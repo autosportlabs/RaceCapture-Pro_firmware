@@ -1,0 +1,125 @@
+main.o: main.c \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/stdlib.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/_ansi.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/newlib.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/config.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/machine/ieeefp.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/include/stddef.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/reent.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/_ansi.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/_types.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/lock.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/machine/stdlib.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/alloca.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/stdio.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/include/stdarg.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/types.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/machine/_types.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/include/limits.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/include/syslimits.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/limits.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/machine/types.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/features.h \
+  /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/stdio.h \
+  FreeRTOS/Source/include/FreeRTOS.h FreeRTOS/Source/include/projdefs.h \
+  FreeRTOSConfig.h hardware/include/Board.h \
+  hardware/include/AT91SAM7S256.h hardware/include/lib_AT91SAM7S256.h \
+  FreeRTOS/Source/include/portable.h \
+  FreeRTOS/Source/include/../../Source/portable/GCC/ARM7_AT91SAM7S/portmacro.h \
+  FreeRTOS/Source/include/task.h FreeRTOS/Source/include/list.h \
+  cfi/include/runtime.h FreeRTOS/Source/include/FreeRTOS.h \
+  FreeRTOS/Source/include/task.h FreeRTOS/Source/include/semphr.h \
+  FreeRTOS/Source/include/queue.h cfi/include/ignition_config.h \
+  cfi/include/ignition_config_defaults.h cfi/include/usb_comm.h \
+  interrupt_utils.h led_debug.h hardware/include/Board.h \
+  cfi/include/USB-CDC.h cfi/include/usb.h
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/stdlib.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/_ansi.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/newlib.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/config.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/machine/ieeefp.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/include/stddef.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/reent.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/_ansi.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/_types.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/lock.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/machine/stdlib.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/alloca.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/stdio.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/include/stdarg.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/types.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/machine/_types.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/include/limits.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/include/syslimits.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/limits.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/machine/types.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/features.h:
+
+/cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/stdio.h:
+
+FreeRTOS/Source/include/FreeRTOS.h:
+
+FreeRTOS/Source/include/projdefs.h:
+
+FreeRTOSConfig.h:
+
+hardware/include/Board.h:
+
+hardware/include/AT91SAM7S256.h:
+
+hardware/include/lib_AT91SAM7S256.h:
+
+FreeRTOS/Source/include/portable.h:
+
+FreeRTOS/Source/include/../../Source/portable/GCC/ARM7_AT91SAM7S/portmacro.h:
+
+FreeRTOS/Source/include/task.h:
+
+FreeRTOS/Source/include/list.h:
+
+cfi/include/runtime.h:
+
+FreeRTOS/Source/include/FreeRTOS.h:
+
+FreeRTOS/Source/include/task.h:
+
+FreeRTOS/Source/include/semphr.h:
+
+FreeRTOS/Source/include/queue.h:
+
+cfi/include/ignition_config.h:
+
+cfi/include/ignition_config_defaults.h:
+
+cfi/include/usb_comm.h:
+
+interrupt_utils.h:
+
+led_debug.h:
+
+hardware/include/Board.h:
+
+cfi/include/USB-CDC.h:
+
+cfi/include/usb.h:

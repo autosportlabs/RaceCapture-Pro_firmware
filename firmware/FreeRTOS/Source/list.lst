@@ -1,0 +1,131 @@
+   1              		.code	16
+   2              		.file	"list.c"
+   3              		.section	.text.vListInitialise,"ax",%progbits
+   4              		.align	2
+   5              		.global	vListInitialise
+   6              		.code 16
+   7              		.thumb_func
+   9              	vListInitialise:
+  10 0000 0123     		mov	r3, #1
+  11 0002 021C     		mov	r2, r0
+  12 0004 5B42     		neg	r3, r3
+  13 0006 8360     		str	r3, [r0, #8]
+  14 0008 0832     		add	r2, r2, #8
+  15 000a 0023     		mov	r3, #0
+  16 000c C260     		str	r2, [r0, #12]
+  17              		@ lr needed for prologue
+  18 000e 0261     		str	r2, [r0, #16]
+  19 0010 4260     		str	r2, [r0, #4]
+  20 0012 0360     		str	r3, [r0]
+  21              		@ sp needed for prologue
+  22 0014 7047     		bx	lr
+  24 0016 C046     		.section	.text.vListInitialiseItem,"ax",%progbits
+  25              		.align	2
+  26              		.global	vListInitialiseItem
+  27              		.code 16
+  28              		.thumb_func
+  30              	vListInitialiseItem:
+  31 0000 0023     		mov	r3, #0
+  32              		@ lr needed for prologue
+  33 0002 0361     		str	r3, [r0, #16]
+  34              		@ sp needed for prologue
+  35 0004 7047     		bx	lr
+  37 0006 C046     		.section	.text.vListInsertEnd,"ax",%progbits
+  38              		.align	2
+  39              		.global	vListInsertEnd
+  40              		.code 16
+  41              		.thumb_func
+  43              	vListInsertEnd:
+  44 0000 4268     		ldr	r2, [r0, #4]
+  45 0002 5368     		ldr	r3, [r2, #4]
+  46 0004 4B60     		str	r3, [r1, #4]
+  47 0006 5368     		ldr	r3, [r2, #4]
+  48 0008 8A60     		str	r2, [r1, #8]
+  49 000a 9960     		str	r1, [r3, #8]
+  50 000c 5160     		str	r1, [r2, #4]
+  51 000e 0368     		ldr	r3, [r0]
+  52 0010 0133     		add	r3, r3, #1
+  53              		@ lr needed for prologue
+  54 0012 4160     		str	r1, [r0, #4]
+  55 0014 0861     		str	r0, [r1, #16]
+  56 0016 0360     		str	r3, [r0]
+  57              		@ sp needed for prologue
+  58 0018 7047     		bx	lr
+  60 001a C046     		.section	.text.vListInsert,"ax",%progbits
+  61              		.align	2
+  62              		.global	vListInsert
+  63              		.code 16
+  64              		.thumb_func
+  66              	vListInsert:
+  67 0000 10B5     		push	{r4, lr}
+  68 0002 0C68     		ldr	r4, [r1]
+  69 0004 631C     		add	r3, r4, #1
+  70 0006 01D1     		bne	.L8
+  71 0008 0269     		ldr	r2, [r0, #16]
+  72 000a 07E0     		b	.L10
+  73              	.L8:
+  74 000c 021C     		mov	r2, r0
+  75 000e 0832     		add	r2, r2, #8
+  76 0010 00E0     		b	.L11
+  77              	.L12:
+  78 0012 5268     		ldr	r2, [r2, #4]
+  79              	.L11:
+  80 0014 5368     		ldr	r3, [r2, #4]
+  81 0016 1B68     		ldr	r3, [r3]
+  82 0018 A342     		cmp	r3, r4
+  83 001a FAD9     		bls	.L12
+  84              	.L10:
+  85 001c 5368     		ldr	r3, [r2, #4]
+  86 001e 9960     		str	r1, [r3, #8]
+  87 0020 4B60     		str	r3, [r1, #4]
+  88 0022 5160     		str	r1, [r2, #4]
+  89 0024 0368     		ldr	r3, [r0]
+  90 0026 0133     		add	r3, r3, #1
+  91 0028 8A60     		str	r2, [r1, #8]
+  92 002a 0861     		str	r0, [r1, #16]
+  93 002c 0360     		str	r3, [r0]
+  94              		@ sp needed for prologue
+  95 002e 10BC     		pop	{r4}
+  96 0030 01BC     		pop	{r0}
+  97 0032 0047     		bx	r0
+  99              		.section	.text.vListRemove,"ax",%progbits
+ 100              		.align	2
+ 101              		.global	vListRemove
+ 102              		.code 16
+ 103              		.thumb_func
+ 105              	vListRemove:
+ 106 0000 4368     		ldr	r3, [r0, #4]
+ 107 0002 8268     		ldr	r2, [r0, #8]
+ 108 0004 9A60     		str	r2, [r3, #8]
+ 109 0006 8168     		ldr	r1, [r0, #8]
+ 110 0008 0269     		ldr	r2, [r0, #16]
+ 111 000a 4B60     		str	r3, [r1, #4]
+ 112 000c 5368     		ldr	r3, [r2, #4]
+ 113              		@ lr needed for prologue
+ 114 000e 8342     		cmp	r3, r0
+ 115 0010 00D1     		bne	.L15
+ 116 0012 5160     		str	r1, [r2, #4]
+ 117              	.L15:
+ 118 0014 0023     		mov	r3, #0
+ 119 0016 0361     		str	r3, [r0, #16]
+ 120 0018 1368     		ldr	r3, [r2]
+ 121 001a 013B     		sub	r3, r3, #1
+ 122 001c 1360     		str	r3, [r2]
+ 123              		@ sp needed for prologue
+ 124 001e 7047     		bx	lr
+ 126              		.ident	"GCC: (GNU) 4.0.2"
+DEFINED SYMBOLS
+                            *ABS*:00000000 list.c
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccOkqHgB.s:1      .text:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccOkqHgB.s:9      .text.vListInitialise:00000000 vListInitialise
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccOkqHgB.s:6      .text.vListInitialise:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccOkqHgB.s:30     .text.vListInitialiseItem:00000000 vListInitialiseItem
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccOkqHgB.s:27     .text.vListInitialiseItem:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccOkqHgB.s:43     .text.vListInsertEnd:00000000 vListInsertEnd
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccOkqHgB.s:40     .text.vListInsertEnd:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccOkqHgB.s:66     .text.vListInsert:00000000 vListInsert
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccOkqHgB.s:63     .text.vListInsert:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccOkqHgB.s:105    .text.vListRemove:00000000 vListRemove
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccOkqHgB.s:102    .text.vListRemove:00000000 $t
+
+NO UNDEFINED SYMBOLS

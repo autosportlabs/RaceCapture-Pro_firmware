@@ -1,0 +1,190 @@
+   1              		.file	"USBIsr.c"
+   2              		.section	.bss.ulNextMessage.2587,"aw",%nobits
+   3              		.align	2
+   6              	ulNextMessage.2587:
+   7 0000 00000000 		.space	4
+   8              		.section	.text.vUSB_ISR,"ax",%progbits
+   9              		.align	2
+  10              		.global	vUSB_ISR
+  12              	vUSB_ISR:
+  13              		@ Function supports interworking.
+  14              		@ Naked Function: prologue and epilogue provided by programmer.
+  15              		@ args = 0, pretend = 0, frame = 4
+  16              		@ frame_needed = 0, uses_anonymous_args = 0
+  17 0000 01002DE9 		STMDB	SP!, {R0}											
+  18 0004 00204DE9 		STMDB	SP,{SP}^											
+  19 0008 0000A0E1 		NOP														
+  20 000c 04D04DE2 		SUB	SP, SP, #4											
+  21 0010 0100BDE8 		LDMIA	SP!,{R0}											
+  22 0014 004020E9 		STMDB	R0!, {LR}											
+  23 0018 00E0A0E1 		MOV	LR, R0												
+  24 001c 0100BDE8 		LDMIA	SP!, {R0}											
+  25 0020 FF7F4EE9 		STMDB	LR,{R0-LR}^											
+  26 0024 0000A0E1 		NOP														
+  27 0028 3CE04EE2 		SUB	LR, LR, #60											
+  28 002c 00004FE1 		MRS	R0, SPSR											
+  29 0030 01002EE9 		STMDB	LR!, {R0}											
+  30 0034 F8019FE5 		LDR	R0, =ulCriticalNesting								
+  31 0038 000090E5 		LDR	R0, [R0]											
+  32 003c 01002EE9 		STMDB	LR!, {R0}											
+  33 0040 F0019FE5 		LDR	R0, =pxCurrentTCB									
+  34 0044 000090E5 		LDR	R0, [R0]											
+  35 0048 00E080E5 		STR	LR, [R0]											
+  36              		
+  37 004c C4319FE5 		ldr	r3, .L23
+  38 0050 003093E5 		ldr	r3, [r3, #0]
+  39 0054 C0319FE5 		ldr	r3, .L23+4
+  40 0058 003093E5 		ldr	r3, [r3, #0]
+  41 005c 04B04EE2 		SUB		R11, LR, #4
+  42 0060 B8219FE5 		ldr	r2, .L23+8
+  43 0064 001092E5 		ldr	r1, [r2, #0]
+  44 0068 003092E5 		ldr	r3, [r2, #0]
+  45 006c 013083E2 		add	r3, r3, #1
+  46 0070 003082E5 		str	r3, [r2, #0]
+  47 0074 A8219FE5 		ldr	r2, .L23+12
+  48 0078 1C4092E5 		ldr	r4, [r2, #28]
+  49 007c 30C092E5 		ldr	ip, [r2, #48]
+  50 0080 A0E19FE5 		ldr	lr, .L23+16
+  51 0084 183092E5 		ldr	r3, [r2, #24]
+  52 0088 031001E2 		and	r1, r1, #3
+  53 008c 0112A0E1 		mov	r1, r1, asl #4
+  54 0090 2C08A0E1 		mov	r0, ip, lsr #16
+  55 0094 805AA0E1 		mov	r5, r0, asl #21
+  56 0098 06001CE3 		tst	ip, #6
+  57 009c 0E0081E0 		add	r0, r1, lr
+  58 00a0 013A83E3 		orr	r3, r3, #4096
+  59 00a4 04C080E5 		str	ip, [r0, #4]
+  60 00a8 00008DE5 		str	r0, [sp, #0]
+  61 00ac 0E4081E7 		str	r4, [r1, lr]
+  62 00b0 203082E5 		str	r3, [r2, #32]
+  63 00b4 A55AA0E1 		mov	r5, r5, lsr #21
+  64 00b8 0000A013 		movne	r0, #0
+  65 00bc 3400001A 		bne	.L4
+  66 00c0 590000EA 		b	.L2
+  67              	.L5:
+  68 00c4 58319FE5 		ldr	r3, .L23+12
+  69 00c8 502093E5 		ldr	r2, [r3, #80]
+  70 00cc 00309DE5 		ldr	r3, [sp, #0]
+  71 00d0 033081E0 		add	r3, r1, r3
+  72 00d4 0820C3E5 		strb	r2, [r3, #8]
+  73              	.L4:
+  74 00d8 FF1000E2 		and	r1, r0, #255
+  75 00dc 050051E1 		cmp	r1, r5
+  76 00e0 010080E2 		add	r0, r0, #1
+  77 00e4 2F00003A 		bcc	.L5
+  78 00e8 34219FE5 		ldr	r2, .L23+12
+  79 00ec 303092E5 		ldr	r3, [r2, #48]
+  80 00f0 040013E3 		tst	r3, #4
+  81 00f4 30309205 		ldreq	r3, [r2, #48]
+  82 00f8 0230C303 		biceq	r3, r3, #2
+  83 00fc 30308205 		streq	r3, [r2, #48]
+  84 0100 5500000A 		beq	.L14
+  85 0104 000055E3 		cmp	r5, #0
+  86 0108 4C00000A 		beq	.L9
+  87 010c 00309DE5 		ldr	r3, [sp, #0]
+  88 0110 D830D3E1 		ldrsb	r3, [r3, #8]
+  89 0114 000053E3 		cmp	r3, #0
+  90 0118 4C0000AA 		bge	.L9
+  91 011c 303092E5 		ldr	r3, [r2, #48]
+  92 0120 803083E3 		orr	r3, r3, #128
+  93 0124 303082E5 		str	r3, [r2, #48]
+  94              	.L12:
+  95 0128 F4309FE5 		ldr	r3, .L23+12
+  96 012c 303093E5 		ldr	r3, [r3, #48]
+  97 0130 800013E3 		tst	r3, #128
+  98 0134 4800000A 		beq	.L12
+  99              	.L9:
+ 100 0138 E4209FE5 		ldr	r2, .L23+12
+ 101 013c 303092E5 		ldr	r3, [r2, #48]
+ 102 0140 0430C3E3 		bic	r3, r3, #4
+ 103 0144 303082E5 		str	r3, [r2, #48]
+ 104              	.L13:
+ 105 0148 D4309FE5 		ldr	r3, .L23+12
+ 106 014c 303093E5 		ldr	r3, [r3, #48]
+ 107 0150 040013E3 		tst	r3, #4
+ 108 0154 5900000A 		beq	.L2
+ 109 0158 500000EA 		b	.L13
+ 110              	.L14:
+ 111 015c C0309FE5 		ldr	r3, .L23+12
+ 112 0160 303093E5 		ldr	r3, [r3, #48]
+ 113 0164 020013E3 		tst	r3, #2
+ 114 0168 5500001A 		bne	.L14
+ 115              	.L2:
+ 116 016c B0E09FE5 		ldr	lr, .L23+12
+ 117 0170 34309EE5 		ldr	r3, [lr, #52]
+ 118 0174 420013E3 		tst	r3, #66
+ 119 0178 0230A013 		movne	r3, #2
+ 120 017c 14308E15 		strne	r3, [lr, #20]
+ 121 0180 30309EE5 		ldr	r3, [lr, #48]
+ 122 0184 0930C3E3 		bic	r3, r3, #9
+ 123 0188 30308EE5 		str	r3, [lr, #48]
+ 124 018c 34309EE5 		ldr	r3, [lr, #52]
+ 125 0190 0D30C3E3 		bic	r3, r3, #13
+ 126 0194 34308EE5 		str	r3, [lr, #52]
+ 127 0198 38309EE5 		ldr	r3, [lr, #56]
+ 128 019c 4F30C3E3 		bic	r3, r3, #79
+ 129 01a0 38308EE5 		str	r3, [lr, #56]
+ 130 01a4 3CC09EE5 		ldr	ip, [lr, #60]
+ 131 01a8 7C309FE5 		ldr	r3, .L23+20
+ 132 01ac 4FC0CCE3 		bic	ip, ip, #79
+ 133 01b0 000093E5 		ldr	r0, [r3, #0]
+ 134 01b4 0020A0E3 		mov	r2, #0
+ 135 01b8 0D10A0E1 		mov	r1, sp
+ 136 01bc 3CC08EE5 		str	ip, [lr, #60]
+ 137 01c0 FEFFFFEB 		bl	xQueueSendFromISR
+ 138 01c4 64309FE5 		ldr	r3, .L23+24
+ 139 01c8 0020A0E3 		mov	r2, #0
+ 140 01cc FF0010E3 		tst	r0, #255
+ 141 01d0 302183E5 		str	r2, [r3, #304]
+ 142 01d4 FEFFFF1B 		blne	vTaskSwitchContext
+ 143              	.L17:
+ 144 01d8 58009FE5 		LDR		R0, =pxCurrentTCB								
+ 145 01dc 000090E5 		LDR		R0, [R0]										
+ 146 01e0 00E090E5 		LDR		LR, [R0]										
+ 147 01e4 48009FE5 		LDR		R0, =ulCriticalNesting							
+ 148 01e8 0200BEE8 		LDMFD	LR!, {R1}											
+ 149 01ec 001080E5 		STR		R1, [R0]										
+ 150 01f0 0100BEE8 		LDMFD	LR!, {R0}											
+ 151 01f4 00F069E1 		MSR		SPSR, R0										
+ 152 01f8 FF7FDEE8 		LDMFD	LR, {R0-R14}^										
+ 153 01fc 0000A0E1 		NOP														
+ 154 0200 3CE09EE5 		LDR		LR, [LR, #+60]									
+ 155 0204 04F05EE2 		SUBS	PC, LR, #4											
+ 156              		
+ 157 0208 08309FE5 		ldr	r3, .L23
+ 158 020c 003093E5 		ldr	r3, [r3, #0]
+ 159 0210 04309FE5 		ldr	r3, .L23+4
+ 160 0214 003093E5 		ldr	r3, [r3, #0]
+ 161              	.L24:
+ 162              		.align	2
+ 163              	.L23:
+ 164 0218 00000000 		.word	ulCriticalNesting
+ 165 021c 00000000 		.word	pxCurrentTCB
+ 166 0220 00000000 		.word	ulNextMessage.2587
+ 167 0224 0000FBFF 		.word	-327680
+ 168 0228 00000000 		.word	xISRMessages
+ 169 022c 00000000 		.word	xUSBInterruptQueue
+ 170 0230 00F0FFFF 		.word	-4096
+ 172              		.section	.bss.xISRMessages,"aw",%nobits
+ 173              		.align	2
+ 176              	xISRMessages:
+ 177 0000 00000000 		.space	64
+ 177      00000000 
+ 177      00000000 
+ 177      00000000 
+ 177      00000000 
+ 178              		.ident	"GCC: (GNU) 4.0.2"
+DEFINED SYMBOLS
+                            *ABS*:00000000 USBIsr.c
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccxkwlh3.s:6      .bss.ulNextMessage.2587:00000000 ulNextMessage.2587
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccxkwlh3.s:12     .text.vUSB_ISR:00000000 vUSB_ISR
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccxkwlh3.s:17     .text.vUSB_ISR:00000000 $a
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccxkwlh3.s:164    .text.vUSB_ISR:00000218 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccxkwlh3.s:176    .bss.xISRMessages:00000000 xISRMessages
+
+UNDEFINED SYMBOLS
+ulCriticalNesting
+pxCurrentTCB
+xQueueSendFromISR
+vTaskSwitchContext
+xUSBInterruptQueue

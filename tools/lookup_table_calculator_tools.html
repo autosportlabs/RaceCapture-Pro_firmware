@@ -1,0 +1,343 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head></head><body>
+<script>
+
+function writeRpmTable(){
+
+document.genRPMTable.rpmTableOutHigh.value="";
+document.genRPMTable.rpmTableOutLow.value="";
+
+var rpm;
+var cyl=document.genRPMTable.cyl.value;
+for (rpm=500;rpm<=10000;rpm=rpm+100){
+var cylMult = cyl/2;
+var ticks=1000000 * ((1/(rpm/60))/cylMult);
+ticks=Math.round(ticks);
+var ticksHex=hexfromdec(ticks);
+
+var lowByte=ticksHex.substring(2,4);
+var highByte=ticksHex.substring(0,2);
+document.genRPMTable.rpmTableOutHigh.value=document.genRPMTable.rpmTableOutHigh.value+"\n\tDC.B\t$"+highByte +"\t\t;" + rpm + "RPM High Byte, " + cyl + " cylinder";
+
+document.genRPMTable.rpmTableOutLow.value =document.genRPMTable.rpmTableOutLow.value +"\n\tDC.B\t$"+lowByte +"\t\t;" + rpm + "RPM Low Byte, " + cyl + " cylinder";
+
+
+
+
+}
+
+
+
+}
+
+function calcSAW(){
+
+var degrees=document.calc.deg.value;
+
+var saw = 1536 - (25.6 * degrees);
+
+saw=Math.round(saw);
+document.calc.saw.value=saw;
+document.calc.sawHex.value=hexfromdec(saw);
+}
+
+function calcRPMTicks(){
+
+var rpm=document.calcRPM.rpm.value;
+
+var cylMult = document.calcRPM.cyl.value/2;
+var ticks=1000000 * ((1/(rpm/60))/cylMult);
+
+ticks=Math.round(ticks);
+document.calcRPM.ticks.value=ticks;
+document.calcRPM.ticksHex.value=hexfromdec(ticks);
+
+}
+
+        function decCompute(form) {
+                form.hex.value = hexfromdec(form.decimal.value);
+        }
+        function hexCompute(form) {
+                form.decimal.value = decfromhex(form.hex.value);
+        }
+        function hexfromdec(num) {
+                if (num > 65535) { return ("err!") }
+                
+                first = Math.round(num/4096 - .5);
+                temp1 = num - first * 4096;
+                second = Math.round(temp1/256 -.5);
+                temp2 = temp1 - second * 256;
+                third = Math.round(temp2/16 - .5);
+                fourth = temp2 - third * 16;
+                                
+                return (""+getletter(first)+getletter(second)+getletter(third)+getletter(fourth));
+        }
+        
+        function getletter(num) {
+num=Math.round(num);
+                if (num < 10) {
+                        return num;
+                } else {
+                        if (num == 10) { return "A" }
+                        if (num == 11) { return "B" }
+                        if (num == 12) { return "C" }
+                        if (num == 13) { return "D" }
+                        if (num == 14) { return "E" }
+                        if (num == 15) { return "F" }
+                }
+        }
+        function decfromhex(num) {
+                while (num.length < 4) {
+                        num = "0" + num;
+                }
+                return (eval(getnum(num.substring(3,4))) + eval(getnum(num.substring(2,3))) * 16 +
+                eval(getnum(num.substring(1,2))) * 256 + eval(getnum(num.substring(0,1))) * 4096);
+                
+        }
+        function getnum(letter) {
+                if (letter <= "9") {
+                        return letter;
+                } else {
+                        if ((letter == "a") || (letter == "A")) { return 10 }
+                        if ((letter == "b") || (letter == "B")) { return 11 }
+                        if ((letter == "c") || (letter == "C")) { return 12 }
+                        if ((letter == "d") || (letter == "D")) { return 13 }
+                        if ((letter == "e") || (letter == "E")) { return 14 }
+                        if ((letter == "f") || (letter == "F")) { return 15 }
+                        return 0;
+                }
+        }
+                    
+        // end hiding from old browsers -->
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<b>Calculate SAW pulsewidth</b>
+<br>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<form name="calc"> Degrees Advance: <input name="deg"> <input type="button" value="calculate" onclick="calcSAW()">
+<br>
+<table border="0">
+  <tbody><tr>
+    <td>SAW pulsewidth microseconds:</td>
+    <td><input name="saw"></td>
+  </tr>
+  <tr>
+    <td>(Hex)</td>
+    <td><input name="sawHex"></td>
+  </tr>
+</tbody></table>
+</form>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<b>Calculate RPM tick counts</b>
+<br>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<form name="calcRPM"> RPM: <input name="rpm"> <input type="button" value="calculate" onclick="calcRPMTicks()">
+<table border="0">
+  <tbody>
+  <tr>
+    <td>cylinders</td>
+    <td><select name="cyl"><option value="4">4</option><option value="6">6</option><option value="8">8</option></select></td>
+  </tr>
+    <tr><td>tick count:</td>
+    <td><input name="ticks"></td>
+  </tr>
+    <tr><td>(Hex)</td>
+    <td><input name="ticksHex"></td>
+  </tr>
+</tbody></table>
+</form>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<b>Generate RPM tick count table</b>
+<form name="genRPMTable">
+<br>cylinders <select name="cyl"><option value="4">4</option><option value="6">6</option><option value="8">8</option></select>
+<input type="button" value="calculate" onclick="writeRpmTable();">
+<br>
+<textarea name="rpmTableOutHigh" rows="10" cols="80"></textarea>
+<br>
+<textarea name="rpmTableOutLow" rows="10" cols="80"></textarea>
+
+</form>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body></html>
