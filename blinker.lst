@@ -1,0 +1,81 @@
+   1              		.file	"blinker.c"
+   2              		.section	.text.blinker,"ax",%progbits
+   3              		.align	2
+   4              		.global	blinker
+   6              	blinker:
+   7              		@ Function supports interworking.
+   8              		@ args = 0, pretend = 0, frame = 12
+   9              		@ frame_needed = 0, uses_anonymous_args = 0
+  10              		@ link register save eliminated.
+  11 0000 B0309FE5 		ldr	r3, .L24
+  12 0004 0CD04DE2 		sub	sp, sp, #12
+  13 0008 08308DE5 		str	r3, [sp, #8]
+  14              		@ lr needed for prologue
+  15 000c FF0000E2 		and	r0, r0, #255
+  16              	.L23:
+  17 0010 04008DE5 		str	r0, [sp, #4]
+  18 0014 1D0000EA 		b	.L3
+  19              	.L4:
+  20 0018 08309DE5 		ldr	r3, [sp, #8]
+  21 001c 0228A0E3 		mov	r2, #131072
+  22 0020 342083E5 		str	r2, [r3, #52]
+  23 0024 90309FE5 		ldr	r3, .L24+4
+  24 0028 0B0000EA 		b	.L21
+  25              	.L6:
+  26 002c 00309DE5 		ldr	r3, [sp, #0]
+  27 0030 013043E2 		sub	r3, r3, #1
+  28              	.L21:
+  29 0034 00308DE5 		str	r3, [sp, #0]
+  30 0038 00309DE5 		ldr	r3, [sp, #0]
+  31 003c 000053E3 		cmp	r3, #0
+  32 0040 0900001A 		bne	.L6
+  33 0044 08309DE5 		ldr	r3, [sp, #8]
+  34 0048 0228A0E3 		mov	r2, #131072
+  35 004c 302083E5 		str	r2, [r3, #48]
+  36 0050 64309FE5 		ldr	r3, .L24+4
+  37 0054 160000EA 		b	.L22
+  38              	.L9:
+  39 0058 00309DE5 		ldr	r3, [sp, #0]
+  40 005c 013043E2 		sub	r3, r3, #1
+  41              	.L22:
+  42 0060 00308DE5 		str	r3, [sp, #0]
+  43 0064 00309DE5 		ldr	r3, [sp, #0]
+  44 0068 000053E3 		cmp	r3, #0
+  45 006c 1400001A 		bne	.L9
+  46 0070 04309DE5 		ldr	r3, [sp, #4]
+  47 0074 013043E2 		sub	r3, r3, #1
+  48 0078 04308DE5 		str	r3, [sp, #4]
+  49              	.L3:
+  50 007c 04309DE5 		ldr	r3, [sp, #4]
+  51 0080 000053E3 		cmp	r3, #0
+  52 0084 0400001A 		bne	.L4
+  53 0088 30309FE5 		ldr	r3, .L24+8
+  54 008c 000050E3 		cmp	r0, #0
+  55 0090 00308DE5 		str	r3, [sp, #0]
+  56 0094 0200000A 		beq	.L23
+  57 0098 280000EA 		b	.L19
+  58              	.L13:
+  59 009c 00309DE5 		ldr	r3, [sp, #0]
+  60 00a0 013043E2 		sub	r3, r3, #1
+  61 00a4 00308DE5 		str	r3, [sp, #0]
+  62              	.L19:
+  63 00a8 00309DE5 		ldr	r3, [sp, #0]
+  64 00ac 000053E3 		cmp	r3, #0
+  65 00b0 2500001A 		bne	.L13
+  66 00b4 020000EA 		b	.L23
+  67              	.L25:
+  68              		.align	2
+  69              	.L24:
+  70 00b8 00F4FFFF 		.word	-3072
+  71 00bc C0270900 		.word	600000
+  72 00c0 404B4C00 		.word	5000000
+  74              		.comm	blinkcount,4,4
+  75              		.ident	"GCC: (GNU) 4.0.2"
+DEFINED SYMBOLS
+                            *ABS*:00000000 blinker.c
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccr5uFMo.s:6      .text.blinker:00000000 blinker
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccr5uFMo.s:11     .text.blinker:00000000 $a
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccr5uFMo.s:70     .text.blinker:000000b8 $d
+                            *COM*:00000004 blinkcount
+
+NO UNDEFINED SYMBOLS

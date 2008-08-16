@@ -1,0 +1,175 @@
+   1              		.code	16
+   2              		.file	"heap_2.c"
+   3              		.section	.bss.xHeapHasBeenInitialised.3010,"aw",%nobits
+   4              		.align	2
+   7              	xHeapHasBeenInitialised.3010:
+   8 0000 00000000 		.space	4
+   9              		.section	.text.pvPortMalloc,"ax",%progbits
+  10              		.align	2
+  11              		.global	pvPortMalloc
+  12              		.code 16
+  13              		.thumb_func
+  15              	pvPortMalloc:
+  16 0000 30B5     		push	{r4, r5, lr}
+  17 0002 041C     		mov	r4, r0
+  18 0004 FFF7FEFF 		bl	vTaskSuspendAll
+  19 0008 244D     		ldr	r5, .L20
+  20 000a 2868     		ldr	r0, [r5]
+  21 000c 0028     		cmp	r0, #0
+  22 000e 0BD1     		bne	.L2
+  23 0010 2349     		ldr	r1, .L20+4
+  24 0012 244B     		ldr	r3, .L20+8
+  25 0014 244A     		ldr	r2, .L20+12
+  26 0016 1960     		str	r1, [r3]
+  27 0018 5860     		str	r0, [r3, #4]
+  28 001a 244B     		ldr	r3, .L20+16
+  29 001c 5A60     		str	r2, [r3, #4]
+  30 001e 1860     		str	r0, [r3]
+  31 0020 0B60     		str	r3, [r1]
+  32 0022 0123     		mov	r3, #1
+  33 0024 4A60     		str	r2, [r1, #4]
+  34 0026 2B60     		str	r3, [r5]
+  35              	.L2:
+  36 0028 002C     		cmp	r4, #0
+  37 002a 05D0     		beq	.L4
+  38 002c 0834     		add	r4, r4, #8
+  39 002e 0323     		mov	r3, #3
+  40 0030 1C42     		tst	r4, r3
+  41 0032 01D0     		beq	.L4
+  42 0034 9C43     		bic	r4, r4, r3
+  43 0036 0434     		add	r4, r4, #4
+  44              	.L4:
+  45 0038 1D4B     		ldr	r3, .L20+20
+  46 003a 621E     		sub	r2, r4, #1
+  47 003c 9A42     		cmp	r2, r3
+  48 003e 25D8     		bhi	.L7
+  49 0040 184B     		ldr	r3, .L20+8
+  50 0042 1A68     		ldr	r2, [r3]
+  51 0044 191C     		mov	r1, r3
+  52              	.L9:
+  53 0046 5368     		ldr	r3, [r2, #4]
+  54 0048 A342     		cmp	r3, r4
+  55 004a 05D2     		bcs	.L10
+  56 004c 1368     		ldr	r3, [r2]
+  57 004e 002B     		cmp	r3, #0
+  58 0050 02D0     		beq	.L10
+  59 0052 111C     		mov	r1, r2
+  60 0054 1A1C     		mov	r2, r3
+  61 0056 F6E7     		b	.L9
+  62              	.L10:
+  63 0058 144B     		ldr	r3, .L20+16
+  64 005a 9A42     		cmp	r2, r3
+  65 005c 16D0     		beq	.L7
+  66 005e 0B68     		ldr	r3, [r1]
+  67 0060 1D1C     		mov	r5, r3
+  68 0062 1368     		ldr	r3, [r2]
+  69 0064 0B60     		str	r3, [r1]
+  70 0066 5368     		ldr	r3, [r2, #4]
+  71 0068 1B1B     		sub	r3, r3, r4
+  72 006a 0835     		add	r5, r5, #8
+  73 006c 102B     		cmp	r3, #16
+  74 006e 0ED9     		bls	.L14
+  75 0070 1019     		add	r0, r2, r4
+  76 0072 4360     		str	r3, [r0, #4]
+  77 0074 5460     		str	r4, [r2, #4]
+  78 0076 0B49     		ldr	r1, .L20+8
+  79 0078 4468     		ldr	r4, [r0, #4]
+  80              	.L16:
+  81 007a 0A68     		ldr	r2, [r1]
+  82 007c 5368     		ldr	r3, [r2, #4]
+  83 007e A342     		cmp	r3, r4
+  84 0080 01D2     		bcs	.L17
+  85 0082 111C     		mov	r1, r2
+  86 0084 F9E7     		b	.L16
+  87              	.L17:
+  88 0086 0260     		str	r2, [r0]
+  89 0088 0860     		str	r0, [r1]
+  90 008a 00E0     		b	.L14
+  91              	.L7:
+  92 008c 0025     		mov	r5, #0
+  93              	.L14:
+  94 008e FFF7FEFF 		bl	xTaskResumeAll
+  95 0092 281C     		mov	r0, r5
+  96              		@ sp needed for prologue
+  97 0094 30BC     		pop	{r4, r5}
+  98 0096 02BC     		pop	{r1}
+  99 0098 0847     		bx	r1
+ 100              	.L21:
+ 101 009a 0000     		.align	2
+ 102              	.L20:
+ 103 009c 00000000 		.word	xHeapHasBeenInitialised.3010
+ 104 00a0 04000000 		.word	xHeap+4
+ 105 00a4 00000000 		.word	xStart
+ 106 00a8 10270000 		.word	10000
+ 107 00ac 00000000 		.word	xEnd
+ 108 00b0 0E270000 		.word	9998
+ 110              		.section	.text.vPortFree,"ax",%progbits
+ 111              		.align	2
+ 112              		.global	vPortFree
+ 113              		.code 16
+ 114              		.thumb_func
+ 116              	vPortFree:
+ 117 0000 10B5     		push	{r4, lr}
+ 118 0002 0028     		cmp	r0, #0
+ 119 0004 0FD0     		beq	.L28
+ 120 0006 041C     		mov	r4, r0
+ 121 0008 083C     		sub	r4, r4, #8
+ 122 000a FFF7FEFF 		bl	vTaskSuspendAll
+ 123 000e 6068     		ldr	r0, [r4, #4]
+ 124 0010 0649     		ldr	r1, .L29
+ 125              	.L25:
+ 126 0012 0A68     		ldr	r2, [r1]
+ 127 0014 5368     		ldr	r3, [r2, #4]
+ 128 0016 8342     		cmp	r3, r0
+ 129 0018 01D2     		bcs	.L26
+ 130 001a 111C     		mov	r1, r2
+ 131 001c F9E7     		b	.L25
+ 132              	.L26:
+ 133 001e 2260     		str	r2, [r4]
+ 134 0020 0C60     		str	r4, [r1]
+ 135 0022 FFF7FEFF 		bl	xTaskResumeAll
+ 136              	.L28:
+ 137              		@ sp needed for prologue
+ 138 0026 10BC     		pop	{r4}
+ 139 0028 01BC     		pop	{r0}
+ 140 002a 0047     		bx	r0
+ 141              	.L30:
+ 142              		.align	2
+ 143              	.L29:
+ 144 002c 00000000 		.word	xStart
+ 146              		.section	.bss.xEnd,"aw",%nobits
+ 147              		.align	2
+ 150              	xEnd:
+ 151 0000 00000000 		.space	8
+ 151      00000000 
+ 152              		.section	.bss.xStart,"aw",%nobits
+ 153              		.align	2
+ 156              	xStart:
+ 157 0000 00000000 		.space	8
+ 157      00000000 
+ 158              		.section	.bss.xHeap,"aw",%nobits
+ 159              		.align	2
+ 162              	xHeap:
+ 163 0000 00000000 		.space	10004
+ 163      00000000 
+ 163      00000000 
+ 163      00000000 
+ 163      00000000 
+ 164              		.ident	"GCC: (GNU) 4.0.2"
+DEFINED SYMBOLS
+                            *ABS*:00000000 heap_2.c
+/cygdrive/c/Users/brent/AppData/Local/Temp/cckHemOf.s:1      .text:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/cckHemOf.s:7      .bss.xHeapHasBeenInitialised.3010:00000000 xHeapHasBeenInitialised.3010
+/cygdrive/c/Users/brent/AppData/Local/Temp/cckHemOf.s:15     .text.pvPortMalloc:00000000 pvPortMalloc
+/cygdrive/c/Users/brent/AppData/Local/Temp/cckHemOf.s:12     .text.pvPortMalloc:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/cckHemOf.s:103    .text.pvPortMalloc:0000009c $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/cckHemOf.s:162    .bss.xHeap:00000000 xHeap
+/cygdrive/c/Users/brent/AppData/Local/Temp/cckHemOf.s:156    .bss.xStart:00000000 xStart
+/cygdrive/c/Users/brent/AppData/Local/Temp/cckHemOf.s:150    .bss.xEnd:00000000 xEnd
+/cygdrive/c/Users/brent/AppData/Local/Temp/cckHemOf.s:116    .text.vPortFree:00000000 vPortFree
+/cygdrive/c/Users/brent/AppData/Local/Temp/cckHemOf.s:113    .text.vPortFree:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/cckHemOf.s:144    .text.vPortFree:0000002c $d
+
+UNDEFINED SYMBOLS
+vTaskSuspendAll
+xTaskResumeAll
