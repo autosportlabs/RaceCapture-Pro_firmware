@@ -574,743 +574,742 @@
  616 0042 002B     		cmp	r3, #0
  617 0044 01D0     		beq	.L147
  618 0046 0028     		cmp	r0, #0
- 619 0048 07D1     		bne	.L59
+ 619 0048 06D1     		bne	.L59
  620              	.L147:
- 621 004a 8020     		mov	r0, #128
- 622 004c C002     		lsl	r0, r0, #11
- 623 004e FFF7FEFF 		bl	Toggle_LED
- 624 0052 6420     		mov	r0, #100
- 625 0054 FFF7FEFF 		bl	vTaskDelay
- 626 0058 F7E7     		b	.L147
- 627              	.L59:
- 628 005a C04B     		ldr	r3, .L161+12
- 629 005c 0021     		mov	r1, #0
- 630 005e 0433     		add	r3, r3, #4
- 631 0060 D967     		str	r1, [r3, #124]
- 632 0062 BF4B     		ldr	r3, .L161+16
- 633 0064 0433     		add	r3, r3, #4
- 634 0066 D967     		str	r1, [r3, #124]
- 635 0068 BE4B     		ldr	r3, .L161+20
- 636 006a 1970     		strb	r1, [r3]
- 637 006c BE4B     		ldr	r3, .L161+24
- 638 006e 1960     		str	r1, [r3]
- 639 0070 BE4B     		ldr	r3, .L161+28
- 640 0072 BF4A     		ldr	r2, .L161+32
- 641 0074 1970     		strb	r1, [r3]
- 642 0076 0223     		mov	r3, #2
- 643 0078 1360     		str	r3, [r2]
- 644 007a BE48     		ldr	r0, .L161+36
- 645 007c 8023     		mov	r3, #128
- 646 007e C268     		ldr	r2, [r0, #12]
- 647 0080 5B05     		lsl	r3, r3, #21
- 648 0082 1A43     		orr	r2, r2, r3
- 649 0084 C260     		str	r2, [r0, #12]
- 650 0086 8024     		mov	r4, #128
- 651 0088 BB4A     		ldr	r2, .L161+40
- 652 008a 8023     		mov	r3, #128
- 653 008c 2401     		lsl	r4, r4, #4
- 654 008e 1360     		str	r3, [r2]
- 655 0090 1461     		str	r4, [r2, #16]
- 656 0092 0123     		mov	r3, #1
- 657 0094 B94A     		ldr	r2, .L161+44
- 658 0096 5B42     		neg	r3, r3
- 659 0098 5361     		str	r3, [r2, #20]
- 660 009a 1362     		str	r3, [r2, #32]
- 661 009c B84B     		ldr	r3, .L161+48
- 662 009e 1960     		str	r1, [r3]
- 663 00a0 B84B     		ldr	r3, .L161+52
- 664 00a2 1163     		str	r1, [r2, #48]
- 665 00a4 5163     		str	r1, [r2, #52]
- 666 00a6 9163     		str	r1, [r2, #56]
- 667 00a8 D163     		str	r1, [r2, #60]
- 668 00aa 5160     		str	r1, [r2, #4]
- 669 00ac 9160     		str	r1, [r2, #8]
- 670 00ae 0293     		str	r3, [sp, #8]
- 671 00b0 B54B     		ldr	r3, .L161+56
- 672 00b2 0322     		mov	r2, #3
- 673 00b4 0093     		str	r3, [sp]
- 674 00b6 0B21     		mov	r1, #11
- 675 00b8 0023     		mov	r3, #0
- 676 00ba 0298     		ldr	r0, [sp, #8]
- 677 00bc FFF7FEFF 		bl	AT91F_AIC_ConfigureIt
- 678 00c0 B24B     		ldr	r3, .L161+60
- 679 00c2 FA20     		mov	r0, #250
- 680 00c4 5C62     		str	r4, [r3, #36]
- 681 00c6 FFF7FEFF 		bl	vTaskDelay
- 682 00ca B14A     		ldr	r2, .L161+64
- 683 00cc 0123     		mov	r3, #1
- 684 00ce 1360     		str	r3, [r2]
- 685 00d0 FFF7FEFF 		bl	vPortExitCritical
- 686              	.L159:
- 687 00d4 9E4B     		ldr	r3, .L161
- 688 00d6 03A9     		add	r1, sp, #12
- 689 00d8 1868     		ldr	r0, [r3]
- 690 00da 0122     		mov	r2, #1
- 691 00dc FFF7FEFF 		bl	xQueueReceive
- 692 00e0 0028     		cmp	r0, #0
- 693 00e2 00D1     		bne	.LCB440
- 694 00e4 93E1     		b	.L61	@long jump
- 695              	.LCB440:
- 696 00e6 039E     		ldr	r6, [sp, #12]
- 697 00e8 3368     		ldr	r3, [r6]
- 698 00ea 0121     		mov	r1, #1
- 699 00ec 0B42     		tst	r3, r1
- 700 00ee 00D1     		bne	.LCB446
- 701 00f0 6AE1     		b	.L63	@long jump
- 702              	.LCB446:
- 703 00f2 7268     		ldr	r2, [r6, #4]
- 704 00f4 5301     		lsl	r3, r2, #5
- 705 00f6 5F0D     		lsr	r7, r3, #21
- 706 00f8 0A42     		tst	r2, r1
- 707 00fa 3DD0     		beq	.L65
- 708 00fc 9A4A     		ldr	r2, .L161+24
- 709 00fe 1568     		ldr	r5, [r2]
- 710 0100 0192     		str	r2, [sp, #4]
- 711 0102 022D     		cmp	r5, #2
- 712 0104 22D1     		bne	.L67
- 713 0106 9D4C     		ldr	r4, .L161+44
- 714 0108 6560     		str	r5, [r4, #4]
- 715 010a FFF7FEFF 		bl	vPortEnterCritical
- 716 010e 626B     		ldr	r2, [r4, #52]
- 717 0110 4F20     		mov	r0, #79
- 718 0112 3021     		mov	r1, #48
- 719 0114 0243     		orr	r2, r2, r0
- 720 0116 8223     		mov	r3, #130
- 721 0118 8A43     		bic	r2, r2, r1
- 722 011a 1B02     		lsl	r3, r3, #8
- 723 011c 1A43     		orr	r2, r2, r3
- 724 011e 6263     		str	r2, [r4, #52]
- 725 0120 2561     		str	r5, [r4, #16]
- 726 0122 A36B     		ldr	r3, [r4, #56]
- 727 0124 8622     		mov	r2, #134
- 728 0126 0343     		orr	r3, r3, r0
- 729 0128 8B43     		bic	r3, r3, r1
- 730 012a 1202     		lsl	r2, r2, #8
- 731 012c 1343     		orr	r3, r3, r2
- 732 012e A363     		str	r3, [r4, #56]
- 733 0130 0423     		mov	r3, #4
- 734 0132 2361     		str	r3, [r4, #16]
- 735 0134 E36B     		ldr	r3, [r4, #60]
- 736 0136 8722     		mov	r2, #135
- 737 0138 0343     		orr	r3, r3, r0
- 738 013a 1202     		lsl	r2, r2, #8
- 739 013c 8B43     		bic	r3, r3, r1
- 740 013e 1343     		orr	r3, r3, r2
- 741 0140 E363     		str	r3, [r4, #60]
- 742 0142 FFF7FEFF 		bl	vPortExitCritical
- 743 0146 019A     		ldr	r2, [sp, #4]
- 744 0148 0523     		mov	r3, #5
- 745 014a 11E0     		b	.L154
- 746              	.L67:
- 747 014c 032D     		cmp	r5, #3
- 748 014e 11D1     		bne	.L69
- 749 0150 904B     		ldr	r3, .L161+68
- 750 0152 1A68     		ldr	r2, [r3]
- 751 0154 002A     		cmp	r2, #0
- 752 0156 02D0     		beq	.L71
- 753 0158 884B     		ldr	r3, .L161+44
- 754 015a 5960     		str	r1, [r3, #4]
- 755 015c 01E0     		b	.L73
- 756              	.L71:
- 757 015e 874B     		ldr	r3, .L161+44
- 758 0160 5A60     		str	r2, [r3, #4]
- 759              	.L73:
- 760 0162 8023     		mov	r3, #128
- 761 0164 5B00     		lsl	r3, r3, #1
- 762 0166 1A43     		orr	r2, r2, r3
- 763 0168 844B     		ldr	r3, .L161+44
- 764 016a 9A60     		str	r2, [r3, #8]
- 765 016c 7E4A     		ldr	r2, .L161+24
- 766 016e 0023     		mov	r3, #0
- 767              	.L154:
- 768 0170 1360     		str	r3, [r2]
- 769 0172 01E0     		b	.L65
- 770              	.L69:
- 771 0174 FFF7FEFF 		bl	prvSendNextSegment
- 772              	.L65:
- 773 0178 7368     		ldr	r3, [r6, #4]
- 774 017a 9A07     		lsl	r2, r3, #30
- 775 017c 1CD5     		bpl	.L74
- 776 017e 774B     		ldr	r3, .L161+12
- 777 0180 1A1D     		add	r2, r3, #4
- 778 0182 0833     		add	r3, r3, #8
- 779 0184 DB6F     		ldr	r3, [r3, #124]
- 780 0186 7648     		ldr	r0, .L161+16
- 781 0188 D367     		str	r3, [r2, #124]
- 782 018a 031C     		mov	r3, r0
- 783 018c 0833     		add	r3, r3, #8
- 784 018e 051D     		add	r5, r0, #4
- 785 0190 DB6F     		ldr	r3, [r3, #124]
- 786 0192 EA6F     		ldr	r2, [r5, #124]
- 787 0194 9B1A     		sub	r3, r3, r2
- 788 0196 1B06     		lsl	r3, r3, #24
- 789 0198 1C0E     		lsr	r4, r3, #24
- 790 019a BC42     		cmp	r4, r7
- 791 019c 01D9     		bls	.L76
- 792 019e 3B06     		lsl	r3, r7, #24
- 793 01a0 1C0E     		lsr	r4, r3, #24
- 794              	.L76:
- 795 01a2 002C     		cmp	r4, #0
- 796 01a4 00D1     		bne	.LCB554
- 797 01a6 0FE1     		b	.L63	@long jump
- 798              	.LCB554:
- 799 01a8 311C     		mov	r1, r6
- 800 01aa 0831     		add	r1, r1, #8
- 801 01ac 221C     		mov	r2, r4
- 802 01ae FFF7FEFF 		bl	memcpy
- 803 01b2 EB6F     		ldr	r3, [r5, #124]
- 804 01b4 1B19     		add	r3, r3, r4
- 805 01b6 EB67     		str	r3, [r5, #124]
- 806              	.L74:
- 807 01b8 7368     		ldr	r3, [r6, #4]
- 808 01ba 5A07     		lsl	r2, r3, #29
- 809 01bc 2AD5     		bpl	.L79
- 810 01be 072F     		cmp	r7, #7
- 811 01c0 28D9     		bls	.L79
- 812 01c2 307A     		ldrb	r0, [r6, #8]
- 813 01c4 7449     		ldr	r1, .L161+72
- 814 01c6 0870     		strb	r0, [r1]
- 815 01c8 737A     		ldrb	r3, [r6, #9]
- 816 01ca 4B70     		strb	r3, [r1, #1]
- 817 01cc F37A     		ldrb	r3, [r6, #11]
- 818 01ce 1B02     		lsl	r3, r3, #8
- 819 01d0 4B80     		strh	r3, [r1, #2]
- 820 01d2 B27A     		ldrb	r2, [r6, #10]
- 821 01d4 1343     		orr	r3, r3, r2
- 822 01d6 4B80     		strh	r3, [r1, #2]
- 823 01d8 737B     		ldrb	r3, [r6, #13]
- 824 01da 1B02     		lsl	r3, r3, #8
- 825 01dc 8B80     		strh	r3, [r1, #4]
- 826 01de 327B     		ldrb	r2, [r6, #12]
- 827 01e0 1343     		orr	r3, r3, r2
- 828 01e2 8B80     		strh	r3, [r1, #4]
- 829 01e4 F37B     		ldrb	r3, [r6, #15]
- 830 01e6 1B02     		lsl	r3, r3, #8
- 831 01e8 CB80     		strh	r3, [r1, #6]
- 832 01ea B27B     		ldrb	r2, [r6, #14]
- 833 01ec 1C1C     		mov	r4, r3
- 834 01ee 1443     		orr	r4, r4, r2
- 835 01f0 5B4A     		ldr	r2, .L161+16
- 836 01f2 CC80     		strh	r4, [r1, #6]
- 837 01f4 131D     		add	r3, r2, #4
- 838 01f6 0021     		mov	r1, #0
- 839 01f8 0006     		lsl	r0, r0, #24
- 840 01fa D967     		str	r1, [r3, #124]
- 841 01fc 0028     		cmp	r0, #0
- 842 01fe 06DB     		blt	.L82
- 843 0200 802C     		cmp	r4, #128
- 844 0202 00D9     		bls	.LCB621
- 845 0204 DEE0     		b	.L149	@long jump
- 846              	.LCB621:
- 847 0206 131C     		mov	r3, r2
- 848 0208 0833     		add	r3, r3, #8
- 849 020a DC67     		str	r4, [r3, #124]
- 850 020c 02E0     		b	.L79
- 851              	.L82:
- 852 020e 131C     		mov	r3, r2
- 853 0210 0833     		add	r3, r3, #8
- 854 0212 D967     		str	r1, [r3, #124]
- 855              	.L79:
- 856 0214 7268     		ldr	r2, [r6, #4]
- 857 0216 0623     		mov	r3, #6
- 858 0218 1A42     		tst	r2, r3
- 859 021a 00D1     		bne	.LCB638
- 860 021c D4E0     		b	.L63	@long jump
- 861              	.LCB638:
- 862 021e 504D     		ldr	r5, .L161+16
- 863 0220 2A1C     		mov	r2, r5
- 864 0222 2B1D     		add	r3, r5, #4
- 865 0224 0832     		add	r2, r2, #8
- 866 0226 D96F     		ldr	r1, [r3, #124]
- 867 0228 D36F     		ldr	r3, [r2, #124]
- 868 022a 9942     		cmp	r1, r3
- 869 022c 00D2     		bcs	.LCB646
- 870 022e CBE0     		b	.L63	@long jump
- 871              	.LCB646:
- 872 0230 594C     		ldr	r4, .L161+72
- 873 0232 2178     		ldrb	r1, [r4]
- 874 0234 6023     		mov	r3, #96
- 875 0236 0B40     		and	r3, r3, r1
- 876 0238 0322     		mov	r2, #3
- 877 023a DB10     		asr	r3, r3, #3
- 878 023c 1140     		and	r1, r1, r2
- 879 023e 0B43     		orr	r3, r3, r1
- 880 0240 012B     		cmp	r3, #1
- 881 0242 5FD0     		beq	.L90
- 882 0244 012B     		cmp	r3, #1
- 883 0246 06D3     		bcc	.L89
- 884 0248 022B     		cmp	r3, #2
- 885 024a 00D1     		bne	.LCB664
- 886 024c BAE0     		b	.L149	@long jump
- 887              	.LCB664:
- 888 024e 052B     		cmp	r3, #5
- 889 0250 00D0     		beq	.LCB666
- 890 0252 B7E0     		b	.L149	@long jump
- 891              	.LCB666:
- 892 0254 5FE0     		b	.L92
- 893              	.L89:
- 894 0256 04AB     		add	r3, sp, #16
- 895 0258 0022     		mov	r2, #0
- 896 025a 1A80     		strh	r2, [r3]
- 897 025c 6378     		ldrb	r3, [r4, #1]
- 898 025e 092B     		cmp	r3, #9
- 899 0260 00D9     		bls	.LCB678
- 900 0262 AFE0     		b	.L149	@long jump
- 901              	.LCB678:
- 902 0264 4D4A     		ldr	r2, .L161+76
- 903 0266 9B00     		lsl	r3, r3, #2
- 904 0268 9B58     		ldr	r3, [r3, r2]
- 905 026a 9F46     		mov	pc, r3
- 906              		.section	.rodata.vUSBCDCTask,"a",%progbits
+ 621 004a 0420     		mov	r0, #4
+ 622 004c FFF7FEFF 		bl	Toggle_LED
+ 623 0050 6420     		mov	r0, #100
+ 624 0052 FFF7FEFF 		bl	vTaskDelay
+ 625 0056 F8E7     		b	.L147
+ 626              	.L59:
+ 627 0058 C04B     		ldr	r3, .L161+12
+ 628 005a 0021     		mov	r1, #0
+ 629 005c 0433     		add	r3, r3, #4
+ 630 005e D967     		str	r1, [r3, #124]
+ 631 0060 BF4B     		ldr	r3, .L161+16
+ 632 0062 0433     		add	r3, r3, #4
+ 633 0064 D967     		str	r1, [r3, #124]
+ 634 0066 BF4B     		ldr	r3, .L161+20
+ 635 0068 1970     		strb	r1, [r3]
+ 636 006a BF4B     		ldr	r3, .L161+24
+ 637 006c 1960     		str	r1, [r3]
+ 638 006e BF4B     		ldr	r3, .L161+28
+ 639 0070 BF4A     		ldr	r2, .L161+32
+ 640 0072 1970     		strb	r1, [r3]
+ 641 0074 0223     		mov	r3, #2
+ 642 0076 1360     		str	r3, [r2]
+ 643 0078 BE48     		ldr	r0, .L161+36
+ 644 007a 8023     		mov	r3, #128
+ 645 007c C268     		ldr	r2, [r0, #12]
+ 646 007e 5B05     		lsl	r3, r3, #21
+ 647 0080 1A43     		orr	r2, r2, r3
+ 648 0082 C260     		str	r2, [r0, #12]
+ 649 0084 8024     		mov	r4, #128
+ 650 0086 BC4A     		ldr	r2, .L161+40
+ 651 0088 8023     		mov	r3, #128
+ 652 008a 2401     		lsl	r4, r4, #4
+ 653 008c 1360     		str	r3, [r2]
+ 654 008e 1461     		str	r4, [r2, #16]
+ 655 0090 0123     		mov	r3, #1
+ 656 0092 BA4A     		ldr	r2, .L161+44
+ 657 0094 5B42     		neg	r3, r3
+ 658 0096 5361     		str	r3, [r2, #20]
+ 659 0098 1362     		str	r3, [r2, #32]
+ 660 009a B94B     		ldr	r3, .L161+48
+ 661 009c 1960     		str	r1, [r3]
+ 662 009e B94B     		ldr	r3, .L161+52
+ 663 00a0 1163     		str	r1, [r2, #48]
+ 664 00a2 5163     		str	r1, [r2, #52]
+ 665 00a4 9163     		str	r1, [r2, #56]
+ 666 00a6 D163     		str	r1, [r2, #60]
+ 667 00a8 5160     		str	r1, [r2, #4]
+ 668 00aa 9160     		str	r1, [r2, #8]
+ 669 00ac 0293     		str	r3, [sp, #8]
+ 670 00ae B64B     		ldr	r3, .L161+56
+ 671 00b0 0322     		mov	r2, #3
+ 672 00b2 0093     		str	r3, [sp]
+ 673 00b4 0B21     		mov	r1, #11
+ 674 00b6 0023     		mov	r3, #0
+ 675 00b8 0298     		ldr	r0, [sp, #8]
+ 676 00ba FFF7FEFF 		bl	AT91F_AIC_ConfigureIt
+ 677 00be B34B     		ldr	r3, .L161+60
+ 678 00c0 FA20     		mov	r0, #250
+ 679 00c2 5C62     		str	r4, [r3, #36]
+ 680 00c4 FFF7FEFF 		bl	vTaskDelay
+ 681 00c8 B14A     		ldr	r2, .L161+64
+ 682 00ca 0123     		mov	r3, #1
+ 683 00cc 1360     		str	r3, [r2]
+ 684 00ce FFF7FEFF 		bl	vPortExitCritical
+ 685              	.L159:
+ 686 00d2 9F4B     		ldr	r3, .L161
+ 687 00d4 03A9     		add	r1, sp, #12
+ 688 00d6 1868     		ldr	r0, [r3]
+ 689 00d8 0122     		mov	r2, #1
+ 690 00da FFF7FEFF 		bl	xQueueReceive
+ 691 00de 0028     		cmp	r0, #0
+ 692 00e0 00D1     		bne	.LCB439
+ 693 00e2 94E1     		b	.L61	@long jump
+ 694              	.LCB439:
+ 695 00e4 039E     		ldr	r6, [sp, #12]
+ 696 00e6 3368     		ldr	r3, [r6]
+ 697 00e8 0121     		mov	r1, #1
+ 698 00ea 0B42     		tst	r3, r1
+ 699 00ec 00D1     		bne	.LCB445
+ 700 00ee 6BE1     		b	.L63	@long jump
+ 701              	.LCB445:
+ 702 00f0 7268     		ldr	r2, [r6, #4]
+ 703 00f2 5301     		lsl	r3, r2, #5
+ 704 00f4 5F0D     		lsr	r7, r3, #21
+ 705 00f6 0A42     		tst	r2, r1
+ 706 00f8 3DD0     		beq	.L65
+ 707 00fa 9B4A     		ldr	r2, .L161+24
+ 708 00fc 1568     		ldr	r5, [r2]
+ 709 00fe 0192     		str	r2, [sp, #4]
+ 710 0100 022D     		cmp	r5, #2
+ 711 0102 22D1     		bne	.L67
+ 712 0104 9D4C     		ldr	r4, .L161+44
+ 713 0106 6560     		str	r5, [r4, #4]
+ 714 0108 FFF7FEFF 		bl	vPortEnterCritical
+ 715 010c 626B     		ldr	r2, [r4, #52]
+ 716 010e 4F20     		mov	r0, #79
+ 717 0110 3021     		mov	r1, #48
+ 718 0112 0243     		orr	r2, r2, r0
+ 719 0114 8223     		mov	r3, #130
+ 720 0116 8A43     		bic	r2, r2, r1
+ 721 0118 1B02     		lsl	r3, r3, #8
+ 722 011a 1A43     		orr	r2, r2, r3
+ 723 011c 6263     		str	r2, [r4, #52]
+ 724 011e 2561     		str	r5, [r4, #16]
+ 725 0120 A36B     		ldr	r3, [r4, #56]
+ 726 0122 8622     		mov	r2, #134
+ 727 0124 0343     		orr	r3, r3, r0
+ 728 0126 8B43     		bic	r3, r3, r1
+ 729 0128 1202     		lsl	r2, r2, #8
+ 730 012a 1343     		orr	r3, r3, r2
+ 731 012c A363     		str	r3, [r4, #56]
+ 732 012e 0423     		mov	r3, #4
+ 733 0130 2361     		str	r3, [r4, #16]
+ 734 0132 E36B     		ldr	r3, [r4, #60]
+ 735 0134 8722     		mov	r2, #135
+ 736 0136 0343     		orr	r3, r3, r0
+ 737 0138 1202     		lsl	r2, r2, #8
+ 738 013a 8B43     		bic	r3, r3, r1
+ 739 013c 1343     		orr	r3, r3, r2
+ 740 013e E363     		str	r3, [r4, #60]
+ 741 0140 FFF7FEFF 		bl	vPortExitCritical
+ 742 0144 019A     		ldr	r2, [sp, #4]
+ 743 0146 0523     		mov	r3, #5
+ 744 0148 11E0     		b	.L154
+ 745              	.L67:
+ 746 014a 032D     		cmp	r5, #3
+ 747 014c 11D1     		bne	.L69
+ 748 014e 914B     		ldr	r3, .L161+68
+ 749 0150 1A68     		ldr	r2, [r3]
+ 750 0152 002A     		cmp	r2, #0
+ 751 0154 02D0     		beq	.L71
+ 752 0156 894B     		ldr	r3, .L161+44
+ 753 0158 5960     		str	r1, [r3, #4]
+ 754 015a 01E0     		b	.L73
+ 755              	.L71:
+ 756 015c 874B     		ldr	r3, .L161+44
+ 757 015e 5A60     		str	r2, [r3, #4]
+ 758              	.L73:
+ 759 0160 8023     		mov	r3, #128
+ 760 0162 5B00     		lsl	r3, r3, #1
+ 761 0164 1A43     		orr	r2, r2, r3
+ 762 0166 854B     		ldr	r3, .L161+44
+ 763 0168 9A60     		str	r2, [r3, #8]
+ 764 016a 7F4A     		ldr	r2, .L161+24
+ 765 016c 0023     		mov	r3, #0
+ 766              	.L154:
+ 767 016e 1360     		str	r3, [r2]
+ 768 0170 01E0     		b	.L65
+ 769              	.L69:
+ 770 0172 FFF7FEFF 		bl	prvSendNextSegment
+ 771              	.L65:
+ 772 0176 7368     		ldr	r3, [r6, #4]
+ 773 0178 9A07     		lsl	r2, r3, #30
+ 774 017a 1CD5     		bpl	.L74
+ 775 017c 774B     		ldr	r3, .L161+12
+ 776 017e 1A1D     		add	r2, r3, #4
+ 777 0180 0833     		add	r3, r3, #8
+ 778 0182 DB6F     		ldr	r3, [r3, #124]
+ 779 0184 7648     		ldr	r0, .L161+16
+ 780 0186 D367     		str	r3, [r2, #124]
+ 781 0188 031C     		mov	r3, r0
+ 782 018a 0833     		add	r3, r3, #8
+ 783 018c 051D     		add	r5, r0, #4
+ 784 018e DB6F     		ldr	r3, [r3, #124]
+ 785 0190 EA6F     		ldr	r2, [r5, #124]
+ 786 0192 9B1A     		sub	r3, r3, r2
+ 787 0194 1B06     		lsl	r3, r3, #24
+ 788 0196 1C0E     		lsr	r4, r3, #24
+ 789 0198 BC42     		cmp	r4, r7
+ 790 019a 01D9     		bls	.L76
+ 791 019c 3B06     		lsl	r3, r7, #24
+ 792 019e 1C0E     		lsr	r4, r3, #24
+ 793              	.L76:
+ 794 01a0 002C     		cmp	r4, #0
+ 795 01a2 00D1     		bne	.LCB553
+ 796 01a4 10E1     		b	.L63	@long jump
+ 797              	.LCB553:
+ 798 01a6 311C     		mov	r1, r6
+ 799 01a8 0831     		add	r1, r1, #8
+ 800 01aa 221C     		mov	r2, r4
+ 801 01ac FFF7FEFF 		bl	memcpy
+ 802 01b0 EB6F     		ldr	r3, [r5, #124]
+ 803 01b2 1B19     		add	r3, r3, r4
+ 804 01b4 EB67     		str	r3, [r5, #124]
+ 805              	.L74:
+ 806 01b6 7368     		ldr	r3, [r6, #4]
+ 807 01b8 5A07     		lsl	r2, r3, #29
+ 808 01ba 2AD5     		bpl	.L79
+ 809 01bc 072F     		cmp	r7, #7
+ 810 01be 28D9     		bls	.L79
+ 811 01c0 307A     		ldrb	r0, [r6, #8]
+ 812 01c2 7549     		ldr	r1, .L161+72
+ 813 01c4 0870     		strb	r0, [r1]
+ 814 01c6 737A     		ldrb	r3, [r6, #9]
+ 815 01c8 4B70     		strb	r3, [r1, #1]
+ 816 01ca F37A     		ldrb	r3, [r6, #11]
+ 817 01cc 1B02     		lsl	r3, r3, #8
+ 818 01ce 4B80     		strh	r3, [r1, #2]
+ 819 01d0 B27A     		ldrb	r2, [r6, #10]
+ 820 01d2 1343     		orr	r3, r3, r2
+ 821 01d4 4B80     		strh	r3, [r1, #2]
+ 822 01d6 737B     		ldrb	r3, [r6, #13]
+ 823 01d8 1B02     		lsl	r3, r3, #8
+ 824 01da 8B80     		strh	r3, [r1, #4]
+ 825 01dc 327B     		ldrb	r2, [r6, #12]
+ 826 01de 1343     		orr	r3, r3, r2
+ 827 01e0 8B80     		strh	r3, [r1, #4]
+ 828 01e2 F37B     		ldrb	r3, [r6, #15]
+ 829 01e4 1B02     		lsl	r3, r3, #8
+ 830 01e6 CB80     		strh	r3, [r1, #6]
+ 831 01e8 B27B     		ldrb	r2, [r6, #14]
+ 832 01ea 1C1C     		mov	r4, r3
+ 833 01ec 1443     		orr	r4, r4, r2
+ 834 01ee 5C4A     		ldr	r2, .L161+16
+ 835 01f0 CC80     		strh	r4, [r1, #6]
+ 836 01f2 131D     		add	r3, r2, #4
+ 837 01f4 0021     		mov	r1, #0
+ 838 01f6 0006     		lsl	r0, r0, #24
+ 839 01f8 D967     		str	r1, [r3, #124]
+ 840 01fa 0028     		cmp	r0, #0
+ 841 01fc 06DB     		blt	.L82
+ 842 01fe 802C     		cmp	r4, #128
+ 843 0200 00D9     		bls	.LCB620
+ 844 0202 DFE0     		b	.L149	@long jump
+ 845              	.LCB620:
+ 846 0204 131C     		mov	r3, r2
+ 847 0206 0833     		add	r3, r3, #8
+ 848 0208 DC67     		str	r4, [r3, #124]
+ 849 020a 02E0     		b	.L79
+ 850              	.L82:
+ 851 020c 131C     		mov	r3, r2
+ 852 020e 0833     		add	r3, r3, #8
+ 853 0210 D967     		str	r1, [r3, #124]
+ 854              	.L79:
+ 855 0212 7268     		ldr	r2, [r6, #4]
+ 856 0214 0623     		mov	r3, #6
+ 857 0216 1A42     		tst	r2, r3
+ 858 0218 00D1     		bne	.LCB637
+ 859 021a D5E0     		b	.L63	@long jump
+ 860              	.LCB637:
+ 861 021c 504D     		ldr	r5, .L161+16
+ 862 021e 2A1C     		mov	r2, r5
+ 863 0220 2B1D     		add	r3, r5, #4
+ 864 0222 0832     		add	r2, r2, #8
+ 865 0224 D96F     		ldr	r1, [r3, #124]
+ 866 0226 D36F     		ldr	r3, [r2, #124]
+ 867 0228 9942     		cmp	r1, r3
+ 868 022a 00D2     		bcs	.LCB645
+ 869 022c CCE0     		b	.L63	@long jump
+ 870              	.LCB645:
+ 871 022e 5A4C     		ldr	r4, .L161+72
+ 872 0230 2178     		ldrb	r1, [r4]
+ 873 0232 6023     		mov	r3, #96
+ 874 0234 0B40     		and	r3, r3, r1
+ 875 0236 0322     		mov	r2, #3
+ 876 0238 DB10     		asr	r3, r3, #3
+ 877 023a 1140     		and	r1, r1, r2
+ 878 023c 0B43     		orr	r3, r3, r1
+ 879 023e 012B     		cmp	r3, #1
+ 880 0240 5FD0     		beq	.L90
+ 881 0242 012B     		cmp	r3, #1
+ 882 0244 06D3     		bcc	.L89
+ 883 0246 022B     		cmp	r3, #2
+ 884 0248 00D1     		bne	.LCB663
+ 885 024a BBE0     		b	.L149	@long jump
+ 886              	.LCB663:
+ 887 024c 052B     		cmp	r3, #5
+ 888 024e 00D0     		beq	.LCB665
+ 889 0250 B8E0     		b	.L149	@long jump
+ 890              	.LCB665:
+ 891 0252 5FE0     		b	.L92
+ 892              	.L89:
+ 893 0254 04AB     		add	r3, sp, #16
+ 894 0256 0022     		mov	r2, #0
+ 895 0258 1A80     		strh	r2, [r3]
+ 896 025a 6378     		ldrb	r3, [r4, #1]
+ 897 025c 092B     		cmp	r3, #9
+ 898 025e 00D9     		bls	.LCB677
+ 899 0260 B0E0     		b	.L149	@long jump
+ 900              	.LCB677:
+ 901 0262 4E4A     		ldr	r2, .L161+76
+ 902 0264 9B00     		lsl	r3, r3, #2
+ 903 0266 9B58     		ldr	r3, [r3, r2]
+ 904 0268 9F46     		mov	pc, r3
+ 905              		.section	.rodata.vUSBCDCTask,"a",%progbits
+ 906              		.align	2
  907              		.align	2
- 908              		.align	2
- 909              	.L100:
- 910 0000 6C020000 		.word	.L94
- 911 0004 C4030000 		.word	.L149
- 912 0008 C4030000 		.word	.L149
- 913 000c FE020000 		.word	.L156
- 914 0010 C4030000 		.word	.L149
- 915 0014 DC020000 		.word	.L96
- 916 0018 70020000 		.word	.L97
- 917 001c C4030000 		.word	.L149
- 918 0020 D4020000 		.word	.L98
- 919 0024 F0020000 		.word	.L99
- 920              		.section	.text.vUSBCDCTask
- 921              	.L94:
- 922 026c 04A8     		add	r0, sp, #16
- 923 026e 4FE0     		b	.L113
- 924              	.L97:
- 925 0270 4949     		ldr	r1, .L161+72
- 926 0272 4A88     		ldrh	r2, [r1, #2]
- 927 0274 130A     		lsr	r3, r2, #8
- 928 0276 022B     		cmp	r3, #2
- 929 0278 0AD0     		beq	.L103
- 930 027a 032B     		cmp	r3, #3
- 931 027c 0CD0     		beq	.L104
- 932 027e 012B     		cmp	r3, #1
- 933 0280 00D0     		beq	.LCB707
- 934 0282 9FE0     		b	.L149	@long jump
- 935              	.LCB707:
- 936 0284 4648     		ldr	r0, .L161+80
- 937 0286 C988     		ldrh	r1, [r1, #6]
- 938 0288 1222     		mov	r2, #18
- 939              	.L155:
- 940 028a FFF7FEFF 		bl	prvSendControlData
- 941 028e 9BE0     		b	.L63
- 942              	.L103:
- 943 0290 4448     		ldr	r0, .L161+84
- 944 0292 C988     		ldrh	r1, [r1, #6]
- 945 0294 4322     		mov	r2, #67
- 946 0296 1BE0     		b	.L158
- 947              	.L104:
- 948 0298 FF23     		mov	r3, #255
- 949 029a 1340     		and	r3, r3, r2
- 950 029c 042B     		cmp	r3, #4
- 951 029e 00D9     		bls	.LCB732
- 952 02a0 90E0     		b	.L149	@long jump
- 953              	.LCB732:
- 954 02a2 414A     		ldr	r2, .L161+88
- 955 02a4 9B00     		lsl	r3, r3, #2
- 956 02a6 9B58     		ldr	r3, [r3, r2]
- 957 02a8 9F46     		mov	pc, r3
- 958              		.section	.rodata.vUSBCDCTask
+ 908              	.L100:
+ 909 0000 6A020000 		.word	.L94
+ 910 0004 C4030000 		.word	.L149
+ 911 0008 C4030000 		.word	.L149
+ 912 000c FC020000 		.word	.L156
+ 913 0010 C4030000 		.word	.L149
+ 914 0014 DA020000 		.word	.L96
+ 915 0018 6E020000 		.word	.L97
+ 916 001c C4030000 		.word	.L149
+ 917 0020 D2020000 		.word	.L98
+ 918 0024 EE020000 		.word	.L99
+ 919              		.section	.text.vUSBCDCTask
+ 920              	.L94:
+ 921 026a 04A8     		add	r0, sp, #16
+ 922 026c 4FE0     		b	.L113
+ 923              	.L97:
+ 924 026e 4A49     		ldr	r1, .L161+72
+ 925 0270 4A88     		ldrh	r2, [r1, #2]
+ 926 0272 130A     		lsr	r3, r2, #8
+ 927 0274 022B     		cmp	r3, #2
+ 928 0276 0AD0     		beq	.L103
+ 929 0278 032B     		cmp	r3, #3
+ 930 027a 0CD0     		beq	.L104
+ 931 027c 012B     		cmp	r3, #1
+ 932 027e 00D0     		beq	.LCB706
+ 933 0280 A0E0     		b	.L149	@long jump
+ 934              	.LCB706:
+ 935 0282 4748     		ldr	r0, .L161+80
+ 936 0284 C988     		ldrh	r1, [r1, #6]
+ 937 0286 1222     		mov	r2, #18
+ 938              	.L155:
+ 939 0288 FFF7FEFF 		bl	prvSendControlData
+ 940 028c 9CE0     		b	.L63
+ 941              	.L103:
+ 942 028e 4548     		ldr	r0, .L161+84
+ 943 0290 C988     		ldrh	r1, [r1, #6]
+ 944 0292 4322     		mov	r2, #67
+ 945 0294 1BE0     		b	.L158
+ 946              	.L104:
+ 947 0296 FF23     		mov	r3, #255
+ 948 0298 1340     		and	r3, r3, r2
+ 949 029a 042B     		cmp	r3, #4
+ 950 029c 00D9     		bls	.LCB731
+ 951 029e 91E0     		b	.L149	@long jump
+ 952              	.LCB731:
+ 953 02a0 414A     		ldr	r2, .L161+88
+ 954 02a2 9B00     		lsl	r3, r3, #2
+ 955 02a4 9B58     		ldr	r3, [r3, r2]
+ 956 02a6 9F46     		mov	pc, r3
+ 957              		.section	.rodata.vUSBCDCTask
+ 958              		.align	2
  959              		.align	2
- 960              		.align	2
- 961              	.L111:
- 962 0028 AA020000 		.word	.L106
- 963 002c B2020000 		.word	.L107
- 964 0030 BA020000 		.word	.L108
- 965 0034 C2020000 		.word	.L109
- 966 0038 CA020000 		.word	.L110
- 967              		.section	.text.vUSBCDCTask
- 968              	.L106:
- 969 02aa 4048     		ldr	r0, .L161+92
- 970 02ac C988     		ldrh	r1, [r1, #6]
- 971 02ae 0422     		mov	r2, #4
- 972 02b0 0EE0     		b	.L158
- 973              	.L107:
- 974 02b2 3F48     		ldr	r0, .L161+96
- 975 02b4 C988     		ldrh	r1, [r1, #6]
- 976 02b6 1222     		mov	r2, #18
- 977 02b8 0AE0     		b	.L158
- 978              	.L108:
- 979 02ba 3E48     		ldr	r0, .L161+100
- 980 02bc C988     		ldrh	r1, [r1, #6]
- 981 02be 2422     		mov	r2, #36
- 982 02c0 06E0     		b	.L158
- 983              	.L109:
- 984 02c2 3D48     		ldr	r0, .L161+104
- 985 02c4 C988     		ldrh	r1, [r1, #6]
- 986 02c6 2622     		mov	r2, #38
- 987 02c8 02E0     		b	.L158
- 988              	.L110:
- 989 02ca 3C48     		ldr	r0, .L161+108
- 990 02cc C988     		ldrh	r1, [r1, #6]
- 991 02ce 1E22     		mov	r2, #30
- 992              	.L158:
- 993 02d0 0123     		mov	r3, #1
- 994 02d2 DAE7     		b	.L155
- 995              	.L98:
- 996 02d4 2348     		ldr	r0, .L161+20
- 997 02d6 0121     		mov	r1, #1
- 998 02d8 0122     		mov	r2, #1
- 999 02da 31E0     		b	.L157
- 1000              	.L96:
- 1001 02dc FFF7FEFF 		bl	prvSendZLP
- 1002 02e0 214A     		ldr	r2, .L161+24
- 1003 02e2 0323     		mov	r3, #3
- 1004 02e4 1360     		str	r3, [r2]
- 1005 02e6 2C4B     		ldr	r3, .L161+72
- 1006 02e8 2A4A     		ldr	r2, .L161+68
- 1007 02ea 5B88     		ldrh	r3, [r3, #2]
- 1008 02ec 1360     		str	r3, [r2]
- 1009 02ee 6BE0     		b	.L63
- 1010              	.L99:
- 1011 02f0 294B     		ldr	r3, .L161+72
- 1012 02f2 1C4A     		ldr	r2, .L161+20
- 1013 02f4 5B88     		ldrh	r3, [r3, #2]
- 1014 02f6 1370     		strb	r3, [r2]
- 1015 02f8 1B4A     		ldr	r2, .L161+24
- 1016 02fa 0223     		mov	r3, #2
- 1017 02fc 1360     		str	r3, [r2]
- 1018              	.L156:
- 1019 02fe FFF7FEFF 		bl	prvSendZLP
- 1020 0302 61E0     		b	.L63
- 1021              	.L90:
- 1022 0304 0023     		mov	r3, #0
- 1023 0306 04A8     		add	r0, sp, #16
- 1024 0308 0380     		strh	r3, [r0]
- 1025 030a 6378     		ldrb	r3, [r4, #1]
- 1026 030c 002B     		cmp	r3, #0
- 1027 030e 59D1     		bne	.L149
- 1028              	.L113:
- 1029 0310 0221     		mov	r1, #2
- 1030 0312 0222     		mov	r2, #2
- 1031 0314 14E0     		b	.L157
- 1032              	.L92:
- 1033 0316 6378     		ldrb	r3, [r4, #1]
- 1034 0318 202B     		cmp	r3, #32
- 1035 031a 06D0     		beq	.L118
- 1036 031c 202B     		cmp	r3, #32
- 1037 031e 51D9     		bls	.L149
- 1038 0320 212B     		cmp	r3, #33
- 1039 0322 0AD0     		beq	.L119
- 1040 0324 222B     		cmp	r3, #34
- 1041 0326 4DD1     		bne	.L149
- 1042 0328 0CE0     		b	.L120
- 1043              	.L118:
- 1044 032a FFF7FEFF 		bl	prvSendZLP
- 1045 032e 291C     		mov	r1, r5
- 1046 0330 0722     		mov	r2, #7
- 1047 0332 2348     		ldr	r0, .L161+112
- 1048 0334 FFF7FEFF 		bl	memcpy
- 1049 0338 46E0     		b	.L63
- 1050              	.L119:
- 1051 033a 2148     		ldr	r0, .L161+112
- 1052 033c E188     		ldrh	r1, [r4, #6]
- 1053 033e 0722     		mov	r2, #7
- 1054              	.L157:
- 1055 0340 0023     		mov	r3, #0
- 1056 0342 A2E7     		b	.L155
- 1057              	.L120:
- 1058 0344 FFF7FEFF 		bl	prvSendZLP
- 1059 0348 084A     		ldr	r2, .L161+28
- 1060 034a 6388     		ldrh	r3, [r4, #2]
- 1061 034c 1370     		strb	r3, [r2]
- 1062 034e 3BE0     		b	.L63
- 1063              	.L162:
- 1064              		.align	2
- 1065              	.L161:
- 1066 0350 00000000 		.word	xUSBInterruptQueue
- 1067 0354 00000000 		.word	xRxCDC
- 1068 0358 00000000 		.word	xTxCDC
- 1069 035c 00000000 		.word	pxControlTx
- 1070 0360 00000000 		.word	pxControlRx
- 1071 0364 00000000 		.word	ucUSBConfig
- 1072 0368 00000000 		.word	eDriverState
- 1073 036c 00000000 		.word	ucControlState
- 1074 0370 00000000 		.word	uiCurrentBank
- 1075 0374 20FCFFFF 		.word	-992
- 1076 0378 00FCFFFF 		.word	-1024
- 1077 037c 0000FBFF 		.word	-327680
- 1078 0380 7400FBFF 		.word	-327564
- 1079 0384 00F0FFFF 		.word	-4096
- 1080 0388 00000000 		.word	vUSB_ISR
- 1081 038c FCF0FFFF 		.word	-3844
- 1082 0390 00000000 		.word	usbIntefacedInitialized
- 1083 0394 00000000 		.word	ulReceivedAddress
- 1084 0398 00000000 		.word	xRequest.3556
- 1085 039c 00000000 		.word	.L100
- 1086 03a0 00000000 		.word	pxDeviceDescriptor
- 1087 03a4 00000000 		.word	pxConfigDescriptor
- 1088 03a8 28000000 		.word	.L111
- 1089 03ac 00000000 		.word	pxLanguageStringDescriptor
- 1090 03b0 00000000 		.word	pxManufacturerStringDescriptor
- 1091 03b4 00000000 		.word	pxProductStringDescriptor
- 1092 03b8 00000000 		.word	pxConfigurationStringDescriptor
- 1093 03bc 00000000 		.word	pxInterfaceStringDescriptor
- 1094 03c0 00000000 		.word	pxLineCoding
- 1095              	.L149:
- 1096 03c4 FFF7FEFF 		bl	prvSendStall
- 1097              	.L63:
- 1098 03c8 039B     		ldr	r3, [sp, #12]
- 1099 03ca 1B68     		ldr	r3, [r3]
- 1100 03cc DA04     		lsl	r2, r3, #19
- 1101 03ce 1ED5     		bpl	.L61
- 1102 03d0 404B     		ldr	r3, .L163
- 1103 03d2 414A     		ldr	r2, .L163+4
- 1104 03d4 0125     		mov	r5, #1
- 1105 03d6 414C     		ldr	r4, .L163+8
- 1106 03d8 1D60     		str	r5, [r3]
- 1107 03da 0023     		mov	r3, #0
- 1108 03dc 1370     		strb	r3, [r2]
- 1109 03de 0F23     		mov	r3, #15
- 1110 03e0 A362     		str	r3, [r4, #40]
- 1111 03e2 0023     		mov	r3, #0
- 1112 03e4 A362     		str	r3, [r4, #40]
- 1113 03e6 8023     		mov	r3, #128
- 1114 03e8 5B00     		lsl	r3, r3, #1
- 1115 03ea A360     		str	r3, [r4, #8]
- 1116 03ec FFF7FEFF 		bl	vPortEnterCritical
- 1117 03f0 226B     		ldr	r2, [r4, #48]
- 1118 03f2 4F23     		mov	r3, #79
- 1119 03f4 1A43     		orr	r2, r2, r3
- 1120 03f6 3023     		mov	r3, #48
- 1121 03f8 9A43     		bic	r2, r2, r3
- 1122 03fa 8023     		mov	r3, #128
- 1123 03fc 1B02     		lsl	r3, r3, #8
- 1124 03fe 1A43     		orr	r2, r2, r3
- 1125 0400 2263     		str	r2, [r4, #48]
- 1126 0402 2561     		str	r5, [r4, #16]
- 1127 0404 FFF7FEFF 		bl	vPortExitCritical
- 1128 0408 354A     		ldr	r2, .L163+12
- 1129 040a 0223     		mov	r3, #2
- 1130 040c 1360     		str	r3, [r2]
- 1131              	.L61:
- 1132 040e 314B     		ldr	r3, .L163
- 1133 0410 1B68     		ldr	r3, [r3]
- 1134 0412 052B     		cmp	r3, #5
- 1135 0414 00D0     		beq	.LCB963
- 1136 0416 5DE6     		b	.L159	@long jump
- 1137              	.LCB963:
- 1138 0418 2F4B     		ldr	r3, .L163+4
- 1139 041a 1B78     		ldrb	r3, [r3]
- 1140 041c 002B     		cmp	r3, #0
- 1141 041e 00D1     		bne	.LCB969
- 1142 0420 58E6     		b	.L159	@long jump
- 1143              	.LCB969:
- 1144 0422 2E4B     		ldr	r3, .L163+8
- 1145 0424 9B6B     		ldr	r3, [r3, #56]
- 1146 0426 DA06     		lsl	r2, r3, #27
- 1147 0428 4ED4     		bmi	.L160
- 1148 042a 2E4B     		ldr	r3, .L163+16
- 1149 042c 1868     		ldr	r0, [r3]
- 1150 042e FFF7FEFF 		bl	uxQueueMessagesWaiting
- 1151 0432 0028     		cmp	r0, #0
- 1152 0434 48D0     		beq	.L160
- 1153 0436 0024     		mov	r4, #0
- 1154              	.L128:
- 1155 0438 2A4B     		ldr	r3, .L163+16
- 1156 043a 6D46     		mov	r5, sp
- 1157 043c 1335     		add	r5, r5, #19
- 1158 043e 1868     		ldr	r0, [r3]
- 1159 0440 291C     		mov	r1, r5
- 1160 0442 0022     		mov	r2, #0
- 1161 0444 FFF7FEFF 		bl	xQueueReceive
- 1162 0448 0028     		cmp	r0, #0
- 1163 044a 05D0     		beq	.L129
- 1164 044c 2A78     		ldrb	r2, [r5]
- 1165 044e 234B     		ldr	r3, .L163+8
- 1166 0450 0134     		add	r4, r4, #1
- 1167 0452 9A65     		str	r2, [r3, #88]
- 1168 0454 402C     		cmp	r4, #64
- 1169 0456 EFD1     		bne	.L128
- 1170              	.L129:
- 1171 0458 204B     		ldr	r3, .L163+8
- 1172 045a 9A6B     		ldr	r2, [r3, #56]
- 1173 045c 1021     		mov	r1, #16
- 1174 045e 0A43     		orr	r2, r2, r1
- 1175 0460 9A63     		str	r2, [r3, #56]
- 1176 0462 31E0     		b	.L160
- 1177              	.L131:
- 1178 0464 4B6B     		ldr	r3, [r1, #52]
- 1179 0466 5B01     		lsl	r3, r3, #5
- 1180 0468 5D0D     		lsr	r5, r3, #21
- 1181 046a 1F4B     		ldr	r3, .L163+20
- 1182 046c 1868     		ldr	r0, [r3]
- 1183 046e FFF7FEFF 		bl	uxQueueMessagesWaiting
- 1184 0472 C823     		mov	r3, #200
- 1185 0474 1B1A     		sub	r3, r3, r0
- 1186 0476 9D42     		cmp	r5, r3
- 1187 0478 00D3     		bcc	.LCB1024
- 1188 047a 2BE6     		b	.L159	@long jump
- 1189              	.LCB1024:
- 1190 047c 0024     		mov	r4, #0
- 1191 047e 0AE0     		b	.L133
- 1192              	.L134:
- 1193 0480 164B     		ldr	r3, .L163+8
- 1194 0482 6946     		mov	r1, sp
- 1195 0484 5B6D     		ldr	r3, [r3, #84]
- 1196 0486 1331     		add	r1, r1, #19
- 1197 0488 0B70     		strb	r3, [r1]
- 1198 048a 174B     		ldr	r3, .L163+20
- 1199 048c 0022     		mov	r2, #0
- 1200 048e 1868     		ldr	r0, [r3]
- 1201 0490 FFF7FEFF 		bl	xQueueSend
- 1202 0494 0134     		add	r4, r4, #1
- 1203              	.L133:
- 1204 0496 AC42     		cmp	r4, r5
- 1205 0498 F2D1     		bne	.L134
- 1206 049a 104C     		ldr	r4, .L163+8
- 1207 049c FFF7FEFF 		bl	vPortEnterCritical
- 1208 04a0 636B     		ldr	r3, [r4, #52]
- 1209 04a2 0F4D     		ldr	r5, .L163+12
- 1210 04a4 4F22     		mov	r2, #79
- 1211 04a6 1343     		orr	r3, r3, r2
- 1212 04a8 3022     		mov	r2, #48
- 1213 04aa 9343     		bic	r3, r3, r2
- 1214 04ac 2A68     		ldr	r2, [r5]
- 1215 04ae 9343     		bic	r3, r3, r2
- 1216 04b0 6363     		str	r3, [r4, #52]
- 1217 04b2 FFF7FEFF 		bl	vPortExitCritical
- 1218 04b6 0222     		mov	r2, #2
- 1219 04b8 2261     		str	r2, [r4, #16]
- 1220 04ba 2B68     		ldr	r3, [r5]
- 1221 04bc 022B     		cmp	r3, #2
- 1222 04be 02D1     		bne	.L136
- 1223 04c0 4023     		mov	r3, #64
- 1224 04c2 2B60     		str	r3, [r5]
- 1225 04c4 00E0     		b	.L160
- 1226              	.L136:
- 1227 04c6 2A60     		str	r2, [r5]
- 1228              	.L160:
- 1229 04c8 0449     		ldr	r1, .L163+8
- 1230 04ca 4A6B     		ldr	r2, [r1, #52]
- 1231 04cc 4223     		mov	r3, #66
- 1232 04ce 1A42     		tst	r2, r3
- 1233 04d0 C8D1     		bne	.L131
- 1234 04d2 FFE5     		b	.L159
- 1235              	.L164:
- 1236              		.align	2
- 1237              	.L163:
- 1238 04d4 00000000 		.word	eDriverState
- 1239 04d8 00000000 		.word	ucControlState
- 1240 04dc 0000FBFF 		.word	-327680
- 1241 04e0 00000000 		.word	uiCurrentBank
- 1242 04e4 00000000 		.word	xTxCDC
- 1243 04e8 00000000 		.word	xRxCDC
- 1245              		.section	.text.vUSBSendDebug,"ax",%progbits
- 1246              		.align	2
- 1247              		.global	vUSBSendDebug
- 1248              		.code 16
- 1249              		.thumb_func
- 1251              	vUSBSendDebug:
- 1252 0000 70B5     		push	{r4, r5, r6, lr}
- 1253 0002 041C     		mov	r4, r0
- 1254 0004 FFF7FEFF 		bl	strlen
- 1255 0008 0025     		mov	r5, #0
- 1256 000a 061C     		mov	r6, r0
- 1257 000c 04E0     		b	.L166
- 1258              	.L167:
- 1259 000e 2078     		ldrb	r0, [r4]
- 1260 0010 FFF7FEFF 		bl	vUSBSendByte
- 1261 0014 0134     		add	r4, r4, #1
- 1262 0016 0135     		add	r5, r5, #1
- 1263              	.L166:
- 1264 0018 B542     		cmp	r5, r6
- 1265 001a F8D1     		bne	.L167
- 1266              		@ sp needed for prologue
- 1267 001c 70BC     		pop	{r4, r5, r6}
- 1268 001e 01BC     		pop	{r0}
- 1269 0020 0047     		bx	r0
- 1271              		.comm	xUSBInterruptQueue,4,4
- 1272 0022 C046     		.section	.bss.uiCurrentBank,"aw",%nobits
- 1273              		.align	2
- 1276              	uiCurrentBank:
- 1277 0000 00000000 		.space	4
- 1278              		.section	.bss.ucControlState,"aw",%nobits
- 1281              	ucControlState:
- 1282 0000 00       		.space	1
- 1283              		.section	.bss.xTxCDC,"aw",%nobits
- 1284              		.align	2
- 1287              	xTxCDC:
- 1288 0000 00000000 		.space	4
- 1289              		.section	.bss.xRxCDC,"aw",%nobits
- 1290              		.align	2
- 1293              	xRxCDC:
- 1294 0000 00000000 		.space	4
- 1295              		.section	.bss.pxControlRx,"aw",%nobits
- 1296              		.align	2
- 1299              	pxControlRx:
- 1300 0000 00000000 		.space	136
- 1300      00000000 
- 1300      00000000 
- 1300      00000000 
- 1300      00000000 
- 1301              		.section	.bss.pxControlTx,"aw",%nobits
- 1302              		.align	2
- 1305              	pxControlTx:
- 1306 0000 00000000 		.space	136
- 1306      00000000 
- 1306      00000000 
- 1306      00000000 
- 1306      00000000 
- 1307              		.ident	"GCC: (GNU) 4.0.2"
+ 960              	.L111:
+ 961 0028 A8020000 		.word	.L106
+ 962 002c B0020000 		.word	.L107
+ 963 0030 B8020000 		.word	.L108
+ 964 0034 C0020000 		.word	.L109
+ 965 0038 C8020000 		.word	.L110
+ 966              		.section	.text.vUSBCDCTask
+ 967              	.L106:
+ 968 02a8 4048     		ldr	r0, .L161+92
+ 969 02aa C988     		ldrh	r1, [r1, #6]
+ 970 02ac 0422     		mov	r2, #4
+ 971 02ae 0EE0     		b	.L158
+ 972              	.L107:
+ 973 02b0 3F48     		ldr	r0, .L161+96
+ 974 02b2 C988     		ldrh	r1, [r1, #6]
+ 975 02b4 1222     		mov	r2, #18
+ 976 02b6 0AE0     		b	.L158
+ 977              	.L108:
+ 978 02b8 3E48     		ldr	r0, .L161+100
+ 979 02ba C988     		ldrh	r1, [r1, #6]
+ 980 02bc 2422     		mov	r2, #36
+ 981 02be 06E0     		b	.L158
+ 982              	.L109:
+ 983 02c0 3D48     		ldr	r0, .L161+104
+ 984 02c2 C988     		ldrh	r1, [r1, #6]
+ 985 02c4 2622     		mov	r2, #38
+ 986 02c6 02E0     		b	.L158
+ 987              	.L110:
+ 988 02c8 3C48     		ldr	r0, .L161+108
+ 989 02ca C988     		ldrh	r1, [r1, #6]
+ 990 02cc 1E22     		mov	r2, #30
+ 991              	.L158:
+ 992 02ce 0123     		mov	r3, #1
+ 993 02d0 DAE7     		b	.L155
+ 994              	.L98:
+ 995 02d2 2448     		ldr	r0, .L161+20
+ 996 02d4 0121     		mov	r1, #1
+ 997 02d6 0122     		mov	r2, #1
+ 998 02d8 31E0     		b	.L157
+ 999              	.L96:
+ 1000 02da FFF7FEFF 		bl	prvSendZLP
+ 1001 02de 224A     		ldr	r2, .L161+24
+ 1002 02e0 0323     		mov	r3, #3
+ 1003 02e2 1360     		str	r3, [r2]
+ 1004 02e4 2C4B     		ldr	r3, .L161+72
+ 1005 02e6 2B4A     		ldr	r2, .L161+68
+ 1006 02e8 5B88     		ldrh	r3, [r3, #2]
+ 1007 02ea 1360     		str	r3, [r2]
+ 1008 02ec 6CE0     		b	.L63
+ 1009              	.L99:
+ 1010 02ee 2A4B     		ldr	r3, .L161+72
+ 1011 02f0 1C4A     		ldr	r2, .L161+20
+ 1012 02f2 5B88     		ldrh	r3, [r3, #2]
+ 1013 02f4 1370     		strb	r3, [r2]
+ 1014 02f6 1C4A     		ldr	r2, .L161+24
+ 1015 02f8 0223     		mov	r3, #2
+ 1016 02fa 1360     		str	r3, [r2]
+ 1017              	.L156:
+ 1018 02fc FFF7FEFF 		bl	prvSendZLP
+ 1019 0300 62E0     		b	.L63
+ 1020              	.L90:
+ 1021 0302 0023     		mov	r3, #0
+ 1022 0304 04A8     		add	r0, sp, #16
+ 1023 0306 0380     		strh	r3, [r0]
+ 1024 0308 6378     		ldrb	r3, [r4, #1]
+ 1025 030a 002B     		cmp	r3, #0
+ 1026 030c 5AD1     		bne	.L149
+ 1027              	.L113:
+ 1028 030e 0221     		mov	r1, #2
+ 1029 0310 0222     		mov	r2, #2
+ 1030 0312 14E0     		b	.L157
+ 1031              	.L92:
+ 1032 0314 6378     		ldrb	r3, [r4, #1]
+ 1033 0316 202B     		cmp	r3, #32
+ 1034 0318 06D0     		beq	.L118
+ 1035 031a 202B     		cmp	r3, #32
+ 1036 031c 52D9     		bls	.L149
+ 1037 031e 212B     		cmp	r3, #33
+ 1038 0320 0AD0     		beq	.L119
+ 1039 0322 222B     		cmp	r3, #34
+ 1040 0324 4ED1     		bne	.L149
+ 1041 0326 0CE0     		b	.L120
+ 1042              	.L118:
+ 1043 0328 FFF7FEFF 		bl	prvSendZLP
+ 1044 032c 291C     		mov	r1, r5
+ 1045 032e 0722     		mov	r2, #7
+ 1046 0330 2348     		ldr	r0, .L161+112
+ 1047 0332 FFF7FEFF 		bl	memcpy
+ 1048 0336 47E0     		b	.L63
+ 1049              	.L119:
+ 1050 0338 2148     		ldr	r0, .L161+112
+ 1051 033a E188     		ldrh	r1, [r4, #6]
+ 1052 033c 0722     		mov	r2, #7
+ 1053              	.L157:
+ 1054 033e 0023     		mov	r3, #0
+ 1055 0340 A2E7     		b	.L155
+ 1056              	.L120:
+ 1057 0342 FFF7FEFF 		bl	prvSendZLP
+ 1058 0346 094A     		ldr	r2, .L161+28
+ 1059 0348 6388     		ldrh	r3, [r4, #2]
+ 1060 034a 1370     		strb	r3, [r2]
+ 1061 034c 3CE0     		b	.L63
+ 1062              	.L162:
+ 1063 034e 0000     		.align	2
+ 1064              	.L161:
+ 1065 0350 00000000 		.word	xUSBInterruptQueue
+ 1066 0354 00000000 		.word	xRxCDC
+ 1067 0358 00000000 		.word	xTxCDC
+ 1068 035c 00000000 		.word	pxControlTx
+ 1069 0360 00000000 		.word	pxControlRx
+ 1070 0364 00000000 		.word	ucUSBConfig
+ 1071 0368 00000000 		.word	eDriverState
+ 1072 036c 00000000 		.word	ucControlState
+ 1073 0370 00000000 		.word	uiCurrentBank
+ 1074 0374 20FCFFFF 		.word	-992
+ 1075 0378 00FCFFFF 		.word	-1024
+ 1076 037c 0000FBFF 		.word	-327680
+ 1077 0380 7400FBFF 		.word	-327564
+ 1078 0384 00F0FFFF 		.word	-4096
+ 1079 0388 00000000 		.word	vUSB_ISR
+ 1080 038c FCF0FFFF 		.word	-3844
+ 1081 0390 00000000 		.word	usbIntefacedInitialized
+ 1082 0394 00000000 		.word	ulReceivedAddress
+ 1083 0398 00000000 		.word	xRequest.3556
+ 1084 039c 00000000 		.word	.L100
+ 1085 03a0 00000000 		.word	pxDeviceDescriptor
+ 1086 03a4 00000000 		.word	pxConfigDescriptor
+ 1087 03a8 28000000 		.word	.L111
+ 1088 03ac 00000000 		.word	pxLanguageStringDescriptor
+ 1089 03b0 00000000 		.word	pxManufacturerStringDescriptor
+ 1090 03b4 00000000 		.word	pxProductStringDescriptor
+ 1091 03b8 00000000 		.word	pxConfigurationStringDescriptor
+ 1092 03bc 00000000 		.word	pxInterfaceStringDescriptor
+ 1093 03c0 00000000 		.word	pxLineCoding
+ 1094              	.L149:
+ 1095 03c4 FFF7FEFF 		bl	prvSendStall
+ 1096              	.L63:
+ 1097 03c8 039B     		ldr	r3, [sp, #12]
+ 1098 03ca 1B68     		ldr	r3, [r3]
+ 1099 03cc DA04     		lsl	r2, r3, #19
+ 1100 03ce 1ED5     		bpl	.L61
+ 1101 03d0 404B     		ldr	r3, .L163
+ 1102 03d2 414A     		ldr	r2, .L163+4
+ 1103 03d4 0125     		mov	r5, #1
+ 1104 03d6 414C     		ldr	r4, .L163+8
+ 1105 03d8 1D60     		str	r5, [r3]
+ 1106 03da 0023     		mov	r3, #0
+ 1107 03dc 1370     		strb	r3, [r2]
+ 1108 03de 0F23     		mov	r3, #15
+ 1109 03e0 A362     		str	r3, [r4, #40]
+ 1110 03e2 0023     		mov	r3, #0
+ 1111 03e4 A362     		str	r3, [r4, #40]
+ 1112 03e6 8023     		mov	r3, #128
+ 1113 03e8 5B00     		lsl	r3, r3, #1
+ 1114 03ea A360     		str	r3, [r4, #8]
+ 1115 03ec FFF7FEFF 		bl	vPortEnterCritical
+ 1116 03f0 226B     		ldr	r2, [r4, #48]
+ 1117 03f2 4F23     		mov	r3, #79
+ 1118 03f4 1A43     		orr	r2, r2, r3
+ 1119 03f6 3023     		mov	r3, #48
+ 1120 03f8 9A43     		bic	r2, r2, r3
+ 1121 03fa 8023     		mov	r3, #128
+ 1122 03fc 1B02     		lsl	r3, r3, #8
+ 1123 03fe 1A43     		orr	r2, r2, r3
+ 1124 0400 2263     		str	r2, [r4, #48]
+ 1125 0402 2561     		str	r5, [r4, #16]
+ 1126 0404 FFF7FEFF 		bl	vPortExitCritical
+ 1127 0408 354A     		ldr	r2, .L163+12
+ 1128 040a 0223     		mov	r3, #2
+ 1129 040c 1360     		str	r3, [r2]
+ 1130              	.L61:
+ 1131 040e 314B     		ldr	r3, .L163
+ 1132 0410 1B68     		ldr	r3, [r3]
+ 1133 0412 052B     		cmp	r3, #5
+ 1134 0414 00D0     		beq	.LCB962
+ 1135 0416 5CE6     		b	.L159	@long jump
+ 1136              	.LCB962:
+ 1137 0418 2F4B     		ldr	r3, .L163+4
+ 1138 041a 1B78     		ldrb	r3, [r3]
+ 1139 041c 002B     		cmp	r3, #0
+ 1140 041e 00D1     		bne	.LCB968
+ 1141 0420 57E6     		b	.L159	@long jump
+ 1142              	.LCB968:
+ 1143 0422 2E4B     		ldr	r3, .L163+8
+ 1144 0424 9B6B     		ldr	r3, [r3, #56]
+ 1145 0426 DA06     		lsl	r2, r3, #27
+ 1146 0428 4ED4     		bmi	.L160
+ 1147 042a 2E4B     		ldr	r3, .L163+16
+ 1148 042c 1868     		ldr	r0, [r3]
+ 1149 042e FFF7FEFF 		bl	uxQueueMessagesWaiting
+ 1150 0432 0028     		cmp	r0, #0
+ 1151 0434 48D0     		beq	.L160
+ 1152 0436 0024     		mov	r4, #0
+ 1153              	.L128:
+ 1154 0438 2A4B     		ldr	r3, .L163+16
+ 1155 043a 6D46     		mov	r5, sp
+ 1156 043c 1335     		add	r5, r5, #19
+ 1157 043e 1868     		ldr	r0, [r3]
+ 1158 0440 291C     		mov	r1, r5
+ 1159 0442 0022     		mov	r2, #0
+ 1160 0444 FFF7FEFF 		bl	xQueueReceive
+ 1161 0448 0028     		cmp	r0, #0
+ 1162 044a 05D0     		beq	.L129
+ 1163 044c 2A78     		ldrb	r2, [r5]
+ 1164 044e 234B     		ldr	r3, .L163+8
+ 1165 0450 0134     		add	r4, r4, #1
+ 1166 0452 9A65     		str	r2, [r3, #88]
+ 1167 0454 402C     		cmp	r4, #64
+ 1168 0456 EFD1     		bne	.L128
+ 1169              	.L129:
+ 1170 0458 204B     		ldr	r3, .L163+8
+ 1171 045a 9A6B     		ldr	r2, [r3, #56]
+ 1172 045c 1021     		mov	r1, #16
+ 1173 045e 0A43     		orr	r2, r2, r1
+ 1174 0460 9A63     		str	r2, [r3, #56]
+ 1175 0462 31E0     		b	.L160
+ 1176              	.L131:
+ 1177 0464 4B6B     		ldr	r3, [r1, #52]
+ 1178 0466 5B01     		lsl	r3, r3, #5
+ 1179 0468 5D0D     		lsr	r5, r3, #21
+ 1180 046a 1F4B     		ldr	r3, .L163+20
+ 1181 046c 1868     		ldr	r0, [r3]
+ 1182 046e FFF7FEFF 		bl	uxQueueMessagesWaiting
+ 1183 0472 C823     		mov	r3, #200
+ 1184 0474 1B1A     		sub	r3, r3, r0
+ 1185 0476 9D42     		cmp	r5, r3
+ 1186 0478 00D3     		bcc	.LCB1023
+ 1187 047a 2AE6     		b	.L159	@long jump
+ 1188              	.LCB1023:
+ 1189 047c 0024     		mov	r4, #0
+ 1190 047e 0AE0     		b	.L133
+ 1191              	.L134:
+ 1192 0480 164B     		ldr	r3, .L163+8
+ 1193 0482 6946     		mov	r1, sp
+ 1194 0484 5B6D     		ldr	r3, [r3, #84]
+ 1195 0486 1331     		add	r1, r1, #19
+ 1196 0488 0B70     		strb	r3, [r1]
+ 1197 048a 174B     		ldr	r3, .L163+20
+ 1198 048c 0022     		mov	r2, #0
+ 1199 048e 1868     		ldr	r0, [r3]
+ 1200 0490 FFF7FEFF 		bl	xQueueSend
+ 1201 0494 0134     		add	r4, r4, #1
+ 1202              	.L133:
+ 1203 0496 AC42     		cmp	r4, r5
+ 1204 0498 F2D1     		bne	.L134
+ 1205 049a 104C     		ldr	r4, .L163+8
+ 1206 049c FFF7FEFF 		bl	vPortEnterCritical
+ 1207 04a0 636B     		ldr	r3, [r4, #52]
+ 1208 04a2 0F4D     		ldr	r5, .L163+12
+ 1209 04a4 4F22     		mov	r2, #79
+ 1210 04a6 1343     		orr	r3, r3, r2
+ 1211 04a8 3022     		mov	r2, #48
+ 1212 04aa 9343     		bic	r3, r3, r2
+ 1213 04ac 2A68     		ldr	r2, [r5]
+ 1214 04ae 9343     		bic	r3, r3, r2
+ 1215 04b0 6363     		str	r3, [r4, #52]
+ 1216 04b2 FFF7FEFF 		bl	vPortExitCritical
+ 1217 04b6 0222     		mov	r2, #2
+ 1218 04b8 2261     		str	r2, [r4, #16]
+ 1219 04ba 2B68     		ldr	r3, [r5]
+ 1220 04bc 022B     		cmp	r3, #2
+ 1221 04be 02D1     		bne	.L136
+ 1222 04c0 4023     		mov	r3, #64
+ 1223 04c2 2B60     		str	r3, [r5]
+ 1224 04c4 00E0     		b	.L160
+ 1225              	.L136:
+ 1226 04c6 2A60     		str	r2, [r5]
+ 1227              	.L160:
+ 1228 04c8 0449     		ldr	r1, .L163+8
+ 1229 04ca 4A6B     		ldr	r2, [r1, #52]
+ 1230 04cc 4223     		mov	r3, #66
+ 1231 04ce 1A42     		tst	r2, r3
+ 1232 04d0 C8D1     		bne	.L131
+ 1233 04d2 FEE5     		b	.L159
+ 1234              	.L164:
+ 1235              		.align	2
+ 1236              	.L163:
+ 1237 04d4 00000000 		.word	eDriverState
+ 1238 04d8 00000000 		.word	ucControlState
+ 1239 04dc 0000FBFF 		.word	-327680
+ 1240 04e0 00000000 		.word	uiCurrentBank
+ 1241 04e4 00000000 		.word	xTxCDC
+ 1242 04e8 00000000 		.word	xRxCDC
+ 1244              		.section	.text.vUSBSendDebug,"ax",%progbits
+ 1245              		.align	2
+ 1246              		.global	vUSBSendDebug
+ 1247              		.code 16
+ 1248              		.thumb_func
+ 1250              	vUSBSendDebug:
+ 1251 0000 70B5     		push	{r4, r5, r6, lr}
+ 1252 0002 041C     		mov	r4, r0
+ 1253 0004 FFF7FEFF 		bl	strlen
+ 1254 0008 0025     		mov	r5, #0
+ 1255 000a 061C     		mov	r6, r0
+ 1256 000c 04E0     		b	.L166
+ 1257              	.L167:
+ 1258 000e 2078     		ldrb	r0, [r4]
+ 1259 0010 FFF7FEFF 		bl	vUSBSendByte
+ 1260 0014 0134     		add	r4, r4, #1
+ 1261 0016 0135     		add	r5, r5, #1
+ 1262              	.L166:
+ 1263 0018 B542     		cmp	r5, r6
+ 1264 001a F8D1     		bne	.L167
+ 1265              		@ sp needed for prologue
+ 1266 001c 70BC     		pop	{r4, r5, r6}
+ 1267 001e 01BC     		pop	{r0}
+ 1268 0020 0047     		bx	r0
+ 1270              		.comm	xUSBInterruptQueue,4,4
+ 1271 0022 C046     		.section	.bss.uiCurrentBank,"aw",%nobits
+ 1272              		.align	2
+ 1275              	uiCurrentBank:
+ 1276 0000 00000000 		.space	4
+ 1277              		.section	.bss.ucControlState,"aw",%nobits
+ 1280              	ucControlState:
+ 1281 0000 00       		.space	1
+ 1282              		.section	.bss.xTxCDC,"aw",%nobits
+ 1283              		.align	2
+ 1286              	xTxCDC:
+ 1287 0000 00000000 		.space	4
+ 1288              		.section	.bss.xRxCDC,"aw",%nobits
+ 1289              		.align	2
+ 1292              	xRxCDC:
+ 1293 0000 00000000 		.space	4
+ 1294              		.section	.bss.pxControlRx,"aw",%nobits
+ 1295              		.align	2
+ 1298              	pxControlRx:
+ 1299 0000 00000000 		.space	136
+ 1299      00000000 
+ 1299      00000000 
+ 1299      00000000 
+ 1299      00000000 
+ 1300              		.section	.bss.pxControlTx,"aw",%nobits
+ 1301              		.align	2
+ 1304              	pxControlTx:
+ 1305 0000 00000000 		.space	136
+ 1305      00000000 
+ 1305      00000000 
+ 1305      00000000 
+ 1305      00000000 
+ 1306              		.ident	"GCC: (GNU) 4.0.2"
 DEFINED SYMBOLS
                             *ABS*:00000000 USB-CDC.c
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:1      .text:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:7      .rodata.pxConfigDescriptor:00000000 pxConfigDescriptor
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:79     .rodata.pxDeviceDescriptor:00000000 pxDeviceDescriptor
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:102    .rodata.pxInterfaceStringDescriptor:00000000 pxInterfaceStringDescriptor
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:137    .rodata.pxConfigurationStringDescriptor:00000000 pxConfigurationStringDescriptor
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:180    .rodata.pxProductStringDescriptor:00000000 pxProductStringDescriptor
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:221    .rodata.pxManufacturerStringDescriptor:00000000 pxManufacturerStringDescriptor
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:244    .rodata.pxLanguageStringDescriptor:00000000 pxLanguageStringDescriptor
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:253    .bss.usbIntefacedInitialized:00000000 usbIntefacedInitialized
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:259    .bss.eDriverState:00000000 eDriverState
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:264    .bss.ucUSBConfig:00000000 ucUSBConfig
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:270    .bss.ulReceivedAddress:00000000 ulReceivedAddress
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:275    .rodata.pxLineCoding:00000000 pxLineCoding
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:289    .text.vUSBIsInitialized:00000000 vUSBIsInitialized
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:286    .text.vUSBIsInitialized:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:298    .text.vUSBIsInitialized:00000008 $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:306    .text.vUSBSendByte:00000000 vUSBSendByte
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:303    .text.vUSBSendByte:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:323    .text.vUSBSendByte:0000001c $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:1287   .bss.xTxCDC:00000000 xTxCDC
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:331    .text.vUSBBytesAvailable:00000000 vUSBBytesAvailable
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:328    .text.vUSBBytesAvailable:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:342    .text.vUSBBytesAvailable:00000010 $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:350    .text.vUSBReceiveByte:00000000 vUSBReceiveByte
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:347    .text.vUSBReceiveByte:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:364    .text.vUSBReceiveByte:00000014 $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:1293   .bss.xRxCDC:00000000 xRxCDC
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:368    .text.prvSendZLP:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:371    .text.prvSendZLP:00000000 prvSendZLP
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:405    .text.prvSendZLP:0000003c $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:1305   .bss.pxControlTx:00000000 pxControlTx
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:410    .text.prvSendStall:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:413    .text.prvSendStall:00000000 prvSendStall
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:432    .text.prvSendStall:00000020 $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:436    .text.prvSendNextSegment:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:439    .text.prvSendNextSegment:00000000 prvSendNextSegment
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:524    .text.prvSendNextSegment:00000098 $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:530    .text.prvSendControlData:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:533    .text.prvSendControlData:00000000 prvSendControlData
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:574    .text.prvSendControlData:00000048 $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:581    .bss.xRequest.3556:00000000 xRequest.3556
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:589    .text.vUSBCDCTask:00000000 vUSBCDCTask
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:586    .text.vUSBCDCTask:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:910    .rodata.vUSBCDCTask:00000000 $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:1066   .text.vUSBCDCTask:00000350 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:1      .text:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:7      .rodata.pxConfigDescriptor:00000000 pxConfigDescriptor
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:79     .rodata.pxDeviceDescriptor:00000000 pxDeviceDescriptor
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:102    .rodata.pxInterfaceStringDescriptor:00000000 pxInterfaceStringDescriptor
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:137    .rodata.pxConfigurationStringDescriptor:00000000 pxConfigurationStringDescriptor
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:180    .rodata.pxProductStringDescriptor:00000000 pxProductStringDescriptor
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:221    .rodata.pxManufacturerStringDescriptor:00000000 pxManufacturerStringDescriptor
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:244    .rodata.pxLanguageStringDescriptor:00000000 pxLanguageStringDescriptor
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:253    .bss.usbIntefacedInitialized:00000000 usbIntefacedInitialized
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:259    .bss.eDriverState:00000000 eDriverState
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:264    .bss.ucUSBConfig:00000000 ucUSBConfig
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:270    .bss.ulReceivedAddress:00000000 ulReceivedAddress
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:275    .rodata.pxLineCoding:00000000 pxLineCoding
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:289    .text.vUSBIsInitialized:00000000 vUSBIsInitialized
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:286    .text.vUSBIsInitialized:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:298    .text.vUSBIsInitialized:00000008 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:306    .text.vUSBSendByte:00000000 vUSBSendByte
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:303    .text.vUSBSendByte:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:323    .text.vUSBSendByte:0000001c $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:1286   .bss.xTxCDC:00000000 xTxCDC
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:331    .text.vUSBBytesAvailable:00000000 vUSBBytesAvailable
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:328    .text.vUSBBytesAvailable:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:342    .text.vUSBBytesAvailable:00000010 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:350    .text.vUSBReceiveByte:00000000 vUSBReceiveByte
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:347    .text.vUSBReceiveByte:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:364    .text.vUSBReceiveByte:00000014 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:1292   .bss.xRxCDC:00000000 xRxCDC
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:368    .text.prvSendZLP:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:371    .text.prvSendZLP:00000000 prvSendZLP
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:405    .text.prvSendZLP:0000003c $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:1304   .bss.pxControlTx:00000000 pxControlTx
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:410    .text.prvSendStall:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:413    .text.prvSendStall:00000000 prvSendStall
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:432    .text.prvSendStall:00000020 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:436    .text.prvSendNextSegment:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:439    .text.prvSendNextSegment:00000000 prvSendNextSegment
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:524    .text.prvSendNextSegment:00000098 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:530    .text.prvSendControlData:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:533    .text.prvSendControlData:00000000 prvSendControlData
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:574    .text.prvSendControlData:00000048 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:581    .bss.xRequest.3556:00000000 xRequest.3556
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:589    .text.vUSBCDCTask:00000000 vUSBCDCTask
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:586    .text.vUSBCDCTask:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:909    .rodata.vUSBCDCTask:00000000 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:1065   .text.vUSBCDCTask:00000350 $d
                             *COM*:00000004 xUSBInterruptQueue
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:1299   .bss.pxControlRx:00000000 pxControlRx
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:1281   .bss.ucControlState:00000000 ucControlState
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:1276   .bss.uiCurrentBank:00000000 uiCurrentBank
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:1096   .text.vUSBCDCTask:000003c4 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:1238   .text.vUSBCDCTask:000004d4 $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:1251   .text.vUSBSendDebug:00000000 vUSBSendDebug
-/cygdrive/c/Users/brent/AppData/Local/Temp/cctqvYq2.s:1248   .text.vUSBSendDebug:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:1298   .bss.pxControlRx:00000000 pxControlRx
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:1280   .bss.ucControlState:00000000 ucControlState
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:1275   .bss.uiCurrentBank:00000000 uiCurrentBank
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:1095   .text.vUSBCDCTask:000003c4 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:1237   .text.vUSBCDCTask:000004d4 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:1250   .text.vUSBSendDebug:00000000 vUSBSendDebug
+/cygdrive/c/Users/brent/AppData/Local/Temp/cchV5rGJ.s:1247   .text.vUSBSendDebug:00000000 $t
 
 UNDEFINED SYMBOLS
 xQueueSend

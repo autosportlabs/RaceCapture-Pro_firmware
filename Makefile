@@ -80,7 +80,6 @@ $(RTOS_SRC_DIR)/queue.c \
 $(RTOS_SRC_DIR)/list.c \
 $(RTOS_PORT_DIR)/MemMang/heap_2.c \
 $(RTOS_GCC_DIR)/port.c \
-$(CFI_SRC_DIR)/source/runtime.c \
 led_debug.c \
 $(CFI_SRC_DIR)/source/usb_comm.c \
 $(CFI_SRC_DIR)/source/USB-CDC.c
@@ -94,9 +93,7 @@ $(CFI_SRC_DIR)/source/USB-CDC.c
 SRCARM = $(RTOS_GCC_DIR)/portISR.c \
 interrupt_utils.c \
 blinker.c \
-$(CFI_SRC_DIR)/source/USBIsr.c \
-$(CFI_SRC_DIR)/source/triggerWheelIsr.c
-
+$(CFI_SRC_DIR)/source/USBIsr.c 
 
 # List C++ source files here.
 # use file-extension cpp for C++-files (use extension .cpp)

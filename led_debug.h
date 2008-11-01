@@ -4,13 +4,10 @@
 #include "Board.h"
 
 
-#define LED1            (1<<17)	/* PA0 / PGMEN0 & PWM0 TIOA0  48 */
-#define LED2            (1<<18)	/* PA1 / PGMEN1 & PWM1 TIOB0  47 */
-#define LED3            (1<<2)	/* PA2          & PWM2 SCK0   44 */
-#define LED4            (1<<3)	/* PA3          & TWD  NPCS3  43 */
-#define NB_LEB			4
+#define LED1 (1<<1)
+#define LED2 (1<<2)
 
-#define LED_MASK        (LED1|LED2|LED3|LED4)
+#define LED_MASK        (LED1|LED2)
 
 
 void Set_LED(unsigned int Led);

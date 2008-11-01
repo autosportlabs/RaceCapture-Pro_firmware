@@ -5,7 +5,6 @@ cfi/source/usb_comm.o: cfi/source/usb_comm.c cfi/include/usb_comm.h \
   hardware/include/Board.h hardware/include/AT91SAM7S256.h \
   hardware/include/lib_AT91SAM7S256.h FreeRTOS/Source/include/portable.h \
   FreeRTOS/Source/include/../../Source/portable/GCC/ARM7_AT91SAM7S/portmacro.h \
-  cfi/include/ignition_config.h cfi/include/ignition_config_defaults.h \
   FreeRTOS/Source/include/task.h FreeRTOS/Source/include/list.h \
   /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/stdio.h \
   /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/_ansi.h \
@@ -28,9 +27,7 @@ cfi/source/usb_comm.o: cfi/source/usb_comm.c cfi/include/usb_comm.h \
   /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/string.h \
   /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/string.h \
   led_debug.h cfi/include/USB-CDC.h cfi/include/usb.h \
-  hardware/include/Board.h cfi/include/runtime.h \
-  FreeRTOS/Source/include/task.h FreeRTOS/Source/include/semphr.h \
-  FreeRTOS/Source/include/queue.h cfi/include/ignition_config.h
+  hardware/include/Board.h
 
 cfi/include/usb_comm.h:
 
@@ -51,10 +48,6 @@ hardware/include/lib_AT91SAM7S256.h:
 FreeRTOS/Source/include/portable.h:
 
 FreeRTOS/Source/include/../../Source/portable/GCC/ARM7_AT91SAM7S/portmacro.h:
-
-cfi/include/ignition_config.h:
-
-cfi/include/ignition_config_defaults.h:
 
 FreeRTOS/Source/include/task.h:
 
@@ -107,13 +100,3 @@ cfi/include/USB-CDC.h:
 cfi/include/usb.h:
 
 hardware/include/Board.h:
-
-cfi/include/runtime.h:
-
-FreeRTOS/Source/include/task.h:
-
-FreeRTOS/Source/include/semphr.h:
-
-FreeRTOS/Source/include/queue.h:
-
-cfi/include/ignition_config.h:

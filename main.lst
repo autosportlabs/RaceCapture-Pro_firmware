@@ -11,99 +11,121 @@
    9      6D00
   10 000e 0000     		.align	2
   11              	.LC6:
-  12 0010 4F6E5265 		.ascii	"OnRevolution\000"
-  12      766F6C75 
-  12      74696F6E 
-  12      00
-  13 001d 000000   		.section	.text.main,"ax",%progbits
+  12 0010 4572726F 		.ascii	"ErrorCheck\000"
+  12      72436865 
+  12      636B00
+  13 001b 00       		.section	.text.main,"ax",%progbits
   14              		.align	2
   15              		.global	main
   16              		.code 16
   17              		.thumb_func
   19              	main:
-  20 0000 30B5     		push	{r4, r5, lr}
-  21 0002 F021     		mov	r1, #240
-  22 0004 82B0     		sub	sp, sp, #8
-  23 0006 1F48     		ldr	r0, .L7
-  24 0008 0902     		lsl	r1, r1, #8
-  25 000a FFF7FEFF 		bl	AT91F_PIO_CfgOutput
-  26 000e F021     		mov	r1, #240
-  27 0010 1C48     		ldr	r0, .L7
-  28 0012 0902     		lsl	r1, r1, #8
-  29 0014 FFF7FEFF 		bl	AT91F_PIO_ClearOutput
-  30 0018 1B4B     		ldr	r3, .L7+4
-  31 001a 0024     		mov	r4, #0
-  32 001c 5C63     		str	r4, [r3, #52]
-  33 001e 1B48     		ldr	r0, .L7+8
-  34 0020 1B49     		ldr	r1, .L7+12
-  35 0022 FFF7FEFF 		bl	AT91F_PMC_EnablePeriphClock
-  36 0026 1B48     		ldr	r0, .L7+16
-  37 0028 0121     		mov	r1, #1
-  38 002a FFF7FEFF 		bl	AT91F_RSTSetMode
-  39 002e FFF7FEFF 		bl	Init_LEDs
-  40 0032 9622     		mov	r2, #150
-  41 0034 1849     		ldr	r1, .L7+20
-  42 0036 0125     		mov	r5, #1
-  43 0038 5200     		lsl	r2, r2, #1
-  44 003a 0023     		mov	r3, #0
-  45 003c 1748     		ldr	r0, .L7+24
-  46 003e 0095     		str	r5, [sp]
-  47 0040 0194     		str	r4, [sp, #4]
-  48 0042 FFF7FEFF 		bl	xTaskCreate
-  49 0046 AF22     		mov	r2, #175
-  50 0048 1549     		ldr	r1, .L7+28
-  51 004a 9200     		lsl	r2, r2, #2
-  52 004c 0023     		mov	r3, #0
-  53 004e 1548     		ldr	r0, .L7+32
-  54 0050 0095     		str	r5, [sp]
-  55 0052 0194     		str	r4, [sp, #4]
-  56 0054 FFF7FEFF 		bl	xTaskCreate
-  57 0058 0223     		mov	r3, #2
-  58 005a FA22     		mov	r2, #250
-  59 005c 1249     		ldr	r1, .L7+36
-  60 005e 0093     		str	r3, [sp]
-  61 0060 5200     		lsl	r2, r2, #1
-  62 0062 0023     		mov	r3, #0
-  63 0064 1148     		ldr	r0, .L7+40
-  64 0066 0194     		str	r4, [sp, #4]
-  65 0068 FFF7FEFF 		bl	xTaskCreate
-  66 006c FFF7FEFF 		bl	vTaskStartScheduler
-  67              	.L2:
-  68 0070 8020     		mov	r0, #128
-  69 0072 C002     		lsl	r0, r0, #11
-  70 0074 FFF7FEFF 		bl	Toggle_LED
-  71 0078 0D4B     		ldr	r3, .L7+44
-  72              	.L3:
-  73 007a 013B     		sub	r3, r3, #1
-  74 007c 002B     		cmp	r3, #0
-  75 007e FCD1     		bne	.L3
-  76 0080 F6E7     		b	.L2
-  77              	.L8:
-  78 0082 0000     		.align	2
-  79              	.L7:
-  80 0084 00F4FFFF 		.word	-3072
-  81 0088 FCF0FFFF 		.word	-3844
-  82 008c 00FCFFFF 		.word	-1024
-  83 0090 44000040 		.word	1073741892
-  84 0094 00FDFFFF 		.word	-768
-  85 0098 00000000 		.word	.LC0
-  86 009c 00000000 		.word	vUSBCDCTask
-  87 00a0 04000000 		.word	.LC3
-  88 00a4 00000000 		.word	onUSBCommTask
-  89 00a8 10000000 		.word	.LC6
-  90 00ac 00000000 		.word	onRevolutionTask
-  91 00b0 80841E00 		.word	2000000
-  93              		.ident	"GCC: (GNU) 4.0.2"
+  20 0000 70B5     		push	{r4, r5, r6, lr}
+  21 0002 1E4B     		ldr	r3, .L7
+  22 0004 0025     		mov	r5, #0
+  23 0006 82B0     		sub	sp, sp, #8
+  24 0008 5D63     		str	r5, [r3, #52]
+  25 000a 1D48     		ldr	r0, .L7+4
+  26 000c 1D49     		ldr	r1, .L7+8
+  27 000e FFF7FEFF 		bl	AT91F_PMC_EnablePeriphClock
+  28 0012 1D48     		ldr	r0, .L7+12
+  29 0014 0121     		mov	r1, #1
+  30 0016 FFF7FEFF 		bl	AT91F_RSTSetMode
+  31 001a FFF7FEFF 		bl	Init_LEDs
+  32 001e 9622     		mov	r2, #150
+  33 0020 0124     		mov	r4, #1
+  34 0022 1A49     		ldr	r1, .L7+16
+  35 0024 5200     		lsl	r2, r2, #1
+  36 0026 0023     		mov	r3, #0
+  37 0028 1948     		ldr	r0, .L7+20
+  38 002a 0094     		str	r4, [sp]
+  39 002c 0195     		str	r5, [sp, #4]
+  40 002e FFF7FEFF 		bl	xTaskCreate
+  41 0032 AF22     		mov	r2, #175
+  42 0034 1749     		ldr	r1, .L7+24
+  43 0036 9200     		lsl	r2, r2, #2
+  44 0038 0023     		mov	r3, #0
+  45 003a 1748     		ldr	r0, .L7+28
+  46 003c 0094     		str	r4, [sp]
+  47 003e 0195     		str	r5, [sp, #4]
+  48 0040 FFF7FEFF 		bl	xTaskCreate
+  49 0044 154E     		ldr	r6, .L7+32
+  50 0046 6422     		mov	r2, #100
+  51 0048 311C     		mov	r1, r6
+  52 004a 0023     		mov	r3, #0
+  53 004c 1448     		ldr	r0, .L7+36
+  54 004e 0094     		str	r4, [sp]
+  55 0050 0195     		str	r5, [sp, #4]
+  56 0052 FFF7FEFF 		bl	xTaskCreate
+  57 0056 311C     		mov	r1, r6
+  58 0058 6422     		mov	r2, #100
+  59 005a 0023     		mov	r3, #0
+  60 005c 1148     		ldr	r0, .L7+40
+  61 005e 0094     		str	r4, [sp]
+  62 0060 0195     		str	r5, [sp, #4]
+  63 0062 FFF7FEFF 		bl	xTaskCreate
+  64 0066 FFF7FEFF 		bl	vTaskStartScheduler
+  65              	.L2:
+  66 006a 0420     		mov	r0, #4
+  67 006c FFF7FEFF 		bl	Toggle_LED
+  68 0070 0D4B     		ldr	r3, .L7+44
+  69              	.L3:
+  70 0072 013B     		sub	r3, r3, #1
+  71 0074 002B     		cmp	r3, #0
+  72 0076 FCD1     		bne	.L3
+  73 0078 F7E7     		b	.L2
+  74              	.L8:
+  75 007a 0000     		.align	2
+  76              	.L7:
+  77 007c FCF0FFFF 		.word	-3844
+  78 0080 00FCFFFF 		.word	-1024
+  79 0084 44000040 		.word	1073741892
+  80 0088 00FDFFFF 		.word	-768
+  81 008c 00000000 		.word	.LC0
+  82 0090 00000000 		.word	vUSBCDCTask
+  83 0094 04000000 		.word	.LC3
+  84 0098 00000000 		.word	onUSBCommTask
+  85 009c 10000000 		.word	.LC6
+  86 00a0 00000000 		.word	StatusLED1
+  87 00a4 00000000 		.word	StatusLED2
+  88 00a8 80841E00 		.word	2000000
+  90              		.section	.text.StatusLED2,"ax",%progbits
+  91              		.align	2
+  92              		.code 16
+  93              		.thumb_func
+  95              	StatusLED2:
+  96 0000 00B5     		push	{lr}
+  97              	.L10:
+  98 0002 FA20     		mov	r0, #250
+  99 0004 FFF7FEFF 		bl	vTaskDelay
+ 100 0008 0420     		mov	r0, #4
+ 101 000a FFF7FEFF 		bl	Toggle_LED
+ 102 000e F8E7     		b	.L10
+ 104              		.section	.text.StatusLED1,"ax",%progbits
+ 105              		.align	2
+ 106              		.code 16
+ 107              		.thumb_func
+ 109              	StatusLED1:
+ 110 0000 00B5     		push	{lr}
+ 111              	.L13:
+ 112 0002 7D20     		mov	r0, #125
+ 113 0004 FFF7FEFF 		bl	vTaskDelay
+ 114 0008 0220     		mov	r0, #2
+ 115 000a FFF7FEFF 		bl	Toggle_LED
+ 116 000e F8E7     		b	.L13
+ 118              		.ident	"GCC: (GNU) 4.0.2"
 DEFINED SYMBOLS
                             *ABS*:00000000 main.c
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccbO3dka.s:1      .text:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccbO3dka.s:19     .text.main:00000000 main
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccbO3dka.s:16     .text.main:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccbO3dka.s:80     .text.main:00000084 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccAlk9x9.s:1      .text:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccAlk9x9.s:19     .text.main:00000000 main
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccAlk9x9.s:16     .text.main:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccAlk9x9.s:77     .text.main:0000007c $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccAlk9x9.s:109    .text.StatusLED1:00000000 StatusLED1
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccAlk9x9.s:95     .text.StatusLED2:00000000 StatusLED2
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccAlk9x9.s:92     .text.StatusLED2:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccAlk9x9.s:106    .text.StatusLED1:00000000 $t
 
 UNDEFINED SYMBOLS
-AT91F_PIO_CfgOutput
-AT91F_PIO_ClearOutput
 AT91F_PMC_EnablePeriphClock
 AT91F_RSTSetMode
 Init_LEDs
@@ -112,4 +134,4 @@ vTaskStartScheduler
 Toggle_LED
 vUSBCDCTask
 onUSBCommTask
-onRevolutionTask
+vTaskDelay
