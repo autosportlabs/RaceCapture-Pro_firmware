@@ -6,104 +6,102 @@
    6              		.code 16
    7              		.thumb_func
    9              	Init_LEDs:
-  10 0000 30B5     		push	{r4, r5, lr}
-  11 0002 064D     		ldr	r5, .L3
-  12 0004 064C     		ldr	r4, .L3+4
-  13 0006 291C     		mov	r1, r5
-  14 0008 201C     		mov	r0, r4
-  15 000a FFF7FEFF 		bl	AT91F_PIO_CfgOutput
-  16 000e 291C     		mov	r1, r5
-  17 0010 201C     		mov	r0, r4
-  18 0012 FFF7FEFF 		bl	AT91F_PIO_SetOutput
-  19              		@ sp needed for prologue
-  20 0016 30BC     		pop	{r4, r5}
-  21 0018 01BC     		pop	{r0}
-  22 001a 0047     		bx	r0
-  23              	.L4:
-  24              		.align	2
-  25              	.L3:
-  26 001c 0C000600 		.word	393228
-  27 0020 00F4FFFF 		.word	-3072
-  29              		.section	.text.Set_LED,"ax",%progbits
-  30              		.align	2
-  31              		.global	Set_LED
-  32              		.code 16
-  33              		.thumb_func
-  35              	Set_LED:
-  36 0000 00B5     		push	{lr}
-  37 0002 011C     		mov	r1, r0
-  38 0004 0248     		ldr	r0, .L7
-  39 0006 FFF7FEFF 		bl	AT91F_PIO_SetOutput
-  40              		@ sp needed for prologue
-  41 000a 01BC     		pop	{r0}
-  42 000c 0047     		bx	r0
-  43              	.L8:
-  44 000e 0000     		.align	2
-  45              	.L7:
-  46 0010 00F4FFFF 		.word	-3072
-  48              		.section	.text.Clear_LED,"ax",%progbits
-  49              		.align	2
-  50              		.global	Clear_LED
-  51              		.code 16
-  52              		.thumb_func
-  54              	Clear_LED:
-  55 0000 00B5     		push	{lr}
-  56 0002 011C     		mov	r1, r0
-  57 0004 0248     		ldr	r0, .L11
-  58 0006 FFF7FEFF 		bl	AT91F_PIO_ClearOutput
-  59              		@ sp needed for prologue
-  60 000a 01BC     		pop	{r0}
-  61 000c 0047     		bx	r0
-  62              	.L12:
-  63 000e 0000     		.align	2
-  64              	.L11:
-  65 0010 00F4FFFF 		.word	-3072
-  67              		.section	.text.Toggle_LED,"ax",%progbits
-  68              		.align	2
-  69              		.global	Toggle_LED
-  70              		.code 16
-  71              		.thumb_func
-  73              	Toggle_LED:
-  74 0000 10B5     		push	{r4, lr}
-  75 0002 041C     		mov	r4, r0
-  76 0004 0848     		ldr	r0, .L18
-  77 0006 FFF7FEFF 		bl	AT91F_PIO_GetInput
-  78 000a 2040     		and	r0, r0, r4
-  79 000c A042     		cmp	r0, r4
-  80 000e 04D1     		bne	.L14
-  81 0010 0548     		ldr	r0, .L18
-  82 0012 211C     		mov	r1, r4
-  83 0014 FFF7FEFF 		bl	AT91F_PIO_ClearOutput
-  84 0018 03E0     		b	.L17
-  85              	.L14:
-  86 001a 0348     		ldr	r0, .L18
-  87 001c 211C     		mov	r1, r4
-  88 001e FFF7FEFF 		bl	AT91F_PIO_SetOutput
-  89              	.L17:
-  90              		@ sp needed for prologue
-  91 0022 10BC     		pop	{r4}
-  92 0024 01BC     		pop	{r0}
-  93 0026 0047     		bx	r0
-  94              	.L19:
-  95              		.align	2
-  96              	.L18:
-  97 0028 00F4FFFF 		.word	-3072
-  99              		.ident	"GCC: (GNU) 4.0.2"
+  10 0000 10B5     		push	{r4, lr}
+  11 0002 064C     		ldr	r4, .L3
+  12 0004 0621     		mov	r1, #6
+  13 0006 201C     		mov	r0, r4
+  14 0008 FFF7FEFF 		bl	AT91F_PIO_CfgOutput
+  15 000c 201C     		mov	r0, r4
+  16 000e 0621     		mov	r1, #6
+  17 0010 FFF7FEFF 		bl	AT91F_PIO_SetOutput
+  18              		@ sp needed for prologue
+  19 0014 10BC     		pop	{r4}
+  20 0016 01BC     		pop	{r0}
+  21 0018 0047     		bx	r0
+  22              	.L4:
+  23 001a 0000     		.align	2
+  24              	.L3:
+  25 001c 00F4FFFF 		.word	-3072
+  27              		.section	.text.Set_LED,"ax",%progbits
+  28              		.align	2
+  29              		.global	Set_LED
+  30              		.code 16
+  31              		.thumb_func
+  33              	Set_LED:
+  34 0000 00B5     		push	{lr}
+  35 0002 011C     		mov	r1, r0
+  36 0004 0248     		ldr	r0, .L7
+  37 0006 FFF7FEFF 		bl	AT91F_PIO_SetOutput
+  38              		@ sp needed for prologue
+  39 000a 01BC     		pop	{r0}
+  40 000c 0047     		bx	r0
+  41              	.L8:
+  42 000e 0000     		.align	2
+  43              	.L7:
+  44 0010 00F4FFFF 		.word	-3072
+  46              		.section	.text.Clear_LED,"ax",%progbits
+  47              		.align	2
+  48              		.global	Clear_LED
+  49              		.code 16
+  50              		.thumb_func
+  52              	Clear_LED:
+  53 0000 00B5     		push	{lr}
+  54 0002 011C     		mov	r1, r0
+  55 0004 0248     		ldr	r0, .L11
+  56 0006 FFF7FEFF 		bl	AT91F_PIO_ClearOutput
+  57              		@ sp needed for prologue
+  58 000a 01BC     		pop	{r0}
+  59 000c 0047     		bx	r0
+  60              	.L12:
+  61 000e 0000     		.align	2
+  62              	.L11:
+  63 0010 00F4FFFF 		.word	-3072
+  65              		.section	.text.Toggle_LED,"ax",%progbits
+  66              		.align	2
+  67              		.global	Toggle_LED
+  68              		.code 16
+  69              		.thumb_func
+  71              	Toggle_LED:
+  72 0000 10B5     		push	{r4, lr}
+  73 0002 041C     		mov	r4, r0
+  74 0004 0848     		ldr	r0, .L18
+  75 0006 FFF7FEFF 		bl	AT91F_PIO_GetInput
+  76 000a 2040     		and	r0, r0, r4
+  77 000c A042     		cmp	r0, r4
+  78 000e 04D1     		bne	.L14
+  79 0010 0548     		ldr	r0, .L18
+  80 0012 211C     		mov	r1, r4
+  81 0014 FFF7FEFF 		bl	AT91F_PIO_ClearOutput
+  82 0018 03E0     		b	.L17
+  83              	.L14:
+  84 001a 0348     		ldr	r0, .L18
+  85 001c 211C     		mov	r1, r4
+  86 001e FFF7FEFF 		bl	AT91F_PIO_SetOutput
+  87              	.L17:
+  88              		@ sp needed for prologue
+  89 0022 10BC     		pop	{r4}
+  90 0024 01BC     		pop	{r0}
+  91 0026 0047     		bx	r0
+  92              	.L19:
+  93              		.align	2
+  94              	.L18:
+  95 0028 00F4FFFF 		.word	-3072
+  97              		.ident	"GCC: (GNU) 4.0.2"
 DEFINED SYMBOLS
                             *ABS*:00000000 led_debug.c
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc0lwt6Q.s:1      .text:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc0lwt6Q.s:9      .text.Init_LEDs:00000000 Init_LEDs
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc0lwt6Q.s:6      .text.Init_LEDs:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc0lwt6Q.s:26     .text.Init_LEDs:0000001c $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc0lwt6Q.s:35     .text.Set_LED:00000000 Set_LED
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc0lwt6Q.s:32     .text.Set_LED:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc0lwt6Q.s:46     .text.Set_LED:00000010 $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc0lwt6Q.s:54     .text.Clear_LED:00000000 Clear_LED
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc0lwt6Q.s:51     .text.Clear_LED:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc0lwt6Q.s:65     .text.Clear_LED:00000010 $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc0lwt6Q.s:73     .text.Toggle_LED:00000000 Toggle_LED
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc0lwt6Q.s:70     .text.Toggle_LED:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc0lwt6Q.s:97     .text.Toggle_LED:00000028 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccsJ9rik.s:1      .text:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccsJ9rik.s:9      .text.Init_LEDs:00000000 Init_LEDs
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccsJ9rik.s:6      .text.Init_LEDs:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccsJ9rik.s:25     .text.Init_LEDs:0000001c $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccsJ9rik.s:33     .text.Set_LED:00000000 Set_LED
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccsJ9rik.s:30     .text.Set_LED:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccsJ9rik.s:44     .text.Set_LED:00000010 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccsJ9rik.s:52     .text.Clear_LED:00000000 Clear_LED
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccsJ9rik.s:49     .text.Clear_LED:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccsJ9rik.s:63     .text.Clear_LED:00000010 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccsJ9rik.s:71     .text.Toggle_LED:00000000 Toggle_LED
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccsJ9rik.s:68     .text.Toggle_LED:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccsJ9rik.s:95     .text.Toggle_LED:00000028 $d
 
 UNDEFINED SYMBOLS
 AT91F_PIO_CfgOutput

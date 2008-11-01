@@ -14,7 +14,6 @@
 /* Scheduler includes. */
 #include "FreeRTOS.h"
 #include "task.h"
-#include "runtime.h"
 #include "usb_comm.h"
 #include "interrupt_utils.h"
 #include "led_debug.h"
@@ -48,12 +47,12 @@
 #define mainON_SELF_TEST_STACK				( 300 )
 
 #define mainNO_ERROR_FLASH_PERIOD			( ( portTickType ) 1000 / portTICK_RATE_MS  )
-#define mainERROR_FLASH_PERIOD		( ( portTickType ) 300 / portTICK_RATE_MS  )
+#define mainBUSY_FLASH_PERIOD				( ( portTickType ) 500 / portTICK_RATE_MS )
+#define mainERROR_FLASH_PERIOD				( ( portTickType ) 100 / portTICK_RATE_MS  )
 
 
-
-static void vErrorChecks( void *pvParameters );
-static void vTaskSelfTest( void *pvParameters );
+static void StatusLED1( void *pvParameters );
+static void StatusLED2( void *pvParameters );
 
 /*
  * Checks that all the demo application tasks are still executing without error
@@ -84,11 +83,6 @@ static void prvSetupHardware( void )
  * Starts all the other tasks, then starts the scheduler. 
  */
  
-static void setupCoilPackPorts(){
-
-    AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, COIL_DRIVER_ALL_PORTS) ;
-    AT91F_PIO_ClearOutput(AT91C_BASE_PIOA, COIL_DRIVER_ALL_PORTS);
-}
 
 int main( void )
 {
@@ -97,7 +91,6 @@ int main( void )
 
 	/* Setup any hardware that has not already been configured by the low
 	level init routines. */
-	setupCoilPackPorts();
 	prvSetupHardware();
 	Init_LEDs();
 	
@@ -108,10 +101,8 @@ int main( void )
 	
 	xTaskCreate( vUSBCDCTask,	( signed portCHAR * ) "USB", 			mainUSB_TASK_STACK, 		NULL, 	mainUSB_PRIORITY, NULL );
 	xTaskCreate( onUSBCommTask,	( signed portCHAR * ) "OnUSBComm", 		mainUSB_COMM_STACK, 		NULL, 	tskIDLE_PRIORITY + 1, NULL );
-	xTaskCreate(onRevolutionTask, ( signed portCHAR *) "OnRevolution", 	mainON_REVOLUTION_STACK, 	NULL, 	mainON_REVOLUTION_TASK_PRIORITY, NULL);
-	//xTaskCreate( vTaskSelfTest,	( signed portCHAR * ) "SelfTest", 		mainON_SELF_TEST_STACK,	 	NULL, 	mainCHECK_TASK_PRIORITY, NULL );
-//	xTaskCreate( vErrorChecks,	( signed portCHAR * ) "ErrorCheck", configMINIMAL_STACK_SIZE, 	NULL, 	mainCHECK_TASK_PRIORITY, NULL );
-		
+	xTaskCreate( StatusLED1,	( signed portCHAR * ) "ErrorCheck", configMINIMAL_STACK_SIZE, 	NULL, 	mainCHECK_TASK_PRIORITY, NULL );
+	xTaskCreate( StatusLED2,	( signed portCHAR * ) "ErrorCheck", configMINIMAL_STACK_SIZE, 	NULL, 	mainCHECK_TASK_PRIORITY, NULL );		
 // DJS--iprintf() requires syscalls.c and serial_simple.c to be compiled
 //   iprintf("\r\nFreeRTOS %s\r\n\r\n",tskKERNEL_VERSION_NUMBER);
 
@@ -133,33 +124,10 @@ int main( void )
    return 0;
 }
 
-static void vTaskSelfTest( void *pvParameters ){
-
-	unsigned int simulatedTriggerWheelMask = (1<<10);
-	portTickType delay = ( portTickType ) 100 / portTICK_RATE_MS;
-    AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, simulatedTriggerWheelMask ) ;
-
-	int count = 0;
-	while(1){
-		count++;
-		vTaskDelay(delay);
-		AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, simulatedTriggerWheelMask ) ;
-		Set_LED(LED1);	
-    	vTaskDelay(delay);
-    	if (count<36){
-    		AT91F_PIO_SetOutput( AT91C_BASE_PIOA, simulatedTriggerWheelMask ) ;
-	        Clear_LED(LED1);	
-    	}
-    	else{
-    		count = 0;
-    	}	
-	}
-}
-
-static void vErrorChecks( void *pvParameters )
+static void StatusLED1( void *pvParameters )
 {
 
-	portTickType xDelayPeriod = mainNO_ERROR_FLASH_PERIOD;
+	portTickType xDelayPeriod = mainBUSY_FLASH_PERIOD;
 	
 	/* The parameters are not used in this task. */
 	( void ) pvParameters;
@@ -184,6 +152,35 @@ static void vErrorChecks( void *pvParameters )
 		Toggle_LED(LED1);
 	}
 }
+static void StatusLED2( void *pvParameters )
+{
+
+	portTickType xDelayPeriod = mainNO_ERROR_FLASH_PERIOD;
+	
+	/* The parameters are not used in this task. */
+	( void ) pvParameters;
+
+	/* Cycle for ever, delaying then checking all the other tasks are still
+	operating without error.  If an error is detected then the delay period
+	is decreased from mainNO_ERROR_FLASH_PERIOD to mainERROR_FLASH_PERIOD so
+	the on board LED flash rate will increase. */
+
+	for( ;; )
+	{
+		/* Delay until it is time to execute again. */
+		vTaskDelay( xDelayPeriod );
+		/* Check all the standard demo application tasks are executing without 
+		error. */
+		if( prvCheckOtherTasksAreStillRunning() != pdPASS )
+		{
+			/* An error has been detected in one of the tasks - flash faster. */
+			xDelayPeriod = mainERROR_FLASH_PERIOD;
+		}
+		
+		Toggle_LED(LED2);
+	}
+}
+
 /*-----------------------------------------------------------*/
 
 static portLONG prvCheckOtherTasksAreStillRunning( void )

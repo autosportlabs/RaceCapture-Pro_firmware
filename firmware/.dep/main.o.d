@@ -27,10 +27,7 @@ main.o: main.c \
   FreeRTOS/Source/include/portable.h \
   FreeRTOS/Source/include/../../Source/portable/GCC/ARM7_AT91SAM7S/portmacro.h \
   FreeRTOS/Source/include/task.h FreeRTOS/Source/include/list.h \
-  cfi/include/runtime.h FreeRTOS/Source/include/FreeRTOS.h \
-  FreeRTOS/Source/include/task.h FreeRTOS/Source/include/semphr.h \
-  FreeRTOS/Source/include/queue.h cfi/include/ignition_config.h \
-  cfi/include/ignition_config_defaults.h cfi/include/usb_comm.h \
+  cfi/include/usb_comm.h FreeRTOS/Source/include/FreeRTOS.h \
   interrupt_utils.h led_debug.h hardware/include/Board.h \
   cfi/include/USB-CDC.h cfi/include/usb.h
 
@@ -98,21 +95,9 @@ FreeRTOS/Source/include/task.h:
 
 FreeRTOS/Source/include/list.h:
 
-cfi/include/runtime.h:
+cfi/include/usb_comm.h:
 
 FreeRTOS/Source/include/FreeRTOS.h:
-
-FreeRTOS/Source/include/task.h:
-
-FreeRTOS/Source/include/semphr.h:
-
-FreeRTOS/Source/include/queue.h:
-
-cfi/include/ignition_config.h:
-
-cfi/include/ignition_config_defaults.h:
-
-cfi/include/usb_comm.h:
 
 interrupt_utils.h:
 
