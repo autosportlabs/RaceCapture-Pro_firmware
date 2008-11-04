@@ -27,9 +27,10 @@ main.o: main.c \
   FreeRTOS/Source/include/portable.h \
   FreeRTOS/Source/include/../../Source/portable/GCC/ARM7_AT91SAM7S/portmacro.h \
   FreeRTOS/Source/include/task.h FreeRTOS/Source/include/list.h \
-  cfi/include/usb_comm.h FreeRTOS/Source/include/FreeRTOS.h \
+  usb/include/usb_comm.h FreeRTOS/Source/include/FreeRTOS.h \
   interrupt_utils.h led_debug.h hardware/include/Board.h \
-  cfi/include/USB-CDC.h cfi/include/usb.h
+  usb/include/USB-CDC.h usb/include/usb.h logger/loggerHardware.h \
+  hardware/include/board.h
 
 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/stdlib.h:
 
@@ -95,7 +96,7 @@ FreeRTOS/Source/include/task.h:
 
 FreeRTOS/Source/include/list.h:
 
-cfi/include/usb_comm.h:
+usb/include/usb_comm.h:
 
 FreeRTOS/Source/include/FreeRTOS.h:
 
@@ -105,6 +106,10 @@ led_debug.h:
 
 hardware/include/Board.h:
 
-cfi/include/USB-CDC.h:
+usb/include/USB-CDC.h:
 
-cfi/include/usb.h:
+usb/include/usb.h:
+
+logger/loggerHardware.h:
+
+hardware/include/board.h:
