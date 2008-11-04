@@ -1,4 +1,4 @@
-cfi/source/USB-CDC.o: cfi/source/USB-CDC.c \
+usb/source/USB-CDC.o: usb/source/USB-CDC.c \
   /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/string.h \
   /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/_ansi.h \
   /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/newlib.h \
@@ -26,8 +26,8 @@ cfi/source/USB-CDC.o: cfi/source/USB-CDC.c \
   hardware/include/Board.h FreeRTOS/Source/include/portable.h \
   FreeRTOS/Source/include/../../Source/portable/GCC/ARM7_AT91SAM7S/portmacro.h \
   FreeRTOS/Source/include/task.h FreeRTOS/Source/include/list.h \
-  FreeRTOS/Source/include/queue.h led_debug.h cfi/include/USB-CDC.h \
-  cfi/include/usb.h cfi/include/descriptors.h
+  FreeRTOS/Source/include/queue.h led_debug.h usb/include/USB-CDC.h \
+  usb/include/usb.h usb/include/descriptors.h
 
 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/string.h:
 
@@ -97,8 +97,8 @@ FreeRTOS/Source/include/queue.h:
 
 led_debug.h:
 
-cfi/include/USB-CDC.h:
+usb/include/USB-CDC.h:
 
-cfi/include/usb.h:
+usb/include/usb.h:
 
-cfi/include/descriptors.h:
+usb/include/descriptors.h:

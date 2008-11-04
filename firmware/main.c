@@ -18,6 +18,8 @@
 #include "interrupt_utils.h"
 #include "led_debug.h"
 #include "USB-CDC.h"
+#include "loggerHardware.h"
+
 
 #define SW1_MASK        (1<<19)	// PA19		RK   FIQ     13
 #define FIQ_INTERRUPT_LEVEL	0
@@ -70,11 +72,15 @@ static void prvSetupHardware( void )
 	/* Enable the peripheral clock. */
    AT91F_PMC_EnablePeriphClock( AT91C_BASE_PMC, (1 << AT91C_ID_PIOA) |  /* Enable Clock for PIO    */
                                                 (1 << AT91C_ID_IRQ0) |  /* Enable Clock for IRQ0   */
-                                                (1 << AT91C_ID_US0)     /* Enable Clock for USART0 */
+                                                (1 << AT91C_ID_US0)  |  /* Enable Clock for USART0 */
+                                                (1 << AT91C_ID_PWMC)	/* Enable Clock for the PWM controller */
                               );
 
    /* Enable reset-button */
    AT91F_RSTSetMode( AT91C_BASE_RSTC , AT91C_RSTC_URSTEN );
+   
+   InitADC();
+   InitPWM();
  }
 
 /*-----------------------------------------------------------*/

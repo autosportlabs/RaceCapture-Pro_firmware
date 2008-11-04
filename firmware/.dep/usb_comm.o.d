@@ -1,4 +1,4 @@
-cfi/source/usb_comm.o: cfi/source/usb_comm.c cfi/include/usb_comm.h \
+usb/source/usb_comm.o: usb/source/usb_comm.c usb/include/usb_comm.h \
   FreeRTOS/Source/include/FreeRTOS.h \
   /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/include/stddef.h \
   FreeRTOS/Source/include/projdefs.h FreeRTOSConfig.h \
@@ -26,10 +26,11 @@ cfi/source/usb_comm.o: cfi/source/usb_comm.c cfi/include/usb_comm.h \
   /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/stdio.h \
   /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/string.h \
   /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/string.h \
-  led_debug.h cfi/include/USB-CDC.h cfi/include/usb.h \
-  hardware/include/Board.h
+  led_debug.h usb/include/USB-CDC.h usb/include/usb.h \
+  hardware/include/Board.h logger/loggerHardware.h \
+  hardware/include/board.h
 
-cfi/include/usb_comm.h:
+usb/include/usb_comm.h:
 
 FreeRTOS/Source/include/FreeRTOS.h:
 
@@ -95,8 +96,12 @@ FreeRTOS/Source/include/list.h:
 
 led_debug.h:
 
-cfi/include/USB-CDC.h:
+usb/include/USB-CDC.h:
 
-cfi/include/usb.h:
+usb/include/usb.h:
 
 hardware/include/Board.h:
+
+logger/loggerHardware.h:
+
+hardware/include/board.h:

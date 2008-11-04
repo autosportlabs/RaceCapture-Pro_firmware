@@ -176,11 +176,11 @@
  178              		.ident	"GCC: (GNU) 4.0.2"
 DEFINED SYMBOLS
                             *ABS*:00000000 USBIsr.c
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccixoiRa.s:6      .bss.ulNextMessage.2587:00000000 ulNextMessage.2587
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccixoiRa.s:12     .text.vUSB_ISR:00000000 vUSB_ISR
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccixoiRa.s:17     .text.vUSB_ISR:00000000 $a
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccixoiRa.s:164    .text.vUSB_ISR:00000218 $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccixoiRa.s:176    .bss.xISRMessages:00000000 xISRMessages
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccSb35JL.s:6      .bss.ulNextMessage.2587:00000000 ulNextMessage.2587
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccSb35JL.s:12     .text.vUSB_ISR:00000000 vUSB_ISR
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccSb35JL.s:17     .text.vUSB_ISR:00000000 $a
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccSb35JL.s:164    .text.vUSB_ISR:00000218 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccSb35JL.s:176    .bss.xISRMessages:00000000 xISRMessages
 
 UNDEFINED SYMBOLS
 ulCriticalNesting
