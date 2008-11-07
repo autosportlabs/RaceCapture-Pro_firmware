@@ -70,6 +70,7 @@ RTOS_GCC_DIR = $(RTOS_PORT_DIR)/GCC/ARM7_AT91SAM7S
 USB_SRC_DIR = usb
 LOGGER_SRC_DIR = logger
 SERIAL_SRC_DIR = serial
+SDCARD_SRC_DIR = sdcard
 
 # List C source files here. (C dependencies are automatically generated.)
 # use file-extension c for "c-only"-files
@@ -85,7 +86,8 @@ led_debug.c \
 $(USB_SRC_DIR)/source/usb_comm.c \
 $(USB_SRC_DIR)/source/USB-CDC.c \
 $(LOGGER_SRC_DIR)/loggerHardware.c \
-$(SERIAL_SRC_DIR)/usart.c
+$(SERIAL_SRC_DIR)/usart.c \
+$(SDCARD_SRC_DIR)/sdcard.c 
 
 
 # DJS--The following are required to use iprintf()
@@ -136,11 +138,11 @@ DEBUG =
 
 # List any extra directories to look for include files here.
 #     Each directory must be seperated by a space.
-EXTRAINCDIRS = 
+EXTRAINCDIRS = ../libefsl/inc ../libefsl/conf
 
 # List any extra directories to look for library files here.
 #     Each directory must be seperated by a space.
-EXTRA_LIBDIRS = 
+EXTRA_LIBDIRS = ../libefsl
 
 # Compiler flag to set the C Standard level.
 # c89   - "ANSI" C
@@ -159,7 +161,7 @@ CDEFS += -DSAM7_GCC
 CDEFS += -DTHUMB_INTERWORK
 
 # Place -I options here
-CINCS = -I. -I$(SERIAL_SRC_DIR) -I$(LOGGER_SRC_DIR) -I$(USB_SRC_DIR)/include -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
+CINCS = -I. -I$(SDCARD_SRC_DIR) -I$(SERIAL_SRC_DIR) -I$(LOGGER_SRC_DIR) -I$(USB_SRC_DIR)/include -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
 #CINCS = -I. -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
 # Place -D or -U options for ASM here
 ADEFS =  -D$(RUN_MODE)
@@ -218,9 +220,7 @@ ASFLAGS = $(ADEFS) -Wa,-adhlns=$(<:.S=.lst), $(DEBUG)
 
 # Extra libraries
 #    Each library-name must be seperated by a space.
-#    To add libxyz.a, libabc.a and libefsl.a: 
-#    EXTRA_LIBS = xyz abc efsl
-EXTRA_LIBS =
+EXTRA_LIBS = efsl
 
 #Support for newlibc-lpc (file: libnewlibc-lpc.a)
 #NEWLIBLPC = -lnewlib-lpc

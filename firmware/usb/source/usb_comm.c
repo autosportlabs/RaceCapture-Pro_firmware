@@ -6,6 +6,7 @@
 #include "USB-CDC.h"
 #include "Board.h"
 #include "loggerHardware.h"
+#include "sdcard.h"
 
 //* Global variable
 extern char					debugMsg[100];
@@ -28,6 +29,40 @@ void onUSBEchoTask(void *pvParameters){
     	
 }
 
+void ListFile(char *filename){
+
+	EmbeddedFileSystem efs;		
+	char text[300];
+	int res;
+	
+	SendString("Card Init...");
+	if ( ( res = efs_init( &efs, 0 ) ) != 0 ) {
+		sprintf(text,"failed with %i\r\n",res);
+		SendString(text);
+	}
+	else{
+		EmbeddedFile f;
+
+		if ( file_fopen( &f, &efs.myFs , filename , 'r' ) != 0 ) {
+			sprintf(text,"\nfile_open for %s failed", filename);
+			fs_umount( &efs.myFs );
+			return;
+		}
+		
+		unsigned short e;
+		unsigned char buf[101];
+		
+		while (( e = file_read(&f,1,buf)) != 0){
+			buf[e]=0;
+			SendString(buf);
+		}
+		file_fclose(&f);
+		fs_umount(&efs.myFs);
+		SendString("\r\nFinished");
+	}	
+}
+
+
 void onUSBCommTask(void *pvParameters){
 	
 	portCHAR theData;
@@ -48,6 +83,12 @@ void onUSBCommTask(void *pvParameters){
 		if (theData == '!'){
 			sprintf(text,"Hello!\r\n");
 			SendBytes(text,strlen(text));
+		}
+		if (theData == 'd'){
+			ListRootDir();	
+		}
+		if (theData == 'r'){
+			ListFile("one.txt");	
 		}
 		if (theData == 'z'){
 			duty--;
@@ -90,6 +131,9 @@ void onUSBCommTask(void *pvParameters){
 }
 
 
+void SendString(portCHAR *s){
+	while ( *s ) vUSBSendByte(*s++ );
+}
 
 void SendBytes(portCHAR *data, unsigned int length){
 	

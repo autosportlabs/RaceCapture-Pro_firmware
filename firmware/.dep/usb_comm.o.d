@@ -28,7 +28,17 @@ usb/source/usb_comm.o: usb/source/usb_comm.c usb/include/usb_comm.h \
   /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/string.h \
   led_debug.h usb/include/USB-CDC.h usb/include/usb.h \
   hardware/include/Board.h logger/loggerHardware.h \
-  hardware/include/board.h
+  hardware/include/board.h sdcard/sdcard.h ../libefsl/inc/efs.h \
+  ../libefsl/inc/types.h ../libefsl/conf/config.h \
+  ../libefsl/inc/interface.h ../libefsl/inc/interfaces/arm_spi.h \
+  ../libefsl/inc/interfaces/../debug.h \
+  ../libefsl/inc/interfaces/../types.h ../libefsl/conf/config.h \
+  ../libefsl/conf/config.h ../libefsl/inc/disc.h ../libefsl/inc/error.h \
+  ../libefsl/inc/ioman.h ../libefsl/inc/plibc.h ../libefsl/inc/debug.h \
+  ../libefsl/inc/extract.h ../libefsl/inc/partition.h ../libefsl/inc/fs.h \
+  ../libefsl/inc/time.h ../libefsl/inc/file.h ../libefsl/inc/dir.h \
+  ../libefsl/inc/fat.h ../libefsl/inc/ui.h ../libefsl/inc/ls.h \
+  ../libefsl/inc/mkfs.h ../libefsl/inc/interfaces/efsl_dbg_printf_arm.h
 
 usb/include/usb_comm.h:
 
@@ -105,3 +115,55 @@ hardware/include/Board.h:
 logger/loggerHardware.h:
 
 hardware/include/board.h:
+
+sdcard/sdcard.h:
+
+../libefsl/inc/efs.h:
+
+../libefsl/inc/types.h:
+
+../libefsl/conf/config.h:
+
+../libefsl/inc/interface.h:
+
+../libefsl/inc/interfaces/arm_spi.h:
+
+../libefsl/inc/interfaces/../debug.h:
+
+../libefsl/inc/interfaces/../types.h:
+
+../libefsl/conf/config.h:
+
+../libefsl/conf/config.h:
+
+../libefsl/inc/disc.h:
+
+../libefsl/inc/error.h:
+
+../libefsl/inc/ioman.h:
+
+../libefsl/inc/plibc.h:
+
+../libefsl/inc/debug.h:
+
+../libefsl/inc/extract.h:
+
+../libefsl/inc/partition.h:
+
+../libefsl/inc/fs.h:
+
+../libefsl/inc/time.h:
+
+../libefsl/inc/file.h:
+
+../libefsl/inc/dir.h:
+
+../libefsl/inc/fat.h:
+
+../libefsl/inc/ui.h:
+
+../libefsl/inc/ls.h:
+
+../libefsl/inc/mkfs.h:
+
+../libefsl/inc/interfaces/efsl_dbg_printf_arm.h:
