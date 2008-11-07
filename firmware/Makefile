@@ -69,6 +69,7 @@ RTOS_GCC_DIR = $(RTOS_PORT_DIR)/GCC/ARM7_AT91SAM7S
 #USB directories
 USB_SRC_DIR = usb
 LOGGER_SRC_DIR = logger
+SERIAL_SRC_DIR = serial
 
 # List C source files here. (C dependencies are automatically generated.)
 # use file-extension c for "c-only"-files
@@ -83,7 +84,9 @@ $(RTOS_GCC_DIR)/port.c \
 led_debug.c \
 $(USB_SRC_DIR)/source/usb_comm.c \
 $(USB_SRC_DIR)/source/USB-CDC.c \
-$(LOGGER_SRC_DIR)/loggerHardware.c 
+$(LOGGER_SRC_DIR)/loggerHardware.c \
+$(SERIAL_SRC_DIR)/usart.c
+
 
 # DJS--The following are required to use iprintf()
 # SRC += syscalls.c simple_serial.c
@@ -156,7 +159,7 @@ CDEFS += -DSAM7_GCC
 CDEFS += -DTHUMB_INTERWORK
 
 # Place -I options here
-CINCS = -I. -I$(LOGGER_SRC_DIR) -I$(USB_SRC_DIR)/include -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
+CINCS = -I. -I$(SERIAL_SRC_DIR) -I$(LOGGER_SRC_DIR) -I$(USB_SRC_DIR)/include -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
 #CINCS = -I. -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
 # Place -D or -U options for ASM here
 ADEFS =  -D$(RUN_MODE)

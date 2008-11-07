@@ -19,6 +19,7 @@
 #include "led_debug.h"
 #include "USB-CDC.h"
 #include "loggerHardware.h"
+#include "usart.h"
 
 
 #define SW1_MASK        (1<<19)	// PA19		RK   FIQ     13
@@ -35,14 +36,13 @@
 #define TC_CLKS_MCK1024          0x4
 
 /* Priorities for the demo application tasks. */
-#define USER_OUTPUTS_TASK_PRIORITY			( tskIDLE_PRIORITY + 1 )
 #define mainLED_TASK_PRIORITY 				( tskIDLE_PRIORITY + 1 )
 #define mainCHECK_TASK_PRIORITY 			( tskIDLE_PRIORITY + 1 )
 #define USB_COMM_TASK_PRIORITY				( tskIDLE_PRIORITY + 1 )
-#define mainON_TOOTH_TASK_PRIORITY			( tskIDLE_PRIORITY + 3 )
-#define mainON_REVOLUTION_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
 #define ON_SELF_TEST_TASK_PRIORITY 			( tskIDLE_PRIORITY + 1 )
 #define mainUSB_PRIORITY					( tskIDLE_PRIORITY + 1 )
+#define mainDEFAULT_TASK_PRIORITY 			( tskIDLE_PRIORITY + 1 )
+
 #define mainUSB_TASK_STACK					( 300 )
 #define mainUSB_COMM_STACK					( 700 )
 #define mainON_REVOLUTION_STACK				( 500 )
@@ -51,10 +51,13 @@
 #define mainNO_ERROR_FLASH_PERIOD			( ( portTickType ) 1000 / portTICK_RATE_MS  )
 #define mainBUSY_FLASH_PERIOD				( ( portTickType ) 500 / portTICK_RATE_MS )
 #define mainERROR_FLASH_PERIOD				( ( portTickType ) 100 / portTICK_RATE_MS  )
+#define mainDATA_DEBUG_PERIOD				( ( portTickType ) 100 / portTICK_RATE_MS  )
 
 
 static void StatusLED1( void *pvParameters );
 static void StatusLED2( void *pvParameters );
+static void SerialPing1( void *pvParameters );
+static void SerialPing2( void *pvParameters );
 
 /*
  * Checks that all the demo application tasks are still executing without error
@@ -73,7 +76,9 @@ static void prvSetupHardware( void )
    AT91F_PMC_EnablePeriphClock( AT91C_BASE_PMC, (1 << AT91C_ID_PIOA) |  /* Enable Clock for PIO    */
                                                 (1 << AT91C_ID_IRQ0) |  /* Enable Clock for IRQ0   */
                                                 (1 << AT91C_ID_US0)  |  /* Enable Clock for USART0 */
-                                                (1 << AT91C_ID_PWMC)	/* Enable Clock for the PWM controller */
+                                                (1 << AT91C_ID_PWMC) |	/* Enable Clock for the PWM controller */
+                                                (1 << AT91C_ID_US0)  | 
+                                                (1 << AT91C_ID_US1)
                               );
 
    /* Enable reset-button */
@@ -81,6 +86,10 @@ static void prvSetupHardware( void )
    
    InitADC();
    InitPWM();
+   InitSerial();
+   
+       
+  
  }
 
 /*-----------------------------------------------------------*/
@@ -107,8 +116,14 @@ int main( void )
 	
 	xTaskCreate( vUSBCDCTask,	( signed portCHAR * ) "USB", 			mainUSB_TASK_STACK, 		NULL, 	mainUSB_PRIORITY, NULL );
 	xTaskCreate( onUSBCommTask,	( signed portCHAR * ) "OnUSBComm", 		mainUSB_COMM_STACK, 		NULL, 	tskIDLE_PRIORITY + 1, NULL );
-	xTaskCreate( StatusLED1,	( signed portCHAR * ) "ErrorCheck", configMINIMAL_STACK_SIZE, 	NULL, 	mainCHECK_TASK_PRIORITY, NULL );
-	xTaskCreate( StatusLED2,	( signed portCHAR * ) "ErrorCheck", configMINIMAL_STACK_SIZE, 	NULL, 	mainCHECK_TASK_PRIORITY, NULL );		
+	xTaskCreate( StatusLED1,	( signed portCHAR * ) "StatusLED1", configMINIMAL_STACK_SIZE, 	NULL, 	mainCHECK_TASK_PRIORITY, NULL );
+	xTaskCreate( StatusLED2,	( signed portCHAR * ) "StatusLED2", configMINIMAL_STACK_SIZE, 	NULL, 	mainCHECK_TASK_PRIORITY, NULL );
+	xTaskCreate( SerialPing1,	( signed portCHAR * ) "DebugSerial1", configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, NULL );
+	xTaskCreate( SerialPing2,	( signed portCHAR * ) "DebugSerial2", configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, NULL );
+	
+				
+#define mainCHECK_TASK_PRIORITY 			( tskIDLE_PRIORITY + 1 )
+
 // DJS--iprintf() requires syscalls.c and serial_simple.c to be compiled
 //   iprintf("\r\nFreeRTOS %s\r\n\r\n",tskKERNEL_VERSION_NUMBER);
 
@@ -182,11 +197,35 @@ static void StatusLED2( void *pvParameters )
 			/* An error has been detected in one of the tasks - flash faster. */
 			xDelayPeriod = mainERROR_FLASH_PERIOD;
 		}
-		
 		Toggle_LED(LED2);
 	}
 }
 
+static void SerialPing1( void *pvParameters )
+{
+	portTickType xDelayPeriod = mainDATA_DEBUG_PERIOD;
+	
+	for( ;; )
+	{
+		uart0_puts("Test_UART0\r\n");
+		/* Delay until it is time to execute again. */
+		vTaskDelay( xDelayPeriod );
+	}
+	
+}
+
+static void SerialPing2( void *pvParameters )
+{
+	portTickType xDelayPeriod = mainDATA_DEBUG_PERIOD;
+	
+	for( ;; )
+	{
+		uart1_puts("Test_UART1\r\n");
+		/* Delay until it is time to execute again. */
+		vTaskDelay( xDelayPeriod );
+	}
+	
+}
 /*-----------------------------------------------------------*/
 
 static portLONG prvCheckOtherTasksAreStillRunning( void )

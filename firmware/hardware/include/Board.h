@@ -20,6 +20,9 @@
 #include "lib_AT91SAM7S256.h"
 
 
+#define BOARD_MCK 48054840
+                  
+
 /*-------------------------*/
 /* Push Buttons Definition */
 /*-------------------------*/
