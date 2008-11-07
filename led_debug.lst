@@ -89,19 +89,19 @@
   97              		.ident	"GCC: (GNU) 4.0.2"
 DEFINED SYMBOLS
                             *ABS*:00000000 led_debug.c
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccSdyehu.s:1      .text:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccSdyehu.s:9      .text.Init_LEDs:00000000 Init_LEDs
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccSdyehu.s:6      .text.Init_LEDs:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccSdyehu.s:25     .text.Init_LEDs:0000001c $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccSdyehu.s:33     .text.Set_LED:00000000 Set_LED
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccSdyehu.s:30     .text.Set_LED:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccSdyehu.s:44     .text.Set_LED:00000010 $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccSdyehu.s:52     .text.Clear_LED:00000000 Clear_LED
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccSdyehu.s:49     .text.Clear_LED:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccSdyehu.s:63     .text.Clear_LED:00000010 $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccSdyehu.s:71     .text.Toggle_LED:00000000 Toggle_LED
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccSdyehu.s:68     .text.Toggle_LED:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccSdyehu.s:95     .text.Toggle_LED:00000028 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccayMRZY.s:1      .text:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccayMRZY.s:9      .text.Init_LEDs:00000000 Init_LEDs
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccayMRZY.s:6      .text.Init_LEDs:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccayMRZY.s:25     .text.Init_LEDs:0000001c $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccayMRZY.s:33     .text.Set_LED:00000000 Set_LED
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccayMRZY.s:30     .text.Set_LED:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccayMRZY.s:44     .text.Set_LED:00000010 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccayMRZY.s:52     .text.Clear_LED:00000000 Clear_LED
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccayMRZY.s:49     .text.Clear_LED:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccayMRZY.s:63     .text.Clear_LED:00000010 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccayMRZY.s:71     .text.Toggle_LED:00000000 Toggle_LED
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccayMRZY.s:68     .text.Toggle_LED:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccayMRZY.s:95     .text.Toggle_LED:00000028 $d
 
 UNDEFINED SYMBOLS
 AT91F_PIO_CfgOutput
