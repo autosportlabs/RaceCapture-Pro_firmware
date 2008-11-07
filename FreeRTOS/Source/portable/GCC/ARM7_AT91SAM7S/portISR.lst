@@ -232,27 +232,27 @@
  248              		.ident	"GCC: (GNU) 4.0.2"
 DEFINED SYMBOLS
                             *ABS*:00000000 portISR.c
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:7      .data.ulCriticalNesting:00000000 ulCriticalNesting
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:8      .data.ulCriticalNesting:00000000 $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:13     .text.vPortISRStartFirstTask:00000000 vPortISRStartFirstTask
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:19     .text.vPortISRStartFirstTask:00000000 $a
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:40     .text.vPortISRStartFirstTask:00000044 $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:47     .text.SWI_Handler:00000000 SWI_Handler
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:52     .text.SWI_Handler:00000000 $a
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:96     .text.SWI_Handler:0000009c $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:103    .text.vPreemptiveTick:00000000 vPreemptiveTick
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:108    .text.vPreemptiveTick:00000000 $a
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:156    .text.vPreemptiveTick:000000ac $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:164    .text.vPortDisableInterruptsFromThumb:00000000 vPortDisableInterruptsFromThumb
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:169    .text.vPortDisableInterruptsFromThumb:00000000 $a
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:180    .text.vPortEnableInterruptsFromThumb:00000000 vPortEnableInterruptsFromThumb
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:185    .text.vPortEnableInterruptsFromThumb:00000000 $a
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:196    .text.vPortEnterCritical:00000000 vPortEnterCritical
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:202    .text.vPortEnterCritical:00000000 $a
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:215    .text.vPortEnterCritical:00000028 $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:221    .text.vPortExitCritical:00000000 vPortExitCritical
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:226    .text.vPortExitCritical:00000000 $a
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccqM8YLw.s:246    .text.vPortExitCritical:00000040 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:7      .data.ulCriticalNesting:00000000 ulCriticalNesting
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:8      .data.ulCriticalNesting:00000000 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:13     .text.vPortISRStartFirstTask:00000000 vPortISRStartFirstTask
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:19     .text.vPortISRStartFirstTask:00000000 $a
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:40     .text.vPortISRStartFirstTask:00000044 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:47     .text.SWI_Handler:00000000 SWI_Handler
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:52     .text.SWI_Handler:00000000 $a
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:96     .text.SWI_Handler:0000009c $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:103    .text.vPreemptiveTick:00000000 vPreemptiveTick
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:108    .text.vPreemptiveTick:00000000 $a
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:156    .text.vPreemptiveTick:000000ac $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:164    .text.vPortDisableInterruptsFromThumb:00000000 vPortDisableInterruptsFromThumb
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:169    .text.vPortDisableInterruptsFromThumb:00000000 $a
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:180    .text.vPortEnableInterruptsFromThumb:00000000 vPortEnableInterruptsFromThumb
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:185    .text.vPortEnableInterruptsFromThumb:00000000 $a
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:196    .text.vPortEnterCritical:00000000 vPortEnterCritical
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:202    .text.vPortEnterCritical:00000000 $a
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:215    .text.vPortEnterCritical:00000028 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:221    .text.vPortExitCritical:00000000 vPortExitCritical
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:226    .text.vPortExitCritical:00000000 $a
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccUsCs2q.s:246    .text.vPortExitCritical:00000040 $d
 
 UNDEFINED SYMBOLS
 pxCurrentTCB
