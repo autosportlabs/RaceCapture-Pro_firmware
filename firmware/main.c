@@ -21,6 +21,7 @@
 #include "loggerHardware.h"
 #include "usart.h"
 #include "sdcard.h"
+#include "gpio.h"
 
 
 #define SW1_MASK        (1<<19)	// PA19		RK   FIQ     13
@@ -37,10 +38,9 @@
 #define TC_CLKS_MCK1024          0x4
 
 /* Priorities for the demo application tasks. */
-#define mainLED_TASK_PRIORITY 				( tskIDLE_PRIORITY + 1)
 #define USB_COMM_TASK_PRIORITY				( tskIDLE_PRIORITY + 2 )
 #define mainUSB_PRIORITY					( tskIDLE_PRIORITY + 2 )
-#define mainDEFAULT_TASK_PRIORITY 			( tskIDLE_PRIORITY  )
+#define mainDEFAULT_TASK_PRIORITY 			( tskIDLE_PRIORITY + 1 )
 
 #define mainUSB_TASK_STACK					( 300 )
 #define mainUSB_COMM_STACK					( 700 )
@@ -84,8 +84,7 @@ static void prvSetupHardware( void )
    AT91F_RSTSetMode( AT91C_BASE_RSTC , AT91C_RSTC_URSTEN );
    
    InitADC();
-   InitPWM();
-  
+ //  InitPWM();
  }
 
 /*-----------------------------------------------------------*/
@@ -110,12 +109,19 @@ int main( void )
 
 	// Start the check task - which is defined in this file.
 	
-	xTaskCreate( vUSBCDCTask,	( signed portCHAR * ) "USB", 			mainUSB_TASK_STACK, 		NULL, 	mainUSB_PRIORITY, NULL );
-	xTaskCreate( onUSBCommTask,	( signed portCHAR * ) "OnUSBComm", 		mainUSB_COMM_STACK, 		NULL, 	tskIDLE_PRIORITY + 1, NULL );
-	xTaskCreate( StatusLED1,	( signed portCHAR * ) "StatusLED1", configMINIMAL_STACK_SIZE, 	NULL, 	mainLED_TASK_PRIORITY, NULL );
-	xTaskCreate( StatusLED2,	( signed portCHAR * ) "StatusLED2", configMINIMAL_STACK_SIZE, 	NULL, 	mainLED_TASK_PRIORITY, NULL );
-	xTaskCreate( SerialPing1,	( signed portCHAR * ) "DebugSerial1", configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, NULL );
-	xTaskCreate( SerialPing2,	( signed portCHAR * ) "DebugSerial2", configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, NULL );
+	xTaskCreate( vUSBCDCTask,		( signed portCHAR * ) "USB", 				mainUSB_TASK_STACK, 		NULL, 	mainUSB_PRIORITY, 			NULL );
+	xTaskCreate( onUSBCommTask,		( signed portCHAR * ) "OnUSBComm", 			mainUSB_COMM_STACK, 		NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
+	//xTaskCreate( StatusLED1,		( signed portCHAR * ) "StatusLED1", 		configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
+	//xTaskCreate( StatusLED2,		( signed portCHAR * ) "StatusLED2", 		configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
+	//xTaskCreate( SerialPing1,		( signed portCHAR * ) "DebugSerial1", 		configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
+	//xTaskCreate( SerialPing2,		( signed portCHAR * ) "DebugSerial2", 		configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
+	xTaskCreate( onPushbuttonTask, 	( signed portCHAR * ) "PushbuttonTask", 	configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
+	//xTaskCreate( onGPI1Task, 		( signed portCHAR * ) "GPI1Task", 			configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
+	//xTaskCreate( onGPI2Task,	 	( signed portCHAR * ) "GPI2Task", 			configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
+	//xTaskCreate( onGPI3Task,	 	( signed portCHAR * ) "GPI3Task", 			configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
+	//xTaskCreate( onGPO1Task,	 	( signed portCHAR * ) "GPO1Task", 			configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
+	//xTaskCreate( onGPO2Task,	 	( signed portCHAR * ) "GPO2Task", 			configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
+	//xTaskCreate( onGPO3Task,	 	( signed portCHAR * ) "GPO3Task", 			configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
 	
 				
 #define mainCHECK_TASK_PRIORITY 			( tskIDLE_PRIORITY + 1 )
@@ -132,12 +138,12 @@ int main( void )
    these demo application projects then ensure Supervisor mode is used here. */
    vTaskStartScheduler();
 
+   /* We should never get here as control is now taken by the scheduler. */
 	while(1){
 		Toggle_LED(LED2);
 		for (int i=0;i<2000000;i++){}	
 	}
 
-   /* We should never get here as control is now taken by the scheduler. */
    return 0;
 }
 

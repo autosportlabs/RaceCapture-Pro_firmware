@@ -801,7 +801,7 @@ extern void ( vUSB_ISR )( void );
 
 
 	/* Wait a short while before making our presence known. */
-	vTaskDelay( usbINIT_DELAY );
+	//vTaskDelay( usbINIT_DELAY );
 //*************************************************
 // We are not using the USB pull-up resistor - USB is initialized immediately	
 //	AT91C_BASE_PIOA->PIO_CODR = AT91C_PIO_PA16;

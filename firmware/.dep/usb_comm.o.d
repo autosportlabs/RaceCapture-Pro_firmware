@@ -38,7 +38,8 @@ usb/source/usb_comm.o: usb/source/usb_comm.c usb/include/usb_comm.h \
   ../libefsl/inc/extract.h ../libefsl/inc/partition.h ../libefsl/inc/fs.h \
   ../libefsl/inc/time.h ../libefsl/inc/file.h ../libefsl/inc/dir.h \
   ../libefsl/inc/fat.h ../libefsl/inc/ui.h ../libefsl/inc/ls.h \
-  ../libefsl/inc/mkfs.h ../libefsl/inc/interfaces/efsl_dbg_printf_arm.h
+  ../libefsl/inc/mkfs.h ../libefsl/inc/interfaces/efsl_dbg_printf_arm.h \
+  accelerometer/accelerometer.h hardware/include/board.h
 
 usb/include/usb_comm.h:
 
@@ -167,3 +168,7 @@ sdcard/sdcard.h:
 ../libefsl/inc/mkfs.h:
 
 ../libefsl/inc/interfaces/efsl_dbg_printf_arm.h:
+
+accelerometer/accelerometer.h:
+
+hardware/include/board.h:

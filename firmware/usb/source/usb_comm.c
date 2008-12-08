@@ -7,6 +7,8 @@
 #include "Board.h"
 #include "loggerHardware.h"
 #include "sdcard.h"
+#include "accelerometer.h"
+
 
 //* Global variable
 extern char					debugMsg[100];
@@ -112,6 +114,25 @@ void onUSBCommTask(void *pvParameters){
 				PWM_SetDutyCycle(0,i);	
 			}
 		}
+		if (theData == 'i'){
+			accel_init();
+		}
+		if (theData == 'y'){
+			accel_setup();	
+		}
+		if (theData == 'k'){
+		 	int x = accel_readAxis(0);
+		 	int y = accel_readAxis(1);
+		 	int z = accel_readAxis(2);
+			sprintf(text,"G X,Y,Z: %d,%d,%d\r\n",x,y,z);
+			SendBytes(text,strlen(text));
+		}
+		if (theData == 'b'){
+		 	int x = accel_readControlRegister();			
+			sprintf(text,"accel control: %d\r\n",x);
+			SendBytes(text,strlen(text));
+		}
+		
 		if (theData == 'a'){
 			unsigned int a0,a1,a2,a3,a4,a5,a6,a7;
 /*			a1 = ReadADC(0);
