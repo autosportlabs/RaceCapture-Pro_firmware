@@ -16,7 +16,6 @@
 #include "task.h"
 #include "usb_comm.h"
 #include "interrupt_utils.h"
-#include "led_debug.h"
 #include "USB-CDC.h"
 #include "loggerHardware.h"
 #include "usart.h"
@@ -72,19 +71,20 @@ static void prvSetupHardware( void )
 	AT91C_BASE_AIC->AIC_EOICR = 0;
 		
 	/* Enable the peripheral clock. */
-   AT91F_PMC_EnablePeriphClock( AT91C_BASE_PMC, (1 << AT91C_ID_PIOA) |  /* Enable Clock for PIO    */
-                                                (1 << AT91C_ID_IRQ0) |  /* Enable Clock for IRQ0   */
-                                                (1 << AT91C_ID_US0)  |  /* Enable Clock for USART0 */
-                                                (1 << AT91C_ID_PWMC) |	/* Enable Clock for the PWM controller */
-                                                (1 << AT91C_ID_US0)  | 
-                                                (1 << AT91C_ID_US1)
+   AT91F_PMC_EnablePeriphClock( AT91C_BASE_PMC, (1 << AT91C_ID_PIOA) |  //Enable Clock for PIO
+                                                (1 << AT91C_ID_IRQ0) |  //Enable Clock for IRQ0
+                                                (1 << AT91C_ID_PWMC) |	//Enable Clock for the PWM controller
+                                                (1 << AT91C_ID_US0)  |  //USART0
+                                                (1 << AT91C_ID_US1)		//USART1
                               );
 
    /* Enable reset-button */
    AT91F_RSTSetMode( AT91C_BASE_RSTC , AT91C_RSTC_URSTEN );
    
-   InitADC();
- //  InitPWM();
+	InitADC();
+	EnableAllPWM();
+	InitLEDs();
+	InitGPIO();
  }
 
 /*-----------------------------------------------------------*/
@@ -102,7 +102,7 @@ int main( void )
 	/* Setup any hardware that has not already been configured by the low
 	level init routines. */
 	prvSetupHardware();
-	Init_LEDs();
+	InitLEDs();
 	
 	// Start the task that processes the RPM signal
 

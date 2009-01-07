@@ -1,5 +1,6 @@
 #include "loggerHardware.h"
 #include "board.h"
+#include "lib_AT91SAM7S256.h"
 
 /* ADC field definition for the Mode Register: Reminder
                        TRGEN    => Selection bewteen Software or hardware start of conversion
@@ -24,16 +25,14 @@
 
 void InitGPIO(){
     AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, GPIO_MASK ) ;
-   //* Clear the LED's.
-    AT91F_PIO_SetOutput( AT91C_BASE_PIOA, GPIO_MASK ) ;	
 }
 
-void SetGPIO(unsigned int gpioPort){
-	AT91F_PIO_SetOutput( AT91C_BASE_PIOA, gpioPort );
+void SetGPIOBits(unsigned int portBits){
+	AT91F_PIO_SetOutput( AT91C_BASE_PIOA, portBits );
 }
 
-void ClearGPIO(unsigned int gpioPort){
-	AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, gpioPort );
+void ClearGPIOBits(unsigned int portBits){
+	AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, portBits );
 }
 
 void SetFREQ_ANALOG(unsigned int freqAnalogPort){
@@ -48,11 +47,37 @@ void ClearFREQ_ANALOG(unsigned int freqAnalogPort){
 
 /// Maximum duty cycle value.
 #define MAX_DUTY_CYCLE              1000
-#define MIN_DUTY_CYCLE          2
-
-void InitPWM(){
+#define MIN_DUTY_CYCLE          	2
 
 
+void StopPWM(unsigned int pwmChannel){
+	if (pwmChannel <= 3){
+		AT91F_PWMC_StopChannel(AT91C_BASE_PWMC,1 << 0);	
+	}
+}
+
+void StopAllPWM(){
+	AT91F_PWMC_StopChannel(AT91C_BASE_PWMC,(1 << 0) | (1 << 1) | (1 << 2) | (1 << 3));
+}
+
+void StartAllPWM(){
+	AT91F_PWMC_StartChannel(AT91C_BASE_PWMC,(1 << 0) | (1 << 1) | (1 << 2) | (1 << 3));
+}
+
+void StartPWM(unsigned int pwmChannel){
+	if (pwmChannel <= 3){
+		AT91F_PWMC_StartChannel(AT91C_BASE_PWMC,1 << pwmChannel);
+	}
+}
+
+void EnableAllPWM(){
+	EnablePWM0();
+	EnablePWM1();
+	EnablePWM2();
+	EnablePWM3();	
+}
+
+void EnablePWM0(){
 	/////////////////////////////////////////
 	//PWM0
 	///////////////////////////////////////// 
@@ -67,11 +92,12 @@ void InitPWM(){
     // Configure PWMC channel (left-aligned)
     PWM_ConfigureChannel(0, AT91C_PWMC_CPRE_MCKA, 0, 0);
     PWM_SetPeriod(0, MAX_DUTY_CYCLE);
-    PWM_SetDutyCycle(0, 49);
+    PWM_SetDutyCycle(0, MIN_DUTY_CYCLE);
     PWM_EnableChannel(0);	
-    //AT91F_PWMC_StartChannel(AT91C_BASE_PWMC,1 << 3);
+}
 
-
+void EnablePWM1(){
+	
 	/////////////////////////////////////////
 	//PWM1
 	///////////////////////////////////////// 
@@ -86,11 +112,11 @@ void InitPWM(){
     // Configure PWMC channel (left-aligned)
     PWM_ConfigureChannel(1, AT91C_PWMC_CPRE_MCKA, 0, 0);
     PWM_SetPeriod(1, MAX_DUTY_CYCLE);
-    PWM_SetDutyCycle(1, 20);
+    PWM_SetDutyCycle(1, MIN_DUTY_CYCLE);
     PWM_EnableChannel(1);	
-    //AT91F_PWMC_StartChannel(AT91C_BASE_PWMC,1 << 3);
+}
 
-
+void EnablePWM2(){
 	/////////////////////////////////////////
 	//PWM2
 	///////////////////////////////////////// 
@@ -105,12 +131,11 @@ void InitPWM(){
     // Configure PWMC channel (left-aligned)
     PWM_ConfigureChannel(2, AT91C_PWMC_CPRE_MCKA, 0, 0);
     PWM_SetPeriod(2, MAX_DUTY_CYCLE);
-    PWM_SetDutyCycle(2, 10);
+    PWM_SetDutyCycle(2, MIN_DUTY_CYCLE);
     PWM_EnableChannel(2);	
-    //AT91F_PWMC_StartChannel(AT91C_BASE_PWMC,1 << 3);
+}
 
-
-
+void EnablePWM3(){
 	/////////////////////////////////////////
 	//PWM3
 	///////////////////////////////////////// 
@@ -127,9 +152,7 @@ void InitPWM(){
     PWM_SetPeriod(3, MAX_DUTY_CYCLE);
     PWM_SetDutyCycle(3, MIN_DUTY_CYCLE);
     PWM_EnableChannel(3);	
-    //AT91F_PWMC_StartChannel(AT91C_BASE_PWMC,1 << 3);
 }
-
 
 //------------------------------------------------------------------------------
 /// Configures PWM clocks A & B to run at the given frequencies. This function
@@ -288,7 +311,6 @@ void PWM_EnableChannel(unsigned char channel)
 }
 
 
-
 void InitADC(){
 
        /* Clear all previous setting and result */
@@ -373,4 +395,30 @@ unsigned int ReadADCx(unsigned int channel){
        	AT91F_ADC_DisableChannel(AT91C_BASE_ADC, (1<<channel));
        	
 	return result;	
+}
+
+void InitLEDs(){
+	
+    AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, LED_MASK ) ;
+   //* Clear the LED's.
+    AT91F_PIO_SetOutput( AT91C_BASE_PIOA, LED_MASK ) ;
+}
+
+void Set_LED(unsigned int Led){
+        AT91F_PIO_SetOutput( AT91C_BASE_PIOA, Led );
+}
+
+void Clear_LED(unsigned int Led){
+        AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, Led );
+}
+
+void Toggle_LED (unsigned int Led){
+    if ( (AT91F_PIO_GetInput(AT91C_BASE_PIOA) & Led ) == Led )
+    {
+        AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, Led );
+    }
+    else
+    {
+        AT91F_PIO_SetOutput( AT91C_BASE_PIOA, Led );
+    }
 }
