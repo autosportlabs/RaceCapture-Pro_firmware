@@ -84,7 +84,6 @@ $(RTOS_SRC_DIR)/queue.c \
 $(RTOS_SRC_DIR)/list.c \
 $(RTOS_PORT_DIR)/MemMang/heap_2.c \
 $(RTOS_GCC_DIR)/port.c \
-led_debug.c \
 $(USB_SRC_DIR)/source/usb_comm.c \
 $(USB_SRC_DIR)/source/USB-CDC.c \
 $(LOGGER_SRC_DIR)/loggerHardware.c \
