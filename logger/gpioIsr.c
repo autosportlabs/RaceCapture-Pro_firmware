@@ -3,13 +3,9 @@
 #include "semphr.h"
 #include "Board.h"
 #include "task.h"
-#include "led_debug.h"
-#include "gpio_pins.h"
+#include "loggerHardware.h"
 
 extern xSemaphoreHandle xOnPushbutton;
-extern xSemaphoreHandle xOnGPI1;
-extern xSemaphoreHandle xOnGPI2;
-extern xSemaphoreHandle xOnGPI3;
 
 
 void pushbutton_irq_handler(void )__attribute__ ((naked));

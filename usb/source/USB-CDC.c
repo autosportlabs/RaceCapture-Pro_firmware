@@ -52,7 +52,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
-#include "led_debug.h"
+#include "loggerHardware.h"
 
 /* Demo app includes. */
 #include "USB-CDC.h"

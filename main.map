@@ -123,13 +123,10 @@ Archive member included because of file (symbol)
 Allocating common symbols
 Common symbol       size              file
 
-xOnGPI2             0x4               gpio/gpio.o
 blinkcount          0x4               blinker.o
 errno               0x4               /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(reent.o)
 xUSBInterruptQueue  0x4               usb/source/USB-CDC.o
-xOnGPI3             0x4               gpio/gpio.o
-xOnGPI1             0x4               gpio/gpio.o
-xOnPushbutton       0x4               gpio/gpio.o
+xOnPushbutton       0x4               logger/loggerHardware.o
 
 Memory Configuration
 
@@ -146,7 +143,7 @@ LOAD FreeRTOS/Source/portable/GCC/ARM7_AT91SAM7S/portISR.o
 LOAD interrupt_utils.o
 LOAD blinker.o
 LOAD usb/source/USBIsr.o
-LOAD gpio/gpioIsr.o
+LOAD logger/gpioIsr.o
 LOAD main.o
 LOAD hardware/lib_AT91SAM7S256.o
 LOAD FreeRTOS/Source/tasks.o
@@ -159,7 +156,6 @@ LOAD usb/source/USB-CDC.o
 LOAD logger/loggerHardware.o
 LOAD serial/usart.o
 LOAD sdcard/sdcard.o
-LOAD gpio/gpio.o
 LOAD accelerometer/accelerometer.o
 LOAD /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a
 LOAD /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libm.a
@@ -170,7 +166,7 @@ LOAD /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgc
 LOAD /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a
 LOAD /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a
 
-.text           0x00100000     0xb254
+.text           0x00100000     0xb240
  *(.vectrom)
  .vectrom       0x00100000       0x58 startup_SAM7S.o
                 0x00100050                IRQ_Handler
@@ -204,7 +200,7 @@ LOAD /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgc
                 0x00100400      0x23c usb/source/USBIsr.o
                 0x00100400                vUSB_ISR
  .text.pushbutton_irq_handler
-                0x0010063c       0xf0 gpio/gpioIsr.o
+                0x0010063c       0xf0 logger/gpioIsr.o
                 0x0010063c                pushbutton_irq_handler
  .text.main     0x0010072c       0xa8 main.o
                 0x0010072c                main
@@ -438,548 +434,548 @@ LOAD /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgc
  .text.Toggle_LED
                 0x00101f68       0x2c logger/loggerHardware.o
                 0x00101f68                Toggle_LED
- .text.EnablePWM0
-                0x00101f94       0x50 logger/loggerHardware.o
-                0x00101f94                EnablePWM0
- .text.EnablePWM1
-                0x00101fe4       0x50 logger/loggerHardware.o
-                0x00101fe4                EnablePWM1
- .text.EnablePWM2
-                0x00102034       0x50 logger/loggerHardware.o
-                0x00102034                EnablePWM2
- .text.EnablePWM3
-                0x00102084       0x50 logger/loggerHardware.o
-                0x00102084                EnablePWM3
- .text.EnableAllPWM
-                0x001020d4       0x18 logger/loggerHardware.o
-                0x001020d4                EnableAllPWM
- .text.ListRootDir
-                0x001020ec       0xd8 sdcard/sdcard.o
-                0x001020ec                ListRootDir
  .text.onPushbuttonTask
-                0x001021c4       0xb4 gpio/gpio.o
-                0x001021c4                onPushbuttonTask
+                0x00101f94       0xa0 logger/loggerHardware.o
+                0x00101f94                onPushbuttonTask
+ .text.EnablePWM0
+                0x00102034       0x50 logger/loggerHardware.o
+                0x00102034                EnablePWM0
+ .text.EnablePWM1
+                0x00102084       0x50 logger/loggerHardware.o
+                0x00102084                EnablePWM1
+ .text.EnablePWM2
+                0x001020d4       0x50 logger/loggerHardware.o
+                0x001020d4                EnablePWM2
+ .text.EnablePWM3
+                0x00102124       0x50 logger/loggerHardware.o
+                0x00102124                EnablePWM3
+ .text.EnableAllPWM
+                0x00102174       0x18 logger/loggerHardware.o
+                0x00102174                EnableAllPWM
+ .text.ListRootDir
+                0x0010218c       0xd8 sdcard/sdcard.o
+                0x0010218c                ListRootDir
  .text.accel_initSPI
-                0x00102278       0x60 accelerometer/accelerometer.o
-                0x00102278                accel_initSPI
+                0x00102264       0x60 accelerometer/accelerometer.o
+                0x00102264                accel_initSPI
  .text.spi_init_chip_select
-                0x001022d8       0x4c accelerometer/accelerometer.o
-                0x001022d8                spi_init_chip_select
+                0x001022c4       0x4c accelerometer/accelerometer.o
+                0x001022c4                spi_init_chip_select
  .text.accel_spiSend
-                0x00102324       0x3c accelerometer/accelerometer.o
-                0x00102324                accel_spiSend
+                0x00102310       0x3c accelerometer/accelerometer.o
+                0x00102310                accel_spiSend
  .text.selectChip
-                0x00102360       0x2c accelerometer/accelerometer.o
-                0x00102360                selectChip
+                0x0010234c       0x2c accelerometer/accelerometer.o
+                0x0010234c                selectChip
  .text.accel_init
-                0x0010238c       0x3c accelerometer/accelerometer.o
-                0x0010238c                accel_init
+                0x00102378       0x3c accelerometer/accelerometer.o
+                0x00102378                accel_init
  .text.accel_setup
-                0x001023c8       0x30 accelerometer/accelerometer.o
-                0x001023c8                accel_setup
+                0x001023b4       0x30 accelerometer/accelerometer.o
+                0x001023b4                accel_setup
  .text.accel_readControlRegister
-                0x001023f8       0x24 accelerometer/accelerometer.o
-                0x001023f8                accel_readControlRegister
+                0x001023e4       0x24 accelerometer/accelerometer.o
+                0x001023e4                accel_readControlRegister
  .text.accel_readAxis
-                0x0010241c       0x50 accelerometer/accelerometer.o
-                0x0010241c                accel_readAxis
- .text          0x0010246c       0x68 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(memcpy.o)
-                0x0010246c                memcpy
- .text          0x001024d4       0x68 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(memset.o)
-                0x001024d4                memset
- .text          0x0010253c       0x84 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(sprintf.o)
-                0x0010253c                _sprintf_r
-                0x0010257c                sprintf
- .text          0x001025c0       0x60 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(strcpy.o)
-                0x001025c0                strcpy
- .text          0x00102620       0x48 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(strlen.o)
-                0x00102620                strlen
- .text          0x00102668       0x84 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(strncpy.o)
-                0x00102668                strncpy
- .text          0x001026ec     0x1914 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(vfprintf.o)
-                0x0010270c                _vfprintf_r
-                0x00103fe0                vfprintf
- .text          0x00104000       0x54 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wcrtomb.o)
-                0x00104000                _wcrtomb_r
-                0x00104034                wcrtomb
- .text          0x00104054      0x100 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wcsrtombs.o)
-                0x00104054                _wcsrtombs_r
-                0x0010412c                wcsrtombs
- .text          0x00104154      0x2a8 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wctomb_r.o)
-                0x00104154                _wctomb_r
- .text          0x001043fc       0xa8 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wsetup.o)
-                0x001043fc                __swsetup
- .text          0x001044a4      0xf08 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(dtoa.o)
-                0x001045f4                _dtoa_r
- .text          0x001053ac       0x90 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fflush.o)
-                0x001053ac                fflush
- .text          0x0010543c      0x1c0 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(findfp.o)
-                0x001054dc                __sinit
-                0x00105474                __sfmoreglue
-                0x001054c0                _cleanup
-                0x001054b0                _cleanup_r
-                0x001055cc                __fp_lock_all
-                0x001054a8                __sfp_lock_acquire
-                0x00105538                __sfp
-                0x001054d8                __sinit_lock_release
-                0x001055e4                __fp_unlock_all
-                0x001054ac                __sfp_lock_release
-                0x001054d4                __sinit_lock_acquire
- .text          0x001055fc      0x260 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(freer.o)
-                0x0010569c                _free_r
-                0x001055fc                _malloc_trim_r
- .text          0x0010585c      0x2a8 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fvwrite.o)
-                0x0010585c                __sfvwrite
- .text          0x00105b04       0xe0 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fwalk.o)
-                0x00105b04                _fwalk
-                0x00105b70                _fwalk_reent
- .text          0x00105be4       0x80 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(locale.o)
-                0x00105be4                _setlocale_r
-                0x00105c20                __locale_charset
-                0x00105c2c                _localeconv_r
-                0x00105c34                setlocale
-                0x00105c50                localeconv
- .text          0x00105c64       0xe0 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(makebuf.o)
-                0x00105c64                __smakebuf
- .text          0x00105d44      0x548 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(mallocr.o)
-                0x00105d44                _malloc_r
- .text          0x0010628c       0x90 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(memchr.o)
-                0x0010628c                memchr
- .text          0x0010631c       0x90 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(memmove.o)
-                0x0010631c                memmove
- .text          0x001063ac        0x8 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(mlock.o)
-                0x001063b0                __malloc_unlock
-                0x001063ac                __malloc_lock
- .text          0x001063b4      0x8ec /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(mprec.o)
-                0x00106c5c                _mprec_log10
-                0x00106560                _hi0bits
-                0x001063b4                _Balloc
-                0x00106b20                _d2b
-                0x0010662c                _multiply
-                0x00106c08                _ratio
-                0x001064c0                _s2b
-                0x00106614                _i2b
-                0x001065a8                _lo0bits
-                0x001068cc                __mcmp
-                0x00106778                _pow5mult
-                0x00106a08                _ulp
-                0x00106a5c                _b2d
-                0x00106424                _multadd
-                0x00106910                __mdiff
-                0x00106818                _lshift
-                0x0010640c                _Bfree
- .text          0x00106ca0      0x3ac /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(reallocr.o)
-                0x00106ca0                _realloc_r
- .text          0x0010704c       0x24 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(s_isinf.o)
-                0x0010704c                isinf
- .text          0x00107070       0x1c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(s_isnan.o)
-                0x00107070                isnan
- .text          0x0010708c       0x28 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(sbrkr.o)
-                0x0010708c                _sbrk_r
- .text          0x001070b4       0xe4 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(stdio.o)
-                0x0010713c                __sseek
-                0x001070b4                __sread
-                0x0010717c                __sclose
-                0x001070f0                __swrite
- .text          0x00107198       0x88 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(strcmp.o)
-                0x00107198                strcmp
- .text          0x00107220      0x504 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(syscalls.o)
-                0x0010728c                _getpid
-                0x00107354                initialise_monitor_handles
-                0x00107324                isatty
-                0x001072c8                _fstat
-                0x001075d8                _open
-                0x00107290                _sbrk
-                0x001072fc                _raise
-                0x00107300                _times
-                0x001075ec                _stat
-                0x0010753c                _lseek
-                0x001072ec                _link
-                0x00107490                _swiwrite
-                0x00107340                _rename
-                0x00107404                _swilseek
-                0x001074b8                _swiclose
-                0x0010754c                _swiopen
-                0x001072f4                _unlink
-                0x00107628                _write
-                0x001076dc                _kill
-                0x001076f8                _gettimeofday
-                0x00107678                _read
-                0x001076c4                _exit
-                0x00107328                _system
-                0x001073dc                _swiread
-                0x0010752c                _close
- .text          0x00107724       0x2c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(writer.o)
-                0x00107724                _write_r
- .text          0x00107750       0x64 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(callocr.o)
-                0x00107750                _calloc_r
- .text          0x001077b4       0x28 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(closer.o)
-                0x001077b4                _close_r
- .text          0x001077dc        0xc /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(errno.o)
-                0x001077dc                __errno
- .text          0x001077e8       0xbc /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fclose.o)
-                0x001077e8                _fclose_r
-                0x0010788c                fclose
- .text          0x001078a4       0x2c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fstatr.o)
-                0x001078a4                _fstat_r
- .text          0x001078d0       0x2c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(lseekr.o)
-                0x001078d0                _lseek_r
- .text          0x001078fc       0x2c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(readr.o)
-                0x001078fc                _read_r
- .text          0x00107928       0x8c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a(_udivsi3.o)
-                0x00107928                __udivsi3
-                0x001079a4                __aeabi_uidivmod
- .text          0x001079b4       0xa4 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a(_divsi3.o)
-                0x001079b4                __divsi3
-                0x00107a48                __aeabi_idivmod
- .text          0x00107a58       0xc8 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a(_umodsi3.o)
-                0x00107a58                __umodsi3
- .text          0x00107b20       0xd8 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a(_modsi3.o)
-                0x00107b20                __modsi3
- .text          0x00107bf8        0x4 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a(_dvmd_tls.o)
-                0x00107bf8                __aeabi_ldiv0
-                0x00107bf8                __div0
-                0x00107bf8                __aeabi_idiv0
- .text          0x00107bfc      0x430 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a(_addsubdf3.o)
-                0x00107fc0                __floatdidf
-                0x00107f40                __floatsidf
-                0x00107f18                __aeabi_ui2d
-                0x00107bfc                __aeabi_drsub
-                0x00107f6c                __extendsfdf2
-                0x00107c08                __adddf3
-                0x00107f18                __floatunsidf
-                0x00107c08                __aeabi_dadd
-                0x00107fac                __aeabi_ul2d
-                0x00107c04                __aeabi_dsub
-                0x00107fac                __floatundidf
-                0x00107f40                __aeabi_i2d
-                0x00107fc0                __aeabi_l2d
-                0x00107f6c                __aeabi_f2d
-                0x00107c04                __subdf3
- .text          0x0010802c      0x49c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a(_muldivdf3.o)
-                0x001082bc                __aeabi_ddiv
-                0x0010802c                __aeabi_dmul
-                0x001082bc                __divdf3
-                0x0010802c                __muldf3
- .text          0x001084c8      0x140 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a(_cmpdf2.o)
-                0x001085c0                __aeabi_dcmple
-                0x001084d8                __cmpdf2
-                0x001084d8                __eqdf2
-                0x001084c8                __gtdf2
-                0x00108578                __aeabi_cdcmple
-                0x0010855c                __aeabi_cdrcmple
-                0x001084d0                __ltdf2
-                0x001085a8                __aeabi_dcmplt
-                0x001084d0                __ledf2
-                0x001085f0                __aeabi_dcmpgt
-                0x001085d8                __aeabi_dcmpge
-                0x001084d8                __nedf2
-                0x00108590                __aeabi_dcmpeq
-                0x00108578                __aeabi_cdcmpeq
-                0x001084c8                __gedf2
- .text          0x00108608       0x5c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a(_fixdfsi.o)
-                0x00108608                __fixdfsi
-                0x00108608                __aeabi_d2iz
- .text          0x00108664       0x90 ../libefsl/libefsl.a(efs.o)
-                0x00108664                efs_init
- .text          0x001086f4       0x48 ../libefsl/libefsl.a(disc.o)
-                0x0010872c                disc_initDisc
-                0x001086f4                disc_loadMBR
- .text          0x0010873c      0x154 ../libefsl/libefsl.a(partition.o)
-                0x00108800                part_getSect
-                0x001087b0                part_readBuf
-                0x0010878c                part_getRealLBA
-                0x00108760                part_initPartition
-                0x00108848                part_directSectorRead
-                0x0010873c                part_isFatPart
-                0x001087d8                part_writeBuf
-                0x0010879c                part_relSect
-                0x00108824                part_flushPart
-                0x0010886c                part_directSectorWrite
- .text          0x00108890      0x67c ../libefsl/libefsl.a(fs.o)
-                0x00108930                fs_countDataSectors
-                0x00108a38                fs_loadVolumeId
-                0x00108b08                fs_sectorToCluster
-                0x00108988                fs_determineFatType
-                0x00108d58                fs_initFs
-                0x00108ac4                fs_clusterToSector
-                0x00108da8                fs_findFile
-                0x00108e9c                fs_findFreeFile
-                0x00108bdc                fs_setFirstClusterInDirEntry
-                0x00108ab0                fs_getFirstClusterRootDir
-                0x00108bec                fs_flushFs
-                0x00108c04                fs_umount
-                0x00108b84                fs_giveFreeClusterHint
-                0x00108b88                fs_getLastCluster
-                0x001089bc                fs_findFirstSectorRootDir
-                0x00108cd8                fs_setFsInfo
-                0x00108b5c                fs_getNextFreeCluster
-                0x00108890                fs_verifySanity
-                0x00108c5c                fs_getFsInfo
-                0x00108bcc                fs_initClusterChain
-                0x00108d44                fs_initCurrentDir
-                0x00108c14                fs_clearCluster
-                0x00108a04                fs_isValidFat
- .text          0x00108f0c      0x77c ../libefsl/libefsl.a(fat.o)
-                0x0010930c                fat_getNextClusterChain
-                0x00109220                fat_setNextClusterAddressWBuf
-                0x00108f0c                fat_getSectorAddressFatEntry
-                0x00109188                fat_getNextClusterAddressWBuf
-                0x001093b0                fat_LogicToDiscCluster
-                0x0010900c                fat_setNextClusterAddress
-                0x001094e0                fat_countFreeClusters
-                0x00108f44                fat_getNextClusterAddress
-                0x00109498                fat_DiscToLogicCluster
-                0x0010911c                fat_isEocMarker
-                0x0010950c                fat_allocClusterChain
-                0x00109158                fat_giveEocMarker
-                0x00109458                fat_countClustersInChain
-                0x00109408                fat_unlinkClusterChain
- .text          0x00109688      0x67c ../libefsl/libefsl.a(file.o)
-                0x00109ad0                file_write
-                0x0010975c                file_normalToFatName
-                0x001097fc                file_requiredCluster
-                0x00109688                file_getAttr
-                0x00109704                file_validateChar
-                0x00109b58                file_fopen
-                0x0010996c                file_read
-                0x00109868                file_fread
-                0x001096e0                file_setAttr
-                0x00109aec                file_fclose
-                0x001096a0                file_setpos
-                0x001096b4                file_initFile
-                0x00109988                file_fwrite
- .text          0x00109d04      0x41c ../libefsl/libefsl.a(dir.o)
-                0x00109e14                dir_updateDirectoryEntry
-                0x00109f24                dir_findinCluster
-                0x0010a024                dir_findinDir
-                0x00109da4                dir_setFirstCluster
-                0x00109f00                dir_findinBuf
-                0x0010a0e0                dir_addCluster
-                0x00109fa8                dir_findinRootArea
-                0x00109d34                dir_createDirectoryEntry
-                0x00109d64                dir_createDefaultEntry
-                0x00109e48                dir_findFileinBuf
-                0x00109de0                dir_setFileSize
-                0x0010a088                dir_getFatFileName
-                0x00109d04                dir_getFileStructure
-                0x00109eb0                dir_findFreeEntryinBuf
- .text          0x0010a120      0x9a0 ../libefsl/libefsl.a(ioman.o)
-                0x0010a4f8                ioman_putSectorInCache
-                0x0010a5a8                ioman_flushRange
-                0x0010a3d4                ioman_getPtr
-                0x0010a36c                ioman_push
-                0x0010a4c8                ioman_findFreeSpot
-                0x0010a204                ioman_getUseCnt
-                0x0010a78c                ioman_printStatus
-                0x0010a544                ioman_flushSector
-                0x0010a41c                ioman_readSector
-                0x0010a848                ioman_findUnusedSpot
-                0x0010a92c                ioman_getSector
-                0x0010a48c                ioman_findSectorInCache
-                0x0010a7b0                ioman_findOverallocableSpot
-                0x0010a124                ioman_reset
-                0x0010a2c4                ioman_decRefCnt
-                0x0010a3f0                ioman_getBp
-                0x0010a244                ioman_decUseCnt
-                0x0010a120                ioman_getBuffer
-                0x0010a440                ioman_writeSector
-                0x0010aa38                ioman_releaseSector
-                0x0010a6e8                ioman_directSectorWrite
-                0x0010aaa4                ioman_init
-                0x0010a628                ioman_flushAll
-                0x0010a2a0                ioman_incRefCnt
-                0x0010a190                ioman_setAttr
-                0x0010a67c                ioman_directSectorRead
-                0x0010a304                ioman_pop
-                0x0010a1d4                ioman_getAttr
-                0x0010a268                ioman_resetUseCnt
-                0x0010a284                ioman_getRefCnt
-                0x0010a2e8                ioman_resetRefCnt
-                0x0010a220                ioman_incUseCnt
-                0x0010a464                ioman_resetCacheItem
- .text          0x0010aac0       0x88 ../libefsl/libefsl.a(extract.o)
-                0x0010ab04                ex_getPartitionField
-                0x0010aad8                ex_getb16
-                0x0010aaf0                ex_setb32
-                0x0010aac0                ex_getb32
-                0x0010ab44                ex_setPartitionField
-                0x0010aae4                ex_setb16
- .text          0x0010ab48      0x1d8 ../libefsl/libefsl.a(ls.o)
-                0x0010abf0                ls_getRootAreaEntry
-                0x0010abb4                ls_fileEntryToDirListEntry
-                0x0010acc4                ls_getDirEntry
-                0x0010ac4c                ls_getRealDirEntry
-                0x0010ace8                ls_getNext
-                0x0010ab94                ls_isValidFileEntry
-                0x0010ab48                ls_openDir
- .text          0x0010ad20      0x138 ../libefsl/libefsl.a(at91_spi.o)
-                0x0010ad70                if_spiInit
-                0x0010ae54                if_setPos
-                0x0010ad48                if_spiSend
-                0x0010ae44                if_writeBuf
-                0x0010ae30                if_readBuf
-                0x0010ad20                if_spiSetSpeed
-                0x0010addc                if_initInterface
- .text          0x0010ae58       0x74 ../libefsl/libefsl.a(plibc.o)
-                0x0010aeb4                memSet
-                0x0010aea0                memClr
-                0x0010ae80                memCpy
-                0x0010ae58                strMatch
- .text          0x0010aecc        0xc ../libefsl/libefsl.a(time.o)
-                0x0010aecc                fs_makeDate
-                0x0010aed0                fs_makeTime
-                0x0010aed4                fs_hasTimeSupport
- .text          0x0010aed8      0x2c8 ../libefsl/libefsl.a(sd.o)
-                0x0010aff8                sd_getDriveSize
-                0x0010b11c                sd_readSector
-                0x0010aed8                sd_Resp8bError
-                0x0010af00                sd_Command
-                0x0010aedc                sd_Resp8b
-                0x0010af94                sd_writeSector
-                0x0010af70                sd_Resp16b
-                0x0010b0f4                sd_State
-                0x0010b088                sd_Init
+                0x00102408       0x50 accelerometer/accelerometer.o
+                0x00102408                accel_readAxis
+ .text          0x00102458       0x68 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(memcpy.o)
+                0x00102458                memcpy
+ .text          0x001024c0       0x68 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(memset.o)
+                0x001024c0                memset
+ .text          0x00102528       0x84 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(sprintf.o)
+                0x00102528                _sprintf_r
+                0x00102568                sprintf
+ .text          0x001025ac       0x60 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(strcpy.o)
+                0x001025ac                strcpy
+ .text          0x0010260c       0x48 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(strlen.o)
+                0x0010260c                strlen
+ .text          0x00102654       0x84 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(strncpy.o)
+                0x00102654                strncpy
+ .text          0x001026d8     0x1914 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(vfprintf.o)
+                0x001026f8                _vfprintf_r
+                0x00103fcc                vfprintf
+ .text          0x00103fec       0x54 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wcrtomb.o)
+                0x00103fec                _wcrtomb_r
+                0x00104020                wcrtomb
+ .text          0x00104040      0x100 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wcsrtombs.o)
+                0x00104040                _wcsrtombs_r
+                0x00104118                wcsrtombs
+ .text          0x00104140      0x2a8 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wctomb_r.o)
+                0x00104140                _wctomb_r
+ .text          0x001043e8       0xa8 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wsetup.o)
+                0x001043e8                __swsetup
+ .text          0x00104490      0xf08 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(dtoa.o)
+                0x001045e0                _dtoa_r
+ .text          0x00105398       0x90 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fflush.o)
+                0x00105398                fflush
+ .text          0x00105428      0x1c0 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(findfp.o)
+                0x001054c8                __sinit
+                0x00105460                __sfmoreglue
+                0x001054ac                _cleanup
+                0x0010549c                _cleanup_r
+                0x001055b8                __fp_lock_all
+                0x00105494                __sfp_lock_acquire
+                0x00105524                __sfp
+                0x001054c4                __sinit_lock_release
+                0x001055d0                __fp_unlock_all
+                0x00105498                __sfp_lock_release
+                0x001054c0                __sinit_lock_acquire
+ .text          0x001055e8      0x260 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(freer.o)
+                0x00105688                _free_r
+                0x001055e8                _malloc_trim_r
+ .text          0x00105848      0x2a8 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fvwrite.o)
+                0x00105848                __sfvwrite
+ .text          0x00105af0       0xe0 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fwalk.o)
+                0x00105af0                _fwalk
+                0x00105b5c                _fwalk_reent
+ .text          0x00105bd0       0x80 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(locale.o)
+                0x00105bd0                _setlocale_r
+                0x00105c0c                __locale_charset
+                0x00105c18                _localeconv_r
+                0x00105c20                setlocale
+                0x00105c3c                localeconv
+ .text          0x00105c50       0xe0 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(makebuf.o)
+                0x00105c50                __smakebuf
+ .text          0x00105d30      0x548 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(mallocr.o)
+                0x00105d30                _malloc_r
+ .text          0x00106278       0x90 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(memchr.o)
+                0x00106278                memchr
+ .text          0x00106308       0x90 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(memmove.o)
+                0x00106308                memmove
+ .text          0x00106398        0x8 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(mlock.o)
+                0x0010639c                __malloc_unlock
+                0x00106398                __malloc_lock
+ .text          0x001063a0      0x8ec /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(mprec.o)
+                0x00106c48                _mprec_log10
+                0x0010654c                _hi0bits
+                0x001063a0                _Balloc
+                0x00106b0c                _d2b
+                0x00106618                _multiply
+                0x00106bf4                _ratio
+                0x001064ac                _s2b
+                0x00106600                _i2b
+                0x00106594                _lo0bits
+                0x001068b8                __mcmp
+                0x00106764                _pow5mult
+                0x001069f4                _ulp
+                0x00106a48                _b2d
+                0x00106410                _multadd
+                0x001068fc                __mdiff
+                0x00106804                _lshift
+                0x001063f8                _Bfree
+ .text          0x00106c8c      0x3ac /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(reallocr.o)
+                0x00106c8c                _realloc_r
+ .text          0x00107038       0x24 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(s_isinf.o)
+                0x00107038                isinf
+ .text          0x0010705c       0x1c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(s_isnan.o)
+                0x0010705c                isnan
+ .text          0x00107078       0x28 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(sbrkr.o)
+                0x00107078                _sbrk_r
+ .text          0x001070a0       0xe4 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(stdio.o)
+                0x00107128                __sseek
+                0x001070a0                __sread
+                0x00107168                __sclose
+                0x001070dc                __swrite
+ .text          0x00107184       0x88 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(strcmp.o)
+                0x00107184                strcmp
+ .text          0x0010720c      0x504 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(syscalls.o)
+                0x00107278                _getpid
+                0x00107340                initialise_monitor_handles
+                0x00107310                isatty
+                0x001072b4                _fstat
+                0x001075c4                _open
+                0x0010727c                _sbrk
+                0x001072e8                _raise
+                0x001072ec                _times
+                0x001075d8                _stat
+                0x00107528                _lseek
+                0x001072d8                _link
+                0x0010747c                _swiwrite
+                0x0010732c                _rename
+                0x001073f0                _swilseek
+                0x001074a4                _swiclose
+                0x00107538                _swiopen
+                0x001072e0                _unlink
+                0x00107614                _write
+                0x001076c8                _kill
+                0x001076e4                _gettimeofday
+                0x00107664                _read
+                0x001076b0                _exit
+                0x00107314                _system
+                0x001073c8                _swiread
+                0x00107518                _close
+ .text          0x00107710       0x2c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(writer.o)
+                0x00107710                _write_r
+ .text          0x0010773c       0x64 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(callocr.o)
+                0x0010773c                _calloc_r
+ .text          0x001077a0       0x28 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(closer.o)
+                0x001077a0                _close_r
+ .text          0x001077c8        0xc /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(errno.o)
+                0x001077c8                __errno
+ .text          0x001077d4       0xbc /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fclose.o)
+                0x001077d4                _fclose_r
+                0x00107878                fclose
+ .text          0x00107890       0x2c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fstatr.o)
+                0x00107890                _fstat_r
+ .text          0x001078bc       0x2c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(lseekr.o)
+                0x001078bc                _lseek_r
+ .text          0x001078e8       0x2c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(readr.o)
+                0x001078e8                _read_r
+ .text          0x00107914       0x8c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a(_udivsi3.o)
+                0x00107914                __udivsi3
+                0x00107990                __aeabi_uidivmod
+ .text          0x001079a0       0xa4 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a(_divsi3.o)
+                0x001079a0                __divsi3
+                0x00107a34                __aeabi_idivmod
+ .text          0x00107a44       0xc8 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a(_umodsi3.o)
+                0x00107a44                __umodsi3
+ .text          0x00107b0c       0xd8 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a(_modsi3.o)
+                0x00107b0c                __modsi3
+ .text          0x00107be4        0x4 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a(_dvmd_tls.o)
+                0x00107be4                __aeabi_ldiv0
+                0x00107be4                __div0
+                0x00107be4                __aeabi_idiv0
+ .text          0x00107be8      0x430 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a(_addsubdf3.o)
+                0x00107fac                __floatdidf
+                0x00107f2c                __floatsidf
+                0x00107f04                __aeabi_ui2d
+                0x00107be8                __aeabi_drsub
+                0x00107f58                __extendsfdf2
+                0x00107bf4                __adddf3
+                0x00107f04                __floatunsidf
+                0x00107bf4                __aeabi_dadd
+                0x00107f98                __aeabi_ul2d
+                0x00107bf0                __aeabi_dsub
+                0x00107f98                __floatundidf
+                0x00107f2c                __aeabi_i2d
+                0x00107fac                __aeabi_l2d
+                0x00107f58                __aeabi_f2d
+                0x00107bf0                __subdf3
+ .text          0x00108018      0x49c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a(_muldivdf3.o)
+                0x001082a8                __aeabi_ddiv
+                0x00108018                __aeabi_dmul
+                0x001082a8                __divdf3
+                0x00108018                __muldf3
+ .text          0x001084b4      0x140 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a(_cmpdf2.o)
+                0x001085ac                __aeabi_dcmple
+                0x001084c4                __cmpdf2
+                0x001084c4                __eqdf2
+                0x001084b4                __gtdf2
+                0x00108564                __aeabi_cdcmple
+                0x00108548                __aeabi_cdrcmple
+                0x001084bc                __ltdf2
+                0x00108594                __aeabi_dcmplt
+                0x001084bc                __ledf2
+                0x001085dc                __aeabi_dcmpgt
+                0x001085c4                __aeabi_dcmpge
+                0x001084c4                __nedf2
+                0x0010857c                __aeabi_dcmpeq
+                0x00108564                __aeabi_cdcmpeq
+                0x001084b4                __gedf2
+ .text          0x001085f4       0x5c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgcc.a(_fixdfsi.o)
+                0x001085f4                __fixdfsi
+                0x001085f4                __aeabi_d2iz
+ .text          0x00108650       0x90 ../libefsl/libefsl.a(efs.o)
+                0x00108650                efs_init
+ .text          0x001086e0       0x48 ../libefsl/libefsl.a(disc.o)
+                0x00108718                disc_initDisc
+                0x001086e0                disc_loadMBR
+ .text          0x00108728      0x154 ../libefsl/libefsl.a(partition.o)
+                0x001087ec                part_getSect
+                0x0010879c                part_readBuf
+                0x00108778                part_getRealLBA
+                0x0010874c                part_initPartition
+                0x00108834                part_directSectorRead
+                0x00108728                part_isFatPart
+                0x001087c4                part_writeBuf
+                0x00108788                part_relSect
+                0x00108810                part_flushPart
+                0x00108858                part_directSectorWrite
+ .text          0x0010887c      0x67c ../libefsl/libefsl.a(fs.o)
+                0x0010891c                fs_countDataSectors
+                0x00108a24                fs_loadVolumeId
+                0x00108af4                fs_sectorToCluster
+                0x00108974                fs_determineFatType
+                0x00108d44                fs_initFs
+                0x00108ab0                fs_clusterToSector
+                0x00108d94                fs_findFile
+                0x00108e88                fs_findFreeFile
+                0x00108bc8                fs_setFirstClusterInDirEntry
+                0x00108a9c                fs_getFirstClusterRootDir
+                0x00108bd8                fs_flushFs
+                0x00108bf0                fs_umount
+                0x00108b70                fs_giveFreeClusterHint
+                0x00108b74                fs_getLastCluster
+                0x001089a8                fs_findFirstSectorRootDir
+                0x00108cc4                fs_setFsInfo
+                0x00108b48                fs_getNextFreeCluster
+                0x0010887c                fs_verifySanity
+                0x00108c48                fs_getFsInfo
+                0x00108bb8                fs_initClusterChain
+                0x00108d30                fs_initCurrentDir
+                0x00108c00                fs_clearCluster
+                0x001089f0                fs_isValidFat
+ .text          0x00108ef8      0x77c ../libefsl/libefsl.a(fat.o)
+                0x001092f8                fat_getNextClusterChain
+                0x0010920c                fat_setNextClusterAddressWBuf
+                0x00108ef8                fat_getSectorAddressFatEntry
+                0x00109174                fat_getNextClusterAddressWBuf
+                0x0010939c                fat_LogicToDiscCluster
+                0x00108ff8                fat_setNextClusterAddress
+                0x001094cc                fat_countFreeClusters
+                0x00108f30                fat_getNextClusterAddress
+                0x00109484                fat_DiscToLogicCluster
+                0x00109108                fat_isEocMarker
+                0x001094f8                fat_allocClusterChain
+                0x00109144                fat_giveEocMarker
+                0x00109444                fat_countClustersInChain
+                0x001093f4                fat_unlinkClusterChain
+ .text          0x00109674      0x67c ../libefsl/libefsl.a(file.o)
+                0x00109abc                file_write
+                0x00109748                file_normalToFatName
+                0x001097e8                file_requiredCluster
+                0x00109674                file_getAttr
+                0x001096f0                file_validateChar
+                0x00109b44                file_fopen
+                0x00109958                file_read
+                0x00109854                file_fread
+                0x001096cc                file_setAttr
+                0x00109ad8                file_fclose
+                0x0010968c                file_setpos
+                0x001096a0                file_initFile
+                0x00109974                file_fwrite
+ .text          0x00109cf0      0x41c ../libefsl/libefsl.a(dir.o)
+                0x00109e00                dir_updateDirectoryEntry
+                0x00109f10                dir_findinCluster
+                0x0010a010                dir_findinDir
+                0x00109d90                dir_setFirstCluster
+                0x00109eec                dir_findinBuf
+                0x0010a0cc                dir_addCluster
+                0x00109f94                dir_findinRootArea
+                0x00109d20                dir_createDirectoryEntry
+                0x00109d50                dir_createDefaultEntry
+                0x00109e34                dir_findFileinBuf
+                0x00109dcc                dir_setFileSize
+                0x0010a074                dir_getFatFileName
+                0x00109cf0                dir_getFileStructure
+                0x00109e9c                dir_findFreeEntryinBuf
+ .text          0x0010a10c      0x9a0 ../libefsl/libefsl.a(ioman.o)
+                0x0010a4e4                ioman_putSectorInCache
+                0x0010a594                ioman_flushRange
+                0x0010a3c0                ioman_getPtr
+                0x0010a358                ioman_push
+                0x0010a4b4                ioman_findFreeSpot
+                0x0010a1f0                ioman_getUseCnt
+                0x0010a778                ioman_printStatus
+                0x0010a530                ioman_flushSector
+                0x0010a408                ioman_readSector
+                0x0010a834                ioman_findUnusedSpot
+                0x0010a918                ioman_getSector
+                0x0010a478                ioman_findSectorInCache
+                0x0010a79c                ioman_findOverallocableSpot
+                0x0010a110                ioman_reset
+                0x0010a2b0                ioman_decRefCnt
+                0x0010a3dc                ioman_getBp
+                0x0010a230                ioman_decUseCnt
+                0x0010a10c                ioman_getBuffer
+                0x0010a42c                ioman_writeSector
+                0x0010aa24                ioman_releaseSector
+                0x0010a6d4                ioman_directSectorWrite
+                0x0010aa90                ioman_init
+                0x0010a614                ioman_flushAll
+                0x0010a28c                ioman_incRefCnt
+                0x0010a17c                ioman_setAttr
+                0x0010a668                ioman_directSectorRead
+                0x0010a2f0                ioman_pop
+                0x0010a1c0                ioman_getAttr
+                0x0010a254                ioman_resetUseCnt
+                0x0010a270                ioman_getRefCnt
+                0x0010a2d4                ioman_resetRefCnt
+                0x0010a20c                ioman_incUseCnt
+                0x0010a450                ioman_resetCacheItem
+ .text          0x0010aaac       0x88 ../libefsl/libefsl.a(extract.o)
+                0x0010aaf0                ex_getPartitionField
+                0x0010aac4                ex_getb16
+                0x0010aadc                ex_setb32
+                0x0010aaac                ex_getb32
+                0x0010ab30                ex_setPartitionField
+                0x0010aad0                ex_setb16
+ .text          0x0010ab34      0x1d8 ../libefsl/libefsl.a(ls.o)
+                0x0010abdc                ls_getRootAreaEntry
+                0x0010aba0                ls_fileEntryToDirListEntry
+                0x0010acb0                ls_getDirEntry
+                0x0010ac38                ls_getRealDirEntry
+                0x0010acd4                ls_getNext
+                0x0010ab80                ls_isValidFileEntry
+                0x0010ab34                ls_openDir
+ .text          0x0010ad0c      0x138 ../libefsl/libefsl.a(at91_spi.o)
+                0x0010ad5c                if_spiInit
+                0x0010ae40                if_setPos
+                0x0010ad34                if_spiSend
+                0x0010ae30                if_writeBuf
+                0x0010ae1c                if_readBuf
+                0x0010ad0c                if_spiSetSpeed
+                0x0010adc8                if_initInterface
+ .text          0x0010ae44       0x74 ../libefsl/libefsl.a(plibc.o)
+                0x0010aea0                memSet
+                0x0010ae8c                memClr
+                0x0010ae6c                memCpy
+                0x0010ae44                strMatch
+ .text          0x0010aeb8        0xc ../libefsl/libefsl.a(time.o)
+                0x0010aeb8                fs_makeDate
+                0x0010aebc                fs_makeTime
+                0x0010aec0                fs_hasTimeSupport
+ .text          0x0010aec4      0x2c8 ../libefsl/libefsl.a(sd.o)
+                0x0010afe4                sd_getDriveSize
+                0x0010b108                sd_readSector
+                0x0010aec4                sd_Resp8bError
+                0x0010aeec                sd_Command
+                0x0010aec8                sd_Resp8b
+                0x0010af80                sd_writeSector
+                0x0010af5c                sd_Resp16b
+                0x0010b0e0                sd_State
+                0x0010b074                sd_Init
  *(.gnu.linkonce.t.*)
  *(.glue_7t .glue_7)
- .glue_7        0x0010b1a0       0x3c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(reent.o)
-                0x0010b1d0                __AT91F_AIC_ClearIt_from_arm
-                0x0010b1b8                __xQueueSendFromISR_from_arm
-                0x0010b1ac                __vTaskIncrementTick_from_arm
-                0x0010b1c4                __AT91F_AIC_AcknowledgeIt_from_arm
-                0x0010b1a0                __vTaskSwitchContext_from_arm
- .glue_7t       0x0010b1dc       0x78 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(reent.o)
-                0x0010b1e0                __vPortEnterCritical_change_to_arm
-                0x0010b244                ____gtdf2_from_thumb
-                0x0010b214                ____subdf3_from_thumb
-                0x0010b210                ____ltdf2_change_to_arm
-                0x0010b218                ____subdf3_change_to_arm
-                0x0010b1e8                __vPortExitCritical_change_to_arm
-                0x0010b250                ____gedf2_change_to_arm
-                0x0010b1f4                __vPortISRStartFirstTask_from_thumb
-                0x0010b1fc                ____eqdf2_from_thumb
-                0x0010b234                ____fixdfsi_from_thumb
-                0x0010b1ec                __vPortDisableInterruptsFromThumb_from_thumb
-                0x0010b240                ____divdf3_change_to_arm
-                0x0010b24c                ____gedf2_from_thumb
-                0x0010b1e4                __vPortExitCritical_from_thumb
-                0x0010b220                ____muldf3_change_to_arm
-                0x0010b238                ____fixdfsi_change_to_arm
-                0x0010b23c                ____divdf3_from_thumb
-                0x0010b228                ____adddf3_change_to_arm
-                0x0010b248                ____gtdf2_change_to_arm
-                0x0010b1dc                __vPortEnterCritical_from_thumb
-                0x0010b22c                ____floatsidf_from_thumb
-                0x0010b20c                ____ltdf2_from_thumb
-                0x0010b1f8                __vPortISRStartFirstTask_change_to_arm
-                0x0010b208                ____nedf2_change_to_arm
-                0x0010b224                ____adddf3_from_thumb
-                0x0010b1f0                __vPortDisableInterruptsFromThumb_change_to_arm
-                0x0010b200                ____eqdf2_change_to_arm
-                0x0010b21c                ____muldf3_from_thumb
-                0x0010b204                ____nedf2_from_thumb
-                0x0010b230                ____floatsidf_change_to_arm
+ .glue_7        0x0010b18c       0x3c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(reent.o)
+                0x0010b1bc                __AT91F_AIC_ClearIt_from_arm
+                0x0010b1a4                __xQueueSendFromISR_from_arm
+                0x0010b198                __vTaskIncrementTick_from_arm
+                0x0010b1b0                __AT91F_AIC_AcknowledgeIt_from_arm
+                0x0010b18c                __vTaskSwitchContext_from_arm
+ .glue_7t       0x0010b1c8       0x78 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(reent.o)
+                0x0010b1cc                __vPortEnterCritical_change_to_arm
+                0x0010b230                ____gtdf2_from_thumb
+                0x0010b200                ____subdf3_from_thumb
+                0x0010b1fc                ____ltdf2_change_to_arm
+                0x0010b204                ____subdf3_change_to_arm
+                0x0010b1d4                __vPortExitCritical_change_to_arm
+                0x0010b23c                ____gedf2_change_to_arm
+                0x0010b1e0                __vPortISRStartFirstTask_from_thumb
+                0x0010b1e8                ____eqdf2_from_thumb
+                0x0010b220                ____fixdfsi_from_thumb
+                0x0010b1d8                __vPortDisableInterruptsFromThumb_from_thumb
+                0x0010b22c                ____divdf3_change_to_arm
+                0x0010b238                ____gedf2_from_thumb
+                0x0010b1d0                __vPortExitCritical_from_thumb
+                0x0010b20c                ____muldf3_change_to_arm
+                0x0010b224                ____fixdfsi_change_to_arm
+                0x0010b228                ____divdf3_from_thumb
+                0x0010b214                ____adddf3_change_to_arm
+                0x0010b234                ____gtdf2_change_to_arm
+                0x0010b1c8                __vPortEnterCritical_from_thumb
+                0x0010b218                ____floatsidf_from_thumb
+                0x0010b1f8                ____ltdf2_from_thumb
+                0x0010b1e4                __vPortISRStartFirstTask_change_to_arm
+                0x0010b1f4                ____nedf2_change_to_arm
+                0x0010b210                ____adddf3_from_thumb
+                0x0010b1dc                __vPortDisableInterruptsFromThumb_change_to_arm
+                0x0010b1ec                ____eqdf2_change_to_arm
+                0x0010b208                ____muldf3_from_thumb
+                0x0010b1f0                ____nedf2_from_thumb
+                0x0010b21c                ____floatsidf_change_to_arm
  *(.fini)
  *(.gcc_except_table)
-                0x0010b254                . = ALIGN (0x4)
+                0x0010b240                . = ALIGN (0x4)
 
-.ctors          0x0010b254        0x0
-                0x0010b254                PROVIDE (__ctors_start__, .)
+.ctors          0x0010b240        0x0
+                0x0010b240                PROVIDE (__ctors_start__, .)
  *(SORT(.ctors.*))
  *(.ctors)
-                0x0010b254                PROVIDE (__ctors_end__, .)
+                0x0010b240                PROVIDE (__ctors_end__, .)
 
-.dtors          0x0010b254        0x0
-                0x0010b254                PROVIDE (__dtors_start__, .)
+.dtors          0x0010b240        0x0
+                0x0010b240                PROVIDE (__dtors_start__, .)
  *(SORT(.dtors.*))
  *(.dtors)
-                0x0010b254                PROVIDE (__dtors_end__, .)
+                0x0010b240                PROVIDE (__dtors_end__, .)
 
-.rodata         0x0010b254      0x648
+.rodata         0x0010b240      0x648
  *(.rodata .rodata.*)
  .rodata.str1.4
-                0x0010b254       0x1f main.o
+                0x0010b240       0x1f main.o
                                  0x20 (size before relaxing)
- *fill*         0x0010b273        0x1 00
+ *fill*         0x0010b25f        0x1 00
  .rodata.str1.4
-                0x0010b274        0x5 FreeRTOS/Source/tasks.o
+                0x0010b260        0x5 FreeRTOS/Source/tasks.o
                                   0x8 (size before relaxing)
- *fill*         0x0010b279        0x3 00
+ *fill*         0x0010b265        0x3 00
  .rodata.str1.4
-                0x0010b27c       0xe1 usb/source/usb_comm.o
+                0x0010b268       0xe1 usb/source/usb_comm.o
                                  0xe4 (size before relaxing)
  .rodata.pxConfigDescriptor
-                0x0010b35d       0x43 usb/source/USB-CDC.o
-                0x0010b35d                pxConfigDescriptor
+                0x0010b349       0x43 usb/source/USB-CDC.o
+                0x0010b349                pxConfigDescriptor
  .rodata.pxDeviceDescriptor
-                0x0010b3a0       0x12 usb/source/USB-CDC.o
-                0x0010b3a0                pxDeviceDescriptor
+                0x0010b38c       0x12 usb/source/USB-CDC.o
+                0x0010b38c                pxDeviceDescriptor
  .rodata.pxInterfaceStringDescriptor
-                0x0010b3b2       0x1e usb/source/USB-CDC.o
-                0x0010b3b2                pxInterfaceStringDescriptor
+                0x0010b39e       0x1e usb/source/USB-CDC.o
+                0x0010b39e                pxInterfaceStringDescriptor
  .rodata.pxConfigurationStringDescriptor
-                0x0010b3d0       0x26 usb/source/USB-CDC.o
-                0x0010b3d0                pxConfigurationStringDescriptor
+                0x0010b3bc       0x26 usb/source/USB-CDC.o
+                0x0010b3bc                pxConfigurationStringDescriptor
  .rodata.pxProductStringDescriptor
-                0x0010b3f6       0x24 usb/source/USB-CDC.o
-                0x0010b3f6                pxProductStringDescriptor
+                0x0010b3e2       0x24 usb/source/USB-CDC.o
+                0x0010b3e2                pxProductStringDescriptor
  .rodata.pxManufacturerStringDescriptor
-                0x0010b41a       0x12 usb/source/USB-CDC.o
-                0x0010b41a                pxManufacturerStringDescriptor
+                0x0010b406       0x12 usb/source/USB-CDC.o
+                0x0010b406                pxManufacturerStringDescriptor
  .rodata.pxLanguageStringDescriptor
-                0x0010b42c        0x4 usb/source/USB-CDC.o
-                0x0010b42c                pxLanguageStringDescriptor
+                0x0010b418        0x4 usb/source/USB-CDC.o
+                0x0010b418                pxLanguageStringDescriptor
  .rodata.pxLineCoding
-                0x0010b430        0x7 usb/source/USB-CDC.o
- *fill*         0x0010b437        0x1 00
+                0x0010b41c        0x7 usb/source/USB-CDC.o
+ *fill*         0x0010b423        0x1 00
  .rodata.vUSBCDCTask
-                0x0010b438       0x3c usb/source/USB-CDC.o
- .rodata.C.1.2491
-                0x0010b474       0x2c logger/loggerHardware.o
+                0x0010b424       0x3c usb/source/USB-CDC.o
+ .rodata.C.1.2660
+                0x0010b460       0x2c logger/loggerHardware.o
  .rodata.str1.4
-                0x0010b4a0       0x39 sdcard/sdcard.o
+                0x0010b48c       0x39 sdcard/sdcard.o
                                  0x60 (size before relaxing)
- *fill*         0x0010b4d9        0x3 00
+ *fill*         0x0010b4c5        0x3 00
  .rodata.str1.4
-                0x0010b4dc       0x19 accelerometer/accelerometer.o
+                0x0010b4c8       0x19 accelerometer/accelerometer.o
                                  0x1c (size before relaxing)
- *fill*         0x0010b4f5        0x3 00
- .rodata        0x0010b4f8      0x18c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(vfprintf.o)
+ *fill*         0x0010b4e1        0x3 00
+ .rodata        0x0010b4e4      0x18c /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(vfprintf.o)
  .rodata.str1.4
-                0x0010b684       0x62 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(vfprintf.o)
+                0x0010b670       0x62 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(vfprintf.o)
                                  0x64 (size before relaxing)
- *fill*         0x0010b6e6        0x2 00
+ *fill*         0x0010b6d2        0x2 00
  .rodata.str1.4
-                0x0010b6e8       0x1e /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wctomb_r.o)
+                0x0010b6d4       0x1e /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wctomb_r.o)
                                  0x20 (size before relaxing)
- *fill*         0x0010b706        0x2 00
+ *fill*         0x0010b6f2        0x2 00
  .rodata.str1.4
-                0x0010b708       0x10 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(dtoa.o)
+                0x0010b6f4       0x10 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(dtoa.o)
                                  0x14 (size before relaxing)
- .rodata        0x0010b718       0x18 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(dtoa.o)
- .rodata        0x0010b730        0x4 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(impure.o)
-                0x0010b730                _global_impure_ptr
+ .rodata        0x0010b704       0x18 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(dtoa.o)
+ .rodata        0x0010b71c        0x4 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(impure.o)
+                0x0010b71c                _global_impure_ptr
  .rodata.str1.4
-                0x0010b734        0x2 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(impure.o)
+                0x0010b720        0x2 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(impure.o)
                                   0x4 (size before relaxing)
- *fill*         0x0010b736        0x2 00
+ *fill*         0x0010b722        0x2 00
  .rodata.str1.4
-                0x0010b738        0xb /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(locale.o)
+                0x0010b724        0xb /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(locale.o)
                                  0x18 (size before relaxing)
- *fill*         0x0010b743        0x1 00
- .rodata        0x0010b744       0x30 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(locale.o)
- .rodata        0x0010b774      0x124 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(mprec.o)
-                0x0010b774                __mprec_tinytens
-                0x0010b7c4                __mprec_tens
-                0x0010b79c                __mprec_bigtens
+ *fill*         0x0010b72f        0x1 00
+ .rodata        0x0010b730       0x30 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(locale.o)
+ .rodata        0x0010b760      0x124 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(mprec.o)
+                0x0010b760                __mprec_tinytens
+                0x0010b7b0                __mprec_tens
+                0x0010b788                __mprec_bigtens
  .rodata.str1.4
-                0x0010b898        0x4 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(syscalls.o)
+                0x0010b884        0x4 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(syscalls.o)
  *(.gnu.linkonce.r.*)
-                0x0010b89c                . = ALIGN (0x4)
-                0x0010b89c                _etext = .
-                0x0010b89c                PROVIDE (etext, .)
+                0x0010b888                . = ALIGN (0x4)
+                0x0010b888                _etext = .
+                0x0010b888                PROVIDE (etext, .)
 
-.data           0x00200000      0x880 load address 0x0010b89c
+.data           0x00200000      0x880 load address 0x0010b888
                 0x00200000                _data = .
  *(.vectram)
  .vectram       0x00200000       0x58 startup_SAM7S.o
@@ -997,19 +993,19 @@ LOAD /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgc
  *(.fastrun)
 
 .data.ulCriticalNesting
-                0x00200880        0x4 load address 0x0010c11c
+                0x00200880        0x4 load address 0x0010c108
  .data.ulCriticalNesting
                 0x00200880        0x4 FreeRTOS/Source/portable/GCC/ARM7_AT91SAM7S/portISR.o
                 0x00200880                ulCriticalNesting
 
-.data.duty      0x00200884        0x2 load address 0x0010c120
+.data.duty      0x00200884        0x2 load address 0x0010c10c
  .data.duty     0x00200884        0x2 usb/source/usb_comm.o
                 0x00200884                duty
                 0x00200888                . = ALIGN (0x4)
                 0x00200888                _edata = .
                 0x00200888                PROVIDE (edata, .)
 
-.bss            0x00200888       0xfc
+.bss            0x00200888       0xf0
                 0x00200888                __bss_start = .
                 0x00200888                __bss_start__ = .
  *(.bss)
@@ -1022,185 +1018,182 @@ LOAD /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgc
  *(COMMON)
  COMMON         0x0020096c        0x4 usb/source/USB-CDC.o
                 0x0020096c                xUSBInterruptQueue
- COMMON         0x00200970       0x10 gpio/gpio.o
-                0x00200970                xOnGPI2
-                0x00200974                xOnGPI3
-                0x00200978                xOnGPI1
-                0x0020097c                xOnPushbutton
- COMMON         0x00200980        0x4 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(reent.o)
-                0x00200980                errno
+ COMMON         0x00200970        0x4 logger/loggerHardware.o
+                0x00200970                xOnPushbutton
+ COMMON         0x00200974        0x4 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(reent.o)
+                0x00200974                errno
 
-.bss.ulNextMessage.2587
-                0x00200984        0x4
- .bss.ulNextMessage.2587
-                0x00200984        0x4 usb/source/USBIsr.o
+.bss.ulNextMessage.2580
+                0x00200978        0x4
+ .bss.ulNextMessage.2580
+                0x00200978        0x4 usb/source/USBIsr.o
 
 .bss.xISRMessages
-                0x00200988       0x40
+                0x0020097c       0x40
  .bss.xISRMessages
-                0x00200988       0x40 usb/source/USBIsr.o
+                0x0020097c       0x40 usb/source/USBIsr.o
 
 .bss.pxCurrentTCB
-                0x002009c8        0x4
+                0x002009bc        0x4
  .bss.pxCurrentTCB
-                0x002009c8        0x4 FreeRTOS/Source/tasks.o
-                0x002009c8                pxCurrentTCB
+                0x002009bc        0x4 FreeRTOS/Source/tasks.o
+                0x002009bc                pxCurrentTCB
 
 .bss.xMissedYield
-                0x002009cc        0x4
+                0x002009c0        0x4
  .bss.xMissedYield
-                0x002009cc        0x4 FreeRTOS/Source/tasks.o
+                0x002009c0        0x4 FreeRTOS/Source/tasks.o
 
 .bss.xTickCount
-                0x002009d0        0x4
+                0x002009c4        0x4
  .bss.xTickCount
-                0x002009d0        0x4 FreeRTOS/Source/tasks.o
+                0x002009c4        0x4 FreeRTOS/Source/tasks.o
 
 .bss.xNumOfOverflows
-                0x002009d4        0x4
+                0x002009c8        0x4
  .bss.xNumOfOverflows
-                0x002009d4        0x4 FreeRTOS/Source/tasks.o
+                0x002009c8        0x4 FreeRTOS/Source/tasks.o
 
 .bss.uxTopReadyPriority
-                0x002009d8        0x4
+                0x002009cc        0x4
  .bss.uxTopReadyPriority
-                0x002009d8        0x4 FreeRTOS/Source/tasks.o
+                0x002009cc        0x4 FreeRTOS/Source/tasks.o
 
 .bss.uxSchedulerSuspended
-                0x002009dc        0x4
+                0x002009d0        0x4
  .bss.uxSchedulerSuspended
-                0x002009dc        0x4 FreeRTOS/Source/tasks.o
+                0x002009d0        0x4 FreeRTOS/Source/tasks.o
 
 .bss.uxMissedTicks
-                0x002009e0        0x4
+                0x002009d4        0x4
  .bss.uxMissedTicks
-                0x002009e0        0x4 FreeRTOS/Source/tasks.o
+                0x002009d4        0x4 FreeRTOS/Source/tasks.o
 
 .bss.uxCurrentNumberOfTasks
-                0x002009e4        0x4
+                0x002009d8        0x4
  .bss.uxCurrentNumberOfTasks
-                0x002009e4        0x4 FreeRTOS/Source/tasks.o
+                0x002009d8        0x4 FreeRTOS/Source/tasks.o
 
 .bss.xSchedulerRunning
-                0x002009e8        0x4
+                0x002009dc        0x4
  .bss.xSchedulerRunning
-                0x002009e8        0x4 FreeRTOS/Source/tasks.o
+                0x002009dc        0x4 FreeRTOS/Source/tasks.o
 
 .bss.uxTopUsedPriority
-                0x002009ec        0x4
+                0x002009e0        0x4
  .bss.uxTopUsedPriority
-                0x002009ec        0x4 FreeRTOS/Source/tasks.o
+                0x002009e0        0x4 FreeRTOS/Source/tasks.o
 
 .bss.uxTaskNumber.3709
-                0x002009f0        0x4
+                0x002009e4        0x4
  .bss.uxTaskNumber.3709
-                0x002009f0        0x4 FreeRTOS/Source/tasks.o
+                0x002009e4        0x4 FreeRTOS/Source/tasks.o
 
 .bss.xSuspendedTaskList
-                0x002009f4       0x14
+                0x002009e8       0x14
  .bss.xSuspendedTaskList
-                0x002009f4       0x14 FreeRTOS/Source/tasks.o
+                0x002009e8       0x14 FreeRTOS/Source/tasks.o
 
 .bss.xPendingReadyList
-                0x00200a08       0x14
+                0x002009fc       0x14
  .bss.xPendingReadyList
-                0x00200a08       0x14 FreeRTOS/Source/tasks.o
+                0x002009fc       0x14 FreeRTOS/Source/tasks.o
 
 .bss.pxOverflowDelayedTaskList
-                0x00200a1c        0x4
+                0x00200a10        0x4
  .bss.pxOverflowDelayedTaskList
-                0x00200a1c        0x4 FreeRTOS/Source/tasks.o
+                0x00200a10        0x4 FreeRTOS/Source/tasks.o
 
 .bss.pxDelayedTaskList
-                0x00200a20        0x4
+                0x00200a14        0x4
  .bss.pxDelayedTaskList
-                0x00200a20        0x4 FreeRTOS/Source/tasks.o
+                0x00200a14        0x4 FreeRTOS/Source/tasks.o
 
 .bss.xDelayedTaskList2
-                0x00200a24       0x14
+                0x00200a18       0x14
  .bss.xDelayedTaskList2
-                0x00200a24       0x14 FreeRTOS/Source/tasks.o
+                0x00200a18       0x14 FreeRTOS/Source/tasks.o
 
 .bss.xDelayedTaskList1
-                0x00200a38       0x14
+                0x00200a2c       0x14
  .bss.xDelayedTaskList1
-                0x00200a38       0x14 FreeRTOS/Source/tasks.o
+                0x00200a2c       0x14 FreeRTOS/Source/tasks.o
 
 .bss.pxReadyTasksLists
-                0x00200a4c       0x64
+                0x00200a40       0x64
  .bss.pxReadyTasksLists
-                0x00200a4c       0x64 FreeRTOS/Source/tasks.o
+                0x00200a40       0x64 FreeRTOS/Source/tasks.o
 
 .bss.xHeapHasBeenInitialised.3010
-                0x00200ab0        0x4
+                0x00200aa4        0x4
  .bss.xHeapHasBeenInitialised.3010
-                0x00200ab0        0x4 FreeRTOS/Source/portable/MemMang/heap_2.o
+                0x00200aa4        0x4 FreeRTOS/Source/portable/MemMang/heap_2.o
 
-.bss.xEnd       0x00200ab4        0x8
- .bss.xEnd      0x00200ab4        0x8 FreeRTOS/Source/portable/MemMang/heap_2.o
+.bss.xEnd       0x00200aa8        0x8
+ .bss.xEnd      0x00200aa8        0x8 FreeRTOS/Source/portable/MemMang/heap_2.o
 
-.bss.xStart     0x00200abc        0x8
- .bss.xStart    0x00200abc        0x8 FreeRTOS/Source/portable/MemMang/heap_2.o
+.bss.xStart     0x00200ab0        0x8
+ .bss.xStart    0x00200ab0        0x8 FreeRTOS/Source/portable/MemMang/heap_2.o
 
-.bss.xHeap      0x00200ac4     0x2714
- .bss.xHeap     0x00200ac4     0x2714 FreeRTOS/Source/portable/MemMang/heap_2.o
+.bss.xHeap      0x00200ab8     0x2714
+ .bss.xHeap     0x00200ab8     0x2714 FreeRTOS/Source/portable/MemMang/heap_2.o
 
 .bss.usbIntefacedInitialized
-                0x002031d8        0x4
+                0x002031cc        0x4
  .bss.usbIntefacedInitialized
-                0x002031d8        0x4 usb/source/USB-CDC.o
+                0x002031cc        0x4 usb/source/USB-CDC.o
 
 .bss.eDriverState
-                0x002031dc        0x4
+                0x002031d0        0x4
  .bss.eDriverState
-                0x002031dc        0x4 usb/source/USB-CDC.o
+                0x002031d0        0x4 usb/source/USB-CDC.o
 
 .bss.ucUSBConfig
-                0x002031e0        0x1
+                0x002031d4        0x1
  .bss.ucUSBConfig
-                0x002031e0        0x1 usb/source/USB-CDC.o
+                0x002031d4        0x1 usb/source/USB-CDC.o
 
 .bss.ulReceivedAddress
-                0x002031e4        0x4
+                0x002031d8        0x4
  .bss.ulReceivedAddress
-                0x002031e4        0x4 usb/source/USB-CDC.o
+                0x002031d8        0x4 usb/source/USB-CDC.o
 
-.bss.xRequest.3556
-                0x002031e8        0x8
- .bss.xRequest.3556
-                0x002031e8        0x8 usb/source/USB-CDC.o
+.bss.xRequest.3612
+                0x002031dc        0x8
+ .bss.xRequest.3612
+                0x002031dc        0x8 usb/source/USB-CDC.o
 
 .bss.uiCurrentBank
-                0x002031f0        0x4
+                0x002031e4        0x4
  .bss.uiCurrentBank
-                0x002031f0        0x4 usb/source/USB-CDC.o
+                0x002031e4        0x4 usb/source/USB-CDC.o
 
 .bss.ucControlState
-                0x002031f4        0x1
+                0x002031e8        0x1
  .bss.ucControlState
-                0x002031f4        0x1 usb/source/USB-CDC.o
+                0x002031e8        0x1 usb/source/USB-CDC.o
 
-.bss.xTxCDC     0x002031f8        0x4
- .bss.xTxCDC    0x002031f8        0x4 usb/source/USB-CDC.o
+.bss.xTxCDC     0x002031ec        0x4
+ .bss.xTxCDC    0x002031ec        0x4 usb/source/USB-CDC.o
 
-.bss.xRxCDC     0x002031fc        0x4
- .bss.xRxCDC    0x002031fc        0x4 usb/source/USB-CDC.o
+.bss.xRxCDC     0x002031f0        0x4
+ .bss.xRxCDC    0x002031f0        0x4 usb/source/USB-CDC.o
 
 .bss.pxControlRx
-                0x00203200       0x88
+                0x002031f4       0x88
  .bss.pxControlRx
-                0x00203200       0x88 usb/source/USB-CDC.o
+                0x002031f4       0x88 usb/source/USB-CDC.o
 
 .bss.pxControlTx
-                0x00203288       0x88
+                0x0020327c       0x88
  .bss.pxControlTx
-                0x00203288       0x88 usb/source/USB-CDC.o
-                0x00203310                . = ALIGN (0x4)
-                0x00203310                __bss_end__ = .
-                0x00203310                __bss_end__ = .
-                0x00203310                _end = .
-                0x00203310                PROVIDE (end, .)
-                0x00203310                . = ALIGN (0x4)
+                0x0020327c       0x88 usb/source/USB-CDC.o
+                0x00203304                . = ALIGN (0x4)
+                0x00203304                __bss_end__ = .
+                0x00203304                __bss_end__ = .
+                0x00203304                _end = .
+                0x00203304                PROVIDE (end, .)
+                0x00203304                . = ALIGN (0x4)
 
 .int_data
  *(.internal_ram_top)
@@ -1223,13 +1216,13 @@ LOAD /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgc
 .stab.indexstr
  *(.stab.indexstr)
 
-.comment        0x00000000      0x534
+.comment        0x00000000      0x522
  *(.comment)
  .comment       0x00000000       0x12 FreeRTOS/Source/portable/GCC/ARM7_AT91SAM7S/portISR.o
  .comment       0x00000012       0x12 interrupt_utils.o
  .comment       0x00000024       0x12 blinker.o
  .comment       0x00000036       0x12 usb/source/USBIsr.o
- .comment       0x00000048       0x12 gpio/gpioIsr.o
+ .comment       0x00000048       0x12 logger/gpioIsr.o
  .comment       0x0000005a       0x12 main.o
  .comment       0x0000006c       0x12 hardware/lib_AT91SAM7S256.o
  .comment       0x0000007e       0x12 FreeRTOS/Source/tasks.o
@@ -1242,63 +1235,62 @@ LOAD /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgc
  .comment       0x000000fc       0x12 logger/loggerHardware.o
  .comment       0x0000010e       0x12 serial/usart.o
  .comment       0x00000120       0x12 sdcard/sdcard.o
- .comment       0x00000132       0x12 gpio/gpio.o
- .comment       0x00000144       0x12 accelerometer/accelerometer.o
- .comment       0x00000156       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(memcpy.o)
- .comment       0x00000168       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(memset.o)
- .comment       0x0000017a       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(sprintf.o)
- .comment       0x0000018c       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(strcpy.o)
- .comment       0x0000019e       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(strlen.o)
- .comment       0x000001b0       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(strncpy.o)
- .comment       0x000001c2       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(vfprintf.o)
- .comment       0x000001d4       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wcrtomb.o)
- .comment       0x000001e6       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wcsrtombs.o)
- .comment       0x000001f8       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wctomb_r.o)
- .comment       0x0000020a       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wsetup.o)
- .comment       0x0000021c       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(dtoa.o)
- .comment       0x0000022e       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fflush.o)
- .comment       0x00000240       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(findfp.o)
- .comment       0x00000252       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(freer.o)
- .comment       0x00000264       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fvwrite.o)
- .comment       0x00000276       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fwalk.o)
- .comment       0x00000288       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(impure.o)
- .comment       0x0000029a       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(locale.o)
- .comment       0x000002ac       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(makebuf.o)
- .comment       0x000002be       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(mallocr.o)
- .comment       0x000002d0       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(memchr.o)
- .comment       0x000002e2       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(memmove.o)
- .comment       0x000002f4       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(mlock.o)
- .comment       0x00000306       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(mprec.o)
- .comment       0x00000318       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(reallocr.o)
- .comment       0x0000032a       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(s_isinf.o)
- .comment       0x0000033c       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(s_isnan.o)
- .comment       0x0000034e       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(sbrkr.o)
- .comment       0x00000360       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(stdio.o)
- .comment       0x00000372       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(strcmp.o)
- .comment       0x00000384       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(syscalls.o)
- .comment       0x00000396       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(writer.o)
- .comment       0x000003a8       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(callocr.o)
- .comment       0x000003ba       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(closer.o)
- .comment       0x000003cc       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(errno.o)
- .comment       0x000003de       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fclose.o)
- .comment       0x000003f0       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fstatr.o)
- .comment       0x00000402       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(lseekr.o)
- .comment       0x00000414       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(readr.o)
- .comment       0x00000426       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(reent.o)
- .comment       0x00000438       0x12 ../libefsl/libefsl.a(efs.o)
- .comment       0x0000044a       0x12 ../libefsl/libefsl.a(disc.o)
- .comment       0x0000045c       0x12 ../libefsl/libefsl.a(partition.o)
- .comment       0x0000046e       0x12 ../libefsl/libefsl.a(fs.o)
- .comment       0x00000480       0x12 ../libefsl/libefsl.a(fat.o)
- .comment       0x00000492       0x12 ../libefsl/libefsl.a(file.o)
- .comment       0x000004a4       0x12 ../libefsl/libefsl.a(dir.o)
- .comment       0x000004b6       0x12 ../libefsl/libefsl.a(ioman.o)
- .comment       0x000004c8       0x12 ../libefsl/libefsl.a(extract.o)
- .comment       0x000004da       0x12 ../libefsl/libefsl.a(ls.o)
- .comment       0x000004ec       0x12 ../libefsl/libefsl.a(at91_spi.o)
- .comment       0x000004fe       0x12 ../libefsl/libefsl.a(plibc.o)
- .comment       0x00000510       0x12 ../libefsl/libefsl.a(time.o)
- .comment       0x00000522       0x12 ../libefsl/libefsl.a(sd.o)
+ .comment       0x00000132       0x12 accelerometer/accelerometer.o
+ .comment       0x00000144       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(memcpy.o)
+ .comment       0x00000156       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(memset.o)
+ .comment       0x00000168       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(sprintf.o)
+ .comment       0x0000017a       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(strcpy.o)
+ .comment       0x0000018c       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(strlen.o)
+ .comment       0x0000019e       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(strncpy.o)
+ .comment       0x000001b0       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(vfprintf.o)
+ .comment       0x000001c2       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wcrtomb.o)
+ .comment       0x000001d4       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wcsrtombs.o)
+ .comment       0x000001e6       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wctomb_r.o)
+ .comment       0x000001f8       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wsetup.o)
+ .comment       0x0000020a       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(dtoa.o)
+ .comment       0x0000021c       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fflush.o)
+ .comment       0x0000022e       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(findfp.o)
+ .comment       0x00000240       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(freer.o)
+ .comment       0x00000252       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fvwrite.o)
+ .comment       0x00000264       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fwalk.o)
+ .comment       0x00000276       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(impure.o)
+ .comment       0x00000288       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(locale.o)
+ .comment       0x0000029a       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(makebuf.o)
+ .comment       0x000002ac       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(mallocr.o)
+ .comment       0x000002be       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(memchr.o)
+ .comment       0x000002d0       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(memmove.o)
+ .comment       0x000002e2       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(mlock.o)
+ .comment       0x000002f4       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(mprec.o)
+ .comment       0x00000306       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(reallocr.o)
+ .comment       0x00000318       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(s_isinf.o)
+ .comment       0x0000032a       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(s_isnan.o)
+ .comment       0x0000033c       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(sbrkr.o)
+ .comment       0x0000034e       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(stdio.o)
+ .comment       0x00000360       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(strcmp.o)
+ .comment       0x00000372       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(syscalls.o)
+ .comment       0x00000384       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(writer.o)
+ .comment       0x00000396       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(callocr.o)
+ .comment       0x000003a8       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(closer.o)
+ .comment       0x000003ba       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(errno.o)
+ .comment       0x000003cc       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fclose.o)
+ .comment       0x000003de       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(fstatr.o)
+ .comment       0x000003f0       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(lseekr.o)
+ .comment       0x00000402       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(readr.o)
+ .comment       0x00000414       0x12 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(reent.o)
+ .comment       0x00000426       0x12 ../libefsl/libefsl.a(efs.o)
+ .comment       0x00000438       0x12 ../libefsl/libefsl.a(disc.o)
+ .comment       0x0000044a       0x12 ../libefsl/libefsl.a(partition.o)
+ .comment       0x0000045c       0x12 ../libefsl/libefsl.a(fs.o)
+ .comment       0x0000046e       0x12 ../libefsl/libefsl.a(fat.o)
+ .comment       0x00000480       0x12 ../libefsl/libefsl.a(file.o)
+ .comment       0x00000492       0x12 ../libefsl/libefsl.a(dir.o)
+ .comment       0x000004a4       0x12 ../libefsl/libefsl.a(ioman.o)
+ .comment       0x000004b6       0x12 ../libefsl/libefsl.a(extract.o)
+ .comment       0x000004c8       0x12 ../libefsl/libefsl.a(ls.o)
+ .comment       0x000004da       0x12 ../libefsl/libefsl.a(at91_spi.o)
+ .comment       0x000004ec       0x12 ../libefsl/libefsl.a(plibc.o)
+ .comment       0x000004fe       0x12 ../libefsl/libefsl.a(time.o)
+ .comment       0x00000510       0x12 ../libefsl/libefsl.a(sd.o)
 
 .debug
  *(.debug)
@@ -2051,18 +2043,18 @@ AT91F_ADC_SoftReset                               hardware/lib_AT91SAM7S256.o
 AT91F_ADC_StartConversion                         hardware/lib_AT91SAM7S256.o
                                                   logger/loggerHardware.o
 AT91F_AIC_AcknowledgeIt                           hardware/lib_AT91SAM7S256.o
-                                                  gpio/gpioIsr.o
+                                                  logger/gpioIsr.o
 AT91F_AIC_CfgPIO                                  hardware/lib_AT91SAM7S256.o
 AT91F_AIC_CfgPMC                                  hardware/lib_AT91SAM7S256.o
 AT91F_AIC_ClearIt                                 hardware/lib_AT91SAM7S256.o
-                                                  gpio/gpioIsr.o
+                                                  logger/gpioIsr.o
 AT91F_AIC_ConfigureIt                             hardware/lib_AT91SAM7S256.o
-                                                  gpio/gpio.o
+                                                  logger/loggerHardware.o
                                                   usb/source/USB-CDC.o
                                                   FreeRTOS/Source/portable/GCC/ARM7_AT91SAM7S/port.o
 AT91F_AIC_DisableIt                               hardware/lib_AT91SAM7S256.o
 AT91F_AIC_EnableIt                                hardware/lib_AT91SAM7S256.o
-                                                  gpio/gpio.o
+                                                  logger/loggerHardware.o
 AT91F_AIC_IsActive                                hardware/lib_AT91SAM7S256.o
 AT91F_AIC_IsPending                               hardware/lib_AT91SAM7S256.o
 AT91F_AIC_Open                                    hardware/lib_AT91SAM7S256.o
@@ -2113,28 +2105,25 @@ AT91F_PIO_A_RegisterSelection                     hardware/lib_AT91SAM7S256.o
 AT91F_PIO_B_RegisterSelection                     hardware/lib_AT91SAM7S256.o
 AT91F_PIO_CfgDirectDrive                          hardware/lib_AT91SAM7S256.o
 AT91F_PIO_CfgInput                                hardware/lib_AT91SAM7S256.o
-                                                  gpio/gpio.o
+                                                  logger/loggerHardware.o
 AT91F_PIO_CfgInputFilter                          hardware/lib_AT91SAM7S256.o
-                                                  gpio/gpio.o
+                                                  logger/loggerHardware.o
 AT91F_PIO_CfgOpendrain                            hardware/lib_AT91SAM7S256.o
-                                                  gpio/gpio.o
+                                                  logger/loggerHardware.o
 AT91F_PIO_CfgOutput                               hardware/lib_AT91SAM7S256.o
-                                                  gpio/gpio.o
                                                   logger/loggerHardware.o
 AT91F_PIO_CfgPeriph                               hardware/lib_AT91SAM7S256.o
                                                   serial/usart.o
                                                   logger/loggerHardware.o
 AT91F_PIO_CfgPullup                               hardware/lib_AT91SAM7S256.o
-                                                  gpio/gpio.o
+                                                  logger/loggerHardware.o
 AT91F_PIO_ClearOutput                             hardware/lib_AT91SAM7S256.o
-                                                  gpio/gpio.o
                                                   logger/loggerHardware.o
 AT91F_PIO_Disable                                 hardware/lib_AT91SAM7S256.o
 AT91F_PIO_Enable                                  hardware/lib_AT91SAM7S256.o
 AT91F_PIO_ForceOutput                             hardware/lib_AT91SAM7S256.o
 AT91F_PIO_GetCfgPullup                            hardware/lib_AT91SAM7S256.o
 AT91F_PIO_GetInput                                hardware/lib_AT91SAM7S256.o
-                                                  gpio/gpio.o
                                                   logger/loggerHardware.o
 AT91F_PIO_GetInputFilterStatus                    hardware/lib_AT91SAM7S256.o
 AT91F_PIO_GetInterruptMaskStatus                  hardware/lib_AT91SAM7S256.o
@@ -2149,7 +2138,7 @@ AT91F_PIO_InputFilterDisable                      hardware/lib_AT91SAM7S256.o
 AT91F_PIO_InputFilterEnable                       hardware/lib_AT91SAM7S256.o
 AT91F_PIO_InterruptDisable                        hardware/lib_AT91SAM7S256.o
 AT91F_PIO_InterruptEnable                         hardware/lib_AT91SAM7S256.o
-                                                  gpio/gpio.o
+                                                  logger/loggerHardware.o
 AT91F_PIO_IsAB_RegisterSet                        hardware/lib_AT91SAM7S256.o
 AT91F_PIO_IsCfgPullupStatusSet                    hardware/lib_AT91SAM7S256.o
 AT91F_PIO_IsInputFilterSet                        hardware/lib_AT91SAM7S256.o
@@ -2168,7 +2157,6 @@ AT91F_PIO_OutputEnable                            hardware/lib_AT91SAM7S256.o
 AT91F_PIO_OutputWriteDisable                      hardware/lib_AT91SAM7S256.o
 AT91F_PIO_OutputWriteEnable                       hardware/lib_AT91SAM7S256.o
 AT91F_PIO_SetOutput                               hardware/lib_AT91SAM7S256.o
-                                                  gpio/gpio.o
                                                   logger/loggerHardware.o
 AT91F_PITC_CfgPMC                                 hardware/lib_AT91SAM7S256.o
 AT91F_PITDisableInt                               hardware/lib_AT91SAM7S256.o
@@ -2389,7 +2377,6 @@ StartPWM                                          logger/loggerHardware.o
 StopAllPWM                                        logger/loggerHardware.o
 StopPWM                                           logger/loggerHardware.o
 Toggle_LED                                        logger/loggerHardware.o
-                                                  gpio/gpio.o
                                                   usb/source/USB-CDC.o
                                                   main.o
 USART_Configure                                   serial/usart.o
@@ -3000,13 +2987,7 @@ memset                                            /cygdrive/c/gccfd/gnuarm/bin/.
                                                   /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(findfp.o)
                                                   /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(vfprintf.o)
                                                   FreeRTOS/Source/tasks.o
-onGPI1Task                                        gpio/gpio.o
-onGPI2Task                                        gpio/gpio.o
-onGPI3Task                                        gpio/gpio.o
-onGPO1Task                                        gpio/gpio.o
-onGPO2Task                                        gpio/gpio.o
-onGPO3Task                                        gpio/gpio.o
-onPushbuttonTask                                  gpio/gpio.o
+onPushbuttonTask                                  logger/loggerHardware.o
                                                   main.o
 onUSBCommTask                                     usb/source/usb_comm.o
                                                   main.o
@@ -3035,15 +3016,15 @@ part_relSect                                      ../libefsl/libefsl.a(partition
                                                   ../libefsl/libefsl.a(fat.o)
                                                   ../libefsl/libefsl.a(fs.o)
 part_writeBuf                                     ../libefsl/libefsl.a(partition.o)
-pushbutton_irq_handler                            gpio/gpioIsr.o
-                                                  gpio/gpio.o
+pushbutton_irq_handler                            logger/gpioIsr.o
+                                                  logger/loggerHardware.o
 pvPortMalloc                                      FreeRTOS/Source/portable/MemMang/heap_2.o
                                                   FreeRTOS/Source/queue.o
                                                   FreeRTOS/Source/tasks.o
 pxConfigDescriptor                                usb/source/USB-CDC.o
 pxConfigurationStringDescriptor                   usb/source/USB-CDC.o
 pxCurrentTCB                                      FreeRTOS/Source/tasks.o
-                                                  gpio/gpioIsr.o
+                                                  logger/gpioIsr.o
                                                   usb/source/USBIsr.o
                                                   FreeRTOS/Source/portable/GCC/ARM7_AT91SAM7S/portISR.o
 pxDeviceDescriptor                                usb/source/USB-CDC.o
@@ -3053,7 +3034,6 @@ pxManufacturerStringDescriptor                    usb/source/USB-CDC.o
 pxPortInitialiseStack                             FreeRTOS/Source/portable/GCC/ARM7_AT91SAM7S/port.o
                                                   FreeRTOS/Source/tasks.o
 pxProductStringDescriptor                         usb/source/USB-CDC.o
-readGPI                                           gpio/gpio.o
 restoreFIQ                                        interrupt_utils.o
 restoreIRQ                                        interrupt_utils.o
 sd_Command                                        ../libefsl/libefsl.a(sd.o)
@@ -3071,7 +3051,6 @@ sd_readSector                                     ../libefsl/libefsl.a(sd.o)
 sd_writeSector                                    ../libefsl/libefsl.a(sd.o)
                                                   ../libefsl/libefsl.a(at91_spi.o)
 selectChip                                        accelerometer/accelerometer.o
-setGPO                                            gpio/gpio.o
 setlocale                                         /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(locale.o)
 spi_init_chip_select                              accelerometer/accelerometer.o
 sprintf                                           /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(sprintf.o)
@@ -3100,7 +3079,7 @@ uart1_putchar                                     serial/usart.o
 uart1_puts                                        serial/usart.o
 uart_putc                                         serial/usart.o
 ulCriticalNesting                                 FreeRTOS/Source/portable/GCC/ARM7_AT91SAM7S/portISR.o
-                                                  gpio/gpioIsr.o
+                                                  logger/gpioIsr.o
                                                   usb/source/USBIsr.o
 uxQueueMessagesWaiting                            FreeRTOS/Source/queue.o
                                                   usb/source/USB-CDC.o
@@ -3123,12 +3102,12 @@ vPortEnableInterruptsFromThumb                    FreeRTOS/Source/portable/GCC/A
 vPortEndScheduler                                 FreeRTOS/Source/portable/GCC/ARM7_AT91SAM7S/port.o
                                                   FreeRTOS/Source/tasks.o
 vPortEnterCritical                                FreeRTOS/Source/portable/GCC/ARM7_AT91SAM7S/portISR.o
-                                                  gpio/gpio.o
+                                                  logger/loggerHardware.o
                                                   usb/source/USB-CDC.o
                                                   FreeRTOS/Source/queue.o
                                                   FreeRTOS/Source/tasks.o
 vPortExitCritical                                 FreeRTOS/Source/portable/GCC/ARM7_AT91SAM7S/portISR.o
-                                                  gpio/gpio.o
+                                                  logger/loggerHardware.o
                                                   usb/source/USB-CDC.o
                                                   FreeRTOS/Source/queue.o
                                                   FreeRTOS/Source/tasks.o
@@ -3141,7 +3120,7 @@ vPreemptiveTick                                   FreeRTOS/Source/portable/GCC/A
                                                   FreeRTOS/Source/portable/GCC/ARM7_AT91SAM7S/port.o
 vQueueDelete                                      FreeRTOS/Source/queue.o
 vTaskDelay                                        FreeRTOS/Source/tasks.o
-                                                  gpio/gpio.o
+                                                  logger/loggerHardware.o
                                                   usb/source/USB-CDC.o
                                                   usb/source/usb_comm.o
 vTaskDelayUntil                                   FreeRTOS/Source/tasks.o
@@ -3163,7 +3142,7 @@ vTaskSuspendAll                                   FreeRTOS/Source/tasks.o
                                                   FreeRTOS/Source/portable/MemMang/heap_2.o
                                                   FreeRTOS/Source/queue.o
 vTaskSwitchContext                                FreeRTOS/Source/tasks.o
-                                                  gpio/gpioIsr.o
+                                                  logger/gpioIsr.o
                                                   usb/source/USBIsr.o
                                                   FreeRTOS/Source/portable/GCC/ARM7_AT91SAM7S/portISR.o
 vUSBBytesAvailable                                usb/source/USB-CDC.o
@@ -3181,25 +3160,22 @@ vUSB_ISR                                          usb/source/USBIsr.o
 vfprintf                                          /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(vfprintf.o)
 wcrtomb                                           /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wcrtomb.o)
 wcsrtombs                                         /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/lib/thumb/interwork/libc.a(wcsrtombs.o)
-xOnGPI1                                           gpio/gpio.o
-xOnGPI2                                           gpio/gpio.o
-xOnGPI3                                           gpio/gpio.o
-xOnPushbutton                                     gpio/gpio.o
-                                                  gpio/gpioIsr.o
+xOnPushbutton                                     logger/loggerHardware.o
+                                                  logger/gpioIsr.o
 xPortStartScheduler                               FreeRTOS/Source/portable/GCC/ARM7_AT91SAM7S/port.o
                                                   FreeRTOS/Source/tasks.o
 xQueueCreate                                      FreeRTOS/Source/queue.o
-                                                  gpio/gpio.o
+                                                  logger/loggerHardware.o
                                                   usb/source/USB-CDC.o
 xQueueReceive                                     FreeRTOS/Source/queue.o
-                                                  gpio/gpio.o
+                                                  logger/loggerHardware.o
                                                   usb/source/USB-CDC.o
 xQueueReceiveFromISR                              FreeRTOS/Source/queue.o
 xQueueSend                                        FreeRTOS/Source/queue.o
-                                                  gpio/gpio.o
+                                                  logger/loggerHardware.o
                                                   usb/source/USB-CDC.o
 xQueueSendFromISR                                 FreeRTOS/Source/queue.o
-                                                  gpio/gpioIsr.o
+                                                  logger/gpioIsr.o
                                                   usb/source/USBIsr.o
 xTaskCheckForTimeOut                              FreeRTOS/Source/tasks.o
                                                   FreeRTOS/Source/queue.o

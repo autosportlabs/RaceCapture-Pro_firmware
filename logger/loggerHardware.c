@@ -1,6 +1,11 @@
 #include "loggerHardware.h"
 #include "board.h"
 #include "lib_AT91SAM7S256.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "semphr.h"
+
 
 /* ADC field definition for the Mode Register: Reminder
                        TRGEN    => Selection bewteen Software or hardware start of conversion
@@ -23,6 +28,13 @@
 #define   CHANNEL  (0)      // Write the targeted channel (Notation: the first channel is 0
                             // and the last is 7)
 
+
+#define DEBOUNCE_DELAY_PERIOD			( ( portTickType )30 / portTICK_RATE_MS  )
+
+
+xSemaphoreHandle xOnPushbutton;
+
+
 void InitGPIO(){
     AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, GPIO_MASK ) ;
 }
@@ -42,12 +54,6 @@ void ClearFREQ_ANALOG(unsigned int freqAnalogPort){
 	AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, freqAnalogPort );
 }
 
-/// PWM frequency in Hz.
-#define PWM_FREQUENCY               5000
-
-/// Maximum duty cycle value.
-#define MAX_DUTY_CYCLE              1000
-#define MIN_DUTY_CYCLE          	2
 
 
 void StopPWM(unsigned int pwmChannel){
@@ -421,4 +427,42 @@ void Toggle_LED (unsigned int Led){
     {
         AT91F_PIO_SetOutput( AT91C_BASE_PIOA, Led );
     }
+}
+
+void onPushbuttonTask(void *pvParameters){
+	
+	portTickType xDelayPeriod = DEBOUNCE_DELAY_PERIOD;
+	
+	portENTER_CRITICAL();
+	vSemaphoreCreateBinary( xOnPushbutton );
+    AT91PS_AIC     pAic;
+	pAic = AT91C_BASE_AIC;
+	AT91F_PIO_CfgInput(AT91C_BASE_PIOA, ENABLED_GPIO_PINS);
+	AT91F_PIO_CfgPullup(AT91C_BASE_PIOA, ENABLED_GPIO_PINS);
+	AT91F_PIO_CfgInputFilter(AT91C_BASE_PIOA,ENABLED_GPIO_PINS);
+	AT91F_PIO_CfgOpendrain(AT91C_BASE_PIOA,ENABLED_GPIO_PINS);
+	
+	AT91F_PIO_InterruptEnable(AT91C_BASE_PIOA,ENABLED_GPIO_PINS);
+
+	AT91F_AIC_ConfigureIt ( pAic, AT91C_ID_PIOA, PUSHBUTTON_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL, pushbutton_irq_handler);
+	AT91F_AIC_EnableIt (pAic, AT91C_ID_PIOA);
+
+	portEXIT_CRITICAL();
+	
+	while(1){
+		if ( xSemaphoreTake(xOnPushbutton, portMAX_DELAY) == pdTRUE){
+				vTaskDelay( xDelayPeriod );
+				
+				if (
+					((AT91F_PIO_GetInput(AT91C_BASE_PIOA) & PIO_PUSHBUTTON_SWITCH) == 0) )
+					{
+						//On Pushbutton
+					}
+
+				if ( ((AT91F_PIO_GetInput(AT91C_BASE_PIOA) & GPIO_1) == 0) ) 
+				{
+					//On GPIO 1
+				}
+		}
+	}
 }
