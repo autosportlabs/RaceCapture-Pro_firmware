@@ -11,8 +11,8 @@ void onUSBEchoTask(void *);
 //On revolution
 void onUSBCommTask(void *);
 
-void SendBytes(portCHAR *data, unsigned int length);
+void SendBytes(char *data, unsigned int length);
 
-void SendString(portCHAR *s);
+void SendString(char *s);
 
 #endif /*USB_COMM_H_*/

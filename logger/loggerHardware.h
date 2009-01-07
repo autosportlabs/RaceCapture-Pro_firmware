@@ -35,7 +35,7 @@
 //Init GPIO ports
 void InitGPIO();
 
-void pushbutton_irq_handler ( void );
+void gpio_irq_handler ( void );
 
 void onPushbuttonTask(void *pvParameters);
 
@@ -80,7 +80,8 @@ void SetFREQ_ANALOG(unsigned int freqAnalogPort);
 void ClearFREQ_ANALOG(unsigned int freqAnalogPort);
 
 //Read all ADC ports
-unsigned int ReadAllADC(unsigned int *a0, 
+
+void ReadAllADC(unsigned int *a0, 
 						unsigned int *a1, 
 						unsigned int *a2,
 						unsigned int *a3,
