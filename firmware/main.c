@@ -20,7 +20,6 @@
 #include "loggerHardware.h"
 #include "usart.h"
 #include "sdcard.h"
-#include "gpio.h"
 
 
 #define SW1_MASK        (1<<19)	// PA19		RK   FIQ     13

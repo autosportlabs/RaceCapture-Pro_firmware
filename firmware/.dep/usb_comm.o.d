@@ -27,8 +27,8 @@ usb/source/usb_comm.o: usb/source/usb_comm.c usb/include/usb_comm.h \
   /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/string.h \
   /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/sys/string.h \
   usb/include/USB-CDC.h usb/include/usb.h hardware/include/Board.h \
-  logger/loggerHardware.h hardware/include/board.h sdcard/sdcard.h \
-  ../libefsl/inc/efs.h ../libefsl/inc/types.h ../libefsl/conf/config.h \
+  logger/loggerHardware.h sdcard/sdcard.h ../libefsl/inc/efs.h \
+  ../libefsl/inc/types.h ../libefsl/conf/config.h \
   ../libefsl/inc/interface.h ../libefsl/inc/interfaces/arm_spi.h \
   ../libefsl/inc/interfaces/../debug.h \
   ../libefsl/inc/interfaces/../types.h ../libefsl/conf/config.h \
@@ -111,8 +111,6 @@ usb/include/usb.h:
 hardware/include/Board.h:
 
 logger/loggerHardware.h:
-
-hardware/include/board.h:
 
 sdcard/sdcard.h:
 

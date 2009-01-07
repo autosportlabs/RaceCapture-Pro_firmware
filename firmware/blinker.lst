@@ -73,9 +73,9 @@
   75              		.ident	"GCC: (GNU) 4.0.2"
 DEFINED SYMBOLS
                             *ABS*:00000000 blinker.c
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccdLt4J8.s:6      .text.blinker:00000000 blinker
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccdLt4J8.s:11     .text.blinker:00000000 $a
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccdLt4J8.s:70     .text.blinker:000000b8 $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/cc0zEzoO.s:6      .text.blinker:00000000 blinker
+/cygdrive/c/Users/brent/AppData/Local/Temp/cc0zEzoO.s:11     .text.blinker:00000000 $a
+/cygdrive/c/Users/brent/AppData/Local/Temp/cc0zEzoO.s:70     .text.blinker:000000b8 $d
                             *COM*:00000004 blinkcount
 
 NO UNDEFINED SYMBOLS

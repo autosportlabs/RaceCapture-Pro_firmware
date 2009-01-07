@@ -116,16 +116,16 @@
  126              		.ident	"GCC: (GNU) 4.0.2"
 DEFINED SYMBOLS
                             *ABS*:00000000 list.c
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc1NaNkr.s:1      .text:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc1NaNkr.s:9      .text.vListInitialise:00000000 vListInitialise
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc1NaNkr.s:6      .text.vListInitialise:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc1NaNkr.s:30     .text.vListInitialiseItem:00000000 vListInitialiseItem
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc1NaNkr.s:27     .text.vListInitialiseItem:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc1NaNkr.s:43     .text.vListInsertEnd:00000000 vListInsertEnd
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc1NaNkr.s:40     .text.vListInsertEnd:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc1NaNkr.s:66     .text.vListInsert:00000000 vListInsert
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc1NaNkr.s:63     .text.vListInsert:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc1NaNkr.s:105    .text.vListRemove:00000000 vListRemove
-/cygdrive/c/Users/brent/AppData/Local/Temp/cc1NaNkr.s:102    .text.vListRemove:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccyAegNM.s:1      .text:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccyAegNM.s:9      .text.vListInitialise:00000000 vListInitialise
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccyAegNM.s:6      .text.vListInitialise:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccyAegNM.s:30     .text.vListInitialiseItem:00000000 vListInitialiseItem
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccyAegNM.s:27     .text.vListInitialiseItem:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccyAegNM.s:43     .text.vListInsertEnd:00000000 vListInsertEnd
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccyAegNM.s:40     .text.vListInsertEnd:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccyAegNM.s:66     .text.vListInsert:00000000 vListInsert
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccyAegNM.s:63     .text.vListInsert:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccyAegNM.s:105    .text.vListRemove:00000000 vListRemove
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccyAegNM.s:102    .text.vListRemove:00000000 $t
 
 NO UNDEFINED SYMBOLS
