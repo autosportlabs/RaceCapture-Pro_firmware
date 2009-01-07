@@ -568,7 +568,7 @@ Disassembly of section .text:
   100634:	00200880 	eoreq	r0, r0, r0, lsl #17
   100638:	002009bc 	streqh	r0, [r0], -ip
 
-0010063c <pushbutton_irq_handler>:
+0010063c <gpio_irq_handler>:
   10063c:	e59f30cc 	ldr	r3, [pc, #204]	; 100710 <.text+0x710>
   100640:	e593304c 	ldr	r3, [r3, #76]
   100644:	e92d0001 	stmdb	sp!, {r0}
@@ -2529,10 +2529,10 @@ Disassembly of section .text:
   10164c:	9302      	str	r3, [sp, #8]
   10164e:	ab51      	add	r3, sp, #324
   101650:	9303      	str	r3, [sp, #12]
-  101652:	a957      	add	r1, sp, #348
-  101654:	aa56      	add	r2, sp, #344
-  101656:	ab55      	add	r3, sp, #340
-  101658:	a858      	add	r0, sp, #352
+  101652:	a858      	add	r0, sp, #352
+  101654:	a957      	add	r1, sp, #348
+  101656:	aa56      	add	r2, sp, #344
+  101658:	ab55      	add	r3, sp, #340
   10165a:	fc3ff000 	bl	101edc <ReadAllADC>
   10165e:	9956      	ldr	r1, [sp, #344]
   101660:	9100      	str	r1, [sp, #0]
@@ -3633,8 +3633,8 @@ Disassembly of section .text:
   101f3a:	9b08      	ldr	r3, [sp, #32]
   101f3c:	6018      	str	r0, [r3, #0]
   101f3e:	bcf0      	pop	{r4, r5, r6, r7}
-  101f40:	bc02      	pop	{r1}
-  101f42:	4708      	bx	r1
+  101f40:	bc01      	pop	{r0}
+  101f42:	4700      	bx	r0
   101f44:	8000      	strh	r0, [r0, #0]
   101f46:	fffd      	second half of BL instruction 0xfffd
 

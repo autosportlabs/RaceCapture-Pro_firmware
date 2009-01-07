@@ -55,7 +55,7 @@ void ListFile(char *filename){
 		
 		while (( e = file_read(&f,1,buf)) != 0){
 			buf[e]=0;
-			SendString(buf);
+			SendString((char *)buf);
 		}
 		file_fclose(&f);
 		fs_umount(&efs.myFs);
@@ -151,11 +151,11 @@ void onUSBCommTask(void *pvParameters){
 }
 
 
-void SendString(portCHAR *s){
+void SendString(char *s){
 	while ( *s ) vUSBSendByte(*s++ );
 }
 
-void SendBytes(portCHAR *data, unsigned int length){
+void SendBytes(char *data, unsigned int length){
 	
 	while (length > 0){
     	vUSBSendByte(*data);
@@ -163,3 +163,4 @@ void SendBytes(portCHAR *data, unsigned int length){
     	length--;
 	}	
 }
+

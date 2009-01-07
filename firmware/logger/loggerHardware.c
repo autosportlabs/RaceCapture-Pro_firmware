@@ -332,7 +332,7 @@ void InitADC(){
 }
 
 
-unsigned int ReadAllADC(	unsigned int *a0, 
+void ReadAllADC(	unsigned int *a0, 
 						unsigned int *a1, 
 						unsigned int *a2,
 						unsigned int *a3,
@@ -444,7 +444,7 @@ void onPushbuttonTask(void *pvParameters){
 	
 	AT91F_PIO_InterruptEnable(AT91C_BASE_PIOA,ENABLED_GPIO_PINS);
 
-	AT91F_AIC_ConfigureIt ( pAic, AT91C_ID_PIOA, PUSHBUTTON_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL, pushbutton_irq_handler);
+	AT91F_AIC_ConfigureIt ( pAic, AT91C_ID_PIOA, PUSHBUTTON_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL, gpio_irq_handler);
 	AT91F_AIC_EnableIt (pAic, AT91C_ID_PIOA);
 
 	portEXIT_CRITICAL();

@@ -8,8 +8,8 @@
 extern xSemaphoreHandle xOnPushbutton;
 
 
-void pushbutton_irq_handler(void )__attribute__ ((naked));
-void pushbutton_irq_handler( void )
+void gpio_irq_handler(void )__attribute__ ((naked));
+void gpio_irq_handler( void )
 {
 //* enable the next PIO IRQ
     int dummy = AT91C_BASE_PIOA->PIO_ISR;

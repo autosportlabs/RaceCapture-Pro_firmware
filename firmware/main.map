@@ -199,9 +199,9 @@ LOAD /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/thumb/interwork/libgc
  .text.vUSB_ISR
                 0x00100400      0x23c usb/source/USBIsr.o
                 0x00100400                vUSB_ISR
- .text.pushbutton_irq_handler
+ .text.gpio_irq_handler
                 0x0010063c       0xf0 logger/gpioIsr.o
-                0x0010063c                pushbutton_irq_handler
+                0x0010063c                gpio_irq_handler
  .text.main     0x0010072c       0xa8 main.o
                 0x0010072c                main
  .text.AT91F_AIC_ConfigureIt
@@ -2883,6 +2883,8 @@ fs_umount                                         ../libefsl/libefsl.a(fs.o)
                                                   sdcard/sdcard.o
                                                   usb/source/usb_comm.o
 fs_verifySanity                                   ../libefsl/libefsl.a(fs.o)
+gpio_irq_handler                                  logger/gpioIsr.o
+                                                  logger/loggerHardware.o
 if_initInterface                                  ../libefsl/libefsl.a(at91_spi.o)
                                                   ../libefsl/libefsl.a(efs.o)
 if_readBuf                                        ../libefsl/libefsl.a(at91_spi.o)
@@ -3016,8 +3018,6 @@ part_relSect                                      ../libefsl/libefsl.a(partition
                                                   ../libefsl/libefsl.a(fat.o)
                                                   ../libefsl/libefsl.a(fs.o)
 part_writeBuf                                     ../libefsl/libefsl.a(partition.o)
-pushbutton_irq_handler                            logger/gpioIsr.o
-                                                  logger/loggerHardware.o
 pvPortMalloc                                      FreeRTOS/Source/portable/MemMang/heap_2.o
                                                   FreeRTOS/Source/queue.o
                                                   FreeRTOS/Source/tasks.o

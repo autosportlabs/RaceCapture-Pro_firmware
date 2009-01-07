@@ -67,7 +67,7 @@
 00100390 T vPortEnterCritical
 001003bc T vPortExitCritical
 00100400 T vUSB_ISR
-0010063c T pushbutton_irq_handler
+0010063c T gpio_irq_handler
 0010072c T main
 001007d4 T AT91F_AIC_ConfigureIt
 001007fc T AT91F_AIC_EnableIt
