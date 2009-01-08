@@ -8,6 +8,8 @@
 
 int InitSDCard();
 void ListRootDir(void);
-
+int InitEFS();
+int UnmountEFS();
+int OpenNextLogFile(EmbeddedFile *f);
 
 #endif /*SDCARD_H_*/

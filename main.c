@@ -18,8 +18,10 @@
 #include "interrupt_utils.h"
 #include "USB-CDC.h"
 #include "loggerHardware.h"
+#include "gpioTasks.h"
 #include "usart.h"
 #include "sdcard.h"
+#include "loggerTask.h"
 
 
 #define SW1_MASK        (1<<19)	// PA19		RK   FIQ     13
@@ -62,7 +64,7 @@ static void SerialPing2( void *pvParameters );
  */
 static portLONG prvCheckOtherTasksAreStillRunning( void );
 
-static void prvSetupHardware( void )
+static void setupHardware( void )
 {
 	/* When using the JTAG debugger the hardware is not always initialised to
 	the correct default state.  This line just ensures that this does not
@@ -81,7 +83,7 @@ static void prvSetupHardware( void )
    AT91F_RSTSetMode( AT91C_BASE_RSTC , AT91C_RSTC_URSTEN );
    
 	InitADC();
-	EnableAllPWM();
+	//EnableAllPWM();
 	InitLEDs();
 	InitGPIO();
  }
@@ -100,8 +102,7 @@ int main( void )
 
 	/* Setup any hardware that has not already been configured by the low
 	level init routines. */
-	prvSetupHardware();
-	InitLEDs();
+	setupHardware();
 	
 	// Start the task that processes the RPM signal
 
@@ -110,17 +111,13 @@ int main( void )
 	
 	xTaskCreate( vUSBCDCTask,		( signed portCHAR * ) "USB", 				mainUSB_TASK_STACK, 		NULL, 	mainUSB_PRIORITY, 			NULL );
 	xTaskCreate( onUSBCommTask,		( signed portCHAR * ) "OnUSBComm", 			mainUSB_COMM_STACK, 		NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
+	createLoggerTask();
+	createGPIOTasks();
+	
 	//xTaskCreate( StatusLED1,		( signed portCHAR * ) "StatusLED1", 		configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
 	//xTaskCreate( StatusLED2,		( signed portCHAR * ) "StatusLED2", 		configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
 	//xTaskCreate( SerialPing1,		( signed portCHAR * ) "DebugSerial1", 		configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
 	//xTaskCreate( SerialPing2,		( signed portCHAR * ) "DebugSerial2", 		configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
-	xTaskCreate( onPushbuttonTask, 	( signed portCHAR * ) "PushbuttonTask", 	configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
-	//xTaskCreate( onGPI1Task, 		( signed portCHAR * ) "GPI1Task", 			configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
-	//xTaskCreate( onGPI2Task,	 	( signed portCHAR * ) "GPI2Task", 			configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
-	//xTaskCreate( onGPI3Task,	 	( signed portCHAR * ) "GPI3Task", 			configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
-	//xTaskCreate( onGPO1Task,	 	( signed portCHAR * ) "GPO1Task", 			configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
-	//xTaskCreate( onGPO2Task,	 	( signed portCHAR * ) "GPO2Task", 			configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
-	//xTaskCreate( onGPO3Task,	 	( signed portCHAR * ) "GPO3Task", 			configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
 	
 				
 #define mainCHECK_TASK_PRIORITY 			( tskIDLE_PRIORITY + 1 )
@@ -139,7 +136,7 @@ int main( void )
 
    /* We should never get here as control is now taken by the scheduler. */
 	while(1){
-		Toggle_LED(LED2);
+		ToggleLED(LED2);
 		for (int i=0;i<2000000;i++){}	
 	}
 
@@ -171,7 +168,7 @@ static void StatusLED1( void *pvParameters )
 			xDelayPeriod = mainERROR_FLASH_PERIOD;
 		}
 		
-		Toggle_LED(LED1);
+		ToggleLED(LED1);
 	}
 }
 static void StatusLED2( void *pvParameters )
@@ -198,7 +195,7 @@ static void StatusLED2( void *pvParameters )
 			/* An error has been detected in one of the tasks - flash faster. */
 			xDelayPeriod = mainERROR_FLASH_PERIOD;
 		}
-		Toggle_LED(LED2);
+		ToggleLED(LED2);
 	}
 }
 

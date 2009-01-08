@@ -71,7 +71,7 @@ LOGGER_SRC_DIR = logger
 SERIAL_SRC_DIR = serial
 SDCARD_SRC_DIR = sdcard
 ACCELEROMETER_SRC_DIR = accelerometer
-
+UTIL_DIR = util
 
 # List C source files here. (C dependencies are automatically generated.)
 # use file-extension c for "c-only"-files
@@ -86,9 +86,12 @@ $(RTOS_GCC_DIR)/port.c \
 $(USB_SRC_DIR)/source/usb_comm.c \
 $(USB_SRC_DIR)/source/USB-CDC.c \
 $(LOGGER_SRC_DIR)/loggerHardware.c \
+$(LOGGER_SRC_DIR)/gpioTasks.c \
+$(LOGGER_SRC_DIR)/loggerTask.c \
 $(SERIAL_SRC_DIR)/usart.c \
 $(SDCARD_SRC_DIR)/sdcard.c \
-$(ACCELEROMETER_SRC_DIR)/accelerometer.c
+$(ACCELEROMETER_SRC_DIR)/accelerometer.c \
+$(UTIL_DIR)/modp_numtoa.c
 
 
 
@@ -164,7 +167,7 @@ CDEFS += -DSAM7_GCC
 CDEFS += -DTHUMB_INTERWORK
 
 # Place -I options here
-CINCS = -I. -I$(SDCARD_SRC_DIR) -I$(SERIAL_SRC_DIR) -I$(ACCELEROMETER_SRC_DIR) -I$(LOGGER_SRC_DIR) -I$(USB_SRC_DIR)/include -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
+CINCS = -I. -I$(UTIL_DIR) -I$(SDCARD_SRC_DIR) -I$(SERIAL_SRC_DIR) -I$(ACCELEROMETER_SRC_DIR) -I$(LOGGER_SRC_DIR) -I$(USB_SRC_DIR)/include -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
 #CINCS = -I. -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
 # Place -D or -U options for ASM here
 ADEFS =  -D$(RUN_MODE)
