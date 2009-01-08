@@ -27,7 +27,8 @@ usb/source/USB-CDC.o: usb/source/USB-CDC.c \
   FreeRTOS/Source/include/../../Source/portable/GCC/ARM7_AT91SAM7S/portmacro.h \
   FreeRTOS/Source/include/task.h FreeRTOS/Source/include/list.h \
   FreeRTOS/Source/include/queue.h logger/loggerHardware.h \
-  usb/include/USB-CDC.h usb/include/usb.h usb/include/descriptors.h
+  logger/loggerPinDefs.h usb/include/USB-CDC.h usb/include/usb.h \
+  usb/include/descriptors.h
 
 /cygdrive/c/gccfd/gnuarm/bin/../lib/gcc/arm-elf/4.0.2/../../../../arm-elf/sys-include/string.h:
 
@@ -96,6 +97,8 @@ FreeRTOS/Source/include/list.h:
 FreeRTOS/Source/include/queue.h:
 
 logger/loggerHardware.h:
+
+logger/loggerPinDefs.h:
 
 usb/include/USB-CDC.h:
 

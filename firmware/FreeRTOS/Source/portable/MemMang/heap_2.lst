@@ -158,17 +158,17 @@
  164              		.ident	"GCC: (GNU) 4.0.2"
 DEFINED SYMBOLS
                             *ABS*:00000000 heap_2.c
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccFQqkyw.s:1      .text:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccFQqkyw.s:7      .bss.xHeapHasBeenInitialised.3010:00000000 xHeapHasBeenInitialised.3010
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccFQqkyw.s:15     .text.pvPortMalloc:00000000 pvPortMalloc
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccFQqkyw.s:12     .text.pvPortMalloc:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccFQqkyw.s:103    .text.pvPortMalloc:0000009c $d
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccFQqkyw.s:162    .bss.xHeap:00000000 xHeap
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccFQqkyw.s:156    .bss.xStart:00000000 xStart
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccFQqkyw.s:150    .bss.xEnd:00000000 xEnd
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccFQqkyw.s:116    .text.vPortFree:00000000 vPortFree
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccFQqkyw.s:113    .text.vPortFree:00000000 $t
-/cygdrive/c/Users/brent/AppData/Local/Temp/ccFQqkyw.s:144    .text.vPortFree:0000002c $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccm2Vknk.s:1      .text:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccm2Vknk.s:7      .bss.xHeapHasBeenInitialised.3010:00000000 xHeapHasBeenInitialised.3010
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccm2Vknk.s:15     .text.pvPortMalloc:00000000 pvPortMalloc
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccm2Vknk.s:12     .text.pvPortMalloc:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccm2Vknk.s:103    .text.pvPortMalloc:0000009c $d
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccm2Vknk.s:162    .bss.xHeap:00000000 xHeap
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccm2Vknk.s:156    .bss.xStart:00000000 xStart
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccm2Vknk.s:150    .bss.xEnd:00000000 xEnd
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccm2Vknk.s:116    .text.vPortFree:00000000 vPortFree
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccm2Vknk.s:113    .text.vPortFree:00000000 $t
+/cygdrive/c/Users/brent/AppData/Local/Temp/ccm2Vknk.s:144    .text.vPortFree:0000002c $d
 
 UNDEFINED SYMBOLS
 vTaskSuspendAll

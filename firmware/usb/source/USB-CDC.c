@@ -731,7 +731,7 @@ extern void ( vUSB_ISR )( void );
 	{	
 		/* Not enough RAM to create queues!. */
 		while(1){
-			Toggle_LED(LED2);
+			ToggleLED(LED2);
 			vTaskDelay(100);
 		}
 		return;

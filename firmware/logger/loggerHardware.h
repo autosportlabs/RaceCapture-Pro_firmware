@@ -1,43 +1,10 @@
 #ifndef LOGGERHARDWARE_H_
 #define LOGGERHARDWARE_H_
 
-
-
-//define PIOs for analog/frequency outputs
-#define FREQ_ANALOG_1 (1<<7)
-#define FREQ_ANALOG_2 (1<<23)
-#define FREQ_ANALOG_3 (1<<24)
-#define FREQ_ANALOG_4 (1<<25)
-#define FREQ_ANALOG_MASK (FREQ_ANALOG_1|FREQ_ANALOG_2|FREQ_ANALOG_3|FREQ_ANALOG_4)
-
-/// PWM frequency in Hz.
-#define PWM_FREQUENCY               5000
-
-/// Maximum duty cycle value.
-#define MAX_DUTY_CYCLE              1000
-#define MIN_DUTY_CYCLE          	2
-
-
-//define PIOs for GPIO ports
-#define GPIO_1 (1<<8)
-#define GPIO_2 (1<<16)
-#define GPIO_3 (1<<27)
-#define PIO_PUSHBUTTON_SWITCH (1 << 4)
-#define GPIO_MASK (GPIO_1|GPIO_2|GPIO_3 | PIO_PUSHBUTTON_SWITCH)
-#define ENABLED_GPIO_PINS GPIO_MASK
-#define PUSHBUTTON_INTERRUPT_LEVEL	6
-
-//define PIOs for status LEDs
-#define LED1 (1<<1)
-#define LED2 (1<<2)
-#define LED_MASK        (LED1|LED2)
+#include "loggerPinDefs.h"
 
 //Init GPIO ports
 void InitGPIO();
-
-void gpio_irq_handler ( void );
-
-void onPushbuttonTask(void *pvParameters);
 
 
 //Init ADC ports
@@ -59,13 +26,13 @@ void StopAllPWM();
 //Init LED ports
 void InitLEDs();
 
-//Set LEDs
-void Set_LED(unsigned int Led);
+//Enable LED
+void EnableLED(unsigned int Led);
 //Clear LEDs
-void Clear_LED(unsigned int Led);
+void DisableLED(unsigned int Led);
 
 //Toggle LED state
-void Toggle_LED (unsigned int Led);
+void ToggleLED (unsigned int Led);
 
 //Set specified bits on PIO
 void SetGPIOBits(unsigned int portBits);
