@@ -154,7 +154,6 @@ void vUSB_ISR( void )
 	/* Clear AIC to complete ISR processing */
 	AT91C_BASE_AIC->AIC_EOICR = 0;
 
-	//Toggle_LED(LED2);
 	/* Do a task switch if needed */
 	portEXIT_SWITCHING_ISR( cTaskWokenByPost )
 }

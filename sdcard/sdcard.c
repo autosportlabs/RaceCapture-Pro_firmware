@@ -5,11 +5,6 @@
 
 #define MAX_LOG_FILE_INDEX 99999
 
-int InitSDCard(){
-	
-		return 0;
-}
-
 EmbeddedFileSystem g_efs;
 
 

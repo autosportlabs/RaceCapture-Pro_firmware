@@ -15,7 +15,7 @@ xSemaphoreHandle g_xLoggerStart;
 
 
 #define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 4 )
-#define LOGGER_STACK_SIZE  					400
+#define LOGGER_STACK_SIZE  					600
 
 void createLoggerTask(){
 
@@ -35,7 +35,6 @@ void createLoggerTask(){
 void writeLogFileValue(char * buf, int value, EmbeddedFile *f){
 	modp_itoa10(value,buf);
 	unsigned int len= strlen(buf);
-	
 	if (len != file_write(f,len,buf)){
 		//write error occurred	
 	}
@@ -50,7 +49,6 @@ void loggerTask(void *params){
 			if (InitEFS() == 0 ){
 				if (OpenNextLogFile(&f) == 0){
 					g_loggingShouldRun = 1;
-					EnableLED(LED1);
 				}
 			}
 			char buf[20];
@@ -63,7 +61,7 @@ void loggerTask(void *params){
 			while (g_loggingShouldRun){
 				unsigned int a0,a1,a2,a3,a4,a5,a6,a7;
 				ReadAllADC(&a0,&a1,&a2,&a3,&a4,&a5,&a6,&a7);				
-								
+
 				writeLogFileValue(buf, a0, &f);
 				file_write(&f,1,",");
 				writeLogFileValue(buf, a1, &f);
@@ -86,7 +84,6 @@ void loggerTask(void *params){
 			}
 			file_fclose(&f);
 			UnmountEFS();
-			DisableLED(LED1);
 			DisableLED(LED2);
 		}
 		vTaskDelay(1);
