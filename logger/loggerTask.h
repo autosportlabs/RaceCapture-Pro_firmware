@@ -5,6 +5,7 @@
 
 void createLoggerTask();
 void loggerTask(void *params);
-void writeLogFileValue(char * buf, int value, EmbeddedFile *f);
+void loggerWriter(void *params);
+void fileWriteString(char *s);
 
 #endif /*LOGGERTASK_H_*/

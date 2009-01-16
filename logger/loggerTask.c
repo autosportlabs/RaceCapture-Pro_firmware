@@ -15,15 +15,28 @@ xSemaphoreHandle g_xLoggerStart;
 
 
 #define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 4 )
-#define LOGGER_STACK_SIZE  					600
+#define WRITER_PRIORITY						( tskIDLE_PRIORITY + 5 )
+#define LOGGER_STACK_SIZE  					200
+#define WRITER_STACK_SIZE					200
+#define WRITE_QUEUE_SIZE					512
+
+xQueueHandle xFileWriteQueue; 
 
 void createLoggerTask(){
 
 	g_loggingShouldRun = 0;
 	vSemaphoreCreateBinary( g_xLoggerStart );
-	xSemaphoreTake( g_xLoggerStart,1);
+	xSemaphoreTake( g_xLoggerStart, 1 );
+	xFileWriteQueue = xQueueCreate( WRITE_QUEUE_SIZE, ( unsigned portCHAR ) sizeof( signed portCHAR ) );
 	
 		
+	xTaskCreate( loggerWriter,
+				( signed portCHAR * ) "loggerWriter",
+				WRITER_STACK_SIZE,
+				NULL,
+				WRITER_PRIORITY,
+				NULL);
+				
 	xTaskCreate( loggerTask, 	
 				( signed portCHAR * ) "loggerTask", 	
 				LOGGER_STACK_SIZE, 	
@@ -32,11 +45,34 @@ void createLoggerTask(){
 				NULL );
 }
 
-void writeLogFileValue(char * buf, int value, EmbeddedFile *f){
-	modp_itoa10(value,buf);
-	unsigned int len= strlen(buf);
-	if (len != file_write(f,len,buf)){
-		//write error occurred	
+void fileWriteString(char *s){
+	
+	while ( *s ){
+		xQueueSend(	xFileWriteQueue, (unsigned portCHAR *)s++, portMAX_DELAY);
+	}
+}
+
+void loggerWriter(void *params){
+	
+	EmbeddedFile f;
+	int writingEnabled = 0;
+	unsigned portCHAR data;
+	while(1){
+		if (xQueueReceive(xFileWriteQueue, &data, portMAX_DELAY)){
+			if (data == '!'){
+				if (InitEFS() == 0 ){
+					if (OpenNextLogFile(&f) == 0){
+						writingEnabled = 1;
+					}
+				}
+			} else if (data == '~'){
+				file_fclose(&f);
+				UnmountEFS();
+				writingEnabled = 0;
+			} else if (writingEnabled){
+				file_write(&f,1,(char *)&data);			
+			}
+		}
 	}
 }
 
@@ -52,38 +88,57 @@ void loggerTask(void *params){
 				}
 			}
 			char buf[20];
+			
+			//signal writer to open next file
+			fileWriteString("!");
 				
-			portTickType xLastWakeTime;
+			portTickType xLastWakeTime, startTickTime;
 			const portTickType xFrequency = 4;
-			xLastWakeTime = xTaskGetTickCount();
+			startTickTime = xLastWakeTime = xTaskGetTickCount();
+			
 			
 			//run until we should not log anymore
 			while (g_loggingShouldRun){
 				unsigned int a0,a1,a2,a3,a4,a5,a6,a7;
 				ReadAllADC(&a0,&a1,&a2,&a3,&a4,&a5,&a6,&a7);				
 
-				writeLogFileValue(buf, a0, &f);
-				file_write(&f,1,",");
-				writeLogFileValue(buf, a1, &f);
-				file_write(&f,1,",");
-				writeLogFileValue(buf, a2, &f);
-				file_write(&f,1,",");
-				writeLogFileValue(buf, a3, &f);
-				file_write(&f,1,",");
-				writeLogFileValue(buf, a4, &f);
-				file_write(&f,1,",");
-				writeLogFileValue(buf, a5, &f);
-				file_write(&f,1,",");
-				writeLogFileValue(buf, a6, &f);
-				file_write(&f,1,",");
-				writeLogFileValue(buf, a7, &f);
-				file_write(&f,1,"\n");
+				modp_itoa10(a0,buf);
+				fileWriteString(buf);
+				fileWriteString(",");
+
+				modp_itoa10(a1,buf);
+				fileWriteString(buf);
+				fileWriteString(",");
+
+				modp_itoa10(a2,buf);
+				fileWriteString(buf);
+				fileWriteString(",");
+	
+				modp_itoa10(a3,buf);
+				fileWriteString(buf);
+				fileWriteString(",");
+
+				modp_itoa10(a4,buf);
+				fileWriteString(buf);
+				fileWriteString(",");
+
+				modp_itoa10(a5,buf);
+				fileWriteString(buf);
+				fileWriteString(",");
+	
+				modp_itoa10(a6,buf);
+				fileWriteString(buf);
+				fileWriteString(",");
+
+				modp_itoa10(a7,buf);
+				fileWriteString(buf);
+
+				fileWriteString("\n");			
 				
 				ToggleLED(LED2);
 				vTaskDelayUntil( &xLastWakeTime, xFrequency );
 			}
-			file_fclose(&f);
-			UnmountEFS();
+			fileWriteString("~");
 			DisableLED(LED2);
 		}
 		vTaskDelay(1);
