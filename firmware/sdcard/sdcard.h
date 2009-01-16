@@ -6,7 +6,6 @@
 #include "mkfs.h"
 #include "interfaces/efsl_dbg_printf_arm.h"
 
-int InitSDCard();
 void ListRootDir(void);
 int InitEFS();
 int UnmountEFS();

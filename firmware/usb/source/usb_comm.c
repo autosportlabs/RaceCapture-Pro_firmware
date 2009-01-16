@@ -14,6 +14,7 @@ extern char					debugMsg[100];
 #define MSG_SIZE 				1000
 
 unsigned short duty = 1;
+char text[300];
 
 void onUSBEchoTask(void *pvParameters){
 	
@@ -33,7 +34,6 @@ void onUSBEchoTask(void *pvParameters){
 void ListFile(char *filename){
 
 	EmbeddedFileSystem efs;		
-	char text[300];
 	int res;
 	
 	SendString("Card Init...");
@@ -51,11 +51,9 @@ void ListFile(char *filename){
 		}
 		
 		unsigned short e;
-		unsigned char buf[101];
-		
-		while (( e = file_read(&f,1,buf)) != 0){
-			buf[e]=0;
-			SendString((char *)buf);
+		while (( e = file_read(&f,1,text)) != 0){
+			text[e]=0;
+			SendString((char *)text);
 		}
 		file_fclose(&f);
 		fs_umount(&efs.myFs);
@@ -71,8 +69,6 @@ void onUSBCommTask(void *pvParameters){
 		vTaskDelay(1);
 	}
 	
-	char text[300];
-	
     while (1){
     	vUSBReceiveByte(&theData);
 		if (theData == 'V'){
@@ -83,9 +79,6 @@ void onUSBCommTask(void *pvParameters){
 		}	
 		if (theData == 'd'){
 			ListRootDir();	
-		}
-		if (theData == 'r'){
-			ListFile("one.txt");	
 		}
 		if (theData == 'z'){
 			duty--;
@@ -129,9 +122,11 @@ void onUSBCommTask(void *pvParameters){
 		}
 		
 		if (theData == '!'){
-			for (int x = 0; x < 100000; x++){
-				sprintf(text,"count: %d\n", x);
+			for (int x = 0; x < 1000; x++){
+				for (int y = 0; y < 1000; y++){
+				sprintf(text,"%d %d\n\r", x,y);
 				SendString(text);	
+				}
 			}
 		}
 		

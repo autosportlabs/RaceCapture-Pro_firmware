@@ -83,7 +83,7 @@
 #define usbLENGTH_LOW_BYTE					( 6 )
 
 /* Misc application definitions. */
-#define usbINTERRUPT_PRIORITY				( 3 )
+#define usbINTERRUPT_PRIORITY				( 4 )
 #define usbQUEUE_LENGTH						( 0x3 )	/* Must have all bits set! */
 #define usbFIFO_LENGTH						( ( unsigned portLONG ) 8 )
 #define usbEND_POINT_0						( 0 )
