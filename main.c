@@ -42,10 +42,8 @@
 #define mainUSB_PRIORITY					( tskIDLE_PRIORITY + 2 )
 #define mainDEFAULT_TASK_PRIORITY 			( tskIDLE_PRIORITY + 1 )
 
-#define mainUSB_TASK_STACK					( 300 )
+#define mainUSB_TASK_STACK					( 200 )
 #define mainUSB_COMM_STACK					( 700 )
-#define mainON_REVOLUTION_STACK				( 500 )
-#define mainON_SELF_TEST_STACK				( 300 )
 
 #define mainNO_ERROR_FLASH_PERIOD			( ( portTickType ) 1000 / portTICK_RATE_MS  )
 #define mainBUSY_FLASH_PERIOD				( ( portTickType ) 500 / portTICK_RATE_MS )
@@ -135,8 +133,10 @@ int main( void )
    vTaskStartScheduler();
 
    /* We should never get here as control is now taken by the scheduler. */
+	EnableLED(LED1);
 	while(1){
 		ToggleLED(LED2);
+		ToggleLED(LED1);
 		for (int i=0;i<2000000;i++){}	
 	}
 
