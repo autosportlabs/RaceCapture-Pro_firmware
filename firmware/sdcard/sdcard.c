@@ -30,6 +30,7 @@ int OpenNextLogFile(EmbeddedFile *f){
 		sprintf(filename,"rc_%d.log",i);
 		int rc = file_fopen( f, &g_efs.myFs , filename , 'r' );
 		if ( rc !=0 ) break;
+		file_fclose(f);
 	}
 	if (i >= MAX_LOG_FILE_INDEX) return -2;
 	int rc = file_fopen( f, &g_efs.myFs , filename , 'w' ); 

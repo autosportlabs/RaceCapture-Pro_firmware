@@ -81,10 +81,6 @@ void onUSBCommTask(void *pvParameters){
 			text[2] = 3;	
 			SendBytes(text,3);
 		}	
-		if (theData == '!'){
-			sprintf(text,"Hello!\r\n");
-			SendBytes(text,strlen(text));
-		}
 		if (theData == 'd'){
 			ListRootDir();	
 		}
@@ -130,6 +126,13 @@ void onUSBCommTask(void *pvParameters){
 		 	int x = accel_readControlRegister();			
 			sprintf(text,"accel control: %d\r\n",x);
 			SendBytes(text,strlen(text));
+		}
+		
+		if (theData == '!'){
+			for (int x = 0; x < 100000; x++){
+				sprintf(text,"count: %d\n", x);
+				SendString(text);	
+			}
 		}
 		
 		if (theData == 'a'){

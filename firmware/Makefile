@@ -103,7 +103,6 @@ $(UTIL_DIR)/modp_numtoa.c
 # use file-extension c for "c-only"-files
 SRCARM = $(RTOS_GCC_DIR)/portISR.c \
 interrupt_utils.c \
-blinker.c \
 $(USB_SRC_DIR)/source/USBIsr.c \
 $(LOGGER_SRC_DIR)/gpioIsr.c
 
