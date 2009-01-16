@@ -93,7 +93,7 @@ void loggerTask(void *params){
 			fileWriteString("!");
 				
 			portTickType xLastWakeTime, startTickTime;
-			const portTickType xFrequency = 4;
+			const portTickType xFrequency = 3;
 			startTickTime = xLastWakeTime = xTaskGetTickCount();
 			
 			
