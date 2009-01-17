@@ -42,7 +42,7 @@
 #define mainUSB_PRIORITY					( tskIDLE_PRIORITY + 2 )
 #define mainDEFAULT_TASK_PRIORITY 			( tskIDLE_PRIORITY + 1 )
 
-#define mainUSB_TASK_STACK					( 300 )
+#define mainUSB_TASK_STACK					( 100 )
 #define mainUSB_COMM_STACK					( 600 )
 
 #define mainNO_ERROR_FLASH_PERIOD			( ( portTickType ) 1000 / portTICK_RATE_MS  )

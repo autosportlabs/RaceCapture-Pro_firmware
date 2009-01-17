@@ -3,12 +3,6 @@
 
 #include "FreeRTOS.h"
 
-//* Global variable
-
-
-void onUSBEchoTask(void *);
-
-//On revolution
 void onUSBCommTask(void *);
 
 void SendBytes(char *data, unsigned int length);
