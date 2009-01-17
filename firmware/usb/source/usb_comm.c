@@ -16,21 +16,6 @@ extern char					debugMsg[100];
 unsigned short duty = 1;
 char text[300];
 
-void onUSBEchoTask(void *pvParameters){
-	
-	portCHAR theData;
-	while (!vUSBIsInitialized()){
-		vTaskDelay(1);
-	}
-	
-    while(1)
-    {
-    	vUSBReceiveByte(&theData);
-    	vUSBSendByte(theData);
-    }	
-    	
-}
-
 void ListFile(char *filename){
 
 	EmbeddedFileSystem efs;		
@@ -123,13 +108,14 @@ void onUSBCommTask(void *pvParameters){
 		
 		if (theData == '!'){
 			for (int x = 0; x < 1000; x++){
-				for (int y = 0; y < 1000; y++){
-				sprintf(text,"%d %d\n\r", x,y);
+				sprintf(text,"%d\n\r", x);
 				SendString(text);	
-				}
 			}
 		}
-		
+		if (theData == 't'){
+			vTaskList(text);
+			SendString(text);	
+		}
 		if (theData == 'a'){
 			unsigned int a0,a1,a2,a3,a4,a5,a6,a7;
 /*			a1 = ReadADC(0);
