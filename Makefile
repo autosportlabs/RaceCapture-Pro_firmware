@@ -91,7 +91,8 @@ $(LOGGER_SRC_DIR)/loggerTask.c \
 $(SERIAL_SRC_DIR)/usart.c \
 $(SDCARD_SRC_DIR)/sdcard.c \
 $(ACCELEROMETER_SRC_DIR)/accelerometer.c \
-$(UTIL_DIR)/modp_numtoa.c
+$(UTIL_DIR)/modp_numtoa.c \
+$(LOGGER_SRC_DIR)/gps.c
 
 
 
@@ -104,7 +105,8 @@ $(UTIL_DIR)/modp_numtoa.c
 SRCARM = $(RTOS_GCC_DIR)/portISR.c \
 interrupt_utils.c \
 $(USB_SRC_DIR)/source/USBIsr.c \
-$(LOGGER_SRC_DIR)/gpioIsr.c
+$(LOGGER_SRC_DIR)/gpioIsr.c \
+$(LOGGER_SRC_DIR)/serialIsr.c
 
 # List C++ source files here.
 # use file-extension cpp for C++-files (use extension .cpp)

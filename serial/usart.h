@@ -100,6 +100,12 @@ extern int uart1_putchar (int ch);
 
 extern int uart1_puts (char* s );
 
+extern int uart1_readLine(char *s, int len);
+
+extern int uart0_readLine(char *s, int len);
+
+extern int uart_readLine(AT91S_USART *usart,char *s, int len);
+
 extern void USART_Write(
     AT91S_USART *usart, 
     unsigned short data, 

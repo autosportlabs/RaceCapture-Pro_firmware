@@ -22,7 +22,7 @@
 #include "usart.h"
 #include "sdcard.h"
 #include "loggerTask.h"
-
+#include "gps.h"
 
 #define SW1_MASK        (1<<19)	// PA19		RK   FIQ     13
 #define FIQ_INTERRUPT_LEVEL	0
@@ -81,6 +81,7 @@ static void setupHardware( void )
    AT91F_RSTSetMode( AT91C_BASE_RSTC , AT91C_RSTC_URSTEN );
    
 	InitADC();
+	InitSerial();
 	//EnableAllPWM();
 	InitLEDs();
 	InitGPIO();
@@ -111,6 +112,7 @@ int main( void )
 	xTaskCreate( onUSBCommTask,		( signed portCHAR * ) "OnUSBComm", 			mainUSB_COMM_STACK, 		NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
 	createLoggerTask();
 	createGPIOTasks();
+	startGPSTask();
 	
 	//xTaskCreate( StatusLED1,		( signed portCHAR * ) "StatusLED1", 		configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
 	//xTaskCreate( StatusLED2,		( signed portCHAR * ) "StatusLED2", 		configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
