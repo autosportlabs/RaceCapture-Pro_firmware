@@ -70,7 +70,7 @@ void InitSerial()
 			0); // mux funtion B  
 
     // Configure the USART in the desired mode @115200 bauds
-    USART_Configure(AT91C_BASE_US1, mode, 115200, BOARD_MCK);
+    USART_Configure(AT91C_BASE_US1, mode, 38400, BOARD_MCK);
 
     // Enable receiver & transmitter
     USART_SetTransmitterEnabled(AT91C_BASE_US1, 1);
@@ -156,6 +156,11 @@ int uart_putc(AT91S_USART *pUSART,int ch)
 	return (pUSART->US_THR = ch);                 /* Transmit Character */
 }	
 
+int uart_readc(AT91S_USART *pUSART){
+	while ((pUSART->US_CSR & AT91C_US_RXRDY) == 0); //read for rx ready
+ 	return pUSART->US_RHR; //read character
+}
+
 int uart0_putchar (int ch) {      
   return uart_putc(AT91C_BASE_US0, ch );
 }
@@ -175,6 +180,29 @@ int uart1_puts (char* s )
 {
 	while ( *s ) uart1_putchar(*s++ );
 	return 0;
+}
+
+int uart1_readLine(char *s, int len)
+{
+	return uart_readLine(AT91C_BASE_US1,s,len);
+}
+
+int uart0_readLine(char *s, int len)
+{
+	return uart_readLine(AT91C_BASE_US0,s,len);
+}
+
+int uart_readLine(AT91S_USART *usart,char *s, int len)
+{
+	int count = 0;
+	while(count < len - 1){
+		int c = uart_readc(usart);
+		*s++ = c;
+		count++;
+		if (c == '\n') break;
+	}
+	*s = '\0';
+	return count;
 }
 
 //------------------------------------------------------------------------------
