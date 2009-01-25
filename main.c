@@ -24,8 +24,6 @@
 #include "loggerTask.h"
 #include "gps.h"
 
-#define SW1_MASK        (1<<19)	// PA19		RK   FIQ     13
-#define FIQ_INTERRUPT_LEVEL	0
 
 /*-----------------*/
 /* Clock Selection */
@@ -50,6 +48,8 @@
 #define mainERROR_FLASH_PERIOD				( ( portTickType ) 100 / portTICK_RATE_MS  )
 #define mainDATA_DEBUG_PERIOD				( ( portTickType ) 100 / portTICK_RATE_MS  )
 
+#define FATAL_ERROR_SCHEDULER	1
+#define FATAL_ERROR_HARDWARE	2
 
 static void StatusLED1( void *pvParameters );
 static void StatusLED2( void *pvParameters );
@@ -62,7 +62,7 @@ static void SerialPing2( void *pvParameters );
  */
 static portLONG prvCheckOtherTasksAreStillRunning( void );
 
-static void setupHardware( void )
+static int setupHardware( void )
 {
 	/* When using the JTAG debugger the hardware is not always initialised to
 	the correct default state.  This line just ensures that this does not
@@ -79,12 +79,15 @@ static void setupHardware( void )
 
    /* Enable reset-button */
    AT91F_RSTSetMode( AT91C_BASE_RSTC , AT91C_RSTC_URSTEN );
-   
+
+	if (!initSerial()) return 0;
+	if (!vInitUSBInterface()) return 0;	
+	   
 	InitADC();
-	InitSerial();
 	//EnableAllPWM();
 	InitLEDs();
 	InitGPIO();
+	return 1;
  }
 
 /*-----------------------------------------------------------*/
@@ -92,38 +95,53 @@ static void setupHardware( void )
 /*
  * Starts all the other tasks, then starts the scheduler. 
  */
- 
+
+void fatalError(int type){
+	
+	
+	int count;
+	int pause = 5000000;
+	int flash = 1000000;
+	
+	switch (type){
+		case FATAL_ERROR_HARDWARE: 	
+			count = 1;
+			break;
+		case FATAL_ERROR_SCHEDULER:
+			count = 2;
+			break;
+		default:
+			count = 3;
+	}
+	
+	while(1){
+		for (int c = 0; c < count; c++){
+			EnableLED(LED1);
+			EnableLED(LED2);
+			for (int i=0;i<flash;i++){}
+			DisableLED(LED1);
+			DisableLED(LED2);
+			for (int i=0;i<flash;i++){}
+		}
+		for (int i=0;i<pause;i++){}	
+	}
+}
 
 int main( void )
 {
-	
-	//Setup our global variables
+	//setup hardware
+	int success = setupHardware();
+	if (! success) fatalError(FATAL_ERROR_HARDWARE);
 
-	/* Setup any hardware that has not already been configured by the low
-	level init routines. */
-	setupHardware();
-	
-	// Start the task that processes the RPM signal
-
-
-	// Start the check task - which is defined in this file.
-	
 	xTaskCreate( vUSBCDCTask,		( signed portCHAR * ) "USB", 				mainUSB_TASK_STACK, 		NULL, 	mainUSB_PRIORITY, 			NULL );
 	xTaskCreate( onUSBCommTask,		( signed portCHAR * ) "OnUSBComm", 			mainUSB_COMM_STACK, 		NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
 	createLoggerTask();
 	createGPIOTasks();
 	startGPSTask();
-	
 	//xTaskCreate( StatusLED1,		( signed portCHAR * ) "StatusLED1", 		configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
 	//xTaskCreate( StatusLED2,		( signed portCHAR * ) "StatusLED2", 		configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
 	//xTaskCreate( SerialPing1,		( signed portCHAR * ) "DebugSerial1", 		configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
 	//xTaskCreate( SerialPing2,		( signed portCHAR * ) "DebugSerial2", 		configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
-	
-				
-#define mainCHECK_TASK_PRIORITY 			( tskIDLE_PRIORITY + 1 )
-
-// DJS--iprintf() requires syscalls.c and serial_simple.c to be compiled
-//   iprintf("\r\nFreeRTOS %s\r\n\r\n",tskKERNEL_VERSION_NUMBER);
 
    /* Start the scheduler.
 
@@ -133,17 +151,11 @@ int main( void )
    to supervisor mode prior to main being called.  If you are not using one of
    these demo application projects then ensure Supervisor mode is used here. */
    vTaskStartScheduler();
-
-   /* We should never get here as control is now taken by the scheduler. */
-	EnableLED(LED1);
-	while(1){
-		ToggleLED(LED2);
-		ToggleLED(LED1);
-		for (int i=0;i<2000000;i++){}	
-	}
+   fatalError(FATAL_ERROR_SCHEDULER);
 
    return 0;
 }
+
 
 static void StatusLED1( void *pvParameters )
 {
@@ -173,6 +185,7 @@ static void StatusLED1( void *pvParameters )
 		ToggleLED(LED1);
 	}
 }
+
 static void StatusLED2( void *pvParameters )
 {
 
@@ -207,7 +220,7 @@ static void SerialPing1( void *pvParameters )
 	
 	for( ;; )
 	{
-		uart0_puts("Test_UART0\r\n");
+		usart0_puts("Test_UART0\r\n");
 		/* Delay until it is time to execute again. */
 		vTaskDelay( xDelayPeriod );
 	}
@@ -220,7 +233,7 @@ static void SerialPing2( void *pvParameters )
 	
 	for( ;; )
 	{
-		uart1_puts("Test_UART1\r\n");
+		usart1_puts("Test_UART1\r\n");
 		/* Delay until it is time to execute again. */
 		vTaskDelay( xDelayPeriod );
 	}

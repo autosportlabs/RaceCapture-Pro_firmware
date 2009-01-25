@@ -6,22 +6,23 @@
 #include "usart.h"
 #include "string.h"
 
-#define GPS_DATA_LINE_BUFFER_LEN 	1000
+#define GPS_DATA_LINE_BUFFER_LEN 	200
 #define GPS_TASK_PRIORITY 			( tskIDLE_PRIORITY + 1 )
- 
+#define GPS_TASK_STACK_SIZE			100
+
 char g_GPSdataLine[GPS_DATA_LINE_BUFFER_LEN];
 
 void startGPSTask(){
-	xTaskCreate( GPSTask, ( signed portCHAR * ) "GPSTask", configMINIMAL_STACK_SIZE, NULL, 	GPS_TASK_PRIORITY, 	NULL );
+	xTaskCreate( GPSTask, ( signed portCHAR * ) "GPSTask", GPS_TASK_STACK_SIZE, NULL, 	GPS_TASK_PRIORITY, 	NULL );
 }
 
 void GPSTask( void *pvParameters ){
 	for( ;; )
 	{
-		int len = uart1_readLine(g_GPSdataLine, GPS_DATA_LINE_BUFFER_LEN);
+		int len = usart1_readLine(g_GPSdataLine, GPS_DATA_LINE_BUFFER_LEN);
 		if (len > 0){
 			ToggleLED(LED1);
-			//uart0_puts(g_GPSdataLine);
+			usart0_puts(g_GPSdataLine);
 		}
 	}
 }

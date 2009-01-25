@@ -76,6 +76,8 @@ typedef struct
 /*-----------------------------------------------------------*/
 void vUSBCDCTask( void *pvParameters );
 
+int vInitUSBInterface();
+
 /* Send cByte down the USB port.  Characters are simply buffered and not
 sent unless the port is connected. */
 void vUSBSendDebug(portCHAR *string);

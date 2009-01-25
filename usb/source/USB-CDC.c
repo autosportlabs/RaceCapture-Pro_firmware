@@ -66,9 +66,6 @@ static void prvResetEndPoints( void );
 /* Clear pull up resistor to detach device from host */
 static void vDetachUSBInterface( void );
 
-/* Set up interface and initialize variables */
-static void vInitUSBInterface( void );
-
 /* Handle control endpoint events. */
 static void prvProcessEndPoint0Interrupt( xISRStatus *pxMessage );
 
@@ -141,17 +138,6 @@ portBASE_TYPE xByte;
 
 	( void ) pvParameters;
 
-	/* Disconnect USB device from hub.  For debugging - causes host to register reset */
-	portENTER_CRITICAL();
-		 vDetachUSBInterface();
-	portEXIT_CRITICAL();
-	
-	vTaskDelay( portTICK_RATE_MS * 60 );
-
-	/* Init USB interface */
-	portENTER_CRITICAL();
-		vInitUSBInterface();
-	portEXIT_CRITICAL();
 	
 	/* Main task loop.  Process incoming endpoint 0 interrupts, handle data transfers. */
 	 
@@ -716,9 +702,12 @@ static void vDetachUSBInterface( void)
 } 
 /*-----------------------------------------------------------*/
 
-static void vInitUSBInterface( void )
+int vInitUSBInterface( void )
 {
-extern void ( vUSB_ISR )( void );
+	extern void ( vUSB_ISR )( void );
+
+	vDetachUSBInterface();
+	//TODO add a delay here after detaching
 
 	/* Create the queue used to communicate between the USB ISR and task. */
 	xUSBInterruptQueue = xQueueCreate( usbQUEUE_LENGTH + 1, sizeof( xISRStatus * ) );
@@ -727,16 +716,8 @@ extern void ( vUSB_ISR )( void );
 	xRxCDC = xQueueCreate( USB_CDC_QUEUE_SIZE, ( unsigned portCHAR ) sizeof( signed portCHAR ) );
 	xTxCDC = xQueueCreate( USB_CDC_QUEUE_SIZE + 1, ( unsigned portCHAR ) sizeof( signed portCHAR ) );
 
-	if( (!xUSBInterruptQueue) || (!xRxCDC) || (!xTxCDC) )
-	{	
-		/* Not enough RAM to create queues!. */
-		while(1){
-			ToggleLED(LED2);
-			vTaskDelay(100);
-		}
-		return;
-		
-	}
+	//check for queue creation failure
+	if( (!xUSBInterruptQueue) || (!xRxCDC) || (!xTxCDC) ) return 0; //failure
 	
 	/* Initialise a few state variables. */
 	pxControlTx.ulNextCharIndex = ( unsigned portLONG ) 0;
@@ -808,6 +789,7 @@ extern void ( vUSB_ISR )( void );
 //*************************************************
 	
 	usbIntefacedInitialized  = 1;
+	return 1; //success
 }
 /*-----------------------------------------------------------*/
 
