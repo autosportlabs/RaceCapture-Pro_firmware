@@ -9,8 +9,8 @@
 
 
 #define DEBOUNCE_DELAY_PERIOD			( ( portTickType )30 / portTICK_RATE_MS  )
-
 #define GPIO_TASK_PRIORITY 			( tskIDLE_PRIORITY + 1 )
+#define GPIO_TASK_STACK_SIZE		50
 
 void gpio_irq_handler ( void );
 
@@ -29,10 +29,10 @@ void createGPIOTasks(){
 	vSemaphoreCreateBinary( xOnGPI2 );
 	vSemaphoreCreateBinary( xOnGPI3 );
 
-	xTaskCreate( onPushbuttonTask, 	( signed portCHAR * ) "PushbuttonTask", 	configMINIMAL_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
-	xTaskCreate( onGPI1Task, 		( signed portCHAR * ) "GPI1Task", 			configMINIMAL_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
-	xTaskCreate( onGPI2Task,	 	( signed portCHAR * ) "GPI2Task", 			configMINIMAL_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
-	xTaskCreate( onGPI3Task,	 	( signed portCHAR * ) "GPI3Task", 			configMINIMAL_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
+	xTaskCreate( onPushbuttonTask, 	( signed portCHAR * ) "PushbuttonTask", 	GPIO_TASK_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
+	xTaskCreate( onGPI1Task, 		( signed portCHAR * ) "GPI1Task", 			GPIO_TASK_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
+	xTaskCreate( onGPI2Task,	 	( signed portCHAR * ) "GPI2Task", 			GPIO_TASK_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
+	xTaskCreate( onGPI3Task,	 	( signed portCHAR * ) "GPI3Task", 			GPIO_TASK_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
 	
 	portENTER_CRITICAL();
     AT91PS_AIC     pAic;

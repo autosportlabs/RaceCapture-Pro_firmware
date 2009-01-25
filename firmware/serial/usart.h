@@ -77,55 +77,31 @@
 //         Exported functions
 //------------------------------------------------------------------------------
 
-extern void InitSerial();
+int initSerial();
 
-extern void USART_Configure(
-    AT91S_USART *usart,
-    unsigned int mode,
-    unsigned int baudrate,
-    unsigned int masterClock);
+void initUsart0(unsigned int mode, unsigned int baud);
 
+void initUsart1(unsigned int mode, unsigned int baud);
 
-extern void USART_SetTransmitterEnabled(AT91S_USART *usart, unsigned char enabled);
+void USART_Configure(AT91S_USART *usart, unsigned int mode, unsigned int baudrate, unsigned int masterClock);
 
-extern void USART_SetReceiverEnabled(AT91S_USART *usart, unsigned char enabled);
+int initQueues();
 
-extern int uart_putc(AT91S_USART *pUSART,int ch);
+char usart0_getchar();
 
-extern int uart0_putchar (int ch);
+char usart1_getchar();
 
-extern int uart0_puts (char* s );
+void usart0_putchar(char c);
 
-extern int uart1_putchar (int ch);
+void usart1_putchar(char c);
 
-extern int uart1_puts (char* s );
+int usart0_puts (char* s );
 
-extern int uart1_readLine(char *s, int len);
+int usart1_puts (char* s );
 
-extern int uart0_readLine(char *s, int len);
+int usart1_readLine(char *s, int len);
 
-extern int uart_readLine(AT91S_USART *usart,char *s, int len);
-
-extern void USART_Write(
-    AT91S_USART *usart, 
-    unsigned short data, 
-    volatile unsigned int timeOut);
-
-extern unsigned char USART_WriteBuffer(
-    AT91S_USART *usart,
-    void *buffer,
-    unsigned int size);
-
-extern unsigned short USART_Read(
-    AT91S_USART *usart, 
-    volatile unsigned int timeOut);
-
-extern unsigned char USART_ReadBuffer(
-    AT91S_USART *usart,
-    void *buffer,
-    unsigned int size);
-
-extern unsigned char USART_IsDataAvailable(AT91S_USART *usart);
+int usart0_readLine(char *s, int len);
 
 #endif //#ifndef USART_H
 

@@ -32,17 +32,62 @@
 //------------------------------------------------------------------------------
 
 #include "usart.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
 
-void InitSerial()
+
+#define USART_INTERRUPT_LEVEL 5
+#define USART_QUEUE_LENGTH 50
+
+void usart0_irq_handler (void);
+void usart1_irq_handler (void);
+
+xQueueHandle xUsart0Tx; 
+xQueueHandle xUsart0Rx;
+xQueueHandle xUsart1Tx; 
+xQueueHandle xUsart1Rx;
+
+int initSerial()
 {
-  unsigned int mode =
+	if (!initQueues()) return 0;
+
+	unsigned int mode =
                         AT91C_US_CLKS_CLOCK
                         | AT91C_US_CHRL_8_BITS
                         | AT91C_US_PAR_NONE
                         | AT91C_US_NBSTOP_1_BIT
                         | AT91C_US_CHMODE_NORMAL;
 
+	initUsart0(mode, 115200);
+	initUsart1(mode, 38400);
+	return 1;
+}
 
+int initQueues(){
+
+	int success = 1;
+	
+	/* Create the queues used to hold Rx and Tx characters. */
+	xUsart0Rx = xQueueCreate( USART_QUEUE_LENGTH, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
+	xUsart0Tx = xQueueCreate( USART_QUEUE_LENGTH + 1, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
+	xUsart1Rx = xQueueCreate( USART_QUEUE_LENGTH, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
+	xUsart1Tx = xQueueCreate( USART_QUEUE_LENGTH + 1, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
+
+	if (xUsart0Rx == NULL ||
+		xUsart1Rx == NULL ||
+		xUsart0Rx == NULL ||
+		xUsart0Rx == NULL
+		) success = 0;
+	
+	return success;
+}
+
+
+void initUsart0(unsigned int mode, unsigned int baud){
+
+	//Enable USART0
+	
  	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA, 
 			AT91C_PA6_TXD0, 				// mux function A
 			0); // mux funtion B
@@ -52,15 +97,24 @@ void InitSerial()
 			0); // mux funtion B  
 
     // Configure the USART in the desired mode @115200 bauds
-    USART_Configure(AT91C_BASE_US0, mode, 115200, BOARD_MCK);
+    USART_Configure(AT91C_BASE_US0, mode, baud, BOARD_MCK);
 
     // Enable receiver & transmitter
-    USART_SetTransmitterEnabled(AT91C_BASE_US0, 1);
-    USART_SetReceiverEnabled(AT91C_BASE_US0, 1);
+    AT91C_BASE_US0->US_CR = AT91C_US_TXEN;
+	AT91C_BASE_US0->US_CR = AT91C_US_RXEN;
 
+	/* Enable the Rx interrupts.  The Tx interrupts are not enabled
+	until there are characters to be transmitted. */
+	AT91F_US_EnableIt( AT91C_BASE_US0, AT91C_US_RXRDY );
+	
+	/* Enable the interrupts in the AIC. */
+	AT91F_AIC_ConfigureIt( AT91C_BASE_AIC, AT91C_ID_US0, USART_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_EXT_LOW_LEVEL, usart0_irq_handler );
+	AT91F_AIC_EnableIt( AT91C_BASE_AIC, AT91C_ID_US0 );
+	
+}
 
-
-
+void initUsart1(unsigned int mode, unsigned int baud){
+	
  	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA, 
 			AT91C_PA22_TXD1, 				// mux function A
 			0); // mux funtion B
@@ -70,11 +124,19 @@ void InitSerial()
 			0); // mux funtion B  
 
     // Configure the USART in the desired mode @115200 bauds
-    USART_Configure(AT91C_BASE_US1, mode, 38400, BOARD_MCK);
+    USART_Configure(AT91C_BASE_US1, mode, baud, BOARD_MCK);
 
     // Enable receiver & transmitter
-    USART_SetTransmitterEnabled(AT91C_BASE_US1, 1);
-    USART_SetReceiverEnabled(AT91C_BASE_US1, 1);
+    AT91C_BASE_US1->US_CR = AT91C_US_TXEN;
+	AT91C_BASE_US1->US_CR = AT91C_US_RXEN;
+
+	/* Enable the Rx interrupts.  The Tx interrupts are not enabled
+	until there are characters to be transmitted. */
+	AT91F_US_EnableIt( AT91C_BASE_US1, AT91C_US_RXRDY );
+	
+	/* Enable the interrupts in the AIC. */
+	AT91F_AIC_ConfigureIt( AT91C_BASE_AIC, AT91C_ID_US1, USART_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_EXT_LOW_LEVEL, usart1_irq_handler );
+	AT91F_AIC_EnableIt( AT91C_BASE_AIC, AT91C_ID_US1 );
 }
 
 //------------------------------------------------------------------------------
@@ -111,92 +173,56 @@ void USART_Configure(AT91S_USART *usart,
 
 }
 
-//------------------------------------------------------------------------------
-/// Enables or disables the transmitter of an USART peripheral.
-/// \param usart  Pointer to an USART peripheral
-/// \param enabled  If true, the transmitter is enabled; otherwise it is
-///                 disabled.
-//------------------------------------------------------------------------------
-void USART_SetTransmitterEnabled(AT91S_USART *usart,
-                                        unsigned char enabled)
+char usart0_getchar()
 {
-    if (enabled) {
-
-        usart->US_CR = AT91C_US_TXEN;
-    }
-    else {
-
-        usart->US_CR = AT91C_US_TXDIS;
-    }
+	char rx;
+	
+	/* Get the next character from the buffer.  Return false if no characters
+	are available, or arrive before xBlockTime expires. */
+	xQueueReceive( xUsart0Rx, &rx, portMAX_DELAY );
+	return rx;
 }
 
-//------------------------------------------------------------------------------
-/// Enables or disables the receiver of an USART peripheral
-/// \param usart  Pointer to an USART peripheral
-/// \param enabled  If true, the receiver is enabled; otherwise it is disabled.
-//------------------------------------------------------------------------------
-void USART_SetReceiverEnabled(AT91S_USART *usart,
-                                     unsigned char enabled)
+char usart1_getchar()
 {
-    if (enabled) {
-
-        usart->US_CR = AT91C_US_RXEN;
-    }
-    else {
-
-        usart->US_CR = AT91C_US_RXDIS;
-    }
+	char rx;
+	
+	/* Get the next character from the buffer.  Return false if no characters
+	are available, or arrive before xBlockTime expires. */
+	xQueueReceive( xUsart1Rx, &rx, portMAX_DELAY );
+	return rx;
 }
 
-
-
-int uart_putc(AT91S_USART *pUSART,int ch) 
-{
-	while (!(pUSART->US_CSR & AT91C_US_TXRDY));   /* Wait for Empty Tx Buffer */
-	return (pUSART->US_THR = ch);                 /* Transmit Character */
-}	
-
-int uart_readc(AT91S_USART *pUSART){
-	while ((pUSART->US_CSR & AT91C_US_RXRDY) == 0); //read for rx ready
- 	return pUSART->US_RHR; //read character
+void usart0_putchar(char c){
+	xQueueSend( xUsart0Tx, &c, portMAX_DELAY );
+	//Enable transmitter interrupt
+	AT91F_US_EnableIt( AT91C_BASE_US0, AT91C_US_TXRDY | AT91C_US_RXRDY );
 }
 
-int uart0_putchar (int ch) {      
-  return uart_putc(AT91C_BASE_US0, ch );
+void usart1_putchar(char c){
+	xQueueSend( xUsart1Tx, &c, portMAX_DELAY );
+	//Enable transmitter interrupt
+	AT91F_US_EnableIt( AT91C_BASE_US1, AT91C_US_TXRDY | AT91C_US_RXRDY );
 }
 
-int uart0_puts (char* s )
+int usart0_puts (char* s )
 {
-	while ( *s ) uart0_putchar(*s++ );
+	while ( *s ) usart0_putchar(*s++ );
 	return 0;
 }
 
-int uart1_putchar (int ch)
-{            
-  return uart_putc(AT91C_BASE_US1, ch );
-}
-
-int uart1_puts (char* s )
+int usart1_puts (char* s )
 {
-	while ( *s ) uart1_putchar(*s++ );
+	while ( *s ) usart1_putchar(*s++ );
 	return 0;
 }
 
-int uart1_readLine(char *s, int len)
-{
-	return uart_readLine(AT91C_BASE_US1,s,len);
-}
 
-int uart0_readLine(char *s, int len)
-{
-	return uart_readLine(AT91C_BASE_US0,s,len);
-}
-
-int uart_readLine(AT91S_USART *usart,char *s, int len)
+int usart0_readLine(char *s, int len)
 {
 	int count = 0;
 	while(count < len - 1){
-		int c = uart_readc(usart);
+		int c = usart0_getchar();
 		*s++ = c;
 		count++;
 		if (c == '\n') break;
@@ -205,155 +231,15 @@ int uart_readLine(AT91S_USART *usart,char *s, int len)
 	return count;
 }
 
-//------------------------------------------------------------------------------
-/// Sends one packet of data through the specified USART peripheral. This
-/// function operates synchronously, so it only returns when the data has been
-/// actually sent.
-/// \param usart  Pointer to an USART peripheral.
-/// \param data  Data to send including 9nth bit and sync field if necessary (in
-///              the same format as the US_THR register in the datasheet).
-/// \param timeOut  Time out value (0 = no timeout).
-//------------------------------------------------------------------------------
-void USART_Write(
-    AT91S_USART *usart,
-    unsigned short data,
-    volatile unsigned int timeOut)
+int usart1_readLine(char *s, int len)
 {
-    if (timeOut == 0) {
-
-        while ((usart->US_CSR & AT91C_US_TXEMPTY) == 0);
-    }
-    else {
-
-        while ((usart->US_CSR & AT91C_US_TXEMPTY) == 0) {
-
-            if (timeOut == 0) {
-
-                return;
-            }
-            timeOut--;
-        }
-    }
-
-    usart->US_THR = data;
+	int count = 0;
+	while(count < len - 1){
+		int c = usart1_getchar();
+		*s++ = c;
+		count++;
+		if (c == '\n') break;
+	}
+	*s = '\0';
+	return count;
 }
-
-//------------------------------------------------------------------------------
-/// Sends the contents of a data buffer through the specified USART peripheral.
-/// This function returns immediately (1 if the buffer has been queued, 0
-/// otherwise); poll the ENDTX and TXBUFE bits of the USART status register
-/// to check for the transfer completion.
-/// \param usart  Pointer to an USART peripheral.
-/// \param buffer  Pointer to the data buffer to send.
-/// \param size  Size of the data buffer (in bytes).
-//------------------------------------------------------------------------------
-unsigned char USART_WriteBuffer(
-    AT91S_USART *usart,
-    void *buffer,
-    unsigned int size)
-{
-    // Check if the first PDC bank is free
-    if ((usart->US_TCR == 0) && (usart->US_TNCR == 0)) {
-
-        usart->US_TPR = (unsigned int) buffer;
-        usart->US_TCR = size;
-        usart->US_PTCR = AT91C_PDC_TXTEN;
-
-        return 1;
-    }
-    // Check if the second PDC bank is free
-    else if (usart->US_TNCR == 0) {
-
-        usart->US_TNPR = (unsigned int) buffer;
-        usart->US_TNCR = size;
-
-        return 1;
-    }
-    else {
-
-        return 0;
-    }
-}
-
-//------------------------------------------------------------------------------
-/// Reads and return a packet of data on the specified USART peripheral. This
-/// function operates asynchronously, so it waits until some data has been
-/// received.
-/// \param usart  Pointer to an USART peripheral.
-/// \param timeOut  Time out value (0 -> no timeout).
-//------------------------------------------------------------------------------
-unsigned short USART_Read(
-    AT91S_USART *usart,
-    volatile unsigned int timeOut)
-{
-    if (timeOut == 0) {
-
-        while ((usart->US_CSR & AT91C_US_RXRDY) == 0);
-    }
-    else {
-
-        while ((usart->US_CSR & AT91C_US_RXRDY) == 0) {
-
-            if (timeOut == 0) {
-
-                return 0;
-            }
-            timeOut--;
-        }
-    }
-
-    return usart->US_RHR;
-}
-
-//------------------------------------------------------------------------------
-/// Reads data from an USART peripheral, filling the provided buffer until it
-/// becomes full. This function returns immediately with 1 if the buffer has
-/// been queued for transmission; otherwise 0.
-/// \param usart  Pointer to an USART peripheral.
-/// \param buffer  Pointer to the buffer where the received data will be stored.
-/// \param size  Size of the data buffer (in bytes).
-//------------------------------------------------------------------------------
-unsigned char USART_ReadBuffer(AT91S_USART *usart,
-                                      void *buffer,
-                                      unsigned int size)
-{
-    // Check if the first PDC bank is free
-    if ((usart->US_RCR == 0) && (usart->US_RNCR == 0)) {
-
-        usart->US_RPR = (unsigned int) buffer;
-        usart->US_RCR = size;
-        usart->US_PTCR = AT91C_PDC_RXTEN;
-
-        return 1;
-    }
-    // Check if the second PDC bank is free
-    else if (usart->US_RNCR == 0) {
-
-        usart->US_RNPR = (unsigned int) buffer;
-        usart->US_RNCR = size;
-
-        return 1;
-    }
-    else {
-
-        return 0;
-    }
-}
-
-//------------------------------------------------------------------------------
-/// Returns 1 if some data has been received and can be read from an USART;
-/// otherwise returns 0.
-/// \param usart  Pointer to an AT91S_USART instance.
-//------------------------------------------------------------------------------
-unsigned char USART_IsDataAvailable(AT91S_USART *usart)
-{
-    if ((usart->US_CSR & AT91C_US_RXRDY) != 0) {
-
-        return 1;
-    }
-    else {
-
-        return 0;
-    }
-}
-
