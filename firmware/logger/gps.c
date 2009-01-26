@@ -18,6 +18,9 @@
 #define GPS_QUALITY_SPS 1
 #define GPS_QUALITY_DIFFERENTIAL 2
 
+#define GPS_LOCK_FLASH_COUNT 2
+#define GPS_NOFIX_FLASH_COUNT 10
+
 char g_GPSdataLine[GPS_DATA_LINE_BUFFER_LEN];
 
 char 	g_UTCTime[11];
@@ -90,17 +93,23 @@ void startGPSTask(){
 }
 
 void GPSTask( void *pvParameters ){
+	
+	int flashCount = 0;
 	for( ;; )
 	{
 		int len = usart1_readLine(g_GPSdataLine, GPS_DATA_LINE_BUFFER_LEN);
 		if (len > 0){
-			
-			
 			if (*g_GPSdataLine == '$' && *(g_GPSdataLine + 1) =='G' && *(g_GPSdataLine + 2) == 'P'){
 				char * data = g_GPSdataLine + 3;
 				if (strstr(data,"GGA,")){
-					ToggleLED(LED1);
 					parseGGA(data + 4);
+					if (flashCount == 0) DisableLED(LED1);
+					flashCount++;
+					int targetFlashCount = (g_gpsQuality == GPS_QUALITY_NO_FIX ? GPS_NOFIX_FLASH_COUNT: GPS_LOCK_FLASH_COUNT);
+					if (flashCount >= targetFlashCount){
+						EnableLED(LED1);
+						flashCount = 0;		
+					}
 				} else if (strstr(data,"GSA,")){ //GPS Fix data
 					parseGSA(data + 4);						
 				} else if (strstr(data,"GSV,")){ //Satellites in view
@@ -113,7 +122,7 @@ void GPSTask( void *pvParameters ){
 					parseGLL(data + 4);					
 				} else if (strstr(data,"ZDA,")){ //Time & Date
 					parseZDA(data + 4);
-				}				
+				}
 			}
 		}
 	}
