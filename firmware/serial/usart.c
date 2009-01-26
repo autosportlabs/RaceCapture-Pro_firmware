@@ -38,7 +38,7 @@
 
 
 #define USART_INTERRUPT_LEVEL 5
-#define USART_QUEUE_LENGTH 50
+#define USART_QUEUE_LENGTH 100
 
 void usart0_irq_handler (void);
 void usart1_irq_handler (void);
