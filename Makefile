@@ -106,7 +106,8 @@ SRCARM = $(RTOS_GCC_DIR)/portISR.c \
 interrupt_utils.c \
 $(USB_SRC_DIR)/source/USBIsr.c \
 $(LOGGER_SRC_DIR)/gpioIsr.c \
-$(LOGGER_SRC_DIR)/serialIsr.c
+$(LOGGER_SRC_DIR)/serialIsr.c \
+$(LOGGER_SRC_DIR)/timerIsr.c
 
 # List C++ source files here.
 # use file-extension cpp for C++-files (use extension .cpp)

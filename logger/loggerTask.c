@@ -77,7 +77,6 @@ void loggerWriter(void *params){
 				UnmountEFS();
 				writingEnabled = 0;
 			} else if (writingEnabled){
-				file_write(&f,1,(char *)&data);			
 			}
 		}
 	}

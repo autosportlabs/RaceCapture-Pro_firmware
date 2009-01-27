@@ -91,4 +91,9 @@ void PWM_SetDutyCycle(
 //Enable PWM channel
 void PWM_EnableChannel(
 	unsigned char channel);
+	
+void initTimerChannels();	
+void initTimer0();
+void initTimer1();
+void initTimer2();
 #endif /*LOGGERHARDWARE_H_*/

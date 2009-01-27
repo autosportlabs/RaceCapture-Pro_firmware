@@ -84,7 +84,8 @@ static int setupHardware( void )
 	if (!vInitUSBInterface()) return 0;	
 	   
 	InitADC();
-	//EnableAllPWM();
+	EnableAllPWM();
+	initTimerChannels();
 	InitLEDs();
 	InitGPIO();
 	return 1;
