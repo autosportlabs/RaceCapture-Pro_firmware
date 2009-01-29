@@ -7,9 +7,14 @@
 #include "loggerHardware.h"
 #include "sdcard.h"
 #include "accelerometer.h"
-
+#include "memory.h"
+#include "loggerConfig.h"
 
 //* Global variable
+extern struct LoggerConfig g_savedLoggerConfig;
+extern struct LoggerConfig g_workingLoggerConfig;
+
+
 extern char					debugMsg[100];
 #define MSG_SIZE 				1000
 
@@ -64,6 +69,25 @@ void onUSBCommTask(void *pvParameters){
 		}	
 		if (theData == 'd'){
 			ListRootDir();	
+		}
+		if (theData == 'u'){
+			g_workingLoggerConfig.AccelX_config++;
+			g_workingLoggerConfig.AccelY_config++;
+			g_workingLoggerConfig.ThetaZ_config++;	
+		}
+		if (theData == 'w'){
+			SendString("flashing...");
+			int result = flashLoggerConfig();
+			sprintf(text,"done: %d\r\n",result);
+			SendString(text);
+		}
+		if (theData == 'p'){
+			sprintf(text,"working: %d,%d,%d\r\n", g_workingLoggerConfig.AccelX_config,g_workingLoggerConfig.AccelY_config,g_workingLoggerConfig.ThetaZ_config);
+			SendString(text);	
+			sprintf(text,"saved: %d,%d,%d\r\n", g_savedLoggerConfig.AccelX_config,g_savedLoggerConfig.AccelY_config,g_savedLoggerConfig.ThetaZ_config);
+			SendString(text);
+			sprintf(text,"page number %d\r\n", getMemoryPageNumber(&g_savedLoggerConfig));
+			SendString(text);
 		}
 		if (theData == 'z'){
 			duty--;
