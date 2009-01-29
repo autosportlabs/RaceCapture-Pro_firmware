@@ -4,8 +4,6 @@
  
 #define RAMFUNC __attribute__ ((long_call, section (".fastrun")))
 
-unsigned int getMemoryPageNumber(void *vAddress);
-	
 unsigned int RAMFUNC flash_write(void * vAddress, void * vData);
 
 

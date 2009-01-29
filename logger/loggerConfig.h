@@ -50,16 +50,7 @@ struct LoggerConfig {
 	char GPS_velocity_enabled;
 	char GPS_time_enabled;
 
-	char extra1;
-	char extra2;
-	char extra3;
-	char extra4;
-	char extra5;
-	char extra6;
-	char extra7;
-	char extra8;
-	char extra9;
-	char extra10;
+	char extra[106];
 };
 
 
@@ -87,16 +78,19 @@ struct LoggerConfig {
 			0, \
 			0, \
 			0, \
-			0, \
-			1, \
-			2, \
-			3, \
-			4, \
-			5, \
-			6, \
-			7, \
-			8, \
-			9 \
+			{ \
+				1,1,1,1,1,1,1,1,1,1,\
+				1,1,1,1,1,1,1,1,1,1,\
+				1,1,1,1,1,1,1,1,1,1,\
+				1,1,1,1,1,1,1,1,1,1,\
+				1,1,1,1,1,1,1,1,1,1,\
+				1,1,1,1,1,1,1,1,1,1,\
+				1,1,1,1,1,1,1,1,1,1,\
+				1,1,1,1,1,1,1,1,1,1,\
+				1,1,1,1,1,1,1,1,1,1,\
+				1,1,1,1,1,1,1,1,1,1,\
+				1,1,1,1,1,1 \
+			} \
 	}
 			
 #endif /*LOGGERCONFIG_H_*/

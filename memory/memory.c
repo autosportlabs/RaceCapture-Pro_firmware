@@ -15,16 +15,6 @@
  *  - Source data buffer
  * Output: OK if write is successful, ERROR otherwise
  */
-
-unsigned int getMemoryPageNumber(void *vAddress){
-	
- unsigned int * pAddress = (unsigned int *) vAddress;
- 	
-	// Calculate page number and flash address
-	unsigned int page = ((unsigned int) pAddress - (unsigned int) MEMORY_START_ADDRESS);// & AT91C_MC_PAGEN;
-	return page;
-}
-
 unsigned int RAMFUNC flash_write(void * vAddress, void * vData){
 
   // Local variables
@@ -35,10 +25,10 @@ unsigned int RAMFUNC flash_write(void * vAddress, void * vData){
   unsigned int * pData = (unsigned int *) vData;
 
   // Program FMCN field in Flash Mode Register
-  AT91C_BASE_MC->MC_FMR = ((80 << 16) & AT91C_MC_FMCN) | AT91C_MC_FWS_1FWS;
+  AT91C_BASE_MC->MC_FMR = ((BOARD_MCK / 666666 << 16) & AT91C_MC_FMCN) | AT91C_MC_FWS_1FWS;
  
   // Calculate page number and flash address
-  page = ((unsigned int) pAddress - (unsigned int) MEMORY_START_ADDRESS) & AT91C_MC_PAGEN;
+  page = ((((unsigned int) pAddress - (unsigned int) MEMORY_START_ADDRESS) / AT91C_IFLASH_PAGE_SIZE) << 8) & AT91C_MC_PAGEN;
 
   // Copy page in write buffer
   for (unsigned int i=0; i < MEMORY_PAGE_SIZE_32; i++) {
