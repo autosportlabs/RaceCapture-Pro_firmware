@@ -77,8 +77,8 @@ void onUSBCommTask(void *pvParameters){
 		}
 		if (theData == 'w'){
 			SendString("flashing...");
-			int result = flashLoggerConfig();
-			sprintf(text,"done: %d\r\n",result);
+			unsigned int result = flashLoggerConfig();
+			sprintf(text,"done: %u\r\n",result);
 			SendString(text);
 		}
 		if (theData == 'p'){
@@ -86,7 +86,7 @@ void onUSBCommTask(void *pvParameters){
 			SendString(text);	
 			sprintf(text,"saved: %d,%d,%d\r\n", g_savedLoggerConfig.AccelX_config,g_savedLoggerConfig.AccelY_config,g_savedLoggerConfig.ThetaZ_config);
 			SendString(text);
-			sprintf(text,"page number %d\r\n", getMemoryPageNumber(&g_savedLoggerConfig));
+			sprintf(text,"address %u\r\n", &g_savedLoggerConfig);
 			SendString(text);
 		}
 		if (theData == 'z'){
