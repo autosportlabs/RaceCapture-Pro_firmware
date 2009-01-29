@@ -23,6 +23,7 @@
 #include "sdcard.h"
 #include "loggerTask.h"
 #include "gps.h"
+#include "loggerConfig.h"
 
 
 /*-----------------*/
@@ -84,8 +85,8 @@ static int setupHardware( void )
 	if (!vInitUSBInterface()) return 0;	
 	   
 	InitADC();
-	EnableAllPWM();
-	initTimerChannels();
+	//EnableAllPWM();
+	//initTimerChannels();
 	InitLEDs();
 	InitGPIO();
 	return 1;
@@ -131,6 +132,7 @@ void fatalError(int type){
 int main( void )
 {
 	//setup hardware
+	updateActiveLoggerConfig();
 	int success = setupHardware();
 	if (! success) fatalError(FATAL_ERROR_HARDWARE);
 
