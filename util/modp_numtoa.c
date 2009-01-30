@@ -19,7 +19,7 @@
  * Powers of 10
  * 10^0 to 10^9
  */
-static const double pow10[] = {1, 10, 100, 1000, 10000, 100000, 1000000,
+static const float pow10[] = {1, 10, 100, 1000, 10000, 100000, 1000000,
                                10000000, 100000000, 1000000000};
 
 static void strreverse(char* begin, char* end)
@@ -54,12 +54,12 @@ void modp_uitoa10(uint32_t value, char* str)
     strreverse(str, wstr-1);
 }
 
-void modp_dtoa(double value, char* str, int prec)
+void modp_dtoa(float value, char* str, int prec)
 {
     /* if input is larger than thres_max, revert to exponential */
-    const double thres_max = (double)(0x7FFFFFFF);
+    const float thres_max = (float)(0x7FFFFFFF);
 
-    double diff = 0.0;
+    float diff = 0.0;
     char* wstr = str;
 
     if (prec < 0) {
@@ -80,7 +80,7 @@ void modp_dtoa(double value, char* str, int prec)
 
 
     int whole = (int) value;
-    double tmp = (value - whole) * pow10[prec];
+    float tmp = (value - whole) * pow10[prec];
     uint32_t frac = (uint32_t)(tmp);
     diff = tmp - frac;
 
@@ -104,6 +104,7 @@ void modp_dtoa(double value, char* str, int prec)
        which can be 100s of characters overflowing your buffers == bad
     */
     if (value > thres_max) {
+    	//strcpy(str,"EEE"); //overflow - avoid sprintf for now
         sprintf(str, "%e", neg ? -value : value);
         return;
     }

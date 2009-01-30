@@ -4,6 +4,8 @@
  
 #define RAMFUNC __attribute__ ((long_call, section (".fastrun")))
 
+unsigned int flashWriteRegion(void *vAddress, void *vData, unsigned int length);
+	
 unsigned int RAMFUNC flash_write(void * vAddress, void * vData);
 
 

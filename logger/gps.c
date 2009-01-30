@@ -163,7 +163,7 @@ void parseGGA(char *data){
 		data = delim + 1;
 		delim = strchr(data,',');
 	}
-	usart0_puts("time: ");
+/*	usart0_puts("time: ");
 	usart0_puts(g_UTCTime);
 	usart0_puts(";lat: ");
 	usart0_puts(g_latitude);
@@ -191,6 +191,7 @@ void parseGGA(char *data){
 	usart0_puts(";Sats Used: ");
 	usart0_puts(satellites);
 	usart0_puts("\r\n");
+*/
 	if (g_gpsQuality != GPS_QUALITY_NO_FIX) g_gpsPositionUpdated = 1;
 }
 
@@ -218,9 +219,10 @@ void parseVTG(char *data){
 		data = delim + 1;
 		delim = strchr(data,',');
 	}
-	usart0_puts("Velocity: ");
+/*	usart0_puts("Velocity: ");
 	usart0_puts(g_velocity);
 	usart0_puts("\r\n");	
+*/
 	if (g_gpsQuality != GPS_QUALITY_NO_FIX) g_gpsVelocityUpdated = 1;
 }
 

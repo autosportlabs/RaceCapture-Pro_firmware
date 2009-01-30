@@ -14,7 +14,14 @@ void updateActiveLoggerConfig(){
 }
 
 int flashLoggerConfig(){
-	return flash_write((void *)&g_savedLoggerConfig,(void *)&g_workingLoggerConfig);	
+	return flashWriteRegion((void *)&g_savedLoggerConfig,(void *)&g_workingLoggerConfig, sizeof (struct LoggerConfig));
 }
 
+struct LoggerConfig * getSavedLoggerConfig(){
+	return &g_savedLoggerConfig;	
+}
+
+struct LoggerConfig * getWorkingLoggerConfig(){
+	return &g_workingLoggerConfig;
+}
 
