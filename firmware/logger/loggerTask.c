@@ -10,9 +10,11 @@
 #include "stdio.h"
 #include "sdcard.h"
 #include "gps.h"
+#include "loggerConfig.h"
 
 int g_loggingShouldRun;
 xSemaphoreHandle g_xLoggerStart;
+
 
 #define BASE_100Hz 3
 #define BASE_50Hz 6
@@ -77,6 +79,7 @@ void loggerWriter(void *params){
 				UnmountEFS();
 				writingEnabled = 0;
 			} else if (writingEnabled){
+				file_write(&f,1,(unsigned char *)&data);
 			}
 		}
 	}
@@ -98,7 +101,7 @@ void loggerTask(void *params){
 			fileWriteString("!");
 				
 			portTickType xLastWakeTime, startTickTime;
-			const portTickType xFrequency = BASE_10Hz;
+			const portTickType xFrequency = BASE_100Hz;
 			startTickTime = xLastWakeTime = xTaskGetTickCount();
 			
 			
@@ -127,35 +130,50 @@ void loggerTask(void *params){
 void writeADC(unsigned int a0,unsigned int a1,unsigned int a2,unsigned int a3,unsigned int a4,unsigned int a5,unsigned int a6,unsigned int a7){
 	
 	char buf[20];
-	modp_itoa10(a0,buf);
+	struct LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+	float scaling;
+	int precision;
+
+	scaling = 6.06f;
+	precision = 2;
+	
+	scaling = loggerConfig->ADC_Calibrations[0].scaling;
+	modp_dtoa((scaling * (float)a0), buf, precision);
+	fileWriteString(buf);
+	fileWriteString(",");
+	
+	scaling = loggerConfig->ADC_Calibrations[1].scaling;
+	modp_dtoa((scaling * (float)a1), buf, precision);
+	fileWriteString(buf);
+	fileWriteString(",");
+ 	
+ 	scaling = loggerConfig->ADC_Calibrations[2].scaling;
+	modp_dtoa((scaling * (float)a2), buf, precision);
+	fileWriteString(buf);
+	fileWriteString(",");
+ 	
+ 	scaling = loggerConfig->ADC_Calibrations[3].scaling;
+	modp_dtoa((scaling * (float)a3), buf, precision);
+	fileWriteString(buf);
+	fileWriteString(",");
+ 	
+ 	scaling = loggerConfig->ADC_Calibrations[4].scaling;
+	modp_dtoa((scaling * (float)a4), buf, precision);
 	fileWriteString(buf);
 	fileWriteString(",");
 
-	modp_itoa10(a1,buf);
+	scaling = loggerConfig->ADC_Calibrations[5].scaling;
+	modp_dtoa((scaling * (float)a5), buf, precision);
 	fileWriteString(buf);
 	fileWriteString(",");
-
-	modp_itoa10(a2,buf);
+ 
+	scaling = loggerConfig->ADC_Calibrations[6].scaling;
+	modp_dtoa((scaling * (float)a6), buf, precision);
 	fileWriteString(buf);
 	fileWriteString(",");
-
-	modp_itoa10(a3,buf);
-	fileWriteString(buf);
-	fileWriteString(",");
-
-	modp_itoa10(a4,buf);
-	fileWriteString(buf);
-	fileWriteString(",");
-
-	modp_itoa10(a5,buf);
-	fileWriteString(buf);
-	fileWriteString(",");
-
-	modp_itoa10(a6,buf);
-	fileWriteString(buf);
-	fileWriteString(",");
-
-	modp_itoa10(a7,buf);
+ 	
+	scaling = loggerConfig->ADC_Calibrations[7].scaling;
+	modp_dtoa((scaling * (float)a7), buf, precision);
 	fileWriteString(buf);
 	fileWriteString(",");	
 }

@@ -16,31 +16,32 @@ void updateActiveLoggerConfig();
 
 int flashLoggerConfig();
 
+
+struct LoggerConfig * getSavedLoggerConfig();
+struct LoggerConfig * getWorkingLoggerConfig();
+
 struct ADCCalibration{
-	char label[51];
-	char units[51];
+	char label[10];
+	char units[10];
+	float scaling;
 };
 
 struct LoggerConfig {
-	//ADC Calibrations	
-	char ADC1_cal_id;
-	char ADC2_cal_id;
-	char ADC3_cal_id;
-	char ADC4_cal_id;
-	char ADC5_cal_id;
-	char ADC6_cal_id;
-	char ADC7_cal_id;
-	char ADC8_cal_id;
+	//ADC Calibrations
+	char ADC_Sample_Rate;
+	struct ADCCalibration ADC_Calibrations[8];
 	//PWM/Analog out configurations
 	char PWM1_config;
 	char PWM2_config;
 	char PWM3_config;
 	char PWM4_config;
 	//GPIO configurations
+	char GPI_Sample_Rate;
 	char GPIO1_config;
 	char GPIO2_config;
 	char GPIO3_config;
 	//Accelerometer Configurations
+	char Accel_Sample_Rate;
 	char AccelX_config;
 	char AccelY_config;
 	char AccelZ_config;
@@ -49,28 +50,28 @@ struct LoggerConfig {
 	char GPS_position_enabled;
 	char GPS_velocity_enabled;
 	char GPS_time_enabled;
-
-	char extra[106];
+	char extra2[44];
 };
+
+#define DEFAULT_ADC_CALIBRATION {"Analog","Units",0.0048875f}	
+#define BATTERY_ADC_CALIBRATION {"Battery","Volts",.01955f}
+	
+#define DEFAULT_ADC_CALIBRATIONS {DEFAULT_ADC_CALIBRATION, DEFAULT_ADC_CALIBRATION, DEFAULT_ADC_CALIBRATION, DEFAULT_ADC_CALIBRATION, DEFAULT_ADC_CALIBRATION, DEFAULT_ADC_CALIBRATION, DEFAULT_ADC_CALIBRATION, BATTERY_ADC_CALIBRATION}
 
 
 #define DEFAULT_LOGGER_CONFIG \
 		{	\
-			0, \
-			1, \
-			2, \
-			3, \
-			4, \
-			5, \
-			6, \
-			7, \
+			10, \
+			DEFAULT_ADC_CALIBRATIONS, \
 			CONFIG_PWM_ANALOG, \
 			CONFIG_PWM_ANALOG, \
 			CONFIG_PWM_ANALOG, \
 			CONFIG_PWM_ANALOG, \
+			10, \
 			CONFIG_GPIO_IN, \
 			CONFIG_GPIO_IN, \
 			CONFIG_GPIO_IN, \
+			10, \
 			CONFIG_ACCEL_DISABLED, \
 			CONFIG_ACCEL_DISABLED, \
 			CONFIG_ACCEL_DISABLED, \
@@ -78,19 +79,7 @@ struct LoggerConfig {
 			0, \
 			0, \
 			0, \
-			{ \
-				1,1,1,1,1,1,1,1,1,1,\
-				1,1,1,1,1,1,1,1,1,1,\
-				1,1,1,1,1,1,1,1,1,1,\
-				1,1,1,1,1,1,1,1,1,1,\
-				1,1,1,1,1,1,1,1,1,1,\
-				1,1,1,1,1,1,1,1,1,1,\
-				1,1,1,1,1,1,1,1,1,1,\
-				1,1,1,1,1,1,1,1,1,1,\
-				1,1,1,1,1,1,1,1,1,1,\
-				1,1,1,1,1,1,1,1,1,1,\
-				1,1,1,1,1,1 \
-			} \
+			"" \
 	}
 			
 #endif /*LOGGERCONFIG_H_*/

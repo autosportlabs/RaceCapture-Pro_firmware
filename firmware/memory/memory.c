@@ -15,6 +15,19 @@
  *  - Source data buffer
  * Output: OK if write is successful, ERROR otherwise
  */
+ 
+unsigned int flashWriteRegion(void *vAddress, void *vData, unsigned int length){
+
+	unsigned int pages = length / AT91C_IFLASH_PAGE_SIZE;
+	for (unsigned int i = 0; i < pages; i++){
+		unsigned int offset = (i * AT91C_IFLASH_PAGE_SIZE);
+		if (! flash_write((void *)((unsigned int)vAddress + offset),(void *)((unsigned int)vData + offset))){
+			return 0;	
+		}
+	}
+	return 1;
+}
+
 unsigned int RAMFUNC flash_write(void * vAddress, void * vData){
 
   // Local variables
@@ -32,7 +45,6 @@ unsigned int RAMFUNC flash_write(void * vAddress, void * vData){
 
   // Copy page in write buffer
   for (unsigned int i=0; i < MEMORY_PAGE_SIZE_32; i++) {
-
     pAddress[i] = pData[i];
   }
 
@@ -51,11 +63,9 @@ unsigned int RAMFUNC flash_write(void * vAddress, void * vData){
   AT91C_BASE_AIC->AIC_IECR = mask;
 
   if (status & (AT91C_MC_LOCKE | AT91C_MC_PROGE)) {
-
     return 0;
   }
   else {
-
     return 1;
   }
 }

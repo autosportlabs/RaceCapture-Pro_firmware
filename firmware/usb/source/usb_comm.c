@@ -41,7 +41,7 @@ void ListFile(char *filename){
 		}
 		
 		unsigned short e;
-		while (( e = file_read(&f,1,text)) != 0){
+		while (( e = file_read( &f,1,(unsigned char *)text)) != 0){
 			text[e]=0;
 			SendString((char *)text);
 		}
@@ -74,6 +74,7 @@ void onUSBCommTask(void *pvParameters){
 			g_workingLoggerConfig.AccelX_config++;
 			g_workingLoggerConfig.AccelY_config++;
 			g_workingLoggerConfig.ThetaZ_config++;	
+			g_workingLoggerConfig.extra2[127]++;
 		}
 		if (theData == 'w'){
 			SendString("flashing...");
@@ -82,11 +83,13 @@ void onUSBCommTask(void *pvParameters){
 			SendString(text);
 		}
 		if (theData == 'p'){
-			sprintf(text,"working: %d,%d,%d\r\n", g_workingLoggerConfig.AccelX_config,g_workingLoggerConfig.AccelY_config,g_workingLoggerConfig.ThetaZ_config);
+			sprintf(text,"working: %d,%d,%d,%d\r\n", g_workingLoggerConfig.AccelX_config,g_workingLoggerConfig.AccelY_config,g_workingLoggerConfig.ThetaZ_config,g_workingLoggerConfig.extra2[127]);
 			SendString(text);	
-			sprintf(text,"saved: %d,%d,%d\r\n", g_savedLoggerConfig.AccelX_config,g_savedLoggerConfig.AccelY_config,g_savedLoggerConfig.ThetaZ_config);
+			sprintf(text,"saved: %d,%d,%d,%d\r\n", g_savedLoggerConfig.AccelX_config,g_savedLoggerConfig.AccelY_config,g_savedLoggerConfig.ThetaZ_config,g_savedLoggerConfig.extra2[127]);
 			SendString(text);
-			sprintf(text,"address %u\r\n", &g_savedLoggerConfig);
+			sprintf(text,"address %u\r\n", (unsigned int)&g_savedLoggerConfig);
+			SendString(text);
+			sprintf(text,"sizeof config %u\r\n", (unsigned int)sizeof(struct LoggerConfig));
 			SendString(text);
 		}
 		if (theData == 'z'){
@@ -137,19 +140,12 @@ void onUSBCommTask(void *pvParameters){
 			}
 		}
 		if (theData == 't'){
-			vTaskList(text);
+			vTaskList((signed char*)text);
 			SendString(text);	
 		}
 		if (theData == 'a'){
 			unsigned int a0,a1,a2,a3,a4,a5,a6,a7;
-/*			a1 = ReadADC(0);
-			a2 = ReadADC(1);
-			a3 = ReadADC(2);
-			a4 = ReadADC(3);
-			a5 = ReadADC(4);
-			a6 = ReadADC(5);
-			a7 = ReadADC(6);
-*/
+
 			ReadAllADC(&a0,&a1,&a2,&a3,&a4,&a5,&a6,&a7);
 			//sprintf(text,"ADC1:%d; ADC2:%d; ADC3:%d; ADC4:%d; ADC5:%d; ADC6:%d; ADC7:%d;\r\n",a1,a2,a3,a4,a5,a6,a7);
 			sprintf(text,"All ADC0:%d; ADC1:%d; ADC2:%d; ADC3:%d; ADC4:%d; ADC5:%d; ADC6:%d; ADC7:%d\r\n",a0,a1,a2,a3,a4,a5,a6,a7);
