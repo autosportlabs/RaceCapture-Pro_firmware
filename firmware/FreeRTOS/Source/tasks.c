@@ -183,8 +183,6 @@ Changes from V4.0.5
 	  queue.c changes.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #define portPXCURRENTTCB_DEFINED 1
@@ -458,7 +456,7 @@ static tskTCB *prvAllocateTCBAndStack( unsigned portSHORT usStackDepth );
  */
 #if ( configUSE_TRACE_FACILITY == 1 )
 
-	static void prvListTaskWithinSingleList( signed portCHAR *pcWriteBuffer, xList *pxList, signed portCHAR cStatus );
+	static void prvListTaskWithinSingleList( char *pcWriteBuffer, xList *pxList, signed portCHAR cStatus );
 
 #endif
 
@@ -1175,7 +1173,7 @@ unsigned portBASE_TYPE uxNumberOfTasks;
 
 #if ( ( configUSE_TRACE_FACILITY == 1 ) && ( INCLUDE_vTaskDelete == 1 ) && ( INCLUDE_vTaskSuspend == 1 ) )
 
-	void vTaskList( signed portCHAR *pcWriteBuffer )
+	void vTaskList( char *pcWriteBuffer )
 	{
 	unsigned portBASE_TYPE uxQueue;
 
@@ -1737,7 +1735,29 @@ tskTCB *pxNewTCB;
 
 #if ( configUSE_TRACE_FACILITY == 1 )
 
-	static void prvListTaskWithinSingleList( signed portCHAR *pcWriteBuffer, xList *pxList, signed portCHAR cStatus )
+	static void strreverse(char* begin, char* end)
+	{
+	    char aux;
+	    while (end > begin)
+	        aux = *end, *end-- = *begin, *begin++ = aux;
+	}
+	
+	void itoa10(int value, char* str)
+	{
+	    char* wstr=str;
+	    int sign;
+	    // Take care of sign
+	    if ((sign=value) < 0) value = -value;
+	    // Conversion. Number is reversed.
+	    do *wstr++ = (48 + (value % 10)); while( value /= 10);
+	    if (sign < 0) *wstr++ = '-';
+	    *wstr='\0';
+	
+	    // Reverse string
+	    strreverse(str,wstr-1);
+	}
+
+	static void prvListTaskWithinSingleList( char *pcWriteBuffer, xList *pxList, signed portCHAR cStatus )
 	{
 	volatile tskTCB *pxNextTCB, *pxFirstTCB;
 	static portCHAR pcStatusString[ 50 ];
@@ -1749,12 +1769,30 @@ tskTCB *pxNewTCB;
 		{
 			listGET_OWNER_OF_NEXT_ENTRY( pxNextTCB, pxList );
 			usStackRemaining = usTaskCheckFreeStackSpace( ( unsigned portCHAR * ) pxNextTCB->pxStack );
-			sprintf( pcStatusString, ( portCHAR * ) "%s\t\t%c\t%u\t%u\t%u\r\n", pxNextTCB->pcTaskName, cStatus, ( unsigned int ) pxNextTCB->uxPriority, usStackRemaining, ( unsigned int ) pxNextTCB->uxTCBNumber );
-			strcat( ( portCHAR * ) pcWriteBuffer, ( portCHAR * ) pcStatusString );
 
+			pcStatusString[0] = cStatus;
+			pcStatusString[1] = '\0';
+			strcat(pcWriteBuffer,pcStatusString);
+			strcat(pcWriteBuffer,"\t");
+
+			itoa10(( unsigned int ) pxNextTCB->uxPriority,pcStatusString);
+			strcat(pcWriteBuffer,pcStatusString);
+			strcat(pcWriteBuffer,"\t");
+
+			itoa10(usStackRemaining, pcStatusString);
+			strcat(pcWriteBuffer,pcStatusString);
+			strcat(pcWriteBuffer,"\t");
+
+			itoa10(( unsigned int ) pxNextTCB->uxTCBNumber,pcStatusString);
+			strcat(pcWriteBuffer,pcStatusString);
+			strcat(pcWriteBuffer,"\t");
+
+			strcat(pcWriteBuffer,(char *)pxNextTCB->pcTaskName);
+			strcat(pcWriteBuffer,"\r\n");
 		} while( pxNextTCB != pxFirstTCB );
 	}
 
+	
 #endif
 /*-----------------------------------------------------------*/
 

@@ -807,7 +807,7 @@ unsigned portBASE_TYPE uxTaskGetNumberOfTasks( void );
  * \page vTaskList vTaskList
  * \ingroup TaskUtils
  */
-void vTaskList( signed portCHAR *pcWriteBuffer );
+void vTaskList( char *pcWriteBuffer );
 
 /**
  * task. h

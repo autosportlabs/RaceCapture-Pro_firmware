@@ -62,7 +62,6 @@ Changes from V4.0.5
 
 */
 
-#include <stdlib.h>
 #include <string.h>
 #include "FreeRTOS.h"
 #include "task.h"

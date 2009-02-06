@@ -43,7 +43,6 @@
 
 /* Standard includes. */
 #include <string.h>
-#include <stdio.h>
 
 /* Demo board includes. */
 #include "Board.h"

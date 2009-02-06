@@ -9,7 +9,7 @@
 #define FREQ_ANALOG_MASK (FREQ_ANALOG_1|FREQ_ANALOG_2|FREQ_ANALOG_3|FREQ_ANALOG_4)
 
 /// PWM frequency in Hz.
-#define PWM_FREQUENCY               5000
+#define PWM_FREQUENCY               2000
 
 /// Maximum duty cycle value.
 #define MAX_DUTY_CYCLE              1000

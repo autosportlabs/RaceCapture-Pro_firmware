@@ -1,7 +1,8 @@
 #include "sdcard.h"
 #include "usb_comm.h"
-#include "stdio.h"
 #include "string.h"
+#include "modp_numtoa.h"
+
 
 #define MAX_LOG_FILE_INDEX 99999
 
@@ -22,7 +23,11 @@ int OpenNextLogFile(EmbeddedFile *f){
 	
 	int i=0;
 	for (;i < MAX_LOG_FILE_INDEX;i++){
-		sprintf(filename,"rc_%d.log",i);
+		strcpy(filename,"rc_");
+		char numBuf[12];
+		modp_itoa10(i,numBuf);
+		strcat(filename,numBuf);
+		strcat(filename,".log");
 		int rc = file_fopen( f, &g_efs.myFs , filename , 'r' );
 		if ( rc !=0 ) break;
 		file_fclose(f);
@@ -36,26 +41,25 @@ int OpenNextLogFile(EmbeddedFile *f){
 void ListRootDir(void)
 {
 	DirList list;
-	char text[300];
 	SendString("Card Init...");
 	
 	int res = InitEFS();
 	if ( res != 0 ) {
-		sprintf(text,"failed with %i\r\n",res);
-		SendString(text);
+		SendString("failed with ");
+		SendNumber(res);
+		SendCrlf();
 	}
 	else{
 		SendString("ok\r\n");
-		sprintf(text,"\r\nDirectory of 'root':\r\n");
-		SendBytes(text,strlen(text));
+		SendString("Directory of 'root':\r\n");
 		ls_openDir( &list, &(g_efs.myFs) , "/");
 		while ( ls_getNext( &list ) == 0 ) {
 			list.currentEntry.FileName[LIST_MAXLENFILENAME-1] = '\0';
-			sprintf(text,"%s (%li bytes)\n\r",
-			list.currentEntry.FileName,
-			list.currentEntry.FileSize
-			);
-			SendBytes(text,strlen(text));
+			SendString(list.currentEntry.FileName);
+			SendString(" (");
+			SendNumber(list.currentEntry.FileSize);
+			SendString(")");
+			SendCrlf();
 			}
 	fs_umount( &g_efs.myFs ) ;
 	}
