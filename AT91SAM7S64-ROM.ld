@@ -108,11 +108,17 @@ SECTIONS
     *(COMMON)
   } >DATA
   . = ALIGN(4);
+  mm_heap = . ;
+  _heap_address = . ;
   __bss_end__ = . ;
   __bss_end__ = . ;
   _end = .;
   PROVIDE (end = .);
-
+  /* calculate block size for mm_malloc */
+  _MM_NUMBLOCKS = (ORIGIN(STACK) - __bss_end__ - 0x0400) / 8 ;
+  /* calculate byte size for heap_2.c memory manager */
+  _CONFIG_HEAP_SIZE = (ORIGIN(STACK) - __bss_end__ - 0x0400);
+  
     . = ALIGN(4);
    .int_data :  
    { 

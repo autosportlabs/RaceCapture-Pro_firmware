@@ -8,8 +8,6 @@
 
 
 /* Standard includes. */
-#include <stdlib.h>
-#include <stdio.h>
 
 /* Scheduler includes. */
 #include "FreeRTOS.h"
@@ -24,6 +22,7 @@
 #include "loggerTask.h"
 #include "gps.h"
 #include "loggerConfig.h"
+#include "luaTask.h"
 
 
 /*-----------------*/
@@ -52,17 +51,6 @@
 #define FATAL_ERROR_SCHEDULER	1
 #define FATAL_ERROR_HARDWARE	2
 
-static void StatusLED1( void *pvParameters );
-static void StatusLED2( void *pvParameters );
-static void SerialPing1( void *pvParameters );
-static void SerialPing2( void *pvParameters );
-
-/*
- * Checks that all the demo application tasks are still executing without error
- * - as described at the top of the file.
- */
-static portLONG prvCheckOtherTasksAreStillRunning( void );
-
 static int setupHardware( void )
 {
 	/* When using the JTAG debugger the hardware is not always initialised to
@@ -85,8 +73,9 @@ static int setupHardware( void )
 	if (!vInitUSBInterface()) return 0;	
 	   
 	InitADC();
-	//EnableAllPWM();
-	//initTimerChannels();
+	EnablePWM0();
+	StartPWM(0);
+	initTimerChannels();
 	InitLEDs();
 	InitGPIO();
 	return 1;
@@ -141,10 +130,7 @@ int main( void )
 	createLoggerTask();
 	createGPIOTasks();
 	startGPSTask();
-	//xTaskCreate( StatusLED1,		( signed portCHAR * ) "StatusLED1", 		configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
-	//xTaskCreate( StatusLED2,		( signed portCHAR * ) "StatusLED2", 		configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
-	//xTaskCreate( SerialPing1,		( signed portCHAR * ) "DebugSerial1", 		configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
-	//xTaskCreate( SerialPing2,		( signed portCHAR * ) "DebugSerial2", 		configMINIMAL_STACK_SIZE, 	NULL, 	mainDEFAULT_TASK_PRIORITY, 	NULL );
+	//startLuaTask();
 
    /* Start the scheduler.
 
@@ -158,100 +144,3 @@ int main( void )
 
    return 0;
 }
-
-
-static void StatusLED1( void *pvParameters )
-{
-
-	portTickType xDelayPeriod = mainBUSY_FLASH_PERIOD;
-	
-	/* The parameters are not used in this task. */
-	( void ) pvParameters;
-
-	/* Cycle for ever, delaying then checking all the other tasks are still
-	operating without error.  If an error is detected then the delay period
-	is decreased from mainNO_ERROR_FLASH_PERIOD to mainERROR_FLASH_PERIOD so
-	the on board LED flash rate will increase. */
-
-	for( ;; )
-	{
-		/* Delay until it is time to execute again. */
-		vTaskDelay( xDelayPeriod );
-		/* Check all the standard demo application tasks are executing without 
-		error. */
-		if( prvCheckOtherTasksAreStillRunning() != pdPASS )
-		{
-			/* An error has been detected in one of the tasks - flash faster. */
-			xDelayPeriod = mainERROR_FLASH_PERIOD;
-		}
-		
-		ToggleLED(LED1);
-	}
-}
-
-static void StatusLED2( void *pvParameters )
-{
-
-	portTickType xDelayPeriod = mainNO_ERROR_FLASH_PERIOD;
-	
-	/* The parameters are not used in this task. */
-	( void ) pvParameters;
-
-	/* Cycle for ever, delaying then checking all the other tasks are still
-	operating without error.  If an error is detected then the delay period
-	is decreased from mainNO_ERROR_FLASH_PERIOD to mainERROR_FLASH_PERIOD so
-	the on board LED flash rate will increase. */
-
-	for( ;; )
-	{
-		/* Delay until it is time to execute again. */
-		vTaskDelay( xDelayPeriod );
-		/* Check all the standard demo application tasks are executing without 
-		error. */
-		if( prvCheckOtherTasksAreStillRunning() != pdPASS )
-		{
-			/* An error has been detected in one of the tasks - flash faster. */
-			xDelayPeriod = mainERROR_FLASH_PERIOD;
-		}
-		ToggleLED(LED2);
-	}
-}
-
-static void SerialPing1( void *pvParameters )
-{
-	portTickType xDelayPeriod = mainDATA_DEBUG_PERIOD;
-	
-	for( ;; )
-	{
-		usart0_puts("Test_UART0\r\n");
-		/* Delay until it is time to execute again. */
-		vTaskDelay( xDelayPeriod );
-	}
-	
-}
-
-static void SerialPing2( void *pvParameters )
-{
-	portTickType xDelayPeriod = mainDATA_DEBUG_PERIOD;
-	
-	for( ;; )
-	{
-		usart1_puts("Test_UART1\r\n");
-		/* Delay until it is time to execute again. */
-		vTaskDelay( xDelayPeriod );
-	}
-	
-}
-/*-----------------------------------------------------------*/
-
-static portLONG prvCheckOtherTasksAreStillRunning( void )
-{
-portLONG lReturn = ( portLONG ) pdPASS;
-
-	/* Check all the demo tasks (other than the flash tasks) to ensure
-	that they are all still running, and that none of them have detected
-	an error. */
-
-	return lReturn;
-}
-/*-----------------------------------------------------------*/

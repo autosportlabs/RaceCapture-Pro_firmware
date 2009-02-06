@@ -41,6 +41,10 @@ extern void ( timer0_irq_handler )( void );
 extern void ( timer1_irq_handler )( void );
 extern void ( timer2_irq_handler )( void );
 
+unsigned int g_timer0Period;
+unsigned int g_timer1Period;
+unsigned int g_timer2Period;
+
 
 void InitGPIO(){
     AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, GPIO_MASK ) ;
@@ -167,6 +171,7 @@ void EnablePWM3(){
     PWM_EnableChannel(3);	
 }
 
+
 //------------------------------------------------------------------------------
 /// Configures PWM clocks A & B to run at the given frequencies. This function
 /// finds the best MCK divisor and prescaler values automatically.
@@ -210,7 +215,7 @@ unsigned short GetClockConfiguration(
     unsigned int frequency,
     unsigned int mck)
 {
-    unsigned int divisors[11] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024};
+    const unsigned int divisors[11] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024};
     unsigned char divisor = 0;
     unsigned int prescaler;
 
@@ -444,6 +449,7 @@ void initTimerChannels(){
 
 void initTimer0(){
 
+	g_timer0Period = 0;
 	// Set PIO pins for Timer Counter 0
 	//TIOA0 connected to PA0
 	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,0,AT91C_PA0_TIOA0);
@@ -454,11 +460,12 @@ void initTimer0(){
 	AT91F_TC_Open ( 
 	AT91C_BASE_TC0,
 	
-	TC_CLKS_MCK2 | 
+	TC_CLKS_MCK32 | 
 	AT91C_TC_ETRGEDG_FALLING |	
 	AT91C_TC_ABETRG |
 	AT91C_TC_LDRA_RISING|
-	AT91C_TC_LDRB_FALLING
+	AT91C_TC_LDRB_FALLING | 
+	AT91C_TC_LDBSTOP
 	
 	,AT91C_ID_TC0
 	);
@@ -470,6 +477,7 @@ void initTimer0(){
 
 void initTimer1(){
 
+	g_timer1Period = 0;
 	// Set PIO pins for Timer Counter 1
 	// TIOA1 mapped to PA15
 	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,0,AT91C_PA15_TIOA1);
@@ -480,11 +488,12 @@ void initTimer1(){
 	AT91F_TC_Open ( 
 	AT91C_BASE_TC1,
 	
-	TC_CLKS_MCK2 | 
+	TC_CLKS_MCK32 | 
 	AT91C_TC_ETRGEDG_FALLING |	
 	AT91C_TC_ABETRG |
 	AT91C_TC_LDRA_RISING|
-	AT91C_TC_LDRB_FALLING
+	AT91C_TC_LDRB_FALLING |
+	AT91C_TC_LDBSTOP
 	
 	,AT91C_ID_TC1
 	);
@@ -496,6 +505,7 @@ void initTimer1(){
 
 void initTimer2(){
 
+	g_timer2Period = 0;
 	// Set PIO pins for Timer Counter 2
 	// TIOA2 mapped to PA26
 	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,0,AT91C_PA26_TIOA2);
@@ -506,17 +516,29 @@ void initTimer2(){
 	AT91F_TC_Open ( 
 	AT91C_BASE_TC2,
 	
-	TC_CLKS_MCK2 | 
+	TC_CLKS_MCK32 | 
 	AT91C_TC_ETRGEDG_FALLING |	
 	AT91C_TC_ABETRG |
 	AT91C_TC_LDRA_RISING|
-	AT91C_TC_LDRB_FALLING
+	AT91C_TC_LDRB_FALLING |
+	AT91C_TC_LDBSTOP	
 	
 	,AT91C_ID_TC2
 	);
 	
 	AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC2, TIMER2_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer2_irq_handler);
-	AT91C_BASE_TC2->TC_IER = AT91C_TC_COVFS | AT91C_TC_LDRBS;  //  IRQ enable RB loading
+	AT91C_BASE_TC2->TC_IER =AT91C_TC_LDRBS;  //  IRQ enable RB loading
 	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC2);	
 }
 
+unsigned int getTimer0Period(){
+	return g_timer0Period;
+}
+
+unsigned int getTimer1Period(){
+	return g_timer1Period;
+}
+
+unsigned int getTimer2Period(){
+	return g_timer2Period;
+}

@@ -78,7 +78,6 @@ Changes from V4.0.4
 	  tick count value.
 */
 
-#include <stdlib.h>
 #include "FreeRTOS.h"
 #include "list.h"
 

@@ -123,7 +123,6 @@ void loggerTask(void *params){
 			fileWriteString("~");
 			DisableLED(LED2);
 		}
-		vTaskDelay(1);
 	}
 }
 
@@ -134,7 +133,6 @@ void writeADC(unsigned int a0,unsigned int a1,unsigned int a2,unsigned int a3,un
 	float scaling;
 	int precision;
 
-	scaling = 6.06f;
 	precision = 2;
 	
 	scaling = loggerConfig->ADC_Calibrations[0].scaling;

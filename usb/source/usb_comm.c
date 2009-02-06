@@ -1,56 +1,24 @@
 #include "usb_comm.h"
 #include "task.h"
-#include "stdio.h"
 #include "string.h"
 #include "USB-CDC.h"
 #include "Board.h"
 #include "loggerHardware.h"
-#include "sdcard.h"
 #include "accelerometer.h"
 #include "memory.h"
 #include "loggerConfig.h"
+#include "modp_numtoa.h"
 
 //* Global variable
 extern struct LoggerConfig g_savedLoggerConfig;
 extern struct LoggerConfig g_workingLoggerConfig;
 
+unsigned short duty = MIN_DUTY_CYCLE;
+unsigned short period = MAX_DUTY_CYCLE;
 
-extern char					debugMsg[100];
-#define MSG_SIZE 				1000
 
-unsigned short duty = 1;
-char text[300];
-
-void ListFile(char *filename){
-
-	EmbeddedFileSystem efs;		
-	int res;
-	
-	SendString("Card Init...");
-	if ( ( res = efs_init( &efs, 0 ) ) != 0 ) {
-		sprintf(text,"failed with %i\r\n",res);
-		SendString(text);
-	}
-	else{
-		EmbeddedFile f;
-
-		if ( file_fopen( &f, &efs.myFs , filename , 'r' ) != 0 ) {
-			sprintf(text,"\nfile_open for %s failed", filename);
-			fs_umount( &efs.myFs );
-			return;
-		}
-		
-		unsigned short e;
-		while (( e = file_read( &f,1,(unsigned char *)text)) != 0){
-			text[e]=0;
-			SendString((char *)text);
-		}
-		file_fclose(&f);
-		fs_umount(&efs.myFs);
-		SendString("\r\nFinished");
-	}	
-}
-
+extern unsigned int _CONFIG_HEAP_SIZE;
+extern unsigned portCHAR  _heap_address[];
 
 void onUSBCommTask(void *pvParameters){
 	
@@ -61,14 +29,13 @@ void onUSBCommTask(void *pvParameters){
 	
     while (1){
     	vUSBReceiveByte(&theData);
-		if (theData == 'V'){
-			text[0] = 3;
-			text[1] = 2;
-			text[2] = 3;	
-			SendBytes(text,3);
-		}	
-		if (theData == 'd'){
-			ListRootDir();	
+
+		if (theData == 'm'){
+			SendString("heap size: ");
+			SendUint((unsigned int)(&_CONFIG_HEAP_SIZE));
+			SendString("; heap address: ");
+			SendUint((unsigned int) _heap_address);
+			SendCrlf();
 		}
 		if (theData == 'u'){
 			g_workingLoggerConfig.AccelX_config++;
@@ -79,30 +46,59 @@ void onUSBCommTask(void *pvParameters){
 		if (theData == 'w'){
 			SendString("flashing...");
 			unsigned int result = flashLoggerConfig();
-			sprintf(text,"done: %u\r\n",result);
-			SendString(text);
+			SendString("done: ");
+			SendNumber(result);
+			SendCrlf();
 		}
 		if (theData == 'p'){
-			sprintf(text,"working: %d,%d,%d,%d\r\n", g_workingLoggerConfig.AccelX_config,g_workingLoggerConfig.AccelY_config,g_workingLoggerConfig.ThetaZ_config,g_workingLoggerConfig.extra2[127]);
-			SendString(text);	
-			sprintf(text,"saved: %d,%d,%d,%d\r\n", g_savedLoggerConfig.AccelX_config,g_savedLoggerConfig.AccelY_config,g_savedLoggerConfig.ThetaZ_config,g_savedLoggerConfig.extra2[127]);
-			SendString(text);
-			sprintf(text,"address %u\r\n", (unsigned int)&g_savedLoggerConfig);
-			SendString(text);
-			sprintf(text,"sizeof config %u\r\n", (unsigned int)sizeof(struct LoggerConfig));
-			SendString(text);
+			SendString("working: ");
+			SendNumber(g_workingLoggerConfig.AccelX_config);
+			SendString(" ");
+			SendNumber(g_workingLoggerConfig.AccelY_config);
+			SendString(" ");
+			SendNumber(g_workingLoggerConfig.ThetaZ_config);
+			SendString(" ");
+			SendNumber(g_workingLoggerConfig.extra2[127]);
+			SendCrlf();
+			SendString("saved: ");
+			SendNumber(g_savedLoggerConfig.AccelX_config);
+			SendNumber(g_savedLoggerConfig.AccelY_config);
+			SendNumber(g_savedLoggerConfig.ThetaZ_config);
+			SendNumber(g_savedLoggerConfig.extra2[127]);
+			SendCrlf();
+			SendString("address: ");
+			SendUint((unsigned int)&g_savedLoggerConfig);
+			SendString("sizeof config: ");
+			SendUint((unsigned int)sizeof(struct LoggerConfig));
+			SendCrlf();
 		}
 		if (theData == 'z'){
 			duty--;
-			sprintf(text,"Duty %d\r\n",duty);
-			SendBytes(text,strlen(text));
+			SendString("Duty: ");
+			SendNumber(duty);
+			SendCrlf();
 			PWM_SetDutyCycle(0,duty);	
 		}
 		if (theData == 'x'){
 			duty++;
-			sprintf(text,"Duty %d\r\n",duty);
-			SendBytes(text,strlen(text));
+			SendString("Duty: ");
+			SendNumber(duty);
+			SendCrlf();
 			PWM_SetDutyCycle(0,duty);
+		}
+		if (theData == '1'){
+			period--;
+			SendString("Period: ");
+			SendNumber(period);
+			SendCrlf();
+			PWM_SetPeriod(0,period);
+		}
+		if (theData == '2'){
+			period++;
+			SendString("Period: ");
+			SendNumber(period);
+			SendCrlf();
+			PWM_SetPeriod(0,period);
 		}
 		if (theData == 'c'){
 			for (int i=1; i< 1000; i++){
@@ -124,43 +120,96 @@ void onUSBCommTask(void *pvParameters){
 		 	int x = accel_readAxis(0);
 		 	int y = accel_readAxis(1);
 		 	int z = accel_readAxis(2);
-			sprintf(text,"G X,Y,Z: %d,%d,%d\r\n",x,y,z);
-			SendBytes(text,strlen(text));
+		 	SendString("G X,Y,Z: ");
+		 	SendNumber(x);
+		 	SendString(",");
+		 	SendNumber(y);
+		 	SendString(",");
+		 	SendNumber(z);
+		 	SendCrlf();
 		}
 		if (theData == 'b'){
-		 	int x = accel_readControlRegister();			
-			sprintf(text,"accel control: %d\r\n",x);
-			SendBytes(text,strlen(text));
+		 	int x = accel_readControlRegister();
+		 	SendString("accel control: ");
+		 	SendNumber(x);
+		 	SendCrlf();			
 		}
 		
 		if (theData == '!'){
 			for (int x = 0; x < 1000; x++){
-				sprintf(text,"%d\n\r", x);
-				SendString(text);	
+				SendNumber(x);
+				SendCrlf();
 			}
 		}
+#if ( configUSE_TRACE_FACILITY == 1 )		
 		if (theData == 't'){
-			vTaskList((signed char*)text);
-			SendString(text);	
+			SendString("status\tpri\tstack\tnum\tname\r\n");
+			char text[300]; //fixme
+			vTaskList(text);
+			SendString(text);
+			SendCrlf();
+		}
+#endif
+		if (theData == 'q'){
+			SendString("timer: ");
+			SendNumber(getTimer0Period());
+			SendString(",");
+			SendNumber(getTimer1Period());
+			SendString(",");
+			SendNumber(getTimer2Period());
+			SendString(",");
+			SendNumber(AT91C_BASE_TC0->TC_CV);
+			SendString(",");
+			SendNumber(AT91C_BASE_TC1->TC_CV);
+			SendString(",");
+			SendNumber(AT91C_BASE_TC2->TC_CV);
+			SendString(",");
+			SendNumber(AT91C_BASE_TC2->TC_RB);
+			SendString(",");
+			SendNumber(AT91C_BASE_TC2->TC_IMR);
+			SendCrlf();
 		}
 		if (theData == 'a'){
 			unsigned int a0,a1,a2,a3,a4,a5,a6,a7;
-
 			ReadAllADC(&a0,&a1,&a2,&a3,&a4,&a5,&a6,&a7);
-			//sprintf(text,"ADC1:%d; ADC2:%d; ADC3:%d; ADC4:%d; ADC5:%d; ADC6:%d; ADC7:%d;\r\n",a1,a2,a3,a4,a5,a6,a7);
-			sprintf(text,"All ADC0:%d; ADC1:%d; ADC2:%d; ADC3:%d; ADC4:%d; ADC5:%d; ADC6:%d; ADC7:%d\r\n",a0,a1,a2,a3,a4,a5,a6,a7);
-			SendBytes(text,strlen(text));	
+			SendString("ADC: ");
+			SendNumber(a0);
+			SendString(",");
+			SendNumber(a1);
+			SendString(",");
+			SendNumber(a2);
+			SendString(",");
+			SendNumber(a3);
+			SendString(",");
+			SendNumber(a4);
+			SendString(",");
+			SendNumber(a5);
+			SendString(",");
+			SendNumber(a6);
+			SendString(",");
+			SendNumber(a7);
+			SendCrlf();
 		}
     }
 }
 
+void SendNumber(int n){
+	char buf[12];
+	modp_itoa10(n,buf);
+	SendString(buf);
+}
+
+void SendUint(unsigned int n){
+	char buf[20];
+	modp_uitoa10(n,buf);
+	SendString(buf);	
+}
 
 void SendString(char *s){
 	while ( *s ) vUSBSendByte(*s++ );
 }
 
 void SendBytes(char *data, unsigned int length){
-	
 	while (length > 0){
     	vUSBSendByte(*data);
     	data++;
@@ -168,3 +217,7 @@ void SendBytes(char *data, unsigned int length){
 	}	
 }
 
+
+void SendCrlf(){
+	SendString("\r\n");
+}

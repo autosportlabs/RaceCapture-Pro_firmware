@@ -4,7 +4,6 @@
 #include "modp_numtoa.h"
 
 #include <stdint.h>
-#include <stdio.h>
 #include <math.h>
 
 // other interesting references on num to string convesion
@@ -104,8 +103,8 @@ void modp_dtoa(float value, char* str, int prec)
        which can be 100s of characters overflowing your buffers == bad
     */
     if (value > thres_max) {
-    	//strcpy(str,"EEE"); //overflow - avoid sprintf for now
-        sprintf(str, "%e", neg ? -value : value);
+    	strcpy(str,"EEE"); //overflow - avoid sprintf for now
+        //sprintf(str, "%e", neg ? -value : value);
         return;
     }
 

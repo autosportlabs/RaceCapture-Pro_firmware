@@ -96,4 +96,9 @@ void initTimerChannels();
 void initTimer0();
 void initTimer1();
 void initTimer2();
+
+unsigned int getTimer0Period();
+unsigned int getTimer1Period();
+unsigned int getTimer2Period();
+
 #endif /*LOGGERHARDWARE_H_*/

@@ -65,6 +65,7 @@ RTOS_DIR = FreeRTOS
 RTOS_SRC_DIR = $(RTOS_DIR)/Source
 RTOS_PORT_DIR = $(RTOS_SRC_DIR)/portable
 RTOS_GCC_DIR = $(RTOS_PORT_DIR)/GCC/ARM7_AT91SAM7S
+RTOS_MEMMANG_DIR = $(RTOS_PORT_DIR)/MemMang
 
 USB_SRC_DIR = usb
 LOGGER_SRC_DIR = logger
@@ -73,6 +74,7 @@ SDCARD_SRC_DIR = sdcard
 ACCELEROMETER_SRC_DIR = accelerometer
 UTIL_DIR = util
 MEMORY_SRC_DIR = memory
+LUA_SRC_DIR = lua
 
 # List C source files here. (C dependencies are automatically generated.)
 # use file-extension c for "c-only"-files
@@ -82,7 +84,6 @@ $(HW_DIR)/lib_AT91SAM7S256.c \
 $(RTOS_SRC_DIR)/tasks.c \
 $(RTOS_SRC_DIR)/queue.c \
 $(RTOS_SRC_DIR)/list.c \
-$(RTOS_PORT_DIR)/MemMang/heap_2.c \
 $(RTOS_GCC_DIR)/port.c \
 $(USB_SRC_DIR)/source/usb_comm.c \
 $(USB_SRC_DIR)/source/USB-CDC.c \
@@ -95,13 +96,10 @@ $(ACCELEROMETER_SRC_DIR)/accelerometer.c \
 $(UTIL_DIR)/modp_numtoa.c \
 $(LOGGER_SRC_DIR)/gps.c \
 $(MEMORY_SRC_DIR)/memory.c \
-$(LOGGER_SRC_DIR)/loggerConfig.c
-
-
-
-# DJS--The following are required to use iprintf()
-# SRC += syscalls.c simple_serial.c
-
+$(LOGGER_SRC_DIR)/loggerConfig.c \
+$(LUA_SRC_DIR)/luaTask.c \
+$(RTOS_PORT_DIR)/MemMang/heap_5.c 
+#$(RTOS_PORT_DIR)/MemMang/m_malloc.c \
 
 # List C source files here which must be compiled in ARM-Mode.
 # use file-extension c for "c-only"-files
@@ -149,11 +147,11 @@ DEBUG =
 
 # List any extra directories to look for include files here.
 #     Each directory must be seperated by a space.
-EXTRAINCDIRS = ../libefsl/inc ../libefsl/conf
+EXTRAINCDIRS = ../libefsl/inc ../libefsl/conf ../lua/src
 
 # List any extra directories to look for library files here.
 #     Each directory must be seperated by a space.
-EXTRA_LIBDIRS = ../libefsl
+EXTRA_LIBDIRS = ../libefsl ../lua/src
 
 # Compiler flag to set the C Standard level.
 # c89   - "ANSI" C
@@ -172,7 +170,7 @@ CDEFS += -DSAM7_GCC
 CDEFS += -DTHUMB_INTERWORK
 
 # Place -I options here
-CINCS = -I. -I$(UTIL_DIR) -I$(MEMORY_SRC_DIR) -I$(SDCARD_SRC_DIR) -I$(SERIAL_SRC_DIR) -I$(ACCELEROMETER_SRC_DIR) -I$(LOGGER_SRC_DIR) -I$(USB_SRC_DIR)/include -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
+CINCS = -I. -I$(RTOS_MEMMANG_DIR) -I$(UTIL_DIR) -I$(LUA_SRC_DIR) -I$(MEMORY_SRC_DIR) -I$(SDCARD_SRC_DIR) -I$(SERIAL_SRC_DIR) -I$(ACCELEROMETER_SRC_DIR) -I$(LOGGER_SRC_DIR) -I$(USB_SRC_DIR)/include -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
 #CINCS = -I. -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
 # Place -D or -U options for ASM here
 ADEFS =  -D$(RUN_MODE)
@@ -231,7 +229,7 @@ ASFLAGS = $(ADEFS) -Wa,-adhlns=$(<:.S=.lst), $(DEBUG)
 
 # Extra libraries
 #    Each library-name must be seperated by a space.
-EXTRA_LIBS = efsl
+EXTRA_LIBS = efsl lua m
 
 #Support for newlibc-lpc (file: libnewlibc-lpc.a)
 #NEWLIBLPC = -lnewlib-lpc
