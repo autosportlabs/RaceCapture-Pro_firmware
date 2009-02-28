@@ -13,7 +13,7 @@
 
 /// Maximum duty cycle value.
 #define MAX_DUTY_CYCLE              1000
-#define MIN_DUTY_CYCLE          	2
+#define MIN_DUTY_CYCLE          	1
 
 //define PIOs for GPIO ports
 #define GPIO_1 (1<<8)
