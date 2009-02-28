@@ -8,6 +8,7 @@
 #include "memory.h"
 #include "loggerConfig.h"
 #include "modp_numtoa.h"
+#include "gps.h"
 
 //* Global variable
 extern struct LoggerConfig g_savedLoggerConfig;
@@ -79,6 +80,12 @@ void onUSBCommTask(void *pvParameters){
 			SendCrlf();
 			PWM_SetDutyCycle(0,duty);	
 		}
+		if (theData == 'X'){
+			SendString("Reset Duty");
+			SendCrlf();
+			duty=MIN_DUTY_CYCLE;
+			PWM_SetDutyCycle(0,duty);	
+		}
 		if (theData == 'x'){
 			duty++;
 			SendString("Duty: ");
@@ -134,12 +141,13 @@ void onUSBCommTask(void *pvParameters){
 		 	SendNumber(x);
 		 	SendCrlf();			
 		}
-		
-		if (theData == '!'){
-			for (int x = 0; x < 1000; x++){
-				SendNumber(x);
-				SendCrlf();
-			}
+		if (theData == 'g'){
+			SendString(getLatitude());
+			SendString(" ");
+			SendString(getLongitude());
+			SendString(" Vel: ");
+			SendString(getGPSVelocity());
+			SendCrlf();	
 		}
 #if ( configUSE_TRACE_FACILITY == 1 )		
 		if (theData == 't'){
@@ -157,16 +165,18 @@ void onUSBCommTask(void *pvParameters){
 			SendNumber(getTimer1Period());
 			SendString(",");
 			SendNumber(getTimer2Period());
-			SendString(",");
+			SendString("  ");
 			SendNumber(AT91C_BASE_TC0->TC_CV);
 			SendString(",");
 			SendNumber(AT91C_BASE_TC1->TC_CV);
 			SendString(",");
 			SendNumber(AT91C_BASE_TC2->TC_CV);
+			SendString("  ");
+			SendNumber(AT91C_BASE_TC0->TC_RB);
+			SendString(",");
+			SendNumber(AT91C_BASE_TC1->TC_RB);
 			SendString(",");
 			SendNumber(AT91C_BASE_TC2->TC_RB);
-			SendString(",");
-			SendNumber(AT91C_BASE_TC2->TC_IMR);
 			SendCrlf();
 		}
 		if (theData == 'a'){

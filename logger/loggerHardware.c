@@ -37,14 +37,15 @@
 #define TC_CLKS_MCK128          0x3
 #define TC_CLKS_MCK1024         0x4
 
+#define MAX_TIMER_VALUE			0xFFFF
+
 extern void ( timer0_irq_handler )( void );
 extern void ( timer1_irq_handler )( void );
 extern void ( timer2_irq_handler )( void );
 
-unsigned int g_timer0Period;
-unsigned int g_timer1Period;
-unsigned int g_timer2Period;
-
+unsigned int g_timer0_overflow;
+unsigned int g_timer1_overflow;
+unsigned int g_timer2_overflow;
 
 void InitGPIO(){
     AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, GPIO_MASK ) ;
@@ -107,7 +108,7 @@ void EnablePWM0(){
     PWM_ConfigureClocks(PWM_FREQUENCY * MAX_DUTY_CYCLE, 0, BOARD_MCK);
 
     // Configure PWMC channel (left-aligned)
-    PWM_ConfigureChannel(0, AT91C_PWMC_CPRE_MCKA, 0, 0);
+    PWM_ConfigureChannel(0, AT91C_PWMC_CPRE_MCKA, 0, AT91C_PWMC_CPOL);
     PWM_SetPeriod(0, MAX_DUTY_CYCLE);
     PWM_SetDutyCycle(0, MIN_DUTY_CYCLE);
     PWM_EnableChannel(0);	
@@ -127,7 +128,7 @@ void EnablePWM1(){
     PWM_ConfigureClocks(PWM_FREQUENCY * MAX_DUTY_CYCLE, 0, BOARD_MCK);
 
     // Configure PWMC channel (left-aligned)
-    PWM_ConfigureChannel(1, AT91C_PWMC_CPRE_MCKA, 0, 0);
+    PWM_ConfigureChannel(1, AT91C_PWMC_CPRE_MCKA, 0, AT91C_PWMC_CPOL);
     PWM_SetPeriod(1, MAX_DUTY_CYCLE);
     PWM_SetDutyCycle(1, MIN_DUTY_CYCLE);
     PWM_EnableChannel(1);	
@@ -146,7 +147,7 @@ void EnablePWM2(){
     PWM_ConfigureClocks(PWM_FREQUENCY * MAX_DUTY_CYCLE, 0, BOARD_MCK);
 
     // Configure PWMC channel (left-aligned)
-    PWM_ConfigureChannel(2, AT91C_PWMC_CPRE_MCKA, 0, 0);
+    PWM_ConfigureChannel(2, AT91C_PWMC_CPRE_MCKA, 0, AT91C_PWMC_CPOL);
     PWM_SetPeriod(2, MAX_DUTY_CYCLE);
     PWM_SetDutyCycle(2, MIN_DUTY_CYCLE);
     PWM_EnableChannel(2);	
@@ -165,7 +166,7 @@ void EnablePWM3(){
     PWM_ConfigureClocks(PWM_FREQUENCY * MAX_DUTY_CYCLE, 0, BOARD_MCK);
 
     // Configure PWMC channel (left-aligned)
-    PWM_ConfigureChannel(3, AT91C_PWMC_CPRE_MCKA, 0, 0);
+    PWM_ConfigureChannel(3, AT91C_PWMC_CPRE_MCKA, 0, AT91C_PWMC_CPOL);
     PWM_SetPeriod(3, MAX_DUTY_CYCLE);
     PWM_SetDutyCycle(3, MIN_DUTY_CYCLE);
     PWM_EnableChannel(3);	
@@ -449,7 +450,7 @@ void initTimerChannels(){
 
 void initTimer0(){
 
-	g_timer0Period = 0;
+	g_timer0_overflow = 1;
 	// Set PIO pins for Timer Counter 0
 	//TIOA0 connected to PA0
 	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,0,AT91C_PA0_TIOA0);
@@ -464,20 +465,20 @@ void initTimer0(){
 	AT91C_TC_ETRGEDG_FALLING |	
 	AT91C_TC_ABETRG |
 	AT91C_TC_LDRA_RISING|
-	AT91C_TC_LDRB_FALLING | 
-	AT91C_TC_LDBSTOP
+	AT91C_TC_LDRB_FALLING
 	
 	,AT91C_ID_TC0
 	);
 	
 	AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC0, TIMER0_INTERRUPT_LEVEL,AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer0_irq_handler);
-	AT91C_BASE_TC0->TC_IER = AT91C_TC_COVFS | AT91C_TC_LDRBS;  //  IRQ enable RB loading
+	AT91C_BASE_TC0->TC_IER = AT91C_TC_LDRBS;  //  IRQ enable RB loading
 	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC0);	
 }
 
 void initTimer1(){
 
-	g_timer1Period = 0;
+	g_timer1_overflow = 1;
+	
 	// Set PIO pins for Timer Counter 1
 	// TIOA1 mapped to PA15
 	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,0,AT91C_PA15_TIOA1);
@@ -492,20 +493,19 @@ void initTimer1(){
 	AT91C_TC_ETRGEDG_FALLING |	
 	AT91C_TC_ABETRG |
 	AT91C_TC_LDRA_RISING|
-	AT91C_TC_LDRB_FALLING |
-	AT91C_TC_LDBSTOP
+	AT91C_TC_LDRB_FALLING
 	
 	,AT91C_ID_TC1
 	);
 	
 	AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC1, TIMER1_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer1_irq_handler);
-	AT91C_BASE_TC1->TC_IER = AT91C_TC_COVFS | AT91C_TC_LDRBS;  //  IRQ enable RB loading
+	AT91C_BASE_TC1->TC_IER = AT91C_TC_LDRBS;  //  IRQ enable RB loading
 	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC1);	
 }
 
 void initTimer2(){
 
-	g_timer2Period = 0;
+	g_timer2_overflow = 1;
 	// Set PIO pins for Timer Counter 2
 	// TIOA2 mapped to PA26
 	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,0,AT91C_PA26_TIOA2);
@@ -520,8 +520,7 @@ void initTimer2(){
 	AT91C_TC_ETRGEDG_FALLING |	
 	AT91C_TC_ABETRG |
 	AT91C_TC_LDRA_RISING|
-	AT91C_TC_LDRB_FALLING |
-	AT91C_TC_LDBSTOP	
+	AT91C_TC_LDRB_FALLING
 	
 	,AT91C_ID_TC2
 	);
@@ -532,13 +531,13 @@ void initTimer2(){
 }
 
 unsigned int getTimer0Period(){
-	return g_timer0Period;
+	return g_timer0_overflow ? MAX_TIMER_VALUE : AT91C_BASE_TC0->TC_RB;
 }
 
 unsigned int getTimer1Period(){
-	return g_timer1Period;
+	return g_timer1_overflow ? MAX_TIMER_VALUE : AT91C_BASE_TC1->TC_RB;
 }
 
 unsigned int getTimer2Period(){
-	return g_timer2Period;
+	return g_timer2_overflow ? MAX_TIMER_VALUE : AT91C_BASE_TC2->TC_RB;
 }
