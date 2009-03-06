@@ -9,7 +9,9 @@ void SendBytes(char *data, unsigned int length);
 
 void SendString(char *s);
 
-void SendNumber(int n);
+void SendInt(int n);
+
+void SendFloat(float f,int precision);
 
 void SendUint(unsigned int n);
 

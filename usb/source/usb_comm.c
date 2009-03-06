@@ -9,6 +9,8 @@
 #include "loggerConfig.h"
 #include "modp_numtoa.h"
 #include "gps.h"
+#include "usart.h"
+
 
 //* Global variable
 extern struct LoggerConfig g_savedLoggerConfig;
@@ -48,24 +50,24 @@ void onUSBCommTask(void *pvParameters){
 			SendString("flashing...");
 			unsigned int result = flashLoggerConfig();
 			SendString("done: ");
-			SendNumber(result);
+			SendInt(result);
 			SendCrlf();
 		}
 		if (theData == 'p'){
 			SendString("working: ");
-			SendNumber(g_workingLoggerConfig.AccelX_config);
+			SendInt(g_workingLoggerConfig.AccelX_config);
 			SendString(" ");
-			SendNumber(g_workingLoggerConfig.AccelY_config);
+			SendInt(g_workingLoggerConfig.AccelY_config);
 			SendString(" ");
-			SendNumber(g_workingLoggerConfig.ThetaZ_config);
+			SendInt(g_workingLoggerConfig.ThetaZ_config);
 			SendString(" ");
-			SendNumber(g_workingLoggerConfig.extra2[127]);
+			SendInt(g_workingLoggerConfig.extra2[127]);
 			SendCrlf();
 			SendString("saved: ");
-			SendNumber(g_savedLoggerConfig.AccelX_config);
-			SendNumber(g_savedLoggerConfig.AccelY_config);
-			SendNumber(g_savedLoggerConfig.ThetaZ_config);
-			SendNumber(g_savedLoggerConfig.extra2[127]);
+			SendInt(g_savedLoggerConfig.AccelX_config);
+			SendInt(g_savedLoggerConfig.AccelY_config);
+			SendInt(g_savedLoggerConfig.ThetaZ_config);
+			SendInt(g_savedLoggerConfig.extra2[127]);
 			SendCrlf();
 			SendString("address: ");
 			SendUint((unsigned int)&g_savedLoggerConfig);
@@ -76,7 +78,7 @@ void onUSBCommTask(void *pvParameters){
 		if (theData == 'z'){
 			duty--;
 			SendString("Duty: ");
-			SendNumber(duty);
+			SendInt(duty);
 			SendCrlf();
 			PWM_SetDutyCycle(0,duty);	
 		}
@@ -89,21 +91,21 @@ void onUSBCommTask(void *pvParameters){
 		if (theData == 'x'){
 			duty++;
 			SendString("Duty: ");
-			SendNumber(duty);
+			SendInt(duty);
 			SendCrlf();
 			PWM_SetDutyCycle(0,duty);
 		}
 		if (theData == '1'){
 			period--;
 			SendString("Period: ");
-			SendNumber(period);
+			SendInt(period);
 			SendCrlf();
 			PWM_SetPeriod(0,period);
 		}
 		if (theData == '2'){
 			period++;
 			SendString("Period: ");
-			SendNumber(period);
+			SendInt(period);
 			SendCrlf();
 			PWM_SetPeriod(0,period);
 		}
@@ -124,30 +126,44 @@ void onUSBCommTask(void *pvParameters){
 			accel_setup();	
 		}
 		if (theData == 'k'){
+			accel_init();
+			accel_setup();
 		 	int x = accel_readAxis(0);
 		 	int y = accel_readAxis(1);
 		 	int z = accel_readAxis(2);
 		 	SendString("G X,Y,Z: ");
-		 	SendNumber(x);
+		 	SendInt(x);
 		 	SendString(",");
-		 	SendNumber(y);
+		 	SendInt(y);
 		 	SendString(",");
-		 	SendNumber(z);
+		 	SendInt(z);
 		 	SendCrlf();
 		}
 		if (theData == 'b'){
 		 	int x = accel_readControlRegister();
 		 	SendString("accel control: ");
-		 	SendNumber(x);
+		 	SendInt(x);
 		 	SendCrlf();			
 		}
+		if (theData == 'd'){
+			unsigned int size = getRx1QueueWaiting();
+			SendString("usart rx1 queue waiting ");
+			SendInt(size);
+			SendCrlf();
+		}
 		if (theData == 'g'){
-			SendString(getLatitude());
-			SendString(" ");
-			SendString(getLongitude());
+			SendFloat(getLongitude(),6);
+			SendString(",");
+			SendFloat(getLatitude(),6);
 			SendString(" Vel: ");
-			SendString(getGPSVelocity());
-			SendCrlf();	
+			SendFloat(getGPSVelocity(),2);
+			SendString(" Qual: ");
+			SendInt(getGPSQuality());
+			SendString(" Sats: ");
+			SendInt(getSatellitesUsedForPosition());
+			SendCrlf();
+			//SendString(getGPSDataLine());
+			//SendCrlf();	
 		}
 #if ( configUSE_TRACE_FACILITY == 1 )		
 		if (theData == 't'){
@@ -160,53 +176,59 @@ void onUSBCommTask(void *pvParameters){
 #endif
 		if (theData == 'q'){
 			SendString("timer: ");
-			SendNumber(getTimer0Period());
+			SendInt(getTimer0Period());
 			SendString(",");
-			SendNumber(getTimer1Period());
+			SendInt(getTimer1Period());
 			SendString(",");
-			SendNumber(getTimer2Period());
+			SendInt(getTimer2Period());
 			SendString("  ");
-			SendNumber(AT91C_BASE_TC0->TC_CV);
+			SendInt(AT91C_BASE_TC0->TC_CV);
 			SendString(",");
-			SendNumber(AT91C_BASE_TC1->TC_CV);
+			SendInt(AT91C_BASE_TC1->TC_CV);
 			SendString(",");
-			SendNumber(AT91C_BASE_TC2->TC_CV);
+			SendInt(AT91C_BASE_TC2->TC_CV);
 			SendString("  ");
-			SendNumber(AT91C_BASE_TC0->TC_RB);
+			SendInt(AT91C_BASE_TC0->TC_RB);
 			SendString(",");
-			SendNumber(AT91C_BASE_TC1->TC_RB);
+			SendInt(AT91C_BASE_TC1->TC_RB);
 			SendString(",");
-			SendNumber(AT91C_BASE_TC2->TC_RB);
+			SendInt(AT91C_BASE_TC2->TC_RB);
 			SendCrlf();
 		}
 		if (theData == 'a'){
 			unsigned int a0,a1,a2,a3,a4,a5,a6,a7;
 			ReadAllADC(&a0,&a1,&a2,&a3,&a4,&a5,&a6,&a7);
 			SendString("ADC: ");
-			SendNumber(a0);
+			SendInt(a0);
 			SendString(",");
-			SendNumber(a1);
+			SendInt(a1);
 			SendString(",");
-			SendNumber(a2);
+			SendInt(a2);
 			SendString(",");
-			SendNumber(a3);
+			SendInt(a3);
 			SendString(",");
-			SendNumber(a4);
+			SendInt(a4);
 			SendString(",");
-			SendNumber(a5);
+			SendInt(a5);
 			SendString(",");
-			SendNumber(a6);
+			SendInt(a6);
 			SendString(",");
-			SendNumber(a7);
+			SendInt(a7);
 			SendCrlf();
 		}
     }
 }
 
-void SendNumber(int n){
+void SendInt(int n){
 	char buf[12];
 	modp_itoa10(n,buf);
 	SendString(buf);
+}
+
+void SendFloat(float f,int precision){
+	char buf[12];
+	modp_ftoa(f,buf,precision);
+	SendString(buf);	
 }
 
 void SendUint(unsigned int n){

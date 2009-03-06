@@ -1,16 +1,18 @@
 #ifndef LOGGERCONFIG_H_
 #define LOGGERCONFIG_H_
 
-#define	CONFIG_GPIO_IN  		0
-#define CONFIG_GPIO_OUT  		1	
+#define	CONFIG_GPIO_IN  			0
+#define CONFIG_GPIO_OUT  			1	
 
-#define CONFIG_PWM_ANALOG  		0
-#define	CONFIG_PWM_FREQUENCY  	1
+#define CONFIG_PWM_ANALOG  			0
+#define	CONFIG_PWM_FREQUENCY  		1
 
-#define CONFIG_ACCEL_DISABLED  	0
-#define CONFIG_ACCEL_NORMAL  	1
-#define CONFIG_ACCEL_INVERTED  	2
+#define CONFIG_ACCEL_DISABLED  		0
+#define CONFIG_ACCEL_NORMAL  		1
+#define CONFIG_ACCEL_INVERTED  		2
 
+#define CONFIG_ACCEL_INSTALLED		1
+#define CONFIG_ACCEL_NOT_INSTALLED	0
 
 void updateActiveLoggerConfig();
 
@@ -41,6 +43,7 @@ struct LoggerConfig {
 	char GPIO2_config;
 	char GPIO3_config;
 	//Accelerometer Configurations
+	char Accel_Installed;
 	char Accel_Sample_Rate;
 	char AccelX_config;
 	char AccelY_config;
@@ -71,10 +74,11 @@ struct LoggerConfig {
 			CONFIG_GPIO_IN, \
 			CONFIG_GPIO_IN, \
 			CONFIG_GPIO_IN, \
+			CONFIG_ACCEL_INSTALLED, \
 			10, \
-			CONFIG_ACCEL_DISABLED, \
-			CONFIG_ACCEL_DISABLED, \
-			CONFIG_ACCEL_DISABLED, \
+			CONFIG_ACCEL_NORMAL, \
+			CONFIG_ACCEL_NORMAL, \
+			CONFIG_ACCEL_NORMAL, \
 			CONFIG_ACCEL_DISABLED, \
 			0, \
 			0, \

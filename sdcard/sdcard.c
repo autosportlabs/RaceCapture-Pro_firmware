@@ -46,7 +46,7 @@ void ListRootDir(void)
 	int res = InitEFS();
 	if ( res != 0 ) {
 		SendString("failed with ");
-		SendNumber(res);
+		SendInt(res);
 		SendCrlf();
 	}
 	else{
@@ -57,7 +57,7 @@ void ListRootDir(void)
 			list.currentEntry.FileName[LIST_MAXLENFILENAME-1] = '\0';
 			SendString(list.currentEntry.FileName);
 			SendString(" (");
-			SendNumber(list.currentEntry.FileSize);
+			SendInt(list.currentEntry.FileSize);
 			SendString(")");
 			SendCrlf();
 			}

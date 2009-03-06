@@ -38,7 +38,7 @@
 
 
 #define USART_INTERRUPT_LEVEL 5
-#define USART_QUEUE_LENGTH 200
+#define USART_QUEUE_LENGTH 100
 
 void usart0_irq_handler (void);
 void usart1_irq_handler (void);
@@ -83,6 +83,10 @@ int initQueues(){
 	return success;
 }
 
+
+unsigned int getRx1QueueWaiting(){
+	return uxQueueMessagesWaiting(xUsart1Rx);	
+}
 
 void initUsart0(unsigned int mode, unsigned int baud){
 

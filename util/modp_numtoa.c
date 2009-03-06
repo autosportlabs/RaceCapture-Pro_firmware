@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <math.h>
+#include <string.h>
 
 // other interesting references on num to string convesion
 // http://www.jb.man.ac.uk/~slowe/cpp/itoa.html
@@ -53,7 +54,7 @@ void modp_uitoa10(uint32_t value, char* str)
     strreverse(str, wstr-1);
 }
 
-void modp_dtoa(float value, char* str, int prec)
+void modp_ftoa(float value, char* str, int prec)
 {
     /* if input is larger than thres_max, revert to exponential */
     const float thres_max = (float)(0x7FFFFFFF);
