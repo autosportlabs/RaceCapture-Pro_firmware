@@ -79,6 +79,8 @@
 
 int initSerial();
 
+unsigned int getRx1QueueWaiting();
+
 void initUsart0(unsigned int mode, unsigned int baud);
 
 void initUsart1(unsigned int mode, unsigned int baud);

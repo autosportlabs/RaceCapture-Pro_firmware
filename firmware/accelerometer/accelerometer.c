@@ -2,6 +2,33 @@
 #include "usb_comm.h"
 
 
+#define SPI_CSR_NUM      1          
+
+
+/* PCS_0 for NPCS0, PCS_1 for NPCS1 ... */
+#define PCS_0 ((0<<0)|(1<<1)|(1<<2)|(1<<3))
+#define PCS_1 ((1<<0)|(0<<1)|(1<<2)|(1<<3))
+#define PCS_2 ((1<<0)|(1<<1)|(0<<2)|(1<<3))
+#define PCS_3 ((1<<0)|(1<<1)|(1<<2)|(0<<3))
+/* TODO: ## */
+#if (SPI_CSR_NUM == 0)
+#define SPI_MR_PCS       PCS_0
+#elif (SPI_CSR_NUM == 1)
+#define SPI_MR_PCS       PCS_1
+#elif (SPI_CSR_NUM == 2)
+#define SPI_MR_PCS       PCS_2
+#elif (SPI_CSR_NUM == 3)
+#define SPI_MR_PCS       PCS_3
+#else
+#error "SPI_CSR_NUM invalid"
+// not realy - when using an external address decoder...
+// but this code takes over the complete SPI-interace anyway
+#endif
+
+/* in variable periph. select PSDEC=1 is used
+   so the already defined values for SPC_MR_PCS can be
+   reused */
+#define SPI_TDR_PCS      SPI_MR_PCS
 
 
 #define SPI_SPEED 1000000  /* 1MHz clock*/
@@ -16,111 +43,82 @@ void accel_initSPI(){
 	// enable peripheral clock for SPI ( PID Bit 5 )
 	AT91C_BASE_PMC->PMC_PCER = ( 1 << AT91C_ID_SPI );
 	
-	*AT91C_SPI_CR = AT91C_SPI_SPIDIS | AT91C_SPI_SWRST;
+	//disable reset
+	//*AT91C_SPI_CR = AT91C_SPI_SPIDIS | AT91C_SPI_SWRST;
+	
 	*AT91C_PMC_PCER = (1 << AT91C_ID_SPI);
-	*AT91C_PIOA_ASR = SPI_TRANSFER | AT91C_PA11_NPCS0;
+	
+	*AT91C_PIOA_ASR = SPI_TRANSFER;
 	*AT91C_PIOA_BSR = AT91C_PA9_NPCS1;
 	
-	*AT91C_PIOA_PDR = SPI_TRANSFER | AT91C_PA11_NPCS0 | AT91C_PA9_NPCS1;
-	*AT91C_PIOA_PPUER = AT91C_PA11_NPCS0 | AT91C_PA9_NPCS1;
+	*AT91C_PIOA_ODR = AT91C_PA9_NPCS1;
+	*AT91C_PIOA_CODR = AT91C_PA9_NPCS1;
 	
-	*AT91C_SPI_MR = (AT91C_SPI_MSTR | AT91C_SPI_PS_FIXED
-                   | AT91C_SPI_MODFDIS | AT91C_SPI_PCS);
+	*AT91C_PIOA_PDR = SPI_TRANSFER | AT91C_PA9_NPCS1;
+	//*AT91C_PIOA_PPUER = AT91C_PA11_NPCS0 | AT91C_PA9_NPCS1;
+	
+	*AT91C_SPI_MR = AT91C_SPI_PS_VARIABLE | AT91C_SPI_MSTR | AT91C_SPI_MODFDIS;
+//	*AT91C_SPI_MR = (AT91C_SPI_MSTR | AT91C_SPI_PS_FIXED
+//                   | AT91C_SPI_MODFDIS | AT91C_SPI_PCS);
  
      /* It seems necessary to set the clock speed for chip select 0
         even if it's not used. */
 	     AT91C_SPI_CSR[0] = (MCK/SPI_SPEED)<<8;
- 
-     *AT91C_SPI_CR = AT91C_SPI_SPIEN;
-}
 
-void spi_init_chip_select(unsigned int chip, unsigned int speed,
-                      unsigned int dlybct,
-                      unsigned int dlybs, unsigned int phase,
-                      unsigned int polarity)
-{
-   AT91C_SPI_CSR[chip] =
-     ((dlybct<<24) | (dlybs<<16) | (((MCK+speed/2)/speed)<<8)
-      | (phase?AT91C_SPI_NCPHA:0) | (polarity?AT91C_SPI_CPOL:0)
-      | AT91C_SPI_BITS_8 | AT91C_SPI_CSAAT);
-}
+	AT91C_SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8 | AT91C_SPI_CSAAT;
 
+	accel_spiSetSpeed(10);
+	//accel_spiSetSpeed(0xFE);
+
+	*AT91C_SPI_CR = AT91C_SPI_SPIEN;
+}
 
 void accel_spiSetSpeed(unsigned char speed)
 {
 	unsigned int reg;
 	AT91PS_SPI pSPI      = AT91C_BASE_SPI;
 
-	reg = pSPI->SPI_CSR[1];
+	reg = pSPI->SPI_CSR[SPI_CSR_NUM];
 	reg = ( reg & ~(AT91C_SPI_SCBR) ) | ( (unsigned int)speed << 8 );
-	pSPI->SPI_CSR[1] = reg;
+	pSPI->SPI_CSR[SPI_CSR_NUM] = reg;
 }
 
-unsigned char accel_spiSend(unsigned char outgoing)
+unsigned char accel_spiSend(unsigned char outgoing, int last)
 {
 	unsigned char incoming;
 	
-	
-	while(!(*AT91C_SPI_SR & AT91C_SPI_TXEMPTY)); /* wait unti previous transfer is done */
-   
-	/* Clear any data left in the receiver */
-	(void)*AT91C_SPI_RDR;
-	(void)*AT91C_SPI_RDR;
-
- 
 	while(!(*AT91C_SPI_SR & AT91C_SPI_TDRE));
-	*AT91C_SPI_TDR = outgoing;
+	//*AT91C_SPI_TDR = outgoing;
+	*AT91C_SPI_TDR = ( (unsigned short)(outgoing) | ((unsigned int)(SPI_TDR_PCS)<<16) | (last ? AT91C_SPI_LASTXFER : 0) );
 	
 	while(!(*AT91C_SPI_SR & AT91C_SPI_RDRF));
-	incoming = *AT91C_SPI_RDR;
-
-
+	incoming = (unsigned char)*AT91C_SPI_RDR;
 	return incoming;
 }
 
-
-void selectChip(unsigned char chip){
-	/* Select chip */	*AT91C_SPI_MR = ((*AT91C_SPI_MR & ~AT91C_SPI_PCS)
-                    | ((~(1 << chip ) & 0x0f) << 16));	
-}
-
 void accel_init(){
-
-	SendString("init\r\n");
 	accel_initSPI();
-	spi_init_chip_select(1,SPI_SPEED,0, 0,0,1);
-	//accel_spiSetSpeed(0xfe);
-
-	SendString("after init spi\r\n");
-
 }
 
 void accel_setup(){
-	selectChip(1);
-	accel_spiSend(0x04);
-	accel_spiSend(0x04);
-	*AT91C_SPI_CR = AT91C_SPI_LASTXFER;
-
+	//selectChip(SPI_CSR_NUM);
+	accel_spiSend(0x04, 0);
+	accel_spiSend(0x04, 1);
 	for (unsigned int d = 0; d < 1000000;d++){} //200 ns???? recalcualate this...
 	
 }
 
 unsigned char accel_readControlRegister(){
-	selectChip(1);
-	accel_spiSend(0x03);
-	unsigned char ctrl = accel_spiSend(0xff);
-	*AT91C_SPI_CR = AT91C_SPI_LASTXFER;
+	accel_spiSend(0x03, 0);
+	unsigned char ctrl = accel_spiSend(0xff, 1);
 	return ctrl;	
 }
 
 unsigned int accel_readAxis(unsigned char axis){
-	
-	selectChip(1);
-	accel_spiSend(axis);
+	accel_spiSend(axis, 0);
 	for (unsigned int d = 0; d < 200;d++){} //200 ns???? recalcualate this...
-	unsigned char dataMSB = accel_spiSend(0x00);
-	unsigned char dataLSB = accel_spiSend(0x00);
-	*AT91C_SPI_CR = AT91C_SPI_LASTXFER;
+	unsigned char dataMSB = accel_spiSend(0x00, 0);
+	unsigned char dataLSB = accel_spiSend(0x00, 1);
 	for (unsigned int d = 0; d < 1000;d++){} //40 us???? recalcualate this...
 	
 	return (dataMSB << 4) + ((dataLSB >> 4) & 0x0f);

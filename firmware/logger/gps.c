@@ -4,9 +4,10 @@
 #include "task.h"
 #include "loggerHardware.h"
 #include "usart.h"
-#include "string.h"
 #include "modp_numtoa.h"
+#include "usb_comm.h"
 #include <stdlib.h>
+#include <string.h>
 
 
 #define GPS_DATA_LINE_BUFFER_LEN 	200
@@ -21,28 +22,63 @@
 #define GPS_LOCK_FLASH_COUNT 2
 #define GPS_NOFIX_FLASH_COUNT 10
 
+#define LATITUDE_DATA_LEN 12
+#define LATITUDE_STR_RAW_BUFFER_LEN LATITUDE_DATA_LEN + 1
+ 
+#define LONGITUDE_DATA_LEN 13
+#define LONGITUDE_STR_RAW_BUFFER_LEN LONGITUDE_DATA_LEN + 1
+
+#define UTC_TIME_BUFFER_LEN 11
+#define UTC_VELOCITY_BUFFER_LEN 10
+
 char g_GPSdataLine[GPS_DATA_LINE_BUFFER_LEN];
 
-char 	g_UTCTime[11];
-char 	g_latitude[15];
-char 	g_longitude[15];
+float	g_latitude;
+float 	g_longitude;
+
+float	g_latitudeRaw;
+float	g_longitudeRaw;
+
+
+
+float	g_UTCTime;
+char 	g_UTCTimeString[UTC_TIME_BUFFER_LEN];
+
+float	g_velocity;
+char  	g_velocityString[UTC_VELOCITY_BUFFER_LEN];
+
 int		g_gpsQuality;
 int		g_satellitesUsedForPosition;
 int		g_gpsPositionUpdated;
 
-char 	g_velocity[11];
 int		g_gpsVelocityUpdated;
 
-char * getUTCTime(){
+float getUTCTime(){
 	return g_UTCTime;
 }
 
-char * getLatitude(){
+char * getUTCTimeString(){
+	return g_UTCTimeString;
+}
+
+void getUTCTimeFormatted(char * buf){
+	
+}
+
+float getLatitude(){
 	return g_latitude;
 }
 
-char * getLongitude(){
+float getLatitudeRaw(){
+	return g_latitudeRaw;
+}
+
+float getLongitude(){
 	return g_longitude;
+}
+
+float getLongitudeRaw(){
+	return g_longitudeRaw;
 }
 
 int getGPSQuality(){
@@ -61,31 +97,34 @@ void setGPSPositionStale(){
 	g_gpsPositionUpdated = 0;	
 }
 
-char * getGPSVelocity(){
+float getGPSVelocity(){
 	return g_velocity;
+}
+
+char * getGPSVelocityString(){
+	return g_velocityString;	
+}
+
+char * getGPSDataLine(){
+	return g_GPSdataLine;
 }
 
 int getGPSVelocityUpdated(){
 	return g_gpsVelocityUpdated;
 }
 
-
 void setGPSVelocityStale(){
 	g_gpsVelocityUpdated = 0;
 }
 
-
-
-
-
 void startGPSTask(){
-	strcpy(g_UTCTime,"000000.000");
-	strcpy(g_latitude,"00000.0000N");
-	strcpy(g_longitude,"00000.0000W");
+	g_latitude = 0.0;
+	g_longitude = 0.0;
+	g_UTCTime = 0.0;
 	g_gpsQuality = GPS_QUALITY_NO_FIX;
 	g_satellitesUsedForPosition = 0;
 	g_gpsPositionUpdated = 0;
-	strcpy(g_velocity,"0000.00");
+	g_velocity = 0.0;
 	g_gpsVelocityUpdated = 0;
 	
 	
@@ -130,27 +169,94 @@ void GPSTask( void *pvParameters ){
 
 //Parse Global Positioning System Fix Data.
 void parseGGA(char *data){
+
+	//SendString(data);
 	
 	char * delim = strchr(data,',');
 	int param = 0;
+	
+	float latitude = 0.0;
+	float latitudeRaw = 0.0;
+	float longitude = 0.0;
+	float longitudeRaw = 0.0;
 	
 	while (delim != NULL){
 		*delim = '\0';
 		switch (param){
 			case 0:
-				strcpy(g_UTCTime, data);
+				{
+					unsigned int len = strlen(data);
+					if (len > 0 && len < UTC_VELOCITY_BUFFER_LEN){
+						strcpy(g_UTCTimeString,data);
+						g_UTCTime = atof(data);
+					}
+				}
 				break;
 			case 1:
-				strcpy(g_latitude, data);			
+				{
+					unsigned int len = strlen(data);
+					if ( len > 0 && len <= LATITUDE_DATA_LEN ){
+						//Format is ddmm.mmmmmm
+						char degreesStr[3];
+						latitudeRaw = atof(data);
+						
+						//SendString(data);
+						//SendString(",");
+						//SendFloat(latitudeRaw,6);
+						//SendString(",");
+						
+						strncpy(degreesStr, data, 2);
+						degreesStr[2] = 0;
+						float minutes = atof(data + 2);
+						minutes = minutes / 60.0;
+						latitude = ((float)atoi(degreesStr)) + minutes;
+					}
+					else{
+						latitude = 0;
+						//TODO log error	
+					}
+				}
 				break;
 			case 2:
-				strcat(g_latitude, data);
+				{
+					if (data[0] == 'S'){
+						latitude = -latitude;
+						latitudeRaw = -latitudeRaw;
+					}
+				}
 				break;
 			case 3:
-				strcpy(g_longitude, data );
+				{	
+					unsigned int len = strlen(data);
+					if ( len > 0 && len <= LONGITUDE_DATA_LEN ){
+						//Format is dddmm.mmmmmm
+						char degreesStr[4];
+						longitudeRaw = atof(data);
+
+						//SendString(data);
+						//SendString(",");
+						//SendFloat(longitudeRaw,6);
+						//SendString("\r\n");
+
+						strncpy(degreesStr, data, 3);
+						degreesStr[3] = 0;
+						float minutes = atof(data + 3);
+						minutes = minutes / 60.0;
+						longitude = ((float)atoi(degreesStr)) + minutes;						
+					}
+					else{
+						longitude = 0;
+						//TODO log error	
+					}
+				}
 				break;
 			case 4:
-				strcat(g_longitude, data);
+				{
+					if (data[0] == 'W'){
+						longitude = -longitude;
+						longitudeRaw = -longitudeRaw;
+					}	
+				}
 				break;
 			case 5:
 				g_gpsQuality = atoi(data);
@@ -163,35 +269,13 @@ void parseGGA(char *data){
 		data = delim + 1;
 		delim = strchr(data,',');
 	}
-/*	usart0_puts("time: ");
-	usart0_puts(g_UTCTime);
-	usart0_puts(";lat: ");
-	usart0_puts(g_latitude);
-	usart0_puts(";long: ");
-	usart0_puts(g_longitude);
-	usart0_puts(";quality: ");
-	switch(g_gpsQuality){
-		case GPS_QUALITY_NO_FIX:
-			usart0_puts("No fix");
-			break;
-		case GPS_QUALITY_SPS:
-			usart0_puts("SPS");
-			break;
-		case GPS_QUALITY_DIFFERENTIAL:
-			usart0_puts("Differential");
-			break;
-		default:
-			usart0_puts("??: ");
-			char qual[10];
-			modp_itoa10(g_gpsQuality,qual);
-			usart0_puts(qual);
-	}
-	char satellites[10];
-	modp_itoa10(g_satellitesUsedForPosition,satellites);
-	usart0_puts(";Sats Used: ");
-	usart0_puts(satellites);
-	usart0_puts("\r\n");
-*/
+
+	g_longitude = longitude;
+	g_longitudeRaw = longitudeRaw;
+	
+	g_latitude = latitude;
+	g_latitudeRaw = latitudeRaw;
+	
 	if (g_gpsQuality != GPS_QUALITY_NO_FIX) g_gpsPositionUpdated = 1;
 }
 
@@ -210,7 +294,12 @@ void parseVTG(char *data){
 		*delim = '\0';
 		switch (param){
 			case 6: //Speed over ground
-				strcpy(g_velocity, data);
+				{
+					if (strlen(data) >= 1){
+						g_velocity = (float)atof(data);
+						strcpy(g_velocityString,data);
+					}
+				}
 				break;
 			default:
 				break;
@@ -219,10 +308,6 @@ void parseVTG(char *data){
 		data = delim + 1;
 		delim = strchr(data,',');
 	}
-/*	usart0_puts("Velocity: ");
-	usart0_puts(g_velocity);
-	usart0_puts("\r\n");	
-*/
 	if (g_gpsQuality != GPS_QUALITY_NO_FIX) g_gpsVelocityUpdated = 1;
 }
 

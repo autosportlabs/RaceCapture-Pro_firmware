@@ -5,16 +5,25 @@ void startGPSTask();
 
 void GPSTask( void *pvParameters );
 
-char * getUTCTime();
-char * getLatitude();
-char * getLongitude();
+void getUTCTimeFormatted(char * buf);
+float getUTCTime();
+char * getUTCTimeString();
+
+float getLatitude();
+float getLatitudeRaw();
+
+float getLongitude();
+float getLongitudeRaw();
+
 int getGPSQuality();
 int getSatellitesUsedForPosition();
 int getGPSPositionUpdated();
 void setGPSPositionStale();
-char * getGPSVelocity();
+float getGPSVelocity();
+char * getGPSVelocityString();
 int getGPSVelocityUpdated();
 void setGPSVelocityStale();
+char * getGPSDataLine();
 
 
 void parseGGA(char *data);
