@@ -74,9 +74,9 @@ TODO:
 
 /* PCS_0 for NPCS0, PCS_1 for NPCS1 ... */
 #define PCS_0 ((0<<0)|(1<<1)|(1<<2)|(1<<3))
-#define PCS_1 ((1<<1)|(0<<1)|(1<<2)|(1<<3))
-#define PCS_2 ((1<<1)|(1<<1)|(0<<2)|(1<<3))
-#define PCS_3 ((1<<1)|(1<<1)|(1<<2)|(0<<3))
+#define PCS_1 ((1<<0)|(0<<1)|(1<<2)|(1<<3))
+#define PCS_2 ((1<<0)|(1<<1)|(0<<2)|(1<<3))
+#define PCS_3 ((1<<0)|(1<<1)|(1<<2)|(0<<3))
 /* TODO: ## */
 #if (SPI_CSR_NUM == 0)
 #define SPI_MR_PCS       PCS_0
@@ -162,7 +162,8 @@ void if_spiInit(hwInterface *iface)
 	pPMC->PMC_PCER = ( (euint32) 1 << AT91C_ID_SPI ); // n.b. IDs are just bit-numbers
 	
 	// SPI enable and reset
-	pSPI->SPI_CR = AT91C_SPI_SPIEN | AT91C_SPI_SWRST;
+	//disable reset for now
+	//pSPI->SPI_CR = AT91C_SPI_SPIEN | AT91C_SPI_SWRST;
 	
 #ifdef FIXED_PERIPH
 	// SPI mode: master, fixed periph. sel., FDIV=0, fault detection disabled
@@ -173,7 +174,8 @@ void if_spiInit(hwInterface *iface)
 #else
 	// SPI mode: master, variable periph. sel., FDIV=0, fault detection disabled
 	// Chip-Select-Decoder Mode (write state of CS-Lines in TDR)
-	pSPI->SPI_MR  = AT91C_SPI_MSTR | AT91C_SPI_MODFDIS | AT91C_SPI_PCSDEC ;
+	//pSPI->SPI_MR = AT91C_SPI_MSTR | AT91C_SPI_MODFDIS | AT91C_SPI_PCSDEC ;
+	pSPI->SPI_MR = AT91C_SPI_PS_VARIABLE | AT91C_SPI_MSTR | AT91C_SPI_MODFDIS;
 #endif
 	
 	// set chip-select-register

@@ -119,15 +119,11 @@ void onUSBCommTask(void *pvParameters){
 				PWM_SetDutyCycle(0,i);	
 			}
 		}
-		if (theData == 'i'){
-			accel_init();
-		}
 		if (theData == 'y'){
-			accel_setup();	
-		}
-		if (theData == 'k'){
 			accel_init();
 			accel_setup();
+		}
+		if (theData == 'k'){
 		 	int x = accel_readAxis(0);
 		 	int y = accel_readAxis(1);
 		 	int z = accel_readAxis(2);

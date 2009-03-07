@@ -21,7 +21,7 @@
 #define BASE_10Hz 30
 
 
-#define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 4 )
+#define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 5 )
 #define WRITER_PRIORITY						( tskIDLE_PRIORITY + 4 )
 #define LOGGER_STACK_SIZE  					200
 #define WRITER_STACK_SIZE					200
@@ -117,7 +117,7 @@ void loggerTask(void *params){
 			}	
 			
 			portTickType xLastWakeTime, startTickTime;
-			const portTickType xFrequency = BASE_10Hz;
+			const portTickType xFrequency = BASE_100Hz;
 			startTickTime = xLastWakeTime = xTaskGetTickCount();
 			
 			

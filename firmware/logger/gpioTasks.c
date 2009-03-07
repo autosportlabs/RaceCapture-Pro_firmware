@@ -9,7 +9,7 @@
 
 
 #define DEBOUNCE_DELAY_PERIOD			( ( portTickType )30 / portTICK_RATE_MS  )
-#define GPIO_TASK_PRIORITY 			( tskIDLE_PRIORITY + 1 )
+#define GPIO_TASK_PRIORITY 			( tskIDLE_PRIORITY + 7 )
 #define GPIO_TASK_STACK_SIZE		50
 
 void gpio_irq_handler ( void );

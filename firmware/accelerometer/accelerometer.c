@@ -31,7 +31,7 @@
 #define SPI_TDR_PCS      SPI_MR_PCS
 
 
-#define SPI_SPEED 1000000  /* 1MHz clock*/
+#define CS0_SPI_SPEED 1000000  /* 1MHz clock*/
 #define SPI_DLYBCT 1
 #define SPI_DLYBS 20
 #define MCK 48054840
@@ -63,11 +63,11 @@ void accel_initSPI(){
  
      /* It seems necessary to set the clock speed for chip select 0
         even if it's not used. */
-	     AT91C_SPI_CSR[0] = (MCK/SPI_SPEED)<<8;
+	     AT91C_SPI_CSR[0] = (MCK/CS0_SPI_SPEED)<<8;
 
 	AT91C_SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8 | AT91C_SPI_CSAAT;
 
-	accel_spiSetSpeed(10);
+	accel_spiSetSpeed(48);
 	//accel_spiSetSpeed(0xFE);
 
 	*AT91C_SPI_CR = AT91C_SPI_SPIEN;
