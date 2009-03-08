@@ -13,6 +13,8 @@ void SendInt(int n);
 
 void SendFloat(float f,int precision);
 
+void SendDouble(double f, int precision);
+
 void SendUint(unsigned int n);
 
 void SendCrlf();

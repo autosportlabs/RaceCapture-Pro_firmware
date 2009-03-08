@@ -5,13 +5,13 @@
 #include "loggerHardware.h"
 #include "usart.h"
 #include "modp_numtoa.h"
+#include "modp_atonum.h"
 #include "usb_comm.h"
-#include <stdlib.h>
 #include <string.h>
 
 
 #define GPS_DATA_LINE_BUFFER_LEN 	200
-#define GPS_TASK_PRIORITY 			( tskIDLE_PRIORITY + 1 )
+#define GPS_TASK_PRIORITY 			( tskIDLE_PRIORITY + 7 )
 #define GPS_TASK_STACK_SIZE			100
 
 
@@ -23,23 +23,15 @@
 #define GPS_NOFIX_FLASH_COUNT 10
 
 #define LATITUDE_DATA_LEN 12
-#define LATITUDE_STR_RAW_BUFFER_LEN LATITUDE_DATA_LEN + 1
- 
 #define LONGITUDE_DATA_LEN 13
-#define LONGITUDE_STR_RAW_BUFFER_LEN LONGITUDE_DATA_LEN + 1
 
 #define UTC_TIME_BUFFER_LEN 11
 #define UTC_VELOCITY_BUFFER_LEN 10
 
 char g_GPSdataLine[GPS_DATA_LINE_BUFFER_LEN];
 
-float	g_latitude;
+double	g_latitude;
 float 	g_longitude;
-
-float	g_latitudeRaw;
-float	g_longitudeRaw;
-
-
 
 float	g_UTCTime;
 char 	g_UTCTimeString[UTC_TIME_BUFFER_LEN];
@@ -65,20 +57,12 @@ void getUTCTimeFormatted(char * buf){
 	
 }
 
-float getLatitude(){
+double getLatitude(){
 	return g_latitude;
 }
 
-float getLatitudeRaw(){
-	return g_latitudeRaw;
-}
-
-float getLongitude(){
+double getLongitude(){
 	return g_longitude;
-}
-
-float getLongitudeRaw(){
-	return g_longitudeRaw;
 }
 
 int getGPSQuality(){
@@ -175,12 +159,12 @@ void parseGGA(char *data){
 	char * delim = strchr(data,',');
 	int param = 0;
 	
-	float latitude = 0.0;
-	float latitudeRaw = 0.0;
-	float longitude = 0.0;
-	float longitudeRaw = 0.0;
+	double latitude = 0.0;
+	double longitude = 0.0;
 	
-	while (delim != NULL){
+	int keepParsing = 1;
+	
+	while (delim != NULL && keepParsing){
 		*delim = '\0';
 		switch (param){
 			case 0:
@@ -188,7 +172,7 @@ void parseGGA(char *data){
 					unsigned int len = strlen(data);
 					if (len > 0 && len < UTC_VELOCITY_BUFFER_LEN){
 						strcpy(g_UTCTimeString,data);
-						g_UTCTime = atof(data);
+						g_UTCTime = modp_atof(data);
 					}
 				}
 				break;
@@ -198,18 +182,19 @@ void parseGGA(char *data){
 					if ( len > 0 && len <= LATITUDE_DATA_LEN ){
 						//Format is ddmm.mmmmmm
 						char degreesStr[3];
-						latitudeRaw = atof(data);
+//						latitude = modp_atod(data);
 						
 						//SendString(data);
 						//SendString(",");
-						//SendFloat(latitudeRaw,6);
+						//SendDouble(latitude,6);
 						//SendString(",");
 						
 						strncpy(degreesStr, data, 2);
 						degreesStr[2] = 0;
-						float minutes = atof(data + 2);
+						float minutes = modp_atof(data + 2);
 						minutes = minutes / 60.0;
-						latitude = ((float)atoi(degreesStr)) + minutes;
+						latitude = modp_atoi(degreesStr) + minutes;
+						
 					}
 					else{
 						latitude = 0;
@@ -221,7 +206,6 @@ void parseGGA(char *data){
 				{
 					if (data[0] == 'S'){
 						latitude = -latitude;
-						latitudeRaw = -latitudeRaw;
 					}
 				}
 				break;
@@ -231,18 +215,18 @@ void parseGGA(char *data){
 					if ( len > 0 && len <= LONGITUDE_DATA_LEN ){
 						//Format is dddmm.mmmmmm
 						char degreesStr[4];
-						longitudeRaw = atof(data);
+//						longitude = modp_atod(data);
 
 						//SendString(data);
 						//SendString(",");
-						//SendFloat(longitudeRaw,6);
+						//SendFloat(longitude,6);
 						//SendString("\r\n");
 
 						strncpy(degreesStr, data, 3);
 						degreesStr[3] = 0;
-						float minutes = atof(data + 3);
+						float minutes = modp_atof(data + 3);
 						minutes = minutes / 60.0;
-						longitude = ((float)atoi(degreesStr)) + minutes;						
+						longitude = modp_atoi(degreesStr) + minutes;
 					}
 					else{
 						longitude = 0;
@@ -254,15 +238,15 @@ void parseGGA(char *data){
 				{
 					if (data[0] == 'W'){
 						longitude = -longitude;
-						longitudeRaw = -longitudeRaw;
 					}	
 				}
 				break;
 			case 5:
-				g_gpsQuality = atoi(data);
+				g_gpsQuality = modp_atoi(data);
 				break;
 			case 6:
-				g_satellitesUsedForPosition = atoi(data);
+				g_satellitesUsedForPosition = modp_atoi(data);
+				keepParsing = 0;
 				break;
 		}
 		param++;
@@ -271,10 +255,7 @@ void parseGGA(char *data){
 	}
 
 	g_longitude = longitude;
-	g_longitudeRaw = longitudeRaw;
-	
 	g_latitude = latitude;
-	g_latitudeRaw = latitudeRaw;
 	
 	if (g_gpsQuality != GPS_QUALITY_NO_FIX) g_gpsPositionUpdated = 1;
 }
@@ -290,15 +271,17 @@ void parseVTG(char *data){
 	char * delim = strchr(data,',');
 	int param = 0;
 	
-	while (delim != NULL){
+	int keepParsing = 1;
+	while (delim != NULL && keepParsing){
 		*delim = '\0';
 		switch (param){
 			case 6: //Speed over ground
 				{
 					if (strlen(data) >= 1){
-						g_velocity = (float)atof(data);
+						g_velocity = (float)modp_atof(data);
 						strcpy(g_velocityString,data);
 					}
+					keepParsing = 0;
 				}
 				break;
 			default:

@@ -62,6 +62,8 @@ void modp_uitoa10(uint32_t value, char* buf);
  */
 void modp_ftoa(float value, char* buf, int precision);
 
+void modp_dtoa(double value, char* buf, int precision);
+
 END_C
 
 #endif

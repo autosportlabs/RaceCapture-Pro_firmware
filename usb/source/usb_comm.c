@@ -8,6 +8,7 @@
 #include "memory.h"
 #include "loggerConfig.h"
 #include "modp_numtoa.h"
+#include "modp_atonum.h"
 #include "gps.h"
 #include "usart.h"
 
@@ -147,10 +148,56 @@ void onUSBCommTask(void *pvParameters){
 			SendInt(size);
 			SendCrlf();
 		}
+		if (theData == '?'){
+			SendString("sizeof float: ");
+			SendInt(sizeof(float));
+			SendCrlf();
+			SendString("sizeof double: ");
+			SendInt(sizeof(double));
+			SendCrlf();	
+			{
+				char *test = "-123.456";
+				float testf = modp_atof(test);
+				SendFloat(testf,3);
+				SendCrlf();
+			}
+			{
+				char *test = "12345";
+				float testf = modp_atof(test);
+				SendFloat(testf,3);
+				SendCrlf();
+			}
+			{
+				char *test = "12345.0";
+				float testf = modp_atof(test);
+				SendFloat(testf,3);
+				SendCrlf();
+			}
+			{
+				char *test = "1111.2222";
+				float testf = modp_atof(test);
+				SendFloat(testf,3);
+				SendCrlf();
+			}
+			{
+				char *test = "-12346.789123";
+				double testd = modp_atod(test);
+				SendDouble(testd,6);
+				SendCrlf();
+			}
+			
+			
+
+			char *test2 = "1";
+			int test2i = modp_atoi(test2);
+			SendInt(test2i);
+			SendCrlf();
+			
+		}
 		if (theData == 'g'){
-			SendFloat(getLongitude(),6);
+			SendDouble(getLongitude(),6);
 			SendString(",");
-			SendFloat(getLatitude(),6);
+			SendDouble(getLatitude(),6);
 			SendString(" Vel: ");
 			SendFloat(getGPSVelocity(),2);
 			SendString(" Qual: ");
@@ -222,9 +269,15 @@ void SendInt(int n){
 }
 
 void SendFloat(float f,int precision){
-	char buf[12];
+	char buf[20];
 	modp_ftoa(f,buf,precision);
 	SendString(buf);	
+}
+
+void SendDouble(double f, int precision){
+	char buf[30];
+	modp_dtoa(f,buf,precision);
+	SendString(buf);
 }
 
 void SendUint(unsigned int n){

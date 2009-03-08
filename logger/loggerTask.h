@@ -16,7 +16,6 @@ void writeAccelerometer();
 
 
 void writeGPSPosition();
-void writeRawGPSPosition();
 void writeGPSVelocity();
 
 #endif /*LOGGERTASK_H_*/

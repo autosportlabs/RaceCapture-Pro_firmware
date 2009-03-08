@@ -133,8 +133,6 @@ void loggerTask(void *params){
 
 				if (accelInstalled == CONFIG_ACCEL_INSTALLED) writeAccelerometer(loggerConfig);
 				
-				writeRawGPSPosition();
-
 				fileWriteString("\n");			
 				
 				ToggleLED(LED2);
@@ -245,45 +243,25 @@ void writeGPSPosition(){
 		fileWriteString(getUTCTimeString());
 		fileWriteString(",");
 		
-		modp_ftoa(getLatitude(),buf,6);
+		modp_dtoa(getLatitude(),buf,6);
 		fileWriteString(buf);
 		fileWriteString(",");
 		
-		modp_ftoa(getLongitude(),buf,6);
+		modp_dtoa(getLongitude(),buf,6);
 		fileWriteString(buf);
 		fileWriteString(",");
 		
 		modp_itoa10(getSatellitesUsedForPosition(),buf);
 		fileWriteString(buf);
 		fileWriteString(",");
-		//setGPSPositionStale();
-	}
-	else{
-		fileWriteString(",");
-		fileWriteString(",");
-		fileWriteString(",");
-		fileWriteString(",");
-		fileWriteString(",");
-	}
-}
-
-void writeRawGPSPosition(){
-
-	char buf[20];
-	
-	if (getGPSPositionUpdated()){
-		
-		modp_ftoa(getLatitudeRaw(),buf,6);
-		fileWriteString(buf);
-		fileWriteString(",");
-		
-		modp_ftoa(getLongitudeRaw(),buf,6);
-		fileWriteString(buf);
-		fileWriteString(",");
 		setGPSPositionStale();
 	}
 	else{
-		fileWriteString(",,");	
+		fileWriteString(",");
+		fileWriteString(",");
+		fileWriteString(",");
+		fileWriteString(",");
+		fileWriteString(",");
 	}
 }
 
