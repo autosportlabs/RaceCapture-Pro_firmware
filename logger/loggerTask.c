@@ -21,35 +21,23 @@
 #define BASE_10Hz 30
 
 
-#define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 5 )
-#define WRITER_PRIORITY						( tskIDLE_PRIORITY + 4 )
+#define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 3 )
 #define LOGGER_STACK_SIZE  					200
-#define WRITER_STACK_SIZE					200
-#define WRITE_QUEUE_SIZE					512
 
+#define LOGGER_LINE_LENGTH					512
 int g_loggingShouldRun;
 
 xSemaphoreHandle g_xLoggerStart;
-xQueueHandle xFileWriteQueue; 
-xSemaphoreHandle xSPIMutex;
+
+char g_loggerLineBuffer[LOGGER_LINE_LENGTH];
 
 void createLoggerTask(){
 
 	g_loggingShouldRun = 0;
 	vSemaphoreCreateBinary( g_xLoggerStart );
-	vSemaphoreCreateBinary(xSPIMutex);
 	
 	xSemaphoreTake( g_xLoggerStart, 1 );
-	xFileWriteQueue = xQueueCreate( WRITE_QUEUE_SIZE, ( unsigned portCHAR ) sizeof( signed portCHAR ) );
 	
-		
-	xTaskCreate( loggerWriter,
-				( signed portCHAR * ) "loggerWriter",
-				WRITER_STACK_SIZE,
-				NULL,
-				WRITER_PRIORITY,
-				NULL);
-				
 	xTaskCreate( loggerTask, 	
 				( signed portCHAR * ) "loggerTask", 	
 				LOGGER_STACK_SIZE, 	
@@ -58,39 +46,51 @@ void createLoggerTask(){
 				NULL );
 }
 
-void fileWriteString(char *s){
-	
-	while ( *s ){
-		xQueueSend(	xFileWriteQueue, (unsigned portCHAR *)s++, portMAX_DELAY);
-	}
+void lineAppendString(char *s){
+	strcat(g_loggerLineBuffer, s);	
 }
 
-void loggerWriter(void *params){
-	
-	EmbeddedFile f;
-	int writingEnabled = 0;
-	unsigned portCHAR data;
-	while(1){
-		if (xQueueReceive(xFileWriteQueue, &data, portMAX_DELAY)){
-			xSemaphoreTake(xSPIMutex, portMAX_DELAY);
-			if (data == '!'){
-				int rc = InitEFS();
-				if ( rc == 0 ){
-					if (OpenNextLogFile(&f) == 0){
-						writingEnabled = 1;
-					}
-				}
-			} else if (data == '~'){
-				file_fclose(&f);
-				UnmountEFS();
-				writingEnabled = 0;
-			} else if (writingEnabled){
-				file_write(&f,1,(unsigned char *)&data);
-			}
-			xSemaphoreGive(xSPIMutex);
-		}
-	}
+void lineAppendInt(int num){
+	char buf[10];
+	modp_itoa10(num,buf);
+	lineAppendString(buf);
 }
+
+void lineAppendFloat(float num, int precision){
+	char buf[20];
+	modp_ftoa(num, buf, precision);
+	lineAppendString(buf);
+}
+
+void lineAppendDouble(double num, int precision){
+	char buf[30];
+	modp_dtoa(num, buf, precision);
+	lineAppendString(buf);
+}
+
+void fileWriteString(EmbeddedFile *f, char *s){
+	int len = strlen(s);
+	file_write(f,len,(unsigned char *)s);
+}
+
+void fileWriteInt(EmbeddedFile *f, int num){
+	char buf[10];
+	modp_itoa10(num,buf);
+	fileWriteString(f,buf);
+}
+
+void fileWriteFloat(EmbeddedFile *f, float num, int precision){
+	char buf[20];
+	modp_ftoa(num, buf, precision);
+	fileWriteString(f,buf);
+}
+
+void fileWriteDouble(EmbeddedFile *f, double num, int precision){
+	char buf[30];
+	modp_dtoa(num, buf, precision);
+	fileWriteString(f,buf);
+}
+
 
 void loggerTask(void *params){
 	
@@ -98,23 +98,24 @@ void loggerTask(void *params){
 	
 	loggerConfig = getWorkingLoggerConfig();
 	
+	EmbeddedFile f;
+	
 	while(1){
 		//wait for signal to start logging
 		if ( xSemaphoreTake(g_xLoggerStart, portMAX_DELAY) == pdTRUE){
 
 			int accelInstalled = loggerConfig->Accel_Installed; 
 			if ( accelInstalled == CONFIG_ACCEL_INSTALLED){
-				xSemaphoreTake(xSPIMutex, portMAX_DELAY);
 				accel_init();
 				accel_setup();
-				xSemaphoreGive(xSPIMutex);
 			}
 						
-			if (InitEFS() == 0 ){
-				g_loggingShouldRun = 1;
-				//signal writer to open next file
-				fileWriteString("!");
-			}	
+			int rc = InitEFS();
+			if ( rc == 0 ){
+				if (OpenNextLogFile(&f) == 0){
+					g_loggingShouldRun = 1;
+				}
+			}
 			
 			portTickType xLastWakeTime, startTickTime;
 			const portTickType xFrequency = BASE_100Hz;
@@ -123,7 +124,11 @@ void loggerTask(void *params){
 			
 			//run until we should not log anymore
 			while (g_loggingShouldRun){
-				
+				ToggleLED(LED2);
+
+				//reset line
+				g_loggerLineBuffer[0] = '\0';
+								
 				writeGPSPosition();
 				writeGPSVelocity();
 
@@ -133,22 +138,18 @@ void loggerTask(void *params){
 
 				if (accelInstalled == CONFIG_ACCEL_INSTALLED) writeAccelerometer(loggerConfig);
 				
-				fileWriteString("\n");			
+				lineAppendString("\n");
+				fileWriteString(&f, g_loggerLineBuffer);
 				
-				ToggleLED(LED2);
 				vTaskDelayUntil( &xLastWakeTime, xFrequency );
 			}
-			fileWriteString("~");
+			file_fclose(&f);
+			UnmountEFS();
 			DisableLED(LED2);
 		}
 	}
 }
 
-void fileWriteInt(int num){
-	char buf[5];
-	modp_itoa10(num,buf);
-	fileWriteString(buf);
-}
 
 void writeAccelerometer(struct LoggerConfig *loggerConfig){
 	
@@ -157,34 +158,31 @@ void writeAccelerometer(struct LoggerConfig *loggerConfig){
 	int z = -1;
 	int zt = -1;
 	
-	xSemaphoreTake(xSPIMutex, portMAX_DELAY);
 	if (loggerConfig->AccelX_config != CONFIG_ACCEL_DISABLED) x = accel_readAxis(0);
 	if (loggerConfig->AccelY_config != CONFIG_ACCEL_DISABLED) y = accel_readAxis(1);
 	if (loggerConfig->AccelZ_config != CONFIG_ACCEL_DISABLED) z = accel_readAxis(2);
 	if (loggerConfig->ThetaZ_config != CONFIG_ACCEL_DISABLED) zt = accel_readAxis(3);
-	xSemaphoreGive(xSPIMutex);
 	
 	if (x > 0){
-		fileWriteInt(x);
-		fileWriteString(",");
+		lineAppendInt(x);
+		lineAppendString(",");
 	}
 	if (y > 0){
-		fileWriteInt(y);
-		fileWriteString(",");
+		lineAppendInt(y);
+		lineAppendString(",");
 	}
 	if (z > 0){
-		fileWriteInt(z);
-		fileWriteString(",");	
+		lineAppendInt(z);
+		lineAppendString(",");	
 	}
 	if (zt > 0){
-		fileWriteInt(zt);
-		fileWriteString(",");
+		lineAppendInt(zt);
+		lineAppendString(",");
 	}
 }
 
 void writeADC(unsigned int a0,unsigned int a1,unsigned int a2,unsigned int a3,unsigned int a4,unsigned int a5,unsigned int a6,unsigned int a7){
 	
-	char buf[20];
 	struct LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 	float scaling;
 	int precision;
@@ -192,86 +190,73 @@ void writeADC(unsigned int a0,unsigned int a1,unsigned int a2,unsigned int a3,un
 	precision = 2;
 	
 	scaling = loggerConfig->ADC_Calibrations[0].scaling;
-	modp_ftoa((scaling * (float)a0), buf, precision);
-	fileWriteString(buf);
-	fileWriteString(",");
+	lineAppendFloat((scaling * (float)a0), precision);
+	lineAppendString(",");
 	
 	scaling = loggerConfig->ADC_Calibrations[1].scaling;
-	modp_ftoa((scaling * (float)a1), buf, precision);
-	fileWriteString(buf);
-	fileWriteString(",");
+	lineAppendFloat((scaling * (float)a1), precision);
+	lineAppendString(",");
  	
  	scaling = loggerConfig->ADC_Calibrations[2].scaling;
-	modp_ftoa((scaling * (float)a2), buf, precision);
-	fileWriteString(buf);
-	fileWriteString(",");
+ 	lineAppendFloat((scaling * (float)a2), precision);
+	lineAppendString(",");
  	
  	scaling = loggerConfig->ADC_Calibrations[3].scaling;
-	modp_ftoa((scaling * (float)a3), buf, precision);
-	fileWriteString(buf);
-	fileWriteString(",");
+	lineAppendFloat((scaling * (float)a3), precision);
+	lineAppendString(",");
  	
  	scaling = loggerConfig->ADC_Calibrations[4].scaling;
-	modp_ftoa((scaling * (float)a4), buf, precision);
-	fileWriteString(buf);
-	fileWriteString(",");
+ 	lineAppendFloat((scaling * (float)a4), precision);
+	lineAppendString(",");
 
 	scaling = loggerConfig->ADC_Calibrations[5].scaling;
-	modp_ftoa((scaling * (float)a5), buf, precision);
-	fileWriteString(buf);
-	fileWriteString(",");
+	lineAppendFloat((scaling * (float)a5), precision);
+	lineAppendString(",");
  
 	scaling = loggerConfig->ADC_Calibrations[6].scaling;
-	modp_ftoa((scaling * (float)a6), buf, precision);
-	fileWriteString(buf);
-	fileWriteString(",");
+	lineAppendFloat((scaling * (float)a6), precision);
+	lineAppendString(",");
  	
 	scaling = loggerConfig->ADC_Calibrations[7].scaling;
-	modp_ftoa((scaling * (float)a7), buf, precision);
-	fileWriteString(buf);
-	fileWriteString(",");	
+	lineAppendFloat((scaling * (float)a7), precision);
+	lineAppendString(",");	
 }
 
 void writeGPSPosition(){
-	char buf[20];
 	
 	if 	(getGPSPositionUpdated()){
-		modp_itoa10(getGPSQuality(),buf);
-		fileWriteString(buf);
-		fileWriteString(",");
+		lineAppendInt(getGPSQuality());
+		lineAppendString(",");
 
-		fileWriteString(getUTCTimeString());
-		fileWriteString(",");
+		lineAppendFloat(getUTCTime(),3);
+		lineAppendString(",");
 		
-		modp_dtoa(getLatitude(),buf,6);
-		fileWriteString(buf);
-		fileWriteString(",");
+		lineAppendDouble(getLatitude(), 6);
+		lineAppendString(",");
 		
-		modp_dtoa(getLongitude(),buf,6);
-		fileWriteString(buf);
-		fileWriteString(",");
+		lineAppendDouble(getLongitude(), 6);
+		lineAppendString(",");
 		
-		modp_itoa10(getSatellitesUsedForPosition(),buf);
-		fileWriteString(buf);
-		fileWriteString(",");
+		lineAppendInt(getSatellitesUsedForPosition());
+		lineAppendString(",");
 		setGPSPositionStale();
 	}
 	else{
-		fileWriteString(",");
-		fileWriteString(",");
-		fileWriteString(",");
-		fileWriteString(",");
-		fileWriteString(",");
+		lineAppendString(",");
+		lineAppendString(",");
+		lineAppendString(",");
+		lineAppendString(",");
+		lineAppendString(",");
 	}
 }
 
 void writeGPSVelocity(){
 	if 	(getGPSVelocityUpdated()){
-		fileWriteString(getGPSVelocityString());
-		fileWriteString(",");
+		lineAppendFloat(getGPSVelocity(),2);
+		lineAppendString(",");
 		setGPSVelocityStale();
 	}
 	else{
-		fileWriteString(",");	
+		lineAppendString(",");	
 	}
 }
