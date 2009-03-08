@@ -11,7 +11,7 @@
 
 
 #define GPS_DATA_LINE_BUFFER_LEN 	200
-#define GPS_TASK_PRIORITY 			( tskIDLE_PRIORITY + 7 )
+#define GPS_TASK_PRIORITY 			( tskIDLE_PRIORITY + 2 )
 #define GPS_TASK_STACK_SIZE			100
 
 
@@ -34,10 +34,8 @@ double	g_latitude;
 float 	g_longitude;
 
 float	g_UTCTime;
-char 	g_UTCTimeString[UTC_TIME_BUFFER_LEN];
 
 float	g_velocity;
-char  	g_velocityString[UTC_VELOCITY_BUFFER_LEN];
 
 int		g_gpsQuality;
 int		g_satellitesUsedForPosition;
@@ -47,10 +45,6 @@ int		g_gpsVelocityUpdated;
 
 float getUTCTime(){
 	return g_UTCTime;
-}
-
-char * getUTCTimeString(){
-	return g_UTCTimeString;
 }
 
 void getUTCTimeFormatted(char * buf){
@@ -83,10 +77,6 @@ void setGPSPositionStale(){
 
 float getGPSVelocity(){
 	return g_velocity;
-}
-
-char * getGPSVelocityString(){
-	return g_velocityString;	
 }
 
 char * getGPSDataLine(){
@@ -171,7 +161,6 @@ void parseGGA(char *data){
 				{
 					unsigned int len = strlen(data);
 					if (len > 0 && len < UTC_VELOCITY_BUFFER_LEN){
-						strcpy(g_UTCTimeString,data);
 						g_UTCTime = modp_atof(data);
 					}
 				}
@@ -180,15 +169,10 @@ void parseGGA(char *data){
 				{
 					unsigned int len = strlen(data);
 					if ( len > 0 && len <= LATITUDE_DATA_LEN ){
-						//Format is ddmm.mmmmmm
-						char degreesStr[3];
+						//Raw GPS Format is ddmm.mmmmmm
 //						latitude = modp_atod(data);
-						
-						//SendString(data);
-						//SendString(",");
-						//SendDouble(latitude,6);
-						//SendString(",");
-						
+												
+						char degreesStr[3];
 						strncpy(degreesStr, data, 2);
 						degreesStr[2] = 0;
 						float minutes = modp_atof(data + 2);
@@ -213,15 +197,11 @@ void parseGGA(char *data){
 				{	
 					unsigned int len = strlen(data);
 					if ( len > 0 && len <= LONGITUDE_DATA_LEN ){
-						//Format is dddmm.mmmmmm
-						char degreesStr[4];
+						//Raw GPS Format is dddmm.mmmmmm
+						
 //						longitude = modp_atod(data);
 
-						//SendString(data);
-						//SendString(",");
-						//SendFloat(longitude,6);
-						//SendString("\r\n");
-
+						char degreesStr[4];
 						strncpy(degreesStr, data, 3);
 						degreesStr[3] = 0;
 						float minutes = modp_atof(data + 3);
@@ -278,8 +258,7 @@ void parseVTG(char *data){
 			case 6: //Speed over ground
 				{
 					if (strlen(data) >= 1){
-						g_velocity = (float)modp_atof(data);
-						strcpy(g_velocityString,data);
+						g_velocity = modp_atof(data);
 					}
 					keepParsing = 0;
 				}

@@ -7,7 +7,6 @@ void GPSTask( void *pvParameters );
 
 void getUTCTimeFormatted(char * buf);
 float getUTCTime();
-char * getUTCTimeString();
 
 double getLatitude();
 double getLongitude();
@@ -17,7 +16,6 @@ int getSatellitesUsedForPosition();
 int getGPSPositionUpdated();
 void setGPSPositionStale();
 float getGPSVelocity();
-char * getGPSVelocityString();
 int getGPSVelocityUpdated();
 void setGPSVelocityStale();
 char * getGPSDataLine();
