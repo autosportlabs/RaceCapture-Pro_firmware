@@ -9,11 +9,8 @@ void getUTCTimeFormatted(char * buf);
 float getUTCTime();
 char * getUTCTimeString();
 
-float getLatitude();
-float getLatitudeRaw();
-
-float getLongitude();
-float getLongitudeRaw();
+double getLatitude();
+double getLongitude();
 
 int getGPSQuality();
 int getSatellitesUsedForPosition();

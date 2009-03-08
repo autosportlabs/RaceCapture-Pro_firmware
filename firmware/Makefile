@@ -94,6 +94,7 @@ $(SERIAL_SRC_DIR)/usart.c \
 $(SDCARD_SRC_DIR)/sdcard.c \
 $(ACCELEROMETER_SRC_DIR)/accelerometer.c \
 $(UTIL_DIR)/modp_numtoa.c \
+$(UTIL_DIR)/modp_atonum.c \
 $(LOGGER_SRC_DIR)/gps.c \
 $(MEMORY_SRC_DIR)/memory.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
