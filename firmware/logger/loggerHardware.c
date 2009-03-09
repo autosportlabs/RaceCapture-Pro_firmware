@@ -290,6 +290,9 @@ void PWM_SetPeriod(unsigned char channel, unsigned short period)
     }
 }
 
+unsigned short PWM_GetPeriod(unsigned char channel){
+	return AT91C_BASE_PWMC->PWMC_CH[channel].PWMC_CPRDR;
+}
 
 //------------------------------------------------------------------------------
 /// Sets the duty cycle used by a PWM channel. This function writes directly to
@@ -323,6 +326,11 @@ void PWM_SetDutyCycle(unsigned char channel, unsigned short duty)
 }
 
 
+unsigned short PWM_GetDutyCycle(unsigned char channel){
+	
+	return AT91C_BASE_PWMC->PWMC_CH[channel].PWMC_CDTYR;
+	
+}
 
 //------------------------------------------------------------------------------
 /// Enables the given PWM channel. This does NOT enable the corresponding pin;

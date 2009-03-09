@@ -4,6 +4,8 @@
 
 #define SPI_CSR_NUM      1          
 
+#define ACCEL_COUNTS_PER_G 				1024
+#define ACCEL_MAX_RANGE 				ACCEL_COUNTS_PER_G * 4
 
 /* PCS_0 for NPCS0, PCS_1 for NPCS1 ... */
 #define PCS_0 ((0<<0)|(1<<1)|(1<<2)|(1<<3))
@@ -112,6 +114,20 @@ unsigned char accel_readControlRegister(){
 	accel_spiSend(0x03, 0);
 	unsigned char ctrl = accel_spiSend(0xff, 1);
 	return ctrl;	
+}
+
+float accel_rawToG(unsigned int accelRaw, unsigned int zeroValue){
+	
+	accelRaw = accelRaw - zeroValue;
+	
+	float gforce = (float)accelRaw / ACCEL_COUNTS_PER_G;
+	return gforce;		
+}
+
+float accel_readAxisG(unsigned char axis, unsigned int zeroValue){
+
+	unsigned int accelRaw = accel_readAxis(axis);
+	return accel_rawToG(accelRaw,zeroValue);
 }
 
 unsigned int accel_readAxis(unsigned char axis){

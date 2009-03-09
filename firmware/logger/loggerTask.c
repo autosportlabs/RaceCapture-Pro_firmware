@@ -96,7 +96,7 @@ void fileWriteDouble(EmbeddedFile *f, double num, int precision){
 portTickType getHighestSampleRate(struct LoggerConfig *config){
 
 	//start with the slowest sample rate
-	char s = SAMPLE_1Hz;
+	char s = (char)SAMPLE_1Hz;
 
 	//find the fastest sample rate
 	for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
@@ -308,7 +308,7 @@ void writeGPSChannelHeaders(EmbeddedFile *f, struct GPSConfig *config){
 
 void writeAccelerometer(portTickType currentTicks, struct LoggerConfig *config){
 
-	int accelValues[CONFIG_ACCEL_CHANNELS];
+	unsigned int accelValues[CONFIG_ACCEL_CHANNELS];
 	
 	for (unsigned int i=0; i < CONFIG_ACCEL_CHANNELS;i++){
 		struct AccelConfig *ac = &(config->AccelConfig[i]);
@@ -322,7 +322,7 @@ void writeAccelerometer(portTickType currentTicks, struct LoggerConfig *config){
 		struct AccelConfig *ac = &(config->AccelConfig[i]);
 		portTickType sr = ac->sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) lineAppendInt(accelValues[i]);
+			if ((currentTicks % sr) == 0) lineAppendFloat(accel_rawToG(accelValues[i],ac->zeroValue),3);
 			lineAppendString(",");
 		}
 	}
@@ -428,7 +428,7 @@ void writePWMChannels(portTickType currentTicks, struct LoggerConfig *loggerConf
 		struct PWMConfig *c = &(loggerConfig->PWMConfig[i]);
 		portTickType sr = c->sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) lineAppendInt(i);
+			if ((currentTicks % sr) == 0) lineAppendInt(PWM_GetPeriod((unsigned char)i));
 			lineAppendString(",");
 		}	
 	}

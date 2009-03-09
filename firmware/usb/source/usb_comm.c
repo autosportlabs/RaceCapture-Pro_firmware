@@ -80,17 +80,17 @@ void onUSBCommTask(void *pvParameters){
 			SendString("Period: ");
 			SendInt(period);
 			SendCrlf();
-			PWM_SetPeriod(0,period);
+			PWM_SetPeriod(3,period);
 		}
 		if (theData == '2'){
 			period++;
 			SendString("Period: ");
 			SendInt(period);
 			SendCrlf();
-			PWM_SetPeriod(0,period);
+			PWM_SetPeriod(3,period);
 		}
 		if (theData == 'c'){
-			for (int i=1; i< 1000; i++){
+			for (int i=1; i < 1000; i++){
 				vTaskDelay(4 / portTICK_RATE_MS);
 				PWM_SetDutyCycle(0,i);	
 			}	
