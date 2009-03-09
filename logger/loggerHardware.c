@@ -51,6 +51,11 @@ void InitGPIO(){
     AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, GPIO_MASK ) ;
 }
 
+unsigned int GetGPIOBits(){
+	return AT91F_PIO_GetStatus(AT91C_BASE_PIOA);
+		
+}
+
 void SetGPIOBits(unsigned int portBits){
 	AT91F_PIO_SetOutput( AT91C_BASE_PIOA, portBits );
 }
@@ -528,6 +533,12 @@ void initTimer2(){
 	AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC2, TIMER2_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer2_irq_handler);
 	AT91C_BASE_TC2->TC_IER =AT91C_TC_LDRBS;  //  IRQ enable RB loading
 	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC2);	
+}
+
+void getAllTimerPeriods(unsigned int *t0, unsigned int *t1, unsigned int *t2){
+	*t0 = getTimer0Period();
+	*t1 = getTimer1Period();
+	*t2 = getTimer2Period();	
 }
 
 unsigned int getTimer0Period(){

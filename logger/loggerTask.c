@@ -10,15 +10,10 @@
 #include "stdio.h"
 #include "sdcard.h"
 #include "gps.h"
-#include "loggerConfig.h"
 #include "accelerometer.h"
 
 
-#define BASE_100Hz 3
-#define BASE_50Hz 6
-#define BASE_30Hz 10
-#define BASE_20Hz 15
-#define BASE_10Hz 30
+
 
 
 #define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 3 )
@@ -68,6 +63,12 @@ void lineAppendDouble(double num, int precision){
 	lineAppendString(buf);
 }
 
+void fileWriteQuotedString(EmbeddedFile *f, char *s){
+	fileWriteString(f,"\"");
+	fileWriteString(f,s);
+	fileWriteString(f,"\"");
+}
+
 void fileWriteString(EmbeddedFile *f, char *s){
 	int len = strlen(s);
 	file_write(f,len,(unsigned char *)s);
@@ -104,8 +105,9 @@ void loggerTask(void *params){
 		//wait for signal to start logging
 		if ( xSemaphoreTake(g_xLoggerStart, portMAX_DELAY) == pdTRUE){
 
-			int accelInstalled = loggerConfig->Accel_Installed; 
-			if ( accelInstalled == CONFIG_ACCEL_INSTALLED){
+			int gpsInstalled = (int)loggerConfig->GPSInstalled;
+			int accelInstalled = (int)loggerConfig->AccelInstalled;
+			if ( accelInstalled == CONFIG_FEATURE_INSTALLED){
 				accel_init();
 				accel_setup();
 			}
@@ -118,25 +120,32 @@ void loggerTask(void *params){
 			}
 			
 			portTickType xLastWakeTime, startTickTime;
-			const portTickType xFrequency = BASE_100Hz;
+			const portTickType xFrequency = SAMPLE_100Hz;
 			startTickTime = xLastWakeTime = xTaskGetTickCount();
 			
+			writeHeaders(&f,loggerConfig);
 			
-			//run until we should not log anymore
+			//run until signalled to stop
 			while (g_loggingShouldRun){
 				ToggleLED(LED2);
 
 				//reset line
 				g_loggerLineBuffer[0] = '\0';
 								
-				writeGPSPosition();
-				writeGPSVelocity();
-
-				unsigned int a0,a1,a2,a3,a4,a5,a6,a7;
-				ReadAllADC(&a0,&a1,&a2,&a3,&a4,&a5,&a6,&a7);				
-				writeADC(a0,a1,a2,a3,a4,a5,a6,a7);
-
-				if (accelInstalled == CONFIG_ACCEL_INSTALLED) writeAccelerometer(loggerConfig);
+				//Write ADC channels				
+				writeADC(loggerConfig);
+				//Write GPIO channels
+				writeGPIOs(loggerConfig);
+				//Write Timer channels
+				writeTimerChannels(loggerConfig);
+				//Write PWM channels
+				writePWMChannels(loggerConfig);
+				
+				//Optional hardware
+				//Write Accelerometer
+				if (accelInstalled) writeAccelerometer(loggerConfig);
+				//Write GPS
+				if (gpsInstalled) writeGPSChannels(&(loggerConfig->GPSConfig));
 				
 				lineAppendString("\n");
 				fileWriteString(&f, g_loggerLineBuffer);
@@ -151,112 +160,206 @@ void loggerTask(void *params){
 }
 
 
-void writeAccelerometer(struct LoggerConfig *loggerConfig){
-	
-	int x = -1;
-	int y = -1;
-	int z = -1;
-	int zt = -1;
-	
-	if (loggerConfig->AccelX_config != CONFIG_ACCEL_DISABLED) x = accel_readAxis(0);
-	if (loggerConfig->AccelY_config != CONFIG_ACCEL_DISABLED) y = accel_readAxis(1);
-	if (loggerConfig->AccelZ_config != CONFIG_ACCEL_DISABLED) z = accel_readAxis(2);
-	if (loggerConfig->ThetaZ_config != CONFIG_ACCEL_DISABLED) zt = accel_readAxis(3);
-	
-	if (x > 0){
-		lineAppendInt(x);
-		lineAppendString(",");
-	}
-	if (y > 0){
-		lineAppendInt(y);
-		lineAppendString(",");
-	}
-	if (z > 0){
-		lineAppendInt(z);
-		lineAppendString(",");	
-	}
-	if (zt > 0){
-		lineAppendInt(zt);
-		lineAppendString(",");
+void writeHeaders(EmbeddedFile *f, struct LoggerConfig *config){
+	writeADCHeaders(f, config);
+	writeGPIOHeaders(f, config);
+	writeTimerChannelHeaders(f, config);
+	writePWMChannelHeaders(f, config);
+	if (config->AccelInstalled) writeAccelChannelHeaders(f, config);
+	if (config->GPSInstalled) writeGPSChannelHeaders(f, &(config->GPSConfig));
+	fileWriteString(f,"\n");
+}
+
+void writeADCHeaders(EmbeddedFile *f,struct LoggerConfig *config){
+	for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
+		struct ADCConfig *c = &(config->ADCConfigs[i]);
+		if (c->sampleRate != SAMPLE_DISABLED){
+			fileWriteQuotedString(f,c->label);
+			fileWriteString(f,",");
+		}
+	}	
+}
+
+void writeGPIOHeaders(EmbeddedFile *f, struct LoggerConfig *config){
+	for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
+		struct GPIOConfig *c = &(config->GPIOConfigs[i]);
+		if (c->sampleRate != SAMPLE_DISABLED){
+			fileWriteQuotedString(f,c->label);
+			fileWriteString(f,",");
+		}	
 	}
 }
 
-void writeADC(unsigned int a0,unsigned int a1,unsigned int a2,unsigned int a3,unsigned int a4,unsigned int a5,unsigned int a6,unsigned int a7){
+void writeTimerChannelHeaders(EmbeddedFile *f, struct LoggerConfig *config){
+	for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++){
+		struct TimerConfig *c = &(config->TimerConfigs[i]);
+		if (c->sampleRate != SAMPLE_DISABLED){
+			fileWriteQuotedString(f,c->label);
+			fileWriteString(f, ",");	
+		}		
+	}
+}
+
+void writePWMChannelHeaders(EmbeddedFile *f, struct LoggerConfig *config){
+	for (int i = 0; i < CONFIG_PWM_CHANNELS; i++){
+		struct PWMConfig *c = &(config->PWMConfig[i]);
+		if (c->sampleRate != SAMPLE_DISABLED){
+			fileWriteQuotedString(f,c->label);
+			fileWriteString(f, ",");		
+		}		
+	}	
+}
+
+void writeAccelChannelHeaders(EmbeddedFile *f, struct LoggerConfig *config){
+	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
+		struct AccelConfig *c = &(config->AccelConfig[i]);
+		if (c->sampleRate != SAMPLE_DISABLED){
+			fileWriteQuotedString(f,c->label);
+			fileWriteString(f, ",");		
+		}	
+	}	
+}
+
+void writeGPSChannelHeaders(EmbeddedFile *f, struct GPSConfig *config){
+
+	if (config->timeSampleRate != SAMPLE_DISABLED){
+		fileWriteQuotedString(f, config->timeLabel);
+		fileWriteString(f, ",");	
+	}
 	
-	struct LoggerConfig *loggerConfig = getWorkingLoggerConfig();
-	float scaling;
+	if (config->positionSampleRate != SAMPLE_DISABLED){
+		fileWriteQuotedString(f,config->qualityLabel);
+		fileWriteString(f, ",");
+		
+		fileWriteQuotedString(f,config->satsLabel);
+		fileWriteString(f, ",");
+		
+		fileWriteQuotedString(f,config->latitiudeLabel);
+		fileWriteString(f, ",");
+		fileWriteQuotedString(f,config->longitudeLabel);
+		fileWriteString(f, ",");	
+	}
+
+	if (config->velocitySampleRate != SAMPLE_DISABLED){
+		fileWriteQuotedString(f, config->velocityLabel);
+		fileWriteString(f, ",");
+	}
+}
+
+
+
+
+
+
+
+
+
+void writeAccelerometer(struct LoggerConfig *config){
+
+	int accelValues[CONFIG_ACCEL_CHANNELS];
+	
+	for (unsigned int i=0; i < CONFIG_ACCEL_CHANNELS;i++){
+		struct AccelConfig *ac = &(config->AccelConfig[i]);
+		if (ac->sampleRate != SAMPLE_DISABLED){
+			accelValues[i] = accel_readAxis(ac->accelChannel);
+		}
+	}
+	
+	for (unsigned int i=0; i < CONFIG_ACCEL_CHANNELS;i++){
+		struct AccelConfig *ac = &(config->AccelConfig[i]);
+		if (ac->sampleRate != SAMPLE_DISABLED){
+			lineAppendInt(accelValues[i]);
+			lineAppendString(",");	
+		}
+	}
+}
+
+void writeADC(struct LoggerConfig *config){
+	
 	int precision;
 
+	unsigned int adc[CONFIG_ADC_CHANNELS];
+	ReadAllADC(&adc[0],&adc[1],&adc[2],&adc[3],&adc[4],&adc[5],&adc[6],&adc[7]);	
+	
 	precision = 2;
 	
-	scaling = loggerConfig->ADC_Calibrations[0].scaling;
-	lineAppendFloat((scaling * (float)a0), precision);
-	lineAppendString(",");
-	
-	scaling = loggerConfig->ADC_Calibrations[1].scaling;
-	lineAppendFloat((scaling * (float)a1), precision);
-	lineAppendString(",");
- 	
- 	scaling = loggerConfig->ADC_Calibrations[2].scaling;
- 	lineAppendFloat((scaling * (float)a2), precision);
-	lineAppendString(",");
- 	
- 	scaling = loggerConfig->ADC_Calibrations[3].scaling;
-	lineAppendFloat((scaling * (float)a3), precision);
-	lineAppendString(",");
- 	
- 	scaling = loggerConfig->ADC_Calibrations[4].scaling;
- 	lineAppendFloat((scaling * (float)a4), precision);
-	lineAppendString(",");
-
-	scaling = loggerConfig->ADC_Calibrations[5].scaling;
-	lineAppendFloat((scaling * (float)a5), precision);
-	lineAppendString(",");
- 
-	scaling = loggerConfig->ADC_Calibrations[6].scaling;
-	lineAppendFloat((scaling * (float)a6), precision);
-	lineAppendString(",");
- 	
-	scaling = loggerConfig->ADC_Calibrations[7].scaling;
-	lineAppendFloat((scaling * (float)a7), precision);
-	lineAppendString(",");	
+	for (unsigned int i=0; i < CONFIG_ADC_CHANNELS;i++){
+		struct ADCConfig *ac = &(config->ADCConfigs[i]);
+		if (ac->sampleRate != SAMPLE_DISABLED){
+			lineAppendFloat(ac->scaling * (float)adc[i],precision);
+			lineAppendString(",");
+		}
+	}
 }
 
-void writeGPSPosition(){
+void writeGPSChannels(struct GPSConfig *config){
 	
-	if 	(getGPSPositionUpdated()){
-		lineAppendInt(getGPSQuality());
-		lineAppendString(",");
-
+	if (config->timeSampleRate != SAMPLE_DISABLED){
 		lineAppendFloat(getUTCTime(),3);
 		lineAppendString(",");
+	}
+	if (config->positionSampleRate != SAMPLE_DISABLED){
+		lineAppendInt(getGPSQuality());
+		lineAppendString(",");
 		
+		lineAppendInt(getSatellitesUsedForPosition());
+		lineAppendString(",");
+
 		lineAppendDouble(getLatitude(), 6);
 		lineAppendString(",");
 		
 		lineAppendDouble(getLongitude(), 6);
 		lineAppendString(",");
 		
-		lineAppendInt(getSatellitesUsedForPosition());
-		lineAppendString(",");
 		setGPSPositionStale();
 	}
-	else{
-		lineAppendString(",");
-		lineAppendString(",");
-		lineAppendString(",");
-		lineAppendString(",");
-		lineAppendString(",");
-	}
-}
-
-void writeGPSVelocity(){
-	if 	(getGPSVelocityUpdated()){
+	if (config->velocitySampleRate != SAMPLE_DISABLED){
 		lineAppendFloat(getGPSVelocity(),2);
 		lineAppendString(",");
 		setGPSVelocityStale();
 	}
-	else{
-		lineAppendString(",");	
+}
+
+void writeGPIOs(struct LoggerConfig *loggerConfig){
+	
+	unsigned int gpioMasks[CONFIG_GPIO_CHANNELS]; 
+	
+	gpioMasks[0] = GPIO_1;
+	gpioMasks[1] = GPIO_2;
+	gpioMasks[2] = GPIO_3;
+	
+	unsigned int gpioStates = AT91F_PIO_GetInput(AT91C_BASE_PIOA);
+	for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
+		struct GPIOConfig *c = &(loggerConfig->GPIOConfigs[i]);
+		if (c->sampleRate != SAMPLE_DISABLED){
+			lineAppendInt((gpioStates & gpioMasks[i]) != 0);
+			lineAppendString(",");
+		}
 	}
 }
+
+void writeTimerChannels(struct LoggerConfig *loggerConfig){
+	
+	unsigned int timers[CONFIG_TIMER_CHANNELS];
+	getAllTimerPeriods(timers,timers + 1,timers + 2);
+	
+	for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++){
+		struct TimerConfig *c = &(loggerConfig->TimerConfigs[i]);
+		if (c->sampleRate != SAMPLE_DISABLED){
+			lineAppendInt(timers[i]);
+			lineAppendString(",");	
+		}	
+	}
+}
+
+void writePWMChannels(struct LoggerConfig *loggerConfig){
+	
+	for (int i = 0; i < CONFIG_PWM_CHANNELS; i++){
+		struct PWMConfig *c = &(loggerConfig->PWMConfig[i]);
+		if (c->sampleRate != SAMPLE_DISABLED){
+			lineAppendInt(i);
+			lineAppendString(",");
+		}	
+	}
+}
+
