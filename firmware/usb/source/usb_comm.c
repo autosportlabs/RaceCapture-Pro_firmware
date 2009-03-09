@@ -41,12 +41,6 @@ void onUSBCommTask(void *pvParameters){
 			SendUint((unsigned int) _heap_address);
 			SendCrlf();
 		}
-		if (theData == 'u'){
-			g_workingLoggerConfig.AccelX_config++;
-			g_workingLoggerConfig.AccelY_config++;
-			g_workingLoggerConfig.ThetaZ_config++;	
-			g_workingLoggerConfig.extra2[127]++;
-		}
 		if (theData == 'w'){
 			SendString("flashing...");
 			unsigned int result = flashLoggerConfig();
@@ -55,21 +49,6 @@ void onUSBCommTask(void *pvParameters){
 			SendCrlf();
 		}
 		if (theData == 'p'){
-			SendString("working: ");
-			SendInt(g_workingLoggerConfig.AccelX_config);
-			SendString(" ");
-			SendInt(g_workingLoggerConfig.AccelY_config);
-			SendString(" ");
-			SendInt(g_workingLoggerConfig.ThetaZ_config);
-			SendString(" ");
-			SendInt(g_workingLoggerConfig.extra2[127]);
-			SendCrlf();
-			SendString("saved: ");
-			SendInt(g_savedLoggerConfig.AccelX_config);
-			SendInt(g_savedLoggerConfig.AccelY_config);
-			SendInt(g_savedLoggerConfig.ThetaZ_config);
-			SendInt(g_savedLoggerConfig.extra2[127]);
-			SendCrlf();
 			SendString("address: ");
 			SendUint((unsigned int)&g_savedLoggerConfig);
 			SendString("sizeof config: ");
@@ -185,14 +164,9 @@ void onUSBCommTask(void *pvParameters){
 				SendDouble(testd,6);
 				SendCrlf();
 			}
-			
-			
-
-			char *test2 = "1";
-			int test2i = modp_atoi(test2);
-			SendInt(test2i);
+			SendString("sizeof loggerConfig; ");
+			SendInt(sizeof(g_savedLoggerConfig));
 			SendCrlf();
-			
 		}
 		if (theData == 'g'){
 			SendDouble(getLongitude(),6);

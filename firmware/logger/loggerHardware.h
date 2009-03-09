@@ -34,6 +34,8 @@ void DisableLED(unsigned int Led);
 //Toggle LED state
 void ToggleLED (unsigned int Led);
 
+unsigned int GetGPIOBits();
+
 //Set specified bits on PIO
 void SetGPIOBits(unsigned int portBits);
 
@@ -97,6 +99,7 @@ void initTimer0();
 void initTimer1();
 void initTimer2();
 
+void getAllTimerPeriods(unsigned int *t0, unsigned int *t1, unsigned int *t2);
 unsigned int getTimer0Period();
 unsigned int getTimer1Period();
 unsigned int getTimer2Period();
