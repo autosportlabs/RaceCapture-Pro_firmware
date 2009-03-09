@@ -39,9 +39,6 @@ float	g_velocity;
 
 int		g_gpsQuality;
 int		g_satellitesUsedForPosition;
-int		g_gpsPositionUpdated;
-
-int		g_gpsVelocityUpdated;
 
 float getUTCTime(){
 	return g_UTCTime;
@@ -67,14 +64,6 @@ int getSatellitesUsedForPosition(){
 	return g_satellitesUsedForPosition;
 }
 
-int getGPSPositionUpdated(){
-	return g_gpsPositionUpdated;
-}
-
-void setGPSPositionStale(){
-	g_gpsPositionUpdated = 0;	
-}
-
 float getGPSVelocity(){
 	return g_velocity;
 }
@@ -83,24 +72,13 @@ char * getGPSDataLine(){
 	return g_GPSdataLine;
 }
 
-int getGPSVelocityUpdated(){
-	return g_gpsVelocityUpdated;
-}
-
-void setGPSVelocityStale(){
-	g_gpsVelocityUpdated = 0;
-}
-
 void startGPSTask(){
 	g_latitude = 0.0;
 	g_longitude = 0.0;
 	g_UTCTime = 0.0;
 	g_gpsQuality = GPS_QUALITY_NO_FIX;
 	g_satellitesUsedForPosition = 0;
-	g_gpsPositionUpdated = 0;
 	g_velocity = 0.0;
-	g_gpsVelocityUpdated = 0;
-	
 	
 	xTaskCreate( GPSTask, ( signed portCHAR * ) "GPSTask", GPS_TASK_STACK_SIZE, NULL, 	GPS_TASK_PRIORITY, 	NULL );
 }
@@ -160,7 +138,7 @@ void parseGGA(char *data){
 			case 0:
 				{
 					unsigned int len = strlen(data);
-					if (len > 0 && len < UTC_VELOCITY_BUFFER_LEN){
+					if (len > 0 && len < UTC_TIME_BUFFER_LEN){
 						g_UTCTime = modp_atof(data);
 					}
 				}
@@ -236,8 +214,6 @@ void parseGGA(char *data){
 
 	g_longitude = longitude;
 	g_latitude = latitude;
-	
-	if (g_gpsQuality != GPS_QUALITY_NO_FIX) g_gpsPositionUpdated = 1;
 }
 
 //Parse GNSS DOP and Active Satellites
@@ -270,7 +246,6 @@ void parseVTG(char *data){
 		data = delim + 1;
 		delim = strchr(data,',');
 	}
-	if (g_gpsQuality != GPS_QUALITY_NO_FIX) g_gpsVelocityUpdated = 1;
 }
 
 //Parse Geographic Position – Latitude / Longitude

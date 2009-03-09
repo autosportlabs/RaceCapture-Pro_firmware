@@ -2,7 +2,7 @@
 #define LOGGERTASK_H_
 #include "efs.h"
 #include "loggerConfig.h"
-
+#include "FreeRTOS.h"
 
 void createLoggerTask();
 void loggerTask(void *params);
@@ -26,11 +26,11 @@ void writeAccelChannelHeaders(EmbeddedFile *f, struct LoggerConfig *config);
 void writeGPSChannelHeaders(EmbeddedFile *f, struct GPSConfig *config);
 
 
-void writeADC(struct LoggerConfig *config);
-void writeGPIOs(struct LoggerConfig *config);
-void writeTimerChannels(struct LoggerConfig *config);
-void writePWMChannels(struct LoggerConfig *config);
-void writeAccelerometer(struct LoggerConfig *config);
-void writeGPSChannels(struct GPSConfig *config);
+void writeADC(portTickType currentTicks, struct LoggerConfig *config);
+void writeGPIOs(portTickType currentTicks, struct LoggerConfig *config);
+void writeTimerChannels(portTickType currentTicks, struct LoggerConfig *config);
+void writePWMChannels(portTickType currentTicks, struct LoggerConfig *config);
+void writeAccelerometer(portTickType currentTicks, struct LoggerConfig *config);
+void writeGPSChannels(portTickType currentTicks, struct GPSConfig *config);
 
 #endif /*LOGGERTASK_H_*/

@@ -178,6 +178,8 @@ void onUSBCommTask(void *pvParameters){
 			SendInt(getGPSQuality());
 			SendString(" Sats: ");
 			SendInt(getSatellitesUsedForPosition());
+			SendString(" Time: ");
+			SendFloat(getUTCTime(),5);
 			SendCrlf();
 			//SendString(getGPSDataLine());
 			//SendCrlf();	
