@@ -78,6 +78,8 @@ void PWM_SetPeriod(
 	unsigned char channel, 
 	unsigned short period);
 
+unsigned short PWM_GetPeriod(unsigned char channel);
+
 //Configure PWM channel
 void PWM_ConfigureChannel(
     unsigned char channel,
@@ -89,6 +91,11 @@ void PWM_ConfigureChannel(
 void PWM_SetDutyCycle(
 	unsigned char channel, 
 	unsigned short duty);
+
+unsigned short PWM_GetDutyCycle(unsigned char channel);
+
+
+
 	
 //Enable PWM channel
 void PWM_EnableChannel(
