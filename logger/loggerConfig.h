@@ -63,7 +63,7 @@ struct ADCConfig{
 #define DEFAULT_ADC4_CONFIG {"Analog5","Units",SAMPLE_10Hz,0.0048875f}
 #define DEFAULT_ADC5_CONFIG {"Analog6","Units",SAMPLE_10Hz,0.0048875f}
 #define DEFAULT_ADC6_CONFIG {"Analog7","Units",SAMPLE_10Hz,0.0048875f}	
-#define BATTERY_ADC7_CONFIG {"Battery","Volts",SAMPLE_10Hz,0.01955f}
+#define BATTERY_ADC7_CONFIG {"Battery","Volts",SAMPLE_100Hz,0.01955f}
 #define DEFAULT_ADC_CONFIGS \
 			{ \
 			DEFAULT_ADC0_CONFIG, \

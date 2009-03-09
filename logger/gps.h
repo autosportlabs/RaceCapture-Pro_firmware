@@ -13,11 +13,7 @@ double getLongitude();
 
 int getGPSQuality();
 int getSatellitesUsedForPosition();
-int getGPSPositionUpdated();
-void setGPSPositionStale();
 float getGPSVelocity();
-int getGPSVelocityUpdated();
-void setGPSVelocityStale();
 char * getGPSDataLine();
 
 
