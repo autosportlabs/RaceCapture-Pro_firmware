@@ -198,7 +198,7 @@ CFLAGS += -fomit-frame-pointer
 CFLAGS += -Wcast-align -Wimplicit 
 CFLAGS += -Wpointer-arith -Wswitch
 CFLAGS += -Wredundant-decls -Wreturn-type -Wshadow -Wunused
-CFLAGS += -ffunction-sections -fdata-sections 
+CFLAGS += -ffunction-sections -fdata-sections
 #CFLAGS += -Wno-strict-aliasing -Wextra
 CFLAGS += -Wa,-adhlns=$(subst $(suffix $<),.lst,$<) 
 CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))

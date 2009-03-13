@@ -93,6 +93,8 @@ void fileWriteDouble(EmbeddedFile *f, double num, int precision){
 }
 
 
+#define HIGHER_SAMPLE(X,Y) ((X != SAMPLE_DISABLED && X <Y))
+
 portTickType getHighestSampleRate(struct LoggerConfig *config){
 
 	//start with the slowest sample rate
@@ -101,39 +103,39 @@ portTickType getHighestSampleRate(struct LoggerConfig *config){
 	//find the fastest sample rate
 	for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
 		char sr = config->ADCConfigs[i].sampleRate; 
-		if (sr < s) s = sr; 	
+		if HIGHER_SAMPLE(sr, s) s = sr; 	
 	}
 	for (int i = 0; i < CONFIG_PWM_CHANNELS; i++){
 		char sr = config->PWMConfig[i].sampleRate;
-		if (sr < s) s = sr;	
+		if HIGHER_SAMPLE(sr, s) s = sr;	
 	}
 	for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
 		char sr = config->GPIOConfigs[i].sampleRate;
-		if (sr < s) s = sr;	
+		if HIGHER_SAMPLE(sr, s) s = sr;	
 	}
 	for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++){
 		char sr = config->TimerConfigs[i].sampleRate;
-		if (sr < s) s = sr;	
+		if HIGHER_SAMPLE(sr, s) s = sr;	
 	}
 	if (config->AccelInstalled){
 		for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
 			char sr = config->AccelConfig[i].sampleRate;
-			if (sr < s) s = sr;	
+			if HIGHER_SAMPLE(sr, s) s = sr;	
 		}
 	}
 	if (config->GPSInstalled){
 		struct GPSConfig *gpsConfig = &(config->GPSConfig);
 		{
 			char sr = gpsConfig->positionSampleRate; 	
-			if (sr < s) s = sr;
+			if HIGHER_SAMPLE(sr, s) s = sr;
 		}
 		{
 			char sr = gpsConfig->timeSampleRate;
-			if (sr < s) s = sr;
+			if HIGHER_SAMPLE(sr, s) s = sr;
 		}
 		{
 			char sr = gpsConfig->velocitySampleRate;
-			if (sr < s) s = sr;	
+			if HIGHER_SAMPLE(sr, s) s = sr;	
 		}
 	}
 	return (portTickType)s;
@@ -428,7 +430,10 @@ void writePWMChannels(portTickType currentTicks, struct LoggerConfig *loggerConf
 		struct PWMConfig *c = &(loggerConfig->PWMConfig[i]);
 		portTickType sr = c->sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) lineAppendInt(PWM_GetPeriod((unsigned char)i));
+			if ((currentTicks % sr) == 0){
+				unsigned int period = PWM_GetPeriod((unsigned char)i); 
+				lineAppendInt(period);
+			}
 			lineAppendString(",");
 		}	
 	}
