@@ -60,13 +60,19 @@ void onUSBCommTask(void *pvParameters){
 			SendString("Duty: ");
 			SendInt(duty);
 			SendCrlf();
-			PWM_SetDutyCycle(0,duty);	
+			PWM_SetDutyCycle(0,duty);
+			PWM_SetDutyCycle(1,duty);
+			PWM_SetDutyCycle(2,duty);
+			PWM_SetDutyCycle(3,duty);	
 		}
 		if (theData == 'X'){
 			SendString("Reset Duty");
 			SendCrlf();
 			duty=MIN_DUTY_CYCLE;
-			PWM_SetDutyCycle(0,duty);	
+			PWM_SetDutyCycle(0,duty);
+			PWM_SetDutyCycle(1,duty);
+			PWM_SetDutyCycle(2,duty);
+			PWM_SetDutyCycle(3,duty);	
 		}
 		if (theData == 'x'){
 			duty++;
@@ -74,12 +80,18 @@ void onUSBCommTask(void *pvParameters){
 			SendInt(duty);
 			SendCrlf();
 			PWM_SetDutyCycle(0,duty);
+			PWM_SetDutyCycle(1,duty);
+			PWM_SetDutyCycle(2,duty);
+			PWM_SetDutyCycle(3,duty);
 		}
 		if (theData == '1'){
 			period--;
 			SendString("Period: ");
 			SendInt(period);
 			SendCrlf();
+			PWM_SetPeriod(0,period);
+			PWM_SetPeriod(1,period);
+			PWM_SetPeriod(2,period);
 			PWM_SetPeriod(3,period);
 		}
 		if (theData == '2'){
@@ -87,16 +99,25 @@ void onUSBCommTask(void *pvParameters){
 			SendString("Period: ");
 			SendInt(period);
 			SendCrlf();
+			PWM_SetPeriod(0,period);
+			PWM_SetPeriod(1,period);
+			PWM_SetPeriod(2,period);
 			PWM_SetPeriod(3,period);
 		}
 		if (theData == 'c'){
 			for (int i=1; i < 1000; i++){
 				vTaskDelay(4 / portTICK_RATE_MS);
-				PWM_SetDutyCycle(0,i);	
+				PWM_SetDutyCycle(0,i);
+				PWM_SetDutyCycle(1,i);
+				PWM_SetDutyCycle(2,i);
+				PWM_SetDutyCycle(3,i);	
 			}	
 			for (int i=999; i >=1; i--){
 				vTaskDelay(4 / portTICK_RATE_MS);
-				PWM_SetDutyCycle(0,i);	
+				PWM_SetDutyCycle(0,i);
+				PWM_SetDutyCycle(1,i);
+				PWM_SetDutyCycle(2,i);
+				PWM_SetDutyCycle(3,i);	
 			}
 		}
 		if (theData == 'y'){
@@ -212,6 +233,45 @@ void onUSBCommTask(void *pvParameters){
 			SendInt(AT91C_BASE_TC1->TC_RB);
 			SendString(",");
 			SendInt(AT91C_BASE_TC2->TC_RB);
+			SendCrlf();
+			struct LoggerConfig *c = getWorkingLoggerConfig();
+			calculateTimerScaling(c,0);
+			calculateTimerScaling(c,1);
+			calculateTimerScaling(c,2);
+			SendString("Scaling: ");
+			SendInt(c->TimerConfigs[0].calculatedScaling);
+			SendString(",");
+			SendInt(c->TimerConfigs[1].calculatedScaling);
+			SendString(",");
+			SendInt(c->TimerConfigs[2].calculatedScaling);
+			SendCrlf();
+			SendString("Hz: ");
+			SendInt(calculateFrequencyHz(getTimer0Period(),c->TimerConfigs[0].calculatedScaling));
+			SendString(",");
+			SendInt(calculateFrequencyHz(getTimer1Period(),c->TimerConfigs[1].calculatedScaling));
+			SendString(",");
+			SendInt(calculateFrequencyHz(getTimer2Period(),c->TimerConfigs[2].calculatedScaling));
+			SendCrlf();
+			SendString("Period Ms: ");
+			SendInt(calculatePeriodMs(getTimer0Period(),c->TimerConfigs[0].calculatedScaling));
+			SendString(",");
+			SendInt(calculatePeriodMs(getTimer1Period(),c->TimerConfigs[1].calculatedScaling));
+			SendString(",");
+			SendInt(calculatePeriodMs(getTimer2Period(),c->TimerConfigs[2].calculatedScaling));
+			SendCrlf();
+			SendString("Period Usec: ");
+			SendInt(calculatePeriodUsec(getTimer0Period(),c->TimerConfigs[0].calculatedScaling));
+			SendString(",");
+			SendInt(calculatePeriodUsec(getTimer1Period(),c->TimerConfigs[1].calculatedScaling));
+			SendString(",");
+			SendInt(calculatePeriodUsec(getTimer2Period(),c->TimerConfigs[2].calculatedScaling));
+			SendCrlf();
+			SendString("RPM: ");
+			SendInt(calculateRPM(getTimer0Period(),c->TimerConfigs[0].calculatedScaling));
+			SendString(",");
+			SendInt(calculateRPM(getTimer1Period(),c->TimerConfigs[1].calculatedScaling));
+			SendString(",");
+			SendInt(calculateRPM(getTimer2Period(),c->TimerConfigs[2].calculatedScaling));
 			SendCrlf();
 		}
 		if (theData == 'a'){

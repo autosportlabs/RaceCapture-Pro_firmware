@@ -1,7 +1,5 @@
 #include "loggerHardware.h"
 #include "board.h"
-#include "lib_AT91SAM7S256.h"
-
 
 /* ADC field definition for the Mode Register: Reminder
                        TRGEN    => Selection bewteen Software or hardware start of conversion
@@ -24,18 +22,10 @@
 #define   CHANNEL  (0)      // Write the targeted channel (Notation: the first channel is 0
                             // and the last is 7)
 
-
 //Timer/Counter declarations
 #define TIMER0_INTERRUPT_LEVEL 	5
 #define TIMER1_INTERRUPT_LEVEL 	5
 #define TIMER2_INTERRUPT_LEVEL 	5
-
-#define TC_CLKS                 0x7
-#define TC_CLKS_MCK2            0x0
-#define TC_CLKS_MCK8            0x1
-#define TC_CLKS_MCK32           0x2
-#define TC_CLKS_MCK128          0x3
-#define TC_CLKS_MCK1024         0x4
 
 #define MAX_TIMER_VALUE			0xFFFF
 
@@ -48,12 +38,11 @@ unsigned int g_timer1_overflow;
 unsigned int g_timer2_overflow;
 
 void InitGPIO(){
-    AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, GPIO_MASK ) ;
+    AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, GPIO_MASK );
 }
 
 unsigned int GetGPIOBits(){
 	return AT91F_PIO_GetStatus(AT91C_BASE_PIOA);
-		
 }
 
 void SetGPIOBits(unsigned int portBits){
@@ -67,11 +56,22 @@ void ClearGPIOBits(unsigned int portBits){
 void SetFREQ_ANALOG(unsigned int freqAnalogPort){
 	AT91F_PIO_SetOutput( AT91C_BASE_PIOA, freqAnalogPort );	
 }
+
 void ClearFREQ_ANALOG(unsigned int freqAnalogPort){
 	AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, freqAnalogPort );
 }
 
+void StartAllPWM(){
+	AT91F_PWMC_StartChannel(AT91C_BASE_PWMC,(1 << 0) | (1 << 1) | (1 << 2) | (1 << 3));
+}
 
+void StopAllPWM(){
+	AT91F_PWMC_StopChannel(AT91C_BASE_PWMC,(1 << 0) | (1 << 1) | (1 << 2) | (1 << 3));
+}
+
+void StartPWM(unsigned int pwmChannel){
+	AT91F_PWMC_StartChannel(AT91C_BASE_PWMC,1 << pwmChannel);
+}
 
 void StopPWM(unsigned int pwmChannel){
 	if (pwmChannel <= 3){
@@ -79,28 +79,12 @@ void StopPWM(unsigned int pwmChannel){
 	}
 }
 
-void StopAllPWM(){
-	AT91F_PWMC_StopChannel(AT91C_BASE_PWMC,(1 << 0) | (1 << 1) | (1 << 2) | (1 << 3));
-}
+void InitPWM(struct LoggerConfig *loggerConfig){
+	
+	//Configure PWM Clock
+	PWM_ConfigureClocks(loggerConfig->PWMClockFrequency * MAX_DUTY_CYCLE, 0, BOARD_MCK);
 
-void StartAllPWM(){
-	AT91F_PWMC_StartChannel(AT91C_BASE_PWMC,(1 << 0) | (1 << 1) | (1 << 2) | (1 << 3));
-}
-
-void StartPWM(unsigned int pwmChannel){
-	if (pwmChannel <= 3){
-		AT91F_PWMC_StartChannel(AT91C_BASE_PWMC,1 << pwmChannel);
-	}
-}
-
-void EnableAllPWM(){
-	EnablePWM0();
-	EnablePWM1();
-	EnablePWM2();
-	EnablePWM3();	
-}
-
-void EnablePWM0(){
+	//Configure PWM ports
 	/////////////////////////////////////////
 	//PWM0
 	///////////////////////////////////////// 
@@ -109,18 +93,6 @@ void EnablePWM0(){
 			0, 				// mux function A
 			AT91C_PIO_PA23); // mux funtion B
 
-	//Configure PWM Clock
-    PWM_ConfigureClocks(PWM_FREQUENCY * MAX_DUTY_CYCLE, 0, BOARD_MCK);
-
-    // Configure PWMC channel (left-aligned)
-    PWM_ConfigureChannel(0, AT91C_PWMC_CPRE_MCKA, 0, AT91C_PWMC_CPOL);
-    PWM_SetPeriod(0, MAX_DUTY_CYCLE);
-    PWM_SetDutyCycle(0, MIN_DUTY_CYCLE);
-    PWM_EnableChannel(0);	
-}
-
-void EnablePWM1(){
-	
 	/////////////////////////////////////////
 	//PWM1
 	///////////////////////////////////////// 
@@ -128,18 +100,7 @@ void EnablePWM1(){
 	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA, 
 			0, 				// mux function A
 			AT91C_PIO_PA24); // mux funtion B
-
-	//Configure PWM Clock
-    PWM_ConfigureClocks(PWM_FREQUENCY * MAX_DUTY_CYCLE, 0, BOARD_MCK);
-
-    // Configure PWMC channel (left-aligned)
-    PWM_ConfigureChannel(1, AT91C_PWMC_CPRE_MCKA, 0, AT91C_PWMC_CPOL);
-    PWM_SetPeriod(1, MAX_DUTY_CYCLE);
-    PWM_SetDutyCycle(1, MIN_DUTY_CYCLE);
-    PWM_EnableChannel(1);	
-}
-
-void EnablePWM2(){
+	
 	/////////////////////////////////////////
 	//PWM2
 	///////////////////////////////////////// 
@@ -148,17 +109,6 @@ void EnablePWM2(){
 			0, 				// mux function A
 			AT91C_PIO_PA25); // mux funtion B
 
-	//Configure PWM Clock
-    PWM_ConfigureClocks(PWM_FREQUENCY * MAX_DUTY_CYCLE, 0, BOARD_MCK);
-
-    // Configure PWMC channel (left-aligned)
-    PWM_ConfigureChannel(2, AT91C_PWMC_CPRE_MCKA, 0, AT91C_PWMC_CPOL);
-    PWM_SetPeriod(2, MAX_DUTY_CYCLE);
-    PWM_SetDutyCycle(2, MIN_DUTY_CYCLE);
-    PWM_EnableChannel(2);	
-}
-
-void EnablePWM3(){
 	/////////////////////////////////////////
 	//PWM3
 	///////////////////////////////////////// 
@@ -167,16 +117,22 @@ void EnablePWM3(){
 			0, 				// mux function A
 			AT91C_PIO_PA7); // mux funtion B
 
-	//Configure PWM Clock
-    PWM_ConfigureClocks(PWM_FREQUENCY * MAX_DUTY_CYCLE, 0, BOARD_MCK);
-
-    // Configure PWMC channel (left-aligned)
-    PWM_ConfigureChannel(3, AT91C_PWMC_CPRE_MCKA, 0, AT91C_PWMC_CPOL);
-    PWM_SetPeriod(3, MAX_DUTY_CYCLE);
-    PWM_SetDutyCycle(3, MIN_DUTY_CYCLE);
-    PWM_EnableChannel(3);	
+	EnablePWMChannel(0,&(loggerConfig->PWMConfig[0]));
+	EnablePWMChannel(1,&(loggerConfig->PWMConfig[1]));
+	EnablePWMChannel(2,&(loggerConfig->PWMConfig[2]));
+	EnablePWMChannel(3,&(loggerConfig->PWMConfig[3]));
+	StartAllPWM();
 }
 
+
+void EnablePWMChannel(unsigned int channel, struct PWMConfig *config){
+	
+    // Configure PWMC channel (left-aligned)
+    PWM_ConfigureChannel(channel, AT91C_PWMC_CPRE_MCKA, 0, AT91C_PWMC_CPOL);
+    PWM_SetPeriod(channel, config->startupPeriod);
+    PWM_SetDutyCycle(channel, config->startupDutyCycle);
+    PWM_EnableChannel(channel);	
+}
 
 //------------------------------------------------------------------------------
 /// Configures PWM clocks A & B to run at the given frequencies. This function
@@ -185,22 +141,22 @@ void EnablePWM3(){
 /// \param clkb  Desired clock B frequency (0 if not used).
 /// \param mck  Master clock frequency.
 //------------------------------------------------------------------------------
-void PWM_ConfigureClocks(unsigned int clka, unsigned int clkb, unsigned int mck)
-{
+void PWM_ConfigureClocks(unsigned int clka, unsigned int clkb, unsigned int mck){
+
     unsigned int mode = 0;
     unsigned int result;
 
     // Clock A
     if (clka != 0) {
 
-        result = GetClockConfiguration(clka, mck);
+        result = PWM_GetClockConfiguration(clka, mck);
         mode |= result;
     }
 
     // Clock B
     if (clkb != 0) {
 
-        result = GetClockConfiguration(clkb, mck);
+        result = PWM_GetClockConfiguration(clkb, mck);
         mode |= (result << 16);
     }
 
@@ -217,7 +173,7 @@ void PWM_ConfigureClocks(unsigned int clka, unsigned int clkb, unsigned int mck)
 /// \param frequency  Desired frequency in Hz.
 /// \param mck  Master clock frequency in Hz.
 //------------------------------------------------------------------------------
-unsigned short GetClockConfiguration(
+unsigned short PWM_GetClockConfiguration(
     unsigned int frequency,
     unsigned int mck)
 {
@@ -238,7 +194,6 @@ unsigned short GetClockConfiguration(
         return prescaler | (divisor << 8);
     }
     else {
-
         return 0;
     }
 }
@@ -259,7 +214,6 @@ void PWM_ConfigureChannel(
     unsigned int alignment,
     unsigned int polarity)
 {
-
     // Disable channel
     AT91C_BASE_PWMC->PWMC_DIS = 1 << channel;
 
@@ -275,22 +229,20 @@ void PWM_ConfigureChannel(
 /// \param channel  Channel number.
 /// \param period  Period value.
 //------------------------------------------------------------------------------
-void PWM_SetPeriod(unsigned char channel, unsigned short period)
+void PWM_SetPeriod(unsigned int channel, unsigned short period)
 {
     // If channel is disabled, write to CPRD
     if ((AT91C_BASE_PWMC->PWMC_SR & (1 << channel)) == 0) {
-
         AT91C_BASE_PWMC->PWMC_CH[channel].PWMC_CPRDR = period;
     }
     // Otherwise use update register
     else {
-
         AT91C_BASE_PWMC->PWMC_CH[channel].PWMC_CMR |= AT91C_PWMC_CPD;
         AT91C_BASE_PWMC->PWMC_CH[channel].PWMC_CUPDR = period;
     }
 }
 
-unsigned short PWM_GetPeriod(unsigned char channel){
+unsigned short PWM_GetPeriod(unsigned int channel){
 	return AT91C_BASE_PWMC->PWMC_CH[channel].PWMC_CPRDR;
 }
 
@@ -303,8 +255,7 @@ unsigned short PWM_GetPeriod(unsigned char channel){
 /// \param channel  Channel number.
 /// \param duty  Duty cycle value.
 //------------------------------------------------------------------------------
-void PWM_SetDutyCycle(unsigned char channel, unsigned short duty)
-{
+void PWM_SetDutyCycle(unsigned int channel, unsigned short duty){
 
     // SAM7S errata
 #if defined(at91sam7s16) || defined(at91sam7s161) || defined(at91sam7s32) \
@@ -326,10 +277,8 @@ void PWM_SetDutyCycle(unsigned char channel, unsigned short duty)
 }
 
 
-unsigned short PWM_GetDutyCycle(unsigned char channel){
-	
+unsigned short PWM_GetDutyCycle(unsigned int channel){
 	return AT91C_BASE_PWMC->PWMC_CH[channel].PWMC_CDTYR;
-	
 }
 
 //------------------------------------------------------------------------------
@@ -337,8 +286,7 @@ unsigned short PWM_GetDutyCycle(unsigned char channel){
 /// this must be done in the user code.
 /// \param channel  Channel number.
 //------------------------------------------------------------------------------
-void PWM_EnableChannel(unsigned char channel)
-{
+void PWM_EnableChannel(unsigned int channel){
     AT91C_BASE_PWMC->PWMC_ENA = 1 << channel;
 }
 
@@ -415,22 +363,20 @@ unsigned int ReadADCx(unsigned int channel){
 	
     unsigned int result ;
 
-  
-        AT91F_ADC_EnableChannel (AT91C_BASE_ADC, (1<<channel)); 
-        /* Third Step: Start the conversion */
-        AT91F_ADC_StartConversion (AT91C_BASE_ADC);
-        
-        //Poll for result
-        while (!((AT91F_ADC_GetStatus (AT91C_BASE_ADC)) & (1<<channel)));
-        
-       	result = AT91F_ADC_GetLastConvertedData(AT91C_BASE_ADC);
-       	AT91F_ADC_DisableChannel(AT91C_BASE_ADC, (1<<channel));
+    AT91F_ADC_EnableChannel (AT91C_BASE_ADC, (1<<channel)); 
+    /* Third Step: Start the conversion */
+    AT91F_ADC_StartConversion (AT91C_BASE_ADC);
+    
+    //Poll for result
+    while (!((AT91F_ADC_GetStatus (AT91C_BASE_ADC)) & (1<<channel)));
+    
+   	result = AT91F_ADC_GetLastConvertedData(AT91C_BASE_ADC);
+   	AT91F_ADC_DisableChannel(AT91C_BASE_ADC, (1<<channel));
        	
 	return result;	
 }
 
 void InitLEDs(){
-	
     AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, LED_MASK ) ;
    //* Clear the LED's.
     AT91F_PIO_SetOutput( AT91C_BASE_PIOA, LED_MASK ) ;
@@ -455,13 +401,31 @@ void ToggleLED (unsigned int Led){
     }
 }
 
-void initTimerChannels(){
-	initTimer0();
-	initTimer1();
-	initTimer2();
+void initTimerChannels(struct LoggerConfig *loggerConfig){
+	initTimer0(&(loggerConfig->TimerConfigs[0]));
+	initTimer1(&(loggerConfig->TimerConfigs[1]));
+	initTimer2(&(loggerConfig->TimerConfigs[2]));
 }
 
-void initTimer0(){
+unsigned int timerClockFromDivider(unsigned int divider){
+
+	switch (divider){
+		case 2:
+			return AT91C_TC_CLKS_TIMER_DIV1_CLOCK;
+		case 8:
+			return AT91C_TC_CLKS_TIMER_DIV2_CLOCK;
+		case 32:
+			return AT91C_TC_CLKS_TIMER_DIV3_CLOCK;
+		case 128:
+			return AT91C_TC_CLKS_TIMER_DIV4_CLOCK;
+		case 1024:
+			return AT91C_TC_CLKS_TIMER_DIV5_CLOCK;
+		default:
+			return AT91C_TC_CLKS_TIMER_DIV5_CLOCK;
+	}	
+}
+
+void initTimer0(struct TimerConfig *timerConfig){
 
 	g_timer0_overflow = 1;
 	// Set PIO pins for Timer Counter 0
@@ -474,7 +438,7 @@ void initTimer0(){
 	AT91F_TC_Open ( 
 	AT91C_BASE_TC0,
 	
-	TC_CLKS_MCK8 | 
+	timerClockFromDivider(timerConfig->timerDivider) | 
 	AT91C_TC_ETRGEDG_FALLING |	
 	AT91C_TC_ABETRG |
 	AT91C_TC_LDRA_RISING|
@@ -488,7 +452,7 @@ void initTimer0(){
 	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC0);	
 }
 
-void initTimer1(){
+void initTimer1(struct TimerConfig *timerConfig){
 
 	g_timer1_overflow = 1;
 	
@@ -502,7 +466,7 @@ void initTimer1(){
 	AT91F_TC_Open ( 
 	AT91C_BASE_TC1,
 	
-	TC_CLKS_MCK8 | 
+	timerClockFromDivider(timerConfig->timerDivider) | 
 	AT91C_TC_ETRGEDG_FALLING |	
 	AT91C_TC_ABETRG |
 	AT91C_TC_LDRA_RISING|
@@ -516,7 +480,7 @@ void initTimer1(){
 	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC1);	
 }
 
-void initTimer2(){
+void initTimer2(struct TimerConfig *timerConfig){
 
 	g_timer2_overflow = 1;
 	// Set PIO pins for Timer Counter 2
@@ -529,7 +493,7 @@ void initTimer2(){
 	AT91F_TC_Open ( 
 	AT91C_BASE_TC2,
 	
-	TC_CLKS_MCK8 | 
+	timerClockFromDivider(timerConfig->timerDivider) | 
 	AT91C_TC_ETRGEDG_FALLING |	
 	AT91C_TC_ABETRG |
 	AT91C_TC_LDRA_RISING|
@@ -549,14 +513,32 @@ void getAllTimerPeriods(unsigned int *t0, unsigned int *t1, unsigned int *t2){
 	*t2 = getTimer2Period();	
 }
 
-unsigned int getTimer0Period(){
+inline unsigned int getTimer0Period(){
 	return g_timer0_overflow ? MAX_TIMER_VALUE : AT91C_BASE_TC0->TC_RB;
 }
 
-unsigned int getTimer1Period(){
+inline unsigned int getTimer1Period(){
 	return g_timer1_overflow ? MAX_TIMER_VALUE : AT91C_BASE_TC1->TC_RB;
 }
 
-unsigned int getTimer2Period(){
+inline unsigned int getTimer2Period(){
 	return g_timer2_overflow ? MAX_TIMER_VALUE : AT91C_BASE_TC2->TC_RB;
+}
+
+inline unsigned int calculateRPM(unsigned int timerTicks, unsigned int scaling){
+	unsigned int usec = calculatePeriodUsec(timerTicks, scaling);
+	unsigned int rpm = 60000000 / usec;
+	return rpm;
+}
+
+inline unsigned int calculateFrequencyHz(unsigned int timerTicks, unsigned int scaling){
+	return 1000000 / calculatePeriodUsec(timerTicks, scaling);
+}
+
+inline unsigned int calculatePeriodMs(unsigned int timerTicks, unsigned int scaling){
+	return (timerTicks * 1000) / scaling;
+}
+
+inline unsigned int calculatePeriodUsec(unsigned int timerTicks, unsigned int scaling){
+	return (timerTicks * 100000) / (scaling / 10);	
 }

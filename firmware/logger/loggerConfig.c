@@ -25,3 +25,10 @@ struct LoggerConfig * getWorkingLoggerConfig(){
 	return &g_workingLoggerConfig;
 }
 
+void calculateTimerScaling(struct LoggerConfig *loggerConfig, unsigned int timerChannel){
+	struct TimerConfig *timerConfig = &(loggerConfig->TimerConfigs[timerChannel]);
+	unsigned int clock = BOARD_MCK / timerConfig->timerDivider;
+	clock = clock / timerConfig->pulsePerRevolution;
+	timerConfig->calculatedScaling = clock;
+}
+

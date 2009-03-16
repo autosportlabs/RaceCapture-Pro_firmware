@@ -46,7 +46,7 @@ void lineAppendString(char *s){
 }
 
 void lineAppendInt(int num){
-	char buf[10];
+	char buf[13];
 	modp_itoa10(num,buf);
 	lineAppendString(buf);
 }
@@ -418,7 +418,27 @@ void writeTimerChannels(portTickType currentTicks, struct LoggerConfig *loggerCo
 		struct TimerConfig *c = &(loggerConfig->TimerConfigs[i]);
 		portTickType sr = c->sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) lineAppendInt(timers[i]);
+			if ((currentTicks % sr) == 0){
+				int value = 0;
+				int scaling = c->calculatedScaling;
+				unsigned int timerValue = timers[i];
+				switch (c->config){
+					case CONFIG_TIMER_RPM:
+						value = calculateRPM(timerValue,scaling);
+						break;
+					case CONFIG_TIMER_FREQUENCY:
+						value = calculateFrequencyHz(timerValue,scaling);
+						break;
+					case CONFIG_TIMER_PERIOD_MS:
+						value = calculatePeriodMs(timerValue,scaling);
+						break;
+					case CONFIG_TIMER_PERIOD_USEC:
+						value = calculatePeriodUsec(timerValue,scaling);
+					default:
+						value = 0;
+				}
+				lineAppendInt(value);
+			}
 			lineAppendString(",");	
 		}	
 	}

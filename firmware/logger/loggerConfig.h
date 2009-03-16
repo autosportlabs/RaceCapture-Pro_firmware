@@ -1,8 +1,7 @@
 #ifndef LOGGERCONFIG_H_
 #define LOGGERCONFIG_H_
 
-#include "AT91SAM7S256.h"
-
+#include "board.h"
 
 #define CONFIG_ADC_CHANNELS			8
 #define CONFIG_ACCEL_CHANNELS		4
@@ -24,6 +23,7 @@
 #define	CONFIG_ACCEL_CHANNEL_ZT		3
 
 #define DEFAULT_ACCEL_ZERO			2047
+#define DEFAULT_PWM_CLOCK_FREQUENCY	100
 
 #define CONFIG_ACCEL_DISABLED  		0
 #define CONFIG_ACCEL_NORMAL  		1
@@ -34,6 +34,8 @@
 
 #define CONFIG_TIMER_RPM			0
 #define CONFIG_TIMER_FREQUENCY		1
+#define CONFIG_TIMER_PERIOD_USEC	2
+#define CONFIG_TIMER_PERIOD_MS		3
 
 #define SAMPLE_100Hz 3
 #define SAMPLE_50Hz 6
@@ -44,12 +46,26 @@
 #define SAMPLE_1Hz 300
 #define SAMPLE_DISABLED 0
 
+// MCK: 48054840 Hz
+// /2 = 24027420
+// /8 = 6006855
+// /32 = 1501713.75
+// /128 = 375428.4375
+// /1024 = 46928.5546875
+#define MCK_2 		2
+#define MCK_8 		8
+#define MCK_32 		32
+#define MCK_128 	128
+#define MCK_1024 	1024
+
 void updateActiveLoggerConfig();
 
 int flashLoggerConfig();
 
 struct LoggerConfig * getSavedLoggerConfig();
 struct LoggerConfig * getWorkingLoggerConfig();
+
+void calculateTimerScaling(struct LoggerConfig *loggerConfig, unsigned int timerChannel);
 
 struct ADCConfig{
 	char label[DEFAULT_LABEL_LENGTH];
@@ -65,7 +81,7 @@ struct ADCConfig{
 #define DEFAULT_ADC4_CONFIG {"Analog5","Units",SAMPLE_10Hz,0.0048875f}
 #define DEFAULT_ADC5_CONFIG {"Analog6","Units",SAMPLE_10Hz,0.0048875f}
 #define DEFAULT_ADC6_CONFIG {"Analog7","Units",SAMPLE_10Hz,0.0048875f}	
-#define BATTERY_ADC7_CONFIG {"Battery","Volts",SAMPLE_100Hz,0.01955f}
+#define BATTERY_ADC7_CONFIG {"Battery","Volts",SAMPLE_10Hz,0.01955f}
 #define DEFAULT_ADC_CONFIGS \
 			{ \
 			DEFAULT_ADC0_CONFIG, \
@@ -83,12 +99,14 @@ struct TimerConfig{
 	char units[DEFAULT_UNITS_LENGTH];
 	char sampleRate;
 	char config;
-	float scaling;
+	char pulsePerRevolution;
+	char timerDivider;
+	unsigned int calculatedScaling;
 };
 
-#define DEFAULT_RPM_TIMER_CONFIG {"EngineRPM","RPM", SAMPLE_10Hz,CONFIG_TIMER_RPM, 0.0000015f}
-#define DEFAULT_FREQUENCY2_CONFIG {"Freq2","Hz", SAMPLE_10Hz, CONFIG_TIMER_FREQUENCY, 0.0000015f}
-#define DEFAULT_FREQUENCY3_CONFIG {"Freq3","Hz", SAMPLE_10Hz, CONFIG_TIMER_FREQUENCY, 0.0000015f}
+#define DEFAULT_RPM_TIMER_CONFIG  {"EngineRPM", "RPM", SAMPLE_10Hz, CONFIG_TIMER_RPM, 1, MCK_128, 375428}
+#define DEFAULT_FREQUENCY2_CONFIG {"Freq2","RPM", SAMPLE_10Hz, CONFIG_TIMER_RPM, 1, MCK_128, 375428}
+#define DEFAULT_FREQUENCY3_CONFIG {"Freq3","Hz", SAMPLE_10Hz, CONFIG_TIMER_FREQUENCY, 1, MCK_128, 375428}
 #define DEFAULT_TIMER_CONFIGS \
 			{ \
 			DEFAULT_RPM_TIMER_CONFIG, \
@@ -135,13 +153,15 @@ struct AccelConfig{
 struct PWMConfig{
 	char label[DEFAULT_LABEL_LENGTH];
 	char sampleRate;
-	char config;	
+	char config;
+	unsigned short startupDutyCycle;
+	unsigned short startupPeriod;
 };
 
-#define DEFAULT_PWM1_CONFIG {"Vout1",SAMPLE_10Hz,CONFIG_PWM_ANALOG}
-#define DEFAULT_PWM2_CONFIG {"Vout2",SAMPLE_10Hz,CONFIG_PWM_ANALOG}
-#define DEFAULT_PWM3_CONFIG {"Vout3",SAMPLE_10Hz,CONFIG_PWM_ANALOG}
-#define DEFAULT_PWM4_CONFIG {"Vout4",SAMPLE_10Hz,CONFIG_PWM_ANALOG}
+#define DEFAULT_PWM1_CONFIG {"Vout1",SAMPLE_10Hz,CONFIG_PWM_ANALOG,50,100}
+#define DEFAULT_PWM2_CONFIG {"Vout2",SAMPLE_10Hz,CONFIG_PWM_ANALOG,50,100}
+#define DEFAULT_PWM3_CONFIG {"Vout3",SAMPLE_10Hz,CONFIG_PWM_ANALOG,50,100}
+#define DEFAULT_PWM4_CONFIG {"Vout4",SAMPLE_10Hz,CONFIG_PWM_ANALOG,50,100}
 #define DEFAULT_PWM_CONFIGS \
 			{ \
 				DEFAULT_PWM1_CONFIG, \
@@ -168,6 +188,7 @@ struct LoggerConfig {
 	//ADC Calibrations
 	struct ADCConfig ADCConfigs[CONFIG_ADC_CHANNELS];
 	//PWM/Analog out configurations
+	unsigned short PWMClockFrequency;
 	struct PWMConfig PWMConfig[CONFIG_PWM_CHANNELS];
 	//GPIO configurations
 	struct GPIOConfig GPIOConfigs[CONFIG_GPIO_CHANNELS];
@@ -186,6 +207,7 @@ struct LoggerConfig {
 #define DEFAULT_LOGGER_CONFIG \
 	{ \
 	DEFAULT_ADC_CONFIGS, \
+	DEFAULT_PWM_CLOCK_FREQUENCY, \
 	DEFAULT_PWM_CONFIGS, \
 	DEFAULT_GPIO_CONFIGS, \
 	DEFAULT_TIMER_CONFIGS, \
