@@ -71,11 +71,11 @@ static int setupHardware( void )
 
 	if (!initSerial()) return 0;
 	if (!vInitUSBInterface()) return 0;	
-	   
+	  
+	struct LoggerConfig *loggerConfig = getWorkingLoggerConfig(); 
 	InitADC();
-	EnablePWM0();
-	StartPWM(0);
-	initTimerChannels();
+	InitPWM(loggerConfig);
+	initTimerChannels(loggerConfig);
 	InitLEDs();
 	InitGPIO();
 	return 1;
