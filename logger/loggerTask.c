@@ -324,7 +324,7 @@ void writeAccelerometer(portTickType currentTicks, struct LoggerConfig *config){
 		struct AccelConfig *ac = &(config->AccelConfig[i]);
 		portTickType sr = ac->sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) lineAppendFloat(accel_rawToG(accelValues[i],ac->zeroValue),3);
+			if ((currentTicks % sr) == 0) lineAppendFloat(accel_rawToG(accelValues[i],ac->zeroValue),DEFAULT_ACCEL_LOGGING_PRECISION);
 			lineAppendString(",");
 		}
 	}
@@ -337,13 +337,11 @@ void writeADC(portTickType currentTicks, struct LoggerConfig *config){
 	unsigned int adc[CONFIG_ADC_CHANNELS];
 	ReadAllADC(&adc[0],&adc[1],&adc[2],&adc[3],&adc[4],&adc[5],&adc[6],&adc[7]);	
 	
-	precision = 2;
-	
 	for (unsigned int i=0; i < CONFIG_ADC_CHANNELS;i++){
 		struct ADCConfig *ac = &(config->ADCConfigs[i]);
 		portTickType sr = ac->sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) lineAppendFloat(ac->scaling * (float)adc[i],precision);
+			if ((currentTicks % sr) == 0) lineAppendFloat(ac->scaling * (float)adc[i],DEFAULT_ADC_LOGGING_PRECISION);
 			lineAppendString(",");
 		}
 	}
@@ -423,19 +421,19 @@ void writeTimerChannels(portTickType currentTicks, struct LoggerConfig *loggerCo
 				int scaling = c->calculatedScaling;
 				unsigned int timerValue = timers[i];
 				switch (c->config){
-					case CONFIG_TIMER_RPM:
+					case CONFIG_LOGGING_TIMER_RPM:
 						value = calculateRPM(timerValue,scaling);
 						break;
-					case CONFIG_TIMER_FREQUENCY:
+					case CONFIG_LOGGING_TIMER_FREQUENCY:
 						value = calculateFrequencyHz(timerValue,scaling);
 						break;
-					case CONFIG_TIMER_PERIOD_MS:
+					case CONFIG_LOGGING_TIMER_PERIOD_MS:
 						value = calculatePeriodMs(timerValue,scaling);
 						break;
-					case CONFIG_TIMER_PERIOD_USEC:
+					case CONFIG_LOGGING_TIMER_PERIOD_USEC:
 						value = calculatePeriodUsec(timerValue,scaling);
 					default:
-						value = 0;
+						value = -1;
 				}
 				lineAppendInt(value);
 			}
@@ -451,8 +449,19 @@ void writePWMChannels(portTickType currentTicks, struct LoggerConfig *loggerConf
 		portTickType sr = c->sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
-				unsigned int period = PWM_GetPeriod((unsigned char)i); 
-				lineAppendInt(period);
+				switch (c->loggingConfig){
+					case CONFIG_LOGGING_PWM_PERIOD:
+						lineAppendInt(PWM_GetPeriod(i));
+						break;
+					case CONFIG_LOGGING_PWM_DUTY:
+						lineAppendInt(PWM_GetDutyCycle(i));
+						break;
+					case CONFIG_LOGGING_PWM_VOLTS:
+						lineAppendFloat(PWM_GetDutyCycle(i) * c->voltageScaling,1); 
+						break;
+					default:
+						lineAppendInt(-1);
+				}
 			}
 			lineAppendString(",");
 		}	

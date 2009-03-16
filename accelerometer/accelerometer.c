@@ -116,7 +116,7 @@ unsigned char accel_readControlRegister(){
 	return ctrl;	
 }
 
-float accel_rawToG(unsigned int accelRaw, unsigned int zeroValue){
+float accel_rawToG(int accelRaw, unsigned int zeroValue){
 	
 	accelRaw = accelRaw - zeroValue;
 	
