@@ -128,12 +128,21 @@ void onUSBCommTask(void *pvParameters){
 		 	int x = accel_readAxis(0);
 		 	int y = accel_readAxis(1);
 		 	int z = accel_readAxis(2);
-		 	SendString("G X,Y,Z: ");
+		 	SendString("RawG X,Y,Z: ");
 		 	SendInt(x);
 		 	SendString(",");
 		 	SendInt(y);
 		 	SendString(",");
 		 	SendInt(z);
+		 	SendCrlf();
+		 	struct LoggerConfig *loggerConfig;
+		 	loggerConfig = getWorkingLoggerConfig();
+		 	SendString("G X,Y,Z: ");
+		 	SendFloat(accel_rawToG(x,loggerConfig->AccelConfig[0].zeroValue),2);
+		 	SendString(",");
+		 	SendFloat(accel_rawToG(y,loggerConfig->AccelConfig[1].zeroValue),2);
+		 	SendString(",");
+		 	SendFloat(accel_rawToG(z,loggerConfig->AccelConfig[2].zeroValue),2);
 		 	SendCrlf();
 		}
 		if (theData == 'b'){
