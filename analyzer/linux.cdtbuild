@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?fileVersion 3.0.0?>
+
+<ManagedProjectBuildInfo>
+<project id="mjljConfigurator.cdt.managedbuild.target.gnu.exe.577102004" name="Executable (Gnu)" projectType="cdt.managedbuild.target.gnu.exe">
+<configuration artifactName="mjljConfigurator" cleanCommand="rm -rf" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.debug.1118197972" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug">
+<toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.648396421" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1990264238" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug"/>
+<tool command="g++ " id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1471457037" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug">
+<option id="gnu.cpp.compiler.option.other.other.1272331978" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0" valueType="string"/>
+<option id="gnu.cpp.compiler.option.include.paths.1213942245" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+<listOptionValue builtIn="false" value="/usr/lib64/wx/include/gtk2-ansi-release-2.6"/>
+<listOptionValue builtIn="false" value="/usr/include/wx-2.6"/>
+</option>
+<option id="gnu.cpp.compiler.option.preprocessor.def.642418395" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+<listOptionValue builtIn="false" value="GTK_NO_CHECK_CASTS"/>
+<listOptionValue builtIn="false" value="NO_GCC_PRAGMA"/>
+<listOptionValue builtIn="false" value="_LARGEFILE_SOURCE=1"/>
+<listOptionValue builtIn="false" value="wxUSE_GUI=1"/>
+<listOptionValue builtIn="false" value="__WXGTK__"/>
+<listOptionValue builtIn="false" value="_FILE_OFFSET_BITS=64"/>
+<listOptionValue builtIn="false" value="_LARGE_FILES"/>
+</option>
+</tool>
+<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.1970061892" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug"/>
+<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1245464939" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
+<option id="gnu.cpp.link.option.flags.361786306" superClass="gnu.cpp.link.option.flags" value="-L/usr/lib64 -pthread -lwx_gtk2_core-2.6" valueType="string"/>
+<option id="gnu.cpp.link.option.libs.803051323" superClass="gnu.cpp.link.option.libs" valueType="libs">
+<listOptionValue builtIn="false" value="wx_gtk2_xrc-2.6"/>
+<listOptionValue builtIn="false" value="wx_gtk2_html-2.6"/>
+<listOptionValue builtIn="false" value="wx_gtk2_adv-2.6"/>
+<listOptionValue builtIn="false" value="wx_gtk2_core-2.6"/>
+<listOptionValue builtIn="false" value="wx_base_xml-2.6"/>
+<listOptionValue builtIn="false" value="wx_base_net-2.6"/>
+<listOptionValue builtIn="false" value="wx_base-2.6"/>
+<listOptionValue builtIn="false" value="wxctbd-0.8"/>
+</option>
+<option id="gnu.cpp.link.option.paths.351361288" superClass="gnu.cpp.link.option.paths"/>
+</tool>
+<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.220202901" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug"/>
+</toolChain>
+</configuration>
+<configuration artifactName="mjljConfigurator" cleanCommand="rm -rf" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.release.431208705" name="Release" parent="cdt.managedbuild.config.gnu.exe.release">
+<toolChain id="cdt.managedbuild.toolchain.gnu.exe.release.1112600672" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.release">
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.release.162068411" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.release"/>
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.324484867" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release"/>
+<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.release.1466740405" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.release"/>
+<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.release.688152832" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.release"/>
+<tool id="cdt.managedbuild.tool.gnu.assembler.exe.release.61365768" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.release"/>
+</toolChain>
+</configuration>
+</project>
+</ManagedProjectBuildInfo>

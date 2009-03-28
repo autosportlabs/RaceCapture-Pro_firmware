@@ -1,0 +1,5 @@
+aaaa	 ICON "mjlj_config.ico"
+aaaa	 ICON "mjlj_icon_med.ico"
+aaaa	 ICON "mjlj_icon_large.ico"
+aaaa	 ICON "mjlj_icon_xlarge.ico"
+#include "wx/msw/wx.rc"
