@@ -22,13 +22,11 @@
 */
 
 /* Memory Definitions */
-
-/* changed back to Sam7s64 */
 MEMORY
 {
-  FLASH (rx) : ORIGIN = 0x00100000, LENGTH = 0x00010000
-  DATA (rw)  : ORIGIN = 0x00200000, LENGTH = 0x00004000
-  STACK (rw) : ORIGIN = 0x00204000, LENGTH = 0x00000000
+  FLASH (rx) : ORIGIN = 0x00100000, LENGTH = 0x00040000
+  DATA (rw)  : ORIGIN = 0x00200000, LENGTH = 0x00010000
+  STACK (rw) : ORIGIN = 0x00210000, LENGTH = 0x00000000
 }
 
 
@@ -111,11 +109,17 @@ SECTIONS
     *(COMMON)
   } >DATA
   . = ALIGN(4);
+  mm_heap = . ;
+  _heap_address = . ;
   __bss_end__ = . ;
   __bss_end__ = . ;
   _end = .;
   PROVIDE (end = .);
-
+  /* calculate block size for mm_malloc */
+  _MM_NUMBLOCKS = (ORIGIN(STACK) - __bss_end__ - 0x0400) / 8 ;
+  /* calculate byte size for heap_2.c memory manager */
+  _CONFIG_HEAP_SIZE = (ORIGIN(STACK) - __bss_end__ - 0x0400);
+  
     . = ALIGN(4);
    .int_data :  
    { 

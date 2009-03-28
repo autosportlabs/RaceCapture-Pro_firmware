@@ -3,17 +3,17 @@
 #include "wx/config.h"
 #include "wx/stdpaths.h"
 
-AppPrefs::AppPrefs() 
+AppPrefs::AppPrefs()
 {
 }
-	
+
 
 void AppPrefs::SaveAppPrefs(){
 	wxConfig config(MJLJ_CONFIG_APP_NAME);
 
 	config.Write(CONFIG_KEY_LAST_CONFIG_DIRECTORY,_lastConfigFileDirectory);
 	config.Write(CONFIG_KEY_LAST_DATALOG_DIRECTORY, _lastDatalogDirectory);
-	
+
 	int count = _perspectives.Count();
 	config.Write(CONFIG_KEY_PERSPECTIVE_COUNT, count);
 	config.Write(CONFIG_KEY_ACTIVE_PERSPECTIVE, _activePerspective);
@@ -27,10 +27,10 @@ void AppPrefs::LoadAppPrefs(){
 	wxConfig config(MJLJ_CONFIG_APP_NAME);
 
 	wxStandardPaths standardPaths;
-	
+
 	_lastConfigFileDirectory = config.Read(CONFIG_KEY_LAST_CONFIG_DIRECTORY, standardPaths.GetUserConfigDir());
 	_lastDatalogDirectory = config.Read(CONFIG_KEY_LAST_DATALOG_DIRECTORY, standardPaths.GetUserConfigDir());
-	
+
 	int count;
 	config.Read(CONFIG_KEY_PERSPECTIVE_COUNT, &count,0);
 	config.Read(CONFIG_KEY_ACTIVE_PERSPECTIVE, &_activePerspective,0);
@@ -42,7 +42,7 @@ void AppPrefs::LoadAppPrefs(){
 		}
 		else{
 			ResetDefaults();
-			break;				
+			break;
 		}
 		wxString perspectiveName;
 		if (config.Read(wxString::Format("%s%d", CONFIG_KEY_PERSPECTIVE_NAME,i), &perspectiveName)){
@@ -50,7 +50,7 @@ void AppPrefs::LoadAppPrefs(){
 		}
 		else{
 			ResetDefaults();
-			break;	
+			break;
 		}
 	}
 }
@@ -66,19 +66,19 @@ wxArrayString & AppPrefs::GetPerspectives(){
 }
 
 wxArrayString & AppPrefs::GetPerspectiveNames(){
-	return _perspectiveNames;	
+	return _perspectiveNames;
 }
 
 int & AppPrefs::GetActivePerspective(){
-	return _activePerspective;	
+	return _activePerspective;
 }
 
 void AppPrefs::SetActivePerspective(int activePerspective){
-	_activePerspective = activePerspective;	
+	_activePerspective = activePerspective;
 }
 
 void AppPrefs::SetLastConfigFileDirectory(wxString lastConfigFileDirectory){
-	_lastConfigFileDirectory = lastConfigFileDirectory;	
+	_lastConfigFileDirectory = lastConfigFileDirectory;
 }
 
 wxString AppPrefs::GetLastConfigFileDirectory(){
