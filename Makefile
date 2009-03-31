@@ -99,8 +99,9 @@ $(LOGGER_SRC_DIR)/gps.c \
 $(MEMORY_SRC_DIR)/memory.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
 $(LUA_SRC_DIR)/luaTask.c \
+$(LUA_SRC_DIR)/luaLoggerBinding.c \
 $(RTOS_PORT_DIR)/MemMang/heap_5.c 
-#$(RTOS_PORT_DIR)/MemMang/m_malloc.c \
+#$(RTOS_PORT_DIR)/MemMang/umm_malloc.c \
 
 # List C source files here which must be compiled in ARM-Mode.
 # use file-extension c for "c-only"-files

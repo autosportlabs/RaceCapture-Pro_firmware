@@ -109,14 +109,14 @@ SECTIONS
     *(COMMON)
   } >DATA
   . = ALIGN(4);
-  mm_heap = . ;
+  umm_heap = . ;
   _heap_address = . ;
   __bss_end__ = . ;
   __bss_end__ = . ;
   _end = .;
   PROVIDE (end = .);
   /* calculate block size for mm_malloc */
-  _MM_NUMBLOCKS = (ORIGIN(STACK) - __bss_end__ - 0x0400) / 8 ;
+  _UMM_NUMBLOCKS = (ORIGIN(STACK) - __bss_end__ - 0x0400) / 8 ;
   /* calculate byte size for heap_2.c memory manager */
   _CONFIG_HEAP_SIZE = (ORIGIN(STACK) - __bss_end__ - 0x0400);
   
@@ -125,6 +125,10 @@ SECTIONS
    { 
    *(.internal_ram_top) 
    }> STACK 
+   
+	__heap_start__ = __bss_end__ ;
+	__heap_end__ = (ORIGIN(STACK) - 0x400);
+   
 
 
 

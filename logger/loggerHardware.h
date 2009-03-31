@@ -105,6 +105,7 @@ void initTimer1(struct TimerConfig *timerConfig);
 void initTimer2(struct TimerConfig *timerConfig);
 unsigned int timerClockFromDivider(unsigned int divider);
 
+inline unsigned int getTimerPeriod(unsigned int channel);
 void getAllTimerPeriods(unsigned int *t0, unsigned int *t1, unsigned int *t2);
 inline unsigned int getTimer0Period();
 inline unsigned int getTimer1Period();

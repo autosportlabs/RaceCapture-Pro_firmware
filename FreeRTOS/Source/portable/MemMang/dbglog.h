@@ -1,6 +1,8 @@
 // ----------------------------------------------------------------------------
 // dbglog.h - A set of macros that cleans up code that needs to produce debug
 //            or log information.
+//
+// See copyright notice in LICENSE.TXT
 // ----------------------------------------------------------------------------
 //
 // There are macros to handle the following decreasing levels of detail:
@@ -11,7 +13,8 @@
 // 3 = ERROR
 // 2 = WARNING
 // 1 = INFO
-// 0 = NONE
+// 0 = FORCE - The printf is always compiled in and is called only when
+//              the first parameter to the macro is non-0
 //
 // ----------------------------------------------------------------------------
 // 
@@ -20,8 +23,6 @@
 //
 // #define DBG_LOG_LEVEL x
 // ----------------------------------------------------------------------------
-
-#define DBG_LOG_LEVEL 0
 
 #ifndef DBG_LOG_LEVEL
 # error "DBG_LOG_LEVEL is not defined!"
@@ -41,9 +42,12 @@
 #undef DBG_LOG_ERROR
 #undef DBG_LOG_WARNING
 #undef DBG_LOG_INFO
+#undef DBG_LOG_FORCE
 
 // ----------------------------------------------------------------------------
 
+
+/*
 #if DBG_LOG_LEVEL >= 6
 #  define DBG_LOG_TRACE( format, ... ) printf( format, ## __VA_ARGS__ )
 #else
@@ -80,4 +84,6 @@
 #  define DBG_LOG_INFO( format, ... )
 #endif
 
+#define DBG_LOG_FORCE( force, format, ... ) {if(force) {printf( format, ## __VA_ARGS__  );}}
+*/
 // ----------------------------------------------------------------------------

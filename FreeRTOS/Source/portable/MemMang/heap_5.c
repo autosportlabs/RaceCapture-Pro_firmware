@@ -39,6 +39,7 @@
  * management pages of http://www.FreeRTOS.org for more information.
  */
 #include <stdlib.h>
+#include <string.h>
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -241,5 +242,24 @@ xBlockLink *pxLink;
 		xTaskResumeAll();
 	}
 }
+
+void * pvPortRealloc( void *pv, size_t xWantedSize){
+	
+	if (! pv){
+		return pvPortMalloc(xWantedSize);
+	}else{
+		unsigned portCHAR *puc = ( unsigned portCHAR * ) pv;
+		xBlockLink *pxLink;
+		puc -= heapSTRUCT_SIZE;
+		
+		pxLink = (void *)puc;
+		void *newPv = pvPortMalloc(xWantedSize);
+		size_t origSize = pxLink->xBlockSize;
+		memcpy(newPv, pv, xWantedSize < origSize ? xWantedSize : origSize);
+		vPortFree(pv);
+		return newPv;
+	}
+}
+
 /*-----------------------------------------------------------*/
 

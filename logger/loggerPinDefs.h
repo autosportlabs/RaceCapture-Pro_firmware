@@ -15,6 +15,18 @@
 #define MAX_DUTY_CYCLE              1000
 #define MIN_DUTY_CYCLE          	1
 
+#define ADC_CHANNEL_MIN				0
+#define ADC_CHANNEL_MAX				7
+
+#define TIMER_CHANNEL_MIN			0
+#define TIMER_CHANNEL_MAX			2
+
+#define GPIO_CHANNEL_MIN			0
+#define GPIO_CHANNEL_MAX			2
+
+#define PWM_CHANNEL_MIN				0
+#define PWM_CHANNEL_MAX				3
+
 //define PIOs for GPIO ports
 #define GPIO_1 (1<<8)
 #define GPIO_2 (1<<16)

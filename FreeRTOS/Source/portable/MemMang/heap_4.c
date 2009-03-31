@@ -42,7 +42,7 @@
  * management pages of http://www.FreeRTOS.org for more information.
  */
 
-#include "m_malloc.h"
+#include "umm_malloc.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -54,7 +54,7 @@ void *pvReturn;
 
 	vTaskSuspendAll();
 	{
-		pvReturn = mm_malloc( xWantedSize );
+		pvReturn = umm_malloc( xWantedSize );
 	}
 	xTaskResumeAll();
 
@@ -68,7 +68,7 @@ void vPortFree( void *pv )
 	{
 		vTaskSuspendAll();
 		{
-			mm_free( pv );
+			umm_free( pv );
 		}
 		xTaskResumeAll();
 	}

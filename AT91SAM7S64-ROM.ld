@@ -118,12 +118,27 @@ SECTIONS
   _MM_NUMBLOCKS = (ORIGIN(STACK) - __bss_end__ - 0x0400) / 8 ;
   /* calculate byte size for heap_2.c memory manager */
   _CONFIG_HEAP_SIZE = (ORIGIN(STACK) - __bss_end__ - 0x0400);
+
+
+__stack_start__ = . ;
+*(.stack)
+. = ALIGN(4);
+__stack_end__ = . ;
+} >DATA
+
+
+
+__heap_start__ = __bss_end__ ;
+__heap_end__ = (ORIGIN(STACK) - 0x400);
+
+
   
     . = ALIGN(4);
    .int_data :  
    { 
    *(.internal_ram_top) 
    }> STACK 
+
 
 
 

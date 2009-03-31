@@ -65,8 +65,7 @@
 //   </h>
 // </h>
 */
-        .equ    Top_Stack,      0x00204000  /* AT91SAM7S64  */
-/*        .equ    Top_Stack,      0x00210000  /* AT91SAM7S256 */
+        .equ    Top_Stack,      0x00210000  /* AT91SAM7S256 */
         .equ    UND_Stack_Size, 0x00000004
         .equ    SVC_Stack_Size, 0x00000100
         .equ    ABT_Stack_Size, 0x00000004
