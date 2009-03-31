@@ -513,6 +513,18 @@ void getAllTimerPeriods(unsigned int *t0, unsigned int *t1, unsigned int *t2){
 	*t2 = getTimer2Period();	
 }
 
+inline unsigned int getTimerPeriod(unsigned int channel){
+	switch (channel){
+		case 0:
+			return getTimer0Period();
+		case 1:
+			return getTimer1Period();
+		case 2:
+			return getTimer2Period();
+	}
+	return 0;
+}
+
 inline unsigned int getTimer0Period(){
 	return g_timer0_overflow ? MAX_TIMER_VALUE : AT91C_BASE_TC0->TC_RB;
 }

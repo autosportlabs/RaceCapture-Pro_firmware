@@ -11,7 +11,7 @@
 #include "modp_atonum.h"
 #include "gps.h"
 #include "usart.h"
-
+#include "luaTask.h"
 
 //* Global variable
 extern struct LoggerConfig g_savedLoggerConfig;
@@ -24,6 +24,12 @@ unsigned short period = MAX_DUTY_CYCLE;
 extern unsigned int _CONFIG_HEAP_SIZE;
 extern unsigned portCHAR  _heap_address[];
 
+extern unsigned portCHAR umm_heap[];
+extern unsigned int _UMM_NUMBLOCKS;
+
+extern unsigned int __heap_start__;
+extern unsigned int __heap_end__;
+
 void onUSBCommTask(void *pvParameters){
 	
 	portCHAR theData;
@@ -35,12 +41,31 @@ void onUSBCommTask(void *pvParameters){
     	vUSBReceiveByte(&theData);
 
 		if (theData == 'm'){
+			
+			SendString("heap start: ");
+			SendUint((unsigned int)(&__heap_start__));
+			SendString("; heap end: ");
+			SendUint((unsigned int)(&__heap_end__));
+			SendCrlf();
+			
 			SendString("heap size: ");
 			SendUint((unsigned int)(&_CONFIG_HEAP_SIZE));
 			SendString("; heap address: ");
 			SendUint((unsigned int) _heap_address);
 			SendCrlf();
+
+			SendString("mm heap ");
+			SendUint((unsigned int)(&_UMM_NUMBLOCKS));
+			SendString(" ");
+			SendUint((unsigned int) umm_heap);			
+			SendCrlf();
+			
 		}
+		if (theData == 'l'){
+			SendString("lua status: ");
+			testLua();
+		}
+		
 		if (theData == 'w'){
 			SendString("flashing...");
 			unsigned int result = flashLoggerConfig();
@@ -331,7 +356,7 @@ void SendUint(unsigned int n){
 	SendString(buf);	
 }
 
-void SendString(char *s){
+void SendString(const char *s){
 	while ( *s ) vUSBSendByte(*s++ );
 }
 
@@ -347,3 +372,4 @@ void SendBytes(char *data, unsigned int length){
 void SendCrlf(){
 	SendString("\r\n");
 }
+

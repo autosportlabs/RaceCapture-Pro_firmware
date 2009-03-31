@@ -23,7 +23,7 @@
 #include "gps.h"
 #include "loggerConfig.h"
 #include "luaTask.h"
-
+#include "accelerometer.h"
 
 /*-----------------*/
 /* Clock Selection */
@@ -41,7 +41,7 @@
 #define mainDEFAULT_TASK_PRIORITY 			( tskIDLE_PRIORITY + 1 )
 
 #define mainUSB_TASK_STACK					( 100 )
-#define mainUSB_COMM_STACK					( 600 )
+#define mainUSB_COMM_STACK					( 2000 )
 
 #define mainNO_ERROR_FLASH_PERIOD			( ( portTickType ) 1000 / portTICK_RATE_MS  )
 #define mainBUSY_FLASH_PERIOD				( ( portTickType ) 500 / portTICK_RATE_MS )
@@ -50,6 +50,9 @@
 
 #define FATAL_ERROR_SCHEDULER	1
 #define FATAL_ERROR_HARDWARE	2
+
+void fatalError(int type);
+
 
 static int setupHardware( void )
 {
@@ -69,23 +72,21 @@ static int setupHardware( void )
    /* Enable reset-button */
    AT91F_RSTSetMode( AT91C_BASE_RSTC , AT91C_RSTC_URSTEN );
 
+	
 	if (!initSerial()) return 0;
 	if (!vInitUSBInterface()) return 0;	
 	  
-	struct LoggerConfig *loggerConfig = getWorkingLoggerConfig(); 
+	struct LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 	InitADC();
 	InitPWM(loggerConfig);
 	initTimerChannels(loggerConfig);
 	InitLEDs();
 	InitGPIO();
+	accel_init();
+	accel_setup();
 	return 1;
  }
 
-/*-----------------------------------------------------------*/
-
-/*
- * Starts all the other tasks, then starts the scheduler. 
- */
 
 void fatalError(int type){
 	
@@ -120,6 +121,8 @@ void fatalError(int type){
 
 int main( void )
 {
+	
+
 	//setup hardware
 	updateActiveLoggerConfig();
 	int success = setupHardware();
@@ -130,7 +133,7 @@ int main( void )
 	createLoggerTask();
 	createGPIOTasks();
 	startGPSTask();
-	//startLuaTask();
+	startLuaTask();
 
    /* Start the scheduler.
 

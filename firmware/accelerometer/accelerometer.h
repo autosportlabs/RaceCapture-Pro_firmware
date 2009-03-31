@@ -3,6 +3,9 @@
 
 #include "board.h"
 
+#define ACCELEROMETER_CHANNEL_MIN 0
+#define ACCELEROMETER_CHANNEL_MAX 3
+
 void accel_init();
 void accel_initSPI();
 void accel_spiSetSpeed(unsigned char speed);
