@@ -7,12 +7,10 @@
 
 void startLuaTask();
 
-int doIt(lua_State *L);
-
 void luaTask(void *params);
 
 void *myAlloc (void *ud, void *ptr, size_t osize,size_t nsize);
 
-int getLuaStatus();
+lua_State * getLua();
 
 #endif /*LUATASK_H_*/

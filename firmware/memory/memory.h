@@ -1,12 +1,19 @@
 #ifndef MEMORY_H_
 #define MEMORY_H_
+#include "AT91SAM7S256.h"
+#include "Board.h"
+
+#define MEMORY_START_ADDRESS   AT91C_IFLASH
+#define MEMORY_SIZE            AT91C_IFLASH_SIZE
+#define MEMORY_PAGE_SIZE       AT91C_IFLASH_PAGE_SIZE
+#define MEMORY_PAGE_SIZE_32    (MEMORY_PAGE_SIZE / 4)
 
  
 #define RAMFUNC __attribute__ ((long_call, section (".fastrun")))
 
-unsigned int flashWriteRegion(void *vAddress, void *vData, unsigned int length);
+int flashWriteRegion(void *vAddress, void *vData, unsigned int length);
 	
-unsigned int RAMFUNC flash_write(void * vAddress, void * vData);
+int RAMFUNC flash_write(void * vAddress, void * vData);
 
 
 

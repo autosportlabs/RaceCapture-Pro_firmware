@@ -33,4 +33,9 @@ int Lua_StopLogging(lua_State *L);
 
 int Lua_SetLED(lua_State *L);
 
+int Lua_WriteScriptPage(lua_State *L);
+
+int Lua_Print(lua_State *L);
+int Lua_Println(lua_State *L);
+
 #endif /*LUALOGGERBINDING_H_*/

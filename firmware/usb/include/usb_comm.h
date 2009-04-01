@@ -3,6 +3,8 @@
 
 #include "FreeRTOS.h"
 
+char * readLine();
+
 void onUSBCommTask(void *);
 
 void SendBytes(char *data, unsigned int length);

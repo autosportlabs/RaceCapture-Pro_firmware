@@ -37,6 +37,7 @@
 #ifndef PORTABLE_H
 #define PORTABLE_H
 
+
 /* Include the macro file relevant to the port being used. */
 
 #ifdef OPEN_WATCOM_INDUSTRIAL_PC_PORT
@@ -157,6 +158,12 @@
 	#include "..\portable\BCC\16BitDOS\flsh186\prtmacro.h"
     typedef void ( __interrupt __far *pxISR )();
 #endif
+
+/*
+ * Map to the memory management routines required for the port.
+ */
+#include "heap.h"
+
 /*
  * Setup the stack of a new task so it is ready to be placed under the
  * scheduler control.  The registers have to be placed on the stack in
@@ -164,11 +171,8 @@
  */
 portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters );
 
-/*
- * Map to the memory management routines required for the port.
- */
-void *pvPortMalloc( size_t xSize );
-void vPortFree( void *pv );
+
+
 void vPortInitialiseBlocks( void );
 
 /*
