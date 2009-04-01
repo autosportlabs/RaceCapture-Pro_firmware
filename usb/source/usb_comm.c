@@ -3,43 +3,100 @@
 #include "string.h"
 #include "USB-CDC.h"
 #include "Board.h"
-#include "loggerHardware.h"
-#include "accelerometer.h"
-#include "memory.h"
-#include "loggerConfig.h"
 #include "modp_numtoa.h"
 #include "modp_atonum.h"
-#include "gps.h"
-#include "usart.h"
 #include "luaTask.h"
+#include "lua.h"
+#include "memory.h"
 
-//* Global variable
-extern struct LoggerConfig g_savedLoggerConfig;
-extern struct LoggerConfig g_workingLoggerConfig;
-
-unsigned short duty = MIN_DUTY_CYCLE;
-unsigned short period = MAX_DUTY_CYCLE;
-
+#define BUFFER_SIZE MEMORY_PAGE_SIZE + 50
 
 extern unsigned int _CONFIG_HEAP_SIZE;
 extern unsigned portCHAR  _heap_address[];
 
-extern unsigned portCHAR umm_heap[];
-extern unsigned int _UMM_NUMBLOCKS;
 
 extern unsigned int __heap_start__;
 extern unsigned int __heap_end__;
 
+char lineBuffer[BUFFER_SIZE];
+
+char * readLine(){
+	int bufIndex = 0;
+    char c;
+	while(bufIndex < BUFFER_SIZE){
+    	vUSBReceiveByte(&c);
+    	if (c == '\r') break;
+    	SendBytes(&c,1);
+		lineBuffer[bufIndex++] = c;
+	}
+	SendCrlf();
+	lineBuffer[bufIndex]='\0';
+	return lineBuffer;
+}
+
 void onUSBCommTask(void *pvParameters){
 	
-	portCHAR theData;
 	while (!vUSBIsInitialized()){
 		vTaskDelay(1);
 	}
 	
     while (1){
-    	vUSBReceiveByte(&theData);
+    	char * line = readLine();
+    	lua_State *L = getLua();
+    	
+    	int result = luaL_dostring(L,line);
+		if (0 != result){
+			SendString("result=\"unrecognizedCommand\";");
+			SendCrlf();	
+		}else{
+			SendString("result=\"ok\";");
+			SendCrlf();	
+		}
+    }    	
+}
 
+void SendInt(int n){
+	char buf[12];
+	modp_itoa10(n,buf);
+	SendString(buf);
+}
+
+void SendFloat(float f,int precision){
+	char buf[20];
+	modp_ftoa(f,buf,precision);
+	SendString(buf);	
+}
+
+void SendDouble(double f, int precision){
+	char buf[30];
+	modp_dtoa(f,buf,precision);
+	SendString(buf);
+}
+
+void SendUint(unsigned int n){
+	char buf[20];
+	modp_uitoa10(n,buf);
+	SendString(buf);	
+}
+
+void SendString(const char *s){
+	while ( *s ) vUSBSendByte(*s++ );
+}
+
+void SendBytes(char *data, unsigned int length){
+	while (length > 0){
+    	vUSBSendByte(*data);
+    	data++;
+    	length--;
+	}	
+}
+
+
+void SendCrlf(){
+	SendString("\r\n");
+}
+
+/*
 		if (theData == 'm'){
 			
 			SendString("heap start: ");
@@ -54,12 +111,6 @@ void onUSBCommTask(void *pvParameters){
 			SendUint((unsigned int) _heap_address);
 			SendCrlf();
 
-			SendString("mm heap ");
-			SendUint((unsigned int)(&_UMM_NUMBLOCKS));
-			SendString(" ");
-			SendUint((unsigned int) umm_heap);			
-			SendCrlf();
-			
 		}
 		if (theData == 'l'){
 			SendString("lua status: ");
@@ -68,7 +119,7 @@ void onUSBCommTask(void *pvParameters){
 		
 		if (theData == 'w'){
 			SendString("flashing...");
-			unsigned int result = flashLoggerConfig();
+			int result = flashLoggerConfig();
 			SendString("done: ");
 			SendInt(result);
 			SendCrlf();
@@ -330,46 +381,5 @@ void onUSBCommTask(void *pvParameters){
 			SendCrlf();
 		}
     }
-}
 
-void SendInt(int n){
-	char buf[12];
-	modp_itoa10(n,buf);
-	SendString(buf);
-}
-
-void SendFloat(float f,int precision){
-	char buf[20];
-	modp_ftoa(f,buf,precision);
-	SendString(buf);	
-}
-
-void SendDouble(double f, int precision){
-	char buf[30];
-	modp_dtoa(f,buf,precision);
-	SendString(buf);
-}
-
-void SendUint(unsigned int n){
-	char buf[20];
-	modp_uitoa10(n,buf);
-	SendString(buf);	
-}
-
-void SendString(const char *s){
-	while ( *s ) vUSBSendByte(*s++ );
-}
-
-void SendBytes(char *data, unsigned int length){
-	while (length > 0){
-    	vUSBSendByte(*data);
-    	data++;
-    	length--;
-	}	
-}
-
-
-void SendCrlf(){
-	SendString("\r\n");
-}
-
+*/

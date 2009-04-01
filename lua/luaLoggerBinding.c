@@ -10,6 +10,7 @@
 #include "gps.h"
 #include "accelerometer.h"
 #include "usb_comm.h"
+#include "luaScript.h"
 
 extern xSemaphoreHandle g_xLoggerStart;
 extern int g_loggingShouldRun;
@@ -43,7 +44,11 @@ void RegisterLuaRaceCaptureFunctions(lua_State *L){
 	lua_register(L,"stopLogging",Lua_StopLogging);	
 
 	lua_register(L,"setLED",Lua_SetLED);
-
+	
+	lua_register(L,"writeScriptPage",Lua_WriteScriptPage);
+	
+	lua_register(L,"print",Lua_Print);
+	lua_register(L,"println", Lua_Println);
 }
 
 int Lua_GetAnalog(lua_State *L){
@@ -152,9 +157,6 @@ int Lua_GetAccelerometerRaw(lua_State *L){
 		}
 	}
 	lua_pushnumber(L,accelValue);
-	SendString("accel raw");
-	SendInt(accelValue);
-	SendCrlf();
 	return 1;
 }
 
@@ -197,7 +199,7 @@ int Lua_SetAnalogOut(lua_State *L){
 
 
 int Lua_StartLogging(lua_State *L){
-	xSemaphoreGive(g_xLoggerStart);
+	if (! g_loggingShouldRun) xSemaphoreGive(g_xLoggerStart);
 	return 0;
 }
 
@@ -225,6 +227,30 @@ int Lua_SetLED(lua_State *L){
 		else{
 			DisableLED(mask);	
 		}
+	}
+	return 0;
+}
+
+int Lua_WriteScriptPage(lua_State *L){
+	if (lua_gettop(L) >= 2){
+		unsigned int page = lua_tonumber(L,1);
+		const char * data = lua_tostring(L,2);	
+		flashScriptPage(page,data);
+	}	
+	return 0;
+}
+
+int Lua_Println(lua_State *L){
+	if (lua_gettop(L) >= 1){
+		SendString(lua_tostring(L,1));	
+		SendCrlf();
+	}
+	return 0;
+}
+
+int Lua_Print(lua_State *L){
+	if (lua_gettop(L) >= 1){
+		SendString(lua_tostring(L,1));	
 	}
 	return 0;
 }

@@ -13,9 +13,6 @@
 #include "accelerometer.h"
 
 
-
-
-
 #define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 3 )
 #define LOGGER_STACK_SIZE  					200
 
@@ -332,8 +329,6 @@ void writeAccelerometer(portTickType currentTicks, struct LoggerConfig *config){
 
 void writeADC(portTickType currentTicks, struct LoggerConfig *config){
 	
-	int precision;
-
 	unsigned int adc[CONFIG_ADC_CHANNELS];
 	ReadAllADC(&adc[0],&adc[1],&adc[2],&adc[3],&adc[4],&adc[5],&adc[6],&adc[7]);	
 	

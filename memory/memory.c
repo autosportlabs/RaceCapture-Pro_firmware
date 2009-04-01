@@ -1,11 +1,5 @@
 #include "memory.h"
-#include "AT91SAM7S256.h"
-#include "Board.h"
 
-#define MEMORY_START_ADDRESS   AT91C_IFLASH
-#define MEMORY_SIZE            AT91C_IFLASH_SIZE
-#define MEMORY_PAGE_SIZE       AT91C_IFLASH_PAGE_SIZE
-#define MEMORY_PAGE_SIZE_32    (MEMORY_PAGE_SIZE / 4)
 
 /**
  * Name:      flash_write
@@ -16,19 +10,19 @@
  * Output: OK if write is successful, ERROR otherwise
  */
  
-unsigned int flashWriteRegion(void *vAddress, void *vData, unsigned int length){
+int flashWriteRegion(void *vAddress, void *vData, unsigned int length){
 
 	unsigned int pages = length / AT91C_IFLASH_PAGE_SIZE;
 	for (unsigned int i = 0; i < pages; i++){
 		unsigned int offset = (i * AT91C_IFLASH_PAGE_SIZE);
-		if (! flash_write((void *)((unsigned int)vAddress + offset),(void *)((unsigned int)vData + offset))){
-			return 0;	
+		if (flash_write((void *)((unsigned int)vAddress + offset),(void *)((unsigned int)vData + offset)) != 0 ){
+			return -1;	
 		}
 	}
-	return 1;
+	return 0;
 }
 
-unsigned int RAMFUNC flash_write(void * vAddress, void * vData){
+int RAMFUNC flash_write(void * vAddress, void * vData){
 
   // Local variables
   unsigned int page;
@@ -62,10 +56,10 @@ unsigned int RAMFUNC flash_write(void * vAddress, void * vData){
   } while (!(status & AT91C_MC_FRDY));
   AT91C_BASE_AIC->AIC_IECR = mask;
 
-  if (status & (AT91C_MC_LOCKE | AT91C_MC_PROGE)) {
-    return 0;
+  if ((status & (AT91C_MC_LOCKE | AT91C_MC_PROGE)) != 0) {
+    return -1;
   }
   else {
-    return 1;
+    return 0;
   }
 }
