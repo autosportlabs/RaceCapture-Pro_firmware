@@ -90,53 +90,64 @@ void fileWriteDouble(EmbeddedFile *f, double num, int precision){
 }
 
 
-#define HIGHER_SAMPLE(X,Y) ((X != SAMPLE_DISABLED && X <Y))
+#define HIGHER_SAMPLE(X,Y) ((X != SAMPLE_DISABLED && X < Y))
+
+portTickType getHighestIdleSampleRate(struct LoggerConfig *config){
+
+	//start with the slowest sample rate
+	int s = SAMPLE_1Hz;
+	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
+		int sr = config->AccelConfig[i].idleSampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
+	}
+	return (portTickType)s;
+}
 
 portTickType getHighestSampleRate(struct LoggerConfig *config){
 
 	//start with the slowest sample rate
-	char s = (char)SAMPLE_1Hz;
-
+	int s = SAMPLE_1Hz;
 	//find the fastest sample rate
 	for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
-		char sr = config->ADCConfigs[i].sampleRate; 
+		int sr = config->ADCConfigs[i].sampleRate; 
 		if HIGHER_SAMPLE(sr, s) s = sr; 	
 	}
 	for (int i = 0; i < CONFIG_PWM_CHANNELS; i++){
-		char sr = config->PWMConfig[i].sampleRate;
+		int sr = config->PWMConfig[i].sampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr;	
 	}
 	for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
-		char sr = config->GPIOConfigs[i].sampleRate;
+		int sr = config->GPIOConfigs[i].sampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr;	
 	}
 	for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++){
-		char sr = config->TimerConfigs[i].sampleRate;
+		int sr = config->TimerConfigs[i].sampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr;	
 	}
 	if (config->AccelInstalled){
 		for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
-			char sr = config->AccelConfig[i].sampleRate;
+			int sr = config->AccelConfig[i].sampleRate;
 			if HIGHER_SAMPLE(sr, s) s = sr;	
 		}
 	}
 	if (config->GPSInstalled){
 		struct GPSConfig *gpsConfig = &(config->GPSConfig);
 		{
-			char sr = gpsConfig->positionSampleRate; 	
+			int sr = gpsConfig->positionSampleRate; 	
 			if HIGHER_SAMPLE(sr, s) s = sr;
 		}
 		{
-			char sr = gpsConfig->timeSampleRate;
+			int sr = gpsConfig->timeSampleRate;
 			if HIGHER_SAMPLE(sr, s) s = sr;
 		}
 		{
-			char sr = gpsConfig->velocitySampleRate;
+			int sr = gpsConfig->velocitySampleRate;
 			if HIGHER_SAMPLE(sr, s) s = sr;	
 		}
 	}
 	return (portTickType)s;
 }
+
 
 void loggerTask(void *params){
 	
@@ -146,16 +157,44 @@ void loggerTask(void *params){
 	
 	EmbeddedFile f;
 	
+	if ( loggerConfig->AccelInstalled == CONFIG_FEATURE_INSTALLED ) accel_setup();
+
+	portTickType idleTicks = 0;
+	
+	portTickType idleDelay = portMAX_DELAY;
+
+	if (loggerConfig->AccelInstalled){
+		idleDelay = getHighestIdleSampleRate(loggerConfig);			
+	}
+	SendString("idleDelay ");
+	SendUint(idleDelay);
+	SendCrlf();
 	while(1){
 		//wait for signal to start logging
-		if ( xSemaphoreTake(g_xLoggerStart, portMAX_DELAY) == pdTRUE){
+		if ( xSemaphoreTake(g_xLoggerStart, idleDelay) != pdTRUE){
+			//perform idle tasks
 
+			idleTicks+=idleDelay;
+			for (unsigned int i=0; i < CONFIG_ACCEL_CHANNELS;i++){
+				struct AccelConfig *ac = &(loggerConfig->AccelConfig[i]);
+				portTickType sr = ac->idleSampleRate;
+				if (sr != SAMPLE_DISABLED && (idleTicks % sr) == 0){
+					SendString("idle...");
+					SendUint(idleDelay);
+					SendString(" ");
+					SendUint(idleTicks);
+					SendString(" ");
+					SendUint(sizeof(unsigned long));
+					SendCrlf();
+					readAccelAxis(ac->accelChannel);
+				}
+			}
+		}
+		else{
+			
+			//perform logging tasks
 			int gpsInstalled = (int)loggerConfig->GPSInstalled;
 			int accelInstalled = (int)loggerConfig->AccelInstalled;
-			if ( accelInstalled == CONFIG_FEATURE_INSTALLED){
-				accel_init();
-				accel_setup();
-			}
 						
 			int rc = InitEFS();
 			if ( rc == 0 ){
@@ -164,11 +203,11 @@ void loggerTask(void *params){
 				}
 			}
 			
-			portTickType xLastWakeTime, startTickTime;
+			portTickType xLastWakeTime;
 			
 			const portTickType xFrequency = getHighestSampleRate(loggerConfig);
 			
-			startTickTime = xLastWakeTime = xTaskGetTickCount();
+			xLastWakeTime = xTaskGetTickCount();
 
 			writeHeaders(&f,loggerConfig);
 			
@@ -206,6 +245,12 @@ void loggerTask(void *params){
 			file_fclose(&f);
 			UnmountEFS();
 			DisableLED(LED2);
+			
+			idleTicks = 0;
+			idleDelay = portMAX_DELAY;
+			if (loggerConfig->AccelInstalled){
+				idleDelay = getHighestIdleSampleRate(loggerConfig);			
+			}
 		}
 	}
 }
@@ -298,13 +343,6 @@ void writeGPSChannelHeaders(EmbeddedFile *f, struct GPSConfig *config){
 }
 
 
-
-
-
-
-
-
-
 void writeAccelerometer(portTickType currentTicks, struct LoggerConfig *config){
 
 	unsigned int accelValues[CONFIG_ACCEL_CHANNELS];
@@ -313,7 +351,7 @@ void writeAccelerometer(portTickType currentTicks, struct LoggerConfig *config){
 		struct AccelConfig *ac = &(config->AccelConfig[i]);
 		portTickType sr = ac->sampleRate;
 		if (sr != SAMPLE_DISABLED && (currentTicks % sr) == 0){
-			accelValues[i] = accel_readAxis(ac->accelChannel);
+			accelValues[i] = readAccelAxis(ac->accelChannel);
 		}
 	}
 	
@@ -321,7 +359,7 @@ void writeAccelerometer(portTickType currentTicks, struct LoggerConfig *config){
 		struct AccelConfig *ac = &(config->AccelConfig[i]);
 		portTickType sr = ac->sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) lineAppendFloat(accel_rawToG(accelValues[i],ac->zeroValue),DEFAULT_ACCEL_LOGGING_PRECISION);
+			if ((currentTicks % sr) == 0) lineAppendFloat(convertAccelRawToG(accelValues[i],ac->zeroValue),DEFAULT_ACCEL_LOGGING_PRECISION);
 			lineAppendString(",");
 		}
 	}

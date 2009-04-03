@@ -1,6 +1,7 @@
 #include "accelerometer.h"
 #include "usb_comm.h"
-
+#include "loggerConfig.h"
+#include <string.h>
 
 #define SPI_CSR_NUM      1          
 
@@ -39,7 +40,9 @@
 #define MCK 48054840
 
 #define SPI_TRANSFER (AT91C_PA12_MISO | AT91C_PA13_MOSI | AT91C_PA14_SPCK)
- 
+
+unsigned int g_lastAccelValues[CONFIG_ACCEL_CHANNELS];
+
 void accel_initSPI(){
 	
 	// enable peripheral clock for SPI ( PID Bit 5 )
@@ -63,9 +66,9 @@ void accel_initSPI(){
 //	*AT91C_SPI_MR = (AT91C_SPI_MSTR | AT91C_SPI_PS_FIXED
 //                   | AT91C_SPI_MODFDIS | AT91C_SPI_PCS);
  
-     /* It seems necessary to set the clock speed for chip select 0
-        even if it's not used. */
-	     AT91C_SPI_CSR[0] = (MCK/CS0_SPI_SPEED)<<8;
+	/* It seems necessary to set the clock speed for chip select 0
+    even if it's not used. */
+	AT91C_SPI_CSR[0] = (MCK/CS0_SPI_SPEED)<<8;
 
 	AT91C_SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8 | AT91C_SPI_CSAAT;
 
@@ -103,11 +106,10 @@ void accel_init(){
 }
 
 void accel_setup(){
-	//selectChip(SPI_CSR_NUM);
+	memset(g_lastAccelValues,0,sizeof(g_lastAccelValues));
 	accel_spiSend(0x04, 0);
 	accel_spiSend(0x04, 1);
 	for (unsigned int d = 0; d < 1000000;d++){} //200 ns???? recalcualate this...
-	
 }
 
 unsigned char accel_readControlRegister(){
@@ -116,26 +118,24 @@ unsigned char accel_readControlRegister(){
 	return ctrl;	
 }
 
-float accel_rawToG(int accelRaw, unsigned int zeroValue){
+float convertAccelRawToG(int accelRaw, unsigned int zeroValue){
 	
 	accelRaw = accelRaw - zeroValue;
-	
 	float gforce = (float)accelRaw / ACCEL_COUNTS_PER_G;
-	return gforce;		
+	return gforce;	
 }
 
-float accel_readAxisG(unsigned char axis, unsigned int zeroValue){
-
-	unsigned int accelRaw = accel_readAxis(axis);
-	return accel_rawToG(accelRaw,zeroValue);
-}
-
-unsigned int accel_readAxis(unsigned char axis){
+unsigned int readAccelAxis(unsigned char axis){
 	accel_spiSend(axis, 0);
 	for (unsigned int d = 0; d < 200;d++){} //200 ns???? recalcualate this...
 	unsigned char dataMSB = accel_spiSend(0x00, 0);
 	unsigned char dataLSB = accel_spiSend(0x00, 1);
 	for (unsigned int d = 0; d < 1000;d++){} //40 us???? recalcualate this...
-	
-	return (dataMSB << 4) + ((dataLSB >> 4) & 0x0f);
+	unsigned int value = (dataMSB << 4) + ((dataLSB >> 4) & 0x0f);
+	g_lastAccelValues[axis] = value;
+	return value;
+}
+
+unsigned int getLastAccelRead(unsigned char axis){
+	return g_lastAccelValues[axis];	
 }

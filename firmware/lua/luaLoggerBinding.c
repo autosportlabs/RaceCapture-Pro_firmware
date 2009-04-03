@@ -11,6 +11,9 @@
 #include "accelerometer.h"
 #include "usb_comm.h"
 #include "luaScript.h"
+#include "luaTask.h"
+#include "memory.h"
+#include <string.h>
 
 extern xSemaphoreHandle g_xLoggerStart;
 extern int g_loggingShouldRun;
@@ -45,10 +48,17 @@ void RegisterLuaRaceCaptureFunctions(lua_State *L){
 
 	lua_register(L,"setLED",Lua_SetLED);
 	
-	lua_register(L,"writeScriptPage",Lua_WriteScriptPage);
+	lua_register(L,"updateScriptPage",Lua_UpdateScriptPage);
+	lua_register(L,"getScriptPage",Lua_GetScriptPage);
+	lua_register(L,"printScriptPage",Lua_PrintScriptPage);
+	lua_register(L,"reloadScript",Lua_ReloadScript);
 	
 	lua_register(L,"print",Lua_Print);
 	lua_register(L,"println", Lua_Println);
+	
+	lua_register(L,"flashLoggerConfig", Lua_FlashLoggerConfig);
+	
+
 }
 
 int Lua_GetAnalog(lua_State *L){
@@ -153,7 +163,7 @@ int Lua_GetAccelerometerRaw(lua_State *L){
 		//make 1-based
 		unsigned int channel = (unsigned int)lua_tonumber(L,1) - 1;
 		if (channel >= ACCELEROMETER_CHANNEL_MIN && channel <= ACCELEROMETER_CHANNEL_MAX){
-			accelValue = accel_readAxis(channel);
+			accelValue = getLastAccelRead(channel);
 		}
 	}
 	lua_pushnumber(L,accelValue);
@@ -231,13 +241,74 @@ int Lua_SetLED(lua_State *L){
 	return 0;
 }
 
-int Lua_WriteScriptPage(lua_State *L){
+int Lua_UpdateScriptPage(lua_State *L){
+	int result = -1;
 	if (lua_gettop(L) >= 2){
 		unsigned int page = lua_tonumber(L,1);
 		const char * data = lua_tostring(L,2);	
-		flashScriptPage(page,data);
+		result = flashScriptPage(page,data);
 	}	
-	return 0;
+	lua_pushnumber(L,result);
+	return 1;
+}
+
+int Lua_PrintScriptPage(lua_State *L){
+	if (lua_gettop(L) >= 1){
+		unsigned int page = lua_tonumber(L,1);
+		char *tmp = pvPortMalloc(MEMORY_PAGE_SIZE + 1);
+		if (tmp){
+			const char * script = getScript();
+			script += (MEMORY_PAGE_SIZE * page);
+			memset(tmp,0,MEMORY_PAGE_SIZE + 1);
+			strncpy(tmp, script, MEMORY_PAGE_SIZE);
+			SendString(tmp);
+			vPortFree(tmp);	
+		}
+		else{
+			SendInt(-1);
+		}
+		SendCrlf();
+	}
+	return 0;	
+}
+
+
+int Lua_GetScriptPage(lua_State *L){
+	if (lua_gettop(L) >= 1){
+		unsigned int page = lua_tonumber(L,1);
+		char *tmp = pvPortMalloc(MEMORY_PAGE_SIZE + 1);
+		if (tmp){
+			memset(tmp,0,MEMORY_PAGE_SIZE + 1);
+			const char * script = getScript();
+			script += (MEMORY_PAGE_SIZE * page);
+			strncpy(tmp, script, MEMORY_PAGE_SIZE);
+			lua_pushstring(L,tmp);
+			vPortFree(tmp);
+		}
+		else{
+			//error
+			lua_pushnumber(L,-1);	
+		}
+	}
+	return 1;	
+}
+
+int Lua_ReloadScript(lua_State *L){
+	portENTER_CRITICAL();
+	int result = luaL_dostring(L,getScript());
+	if (result !=0){
+		const char *err = lua_tostring(L,-1);
+		char *tmp = pvPortMalloc(strlen(err) + 1);
+		strcpy(tmp,err);
+		lua_pop(L,1);
+		lua_pushstring(L,tmp);
+		vPortFree(tmp);
+	}
+	else{
+		lua_pushstring(L,"ok");
+	}
+	portEXIT_CRITICAL();
+	return 1;
 }
 
 int Lua_Println(lua_State *L){
@@ -253,4 +324,10 @@ int Lua_Print(lua_State *L){
 		SendString(lua_tostring(L,1));	
 	}
 	return 0;
+}
+
+int Lua_FlashLoggerConfig(lua_State *L){
+	int result = flashLoggerConfig();
+	lua_pushnumber(L,result);
+	return 1;	
 }

@@ -78,7 +78,7 @@ void calculateTimerScaling(struct LoggerConfig *loggerConfig, unsigned int timer
 struct ADCConfig{
 	char label[DEFAULT_LABEL_LENGTH];
 	char units[DEFAULT_UNITS_LENGTH];
-	char sampleRate;
+	int sampleRate;
 	float scaling;
 };
 
@@ -105,7 +105,7 @@ struct ADCConfig{
 struct TimerConfig{
 	char label[DEFAULT_LABEL_LENGTH];
 	char units[DEFAULT_UNITS_LENGTH];
-	char sampleRate;
+	int sampleRate;
 	char config;
 	char pulsePerRevolution;
 	char timerDivider;
@@ -124,7 +124,7 @@ struct TimerConfig{
 
 struct GPIOConfig{
 	char label[DEFAULT_LABEL_LENGTH];
-	char sampleRate;
+	int sampleRate;
 	char config;	
 };
 
@@ -140,16 +140,17 @@ struct GPIOConfig{
 			
 struct AccelConfig{
 	char label[DEFAULT_LABEL_LENGTH];
-	char sampleRate;
+	int sampleRate;
+	int idleSampleRate;
 	char config;
 	char accelChannel;
 	unsigned long zeroValue;
 };
 
-#define DEFAULT_ACCEL_X_AXIS_CONFIG {"AccelX", SAMPLE_10Hz, CONFIG_ACCEL_NORMAL, CONFIG_ACCEL_CHANNEL_X,DEFAULT_ACCEL_ZERO}
-#define DEFAULT_ACCEL_Y_AXIS_CONFIG {"AccelY", SAMPLE_10Hz, CONFIG_ACCEL_NORMAL, CONFIG_ACCEL_CHANNEL_Y,DEFAULT_ACCEL_ZERO}
-#define DEFAULT_ACCEL_Z_AXIS_CONFIG {"AccelZ", SAMPLE_10Hz, CONFIG_ACCEL_NORMAL, CONFIG_ACCEL_CHANNEL_Z,DEFAULT_ACCEL_ZERO}
-#define DEFAULT_ACCEL_ZT_AXIS_CONFIG {"Yaw", SAMPLE_DISABLED, CONFIG_ACCEL_NORMAL, CONFIG_ACCEL_CHANNEL_ZT,DEFAULT_ACCEL_ZERO}
+#define DEFAULT_ACCEL_X_AXIS_CONFIG {"AccelX", SAMPLE_10Hz, SAMPLE_DISABLED, CONFIG_ACCEL_NORMAL, CONFIG_ACCEL_CHANNEL_X,DEFAULT_ACCEL_ZERO}
+#define DEFAULT_ACCEL_Y_AXIS_CONFIG {"AccelY", SAMPLE_10Hz, SAMPLE_5Hz, CONFIG_ACCEL_NORMAL, CONFIG_ACCEL_CHANNEL_Y,DEFAULT_ACCEL_ZERO}
+#define DEFAULT_ACCEL_Z_AXIS_CONFIG {"AccelZ", SAMPLE_10Hz, SAMPLE_DISABLED,CONFIG_ACCEL_NORMAL, CONFIG_ACCEL_CHANNEL_Z,DEFAULT_ACCEL_ZERO}
+#define DEFAULT_ACCEL_ZT_AXIS_CONFIG {"Yaw", SAMPLE_DISABLED, SAMPLE_DISABLED, CONFIG_ACCEL_NORMAL, CONFIG_ACCEL_CHANNEL_ZT,DEFAULT_ACCEL_ZERO}
 #define DEFAULT_ACCEL_CONFIGS \
 			{ \
 				DEFAULT_ACCEL_X_AXIS_CONFIG, \
@@ -160,7 +161,7 @@ struct AccelConfig{
 	
 struct PWMConfig{
 	char label[DEFAULT_LABEL_LENGTH];
-	char sampleRate;
+	int sampleRate;
 	char outputConfig;
 	char loggingConfig;
 	unsigned short startupDutyCycle;
@@ -188,9 +189,9 @@ struct GPSConfig{
 	char timeLabel[DEFAULT_LABEL_LENGTH];
 	char velocityLabel[DEFAULT_LABEL_LENGTH];
 	
-	char positionSampleRate;
-	char velocitySampleRate;
-	char timeSampleRate;
+	int positionSampleRate;
+	int velocitySampleRate;
+	int timeSampleRate;
 };
 #define DEFAULT_GPS_CONFIG {"GPS_Qual", "GPS_Sats", "Latitude", "Longitude", "UTCTime", "kph", SAMPLE_5Hz, SAMPLE_5Hz, SAMPLE_5Hz}
 

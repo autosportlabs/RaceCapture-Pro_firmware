@@ -6,7 +6,7 @@
 
 
 
-struct LoggerConfig g_savedLoggerConfig __attribute__ ((aligned (128))) __attribute__((section(".text\n\t#"))) = DEFAULT_LOGGER_CONFIG;
+struct LoggerConfig g_savedLoggerConfig __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".text\n\t#"))) = DEFAULT_LOGGER_CONFIG;
 struct LoggerConfig g_workingLoggerConfig;
 
 void updateActiveLoggerConfig(){

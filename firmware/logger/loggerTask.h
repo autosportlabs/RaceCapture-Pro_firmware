@@ -7,6 +7,10 @@
 void createLoggerTask();
 void loggerTask(void *params);
 
+portTickType getHighestIdleSampleRate(struct LoggerConfig *config);
+portTickType getHighestSampleRate(struct LoggerConfig *config);
+
+
 void lineAppendString(char *s);
 void lineAppendInt(int num);
 void lineAppendFloat(float num, int precision);
