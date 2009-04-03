@@ -503,12 +503,13 @@
 
 //#define LUA_NUMBER_DOUBLE
 #define LUA_NUMBER	int
-
+//#define LUA_NUMBER	double
 /*
 @@ LUAI_UACNUMBER is the result of an 'usual argument conversion'
 @* over a number.
 */
 #define LUAI_UACNUMBER	int
+//#define LUAI_UACNUMBER	double
 
 
 /*
@@ -518,12 +519,21 @@
 @@ LUAI_MAXNUMBER2STR is maximum size of previous conversion.
 @@ lua_str2number converts a string to a number.
 */
+
+
 #define LUA_NUMBER_SCAN		"%d"
 #define LUA_NUMBER_FMT		"%d"
 #define lua_number2str(s,n)	sprintf((s), LUA_NUMBER_FMT, (n))
-#define LUAI_MAXNUMBER2STR	32 /* 16 digits, sign, point, and \0 */
+#define LUAI_MAXNUMBER2STR	32 // 16 digits, sign, point, and \0
 #define lua_str2number(s,p)     strtol((s), (p), 10)
 
+/*
+#define LUA_NUMBER_SCAN		"%lf"
+#define LUA_NUMBER_FMT		"%.14g"
+#define lua_number2str(s,n)	sprintf((s), LUA_NUMBER_FMT, (n))
+#define LUAI_MAXNUMBER2STR	32 // 16 digits, sign, point, and \0 
+#define lua_str2number(s,p)	strtod((s), (p))
+*/
 
 
 /*
@@ -593,7 +603,8 @@ union luai_Cast { double l_d; long l_l; };
 ** aligned in 16-byte boundaries, then you should add long double in the
 ** union.) Probably you do not need to change this.
 */
-#define LUAI_USER_ALIGNMENT_T	union { double u; void *s; long l; }
+//#define LUAI_USER_ALIGNMENT_T	union { double u; void *s; long l; }
+#define LUAI_USER_ALIGNMENT_T	union { int u; void *s; long l; }
 
 
 /*

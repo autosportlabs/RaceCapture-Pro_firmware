@@ -15,7 +15,7 @@ unsigned int getScriptPages();
 		
 #define TEST_SCRIPT \
 		"function onTick()\n" \
-		"if getAccelerometerRaw(1) > 2200 then setLED(2,1) else setLED(2,0) end\n" \
+		"if getAccelerometerRaw(0) > 2200 then setLED(2,1) else setLED(2,0) end\n" \
 		"end\n";
 		
 #define TEST_SCRIPT2 \
