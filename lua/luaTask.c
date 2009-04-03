@@ -67,11 +67,13 @@ void luaTask(void *params){
 		portTickType xLastWakeTime, startTickTime;
 		const portTickType xFrequency = LUA_1Hz;
 		startTickTime = xLastWakeTime = xTaskGetTickCount();
-/*		
+
  		lua_getglobal(g_lua, LUA_PERIODIC_FUNCTION);
     	if (! lua_isnil(g_lua,-1)){
         	if (lua_pcall(g_lua, 0, LUA_MULTRET, 0) != 0){
-        		SendString("Error Calling onTick(): ");
+        		SendString("Error Calling ");
+        		SendString(LUA_PERIODIC_FUNCTION);
+        		SendString(": ");
         		SendString( lua_tostring(g_lua,-1));
         		SendCrlf();
         		lua_pop(g_lua,1);
@@ -80,7 +82,6 @@ void luaTask(void *params){
 	       // //handle missing function error
 	        lua_pop(g_lua,1);
 	    }
-	    */
 		vTaskDelayUntil( &xLastWakeTime, xFrequency );
 	}
 }

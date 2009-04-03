@@ -69,8 +69,7 @@ int Lua_GetAnalog(lua_State *L){
 int Lua_GetAnalogRaw(lua_State *L){
 	int result = -1;
 	if (lua_gettop(L) >= 1){
-		//make 1-basd
-		int channel = (unsigned int)lua_tonumber(L,1) - 1;
+		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		if (channel >= ADC_CHANNEL_MIN && channel <= ADC_CHANNEL_MAX){
 			result = (int)ReadADC(channel);
 		}
@@ -88,8 +87,7 @@ int Lua_GetFrequency(lua_State *L){
 int Lua_GetTimerRaw(lua_State *L){
 	int result = -1;
 	if (lua_gettop(L) >= 1){
-		//make 1-based
-		unsigned int channel = (unsigned int)lua_tonumber(L,1) - 1;
+		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		if (channel >= TIMER_CHANNEL_MIN && channel <= TIMER_CHANNEL_MAX){
 			result = (int)getTimerPeriod(channel);
 		}
@@ -107,7 +105,7 @@ int Lua_GetButton(lua_State *L){
 int Lua_GetInput(lua_State *L){
 	int result = -1;
 	if (lua_gettop(L) >= 1){
-		unsigned int channel = (unsigned int)lua_tonumber(L,1);
+		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		unsigned int gpioBits = GetGPIOBits();
 		switch (channel){
 			case 1:
@@ -126,8 +124,8 @@ int Lua_GetInput(lua_State *L){
 
 int Lua_SetOutput(lua_State *L){
 	if (lua_gettop(L) >=2){
-		unsigned int channel = (unsigned int)lua_tonumber(L,1);
-		unsigned int state = (unsigned int)lua_tonumber(L,2);
+		unsigned int channel = (unsigned int)lua_tointeger(L,1);
+		unsigned int state = (unsigned int)lua_tointeger(L,2);
 		unsigned int gpioBits = 0;
 		switch (channel){
 			case 1:
@@ -160,8 +158,7 @@ int Lua_GetAccelerometer(lua_State *L){
 int Lua_GetAccelerometerRaw(lua_State *L){
 	int accelValue = -1;
 	if (lua_gettop(L) >= 1){
-		//make 1-based
-		unsigned int channel = (unsigned int)lua_tonumber(L,1) - 1;
+		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		if (channel >= ACCELEROMETER_CHANNEL_MIN && channel <= ACCELEROMETER_CHANNEL_MAX){
 			accelValue = getLastAccelRead(channel);
 		}
@@ -180,9 +177,8 @@ int Lua_SetPWMFrequency(lua_State *L){
 
 int Lua_SetPWMDutyCycleRaw(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		//make 1-based
-		unsigned int channel = (unsigned int)lua_tonumber(L,1) - 1;
-		unsigned int dutyCycleRaw = (unsigned int)lua_tonumber(L,2);
+		unsigned int channel = (unsigned int)lua_tointeger(L,1);
+		unsigned int dutyCycleRaw = (unsigned int)lua_tointeger(L,2);
 		if (channel >= PWM_CHANNEL_MIN && channel <= PWM_CHANNEL_MAX){
 			PWM_SetDutyCycle( channel, (unsigned short)dutyCycleRaw);
 		}
@@ -192,9 +188,8 @@ int Lua_SetPWMDutyCycleRaw(lua_State *L){
 
 int Lua_SetPWMPeriodRaw(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		//make 1-based	
-		unsigned int channel = (unsigned int)lua_tonumber(L,1) - 1;
-		unsigned int periodRaw = (unsigned int)lua_tonumber(L,2);
+		unsigned int channel = (unsigned int)lua_tointeger(L,1);
+		unsigned int periodRaw = (unsigned int)lua_tointeger(L,2);
 		if (channel >= PWM_CHANNEL_MIN && channel <= PWM_CHANNEL_MAX){
 			PWM_SetPeriod( channel, (unsigned short)periodRaw);
 		}
@@ -220,8 +215,8 @@ int Lua_StopLogging(lua_State *L){
 
 int Lua_SetLED(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		unsigned int LED = lua_tonumber(L,1);
-		unsigned int state = lua_tonumber(L,2);
+		unsigned int LED = lua_tointeger(L,1);
+		unsigned int state = lua_tointeger(L,2);
 		unsigned int mask = 0;
 		switch (LED){
 			case 1:
@@ -244,7 +239,7 @@ int Lua_SetLED(lua_State *L){
 int Lua_UpdateScriptPage(lua_State *L){
 	int result = -1;
 	if (lua_gettop(L) >= 2){
-		unsigned int page = lua_tonumber(L,1);
+		unsigned int page = lua_tointeger(L,1);
 		const char * data = lua_tostring(L,2);	
 		result = flashScriptPage(page,data);
 	}	
@@ -254,7 +249,7 @@ int Lua_UpdateScriptPage(lua_State *L){
 
 int Lua_PrintScriptPage(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		unsigned int page = lua_tonumber(L,1);
+		unsigned int page = lua_tointeger(L,1);
 		char *tmp = pvPortMalloc(MEMORY_PAGE_SIZE + 1);
 		if (tmp){
 			const char * script = getScript();
@@ -275,7 +270,7 @@ int Lua_PrintScriptPage(lua_State *L){
 
 int Lua_GetScriptPage(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		unsigned int page = lua_tonumber(L,1);
+		unsigned int page = lua_tointeger(L,1);
 		char *tmp = pvPortMalloc(MEMORY_PAGE_SIZE + 1);
 		if (tmp){
 			memset(tmp,0,MEMORY_PAGE_SIZE + 1);

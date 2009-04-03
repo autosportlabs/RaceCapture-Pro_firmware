@@ -166,9 +166,6 @@ void loggerTask(void *params){
 	if (loggerConfig->AccelInstalled){
 		idleDelay = getHighestIdleSampleRate(loggerConfig);			
 	}
-	SendString("idleDelay ");
-	SendUint(idleDelay);
-	SendCrlf();
 	while(1){
 		//wait for signal to start logging
 		if ( xSemaphoreTake(g_xLoggerStart, idleDelay) != pdTRUE){
@@ -179,13 +176,6 @@ void loggerTask(void *params){
 				struct AccelConfig *ac = &(loggerConfig->AccelConfig[i]);
 				portTickType sr = ac->idleSampleRate;
 				if (sr != SAMPLE_DISABLED && (idleTicks % sr) == 0){
-					SendString("idle...");
-					SendUint(idleDelay);
-					SendString(" ");
-					SendUint(idleTicks);
-					SendString(" ");
-					SendUint(sizeof(unsigned long));
-					SendCrlf();
 					readAccelAxis(ac->accelChannel);
 				}
 			}
