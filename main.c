@@ -82,8 +82,10 @@ static int setupHardware( void )
 	initTimerChannels(loggerConfig);
 	InitLEDs();
 	InitGPIO();
-	accel_init();
-	accel_setup();
+	if (loggerConfig->AccelInstalled){
+		accel_init();
+		accel_setup();
+	}
 	return 1;
  }
 

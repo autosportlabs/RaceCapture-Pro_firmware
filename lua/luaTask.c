@@ -60,9 +60,9 @@ void luaTask(void *params){
 	//luaopen_string(g_lua);
 
 	RegisterLuaRaceCaptureFunctions(g_lua);
-
+	portENTER_CRITICAL();
 	luaL_dostring(g_lua,getScript());
-	
+	portEXIT_CRITICAL();
 	while(1){
 		portTickType xLastWakeTime, startTickTime;
 		const portTickType xFrequency = LUA_1Hz;

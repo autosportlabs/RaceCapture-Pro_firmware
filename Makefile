@@ -410,8 +410,8 @@ gccversion :
 # testing: option -C
 %.lss: %.elf
 	@echo
-	@echo $(MSG_EXTENDED_LISTING) $@
-	$(OBJDUMP) -h -S -C $< > $@
+#	@echo $(MSG_EXTENDED_LISTING) $@
+#	$(OBJDUMP) -h -S -C $< > $@
 
 
 # Create a symbol table from ELF output file.

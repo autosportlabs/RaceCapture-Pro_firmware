@@ -12,9 +12,11 @@ void accel_spiSetSpeed(unsigned char speed);
 unsigned char accel_spiSend(unsigned char outgoing, int last);
 void accel_setup();
 unsigned char accel_readControlRegister();
-unsigned int accel_readAxis(unsigned char axis);
-float accel_rawToG(int rawValue, unsigned int zeroValue);
-float accel_readAxisG(unsigned char axis, unsigned int zeroValue);
-                      
+float convertAccelRawToG(int rawValue, unsigned int zeroValue);
+unsigned int readAccelAxis(unsigned char axis);
+unsigned int getLastAccelRead(unsigned char axis);
+
+#define readAccelAxisG(axis,zeroValue) accel_rawToG(accel_readAxis(axis),zeroValue);
+#define getLastAccelReadG(axis,zeroValue) accel_rawToG(accel_readAxis(axis),zeroValue);
 
 #endif /*ACCELEROMETER_H_*/

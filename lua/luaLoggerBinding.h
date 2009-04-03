@@ -2,6 +2,11 @@
 #define LUALOGGERBINDING_H_
 
 #include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
+
+int Lua_Print(lua_State *L);
+int Lua_Println(lua_State *L);
 
 
 void RegisterLuaRaceCaptureFunctions(lua_State *L);
@@ -33,9 +38,12 @@ int Lua_StopLogging(lua_State *L);
 
 int Lua_SetLED(lua_State *L);
 
-int Lua_WriteScriptPage(lua_State *L);
+int Lua_UpdateScriptPage(lua_State *L);
+int Lua_GetScriptPage(lua_State *L);
+int Lua_PrintScriptPage(lua_State *L);
 
-int Lua_Print(lua_State *L);
-int Lua_Println(lua_State *L);
+int Lua_FlashLoggerConfig(lua_State *L);
+
+int Lua_ReloadScript(lua_State *L);
 
 #endif /*LUALOGGERBINDING_H_*/
