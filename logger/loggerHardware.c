@@ -117,10 +117,10 @@ void InitPWM(struct LoggerConfig *loggerConfig){
 			0, 				// mux function A
 			AT91C_PIO_PA7); // mux funtion B
 
-	EnablePWMChannel(0,&(loggerConfig->PWMConfig[0]));
-	EnablePWMChannel(1,&(loggerConfig->PWMConfig[1]));
-	EnablePWMChannel(2,&(loggerConfig->PWMConfig[2]));
-	EnablePWMChannel(3,&(loggerConfig->PWMConfig[3]));
+	EnablePWMChannel(0,&(loggerConfig->PWMConfigs[0]));
+	EnablePWMChannel(1,&(loggerConfig->PWMConfigs[1]));
+	EnablePWMChannel(2,&(loggerConfig->PWMConfigs[2]));
+	EnablePWMChannel(3,&(loggerConfig->PWMConfigs[3]));
 	StartAllPWM();
 }
 

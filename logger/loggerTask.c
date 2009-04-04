@@ -113,7 +113,7 @@ portTickType getHighestSampleRate(struct LoggerConfig *config){
 		if HIGHER_SAMPLE(sr, s) s = sr; 	
 	}
 	for (int i = 0; i < CONFIG_PWM_CHANNELS; i++){
-		int sr = config->PWMConfig[i].sampleRate;
+		int sr = config->PWMConfigs[i].sampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr;	
 	}
 	for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
@@ -288,7 +288,7 @@ void writeTimerChannelHeaders(EmbeddedFile *f, struct LoggerConfig *config){
 
 void writePWMChannelHeaders(EmbeddedFile *f, struct LoggerConfig *config){
 	for (int i = 0; i < CONFIG_PWM_CHANNELS; i++){
-		struct PWMConfig *c = &(config->PWMConfig[i]);
+		struct PWMConfig *c = &(config->PWMConfigs[i]);
 		if (c->sampleRate != SAMPLE_DISABLED){
 			fileWriteQuotedString(f,c->label);
 			fileWriteString(f, ",");		
@@ -468,7 +468,7 @@ void writeTimerChannels(portTickType currentTicks, struct LoggerConfig *loggerCo
 void writePWMChannels(portTickType currentTicks, struct LoggerConfig *loggerConfig){
 	
 	for (int i = 0; i < CONFIG_PWM_CHANNELS; i++){
-		struct PWMConfig *c = &(loggerConfig->PWMConfig[i]);
+		struct PWMConfig *c = &(loggerConfig->PWMConfigs[i]);
 		portTickType sr = c->sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){

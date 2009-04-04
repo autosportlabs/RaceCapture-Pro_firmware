@@ -16,6 +16,20 @@
 #define	CONFIG_GPIO_IN  					0
 #define CONFIG_GPIO_OUT  					1	
 
+/// PWM frequency in Hz.
+#define PWM_FREQUENCY               		2000
+
+/// Maximum duty cycle value.
+#define MAX_DUTY_CYCLE              		100
+#define MIN_DUTY_CYCLE          			1
+
+//TODO: FIX PERIOD/FREQ MIN-MAX
+#define MIN_PWM_PERIOD						1
+#define MAX_PWM_PERIOD						2000
+
+#define MIN_PWM_FREQUENCY					1
+#define MAX_PWM_FREQUENCY					2000
+
 #define CONFIG_PWM_ANALOG  					0
 #define	CONFIG_PWM_FREQUENCY  				1
 
@@ -65,15 +79,6 @@
 #define MCK_32 		32
 #define MCK_128 	128
 #define MCK_1024 	1024
-
-void updateActiveLoggerConfig();
-
-int flashLoggerConfig();
-
-struct LoggerConfig * getSavedLoggerConfig();
-struct LoggerConfig * getWorkingLoggerConfig();
-
-void calculateTimerScaling(struct LoggerConfig *loggerConfig, unsigned int timerChannel);
 
 struct ADCConfig{
 	char label[DEFAULT_LABEL_LENGTH];
@@ -200,7 +205,7 @@ struct LoggerConfig {
 	struct ADCConfig ADCConfigs[CONFIG_ADC_CHANNELS];
 	//PWM/Analog out configurations
 	unsigned short PWMClockFrequency;
-	struct PWMConfig PWMConfig[CONFIG_PWM_CHANNELS];
+	struct PWMConfig PWMConfigs[CONFIG_PWM_CHANNELS];
 	//GPIO configurations
 	struct GPIOConfig GPIOConfigs[CONFIG_GPIO_CHANNELS];
 	//Timer Configurations
@@ -228,5 +233,27 @@ struct LoggerConfig {
 	DEFAULT_GPS_CONFIG, \
 	"" \
 	}
-			
+	
+
+int flashLoggerConfig();
+void updateActiveLoggerConfig();
+
+struct LoggerConfig * getSavedLoggerConfig();
+struct LoggerConfig * getWorkingLoggerConfig();
+
+void calculateTimerScaling(struct LoggerConfig *loggerConfig, unsigned int timerChannel);
+
+int mapSampleRate(int sampleRate);
+
+int filterPWMOutputConfig(int config);
+int filterPWMLoggingConfig(int config);
+int filterPWMDutyCycle(int dutyCycle);
+int filterPWMPeriod(int period);
+
+struct TimerConfig * getTimerConfigChannel(int channel);
+struct ADCConfig * getADCConfigChannel(int channel);
+struct PWMConfig * getPWMConfigChannel(int channel);
+
+
+
 #endif /*LOGGERCONFIG_H_*/

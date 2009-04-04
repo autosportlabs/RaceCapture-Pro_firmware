@@ -8,24 +8,7 @@
 #define FREQ_ANALOG_4 (1<<25)
 #define FREQ_ANALOG_MASK (FREQ_ANALOG_1|FREQ_ANALOG_2|FREQ_ANALOG_3|FREQ_ANALOG_4)
 
-/// PWM frequency in Hz.
-#define PWM_FREQUENCY               2000
 
-/// Maximum duty cycle value.
-#define MAX_DUTY_CYCLE              1000
-#define MIN_DUTY_CYCLE          	1
-
-#define ADC_CHANNEL_MIN				0
-#define ADC_CHANNEL_MAX				7
-
-#define TIMER_CHANNEL_MIN			0
-#define TIMER_CHANNEL_MAX			2
-
-#define GPIO_CHANNEL_MIN			0
-#define GPIO_CHANNEL_MAX			2
-
-#define PWM_CHANNEL_MIN				0
-#define PWM_CHANNEL_MAX				3
 
 //define PIOs for GPIO ports
 #define GPIO_1 (1<<8)
