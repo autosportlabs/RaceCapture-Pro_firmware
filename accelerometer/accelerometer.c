@@ -126,7 +126,12 @@ float convertAccelRawToG(int accelRaw, unsigned int zeroValue){
 }
 
 unsigned int readAccelAxis(unsigned char axis){
-	accel_spiSend(axis, 0);
+	
+	//aux input (i.e. Yaw input) is mapped to 0x07 on the
+	//kionix KXR94
+	unsigned char readAxis = axis;
+	if (readAxis == 3) readAxis = 7;
+	accel_spiSend(readAxis, 0);
 	for (unsigned int d = 0; d < 200;d++){} //200 ns???? recalcualate this...
 	unsigned char dataMSB = accel_spiSend(0x00, 0);
 	unsigned char dataLSB = accel_spiSend(0x00, 1);

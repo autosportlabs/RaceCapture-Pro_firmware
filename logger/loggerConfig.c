@@ -26,10 +26,12 @@ struct LoggerConfig * getWorkingLoggerConfig(){
 }
 
 void calculateTimerScaling(struct LoggerConfig *loggerConfig, unsigned int timerChannel){
-	struct TimerConfig *timerConfig = &(loggerConfig->TimerConfigs[timerChannel]);
-	unsigned int clock = BOARD_MCK / timerConfig->timerDivider;
-	clock = clock / timerConfig->pulsePerRevolution;
-	timerConfig->calculatedScaling = clock;
+	struct TimerConfig *timerConfig = getTimerConfigChannel(timerChannel);
+	if (NULL != timerConfig){
+		unsigned int clock = BOARD_MCK / timerConfig->timerDivider;
+		clock = clock / timerConfig->pulsePerRevolution;
+		timerConfig->calculatedScaling = clock;
+	}
 }
 
 int mapSampleRate(int sampleRate){
@@ -55,6 +57,16 @@ int mapSampleRate(int sampleRate){
 	}
 }
 
+int filterGPIOConfig(int value){
+	switch(value){
+		case CONFIG_GPIO_OUT:
+			return CONFIG_GPIO_OUT;
+		case CONFIG_GPIO_IN:
+		default:
+			return CONFIG_GPIO_IN;	
+	}	
+}
+
 int filterPWMOutputConfig(int value){
 	switch(value){
 		case CONFIG_PWM_ANALOG:
@@ -77,6 +89,54 @@ int filterPWMLoggingConfig(int config){
 	}
 }
 
+int filterTimerConfig(int config){
+	switch (config){
+		case CONFIG_LOGGING_TIMER_RPM:
+			return CONFIG_LOGGING_TIMER_RPM;
+		case CONFIG_LOGGING_TIMER_PERIOD_MS:
+			return CONFIG_LOGGING_TIMER_PERIOD_MS;
+		case CONFIG_LOGGING_TIMER_PERIOD_USEC:
+			return CONFIG_LOGGING_TIMER_PERIOD_USEC;
+		default:
+		case CONFIG_LOGGING_TIMER_FREQUENCY:
+			return CONFIG_LOGGING_TIMER_FREQUENCY;	
+	}
+}
+
+int filterAccelChannel(int config){
+	switch(config){
+		case CONFIG_ACCEL_CHANNEL_Y:
+			return CONFIG_ACCEL_CHANNEL_Y;
+		case CONFIG_ACCEL_CHANNEL_Z:
+			return CONFIG_ACCEL_CHANNEL_Z;
+		case CONFIG_ACCEL_CHANNEL_ZT:
+			return CONFIG_ACCEL_CHANNEL_ZT;
+		default:
+		case CONFIG_ACCEL_CHANNEL_X:
+			return CONFIG_ACCEL_CHANNEL_X;
+	}
+}	
+
+int filterAccelRawValue(int accelRawValue){
+	if (accelRawValue > MAX_ACCEL_RAW){
+		accelRawValue = MAX_ACCEL_RAW;
+	} else if (accelRawValue < MIN_ACCEL_RAW){
+		accelRawValue = MIN_ACCEL_RAW;	
+	}
+	return accelRawValue;
+}
+
+int filterAccelConfig(int config){
+	switch (config){
+		case CONFIG_ACCEL_DISABLED:
+			return CONFIG_ACCEL_DISABLED;
+		case CONFIG_ACCEL_INVERTED:
+			return CONFIG_ACCEL_INVERTED;
+		default:
+		case CONFIG_ACCEL_NORMAL:
+			return CONFIG_ACCEL_NORMAL;
+	}
+}
 
 int filterPWMDutyCycle(int dutyCycle){
 	if (dutyCycle > MAX_DUTY_CYCLE){
@@ -96,11 +156,11 @@ int filterPWMPeriod(int period){
 	return period;		
 }
 
-int filterPWMFreqency(int freq){
-	if (freq > MAX_PWM_FREQUENCY){
-		freq = MAX_PWM_FREQUENCY;
-	} else if (freq < MIN_PWM_FREQUENCY){
-		freq = MIN_PWM_FREQUENCY;
+int filterPWMClockFrequency(int freq){
+	if (freq > MAX_PWM_CLOCK_FREQUENCY){
+		freq = MAX_PWM_CLOCK_FREQUENCY;
+	} else if (freq < MIN_PWM_CLOCK_FREQUENCY){
+		freq = MIN_PWM_CLOCK_FREQUENCY;
 	}
 	return freq;
 }
@@ -127,4 +187,20 @@ struct ADCConfig * getADCConfigChannel(int channel){
 		c = &(getWorkingLoggerConfig()->ADCConfigs[channel]);		
 	}
 	return c;
+}
+
+struct GPIOConfig * getGPIOConfigChannel(int channel){
+	struct GPIOConfig *c = NULL;
+	if (channel >=0 && channel < CONFIG_GPIO_CHANNELS){
+		c = &(getWorkingLoggerConfig()->GPIOConfigs[channel]);	
+	}
+	return c;	
+}
+
+struct AccelConfig * getAccelConfigChannel(int channel){
+	struct AccelConfig * c = NULL;
+	if (channel >= 0 && channel < CONFIG_ACCEL_CHANNELS){
+		c = &(getWorkingLoggerConfig()->AccelConfigs[channel]);
+	}
+	return c;		
 }

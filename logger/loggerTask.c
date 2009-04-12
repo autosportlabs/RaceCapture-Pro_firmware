@@ -97,7 +97,7 @@ portTickType getHighestIdleSampleRate(struct LoggerConfig *config){
 	//start with the slowest sample rate
 	int s = SAMPLE_1Hz;
 	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
-		int sr = config->AccelConfig[i].idleSampleRate;
+		int sr = config->AccelConfigs[i].idleSampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr;
 	}
 	return (portTickType)s;
@@ -126,7 +126,7 @@ portTickType getHighestSampleRate(struct LoggerConfig *config){
 	}
 	if (config->AccelInstalled){
 		for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
-			int sr = config->AccelConfig[i].sampleRate;
+			int sr = config->AccelConfigs[i].sampleRate;
 			if HIGHER_SAMPLE(sr, s) s = sr;	
 		}
 	}
@@ -173,7 +173,7 @@ void loggerTask(void *params){
 
 			idleTicks+=idleDelay;
 			for (unsigned int i=0; i < CONFIG_ACCEL_CHANNELS;i++){
-				struct AccelConfig *ac = &(loggerConfig->AccelConfig[i]);
+				struct AccelConfig *ac = &(loggerConfig->AccelConfigs[i]);
 				portTickType sr = ac->idleSampleRate;
 				if (sr != SAMPLE_DISABLED && (idleTicks % sr) == 0){
 					readAccelAxis(ac->accelChannel);
@@ -298,7 +298,7 @@ void writePWMChannelHeaders(EmbeddedFile *f, struct LoggerConfig *config){
 
 void writeAccelChannelHeaders(EmbeddedFile *f, struct LoggerConfig *config){
 	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
-		struct AccelConfig *c = &(config->AccelConfig[i]);
+		struct AccelConfig *c = &(config->AccelConfigs[i]);
 		if (c->sampleRate != SAMPLE_DISABLED){
 			fileWriteQuotedString(f,c->label);
 			fileWriteString(f, ",");		
@@ -338,7 +338,7 @@ void writeAccelerometer(portTickType currentTicks, struct LoggerConfig *config){
 	unsigned int accelValues[CONFIG_ACCEL_CHANNELS];
 	
 	for (unsigned int i=0; i < CONFIG_ACCEL_CHANNELS;i++){
-		struct AccelConfig *ac = &(config->AccelConfig[i]);
+		struct AccelConfig *ac = &(config->AccelConfigs[i]);
 		portTickType sr = ac->sampleRate;
 		if (sr != SAMPLE_DISABLED && (currentTicks % sr) == 0){
 			accelValues[i] = readAccelAxis(ac->accelChannel);
@@ -346,7 +346,7 @@ void writeAccelerometer(portTickType currentTicks, struct LoggerConfig *config){
 	}
 	
 	for (unsigned int i=0; i < CONFIG_ACCEL_CHANNELS;i++){
-		struct AccelConfig *ac = &(config->AccelConfig[i]);
+		struct AccelConfig *ac = &(config->AccelConfigs[i]);
 		portTickType sr = ac->sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0) lineAppendFloat(convertAccelRawToG(accelValues[i],ac->zeroValue),DEFAULT_ACCEL_LOGGING_PRECISION);
