@@ -65,7 +65,7 @@ void luaTask(void *params){
 	portEXIT_CRITICAL();
 	while(1){
 		portTickType xLastWakeTime, startTickTime;
-		const portTickType xFrequency = LUA_1Hz;
+		const portTickType xFrequency = LUA_5Hz;
 		startTickTime = xLastWakeTime = xTaskGetTickCount();
 
  		lua_getglobal(g_lua, LUA_PERIODIC_FUNCTION);

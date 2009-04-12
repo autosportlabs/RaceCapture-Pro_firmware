@@ -14,9 +14,20 @@ unsigned int getScriptPages();
 		"end\n"; 
 		
 #define TEST_SCRIPT \
+		"tol = 100\n" \
+		"idle = 0\n" \
+		"thresh = 20\n" \
+		"logging = 0\n" \
+		"lastX = 0\n" \
 		"function onTick()\n" \
-		"if getAccelerometerRaw(0) > 2200 then setLED(2,1) else setLED(2,0) end\n" \
+		"if lastX == 0 then lastX = getAccelerometerRaw(0) end\n" \
+		"x = getAccelerometerRaw(0)\n" \
+		"if logging == 1 and  x < lastX + tol and x > lastX - tol then idle = idle + 1 else idle = 0 end\n" \
+		"if logging == 1 and idle >= thresh then stopLogging();logging = 0 end\n" \
+		"if logging == 0 and (x > lastX + tol or x < lastX - tol) then startLogging();logging = 1;idle = 0 end\n" \
+		"lastX = x\n" \
 		"end\n";
+		//"print(x .." ");print(lastX .." ");println(idle);\n" \
 		
 #define TEST_SCRIPT2 \
 		"function onTick()\n" \
