@@ -70,10 +70,10 @@ void luaTask(void *params){
 
  		lua_getglobal(g_lua, LUA_PERIODIC_FUNCTION);
     	if (! lua_isnil(g_lua,-1)){
-        	if (lua_pcall(g_lua, 0, LUA_MULTRET, 0) != 0){
-        		SendString("Error Calling ");
+        	if (lua_pcall(g_lua, 0, 0, 0) != 0){
+        		SendString("Error calling ");
         		SendString(LUA_PERIODIC_FUNCTION);
-        		SendString(": ");
+        		SendString("(): ");
         		SendString( lua_tostring(g_lua,-1));
         		SendCrlf();
         		lua_pop(g_lua,1);

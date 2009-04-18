@@ -9,7 +9,7 @@
 #include "lua.h"
 #include "memory.h"
 
-#define BUFFER_SIZE MEMORY_PAGE_SIZE + 50
+#define BUFFER_SIZE MEMORY_PAGE_SIZE * 2
 
 extern unsigned int _CONFIG_HEAP_SIZE;
 extern unsigned portCHAR  _heap_address[];
@@ -46,8 +46,11 @@ void onUSBCommTask(void *pvParameters){
     	
     	int result = luaL_dostring(L,line);
 		if (0 != result){
-			SendString("result=\"unrecognizedCommand\";");
+			SendString("result=\"error:(");
+			SendString(lua_tostring(L,-1));
+			SendString(");");
 			SendCrlf();	
+			lua_pop(L,1);
 		}else{
 			SendString("result=\"ok\";");
 			SendCrlf();	

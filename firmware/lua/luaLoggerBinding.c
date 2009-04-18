@@ -14,6 +14,7 @@
 #include "luaTask.h"
 #include "memory.h"
 #include <string.h>
+#include "base64.h"
 
 extern xSemaphoreHandle g_xLoggerStart;
 extern int g_loggingShouldRun;
@@ -38,6 +39,7 @@ void RegisterLuaRaceCaptureFunctions(lua_State *L){
 	lua_register(L,"getPeriodUsec",Lua_GetPeriodUsec);
 	lua_register(L,"getFrequency",Lua_GetFrequency);
 	lua_register(L,"getTimerRaw",Lua_GetTimerRaw);
+	lua_register(L,"getTimerCount",Lua_GetTimerCount);
 	
 	lua_register(L,"getAnalog",Lua_GetAnalog);
 	lua_register(L,"getAnalogRaw",Lua_GetAnalogRaw);
@@ -55,12 +57,14 @@ void RegisterLuaRaceCaptureFunctions(lua_State *L){
 	//Script management	
 	lua_register(L,"updateScriptPage",Lua_UpdateScriptPage);
 	lua_register(L,"getScriptPage",Lua_GetScriptPage);
-	lua_register(L,"printScriptPage",Lua_PrintScriptPage);
 	lua_register(L,"reloadScript",Lua_ReloadScript);
 	
 	//Utility
 	lua_register(L,"print",Lua_Print);
 	lua_register(L,"println", Lua_Println);
+	lua_register(L,"getStackSize", Lua_GetStackSize);
+	lua_register(L,"base64encode", Lua_Base64encode);
+	lua_register(L,"base64decode", Lua_Base64decode);
 	
 	//Logger configuration editing
 	lua_register(L,"flashLoggerConfig", Lua_FlashLoggerConfig);
@@ -261,7 +265,7 @@ int Lua_SetAccelConfig(lua_State *L){
 }
 
 int Lua_GetAccelConfig(lua_State *L){
-	if (lua_gettop(L) >=1 ){
+	if (lua_gettop(L) >= 1){
 		struct AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushnumber(L, c->config);
@@ -274,7 +278,7 @@ int Lua_GetAccelConfig(lua_State *L){
 int Lua_SetAccelChannel(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		struct AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->config = filterAccelChannel(lua_tointeger(L,2));	
+		if (NULL != c) c->accelChannel = filterAccelChannel(lua_tointeger(L,2));	
 	}
 	return 0;
 }
@@ -283,7 +287,7 @@ int Lua_GetAccelChannel(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		struct AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
-			lua_pushnumber(L, c->config);
+			lua_pushnumber(L, c->accelChannel);
 			return 1;	
 		}
 	}
@@ -449,7 +453,7 @@ int Lua_GetGPIOLabel(lua_State *L){
 int Lua_SetGPIOSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		struct GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
-		c->sampleRate = mapSampleRate(lua_tointeger(L,2));
+		if (NULL != c) c->sampleRate = mapSampleRate(lua_tointeger(L,2));
 	}
 	return 0;
 }
@@ -468,7 +472,7 @@ int Lua_GetGPIOSampleRate(lua_State *L){
 int Lua_SetGPIOConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		struct GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
-		c->config = filterGPIOConfig(lua_tointeger(L,2));	
+		if (NULL != c) c->config = filterGPIOConfig(lua_tointeger(L,2));	
 	}
 	return 0;
 }
@@ -499,7 +503,7 @@ int Lua_GetGPSInstalled(lua_State *L){
 
 int Lua_SetGPSQualityLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.qualityLabel,lua_tostring(L,2));
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.qualityLabel,lua_tostring(L,1));
 	}
 	return 0;
 }
@@ -511,7 +515,7 @@ int Lua_GetGPSQualityLabel(lua_State *L){
 
 int Lua_SetGPSSatsLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.satsLabel,lua_tostring(L,2));
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.satsLabel,lua_tostring(L,1));
 	}
 	return 0;
 }
@@ -523,7 +527,7 @@ int Lua_GetGPSSatsLabel(lua_State *L){
 
 int Lua_SetGPSLatitudeLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.latitiudeLabel,lua_tostring(L,2));
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.latitiudeLabel,lua_tostring(L,1));
 	}
 	return 0;
 }
@@ -535,7 +539,7 @@ int Lua_GetGPSLatitudeLabel(lua_State *L){
 
 int Lua_SetGPSLongitudeLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.longitudeLabel,lua_tostring(L,2));
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.longitudeLabel,lua_tostring(L,1));
 	}
 	return 0;
 }
@@ -547,7 +551,7 @@ int Lua_GetGPSLongitudeLabel(lua_State *L){
 
 int Lua_SetGPSTimeLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.timeLabel,lua_tostring(L,2));
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.timeLabel,lua_tostring(L,1));
 	}
 	return 0;
 }
@@ -559,7 +563,7 @@ int Lua_GetGPSTimeLabel(lua_State *L){
 
 int Lua_SetGPSVelocityLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.velocityLabel,lua_tostring(L,2));
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.velocityLabel,lua_tostring(L,1));
 	}
 	return 0;
 }
@@ -571,7 +575,7 @@ int Lua_GetGPSVelocityLabel(lua_State *L){
 
 int Lua_SetGPSPositionSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		getWorkingLoggerConfig()->GPSConfig.positionSampleRate = mapSampleRate(lua_tointeger(L,2));
+		getWorkingLoggerConfig()->GPSConfig.positionSampleRate = mapSampleRate(lua_tointeger(L,1));
 	}
 	return 0;
 }
@@ -583,7 +587,7 @@ int Lua_GetGPSPositionSampleRate(lua_State *L){
 
 int Lua_SetGPSVelocitySampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1 ){
-		getWorkingLoggerConfig()->GPSConfig.velocitySampleRate = mapSampleRate(lua_tointeger(L,2));
+		getWorkingLoggerConfig()->GPSConfig.velocitySampleRate = mapSampleRate(lua_tointeger(L,1));
 	}
 	return 0;
 }
@@ -595,7 +599,7 @@ int Lua_GetGPSVelocitySampleRate(lua_State *L){
 
 int Lua_SetGPSTimeSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1 ){
-		getWorkingLoggerConfig()->GPSConfig.timeSampleRate = mapSampleRate(lua_tointeger(L,2));
+		getWorkingLoggerConfig()->GPSConfig.timeSampleRate = mapSampleRate(lua_tointeger(L,1));
 	}
 	return 0;
 }
@@ -618,7 +622,7 @@ int Lua_GetPWMClockFrequency(lua_State *L){
 }
 
 int Lua_SetPWMLabel(lua_State *L){
-	if (lua_gettop(L) >= 1){
+	if (lua_gettop(L) >= 2){
 		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) setLabelGeneric(c->label,lua_tostring(L,2));
 	}
@@ -636,7 +640,7 @@ int Lua_GetPWMLabel(lua_State *L){
 }
 
 int Lua_SetPWMSampleRate(lua_State *L){
-	if (lua_gettop(L) >= 1){
+	if (lua_gettop(L) >= 2){
 		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->sampleRate = mapSampleRate(lua_tointeger(L,2));
 	}
@@ -655,7 +659,7 @@ int Lua_GetPWMSampleRate(lua_State *L){
 }
 
 int Lua_SetPWMOutputConfig(lua_State *L){
-	if (lua_gettop(L) >= 1){
+	if (lua_gettop(L) >= 2){
 		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->outputConfig = filterPWMOutputConfig(lua_tointeger(L,2));	
 	}
@@ -663,7 +667,7 @@ int Lua_SetPWMOutputConfig(lua_State *L){
 }
 
 int Lua_GetPWMOutputConfig(lua_State *L){
-	if (lua_gettop(L) >=1){
+	if (lua_gettop(L) >= 1){
 		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushinteger(L,c->outputConfig);
@@ -674,7 +678,7 @@ int Lua_GetPWMOutputConfig(lua_State *L){
 }
 
 int Lua_SetPWMLoggingConfig(lua_State *L){
-	if (lua_gettop(L) >= 1){
+	if (lua_gettop(L) >= 2){
 		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->loggingConfig = filterPWMLoggingConfig(lua_tointeger(L,2));	
 	}
@@ -714,7 +718,7 @@ int Lua_GetPWMStartupDutyCycle(lua_State *L){
 }
 
 int Lua_SetPWMStartupPeriod(lua_State *L){
-	if (lua_gettop(L) >= 1){
+	if (lua_gettop(L) >= 2){
 		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			c->startupPeriod = filterPWMPeriod(lua_tointeger(L,2));
@@ -735,7 +739,7 @@ int Lua_GetPWMStartupPeriod(lua_State *L){
 }
 
 int Lua_SetPWMVoltageScaling(lua_State *L){
-	if (lua_gettop(L) >= 1){
+	if (lua_gettop(L) >= 2){
 		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			c->voltageScaling = lua_tonumber(L,2);
@@ -769,7 +773,7 @@ int Lua_SetAnalogChannelLabel(lua_State *L){
 
 int Lua_GetAnalogChannelLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		struct ADCConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
+		struct ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL !=c ){
 			lua_pushstring(L,c->label);
 			lua_pushstring(L,c->units);
@@ -819,30 +823,6 @@ int Lua_GetAnalogChannelScaling(lua_State *L){
 	}
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -904,6 +884,15 @@ int Lua_GetTimerRaw(lua_State *L){
 	return 1;
 }
 
+int Lua_GetTimerCount(lua_State *L){
+	int result = -1;
+	if (lua_gettop(L) >= 1){
+		int channel = lua_tointeger(L,1);
+		result = getTimerCount(channel);		
+	}
+	lua_pushinteger(L,result);
+	return 1;
+}
 int Lua_GetButton(lua_State *L){
 	unsigned int pushbutton = GetGPIOBits() | PIO_PUSHBUTTON_SWITCH;
 	lua_pushinteger(L,(pushbutton == 0));
@@ -926,7 +915,7 @@ int Lua_GetInput(lua_State *L){
 				result = gpioBits | GPIO_3;
 		}
 	}
-	lua_pushinteger(L,(result !=0 ));
+	lua_pushinteger(L,(result != 0 ));
 	return 1;
 }
 
@@ -1044,54 +1033,52 @@ int Lua_SetLED(lua_State *L){
 	return 0;
 }
 
+//0 = success; -1 = flash error; -2 = memory error; -3 = incorrect script length; -4 = param error
 int Lua_UpdateScriptPage(lua_State *L){
-	int result = -1;
-	if (lua_gettop(L) >= 2){
+	int result = 0;
+	if (lua_gettop(L) < 2){
+		result = -4; //param error
+	}else{
 		unsigned int page = lua_tointeger(L,1);
-		const char * data = lua_tostring(L,2);	
-		result = flashScriptPage(page,data);
-	}	
+		const char * encodedScript = lua_tostring(L,2);
+		size_t encodedScriptLen = strlen(encodedScript);
+		char *decodedScript = base64decode(encodedScript, encodedScriptLen);
+		if (NULL == decodedScript){
+			result = -2; //memory error	
+		} else{
+			if (strlen(decodedScript) > MEMORY_PAGE_SIZE){
+				result = -3; //script length error
+			} else{
+				result = flashScriptPage(page, encodedScript);	
+			}
+			vPortFree(decodedScript);
+		}
+	}
 	lua_pushinteger(L,result);
 	return 1;
 }
 
-int Lua_PrintScriptPage(lua_State *L){
-	if (lua_gettop(L) >= 1){
-		unsigned int page = lua_tointeger(L,1);
-		char *tmp = pvPortMalloc(MEMORY_PAGE_SIZE + 1);
-		if (tmp){
-			const char * script = getScript();
-			script += (MEMORY_PAGE_SIZE * page);
-			memset(tmp,0,MEMORY_PAGE_SIZE + 1);
-			strncpy(tmp, script, MEMORY_PAGE_SIZE);
-			SendString(tmp);
-			vPortFree(tmp);	
-		}
-		else{
-			SendInt(-1);
-		}
-		SendCrlf();
-	}
-	return 0;	
-}
-
-
 int Lua_GetScriptPage(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		unsigned int page = lua_tointeger(L,1);
-		char *tmp = pvPortMalloc(MEMORY_PAGE_SIZE + 1);
-		if (tmp){
-			memset(tmp,0,MEMORY_PAGE_SIZE + 1);
-			const char * script = getScript();
-			script += (MEMORY_PAGE_SIZE * page);
-			strncpy(tmp, script, MEMORY_PAGE_SIZE);
-			lua_pushstring(L,tmp);
-			vPortFree(tmp);
+		const char * script = getScript();
+		//forward to the requested page
+		script += (MEMORY_PAGE_SIZE * page);
+		//check for truncated page
+		size_t scriptLen = strlen(script);
+		if (scriptLen > MEMORY_PAGE_SIZE) scriptLen = MEMORY_PAGE_SIZE;
+		char *encoded = base64encode(script,scriptLen);
+		if (NULL != encoded){
+			lua_pushstring(L,encoded);
+			vPortFree(encoded);	
 		}
 		else{
 			//error
 			lua_pushinteger(L,-1);	
 		}
+	}
+	else{
+		lua_pushinteger(L,-1);	
 	}
 	return 1;	
 }
@@ -1114,6 +1101,12 @@ int Lua_ReloadScript(lua_State *L){
 	return 1;
 }
 
+int Lua_FlashLoggerConfig(lua_State *L){
+	int result = flashLoggerConfig();
+	lua_pushinteger(L,result);
+	return 1;	
+}
+
 int Lua_Println(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		SendString(lua_tostring(L,1));	
@@ -1129,8 +1122,41 @@ int Lua_Print(lua_State *L){
 	return 0;
 }
 
-int Lua_FlashLoggerConfig(lua_State *L){
-	int result = flashLoggerConfig();
-	lua_pushinteger(L,result);
+int Lua_GetStackSize(lua_State *L){
+	lua_pushinteger(L,lua_gettop(L));
 	return 1;	
+}
+
+//-1 = param error; -2 = memory error
+int Lua_Base64encode(lua_State *L){
+	if (lua_gettop(L) >= 1){
+		const char *data = lua_tostring(L,1);
+		char *encoded = base64encode(data,strlen(data));
+		if (NULL != encoded){
+			lua_pushstring(L,encoded);
+			vPortFree(encoded);
+		} else{
+			lua_pushinteger(L,-2);	
+		}
+	} else{
+		lua_pushinteger(L,-1);	
+	}
+	return 1;	
+}
+
+//-1 = param error; -2 = memory error
+int Lua_Base64decode(lua_State *L){
+	if (lua_gettop(L) >= 1){
+		const char *data = lua_tostring(L,1);
+		char *decoded = base64decode(data,strlen(data));
+		if (NULL != decoded){
+			lua_pushstring(L,decoded);
+			vPortFree(decoded);
+		} else{
+			lua_pushinteger(L,-2);	
+		}
+	} else{
+		lua_pushinteger(L,-1);	
+	}
+	return 1;
 }

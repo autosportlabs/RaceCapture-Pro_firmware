@@ -32,10 +32,14 @@
 extern void ( timer0_irq_handler )( void );
 extern void ( timer1_irq_handler )( void );
 extern void ( timer2_irq_handler )( void );
+extern void ( timer0_slow_irq_handler )( void );
+extern void ( timer1_slow_irq_handler )( void );
+extern void ( timer2_slow_irq_handler )( void );
 
 unsigned int g_timer0_overflow;
 unsigned int g_timer1_overflow;
 unsigned int g_timer2_overflow;
+unsigned int g_timer_counts[CONFIG_TIMER_CHANNELS];
 
 void InitGPIO(){
     AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, GPIO_MASK );
@@ -428,6 +432,7 @@ unsigned int timerClockFromDivider(unsigned int divider){
 void initTimer0(struct TimerConfig *timerConfig){
 
 	g_timer0_overflow = 1;
+	g_timer_counts[0] = 0;
 	// Set PIO pins for Timer Counter 0
 	//TIOA0 connected to PA0
 	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,0,AT91C_PA0_TIOA0);
@@ -447,14 +452,21 @@ void initTimer0(struct TimerConfig *timerConfig){
 	,AT91C_ID_TC0
 	);
 	
-	AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC0, TIMER0_INTERRUPT_LEVEL,AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer0_irq_handler);
-	AT91C_BASE_TC0->TC_IER = AT91C_TC_LDRBS;  //  IRQ enable RB loading
+	if (timerConfig->slowTimerEnabled){
+		AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC0, TIMER0_INTERRUPT_LEVEL,AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer0_slow_irq_handler);
+		AT91C_BASE_TC0->TC_IER = AT91C_TC_LDRBS | AT91C_TC_COVFS;  //  IRQ enable RB loading and overflow
+	}
+	else{
+		AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC0, TIMER0_INTERRUPT_LEVEL,AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer0_irq_handler);
+		AT91C_BASE_TC0->TC_IER = AT91C_TC_LDRBS;  //  IRQ enable RB loading
+	}
 	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC0);	
 }
 
 void initTimer1(struct TimerConfig *timerConfig){
 
 	g_timer1_overflow = 1;
+	g_timer_counts[1] = 0;
 	
 	// Set PIO pins for Timer Counter 1
 	// TIOA1 mapped to PA15
@@ -475,14 +487,21 @@ void initTimer1(struct TimerConfig *timerConfig){
 	,AT91C_ID_TC1
 	);
 	
-	AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC1, TIMER1_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer1_irq_handler);
-	AT91C_BASE_TC1->TC_IER = AT91C_TC_LDRBS;  //  IRQ enable RB loading
+	if (timerConfig->slowTimerEnabled){
+		AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC1, TIMER1_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer1_slow_irq_handler);
+		AT91C_BASE_TC1->TC_IER = AT91C_TC_LDRBS | AT91C_TC_COVFS;  //  IRQ enable RB loading and overflow
+	}
+	else{
+		AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC1, TIMER1_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer1_irq_handler);
+		AT91C_BASE_TC1->TC_IER = AT91C_TC_LDRBS;  //  IRQ enable RB loading
+	}
 	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC1);	
 }
 
 void initTimer2(struct TimerConfig *timerConfig){
 
 	g_timer2_overflow = 1;
+	g_timer_counts[2] = 0;
 	// Set PIO pins for Timer Counter 2
 	// TIOA2 mapped to PA26
 	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,0,AT91C_PA26_TIOA2);
@@ -502,15 +521,36 @@ void initTimer2(struct TimerConfig *timerConfig){
 	,AT91C_ID_TC2
 	);
 	
-	AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC2, TIMER2_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer2_irq_handler);
-	AT91C_BASE_TC2->TC_IER =AT91C_TC_LDRBS;  //  IRQ enable RB loading
-	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC2);	
+	if (timerConfig->slowTimerEnabled){
+		AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC2, TIMER2_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer2_slow_irq_handler);
+		AT91C_BASE_TC2->TC_IER =AT91C_TC_LDRBS | AT91C_TC_COVFS;  //  IRQ enable RB loading and overflow
+	}
+	else{
+		AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC2, TIMER2_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer2_irq_handler);
+		AT91C_BASE_TC2->TC_IER =AT91C_TC_LDRBS;  //  IRQ enable RB loading
+	}	
+	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC2);
 }
 
 void getAllTimerPeriods(unsigned int *t0, unsigned int *t1, unsigned int *t2){
 	*t0 = getTimer0Period();
 	*t1 = getTimer1Period();
 	*t2 = getTimer2Period();	
+}
+
+inline void resetTimerCount(unsigned int channel){
+	if (channel >= 0 && channel < CONFIG_TIMER_CHANNELS){
+		g_timer_counts[channel] = 0;			
+	}
+}
+
+inline unsigned int getTimerCount(unsigned int channel){
+	if (channel >= 0 && channel < CONFIG_TIMER_CHANNELS){
+		return g_timer_counts[channel];			
+	}
+	else{
+		return 0;
+	}
 }
 
 inline unsigned int getTimerPeriod(unsigned int channel){
