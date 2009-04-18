@@ -27,7 +27,8 @@ unsigned int getScriptPages();
 		"if logging == 0 and (x > lastX + tol or x < lastX - tol) then startLogging();logging = 1;idle = 0 end\n" \
 		"lastX = x\n" \
 		"end\n";
-		//"print(x .." ");print(lastX .." ");println(idle);\n" \
+		
+		//"print(x .." ");print(lastX .." ");println(idle);\n" 
 		
 #define TEST_SCRIPT2 \
 		"function onTick()\n" \

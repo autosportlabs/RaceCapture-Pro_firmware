@@ -5,8 +5,13 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
+// utility functions
 int Lua_Print(lua_State *L);
 int Lua_Println(lua_State *L);
+int Lua_GetStackSize(lua_State *L);
+int Lua_Base64encode(lua_State *L);
+int Lua_Base64decode(lua_State *L);
+
 
 
 void RegisterLuaRaceCaptureFunctions(lua_State *L);
@@ -20,6 +25,7 @@ int Lua_GetPeriodMs(lua_State *L);
 int Lua_GetPeriodUsec(lua_State *L);
 int Lua_GetFrequency(lua_State *L);
 int Lua_GetTimerRaw(lua_State *L);
+int Lua_GetTimerCount(lua_State *L);
 
 int Lua_GetButton(lua_State *L);
 int Lua_GetInput(lua_State *L);
@@ -44,7 +50,6 @@ int Lua_SetLED(lua_State *L);
 
 int Lua_UpdateScriptPage(lua_State *L);
 int Lua_GetScriptPage(lua_State *L);
-int Lua_PrintScriptPage(lua_State *L);
 int Lua_ReloadScript(lua_State *L);
 
 //logger config data
