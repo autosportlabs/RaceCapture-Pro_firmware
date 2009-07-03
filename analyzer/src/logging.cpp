@@ -6,7 +6,7 @@
  */
 #include "logging.h"
 
-bool loggingVerbose = false;
+bool loggingVerbose = true;
 
 void EnableVerbose(bool enabled){
 	loggingVerbose = enabled;

@@ -62,6 +62,7 @@ class DatalogChannelUtil{
 public:
 
 	static int FindChannelIdByName(DatalogChannels &channels, wxString &name);
+	static int FindChannelTypeIdByName(DatalogChannelTypes &channelTypes, wxString &name);
 
 };
 #endif /* DATALOGDATA_H_ */

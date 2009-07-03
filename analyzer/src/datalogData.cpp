@@ -33,3 +33,12 @@ int DatalogChannelUtil::FindChannelIdByName(DatalogChannels &channels, wxString 
 	}
 	return -1;
 }
+
+int DatalogChannelUtil::FindChannelTypeIdByName(DatalogChannelTypes &channelTypes, wxString &name){
+	size_t count = channelTypes.Count();
+
+	for (size_t i = 0; i < count; i++){
+		if (name == channelTypes[i].name) return i;
+	}
+	return -1;
+}

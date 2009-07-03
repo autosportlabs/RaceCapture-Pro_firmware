@@ -22,7 +22,7 @@ public:
 		appOptions(NULL),
 		datalogStore(NULL),
 		datalogFilePath(""),
-		datalogName(""),
+		datalogName(GetDefaultDatalogName()),
 		datalogDesc("")
 		{}
 
@@ -39,7 +39,9 @@ public:
 		datalogFilePath(filePath),
 		datalogName(name),
 		datalogDesc(desc)
-		{}
+		{
+				if(0 == name.Length()) datalogName = GetDefaultDatalogName();
+		}
 
 	AppPrefs 			*appPrefs;
 	AppOptions			*appOptions;
@@ -49,6 +51,8 @@ public:
 	wxString			datalogDesc;
 	DatalogChannels		datalogChannels;
 	DatalogChannelTypes datalogChannelTypes;
+
+	wxString GetDefaultDatalogName();
 };
 
 class DatalogFileSelectPage : public wxWizardPageSimple{
@@ -78,7 +82,7 @@ public:
     void UpdateUIState();
 	void OnNameChange(wxCommandEvent &event);
 	void OnWizardPageChanging(wxWizardEvent &event);
-	wxString GetDefaultDatalogName();
+	void OnWizardPageChanged(wxWizardEvent &event);
     DECLARE_EVENT_TABLE()
 
 private:
