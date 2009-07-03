@@ -1,4 +1,3 @@
-#include "wx/wx.h"
 #include "configData.h"
 
 ConfigValueException::ConfigValueException(){
@@ -7,7 +6,7 @@ ConfigValueException::ConfigValueException(){
 
 ConfigValueException::ConfigValueException( const wxString &message){
 	wxLogError("Config Value Exception: %s", message.ToAscii());
-	_message = message;	
+	_message = message;
 }
 
 const wxString ConfigValueException::GetMessage(){
@@ -18,7 +17,7 @@ bool VersionData::IsDefined() const{
 	return !(!_major && !_minor && !_bugfix);
 }
 
-void VersionData::SetMajor(int major){	
+void VersionData::SetMajor(int major){
 	_major = major;
 }
 
@@ -40,7 +39,7 @@ int VersionData::GetBugfix() const{
 
 void VersionData::SetBugfix(int bugfix){
 	_bugfix = bugfix;
-}	
+}
 
 wxString VersionData::GetNotes() const{
 	return _notes;

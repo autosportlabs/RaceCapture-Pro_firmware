@@ -32,21 +32,21 @@ bool OptionsDialog::Create (wxWindow* parent,
   			const wxPoint& pos,
   			const wxSize& size,
   			long style){
-  				
+
  	SetExtraStyle(wxWS_EX_BLOCK_EVENTS);
- 	
+
  	if (! wxDialog::Create (parent, id, caption, pos, size, style)) return false;
- 	
+
  	CreateControls();
- 	
+
  	GetSizer()->Fit(this);
  	GetSizer()->SetSizeHints(this);
  	Center();
  	return true;
 }
-  			
+
 void OptionsDialog::CreateControls(){
- 	
+
  	wxBoxSizer* outerSizer = new wxBoxSizer(wxVERTICAL);
 	this->SetSizer(outerSizer);
 
@@ -54,10 +54,10 @@ void OptionsDialog::CreateControls(){
 	optionsSizer->AddGrowableCol(1);
 	wxBoxSizer* okCancelSizer = new wxBoxSizer(wxHORIZONTAL);
 
-	outerSizer->Add(optionsSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL,1);	
+	outerSizer->Add(optionsSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL,1);
 	outerSizer->Add(okCancelSizer,0,wxALIGN_CENTER_HORIZONTAL | wxALL,3);
- 
- 
+
+
  	wxString comPorts[NUMBER_COM_PORTS];
 	for (int i = 0; i < NUMBER_COM_PORTS;i++){
 		comPorts[i].Printf("COM %d",i+1);
@@ -65,16 +65,23 @@ void OptionsDialog::CreateControls(){
 	wxComboBox *comPortComboBox = new wxComboBox(this, -1, "", wxDefaultPosition, wxDefaultSize, NUMBER_COM_PORTS, comPorts,wxCB_READONLY);
 	COMPortValidator cpValidator(_options);
 	comPortComboBox->SetValidator(cpValidator);
-	
+
 	optionsSizer->Add(new wxStaticText(this, -1, "COM Port"));
 	optionsSizer->Add(comPortComboBox);
-	
+
 	wxCheckBox *autoLoadCheckBox= new wxCheckBox(this, -1, "Automatically read config at startup");
 	autoLoadCheckBox->SetValidator(wxGenericValidator(&_options->GetAutoLoadConfig()));
 	optionsSizer->AddStretchSpacer();
 	optionsSizer->Add(autoLoadCheckBox);
+
+ 	wxButton* ok = new wxButton(this, wxID_OK, wxT("&OK"), wxDefaultPosition, wxDefaultSize,0);
+	okCancelSizer->Add(ok, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
+
+	wxButton* cancel = new wxButton(this, wxID_CANCEL, wxT("&Cancel"), wxDefaultPosition, wxDefaultSize,0);
+	okCancelSizer->Add(cancel, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
+
 }
- 
+
 BEGIN_EVENT_TABLE( OptionsDialog, wxDialog)
 END_EVENT_TABLE()
 
@@ -83,11 +90,11 @@ COMPortValidator::COMPortValidator() : _appOptions(NULL)
 {}
 
 COMPortValidator::COMPortValidator(AppOptions *appOptions){
-	_appOptions = appOptions;	
+	_appOptions = appOptions;
 }
 
 void COMPortValidator::SetAppOptions(AppOptions *appOptions){
-	_appOptions = appOptions;	
+	_appOptions = appOptions;
 }
 
 bool COMPortValidator::TransferFromWindow(){
@@ -102,14 +109,14 @@ bool COMPortValidator::TransferToWindow(){
 
 	int selectedIndex = _appOptions->GetSerialPort();
 	wxComboBox* combo = (wxComboBox*)GetWindow();
-	combo->Select(selectedIndex);	
+	combo->Select(selectedIndex);
 	return true;
 }
 
 wxObject* COMPortValidator::Clone() const{
-	return new COMPortValidator(_appOptions);	
+	return new COMPortValidator(_appOptions);
 }
 
 bool COMPortValidator::Validate(wxWindow* parent){
-	return true;	
+	return true;
 }

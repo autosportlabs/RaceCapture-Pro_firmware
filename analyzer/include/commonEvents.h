@@ -1,7 +1,7 @@
 #ifndef COMMON_EVENTS_H_
 #define COMMON_EVENTS_H_
 
-#include <wx/wx.h>
+#include "wx/wxprec.h"
 
 DECLARE_EVENT_TYPE ( OPTIONS_CHANGED_EVENT, -1 )
 DECLARE_EVENT_TYPE ( CONFIG_CHANGED_EVENT, -1 )

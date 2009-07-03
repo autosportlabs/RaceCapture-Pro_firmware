@@ -4,6 +4,9 @@
 
 #include "optionsDialog.h"
 #include "fileIO.h"
+#include "logging.h"
+#include "lineChart.h"
+#include "importWizardDialog.h"
 
 #include "filenew.xpm"
 #include "fileopen.xpm"
@@ -17,6 +20,7 @@
 #include "advancetable.xpm"
 #include "tuning.xpm"
 #include "mjlj_logo_small.xpm"
+#include "import.xpm"
 
 #include "mjlj_icon.xpm"
 #include "mjlj_icon_med.xpm"
@@ -26,12 +30,13 @@
 //wxAUI string definitions
 #define PANE_CONFIGURATION 		"config"
 #define PANE_RUNTIME			"runtime"
-#define PANE_TUNING				"tuning"
+#define PANE_ANALYZE			"analysis"
+#define PANE_SCRIPT				"script"
 
-
-#define CAPTION_TUNING			"Tuning"
+#define CAPTION_ANALYSIS		"Analysis"
 #define CAPTION_RUNTIME 		"Runtime"
 #define CAPTION_CONFIG			"Configuration"
+#define CAPTION_SCRIPT			"Script"
 
 IMPLEMENT_APP(RaceAnalyzerApp);
 
@@ -39,7 +44,7 @@ IMPLEMENT_APP(RaceAnalyzerApp);
 bool RaceAnalyzerApp::OnInit()
 {
 	// Create an instance of our frame, or window
-	_mainFrame = new MainFrame(MJLJ_WINDOW_TITLE, wxPoint(1, 1), wxSize(300,300));
+	_mainFrame = new MainFrame(RACEANALYZER_WINDOW_TITLE, wxPoint(1, 1), wxSize(300,300));
 
 	wxIconBundle iconBundle;
 	iconBundle.AddIcon(wxIcon(mjlj_icon_xlarge_xpm));
@@ -59,7 +64,7 @@ void RaceAnalyzerApp::OnInitCmdLine(wxCmdLineParser& parser){
    parser.Parse(false);
    if (parser.GetParamCount() > 0){
    		wxString mjljConfigFile = parser.GetParam(0);
-   		_mainFrame->LoadConfigurationFile(mjljConfigFile);
+   		_mainFrame->OpenRaceEvent(mjljConfigFile);
    }
 }
 
@@ -72,24 +77,18 @@ bool RaceAnalyzerApp::OnCmdLineParsed(wxCmdLineParser& parser)
 MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize
   &size) : wxFrame((wxFrame*)NULL,  - 1, title, pos, size)
 {
-	_appTerminated = false;
-	ShowSplashScreen();
+	m_appTerminated = false;
+	//ShowSplashScreen();
 
-	_currentConfigFileName = NULL;
-	_activeConfig = -1;
-	_appOptions.LoadAppOptions();
+	m_activeConfig = -1;
+	m_appOptions.LoadAppOptions();
 	_appPrefs.LoadAppPrefs();
 
 	InitializeFrame();
 	SetSize(wxSize(800,640));
 	Center();
 
-	m_raceAnalyzerComm.SetSerialPort(_appOptions.GetSerialPort());
-
-	try{
-	 LoadInitialConfig();
-	}
-	catch(...){}
+	InitComms();
 
 }
 
@@ -99,16 +98,23 @@ MainFrame::~MainFrame(){
 }
 
 
-void MainFrame::LoadInitialConfig(){
+void MainFrame::InitComms(){
 
-
+	m_scriptPanel->SetComm(&m_raceAnalyzerComm);
+	try{
+		m_raceAnalyzerComm.SetSerialPort(m_appOptions.GetSerialPort());
+	}
+	catch(CommException e){
+		SetStatusMessage(e.GetErrorMessage());
+	}
 }
+
 
 void MainFrame::ShowSplashScreen(){
 
 	wxBitmap splashBitmap(mjlj_logo_small_xpm);
 
-	wxSplashScreen* splash = new wxSplashScreen(splashBitmap,
+	new wxSplashScreen(splashBitmap,
       wxSPLASH_CENTRE_ON_SCREEN|wxSPLASH_TIMEOUT,
       4000, NULL, -1, wxDefaultPosition, wxDefaultSize,
       wxSIMPLE_BORDER|wxSTAY_ON_TOP);
@@ -128,7 +134,8 @@ void MainFrame::InitializeFrame(){
 
 	if (0 == _appPrefs.GetPerspectives().Count()){
 		CreateDefaultPerspectives();
-		_appPrefs.SetActivePerspective(_appPrefs.GetPerspectives().Count() - 1);
+		int perspectiveCount = _appPrefs.GetPerspectives().Count();
+		_appPrefs.SetActivePerspective(perspectiveCount - 1);
 		SwitchToPerspective(0);
 	}
 	else{
@@ -143,15 +150,17 @@ void MainFrame::CreateDefaultPerspectives(){
 
 	CreateDefaultConfigPerspective();
 	CreateDefaultRuntimePerspective();
-	CreateDefaultTuningPerspective();
+	CreateDefaultAnalyzePerspective();
+	CreateDefaultScriptPerspective();
 	_appPrefs.SaveAppPrefs();
 }
 
 void MainFrame::CreateDefaultConfigPerspective(){
 
-	_frameManager.GetPane(wxT(PANE_RUNTIME)).Show(false);
-	_frameManager.GetPane(wxT(PANE_TUNING)).Show(false);
 	_frameManager.GetPane(wxT(PANE_CONFIGURATION)).Show(true);
+	_frameManager.GetPane(wxT(PANE_ANALYZE)).Show(false);
+	_frameManager.GetPane(wxT(PANE_RUNTIME)).Show(false);
+	_frameManager.GetPane(wxT(PANE_SCRIPT)).Show(false);
 	_frameManager.Update();
 
 	wxString perspective = _frameManager.SavePerspective();
@@ -160,11 +169,26 @@ void MainFrame::CreateDefaultConfigPerspective(){
 	_appPrefs.GetPerspectiveNames().Add(PERSPECTIVE_CONFIG);
 }
 
+void MainFrame::CreateDefaultScriptPerspective(){
+
+	_frameManager.GetPane(wxT(PANE_CONFIGURATION)).Show(false);
+	_frameManager.GetPane(wxT(PANE_ANALYZE)).Show(false);
+	_frameManager.GetPane(wxT(PANE_RUNTIME)).Show(false);
+	_frameManager.GetPane(wxT(PANE_SCRIPT)).Show(true);
+	_frameManager.Update();
+
+	wxString perspective = _frameManager.SavePerspective();
+
+	_appPrefs.GetPerspectives().Add(perspective);
+	_appPrefs.GetPerspectiveNames().Add(PERSPECTIVE_SCRIPT);
+}
+
 void MainFrame::CreateDefaultRuntimePerspective(){
 
-	_frameManager.GetPane(wxT(PANE_TUNING)).Show(false);
 	_frameManager.GetPane(wxT(PANE_CONFIGURATION)).Show(false);
+	_frameManager.GetPane(wxT(PANE_ANALYZE)).Show(false);
 	_frameManager.GetPane(wxT(PANE_RUNTIME)).Show(true);
+	_frameManager.GetPane(wxT(PANE_SCRIPT)).Show(false);
 	_frameManager.Update();
 
 	wxString perspective = _frameManager.SavePerspective();
@@ -173,17 +197,18 @@ void MainFrame::CreateDefaultRuntimePerspective(){
 	_appPrefs.GetPerspectiveNames().Add(PERSPECTIVE_RUNTIME);
 }
 
-void MainFrame::CreateDefaultTuningPerspective(){
+void MainFrame::CreateDefaultAnalyzePerspective(){
 
-	_frameManager.GetPane(wxT(PANE_RUNTIME)).Show(false);
 	_frameManager.GetPane(wxT(PANE_CONFIGURATION)).Show(false);
-	_frameManager.GetPane(wxT(PANE_TUNING)).Show(true);
+	_frameManager.GetPane(wxT(PANE_ANALYZE)).Show(true);
+	_frameManager.GetPane(wxT(PANE_RUNTIME)).Show(false);
+	_frameManager.GetPane(wxT(PANE_SCRIPT)).Show(false);
 	_frameManager.Update();
 
 	wxString perspective = _frameManager.SavePerspective();
 
 	_appPrefs.GetPerspectives().Add(perspective);
-	_appPrefs.GetPerspectiveNames().Add(PERSPECTIVE_TUNING);
+	_appPrefs.GetPerspectiveNames().Add(PERSPECTIVE_ANALYZE);
 
 }
 
@@ -214,29 +239,20 @@ void MainFrame::OnRuntimePerspective(wxCommandEvent& event){
 	SwitchToPerspective(1);
 }
 
-void MainFrame::OnTuningPerspective(wxCommandEvent& event){
+void MainFrame::OnAnalyzePerspective(wxCommandEvent& event){
 	SaveCurrentPerspective();
 	SwitchToPerspective(2);
 }
 
 void MainFrame::InitializeMenus(){
 
-
 	//initialize main menu
 	wxMenuBar* menuBar = new wxMenuBar();
 	wxMenu* fileMenu = new wxMenu();
-	fileMenu->Append(wxID_NEW, wxT("New\tCtrl+N"), wxT("Create a new Ignition Configuration"));
-	fileMenu->Append(wxID_OPEN, wxT("Open\tCtrl+O"), wxT("Open a saved Ignition Configuration"));
+	fileMenu->Append(wxID_NEW, wxT("New\tCtrl+N"), wxT("Create a new Race Event"));
+	fileMenu->Append(wxID_OPEN, wxT("Open\tCtrl+O"), wxT("Open a Race Event"));
 	fileMenu->AppendSeparator();
-	fileMenu->Append(wxID_SAVE, wxT("Save\tCtrl+S"), wxT("Save the current Ignition Configuration"));
-	fileMenu->Append(wxID_SAVEAS, wxT("Save As\tCtrl+Shift+S"), wxT("Save the current Ignition Configuration under a new file"));
-	fileMenu->AppendSeparator();
-	fileMenu->Append(ID_QUICKLOGGING, wxT("Quick Datalog\tF5"));
-	_startDatalogMenuItem = fileMenu->Append(ID_STARTLOG, wxT("Start Datalog\tF6"));
-	_stopDatalogMenuItem = fileMenu->Append(ID_STOPLOG, wxT("Stop Datalog\tESC"));
-
-	fileMenu->Append(ID_OPENDATALOG,wxT("Open Datalog"));
-
+	fileMenu->Append(ID_IMPORT_DATALOG, wxT("Import\tCtrl-I"),wxT("Import Datalog"));
 	fileMenu->AppendSeparator();
 	fileMenu->Append(wxID_EXIT, wxT("Exit"), wxT("Exit the program"));
 	menuBar->Append(fileMenu, wxT("File"));
@@ -246,6 +262,7 @@ void MainFrame::InitializeMenus(){
 
 	wxMenu* toolsMenu = new wxMenu();
 	toolsMenu->Append(ID_OPTIONS, wxT("Configurator Options"));
+	menuBar->Append(toolsMenu, "Tools");
 
 	wxMenu* viewMenu = new wxMenu();
 	viewMenu->AppendSeparator();
@@ -272,25 +289,23 @@ void MainFrame::InitializeMenus(){
 	wxToolBar* toolBar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_HORIZONTAL | wxTB_FLAT | wxTB_NODIVIDER);
 	wxBitmap bmpNew(filenew_xpm);
 	wxBitmap bmpOpen(fileopen_xpm);
-	wxBitmap bmpSave(filesave_xpm);
-	wxBitmap bmpSaveAs(filesaveas_xpm);
 	wxBitmap bmpGetConfig(getconfig_xpm);
 	wxBitmap bmpWriteConfig(writeconfig_xpm);
 	wxBitmap bmpCommitFlash(commitflash_xpm);
 	wxBitmap bmpChart(line_chart_xpm);
 	wxBitmap bmpRuntime(runtime_xpm);
 	wxBitmap bmpAdvanceTable(advancetable_xpm);
-	wxBitmap bmpTuning(tuning_xpm);
+	wxBitmap bmpAnalyze(tuning_xpm);
+	wxBitmap bmpImport(import_xpm);
 
-	toolBar->AddTool(wxID_NEW, bmpNew, wxT("New Ignition Configuration"));
-	toolBar->AddTool(wxID_OPEN, bmpOpen, wxT("Open"));
+	toolBar->AddTool(wxID_NEW, bmpNew, wxT("Create new Race Event"));
+	toolBar->AddTool(wxID_OPEN, bmpOpen, wxT("Open a Race Event"));
+	toolBar->AddTool(ID_IMPORT_DATALOG,bmpImport,wxT("ImportDatalog"));
+
 	toolBar->AddSeparator();
-	toolBar->AddTool(wxID_SAVE, bmpSave, wxT("Save"));
-	toolBar->AddTool(wxID_SAVEAS, bmpSaveAs, wxT("Save As"));
-	toolBar->AddSeparator();
-	toolBar->AddTool(ID_CONFIG_MODE, bmpAdvanceTable, wxT("Edit IgnitionConfiguration"));
-	toolBar->AddTool(ID_RUNTIME_MODE, bmpChart, wxT("Charting/Runtime View"));
-	toolBar->AddTool(ID_TUNING_MODE, bmpTuning, wxT("Tuning"));
+	toolBar->AddTool(ID_CONFIG_MODE, bmpAdvanceTable, wxT("Edit Configuration"));
+	toolBar->AddTool(ID_RUNTIME_MODE, bmpChart, wxT("Monitor Runtime Channels"));
+	toolBar->AddTool(ID_ANALYZE_MODE, bmpAnalyze, wxT("Analysis Mode"));
 
 	toolBar->Realize();
 	SetToolBar(toolBar);
@@ -298,98 +313,38 @@ void MainFrame::InitializeMenus(){
 
 void MainFrame::InitializeComponents(){
 
+	m_channelsPanel = new DatalogChannelsPanel(this);
+	m_channelsPanel->SetDatalogStore(&m_datalogStore);
+	_frameManager.AddPane(m_channelsPanel, wxAuiPaneInfo().Name(wxT(PANE_RUNTIME)).Caption(wxT(CAPTION_RUNTIME)).Center().Hide());
 
-	m_runtimePanel = new wxPanel(this);
-	_frameManager.AddPane(m_runtimePanel, wxAuiPaneInfo().Name(wxT(PANE_RUNTIME)).Caption(wxT(CAPTION_RUNTIME)).Center().Hide());
-
-	m_tuningPanel = new wxPanel(this);
-	_frameManager.AddPane(m_tuningPanel, wxAuiPaneInfo().Name(wxT(PANE_TUNING)).Caption(wxT(CAPTION_TUNING)).Center().Show(true));
+	m_analyzePanel = new LogViewer(this);
+	_frameManager.AddPane(m_analyzePanel, wxAuiPaneInfo().Name(wxT(PANE_ANALYZE)).Caption(wxT(CAPTION_ANALYSIS)).Center().Hide());
 
 	m_configPanel = new wxPanel(this);
-	_frameManager.AddPane(m_configPanel, wxAuiPaneInfo().Name(wxT(PANE_CONFIGURATION)).Caption(wxT(CAPTION_CONFIG)).Center());
+	_frameManager.AddPane(m_configPanel, wxAuiPaneInfo().Name(wxT(PANE_CONFIGURATION)).Caption(wxT(CAPTION_CONFIG)).Center().Hide());
+
+	m_scriptPanel = new ScriptPanel(this);
+	_frameManager.AddPane(m_scriptPanel, wxAuiPaneInfo().Name(wxT(PANE_SCRIPT)).Caption(wxT(CAPTION_SCRIPT)).Center());
+
 }
 
 
 void MainFrame::OnHelpAbout(wxCommandEvent &event){
 
-	wxString msg = wxString::Format("MegaJolt Lite Jr. Configurator %s\n\nhttp://www.autosportlabs.net\n\nCopyright © 2004-2008 Autosport Labs\n\n",MJLJ_CONFIG_VERSION);
+	wxString msg = wxString::Format("MegaJolt Lite Jr. Configurator %s\n\nhttp://www.autosportlabs.net\n\nCopyright ï¿½ 2004-2008 Autosport Labs\n\n",RACE_ANALYZER_VERSION);
 	wxMessageDialog dlg(this,msg, "About", wxOK);
 	dlg.ShowModal();
 }
 
-void MainFrame::UpdateLoggingStatus(){
 
-//	bool isLogging = _datalogger.IsLogging();
-	bool isLogging = false;
-	_startDatalogMenuItem->Enable(! isLogging);
-	_stopDatalogMenuItem->Enable(isLogging);
-	SetActivityMessage(isLogging ? "Datalogging" : "");
-}
-
-
-void MainFrame::OnStartLogging(wxCommandEvent &event){
-
-	wxString defaultDir = _appPrefs.GetLastDatalogDirectory();
-	wxString defaultFile = "";
-	wxFileDialog fileDialog(this, "Datalog to File", defaultDir, defaultFile, LOGGING_FILE_FILTER,wxSAVE);
-
-	int result = fileDialog.ShowModal();
-
-	if (wxID_OK == result){
-		const wxString fileName = fileDialog.GetPath();
-		if (!wxFile::Exists(fileName) || (wxFile::Exists(fileName) && QueryFileOverwrite())){
-
-			//start logging here
-
-			_appPrefs.SetLastDatalogDirectory(fileDialog.GetDirectory());
-		}
-	}
-	UpdateLoggingStatus();
-}
-
-void MainFrame::OnOpenDatalog(wxCommandEvent &event){
-
-	wxString defaultDir = _appPrefs.GetLastDatalogDirectory();
-	wxString defaultFile = "";
-	wxFileDialog fileDialog(this, "Open Datalog", defaultDir, defaultFile, LOGGING_FILE_FILTER, wxOPEN);
-	int result = fileDialog.ShowModal();
-
-	if (wxID_OK == result){
-		const wxString fileName = fileDialog.GetPath();
-		_appPrefs.SetLastDatalogDirectory(fileDialog.GetDirectory());
-
-	}
-}
-
-void MainFrame::OnQuickLogging(wxCommandEvent &event){
-
-//	if (_datalogger.IsLogging()) _datalogger.StopLogging();
-
-	wxDateTime now = wxDateTime::Now();
-
-	wxString filename = "MJLJ_Log_" + now.Format("%Y-%m-%d_%H.%M.%S") + ".csv";
-	wxString lastDirectory = _appPrefs.GetLastDatalogDirectory();
-
-	if ( "" != lastDirectory){
-		filename = lastDirectory + wxFileName::GetPathSeparator() + filename;
-	}
-	//_datalogger.StartLogging(filename);
-	UpdateLoggingStatus();
-}
-
-void MainFrame::OnStopLogging(wxCommandEvent &event){
-
-//	if (_datalogger.IsLogging()) _datalogger.StopLogging();
-	UpdateLoggingStatus();
-}
 
 void MainFrame::NotifyConfigChanged(){
 
 	wxCommandEvent event( CONFIG_STALE_EVENT, CONFIG_STALE );
 	event.SetEventObject(this);
-	m_tuningPanel->AddPendingEvent(event);
+	m_analyzePanel->AddPendingEvent(event);
 	m_configPanel->AddPendingEvent(event);
-	m_runtimePanel->AddPendingEvent(event);
+	m_channelsPanel->AddPendingEvent(event);
 }
 
 
@@ -439,28 +394,6 @@ void MainFrame::ClearActivityMessage(){
 }
 
 
-void MainFrame::SaveCurrentConfig(){
-	if ( _currentConfigFileName ){
-		MJLJConfigFileWriter writer;
-		const wxString fileName(*_currentConfigFileName);
-		writer.SetFileName(fileName);
-
-		try{
-			writer.WriteConfigData(_currentConfigData);
-			_configModified = false;
-			SetStatusMessage("Ignition Configuration Saved");
-		}
-		catch (FileIOException e){
-			wxMessageDialog dlg(this, wxString::Format("Failed to save Ignition Configuration:\n\n%s", e.GetMessage().ToAscii()), "Error saving", wxOK | wxICON_HAND);
-			dlg.ShowModal();
-			return;
-		}
-	}
-	else{
-		SaveAsCurrentConfig();
-	}
-	UpdateConfigFileStatus();
-}
 
 bool MainFrame::QueryFileOverwrite(){
 
@@ -468,56 +401,16 @@ bool MainFrame::QueryFileOverwrite(){
 	return ( wxID_YES == dlg.ShowModal() );
 }
 
-void MainFrame::SaveAsCurrentConfig(){
-
-	wxString defaultDir = _appPrefs.GetLastConfigFileDirectory();
-	wxString defaultFile = "";
-	wxFileDialog fileDialog(this, "Save As Ignition Configuration", defaultDir, defaultFile, CONFIG_FILE_FILTER,wxSAVE);
-
-	int result = fileDialog.ShowModal();
-
-	if (wxID_OK == result){
-		MJLJConfigFileWriter writer;
-
-		const wxString fileName = fileDialog.GetPath();
-		if (!wxFile::Exists(fileName) || (wxFile::Exists(fileName) && QueryFileOverwrite())){
-			writer.SetFileName(fileName);
-
-			try{
-				writer.WriteConfigData(_currentConfigData);
-				_currentConfigFileName = new wxString(fileName);
-				_configModified = false;
-				SetStatusMessage("Ignition Configuration Saved");
-				_appPrefs.SetLastConfigFileDirectory(fileDialog.GetDirectory());
-			}
-			catch (FileIOException e){
-				wxMessageDialog dlg(this, wxString::Format("Failed to save Ignition Configuration:\n\n%s", e.GetMessage().ToAscii()), "Error saving", wxOK | wxICON_HAND);
-				dlg.ShowModal();
-				return;
-			}
-		}
-	}
-	UpdateConfigFileStatus();
-}
-
-void MainFrame::OnSaveAsCurrentConfig(wxCommandEvent& event){
-	SaveAsCurrentConfig();
-}
-
-void MainFrame::OnSaveCurrentConfig(wxCommandEvent& event){
-	SaveCurrentConfig();
-}
-
 
 void MainFrame::OnAppOptions(wxCommandEvent& event){
 
 	OptionsDialog optionsDialog;
-	optionsDialog.SetAppOptions(&_appOptions);
+	optionsDialog.SetAppOptions(&m_appOptions);
 	optionsDialog.Create(this);
 
 	if (optionsDialog.ShowModal() == wxID_OK) {
-		_appOptions.SaveAppOptions();
-		m_raceAnalyzerComm.SetSerialPort(_appOptions.GetSerialPort());
+		m_appOptions.SaveAppOptions();
+		m_raceAnalyzerComm.SetSerialPort(m_appOptions.GetSerialPort());
 	}
 }
 
@@ -528,59 +421,176 @@ bool MainFrame::QuerySaveModifications(){
 }
 
 
-void MainFrame::OnNewConfig(wxCommandEvent &event){
+void MainFrame::OnNewRaceEvent(wxCommandEvent &event){
 
-	if (_configModified){
-		if (QuerySaveModifications()) SaveCurrentConfig();
+	wxString defaultDir = _appPrefs.GetLastConfigFileDirectory();
+	wxString defaultFile = "";
+	wxFileDialog fileDialog(this, "New Race Event", defaultDir, defaultFile, OPEN_RACE_EVENT_FILTER, wxSAVE);
+
+	int result = fileDialog.ShowModal();
+
+	if (wxID_OK == result){
+		try{
+			const wxString fileName = fileDialog.GetPath();
+			if (wxFile::Exists(fileName)){
+				wxMessageDialog dlg(this, wxString::Format("Race Event file already exists. Open this Event?"),"Open Existing Race Event", wxYES_DEFAULT | wxYES_NO);
+				int result = dlg.ShowModal();
+				if (result == wxYES){
+					OpenRaceEvent(fileName);
+				}
+			}else{
+				NewRaceEvent(fileName);
+			}
+
+			RaceEventLoaded();
+		}
+		catch(DatastoreException e){
+			wxMessageDialog dlg(this, wxString::Format("Failed to Create Race Event:\n\n%s", e.GetMessage().ToAscii()), "Error Creating Race Event", wxOK | wxICON_HAND);
+		}
+		_appPrefs.SetLastConfigFileDirectory(fileDialog.GetDirectory());
 	}
 	//Set default values
 	NotifyConfigChanged();
 }
 
+void MainFrame::OnOpenRaceEvent(wxCommandEvent& event){
 
-void MainFrame::OnOpenConfig(wxCommandEvent& event){
-
-	if (_configModified){
-		if (QuerySaveModifications()) SaveCurrentConfig();
-	}
 
 	wxString defaultDir = _appPrefs.GetLastConfigFileDirectory();
 	wxString defaultFile = "";
-	wxFileDialog fileDialog(this, "Open Ignition Configuration", defaultDir, defaultFile, CONFIG_FILE_FILTER, wxOPEN);
+	wxFileDialog fileDialog(this, "Open Race Event", defaultDir, defaultFile, OPEN_RACE_EVENT_FILTER, wxOPEN | wxFILE_MUST_EXIST);
 
 	int result = fileDialog.ShowModal();
 
 	if (wxID_OK == result){
-		const wxString fileName = fileDialog.GetPath();
-		LoadConfigurationFile(fileName);
+		try{
+			const wxString fileName = fileDialog.GetPath();
+			OpenRaceEvent(fileName);
+			RaceEventLoaded();
+		}
+		catch(DatastoreException e){
+			wxMessageDialog dlg(this, wxString::Format("Failed to open Race Event:\n\n%s", e.GetMessage().ToAscii()), "Error Opening", wxOK | wxICON_HAND);
+			dlg.ShowModal();
+			return;
+		}
 		_appPrefs.SetLastConfigFileDirectory(fileDialog.GetDirectory());
 	}
 }
 
-void MainFrame::LoadConfigurationFile(const wxString fileName){
 
-	MJLJConfigFileReader reader;
+void MainFrame::NewRaceEvent(wxString fileName){
 
-	reader.SetFileName( fileName);
+	if (m_datalogStore.IsOpen()) m_datalogStore.Close();
+	m_datalogStore.CreateNew(fileName);
+}
+
+void MainFrame::CloseRaceEvent(){
+
+	if (m_datalogStore.IsOpen()){
+		m_datalogStore.Close();
+	}
+}
+
+void MainFrame::OpenRaceEvent(wxString fileName){
+
+	m_datalogStore.Open(fileName);
+	UpdateAnalyzerView();
+}
+
+void MainFrame::OnImportDatalog(wxCommandEvent& event){
+
+	ImportDatalogWizard *wiz = new ImportDatalogWizard(this,ImportWizardParams(&_appPrefs,&m_appOptions,&m_datalogStore));
+
+	wiz->ShowPage(wiz->GetFirstPage());
+	wiz->Show(true);
+
+/*	wxString defaultDir = _appPrefs.GetLastConfigFileDirectory();
+	wxFileDialog fileDialog(this, "Import Datalog", defaultDir, "", LOGGING_FILE_FILTER, wxOPEN);
+
+	int result = fileDialog.ShowModal();
+
+	if (wxID_OK != result) return;
+
 
 	try{
-		reader.ReadConfiguration(_currentConfigData);
-		if (_currentConfigFileName) delete _currentConfigFileName;
-		_currentConfigFileName = new wxString(fileName);
-		_configModified = false;
-		_staleRAMMemory = true;
-		UpdateCommControls();
-		NotifyConfigChanged();
-		SyncControls();
-		UpdateConfigFileStatus();
-		SetStatusMessage("Ignition Configuration Loaded");
+		const wxString fileName = fileDialog.GetPath();
+		wxString name("Session");
+		wxString notes("Notes");
+		ImportDatalog(fileName, name, notes);
+		UpdateAnalyzerView();
 	}
-	catch( FileIOException e ){
-		wxMessageDialog dlg(this, wxString::Format("Failed to load Ignition Configuration:\n\n%s", e.GetMessage().ToAscii()), "Error loading", wxOK | wxICON_HAND);
+	catch(DatastoreException e){
+		wxMessageDialog dlg(this, wxString::Format("Failed to Import Datalog File:\n\n%s", e.GetMessage().ToAscii()), "Error Importing", wxOK | wxICON_HAND);
 		dlg.ShowModal();
 		return;
 	}
+	_appPrefs.SetLastConfigFileDirectory(fileDialog.GetDirectory());
+	*/
+}
+
+void MainFrame::ImportDatalog(const wxString &fileName, const wxString &name, const wxString &notes){
+
+	INFO(FMT("Importing Datalog %s",fileName.ToAscii()));
+	m_datalogStore.ImportDatalog(fileName, name, notes);
+	INFO("Datalog import complete");
+}
+
+
+void MainFrame::UpdateAnalyzerView(){
+
+	INFO("Updating Analyzer view");
+	UpdateDatalogSessions();
+	UpdateAnalysis();
+	INFO("Updating Analyzer view complete");
+}
+
+void MainFrame::UpdateDatalogSessions(){
+	m_channelsPanel->UpdateDatalogSessions();
+}
+
+void MainFrame::UpdateAnalysis(){
+
+	m_datalogData.Clear();
+
+	wxArrayString channels;
+	channels.Add("GPSVelocity");
+	channels.Add("AccelX");
+	channels.Add("AccelY");
+	channels.Add("AccelZ");
+	channels.Add("Yaw");
+
+	int datalogId = 1;
+	m_datalogStore.ReadDatalog(m_datalogData, datalogId, channels, 0);
+
+	Range *speedRange = new Range(0,300,"KPh");
+	int rangeId = m_analyzePanel->GetLineChart()->AddRange(speedRange);
+	Series *gpsSpeed = new Series(&m_datalogData,0,rangeId,0,"GPS Speed",*wxGREEN);
+	m_analyzePanel->GetLineChart()->AddSeries(gpsSpeed);
+
+	Range *gForceRange = new Range(-2.0,2.0,"G");
+	int gForceRangeId= m_analyzePanel->GetLineChart()->AddRange(gForceRange);
+
+	Series *accelX = new Series(&m_datalogData, 1, gForceRangeId,0,"Accel X",*wxWHITE);
+	m_analyzePanel->GetLineChart()->AddSeries(accelX);
+
+	Series *accelY = new Series(&m_datalogData, 2, gForceRangeId,0,"Accel Y",*wxBLUE);
+	m_analyzePanel->GetLineChart()->AddSeries(accelY);
+
+	Series *accelZ = new Series(&m_datalogData, 3, gForceRangeId,0,"Accel Z",wxColor(255,255,0));
+	m_analyzePanel->GetLineChart()->AddSeries(accelZ);
+
+	Series *yaw = new Series(&m_datalogData,4,gForceRangeId,0,"Yaw",*wxRED);
+	m_analyzePanel->GetLineChart()->AddSeries(yaw);
+
+}
+
+
+void MainFrame::RaceEventLoaded(){
+	UpdateCommControls();
+	NotifyConfigChanged();
+	SyncControls();
 	UpdateConfigFileStatus();
+	SetStatusMessage("Race Event Loaded");
 }
 
 
@@ -591,26 +601,14 @@ void MainFrame::UpdateCommControls(){
 
 void MainFrame::UpdateConfigFileStatus(){
 
+	wxString windowTitle = wxString::Format(RACEANALYZER_WINDOW_TITLE,RACE_ANALYZER_VERSION);
 
-	wxString modifiedLabel = _configModified ? "(Modified)" : "";
-	wxString windowTitle = wxString::Format(MJLJ_WINDOW_TITLE,MJLJ_CONFIG_VERSION);
-
-	wxString title;
-	if (! _currentConfigFileName){
-		title.Printf("%s - No file loaded %s",windowTitle.ToAscii(), modifiedLabel.ToAscii());
-	}
-	else{
-		title.Printf("%s - %s %s", windowTitle.ToAscii(), _currentConfigFileName->ToAscii(), modifiedLabel.ToAscii());
-	}
+	wxString fileName = m_datalogStore.GetFileName();
+	wxString title = wxString::Format("%s - Race Event %s", windowTitle.ToAscii(), fileName.ToAscii());
 	SetTitle(title);
-
-	wxToolBar *toolBar = GetToolBar();
-	toolBar->EnableTool(wxID_SAVE, _configModified );
-	toolBar->EnableTool(wxID_SAVEAS, _configModified );
 }
 
 void MainFrame::OnRestoreDefaultView(wxCommandEvent &event){
-
 	CreateDefaultPerspectives();
 }
 
@@ -625,11 +623,11 @@ void MainFrame::OnExit(wxCloseEvent& WXUNUSED(event)){
 
 void MainFrame::TerminateApp(){
 
-	if (_appTerminated) return;
-	_appTerminated = true;
+	if (m_appTerminated) return;
+	m_appTerminated = true;
 	//Cancel exit if there are unsaved changes and the user opts to not save
-	if (_configModified && QuerySaveModifications()) SaveCurrentConfig();
 
+	CloseRaceEvent();
 	SaveCurrentPerspective();
 	_appPrefs.SaveAppPrefs();
 
@@ -642,27 +640,21 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
     EVT_MENU(wxID_EXIT, MainFrame::OnFileExit)
     EVT_MENU(ID_OPTIONS, MainFrame::OnAppOptions)
 
-    EVT_MENU_RANGE(ID_PERSPECTIVES, ID_PERSPECTIVES + MAX_PERSPECTIVES, MainFrame::OnSwitchView)
 
-    EVT_MENU(wxID_NEW, MainFrame::OnNewConfig)
-    EVT_MENU(wxID_SAVE,MainFrame::OnSaveCurrentConfig)
-    EVT_MENU(wxID_OPEN,MainFrame::OnOpenConfig)
-    EVT_MENU(wxID_SAVEAS,MainFrame::OnSaveAsCurrentConfig)
+    EVT_MENU(wxID_NEW, MainFrame::OnNewRaceEvent)
+    EVT_MENU(wxID_OPEN,MainFrame::OnOpenRaceEvent)
+    EVT_MENU(ID_IMPORT_DATALOG,MainFrame::OnImportDatalog)
 
     EVT_COMMAND( CONFIG_CHANGED, CONFIG_CHANGED_EVENT, MainFrame::OnConfigChanged )
 
 	EVT_MENU( ID_CONFIG_MODE, MainFrame::OnConfigPerspective)
 	EVT_MENU( ID_RUNTIME_MODE, MainFrame::OnRuntimePerspective)
-	EVT_MENU( ID_TUNING_MODE, MainFrame::OnTuningPerspective)
-
-
-	EVT_MENU( ID_STARTLOG, MainFrame::OnStartLogging)
-	EVT_MENU( ID_QUICKLOGGING, MainFrame::OnQuickLogging)
-	EVT_MENU( ID_STOPLOG, MainFrame::OnStopLogging)
-	EVT_MENU( ID_OPENDATALOG, MainFrame::OnOpenDatalog)
+	EVT_MENU( ID_ANALYZE_MODE, MainFrame::OnAnalyzePerspective)
 
 	EVT_MENU( ID_HELP_ABOUT, MainFrame::OnHelpAbout)
 
+	//this must always be last
+	EVT_MENU_RANGE(ID_PERSPECTIVES, ID_PERSPECTIVES + MAX_PERSPECTIVES, MainFrame::OnSwitchView)
 
 END_EVENT_TABLE()
 

@@ -1,5 +1,5 @@
 /* XPM */
-static char * filesaveas_xpm[] = {
+const char * filesaveas_xpm[] = {
 "16 16 193 2",
 "  	c None",
 ". 	c #EE9E1A",

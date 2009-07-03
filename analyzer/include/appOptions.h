@@ -1,28 +1,40 @@
 #ifndef APPOPTIONS_H_
 #define APPOPTIONS_H_
-#include "wx/wx.h"
+#include "wx/wxprec.h"
+#include "datalogData.h"
 
 #include "raceAnalyzerConfigBase.h"
 
-#define CONFIG_KEY_COM_PORT 					"COM_Port"
-#define CONFIG_KEY_AUTO_LOAD					"AutoLoadConfig"
+
 
 class AppOptions{
-	
+
 	public:
-		
-		AppOptions(); 	
+
+		AppOptions();
 		int GetSerialPort();
 		void SetSerialPort(int serialPort);
-		
+
 		bool & GetAutoLoadConfig();
 		void SetAutoLoadConfig(bool autoConnect);
-		
+
 		void SaveAppOptions();
 		void LoadAppOptions();
-		
+
+		DatalogChannels & GetStandardChannels();
+		DatalogChannelTypes & GetStandardChannelTypes();
+
+		void LoadDefaultStandardChannels(DatalogChannels &channels);
+		void LoadDefaultStandardChannelTypes(DatalogChannelTypes &channelTypes);
+
 	private:
-		int 		_serialPort;
-		bool 		_autoLoadConfig;
+		int 				m_serialPort;
+		bool 				m_autoLoadConfig;
+		DatalogChannels 	m_standardChannels;
+		DatalogChannelTypes	m_standardChannelTypes;
+
+
 };
+
+
 #endif /*APPOPTIONS_H_*/

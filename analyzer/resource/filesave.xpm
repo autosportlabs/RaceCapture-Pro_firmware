@@ -1,5 +1,5 @@
 /* XPM */
-static char * filesave_xpm[] = {
+const char * filesave_xpm[] = {
 "16 16 177 2",
 "  	c None",
 ". 	c #A3A4C3",

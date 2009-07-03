@@ -1,33 +1,24 @@
 #include "fileIO.h"
+#include "exceptions.h"
+#include "logging.h"
 #include <wx/textfile.h>
 #include <wx/tokenzr.h>
 
-FileIOException::FileIOException(){
-	_message="";
-}
 
-FileIOException::FileIOException( const wxString &message ){
-	_message = message;	
-}
-
-const wxString FileIOException::GetMessage(){
-	return _message;	
-}
-
-void MJLJConfigFileIOBase::SetFileName(const wxString& fileName){
+void RaceCaptureConfigFileIOBase::SetFileName(const wxString& fileName){
 	_fileName = fileName;
 }
 
-const wxString MJLJConfigFileIOBase::GetFileName(){
+const wxString RaceCaptureConfigFileIOBase::GetFileName(){
 	return _fileName;
 }
 
 
-void MJLJConfigFileWriter::WriteConfigData(ConfigData &config){
-	
+void RaceCaptureConfigFileWriter::WriteConfigData(ConfigData &config){
+
 	wxString fileName = GetFileName();
 	wxTextFile configFile(fileName);
-	
+
 	if ( configFile.Exists() ){
 		configFile.Open();
 		configFile.Clear();
@@ -36,23 +27,23 @@ void MJLJConfigFileWriter::WriteConfigData(ConfigData &config){
 		configFile.Create();
 	}
 	configFile.Write();
-	configFile.Close();	
+	configFile.Close();
 }
 
 
-void MJLJConfigFileReader::ReadConfiguration(ConfigData &config){
-	
+void RaceCaptureConfigFileReader::ReadConfiguration(ConfigData &config){
+
 	wxString fileName = GetFileName();
 	wxTextFile configFile(fileName);
-	
+
 	if ( ! configFile.Exists() ){
 		wxString errorMsg;
 		errorMsg.Printf("Config file '%s' does not exist",fileName.ToAscii());
-		throw FileIOException(errorMsg);	
+		throw FileAccessException(errorMsg,fileName);
 	}
-	
+
 	configFile.Open();
-	
+
 	configFile.Close();
-	
+
 }

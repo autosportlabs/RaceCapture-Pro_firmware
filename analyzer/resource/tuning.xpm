@@ -1,5 +1,5 @@
 /* XPM */
-static char * tuning_xpm[] = {
+const char * tuning_xpm[] = {
 "16 16 93 2",
 "  	c None",
 ". 	c #ADADBB",

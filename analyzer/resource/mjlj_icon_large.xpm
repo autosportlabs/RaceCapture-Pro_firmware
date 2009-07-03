@@ -1,5 +1,5 @@
 /* XPM */
-static char * mjlj_icon_large_xpm[] = {
+const char * mjlj_icon_large_xpm[] = {
 "32 32 787 2",
 "  	c None",
 ". 	c #000000",

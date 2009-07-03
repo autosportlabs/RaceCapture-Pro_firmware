@@ -1,5 +1,5 @@
 /* XPM */
-static char * advancetable_xpm[] = {
+const char * advancetable_xpm[] = {
 "16 16 9 1",
 " 	c None",
 ".	c #000000",

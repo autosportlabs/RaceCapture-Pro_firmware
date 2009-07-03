@@ -1,17 +1,20 @@
 #ifndef __RACE_ANALYZER_H_
 #define __RACE_ANALYZER_H_
 
-#include <wx/wx.h>
+#include "wx/wxprec.h"
 #include <wx/thread.h>
 #include <wx/file.h>
 #include <wx/filename.h>
 #include <wx/splash.h>
 #include <wx/cmdline.h>
 
+#include "datalogStore.h"
+#include "logViewer.h"
+#include "datalogChannelsPanel.h"
 #include "raceAnalyzerConfigBase.h"
 #include "LCDWindow.h"
 #include "AngularMeter.h"
-#include "StripChart.h"
+#include "scriptPanel.h"
 #include "comm.h"
 #include "configData.h"
 #include "appOptions.h"
@@ -23,15 +26,15 @@
 #include <wx/aui/framemanager.h>
 
 
-  #define  CONFIG_FILE_FILTER 	"RaceAnalyzer Configuration files (*.raz;)|*.raz"
-  #define	MJLJ_WINDOW_TITLE 	"RaceAnalyzer V%s"
+#define  OPEN_RACE_EVENT_FILTER 	"RaceAnalyzer Event Files (*.radb)|*.radb"
+#define	RACEANALYZER_WINDOW_TITLE 	"RaceAnalyzer V%s"
 
-  #define PERSPECTIVE_CONFIG 	"Configuration"
-  #define PERSPECTIVE_RUNTIME 	"Runtime"
-  #define PERSPECTIVE_TUNING	"Tuning"
-  #define MAX_PERSPECTIVES		20
+#define PERSPECTIVE_CONFIG	"Configuration"
+#define PERSPECTIVE_RUNTIME	"Runtime"
+#define PERSPECTIVE_ANALYZE	"Analysis"
+#define PERSPECTIVE_SCRIPT	"Scripting"
+#define MAX_PERSPECTIVES	20
 
-  #define LOGGING_FILE_FILTER	"RaceAnalyzer Datalog File (*.csv)|*.csv"
 
 class MainFrame;
 
@@ -50,8 +53,10 @@ class RaceAnalyzerApp : public wxApp{
   {
 
   private:
+
+
+	void InitComms();
   	void NotifyConfigChanged();
-  	void LoadInitialConfig();
   	void UpdateConfigFileStatus();
 	void InitializeComponents();
 	void InitializeFrame();
@@ -61,6 +66,9 @@ class RaceAnalyzerApp : public wxApp{
 	void ClearActivityMessage();
 	void ClearStatusMessage();
 	void UpdateCommControls();
+	void UpdateAnalyzerView();
+	void UpdateDatalogSessions();
+	void UpdateAnalysis();
 	void ConfigModified();
 	void TerminateApp();
 	bool QuerySaveModifications();
@@ -70,33 +78,36 @@ class RaceAnalyzerApp : public wxApp{
 	void CreateDefaultPerspectives();
 	void CreateDefaultConfigPerspective();
 	void CreateDefaultRuntimePerspective();
-	void CreateDefaultTuningPerspective();
+	void CreateDefaultAnalyzePerspective();
+	void CreateDefaultScriptPerspective();
 	void ShowSplashScreen();
-	void UpdateLoggingStatus();
 	void SyncControls();
+
+	void NewRaceEvent(wxString fileName);
+	void CloseRaceEvent();
+
 	//Data
 
-	ConfigData 			_currentConfigData;
-	wxString 			*_currentConfigFileName;
-	bool				_configModified;
-	bool				_staleFlashMemory;
-	bool				_staleRAMMemory;
+	ConfigData 			m_currentConfigData;
+	wxString 			m_currentConfigFileName;
 
-	bool				_appTerminated;
+	bool				m_appTerminated;
 
-	int					_activeConfig;
-	int					_cylinderCount;
+	int					m_activeConfig;
 
-	RaceAnalyzerComm			m_raceAnalyzerComm;
-	wxMenuItem			*_startDatalogMenuItem;
-	wxMenuItem			*_stopDatalogMenuItem;
+	RaceAnalyzerComm	m_raceAnalyzerComm;
+	DatalogStore		m_datalogStore;
 
-	wxPanel				*m_runtimePanel;
-	wxPanel				*m_tuningPanel;
+	DatalogStoreRows	m_datalogData;
+
+	LogViewer			*m_analyzePanel;
 	wxPanel				*m_configPanel;
+	ScriptPanel			*m_scriptPanel;
+	DatalogChannelsPanel *m_channelsPanel;
+
 
 	//App Options and settings
-	AppOptions		_appOptions;
+	AppOptions		m_appOptions;
 
 	AppPrefs		_appPrefs;
 
@@ -107,33 +118,28 @@ class RaceAnalyzerApp : public wxApp{
 
   	//events
   	void OnHelpAbout(wxCommandEvent &event);
-  	void OnQuickLogging(wxCommandEvent &event);
-  	void OnStopLogging(wxCommandEvent &event);
-  	void OnStartLogging(wxCommandEvent &event);
-  	void OnOpenDatalog(wxCommandEvent &event);
 
   	void OnConfigChanged(wxCommandEvent &event);
   	void OnFileExit(wxCommandEvent &event);
   	void OnExit(wxCloseEvent& WXUNUSED(event));
+  	void RaceEventLoaded();
+  	void OnNewRaceEvent(wxCommandEvent& event);
+  	void OnOpenRaceEvent(wxCommandEvent& event);
 
-  	void OnNewConfig(wxCommandEvent& event);
-	void OnSaveCurrentConfig(wxCommandEvent& event);
-	void OnSaveAsCurrentConfig(wxCommandEvent& event);
-	void OnOpenConfig(wxCommandEvent& event);
+	void OnImportDatalog(wxCommandEvent& event);
 	void OnAppOptions(wxCommandEvent& event);
     void OnSwitchView(wxCommandEvent& event);
     void OnConfigPerspective(wxCommandEvent& event);
     void OnRuntimePerspective(wxCommandEvent& event);
-    void OnTuningPerspective(wxCommandEvent& event);
+    void OnAnalyzePerspective(wxCommandEvent& event);
 	void OnRestoreDefaultView(wxCommandEvent &event);
+	void ImportDatalog(const wxString &fileName, const wxString &name, const wxString &notes);
 
 
  public:
 
-	void LoadConfigurationFile(const wxString fileName);
-	void SaveCurrentConfig();
-	void SaveAsCurrentConfig();
 
+	void OpenRaceEvent(wxString fileName);
     MainFrame( const wxString &title, const wxPoint &pos, const wxSize &size );
 	~MainFrame();
 
@@ -144,25 +150,20 @@ class RaceAnalyzerApp : public wxApp{
 
   enum{
 
-    ID_PERSPECTIVES			= wxID_HIGHEST + 1,
 
-	ID_OPTIONS,
+	ID_OPTIONS = wxID_HIGHEST + 1,
 	ID_GET_CONFIG,
 	ID_WRITE_CONFIG,
 
 	ID_CONFIG_MODE,
 	ID_RUNTIME_MODE,
-	ID_TUNING_MODE,
+	ID_ANALYZE_MODE,
 
 	ID_HELP_ABOUT,
+	ID_IMPORT_DATALOG,
 
 	ID_RESTORE_DEFAULT_VIEWS,
-
-
-	ID_QUICKLOGGING,
-	ID_STARTLOG,
-	ID_STOPLOG,
-	ID_OPENDATALOG
+	ID_PERSPECTIVES
   };
 
 

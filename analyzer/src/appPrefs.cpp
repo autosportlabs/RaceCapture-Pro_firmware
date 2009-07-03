@@ -9,7 +9,7 @@ AppPrefs::AppPrefs()
 
 
 void AppPrefs::SaveAppPrefs(){
-	wxConfig config(MJLJ_CONFIG_APP_NAME);
+	wxConfig config(RACE_ANALYZER_APP_NAME);
 
 	config.Write(CONFIG_KEY_LAST_CONFIG_DIRECTORY,_lastConfigFileDirectory);
 	config.Write(CONFIG_KEY_LAST_DATALOG_DIRECTORY, _lastDatalogDirectory);
@@ -24,7 +24,7 @@ void AppPrefs::SaveAppPrefs(){
 }
 
 void AppPrefs::LoadAppPrefs(){
-	wxConfig config(MJLJ_CONFIG_APP_NAME);
+	wxConfig config(RACE_ANALYZER_APP_NAME);
 
 	wxStandardPaths standardPaths;
 

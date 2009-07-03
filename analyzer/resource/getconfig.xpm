@@ -1,5 +1,5 @@
 /* XPM */
-static char * getconfig_xpm[] = {
+const char * getconfig_xpm[] = {
 "16 16 44 1",
 " 	c None",
 ".	c #0062B3",

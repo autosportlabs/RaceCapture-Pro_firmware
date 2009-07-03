@@ -1,5 +1,5 @@
 /* XPM */
-static char * mjlj_icon_med_xpm[] = {
+const char * mjlj_icon_med_xpm[] = {
 "24 24 459 2",
 "  	c None",
 ". 	c #000000",

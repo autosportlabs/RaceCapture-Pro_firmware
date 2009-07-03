@@ -1,5 +1,5 @@
 /* XPM */
-static char * line_chart_xpm[] = {
+const char * line_chart_xpm[] = {
 "16 16 189 2",
 "  	c None",
 ". 	c #9599A8",

@@ -2,24 +2,10 @@
 #ifndef FILE_IO_H_
 #define FILE_IO_H_
 
-#include <wx/wx.h>
+#include "wx/wxprec.h"
 #include "configData.h"
 
-class FileIOException{
-	
-	
-	public:
-		FileIOException();
-		FileIOException( const wxString &message );
-		const wxString GetMessage();
-	
-	private:
-		wxString _message;
-	
-};
-
-
-class MJLJConfigFileIOBase{
+class RaceCaptureConfigFileIOBase{
 
 	public:
 		const wxString GetFileName();
@@ -27,23 +13,23 @@ class MJLJConfigFileIOBase{
 
 
 	private:
-		wxString _fileName; 	
-	
+		wxString _fileName;
+
 };
 
-class MJLJConfigFileReader : public MJLJConfigFileIOBase{
-	
+class RaceCaptureConfigFileReader : public RaceCaptureConfigFileIOBase{
+
 	public:
 		void ReadConfiguration(ConfigData &config);
-	
+
 	private:
 };
 
-class MJLJConfigFileWriter : public MJLJConfigFileIOBase{
-	
+class RaceCaptureConfigFileWriter : public RaceCaptureConfigFileIOBase{
+
 	public:
 		void WriteConfigData(ConfigData &config);
-	
+
 	private:
 };
 

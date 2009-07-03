@@ -1,6 +1,6 @@
 #ifndef APPPEFS_H_
 #define APPPEFS_H_
-#include "wx/wx.h"
+#include "wx/wxprec.h"
 
 #include "raceAnalyzerConfigBase.h"
 
@@ -13,12 +13,12 @@
 
 
 class AppPrefs{
-	
+
 	public:
-		
-		
-		AppPrefs(); 
-		
+
+
+		AppPrefs();
+
 		wxArrayString & GetPerspectives();
 		int & GetActivePerspective();
 		void SetActivePerspective(int activePerspective);
@@ -27,18 +27,18 @@ class AppPrefs{
 		void SetLastConfigFileDirectory(wxString lastconfigFileDirectory);
 		wxString GetLastDatalogDirectory();
 		void SetLastDatalogDirectory(wxString lastDatalogDirectory);
-		
-		
+
+
 		void SaveAppPrefs();
 		void LoadAppPrefs();
 		void ResetDefaults();
-		
+
 	private:
 		int				_activePerspective;
 		wxArrayString 	_perspectives;
 		wxArrayString	_perspectiveNames;
 		wxString		_lastConfigFileDirectory;
 		wxString		_lastDatalogDirectory;
-				
+
 };
 #endif /*APPOPTIONS_H_*/
