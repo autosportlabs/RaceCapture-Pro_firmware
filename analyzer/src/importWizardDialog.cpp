@@ -299,13 +299,14 @@ MapDatalogChannelsPage::MapDatalogChannelsPage(wxWizard *parent,ImportWizardPara
     innerSizer->AddGrowableCol(0);
 
     m_channelMapGrid = new wxGrid(this,ID_IMPORT_WIZ_CHANNEL_MAP_GRID);
-    m_channelMapGrid->CreateGrid(0,5);
+    m_channelMapGrid->CreateGrid(0,6);
 
-    m_channelMapGrid->SetColLabelValue(0,"Channel");
-    m_channelMapGrid->SetColLabelValue(1,"Type");
-    m_channelMapGrid->SetColLabelValue(2,"Units");
-    m_channelMapGrid->SetColLabelValue(3,"Min");
-    m_channelMapGrid->SetColLabelValue(4,"Max");
+    m_channelMapGrid->SetColLabelValue(0,"Select");
+    m_channelMapGrid->SetColLabelValue(1,"Channel");
+    m_channelMapGrid->SetColLabelValue(2,"Type");
+    m_channelMapGrid->SetColLabelValue(3,"Units");
+    m_channelMapGrid->SetColLabelValue(4,"Min");
+    m_channelMapGrid->SetColLabelValue(5,"Max");
 
     innerSizer->Add(m_channelMapGrid,1,wxEXPAND);
 
@@ -416,39 +417,50 @@ void MapDatalogChannelsPage::RefreshChannelGrid(){
 	DatalogChannels &channels = m_params->datalogChannels;
 	DatalogChannelTypes &channelTypes = m_params->datalogChannelTypes;
 
-	size_t count = channels.Count();
+	wxArrayString choices;
+	size_t channelTypesCount = channelTypes.Count();
+	for (size_t i = 0; i < channelTypesCount; i++){
+		choices.Add(channelTypes[i].name);
+	}
 
+	wxGridCellChoiceEditor *channelTypeEditor = new wxGridCellChoiceEditor(choices);
+
+	wxGridCellBoolEditor *boolTypeEditor = new wxGridCellBoolEditor();
 
 	m_channelMapGrid->ClearGrid();
 	int existingGridRows = m_channelMapGrid->GetRows();
 	if (existingGridRows > 0) m_channelMapGrid->DeleteRows(0,existingGridRows);
 
-	m_channelMapGrid->InsertRows(0,count,true);
+	size_t channelsCount = channels.Count();
+	m_channelMapGrid->InsertRows(0,channelsCount,true);
 
-	for (size_t i = 0; i < count; i++){
+	for (size_t i = 0; i < channelsCount; i++){
 		DatalogChannel &channel = channels[i];
-		m_channelMapGrid->SetCellValue(i,0,channel.name);
-		m_channelMapGrid->SetReadOnly(i,0,true);
-		m_channelMapGrid->SetCellBackgroundColour(i,0,DISABLED_BACKGROUND_COLOR);
+
+		m_channelMapGrid->SetCellEditor(i,0,boolTypeEditor);
+		m_channelMapGrid->SetCellRenderer(i,0,new wxGridCellBoolRenderer);
+
+		m_channelMapGrid->SetCellValue(i,1,channel.name);
+		m_channelMapGrid->SetReadOnly(i,1,true);
+		m_channelMapGrid->SetCellBackgroundColour(i,1,DISABLED_BACKGROUND_COLOR);
 
 		int typeId = channel.typeId;
 		if (typeId >=0){
 			DatalogChannelType &channelType = channelTypes[typeId];
-			m_channelMapGrid->SetCellValue(i,1,channelType.name);
+			m_channelMapGrid->SetCellValue(i,2,channelType.name);
+			m_channelMapGrid->SetCellEditor(i,2,channelTypeEditor);
 
-
-			m_channelMapGrid->SetCellValue(i,2,channelType.unitsLabel);
-			m_channelMapGrid->SetReadOnly(i,2,true);
-			m_channelMapGrid->SetCellBackgroundColour(i,2,DISABLED_BACKGROUND_COLOR);
-
-			m_channelMapGrid->SetCellValue(i,3,wxString::Format("%.2f",channelType.minValue));
+			m_channelMapGrid->SetCellValue(i,3,channelType.unitsLabel);
 			m_channelMapGrid->SetReadOnly(i,3,true);
 			m_channelMapGrid->SetCellBackgroundColour(i,3,DISABLED_BACKGROUND_COLOR);
 
-			m_channelMapGrid->SetCellValue(i,4,wxString::Format("%.2f",channelType.maxValue));
+			m_channelMapGrid->SetCellValue(i,4,wxString::Format("%.2f",channelType.minValue));
 			m_channelMapGrid->SetReadOnly(i,4,true);
 			m_channelMapGrid->SetCellBackgroundColour(i,4,DISABLED_BACKGROUND_COLOR);
 
+			m_channelMapGrid->SetCellValue(i,5,wxString::Format("%.2f",channelType.maxValue));
+			m_channelMapGrid->SetReadOnly(i,5,true);
+			m_channelMapGrid->SetCellBackgroundColour(i,5,DISABLED_BACKGROUND_COLOR);
 		}
 	}
 	m_channelMapGrid->AutoSize();
