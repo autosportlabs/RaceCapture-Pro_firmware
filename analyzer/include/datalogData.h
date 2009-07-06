@@ -46,7 +46,8 @@ public:
 class DatalogChannel{
 
 public:
-	DatalogChannel(wxString newName, int newTypeId, wxString newDescription);
+	static const int UNDEFINED_TYPE = -1;
+	DatalogChannel(wxString newName, int newTypeId = UNDEFINED_TYPE, wxString newDescription = "");
 	DatalogChannel();
 
 	wxString name;

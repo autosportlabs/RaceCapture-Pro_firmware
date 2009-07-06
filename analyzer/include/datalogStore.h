@@ -17,6 +17,13 @@
 #include "datalogData.h"
 
 
+class DatalogImportProgressListener {
+
+public:
+
+	virtual void UpdateProgress(int completePercent) = 0;
+};
+
 class DatastoreException : public RuntimeException{
 public:
 	DatastoreException(wxString msg, int errorCode):RuntimeException(msg),m_errorCode(errorCode) {
@@ -42,8 +49,9 @@ public:
 	void CreateNew(wxString filePath);
 	wxString GetFileName();
 	bool IsOpen();
-	void ImportDatalog(const wxString &filePath, const wxString &name, const wxString &notes);
+	void ImportDatalog(const wxString &filePath, const wxString &name, const wxString &notes, DatalogChannels &channels, DatalogChannelTypes &channelTypes, DatalogImportProgressListener *progressListener = NULL);
 
+	size_t CountFileLines(wxFFile &file);
 	void ReadDatalogInfo(int datalogId, int &timeOffset, wxString &name, wxString &notes);
 	void ReadChannels(DatalogChannels &channels);
 	void ReadChannelTypes(DatalogChannelTypes &channelTypes);
@@ -67,10 +75,9 @@ private:
 	size_t ExtractValues(wxArrayString &valueList, wxString &line);
 
 	void InsertDatalogRow(sqlite3_stmt *query, int id, int timePoint, wxArrayString &values);
-	void AddMissingChannels(wxArrayString &channelNames);
-	bool ChannelExists(wxArrayString &existingChannels, wxString &channelName);
-	void AddDatalogChannel(wxString &channelName, int typeId);
-	sqlite3_stmt * CreateDatalogInsertPreparedStatement(wxArrayString &headers);
+	void AddDatalogChannel(DatalogChannel &channel);
+	bool DatalogColumnExists(wxString &name);
+	sqlite3_stmt * CreateDatalogInsertPreparedStatement(DatalogChannels &channels);
 	int GetTopDatalogId();
 	int GetTopTimePoint();
 

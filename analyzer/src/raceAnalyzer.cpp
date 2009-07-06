@@ -528,12 +528,6 @@ void MainFrame::OnImportDatalog(wxCommandEvent& event){
 	*/
 }
 
-void MainFrame::ImportDatalog(const wxString &fileName, const wxString &name, const wxString &notes){
-
-	INFO(FMT("Importing Datalog %s",fileName.ToAscii()));
-	m_datalogStore.ImportDatalog(fileName, name, notes);
-	INFO("Datalog import complete");
-}
 
 
 void MainFrame::UpdateAnalyzerView(){

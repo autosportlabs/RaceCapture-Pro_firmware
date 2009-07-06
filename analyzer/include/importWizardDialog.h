@@ -10,9 +10,12 @@
 #include "wx/wxprec.h"
 #include "wx/wizard.h"
 #include "wx/grid.h"
-#import "appPrefs.h"
-#import "appOptions.h"
-#import "datalogStore.h"
+#include "wx/gauge.h"
+#include "wx/thread.h"
+#include "appPrefs.h"
+#include "appOptions.h"
+#include "datalogStore.h"
+#include "exceptions.h"
 
 class ImportWizardParams{
 
@@ -23,7 +26,8 @@ public:
 		datalogStore(NULL),
 		datalogFilePath(""),
 		datalogName(GetDefaultDatalogName()),
-		datalogDesc("")
+		datalogDesc(""),
+		datalogImported(false)
 		{}
 
 	ImportWizardParams(
@@ -38,7 +42,8 @@ public:
 		datalogStore(store),
 		datalogFilePath(filePath),
 		datalogName(name),
-		datalogDesc(desc)
+		datalogDesc(desc),
+		datalogImported(false)
 		{
 				if(0 == name.Length()) datalogName = GetDefaultDatalogName();
 		}
@@ -51,8 +56,23 @@ public:
 	wxString			datalogDesc;
 	DatalogChannels		datalogChannels;
 	DatalogChannelTypes datalogChannelTypes;
+	bool				datalogImported;
 
 	wxString GetDefaultDatalogName();
+};
+
+class ImporterThread : public wxThread , public DatalogImportProgressListener{
+
+public:
+	ImporterThread();
+	void SetParams(ImportWizardParams *params, wxWindow *owner);
+	virtual wxThread::ExitCode Entry();
+	virtual void UpdateProgress(int completePercent);
+
+private:
+
+	ImportWizardParams *m_params;
+	wxWindow *m_owner;
 };
 
 class DatalogFileSelectPage : public wxWizardPageSimple{
@@ -99,8 +119,17 @@ public:
 	MapDatalogChannelsPage(wxWizard *parent, ImportWizardParams *params);
 	void OnWizardPageChanged(wxWizardEvent &event);
 	void PopulateChannels();
-	void RefreshChannelGrid();
+	void AddExistingChannels(
+			wxArrayString &headers,
+			wxArrayString &remainingHeaders,
+			DatalogChannels &channels,
+			DatalogChannelTypes &channelTypes,
+			DatalogChannels &existingChannels,
+			DatalogChannelTypes &existingChannelTypes
+			);
 
+	void RefreshChannelGrid();
+	void UpdateUIState();
 	DECLARE_EVENT_TABLE()
 
 private:
@@ -108,6 +137,31 @@ private:
 	wxGrid				*m_channelMapGrid;
 };
 
+
+class DatalogImporterPage : public wxWizardPageSimple{
+
+public:
+	DatalogImporterPage(wxWizard *parent, ImportWizardParams *params);
+	void OnWizardPageChanged(wxWizardEvent &event);
+	void OnWizardPageChanging(wxWizardEvent &event);
+	void OnWizardPageFinished(wxWizardEvent &event);
+	void DoImportDatalog();
+	void OnStartImport(wxCommandEvent &event);
+	void OnImportProgress(wxCommandEvent &event);
+	void OnImportResult(wxCommandEvent &event);
+	void UpdateUIState();
+
+	DECLARE_EVENT_TABLE()
+
+private:
+	ImportWizardParams *m_params;
+	wxGauge *m_progressGauge;
+	wxStaticText *m_progressMessage;
+	wxStaticText *m_statusMessage;
+	ImporterThread *m_importerThread;
+	bool	m_importing;
+
+};
 
 class ImportDatalogWizard : public wxWizard{
 
@@ -128,9 +182,14 @@ enum{
 	ID_IMPORT_WIZ_PATH_TEXT_CTRL,
 	ID_IMPORT_WIZ_DATALOG_FILE_HELP_TEXT,
 	ID_IMPORT_WIZ_DATALOG_NAME_TEXT,
-	ID_IMPORT_WIZ_CHANNEL_MAP_GRID
+	ID_IMPORT_WIZ_CHANNEL_MAP_GRID,
+	ID_IMPORT_WIZ_IMPORT_PROGRESS,
+	ID_IMPORT_WIZ_START_IMPORT,
+	ID_IMPORT_WIZ_IMPORT_RESULT
 
 };
 
+DECLARE_EVENT_TYPE ( IMPORT_PROGRESS_EVENT, -1 )
+DECLARE_EVENT_TYPE ( IMPORT_RESULT_EVENT, -1 )
 
 #endif /* IMPORTWIZARDDIALOG_H_ */

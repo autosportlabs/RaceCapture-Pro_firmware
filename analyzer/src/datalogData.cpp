@@ -21,7 +21,7 @@ DatalogChannel::DatalogChannel(wxString newName, int newTypeId, wxString newDesc
 { }
 
 DatalogChannel::DatalogChannel() :
-	name(""), typeId(-1), description("")
+	name(""), typeId(UNDEFINED_TYPE), description("")
 { }
 
 int DatalogChannelUtil::FindChannelIdByName(DatalogChannels &channels, wxString &name){

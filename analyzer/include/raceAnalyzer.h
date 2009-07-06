@@ -133,7 +133,6 @@ class RaceAnalyzerApp : public wxApp{
     void OnRuntimePerspective(wxCommandEvent& event);
     void OnAnalyzePerspective(wxCommandEvent& event);
 	void OnRestoreDefaultView(wxCommandEvent &event);
-	void ImportDatalog(const wxString &fileName, const wxString &name, const wxString &notes);
 
 
  public:
