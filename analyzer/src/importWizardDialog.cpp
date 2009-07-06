@@ -11,6 +11,7 @@
 #define LOGGING_FILE_FILTER	"RaceAnalyzer Datalog File (*.log)|*.log|Generic CSV File (*.csv)|*.csv"
 
 #define ERROR_BACKGROUND_COLOR wxColor(0xff,0xe0,0xe0)
+#define DISABLED_BACKGROUND_COLOR wxColor(0xe0,0xe0,0xe0)
 
 wxString ImportWizardParams::GetDefaultDatalogName(){
 	return "Datalog " + wxDateTime::Now().FormatDate();
@@ -197,6 +198,11 @@ void DatalogFileSelectPage::OnDatalogPathTextChange(wxCommandEvent &event){
 	UpdateUIState();
 }
 
+void DatalogFileSelectPage::OnWizardPageChanged(wxWizardEvent& event){
+
+
+}
+
 void DatalogFileSelectPage::OnWizardPageChanging(wxWizardEvent& event)
 {
 	if (event.GetDirection() &&  ! wxFile::Exists(GetDatalogFilePath().ToAscii())){
@@ -209,6 +215,7 @@ BEGIN_EVENT_TABLE ( DatalogFileSelectPage, wxWizardPageSimple )
 
 	EVT_BUTTON(ID_IMPORT_WIZ_BROWSE_BUTTON, DatalogFileSelectPage::OnBrowse)
 	EVT_WIZARD_PAGE_CHANGING(wxID_ANY, DatalogFileSelectPage::OnWizardPageChanging)
+	EVT_WIZARD_PAGE_CHANGED(wxID_ANY, DatalogFileSelectPage::OnWizardPageChanged)
 	EVT_TEXT(ID_IMPORT_WIZ_PATH_TEXT_CTRL,DatalogFileSelectPage::OnDatalogPathTextChange)
 
 END_EVENT_TABLE()
@@ -410,20 +417,38 @@ void MapDatalogChannelsPage::RefreshChannelGrid(){
 	DatalogChannelTypes &channelTypes = m_params->datalogChannelTypes;
 
 	size_t count = channels.Count();
-	int existingRows = m_channelMapGrid->GetRows();
 
-	m_channelMapGrid->InsertRows(0,count - existingRows,true);
+
+	m_channelMapGrid->ClearGrid();
+	int existingGridRows = m_channelMapGrid->GetRows();
+	if (existingGridRows > 0) m_channelMapGrid->DeleteRows(0,existingGridRows);
+
+	m_channelMapGrid->InsertRows(0,count,true);
 
 	for (size_t i = 0; i < count; i++){
 		DatalogChannel &channel = channels[i];
 		m_channelMapGrid->SetCellValue(i,0,channel.name);
+		m_channelMapGrid->SetReadOnly(i,0,true);
+		m_channelMapGrid->SetCellBackgroundColour(i,0,DISABLED_BACKGROUND_COLOR);
+
 		int typeId = channel.typeId;
 		if (typeId >=0){
 			DatalogChannelType &channelType = channelTypes[typeId];
 			m_channelMapGrid->SetCellValue(i,1,channelType.name);
+
+
 			m_channelMapGrid->SetCellValue(i,2,channelType.unitsLabel);
+			m_channelMapGrid->SetReadOnly(i,2,true);
+			m_channelMapGrid->SetCellBackgroundColour(i,2,DISABLED_BACKGROUND_COLOR);
+
 			m_channelMapGrid->SetCellValue(i,3,wxString::Format("%.2f",channelType.minValue));
+			m_channelMapGrid->SetReadOnly(i,3,true);
+			m_channelMapGrid->SetCellBackgroundColour(i,3,DISABLED_BACKGROUND_COLOR);
+
 			m_channelMapGrid->SetCellValue(i,4,wxString::Format("%.2f",channelType.maxValue));
+			m_channelMapGrid->SetReadOnly(i,4,true);
+			m_channelMapGrid->SetCellBackgroundColour(i,4,DISABLED_BACKGROUND_COLOR);
+
 		}
 	}
 	m_channelMapGrid->AutoSize();
@@ -454,9 +479,9 @@ DatalogImporterPage::DatalogImporterPage(wxWizard *parent, ImportWizardParams *p
     m_progressGauge = new wxGauge(this,-1,100);
     m_progressMessage = new wxStaticText(this,-1,"",wxDefaultPosition,wxDefaultSize,wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
 
-    m_statusMessage = new wxStaticText(this,-1,"Ready To Import- Click 'Start' to Proceed",wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
+    m_statusMessage = new wxStaticText(this,-1,"Ready To Import- Click 'Import' to Proceed",wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
 
-    wxButton *startImportButton = new wxButton(this,ID_IMPORT_WIZ_START_IMPORT,"Start");
+    wxButton *startImportButton = new wxButton(this,ID_IMPORT_WIZ_START_IMPORT,"Import");
 
     mainSizer->Add(m_statusMessage,1,wxEXPAND | wxALIGN_CENTER_HORIZONTAL);
     mainSizer->Add(m_progressGauge,0,wxEXPAND);

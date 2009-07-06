@@ -82,6 +82,7 @@ public:
 	void OnDatalogPathTextChange(wxCommandEvent &event);
 	void OnBrowse(wxCommandEvent &event);
 	void OnWizardPageChanging(wxWizardEvent &event);
+	void OnWizardPageChanged(wxWizardEvent &event);
 	wxString GetDatalogFilePath();
     void SetDatalogFilePath(wxString filePath);
     bool IsFileValid(wxString filePath);
