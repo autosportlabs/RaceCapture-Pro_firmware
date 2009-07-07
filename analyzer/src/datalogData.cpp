@@ -16,12 +16,12 @@ DatalogChannelType::DatalogChannelType(wxString newName, wxString newUnitsLabel,
 	name(newName), unitsLabel(newUnitsLabel), smoothingLevel(newSmoothingLevel), minValue(newMinValue), maxValue(newMaxValue)
 { }
 
-DatalogChannel::DatalogChannel(wxString newName, int newTypeId, wxString newDescription) :
-	name(newName), typeId(newTypeId), description(newDescription)
+DatalogChannel::DatalogChannel(wxString newName, int newTypeId, wxString newDescription, bool en) :
+	name(newName), typeId(newTypeId), description(newDescription), enabled(en)
 { }
 
 DatalogChannel::DatalogChannel() :
-	name(""), typeId(UNDEFINED_TYPE), description("")
+	name(""), typeId(UNDEFINED_TYPE), description(""), enabled(true)
 { }
 
 int DatalogChannelUtil::FindChannelIdByName(DatalogChannels &channels, wxString &name){

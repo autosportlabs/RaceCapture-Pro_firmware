@@ -72,12 +72,12 @@ private:
 	void SetFilename(wxString name);
 	void CreateTables();
 	size_t ReadLine(wxString &buffer, wxFFile &file);
-	size_t ExtractValues(wxArrayString &valueList, wxString &line);
+	size_t ExtractValues(wxArrayString &valueList, wxString &line, wxArrayInt *selectedColumns = NULL);
 
 	void InsertDatalogRow(sqlite3_stmt *query, int id, int timePoint, wxArrayString &values);
 	void AddDatalogChannel(DatalogChannel &channel);
 	bool DatalogColumnExists(wxString &name);
-	sqlite3_stmt * CreateDatalogInsertPreparedStatement(DatalogChannels &channels);
+	sqlite3_stmt * CreateDatalogInsertPreparedStatement(wxArrayString &columns, wxArrayInt &selectedColumns);
 	int GetTopDatalogId();
 	int GetTopTimePoint();
 

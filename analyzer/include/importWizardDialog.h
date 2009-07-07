@@ -119,6 +119,7 @@ class MapDatalogChannelsPage : public wxWizardPageSimple{
 public:
 	MapDatalogChannelsPage(wxWizard *parent, ImportWizardParams *params);
 	void OnWizardPageChanged(wxWizardEvent &event);
+	void OnWizardPageChanging(wxWizardEvent &event);
 	void PopulateChannels();
 	void AddExistingChannels(
 			wxArrayString &headers,

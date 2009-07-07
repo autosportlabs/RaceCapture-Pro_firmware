@@ -156,6 +156,17 @@ void DatalogStore::ImportDatalog(const wxString &filePath, const wxString &name,
 		datalogFile.Seek(0,wxFromStart);
 	}
 
+	wxArrayString columnNames;
+	wxArrayInt selectedColumns;
+	GetDatalogHeaders(columnNames,datalogFile);
+
+	//Select the columns we are inserting
+	size_t columnNamesCount = columnNames.Count();
+	for (size_t i = 0; i < columnNamesCount; i++){
+		int id = DatalogChannelUtil::FindChannelIdByName(channels, columnNames[i]);
+		selectedColumns.Add(id >= 0 ? 1 : 0);
+	}
+
 	int timeOffset = 0;
 
 	sqlite3_exec(m_db,"BEGIN TRANSACTION",NULL,NULL,NULL);
@@ -170,7 +181,6 @@ void DatalogStore::ImportDatalog(const wxString &filePath, const wxString &name,
 			throw DatastoreException("Failed to prepare Insert DatalogInfo statement", rc);
 		}
 	}
-
 	{
 		int rc = sqlite3_bind_int(infoStmt,1,timeOffset);
 		if (SQLITE_OK != rc){
@@ -200,7 +210,7 @@ void DatalogStore::ImportDatalog(const wxString &filePath, const wxString &name,
 
 	int datalogId = GetTopDatalogId();
 
-	sqlite3_stmt *insertStmt = CreateDatalogInsertPreparedStatement(channels);
+	sqlite3_stmt *insertStmt = CreateDatalogInsertPreparedStatement(columnNames, selectedColumns);
 
 	wxArrayString values;
 	int timePoint = 0;
@@ -212,7 +222,7 @@ void DatalogStore::ImportDatalog(const wxString &filePath, const wxString &name,
 
 	while (ReadLine(line,datalogFile)){
 		values.Clear();
-		ExtractValues(values, line);
+		ExtractValues(values, line, &selectedColumns);
 		InsertDatalogRow(insertStmt, datalogId, timePoint, values);
 		timePoint += logInterval;
 		if (NULL != progressListener){
@@ -229,23 +239,24 @@ void DatalogStore::ImportDatalog(const wxString &filePath, const wxString &name,
 
 }
 
-sqlite3_stmt * DatalogStore::CreateDatalogInsertPreparedStatement(DatalogChannels &channels){
+sqlite3_stmt * DatalogStore::CreateDatalogInsertPreparedStatement(wxArrayString &columns, wxArrayInt &selectedColumns){
 
 	sqlite3_stmt *query;
 
-	size_t count = channels.Count();
+	size_t count = columns.Count();
 
 	wxString sql = "INSERT INTO datalog(id,timePoint,";
 	for (size_t i = 0; i < count; i++){
-		sql += channels[i].name;
-		if (i < count - 1) sql += ",";
+		if (selectedColumns[i]) sql += columns[i] + ",";
 	}
-	sql +=") VALUES (?,?,";
+	sql.RemoveLast();
+
+	sql += ") VALUES (?,?,";
 	for (size_t i = 0; i < count; i++){
-		sql += "?";
-		if (i < count - 1) sql += ",";
+		if (selectedColumns[i])	sql += "?,";
 	}
-	sql +=")";
+	sql.RemoveLast();
+	sql += ")";
 	VERBOSE(FMT("Datalog insert prepared statement: %s", sql.ToAscii()));
 	{
 		int rc = sqlite3_prepare(m_db, sql.ToAscii(), sql.Length(), &query, NULL);
@@ -579,23 +590,27 @@ size_t DatalogStore::ReadLine(wxString &buffer, wxFFile &file){
 	return readCount;
 }
 
-size_t DatalogStore::ExtractValues(wxArrayString &valueList, wxString &line){
+size_t DatalogStore::ExtractValues(wxArrayString &valueList, wxString &line, wxArrayInt *selectedColumns){
 
 	wxStringTokenizer tok(line, DATALOG_ITEM_DELIMITER, wxTOKEN_RET_EMPTY);
 
+	size_t selectedColumnsCount = 0;
+	if (NULL != selectedColumns) selectedColumnsCount = selectedColumns->Count();
 	size_t count = 0;
 	while (tok.HasMoreTokens()){
 		wxString value = tok.NextToken();
 		value.Strip(wxString::both);
 		//process string value
-		VERBOSE(FMT("token Value: %s",value.ToAscii()));
 		size_t len = value.Length();
 		if (len > 0 && value[0] == '"' && value[len - 1] == '"'){
 			value.Remove(0,1);
 			value.RemoveLast(1);
 			value.Replace(DATALOG_ITEM_STRING_DELIMITER_ESCAPE, DATALOG_ITEM_STRING_DELIMETER, true);
 		}
-		valueList.Add(value);
+		if (NULL == selectedColumns || (count < selectedColumnsCount && selectedColumns->Item(count))){
+			valueList.Add(value);
+			VERBOSE(FMT("Adding value: %s",value.ToAscii()));
+		}
 		count++;
 	}
 	return count;

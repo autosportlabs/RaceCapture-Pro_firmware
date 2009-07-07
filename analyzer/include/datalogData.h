@@ -47,12 +47,13 @@ class DatalogChannel{
 
 public:
 	static const int UNDEFINED_TYPE = -1;
-	DatalogChannel(wxString newName, int newTypeId = UNDEFINED_TYPE, wxString newDescription = "");
+	DatalogChannel(wxString newName, int newTypeId = UNDEFINED_TYPE, wxString newDescription = "", bool en = true);
 	DatalogChannel();
 
 	wxString name;
 	int typeId;
 	wxString description;
+	bool enabled;
 };
 
 WX_DECLARE_OBJARRAY(DatalogChannel,DatalogChannels);

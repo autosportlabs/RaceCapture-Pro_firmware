@@ -47,26 +47,28 @@ wxThread::ExitCode ImporterThread::Entry(){
 
 			DatalogChannel importChannel = importChannels[i];
 
-			int existingId = DatalogChannelUtil::FindChannelIdByName(existingChannels,importChannel.name);
+			if (importChannel.enabled){
+				int existingId = DatalogChannelUtil::FindChannelIdByName(existingChannels,importChannel.name);
 
-			if (existingId < 0){
-				//need to add the channel
-				int typeId = importChannel.typeId;
+				if (existingId < 0){
+					//need to add the channel
+					int typeId = importChannel.typeId;
 
-				if (typeId >= 0){
-					DatalogChannelType importType = importChannelTypes[typeId];
+					if (typeId >= 0){
+						DatalogChannelType importType = importChannelTypes[typeId];
 
-					int existingTypeId = DatalogChannelUtil::FindChannelTypeIdByName(existingChannelTypes, importType.name);
+						int existingTypeId = DatalogChannelUtil::FindChannelTypeIdByName(existingChannelTypes, importType.name);
 
-					if (existingTypeId < 0){
-						existingChannelTypes.Add(importType);
-						importChannel.typeId = existingChannelTypes.Count() - 1;
+						if (existingTypeId < 0){
+							existingChannelTypes.Add(importType);
+							importChannel.typeId = existingChannelTypes.Count() - 1;
+						}
+						else{
+							importChannel.typeId = existingTypeId;
+						}
 					}
-					else{
-						importChannel.typeId = existingTypeId;
-					}
+					existingChannels.Add(importChannel);
 				}
-				existingChannels.Add(importChannel);
 			}
 		}
 
@@ -323,6 +325,27 @@ void MapDatalogChannelsPage::OnWizardPageChanged(wxWizardEvent &event){
 	UpdateUIState();
 }
 
+void MapDatalogChannelsPage::OnWizardPageChanging(wxWizardEvent &event){
+
+	DatalogChannels &channels = m_params->datalogChannels;
+	DatalogChannelTypes &channelTypes = m_params->datalogChannelTypes;
+
+	size_t count = m_channelMapGrid->GetRows();
+	for (size_t i = 0; i < count; i++){
+
+		wxString channelType = m_channelMapGrid->GetCellValue(i,2);
+
+		DatalogChannel &channel = channels[i];
+		int typeId = DatalogChannelUtil::FindChannelTypeIdByName(channelTypes,channelType);
+		if (typeId >= 0){
+			channel.typeId = typeId;
+		}
+
+		bool selected= m_channelMapGrid->GetCellValue(i,0) == "1";
+		channel.enabled = selected;
+	}
+}
+
 void MapDatalogChannelsPage::PopulateChannels(){
 
 	DatalogChannels &channels = m_params->datalogChannels;
@@ -439,6 +462,7 @@ void MapDatalogChannelsPage::RefreshChannelGrid(){
 
 		m_channelMapGrid->SetCellEditor(i,0,boolTypeEditor);
 		m_channelMapGrid->SetCellRenderer(i,0,new wxGridCellBoolRenderer);
+		m_channelMapGrid->SetCellValue(i,0,"1");
 
 		m_channelMapGrid->SetCellValue(i,1,channel.name);
 		m_channelMapGrid->SetReadOnly(i,1,true);
@@ -476,6 +500,7 @@ void MapDatalogChannelsPage::UpdateUIState(){
 BEGIN_EVENT_TABLE ( MapDatalogChannelsPage, wxWizardPageSimple )
 
 	EVT_WIZARD_PAGE_CHANGED(wxID_ANY, MapDatalogChannelsPage::OnWizardPageChanged)
+	EVT_WIZARD_PAGE_CHANGING(wxID_ANY, MapDatalogChannelsPage::OnWizardPageChanging)
 
 END_EVENT_TABLE()
 
