@@ -37,6 +37,9 @@ LogViewer::~LogViewer(){
 
 }
 
+void LogViewer::SetChartParams(ChartParams params){
+	m_chartParams = params;
+}
 
 void LogViewer::InitComponents(){
 

@@ -7,6 +7,7 @@
 #include <wx/filename.h>
 #include <wx/splash.h>
 #include <wx/cmdline.h>
+#include <wx/wizard.h>
 
 #include "datalogStore.h"
 #include "logViewer.h"
@@ -21,6 +22,7 @@
 #include "appPrefs.h"
 #include "commonEvents.h"
 #include "digitalRPMPanel.h"
+#include "chartBase.h"
 
 #include <wx/aui/aui.h>
 #include <wx/aui/framemanager.h>
@@ -48,12 +50,10 @@ class RaceAnalyzerApp : public wxApp{
   };
 
 
-
-  class MainFrame : public wxFrame
+class MainFrame : public wxFrame
   {
 
   private:
-
 
 	void InitComms();
   	void NotifyConfigChanged();
@@ -86,6 +86,40 @@ class RaceAnalyzerApp : public wxApp{
 	void NewRaceEvent(wxString fileName);
 	void CloseRaceEvent();
 
+	void AddNewLineChart();
+
+	//Main Panels
+
+  	//events
+  	void OnHelpAbout(wxCommandEvent &event);
+
+  	void OnConfigChanged(wxCommandEvent &event);
+  	void OnFileExit(wxCommandEvent &event);
+  	void OnExit(wxCloseEvent& WXUNUSED(event));
+  	void RaceEventLoaded();
+  	void OnNewRaceEvent(wxCommandEvent &event);
+  	void OnOpenRaceEvent(wxCommandEvent &event);
+
+	void OnImportDatalog(wxCommandEvent &event);
+	void OnAppOptions(wxCommandEvent &event);
+    void OnSwitchView(wxCommandEvent &event);
+    void OnConfigPerspective(wxCommandEvent &event);
+    void OnRuntimePerspective(wxCommandEvent &event);
+    void OnAnalyzePerspective(wxCommandEvent &event);
+	void OnRestoreDefaultView(wxCommandEvent &event);
+
+	void OnImportWizardFinished(wxWizardEvent &event);
+
+	//chart events
+	void OnAddLineChart(wxCommandEvent &event);
+
+ public:
+
+
+	void OpenRaceEvent(wxString fileName);
+    MainFrame( const wxString &title, const wxPoint &pos, const wxSize &size );
+	~MainFrame();
+
 	//Data
 
 	ConfigData 			m_currentConfigData;
@@ -100,49 +134,23 @@ class RaceAnalyzerApp : public wxApp{
 
 	DatalogStoreRows	m_datalogData;
 
-	LogViewer			*m_analyzePanel;
 	wxPanel				*m_configPanel;
 	ScriptPanel			*m_scriptPanel;
+	wxPanel				*m_analyzePanel;
 	DatalogChannelsPanel *m_channelsPanel;
 
 
-	//App Options and settings
-	AppOptions		m_appOptions;
+	RaceAnalyzerCharts	m_charts;
 
-	AppPrefs		_appPrefs;
+	//App Options and settings
+	AppOptions			m_appOptions;
+
+	AppPrefs			_appPrefs;
 
 	//Frame Manager
 	wxAuiManager		_frameManager;
 
-	//Main Panels
-
-  	//events
-  	void OnHelpAbout(wxCommandEvent &event);
-
-  	void OnConfigChanged(wxCommandEvent &event);
-  	void OnFileExit(wxCommandEvent &event);
-  	void OnExit(wxCloseEvent& WXUNUSED(event));
-  	void RaceEventLoaded();
-  	void OnNewRaceEvent(wxCommandEvent& event);
-  	void OnOpenRaceEvent(wxCommandEvent& event);
-
-	void OnImportDatalog(wxCommandEvent& event);
-	void OnAppOptions(wxCommandEvent& event);
-    void OnSwitchView(wxCommandEvent& event);
-    void OnConfigPerspective(wxCommandEvent& event);
-    void OnRuntimePerspective(wxCommandEvent& event);
-    void OnAnalyzePerspective(wxCommandEvent& event);
-	void OnRestoreDefaultView(wxCommandEvent &event);
-
-
- public:
-
-
-	void OpenRaceEvent(wxString fileName);
-    MainFrame( const wxString &title, const wxPoint &pos, const wxSize &size );
-	~MainFrame();
-
-    DECLARE_EVENT_TABLE()
+	DECLARE_EVENT_TABLE()
 
   };
 
@@ -161,8 +169,11 @@ class RaceAnalyzerApp : public wxApp{
 	ID_HELP_ABOUT,
 	ID_IMPORT_DATALOG,
 
+	ID_ADD_LINE_CHART,
+
 	ID_RESTORE_DEFAULT_VIEWS,
-	ID_PERSPECTIVES
+	ID_PERSPECTIVES //this must be last
+
   };
 
 

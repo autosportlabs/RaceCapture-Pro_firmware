@@ -10,11 +10,14 @@
 
 #include "wx/wxprec.h"
 #include "lineChart.h"
+#include "chartBase.h"
 
-class LogViewer : public wxPanel {
+
+class LogViewer : public wxPanel, public RaceAnalyzerChart {
 
 public:
 	LogViewer();
+	void SetChartParams(ChartParams params);
 	LogViewer(wxWindow *parent,
 				wxWindowID id = -1,
 				const wxPoint &pos = wxDefaultPosition,
@@ -31,6 +34,7 @@ public:
 private:
 	wxScrollBar *m_scrollBar;
 	LineChart 	*m_lineChart;
+	ChartParams	m_chartParams;
 
 	DECLARE_EVENT_TABLE()
 };

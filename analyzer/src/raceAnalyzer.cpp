@@ -124,7 +124,17 @@ void MainFrame::ShowSplashScreen(){
 void MainFrame::InitializeFrame(){
 
 	_frameManager.SetFrame(this);
+
+#ifdef __WXMSW_
 	_frameManager.SetFlags(_frameManager.GetFlags() ^ wxAUI_MGR_TRANSPARENT_DRAG);
+#else
+	//workaround for bug
+	//http://trac.wxwidgets.org/ticket/4841
+	_frameManager.SetFlags(wxAUI_MGR_ALLOW_FLOATING |
+			wxAUI_MGR_NO_VENETIAN_BLINDS_FADE |
+			wxAUI_MGR_RECTANGLE_HINT
+			);
+#endif
 
 	CreateStatusBar(3);
 
@@ -270,6 +280,10 @@ void MainFrame::InitializeMenus(){
 
 	menuBar->Append(viewMenu, "View");
 
+	wxMenu *chartsMenu = new wxMenu();
+	chartsMenu->Append(ID_ADD_LINE_CHART,wxT("Line Chart"));
+	menuBar->Append(chartsMenu, "Charts");
+
 	wxMenu* perspectiveMenu = new wxMenu();
 	int perspectiveCount = _appPrefs.GetPerspectiveNames().Count();
 
@@ -317,7 +331,7 @@ void MainFrame::InitializeComponents(){
 	m_channelsPanel->SetDatalogStore(&m_datalogStore);
 	_frameManager.AddPane(m_channelsPanel, wxAuiPaneInfo().Name(wxT(PANE_RUNTIME)).Caption(wxT(CAPTION_RUNTIME)).Center().Hide());
 
-	m_analyzePanel = new LogViewer(this);
+	m_analyzePanel = new wxPanel(this);
 	_frameManager.AddPane(m_analyzePanel, wxAuiPaneInfo().Name(wxT(PANE_ANALYZE)).Caption(wxT(CAPTION_ANALYSIS)).Center().Hide());
 
 	m_configPanel = new wxPanel(this);
@@ -529,12 +543,14 @@ void MainFrame::OnImportDatalog(wxCommandEvent& event){
 }
 
 
+void MainFrame::OnImportWizardFinished(wxWizardEvent &event){
+	UpdateAnalyzerView();
+}
 
 void MainFrame::UpdateAnalyzerView(){
 
 	INFO("Updating Analyzer view");
 	UpdateDatalogSessions();
-	UpdateAnalysis();
 	INFO("Updating Analyzer view complete");
 }
 
@@ -544,7 +560,7 @@ void MainFrame::UpdateDatalogSessions(){
 
 void MainFrame::UpdateAnalysis(){
 
-	m_datalogData.Clear();
+/*	m_datalogData.Clear();
 
 	wxArrayString channels;
 	channels.Add("GPSVelocity");
@@ -575,7 +591,7 @@ void MainFrame::UpdateAnalysis(){
 
 	Series *yaw = new Series(&m_datalogData,4,gForceRangeId,0,"Yaw",*wxRED);
 	m_analyzePanel->GetLineChart()->AddSeries(yaw);
-
+*/
 }
 
 
@@ -628,6 +644,36 @@ void MainFrame::TerminateApp(){
 	Destroy();
 }
 
+void MainFrame::AddNewLineChart(){
+
+
+	LogViewer *logViewer = new LogViewer(this, -1);
+	logViewer->SetChartParams(ChartParams(&_appPrefs,&m_appOptions,&m_datalogStore));
+
+	m_charts.Add(logViewer);
+	int id = m_charts.Count();
+	wxString name = wxString::Format("Line Chart %d", id);
+
+	_frameManager.AddPane(logViewer,
+			wxAuiPaneInfo().
+			BestSize(100,50).
+			MinSize(100,50).
+			Name(name).
+			Caption("Line Chart").
+			Bottom().
+			Layer(1).
+			Position(2).
+			Show(true));
+
+	_frameManager.Update();
+}
+
+
+void MainFrame::OnAddLineChart(wxCommandEvent &event){
+	AddNewLineChart();
+}
+
+
 BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
   	EVT_CLOSE (MainFrame::OnExit)
 
@@ -646,6 +692,10 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 	EVT_MENU( ID_ANALYZE_MODE, MainFrame::OnAnalyzePerspective)
 
 	EVT_MENU( ID_HELP_ABOUT, MainFrame::OnHelpAbout)
+
+	EVT_WIZARD_FINISHED(wxID_ANY, MainFrame::OnImportWizardFinished)
+
+	EVT_MENU(ID_ADD_LINE_CHART, MainFrame::OnAddLineChart)
 
 	//this must always be last
 	EVT_MENU_RANGE(ID_PERSPECTIVES, ID_PERSPECTIVES + MAX_PERSPECTIVES, MainFrame::OnSwitchView)
