@@ -75,10 +75,14 @@ void DatalogChannelsPanel::AddDatalogSession(int id){
 	grid->SetColLabelValue(3,"Min");
 	grid->SetColLabelValue(4,"Max");
 
-	wxArrayString channelNames;
-	m_datalogStore->GetChannelNames(channelNames);
+	DatalogChannels channels;
+	m_datalogStore->GetChannels(channels);
 
-	ReloadChannels(channelNames,grid);
+	DatalogChannelTypes channelTypes;
+	m_datalogStore->GetChannelTypes(channelTypes);
+
+	ReloadChannels(channels,channelTypes,grid);
+
 
 }
 
@@ -116,7 +120,7 @@ void DatalogChannelsPanel::UpdateDatalogSessions(){
 	}
 }
 
-void DatalogChannelsPanel::ReloadChannels(wxArrayString &names, wxGrid *grid){
+void DatalogChannelsPanel::ReloadChannels(DatalogChannels &channels, DatalogChannelTypes &channelTypes, wxGrid *grid){
 
 	if (NULL == m_datalogStore){
 		return;
@@ -124,11 +128,19 @@ void DatalogChannelsPanel::ReloadChannels(wxArrayString &names, wxGrid *grid){
 
 	int existingRows = grid->GetNumberRows();
 	if (existingRows > 0) grid->DeleteRows(0,existingRows);
-	size_t nameSize = names.size();
-	grid->AppendRows(nameSize);
-	for (size_t i = 0; i < nameSize; i++){
-		grid->SetCellValue(i,0,names[i]);
+	size_t channelsSize = channels.size();
+	grid->AppendRows(channelsSize);
+	for (size_t i = 0; i < channelsSize; i++){
+		DatalogChannel &channel = channels[i];
+		grid->SetCellValue(i,0,channel.name);
+		DatalogChannelType &type = channelTypes[channel.typeId];
+
+		grid->SetCellValue(i,1,type.name);
+		grid->SetCellValue(i,2,type.unitsLabel);
+		grid->SetCellValue(i,3,wxString::Format("%.2f",type.minValue));
+		grid->SetCellValue(i,4,wxString::Format("%.2f",type.maxValue));
 	}
+
 	UpdateRuntimeValues();
 }
 

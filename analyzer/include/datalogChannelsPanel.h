@@ -28,7 +28,7 @@ class DatalogChannelsPanel : public wxPanel{
 
 		void UpdateDatalogSessions();
 		void AddDatalogSession(int id);
-		void ReloadChannels(wxArrayString &names, wxGrid *grid);
+		void ReloadChannels(DatalogChannels &channels, DatalogChannelTypes &channelTypes, wxGrid *grid);
 		void SetDatalogStore(DatalogStore *datalogStore);
 		void UpdateRuntimeValues();
 

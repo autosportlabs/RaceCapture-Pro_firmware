@@ -77,7 +77,7 @@ void AppOptions::LoadDefaultStandardChannelTypes(DatalogChannelTypes &types){
 	types.Add( DatalogChannelType("GForce", "G", 5,-2.0,2.0) );
 	types.Add( DatalogChannelType("Rotation", "Degrees/Sec", 5, -300.0, 300.0) );
 	types.Add( DatalogChannelType("TimeDate", "UTC", 0, 0, 0) );
-	types.Add( DatalogChannelType("Count", "Count", 0,0, 10.0) );
+	types.Add( DatalogChannelType("Count", "Count", 0,0, 100.0) );
 	types.Add( DatalogChannelType("Latitude", "Degrees", 0, 0, 360.0) );
 	types.Add( DatalogChannelType("Longitude", "Degrees", 0, 0, 360.0) );
 	types.Add( DatalogChannelType("Speed", "KPH", 0, 0, 300.0) );
