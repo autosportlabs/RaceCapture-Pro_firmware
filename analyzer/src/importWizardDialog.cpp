@@ -32,10 +32,12 @@ wxThread::ExitCode ImporterThread::Entry(){
 	wxCommandEvent resultEvent( IMPORT_RESULT_EVENT, ID_IMPORT_WIZ_IMPORT_RESULT );
 	try{
 
+		wxArrayInt importChannelIds;
+
 		DatalogChannels existingChannels;
 		DatalogChannelTypes existingChannelTypes;
 
-		store->GetChannels(existingChannels);
+		store->GetAllChannels(existingChannels);
 		store->GetChannelTypes(existingChannelTypes);
 
 		DatalogChannels &importChannels = m_params->datalogChannels;
@@ -48,7 +50,7 @@ wxThread::ExitCode ImporterThread::Entry(){
 			DatalogChannel importChannel = importChannels[i];
 
 			if (importChannel.enabled){
-				int existingId = DatalogChannelUtil::FindChannelIdByName(existingChannels,importChannel.name);
+				int existingId = DatalogChannelUtil::FindChannelIdByName(existingChannels, importChannel.name);
 
 				if (existingId < 0){
 					//need to add the channel
@@ -68,6 +70,10 @@ wxThread::ExitCode ImporterThread::Entry(){
 						}
 					}
 					existingChannels.Add(importChannel);
+					importChannelIds.Add(existingChannels.Count() - 1);
+				}
+				else{
+					importChannelIds.Add(existingId);
 				}
 			}
 		}
@@ -84,6 +90,8 @@ wxThread::ExitCode ImporterThread::Entry(){
 				existingChannels,
 				existingChannelTypes,
 				this);
+		int newId = store->GetTopDatalogId();
+		store->ImportDatalogChannelMap(newId, importChannelIds);
 		resultEvent.SetInt(1);
 	}
 	catch(DatastoreException e){
@@ -370,7 +378,7 @@ void MapDatalogChannelsPage::PopulateChannels(){
 	DatalogChannels existingChannels;
 	DatalogChannelTypes existingChannelTypes;
 
-	store->GetChannels(existingChannels);
+	store->GetAllChannels(existingChannels);
 	store->GetChannelTypes(existingChannelTypes);
 
 	wxArrayString remainingHeaders;

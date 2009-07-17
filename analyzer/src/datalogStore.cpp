@@ -107,26 +107,40 @@ void DatalogStore::CreateTables(){
 			throw DatastoreException(errMsg, rc);
 		}
 	}
+
 	{
 		const char *CREATE_DATALOG_TABLE_CHANNEL_TYPES_SQL = \
-		"CREATE TABLE datalogChannelTypes(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, units TEXT NOT NULL, smoothing INTEGER NOT NULL, min REAL NULL, max REAL NULL)";
+		"CREATE TABLE channelTypes(id INTEGER PRIMARY KEY, name TEXT NOT NULL, units TEXT NOT NULL, smoothing INTEGER NOT NULL, min REAL NULL, max REAL NULL)";
 		int rc = sqlite3_exec(m_db, CREATE_DATALOG_TABLE_CHANNEL_TYPES_SQL, NULL, NULL, &sqlErrMsg);
 		if ( rc != SQLITE_OK ){
-			wxString errMsg = wxString::Format("Error creating 'datalogChannelTypes' table: %s", sqlErrMsg);
+			wxString errMsg = wxString::Format("Error creating 'channelTypes' table: %s", sqlErrMsg);
 			sqlite3_free(sqlErrMsg);
 			throw DatastoreException(errMsg, rc);
 		}
 	}
+
 	{
 		const char *CREATE_DATALOG_TABLE_CHANNELS_SQL = \
-		"CREATE TABLE datalogChannels(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, typeId integer NOT NULL, description TEXT NULL)";
+		"CREATE TABLE channels(id INTEGER PRIMARY KEY, name TEXT NOT NULL, typeId integer NOT NULL, description TEXT NULL)";
 		int rc = sqlite3_exec(m_db, CREATE_DATALOG_TABLE_CHANNELS_SQL, NULL, NULL, &sqlErrMsg);
 		if ( rc != SQLITE_OK ){
-			wxString errMsg = wxString::Format("Error creating 'datalogChannels' table: %s", sqlErrMsg);
+			wxString errMsg = wxString::Format("Error creating 'channels' table: %s", sqlErrMsg);
 			sqlite3_free(sqlErrMsg);
 			throw DatastoreException(errMsg, rc);
 		}
 	}
+
+	{
+		const char *CREATE_DATALOG_CHANNEL_MAP_SQL = \
+		"CREATE TABLE datalogChannelMap(datalogId INTEGER NOT NULL, channelId INTEGER NOT NULL)";
+		int rc = sqlite3_exec(m_db, CREATE_DATALOG_CHANNEL_MAP_SQL, NULL, NULL, &sqlErrMsg);
+		if (rc != SQLITE_OK ){
+			wxString errMsg = wxString::Format("Error creating 'datalogChannelMap' table: %s", sqlErrMsg);
+			sqlite3_free(sqlErrMsg);
+			throw DatastoreException(errMsg, rc);
+		}
+	}
+
 }
 
 
@@ -140,6 +154,52 @@ void DatalogStore::GetDatalogHeaders(wxArrayString &headers, wxFFile &file){
 	}
 	ExtractValues(headers,line);
 }
+
+void DatalogStore::ImportDatalogChannelMap(int datalogId, wxArrayInt &channelIds){
+
+	sqlite3_exec(m_db,"BEGIN TRANSACTION",NULL,NULL,NULL);
+
+	const char * INSERT_CHANNEL_TYPE_MAP =
+		"INSERT INTO datalogChannelMap (datalogId, channelId) values (?,?)";
+
+	sqlite3_stmt *stmt;
+
+	{
+		int rc = sqlite3_prepare(m_db, INSERT_CHANNEL_TYPE_MAP, strlen(INSERT_CHANNEL_TYPE_MAP), &stmt, NULL);
+		if (SQLITE_OK != rc){
+			throw DatastoreException("Failed to prepare insert channelTypeMap statement", rc);
+		}
+	}
+
+	size_t count = channelIds.Count();
+
+	for (size_t i = 0; i < count; i++){
+		int channelId = channelIds[i];
+		{
+			int rc = sqlite3_bind_int(stmt, 1, datalogId);
+			if (SQLITE_OK != rc){
+				throw DatastoreException("Failed to bind datalogId parameter for channelTypeMap", rc);
+			}
+		}
+		{
+			int rc = sqlite3_bind_int(stmt, 2, channelId);
+			if (SQLITE_OK != rc){
+				throw DatastoreException("Failed to bind channelId parameter for channelTypeMap", rc);
+			}
+		}
+
+		int rc = sqlite3_step(stmt);
+		if (SQLITE_DONE != rc){
+			VERBOSE(FMT("Error inserting: %s %d",sqlite3_errmsg(m_db),rc));
+			throw DatastoreException("failed to insert channelTypeMap record" ,rc);
+		}
+		sqlite3_reset(stmt);
+	}
+
+	sqlite3_exec(m_db,"COMMIT",NULL,NULL,NULL);
+	sqlite3_finalize(stmt);
+}
+
 
 void DatalogStore::ImportDatalog(const wxString &filePath, const wxString &name, const wxString &notes, DatalogChannels &channels, DatalogChannelTypes &channelTypes, DatalogImportProgressListener *progressListener){
 
@@ -313,13 +373,13 @@ void DatalogStore::InsertDatalogRow(sqlite3_stmt *query, int id, int timePoint, 
 }
 
 
-void DatalogStore::AddDatalogChannel(DatalogChannel &channel){
+void DatalogStore::AddDatalogChannel(int channelId, DatalogChannel &channel){
 
 	wxString &channelName = channel.name;
 
 	VERBOSE(FMT("Adding Datalog Channel '%s'", channelName.ToAscii()));
 
-	const char * ADD_CHANNEL_SQL = "INSERT INTO datalogChannels(name,typeId,description) values(?,?,?)";
+	const char * ADD_CHANNEL_SQL = "INSERT INTO channels(id,name,typeId,description) values(?,?,?,?)";
 
 	sqlite3_stmt *query;
 	{
@@ -329,19 +389,25 @@ void DatalogStore::AddDatalogChannel(DatalogChannel &channel){
 		}
 	}
 	{
-		int rc = sqlite3_bind_text(query,1,channelName.ToAscii(),channelName.Length(), SQLITE_STATIC);
+		int rc = sqlite3_bind_int(query,1,channelId);
+		if (SQLITE_OK != rc){
+			throw DatastoreException("Failed to bind channelIdparameter", rc);
+		}
+	}
+	{
+		int rc = sqlite3_bind_text(query,2,channelName.ToAscii(),channelName.Length(), SQLITE_STATIC);
 		if (SQLITE_OK != rc){
 			throw DatastoreException("Failed to bind channelName parameter", rc);
 		}
 	}
 	{
-		int rc = sqlite3_bind_int(query,2,channel.typeId);
+		int rc = sqlite3_bind_int(query,3,channel.typeId);
 		if (SQLITE_OK != rc){
 			throw DatastoreException("Failed to bind channelTypeId parameter", rc);
 		}
 	}
 	{
-		int rc = sqlite3_bind_text(query,3,channel.description.ToAscii(), channel.description.Length(), SQLITE_STATIC);
+		int rc = sqlite3_bind_text(query,4,channel.description.ToAscii(), channel.description.Length(), SQLITE_STATIC);
 		if (SQLITE_OK != rc){
 			throw DatastoreException("Failed to bind description parameter", rc);
 		}
@@ -349,7 +415,7 @@ void DatalogStore::AddDatalogChannel(DatalogChannel &channel){
 	{
 		int rc = sqlite3_step(query);
 		if (SQLITE_DONE != rc){
-			throw DatastoreException("failed to insert into datalogChannels" ,rc);
+			throw DatastoreException("failed to insert into channels" ,rc);
 		}
 	}
 	sqlite3_finalize(query);
@@ -444,7 +510,7 @@ void DatalogStore::ReadDatalogIds(wxArrayInt &data){
 
 void DatalogStore::GetChannelNames(wxArrayString &channelNames){
 
-	const char * CHANNEL_EXISTS_SQL = "SELECT name FROM datalogChannels";
+	const char * CHANNEL_EXISTS_SQL = "SELECT name FROM channels";
 
 	sqlite3_stmt *query;
 	{
@@ -465,7 +531,7 @@ void DatalogStore::GetChannelNames(wxArrayString &channelNames){
 
 void DatalogStore::GetChannelTypes(DatalogChannelTypes &channelTypes){
 
-	const char * GET_CHANNEL_TYPES_SQL = "SELECT name, units, smoothing, min, max FROM datalogChannelTypes ORDER BY id ASC";
+	const char * GET_CHANNEL_TYPES_SQL = "SELECT name, units, smoothing, min, max FROM channelTypes ORDER BY id ASC";
 
 	sqlite3_stmt *query;
 	{
@@ -489,17 +555,44 @@ void DatalogStore::GetChannelTypes(DatalogChannelTypes &channelTypes){
 	sqlite3_finalize(query);
 }
 
-void DatalogStore::GetChannels(DatalogChannels &channels){
+void DatalogStore::GetChannels(int datalogId, DatalogChannels &channels){
 
-//	"CREATE TABLE datalogChannels(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, typeId integer NOT NULL, description TEXT NULL)";
-
-	const char * GET_CHANNELS_SQL = "SELECT name, typeId, description from datalogChannels ORDER BY id ASC";
+	const char * GET_CHANNELS_SQL = "SELECT name, typeId, description FROM channels WHERE id IN (select channelId from datalogChannelMap where datalogId = ?)";
 
 	sqlite3_stmt *query;
 	{
 		int rc = sqlite3_prepare(m_db, GET_CHANNELS_SQL, strlen(GET_CHANNELS_SQL), &query, NULL);
 		if (SQLITE_OK != rc){
 			throw DatastoreException("Failed to query for channels", rc);
+		}
+	}
+	{
+		int rc = sqlite3_bind_int(query, 1, datalogId);
+		if (SQLITE_OK != rc){
+			throw DatastoreException("Failed to bind datalogId parameter for GetChannels", rc);
+		}
+	}
+
+	while( sqlite3_step(query) == SQLITE_ROW){
+
+		wxString name = sqlite3_column_text(query,0);
+		int typeId = sqlite3_column_int(query,1);
+		wxString description = sqlite3_column_text(query,2);
+		channels.Add(DatalogChannel(name,typeId,description));
+	}
+
+	sqlite3_finalize(query);
+}
+
+void DatalogStore::GetAllChannels(DatalogChannels &channels){
+
+	const char * GET_CHANNELS_SQL = "SELECT name, typeId, description from channels ORDER BY id ASC";
+
+	sqlite3_stmt *query;
+	{
+		int rc = sqlite3_prepare(m_db, GET_CHANNELS_SQL, strlen(GET_CHANNELS_SQL), &query, NULL);
+		if (SQLITE_OK != rc){
+			throw DatastoreException("Failed to query for all channels", rc);
 		}
 	}
 
@@ -738,10 +831,10 @@ void DatalogStore::ClearChannelTypes(){
 	char *sqlErrMsg = NULL;
 
 	const char *CLEAR_CHANNEL_TYPES_SQL = \
-	"DELETE FROM datalogChannelTypes";
+	"DELETE FROM channelTypes";
 	int rc = sqlite3_exec(m_db, CLEAR_CHANNEL_TYPES_SQL, NULL, NULL, &sqlErrMsg);
 	if ( rc != SQLITE_OK ){
-		wxString errMsg = wxString::Format("Error Clearing 'datalogChannelTypes' table: %s", sqlErrMsg);
+		wxString errMsg = wxString::Format("Error Clearing 'channelTypes' table: %s", sqlErrMsg);
 		sqlite3_free(sqlErrMsg);
 		throw DatastoreException(errMsg, rc);
 	}
@@ -752,10 +845,10 @@ void DatalogStore::ClearChannels(){
 	char *sqlErrMsg = NULL;
 
 	const char *CLEAR_CHANNELS_SQL = \
-	"DELETE FROM datalogChannels";
+	"DELETE FROM channels";
 	int rc = sqlite3_exec(m_db, CLEAR_CHANNELS_SQL, NULL, NULL, &sqlErrMsg);
 	if ( rc != SQLITE_OK ){
-		wxString errMsg = wxString::Format("Error Clearing 'datalogChannels' table: %s", sqlErrMsg);
+		wxString errMsg = wxString::Format("Error Clearing 'channels' table: %s", sqlErrMsg);
 		sqlite3_free(sqlErrMsg);
 		throw DatastoreException(errMsg, rc);
 	}
@@ -766,7 +859,7 @@ void DatalogStore::ImportChannels(DatalogChannels &channels){
 	size_t count = channels.Count();
 	for (size_t i = 0; i < count; i++){
 		DatalogChannel &channel = channels[i];
-		AddDatalogChannel(channel);
+		AddDatalogChannel(i,channel);
 	}
 }
 
@@ -776,7 +869,7 @@ void DatalogStore::ImportChannelTypes(DatalogChannelTypes &channelTypes){
 	sqlite3_exec(m_db,"BEGIN TRANSACTION",NULL,NULL,NULL);
 
 	const char * INSERT_DATALOG_CHANNEL_TYPES_SQL =
-		"INSERT INTO datalogChannelTypes (name, units, smoothing, min, max) values (?,?,?,?,?)";
+		"INSERT INTO channelTypes (id,name, units, smoothing, min, max) values (?,?,?,?,?,?)";
 
 	sqlite3_stmt *stmt;
 
@@ -792,31 +885,37 @@ void DatalogStore::ImportChannelTypes(DatalogChannelTypes &channelTypes){
 	for (size_t i = 0; i < count; i++){
 		DatalogChannelType &channelType = channelTypes[i];
 		{
-			int rc = sqlite3_bind_text(stmt, 1, channelType.name.ToAscii(), channelType.name.Length(), SQLITE_STATIC);
+			int rc = sqlite3_bind_int(stmt, 1, i);
+			if (SQLITE_OK != rc){
+				throw DatastoreException("Failed to bind id parameter for datalogChannelType", rc);
+			}
+		}
+		{
+			int rc = sqlite3_bind_text(stmt, 2, channelType.name.ToAscii(), channelType.name.Length(), SQLITE_STATIC);
 			if (SQLITE_OK != rc){
 				throw DatastoreException("Failed to bind name parameter for datalogChannelType", rc);
 			}
 		}
 		{
-			int rc = sqlite3_bind_text(stmt, 2, channelType.unitsLabel.ToAscii(), channelType.unitsLabel.Length(), SQLITE_STATIC);
+			int rc = sqlite3_bind_text(stmt, 3, channelType.unitsLabel.ToAscii(), channelType.unitsLabel.Length(), SQLITE_STATIC);
 			if (SQLITE_OK != rc){
 				throw DatastoreException("Failed to bind units parameter for datalogChannelType", rc);
 			}
 		}
 		{
-			int rc = sqlite3_bind_int(stmt, 3, channelType.smoothingLevel);
+			int rc = sqlite3_bind_int(stmt, 4, channelType.smoothingLevel);
 			if (SQLITE_OK != rc){
 				throw DatastoreException("Failed to bind smoothing level parameter for datalogChannelType", rc);
 			}
 		}
 		{
-			int rc = sqlite3_bind_int(stmt, 4, channelType.minValue);
+			int rc = sqlite3_bind_int(stmt, 5, channelType.minValue);
 			if (SQLITE_OK != rc){
 				throw DatastoreException("Failed to bind minValue parameter for datalogChannelType", rc);
 			}
 		}
 		{
-			int rc = sqlite3_bind_int(stmt, 5, channelType.maxValue);
+			int rc = sqlite3_bind_int(stmt, 6, channelType.maxValue);
 			if (SQLITE_OK != rc){
 				throw DatastoreException("Failed to bind maxValue parameter for datalogChannelType", rc);
 			}

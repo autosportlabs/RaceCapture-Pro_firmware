@@ -53,16 +53,16 @@ void DatalogChannelsPanel::InitOptions(){
 
 }
 
-void DatalogChannelsPanel::AddDatalogSession(int id){
+void DatalogChannelsPanel::AddDatalogSession(int datalogId){
 
-	INFO(FMT("Adding Datalog Session ID %d", id));
+	INFO(FMT("Adding Datalog Session ID %d", datalogId));
 
 	wxGrid *grid = new wxGrid(m_datalogSessions, ID_DATALOG_CHANNELS_GRID);
 
 	wxString name;
 	wxString notes;
 	int timeOffset;
-	m_datalogStore->ReadDatalogInfo(id,timeOffset,name,notes);
+	m_datalogStore->ReadDatalogInfo(datalogId,timeOffset,name,notes);
 
 	INFO(FMT("Read Datalog Info %s",name.ToAscii()));
 	m_datalogSessions->AddPage(grid,name);
@@ -76,7 +76,7 @@ void DatalogChannelsPanel::AddDatalogSession(int id){
 	grid->SetColLabelValue(4,"Max");
 
 	DatalogChannels channels;
-	m_datalogStore->GetChannels(channels);
+	m_datalogStore->GetChannels(datalogId, channels);
 
 	DatalogChannelTypes channelTypes;
 	m_datalogStore->GetChannelTypes(channelTypes);
