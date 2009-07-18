@@ -41,10 +41,15 @@ class DatalogChannelsPanel : public wxPanel{
 
 		void InitComponents();
 		void InitOptions();
+		void OnNewLineChart(wxCommandEvent &event);
+		void DoGridContextMenu(wxGridEvent &event);
 
-		wxNotebook 		*m_datalogSessions;
+		wxArrayInt		m_datalogIdList;
+		wxNotebook 		*m_datalogSessionsNotebook;
 		DatalogStore 	*m_datalogStore;
 		size_t 			m_markerOffset;
+
+		wxMenu			*m_gridPopupMenu;
 
 
 	DECLARE_EVENT_TABLE()
@@ -53,8 +58,11 @@ class DatalogChannelsPanel : public wxPanel{
 enum{
 
 	ID_DATALOG_SESSIONS_NOTEBOOK = wxID_HIGHEST + 1,
-	ID_DATALOG_CHANNELS_GRID
+	ID_DATALOG_CHANNELS_GRID,
+	ID_NEW_LINE_CHART
 
 };
+
+
 
 #endif /* DATALOGCHANNELSPANEL_H_ */

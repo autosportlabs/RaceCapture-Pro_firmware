@@ -644,11 +644,12 @@ void MainFrame::TerminateApp(){
 	Destroy();
 }
 
-void MainFrame::AddNewLineChart(){
+void MainFrame::AddNewLineChart(DatalogChannelSelectionSet *selectionSet){
 
 
-	LogViewer *logViewer = new LogViewer(this, -1);
+	LineChartPane *logViewer = new LineChartPane(this, -1);
 	logViewer->SetChartParams(ChartParams(&_appPrefs,&m_appOptions,&m_datalogStore));
+	logViewer->CreateChart(selectionSet);
 
 	m_charts.Add(logViewer);
 	int id = m_charts.Count();
@@ -670,7 +671,10 @@ void MainFrame::AddNewLineChart(){
 
 
 void MainFrame::OnAddLineChart(wxCommandEvent &event){
-	AddNewLineChart();
+
+	DatalogChannelSelectionSet *addData = (DatalogChannelSelectionSet *)event.GetClientData();
+	AddNewLineChart(addData);
+	delete addData;
 }
 
 
@@ -695,7 +699,10 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 
 	EVT_WIZARD_FINISHED(wxID_ANY, MainFrame::OnImportWizardFinished)
 
+
 	EVT_MENU(ID_ADD_LINE_CHART, MainFrame::OnAddLineChart)
+
+	EVT_COMMAND(ADD_NEW_LINE_CHART, ADD_NEW_LINE_CHART_EVENT, MainFrame::OnAddLineChart)
 
 	//this must always be last
 	EVT_MENU_RANGE(ID_PERSPECTIVES, ID_PERSPECTIVES + MAX_PERSPECTIVES, MainFrame::OnSwitchView)

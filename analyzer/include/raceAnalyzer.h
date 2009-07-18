@@ -10,7 +10,7 @@
 #include <wx/wizard.h>
 
 #include "datalogStore.h"
-#include "logViewer.h"
+#include "lineChartPane.h"
 #include "datalogChannelsPanel.h"
 #include "raceAnalyzerConfigBase.h"
 #include "LCDWindow.h"
@@ -86,7 +86,7 @@ class MainFrame : public wxFrame
 	void NewRaceEvent(wxString fileName);
 	void CloseRaceEvent();
 
-	void AddNewLineChart();
+	void AddNewLineChart(DatalogChannelSelectionSet *selectionSet);
 
 	//Main Panels
 

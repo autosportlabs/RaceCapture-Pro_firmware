@@ -1,5 +1,5 @@
 /*
- * logViewer.h
+ * lineChartPane.h
  *
  *  Created on: Jun 7, 2009
  *      Author: brent
@@ -13,23 +13,24 @@
 #include "chartBase.h"
 
 
-class LogViewer : public wxPanel, public RaceAnalyzerChart {
+class LineChartPane : public wxPanel, public RaceAnalyzerChart {
 
 public:
-	LogViewer();
+	LineChartPane();
 	void SetChartParams(ChartParams params);
-	LogViewer(wxWindow *parent,
+	LineChartPane(wxWindow *parent,
 				wxWindowID id = -1,
 				const wxPoint &pos = wxDefaultPosition,
 				const wxSize &size = wxDefaultSize,
 				long style = wxTAB_TRAVERSAL,
 				const wxString &name = "panel"
 				);
-	~LogViewer();
+	~LineChartPane();
 	void InitComponents();
 	LineChart * GetLineChart();
 
 	void OnScroll(wxScrollEvent &event);
+	void CreateChart(DatalogChannelSelectionSet *selectionSet);
 
 private:
 	wxScrollBar *m_scrollBar;

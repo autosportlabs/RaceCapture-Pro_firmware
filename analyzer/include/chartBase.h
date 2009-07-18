@@ -9,7 +9,7 @@
 #include "datalogStore.h"
 #include "appOptions.h"
 #include "appPrefs.h"
-#
+#include "commonEvents.h"
 
 #ifndef CHARTBASE_H_
 #define CHARTBASE_H_
@@ -26,7 +26,8 @@ public:
 	ChartParams(
 			AppPrefs *prefs,
 			AppOptions *options,
-			DatalogStore *store ):
+			DatalogStore *store
+			):
 		appPrefs(prefs),
 		appOptions(options),
 		datalogStore(store)
@@ -34,9 +35,9 @@ public:
 
 		}
 
-	AppPrefs 			*appPrefs;
-	AppOptions			*appOptions;
-	DatalogStore 		*datalogStore;
+	AppPrefs 					*appPrefs;
+	AppOptions					*appOptions;
+	DatalogStore 				*datalogStore;
 };
 
 
