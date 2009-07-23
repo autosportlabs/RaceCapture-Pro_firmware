@@ -12,6 +12,8 @@
 #include "wx/grid.h"
 #include "wx/notebook.h"
 #include "datalogStore.h"
+#include "commonEvents.h"
+
 
 
 class DatalogChannelsPanel : public wxPanel{
@@ -41,7 +43,10 @@ class DatalogChannelsPanel : public wxPanel{
 
 		void InitComponents();
 		void InitOptions();
+		void PopulateSelectedChannels(DatalogChannelSelectionSet *selectionSet);
 		void OnNewLineChart(wxCommandEvent &event);
+		void OnNewAnalogGauge(wxCommandEvent &event);
+		void OnNewDigitalGauge(wxCommandEvent &event);
 		void DoGridContextMenu(wxGridEvent &event);
 
 		wxArrayInt		m_datalogIdList;
@@ -59,7 +64,9 @@ enum{
 
 	ID_DATALOG_SESSIONS_NOTEBOOK = wxID_HIGHEST + 1,
 	ID_DATALOG_CHANNELS_GRID,
-	ID_NEW_LINE_CHART
+	ID_NEW_LINE_CHART,
+	ID_NEW_ANALOG_GAUGE,
+	ID_NEW_DIGITAL_GAUGE
 
 };
 

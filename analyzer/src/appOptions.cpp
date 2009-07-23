@@ -1,11 +1,18 @@
 
 #include "appOptions.h"
 #include "wx/config.h"
+#include "wx/tokenzr.h"
 
 #define DEFAULT_COM_PORT 						1
 #define DEFAULT_AUTO_LOAD_CONFIG 				true
 #define DEFAULT_DATALOG_CHANNEL_COUNT 			-1
 #define DEFAULT_DATALOG_CHANNEL_TYPES_COUNT 	-1
+#define DEFAULT_ANALOG_GAUGE_TYPE_COUNT			-1
+#define DEFAULT_DIGITAL_GAUGE_TYPE_COUNT		-1
+
+
+#define DEFAULT_CHART_COLORS					"0x00FF00,0xFF0000,0x0000FF,0xFFFF00,0x00FFFF,0xFFFFFF,0xFF00FF"
+#define CHART_COLOR_STRING_DELIMITER			","
 
 #define CONFIG_KEY_COM_PORT 					"COM_Port"
 #define CONFIG_KEY_AUTO_LOAD					"AutoLoadConfig"
@@ -13,6 +20,22 @@
 #define CONFIG_KEY_DATALOG_CHANNEL_TYPE			"DatalogChannelType_"
 #define CONFIG_KEY_DATALOG_CHANNEL_COUNT		"DatalogChannelCount"
 #define CONFIG_KEY_DATALOG_CHANNEL_TYPE_COUNT	"DatalogChannelTypeCount"
+#define CONFIG_KEY_CHART_COLORS					"ChartColors"
+
+#define CONFIG_KEY_ANALOG_GAUGE_TYPE_COUNT		"AnalogGaugeTypeCount"
+#define	CONFIG_KEY_ANALOG_GAUGE_TYPE			"AnalogGaugeType_"
+#define CONFIG_KEY_ANALOG_GAUGE_MINOR_TICK		"AnalogGaugeTypeMinorTick_"
+#define	CONFIG_KEY_ANALOG_GAUGE_MAJOR_TICK		"AnalogGaugeTypeMajorTick_"
+
+#define CONFIG_KEY_DIGITAL_GAUGE_TYPE_COUNT		"DigitalGaugeTypeCount"
+#define CONFIG_KEY_DIGITAL_GAUGE_TYPE			"DigitalGaugeType_"
+#define CONFIG_KEY_DIGITAL_GAUGE_DIGITS			"DigitalGaugeTypeDigits_"
+#define CONFIG_KEY_DIGITAL_GAUGE_PRECISION		"DigitalGaugeTypePrecision_"
+
+
+
+#include <wx/arrimpl.cpp> // this is a magic incantation which must be done!
+WX_DEFINE_OBJARRAY(ChartColors);
 
 AppOptions::AppOptions()
 	: 	m_serialPort(DEFAULT_COM_PORT) ,
@@ -33,6 +56,10 @@ bool & AppOptions::GetAutoLoadConfig(){
 
 void AppOptions::SetAutoLoadConfig(bool autoConnect){
 	m_autoLoadConfig = autoConnect;
+}
+
+ChartColors & AppOptions::GetChartColors(){
+	return m_chartColors;
 }
 
 void AppOptions::SaveAppOptions(){
@@ -61,6 +88,30 @@ void AppOptions::LoadAppOptions(){
 	if (DEFAULT_DATALOG_CHANNEL_TYPES_COUNT == standardChannelTypesCount){
 		LoadDefaultStandardChannelTypes(m_standardChannelTypes);
 	}
+
+	wxString chartColorString;
+	config.Read(CONFIG_KEY_CHART_COLORS, &chartColorString, DEFAULT_CHART_COLORS);
+	wxStringTokenizer colorSplitter(chartColorString,CHART_COLOR_STRING_DELIMITER);
+	while (colorSplitter.HasMoreTokens()){
+		wxString tok = colorSplitter.GetNextToken();
+		long int color;
+		tok.ToLong(&color,16);
+		wxColour chartColor((color & 0xff0000) >> 16, (color & 0xff00) >> 8, color & 0xff);
+		m_chartColors.Add(chartColor);
+	}
+
+	int analogGaugeTypeCount = 0;
+	config.Read(CONFIG_KEY_ANALOG_GAUGE_TYPE_COUNT, &analogGaugeTypeCount, DEFAULT_ANALOG_GAUGE_TYPE_COUNT);
+	if (DEFAULT_ANALOG_GAUGE_TYPE_COUNT == analogGaugeTypeCount){
+		LoadDefaultAnalogGaugeTypes(m_analogGaugeTypes);
+	}
+
+	int digitalGaugeTypeCount = 0;
+	config.Read(CONFIG_KEY_DIGITAL_GAUGE_TYPE_COUNT, &digitalGaugeTypeCount, DEFAULT_DIGITAL_GAUGE_TYPE_COUNT);
+	if (DEFAULT_DIGITAL_GAUGE_TYPE_COUNT == digitalGaugeTypeCount){
+		LoadDefaultDigitalGaugeTypes(m_digitalGaugeTypes);
+	}
+
 }
 
 DatalogChannels & AppOptions::GetStandardChannels(){
@@ -71,15 +122,23 @@ DatalogChannelTypes & AppOptions::GetStandardChannelTypes(){
 	return m_standardChannelTypes;
 }
 
+AnalogGaugeTypes & AppOptions::GetAnalogGaugeTypes(){
+	return m_analogGaugeTypes;
+}
+
+DigitalGaugeTypes & AppOptions::GetDigitalGaugeTypes(){
+	return m_digitalGaugeTypes;
+}
+
 void AppOptions::LoadDefaultStandardChannelTypes(DatalogChannelTypes &types){
 
 	types.Add( DatalogChannelType("Raw","Number", 0,0,1024) );
 	types.Add( DatalogChannelType("GForce", "G", 5,-2.0,2.0) );
-	types.Add( DatalogChannelType("Rotation", "Degrees/Sec", 5, -300.0, 300.0) );
+	types.Add( DatalogChannelType("Rotation", "Degrees/Sec", 5, -10.0, 10.0) );
 	types.Add( DatalogChannelType("TimeDate", "UTC", 0, 0, 0) );
 	types.Add( DatalogChannelType("Count", "Count", 0,0, 100.0) );
-	types.Add( DatalogChannelType("Latitude", "Degrees", 0, 0, 360.0) );
-	types.Add( DatalogChannelType("Longitude", "Degrees", 0, 0, 360.0) );
+	types.Add( DatalogChannelType("Latitude", "Degrees", 0, -90.0, 90.0) );
+	types.Add( DatalogChannelType("Longitude", "Degrees", 0, -180.0, 180.0) );
 	types.Add( DatalogChannelType("Speed", "KPH", 0, 0, 300.0) );
 	types.Add( DatalogChannelType("Volts", "Volts", 0, 0, 25.0) );
 	types.Add( DatalogChannelType("Pressure", "PSI", 0, 0, 300.0) );
@@ -150,4 +209,37 @@ void AppOptions::LoadDefaultStandardChannels(DatalogChannels &channels){
 	channels.Add(DatalogChannel("DigitalOut1", 15, "Digital Output 1") );
 	channels.Add(DatalogChannel("DigitalOut2", 15, "Digital Output 2") );
 	channels.Add(DatalogChannel("DigitalOut3", 15, "Digital Output 3") );
+}
+
+void AppOptions::LoadDefaultAnalogGaugeTypes(AnalogGaugeTypes &analogGaugeTypes){
+
+	analogGaugeTypes["Raw"] = AnalogGaugeType(100, 50, 0);
+	analogGaugeTypes["GForce"] = AnalogGaugeType(0.5, 0.1,2);
+	analogGaugeTypes["Rotation"] = AnalogGaugeType(2.0, 1.0, 2);
+	analogGaugeTypes["Count"] = AnalogGaugeType(10.0, 5.0, 1);
+	analogGaugeTypes["Speed"] = AnalogGaugeType(20.0, 10.0, 0);
+	analogGaugeTypes["Volts"] = AnalogGaugeType(5.0, 1.0, 2);
+	analogGaugeTypes["Pressure"] = AnalogGaugeType(10.0, 5.0, 0);
+	analogGaugeTypes["Temperature"] = AnalogGaugeType(10.0, 5.0, 0);
+	analogGaugeTypes["Frequency"] = AnalogGaugeType(100.0, 50.0, 0);
+	analogGaugeTypes["RPM"] = AnalogGaugeType(100.0, 50.0, 0);
+	analogGaugeTypes["Duration"] = AnalogGaugeType(10.0, 5.0, 0);
+	analogGaugeTypes["Percent"] = AnalogGaugeType(10.0, 5.0, 0);
+}
+
+void AppOptions::LoadDefaultDigitalGaugeTypes(DigitalGaugeTypes &digitalGaugeTypes){
+
+	digitalGaugeTypes["Raw"] = DigitalGaugeType(3,0);
+	digitalGaugeTypes["GForce"] = DigitalGaugeType(1,2);
+	digitalGaugeTypes["Rotation"] = DigitalGaugeType(2,2);
+	digitalGaugeTypes["Count"] = DigitalGaugeType(3,0);
+	digitalGaugeTypes["Speed"] = DigitalGaugeType(3,0);
+	digitalGaugeTypes["Volts"] = DigitalGaugeType(2,2);
+	digitalGaugeTypes["Pressure"] = DigitalGaugeType(3,0);
+	digitalGaugeTypes["Temperature"] = DigitalGaugeType(3,0);
+	digitalGaugeTypes["Frequency"] = DigitalGaugeType(4,0);
+	digitalGaugeTypes["RPM"] = DigitalGaugeType(4,0);
+	digitalGaugeTypes["Duration"] = DigitalGaugeType(3,1);
+	digitalGaugeTypes["Percent"] = DigitalGaugeType(2,0);
+
 }

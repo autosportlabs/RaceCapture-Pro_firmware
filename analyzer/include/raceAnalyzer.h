@@ -11,6 +11,8 @@
 
 #include "datalogStore.h"
 #include "lineChartPane.h"
+#include "analogGaugePane.h"
+#include "digitalGaugePane.h"
 #include "datalogChannelsPanel.h"
 #include "raceAnalyzerConfigBase.h"
 #include "LCDWindow.h"
@@ -87,6 +89,8 @@ class MainFrame : public wxFrame
 	void CloseRaceEvent();
 
 	void AddNewLineChart(DatalogChannelSelectionSet *selectionSet);
+	void AddAnalogGauges(DatalogChannelSelectionSet *selectionSet);
+	void AddDigitalGauges(DatalogChannelSelectionSet *selectionSet);
 
 	//Main Panels
 
@@ -112,6 +116,8 @@ class MainFrame : public wxFrame
 
 	//chart events
 	void OnAddLineChart(wxCommandEvent &event);
+	void OnAddAnalogGauge(wxCommandEvent &event);
+	void OnAddDigitalGauge(wxCommandEvent &event);
 
  public:
 
@@ -140,7 +146,7 @@ class MainFrame : public wxFrame
 	DatalogChannelsPanel *m_channelsPanel;
 
 
-	RaceAnalyzerCharts	m_charts;
+	RaceAnalyzerChannelViews	m_channelViews;
 
 	//App Options and settings
 	AppOptions			m_appOptions;

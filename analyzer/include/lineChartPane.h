@@ -13,7 +13,7 @@
 #include "chartBase.h"
 
 
-class LineChartPane : public wxPanel, public RaceAnalyzerChart {
+class LineChartPane : public wxPanel, public RaceAnalyzerChannelView {
 
 public:
 	LineChartPane();

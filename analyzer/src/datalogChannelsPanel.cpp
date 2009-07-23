@@ -6,7 +6,6 @@
  */
 
 #include "datalogChannelsPanel.h"
-#include "commonEvents.h"
 
 #define GRID_ROWS 5
 
@@ -50,6 +49,9 @@ void DatalogChannelsPanel::InitComponents(){
 
 	m_gridPopupMenu = new wxMenu();
 	m_gridPopupMenu->Append(ID_NEW_LINE_CHART,"New Line Chart");
+	m_gridPopupMenu->Append(ID_NEW_ANALOG_GAUGE,"New Analog Gauge");
+	m_gridPopupMenu->Append(ID_NEW_DIGITAL_GAUGE, "New Digital Gauge");
+
 
 }
 
@@ -157,7 +159,7 @@ void DatalogChannelsPanel::SetDatalogStore(DatalogStore * datalogStore){
 	m_datalogStore = datalogStore;
 }
 
-void DatalogChannelsPanel::OnNewLineChart(wxCommandEvent &event){
+void DatalogChannelsPanel::PopulateSelectedChannels(DatalogChannelSelectionSet *selectionSet){
 
 	size_t selectedPage = m_datalogSessionsNotebook->GetSelection();
 
@@ -179,13 +181,36 @@ void DatalogChannelsPanel::OnNewLineChart(wxCommandEvent &event){
 		}
 	}
 
-	wxCommandEvent addEvent( ADD_NEW_LINE_CHART_EVENT, ADD_NEW_LINE_CHART );
-	DatalogChannelSelectionSet *selectionSet = new DatalogChannelSelectionSet();
 	selectionSet->Add(DatalogChannelSelection(datalogId,selectedChannelIds));
+
+}
+
+void DatalogChannelsPanel::OnNewLineChart(wxCommandEvent &event){
+
+	DatalogChannelSelectionSet *selectionSet = new DatalogChannelSelectionSet();
+	PopulateSelectedChannels(selectionSet);
+	wxCommandEvent addEvent( ADD_NEW_LINE_CHART_EVENT, ADD_NEW_LINE_CHART );
 	addEvent.SetClientData(selectionSet);
 	GetParent()->AddPendingEvent(addEvent);
 }
 
+void DatalogChannelsPanel::OnNewAnalogGauge(wxCommandEvent &event){
+
+	DatalogChannelSelectionSet *selectionSet = new DatalogChannelSelectionSet();
+	PopulateSelectedChannels(selectionSet);
+	wxCommandEvent addEvent( ADD_NEW_ANALOG_GAUGE_EVENT, ADD_NEW_ANALOG_GAUGE );
+	addEvent.SetClientData(selectionSet);
+	GetParent()->AddPendingEvent(addEvent);
+}
+
+void DatalogChannelsPanel::OnNewDigitalGauge(wxCommandEvent &event){
+
+	DatalogChannelSelectionSet *selectionSet = new DatalogChannelSelectionSet();
+	PopulateSelectedChannels(selectionSet);
+	wxCommandEvent addEvent( ADD_NEW_DIGITAL_GAUGE_EVENT, ADD_NEW_DIGITAL_GAUGE );
+	addEvent.SetClientData(selectionSet);
+	GetParent()->AddPendingEvent(addEvent);
+}
 
 void DatalogChannelsPanel::DoGridContextMenu(wxGridEvent &event){
 	PopupMenu(m_gridPopupMenu);
@@ -193,5 +218,8 @@ void DatalogChannelsPanel::DoGridContextMenu(wxGridEvent &event){
 
 BEGIN_EVENT_TABLE ( DatalogChannelsPanel, wxPanel )
 	EVT_MENU(ID_NEW_LINE_CHART,DatalogChannelsPanel::OnNewLineChart)
+	EVT_MENU(ID_NEW_ANALOG_GAUGE, DatalogChannelsPanel::OnNewAnalogGauge)
+	EVT_MENU(ID_NEW_DIGITAL_GAUGE, DatalogChannelsPanel::OnNewDigitalGauge)
+
 	EVT_GRID_CELL_RIGHT_CLICK(DatalogChannelsPanel::DoGridContextMenu)
 END_EVENT_TABLE()

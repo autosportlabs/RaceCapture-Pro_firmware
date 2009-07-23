@@ -42,6 +42,12 @@ void LineChartPane::CreateChart(DatalogChannelSelectionSet *selectionSet){
 	DatalogStore *store = m_chartParams.datalogStore;
 	LineChart *lineChart = GetLineChart();
 
+	AppOptions *appOptions = m_chartParams.appOptions;
+	ChartColors &chartColors = appOptions->GetChartColors();
+	size_t maxColors = chartColors.Count();
+	size_t currentColor = 0;
+
+
 	size_t selCount = selectionSet->Count();
 	for (size_t selIndex = 0; selIndex < selCount; selIndex++){
 		DatalogChannelSelection &sel = selectionSet->Item(selIndex);
@@ -70,7 +76,8 @@ void LineChartPane::CreateChart(DatalogChannelSelectionSet *selectionSet){
 			Range *range = new Range(channelType.minValue,channelType.maxValue,channelType.unitsLabel);
 
 			int newRangeId = lineChart->AddRange(range);
-			Series *series = new Series(datalogData,channelIndex,newRangeId,0,channels[channelId].name,*wxWHITE);
+			Series *series = new Series(datalogData,channelIndex,newRangeId,0,channels[channelId].name,chartColors[currentColor]);
+			currentColor =  currentColor < maxColors - 1 ? currentColor + 1 : 0;
 			lineChart->AddSeries(series);
 		}
 	}

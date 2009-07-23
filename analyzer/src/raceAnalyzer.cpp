@@ -651,16 +651,16 @@ void MainFrame::AddNewLineChart(DatalogChannelSelectionSet *selectionSet){
 	logViewer->SetChartParams(ChartParams(&_appPrefs,&m_appOptions,&m_datalogStore));
 	logViewer->CreateChart(selectionSet);
 
-	m_charts.Add(logViewer);
-	int id = m_charts.Count();
-	wxString name = wxString::Format("Line Chart %d", id);
+	m_channelViews.Add(logViewer);
+	wxString name = wxString::Format("lineChart_%lu", (unsigned long)m_channelViews.Count());
+	wxString caption = wxString::Format("Line Chart");
 
 	_frameManager.AddPane(logViewer,
 			wxAuiPaneInfo().
 			BestSize(100,50).
 			MinSize(100,50).
 			Name(name).
-			Caption("Line Chart").
+			Caption(caption).
 			Bottom().
 			Layer(1).
 			Position(2).
@@ -669,11 +669,96 @@ void MainFrame::AddNewLineChart(DatalogChannelSelectionSet *selectionSet){
 	_frameManager.Update();
 }
 
+void MainFrame::AddAnalogGauges(DatalogChannelSelectionSet *selectionSet){
+
+	size_t selectionSetCount = selectionSet->Count();
+	for (size_t i = 0; i < selectionSetCount; i++){
+		DatalogChannelSelection &sel = (*selectionSet)[i];
+		int datalogId = sel.datalogId;
+		DatalogChannels channels;
+		m_datalogStore.GetChannels(datalogId,channels);
+
+		for (size_t c = 0; c < sel.channelIds.Count(); c++){
+			int channelId = sel.channelIds[c];
+
+			AnalogGaugePane *gaugePane = new AnalogGaugePane(this, -1);
+			gaugePane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions,&m_datalogStore));
+			gaugePane->CreateGauge(datalogId,channelId);
+			m_channelViews.Add(gaugePane);
+
+			wxString name = wxString::Format("analogGauge_%lu", (unsigned long)m_channelViews.Count());
+			wxString caption = wxString::Format("%s", channels[channelId].name.ToAscii());
+
+			_frameManager.AddPane(gaugePane,
+					wxAuiPaneInfo().
+					BestSize(150,150).
+					MinSize(150,150).
+					Name(name).
+					Caption(caption).
+					Bottom().
+					Layer(1).
+					Position(2).
+					Show(true));
+
+			_frameManager.Update();
+		}
+
+	}
+}
+
+void MainFrame::AddDigitalGauges(DatalogChannelSelectionSet *selectionSet){
+
+	size_t selectionSetCount = selectionSet->Count();
+	for (size_t i = 0; i < selectionSetCount; i++){
+		DatalogChannelSelection &sel = (*selectionSet)[i];
+		int datalogId = sel.datalogId;
+		DatalogChannels channels;
+		m_datalogStore.GetChannels(datalogId,channels);
+
+		for (size_t c = 0; c < sel.channelIds.Count(); c++){
+			int channelId = sel.channelIds[c];
+
+			DigitalGaugePane *gaugePane = new DigitalGaugePane(this, -1);
+			gaugePane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions,&m_datalogStore));
+			gaugePane->CreateGauge(datalogId,channelId);
+			m_channelViews.Add(gaugePane);
+
+			wxString name = wxString::Format("digitalGauge_%lu", (unsigned long)m_channelViews.Count());
+			wxString caption = wxString::Format("%s", channels[channelId].name.ToAscii());
+
+			_frameManager.AddPane(gaugePane,
+					wxAuiPaneInfo().
+					BestSize(150,50).
+					MinSize(150,50).
+					Name(name).
+					Caption(caption).
+					Bottom().
+					Layer(1).
+					Position(2).
+					Show(true));
+
+			_frameManager.Update();
+		}
+
+	}
+}
 
 void MainFrame::OnAddLineChart(wxCommandEvent &event){
 
 	DatalogChannelSelectionSet *addData = (DatalogChannelSelectionSet *)event.GetClientData();
 	AddNewLineChart(addData);
+	delete addData;
+}
+
+void MainFrame::OnAddAnalogGauge(wxCommandEvent &event){
+	DatalogChannelSelectionSet *addData = (DatalogChannelSelectionSet *)event.GetClientData();
+	AddAnalogGauges(addData);
+	delete addData;
+}
+
+void MainFrame::OnAddDigitalGauge(wxCommandEvent &event){
+	DatalogChannelSelectionSet *addData = (DatalogChannelSelectionSet *)event.GetClientData();
+	AddDigitalGauges(addData);
 	delete addData;
 }
 
@@ -703,6 +788,9 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 	EVT_MENU(ID_ADD_LINE_CHART, MainFrame::OnAddLineChart)
 
 	EVT_COMMAND(ADD_NEW_LINE_CHART, ADD_NEW_LINE_CHART_EVENT, MainFrame::OnAddLineChart)
+	EVT_COMMAND(ADD_NEW_ANALOG_GAUGE, ADD_NEW_ANALOG_GAUGE_EVENT, MainFrame::OnAddAnalogGauge)
+	EVT_COMMAND(ADD_NEW_DIGITAL_GAUGE, ADD_NEW_DIGITAL_GAUGE_EVENT, MainFrame::OnAddDigitalGauge)
+
 
 	//this must always be last
 	EVT_MENU_RANGE(ID_PERSPECTIVES, ID_PERSPECTIVES + MAX_PERSPECTIVES, MainFrame::OnSwitchView)

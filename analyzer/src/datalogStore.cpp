@@ -109,6 +109,17 @@ void DatalogStore::CreateTables(){
 	}
 
 	{
+		const char *CREATE_DATALOG_TABLE_INDEX_SQL = \
+		"CREATE INDEX datalog_index_id on datalog(id)";
+		int rc = sqlite3_exec(m_db, CREATE_DATALOG_TABLE_INDEX_SQL, NULL, NULL, &sqlErrMsg);
+		if ( rc != SQLITE_OK ){
+			wxString errMsg = wxString::Format("Error creating 'datalog_index_id': %s", sqlErrMsg);
+			sqlite3_free(sqlErrMsg);
+			throw DatastoreException(errMsg, rc);
+		}
+	}
+
+	{
 		const char *CREATE_DATALOG_TABLE_CHANNEL_TYPES_SQL = \
 		"CREATE TABLE channelTypes(id INTEGER PRIMARY KEY, name TEXT NOT NULL, units TEXT NOT NULL, smoothing INTEGER NOT NULL, min REAL NULL, max REAL NULL)";
 		int rc = sqlite3_exec(m_db, CREATE_DATALOG_TABLE_CHANNEL_TYPES_SQL, NULL, NULL, &sqlErrMsg);

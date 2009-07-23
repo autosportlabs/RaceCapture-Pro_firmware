@@ -41,13 +41,14 @@ public:
 };
 
 
-class RaceAnalyzerChart{
+class RaceAnalyzerChannelView{
 
 public:
 	virtual void SetChartParams(ChartParams params) = 0;
 
 };
 
-WX_DECLARE_OBJARRAY(RaceAnalyzerChart *,RaceAnalyzerCharts);
+
+WX_DECLARE_OBJARRAY(RaceAnalyzerChannelView *,RaceAnalyzerChannelViews);
 
 #endif /* CHARTBASE_H_ */
