@@ -32,16 +32,28 @@ public:
 WX_DECLARE_OBJARRAY(DatastoreRow,DatalogStoreRows);
 
 
+
 class DatalogChannelType{
 
 public:
 	DatalogChannelType(wxString newName, wxString newUnitsLabel, int newSmoothingLevel, double newMinValue, double newMaxValue);
+	bool operator==(const DatalogChannelType &rh){
+		return (name == rh.name);
+	}
 	wxString name;
 	wxString unitsLabel;
 	int smoothingLevel;
 	double minValue;
 	double maxValue;
 };
+
+class DatalogChannelSystemTypes {
+
+public:
+	static DatalogChannelType GetLatitudeChannelType(){ return DatalogChannelType("Latitude", "Degrees", 0, -90.0, 90.0);}
+	static DatalogChannelType GetLongitudeChannelType(){ return DatalogChannelType ("Longitude", "Degrees", 0, -180.0, 180.0);}
+};
+
 
 class DatalogChannel{
 

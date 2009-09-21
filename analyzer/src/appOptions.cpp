@@ -137,8 +137,8 @@ void AppOptions::LoadDefaultStandardChannelTypes(DatalogChannelTypes &types){
 	types.Add( DatalogChannelType("Rotation", "Degrees/Sec", 5, -10.0, 10.0) );
 	types.Add( DatalogChannelType("TimeDate", "UTC", 0, 0, 0) );
 	types.Add( DatalogChannelType("Count", "Count", 0,0, 100.0) );
-	types.Add( DatalogChannelType("Latitude", "Degrees", 0, -90.0, 90.0) );
-	types.Add( DatalogChannelType("Longitude", "Degrees", 0, -180.0, 180.0) );
+	types.Add( DatalogChannelSystemTypes::GetLatitudeChannelType());
+	types.Add( DatalogChannelSystemTypes::GetLongitudeChannelType());
 	types.Add( DatalogChannelType("Speed", "KPH", 0, 0, 300.0) );
 	types.Add( DatalogChannelType("Volts", "Volts", 0, 0, 25.0) );
 	types.Add( DatalogChannelType("Pressure", "PSI", 0, 0, 300.0) );
@@ -241,5 +241,4 @@ void AppOptions::LoadDefaultDigitalGaugeTypes(DigitalGaugeTypes &digitalGaugeTyp
 	digitalGaugeTypes["RPM"] = DigitalGaugeType(4,0);
 	digitalGaugeTypes["Duration"] = DigitalGaugeType(3,1);
 	digitalGaugeTypes["Percent"] = DigitalGaugeType(2,0);
-
 }

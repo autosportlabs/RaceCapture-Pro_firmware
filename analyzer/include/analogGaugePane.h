@@ -6,7 +6,7 @@
  */
 
 #ifndef ANALOGGAUGEPANE_H_
-#define DIGITALGAUGEPANE_H_
+#define ANALOGGAUGEPANE_H_
 
 #include "wx/wxprec.h"
 #include "lineChart.h"

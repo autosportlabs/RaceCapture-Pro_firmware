@@ -51,6 +51,7 @@ void DatalogChannelsPanel::InitComponents(){
 	m_gridPopupMenu->Append(ID_NEW_LINE_CHART,"New Line Chart");
 	m_gridPopupMenu->Append(ID_NEW_ANALOG_GAUGE,"New Analog Gauge");
 	m_gridPopupMenu->Append(ID_NEW_DIGITAL_GAUGE, "New Digital Gauge");
+	m_gridPopupMenu->Append(ID_NEW_GPS_VIEW, "New GPS View");
 
 
 }
@@ -212,6 +213,14 @@ void DatalogChannelsPanel::OnNewDigitalGauge(wxCommandEvent &event){
 	GetParent()->AddPendingEvent(addEvent);
 }
 
+void DatalogChannelsPanel::OnNewGPSView(wxCommandEvent &event){
+	DatalogChannelSelectionSet *selectionSet = new DatalogChannelSelectionSet();
+	PopulateSelectedChannels(selectionSet);
+	wxCommandEvent addEvent( ADD_NEW_GPS_VIEW_EVENT, ADD_NEW_GPS_VIEW );
+	addEvent.SetClientData(selectionSet);
+	GetParent()->AddPendingEvent(addEvent);
+}
+
 void DatalogChannelsPanel::DoGridContextMenu(wxGridEvent &event){
 	PopupMenu(m_gridPopupMenu);
 }
@@ -220,6 +229,7 @@ BEGIN_EVENT_TABLE ( DatalogChannelsPanel, wxPanel )
 	EVT_MENU(ID_NEW_LINE_CHART,DatalogChannelsPanel::OnNewLineChart)
 	EVT_MENU(ID_NEW_ANALOG_GAUGE, DatalogChannelsPanel::OnNewAnalogGauge)
 	EVT_MENU(ID_NEW_DIGITAL_GAUGE, DatalogChannelsPanel::OnNewDigitalGauge)
+	EVT_MENU(ID_NEW_GPS_VIEW, DatalogChannelsPanel::OnNewGPSView)
 
 	EVT_GRID_CELL_RIGHT_CLICK(DatalogChannelsPanel::DoGridContextMenu)
 END_EVENT_TABLE()

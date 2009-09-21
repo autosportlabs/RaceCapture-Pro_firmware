@@ -13,6 +13,7 @@
 #include "lineChartPane.h"
 #include "analogGaugePane.h"
 #include "digitalGaugePane.h"
+#include "gpsPanel.h"
 #include "datalogChannelsPanel.h"
 #include "raceAnalyzerConfigBase.h"
 #include "LCDWindow.h"
@@ -91,6 +92,7 @@ class MainFrame : public wxFrame
 	void AddNewLineChart(DatalogChannelSelectionSet *selectionSet);
 	void AddAnalogGauges(DatalogChannelSelectionSet *selectionSet);
 	void AddDigitalGauges(DatalogChannelSelectionSet *selectionSet);
+	void AddGPSView(DatalogChannelSelectionSet *selectionSet);
 
 	//Main Panels
 
@@ -118,6 +120,7 @@ class MainFrame : public wxFrame
 	void OnAddLineChart(wxCommandEvent &event);
 	void OnAddAnalogGauge(wxCommandEvent &event);
 	void OnAddDigitalGauge(wxCommandEvent &event);
+	void OnAddGPSView(wxCommandEvent &event);
 
  public:
 
@@ -128,22 +131,22 @@ class MainFrame : public wxFrame
 
 	//Data
 
-	ConfigData 			m_currentConfigData;
-	wxString 			m_currentConfigFileName;
+	ConfigData 					m_currentConfigData;
+	wxString 					m_currentConfigFileName;
 
-	bool				m_appTerminated;
+	bool						m_appTerminated;
 
-	int					m_activeConfig;
+	int							m_activeConfig;
 
-	RaceAnalyzerComm	m_raceAnalyzerComm;
-	DatalogStore		m_datalogStore;
+	RaceAnalyzerComm			m_raceAnalyzerComm;
+	DatalogStore				m_datalogStore;
 
-	DatalogStoreRows	m_datalogData;
+	DatalogStoreRows			m_datalogData;
 
-	wxPanel				*m_configPanel;
-	ScriptPanel			*m_scriptPanel;
-	wxPanel				*m_analyzePanel;
-	DatalogChannelsPanel *m_channelsPanel;
+	wxPanel						*m_configPanel;
+	ScriptPanel					*m_scriptPanel;
+	wxPanel						*m_analyzePanel;
+	DatalogChannelsPanel 		*m_channelsPanel;
 
 
 	RaceAnalyzerChannelViews	m_channelViews;

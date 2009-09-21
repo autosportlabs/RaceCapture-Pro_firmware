@@ -47,6 +47,7 @@ class DatalogChannelsPanel : public wxPanel{
 		void OnNewLineChart(wxCommandEvent &event);
 		void OnNewAnalogGauge(wxCommandEvent &event);
 		void OnNewDigitalGauge(wxCommandEvent &event);
+		void OnNewGPSView(wxCommandEvent &event);
 		void DoGridContextMenu(wxGridEvent &event);
 
 		wxArrayInt		m_datalogIdList;
@@ -66,7 +67,8 @@ enum{
 	ID_DATALOG_CHANNELS_GRID,
 	ID_NEW_LINE_CHART,
 	ID_NEW_ANALOG_GAUGE,
-	ID_NEW_DIGITAL_GAUGE
+	ID_NEW_DIGITAL_GAUGE,
+	ID_NEW_GPS_VIEW
 
 };
 

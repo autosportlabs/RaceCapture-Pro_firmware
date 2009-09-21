@@ -5,7 +5,7 @@
  *      Author: brent
  */
 
-#ifndef DigitalGaugePane_H_
+#ifndef DIGITALGAUGEPANE_H_
 #define DIGITALGAUGEPANE_H_
 
 #include "wx/wxprec.h"

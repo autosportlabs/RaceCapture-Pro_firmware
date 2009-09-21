@@ -743,6 +743,59 @@ void MainFrame::AddDigitalGauges(DatalogChannelSelectionSet *selectionSet){
 	}
 }
 
+void MainFrame::AddGPSView(DatalogChannelSelectionSet *selectionSet){
+	size_t selectionSetCount = selectionSet->Count();
+	for (size_t i = 0; i < selectionSetCount; i++){
+		DatalogChannelSelection &sel = (*selectionSet)[i];
+		int datalogId = sel.datalogId;
+		DatalogChannels channels;
+		m_datalogStore.GetChannels(datalogId,channels);
+
+		DatalogChannelTypes channelTypes;
+		m_datalogStore.GetChannelTypes(channelTypes);
+
+		int longitudeChannelId = -1;
+		int latitudeChannelId = -1;
+
+		wxArrayInt &channelIds = sel.channelIds;
+		size_t selectedChannelsCount = channelIds.Count();
+		for (size_t ci = 0; ci < selectedChannelsCount; ci++){
+			int channelId = channelIds[ci];
+			DatalogChannel &c = channels[channelId];
+			DatalogChannelType &ct = channelTypes[c.typeId];
+			if (ct == DatalogChannelSystemTypes::GetLongitudeChannelType()) longitudeChannelId = channelId;
+			if (ct == DatalogChannelSystemTypes::GetLatitudeChannelType()) latitudeChannelId = channelId;
+		}
+
+		if (longitudeChannelId >= 0 && latitudeChannelId >= 0){
+
+			GPSPane *gpsPane = new GPSPane(this, -1);
+
+			gpsPane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions,&m_datalogStore));
+			gpsPane->CreateGPSView(datalogId,latitudeChannelId,longitudeChannelId);
+			wxString name = wxString::Format("GPS_%lu", (unsigned long)m_channelViews.Count());
+			wxString caption = wxString::Format("GPS %d", datalogId);
+
+			_frameManager.AddPane(gpsPane,
+					wxAuiPaneInfo().
+					BestSize(400,400).
+					MinSize(200,200).
+					Name(name).
+					Caption(caption).
+					Bottom().
+					Layer(1).
+					Position(2).
+					Show(true));
+
+			_frameManager.Update();
+		}
+		else{
+			wxMessageDialog dlg(this,"Please Select the Channels containing the GPS Latitude and Longitude information", "Error", wxOK);
+			dlg.ShowModal();
+		}
+	}
+}
+
 void MainFrame::OnAddLineChart(wxCommandEvent &event){
 
 	DatalogChannelSelectionSet *addData = (DatalogChannelSelectionSet *)event.GetClientData();
@@ -760,6 +813,13 @@ void MainFrame::OnAddDigitalGauge(wxCommandEvent &event){
 	DatalogChannelSelectionSet *addData = (DatalogChannelSelectionSet *)event.GetClientData();
 	AddDigitalGauges(addData);
 	delete addData;
+}
+
+void MainFrame::OnAddGPSView(wxCommandEvent &event){
+	DatalogChannelSelectionSet *addData = (DatalogChannelSelectionSet *)event.GetClientData();
+	AddGPSView(addData);
+	delete addData;
+
 }
 
 
@@ -790,6 +850,7 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 	EVT_COMMAND(ADD_NEW_LINE_CHART, ADD_NEW_LINE_CHART_EVENT, MainFrame::OnAddLineChart)
 	EVT_COMMAND(ADD_NEW_ANALOG_GAUGE, ADD_NEW_ANALOG_GAUGE_EVENT, MainFrame::OnAddAnalogGauge)
 	EVT_COMMAND(ADD_NEW_DIGITAL_GAUGE, ADD_NEW_DIGITAL_GAUGE_EVENT, MainFrame::OnAddDigitalGauge)
+	EVT_COMMAND(ADD_NEW_GPS_VIEW, ADD_NEW_GPS_VIEW_EVENT, MainFrame::OnAddGPSView)
 
 
 	//this must always be last
