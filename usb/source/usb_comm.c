@@ -2,7 +2,7 @@
 #include "task.h"
 #include "string.h"
 #include "USB-CDC.h"
-#include "Board.h"
+#include "board.h"
 #include "modp_numtoa.h"
 #include "modp_atonum.h"
 #include "luaTask.h"

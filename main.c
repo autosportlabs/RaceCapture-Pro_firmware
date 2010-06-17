@@ -131,7 +131,7 @@ int main( void )
 	if (! success) fatalError(FATAL_ERROR_HARDWARE);
 
 	xTaskCreate( vUSBCDCTask,		( signed portCHAR * ) "USB", 				mainUSB_TASK_STACK, 		NULL, 	mainUSB_PRIORITY, 			NULL );
-	xTaskCreate( onUSBCommTask,		( signed portCHAR * ) "OnUSBComm", 			mainUSB_COMM_STACK, 		NULL, 	USB_COMM_TASK_PRIORITY, 	NULL );
+	xTaskCreate( onUSBCommTask,	( signed portCHAR * ) "OnUSBComm", 		mainUSB_COMM_STACK, 		NULL, 	USB_COMM_TASK_PRIORITY, 	NULL );
 	createLoggerTask();
 	createGPIOTasks();
 	startGPSTask();

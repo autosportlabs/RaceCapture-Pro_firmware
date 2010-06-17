@@ -195,7 +195,7 @@ endif
 CFLAGS = $(DEBUG)
 CFLAGS += $(CDEFS) $(CINCS)
 CFLAGS += -O$(OPT)
-CFLAGS += -Wall
+CFLAGS += -Wall 
 CFLAGS += -fomit-frame-pointer
 CFLAGS += -Wcast-align -Wimplicit 
 CFLAGS += -Wpointer-arith -Wswitch
