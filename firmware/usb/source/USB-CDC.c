@@ -45,7 +45,7 @@
 #include <string.h>
 
 /* Demo board includes. */
-#include "Board.h"
+#include "board.h"
 
 /* Scheduler includes. */
 #include "FreeRTOS.h"

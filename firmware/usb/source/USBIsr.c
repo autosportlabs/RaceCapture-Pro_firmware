@@ -46,7 +46,7 @@
 #include "queue.h"
 
 /* Demo application includes. */
-#include "Board.h"
+#include "board.h"
 #include "usb.h"
 #include "USB-CDC.h"
 

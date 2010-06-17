@@ -1,7 +1,7 @@
 #ifndef MEMORY_H_
 #define MEMORY_H_
 #include "AT91SAM7S256.h"
-#include "Board.h"
+#include "board.h"
 
 #define MEMORY_START_ADDRESS   AT91C_IFLASH
 #define MEMORY_SIZE            AT91C_IFLASH_SIZE

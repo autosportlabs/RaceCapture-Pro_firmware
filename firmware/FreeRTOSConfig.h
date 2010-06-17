@@ -33,7 +33,7 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
-#include "Board.h"
+#include "board.h"
 
 /* The SWI is used by the scheduler. */
 #define vPortYieldProcessor SWI_Handler
