@@ -56,8 +56,6 @@ void RaceAnalyzerComm::CloseSerialPort(){
 
 wxSerialPort* RaceAnalyzerComm::GetSerialPort(){
 
-	//CloseSerialPort();
-
 	if ( _serialPort){
 		if ( ! _serialPort->IsOpen()){
 			delete _serialPort;
@@ -111,11 +109,13 @@ wxString RaceAnalyzerComm::readScript(){
 		to = ReadLine(serialPort, buffer, DEFAULT_TIMEOUT);
 		wxString scriptFragment;
 		Base64::Decode(buffer,scriptFragment);
+		wxLogMessage("'%s'",scriptFragment.ToAscii());
 		size_t scriptFragmentLen = scriptFragment.Length();
 		if (scriptFragmentLen > 0 ) script+=scriptFragment;
 		//the last page is a 'partial page'
 		if (scriptFragmentLen < SCRIPT_PAGE_LENGTH ) break;
 	}
+	CloseSerialPort();
 	if (to){
 		throw CommException(CommException::COMM_TIMEOUT);
 	}
@@ -154,6 +154,7 @@ void RaceAnalyzerComm::writeScript(wxString &script){
 		wxString cmd = wxString::Format("updateScriptPage(%d,\"\")", page);
 		to = WriteCommand(serialPort, cmd, DEFAULT_TIMEOUT);
 	}
+	CloseSerialPort();
 	if (to){
 		throw CommException(CommException::COMM_TIMEOUT);
 	}
