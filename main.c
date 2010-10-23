@@ -132,8 +132,8 @@ int main( void )
 
 	xTaskCreate( vUSBCDCTask,		( signed portCHAR * ) "USB", 				mainUSB_TASK_STACK, 		NULL, 	mainUSB_PRIORITY, 			NULL );
 	xTaskCreate( onUSBCommTask,	( signed portCHAR * ) "OnUSBComm", 		mainUSB_COMM_STACK, 		NULL, 	USB_COMM_TASK_PRIORITY, 	NULL );
-	createLoggerTask();
-	createGPIOTasks();
+//	createLoggerTask();
+//	createGPIOTasks();
 	startGPSTask();
 	startLuaTask();
 
