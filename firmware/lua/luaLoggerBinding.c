@@ -1049,7 +1049,7 @@ int Lua_UpdateScriptPage(lua_State *L){
 			if (strlen(decodedScript) > MEMORY_PAGE_SIZE){
 				result = -3; //script length error
 			} else{
-				result = flashScriptPage(page, encodedScript);	
+				result = flashScriptPage(page, decodedScript);
 			}
 			vPortFree(decodedScript);
 		}

@@ -79,6 +79,9 @@ wxSerialPort* RaceAnalyzerComm::OpenSerialPort(){
 	wxSerialPort* comPort = new wxSerialPort();
 	const char *devName = GetSerialPortDevName(_serialPortNumber);
 
+	devName = "/dev/ttyUSB0";
+	wxLogMessage(devName);
+
 	wxSerialPort_DCS dcs;
 	dcs.baud=wxBAUD_38400;
 	dcs.stopbits=1;
@@ -138,6 +141,7 @@ void RaceAnalyzerComm::writeScript(wxString &script){
 		}
 		wxString data;
 		Base64::Encode(scriptFragment,data);
+		wxLogMessage(data);
 		wxString cmd = wxString::Format("updateScriptPage(%d,\"%s\")", page,data.ToAscii());
 		to = WriteCommand(serialPort, cmd, DEFAULT_TIMEOUT);
 		page++;
@@ -256,7 +260,7 @@ int RaceAnalyzerComm::WriteCommand(wxSerialPort *comPort, wxString &buffer, int 
 int RaceAnalyzerComm::WriteLine(wxSerialPort * comPort, wxString &buffer, int timeout){
 
 	wxLogMessage("writeLine: %s", buffer.ToAscii());
-	char *tempBuff = (char*)malloc(buffer.Len() + 2);
+	char *tempBuff = (char*)malloc(buffer.Len() + 10);
 	strcpy(tempBuff,buffer.ToAscii());
 	strcat(tempBuff,"\r\n");
 	char *buffPtr = tempBuff;

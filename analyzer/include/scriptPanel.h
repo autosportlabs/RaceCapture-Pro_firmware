@@ -39,10 +39,12 @@ class ScriptPanel : public wxPanel{
 		void InitComponents();
 		void InitOptions();
 
+		wxTextCtrl *m_scriptCtrl;
+
 		RaceAnalyzerComm *m_comm;
 
 		enum{
-			ID_SCRIPT_WINDOW = wxID_HIGHEST + 1,
+			ID_SCRIPT_WINDOW = wxID_HIGHEST + 10000,
 			ID_BUTTON_READ,
 			ID_BUTTON_WRITE,
 			ID_BUTTON_RUN

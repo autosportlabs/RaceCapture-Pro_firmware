@@ -39,9 +39,11 @@ void ScriptPanel::InitComponents(){
 	sizer->AddGrowableCol(0);
 	sizer->AddGrowableRow(0);
 
-	wxTextCtrl *script = new wxTextCtrl(this,ID_SCRIPT_WINDOW,"", wxDefaultPosition, wxDefaultSize,wxTE_MULTILINE | wxTE_PROCESS_TAB);
 
-	sizer->Add(script,1,wxEXPAND);
+
+	m_scriptCtrl = new wxTextCtrl(this,ID_SCRIPT_WINDOW,"", wxDefaultPosition, wxDefaultSize,wxTE_MULTILINE | wxTE_PROCESS_TAB);
+
+	sizer->Add(m_scriptCtrl,1,wxEXPAND);
 
 	wxButton *readButton = new wxButton(this,ID_BUTTON_READ,"Read");
 	wxButton *writeButton = new wxButton(this, ID_BUTTON_WRITE,"Write");
@@ -76,8 +78,7 @@ void ScriptPanel::SetComm(RaceAnalyzerComm *comm){
 void ScriptPanel::OnReadScript(wxCommandEvent &event){
 	try{
 		wxString script = m_comm->readScript();
-		wxTextCtrl *scriptCtrl = static_cast<wxTextCtrl *>(FindWindowById(ID_SCRIPT_WINDOW));
-		scriptCtrl->SetValue(script);
+		m_scriptCtrl->SetValue(script);
 	}
 	catch(CommException e){
 		wxLogMessage("Error reading script: %s", e.GetErrorMessage().ToAscii());
@@ -87,8 +88,9 @@ void ScriptPanel::OnReadScript(wxCommandEvent &event){
 void ScriptPanel::OnWriteScript(wxCommandEvent &event){
 
 	try{
-		wxTextCtrl *scriptCtrl = static_cast<wxTextCtrl *>(FindWindowById(ID_SCRIPT_WINDOW));
-		wxString script = scriptCtrl->GetValue();
+
+
+		wxString script = m_scriptCtrl->GetValue();
 		m_comm->writeScript(script);
 	}
 	catch(CommException e){

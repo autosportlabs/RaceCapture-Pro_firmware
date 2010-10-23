@@ -90,6 +90,8 @@ char * base64encode(const char *sString,size_t nLength) {
 //Returns NULL if no memory can be allocated
 char * base64decode(const char * sString, size_t nLength) {
 
+	if (nLength == 0) return "";
+
 	char * sResult = pvPortMalloc(nLength);
 	if (NULL == sResult) return NULL; //if no memory available...
 	
