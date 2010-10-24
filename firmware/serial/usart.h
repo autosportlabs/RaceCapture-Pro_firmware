@@ -97,9 +97,9 @@ void usart0_putchar(char c);
 
 void usart1_putchar(char c);
 
-int usart0_puts (char* s );
+int usart0_puts (const char* s );
 
-int usart1_puts (char* s );
+int usart1_puts (const char* s );
 
 int usart1_readLine(char *s, int len);
 

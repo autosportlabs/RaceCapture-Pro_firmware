@@ -701,9 +701,10 @@ static void vDetachUSBInterface( void)
 } 
 /*-----------------------------------------------------------*/
 
+extern void ( vUSB_ISR )( void );
+
 int vInitUSBInterface( void )
 {
-	extern void ( vUSB_ISR )( void );
 
 	vDetachUSBInterface();
 	//TODO add a delay here after detaching

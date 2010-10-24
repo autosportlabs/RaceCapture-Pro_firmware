@@ -19,7 +19,7 @@ RANLIB= ranlib
 RM= rm -f
 LIBS= -lm $(MYLIBS)
 
-MYCFLAGS = -mcpu=$(MCU) $(THUMB) -gdwarf-2 -Wall -Os 
+MYCFLAGS = -mcpu=$(MCU) $(THUMB)  -Wall -Os 
 MYLDFLAGS=
 MYLIBS=
 

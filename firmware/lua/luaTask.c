@@ -12,7 +12,7 @@
 #define LUA_5Hz 60
 #define LUA_1Hz 300
 
-#define LUA_STACK_SIZE 2000
+#define LUA_STACK_SIZE 3000
 #define LUA_PRIORITY 2
 
 #define LUA_PERIODIC_FUNCTION "onTick"
@@ -20,19 +20,25 @@
 
 void * myAlloc (void *ud, void *ptr, size_t osize,size_t nsize) {
 	
-//	SendString("myAlloc ");
-//	SendInt(nsize);
-   (void)ud;  (void)osize;
+/*	SendString("myAlloc ");
+	SendUint((unsigned int)ptr);
+	SendString(" ");
+	SendInt(osize);
+	SendString(" ");
+	SendInt(nsize);
+*/
+   //(void)ud;  (void)osize;
+
    if (nsize == 0) {
      vPortFree(ptr);
-//	SendCrlf();
+	//SendCrlf();
      return NULL;
    }
    else{
    	 void *newPtr = pvPortRealloc(ptr, nsize);
-//   	 SendString(" ");
-//   	 SendUint((unsigned int)newPtr);
-//   	 SendCrlf();
+  // 	 SendString(" ");
+   	// SendUint((unsigned int)newPtr);
+   	 //SendCrlf();
    	 return newPtr;
    }
 }
@@ -55,9 +61,9 @@ void luaTask(void *params){
 	g_lua=lua_newstate( myAlloc, NULL);
 	
 	//open optional libraries
-	//luaopen_base(g_lua);
-	//luaopen_table(g_lua);
-	//luaopen_string(g_lua);
+	luaopen_base(g_lua);
+	luaopen_table(g_lua);
+	luaopen_string(g_lua);
 
 	RegisterLuaRaceCaptureFunctions(g_lua);
 	portENTER_CRITICAL();
@@ -71,17 +77,18 @@ void luaTask(void *params){
  		lua_getglobal(g_lua, LUA_PERIODIC_FUNCTION);
     	if (! lua_isnil(g_lua,-1)){
         	if (lua_pcall(g_lua, 0, 0, 0) != 0){
-        		SendString("Error calling ");
-        		SendString(LUA_PERIODIC_FUNCTION);
-        		SendString("(): ");
-        		SendString( lua_tostring(g_lua,-1));
-        		SendCrlf();
+//        		SendString("Error calling ");
+//        		SendString(LUA_PERIODIC_FUNCTION);
+//        		SendString("(): ");
+//        		SendString( lua_tostring(g_lua,-1));
+//        		SendCrlf();
         		lua_pop(g_lua,1);
         	}
     	} else{
 	       // //handle missing function error
 	        lua_pop(g_lua,1);
 	    }
+
 		vTaskDelayUntil( &xLastWakeTime, xFrequency );
 	}
 }

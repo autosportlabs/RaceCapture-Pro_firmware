@@ -38,7 +38,7 @@
 
 
 #define USART_INTERRUPT_LEVEL 5
-#define USART_QUEUE_LENGTH 100
+#define USART_QUEUE_LENGTH 1000
 
 void usart0_irq_handler (void);
 void usart1_irq_handler (void);
@@ -209,13 +209,13 @@ void usart1_putchar(char c){
 	AT91F_US_EnableIt( AT91C_BASE_US1, AT91C_US_TXRDY | AT91C_US_RXRDY );
 }
 
-int usart0_puts (char* s )
+int usart0_puts (const char* s )
 {
 	while ( *s ) usart0_putchar(*s++ );
 	return 0;
 }
 
-int usart1_puts (char* s )
+int usart1_puts (const char* s )
 {
 	while ( *s ) usart1_putchar(*s++ );
 	return 0;

@@ -34,18 +34,6 @@ char * readLine(){
 	return lineBuffer;
 }
 
-void onUSBCommTaskr(void *pvParameeters){
-
-	while (!vUSBIsInitialized()){
-		vTaskDelay(1);
-	}
-
-    while (1){
-    	char * line = readLine();
-    	SendString("blah");
-    }
-
-}
 
 
 void onUSBCommTask(void *pvParameters){
@@ -68,6 +56,7 @@ void onUSBCommTask(void *pvParameters){
 		}else{
 			SendString("result=\"ok\";");
 			SendCrlf();	
+			lua_pop(L,1);
 		}
     }    	
 }

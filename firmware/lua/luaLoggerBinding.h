@@ -31,7 +31,18 @@ int Lua_GetButton(lua_State *L);
 int Lua_GetInput(lua_State *L);
 int Lua_SetOutput(lua_State *L);
 
-int Lua_GetGPS(lua_State *L);
+int Lua_ReadSerialLine(lua_State *L);
+int Lua_WriteSerial(lua_State *L);
+
+int Lua_GetGPSLongitude(lua_State *L);
+int Lua_GetGPSLatitude(lua_State *L);
+int Lua_GetGPSVelocity(lua_State *L);
+int Lua_GetGPSQuality(lua_State *L);
+int Lua_GetGPSTime(lua_State *L);
+int Lua_GetGPSSecondsSinceMidnight(lua_State *L);
+
+
+
 int Lua_GetAccelerometer(lua_State *L);
 int Lua_GetAccelerometerRaw(lua_State *L);
 
@@ -52,7 +63,13 @@ int Lua_UpdateScriptPage(lua_State *L);
 int Lua_GetScriptPage(lua_State *L);
 int Lua_ReloadScript(lua_State *L);
 
+//CellModem Bindings
+int Lua_InitCellModem(lua_State *L);
+int Lua_SendText(lua_State *L);
+int Lua_ReceiveText(lua_State *L);
+
 //logger config data
+
 
 void setLabelGeneric(char *dest, const char *source);
 

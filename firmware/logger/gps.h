@@ -7,6 +7,7 @@ void GPSTask( void *pvParameters );
 
 void getUTCTimeFormatted(char * buf);
 float getUTCTime();
+float getSecondsSinceMidnight();
 
 double getLatitude();
 double getLongitude();

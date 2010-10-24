@@ -15,10 +15,15 @@
 #include "memory.h"
 #include <string.h>
 #include "base64.h"
+#include "usart.h"
+#include "cellModem.h"
 
 extern xSemaphoreHandle g_xLoggerStart;
 extern int g_loggingShouldRun;
 
+#define TEMP_BUFFER_LEN 200
+
+char g_tempBuffer[TEMP_BUFFER_LEN];
 
 void RegisterLuaRaceCaptureFunctions(lua_State *L){
 
@@ -44,7 +49,19 @@ void RegisterLuaRaceCaptureFunctions(lua_State *L){
 	lua_register(L,"getAnalog",Lua_GetAnalog);
 	lua_register(L,"getAnalogRaw",Lua_GetAnalogRaw);
 
-	lua_register(L,"getGPS",Lua_GetGPS);
+	lua_register(L,"initCellModem",Lua_InitCellModem);
+	lua_register(L,"sendText",Lua_SendText);
+	lua_register(L,"receiveText",Lua_ReceiveText);
+
+	lua_register(L,"readSerial", Lua_ReadSerialLine);
+	lua_register(L,"writeSerial", Lua_WriteSerial);
+
+	lua_register(L,"getGPSLatitude",Lua_GetGPSLatitude);
+	lua_register(L,"getGPSLongitude", Lua_GetGPSLongitude);
+	lua_register(L,"getGPSVelocity",Lua_GetGPSVelocity);
+	lua_register(L,"getGPSQuality", Lua_GetGPSQuality);
+	lua_register(L,"getGPSTime", Lua_GetGPSTime);
+	lua_register(L,"getGPSSecondsSinceMidnight", Lua_GetGPSSecondsSinceMidnight);
 					
 	lua_register(L,"getAccelerometer",Lua_GetAccelerometer);
 	lua_register(L,"getAccelerometerRaw",Lua_GetAccelerometerRaw);
@@ -899,6 +916,78 @@ int Lua_GetButton(lua_State *L){
 	return 1;	
 }
 
+int Lua_WriteSerial(lua_State *L){
+
+	if (lua_gettop(L) >= 2){
+		int uart = lua_tointeger(L,1);
+		const char * data= lua_tostring(L,2);
+		switch (uart){
+		case 0:
+			usart0_puts(data);
+			break;
+		case 1:
+			usart1_puts(data);
+			break;
+		}
+		lua_pushstring(L,data);
+		return 1;
+	}
+	return 0;
+}
+
+int Lua_InitCellModem(lua_State *L){
+
+	int rc = initCellModem();
+	lua_pushnumber(L,rc);
+	return 1;
+}
+
+int Lua_SendText(lua_State *L){
+
+	if (lua_gettop(L) >= 2){
+		const char * phoneNumber = lua_tostring(L,1);
+		const char * msg = lua_tostring(L,2);
+
+		int rc = sendText(phoneNumber, msg);
+		lua_pushnumber(L,rc);
+		return 1;
+	}
+	return 0;
+}
+
+int Lua_ReceiveText(lua_State *L){
+
+	const char *txt = receiveText();
+
+	if (NULL != txt){
+		lua_pushstring(L,txt);
+	}
+	else{
+		lua_pushstring(L,"");
+	}
+	return 1;
+}
+
+int Lua_ReadSerialLine(lua_State *L){
+
+	if (lua_gettop(L) >= 1){
+		int uart = lua_tointeger(L,1);
+		switch (uart){
+		case 0:
+			usart0_readLine(g_tempBuffer, TEMP_BUFFER_LEN);
+			break;
+		case 1:
+			usart1_readLine(g_tempBuffer, TEMP_BUFFER_LEN);
+			break;
+		default:
+			return 0; //no result, return nil
+		}
+		lua_pushstring(L,g_tempBuffer);
+		return 1;
+	}
+	return 0; //missing parameter
+}
+
 int Lua_GetInput(lua_State *L){
 	int result = -1;
 	if (lua_gettop(L) >= 1){
@@ -943,12 +1032,51 @@ int Lua_SetOutput(lua_State *L){
 	return 0;
 }
 
-int Lua_GetGPS(lua_State *L){
-	return 0;
+int Lua_GetGPSLongitude(lua_State *L){
+
+	lua_pushnumber(L,getLongitude());
+	return 1;
+}
+
+int Lua_GetGPSLatitude(lua_State *L){
+	lua_pushnumber(L,getLatitude());
+	return 1;
+}
+
+int Lua_GetGPSVelocity(lua_State *L){
+	lua_pushnumber(L,getGPSVelocity());
+	return 1;
+}
+
+int Lua_GetGPSQuality(lua_State *L){
+	lua_pushnumber(L,getGPSQuality());
+	return 1;
+}
+
+int Lua_GetGPSTime(lua_State *L){
+	lua_pushnumber(L,getUTCTime());
+	return 1;
+}
+
+
+int Lua_GetGPSSecondsSinceMidnight(lua_State *L){
+	float s = getSecondsSinceMidnight();
+	lua_pushnumber(L,s);
+	return 1;
 }
 
 int Lua_GetAccelerometer(lua_State *L){
 	
+	int accelValue = -1;
+	if (lua_gettop(L) >= 1){
+		unsigned int channel = (unsigned int)lua_tointeger(L,1);
+		if (channel >= ACCELEROMETER_CHANNEL_MIN && channel <= ACCELEROMETER_CHANNEL_MAX){
+			accelValue =  readAccelAxis(channel);
+			double g = convertAccelRawToG(accelValue,DEFAULT_ACCEL_ZERO);
+			lua_pushnumber(L,g);
+			return 1;
+		}
+	}
 	return 0;
 }
 
@@ -957,7 +1085,7 @@ int Lua_GetAccelerometerRaw(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		if (channel >= ACCELEROMETER_CHANNEL_MIN && channel <= ACCELEROMETER_CHANNEL_MAX){
-			accelValue =  getLastAccelRead(channel);
+			accelValue =  readAccelAxis(channel);
 		}
 	}
 	lua_pushinteger(L,accelValue);
