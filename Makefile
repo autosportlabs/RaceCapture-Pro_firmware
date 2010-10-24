@@ -4,7 +4,7 @@
 # by Martin Thomas, Kaiserslautern, Germany 
 # <eversmith@heizung-thomas.de>
 #
-# based on the WinAVR makefile written by Eric B. Weddington, Jörg Wunsch, et al.
+# based on the WinAVR makefile written by Eric B. Weddington, Jï¿½rg Wunsch, et al.
 # Released to the Public Domain
 # Please read the make user manual!
 #
@@ -96,6 +96,7 @@ $(ACCELEROMETER_SRC_DIR)/accelerometer.c \
 $(UTIL_DIR)/modp_numtoa.c \
 $(UTIL_DIR)/modp_atonum.c \
 $(LOGGER_SRC_DIR)/gps.c \
+$(LOGGER_SRC_DIR)/cellModem.c \
 $(MEMORY_SRC_DIR)/memory.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
 $(LUA_SRC_DIR)/luaTask.c \

@@ -9,7 +9,7 @@ unsigned int getPageSize();
 
 unsigned int getScriptPages();
 
-#define DEFAULT_SCRIPT \
+#define DEFAULT_SCRIPTX \
 		"function onTick()\n" \
 		"end\n"; 
 		
@@ -30,7 +30,7 @@ unsigned int getScriptPages();
 		
 		//"print(x .." ");print(lastX .." ");println(idle);\n" 
 		
-#define TEST_SCRIPT2 \
+#define DEFAULT_SCRIPT \
 		"function onTick()\n" \
 		"setLED(2,1)\n" \
 		"for i = 1,1000000 do end\n" \

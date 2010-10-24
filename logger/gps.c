@@ -9,7 +9,6 @@
 #include "usb_comm.h"
 #include <string.h>
 
-
 #define GPS_DATA_LINE_BUFFER_LEN 	200
 #define GPS_TASK_PRIORITY 			( tskIDLE_PRIORITY + 2 )
 #define GPS_TASK_STACK_SIZE			100
@@ -34,19 +33,32 @@ double	g_latitude;
 float 	g_longitude;
 
 float	g_UTCTime;
+float 	g_secondsSinceMidnight;
 
 float	g_velocity;
 
 int		g_gpsQuality;
 int		g_satellitesUsedForPosition;
 
+float getTimeDiff(float t1, float t2){
+	if (t2 < t1){
+		t2+=86400;
+	}
+	return t2 - t1;
+}
+
 float getUTCTime(){
 	return g_UTCTime;
+}
+
+float getSecondsSinceMidnight(){
+	return g_secondsSinceMidnight;
 }
 
 void getUTCTimeFormatted(char * buf){
 	
 }
+
 
 double getLatitude(){
 	return g_latitude;
@@ -109,7 +121,7 @@ void GPSTask( void *pvParameters ){
 					parseRMC(data + 4);					
 				} else if (strstr(data,"VTG,")){ //Course Over Ground and Ground Speed
 					parseVTG(data + 4);					
-				} else if (strstr(data,"GLL,")){ //Geographic Position – Latitude/Longitude
+				} else if (strstr(data,"GLL,")){ //Geographic Position - Latitude/Longitude
 					parseGLL(data + 4);					
 				} else if (strstr(data,"ZDA,")){ //Time & Date
 					parseZDA(data + 4);
@@ -140,6 +152,22 @@ void parseGGA(char *data){
 					unsigned int len = strlen(data);
 					if (len > 0 && len < UTC_TIME_BUFFER_LEN){
 						g_UTCTime = modp_atof(data);
+
+						char hh[3];
+						char mm[3];
+						char ss[7];
+
+						memcpy(hh,data,2);
+						hh[2] = '\0';
+						memcpy(mm,data+2,2);
+						mm[2] = '\0';
+						memcpy(ss,data+4,6);
+						ss[6] = '\0';
+						int hour = modp_atoi(hh);
+						int minutes = modp_atoi(mm);
+						float seconds = modp_atof(ss);
+
+						g_secondsSinceMidnight = (hour * 60.0 * 60.0) + (minutes * 60.0) + seconds;
 					}
 				}
 				break;
@@ -248,14 +276,13 @@ void parseVTG(char *data){
 	}
 }
 
-//Parse Geographic Position – Latitude / Longitude
+//Parse Geographic Position ï¿½ Latitude / Longitude
 void parseGLL(char *data){
 	
 }
 
 //Parse Time & Date
 void parseZDA(char *data){
-	
 }
 
 //Parse GNSS Satellites in View
