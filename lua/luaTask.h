@@ -5,12 +5,14 @@
 #include "lualib.h"
 
 
-void startLuaTask();
+void lockLua(void);
+void unlockLua(void);
 
+void startLuaTask(void);
 void luaTask(void *params);
 
 void *myAlloc (void *ud, void *ptr, size_t osize,size_t nsize);
 
-lua_State * getLua();
+lua_State * getLua(void);
 
 #endif /*LUATASK_H_*/

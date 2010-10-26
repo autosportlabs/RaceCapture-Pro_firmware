@@ -14,7 +14,6 @@
 #include "luaTask.h"
 #include "memory.h"
 #include <string.h>
-#include "base64.h"
 #include "usart.h"
 #include "cellModem.h"
 
@@ -52,6 +51,7 @@ void RegisterLuaRaceCaptureFunctions(lua_State *L){
 	lua_register(L,"initCellModem",Lua_InitCellModem);
 	lua_register(L,"sendText",Lua_SendText);
 	lua_register(L,"receiveText",Lua_ReceiveText);
+	lua_register(L,"deleteAllTexts", Lua_DeleteAllTexts);
 
 	lua_register(L,"readSerial", Lua_ReadSerialLine);
 	lua_register(L,"writeSerial", Lua_WriteSerial);
@@ -62,6 +62,8 @@ void RegisterLuaRaceCaptureFunctions(lua_State *L){
 	lua_register(L,"getGPSQuality", Lua_GetGPSQuality);
 	lua_register(L,"getGPSTime", Lua_GetGPSTime);
 	lua_register(L,"getGPSSecondsSinceMidnight", Lua_GetGPSSecondsSinceMidnight);
+	lua_register(L,"getTimeDiff", Lua_GetTimeDiff);
+	lua_register(L,"getTimeSince", Lua_GetTimeSince);
 					
 	lua_register(L,"getAccelerometer",Lua_GetAccelerometer);
 	lua_register(L,"getAccelerometerRaw",Lua_GetAccelerometerRaw);
@@ -957,8 +959,12 @@ int Lua_SendText(lua_State *L){
 
 int Lua_ReceiveText(lua_State *L){
 
-	const char *txt = receiveText();
 
+	int txtNumber = 1;
+	if (lua_gettop(L) >= 1){
+		txtNumber = lua_tointeger(L,1);
+	}
+	const char *txt = receiveText(txtNumber);
 	if (NULL != txt){
 		lua_pushstring(L,txt);
 	}
@@ -967,6 +973,12 @@ int Lua_ReceiveText(lua_State *L){
 	}
 	return 1;
 }
+
+int Lua_DeleteAllTexts(lua_State *L){
+	deleteAllTexts();
+	return 0;
+}
+
 
 int Lua_ReadSerialLine(lua_State *L){
 
@@ -1063,6 +1075,27 @@ int Lua_GetGPSSecondsSinceMidnight(lua_State *L){
 	float s = getSecondsSinceMidnight();
 	lua_pushnumber(L,s);
 	return 1;
+}
+
+int Lua_GetTimeDiff(lua_State *L){
+
+	if (lua_gettop(L) >= 2){
+		float t1 = (float)lua_tonumber(L,1);
+		float t2 = (float)lua_tonumber(L,2);
+		lua_pushnumber(L,getTimeDiff(t1,t2));
+		return 1;
+	}
+	return 0;
+}
+
+int Lua_GetTimeSince(lua_State *L){
+
+	if (lua_gettop(L) >= 1){
+		float t1 = (float)lua_tonumber(L,1);
+		lua_pushnumber(L,getTimeSince(t1));
+		return 1;
+	}
+	return 0;
 }
 
 int Lua_GetAccelerometer(lua_State *L){
@@ -1163,7 +1196,8 @@ int Lua_SetLED(lua_State *L){
 
 //0 = success; -1 = flash error; -2 = memory error; -3 = incorrect script length; -4 = param error
 int Lua_UpdateScriptPage(lua_State *L){
-	int result = 0;
+/*
+ 	int result = 0;
 	if (lua_gettop(L) < 2){
 		result = -4; //param error
 	}else{
@@ -1184,10 +1218,12 @@ int Lua_UpdateScriptPage(lua_State *L){
 	}
 	lua_pushinteger(L,result);
 	return 1;
+	 */
+	return 0;
 }
 
 int Lua_GetScriptPage(lua_State *L){
-	if (lua_gettop(L) >= 1){
+/*	if (lua_gettop(L) >= 1){
 		unsigned int page = lua_tointeger(L,1);
 		const char * script = getScript();
 		//forward to the requested page
@@ -1208,6 +1244,7 @@ int Lua_GetScriptPage(lua_State *L){
 	else{
 		lua_pushinteger(L,-1);	
 	}
+	*/
 	return 1;	
 }
 
@@ -1257,6 +1294,7 @@ int Lua_GetStackSize(lua_State *L){
 
 //-1 = param error; -2 = memory error
 int Lua_Base64encode(lua_State *L){
+	/*
 	if (lua_gettop(L) >= 1){
 		const char *data = lua_tostring(L,1);
 		char *encoded = base64encode(data,strlen(data));
@@ -1269,11 +1307,14 @@ int Lua_Base64encode(lua_State *L){
 	} else{
 		lua_pushinteger(L,-1);	
 	}
-	return 1;	
+	return 1;
+	*/
+	return 0;
 }
 
 //-1 = param error; -2 = memory error
 int Lua_Base64decode(lua_State *L){
+/*
 	if (lua_gettop(L) >= 1){
 		const char *data = lua_tostring(L,1);
 		char *decoded = base64decode(data,strlen(data));
@@ -1287,4 +1328,6 @@ int Lua_Base64decode(lua_State *L){
 		lua_pushinteger(L,-1);	
 	}
 	return 1;
+	*/
+	return 0;
 }

@@ -24,6 +24,7 @@
 #include "loggerConfig.h"
 #include "luaTask.h"
 #include "accelerometer.h"
+#include "raceTask.h"
 
 /*-----------------*/
 /* Clock Selection */
@@ -136,6 +137,7 @@ int main( void )
 //	createGPIOTasks();
 	startGPSTask();
 	startLuaTask();
+	startRaceTask();
 
    /* Start the scheduler.
 

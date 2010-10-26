@@ -40,6 +40,10 @@ float	g_velocity;
 int		g_gpsQuality;
 int		g_satellitesUsedForPosition;
 
+float getTimeSince(float t1){
+	return getTimeDiff(t1,getSecondsSinceMidnight());
+}
+
 float getTimeDiff(float t1, float t2){
 	if (t2 < t1){
 		t2+=86400;

@@ -40,6 +40,8 @@ int Lua_GetGPSVelocity(lua_State *L);
 int Lua_GetGPSQuality(lua_State *L);
 int Lua_GetGPSTime(lua_State *L);
 int Lua_GetGPSSecondsSinceMidnight(lua_State *L);
+int Lua_GetTimeDiff(lua_State *L);
+int Lua_GetTimeSince(lua_State *L);
 
 
 
@@ -67,6 +69,7 @@ int Lua_ReloadScript(lua_State *L);
 int Lua_InitCellModem(lua_State *L);
 int Lua_SendText(lua_State *L);
 int Lua_ReceiveText(lua_State *L);
+int Lua_DeleteAllTexts(lua_State *L);
 
 //logger config data
 

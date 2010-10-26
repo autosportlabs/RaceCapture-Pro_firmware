@@ -3,7 +3,6 @@
 #include "heap.h"
 #include <string.h>
 
-#define SCRIPT_PAGES 40
 #define SCRIPT_LENGTH SCRIPT_PAGES * MEMORY_PAGE_SIZE
 
 static const char g_script[SCRIPT_LENGTH + 1] __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".text\n\t#"))) = DEFAULT_SCRIPT;
