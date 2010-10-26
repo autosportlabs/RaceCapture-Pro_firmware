@@ -105,5 +105,9 @@ int usart1_readLine(char *s, int len);
 
 int usart0_readLine(char *s, int len);
 
+void usart0_flush(void);
+
+void usart1_flush(void);
+
 #endif //#ifndef USART_H
 

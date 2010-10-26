@@ -38,7 +38,7 @@
 
 
 #define USART_INTERRUPT_LEVEL 5
-#define USART_QUEUE_LENGTH 1000
+#define USART_QUEUE_LENGTH 300
 
 void usart0_irq_handler (void);
 void usart1_irq_handler (void);
@@ -175,6 +175,16 @@ void USART_Configure(AT91S_USART *usart,
     // TODO other modes
 
 
+}
+
+void usart0_flush(void){
+	char rx;
+	while(xQueueReceive( xUsart0Rx, &rx, 0 ));
+}
+
+void usart1_flush(void){
+	char rx;
+	while(xQueueReceive( xUsart1Rx, &rx, 0 ));
 }
 
 char usart0_getchar()

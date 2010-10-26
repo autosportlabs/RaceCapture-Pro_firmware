@@ -3,7 +3,7 @@
 
 int initCellModem(void);
 int sendText(const char * number, const char *msg);
-const char * receiveText();
-
+const char * receiveText(int txtNumber);
+void deleteAllTexts(void);
 #endif
 

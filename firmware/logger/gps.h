@@ -8,6 +8,8 @@ void GPSTask( void *pvParameters );
 void getUTCTimeFormatted(char * buf);
 float getUTCTime();
 float getSecondsSinceMidnight();
+float getTimeDiff(float t1, float t2);
+float getTimeSince(float t1);
 
 double getLatitude();
 double getLongitude();

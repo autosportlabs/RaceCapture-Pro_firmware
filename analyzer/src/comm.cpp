@@ -102,11 +102,15 @@ wxString RaceAnalyzerComm::readScript(){
 	int to = 0;
 	wxLogMessage("readScript");
 	wxSerialPort *serialPort = GetSerialPort();
+	FlushReceiveBuffer(serialPort);
 	while(!to){
-		wxString cmd = wxString::Format("println(getScriptPage(%d))",scriptPage++);
+
+		//wxString cmd = wxString::Format("println(getScriptPage(%d))",scriptPage++);
+		wxString cmd = wxString::Format("r %d",scriptPage++);
 		to = WriteCommand(serialPort, cmd, DEFAULT_TIMEOUT);
 		wxString buffer;
 		to = ReadLine(serialPort, buffer, DEFAULT_TIMEOUT);
+		wxLogMessage("read: %s",buffer.ToAscii());
 		wxString scriptFragment;
 		Base64::Decode(buffer,scriptFragment);
 		wxLogMessage("'%s'",scriptFragment.ToAscii());
@@ -142,7 +146,8 @@ void RaceAnalyzerComm::writeScript(wxString &script){
 		wxString data;
 		Base64::Encode(scriptFragment,data);
 		wxLogMessage(data);
-		wxString cmd = wxString::Format("updateScriptPage(%d,\"%s\")", page,data.ToAscii());
+		//wxString cmd = wxString::Format("updateScriptPage(%d,\"%s\")", page,data.ToAscii());
+		wxString cmd = wxString::Format("w %d,%s,",page,data.ToAscii());
 		to = WriteCommand(serialPort, cmd, DEFAULT_TIMEOUT);
 		page++;
 		index += SCRIPT_PAGE_LENGTH;
@@ -151,7 +156,7 @@ void RaceAnalyzerComm::writeScript(wxString &script){
 	//note we're subtracting script pages by one to account for integer divide truncation
 	if ((length / SCRIPT_PAGE_LENGTH) < SCRIPT_PAGES - 1 ){
 		//write a null to the next page
-		wxString cmd = wxString::Format("updateScriptPage(%d,\"\")", page);
+		wxString cmd = wxString::Format("w %d,,",page);
 		to = WriteCommand(serialPort, cmd, DEFAULT_TIMEOUT);
 	}
 	CloseSerialPort();
@@ -263,7 +268,7 @@ int RaceAnalyzerComm::WriteLine(wxSerialPort * comPort, wxString &buffer, int ti
 	wxLogMessage("writeLine: %s", buffer.ToAscii());
 	char *tempBuff = (char*)malloc(buffer.Len() + 10);
 	strcpy(tempBuff,buffer.ToAscii());
-	strcat(tempBuff,"\r\n");
+	strcat(tempBuff,"\r");
 	char *buffPtr = tempBuff;
 
 	int to = 0;

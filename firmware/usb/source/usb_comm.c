@@ -8,6 +8,8 @@
 #include "luaTask.h"
 #include "lua.h"
 #include "memory.h"
+#include "luaScript.h"
+#include "base64.h"
 
 #define BUFFER_SIZE MEMORY_PAGE_SIZE * 2
 
@@ -34,7 +36,98 @@ char * readLine(){
 	return lineBuffer;
 }
 
+static void handleLuaCmd(char *line){
 
+	lockLua();
+	lua_State *L = getLua();
+
+	int result = luaL_loadstring(L,line);
+	if (0 != result){
+		SendString("result=\"error:(");
+		SendString(lua_tostring(L,-1));
+		lua_pop(L,1);
+		SendString("\");");
+	}else{
+		lua_pushvalue(L,-1);
+		lua_call(L,0,0);
+		lua_pop(L,1);
+		SendString("result=\"ok\";");
+	}
+	lua_gc(L,LUA_GCCOLLECT,0);
+	SendString("lua_top=");
+	SendInt(lua_gettop(L));
+	SendString(";lua_gc_count=");
+	SendInt(lua_gc(L,LUA_GCCOUNT,0));
+	SendString(";");
+	SendCrlf();
+	unlockLua();
+}
+
+static void handleScriptWrite(char *data){
+
+	char * delim = strchr(data,',');
+	int param = 0;
+
+	int page = 0;
+	char *scriptPage = NULL;
+
+	int keepParsing = 1;
+
+	while (delim != NULL && keepParsing){
+		*delim = '\0';
+		switch (param){
+			case 0:
+				{
+					page = modp_atoi(data);
+					break;
+				}
+			case 1:
+				{
+					scriptPage = data;
+					keepParsing = 0;
+					break;
+				}
+			}
+			param++;
+			data = delim + 1;
+			delim = strchr(data,',');
+		}
+	if (scriptPage != NULL){
+		vPortEnterCritical();
+		char *decodedScript = base64decode(scriptPage, strlen(scriptPage));
+		int result = flashScriptPage(page,decodedScript);
+		vPortFree(decodedScript);
+	   	vPortExitCritical();
+		if (result == 0){
+			SendString("ok");
+		}
+		else{
+			SendString("error");
+		}
+		SendCrlf();
+	}
+}
+
+void handleScriptRead(char *data){
+
+	int page = modp_atoi(data);
+
+	if (page >=0 && page < SCRIPT_PAGES){
+
+		const char * script = getScript();
+		//forward to the requested page
+		script += (MEMORY_PAGE_SIZE * page);
+		//check for truncated page
+		size_t scriptLen = strlen(script);
+		if (scriptLen > MEMORY_PAGE_SIZE) scriptLen = MEMORY_PAGE_SIZE;
+		char *encoded = base64encode(script,scriptLen);
+		if (NULL != encoded){
+			SendString(encoded);
+			SendCrlf();
+			vPortFree(encoded);
+		}
+	}
+}
 
 void onUSBCommTask(void *pvParameters){
 	
@@ -44,22 +137,36 @@ void onUSBCommTask(void *pvParameters){
 	
     while (1){
     	char * line = readLine();
-    	lua_State *L = getLua();
     	
-    	int result = luaL_dostring(L,line);
-		if (0 != result){
-			SendString("result=\"error:(");
-			SendString(lua_tostring(L,-1));
-			SendString(");");
-			SendCrlf();	
-			lua_pop(L,1);
-		}else{
-			SendString("result=\"ok\";");
-			SendCrlf();	
-			lua_pop(L,1);
-		}
-    }    	
+    	switch (line[0]){
+
+    	case 'e':
+    	{
+    		handleLuaCmd(line+2);
+    		break;
+    	}
+
+    	case 'w':
+    	{
+    		handleScriptWrite(line+2);
+    		break;
+    	}
+
+    	case 'r':
+    	{
+    		handleScriptRead(line+2);
+    		break;
+    	}
+    	default:
+    	{
+    		SendString("unknown command");
+    		SendCrlf();
+    		break;
+    	}
+    }
+    }
 }
+
 
 void SendInt(int n){
 	char buf[12];
