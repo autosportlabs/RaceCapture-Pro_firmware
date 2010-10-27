@@ -8,11 +8,11 @@ void GPSTask( void *pvParameters );
 void getUTCTimeFormatted(char * buf);
 float getUTCTime();
 float getSecondsSinceMidnight();
-float getTimeDiff(float t1, float t2);
+float getTimeDiff(float from, float to);
 float getTimeSince(float t1);
 
-double getLatitude();
-double getLongitude();
+float getLatitude();
+float getLongitude();
 
 int getGPSQuality();
 int getSatellitesUsedForPosition();

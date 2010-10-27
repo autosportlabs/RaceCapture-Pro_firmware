@@ -29,7 +29,7 @@
 
 char g_GPSdataLine[GPS_DATA_LINE_BUFFER_LEN];
 
-double	g_latitude;
+float	g_latitude;
 float 	g_longitude;
 
 float	g_UTCTime;
@@ -44,11 +44,11 @@ float getTimeSince(float t1){
 	return getTimeDiff(t1,getSecondsSinceMidnight());
 }
 
-float getTimeDiff(float t1, float t2){
-	if (t2 < t1){
-		t2+=86400;
+float getTimeDiff(float from, float to){
+	if (to < from){
+		to+=86400;
 	}
-	return t2 - t1;
+	return to - from;
 }
 
 float getUTCTime(){
@@ -64,11 +64,11 @@ void getUTCTimeFormatted(char * buf){
 }
 
 
-double getLatitude(){
+float getLatitude(){
 	return g_latitude;
 }
 
-double getLongitude(){
+float getLongitude(){
 	return g_longitude;
 }
 

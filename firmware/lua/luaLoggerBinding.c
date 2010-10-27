@@ -16,6 +16,7 @@
 #include <string.h>
 #include "usart.h"
 #include "cellModem.h"
+#include "raceTask.h"
 
 extern xSemaphoreHandle g_xLoggerStart;
 extern int g_loggingShouldRun;
@@ -56,6 +57,9 @@ void RegisterLuaRaceCaptureFunctions(lua_State *L){
 	lua_register(L,"readSerial", Lua_ReadSerialLine);
 	lua_register(L,"writeSerial", Lua_WriteSerial);
 
+	lua_register(L,"setStartFinishPoint",Lua_SetStartFinishPoint);
+	lua_register(L,"getStartFinishPoint", Lua_GetStartFinishPoint);
+	lua_register(L,"setTweetNumber", Lua_SetTweetNumber);
 	lua_register(L,"getGPSLatitude",Lua_GetGPSLatitude);
 	lua_register(L,"getGPSLongitude", Lua_GetGPSLongitude);
 	lua_register(L,"getGPSVelocity",Lua_GetGPSVelocity);
@@ -1048,6 +1052,31 @@ int Lua_GetGPSLongitude(lua_State *L){
 
 	lua_pushnumber(L,getLongitude());
 	return 1;
+}
+
+int Lua_SetTweetNumber(lua_State *L){
+	if (lua_gettop(L) >= 1){
+		setTweetNumber(lua_tostring(L,1));
+	}
+	return 0;
+}
+
+int Lua_SetStartFinishPoint(lua_State *L){
+
+	if (lua_gettop(L) >= 3){
+		float latitude = lua_tonumber(L,1);
+		float longitude = lua_tonumber(L,2);
+		float radius = lua_tonumber(L,3);
+		setStartFinishPoint(latitude,longitude,radius);
+	}
+	return 0;
+}
+
+int Lua_GetStartFinishPoint(lua_State *L){
+	lua_pushnumber(L,getStartFinishLatitude());
+	lua_pushnumber(L,getStartFinishLongitude());
+	lua_pushnumber(L,getStartFinishRadius());
+	return 3;
 }
 
 int Lua_GetGPSLatitude(lua_State *L){

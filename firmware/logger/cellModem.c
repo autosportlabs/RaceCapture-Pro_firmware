@@ -13,50 +13,57 @@
 char g_cellBuffer[200];
 char g_latestTextMsg[200];
 
+
+
+static int readModem(void){
+	//SendString("read:");
+	//SendString(g_cellBuffer);
+	int c = usart0_readLine(g_cellBuffer, sizeof(g_cellBuffer));
+	return c;
+}
+
+static int putsModem(const char *s){
+	int c = usart0_puts(s);
+	//SendString(s);
+	return c;
+}
+
+static int putc(char c){
+	usart0_putchar(c);
+	//SendChar(c);
+	return 0;
+}
+
+static void flushModem(void){
+	putc(26);
+	usart0_flush();
+}
+
 static int sendCommand(const char * cmd){
 
-	usart0_flush();
-	usart0_puts(cmd);
-	usart0_readLine(g_cellBuffer, sizeof(g_cellBuffer));
-	usart0_readLine(g_cellBuffer, sizeof(g_cellBuffer));
-	/*SendString("cmd:");
-	SendString(cmd);
-	SendString("\n");
-	SendString("rsp:");
-	SendString(g_cellBuffer);
-	SendString("\n");
-	*/
-
+	flushModem();
+	putsModem(cmd);
+	readModem();
+	readModem();
 	return strncmp(g_cellBuffer,"OK",2) == 0;
 }
 
 
 static int isNetworkConnected(){
 
-	SendString("isneworkconnected");
-	SendCrlf();
-	usart0_flush();
-	usart0_puts("AT+CREG?\r");
-	usart0_readLine(g_cellBuffer, sizeof(g_cellBuffer));
-	SendString(g_cellBuffer);
-	SendCrlf();
-	usart0_readLine(g_cellBuffer, sizeof(g_cellBuffer));
-	SendString(g_cellBuffer);
-	SendCrlf();
+	flushModem();
+	putsModem("AT+CREG?\r");
+	readModem();
+	readModem();
 	int connected = (0 == strncmp(g_cellBuffer,"+CREG: 0,1",10));
-	usart0_readLine(g_cellBuffer, sizeof(g_cellBuffer));
-	SendString(g_cellBuffer);
-	SendCrlf();
-	usart0_readLine(g_cellBuffer, sizeof(g_cellBuffer));
-	SendString(g_cellBuffer);
-	SendCrlf();
+	readModem();
 	return connected;
 }
 
 
 int initCellModem(void){
 
-	int tryCount = 0;
+	//int tryCount = 0;
 
 /*
 	while(tryCount < NETWORK_CONNECT_MAX_TRIES){
@@ -84,23 +91,31 @@ void deleteAllTexts(void){
 	sendCommand("AT+CMGDA=\"DEL ALL\"\r");
 }
 
+void deleteInbox(void){
+	sendCommand("AT+CMGDA=\"DEL INBOX\"\r");
+}
+
+void deleteSent(void){
+	sendCommand("AT+CMGDA=\"DEL SENT\"\r");
+}
+
 const char * receiveText(int txtNumber){
 
-	usart0_flush();
-	usart0_puts("AT+CMGR=");
+	flushModem();
+	putsModem("AT+CMGR=");
 	char txtNumberBuffer[10];
 	modp_itoa10(txtNumber,txtNumberBuffer);
-	usart0_puts(txtNumberBuffer);
-	usart0_puts("\r");
+	putsModem(txtNumberBuffer);
+	putsModem("\r");
 
-	usart0_readLine(g_cellBuffer, sizeof(g_cellBuffer));
-	usart0_readLine(g_cellBuffer, sizeof(g_cellBuffer));
+	readModem();
+	readModem();
 	if (0 != strncmp(g_cellBuffer, "+CMGR",5)) return NULL;
 
 
 	size_t pos = 0;
 	while(1){
-		usart0_readLine(g_cellBuffer, sizeof(g_cellBuffer));
+		readModem();
 		if (0 == strncmp(g_cellBuffer,"OK",2)) break;
 		size_t len = strlen(g_cellBuffer);
 		if (len == 0) continue;
@@ -114,16 +129,16 @@ const char * receiveText(int txtNumber){
 
 int sendText(const char * number, const char * msg){
 
-	usart0_puts("AT+CMGS=\"");
-	usart0_puts(number);
-	usart0_puts("\"\r");
-	usart0_puts(msg);
-	usart0_putchar(26);
-	usart0_readLine(g_cellBuffer, sizeof(g_cellBuffer));
-	usart0_readLine(g_cellBuffer, sizeof(g_cellBuffer));
-	usart0_readLine(g_cellBuffer, sizeof(g_cellBuffer));
-	usart0_readLine(g_cellBuffer, sizeof(g_cellBuffer));
-	usart0_readLine(g_cellBuffer, sizeof(g_cellBuffer));
+	putsModem("AT+CMGS=\"");
+	putsModem(number);
+	putsModem("\"\r");
+	putsModem(msg);
+	putc(26);
+	readModem();
+	readModem();
+	readModem();
+	readModem();
+	readModem();
 
 	return 0;
 }

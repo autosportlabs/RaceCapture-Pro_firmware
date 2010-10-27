@@ -5,5 +5,7 @@ int initCellModem(void);
 int sendText(const char * number, const char *msg);
 const char * receiveText(int txtNumber);
 void deleteAllTexts(void);
+void deleteInbox(void);
+void deleteSent(void);
 #endif
 
