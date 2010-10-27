@@ -204,6 +204,9 @@ void SendBytes(char *data, unsigned int length){
 	}	
 }
 
+void SendChar(char c){
+	vUSBSendByte(c);
+}
 
 void SendCrlf(){
 	SendString("\r\n");

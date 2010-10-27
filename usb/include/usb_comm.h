@@ -9,6 +9,8 @@ void onUSBCommTask(void *);
 
 void SendBytes(char *data, unsigned int length);
 
+void SendChar(char c);
+
 void SendString(const char *s);
 
 void SendInt(int n);

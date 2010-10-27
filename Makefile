@@ -99,6 +99,7 @@ $(LOGGER_SRC_DIR)/gps.c \
 $(LOGGER_SRC_DIR)/cellModem.c \
 $(MEMORY_SRC_DIR)/memory.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
+$(LOGGER_SRC_DIR)/geometry.c \
 $(LUA_SRC_DIR)/luaTask.c \
 $(LUA_SRC_DIR)/raceTask.c \
 $(LUA_SRC_DIR)/luaScript.c \

@@ -34,6 +34,10 @@ int Lua_SetOutput(lua_State *L);
 int Lua_ReadSerialLine(lua_State *L);
 int Lua_WriteSerial(lua_State *L);
 
+int Lua_SetTweetNumber(lua_State *L);
+int Lua_SetStartFinishPoint(lua_State *L);
+int Lua_GetStartFinishPoint(lua_State *L);
+
 int Lua_GetGPSLongitude(lua_State *L);
 int Lua_GetGPSLatitude(lua_State *L);
 int Lua_GetGPSVelocity(lua_State *L);
