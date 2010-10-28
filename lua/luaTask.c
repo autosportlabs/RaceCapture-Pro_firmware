@@ -14,7 +14,7 @@
 #define LUA_5Hz 60
 #define LUA_1Hz 300
 
-#define LUA_STACK_SIZE 3000
+#define LUA_STACK_SIZE 2000
 #define LUA_PRIORITY 2
 
 #define LUA_PERIODIC_FUNCTION "onTick"
@@ -103,7 +103,7 @@ void luaTask(void *params){
 		portTickType xLastWakeTime, startTickTime;
 		const portTickType xFrequency = LUA_1Hz;
 		startTickTime = xLastWakeTime = xTaskGetTickCount();
-
+/*
 		lockLua();
  		lua_getglobal(g_lua, LUA_PERIODIC_FUNCTION);
     	if (! lua_isnil(g_lua,-1)){
@@ -120,6 +120,7 @@ void luaTask(void *params){
 	        lua_pop(g_lua,1);
 	    }
     	unlockLua();
+    	*/
 		vTaskDelayUntil( &xLastWakeTime, xFrequency );
 	}
 }

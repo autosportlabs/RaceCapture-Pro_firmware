@@ -157,6 +157,14 @@ void onUSBCommTask(void *pvParameters){
     		handleScriptRead(line+2);
     		break;
     	}
+    	case 'd':
+    	{
+    		char taskList[200];
+    		vTaskList(taskList);
+    		SendString(taskList);
+    		SendCrlf();
+    		break;
+    	}
     	default:
     	{
     		SendString("unknown command");
