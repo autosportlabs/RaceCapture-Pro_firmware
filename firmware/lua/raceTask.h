@@ -4,6 +4,7 @@
 
 void startRaceTask(void);
 void raceTask(void *params);
+void textSenderTask(void *params);
 void setStartFinishPoint(float latitude, float longitude, float radius);
 float getStartFinishLatitude(void);
 float getStartFinishLongitude(void);

@@ -48,6 +48,7 @@ static int sendCommand(const char * cmd){
 	return strncmp(g_cellBuffer,"OK",2) == 0;
 }
 
+/*
 
 static int isNetworkConnected(){
 
@@ -59,7 +60,20 @@ static int isNetworkConnected(){
 	readModem();
 	return connected;
 }
+*/
+/*
+flushModem();
+g_cellBuffer[0]='\0';
+while(0 != strncmp(g_cellBuffer,"Call Ready",10))
 
+int tryCount = 0;
+while(tryCount < NETWORK_CONNECT_MAX_TRIES){
+	if (isNetworkConnected()) break;
+	vTaskDelay(100);
+	tryCount++;
+}
+if (tryCount >=NETWORK_CONNECT_MAX_TRIES) return -6;
+*/
 
 int initCellModem(void){
 

@@ -11,9 +11,15 @@ unsigned int getPageSize();
 
 unsigned int getScriptPages();
 
+#define DEFAULT_SCRIPTxx \
+		"function xonTick()\n" \
+		"end\n";
+
 #define DEFAULT_SCRIPT \
-		"setStartFinishPoint(47.806953,-122.346572,0.0001)\n" \
-		"setTweetNumber(\"2068544508\")\n" \
+		"--5 corners, Edmonds\n" \
+		"--setStartFinishPoint(47.806948,-122.346578,0.001)\n" \
+		"setStartFinishPoint(45.596536,-122.698436,0.001)\n" \
+		"setTweetNumber(\"40404\")\n" \
 		"function xonTick()\n" \
 		"end\n"; 
 
