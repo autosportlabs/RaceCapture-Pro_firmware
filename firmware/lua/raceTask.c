@@ -32,11 +32,12 @@
 #define FREQ_5Hz 60
 #define FREQ_1Hz 300
 
-#define NOTIFY_INTERVAL 60
+#define NOTIFY_INTERVAL 600
 
 #define DRIVER_CMD "driver"
-
+#define WHOAMI "@asl_labrat1"
 #define HASHTAG "#chumpcar"
+#define COLOR_CMD "color"
 
 #define Y_AXIS 1
 #define Y_AXIS_INVERT -1
@@ -90,7 +91,6 @@ static char g_receivedText[TEXT_MSG_LEN];
 static char g_twitterNumber[20] = "40404";
 
 static float g_lastNotifiedTimestamp = 0;
-static float g_notifyInterval = 0;
 
 void startRaceTask(void){
 
@@ -114,6 +114,7 @@ void startRaceTask(void){
 			TEXT_SENDER_PRIORITY,
 			NULL);
 }
+
 
 static void lower(const char *pstr){
 	for(char *p = pstr;*p;++p) *p=*p>0x40&&*p<0x5b?*p|0x60:*p;
@@ -150,6 +151,15 @@ static void strcatf(char *dest, float f){
 	strcat(dest,tmp);
 }
 
+static char * getRandomExclamation(){
+
+	return "Cool!";
+}
+
+static char * getRandomWish(){
+	return "Drive Like the wind!";
+}
+
 static void handleOldDriver(){
 
 	float elapsed = getTimeSince(g_timeStartSec);
@@ -175,9 +185,7 @@ static void handleOldDriver(){
 	tweet(g_tweet);
 }
 
-static char * getRandomWish(){
-	return "Good Luck!";
-}
+
 
 static void handleNewDriver(const char *txt){
 
@@ -202,23 +210,110 @@ static void handleNewDriver(const char *txt){
 	strcpy(g_currentDriver,txt);
 }
 
+#define RED "red"
+#define GREEN "green"
+#define BLUE "blue"
+#define WHITE "white"
+#define OFF	"off"
+
+static void setColor(const char *c){
+
+	if (strlen(c) < 6) return;
+
+	unsigned int red = 1;
+	unsigned int green = 1;
+	unsigned int blue = 1;
+
+	if (strncmp(c,RED,strlen(RED))==0){
+		red = 99;
+		green = 1;
+		blue = 1;
+	}
+	else if (strncmp(c,GREEN,strlen(GREEN))==0){
+		red = 1;
+		green = 99;
+		blue = 1;
+	}
+	else if (strncmp(c,BLUE,strlen(BLUE))==0){
+		red = 1;
+		green = 1;
+		blue = 99;
+	}
+	else if (strncmp(c,OFF,strlen(OFF)) == 0){
+		red = 1;
+		green = 1;
+		blue = 1;
+	}
+	else if (strncmp(c,WHITE,strlen(WHITE)) == 0){
+		red = 99;
+		green = 99;
+		blue = 99;
+	}
+	else{
+
+		char r[3];
+		char g[3];
+		char b[3];
+		r[2] = '\0';
+		g[2] = '\0';
+		b[2] = '\0';
+		memcpy(r,c,2);
+		memcpy(g,c+2,2);
+		memcpy(b,c+4,2);
+
+		red = strtol(r,NULL,16);
+		green = strtol(g,NULL,16);
+		blue = strtol(b,NULL,16);
+		red = (red * 100) / 256;
+		green = (green * 100) / 256;
+		blue = (blue * 100) / 256;
+		if (red == 0) red = 1;
+		if (green == 0) green = 1;
+		if (blue == 0) blue = 1;
+	}
+
+	PWM_SetDutyCycle(1,(unsigned short)green);
+	PWM_SetDutyCycle(2,(unsigned short)red);
+	PWM_SetDutyCycle(3,(unsigned short)blue);
+}
+
+
+static void handleMention(const char *msg){
+
+	if (strlen(msg)==0) return;
+	if (strncmp(msg,COLOR_CMD,strlen(COLOR_CMD)) == 0){
+		setColor(msg + strlen(COLOR_CMD) + 1);
+	}
+}
+
+#define LZERO "lzero"
+#define LONE "lone"
 
 static void handleTxt(const char *txt){
 
 	const char *p = txt;
 	lower(p);
 
-	if (strncmp(p,DRIVER_CMD,6) == 0){
+	if (strncmp(p,DRIVER_CMD,strlen(DRIVER_CMD)) == 0){
 		handleOldDriver();
 		handleNewDriver(p+7);
 	}
+	if (strncmp(p,LZERO,strlen(LZERO)) == 0){
+		PWM_SetDutyCycle(1,0);
+		PWM_SetDutyCycle(2,0);
+		PWM_SetDutyCycle(3,0);
+	}
+	if (strncmp(p,LONE,strlen(LONE)) == 0){
+		PWM_SetDutyCycle(1,99);
+		PWM_SetDutyCycle(2,99);
+		PWM_SetDutyCycle(3,99);
+	}
+	char * whoami = strstr(txt,WHOAMI);
+	if (NULL != whoami){
+		handleMention(whoami+strlen(WHOAMI)+ 1);
+	}
 }
 
-
-static char * getRandomExclamation(){
-
-	return "Sweet!";
-}
 
 static void tweetPersonalTopSpeed(void){
 	strcpy(g_tweet,getRandomExclamation());
@@ -505,8 +600,17 @@ static void doNewLap(float elapsed){
 
 void raceTask(void *params){
 
+	PWM_SetDutyCycle(1,(unsigned short)0);
+	PWM_SetDutyCycle(2,(unsigned short)0);
+	PWM_SetDutyCycle(3,(unsigned short)0);
+
+	PWM_SetDutyCycle(1,(unsigned short)99);
+	PWM_SetDutyCycle(2,(unsigned short)99);
+	PWM_SetDutyCycle(3,(unsigned short)99);
 
 	int cellModemInited = 0;
+
+	memset(g_receivedText,0,200);
 
 	EnableLED(LED2);
 	while(1){
@@ -599,6 +703,7 @@ void textSenderTask(void *params){
 			xQueueSend(textMsgRxQueue,txt,portMAX_DELAY);
 			deleteInbox();
 		}
+
 		vTaskDelay(100);
 	}
 }
