@@ -15,7 +15,7 @@
 #define   LOWRES   (0x0)    // 10-bit result output format
 #define   SLEEP    (0x0)    // Normal Mode (instead of SLEEP Mode)
 #define   PRESCAL  (0x4)    // Max value
-#define   STARTUP  (0xc)    // This time period must be higher than 20 µs
+#define   STARTUP  (0xc)    // This time period must be higher than 20 ï¿½s
 #define   SHTIM    (0x3)    // Must be higher than 3 ADC clock cycles but depends on output
                             // impedance of the analog driver to the ADC input
 /* Channel selection */
@@ -132,7 +132,7 @@ void InitPWM(struct LoggerConfig *loggerConfig){
 void EnablePWMChannel(unsigned int channel, struct PWMConfig *config){
 	
     // Configure PWMC channel (left-aligned)
-    PWM_ConfigureChannel(channel, AT91C_PWMC_CPRE_MCKA, 0, AT91C_PWMC_CPOL);
+    PWM_ConfigureChannel(channel, AT91C_PWMC_CPRE_MCKA, 0,0);// AT91C_PWMC_CPOL);
     PWM_SetPeriod(channel, config->startupPeriod);
     PWM_SetDutyCycle(channel, config->startupDutyCycle);
     PWM_EnableChannel(channel);	

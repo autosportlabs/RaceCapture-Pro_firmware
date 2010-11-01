@@ -10,6 +10,7 @@
 #include "memory.h"
 #include "luaScript.h"
 #include "base64.h"
+#include "loggerHardware.h"
 
 #define BUFFER_SIZE MEMORY_PAGE_SIZE * 2
 
@@ -129,6 +130,61 @@ void handleScriptRead(char *data){
 	}
 }
 
+void setColor(char *c){
+
+	if (strlen(c) < 6) return;
+
+	char r[3];
+	char g[3];
+	char b[3];
+	r[2] = '\0';
+	g[2] = '\0';
+	b[2] = '\0';
+	memcpy(r,c,2);
+	memcpy(g,c+2,2);
+	memcpy(b,c+4,2);
+
+	unsigned int red = strtol(r,NULL,16);
+	unsigned int green = strtol(g,NULL,16);
+	unsigned int blue = strtol(b,NULL,16);
+
+	SendString("converted color: ");
+	SendInt(red);
+	SendString(" ");
+	SendInt(green);
+	SendString(" ");
+	SendInt(blue);
+	SendCrlf();
+
+
+/*	red = red >> 8;
+	if (red > 0xFFFF) red= 0xFFFF;
+	green = green >> 8;
+	if (green > 0xFFFF) green = 0xFFFF;
+	blue = blue >> 8;
+	if (blue > 0xFFFF) blue = 0xFFFF;
+*/
+	red = (red * 100) / 256;
+	green = (green * 100) / 256;
+	blue = (blue * 100) / 256;
+
+//	struct LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+//	EnablePWMChannel(1,&(loggerConfig->PWMConfigs[1]));
+//	EnablePWMChannel(2,&(loggerConfig->PWMConfigs[2]));
+//	EnablePWMChannel(3,&(loggerConfig->PWMConfigs[3]));
+	PWM_SetDutyCycle(1,(unsigned short)green);
+	PWM_SetDutyCycle(2,(unsigned short)red);
+	PWM_SetDutyCycle(3,(unsigned short)blue);
+
+	SendString("color: ");
+	SendInt(red);
+	SendString(" ");
+	SendInt(green);
+	SendString(" ");
+	SendInt(blue);
+	SendCrlf();
+}
+
 void onUSBCommTask(void *pvParameters){
 	
 	while (!vUSBIsInitialized()){
@@ -162,6 +218,13 @@ void onUSBCommTask(void *pvParameters){
     		char taskList[200];
     		vTaskList(taskList);
     		SendString(taskList);
+    		SendCrlf();
+    		break;
+    	}
+    	case 'c':
+    	{
+    		setColor(line+2);
+    		SendString("ok");
     		SendCrlf();
     		break;
     	}
