@@ -1,4 +1,5 @@
-/* 
+/*
+ * RaceCapture Pro main
 	NOTE : Tasks run in system mode and the scheduler runs in Supervisor mode.
 	The processor MUST be in supervisor mode when vTaskStartScheduler is 
 	called.  The demo applications included in the FreeRTOS.org download switch
@@ -42,7 +43,7 @@
 #define mainDEFAULT_TASK_PRIORITY 			( tskIDLE_PRIORITY + 1 )
 
 #define mainUSB_TASK_STACK					( 100 )
-#define mainUSB_COMM_STACK					( 2000 )
+#define mainUSB_COMM_STACK					( 1000 )
 
 #define mainNO_ERROR_FLASH_PERIOD			( ( portTickType ) 1000 / portTICK_RATE_MS  )
 #define mainBUSY_FLASH_PERIOD				( ( portTickType ) 500 / portTICK_RATE_MS )
@@ -131,13 +132,13 @@ int main( void )
 	int success = setupHardware();
 	if (! success) fatalError(FATAL_ERROR_HARDWARE);
 
-	xTaskCreate( vUSBCDCTask,		( signed portCHAR * ) "USB", 				mainUSB_TASK_STACK, 		NULL, 	mainUSB_PRIORITY, 			NULL );
-	xTaskCreate( onUSBCommTask,	( signed portCHAR * ) "OnUSBComm", 		mainUSB_COMM_STACK, 		NULL, 	USB_COMM_TASK_PRIORITY, 	NULL );
-//	createLoggerTask();
-//	createGPIOTasks();
+	xTaskCreate( vUSBCDCTask,		( signed portCHAR * ) "USB", 				mainUSB_TASK_STACK, NULL, 	mainUSB_PRIORITY, 		NULL );
+	xTaskCreate( onUSBCommTask,	( signed portCHAR * ) "OnUSBComm", 				mainUSB_COMM_STACK, NULL, 	USB_COMM_TASK_PRIORITY, NULL );
+	createLoggerTask();
+	createGPIOTasks();
 	startGPSTask();
 	startLuaTask();
-	startRaceTask();
+	//startRaceTask();
 
    /* Start the scheduler.
 

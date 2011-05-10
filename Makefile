@@ -108,6 +108,7 @@ $(LOGGER_SRC_DIR)/luaLoggerBinding.c \
 $(MEMORY_SRC_DIR)/memory.c \
 $(LUA_SRC_DIR)/luaTask.c \
 $(LUA_SRC_DIR)/luaScript.c \
+$(LUA_SRC_DIR)/luaBaseBinding.c \
 $(RTOS_PORT_DIR)/MemMang/heap_5.c \
 $(TWEETER_DIR)/raceTask.c 
 
