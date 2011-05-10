@@ -60,21 +60,25 @@ TARGET = main
 
 
 # Common directories
-HW_DIR = hardware
-RTOS_DIR = FreeRTOS
+SAM7s_BASE_DIR = SAM7s_base
+HW_DIR = $(SAM7s_BASE_DIR)/hardware
+RTOS_DIR = $(SAM7s_BASE_DIR)/FreeRTOS
 RTOS_SRC_DIR = $(RTOS_DIR)/Source
 RTOS_PORT_DIR = $(RTOS_SRC_DIR)/portable
 RTOS_GCC_DIR = $(RTOS_PORT_DIR)/GCC/ARM7_AT91SAM7S
 RTOS_MEMMANG_DIR = $(RTOS_PORT_DIR)/MemMang
 
-USB_SRC_DIR = usb
+USB_SRC_DIR = $(SAM7s_BASE_DIR)/usb
+SERIAL_SRC_DIR = $(SAM7s_BASE_DIR)/serial
+UTIL_DIR = $(SAM7s_BASE_DIR)/util
+MEMORY_SRC_DIR = $(SAM7s_BASE_DIR)/memory
+LUA_SRC_DIR = $(SAM7s_BASE_DIR)/lua
+
+#App specific dirs
 LOGGER_SRC_DIR = logger
-SERIAL_SRC_DIR = serial
 SDCARD_SRC_DIR = sdcard
 ACCELEROMETER_SRC_DIR = accelerometer
-UTIL_DIR = util
-MEMORY_SRC_DIR = memory
-LUA_SRC_DIR = lua
+TWEETER_DIR = tweeter
 
 # List C source files here. (C dependencies are automatically generated.)
 # use file-extension c for "c-only"-files
@@ -85,27 +89,27 @@ $(RTOS_SRC_DIR)/tasks.c \
 $(RTOS_SRC_DIR)/queue.c \
 $(RTOS_SRC_DIR)/list.c \
 $(RTOS_GCC_DIR)/port.c \
+$(UTIL_DIR)/modp_numtoa.c \
+$(UTIL_DIR)/modp_atonum.c \
+$(UTIL_DIR)/base64.c \
 $(USB_SRC_DIR)/source/usb_comm.c \
 $(USB_SRC_DIR)/source/USB-CDC.c \
-$(LOGGER_SRC_DIR)/loggerHardware.c \
-$(LOGGER_SRC_DIR)/gpioTasks.c \
-$(LOGGER_SRC_DIR)/loggerTask.c \
 $(SERIAL_SRC_DIR)/usart.c \
 $(SDCARD_SRC_DIR)/sdcard.c \
 $(ACCELEROMETER_SRC_DIR)/accelerometer.c \
-$(UTIL_DIR)/modp_numtoa.c \
-$(UTIL_DIR)/modp_atonum.c \
+$(LOGGER_SRC_DIR)/loggerHardware.c \
+$(LOGGER_SRC_DIR)/gpioTasks.c \
+$(LOGGER_SRC_DIR)/loggerTask.c \
 $(LOGGER_SRC_DIR)/gps.c \
 $(LOGGER_SRC_DIR)/cellModem.c \
-$(MEMORY_SRC_DIR)/memory.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
 $(LOGGER_SRC_DIR)/geometry.c \
+$(LOGGER_SRC_DIR)/luaLoggerBinding.c \
+$(MEMORY_SRC_DIR)/memory.c \
 $(LUA_SRC_DIR)/luaTask.c \
-$(LUA_SRC_DIR)/raceTask.c \
 $(LUA_SRC_DIR)/luaScript.c \
-$(LUA_SRC_DIR)/luaLoggerBinding.c \
-$(RTOS_PORT_DIR)/MemMang/heap_5.c 
-#$(RTOS_PORT_DIR)/MemMang/umm_malloc.c \
+$(RTOS_PORT_DIR)/MemMang/heap_5.c \
+$(TWEETER_DIR)/raceTask.c 
 
 # List C source files here which must be compiled in ARM-Mode.
 # use file-extension c for "c-only"-files
@@ -176,7 +180,7 @@ CDEFS += -DSAM7_GCC
 CDEFS += -DTHUMB_INTERWORK
 
 # Place -I options here
-CINCS = -I. -I$(RTOS_MEMMANG_DIR) -I$(UTIL_DIR) -I$(LUA_SRC_DIR) -I$(MEMORY_SRC_DIR) -I$(SDCARD_SRC_DIR) -I$(SERIAL_SRC_DIR) -I$(ACCELEROMETER_SRC_DIR) -I$(LOGGER_SRC_DIR) -I$(USB_SRC_DIR)/include -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
+CINCS = -I. -I$(RTOS_MEMMANG_DIR) -I$(UTIL_DIR) -I$(LUA_SRC_DIR) -I$(MEMORY_SRC_DIR) -I$(SDCARD_SRC_DIR) -I$(SERIAL_SRC_DIR) -I$(ACCELEROMETER_SRC_DIR) -I$(LOGGER_SRC_DIR) -I$(USB_SRC_DIR)/include -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR) -I$(TWEETER_DIR)
 #CINCS = -I. -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
 # Place -D or -U options for ASM here
 ADEFS =  -D$(RUN_MODE)
