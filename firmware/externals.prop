@@ -1,0 +1,3 @@
+#set with: svn propset svn:externals -F ./externals.prop .
+#then svn commit
+SAM7s_base svn+ssh://zardoz.podzone.org/repository/trunk/SAM7s_base/trunk/SAM7s_base/
