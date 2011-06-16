@@ -6,9 +6,10 @@
 #include "task.h"
 #include "queue.h"
 #include "semphr.h"
+#include "loggerHardware.h"
 
 
-#define DEBOUNCE_DELAY_PERIOD			( ( portTickType )30 / portTICK_RATE_MS  )
+#define DEBOUNCE_DELAY_PERIOD		( ( portTickType )30 / portTICK_RATE_MS  )
 #define GPIO_TASK_PRIORITY 			( tskIDLE_PRIORITY + 4 )
 #define GPIO_TASK_STACK_SIZE		50
 
@@ -29,25 +30,29 @@ void createGPIOTasks(){
 	vSemaphoreCreateBinary( xOnGPI2 );
 	vSemaphoreCreateBinary( xOnGPI3 );
 
-	xTaskCreate( onPushbuttonTask, 	( signed portCHAR * ) "PushbuttonTask", 	GPIO_TASK_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
-	xTaskCreate( onGPI1Task, 		( signed portCHAR * ) "GPI1Task", 			GPIO_TASK_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
-	xTaskCreate( onGPI2Task,	 	( signed portCHAR * ) "GPI2Task", 			GPIO_TASK_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
-	xTaskCreate( onGPI3Task,	 	( signed portCHAR * ) "GPI3Task", 			GPIO_TASK_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
 	
 	portENTER_CRITICAL();
     AT91PS_AIC     pAic;
 	pAic = AT91C_BASE_AIC;
-	AT91F_PIO_CfgInput(AT91C_BASE_PIOA, ENABLED_GPIO_PINS);
-	AT91F_PIO_CfgPullup(AT91C_BASE_PIOA, ENABLED_GPIO_PINS);
-	AT91F_PIO_CfgInputFilter(AT91C_BASE_PIOA,ENABLED_GPIO_PINS);
-	AT91F_PIO_CfgOpendrain(AT91C_BASE_PIOA,ENABLED_GPIO_PINS);
-	AT91F_PIO_InterruptEnable(AT91C_BASE_PIOA,ENABLED_GPIO_PINS);
+
+	AT91F_PIO_CfgInput(AT91C_BASE_PIOA, PIO_PUSHBUTTON_SWITCH);
+	AT91C_BASE_PIOA->PIO_PPUER = PIO_PUSHBUTTON_SWITCH; //enable pullup
+	AT91C_BASE_PIOA->PIO_IFER = PIO_PUSHBUTTON_SWITCH; //enable input filter
+	AT91C_BASE_PIOA->PIO_MDER = PIO_PUSHBUTTON_SWITCH; //enable multi drain
+
+	AT91F_PIO_InterruptEnable(AT91C_BASE_PIOA,PIO_PUSHBUTTON_SWITCH);
 
 	AT91F_AIC_ConfigureIt ( pAic, AT91C_ID_PIOA, PUSHBUTTON_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL, gpio_irq_handler);
 	AT91F_AIC_EnableIt (pAic, AT91C_ID_PIOA);
 	portEXIT_CRITICAL();
 
-	
+	InitSDCard();
+
+	xTaskCreate( onPushbuttonTask, 	( signed portCHAR * ) "PushbuttonTask", 	GPIO_TASK_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
+	xTaskCreate( onGPI1Task, 		( signed portCHAR * ) "GPI1Task", 			GPIO_TASK_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
+	xTaskCreate( onGPI2Task,	 	( signed portCHAR * ) "GPI2Task", 			GPIO_TASK_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
+	xTaskCreate( onGPI3Task,	 	( signed portCHAR * ) "GPI3Task", 			GPIO_TASK_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
+
 }
 
 

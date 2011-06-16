@@ -41,12 +41,61 @@ unsigned int g_timer1_overflow;
 unsigned int g_timer2_overflow;
 unsigned int g_timer_counts[CONFIG_TIMER_CHANNELS];
 
-void InitGPIO(){
-    AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, GPIO_MASK );
+void InitGPIO(struct LoggerConfig *loggerConfig){
+
+//	AT91F_PIO_CfgInput(AT91C_BASE_PIOA, GPIO_MASK);
+//	AT91C_BASE_PIOA->PIO_PPUDR = GPIO_MASK; //disable pullup
+//	AT91C_BASE_PIOA->PIO_IFER = GPIO_MASK; //enable input filter
+//	AT91C_BASE_PIOA->PIO_MDER = GPIO_MASK; //enable multi drain
+
+	struct GPIOConfig * gpios = loggerConfig->GPIOConfigs;
+	if (gpios[0].config == CONFIG_GPIO_IN){
+		AT91F_PIO_CfgInput(AT91C_BASE_PIOA, GPIO_1);
+		AT91C_BASE_PIOA->PIO_PPUER = GPIO_1; //enable pullup
+		AT91C_BASE_PIOA->PIO_IFER = GPIO_1; //enable input filter
+	}
+	else{
+	    AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, GPIO_1 );
+	}
+	if (gpios[1].config == CONFIG_GPIO_IN){
+		AT91F_PIO_CfgInput(AT91C_BASE_PIOA, GPIO_2);
+		AT91C_BASE_PIOA->PIO_PPUER = GPIO_2; //enable pullup
+		AT91C_BASE_PIOA->PIO_IFER = GPIO_2; //enable input filter
+	}
+	else{
+	    AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, GPIO_2 );
+	}
+	if (gpios[2].config == CONFIG_GPIO_IN){
+		AT91F_PIO_CfgInput(AT91C_BASE_PIOA, GPIO_3);
+		AT91C_BASE_PIOA->PIO_PPUER = GPIO_3; //enable pullup
+		AT91C_BASE_PIOA->PIO_IFER = GPIO_3; //enable input filter
+		AT91C_BASE_PIOA->PIO_MDER = GPIO_3; //enable multi drain
+	}
+	else{
+	    AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, GPIO_3 );
+	}
 }
 
-unsigned int GetGPIOBits(){
-	return AT91F_PIO_GetStatus(AT91C_BASE_PIOA);
+void InitSDCard(void){
+	AT91F_PIO_CfgInput(AT91C_BASE_PIOA, SD_CARD_DETECT | SD_WRITE_PROTECT);
+	AT91C_BASE_PIOA->PIO_PPUER = SD_CARD_DETECT | SD_WRITE_PROTECT; //enable pullup
+	AT91C_BASE_PIOA->PIO_IFER = SD_CARD_DETECT | SD_WRITE_PROTECT; //enable input filter
+}
+
+int isCardPresent(void){
+	return (GetGPIOBits() & SD_CARD_DETECT) == 0;
+}
+
+int isCardWritable(void){
+	return (GetGPIOBits() & SD_WRITE_PROTECT) == 0;
+}
+
+int isButtonPressed(void){
+	return (GetGPIOBits() & PIO_PUSHBUTTON_SWITCH) == 0;
+}
+
+unsigned int GetGPIOBits(void){
+	return AT91F_PIO_GetInput(AT91C_BASE_PIOA);
 }
 
 void SetGPIOBits(unsigned int portBits){
@@ -295,7 +344,7 @@ void PWM_EnableChannel(unsigned int channel){
 }
 
 
-void InitADC(){
+void InitADC(void){
 
        /* Clear all previous setting and result */
        AT91F_ADC_SoftReset (AT91C_BASE_ADC);
@@ -380,7 +429,7 @@ unsigned int ReadADCx(unsigned int channel){
 	return result;	
 }
 
-void InitLEDs(){
+void InitLEDs(void){
     AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, LED_MASK ) ;
    //* Clear the LED's.
     AT91F_PIO_SetOutput( AT91C_BASE_PIOA, LED_MASK ) ;

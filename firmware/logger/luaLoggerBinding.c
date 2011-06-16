@@ -27,10 +27,12 @@ char g_tempBuffer[TEMP_BUFFER_LEN];
 void registerExtendedLuaFunctions(lua_State *L){
 
 	//Read / control inputs and outputs
-	lua_register(L,"getInput",Lua_GetInput);
+	lua_register(L,"getGPIO",Lua_GetGPIO);
 	lua_register(L,"getButton",Lua_GetButton);
-	lua_register(L,"setOutput",Lua_SetOutput);
+	lua_register(L,"setGPIO",Lua_SetGPIO);
 
+	lua_register(L,"isSDCardPresent", Lua_IsSDCardPresent);
+	lua_register(L,"isSDCardWritable", Lua_IsSDCardWritable);
 	lua_register(L,"setPWMDutyCycle",Lua_SetPWMDutyCycle);
 	lua_register(L,"setPWMDutyCycleRaw",Lua_SetPWMDutyCycleRaw);
 
@@ -68,8 +70,8 @@ void registerExtendedLuaFunctions(lua_State *L){
 	lua_register(L,"getTimeDiff", Lua_GetTimeDiff);
 	lua_register(L,"getTimeSince", Lua_GetTimeSince);
 					
-	lua_register(L,"getAccelerometer",Lua_GetAccelerometer);
-	lua_register(L,"getAccelerometerRaw",Lua_GetAccelerometerRaw);
+	lua_register(L,"readAccelerometer",Lua_ReadAccelerometer);
+	lua_register(L,"readAccelerometerRaw",Lua_ReadAccelerometerRaw);
 	
 	lua_register(L,"startLogging",Lua_StartLogging);
 	lua_register(L,"stopLogging",Lua_StopLogging);	
@@ -191,6 +193,17 @@ void registerExtendedLuaFunctions(lua_State *L){
 	
 	
 }
+
+int Lua_IsSDCardPresent(lua_State *L){
+	lua_pushinteger(L,isCardPresent());
+	return 1;
+}
+
+int Lua_IsSDCardWritable(lua_State *L){
+	lua_pushinteger(L,isCardWritable());
+	return 1;
+}
+
 void setLabelGeneric(char *dest, const char *source){
 	strncpy(dest ,source ,DEFAULT_LABEL_LENGTH);
 	dest[DEFAULT_LABEL_LENGTH - 1] = 0;
@@ -481,19 +494,28 @@ int Lua_GetGPIOSampleRate(lua_State *L){
 
 int Lua_SetGPIOConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->config = filterGPIOConfig(lua_tointeger(L,2));	
+		int channel = lua_tointeger(L,1) - 1 ;
+		if (channel >= 0 && channel <= 2){//1 based
+			struct GPIOConfig *c = getGPIOConfigChannel(channel);
+			//0= configure as input, 1=configure as output
+			if (NULL != c) c->config = filterGPIOConfig(lua_tointeger(L,2));
+			InitGPIO(getWorkingLoggerConfig()); //reload configuration
+		}
 	}
 	return 0;
 }
 
 int Lua_GetGPIOConfig(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		struct GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
-		if (NULL !=c){
-			lua_pushinteger(L,c->config);
-			return 1;	
-		}		
+		int channel = lua_tointeger(L,1) - 1;
+		if (channel >= 0 && channel <= 2){
+			struct GPIOConfig *c = getGPIOConfigChannel(channel);
+			if (NULL !=c){
+				//0=configure as input, 1=configure as output
+				lua_pushinteger(L,c->config);
+				return 1;
+			}
+		}
 	}	
 	return 0;
 }
@@ -904,7 +926,7 @@ int Lua_GetTimerCount(lua_State *L){
 	return 1;
 }
 int Lua_GetButton(lua_State *L){
-	unsigned int pushbutton = GetGPIOBits() | PIO_PUSHBUTTON_SWITCH;
+	unsigned int pushbutton = GetGPIOBits() & PIO_PUSHBUTTON_SWITCH;
 	lua_pushinteger(L,(pushbutton == 0));
 	return 1;	
 }
@@ -991,27 +1013,27 @@ int Lua_ReadSerialLine(lua_State *L){
 	return 0; //missing parameter
 }
 
-int Lua_GetInput(lua_State *L){
-	int result = -1;
+int Lua_GetGPIO(lua_State *L){
+	unsigned int result = 0;
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		unsigned int gpioBits = GetGPIOBits();
 		switch (channel){
 			case 1:
-				result = gpioBits | GPIO_1;
+				result = gpioBits & GPIO_1;
 				break;
 			case 2:
-				result = gpioBits | GPIO_2;
+				result = gpioBits & GPIO_2;
 				break;
 			case 3:
-				result = gpioBits | GPIO_3;
+				result = gpioBits & GPIO_3;
 		}
 	}
 	lua_pushinteger(L,(result != 0 ));
 	return 1;
 }
 
-int Lua_SetOutput(lua_State *L){
+int Lua_SetGPIO(lua_State *L){
 	if (lua_gettop(L) >=2){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		unsigned int state = (unsigned int)lua_tointeger(L,2);
@@ -1027,9 +1049,9 @@ int Lua_SetOutput(lua_State *L){
 				gpioBits = GPIO_3;
 		}
 		if (state){
-			SetGPIOBits(gpioBits);
-		} else{
 			ClearGPIOBits(gpioBits);
+		} else{
+			SetGPIOBits(gpioBits);
 		}
 	}
 	return 0;
@@ -1114,14 +1136,11 @@ int Lua_GetTimeSince(lua_State *L){
 	return 0;
 }
 
-int Lua_GetAccelerometer(lua_State *L){
-	
-	int accelValue = -1;
+int Lua_ReadAccelerometer(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		if (channel >= ACCELEROMETER_CHANNEL_MIN && channel <= ACCELEROMETER_CHANNEL_MAX){
-			accelValue =  readAccelAxis(channel);
-			double g = convertAccelRawToG(accelValue,DEFAULT_ACCEL_ZERO);
+			float g = convertAccelRawToG(readAccelChannel(channel),DEFAULT_ACCEL_ZERO);
 			lua_pushnumber(L,g);
 			return 1;
 		}
@@ -1129,17 +1148,19 @@ int Lua_GetAccelerometer(lua_State *L){
 	return 0;
 }
 
-int Lua_GetAccelerometerRaw(lua_State *L){
-	int accelValue = -1;
+
+int Lua_ReadAccelerometerRaw(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		if (channel >= ACCELEROMETER_CHANNEL_MIN && channel <= ACCELEROMETER_CHANNEL_MAX){
-			accelValue =  readAccelAxis(channel);
+			int accelValue =  readAccelChannel(channel);
+			lua_pushinteger(L,accelValue);
+			return 1;
 		}
 	}
-	lua_pushinteger(L,accelValue);
-	return 1;
+	return 0;
 }
+
 
 int Lua_SetPWMDutyCycle(lua_State *L){
 	return 0;

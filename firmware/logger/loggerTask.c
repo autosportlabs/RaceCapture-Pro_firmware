@@ -26,16 +26,10 @@ char g_loggerLineBuffer[LOGGER_LINE_LENGTH];
 void createLoggerTask(){
 
 	g_loggingShouldRun = 0;
+
 	vSemaphoreCreateBinary( g_xLoggerStart );
-	
 	xSemaphoreTake( g_xLoggerStart, 1 );
-	
-	xTaskCreate( loggerTask, 	
-				( signed portCHAR * ) "loggerTask", 	
-				LOGGER_STACK_SIZE, 	
-				NULL, 	
-				LOGGER_TASK_PRIORITY, 	
-				NULL );
+	xTaskCreate( loggerTask,( signed portCHAR * ) "loggerTask",	LOGGER_STACK_SIZE, NULL, LOGGER_TASK_PRIORITY, NULL );
 }
 
 void lineAppendString(char *s){
@@ -166,7 +160,9 @@ void loggerTask(void *params){
 	if (loggerConfig->AccelInstalled){
 		idleDelay = getHighestIdleSampleRate(loggerConfig);			
 	}
+
 	while(1){
+
 		//wait for signal to start logging
 		if ( xSemaphoreTake(g_xLoggerStart, idleDelay) != pdTRUE){
 			//perform idle tasks
@@ -176,12 +172,16 @@ void loggerTask(void *params){
 				struct AccelConfig *ac = &(loggerConfig->AccelConfigs[i]);
 				portTickType sr = ac->idleSampleRate;
 				if (sr != SAMPLE_DISABLED && (idleTicks % sr) == 0){
-					readAccelAxis(ac->accelChannel);
+
+//					int xx = readAccelAxis(ac->accelChannel);
+	//				SendString("Blah ");
+		//			SendInt(xx);
+			//		SendCrlf();
 				}
 			}
 		}
-		else{
-			
+		else if (isCardPresent() && isCardWritable()){
+
 			//perform logging tasks
 			int gpsInstalled = (int)loggerConfig->GPSInstalled;
 			int accelInstalled = (int)loggerConfig->AccelInstalled;
@@ -341,7 +341,7 @@ void writeAccelerometer(portTickType currentTicks, struct LoggerConfig *config){
 		struct AccelConfig *ac = &(config->AccelConfigs[i]);
 		portTickType sr = ac->sampleRate;
 		if (sr != SAMPLE_DISABLED && (currentTicks % sr) == 0){
-			accelValues[i] = readAccelAxis(ac->accelChannel);
+			accelValues[i] = readAccelChannel(ac->accelChannel);
 		}
 	}
 	

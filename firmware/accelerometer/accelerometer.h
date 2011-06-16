@@ -7,16 +7,21 @@
 #define ACCELEROMETER_CHANNEL_MAX 3
 
 void accel_init();
+void accel_setup();
+void initAccelBuffer();
+unsigned int calculateAccelAverage(unsigned char channel);
+
 void accel_initSPI();
 void accel_spiSetSpeed(unsigned char speed);
 unsigned char accel_spiSend(unsigned char outgoing, int last);
-void accel_setup();
 unsigned char accel_readControlRegister();
 float convertAccelRawToG(int rawValue, unsigned int zeroValue);
-unsigned int readAccelAxis(unsigned char axis);
-unsigned int getLastAccelRead(unsigned char axis);
+unsigned int readAccelChannel(unsigned char channel);
+unsigned int getLastAccelRead(unsigned char channel);
+unsigned int readAccelerometerDevice(unsigned char channel);
 
-#define readAccelAxisG(axis,zeroValue) accel_rawToG(accel_readAxis(axis),zeroValue);
-#define getLastAccelReadG(axis,zeroValue) accel_rawToG(accel_readAxis(axis),zeroValue);
+
+//#define readAccelAxisG(channel,zeroValue) accel_rawToG(accel_readAxis(channel),zeroValue);
+//#define getLastAccelReadG(channel,zeroValue) accel_rawToG(accel_readAxis(channel),zeroValue);
 
 #endif /*ACCELEROMETER_H_*/

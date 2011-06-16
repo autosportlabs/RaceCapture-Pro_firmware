@@ -3,7 +3,10 @@
 #include "loggerConfig.h"
 #include <string.h>
 
-#define SPI_CSR_NUM      1          
+#define SPI_CSR_NUM      1
+
+#define ACCEL_BUFFER_SIZE 10
+
 
 #define ACCEL_COUNTS_PER_G 				1024
 #define ACCEL_MAX_RANGE 				ACCEL_COUNTS_PER_G * 4
@@ -41,41 +44,68 @@
 
 #define SPI_TRANSFER (AT91C_PA12_MISO | AT91C_PA13_MOSI | AT91C_PA14_SPCK)
 
-unsigned int g_lastAccelValues[CONFIG_ACCEL_CHANNELS];
+unsigned int g_averagedAccelValues[CONFIG_ACCEL_CHANNELS];
+
+static unsigned int g_accelBuffer[CONFIG_ACCEL_CHANNELS][ACCEL_BUFFER_SIZE];
+static int g_accelBufferPointers[CONFIG_ACCEL_CHANNELS];
+static unsigned int g_accelBufferPointer[CONFIG_ACCEL_CHANNELS];
+
+#define NCPS_PDR_BIT     AT91C_PA9_NPCS1
+#define NCPS_ASR_BIT     0
+#define NPCS_BSR_BIT     AT91C_PA9_NPCS1
 
 void accel_initSPI(){
-	
+
+	AT91PS_SPI pSPI      = AT91C_BASE_SPI;
+	AT91PS_PIO pPIOA     = AT91C_BASE_PIOA;
+	AT91PS_PMC pPMC      = AT91C_BASE_PMC;
+	// not used: AT91PS_PDC pPDC_SPI  = AT91C_BASE_PDC_SPI;
+
+	// disable PIO from controlling MOSI, MISO, SCK (=hand over to SPI)
+	// keep CS untouched - used as GPIO pin during init
+	pPIOA->PIO_PPUDR = AT91C_PA12_MISO | AT91C_PA13_MOSI | AT91C_PA14_SPCK;
+
+	pPIOA->PIO_PDR = AT91C_PA12_MISO | AT91C_PA13_MOSI | AT91C_PA14_SPCK; //  | NCPS_PDR_BIT;
+	// set pin-functions in PIO Controller
+	pPIOA->PIO_ASR = AT91C_PA12_MISO | AT91C_PA13_MOSI | AT91C_PA14_SPCK; /// not here: | NCPS_ASR_BIT;
+	/// not here: pPIOA->PIO_BSR = NPCS_BSR_BIT;
+
+
 	// enable peripheral clock for SPI ( PID Bit 5 )
-	AT91C_BASE_PMC->PMC_PCER = ( 1 << AT91C_ID_SPI );
-	
-	//disable reset
-	//*AT91C_SPI_CR = AT91C_SPI_SPIDIS | AT91C_SPI_SWRST;
-	
-	*AT91C_PMC_PCER = (1 << AT91C_ID_SPI);
-	
-	*AT91C_PIOA_ASR = SPI_TRANSFER;
-	*AT91C_PIOA_BSR = AT91C_PA9_NPCS1;
-	
-	*AT91C_PIOA_ODR = AT91C_PA9_NPCS1;
-	*AT91C_PIOA_CODR = AT91C_PA9_NPCS1;
-	
-	*AT91C_PIOA_PDR = SPI_TRANSFER | AT91C_PA9_NPCS1;
-	//*AT91C_PIOA_PPUER = AT91C_PA11_NPCS0 | AT91C_PA9_NPCS1;
-	
-	*AT91C_SPI_MR = AT91C_SPI_PS_VARIABLE | AT91C_SPI_MSTR | AT91C_SPI_MODFDIS;
-//	*AT91C_SPI_MR = (AT91C_SPI_MSTR | AT91C_SPI_PS_FIXED
-//                   | AT91C_SPI_MODFDIS | AT91C_SPI_PCS);
- 
-	/* It seems necessary to set the clock speed for chip select 0
-    even if it's not used. */
-	AT91C_SPI_CSR[0] = (MCK/CS0_SPI_SPEED)<<8;
+	pPMC->PMC_PCER = ( 1 << AT91C_ID_SPI ); // n.b. IDs are just bit-numbers
 
-	AT91C_SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8 | AT91C_SPI_CSAAT;
+	// SPI mode: master, variable periph. sel., FDIV=0, fault detection disabled
+	// Chip-Select-Decoder Mode (write state of CS-Lines in TDR)
+	//pSPI->SPI_MR = AT91C_SPI_MSTR | AT91C_SPI_MODFDIS | AT91C_SPI_PCSDEC ;
+	pSPI->SPI_MR = AT91C_SPI_PS_VARIABLE | AT91C_SPI_MSTR | AT91C_SPI_MODFDIS;
 
+	// set chip-select-register
+	// 8 bits per transfer, CPOL=1, ClockPhase=0, DLYBCT = 0
+	// TODO: Why has CPOL to be active here and non-active on LPC2000?
+	//       Take closer look on timing diagrams in datasheets.
+	// not working pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8 | AT91C_SPI_NCPHA;
+	// not working pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_BITS_8 | AT91C_SPI_NCPHA;
+	pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8 | AT91C_SPI_CSAAT;
+	// not working pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_BITS_8;
+
+	// slow during init
+	accel_spiSetSpeed(0xFE);
+
+	// enable
+	pSPI->SPI_CR = AT91C_SPI_SPIEN;
+
+	/* enable automatic chip-select */
+	// reset PIO-registers of CS-pin to default
+	pPIOA->PIO_ODR  = NCPS_PDR_BIT; // input
+	pPIOA->PIO_CODR = NCPS_PDR_BIT; // clear
+	// disable PIO from controlling the CS pin (=hand over to SPI)
+	pPIOA->PIO_PDR = NCPS_PDR_BIT;
+	// set pin-functions in PIO Controller (function NCPS for CS-pin)
+	pPIOA->PIO_ASR = NCPS_ASR_BIT;
+	pPIOA->PIO_BSR = NPCS_BSR_BIT;
+
+	//normal speed
 	accel_spiSetSpeed(48);
-	//accel_spiSetSpeed(0xFE);
-
-	*AT91C_SPI_CR = AT91C_SPI_SPIEN;
 }
 
 void accel_spiSetSpeed(unsigned char speed)
@@ -103,10 +133,21 @@ unsigned char accel_spiSend(unsigned char outgoing, int last)
 
 void accel_init(){
 	accel_initSPI();
+	accel_setup();
+	initAccelBuffer();
+}
+
+void initAccelBuffer(){
+	for (int channel = 0; channel < CONFIG_ACCEL_CHANNELS; channel++){
+		for (int i = 0; i < ACCEL_BUFFER_SIZE; i++){
+			g_accelBuffer[channel][i] = readAccelerometerDevice(channel);
+		}
+		g_accelBufferPointers[channel] = 0;
+	}
 }
 
 void accel_setup(){
-	memset(g_lastAccelValues,0,sizeof(g_lastAccelValues));
+	memset(g_averagedAccelValues,0,sizeof(g_averagedAccelValues));
 	accel_spiSend(0x04, 0);
 	accel_spiSend(0x04, 1);
 	for (unsigned int d = 0; d < 1000000;d++){} //200 ns???? recalcualate this...
@@ -125,22 +166,46 @@ float convertAccelRawToG(int accelRaw, unsigned int zeroValue){
 	return gforce;	
 }
 
-unsigned int readAccelAxis(unsigned char axis){
+unsigned int calculateAccelAverage(unsigned char channel){
+	unsigned int total = 0;
+	for (int i = 0; i < ACCEL_BUFFER_SIZE;i++){
+		total+=g_accelBuffer[channel][i];
+	}
+	return total / ACCEL_BUFFER_SIZE;
+}
+
+
+unsigned int readAccelChannel(unsigned char channel){
+	//read the accel channel, add to buffer,
+	//move pointer and calculate average
+	unsigned int value = readAccelerometerDevice(channel);
+	int currentIndex = g_accelBufferPointer[channel];
+	g_accelBuffer[channel][currentIndex] = value;
+	currentIndex++;
+	if (currentIndex >= ACCEL_BUFFER_SIZE) currentIndex = 0;
+	g_accelBufferPointer[channel]=currentIndex;
+	unsigned int averageValue = calculateAccelAverage(channel);
+	g_averagedAccelValues[channel] = averageValue;
+	return averageValue;
+}
+
+
+
+unsigned int readAccelerometerDevice(unsigned char channel){
 	
 	//aux input (i.e. Yaw input) is mapped to 0x07 on the
 	//kionix KXR94
-	unsigned char readAxis = axis;
-	if (readAxis == 3) readAxis = 7;
-	accel_spiSend(readAxis, 0);
+	unsigned char readChannel = channel;
+	if (readChannel == 3) readChannel = 7;
+	accel_spiSend(readChannel, 0);
 	for (unsigned int d = 0; d < 200;d++){} //200 ns???? recalcualate this...
 	unsigned char dataMSB = accel_spiSend(0x00, 0);
 	unsigned char dataLSB = accel_spiSend(0x00, 1);
 	for (unsigned int d = 0; d < 1000;d++){} //40 us???? recalcualate this...
 	unsigned int value = (dataMSB << 4) + ((dataLSB >> 4) & 0x0f);
-	g_lastAccelValues[axis] = value;
 	return value;
 }
 
-unsigned int getLastAccelRead(unsigned char axis){
-	return g_lastAccelValues[axis];	
+unsigned int getLastAccelRead(unsigned char channel){
+	return g_averagedAccelValues[channel];
 }

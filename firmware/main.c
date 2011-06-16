@@ -58,35 +58,34 @@ void fatalError(int type);
 
 static int setupHardware( void )
 {
-	/* When using the JTAG debugger the hardware is not always initialised to
-	the correct default state.  This line just ensures that this does not
-	cause all interrupts to be masked at the start. */
+	// When using the JTAG debugger the hardware is not always initialised to
+	// the correct default state.  This line just ensures that this does not
+	// cause all interrupts to be masked at the start.
 	AT91C_BASE_AIC->AIC_EOICR = 0;
 		
-	/* Enable the peripheral clock. */
-   AT91F_PMC_EnablePeriphClock( AT91C_BASE_PMC, (1 << AT91C_ID_PIOA) |  //Enable Clock for PIO
-                                                (1 << AT91C_ID_IRQ0) |  //Enable Clock for IRQ0
-                                                (1 << AT91C_ID_PWMC) |	//Enable Clock for the PWM controller
-                                                (1 << AT91C_ID_US0)  |  //USART0
-                                                (1 << AT91C_ID_US1)		//USART1
-                              );
+	// Enable the peripheral clock.
+	AT91F_PMC_EnablePeriphClock( AT91C_BASE_PMC, (1 << AT91C_ID_PIOA) |  //Enable Clock for PIO
+												(1 << AT91C_ID_IRQ0) |  //Enable Clock for IRQ0
+												(1 << AT91C_ID_PWMC) |	//Enable Clock for the PWM controller
+												(1 << AT91C_ID_US0)  |  //USART0
+												(1 << AT91C_ID_US1)		//USART1
+							  );
 
-   /* Enable reset-button */
-   AT91F_RSTSetMode( AT91C_BASE_RSTC , AT91C_RSTC_URSTEN );
 
-	
+	// Enable reset-button
+	AT91F_RSTSetMode( AT91C_BASE_RSTC , AT91C_RSTC_URSTEN );
+
 	if (!initSerial()) return 0;
 	if (!vInitUSBInterface()) return 0;	
 	  
 	struct LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+	InitGPIO(loggerConfig);
 	InitADC();
 	InitPWM(loggerConfig);
 	initTimerChannels(loggerConfig);
 	InitLEDs();
-	InitGPIO();
 	if (loggerConfig->AccelInstalled){
 		accel_init();
-		accel_setup();
 	}
 	return 1;
  }
