@@ -17,8 +17,8 @@ char g_latestTextMsg[200];
 
 static int readModem(void){
 	//SendString("read:");
-	//SendString(g_cellBuffer);
 	int c = usart0_readLine(g_cellBuffer, sizeof(g_cellBuffer));
+	//SendString(g_cellBuffer);
 	return c;
 }
 

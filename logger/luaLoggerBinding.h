@@ -8,6 +8,10 @@
 
 void registerExtendedLuaFunctions(lua_State *L);
 
+
+int Lua_IsSDCardPresent(lua_State *L);
+int Lua_IsSDCardWritable(lua_State *L);
+
 int Lua_GetAnalog(lua_State *L);
 int Lua_GetAnalogRaw(lua_State *L);
 
@@ -20,8 +24,8 @@ int Lua_GetTimerRaw(lua_State *L);
 int Lua_GetTimerCount(lua_State *L);
 
 int Lua_GetButton(lua_State *L);
-int Lua_GetInput(lua_State *L);
-int Lua_SetOutput(lua_State *L);
+int Lua_GetGPIO(lua_State *L);
+int Lua_SetGPIO(lua_State *L);
 
 int Lua_ReadSerialLine(lua_State *L);
 int Lua_WriteSerial(lua_State *L);
@@ -41,8 +45,8 @@ int Lua_GetTimeSince(lua_State *L);
 
 
 
-int Lua_GetAccelerometer(lua_State *L);
-int Lua_GetAccelerometerRaw(lua_State *L);
+int Lua_ReadAccelerometer(lua_State *L);
+int Lua_ReadAccelerometerRaw(lua_State *L);
 
 int Lua_SetPWMDutyCycle(lua_State *L);
 int Lua_SetPWMDutyCycleRaw(lua_State *L);

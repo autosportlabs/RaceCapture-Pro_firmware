@@ -10,25 +10,22 @@
 #define TC_CLKS_MCK128          0x3
 #define TC_CLKS_MCK1024         0x4
 
-//Init GPIO ports
-void InitGPIO();
+void InitGPIO(struct LoggerConfig *loggerConfig);
+void InitSDCard(void);
 
+int isCardPresent(void);
+int isCardWritable(void);
+int isButtonPressed(void);
 
-//Init ADC ports
-void InitADC();
+unsigned int GetGPIOBits(void);
 
-//Init LED ports
-void InitLEDs();
+void InitADC(void);
 
-//Enable LED
+void InitLEDs(void);
+
 void EnableLED(unsigned int Led);
-//Clear LEDs
 void DisableLED(unsigned int Led);
-
-//Toggle LED state
 void ToggleLED (unsigned int Led);
-
-unsigned int GetGPIOBits();
 
 //Set specified bits on PIO
 void SetGPIOBits(unsigned int portBits);
