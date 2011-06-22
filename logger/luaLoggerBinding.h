@@ -6,7 +6,7 @@
 #include "lualib.h"
 
 
-void registerExtendedLuaFunctions(lua_State *L);
+void registerLuaLoggerBindings();
 
 
 int Lua_IsSDCardPresent(lua_State *L);
@@ -29,10 +29,6 @@ int Lua_SetGPIO(lua_State *L);
 
 int Lua_ReadSerialLine(lua_State *L);
 int Lua_WriteSerial(lua_State *L);
-
-int Lua_SetTweetNumber(lua_State *L);
-int Lua_SetStartFinishPoint(lua_State *L);
-int Lua_GetStartFinishPoint(lua_State *L);
 
 int Lua_GetGPSLongitude(lua_State *L);
 int Lua_GetGPSLatitude(lua_State *L);
@@ -60,13 +56,6 @@ int Lua_StartLogging(lua_State *L);
 int Lua_StopLogging(lua_State *L);
 
 int Lua_SetLED(lua_State *L);
-
-
-//CellModem Bindings
-int Lua_InitCellModem(lua_State *L);
-int Lua_SendText(lua_State *L);
-int Lua_ReceiveText(lua_State *L);
-int Lua_DeleteAllTexts(lua_State *L);
 
 //logger config data
 

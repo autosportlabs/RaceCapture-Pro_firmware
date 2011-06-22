@@ -13,11 +13,13 @@
 #include "accelerometer.h"
 #include "math.h"
 #include "geometry.h"
+#include "usart.h"
+#include "luaTask.h"
 
 #define MIN_SPEED 50
-#define STARTING_CORNER_GFORCE 0.1
-#define STARTING_ACCEL_GFORCE 0.1
-#define STARTING_BRAKING_GFORCE -0.1
+#define STARTING_CORNER_GFORCE 0.5
+#define STARTING_ACCEL_GFORCE 0.3
+#define STARTING_BRAKING_GFORCE -0.4
 #define START_FINISH_TIME_THRESHOLD 30
 
 #define RACE_STACK_SIZE 1000
@@ -32,12 +34,22 @@
 #define FREQ_5Hz 60
 #define FREQ_1Hz 300
 
-#define NOTIFY_INTERVAL 600
+#define NOTIFY_INTERVAL 300
+
+//small - normal font - auto mode - fast
+//#define SIGN_PREAMBLE_DATA "~00~00~00~00~00~01FF00~02A0A227F200801012020010100000000~FF~FF13~FEA~FDB"
+
+//7 row - normal font - roll left - slow speed
+#define SIGN_PREAMBLE_DATA "~00~00~00~00~00~01FF00~02A0I527F200801012020010100000000~FF~FF13~FEE~FDB"
+
+//this comes after the text to display
+#define SIGN_POSTSCRIPT_DATA "~03005F~04"
 
 #define DRIVER_CMD "driver"
-#define WHOAMI "@asl_labrat1"
-#define HASHTAG "#chumpcar"
+#define WHOAMI "@asl_labrat"
+#define HASHTAG "#24HoursOfLemons"
 #define COLOR_CMD "color"
+#define SAY_CMD "say"
 
 #define Y_AXIS 1
 #define Y_AXIS_INVERT -1
@@ -64,7 +76,7 @@ static trackablePoint g_maxBrakingGforce = { .updated=0, .value=STARTING_BRAKING
 static trackablePoint g_maxAccelGforce = { .updated=0, .value=STARTING_ACCEL_GFORCE};
 
 //driver info
-static char g_currentDriver[30] = "My driver";
+static char g_currentDriver[30] = "";
 
 static float g_lastLapTime = 0;
 static float g_timeStartSec = 0;
@@ -88,9 +100,103 @@ static char g_txtSendBuffer[TEXT_MSG_LEN];
 static char g_tweet[TEXT_MSG_LEN];
 static char g_receivedText[TEXT_MSG_LEN];
 
-static char g_twitterNumber[20] = "40404";
+//static char g_twitterNumber[20] = "40404";
+static char g_twitterNumber[20] = "2068544508";
 
 static float g_lastNotifiedTimestamp = 0;
+
+void registerRaceTaskLuaBindings(){
+
+	lua_State *L = getLua();
+	lockLua();
+	lua_register(L,"pokeSMS",Lua_PokeSMS);
+	lua_register(L,"initCellModem",Lua_InitCellModem);
+	lua_register(L,"sendText",Lua_SendText);
+	lua_register(L,"receiveText",Lua_ReceiveText);
+	lua_register(L,"deleteAllTexts", Lua_DeleteAllTexts);
+	lua_register(L,"setStartFinishPoint",Lua_SetStartFinishPoint);
+	lua_register(L,"getStartFinishPoint", Lua_GetStartFinishPoint);
+	lua_register(L,"setTweetNumber", Lua_SetTweetNumber);
+	unlockLua();
+}
+
+int Lua_PokeSMS(lua_State *L){
+
+	if (lua_gettop(L) >= 1){
+		const char * data= lua_tostring(L,1);
+		xQueueSend(textMsgRxQueue,data,portMAX_DELAY);
+	}
+	return 0;
+}
+
+int Lua_SetTweetNumber(lua_State *L){
+	if (lua_gettop(L) >= 1){
+		setTweetNumber(lua_tostring(L,1));
+	}
+	return 0;
+}
+
+int Lua_SetStartFinishPoint(lua_State *L){
+
+	if (lua_gettop(L) >= 3){
+		float latitude = lua_tonumber(L,1);
+		float longitude = lua_tonumber(L,2);
+		float radius = lua_tonumber(L,3);
+		setStartFinishPoint(latitude,longitude,radius);
+	}
+	return 0;
+}
+
+int Lua_GetStartFinishPoint(lua_State *L){
+	lua_pushnumber(L,getStartFinishLatitude());
+	lua_pushnumber(L,getStartFinishLongitude());
+	lua_pushnumber(L,getStartFinishRadius());
+	return 3;
+}
+
+int Lua_InitCellModem(lua_State *L){
+
+	int rc = initCellModem();
+	lua_pushnumber(L,rc);
+	return 1;
+}
+
+int Lua_SendText(lua_State *L){
+
+	if (lua_gettop(L) >= 2){
+		const char * phoneNumber = lua_tostring(L,1);
+		const char * msg = lua_tostring(L,2);
+
+		int rc = sendText(phoneNumber, msg);
+		lua_pushnumber(L,rc);
+		return 1;
+	}
+	return 0;
+}
+
+int Lua_ReceiveText(lua_State *L){
+
+
+	int txtNumber = 1;
+	if (lua_gettop(L) >= 1){
+		txtNumber = lua_tointeger(L,1);
+	}
+	const char *txt = receiveText(txtNumber);
+	if (NULL != txt){
+		lua_pushstring(L,txt);
+	}
+	else{
+		lua_pushstring(L,"");
+	}
+	return 1;
+}
+
+int Lua_DeleteAllTexts(lua_State *L){
+	deleteAllTexts();
+	return 0;
+}
+
+
 
 void startRaceTask(void){
 
@@ -100,6 +206,8 @@ void startRaceTask(void){
 	textMsgRxQueue = xQueueCreate(TEXT_MSG_QUEUE_LEN,sizeof(signed char[TEXT_MSG_LEN]));
 	if (NULL == textMsgRxQueue) return;
 
+	registerRaceTaskLuaBindings();
+
 	xTaskCreate( raceTask,
 					( signed portCHAR * ) "raceTask",
 					RACE_STACK_SIZE,
@@ -107,6 +215,9 @@ void startRaceTask(void){
 					RACE_PRIORITY,
 					NULL);
 
+}
+
+static void startSMSTask(void){
 	xTaskCreate( textSenderTask,
 			(signed portCHAR *) "textSender",
 			TEXT_SENDER_STACK_SIZE,
@@ -115,8 +226,16 @@ void startRaceTask(void){
 			NULL);
 }
 
+static void stripCrlf(char *txt)
+{
 
-static void lower(const char *pstr){
+	for (int i=strlen(txt)-1; i >=0;i--)
+	{
+		char *test = txt+i;
+		if (*test=='\n' || *test=='\r') *test = 0;
+	}
+}
+static void lower(char *pstr){
 	for(char *p = pstr;*p;++p) *p=*p>0x40&&*p<0x5b?*p|0x60:*p;
 }
 
@@ -187,8 +306,9 @@ static void handleOldDriver(){
 
 
 
-static void handleNewDriver(const char *txt){
+static void handleNewDriver(char *txt){
 
+	stripCrlf(txt);
 	g_timeStartSec = getSecondsSinceMidnight();
 	g_personalTopSpeed.value = MIN_SPEED;
 	g_lastLapTime = 0;
@@ -216,9 +336,32 @@ static void handleNewDriver(const char *txt){
 #define WHITE "white"
 #define OFF	"off"
 
+static void setMessage(const char *c){
+
+	if (strlen(c) < 2) return;
+	c++;
+	SendString("Setting Message: ");
+	SendString(c);
+	SendCrlf();
+	//there must be a space plus at least one character to display
+	initUsart1(USART_MODE_8N1, 9600);
+	usart1_puts(SIGN_PREAMBLE_DATA);
+	usart1_puts("Twitter Sez: ");
+	usart1_puts(c);
+	usart1_puts(SIGN_POSTSCRIPT_DATA);
+	//initUsart0(USART_MODE_8N1,38400);
+	SendString("Done");
+	SendCrlf();
+
+}
+
+
 static void setColor(const char *c){
 
-	if (strlen(c) < 6) return;
+	//hex color code + space
+	if (strlen(c) < 7) return;
+
+	c++; //skip past the space
 
 	unsigned int red = 1;
 	unsigned int green = 1;
@@ -280,22 +423,33 @@ static void setColor(const char *c){
 
 static void handleMention(const char *msg){
 
-	if (strlen(msg)==0) return;
-	if (strncmp(msg,COLOR_CMD,strlen(COLOR_CMD)) == 0){
-		setColor(msg + strlen(COLOR_CMD) + 1);
+	SendString("handling Mention");
+	SendString(msg);
+	SendCrlf();
+
+	if (strlen(msg) == 0) return;
+	char *found;
+	found = strstr(msg,COLOR_CMD);
+	if (NULL != found){
+		setColor(found + strlen(COLOR_CMD));
+		return;
+	}
+	found = strstr(msg,SAY_CMD);
+	if (NULL != found){
+		setMessage(found + strlen(SAY_CMD));
 	}
 }
 
 #define LZERO "lzero"
 #define LONE "lone"
 
-static void handleTxt(const char *txt){
+static void handleTxt(char *txt){
 
 	const char *p = txt;
 	lower(p);
 
 	if (strncmp(p,DRIVER_CMD,strlen(DRIVER_CMD)) == 0){
-		handleOldDriver();
+		if (strlen(g_currentDriver) > 0) handleOldDriver();
 		handleNewDriver(p+7);
 	}
 	if (strncmp(p,LZERO,strlen(LZERO)) == 0){
@@ -310,7 +464,7 @@ static void handleTxt(const char *txt){
 	}
 	char * whoami = strstr(txt,WHOAMI);
 	if (NULL != whoami){
-		handleMention(whoami+strlen(WHOAMI)+ 1);
+		handleMention(whoami + strlen(WHOAMI));
 	}
 }
 
@@ -623,6 +777,7 @@ void raceTask(void *params){
 			if (rc == 0){
 				cellModemInited = 1;
 				g_timeStartSec = getSecondsSinceMidnight();
+				startSMSTask();
 			}
 		}
 		else{

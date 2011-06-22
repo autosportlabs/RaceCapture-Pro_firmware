@@ -4,6 +4,7 @@
 #include "queue.h"
 #include "semphr.h"
 #include "loggerHardware.h"
+#include "luaLoggerBinding.h"
 #include "usb_comm.h"
 #include "modp_numtoa.h"
 #include "string.h"
@@ -26,6 +27,8 @@ char g_loggerLineBuffer[LOGGER_LINE_LENGTH];
 void createLoggerTask(){
 
 	g_loggingShouldRun = 0;
+
+	registerLuaLoggerBindings();
 
 	vSemaphoreCreateBinary( g_xLoggerStart );
 	xSemaphoreTake( g_xLoggerStart, 1 );
