@@ -14,8 +14,6 @@
 #include "luaTask.h"
 #include <string.h>
 #include "usart.h"
-#include "cellModem.h"
-#include "raceTask.h"
 
 extern xSemaphoreHandle g_xLoggerStart;
 extern int g_loggingShouldRun;
@@ -24,8 +22,10 @@ extern int g_loggingShouldRun;
 
 char g_tempBuffer[TEMP_BUFFER_LEN];
 
-void registerExtendedLuaFunctions(lua_State *L){
+void registerLuaLoggerBindings(){
 
+	lua_State *L = getLua();
+	lockLua();
 	//Read / control inputs and outputs
 	lua_register(L,"getGPIO",Lua_GetGPIO);
 	lua_register(L,"getButton",Lua_GetButton);
@@ -50,17 +50,10 @@ void registerExtendedLuaFunctions(lua_State *L){
 	lua_register(L,"getAnalog",Lua_GetAnalog);
 	lua_register(L,"getAnalogRaw",Lua_GetAnalogRaw);
 
-	lua_register(L,"initCellModem",Lua_InitCellModem);
-	lua_register(L,"sendText",Lua_SendText);
-	lua_register(L,"receiveText",Lua_ReceiveText);
-	lua_register(L,"deleteAllTexts", Lua_DeleteAllTexts);
 
 	lua_register(L,"readSerial", Lua_ReadSerialLine);
 	lua_register(L,"writeSerial", Lua_WriteSerial);
 
-	lua_register(L,"setStartFinishPoint",Lua_SetStartFinishPoint);
-	lua_register(L,"getStartFinishPoint", Lua_GetStartFinishPoint);
-	lua_register(L,"setTweetNumber", Lua_SetTweetNumber);
 	lua_register(L,"getGPSLatitude",Lua_GetGPSLatitude);
 	lua_register(L,"getGPSLongitude", Lua_GetGPSLongitude);
 	lua_register(L,"getGPSVelocity",Lua_GetGPSVelocity);
@@ -191,6 +184,7 @@ void registerExtendedLuaFunctions(lua_State *L){
 	
 	lua_register(L,"setAccelZeroValue",Lua_SetAccelZeroValue);
 	
+	unlockLua();
 	
 }
 
@@ -944,53 +938,10 @@ int Lua_WriteSerial(lua_State *L){
 			usart1_puts(data);
 			break;
 		}
-		lua_pushstring(L,data);
-		return 1;
 	}
 	return 0;
 }
 
-int Lua_InitCellModem(lua_State *L){
-
-	int rc = initCellModem();
-	lua_pushnumber(L,rc);
-	return 1;
-}
-
-int Lua_SendText(lua_State *L){
-
-	if (lua_gettop(L) >= 2){
-		const char * phoneNumber = lua_tostring(L,1);
-		const char * msg = lua_tostring(L,2);
-
-		int rc = sendText(phoneNumber, msg);
-		lua_pushnumber(L,rc);
-		return 1;
-	}
-	return 0;
-}
-
-int Lua_ReceiveText(lua_State *L){
-
-
-	int txtNumber = 1;
-	if (lua_gettop(L) >= 1){
-		txtNumber = lua_tointeger(L,1);
-	}
-	const char *txt = receiveText(txtNumber);
-	if (NULL != txt){
-		lua_pushstring(L,txt);
-	}
-	else{
-		lua_pushstring(L,"");
-	}
-	return 1;
-}
-
-int Lua_DeleteAllTexts(lua_State *L){
-	deleteAllTexts();
-	return 0;
-}
 
 
 int Lua_ReadSerialLine(lua_State *L){
@@ -1063,30 +1014,6 @@ int Lua_GetGPSLongitude(lua_State *L){
 	return 1;
 }
 
-int Lua_SetTweetNumber(lua_State *L){
-	if (lua_gettop(L) >= 1){
-		setTweetNumber(lua_tostring(L,1));
-	}
-	return 0;
-}
-
-int Lua_SetStartFinishPoint(lua_State *L){
-
-	if (lua_gettop(L) >= 3){
-		float latitude = lua_tonumber(L,1);
-		float longitude = lua_tonumber(L,2);
-		float radius = lua_tonumber(L,3);
-		setStartFinishPoint(latitude,longitude,radius);
-	}
-	return 0;
-}
-
-int Lua_GetStartFinishPoint(lua_State *L){
-	lua_pushnumber(L,getStartFinishLatitude());
-	lua_pushnumber(L,getStartFinishLongitude());
-	lua_pushnumber(L,getStartFinishRadius());
-	return 3;
-}
 
 int Lua_GetGPSLatitude(lua_State *L){
 	lua_pushnumber(L,getLatitude());

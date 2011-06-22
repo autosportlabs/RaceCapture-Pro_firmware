@@ -4,6 +4,7 @@
 #include "usb_comm.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "queue.h"
 #include "modp_numtoa.h"
 
 #define min(a,b) ((a)<(b)?(a):(b))
@@ -13,18 +14,25 @@
 char g_cellBuffer[200];
 char g_latestTextMsg[200];
 
+#define READ_TIMEOUT 900
 
 
-static int readModem(void){
+static int readModemWait(portTickType delay){
 	//SendString("read:");
-	int c = usart0_readLine(g_cellBuffer, sizeof(g_cellBuffer));
+	int c = usart0_readLineWait(g_cellBuffer, sizeof(g_cellBuffer),delay);
 	//SendString(g_cellBuffer);
 	return c;
 }
 
+static int readModem(void){
+	return readModemWait(portMAX_DELAY);
+}
+
 static int putsModem(const char *s){
 	int c = usart0_puts(s);
+	//SendString("Write: ");
 	//SendString(s);
+	//SendCrlf();
 	return c;
 }
 
@@ -43,60 +51,41 @@ static int sendCommand(const char * cmd){
 
 	flushModem();
 	putsModem(cmd);
-	readModem();
-	readModem();
+	readModemWait(READ_TIMEOUT);
+	readModemWait(READ_TIMEOUT);
 	return strncmp(g_cellBuffer,"OK",2) == 0;
 }
 
-/*
+
 
 static int isNetworkConnected(){
 
 	flushModem();
-	putsModem("AT+CREG?\r");
-	readModem();
-	readModem();
+	sendCommand("AT+CREG?\r");
 	int connected = (0 == strncmp(g_cellBuffer,"+CREG: 0,1",10));
-	readModem();
 	return connected;
 }
-*/
-/*
-flushModem();
-g_cellBuffer[0]='\0';
-while(0 != strncmp(g_cellBuffer,"Call Ready",10))
-
-int tryCount = 0;
-while(tryCount < NETWORK_CONNECT_MAX_TRIES){
-	if (isNetworkConnected()) break;
-	vTaskDelay(100);
-	tryCount++;
-}
-if (tryCount >=NETWORK_CONNECT_MAX_TRIES) return -6;
-*/
 
 int initCellModem(void){
 
-	//int tryCount = 0;
+	initUsart0(USART_MODE_8N1, 115200);
 
-/*
-	while(tryCount < NETWORK_CONNECT_MAX_TRIES){
+	//wait until network is connected
+	while (1){
 		if (isNetworkConnected()) break;
-		vTaskDelay(100);
-		tryCount++;
+		vTaskDelay(900);
 	}
-	if (tryCount >=NETWORK_CONNECT_MAX_TRIES) return -6;
-*/
+
 	//Setup for Texting
-	if (!sendCommand("AT+CMGF=1\r")) return -1;
+	if (!sendCommand("AT+CMGF=1\r")) return -2;
 	vTaskDelay(100);
-	if (!sendCommand("AT+CSCS=\"GSM\"\r")) return -2;
+	if (!sendCommand("AT+CSCS=\"GSM\"\r")) return -3;
 	vTaskDelay(100);
-	if (!sendCommand("AT+CSCA=\"+12063130004\"\r")) return -3;
+	if (!sendCommand("AT+CSCA=\"+12063130004\"\r")) return -4;
 	vTaskDelay(100);
-	if (!sendCommand("AT+CSMP=17,167,0,240\r")) return -4;
+	if (!sendCommand("AT+CSMP=17,167,0,240\r")) return -5;
 	vTaskDelay(100);
-	if (!sendCommand("AT+CNMI=0,0\r")) return -5;
+	if (!sendCommand("AT+CNMI=0,0\r")) return -6;
 	vTaskDelay(100);
 	return 0;
 }

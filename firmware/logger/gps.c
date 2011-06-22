@@ -96,6 +96,7 @@ void startGPSTask(){
 	g_satellitesUsedForPosition = 0;
 	g_velocity = 0.0;
 	
+	initUsart1(USART_MODE_8N1, 38400);
 	xTaskCreate( GPSTask, ( signed portCHAR * ) "GPSTask", GPS_TASK_STACK_SIZE, NULL, 	GPS_TASK_PRIORITY, 	NULL );
 }
 
