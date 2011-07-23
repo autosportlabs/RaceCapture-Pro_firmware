@@ -109,7 +109,7 @@ $(MEMORY_SRC_DIR)/memory.c \
 $(LUA_SRC_DIR)/luaTask.c \
 $(LUA_SRC_DIR)/luaScript.c \
 $(LUA_SRC_DIR)/luaBaseBinding.c \
-$(RTOS_PORT_DIR)/MemMang/heap_5.c \
+$(RTOS_PORT_DIR)/MemMang/heap_2_combine.c \
 $(TWEETER_DIR)/raceTask.c 
 
 # List C source files here which must be compiled in ARM-Mode.

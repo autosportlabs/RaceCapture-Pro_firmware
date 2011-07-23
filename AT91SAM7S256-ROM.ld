@@ -115,10 +115,8 @@ SECTIONS
   __bss_end__ = . ;
   _end = .;
   PROVIDE (end = .);
-  /* calculate block size for mm_malloc */
-  _UMM_NUMBLOCKS = (ORIGIN(STACK) - __bss_end__ - 0x0400) / 8 ;
   /* calculate byte size for heap_2.c memory manager */
-  _CONFIG_HEAP_SIZE = (ORIGIN(STACK) - __bss_end__ - 0x0400);
+  _CONFIG_HEAP_SIZE = (ORIGIN(STACK) - __bss_end__);
   
     . = ALIGN(4);
    .int_data :  
