@@ -138,7 +138,7 @@ int main( void )
 	createLoggerTask();
 	createGPIOTasks();
 	startGPSTask();
-	startRaceTask();
+//	startRaceTask();
 
    /* Start the scheduler.
 

@@ -3,7 +3,7 @@
 #include "loggerConfig.h"
 #include <string.h>
 
-#define SPI_CSR_NUM      1
+#define SPI_CSR_NUM      2
 
 #define ACCEL_BUFFER_SIZE 10
 
@@ -50,9 +50,9 @@ static unsigned int g_accelBuffer[CONFIG_ACCEL_CHANNELS][ACCEL_BUFFER_SIZE];
 static int g_accelBufferPointers[CONFIG_ACCEL_CHANNELS];
 static unsigned int g_accelBufferPointer[CONFIG_ACCEL_CHANNELS];
 
-#define NCPS_PDR_BIT     AT91C_PA9_NPCS1
+#define NCPS_PDR_BIT     AT91C_PA10_NPCS2
 #define NCPS_ASR_BIT     0
-#define NPCS_BSR_BIT     AT91C_PA9_NPCS1
+#define NPCS_BSR_BIT     AT91C_PA10_NPCS2
 
 void accel_initSPI(){
 
