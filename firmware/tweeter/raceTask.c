@@ -16,6 +16,18 @@
 #include "usart.h"
 #include "luaTask.h"
 
+
+#define DEFAULT_STARTFINISH_LATITUDE 0
+#define DEFAULT_STARTFINISH_LONGITUDE 0
+#define DEFAULT_STARTFINISH_RADIUS 50
+
+#define DEFAULT_TWEET_NUMBER "2068544508"
+#define DRIVER_CMD "driver"
+#define WHOAMI "@asl_labrat"
+#define HASHTAG "#24HoursOfLemons"
+#define COLOR_CMD "color"
+#define SAY_CMD "say"
+
 #define MIN_SPEED 50
 #define STARTING_CORNER_GFORCE 0.5
 #define STARTING_ACCEL_GFORCE 0.3
@@ -45,20 +57,15 @@
 //this comes after the text to display
 #define SIGN_POSTSCRIPT_DATA "~03005F~04"
 
-#define DRIVER_CMD "driver"
-#define WHOAMI "@asl_labrat"
-#define HASHTAG "#24HoursOfLemons"
-#define COLOR_CMD "color"
-#define SAY_CMD "say"
 
 #define Y_AXIS 1
 #define Y_AXIS_INVERT -1
 #define X_AXIS 0
 #define X_AXIS_INVERT 1
 
-static float g_startFinishLatitude = 0;
-static float g_startFinishLongitude = 0;
-static float g_startFinishRadius = 0;
+static float g_startFinishLatitude = DEFAULT_STARTFINISH_LATITUDE;
+static float g_startFinishLongitude = DEFAULT_STARTFINISH_LONGITUDE;
+static float g_startFinishRadius = DEFAULT_STARTFINISH_RADIUS;
 
 static int g_prevAtStartFinish = 0;
 static float g_lastStartFinishTimestamp = 0;
@@ -100,8 +107,7 @@ static char g_txtSendBuffer[TEXT_MSG_LEN];
 static char g_tweet[TEXT_MSG_LEN];
 static char g_receivedText[TEXT_MSG_LEN];
 
-//static char g_twitterNumber[20] = "40404";
-static char g_twitterNumber[20] = "2068544508";
+static char g_twitterNumber[20] = DEFAULT_TWEET_NUMBER;
 
 static float g_lastNotifiedTimestamp = 0;
 
