@@ -8,14 +8,16 @@
 */
 
 
-/* Standard includes. */
-
-/* Scheduler includes. */
+// Standard includes
 #include "FreeRTOS.h"
 #include "task.h"
 #include "usb_comm.h"
+#include "baseCommands.h"
+#include "constants.h"
 #include "interrupt_utils.h"
 #include "USB-CDC.h"
+
+//RaceCapture specific includes
 #include "loggerHardware.h"
 #include "gpioTasks.h"
 #include "usart.h"
@@ -26,6 +28,7 @@
 #include "luaTask.h"
 #include "accelerometer.h"
 #include "raceTask.h"
+#include "loggerCommands.h"
 
 /*-----------------*/
 /* Clock Selection */
@@ -130,6 +133,9 @@ int main( void )
 	updateActiveLoggerConfig();
 	int success = setupHardware();
 	if (! success) fatalError(FATAL_ERROR_HARDWARE);
+
+	InitBaseCommands();
+	InitLoggerCommands();
 
 	xTaskCreate( vUSBCDCTask,		( signed portCHAR * ) "USB", 				mainUSB_TASK_STACK, NULL, 	mainUSB_PRIORITY, 		NULL );
 	xTaskCreate( onUSBCommTask,	( signed portCHAR * ) "OnUSBComm", 				mainUSB_COMM_STACK, NULL, 	USB_COMM_TASK_PRIORITY, NULL );

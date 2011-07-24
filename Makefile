@@ -84,6 +84,7 @@ TWEETER_DIR = tweeter
 # use file-extension c for "c-only"-files
 SRC	= \
 $(TARGET).c \
+baseCommands.c \
 $(HW_DIR)/lib_AT91SAM7S256.c \
 $(RTOS_SRC_DIR)/tasks.c \
 $(RTOS_SRC_DIR)/queue.c \
@@ -105,6 +106,7 @@ $(LOGGER_SRC_DIR)/cellModem.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
 $(LOGGER_SRC_DIR)/geometry.c \
 $(LOGGER_SRC_DIR)/luaLoggerBinding.c \
+$(LOGGER_SRC_DIR)/loggerCommands.c \
 $(MEMORY_SRC_DIR)/memory.c \
 $(LUA_SRC_DIR)/luaTask.c \
 $(LUA_SRC_DIR)/luaScript.c \
