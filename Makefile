@@ -111,6 +111,7 @@ $(MEMORY_SRC_DIR)/memory.c \
 $(LUA_SRC_DIR)/luaTask.c \
 $(LUA_SRC_DIR)/luaScript.c \
 $(LUA_SRC_DIR)/luaBaseBinding.c \
+$(LUA_SRC_DIR)/luaCommands.c \
 $(RTOS_PORT_DIR)/MemMang/heap_2_combine.c \
 $(TWEETER_DIR)/raceTask.c 
 
