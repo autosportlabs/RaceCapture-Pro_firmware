@@ -6,6 +6,7 @@
  */
 #include "baseCommands.h"
 #include "usb_comm.h"
+#include "task.h"
 
 static struct cmd_t taskInfoCmd ={"showTasks", "Show status of running tasks", ShowTaskInfo, NULL};
 
