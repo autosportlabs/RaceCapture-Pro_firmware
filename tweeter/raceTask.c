@@ -451,12 +451,12 @@ static void handleMention(const char *msg){
 
 static void handleTxt(char *txt){
 
-	const char *p = txt;
+	char *p = txt;
 	lower(p);
 
 	if (strncmp(p,DRIVER_CMD,strlen(DRIVER_CMD)) == 0){
 		if (strlen(g_currentDriver) > 0) handleOldDriver();
-		handleNewDriver(p+7);
+		handleNewDriver((char *)(p+7));
 	}
 	if (strncmp(p,LZERO,strlen(LZERO)) == 0){
 		PWM_SetDutyCycle(1,0);

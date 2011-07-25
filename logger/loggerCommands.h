@@ -12,6 +12,8 @@ void InitLoggerCommands();
 void ExecLuaCommand(unsigned char argc, char **argv);
 void WriteScriptPage(unsigned char argc, char **argv);
 void ReadScriptPage(unsigned char argc, char **argv);
+void ShowMemInfo(unsigned char argc, char **argv);
+
 
 
 
