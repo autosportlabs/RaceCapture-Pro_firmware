@@ -47,12 +47,6 @@
 </scannerInfoProvider>
 </profile>
 </storageModule>
-<storageModule moduleId="org.eclipse.cdt.core.pathentry">
-<pathentry kind="src" path=""/>
-<pathentry kind="out" path=""/>
-<pathentry kind="con" path="org.eclipse.cdt.make.core.DISCOVERED_SCANNER_INFO"/>
-<pathentry kind="prj" path="/liblua"/>
-</storageModule>
 <storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
 <buildTargets>
 <target name="program" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
@@ -84,6 +78,11 @@
 <extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 </extensions>
 </storageModule>
+<storageModule moduleId="org.eclipse.cdt.core.pathentry">
+<pathentry kind="src" path=""/>
+<pathentry kind="out" path=""/>
+</storageModule>
+<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 </cconfiguration>
 </storageModule>
 </cproject>
