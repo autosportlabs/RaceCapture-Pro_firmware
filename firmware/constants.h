@@ -12,6 +12,6 @@
 #define WELCOME_MSG "Welcome to RaceCapture/Pro : Firmware Version " FIRMWARE_VERSION
 #define COMMAND_PROMPT "RaceCapture/Pro"
 
-#define LUA_ENABLED 1
+#define LUA_ENABLED
 
 #endif /* CONSTANTS_H_ */

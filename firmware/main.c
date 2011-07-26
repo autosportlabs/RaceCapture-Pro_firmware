@@ -25,11 +25,14 @@
 #include "loggerTask.h"
 #include "gps.h"
 #include "loggerConfig.h"
-#include "luaTask.h"
 #include "accelerometer.h"
 #include "raceTask.h"
 #include "loggerCommands.h"
 
+#ifdef LUA_ENABLED
+#include "luaTask.h"
+#include "luaCommands.h"
+#endif
 /*-----------------*/
 /* Clock Selection */
 /*-----------------*/
