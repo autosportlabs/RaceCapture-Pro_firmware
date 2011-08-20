@@ -49,7 +49,7 @@
 #define mainDEFAULT_TASK_PRIORITY 			( tskIDLE_PRIORITY + 1 )
 
 #define mainUSB_TASK_STACK					( 100 )
-#define mainUSB_COMM_STACK					( 1000 )
+#define mainUSB_COMM_STACK					( 500 )
 
 #define mainNO_ERROR_FLASH_PERIOD			( ( portTickType ) 1000 / portTICK_RATE_MS  )
 #define mainBUSY_FLASH_PERIOD				( ( portTickType ) 500 / portTICK_RATE_MS )
@@ -150,7 +150,7 @@ int main( void )
 	createLoggerTask();
 	createGPIOTasks();
 	startGPSTask();
-//	startRaceTask();
+	startRaceTask();
 
    /* Start the scheduler.
 

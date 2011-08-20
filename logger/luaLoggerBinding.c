@@ -1147,6 +1147,9 @@ int Lua_SetLED(lua_State *L){
 			case 2:
 				mask = LED2;
 				break;
+			case 3:
+				mask = LED3;
+				break;
 		}
 		if (state){
 			EnableLED(mask);

@@ -21,12 +21,14 @@
 #define DEFAULT_STARTFINISH_LONGITUDE 0
 #define DEFAULT_STARTFINISH_RADIUS 50
 
-#define DEFAULT_TWEET_NUMBER "2068544508"
+//#define DEFAULT_TWEET_NUMBER "2068544508"
+#define DEFAULT_TWEET_NUMBER "40404"
 #define DRIVER_CMD "driver"
 #define WHOAMI "@asl_labrat"
 #define HASHTAG "#24HoursOfLemons"
 #define COLOR_CMD "color"
-#define SAY_CMD "say"
+#define SAY_CMD "say "
+#define TWITTER_PROMPT "Twitter Sez: "
 
 #define MIN_SPEED 50
 #define STARTING_CORNER_GFORCE 0.5
@@ -34,7 +36,7 @@
 #define STARTING_BRAKING_GFORCE -0.4
 #define START_FINISH_TIME_THRESHOLD 30
 
-#define RACE_STACK_SIZE 1000
+#define RACE_STACK_SIZE 100
 #define RACE_PRIORITY 2
 
 #define TEXT_SENDER_STACK_SIZE 100
@@ -111,6 +113,9 @@ static char g_twitterNumber[20] = DEFAULT_TWEET_NUMBER;
 
 static float g_lastNotifiedTimestamp = 0;
 
+//forward declarations
+static void setMessage(const char *c);
+
 void registerRaceTaskLuaBindings(){
 
 	lua_State *L = getLua();
@@ -123,6 +128,7 @@ void registerRaceTaskLuaBindings(){
 	lua_register(L,"setStartFinishPoint",Lua_SetStartFinishPoint);
 	lua_register(L,"getStartFinishPoint", Lua_GetStartFinishPoint);
 	lua_register(L,"setTweetNumber", Lua_SetTweetNumber);
+	lua_register(L,"sayMessage", Lua_SayMessage);
 	unlockLua();
 }
 
@@ -199,6 +205,14 @@ int Lua_ReceiveText(lua_State *L){
 
 int Lua_DeleteAllTexts(lua_State *L){
 	deleteAllTexts();
+	return 0;
+}
+
+int Lua_SayMessage(lua_State *L){
+	if (lua_gettop(L) >= 1){
+		const char *msg = lua_tostring(L,1);
+		setMessage(msg);
+	}
 	return 0;
 }
 
@@ -344,21 +358,20 @@ static void handleNewDriver(char *txt){
 
 static void setMessage(const char *c){
 
-	if (strlen(c) < 2) return;
-	c++;
-	SendString("Setting Message: ");
-	SendString(c);
-	SendCrlf();
+	if (strlen(c) < 1) return;
 	//there must be a space plus at least one character to display
 	initUsart1(USART_MODE_8N1, 9600);
 	usart1_puts(SIGN_PREAMBLE_DATA);
-	usart1_puts("Twitter Sez: ");
+	usart1_puts(TWITTER_PROMPT);
 	usart1_puts(c);
 	usart1_puts(SIGN_POSTSCRIPT_DATA);
-	//initUsart0(USART_MODE_8N1,38400);
-	SendString("Done");
-	SendCrlf();
+	//wait some amount of time
+	int wait = strlen(SIGN_PREAMBLE_DATA) + strlen(SIGN_POSTSCRIPT_DATA) + strlen(TWITTER_PROMPT) + strlen(c);
 
+	//wait about 3 ms per character sent - 9600 baud is about 1066 characters per sec 300Hz - 3.3ms per tick
+	vTaskDelay(wait);
+
+	initUsart1(USART_MODE_8N1,38400);
 }
 
 
@@ -429,9 +442,6 @@ static void setColor(const char *c){
 
 static void handleMention(const char *msg){
 
-	SendString("handling Mention");
-	SendString(msg);
-	SendCrlf();
 
 	if (strlen(msg) == 0) return;
 	char *found;
@@ -770,7 +780,7 @@ void raceTask(void *params){
 
 	int cellModemInited = 0;
 
-	memset(g_receivedText,0,200);
+	memset(g_receivedText,0,TEXT_MSG_LEN);
 
 	EnableLED(LED2);
 	while(1){
@@ -792,30 +802,31 @@ void raceTask(void *params){
 				handleTxt(g_receivedText);
 			}
 
-			doSpeedChecks();
+			if (strlen(g_currentDriver) > 0){
+				doSpeedChecks();
 
-			doGForceChecks();
+				doGForceChecks();
 
-			if (atStartFinish()){
-				if (g_prevAtStartFinish == 0){
-					if (g_lastStartFinishTimestamp == 0){
-						g_lastStartFinishTimestamp = getSecondsSinceMidnight();
-					}
-					else{
-						float currentTimestamp = getSecondsSinceMidnight();
-						float elapsed = getTimeDiff(g_lastStartFinishTimestamp,currentTimestamp);
-						if (elapsed > START_FINISH_TIME_THRESHOLD){
-							doNewLap(elapsed);
-							g_lastStartFinishTimestamp = currentTimestamp;
+				if (atStartFinish()){
+					if (g_prevAtStartFinish == 0){
+						if (g_lastStartFinishTimestamp == 0){
+							g_lastStartFinishTimestamp = getSecondsSinceMidnight();
+						}
+						else{
+							float currentTimestamp = getSecondsSinceMidnight();
+							float elapsed = getTimeDiff(g_lastStartFinishTimestamp,currentTimestamp);
+							if (elapsed > START_FINISH_TIME_THRESHOLD){
+								doNewLap(elapsed);
+								g_lastStartFinishTimestamp = currentTimestamp;
+							}
 						}
 					}
+					g_prevAtStartFinish = 1;
 				}
-				g_prevAtStartFinish = 1;
+				else{
+					g_prevAtStartFinish = 0;
+				}
 			}
-			else{
-				g_prevAtStartFinish = 0;
-			}
-
 		}
 
 		if (getTimeSince(g_lastNotifiedTimestamp)>NOTIFY_INTERVAL){
