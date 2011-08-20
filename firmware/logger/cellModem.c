@@ -47,6 +47,13 @@ static void flushModem(void){
 	usart0_flush();
 }
 
+static void stripTrailingWhitespace(char *data){
+
+	char * ch = data;
+	while(*ch >= 32){ ch++;	}
+	*ch = 0;
+}
+
 static int sendCommand(const char * cmd){
 
 	flushModem();
@@ -122,11 +129,12 @@ const char * receiveText(int txtNumber){
 		if (0 == strncmp(g_cellBuffer,"OK",2)) break;
 		size_t len = strlen(g_cellBuffer);
 		if (len == 0) continue;
-		len = min(len, sizeof(g_latestTextMsg) - pos -1);
+		len = min(len, sizeof(g_latestTextMsg) - pos - 1);
 		memcpy(g_latestTextMsg + pos,g_cellBuffer,len);
 		pos += len;
 	}
 	g_latestTextMsg[pos]='\0';
+	stripTrailingWhitespace(g_latestTextMsg);
 	return g_latestTextMsg;
 }
 

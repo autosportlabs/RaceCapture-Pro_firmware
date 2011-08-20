@@ -12,7 +12,7 @@ int Lua_DeleteAllTexts(lua_State *L);
 int Lua_SetTweetNumber(lua_State *L);
 int Lua_SetStartFinishPoint(lua_State *L);
 int Lua_GetStartFinishPoint(lua_State *L);
-
+int Lua_SayMessage(lua_State *L);
 
 void startRaceTask(void);
 void raceTask(void *params);

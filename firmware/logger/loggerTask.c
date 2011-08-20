@@ -233,6 +233,12 @@ void loggerTask(void *params){
 				lineAppendString("\n");
 				fileWriteString(&f, g_loggerLineBuffer);
 				
+				if (ReadADC(7) < 400){
+					g_loggingShouldRun = 0;
+
+					fileWriteString(&f,"x\n");
+					break;
+				}
 				vTaskDelayUntil( &xLastWakeTime, xFrequency );
 			}
 			file_fclose(&f);
