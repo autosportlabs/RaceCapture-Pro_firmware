@@ -130,8 +130,6 @@ void fatalError(int type){
 
 int main( void )
 {
-	
-
 	//setup hardware
 	updateActiveLoggerConfig();
 	int success = setupHardware();
@@ -146,7 +144,7 @@ int main( void )
 	createLoggerTask();
 	createGPIOTasks();
 	startGPSTask();
-	startRaceTask();
+//	startRaceTask();
 
    /* Start the scheduler.
 
