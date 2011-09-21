@@ -26,6 +26,8 @@ char g_loggerLineBuffer[LOGGER_LINE_LENGTH];
 
 void createLoggerTask(){
 
+	updateActiveLoggerConfig();
+
 	g_loggingShouldRun = 0;
 
 	registerLuaLoggerBindings();

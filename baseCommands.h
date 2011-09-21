@@ -10,7 +10,11 @@
 
 #include "constants.h"
 
-void InitBaseCommands();
+
+#define BASE_COMMANDS \
+		{"showTasks", "Show status of running tasks", "", ShowTaskInfo}
+
+
 void ShowTaskInfo(unsigned int argc, char **argv);
 
 #endif /* BASECOMMANDS_H_ */

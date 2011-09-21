@@ -137,14 +137,10 @@ int main( void )
 	int success = setupHardware();
 	if (! success) fatalError(FATAL_ERROR_HARDWARE);
 
-	InitBaseCommands();
-	InitLoggerCommands();
-
 	xTaskCreate( vUSBCDCTask,		( signed portCHAR * ) "USB", 				mainUSB_TASK_STACK, NULL, 	mainUSB_PRIORITY, 		NULL );
 	xTaskCreate( onUSBCommTask,	( signed portCHAR * ) "OnUSBComm", 				mainUSB_COMM_STACK, NULL, 	USB_COMM_TASK_PRIORITY, NULL );
 
 #ifdef LUA_ENABLED
-	InitLuaCommands();
 	startLuaTask();
 #endif
 	createLoggerTask();

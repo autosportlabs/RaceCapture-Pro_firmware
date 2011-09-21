@@ -8,7 +8,129 @@
 #ifndef LOGGERCOMMANDS_H_
 #define LOGGERCOMMANDS_H_
 
-void InitLoggerCommands();
+#include "usb_comm.h"
+#include "command.h"
+
+extern const struct cmd_t g_loggerCommands[];
+
+#define LOGGER_COMMANDS \
+{"flashLoggerCfg", "Write the active Logger Configuration to flash.","", FlashLoggerConfig}, \
+	\
+{"setAnalogLabel", "Sets the label for the specified analog channel.","<channel> <label> <units>", SetAnalogLabel}, \
+{"getAnalogLabel", "Gets the label for the specified analog channel.","<channel>", GetAnalogLabel}, \
+	\
+{"getAnalogSampleRate", "Gets the sample rate for the specified analog channel.","<channel>", GetAnalogSampleRate}, \
+{"setAnalogSampleRate", "Sets the sample rate for the specified analog channel.","<channel> <sampleRate>", SetAnalogSampleRate}, \
+	\
+{"setAnalogScaling", "Sets the scaling factor for the specified analog channel.","<channel> <scaling>", SetAnalogScaling}, \
+{"getAnalogScaling", "Gets the scaling factor for the specified analog channel.","<channel>", GetAnalogScaling}, \
+	\
+{"setPwmClockFreq", "Sets the PWM clock frequency for the specified channel.","<channel> <frequency>", SetPwmClockFreq}, \
+{"getPwmClockFreq", "Gets the PWM clock frequency for the specified channel.","<channel>", GetPwmClockFreq}, \
+	\
+{"setPwmLabel", "Sets the label for the specified PWM channel.","<channel> <label>", SetPwmLabel}, \
+{"getPwmLabel", "Gets the label for the specified PWM channel.","<channel>", GetPwmLabel}, \
+	\
+{"setPwmSampelRate", "Sets the sample rate for the specified PWM channel.","<channel> <sampleRate>", SetPwmSampleRate}, \
+{"getPwmSampleRate", "Gets the sample rate for the specified PWM channel.","<channel>", GetPwmSampleRate}, \
+	\
+{"setPwmOutputCfg", "Sets the output configuration for the specified PWM channel.","<channel> <config>", SetPwmOutputCfg}, \
+{"getPwmOutputCfg", "Gets the output configuration for the specified PWM channel.","<channel>", GetPwmOutputCfg}, \
+	\
+{"setPwmLoggingCfg", "Sets the logging configuration for the specified PWM channel.","<channel> <config>", SetPwmLoggingCfg}, \
+{"getPwmLoggingCfg", "Sets the logging configuration for the specified PWM channel.","<channel>", GetPwmLoggingCfg}, \
+	\
+{"setPwmStartupDutyCycle", "Sets the startup duty cycle for the specified PWM channel.","<channel> <dutyCycle>", SetPwmStartupDutyCycle}, \
+{"getPwmStartupDutyCycle", "Gets the startup duty cycle for the specified PWM channel.","<channel>", GetPwmStartupDutyCycle}, \
+	\
+{"setPwmStartupPeriod", "Sets the startup period for the specified PWM channel.","<channel> <period>", SetPWMStartupPeriod}, \
+{"getPwmStartupPeriod", "Gets the startup period for the specified PWM channel.","<channel>", GetPwmStartupPeriod}, \
+	\
+{"setPwmVoltageScaling", "Sets the voltage scaling for the specified PWM channel.","<channel> <scaling>", SetPwmVoltageScaling}, \
+{"getPwmVoltageScaling", "Gets the voltage scaling for the specified PWM channel.","<channel>", getPwmVoltageScaling}, \
+	\
+{"setGpsInstalled", "Sets the installed state of the GPS module.","<installed>", SetGpsInstalled}, \
+{"getGpsInstalled", "Gets the installed state of the GPS module.","", getGpsInstalled}, \
+	\
+{"setGpsQualityLabel", "Sets the GPS quality label.","<label>", SetGpsQualityLabel}, \
+{"getGpsQualityLabel", "Gets the GPS quality label.","", GetGpsQualityLabel}, \
+	\
+{"setGpsStatsLabel", "Sets the GPS stats label.","<label>", SetGpsStatsLabel}, \
+{"getGpsStatsLabel", "Gets the GPS stats label.","", GetGpsStatsLabel}, \
+	\
+{"setGpsLatitudeLabel", "Sets the GPS latitude label.","<label>", SetGpsLatitudeLabel}, \
+{"getGpsLatitudeLabel", "Gets the GPS latitude label.","", GetGpsLatitudeLabel}, \
+	\
+{"setGpsLongitudeLabel", "Sets the GPS longitude label.","<label>", SetGpsLongitudeLabel}, \
+{"getGpsLongitudeLabel", "Gets the GPS longitude label.","", GetGpsLongitudeLabel}, \
+	\
+{"setGpsTimeLabel", "Sets the GPS time label.","<label>", SetGpsTimeLabel}, \
+{"getGpsTimeLabel", "Gets the GPS time label.","", GetGpsTimeLabel}, \
+	\
+{"setGpsVelocityLabel", "Sets the GPS velocity label.","<label>", SetGpsVelocityLabel}, \
+{"getGpsVeloictyLabel", "Gets the GPS velocity label.","", GetGpsVelocityLabel}, \
+	\
+{"setGpsPositionSampleRate", "Sets the GPS position sample rate.","<sampleRate>", SetGpsPositionSampleRate}, \
+{"getGpsPositionSampleRate", "Gets the GPS position sample rate.","", GetGpsPositionSampleRate}, \
+	\
+{"setGpsVelocitySampleRate", "Sets the GPS velocity sample rate.","<sampleRate>", SetGpsVelocitySampleRate}, \
+{"getGpsVelocitySampleRate", "Gets the GPS velocity sample rate.","", GetGpsVelocitySampleRate}, \
+	\
+{"setGpsTimeSampleRate", "Sets the GPS time sample rate.","<sampleRate>", SetGpsTimeSampleRate}, \
+{"getGpsTimeSampleRate", "Gets the GPS time sample rate.","", GetGpsTimeSampleRate}, \
+	\
+{"setGpioLabel", "Sets the label for the specified GPIO port.","<port> <label>", SetGpioLabel}, \
+{"getGpioLabel", "Gets the label for the specified GPIO port.","<port>", GetGpioLabel}, \
+	\
+{"setGpioSampleRate", "Sets the sample rate for the specified GPIO port.","<port> <sampleRate>", SetGpioSampleRate}, \
+{"getGpioSampleRate", "Gets the sample rate for the specified GPIO port.","<port>", GetGpioSampleRate}, \
+	\
+{"setGpioCfg", "Sets the configuration for the specified GPIO port.","<port> <configuration>", SetGpioConfig}, \
+{"getGpioCfg", "Gets the configuration for the specified GPIO port.","<port>", GetGpioConfig}, \
+	\
+{"setTimerLabel", "Sets the label for the specified timer channel.","<channel> <label>", SetTimerLabel}, \
+{"getTimerLabel", "Gets the label for the specified timer channel.","<channel>", GetTimerLabel}, \
+	\
+{"setTimerSampleRate", "Sets the sample rate for the specified timer channel.","<channel> <sampleRate>", SetTimerSampleRate}, \
+{"getTimerSampleRate", "Gets the sample rate for the specified timer channel.","<channel>", GetTimerSampleRate}, \
+	\
+{"setTimerCfg", "Sets the configuration for the specified timer channel.","<channel> <configuration>", SetTimerCfg}, \
+{"getTimerCfg", "Gets the configuration for the specified timer channel.","<channel>", GetTimerCfg}, \
+	\
+{"setTimerPulsePerRev", "Sets the pulse per revolution for the specified timer channel.","<channel> <pulses>", SetTimerPulsePerRev}, \
+{"getTimerPulsePerRev", "Gets the pulse per revolution for the specified timer channel.","<channel>", GetTimerPulsePerRev}, \
+	\
+{"setTimerDivider", "Sets the divider for the specified timer channel.","<channel> <divider>", SetTimerDivider}, \
+{"getTimerDivider", "Gets the divider for the specified timer channel.","<channel>", GetTimerDivider}, \
+	\
+{"calculateTimerScaling", "Calculates and updates the scaling for the specified timer channel.","<channel>", CalculateTimerScaling}, \
+{"getTimerScaling", "Gets the scaling for the specified timer channel.","<channel>", GetTimerScaling}, \
+	\
+{"setAccelInstalled", "Sets the installed state of the accelerometer.","", SetAccelInstalled}, \
+{"getAccelInstalled", "Gets the installed state of the accelerometer.","", GetAccelInstalled}, \
+	\
+{"setAccelLabel", "Sets the label for the specified accelerometer channel.","<channel> <label>", SetAccelLabel}, \
+{"getAccelLabel", "Gets the label for the specified accelerometer channel.","<channel>", GetAccelLabel}, \
+	\
+{"setAccelSampleRate", "Sets the sample rate for the specified accelerometer channel.","<channel> <sampleRate>", SetAccelSampleRate}, \
+{"getAccelSampleRate", "Gets the sample rate for the specified accelerometer channel.","<channel>", GetAccelSampleRate}, \
+	\
+{"setAccelIdleSampleRate", "Sets the sample rate for the specified accelerometer channel when not logging.","<channel> <sampleRate>", SetAccelIdleSampeRate}, \
+{"getAccelIdleSampleRate", "Gets the sample rate for the specified accelerometer channel when not logging.","<channel>", GetAccelIdleSampleRate}, \
+	\
+{"setAccelConfig", "Sets the configuration for the specified accelerometer channel.","<channel> <config>", SetAccelConfig}, \
+{"getAccelConfig", "Gets the configuration for the specified accelerometer channel.","<channel>", GetAccelConfig}, \
+	\
+{"setAccelChannel", "Sets the X/Y/Z orientation for the specified accelerometer channel.","<channel> <orientation>", SetAccelChannel}, \
+{"getAccelChannel", "Gets the X/Y/Z orientation for the specified accelerometer channel.","<channel>", GetAccelChannel}, \
+	\
+{"setAccelZeroValue", "Sets the zero value for the specified accelerometer channel.","<channel> <zeroValue>", SetAccelZeroValue}, \
+{"getAccelZeroValue", "Gets the zero value for the specified accelerometer channel.","<channel>", GetAccelZeroValue}, \
+	\
+{"calibrateAccelZero", "Calibrates the current accelerometer values as the zero point.","", CalibrateAccelZero}
+
+
+
 
 void FlashLoggerConfig(unsigned int argc, char **argv);
 
