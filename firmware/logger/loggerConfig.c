@@ -1,13 +1,14 @@
 #include "loggerConfig.h"
+#include "accelerometer.h"
 #include "string.h"
 #include "memory.h"
 #include "AT91SAM7S256.h"
 #include "board.h"
 
+struct LoggerConfig g_workingLoggerConfig;
 
 
 struct LoggerConfig g_savedLoggerConfig __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".text\n\t#"))) = DEFAULT_LOGGER_CONFIG;
-struct LoggerConfig g_workingLoggerConfig;
 
 void updateActiveLoggerConfig(){
 	memcpy(&g_workingLoggerConfig,&g_savedLoggerConfig,sizeof(struct LoggerConfig));
@@ -25,16 +26,13 @@ struct LoggerConfig * getWorkingLoggerConfig(){
 	return &g_workingLoggerConfig;
 }
 
-void calculateTimerScaling(struct LoggerConfig *loggerConfig, unsigned int timerChannel){
-	struct TimerConfig *timerConfig = getTimerConfigChannel(timerChannel);
-	if (NULL != timerConfig){
-		unsigned int clock = BOARD_MCK / timerConfig->timerDivider;
-		clock = clock / timerConfig->pulsePerRevolution;
-		timerConfig->calculatedScaling = clock;
-	}
+void calculateTimerScaling(struct TimerConfig *timerConfig){
+	unsigned int clock = BOARD_MCK / timerConfig->timerDivider;
+	clock = clock / timerConfig->pulsePerRevolution;
+	timerConfig->calculatedScaling = clock;
 }
 
-int mapSampleRate(int sampleRate){
+int encodeSampleRate(int sampleRate){
 
 	switch(sampleRate){
 		case 100:
@@ -54,6 +52,29 @@ int mapSampleRate(int sampleRate){
 		default:
 		case 0:
 			return SAMPLE_DISABLED;
+	}
+}
+
+int decodeSampleRate(int sampleRateCode){
+
+	switch(sampleRateCode){
+		case SAMPLE_100Hz:
+			return 100;
+		case SAMPLE_50Hz:
+			return 50;
+		case SAMPLE_30Hz:
+			return 30;
+		case SAMPLE_20Hz:
+			return 20;
+		case SAMPLE_10Hz:
+			return SAMPLE_10Hz;
+		case SAMPLE_5Hz:
+			return 5;
+		case SAMPLE_1Hz:
+			return 1;
+		default:
+		case SAMPLE_DISABLED:
+			return 0;
 	}
 }
 
@@ -203,4 +224,24 @@ struct AccelConfig * getAccelConfigChannel(int channel){
 		c = &(getWorkingLoggerConfig()->AccelConfigs[channel]);
 	}
 	return c;		
+}
+
+void setLabelGeneric(char *dest, const char *source){
+	strncpy(dest ,source ,DEFAULT_LABEL_LENGTH);
+	dest[DEFAULT_LABEL_LENGTH - 1] = 0;
+}
+
+void calibrateAccelZero(){
+	//fill the averaging buffer
+	int resample = ACCELEROMETER_BUFFER_SIZE;
+	while (resample > 0){
+		for (int i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
+			readAccelChannel(i);
+		}
+	}
+
+	for (int i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
+		struct AccelConfig * c = getAccelConfigChannel(i);
+		c->zeroValue = getLastAccelRead(c->accelChannel);
+	}
 }

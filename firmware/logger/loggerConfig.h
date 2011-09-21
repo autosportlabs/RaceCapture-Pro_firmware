@@ -243,9 +243,11 @@ void updateActiveLoggerConfig();
 struct LoggerConfig * getSavedLoggerConfig();
 struct LoggerConfig * getWorkingLoggerConfig();
 
-void calculateTimerScaling(struct LoggerConfig *loggerConfig, unsigned int timerChannel);
+void calculateTimerScaling(struct TimerConfig *timerConfig);
 
-int mapSampleRate(int sampleRate);
+int encodeSampleRate(int sampleRate);
+int decodeSampleRate(int sampleRateCode);
+
 
 int filterGPIOConfig(int config);
 int filterPWMOutputConfig(int config);
@@ -264,6 +266,8 @@ struct PWMConfig * getPWMConfigChannel(int channel);
 struct GPIOConfig * getGPIOConfigChannel(int channel);
 struct AccelConfig * getAccelConfigChannel(int channel);
 
+void setLabelGeneric(char *dest, const char *source);
 
+void calibrateAccelZero();
 
 #endif /*LOGGERCONFIG_H_*/
