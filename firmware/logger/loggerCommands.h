@@ -31,7 +31,7 @@ extern const struct cmd_t g_loggerCommands[];
 {"setPwmLabel", "Sets the label for the specified PWM channel.","<channel> <label>", SetPwmLabel}, \
 {"getPwmLabel", "Gets the label for the specified PWM channel.","<channel>", GetPwmLabel}, \
 	\
-{"setPwmSampelRate", "Sets the sample rate for the specified PWM channel.","<channel> <sampleRate>", SetPwmSampleRate}, \
+{"setPwmSampleRate", "Sets the sample rate for the specified PWM channel.","<channel> <sampleRate>", SetPwmSampleRate}, \
 {"getPwmSampleRate", "Gets the sample rate for the specified PWM channel.","<channel>", GetPwmSampleRate}, \
 	\
 {"setPwmOutputCfg", "Sets the output configuration for the specified PWM channel.","<channel> <config>", SetPwmOutputCfg}, \
@@ -115,7 +115,7 @@ extern const struct cmd_t g_loggerCommands[];
 {"setAccelSampleRate", "Sets the sample rate for the specified accelerometer channel.","<channel> <sampleRate>", SetAccelSampleRate}, \
 {"getAccelSampleRate", "Gets the sample rate for the specified accelerometer channel.","<channel>", GetAccelSampleRate}, \
 	\
-{"setAccelIdleSampleRate", "Sets the sample rate for the specified accelerometer channel when not logging.","<channel> <sampleRate>", SetAccelIdleSampeRate}, \
+{"setAccelIdleSampleRate", "Sets the sample rate for the specified accelerometer channel when not logging.","<channel> <sampleRate>", SetAccelIdleSampleRate}, \
 {"getAccelIdleSampleRate", "Gets the sample rate for the specified accelerometer channel when not logging.","<channel>", GetAccelIdleSampleRate}, \
 	\
 {"setAccelConfig", "Sets the configuration for the specified accelerometer channel.","<channel> <config>", SetAccelConfig}, \
@@ -234,7 +234,7 @@ void GetAccelLabel(unsigned int argc, char **argv);
 void SetAccelSampleRate(unsigned int argc, char **argv);
 void GetAccelSampleRate(unsigned int argc, char **argv);
 
-void SetAccelIdleSampeRate(unsigned int argc, char **argv);
+void SetAccelIdleSampleRate(unsigned int argc, char **argv);
 void GetAccelIdleSampleRate(unsigned int argc, char **argv);
 
 void SetAccelConfig(unsigned int argc, char **argv);
