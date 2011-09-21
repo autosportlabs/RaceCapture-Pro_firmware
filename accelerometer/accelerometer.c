@@ -5,7 +5,6 @@
 
 #define SPI_CSR_NUM      2
 
-#define ACCEL_BUFFER_SIZE 10
 
 
 #define ACCEL_COUNTS_PER_G 				1024
@@ -46,7 +45,7 @@
 
 unsigned int g_averagedAccelValues[CONFIG_ACCEL_CHANNELS];
 
-static unsigned int g_accelBuffer[CONFIG_ACCEL_CHANNELS][ACCEL_BUFFER_SIZE];
+static unsigned int g_accelBuffer[CONFIG_ACCEL_CHANNELS][ACCELEROMETER_BUFFER_SIZE];
 static int g_accelBufferPointers[CONFIG_ACCEL_CHANNELS];
 static unsigned int g_accelBufferPointer[CONFIG_ACCEL_CHANNELS];
 
@@ -139,7 +138,7 @@ void accel_init(){
 
 void initAccelBuffer(){
 	for (int channel = 0; channel < CONFIG_ACCEL_CHANNELS; channel++){
-		for (int i = 0; i < ACCEL_BUFFER_SIZE; i++){
+		for (int i = 0; i < ACCELEROMETER_BUFFER_SIZE; i++){
 			g_accelBuffer[channel][i] = readAccelerometerDevice(channel);
 		}
 		g_accelBufferPointers[channel] = 0;
@@ -168,10 +167,10 @@ float convertAccelRawToG(int accelRaw, unsigned int zeroValue){
 
 unsigned int calculateAccelAverage(unsigned char channel){
 	unsigned int total = 0;
-	for (int i = 0; i < ACCEL_BUFFER_SIZE;i++){
+	for (int i = 0; i < ACCELEROMETER_BUFFER_SIZE;i++){
 		total+=g_accelBuffer[channel][i];
 	}
-	return total / ACCEL_BUFFER_SIZE;
+	return total / ACCELEROMETER_BUFFER_SIZE;
 }
 
 
@@ -182,7 +181,7 @@ unsigned int readAccelChannel(unsigned char channel){
 	int currentIndex = g_accelBufferPointer[channel];
 	g_accelBuffer[channel][currentIndex] = value;
 	currentIndex++;
-	if (currentIndex >= ACCEL_BUFFER_SIZE) currentIndex = 0;
+	if (currentIndex >= ACCELEROMETER_BUFFER_SIZE) currentIndex = 0;
 	g_accelBufferPointer[channel]=currentIndex;
 	unsigned int averageValue = calculateAccelAverage(channel);
 	g_averagedAccelValues[channel] = averageValue;

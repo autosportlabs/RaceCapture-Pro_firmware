@@ -5,6 +5,8 @@
 
 #define ACCELEROMETER_CHANNEL_MIN 0
 #define ACCELEROMETER_CHANNEL_MAX 3
+#define ACCELEROMETER_BUFFER_SIZE 10
+
 
 void accel_init();
 void accel_setup();

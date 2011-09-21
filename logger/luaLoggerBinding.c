@@ -36,7 +36,7 @@ void registerLuaLoggerBindings(){
 	lua_register(L,"setPWMDutyCycle",Lua_SetPWMDutyCycle);
 	lua_register(L,"setPWMDutyCycleRaw",Lua_SetPWMDutyCycleRaw);
 
-	lua_register(L,"setPWMFrequency",Lua_SetPWMFrequency);
+	lua_register(L,"setPWMPeriod",Lua_SetPWMPeriod);
 	lua_register(L,"setPWMPeriodRaw",Lua_SetPWMPeriodRaw);
 	lua_register(L,"setAnalogOut",Lua_SetAnalogOut);
 
@@ -198,12 +198,6 @@ int Lua_IsSDCardWritable(lua_State *L){
 	return 1;
 }
 
-void setLabelGeneric(char *dest, const char *source){
-	strncpy(dest ,source ,DEFAULT_LABEL_LENGTH);
-	dest[DEFAULT_LABEL_LENGTH - 1] = 0;
-}
-
-
 int Lua_SetAccelInstalled(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		getWorkingLoggerConfig()->AccelInstalled = lua_toboolean(L,1);	
@@ -238,7 +232,7 @@ int Lua_GetAccelLabel(lua_State *L){
 int Lua_SetAccelSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2 ){
 		struct AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->sampleRate = mapSampleRate(lua_tointeger(L,2));
+		if (NULL != c) c->sampleRate = encodeSampleRate(lua_tointeger(L,2));
 	}	
 	return 0;
 }
@@ -257,7 +251,7 @@ int Lua_GetAccelSampleRate(lua_State *L){
 int Lua_SetAccelIdleSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		struct AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->idleSampleRate = mapSampleRate(lua_tointeger(L,2));
+		if (NULL != c) c->idleSampleRate = encodeSampleRate(lua_tointeger(L,2));
 	}
 	return 0;
 }
@@ -357,7 +351,7 @@ int Lua_GetTimerLabel(lua_State *L){
 int Lua_SetTimerSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		struct TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->sampleRate = mapSampleRate(lua_tointeger(L,2));
+		if (NULL != c) c->sampleRate = encodeSampleRate(lua_tointeger(L,2));
 	}
 	return 0;
 }
@@ -432,7 +426,8 @@ int Lua_GetTimerDivider(lua_State *L){
 
 int Lua_CalculateTimerScaling(lua_State *L){
 	if (lua_gettop(L) >=1 ){
-		calculateTimerScaling(getWorkingLoggerConfig(),lua_tointeger(L,1));
+		struct TimerConfig * c= getTimerConfigChannel(lua_tointeger(L,1));
+		if (NULL != c) calculateTimerScaling(c);
 	}
 	return 0;
 }
@@ -470,7 +465,7 @@ int Lua_GetGPIOLabel(lua_State *L){
 int Lua_SetGPIOSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		struct GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->sampleRate = mapSampleRate(lua_tointeger(L,2));
+		if (NULL != c) c->sampleRate = encodeSampleRate(lua_tointeger(L,2));
 	}
 	return 0;
 }
@@ -601,7 +596,7 @@ int Lua_GetGPSVelocityLabel(lua_State *L){
 
 int Lua_SetGPSPositionSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		getWorkingLoggerConfig()->GPSConfig.positionSampleRate = mapSampleRate(lua_tointeger(L,1));
+		getWorkingLoggerConfig()->GPSConfig.positionSampleRate = encodeSampleRate(lua_tointeger(L,1));
 	}
 	return 0;
 }
@@ -613,7 +608,7 @@ int Lua_GetGPSPositionSampleRate(lua_State *L){
 
 int Lua_SetGPSVelocitySampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1 ){
-		getWorkingLoggerConfig()->GPSConfig.velocitySampleRate = mapSampleRate(lua_tointeger(L,1));
+		getWorkingLoggerConfig()->GPSConfig.velocitySampleRate = encodeSampleRate(lua_tointeger(L,1));
 	}
 	return 0;
 }
@@ -625,7 +620,7 @@ int Lua_GetGPSVelocitySampleRate(lua_State *L){
 
 int Lua_SetGPSTimeSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1 ){
-		getWorkingLoggerConfig()->GPSConfig.timeSampleRate = mapSampleRate(lua_tointeger(L,1));
+		getWorkingLoggerConfig()->GPSConfig.timeSampleRate = encodeSampleRate(lua_tointeger(L,1));
 	}
 	return 0;
 }
@@ -668,7 +663,7 @@ int Lua_GetPWMLabel(lua_State *L){
 int Lua_SetPWMSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->sampleRate = mapSampleRate(lua_tointeger(L,2));
+		if (NULL != c) c->sampleRate = encodeSampleRate(lua_tointeger(L,2));
 	}
 	return 0;
 }
@@ -813,7 +808,7 @@ int Lua_SetAnalogChannelSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		struct ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
-			c->sampleRate = mapSampleRate(lua_tointeger(L,2));
+			c->sampleRate = encodeSampleRate(lua_tointeger(L,2));
 		}
 	}
 	return 0;	
@@ -851,10 +846,17 @@ int Lua_GetAnalogChannelScaling(lua_State *L){
 }
 
 
-
 int Lua_GetAnalog(lua_State *L){
-	
-	return 0;
+	float result = -1;
+	if (lua_gettop(L) >= 1){
+		unsigned int channel = (unsigned int)lua_tointeger(L,1);
+		struct ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
+		if (NULL != c){
+			result = c->scaling * ReadADC(channel);
+		}
+	}
+	lua_pushnumber(L,result);
+	return 1;
 }
 
 int Lua_GetAnalogRaw(lua_State *L){
@@ -919,6 +921,7 @@ int Lua_GetTimerCount(lua_State *L){
 	lua_pushinteger(L,result);
 	return 1;
 }
+
 int Lua_GetButton(lua_State *L){
 	unsigned int pushbutton = GetGPIOBits() & PIO_PUSHBUTTON_SWITCH;
 	lua_pushinteger(L,(pushbutton == 0));
@@ -941,8 +944,6 @@ int Lua_WriteSerial(lua_State *L){
 	}
 	return 0;
 }
-
-
 
 int Lua_ReadSerialLine(lua_State *L){
 
@@ -1009,7 +1010,6 @@ int Lua_SetGPIO(lua_State *L){
 }
 
 int Lua_GetGPSLongitude(lua_State *L){
-
 	lua_pushnumber(L,getLongitude());
 	return 1;
 }
@@ -1090,11 +1090,7 @@ int Lua_ReadAccelerometerRaw(lua_State *L){
 
 
 int Lua_SetPWMDutyCycle(lua_State *L){
-	return 0;
-}
-
-int Lua_SetPWMFrequency(lua_State *L){
-	return 0;
+	return Lua_SetPWMDutyCycleRaw(L);
 }
 
 int Lua_SetPWMDutyCycleRaw(lua_State *L){
@@ -1106,6 +1102,10 @@ int Lua_SetPWMDutyCycleRaw(lua_State *L){
 		}
 	}
 	return 0;
+}
+
+int Lua_SetPWMPeriod(lua_State *L){
+	return Lua_SetPWMPeriodRaw(L);
 }
 
 int Lua_SetPWMPeriodRaw(lua_State *L){
@@ -1120,7 +1120,16 @@ int Lua_SetPWMPeriodRaw(lua_State *L){
 }
 
 int Lua_SetAnalogOut(lua_State *L){
-	
+	if (lua_gettop(L) >= 2){
+		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		if (NULL != c){
+			unsigned int channel = (unsigned int)lua_tointeger(L,1);
+			if (channel >= 0 && channel < CONFIG_PWM_CHANNELS){
+				float dutyCycle = (float)lua_tonumber(L,2) / c->voltageScaling;
+				PWM_SetDutyCycle(channel,(unsigned short)dutyCycle);
+			}
+		}
+	}
 	return 0;
 }
 

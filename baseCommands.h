@@ -11,6 +11,6 @@
 #include "constants.h"
 
 void InitBaseCommands();
-void ShowTaskInfo(unsigned char argc, char **argv);
+void ShowTaskInfo(unsigned int argc, char **argv);
 
 #endif /* BASECOMMANDS_H_ */

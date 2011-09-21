@@ -47,7 +47,7 @@ int Lua_ReadAccelerometerRaw(lua_State *L);
 int Lua_SetPWMDutyCycle(lua_State *L);
 int Lua_SetPWMDutyCycleRaw(lua_State *L);
 
-int Lua_SetPWMFrequency(lua_State *L);
+int Lua_SetPWMPeriod(lua_State *L);
 int Lua_SetPWMPeriodRaw(lua_State *L);
 
 int Lua_SetAnalogOut(lua_State *L);
@@ -59,8 +59,6 @@ int Lua_SetLED(lua_State *L);
 
 //logger config data
 
-
-void setLabelGeneric(char *dest, const char *source);
 
 int Lua_SetAccelInstalled(lua_State *L);
 int Lua_GetAccelInstalled(lua_State *L);

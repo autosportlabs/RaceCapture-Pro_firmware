@@ -8,7 +8,7 @@
 #include "usb_comm.h"
 #include "task.h"
 
-static struct cmd_t taskInfoCmd ={"showTasks", "Show status of running tasks", ShowTaskInfo, NULL};
+static struct cmd_t taskInfoCmd ={NULL, "showTasks", "Show status of running tasks", "", ShowTaskInfo};
 
 void InitBaseCommands(){
 
@@ -17,7 +17,7 @@ void InitBaseCommands(){
 }
 
 
-void ShowTaskInfo(unsigned char argc, char **argv){
+void ShowTaskInfo(unsigned int argc, char **argv){
 
 	SendString("Task Info");
 	SendCrlf();
