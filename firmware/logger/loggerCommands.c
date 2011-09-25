@@ -66,7 +66,11 @@ void SetAnalogLabel(unsigned int argc, char **argv){
 
 void GetAnalogLabel(unsigned int argc, char **argv){
 	struct ADCConfig * c = AssertAdcGetParam(argc,argv);
-	if (NULL != c) SendNameString("label",c->label);
+	if (NULL != c){
+		SendNameString("label",c->label);
+		SendNameString("units",c->units);
+	}
+
 }
 
 
@@ -227,7 +231,7 @@ void getPwmVoltageScaling(unsigned int argc, char **argv){
 }
 
 struct LoggerConfig * AssertSetBaseParam(unsigned int argc){
-	if (2 < argc){
+	if (argc >= 2){
 		return getWorkingLoggerConfig();
 	}
 	else{
@@ -513,7 +517,7 @@ void GetTimerDivider(unsigned int argc, char **argv){
 }
 
 void CalculateTimerScaling(unsigned int argc, char **argv){
-	struct TimerConfig * c = AssertTimerSetParam(argc,argv);
+	struct TimerConfig * c = AssertTimerGetParam(argc,argv);
 	if (NULL != c){
 		calculateTimerScaling(c);
 		SendCommandOK();
@@ -554,7 +558,10 @@ struct AccelConfig * AssertAccelGetParam(unsigned int argc, char **argv){
 
 void SetAccelInstalled(unsigned int argc, char **argv){
 	struct LoggerConfig * c = AssertSetBaseParam(argc);
-	if (NULL != c) c->AccelInstalled = (modp_atoi(argv[1]) != 0);
+	if (NULL != c){
+		c->AccelInstalled = (modp_atoi(argv[1]) != 0);
+		SendCommandOK();
+	}
 }
 
 void GetAccelInstalled(unsigned int argc, char **argv){
@@ -644,6 +651,7 @@ void GetAccelZeroValue(unsigned int argc, char **argv){
 
 void CalibrateAccelZero(unsigned int argc, char **argv){
 	calibrateAccelZero();
+	SendCommandOK();
 }
 
 /*

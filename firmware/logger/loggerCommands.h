@@ -68,7 +68,7 @@ extern const struct cmd_t g_loggerCommands[];
 {"getGpsTimeLabel", "Gets the GPS time label.","", GetGpsTimeLabel}, \
 	\
 {"setGpsVelocityLabel", "Sets the GPS velocity label.","<label>", SetGpsVelocityLabel}, \
-{"getGpsVeloictyLabel", "Gets the GPS velocity label.","", GetGpsVelocityLabel}, \
+{"getGpsVelocityLabel", "Gets the GPS velocity label.","", GetGpsVelocityLabel}, \
 	\
 {"setGpsPositionSampleRate", "Sets the GPS position sample rate.","<sampleRate>", SetGpsPositionSampleRate}, \
 {"getGpsPositionSampleRate", "Gets the GPS position sample rate.","", GetGpsPositionSampleRate}, \
