@@ -24,17 +24,6 @@ xSemaphoreHandle g_xLoggerStart;
 
 char g_loggerLineBuffer[LOGGER_LINE_LENGTH];
 
-void createLoggerTask(){
-
-
-	g_loggingShouldRun = 0;
-
-	registerLuaLoggerBindings();
-
-	vSemaphoreCreateBinary( g_xLoggerStart );
-	xSemaphoreTake( g_xLoggerStart, 1 );
-	xTaskCreate( loggerTask,( signed portCHAR * ) "loggerTask",	LOGGER_STACK_SIZE, NULL, LOGGER_TASK_PRIORITY, NULL );
-}
 
 void lineAppendString(char *s){
 	strcat(g_loggerLineBuffer, s);	
@@ -146,6 +135,17 @@ portTickType getHighestSampleRate(struct LoggerConfig *config){
 	return (portTickType)s;
 }
 
+void createLoggerTask(){
+
+
+	g_loggingShouldRun = 0;
+
+	registerLuaLoggerBindings();
+
+	vSemaphoreCreateBinary( g_xLoggerStart );
+	xSemaphoreTake( g_xLoggerStart, 1 );
+	xTaskCreate( loggerTask,( signed portCHAR * ) "loggerTask",	LOGGER_STACK_SIZE, NULL, LOGGER_TASK_PRIORITY, NULL );
+}
 
 void loggerTask(void *params){
 	
@@ -170,7 +170,6 @@ void loggerTask(void *params){
 		//wait for signal to start logging
 		if ( xSemaphoreTake(g_xLoggerStart, idleDelay) != pdTRUE){
 			//perform idle tasks
-
 			idleTicks+=idleDelay;
 			for (unsigned int i=0; i < CONFIG_ACCEL_CHANNELS;i++){
 				struct AccelConfig *ac = &(loggerConfig->AccelConfigs[i]);
@@ -185,7 +184,6 @@ void loggerTask(void *params){
 			}
 		}
 		else if (isCardPresent() && isCardWritable()){
-
 			//perform logging tasks
 			int gpsInstalled = (int)loggerConfig->GPSInstalled;
 			int accelInstalled = (int)loggerConfig->AccelInstalled;
@@ -234,12 +232,12 @@ void loggerTask(void *params){
 				lineAppendString("\n");
 				fileWriteString(&f, g_loggerLineBuffer);
 				
-				if (ReadADC(7) < 400){
-					g_loggingShouldRun = 0;
+//				if (ReadADC(7) < 400){
+//					g_loggingShouldRun = 0;
 
-					fileWriteString(&f,"x\n");
-					break;
-				}
+//					fileWriteString(&f,"x\n");
+//					break;
+//				}
 				vTaskDelayUntil( &xLastWakeTime, xFrequency );
 			}
 			file_fclose(&f);

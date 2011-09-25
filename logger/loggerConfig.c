@@ -234,7 +234,7 @@ void setLabelGeneric(char *dest, const char *source){
 void calibrateAccelZero(){
 	//fill the averaging buffer
 	int resample = ACCELEROMETER_BUFFER_SIZE;
-	while (resample > 0){
+	while (resample-- > 0){
 		for (int i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
 			readAccelChannel(i);
 		}
@@ -242,6 +242,6 @@ void calibrateAccelZero(){
 
 	for (int i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
 		struct AccelConfig * c = getAccelConfigChannel(i);
-		c->zeroValue = getLastAccelRead(c->accelChannel);
+		c->zeroValue = getLastAccelRead(c->accelChannel);  //we map the logical channel to the physical
 	}
 }
