@@ -23,7 +23,7 @@
 
 #define SYSTEM_COMMANDS {BASE_COMMANDS, LUA_COMMANDS, LOGGER_COMMANDS, NULL_COMMAND}
 
-//length of this entire array (in bytes)
+//USB manufacturer string descriptor
 //first element = length of this entire array, in bytes
 //second element = 0x03 = descriptor type string (don't change)
 #define USB_MFG_STRING_DESCRIPTOR 	\
