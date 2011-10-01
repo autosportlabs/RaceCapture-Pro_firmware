@@ -10,6 +10,7 @@ EmbeddedFileSystem g_efs;
 
 
 int InitEFS(){
+
 	return efs_init( &g_efs, 0 );
 }
 

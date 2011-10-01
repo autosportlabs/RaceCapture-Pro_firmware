@@ -232,17 +232,19 @@ void loggerTask(void *params){
 				lineAppendString("\n");
 				fileWriteString(&f, g_loggerLineBuffer);
 				
-//				if (ReadADC(7) < 400){
-//					g_loggingShouldRun = 0;
+				if (ReadADC(7) < 230){
+					g_loggingShouldRun = 0;
 
-//					fileWriteString(&f,"x\n");
-//					break;
-//				}
+					fileWriteString(&f,"x\r\n");
+					break;
+				}
 				vTaskDelayUntil( &xLastWakeTime, xFrequency );
+
 			}
 			file_fclose(&f);
 			UnmountEFS();
 			DisableLED(LED2);
+			ToggleLED(LED1);
 			
 			idleTicks = 0;
 			idleDelay = portMAX_DELAY;
