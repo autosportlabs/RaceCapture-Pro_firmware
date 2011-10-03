@@ -27,7 +27,6 @@
 </builder>
 <tool command="as" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.tool.gnu.assembler.mingw.base.513053853" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.mingw.base">
 <option id="gnu.both.asm.option.include.paths.877747926" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks}&quot;"/>
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/raceAnalyzer/gaugeWorks}&quot;"/>
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/raceAnalyzer/gaugeWorks/include}&quot;"/>
 <listOptionValue builtIn="false" value="C:/projects/logger/trunk/analyzer"/>
@@ -42,7 +41,6 @@
 <tool id="cdt.managedbuild.tool.gnu.archiver.mingw.base.1098469353" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.mingw.base"/>
 <tool command="g++" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.base.1491606997" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.base">
 <option id="gnu.cpp.compiler.option.include.paths.595312928" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks}&quot;"/>
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks/include}&quot;"/>
 <listOptionValue builtIn="false" value=".."/>
 <listOptionValue builtIn="false" value="../include"/>
@@ -64,7 +62,6 @@
 </tool>
 <tool command="gcc" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="cdt.managedbuild.tool.gnu.c.compiler.mingw.base.1625190516" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.mingw.base">
 <option id="gnu.c.compiler.option.include.paths.226641281" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks}&quot;"/>
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/raceAnalyzer/gaugeWorks}&quot;"/>
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/raceAnalyzer/gaugeWorks/include}&quot;"/>
 <listOptionValue builtIn="false" value="C:/projects/logger/trunk/analyzer"/>
@@ -117,7 +114,6 @@
 <listOptionValue builtIn="false" value="gdi32"/>
 </option>
 <option id="gnu.cpp.link.option.paths.362168868" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
-<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks/Debug}&quot;"/>
 <listOptionValue builtIn="false" value="&quot;C:\wxWidgets-2.8.10\msw-debug\lib&quot;"/>
 <listOptionValue builtIn="false" value="&quot;C:\projects\wxctb\lib&quot;"/>
 </option>
@@ -143,12 +139,7 @@
 </configuration>
 </storageModule>
 <storageModule moduleId="org.eclipse.cdt.core.externalSettings">
-<externalSettings containerId="gaugeWorks;" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier">
-<externalSetting>
-<entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/gaugeWorks"/>
-<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/gaugeWorks/Debug"/>
-</externalSetting>
-</externalSettings>
+<externalSettings containerId="gaugeWorks;" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
 </storageModule>
 
 

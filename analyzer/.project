@@ -3,6 +3,9 @@
 	<name>raceAnalyzer</name>
 	<comment></comment>
 	<projects>
+		<project>gaugeWorks</project>
+		<project>sqlite</project>
+		<project>wxSerial</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
