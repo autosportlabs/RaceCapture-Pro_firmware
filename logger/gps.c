@@ -118,15 +118,15 @@ void GPSTask( void *pvParameters ){
 						EnableLED(LED1);
 						flashCount = 0;		
 					}
+				} else if (strstr(data,"VTG,")){ //Course Over Ground and Ground Speed
+					parseVTG(data + 4);
 				} else if (strstr(data,"GSA,")){ //GPS Fix data
 					parseGSA(data + 4);						
 				} else if (strstr(data,"GSV,")){ //Satellites in view
 					parseGSV(data + 4);					
 				} else if (strstr(data,"RMC,")){ //Recommended Minimum Specific GNSS Data
 					parseRMC(data + 4);					
-				} else if (strstr(data,"VTG,")){ //Course Over Ground and Ground Speed
-					parseVTG(data + 4);					
-				} else if (strstr(data,"GLL,")){ //Geographic Position - Latitude/Longitude
+				}  else if (strstr(data,"GLL,")){ //Geographic Position - Latitude/Longitude
 					parseGLL(data + 4);					
 				} else if (strstr(data,"ZDA,")){ //Time & Date
 					parseZDA(data + 4);

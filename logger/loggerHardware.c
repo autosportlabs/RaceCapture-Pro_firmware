@@ -51,28 +51,30 @@ void InitGPIO(struct LoggerConfig *loggerConfig){
 	struct GPIOConfig * gpios = loggerConfig->GPIOConfigs;
 	if (gpios[0].config == CONFIG_GPIO_IN){
 		AT91F_PIO_CfgInput(AT91C_BASE_PIOA, GPIO_1);
-		AT91C_BASE_PIOA->PIO_PPUER = GPIO_1; //enable pullup
+		AT91C_BASE_PIOA->PIO_PPUDR = GPIO_1; //disable pullup
 		AT91C_BASE_PIOA->PIO_IFER = GPIO_1; //enable input filter
 	}
 	else{
 	    AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, GPIO_1 );
+	    AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, GPIO_1 );
 	}
 	if (gpios[1].config == CONFIG_GPIO_IN){
 		AT91F_PIO_CfgInput(AT91C_BASE_PIOA, GPIO_2);
-		AT91C_BASE_PIOA->PIO_PPUER = GPIO_2; //enable pullup
+		AT91C_BASE_PIOA->PIO_PPUDR = GPIO_2; //disable pullup
 		AT91C_BASE_PIOA->PIO_IFER = GPIO_2; //enable input filter
 	}
 	else{
 	    AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, GPIO_2 );
+	    AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, GPIO_2 );
 	}
 	if (gpios[2].config == CONFIG_GPIO_IN){
 		AT91F_PIO_CfgInput(AT91C_BASE_PIOA, GPIO_3);
-		AT91C_BASE_PIOA->PIO_PPUER = GPIO_3; //enable pullup
+		AT91C_BASE_PIOA->PIO_PPUDR = GPIO_3; //disable pullup
 		AT91C_BASE_PIOA->PIO_IFER = GPIO_3; //enable input filter
-		AT91C_BASE_PIOA->PIO_MDER = GPIO_3; //enable multi drain
 	}
 	else{
 	    AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, GPIO_3 );
+	    AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, GPIO_3 );
 	}
 }
 
@@ -405,8 +407,8 @@ unsigned int ReadADC(unsigned int channel){
         while (!((AT91F_ADC_GetStatus (AT91C_BASE_ADC)) & (1<<channel)));
         
         /* Fifth Step: Read the ADC result output */
-       	unsigned int result = AT91F_ADC_GetLastConvertedData(AT91C_BASE_ADC);
-//        unsigned int result = AT91F_ADC_GetConvertedDataCH0 (AT91C_BASE_ADC);
+//       	unsigned int result = AT91F_ADC_GetLastConvertedData(AT91C_BASE_ADC);
+        unsigned int result = AT91F_ADC_GetConvertedDataCH6 (AT91C_BASE_ADC);
 
 		return result;	
 	
@@ -480,12 +482,61 @@ unsigned int timerClockFromDivider(unsigned int divider){
 
 void initTimer0(struct TimerConfig *timerConfig){
 
-	g_timer0_overflow = 1;
+	//pullup enable on timer 0
+	//AT91F_PIO_CfgInput(AT91C_BASE_PIOA, 1 << 0);
+	AT91C_BASE_PIOA->PIO_PPUER = (1 << 0);
+
+	/* Set PIO pins for Timer Counter 0 */
+	AT91F_PIO_CfgPeriph(
+		AT91C_BASE_PIOA, // PIO controller base address
+		0, // Peripheral A
+		((unsigned int) AT91C_PA0_TIOA0   ));
+
+   /* Enable TC0's clock in the PMC controller */
+   AT91F_TC0_CfgPMC();
+
+	AT91F_TC_Open (
+	AT91C_BASE_TC0,
+
+	TC_CLKS_MCK128 |
+	AT91C_TC_ETRGEDG_FALLING |
+	AT91C_TC_ABETRG |
+	AT91C_TC_LDRA_RISING |
+	AT91C_TC_LDRB_FALLING
+
+	,AT91C_ID_TC0
+	);
+
+	if (timerConfig->slowTimerEnabled){
+		AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC0, TIMER0_INTERRUPT_LEVEL,AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer0_slow_irq_handler);
+		AT91C_BASE_TC0->TC_IER = AT91C_TC_LDRBS | AT91C_TC_COVFS;  //  IRQ enable RB loading and overflow
+	}
+	else{
+		AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC0, TIMER0_INTERRUPT_LEVEL,AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer0_irq_handler);
+		AT91C_BASE_TC0->TC_IER = AT91C_TC_COVFS | AT91C_TC_LDRBS;  //  IRQ enable RB loading
+	}
+	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC0);
+}
+
+
+
+
+
+
+
+void initTimer0x(struct TimerConfig *timerConfig){
+
+	g_timer1_overflow = 1;
 	g_timer_counts[0] = 0;
+
 	// Set PIO pins for Timer Counter 0
 	//TIOA0 connected to PA0
 	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,0,AT91C_PA0_TIOA0);
 	
+	 //enable pullup (optoisolator input)
+	AT91C_BASE_PIOA->PIO_PPUER = AT91C_PA0_TIOA0;
+	AT91C_BASE_PIOA->PIO_IFER = AT91C_PA0_TIOA0; //enable input filter
+
 	/// Enable TC0's clock in the PMC controller
 	AT91F_TC0_CfgPMC();
 	
@@ -507,7 +558,7 @@ void initTimer0(struct TimerConfig *timerConfig){
 	}
 	else{
 		AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC0, TIMER0_INTERRUPT_LEVEL,AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer0_irq_handler);
-		AT91C_BASE_TC0->TC_IER = AT91C_TC_LDRBS;  //  IRQ enable RB loading
+		AT91C_BASE_TC0->TC_IER = AT91C_TC_COVFS | AT91C_TC_LDRBS;  //  IRQ enable RB loading
 	}
 	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC0);	
 }
@@ -521,6 +572,9 @@ void initTimer1(struct TimerConfig *timerConfig){
 	// TIOA1 mapped to PA15
 	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,0,AT91C_PA15_TIOA1);
 	 
+	AT91C_BASE_PIOA->PIO_PPUDR = AT91C_PA15_TIOA1; //disable pullup
+	AT91C_BASE_PIOA->PIO_IFER = AT91C_PA15_TIOA1; //enable input filter
+
 	// Enable TC0's clock in the PMC controller
 	AT91F_TC1_CfgPMC();
 	
@@ -554,6 +608,9 @@ void initTimer2(struct TimerConfig *timerConfig){
 	// Set PIO pins for Timer Counter 2
 	// TIOA2 mapped to PA26
 	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,0,AT91C_PA26_TIOA2);
+
+	AT91C_BASE_PIOA->PIO_PPUDR = AT91C_PA26_TIOA2; //disable pullup
+	AT91C_BASE_PIOA->PIO_IFER = AT91C_PA26_TIOA2; //enable input filter
 
 	// Enable TC0's clock in the PMC controller
 	AT91F_TC2_CfgPMC();

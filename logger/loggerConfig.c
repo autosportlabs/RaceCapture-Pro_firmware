@@ -67,7 +67,7 @@ int decodeSampleRate(int sampleRateCode){
 		case SAMPLE_20Hz:
 			return 20;
 		case SAMPLE_10Hz:
-			return SAMPLE_10Hz;
+			return 10;
 		case SAMPLE_5Hz:
 			return 5;
 		case SAMPLE_1Hz:

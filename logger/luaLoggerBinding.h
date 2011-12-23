@@ -21,6 +21,7 @@ int Lua_GetPeriodMs(lua_State *L);
 int Lua_GetPeriodUsec(lua_State *L);
 int Lua_GetFrequency(lua_State *L);
 int Lua_GetTimerRaw(lua_State *L);
+int Lua_ResetTimerCount(lua_State *L);
 int Lua_GetTimerCount(lua_State *L);
 
 int Lua_GetButton(lua_State *L);

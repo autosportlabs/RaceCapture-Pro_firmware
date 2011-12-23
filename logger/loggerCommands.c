@@ -4,6 +4,7 @@
  *  Created on: Jul 24, 2011
  *      Author: brent
  */
+#include <stddef.h>
 #include <string.h>
 #include "loggerCommands.h"
 #include "modp_numtoa.h"
