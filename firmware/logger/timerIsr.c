@@ -10,6 +10,7 @@
 extern unsigned int g_timer0_overflow;
 extern unsigned int g_timer1_overflow;
 extern unsigned int g_timer2_overflow;
+
 extern unsigned int *g_timer_counts;
 
 /* The ISR can cause a context switch so is declared naked. */
