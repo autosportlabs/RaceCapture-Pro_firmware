@@ -77,7 +77,7 @@ wxSerialPort* RaceAnalyzerComm::OpenSerialPort(){
 	wxSerialPort* comPort = new wxSerialPort();
 	const char *devName = GetSerialPortDevName(_serialPortNumber);
 
-	devName = "/dev/ttyUSB0";
+	devName = "/dev/ttyACM0";
 	wxLogMessage(devName);
 
 	wxSerialPort_DCS dcs;
