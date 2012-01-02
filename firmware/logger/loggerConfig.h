@@ -115,7 +115,7 @@ struct TimerConfig{
 	int sampleRate;
 	char config;
 	char pulsePerRevolution;
-	char timerDivider;
+	unsigned short timerDivider;
 	unsigned int calculatedScaling;
 };
 
@@ -218,7 +218,7 @@ struct LoggerConfig {
 	//GPS Configuration
 	char GPSInstalled;
 	struct GPSConfig GPSConfig;
-	//Padding data to accomodate flash routine
+	//Padding data to accommodate flash routine
 	char padding_data[AT91C_IFLASH_PAGE_SIZE]; 
 };
 
@@ -257,6 +257,7 @@ int filterAccelRawValue(int accelRawValue);
 int filterPWMPeriod(int period);
 int filterPWMClockFrequency(int frequency);
 int filterTimerConfig(int config);
+unsigned short filterTimerDivider(unsigned short divider);
 int filterAccelConfig(int config);
 int filterAccelChannel(int channel);
 

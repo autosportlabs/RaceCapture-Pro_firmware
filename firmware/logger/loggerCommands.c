@@ -505,7 +505,7 @@ void GetTimerPulsePerRev(unsigned int argc, char **argv){
 void SetTimerDivider(unsigned int argc, char **argv){
 	struct TimerConfig * c = AssertTimerSetParam(argc,argv);
 	if (NULL != c){
-		c->timerDivider = modp_atoi(argv[2]);
+		c->timerDivider = filterTimerDivider(modp_atoi(argv[2]));
 		SendCommandOK();
 	}
 }

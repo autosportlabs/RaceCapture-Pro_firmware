@@ -100,7 +100,7 @@ void initTimerChannels(struct LoggerConfig *loggerConfig);
 void initTimer0(struct TimerConfig *timerConfig);
 void initTimer1(struct TimerConfig *timerConfig);
 void initTimer2(struct TimerConfig *timerConfig);
-unsigned int timerClockFromDivider(unsigned int divider);
+unsigned int timerClockFromDivider(unsigned short divider);
 
 inline unsigned int getTimerPeriod(unsigned int channel);
 inline unsigned int getTimerCount(unsigned int channel);

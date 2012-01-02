@@ -462,7 +462,7 @@ void initTimerChannels(struct LoggerConfig *loggerConfig){
 	initTimer2(&(loggerConfig->TimerConfigs[2]));
 }
 
-unsigned int timerClockFromDivider(unsigned int divider){
+unsigned int timerClockFromDivider(unsigned short divider){
 
 	switch (divider){
 		case 2:
