@@ -82,6 +82,8 @@ int Lua_GetAccelChannel(lua_State *L);
 int Lua_SetAccelZeroValue(lua_State *L);
 int Lua_GetAccelZeroValue(lua_State *L);
 
+int Lua_CalibrateAccelZero(lua_State *L);
+
 int Lua_SetTimerLabel(lua_State *L);
 int Lua_GetTimerLabel(lua_State *L);
 

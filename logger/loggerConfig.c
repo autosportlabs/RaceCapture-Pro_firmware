@@ -110,6 +110,22 @@ int filterPWMLoggingConfig(int config){
 	}
 }
 
+unsigned short filterTimerDivider(unsigned short divider){
+	switch(divider){
+	case MCK_2:
+		return MCK_2;
+	case MCK_8:
+		return MCK_8;
+	case MCK_32:
+		return MCK_32;
+	case MCK_128:
+		return MCK_128;
+	case MCK_1024:
+		return MCK_1024;
+	default:
+		return MCK_128;
+	}
+}
 int filterTimerConfig(int config){
 	switch (config){
 		case CONFIG_LOGGING_TIMER_RPM:

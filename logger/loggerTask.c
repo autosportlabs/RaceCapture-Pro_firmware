@@ -176,10 +176,6 @@ void loggerTask(void *params){
 				portTickType sr = ac->idleSampleRate;
 				if (sr != SAMPLE_DISABLED && (idleTicks % sr) == 0){
 
-//					int xx = readAccelAxis(ac->accelChannel);
-	//				SendString("Blah ");
-		//			SendInt(xx);
-			//		SendCrlf();
 				}
 			}
 		}

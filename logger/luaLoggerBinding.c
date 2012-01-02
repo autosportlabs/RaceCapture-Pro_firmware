@@ -40,10 +40,10 @@ void registerLuaLoggerBindings(){
 	lua_register(L,"setPwmPeriodRaw",Lua_SetPWMPeriodRaw);
 	lua_register(L,"setAnalogOut",Lua_SetAnalogOut);
 
-	lua_register(L,"getRpm",Lua_GetRPM);
-	lua_register(L,"getPeriodMs",Lua_GetPeriodMs);
-	lua_register(L,"getPeriodUsec",Lua_GetPeriodUsec);
-	lua_register(L,"getFrequency",Lua_GetFrequency);
+	lua_register(L,"getTimerRpm",Lua_GetRPM);
+	lua_register(L,"getTimerPeriodMs",Lua_GetPeriodMs);
+	lua_register(L,"getTimerPeriodUsec",Lua_GetPeriodUsec);
+	lua_register(L,"getTimerFrequency",Lua_GetFrequency);
 	lua_register(L,"getTimerRaw",Lua_GetTimerRaw);
 
 
@@ -186,9 +186,11 @@ void registerLuaLoggerBindings(){
 	lua_register(L,"getAccelChannel",Lua_GetAccelChannel);
 	
 	lua_register(L,"setAccelZeroValue",Lua_SetAccelZeroValue);
+	lua_register(L,"getAccelZeroValue",Lua_GetAccelZeroValue);
+
+	lua_register(L,"calibrateAccelZero",Lua_CalibrateAccelZero);
 	
 	unlockLua();
-	
 }
 
 int Lua_IsSDCardPresent(lua_State *L){
@@ -327,6 +329,11 @@ int Lua_GetAccelZeroValue(lua_State *L){
 	return 0;	
 }
 
+int Lua_CalibrateAccelZero(lua_State *L){
+	calibrateAccelZero();
+	return 0;
+}
+
 int Lua_SetTimerLabel(lua_State *L){
 	if (lua_gettop(L) >= 3){
 		struct TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
@@ -411,7 +418,7 @@ int Lua_GetTimerPulsePerRevolution(lua_State *L){
 int Lua_SetTimerDivider(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		struct TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->timerDivider = lua_tointeger(L,2);	
+		if (NULL != c) c->timerDivider = filterTimerDivider(lua_tointeger(L,2));
 	}
 	return 0;
 }
