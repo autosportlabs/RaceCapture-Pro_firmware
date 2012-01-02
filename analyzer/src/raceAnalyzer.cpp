@@ -329,6 +329,9 @@ void MainFrame::InitializeComponents(){
 
 	m_channelsPanel = new DatalogChannelsPanel(this);
 	m_channelsPanel->SetDatalogStore(&m_datalogStore);
+	m_channelsPanel->SetAppOptions(&m_appOptions);
+	m_channelsPanel->SetAppPrefs(&_appPrefs);
+
 	_frameManager.AddPane(m_channelsPanel, wxAuiPaneInfo().Name(wxT(PANE_RUNTIME)).Caption(wxT(CAPTION_RUNTIME)).Center().Hide());
 
 	m_analyzePanel = new wxPanel(this);

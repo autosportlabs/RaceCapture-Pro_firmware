@@ -70,27 +70,29 @@ void GPSPane::ReloadGPSPoints(){
 
 void GPSPane::AddGPSPoint(double latitude, double longitude){
 
-//	% WGS84 ellipsoid constants:
-double a = 6378137;
-double e = 8.1819190842622e-2;
+	double pi = 3.14159;
+	// convert lat/long to radians
+	latitude = pi * latitude / 180;
+	longitude = pi * longitude / 180;
 
-//	% intermediate calculation
-//	% (prime vertical radius of curvature)
-double N = a / sqrt(1 - pow(e,2) * pow(sin(latitude),2));
+	// adjust position by radians
+	latitude -= 1.570795765134; // subtract 90 degrees (in radians)
 
-//	% results:
-	double x = (N) * cos(latitude) * cos(longitude);
-	double y = (N) * cos(latitude) * sin(longitude);
+	double world_radius = 180;
+	// and switch z and y
+	double x = (world_radius) * sin(latitude) * cos(longitude);
+	double z = (world_radius) * sin(latitude) * sin(longitude);
+	double y = (world_radius) * cos(latitude);
 
+	double focal_length = 150;
 
-	x = x / 100000;
-	y = y / 100000;
+	double projected_x = x * focal_length / (focal_length + z);
+	double projected_y = y * focal_length / (focal_length + z);
 
-//	double x = longitude*60*1852*cos(latitude);
-//	double y = latitude*60*1852;
-	//VERBOSE(FMT("%10.5f,%10.5f",x, y));
+	projected_x = - projected_x;
+	projected_y = - projected_y;
 
-	m_gpsView->AddGPSPoint(GPSPoint(x,y,0,0,0));
+	m_gpsView->AddGPSPoint(GPSPoint(projected_x,projected_y,0,0,0));
 }
 
 void GPSPane::InitComponents(){

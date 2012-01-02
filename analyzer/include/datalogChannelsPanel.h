@@ -13,7 +13,8 @@
 #include "wx/notebook.h"
 #include "datalogStore.h"
 #include "commonEvents.h"
-
+#include "appOptions.h"
+#include "appPrefs.h"
 
 
 class DatalogChannelsPanel : public wxPanel{
@@ -32,6 +33,8 @@ class DatalogChannelsPanel : public wxPanel{
 		void AddDatalogSession(int id);
 		void ReloadChannels(DatalogChannels &channels, DatalogChannelTypes &channelTypes, wxGrid *grid);
 		void SetDatalogStore(DatalogStore *datalogStore);
+		void SetAppOptions(AppOptions *appOptions);
+		void SetAppPrefs(AppPrefs *appPrefs);
 		void UpdateRuntimeValues();
 
 		void SetMarkerOffset(size_t offset);
@@ -48,13 +51,15 @@ class DatalogChannelsPanel : public wxPanel{
 		void OnNewAnalogGauge(wxCommandEvent &event);
 		void OnNewDigitalGauge(wxCommandEvent &event);
 		void OnNewGPSView(wxCommandEvent &event);
+		void OnAddChannel(wxCommandEvent &event);
 		void DoGridContextMenu(wxGridEvent &event);
 
 		wxArrayInt		m_datalogIdList;
 		wxNotebook 		*m_datalogSessionsNotebook;
-		DatalogStore 	*m_datalogStore;
 		size_t 			m_markerOffset;
-
+		DatalogStore 	*m_datalogStore;
+		AppOptions		*m_appOptions;
+		AppPrefs		*m_appPrefs;
 		wxMenu			*m_gridPopupMenu;
 
 
@@ -68,7 +73,8 @@ enum{
 	ID_NEW_LINE_CHART,
 	ID_NEW_ANALOG_GAUGE,
 	ID_NEW_DIGITAL_GAUGE,
-	ID_NEW_GPS_VIEW
+	ID_NEW_GPS_VIEW,
+	ID_ADD_CHANNEL
 
 };
 

@@ -7,23 +7,8 @@
 
 #ifndef GPSVIEW_H_
 #define GPSVIEW_H_
-#include "wx/wxprec.h"
-#include <wx/glcanvas.h>
+#include <wx/wx.h>
 #include <wx/dynarray.h>
-
-
-
-extern "C"
-{
-	#include "glf.h"
-	#include "trackball.h"
-}
-
-typedef struct
-{
-    float beginx,beginy;  /* position of mouse */
-    float quat[4];        /* orientation of object */
-} mesh_info;
 
 #define POINT_SCALING	100000
 
@@ -44,7 +29,7 @@ public:
 
 WX_DECLARE_OBJARRAY(GPSPoint,GPSPoints);
 
-class GPSView : public wxGLCanvas
+class GPSView : public wxWindow
 {
 public:
 
@@ -57,22 +42,19 @@ public:
 	    void OnSize(wxSizeEvent& event);
 	    void OnPaint(wxPaintEvent& event);
 	    void Render();
-	    void InitGL();
 	    void ClearGPSPoints();
 	    void AddGPSPoint(GPSPoint point);
-	    void OnMouse( wxMouseEvent& event );
 	    void OnEraseBackground(wxEraseEvent& event);
 	    void OnEnterWindow( wxMouseEvent& event );
 private:
-	    GLuint 			m_gllist;
-	    bool			m_init;
-	    float 			m_tx,m_ty,m_tz;
-	    mesh_info 		info;
 	    GPSPoints		m_gpsPoints;
 	    double			m_minX;
 	    double			m_maxX;
 	    double			m_minY;
 	    double			m_maxY;
+		int				_currentWidth;
+		int				_currentHeight;
+		wxBitmap 		*_memBitmap;
 
 	    DECLARE_EVENT_TABLE()
 

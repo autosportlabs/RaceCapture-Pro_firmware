@@ -4,8 +4,8 @@
  *  Created on: Jun 22, 2009
  *      Author: brent
  */
-#import "importWizardDialog.h"
-#import "wx/file.h"
+#include "importWizardDialog.h"
+#include "wx/file.h"
 #include "logging.h"
 
 #define LOGGING_FILE_FILTER	"RaceAnalyzer Datalog File (*.log)|*.log|Generic CSV File (*.csv)|*.csv"
