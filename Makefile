@@ -60,7 +60,7 @@ TARGET = main
 
 
 # Common directories
-SAM7s_BASE_DIR = SAM7s_base
+SAM7s_BASE_DIR = ../../SAM7s_base
 HW_DIR = $(SAM7s_BASE_DIR)/hardware
 RTOS_DIR = $(SAM7s_BASE_DIR)/FreeRTOS
 RTOS_SRC_DIR = $(RTOS_DIR)/Source
@@ -162,11 +162,11 @@ DEBUG =
 
 # List any extra directories to look for include files here.
 #     Each directory must be seperated by a space.
-EXTRAINCDIRS = ../libefsl/inc ../libefsl/conf ../lua/src
+EXTRAINCDIRS = ../libefsl/inc ../libefsl/conf ../../SAM7s_lua/src
 
 # List any extra directories to look for library files here.
 #     Each directory must be seperated by a space.
-EXTRA_LIBDIRS = ../libefsl ../lua/src
+EXTRA_LIBDIRS = ../libefsl ../../SAM7s_lua/src
 
 # Compiler flag to set the C Standard level.
 # c89   - "ANSI" C
