@@ -1,3 +1,0 @@
-#set with: svn propset svn:externals -F ./externals.prop .
-#then svn commit
-lua svn+ssh://zardoz.podzone.org/repository/trunk/SAM7s_lua/trunk/
