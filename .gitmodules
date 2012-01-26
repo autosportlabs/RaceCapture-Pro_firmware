@@ -1,0 +1,6 @@
+[submodule "firmware/SAM7s_base"]
+	path = firmware/SAM7s_base
+	url = git@github.com:brentpicasso/SAM7s_base_private.git
+[submodule "firmware/SAM7s_lua"]
+	path = firmware/SAM7s_lua
+	url = git@github.com:brentpicasso/SAM7s_lua_private.git
