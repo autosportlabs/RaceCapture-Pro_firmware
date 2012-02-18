@@ -1,14 +1,14 @@
 #ifndef SDCARD_H_
 #define SDCARD_H_
 
-#include "efs.h"
-#include "ls.h"
-#include "mkfs.h"
-#include "interfaces/efsl_dbg_printf_arm.h"
+#include "ff.h"
+#include "diskio.h"
 
-void ListRootDir(void);
+void createDiskTimerTask();
+void diskTimerTask(void *params);
+void TestSDWrite(int lines,int doFlush);
 int InitEFS();
 int UnmountEFS();
-int OpenNextLogFile(EmbeddedFile *f);
+int OpenNextLogFile(FIL *f);
 
 #endif /*SDCARD_H_*/

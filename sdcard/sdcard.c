@@ -2,66 +2,111 @@
 #include "usb_comm.h"
 #include "string.h"
 #include "modp_numtoa.h"
-
+#include "FreeRTOS.h"
+#include "task.h"
+#include "loggerHardware.h"
 
 #define MAX_LOG_FILE_INDEX 99999
+#define FREQ_100Hz 3
+#define DISK_TIMER_PRIORITY ( tskIDLE_PRIORITY + 4 )
+#define DISK_TIMER_STACK_SIZE 20
+static FATFS Fatfs[1];
 
-EmbeddedFileSystem g_efs;
+void createDiskTimerTask(){
+	xTaskCreate( diskTimerTask,( signed portCHAR * ) "diskTask",DISK_TIMER_STACK_SIZE, NULL, DISK_TIMER_PRIORITY, NULL );
+}
 
+void diskTimerTask(void *params){
+	while(1){
+		portTickType xLastWakeTime = xTaskGetTickCount();
+		disk_timerproc();
+		vTaskDelayUntil( &xLastWakeTime, FREQ_100Hz );
+	}
+}
 
 int InitEFS(){
-
-	return efs_init( &g_efs, 0 );
+	int res = disk_initialize(0);
+	if (0 != res) return res;
+	res = f_mount(0, &Fatfs[0]);
+	return res;
 }
 
 int UnmountEFS(){
-	return fs_umount(&g_efs.myFs);
+	return f_mount(0,NULL);
 }
 
-int OpenNextLogFile(EmbeddedFile *f){
+int OpenNextLogFile(FIL *f){
 
 	char filename[13];
-	
-	int i=0;
-	for (;i < MAX_LOG_FILE_INDEX;i++){
+	int i = 0;
+	int rc;
+	for (; i < MAX_LOG_FILE_INDEX; i++){
 		strcpy(filename,"rc_");
 		char numBuf[12];
 		modp_itoa10(i,numBuf);
 		strcat(filename,numBuf);
 		strcat(filename,".log");
-		int rc = file_fopen( f, &g_efs.myFs , filename , 'r' );
-		if ( rc !=0 ) break;
-		file_fclose(f);
+		rc = f_open(f,filename, FA_WRITE | FA_CREATE_NEW);
+		if ( rc == 0 ) break;
+		f_close(f);
 	}
 	if (i >= MAX_LOG_FILE_INDEX) return -2;
-	int rc = file_fopen( f, &g_efs.myFs , filename , 'w' ); 
 	return rc;
 }
 
+static FIL fatFile;
 
-void ListRootDir(void)
+void TestSDWrite(int lines,int doFlush)
 {
-	DirList list;
+
+	SendString("sizeof long ");
+	SendInt(sizeof(long));
+	SendCrlf();
+	SendString("Test Write: Lines: ");
+	SendInt(lines);
+	SendCrlf();
+	SendString("Flushing Enabled: " );
+	SendInt(doFlush);
+	SendCrlf();
+
 	SendString("Card Init...");
-	
 	int res = InitEFS();
-	if ( res != 0 ) {
-		SendString("failed with ");
-		SendInt(res);
-		SendCrlf();
+	SendInt(res);
+	SendCrlf();
+
+	if (res !=0) return;
+
+	SendString("Drive Mount...");
+	SendInt(res);
+	SendCrlf();
+	if (res !=0) return;
+
+	SendString("Opening File..");
+	res = f_open(&fatFile,"test1.txt", FA_WRITE | FA_CREATE_ALWAYS);
+	SendInt(res);
+	SendCrlf();
+	if (res !=0) return;
+
+	SendString("Writing file..");
+	portTickType startTicks = xTaskGetTickCount();
+	while (lines--){
+//		SendString("chars: ");
+		res = f_puts("The quick brown fox jumped over the lazy dog\n",&fatFile);
+//		SendInt(res);
+//		SendString("; sync: " );
+		if (doFlush) res = f_sync(&fatFile);
+//		SendInt(res);
+//		SendCrlf();
 	}
-	else{
-		SendString("ok\r\n");
-		SendString("Directory of 'root':\r\n");
-		ls_openDir( &list, &(g_efs.myFs) , "/");
-		while ( ls_getNext( &list ) == 0 ) {
-			list.currentEntry.FileName[LIST_MAXLENFILENAME-1] = '\0';
-			SendString(list.currentEntry.FileName);
-			SendString(" (");
-			SendInt(list.currentEntry.FileSize);
-			SendString(")");
-			SendCrlf();
-			}
-	fs_umount( &g_efs.myFs ) ;
-	}
+	portTickType endTicks = xTaskGetTickCount();
+
+	SendString("Ticks to write: ");
+	SendInt(endTicks - startTicks);
+	SendCrlf();
+	res = f_close(&fatFile);
+
+	SendString("Unmounting...");
+	res = UnmountEFS();
+	SendInt(res);
+	SendCrlf();
 }

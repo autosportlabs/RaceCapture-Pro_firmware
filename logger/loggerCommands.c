@@ -10,7 +10,16 @@
 #include "modp_numtoa.h"
 #include "modp_atonum.h"
 #include "loggerConfig.h"
+#include "sdcard.h"
 
+void TestSD(unsigned int argc, char **argv){
+
+	int lines = 1;
+	int doFlush = 0;
+	if (argc > 1) lines = modp_atoi(argv[1]);
+	if (argc > 2) doFlush = modp_atoi(argv[2]);
+	TestSDWrite(lines,doFlush);
+}
 
 void FlashLoggerConfig(unsigned int argc, char **argv){
 	int result = flashLoggerConfig();

@@ -28,6 +28,7 @@
 #include "accelerometer.h"
 #include "raceTask.h"
 #include "loggerCommands.h"
+#include "sdcard.h";
 
 #ifdef LUA_ENABLED
 #include "luaTask.h"
@@ -61,6 +62,16 @@
 
 void fatalError(int type);
 
+
+//Real Time Clock for Disk IO. Placed here for now until we can integrate time of day
+//from GPS module
+unsigned int RTC_GetCounter(void){
+	return 1;
+}
+
+void RTC_SetCounter(unsigned int val){
+
+}
 
 static int setupHardware( void )
 {
@@ -144,6 +155,7 @@ int main( void )
 	createLoggerTask();
 	createGPIOTasks();
 	startGPSTask();
+	createDiskTimerTask();
 //	startRaceTask();
 
    /* Start the scheduler.
