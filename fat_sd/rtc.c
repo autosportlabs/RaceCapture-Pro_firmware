@@ -8,14 +8,34 @@
 #include <stdbool.h>
 #include "rtc.h"
 
-extern unsigned int RTC_GetCounter(void);
-extern void RTC_SetCounter(unsigned int val);
-
-
 #define FIRSTYEAR   2000		// start year
 #define FIRSTDAY    6			// 0 = Sunday
 
 static const uint8_t DaysInMonth[] = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+static unsigned int g_rtcCounter = 0;
+
+/*******************************************************************************
+* Function Name  : RTC_GetCounter
+* Description    : Gets the hardware-counter
+* Input          : None
+* Output         : None
+* Return         : the current counter value
+*******************************************************************************/
+unsigned int RTC_GetCounter(void){
+	return g_rtcCounter;
+}
+
+/*******************************************************************************
+* Function Name  : RTC_SetCounter
+* Description    : sets the hardware-counter
+* Input          : new counter-value
+* Output         : None
+* Return         : None
+*******************************************************************************/
+void RTC_SetCounter(unsigned int val){
+	g_rtcCounter = val;
+}
 
 /*******************************************************************************
 * Function Name  : isDST
@@ -227,18 +247,6 @@ bool rtc_gettime (RTC_t *rtc)
 }
 
 /*******************************************************************************
-* Function Name  : my_RTC_SetCounter
-* Description    : sets the hardware-counter
-* Input          : new counter-value
-* Output         : None
-* Return         : None
-*******************************************************************************/
-static void my_RTC_SetCounter(uint32_t cnt)
-{
-	RTC_SetCounter(cnt);
-}
-
-/*******************************************************************************
 * Function Name  : rtc_settime
 * Description    : sets HW-RTC with values from time-struct, takes DST into
 *                  account, HW-RTC always running in non-DST time
@@ -256,7 +264,7 @@ bool rtc_settime (const RTC_t *rtc)
 	if ( isDST( &ts ) ) {
 		cnt -= 60*60; // Subtract one hour
 	}
-	my_RTC_SetCounter( cnt );
+	RTC_SetCounter( cnt );
 
 	return true;
 }
@@ -271,6 +279,6 @@ bool rtc_settime (const RTC_t *rtc)
 *******************************************************************************/
 int rtc_init(void)
 {
-	my_RTC_SetCounter( (uint32_t)((11*60+55)*60) ); // here: 1st January 2000 11:55:00
+	RTC_SetCounter( (uint32_t)((11*60+55)*60) ); // here: 1st January 2000 11:55:00
 	return 0;
 }

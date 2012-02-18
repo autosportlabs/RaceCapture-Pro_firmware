@@ -62,17 +62,6 @@
 
 void fatalError(int type);
 
-
-//Real Time Clock for Disk IO. Placed here for now until we can integrate time of day
-//from GPS module
-unsigned int RTC_GetCounter(void){
-	return 1;
-}
-
-void RTC_SetCounter(unsigned int val){
-
-}
-
 static int setupHardware( void )
 {
 	// When using the JTAG debugger the hardware is not always initialised to

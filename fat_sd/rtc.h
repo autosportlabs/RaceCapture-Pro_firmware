@@ -17,5 +17,7 @@ typedef struct {
 int rtc_init(void);
 bool rtc_gettime (RTC_t*);					/* Get time */
 bool rtc_settime (const RTC_t*);			/* Set time */
+unsigned int RTC_GetCounter(void); 			/* Get Raw RTC counter value */
+void RTC_SetCounter(unsigned int val);		/* Set Raw RTC counter value */
 
 #endif
