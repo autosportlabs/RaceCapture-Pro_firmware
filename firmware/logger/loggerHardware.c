@@ -373,7 +373,7 @@ void ReadAllADC(	unsigned int *a0,
         /* Third Step: Start the conversion */
         AT91F_ADC_StartConversion (AT91C_BASE_ADC);
         
-        /* Fourth Step: Waiting Stop Of conversion by pulling */
+        /* Fourth Step: Waiting Stop Of conversion by polling */
         while (!((AT91F_ADC_GetStatus (AT91C_BASE_ADC)) & (1<<7)));
         
         *a0 = AT91F_ADC_GetConvertedDataCH0 (AT91C_BASE_ADC);

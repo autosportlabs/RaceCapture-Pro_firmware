@@ -67,7 +67,6 @@ RTOS_SRC_DIR = $(RTOS_DIR)/Source
 RTOS_PORT_DIR = $(RTOS_SRC_DIR)/portable
 RTOS_GCC_DIR = $(RTOS_PORT_DIR)/GCC/ARM7_AT91SAM7S
 RTOS_MEMMANG_DIR = $(RTOS_PORT_DIR)/MemMang
-
 USB_SRC_DIR = $(SAM7s_BASE_DIR)/usb
 SERIAL_SRC_DIR = $(SAM7s_BASE_DIR)/serial
 UTIL_DIR = $(SAM7s_BASE_DIR)/util
@@ -76,6 +75,7 @@ LUA_SRC_DIR = $(SAM7s_BASE_DIR)/lua
 CMD_SRC_DIR = $(SAM7s_BASE_DIR)/command
 
 #App specific dirs
+FAT_SD_SRC_DIR = fat_sd
 LOGGER_SRC_DIR = logger
 SDCARD_SRC_DIR = sdcard
 ACCELEROMETER_SRC_DIR = accelerometer
@@ -97,6 +97,11 @@ $(UTIL_DIR)/base64.c \
 $(USB_SRC_DIR)/source/usb_comm.c \
 $(USB_SRC_DIR)/source/USB-CDC.c \
 $(SERIAL_SRC_DIR)/usart.c \
+$(FAT_SD_SRC_DIR)/fattime.c \
+$(FAT_SD_SRC_DIR)/ff.c \
+$(FAT_SD_SRC_DIR)/sd_spi_at91.c \
+$(FAT_SD_SRC_DIR)/rtc.c \
+$(FAT_SD_SRC_DIR)/option/ccsbcs.c \
 $(SDCARD_SRC_DIR)/sdcard.c \
 $(ACCELEROMETER_SRC_DIR)/accelerometer.c \
 $(LOGGER_SRC_DIR)/loggerHardware.c \
@@ -162,11 +167,11 @@ DEBUG =
 
 # List any extra directories to look for include files here.
 #     Each directory must be seperated by a space.
-EXTRAINCDIRS = ../libefsl/inc ../libefsl/conf SAM7s_lua/src
+EXTRAINCDIRS = SAM7s_lua/src
 
 # List any extra directories to look for library files here.
 #     Each directory must be seperated by a space.
-EXTRA_LIBDIRS = ../libefsl SAM7s_lua/src
+EXTRA_LIBDIRS = SAM7s_lua/src
 
 # Compiler flag to set the C Standard level.
 # c89   - "ANSI" C
@@ -185,7 +190,7 @@ CDEFS += -DSAM7_GCC
 CDEFS += -DTHUMB_INTERWORK
 
 # Place -I options here
-CINCS = -I. -I$(RTOS_MEMMANG_DIR) -I$(UTIL_DIR) -I$(LUA_SRC_DIR) -I$(MEMORY_SRC_DIR) -I$(SDCARD_SRC_DIR) -I$(SERIAL_SRC_DIR) -I$(ACCELEROMETER_SRC_DIR) -I$(LOGGER_SRC_DIR) -I$(USB_SRC_DIR)/include -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR) -I$(TWEETER_DIR) -I$(CMD_SRC_DIR)
+CINCS = -I. -I$(RTOS_MEMMANG_DIR) -I$(UTIL_DIR) -I$(LUA_SRC_DIR) -I$(MEMORY_SRC_DIR) -I$(FAT_SD_SRC_DIR) -I$(SDCARD_SRC_DIR) -I$(SERIAL_SRC_DIR) -I$(ACCELEROMETER_SRC_DIR) -I$(LOGGER_SRC_DIR) -I$(USB_SRC_DIR)/include -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR) -I$(TWEETER_DIR) -I$(CMD_SRC_DIR)
 #CINCS = -I. -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
 # Place -D or -U options for ASM here
 ADEFS =  -D$(RUN_MODE)
@@ -244,7 +249,7 @@ ASFLAGS = $(ADEFS) -Wa,-adhlns=$(<:.S=.lst), $(DEBUG)
 
 # Extra libraries
 #    Each library-name must be seperated by a space.
-EXTRA_LIBS = efsl lua m
+EXTRA_LIBS = lua m
 
 #Support for newlibc-lpc (file: libnewlibc-lpc.a)
 #NEWLIBLPC = -lnewlib-lpc
@@ -299,12 +304,24 @@ LPC21ISP_CONTROL = -control
 
 # Define programs and commands.
 SHELL = sh
+
+#gnuarm settings
 CC = arm-elf-gcc
 CPP = arm-elf-g++
 OBJCOPY = arm-elf-objcopy
 OBJDUMP = arm-elf-objdump
 SIZE = arm-elf-size
 NM = arm-elf-nm
+
+#CodeSourcery settings
+#CC = arm-none-eabi-gcc
+#CPP = arm-none-eabi-g++
+#OBJCOPY = arm-none-eabi-objcopy
+#OBJDUMP = arm-none-eabi-objdump
+#SIZE = arm-none-eabi-size
+#NM = arm-none-eabi-nm
+
+
 REMOVE = rm -f
 COPY = cp
 

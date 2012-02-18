@@ -1,4 +1,5 @@
 #include "loggerTask.h"
+#include "diskio.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
@@ -16,14 +17,15 @@
 
 #define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 3 )
 #define LOGGER_STACK_SIZE  					200
-
 #define LOGGER_LINE_LENGTH					512
+
 int g_loggingShouldRun;
+
+FIL g_logfile;
 
 xSemaphoreHandle g_xLoggerStart;
 
 char g_loggerLineBuffer[LOGGER_LINE_LENGTH];
-
 
 void lineAppendString(char *s){
 	strcat(g_loggerLineBuffer, s);	
@@ -47,35 +49,34 @@ void lineAppendDouble(double num, int precision){
 	lineAppendString(buf);
 }
 
-void fileWriteQuotedString(EmbeddedFile *f, char *s){
+void fileWriteQuotedString(FIL *f, char *s){
 	fileWriteString(f,"\"");
 	fileWriteString(f,s);
 	fileWriteString(f,"\"");
 }
 
-void fileWriteString(EmbeddedFile *f, char *s){
-	int len = strlen(s);
-	file_write(f,len,(unsigned char *)s);
+void fileWriteString(FIL *f, char *s){
+	f_puts(s,f);
+	f_sync(f);
 }
 
-void fileWriteInt(EmbeddedFile *f, int num){
+void fileWriteInt(FIL *f, int num){
 	char buf[10];
 	modp_itoa10(num,buf);
 	fileWriteString(f,buf);
 }
 
-void fileWriteFloat(EmbeddedFile *f, float num, int precision){
+void fileWriteFloat(FIL *f, float num, int precision){
 	char buf[20];
 	modp_ftoa(num, buf, precision);
 	fileWriteString(f,buf);
 }
 
-void fileWriteDouble(EmbeddedFile *f, double num, int precision){
+void fileWriteDouble(FIL *f, double num, int precision){
 	char buf[30];
 	modp_dtoa(num, buf, precision);
 	fileWriteString(f,buf);
 }
-
 
 #define HIGHER_SAMPLE(X,Y) ((X != SAMPLE_DISABLED && X < Y))
 
@@ -137,7 +138,6 @@ portTickType getHighestSampleRate(struct LoggerConfig *config){
 
 void createLoggerTask(){
 
-
 	g_loggingShouldRun = 0;
 
 	registerLuaLoggerBindings();
@@ -147,37 +147,20 @@ void createLoggerTask(){
 	xTaskCreate( loggerTask,( signed portCHAR * ) "loggerTask",	LOGGER_STACK_SIZE, NULL, LOGGER_TASK_PRIORITY, NULL );
 }
 
+
 void loggerTask(void *params){
 	
 	struct LoggerConfig *loggerConfig;
 	
 	loggerConfig = getWorkingLoggerConfig();
 	
-	EmbeddedFile f;
-	
 	if ( loggerConfig->AccelInstalled == CONFIG_FEATURE_INSTALLED ) accel_setup();
-
-	portTickType idleTicks = 0;
-	
-	portTickType idleDelay = portMAX_DELAY;
-
-	if (loggerConfig->AccelInstalled){
-		idleDelay = getHighestIdleSampleRate(loggerConfig);			
-	}
 
 	while(1){
 
 		//wait for signal to start logging
-		if ( xSemaphoreTake(g_xLoggerStart, idleDelay) != pdTRUE){
+		if ( xSemaphoreTake(g_xLoggerStart, portMAX_DELAY) != pdTRUE){
 			//perform idle tasks
-			idleTicks+=idleDelay;
-			for (unsigned int i=0; i < CONFIG_ACCEL_CHANNELS;i++){
-				struct AccelConfig *ac = &(loggerConfig->AccelConfigs[i]);
-				portTickType sr = ac->idleSampleRate;
-				if (sr != SAMPLE_DISABLED && (idleTicks % sr) == 0){
-
-				}
-			}
 		}
 		else if (isCardPresent() && isCardWritable()){
 			//perform logging tasks
@@ -186,22 +169,19 @@ void loggerTask(void *params){
 						
 			int rc = InitEFS();
 			if ( rc == 0 ){
-				if (OpenNextLogFile(&f) == 0){
+				if (OpenNextLogFile(&g_logfile) == 0){
 					g_loggingShouldRun = 1;
 				}
 			}
 			
-			portTickType xLastWakeTime;
-			
 			const portTickType xFrequency = getHighestSampleRate(loggerConfig);
-			
-			xLastWakeTime = xTaskGetTickCount();
 
-			writeHeaders(&f,loggerConfig);
+			writeHeaders(&g_logfile,loggerConfig);
 			
 			portTickType currentTicks = 0;
 			
 			//run until signalled to stop
+			portTickType xLastWakeTime = xTaskGetTickCount();
 			while (g_loggingShouldRun){
 				currentTicks += xFrequency;
 				
@@ -226,33 +206,29 @@ void loggerTask(void *params){
 				if (gpsInstalled) writeGPSChannels(currentTicks, &(loggerConfig->GPSConfig));
 				
 				lineAppendString("\n");
-				fileWriteString(&f, g_loggerLineBuffer);
-				
+				fileWriteString(&g_logfile, g_loggerLineBuffer);
+
+				//test code for detecting power loss via +12v bus.
 /*				if (ReadADC(7) < 230){
 					g_loggingShouldRun = 0;
 
 					fileWriteString(&f,"x\r\n");
 					break;
 				}
+
 				*/
 				vTaskDelayUntil( &xLastWakeTime, xFrequency );
 
 			}
-			file_fclose(&f);
+			f_close(&g_logfile);
 			UnmountEFS();
 			DisableLED(LED2);
-			
-			idleTicks = 0;
-			idleDelay = portMAX_DELAY;
-			if (loggerConfig->AccelInstalled){
-				idleDelay = getHighestIdleSampleRate(loggerConfig);			
-			}
 		}
 	}
 }
 
 
-void writeHeaders(EmbeddedFile *f, struct LoggerConfig *config){
+void writeHeaders(FIL *f, struct LoggerConfig *config){
 	writeADCHeaders(f, config);
 	writeGPIOHeaders(f, config);
 	writeTimerChannelHeaders(f, config);
@@ -262,7 +238,7 @@ void writeHeaders(EmbeddedFile *f, struct LoggerConfig *config){
 	fileWriteString(f,"\n");
 }
 
-void writeADCHeaders(EmbeddedFile *f,struct LoggerConfig *config){
+void writeADCHeaders(FIL *f,struct LoggerConfig *config){
 	for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
 		struct ADCConfig *c = &(config->ADCConfigs[i]);
 		if (c->sampleRate != SAMPLE_DISABLED){
@@ -272,7 +248,7 @@ void writeADCHeaders(EmbeddedFile *f,struct LoggerConfig *config){
 	}	
 }
 
-void writeGPIOHeaders(EmbeddedFile *f, struct LoggerConfig *config){
+void writeGPIOHeaders(FIL *f, struct LoggerConfig *config){
 	for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
 		struct GPIOConfig *c = &(config->GPIOConfigs[i]);
 		if (c->sampleRate != SAMPLE_DISABLED){
@@ -282,7 +258,7 @@ void writeGPIOHeaders(EmbeddedFile *f, struct LoggerConfig *config){
 	}
 }
 
-void writeTimerChannelHeaders(EmbeddedFile *f, struct LoggerConfig *config){
+void writeTimerChannelHeaders(FIL *f, struct LoggerConfig *config){
 	for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++){
 		struct TimerConfig *c = &(config->TimerConfigs[i]);
 		if (c->sampleRate != SAMPLE_DISABLED){
@@ -292,7 +268,7 @@ void writeTimerChannelHeaders(EmbeddedFile *f, struct LoggerConfig *config){
 	}
 }
 
-void writePWMChannelHeaders(EmbeddedFile *f, struct LoggerConfig *config){
+void writePWMChannelHeaders(FIL *f, struct LoggerConfig *config){
 	for (int i = 0; i < CONFIG_PWM_CHANNELS; i++){
 		struct PWMConfig *c = &(config->PWMConfigs[i]);
 		if (c->sampleRate != SAMPLE_DISABLED){
@@ -302,7 +278,7 @@ void writePWMChannelHeaders(EmbeddedFile *f, struct LoggerConfig *config){
 	}	
 }
 
-void writeAccelChannelHeaders(EmbeddedFile *f, struct LoggerConfig *config){
+void writeAccelChannelHeaders(FIL *f, struct LoggerConfig *config){
 	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
 		struct AccelConfig *c = &(config->AccelConfigs[i]);
 		if (c->sampleRate != SAMPLE_DISABLED){
@@ -312,7 +288,7 @@ void writeAccelChannelHeaders(EmbeddedFile *f, struct LoggerConfig *config){
 	}	
 }
 
-void writeGPSChannelHeaders(EmbeddedFile *f, struct GPSConfig *config){
+void writeGPSChannelHeaders(FIL *f, struct GPSConfig *config){
 
 	if (config->timeSampleRate != SAMPLE_DISABLED){
 		fileWriteQuotedString(f, config->timeLabel);

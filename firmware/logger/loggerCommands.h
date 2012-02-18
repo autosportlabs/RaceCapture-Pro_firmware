@@ -14,6 +14,7 @@
 extern const struct cmd_t g_loggerCommands[];
 
 #define LOGGER_COMMANDS \
+{"testSD", "Test Write to SD card.","<lineWrites>", TestSD}, \
 {"flashLoggerCfg", "Write the active Logger Configuration to flash.","", FlashLoggerConfig}, \
 	\
 {"setAnalogLabel", "Sets the label for the specified analog channel.","<channel> <label> <units>", SetAnalogLabel}, \
@@ -130,7 +131,7 @@ extern const struct cmd_t g_loggerCommands[];
 {"calibrateAccelZero", "Calibrates the current accelerometer values as the zero point.","", CalibrateAccelZero}
 
 
-
+void TestSD(unsigned int argc, char **argv);
 
 void FlashLoggerConfig(unsigned int argc, char **argv);
 
