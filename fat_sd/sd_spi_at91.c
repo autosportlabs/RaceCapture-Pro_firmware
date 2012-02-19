@@ -686,7 +686,7 @@ DSTATUS disk_initialize (
 #endif
 
 	if (drv) return STA_NOINIT;			/* Supports only single drive */
-	if (Stat & STA_NODISK) return Stat;	/* No card in the socket */
+	if (get_SOCKINS()) return STA_NODISK;
 
 	power_on();							/* Force socket power on */
 	for (n = 10; n; n--) rcvr_spi();	/* 80 dummy clocks */
@@ -795,7 +795,7 @@ DRESULT disk_write (
 {
 	if (drv || !count) return RES_PARERR;
 	if (Stat & STA_NOINIT) return RES_NOTRDY;
-	if (Stat & STA_PROTECT) return RES_WRPRT;
+	if (get_SOCKWP()) return RES_WRPRT;
 
 	if (!(CardType & CT_BLOCK)) sector *= 512;	/* Convert to byte address if needed */
 
@@ -955,43 +955,3 @@ DRESULT disk_ioctl (
 	return res;
 }
 #endif /* _USE_IOCTL != 0 */
-
-
-/*-----------------------------------------------------------------------*/
-/* Device Timer Interrupt Procedure  (Platform dependent)                */
-/*-----------------------------------------------------------------------*/
-/* This function must be called in period of 10ms                        */
-
-inline void disk_timerproc (void)
-{
-	static BYTE pv;
-	BYTE n, s;
-
-
-	n = Timer1;						/* 100Hz decrement timer */
-	if (n) Timer1 = --n;
-	n = Timer2;
-	if (n) Timer2 = --n;
-
-	n = pv;
-	pv = get_SOCKWP() | get_SOCKINS();
-	// pv = ( ( PIOA->PIO_PDSR & SD_SOCKET_WP_PIN ) ? SOCKWP /*protected*/ : 0 /* unprotected */ )
-	//	| ( ( PIOA->PIO_PDSR & SD_SOCKET_INS_PIN ) ?  SOCKINS /*no card*/ : 0 /* card inserted */ );
-
-	if (n == pv) {					/* Have contacts stabled? */
-		s = Stat;
-
-		if (pv & SOCKWP)			/* WP is H (write protected) */
-			s |= STA_PROTECT;
-		else						/* WP is L (write enabled) */
-			s &= ~STA_PROTECT;
-
-		if (pv & SOCKINS)			/* INS = H (Socket empty) */
-			s |= (STA_NODISK | STA_NOINIT);
-		else						/* INS = L (Card inserted) */
-			s &= ~STA_NODISK;
-
-		Stat = s;
-	}
-}
-
