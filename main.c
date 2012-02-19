@@ -28,7 +28,7 @@
 #include "accelerometer.h"
 #include "raceTask.h"
 #include "loggerCommands.h"
-#include "sdcard.h";
+#include "sdcard.h"
 
 #ifdef LUA_ENABLED
 #include "luaTask.h"
