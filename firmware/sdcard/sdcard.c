@@ -7,31 +7,16 @@
 #include "loggerHardware.h"
 
 #define MAX_LOG_FILE_INDEX 99999
-#define FREQ_100Hz 3
-#define DISK_TIMER_PRIORITY ( tskIDLE_PRIORITY + 4 )
-#define DISK_TIMER_STACK_SIZE 20
 static FATFS Fatfs[1];
 
-void createDiskTimerTask(){
-	xTaskCreate( diskTimerTask,( signed portCHAR * ) "diskTask",DISK_TIMER_STACK_SIZE, NULL, DISK_TIMER_PRIORITY, NULL );
-}
-
-void diskTimerTask(void *params){
-	while(1){
-		portTickType xLastWakeTime = xTaskGetTickCount();
-		disk_timerproc();
-		vTaskDelayUntil( &xLastWakeTime, FREQ_100Hz );
-	}
-}
-
-int InitEFS(){
+int InitFS(){
 	int res = disk_initialize(0);
 	if (0 != res) return res;
 	res = f_mount(0, &Fatfs[0]);
 	return res;
 }
 
-int UnmountEFS(){
+int UnmountFS(){
 	return f_mount(0,NULL);
 }
 
@@ -70,7 +55,7 @@ void TestSDWrite(int lines,int doFlush)
 	SendCrlf();
 
 	SendString("Card Init...");
-	int res = InitEFS();
+	int res = InitFS();
 	SendInt(res);
 	SendCrlf();
 
@@ -106,7 +91,7 @@ void TestSDWrite(int lines,int doFlush)
 	res = f_close(&fatFile);
 
 	SendString("Unmounting...");
-	res = UnmountEFS();
+	res = UnmountFS();
 	SendInt(res);
 	SendCrlf();
 }

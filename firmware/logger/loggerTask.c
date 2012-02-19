@@ -162,12 +162,12 @@ void loggerTask(void *params){
 		if ( xSemaphoreTake(g_xLoggerStart, portMAX_DELAY) != pdTRUE){
 			//perform idle tasks
 		}
-		else if (isCardPresent() && isCardWritable()){
+		else {
 			//perform logging tasks
 			int gpsInstalled = (int)loggerConfig->GPSInstalled;
 			int accelInstalled = (int)loggerConfig->AccelInstalled;
 						
-			int rc = InitEFS();
+			int rc = InitFS();
 			if ( rc == 0 ){
 				if (OpenNextLogFile(&g_logfile) == 0){
 					g_loggingShouldRun = 1;
@@ -221,7 +221,7 @@ void loggerTask(void *params){
 
 			}
 			f_close(&g_logfile);
-			UnmountEFS();
+			UnmountFS();
 			DisableLED(LED2);
 		}
 	}

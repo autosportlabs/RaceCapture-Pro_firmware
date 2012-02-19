@@ -7,8 +7,8 @@
 void createDiskTimerTask();
 void diskTimerTask(void *params);
 void TestSDWrite(int lines,int doFlush);
-int InitEFS();
-int UnmountEFS();
+int InitFS();
+int UnmountFS();
 int OpenNextLogFile(FIL *f);
 
 #endif /*SDCARD_H_*/
