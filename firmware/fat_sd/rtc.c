@@ -162,7 +162,7 @@ static void counter_to_struct( uint32_t sec, RTC_t *t )
 	}
 	t->year = year + FIRSTYEAR / 100 * 100;	// + century
 
-	if( dayofyear & 1 && day > 58 ) { 	// no leap year and after 28.2.
+	if( (dayofyear & 1) && day > 58 ) { 	// no leap year and after 28.2.
 		day++;					// skip 29.2.
 	}
 
