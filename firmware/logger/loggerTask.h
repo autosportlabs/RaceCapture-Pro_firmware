@@ -4,6 +4,34 @@
 #include "FreeRTOS.h"
 #include "ff.h"
 
+#include <limits.h>
+
+#define NIL_SAMPLE INT_MIN
+
+struct channelSample
+	{
+	void * channelConfig;
+	union
+	{
+		int intValue;
+		float floatValue;
+	};
+};
+
+struct sampleRecord
+{
+	struct channelSample ADCSamples[CONFIG_ADC_CHANNELS];
+	struct channelSample PWMSamples[CONFIG_PWM_CHANNELS];
+	struct channelSample GPIOSamples[CONFIG_GPIO_CHANNELS];
+	struct channelSample TimerSamples[CONFIG_TIMER_CHANNELS];
+	struct channelSample AccelSamples[CONFIG_ACCEL_CHANNELS];
+	struct channelSample GPS_LatitueSample;
+	struct channelSample GPS_LongitudeSample;
+	struct channelSample GPS_VelocitySample;
+	struct channelSample GPS_TimeSample;
+};
+
+
 void createLoggerTask();
 void loggerTask(void *params);
 
