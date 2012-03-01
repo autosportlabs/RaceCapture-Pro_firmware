@@ -4,41 +4,6 @@
 #include "FreeRTOS.h"
 #include "ff.h"
 
-#include <limits.h>
-
-#define NIL_SAMPLE_VALUE INT_MIN
-#define NIL_SAMPLE(X) X.intValue = NIL_SAMPLE_VALUE
-#define IS_NIL_SAMPLE(X) (X.intValue == NIL_SAMPLE_VALUE)
-#define SAMPLE_RECORD_CHANNELS (4 + CONFIG_ADC_CHANNELS + CONFIG_PWM_CHANNELS + CONFIG_GPIO_CHANNELS + CONFIG_TIMER_CHANNELS + CONFIG_ACCEL_CHANNELS)
-
-struct ChannelSample
-	{
-	void * channelConfig;
-	union
-	{
-		int intValue;
-		float floatValue;
-	};
-};
-
-struct SampleRecord
-{
-	union
-	{
-		struct ChannelSample Samples[SAMPLE_RECORD_CHANNELS];
-	struct{
-		struct ChannelSample ADCSamples[CONFIG_ADC_CHANNELS];
-		struct ChannelSample PWMSamples[CONFIG_PWM_CHANNELS];
-		struct ChannelSample GPIOSamples[CONFIG_GPIO_CHANNELS];
-		struct ChannelSample TimerSamples[CONFIG_TIMER_CHANNELS];
-		struct ChannelSample AccelSamples[CONFIG_ACCEL_CHANNELS];
-		struct ChannelSample GPS_LatitueSample;
-		struct ChannelSample GPS_LongitudeSample;
-		struct ChannelSample GPS_VelocitySample;
-		struct ChannelSample GPS_TimeSample;
-		};
-	};
-};
 
 
 
