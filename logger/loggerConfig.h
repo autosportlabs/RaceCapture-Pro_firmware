@@ -81,21 +81,25 @@
 #define MCK_128 	128
 #define MCK_1024 	1024
 
-typedef struct _ADCConfig{
+typedef struct _ChannelConfig{
 	char label[DEFAULT_LABEL_LENGTH];
 	char units[DEFAULT_UNITS_LENGTH];
 	int sampleRate;
+} ChannelConfig;
+
+typedef struct _ADCConfig{
+	ChannelConfig cfg;
 	float scaling;
 } ADCConfig;
 
-#define DEFAULT_ADC0_CONFIG {"Analog1","Units",SAMPLE_DISABLED,0.0048875f}
-#define DEFAULT_ADC1_CONFIG {"Analog2","Units",SAMPLE_DISABLED,0.0048875f}
-#define DEFAULT_ADC2_CONFIG {"Analog3","Units",SAMPLE_DISABLED,0.0048875f}
-#define DEFAULT_ADC3_CONFIG {"Analog4","Units",SAMPLE_DISABLED,0.0048875f}
-#define DEFAULT_ADC4_CONFIG {"Analog5","Units",SAMPLE_DISABLED,0.0048875f}
-#define DEFAULT_ADC5_CONFIG {"Analog6","Units",SAMPLE_DISABLED,0.0048875f}
-#define DEFAULT_ADC6_CONFIG {"Analog7","Units",SAMPLE_DISABLED,0.0048875f}	
-#define BATTERY_ADC7_CONFIG {"Battery","Volts",SAMPLE_DISABLED,0.01955f}
+#define DEFAULT_ADC0_CONFIG {{"Analog1","Units",SAMPLE_DISABLED},0.0048875f}
+#define DEFAULT_ADC1_CONFIG {{"Analog2","Units",SAMPLE_DISABLED},0.0048875f}
+#define DEFAULT_ADC2_CONFIG {{"Analog3","Units",SAMPLE_DISABLED},0.0048875f}
+#define DEFAULT_ADC3_CONFIG {{"Analog4","Units",SAMPLE_DISABLED},0.0048875f}
+#define DEFAULT_ADC4_CONFIG {{"Analog5","Units",SAMPLE_DISABLED},0.0048875f}
+#define DEFAULT_ADC5_CONFIG {{"Analog6","Units",SAMPLE_DISABLED},0.0048875f}
+#define DEFAULT_ADC6_CONFIG {{"Analog7","Units",SAMPLE_DISABLED},0.0048875f}
+#define BATTERY_ADC7_CONFIG {{"Battery","Volts",SAMPLE_DISABLED},0.01955f}
 #define DEFAULT_ADC_CONFIGS \
 			{ \
 			DEFAULT_ADC0_CONFIG, \
@@ -109,19 +113,17 @@ typedef struct _ADCConfig{
 			}
 
 typedef struct _TimerConfig{
-	char label[DEFAULT_LABEL_LENGTH];
-	char units[DEFAULT_UNITS_LENGTH];
+	ChannelConfig cfg;
 	char slowTimerEnabled;
-	int sampleRate;
 	char config;
 	char pulsePerRevolution;
 	unsigned short timerDivider;
 	unsigned int calculatedScaling;
 } TimerConfig;
 
-#define DEFAULT_RPM_TIMER_CONFIG  {"EngineRPM", "RPM", 0, SAMPLE_DISABLED, CONFIG_LOGGING_TIMER_RPM, 1, MCK_128, 375428}
-#define DEFAULT_FREQUENCY2_CONFIG {"Freq2","Hz", 0, SAMPLE_DISABLED, CONFIG_LOGGING_TIMER_FREQUENCY, 1, MCK_128, 375428}
-#define DEFAULT_FREQUENCY3_CONFIG {"Freq3","Hz", 0, SAMPLE_DISABLED, CONFIG_LOGGING_TIMER_FREQUENCY, 1, MCK_128, 375428}
+#define DEFAULT_RPM_TIMER_CONFIG  {{"EngineRPM", "RPM", SAMPLE_DISABLED}, 0, CONFIG_LOGGING_TIMER_RPM, 1, MCK_128, 375428}
+#define DEFAULT_FREQUENCY2_CONFIG {{"Freq2","Hz", SAMPLE_DISABLED, 0}, CONFIG_LOGGING_TIMER_FREQUENCY, 1, MCK_128, 375428}
+#define DEFAULT_FREQUENCY3_CONFIG {{"Freq3","Hz", SAMPLE_DISABLED}, 0, CONFIG_LOGGING_TIMER_FREQUENCY, 1, MCK_128, 375428}
 #define DEFAULT_TIMER_CONFIGS \
 			{ \
 			DEFAULT_RPM_TIMER_CONFIG, \
@@ -130,14 +132,13 @@ typedef struct _TimerConfig{
 			}
 
 typedef struct _GPIOConfig{
-	char label[DEFAULT_LABEL_LENGTH];
-	int sampleRate;
-	char config;	
+	ChannelConfig cfg;
+	char config;
 } GPIOConfig;
 
-#define DEFAULT_GPIO1_CONFIG {"GPIO1", SAMPLE_DISABLED, CONFIG_GPIO_IN}
-#define DEFAULT_GPIO2_CONFIG {"GPIO2", SAMPLE_DISABLED, CONFIG_GPIO_IN}
-#define DEFAULT_GPIO3_CONFIG {"GPIO3", SAMPLE_DISABLED, CONFIG_GPIO_IN}
+#define DEFAULT_GPIO1_CONFIG {{"GPIO1", "", SAMPLE_DISABLED}, CONFIG_GPIO_IN}
+#define DEFAULT_GPIO2_CONFIG {{"GPIO2", "", SAMPLE_DISABLED}, CONFIG_GPIO_IN}
+#define DEFAULT_GPIO3_CONFIG {{"GPIO3", "", SAMPLE_DISABLED}, CONFIG_GPIO_IN}
 #define DEFAULT_GPIO_CONFIGS \
 			{ \
 			DEFAULT_GPIO1_CONFIG, \
@@ -146,18 +147,17 @@ typedef struct _GPIOConfig{
 			}
 			
 typedef struct _AccelConfig{
-	char label[DEFAULT_LABEL_LENGTH];
-	int sampleRate;
+	ChannelConfig cfg;
 	int idleSampleRate;
 	char config;
 	unsigned char accelChannel;
 	unsigned long zeroValue;
 } AccelConfig;
 
-#define DEFAULT_ACCEL_X_AXIS_CONFIG {"AccelX", SAMPLE_30Hz, SAMPLE_5Hz, CONFIG_ACCEL_NORMAL, CONFIG_ACCEL_CHANNEL_X,DEFAULT_ACCEL_ZERO}
-#define DEFAULT_ACCEL_Y_AXIS_CONFIG {"AccelY", SAMPLE_30Hz, SAMPLE_5Hz, CONFIG_ACCEL_NORMAL, CONFIG_ACCEL_CHANNEL_Y,DEFAULT_ACCEL_ZERO}
-#define DEFAULT_ACCEL_Z_AXIS_CONFIG {"AccelZ", SAMPLE_30Hz, SAMPLE_5Hz, CONFIG_ACCEL_NORMAL, CONFIG_ACCEL_CHANNEL_Z,DEFAULT_ACCEL_ZERO}
-#define DEFAULT_ACCEL_ZT_AXIS_CONFIG {"Yaw", SAMPLE_30Hz, SAMPLE_5Hz, CONFIG_ACCEL_NORMAL, CONFIG_ACCEL_CHANNEL_ZT,DEFAULT_ACCEL_ZERO}
+#define DEFAULT_ACCEL_X_AXIS_CONFIG {{"AccelX", "G", SAMPLE_30Hz}, SAMPLE_5Hz, CONFIG_ACCEL_NORMAL, CONFIG_ACCEL_CHANNEL_X,DEFAULT_ACCEL_ZERO}
+#define DEFAULT_ACCEL_Y_AXIS_CONFIG {{"AccelY", "G", SAMPLE_30Hz}, SAMPLE_5Hz, CONFIG_ACCEL_NORMAL, CONFIG_ACCEL_CHANNEL_Y,DEFAULT_ACCEL_ZERO}
+#define DEFAULT_ACCEL_Z_AXIS_CONFIG {{"AccelZ", "G", SAMPLE_30Hz}, SAMPLE_5Hz, CONFIG_ACCEL_NORMAL, CONFIG_ACCEL_CHANNEL_Z,DEFAULT_ACCEL_ZERO}
+#define DEFAULT_ACCEL_ZT_AXIS_CONFIG {{"Yaw", "Deg/Sec", SAMPLE_30Hz}, SAMPLE_5Hz, CONFIG_ACCEL_NORMAL, CONFIG_ACCEL_CHANNEL_ZT,DEFAULT_ACCEL_ZERO}
 #define DEFAULT_ACCEL_CONFIGS \
 			{ \
 				DEFAULT_ACCEL_X_AXIS_CONFIG, \
@@ -167,8 +167,7 @@ typedef struct _AccelConfig{
 			}
 	
 typedef struct _PWMConfig{
-	char label[DEFAULT_LABEL_LENGTH];
-	int sampleRate;
+	ChannelConfig cfg;
 	char outputConfig;
 	char loggingConfig;
 	unsigned short startupDutyCycle;
@@ -176,10 +175,10 @@ typedef struct _PWMConfig{
 	float voltageScaling;
 } PWMConfig;
 
-#define DEFAULT_PWM1_CONFIG {"Vout1",SAMPLE_DISABLED,CONFIG_PWM_ANALOG,CONFIG_LOGGING_PWM_VOLTS,50,100,DEFAULT_PWM_VOLTAGE_SCALING}
-#define DEFAULT_PWM2_CONFIG {"Vout2",SAMPLE_DISABLED,CONFIG_PWM_ANALOG,CONFIG_LOGGING_PWM_PERIOD,50,100,DEFAULT_PWM_VOLTAGE_SCALING}
-#define DEFAULT_PWM3_CONFIG {"Vout3",SAMPLE_DISABLED,CONFIG_PWM_ANALOG,CONFIG_LOGGING_PWM_DUTY,50,100,DEFAULT_PWM_VOLTAGE_SCALING}
-#define DEFAULT_PWM4_CONFIG {"Vout4",SAMPLE_DISABLED,CONFIG_PWM_ANALOG,CONFIG_LOGGING_PWM_PERIOD,50,100,DEFAULT_PWM_VOLTAGE_SCALING}
+#define DEFAULT_PWM1_CONFIG {{"Vout1","V",SAMPLE_DISABLED},CONFIG_PWM_ANALOG,CONFIG_LOGGING_PWM_VOLTS,50,100,DEFAULT_PWM_VOLTAGE_SCALING}
+#define DEFAULT_PWM2_CONFIG {{"Vout2","V",SAMPLE_DISABLED},CONFIG_PWM_ANALOG,CONFIG_LOGGING_PWM_PERIOD,50,100,DEFAULT_PWM_VOLTAGE_SCALING}
+#define DEFAULT_PWM3_CONFIG {{"Vout3","V",SAMPLE_DISABLED},CONFIG_PWM_ANALOG,CONFIG_LOGGING_PWM_DUTY,50,100,DEFAULT_PWM_VOLTAGE_SCALING}
+#define DEFAULT_PWM4_CONFIG {{"Vout4","V",SAMPLE_DISABLED},CONFIG_PWM_ANALOG,CONFIG_LOGGING_PWM_PERIOD,50,100,DEFAULT_PWM_VOLTAGE_SCALING}
 #define DEFAULT_PWM_CONFIGS \
 			{ \
 				DEFAULT_PWM1_CONFIG, \
@@ -189,21 +188,23 @@ typedef struct _PWMConfig{
 			}
 			
 typedef struct _GPSConfig{
-	char qualityLabel[DEFAULT_LABEL_LENGTH];
-	char satsLabel[DEFAULT_LABEL_LENGTH];
-	char latitiudeLabel[DEFAULT_LABEL_LENGTH];
-	char longitudeLabel[DEFAULT_LABEL_LENGTH];
-	char timeLabel[DEFAULT_LABEL_LENGTH];
-	char velocityLabel[DEFAULT_LABEL_LENGTH];
-	
-	int positionSampleRate;
-	int velocitySampleRate;
-	int timeSampleRate;
+	ChannelConfig qualityCfg;
+	ChannelConfig satellitesCfg;
+	ChannelConfig latitudeCfg;
+	ChannelConfig longitudeCfg;
+	ChannelConfig timeCfg;
+	ChannelConfig velocityCfg;
 } GPSConfig;
 
-#define DEFAULT_GPS_CONFIG {"GPS_Qual", "GPS_Sats", "Latitude", "Longitude", "UTCTime", "kph", SAMPLE_5Hz, SAMPLE_5Hz, SAMPLE_5Hz}
+#define DEFAULT_GPS_QUAL_CONFIG {"GPS_Qual","",SAMPLE_DISABLED}
+#define DEFAULT_GPS_SATELLITES_CONFIG {"GPS_Sats","",SAMPLE_DISABLED}
+#define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude","deg",SAMPLE_5Hz}
+#define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude","deg",SAMPLE_5Hz}
+#define DEFAULT_GPS_TIME_CONFIG {"UTCTIme","Time",SAMPLE_5Hz}
+#define DEFAULT_GPS_VELOCITY_CONFIG {"Velocity","kph",SAMPLE_5Hz}
+#define DEFAULT_GPS_CONFIG {DEFAULT_GPS_QUAL_CONFIG, DEFAULT_GPS_SATELLITES_CONFIG, DEFAULT_GPS_LATITUDE_CONFIG, DEFAULT_GPS_LONGITUDE_CONFIG, DEFAULT_GPS_TIME_CONFIG, DEFAULT_GPS_VELOCITY_CONFIG}
 
-struct LoggerConfig {
+typedef struct _LoggerConfig {
 	//ADC Calibrations
 	ADCConfig ADCConfigs[CONFIG_ADC_CHANNELS];
 	//PWM/Analog out configurations
@@ -221,7 +222,7 @@ struct LoggerConfig {
 	GPSConfig GPSConfig;
 	//Padding data to accommodate flash routine
 	char padding_data[AT91C_IFLASH_PAGE_SIZE]; 
-};
+} LoggerConfig;
 
 #define DEFAULT_LOGGER_CONFIG \
 	{ \
@@ -241,8 +242,8 @@ struct LoggerConfig {
 int flashLoggerConfig();
 void updateActiveLoggerConfig();
 
-struct LoggerConfig * getSavedLoggerConfig();
-struct LoggerConfig * getWorkingLoggerConfig();
+LoggerConfig * getSavedLoggerConfig();
+LoggerConfig * getWorkingLoggerConfig();
 
 void calculateTimerScaling(TimerConfig *timerConfig);
 

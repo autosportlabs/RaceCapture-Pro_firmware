@@ -15,7 +15,7 @@
 #include "accelerometer.h"
 
 
-#define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 3 )
+#define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 4 )
 #define LOGGER_STACK_SIZE  					200
 #define LOGGER_LINE_LENGTH					512
 
@@ -82,7 +82,7 @@ void fileWriteDouble(FIL *f, double num, int precision){
 
 #define HIGHER_SAMPLE(X,Y) ((X != SAMPLE_DISABLED && X < Y))
 
-portTickType getHighestIdleSampleRate(struct LoggerConfig *config){
+portTickType getHighestIdleSampleRate(LoggerConfig *config){
 
 	//start with the slowest sample rate
 	int s = SAMPLE_1Hz;
@@ -93,45 +93,46 @@ portTickType getHighestIdleSampleRate(struct LoggerConfig *config){
 	return (portTickType)s;
 }
 
-portTickType getHighestSampleRate(struct LoggerConfig *config){
+portTickType getHighestSampleRate(LoggerConfig *config){
 
 	//start with the slowest sample rate
 	int s = SAMPLE_1Hz;
 	//find the fastest sample rate
 	for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
-		int sr = config->ADCConfigs[i].sampleRate; 
+		int sr = config->ADCConfigs[i].cfg.sampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr; 	
 	}
 	for (int i = 0; i < CONFIG_PWM_CHANNELS; i++){
-		int sr = config->PWMConfigs[i].sampleRate;
+		int sr = config->PWMConfigs[i].cfg.sampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr;	
 	}
 	for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
-		int sr = config->GPIOConfigs[i].sampleRate;
+		int sr = config->GPIOConfigs[i].cfg.sampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr;	
 	}
 	for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++){
-		int sr = config->TimerConfigs[i].sampleRate;
+		int sr = config->TimerConfigs[i].cfg.sampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr;	
 	}
 	if (config->AccelInstalled){
 		for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
-			int sr = config->AccelConfigs[i].sampleRate;
+			int sr = config->AccelConfigs[i].cfg.sampleRate;
 			if HIGHER_SAMPLE(sr, s) s = sr;	
 		}
 	}
 	if (config->GPSInstalled){
 		GPSConfig *gpsConfig = &(config->GPSConfig);
 		{
-			int sr = gpsConfig->positionSampleRate; 	
+			//TODO this represents "Position sample rate".
+			int sr = gpsConfig->latitudeCfg.sampleRate;
 			if HIGHER_SAMPLE(sr, s) s = sr;
 		}
 		{
-			int sr = gpsConfig->timeSampleRate;
+			int sr = gpsConfig->timeCfg.sampleRate;
 			if HIGHER_SAMPLE(sr, s) s = sr;
 		}
 		{
-			int sr = gpsConfig->velocitySampleRate;
+			int sr = gpsConfig->velocityCfg.sampleRate;
 			if HIGHER_SAMPLE(sr, s) s = sr;	
 		}
 	}
@@ -152,7 +153,7 @@ void createLoggerTask(){
 
 void loggerTask(void *params){
 	
-	struct LoggerConfig *loggerConfig;
+	LoggerConfig *loggerConfig;
 	
 	loggerConfig = getWorkingLoggerConfig();
 	
@@ -230,7 +231,7 @@ void loggerTask(void *params){
 }
 
 
-void writeHeaders(FIL *f, struct LoggerConfig *config){
+void writeHeaders(FIL *f, LoggerConfig *config){
 	writeADCHeaders(f, config);
 	writeGPIOHeaders(f, config);
 	writeTimerChannelHeaders(f, config);
@@ -240,51 +241,51 @@ void writeHeaders(FIL *f, struct LoggerConfig *config){
 	fileWriteString(f,"\n");
 }
 
-void writeADCHeaders(FIL *f,struct LoggerConfig *config){
+void writeADCHeaders(FIL *f,LoggerConfig *config){
 	for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
 		ADCConfig *c = &(config->ADCConfigs[i]);
-		if (c->sampleRate != SAMPLE_DISABLED){
-			fileWriteQuotedString(f,c->label);
+		if (c->cfg.sampleRate != SAMPLE_DISABLED){
+			fileWriteQuotedString(f,c->cfg.label);
 			fileWriteString(f,",");
 		}
 	}	
 }
 
-void writeGPIOHeaders(FIL *f, struct LoggerConfig *config){
+void writeGPIOHeaders(FIL *f, LoggerConfig *config){
 	for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
 		GPIOConfig *c = &(config->GPIOConfigs[i]);
-		if (c->sampleRate != SAMPLE_DISABLED){
-			fileWriteQuotedString(f,c->label);
+		if (c->cfg.sampleRate != SAMPLE_DISABLED){
+			fileWriteQuotedString(f,c->cfg.label);
 			fileWriteString(f,",");
 		}	
 	}
 }
 
-void writeTimerChannelHeaders(FIL *f, struct LoggerConfig *config){
+void writeTimerChannelHeaders(FIL *f, LoggerConfig *config){
 	for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++){
 		TimerConfig *c = &(config->TimerConfigs[i]);
-		if (c->sampleRate != SAMPLE_DISABLED){
-			fileWriteQuotedString(f,c->label);
+		if (c->cfg.sampleRate != SAMPLE_DISABLED){
+			fileWriteQuotedString(f,c->cfg.label);
 			fileWriteString(f, ",");	
 		}		
 	}
 }
 
-void writePWMChannelHeaders(FIL *f, struct LoggerConfig *config){
+void writePWMChannelHeaders(FIL *f, LoggerConfig *config){
 	for (int i = 0; i < CONFIG_PWM_CHANNELS; i++){
 		PWMConfig *c = &(config->PWMConfigs[i]);
-		if (c->sampleRate != SAMPLE_DISABLED){
-			fileWriteQuotedString(f,c->label);
+		if (c->cfg.sampleRate != SAMPLE_DISABLED){
+			fileWriteQuotedString(f,c->cfg.label);
 			fileWriteString(f, ",");		
 		}		
 	}	
 }
 
-void writeAccelChannelHeaders(FIL *f, struct LoggerConfig *config){
+void writeAccelChannelHeaders(FIL *f, LoggerConfig *config){
 	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
 		AccelConfig *c = &(config->AccelConfigs[i]);
-		if (c->sampleRate != SAMPLE_DISABLED){
-			fileWriteQuotedString(f,c->label);
+		if (c->cfg.sampleRate != SAMPLE_DISABLED){
+			fileWriteQuotedString(f,c->cfg.label);
 			fileWriteString(f, ",");		
 		}	
 	}	
@@ -292,38 +293,45 @@ void writeAccelChannelHeaders(FIL *f, struct LoggerConfig *config){
 
 void writeGPSChannelHeaders(FIL *f, GPSConfig *config){
 
-	if (config->timeSampleRate != SAMPLE_DISABLED){
-		fileWriteQuotedString(f, config->timeLabel);
+	if (config->timeCfg.sampleRate != SAMPLE_DISABLED){
+		fileWriteQuotedString(f, config->timeCfg.label);
 		fileWriteString(f, ",");	
 	}
 	
-	if (config->positionSampleRate != SAMPLE_DISABLED){
-		fileWriteQuotedString(f,config->qualityLabel);
+	if (config->qualityCfg.sampleRate != SAMPLE_DISABLED){
+		fileWriteQuotedString(f,config->qualityCfg.label);
 		fileWriteString(f, ",");
-		
-		fileWriteQuotedString(f,config->satsLabel);
+	}
+
+	if (config->satellitesCfg.sampleRate != SAMPLE_DISABLED){
+		fileWriteQuotedString(f,config->satellitesCfg.label);
 		fileWriteString(f, ",");
-		
-		fileWriteQuotedString(f,config->latitiudeLabel);
+	}
+
+	if (config->latitudeCfg.sampleRate != SAMPLE_DISABLED){
+		fileWriteQuotedString(f,config->latitudeCfg.label);
 		fileWriteString(f, ",");
-		fileWriteQuotedString(f,config->longitudeLabel);
+	}
+
+	if (config->longitudeCfg.sampleRate != SAMPLE_DISABLED){
+		fileWriteQuotedString(f,config->longitudeCfg.label);
 		fileWriteString(f, ",");	
 	}
 
-	if (config->velocitySampleRate != SAMPLE_DISABLED){
-		fileWriteQuotedString(f, config->velocityLabel);
+	if (config->velocityCfg.sampleRate != SAMPLE_DISABLED){
+		fileWriteQuotedString(f, config->velocityCfg.label);
 		fileWriteString(f, ",");
 	}
 }
 
 
-void writeAccelerometer(portTickType currentTicks, struct LoggerConfig *config){
+void writeAccelerometer(portTickType currentTicks, LoggerConfig *config){
 
 	unsigned int accelValues[CONFIG_ACCEL_CHANNELS];
 	
 	for (unsigned int i=0; i < CONFIG_ACCEL_CHANNELS;i++){
 		AccelConfig *ac = &(config->AccelConfigs[i]);
-		portTickType sr = ac->sampleRate;
+		portTickType sr = ac->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED && (currentTicks % sr) == 0){
 			accelValues[i] = readAccelChannel(ac->accelChannel);
 		}
@@ -331,7 +339,7 @@ void writeAccelerometer(portTickType currentTicks, struct LoggerConfig *config){
 	
 	for (unsigned int i=0; i < CONFIG_ACCEL_CHANNELS;i++){
 		AccelConfig *ac = &(config->AccelConfigs[i]);
-		portTickType sr = ac->sampleRate;
+		portTickType sr = ac->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0) lineAppendFloat(convertAccelRawToG(accelValues[i],ac->zeroValue),DEFAULT_ACCEL_LOGGING_PRECISION);
 			lineAppendString(",");
@@ -339,14 +347,14 @@ void writeAccelerometer(portTickType currentTicks, struct LoggerConfig *config){
 	}
 }
 
-void writeADC(portTickType currentTicks, struct LoggerConfig *config){
+void writeADC(portTickType currentTicks, LoggerConfig *config){
 	
 	unsigned int adc[CONFIG_ADC_CHANNELS];
 	ReadAllADC(&adc[0],&adc[1],&adc[2],&adc[3],&adc[4],&adc[5],&adc[6],&adc[7]);	
 	
 	for (unsigned int i=0; i < CONFIG_ADC_CHANNELS;i++){
 		ADCConfig *ac = &(config->ADCConfigs[i]);
-		portTickType sr = ac->sampleRate;
+		portTickType sr = ac->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0) lineAppendFloat(ac->scaling * (float)adc[i],DEFAULT_ADC_LOGGING_PRECISION);
 			lineAppendString(",");
@@ -357,45 +365,53 @@ void writeADC(portTickType currentTicks, struct LoggerConfig *config){
 void writeGPSChannels(portTickType currentTicks, GPSConfig *config){
 
 	{
-		portTickType sr = config->timeSampleRate;
+		portTickType sr = config->timeCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0) lineAppendFloat(getUTCTime(),3);
 			lineAppendString(",");
 		}
 	}
 	{
-		portTickType sr = config->positionSampleRate;
+		portTickType sr = config->latitudeCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
-				lineAppendInt(getGPSQuality());
-				lineAppendString(",");
-				
-				lineAppendInt(getSatellitesUsedForPosition());
-				lineAppendString(",");
-		
 				lineAppendDouble(getLatitude(), 6);
 				lineAppendString(",");
 				
 				lineAppendDouble(getLongitude(), 6);
 				lineAppendString(",");
 			} else{
-				lineAppendString(",,,,");	
+				lineAppendString(",,");
 			}
 		}
 	}
 	
 	{
-		portTickType sr = config->velocitySampleRate;
+		portTickType sr = config->qualityCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0){
-				lineAppendFloat(getGPSVelocity(),2);
-			}
+			if ((currentTicks % sr) == 0) lineAppendInt(getGPSQuality());
+			lineAppendString(",");
+		}
+	}
+
+	{
+		portTickType sr = config->satellitesCfg.sampleRate;
+		if (sr != SAMPLE_DISABLED){
+			if ((currentTicks % sr) == 0) lineAppendInt(getSatellitesUsedForPosition());
+			lineAppendString(",");
+		}
+	}
+
+	{
+		portTickType sr = config->velocityCfg.sampleRate;
+		if (sr != SAMPLE_DISABLED){
+			if ((currentTicks % sr) == 0) lineAppendFloat(getGPSVelocity(),2);
 			lineAppendString(",");
 		}
 	}
 }
 
-void writeGPIOs(portTickType currentTicks, struct LoggerConfig *loggerConfig){
+void writeGPIOs(portTickType currentTicks, LoggerConfig *loggerConfig){
 	
 	unsigned int gpioMasks[CONFIG_GPIO_CHANNELS]; 
 	
@@ -406,7 +422,7 @@ void writeGPIOs(portTickType currentTicks, struct LoggerConfig *loggerConfig){
 	unsigned int gpioStates = AT91F_PIO_GetInput(AT91C_BASE_PIOA);
 	for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
 		GPIOConfig *c = &(loggerConfig->GPIOConfigs[i]);
-		portTickType sr = c->sampleRate;
+		portTickType sr = c->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0) lineAppendInt((gpioStates & gpioMasks[i]) != 0);
 			lineAppendString(",");
@@ -414,14 +430,14 @@ void writeGPIOs(portTickType currentTicks, struct LoggerConfig *loggerConfig){
 	}
 }
 
-void writeTimerChannels(portTickType currentTicks, struct LoggerConfig *loggerConfig){
+void writeTimerChannels(portTickType currentTicks, LoggerConfig *loggerConfig){
 	
 	unsigned int timers[CONFIG_TIMER_CHANNELS];
 	getAllTimerPeriods(timers,timers + 1,timers + 2);
 	
 	for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++){
 		TimerConfig *c = &(loggerConfig->TimerConfigs[i]);
-		portTickType sr = c->sampleRate;
+		portTickType sr = c->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
 				int value = 0;
@@ -449,11 +465,11 @@ void writeTimerChannels(portTickType currentTicks, struct LoggerConfig *loggerCo
 	}
 }
 
-void writePWMChannels(portTickType currentTicks, struct LoggerConfig *loggerConfig){
+void writePWMChannels(portTickType currentTicks, LoggerConfig *loggerConfig){
 	
 	for (int i = 0; i < CONFIG_PWM_CHANNELS; i++){
 		PWMConfig *c = &(loggerConfig->PWMConfigs[i]);
-		portTickType sr = c->sampleRate;
+		portTickType sr = c->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
 				switch (c->loggingConfig){

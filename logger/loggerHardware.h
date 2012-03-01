@@ -10,7 +10,7 @@
 #define TC_CLKS_MCK128          0x3
 #define TC_CLKS_MCK1024         0x4
 
-void InitGPIO(struct LoggerConfig *loggerConfig);
+void InitGPIO(LoggerConfig *loggerConfig);
 void InitSDCard(void);
 
 int isCardPresent(void);
@@ -55,7 +55,7 @@ unsigned int ReadADC(unsigned int channel);
 
 
 //PWM Channel Functions
-void InitPWM(struct LoggerConfig *loggerConfig);
+void InitPWM(LoggerConfig *loggerConfig);
 void EnablePWMChannel(unsigned int channel, PWMConfig *config);
 
 void StartPWM(unsigned int pwmChannel);
@@ -96,7 +96,7 @@ unsigned short PWM_GetDutyCycle(unsigned int channel);
 //Enable PWM channel
 void PWM_EnableChannel(unsigned int channel);
 
-void initTimerChannels(struct LoggerConfig *loggerConfig);	
+void initTimerChannels(LoggerConfig *loggerConfig);	
 void initTimer0(TimerConfig *timerConfig);
 void initTimer1(TimerConfig *timerConfig);
 void initTimer2(TimerConfig *timerConfig);

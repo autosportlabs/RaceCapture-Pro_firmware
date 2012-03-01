@@ -41,7 +41,7 @@ unsigned int g_timer1_overflow;
 unsigned int g_timer2_overflow;
 unsigned int g_timer_counts[CONFIG_TIMER_CHANNELS];
 
-void InitGPIO(struct LoggerConfig *loggerConfig){
+void InitGPIO(LoggerConfig *loggerConfig){
 
 //	AT91F_PIO_CfgInput(AT91C_BASE_PIOA, GPIO_MASK);
 //	AT91C_BASE_PIOA->PIO_PPUDR = GPIO_MASK; //disable pullup
@@ -134,7 +134,7 @@ void StopPWM(unsigned int pwmChannel){
 	}
 }
 
-void InitPWM(struct LoggerConfig *loggerConfig){
+void InitPWM(LoggerConfig *loggerConfig){
 	
 	//Configure PWM Clock
 	PWM_ConfigureClocks(loggerConfig->PWMClockFrequency * MAX_DUTY_CYCLE, 0, BOARD_MCK);
@@ -456,7 +456,7 @@ void ToggleLED (unsigned int Led){
     }
 }
 
-void initTimerChannels(struct LoggerConfig *loggerConfig){
+void initTimerChannels(LoggerConfig *loggerConfig){
 	initTimer0(&(loggerConfig->TimerConfigs[0]));
 	initTimer1(&(loggerConfig->TimerConfigs[1]));
 	initTimer2(&(loggerConfig->TimerConfigs[2]));

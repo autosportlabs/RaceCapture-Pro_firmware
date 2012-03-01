@@ -84,7 +84,7 @@ static int setupHardware( void )
 	if (!initSerial()) return 0;
 	if (!vInitUSBInterface()) return 0;	
 	  
-	struct LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 	InitGPIO(loggerConfig);
 	InitADC();
 	InitPWM(loggerConfig);

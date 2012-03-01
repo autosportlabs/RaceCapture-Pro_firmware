@@ -218,7 +218,7 @@ int Lua_GetAccelInstalled(lua_State *L){
 int Lua_SetAccelLabel(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) setLabelGeneric(c->label,lua_tostring(L,2));
+		if (NULL != c) setLabelGeneric(c->cfg.label,lua_tostring(L,2));
 	}
 	return 0;	
 }
@@ -227,7 +227,7 @@ int Lua_GetAccelLabel(lua_State *L){
 	if (lua_gettop(L) >= 1 ){
 		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
-			lua_pushstring(L,c->label);
+			lua_pushstring(L,c->cfg.label);
 			return 1;
 		}
 	}
@@ -237,7 +237,7 @@ int Lua_GetAccelLabel(lua_State *L){
 int Lua_SetAccelSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2 ){
 		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->sampleRate = encodeSampleRate(lua_tointeger(L,2));
+		if (NULL != c) c->cfg.sampleRate = encodeSampleRate(lua_tointeger(L,2));
 	}	
 	return 0;
 }
@@ -246,7 +246,7 @@ int Lua_GetAccelSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL !=c ){
-			lua_pushnumber(L,c->sampleRate);
+			lua_pushnumber(L,c->cfg.sampleRate);
 			return 1;	
 		}
 	}
@@ -338,8 +338,8 @@ int Lua_SetTimerLabel(lua_State *L){
 	if (lua_gettop(L) >= 3){
 		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
-			setLabelGeneric(c->label,lua_tostring(L,2));
-			setLabelGeneric(c->units,lua_tostring(L,3));
+			setLabelGeneric(c->cfg.label,lua_tostring(L,2));
+			setLabelGeneric(c->cfg.units,lua_tostring(L,3));
 		}		
 	}
 	return 0;
@@ -349,8 +349,8 @@ int Lua_GetTimerLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
-			lua_pushstring(L,c->label);
-			lua_pushstring(L,c->units);
+			lua_pushstring(L,c->cfg.label);
+			lua_pushstring(L,c->cfg.units);
 			return 2;			
 		}
 	}
@@ -361,7 +361,7 @@ int Lua_GetTimerLabel(lua_State *L){
 int Lua_SetTimerSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->sampleRate = encodeSampleRate(lua_tointeger(L,2));
+		if (NULL != c) c->cfg.sampleRate = encodeSampleRate(lua_tointeger(L,2));
 	}
 	return 0;
 }
@@ -370,7 +370,7 @@ int Lua_GetTimerSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
-			lua_pushinteger(L,c->sampleRate);
+			lua_pushinteger(L,c->cfg.sampleRate);
 			return 1;
 		}
 	}
@@ -456,7 +456,7 @@ int Lua_GetTimerScaling(lua_State *L){
 int Lua_SetGPIOLabel(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) setLabelGeneric(c->label,lua_tostring(L,2));	
+		if (NULL != c) setLabelGeneric(c->cfg.label,lua_tostring(L,2));
 	}
 	return 0;	
 }
@@ -465,7 +465,7 @@ int Lua_GetGPIOLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
 		if (NULL !=c){
-			lua_pushstring(L,c->label);
+			lua_pushstring(L,c->cfg.label);
 			return 1;	
 		}
 	}	
@@ -475,7 +475,7 @@ int Lua_GetGPIOLabel(lua_State *L){
 int Lua_SetGPIOSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->sampleRate = encodeSampleRate(lua_tointeger(L,2));
+		if (NULL != c) c->cfg.sampleRate = encodeSampleRate(lua_tointeger(L,2));
 	}
 	return 0;
 }
@@ -484,7 +484,7 @@ int Lua_GetGPIOSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
 		if (NULL !=c){
-			lua_pushinteger(L,c->sampleRate);
+			lua_pushinteger(L,c->cfg.sampleRate);
 			return 1;	
 		}
 	}	
@@ -534,109 +534,111 @@ int Lua_GetGPSInstalled(lua_State *L){
 
 int Lua_SetGPSQualityLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.qualityLabel,lua_tostring(L,1));
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.qualityCfg.label,lua_tostring(L,1));
 	}
 	return 0;
 }
 
 int Lua_GetGPSQualityLabel(lua_State *L){
-	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.qualityLabel);
+	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.qualityCfg.label);
 	return 1;	
 }
 
 int Lua_SetGPSSatsLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.satsLabel,lua_tostring(L,1));
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.satellitesCfg.label,lua_tostring(L,1));
 	}
 	return 0;
 }
 
 int Lua_GetGPSSatsLabel(lua_State *L){
-	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.satsLabel);
+	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.satellitesCfg.label);
 	return 1;	
 }
 
 int Lua_SetGPSLatitudeLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.latitiudeLabel,lua_tostring(L,1));
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.latitudeCfg.label,lua_tostring(L,1));
 	}
 	return 0;
 }
 
 int Lua_GetGPSLatitudeLabel(lua_State *L){
-	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.latitiudeLabel);
+	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.latitudeCfg.label);
 	return 1;
 }
 
 int Lua_SetGPSLongitudeLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.longitudeLabel,lua_tostring(L,1));
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.longitudeCfg.label,lua_tostring(L,1));
 	}
 	return 0;
 }
 
 int Lua_GetGPSLongitudeLabel(lua_State *L){
-	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.longitudeLabel);
+	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.longitudeCfg.label);
 	return 1;	
 }
 
 int Lua_SetGPSTimeLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.timeLabel,lua_tostring(L,1));
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.timeCfg.label,lua_tostring(L,1));
 	}
 	return 0;
 }
 
 int Lua_GetGPSTimeLabel(lua_State *L){
-	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.timeLabel);
+	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.timeCfg.label);
 	return 1;	
 }
 
 int Lua_SetGPSVelocityLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.velocityLabel,lua_tostring(L,1));
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.velocityCfg.label,lua_tostring(L,1));
 	}
 	return 0;
 }
 
 int Lua_GetGPSVelocityLabel(lua_State *L){
-	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.velocityLabel);
+	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.velocityCfg.label);
 	return 1;	
 }
 
 int Lua_SetGPSPositionSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		getWorkingLoggerConfig()->GPSConfig.positionSampleRate = encodeSampleRate(lua_tointeger(L,1));
+		LoggerConfig *cfg = getWorkingLoggerConfig();
+		cfg->GPSConfig.latitudeCfg.sampleRate = cfg->GPSConfig.longitudeCfg.sampleRate = encodeSampleRate(lua_tointeger(L,1));
 	}
 	return 0;
 }
 
 int Lua_GetGPSPositionSampleRate(lua_State *L){
-	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfig.positionSampleRate);
+	//TODO we pull one for all... is there a better way? individual settable sample rates?
+	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfig.latitudeCfg.sampleRate);
 	return 1;		
 }
 
 int Lua_SetGPSVelocitySampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1 ){
-		getWorkingLoggerConfig()->GPSConfig.velocitySampleRate = encodeSampleRate(lua_tointeger(L,1));
+		getWorkingLoggerConfig()->GPSConfig.velocityCfg.sampleRate = encodeSampleRate(lua_tointeger(L,1));
 	}
 	return 0;
 }
 
 int Lua_GetGPSVelocitySampleRate(lua_State *L){
-	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfig.velocitySampleRate);
+	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfig.velocityCfg.sampleRate);
 	return 1;
 }
 
 int Lua_SetGPSTimeSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1 ){
-		getWorkingLoggerConfig()->GPSConfig.timeSampleRate = encodeSampleRate(lua_tointeger(L,1));
+		getWorkingLoggerConfig()->GPSConfig.timeCfg.sampleRate = encodeSampleRate(lua_tointeger(L,1));
 	}
 	return 0;
 }
 
 int Lua_GetGPSTimeSampleRate(lua_State *L){
-	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfig.timeSampleRate);
+	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfig.timeCfg.sampleRate);
 	return 1;
 }
 
@@ -655,7 +657,7 @@ int Lua_GetPWMClockFrequency(lua_State *L){
 int Lua_SetPWMLabel(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) setLabelGeneric(c->label,lua_tostring(L,2));
+		if (NULL != c) setLabelGeneric(c->cfg.label,lua_tostring(L,2));
 	}
 	return 0;
 }
@@ -664,7 +666,7 @@ int Lua_GetPWMLabel(lua_State *L){
 	if (lua_gettop(L) >=1){
 		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
-			lua_pushstring(L,c->label);	
+			lua_pushstring(L,c->cfg.label);
 		}	
 	}	
 	return 0;
@@ -673,7 +675,7 @@ int Lua_GetPWMLabel(lua_State *L){
 int Lua_SetPWMSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->sampleRate = encodeSampleRate(lua_tointeger(L,2));
+		if (NULL != c) c->cfg.sampleRate = encodeSampleRate(lua_tointeger(L,2));
 	}
 	return 0;
 }
@@ -682,7 +684,7 @@ int Lua_GetPWMSampleRate(lua_State *L){
 	if (lua_gettop(L) >=1){
 		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
-			lua_pushinteger(L,c->sampleRate);	
+			lua_pushinteger(L,c->cfg.sampleRate);
 			return 1;
 		}	
 	}	
@@ -795,8 +797,8 @@ int Lua_SetAnalogChannelLabel(lua_State *L){
 	if (lua_gettop(L) >= 3){
 		ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
-			setLabelGeneric(c->label,lua_tostring(L,2));
-			setLabelGeneric(c->units,lua_tostring(L,3));
+			setLabelGeneric(c->cfg.label,lua_tostring(L,2));
+			setLabelGeneric(c->cfg.units,lua_tostring(L,3));
 		}
 	}
 	return 0;
@@ -806,8 +808,8 @@ int Lua_GetAnalogChannelLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL !=c ){
-			lua_pushstring(L,c->label);
-			lua_pushstring(L,c->units);
+			lua_pushstring(L,c->cfg.label);
+			lua_pushstring(L,c->cfg.units);
 			return 2;			
 		}	
 	}	
@@ -818,7 +820,7 @@ int Lua_SetAnalogChannelSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
-			c->sampleRate = encodeSampleRate(lua_tointeger(L,2));
+			c->cfg.sampleRate = encodeSampleRate(lua_tointeger(L,2));
 		}
 	}
 	return 0;	
@@ -828,7 +830,7 @@ int Lua_GetAnalogChannelSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL !=c ){
-			lua_pushinteger(L,c->sampleRate);
+			lua_pushinteger(L,c->cfg.sampleRate);
 			return 1;	
 		}	
 	}	

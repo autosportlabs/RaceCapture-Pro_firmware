@@ -5,24 +5,24 @@
 #include "AT91SAM7S256.h"
 #include "board.h"
 
-struct LoggerConfig g_workingLoggerConfig;
+LoggerConfig g_workingLoggerConfig;
 
 
-struct LoggerConfig g_savedLoggerConfig __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".text\n\t#"))) = DEFAULT_LOGGER_CONFIG;
+LoggerConfig g_savedLoggerConfig __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".text\n\t#"))) = DEFAULT_LOGGER_CONFIG;
 
 void updateActiveLoggerConfig(){
-	memcpy(&g_workingLoggerConfig,&g_savedLoggerConfig,sizeof(struct LoggerConfig));
+	memcpy(&g_workingLoggerConfig,&g_savedLoggerConfig,sizeof(LoggerConfig));
 }
 
 int flashLoggerConfig(){
-	return flashWriteRegion((void *)&g_savedLoggerConfig,(void *)&g_workingLoggerConfig, sizeof (struct LoggerConfig));
+	return flashWriteRegion((void *)&g_savedLoggerConfig,(void *)&g_workingLoggerConfig, sizeof (LoggerConfig));
 }
 
-struct LoggerConfig * getSavedLoggerConfig(){
+LoggerConfig * getSavedLoggerConfig(){
 	return &g_savedLoggerConfig;	
 }
 
-struct LoggerConfig * getWorkingLoggerConfig(){
+LoggerConfig * getWorkingLoggerConfig(){
 	return &g_workingLoggerConfig;
 }
 
