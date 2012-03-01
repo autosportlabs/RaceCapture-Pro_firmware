@@ -29,14 +29,6 @@ char g_loggerLineBuffer[LOGGER_LINE_LENGTH];
 
 
 
-struct SampleRecord * createNewSampleRecord(){
-	struct SampleRecord *sr = (struct SampleRecord *)malloc(sizeof(struct SampleRecord));
-	for (int i=0; i < SAMPLE_RECORD_CHANNELS;i++){
-		NIL_SAMPLE(sr->Samples[i]);
-	}
-	return sr;
-}
-
 void lineAppendString(char *s){
 	strcat(g_loggerLineBuffer, s);	
 }
