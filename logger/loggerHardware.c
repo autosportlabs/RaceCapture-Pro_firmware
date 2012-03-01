@@ -48,7 +48,7 @@ void InitGPIO(struct LoggerConfig *loggerConfig){
 //	AT91C_BASE_PIOA->PIO_IFER = GPIO_MASK; //enable input filter
 //	AT91C_BASE_PIOA->PIO_MDER = GPIO_MASK; //enable multi drain
 
-	struct GPIOConfig * gpios = loggerConfig->GPIOConfigs;
+	GPIOConfig * gpios = loggerConfig->GPIOConfigs;
 	if (gpios[0].config == CONFIG_GPIO_IN){
 		AT91F_PIO_CfgInput(AT91C_BASE_PIOA, GPIO_1);
 		AT91C_BASE_PIOA->PIO_PPUDR = GPIO_1; //disable pullup
@@ -180,7 +180,7 @@ void InitPWM(struct LoggerConfig *loggerConfig){
 }
 
 
-void EnablePWMChannel(unsigned int channel, struct PWMConfig *config){
+void EnablePWMChannel(unsigned int channel, PWMConfig *config){
 	
     // Configure PWMC channel (left-aligned)
     PWM_ConfigureChannel(channel, AT91C_PWMC_CPRE_MCKA, 0,0);// AT91C_PWMC_CPOL);
@@ -480,7 +480,7 @@ unsigned int timerClockFromDivider(unsigned short divider){
 	}	
 }
 
-void initTimer0(struct TimerConfig *timerConfig){
+void initTimer0(TimerConfig *timerConfig){
 
 	//pullup enable on timer 0
 	//AT91F_PIO_CfgInput(AT91C_BASE_PIOA, 1 << 0);
@@ -524,7 +524,7 @@ void initTimer0(struct TimerConfig *timerConfig){
 
 
 
-void initTimer0x(struct TimerConfig *timerConfig){
+void initTimer0x(TimerConfig *timerConfig){
 
 	g_timer1_overflow = 1;
 	g_timer_counts[0] = 0;
@@ -563,7 +563,7 @@ void initTimer0x(struct TimerConfig *timerConfig){
 	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC0);	
 }
 
-void initTimer1(struct TimerConfig *timerConfig){
+void initTimer1(TimerConfig *timerConfig){
 
 	g_timer1_overflow = 1;
 	g_timer_counts[1] = 0;
@@ -601,7 +601,7 @@ void initTimer1(struct TimerConfig *timerConfig){
 	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC1);	
 }
 
-void initTimer2(struct TimerConfig *timerConfig){
+void initTimer2(TimerConfig *timerConfig){
 
 	g_timer2_overflow = 1;
 	g_timer_counts[2] = 0;

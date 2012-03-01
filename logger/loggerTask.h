@@ -65,7 +65,7 @@ void writeGPIOHeaders(FIL *f, struct LoggerConfig *config);
 void writeTimerChannelHeaders(FIL *f, struct LoggerConfig *config);
 void writePWMChannelHeaders(FIL *f, struct LoggerConfig *config);
 void writeAccelChannelHeaders(FIL *f, struct LoggerConfig *config);
-void writeGPSChannelHeaders(FIL *f, struct GPSConfig *config);
+void writeGPSChannelHeaders(FIL *f, GPSConfig *config);
 
 
 void writeADC(portTickType currentTicks, struct LoggerConfig *config);
@@ -73,6 +73,6 @@ void writeGPIOs(portTickType currentTicks, struct LoggerConfig *config);
 void writeTimerChannels(portTickType currentTicks, struct LoggerConfig *config);
 void writePWMChannels(portTickType currentTicks, struct LoggerConfig *config);
 void writeAccelerometer(portTickType currentTicks, struct LoggerConfig *config);
-void writeGPSChannels(portTickType currentTicks, struct GPSConfig *config);
+void writeGPSChannels(portTickType currentTicks, GPSConfig *config);
 
 #endif /*LOGGERTASK_H_*/

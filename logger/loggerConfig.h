@@ -81,12 +81,12 @@
 #define MCK_128 	128
 #define MCK_1024 	1024
 
-struct ADCConfig{
+typedef struct _ADCConfig{
 	char label[DEFAULT_LABEL_LENGTH];
 	char units[DEFAULT_UNITS_LENGTH];
 	int sampleRate;
 	float scaling;
-};
+} ADCConfig;
 
 #define DEFAULT_ADC0_CONFIG {"Analog1","Units",SAMPLE_DISABLED,0.0048875f}
 #define DEFAULT_ADC1_CONFIG {"Analog2","Units",SAMPLE_DISABLED,0.0048875f}
@@ -108,7 +108,7 @@ struct ADCConfig{
 			BATTERY_ADC7_CONFIG \
 			}
 
-struct TimerConfig{
+typedef struct _TimerConfig{
 	char label[DEFAULT_LABEL_LENGTH];
 	char units[DEFAULT_UNITS_LENGTH];
 	char slowTimerEnabled;
@@ -117,7 +117,7 @@ struct TimerConfig{
 	char pulsePerRevolution;
 	unsigned short timerDivider;
 	unsigned int calculatedScaling;
-};
+} TimerConfig;
 
 #define DEFAULT_RPM_TIMER_CONFIG  {"EngineRPM", "RPM", 0, SAMPLE_DISABLED, CONFIG_LOGGING_TIMER_RPM, 1, MCK_128, 375428}
 #define DEFAULT_FREQUENCY2_CONFIG {"Freq2","Hz", 0, SAMPLE_DISABLED, CONFIG_LOGGING_TIMER_FREQUENCY, 1, MCK_128, 375428}
@@ -129,11 +129,11 @@ struct TimerConfig{
 			DEFAULT_FREQUENCY3_CONFIG \
 			}
 
-struct GPIOConfig{
+typedef struct _GPIOConfig{
 	char label[DEFAULT_LABEL_LENGTH];
 	int sampleRate;
 	char config;	
-};
+} GPIOConfig;
 
 #define DEFAULT_GPIO1_CONFIG {"GPIO1", SAMPLE_DISABLED, CONFIG_GPIO_IN}
 #define DEFAULT_GPIO2_CONFIG {"GPIO2", SAMPLE_DISABLED, CONFIG_GPIO_IN}
@@ -145,14 +145,14 @@ struct GPIOConfig{
 			DEFAULT_GPIO3_CONFIG \
 			}
 			
-struct AccelConfig{
+typedef struct _AccelConfig{
 	char label[DEFAULT_LABEL_LENGTH];
 	int sampleRate;
 	int idleSampleRate;
 	char config;
 	unsigned char accelChannel;
 	unsigned long zeroValue;
-};
+} AccelConfig;
 
 #define DEFAULT_ACCEL_X_AXIS_CONFIG {"AccelX", SAMPLE_30Hz, SAMPLE_5Hz, CONFIG_ACCEL_NORMAL, CONFIG_ACCEL_CHANNEL_X,DEFAULT_ACCEL_ZERO}
 #define DEFAULT_ACCEL_Y_AXIS_CONFIG {"AccelY", SAMPLE_30Hz, SAMPLE_5Hz, CONFIG_ACCEL_NORMAL, CONFIG_ACCEL_CHANNEL_Y,DEFAULT_ACCEL_ZERO}
@@ -166,7 +166,7 @@ struct AccelConfig{
 				DEFAULT_ACCEL_ZT_AXIS_CONFIG \
 			}
 	
-struct PWMConfig{
+typedef struct _PWMConfig{
 	char label[DEFAULT_LABEL_LENGTH];
 	int sampleRate;
 	char outputConfig;
@@ -174,7 +174,7 @@ struct PWMConfig{
 	unsigned short startupDutyCycle;
 	unsigned short startupPeriod;
 	float voltageScaling;
-};
+} PWMConfig;
 
 #define DEFAULT_PWM1_CONFIG {"Vout1",SAMPLE_DISABLED,CONFIG_PWM_ANALOG,CONFIG_LOGGING_PWM_VOLTS,50,100,DEFAULT_PWM_VOLTAGE_SCALING}
 #define DEFAULT_PWM2_CONFIG {"Vout2",SAMPLE_DISABLED,CONFIG_PWM_ANALOG,CONFIG_LOGGING_PWM_PERIOD,50,100,DEFAULT_PWM_VOLTAGE_SCALING}
@@ -188,7 +188,7 @@ struct PWMConfig{
 				DEFAULT_PWM4_CONFIG, \
 			}
 			
-struct GPSConfig{
+typedef struct _GPSConfig{
 	char qualityLabel[DEFAULT_LABEL_LENGTH];
 	char satsLabel[DEFAULT_LABEL_LENGTH];
 	char latitiudeLabel[DEFAULT_LABEL_LENGTH];
@@ -199,25 +199,26 @@ struct GPSConfig{
 	int positionSampleRate;
 	int velocitySampleRate;
 	int timeSampleRate;
-};
+} GPSConfig;
+
 #define DEFAULT_GPS_CONFIG {"GPS_Qual", "GPS_Sats", "Latitude", "Longitude", "UTCTime", "kph", SAMPLE_5Hz, SAMPLE_5Hz, SAMPLE_5Hz}
 
 struct LoggerConfig {
 	//ADC Calibrations
-	struct ADCConfig ADCConfigs[CONFIG_ADC_CHANNELS];
+	ADCConfig ADCConfigs[CONFIG_ADC_CHANNELS];
 	//PWM/Analog out configurations
 	unsigned short PWMClockFrequency;
-	struct PWMConfig PWMConfigs[CONFIG_PWM_CHANNELS];
+	PWMConfig PWMConfigs[CONFIG_PWM_CHANNELS];
 	//GPIO configurations
-	struct GPIOConfig GPIOConfigs[CONFIG_GPIO_CHANNELS];
+	GPIOConfig GPIOConfigs[CONFIG_GPIO_CHANNELS];
 	//Timer Configurations
-	struct TimerConfig TimerConfigs[CONFIG_TIMER_CHANNELS];
+	TimerConfig TimerConfigs[CONFIG_TIMER_CHANNELS];
 	//Accelerometer Configurations
 	char AccelInstalled;
-	struct AccelConfig AccelConfigs[CONFIG_ACCEL_CHANNELS];
+	AccelConfig AccelConfigs[CONFIG_ACCEL_CHANNELS];
 	//GPS Configuration
 	char GPSInstalled;
-	struct GPSConfig GPSConfig;
+	GPSConfig GPSConfig;
 	//Padding data to accommodate flash routine
 	char padding_data[AT91C_IFLASH_PAGE_SIZE]; 
 };
@@ -243,7 +244,7 @@ void updateActiveLoggerConfig();
 struct LoggerConfig * getSavedLoggerConfig();
 struct LoggerConfig * getWorkingLoggerConfig();
 
-void calculateTimerScaling(struct TimerConfig *timerConfig);
+void calculateTimerScaling(TimerConfig *timerConfig);
 
 int encodeSampleRate(int sampleRate);
 int decodeSampleRate(int sampleRateCode);
@@ -261,11 +262,11 @@ unsigned short filterTimerDivider(unsigned short divider);
 int filterAccelConfig(int config);
 int filterAccelChannel(int channel);
 
-struct TimerConfig * getTimerConfigChannel(int channel);
-struct ADCConfig * getADCConfigChannel(int channel);
-struct PWMConfig * getPWMConfigChannel(int channel);
-struct GPIOConfig * getGPIOConfigChannel(int channel);
-struct AccelConfig * getAccelConfigChannel(int channel);
+TimerConfig * getTimerConfigChannel(int channel);
+ADCConfig * getADCConfigChannel(int channel);
+PWMConfig * getPWMConfigChannel(int channel);
+GPIOConfig * getGPIOConfigChannel(int channel);
+AccelConfig * getAccelConfigChannel(int channel);
 
 void setLabelGeneric(char *dest, const char *source);
 

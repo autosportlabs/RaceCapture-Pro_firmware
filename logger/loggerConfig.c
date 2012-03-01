@@ -26,7 +26,7 @@ struct LoggerConfig * getWorkingLoggerConfig(){
 	return &g_workingLoggerConfig;
 }
 
-void calculateTimerScaling(struct TimerConfig *timerConfig){
+void calculateTimerScaling(TimerConfig *timerConfig){
 	unsigned int clock = BOARD_MCK / timerConfig->timerDivider;
 	clock = clock / timerConfig->pulsePerRevolution;
 	timerConfig->calculatedScaling = clock;
@@ -202,40 +202,40 @@ int filterPWMClockFrequency(int freq){
 	return freq;
 }
 
-struct PWMConfig * getPWMConfigChannel(int channel){
-	struct PWMConfig * c = NULL;
+PWMConfig * getPWMConfigChannel(int channel){
+	PWMConfig * c = NULL;
 	if (channel >= 0 && channel < CONFIG_PWM_CHANNELS){
 		c = &(getWorkingLoggerConfig()->PWMConfigs[channel]);	
 	}
 	return c;
 }
 
-struct TimerConfig * getTimerConfigChannel(int channel){
-	struct TimerConfig * c = NULL;
+TimerConfig * getTimerConfigChannel(int channel){
+	TimerConfig * c = NULL;
 	if (channel >=0 && channel < CONFIG_TIMER_CHANNELS){
 		c = &(getWorkingLoggerConfig()->TimerConfigs[channel]);
 	}
 	return c;
 }
 
-struct ADCConfig * getADCConfigChannel(int channel){
-	struct ADCConfig *c = NULL;
+ADCConfig * getADCConfigChannel(int channel){
+	ADCConfig *c = NULL;
 	if (channel >=0 && channel < CONFIG_ADC_CHANNELS){
 		c = &(getWorkingLoggerConfig()->ADCConfigs[channel]);		
 	}
 	return c;
 }
 
-struct GPIOConfig * getGPIOConfigChannel(int channel){
-	struct GPIOConfig *c = NULL;
+GPIOConfig * getGPIOConfigChannel(int channel){
+	GPIOConfig *c = NULL;
 	if (channel >=0 && channel < CONFIG_GPIO_CHANNELS){
 		c = &(getWorkingLoggerConfig()->GPIOConfigs[channel]);	
 	}
 	return c;	
 }
 
-struct AccelConfig * getAccelConfigChannel(int channel){
-	struct AccelConfig * c = NULL;
+AccelConfig * getAccelConfigChannel(int channel){
+	AccelConfig * c = NULL;
 	if (channel >= 0 && channel < CONFIG_ACCEL_CHANNELS){
 		c = &(getWorkingLoggerConfig()->AccelConfigs[channel]);
 	}
@@ -257,7 +257,7 @@ void calibrateAccelZero(){
 	}
 
 	for (int i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
-		struct AccelConfig * c = getAccelConfigChannel(i);
+		AccelConfig * c = getAccelConfigChannel(i);
 		c->zeroValue = getLastAccelRead(c->accelChannel);  //we map the logical channel to the physical
 	}
 }

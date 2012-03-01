@@ -217,7 +217,7 @@ int Lua_GetAccelInstalled(lua_State *L){
 
 int Lua_SetAccelLabel(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
+		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) setLabelGeneric(c->label,lua_tostring(L,2));
 	}
 	return 0;	
@@ -225,7 +225,7 @@ int Lua_SetAccelLabel(lua_State *L){
 
 int Lua_GetAccelLabel(lua_State *L){
 	if (lua_gettop(L) >= 1 ){
-		struct AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
+		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushstring(L,c->label);
 			return 1;
@@ -236,7 +236,7 @@ int Lua_GetAccelLabel(lua_State *L){
 
 int Lua_SetAccelSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2 ){
-		struct AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
+		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->sampleRate = encodeSampleRate(lua_tointeger(L,2));
 	}	
 	return 0;
@@ -244,7 +244,7 @@ int Lua_SetAccelSampleRate(lua_State *L){
 
 int Lua_GetAccelSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		struct AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
+		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL !=c ){
 			lua_pushnumber(L,c->sampleRate);
 			return 1;	
@@ -255,7 +255,7 @@ int Lua_GetAccelSampleRate(lua_State *L){
 
 int Lua_SetAccelIdleSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
+		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->idleSampleRate = encodeSampleRate(lua_tointeger(L,2));
 	}
 	return 0;
@@ -263,7 +263,7 @@ int Lua_SetAccelIdleSampleRate(lua_State *L){
 
 int Lua_GetAccelIdleSampleRate(lua_State *L){
 	if (lua_gettop(L) >=1 ){
-		struct AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
+		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){	
 			lua_pushnumber(L, c->idleSampleRate);
 			return 1;
@@ -274,7 +274,7 @@ int Lua_GetAccelIdleSampleRate(lua_State *L){
 
 int Lua_SetAccelConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
+		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->config = filterAccelConfig(lua_tointeger(L,2));	
 	}
 	return 0;
@@ -282,7 +282,7 @@ int Lua_SetAccelConfig(lua_State *L){
 
 int Lua_GetAccelConfig(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		struct AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
+		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushnumber(L, c->config);
 			return 1;
@@ -293,7 +293,7 @@ int Lua_GetAccelConfig(lua_State *L){
 
 int Lua_SetAccelChannel(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
+		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->accelChannel = filterAccelChannel(lua_tointeger(L,2));	
 	}
 	return 0;
@@ -301,7 +301,7 @@ int Lua_SetAccelChannel(lua_State *L){
 
 int Lua_GetAccelChannel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		struct AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
+		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushnumber(L, c->accelChannel);
 			return 1;	
@@ -312,7 +312,7 @@ int Lua_GetAccelChannel(lua_State *L){
 
 int Lua_SetAccelZeroValue(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
+		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->zeroValue = filterAccelRawValue(lua_tointeger(L,2));
 	}
 	return 0;
@@ -320,7 +320,7 @@ int Lua_SetAccelZeroValue(lua_State *L){
 
 int Lua_GetAccelZeroValue(lua_State *L){
 	if (lua_gettop(L) >=2 ){
-		struct AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
+		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushinteger(L,c->zeroValue);
 			return 1;
@@ -336,7 +336,7 @@ int Lua_CalibrateAccelZero(lua_State *L){
 
 int Lua_SetTimerLabel(lua_State *L){
 	if (lua_gettop(L) >= 3){
-		struct TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
+		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			setLabelGeneric(c->label,lua_tostring(L,2));
 			setLabelGeneric(c->units,lua_tostring(L,3));
@@ -347,7 +347,7 @@ int Lua_SetTimerLabel(lua_State *L){
 
 int Lua_GetTimerLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		struct TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
+		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushstring(L,c->label);
 			lua_pushstring(L,c->units);
@@ -360,7 +360,7 @@ int Lua_GetTimerLabel(lua_State *L){
 
 int Lua_SetTimerSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
+		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->sampleRate = encodeSampleRate(lua_tointeger(L,2));
 	}
 	return 0;
@@ -368,7 +368,7 @@ int Lua_SetTimerSampleRate(lua_State *L){
 
 int Lua_GetTimerSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		struct TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
+		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushinteger(L,c->sampleRate);
 			return 1;
@@ -379,7 +379,7 @@ int Lua_GetTimerSampleRate(lua_State *L){
 
 int Lua_SetTimerConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
+		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->config = filterTimerConfig(lua_tointeger(L,2));
 	}	
 	return 0;
@@ -387,7 +387,7 @@ int Lua_SetTimerConfig(lua_State *L){
 
 int Lua_GetTimerConfig(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		struct TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
+		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushinteger(L, c->config);
 			return 1;
@@ -398,7 +398,7 @@ int Lua_GetTimerConfig(lua_State *L){
 
 int Lua_SetTimerPulsePerRevolution(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
+		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->pulsePerRevolution = lua_tointeger(L,2);
 	}
 	return 0;
@@ -406,7 +406,7 @@ int Lua_SetTimerPulsePerRevolution(lua_State *L){
 
 int Lua_GetTimerPulsePerRevolution(lua_State *L){
 	if (lua_gettop(L) >=1 ){
-		struct TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
+		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushinteger(L,c->pulsePerRevolution);
 			return 1;	
@@ -417,7 +417,7 @@ int Lua_GetTimerPulsePerRevolution(lua_State *L){
 
 int Lua_SetTimerDivider(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
+		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->timerDivider = filterTimerDivider(lua_tointeger(L,2));
 	}
 	return 0;
@@ -425,7 +425,7 @@ int Lua_SetTimerDivider(lua_State *L){
 
 int Lua_GetTimerDivider(lua_State *L){
 	if (lua_gettop(L) >=1 ){
-		struct TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
+		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushinteger(L,c->timerDivider);
 			return 1;
@@ -436,7 +436,7 @@ int Lua_GetTimerDivider(lua_State *L){
 
 int Lua_CalculateTimerScaling(lua_State *L){
 	if (lua_gettop(L) >=1 ){
-		struct TimerConfig * c= getTimerConfigChannel(lua_tointeger(L,1));
+		TimerConfig * c= getTimerConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) calculateTimerScaling(c);
 	}
 	return 0;
@@ -444,7 +444,7 @@ int Lua_CalculateTimerScaling(lua_State *L){
 
 int Lua_GetTimerScaling(lua_State *L){
 	if (lua_gettop(L) >=1 ){
-		struct TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
+		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
 		if (NULL !=c ){
 			lua_pushinteger(L,c->calculatedScaling);
 			return 1;			
@@ -455,7 +455,7 @@ int Lua_GetTimerScaling(lua_State *L){
 
 int Lua_SetGPIOLabel(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
+		GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) setLabelGeneric(c->label,lua_tostring(L,2));	
 	}
 	return 0;	
@@ -463,7 +463,7 @@ int Lua_SetGPIOLabel(lua_State *L){
 
 int Lua_GetGPIOLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		struct GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
+		GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
 		if (NULL !=c){
 			lua_pushstring(L,c->label);
 			return 1;	
@@ -474,7 +474,7 @@ int Lua_GetGPIOLabel(lua_State *L){
 
 int Lua_SetGPIOSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
+		GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->sampleRate = encodeSampleRate(lua_tointeger(L,2));
 	}
 	return 0;
@@ -482,7 +482,7 @@ int Lua_SetGPIOSampleRate(lua_State *L){
 
 int Lua_GetGPIOSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		struct GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
+		GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
 		if (NULL !=c){
 			lua_pushinteger(L,c->sampleRate);
 			return 1;	
@@ -495,7 +495,7 @@ int Lua_SetGPIOConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		int channel = lua_tointeger(L,1) - 1 ;
 		if (channel >= 0 && channel <= 2){//1 based
-			struct GPIOConfig *c = getGPIOConfigChannel(channel);
+			GPIOConfig *c = getGPIOConfigChannel(channel);
 			//0= configure as input, 1=configure as output
 			if (NULL != c) c->config = filterGPIOConfig(lua_tointeger(L,2));
 			InitGPIO(getWorkingLoggerConfig()); //reload configuration
@@ -508,7 +508,7 @@ int Lua_GetGPIOConfig(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		int channel = lua_tointeger(L,1) - 1;
 		if (channel >= 0 && channel <= 2){
-			struct GPIOConfig *c = getGPIOConfigChannel(channel);
+			GPIOConfig *c = getGPIOConfigChannel(channel);
 			if (NULL !=c){
 				//0=configure as input, 1=configure as output
 				lua_pushinteger(L,c->config);
@@ -654,7 +654,7 @@ int Lua_GetPWMClockFrequency(lua_State *L){
 
 int Lua_SetPWMLabel(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) setLabelGeneric(c->label,lua_tostring(L,2));
 	}
 	return 0;
@@ -662,7 +662,7 @@ int Lua_SetPWMLabel(lua_State *L){
 
 int Lua_GetPWMLabel(lua_State *L){
 	if (lua_gettop(L) >=1){
-		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushstring(L,c->label);	
 		}	
@@ -672,7 +672,7 @@ int Lua_GetPWMLabel(lua_State *L){
 
 int Lua_SetPWMSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->sampleRate = encodeSampleRate(lua_tointeger(L,2));
 	}
 	return 0;
@@ -680,7 +680,7 @@ int Lua_SetPWMSampleRate(lua_State *L){
 
 int Lua_GetPWMSampleRate(lua_State *L){
 	if (lua_gettop(L) >=1){
-		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushinteger(L,c->sampleRate);	
 			return 1;
@@ -691,7 +691,7 @@ int Lua_GetPWMSampleRate(lua_State *L){
 
 int Lua_SetPWMOutputConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->outputConfig = filterPWMOutputConfig(lua_tointeger(L,2));	
 	}
 	return 0;
@@ -699,7 +699,7 @@ int Lua_SetPWMOutputConfig(lua_State *L){
 
 int Lua_GetPWMOutputConfig(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushinteger(L,c->outputConfig);
 			return 1;	
@@ -710,7 +710,7 @@ int Lua_GetPWMOutputConfig(lua_State *L){
 
 int Lua_SetPWMLoggingConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->loggingConfig = filterPWMLoggingConfig(lua_tointeger(L,2));	
 	}
 	return 0;	
@@ -718,7 +718,7 @@ int Lua_SetPWMLoggingConfig(lua_State *L){
 
 int Lua_GetPWMLoggingConfig(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushinteger(L,c->loggingConfig);
 			return 1;	
@@ -729,7 +729,7 @@ int Lua_GetPWMLoggingConfig(lua_State *L){
 
 int Lua_SetPWMStartupDutyCycle(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			c->startupDutyCycle = filterPWMDutyCycle(lua_tointeger(L,2));
 		}	
@@ -739,7 +739,7 @@ int Lua_SetPWMStartupDutyCycle(lua_State *L){
 
 int Lua_GetPWMStartupDutyCycle(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushinteger(L,c->startupDutyCycle);
 			return 1;	
@@ -750,7 +750,7 @@ int Lua_GetPWMStartupDutyCycle(lua_State *L){
 
 int Lua_SetPWMStartupPeriod(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			c->startupPeriod = filterPWMPeriod(lua_tointeger(L,2));
 		}	
@@ -760,7 +760,7 @@ int Lua_SetPWMStartupPeriod(lua_State *L){
 
 int Lua_GetPWMStartupPeriod(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushinteger(L,c->startupPeriod);
 			return 1;	
@@ -771,7 +771,7 @@ int Lua_GetPWMStartupPeriod(lua_State *L){
 
 int Lua_SetPWMVoltageScaling(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			c->voltageScaling = lua_tonumber(L,2);
 		}	
@@ -781,7 +781,7 @@ int Lua_SetPWMVoltageScaling(lua_State *L){
 
 int Lua_GetPWMVoltageScaling(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushnumber(L,c->voltageScaling);
 			return 1;			
@@ -793,7 +793,7 @@ int Lua_GetPWMVoltageScaling(lua_State *L){
 
 int Lua_SetAnalogChannelLabel(lua_State *L){
 	if (lua_gettop(L) >= 3){
-		struct ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
+		ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			setLabelGeneric(c->label,lua_tostring(L,2));
 			setLabelGeneric(c->units,lua_tostring(L,3));
@@ -804,7 +804,7 @@ int Lua_SetAnalogChannelLabel(lua_State *L){
 
 int Lua_GetAnalogChannelLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		struct ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
+		ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL !=c ){
 			lua_pushstring(L,c->label);
 			lua_pushstring(L,c->units);
@@ -816,7 +816,7 @@ int Lua_GetAnalogChannelLabel(lua_State *L){
 
 int Lua_SetAnalogChannelSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
+		ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			c->sampleRate = encodeSampleRate(lua_tointeger(L,2));
 		}
@@ -826,7 +826,7 @@ int Lua_SetAnalogChannelSampleRate(lua_State *L){
 
 int Lua_GetAnalogChannelSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		struct ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
+		ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL !=c ){
 			lua_pushinteger(L,c->sampleRate);
 			return 1;	
@@ -837,7 +837,7 @@ int Lua_GetAnalogChannelSampleRate(lua_State *L){
 
 int Lua_SetAnalogChannelScaling(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
+		ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL !=c ){
 			c->scaling = lua_tonumber(L,2);
 		}
@@ -847,7 +847,7 @@ int Lua_SetAnalogChannelScaling(lua_State *L){
 
 int Lua_GetAnalogChannelScaling(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		struct ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
+		ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL !=c ){
 			lua_pushnumber(L,c->scaling);			
 		}		
@@ -860,7 +860,7 @@ int Lua_GetAnalog(lua_State *L){
 	float result = -1;
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
-		struct ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
+		ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			result = c->scaling * ReadADC(channel);
 		}
@@ -885,7 +885,7 @@ int calculateXTimerValue(lua_State *L, unsigned int (*scaler)(unsigned int,unsig
 	int result = -1;
 	if (lua_gettop(L) >=  1){
 		int channel = lua_tointeger(L,1);
-		struct TimerConfig *c = getTimerConfigChannel(channel);
+		TimerConfig *c = getTimerConfigChannel(channel);
 		if (c != NULL) result = (*scaler)(getTimerPeriod(channel),c->calculatedScaling);
 	}
 	return result;
@@ -1141,7 +1141,7 @@ int Lua_SetPWMPeriodRaw(lua_State *L){
 
 int Lua_SetAnalogOut(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		struct PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			unsigned int channel = (unsigned int)lua_tointeger(L,1);
 			if (channel >= 0 && channel < CONFIG_PWM_CHANNELS){
