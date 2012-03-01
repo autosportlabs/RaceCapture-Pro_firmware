@@ -31,8 +31,8 @@ void FlashLoggerConfig(unsigned int argc, char **argv){
 	}
 }
 
-struct ADCConfig * AssertAdcSetParam(unsigned int argc, char **argv){
-	struct ADCConfig *c = NULL;
+ADCConfig * AssertAdcSetParam(unsigned int argc, char **argv){
+	ADCConfig *c = NULL;
 	if (argc >= 3){
 		c = getADCConfigChannel(modp_atoi(argv[1]));
 		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
@@ -43,8 +43,8 @@ struct ADCConfig * AssertAdcSetParam(unsigned int argc, char **argv){
 	return c;
 }
 
-struct ADCConfig * AssertAdcGetParam(unsigned int argc, char **argv){
-	struct ADCConfig *c = NULL;
+ADCConfig * AssertAdcGetParam(unsigned int argc, char **argv){
+	ADCConfig *c = NULL;
 	if (argc >= 2){
 		c = getADCConfigChannel(modp_atoi(argv[1]));
 		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
@@ -59,7 +59,7 @@ struct ADCConfig * AssertAdcGetParam(unsigned int argc, char **argv){
 void SetAnalogLabel(unsigned int argc, char **argv){
 
 	if (argc >= 4){
-		struct ADCConfig *c = getADCConfigChannel(modp_atoi(argv[1]));
+		ADCConfig *c = getADCConfigChannel(modp_atoi(argv[1]));
 		if (NULL != c){
 			setLabelGeneric(c->label,argv[2]);
 			setLabelGeneric(c->units,argv[3]);
@@ -75,7 +75,7 @@ void SetAnalogLabel(unsigned int argc, char **argv){
 }
 
 void GetAnalogLabel(unsigned int argc, char **argv){
-	struct ADCConfig * c = AssertAdcGetParam(argc,argv);
+	ADCConfig * c = AssertAdcGetParam(argc,argv);
 	if (NULL != c){
 		SendNameString("label",c->label);
 		SendNameString("units",c->units);
@@ -85,7 +85,7 @@ void GetAnalogLabel(unsigned int argc, char **argv){
 
 
 void SetAnalogSampleRate(unsigned int argc, char **argv){
-	struct ADCConfig * c = AssertAdcSetParam(argc,argv);
+	ADCConfig * c = AssertAdcSetParam(argc,argv);
 	if (NULL != c){
 		c->sampleRate = encodeSampleRate(modp_atoi(argv[2]));
 		SendCommandOK();
@@ -93,12 +93,12 @@ void SetAnalogSampleRate(unsigned int argc, char **argv){
 }
 
 void GetAnalogSampleRate(unsigned int argc, char **argv){
-	struct ADCConfig * c = AssertAdcGetParam(argc,argv);
+	ADCConfig * c = AssertAdcGetParam(argc,argv);
 	if (NULL != c) SendNameInt("sampleRate",decodeSampleRate(c->sampleRate));
 }
 
 void SetAnalogScaling(unsigned int argc, char **argv){
-	struct ADCConfig * c = AssertAdcSetParam(argc,argv);
+	ADCConfig * c = AssertAdcSetParam(argc,argv);
 	if (NULL != c){
 		c->scaling = modp_atof(argv[2]);
 		SendCommandOK();
@@ -106,7 +106,7 @@ void SetAnalogScaling(unsigned int argc, char **argv){
 }
 
 void GetAnalogScaling(unsigned int argc, char **argv){
-	struct ADCConfig * c = AssertAdcGetParam(argc,argv);
+	ADCConfig * c = AssertAdcGetParam(argc,argv);
 	if (NULL != c) SendNameFloat("scaling",c->scaling,2);
 }
 
@@ -124,8 +124,8 @@ void GetPwmClockFreq(unsigned int argc, char **argv){
 	SendNameInt("frequency",getWorkingLoggerConfig()->PWMClockFrequency);
 }
 
-struct PWMConfig * AssertPwmSetParam(unsigned int argc, char **argv){
-	struct PWMConfig *c = NULL;
+PWMConfig * AssertPwmSetParam(unsigned int argc, char **argv){
+	PWMConfig *c = NULL;
 	if (argc >= 3){
 		c = getPWMConfigChannel(modp_atoi(argv[1]));
 		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
@@ -136,8 +136,8 @@ struct PWMConfig * AssertPwmSetParam(unsigned int argc, char **argv){
 	return c;
 }
 
-struct PWMConfig * AssertPwmGetParam(unsigned int argc, char **argv){
-	struct PWMConfig *c = NULL;
+PWMConfig * AssertPwmGetParam(unsigned int argc, char **argv){
+	PWMConfig *c = NULL;
 	if (argc >= 2){
 		c = getPWMConfigChannel(modp_atoi(argv[1]));
 		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
@@ -149,7 +149,7 @@ struct PWMConfig * AssertPwmGetParam(unsigned int argc, char **argv){
 }
 
 void SetPwmLabel(unsigned int argc, char **argv){
-	struct PWMConfig *c = AssertPwmSetParam(argc,argv);
+	PWMConfig *c = AssertPwmSetParam(argc,argv);
 	if (NULL != c){
 		setLabelGeneric(c->label,argv[2]);
 		SendCommandOK();
@@ -157,12 +157,12 @@ void SetPwmLabel(unsigned int argc, char **argv){
 }
 
 void GetPwmLabel(unsigned int argc, char **argv){
-	struct PWMConfig *c = AssertPwmGetParam(argc,argv);
+	PWMConfig *c = AssertPwmGetParam(argc,argv);
 	if (NULL !=c ) SendNameString("label",c->label);
 }
 
 void SetPwmSampleRate(unsigned int argc, char **argv){
-	struct PWMConfig *c = AssertPwmSetParam(argc,argv);
+	PWMConfig *c = AssertPwmSetParam(argc,argv);
 	if (NULL != c){
 		c->sampleRate = encodeSampleRate(modp_atoi(argv[2]));
 		SendCommandOK();
@@ -170,12 +170,12 @@ void SetPwmSampleRate(unsigned int argc, char **argv){
 }
 
 void GetPwmSampleRate(unsigned int argc, char **argv){
-	struct PWMConfig *c = AssertPwmGetParam(argc,argv);
+	PWMConfig *c = AssertPwmGetParam(argc,argv);
 	if (NULL !=c ) SendNameInt("sampleRate",decodeSampleRate(c->sampleRate));
 }
 
 void SetPwmOutputCfg(unsigned int argc, char **argv){
-	struct PWMConfig *c = AssertPwmSetParam(argc,argv);
+	PWMConfig *c = AssertPwmSetParam(argc,argv);
 	if (NULL != c){
 		c->outputConfig = filterPWMOutputConfig(modp_atoi(argv[2]));
 		SendCommandOK();
@@ -183,12 +183,12 @@ void SetPwmOutputCfg(unsigned int argc, char **argv){
 }
 
 void GetPwmOutputCfg(unsigned int argc, char **argv){
-	struct PWMConfig *c = AssertPwmGetParam(argc,argv);
+	PWMConfig *c = AssertPwmGetParam(argc,argv);
 	if (NULL != c) SendNameInt("outputConfig",c->outputConfig);
 }
 
 void SetPwmLoggingCfg(unsigned int argc, char **argv){
-	struct PWMConfig *c = AssertPwmSetParam(argc,argv);
+	PWMConfig *c = AssertPwmSetParam(argc,argv);
 	if (NULL != c) {
 		c->loggingConfig = filterPWMLoggingConfig(modp_atoi(argv[2]));
 		SendCommandOK();
@@ -196,12 +196,12 @@ void SetPwmLoggingCfg(unsigned int argc, char **argv){
 }
 
 void GetPwmLoggingCfg(unsigned int argc, char **argv){
-	struct PWMConfig *c = AssertPwmGetParam(argc,argv);
+	PWMConfig *c = AssertPwmGetParam(argc,argv);
 	if (NULL !=c ) SendNameInt("loggingConfig",c->loggingConfig);
 }
 
 void SetPwmStartupDutyCycle(unsigned int argc, char **argv){
-	struct PWMConfig *c = AssertPwmSetParam(argc,argv);
+	PWMConfig *c = AssertPwmSetParam(argc,argv);
 	if (NULL != c){
 		c->startupDutyCycle = filterPWMDutyCycle(modp_atoi(argv[2]));
 		SendCommandOK();
@@ -209,12 +209,12 @@ void SetPwmStartupDutyCycle(unsigned int argc, char **argv){
 }
 
 void GetPwmStartupDutyCycle(unsigned int argc, char **argv){
-	struct PWMConfig *c = AssertPwmGetParam(argc,argv);
+	PWMConfig *c = AssertPwmGetParam(argc,argv);
 	if (NULL != c) SendNameInt("dutyCycle",c->startupDutyCycle);
 }
 
 void SetPWMStartupPeriod(unsigned int argc, char **argv){
-	struct PWMConfig *c = AssertPwmSetParam(argc,argv);
+	PWMConfig *c = AssertPwmSetParam(argc,argv);
 	if (NULL != c){
 		c->startupPeriod = filterPWMPeriod(modp_atoi(argv[2]));
 		SendCommandOK();
@@ -222,12 +222,12 @@ void SetPWMStartupPeriod(unsigned int argc, char **argv){
 }
 
 void GetPwmStartupPeriod(unsigned int argc, char **argv){
-	struct PWMConfig *c = AssertPwmGetParam(argc,argv);
+	PWMConfig *c = AssertPwmGetParam(argc,argv);
 	if (NULL != c) SendNameInt("startupPeriod",c->startupPeriod);
 }
 
 void SetPwmVoltageScaling(unsigned int argc, char **argv){
-	struct PWMConfig *c = AssertPwmSetParam(argc,argv);
+	PWMConfig *c = AssertPwmSetParam(argc,argv);
 	if (NULL != c){
 		c->voltageScaling = modp_atof(argv[2]);
 		SendCommandOK();
@@ -235,7 +235,7 @@ void SetPwmVoltageScaling(unsigned int argc, char **argv){
 }
 
 void getPwmVoltageScaling(unsigned int argc, char **argv){
-	struct PWMConfig *c = AssertPwmGetParam(argc,argv);
+	PWMConfig *c = AssertPwmGetParam(argc,argv);
 	if (NULL == c) return;
 	SendNameFloat("voltageScaling",c->voltageScaling,2);
 }
@@ -370,8 +370,8 @@ void GetGpsTimeSampleRate(unsigned int argc, char **argv){
 	SendNameInt("gpsTimeSampleRate", decodeSampleRate(getWorkingLoggerConfig()->GPSConfig.timeSampleRate));
 }
 
-struct GPIOConfig * AssertGpioSetParam(unsigned int argc, char **argv){
-	struct GPIOConfig *c = NULL;
+GPIOConfig * AssertGpioSetParam(unsigned int argc, char **argv){
+	GPIOConfig *c = NULL;
 	if (argc >= 3){
 		c = getGPIOConfigChannel(modp_atoi(argv[1]));
 		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
@@ -382,8 +382,8 @@ struct GPIOConfig * AssertGpioSetParam(unsigned int argc, char **argv){
 	return c;
 }
 
-struct GPIOConfig * AssertGpioGetParam(unsigned int argc, char **argv){
-	struct GPIOConfig *c = NULL;
+GPIOConfig * AssertGpioGetParam(unsigned int argc, char **argv){
+	GPIOConfig *c = NULL;
 	if (argc >= 2){
 		c = getGPIOConfigChannel(modp_atoi(argv[1]));
 		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
@@ -395,7 +395,7 @@ struct GPIOConfig * AssertGpioGetParam(unsigned int argc, char **argv){
 }
 
 void SetGpioLabel(unsigned int argc, char **argv){
-	struct GPIOConfig * c = AssertGpioSetParam(argc,argv);
+	GPIOConfig * c = AssertGpioSetParam(argc,argv);
 	if (NULL != c){
 		setLabelGeneric(c->label,argv[2]);
 		SendCommandOK();
@@ -403,12 +403,12 @@ void SetGpioLabel(unsigned int argc, char **argv){
 }
 
 void GetGpioLabel(unsigned int argc, char **argv){
-	struct GPIOConfig * c = AssertGpioGetParam(argc,argv);
+	GPIOConfig * c = AssertGpioGetParam(argc,argv);
 	if (NULL != c) SendNameString("gpioLabel",c->label);
 }
 
 void SetGpioSampleRate(unsigned int argc, char **argv){
-	struct GPIOConfig * c = AssertGpioSetParam(argc,argv);
+	GPIOConfig * c = AssertGpioSetParam(argc,argv);
 	if (NULL != c){
 		c->sampleRate = encodeSampleRate(modp_atoi(argv[2]));
 		SendCommandOK();
@@ -416,12 +416,12 @@ void SetGpioSampleRate(unsigned int argc, char **argv){
 }
 
 void GetGpioSampleRate(unsigned int argc, char **argv){
-	struct GPIOConfig * c = AssertGpioGetParam(argc,argv);
+	GPIOConfig * c = AssertGpioGetParam(argc,argv);
 	if (NULL != c) SendNameInt("gpioSampleRate",decodeSampleRate(c->sampleRate));
 }
 
 void SetGpioConfig(unsigned int argc, char **argv){
-	struct GPIOConfig * c = AssertGpioSetParam(argc,argv);
+	GPIOConfig * c = AssertGpioSetParam(argc,argv);
 	if (NULL != c){
 		c->config = filterGPIOConfig(modp_atoi(argv[2]));
 		SendCommandOK();
@@ -429,12 +429,12 @@ void SetGpioConfig(unsigned int argc, char **argv){
 }
 
 void GetGpioConfig(unsigned int argc, char **argv){
-	struct GPIOConfig * c = AssertGpioGetParam(argc,argv);
+	GPIOConfig * c = AssertGpioGetParam(argc,argv);
 	if (NULL != c) SendNameInt("gpioConfig",c->config);
 }
 
-struct TimerConfig * AssertTimerSetParam(unsigned int argc, char **argv){
-	struct TimerConfig *c = NULL;
+TimerConfig * AssertTimerSetParam(unsigned int argc, char **argv){
+	TimerConfig *c = NULL;
 	if (argc >= 3){
 		c = getTimerConfigChannel(modp_atoi(argv[1]));
 		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
@@ -445,8 +445,8 @@ struct TimerConfig * AssertTimerSetParam(unsigned int argc, char **argv){
 	return c;
 }
 
-struct TimerConfig* AssertTimerGetParam(unsigned int argc, char **argv){
-	struct TimerConfig *c = NULL;
+TimerConfig* AssertTimerGetParam(unsigned int argc, char **argv){
+	TimerConfig *c = NULL;
 	if (argc >= 2){
 		c = getTimerConfigChannel(modp_atoi(argv[1]));
 		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
@@ -458,7 +458,7 @@ struct TimerConfig* AssertTimerGetParam(unsigned int argc, char **argv){
 }
 
 void SetTimerLabel(unsigned int argc, char **argv){
-	struct TimerConfig * c = AssertTimerSetParam(argc,argv);
+	TimerConfig * c = AssertTimerSetParam(argc,argv);
 	if (NULL != c){
 		setLabelGeneric(c->label,argv[2]);
 		SendCommandOK();
@@ -466,12 +466,12 @@ void SetTimerLabel(unsigned int argc, char **argv){
 }
 
 void GetTimerLabel(unsigned int argc, char **argv){
-	struct TimerConfig * c = AssertTimerGetParam(argc,argv);
+	TimerConfig * c = AssertTimerGetParam(argc,argv);
 	if (NULL !=c) SendNameString("timerLabel",c->label);
 }
 
 void SetTimerSampleRate(unsigned int argc, char **argv){
-	struct TimerConfig * c = AssertTimerSetParam(argc,argv);
+	TimerConfig * c = AssertTimerSetParam(argc,argv);
 	if (NULL != c){
 		c->sampleRate = encodeSampleRate(modp_atoi(argv[2]));
 		SendCommandOK();
@@ -479,12 +479,12 @@ void SetTimerSampleRate(unsigned int argc, char **argv){
 }
 
 void GetTimerSampleRate(unsigned int argc, char **argv){
-	struct TimerConfig * c = AssertTimerGetParam(argc,argv);
+	TimerConfig * c = AssertTimerGetParam(argc,argv);
 	if (NULL != c) SendNameInt("timerSampleRate", decodeSampleRate(c->sampleRate));
 }
 
 void SetTimerCfg(unsigned int argc, char **argv){
-	struct TimerConfig * c = AssertTimerSetParam(argc,argv);
+	TimerConfig * c = AssertTimerSetParam(argc,argv);
 	if (NULL != c){
 		c->config = filterTimerConfig(modp_atoi(argv[2]));
 		SendCommandOK();
@@ -492,12 +492,12 @@ void SetTimerCfg(unsigned int argc, char **argv){
 }
 
 void GetTimerCfg(unsigned int argc, char **argv){
-	struct TimerConfig * c = AssertTimerGetParam(argc,argv);
+	TimerConfig * c = AssertTimerGetParam(argc,argv);
 	if (NULL != c) SendNameInt("timerConfig", c->config);
 }
 
 void SetTimerPulsePerRev(unsigned int argc, char **argv){
-	struct TimerConfig * c = AssertTimerSetParam(argc,argv);
+	TimerConfig * c = AssertTimerSetParam(argc,argv);
 	if (NULL != c){
 		c->pulsePerRevolution = modp_atoi(argv[2]);
 		SendCommandOK();
@@ -505,14 +505,14 @@ void SetTimerPulsePerRev(unsigned int argc, char **argv){
 }
 
 void GetTimerPulsePerRev(unsigned int argc, char **argv){
-	struct TimerConfig * c = AssertTimerGetParam(argc,argv);
+	TimerConfig * c = AssertTimerGetParam(argc,argv);
 	if (NULL != c){
 		SendNameInt("timerPulsePerRev",c->pulsePerRevolution);
 	}
 }
 
 void SetTimerDivider(unsigned int argc, char **argv){
-	struct TimerConfig * c = AssertTimerSetParam(argc,argv);
+	TimerConfig * c = AssertTimerSetParam(argc,argv);
 	if (NULL != c){
 		c->timerDivider = filterTimerDivider(modp_atoi(argv[2]));
 		SendCommandOK();
@@ -520,14 +520,14 @@ void SetTimerDivider(unsigned int argc, char **argv){
 }
 
 void GetTimerDivider(unsigned int argc, char **argv){
-	struct TimerConfig * c = AssertTimerGetParam(argc,argv);
+	TimerConfig * c = AssertTimerGetParam(argc,argv);
 	if (NULL != c){
 		SendNameInt("timerDivider",c->timerDivider);
 	}
 }
 
 void CalculateTimerScaling(unsigned int argc, char **argv){
-	struct TimerConfig * c = AssertTimerGetParam(argc,argv);
+	TimerConfig * c = AssertTimerGetParam(argc,argv);
 	if (NULL != c){
 		calculateTimerScaling(c);
 		SendCommandOK();
@@ -535,15 +535,15 @@ void CalculateTimerScaling(unsigned int argc, char **argv){
 }
 
 void GetTimerScaling(unsigned int argc, char **argv){
-	struct TimerConfig * c = AssertTimerGetParam(argc,argv);
+	TimerConfig * c = AssertTimerGetParam(argc,argv);
 	if (NULL != c){
 		SendNameInt("timerScaling",c->calculatedScaling);
 		SendCommandOK();
 	}
 }
 
-struct AccelConfig * AssertAccelSetParam(unsigned int argc, char **argv){
-	struct AccelConfig *c = NULL;
+AccelConfig * AssertAccelSetParam(unsigned int argc, char **argv){
+	AccelConfig *c = NULL;
 	if (argc >= 3){
 		c = getAccelConfigChannel(modp_atoi(argv[1]));
 		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
@@ -554,8 +554,8 @@ struct AccelConfig * AssertAccelSetParam(unsigned int argc, char **argv){
 	return c;
 }
 
-struct AccelConfig * AssertAccelGetParam(unsigned int argc, char **argv){
-	struct AccelConfig *c = NULL;
+AccelConfig * AssertAccelGetParam(unsigned int argc, char **argv){
+	AccelConfig *c = NULL;
 	if (argc >= 2){
 		c = getAccelConfigChannel(modp_atoi(argv[1]));
 		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
@@ -580,7 +580,7 @@ void GetAccelInstalled(unsigned int argc, char **argv){
 }
 
 void SetAccelLabel(unsigned int argc, char **argv){
-	struct AccelConfig * c = AssertAccelSetParam(argc,argv);
+	AccelConfig * c = AssertAccelSetParam(argc,argv);
 	if (NULL != c){
 		setLabelGeneric(c->label,argv[2]);
 		SendCommandOK();
@@ -588,14 +588,14 @@ void SetAccelLabel(unsigned int argc, char **argv){
 }
 
 void GetAccelLabel(unsigned int argc, char **argv){
-	struct AccelConfig * c = AssertAccelGetParam(argc,argv);
+	AccelConfig * c = AssertAccelGetParam(argc,argv);
 	if (NULL != c){
 		SendNameString("accelLabel",c->label);
 	}
 }
 
 void SetAccelSampleRate(unsigned int argc, char **argv){
-	struct AccelConfig * c = AssertAccelSetParam(argc,argv);
+	AccelConfig * c = AssertAccelSetParam(argc,argv);
 	if (NULL != c){
 		c->sampleRate = encodeSampleRate(modp_atoi(argv[2]));
 		SendCommandOK();
@@ -603,12 +603,12 @@ void SetAccelSampleRate(unsigned int argc, char **argv){
 }
 
 void GetAccelSampleRate(unsigned int argc, char **argv){
-	struct AccelConfig * c = AssertAccelGetParam(argc,argv);
+	AccelConfig * c = AssertAccelGetParam(argc,argv);
 	if (NULL != c) SendNameInt("accelSampleRate",decodeSampleRate(c->sampleRate));
 }
 
 void SetAccelIdleSampleRate(unsigned int argc, char **argv){
-	struct AccelConfig * c = AssertAccelSetParam(argc,argv);
+	AccelConfig * c = AssertAccelSetParam(argc,argv);
 	if (NULL != c){
 		c->idleSampleRate = encodeSampleRate(modp_atoi(argv[2]));
 		SendCommandOK();
@@ -616,12 +616,12 @@ void SetAccelIdleSampleRate(unsigned int argc, char **argv){
 }
 
 void GetAccelIdleSampleRate(unsigned int argc, char **argv){
-	struct AccelConfig * c = AssertAccelGetParam(argc,argv);
+	AccelConfig * c = AssertAccelGetParam(argc,argv);
 	if (NULL != c) SendNameInt("accelIdleSampleRate",decodeSampleRate(c->idleSampleRate));
 }
 
 void SetAccelConfig(unsigned int argc, char **argv){
-	struct AccelConfig * c = AssertAccelSetParam(argc,argv);
+	AccelConfig * c = AssertAccelSetParam(argc,argv);
 	if (NULL != c){
 		c->config = filterAccelConfig(modp_atoi(argv[2]));
 		SendCommandOK();
@@ -629,12 +629,12 @@ void SetAccelConfig(unsigned int argc, char **argv){
 }
 
 void GetAccelConfig(unsigned int argc, char **argv){
-	struct AccelConfig * c = AssertAccelGetParam(argc,argv);
+	AccelConfig * c = AssertAccelGetParam(argc,argv);
 	if (NULL != c) SendNameInt("accelConfig",c->config);
 }
 
 void SetAccelChannel(unsigned int argc, char **argv){
-	struct AccelConfig * c = AssertAccelSetParam(argc,argv);
+	AccelConfig * c = AssertAccelSetParam(argc,argv);
 	if (NULL != c){
 		c->accelChannel = filterAccelChannel(modp_atoi(argv[2]));
 		SendCommandOK();
@@ -642,12 +642,12 @@ void SetAccelChannel(unsigned int argc, char **argv){
 }
 
 void GetAccelChannel(unsigned int argc, char **argv){
-	struct AccelConfig * c = AssertAccelGetParam(argc,argv);
+	AccelConfig * c = AssertAccelGetParam(argc,argv);
 	if (NULL != c) SendNameInt("accelChannel",c->accelChannel);
 }
 
 void SetAccelZeroValue(unsigned int argc, char **argv){
-	struct AccelConfig * c = AssertAccelSetParam(argc,argv);
+	AccelConfig * c = AssertAccelSetParam(argc,argv);
 	if (NULL != c){
 		c->zeroValue = modp_atoi(argv[2]);
 		SendCommandOK();
@@ -655,7 +655,7 @@ void SetAccelZeroValue(unsigned int argc, char **argv){
 }
 
 void GetAccelZeroValue(unsigned int argc, char **argv){
-	struct AccelConfig * c = AssertAccelGetParam(argc,argv);
+	AccelConfig * c = AssertAccelGetParam(argc,argv);
 	if (NULL != c) SendNameInt("zeroValue",c->zeroValue);
 }
 
