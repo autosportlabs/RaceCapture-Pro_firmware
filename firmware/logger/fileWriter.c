@@ -4,23 +4,41 @@
  *  Created on: Feb 29, 2012
  *      Author: brent
  */
-#import "fileWriter.h"
+#include "fileWriter.h"
+#include "task.h"
+#include "semphr.h"
+#include "modp_numtoa.h"
+#include "sdcard.h"
+#include "sampleRecord.h"
+#include "loggerHardware.h"
+#include "usb_comm.h"
+#include "string.h"
 
-static int g_shouldWrite;
+static int g_writingActive;
 static FIL g_logfile;
-static xSemaphoreHandle g_xWritingStart;
+static xQueueHandle g_sampleRecordQueue = NULL;
 
-#define FILE_WRITER_TASK_PRIORITY				( tskIDLE_PRIORITY + 3 )
+#define FILE_WRITER_TASK_PRIORITY				( tskIDLE_PRIORITY + 4 )
 #define FILE_WRITER_STACK_SIZE  				200
+#define SAMPLE_RECORD_QUEUE_SIZE				10
+#define MAX_LOG_FILE_INDEX 						99999
 
+//wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all
+//#define SAMPLE_QUEUE_WAIT_TIME					0
+#define SAMPLE_QUEUE_WAIT_TIME					portMAX_DELAY
 
-void createFileWriterTask(){
+portBASE_TYPE queueLogfileRecord(SampleRecord * sr){
+	if (NULL != g_sampleRecordQueue){
+		return xQueueSend(g_sampleRecordQueue, &sr, SAMPLE_QUEUE_WAIT_TIME);
+	}
+	else{
+		return errQUEUE_EMPTY;
+	}
+}
 
-	g_shouldWrite = 0;
-
-	vSemaphoreCreateBinary( g_xWritingStart );
-	xSemaphoreTake( g_xWritingStart, 1 );
-	xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileTask", FILE_WRITER_STACK_SIZE, NULL, FILE_WRITER_TASK_PRIORITY, NULL );
+static void fileWriteString(FIL *f, char *s){
+	f_puts(s,f);
+	f_sync(f);
 }
 
 static void fileWriteQuotedString(FIL *f, char *s){
@@ -29,10 +47,6 @@ static void fileWriteQuotedString(FIL *f, char *s){
 	fileWriteString(f,"\"");
 }
 
-static void fileWriteString(FIL *f, char *s){
-	f_puts(s,f);
-	f_sync(f);
-}
 
 static void fileWriteInt(FIL *f, int num){
 	char buf[10];
@@ -52,159 +66,107 @@ static void fileWriteDouble(FIL *f, double num, int precision){
 	fileWriteString(f,buf);
 }
 
-static void writeHeaders(FIL *f, LoggerConfig *config){
-	writeADCHeaders(f, config);
-	writeGPIOHeaders(f, config);
-	writeTimerChannelHeaders(f, config);
-	writePWMChannelHeaders(f, config);
-	if (config->AccelInstalled) writeAccelChannelHeaders(f, config);
-	if (config->GPSInstalled) writeGPSChannelHeaders(f, &(config->GPSConfig));
-	fileWriteString(f,"\n");
-}
+static void writeHeaders(FIL *f, SampleRecord *sr){
 
-static void writeADCHeaders(FIL *f,LoggerConfig *config){
-	for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
-		ADCConfig *c = &(config->ADCConfigs[i]);
-		if (c->sampleRate != SAMPLE_DISABLED){
-			fileWriteQuotedString(f,c->label);
-			fileWriteString(f,",");
+	int headerCount = 0;
+	for (int i = 0; i < SAMPLE_RECORD_CHANNELS;i++){
+		ChannelConfig *cfg = (sr->Samples[i].channelConfig);
+		if (SAMPLE_DISABLED != cfg->sampleRate){
+			if (headerCount > 0) fileWriteString(f,",");
+			//SendUint((unsigned int)&(cfg));
+			fileWriteQuotedString(f,cfg->label);
+			headerCount++;
 		}
 	}
-}
-
-static void writeGPIOHeaders(FIL *f, LoggerConfig *config){
-	for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
-		GPIOConfig *c = &(config->GPIOConfigs[i]);
-		if (c->sampleRate != SAMPLE_DISABLED){
-			fileWriteQuotedString(f,c->label);
-			fileWriteString(f,",");
-		}
-	}
-}
-
-static void writeTimerChannelHeaders(FIL *f, LoggerConfig *config){
-	for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++){
-		TimerConfig *c = &(config->TimerConfigs[i]);
-		if (c->sampleRate != SAMPLE_DISABLED){
-			fileWriteQuotedString(f,c->label);
-			fileWriteString(f, ",");
-		}
-	}
-}
-
-static void writePWMChannelHeaders(FIL *f, LoggerConfig *config){
-	for (int i = 0; i < CONFIG_PWM_CHANNELS; i++){
-		PWMConfig *c = &(config->PWMConfigs[i]);
-		if (c->sampleRate != SAMPLE_DISABLED){
-			fileWriteQuotedString(f,c->label);
-			fileWriteString(f, ",");
-		}
-	}
-}
-
-static void writeAccelChannelHeaders(FIL *f, LoggerConfig *config){
-	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
-		AccelConfig *c = &(config->AccelConfigs[i]);
-		if (c->sampleRate != SAMPLE_DISABLED){
-			fileWriteQuotedString(f,c->label);
-			fileWriteString(f, ",");
-		}
-	}
-}
-
-static void writeGPSChannelHeaders(FIL *f, GPSConfig *config){
-
-	if (config->timeSampleRate != SAMPLE_DISABLED){
-		fileWriteQuotedString(f, config->timeLabel);
-		fileWriteString(f, ",");
-	}
-
-	if (config->positionSampleRate != SAMPLE_DISABLED){
-		fileWriteQuotedString(f,config->qualityLabel);
-		fileWriteString(f, ",");
-
-		fileWriteQuotedString(f,config->satsLabel);
-		fileWriteString(f, ",");
-
-		fileWriteQuotedString(f,config->latitiudeLabel);
-		fileWriteString(f, ",");
-		fileWriteQuotedString(f,config->longitudeLabel);
-		fileWriteString(f, ",");
-	}
-
-	if (config->velocitySampleRate != SAMPLE_DISABLED){
-		fileWriteQuotedString(f, config->velocityLabel);
-		fileWriteString(f, ",");
-	}
+	fileWriteString(f,"\r\n");
 }
 
 
-static SampleRecord * getNextSampleRecord(){
-	return null;
-}
-
-static writeSampleRecord(FIL * logfile, SampleRecord * sampleRecord){
+static void writeSampleRecord(FIL * logfile, SampleRecord * sampleRecord){
 
 	if (NULL == sampleRecord) return;
 
 	for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
-		ChannelSample &sample = sampleRecord->Samples[i];
-		ChannelConfig * channelConfig = sample.channelConfig;
+		ChannelSample *sample = &(sampleRecord->Samples[i]);
+		ChannelConfig * channelConfig = sample->channelConfig;
 
 		if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
 
-		if (i > 0) fileWriteString(",");
+		if (i > 0) fileWriteString(logfile,",");
 
-		if (IS_NIL_VALUE(sample)) continue;
+		if (sample->intValue == NIL_SAMPLE) continue;
 
-		size_t precision = sample->precision;
+		int precision = sample->channelConfig->precision;
 		if (precision > 0){
-			fileWriteFloat(logfile,sample.floatValue,precision);
+			fileWriteFloat(logfile,sample->floatValue,precision);
 		}
 		else{
-			fileWriteInt(logfile, sample.intValue);
+			fileWriteInt(logfile, sample->intValue);
 		}
 	}
-	fileWriteString("\n");
+	fileWriteString(logfile,"\n");
+}
+
+static int openNextLogFile(FIL *f){
+
+	char filename[13];
+	int i = 0;
+	int rc;
+	for (; i < MAX_LOG_FILE_INDEX; i++){
+		strcpy(filename,"rc_");
+		char numBuf[12];
+		modp_itoa10(i,numBuf);
+		strcat(filename,numBuf);
+		strcat(filename,".log");
+		rc = f_open(f,filename, FA_WRITE | FA_CREATE_NEW);
+		if ( rc == 0 ) break;
+		f_close(f);
+	}
+	if (i >= MAX_LOG_FILE_INDEX) return -2;
+	return rc;
 }
 
 void fileWriterTask(void *params){
 
 	SampleRecord *sr = NULL;
 	while(1){
-		//wait for signal to start logging
-		if ( xSemaphoreTake(g_xWritingStart, portMAX_DELAY) != pdTRUE){
-			//perform idle tasks
+		//wait for the next sample record
+		xQueueReceive(g_sampleRecordQueue, &(sr), portMAX_DELAY);
+
+		ToggleLED(LED3);
+		if (NULL != sr && 0 == g_writingActive){
+			//start of a new logfile
+			int rc = InitFS();
+			if (0 != rc) continue;
+
+			//open next log file
+			rc = openNextLogFile(&g_logfile);
+			if (0 != rc) continue;
+
+			g_writingActive = 1;
+			writeHeaders(&g_logfile,sr);
 		}
-		else {
-			if (0 == g_shouldWrite){
-				//start of a new logfile
-				int rc = InitFS();
-				if (0 != rc) continue;
 
-				//open next log file
-				rc = OpenNextLogFile(&g_logfile);
-				if (0 != rc) continue;
-
-				g_shouldWrite = 1;
-				writeHeaders(&g_logfile,getWorkingLoggerConfig());
+		if (g_writingActive){
+			//a null sample record means end of sample run; like an EOF
+			if (NULL != sr){
+				writeSampleRecord(&g_logfile,sr);
 			}
-
-			if (g_shouldWrite){
-				//a null sample record means - end of sample run
-				//like an EOF
-				if (NULL != sr){
-					writeSampleRecord(&g_logfile,sr);
-				}
-				else{
-					f_close(&g_logfile);
-					g_shouldWrite = 0;
-				}
+			else{
+				f_close(&g_logfile);
+				g_writingActive = 0;
 			}
 		}
 	}
 }
 
+void createFileWriterTask(){
 
-
-
+	g_writingActive = 0;
+	g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( SampleRecord *));
+	if (NULL == g_sampleRecordQueue){
+		//TODO log error
+		return;
+	}
+	xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter", FILE_WRITER_STACK_SIZE, NULL, FILE_WRITER_TASK_PRIORITY, NULL );
+}

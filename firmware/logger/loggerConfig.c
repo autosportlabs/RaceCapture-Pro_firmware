@@ -4,11 +4,17 @@
 #include "memory.h"
 #include "AT91SAM7S256.h"
 #include "board.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "semphr.h"
+#include "FreeRTOSConfig.h"
+
+#define HIGHER_SAMPLE(X,Y) 					((X != SAMPLE_DISABLED && X < Y))
 
 LoggerConfig g_workingLoggerConfig;
-
-
 LoggerConfig g_savedLoggerConfig __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".text\n\t#"))) = DEFAULT_LOGGER_CONFIG;
+
 
 void updateActiveLoggerConfig(){
 	memcpy(&g_workingLoggerConfig,&g_savedLoggerConfig,sizeof(LoggerConfig));
@@ -261,3 +267,50 @@ void calibrateAccelZero(){
 		c->zeroValue = getLastAccelRead(c->accelChannel);  //we map the logical channel to the physical
 	}
 }
+
+int getHighestSampleRate(LoggerConfig *config){
+
+	//start with the slowest sample rate
+	int s = SAMPLE_1Hz;
+	//find the fastest sample rate
+	for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
+		int sr = config->ADCConfigs[i].cfg.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
+	}
+	for (int i = 0; i < CONFIG_PWM_CHANNELS; i++){
+		int sr = config->PWMConfigs[i].cfg.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
+	}
+	for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
+		int sr = config->GPIOConfigs[i].cfg.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
+	}
+	for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++){
+		int sr = config->TimerConfigs[i].cfg.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
+	}
+	if (config->AccelInstalled){
+		for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
+			int sr = config->AccelConfigs[i].cfg.sampleRate;
+			if HIGHER_SAMPLE(sr, s) s = sr;
+		}
+	}
+	if (config->GPSInstalled){
+		GPSConfig *gpsConfig = &(config->GPSConfig);
+		{
+			//TODO this represents "Position sample rate".
+			int sr = gpsConfig->latitudeCfg.sampleRate;
+			if HIGHER_SAMPLE(sr, s) s = sr;
+		}
+		{
+			int sr = gpsConfig->timeCfg.sampleRate;
+			if HIGHER_SAMPLE(sr, s) s = sr;
+		}
+		{
+			int sr = gpsConfig->velocityCfg.sampleRate;
+			if HIGHER_SAMPLE(sr, s) s = sr;
+		}
+	}
+	return (portTickType)s;
+}
+

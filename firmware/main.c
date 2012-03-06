@@ -22,13 +22,18 @@
 #include "gpioTasks.h"
 #include "usart.h"
 #include "sdcard.h"
-#include "loggerTask.h"
 #include "gps.h"
 #include "loggerConfig.h"
 #include "accelerometer.h"
 #include "raceTask.h"
 #include "loggerCommands.h"
 #include "sdcard.h"
+
+//logging related tasks
+#include "loggerTask.h"
+#include "loggerTaskEx.h"
+#include "fileWriter.h"
+#include "telemetryTask.h"
 
 #ifdef LUA_ENABLED
 #include "luaTask.h"
@@ -113,6 +118,7 @@ void fatalError(int type){
 			break;
 		default:
 			count = 3;
+			break;
 	}
 	
 	while(1){
@@ -141,8 +147,11 @@ int main( void )
 #ifdef LUA_ENABLED
 	startLuaTask();
 #endif
-	createLoggerTask();
+	createFileWriterTask();
+	//createLoggerTask();
+	createLoggerTaskEx();
 	createGPIOTasks();
+	createTelemetryTask();
 	startGPSTask();
 //	startRaceTask();
 
