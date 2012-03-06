@@ -11,10 +11,8 @@
 #include <limits.h>
 #include "loggerConfig.h"
 
-#define DISCRETE_GPS_CHANNELS 4
-#define NIL_SAMPLE_VALUE INT_MIN
-#define NIL_SAMPLE(X) X.intValue = NIL_SAMPLE_VALUE
-#define IS_NIL_SAMPLE(X) (X.intValue == NIL_SAMPLE_VALUE)
+#define DISCRETE_GPS_CHANNELS 6
+#define NIL_SAMPLE INT_MIN
 #define SAMPLE_RECORD_CHANNELS (DISCRETE_GPS_CHANNELS + CONFIG_ADC_CHANNELS + CONFIG_PWM_CHANNELS + CONFIG_GPIO_CHANNELS + CONFIG_TIMER_CHANNELS + CONFIG_ACCEL_CHANNELS)
 
 
@@ -43,10 +41,22 @@ typedef struct _SampleRecord
 		ChannelSample GPS_LongitudeSample;
 		ChannelSample GPS_VelocitySample;
 		ChannelSample GPS_TimeSample;
+		ChannelSample GPS_QualitySample;
+		ChannelSample GPS_SatellitesSample;
 		};
 	};
 } SampleRecord;
 
-SampleRecord * createNewSampleRecord();
+void clearSampleRecordBuffer(SampleRecord **srBuff, int size);
+
+void clearSampleRecord(SampleRecord* sr);
+
+SampleRecord ** createSampleRecordBuffer(LoggerConfig *loggerConfig, int size);
+
+void initSampleRecord(LoggerConfig *loggerConfig,SampleRecord *sr);
+
+void initSampleRecordBuffer(LoggerConfig *loggerConfig, SampleRecord ** srBuff,int size);
+
+void freeSampleRecordBuffer(SampleRecord ** sampleRecordBuffer);
 
 #endif /* SAMPLERECORD_H_ */

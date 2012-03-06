@@ -18,6 +18,7 @@
 #define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 4 )
 #define LOGGER_STACK_SIZE  					200
 #define LOGGER_LINE_LENGTH					512
+#define MAX_LOG_FILE_INDEX 					99999
 
 int g_loggingShouldRun;
 
@@ -93,51 +94,6 @@ portTickType getHighestIdleSampleRate(LoggerConfig *config){
 	return (portTickType)s;
 }
 
-portTickType getHighestSampleRate(LoggerConfig *config){
-
-	//start with the slowest sample rate
-	int s = SAMPLE_1Hz;
-	//find the fastest sample rate
-	for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
-		int sr = config->ADCConfigs[i].cfg.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr; 	
-	}
-	for (int i = 0; i < CONFIG_PWM_CHANNELS; i++){
-		int sr = config->PWMConfigs[i].cfg.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;	
-	}
-	for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
-		int sr = config->GPIOConfigs[i].cfg.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;	
-	}
-	for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++){
-		int sr = config->TimerConfigs[i].cfg.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;	
-	}
-	if (config->AccelInstalled){
-		for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
-			int sr = config->AccelConfigs[i].cfg.sampleRate;
-			if HIGHER_SAMPLE(sr, s) s = sr;	
-		}
-	}
-	if (config->GPSInstalled){
-		GPSConfig *gpsConfig = &(config->GPSConfig);
-		{
-			//TODO this represents "Position sample rate".
-			int sr = gpsConfig->latitudeCfg.sampleRate;
-			if HIGHER_SAMPLE(sr, s) s = sr;
-		}
-		{
-			int sr = gpsConfig->timeCfg.sampleRate;
-			if HIGHER_SAMPLE(sr, s) s = sr;
-		}
-		{
-			int sr = gpsConfig->velocityCfg.sampleRate;
-			if HIGHER_SAMPLE(sr, s) s = sr;	
-		}
-	}
-	return (portTickType)s;
-}
 
 void createLoggerTask(){
 
@@ -147,7 +103,26 @@ void createLoggerTask(){
 
 	vSemaphoreCreateBinary( g_xLoggerStart );
 	xSemaphoreTake( g_xLoggerStart, 1 );
-	xTaskCreate( loggerTask,( signed portCHAR * ) "loggerTask",	LOGGER_STACK_SIZE, NULL, LOGGER_TASK_PRIORITY, NULL );
+	xTaskCreate( loggerTask,( signed portCHAR * ) "logger",	LOGGER_STACK_SIZE, NULL, LOGGER_TASK_PRIORITY, NULL );
+}
+
+static int openNextLogFile(FIL *f){
+
+	char filename[13];
+	int i = 0;
+	int rc;
+	for (; i < MAX_LOG_FILE_INDEX; i++){
+		strcpy(filename,"rc_");
+		char numBuf[12];
+		modp_itoa10(i,numBuf);
+		strcat(filename,numBuf);
+		strcat(filename,".log");
+		rc = f_open(f,filename, FA_WRITE | FA_CREATE_NEW);
+		if ( rc == 0 ) break;
+		f_close(f);
+	}
+	if (i >= MAX_LOG_FILE_INDEX) return -2;
+	return rc;
 }
 
 
@@ -172,7 +147,7 @@ void loggerTask(void *params){
 						
 			int rc = InitFS();
 			if ( rc == 0 ){
-				if (OpenNextLogFile(&g_logfile) == 0){
+				if (openNextLogFile(&g_logfile) == 0){
 					g_loggingShouldRun = 1;
 				}
 			}
@@ -484,10 +459,14 @@ void writePWMChannels(portTickType currentTicks, LoggerConfig *loggerConfig){
 						break;
 					default:
 						lineAppendInt(-1);
+						break;
 				}
 			}
 			lineAppendString(",");
 		}	
 	}
 }
+
+
+
 

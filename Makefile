@@ -106,9 +106,12 @@ $(FAT_SD_SRC_DIR)/option/ccsbcs.c \
 $(SDCARD_SRC_DIR)/sdcard.c \
 $(ACCELEROMETER_SRC_DIR)/accelerometer.c \
 $(LOGGER_SRC_DIR)/sampleRecord.c \
+$(LOGGER_SRC_DIR)/fileWriter.c \
 $(LOGGER_SRC_DIR)/loggerHardware.c \
 $(LOGGER_SRC_DIR)/gpioTasks.c \
 $(LOGGER_SRC_DIR)/loggerTask.c \
+$(LOGGER_SRC_DIR)/loggerTaskEx.c \
+$(LOGGER_SRC_DIR)/telemetryTask.c \
 $(LOGGER_SRC_DIR)/gps.c \
 $(LOGGER_SRC_DIR)/cellModem.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \

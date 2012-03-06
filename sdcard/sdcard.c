@@ -6,7 +6,7 @@
 #include "task.h"
 #include "loggerHardware.h"
 
-#define MAX_LOG_FILE_INDEX 99999
+
 static FATFS Fatfs[1];
 
 int InitFS(){
@@ -18,25 +18,6 @@ int InitFS(){
 
 int UnmountFS(){
 	return f_mount(0,NULL);
-}
-
-int OpenNextLogFile(FIL *f){
-
-	char filename[13];
-	int i = 0;
-	int rc;
-	for (; i < MAX_LOG_FILE_INDEX; i++){
-		strcpy(filename,"rc_");
-		char numBuf[12];
-		modp_itoa10(i,numBuf);
-		strcat(filename,numBuf);
-		strcat(filename,".log");
-		rc = f_open(f,filename, FA_WRITE | FA_CREATE_NEW);
-		if ( rc == 0 ) break;
-		f_close(f);
-	}
-	if (i >= MAX_LOG_FILE_INDEX) return -2;
-	return rc;
 }
 
 static FIL fatFile;
