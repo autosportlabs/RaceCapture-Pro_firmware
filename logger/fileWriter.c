@@ -12,7 +12,7 @@
 #include "sampleRecord.h"
 #include "loggerHardware.h"
 #include "usb_comm.h"
-#include "string.h"
+#include <string.h>
 
 static int g_writingActive;
 static FIL g_logfile;
@@ -72,10 +72,8 @@ static void writeHeaders(FIL *f, SampleRecord *sr){
 	for (int i = 0; i < SAMPLE_RECORD_CHANNELS;i++){
 		ChannelConfig *cfg = (sr->Samples[i].channelConfig);
 		if (SAMPLE_DISABLED != cfg->sampleRate){
-			if (headerCount > 0) fileWriteString(f,",");
-			//SendUint((unsigned int)&(cfg));
+			if (headerCount++ > 0) fileWriteString(f,",");
 			fileWriteQuotedString(f,cfg->label);
-			headerCount++;
 		}
 	}
 	fileWriteString(f,"\r\n");
@@ -86,13 +84,14 @@ static void writeSampleRecord(FIL * logfile, SampleRecord * sampleRecord){
 
 	if (NULL == sampleRecord) return;
 
+	int fieldCount = 0;
 	for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
 		ChannelSample *sample = &(sampleRecord->Samples[i]);
 		ChannelConfig * channelConfig = sample->channelConfig;
 
 		if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
 
-		if (i > 0) fileWriteString(logfile,",");
+		if (fieldCount++ > 0) fileWriteString(logfile,",");
 
 		if (sample->intValue == NIL_SAMPLE) continue;
 

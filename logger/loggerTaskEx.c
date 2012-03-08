@@ -258,7 +258,7 @@ void loggerTaskEx(void *params){
 				//Write GPS
 				if (gpsInstalled) writeGPSChannels(sr,currentTicks, &(loggerConfig->GPSConfig));
 
-				queueLogfileRecord(sr);
+				//queueLogfileRecord(sr);
 				queueTelemetryRecord(sr);
 
 				bufferIndex++;
