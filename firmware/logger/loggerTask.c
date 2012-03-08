@@ -430,8 +430,10 @@ void writeTimerChannels(portTickType currentTicks, LoggerConfig *loggerConfig){
 						break;
 					case CONFIG_LOGGING_TIMER_PERIOD_USEC:
 						value = calculatePeriodUsec(timerValue,scaling);
+						break;
 					default:
 						value = -1;
+						break;
 				}
 				lineAppendInt(value);
 			}
