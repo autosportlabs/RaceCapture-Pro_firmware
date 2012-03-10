@@ -10,6 +10,8 @@
 #define TC_CLKS_MCK128          0x3
 #define TC_CLKS_MCK1024         0x4
 
+void InitLoggerHardware();
+
 void InitGPIO(LoggerConfig *loggerConfig);
 void InitSDCard(void);
 

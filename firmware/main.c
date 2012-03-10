@@ -24,7 +24,6 @@
 #include "sdcard.h"
 #include "gps.h"
 #include "loggerConfig.h"
-#include "accelerometer.h"
 #include "raceTask.h"
 #include "loggerCommands.h"
 #include "sdcard.h"
@@ -88,16 +87,8 @@ static int setupHardware( void )
 
 	if (!initSerial()) return 0;
 	if (!vInitUSBInterface()) return 0;	
-	  
-	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
-	InitGPIO(loggerConfig);
-	InitADC();
-	InitPWM(loggerConfig);
-	initTimerChannels(loggerConfig);
-	InitLEDs();
-	if (loggerConfig->AccelInstalled){
-		accel_init();
-	}
+
+	InitLoggerHardware();
 	return 1;
  }
 

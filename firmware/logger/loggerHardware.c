@@ -1,5 +1,6 @@
 #include "loggerHardware.h"
 #include "board.h"
+#include "accelerometer.h"
 
 /* ADC field definition for the Mode Register: Reminder
                        TRGEN    => Selection bewteen Software or hardware start of conversion
@@ -40,6 +41,17 @@ unsigned int g_timer0_overflow;
 unsigned int g_timer1_overflow;
 unsigned int g_timer2_overflow;
 unsigned int g_timer_counts[CONFIG_TIMER_CHANNELS];
+
+void InitLoggerHardware(){
+	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+	InitGPIO(loggerConfig);
+	InitADC();
+	InitPWM(loggerConfig);
+	initTimerChannels(loggerConfig);
+	InitLEDs();
+	if (loggerConfig->AccelInstalled) accel_init();
+
+}
 
 void InitGPIO(LoggerConfig *loggerConfig){
 

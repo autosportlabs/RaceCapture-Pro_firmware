@@ -239,7 +239,7 @@ void loggerTaskEx(void *params){
 
 				currentTicks += xFrequency;
 
-				SampleRecord *sr = &g_sampleRecordBuffer[0];//srBuffer[bufferIndex];
+				SampleRecord *sr = &g_sampleRecordBuffer[bufferIndex];//srBuffer[bufferIndex];
 
 				clearSampleRecord(sr);
 
