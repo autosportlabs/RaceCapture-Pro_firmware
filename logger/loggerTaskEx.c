@@ -213,7 +213,7 @@ void loggerTaskEx(void *params){
 		}
 		else {
 			//perform logging tasks
-			int gpsInstalled = (int)loggerConfig->GPSInstalled;
+			int gpsInstalled = (int)loggerConfig->GPSConfig.GPSInstalled;
 			int accelInstalled = (int)loggerConfig->AccelInstalled;
 
 			const portTickType xFrequency = getHighestSampleRate(loggerConfig);

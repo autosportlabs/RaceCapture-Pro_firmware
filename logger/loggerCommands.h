@@ -116,9 +116,6 @@ extern const struct cmd_t g_loggerCommands[];
 {"setAccelSampleRate", "Sets the sample rate for the specified accelerometer channel.","<channel> <sampleRate>", SetAccelSampleRate}, \
 {"getAccelSampleRate", "Gets the sample rate for the specified accelerometer channel.","<channel>", GetAccelSampleRate}, \
 	\
-{"setAccelIdleSampleRate", "Sets the sample rate for the specified accelerometer channel when not logging.","<channel> <sampleRate>", SetAccelIdleSampleRate}, \
-{"getAccelIdleSampleRate", "Gets the sample rate for the specified accelerometer channel when not logging.","<channel>", GetAccelIdleSampleRate}, \
-	\
 {"setAccelConfig", "Sets the configuration for the specified accelerometer channel.","<channel> <config>", SetAccelConfig}, \
 {"getAccelConfig", "Gets the configuration for the specified accelerometer channel.","<channel>", GetAccelConfig}, \
 	\
@@ -234,9 +231,6 @@ void GetAccelLabel(unsigned int argc, char **argv);
 
 void SetAccelSampleRate(unsigned int argc, char **argv);
 void GetAccelSampleRate(unsigned int argc, char **argv);
-
-void SetAccelIdleSampleRate(unsigned int argc, char **argv);
-void GetAccelIdleSampleRate(unsigned int argc, char **argv);
 
 void SetAccelConfig(unsigned int argc, char **argv);
 void GetAccelConfig(unsigned int argc, char **argv);

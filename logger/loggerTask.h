@@ -10,8 +10,6 @@
 void createLoggerTask();
 void loggerTask(void *params);
 
-portTickType getHighestIdleSampleRate(LoggerConfig *config);
-
 
 void lineAppendString(char *s);
 void lineAppendInt(int num);

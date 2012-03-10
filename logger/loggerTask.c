@@ -83,17 +83,6 @@ void fileWriteDouble(FIL *f, double num, int precision){
 
 #define HIGHER_SAMPLE(X,Y) ((X != SAMPLE_DISABLED && X < Y))
 
-portTickType getHighestIdleSampleRate(LoggerConfig *config){
-
-	//start with the slowest sample rate
-	int s = SAMPLE_1Hz;
-	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
-		int sr = config->AccelConfigs[i].idleSampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;
-	}
-	return (portTickType)s;
-}
-
 
 void createLoggerTask(){
 
@@ -142,7 +131,7 @@ void loggerTask(void *params){
 		}
 		else {
 			//perform logging tasks
-			int gpsInstalled = (int)loggerConfig->GPSInstalled;
+			int gpsInstalled = (int)loggerConfig->GPSConfig.GPSInstalled;
 			int accelInstalled = (int)loggerConfig->AccelInstalled;
 						
 			int rc = InitFS();
@@ -212,7 +201,7 @@ void writeHeaders(FIL *f, LoggerConfig *config){
 	writeTimerChannelHeaders(f, config);
 	writePWMChannelHeaders(f, config);
 	if (config->AccelInstalled) writeAccelChannelHeaders(f, config);
-	if (config->GPSInstalled) writeGPSChannelHeaders(f, &(config->GPSConfig));
+	if (config->GPSConfig.GPSInstalled) writeGPSChannelHeaders(f, &(config->GPSConfig.GPSInstalled));
 	fileWriteString(f,"\n");
 }
 

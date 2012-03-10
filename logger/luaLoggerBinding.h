@@ -70,9 +70,6 @@ int Lua_GetAccelLabel(lua_State *L);
 int Lua_SetAccelSampleRate(lua_State *L);
 int Lua_GetAccelSampleRate(lua_State *L);
 
-int Lua_SetAccelIdleSampleRate(lua_State *L);
-int Lua_GetAccelIdleSampleRate(lua_State *L);
-
 int Lua_SetAccelConfig(lua_State *L);
 int Lua_GetAccelConfig(lua_State *L);
 
