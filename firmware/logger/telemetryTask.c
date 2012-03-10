@@ -38,8 +38,8 @@ static xQueueHandle g_sampleRecordQueue = NULL;
 
 
 //wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all
-//#define TELEMETRY_QUEUE_WAIT_TIME					0
-#define TELEMETRY_QUEUE_WAIT_TIME					portMAX_DELAY
+#define TELEMETRY_QUEUE_WAIT_TIME					0
+//#define TELEMETRY_QUEUE_WAIT_TIME					portMAX_DELAY
 
 static int g_telemetryActive;
 
@@ -260,7 +260,7 @@ void telemetryTask(void *params){
 		//wait for the next sample record
 		xQueueReceive(g_sampleRecordQueue, &(sr), portMAX_DELAY);
 
-		ToggleLED(LED3);
+		//ToggleLED(LED3);
 		if (NULL != sr && 0 == g_telemetryActive){
 			g_telemetryActive = 1;
 			sampleTick = 0;
