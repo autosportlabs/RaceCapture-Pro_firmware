@@ -3,10 +3,13 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "loggerHardware.h"
+#include "loggerConfig.h"
 #include "usart.h"
 #include "modp_numtoa.h"
 #include "modp_atonum.h"
 #include "usb_comm.h"
+#include "geometry.h"
+
 #include <string.h>
 
 #define GPS_DATA_LINE_BUFFER_LEN 	200
@@ -40,6 +43,8 @@ float	g_velocity;
 int		g_gpsQuality;
 int		g_satellitesUsedForPosition;
 
+int		g_atStartFinish;
+
 float getTimeSince(float t1){
 	return getTimeDiff(t1,getSecondsSinceMidnight());
 }
@@ -49,6 +54,10 @@ float getTimeDiff(float from, float to){
 		to+=86400;
 	}
 	return to - from;
+}
+
+int getAtStartFinish(){
+	return g_atStartFinish;
 }
 
 float getUTCTime(){
@@ -62,7 +71,6 @@ float getSecondsSinceMidnight(){
 void getUTCTimeFormatted(char * buf){
 	
 }
-
 
 float getLatitude(){
 	return g_latitude;
@@ -88,6 +96,41 @@ char * getGPSDataLine(){
 	return g_GPSdataLine;
 }
 
+static int atStartFinish(GPSConfig *gpsConfig){
+
+	struct circ_area area;
+	struct point p;
+	p.x = gpsConfig->startFinishLongitude;
+	p.y = gpsConfig->startFinishLatitude;
+
+	struct point currentP;
+	currentP.x = getLongitude();
+	currentP.y = getLatitude();
+
+	create_circ(&area,&p,gpsConfig->startFinishRadius);
+	int within =  within_circ(&area,&currentP);
+/*	SendFloat(p.x,10);
+	SendString(" ");
+	SendFloat(p.y,10);
+	SendString(" within: ");
+	SendInt(within);
+	SendString(" ");
+	SendFloat(g_startFinishRadius,10);
+	SendCrlf();
+	*/
+	return within;
+}
+
+static int isStartFinishDetectionEnabled(GPSConfig *gpsConfig){
+	return gpsConfig->startFinishLatitude != 0 && gpsConfig->startFinishLongitude != 0;
+}
+
+static void updateStartFinish(GPSConfig *gpsConfig){
+	if (isStartFinishDetectionEnabled(gpsConfig)){
+		g_atStartFinish = atStartFinish(gpsConfig);
+	}
+}
+
 void startGPSTask(){
 	g_latitude = 0.0;
 	g_longitude = 0.0;
@@ -95,6 +138,7 @@ void startGPSTask(){
 	g_gpsQuality = GPS_QUALITY_NO_FIX;
 	g_satellitesUsedForPosition = 0;
 	g_velocity = 0.0;
+	g_atStartFinish = 0;
 	
 	initUsart1(USART_MODE_8N1, 38400);
 	xTaskCreate( GPSTask, ( signed portCHAR * ) "GPSTask", GPS_TASK_STACK_SIZE, NULL, 	GPS_TASK_PRIORITY, 	NULL );
@@ -103,6 +147,7 @@ void startGPSTask(){
 void GPSTask( void *pvParameters ){
 	
 	int flashCount = 0;
+	GPSConfig *gpsConfig = &(getWorkingLoggerConfig()->GPSConfig);
 	for( ;; )
 	{
 		int len = usart1_readLine(g_GPSdataLine, GPS_DATA_LINE_BUFFER_LEN);
@@ -118,6 +163,7 @@ void GPSTask( void *pvParameters ){
 						EnableLED(LED1);
 						flashCount = 0;		
 					}
+					updateStartFinish(gpsConfig);
 				} else if (strstr(data,"VTG,")){ //Course Over Ground and Ground Speed
 					parseVTG(data + 4);
 				} else if (strstr(data,"GSA,")){ //GPS Fix data

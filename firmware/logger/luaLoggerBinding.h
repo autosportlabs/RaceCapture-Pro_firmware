@@ -37,6 +37,7 @@ int Lua_GetGPSVelocity(lua_State *L);
 int Lua_GetGPSQuality(lua_State *L);
 int Lua_GetGPSTime(lua_State *L);
 int Lua_GetGPSSecondsSinceMidnight(lua_State *L);
+int Lua_GetGPSAtStartFinish(lua_State *L);
 int Lua_GetTimeDiff(lua_State *L);
 int Lua_GetTimeSince(lua_State *L);
 
@@ -111,6 +112,11 @@ int Lua_GetGPIOConfig(lua_State *L);
 
 int Lua_SetGPSInstalled(lua_State *L);
 int Lua_GetGPSInstalled(lua_State *L);
+
+int Lua_SetGPSStartFinish(lua_State *L);
+int Lua_GetGPSStartFinish(lua_State *L);
+
+int Lua_GetAtStartFinish(lua_State *L);
 
 int Lua_SetGPSQualityLabel(lua_State *L);
 int Lua_GetGPSQualityLabel(lua_State *L);

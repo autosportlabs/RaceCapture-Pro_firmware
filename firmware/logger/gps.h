@@ -5,6 +5,7 @@ void startGPSTask();
 
 void GPSTask( void *pvParameters );
 
+int getAtStartFinish();
 void getUTCTimeFormatted(char * buf);
 float getUTCTime();
 float getSecondsSinceMidnight();
