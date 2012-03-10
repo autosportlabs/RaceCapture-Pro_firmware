@@ -363,9 +363,6 @@ static inline void xmit_datablock_dma (
 static volatile
 DSTATUS Stat = STA_NOINIT;	/* Disk status */
 
-static volatile
-BYTE Timer1;	/* 100Hz decrement timer */
-
 static
 BYTE CardType;			/* b0:MMC, b1:SDv1, b2:SDv2, b3:Block addressing */
 
@@ -432,7 +429,8 @@ static void init_spi( void )
 	//       Take closer look on timing diagrams in datasheets.
 	// not working pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8 | AT91C_SPI_NCPHA;
 	// not working pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_BITS_8 | AT91C_SPI_NCPHA;
-	pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8;
+	//pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8;
+	pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8 | AT91C_SPI_CSAAT;
 	// not working pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_BITS_8;
 
 	// slow during init
@@ -521,13 +519,12 @@ BYTE wait_ready (void)
 {
 	BYTE res;
 
-	portTickType start = xTaskGetTickCount();
+	USHORT timeout = 0xffff;
 
 	rcvr_spi();
 	do
 		res = rcvr_spi();
-	while ((res != 0xFF) && !isTimeoutMs(start,500));
-
+	while ((res != 0xFF) && timeout--);
 	return res;
 }
 
@@ -587,11 +584,11 @@ BOOL rcvr_datablock (
 	BYTE token;
 
 
+	USHORT timeout = 0xFFFF;
 
-	portTickType timer1Start = xTaskGetTickCount();
 	do {							/* Wait for data packet in timeout of 100ms */
 		token = rcvr_spi();
-	} while ((token == 0xFF) && ! isTimeoutMs(timer1Start,100));
+	} while (token == 0xFF && timeout--);
 	if(token != 0xFE) return FALSE;	/* If not valid data token, return with error */
 
 #if USE_DMA
@@ -739,7 +736,6 @@ DSTATUS disk_initialize (
 	ty = 0;
 	if (send_cmd(CMD0, 0) == 1) {			/* Enter Idle state */
 		portTickType timer1Start = xTaskGetTickCount();
-		Timer1 = 100;						/* Initialization timeout of 1000 msec */
 		if (send_cmd(CMD8, 0x1AA) == 1) {	/* SDHC */
 			for (n = 0; n < 4; n++) ocr[n] = rcvr_spi();		/* Get trailing return value of R7 resp */
 			if (ocr[2] == 0x01 && ocr[3] == 0xAA) {				/* The card can work at vdd range of 2.7-3.6V */
