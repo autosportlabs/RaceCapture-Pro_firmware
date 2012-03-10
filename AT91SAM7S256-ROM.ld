@@ -115,8 +115,6 @@ SECTIONS
   __bss_end__ = . ;
   _end = .;
   PROVIDE (end = .);
-  /* calculate byte size for heap_2.c memory manager */
-  _CONFIG_HEAP_SIZE = (ORIGIN(STACK) - __bss_end__);
   
     . = ALIGN(4);
    .int_data :  
@@ -128,6 +126,8 @@ SECTIONS
 	__heap_end__ = (ORIGIN(STACK) - 0x400);
    
 
+  /* calculate byte size for heap_2.c memory manager */
+  _CONFIG_HEAP_SIZE = (__heap_end__ - __bss_end__);
 
 
   /* Stabs debugging sections.  */
