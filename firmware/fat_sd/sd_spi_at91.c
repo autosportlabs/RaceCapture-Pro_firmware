@@ -364,7 +364,7 @@ static volatile
 DSTATUS Stat = STA_NOINIT;	/* Disk status */
 
 static volatile
-BYTE Timer1, Timer2;	/* 100Hz decrement timer */
+BYTE Timer1;	/* 100Hz decrement timer */
 
 static
 BYTE CardType;			/* b0:MMC, b1:SDv1, b2:SDv2, b3:Block addressing */
@@ -905,6 +905,7 @@ DRESULT disk_ioctl (
 			break;
 		default :
 			res = RES_PARERR;
+			break;
 		}
 	}
 	else {
@@ -991,6 +992,7 @@ DRESULT disk_ioctl (
 
 		default:
 			res = RES_PARERR;
+			break;
 		}
 
 		release_spi();
