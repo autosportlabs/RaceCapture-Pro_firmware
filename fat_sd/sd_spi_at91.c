@@ -46,7 +46,7 @@
 /*-----------------------------------------------------------------------*/
 
 #define USE_BOARD_H       1
-#define USE_DMA           1
+#define USE_DMA           0
 #define USE_DMA_DUMMY_RAM 0
 #define USE_SOCKSWITCHES  1
 #define USE_POWERCONTROL  0
@@ -145,28 +145,43 @@ BYTE dma_dummy[DMA_DUMMY_SIZE] = {
 
 ---------------------------------------------------------------------------*/
 
-#define PPIO_BASE_SPI         AT91C_BASE_PIOA
-#define PSPI_BASE             AT91C_BASE_SPI
-#define SPI_SCBR_MIN          2 /* 1 failed with my cards */
-// Chip-Select-Register Number (Array Index of SPI_CSR[])
-// here: NPCS0
-#define SPI_CSR_NUM           0
 
-#define PMC_ID_CS             AT91C_ID_PIOA
-#define PPIO_BASE_CS          AT91C_BASE_PIOA
-#define CARD_SELECT_PIN       AT91C_PA11_NPCS0
+/* here: use NCPS0 @ PA11: */
+#define NCPS_PDR_BIT     AT91C_PA11_NPCS0
+#define NCPS_ASR_BIT     AT91C_PA11_NPCS0
+#define NPCS_BSR_BIT     0
+#define SPI_CSR_NUM      0
 
-// select card ( MMC CS = L )
-static inline void SELECT( void )
-{
-	PPIO_BASE_CS->PIO_CODR = CARD_SELECT_PIN;
-}
+/* PCS_0 for NPCS0, PCS_1 for NPCS1 ... */
+#define PCS_0 ((0<<0)|(1<<1)|(1<<2)|(1<<3))
+#define PCS_1 ((1<<0)|(0<<1)|(1<<2)|(1<<3))
+#define PCS_2 ((1<<0)|(1<<1)|(0<<2)|(1<<3))
+#define PCS_3 ((1<<0)|(1<<1)|(1<<2)|(0<<3))
+/* TODO: ## */
+#if (SPI_CSR_NUM == 0)
+#define SPI_MR_PCS       PCS_0
+#elif (SPI_CSR_NUM == 1)
+#define SPI_MR_PCS       PCS_1
+#elif (SPI_CSR_NUM == 2)
+#define SPI_MR_PCS       PCS_2
+#elif (SPI_CSR_NUM == 3)
+#define SPI_MR_PCS       PCS_3
+#else
+#error "SPI_CSR_NUM invalid"
+// not realy - when using an external address decoder...
+// but this code takes over the complete SPI-interace anyway
+#endif
 
-// unselect card MMC CS = H
-static inline void DESELECT( void )
-{
-	PPIO_BASE_CS->PIO_SODR = CARD_SELECT_PIN;
-}
+/* in variable periph. select PSDEC=1 is used
+   so the already defined values for SPC_MR_PCS can be
+   reused */
+#define SPI_TDR_PCS      SPI_MR_PCS
+
+/* SPI prescaler lower limit (the smaller the faster) */
+#define SPI_SCBR_MIN     2
+
+
+
 
 #define SOCKWP		0x20			/* Write protect bit-mask (Bit5 set = */
 #define SOCKINS		0x10			/* Card detect bit-mask   */
@@ -195,7 +210,7 @@ static inline BYTE get_SOCKINS(void)
 static void init_SOCKWP_SOCKINS( void )
 {
 	/* set Pin as Input, no internal pulls, glitch detection */
-	AT91C_BASE_PMC->PMC_PCER = ( 1 << PMC_ID_CS ); // enable needed PIO in PMC
+	AT91C_BASE_PMC->PMC_PCER = ( 1 << AT91C_ID_PIOA ); // enable needed PIO in PMC
 	PIOA->PIO_PPUER = SD_SOCKET_WP_PIN; // enable pull-up
 	PIOA->PIO_IFER  = SD_SOCKET_WP_PIN; // enable filter
 	PIOA->PIO_ODR   = SD_SOCKET_WP_PIN; // disable output
@@ -222,27 +237,24 @@ static void init_SOCKWP_SOCKINS( void )
 }
 #endif /* USE_SOCKSWITCHES */
 
-static void AT91_spiSetSpeed(BYTE speed)
-{
-	DWORD reg;
-
-	if ( speed < SPI_SCBR_MIN ) speed = SPI_SCBR_MIN;
-	if ( speed > 1 ) speed &= 0xFE;
-
-	reg = PSPI_BASE->SPI_CSR[SPI_CSR_NUM];
-	reg = ( reg & ~(AT91C_SPI_SCBR) ) | ( (DWORD)speed << 8 );
-	PSPI_BASE->SPI_CSR[SPI_CSR_NUM] = reg;
-}
 
 /* general AT91 SPI send/receive */
 static inline BYTE AT91_spi_write_read( BYTE outgoing )
 {
+
 	BYTE incoming;
 
-	while( !( PSPI_BASE->SPI_SR & AT91C_SPI_TDRE ) ); // transfer complete wait
-	PSPI_BASE->SPI_TDR = (WORD)( outgoing );
-	while( !( PSPI_BASE->SPI_SR & AT91C_SPI_RDRF ) ); // wait for char
-	incoming = (BYTE)( PSPI_BASE->SPI_RDR );
+	AT91PS_SPI pSPI      = AT91C_BASE_SPI;
+
+	while( !( pSPI->SPI_SR & AT91C_SPI_TDRE ) ); // transfer compl. wait
+#ifdef FIXED_PERIPH
+	pSPI->SPI_TDR = (USHORT)( outgoing );
+#else
+	pSPI->SPI_TDR = ( (USHORT)(outgoing) | ((ULONG)(SPI_TDR_PCS)<<16) );
+#endif
+
+	while( !( pSPI->SPI_SR & AT91C_SPI_RDRF ) ); // wait for char
+	incoming = (BYTE)( pSPI->SPI_RDR );
 
 	return incoming;
 }
@@ -256,19 +268,19 @@ static inline void rcvr_block_dma (
 {
 	volatile DWORD dummy;
 
-	PSPI_BASE->SPI_RPR = (DWORD)buff; // destination address
-	PSPI_BASE->SPI_RCR = btr; // number of frames (here: frame=byte)
+	AT91C_BASE_SPI->SPI_RPR = (DWORD)buff; // destination address
+	AT91C_BASE_SPI->SPI_RCR = btr; // number of frames (here: frame=byte)
 	// SPI PDC TX buffer (dummy bytes):
-	PSPI_BASE->SPI_TPR = (DWORD)dma_dummy; // source address
-	PSPI_BASE->SPI_TCR = btr; // number of frames (here: frame=byte)
+	AT91C_BASE_SPI->SPI_TPR = (DWORD)dma_dummy; // source address
+	AT91C_BASE_SPI->SPI_TCR = btr; // number of frames (here: frame=byte)
 	// enable PDC TX and RX
-	PSPI_BASE->SPI_PTCR = AT91C_PDC_TXTEN | AT91C_PDC_RXTEN;
-	while( !( (PSPI_BASE->SPI_SR) & AT91C_SPI_RXBUFF ) ) {
+	AT91C_BASE_SPI->SPI_PTCR = AT91C_PDC_TXTEN | AT91C_PDC_RXTEN;
+	while( !( (AT91C_BASE_SPI->SPI_SR) & AT91C_SPI_RXBUFF ) ) {
 		// wait for RX Buffer Full (counters 0)
 	}
-	dummy = PSPI_BASE->SPI_SR;   // read status to clear flags
+	dummy = AT91C_BASE_SPI->SPI_SR;   // read status to clear flags
 	// disable PDC TX and RX
-	PSPI_BASE->SPI_PTCR = AT91C_PDC_TXTDIS | AT91C_PDC_RXTDIS;
+	AT91C_BASE_SPI->SPI_PTCR = AT91C_PDC_TXTDIS | AT91C_PDC_RXTDIS;
 }
 
 
@@ -288,19 +300,19 @@ static inline void xmit_datablock_dma (
 	volatile DWORD dummy;
 
 	// Dummy Receive-Buffering
-	PSPI_BASE->SPI_RPR  = (DWORD)xmit_rec_dummy;
-	PSPI_BASE->SPI_RCR  = 512;
+	AT91C_BASE_SPI->SPI_RPR  = (DWORD)xmit_rec_dummy;
+	AT91C_BASE_SPI->SPI_RCR  = 512;
 	// SPI PDC TX buffer
-	PSPI_BASE->SPI_TPR = (DWORD)buff;  // source address
-	PSPI_BASE->SPI_TCR = 512;          // number of frames
+	AT91C_BASE_SPI->SPI_TPR = (DWORD)buff;  // source address
+	AT91C_BASE_SPI->SPI_TCR = 512;          // number of frames
 	// Transmitter transfer enable
-	PSPI_BASE->SPI_PTCR = AT91C_PDC_TXTEN | AT91C_PDC_RXTEN;
-	while( !( (PSPI_BASE->SPI_SR) & AT91C_SPI_RXBUFF ) ) {
+	AT91C_BASE_SPI->SPI_PTCR = AT91C_PDC_TXTEN | AT91C_PDC_RXTEN;
+	while( !( (AT91C_BASE_SPI->SPI_SR) & AT91C_SPI_RXBUFF ) ) {
 			// wait for RX Buffer Full (counters 0)
 	}
-	dummy = PSPI_BASE->SPI_SR;   // read status to clear flags
+	dummy = AT91C_BASE_SPI->SPI_SR;   // read status to clear flags
 	// Transmitter transfer disable
-	PSPI_BASE->SPI_PTCR = AT91C_PDC_TXTDIS | AT91C_PDC_RXTDIS;
+	AT91C_BASE_SPI->SPI_PTCR = AT91C_PDC_TXTDIS | AT91C_PDC_RXTDIS;
 }
 
 #elif (XMIT_TEST==2)
@@ -314,26 +326,26 @@ static inline void xmit_datablock_dma (
 	volatile DWORD dummy;
 
 	// SPI PDC TX buffer
-	PSPI_BASE->SPI_RPR   = (DWORD)&dummy;
-	PSPI_BASE->SPI_RPR   = 0;
-	PSPI_BASE->SPI_RCR   = 0;
-	PSPI_BASE->SPI_RNCR  = 0;
-	PSPI_BASE->SPI_TPR   = (DWORD)buff;  // source address
-	PSPI_BASE->SPI_TCR   = 512;          // number of frames
+	AT91C_BASE_SPI->SPI_RPR   = (DWORD)&dummy;
+	AT91C_BASE_SPI->SPI_RPR   = 0;
+	AT91C_BASE_SPI->SPI_RCR   = 0;
+	AT91C_BASE_SPI->SPI_RNCR  = 0;
+	AT91C_BASE_SPI->SPI_TPR   = (DWORD)buff;  // source address
+	AT91C_BASE_SPI->SPI_TCR   = 512;          // number of frames
 	// Transmitter transfer enable
-	PSPI_BASE->SPI_PTCR = AT91C_PDC_TXTEN;
-	while( PSPI_BASE->SPI_TCR ) {
+	AT91C_BASE_SPI->SPI_PTCR = AT91C_PDC_TXTEN;
+	while( AT91C_BASE_SPI->SPI_TCR ) {
 		// wait for transmit PDC counter 0
 	}
-	while( !( (PSPI_BASE->SPI_SR) & AT91C_SPI_TXEMPTY ) ) {
+	while( !( (AT91C_BASE_SPI->SPI_SR) & AT91C_SPI_TXEMPTY ) ) {
 		// wait for TDR and shifter empty
 	}
 	// "When the received data is read, the RDRF bit is cleared."
-	dummy = PSPI_BASE->SPI_RDR;
+	dummy = AT91C_BASE_SPI->SPI_RDR;
 	// "The user has to read the status register to clear the OVRES bit."
-	dummy = PSPI_BASE->SPI_SR;
+	dummy = AT91C_BASE_SPI->SPI_SR;
 	// Transmitter transfer disable
-	PSPI_BASE->SPI_PTCR = AT91C_PDC_TXTDIS;
+	AT91C_BASE_SPI->SPI_PTCR = AT91C_PDC_TXTDIS;
 }
 #else
 #error "unknown xmit selection"
@@ -357,80 +369,117 @@ BYTE Timer1, Timer2;	/* 100Hz decrement timer */
 static
 BYTE CardType;			/* b0:MMC, b1:SDv1, b2:SDv2, b3:Block addressing */
 
+static void if_spiSetSpeed(BYTE speed)
+{
+	ULONG reg;
+	AT91PS_SPI pSPI      = AT91C_BASE_SPI;
+
+	if ( speed < SPI_SCBR_MIN ) speed = SPI_SCBR_MIN;
+	if ( speed > 1 ) speed &= 0xFE;
+
+	reg = pSPI->SPI_CSR[SPI_CSR_NUM];
+	reg = ( reg & ~(AT91C_SPI_SCBR) ) | ( (ULONG)speed << 8 );
+	pSPI->SPI_CSR[SPI_CSR_NUM] = reg;
+}
 
 /*-----------------------------------------------------------------------*/
 /* Init SPI-Interface (Platform dependent)                               */
 /*-----------------------------------------------------------------------*/
 static void init_spi( void )
 {
-	// set SPI pins to the peripheral function
-	PPIO_BASE_SPI->PIO_ASR = AT91C_PA12_MISO | AT91C_PA13_MOSI | AT91C_PA14_SPCK;
-	// disable PIO from controlling the pins (so they are used for peripheral)
-	PPIO_BASE_SPI->PIO_PDR = AT91C_PA12_MISO | AT91C_PA13_MOSI | AT91C_PA14_SPCK;
+	BYTE i;
 
-	/* set chip-select as output high (unselect card) */
-	/* manual control for CS !                        */
-	AT91C_BASE_PMC->PMC_PCER = ( 1 << PMC_ID_CS ); // enable needed PIO in PMC
-	PPIO_BASE_CS->PIO_PER  = CARD_SELECT_PIN;  // enable GPIO of CS-pin (disable peripheral functions)
-	PPIO_BASE_CS->PIO_SODR = CARD_SELECT_PIN;  // set high
-	PPIO_BASE_CS->PIO_OER  = CARD_SELECT_PIN;  // output enable
+	AT91PS_SPI pSPI      = AT91C_BASE_SPI;
+	AT91PS_PIO pPIOA     = AT91C_BASE_PIOA;
+	AT91PS_PMC pPMC      = AT91C_BASE_PMC;
+	// not used: AT91PS_PDC pPDC_SPI  = AT91C_BASE_PDC_SPI;
+
+	// disable PIO from controlling MOSI, MISO, SCK (=hand over to SPI)
+	// keep CS untouched - used as GPIO pin during init
+	pPIOA->PIO_PDR = AT91C_PA12_MISO | AT91C_PA13_MOSI | AT91C_PA14_SPCK; //  | NCPS_PDR_BIT;
+	// set pin-functions in PIO Controller
+	pPIOA->PIO_ASR = AT91C_PA12_MISO | AT91C_PA13_MOSI | AT91C_PA14_SPCK; /// not here: | NCPS_ASR_BIT;
+	/// not here: pPIOA->PIO_BSR = NPCS_BSR_BIT;
+
+	// set chip-select as output high (unselect card)
+	pPIOA->PIO_PER  = NCPS_PDR_BIT; // enable GPIO of CS-pin
+	pPIOA->PIO_SODR = NCPS_PDR_BIT; // set high
+	pPIOA->PIO_OER  = NCPS_PDR_BIT; // output enable
 
 	// enable peripheral clock for SPI ( PID Bit 5 )
-	AT91C_BASE_PMC->PMC_PCER = ( 1 << AT91C_ID_SPI ); // n.b. IDs are just bit-numbers
-
-	// SPI disable
-	PSPI_BASE->SPI_CR = AT91C_SPI_SPIDIS;
-
-#if USE_DMA
-	// init the SPI's PDC-controller:
-	// disable PDC TX and RX
-	PSPI_BASE->SPI_PTCR = AT91C_PDC_TXTDIS | AT91C_PDC_RXTDIS;
-	// init counters and buffer-pointers to 0
-	// "next" TX
-	PSPI_BASE->SPI_TNPR = 0;
-	PSPI_BASE->SPI_TNCR = 0;
-	// "next" RX
-	PSPI_BASE->SPI_RNPR = 0;
-	PSPI_BASE->SPI_RNCR = 0;
-	// TX
-	PSPI_BASE->SPI_TPR = 0;
-	PSPI_BASE->SPI_TCR = 0;
-	// RX
-	PSPI_BASE->SPI_RPR = 0;
-	PSPI_BASE->SPI_RCR = 0;
-#endif /* USE_DMA */
+	pPMC->PMC_PCER = ( (ULONG) 1 << AT91C_ID_SPI ); // n.b. IDs are just bit-numbers
 
 	// SPI enable and reset
-	// "It seems that the state machine for revB version needs to have 2 SPI
-	// software reset to properly reset the state machine."
-	PSPI_BASE->SPI_CR = AT91C_SPI_SWRST;
-	PSPI_BASE->SPI_CR = AT91C_SPI_SWRST;
-	PSPI_BASE->SPI_CR = AT91C_SPI_SPIEN;
+	//disable reset for now
+	//pSPI->SPI_CR = AT91C_SPI_SPIEN | AT91C_SPI_SWRST;
 
-	// SPI mode: master, FDIV=0, fault detection disabled
-	PSPI_BASE->SPI_MR  = AT91C_SPI_MSTR | AT91C_SPI_MODFDIS;
+#ifdef FIXED_PERIPH
+	// SPI mode: master, fixed periph. sel., FDIV=0, fault detection disabled
+	pSPI->SPI_MR  = AT91C_SPI_MSTR | AT91C_SPI_PS_FIXED | AT91C_SPI_MODFDIS;
+	// set PCS for fixed select
+	// pSPI->SPI_MR &= 0xFFF0FFFF; // clear old PCS - redundant (AT91lib)
+	pSPI->SPI_MR |= ( (SPI_MR_PCS<<16) & AT91C_SPI_PCS ); // set PCS
+#else
+	// SPI mode: master, variable periph. sel., FDIV=0, fault detection disabled
+	// Chip-Select-Decoder Mode (write state of CS-Lines in TDR)
+	//pSPI->SPI_MR = AT91C_SPI_MSTR | AT91C_SPI_MODFDIS | AT91C_SPI_PCSDEC ;
+	pSPI->SPI_MR = AT91C_SPI_PS_VARIABLE | AT91C_SPI_MSTR | AT91C_SPI_MODFDIS;
+#endif
 
 	// set chip-select-register
 	// 8 bits per transfer, CPOL=1, ClockPhase=0, DLYBCT = 0
-	PSPI_BASE->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8;
+	// TODO: Why has CPOL to be active here and non-active on LPC2000?
+	//       Take closer look on timing diagrams in datasheets.
+	// not working pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8 | AT91C_SPI_NCPHA;
+	// not working pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_BITS_8 | AT91C_SPI_NCPHA;
+	pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8;
+	// not working pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_BITS_8;
 
 	// slow during init
-	AT91_spiSetSpeed(0xFE);
+	if_spiSetSpeed(0xFE);
 
-	// enable SPI
-	PSPI_BASE->SPI_CR = AT91C_SPI_SPIEN;
+	// enable
+	pSPI->SPI_CR = AT91C_SPI_SPIEN;
+
+#if 0
+	// a PDC-init has been in the Olimex-code - not needed since
+	// the PDC is not used by this version of the interface
+	// (Olimex did not use PDC either)
+	// enable PDC transmit and receive in "PERIPH_PTCR" (SPI_PTCR)
+	pPDC_SPI->PDC_PTCR = AT91C_PDC_TXTEN | AT91C_PDC_RXTEN;
+	pSPI->SPI_PTCR = AT91C_PDC_TXTEN | AT91C_PDC_RXTEN;
+#endif
+
+	/* Send 20 spi commands with card not selected */
+	for(i=0;i<21;i++) {
+		AT91_spi_write_read(0xFF);
+	}
+
+	/* enable automatic chip-select */
+	// reset PIO-registers of CS-pin to default
+	pPIOA->PIO_ODR  = NCPS_PDR_BIT; // input
+	pPIOA->PIO_CODR = NCPS_PDR_BIT; // clear
+	// disable PIO from controlling the CS pin (=hand over to SPI)
+	pPIOA->PIO_PDR = NCPS_PDR_BIT;
+	// set pin-functions in PIO Controller (function NCPS for CS-pin)
+	pPIOA->PIO_ASR = NCPS_ASR_BIT;
+	pPIOA->PIO_BSR = NPCS_BSR_BIT;
 }
+
 
 static void close_spi( void )
 {
-	// enable PIO-control for Pins
+/*
+
+ 	// enable PIO-control for Pins
 	PPIO_BASE_SPI->PIO_PER = AT91C_PA12_MISO | AT91C_PA13_MOSI | AT91C_PA14_SPCK;
 	// disable PDC TX and RX
-	PSPI_BASE->SPI_PTCR = AT91C_PDC_TXTDIS | AT91C_PDC_RXTDIS;
+	AT91C_BASE_SPI->SPI_PTCR = AT91C_PDC_TXTDIS | AT91C_PDC_RXTDIS;
 	// disable SPI
-	PSPI_BASE->SPI_CR = AT91C_SPI_SPIDIS;
+	AT91C_BASE_SPI->SPI_CR = AT91C_SPI_SPIDIS;
 	// disable peripheral clock
 	AT91C_BASE_PMC->PMC_PCDR = ( 1 << AT91C_ID_SPI );
+	*/
 }
 
 
@@ -491,7 +540,6 @@ BYTE wait_ready (void)
 static
 void release_spi (void)
 {
-	DESELECT();
 	rcvr_spi();
 }
 
@@ -513,7 +561,6 @@ void power_on (void)
 static
 void power_off (void)
 {
-	SELECT();				/* Wait for card ready */
 	wait_ready();
 	close_spi();
 	Stat |= STA_NOINIT;		/* Set STA_NOINIT */
@@ -625,8 +672,6 @@ BYTE send_cmd (
 	}
 
 	/* Select the card and wait for ready */
-	DESELECT();
-	SELECT();
 	if (wait_ready() != 0xFF) return 0xFF;
 
 	/* Send command packet */
@@ -720,7 +765,7 @@ DSTATUS disk_initialize (
 
 	if (ty) {			/* Initialization succeeded */
 		Stat &= ~STA_NOINIT;		/* Clear STA_NOINIT */
-		AT91_spiSetSpeed(SPI_SCBR_MIN);
+		if_spiSetSpeed(SPI_SCBR_MIN);
 	} else {			/* Initialization failed */
 		power_off();
 	}
@@ -867,7 +912,6 @@ DRESULT disk_ioctl (
 
 		switch (ctrl) {
 		case CTRL_SYNC :		/* Make sure that no pending write process */
-			SELECT();
 			if (wait_ready() == 0xFF)
 				res = RES_OK;
 			break;
