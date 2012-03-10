@@ -10,12 +10,13 @@
 #include "FreeRTOS.h"
 #include "sampleRecord.h"
 #include "stdint.h"
+#include "loggerConfig.h"
 
 portBASE_TYPE queueTelemetryRecord(SampleRecord * sr);
 
 #define MAX_FIELD_COUNT 12
 #define MAX_DATA_LENGTH 96
-#define FIELD_NAME_LENGTH 4
+#define FIELD_NAME_LENGTH DEFAULT_LABEL_LENGTH
 #define SAMPLE_TICK_LENGTH sizeof(uint32_t)
 #define ADDRESS_LENGTH sizeof(uint64_t)
 #define FIELD_VALUE_LENGTH sizeof(int32_t)

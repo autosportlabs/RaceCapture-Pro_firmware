@@ -223,7 +223,7 @@ static void writeSampleRecordBinary(SampleRecord * sampleRecord, uint32_t sample
 
 		if (sample->intValue == NIL_SAMPLE) continue;
 
-		strncpy(txFrame->field[fieldIndex].name, sample->channelConfig->label,4);
+		strncpy(txFrame->field[fieldIndex].name, sample->channelConfig->label,FIELD_NAME_LENGTH - 1);
 
 		int precision = sample->channelConfig->precision;
 		if (precision > 0){
@@ -234,6 +234,9 @@ static void writeSampleRecordBinary(SampleRecord * sampleRecord, uint32_t sample
 		}
 		fieldIndex++;
 	}
+	SendString("Field Index: " );
+	SendInt(fieldIndex);
+	SendCrlf();
 	finalizeTxFrame(txFrame,fieldIndex);
 	sendTxFrameBinary(txFrame,fieldIndex);
 }
