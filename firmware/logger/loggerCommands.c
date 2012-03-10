@@ -253,13 +253,13 @@ LoggerConfig * AssertSetBaseParam(unsigned int argc){
 void SetGpsInstalled(unsigned int argc, char **argv){
 	LoggerConfig * c = AssertSetBaseParam(argc);
 	if (NULL != c){
-		c->GPSInstalled = (modp_atoi(argv[1]) != 0);
+		c->GPSConfig.GPSInstalled = (modp_atoi(argv[1]) != 0);
 		SendCommandOK();
 	}
 }
 
 void getGpsInstalled(unsigned int argc, char **argv){
-	SendNameInt("gpsInstalled",getWorkingLoggerConfig()->GPSInstalled);
+	SendNameInt("gpsInstalled",getWorkingLoggerConfig()->GPSConfig.GPSInstalled);
 }
 
 void SetGpsQualityLabel(unsigned int argc, char **argv){
@@ -608,18 +608,6 @@ void GetAccelSampleRate(unsigned int argc, char **argv){
 	if (NULL != c) SendNameInt("accelSampleRate",decodeSampleRate(c->cfg.sampleRate));
 }
 
-void SetAccelIdleSampleRate(unsigned int argc, char **argv){
-	AccelConfig * c = AssertAccelSetParam(argc,argv);
-	if (NULL != c){
-		c->idleSampleRate = encodeSampleRate(modp_atoi(argv[2]));
-		SendCommandOK();
-	}
-}
-
-void GetAccelIdleSampleRate(unsigned int argc, char **argv){
-	AccelConfig * c = AssertAccelGetParam(argc,argv);
-	if (NULL != c) SendNameInt("accelIdleSampleRate",decodeSampleRate(c->idleSampleRate));
-}
 
 void SetAccelConfig(unsigned int argc, char **argv){
 	AccelConfig * c = AssertAccelSetParam(argc,argv);

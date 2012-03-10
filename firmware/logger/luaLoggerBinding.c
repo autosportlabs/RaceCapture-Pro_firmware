@@ -176,9 +176,6 @@ void registerLuaLoggerBindings(){
 	lua_register(L,"setAccelSampleRate",Lua_SetAccelSampleRate);
 	lua_register(L,"getAccelSampleRate",Lua_GetAccelSampleRate);
 	
-	lua_register(L,"setAccelIdleSampleRate",Lua_SetAccelIdleSampleRate);
-	lua_register(L,"getAccelIdleSampleRate",Lua_GetAccelIdleSampleRate);
-	
 	lua_register(L,"setAccelConfig",Lua_SetAccelConfig);
 	lua_register(L,"getAccelConfig",Lua_GetAccelConfig);
 	
@@ -253,24 +250,6 @@ int Lua_GetAccelSampleRate(lua_State *L){
 	return 0;	
 }
 
-int Lua_SetAccelIdleSampleRate(lua_State *L){
-	if (lua_gettop(L) >= 2){
-		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->idleSampleRate = encodeSampleRate(lua_tointeger(L,2));
-	}
-	return 0;
-}
-
-int Lua_GetAccelIdleSampleRate(lua_State *L){
-	if (lua_gettop(L) >=1 ){
-		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
-		if (NULL != c){	
-			lua_pushnumber(L, c->idleSampleRate);
-			return 1;
-		}
-	}
-	return 0;	
-}
 
 int Lua_SetAccelConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
@@ -521,13 +500,13 @@ int Lua_GetGPIOConfig(lua_State *L){
 
 int Lua_SetGPSInstalled(lua_State *L){
 	if (lua_gettop(L) >=1 ){
-		getWorkingLoggerConfig()->GPSInstalled = lua_toboolean(L,1);	
+		getWorkingLoggerConfig()->GPSConfig.GPSInstalled = lua_toboolean(L,1);
 	}
 	return 0;	
 }
 
 int Lua_GetGPSInstalled(lua_State *L){
-	lua_pushboolean(L,getWorkingLoggerConfig()->GPSInstalled);
+	lua_pushboolean(L,getWorkingLoggerConfig()->GPSConfig.GPSInstalled);
 	return 1;	
 }
 
