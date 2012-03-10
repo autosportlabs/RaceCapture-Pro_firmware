@@ -53,6 +53,9 @@ extern const struct cmd_t g_loggerCommands[];
 {"setGpsInstalled", "Sets the installed state of the GPS module.","<installed>", SetGpsInstalled}, \
 {"getGpsInstalled", "Gets the installed state of the GPS module.","", getGpsInstalled}, \
 	\
+{"setGpsStartFinish", "Sets the GPS-detected start/finish line.","<latitude> <longitude> [radius]", SetGpsStartFinish}, \
+{"getGpsStartFinish", "Gets the GPS-detected start/finish line.","", GetGpsStartFinish}, \
+	\
 {"setGpsQualityLabel", "Sets the GPS quality label.","<label>", SetGpsQualityLabel}, \
 {"getGpsQualityLabel", "Gets the GPS quality label.","", GetGpsQualityLabel}, \
 	\
@@ -168,6 +171,9 @@ void getPwmVoltageScaling(unsigned int argc, char **argv);
 
 void SetGpsInstalled(unsigned int argc, char **argv);
 void getGpsInstalled(unsigned int argc, char **argv);
+
+void SetGpsStartFinish(unsigned int argc, char **argv);
+void GetGpsStartFinish(unsigned int argc, char **argv);
 
 void SetGpsQualityLabel(unsigned int argc, char **argv);
 void GetGpsQualityLabel(unsigned int argc, char **argv);

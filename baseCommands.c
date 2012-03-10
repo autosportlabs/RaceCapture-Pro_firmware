@@ -16,8 +16,14 @@ void ShowTaskInfo(unsigned int argc, char **argv){
 	SendCrlf();
 	SendString("Status\tPri\tStack\tTask#\tName");
 	SendCrlf();
-	char taskList[200];
-	vTaskList(taskList);
-	SendString(taskList);
+	char *taskList = (char *)pvPortMalloc(1024);
+	if (NULL != taskList){
+		vTaskList(taskList);
+		SendString(taskList);
+		vPortFree(taskList);
+	}
+	else{
+		SendString("Out of Memory!");
+	}
 	SendCrlf();
 }

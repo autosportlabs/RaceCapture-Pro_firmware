@@ -63,6 +63,8 @@ void registerLuaLoggerBindings(){
 	lua_register(L,"getGpsQuality", Lua_GetGPSQuality);
 	lua_register(L,"getGpsTime", Lua_GetGPSTime);
 	lua_register(L,"getGpsSecondsSinceMidnight", Lua_GetGPSSecondsSinceMidnight);
+	lua_register(L,"getGpsAtStartFinish",Lua_GetGPSAtStartFinish);
+
 	lua_register(L,"getTimeDiff", Lua_GetTimeDiff);
 	lua_register(L,"getTimeSince", Lua_GetTimeSince);
 					
@@ -113,6 +115,9 @@ void registerLuaLoggerBindings(){
 	lua_register(L,"setGpsInstalled", Lua_SetGPSInstalled);
 	lua_register(L,"getGpsInstalled", Lua_GetGPSInstalled);
 	
+	lua_register(L,"setGpsStartFinish",Lua_SetGPSStartFinish);
+	lua_register(L,"getGpsStartFinish",Lua_GetGPSStartFinish);
+
 	lua_register(L,"setGpsQualityLabel", Lua_SetGPSQualityLabel);
 	lua_register(L,"getGpsQualityLabel", Lua_GetGPSQualityLabel);
 	
@@ -510,6 +515,23 @@ int Lua_GetGPSInstalled(lua_State *L){
 	return 1;	
 }
 
+int Lua_SetGPSStartFinish(lua_State *L){
+	if (lua_gettop(L) >= 2){
+		GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfig);
+		c->startFinishLatitude = lua_tonumber(L,1);
+		c->startFinishLongitude = lua_tonumber(L,2);
+		if (lua_gettop(L) >=3) c->startFinishRadius = lua_tonumber(L,3);
+	}
+	return 0;
+}
+
+int Lua_GetGPSStartFinish(lua_State *L){
+	GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfig);
+	lua_pushnumber(L,c->startFinishLatitude);
+	lua_pushnumber(L,c->startFinishLongitude);
+	lua_pushnumber(L,c->startFinishRadius);
+	return 3;
+}
 
 int Lua_SetGPSQualityLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
@@ -1036,10 +1058,14 @@ int Lua_GetGPSTime(lua_State *L){
 	return 1;
 }
 
-
 int Lua_GetGPSSecondsSinceMidnight(lua_State *L){
 	float s = getSecondsSinceMidnight();
 	lua_pushnumber(L,s);
+	return 1;
+}
+
+int Lua_GetGPSAtStartFinish(lua_State *L){
+	lua_pushinteger(L,getAtStartFinish());
 	return 1;
 }
 

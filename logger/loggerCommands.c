@@ -31,7 +31,18 @@ void FlashLoggerConfig(unsigned int argc, char **argv){
 	}
 }
 
-ADCConfig * AssertAdcSetParam(unsigned int argc, char **argv){
+static LoggerConfig * AssertSetParam(unsigned int argc, unsigned int requiredParams){
+	LoggerConfig *c = NULL;
+	if (argc >= requiredParams){
+		c = getWorkingLoggerConfig();
+	}
+	else{
+		SendCommandError(ERROR_CODE_MISSING_PARAMS);
+	}
+	return c;
+}
+
+static ADCConfig * AssertAdcSetParam(unsigned int argc, char **argv){
 	ADCConfig *c = NULL;
 	if (argc >= 3){
 		c = getADCConfigChannel(modp_atoi(argv[1]));
@@ -43,7 +54,7 @@ ADCConfig * AssertAdcSetParam(unsigned int argc, char **argv){
 	return c;
 }
 
-ADCConfig * AssertAdcGetParam(unsigned int argc, char **argv){
+static ADCConfig * AssertAdcGetParam(unsigned int argc, char **argv){
 	ADCConfig *c = NULL;
 	if (argc >= 2){
 		c = getADCConfigChannel(modp_atoi(argv[1]));
@@ -124,7 +135,7 @@ void GetPwmClockFreq(unsigned int argc, char **argv){
 	SendNameInt("frequency",getWorkingLoggerConfig()->PWMClockFrequency);
 }
 
-PWMConfig * AssertPwmSetParam(unsigned int argc, char **argv){
+static PWMConfig * AssertPwmSetParam(unsigned int argc, char **argv){
 	PWMConfig *c = NULL;
 	if (argc >= 3){
 		c = getPWMConfigChannel(modp_atoi(argv[1]));
@@ -136,7 +147,7 @@ PWMConfig * AssertPwmSetParam(unsigned int argc, char **argv){
 	return c;
 }
 
-PWMConfig * AssertPwmGetParam(unsigned int argc, char **argv){
+static PWMConfig * AssertPwmGetParam(unsigned int argc, char **argv){
 	PWMConfig *c = NULL;
 	if (argc >= 2){
 		c = getPWMConfigChannel(modp_atoi(argv[1]));
@@ -240,7 +251,7 @@ void getPwmVoltageScaling(unsigned int argc, char **argv){
 	SendNameFloat("voltageScaling",c->voltageScaling,2);
 }
 
-LoggerConfig * AssertSetBaseParam(unsigned int argc){
+static LoggerConfig * AssertSetBaseParam(unsigned int argc){
 	if (argc >= 2){
 		return getWorkingLoggerConfig();
 	}
@@ -260,6 +271,23 @@ void SetGpsInstalled(unsigned int argc, char **argv){
 
 void getGpsInstalled(unsigned int argc, char **argv){
 	SendNameInt("gpsInstalled",getWorkingLoggerConfig()->GPSConfig.GPSInstalled);
+}
+
+void SetGpsStartFinish(unsigned int argc, char **argv){
+	LoggerConfig *c = AssertSetParam(argc,4);
+	if (NULL != c){
+		GPSConfig *gpsConfig = &(c->GPSConfig);
+		gpsConfig->startFinishLatitude = modp_atof(argv[1]);
+		gpsConfig->startFinishLongitude = modp_atof(argv[2]);
+		if (argc > 3) gpsConfig->startFinishRadius = modp_atof(argv[3]);
+		SendCommandOK();
+	}
+}
+
+void GetGpsStartFinish(unsigned int argc, char **argv){
+	SendNameFloat("gpsStartFinishLatitude",getWorkingLoggerConfig()->GPSConfig.startFinishLatitude,DEFAULT_GPS_POSITION_LOGGING_PRECISION);
+	SendNameFloat("gpsStartFinishLongitude", getWorkingLoggerConfig()->GPSConfig.startFinishLongitude,DEFAULT_GPS_POSITION_LOGGING_PRECISION);
+	SendNameFloat("gpsStartFinishRadius",getWorkingLoggerConfig()->GPSConfig.startFinishRadius,DEFAULT_GPS_RADIUS_LOGGING_PRECISION);
 }
 
 void SetGpsQualityLabel(unsigned int argc, char **argv){
