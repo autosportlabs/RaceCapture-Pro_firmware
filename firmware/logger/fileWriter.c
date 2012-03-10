@@ -12,6 +12,7 @@
 #include "sampleRecord.h"
 #include "loggerHardware.h"
 #include "usb_comm.h"
+#include "taskUtil.h"
 #include <string.h>
 
 static int g_writingActive;
@@ -22,10 +23,11 @@ static xQueueHandle g_sampleRecordQueue = NULL;
 #define FILE_WRITER_STACK_SIZE  				200
 #define SAMPLE_RECORD_QUEUE_SIZE				10
 #define MAX_LOG_FILE_INDEX 						99999
+#define FLUSH_INTERVAL_SEC						10
 
 //wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all
-//#define SAMPLE_QUEUE_WAIT_TIME					0
-#define SAMPLE_QUEUE_WAIT_TIME					portMAX_DELAY
+#define SAMPLE_QUEUE_WAIT_TIME					0
+//#define SAMPLE_QUEUE_WAIT_TIME					portMAX_DELAY
 
 portBASE_TYPE queueLogfileRecord(SampleRecord * sr){
 	if (NULL != g_sampleRecordQueue){
@@ -38,7 +40,6 @@ portBASE_TYPE queueLogfileRecord(SampleRecord * sr){
 
 static void fileWriteString(FIL *f, char *s){
 	f_puts(s,f);
-	f_sync(f);
 }
 
 static void fileWriteQuotedString(FIL *f, char *s){
@@ -57,12 +58,6 @@ static void fileWriteInt(FIL *f, int num){
 static void fileWriteFloat(FIL *f, float num, int precision){
 	char buf[20];
 	modp_ftoa(num, buf, precision);
-	fileWriteString(f,buf);
-}
-
-static void fileWriteDouble(FIL *f, double num, int precision){
-	char buf[30];
-	modp_dtoa(num, buf, precision);
 	fileWriteString(f,buf);
 }
 
@@ -127,7 +122,10 @@ static int openNextLogFile(FIL *f){
 
 void fileWriterTask(void *params){
 
+
 	SampleRecord *sr = NULL;
+	unsigned int flushTimeoutInterval = 0;
+	portTickType flushTimeoutStart = 0;
 	while(1){
 		//wait for the next sample record
 		xQueueReceive(g_sampleRecordQueue, &(sr), portMAX_DELAY);
@@ -144,16 +142,23 @@ void fileWriterTask(void *params){
 
 			g_writingActive = 1;
 			writeHeaders(&g_logfile,sr);
+			flushTimeoutInterval = FLUSH_INTERVAL_SEC * 1000;
+			flushTimeoutStart = xTaskGetTickCount();
 		}
 
 		if (g_writingActive){
 			//a null sample record means end of sample run; like an EOF
 			if (NULL != sr){
 				writeSampleRecord(&g_logfile,sr);
+				if (isTimeoutMs(flushTimeoutStart, flushTimeoutInterval)){
+					f_sync(&g_logfile);
+					flushTimeoutStart = xTaskGetTickCount();
+				}
 			}
 			else{
 				f_close(&g_logfile);
 				g_writingActive = 0;
+				DisableLED(LED3);
 			}
 		}
 	}
