@@ -254,11 +254,11 @@ void loggerTaskEx(void *params){
 
 				//Optional hardware
 				//Write Accelerometer
-				//if (accelInstalled) writeAccelerometer(sr,currentTicks, loggerConfig);
+				if (accelInstalled) writeAccelerometer(sr,currentTicks, loggerConfig);
 				//Write GPS
 				if (gpsInstalled) writeGPSChannels(sr,currentTicks, &(loggerConfig->GPSConfig));
 
-				//queueLogfileRecord(sr);
+				queueLogfileRecord(sr);
 				queueTelemetryRecord(sr);
 
 				bufferIndex++;

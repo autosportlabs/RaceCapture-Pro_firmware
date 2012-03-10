@@ -234,9 +234,6 @@ static void writeSampleRecordBinary(SampleRecord * sampleRecord, uint32_t sample
 		}
 		fieldIndex++;
 	}
-	SendString("Field Index: " );
-	SendInt(fieldIndex);
-	SendCrlf();
 	finalizeTxFrame(txFrame,fieldIndex);
 	sendTxFrameBinary(txFrame,fieldIndex);
 }
