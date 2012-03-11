@@ -62,8 +62,10 @@ void registerLuaLoggerBindings(){
 	lua_register(L,"getGpsVelocity",Lua_GetGPSVelocity);
 	lua_register(L,"getGpsQuality", Lua_GetGPSQuality);
 	lua_register(L,"getGpsTime", Lua_GetGPSTime);
+	lua_register(L,"getLapCount", Lua_GetLapCount);
+	lua_register(L,"getLapTime", Lua_GetLapTime);
 	lua_register(L,"getGpsSecondsSinceMidnight", Lua_GetGPSSecondsSinceMidnight);
-	lua_register(L,"getGpsAtStartFinish",Lua_GetGPSAtStartFinish);
+	lua_register(L,"getAtStartFinish",Lua_GetGPSAtStartFinish);
 
 	lua_register(L,"getTimeDiff", Lua_GetTimeDiff);
 	lua_register(L,"getTimeSince", Lua_GetTimeSince);
@@ -144,6 +146,18 @@ void registerLuaLoggerBindings(){
 	
 	lua_register(L,"setGpsTimeSampleRate", Lua_SetGPSTimeSampleRate);
 	lua_register(L,"getGpsTimeSampleRate", Lua_GetGPSTimeSampleRate);
+
+	lua_register(L,"setLapCountSampleRate", Lua_SetLapCountSampleRate);
+	lua_register(L,"getLapCountSampleRate", Lua_GetLapCountSampleRate);
+
+	lua_register(L,"setLapTimeSampleRate", Lua_SetLapTimeSampleRate);
+	lua_register(L,"getLapTimeSampleRate", Lua_GetLapTimeSampleRate);
+
+	lua_register(L,"setLapCountLabel", Lua_SetLapCountLabel);
+	lua_register(L,"getLapCountLabel", Lua_GetLapCountLabel);
+
+	lua_register(L,"setLapTimeLabel", Lua_SetLapTimeLabel);
+	lua_register(L,"getLapTimeLabel", Lua_GetLapTimeLabel);
 	
 	lua_register(L,"setGpioLabel", Lua_SetGPIOLabel);
 	lua_register(L,"getGpioLabel", Lua_GetGPIOLabel);
@@ -194,6 +208,41 @@ void registerLuaLoggerBindings(){
 	
 	unlockLua();
 }
+
+////////////////////////////////////////////////////
+// common functions
+////////////////////////////////////////////////////
+static GPSConfig * getGPSConfig(){
+	return &(getWorkingLoggerConfig()->GPSConfig);
+}
+
+static int setLuaSampleRate(lua_State *L, int *sampleRate){
+	if (lua_gettop(L) >= 1 ){
+		*sampleRate = encodeSampleRate(lua_tointeger(L,1));
+	}
+	return 0;
+}
+
+static int getLuaSampleRate(lua_State *L, int sampleRate){
+	lua_pushinteger(L,sampleRate);
+	return 1;
+}
+
+static int setLuaChannelLabel(lua_State *L, char *label){
+	if (lua_gettop(L) >= 1){
+		setLabelGeneric(label,lua_tostring(L,1));
+	}
+	return 0;
+}
+
+static int getLuaChannelLabel(lua_State *L, char *label){
+	lua_pushstring(L,label);
+	return 0;
+}
+
+////////////////////////////////////////////////////
+
+
 
 int Lua_IsSDCardPresent(lua_State *L){
 	lua_pushinteger(L,isCardPresent());
@@ -643,6 +692,39 @@ int Lua_GetGPSTimeSampleRate(lua_State *L){
 	return 1;
 }
 
+int Lua_SetLapCountSampleRate(lua_State *L){
+	return setLuaSampleRate(L, &(getGPSConfig()->lapCountCfg.sampleRate));
+}
+
+int Lua_GetLapCountSampleRate(lua_State *L){
+	return getLuaSampleRate(L, getGPSConfig()->lapCountCfg.sampleRate);
+}
+
+int Lua_SetLapTimeSampleRate(lua_State *L){
+	return setLuaSampleRate(L, &(getGPSConfig()->lapTimeCfg.sampleRate));
+}
+
+int Lua_GetLapTimeSampleRate(lua_State *L){
+	return getLuaSampleRate(L, getGPSConfig()->lapTimeCfg.sampleRate);
+}
+
+int Lua_SetLapCountLabel(lua_State *L){
+	return setLuaChannelLabel(L,getGPSConfig()->lapCountCfg.label);
+}
+
+int Lua_GetLapCountLabel(lua_State *L){
+	return getLuaChannelLabel(L,getGPSConfig()->lapCountCfg.label);
+}
+
+int Lua_SetLapTimeLabel(lua_State *L){
+	return setLuaChannelLabel(L,getGPSConfig()->lapTimeCfg.label);
+}
+
+int Lua_GetLapTimeLabel(lua_State *L){
+	return getLuaChannelLabel(L,getGPSConfig()->lapTimeCfg.label);
+}
+
+
 int Lua_SetPWMClockFrequency(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		getWorkingLoggerConfig()->PWMClockFrequency = filterPWMClockFrequency(lua_tointeger(L,1));
@@ -1055,6 +1137,16 @@ int Lua_GetGPSQuality(lua_State *L){
 
 int Lua_GetGPSTime(lua_State *L){
 	lua_pushnumber(L,getUTCTime());
+	return 1;
+}
+
+int Lua_GetLapTime(lua_State *L){
+	lua_pushnumber(L,getLastLapTime());
+	return 1;
+}
+
+int Lua_GetLapCount(lua_State *L){
+	lua_pushinteger(L,getLapCount());
 	return 1;
 }
 

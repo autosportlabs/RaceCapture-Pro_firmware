@@ -30,20 +30,43 @@
 #define UTC_TIME_BUFFER_LEN 11
 #define UTC_VELOCITY_BUFFER_LEN 10
 
-char g_GPSdataLine[GPS_DATA_LINE_BUFFER_LEN];
+#define START_FINISH_TIME_THRESHOLD 30
 
-float	g_latitude;
-float 	g_longitude;
+static char g_GPSdataLine[GPS_DATA_LINE_BUFFER_LEN];
 
-float	g_UTCTime;
-float 	g_secondsSinceMidnight;
+static float	g_latitude;
+static float 	g_longitude;
 
-float	g_velocity;
+static float	g_UTCTime;
+static float 	g_secondsSinceMidnight;
 
-int		g_gpsQuality;
-int		g_satellitesUsedForPosition;
+static float	g_velocity;
 
-int		g_atStartFinish;
+static int		g_gpsQuality;
+
+static int		g_satellitesUsedForPosition;
+
+static int g_atStartFinish;
+
+static int g_prevAtStartFinish;
+
+static float g_lastStartFinishTimestamp;
+
+static float g_lastLapTime;
+
+static int g_lapCount;
+
+void setLapCount(int lapCount){
+	g_lapCount = lapCount;
+}
+
+int getLapCount(){
+	return g_lapCount;
+}
+
+float getLastLapTime(){
+	return g_lastLapTime;
+}
 
 float getTimeSince(float t1){
 	return getTimeDiff(t1,getSecondsSinceMidnight());
@@ -125,11 +148,39 @@ static int isStartFinishDetectionEnabled(GPSConfig *gpsConfig){
 	return gpsConfig->startFinishLatitude != 0 && gpsConfig->startFinishLongitude != 0;
 }
 
-static void updateStartFinish(GPSConfig *gpsConfig){
-	if (isStartFinishDetectionEnabled(gpsConfig)){
-		g_atStartFinish = atStartFinish(gpsConfig);
+
+static void updateStartFinish(void){
+	GPSConfig *gpsConfig = &(getWorkingLoggerConfig()->GPSConfig);
+	if (! isStartFinishDetectionEnabled(gpsConfig)) return;
+
+	g_atStartFinish = atStartFinish(gpsConfig);
+	if (g_atStartFinish){
+		if (g_prevAtStartFinish == 0){
+			if (g_lastStartFinishTimestamp == 0){
+				g_lastStartFinishTimestamp = getSecondsSinceMidnight();
+			}
+			else{
+				//guard against false triggering.
+				//We have to be out of the start/finish target for some amount of time
+				float currentTimestamp = getSecondsSinceMidnight();
+				float elapsed = getTimeDiff(g_lastStartFinishTimestamp,currentTimestamp);
+				if (elapsed > START_FINISH_TIME_THRESHOLD){
+					//NOW we can record an new lap
+					float lapTime = elapsed / 60.0;
+					g_lapCount++;
+					g_lastLapTime = lapTime;
+					g_lastStartFinishTimestamp = currentTimestamp;
+				}
+			}
+		}
+		g_prevAtStartFinish = 1;
+	}
+	else{
+		g_prevAtStartFinish = 0;
 	}
 }
+
+
 
 void startGPSTask(){
 	g_latitude = 0.0;
@@ -139,6 +190,10 @@ void startGPSTask(){
 	g_satellitesUsedForPosition = 0;
 	g_velocity = 0.0;
 	g_atStartFinish = 0;
+	g_lastLapTime = 0;
+	g_prevAtStartFinish = 0;
+	g_lastStartFinishTimestamp = 0;
+	g_lapCount = 0;
 	
 	initUsart1(USART_MODE_8N1, 38400);
 	xTaskCreate( GPSTask, ( signed portCHAR * ) "GPSTask", GPS_TASK_STACK_SIZE, NULL, 	GPS_TASK_PRIORITY, 	NULL );
@@ -147,7 +202,6 @@ void startGPSTask(){
 void GPSTask( void *pvParameters ){
 	
 	int flashCount = 0;
-	GPSConfig *gpsConfig = &(getWorkingLoggerConfig()->GPSConfig);
 	for( ;; )
 	{
 		int len = usart1_readLine(g_GPSdataLine, GPS_DATA_LINE_BUFFER_LEN);
@@ -163,7 +217,7 @@ void GPSTask( void *pvParameters ){
 						EnableLED(LED1);
 						flashCount = 0;		
 					}
-					updateStartFinish(gpsConfig);
+					updateStartFinish();
 				} else if (strstr(data,"VTG,")){ //Course Over Ground and Ground Speed
 					parseVTG(data + 4);
 				} else if (strstr(data,"GSA,")){ //GPS Fix data

@@ -310,6 +310,14 @@ int getHighestSampleRate(LoggerConfig *config){
 			int sr = gpsConfig->velocityCfg.sampleRate;
 			if HIGHER_SAMPLE(sr, s) s = sr;
 		}
+		{
+			int sr = gpsConfig->lapCountCfg.sampleRate;
+			if HIGHER_SAMPLE(sr, s) s = sr;
+		}
+		{
+			int sr = gpsConfig->lapTimeCfg.sampleRate;
+			if HIGHER_SAMPLE(sr, s) s = sr;
+		}
 	}
 	return (portTickType)s;
 }

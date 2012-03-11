@@ -115,6 +115,18 @@ static void writeGPSChannels(SampleRecord *sampleRecord, portTickType currentTic
 			if ((currentTicks % sr) == 0) sampleRecord->GPS_VelocitySample.floatValue = getGPSVelocity();
 		}
 	}
+	{
+		portTickType sr = config->lapCountCfg.sampleRate;
+		if (sr != SAMPLE_DISABLED){
+			if ((currentTicks % sr) == 0) sampleRecord->GPS_LapCountSample.intValue = getLapCount();
+		}
+	}
+	{
+		portTickType sr = config->lapTimeCfg.sampleRate;
+		if (sr != SAMPLE_DISABLED){
+			if ((currentTicks % sr) == 0) sampleRecord->GPS_LapTimeSample.floatValue = getLastLapTime();
+		}
+	}
 }
 
 static void writeGPIOs(SampleRecord *sampleRecord, portTickType currentTicks, LoggerConfig *loggerConfig){
