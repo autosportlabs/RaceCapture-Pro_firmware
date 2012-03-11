@@ -83,6 +83,18 @@ extern const struct cmd_t g_loggerCommands[];
 {"setGpsTimeSampleRate", "Sets the GPS time sample rate.","<sampleRate>", SetGpsTimeSampleRate}, \
 {"getGpsTimeSampleRate", "Gets the GPS time sample rate.","", GetGpsTimeSampleRate}, \
 	\
+{"setLapCountSampleRate", "Sets the Lap Count sample rate.","<sampleRate>", SetLapCountSampleRate}, \
+{"getLapCountSampleRate", "Gets the Lap Count sample rate.","", GetLapCountSampleRate}, \
+	\
+{"setLapTimeSampleRate", "Sets the Lap Time sample rate.","<sampleRate>", SetLapTimeSampleRate}, \
+{"getLapTimeSampleRate", "Gets the Lap Time sample rate.","", GetLapTimeSampleRate}, \
+	\
+{"setLapCountLabel", "Sets the Lap Count label.","<label>", SetLapCountLabel}, \
+{"getLapCountLabel", "Gets the Lap Count label.","", GetLapCountLabel}, \
+	\
+{"setLapTimeLabel", "Sets the Lap Time label.","<label>", SetLapTimeLabel}, \
+{"getLapTimeLabel", "Gets the Lap Time label.","", GetLapTimeLabel}, \
+	\
 {"setGpioLabel", "Sets the label for the specified GPIO port.","<port> <label>", SetGpioLabel}, \
 {"getGpioLabel", "Gets the label for the specified GPIO port.","<port>", GetGpioLabel}, \
 	\
@@ -201,6 +213,18 @@ void GetGpsVelocitySampleRate(unsigned int argc, char **argv);
 
 void SetGpsTimeSampleRate(unsigned int argc, char **argv);
 void GetGpsTimeSampleRate(unsigned int argc, char **argv);
+
+void SetLapCountLabel(unsigned int argc, char **argv);
+void GetLapCountLabel(unsigned int argc, char **argv);
+
+void SetLapCountSampleRate(unsigned int argc, char **argv);
+void GetLapCountSampleRate(unsigned int argc, char **argv);
+
+void SetLapTimeLabel(unsigned int argc, char **argv);
+void GetLapTimeLabel(unsigned int argc, char **argv);
+
+void SetLapTimeSampleRate(unsigned int argc, char **argv);
+void GetLapTimeSampleRate(unsigned int argc, char **argv);
 
 void SetGpioLabel(unsigned int argc, char **argv);
 void GetGpioLabel(unsigned int argc, char **argv);

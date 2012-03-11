@@ -201,7 +201,7 @@ void writeHeaders(FIL *f, LoggerConfig *config){
 	writeTimerChannelHeaders(f, config);
 	writePWMChannelHeaders(f, config);
 	if (config->AccelInstalled) writeAccelChannelHeaders(f, config);
-	if (config->GPSConfig.GPSInstalled) writeGPSChannelHeaders(f, &(config->GPSConfig.GPSInstalled));
+	if (config->GPSConfig.GPSInstalled) writeGPSChannelHeaders(f, &(config->GPSConfig));
 	fileWriteString(f,"\n");
 }
 

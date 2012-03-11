@@ -56,6 +56,16 @@ void initSampleRecord(LoggerConfig *loggerConfig,SampleRecord *sr){
 		s->intValue = NIL_SAMPLE;
 	}
 	{
+		ChannelSample *s = &(sr->GPS_LapCountSample);
+		s->channelConfig = &(loggerConfig->GPSConfig.lapCountCfg);
+		s->intValue = NIL_SAMPLE;
+	}
+	{
+		ChannelSample *s = &(sr->GPS_LapTimeSample);
+		s->channelConfig = &(loggerConfig->GPSConfig.lapTimeCfg);
+		s->intValue = NIL_SAMPLE;
+	}
+	{
 		ChannelSample *s = &(sr->GPS_QualitySample);
 		s->channelConfig =  &(loggerConfig->GPSConfig.qualityCfg);
 		s->intValue = NIL_SAMPLE;

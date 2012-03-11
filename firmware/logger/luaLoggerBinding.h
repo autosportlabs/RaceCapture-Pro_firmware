@@ -36,12 +36,12 @@ int Lua_GetGPSLatitude(lua_State *L);
 int Lua_GetGPSVelocity(lua_State *L);
 int Lua_GetGPSQuality(lua_State *L);
 int Lua_GetGPSTime(lua_State *L);
+int Lua_GetLapTime(lua_State *L);
+int Lua_GetLapCount(lua_State *L);
 int Lua_GetGPSSecondsSinceMidnight(lua_State *L);
 int Lua_GetGPSAtStartFinish(lua_State *L);
 int Lua_GetTimeDiff(lua_State *L);
 int Lua_GetTimeSince(lua_State *L);
-
-
 
 int Lua_ReadAccelerometer(lua_State *L);
 int Lua_ReadAccelerometerRaw(lua_State *L);
@@ -144,6 +144,18 @@ int Lua_GetGPSVelocitySampleRate(lua_State *L);
 
 int Lua_SetGPSTimeSampleRate(lua_State *L);
 int Lua_GetGPSTimeSampleRate(lua_State *L);
+
+int Lua_SetLapCountSampleRate(lua_State *L);
+int Lua_GetLapCountSampleRate(lua_State *L);
+
+int Lua_SetLapTimeSampleRate(lua_State *L);
+int Lua_GetLapTimeSampleRate(lua_State *L);
+
+int Lua_SetLapCountLabel(lua_State *L);
+int Lua_GetLapCountLabel(lua_State *L);
+
+int Lua_SetLapTimeLabel(lua_State *L);
+int Lua_GetLapTimeLabel(lua_State *L);
 
 int Lua_SetPWMClockFrequency(lua_State *L);
 int Lua_GetPWMClockFrequency(lua_State *L);

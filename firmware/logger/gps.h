@@ -5,19 +5,34 @@ void startGPSTask();
 
 void GPSTask( void *pvParameters );
 
+void setLapCount(int lapCount);
+
+int getLapCount();
+
+float getLastLapTime();
+
 int getAtStartFinish();
+
 void getUTCTimeFormatted(char * buf);
+
 float getUTCTime();
+
 float getSecondsSinceMidnight();
+
 float getTimeDiff(float from, float to);
+
 float getTimeSince(float t1);
 
 float getLatitude();
+
 float getLongitude();
 
 int getGPSQuality();
+
 int getSatellitesUsedForPosition();
+
 float getGPSVelocity();
+
 char * getGPSDataLine();
 
 

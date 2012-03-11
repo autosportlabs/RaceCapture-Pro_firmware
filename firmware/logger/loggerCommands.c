@@ -31,6 +31,34 @@ void FlashLoggerConfig(unsigned int argc, char **argv){
 	}
 }
 
+static GPSConfig * getGpsConfig(){
+	return &(getWorkingLoggerConfig()->GPSConfig);
+}
+
+static void setCmdChannelLabel(unsigned int argc, char **argv, char *label){
+	if (argc >= 2){
+		setLabelGeneric(label,argv[1]);
+		SendCommandOK();
+	}
+	else{
+		SendCommandError(ERROR_CODE_MISSING_PARAMS);
+	}
+}
+
+static void setSampleRateGeneric(unsigned int argc, char **argv, int *sampleRate){
+	if (argc >= 2){
+		*sampleRate = encodeSampleRate(modp_atoi(argv[1]));
+		SendCommandOK();
+	}
+	else{
+		SendCommandError(ERROR_CODE_MISSING_PARAMS);
+	}
+}
+
+static void sendSampleRateGeneric(char *name,int sampleRate){
+	SendNameInt(name,decodeSampleRate(sampleRate));
+}
+
 static LoggerConfig * AssertSetParam(unsigned int argc, unsigned int requiredParams){
 	LoggerConfig *c = NULL;
 	if (argc >= requiredParams){
@@ -251,9 +279,9 @@ void getPwmVoltageScaling(unsigned int argc, char **argv){
 	SendNameFloat("voltageScaling",c->voltageScaling,2);
 }
 
-static LoggerConfig * AssertSetBaseParam(unsigned int argc){
+static GPSConfig * AssertSetGpsParam(unsigned int argc){
 	if (argc >= 2){
-		return getWorkingLoggerConfig();
+		return &(getWorkingLoggerConfig()->GPSConfig);
 	}
 	else{
 		SendCommandError(ERROR_CODE_MISSING_PARAMS);
@@ -262,24 +290,23 @@ static LoggerConfig * AssertSetBaseParam(unsigned int argc){
 }
 
 void SetGpsInstalled(unsigned int argc, char **argv){
-	LoggerConfig * c = AssertSetBaseParam(argc);
+	GPSConfig * c = AssertSetGpsParam(argc);
 	if (NULL != c){
-		c->GPSConfig.GPSInstalled = (modp_atoi(argv[1]) != 0);
+		c->GPSInstalled = (modp_atoi(argv[1]) != 0);
 		SendCommandOK();
 	}
 }
 
 void getGpsInstalled(unsigned int argc, char **argv){
-	SendNameInt("gpsInstalled",getWorkingLoggerConfig()->GPSConfig.GPSInstalled);
+	SendNameInt("gpsInstalled",getGpsConfig()->GPSInstalled);
 }
 
 void SetGpsStartFinish(unsigned int argc, char **argv){
 	LoggerConfig *c = AssertSetParam(argc,4);
 	if (NULL != c){
-		GPSConfig *gpsConfig = &(c->GPSConfig);
-		gpsConfig->startFinishLatitude = modp_atof(argv[1]);
-		gpsConfig->startFinishLongitude = modp_atof(argv[2]);
-		if (argc > 3) gpsConfig->startFinishRadius = modp_atof(argv[3]);
+		c->GPSConfig.startFinishLatitude = modp_atof(argv[1]);
+		c->GPSConfig.startFinishLongitude = modp_atof(argv[2]);
+		if (argc > 3) c->GPSConfig.startFinishRadius = modp_atof(argv[3]);
 		SendCommandOK();
 	}
 }
@@ -291,21 +318,21 @@ void GetGpsStartFinish(unsigned int argc, char **argv){
 }
 
 void SetGpsQualityLabel(unsigned int argc, char **argv){
-	LoggerConfig * c = AssertSetBaseParam(argc);
+	GPSConfig * c = AssertSetGpsParam(argc);
 	if (NULL != c){
-		setLabelGeneric(c->GPSConfig.qualityCfg.label,argv[1]);
+		setLabelGeneric(c->qualityCfg.label,argv[1]);
 		SendCommandOK();
 	}
 }
 
 void GetGpsQualityLabel(unsigned int argc, char **argv){
-	SendNameString("gpsQualityLabel", getWorkingLoggerConfig()->GPSConfig.qualityCfg.label);
+	SendNameString("gpsQualityLabel", getGpsConfig()->qualityCfg.label);
 }
 
 void SetGpsStatsLabel(unsigned int argc, char **argv){
-	LoggerConfig * c = AssertSetBaseParam(argc);
+	GPSConfig * c = AssertSetGpsParam(argc);
 	if (NULL != c){
-		setLabelGeneric(c->GPSConfig.satellitesCfg.label, argv[1]);
+		setLabelGeneric(c->satellitesCfg.label, argv[1]);
 		SendCommandOK();
 	}
 }
@@ -315,9 +342,9 @@ void GetGpsStatsLabel(unsigned int argc, char **argv){
 }
 
 void SetGpsLatitudeLabel(unsigned int argc, char **argv){
-	LoggerConfig * c = AssertSetBaseParam(argc);
+	GPSConfig * c = AssertSetGpsParam(argc);
 	if (NULL != c){
-		setLabelGeneric(c->GPSConfig.latitudeCfg.label, argv[1]);
+		setLabelGeneric(c->latitudeCfg.label, argv[1]);
 		SendCommandOK();
 	}
 }
@@ -327,9 +354,9 @@ void GetGpsLatitudeLabel(unsigned int argc, char **argv){
 }
 
 void SetGpsLongitudeLabel(unsigned int argc, char **argv){
-	LoggerConfig * c = AssertSetBaseParam(argc);
+	GPSConfig *c = AssertSetGpsParam(argc);
 	if (NULL != c){
-		setLabelGeneric(c->GPSConfig.longitudeCfg.label, argv[1]);
+		setLabelGeneric(c->longitudeCfg.label, argv[1]);
 		SendCommandOK();
 	}
 }
@@ -339,9 +366,9 @@ void GetGpsLongitudeLabel(unsigned int argc, char **argv){
 }
 
 void SetGpsTimeLabel(unsigned int argc, char **argv){
-	LoggerConfig * c = AssertSetBaseParam(argc);
+	GPSConfig *c = AssertSetGpsParam(argc);
 	if (NULL != c){
-		setLabelGeneric(c->GPSConfig.timeCfg.label, argv[1]);
+		setLabelGeneric(c->timeCfg.label, argv[1]);
 		SendCommandOK();
 	}
 }
@@ -350,10 +377,42 @@ void GetGpsTimeLabel(unsigned int argc, char **argv){
 	SendNameString("gpsTimeLabel", getWorkingLoggerConfig()->GPSConfig.timeCfg.label);
 }
 
+void SetLapCountLabel(unsigned int argc, char **argv){
+	setCmdChannelLabel(argc,argv,getGpsConfig()->lapCountCfg.label);
+}
+
+void GetLapCountLabel(unsigned int argc, char **argv){
+	SendNameString("lapCountLabel",getGpsConfig()->lapCountCfg.label);
+}
+
+void SetLapCountSampleRate(unsigned int argc, char **argv){
+	setSampleRateGeneric(argc,argv,&(getGpsConfig()->lapCountCfg.sampleRate));
+}
+
+void GetLapCountSampleRate(unsigned int argc, char **argv){
+	sendSampleRateGeneric("lapCountSampleRate", getGpsConfig()->lapCountCfg.sampleRate);
+}
+
+void SetLapTimeLabel(unsigned int argc, char **argv){
+	setCmdChannelLabel(argc,argv,getGpsConfig()->lapTimeCfg.label);
+}
+
+void GetLapTimeLabel(unsigned int argc, char **argv){
+	SendNameString("lapTimeLabel",getGpsConfig()->lapTimeCfg.label);
+}
+
+void SetLapTimeSampleRate(unsigned int argc, char **argv){
+	setSampleRateGeneric(argc,argv,&(getGpsConfig()->lapTimeCfg.sampleRate));
+}
+
+void GetLapTimeSampleRate(unsigned int argc, char **argv){
+	sendSampleRateGeneric("lapTimeSampleRate",getGpsConfig()->lapTimeCfg.sampleRate);
+}
+
 void SetGpsVelocityLabel(unsigned int argc, char **argv){
-	LoggerConfig * c = AssertSetBaseParam(argc);
+	GPSConfig * c = AssertSetGpsParam(argc);
 	if (NULL != c){
-		setLabelGeneric(c->GPSConfig.velocityCfg.label, argv[1]);
+		setLabelGeneric(c->velocityCfg.label, argv[1]);
 		SendCommandOK();
 	}
 }
@@ -363,22 +422,22 @@ void GetGpsVelocityLabel(unsigned int argc, char **argv){
 }
 
 void SetGpsPositionSampleRate(unsigned int argc, char **argv){
-	LoggerConfig * c = AssertSetBaseParam(argc);
+	GPSConfig *c = AssertSetGpsParam(argc);
 	if (NULL != c){
-		c->GPSConfig.latitudeCfg.sampleRate = c->GPSConfig.longitudeCfg.sampleRate = encodeSampleRate(modp_atoi(argv[1]));
+		c->latitudeCfg.sampleRate = c->longitudeCfg.sampleRate = encodeSampleRate(modp_atoi(argv[1]));
 		SendCommandOK();
 	}
 }
 
 void GetGpsPositionSampleRate(unsigned int argc, char **argv){
-	//TODO we pull one for all... is there a better way? individual settable sample rates?
+	//TODO we pull one to represent all... is there a better way? individual settable sample rates?
 	SendNameInt("gpsPositionSampleRate",decodeSampleRate(getWorkingLoggerConfig()->GPSConfig.latitudeCfg.sampleRate));
 }
 
 void SetGpsVelocitySampleRate(unsigned int argc, char **argv){
-	LoggerConfig * c = AssertSetBaseParam(argc);
+	GPSConfig *c = AssertSetGpsParam(argc);
 	if (NULL != c){
-		c->GPSConfig.velocityCfg.sampleRate = encodeSampleRate(modp_atoi(argv[1]));
+		c->velocityCfg.sampleRate = encodeSampleRate(modp_atoi(argv[1]));
 		SendCommandOK();
 	}
 }
@@ -388,9 +447,9 @@ void GetGpsVelocitySampleRate(unsigned int argc, char **argv){
 }
 
 void SetGpsTimeSampleRate(unsigned int argc, char **argv){
-	LoggerConfig * c = AssertSetBaseParam(argc);
+	GPSConfig *c = AssertSetGpsParam(argc);
 	if (NULL != c){
-		c->GPSConfig.timeCfg.sampleRate = encodeSampleRate(modp_atoi(argv[1]));
+		c->timeCfg.sampleRate = encodeSampleRate(modp_atoi(argv[1]));
 		SendCommandOK();
 	}
 }
@@ -596,7 +655,7 @@ AccelConfig * AssertAccelGetParam(unsigned int argc, char **argv){
 }
 
 void SetAccelInstalled(unsigned int argc, char **argv){
-	LoggerConfig * c = AssertSetBaseParam(argc);
+	LoggerConfig * c = AssertSetParam(argc,2);
 	if (NULL != c){
 		c->AccelInstalled = (modp_atoi(argv[1]) != 0);
 		SendCommandOK();
