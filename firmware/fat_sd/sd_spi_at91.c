@@ -429,8 +429,11 @@ static void init_spi( void )
 	//       Take closer look on timing diagrams in datasheets.
 	// not working pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8 | AT91C_SPI_NCPHA;
 	// not working pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_BITS_8 | AT91C_SPI_NCPHA;
-	//pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8;
-	pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8 | AT91C_SPI_CSAAT;
+
+
+	pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8;
+	//pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8 | AT91C_SPI_CSAAT;
+
 	// not working pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_BITS_8;
 
 	// slow during init
@@ -701,6 +704,10 @@ BYTE send_cmd (
 ---------------------------------------------------------------------------*/
 
 
+void disk_init_hardware(void){
+	power_on();							/* Force socket power on */
+}
+
 /*-----------------------------------------------------------------------*/
 /* Initialize Disk Drive                                                 */
 /*-----------------------------------------------------------------------*/
@@ -730,7 +737,6 @@ DSTATUS disk_initialize (
 	if (drv) return STA_NOINIT;			/* Supports only single drive */
 	if (get_SOCKINS()) return STA_NODISK;
 
-	power_on();							/* Force socket power on */
 	for (n = 10; n; n--) rcvr_spi();	/* 80 dummy clocks */
 
 	ty = 0;

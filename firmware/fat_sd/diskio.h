@@ -27,6 +27,7 @@ typedef enum {
 /*---------------------------------------*/
 /* Prototypes for disk control functions */
 
+void disk_init_hardware(void);
 DSTATUS disk_initialize (BYTE);
 DSTATUS disk_status (BYTE);
 DRESULT disk_read (BYTE, BYTE*, DWORD, BYTE);

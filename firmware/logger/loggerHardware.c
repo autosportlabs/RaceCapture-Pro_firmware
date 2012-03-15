@@ -1,6 +1,7 @@
 #include "loggerHardware.h"
 #include "board.h"
 #include "accelerometer.h"
+#include "sdcard.h"
 
 /* ADC field definition for the Mode Register: Reminder
                        TRGEN    => Selection bewteen Software or hardware start of conversion
@@ -49,6 +50,7 @@ void InitLoggerHardware(){
 	InitPWM(loggerConfig);
 	initTimerChannels(loggerConfig);
 	InitLEDs();
+	InitFSHardware();
 	if (loggerConfig->AccelInstalled) accel_init();
 
 }

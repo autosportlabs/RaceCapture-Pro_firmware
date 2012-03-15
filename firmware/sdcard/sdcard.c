@@ -9,6 +9,10 @@
 
 static FATFS Fatfs[1];
 
+void InitFSHardware(void){
+	disk_init_hardware();
+}
+
 int InitFS(){
 	int res = disk_initialize(0);
 	if (0 != res) return res;
