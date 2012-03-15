@@ -33,10 +33,6 @@ static xQueueHandle g_sampleRecordQueue = NULL;
 
 #define SWIZZLE_BIGENDIAN(VAL, BYTE, BITLEN) ((VAL >> ((((BITLEN / 8) - 1) - BYTE) << 3)) & 0xFF)
 
-//max number of transmit fields we can put in a tx frame (for now), until we support splitting frames
-#define MAX_TRANSMIT_FIELDS						20
-
-
 //wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all
 #define TELEMETRY_QUEUE_WAIT_TIME					0
 //#define TELEMETRY_QUEUE_WAIT_TIME					portMAX_DELAY
@@ -145,23 +141,23 @@ static void finalizeTxFrame(TxFrame *frame,int fieldCount){
 		for (int ii = 0; ii < FIELD_VALUE_LENGTH; ii++) cs+=frame->field[i].raw[ii];
 	}
 
-	frame->checksum = 0xff - (cs & 0xFF);;
+	frame->checksum = 0xff - (cs & 0xFF);
 }
 
 static void sendTxFrameBinary(TxFrame *txFrame,int fieldCount){
 
 	putcXbee(txFrame->startDelimeter);
-	putcXbee(txFrame->lengthHigh);
-	putcXbee(txFrame->lengthLow);
-	putcXbee(txFrame->frameType);
-	putcXbee(txFrame->frameId);
+	putEscXbee(txFrame->lengthHigh);
+	putEscXbee(txFrame->lengthLow);
+	putEscXbee(txFrame->frameType);
+	putEscXbee(txFrame->frameId);
 	for (int i = 0; i < ADDRESS_LENGTH; i++){
-		putcXbee(txFrame->address[i]);
+		putEscXbee(txFrame->address[i]);
 	}
-	putcXbee(txFrame->reserved1);
-	putcXbee(txFrame->reserved2);
-	putcXbee(txFrame->broadcastRadius);
-	putcXbee(txFrame->transmitOptions);
+	putEscXbee(txFrame->reserved1);
+	putEscXbee(txFrame->reserved2);
+	putEscXbee(txFrame->broadcastRadius);
+	putEscXbee(txFrame->transmitOptions);
 	for (int i = 0; i < SAMPLE_TICK_LENGTH;i++){
 		putEscXbee(SWIZZLE_BIGENDIAN(txFrame->sampleTick,i,32));
 	}
@@ -275,6 +271,7 @@ void telemetryTask(void *params){
 				//writeSampleRecordJSON(sr,sampleTick);
 			}
 			else{
+				sampleTick = 0;
 				g_telemetryActive = 0;
 			}
 		}

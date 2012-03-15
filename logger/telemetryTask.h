@@ -14,7 +14,7 @@
 
 portBASE_TYPE queueTelemetryRecord(SampleRecord * sr);
 
-#define MAX_FIELD_COUNT 12
+#define MAX_FIELD_COUNT 20
 #define MAX_DATA_LENGTH 96
 #define FIELD_NAME_LENGTH DEFAULT_LABEL_LENGTH
 #define SAMPLE_TICK_LENGTH sizeof(uint32_t)
