@@ -419,13 +419,38 @@ unsigned int ReadADC(unsigned int channel){
         
         /* Fourth Step: Waiting Stop Of conversion by pulling */
         while (!((AT91F_ADC_GetStatus (AT91C_BASE_ADC)) & (1<<channel)));
-        
-        /* Fifth Step: Read the ADC result output */
-//       	unsigned int result = AT91F_ADC_GetLastConvertedData(AT91C_BASE_ADC);
-        unsigned int result = AT91F_ADC_GetConvertedDataCH6 (AT91C_BASE_ADC);
 
-		return result;	
-	
+        unsigned int result = 0;
+        
+        switch (channel){
+        case 0:
+        	result = AT91F_ADC_GetConvertedDataCH0 (AT91C_BASE_ADC);
+        	break;
+        case 1:
+        	result = AT91F_ADC_GetConvertedDataCH1 (AT91C_BASE_ADC);
+        	break;
+        case 2:
+        	result = AT91F_ADC_GetConvertedDataCH2 (AT91C_BASE_ADC);
+        	break;
+        case 3:
+        	result = AT91F_ADC_GetConvertedDataCH3 (AT91C_BASE_ADC);
+        	break;
+        case 4:
+        	result = AT91F_ADC_GetConvertedDataCH4 (AT91C_BASE_ADC);
+        	break;
+        case 5:
+        	result = AT91F_ADC_GetConvertedDataCH5 (AT91C_BASE_ADC);
+        	break;
+        case 6:
+        	result = AT91F_ADC_GetConvertedDataCH6 (AT91C_BASE_ADC);
+        	break;
+        case 7:
+        	result = AT91F_ADC_GetConvertedDataCH7 (AT91C_BASE_ADC);
+        	break;
+        default:
+        	break;
+        }
+	return result;
 }
 
 unsigned int ReadADCx(unsigned int channel){
