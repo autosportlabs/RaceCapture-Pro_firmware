@@ -31,6 +31,8 @@ static xQueueHandle g_sampleRecordQueue = NULL;
 #define RESERVED1								0xFF
 #define RESERVED2								0XFE
 
+#define IDLE_TIMEOUT							configTICK_RATE_HZ / 1
+
 #define SWIZZLE_BIGENDIAN(VAL, BYTE, BITLEN) ((VAL >> ((((BITLEN / 8) - 1) - BYTE) << 3)) & 0xFF)
 
 //wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all
@@ -210,27 +212,29 @@ static void writeSampleRecordBinary(SampleRecord * sampleRecord, uint32_t sample
 
 	txFrame->sampleTick = sampleTick;
 
-	//go until we reach the end of enabled sample records, or until the max transmittable
-	//field count is reached
 	int fieldIndex = 0;
-	for (int i = 0; i < SAMPLE_RECORD_CHANNELS && fieldIndex < MAX_FIELD_COUNT; i++){
-		ChannelSample * sample = &(sampleRecord->Samples[i]);
-		ChannelConfig * channelConfig = sample->channelConfig;
+	if (NULL != sampleRecord){
+		//go until we reach the end of enabled sample records, or until the max transmittable
+		//field count is reached
+		for (int i = 0; i < SAMPLE_RECORD_CHANNELS && fieldIndex < MAX_FIELD_COUNT; i++){
+			ChannelSample * sample = &(sampleRecord->Samples[i]);
+			ChannelConfig * channelConfig = sample->channelConfig;
 
-		if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
+			if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
 
-		if (sample->intValue == NIL_SAMPLE) continue;
+			if (sample->intValue == NIL_SAMPLE) continue;
 
-		strncpy(txFrame->field[fieldIndex].name, sample->channelConfig->label,FIELD_NAME_LENGTH - 1);
+			strncpy(txFrame->field[fieldIndex].name, sample->channelConfig->label,FIELD_NAME_LENGTH - 1);
 
-		int precision = sample->channelConfig->precision;
-		if (precision > 0){
-			txFrame->field[fieldIndex].floatValue = sample->floatValue;
+			int precision = sample->channelConfig->precision;
+			if (precision > 0){
+				txFrame->field[fieldIndex].floatValue = sample->floatValue;
+			}
+			else{
+				txFrame->field[fieldIndex].intValue = sample->intValue;
+			}
+			fieldIndex++;
 		}
-		else{
-			txFrame->field[fieldIndex].intValue = sample->intValue;
-		}
-		fieldIndex++;
 	}
 	finalizeTxFrame(txFrame,fieldIndex);
 	sendTxFrameBinary(txFrame,fieldIndex);
@@ -256,26 +260,29 @@ void telemetryTask(void *params){
 	g_telemetryActive = 0;
 	while(1){
 		//wait for the next sample record
-		xQueueReceive(g_sampleRecordQueue, &(sr), portMAX_DELAY);
-
-		//ToggleLED(LED3);
-		if (NULL != sr && 0 == g_telemetryActive){
-			g_telemetryActive = 1;
-			sampleTick = 0;
+		char res = xQueueReceive(g_sampleRecordQueue, &(sr), IDLE_TIMEOUT);
+		sampleTick++;
+		if (pdFALSE == res){
 			initTxFrame(&g_xBeeFrame);
+			writeSampleRecordBinary(NULL,sampleTick);
 		}
-
-		if (g_telemetryActive){
-			//a null sample record means end of sample run; like an EOF
-			if (NULL != sr){
-				sampleTick++;
-				//need to make this selectable - configurable
-				writeSampleRecordBinary(sr,sampleTick);
-				//writeSampleRecordJSON(sr,sampleTick);
+		else{
+			//ToggleLED(LED3);
+			if (NULL != sr && 0 == g_telemetryActive){
+				g_telemetryActive = 1;
+				initTxFrame(&g_xBeeFrame);
 			}
-			else{
-				sampleTick = 0;
-				g_telemetryActive = 0;
+
+			if (g_telemetryActive){
+				//a null sample record means end of sample run; like an EOF
+				if (NULL != sr){
+					//need to make this selectable - configurable
+					writeSampleRecordBinary(sr,sampleTick);
+					//writeSampleRecordJSON(sr,sampleTick);
+				}
+				else{
+					g_telemetryActive = 0;
+				}
 			}
 		}
 	}
