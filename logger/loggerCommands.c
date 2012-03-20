@@ -55,6 +55,15 @@ static void setSampleRateGeneric(unsigned int argc, char **argv, int *sampleRate
 	}
 }
 
+static void setCharValueGeneric(unsigned int argc, char **argv, char *value){
+	if (argc >=2){
+		*value = (char)modp_atoi(argv[1]);
+	}
+	else{
+		SendCommandError(ERROR_CODE_MISSING_PARAMS);
+	}
+}
+
 static void sendSampleRateGeneric(char *name,int sampleRate){
 	SendNameInt(name,decodeSampleRate(sampleRate));
 }
@@ -738,6 +747,23 @@ void GetAccelZeroValue(unsigned int argc, char **argv){
 void CalibrateAccelZero(unsigned int argc, char **argv){
 	calibrateAccelZero();
 	SendCommandOK();
+}
+
+void SetTelemetryMode(unsigned int argc, char **argv){
+	setCharValueGeneric(argc, argv, &(getWorkingLoggerConfig()->LoggerOutputConfig.telemetryMode));
+}
+
+void SetSDLoggingMode(unsigned int argc, char **argv){
+	setCharValueGeneric(argc, argv, &(getWorkingLoggerConfig()->LoggerOutputConfig.sdLoggingMode));
+}
+
+void SetP2PTelemetryDestinationAddr(unsigned int argc, char **argv){
+	LoggerConfig *c = AssertSetParam(argc, 3);
+	if (c != NULL){
+		c->LoggerOutputConfig.p2pDestinationAddrHigh = modp_atoui(argv[1]);
+		c->LoggerOutputConfig.p2pDestinationAddrLow = modp_atoui(argv[2]);
+		SendCommandOK();
+	}
 }
 
 /*

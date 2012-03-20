@@ -234,6 +234,33 @@ typedef struct _GPSConfig{
 							DEFAULT_GPS_TIME_CONFIG, \
 							DEFAULT_GPS_VELOCITY_CONFIG}
 
+typedef struct _LoggerOutputConfig {
+	char telemetryMode;
+	char sdLoggingMode;
+	unsigned int p2pDestinationAddrHigh;
+	unsigned int p2pDestinationAddrLow;
+} LoggerOutputConfig;
+
+#define TELEMETRY_MODE_DISABLED 				0
+#define TELEMETRY_MODE_P2P 						1
+#define TELEMETRY_MODE_CELL						2
+
+#define SD_LOGGING_MODE_DISABLED				0
+#define SD_LOGGING_MODE_CSV						1
+#define SD_LOGGING_MODE_BINARY					2
+
+#define DEFAULT_TELEMETRY_MODE 					TELEMETRY_MODE_DISABLED
+#define DEFAULT_SD_LOGGING_MODE					SD_LOGGING_MODE_CSV
+
+#define DEFAULT_P2P_DESTINATION_ADDR_HIGH	 	0x00000000
+#define DEFAULT_P2P_DESTINATION_ADDR_LOW		0X0000FFFF
+
+#define DEFAULT_LOGGER_OUTPUT_CONFIG { 	DEFAULT_TELEMETRY_MODE, \
+										DEFAULT_SD_LOGGING_MODE, \
+										DEFAULT_P2P_DESTINATION_ADDR_HIGH, \
+										DEFAULT_P2P_DESTINATION_ADDR_LOW \
+										}
+
 typedef struct _LoggerConfig {
 	//ADC Calibrations
 	ADCConfig ADCConfigs[CONFIG_ADC_CHANNELS];
@@ -249,6 +276,8 @@ typedef struct _LoggerConfig {
 	AccelConfig AccelConfigs[CONFIG_ACCEL_CHANNELS];
 	//GPS Configuration
 	GPSConfig GPSConfig;
+	//Logger Output Configuration
+	LoggerOutputConfig LoggerOutputConfig;
 	//Padding data to accommodate flash routine
 	char padding_data[AT91C_IFLASH_PAGE_SIZE]; 
 } LoggerConfig;
@@ -263,6 +292,7 @@ typedef struct _LoggerConfig {
 	CONFIG_FEATURE_INSTALLED, \
 	DEFAULT_ACCEL_CONFIGS, \
 	DEFAULT_GPS_CONFIG, \
+	DEFAULT_LOGGER_OUTPUT_CONFIG, \
 	"" \
 	}
 	
