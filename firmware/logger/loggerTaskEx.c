@@ -279,6 +279,7 @@ void loggerTaskEx(void *params){
 				vTaskDelayUntil( &xLastWakeTime, xFrequency );
 			}
 			queueLogfileRecord(NULL);
+			queueTelemetryRecord(NULL);
 			//freeSampleRecordBuffer(srBuffer);
 			DisableLED(LED2);
 		}

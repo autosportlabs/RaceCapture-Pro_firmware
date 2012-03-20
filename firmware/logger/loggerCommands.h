@@ -17,6 +17,10 @@ extern const struct cmd_t g_loggerCommands[];
 {"testSD", "Test Write to SD card.","<lineWrites>", TestSD}, \
 {"flashLoggerCfg", "Write the active Logger Configuration to flash.","", FlashLoggerConfig}, \
 	\
+{"setTelemetryMode", "Sets the Telemetry mode","<mode>", SetTelemetryMode}, \
+{"setSDLoggingMode", "Sets the SD Logging Mode","<mode>", SetSDLoggingMode}, \
+{"setP2PTelemetryAddr", "Sets the P2P Telemetry Destination Address","<high> <low>",SetP2PTelemetryDestinationAddr}, \
+ \
 {"setAnalogLabel", "Sets the label for the specified analog channel.","<channel> <label> <units>", SetAnalogLabel}, \
 {"getAnalogLabel", "Gets the label for the specified analog channel.","<channel>", GetAnalogLabel}, \
 	\
@@ -146,6 +150,10 @@ extern const struct cmd_t g_loggerCommands[];
 void TestSD(unsigned int argc, char **argv);
 
 void FlashLoggerConfig(unsigned int argc, char **argv);
+
+void SetTelemetryMode(unsigned int argc, char **argv);
+void SetSDLoggingMode(unsigned int argc, char **argv);
+void SetP2PTelemetryDestinationAddr(unsigned int argc, char **argv);
 
 void SetAnalogLabel(unsigned int argc, char **argv);
 void GetAnalogLabel(unsigned int argc, char **argv);

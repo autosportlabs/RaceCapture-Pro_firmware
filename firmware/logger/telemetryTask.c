@@ -61,7 +61,7 @@ static void putEscXbee(char c){
 		case 0x7d:
 		case 0x11:
 		case 0x13:
-			usart0_putchar(0x7d);
+			putcXbee(0x7d);
 			c^= 0x20;
 			break;
 		default:
@@ -107,10 +107,16 @@ static void initTxFrame(TxFrame *frame){
 	frame->startDelimeter = START_DELIMETER;
 	frame->frameType = TRANSMIT_FRAME_TYPE;
 
-	uint64_t address = DEFAULT_DESTINATION_ADDRESS;
-	for (int i = 0; i < ADDRESS_LENGTH;i++){
-		frame->address[i] = SWIZZLE_BIGENDIAN(address,i,64);
+	LoggerOutputConfig *config = &(getWorkingLoggerConfig()->LoggerOutputConfig);
+
+	for (int i = 0; i < ADDRESS_LENGTH / 2;i++){
+		frame->address[i] = SWIZZLE_BIGENDIAN(config->p2pDestinationAddrHigh,i,32);
 	}
+
+	for (int i = 0; i < ADDRESS_LENGTH / 2;i++){
+		frame->address[i+ (ADDRESS_LENGTH / 2)] = SWIZZLE_BIGENDIAN(config->p2pDestinationAddrLow,i,32);
+	}
+
 	frame->reserved1 = RESERVED1;
 	frame->reserved2 = RESERVED2;
 
@@ -202,10 +208,6 @@ static void writeSampleRecordBinary(SampleRecord * sampleRecord, uint32_t sample
 
 	TxFrame * txFrame = &g_xBeeFrame;
 
-	//the init *could* be written once at start of telemetry session,
-	//so doing it every time is a bit inefficient
-	initTxFrame(txFrame);
-
 	txFrame->sampleTick = sampleTick;
 
 	//go until we reach the end of enabled sample records, or until the max transmittable
@@ -239,7 +241,6 @@ void createTelemetryTask(){
 
 	initUsart0(USART_MODE_8N1, 115200);
 
-	g_telemetryActive = 0;
 	g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( SampleRecord *));
 	if (NULL == g_sampleRecordQueue){
 		//TODO log error
@@ -252,6 +253,7 @@ void telemetryTask(void *params){
 
 	SampleRecord *sr = NULL;
 	uint32_t sampleTick = 0;
+	g_telemetryActive = 0;
 	while(1){
 		//wait for the next sample record
 		xQueueReceive(g_sampleRecordQueue, &(sr), portMAX_DELAY);
@@ -260,6 +262,7 @@ void telemetryTask(void *params){
 		if (NULL != sr && 0 == g_telemetryActive){
 			g_telemetryActive = 1;
 			sampleTick = 0;
+			initTxFrame(&g_xBeeFrame);
 		}
 
 		if (g_telemetryActive){
