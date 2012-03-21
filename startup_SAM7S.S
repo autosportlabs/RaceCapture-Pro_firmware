@@ -109,7 +109,7 @@
 //   <o1.15>     WDDIS: Watchdog Disable
 // </e>
 */
-        .equ    WDT_SETUP,      1
+        .equ    WDT_SETUP,      0
         .equ    WDT_MR_Val,     0x00008000
 
 

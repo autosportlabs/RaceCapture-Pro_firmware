@@ -2,6 +2,7 @@
 #include "board.h"
 #include "accelerometer.h"
 #include "sdcard.h"
+#include "constants.h"
 
 /* ADC field definition for the Mode Register: Reminder
                        TRGEN    => Selection bewteen Software or hardware start of conversion
@@ -44,6 +45,7 @@ unsigned int g_timer2_overflow;
 unsigned int g_timer_counts[CONFIG_TIMER_CHANNELS];
 
 void InitLoggerHardware(){
+	InitWatchdog(WATCHDOG_TIMEOUT_MS);
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 	InitGPIO(loggerConfig);
 	InitADC();
@@ -52,7 +54,16 @@ void InitLoggerHardware(){
 	InitLEDs();
 	InitFSHardware();
 	if (loggerConfig->AccelInstalled) accel_init();
+}
 
+void ResetWatchdog(){
+	AT91F_WDTRestart(AT91C_BASE_WDTC);
+}
+
+void InitWatchdog(int timeoutMs){
+	 int counter= AT91F_WDTGetPeriod(timeoutMs);
+	 AT91F_WDTSetMode(AT91C_BASE_WDTC, AT91C_WDTC_WDRSTEN | AT91C_WDTC_WDRPROC | counter | (counter << 16));
+	 AT91F_WDTC_CfgPMC();
 }
 
 void InitGPIO(LoggerConfig *loggerConfig){

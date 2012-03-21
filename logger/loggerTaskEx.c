@@ -21,6 +21,7 @@
 
 #define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 4 )
 #define LOGGER_STACK_SIZE  					200
+#define IDLE_TIMEOUT						configTICK_RATE_HZ / 1
 
 int g_loggingShouldRun;
 
@@ -220,7 +221,7 @@ void loggerTaskEx(void *params){
 
 	while(1){
 		//wait for signal to start logging
-		if ( xSemaphoreTake(g_xLoggerStart, portMAX_DELAY) != pdTRUE){
+		if ( xSemaphoreTake(g_xLoggerStart, IDLE_TIMEOUT) != pdTRUE){
 			//perform idle tasks
 		}
 		else {
@@ -283,6 +284,7 @@ void loggerTaskEx(void *params){
 			//freeSampleRecordBuffer(srBuffer);
 			DisableLED(LED2);
 		}
+		ResetWatchdog();
 	}
 
 

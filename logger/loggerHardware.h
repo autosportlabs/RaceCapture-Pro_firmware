@@ -29,6 +29,10 @@ void EnableLED(unsigned int Led);
 void DisableLED(unsigned int Led);
 void ToggleLED (unsigned int Led);
 
+void ResetWatchdog();
+
+void InitWatchdog(int timeoutMs);
+
 //Set specified bits on PIO
 void SetGPIOBits(unsigned int portBits);
 
