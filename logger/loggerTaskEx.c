@@ -222,6 +222,7 @@ void loggerTaskEx(void *params){
 	while(1){
 		//wait for signal to start logging
 		if ( xSemaphoreTake(g_xLoggerStart, IDLE_TIMEOUT) != pdTRUE){
+			ResetWatchdog();
 			//perform idle tasks
 		}
 		else {
@@ -248,6 +249,8 @@ void loggerTaskEx(void *params){
 			//run until signalled to stop
 			portTickType xLastWakeTime = xTaskGetTickCount();
 			while (g_loggingShouldRun){
+				ResetWatchdog();
+
 				ToggleLED(LED2);
 
 				currentTicks += xFrequency;
@@ -284,7 +287,6 @@ void loggerTaskEx(void *params){
 			//freeSampleRecordBuffer(srBuffer);
 			DisableLED(LED2);
 		}
-		ResetWatchdog();
 	}
 
 
