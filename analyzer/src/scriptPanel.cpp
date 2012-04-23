@@ -88,8 +88,6 @@ void ScriptPanel::OnReadScript(wxCommandEvent &event){
 void ScriptPanel::OnWriteScript(wxCommandEvent &event){
 
 	try{
-
-
 		wxString script = m_scriptCtrl->GetValue();
 		m_comm->writeScript(script);
 	}
@@ -99,7 +97,7 @@ void ScriptPanel::OnWriteScript(wxCommandEvent &event){
 }
 
 void ScriptPanel::OnRunScript(wxCommandEvent &event){
-	wxLogMessage("run");
+	m_comm->reloadScript();
 }
 
 

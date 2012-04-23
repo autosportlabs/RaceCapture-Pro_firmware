@@ -1,19 +1,25 @@
 
 #include "comm.h"
-#include "wx/ctb-0.13/getopt.h"
-#include "wx/ctb-0.13/serport.h"
-#include "wx/ctb-0.13/timer.h"
+#include "wx/ctb/getopt.h"
+#include "wx/ctb/serport.h"
+#include "wx/ctb/timer.h"
 #include <stdio.h>
 #include <wx/log.h>
 #include "base64.h"
+#include <wx/tokenzr.h>
+#include <wx/hashmap.h>
 
-
-CommException::CommException(int errorStatus){
+CommException::CommException(int errorStatus, wxString errorDetail){
 	_errorStatus = errorStatus;
+	_errorDetail = errorDetail;
 }
 
 int CommException::GetErrorStatus(){
 	return _errorStatus;
+}
+
+wxString CommException::GetErrorDetail(){
+	return _errorDetail;
 }
 
 wxString CommException::GetErrorMessage(){
@@ -24,7 +30,7 @@ wxString CommException::GetErrorMessage(){
 		case DATA_ERROR:
 			return "A data error occured";
 		case COMM_TIMEOUT:
-			return "A communications timeout occured";
+			return "A communications timeout occured: (" + _errorDetail + ")";
 		default:
 			return "An unspecified error occured";
 	}
@@ -77,22 +83,97 @@ wxSerialPort* RaceAnalyzerComm::OpenSerialPort(){
 	wxSerialPort* comPort = new wxSerialPort();
 	const char *devName = GetSerialPortDevName(_serialPortNumber);
 
-	devName = "/dev/ttyACM0";
 	wxLogMessage(devName);
 
 	wxSerialPort_DCS dcs;
-	dcs.baud=wxBAUD_38400;
+	dcs.baud=wxBAUD_115200;
 	dcs.stopbits=1;
 	dcs.parity = wxPARITY_NONE;
 	dcs.wordlen = 8;
 	dcs.xonxoff = false;
 	dcs.rtscts = false;
 
-		if (comPort->Open(devName,&dcs)<0){
+		if (comPort->Open(devName,&dcs) < 0 ){
 			delete ( comPort );
 			throw CommException(CommException::OPEN_PORT_FAILED);
 		}
 	return comPort;
+}
+
+void RaceAnalyzerComm::checkThrowResult(wxString &result){
+	if (getParam(result,"result") != "ok") throw CommException(CommException::CMD_ERROR,result);
+}
+
+void RaceAnalyzerComm::unescape(wxString &data){
+
+	wxString working = data;
+	data = "";
+	const char *d = working.ToAscii();
+	while (*d){
+		if (*d =='\\'){
+			switch(*(d + 1)){
+				case '_':
+					data+=" ";
+					break;
+				case 'n':
+					data+="\n";
+					break;
+				case 'r':
+					data+="\r";
+					break;
+				case '\\':
+					data+="\\";
+					break;
+				case '"':
+					data+="\"";
+					break;
+				case '\0': //this should *NOT* happen
+					return;
+			}
+			d++;
+		}
+		else{
+			data+=*d;
+		}
+		d++;
+	}
+}
+
+void RaceAnalyzerComm::escape(wxString &data){
+
+	wxString working = data;
+	data="";
+	const char *d = working.ToAscii();
+	while(*d){
+		switch(*d){
+		case ' ':
+			data+="\\_";
+			break;
+		case '\n':
+			data+="\\n";
+			break;
+		case '\r':
+			data+="\\r";
+			break;
+		case '\"':
+			data+="\\\"";
+			break;
+		default:
+			data+=*d;
+			break;
+		}
+		d++;
+	}
+}
+
+void RaceAnalyzerComm::reloadScript(void){
+
+	wxSerialPort *serialPort = GetSerialPort();
+	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
+
+	wxString reloadCmd = "reloadScript";
+	wxString result = SendCommand(serialPort, reloadCmd);
+	checkThrowResult(result);
 }
 
 wxString RaceAnalyzerComm::readScript(){
@@ -106,16 +187,19 @@ wxString RaceAnalyzerComm::readScript(){
 	while(!to){
 
 		//wxString cmd = wxString::Format("println(getScriptPage(%d))",scriptPage++);
-		wxString cmd = wxString::Format("r %d",scriptPage++);
-		to = WriteCommand(serialPort, cmd, DEFAULT_TIMEOUT);
-		wxString buffer;
-		to = ReadLine(serialPort, buffer, DEFAULT_TIMEOUT);
+		wxString cmd = wxString::Format("readScriptPage %d",scriptPage++);
+		wxString buffer = SendCommand(serialPort, cmd);
 		wxLogMessage("read: %s",buffer.ToAscii());
-		wxString scriptFragment;
-		Base64::Decode(buffer,scriptFragment);
-		wxLogMessage("'%s'",scriptFragment.ToAscii());
-		size_t scriptFragmentLen = scriptFragment.Length();
-		if (scriptFragmentLen > 0 ) script+=scriptFragment;
+		buffer.Trim(false);
+		buffer.Trim(true);
+
+		size_t scriptFragmentLen = buffer.Length();
+		wxString scriptFrag = getParam(buffer,"script");
+		unescape(scriptFrag);
+
+		wxLogMessage("unescaped script'%s",scriptFrag.ToAscii());
+
+		if (scriptFragmentLen > 0 ) script+=scriptFrag;
 		//the last page is a 'partial page'
 		if (scriptFragmentLen < SCRIPT_PAGE_LENGTH ) break;
 	}
@@ -143,12 +227,13 @@ void RaceAnalyzerComm::writeScript(wxString &script){
 		}else{
 			scriptFragment = script.Mid(index, SCRIPT_PAGE_LENGTH);
 		}
-		wxString data;
-		Base64::Encode(scriptFragment,data);
-		wxLogMessage(data);
+		wxLogMessage("script fragment: '%s'", scriptFragment.ToAscii());
+		escape(scriptFragment);
+		wxLogMessage("esc script fragment: '%s'",scriptFragment.ToAscii());
 		//wxString cmd = wxString::Format("updateScriptPage(%d,\"%s\")", page,data.ToAscii());
-		wxString cmd = wxString::Format("w %d,%s,",page,data.ToAscii());
-		to = WriteCommand(serialPort, cmd, DEFAULT_TIMEOUT);
+		wxString cmd = wxString::Format("writeScriptPage %d %s",page,scriptFragment.ToAscii());
+		wxString result = SendCommand(serialPort, cmd);
+		checkThrowResult(result);
 		page++;
 		index += SCRIPT_PAGE_LENGTH;
 	}
@@ -156,9 +241,10 @@ void RaceAnalyzerComm::writeScript(wxString &script){
 	//note we're subtracting script pages by one to account for integer divide truncation
 	if ((length / SCRIPT_PAGE_LENGTH) < SCRIPT_PAGES - 1 ){
 		//write a null to the next page
-		wxString cmd = wxString::Format("w %d,,",page);
-		to = WriteCommand(serialPort, cmd, DEFAULT_TIMEOUT);
+		wxString cmd = wxString::Format("writeScriptPage %d",page);
+		SendCommand(serialPort, cmd);
 	}
+
 	CloseSerialPort();
 	if (to){
 		throw CommException(CommException::COMM_TIMEOUT);
@@ -250,17 +336,29 @@ int RaceAnalyzerComm::FlushReceiveBuffer(wxSerialPort* comPort){
 	return buffer;
 }
 
-int RaceAnalyzerComm::WriteCommand(wxSerialPort *comPort, wxString &buffer, int timeout){
+wxString RaceAnalyzerComm::SendCommand(wxSerialPort *comPort, wxString &buffer, int timeout){
 	FlushReceiveBuffer(comPort);
+	wxLogMessage("writing %d: %s",buffer.Len(), buffer.ToAscii());
 	WriteLine(comPort,buffer,timeout);
-	wxString echo;
-	int to = ReadLine(comPort,echo,timeout);
-	if (echo != buffer){
-		wxLogMessage("echoed buffer: %s", buffer.ToAscii());
-		//we expected the command echoed back
-		//throw CommException(CommException::DATA_ERROR);
+
+	{
+		wxString echo;
+		int to = ReadLine(comPort,echo,timeout);
+		if (to) throw CommException(CommException::COMM_TIMEOUT);
+		if (echo != buffer){
+			wxLogMessage("echoed buffer was %s instead of %s", echo.ToAscii(), buffer.ToAscii());
+			//we expected the command echoed back
+			//throw CommException(CommException::DATA_ERROR);
+		}
 	}
-	return to;
+	{
+		wxString result;
+		int to = ReadLine(comPort,result,timeout);
+		if (to) throw CommException(CommException::COMM_TIMEOUT);
+		result.Trim(false);
+		result.Trim(true);
+		return result;
+	}
 }
 
 int RaceAnalyzerComm::WriteLine(wxSerialPort * comPort, wxString &buffer, int timeout){
@@ -307,7 +405,7 @@ int RaceAnalyzerComm::ReadLine(wxSerialPort * comPort, wxString &buffer, int tim
 
 	if (to){
 		wxLogMessage("timed out");
-		CloseSerialPort();
+		//CloseSerialPort();
 	}
 
 //	wxLogMessage("readLine: ");
@@ -315,5 +413,46 @@ int RaceAnalyzerComm::ReadLine(wxSerialPort * comPort, wxString &buffer, int tim
 	return to;
 }
 
+void RaceAnalyzerComm::swapCharsInsideQuotes(wxString &data, char find,char replace){
+	bool insideQuotes = false;
+	int len = data.Len();
+	for (int index = 0; index < len; index++){
+		if (data[index] == '"') insideQuotes = !insideQuotes;
+		else if (data[index] == find && insideQuotes) data[index] = replace;
+	}
+}
 
+void RaceAnalyzerComm::hideInnerTokens(wxString &data){
+	swapCharsInsideQuotes(data,'=',EQUALS_HIDE_CHAR);
+	swapCharsInsideQuotes(data,';',SEMICOLON_HIDE_CHAR);
+}
+
+void RaceAnalyzerComm::unhideInnerTokens(wxString &data){
+	swapCharsInsideQuotes(data,EQUALS_HIDE_CHAR,'=');
+	swapCharsInsideQuotes(data,SEMICOLON_HIDE_CHAR,';');
+}
+
+wxString RaceAnalyzerComm::getParam(wxString &data, const wxString &name){
+
+	hideInnerTokens(data);
+	wxStringTokenizer tokenizer(data,";");
+
+	while (tokenizer.HasMoreTokens()){
+		wxString token = tokenizer.GetNextToken();
+		wxStringTokenizer subTokenizer(token,"=");
+		if (subTokenizer.CountTokens() >= 2){
+			wxString paramName = subTokenizer.GetNextToken();
+			if (paramName == name){
+				wxString value = subTokenizer.GetNextToken();
+				unhideInnerTokens(value);
+				if (value.StartsWith("\"") && value.EndsWith("\"")){
+					value = value.Left(value.Len() - 1);
+					value = value.Right(value.Len() - 1);
+				}
+				return value;
+			}
+		}
+	}
+	return "";
+}
 

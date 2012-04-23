@@ -19,7 +19,7 @@
 					<folderInfo id="cdt.managedbuild.config.gnu.cygwin.exe.debug.1860327815.1492359768" name="/" resourcePath="">
 						<toolChain errorParsers="" id="cdt.managedbuild.toolchain.gnu.mingw.base.1211523927" name="MinGW GCC" superClass="cdt.managedbuild.toolchain.gnu.mingw.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.PE" id="cdt.managedbuild.target.gnu.platform.mingw.base.1344708451" name="Debug Platform" osList="win32" superClass="cdt.managedbuild.target.gnu.platform.mingw.base"/>
-							<builder autoBuildTarget="" buildPath="${workspace_loc:/mjljConfigurator/Debug}" cleanBuildTarget="" enabledIncrementalBuild="true" errorParsers="" id="cdt.managedbuild.tool.gnu.builder.mingw.base.1193594732" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" name="CDT Internal Builder" parallelBuildOn="true" parallelizationNumber="2" superClass="cdt.managedbuild.tool.gnu.builder.mingw.base">
+							<builder autoBuildTarget="" buildPath="${workspace_loc:/mjljConfigurator/Debug}" cleanBuildTarget="" enabledIncrementalBuild="true" errorParsers="" id="cdt.managedbuild.tool.gnu.builder.mingw.base.1193594732" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" name="CDT Internal Builder" parallelBuildOn="false" parallelizationNumber="6" superClass="cdt.managedbuild.tool.gnu.builder.mingw.base">
 								<outputEntries>
 									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name="Debug"/>
 									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name="Release"/>
@@ -42,14 +42,14 @@
 							<tool id="cdt.managedbuild.tool.gnu.archiver.mingw.base.1098469353" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.mingw.base"/>
 							<tool command="g++" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.base.1491606997" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.base">
 								<option id="gnu.cpp.compiler.option.include.paths.595312928" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks/include}&quot;"/>
-									<listOptionValue builtIn="false" value=".."/>
 									<listOptionValue builtIn="false" value="../include"/>
 									<listOptionValue builtIn="false" value="../resource"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wxctb/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sqlite}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks/include}&quot;"/>
 									<listOptionValue builtIn="false" value="C:/wxWidgets-2.8.10/msw-debug/lib/wx/include/msw-ansi-debug-static-2.8"/>
 									<listOptionValue builtIn="false" value="C:/wxWidgets-2.8.10/include"/>
-									<listOptionValue builtIn="false" value="C:/projects/wxctb/include"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.23403687" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="WX_PRECOMP"/>
@@ -64,6 +64,7 @@
 							</tool>
 							<tool command="gcc" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="cdt.managedbuild.tool.gnu.c.compiler.mingw.base.1625190516" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.mingw.base">
 								<option id="gnu.c.compiler.option.include.paths.226641281" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="../include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/raceAnalyzer/gaugeWorks}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/raceAnalyzer/gaugeWorks/include}&quot;"/>
@@ -72,7 +73,6 @@
 									<listOptionValue builtIn="false" value="C:/projects/logger/trunk/analyzer/resource"/>
 									<listOptionValue builtIn="false" value="C:/wxWidgets-2.8.10/msw-debug/lib/wx/include/msw-ansi-debug-static-2.8"/>
 									<listOptionValue builtIn="false" value="C:/wxWidgets-2.8.10/include"/>
-									<listOptionValue builtIn="false" value="C:/projects/wxctb/include"/>
 								</option>
 								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.1912534968" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" value="gnu.c.optimization.level.none" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.debugging.level.1932784663" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
@@ -88,6 +88,7 @@
 							<tool command="g++" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GLDErrorParser" id="cdt.managedbuild.tool.gnu.cpp.linker.mingw.base.1065391908" name="MinGW C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.mingw.base">
 								<option id="gnu.cpp.link.option.libs.436542558" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="gaugeWorks"/>
+									<listOptionValue builtIn="false" value="sqlite"/>
 									<listOptionValue builtIn="false" value="wxctb-0.8"/>
 									<listOptionValue builtIn="false" value="wx_mswd_gl-2.8"/>
 									<listOptionValue builtIn="false" value="opengl32"/>
@@ -117,9 +118,10 @@
 									<listOptionValue builtIn="false" value="gdi32"/>
 								</option>
 								<option id="gnu.cpp.link.option.paths.362168868" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks/Debug}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks/MinGW-Debug}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sqlite/MinGW-Debug}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\wxWidgets-2.8.10\msw-debug\lib&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;C:\projects\wxctb\lib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wxctb/lib}&quot;"/>
 								</option>
 								<option id="gnu.cpp.link.option.flags.2034566404" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-mthreads -Wl,--subsystem,windows -mwindows" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1485484092" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
@@ -130,7 +132,7 @@
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.cygwin.exe.debug.1860327815./mjljConfigurator/resource/mjlj_config.rc" name="mjlj_config.rc" rcbsApplicability="override" resourcePath="resource/mjlj_config.rc" toolsToInvoke="org.eclipse.cdt.managedbuilder.ui.rcbs.1372096862">
-						<tool announcement="Invoking: Resource Custom Build Step" command="windres -o &quot;resource/mjlj_config_resources.o&quot; -I&quot;C:/wxWidgets-2.6.2/include&quot; -I&quot;../resource&quot; &quot;../resource/mjlj_config.rc&quot;" customBuildStep="true" errorParsers="" id="org.eclipse.cdt.managedbuilder.ui.rcbs.1372096862" name="Resource Custom Build Step">
+						<tool announcement="Invoking: Resource Custom Build Step" command="windres -o &quot;resource/mjlj_config_resources.o&quot; -I&quot;C:/wxWidgets-2.8.10/include&quot; -I&quot;../resource&quot; &quot;../resource/mjlj_config.rc&quot;" customBuildStep="true" errorParsers="" id="org.eclipse.cdt.managedbuilder.ui.rcbs.1372096862" name="Resource Custom Build Step">
 							<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.1117973206" name="Resource Custom Build Step Input Type">
 								<additionalInput kind="additionalinputdependency" paths=""/>
 							</inputType>
@@ -249,7 +251,7 @@
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.cygwin.exe.debug.271416248./mjljConfigurator/resource/mjlj_config.rc" name="mjlj_config.rc" rcbsApplicability="override" resourcePath="resource/mjlj_config.rc" toolsToInvoke="org.eclipse.cdt.managedbuilder.ui.rcbs.968583717">
-						<tool announcement="Invoking: Resource Custom Build Step" command="windres -o &quot;resource/mjlj_config_resources.o&quot; -I&quot;C:/wxWidgets-2.6.2/include&quot; -I&quot;../resource&quot; &quot;../resource/mjlj_config.rc&quot;" customBuildStep="true" errorParsers="" id="org.eclipse.cdt.managedbuilder.ui.rcbs.968583717" name="Resource Custom Build Step">
+						<tool announcement="Invoking: Resource Custom Build Step" command="windres -o &quot;resource/mjlj_config_resources.o&quot; -I&quot;C:/wxWidgets-2.8.10/include&quot; -I&quot;../resource&quot; &quot;../resource/mjlj_config.rc&quot;" customBuildStep="true" errorParsers="" id="org.eclipse.cdt.managedbuilder.ui.rcbs.968583717" name="Resource Custom Build Step">
 							<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.713771101" name="Resource Custom Build Step Input Type">
 								<additionalInput kind="additionalinputdependency" paths=""/>
 							</inputType>
@@ -388,6 +390,14 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.cygwin.exe.debug.980944875.2026884027" name="mjlj_config.rc" rcbsApplicability="disable" resourcePath="resource/mjlj_config.rc" toolsToInvoke="">
+						<tool customBuildStep="true" id="org.eclipse.cdt.managedbuilder.ui.rcbs.629823781" name="Resource Custom Build Step">
+							<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.1727376212" name="Resource Custom Build Step Input Type">
+								<additionalInput kind="additionalinputdependency" paths=""/>
+							</inputType>
+							<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.2090337807" name="Resource Custom Build Step Output Type"/>
+						</tool>
+					</fileInfo>
 					<sourceEntries>
 						<entry excluding="wxGTK-2.8.10" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
@@ -437,6 +447,14 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.cygwin.exe.release.788673344.1364448464" name="mjlj_config.rc" rcbsApplicability="disable" resourcePath="resource/mjlj_config.rc" toolsToInvoke="">
+						<tool customBuildStep="true" id="org.eclipse.cdt.managedbuilder.ui.rcbs.1231312901" name="Resource Custom Build Step">
+							<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.1923881287" name="Resource Custom Build Step Input Type">
+								<additionalInput kind="additionalinputdependency" paths=""/>
+							</inputType>
+							<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.399251371" name="Resource Custom Build Step Output Type"/>
+						</tool>
+					</fileInfo>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
@@ -1858,5 +1876,8 @@
 				</scannerInfoProvider>
 			</profile>
 		</scannerConfigBuildInfo>
+	</storageModule>
+	<storageModule moduleId="refreshScope" versionNumber="1">
+		<resource resourceType="PROJECT" workspacePath="/raceAnalyzer"/>
 	</storageModule>
 </cproject>

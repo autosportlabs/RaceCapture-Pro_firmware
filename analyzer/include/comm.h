@@ -2,8 +2,7 @@
 #define _COMM_H_
 
 #include "configData.h"
-#include "wx/ctb-0.13/serport.h"
-
+#include "wx/ctb/serport.h"
 
 
 
@@ -17,6 +16,8 @@ class RaceAnalyzerComm {
 		void CloseSerialPort();
 		wxString readScript();
 		void writeScript(wxString &script);
+		void reloadScript(void);
+
 
 	private:
 
@@ -26,14 +27,22 @@ class RaceAnalyzerComm {
 
 		static const size_t SCRIPT_PAGE_LENGTH = 256;
 		static const int SCRIPT_PAGES = 40;
+		static const char EQUALS_HIDE_CHAR = 1;
+		static const char SEMICOLON_HIDE_CHAR = 2;
 
 		wxSerialPort* OpenSerialPort();
 		wxSerialPort* GetSerialPort();
+		void checkThrowResult(wxString &result);
 		int FlushReceiveBuffer(wxSerialPort * comPort);
 		int ReadLine(wxSerialPort * comPort, wxString &buffer, int timeout);
 		int WriteLine(wxSerialPort * comPort, wxString &buffer, int timeout);
-		int WriteCommand(wxSerialPort *comPort, wxString &buffer, int timeout);
-
+		wxString SendCommand(wxSerialPort *comPort, wxString &buffer, int timeout = DEFAULT_TIMEOUT);
+		void unescape(wxString &data);
+		void escape(wxString &data);
+		wxString getParam(wxString &data, const wxString &name);
+		void hideInnerTokens(wxString &data);
+		void unhideInnerTokens(wxString &data);
+		void swapCharsInsideQuotes(wxString &data, char find,char replace);
 
 		void CheckThrowIncompatibleVersion();
 
@@ -50,13 +59,16 @@ class CommException{
 		static const int OPEN_PORT_FAILED = 0;
 		static const int DATA_ERROR = 1;
 		static const int COMM_TIMEOUT = 2;
+		static const int CMD_ERROR = 3;
 
-		CommException(int errorStatus);
+		CommException(int errorStatus, wxString errorDetail = "");
 		int GetErrorStatus();
+		wxString GetErrorDetail();
 		wxString GetErrorMessage();
 
 	private:
 		int _errorStatus;
+		wxString _errorDetail;
 };
 
 #endif
