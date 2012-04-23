@@ -24,6 +24,7 @@ unsigned int GetGPIOBits(void);
 void InitADC(void);
 
 void InitLEDs(void);
+void InitPushbutton(void);
 
 void EnableLED(unsigned int Led);
 void DisableLED(unsigned int Led);

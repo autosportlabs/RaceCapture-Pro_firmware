@@ -52,7 +52,8 @@ void InitLoggerHardware(){
 	InitPWM(loggerConfig);
 	initTimerChannels(loggerConfig);
 	InitLEDs();
-	InitFSHardware();
+	InitPushbutton();
+	InitSDCard();
 	if (loggerConfig->AccelInstalled) accel_init();
 }
 
@@ -67,6 +68,7 @@ void InitWatchdog(int timeoutMs){
 }
 
 void InitGPIO(LoggerConfig *loggerConfig){
+
 
 //	AT91F_PIO_CfgInput(AT91C_BASE_PIOA, GPIO_MASK);
 //	AT91C_BASE_PIOA->PIO_PPUDR = GPIO_MASK; //disable pullup
@@ -107,6 +109,7 @@ void InitSDCard(void){
 	AT91F_PIO_CfgInput(AT91C_BASE_PIOA, SD_CARD_DETECT | SD_WRITE_PROTECT);
 	AT91C_BASE_PIOA->PIO_PPUER = SD_CARD_DETECT | SD_WRITE_PROTECT; //enable pullup
 	AT91C_BASE_PIOA->PIO_IFER = SD_CARD_DETECT | SD_WRITE_PROTECT; //enable input filter
+	InitFSHardware();
 }
 
 int isCardPresent(void){
@@ -485,6 +488,13 @@ void InitLEDs(void){
     AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, LED_MASK ) ;
    //* Clear the LED's.
     AT91F_PIO_SetOutput( AT91C_BASE_PIOA, LED_MASK ) ;
+}
+
+void InitPushbutton(void){
+	AT91F_PIO_CfgInput(AT91C_BASE_PIOA, PIO_PUSHBUTTON_SWITCH);
+	AT91C_BASE_PIOA->PIO_PPUER = PIO_PUSHBUTTON_SWITCH; //enable pullup
+	AT91C_BASE_PIOA->PIO_IFER = PIO_PUSHBUTTON_SWITCH; //enable input filter
+	AT91C_BASE_PIOA->PIO_MDER = PIO_PUSHBUTTON_SWITCH; //enable multi drain
 }
 
 void EnableLED(unsigned int Led){

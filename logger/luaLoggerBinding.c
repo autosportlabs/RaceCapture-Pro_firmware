@@ -27,184 +27,184 @@ void registerLuaLoggerBindings(){
 	lua_State *L = getLua();
 	lockLua();
 	//Read / control inputs and outputs
-	lua_register(L,"getGpio",Lua_GetGPIO);
-	lua_register(L,"getButton",Lua_GetButton);
-	lua_register(L,"setGpio",Lua_SetGPIO);
+	lua_registerlight(L,"getGpio",Lua_GetGPIO);
+	lua_registerlight(L,"getButton",Lua_GetButton);
+	lua_registerlight(L,"setGpio",Lua_SetGPIO);
 
-	lua_register(L,"isSDCardPresent", Lua_IsSDCardPresent);
-	lua_register(L,"isSDCardWritable", Lua_IsSDCardWritable);
-	lua_register(L,"setPWMDutyCycle",Lua_SetPWMDutyCycle);
-	lua_register(L,"setPWMDutyCycleRaw",Lua_SetPWMDutyCycleRaw);
+	lua_registerlight(L,"isSDCardPresent", Lua_IsSDCardPresent);
+	lua_registerlight(L,"isSDCardWritable", Lua_IsSDCardWritable);
+	lua_registerlight(L,"setPWMDutyCycle",Lua_SetPWMDutyCycle);
+	lua_registerlight(L,"setPWMDutyCycleRaw",Lua_SetPWMDutyCycleRaw);
 
-	lua_register(L,"setPwmPeriod",Lua_SetPWMPeriod);
-	lua_register(L,"setPwmPeriodRaw",Lua_SetPWMPeriodRaw);
-	lua_register(L,"setAnalogOut",Lua_SetAnalogOut);
+	lua_registerlight(L,"setPwmPeriod",Lua_SetPWMPeriod);
+	lua_registerlight(L,"setPwmPeriodRaw",Lua_SetPWMPeriodRaw);
+	lua_registerlight(L,"setAnalogOut",Lua_SetAnalogOut);
 
-	lua_register(L,"getTimerRpm",Lua_GetRPM);
-	lua_register(L,"getTimerPeriodMs",Lua_GetPeriodMs);
-	lua_register(L,"getTimerPeriodUsec",Lua_GetPeriodUsec);
-	lua_register(L,"getTimerFrequency",Lua_GetFrequency);
-	lua_register(L,"getTimerRaw",Lua_GetTimerRaw);
+	lua_registerlight(L,"getTimerRpm",Lua_GetRPM);
+	lua_registerlight(L,"getTimerPeriodMs",Lua_GetPeriodMs);
+	lua_registerlight(L,"getTimerPeriodUsec",Lua_GetPeriodUsec);
+	lua_registerlight(L,"getTimerFrequency",Lua_GetFrequency);
+	lua_registerlight(L,"getTimerRaw",Lua_GetTimerRaw);
 
 
-	lua_register(L,"resetTimerCount",Lua_ResetTimerCount);
-	lua_register(L,"getTimerCount",Lua_GetTimerCount);
+	lua_registerlight(L,"resetTimerCount",Lua_ResetTimerCount);
+	lua_registerlight(L,"getTimerCount",Lua_GetTimerCount);
 	
-	lua_register(L,"getAnalog",Lua_GetAnalog);
-	lua_register(L,"getAnalogRaw",Lua_GetAnalogRaw);
+	lua_registerlight(L,"getAnalog",Lua_GetAnalog);
+	lua_registerlight(L,"getAnalogRaw",Lua_GetAnalogRaw);
 
 
-	lua_register(L,"readSerial", Lua_ReadSerialLine);
-	lua_register(L,"writeSerial", Lua_WriteSerial);
+	lua_registerlight(L,"readSerial", Lua_ReadSerialLine);
+	lua_registerlight(L,"writeSerial", Lua_WriteSerial);
 
-	lua_register(L,"getGpsLatitude",Lua_GetGPSLatitude);
-	lua_register(L,"getGpsLongitude", Lua_GetGPSLongitude);
-	lua_register(L,"getGpsVelocity",Lua_GetGPSVelocity);
-	lua_register(L,"getGpsQuality", Lua_GetGPSQuality);
-	lua_register(L,"getGpsTime", Lua_GetGPSTime);
-	lua_register(L,"getLapCount", Lua_GetLapCount);
-	lua_register(L,"getLapTime", Lua_GetLapTime);
-	lua_register(L,"getGpsSecondsSinceMidnight", Lua_GetGPSSecondsSinceMidnight);
-	lua_register(L,"getAtStartFinish",Lua_GetGPSAtStartFinish);
+	lua_registerlight(L,"getGpsLatitude",Lua_GetGPSLatitude);
+	lua_registerlight(L,"getGpsLongitude", Lua_GetGPSLongitude);
+	lua_registerlight(L,"getGpsVelocity",Lua_GetGPSVelocity);
+	lua_registerlight(L,"getGpsQuality", Lua_GetGPSQuality);
+	lua_registerlight(L,"getGpsTime", Lua_GetGPSTime);
+	lua_registerlight(L,"getLapCount", Lua_GetLapCount);
+	lua_registerlight(L,"getLapTime", Lua_GetLapTime);
+	lua_registerlight(L,"getGpsSecondsSinceMidnight", Lua_GetGPSSecondsSinceMidnight);
+	lua_registerlight(L,"getAtStartFinish",Lua_GetGPSAtStartFinish);
 
-	lua_register(L,"getTimeDiff", Lua_GetTimeDiff);
-	lua_register(L,"getTimeSince", Lua_GetTimeSince);
+	lua_registerlight(L,"getTimeDiff", Lua_GetTimeDiff);
+	lua_registerlight(L,"getTimeSince", Lua_GetTimeSince);
 					
-	lua_register(L,"readAccel",Lua_ReadAccelerometer);
-	lua_register(L,"readAccelRaw",Lua_ReadAccelerometerRaw);
+	lua_registerlight(L,"readAccel",Lua_ReadAccelerometer);
+	lua_registerlight(L,"readAccelRaw",Lua_ReadAccelerometerRaw);
 	
-	lua_register(L,"startLogging",Lua_StartLogging);
-	lua_register(L,"stopLogging",Lua_StopLogging);	
+	lua_registerlight(L,"startLogging",Lua_StartLogging);
+	lua_registerlight(L,"stopLogging",Lua_StopLogging);
 
-	lua_register(L,"setLed",Lua_SetLED);
+	lua_registerlight(L,"setLed",Lua_SetLED);
 
 	//Logger configuration editing
-	lua_register(L,"flashLoggerConfig", Lua_FlashLoggerConfig);
+	lua_registerlight(L,"flashLoggerConfig", Lua_FlashLoggerConfig);
 
-	lua_register(L,"setAnalogLabel", Lua_SetAnalogChannelLabel);
-	lua_register(L,"getAnalogLabel", Lua_GetAnalogChannelLabel);
+	lua_registerlight(L,"setAnalogLabel", Lua_SetAnalogChannelLabel);
+	lua_registerlight(L,"getAnalogLabel", Lua_GetAnalogChannelLabel);
 	
-	lua_register(L,"setAnalogSampleRate", Lua_SetAnalogChannelSampleRate);
-	lua_register(L,"getAnalogSampleRate", Lua_GetAnalogChannelSampleRate);
+	lua_registerlight(L,"setAnalogSampleRate", Lua_SetAnalogChannelSampleRate);
+	lua_registerlight(L,"getAnalogSampleRate", Lua_GetAnalogChannelSampleRate);
 	
-	lua_register(L,"setAnalogScaling", Lua_SetAnalogChannelScaling);
-	lua_register(L,"getAnalogScaling", Lua_GetAnalogChannelScaling);
+	lua_registerlight(L,"setAnalogScaling", Lua_SetAnalogChannelScaling);
+	lua_registerlight(L,"getAnalogScaling", Lua_GetAnalogChannelScaling);
 	
-	lua_register(L,"setPwmClockFrequency",Lua_SetPWMClockFrequency);
-	lua_register(L,"getPwmClockFrequency",Lua_GetPWMClockFrequency);
+	lua_registerlight(L,"setPwmClockFrequency",Lua_SetPWMClockFrequency);
+	lua_registerlight(L,"getPwmClockFrequency",Lua_GetPWMClockFrequency);
 	
-	lua_register(L,"setPwmLabel", Lua_SetPWMLabel);
-	lua_register(L,"getPwmLabel", Lua_GetPWMLabel);
+	lua_registerlight(L,"setPwmLabel", Lua_SetPWMLabel);
+	lua_registerlight(L,"getPwmLabel", Lua_GetPWMLabel);
 	
-	lua_register(L,"setPwmSampleRate", Lua_SetPWMSampleRate);
-	lua_register(L,"getPwmSampleRate", Lua_GetPWMSampleRate);
+	lua_registerlight(L,"setPwmSampleRate", Lua_SetPWMSampleRate);
+	lua_registerlight(L,"getPwmSampleRate", Lua_GetPWMSampleRate);
 	
-	lua_register(L,"setPwmOutputConfig", Lua_SetPWMOutputConfig);
-	lua_register(L,"getPwmOutputConfig", Lua_GetPWMOutputConfig);
+	lua_registerlight(L,"setPwmOutputConfig", Lua_SetPWMOutputConfig);
+	lua_registerlight(L,"getPwmOutputConfig", Lua_GetPWMOutputConfig);
 	
-	lua_register(L,"setPwmLoggingConfig", Lua_SetPWMLoggingConfig);
-	lua_register(L,"getPwmLoggingConfig", Lua_GetPWMLoggingConfig);
+	lua_registerlight(L,"setPwmLoggingConfig", Lua_SetPWMLoggingConfig);
+	lua_registerlight(L,"getPwmLoggingConfig", Lua_GetPWMLoggingConfig);
 	
-	lua_register(L,"setPwmStartupDutyCycle", Lua_SetPWMStartupDutyCycle);
-	lua_register(L,"getPwmStartupDutyCycle", Lua_GetPWMStartupDutyCycle);
+	lua_registerlight(L,"setPwmStartupDutyCycle", Lua_SetPWMStartupDutyCycle);
+	lua_registerlight(L,"getPwmStartupDutyCycle", Lua_GetPWMStartupDutyCycle);
 		
-	lua_register(L,"setPwmStartupPeriod", Lua_SetPWMStartupPeriod);
-	lua_register(L,"getPwmStartupPeriod", Lua_GetPWMStartupPeriod);
+	lua_registerlight(L,"setPwmStartupPeriod", Lua_SetPWMStartupPeriod);
+	lua_registerlight(L,"getPwmStartupPeriod", Lua_GetPWMStartupPeriod);
 	
-	lua_register(L,"setPwmVoltageScaling", Lua_SetPWMVoltageScaling);
-	lua_register(L,"getPwmVoltageScaling", Lua_GetPWMVoltageScaling);
+	lua_registerlight(L,"setPwmVoltageScaling", Lua_SetPWMVoltageScaling);
+	lua_registerlight(L,"getPwmVoltageScaling", Lua_GetPWMVoltageScaling);
 	
-	lua_register(L,"setGpsInstalled", Lua_SetGPSInstalled);
-	lua_register(L,"getGpsInstalled", Lua_GetGPSInstalled);
+	lua_registerlight(L,"setGpsInstalled", Lua_SetGPSInstalled);
+	lua_registerlight(L,"getGpsInstalled", Lua_GetGPSInstalled);
 	
-	lua_register(L,"setGpsStartFinish",Lua_SetGPSStartFinish);
-	lua_register(L,"getGpsStartFinish",Lua_GetGPSStartFinish);
+	lua_registerlight(L,"setGpsStartFinish",Lua_SetGPSStartFinish);
+	lua_registerlight(L,"getGpsStartFinish",Lua_GetGPSStartFinish);
 
-	lua_register(L,"setGpsQualityLabel", Lua_SetGPSQualityLabel);
-	lua_register(L,"getGpsQualityLabel", Lua_GetGPSQualityLabel);
+	lua_registerlight(L,"setGpsQualityLabel", Lua_SetGPSQualityLabel);
+	lua_registerlight(L,"getGpsQualityLabel", Lua_GetGPSQualityLabel);
 	
-	lua_register(L,"setGpsSatsLabel", Lua_SetGPSSatsLabel);
-	lua_register(L,"getGpsSatsLabel", Lua_GetGPSSatsLabel);
+	lua_registerlight(L,"setGpsSatsLabel", Lua_SetGPSSatsLabel);
+	lua_registerlight(L,"getGpsSatsLabel", Lua_GetGPSSatsLabel);
 	
-	lua_register(L,"setGpsLatitudeLabel", Lua_SetGPSLatitudeLabel);
-	lua_register(L,"getGpsLatitudeLabel", Lua_GetGPSLatitudeLabel);
+	lua_registerlight(L,"setGpsLatitudeLabel", Lua_SetGPSLatitudeLabel);
+	lua_registerlight(L,"getGpsLatitudeLabel", Lua_GetGPSLatitudeLabel);
 	
-	lua_register(L,"setGpsLongitudeLabel", Lua_SetGPSLongitudeLabel);
-	lua_register(L,"getGpsLongitudeLabel", Lua_GetGPSLongitudeLabel);
+	lua_registerlight(L,"setGpsLongitudeLabel", Lua_SetGPSLongitudeLabel);
+	lua_registerlight(L,"getGpsLongitudeLabel", Lua_GetGPSLongitudeLabel);
 	
-	lua_register(L,"setGpsTimeLabel", Lua_SetGPSTimeLabel);
-	lua_register(L,"getGpsTimeLabel", Lua_GetGPSTimeLabel);
+	lua_registerlight(L,"setGpsTimeLabel", Lua_SetGPSTimeLabel);
+	lua_registerlight(L,"getGpsTimeLabel", Lua_GetGPSTimeLabel);
 	
-	lua_register(L,"setGpsVelocityLabel", Lua_SetGPSVelocityLabel);
-	lua_register(L,"getGpsVelocityLabel", Lua_GetGPSVelocityLabel);
+	lua_registerlight(L,"setGpsVelocityLabel", Lua_SetGPSVelocityLabel);
+	lua_registerlight(L,"getGpsVelocityLabel", Lua_GetGPSVelocityLabel);
 	
-	lua_register(L,"setGpsPositionSampleRate", Lua_SetGPSPositionSampleRate);
-	lua_register(L,"getGpsPositionSampleRate", Lua_GetGPSPositionSampleRate);
+	lua_registerlight(L,"setGpsPositionSampleRate", Lua_SetGPSPositionSampleRate);
+	lua_registerlight(L,"getGpsPositionSampleRate", Lua_GetGPSPositionSampleRate);
 	
-	lua_register(L,"setGpsVelocitySampleRate", Lua_SetGPSVelocitySampleRate);
-	lua_register(L,"getGpsVelocitySampleRate", Lua_GetGPSVelocitySampleRate);
+	lua_registerlight(L,"setGpsVelocitySampleRate", Lua_SetGPSVelocitySampleRate);
+	lua_registerlight(L,"getGpsVelocitySampleRate", Lua_GetGPSVelocitySampleRate);
 	
-	lua_register(L,"setGpsTimeSampleRate", Lua_SetGPSTimeSampleRate);
-	lua_register(L,"getGpsTimeSampleRate", Lua_GetGPSTimeSampleRate);
+	lua_registerlight(L,"setGpsTimeSampleRate", Lua_SetGPSTimeSampleRate);
+	lua_registerlight(L,"getGpsTimeSampleRate", Lua_GetGPSTimeSampleRate);
 
-	lua_register(L,"setLapCountSampleRate", Lua_SetLapCountSampleRate);
-	lua_register(L,"getLapCountSampleRate", Lua_GetLapCountSampleRate);
+	lua_registerlight(L,"setLapCountSampleRate", Lua_SetLapCountSampleRate);
+	lua_registerlight(L,"getLapCountSampleRate", Lua_GetLapCountSampleRate);
 
-	lua_register(L,"setLapTimeSampleRate", Lua_SetLapTimeSampleRate);
-	lua_register(L,"getLapTimeSampleRate", Lua_GetLapTimeSampleRate);
+	lua_registerlight(L,"setLapTimeSampleRate", Lua_SetLapTimeSampleRate);
+	lua_registerlight(L,"getLapTimeSampleRate", Lua_GetLapTimeSampleRate);
 
-	lua_register(L,"setLapCountLabel", Lua_SetLapCountLabel);
-	lua_register(L,"getLapCountLabel", Lua_GetLapCountLabel);
+	lua_registerlight(L,"setLapCountLabel", Lua_SetLapCountLabel);
+	lua_registerlight(L,"getLapCountLabel", Lua_GetLapCountLabel);
 
-	lua_register(L,"setLapTimeLabel", Lua_SetLapTimeLabel);
-	lua_register(L,"getLapTimeLabel", Lua_GetLapTimeLabel);
+	lua_registerlight(L,"setLapTimeLabel", Lua_SetLapTimeLabel);
+	lua_registerlight(L,"getLapTimeLabel", Lua_GetLapTimeLabel);
 	
-	lua_register(L,"setGpioLabel", Lua_SetGPIOLabel);
-	lua_register(L,"getGpioLabel", Lua_GetGPIOLabel);
+	lua_registerlight(L,"setGpioLabel", Lua_SetGPIOLabel);
+	lua_registerlight(L,"getGpioLabel", Lua_GetGPIOLabel);
 	
-	lua_register(L,"setGpioSampleRate", Lua_SetGPIOSampleRate);
-	lua_register(L,"getGpioSampleRate", Lua_GetGPIOSampleRate);
+	lua_registerlight(L,"setGpioSampleRate", Lua_SetGPIOSampleRate);
+	lua_registerlight(L,"getGpioSampleRate", Lua_GetGPIOSampleRate);
 	
-	lua_register(L,"setGpioConfig", Lua_SetGPIOConfig);
-	lua_register(L,"getGpioConfig", Lua_GetGPIOConfig);
+	lua_registerlight(L,"setGpioConfig", Lua_SetGPIOConfig);
+	lua_registerlight(L,"getGpioConfig", Lua_GetGPIOConfig);
 	
-	lua_register(L,"setTimerLabel", Lua_SetTimerLabel);
-	lua_register(L,"getTimerLabel", Lua_GetTimerLabel);
+	lua_registerlight(L,"setTimerLabel", Lua_SetTimerLabel);
+	lua_registerlight(L,"getTimerLabel", Lua_GetTimerLabel);
 	
-	lua_register(L,"setTimerSampleRate", Lua_SetTimerSampleRate);
-	lua_register(L,"getTimerSampleRate", Lua_GetTimerSampleRate);
+	lua_registerlight(L,"setTimerSampleRate", Lua_SetTimerSampleRate);
+	lua_registerlight(L,"getTimerSampleRate", Lua_GetTimerSampleRate);
 	
-	lua_register(L,"setTimerConfig", Lua_SetTimerConfig);
-	lua_register(L,"getTimerConfig", Lua_GetTimerConfig);
+	lua_registerlight(L,"setTimerConfig", Lua_SetTimerConfig);
+	lua_registerlight(L,"getTimerConfig", Lua_GetTimerConfig);
 	
-	lua_register(L,"setTimerPulsePerRevolution",Lua_SetTimerPulsePerRevolution);
-	lua_register(L,"getTimerPulsePerRevolution",Lua_GetTimerPulsePerRevolution);
+	lua_registerlight(L,"setTimerPulsePerRevolution",Lua_SetTimerPulsePerRevolution);
+	lua_registerlight(L,"getTimerPulsePerRevolution",Lua_GetTimerPulsePerRevolution);
 	
-	lua_register(L,"setTimerDivider", Lua_SetTimerDivider);
-	lua_register(L,"getTimerDivider", Lua_GetTimerDivider);
+	lua_registerlight(L,"setTimerDivider", Lua_SetTimerDivider);
+	lua_registerlight(L,"getTimerDivider", Lua_GetTimerDivider);
 	
-	lua_register(L,"calculateTimerScaling", Lua_CalculateTimerScaling);
-	lua_register(L,"getTimerScaling", Lua_GetTimerScaling);
+	lua_registerlight(L,"calculateTimerScaling", Lua_CalculateTimerScaling);
+	lua_registerlight(L,"getTimerScaling", Lua_GetTimerScaling);
 	
-	lua_register(L,"setAccelInstalled",Lua_SetAccelInstalled);
-	lua_register(L,"getAccelInstalled",Lua_GetAccelInstalled);
+	lua_registerlight(L,"setAccelInstalled",Lua_SetAccelInstalled);
+	lua_registerlight(L,"getAccelInstalled",Lua_GetAccelInstalled);
 	
-	lua_register(L,"setAccelLabel",Lua_SetAccelLabel);
-	lua_register(L,"getAccelLabel",Lua_GetAccelLabel);
+	lua_registerlight(L,"setAccelLabel",Lua_SetAccelLabel);
+	lua_registerlight(L,"getAccelLabel",Lua_GetAccelLabel);
 	
-	lua_register(L,"setAccelSampleRate",Lua_SetAccelSampleRate);
-	lua_register(L,"getAccelSampleRate",Lua_GetAccelSampleRate);
+	lua_registerlight(L,"setAccelSampleRate",Lua_SetAccelSampleRate);
+	lua_registerlight(L,"getAccelSampleRate",Lua_GetAccelSampleRate);
 	
-	lua_register(L,"setAccelConfig",Lua_SetAccelConfig);
-	lua_register(L,"getAccelConfig",Lua_GetAccelConfig);
+	lua_registerlight(L,"setAccelConfig",Lua_SetAccelConfig);
+	lua_registerlight(L,"getAccelConfig",Lua_GetAccelConfig);
 	
-	lua_register(L,"setAccelChannel",Lua_SetAccelChannel);
-	lua_register(L,"getAccelChannel",Lua_GetAccelChannel);
+	lua_registerlight(L,"setAccelChannel",Lua_SetAccelChannel);
+	lua_registerlight(L,"getAccelChannel",Lua_GetAccelChannel);
 	
-	lua_register(L,"setAccelZeroValue",Lua_SetAccelZeroValue);
-	lua_register(L,"getAccelZeroValue",Lua_GetAccelZeroValue);
+	lua_registerlight(L,"setAccelZeroValue",Lua_SetAccelZeroValue);
+	lua_registerlight(L,"getAccelZeroValue",Lua_GetAccelZeroValue);
 
-	lua_register(L,"calibrateAccelZero",Lua_CalibrateAccelZero);
+	lua_registerlight(L,"calibrateAccelZero",Lua_CalibrateAccelZero);
 	
 	unlockLua();
 }

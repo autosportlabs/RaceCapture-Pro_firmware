@@ -35,18 +35,11 @@ void createGPIOTasks(){
     AT91PS_AIC     pAic;
 	pAic = AT91C_BASE_AIC;
 
-	AT91F_PIO_CfgInput(AT91C_BASE_PIOA, PIO_PUSHBUTTON_SWITCH);
-	AT91C_BASE_PIOA->PIO_PPUER = PIO_PUSHBUTTON_SWITCH; //enable pullup
-	AT91C_BASE_PIOA->PIO_IFER = PIO_PUSHBUTTON_SWITCH; //enable input filter
-	AT91C_BASE_PIOA->PIO_MDER = PIO_PUSHBUTTON_SWITCH; //enable multi drain
-
 	AT91F_PIO_InterruptEnable(AT91C_BASE_PIOA,PIO_PUSHBUTTON_SWITCH);
 
 	AT91F_AIC_ConfigureIt ( pAic, AT91C_ID_PIOA, PUSHBUTTON_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL, gpio_irq_handler);
 	AT91F_AIC_EnableIt (pAic, AT91C_ID_PIOA);
 	portEXIT_CRITICAL();
-
-	InitSDCard();
 
 	xTaskCreate( onPushbuttonTask, 	( signed portCHAR * ) "PushbuttonTask", 	GPIO_TASK_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
 	xTaskCreate( onGPI1Task, 		( signed portCHAR * ) "GPI1Task", 			GPIO_TASK_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
