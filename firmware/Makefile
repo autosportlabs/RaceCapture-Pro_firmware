@@ -93,7 +93,6 @@ $(RTOS_SRC_DIR)/list.c \
 $(RTOS_GCC_DIR)/port.c \
 $(UTIL_DIR)/modp_numtoa.c \
 $(UTIL_DIR)/modp_atonum.c \
-$(UTIL_DIR)/base64.c \
 $(UTIL_DIR)/taskUtil.c \
 $(USB_SRC_DIR)/source/usb_comm.c \
 $(USB_SRC_DIR)/source/USB-CDC.c \
