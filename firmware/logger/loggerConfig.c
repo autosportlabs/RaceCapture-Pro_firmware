@@ -96,67 +96,67 @@ int filterGPIOConfig(int value){
 
 int filterPWMOutputConfig(int value){
 	switch(value){
-		case CONFIG_PWM_ANALOG:
-			return CONFIG_PWM_ANALOG;
-		case CONFIG_PWM_FREQUENCY:
+		case MODE_PWM_ANALOG:
+			return MODE_PWM_ANALOG;
+		case MODE_PWM_FREQUENCY:
 		default:
-			return CONFIG_PWM_FREQUENCY;	
+			return MODE_PWM_FREQUENCY;
 	}
 }
 
 int filterPWMLoggingConfig(int config){
 	switch (config){
-		case CONFIG_LOGGING_PWM_PERIOD:
-			return CONFIG_LOGGING_PWM_PERIOD;
-		case CONFIG_LOGGING_PWM_DUTY:
-			return CONFIG_LOGGING_PWM_DUTY;
-		case CONFIG_LOGGING_PWM_VOLTS:
+		case MODE_LOGGING_PWM_PERIOD:
+			return MODE_LOGGING_PWM_PERIOD;
+		case MODE_LOGGING_PWM_DUTY:
+			return MODE_LOGGING_PWM_DUTY;
+		case MODE_LOGGING_PWM_VOLTS:
 		default:
-			return CONFIG_LOGGING_PWM_VOLTS;
+			return MODE_LOGGING_PWM_VOLTS;
 	}
 }
 
 unsigned short filterTimerDivider(unsigned short divider){
 	switch(divider){
-	case MCK_2:
-		return MCK_2;
-	case MCK_8:
-		return MCK_8;
-	case MCK_32:
-		return MCK_32;
-	case MCK_128:
-		return MCK_128;
-	case MCK_1024:
-		return MCK_1024;
+	case TIMER_MCK_2:
+		return TIMER_MCK_2;
+	case TIMER_MCK_8:
+		return TIMER_MCK_8;
+	case TIMER_MCK_32:
+		return TIMER_MCK_32;
+	case TIMER_MCK_128:
+		return TIMER_MCK_128;
+	case TIMER_MCK_1024:
+		return TIMER_MCK_1024;
 	default:
-		return MCK_128;
+		return TIMER_MCK_128;
 	}
 }
 int filterTimerConfig(int config){
 	switch (config){
-		case CONFIG_LOGGING_TIMER_RPM:
-			return CONFIG_LOGGING_TIMER_RPM;
-		case CONFIG_LOGGING_TIMER_PERIOD_MS:
-			return CONFIG_LOGGING_TIMER_PERIOD_MS;
-		case CONFIG_LOGGING_TIMER_PERIOD_USEC:
-			return CONFIG_LOGGING_TIMER_PERIOD_USEC;
+		case MODE_LOGGING_TIMER_RPM:
+			return MODE_LOGGING_TIMER_RPM;
+		case MODE_LOGGING_TIMER_PERIOD_MS:
+			return MODE_LOGGING_TIMER_PERIOD_MS;
+		case MODE_LOGGING_TIMER_PERIOD_USEC:
+			return MODE_LOGGING_TIMER_PERIOD_USEC;
 		default:
-		case CONFIG_LOGGING_TIMER_FREQUENCY:
-			return CONFIG_LOGGING_TIMER_FREQUENCY;	
+		case MODE_LOGGING_TIMER_FREQUENCY:
+			return MODE_LOGGING_TIMER_FREQUENCY;
 	}
 }
 
 int filterAccelChannel(int config){
 	switch(config){
-		case CONFIG_ACCEL_CHANNEL_Y:
-			return CONFIG_ACCEL_CHANNEL_Y;
-		case CONFIG_ACCEL_CHANNEL_Z:
-			return CONFIG_ACCEL_CHANNEL_Z;
-		case CONFIG_ACCEL_CHANNEL_ZT:
-			return CONFIG_ACCEL_CHANNEL_ZT;
+		case ACCEL_CHANNEL_Y:
+			return ACCEL_CHANNEL_Y;
+		case ACCEL_CHANNEL_Z:
+			return ACCEL_CHANNEL_Z;
+		case ACCEL_CHANNEL_ZT:
+			return ACCEL_CHANNEL_ZT;
 		default:
-		case CONFIG_ACCEL_CHANNEL_X:
-			return CONFIG_ACCEL_CHANNEL_X;
+		case ACCEL_CHANNEL_X:
+			return ACCEL_CHANNEL_X;
 	}
 }	
 
@@ -171,21 +171,21 @@ int filterAccelRawValue(int accelRawValue){
 
 int filterAccelConfig(int config){
 	switch (config){
-		case CONFIG_ACCEL_DISABLED:
-			return CONFIG_ACCEL_DISABLED;
-		case CONFIG_ACCEL_INVERTED:
-			return CONFIG_ACCEL_INVERTED;
+		case MODE_ACCEL_DISABLED:
+			return MODE_ACCEL_DISABLED;
+		case MODE_ACCEL_INVERTED:
+			return MODE_ACCEL_INVERTED;
 		default:
-		case CONFIG_ACCEL_NORMAL:
-			return CONFIG_ACCEL_NORMAL;
+		case MODE_ACCEL_NORMAL:
+			return MODE_ACCEL_NORMAL;
 	}
 }
 
 int filterPWMDutyCycle(int dutyCycle){
-	if (dutyCycle > MAX_DUTY_CYCLE){
-		dutyCycle = MAX_DUTY_CYCLE;
-	} else if (dutyCycle < MIN_DUTY_CYCLE){
-		dutyCycle = MIN_DUTY_CYCLE;
+	if (dutyCycle > MAX_PWM_DUTY_CYCLE){
+		dutyCycle = MAX_PWM_DUTY_CYCLE;
+	} else if (dutyCycle < MIN_PWM_DUTY_CYCLE){
+		dutyCycle = MIN_PWM_DUTY_CYCLE;
 	}
 	return dutyCycle;
 }

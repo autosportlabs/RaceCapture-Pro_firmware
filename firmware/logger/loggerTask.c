@@ -407,17 +407,17 @@ void writeTimerChannels(portTickType currentTicks, LoggerConfig *loggerConfig){
 				int value = 0;
 				int scaling = c->calculatedScaling;
 				unsigned int timerValue = timers[i];
-				switch (c->config){
-					case CONFIG_LOGGING_TIMER_RPM:
+				switch (c->mode){
+					case MODE_LOGGING_TIMER_RPM:
 						value = calculateRPM(timerValue,scaling);
 						break;
-					case CONFIG_LOGGING_TIMER_FREQUENCY:
+					case MODE_LOGGING_TIMER_FREQUENCY:
 						value = calculateFrequencyHz(timerValue,scaling);
 						break;
-					case CONFIG_LOGGING_TIMER_PERIOD_MS:
+					case MODE_LOGGING_TIMER_PERIOD_MS:
 						value = calculatePeriodMs(timerValue,scaling);
 						break;
-					case CONFIG_LOGGING_TIMER_PERIOD_USEC:
+					case MODE_LOGGING_TIMER_PERIOD_USEC:
 						value = calculatePeriodUsec(timerValue,scaling);
 						break;
 					default:
@@ -439,13 +439,13 @@ void writePWMChannels(portTickType currentTicks, LoggerConfig *loggerConfig){
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
 				switch (c->loggingConfig){
-					case CONFIG_LOGGING_PWM_PERIOD:
+					case MODE_LOGGING_PWM_PERIOD:
 						lineAppendInt(PWM_GetPeriod(i));
 						break;
-					case CONFIG_LOGGING_PWM_DUTY:
+					case MODE_LOGGING_PWM_DUTY:
 						lineAppendInt(PWM_GetDutyCycle(i));
 						break;
-					case CONFIG_LOGGING_PWM_VOLTS:
+					case MODE_LOGGING_PWM_VOLTS:
 						lineAppendFloat(PWM_GetDutyCycle(i) * c->voltageScaling,1); 
 						break;
 					default:

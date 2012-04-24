@@ -225,14 +225,14 @@ void GetPwmSampleRate(unsigned int argc, char **argv){
 void SetPwmOutputCfg(unsigned int argc, char **argv){
 	PWMConfig *c = AssertPwmSetParam(argc,argv);
 	if (NULL != c){
-		c->outputConfig = filterPWMOutputConfig(modp_atoi(argv[2]));
+		c->mode = filterPWMOutputConfig(modp_atoi(argv[2]));
 		SendCommandOK();
 	}
 }
 
 void GetPwmOutputCfg(unsigned int argc, char **argv){
 	PWMConfig *c = AssertPwmGetParam(argc,argv);
-	if (NULL != c) SendNameInt("outputConfig",c->outputConfig);
+	if (NULL != c) SendNameInt("outputConfig",c->mode);
 }
 
 void SetPwmLoggingCfg(unsigned int argc, char **argv){
@@ -520,14 +520,14 @@ void GetGpioSampleRate(unsigned int argc, char **argv){
 void SetGpioConfig(unsigned int argc, char **argv){
 	GPIOConfig * c = AssertGpioSetParam(argc,argv);
 	if (NULL != c){
-		c->config = filterGPIOConfig(modp_atoi(argv[2]));
+		c->mode = filterGPIOConfig(modp_atoi(argv[2]));
 		SendCommandOK();
 	}
 }
 
 void GetGpioConfig(unsigned int argc, char **argv){
 	GPIOConfig * c = AssertGpioGetParam(argc,argv);
-	if (NULL != c) SendNameInt("gpioConfig",c->config);
+	if (NULL != c) SendNameInt("gpioConfig",c->mode);
 }
 
 TimerConfig * AssertTimerSetParam(unsigned int argc, char **argv){
@@ -583,14 +583,14 @@ void GetTimerSampleRate(unsigned int argc, char **argv){
 void SetTimerCfg(unsigned int argc, char **argv){
 	TimerConfig * c = AssertTimerSetParam(argc,argv);
 	if (NULL != c){
-		c->config = filterTimerConfig(modp_atoi(argv[2]));
+		c->mode = filterTimerConfig(modp_atoi(argv[2]));
 		SendCommandOK();
 	}
 }
 
 void GetTimerCfg(unsigned int argc, char **argv){
 	TimerConfig * c = AssertTimerGetParam(argc,argv);
-	if (NULL != c) SendNameInt("timerConfig", c->config);
+	if (NULL != c) SendNameInt("timerConfig", c->mode);
 }
 
 void SetTimerPulsePerRev(unsigned int argc, char **argv){
@@ -708,14 +708,14 @@ void GetAccelSampleRate(unsigned int argc, char **argv){
 void SetAccelConfig(unsigned int argc, char **argv){
 	AccelConfig * c = AssertAccelSetParam(argc,argv);
 	if (NULL != c){
-		c->config = filterAccelConfig(modp_atoi(argv[2]));
+		c->mode = filterAccelConfig(modp_atoi(argv[2]));
 		SendCommandOK();
 	}
 }
 
 void GetAccelConfig(unsigned int argc, char **argv){
 	AccelConfig * c = AssertAccelGetParam(argc,argv);
-	if (NULL != c) SendNameInt("accelConfig",c->config);
+	if (NULL != c) SendNameInt("accelConfig",c->mode);
 }
 
 void SetAccelChannel(unsigned int argc, char **argv){
