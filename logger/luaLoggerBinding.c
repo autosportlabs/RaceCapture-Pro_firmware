@@ -308,7 +308,7 @@ int Lua_GetAccelSampleRate(lua_State *L){
 int Lua_SetAccelConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->config = filterAccelConfig(lua_tointeger(L,2));	
+		if (NULL != c) c->mode = filterAccelConfig(lua_tointeger(L,2));
 	}
 	return 0;
 }
@@ -317,7 +317,7 @@ int Lua_GetAccelConfig(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
-			lua_pushnumber(L, c->config);
+			lua_pushnumber(L, c->mode);
 			return 1;
 		}
 	}
@@ -413,7 +413,7 @@ int Lua_GetTimerSampleRate(lua_State *L){
 int Lua_SetTimerConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->config = filterTimerConfig(lua_tointeger(L,2));
+		if (NULL != c) c->mode = filterTimerConfig(lua_tointeger(L,2));
 	}	
 	return 0;
 }
@@ -422,7 +422,7 @@ int Lua_GetTimerConfig(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
-			lua_pushinteger(L, c->config);
+			lua_pushinteger(L, c->mode);
 			return 1;
 		}
 	}
@@ -530,7 +530,7 @@ int Lua_SetGPIOConfig(lua_State *L){
 		if (channel >= 0 && channel <= 2){//1 based
 			GPIOConfig *c = getGPIOConfigChannel(channel);
 			//0= configure as input, 1=configure as output
-			if (NULL != c) c->config = filterGPIOConfig(lua_tointeger(L,2));
+			if (NULL != c) c->mode = filterGPIOConfig(lua_tointeger(L,2));
 			InitGPIO(getWorkingLoggerConfig()); //reload configuration
 		}
 	}
@@ -544,7 +544,7 @@ int Lua_GetGPIOConfig(lua_State *L){
 			GPIOConfig *c = getGPIOConfigChannel(channel);
 			if (NULL !=c){
 				//0=configure as input, 1=configure as output
-				lua_pushinteger(L,c->config);
+				lua_pushinteger(L,c->mode);
 				return 1;
 			}
 		}
@@ -777,7 +777,7 @@ int Lua_GetPWMSampleRate(lua_State *L){
 int Lua_SetPWMOutputConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->outputConfig = filterPWMOutputConfig(lua_tointeger(L,2));	
+		if (NULL != c) c->mode = filterPWMOutputConfig(lua_tointeger(L,2));	
 	}
 	return 0;
 }
@@ -786,7 +786,7 @@ int Lua_GetPWMOutputConfig(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
-			lua_pushinteger(L,c->outputConfig);
+			lua_pushinteger(L,c->mode);
 			return 1;	
 		}		
 	}

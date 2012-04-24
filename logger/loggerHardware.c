@@ -76,7 +76,7 @@ void InitGPIO(LoggerConfig *loggerConfig){
 //	AT91C_BASE_PIOA->PIO_MDER = GPIO_MASK; //enable multi drain
 
 	GPIOConfig * gpios = loggerConfig->GPIOConfigs;
-	if (gpios[0].config == CONFIG_GPIO_IN){
+	if (gpios[0].mode == CONFIG_GPIO_IN){
 		AT91F_PIO_CfgInput(AT91C_BASE_PIOA, GPIO_1);
 		AT91C_BASE_PIOA->PIO_PPUDR = GPIO_1; //disable pullup
 		AT91C_BASE_PIOA->PIO_IFER = GPIO_1; //enable input filter
@@ -85,7 +85,7 @@ void InitGPIO(LoggerConfig *loggerConfig){
 	    AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, GPIO_1 );
 	    AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, GPIO_1 );
 	}
-	if (gpios[1].config == CONFIG_GPIO_IN){
+	if (gpios[1].mode == CONFIG_GPIO_IN){
 		AT91F_PIO_CfgInput(AT91C_BASE_PIOA, GPIO_2);
 		AT91C_BASE_PIOA->PIO_PPUDR = GPIO_2; //disable pullup
 		AT91C_BASE_PIOA->PIO_IFER = GPIO_2; //enable input filter
@@ -94,7 +94,7 @@ void InitGPIO(LoggerConfig *loggerConfig){
 	    AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, GPIO_2 );
 	    AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, GPIO_2 );
 	}
-	if (gpios[2].config == CONFIG_GPIO_IN){
+	if (gpios[2].mode == CONFIG_GPIO_IN){
 		AT91F_PIO_CfgInput(AT91C_BASE_PIOA, GPIO_3);
 		AT91C_BASE_PIOA->PIO_PPUDR = GPIO_3; //disable pullup
 		AT91C_BASE_PIOA->PIO_IFER = GPIO_3; //enable input filter
@@ -165,7 +165,7 @@ void StopPWM(unsigned int pwmChannel){
 void InitPWM(LoggerConfig *loggerConfig){
 	
 	//Configure PWM Clock
-	PWM_ConfigureClocks(loggerConfig->PWMClockFrequency * MAX_DUTY_CYCLE, 0, BOARD_MCK);
+	PWM_ConfigureClocks(loggerConfig->PWMClockFrequency * MAX_PWM_DUTY_CYCLE, 0, BOARD_MCK);
 
 	//Configure PWM ports
 	/////////////////////////////////////////
