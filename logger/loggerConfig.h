@@ -27,6 +27,8 @@
 #define DEFAULT_LABEL_LENGTH				11
 #define DEFAULT_UNITS_LENGTH				11
 
+#define CHANNEL_CONFIG_SCALING				4
+
 typedef struct _ChannelConfig{
 	int precision;
 	char label[DEFAULT_LABEL_LENGTH];

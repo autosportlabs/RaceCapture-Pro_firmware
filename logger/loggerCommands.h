@@ -21,6 +21,7 @@ extern const struct cmd_t g_loggerCommands[];
 {"setSDLoggingMode", "Sets the SD Logging Mode","<mode>", SetSDLoggingMode}, \
 {"setP2PTelemetryAddr", "Sets the P2P Telemetry Destination Address","<high> <low>",SetP2PTelemetryDestinationAddr}, \
  \
+{"getAnalogConfig", "Gets the configuration for the specified analog channel","<channel>", GetAnalogConfig}, \
 {"setAnalogLabel", "Sets the label for the specified analog channel.","<channel> <label> <units>", SetAnalogLabel}, \
 {"getAnalogLabel", "Gets the label for the specified analog channel.","<channel>", GetAnalogLabel}, \
 	\
@@ -108,6 +109,7 @@ extern const struct cmd_t g_loggerCommands[];
 {"setGpioCfg", "Sets the configuration for the specified GPIO port.","<port> <configuration>", SetGpioConfig}, \
 {"getGpioCfg", "Gets the configuration for the specified GPIO port.","<port>", GetGpioConfig}, \
 	\
+{"getTimerConfig", "Gets the configuration for the specified timer channel.","<channel>", GetTimerConfig}, \
 {"setTimerLabel", "Sets the label for the specified timer channel.","<channel> <label>", SetTimerLabel}, \
 {"getTimerLabel", "Gets the label for the specified timer channel.","<channel>", GetTimerLabel}, \
 	\
@@ -155,6 +157,7 @@ void SetTelemetryMode(unsigned int argc, char **argv);
 void SetSDLoggingMode(unsigned int argc, char **argv);
 void SetP2PTelemetryDestinationAddr(unsigned int argc, char **argv);
 
+void GetAnalogConfig(unsigned int argc, char **argv);
 void SetAnalogLabel(unsigned int argc, char **argv);
 void GetAnalogLabel(unsigned int argc, char **argv);
 
@@ -243,6 +246,7 @@ void GetGpioSampleRate(unsigned int argc, char **argv);
 void SetGpioConfig(unsigned int argc, char **argv);
 void GetGpioConfig(unsigned int argc, char **argv);
 
+void GetTimerConfig(unsigned int argc, char **argv);
 void SetTimerLabel(unsigned int argc, char **argv);
 void GetTimerLabel(unsigned int argc, char **argv);
 

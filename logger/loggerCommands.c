@@ -103,6 +103,22 @@ static ADCConfig * AssertAdcGetParam(unsigned int argc, char **argv){
 	return c;
 }
 
+static void SendChannelConfig(ChannelConfig *c){
+	if (NULL != c){
+		SendNameString("label",c->label);
+		SendNameString("units",c->units);
+		SendNameInt("precision",c->precision);
+		SendNameInt("sampleRate",decodeSampleRate(c->sampleRate));
+	}
+}
+
+void GetAnalogConfig(unsigned int argc, char **argv){
+	ADCConfig * c = AssertAdcGetParam(argc,argv);
+	if (NULL != c){
+		SendChannelConfig(&(c->cfg));
+		SendNameFloat("scaling",c->scaling,CHANNEL_CONFIG_SCALING);
+	}
+}
 
 void SetAnalogLabel(unsigned int argc, char **argv){
 
@@ -155,7 +171,7 @@ void SetAnalogScaling(unsigned int argc, char **argv){
 
 void GetAnalogScaling(unsigned int argc, char **argv){
 	ADCConfig * c = AssertAdcGetParam(argc,argv);
-	if (NULL != c) SendNameFloat("scaling",c->scaling,2);
+	if (NULL != c) SendNameFloat("scaling",c->scaling,CHANNEL_CONFIG_SCALING);
 }
 
 void SetPwmClockFreq(unsigned int argc, char **argv){
@@ -553,6 +569,19 @@ TimerConfig* AssertTimerGetParam(unsigned int argc, char **argv){
 	}
 	return c;
 }
+
+void GetTimerConfig(unsigned int argc, char **argv){
+	TimerConfig * c = AssertTimerGetParam(argc,argv);
+	if (NULL != c){
+		SendChannelConfig(&(c->cfg));
+		SendNameInt("slowTimer",c->slowTimerEnabled);
+		SendNameInt("mode",c->mode);
+		SendNameInt("pulsePerRev",c->pulsePerRevolution);
+		SendNameInt("timerDivider",c->timerDivider);
+		SendNameInt("scaling",c->calculatedScaling);
+	}
+}
+
 
 void SetTimerLabel(unsigned int argc, char **argv){
 	TimerConfig * c = AssertTimerSetParam(argc,argv);
