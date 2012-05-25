@@ -1,11 +1,5 @@
-/* XPM */
-<<<<<<< HEAD
 const char * finishLine_xpm[] = {
-"200 63 252 2",
-=======
-static char * finishLine_xpm[] = {
 "200 63 159 2",
->>>>>>> f3bdd987378357fd44547ef5a1c705ec0b510cb3
 "  	c None",
 ". 	c #787878",
 "+ 	c #4A4A4A",
