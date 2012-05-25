@@ -1,5 +1,5 @@
 /* XPM */
-static char * finishLine_xpm[] = {
+const char * finishLine_xpm[] = {
 "200 63 159 2",
 "  	c None",
 ". 	c #787878",
