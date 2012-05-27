@@ -91,6 +91,12 @@ static ADCConfig * AssertAdcGetParam(unsigned int argc, char **argv){
 	return c;
 }
 
+static void SetChannelConfig(ChannelConfig *c, unsigned int offset, unsigned int argc, char **argv){
+	if (argc > offset) setLabelGeneric(c->label,argv[offset]);
+	if (argc > offset + 1) setLabelGeneric(c->units,argv[offset + 1]);
+	if (argc > offset + 2) c->sampleRate = encodeSampleRate(modp_atoi(argv[offset + 2]));
+}
+
 static void SendChannelConfigSuffix(ChannelConfig *c, const char *suf){
 	if (NULL != c){
 		SendNameSuffixString("label",suf,c->label);
@@ -111,7 +117,7 @@ void GetAnalogConfig(unsigned int argc, char **argv){
 	ADCConfig * c = AssertAdcGetParam(argc,argv);
 	if (NULL != c){
 		SendChannelConfig(&(c->cfg));
-		SendNameInt("logPrec",c->loggingPrecision);
+		SendNameInt("loggingPrecision",c->loggingPrecision);
 		SendNameInt("scalingMode",c->scalingMode);
 		SendNameFloat("scaling",c->linearScaling,ANALOG_SCALING_PRECISION);
 		for (int i = 0; i < ANALOG_SCALING_BINS; i++){
@@ -178,7 +184,7 @@ void GetPwmConfig(unsigned int argc, char **argv){
 	PWMConfig *c = AssertPwmGetParam(argc,argv);
 	if (NULL != c){
 		SendChannelConfig(&(c->cfg));
-		SendNameInt("logPrec",c->loggingPrecision);
+		SendNameInt("loggingPrecision",c->loggingPrecision);
 		SendNameInt("outputMode",c->outputMode);
 		SendNameInt("loggingMode",c->loggingMode);
 		SendNameInt("startupDutyCycle",c->startupDutyCycle);
@@ -222,12 +228,39 @@ void GetGpsConfig(unsigned int argc, char **argv){
 	SendChannelConfigSuffix(&(cfg->timeCfg),"time");
 	SendChannelConfigSuffix(&(cfg->qualityCfg),"qual");
 	SendChannelConfigSuffix(&(cfg->satellitesCfg),"sats");
+}
+
+void SetGpsConfig(unsigned int argc, char **argv){
+	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfig);
+	if (argc > 1) cfg->GPSInstalled = (modp_atoi(argv[1]) != 0);
+	if (argc > 2) SetChannelConfig(&(cfg->latitudeCfg),2,argc,argv);
+	if (argc > 5) SetChannelConfig(&(cfg->longitudeCfg),5,argc,argv);
+	if (argc > 8) SetChannelConfig(&(cfg->velocityCfg),8,argc,argv);
+	if (argc > 11) SetChannelConfig(&(cfg->timeCfg),11,argc,argv);
+	if (argc > 14) SetChannelConfig(&(cfg->qualityCfg),14,argc,argv);
+	if (argc > 17) SetChannelConfig(&(cfg->satellitesCfg),17,argc,argv);
+	SendCommandOK();
+}
+
+void GetStartFinishConfig(unsigned int argc, char **argv){
+	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfig);
 	SendChannelConfigSuffix(&(cfg->lapCountCfg),"lapCount");
 	SendChannelConfigSuffix(&(cfg->lapTimeCfg),"lapTime");
 	SendNameFloat("startFinishLat",cfg->startFinishLatitude,DEFAULT_GPS_POSITION_LOGGING_PRECISION);
 	SendNameFloat("startFinishLong", cfg->startFinishLongitude,DEFAULT_GPS_POSITION_LOGGING_PRECISION);
 	SendNameFloat("startFinishRadius",cfg->startFinishRadius,DEFAULT_GPS_RADIUS_LOGGING_PRECISION);
 }
+
+void SetStartFinishConfig(unsigned int argc, char **argv){
+	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfig);
+	if (argc > 1) SetChannelConfig(&(cfg->lapCountCfg),1,argc,argv);
+	if (argc > 4) SetChannelConfig(&(cfg->lapTimeCfg),4,argc,argv);
+	if (argc > 7) cfg->startFinishLatitude = modp_atof(argv[7]);
+	if (argc > 8) cfg->startFinishLongitude = modp_atof(argv[8]);
+	if (argc > 9) cfg->startFinishRadius = modp_atof(argv[9]);
+	SendCommandOK();
+}
+
 
 void SetGpsInstalled(unsigned int argc, char **argv){
 	GPSConfig * c = AssertSetGpsParam(argc);
@@ -497,7 +530,7 @@ void GetTimerConfig(unsigned int argc, char **argv){
 	TimerConfig * c = AssertTimerGetParam(argc,argv);
 	if (NULL != c){
 		SendChannelConfig(&(c->cfg));
-		SendNameInt("logPrec",c->loggingPrecision);
+		SendNameInt("loggingPrecision",c->loggingPrecision);
 		SendNameInt("slowTimer",c->slowTimerEnabled);
 		SendNameInt("mode",c->mode);
 		SendNameInt("pulsePerRev",c->pulsePerRevolution);
