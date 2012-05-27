@@ -321,10 +321,10 @@ void GetAccelConfig(unsigned int argc, char **argv){
 void SetAccelConfig(unsigned int argc, char **argv){
 	AccelConfig * c= AssertAccelGetChannel(argc,argv);
 	if (NULL != c){
-		SetChannelConfig(&(c->cfg),1,argc,argv);
-		if (argc >= 4) c->mode = filterAccelMode(modp_atoi(argv[4]));
-		if (argc >= 5) c->accelChannel = filterAccelChannel(modp_atoi(argv[5]));
-		if (argc >= 6) c->zeroValue = modp_atoi(argv[6]);
+		SetChannelConfig(&(c->cfg),2,argc,argv);
+		if (argc >= 5) c->mode = filterAccelMode(modp_atoi(argv[5]));
+		if (argc >= 6) c->accelChannel = filterAccelChannel(modp_atoi(argv[6]));
+		if (argc >= 7) c->zeroValue = modp_atoi(argv[7]);
 		SendCommandOK();
 	}
 }
