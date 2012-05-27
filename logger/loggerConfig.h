@@ -354,7 +354,7 @@ unsigned short filterPwmDutyCycle(int dutyCycle);
 unsigned short filterPwmPeriod(int period);
 int filterAccelRawValue(int accelRawValue);
 int filterPwmClockFrequency(int frequency);
-int filterTimerMode(int config);
+char filterTimerMode(int config);
 unsigned short filterTimerDivider(unsigned short divider);
 int filterAccelMode(int mode);
 int filterAccelChannel(int channel);

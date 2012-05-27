@@ -292,91 +292,25 @@ void GetTimerConfig(unsigned int argc, char **argv){
 	}
 }
 
-
-void SetTimerLabel(unsigned int argc, char **argv){
-	TimerConfig * c = AssertTimerSetParam(argc,argv);
+void SetTimerConfig(unsigned int argc, char **argv){
+	TimerConfig * c = AssertTimerGetParam(argc,argv);
 	if (NULL != c){
-		setLabelGeneric(c->cfg.label,argv[2]);
+		SetChannelConfig(&(c->cfg),2,argc,argv);
+		if (argc > 5) c->loggingPrecision = modp_atoi(argv[5]);
+		if (argc > 6) c->slowTimerEnabled = (modp_atoi(argv[6]) != 0);
+		if (argc > 7) c->mode = filterTimerMode(modp_atoi(argv[7]));
+		if (argc > 8) c->pulsePerRevolution = modp_atoi(argv[8]);
+		if (argc > 9) c->timerDivider = filterTimerDivider(modp_atoi(argv[9]));
+		if (argc > 10){
+			c->calculatedScaling = modp_atoi(argv[10]);
+		}
+		else{
+			calculateTimerScaling(c);
+		}
 		SendCommandOK();
 	}
 }
 
-void GetTimerLabel(unsigned int argc, char **argv){
-	TimerConfig * c = AssertTimerGetParam(argc,argv);
-	if (NULL !=c) SendNameString("label",c->cfg.label);
-}
-
-void SetTimerSampleRate(unsigned int argc, char **argv){
-	TimerConfig * c = AssertTimerSetParam(argc,argv);
-	if (NULL != c){
-		c->cfg.sampleRate = encodeSampleRate(modp_atoi(argv[2]));
-		SendCommandOK();
-	}
-}
-
-void GetTimerSampleRate(unsigned int argc, char **argv){
-	TimerConfig * c = AssertTimerGetParam(argc,argv);
-	if (NULL != c) SendNameInt("sampleRate", decodeSampleRate(c->cfg.sampleRate));
-}
-
-void SetTimerMode(unsigned int argc, char **argv){
-	TimerConfig * c = AssertTimerSetParam(argc,argv);
-	if (NULL != c){
-		c->mode = filterTimerMode(modp_atoi(argv[2]));
-		SendCommandOK();
-	}
-}
-
-void GetTimerMode(unsigned int argc, char **argv){
-	TimerConfig * c = AssertTimerGetParam(argc,argv);
-	if (NULL != c) SendNameInt("mode", c->mode);
-}
-
-void SetTimerPulsePerRev(unsigned int argc, char **argv){
-	TimerConfig * c = AssertTimerSetParam(argc,argv);
-	if (NULL != c){
-		c->pulsePerRevolution = modp_atoi(argv[2]);
-		SendCommandOK();
-	}
-}
-
-void GetTimerPulsePerRev(unsigned int argc, char **argv){
-	TimerConfig * c = AssertTimerGetParam(argc,argv);
-	if (NULL != c){
-		SendNameInt("pulsePerRev",c->pulsePerRevolution);
-	}
-}
-
-void SetTimerDivider(unsigned int argc, char **argv){
-	TimerConfig * c = AssertTimerSetParam(argc,argv);
-	if (NULL != c){
-		c->timerDivider = filterTimerDivider(modp_atoi(argv[2]));
-		SendCommandOK();
-	}
-}
-
-void GetTimerDivider(unsigned int argc, char **argv){
-	TimerConfig * c = AssertTimerGetParam(argc,argv);
-	if (NULL != c){
-		SendNameInt("divider",c->timerDivider);
-	}
-}
-
-void CalculateTimerScaling(unsigned int argc, char **argv){
-	TimerConfig * c = AssertTimerGetParam(argc,argv);
-	if (NULL != c){
-		calculateTimerScaling(c);
-		SendCommandOK();
-	}
-}
-
-void GetTimerScaling(unsigned int argc, char **argv){
-	TimerConfig * c = AssertTimerGetParam(argc,argv);
-	if (NULL != c){
-		SendNameInt("scaling",c->calculatedScaling);
-		SendCommandOK();
-	}
-}
 
 AccelConfig * AssertAccelSetParam(unsigned int argc, char **argv){
 	AccelConfig *c = NULL;

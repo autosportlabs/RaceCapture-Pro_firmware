@@ -168,8 +168,8 @@ unsigned short filterTimerDivider(unsigned short divider){
 		return TIMER_MCK_128;
 	}
 }
-int filterTimerMode(int config){
-	switch (config){
+char filterTimerMode(int mode){
+	switch (mode){
 		case MODE_LOGGING_TIMER_RPM:
 			return MODE_LOGGING_TIMER_RPM;
 		case MODE_LOGGING_TIMER_PERIOD_MS:
