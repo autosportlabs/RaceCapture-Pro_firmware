@@ -120,7 +120,7 @@ char filterTelemetryMode(char mode){
 	}
 }
 
-int filterGPIOMode(int value){
+char filterGpioMode(int value){
 	switch(value){
 		case CONFIG_GPIO_OUT:
 			return CONFIG_GPIO_OUT;
