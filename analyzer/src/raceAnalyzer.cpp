@@ -1,7 +1,4 @@
-
 #include "raceAnalyzer.h"
-
-
 #include "optionsDialog.h"
 #include "fileIO.h"
 #include "logging.h"
@@ -40,6 +37,24 @@
 
 IMPLEMENT_APP(RaceAnalyzerApp);
 
+enum{
+	ID_OPTIONS = wxID_HIGHEST + 1,
+	ID_GET_CONFIG,
+	ID_WRITE_CONFIG,
+
+	ID_CONFIG_MODE,
+	ID_RUNTIME_MODE,
+	ID_ANALYZE_MODE,
+
+	ID_HELP_ABOUT,
+	ID_IMPORT_DATALOG,
+
+	ID_ADD_LINE_CHART,
+
+	ID_RESTORE_DEFAULT_VIEWS,
+	ID_PERSPECTIVES //this must be last
+
+};
 
 bool RaceAnalyzerApp::OnInit()
 {
@@ -73,7 +88,6 @@ bool RaceAnalyzerApp::OnCmdLineParsed(wxCmdLineParser& parser)
    return true;
 }
 
-
 MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize
   &size) : wxFrame((wxFrame*)NULL,  - 1, title, pos, size)
 {
@@ -89,7 +103,6 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize
 	Center();
 
 	InitComms();
-
 }
 
 MainFrame::~MainFrame(){
@@ -101,10 +114,11 @@ MainFrame::~MainFrame(){
 void MainFrame::InitComms(){
 
 	m_scriptPanel->SetComm(&m_raceAnalyzerComm);
+	m_configPanel->SetComm(&m_raceAnalyzerComm);
 	try{
 		m_raceAnalyzerComm.SetSerialPort(m_appOptions.GetSerialPort());
 	}
-	catch(CommException e){
+	catch(CommException &e){
 		SetStatusMessage(e.GetErrorMessage());
 	}
 }
@@ -294,7 +308,7 @@ void MainFrame::InitializeMenus(){
 	menuBar->Append(perspectiveMenu, wxT("Perspective"));
 
 	wxMenu* helpMenu = new wxMenu();
-	helpMenu->Append(ID_HELP_ABOUT, wxT("About MJLJ Configurator"));
+	helpMenu->Append(ID_HELP_ABOUT, wxT("About Race Analyzer"));
 	menuBar->Append(helpMenu, wxT("Help"));
 
 	SetMenuBar(menuBar);
@@ -337,7 +351,7 @@ void MainFrame::InitializeComponents(){
 	m_analyzePanel = new wxPanel(this);
 	_frameManager.AddPane(m_analyzePanel, wxAuiPaneInfo().Name(wxT(PANE_ANALYZE)).Caption(wxT(CAPTION_ANALYSIS)).Center().Hide());
 
-	m_configPanel = new wxPanel(this);
+	m_configPanel = new ConfigPanel(this);
 	_frameManager.AddPane(m_configPanel, wxAuiPaneInfo().Name(wxT(PANE_CONFIGURATION)).Caption(wxT(CAPTION_CONFIG)).Center().Hide());
 
 	m_scriptPanel = new ScriptPanel(this);
@@ -348,7 +362,7 @@ void MainFrame::InitializeComponents(){
 
 void MainFrame::OnHelpAbout(wxCommandEvent &event){
 
-	wxString msg = wxString::Format("MegaJolt Lite Jr. Configurator %s\n\nhttp://www.autosportlabs.net\n\nCopyright � 2004-2008 Autosport Labs\n\n",RACE_ANALYZER_VERSION);
+	wxString msg = wxString::Format("Race Analyzer %s\n\nhttp://www.autosportlabs.net\n\nCopyright � 2004-2012 Autosport Labs\n\n",RACE_ANALYZER_VERSION);
 	wxMessageDialog dlg(this,msg, "About", wxOK);
 	dlg.ShowModal();
 }
@@ -461,7 +475,7 @@ void MainFrame::OnNewRaceEvent(wxCommandEvent &event){
 
 			RaceEventLoaded();
 		}
-		catch(DatastoreException e){
+		catch(DatastoreException &e){
 			wxMessageDialog dlg(this, wxString::Format("Failed to Create Race Event:\n\n%s", e.GetMessage().ToAscii()), "Error Creating Race Event", wxOK | wxICON_HAND);
 		}
 		_appPrefs.SetLastConfigFileDirectory(fileDialog.GetDirectory());
@@ -485,7 +499,7 @@ void MainFrame::OnOpenRaceEvent(wxCommandEvent& event){
 			OpenRaceEvent(fileName);
 			RaceEventLoaded();
 		}
-		catch(DatastoreException e){
+		catch(DatastoreException &e){
 			wxMessageDialog dlg(this, wxString::Format("Failed to open Race Event:\n\n%s", e.GetMessage().ToAscii()), "Error Opening", wxOK | wxICON_HAND);
 			dlg.ShowModal();
 			return;

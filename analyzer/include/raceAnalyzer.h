@@ -19,6 +19,7 @@
 #include "LCDWindow.h"
 #include "AngularMeter.h"
 #include "scriptPanel.h"
+#include "configuration/configPanel.h"
 #include "comm.h"
 #include "configData.h"
 #include "appOptions.h"
@@ -143,7 +144,7 @@ class MainFrame : public wxFrame
 
 	DatalogStoreRows			m_datalogData;
 
-	wxPanel						*m_configPanel;
+	ConfigPanel					*m_configPanel;
 	ScriptPanel					*m_scriptPanel;
 	wxPanel						*m_analyzePanel;
 	DatalogChannelsPanel 		*m_channelsPanel;
@@ -162,28 +163,5 @@ class MainFrame : public wxFrame
 	DECLARE_EVENT_TABLE()
 
   };
-
-
-  enum{
-
-
-	ID_OPTIONS = wxID_HIGHEST + 1,
-	ID_GET_CONFIG,
-	ID_WRITE_CONFIG,
-
-	ID_CONFIG_MODE,
-	ID_RUNTIME_MODE,
-	ID_ANALYZE_MODE,
-
-	ID_HELP_ABOUT,
-	ID_IMPORT_DATALOG,
-
-	ID_ADD_LINE_CHART,
-
-	ID_RESTORE_DEFAULT_VIEWS,
-	ID_PERSPECTIVES //this must be last
-
-  };
-
 
 #endif

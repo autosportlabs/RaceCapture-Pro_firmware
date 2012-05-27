@@ -3,6 +3,7 @@
 
 #include "configData.h"
 #include "wx/ctb/serport.h"
+#include "raceCapture/raceCaptureConfig.h"
 
 
 
@@ -17,7 +18,10 @@ class RaceAnalyzerComm {
 		wxString readScript();
 		void writeScript(wxString &script);
 		void reloadScript(void);
-
+		void populateChannelConfig(ChannelConfig &cfg, wxString suffix, wxString &data);
+		void populateChannelConfig(ChannelConfig &cfg, wxString &data);
+		void readConfig(RaceCaptureConfig &config);
+		void writeConfig(const RaceCaptureConfig &config);
 
 	private:
 
@@ -39,6 +43,8 @@ class RaceAnalyzerComm {
 		wxString SendCommand(wxSerialPort *comPort, wxString &buffer, int timeout = DEFAULT_TIMEOUT);
 		void unescape(wxString &data);
 		void escape(wxString &data);
+		int getIntParam(wxString &data, const wxString &name);
+		float getFloatParam(wxString &data,const wxString &name);
 		wxString getParam(wxString &data, const wxString &name);
 		void hideInnerTokens(wxString &data);
 		void unhideInnerTokens(wxString &data);
