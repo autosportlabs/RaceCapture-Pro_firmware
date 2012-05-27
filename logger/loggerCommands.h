@@ -39,13 +39,13 @@ extern const struct cmd_t g_loggerCommands[];
 {"setGpioConfig","Sets the configuration for the specified GPIO port.","<port> [label] [units] [sampleRate] [mode]", SetGpioConfig}, \
 \
 {"getTimerConfig", "Gets the configuration for the specified timer channel.","<channel>", GetTimerConfig}, \
-{"setTimerConfig", "Sets the configuration for the specified timer channel.","<channel>", SetTimerConfig}, \
+{"setTimerConfig", "Sets the configuration for the specified timer channel.","<channel> [label] [units] [sampleRate] [loggingPrecision] [slowTimerEnabled] [mode] [pulsePerRevolution] [timerDivider] [scaling]", SetTimerConfig}, \
 \
 {"getAccelConfig", "Gets the configuration for the specified accelerometer channel.","<channel>",GetAccelConfig}, \
-{"setAccelConfig", "Sets the configuration for the specified accelerometer channel.","<channel>",SetAccelConfig}, \
+{"setAccelConfig", "Sets the configuration for the specified accelerometer channel.","<channel> [label] [units] [sampleRate] [mode] [accelChannel] [zeroValue]",SetAccelConfig}, \
 \
 {"getAccelInstalled", "Gets the installed state of the accelerometer.","", GetAccelInstalled}, \
-{"setAccelInstalled", "Sets the installed state of the accelerometer.","", SetAccelInstalled}, \
+{"setAccelInstalled", "Sets the installed state of the accelerometer.","<installed>", SetAccelInstalled}, \
 \
 {"calibrateAccelZero", "Calibrates the current accelerometer values as the zero point.","", CalibrateAccelZero}
 
