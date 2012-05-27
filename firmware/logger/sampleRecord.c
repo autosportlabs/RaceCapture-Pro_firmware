@@ -12,66 +12,82 @@ void initSampleRecord(LoggerConfig *loggerConfig,SampleRecord *sr){
 
 	for (int i=0; i < CONFIG_ADC_CHANNELS; i++){
 		ChannelSample *s = &(sr->ADCSamples[i]);
-		s->channelConfig = &(loggerConfig->ADCConfigs[i].cfg);
+		ADCConfig *adcCfg = &(loggerConfig->ADCConfigs[i]);
+		s->precision = adcCfg->loggingPrecision;
+		s->channelConfig = &(adcCfg->cfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	for (int i=0; i < CONFIG_PWM_CHANNELS; i++){
 		ChannelSample *s = &(sr->PWMSamples[i]);
-		s->channelConfig = &(loggerConfig->PWMConfigs[i].cfg);
+		PWMConfig *pwmCfg = &(loggerConfig->PWMConfigs[i]);
+		s->precision = pwmCfg->loggingPrecision;
+		s->channelConfig = &(pwmCfg->cfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	for (int i=0; i < CONFIG_GPIO_CHANNELS; i++){
 		ChannelSample *s = &(sr->GPIOSamples[i]);
+		s->precision = DEFAULT_GPIO_LOGGING_PRECISION;
 		s->channelConfig = &(loggerConfig->GPIOConfigs[i].cfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	for (int i=0; i < CONFIG_TIMER_CHANNELS; i++){
 		ChannelSample *s = &(sr->TimerSamples[i]);
-		s->channelConfig = &(loggerConfig->TimerConfigs[i].cfg);
+		TimerConfig *timerCfg = &(loggerConfig->TimerConfigs[i]);
+		s->precision = timerCfg->loggingPrecision;
+		s->channelConfig = &(timerCfg->cfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	for (int i=0; i < CONFIG_ACCEL_CHANNELS; i++){
 		ChannelSample *s = &(sr->AccelSamples[i]);
+		s->precision = DEFAULT_ACCEL_LOGGING_PRECISION;
 		s->channelConfig = &(loggerConfig->AccelConfigs[i].cfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->GPS_LatitueSample);
+		s->precision = DEFAULT_GPS_POSITION_LOGGING_PRECISION;
 		s->channelConfig = &(loggerConfig->GPSConfig.latitudeCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->GPS_LongitudeSample);
+		s->precision = DEFAULT_GPS_POSITION_LOGGING_PRECISION;
 		s->channelConfig = &(loggerConfig->GPSConfig.longitudeCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->GPS_VelocitySample);
+		s->precision = DEFAULT_GPS_VELOCITY_LOGGING_PRECISION;
 		s->channelConfig = &(loggerConfig->GPSConfig.velocityCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->GPS_TimeSample);
+		s->precision = DEFAULT_GPS_TIME_LOGGING_PRECISION;
 		s->channelConfig = &(loggerConfig->GPSConfig.timeCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->GPS_LapCountSample);
+		s->precision = DEFAULT_LAP_COUNT_LOGGING_PRECISION;
 		s->channelConfig = &(loggerConfig->GPSConfig.lapCountCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->GPS_LapTimeSample);
+		s->precision = DEFAULT_LAP_TIME_LOGGING_PRECISION;
 		s->channelConfig = &(loggerConfig->GPSConfig.lapTimeCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->GPS_QualitySample);
+		s->precision = DEFAULT_GPS_QUALITY_LOGGING_PRECISION;
 		s->channelConfig =  &(loggerConfig->GPSConfig.qualityCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->GPS_SatellitesSample);
+		s->precision = DEFAULT_GPS_SATELLITES_LOGGING_PRECISION;
 		s->channelConfig = &(loggerConfig->GPSConfig.satellitesCfg);
 		s->intValue = NIL_SAMPLE;
 	}

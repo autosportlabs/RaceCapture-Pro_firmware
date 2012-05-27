@@ -103,11 +103,18 @@ static ADCConfig * AssertAdcGetParam(unsigned int argc, char **argv){
 	return c;
 }
 
+static void SendChannelConfigSuffix(ChannelConfig *c, const char *suf){
+	if (NULL != c){
+		SendNameSuffixString("label",suf,c->label);
+		SendNameSuffixString("units",suf,c->units);
+		SendNameSuffixInt("sampleRate",suf,decodeSampleRate(c->sampleRate));
+	}
+}
+
 static void SendChannelConfig(ChannelConfig *c){
 	if (NULL != c){
 		SendNameString("label",c->label);
 		SendNameString("units",c->units);
-		SendNameInt("precision",c->precision);
 		SendNameInt("sampleRate",decodeSampleRate(c->sampleRate));
 	}
 }
@@ -116,7 +123,15 @@ void GetAnalogConfig(unsigned int argc, char **argv){
 	ADCConfig * c = AssertAdcGetParam(argc,argv);
 	if (NULL != c){
 		SendChannelConfig(&(c->cfg));
-		SendNameFloat("scaling",c->scaling,CHANNEL_CONFIG_SCALING);
+		SendNameInt("logPrec",c->loggingPrecision);
+		SendNameFloat("scaling",c->linearScaling,ANALOG_SCALING_PRECISION);
+		SendNameInt("scalingMode",c->scalingMode);
+		for (int i = 0; i < ANALOG_SCALING_BINS; i++){
+			SendNameIndexInt("mapRaw",i,c->scalingMap.rawValues[i]);
+		}
+		for (int i = 0; i < ANALOG_SCALING_BINS; i++){
+			SendNameIndexFloat("mapScaled",i,c->scalingMap.scaledValues[i],ANALOG_SCALING_PRECISION);
+		}
 	}
 }
 
@@ -164,14 +179,14 @@ void GetAnalogSampleRate(unsigned int argc, char **argv){
 void SetAnalogScaling(unsigned int argc, char **argv){
 	ADCConfig * c = AssertAdcSetParam(argc,argv);
 	if (NULL != c){
-		c->scaling = modp_atof(argv[2]);
+		c->linearScaling = modp_atof(argv[2]);
 		SendCommandOK();
 	}
 }
 
 void GetAnalogScaling(unsigned int argc, char **argv){
 	ADCConfig * c = AssertAdcGetParam(argc,argv);
-	if (NULL != c) SendNameFloat("scaling",c->scaling,CHANNEL_CONFIG_SCALING);
+	if (NULL != c) SendNameFloat("scaling",c->linearScaling,ANALOG_SCALING_PRECISION);
 }
 
 void SetPwmClockFreq(unsigned int argc, char **argv){
@@ -212,6 +227,19 @@ static PWMConfig * AssertPwmGetParam(unsigned int argc, char **argv){
 	return c;
 }
 
+void GetPwmConfig(unsigned int argc, char **argv){
+	PWMConfig *c = AssertPwmGetParam(argc,argv);
+	if (NULL != c){
+		SendChannelConfig(&(c->cfg));
+		SendNameInt("logPrec",c->loggingPrecision);
+		SendNameInt("outputMode",c->outputMode);
+		SendNameInt("loggingMode",c->loggingMode);
+		SendNameInt("startupDutyCycle",c->startupDutyCycle);
+		SendNameInt("startupPeriod",c->startupPeriod);
+		SendNameFloat("voltageScaling",c->voltageScaling,VOLTAGE_SCALING_PRECISION);
+	}
+}
+
 void SetPwmLabel(unsigned int argc, char **argv){
 	PWMConfig *c = AssertPwmSetParam(argc,argv);
 	if (NULL != c){
@@ -238,30 +266,30 @@ void GetPwmSampleRate(unsigned int argc, char **argv){
 	if (NULL !=c ) SendNameInt("sampleRate",decodeSampleRate(c->cfg.sampleRate));
 }
 
-void SetPwmOutputCfg(unsigned int argc, char **argv){
+void SetPwmOutputMode(unsigned int argc, char **argv){
 	PWMConfig *c = AssertPwmSetParam(argc,argv);
 	if (NULL != c){
-		c->mode = filterPWMOutputConfig(modp_atoi(argv[2]));
+		c->outputMode = filterPWMOutputConfig(modp_atoi(argv[2]));
 		SendCommandOK();
 	}
 }
 
-void GetPwmOutputCfg(unsigned int argc, char **argv){
+void GetPwmOutputMode(unsigned int argc, char **argv){
 	PWMConfig *c = AssertPwmGetParam(argc,argv);
-	if (NULL != c) SendNameInt("outputConfig",c->mode);
+	if (NULL != c) SendNameInt("outputMode",c->outputMode);
 }
 
-void SetPwmLoggingCfg(unsigned int argc, char **argv){
+void SetPwmLoggingMode(unsigned int argc, char **argv){
 	PWMConfig *c = AssertPwmSetParam(argc,argv);
 	if (NULL != c) {
-		c->loggingConfig = filterPWMLoggingConfig(modp_atoi(argv[2]));
+		c->loggingMode = filterPWMLoggingConfig(modp_atoi(argv[2]));
 		SendCommandOK();
 	}
 }
 
-void GetPwmLoggingCfg(unsigned int argc, char **argv){
+void GetPwmLoggingMode(unsigned int argc, char **argv){
 	PWMConfig *c = AssertPwmGetParam(argc,argv);
-	if (NULL !=c ) SendNameInt("loggingConfig",c->loggingConfig);
+	if (NULL !=c ) SendNameInt("loggingMode",c->loggingMode);
 }
 
 void SetPwmStartupDutyCycle(unsigned int argc, char **argv){
@@ -301,7 +329,7 @@ void SetPwmVoltageScaling(unsigned int argc, char **argv){
 void getPwmVoltageScaling(unsigned int argc, char **argv){
 	PWMConfig *c = AssertPwmGetParam(argc,argv);
 	if (NULL == c) return;
-	SendNameFloat("voltageScaling",c->voltageScaling,2);
+	SendNameFloat("voltageScaling",c->voltageScaling,VOLTAGE_SCALING_PRECISION);
 }
 
 static GPSConfig * AssertSetGpsParam(unsigned int argc){
@@ -314,6 +342,22 @@ static GPSConfig * AssertSetGpsParam(unsigned int argc){
 	return NULL;
 }
 
+void GetGpsConfig(unsigned int argc, char **argv){
+	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfig);
+	SendNameInt("installed",cfg->GPSInstalled);
+	SendChannelConfigSuffix(&(cfg->latitudeCfg),"lat");
+	SendChannelConfigSuffix(&(cfg->longitudeCfg),"long");
+	SendChannelConfigSuffix(&(cfg->velocityCfg),"vel");
+	SendChannelConfigSuffix(&(cfg->timeCfg),"time");
+	SendChannelConfigSuffix(&(cfg->qualityCfg),"qual");
+	SendChannelConfigSuffix(&(cfg->satellitesCfg),"sats");
+	SendChannelConfigSuffix(&(cfg->lapCountCfg),"lapCount");
+	SendChannelConfigSuffix(&(cfg->lapTimeCfg),"lapTime");
+	SendNameFloat("startFinishLat",cfg->startFinishLatitude,DEFAULT_GPS_POSITION_LOGGING_PRECISION);
+	SendNameFloat("startFinishLong", cfg->startFinishLongitude,DEFAULT_GPS_POSITION_LOGGING_PRECISION);
+	SendNameFloat("startFinishRadius",cfg->startFinishRadius,DEFAULT_GPS_RADIUS_LOGGING_PRECISION);
+}
+
 void SetGpsInstalled(unsigned int argc, char **argv){
 	GPSConfig * c = AssertSetGpsParam(argc);
 	if (NULL != c){
@@ -323,7 +367,7 @@ void SetGpsInstalled(unsigned int argc, char **argv){
 }
 
 void getGpsInstalled(unsigned int argc, char **argv){
-	SendNameInt("gpsInstalled",getGpsConfig()->GPSInstalled);
+	SendNameInt("installed",getGpsConfig()->GPSInstalled);
 }
 
 void SetGpsStartFinish(unsigned int argc, char **argv){
@@ -337,9 +381,9 @@ void SetGpsStartFinish(unsigned int argc, char **argv){
 }
 
 void GetGpsStartFinish(unsigned int argc, char **argv){
-	SendNameFloat("gpsStartFinishLatitude",getWorkingLoggerConfig()->GPSConfig.startFinishLatitude,DEFAULT_GPS_POSITION_LOGGING_PRECISION);
-	SendNameFloat("gpsStartFinishLongitude", getWorkingLoggerConfig()->GPSConfig.startFinishLongitude,DEFAULT_GPS_POSITION_LOGGING_PRECISION);
-	SendNameFloat("gpsStartFinishRadius",getWorkingLoggerConfig()->GPSConfig.startFinishRadius,DEFAULT_GPS_RADIUS_LOGGING_PRECISION);
+	SendNameFloat("startFinishLat",getWorkingLoggerConfig()->GPSConfig.startFinishLatitude,DEFAULT_GPS_POSITION_LOGGING_PRECISION);
+	SendNameFloat("startFinishLong", getWorkingLoggerConfig()->GPSConfig.startFinishLongitude,DEFAULT_GPS_POSITION_LOGGING_PRECISION);
+	SendNameFloat("startFinishRadius",getWorkingLoggerConfig()->GPSConfig.startFinishRadius,DEFAULT_GPS_RADIUS_LOGGING_PRECISION);
 }
 
 void SetGpsQualityLabel(unsigned int argc, char **argv){
@@ -351,7 +395,7 @@ void SetGpsQualityLabel(unsigned int argc, char **argv){
 }
 
 void GetGpsQualityLabel(unsigned int argc, char **argv){
-	SendNameString("gpsQualityLabel", getGpsConfig()->qualityCfg.label);
+	SendNameString("label", getGpsConfig()->qualityCfg.label);
 }
 
 void SetGpsStatsLabel(unsigned int argc, char **argv){
@@ -363,7 +407,7 @@ void SetGpsStatsLabel(unsigned int argc, char **argv){
 }
 
 void GetGpsStatsLabel(unsigned int argc, char **argv){
-	SendNameString("gpsStatsLabel", getWorkingLoggerConfig()->GPSConfig.satellitesCfg.label);
+	SendNameString("label", getWorkingLoggerConfig()->GPSConfig.satellitesCfg.label);
 }
 
 void SetGpsLatitudeLabel(unsigned int argc, char **argv){
@@ -375,7 +419,7 @@ void SetGpsLatitudeLabel(unsigned int argc, char **argv){
 }
 
 void GetGpsLatitudeLabel(unsigned int argc, char **argv){
-	SendNameString("gpsLatitudeLabel", getWorkingLoggerConfig()->GPSConfig.latitudeCfg.label);
+	SendNameString("label", getWorkingLoggerConfig()->GPSConfig.latitudeCfg.label);
 }
 
 void SetGpsLongitudeLabel(unsigned int argc, char **argv){
@@ -387,7 +431,7 @@ void SetGpsLongitudeLabel(unsigned int argc, char **argv){
 }
 
 void GetGpsLongitudeLabel(unsigned int argc, char **argv){
-	SendNameString("gpsLongitudeLabel", getWorkingLoggerConfig()->GPSConfig.longitudeCfg.label);
+	SendNameString("label", getWorkingLoggerConfig()->GPSConfig.longitudeCfg.label);
 }
 
 void SetGpsTimeLabel(unsigned int argc, char **argv){
@@ -399,7 +443,7 @@ void SetGpsTimeLabel(unsigned int argc, char **argv){
 }
 
 void GetGpsTimeLabel(unsigned int argc, char **argv){
-	SendNameString("gpsTimeLabel", getWorkingLoggerConfig()->GPSConfig.timeCfg.label);
+	SendNameString("label", getWorkingLoggerConfig()->GPSConfig.timeCfg.label);
 }
 
 void SetLapCountLabel(unsigned int argc, char **argv){
@@ -407,7 +451,7 @@ void SetLapCountLabel(unsigned int argc, char **argv){
 }
 
 void GetLapCountLabel(unsigned int argc, char **argv){
-	SendNameString("lapCountLabel",getGpsConfig()->lapCountCfg.label);
+	SendNameString("label",getGpsConfig()->lapCountCfg.label);
 }
 
 void SetLapCountSampleRate(unsigned int argc, char **argv){
@@ -415,7 +459,7 @@ void SetLapCountSampleRate(unsigned int argc, char **argv){
 }
 
 void GetLapCountSampleRate(unsigned int argc, char **argv){
-	sendSampleRateGeneric("lapCountSampleRate", getGpsConfig()->lapCountCfg.sampleRate);
+	sendSampleRateGeneric("sampleRate", getGpsConfig()->lapCountCfg.sampleRate);
 }
 
 void SetLapTimeLabel(unsigned int argc, char **argv){
@@ -423,7 +467,7 @@ void SetLapTimeLabel(unsigned int argc, char **argv){
 }
 
 void GetLapTimeLabel(unsigned int argc, char **argv){
-	SendNameString("lapTimeLabel",getGpsConfig()->lapTimeCfg.label);
+	SendNameString("label",getGpsConfig()->lapTimeCfg.label);
 }
 
 void SetLapTimeSampleRate(unsigned int argc, char **argv){
@@ -431,7 +475,7 @@ void SetLapTimeSampleRate(unsigned int argc, char **argv){
 }
 
 void GetLapTimeSampleRate(unsigned int argc, char **argv){
-	sendSampleRateGeneric("lapTimeSampleRate",getGpsConfig()->lapTimeCfg.sampleRate);
+	sendSampleRateGeneric("sampleRate",getGpsConfig()->lapTimeCfg.sampleRate);
 }
 
 void SetGpsVelocityLabel(unsigned int argc, char **argv){
@@ -443,7 +487,7 @@ void SetGpsVelocityLabel(unsigned int argc, char **argv){
 }
 
 void GetGpsVelocityLabel(unsigned int argc, char **argv){
-	SendNameString("gpsVelocityLabel", getWorkingLoggerConfig()->GPSConfig.velocityCfg.label);
+	SendNameString("label", getWorkingLoggerConfig()->GPSConfig.velocityCfg.label);
 }
 
 void SetGpsPositionSampleRate(unsigned int argc, char **argv){
@@ -456,7 +500,7 @@ void SetGpsPositionSampleRate(unsigned int argc, char **argv){
 
 void GetGpsPositionSampleRate(unsigned int argc, char **argv){
 	//TODO we pull one to represent all... is there a better way? individual settable sample rates?
-	SendNameInt("gpsPositionSampleRate",decodeSampleRate(getWorkingLoggerConfig()->GPSConfig.latitudeCfg.sampleRate));
+	SendNameInt("sampleRate",decodeSampleRate(getWorkingLoggerConfig()->GPSConfig.latitudeCfg.sampleRate));
 }
 
 void SetGpsVelocitySampleRate(unsigned int argc, char **argv){
@@ -468,7 +512,7 @@ void SetGpsVelocitySampleRate(unsigned int argc, char **argv){
 }
 
 void GetGpsVelocitySampleRate(unsigned int argc, char **argv){
-	SendNameInt("gpsVelocitySampleRate",decodeSampleRate(getWorkingLoggerConfig()->GPSConfig.velocityCfg.sampleRate));
+	SendNameInt("sampleRate",decodeSampleRate(getWorkingLoggerConfig()->GPSConfig.velocityCfg.sampleRate));
 }
 
 void SetGpsTimeSampleRate(unsigned int argc, char **argv){
@@ -480,7 +524,7 @@ void SetGpsTimeSampleRate(unsigned int argc, char **argv){
 }
 
 void GetGpsTimeSampleRate(unsigned int argc, char **argv){
-	SendNameInt("gpsTimeSampleRate", decodeSampleRate(getWorkingLoggerConfig()->GPSConfig.timeCfg.sampleRate));
+	SendNameInt("sampleRate", decodeSampleRate(getWorkingLoggerConfig()->GPSConfig.timeCfg.sampleRate));
 }
 
 GPIOConfig * AssertGpioSetParam(unsigned int argc, char **argv){
@@ -507,6 +551,14 @@ GPIOConfig * AssertGpioGetParam(unsigned int argc, char **argv){
 	return c;
 }
 
+void GetGpioConfig(unsigned int argc, char **argv){
+	GPIOConfig *c = AssertGpioGetParam(argc,argv);
+	if (NULL != c){
+		SendChannelConfig(&(c->cfg));
+		SendNameInt("mode",c->mode);
+	}
+}
+
 void SetGpioLabel(unsigned int argc, char **argv){
 	GPIOConfig * c = AssertGpioSetParam(argc,argv);
 	if (NULL != c){
@@ -517,7 +569,7 @@ void SetGpioLabel(unsigned int argc, char **argv){
 
 void GetGpioLabel(unsigned int argc, char **argv){
 	GPIOConfig * c = AssertGpioGetParam(argc,argv);
-	if (NULL != c) SendNameString("gpioLabel",c->cfg.label);
+	if (NULL != c) SendNameString("label",c->cfg.label);
 }
 
 void SetGpioSampleRate(unsigned int argc, char **argv){
@@ -530,20 +582,20 @@ void SetGpioSampleRate(unsigned int argc, char **argv){
 
 void GetGpioSampleRate(unsigned int argc, char **argv){
 	GPIOConfig * c = AssertGpioGetParam(argc,argv);
-	if (NULL != c) SendNameInt("gpioSampleRate",decodeSampleRate(c->cfg.sampleRate));
+	if (NULL != c) SendNameInt("sampleRate",decodeSampleRate(c->cfg.sampleRate));
 }
 
-void SetGpioConfig(unsigned int argc, char **argv){
+void SetGpioMode(unsigned int argc, char **argv){
 	GPIOConfig * c = AssertGpioSetParam(argc,argv);
 	if (NULL != c){
-		c->mode = filterGPIOConfig(modp_atoi(argv[2]));
+		c->mode = filterGPIOMode(modp_atoi(argv[2]));
 		SendCommandOK();
 	}
 }
 
-void GetGpioConfig(unsigned int argc, char **argv){
+void GetGpioMode(unsigned int argc, char **argv){
 	GPIOConfig * c = AssertGpioGetParam(argc,argv);
-	if (NULL != c) SendNameInt("gpioConfig",c->mode);
+	if (NULL != c) SendNameInt("mode",c->mode);
 }
 
 TimerConfig * AssertTimerSetParam(unsigned int argc, char **argv){
@@ -574,10 +626,11 @@ void GetTimerConfig(unsigned int argc, char **argv){
 	TimerConfig * c = AssertTimerGetParam(argc,argv);
 	if (NULL != c){
 		SendChannelConfig(&(c->cfg));
+		SendNameInt("logPrec",c->loggingPrecision);
 		SendNameInt("slowTimer",c->slowTimerEnabled);
 		SendNameInt("mode",c->mode);
 		SendNameInt("pulsePerRev",c->pulsePerRevolution);
-		SendNameInt("timerDivider",c->timerDivider);
+		SendNameInt("divider",c->timerDivider);
 		SendNameInt("scaling",c->calculatedScaling);
 	}
 }
@@ -593,7 +646,7 @@ void SetTimerLabel(unsigned int argc, char **argv){
 
 void GetTimerLabel(unsigned int argc, char **argv){
 	TimerConfig * c = AssertTimerGetParam(argc,argv);
-	if (NULL !=c) SendNameString("timerLabel",c->cfg.label);
+	if (NULL !=c) SendNameString("label",c->cfg.label);
 }
 
 void SetTimerSampleRate(unsigned int argc, char **argv){
@@ -606,20 +659,20 @@ void SetTimerSampleRate(unsigned int argc, char **argv){
 
 void GetTimerSampleRate(unsigned int argc, char **argv){
 	TimerConfig * c = AssertTimerGetParam(argc,argv);
-	if (NULL != c) SendNameInt("timerSampleRate", decodeSampleRate(c->cfg.sampleRate));
+	if (NULL != c) SendNameInt("sampleRate", decodeSampleRate(c->cfg.sampleRate));
 }
 
-void SetTimerCfg(unsigned int argc, char **argv){
+void SetTimerMode(unsigned int argc, char **argv){
 	TimerConfig * c = AssertTimerSetParam(argc,argv);
 	if (NULL != c){
-		c->mode = filterTimerConfig(modp_atoi(argv[2]));
+		c->mode = filterTimerMode(modp_atoi(argv[2]));
 		SendCommandOK();
 	}
 }
 
-void GetTimerCfg(unsigned int argc, char **argv){
+void GetTimerMode(unsigned int argc, char **argv){
 	TimerConfig * c = AssertTimerGetParam(argc,argv);
-	if (NULL != c) SendNameInt("timerConfig", c->mode);
+	if (NULL != c) SendNameInt("mode", c->mode);
 }
 
 void SetTimerPulsePerRev(unsigned int argc, char **argv){
@@ -633,7 +686,7 @@ void SetTimerPulsePerRev(unsigned int argc, char **argv){
 void GetTimerPulsePerRev(unsigned int argc, char **argv){
 	TimerConfig * c = AssertTimerGetParam(argc,argv);
 	if (NULL != c){
-		SendNameInt("timerPulsePerRev",c->pulsePerRevolution);
+		SendNameInt("pulsePerRev",c->pulsePerRevolution);
 	}
 }
 
@@ -648,7 +701,7 @@ void SetTimerDivider(unsigned int argc, char **argv){
 void GetTimerDivider(unsigned int argc, char **argv){
 	TimerConfig * c = AssertTimerGetParam(argc,argv);
 	if (NULL != c){
-		SendNameInt("timerDivider",c->timerDivider);
+		SendNameInt("divider",c->timerDivider);
 	}
 }
 
@@ -663,7 +716,7 @@ void CalculateTimerScaling(unsigned int argc, char **argv){
 void GetTimerScaling(unsigned int argc, char **argv){
 	TimerConfig * c = AssertTimerGetParam(argc,argv);
 	if (NULL != c){
-		SendNameInt("timerScaling",c->calculatedScaling);
+		SendNameInt("scaling",c->calculatedScaling);
 		SendCommandOK();
 	}
 }
@@ -702,7 +755,17 @@ void SetAccelInstalled(unsigned int argc, char **argv){
 
 void GetAccelInstalled(unsigned int argc, char **argv){
 	LoggerConfig * c = getWorkingLoggerConfig();
-	SendNameInt("accelInstalled",c->AccelInstalled);
+	SendNameInt("installed",c->AccelInstalled);
+}
+
+void GetAccelConfig(unsigned int argc, char **argv){
+	AccelConfig * c= AssertAccelGetParam(argc,argv);
+	if (NULL != c){
+		SendChannelConfig(&(c->cfg));
+		SendNameInt("mode",c->mode);
+		SendNameInt("channel",c->accelChannel);
+		SendNameInt("zeroValue",c->zeroValue);
+	}
 }
 
 void SetAccelLabel(unsigned int argc, char **argv){
@@ -716,7 +779,7 @@ void SetAccelLabel(unsigned int argc, char **argv){
 void GetAccelLabel(unsigned int argc, char **argv){
 	AccelConfig * c = AssertAccelGetParam(argc,argv);
 	if (NULL != c){
-		SendNameString("accelLabel",c->cfg.label);
+		SendNameString("label",c->cfg.label);
 	}
 }
 
@@ -730,21 +793,21 @@ void SetAccelSampleRate(unsigned int argc, char **argv){
 
 void GetAccelSampleRate(unsigned int argc, char **argv){
 	AccelConfig * c = AssertAccelGetParam(argc,argv);
-	if (NULL != c) SendNameInt("accelSampleRate",decodeSampleRate(c->cfg.sampleRate));
+	if (NULL != c) SendNameInt("sampleRate",decodeSampleRate(c->cfg.sampleRate));
 }
 
 
-void SetAccelConfig(unsigned int argc, char **argv){
+void SetAccelMode(unsigned int argc, char **argv){
 	AccelConfig * c = AssertAccelSetParam(argc,argv);
 	if (NULL != c){
-		c->mode = filterAccelConfig(modp_atoi(argv[2]));
+		c->mode = filterAccelMode(modp_atoi(argv[2]));
 		SendCommandOK();
 	}
 }
 
-void GetAccelConfig(unsigned int argc, char **argv){
+void GetAccelMode(unsigned int argc, char **argv){
 	AccelConfig * c = AssertAccelGetParam(argc,argv);
-	if (NULL != c) SendNameInt("accelConfig",c->mode);
+	if (NULL != c) SendNameInt("mode",c->mode);
 }
 
 void SetAccelChannel(unsigned int argc, char **argv){
@@ -757,7 +820,7 @@ void SetAccelChannel(unsigned int argc, char **argv){
 
 void GetAccelChannel(unsigned int argc, char **argv){
 	AccelConfig * c = AssertAccelGetParam(argc,argv);
-	if (NULL != c) SendNameInt("accelChannel",c->accelChannel);
+	if (NULL != c) SendNameInt("channel",c->accelChannel);
 }
 
 void SetAccelZeroValue(unsigned int argc, char **argv){
@@ -795,6 +858,13 @@ void SetP2PTelemetryDestinationAddr(unsigned int argc, char **argv){
 	}
 }
 
+void GetLoggerOutputConfig(unsigned int argc, char **argv){
+	LoggerOutputConfig *c = &(getWorkingLoggerConfig()->LoggerOutputConfig);
+	SendNameInt("telemetryMode",c->telemetryMode);
+	SendNameInt("sdLoggingMode",c->sdLoggingMode);
+	SendNameUint("p2pDestAddrHigh",c->p2pDestinationAddrHigh);
+	SendNameUint("p2pDestAddrLow",c->p2pDestinationAddrLow);
+}
 /*
 //Logger configuration editing
 lua_register(L,"setAccelZeroValue",Lua_SetAccelZeroValue);

@@ -20,6 +20,7 @@ extern const struct cmd_t g_loggerCommands[];
 {"setTelemetryMode", "Sets the Telemetry mode","<mode>", SetTelemetryMode}, \
 {"setSDLoggingMode", "Sets the SD Logging Mode","<mode>", SetSDLoggingMode}, \
 {"setP2PTelemetryAddr", "Sets the P2P Telemetry Destination Address","<high> <low>",SetP2PTelemetryDestinationAddr}, \
+{"getOutputConfig", "Gets the Output Configuration","",GetLoggerOutputConfig}, \
  \
 {"getAnalogConfig", "Gets the configuration for the specified analog channel","<channel>", GetAnalogConfig}, \
 {"setAnalogLabel", "Sets the label for the specified analog channel.","<channel> <label> <units>", SetAnalogLabel}, \
@@ -31,29 +32,33 @@ extern const struct cmd_t g_loggerCommands[];
 {"setAnalogScaling", "Sets the scaling factor for the specified analog channel.","<channel> <scaling>", SetAnalogScaling}, \
 {"getAnalogScaling", "Gets the scaling factor for the specified analog channel.","<channel>", GetAnalogScaling}, \
 	\
+{"getPwmConfig","Gets the configuration for the specified PWM/Analog Output channel.","<channel>",GetPwmConfig}, \
+	\
 {"setPwmClockFreq", "Sets the PWM clock frequency for the specified channel.","<channel> <frequency>", SetPwmClockFreq}, \
 {"getPwmClockFreq", "Gets the PWM clock frequency for the specified channel.","<channel>", GetPwmClockFreq}, \
 	\
-{"setPwmLabel", "Sets the label for the specified PWM channel.","<channel> <label>", SetPwmLabel}, \
-{"getPwmLabel", "Gets the label for the specified PWM channel.","<channel>", GetPwmLabel}, \
+{"setPwmLabel", "Sets the label for the specified PWM/Analog Output channel.","<channel> <label>", SetPwmLabel}, \
+{"getPwmLabel", "Gets the label for the specified PWM/Analog Output channel.","<channel>", GetPwmLabel}, \
 	\
-{"setPwmSampleRate", "Sets the sample rate for the specified PWM channel.","<channel> <sampleRate>", SetPwmSampleRate}, \
-{"getPwmSampleRate", "Gets the sample rate for the specified PWM channel.","<channel>", GetPwmSampleRate}, \
+{"setPwmSampleRate", "Sets the sample rate for the specified PWM/Analog Output channel.","<channel> <sampleRate>", SetPwmSampleRate}, \
+{"getPwmSampleRate", "Gets the sample rate for the specified PWM/Analog Output channel.","<channel>", GetPwmSampleRate}, \
 	\
-{"setPwmOutputCfg", "Sets the output configuration for the specified PWM channel.","<channel> <config>", SetPwmOutputCfg}, \
-{"getPwmOutputCfg", "Gets the output configuration for the specified PWM channel.","<channel>", GetPwmOutputCfg}, \
+{"setPwmOutputMode", "Sets the output mode for the specified PWM/Analog Output channel.","<channel> <config>", SetPwmOutputMode}, \
+{"getPwmOutputMode", "Gets the output mode for the specified PWM/Analog Output channel.","<channel>", GetPwmOutputMode}, \
 	\
-{"setPwmLoggingCfg", "Sets the logging configuration for the specified PWM channel.","<channel> <config>", SetPwmLoggingCfg}, \
-{"getPwmLoggingCfg", "Sets the logging configuration for the specified PWM channel.","<channel>", GetPwmLoggingCfg}, \
+{"setPwmLoggingCfg", "Sets the logging mode for the specified PWM/Analog Output channel.","<channel> <config>", SetPwmLoggingMode}, \
+{"getPwmLoggingCfg", "Sets the logging mode for the specified PWM/Analog Output channel.","<channel>", GetPwmLoggingMode}, \
 	\
-{"setPwmStartupDutyCycle", "Sets the startup duty cycle for the specified PWM channel.","<channel> <dutyCycle>", SetPwmStartupDutyCycle}, \
-{"getPwmStartupDutyCycle", "Gets the startup duty cycle for the specified PWM channel.","<channel>", GetPwmStartupDutyCycle}, \
+{"setPwmStartupDutyCycle", "Sets the startup duty cycle for the specified PWM/Analog Output channel.","<channel> <dutyCycle>", SetPwmStartupDutyCycle}, \
+{"getPwmStartupDutyCycle", "Gets the startup duty cycle for the specified PWM/Analog Output channel.","<channel>", GetPwmStartupDutyCycle}, \
 	\
-{"setPwmStartupPeriod", "Sets the startup period for the specified PWM channel.","<channel> <period>", SetPWMStartupPeriod}, \
-{"getPwmStartupPeriod", "Gets the startup period for the specified PWM channel.","<channel>", GetPwmStartupPeriod}, \
+{"setPwmStartupPeriod", "Sets the startup period for the specified PWM/Analog Output channel.","<channel> <period>", SetPWMStartupPeriod}, \
+{"getPwmStartupPeriod", "Gets the startup period for the specified PWM/Analog Output channel.","<channel>", GetPwmStartupPeriod}, \
 	\
-{"setPwmVoltageScaling", "Sets the voltage scaling for the specified PWM channel.","<channel> <scaling>", SetPwmVoltageScaling}, \
-{"getPwmVoltageScaling", "Gets the voltage scaling for the specified PWM channel.","<channel>", getPwmVoltageScaling}, \
+{"setPwmVoltageScaling", "Sets the voltage scaling for the specified PWM/Analog Output channel.","<channel> <scaling>", SetPwmVoltageScaling}, \
+{"getPwmVoltageScaling", "Gets the voltage scaling for the specified PWM/Analog Output channel.","<channel>", getPwmVoltageScaling}, \
+	\
+{"getGpsConfig", "Gets the configuration for Gps features","",GetGpsConfig}, \
 	\
 {"setGpsInstalled", "Sets the installed state of the GPS module.","<installed>", SetGpsInstalled}, \
 {"getGpsInstalled", "Gets the installed state of the GPS module.","", getGpsInstalled}, \
@@ -100,14 +105,16 @@ extern const struct cmd_t g_loggerCommands[];
 {"setLapTimeLabel", "Sets the Lap Time label.","<label>", SetLapTimeLabel}, \
 {"getLapTimeLabel", "Gets the Lap Time label.","", GetLapTimeLabel}, \
 	\
+{"getGpioConfig","Gets the configuration for the specified GPIO port.","<port>", GetGpioConfig}, \
+	\
 {"setGpioLabel", "Sets the label for the specified GPIO port.","<port> <label>", SetGpioLabel}, \
 {"getGpioLabel", "Gets the label for the specified GPIO port.","<port>", GetGpioLabel}, \
 	\
 {"setGpioSampleRate", "Sets the sample rate for the specified GPIO port.","<port> <sampleRate>", SetGpioSampleRate}, \
 {"getGpioSampleRate", "Gets the sample rate for the specified GPIO port.","<port>", GetGpioSampleRate}, \
 	\
-{"setGpioCfg", "Sets the configuration for the specified GPIO port.","<port> <configuration>", SetGpioConfig}, \
-{"getGpioCfg", "Gets the configuration for the specified GPIO port.","<port>", GetGpioConfig}, \
+{"setGpioMode", "Sets the mode for the specified GPIO port.","<port> <mode>", SetGpioMode}, \
+{"getGpioMode", "Gets the mode for the specified GPIO port.","<port>", GetGpioMode}, \
 	\
 {"getTimerConfig", "Gets the configuration for the specified timer channel.","<channel>", GetTimerConfig}, \
 {"setTimerLabel", "Sets the label for the specified timer channel.","<channel> <label>", SetTimerLabel}, \
@@ -116,8 +123,8 @@ extern const struct cmd_t g_loggerCommands[];
 {"setTimerSampleRate", "Sets the sample rate for the specified timer channel.","<channel> <sampleRate>", SetTimerSampleRate}, \
 {"getTimerSampleRate", "Gets the sample rate for the specified timer channel.","<channel>", GetTimerSampleRate}, \
 	\
-{"setTimerCfg", "Sets the configuration for the specified timer channel.","<channel> <configuration>", SetTimerCfg}, \
-{"getTimerCfg", "Gets the configuration for the specified timer channel.","<channel>", GetTimerCfg}, \
+{"setTimerMode", "Sets the mode for the specified timer channel.","<channel> <mode>", SetTimerMode}, \
+{"getTimerMode", "Gets the mode for the specified timer channel.","<channel>", GetTimerMode}, \
 	\
 {"setTimerPulsePerRev", "Sets the pulse per revolution for the specified timer channel.","<channel> <pulses>", SetTimerPulsePerRev}, \
 {"getTimerPulsePerRev", "Gets the pulse per revolution for the specified timer channel.","<channel>", GetTimerPulsePerRev}, \
@@ -128,6 +135,8 @@ extern const struct cmd_t g_loggerCommands[];
 {"calculateTimerScaling", "Calculates and updates the scaling for the specified timer channel.","<channel>", CalculateTimerScaling}, \
 {"getTimerScaling", "Gets the scaling for the specified timer channel.","<channel>", GetTimerScaling}, \
 	\
+{"getAccelConfig", "Gets the configuration for the specified accelerometer channel.","<channel>",GetAccelConfig}, \
+	\
 {"setAccelInstalled", "Sets the installed state of the accelerometer.","", SetAccelInstalled}, \
 {"getAccelInstalled", "Gets the installed state of the accelerometer.","", GetAccelInstalled}, \
 	\
@@ -137,8 +146,8 @@ extern const struct cmd_t g_loggerCommands[];
 {"setAccelSampleRate", "Sets the sample rate for the specified accelerometer channel.","<channel> <sampleRate>", SetAccelSampleRate}, \
 {"getAccelSampleRate", "Gets the sample rate for the specified accelerometer channel.","<channel>", GetAccelSampleRate}, \
 	\
-{"setAccelConfig", "Sets the configuration for the specified accelerometer channel.","<channel> <config>", SetAccelConfig}, \
-{"getAccelConfig", "Gets the configuration for the specified accelerometer channel.","<channel>", GetAccelConfig}, \
+{"setAccelMode", "Sets the mode for the specified accelerometer channel.","<channel> <mode>", SetAccelMode}, \
+{"getAccelMode", "Gets the mode for the specified accelerometer channel.","<channel>", GetAccelMode}, \
 	\
 {"setAccelChannel", "Sets the X/Y/Z orientation for the specified accelerometer channel.","<channel> <orientation>", SetAccelChannel}, \
 {"getAccelChannel", "Gets the X/Y/Z orientation for the specified accelerometer channel.","<channel>", GetAccelChannel}, \
@@ -156,6 +165,7 @@ void FlashLoggerConfig(unsigned int argc, char **argv);
 void SetTelemetryMode(unsigned int argc, char **argv);
 void SetSDLoggingMode(unsigned int argc, char **argv);
 void SetP2PTelemetryDestinationAddr(unsigned int argc, char **argv);
+void GetLoggerOutputConfig(unsigned int argc, char **argv);
 
 void GetAnalogConfig(unsigned int argc, char **argv);
 void SetAnalogLabel(unsigned int argc, char **argv);
@@ -167,6 +177,7 @@ void SetAnalogSampleRate(unsigned int argc, char **argv);
 void SetAnalogScaling(unsigned int argc, char **argv);
 void GetAnalogScaling(unsigned int argc, char **argv);
 
+void GetPwmConfig(unsigned int argc, char **argv);
 
 void SetPwmClockFreq(unsigned int argc, char **argv);
 void GetPwmClockFreq(unsigned int argc, char **argv);
@@ -177,11 +188,11 @@ void GetPwmLabel(unsigned int argc, char **argv);
 void SetPwmSampleRate(unsigned int argc, char **argv);
 void GetPwmSampleRate(unsigned int argc, char **argv);
 
-void SetPwmOutputCfg(unsigned int argc, char **argv);
-void GetPwmOutputCfg(unsigned int argc, char **argv);
+void SetPwmOutputMode(unsigned int argc, char **argv);
+void GetPwmOutputMode(unsigned int argc, char **argv);
 
-void SetPwmLoggingCfg(unsigned int argc, char **argv);
-void GetPwmLoggingCfg(unsigned int argc, char **argv);
+void SetPwmLoggingMode(unsigned int argc, char **argv);
+void GetPwmLoggingMode(unsigned int argc, char **argv);
 
 void SetPwmStartupDutyCycle(unsigned int argc, char **argv);
 void GetPwmStartupDutyCycle(unsigned int argc, char **argv);
@@ -191,6 +202,8 @@ void GetPwmStartupPeriod(unsigned int argc, char **argv);
 
 void SetPwmVoltageScaling(unsigned int argc, char **argv);
 void getPwmVoltageScaling(unsigned int argc, char **argv);
+
+void GetGpsConfig(unsigned int argc, char **argv);
 
 void SetGpsInstalled(unsigned int argc, char **argv);
 void getGpsInstalled(unsigned int argc, char **argv);
@@ -237,14 +250,16 @@ void GetLapTimeLabel(unsigned int argc, char **argv);
 void SetLapTimeSampleRate(unsigned int argc, char **argv);
 void GetLapTimeSampleRate(unsigned int argc, char **argv);
 
+void GetGpioConfig(unsigned int argc, char **argv);
+
 void SetGpioLabel(unsigned int argc, char **argv);
 void GetGpioLabel(unsigned int argc, char **argv);
 
 void SetGpioSampleRate(unsigned int argc, char **argv);
 void GetGpioSampleRate(unsigned int argc, char **argv);
 
-void SetGpioConfig(unsigned int argc, char **argv);
-void GetGpioConfig(unsigned int argc, char **argv);
+void SetGpioMode(unsigned int argc, char **argv);
+void GetGpioMode(unsigned int argc, char **argv);
 
 void GetTimerConfig(unsigned int argc, char **argv);
 void SetTimerLabel(unsigned int argc, char **argv);
@@ -253,8 +268,8 @@ void GetTimerLabel(unsigned int argc, char **argv);
 void SetTimerSampleRate(unsigned int argc, char **argv);
 void GetTimerSampleRate(unsigned int argc, char **argv);
 
-void SetTimerCfg(unsigned int argc, char **argv);
-void GetTimerCfg(unsigned int argc, char **argv);
+void SetTimerMode(unsigned int argc, char **argv);
+void GetTimerMode(unsigned int argc, char **argv);
 
 void SetTimerPulsePerRev(unsigned int argc, char **argv);
 void GetTimerPulsePerRev(unsigned int argc, char **argv);
@@ -265,6 +280,8 @@ void GetTimerDivider(unsigned int argc, char **argv);
 void CalculateTimerScaling(unsigned int argc, char **argv);
 void GetTimerScaling(unsigned int argc, char **argv);
 
+void GetAccelConfig(unsigned int argc, char **argv);
+
 void SetAccelInstalled(unsigned int argc, char **argv);
 void GetAccelInstalled(unsigned int argc, char **argv);
 
@@ -274,8 +291,8 @@ void GetAccelLabel(unsigned int argc, char **argv);
 void SetAccelSampleRate(unsigned int argc, char **argv);
 void GetAccelSampleRate(unsigned int argc, char **argv);
 
-void SetAccelConfig(unsigned int argc, char **argv);
-void GetAccelConfig(unsigned int argc, char **argv);
+void SetAccelMode(unsigned int argc, char **argv);
+void GetAccelMode(unsigned int argc, char **argv);
 
 void SetAccelChannel(unsigned int argc, char **argv);
 void GetAccelChannel(unsigned int argc, char **argv);

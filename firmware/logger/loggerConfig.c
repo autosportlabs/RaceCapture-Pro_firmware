@@ -84,7 +84,7 @@ int decodeSampleRate(int sampleRateCode){
 	}
 }
 
-int filterGPIOConfig(int value){
+int filterGPIOMode(int value){
 	switch(value){
 		case CONFIG_GPIO_OUT:
 			return CONFIG_GPIO_OUT;
@@ -132,7 +132,7 @@ unsigned short filterTimerDivider(unsigned short divider){
 		return TIMER_MCK_128;
 	}
 }
-int filterTimerConfig(int config){
+int filterTimerMode(int config){
 	switch (config){
 		case MODE_LOGGING_TIMER_RPM:
 			return MODE_LOGGING_TIMER_RPM;
@@ -169,8 +169,8 @@ int filterAccelRawValue(int accelRawValue){
 	return accelRawValue;
 }
 
-int filterAccelConfig(int config){
-	switch (config){
+int filterAccelMode(int mode){
+	switch (mode){
 		case MODE_ACCEL_DISABLED:
 			return MODE_ACCEL_DISABLED;
 		case MODE_ACCEL_INVERTED:

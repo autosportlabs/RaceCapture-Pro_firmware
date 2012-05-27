@@ -90,7 +90,7 @@ static void writeSampleRecord(FIL * logfile, SampleRecord * sampleRecord){
 
 		if (sample->intValue == NIL_SAMPLE) continue;
 
-		int precision = sample->channelConfig->precision;
+		int precision = sample->precision;
 		if (precision > 0){
 			fileWriteFloat(logfile,sample->floatValue,precision);
 		}

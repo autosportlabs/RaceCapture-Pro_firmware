@@ -320,7 +320,7 @@ void writeADC(portTickType currentTicks, LoggerConfig *config){
 		ADCConfig *ac = &(config->ADCConfigs[i]);
 		portTickType sr = ac->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) lineAppendFloat(ac->scaling * (float)adc[i],DEFAULT_ADC_LOGGING_PRECISION);
+			if ((currentTicks % sr) == 0) lineAppendFloat(ac->linearScaling * (float)adc[i],DEFAULT_ADC_LOGGING_PRECISION);
 			lineAppendString(",");
 		}
 	}
@@ -438,7 +438,7 @@ void writePWMChannels(portTickType currentTicks, LoggerConfig *loggerConfig){
 		portTickType sr = c->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
-				switch (c->loggingConfig){
+				switch (c->loggingMode){
 					case MODE_LOGGING_PWM_PERIOD:
 						lineAppendInt(PWM_GetPeriod(i));
 						break;
