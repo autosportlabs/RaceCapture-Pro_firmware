@@ -31,29 +31,6 @@ void FlashLoggerConfig(unsigned int argc, char **argv){
 	}
 }
 
-static LoggerConfig * AssertSetParam(unsigned int argc, unsigned int requiredParams){
-	LoggerConfig *c = NULL;
-	if (argc >= requiredParams){
-		c = getWorkingLoggerConfig();
-	}
-	else{
-		SendCommandError(ERROR_CODE_MISSING_PARAMS);
-	}
-	return c;
-}
-
-static ADCConfig * AssertAdcGetParam(unsigned int argc, char **argv){
-	ADCConfig *c = NULL;
-	if (argc >= 2){
-		c = getADCConfigChannel(modp_atoi(argv[1]));
-		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
-	}
-	else{
-		SendCommandError(ERROR_CODE_MISSING_PARAMS);
-	}
-	return c;
-}
-
 static void SetChannelConfig(ChannelConfig *c, unsigned int offset, unsigned int argc, char **argv){
 	if (argc > offset) setLabelGeneric(c->label,argv[offset]);
 	if (argc > offset + 1) setLabelGeneric(c->units,argv[offset + 1]);
@@ -76,8 +53,31 @@ static void SendChannelConfig(ChannelConfig *c){
 	}
 }
 
+static LoggerConfig * AssertSetParam(unsigned int argc, unsigned int requiredParams){
+	LoggerConfig *c = NULL;
+	if (argc >= requiredParams){
+		c = getWorkingLoggerConfig();
+	}
+	else{
+		SendCommandError(ERROR_CODE_MISSING_PARAMS);
+	}
+	return c;
+}
+
+static ADCConfig * AssertAdcGetChannel(unsigned int argc, char **argv){
+	ADCConfig *c = NULL;
+	if (argc >= 2){
+		c = getADCConfigChannel(modp_atoi(argv[1]));
+		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
+	}
+	else{
+		SendCommandError(ERROR_CODE_MISSING_PARAMS);
+	}
+	return c;
+}
+
 void GetAnalogConfig(unsigned int argc, char **argv){
-	ADCConfig * c = AssertAdcGetParam(argc,argv);
+	ADCConfig * c = AssertAdcGetChannel(argc,argv);
 	if (NULL != c){
 		SendChannelConfig(&(c->cfg));
 		SendNameInt("loggingPrecision",c->loggingPrecision);
@@ -93,15 +93,13 @@ void GetAnalogConfig(unsigned int argc, char **argv){
 }
 
 void SetAnalogConfig(unsigned int argc, char **argv){
-	ADCConfig * c = AssertAdcGetParam(argc,argv);
+	ADCConfig * c = AssertAdcGetChannel(argc,argv);
 	if (NULL != c){
 		if (argc > 8 && argc < 18){
 			SendCommandError(ERROR_CODE_MISSING_PARAMS);
 			return;
 		}
-		if (argc > 2) setLabelGeneric(c->cfg.label,argv[2]);
-		if (argc > 3) setLabelGeneric(c->cfg.units,argv[3]);
-		if (argc > 4) c->cfg.sampleRate = encodeSampleRate(modp_atoi(argv[4]));
+		if (argc > 2) SetChannelConfig(&(c->cfg),2,argc,argv);
 		if (argc > 5) c->loggingPrecision = modp_atoi(argv[5]);
 		if (argc > 6) c->scalingMode = filterAnalogScalingMode(modp_atoi(argv[6]));
 		if (argc > 7) c->linearScaling = modp_atof(argv[7]);
@@ -115,6 +113,18 @@ void SetAnalogConfig(unsigned int argc, char **argv){
 		}
 		SendCommandOK();
 	}
+}
+
+static PWMConfig * AssertPwmGetChannel(unsigned int argc, char **argv){
+	PWMConfig *c = NULL;
+	if (argc >= 2){
+		c = getPwmConfigChannel(modp_atoi(argv[1]));
+		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
+	}
+	else{
+		SendCommandError(ERROR_CODE_MISSING_PARAMS);
+	}
+	return c;
 }
 
 void SetPwmClockFreq(unsigned int argc, char **argv){
@@ -131,20 +141,8 @@ void GetPwmClockFreq(unsigned int argc, char **argv){
 	SendNameInt("frequency",getWorkingLoggerConfig()->PWMClockFrequency);
 }
 
-static PWMConfig * AssertPwmGetParam(unsigned int argc, char **argv){
-	PWMConfig *c = NULL;
-	if (argc >= 2){
-		c = getPwmConfigChannel(modp_atoi(argv[1]));
-		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
-	}
-	else{
-		SendCommandError(ERROR_CODE_MISSING_PARAMS);
-	}
-	return c;
-}
-
 void GetPwmConfig(unsigned int argc, char **argv){
-	PWMConfig *c = AssertPwmGetParam(argc,argv);
+	PWMConfig *c = AssertPwmGetChannel(argc,argv);
 	if (NULL != c){
 		SendChannelConfig(&(c->cfg));
 		SendNameInt("loggingPrecision",c->loggingPrecision);
@@ -157,11 +155,9 @@ void GetPwmConfig(unsigned int argc, char **argv){
 }
 
 void SetPwmConfig(unsigned int argc, char **argv){
-	PWMConfig *c = AssertPwmGetParam(argc,argv);
+	PWMConfig *c = AssertPwmGetChannel(argc,argv);
 	if (NULL != c){
-		if (argc > 2) setLabelGeneric(c->cfg.label,argv[2]);
-		if (argc > 3) setLabelGeneric(c->cfg.units,argv[3]);
-		if (argc > 4) c->cfg.sampleRate = encodeSampleRate(modp_atoi(argv[4]));
+		if (argc > 2) SetChannelConfig(&(c->cfg),2,argc,argv);
 		if (argc > 5) c->loggingPrecision = modp_atoi(argv[5]);
 		if (argc > 6) c->outputMode = filterPwmOutputMode(modp_atoi(argv[6]));
 		if (argc > 7) c->loggingMode = filterPwmLoggingMode(modp_atoi(argv[7]));
@@ -214,19 +210,7 @@ void SetStartFinishConfig(unsigned int argc, char **argv){
 	SendCommandOK();
 }
 
-GPIOConfig * AssertGpioSetParam(unsigned int argc, char **argv){
-	GPIOConfig *c = NULL;
-	if (argc >= 3){
-		c = getGPIOConfigChannel(modp_atoi(argv[1]));
-		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
-	}
-	else{
-		SendCommandError(ERROR_CODE_MISSING_PARAMS);
-	}
-	return c;
-}
-
-GPIOConfig * AssertGpioGetParam(unsigned int argc, char **argv){
+static GPIOConfig * AssertGpioGetChannel(unsigned int argc, char **argv){
 	GPIOConfig *c = NULL;
 	if (argc >= 2){
 		c = getGPIOConfigChannel(modp_atoi(argv[1]));
@@ -239,7 +223,7 @@ GPIOConfig * AssertGpioGetParam(unsigned int argc, char **argv){
 }
 
 void GetGpioConfig(unsigned int argc, char **argv){
-	GPIOConfig *c = AssertGpioGetParam(argc,argv);
+	GPIOConfig *c = AssertGpioGetChannel(argc,argv);
 	if (NULL != c){
 		SendChannelConfig(&(c->cfg));
 		SendNameInt("mode",c->mode);
@@ -247,7 +231,7 @@ void GetGpioConfig(unsigned int argc, char **argv){
 }
 
 void SetGpioConfig(unsigned int argc, char **argv){
-	GPIOConfig *c = AssertGpioGetParam(argc,argv);
+	GPIOConfig *c = AssertGpioGetChannel(argc,argv);
 	if (NULL != c){
 		SetChannelConfig(&(c->cfg),2,argc,argv);
 		if (argc > 5) c->mode = filterGpioMode(modp_atoi(argv[5]));
@@ -255,19 +239,7 @@ void SetGpioConfig(unsigned int argc, char **argv){
 	}
 }
 
-TimerConfig * AssertTimerSetParam(unsigned int argc, char **argv){
-	TimerConfig *c = NULL;
-	if (argc >= 3){
-		c = getTimerConfigChannel(modp_atoi(argv[1]));
-		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
-	}
-	else{
-		SendCommandError(ERROR_CODE_MISSING_PARAMS);
-	}
-	return c;
-}
-
-TimerConfig* AssertTimerGetParam(unsigned int argc, char **argv){
+static TimerConfig* AssertTimerGetChannel(unsigned int argc, char **argv){
 	TimerConfig *c = NULL;
 	if (argc >= 2){
 		c = getTimerConfigChannel(modp_atoi(argv[1]));
@@ -280,7 +252,7 @@ TimerConfig* AssertTimerGetParam(unsigned int argc, char **argv){
 }
 
 void GetTimerConfig(unsigned int argc, char **argv){
-	TimerConfig * c = AssertTimerGetParam(argc,argv);
+	TimerConfig * c = AssertTimerGetChannel(argc,argv);
 	if (NULL != c){
 		SendChannelConfig(&(c->cfg));
 		SendNameInt("loggingPrecision",c->loggingPrecision);
@@ -293,7 +265,7 @@ void GetTimerConfig(unsigned int argc, char **argv){
 }
 
 void SetTimerConfig(unsigned int argc, char **argv){
-	TimerConfig * c = AssertTimerGetParam(argc,argv);
+	TimerConfig * c = AssertTimerGetChannel(argc,argv);
 	if (NULL != c){
 		SetChannelConfig(&(c->cfg),2,argc,argv);
 		if (argc > 5) c->loggingPrecision = modp_atoi(argv[5]);
@@ -311,20 +283,7 @@ void SetTimerConfig(unsigned int argc, char **argv){
 	}
 }
 
-
-AccelConfig * AssertAccelSetParam(unsigned int argc, char **argv){
-	AccelConfig *c = NULL;
-	if (argc >= 3){
-		c = getAccelConfigChannel(modp_atoi(argv[1]));
-		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
-	}
-	else{
-		SendCommandError(ERROR_CODE_MISSING_PARAMS);
-	}
-	return c;
-}
-
-AccelConfig * AssertAccelGetParam(unsigned int argc, char **argv){
+static AccelConfig * AssertAccelGetChannel(unsigned int argc, char **argv){
 	AccelConfig *c = NULL;
 	if (argc >= 2){
 		c = getAccelConfigChannel(modp_atoi(argv[1]));
@@ -350,7 +309,7 @@ void GetAccelInstalled(unsigned int argc, char **argv){
 }
 
 void GetAccelConfig(unsigned int argc, char **argv){
-	AccelConfig * c= AssertAccelGetParam(argc,argv);
+	AccelConfig * c= AssertAccelGetChannel(argc,argv);
 	if (NULL != c){
 		SendChannelConfig(&(c->cfg));
 		SendNameInt("mode",c->mode);
@@ -359,77 +318,26 @@ void GetAccelConfig(unsigned int argc, char **argv){
 	}
 }
 
-void SetAccelLabel(unsigned int argc, char **argv){
-	AccelConfig * c = AssertAccelSetParam(argc,argv);
+void SetAccelConfig(unsigned int argc, char **argv){
+	AccelConfig * c= AssertAccelGetChannel(argc,argv);
 	if (NULL != c){
-		setLabelGeneric(c->cfg.label,argv[2]);
+		SetChannelConfig(&(c->cfg),1,argc,argv);
+		if (argc >= 4) c->mode = filterAccelMode(modp_atoi(argv[4]));
+		if (argc >= 5) c->accelChannel = filterAccelChannel(modp_atoi(argv[5]));
+		if (argc >= 6) c->zeroValue = modp_atoi(argv[6]);
 		SendCommandOK();
 	}
-}
-
-void GetAccelLabel(unsigned int argc, char **argv){
-	AccelConfig * c = AssertAccelGetParam(argc,argv);
-	if (NULL != c){
-		SendNameString("label",c->cfg.label);
-	}
-}
-
-void SetAccelSampleRate(unsigned int argc, char **argv){
-	AccelConfig * c = AssertAccelSetParam(argc,argv);
-	if (NULL != c){
-		c->cfg.sampleRate = encodeSampleRate(modp_atoi(argv[2]));
-		SendCommandOK();
-	}
-}
-
-void GetAccelSampleRate(unsigned int argc, char **argv){
-	AccelConfig * c = AssertAccelGetParam(argc,argv);
-	if (NULL != c) SendNameInt("sampleRate",decodeSampleRate(c->cfg.sampleRate));
-}
-
-
-void SetAccelMode(unsigned int argc, char **argv){
-	AccelConfig * c = AssertAccelSetParam(argc,argv);
-	if (NULL != c){
-		c->mode = filterAccelMode(modp_atoi(argv[2]));
-		SendCommandOK();
-	}
-}
-
-void GetAccelMode(unsigned int argc, char **argv){
-	AccelConfig * c = AssertAccelGetParam(argc,argv);
-	if (NULL != c) SendNameInt("mode",c->mode);
-}
-
-void SetAccelChannel(unsigned int argc, char **argv){
-	AccelConfig * c = AssertAccelSetParam(argc,argv);
-	if (NULL != c){
-		c->accelChannel = filterAccelChannel(modp_atoi(argv[2]));
-		SendCommandOK();
-	}
-}
-
-void GetAccelChannel(unsigned int argc, char **argv){
-	AccelConfig * c = AssertAccelGetParam(argc,argv);
-	if (NULL != c) SendNameInt("channel",c->accelChannel);
-}
-
-void SetAccelZeroValue(unsigned int argc, char **argv){
-	AccelConfig * c = AssertAccelSetParam(argc,argv);
-	if (NULL != c){
-		c->zeroValue = modp_atoi(argv[2]);
-		SendCommandOK();
-	}
-}
-
-void GetAccelZeroValue(unsigned int argc, char **argv){
-	AccelConfig * c = AssertAccelGetParam(argc,argv);
-	if (NULL != c) SendNameInt("zeroValue",c->zeroValue);
 }
 
 void CalibrateAccelZero(unsigned int argc, char **argv){
-	calibrateAccelZero();
-	SendCommandOK();
+	if (getWorkingLoggerConfig()->AccelInstalled){
+		calibrateAccelZero();
+		SendCommandOK();
+	}
+	else{
+		SendCommandError(ERROR_CODE_INVALID_COMMAND);
+	}
+
 }
 
 void GetLoggerOutputConfig(unsigned int argc, char **argv){
@@ -442,23 +350,9 @@ void GetLoggerOutputConfig(unsigned int argc, char **argv){
 
 void SetLoggerOutputConfig(unsigned int argc, char **argv){
 	LoggerOutputConfig *c = &(getWorkingLoggerConfig()->LoggerOutputConfig);
-	if (argc > 1){
-		c->sdLoggingMode = filterSdLoggingMode((char)modp_atoui(argv[1]));
-	}
-	if (argc > 2){
-		c->telemetryMode = filterTelemetryMode((char)modp_atoui(argv[2]));
-	}
-	if (argc > 3){
-		c->p2pDestinationAddrHigh = modp_atoui(argv[3]);
-	}
-	if (argc > 4){
-		c->p2pDestinationAddrLow = modp_atoui(argv[4]);
-	}
+	if (argc > 1) c->sdLoggingMode = filterSdLoggingMode((char)modp_atoui(argv[1]));
+	if (argc > 2) c->telemetryMode = filterTelemetryMode((char)modp_atoui(argv[2]));
+	if (argc > 3) c->p2pDestinationAddrHigh = modp_atoui(argv[3]);
+	if (argc > 4) c->p2pDestinationAddrLow = modp_atoui(argv[4]);
 	SendCommandOK();
 }
-
-
-/*
-//Logger configuration editing
-lua_register(L,"setAccelZeroValue",Lua_SetAccelZeroValue);
-*/
