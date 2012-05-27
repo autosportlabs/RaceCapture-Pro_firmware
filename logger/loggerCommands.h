@@ -36,15 +36,7 @@ extern const struct cmd_t g_loggerCommands[];
 {"setStartFinishConfig", "Sets the start/finish line configuration","[label_lapCount] [units_lapCount] [sampleRate_lapCount] [label_lapTime] [units_lapTime] [sampleRate_lapTime] [startFinishLat] [startFinishLong] [startFinishRadius]",SetStartFinishConfig}, \
 \
 {"getGpioConfig","Gets the configuration for the specified GPIO port.","<port>", GetGpioConfig}, \
-\
-{"setGpioLabel", "Sets the label for the specified GPIO port.","<port> <label>", SetGpioLabel}, \
-{"getGpioLabel", "Gets the label for the specified GPIO port.","<port>", GetGpioLabel}, \
-\
-{"setGpioSampleRate", "Sets the sample rate for the specified GPIO port.","<port> <sampleRate>", SetGpioSampleRate}, \
-{"getGpioSampleRate", "Gets the sample rate for the specified GPIO port.","<port>", GetGpioSampleRate}, \
-\
-{"setGpioMode", "Sets the mode for the specified GPIO port.","<port> <mode>", SetGpioMode}, \
-{"getGpioMode", "Gets the mode for the specified GPIO port.","<port>", GetGpioMode}, \
+{"setGpioConfig","Sets the configuration for the specified GPIO port.","<port> [label] [units] [sampleRate] [mode]", SetGpioConfig}, \
 \
 {"getTimerConfig", "Gets the configuration for the specified timer channel.","<channel>", GetTimerConfig}, \
 {"setTimerLabel", "Sets the label for the specified timer channel.","<channel> <label>", SetTimerLabel}, \
@@ -111,15 +103,7 @@ void GetStartFinishConfig(unsigned int argc, char **argv);
 void SetStartFinishConfig(unsigned int argc, char **argv);
 
 void GetGpioConfig(unsigned int argc, char **argv);
-
-void SetGpioLabel(unsigned int argc, char **argv);
-void GetGpioLabel(unsigned int argc, char **argv);
-
-void SetGpioSampleRate(unsigned int argc, char **argv);
-void GetGpioSampleRate(unsigned int argc, char **argv);
-
-void SetGpioMode(unsigned int argc, char **argv);
-void GetGpioMode(unsigned int argc, char **argv);
+void SetGpioConfig(unsigned int argc, char **argv);
 
 void GetTimerConfig(unsigned int argc, char **argv);
 void SetTimerLabel(unsigned int argc, char **argv);

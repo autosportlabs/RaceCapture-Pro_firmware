@@ -530,7 +530,7 @@ int Lua_SetGPIOConfig(lua_State *L){
 		if (channel >= 0 && channel <= 2){//1 based
 			GPIOConfig *c = getGPIOConfigChannel(channel);
 			//0= configure as input, 1=configure as output
-			if (NULL != c) c->mode = filterGPIOMode(lua_tointeger(L,2));
+			if (NULL != c) c->mode = filterGpioMode(lua_tointeger(L,2));
 			InitGPIO(getWorkingLoggerConfig()); //reload configuration
 		}
 	}

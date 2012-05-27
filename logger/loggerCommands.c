@@ -246,43 +246,13 @@ void GetGpioConfig(unsigned int argc, char **argv){
 	}
 }
 
-void SetGpioLabel(unsigned int argc, char **argv){
-	GPIOConfig * c = AssertGpioSetParam(argc,argv);
+void SetGpioConfig(unsigned int argc, char **argv){
+	GPIOConfig *c = AssertGpioGetParam(argc,argv);
 	if (NULL != c){
-		setLabelGeneric(c->cfg.label,argv[2]);
+		SetChannelConfig(&(c->cfg),2,argc,argv);
+		if (argc > 5) c->mode = filterGpioMode(modp_atoi(argv[5]));
 		SendCommandOK();
 	}
-}
-
-void GetGpioLabel(unsigned int argc, char **argv){
-	GPIOConfig * c = AssertGpioGetParam(argc,argv);
-	if (NULL != c) SendNameString("label",c->cfg.label);
-}
-
-void SetGpioSampleRate(unsigned int argc, char **argv){
-	GPIOConfig * c = AssertGpioSetParam(argc,argv);
-	if (NULL != c){
-		c->cfg.sampleRate = encodeSampleRate(modp_atoi(argv[2]));
-		SendCommandOK();
-	}
-}
-
-void GetGpioSampleRate(unsigned int argc, char **argv){
-	GPIOConfig * c = AssertGpioGetParam(argc,argv);
-	if (NULL != c) SendNameInt("sampleRate",decodeSampleRate(c->cfg.sampleRate));
-}
-
-void SetGpioMode(unsigned int argc, char **argv){
-	GPIOConfig * c = AssertGpioSetParam(argc,argv);
-	if (NULL != c){
-		c->mode = filterGPIOMode(modp_atoi(argv[2]));
-		SendCommandOK();
-	}
-}
-
-void GetGpioMode(unsigned int argc, char **argv){
-	GPIOConfig * c = AssertGpioGetParam(argc,argv);
-	if (NULL != c) SendNameInt("mode",c->mode);
 }
 
 TimerConfig * AssertTimerSetParam(unsigned int argc, char **argv){
