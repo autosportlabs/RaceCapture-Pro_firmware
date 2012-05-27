@@ -24,12 +24,16 @@ extern const struct cmd_t g_loggerCommands[];
 {"setAnalogConfig", "Sets the configuration for the specified analog channel","<channel> [label] [units] [sampleRate] [loggingPrecision] [scalingMode] [linearScaling] < [mapRaw_0] [mapRaw_1] [mapRaw_2] [mapRaw_3] [mapRaw_4] [mapScaled_0] [mapScaled_1] [mapScaled_2] [mapScaled_3] [mapScaled_4] >",SetAnalogConfig}, \
 \
 {"getPwmConfig","Gets the configuration for the specified PWM/Analog Output channel.","<channel>",GetPwmConfig}, \
-{"setPwmConfig","Sets the configuration for the specified PWM/Analog Output channel.","<channel> [label] [units] [sampleRate]",SetPwmConfig}, \
+{"setPwmConfig","Sets the configuration for the specified PWM/Analog Output channel.","<channel> [label] [units] [sampleRate] [loggingPrecision] [outputMode] [loggingMode] [startupDutyCycle] [startupPeriod] [voltageScaling]",SetPwmConfig}, \
 \
 {"setPwmClockFreq", "Sets the PWM clock frequency for the specified channel.","<channel> <frequency>", SetPwmClockFreq}, \
 {"getPwmClockFreq", "Gets the PWM clock frequency for the specified channel.","<channel>", GetPwmClockFreq}, \
 \
 {"getGpsConfig", "Gets the configuration for Gps features","",GetGpsConfig}, \
+{"setGpsConfig", "Sets the configuration for Gps features","[installed] [label_lat] [units_lat] [sampleRate_lat] [label_long] [units_long] [sampleRate_long] [label_vel] [units_vel] [sampleRate_vel] [label_time] [units_time] [sampleRate_time] [label_qual] [units_qual] [sampleRate_qual] [label_sats] [units_sats] [sampleRate_sats]",SetGpsConfig}, \
+\
+{"getStartFinishConfig", "Gets the start/finish line configuration","",GetStartFinishConfig}, \
+{"setStartFinishConfig", "Sets the start/finish line configuration","[label_lapCount] [units_lapCount] [sampleRate_lapCount] [label_lapTime] [units_lapTime] [sampleRate_lapTime] [startFinishLat] [startFinishLong] [startFinishRadius]",SetStartFinishConfig}, \
 \
 {"setGpsInstalled", "Sets the installed state of the GPS module.","<installed>", SetGpsInstalled}, \
 {"getGpsInstalled", "Gets the installed state of the GPS module.","", getGpsInstalled}, \
@@ -146,6 +150,10 @@ void SetPwmClockFreq(unsigned int argc, char **argv);
 void GetPwmClockFreq(unsigned int argc, char **argv);
 
 void GetGpsConfig(unsigned int argc, char **argv);
+void SetGpsConfig(unsigned int argc, char **argv);
+
+void GetStartFinishConfig(unsigned int argc, char **argv);
+void SetStartFinishConfig(unsigned int argc, char **argv);
 
 void SetGpsInstalled(unsigned int argc, char **argv);
 void getGpsInstalled(unsigned int argc, char **argv);
