@@ -130,7 +130,7 @@ int filterGPIOMode(int value){
 	}	
 }
 
-int filterPWMOutputConfig(int value){
+char filterPwmOutputMode(int value){
 	switch(value){
 		case MODE_PWM_ANALOG:
 			return MODE_PWM_ANALOG;
@@ -140,7 +140,7 @@ int filterPWMOutputConfig(int value){
 	}
 }
 
-int filterPWMLoggingConfig(int config){
+char filterPwmLoggingMode(int config){
 	switch (config){
 		case MODE_LOGGING_PWM_PERIOD:
 			return MODE_LOGGING_PWM_PERIOD;
@@ -217,7 +217,7 @@ int filterAccelMode(int mode){
 	}
 }
 
-int filterPWMDutyCycle(int dutyCycle){
+unsigned short filterPwmDutyCycle(int dutyCycle){
 	if (dutyCycle > MAX_PWM_DUTY_CYCLE){
 		dutyCycle = MAX_PWM_DUTY_CYCLE;
 	} else if (dutyCycle < MIN_PWM_DUTY_CYCLE){
@@ -226,7 +226,7 @@ int filterPWMDutyCycle(int dutyCycle){
 	return dutyCycle;
 }
 
-int filterPWMPeriod(int period){
+unsigned short filterPwmPeriod(int period){
 	if (period > MAX_PWM_PERIOD){
 		period = MAX_PWM_PERIOD;
 	} else if (period < MIN_PWM_PERIOD){
@@ -235,7 +235,7 @@ int filterPWMPeriod(int period){
 	return period;		
 }
 
-int filterPWMClockFrequency(int freq){
+int filterPwmClockFrequency(int freq){
 	if (freq > MAX_PWM_CLOCK_FREQUENCY){
 		freq = MAX_PWM_CLOCK_FREQUENCY;
 	} else if (freq < MIN_PWM_CLOCK_FREQUENCY){
@@ -244,7 +244,7 @@ int filterPWMClockFrequency(int freq){
 	return freq;
 }
 
-PWMConfig * getPWMConfigChannel(int channel){
+PWMConfig * getPwmConfigChannel(int channel){
 	PWMConfig * c = NULL;
 	if (channel >= 0 && channel < CONFIG_PWM_CHANNELS){
 		c = &(getWorkingLoggerConfig()->PWMConfigs[channel]);	

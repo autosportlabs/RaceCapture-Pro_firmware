@@ -348,12 +348,12 @@ char filterAnalogScalingMode(char mode);
 char filterSdLoggingMode(char mode);
 char filterTelemetryMode(char mode);
 int filterGPIOMode(int config);
-int filterPWMOutputConfig(int config);
-int filterPWMLoggingConfig(int config);
-int filterPWMDutyCycle(int dutyCycle);
+char filterPwmOutputMode(int config);
+char filterPwmLoggingMode(int config);
+unsigned short filterPwmDutyCycle(int dutyCycle);
+unsigned short filterPwmPeriod(int period);
 int filterAccelRawValue(int accelRawValue);
-int filterPWMPeriod(int period);
-int filterPWMClockFrequency(int frequency);
+int filterPwmClockFrequency(int frequency);
 int filterTimerMode(int config);
 unsigned short filterTimerDivider(unsigned short divider);
 int filterAccelMode(int mode);
@@ -361,7 +361,7 @@ int filterAccelChannel(int channel);
 
 TimerConfig * getTimerConfigChannel(int channel);
 ADCConfig * getADCConfigChannel(int channel);
-PWMConfig * getPWMConfigChannel(int channel);
+PWMConfig * getPwmConfigChannel(int channel);
 GPIOConfig * getGPIOConfigChannel(int channel);
 AccelConfig * getAccelConfigChannel(int channel);
 

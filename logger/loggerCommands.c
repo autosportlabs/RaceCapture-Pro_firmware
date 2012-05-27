@@ -150,7 +150,7 @@ void SetAnalogConfig(unsigned int argc, char **argv){
 
 void SetPwmClockFreq(unsigned int argc, char **argv){
 	if (argc >= 2){
-		getWorkingLoggerConfig()->PWMClockFrequency = filterPWMClockFrequency(modp_atoi(argv[1]));
+		getWorkingLoggerConfig()->PWMClockFrequency = filterPwmClockFrequency(modp_atoi(argv[1]));
 		SendCommandOK();
 	}
 	else{
@@ -162,22 +162,10 @@ void GetPwmClockFreq(unsigned int argc, char **argv){
 	SendNameInt("frequency",getWorkingLoggerConfig()->PWMClockFrequency);
 }
 
-static PWMConfig * AssertPwmSetParam(unsigned int argc, char **argv){
-	PWMConfig *c = NULL;
-	if (argc >= 3){
-		c = getPWMConfigChannel(modp_atoi(argv[1]));
-		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
-	}
-	else{
-		SendCommandError(ERROR_CODE_MISSING_PARAMS);
-	}
-	return c;
-}
-
 static PWMConfig * AssertPwmGetParam(unsigned int argc, char **argv){
 	PWMConfig *c = NULL;
 	if (argc >= 2){
-		c = getPWMConfigChannel(modp_atoi(argv[1]));
+		c = getPwmConfigChannel(modp_atoi(argv[1]));
 		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
 	}
 	else{
@@ -199,96 +187,20 @@ void GetPwmConfig(unsigned int argc, char **argv){
 	}
 }
 
-void SetPwmLabel(unsigned int argc, char **argv){
-	PWMConfig *c = AssertPwmSetParam(argc,argv);
+void SetPwmConfig(unsigned int argc, char **argv){
+	PWMConfig *c = AssertPwmGetParam(argc,argv);
 	if (NULL != c){
-		setLabelGeneric(c->cfg.label,argv[2]);
+		if (argc > 2) setLabelGeneric(c->cfg.label,argv[2]);
+		if (argc > 3) setLabelGeneric(c->cfg.units,argv[3]);
+		if (argc > 4) c->cfg.sampleRate = encodeSampleRate(modp_atoi(argv[4]));
+		if (argc > 5) c->loggingPrecision = modp_atoi(argv[5]);
+		if (argc > 6) c->outputMode = filterPwmOutputMode(modp_atoi(argv[6]));
+		if (argc > 7) c->loggingMode = filterPwmLoggingMode(modp_atoi(argv[7]));
+		if (argc > 8) c->startupDutyCycle = filterPwmDutyCycle(modp_atoi(argv[8]));
+		if (argc > 9) c->startupPeriod = filterPwmPeriod(modp_atoi(argv[9]));
+		if (argc > 10) c->voltageScaling = modp_atof(argv[10]);
 		SendCommandOK();
 	}
-}
-
-void GetPwmLabel(unsigned int argc, char **argv){
-	PWMConfig *c = AssertPwmGetParam(argc,argv);
-	if (NULL !=c ) SendNameString("label",c->cfg.label);
-}
-
-void SetPwmSampleRate(unsigned int argc, char **argv){
-	PWMConfig *c = AssertPwmSetParam(argc,argv);
-	if (NULL != c){
-		c->cfg.sampleRate = encodeSampleRate(modp_atoi(argv[2]));
-		SendCommandOK();
-	}
-}
-
-void GetPwmSampleRate(unsigned int argc, char **argv){
-	PWMConfig *c = AssertPwmGetParam(argc,argv);
-	if (NULL !=c ) SendNameInt("sampleRate",decodeSampleRate(c->cfg.sampleRate));
-}
-
-void SetPwmOutputMode(unsigned int argc, char **argv){
-	PWMConfig *c = AssertPwmSetParam(argc,argv);
-	if (NULL != c){
-		c->outputMode = filterPWMOutputConfig(modp_atoi(argv[2]));
-		SendCommandOK();
-	}
-}
-
-void GetPwmOutputMode(unsigned int argc, char **argv){
-	PWMConfig *c = AssertPwmGetParam(argc,argv);
-	if (NULL != c) SendNameInt("outputMode",c->outputMode);
-}
-
-void SetPwmLoggingMode(unsigned int argc, char **argv){
-	PWMConfig *c = AssertPwmSetParam(argc,argv);
-	if (NULL != c) {
-		c->loggingMode = filterPWMLoggingConfig(modp_atoi(argv[2]));
-		SendCommandOK();
-	}
-}
-
-void GetPwmLoggingMode(unsigned int argc, char **argv){
-	PWMConfig *c = AssertPwmGetParam(argc,argv);
-	if (NULL !=c ) SendNameInt("loggingMode",c->loggingMode);
-}
-
-void SetPwmStartupDutyCycle(unsigned int argc, char **argv){
-	PWMConfig *c = AssertPwmSetParam(argc,argv);
-	if (NULL != c){
-		c->startupDutyCycle = filterPWMDutyCycle(modp_atoi(argv[2]));
-		SendCommandOK();
-	}
-}
-
-void GetPwmStartupDutyCycle(unsigned int argc, char **argv){
-	PWMConfig *c = AssertPwmGetParam(argc,argv);
-	if (NULL != c) SendNameInt("dutyCycle",c->startupDutyCycle);
-}
-
-void SetPWMStartupPeriod(unsigned int argc, char **argv){
-	PWMConfig *c = AssertPwmSetParam(argc,argv);
-	if (NULL != c){
-		c->startupPeriod = filterPWMPeriod(modp_atoi(argv[2]));
-		SendCommandOK();
-	}
-}
-
-void GetPwmStartupPeriod(unsigned int argc, char **argv){
-	PWMConfig *c = AssertPwmGetParam(argc,argv);
-	if (NULL != c) SendNameInt("startupPeriod",c->startupPeriod);
-}
-
-void SetPwmVoltageScaling(unsigned int argc, char **argv){
-	PWMConfig *c = AssertPwmSetParam(argc,argv);
-	if (NULL != c){
-		c->voltageScaling = modp_atof(argv[2]);
-		SendCommandOK();
-	}
-}
-
-void getPwmVoltageScaling(unsigned int argc, char **argv){
-	PWMConfig *c = AssertPwmGetParam(argc,argv);
-	if (NULL == c) return;
-	SendNameFloat("voltageScaling",c->voltageScaling,VOLTAGE_SCALING_PRECISION);
 }
 
 static GPSConfig * AssertSetGpsParam(unsigned int argc){
