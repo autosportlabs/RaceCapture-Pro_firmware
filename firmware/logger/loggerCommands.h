@@ -39,23 +39,7 @@ extern const struct cmd_t g_loggerCommands[];
 {"setGpioConfig","Sets the configuration for the specified GPIO port.","<port> [label] [units] [sampleRate] [mode]", SetGpioConfig}, \
 \
 {"getTimerConfig", "Gets the configuration for the specified timer channel.","<channel>", GetTimerConfig}, \
-{"setTimerLabel", "Sets the label for the specified timer channel.","<channel> <label>", SetTimerLabel}, \
-{"getTimerLabel", "Gets the label for the specified timer channel.","<channel>", GetTimerLabel}, \
-\
-{"setTimerSampleRate", "Sets the sample rate for the specified timer channel.","<channel> <sampleRate>", SetTimerSampleRate}, \
-{"getTimerSampleRate", "Gets the sample rate for the specified timer channel.","<channel>", GetTimerSampleRate}, \
-\
-{"setTimerMode", "Sets the mode for the specified timer channel.","<channel> <mode>", SetTimerMode}, \
-{"getTimerMode", "Gets the mode for the specified timer channel.","<channel>", GetTimerMode}, \
-\
-{"setTimerPulsePerRev", "Sets the pulse per revolution for the specified timer channel.","<channel> <pulses>", SetTimerPulsePerRev}, \
-{"getTimerPulsePerRev", "Gets the pulse per revolution for the specified timer channel.","<channel>", GetTimerPulsePerRev}, \
-\
-{"setTimerDivider", "Sets the divider for the specified timer channel.","<channel> <divider>", SetTimerDivider}, \
-{"getTimerDivider", "Gets the divider for the specified timer channel.","<channel>", GetTimerDivider}, \
-\
-{"calculateTimerScaling", "Calculates and updates the scaling for the specified timer channel.","<channel>", CalculateTimerScaling}, \
-{"getTimerScaling", "Gets the scaling for the specified timer channel.","<channel>", GetTimerScaling}, \
+{"setTimerConfig", "Sets the configuration for the specified timer channel.","<channel>", SetTimerConfig}, \
 \
 {"getAccelConfig", "Gets the configuration for the specified accelerometer channel.","<channel>",GetAccelConfig}, \
 \
@@ -106,23 +90,7 @@ void GetGpioConfig(unsigned int argc, char **argv);
 void SetGpioConfig(unsigned int argc, char **argv);
 
 void GetTimerConfig(unsigned int argc, char **argv);
-void SetTimerLabel(unsigned int argc, char **argv);
-void GetTimerLabel(unsigned int argc, char **argv);
-
-void SetTimerSampleRate(unsigned int argc, char **argv);
-void GetTimerSampleRate(unsigned int argc, char **argv);
-
-void SetTimerMode(unsigned int argc, char **argv);
-void GetTimerMode(unsigned int argc, char **argv);
-
-void SetTimerPulsePerRev(unsigned int argc, char **argv);
-void GetTimerPulsePerRev(unsigned int argc, char **argv);
-
-void SetTimerDivider(unsigned int argc, char **argv);
-void GetTimerDivider(unsigned int argc, char **argv);
-
-void CalculateTimerScaling(unsigned int argc, char **argv);
-void GetTimerScaling(unsigned int argc, char **argv);
+void SetTimerConfig(unsigned int argc, char **argv);
 
 void GetAccelConfig(unsigned int argc, char **argv);
 
