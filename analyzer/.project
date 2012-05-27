@@ -3,9 +3,6 @@
 	<name>raceAnalyzer</name>
 	<comment></comment>
 	<projects>
-		<project>ctb-0.16</project>
-		<project>gaugeWorks</project>
-		<project>sqlite</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
