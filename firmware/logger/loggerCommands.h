@@ -24,30 +24,10 @@ extern const struct cmd_t g_loggerCommands[];
 {"setAnalogConfig", "Sets the configuration for the specified analog channel","<channel> [label] [units] [sampleRate] [loggingPrecision] [scalingMode] [linearScaling] < [mapRaw_0] [mapRaw_1] [mapRaw_2] [mapRaw_3] [mapRaw_4] [mapScaled_0] [mapScaled_1] [mapScaled_2] [mapScaled_3] [mapScaled_4] >",SetAnalogConfig}, \
 \
 {"getPwmConfig","Gets the configuration for the specified PWM/Analog Output channel.","<channel>",GetPwmConfig}, \
+{"setPwmConfig","Sets the configuration for the specified PWM/Analog Output channel.","<channel> [label] [units] [sampleRate]",SetPwmConfig}, \
 \
 {"setPwmClockFreq", "Sets the PWM clock frequency for the specified channel.","<channel> <frequency>", SetPwmClockFreq}, \
 {"getPwmClockFreq", "Gets the PWM clock frequency for the specified channel.","<channel>", GetPwmClockFreq}, \
-\
-{"setPwmLabel", "Sets the label for the specified PWM/Analog Output channel.","<channel> <label>", SetPwmLabel}, \
-{"getPwmLabel", "Gets the label for the specified PWM/Analog Output channel.","<channel>", GetPwmLabel}, \
-\
-{"setPwmSampleRate", "Sets the sample rate for the specified PWM/Analog Output channel.","<channel> <sampleRate>", SetPwmSampleRate}, \
-{"getPwmSampleRate", "Gets the sample rate for the specified PWM/Analog Output channel.","<channel>", GetPwmSampleRate}, \
-\
-{"setPwmOutputMode", "Sets the output mode for the specified PWM/Analog Output channel.","<channel> <config>", SetPwmOutputMode}, \
-{"getPwmOutputMode", "Gets the output mode for the specified PWM/Analog Output channel.","<channel>", GetPwmOutputMode}, \
-\
-{"setPwmLoggingCfg", "Sets the logging mode for the specified PWM/Analog Output channel.","<channel> <config>", SetPwmLoggingMode}, \
-{"getPwmLoggingCfg", "Sets the logging mode for the specified PWM/Analog Output channel.","<channel>", GetPwmLoggingMode}, \
-\
-{"setPwmStartupDutyCycle", "Sets the startup duty cycle for the specified PWM/Analog Output channel.","<channel> <dutyCycle>", SetPwmStartupDutyCycle}, \
-{"getPwmStartupDutyCycle", "Gets the startup duty cycle for the specified PWM/Analog Output channel.","<channel>", GetPwmStartupDutyCycle}, \
-\
-{"setPwmStartupPeriod", "Sets the startup period for the specified PWM/Analog Output channel.","<channel> <period>", SetPWMStartupPeriod}, \
-{"getPwmStartupPeriod", "Gets the startup period for the specified PWM/Analog Output channel.","<channel>", GetPwmStartupPeriod}, \
-\
-{"setPwmVoltageScaling", "Sets the voltage scaling for the specified PWM/Analog Output channel.","<channel> <scaling>", SetPwmVoltageScaling}, \
-{"getPwmVoltageScaling", "Gets the voltage scaling for the specified PWM/Analog Output channel.","<channel>", getPwmVoltageScaling}, \
 \
 {"getGpsConfig", "Gets the configuration for Gps features","",GetGpsConfig}, \
 \
@@ -160,30 +140,10 @@ void GetAnalogConfig(unsigned int argc, char **argv);
 void SetAnalogConfig(unsigned int argc, char **argv);
 
 void GetPwmConfig(unsigned int argc, char **argv);
+void SetPwmConfig(unsigned int argc, char **argv);
 
 void SetPwmClockFreq(unsigned int argc, char **argv);
 void GetPwmClockFreq(unsigned int argc, char **argv);
-
-void SetPwmLabel(unsigned int argc, char **argv);
-void GetPwmLabel(unsigned int argc, char **argv);
-
-void SetPwmSampleRate(unsigned int argc, char **argv);
-void GetPwmSampleRate(unsigned int argc, char **argv);
-
-void SetPwmOutputMode(unsigned int argc, char **argv);
-void GetPwmOutputMode(unsigned int argc, char **argv);
-
-void SetPwmLoggingMode(unsigned int argc, char **argv);
-void GetPwmLoggingMode(unsigned int argc, char **argv);
-
-void SetPwmStartupDutyCycle(unsigned int argc, char **argv);
-void GetPwmStartupDutyCycle(unsigned int argc, char **argv);
-
-void SetPWMStartupPeriod(unsigned int argc, char **argv);
-void GetPwmStartupPeriod(unsigned int argc, char **argv);
-
-void SetPwmVoltageScaling(unsigned int argc, char **argv);
-void getPwmVoltageScaling(unsigned int argc, char **argv);
 
 void GetGpsConfig(unsigned int argc, char **argv);
 

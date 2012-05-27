@@ -727,7 +727,7 @@ int Lua_GetLapTimeLabel(lua_State *L){
 
 int Lua_SetPWMClockFrequency(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		getWorkingLoggerConfig()->PWMClockFrequency = filterPWMClockFrequency(lua_tointeger(L,1));
+		getWorkingLoggerConfig()->PWMClockFrequency = filterPwmClockFrequency(lua_tointeger(L,1));
 	}
 	return 0;
 }
@@ -739,7 +739,7 @@ int Lua_GetPWMClockFrequency(lua_State *L){
 
 int Lua_SetPWMLabel(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPwmConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) setLabelGeneric(c->cfg.label,lua_tostring(L,2));
 	}
 	return 0;
@@ -747,7 +747,7 @@ int Lua_SetPWMLabel(lua_State *L){
 
 int Lua_GetPWMLabel(lua_State *L){
 	if (lua_gettop(L) >=1){
-		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPwmConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushstring(L,c->cfg.label);
 		}	
@@ -757,7 +757,7 @@ int Lua_GetPWMLabel(lua_State *L){
 
 int Lua_SetPWMSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPwmConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->cfg.sampleRate = encodeSampleRate(lua_tointeger(L,2));
 	}
 	return 0;
@@ -765,7 +765,7 @@ int Lua_SetPWMSampleRate(lua_State *L){
 
 int Lua_GetPWMSampleRate(lua_State *L){
 	if (lua_gettop(L) >=1){
-		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPwmConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushinteger(L,c->cfg.sampleRate);
 			return 1;
@@ -776,15 +776,15 @@ int Lua_GetPWMSampleRate(lua_State *L){
 
 int Lua_SetPWMOutputConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->outputMode = filterPWMOutputConfig(lua_tointeger(L,2));	
+		PWMConfig *c = getPwmConfigChannel(lua_tointeger(L,1));
+		if (NULL != c) c->outputMode = filterPwmOutputMode(lua_tointeger(L,2));	
 	}
 	return 0;
 }
 
 int Lua_GetPWMOutputConfig(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPwmConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushinteger(L,c->outputMode);
 			return 1;	
@@ -795,15 +795,15 @@ int Lua_GetPWMOutputConfig(lua_State *L){
 
 int Lua_SetPWMLoggingConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->loggingMode = filterPWMLoggingConfig(lua_tointeger(L,2));	
+		PWMConfig *c = getPwmConfigChannel(lua_tointeger(L,1));
+		if (NULL != c) c->loggingMode = filterPwmLoggingMode(lua_tointeger(L,2));	
 	}
 	return 0;	
 }
 
 int Lua_GetPWMLoggingConfig(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPwmConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushinteger(L,c->loggingMode);
 			return 1;	
@@ -814,9 +814,9 @@ int Lua_GetPWMLoggingConfig(lua_State *L){
 
 int Lua_SetPWMStartupDutyCycle(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPwmConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
-			c->startupDutyCycle = filterPWMDutyCycle(lua_tointeger(L,2));
+			c->startupDutyCycle = filterPwmDutyCycle(lua_tointeger(L,2));
 		}	
 	}
 	return 0;	
@@ -824,7 +824,7 @@ int Lua_SetPWMStartupDutyCycle(lua_State *L){
 
 int Lua_GetPWMStartupDutyCycle(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPwmConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushinteger(L,c->startupDutyCycle);
 			return 1;	
@@ -835,9 +835,9 @@ int Lua_GetPWMStartupDutyCycle(lua_State *L){
 
 int Lua_SetPWMStartupPeriod(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPwmConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
-			c->startupPeriod = filterPWMPeriod(lua_tointeger(L,2));
+			c->startupPeriod = filterPwmPeriod(lua_tointeger(L,2));
 		}	
 	}
 	return 0;	
@@ -845,7 +845,7 @@ int Lua_SetPWMStartupPeriod(lua_State *L){
 
 int Lua_GetPWMStartupPeriod(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPwmConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushinteger(L,c->startupPeriod);
 			return 1;	
@@ -856,7 +856,7 @@ int Lua_GetPWMStartupPeriod(lua_State *L){
 
 int Lua_SetPWMVoltageScaling(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPwmConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			c->voltageScaling = lua_tonumber(L,2);
 		}	
@@ -866,7 +866,7 @@ int Lua_SetPWMVoltageScaling(lua_State *L){
 
 int Lua_GetPWMVoltageScaling(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPwmConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			lua_pushnumber(L,c->voltageScaling);
 			return 1;			
@@ -1240,7 +1240,7 @@ int Lua_SetPWMPeriodRaw(lua_State *L){
 
 int Lua_SetAnalogOut(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
+		PWMConfig *c = getPwmConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
 			unsigned int channel = (unsigned int)lua_tointeger(L,1);
 			if (channel >= 0 && channel < CONFIG_PWM_CHANNELS){
