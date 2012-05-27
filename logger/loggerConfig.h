@@ -344,7 +344,9 @@ void calculateTimerScaling(TimerConfig *timerConfig);
 int encodeSampleRate(int sampleRate);
 int decodeSampleRate(int sampleRateCode);
 
-
+char filterAnalogScalingMode(char mode);
+char filterSdLoggingMode(char mode);
+char filterTelemetryMode(char mode);
 int filterGPIOMode(int config);
 int filterPWMOutputConfig(int config);
 int filterPWMLoggingConfig(int config);
