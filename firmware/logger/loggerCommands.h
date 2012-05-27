@@ -26,8 +26,8 @@ extern const struct cmd_t g_loggerCommands[];
 {"getPwmConfig","Gets the configuration for the specified PWM/Analog Output channel.","<channel>",GetPwmConfig}, \
 {"setPwmConfig","Sets the configuration for the specified PWM/Analog Output channel.","<channel> [label] [units] [sampleRate] [loggingPrecision] [outputMode] [loggingMode] [startupDutyCycle] [startupPeriod] [voltageScaling]",SetPwmConfig}, \
 \
-{"setPwmClockFreq", "Sets the PWM clock frequency for the specified channel.","<channel> <frequency>", SetPwmClockFreq}, \
-{"getPwmClockFreq", "Gets the PWM clock frequency for the specified channel.","<channel>", GetPwmClockFreq}, \
+{"setPwmClockFreq", "Sets the PWM clock frequency for the specified channel.","<frequency>", SetPwmClockFreq}, \
+{"getPwmClockFreq", "Gets the PWM clock frequency for the specified channel.","", GetPwmClockFreq}, \
 \
 {"getGpsConfig", "Gets the configuration for Gps features","",GetGpsConfig}, \
 {"setGpsConfig", "Sets the configuration for Gps features","[installed] [label_lat] [units_lat] [sampleRate_lat] [label_long] [units_long] [sampleRate_long] [label_vel] [units_vel] [sampleRate_vel] [label_time] [units_time] [sampleRate_time] [label_qual] [units_qual] [sampleRate_qual] [label_sats] [units_sats] [sampleRate_sats]",SetGpsConfig}, \
@@ -42,24 +42,10 @@ extern const struct cmd_t g_loggerCommands[];
 {"setTimerConfig", "Sets the configuration for the specified timer channel.","<channel>", SetTimerConfig}, \
 \
 {"getAccelConfig", "Gets the configuration for the specified accelerometer channel.","<channel>",GetAccelConfig}, \
+{"setAccelConfig", "Sets the configuration for the specified accelerometer channel.","<channel>",SetAccelConfig}, \
 \
-{"setAccelInstalled", "Sets the installed state of the accelerometer.","", SetAccelInstalled}, \
 {"getAccelInstalled", "Gets the installed state of the accelerometer.","", GetAccelInstalled}, \
-\
-{"setAccelLabel", "Sets the label for the specified accelerometer channel.","<channel> <label>", SetAccelLabel}, \
-{"getAccelLabel", "Gets the label for the specified accelerometer channel.","<channel>", GetAccelLabel}, \
-\
-{"setAccelSampleRate", "Sets the sample rate for the specified accelerometer channel.","<channel> <sampleRate>", SetAccelSampleRate}, \
-{"getAccelSampleRate", "Gets the sample rate for the specified accelerometer channel.","<channel>", GetAccelSampleRate}, \
-\
-{"setAccelMode", "Sets the mode for the specified accelerometer channel.","<channel> <mode>", SetAccelMode}, \
-{"getAccelMode", "Gets the mode for the specified accelerometer channel.","<channel>", GetAccelMode}, \
-\
-{"setAccelChannel", "Sets the X/Y/Z orientation for the specified accelerometer channel.","<channel> <orientation>", SetAccelChannel}, \
-{"getAccelChannel", "Gets the X/Y/Z orientation for the specified accelerometer channel.","<channel>", GetAccelChannel}, \
-\
-{"setAccelZeroValue", "Sets the zero value for the specified accelerometer channel.","<channel> <zeroValue>", SetAccelZeroValue}, \
-{"getAccelZeroValue", "Gets the zero value for the specified accelerometer channel.","<channel>", GetAccelZeroValue}, \
+{"setAccelInstalled", "Sets the installed state of the accelerometer.","", SetAccelInstalled}, \
 \
 {"calibrateAccelZero", "Calibrates the current accelerometer values as the zero point.","", CalibrateAccelZero}
 
@@ -92,25 +78,11 @@ void SetGpioConfig(unsigned int argc, char **argv);
 void GetTimerConfig(unsigned int argc, char **argv);
 void SetTimerConfig(unsigned int argc, char **argv);
 
-void GetAccelConfig(unsigned int argc, char **argv);
-
 void SetAccelInstalled(unsigned int argc, char **argv);
 void GetAccelInstalled(unsigned int argc, char **argv);
 
-void SetAccelLabel(unsigned int argc, char **argv);
-void GetAccelLabel(unsigned int argc, char **argv);
-
-void SetAccelSampleRate(unsigned int argc, char **argv);
-void GetAccelSampleRate(unsigned int argc, char **argv);
-
-void SetAccelMode(unsigned int argc, char **argv);
-void GetAccelMode(unsigned int argc, char **argv);
-
-void SetAccelChannel(unsigned int argc, char **argv);
-void GetAccelChannel(unsigned int argc, char **argv);
-
-void SetAccelZeroValue(unsigned int argc, char **argv);
-void GetAccelZeroValue(unsigned int argc, char **argv);
+void GetAccelConfig(unsigned int argc, char **argv);
+void SetAccelConfig(unsigned int argc, char **argv);
 
 void CalibrateAccelZero(unsigned int argc, char **argv);
 
