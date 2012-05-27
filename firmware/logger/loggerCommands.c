@@ -79,18 +79,6 @@ static LoggerConfig * AssertSetParam(unsigned int argc, unsigned int requiredPar
 	return c;
 }
 
-static ADCConfig * AssertAdcSetParam(unsigned int argc, char **argv){
-	ADCConfig *c = NULL;
-	if (argc >= 3){
-		c = getADCConfigChannel(modp_atoi(argv[1]));
-		if (NULL == c) SendCommandError(ERROR_CODE_INVALID_PARAM);
-	}
-	else{
-		SendCommandError(ERROR_CODE_MISSING_PARAMS);
-	}
-	return c;
-}
-
 static ADCConfig * AssertAdcGetParam(unsigned int argc, char **argv){
 	ADCConfig *c = NULL;
 	if (argc >= 2){
@@ -124,8 +112,8 @@ void GetAnalogConfig(unsigned int argc, char **argv){
 	if (NULL != c){
 		SendChannelConfig(&(c->cfg));
 		SendNameInt("logPrec",c->loggingPrecision);
-		SendNameFloat("scaling",c->linearScaling,ANALOG_SCALING_PRECISION);
 		SendNameInt("scalingMode",c->scalingMode);
+		SendNameFloat("scaling",c->linearScaling,ANALOG_SCALING_PRECISION);
 		for (int i = 0; i < ANALOG_SCALING_BINS; i++){
 			SendNameIndexInt("mapRaw",i,c->scalingMap.rawValues[i]);
 		}
@@ -135,58 +123,29 @@ void GetAnalogConfig(unsigned int argc, char **argv){
 	}
 }
 
-void SetAnalogLabel(unsigned int argc, char **argv){
-
-	if (argc >= 4){
-		ADCConfig *c = getADCConfigChannel(modp_atoi(argv[1]));
-		if (NULL != c){
-			setLabelGeneric(c->cfg.label,argv[2]);
-			setLabelGeneric(c->cfg.units,argv[3]);
-			SendCommandOK();
-		}
-		else{
-			SendCommandError(ERROR_CODE_INVALID_PARAM);
-		}
-	}
-	else{
-		SendCommandError(ERROR_CODE_MISSING_PARAMS);
-	}
-}
-
-void GetAnalogLabel(unsigned int argc, char **argv){
+void SetAnalogConfig(unsigned int argc, char **argv){
 	ADCConfig * c = AssertAdcGetParam(argc,argv);
 	if (NULL != c){
-		SendNameString("label",c->cfg.label);
-		SendNameString("units",c->cfg.units);
-	}
-
-}
-
-
-void SetAnalogSampleRate(unsigned int argc, char **argv){
-	ADCConfig * c = AssertAdcSetParam(argc,argv);
-	if (NULL != c){
-		c->cfg.sampleRate = encodeSampleRate(modp_atoi(argv[2]));
+		if (argc > 8 && argc < 18){
+			SendCommandError(ERROR_CODE_MISSING_PARAMS);
+			return;
+		}
+		if (argc > 2) setLabelGeneric(c->cfg.label,argv[2]);
+		if (argc > 3) setLabelGeneric(c->cfg.units,argv[3]);
+		if (argc > 4) c->cfg.sampleRate = encodeSampleRate(modp_atoi(argv[4]));
+		if (argc > 5) c->loggingPrecision = modp_atoi(argv[5]);
+		if (argc > 6) c->scalingMode = filterAnalogScalingMode(modp_atoi(argv[6]));
+		if (argc > 7) c->linearScaling = modp_atof(argv[7]);
+		if (argc > 17){
+			for (int i = 8; i < 13; i++){
+				c->scalingMap.rawValues[i-8]  = modp_atoi(argv[i]);
+			}
+			for (int i = 13; i < 18; i++){
+				c->scalingMap.scaledValues[i-13] = modp_atof(argv[i]);
+			}
+		}
 		SendCommandOK();
 	}
-}
-
-void GetAnalogSampleRate(unsigned int argc, char **argv){
-	ADCConfig * c = AssertAdcGetParam(argc,argv);
-	if (NULL != c) SendNameInt("sampleRate",decodeSampleRate(c->cfg.sampleRate));
-}
-
-void SetAnalogScaling(unsigned int argc, char **argv){
-	ADCConfig * c = AssertAdcSetParam(argc,argv);
-	if (NULL != c){
-		c->linearScaling = modp_atof(argv[2]);
-		SendCommandOK();
-	}
-}
-
-void GetAnalogScaling(unsigned int argc, char **argv){
-	ADCConfig * c = AssertAdcGetParam(argc,argv);
-	if (NULL != c) SendNameFloat("scaling",c->linearScaling,ANALOG_SCALING_PRECISION);
 }
 
 void SetPwmClockFreq(unsigned int argc, char **argv){
@@ -841,30 +800,32 @@ void CalibrateAccelZero(unsigned int argc, char **argv){
 	SendCommandOK();
 }
 
-void SetTelemetryMode(unsigned int argc, char **argv){
-	setCharValueGeneric(argc, argv, &(getWorkingLoggerConfig()->LoggerOutputConfig.telemetryMode));
-}
-
-void SetSDLoggingMode(unsigned int argc, char **argv){
-	setCharValueGeneric(argc, argv, &(getWorkingLoggerConfig()->LoggerOutputConfig.sdLoggingMode));
-}
-
-void SetP2PTelemetryDestinationAddr(unsigned int argc, char **argv){
-	LoggerConfig *c = AssertSetParam(argc, 3);
-	if (c != NULL){
-		c->LoggerOutputConfig.p2pDestinationAddrHigh = modp_atoui(argv[1]);
-		c->LoggerOutputConfig.p2pDestinationAddrLow = modp_atoui(argv[2]);
-		SendCommandOK();
-	}
-}
-
 void GetLoggerOutputConfig(unsigned int argc, char **argv){
 	LoggerOutputConfig *c = &(getWorkingLoggerConfig()->LoggerOutputConfig);
-	SendNameInt("telemetryMode",c->telemetryMode);
 	SendNameInt("sdLoggingMode",c->sdLoggingMode);
+	SendNameInt("telemetryMode",c->telemetryMode);
 	SendNameUint("p2pDestAddrHigh",c->p2pDestinationAddrHigh);
 	SendNameUint("p2pDestAddrLow",c->p2pDestinationAddrLow);
 }
+
+void SetLoggerOutputConfig(unsigned int argc, char **argv){
+	LoggerOutputConfig *c = &(getWorkingLoggerConfig()->LoggerOutputConfig);
+	if (argc > 1){
+		c->sdLoggingMode = filterSdLoggingMode((char)modp_atoui(argv[1]));
+	}
+	if (argc > 2){
+		c->telemetryMode = filterTelemetryMode((char)modp_atoui(argv[2]));
+	}
+	if (argc > 3){
+		c->p2pDestinationAddrHigh = modp_atoui(argv[3]);
+	}
+	if (argc > 4){
+		c->p2pDestinationAddrLow = modp_atoui(argv[4]);
+	}
+	SendCommandOK();
+}
+
+
 /*
 //Logger configuration editing
 lua_register(L,"setAccelZeroValue",Lua_SetAccelZeroValue);

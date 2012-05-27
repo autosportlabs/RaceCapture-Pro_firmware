@@ -84,6 +84,42 @@ int decodeSampleRate(int sampleRateCode){
 	}
 }
 
+char filterAnalogScalingMode(char mode){
+	switch(mode){
+		case SCALING_MODE_LINEAR:
+			return SCALING_MODE_LINEAR;
+		case SCALING_MODE_MAP:
+			return SCALING_MODE_MAP;
+		default:
+		case SCALING_MODE_RAW:
+			return SCALING_MODE_RAW;
+	}
+}
+
+char filterSdLoggingMode(char mode){
+	switch (mode){
+		case SD_LOGGING_MODE_CSV:
+			return SD_LOGGING_MODE_CSV;
+		case SD_LOGGING_MODE_BINARY:
+			return SD_LOGGING_MODE_BINARY;
+		default:
+		case SD_LOGGING_MODE_DISABLED:
+			return SD_LOGGING_MODE_DISABLED;
+	}
+}
+
+char filterTelemetryMode(char mode){
+	switch(mode){
+		case TELEMETRY_MODE_P2P:
+			return TELEMETRY_MODE_P2P;
+		case TELEMETRY_MODE_CELL:
+			return TELEMETRY_MODE_CELL;
+		default:
+		case TELEMETRY_MODE_DISABLED:
+			return TELEMETRY_MODE_DISABLED;
+	}
+}
+
 int filterGPIOMode(int value){
 	switch(value){
 		case CONFIG_GPIO_OUT:
