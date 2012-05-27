@@ -19,6 +19,7 @@
 typedef struct _ChannelSample
 	{
 	ChannelConfig * channelConfig;
+	int precision;
 	union
 	{
 		int intValue;

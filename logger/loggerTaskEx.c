@@ -71,7 +71,7 @@ static void writeADC(SampleRecord *sampleRecord, portTickType currentTicks, Logg
 		portTickType sr = ac->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
-				sampleRecord->ADCSamples[i].floatValue = (ac->scaling * (float)adc[i]);
+				sampleRecord->ADCSamples[i].floatValue = (ac->linearScaling * (float)adc[i]);
 			}
 		}
 	}
@@ -191,7 +191,7 @@ static void writePWMChannels(SampleRecord *sampleRecord, portTickType currentTic
 		portTickType sr = c->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
-				switch (c->loggingConfig){
+				switch (c->loggingMode){
 					case MODE_LOGGING_PWM_PERIOD:
 						sampleRecord->PWMSamples[i].intValue = PWM_GetPeriod(i);
 						break;

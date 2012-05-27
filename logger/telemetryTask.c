@@ -195,7 +195,7 @@ static void writeSampleRecordJSON(SampleRecord * sampleRecord, uint32_t sampleTi
 
 		putQuotedStringXbee(channelConfig->label);
 		putcXbee(':');
-		int precision = sample->channelConfig->precision;
+		int precision = sample->precision;
 		if (precision > 0){
 			putFloatXbee(sample->floatValue,precision);
 		}
@@ -226,7 +226,7 @@ static void writeSampleRecordBinary(SampleRecord * sampleRecord, uint32_t sample
 
 			strncpy(txFrame->field[fieldIndex].name, sample->channelConfig->label,FIELD_NAME_LENGTH - 1);
 
-			int precision = sample->channelConfig->precision;
+			int precision = sample->precision;
 			if (precision > 0){
 				txFrame->field[fieldIndex].floatValue = sample->floatValue;
 			}

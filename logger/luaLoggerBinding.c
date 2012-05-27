@@ -308,7 +308,7 @@ int Lua_GetAccelSampleRate(lua_State *L){
 int Lua_SetAccelConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->mode = filterAccelConfig(lua_tointeger(L,2));
+		if (NULL != c) c->mode = filterAccelMode(lua_tointeger(L,2));
 	}
 	return 0;
 }
@@ -413,7 +413,7 @@ int Lua_GetTimerSampleRate(lua_State *L){
 int Lua_SetTimerConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->mode = filterTimerConfig(lua_tointeger(L,2));
+		if (NULL != c) c->mode = filterTimerMode(lua_tointeger(L,2));
 	}	
 	return 0;
 }
@@ -530,7 +530,7 @@ int Lua_SetGPIOConfig(lua_State *L){
 		if (channel >= 0 && channel <= 2){//1 based
 			GPIOConfig *c = getGPIOConfigChannel(channel);
 			//0= configure as input, 1=configure as output
-			if (NULL != c) c->mode = filterGPIOConfig(lua_tointeger(L,2));
+			if (NULL != c) c->mode = filterGPIOMode(lua_tointeger(L,2));
 			InitGPIO(getWorkingLoggerConfig()); //reload configuration
 		}
 	}
@@ -777,7 +777,7 @@ int Lua_GetPWMSampleRate(lua_State *L){
 int Lua_SetPWMOutputConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->mode = filterPWMOutputConfig(lua_tointeger(L,2));	
+		if (NULL != c) c->outputMode = filterPWMOutputConfig(lua_tointeger(L,2));	
 	}
 	return 0;
 }
@@ -786,7 +786,7 @@ int Lua_GetPWMOutputConfig(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
-			lua_pushinteger(L,c->mode);
+			lua_pushinteger(L,c->outputMode);
 			return 1;	
 		}		
 	}
@@ -796,7 +796,7 @@ int Lua_GetPWMOutputConfig(lua_State *L){
 int Lua_SetPWMLoggingConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->loggingConfig = filterPWMLoggingConfig(lua_tointeger(L,2));	
+		if (NULL != c) c->loggingMode = filterPWMLoggingConfig(lua_tointeger(L,2));	
 	}
 	return 0;	
 }
@@ -805,7 +805,7 @@ int Lua_GetPWMLoggingConfig(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		PWMConfig *c = getPWMConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
-			lua_pushinteger(L,c->loggingConfig);
+			lua_pushinteger(L,c->loggingMode);
 			return 1;	
 		}
 	}
@@ -924,7 +924,7 @@ int Lua_SetAnalogChannelScaling(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL !=c ){
-			c->scaling = lua_tonumber(L,2);
+			c->linearScaling = lua_tonumber(L,2);
 		}
 	}
 	return 0;	
@@ -934,7 +934,7 @@ int Lua_GetAnalogChannelScaling(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL !=c ){
-			lua_pushnumber(L,c->scaling);			
+			lua_pushnumber(L,c->linearScaling);			
 		}		
 	}
 	return 0;
@@ -947,7 +947,7 @@ int Lua_GetAnalog(lua_State *L){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL != c){
-			result = c->scaling * ReadADC(channel);
+			result = c->linearScaling * ReadADC(channel);
 		}
 	}
 	lua_pushnumber(L,result);
