@@ -35,51 +35,6 @@ extern const struct cmd_t g_loggerCommands[];
 {"getStartFinishConfig", "Gets the start/finish line configuration","",GetStartFinishConfig}, \
 {"setStartFinishConfig", "Sets the start/finish line configuration","[label_lapCount] [units_lapCount] [sampleRate_lapCount] [label_lapTime] [units_lapTime] [sampleRate_lapTime] [startFinishLat] [startFinishLong] [startFinishRadius]",SetStartFinishConfig}, \
 \
-{"setGpsInstalled", "Sets the installed state of the GPS module.","<installed>", SetGpsInstalled}, \
-{"getGpsInstalled", "Gets the installed state of the GPS module.","", getGpsInstalled}, \
-\
-{"setGpsStartFinish", "Sets the GPS-detected start/finish line.","<latitude> <longitude> [radius]", SetGpsStartFinish}, \
-{"getGpsStartFinish", "Gets the GPS-detected start/finish line.","", GetGpsStartFinish}, \
-\
-{"setGpsQualityLabel", "Sets the GPS quality label.","<label>", SetGpsQualityLabel}, \
-{"getGpsQualityLabel", "Gets the GPS quality label.","", GetGpsQualityLabel}, \
-\
-{"setGpsStatsLabel", "Sets the GPS stats label.","<label>", SetGpsStatsLabel}, \
-{"getGpsStatsLabel", "Gets the GPS stats label.","", GetGpsStatsLabel}, \
-\
-{"setGpsLatitudeLabel", "Sets the GPS latitude label.","<label>", SetGpsLatitudeLabel}, \
-{"getGpsLatitudeLabel", "Gets the GPS latitude label.","", GetGpsLatitudeLabel}, \
-\
-{"setGpsLongitudeLabel", "Sets the GPS longitude label.","<label>", SetGpsLongitudeLabel}, \
-{"getGpsLongitudeLabel", "Gets the GPS longitude label.","", GetGpsLongitudeLabel}, \
-\
-{"setGpsTimeLabel", "Sets the GPS time label.","<label>", SetGpsTimeLabel}, \
-{"getGpsTimeLabel", "Gets the GPS time label.","", GetGpsTimeLabel}, \
-\
-{"setGpsVelocityLabel", "Sets the GPS velocity label.","<label>", SetGpsVelocityLabel}, \
-{"getGpsVelocityLabel", "Gets the GPS velocity label.","", GetGpsVelocityLabel}, \
-\
-{"setGpsPositionSampleRate", "Sets the GPS position sample rate.","<sampleRate>", SetGpsPositionSampleRate}, \
-{"getGpsPositionSampleRate", "Gets the GPS position sample rate.","", GetGpsPositionSampleRate}, \
-\
-{"setGpsVelocitySampleRate", "Sets the GPS velocity sample rate.","<sampleRate>", SetGpsVelocitySampleRate}, \
-{"getGpsVelocitySampleRate", "Gets the GPS velocity sample rate.","", GetGpsVelocitySampleRate}, \
-\
-{"setGpsTimeSampleRate", "Sets the GPS time sample rate.","<sampleRate>", SetGpsTimeSampleRate}, \
-{"getGpsTimeSampleRate", "Gets the GPS time sample rate.","", GetGpsTimeSampleRate}, \
-\
-{"setLapCountSampleRate", "Sets the Lap Count sample rate.","<sampleRate>", SetLapCountSampleRate}, \
-{"getLapCountSampleRate", "Gets the Lap Count sample rate.","", GetLapCountSampleRate}, \
-\
-{"setLapTimeSampleRate", "Sets the Lap Time sample rate.","<sampleRate>", SetLapTimeSampleRate}, \
-{"getLapTimeSampleRate", "Gets the Lap Time sample rate.","", GetLapTimeSampleRate}, \
-\
-{"setLapCountLabel", "Sets the Lap Count label.","<label>", SetLapCountLabel}, \
-{"getLapCountLabel", "Gets the Lap Count label.","", GetLapCountLabel}, \
-\
-{"setLapTimeLabel", "Sets the Lap Time label.","<label>", SetLapTimeLabel}, \
-{"getLapTimeLabel", "Gets the Lap Time label.","", GetLapTimeLabel}, \
-\
 {"getGpioConfig","Gets the configuration for the specified GPIO port.","<port>", GetGpioConfig}, \
 \
 {"setGpioLabel", "Sets the label for the specified GPIO port.","<port> <label>", SetGpioLabel}, \
@@ -154,51 +109,6 @@ void SetGpsConfig(unsigned int argc, char **argv);
 
 void GetStartFinishConfig(unsigned int argc, char **argv);
 void SetStartFinishConfig(unsigned int argc, char **argv);
-
-void SetGpsInstalled(unsigned int argc, char **argv);
-void getGpsInstalled(unsigned int argc, char **argv);
-
-void SetGpsStartFinish(unsigned int argc, char **argv);
-void GetGpsStartFinish(unsigned int argc, char **argv);
-
-void SetGpsQualityLabel(unsigned int argc, char **argv);
-void GetGpsQualityLabel(unsigned int argc, char **argv);
-
-void SetGpsStatsLabel(unsigned int argc, char **argv);
-void GetGpsStatsLabel(unsigned int argc, char **argv);
-
-void SetGpsLatitudeLabel(unsigned int argc, char **argv);
-void GetGpsLatitudeLabel(unsigned int argc, char **argv);
-
-void SetGpsLongitudeLabel(unsigned int argc, char **argv);
-void GetGpsLongitudeLabel(unsigned int argc, char **argv);
-
-void SetGpsTimeLabel(unsigned int argc, char **argv);
-void GetGpsTimeLabel(unsigned int argc, char **argv);
-
-void SetGpsVelocityLabel(unsigned int argc, char **argv);
-void GetGpsVelocityLabel(unsigned int argc, char **argv);
-
-void SetGpsPositionSampleRate(unsigned int argc, char **argv);
-void GetGpsPositionSampleRate(unsigned int argc, char **argv);
-
-void SetGpsVelocitySampleRate(unsigned int argc, char **argv);
-void GetGpsVelocitySampleRate(unsigned int argc, char **argv);
-
-void SetGpsTimeSampleRate(unsigned int argc, char **argv);
-void GetGpsTimeSampleRate(unsigned int argc, char **argv);
-
-void SetLapCountLabel(unsigned int argc, char **argv);
-void GetLapCountLabel(unsigned int argc, char **argv);
-
-void SetLapCountSampleRate(unsigned int argc, char **argv);
-void GetLapCountSampleRate(unsigned int argc, char **argv);
-
-void SetLapTimeLabel(unsigned int argc, char **argv);
-void GetLapTimeLabel(unsigned int argc, char **argv);
-
-void SetLapTimeSampleRate(unsigned int argc, char **argv);
-void GetLapTimeSampleRate(unsigned int argc, char **argv);
 
 void GetGpioConfig(unsigned int argc, char **argv);
 
