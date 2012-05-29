@@ -540,7 +540,9 @@ unsigned int timerClockFromDivider(unsigned short divider){
 	}	
 }
 
-void initTimer0(TimerConfig *timerConfig){
+//Enable this pullup on hardware revisions < F (on-board optoisolator)
+//Experimental timer init routine
+void initTimer0x(TimerConfig *timerConfig){
 
 	//pullup enable on timer 0
 	//AT91F_PIO_CfgInput(AT91C_BASE_PIOA, 1 << 0);
@@ -584,7 +586,7 @@ void initTimer0(TimerConfig *timerConfig){
 
 
 
-void initTimer0x(TimerConfig *timerConfig){
+void initTimer0(TimerConfig *timerConfig){
 
 	g_timer1_overflow = 1;
 	g_timer_counts[0] = 0;
@@ -594,7 +596,7 @@ void initTimer0x(TimerConfig *timerConfig){
 	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,0,AT91C_PA0_TIOA0);
 	
 	 //enable pullup (optoisolator input)
-	AT91C_BASE_PIOA->PIO_PPUER = AT91C_PA0_TIOA0;
+	AT91C_BASE_PIOA->PIO_PPUDR = AT91C_PA0_TIOA0; //disable pullup
 	AT91C_BASE_PIOA->PIO_IFER = AT91C_PA0_TIOA0; //enable input filter
 
 	/// Enable TC0's clock in the PMC controller

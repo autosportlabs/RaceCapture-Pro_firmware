@@ -1,0 +1,43 @@
+#	OpenOCD Target Script for Atmel AT91SAM7S256
+
+
+# clear lock bit 0 -only use if flash bank known to be locked
+#mww 0xffffff64 0x5a000004
+
+# clear lock bit 1 -only use if flash bank known to be locked
+#mww 0xffffff64 0x5a002004
+
+# disable watchdog
+mww 0xfffffd44 0x00008000 	 
+
+# enable user reset
+mww 0xfffffd08 0xa5000001
+
+# CKGR_MOR : enable the main oscillator
+mww 0xfffffc20 0x00000601
+
+sleep 10
+
+# CKGR_PLLR: 96.1097 MHz
+mww 0xfffffc2c 0x00481c0e
+
+sleep 10
+
+# PMC_MCKR : MCK = PLL / 2 ~= 48 MHz
+mww 0xfffffc30 0x00000007
+
+sleep 10
+
+# MC_FMR: flash mode (FWS=1,FMCN=60)
+mww 0xffffff60 0x003c0100
+sleep 100
+halt 
+sleep 10 
+#arm7_9 dcc_downloads enable 
+sleep 10 
+poll 
+
+flash probe 0 
+flash write_bank 0 main.bin 0x0 
+sleep 10
+gdb_breakpoint_override hard
