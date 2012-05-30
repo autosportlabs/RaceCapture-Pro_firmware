@@ -38,11 +38,14 @@ class AccelInputPanel : public BaseChannelConfigPanel{
 
 	private:
 		//event handlers
+		void OnChannelModeChanged(wxCommandEvent &event);
 		void OnChannelMappingChanged(wxCommandEvent &event);
 		void OnAccelZeroChanged(wxCommandEvent &event);
 		void InitMappingCombo(wxComboBox *combo);
+		void InitModeCombo(wxComboBox *combo);
 
 		wxComboBox *m_accelMapping[CONFIG_ACCEL_CHANNELS];
+		wxComboBox *m_accelMode[CONFIG_ACCEL_CHANNELS];
 		SteppedSpinCtrl *m_accelZeroValue[CONFIG_ACCEL_CHANNELS];
 	DECLARE_EVENT_TABLE()
 };

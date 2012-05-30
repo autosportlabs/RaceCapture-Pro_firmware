@@ -37,8 +37,10 @@ class GpioPanel : public BaseChannelConfigPanel{
 		wxString GetChannelListTitle();
 		//event handlers
 	private:
-		wxString GetModeFieldName(int index);
+		void OnModeChanged(wxCommandEvent &event);
 		void InitModeCombo(wxComboBox *modeCombo);
+
+		wxComboBox * m_modeCombo[CONFIG_GPIO_CHANNELS];
 
 	DECLARE_EVENT_TABLE()
 };

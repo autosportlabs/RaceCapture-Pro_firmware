@@ -31,6 +31,7 @@ AccelInputPanel::~AccelInputPanel(){
 
 void AccelInputPanel::UpdateExtendedChannelFields(int i){
 	AccelConfig &cfg = (m_raceCaptureConfig->accelConfigs[i]);
+	m_accelMode[i]->Select(cfg.mode);
 	m_accelMapping[i]->Select(cfg.channel);
 	m_accelZeroValue[i]->SetValue(cfg.zeroValue);
 }
@@ -46,6 +47,17 @@ int AccelInputPanel::ChannelCount(){
 ChannelConfigExtraFields AccelInputPanel::CreateExtendedChannelFields(int i){
 	AccelConfig &cfg = (m_raceCaptureConfig->accelConfigs[i]);
 	ChannelConfigExtraFields extraFields;
+	{
+		ChannelConfigExtraField f;
+		wxComboBox *c = new wxComboBox(this,wxID_ANY,"",wxDefaultPosition,wxDefaultSize,0,NULL,wxCB_DROPDOWN | wxCB_READONLY);
+		c->SetClientData(&cfg);
+		c->Connect(wxEVT_COMMAND_COMBOBOX_SELECTED, wxCommandEventHandler(AccelInputPanel::OnChannelModeChanged),NULL,this);
+		InitModeCombo(c);
+		m_accelMode[i] = c;
+		f.control = c;
+		f.header = "Mode";
+		extraFields.Add(f);
+	}
 	{
 		ChannelConfigExtraField f;
 		wxComboBox *c = new wxComboBox(this,wxID_ANY,"",wxDefaultPosition,wxDefaultSize,0,NULL,wxCB_DROPDOWN | wxCB_READONLY);
@@ -81,6 +93,12 @@ void AccelInputPanel::InitMappingCombo(wxComboBox *combo){
 	combo->Select(0);
 }
 
+void AccelInputPanel::InitModeCombo(wxComboBox *combo){
+	combo->Append("Disabled");
+	combo->Append("Normal");
+	combo->Append("Inverted");
+	combo->Select(0);
+}
 
 wxString AccelInputPanel::GetChannelLabel(int index){
 	return wxString::Format("Axis %d",index + 1);
@@ -104,6 +122,14 @@ wxPanel * AccelInputPanel::GetBottomInnerPanel(){
 
 void AccelInputPanel::UpdatedExtendedFields()
 {
+}
+
+void AccelInputPanel::OnChannelModeChanged(wxCommandEvent &event){
+	wxComboBox *c = dynamic_cast<wxComboBox*>(event.GetEventObject());
+	if (NULL != c) {
+		AccelConfig *cfg = (AccelConfig*)c->GetClientData();
+		cfg->mode = (accel_mode_t)c->GetSelection();
+	}
 }
 
 void AccelInputPanel::OnChannelMappingChanged(wxCommandEvent &event){

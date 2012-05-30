@@ -35,13 +35,19 @@ class GpsConfigPanel : public BaseChannelConfigPanel{
 		wxString GetChannelConfigPanelName(int index);
 		wxString GetChannelLabel(int index);
 		wxString GetChannelListTitle();
-		static const wxString GPS_INSTALLED_CHECKBOX_NAME;
-		static const wxString GPS_STARTFINISH_LATITUDE_NAME;
-		static const wxString GPS_STARTFINISH_LONGITUDE_NAME;
-		static const wxString GPS_STARTFINISH_TARGET_RADIUS_NAME;
 
-		//event handlers
+		wxCheckBox * m_gpsInstalledCheckBox;
+		wxTextCtrl * m_startFinishLatitudeTextCtrl;
+		wxTextCtrl * m_startFinishLongitudeTextCtrl;
+		wxTextCtrl * m_startFinishTargetRadius;
+
 	private:
+		//event handlers
+		void OnGpsInstalledChanged(wxCommandEvent &event);
+		void OnStartFinishLatitudeChanged(wxCommandEvent &event);
+		void OnStartFinishLongitudeChanged(wxCommandEvent &event);
+		void OnStartFinishRadiusChanged(wxCommandEvent &event);
+
 		wxPanel * m_gpsOptionsPanel;
 
 	DECLARE_EVENT_TABLE()

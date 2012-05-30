@@ -105,6 +105,7 @@ void ChannelConfigPanel::InitSampleRateCombo(wxComboBox *combo){
 		int sr = *it;
 		combo->Append((sr == 0 ? wxString("Disabled") : wxString::Format("%d Hz",*it)));
 	}
+	combo->Select(0);
 }
 
 sample_rate_t ChannelConfigPanel::MapSampleRateFromCombo(int index){

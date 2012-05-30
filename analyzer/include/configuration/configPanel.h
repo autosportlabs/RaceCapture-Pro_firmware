@@ -36,6 +36,7 @@ class ConfigPanel : public wxPanel{
 	private:
 
 		void OnReadConfig(wxCommandEvent &event);
+		void OnWriteConfig(wxCommandEvent &event);
 		void InitComponents();
 		void InitOptions();
 

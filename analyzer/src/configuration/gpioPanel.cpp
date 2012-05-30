@@ -29,10 +29,7 @@ GpioPanel::~GpioPanel(){
 }
 
 void GpioPanel::UpdateExtendedChannelFields(int i){
-	wxComboBox *ctrl = FindComboBoxCtrl(GetModeFieldName(i));
-	if (NULL != ctrl){
-		ctrl->SetSelection(m_raceCaptureConfig->gpioConfigs[i].mode);
-	}
+	m_modeCombo[i]->SetSelection(m_raceCaptureConfig->gpioConfigs[i].mode);
 }
 
 void GpioPanel::InitModeCombo(wxComboBox * modeCombo){
@@ -50,13 +47,15 @@ int GpioPanel::ChannelCount(){
 }
 
 ChannelConfigExtraFields GpioPanel::CreateExtendedChannelFields(int i){
+	GpioConfig &cfg = (m_raceCaptureConfig->gpioConfigs[i]);
 	ChannelConfigExtraFields extraFields;
 	{
 		ChannelConfigExtraField f;
-		wxComboBox *modeCombo = new wxComboBox(this,-1,"",wxDefaultPosition,wxDefaultSize,0,NULL,wxCB_DROPDOWN | wxCB_READONLY);
-		modeCombo->SetName(GetModeFieldName(i));
-		InitModeCombo(modeCombo);
-		f.control = modeCombo;
+		wxComboBox *c = new wxComboBox(this,-1,"",wxDefaultPosition,wxDefaultSize,0,NULL,wxCB_DROPDOWN | wxCB_READONLY);
+		c->Connect(wxEVT_COMMAND_COMBOBOX_SELECTED, wxCommandEventHandler(GpioPanel::OnModeChanged),NULL,this);
+		c->SetClientData(&cfg);
+		InitModeCombo(c);
+		f.control = m_modeCombo[i] = c;
 		f.header = "Mode";
 		extraFields.Add(f);
 	}
@@ -75,10 +74,6 @@ wxString GpioPanel::GetChannelConfigPanelName(int index){
 	return wxString::Format("gpio_channel_%d",index);
 }
 
-wxString GpioPanel::GetModeFieldName(int index){
-	return wxString::Format("gpio_channel_mode_%d",index);
-}
-
 wxPanel * GpioPanel::GetTopInnerPanel(){
 	return NULL;
 }
@@ -91,5 +86,12 @@ void GpioPanel::UpdatedExtendedFields()
 {
 }
 
+void GpioPanel::OnModeChanged(wxCommandEvent &event){
+	wxComboBox *c = dynamic_cast<wxComboBox*>(event.GetEventObject());
+	if (NULL != c) {
+		GpioConfig *cfg = (GpioConfig*)c->GetClientData();
+		cfg->mode = (gpio_mode_t)c->GetSelection();
+	}
+}
 BEGIN_EVENT_TABLE ( GpioPanel, wxPanel )
 END_EVENT_TABLE()

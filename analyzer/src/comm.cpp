@@ -238,7 +238,7 @@ int RaceAnalyzerComm::FlushReceiveBuffer(wxSerialPort* comPort){
 		while (1){
 			if (comPort->Read(&data,1)){
 				//#ifdef __WXDEBUG__
-				wxLogMessage("flushed %0x", (int)data);
+				//wxLogMessage("flushed %0x", (int)data);
 				//#endif
 				//wxBell();
 				buffer++;
@@ -247,14 +247,14 @@ int RaceAnalyzerComm::FlushReceiveBuffer(wxSerialPort* comPort){
 				break;
 			}
 		}
-	if (buffer > 0) wxLogMessage("flushed %d bytes",buffer);
+	//if (buffer > 0) wxLogMessage("flushed %d bytes",buffer);
 	}
 	return buffer;
 }
 
 wxString RaceAnalyzerComm::SendCommand(wxSerialPort *comPort, wxString &buffer, int timeout){
 	FlushReceiveBuffer(comPort);
-	wxLogMessage("writing %d: %s",buffer.Len(), buffer.ToAscii());
+	wxLogMessage("Send Cmd (%d): %s",buffer.Len(), buffer.ToAscii());
 	WriteLine(comPort,buffer,timeout);
 
 	{
@@ -270,16 +270,16 @@ wxString RaceAnalyzerComm::SendCommand(wxSerialPort *comPort, wxString &buffer, 
 	{
 		wxString result;
 		int to = ReadLine(comPort,result,timeout);
+		wxLogMessage("Cmd Response: %s", result.ToAscii());
 		if (to) throw CommException(CommException::COMM_TIMEOUT);
-		result.Trim(false);
-		result.Trim(true);
+		result.Trim(false).Trim(true);
 		return result;
 	}
 }
 
 int RaceAnalyzerComm::WriteLine(wxSerialPort * comPort, wxString &buffer, int timeout){
 
-	wxLogMessage("writeLine: %s", buffer.ToAscii());
+	//wxLogMessage("writeLine: %s", buffer.ToAscii());
 	char *tempBuff = (char*)malloc(buffer.Len() + 10);
 	strcpy(tempBuff,buffer.ToAscii());
 	strcat(tempBuff,"\r");
@@ -296,6 +296,9 @@ int RaceAnalyzerComm::WriteLine(wxSerialPort * comPort, wxString &buffer, int ti
 		len -= written;
 	}
 	t.stop();
+	if (to){
+		wxLogMessage("WriteLine timed out");
+	}
 	free(tempBuff);
 
 	return to;
@@ -306,7 +309,16 @@ int RaceAnalyzerComm::ReadLine(wxSerialPort * comPort, wxString &buffer, int tim
 	int to = 0;
 	timer t(timeout, &to, NULL);
 
+
 	t.start();
+
+	//These two lines is to address flakiness issues
+	//with the wxCtb - sometimes we can't read values from the port, even
+	//though there are bytes pending. Sending a character seems to jog
+	//things loose. I know, whatev. Need to update to latest wxCtb or
+	//roll our own driver.
+	char blah = ' ';
+	comPort->Writev(&blah,1,&to,true);
 
 	wxString dataLine = "";
 	char value;
@@ -320,12 +332,10 @@ int RaceAnalyzerComm::ReadLine(wxSerialPort * comPort, wxString &buffer, int tim
 	t.stop();
 
 	if (to){
-		wxLogMessage("timed out");
+		wxLogMessage("ReadLine timed out");
 		//CloseSerialPort();
 	}
-
-//	wxLogMessage("readLine: ");
-//	wxLogMessage(buffer.T);
+	buffer.Trim(false).Trim(true);
 	return to;
 }
 
@@ -480,33 +490,33 @@ void RaceAnalyzerComm::populateChannelConfig(ChannelConfig &cfg, wxString &data)
 	cfg.sampleRate = (sample_rate_t)getIntParam(data,"sampleRate");
 }
 
+
 void RaceAnalyzerComm::readConfig(RaceCaptureConfig &config){
 	wxSerialPort *serialPort = GetSerialPort();
 	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
 
 	for (int i = 0; i < CONFIG_ANALOG_CHANNELS; i++){
 		AnalogConfig &analogConfig = (config.analogConfigs[i]);
-		wxString cmd = wxString::Format("getAnalogConfig %d",i);
+		wxString cmd = wxString::Format("getAnalogCfg %d",i);
 		wxString rsp = SendCommand(serialPort,cmd);
 		populateChannelConfig(analogConfig.channelConfig,rsp);
-		analogConfig.loggingPrecision = getIntParam(rsp,"logPrec");
-		analogConfig.linearScaling = getFloatParam(rsp,"scaling");
+		analogConfig.loggingPrecision = getIntParam(rsp,"loggingPrecision");
 		analogConfig.scalingMode = (scaling_mode_t)getIntParam(rsp,"scalingMode");
+		analogConfig.linearScaling = getFloatParam(rsp,"scaling");
 		for (int ii=0; ii < CONFIG_ANALOG_SCALING_BINS;ii++){
 			analogConfig.scalingMap.rawValues[ii]=getIntParam(rsp,wxString::Format("mapRaw_%d",ii));
 		}
 		for (int ii=0; ii < CONFIG_ANALOG_SCALING_BINS;ii++){
 			analogConfig.scalingMap.scaledValue[ii]=getFloatParam(rsp,wxString::Format("mapScaled_%d",ii));
 		}
-
 	}
 
 	for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++){
 		TimerConfig &timerConfig = config.timerConfigs[i];
-		wxString cmd = wxString::Format("getTimerConfig %d",i);
+		wxString cmd = wxString::Format("getTimerCfg %d",i);
 		wxString rsp = SendCommand(serialPort,cmd);
 		populateChannelConfig(timerConfig.channelConfig,rsp);
-		timerConfig.loggingPrecision = getIntParam(rsp,"logPrec");
+		timerConfig.loggingPrecision = getIntParam(rsp,"loggingPrecision");
 		timerConfig.slowTimerEnabled = getIntParam(rsp,"slowTimer") == 1;
 		timerConfig.mode = (timer_mode_t)getIntParam(rsp,"mode");
 		timerConfig.pulsePerRev = getIntParam(rsp,"pulsePerRev");
@@ -516,46 +526,53 @@ void RaceAnalyzerComm::readConfig(RaceCaptureConfig &config){
 
 	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
 		AccelConfig &accelConfig = (config.accelConfigs[i]);
-		wxString cmd = wxString::Format("getAccelConfig %d",i);
+		wxString cmd = wxString::Format("getAccelCfg %d",i);
 		wxString rsp = SendCommand(serialPort,cmd);
 		populateChannelConfig(accelConfig.channelConfig,rsp);
 		accelConfig.mode = (accel_mode_t)getIntParam(rsp,"mode");
 		accelConfig.channel = (accel_channel_t)getIntParam(rsp,"channel");
 		accelConfig.zeroValue = getIntParam(rsp,"zeroValue");
 	}
+
 	for (int i = 0; i < CONFIG_ANALOG_PULSE_CHANNELS; i++){
 		PwmConfig &pwmConfig = (config.pwmConfigs[i]);
-		wxString cmd = wxString::Format("getPwmConfig %d",i);
+		wxString cmd = wxString::Format("getPwmCfg %d",i);
 		wxString rsp = SendCommand(serialPort,cmd);
 		populateChannelConfig(pwmConfig.channelConfig,rsp);
-		pwmConfig.loggingPrecision = getIntParam(rsp,"logPrec");
-		pwmConfig.loggingMode = (pwm_logging_mode_t)getIntParam(rsp,"loggingMode");
+		pwmConfig.loggingPrecision = getIntParam(rsp,"loggingPrecision");
 		pwmConfig.outputMode = (pwm_output_mode_t)getIntParam(rsp,"outputMode");
+		pwmConfig.loggingMode = (pwm_logging_mode_t)getIntParam(rsp,"loggingMode");
 		pwmConfig.startupDutyCycle = getIntParam(rsp,"startupDutyCycle");
 		pwmConfig.startupPeriod = getIntParam(rsp,"startupPeriod");
 		pwmConfig.voltageScaling = getFloatParam(rsp,"voltageScaling");
 	}
+
 	for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
 		GpioConfig &gpioConfig = (config.gpioConfigs[i]);
-		wxString cmd = wxString::Format("getGpioConfig %d",i);
+		wxString cmd = wxString::Format("getGpioCfg %d",i);
 		wxString rsp = SendCommand(serialPort,cmd);
 		populateChannelConfig(gpioConfig.channelConfig,rsp);
 		gpioConfig.mode = (gpio_mode_t)getIntParam(rsp,"mode");
 	}
+
 	{
 		GpsConfig &gpsConfig = (config.gpsConfig);
-
-		wxString cmd = "getGpsConfig";
+		wxString cmd = "getGpsCfg";
 		wxString rsp = SendCommand(serialPort,cmd);
+		gpsConfig.gpsInstalled = getIntParam(rsp,"installed") != 0;
 		populateChannelConfig(gpsConfig.latitudeCfg,"lat",rsp);
 		populateChannelConfig(gpsConfig.longitudeCfg,"long",rsp);
 		populateChannelConfig(gpsConfig.velocityCfg,"vel",rsp);
 		populateChannelConfig(gpsConfig.timeCfg,"time",rsp);
 		populateChannelConfig(gpsConfig.qualityCfg,"qual",rsp);
 		populateChannelConfig(gpsConfig.satellitesCfg,"sats",rsp);
+	}
+	{
+		GpsConfig &gpsConfig = (config.gpsConfig);
+		wxString cmd = "getStartFinishCfg";
+		wxString rsp = SendCommand(serialPort,cmd);
 		populateChannelConfig(gpsConfig.lapCountCfg,"lapCount",rsp);
 		populateChannelConfig(gpsConfig.lapTimeCfg,"lapTime",rsp);
-		gpsConfig.gpsInstalled = (char)getIntParam(rsp,"installed");
 		gpsConfig.startFinishLatitude = getFloatParam(rsp,"startFinishLat");
 		gpsConfig.startFinishLongitude = getFloatParam(rsp,"startFinishLong");
 		gpsConfig.startFinishRadius = getFloatParam(rsp,"startFinishRadius");
@@ -563,20 +580,142 @@ void RaceAnalyzerComm::readConfig(RaceCaptureConfig &config){
 
 	{
 		LoggerOutputConfig &outputConfig = (config.loggerOutputConfig);
-
-		wxString cmd = "getOutputConfig";
+		wxString cmd = "getOutputCfg";
 		wxString rsp = SendCommand(serialPort,cmd);
 		outputConfig.loggingMode = (logging_mode_t)getIntParam(rsp,"sdLoggingMode");
 		outputConfig.telemetryMode = (telemetry_mode_t)getIntParam(rsp,"telemetryMode");
 		outputConfig.p2pDestinationAddrHigh = getIntParam(rsp,"p2pDestAddrHigh");
 		outputConfig.p2pDestinationAddrLow = getIntParam(rsp,"p2pDestAddrLow");
 	}
+	CloseSerialPort();
 }
 
-void RaceAnalyzerComm::writeConfig(const RaceCaptureConfig &config){
+void RaceAnalyzerComm::writeConfig(RaceCaptureConfig &config){
 	wxSerialPort *serialPort = GetSerialPort();
 	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
 
+	for (int i = 0; i < CONFIG_ANALOG_CHANNELS;i++){
+		AnalogConfig &cfg = config.analogConfigs[i];
+		wxString cmd = "setAnalogCfg";
+		cmd = AppendIntParam(cmd, i);
+		cmd = AppendChannelConfig(cmd, cfg.channelConfig);
+		cmd = AppendIntParam(cmd, cfg.loggingPrecision);
+		cmd = AppendIntParam(cmd, cfg.scalingMode);
+		cmd = AppendFloatParam(cmd, cfg.linearScaling);
+		ScalingMap &map = (cfg.scalingMap);
+		for (int m=0; m < CONFIG_ANALOG_SCALING_BINS;m++){
+			cmd = AppendIntParam(cmd, map.rawValues[m]);
+		}
+		for (int m=0; m < CONFIG_ANALOG_SCALING_BINS;m++){
+			cmd = AppendFloatParam(cmd, map.scaledValue[m]);
+		}
+		wxString result = SendCommand(serialPort, cmd);
+		checkThrowResult(result);
+	}
+	for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++){
+		TimerConfig &cfg = config.timerConfigs[i];
+		wxString cmd = "setTimerCfg";
+		cmd = AppendIntParam(cmd, i);
+		AppendChannelConfig(cmd, cfg.channelConfig);
+		cmd = AppendIntParam(cmd, cfg.loggingPrecision);
+		cmd = AppendIntParam(cmd, cfg.slowTimerEnabled);
+		cmd = AppendIntParam(cmd, cfg.mode);
+		cmd = AppendIntParam(cmd, cfg.pulsePerRev);
+		cmd = AppendIntParam(cmd, cfg.timerDivider);
+		cmd = AppendIntParam(cmd, cfg.scaling);
+		wxString result = SendCommand(serialPort, cmd);
+		checkThrowResult(result);
+	}
+	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
+		AccelConfig &cfg = config.accelConfigs[i];
+		wxString cmd = "setAccelCfg";
+		cmd = AppendIntParam(cmd, i);
+		cmd = AppendChannelConfig(cmd, cfg.channelConfig);
+		cmd = AppendIntParam(cmd, cfg.mode);
+		cmd = AppendIntParam(cmd, cfg.channel);
+		cmd = AppendIntParam(cmd, cfg.zeroValue);
+		wxString result = SendCommand(serialPort, cmd);
+		checkThrowResult(result);
+	}
+	for (int i = 0; i < CONFIG_ANALOG_PULSE_CHANNELS; i++){
+		PwmConfig &cfg = config.pwmConfigs[i];
+		wxString cmd = "setPwmCfg";
+		cmd = AppendIntParam(cmd, i);
+		cmd = AppendChannelConfig(cmd, cfg.channelConfig);
+		cmd = AppendIntParam(cmd, cfg.loggingPrecision);
+		cmd = AppendIntParam(cmd, cfg.outputMode);
+		cmd = AppendIntParam(cmd, cfg.loggingMode);
+		cmd = AppendIntParam(cmd, cfg.startupDutyCycle);
+		cmd = AppendIntParam(cmd, cfg.startupPeriod);
+		cmd = AppendFloatParam(cmd, cfg.voltageScaling);
+		wxString result = SendCommand(serialPort, cmd);
+		checkThrowResult(result);
+	}
+	for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
+		GpioConfig &cfg = config.gpioConfigs[i];
+		wxString cmd = "setGpioCfg";
+		cmd = AppendIntParam(cmd,i);
+		AppendChannelConfig(cmd, cfg.channelConfig);
+		AppendIntParam(cmd, cfg.mode);
+		wxString result = SendCommand(serialPort, cmd);
+		checkThrowResult(result);
+	}
+	{
+		GpsConfig &cfg = config.gpsConfig;
+		{
+			wxString cmd = "setGpsCfg";
+			cmd = AppendIntParam(cmd, cfg.gpsInstalled);
+			cmd = AppendChannelConfig(cmd, cfg.latitudeCfg);
+			cmd = AppendChannelConfig(cmd, cfg.longitudeCfg);
+			cmd = AppendChannelConfig(cmd, cfg.velocityCfg);
+			cmd = AppendChannelConfig(cmd, cfg.timeCfg);
+			cmd = AppendChannelConfig(cmd, cfg.qualityCfg);
+			cmd = AppendChannelConfig(cmd, cfg.satellitesCfg);
+			wxString result = SendCommand(serialPort, cmd);
+			checkThrowResult(result);
+		}
+		{
+			wxString cmd = "setStartFinishCfg";
+			cmd = AppendChannelConfig(cmd, cfg.lapCountCfg);
+			cmd = AppendChannelConfig(cmd, cfg.lapTimeCfg);
+			cmd = AppendFloatParam(cmd, cfg.startFinishLatitude);
+			cmd = AppendFloatParam(cmd, cfg.startFinishLongitude);
+			cmd = AppendFloatParam(cmd, cfg.startFinishRadius);
+			wxString result = SendCommand(serialPort, cmd);
+			checkThrowResult(result);
+		}
+	}
+	{
+		LoggerOutputConfig &cfg = config.loggerOutputConfig;
+		wxString cmd = "setOutputCfg";
+		cmd = AppendIntParam(cmd, cfg.loggingMode);
+		cmd = AppendIntParam(cmd, cfg.telemetryMode);
+		cmd = AppendUIntParam(cmd, cfg.p2pDestinationAddrHigh);
+		cmd = AppendUIntParam(cmd, cfg.p2pDestinationAddrLow);
+	}
+	CloseSerialPort();
 }
 
+wxString RaceAnalyzerComm::AppendStringParam(wxString &cmd, wxString param){
+	param.Replace(" ","_",true);
+	return cmd + wxString::Format(" \"%s\"", param.ToAscii());
+}
 
+wxString RaceAnalyzerComm::AppendFloatParam(wxString &cmd, float param){
+	return cmd + wxString::Format(" %f", param);
+}
+
+wxString RaceAnalyzerComm::AppendIntParam(wxString &cmd, int param){
+	return cmd + wxString::Format(" %d", param);
+}
+
+wxString RaceAnalyzerComm::AppendUIntParam(wxString &cmd, unsigned int param){
+	return cmd + wxString::Format(" %u", param);
+}
+
+wxString RaceAnalyzerComm::AppendChannelConfig(wxString &cmd, ChannelConfig &channelConfig){
+	cmd = AppendStringParam(cmd, channelConfig.label);
+	cmd = AppendStringParam(cmd, channelConfig.units);
+	cmd = AppendIntParam(cmd, channelConfig.sampleRate);
+	return cmd;
+}

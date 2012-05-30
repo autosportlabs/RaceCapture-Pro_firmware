@@ -21,11 +21,11 @@ class RaceAnalyzerComm {
 		void populateChannelConfig(ChannelConfig &cfg, wxString suffix, wxString &data);
 		void populateChannelConfig(ChannelConfig &cfg, wxString &data);
 		void readConfig(RaceCaptureConfig &config);
-		void writeConfig(const RaceCaptureConfig &config);
+		void writeConfig(RaceCaptureConfig &config);
 
 	private:
 
-		static const int DEFAULT_TIMEOUT = 1000;
+		static const int DEFAULT_TIMEOUT = 5000;
 		wxLogStderr *_logger;
 		FILE *_logfile;
 
@@ -49,6 +49,12 @@ class RaceAnalyzerComm {
 		void hideInnerTokens(wxString &data);
 		void unhideInnerTokens(wxString &data);
 		void swapCharsInsideQuotes(wxString &data, char find,char replace);
+
+		wxString AppendStringParam(wxString &cmd, wxString param);
+		wxString AppendFloatParam(wxString &cmd, float param);
+		wxString AppendIntParam(wxString &cmd, int param);
+		wxString AppendUIntParam(wxString &cmd, unsigned int param);
+		wxString AppendChannelConfig(wxString &cmd, ChannelConfig &channelConfig);
 
 		void CheckThrowIncompatibleVersion();
 

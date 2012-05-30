@@ -4,11 +4,6 @@
 
 #include "finishLine.xpm"
 
-const wxString GpsConfigPanel::GPS_INSTALLED_CHECKBOX_NAME = "gpsInstalled";
-const wxString GpsConfigPanel::GPS_STARTFINISH_LATITUDE_NAME = "gpsStartFinishLatitude";
-const wxString GpsConfigPanel::GPS_STARTFINISH_LONGITUDE_NAME = "gpsStartFinishLongitude";
-const wxString GpsConfigPanel::GPS_STARTFINISH_TARGET_RADIUS_NAME  = "gpsStartFinish";
-
 GpsConfigPanel::GpsConfigPanel() : BaseChannelConfigPanel()
 {
 }
@@ -37,10 +32,11 @@ GpsConfigPanel::~GpsConfigPanel(){
 
 void GpsConfigPanel::UpdatedExtendedFields(){
 	GpsConfig &gpsConfig = m_raceCaptureConfig->gpsConfig;
-	SetCheckBoxValue(GPS_INSTALLED_CHECKBOX_NAME,gpsConfig.gpsInstalled == 1);
-	SetTextCtrlValue(GPS_STARTFINISH_LATITUDE_NAME,gpsConfig.startFinishLatitude);
-	SetTextCtrlValue(GPS_STARTFINISH_LONGITUDE_NAME,gpsConfig.startFinishLongitude);
-	SetTextCtrlValue(GPS_STARTFINISH_TARGET_RADIUS_NAME,gpsConfig.startFinishRadius);
+
+	m_gpsInstalledCheckBox->SetValue(gpsConfig.gpsInstalled);
+	m_startFinishLatitudeTextCtrl->SetValue(wxString::Format("%f",gpsConfig.startFinishLatitude));
+	m_startFinishLongitudeTextCtrl->SetValue(wxString::Format("%f",gpsConfig.startFinishLongitude));
+	m_startFinishTargetRadius->SetValue(wxString::Format("%f",gpsConfig.startFinishRadius));
 }
 
 void GpsConfigPanel::UpdateExtendedChannelFields(int i){
@@ -119,30 +115,33 @@ wxPanel * GpsConfigPanel::GetTopInnerPanel(){
 	sizer->AddGrowableRow(1);
 	sizer->AddGrowableCol(0);
 
-	wxCheckBox *installedCheckBox = new wxCheckBox(m_gpsOptionsPanel,-1,"GPS Installed");
-	installedCheckBox->SetName(GPS_INSTALLED_CHECKBOX_NAME);
-
-	sizer->Add(installedCheckBox,1,wxEXPAND | wxALIGN_CENTER_VERTICAL);
+	m_gpsInstalledCheckBox = new wxCheckBox(m_gpsOptionsPanel,wxID_ANY,"GPS Installed");
+	m_gpsInstalledCheckBox->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(GpsConfigPanel::OnGpsInstalledChanged),NULL,this);
+	sizer->Add(m_gpsInstalledCheckBox,1,wxEXPAND | wxALIGN_CENTER_VERTICAL);
 
 	wxStaticBoxSizer *startFinishSizer = new wxStaticBoxSizer(new wxStaticBox(m_gpsOptionsPanel,-1,"Start/Finish Line Target"),wxHORIZONTAL);
-
 	wxFlexGridSizer *innerStartFinishSizer = new wxFlexGridSizer(3,3,8,8);
 	innerStartFinishSizer->AddGrowableCol(2);
 
-	innerStartFinishSizer->Add(new wxStaticText(m_gpsOptionsPanel,-1,"Target Latitude"),1,wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
-	innerStartFinishSizer->Add(new wxTextCtrl(m_gpsOptionsPanel,-1,"",wxDefaultPosition,wxDefaultSize,0,wxDefaultValidator,GPS_STARTFINISH_LATITUDE_NAME),1);
+	innerStartFinishSizer->Add(new wxStaticText(m_gpsOptionsPanel,wxID_ANY,"Target Latitude"),1,wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	m_startFinishLatitudeTextCtrl = new wxTextCtrl(m_gpsOptionsPanel,wxID_ANY,"",wxDefaultPosition,wxDefaultSize,0,wxTextValidator(wxFILTER_NUMERIC));
+	m_startFinishLatitudeTextCtrl->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(GpsConfigPanel::OnStartFinishLatitudeChanged),NULL,this);	innerStartFinishSizer->Add(m_startFinishLatitudeTextCtrl,1);
 	innerStartFinishSizer->Add(new wxStaticText(m_gpsOptionsPanel,-1,"Degrees"),1,wxALIGN_CENTER_VERTICAL);
 
-	innerStartFinishSizer->Add(new wxStaticText(m_gpsOptionsPanel,-1,"Target Longitude"),1,wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
-	innerStartFinishSizer->Add(new wxTextCtrl(m_gpsOptionsPanel,-1,"",wxDefaultPosition,wxDefaultSize,0,wxDefaultValidator,GPS_STARTFINISH_LONGITUDE_NAME),1);
-	innerStartFinishSizer->Add(new wxStaticText(m_gpsOptionsPanel,-1,"Degrees"),1,wxALIGN_CENTER_VERTICAL);
+	m_startFinishLongitudeTextCtrl =new wxTextCtrl(m_gpsOptionsPanel,wxID_ANY,"",wxDefaultPosition,wxDefaultSize,0,wxTextValidator(wxFILTER_NUMERIC));
+	m_startFinishLongitudeTextCtrl->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(GpsConfigPanel::OnStartFinishLongitudeChanged),NULL,this);
+	innerStartFinishSizer->Add(new wxStaticText(m_gpsOptionsPanel,wxID_ANY,"Target Longitude"),1,wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	innerStartFinishSizer->Add(m_startFinishLongitudeTextCtrl,1);
+	innerStartFinishSizer->Add(new wxStaticText(m_gpsOptionsPanel,wxID_ANY,"Degrees"),1,wxALIGN_CENTER_VERTICAL);
 
-	innerStartFinishSizer->Add(new wxStaticText(m_gpsOptionsPanel,-1,"Target Radius"),1,wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
-	innerStartFinishSizer->Add(new wxTextCtrl(m_gpsOptionsPanel,-1,"",wxDefaultPosition,wxDefaultSize,0,wxDefaultValidator,GPS_STARTFINISH_TARGET_RADIUS_NAME),1);
-	innerStartFinishSizer->Add(new wxStaticText(m_gpsOptionsPanel,-1,"Degrees"),1,wxALIGN_CENTER_VERTICAL);
+	m_startFinishTargetRadius = new wxTextCtrl(m_gpsOptionsPanel,wxID_ANY,"",wxDefaultPosition,wxDefaultSize,0,wxTextValidator(wxFILTER_NUMERIC));
+	m_startFinishTargetRadius->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(GpsConfigPanel::OnStartFinishRadiusChanged),NULL,this);
+	innerStartFinishSizer->Add(new wxStaticText(m_gpsOptionsPanel,wxID_ANY,"Target Radius"),1,wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	innerStartFinishSizer->Add(m_startFinishTargetRadius,1);
+	innerStartFinishSizer->Add(new wxStaticText(m_gpsOptionsPanel,wxID_ANY,"Degrees"),1,wxALIGN_CENTER_VERTICAL);
 
 	startFinishSizer->Add(innerStartFinishSizer);
-	startFinishSizer->Add(new BitmapWindow(m_gpsOptionsPanel, -1,finishLine_xpm),1, wxALIGN_CENTER_HORIZONTAL);
+	startFinishSizer->Add(new BitmapWindow(m_gpsOptionsPanel,wxID_ANY,finishLine_xpm),1, wxALIGN_CENTER_HORIZONTAL);
 	sizer->Add(startFinishSizer,1,wxEXPAND);
 	m_gpsOptionsPanel->SetSizer(sizer);
 
@@ -151,6 +150,27 @@ wxPanel * GpsConfigPanel::GetTopInnerPanel(){
 
 wxPanel * GpsConfigPanel::GetBottomInnerPanel(){
 	return NULL;
+}
+
+void GpsConfigPanel::OnGpsInstalledChanged(wxCommandEvent &event){
+	wxCheckBox *c = dynamic_cast<wxCheckBox*>(event.GetEventObject());
+	if (NULL != c) m_raceCaptureConfig->gpsConfig.gpsInstalled = c->GetValue();
+}
+
+void GpsConfigPanel::OnStartFinishLatitudeChanged(wxCommandEvent &event){
+	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
+	if (NULL != c) m_raceCaptureConfig->gpsConfig.startFinishLatitude = atof(c->GetValue());
+}
+
+void GpsConfigPanel::OnStartFinishLongitudeChanged(wxCommandEvent &event){
+	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
+	if (NULL != c) m_raceCaptureConfig->gpsConfig.startFinishLongitude = atof(c->GetValue());
+
+}
+
+void GpsConfigPanel::OnStartFinishRadiusChanged(wxCommandEvent &event){
+	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
+	if (NULL != c) m_raceCaptureConfig->gpsConfig.startFinishRadius = atof(c->GetValue());
 }
 
 BEGIN_EVENT_TABLE ( GpsConfigPanel, wxPanel )

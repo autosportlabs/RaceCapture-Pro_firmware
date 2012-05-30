@@ -123,10 +123,21 @@ void ConfigPanel::OnReadConfig(wxCommandEvent &event){
 		m_loggerOutputPanel->OnConfigUpdated();
 	}
 	catch(CommException &e){
-		wxLogMessage("Error reading script: %s", e.GetErrorMessage().ToAscii());
+		wxLogMessage("Error reading configuration: %s", e.GetErrorMessage().ToAscii());
+	}
+}
+
+void ConfigPanel::OnWriteConfig(wxCommandEvent &event){
+	try{
+		m_comm->writeConfig(m_raceCaptureConfig);
+
+	}
+	catch(CommException &e){
+		wxLogMessage("Error writing configuration: %s", e.GetErrorMessage().ToAscii());
 	}
 }
 
 BEGIN_EVENT_TABLE ( ConfigPanel, wxPanel )
 	EVT_BUTTON(ID_BUTTON_READ_CONFIG,ConfigPanel::OnReadConfig)
+	EVT_BUTTON(ID_BUTTON_WRITE_CONFIG,ConfigPanel::OnWriteConfig)
 END_EVENT_TABLE()

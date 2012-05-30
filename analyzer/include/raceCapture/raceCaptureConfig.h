@@ -180,7 +180,7 @@ public:
 
 class GpsConfig{
 public:
-	char gpsInstalled;
+	bool gpsInstalled;
 	float startFinishLatitude;
 	float startFinishLongitude;
 	float startFinishRadius;
