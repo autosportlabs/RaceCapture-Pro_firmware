@@ -166,8 +166,8 @@ OPT = s
 # AVR (extended) COFF requires stabs, plus an avr-objcopy run.
 #DEBUG = stabs
 #DEBUG = dwarf-2
-#DEBUG = -g
-DEBUG = 
+DEBUG = -g
+#DEBUG = 
 
 # List any extra directories to look for include files here.
 #     Each directory must be seperated by a space.
@@ -554,49 +554,11 @@ build elf hex bin lss sym clean clean_list program
 
 
 # **********************************************************************************************
-#                            FLASH PROGRAMMING      (using OpenOCD and Amontec JTAGKey)
-#
-# Alternate make target for flash programming only
-#
-# You must create a special Eclipse make target (program) to run this part of the makefile 
-# (Project -> Create Make Target...  then set the Target Name and Make Target to "program")
-#
-# OpenOCD is run in "batch" mode with a special configuration file and a script file containing
-# the flash commands. When flash programming completes, OpenOCD terminates.
-#
-# Note that the make file below creates the script file of flash commands "on the fly"
-#
-# Programmers: Martin Thomas, Joseph M Dupre, James P Lynch
+#                            FLASH PROGRAMMING      (using OpenOCD 0.5.0 and Olimex ARM-USB-OCD)
 # **********************************************************************************************
-
-# specify output filename here (must be *.bin file)
-PROGRAM_TARGET = main.bin
-
-# specify the directory where openocd executable resides (openocd-ftd2xx.exe or openocd-pp.exe)
-OPENOCD_DIR = 'c:/Program Files/openocd-2006re93/bin/'
-
-# specify OpenOCD executable (pp is for the wiggler, ftd2xx is for the USB debugger)
-#OPENOCD = $(OPENOCD_DIR)openocd-pp.exe
-OPENOCD = $(OPENOCD_DIR)openocd-ftd2xx.exe
-
-# specify OpenOCD configuration file (pick the one for your device)
-#OPENOCD_CFG = $(OPENOCD_DIR)at91sam7s256-wiggler-flash-program.cfg
-#OPENOCD_CFG = $(OPENOCD_DIR)at91sam7s256-jtagkey-flash-program.cfg
-OPENOCD_CFG = $(OPENOCD_DIR)at91sam7s256-armusbocd-flash-program.cfg
-
-# specify the name and folder of the flash programming script file
-OPENOCD_SCRIPT = c:\temp\temp.ocd
+# inspect for later->	@cmd /c 'echo mww 0xfffffd08 0xa5000401 >> $(OPENOCD_SCRIPT)'
 
 # program the AT91SAM7S256 internal flash memory
 program: $(PROGRAM_TARGET)
-	@echo "Preparing OpenOCD script..."
-	@cmd /c 'echo wait_halt > $(OPENOCD_SCRIPT)'
-	@cmd /c 'echo armv4_5 core_state arm >> $(OPENOCD_SCRIPT)'
-	@cmd /c 'echo flash write 0 $(PROGRAM_TARGET) 0x0 >> $(OPENOCD_SCRIPT)'
-	@cmd /c 'echo mww 0xfffffd08 0xa5000401 >> $(OPENOCD_SCRIPT)'
-	@cmd /c 'echo reset >> $(OPENOCD_SCRIPT)'
-	@cmd /c 'echo shutdown >> $(OPENOCD_SCRIPT)'
-	@echo "Flash Programming with OpenOCD..."
-	$(OPENOCD) -f $(OPENOCD_CFG)
-	@echo "Flash Programming Finished."
-
+	openocd -f flash.cfg
+	

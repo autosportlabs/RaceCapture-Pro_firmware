@@ -235,6 +235,7 @@ void SetGpioConfig(unsigned int argc, char **argv){
 	if (NULL != c){
 		SetChannelConfig(&(c->cfg),2,argc,argv);
 		if (argc > 5) c->mode = filterGpioMode(modp_atoi(argv[5]));
+		InitGPIO(getWorkingLoggerConfig());
 		SendCommandOK();
 	}
 }
