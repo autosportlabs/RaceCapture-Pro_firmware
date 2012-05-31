@@ -2,9 +2,8 @@
 #define _COMM_H_
 
 #include "configData.h"
-#include "wx/ctb/serport.h"
+#include "comm_win32.h"
 #include "raceCapture/raceCaptureConfig.h"
-
 
 
 class RaceAnalyzerComm {
@@ -34,13 +33,13 @@ class RaceAnalyzerComm {
 		static const char EQUALS_HIDE_CHAR = 1;
 		static const char SEMICOLON_HIDE_CHAR = 2;
 
-		wxSerialPort* OpenSerialPort();
-		wxSerialPort* GetSerialPort();
+		CComm* OpenSerialPort();
+		CComm* GetSerialPort();
 		void checkThrowResult(wxString &result);
-		int FlushReceiveBuffer(wxSerialPort * comPort);
-		int ReadLine(wxSerialPort * comPort, wxString &buffer, int timeout);
-		int WriteLine(wxSerialPort * comPort, wxString &buffer, int timeout);
-		wxString SendCommand(wxSerialPort *comPort, wxString &buffer, int timeout = DEFAULT_TIMEOUT);
+		int FlushReceiveBuffer(CComm * comPort);
+		int ReadLine(CComm * comPort, wxString &buffer, int timeout);
+		int WriteLine(CComm * comPort, wxString &buffer, int timeout);
+		wxString SendCommand(CComm *comPort, wxString &buffer, int timeout = DEFAULT_TIMEOUT);
 		void unescape(wxString &data);
 		void escape(wxString &data);
 		int getIntParam(wxString &data, const wxString &name);
@@ -58,8 +57,8 @@ class RaceAnalyzerComm {
 
 		void CheckThrowIncompatibleVersion();
 
-		int 					_serialPortNumber;
-		wxSerialPort* 			_serialPort;
+		int 			_serialPortNumber;
+		CComm* 			_serialPort;
 
 		const char 				* GetSerialPortDevName(int comPort);
 		wxMutex					_commMutex;

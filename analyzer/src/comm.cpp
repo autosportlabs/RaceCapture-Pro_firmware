@@ -1,8 +1,5 @@
 
 #include "comm.h"
-#include "wx/ctb/getopt.h"
-#include "wx/ctb/serport.h"
-#include "wx/ctb/timer.h"
 #include <stdio.h>
 #include <wx/log.h>
 #include "base64.h"
@@ -54,16 +51,16 @@ void RaceAnalyzerComm::CloseSerialPort(){
 
 	wxLogMessage("closing serial port");
 	if (_serialPort){
-		if (_serialPort->IsOpen()) _serialPort->Close();
+		if (_serialPort->isOpen()) _serialPort->closePort();
 		delete _serialPort;
 		_serialPort = NULL;
 	}
 }
 
-wxSerialPort* RaceAnalyzerComm::GetSerialPort(){
+CComm* RaceAnalyzerComm::GetSerialPort(){
 
 	if ( _serialPort){
-		if ( ! _serialPort->IsOpen()){
+		if ( ! _serialPort->isOpen()){
 			delete _serialPort;
 			_serialPort = NULL;
 		}
@@ -77,23 +74,14 @@ wxSerialPort* RaceAnalyzerComm::GetSerialPort(){
 	return _serialPort;
 }
 
-wxSerialPort* RaceAnalyzerComm::OpenSerialPort(){
+CComm* RaceAnalyzerComm::OpenSerialPort(){
 
 	wxLogMessage("Open COM%d" ,_serialPortNumber + 1);
-	wxSerialPort* comPort = new wxSerialPort();
 	const char *devName = GetSerialPortDevName(_serialPortNumber);
-
 	wxLogMessage(devName);
 
-	wxSerialPort_DCS dcs;
-	dcs.baud=wxBAUD_115200;
-	dcs.stopbits=1;
-	dcs.parity = wxPARITY_NONE;
-	dcs.wordlen = 8;
-	dcs.xonxoff = false;
-	dcs.rtscts = false;
-
-		if (comPort->Open(devName,&dcs) < 0 ){
+	CComm* comPort = new CComm();
+	if (!comPort->openPort(_serialPortNumber + 1)){
 			delete ( comPort );
 			throw CommException(CommException::OPEN_PORT_FAILED);
 		}
@@ -174,7 +162,7 @@ void RaceAnalyzerComm::SetSerialPort(int port){
 	if (_serialPortNumber != port){
 
 		if (_serialPort){
-			if (_serialPort->IsOpen()) _serialPort->Close();
+			if (_serialPort->isOpen()) _serialPort->closePort();
 			delete _serialPort;
 			_serialPort = NULL;
 		}
@@ -186,98 +174,65 @@ const char * RaceAnalyzerComm::GetSerialPortDevName(int comPort){
 
 	switch (comPort){
 		case 0:
-			return wxCOM1;
+			return "COM1";
 		case 1:
-			return wxCOM2;
+			return "COM2";
 		case 2:
-			return wxCOM3;
+			return "COM3";
 		case 3:
-			return wxCOM4;
+			return "COM4";
 		case 4:
-			return wxCOM5;
+			return "COM5";
 		case 5:
-			return wxCOM6;
+			return "COM6";
 		case 6:
-			return wxCOM7;
+			return "COM7";
 		case 7:
-			return wxCOM8;
+			return "COM8";
 		case 8:
-			return wxCOM9;
+			return "COM9";
 		case 9:
-			return wxCOM10;
+			return "COM10";
 		case 10:
-			return wxCOM11;
+			return "COM11";
 		case 11:
-			return wxCOM12;
+			return "COM12";
 		case 12:
-			return wxCOM13;
+			return "COM13";
 		case 13:
-			return wxCOM14;
+			return "COM14";
 		case 14:
-			return wxCOM15;
+			return "COM15";
 		case 15:
-			return wxCOM16;
+			return "COM16";
 		case 16:
-			return wxCOM17;
+			return "COM17";
 		case 17:
-			return wxCOM18;
+			return "COM18";
 		case 18:
-			return wxCOM19;
+			return "COM19";
 		case 19:
-			return wxCOM20;
+			return "COM20";
 		default:
 			throw CommException(CommException::OPEN_PORT_FAILED);
 	}
 }
 
-int RaceAnalyzerComm::FlushReceiveBuffer(wxSerialPort* comPort){
-
-	char data;
-	int buffer = 0;
-	if (comPort && comPort->IsOpen()){
-		while (1){
-			if (comPort->Read(&data,1)){
-				//#ifdef __WXDEBUG__
-				//wxLogMessage("flushed %0x", (int)data);
-				//#endif
-				//wxBell();
-				buffer++;
-			}
-			else{
-				break;
-			}
-		}
-	//if (buffer > 0) wxLogMessage("flushed %d bytes",buffer);
-	}
-	return buffer;
+int RaceAnalyzerComm::FlushReceiveBuffer(CComm* comPort){
+	comPort->drainInput();
 }
 
-wxString RaceAnalyzerComm::SendCommand(wxSerialPort *comPort, wxString &buffer, int timeout){
-	FlushReceiveBuffer(comPort);
+wxString RaceAnalyzerComm::SendCommand(CComm *comPort, wxString &buffer, int timeout){
+
 	wxLogMessage("Send Cmd (%d): %s",buffer.Len(), buffer.ToAscii());
-	WriteLine(comPort,buffer,timeout);
-
-	{
-		wxString echo;
-		int to = ReadLine(comPort,echo,timeout);
-		if (to) throw CommException(CommException::COMM_TIMEOUT);
-		if (echo != buffer){
-			wxLogMessage("echoed buffer was %s instead of %s", echo.ToAscii(), buffer.ToAscii());
-			//we expected the command echoed back
-			//throw CommException(CommException::DATA_ERROR);
-		}
-	}
-	{
-		wxString result;
-		int to = ReadLine(comPort,result,timeout);
-		wxLogMessage("Cmd Response: %s", result.ToAscii());
-		if (to) throw CommException(CommException::COMM_TIMEOUT);
-		result.Trim(false).Trim(true);
-		return result;
-	}
+	wxString response;
+	size_t bufferSize = 8192;
+	comPort->sendCommand(buffer.ToAscii(),wxStringBuffer(response,bufferSize),bufferSize,60000,true);
+	wxLogMessage("Cmd Response: %s", response.ToAscii());
+	return response;
 }
 
-int RaceAnalyzerComm::WriteLine(wxSerialPort * comPort, wxString &buffer, int timeout){
+int RaceAnalyzerComm::WriteLine(CComm * comPort, wxString &buffer, int timeout){
 
 	//wxLogMessage("writeLine: %s", buffer.ToAscii());
 	char *tempBuff = (char*)malloc(buffer.Len() + 10);
@@ -285,58 +240,17 @@ int RaceAnalyzerComm::WriteLine(wxSerialPort * comPort, wxString &buffer, int ti
 	strcat(tempBuff,"\r");
 	char *buffPtr = tempBuff;
 
-	int to = 0;
-	timer t(timeout, &to, NULL);
-	t.start();
-
 	size_t len = strlen(buffPtr);
-	while (len > 0 && !to){
-		size_t written = comPort->Writev(buffPtr,len,&to,true);
-		buffPtr+=written;
-		len -= written;
-	}
-	t.stop();
-	if (to){
-		wxLogMessage("WriteLine timed out");
-	}
+	bool result = comPort->writeBuffer(buffPtr,len);
 	free(tempBuff);
 
-	return to;
+	return 0;
 }
 
-int RaceAnalyzerComm::ReadLine(wxSerialPort * comPort, wxString &buffer, int timeout){
-
-	int to = 0;
-	timer t(timeout, &to, NULL);
-
-
-	t.start();
-
-	//These two lines is to address flakiness issues
-	//with the wxCtb - sometimes we can't read values from the port, even
-	//though there are bytes pending. Sending a character seems to jog
-	//things loose. I know, whatev. Need to update to latest wxCtb or
-	//roll our own driver.
-	char blah = ' ';
-	comPort->Writev(&blah,1,&to,true);
-
-	wxString dataLine = "";
-	char value;
-
-	while(!to){
-		if (comPort->Readv(&value,1,&to,true)){
-			if ('\n' == value) break;
-			buffer += value;
-		}
-	}
-	t.stop();
-
-	if (to){
-		wxLogMessage("ReadLine timed out");
-		//CloseSerialPort();
-	}
-	buffer.Trim(false).Trim(true);
-	return to;
+int RaceAnalyzerComm::ReadLine(CComm * comPort, wxString &buffer, int timeout){
+	int count = comPort->readLine(wxStringBuffer(buffer,1024), 1024, timeout);
+	buffer.Trim(true).Trim(false);
+	return count;
 }
 
 void RaceAnalyzerComm::swapCharsInsideQuotes(wxString &data, char find,char replace){
@@ -391,7 +305,7 @@ wxString RaceAnalyzerComm::getParam(wxString &data, const wxString &name){
 
 void RaceAnalyzerComm::reloadScript(void){
 
-	wxSerialPort *serialPort = GetSerialPort();
+	CComm *serialPort = GetSerialPort();
 	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
 
 	wxString reloadCmd = "reloadScript";
@@ -405,7 +319,7 @@ wxString RaceAnalyzerComm::readScript(){
 	int scriptPage = 0;
 	int to = 0;
 	wxLogMessage("readScript");
-	wxSerialPort *serialPort = GetSerialPort();
+	CComm *serialPort = GetSerialPort();
 	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
 
 	FlushReceiveBuffer(serialPort);
@@ -443,7 +357,7 @@ void RaceAnalyzerComm::writeScript(wxString &script){
 	to = 0;
 	size_t length = script.Length();
 
-	wxSerialPort *serialPort = GetSerialPort();
+	CComm *serialPort = GetSerialPort();
 	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
 
 	while(index < length && page < SCRIPT_PAGES && !to){
@@ -492,7 +406,9 @@ void RaceAnalyzerComm::populateChannelConfig(ChannelConfig &cfg, wxString &data)
 
 
 void RaceAnalyzerComm::readConfig(RaceCaptureConfig &config){
-	wxSerialPort *serialPort = GetSerialPort();
+
+	wxDateTime start = wxDateTime::UNow();
+	CComm *serialPort = GetSerialPort();
 	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
 
 	for (int i = 0; i < CONFIG_ANALOG_CHANNELS; i++){
@@ -587,11 +503,13 @@ void RaceAnalyzerComm::readConfig(RaceCaptureConfig &config){
 		outputConfig.p2pDestinationAddrHigh = getIntParam(rsp,"p2pDestAddrHigh");
 		outputConfig.p2pDestinationAddrLow = getIntParam(rsp,"p2pDestAddrLow");
 	}
-	CloseSerialPort();
+
+	wxTimeSpan dur = wxDateTime::UNow() - start;
+	wxLogMessage("get config in %f",dur.GetMilliseconds().ToDouble());
 }
 
 void RaceAnalyzerComm::writeConfig(RaceCaptureConfig &config){
-	wxSerialPort *serialPort = GetSerialPort();
+	CComm *serialPort = GetSerialPort();
 	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
 
 	for (int i = 0; i < CONFIG_ANALOG_CHANNELS;i++){
@@ -693,7 +611,6 @@ void RaceAnalyzerComm::writeConfig(RaceCaptureConfig &config){
 		cmd = AppendUIntParam(cmd, cfg.p2pDestinationAddrHigh);
 		cmd = AppendUIntParam(cmd, cfg.p2pDestinationAddrLow);
 	}
-	CloseSerialPort();
 }
 
 wxString RaceAnalyzerComm::AppendStringParam(wxString &cmd, wxString param){

@@ -43,8 +43,8 @@
 							<tool command="g++" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.base.1491606997" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.base">
 								<option id="gnu.cpp.compiler.option.include.paths.595312928" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="../include"/>
+									<listOptionValue builtIn="false" value="../include/comm"/>
 									<listOptionValue builtIn="false" value="../resource"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wxctb/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sqlite}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks/include}&quot;"/>
@@ -89,7 +89,6 @@
 								<option id="gnu.cpp.link.option.libs.436542558" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="gaugeWorks"/>
 									<listOptionValue builtIn="false" value="sqlite"/>
-									<listOptionValue builtIn="false" value="wxctb-0.8"/>
 									<listOptionValue builtIn="false" value="wx_mswd_gl-2.8"/>
 									<listOptionValue builtIn="false" value="opengl32"/>
 									<listOptionValue builtIn="false" value="glu32"/>
@@ -121,7 +120,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks/MinGW-Debug}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sqlite/MinGW-Debug}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\wxWidgets-2.8.10\msw-debug\lib&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wxctb/lib}&quot;"/>
 								</option>
 								<option id="gnu.cpp.link.option.flags.2034566404" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-mthreads -Wl,--subsystem,windows -mwindows" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1485484092" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
@@ -185,7 +183,6 @@
 									<listOptionValue builtIn="false" value="../resource"/>
 									<listOptionValue builtIn="false" value="c:/wxWidgets-2.8.10/msw-release/lib/wx/include/msw-ansi-release-static-2.8"/>
 									<listOptionValue builtIn="false" value="c:/wxWidgets-2.8.10/include"/>
-									<listOptionValue builtIn="false" value="&quot;C:\projects\wxctb\include&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.2089251393" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="WX_PRECOMP"/>
@@ -208,7 +205,6 @@
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.mingw.base.879960736" name="MinGW C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.mingw.base"/>
 							<tool command="g++" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GLDErrorParser" id="cdt.managedbuild.tool.gnu.cpp.linker.mingw.base.1724346141" name="MinGW C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.mingw.base">
 								<option id="gnu.cpp.link.option.libs.1612925592" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="wxctb-0.8"/>
 									<listOptionValue builtIn="false" value="gaugeWorks"/>
 									<listOptionValue builtIn="false" value="wx_msw_gl-2.8"/>
 									<listOptionValue builtIn="false" value="opengl32"/>
