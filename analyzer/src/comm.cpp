@@ -76,12 +76,9 @@ CComm* RaceAnalyzerComm::GetSerialPort(){
 
 CComm* RaceAnalyzerComm::OpenSerialPort(){
 
-	wxLogMessage("Open COM%d" ,_serialPortNumber + 1);
-	const char *devName = GetSerialPortDevName(_serialPortNumber);
-	wxLogMessage(devName);
-
+	wxLogMessage("Open Serial port %d" ,_serialPortNumber + 1);
 	CComm* comPort = new CComm();
-	if (!comPort->openPort(_serialPortNumber + 1)){
+	if (!comPort->openPort(comPort->getPortName(_serialPortNumber + 1))){
 			delete ( comPort );
 			throw CommException(CommException::OPEN_PORT_FAILED);
 		}
@@ -170,54 +167,6 @@ void RaceAnalyzerComm::SetSerialPort(int port){
 	}
 }
 
-const char * RaceAnalyzerComm::GetSerialPortDevName(int comPort){
-
-	switch (comPort){
-		case 0:
-			return "COM1";
-		case 1:
-			return "COM2";
-		case 2:
-			return "COM3";
-		case 3:
-			return "COM4";
-		case 4:
-			return "COM5";
-		case 5:
-			return "COM6";
-		case 6:
-			return "COM7";
-		case 7:
-			return "COM8";
-		case 8:
-			return "COM9";
-		case 9:
-			return "COM10";
-		case 10:
-			return "COM11";
-		case 11:
-			return "COM12";
-		case 12:
-			return "COM13";
-		case 13:
-			return "COM14";
-		case 14:
-			return "COM15";
-		case 15:
-			return "COM16";
-		case 16:
-			return "COM17";
-		case 17:
-			return "COM18";
-		case 18:
-			return "COM19";
-		case 19:
-			return "COM20";
-		default:
-			throw CommException(CommException::OPEN_PORT_FAILED);
-	}
-}
-
 int RaceAnalyzerComm::FlushReceiveBuffer(CComm* comPort){
 	comPort->drainInput();
 }
@@ -227,7 +176,7 @@ wxString RaceAnalyzerComm::SendCommand(CComm *comPort, wxString &buffer, int tim
 	wxLogMessage("Send Cmd (%d): %s",buffer.Len(), buffer.ToAscii());
 	wxString response;
 	size_t bufferSize = 8192;
-	comPort->sendCommand(buffer.ToAscii(),wxStringBuffer(response,bufferSize),bufferSize,60000,true);
+	comPort->sendCommand(buffer.ToAscii(),wxStringBuffer(response,bufferSize),bufferSize,DEFAULT_TIMEOUT,true);
 	wxLogMessage("Cmd Response: %s", response.ToAscii());
 	return response;
 }

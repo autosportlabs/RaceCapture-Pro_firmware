@@ -49,27 +49,68 @@ CComm::~CComm()
 // init
 //
 
-bool CComm::openPort( unsigned char nComPort,
+const char * CComm::getPortName(unsigned char portNumber){
+	switch(portNumber){
+	case 1:
+		return "COM1";
+	case 2:
+		return "COM2";
+	case 3:
+		return "COM3";
+	case 4:
+		return "COM4";
+	case 5:
+		return "COM5";
+	case 6:
+		return "COM6";
+	case 7:
+		return "COM7";
+	case 8:
+		return "COM8";
+	case  9:
+		return "COM9";
+	case 10:
+		return "\\\\.\\com10";
+	case 11:
+		return "\\\\.\\com11";
+	case 12:
+		return "\\\\.\\com12";
+	case 13:
+		return "\\\\.\\com13";
+	case 14:
+		return "\\\\.\\com14";
+	case 15:
+		return "\\\\.\\com15";
+	case 16:
+		return "\\\\.\\com16";
+	case 17:
+		return "\\\\.\\com17";
+	case 18:
+		return "\\\\.\\com18";
+	case 19:
+	    return "\\\\.\\com19";
+	case 20:
+	    return "\\\\.\\com20";
+	default:
+		return "";
+	}
+
+}
+
+bool CComm::openPort( const char * comPort,
                                                 DWORD nBaudRate,
                                                 unsigned char nDatabits,
                                                 unsigned char nParity,
                                                 unsigned char nStopbits,
                                                 unsigned char nHandshake )
 {
-        char szComPort[10];
         COMMTIMEOUTS ct;
         DCB dcbCommPort;	// ONESTOPBIT
 
-        // Check com-port data
-        if ( nComPort!= 0 ) {
-                sprintf( szComPort, "\\\\.\\COM%d", nComPort );
-        }
-        else {
-                return false;
-        }
+        if (NULL == comPort) return false;
 
         if ( INVALID_HANDLE_VALUE ==
-                        ( m_hCommPort = CreateFile( szComPort,
+                        ( m_hCommPort = CreateFile( comPort,
                                                                                 GENERIC_READ | GENERIC_WRITE,
                                                                                 0,
                                                                                 NULL,

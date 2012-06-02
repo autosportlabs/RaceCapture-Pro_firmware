@@ -105,13 +105,15 @@ public:
                 \param nStopbits Number of stopbits (defaults to one stopbit).
                 \return True on success.
         */
-        bool openPort( unsigned char nComPort=1,
+        bool openPort( const char * comPort,
                                                         DWORD nBaudRate = CBR_115200,
                                                         unsigned char nDatabits = 8,
                                                         unsigned char nParity= NOPARITY,
                                                         unsigned char nStopbits=ONESTOPBIT,
                                                         unsigned char nHandshake = HANDSHAKE_NONE );
 
+
+        const char * getPortName(unsigned char portNumber);
 
         void closePort( void );
 

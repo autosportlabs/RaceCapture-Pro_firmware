@@ -24,7 +24,7 @@ class RaceAnalyzerComm {
 
 	private:
 
-		static const int DEFAULT_TIMEOUT = 5000;
+		static const int DEFAULT_TIMEOUT = 1000;
 		wxLogStderr *_logger;
 		FILE *_logfile;
 
@@ -60,7 +60,6 @@ class RaceAnalyzerComm {
 		int 			_serialPortNumber;
 		CComm* 			_serialPort;
 
-		const char 				* GetSerialPortDevName(int comPort);
 		wxMutex					_commMutex;
 };
 

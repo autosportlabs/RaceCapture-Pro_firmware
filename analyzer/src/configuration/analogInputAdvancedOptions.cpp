@@ -83,7 +83,7 @@ void AnalogInputAdvancedDialog::CreateControls(){
 	analogScalingOptionsSizer->AddSpacer(10);
 
 	wxFlexGridSizer* optionsSizer = new wxFlexGridSizer(3,3,6,6);
-	optionsSizer->Add(new wxRadioButton(this,ANALOG_SCALING_RAW_RADIO,"Raw Value (0 - 4095)",wxDefaultPosition,wxDefaultSize,wxRB_GROUP));
+	optionsSizer->Add(new wxRadioButton(this,ANALOG_SCALING_RAW_RADIO,"Raw Value (0 - 1023)",wxDefaultPosition,wxDefaultSize,wxRB_GROUP));
 	optionsSizer->AddStretchSpacer(1);
 	optionsSizer->AddStretchSpacer(1);
 
