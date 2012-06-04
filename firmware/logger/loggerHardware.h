@@ -60,7 +60,6 @@ void ReadAllADC(unsigned int *a0,
 //Read specified ADC channel												
 unsigned int ReadADC(unsigned int channel);
 
-
 //PWM Channel Functions
 void InitPWM(LoggerConfig *loggerConfig);
 void EnablePWMChannel(unsigned int channel, PWMConfig *config);

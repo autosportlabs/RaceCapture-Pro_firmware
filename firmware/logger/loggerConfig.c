@@ -285,8 +285,14 @@ AccelConfig * getAccelConfigChannel(int channel){
 }
 
 void setLabelGeneric(char *dest, const char *source){
-	strncpy(dest ,source ,DEFAULT_LABEL_LENGTH);
-	dest[DEFAULT_LABEL_LENGTH - 1] = 0;
+
+	const char *from = source;
+	if (*from == '"') from++;
+	int len = strlen(from);
+	if (*(from + len -1) == '"') len--;
+	if (len > DEFAULT_LABEL_LENGTH) len = DEFAULT_LABEL_LENGTH;
+	strncpy(dest ,from, len);
+	dest[len] = '\0';
 }
 
 void calibrateAccelZero(){

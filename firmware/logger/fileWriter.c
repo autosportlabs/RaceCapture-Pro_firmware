@@ -103,6 +103,7 @@ static void writeSampleRecord(FIL * logfile, SampleRecord * sampleRecord){
 
 static int openNextLogFile(FIL *f){
 
+	//taskENTER_CRITICAL();
 	char filename[13];
 	int i = 0;
 	int rc;
@@ -116,6 +117,7 @@ static int openNextLogFile(FIL *f){
 		if ( rc == 0 ) break;
 		f_close(f);
 	}
+	//taskEXIT_CRITICAL();
 	if (i >= MAX_LOG_FILE_INDEX) return -2;
 	return rc;
 }
