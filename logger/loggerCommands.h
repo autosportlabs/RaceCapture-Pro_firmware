@@ -17,32 +17,32 @@ extern const struct cmd_t g_loggerCommands[];
 {"testSD", "Test Write to SD card.","<lineWrites>", TestSD}, \
 {"flashLoggerCfg", "Write the active Logger Configuration to flash.","", FlashLoggerConfig}, \
 \
-{"getOutputConfig", "Gets the Output Configuration","",GetLoggerOutputConfig}, \
-{"setOutputConfig", "Sets the Output Configuration","[sdLoggingMode] [telemetryMode] [p2pDestAddrHigh] [p2pDestAddrLow]",SetLoggerOutputConfig}, \
+{"getOutputCfg", "Gets the Output Configuration","",GetLoggerOutputConfig}, \
+{"setOutputCfg", "Sets the Output Configuration","[sdLoggingMode] [telemetryMode] [p2pDestAddrHigh] [p2pDestAddrLow]",SetLoggerOutputConfig}, \
 \
-{"getAnalogConfig", "Gets the configuration for the specified analog channel","<channel>", GetAnalogConfig}, \
-{"setAnalogConfig", "Sets the configuration for the specified analog channel","<channel> [label] [units] [sampleRate] [loggingPrecision] [scalingMode] [linearScaling] < [mapRaw_0] [mapRaw_1] [mapRaw_2] [mapRaw_3] [mapRaw_4] [mapScaled_0] [mapScaled_1] [mapScaled_2] [mapScaled_3] [mapScaled_4] >",SetAnalogConfig}, \
+{"getAnalogCfg", "Gets the configuration for the specified analog channel","<channel>", GetAnalogConfig}, \
+{"setAnalogCfg", "Sets the configuration for the specified analog channel","<channel> [label] [units] [sampleRate] [loggingPrecision] [scalingMode] [linearScaling] < [mapRaw_0] [mapRaw_1] [mapRaw_2] [mapRaw_3] [mapRaw_4] [mapScaled_0] [mapScaled_1] [mapScaled_2] [mapScaled_3] [mapScaled_4] >",SetAnalogConfig}, \
 \
-{"getPwmConfig","Gets the configuration for the specified PWM/Analog Output channel.","<channel>",GetPwmConfig}, \
-{"setPwmConfig","Sets the configuration for the specified PWM/Analog Output channel.","<channel> [label] [units] [sampleRate] [loggingPrecision] [outputMode] [loggingMode] [startupDutyCycle] [startupPeriod] [voltageScaling]",SetPwmConfig}, \
+{"getPwmCfg","Gets the configuration for the specified PWM/Analog Output channel.","<channel>",GetPwmConfig}, \
+{"setPwmCfg","Sets the configuration for the specified PWM/Analog Output channel.","<channel> [label] [units] [sampleRate] [loggingPrecision] [outputMode] [loggingMode] [startupDutyCycle] [startupPeriod] [voltageScaling]",SetPwmConfig}, \
 \
 {"setPwmClockFreq", "Sets the PWM clock frequency for the specified channel.","<frequency>", SetPwmClockFreq}, \
 {"getPwmClockFreq", "Gets the PWM clock frequency for the specified channel.","", GetPwmClockFreq}, \
 \
-{"getGpsConfig", "Gets the configuration for Gps features","",GetGpsConfig}, \
-{"setGpsConfig", "Sets the configuration for Gps features","[installed] [label_lat] [units_lat] [sampleRate_lat] [label_long] [units_long] [sampleRate_long] [label_vel] [units_vel] [sampleRate_vel] [label_time] [units_time] [sampleRate_time] [label_qual] [units_qual] [sampleRate_qual] [label_sats] [units_sats] [sampleRate_sats]",SetGpsConfig}, \
+{"getGpsCfg", "Gets the configuration for Gps features","",GetGpsConfig}, \
+{"setGpsCfg", "Sets the configuration for Gps features","[installed] [label_lat] [units_lat] [sampleRate_lat] [label_long] [units_long] [sampleRate_long] [label_vel] [units_vel] [sampleRate_vel] [label_time] [units_time] [sampleRate_time] [label_qual] [units_qual] [sampleRate_qual] [label_sats] [units_sats] [sampleRate_sats]",SetGpsConfig}, \
 \
-{"getStartFinishConfig", "Gets the start/finish line configuration","",GetStartFinishConfig}, \
-{"setStartFinishConfig", "Sets the start/finish line configuration","[label_lapCount] [units_lapCount] [sampleRate_lapCount] [label_lapTime] [units_lapTime] [sampleRate_lapTime] [startFinishLat] [startFinishLong] [startFinishRadius]",SetStartFinishConfig}, \
+{"getStartFinishCfg", "Gets the start/finish line configuration","",GetStartFinishConfig}, \
+{"setStartFinishCfg", "Sets the start/finish line configuration","[label_lapCount] [units_lapCount] [sampleRate_lapCount] [label_lapTime] [units_lapTime] [sampleRate_lapTime] [startFinishLat] [startFinishLong] [startFinishRadius]",SetStartFinishConfig}, \
 \
-{"getGpioConfig","Gets the configuration for the specified GPIO port.","<port>", GetGpioConfig}, \
-{"setGpioConfig","Sets the configuration for the specified GPIO port.","<port> [label] [units] [sampleRate] [mode]", SetGpioConfig}, \
+{"getGpioCfg","Gets the configuration for the specified GPIO port.","<port>", GetGpioConfig}, \
+{"setGpioCfg","Sets the configuration for the specified GPIO port.","<port> [label] [units] [sampleRate] [mode]", SetGpioConfig}, \
 \
-{"getTimerConfig", "Gets the configuration for the specified timer channel.","<channel>", GetTimerConfig}, \
-{"setTimerConfig", "Sets the configuration for the specified timer channel.","<channel> [label] [units] [sampleRate] [loggingPrecision] [slowTimerEnabled] [mode] [pulsePerRevolution] [timerDivider] [scaling]", SetTimerConfig}, \
+{"getTimerCfg", "Gets the configuration for the specified timer channel.","<channel>", GetTimerConfig}, \
+{"setTimerCfg", "Sets the configuration for the specified timer channel.","<channel> [label] [units] [sampleRate] [loggingPrecision] [slowTimerEnabled] [mode] [pulsePerRevolution] [timerDivider] [scaling]", SetTimerConfig}, \
 \
-{"getAccelConfig", "Gets the configuration for the specified accelerometer channel.","<channel>",GetAccelConfig}, \
-{"setAccelConfig", "Sets the configuration for the specified accelerometer channel.","<channel> [label] [units] [sampleRate] [mode] [accelChannel] [zeroValue]",SetAccelConfig}, \
+{"getAccelCfg", "Gets the configuration for the specified accelerometer channel.","<channel>",GetAccelConfig}, \
+{"setAccelCfg", "Sets the configuration for the specified accelerometer channel.","<channel> [label] [units] [sampleRate] [mode] [accelChannel] [zeroValue]",SetAccelConfig}, \
 \
 {"getAccelInstalled", "Gets the installed state of the accelerometer.","", GetAccelInstalled}, \
 {"setAccelInstalled", "Sets the installed state of the accelerometer.","<installed>", SetAccelInstalled}, \

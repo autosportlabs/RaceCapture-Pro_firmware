@@ -5,6 +5,7 @@
 #include "queue.h"
 #include "semphr.h"
 #include "loggerHardware.h"
+#include "loggerData.h"
 #include "luaLoggerBinding.h"
 #include "usb_comm.h"
 #include "modp_numtoa.h"
@@ -320,7 +321,21 @@ void writeADC(portTickType currentTicks, LoggerConfig *config){
 		ADCConfig *ac = &(config->ADCConfigs[i]);
 		portTickType sr = ac->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) lineAppendFloat(ac->linearScaling * (float)adc[i],DEFAULT_ADC_LOGGING_PRECISION);
+			if ((currentTicks % sr) == 0){
+				float analogValue = 0;
+				switch(ac->scalingMode){
+				case SCALING_MODE_RAW:
+					analogValue = adc[i];
+					break;
+				case SCALING_MODE_LINEAR:
+					analogValue = (ac->linearScaling * (float)adc[i]);
+					break;
+				case SCALING_MODE_MAP:
+					analogValue = GetMappedValue((float)adc[i],&(ac->scalingMap));
+					break;
+				}
+				lineAppendFloat(analogValue,ac->loggingPrecision);
+			}
 			lineAppendString(",");
 		}
 	}

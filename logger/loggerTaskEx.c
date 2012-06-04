@@ -13,6 +13,7 @@
 #include "sampleRecord.h"
 #include "loggerTaskEx.h"
 #include "loggerHardware.h"
+#include "loggerData.h"
 #include "accelerometer.h"
 #include "luaLoggerBinding.h"
 #include "gps.h"
@@ -24,7 +25,6 @@
 #define IDLE_TIMEOUT						configTICK_RATE_HZ / 1
 
 int g_loggingShouldRun;
-
 xSemaphoreHandle g_xLoggerStart;
 
 void createLoggerTaskEx(){
@@ -71,7 +71,19 @@ static void writeADC(SampleRecord *sampleRecord, portTickType currentTicks, Logg
 		portTickType sr = ac->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
-				sampleRecord->ADCSamples[i].floatValue = (ac->linearScaling * (float)adc[i]);
+				float analogValue = 0;
+				switch(ac->scalingMode){
+				case SCALING_MODE_RAW:
+					analogValue = adc[i];
+					break;
+				case SCALING_MODE_LINEAR:
+					analogValue = (ac->linearScaling * (float)adc[i]);
+					break;
+				case SCALING_MODE_MAP:
+					analogValue = GetMappedValue((float)adc[i],&(ac->scalingMap));
+					break;
+				}
+				sampleRecord->ADCSamples[i].floatValue = analogValue;
 			}
 		}
 	}

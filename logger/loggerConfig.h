@@ -182,7 +182,7 @@ typedef struct _PWMConfig{
 	float voltageScaling;
 } PWMConfig;
 
-#define VOLTAGE_SCALING_PRECISION			2
+#define VOLTAGE_SCALING_PRECISION			4
 /// PWM frequency in Hz.
 #define MAX_PWM_CLOCK_FREQUENCY             2000
 #define MIN_PWM_CLOCK_FREQUENCY				10

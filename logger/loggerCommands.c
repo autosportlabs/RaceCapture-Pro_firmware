@@ -10,6 +10,7 @@
 #include "modp_numtoa.h"
 #include "modp_atonum.h"
 #include "loggerConfig.h"
+#include "loggerHardware.h"
 #include "sdcard.h"
 
 void TestSD(unsigned int argc, char **argv){

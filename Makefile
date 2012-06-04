@@ -107,6 +107,7 @@ $(ACCELEROMETER_SRC_DIR)/accelerometer.c \
 $(LOGGER_SRC_DIR)/sampleRecord.c \
 $(LOGGER_SRC_DIR)/fileWriter.c \
 $(LOGGER_SRC_DIR)/loggerHardware.c \
+$(LOGGER_SRC_DIR)/loggerData.c \
 $(LOGGER_SRC_DIR)/gpioTasks.c \
 $(LOGGER_SRC_DIR)/loggerTask.c \
 $(LOGGER_SRC_DIR)/loggerTaskEx.c \
