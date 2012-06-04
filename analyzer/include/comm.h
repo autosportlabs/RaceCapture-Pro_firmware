@@ -4,10 +4,16 @@
 #include "configData.h"
 #include "comm_win32.h"
 #include "raceCapture/raceCaptureConfig.h"
+#include "commonEvents.h"
 
+class RaceAnalyzerCommCallback : public ProgresssReceiver{
+public:
+	virtual void ReadConfigComplete(bool success, wxString msg) = 0;
+	virtual void WriteConfigComplete(bool success, wxString msg) = 0;
+	virtual void FlashConfigComplete(bool success, wxString msg) = 0;
+};
 
 class RaceAnalyzerComm {
-
 
 	public:
 		RaceAnalyzerComm();
@@ -19,8 +25,10 @@ class RaceAnalyzerComm {
 		void reloadScript(void);
 		void populateChannelConfig(ChannelConfig &cfg, wxString suffix, wxString &data);
 		void populateChannelConfig(ChannelConfig &cfg, wxString &data);
-		void readConfig(RaceCaptureConfig &config);
-		void writeConfig(RaceCaptureConfig &config);
+		void flashCurrentConfig();
+		void readConfig(RaceCaptureConfig *config, RaceAnalyzerCommCallback *callback);
+		void writeConfig(RaceCaptureConfig *config, RaceAnalyzerCommCallback *callback);
+		void updateWriteConfigPct(int count, RaceAnalyzerCommCallback *callback);
 
 	private:
 
@@ -35,19 +43,19 @@ class RaceAnalyzerComm {
 
 		CComm* OpenSerialPort();
 		CComm* GetSerialPort();
-		void checkThrowResult(wxString &result);
+		void CheckThrowResult(wxString &result);
 		int FlushReceiveBuffer(CComm * comPort);
 		int ReadLine(CComm * comPort, wxString &buffer, int timeout);
 		int WriteLine(CComm * comPort, wxString &buffer, int timeout);
 		wxString SendCommand(CComm *comPort, wxString &buffer, int timeout = DEFAULT_TIMEOUT);
-		void unescape(wxString &data);
-		void escape(wxString &data);
-		int getIntParam(wxString &data, const wxString &name);
-		float getFloatParam(wxString &data,const wxString &name);
-		wxString getParam(wxString &data, const wxString &name);
-		void hideInnerTokens(wxString &data);
-		void unhideInnerTokens(wxString &data);
-		void swapCharsInsideQuotes(wxString &data, char find,char replace);
+		void Unescape(wxString &data);
+		void Escape(wxString &data);
+		int GetIntParam(wxString &data, const wxString &name);
+		float GetFloatParam(wxString &data,const wxString &name);
+		wxString GetParam(wxString &data, const wxString &name);
+		void HideInnerTokens(wxString &data);
+		void UnhideInnerTokens(wxString &data);
+		void SwapCharsInsideQuotes(wxString &data, char find,char replace);
 
 		wxString AppendStringParam(wxString &cmd, wxString param);
 		wxString AppendFloatParam(wxString &cmd, float param);
@@ -60,7 +68,29 @@ class RaceAnalyzerComm {
 		int 			_serialPortNumber;
 		CComm* 			_serialPort;
 
-		wxMutex					_commMutex;
+		wxMutex			_commMutex;
+};
+
+class AsyncRaceAnalyzerComm : public wxThread{
+
+public:
+
+	static const int ACTION_READ_CONFIG = 0;
+	static const int ACTION_WRITE_CONFIG = 1;
+	static const int ACTION_FLASH_CONFIG = 2;
+
+	void Create(RaceAnalyzerComm *comm, RaceCaptureConfig *config, RaceAnalyzerCommCallback *progress);
+	void Run(int action);
+	void * Entry();
+
+private:
+	void WriteConfig();
+
+	int m_action;
+	RaceAnalyzerComm *m_comm;
+	RaceCaptureConfig *m_config;
+	RaceAnalyzerCommCallback *m_callback;
+	wxWindow *m_parent;
 };
 
 class CommException{

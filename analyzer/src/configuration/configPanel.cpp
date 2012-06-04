@@ -1,9 +1,3 @@
-/*
- * ConfigPanel.cpp
- *
- *  Created on: Apr 30, 2009
- *      Author: brent
- */
 #include "configuration/configPanel.h"
 
 enum{
@@ -13,7 +7,6 @@ enum{
 	ID_FLASH_CONFIG,
 	ID_READWRITE_PROGRESS
 };
-
 
 ConfigPanel::ConfigPanel() : wxPanel()
 {
@@ -42,6 +35,7 @@ ConfigPanel::~ConfigPanel(){
 }
 
 void ConfigPanel::InitComponents(){
+
 
 	wxFlexGridSizer *sizer = new wxFlexGridSizer(2,1,3,3);
 	sizer->AddGrowableCol(0);
@@ -84,8 +78,8 @@ void ConfigPanel::InitComponents(){
 
 	wxButton *readButton = new wxButton(this,ID_BUTTON_READ_CONFIG,"Read");
 	wxButton *writeButton = new wxButton(this, ID_BUTTON_WRITE_CONFIG,"Write");
-	wxCheckBox *flashConfig = new wxCheckBox(this,ID_FLASH_CONFIG,"Also Flash Configuration");
-	flashConfig->SetValue(true);
+	m_alsoFlashConfigCheckBox = new wxCheckBox(this,ID_FLASH_CONFIG,"Also Flash Configuration");
+	m_alsoFlashConfigCheckBox->SetValue(true);
 
 	wxGridSizer *buttonBarSizer = new wxGridSizer(1,2,3,3);
 
@@ -94,14 +88,13 @@ void ConfigPanel::InitComponents(){
 	leftButtonSizer->Add(readButton,0,wxALIGN_LEFT | wxALL);
 	leftButtonSizer->Add(writeButton,0,wxALIGN_RIGHT | wxALL);
 	leftButtonSizer->AddSpacer(10);
-	leftButtonSizer->Add(flashConfig,0,wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL | wxALL);
+	leftButtonSizer->Add(m_alsoFlashConfigCheckBox,0,wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL | wxALL);
 
 	buttonBarSizer->Add(leftButtonSizer,1,wxEXPAND | wxALL);
 
 	sizer->Add(buttonBarSizer,1,wxEXPAND);
 	this->SetSizer(sizer);
 }
-
 
 void ConfigPanel::InitOptions(){
 
@@ -112,8 +105,38 @@ void ConfigPanel::SetComm(RaceAnalyzerComm *comm){
 }
 
 void ConfigPanel::OnReadConfig(wxCommandEvent &event){
-	try{
-		m_comm->readConfig(m_raceCaptureConfig);
+	UpdateStatus("Reading Configuration");
+	m_asyncComm = new AsyncRaceAnalyzerComm();
+	m_asyncComm->Create(m_comm, &m_raceCaptureConfig,this);
+	m_asyncComm->Run(AsyncRaceAnalyzerComm::ACTION_READ_CONFIG);
+}
+
+void ConfigPanel::OnWriteConfig(wxCommandEvent &event){
+	UpdateStatus("Writing Configuration");
+	m_asyncComm = new AsyncRaceAnalyzerComm();
+	m_asyncComm->Create(m_comm, &m_raceCaptureConfig,this);
+	m_asyncComm->Run(AsyncRaceAnalyzerComm::ACTION_WRITE_CONFIG);
+}
+
+void ConfigPanel::UpdateStatus(wxString msg){
+	wxCommandEvent evt(UPDATE_STATUS_EVENT, UPDATE_STATUS);
+	evt.SetString(msg);
+	GetParent()->AddPendingEvent(evt);
+}
+
+void ConfigPanel::UpdateActivity(wxString msg){
+	wxCommandEvent evt(UPDATE_ACTIVITY_EVENT, UPDATE_ACTIVITY);
+	evt.SetString(msg);
+	GetParent()->AddPendingEvent(evt);
+}
+
+void ConfigPanel::OnProgress(int pct){
+	UpdateActivity(wxString::Format("Progress: %d%%",pct));
+}
+
+void ConfigPanel::ReadConfigComplete(bool success, wxString msg){
+	if (success){
+		UpdateStatus("Read Configuration Complete");
 		m_analogInputPanel->OnConfigUpdated();
 		m_timerInputPanel->OnConfigUpdated();
 		m_accelInputPanel->OnConfigUpdated();
@@ -122,20 +145,45 @@ void ConfigPanel::OnReadConfig(wxCommandEvent &event){
 		m_gpsPanel->OnConfigUpdated();
 		m_loggerOutputPanel->OnConfigUpdated();
 	}
-	catch(CommException &e){
-		wxLogMessage("Error reading configuration: %s", e.GetErrorMessage().ToAscii());
+	else{
+		UpdateStatus(wxString::Format("Read Configuration Failed: %s",msg.ToAscii()));
 	}
 }
 
-void ConfigPanel::OnWriteConfig(wxCommandEvent &event){
-	try{
-		m_comm->writeConfig(m_raceCaptureConfig);
+void ConfigPanel::WriteConfigComplete(bool success, wxString msg){
+	if (success){
+		UpdateStatus("Write Configuration Complete");
+		if (m_alsoFlashConfigCheckBox->GetValue()) m_comm->flashCurrentConfig();
+	}
+	else{
+		UpdateStatus(wxString::Format("Write Configuration Failed: %s",msg.ToAscii()));
+	}
+}
 
+void ConfigPanel::FlashConfigComplete(bool success, wxString msg){
+	if (success){
+		UpdateStatus("Configuration Flashed");
+	}
+	else{
+		UpdateActivity(wxString::Format("Configuration Flash Failed: %s",msg.ToAscii()));
+	}
+}
+
+/*
+void ConfigPanel::OnStartWrite(wxTimerEvent &event){
+	try{
+		m_comm->writeConfig(m_raceCaptureConfig,this);
+		UpdateStatus("Configuration Written");
+		if (m_alsoFlashConfigCheckBox->GetValue()){
+			m_comm->flashCurrentConfig();
+			UpdateStatus("Configuration Flashed");
+		}
 	}
 	catch(CommException &e){
 		wxLogMessage("Error writing configuration: %s", e.GetErrorMessage().ToAscii());
 	}
 }
+*/
 
 BEGIN_EVENT_TABLE ( ConfigPanel, wxPanel )
 	EVT_BUTTON(ID_BUTTON_READ_CONFIG,ConfigPanel::OnReadConfig)

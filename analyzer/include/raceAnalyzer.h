@@ -122,9 +122,10 @@ class MainFrame : public wxFrame
 	void OnAddAnalogGauge(wxCommandEvent &event);
 	void OnAddDigitalGauge(wxCommandEvent &event);
 	void OnAddGPSView(wxCommandEvent &event);
+	void OnUpdateStatus(wxCommandEvent &event);
+	void OnUpdateActivity(wxCommandEvent &event);
 
  public:
-
 
 	void OpenRaceEvent(wxString fileName);
     MainFrame( const wxString &title, const wxPoint &pos, const wxSize &size );

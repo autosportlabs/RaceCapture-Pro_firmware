@@ -3,6 +3,7 @@
 
 #include "wx/wxprec.h"
 #include "wx/treebook.h"
+#include "commonEvents.h"
 #include "raceAnalyzerConfigBase.h"
 #include "raceCapture/raceCaptureConfig.h"
 #include "configuration/analogInputPanel.h"
@@ -12,10 +13,9 @@
 #include "configuration/loggerOutputConfigPanel.h"
 #include "configuration/gpioPanel.h"
 #include "configuration/gpsConfigPanel.h"
-#include "commonEvents.h"
 #include "comm.h"
 
-class ConfigPanel : public wxPanel{
+class ConfigPanel : public wxPanel, public RaceAnalyzerCommCallback{
 
 	public:
 		ConfigPanel();
@@ -32,6 +32,12 @@ class ConfigPanel : public wxPanel{
 
 		void SetComm(RaceAnalyzerComm *comm);
 
+		void OnProgress(int pct);
+		void ReadConfigComplete(bool success, wxString msg);
+		void WriteConfigComplete(bool success, wxString msg);
+		void FlashConfigComplete(bool success, wxString msg);
+
+
 		//event handlers
 	private:
 
@@ -39,9 +45,13 @@ class ConfigPanel : public wxPanel{
 		void OnWriteConfig(wxCommandEvent &event);
 		void InitComponents();
 		void InitOptions();
+		void UpdateActivity(wxString msg);
+		void UpdateStatus(wxString msg);
+
 
 		wxPanel *m_configSettings;
 		wxTreebook *m_configNavigation;
+		wxCheckBox *m_alsoFlashConfigCheckBox;
 		AnalogInputPanel *m_analogInputPanel;
 		PulseInputPanel *m_timerInputPanel;
 		AccelInputPanel *m_accelInputPanel;
@@ -50,8 +60,9 @@ class ConfigPanel : public wxPanel{
 		GpsConfigPanel *m_gpsPanel;
 		LoggerOutputConfigPanel *m_loggerOutputPanel;
 
-		RaceCaptureConfig m_raceCaptureConfig;
 
+		RaceCaptureConfig m_raceCaptureConfig;
+		AsyncRaceAnalyzerComm * m_asyncComm;
 		RaceAnalyzerComm *m_comm;
 
 

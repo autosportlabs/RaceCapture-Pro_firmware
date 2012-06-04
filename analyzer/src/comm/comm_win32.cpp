@@ -330,21 +330,21 @@ size_t CComm::sendCommand(const char *cmd, char *rsp, size_t rspSize, size_t tim
 	//send the command
 	size_t cmdLen = strlen(cmd);
 	size_t written = 0;
-	while (written < cmdLen){
+	size_t tstart = GetTickCount();
+	while ((GetTickCount() - tstart) < timeout && written < cmdLen){
 		written += writeBuffer((cmd + written),cmdLen - written);
 	}
-	while(!writeChar('\r'));
+	while((GetTickCount() - tstart) < timeout && !writeChar('\r'));
 
 	//optionally absorb the command echo
 	if (absorbEcho){
-		readLine(rsp,rspSize,timeout);
+		readLine(rsp,rspSize,tstart + GetTickCount());
 		if (strncmp(rsp,cmd,cmdLen) != 0){
 			//throw an error if command doesn't match?
 		}
 	}
-
 	//read the response
-	return readLine(rsp,rspSize,timeout);
+	return readLine(rsp,rspSize,tstart + GetTickCount());
 }
 
 /////////////////////////////////////////////////////////////////////////////

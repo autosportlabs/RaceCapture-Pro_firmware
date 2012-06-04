@@ -409,19 +409,19 @@ void MainFrame::OnSwitchView(wxCommandEvent &event){
 }
 
 void MainFrame::SetActivityMessage(const wxString& message){
-	SetStatusText(message,0);
-}
-
-void MainFrame::SetStatusMessage(const wxString& message){
 	SetStatusText(message,1);
 }
 
+void MainFrame::SetStatusMessage(const wxString& message){
+	SetStatusText(message,0);
+}
+
 void MainFrame::ClearStatusMessage(){
-	SetStatusText("",1);
+	SetStatusMessage("");
 }
 
 void MainFrame::ClearActivityMessage(){
-	SetStatusText("",0);
+	SetActivityMessage("");
 }
 
 
@@ -836,9 +836,15 @@ void MainFrame::OnAddGPSView(wxCommandEvent &event){
 	DatalogChannelSelectionSet *addData = (DatalogChannelSelectionSet *)event.GetClientData();
 	AddGPSView(addData);
 	delete addData;
-
 }
 
+void MainFrame::OnUpdateStatus(wxCommandEvent &event){
+	SetStatusMessage(event.GetString());
+}
+
+void MainFrame::OnUpdateActivity(wxCommandEvent &event){
+	SetActivityMessage(event.GetString());
+}
 
 BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
   	EVT_CLOSE (MainFrame::OnExit)
@@ -861,7 +867,6 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 
 	EVT_WIZARD_FINISHED(wxID_ANY, MainFrame::OnImportWizardFinished)
 
-
 	EVT_MENU(ID_ADD_LINE_CHART, MainFrame::OnAddLineChart)
 
 	EVT_COMMAND(ADD_NEW_LINE_CHART, ADD_NEW_LINE_CHART_EVENT, MainFrame::OnAddLineChart)
@@ -869,6 +874,8 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 	EVT_COMMAND(ADD_NEW_DIGITAL_GAUGE, ADD_NEW_DIGITAL_GAUGE_EVENT, MainFrame::OnAddDigitalGauge)
 	EVT_COMMAND(ADD_NEW_GPS_VIEW, ADD_NEW_GPS_VIEW_EVENT, MainFrame::OnAddGPSView)
 
+	EVT_COMMAND(UPDATE_STATUS, UPDATE_STATUS_EVENT, MainFrame::OnUpdateStatus)
+	EVT_COMMAND(UPDATE_ACTIVITY, UPDATE_ACTIVITY_EVENT, MainFrame::OnUpdateActivity)
 
 	//this must always be last
 	EVT_MENU_RANGE(ID_PERSPECTIVES, ID_PERSPECTIVES + MAX_PERSPECTIVES, MainFrame::OnSwitchView)
