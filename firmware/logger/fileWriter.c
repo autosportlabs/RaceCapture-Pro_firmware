@@ -103,7 +103,6 @@ static void writeSampleRecord(FIL * logfile, SampleRecord * sampleRecord){
 
 static int openNextLogFile(FIL *f){
 
-	//taskENTER_CRITICAL();
 	char filename[13];
 	int i = 0;
 	int rc;
@@ -117,7 +116,6 @@ static int openNextLogFile(FIL *f){
 		if ( rc == 0 ) break;
 		f_close(f);
 	}
-	//taskEXIT_CRITICAL();
 	if (i >= MAX_LOG_FILE_INDEX) return -2;
 	return rc;
 }
@@ -132,15 +130,22 @@ void fileWriterTask(void *params){
 		//wait for the next sample record
 		xQueueReceive(g_sampleRecordQueue, &(sr), portMAX_DELAY);
 
-		ToggleLED(LED3);
 		if (NULL != sr && 0 == g_writingActive){
 			//start of a new logfile
+
 			int rc = InitFS();
-			if (0 != rc) continue;
+			if (0 != rc){
+				EnableLED(LED3);
+			}
 
 			//open next log file
 			rc = openNextLogFile(&g_logfile);
-			if (0 != rc) continue;
+			if (0 != rc){
+				SendString("Failed to open file ");
+				SendInt(rc);
+				SendCrlf();
+				EnableLED(LED3);
+			}
 
 			g_writingActive = 1;
 			writeHeaders(&g_logfile,sr);
@@ -159,6 +164,7 @@ void fileWriterTask(void *params){
 			}
 			else{
 				f_close(&g_logfile);
+				UnmountFS();
 				g_writingActive = 0;
 				DisableLED(LED3);
 			}
