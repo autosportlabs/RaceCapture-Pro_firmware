@@ -12,6 +12,31 @@
 #include "loggerConfig.h"
 #include "loggerHardware.h"
 #include "sdcard.h"
+#include "loggerData.h"
+#include "sampleRecord.h"
+
+void SampleData(unsigned int argc, char **argv){
+	SampleRecord sr;
+	LoggerConfig * config = getWorkingLoggerConfig();
+	initSampleRecord(config, &sr);
+	populateSampleRecord(&sr,0,config);
+
+	for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
+		ChannelSample *sample = &(sr.Samples[i]);
+		ChannelConfig * channelConfig = sample->channelConfig;
+
+		if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
+		if (sample->intValue == NIL_SAMPLE) continue;
+
+		int precision = sample->precision;
+		if (precision > 0){
+			SendNameFloat(channelConfig->label,sample->floatValue,precision);
+		}
+		else{
+			SendNameInt(channelConfig->label,sample->intValue);
+		}
+	}
+}
 
 void TestSD(unsigned int argc, char **argv){
 
