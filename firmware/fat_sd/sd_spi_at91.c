@@ -737,6 +737,9 @@ DSTATUS disk_initialize (
 	if (drv) return STA_NOINIT;			/* Supports only single drive */
 	if (get_SOCKINS()) return STA_NODISK;
 
+	// slow during init
+	if_spiSetSpeed(0xFE);
+
 	for (n = 10; n; n--) rcvr_spi();	/* 80 dummy clocks */
 
 	ty = 0;
@@ -745,7 +748,7 @@ DSTATUS disk_initialize (
 		if (send_cmd(CMD8, 0x1AA) == 1) {	/* SDHC */
 			for (n = 0; n < 4; n++) ocr[n] = rcvr_spi();		/* Get trailing return value of R7 resp */
 			if (ocr[2] == 0x01 && ocr[3] == 0xAA) {				/* The card can work at vdd range of 2.7-3.6V */
-				unsigned int attempts = 32000;
+				unsigned int attempts = 3200;
 				while (attempts-- && send_cmd(ACMD41, 1UL << 30));	/* Wait for leaving idle state (ACMD41 with HCS bit) */
 				if (attempts && send_cmd(CMD58, 0) == 0) {		/* Check CCS bit in the OCR */
 					for (n = 0; n < 4; n++) ocr[n] = rcvr_spi();
@@ -758,7 +761,7 @@ DSTATUS disk_initialize (
 			} else {
 				ty = CT_MMC; cmd = CMD1;		/* MMC */
 			}
-			unsigned int attempts = 32000;
+			unsigned int attempts = 3200;
 			while (attempts-- && send_cmd(cmd, 0));			/* Wait for leaving idle state */
 			if (attempts || send_cmd(CMD16, 512) != 0)	ty = 0; /* Set R/W block length to 512 */
 		}

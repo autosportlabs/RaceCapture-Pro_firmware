@@ -16,14 +16,6 @@ void InitFSHardware(void){
 
 int InitFS(){
 	taskENTER_CRITICAL();
-	//TODO - we need to re-init the hardware in cases of
-	//write once at SD insertion / fresh reset
-	//remove / re-insert SD
-	//attempt to write again. (error would occur)
-	//the re-init of the hardware seems to solve this.
-	//Probably not needing the SPI init, but init around the SD card.
-	//Investigate splitting this out into a better SD card init
-	disk_init_hardware();
 	int res = disk_initialize(0);
 	if (0 == res){
 		res = f_mount(0, &Fatfs[0]);
