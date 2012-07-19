@@ -7,6 +7,7 @@
 #include "queue.h"
 #include "semphr.h"
 #include "loggerConfig.h"
+#include "loggerData.h"
 #include "gps.h"
 #include "accelerometer.h"
 #include "usb_comm.h"
@@ -942,15 +943,26 @@ int Lua_GetAnalogChannelScaling(lua_State *L){
 
 
 int Lua_GetAnalog(lua_State *L){
-	float result = -1;
+	float analogValue = -1;
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
-		ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
-		if (NULL != c){
-			result = c->linearScaling * ReadADC(channel);
+		ADCConfig *ac = getADCConfigChannel(lua_tointeger(L,1));
+		if (NULL != ac){
+			unsigned int adcRaw = ReadADC(channel);
+			switch(ac->scalingMode){
+			case SCALING_MODE_RAW:
+				analogValue = adcRaw;
+				break;
+			case SCALING_MODE_LINEAR:
+				analogValue = (ac->linearScaling * (float)adcRaw);
+				break;
+			case SCALING_MODE_MAP:
+				analogValue = GetMappedValue((float)adcRaw,&(ac->scalingMap));
+				break;
+			}
 		}
 	}
-	lua_pushnumber(L,result);
+	lua_pushnumber(L, analogValue);
 	return 1;
 }
 
