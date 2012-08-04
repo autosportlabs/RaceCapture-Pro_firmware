@@ -9,7 +9,6 @@
 #include "task.h"
 
 
-
 void ShowTaskInfo(unsigned int argc, char **argv){
 
 	SendString("Task Info");
@@ -26,4 +25,10 @@ void ShowTaskInfo(unsigned int argc, char **argv){
 		SendString("Out of Memory!");
 	}
 	SendCrlf();
+}
+
+void GetVersion(unsigned int argc, char **argv){
+	SendNameString("major", MAJOR_REV);
+	SendNameString("minor", MINOR_REV);
+	SendNameString("bugfix", BUGFIX_REV);
 }

@@ -5,6 +5,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "loggerHardware.h"
+#include "usb_comm.h"
 
 
 static FATFS Fatfs[1];
@@ -14,9 +15,12 @@ void InitFSHardware(void){
 }
 
 int InitFS(){
+	taskENTER_CRITICAL();
 	int res = disk_initialize(0);
-	if (0 != res) return res;
-	res = f_mount(0, &Fatfs[0]);
+	if (0 == res){
+		res = f_mount(0, &Fatfs[0]);
+	}
+	taskEXIT_CRITICAL();
 	return res;
 }
 
