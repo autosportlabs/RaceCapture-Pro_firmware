@@ -17,7 +17,6 @@ class LineChartPane : public wxPanel, public RaceAnalyzerChannelView {
 
 public:
 	LineChartPane();
-	void SetChartParams(ChartParams params);
 	LineChartPane(wxWindow *parent,
 				wxWindowID id = -1,
 				const wxPoint &pos = wxDefaultPosition,
@@ -31,6 +30,11 @@ public:
 
 	void OnScroll(wxScrollEvent &event);
 	void CreateChart(DatalogChannelSelectionSet *selectionSet);
+
+	//from RaceAnalyzerChannelView
+	void SetChartParams(ChartParams params);
+	void UpdateValue(wxString &name, float value);
+	void SetOffset(int offset);
 
 private:
 	wxScrollBar *m_scrollBar;

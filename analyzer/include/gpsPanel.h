@@ -25,13 +25,17 @@ public:
 				const wxString &name = "panel"
 				);
 	~GPSPane();
-	void SetChartParams(ChartParams params);
 	void InitComponents();
 
-	void CreateGPSView(int datalogId, int latitudeChannelId, int longitudeChannelId);
+	void CreateGPSView(int datalogId, wxString &latitudeChannelName, wxString &longitudeChannelName);
 	void SetOffset(size_t offset);
 	void ReloadGPSPoints();
 
+
+	//from RaceAnalyzerChannelView
+	void SetChartParams(ChartParams params);
+	void UpdateValue(wxString &name, float value);
+	void SetOffset(int offset);
 
 private:
 	void AddGPSPoint(double latitude, double longitude);
@@ -45,8 +49,8 @@ private:
 	size_t				m_dataOffset;
 
 	int					m_datalogId;
-	int					m_longitudeChannelId;
-	int					m_latitudeChannelId;
+	wxString			m_longitudeChannelName;
+	wxString 			m_latitudeChannelName;
 
 	DECLARE_EVENT_TABLE()
 };

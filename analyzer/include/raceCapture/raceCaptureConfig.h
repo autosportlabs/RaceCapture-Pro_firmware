@@ -8,7 +8,11 @@
 #ifndef RACECAPTURECONFIG_H_
 #define RACECAPTURECONFIG_H_
 #include "wx/wxprec.h"
+#include "json/reader.h"
+#include "json/writer.h"
+#include "json/elements.h"
 
+using namespace json;
 
 //Number of channels per feature
 #define CONFIG_ANALOG_CHANNELS				8
@@ -72,8 +76,6 @@ public:
 	static SampleRates GetSampleRates();
 	const static int MAX_LABEL_LENGTH = 10;
 	const static int MAX_UNITS_LENGTH = 10;
-	const static int MAX_PRECISION = 8;
-	const static int MIN_PRECISION = 0;
 	wxString label;
 	wxString units;
 	sample_rate_t sampleRate;
@@ -198,6 +200,8 @@ public:
 class RaceCaptureConfig
 {
 public:
+	const static int MAX_PRECISION = 8;
+	const static int MIN_PRECISION = 0;
 	AnalogConfig analogConfigs[CONFIG_ANALOG_CHANNELS];
 	unsigned short PwmClockFrequency;
 	PwmConfig pwmConfigs[CONFIG_ANALOG_PULSE_CHANNELS];
@@ -207,6 +211,31 @@ public:
 	AccelConfig accelConfigs[CONFIG_ACCEL_CHANNELS];
 	GpsConfig gpsConfig;
 	LoggerOutputConfig loggerOutputConfig;
+
+
+	void SetDefaults();
+	Object ToJson(void);
+	void FromJson(Object root);
+
+private:
+	Object ChannelConfigToJson(ChannelConfig &channelConfig);
+	Object GpsConfigToJson();
+	Array AnalogConfigToJson();
+	Array PulseInputConfigToJson();
+	Array AccelConfigToJson();
+	Array PulseOutputConfigToJson();
+	Array GpioConfigToJson();
+	Object OutputConfigToJson();
+
+	void ChannelConfigFromJson(ChannelConfig &channelConfig, const Object &channelConfigJson);
+	void PopulateGpsConfig(Object &gpsRoot);
+	void PopulateAnalogConfig(Array &analogRoot);
+	void PopulatePulseInputConfig(Array &pulseInputRoot);
+	void PopulateAccelConfig(Array &accelRoot);
+	void PopulatePulseOutputConfig(Array &pulseOutputRoot);
+	void PopulateGpioConfig(Array &gpioConfigRoot);
+	void PopulateOutputConfig(Object &outputConfig);
+
 };
 
 #endif /* RACECAPTURECONFIG_H_ */

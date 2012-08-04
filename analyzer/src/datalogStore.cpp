@@ -285,7 +285,7 @@ void DatalogStore::ImportDatalog(const wxString &filePath, const wxString &name,
 
 	wxArrayString values;
 	int timePoint = 0;
-	int logInterval = 10; //TODO detect this from file
+	int logInterval = 100; //TODO detect this from file. in Milliseconds
 	wxString line;
 
 	int progressReportCoarseness = datalogLines / IMPORT_PROGRESS_COARSENESS;
@@ -565,6 +565,41 @@ void DatalogStore::GetChannelTypes(DatalogChannelTypes &channelTypes){
 
 	sqlite3_finalize(query);
 }
+
+void DatalogStore::GetChannel(int datalogId, wxString &channelName, DatalogChannel &channel){
+
+	const char * GET_CHANNEL_SQL = "SELECT name, typeId, description FROM channels WHERE id IN (select channelId from datalogChannelMap where datalogId = ?) and name = ?";
+
+	sqlite3_stmt *query;
+	{
+		int rc = sqlite3_prepare(m_db, GET_CHANNEL_SQL, strlen(GET_CHANNEL_SQL), &query, NULL);
+		if (SQLITE_OK != rc){
+			throw DatastoreException("Failed to query for channels", rc);
+		}
+	}
+	{
+		int rc = sqlite3_bind_int(query, 1, datalogId);
+		if (SQLITE_OK != rc){
+			throw DatastoreException("Failed to bind datalogId parameter for GetChannel", rc);
+		}
+	}
+	{
+		int rc = sqlite3_bind_text(query, 2, channelName,-1, NULL);
+		if (SQLITE_OK != rc){
+			throw DatastoreException("Failed to bind channelName parameter for GetChannel", rc);
+		}
+	}
+
+	if ( sqlite3_step(query) == SQLITE_ROW){
+		channel.name = sqlite3_column_text(query,0);
+		channel.typeId = sqlite3_column_int(query,1);
+		channel.description = sqlite3_column_text(query,2);
+	}
+
+	sqlite3_finalize(query);
+}
+
+
 
 void DatalogStore::GetChannels(int datalogId, DatalogChannels &channels){
 

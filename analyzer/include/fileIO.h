@@ -3,6 +3,7 @@
 #define FILE_IO_H_
 
 #include "wx/wxprec.h"
+#include "raceCapture/raceCaptureConfig.h"
 #include "configData.h"
 
 class RaceCaptureConfigFileIOBase{
@@ -20,7 +21,7 @@ class RaceCaptureConfigFileIOBase{
 class RaceCaptureConfigFileReader : public RaceCaptureConfigFileIOBase{
 
 	public:
-		void ReadConfiguration(ConfigData &config);
+		void ReadConfiguration(RaceCaptureConfig &config);
 
 	private:
 };
@@ -28,7 +29,7 @@ class RaceCaptureConfigFileReader : public RaceCaptureConfigFileIOBase{
 class RaceCaptureConfigFileWriter : public RaceCaptureConfigFileIOBase{
 
 	public:
-		void WriteConfigData(ConfigData &config);
+		void WriteConfigData(RaceCaptureConfig &config);
 
 	private:
 };

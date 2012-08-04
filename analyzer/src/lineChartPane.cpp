@@ -5,6 +5,7 @@
  *      Author: brent
  */
 #include "lineChartPane.h"
+#include "datalogData.h"
 
 #define SCROLLBAR_RANGE 10000
 #define	SCROLLBAR_THUMBSIZE 100
@@ -47,36 +48,32 @@ void LineChartPane::CreateChart(DatalogChannelSelectionSet *selectionSet){
 	size_t maxColors = chartColors.Count();
 	size_t currentColor = 0;
 
+	DatalogChannelTypes channelTypes;
+	store->GetChannelTypes(channelTypes);
 
 	size_t selCount = selectionSet->Count();
 	for (size_t selIndex = 0; selIndex < selCount; selIndex++){
 		DatalogChannelSelection &sel = selectionSet->Item(selIndex);
 
 		int datalogId = sel.datalogId;
-		DatalogChannels channels;
-		store->GetChannels(datalogId, channels);
 
-		wxArrayInt &channelIds = sel.channelIds;
-		wxArrayString channelNames;
-		size_t channelCount = channelIds.Count();
-		for (size_t channelIndex = 0; channelIndex < channelCount; channelIndex++){
-			int channelId = channelIds[channelIndex];
-			channelNames.Add(channels[channelId].name);
-		}
-		DatalogChannelTypes channelTypes;
-		store->GetChannelTypes(channelTypes);
+		wxArrayString &channelNames = sel.channelNames;
+
 		DatalogStoreRows	*datalogData = new DatalogStoreRows();
 		store->ReadDatalog(*datalogData,datalogId,channelNames,0);
 
-		for (size_t channelIndex = 0; channelIndex < channelCount; channelIndex++){
-			int channelId = channelIds[channelIndex];
-			DatalogChannel &channel = channels[channelId];
+		for (size_t channelIndex = 0; channelIndex < channelNames.Count(); channelIndex++){
+
+			wxString channelName = channelNames[channelIndex];
+			DatalogChannel channel;
+			store->GetChannel(datalogId,channelName,channel);
+
 			DatalogChannelType &channelType = channelTypes[channel.typeId];
 
 			Range *range = new Range(channelType.minValue,channelType.maxValue,channelType.unitsLabel);
 
 			int newRangeId = lineChart->AddRange(range);
-			Series *series = new Series(datalogData,channelIndex,newRangeId,0,channels[channelId].name,chartColors[currentColor]);
+			Series *series = new Series(datalogData,channelIndex, newRangeId, 0, channelName, chartColors[currentColor]);
 			currentColor =  currentColor < maxColors - 1 ? currentColor + 1 : 0;
 			lineChart->AddSeries(series);
 		}
@@ -86,6 +83,14 @@ void LineChartPane::CreateChart(DatalogChannelSelectionSet *selectionSet){
 
 void LineChartPane::SetChartParams(ChartParams params){
 	m_chartParams = params;
+}
+
+void LineChartPane::UpdateValue(wxString &name, float value){
+
+}
+
+void LineChartPane::SetOffset(int offset){
+
 }
 
 void LineChartPane::InitComponents(){

@@ -105,6 +105,7 @@ class LineChart : public wxWindow
 
 		int AddRange(Range *range);
 		int AddSeries(Series *series);
+		Series * GetSeries(int index);
 
 		DECLARE_EVENT_TABLE()
 

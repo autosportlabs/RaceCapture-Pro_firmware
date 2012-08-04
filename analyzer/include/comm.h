@@ -4,6 +4,8 @@
 #include "configData.h"
 #include "comm_win32.h"
 #include "raceCapture/raceCaptureConfig.h"
+#include "raceCapture/raceCaptureRuntime.h"
+
 #include "commonEvents.h"
 
 class RaceAnalyzerCommCallback : public ProgresssReceiver{
@@ -26,6 +28,7 @@ class RaceAnalyzerComm {
 		void populateChannelConfig(ChannelConfig &cfg, wxString suffix, wxString &data);
 		void populateChannelConfig(ChannelConfig &cfg, wxString &data);
 		void flashCurrentConfig();
+		void readRuntime(RuntimeValues *values);
 		void readConfig(RaceCaptureConfig *config, RaceAnalyzerCommCallback *callback);
 		void writeConfig(RaceCaptureConfig *config, RaceAnalyzerCommCallback *callback);
 		void updateWriteConfigPct(int count, RaceAnalyzerCommCallback *callback);
@@ -47,7 +50,7 @@ class RaceAnalyzerComm {
 		int FlushReceiveBuffer(CComm * comPort);
 		int ReadLine(CComm * comPort, wxString &buffer, int timeout);
 		int WriteLine(CComm * comPort, wxString &buffer, int timeout);
-		wxString SendCommand(CComm *comPort, wxString &buffer, int timeout = DEFAULT_TIMEOUT);
+		wxString SendCommand(CComm *comPort, const wxString &buffer, int timeout = DEFAULT_TIMEOUT);
 		void Unescape(wxString &data);
 		void Escape(wxString &data);
 		int GetIntParam(wxString &data, const wxString &name);
@@ -79,7 +82,10 @@ public:
 	static const int ACTION_WRITE_CONFIG = 1;
 	static const int ACTION_FLASH_CONFIG = 2;
 
-	void Create(RaceAnalyzerComm *comm, RaceCaptureConfig *config, RaceAnalyzerCommCallback *progress);
+	AsyncRaceAnalyzerComm(RaceAnalyzerComm *comm, RaceCaptureConfig *config, RaceAnalyzerCommCallback *progress);
+	void RunReadConfig(void);
+	void RunWriteConfig(void);
+	void RunFlashConfig(void);
 	void Run(int action);
 	void * Entry();
 

@@ -61,6 +61,7 @@ public:
 	void GetChannelNames(wxArrayString &channelNames);
 	void GetChannelTypes(DatalogChannelTypes &channelTypes);
 	void GetAllChannels(DatalogChannels &channels);
+	void GetChannel(int datalogId, wxString &channelName, DatalogChannel &channel);
 	void GetChannels(int datalogId, DatalogChannels &channels);
 	void ClearChannelTypes();
 	void ClearChannels();

@@ -37,16 +37,15 @@ DigitalGaugePane::~DigitalGaugePane(){
 
 }
 
-void DigitalGaugePane::CreateGauge(int datalogId, int channelId){
+void DigitalGaugePane::CreateGauge(int datalogId, wxString channelName){
 
 	DatalogStore *store = m_chartParams.datalogStore;
 
-	DatalogChannels channels;
-	store->GetChannels(datalogId, channels);
 	DatalogChannelTypes channelTypes;
 	store->GetChannelTypes(channelTypes);
 
-	DatalogChannel &channel = channels[channelId];
+	DatalogChannel channel;
+	store->GetChannel(datalogId,channelName,channel);
 	DatalogChannelType &type = channelTypes[channel.typeId];
 
 	AppOptions *options = m_chartParams.appOptions;
@@ -62,14 +61,14 @@ void DigitalGaugePane::CreateGauge(int datalogId, int channelId){
 	}
 
 	wxArrayString channelNames;
-	channelNames.Add(channels[channelId].name);
+	channelNames.Add(channelName);
 	store->ReadDatalog(m_channelData,datalogId,channelNames,0);
 
 	SetOffset(0);
 }
 
 
-void DigitalGaugePane::SetOffset(size_t offset){
+void DigitalGaugePane::SetOffset(int offset){
 	m_dataOffset = offset;
 	RefreshGaugeValue();
 }
@@ -83,6 +82,10 @@ void DigitalGaugePane::RefreshGaugeValue(){
 
 void DigitalGaugePane::SetChartParams(ChartParams params){
 	m_chartParams = params;
+}
+
+void DigitalGaugePane::UpdateValue(wxString &name, float value){
+
 }
 
 void DigitalGaugePane::InitComponents(){

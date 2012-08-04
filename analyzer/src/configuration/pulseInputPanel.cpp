@@ -51,7 +51,7 @@ ChannelConfigExtraFields PulseInputPanel::CreateExtendedChannelFields(int i){
 		ChannelConfigExtraField f;
 		SteppedSpinCtrl *ctrl = new SteppedSpinCtrl(this,wxID_ANY);
 		ctrl->SetStepValue(1);
-		ctrl->SetRange(ChannelConfig::MIN_PRECISION,ChannelConfig::MAX_PRECISION);
+		ctrl->SetRange(RaceCaptureConfig::MIN_PRECISION,RaceCaptureConfig::MAX_PRECISION);
 		ctrl->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(PulseInputPanel::OnPrecisionChanged),NULL,this);
 		f.control = ctrl;
 		f.header = "Logging Precision";

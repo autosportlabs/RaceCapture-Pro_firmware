@@ -171,7 +171,7 @@ int RaceAnalyzerComm::FlushReceiveBuffer(CComm* comPort){
 	comPort->drainInput();
 }
 
-wxString RaceAnalyzerComm::SendCommand(CComm *comPort, wxString &buffer, int timeout){
+wxString RaceAnalyzerComm::SendCommand(CComm *comPort, const wxString &buffer, int timeout){
 
 	wxLogMessage("Send Cmd (%d): %s",buffer.Len(), buffer.ToAscii());
 	wxString response;
@@ -353,6 +353,39 @@ void RaceAnalyzerComm::populateChannelConfig(ChannelConfig &cfg, wxString &data)
 	cfg.sampleRate = (sample_rate_t)GetIntParam(data,"sampleRate");
 }
 
+void RaceAnalyzerComm::readRuntime(RuntimeValues *values){
+	try{
+		wxDateTime start = wxDateTime::UNow();
+		CComm *serialPort = GetSerialPort();
+		if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
+
+		wxString cmd = "sample";
+		wxString rsp = SendCommand(serialPort, "sample");
+
+		wxStringTokenizer tokenizer(rsp,";");
+		while (tokenizer.HasMoreTokens()){
+			wxString token = tokenizer.GetNextToken();
+			wxStringTokenizer subTokenizer(token,"=");
+			if (subTokenizer.CountTokens() >= 2){
+				wxString name = subTokenizer.GetNextToken();
+				wxString value = subTokenizer.GetNextToken();
+				UnhideInnerTokens(value);
+				if (value.StartsWith("\"") && value.EndsWith("\"")){
+					value = value.Left(value.Len() - 1);
+					value = value.Right(value.Len() - 1);
+				}
+				(*values)[name] = atof(value);
+			}
+		}
+
+		wxTimeSpan dur = wxDateTime::UNow() - start;
+		wxLogMessage("sample in %f",dur.GetMilliseconds().ToDouble());
+	}
+	catch(CommException e){
+
+	}
+
+}
 
 void RaceAnalyzerComm::readConfig(RaceCaptureConfig *config,RaceAnalyzerCommCallback *callback){
 	try{
@@ -644,17 +677,26 @@ wxString RaceAnalyzerComm::AppendChannelConfig(wxString &cmd, ChannelConfig &cha
 	return cmd;
 }
 
-
-void AsyncRaceAnalyzerComm::Create(RaceAnalyzerComm *comm, RaceCaptureConfig *config, RaceAnalyzerCommCallback *callback){
-	m_comm = comm;
-	m_config = config;
-	m_callback = callback;
+AsyncRaceAnalyzerComm::AsyncRaceAnalyzerComm(RaceAnalyzerComm *comm, RaceCaptureConfig *config, RaceAnalyzerCommCallback *callback) :
+		m_comm(comm), m_config(config), m_callback(callback){
 	wxThread::Create();
 }
 
 void AsyncRaceAnalyzerComm::Run(int action){
 	m_action = action;
 	wxThread::Run();
+}
+
+void AsyncRaceAnalyzerComm::RunReadConfig(void){
+	Run(ACTION_READ_CONFIG);
+}
+
+void AsyncRaceAnalyzerComm::RunWriteConfig(void){
+	Run(ACTION_WRITE_CONFIG);
+}
+
+void AsyncRaceAnalyzerComm::RunFlashConfig(void){
+	Run(ACTION_FLASH_CONFIG);
 }
 
 void * AsyncRaceAnalyzerComm::Entry(){

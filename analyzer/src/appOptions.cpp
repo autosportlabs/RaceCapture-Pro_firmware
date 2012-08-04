@@ -159,56 +159,56 @@ void AppOptions::LoadDefaultStandardChannels(DatalogChannels &channels){
 	channels.Add( DatalogChannel("Yaw", 2, "Accelerometer Z Axis Rotation") );
 
 	//GPS inputs
-	channels.Add( DatalogChannel("GPSTime", 3, "GPS Time in UTC") );
-	channels.Add( DatalogChannel("GPSQual", 4, "GPS signal quality indicator") );
-	channels.Add( DatalogChannel("GPSSats", 4, "Number of Active Satellites") );
-	channels.Add( DatalogChannel("GPSLatitude", 5, "GPS Latitude in Degrees") );
-	channels.Add( DatalogChannel("GPSLongitude", 6,"GPS Longitude in Degrees") );
-	channels.Add( DatalogChannel("GPSVelocity", 7, "GPS Velocity") );
+	channels.Add( DatalogChannel("GpsTime", 3, "GPS Time in UTC") );
+	channels.Add( DatalogChannel("GpsQual", 4, "GPS signal quality indicator") );
+	channels.Add( DatalogChannel("GpsSats", 4, "Number of Active Satellites") );
+	channels.Add( DatalogChannel("GpsLatitude", 5, "GPS Latitude in Degrees") );
+	channels.Add( DatalogChannel("GpsLongitude", 6,"GPS Longitude in Degrees") );
+	channels.Add( DatalogChannel("GpsVelocity", 7, "GPS Velocity") );
 
 	//Analog inputs
 	channels.Add( DatalogChannel("Battery", 8, "Battery Voltage") );
-	channels.Add( DatalogChannel("AnalogIn1", 8, "Analog Input 1") );
-	channels.Add( DatalogChannel("AnalogIn2", 8, "Analog Input 2") );
-	channels.Add( DatalogChannel("AnalogIn3", 8, "Analog Input 3") );
-	channels.Add( DatalogChannel("AnalogIn4", 8, "Analog Input 4") );
-	channels.Add( DatalogChannel("AnalogIn5", 8, "Analog Input 5") );
-	channels.Add( DatalogChannel("AnalogIn6", 8, "Analog Input 6") );
-	channels.Add( DatalogChannel("AnalogIn7", 8, "Analog Input 7") );
+	channels.Add( DatalogChannel("Analog1", 8, "Analog Input 1") );
+	channels.Add( DatalogChannel("Analog2", 8, "Analog Input 2") );
+	channels.Add( DatalogChannel("Analog3", 8, "Analog Input 3") );
+	channels.Add( DatalogChannel("Analog4", 8, "Analog Input 4") );
+	channels.Add( DatalogChannel("Analog5", 8, "Analog Input 5") );
+	channels.Add( DatalogChannel("Analog6", 8, "Analog Input 6") );
+	channels.Add( DatalogChannel("Analog7", 8, "Analog Input 7") );
 	channels.Add( DatalogChannel("OilPressure", 9, "Oil Pressure") );
 	channels.Add( DatalogChannel("OilTemp", 10, "Engine Oil Temperature") );
 	channels.Add( DatalogChannel("CoolantTemp", 10, "Engine Coolant Temperature") );
 
 	//Frequency Inputs
-	channels.Add( DatalogChannel("FrequencyIn1", 11, "Frequency Input 1") );
-	channels.Add( DatalogChannel("FrequencyIn2", 11, "Frequency Input 2") );
-	channels.Add( DatalogChannel("FrequencyIn3", 11, "Frequency Input 3") );
-	channels.Add( DatalogChannel("EngineRPM", 12, "Engine Speed in RPM") );
+	channels.Add( DatalogChannel("Freq1", 11, "Frequency Input 1") );
+	channels.Add( DatalogChannel("Freq2", 11, "Frequency Input 2") );
+	channels.Add( DatalogChannel("Freq3", 11, "Frequency Input 3") );
+	channels.Add( DatalogChannel("RPM", 12, "Engine Speed in RPM") );
 	channels.Add( DatalogChannel("WheelSpeed", 12, "Wheel Speed in RPM") );
 	channels.Add( DatalogChannel("PulseWidth", 13, "Signal Pulse width in Ms.") );
 	channels.Add( DatalogChannel("DutyCycle", 14, "Signal Duty Cycle in %") );
 
 	//Analog Outputs
-	channels.Add( DatalogChannel("AnalogOut1", 8, "Analog Output 1") );
-	channels.Add( DatalogChannel("AnalogOut2", 8, "Analog Output 2") );
-	channels.Add( DatalogChannel("AnalogOut3", 8, "Analog Output 3") );
-	channels.Add( DatalogChannel("AnalogOut4", 8, "Analog Output 4") );
+	channels.Add( DatalogChannel("Vout1", 8, "Analog Output 1") );
+	channels.Add( DatalogChannel("Vout2", 8, "Analog Output 2") );
+	channels.Add( DatalogChannel("Vout3", 8, "Analog Output 3") );
+	channels.Add( DatalogChannel("Vout4", 8, "Analog Output 4") );
 
 	//Frequency Outputs
-	channels.Add( DatalogChannel("FrequencyOut1", 11, "Frequency Output 1") );
-	channels.Add( DatalogChannel("FrequencyOut2", 11, "Frequency Output 2") );
-	channels.Add( DatalogChannel("FrequencyOut3", 11, "Frequency Output 3") );
-	channels.Add( DatalogChannel("FrequencyOut4", 11, "Frequency Output 4") );
+	channels.Add( DatalogChannel("FreqOut1", 11, "Frequency Output 1") );
+	channels.Add( DatalogChannel("FreqOut2", 11, "Frequency Output 2") );
+	channels.Add( DatalogChannel("FreqOut3", 11, "Frequency Output 3") );
+	channels.Add( DatalogChannel("FreqOut4", 11, "Frequency Output 4") );
 
 	//Digital Inputs
-	channels.Add(DatalogChannel("DigitalIn1", 15, "Digital Input 1") );
-	channels.Add(DatalogChannel("DigitalIn2", 15, "Digital Input 2") );
-	channels.Add(DatalogChannel("DigitalIn3", 15, "Digital Input 3") );
+	channels.Add(DatalogChannel("GPI1", 15, "Digital Input 1") );
+	channels.Add(DatalogChannel("GPI2", 15, "Digital Input 2") );
+	channels.Add(DatalogChannel("GPI3", 15, "Digital Input 3") );
 
 	//Digital Outputs
-	channels.Add(DatalogChannel("DigitalOut1", 15, "Digital Output 1") );
-	channels.Add(DatalogChannel("DigitalOut2", 15, "Digital Output 2") );
-	channels.Add(DatalogChannel("DigitalOut3", 15, "Digital Output 3") );
+	channels.Add(DatalogChannel("GPO1", 15, "Digital Output 1") );
+	channels.Add(DatalogChannel("GPO2", 15, "Digital Output 2") );
+	channels.Add(DatalogChannel("GPO3", 15, "Digital Output 3") );
 }
 
 void AppOptions::LoadDefaultAnalogGaugeTypes(AnalogGaugeTypes &analogGaugeTypes){
