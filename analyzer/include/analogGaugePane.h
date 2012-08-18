@@ -17,7 +17,7 @@ class AnalogGaugePane : public wxPanel, public RaceAnalyzerChannelView {
 
 public:
 	AnalogGaugePane();
-	void SetChartParams(ChartParams params);
+
 	AnalogGaugePane(wxWindow *parent,
 				wxWindowID id = -1,
 				const wxPoint &pos = wxDefaultPosition,
@@ -28,16 +28,20 @@ public:
 	~AnalogGaugePane();
 	void InitComponents();
 
-	void CreateGauge(int datalogId, int channelId);
-	void SetOffset(size_t offset);
+	void CreateGauge(int datalogId, wxString channelName);
+	void SetOffset(int offset);
 	void RefreshGaugeValue();
+
+	//from RaceAnalyzerChannelView
+	void SetChartParams(ChartParams params);
+	void UpdateValue(wxString &channelName, float value);
 
 
 private:
 	AngularMeter 		*m_angularMeter;
 	ChartParams			m_chartParams;
 	DatalogStoreRows 	m_channelData;
-	size_t				m_dataOffset;
+	int					m_dataOffset;
 
 	DECLARE_EVENT_TABLE()
 };

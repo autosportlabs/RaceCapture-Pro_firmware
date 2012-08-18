@@ -27,11 +27,14 @@
 #include "commonEvents.h"
 #include "digitalRPMPanel.h"
 #include "chartBase.h"
+#include "runtimeReader.h"
+#include "datalogPlayer.h"
 
 #include <wx/aui/aui.h>
 #include <wx/aui/framemanager.h>
 
 
+#define  CONFIG_FILE_FILTER 		"RaceCapture Configuration files (*.rcap)|*.rcap"
 #define  OPEN_RACE_EVENT_FILTER 	"RaceAnalyzer Event Files (*.radb)|*.radb"
 #define	RACEANALYZER_WINDOW_TITLE 	"RaceAnalyzer V%s"
 
@@ -54,12 +57,15 @@ class RaceAnalyzerApp : public wxApp{
   };
 
 
-class MainFrame : public wxFrame
+class MainFrame : public wxFrame, public RuntimeListener
   {
 
   private:
 
 	void InitComms();
+	void InitDatalogPlayer();
+	void LoadInitialConfig();
+	void ReadRaceCaptureConfig();
   	void NotifyConfigChanged();
   	void UpdateConfigFileStatus();
 	void InitializeComponents();
@@ -86,6 +92,7 @@ class MainFrame : public wxFrame
 	void CreateDefaultScriptPerspective();
 	void ShowSplashScreen();
 	void SyncControls();
+	void LoadConfigurationFile(const wxString fileName);
 
 	void NewRaceEvent(wxString fileName);
 	void CloseRaceEvent();
@@ -94,6 +101,10 @@ class MainFrame : public wxFrame
 	void AddAnalogGauges(DatalogChannelSelectionSet *selectionSet);
 	void AddDigitalGauges(DatalogChannelSelectionSet *selectionSet);
 	void AddGPSView(DatalogChannelSelectionSet *selectionSet);
+
+	//Config Related
+	void SaveCurrentConfig();
+	void SaveAsCurrentConfig();
 
 	//Main Panels
 
@@ -117,6 +128,12 @@ class MainFrame : public wxFrame
 
 	void OnImportWizardFinished(wxWizardEvent &event);
 
+
+	void OnOpenConfig(wxCommandEvent &event);
+	void OnNewConfig(wxCommandEvent &event);
+	void OnSaveAsConfig(wxCommandEvent &event);
+	void OnSaveConfig(wxCommandEvent &event);
+
 	//chart events
 	void OnAddLineChart(wxCommandEvent &event);
 	void OnAddAnalogGauge(wxCommandEvent &event);
@@ -124,6 +141,13 @@ class MainFrame : public wxFrame
 	void OnAddGPSView(wxCommandEvent &event);
 	void OnUpdateStatus(wxCommandEvent &event);
 	void OnUpdateActivity(wxCommandEvent &event);
+	void OnPlayDatalog(wxCommandEvent &event);
+	void OnPauseDatalog(wxCommandEvent &event);
+	void OnJumpBeginningDatalog(wxCommandEvent &event);
+	void OnJumpEndDatalog(wxCommandEvent &event);
+
+	//RuntimeListener
+	void OnRuntimeValueUpdated(wxString &name, float value);
 
  public:
 
@@ -131,11 +155,11 @@ class MainFrame : public wxFrame
     MainFrame( const wxString &title, const wxPoint &pos, const wxSize &size );
 	~MainFrame();
 
+private:
 	//Data
-
-	ConfigData 					m_currentConfigData;
-	wxString 					m_currentConfigFileName;
-
+	RaceCaptureConfig			m_currentConfig;
+	wxString 					*m_currentConfigFileName;
+	bool						m_configModified;
 	bool						m_appTerminated;
 
 	int							m_activeConfig;
@@ -160,6 +184,8 @@ class MainFrame : public wxFrame
 
 	//Frame Manager
 	wxAuiManager		_frameManager;
+
+	DatalogPlayer		m_datalogPlayer;
 
 	DECLARE_EVENT_TABLE()
 

@@ -8,6 +8,8 @@
 #include "datalogChannelsPanel.h"
 #include "addChannelWizardDialog.h"
 #include "add.xpm"
+#include "player_play.xpm"
+#include "player_pause.xpm"
 
 #define GRID_ROWS 5
 
@@ -50,6 +52,11 @@ void DatalogChannelsPanel::InitComponents(){
 	wxBitmap bmpNew(add_xpm);
 
 	toolBar->AddTool(ID_ADD_CHANNEL, bmpNew, wxT("Add Channel"));
+	toolBar->AddTool(ID_PLAY_DATALOG, player_play_xpm, wxT("Play datalog"));
+	toolBar->AddTool(ID_PAUSE_DATALOG,player_pause_xpm, wxT("Pause datalog"));
+//	toolBar->AddTool(ID_JUMP_BEGINNING_DATALOG, bmpToBeginning, wxT("Jump to Beginning"));/
+//	toolBar->AddTool(ID_JUMP_END_DATALOG, bmpToEnd, wxT("Jump to End"));
+
 	toolBar->Realize();
 	sizer->Add(toolBar,1,wxEXPAND);
 
@@ -186,7 +193,7 @@ void DatalogChannelsPanel::PopulateSelectedChannels(DatalogChannelSelectionSet *
 
 	int datalogId = m_datalogIdList[selectedPage];
 
-	wxArrayInt selectedChannelIds;
+	wxArrayString selectedChannelIds;
 
 	DatalogChannels channels;
 	m_datalogStore->GetChannels(datalogId,channels);
@@ -197,8 +204,7 @@ void DatalogChannelsPanel::PopulateSelectedChannels(DatalogChannelSelectionSet *
 	for (size_t i = 0; i < rowCount; i++){
 		if (grid->IsInSelection(i,0)){
 			wxString channelName = grid->GetCellValue(i,0);
-			int channelId = DatalogChannelUtil::FindChannelIdByName(channels,channelName);
-			if (channelId >= 0) selectedChannelIds.Add(channelId);
+			selectedChannelIds.Add(channelName);
 		}
 	}
 
@@ -240,6 +246,16 @@ void DatalogChannelsPanel::OnAddChannel(wxCommandEvent &event){
 	wiz->Show(true);
 }
 
+void DatalogChannelsPanel::OnPlay(wxCommandEvent &event){
+	wxCommandEvent playEvent( PLAY_DATALOG_EVENT, PLAY_DATALOG);
+	GetParent()->AddPendingEvent(playEvent);
+}
+
+void DatalogChannelsPanel::OnPause(wxCommandEvent &event){
+	wxCommandEvent pauseEvent( PAUSE_DATALOG_EVENT, PAUSE_DATALOG);
+	GetParent()->AddPendingEvent(pauseEvent);
+}
+
 void DatalogChannelsPanel::OnNewGPSView(wxCommandEvent &event){
 	DatalogChannelSelectionSet *selectionSet = new DatalogChannelSelectionSet();
 	PopulateSelectedChannels(selectionSet);
@@ -258,6 +274,8 @@ BEGIN_EVENT_TABLE ( DatalogChannelsPanel, wxPanel )
 	EVT_MENU(ID_NEW_DIGITAL_GAUGE, DatalogChannelsPanel::OnNewDigitalGauge)
 	EVT_MENU(ID_NEW_GPS_VIEW, DatalogChannelsPanel::OnNewGPSView)
 	EVT_MENU(ID_ADD_CHANNEL, DatalogChannelsPanel::OnAddChannel)
+	EVT_MENU(ID_PLAY_DATALOG, DatalogChannelsPanel::OnPlay)
+	EVT_MENU(ID_PAUSE_DATALOG, DatalogChannelsPanel::OnPause)
 
 	EVT_GRID_CELL_RIGHT_CLICK(DatalogChannelsPanel::DoGridContextMenu)
 END_EVENT_TABLE()

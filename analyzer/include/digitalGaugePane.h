@@ -17,7 +17,6 @@ class DigitalGaugePane : public wxPanel, public RaceAnalyzerChannelView {
 
 public:
 	DigitalGaugePane();
-	void SetChartParams(ChartParams params);
 	DigitalGaugePane(wxWindow *parent,
 				wxWindowID id = -1,
 				const wxPoint &pos = wxDefaultPosition,
@@ -28,16 +27,19 @@ public:
 	~DigitalGaugePane();
 	void InitComponents();
 
-	void CreateGauge(int datalogId, int channelId);
-	void SetOffset(size_t offset);
+	void CreateGauge(int datalogId, wxString channelName);
 	void RefreshGaugeValue();
 
+	//from RaceAnalyzerChannelView
+	void SetChartParams(ChartParams params);
+	void UpdateValue(wxString &name, float value);
+	void SetOffset(int offset);
 
 private:
 	LCDDisplay			*m_lcdDisplay;
 	ChartParams			m_chartParams;
 	DatalogStoreRows 	m_channelData;
-	size_t				m_dataOffset;
+	int					m_dataOffset;
 	unsigned int		m_valuePrecision;
 
 	DECLARE_EVENT_TABLE()

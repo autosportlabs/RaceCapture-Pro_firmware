@@ -4,6 +4,7 @@
 #include "logging.h"
 #include "lineChart.h"
 #include "importWizardDialog.h"
+#include "exceptions.h"
 
 #include "filenew.xpm"
 #include "fileopen.xpm"
@@ -51,6 +52,11 @@ enum{
 
 	ID_ADD_LINE_CHART,
 
+	ID_NEW_CONFIG,
+	ID_OPEN_CONFIG,
+	ID_SAVE_CONFIG,
+	ID_SAVE_CONFIG_AS,
+
 	ID_RESTORE_DEFAULT_VIEWS,
 	ID_PERSPECTIVES //this must be last
 
@@ -93,7 +99,7 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize
 {
 	m_appTerminated = false;
 	//ShowSplashScreen();
-
+	m_currentConfigFileName = NULL;
 	m_activeConfig = -1;
 	m_appOptions.LoadAppOptions();
 	_appPrefs.LoadAppPrefs();
@@ -103,6 +109,14 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize
 	Center();
 
 	InitComms();
+
+	InitDatalogPlayer();
+
+	try{
+	 LoadInitialConfig();
+	}
+	catch(...){}
+
 }
 
 MainFrame::~MainFrame(){
@@ -114,7 +128,6 @@ MainFrame::~MainFrame(){
 void MainFrame::InitComms(){
 
 	m_scriptPanel->SetComm(&m_raceAnalyzerComm);
-	m_configPanel->SetComm(&m_raceAnalyzerComm);
 	try{
 		m_raceAnalyzerComm.SetSerialPort(m_appOptions.GetSerialPort());
 	}
@@ -123,6 +136,29 @@ void MainFrame::InitComms(){
 	}
 }
 
+void MainFrame::InitDatalogPlayer(){
+	m_datalogPlayer.Create(&m_datalogData, &m_channelViews);
+	m_datalogPlayer.Run();
+}
+
+void MainFrame::LoadInitialConfig(){
+
+	if (m_appOptions.GetAutoLoadConfig()){
+		ReadRaceCaptureConfig();
+	}
+	else{
+		SetStatusMessage("Default Config Loaded");
+	}
+	NotifyConfigChanged();
+	m_configModified = false;
+	UpdateCommControls();
+	SyncControls();
+	UpdateConfigFileStatus();
+}
+
+void MainFrame::ReadRaceCaptureConfig(){
+
+}
 
 void MainFrame::ShowSplashScreen(){
 
@@ -273,11 +309,16 @@ void MainFrame::InitializeMenus(){
 	//initialize main menu
 	wxMenuBar* menuBar = new wxMenuBar();
 	wxMenu* fileMenu = new wxMenu();
-	fileMenu->Append(wxID_NEW, wxT("New\tCtrl+N"), wxT("Create a new Race Event"));
-	fileMenu->Append(wxID_OPEN, wxT("Open\tCtrl+O"), wxT("Open a Race Event"));
+	fileMenu->Append(wxID_NEW, wxT("New Race Event\tCtrl+N"), wxT("Create a new Race Event"));
+	fileMenu->Append(wxID_OPEN, wxT("Open Race Event\tCtrl+O"), wxT("Open an existing Race Event"));
+	fileMenu->Append(ID_IMPORT_DATALOG, wxT("Import Datalog\tCtrl-I"),wxT("Import Datalog"));
 	fileMenu->AppendSeparator();
-	fileMenu->Append(ID_IMPORT_DATALOG, wxT("Import\tCtrl-I"),wxT("Import Datalog"));
+	fileMenu->Append(ID_NEW_CONFIG, wxT("New Configuration\tCtrl+N"), wxT("Create a new Race Capture Configuration"));
+	fileMenu->Append(ID_OPEN_CONFIG, wxT("Open Configuration\tCtrl+O"), wxT("Open a saved Race Capture Configuration"));
+	fileMenu->Append(ID_SAVE_CONFIG, wxT("Save Configuration\tCtrl+S"), wxT("Save the current Race Capture Configuration"));
+	fileMenu->Append(ID_SAVE_CONFIG_AS, wxT("Save Configuration As\tCtrl+Shift+S"), wxT("Save the current Race Capture Configuration under a new file"));
 	fileMenu->AppendSeparator();
+
 	fileMenu->Append(wxID_EXIT, wxT("Exit"), wxT("Exit the program"));
 	menuBar->Append(fileMenu, wxT("File"));
 
@@ -351,7 +392,7 @@ void MainFrame::InitializeComponents(){
 	m_analyzePanel = new wxPanel(this);
 	_frameManager.AddPane(m_analyzePanel, wxAuiPaneInfo().Name(wxT(PANE_ANALYZE)).Caption(wxT(CAPTION_ANALYSIS)).Center().Hide());
 
-	m_configPanel = new ConfigPanel(this);
+	m_configPanel = new ConfigPanel(ConfigPanelParams(&m_raceAnalyzerComm, &m_currentConfig), this);
 	_frameManager.AddPane(m_configPanel, wxAuiPaneInfo().Name(wxT(PANE_CONFIGURATION)).Caption(wxT(CAPTION_CONFIG)).Center().Hide());
 
 	m_scriptPanel = new ScriptPanel(this);
@@ -692,19 +733,17 @@ void MainFrame::AddAnalogGauges(DatalogChannelSelectionSet *selectionSet){
 	for (size_t i = 0; i < selectionSetCount; i++){
 		DatalogChannelSelection &sel = (*selectionSet)[i];
 		int datalogId = sel.datalogId;
-		DatalogChannels channels;
-		m_datalogStore.GetChannels(datalogId,channels);
 
-		for (size_t c = 0; c < sel.channelIds.Count(); c++){
-			int channelId = sel.channelIds[c];
+		for (size_t c = 0; c < sel.channelNames.Count(); c++){
+			wxString channelName = sel.channelNames[c];
 
 			AnalogGaugePane *gaugePane = new AnalogGaugePane(this, -1);
 			gaugePane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions,&m_datalogStore));
-			gaugePane->CreateGauge(datalogId,channelId);
+			gaugePane->CreateGauge(datalogId,channelName);
 			m_channelViews.Add(gaugePane);
 
 			wxString name = wxString::Format("analogGauge_%lu", (unsigned long)m_channelViews.Count());
-			wxString caption = wxString::Format("%s", channels[channelId].name.ToAscii());
+			wxString caption = wxString::Format("%s", channelName.ToAscii());
 
 			_frameManager.AddPane(gaugePane,
 					wxAuiPaneInfo().
@@ -729,19 +768,19 @@ void MainFrame::AddDigitalGauges(DatalogChannelSelectionSet *selectionSet){
 	for (size_t i = 0; i < selectionSetCount; i++){
 		DatalogChannelSelection &sel = (*selectionSet)[i];
 		int datalogId = sel.datalogId;
-		DatalogChannels channels;
-		m_datalogStore.GetChannels(datalogId,channels);
 
-		for (size_t c = 0; c < sel.channelIds.Count(); c++){
-			int channelId = sel.channelIds[c];
+
+
+		for (size_t c = 0; c < sel.channelNames.Count(); c++){
 
 			DigitalGaugePane *gaugePane = new DigitalGaugePane(this, -1);
 			gaugePane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions,&m_datalogStore));
-			gaugePane->CreateGauge(datalogId,channelId);
-			m_channelViews.Add(gaugePane);
+			wxString channelName = sel.channelNames[c];
 
+			gaugePane->CreateGauge(datalogId,channelName);
+			m_channelViews.Add(gaugePane);
 			wxString name = wxString::Format("digitalGauge_%lu", (unsigned long)m_channelViews.Count());
-			wxString caption = wxString::Format("%s", channels[channelId].name.ToAscii());
+			wxString caption = wxString::Format("%s", channelName.ToAscii());
 
 			_frameManager.AddPane(gaugePane,
 					wxAuiPaneInfo().
@@ -765,31 +804,30 @@ void MainFrame::AddGPSView(DatalogChannelSelectionSet *selectionSet){
 	for (size_t i = 0; i < selectionSetCount; i++){
 		DatalogChannelSelection &sel = (*selectionSet)[i];
 		int datalogId = sel.datalogId;
-		DatalogChannels channels;
-		m_datalogStore.GetChannels(datalogId,channels);
 
 		DatalogChannelTypes channelTypes;
 		m_datalogStore.GetChannelTypes(channelTypes);
 
-		int longitudeChannelId = -1;
-		int latitudeChannelId = -1;
+		wxString longitudeChannelName = "";
+		wxString latitudeChannelName = "";
 
-		wxArrayInt &channelIds = sel.channelIds;
-		size_t selectedChannelsCount = channelIds.Count();
+		wxArrayString &channelNames = sel.channelNames;
+		size_t selectedChannelsCount = channelNames.Count();
 		for (size_t ci = 0; ci < selectedChannelsCount; ci++){
-			int channelId = channelIds[ci];
-			DatalogChannel &c = channels[channelId];
-			DatalogChannelType &ct = channelTypes[c.typeId];
-			if (ct == DatalogChannelSystemTypes::GetLongitudeChannelType()) longitudeChannelId = channelId;
-			if (ct == DatalogChannelSystemTypes::GetLatitudeChannelType()) latitudeChannelId = channelId;
+			wxString channelName = channelNames[ci];
+			DatalogChannel channel;
+			m_datalogStore.GetChannel(datalogId,channelName,channel);
+			DatalogChannelType &ct = channelTypes[channel.typeId];
+			if (ct == DatalogChannelSystemTypes::GetLongitudeChannelType()) longitudeChannelName = channelName;
+			if (ct == DatalogChannelSystemTypes::GetLatitudeChannelType()) latitudeChannelName = channelName;
 		}
 
-		if (longitudeChannelId >= 0 && latitudeChannelId >= 0){
+		if (longitudeChannelName.Len() > 0 && latitudeChannelName.Len() >= 0){
 
 			GPSPane *gpsPane = new GPSPane(this, -1);
 
 			gpsPane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions,&m_datalogStore));
-			gpsPane->CreateGPSView(datalogId,latitudeChannelId,longitudeChannelId);
+			gpsPane->CreateGPSView(datalogId,latitudeChannelName,longitudeChannelName);
 			wxString name = wxString::Format("GPS_%lu", (unsigned long)m_channelViews.Count());
 			wxString caption = wxString::Format("GPS %d", datalogId);
 
@@ -846,6 +884,148 @@ void MainFrame::OnUpdateActivity(wxCommandEvent &event){
 	SetActivityMessage(event.GetString());
 }
 
+void MainFrame::OnPlayDatalog(wxCommandEvent &event){
+	m_datalogPlayer.Play();
+}
+
+void MainFrame::OnPauseDatalog(wxCommandEvent &event){
+	m_datalogPlayer.Pause();
+}
+
+void MainFrame::OnJumpBeginningDatalog(wxCommandEvent &event){
+
+}
+
+void MainFrame::OnJumpEndDatalog(wxCommandEvent &event){
+
+}
+
+
+void MainFrame::OnRuntimeValueUpdated(wxString &name, float value){
+
+	for (size_t i = 0; i < m_channelViews.Count(); i++){
+		m_channelViews[i]->UpdateValue(name,value);
+	}
+}
+
+void MainFrame::OnSaveAsConfig(wxCommandEvent& event){
+	SaveAsCurrentConfig();
+}
+
+void MainFrame::OnSaveConfig(wxCommandEvent& event){
+	SaveCurrentConfig();
+}
+
+
+void MainFrame::OnNewConfig(wxCommandEvent &event){
+
+	if (m_configModified){
+		if (QuerySaveModifications()) SaveCurrentConfig();
+	}
+	m_currentConfig.SetDefaults();
+	NotifyConfigChanged();
+}
+
+void MainFrame::OnOpenConfig(wxCommandEvent& event){
+
+	if (m_configModified){
+		if (QuerySaveModifications()) SaveCurrentConfig();
+	}
+
+	wxString defaultDir = _appPrefs.GetLastConfigFileDirectory();
+	wxString defaultFile = "";
+	wxFileDialog fileDialog(this, "Open Configuration", defaultDir, defaultFile, CONFIG_FILE_FILTER, wxOPEN);
+
+	int result = fileDialog.ShowModal();
+
+	if (wxID_OK == result){
+		const wxString fileName = fileDialog.GetPath();
+		LoadConfigurationFile(fileName);
+		_appPrefs.SetLastConfigFileDirectory(fileDialog.GetDirectory());
+	}
+}
+
+void MainFrame::LoadConfigurationFile(const wxString fileName){
+
+	RaceCaptureConfigFileReader reader;
+
+	reader.SetFileName(fileName);
+
+	try{
+		reader.ReadConfiguration(m_currentConfig);
+		if (m_currentConfigFileName) delete m_currentConfigFileName;
+		m_currentConfigFileName = new wxString(fileName);
+//		_configurationPanel->PopulateIgnitionConfig();
+		m_configModified = false;
+		UpdateCommControls();
+		NotifyConfigChanged();
+		SyncControls();
+		UpdateConfigFileStatus();
+		SetStatusMessage("Ignition Configuration Loaded");
+	}
+	catch( FileAccessException e ){
+		wxMessageDialog dlg(this, wxString::Format("Failed to load Configuration:\n\n%s", e.GetMessage().ToAscii()), "Error loading", wxOK | wxICON_HAND);
+		dlg.ShowModal();
+		return;
+	}
+	UpdateConfigFileStatus();
+}
+
+void MainFrame::SaveCurrentConfig(){
+	if ( m_currentConfigFileName ){
+		RaceCaptureConfigFileWriter writer;
+		const wxString fileName(*m_currentConfigFileName);
+		writer.SetFileName(fileName);
+
+		try{
+			writer.WriteConfigData(m_currentConfig);
+			m_configModified = false;
+			SetStatusMessage("Configuration Saved");
+		}
+		catch (FileAccessException e){
+			wxMessageDialog dlg(this, wxString::Format("Failed to save Configuration:\n\n%s", e.GetMessage().ToAscii()), "Error saving", wxOK | wxICON_HAND);
+			dlg.ShowModal();
+			return;
+		}
+	}
+	else{
+		SaveAsCurrentConfig();
+	}
+}
+
+void MainFrame::SaveAsCurrentConfig(){
+
+	wxString defaultDir = _appPrefs.GetLastConfigFileDirectory();
+	wxString defaultFile = "";
+	wxFileDialog fileDialog(this, "Save As Configuration", defaultDir, defaultFile, CONFIG_FILE_FILTER,wxSAVE);
+
+	int result = fileDialog.ShowModal();
+
+	if (wxID_OK == result){
+		RaceCaptureConfigFileWriter writer;
+
+		const wxString fileName = fileDialog.GetPath();
+		if (!wxFile::Exists(fileName) || (wxFile::Exists(fileName) && QueryFileOverwrite())){
+			writer.SetFileName(fileName);
+
+			try{
+				writer.WriteConfigData(m_currentConfig);
+				m_currentConfigFileName = new wxString(fileName);
+				m_configModified = false;
+				SetStatusMessage("Ignition Configuration Saved");
+				_appPrefs.SetLastConfigFileDirectory(fileDialog.GetDirectory());
+			}
+			catch (FileAccessException e){
+				wxMessageDialog dlg(this, wxString::Format("Failed to save Ignition Configuration:\n\n%s", e.GetMessage().ToAscii()), "Error saving", wxOK | wxICON_HAND);
+				dlg.ShowModal();
+				return;
+			}
+		}
+	}
+	UpdateConfigFileStatus();
+}
+
+
 BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
   	EVT_CLOSE (MainFrame::OnExit)
 
@@ -869,6 +1049,11 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 
 	EVT_MENU(ID_ADD_LINE_CHART, MainFrame::OnAddLineChart)
 
+	EVT_MENU(ID_NEW_CONFIG, MainFrame::OnNewConfig)
+	EVT_MENU(ID_OPEN_CONFIG, MainFrame::OnOpenConfig)
+	EVT_MENU(ID_SAVE_CONFIG, MainFrame::OnSaveConfig)
+	EVT_MENU(ID_SAVE_CONFIG_AS, MainFrame::OnSaveAsConfig)
+
 	EVT_COMMAND(ADD_NEW_LINE_CHART, ADD_NEW_LINE_CHART_EVENT, MainFrame::OnAddLineChart)
 	EVT_COMMAND(ADD_NEW_ANALOG_GAUGE, ADD_NEW_ANALOG_GAUGE_EVENT, MainFrame::OnAddAnalogGauge)
 	EVT_COMMAND(ADD_NEW_DIGITAL_GAUGE, ADD_NEW_DIGITAL_GAUGE_EVENT, MainFrame::OnAddDigitalGauge)
@@ -876,6 +1061,11 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 
 	EVT_COMMAND(UPDATE_STATUS, UPDATE_STATUS_EVENT, MainFrame::OnUpdateStatus)
 	EVT_COMMAND(UPDATE_ACTIVITY, UPDATE_ACTIVITY_EVENT, MainFrame::OnUpdateActivity)
+
+	EVT_COMMAND(PLAY_DATALOG, PLAY_DATALOG_EVENT, MainFrame::OnPlayDatalog)
+	EVT_COMMAND(PAUSE_DATALOG, PAUSE_DATALOG_EVENT, MainFrame::OnPauseDatalog)
+	EVT_COMMAND(JUMP_BEGINNING_DATALOG, JUMP_BEGINNING_DATALOG_EVENT, MainFrame::OnJumpBeginningDatalog)
+	EVT_COMMAND(JUMP_END_DATALOG, JUMP_END_DATALOG_EVENT, MainFrame::OnJumpEndDatalog)
 
 	//this must always be last
 	EVT_MENU_RANGE(ID_PERSPECTIVES, ID_PERSPECTIVES + MAX_PERSPECTIVES, MainFrame::OnSwitchView)

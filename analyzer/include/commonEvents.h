@@ -6,11 +6,11 @@
 class DatalogChannelSelection {
 
 public:
-	DatalogChannelSelection(int newDatalogId, wxArrayInt newChannelIds) : datalogId(newDatalogId), channelIds(newChannelIds)
+	DatalogChannelSelection(int newDatalogId, wxArrayString newChannelNames) : datalogId(newDatalogId), channelNames(newChannelNames)
 	{}
 
 	int datalogId;
-	wxArrayInt channelIds;
+	wxArrayString channelNames;
 };
 
 
@@ -26,6 +26,11 @@ DECLARE_EVENT_TYPE ( ADD_NEW_DIGITAL_GAUGE_EVENT, -1 )
 DECLARE_EVENT_TYPE ( ADD_NEW_GPS_VIEW_EVENT, -1 )
 DECLARE_EVENT_TYPE ( UPDATE_STATUS_EVENT, -1 )
 DECLARE_EVENT_TYPE ( UPDATE_ACTIVITY_EVENT, -1 )
+DECLARE_EVENT_TYPE ( PLAY_DATALOG_EVENT, -1 )
+DECLARE_EVENT_TYPE ( PAUSE_DATALOG_EVENT, -1 )
+DECLARE_EVENT_TYPE ( JUMP_BEGINNING_DATALOG_EVENT, -1 )
+DECLARE_EVENT_TYPE ( JUMP_END_DATALOG_EVENT, -1 )
+
 
 enum{
 		CONFIG_CHANGED 	= wxID_HIGHEST + 80000,
@@ -37,7 +42,12 @@ enum{
 		ADD_NEW_DIGITAL_GAUGE,
 		ADD_NEW_GPS_VIEW,
 		UPDATE_STATUS,
-		UPDATE_ACTIVITY
+		UPDATE_ACTIVITY,
+		PLAY_DATALOG,
+		PAUSE_DATALOG,
+		JUMP_BEGINNING_DATALOG,
+		JUMP_END_DATALOG
+
 };
 
 class ProgresssReceiver{

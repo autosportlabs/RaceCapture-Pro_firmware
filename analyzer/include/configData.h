@@ -45,11 +45,5 @@ class VersionData{
 
 };
 
-class ConfigData{
-
-
-
-};
-
 
 #endif

@@ -8,19 +8,18 @@ enum{
 	ID_READWRITE_PROGRESS
 };
 
-ConfigPanel::ConfigPanel() : wxPanel()
-{
-	InitComponents();
-}
-
-ConfigPanel::ConfigPanel(wxWindow *parent,
+ConfigPanel::ConfigPanel(
+			ConfigPanelParams params,
+			wxWindow *parent,
 			wxWindowID id,
 			const wxPoint &pos,
 			const wxSize &size,
 			long style,
 			const wxString &name
 			)
-			: wxPanel(	parent,
+			: m_raceCaptureConfig(params.config),
+			  m_comm(params.comm),
+			  wxPanel(	parent,
 						id,
 						pos,
 						size,
@@ -43,25 +42,25 @@ void ConfigPanel::InitComponents(){
 
 	m_configNavigation = new wxTreebook(this,-1, wxDefaultPosition, wxSize(600,400),wxNB_LEFT);
 
-	m_analogInputPanel = new AnalogInputPanel(m_configNavigation,-1,&m_raceCaptureConfig);
+	m_analogInputPanel = new AnalogInputPanel(m_configNavigation,-1,m_raceCaptureConfig);
 	m_analogInputPanel->InitComponents();
 
-	m_timerInputPanel = new PulseInputPanel(m_configNavigation,-1,&m_raceCaptureConfig);
+	m_timerInputPanel = new PulseInputPanel(m_configNavigation,-1,m_raceCaptureConfig);
 	m_timerInputPanel->InitComponents();
 
-	m_accelInputPanel = new AccelInputPanel(m_configNavigation,-1,&m_raceCaptureConfig);
+	m_accelInputPanel = new AccelInputPanel(m_configNavigation,-1,m_raceCaptureConfig);
 	m_accelInputPanel->InitComponents();
 
-	m_analogPulseOutPanel = new AnalogPulseOutputPanel(m_configNavigation,-1,&m_raceCaptureConfig);
+	m_analogPulseOutPanel = new AnalogPulseOutputPanel(m_configNavigation,-1,m_raceCaptureConfig);
 	m_analogPulseOutPanel->InitComponents();
 
-	m_gpioPanel = new GpioPanel(m_configNavigation,-1,&m_raceCaptureConfig);
+	m_gpioPanel = new GpioPanel(m_configNavigation,-1,m_raceCaptureConfig);
 	m_gpioPanel->InitComponents();
 
-	m_gpsPanel = new GpsConfigPanel(m_configNavigation,-1,&m_raceCaptureConfig);
+	m_gpsPanel = new GpsConfigPanel(m_configNavigation,-1,m_raceCaptureConfig);
 	m_gpsPanel->InitComponents();
 
-	m_loggerOutputPanel = new LoggerOutputConfigPanel(m_configNavigation, -1, &m_raceCaptureConfig);
+	m_loggerOutputPanel = new LoggerOutputConfigPanel(m_configNavigation, -1, m_raceCaptureConfig);
 	m_loggerOutputPanel->InitComponents();
 
 	m_configNavigation->AddPage(m_gpsPanel,"GPS");
@@ -100,22 +99,16 @@ void ConfigPanel::InitOptions(){
 
 }
 
-void ConfigPanel::SetComm(RaceAnalyzerComm *comm){
-	m_comm = comm;
-}
-
 void ConfigPanel::OnReadConfig(wxCommandEvent &event){
 	UpdateStatus("Reading Configuration");
-	m_asyncComm = new AsyncRaceAnalyzerComm();
-	m_asyncComm->Create(m_comm, &m_raceCaptureConfig,this);
-	m_asyncComm->Run(AsyncRaceAnalyzerComm::ACTION_READ_CONFIG);
+	m_asyncComm = new AsyncRaceAnalyzerComm(m_comm, m_raceCaptureConfig,this);
+	m_asyncComm->RunReadConfig();
 }
 
 void ConfigPanel::OnWriteConfig(wxCommandEvent &event){
 	UpdateStatus("Writing Configuration");
-	m_asyncComm = new AsyncRaceAnalyzerComm();
-	m_asyncComm->Create(m_comm, &m_raceCaptureConfig,this);
-	m_asyncComm->Run(AsyncRaceAnalyzerComm::ACTION_WRITE_CONFIG);
+	m_asyncComm = new AsyncRaceAnalyzerComm(m_comm, m_raceCaptureConfig,this);
+	m_asyncComm->RunWriteConfig();
 }
 
 void ConfigPanel::UpdateStatus(wxString msg){
@@ -134,16 +127,20 @@ void ConfigPanel::OnProgress(int pct){
 	UpdateActivity(wxString::Format("Progress: %d%%",pct));
 }
 
+void ConfigPanel::OnConfigUpdated(){
+	m_analogInputPanel->OnConfigUpdated();
+	m_timerInputPanel->OnConfigUpdated();
+	m_accelInputPanel->OnConfigUpdated();
+	m_analogPulseOutPanel->OnConfigUpdated();
+	m_gpioPanel->OnConfigUpdated();
+	m_gpsPanel->OnConfigUpdated();
+	m_loggerOutputPanel->OnConfigUpdated();
+}
+
 void ConfigPanel::ReadConfigComplete(bool success, wxString msg){
 	if (success){
 		UpdateStatus("Read Configuration Complete");
-		m_analogInputPanel->OnConfigUpdated();
-		m_timerInputPanel->OnConfigUpdated();
-		m_accelInputPanel->OnConfigUpdated();
-		m_analogPulseOutPanel->OnConfigUpdated();
-		m_gpioPanel->OnConfigUpdated();
-		m_gpsPanel->OnConfigUpdated();
-		m_loggerOutputPanel->OnConfigUpdated();
+		OnConfigUpdated();
 	}
 	else{
 		UpdateStatus(wxString::Format("Read Configuration Failed: %s",msg.ToAscii()));
@@ -169,6 +166,10 @@ void ConfigPanel::FlashConfigComplete(bool success, wxString msg){
 	}
 }
 
+void ConfigPanel::OnConfigStale(wxCommandEvent &event){
+	OnConfigUpdated();
+}
+
 /*
 void ConfigPanel::OnStartWrite(wxTimerEvent &event){
 	try{
@@ -188,4 +189,5 @@ void ConfigPanel::OnStartWrite(wxTimerEvent &event){
 BEGIN_EVENT_TABLE ( ConfigPanel, wxPanel )
 	EVT_BUTTON(ID_BUTTON_READ_CONFIG,ConfigPanel::OnReadConfig)
 	EVT_BUTTON(ID_BUTTON_WRITE_CONFIG,ConfigPanel::OnWriteConfig)
+ 	EVT_COMMAND( CONFIG_STALE, CONFIG_STALE_EVENT, ConfigPanel::OnConfigStale)
 END_EVENT_TABLE()

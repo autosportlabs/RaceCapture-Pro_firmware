@@ -31,19 +31,16 @@ GPSPane::GPSPane(wxWindow *parent,
 
 GPSPane::~GPSPane(){}
 
-void GPSPane::CreateGPSView(int datalogId, int latitudeChannelId, int longitudeChannelId){
+void GPSPane::CreateGPSView(int datalogId, wxString &latitudeChannelName, wxString &longitudeChannelName){
 	m_datalogId = datalogId;
-	m_latitudeChannelId = latitudeChannelId;
-	m_longitudeChannelId = longitudeChannelId;
+	m_latitudeChannelName = latitudeChannelName;
+	m_longitudeChannelName = longitudeChannelName;
 
 	DatalogStore *store = m_chartParams.datalogStore;
 
-	DatalogChannels channels;
-	store->GetChannels(datalogId, channels);
-
 	wxArrayString channelNames;
-	channelNames.Add(channels[latitudeChannelId].name);
-	channelNames.Add(channels[longitudeChannelId].name);
+	channelNames.Add(m_latitudeChannelName);
+	channelNames.Add(m_longitudeChannelName);
 	store->ReadDatalog(m_channelData,datalogId,channelNames,0);
 
 	SetOffset(0);
@@ -110,6 +107,13 @@ void GPSPane::SetChartParams(ChartParams params){
 	m_chartParams = params;
 }
 
+void GPSPane::UpdateValue(wxString &name, float value){
+
+}
+
+void GPSPane::SetOffset(int offset){
+
+}
 
 BEGIN_EVENT_TABLE ( GPSPane , wxPanel )
 END_EVENT_TABLE()

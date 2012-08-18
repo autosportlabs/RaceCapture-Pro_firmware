@@ -233,3 +233,7 @@ int LineChart::AddSeries(Series *series){
 	return m_seriesArray.size() - 1;
 }
 
+Series * LineChart::GetSeries(int index){
+	return m_seriesArray[index];
+}
+

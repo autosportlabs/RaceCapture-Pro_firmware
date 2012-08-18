@@ -44,7 +44,9 @@ public:
 class RaceAnalyzerChannelView{
 
 public:
+	virtual void UpdateValue(wxString &channelName, float value) = 0;
 	virtual void SetChartParams(ChartParams params) = 0;
+	virtual void SetOffset(int offset) = 0;
 
 };
 

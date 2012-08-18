@@ -53,6 +53,9 @@ class DatalogChannelsPanel : public wxPanel{
 		void OnNewGPSView(wxCommandEvent &event);
 		void OnAddChannel(wxCommandEvent &event);
 		void DoGridContextMenu(wxGridEvent &event);
+		void OnPlay(wxCommandEvent &event);
+		void OnPause(wxCommandEvent &event);
+
 
 		wxArrayInt		m_datalogIdList;
 		wxNotebook 		*m_datalogSessionsNotebook;
@@ -74,7 +77,11 @@ enum{
 	ID_NEW_ANALOG_GAUGE,
 	ID_NEW_DIGITAL_GAUGE,
 	ID_NEW_GPS_VIEW,
-	ID_ADD_CHANNEL
+	ID_ADD_CHANNEL,
+	ID_PLAY_DATALOG,
+	ID_PAUSE_DATALOG,
+	ID_JUMP_BEGINNING_DATALOG,
+	ID_JUMP_END_DATALOG
 
 };
 

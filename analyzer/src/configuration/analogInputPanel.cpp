@@ -55,7 +55,7 @@ ChannelConfigExtraFields AnalogInputPanel::CreateExtendedChannelFields(int i){
 		ChannelConfigExtraField f;
 		SteppedSpinCtrl *spin = new SteppedSpinCtrl(this,wxID_ANY);
 		spin->SetStepValue(1);
-		spin->SetRange(ChannelConfig::MIN_PRECISION,ChannelConfig::MAX_PRECISION);
+		spin->SetRange(RaceCaptureConfig::MIN_PRECISION,RaceCaptureConfig::MAX_PRECISION);
 		spin->SetClientData(&cfg);
 		spin->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(AnalogInputPanel::OnPrecisionChanged),NULL,this);
 		m_loggingPrecisionSpinner[i] = spin;
