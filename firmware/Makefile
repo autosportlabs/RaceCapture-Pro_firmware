@@ -112,6 +112,8 @@ $(LOGGER_SRC_DIR)/gpioTasks.c \
 $(LOGGER_SRC_DIR)/loggerTask.c \
 $(LOGGER_SRC_DIR)/loggerTaskEx.c \
 $(LOGGER_SRC_DIR)/telemetryTask.c \
+$(LOGGER_SRC_DIR)/p2pTelemetry.c \
+$(LOGGER_SRC_DIR)/cellTelemetry.c \
 $(LOGGER_SRC_DIR)/gps.c \
 $(LOGGER_SRC_DIR)/cellModem.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \

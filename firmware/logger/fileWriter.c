@@ -141,7 +141,6 @@ void fileWriterTask(void *params){
 			//open next log file
 			rc = openNextLogFile(&g_logfile);
 			if (0 != rc){
-				SendString("Failed to open file ");
 				SendInt(rc);
 				SendCrlf();
 				EnableLED(LED3);
