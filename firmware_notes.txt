@@ -1,0 +1,42 @@
+How to program RaceCapture firmware:
+
+
+Windows / Linux:
+
+http://www.atmel.com/tools/ATMELSAM-BAIN-SYSTEMPROGRAMMER.aspx
+
+There are alternate Linux tool available via 3rd parties.
+
+TODO: add links here
+
+
+Instructions:
+
+-1. Save any RaceCapture configuration as the flashing process restores settings to factory defaults.
+0. Install SAM-BA software and necessary drivers to detect CPU while in SAM-BA mode (windows specific; Linux installations show up as /dev/ttyUSB0)
+1. Remove RaceCapture board from enclosure
+2. While depressing the TEST button on the board, apply power via USB for 20 seconds.
+3. Disconnect board
+4. Re-attach via USB
+5. Run programming software, specifying the firmware .bin file
+6. When complete, power cycle Race Capture again.
+
+
+
+Firmware Changelog:
+
+===0.3.0===
+
+- initial cut of cellular telemetry
+- refactored P2P telemetry into it's own module
+- removed a stray debug output in the SD writing routine
+
+===0.2.0===
+
+- Various fixes/ updates to support RaceAnalyzer application
+- Fixed script flashing routine
+- Added sample runtime channels
+
+
+
+
