@@ -9,11 +9,23 @@ static int g_telemetryActive;
 #define IDLE_TIMEOUT							configTICK_RATE_HZ / 1
 
 
+static void writeAuthJSON(const char *deviceId){
+	//send linefeed at slow intervals until we have the auth packet ack from server
+	for (int i = 0; i < 5; i++){
+		putsCell("\n");
+		vTaskDelay(84); //250ms pause
+	}
+	putsCell("{\"cmd\":{\"auth\":{\"deviceId\":\"");
+	putsCell(deviceId);
+	putsCell("\"}}}\n");
+	vTaskDelay(334); //~1000ms
+}
+
 static void writeSampleRecordJSON(SampleRecord * sampleRecord, uint32_t sampleTick){
 
 	//check for closed connection
 
-	putcCell('{');
+	putsCell("{\"data\":{");
 	int fieldCount = 0;
 	putsCell("\"tick\":");
 	putUintCell(sampleTick);
@@ -38,7 +50,7 @@ static void writeSampleRecordJSON(SampleRecord * sampleRecord, uint32_t sampleTi
 			putIntCell(sample->intValue);
 		}
 	}
-	putsCell("}\r\n");
+	putsCell("}}\n");
 }
 
 void cellTelemetryTask(void *params){
@@ -72,6 +84,7 @@ void cellTelemetryTask(void *params){
 			else{
 				if (0 == g_telemetryActive && cellReady){
 					if( 0 == connectNet("67.222.3.214","8080",0)){
+						writeAuthJSON("8f4240f8-0816-4896-8527-f1d7c5285ad9");
 						g_telemetryActive = 1;
 					}
 					else{
