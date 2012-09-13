@@ -19,11 +19,32 @@
 #include "tuning.xpm"
 #include "mjlj_logo_small.xpm"
 #include "import.xpm"
+#include "runtime_1.xpm"
+#include "runtime_2.xpm"
+#include "runtime_3.xpm"
+#include "runtime_4.xpm"
+#include "runtime_5.xpm"
+#include "runtime_6.xpm"
+#include "runtime_7.xpm"
+#include "analysis.xpm"
+#include "config.xpm"
+#include "config_1.xpm"
+#include "config_2.xpm"
+#include "analysis_runtime2.xpm"
+#include "script_edit.xpm"
+
+
+#include "page_lightning.xpm"
+#include "folder_database.xpm"
+#include "wrench.xpm"
+#include "go_bottom.xpm"
 
 #include "mjlj_icon.xpm"
 #include "mjlj_icon_med.xpm"
 #include "mjlj_icon_large.xpm"
 #include "mjlj_icon_xlarge.xpm"
+
+
 
 //wxAUI string definitions
 #define PANE_CONFIGURATION 		"config"
@@ -31,7 +52,6 @@
 #define PANE_ANALYZE			"analysis"
 #define PANE_SCRIPT				"script"
 
-#define CAPTION_ANALYSIS		"Analysis"
 #define CAPTION_RUNTIME 		"Runtime"
 #define CAPTION_CONFIG			"Configuration"
 #define CAPTION_SCRIPT			"Script"
@@ -45,7 +65,7 @@ enum{
 
 	ID_CONFIG_MODE,
 	ID_RUNTIME_MODE,
-	ID_ANALYZE_MODE,
+	ID_SCRIPT_MODE,
 
 	ID_HELP_ABOUT,
 	ID_IMPORT_DATALOG,
@@ -304,6 +324,11 @@ void MainFrame::OnAnalyzePerspective(wxCommandEvent& event){
 	SwitchToPerspective(2);
 }
 
+void MainFrame::OnScriptPerspective(wxCommandEvent &event){
+	SaveCurrentPerspective();
+	SwitchToPerspective(3);
+}
+
 void MainFrame::InitializeMenus(){
 
 	//initialize main menu
@@ -356,25 +381,28 @@ void MainFrame::InitializeMenus(){
 
 	//initialize tool bar
 	wxToolBar* toolBar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_HORIZONTAL | wxTB_FLAT | wxTB_NODIVIDER);
-	wxBitmap bmpNew(filenew_xpm);
-	wxBitmap bmpOpen(fileopen_xpm);
+	wxBitmap bmpNew(page_lightning_xpm);
+	wxBitmap bmpOpen(folder_database_xpm);
 	wxBitmap bmpGetConfig(getconfig_xpm);
 	wxBitmap bmpWriteConfig(writeconfig_xpm);
 	wxBitmap bmpCommitFlash(commitflash_xpm);
 	wxBitmap bmpChart(line_chart_xpm);
-	wxBitmap bmpRuntime(runtime_xpm);
-	wxBitmap bmpAdvanceTable(advancetable_xpm);
-	wxBitmap bmpAnalyze(tuning_xpm);
+	wxBitmap bmpRuntime(runtime_7_xpm);
 	wxBitmap bmpImport(import_xpm);
 
 	toolBar->AddTool(wxID_NEW, bmpNew, wxT("Create new Race Event"));
 	toolBar->AddTool(wxID_OPEN, bmpOpen, wxT("Open a Race Event"));
-	toolBar->AddTool(ID_IMPORT_DATALOG,bmpImport,wxT("ImportDatalog"));
+	toolBar->AddTool(ID_IMPORT_DATALOG,go_bottom_xpm,wxT("ImportDatalog"));
 
 	toolBar->AddSeparator();
-	toolBar->AddTool(ID_CONFIG_MODE, bmpAdvanceTable, wxT("Edit Configuration"));
-	toolBar->AddTool(ID_RUNTIME_MODE, bmpChart, wxT("Monitor Runtime Channels"));
-	toolBar->AddTool(ID_ANALYZE_MODE, bmpAnalyze, wxT("Analysis Mode"));
+	toolBar->AddTool(ID_CONFIG_MODE, wrench_xpm, wxT("Edit Configuration"));
+	toolBar->AddTool(ID_RUNTIME_MODE, analysis_runtime2_xpm, wxT("Analysis/Monitor Mode"));
+
+//	toolBar->AddTool(ID_RUNTIME_MODE, analysis_runtime2_xpm, wxT("Monitor Runtime Channels"));
+//	toolBar->AddTool(ID_ANALYZE_MODE, analysis_xpm, wxT("Analysis Mode"));
+	toolBar->AddTool(ID_SCRIPT_MODE, script_edit_xpm, wxT("Script Editor"));
+
+	toolBar->AddSeparator();
 
 	toolBar->Realize();
 	SetToolBar(toolBar);
@@ -388,9 +416,6 @@ void MainFrame::InitializeComponents(){
 	m_channelsPanel->SetAppPrefs(&_appPrefs);
 
 	_frameManager.AddPane(m_channelsPanel, wxAuiPaneInfo().Name(wxT(PANE_RUNTIME)).Caption(wxT(CAPTION_RUNTIME)).Center().Hide());
-
-	m_analyzePanel = new wxPanel(this);
-	_frameManager.AddPane(m_analyzePanel, wxAuiPaneInfo().Name(wxT(PANE_ANALYZE)).Caption(wxT(CAPTION_ANALYSIS)).Center().Hide());
 
 	m_configPanel = new ConfigPanel(ConfigPanelParams(&m_raceAnalyzerComm, &m_currentConfig), this);
 	_frameManager.AddPane(m_configPanel, wxAuiPaneInfo().Name(wxT(PANE_CONFIGURATION)).Caption(wxT(CAPTION_CONFIG)).Center().Hide());
@@ -414,7 +439,6 @@ void MainFrame::NotifyConfigChanged(){
 
 	wxCommandEvent event( CONFIG_STALE_EVENT, CONFIG_STALE );
 	event.SetEventObject(this);
-	m_analyzePanel->AddPendingEvent(event);
 	m_configPanel->AddPendingEvent(event);
 	m_channelsPanel->AddPendingEvent(event);
 }
@@ -1041,7 +1065,7 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 
 	EVT_MENU( ID_CONFIG_MODE, MainFrame::OnConfigPerspective)
 	EVT_MENU( ID_RUNTIME_MODE, MainFrame::OnRuntimePerspective)
-	EVT_MENU( ID_ANALYZE_MODE, MainFrame::OnAnalyzePerspective)
+	EVT_MENU( ID_SCRIPT_MODE, MainFrame::OnScriptPerspective)
 
 	EVT_MENU( ID_HELP_ABOUT, MainFrame::OnHelpAbout)
 

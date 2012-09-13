@@ -124,6 +124,7 @@ class MainFrame : public wxFrame, public RuntimeListener
     void OnConfigPerspective(wxCommandEvent &event);
     void OnRuntimePerspective(wxCommandEvent &event);
     void OnAnalyzePerspective(wxCommandEvent &event);
+    void OnScriptPerspective(wxCommandEvent &event);
 	void OnRestoreDefaultView(wxCommandEvent &event);
 
 	void OnImportWizardFinished(wxWizardEvent &event);
@@ -171,7 +172,6 @@ private:
 
 	ConfigPanel					*m_configPanel;
 	ScriptPanel					*m_scriptPanel;
-	wxPanel						*m_analyzePanel;
 	DatalogChannelsPanel 		*m_channelsPanel;
 
 
