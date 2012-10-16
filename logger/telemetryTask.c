@@ -11,6 +11,7 @@
 #include "sampleRecord.h"
 #include "modp_numtoa.h"
 #include "loggerHardware.h"
+#include "loggerConfig.h"
 #include "usb_comm.h"
 #include "usart.h"
 #include "string.h"
@@ -38,7 +39,7 @@ portBASE_TYPE queueTelemetryRecord(SampleRecord * sr){
 	}
 }
 
-void createTelemetryTask(){
+void createTelemetryTask(int telemetryLoggingMode){
 
 	initUsart0(USART_MODE_8N1, 115200);
 
@@ -47,7 +48,17 @@ void createTelemetryTask(){
 		//TODO log error
 		return;
 	}
-	xTaskCreate( cellTelemetryTask,( signed portCHAR * ) "telemetry", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
+
+	switch(telemetryLoggingMode){
+		case TELEMETRY_MODE_DISABLED:
+			break;
+		case TELEMETRY_MODE_CELL:
+			xTaskCreate( cellTelemetryTask, ( signed portCHAR * ) "telemetry", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
+			break;
+		case TELEMETRY_MODE_P2P:
+			xTaskCreate( p2pTelemetryTask, ( signed portCHAR * ) "telemetry", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
+			break;
+	}
 }
 
 
