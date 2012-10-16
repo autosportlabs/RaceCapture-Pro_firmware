@@ -763,7 +763,7 @@ DSTATUS disk_initialize (
 			}
 			unsigned int attempts = 3200;
 			while (attempts-- && send_cmd(cmd, 0));			/* Wait for leaving idle state */
-			if (attempts || send_cmd(CMD16, 512) != 0)	ty = 0; /* Set R/W block length to 512 */
+			if (!attempts || send_cmd(CMD16, 512) != 0)	ty = 0; /* Set R/W block length to 512 */
 		}
 	}
 	CardType = ty;
