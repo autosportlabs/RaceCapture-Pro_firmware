@@ -39,7 +39,7 @@ portBASE_TYPE queueTelemetryRecord(SampleRecord * sr){
 	}
 }
 
-void createTelemetryTask(int telemetryLoggingMode){
+void createTelemetryTask(){
 
 	initUsart0(USART_MODE_8N1, 115200);
 
@@ -49,7 +49,7 @@ void createTelemetryTask(int telemetryLoggingMode){
 		return;
 	}
 
-	switch(telemetryLoggingMode){
+	switch(getWorkingLoggerConfig()->LoggerOutputConfig.telemetryMode){
 		case TELEMETRY_MODE_DISABLED:
 			break;
 		case TELEMETRY_MODE_CELL:
