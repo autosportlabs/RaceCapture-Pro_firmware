@@ -25,6 +25,12 @@ Instructions:
 
 Firmware Changelog:
 
+===0.3.3===
+- Added wait for telemetry authorization in cellTelemetry.c
+
+===0.3.2===
+- Fixed bug where telemetry task would not start
+
 ===0.3.1===
 - Select telemetry logging mode at strup based on configuration
 - Fixed SD card detection / init bug
