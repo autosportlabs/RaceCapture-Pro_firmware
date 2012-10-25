@@ -141,8 +141,6 @@ void fileWriterTask(void *params){
 			//open next log file
 			rc = openNextLogFile(&g_logfile);
 			if (0 != rc){
-				SendInt(rc);
-				SendCrlf();
 				EnableLED(LED3);
 			}
 

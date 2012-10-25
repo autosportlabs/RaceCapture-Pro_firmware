@@ -13,17 +13,23 @@ TODO: add links here
 Instructions:
 
 -1. Save any RaceCapture configuration as the flashing process restores settings to factory defaults.
-0. Install SAM-BA software and necessary drivers to detect CPU while in SAM-BA mode (windows specific; Linux installations show up as /dev/ttyUSB0)
-1. Remove RaceCapture board from enclosure
-2. While depressing the TEST button on the board, apply power via USB for 20 seconds.
-3. Disconnect board
-4. Re-attach via USB
-5. Run programming software, specifying the firmware .bin file
-6. When complete, power cycle Race Capture again.
+0 . Install SAM-BA software and necessary drivers to detect CPU while in SAM-BA mode (windows specific; Linux installations show up as /dev/ttyUSB0)
+1 . Remove RaceCapture board from enclosure
+2 . While depressing the TEST button on the board, apply power via USB for 20 seconds.
+3 . Disconnect board
+4 . Re-attach via USB
+5 . Run programming software, specifying the firmware .bin file
+6 . When complete, power cycle Race Capture again.
 
 
 
 Firmware Changelog:
+
+===0.3.1===
+- Select telemetry logging mode at strup based on configuration
+- Fixed SD card detection / init bug
+- Removed extraneous debug code
+- Removed activation of LED3 during cellular initialization 
 
 ===0.3.0===
 
