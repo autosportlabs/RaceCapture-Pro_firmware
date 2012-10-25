@@ -30,6 +30,9 @@
 # -  2. Dec. 2005  - fixed ihex and binary file extensions (mth)
 #
 
+include version.mk
+RELEASE_DIR ?= .
+RELEASE_NAME = RaceCapturePro-$(MAJOR).$(MINOR).$(BUGFIX).bin
 
 # MCU name and submodel
 MCU      = arm7tdmi
@@ -112,6 +115,8 @@ $(LOGGER_SRC_DIR)/gpioTasks.c \
 $(LOGGER_SRC_DIR)/loggerTask.c \
 $(LOGGER_SRC_DIR)/loggerTaskEx.c \
 $(LOGGER_SRC_DIR)/telemetryTask.c \
+$(LOGGER_SRC_DIR)/p2pTelemetry.c \
+$(LOGGER_SRC_DIR)/cellTelemetry.c \
 $(LOGGER_SRC_DIR)/gps.c \
 $(LOGGER_SRC_DIR)/cellModem.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
@@ -186,7 +191,7 @@ EXTRA_LIBDIRS = SAM7s_lua/src
 CSTANDARD = -std=gnu99
 
 # Place -D or -U options for C here
-CDEFS  = -D$(RUN_MODE)
+CDEFS  = -D$(RUN_MODE) -DMAJOR_REV=\"$(MAJOR)\" -DMINOR_REV=\"$(MINOR)\" -DBUGFIX_REV=\"$(BUGFIX)\"
 
 # Compile for SAM7 using GCC
 CDEFS += -DSAM7_GCC
@@ -517,7 +522,7 @@ clean_list :
 	@echo
 	@echo $(MSG_CLEANING)
 	$(REMOVE) $(TARGET).hex
-	$(REMOVE) $(TARGET).bin
+	$(REMOVE) *.bin
 	$(REMOVE) $(TARGET).obj
 	$(REMOVE) $(TARGET).elf
 	$(REMOVE) $(TARGET).map
@@ -553,6 +558,10 @@ clean_list :
 build elf hex bin lss sym clean clean_list program
 
 
+release : clean all
+	mv main.bin $(RELEASE_DIR)/$(RELEASE_NAME)
+	cp RELEASE_NOTES.TXT $(RELEASE_DIR)
+	
 
 # **********************************************************************************************
 #                            FLASH PROGRAMMING      (using OpenOCD 0.5.0 and Olimex ARM-USB-OCD)

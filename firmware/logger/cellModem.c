@@ -2,9 +2,6 @@
 #include "usart.h"
 #include <string.h>
 #include "usb_comm.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
 #include "modp_numtoa.h"
 
 #define min(a,b) ((a)<(b)?(a):(b))
@@ -14,13 +11,23 @@
 char g_cellBuffer[200];
 char g_latestTextMsg[200];
 
-#define READ_TIMEOUT 900
+#define PAUSE_DELAY 167
 
+#define READ_TIMEOUT 334
+#define SHORT_TIMEOUT 1500
+#define MEDIUM_TIMEOUT 5000
+#define CONNECT_TIMEOUT 10000
+
+//#define DEBUG
 
 static int readModemWait(portTickType delay){
-	//SendString("read:");
+#ifdef DEBUG
+	SendString("Read:");
+#endif
 	int c = usart0_readLineWait(g_cellBuffer, sizeof(g_cellBuffer),delay);
-	//SendString(g_cellBuffer);
+#ifdef DEBUG
+	SendString(g_cellBuffer);
+#endif
 	return c;
 }
 
@@ -30,20 +37,21 @@ static int readModem(void){
 
 static int putsModem(const char *s){
 	int c = usart0_puts(s);
-	//SendString("Write: ");
-	//SendString(s);
-	//SendCrlf();
+#ifdef DEBUG
+	SendString("Write: ");
+	SendString(s);
+	SendCrlf();
+#endif
 	return c;
 }
 
-static int putc(char c){
+int putcCell(char c){
 	usart0_putchar(c);
-	//SendChar(c);
 	return 0;
 }
 
 static void flushModem(void){
-	putc(26);
+	g_cellBuffer[0] = '\0';
 	usart0_flush();
 }
 
@@ -54,16 +62,18 @@ static void stripTrailingWhitespace(char *data){
 	*ch = 0;
 }
 
-static int sendCommand(const char * cmd){
-
+static int sendCommandWait(const char *cmd, portTickType wait){
 	flushModem();
 	putsModem(cmd);
+	readModemWait(wait);
 	readModemWait(READ_TIMEOUT);
-	readModemWait(READ_TIMEOUT);
+	vTaskDelay(PAUSE_DELAY); //maybe take this out later - debugging SIM900
 	return strncmp(g_cellBuffer,"OK",2) == 0;
 }
 
-
+static int sendCommand(const char * cmd){
+	return sendCommandWait(cmd, READ_TIMEOUT);
+}
 
 static int isNetworkConnected(){
 
@@ -73,16 +83,125 @@ static int isNetworkConnected(){
 	return connected;
 }
 
-int initCellModem(void){
+static int isDataReady(){
+	flushModem();
+	sendCommand("AT+CGATT?\r");
+	int dataReady = (0 == strncmp(g_cellBuffer,"+CGATT: 1",9));
+	return dataReady;
+}
 
-	initUsart0(USART_MODE_8N1, 115200);
+static int getIpAddress(){
+	putsModem("AT+CIFSR\r");
+	readModemWait(MEDIUM_TIMEOUT);
+	readModemWait(READ_TIMEOUT);
+	if (strlen(g_cellBuffer) == 0) return -1;
+	if (strncmp(g_cellBuffer, "ERROR", 5) == 0) return -2;
+	vTaskDelay(PAUSE_DELAY);
+	return 0;
+}
 
-	//wait until network is connected
-	while (1){
-		if (isNetworkConnected()) break;
-		vTaskDelay(900);
+int configureNet(void){
+	if (!sendCommand("AT+CIPMUX=0\r")) return -1;  //TODO enable for SIM900
+	if (!sendCommand("AT+CIPMODE=1\r")) return -1;
+	//if (!sendCommand("AT+CIPCCFG=3,2,256,1\r")) return -1;
+	if (!sendCommandWait("AT+CSTT=\"epc.tmobile.com\",\"\",\"\"\r", READ_TIMEOUT)) return -2;
+//	if (!sendCommand("AT+CIPHEAD=1\r")) return -2;
+	if (!sendCommandWait("AT+CIICR\r", CONNECT_TIMEOUT)) return -4;
+	if (getIpAddress() !=0 ) return -5;
+	return 0;
+}
+
+
+int connectNet(const char *host, const char *port, int udpMode){
+	flushModem();
+	strcpy(g_cellBuffer, "AT+CIPSTART=\"");
+	strcat(g_cellBuffer, udpMode ? "UDP" : "TCP");
+	strcat(g_cellBuffer, "\",\"");
+	strcat(g_cellBuffer, host);
+	strcat(g_cellBuffer, "\",\"");
+	strcat(g_cellBuffer, port);
+	strcat(g_cellBuffer, "\"\r");
+	putsModem(g_cellBuffer);
+	int attempt = 0;
+	while (attempt++ < 5){
+		readModemWait(SHORT_TIMEOUT);
+		if (strncmp(g_cellBuffer,"CONNECT",7) == 0) return 0;
+		if (strncmp(g_cellBuffer,"ERROR",5) == 0) return -1;
+		if (strncmp(g_cellBuffer,"FAIL",4) == 0) return -1;
+		if (strncmp(g_cellBuffer,"CLOSED",6) == 0) return -1;
 	}
+	return -1;
+}
 
+int closeNet(){
+	vTaskDelay(335); //~1000ms
+	putsModem("+++");
+	vTaskDelay(168); //~500ms
+	if (!sendCommandWait("AT+CIPCLOSE\r", SHORT_TIMEOUT)) return -1;
+	return 0;
+}
+
+int startNetData(){
+	flushModem();
+	putsModem("AT+CIPSEND\r");
+	while (1){
+		readModemWait(READ_TIMEOUT);
+		if (strncmp(g_cellBuffer,">",1) == 0) return 0;
+		if (strncmp(g_cellBuffer,"ERROR",5) == 0) return -1;
+	}
+}
+
+int endNetData(){
+	putcCell(26);
+	while (1){
+		readModemWait(READ_TIMEOUT);
+		if (strncmp(g_cellBuffer,"DATA ACCEPT",7) == 0) return 0;
+		if (strncmp(g_cellBuffer,"SEND OK",7) == 0) return 0;
+		if (strncmp(g_cellBuffer,"ERROR",5) == 0) return -1;
+	}
+}
+
+const char * readsCell(portTickType timeout){
+	readModemWait(timeout);
+	return g_cellBuffer;
+}
+
+int putsCell(const char *data){
+	return putsModem(data);
+}
+
+void putUintCell(uint32_t num){
+	char buf[10];
+	modp_uitoa10(num,buf);
+	putsCell(buf);
+}
+
+void putIntCell(int num){
+	char buf[10];
+	modp_itoa10(num,buf);
+	putsCell(buf);
+}
+
+void putFloatCell(float num, int precision){
+	char buf[20];
+	modp_ftoa(num, buf, precision);
+	putsCell(buf);
+}
+
+void putQuotedStringCell(char *s){
+	usart0_putchar('"');
+	usart0_puts(s);
+	usart0_putchar('"');
+}
+
+int isNetConnectionErrorOrClosed(){
+	const char * readData = readsCell(0);
+	if (strncmp(readData,"CLOSED",6) == 0) return 1;
+	if (strncmp(readData,"ERROR", 5) == 0) return 1;
+	return 0;
+}
+
+int configureTexting(void){
 	//Setup for Texting
 	if (!sendCommand("AT+CMGF=1\r")) return -2;
 	vTaskDelay(100);
@@ -94,6 +213,39 @@ int initCellModem(void){
 	vTaskDelay(100);
 	if (!sendCommand("AT+CNMI=0,0\r")) return -6;
 	vTaskDelay(100);
+	return 0;
+}
+
+int loadDefaultCellConfig(){
+	if (!sendCommand("ATZ\r")) return -1;
+	return 0;
+}
+
+void powerDownCellModem(){
+	sendCommand("\rAT+CPOWD=1\r");
+}
+
+int initCellModem(void){
+
+	initUsart0(USART_MODE_8N1, 115200);
+
+	closeNet();
+
+	while (1){
+		if (loadDefaultCellConfig() == 0) break;
+		vTaskDelay(900);
+	}
+	if (!sendCommand("ATE0\r")) return -1;
+	sendCommand("AT+CIPSHUT\r");
+	//wait until network is connected
+	while (1){
+		if (isNetworkConnected()) break;
+		vTaskDelay(900);
+	}
+	while (1){
+		if (isDataReady()) break;
+		vTaskDelay(900);
+	}
 	return 0;
 }
 
@@ -144,7 +296,7 @@ int sendText(const char * number, const char * msg){
 	putsModem(number);
 	putsModem("\"\r");
 	putsModem(msg);
-	putc(26);
+	putcCell(26);
 	readModem();
 	readModem();
 	readModem();
