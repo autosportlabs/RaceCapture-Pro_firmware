@@ -25,6 +25,8 @@ Instructions:
 
 Firmware Changelog:
 
+===0.3.4===
+- Handles no telemetry authorizations scenario correctly
 ===0.3.3===
 - Added wait for telemetry authorization in cellTelemetry.c
 
