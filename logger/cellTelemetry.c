@@ -70,12 +70,10 @@ void cellTelemetryTask(void *params){
 		g_telemetryActive = 0;
 		int cellReady = 0;
 
-		EnableLED(LED3);
 		while (cellReady == 0){
 			if (0 == initCellModem()){
 				if (0 == configureNet()){
 					cellReady = 1;
-					DisableLED(LED3);
 				}
 			}
 		}
@@ -106,11 +104,9 @@ void cellTelemetryTask(void *params){
 					else{
 						//a null sample record means end of sample run; like an EOF
 						if (NULL != sr){
-							ToggleLED(LED3);
 							writeSampleRecordJSON(sr,sampleTick);
 						}
 						else{
-							DisableLED(LED3);
 							g_telemetryActive = 0;
 							closeNet();
 						}

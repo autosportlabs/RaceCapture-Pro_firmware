@@ -90,8 +90,8 @@ void loggerTaskEx(void *params){
 				vTaskDelayUntil( &xLastWakeTime, xFrequency );
 			}
 
-			if (!queueLogfileRecord(NULL)) EnableLED(LED3);
-			if (!queueTelemetryRecord(NULL)) EnableLED(LED3);
+			queueLogfileRecord(NULL);
+			queueTelemetryRecord(NULL);
 
 			DisableLED(LED2);
 		}
