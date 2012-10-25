@@ -87,15 +87,14 @@ void cellTelemetryTask(void *params){
 				//writeSampleRecordBinary(NULL,sampleTick);
 			}
 			else{
-				if (0 == g_telemetryActive && cellReady){
-					if( 0 == connectNet("67.222.3.214","8080",0)){
-						if (0 == writeAuthJSON("8f4240f8-0816-4896-8527-f1d7c5285ad9")){
+				if (0 == g_telemetryActive){
+					if( 0 == connectNet("67.222.3.214","8080",0) &&
+						0 == writeAuthJSON("8f4240f8-0816-4896-8527-f1d7c5285ad9")){
 							g_telemetryActive = 1;
 						}
-					}
-					else{
-						break;
-					}
+						else{
+							break;
+						}
 				}
 				if (g_telemetryActive){
 					if (isNetConnectionErrorOrClosed()){
