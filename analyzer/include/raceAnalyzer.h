@@ -88,7 +88,6 @@ class MainFrame : public wxFrame, public RuntimeListener
 	void CreateDefaultPerspectives();
 	void CreateDefaultConfigPerspective();
 	void CreateDefaultRuntimePerspective();
-	void CreateDefaultAnalyzePerspective();
 	void CreateDefaultScriptPerspective();
 	void ShowSplashScreen();
 	void SyncControls();
@@ -111,6 +110,7 @@ class MainFrame : public wxFrame, public RuntimeListener
   	//events
   	void OnHelpAbout(wxCommandEvent &event);
 
+  	void OnRequestDatalogData(wxCommandEvent &event);
   	void OnConfigChanged(wxCommandEvent &event);
   	void OnFileExit(wxCommandEvent &event);
   	void OnExit(wxCloseEvent& WXUNUSED(event));

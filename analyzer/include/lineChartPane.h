@@ -12,8 +12,9 @@
 #include "lineChart.h"
 #include "chartBase.h"
 
+DECLARE_EVENT_TYPE ( REQUEST_DATALOG_DATA_EVENT, -1 )
 
-class LineChartPane : public wxPanel, public RaceAnalyzerChannelView {
+class LineChartPane : public wxPanel, public RaceAnalyzerChannelView, public HistoricalView {
 
 public:
 	LineChartPane();
@@ -29,11 +30,14 @@ public:
 	LineChart * GetLineChart();
 
 	void OnScroll(wxScrollEvent &event);
-	void CreateChart(DatalogChannelSelectionSet *selectionSet);
+	void ConfigureChart(DatalogChannelSelectionSet *selectionSet);
 
 	//from RaceAnalyzerChannelView
 	void SetChartParams(ChartParams params);
-	void UpdateValue(wxString &name, float value);
+	void SetBufferSize(wxString &channelName, size_t size);
+	void UpdateValueRange(wxString &channel, size_t fromIndex, size_t toIndex, ChartValues &values);
+	void UpdateValue(wxString &name, size_t index, double value);
+	void ScrollLineChart(int thumbPosition);
 	void SetOffset(int offset);
 
 private:
@@ -47,6 +51,6 @@ private:
 enum{
 
    ID_LOGVIEWER_SCROLL			= wxID_HIGHEST + 1,
-
+   ID_REQUEST_DATALOG_DATA
 };
 #endif /* LOGVIEWER_H_ */

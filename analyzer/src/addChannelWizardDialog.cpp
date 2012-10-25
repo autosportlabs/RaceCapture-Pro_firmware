@@ -10,96 +10,37 @@
 #include "logging.h"
 #include "wxUtils.h"
 
-#include "lapDetectorNewChannelProcessor.h"
-#include "scaledValueNewChannelProcessor.h"
-
 
 enum{
 	ID_ADD_CHANNEL_WIZ_SELECT = wxID_HIGHEST + 1,
 	ID_ADD_CHANNEL_NEW_CHANNELS_GRID,
+	ID_ADD_CHANNEL_GRID,
 	ID_ADD_CHANNEL_WIZ_START_ADD_CHANNEL,
 	ID_ADD_CHANNEL_WIZ_ADD_CHANNEL_PROGRESS,
 	ID_ADD_CHANNEL_WIZ_ADD_CHANNEL_RESULT
 };
 
-#include <wx/arrimpl.cpp> // This is a magic incantation which must be done!
- WX_DEFINE_OBJARRAY(ChannelProcessorDescriptions);
-
-ChannelProcessorDescription::ChannelProcessorDescription(wxString name, wxString description, NewChannelProcessor processor, NewChannelOptionsPageFactory * wizardPageFactory) :
-		m_name(name),m_description(description),m_processor(processor), m_wizardPageFactory(wizardPageFactory)
-{}
 
 NewChannelFinishPage::NewChannelFinishPage(wxWizard *parent) : wxWizardPageSimple(parent){
 
     wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
-    mainSizer->Add(new wxStaticText(this, -1, "Complete. The New channel has been added to the channel list"),1,wxALL | wxEXPAND,1 );
+    mainSizer->Add(new wxStaticText(this, -1, "Complete. Press finish to add the selected channels to the view."),1,wxALL | wxEXPAND,1 );
     SetSizer(mainSizer);
     mainSizer->Fit(this);
 }
 
-NewChannelProgressPage::NewChannelProgressPage(wxWizard *parent, AddChannelWizardParams *params) :
+
+ChannelSelectorPage::ChannelSelectorPage(wxWizard *parent, AddChannelWizardParams *params) :
 	wxWizardPageSimple(parent),m_params(params){
-}
 
-void NewChannelProgressPage::OnWizardPageChanged(wxWizardEvent &event){
-
-	/*
-	m_importing = false;
-	UpdateUIState();
-	*/
-}
-
-void NewChannelProgressPage::OnWizardPageChanging(wxWizardEvent &event){
-
-	/*
-	m_importing = false;
-	UpdateUIState();
-	*/
-}
-
-void NewChannelProgressPage::OnWizardPageFinished(wxWizardEvent &event){
-
-}
-
-void NewChannelProgressPage::OnStartNewChannel(wxCommandEvent &event){
-
-}
-
-void NewChannelProgressPage::OnNewChannelProgress(wxCommandEvent &event){
-	//	int percent = event.GetInt();
-	//	m_progressGauge->SetValue(percent);
-	//	m_progressMessage->SetLabel(wxString::Format("Progress: %d %%",percent));
-
-}
-
-void NewChannelProgressPage::OnNewChannelResult(wxCommandEvent &event){
-
-}
-
-BEGIN_EVENT_TABLE ( NewChannelProgressPage, wxWizardPageSimple )
-
-	EVT_WIZARD_PAGE_CHANGED(wxID_ANY, NewChannelProgressPage::OnWizardPageChanged)
-	EVT_WIZARD_PAGE_CHANGING(wxID_ANY, NewChannelProgressPage::OnWizardPageChanging)
-	EVT_WIZARD_FINISHED(wxID_ANY, NewChannelProgressPage::OnWizardPageFinished)
-	EVT_BUTTON(ID_ADD_CHANNEL_WIZ_START_ADD_CHANNEL, NewChannelProgressPage::OnStartNewChannel)
-	EVT_COMMAND( ID_ADD_CHANNEL_WIZ_ADD_CHANNEL_PROGRESS, ADD_CHANNEL_PROGRESS_EVENT, NewChannelProgressPage::OnNewChannelProgress )
-	EVT_COMMAND( ID_ADD_CHANNEL_WIZ_ADD_CHANNEL_RESULT, ADD_CHANNEL_RESULT_EVENT, NewChannelProgressPage::OnNewChannelResult)
-
-END_EVENT_TABLE()
-
-
-SelectNewChannelTypePage::SelectNewChannelTypePage(wxWizard *parent, AddChannelWizardParams *params, ChannelProcessorDescriptions *processorDescriptions) :
-	wxWizardPageSimple(parent),m_params(params),selectedChannelIndex(-1),m_processorDescriptions(processorDescriptions){
-
-	m_wizardParent = parent;
 	wxFlexGridSizer *innerSizer = new wxFlexGridSizer(2,1,3,3);
 	innerSizer->AddGrowableCol(0);
 	innerSizer->AddGrowableRow(1);
 
-	innerSizer->Add(new wxStaticText(this, -1, "Select Channel Type"));
+	innerSizer->Add(new wxStaticText(this, -1, "Select Channel"));
 
-	wxGrid *grid = CreateNewChannelsGrid();
-	PopulateAvailableNewChannels(parent, grid,processorDescriptions);
+	wxGrid *grid = CreateChannelsGrid();
+	PopulateAvailableChannels(grid, params->raceCaptureConfig);
 	grid->SelectRow(0,false);
 
 	grid->AutoSize();
@@ -109,26 +50,163 @@ SelectNewChannelTypePage::SelectNewChannelTypePage(wxWizard *parent, AddChannelW
     wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
     mainSizer->Add(innerSizer,1,wxALL | wxEXPAND,1 );
 
+    m_channelsGrid = grid;
+
     SetSizer(mainSizer);
     mainSizer->Fit(this);
 }
 
-void SelectNewChannelTypePage::AppendNewChannelType(wxGrid *grid, ChannelProcessorDescription &channelProcessorDescription){
-	grid->AppendRows(1);
-	int lastIndex = grid->GetRows() - 1;
-	grid->SetCellValue(lastIndex,0,channelProcessorDescription.m_name);
-	grid->SetCellValue(lastIndex,1,channelProcessorDescription.m_description);
+wxArrayString ChannelSelectorPage::GetSelectedChannels(){
+
+	wxArrayString selectedNames;
+	size_t count = m_channelsGrid->GetRows();
+	for (size_t i = 0; i < count; i++){
+		if (m_channelsGrid->IsInSelection(i,0)){
+			selectedNames.Add(m_channelsGrid->GetCellValue(i,0));
+		}
+	}
+	return selectedNames;
 }
 
-void SelectNewChannelTypePage::PopulateAvailableNewChannels(wxWizard *wizardParent, wxGrid *grid, ChannelProcessorDescriptions *processorDescriptions){
+wxGrid * ChannelSelectorPage::CreateChannelsGrid(){
 
-	for (size_t i = 0; i < processorDescriptions->size();i++){
-		ChannelProcessorDescription d = processorDescriptions->Item(i);
-		AppendNewChannelType(grid,d);
+	wxGrid *grid = new wxGrid(this, ID_ADD_CHANNEL_GRID);
+
+	grid->SetEditable(false);
+	wxString name;
+	wxString notes;
+
+	grid->CreateGrid(0,2);
+	grid->SetSelectionMode(wxGrid::wxGridSelectRows);
+	grid->EnableDragRowSize(false);
+
+	grid->SetColLabelValue(0,"Channel");
+	grid->SetColLabelValue(1,"Units");
+
+	return grid;
+}
+
+
+void ChannelSelectorPage::AppendChannelItem(wxGrid *grid, ChannelConfig *channelConfig){
+	grid->AppendRows(1);
+	int lastIndex = grid->GetRows() - 1;
+	grid->SetCellValue(lastIndex,0,channelConfig->label);
+	grid->SetCellValue(lastIndex,1,channelConfig->units);
+}
+
+void ChannelSelectorPage::PopulateAvailableChannels(wxGrid *grid, RaceCaptureConfig *config){
+
+	AppendChannelItem(grid, &config->gpsConfig.lapCountCfg);
+	AppendChannelItem(grid, &config->gpsConfig.lapTimeCfg);
+	AppendChannelItem(grid, &config->gpsConfig.qualityCfg);
+	AppendChannelItem(grid, &config->gpsConfig.satellitesCfg);
+	AppendChannelItem(grid, &config->gpsConfig.latitudeCfg);
+	AppendChannelItem(grid, &config->gpsConfig.longitudeCfg);
+	AppendChannelItem(grid, &config->gpsConfig.timeCfg);
+	AppendChannelItem(grid, &config->gpsConfig.velocityCfg);
+
+	for (size_t i = 0; i < CONFIG_ANALOG_CHANNELS - 1; i++ ){
+		AppendChannelItem(grid, &config->analogConfigs[i].channelConfig);
+	}
+
+	for (size_t i = 0; i < CONFIG_TIMER_CHANNELS - 1; i++){
+		AppendChannelItem(grid, &config->timerConfigs[i].channelConfig);
+	}
+
+	for (size_t i = 0; i < CONFIG_ANALOG_PULSE_CHANNELS - 1; i++){
+		AppendChannelItem(grid, &config->pwmConfigs[i].channelConfig);
+	}
+
+	for (size_t i = 0; i < CONFIG_GPIO_CHANNELS - 1; i++){
+		AppendChannelItem(grid, &config->gpioConfigs[i].channelConfig);
+	}
+
+	for (size_t i = 0; i < CONFIG_ACCEL_CHANNELS - 1; i++){
+		AppendChannelItem(grid, &config->accelConfigs[i].channelConfig);
 	}
 }
 
-wxGrid * SelectNewChannelTypePage::CreateNewChannelsGrid(){
+void ChannelSelectorPage::OnWizardPageChanged(wxWizardEvent &event){
+	int i=1;
+		int b=i;
+	/*
+	m_importing = false;
+	UpdateUIState();
+	*/
+}
+
+void ChannelSelectorPage::OnWizardPageChanging(wxWizardEvent &event){
+	int i=1;
+		int b=i;
+	/*
+	m_importing = false;
+	UpdateUIState();
+	*/
+}
+
+BEGIN_EVENT_TABLE ( ChannelSelectorPage, wxWizardPageSimple )
+
+	EVT_WIZARD_PAGE_CHANGED(wxID_ANY, ChannelSelectorPage::OnWizardPageChanged)
+	EVT_WIZARD_PAGE_CHANGING(wxID_ANY, ChannelSelectorPage::OnWizardPageChanging)
+
+END_EVENT_TABLE()
+
+
+SelectChannelViewPage::SelectChannelViewPage(wxWizard *parent, AddChannelWizardParams *params, ChannelViews *channelViews) :
+	wxWizardPageSimple(parent),m_params(params),selectedChannelIndex(-1),m_channelViews(channelViews){
+
+	m_wizardParent = parent;
+	wxFlexGridSizer *innerSizer = new wxFlexGridSizer(2,1,3,3);
+	innerSizer->AddGrowableCol(0);
+	innerSizer->AddGrowableRow(1);
+
+	innerSizer->Add(new wxStaticText(this, -1, "Select Channel Type"));
+
+	m_channelViewSelectorGrid = CreateViewSelectorGrid();
+	PopulateNewChannelViews(parent, m_channelViewSelectorGrid, channelViews);
+	m_channelViewSelectorGrid->SelectRow(0,false);
+
+	m_channelViewSelectorGrid->AutoSize();
+
+	innerSizer->Add(m_channelViewSelectorGrid,1, wxALL | wxEXPAND);
+
+    wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
+    mainSizer->Add(innerSizer,1,wxALL | wxEXPAND,1 );
+
+    SetSizer(mainSizer);
+    mainSizer->Fit(this);
+}
+
+ChannelViews SelectChannelViewPage::GetSelectedChannelViews(){
+
+	ChannelViews selectedViews;
+
+	size_t count = m_channelViewSelectorGrid->GetRows();
+	for (size_t i = 0; i < count; i++){
+		if (m_channelViewSelectorGrid->IsInSelection(i,0)){
+			selectedViews.Add(m_channelViews->Item(i));
+		}
+	}
+	return selectedViews;
+}
+
+void SelectChannelViewPage::AppendNewChannelView(wxGrid *grid, ChannelView &channelViewDescription){
+	grid->AppendRows(1);
+	int lastIndex = grid->GetRows() - 1;
+	grid->SetCellValue(lastIndex,0,channelViewDescription.m_name);
+	grid->SetCellValue(lastIndex,1,channelViewDescription.m_description);
+
+}
+
+void SelectChannelViewPage::PopulateNewChannelViews(wxWizard *wizardParent, wxGrid *grid, ChannelViews *channelViews){
+
+	for (size_t i = 0; i < channelViews->size();i++){
+		ChannelView d = channelViews->Item(i);
+		AppendNewChannelView(grid,d);
+	}
+}
+
+wxGrid * SelectChannelViewPage::CreateViewSelectorGrid(){
 
 	wxGrid *grid = new wxGrid(this, ID_ADD_CHANNEL_NEW_CHANNELS_GRID);
 
@@ -140,49 +218,41 @@ wxGrid * SelectNewChannelTypePage::CreateNewChannelsGrid(){
 	grid->SetSelectionMode(wxGrid::wxGridSelectRows);
 	grid->EnableDragRowSize(false);
 
-	grid->SetColLabelValue(0,"Channel");
+	grid->SetColLabelValue(0,"View");
 	grid->SetColLabelValue(1,"Description");
 
 	return grid;
 }
 
 
-void SelectNewChannelTypePage::UpdateUIState(){
+void SelectChannelViewPage::UpdateUIState(){
 
 	bool itemSelected = selectedChannelIndex >= 0;
 	GetParent()->FindWindow(wxID_FORWARD)->Enable(itemSelected);
 }
 
-void SelectNewChannelTypePage::OnWizardPageChanged(wxWizardEvent &event){
+void SelectChannelViewPage::OnWizardPageChanged(wxWizardEvent &event){
 
 	UpdateUIState();
 }
 
-void SelectNewChannelTypePage::OnWizardPageChanging(wxWizardEvent &event){
+void SelectChannelViewPage::OnWizardPageChanging(wxWizardEvent &event){
 
 	/*
 	m_importing = false;
 	UpdateUIState();
 	*/
 }
-void SelectNewChannelTypePage::OnGridSelected(wxGridEvent &event){
+void SelectChannelViewPage::OnGridSelected(wxGridEvent &event){
 	selectedChannelIndex = event.GetRow();
-	wxWizardPage *oldPage = this->GetNext();
-	if (NULL != oldPage){
-		wxWizardPageSimple *nextPage = m_processorDescriptions->Item(selectedChannelIndex).m_wizardPageFactory->createChannelProcessor(m_wizardParent,m_params);
-		nextPage->SetNext(oldPage->GetNext());
-		nextPage->SetPrev(this);
-		this->SetNext(nextPage);
-		delete(oldPage);
-	}
 	UpdateUIState();
 }
 
-BEGIN_EVENT_TABLE ( SelectNewChannelTypePage, wxWizardPageSimple )
+BEGIN_EVENT_TABLE ( SelectChannelViewPage, wxWizardPageSimple )
 
-	EVT_WIZARD_PAGE_CHANGED(wxID_ANY, SelectNewChannelTypePage::OnWizardPageChanged)
-	EVT_WIZARD_PAGE_CHANGING(wxID_ANY, SelectNewChannelTypePage::OnWizardPageChanging)
-	EVT_GRID_SELECT_CELL(SelectNewChannelTypePage::OnGridSelected)
+	EVT_WIZARD_PAGE_CHANGED(wxID_ANY, SelectChannelViewPage::OnWizardPageChanged)
+	EVT_WIZARD_PAGE_CHANGING(wxID_ANY, SelectChannelViewPage::OnWizardPageChanging)
+	EVT_GRID_SELECT_CELL(SelectChannelViewPage::OnGridSelected)
 
 END_EVENT_TABLE()
 
@@ -194,41 +264,51 @@ AddChannelWizard::AddChannelWizard(wxWindow *frame, AddChannelWizardParams param
 	                 m_params(params)
 
 {
-	initChannelProcessors();
-	m_startPage = new SelectNewChannelTypePage(this, &m_params,&m_channelProcessors);
-	wxWizardPageSimple *blankPage = new wxWizardPageSimple(this);
-	m_progressPage = new NewChannelProgressPage(this, &m_params);
-	wxWizardPageSimple *finishPage = new NewChannelFinishPage(this);
+	InitChannelViews();
+	m_viewSelectorPage = new SelectChannelViewPage(this, &m_params,&m_channelViews);
+	m_channelSelectorPage = new ChannelSelectorPage(this, &m_params);
+	m_finishPage = new NewChannelFinishPage(this);
 
-	m_startPage->SetNext(blankPage);
-	blankPage->SetPrev(m_startPage);
-	blankPage->SetNext(m_progressPage);
-	m_progressPage->SetNext(finishPage);
+	m_viewSelectorPage->SetNext(m_channelSelectorPage);
 
-	GetPageAreaSizer()->Add(m_startPage);
+	m_channelSelectorPage->SetNext(m_finishPage);
+	m_channelSelectorPage->SetPrev(m_viewSelectorPage);
+
+	m_finishPage->SetPrev(m_channelSelectorPage);
+
+	GetPageAreaSizer()->Add(m_viewSelectorPage);
 }
 
-void AddChannelWizard::SetAddChannelOptionsPage(wxWizardPageSimple *page){
+void AddChannelWizard::InitChannelViews(){
 
-	m_startPage->SetNext(page);
-	page->SetPrev(m_startPage);
-	page->SetNext(m_progressPage);
-	m_progressPage->SetPrev(page);
+	ChannelView lineChartView("Line Chart", "A channel's value over time", ADD_NEW_LINE_CHART_EVENT, ADD_NEW_LINE_CHART);
+	ChannelView analogGaugeView("Analog Gauge", "A channel's value displayed on an analog gauge", ADD_NEW_ANALOG_GAUGE_EVENT, ADD_NEW_ANALOG_GAUGE);
+	ChannelView digitalGaugeView("Digital Gauge", "A channel's value displayed on a digital gauge", ADD_NEW_DIGITAL_GAUGE_EVENT, ADD_NEW_DIGITAL_GAUGE);
+	ChannelView gpsGaugeView("GPS View", "A View showing the GPS coordinates of a pair of Latitude / Longitude channels", ADD_NEW_GPS_VIEW_EVENT, ADD_NEW_GPS_VIEW);
+
+	m_channelViews.Add(lineChartView);
+	m_channelViews.Add(analogGaugeView);
+	m_channelViews.Add(digitalGaugeView);
+	m_channelViews.Add(gpsGaugeView);
 }
 
-void AddChannelWizard::initChannelProcessors(){
+void AddChannelWizard::OnWizardFinished(wxWizardEvent &event){
+	ChannelViews selectedViews = m_viewSelectorPage->GetSelectedChannelViews();
+	wxArrayString selectedChannelNames = m_channelSelectorPage->GetSelectedChannels();
 
-	ChannelProcessorDescription scaledValue("Scaled Value",
-			"Create a new channel that is linearly scaled from an existing channel",
-			ScaledValueNewChannelProcessor(),
-			new ScaledValueNewChannelOptionsPageFactory()
-			);
-	m_channelProcessors.Add(scaledValue);
-
-	ChannelProcessorDescription lapDetector("Lap Detector",
-			"Detect current Lap via GPS-based Start/Finish detection",
-			LapDetectorNewChannelProcessor(),
-			new LapDetectorNewChannelOptionsPageFactory()
-			);
-	m_channelProcessors.Add(lapDetector);
+	size_t selectedViewsCount = selectedViews.Count();
+	for (size_t viewIndex = 0; viewIndex < selectedViewsCount; viewIndex++){
+		DatalogChannelSelectionSet *selectionSet = new DatalogChannelSelectionSet();
+		selectionSet->Add(DatalogChannelSelection(1,selectedChannelNames));
+		ChannelView selectedView = selectedViews[viewIndex];
+		wxCommandEvent addEvent(selectedView.m_eventType, selectedView.m_eventId);
+		addEvent.SetClientData(selectionSet);
+		GetParent()->AddPendingEvent(addEvent);
+	}
 }
+
+BEGIN_EVENT_TABLE ( AddChannelWizard, wxWizard )
+
+	EVT_WIZARD_FINISHED(wxID_ANY, AddChannelWizard::OnWizardFinished)
+
+END_EVENT_TABLE()

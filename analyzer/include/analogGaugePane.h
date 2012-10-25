@@ -29,12 +29,11 @@ public:
 	void InitComponents();
 
 	void CreateGauge(int datalogId, wxString channelName);
-	void SetOffset(int offset);
-	void RefreshGaugeValue();
 
 	//from RaceAnalyzerChannelView
 	void SetChartParams(ChartParams params);
-	void UpdateValue(wxString &channelName, float value);
+	void SetBufferSize(wxString &channelName, size_t size);
+	void UpdateValue(wxString &channelName, size_t index, double value);
 
 
 private:
@@ -42,6 +41,7 @@ private:
 	ChartParams			m_chartParams;
 	DatalogStoreRows 	m_channelData;
 	int					m_dataOffset;
+	wxString			m_channelName;
 
 	DECLARE_EVENT_TABLE()
 };

@@ -130,24 +130,43 @@ DigitalGaugeTypes & AppOptions::GetDigitalGaugeTypes(){
 	return m_digitalGaugeTypes;
 }
 
+DatalogChannelType AppOptions::GetDefaultUnknownChannelType(wxString name){
+	DatalogChannelType channelType(name, "", 0, 0, 10000, 2);
+	return channelType;
+}
+
+DatalogChannelType AppOptions::GetChannelTypeForChannel(wxString channelName){
+	//search through this. maybe change this to a wxHashMap for better efficiency
+	size_t count = m_standardChannels.Count();
+	for (size_t i = 0; i < count; i++){
+		DatalogChannel &channel = m_standardChannels[i];
+		if (channel.name == channelName){
+			int typeId = channel.typeId;
+			return m_standardChannelTypes[typeId];
+		}
+	}
+	return GetDefaultUnknownChannelType(channelName);
+}
+
 void AppOptions::LoadDefaultStandardChannelTypes(DatalogChannelTypes &types){
 
-	types.Add( DatalogChannelType("Raw","Number", 0,0,1024) );
-	types.Add( DatalogChannelType("GForce", "G", 5,-2.0,2.0) );
-	types.Add( DatalogChannelType("Rotation", "Degrees/Sec", 5, -10.0, 10.0) );
-	types.Add( DatalogChannelType("TimeDate", "UTC", 0, 0, 0) );
-	types.Add( DatalogChannelType("Count", "Count", 0,0, 100.0) );
+	types.Add( DatalogChannelType("Raw","Number", 0, 0, 1024, 0) );
+	types.Add( DatalogChannelType("GForce", "G", 5, -2.0, 2.0, 2) );
+	types.Add( DatalogChannelType("Rotation", "Degrees/Sec", 5, -10.0, 10.0, 2) );
+	types.Add( DatalogChannelType("TimeDate", "UTC", 0, 0, 0, 2) );
+	types.Add( DatalogChannelType("Count", "Count", 0,0, 1000.0, 0) );
 	types.Add( DatalogChannelSystemTypes::GetLatitudeChannelType());
 	types.Add( DatalogChannelSystemTypes::GetLongitudeChannelType());
-	types.Add( DatalogChannelType("Speed", "KPH", 0, 0, 300.0) );
-	types.Add( DatalogChannelType("Volts", "Volts", 0, 0, 25.0) );
-	types.Add( DatalogChannelType("Pressure", "PSI", 0, 0, 300.0) );
-	types.Add( DatalogChannelType("Temperature", "F", 0, 0, 300.0) );
-	types.Add( DatalogChannelType("Frequency", "Hz", 0, 0, 2000.0) );
-	types.Add( DatalogChannelType("RPM", "RPM", 0, 0, 10000.0) );
-	types.Add( DatalogChannelType("Duration", "Ms.", 0, 0, 100.0) );
-	types.Add( DatalogChannelType("Percent", "%", 0, 0, 100.0) );
-	types.Add( DatalogChannelType("Digital", "Off/On", 0, 0, 1) );
+	types.Add( DatalogChannelType("Speed", "KPH", 0, 0, 300.0, 0) );
+	types.Add( DatalogChannelType("Volts", "Volts", 0, 0, 25.0, 2) );
+	types.Add( DatalogChannelType("Pressure", "PSI", 0, 0, 300.0, 2) );
+	types.Add( DatalogChannelType("Temperature", "F", 0, 0, 300.0, 0) );
+	types.Add( DatalogChannelType("Frequency", "Hz", 0, 0, 2000.0, 0) );
+	types.Add( DatalogChannelType("RPM", "RPM", 0, 0, 10000.0, 0) );
+	types.Add( DatalogChannelType("Duration", "Ms.", 0, 0, 100.0, 0) );
+	types.Add( DatalogChannelType("Percent", "%", 0, 0, 100.0, 2) );
+	types.Add( DatalogChannelType("Digital", "Off/On", 0, 0, 1, 0) );
+	types.Add( DatalogChannelType("Time", "Seconds", 0, 0, 1000, 2));
 }
 
 void AppOptions::LoadDefaultStandardChannels(DatalogChannels &channels){
@@ -159,12 +178,14 @@ void AppOptions::LoadDefaultStandardChannels(DatalogChannels &channels){
 	channels.Add( DatalogChannel("Yaw", 2, "Accelerometer Z Axis Rotation") );
 
 	//GPS inputs
-	channels.Add( DatalogChannel("GpsTime", 3, "GPS Time in UTC") );
-	channels.Add( DatalogChannel("GpsQual", 4, "GPS signal quality indicator") );
+	channels.Add( DatalogChannel("Time", 3, "GPS Time in UTC") );
+	channels.Add( DatalogChannel("Qual", 4, "GPS signal quality indicator") );
 	channels.Add( DatalogChannel("GpsSats", 4, "Number of Active Satellites") );
-	channels.Add( DatalogChannel("GpsLatitude", 5, "GPS Latitude in Degrees") );
-	channels.Add( DatalogChannel("GpsLongitude", 6,"GPS Longitude in Degrees") );
-	channels.Add( DatalogChannel("GpsVelocity", 7, "GPS Velocity") );
+	channels.Add( DatalogChannel("Latitude", 5, "GPS Latitude in Degrees") );
+	channels.Add( DatalogChannel("Longitude", 6,"GPS Longitude in Degrees") );
+	channels.Add( DatalogChannel("Velocity", 7, "GPS Velocity") );
+	channels.Add( DatalogChannel("LapCount",4, "Lap Count" ));
+	channels.Add( DatalogChannel("LapTime", 16, "Lap Time" ));
 
 	//Analog inputs
 	channels.Add( DatalogChannel("Battery", 8, "Battery Voltage") );

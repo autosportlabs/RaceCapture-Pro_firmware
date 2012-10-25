@@ -9,6 +9,8 @@
 #define LINECHART_H_
 #include "wx/wxprec.h"
 #include "datalogData.h"
+#include <wx/dynarray.h>
+
 
 class Range{
 
@@ -30,42 +32,48 @@ private:
 	wxString m_label;
 };
 
+#include <wx/dynarray.h>
+
+WX_DEFINE_ARRAY_DOUBLE(double, SeriesValues);
+
 class Series{
 
 public:
-	Series(DatalogStoreRows *dataBuffer, size_t bufferCol, int rangeId, size_t offset, wxString label, wxColor color) :
-		m_dataBuffer(dataBuffer),
-		m_bufferCol(bufferCol),
-		m_rangeId(rangeId),
-		m_offset(offset),
-		m_label(label),
-		m_color(color)
-		{}
 
-	DatalogStoreRows * GetDataBuffer(){ return m_dataBuffer; }
-	size_t GetBufferCol(){return m_bufferCol;}
-	void SetBufferCol(size_t bufferCol){m_bufferCol = bufferCol;}
-	int GetRangeId(){ return m_rangeId; }
-	void SetRangeId(int seriesId){m_rangeId = seriesId; }
-	size_t GetOffset(){ return m_offset; }
-	void SetOffset(size_t offset){ m_offset = offset; }
-	wxString & GetLabel(){ return m_label; }
-	void SetLabel(wxString label){ m_label = label; }
-	void SetColor(wxColor color){m_color = color; }
-	wxColor GetColor(){return m_color;}
+	Series(size_t bufferSize, int rangeId, size_t offset, wxString label, wxColor color, int precision);
+
+	const static double NULL_VALUE = -0xFFFFFFFFFFFFFFF;
+	const static size_t DEFAULT_LOOK_DISTANCE = 100;
+	SeriesValues * GetSeriesValues();
+	size_t GetBufferSize();
+	int GetRangeId();
+	void SetRangeId(int seriesId);
+	size_t GetOffset();
+	void SetOffset(size_t offset);
+	wxString & GetLabel();
+	void SetLabel(wxString label);
+	void SetColor(wxColor color);
+	wxColor GetColor();
+	int GetPrecision();
+	void SetPrecision(int precision);
+
+	void SetBufferSize(size_t size);
+	double GetValueAtOrNear(size_t index);
+	double GetValueAt(size_t index);
+	void SetValueAt(size_t index, double value);
 
 private:
 
-	DatalogStoreRows *m_dataBuffer;
-	size_t m_bufferCol;
 	int m_rangeId;
 	size_t m_offset;
 	wxString m_label;
 	wxColor m_color;
+	int m_precision;
+	SeriesValues m_seriesValues;
 };
 
 WX_DECLARE_OBJARRAY(Range*,RangeArray);
-WX_DECLARE_OBJARRAY(Series*,SeriesArray);
+WX_DECLARE_STRING_HASH_MAP(Series*,SeriesMap);
 
 class LineChart : public wxWindow
 {
@@ -97,15 +105,16 @@ class LineChart : public wxWindow
 		bool GetShowScale();
 		void ShowScale(bool showScale);
 
-		void SetViewOffsetPercent(double offset);
+		void SetViewOffsetFactor(double offset);
 		double GetViewOffsetPercent();
 
-		int GetMarkerOffset();
-		void SetMarkerOffset(int offset);
+		size_t GetMarkerIndex();
+		void SetMarkerIndex(size_t index);
 
 		int AddRange(Range *range);
-		int AddSeries(Series *series);
-		Series * GetSeries(int index);
+		void ClearAllSeries();
+		void AddSeries(wxString channel, Series *series);
+		Series * GetSeries(wxString channel);
 
 		DECLARE_EVENT_TABLE()
 
@@ -120,11 +129,12 @@ class LineChart : public wxWindow
 
 		void DrawGrid(wxMemoryDC &dc);
 		void DrawScale(wxMemoryDC &dc);
+		void DrawCurrentValues(wxMemoryDC &dc);
 
-		SeriesArray			m_seriesArray;
+		SeriesMap			m_seriesMap;
 		RangeArray			m_rangeArray;
-		double				m_viewOffsetPercent;
-		int					m_markerOffset;
+		double				m_viewOffsetFactor;
+		size_t				m_markerIndex;
 
 		int					_zoomPercentage;
 		int					_currentWidth;
@@ -133,9 +143,9 @@ class LineChart : public wxWindow
 		wxColor				_backgroundColor;
 		bool				_showScale;
 
-		bool				_showData;
-		int					_mouseX;
-		int					_mouseY;
+		bool				m_showData;
+		int					m_mouseX;
+		int					m_mouseY;
 
 };
 #endif /* LINECHART_H_ */

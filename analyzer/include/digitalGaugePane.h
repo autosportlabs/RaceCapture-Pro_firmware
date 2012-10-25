@@ -28,18 +28,16 @@ public:
 	void InitComponents();
 
 	void CreateGauge(int datalogId, wxString channelName);
-	void RefreshGaugeValue();
 
 	//from RaceAnalyzerChannelView
 	void SetChartParams(ChartParams params);
-	void UpdateValue(wxString &name, float value);
-	void SetOffset(int offset);
+	void SetBufferSize(wxString &channelName, size_t size);
+	void UpdateValue(wxString &name, size_t index, double value);
 
 private:
+	wxString			m_channelName;
 	LCDDisplay			*m_lcdDisplay;
 	ChartParams			m_chartParams;
-	DatalogStoreRows 	m_channelData;
-	int					m_dataOffset;
 	unsigned int		m_valuePrecision;
 
 	DECLARE_EVENT_TABLE()

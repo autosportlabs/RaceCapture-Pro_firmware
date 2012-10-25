@@ -36,33 +36,22 @@ void GPSPane::CreateGPSView(int datalogId, wxString &latitudeChannelName, wxStri
 	m_latitudeChannelName = latitudeChannelName;
 	m_longitudeChannelName = longitudeChannelName;
 
-	DatalogStore *store = m_chartParams.datalogStore;
-
-	wxArrayString channelNames;
-	channelNames.Add(m_latitudeChannelName);
-	channelNames.Add(m_longitudeChannelName);
-	store->ReadDatalog(m_channelData,datalogId,channelNames,0);
-
-	SetOffset(0);
 	ReloadGPSPoints();
 }
 
-void GPSPane::SetOffset(size_t offset){
-	m_dataOffset = offset;
-}
-
 void GPSPane::ReloadGPSPoints(){
-
+/*
 	size_t count = m_channelData.Count();
 	for (size_t i = 0; i < count; i++){
 		DatastoreRow &row = m_channelData[i];
 
 		double latitude = row.values[LATITUDE_INDEX];
 		double longitude = row.values[LONGITUDE_INDEX];
-		if (latitude != DatastoreRow::NULL_VALUE && longitude != DatastoreRow::NULL_VALUE){
+		if (latitude != NULL_VALUE && longitude != NULL_VALUE){
 			AddGPSPoint(latitude,longitude);
 		}
 	}
+	*/
 }
 
 void GPSPane::AddGPSPoint(double latitude, double longitude){
@@ -107,11 +96,9 @@ void GPSPane::SetChartParams(ChartParams params){
 	m_chartParams = params;
 }
 
-void GPSPane::UpdateValue(wxString &name, float value){
+void GPSPane::SetBufferSize(wxString &channelName, size_t size){}
 
-}
-
-void GPSPane::SetOffset(int offset){
+void GPSPane::UpdateValue(wxString &name, size_t index, double value){
 
 }
 

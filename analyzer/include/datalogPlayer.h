@@ -17,21 +17,27 @@ class DatalogPlayer : public wxThread {
 public:
 	DatalogPlayer();
 	~DatalogPlayer();
-	void Play();
+	void Play(int datalogId);
+	void Requery(int datalogId);
 	void Pause();
 	void FastForwardBeginning();
 	void FastForwardEnd();
 	void SetPlaybackMultiplier(int multiplier);
+	void UpdateDataHistory(HistoricalView *view, wxString &channel, size_t fromIndex, size_t toIndex);
 
-	void Create(DatalogStoreRows *data, RaceAnalyzerChannelViews *views);
+	void Create(DatalogStore *datalogStore, RaceAnalyzerChannelViews *views);
 	void * Entry();
 
 private:
-	void Tick();
+	void Tick(size_t offset);
 
-	int m_offset;
+	int m_datalogId;
+	size_t m_offset;
 	int m_multiplier;
-	DatalogStoreRows * m_datalogData;
+
+	DatalogStore *m_datalogStore;
+	DatalogChannels m_datalogChannels;
+	DatalogStoreRows  m_datalogData;
 	RaceAnalyzerChannelViews * m_views;
 	wxSemaphore * m_shouldPlay;
 

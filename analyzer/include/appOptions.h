@@ -85,6 +85,9 @@ class AppOptions{
 		void LoadDefaultAnalogGaugeTypes(AnalogGaugeTypes &analogGaugeTypes);
 		void LoadDefaultDigitalGaugeTypes(DigitalGaugeTypes &digitalGaugeTypes);
 
+		DatalogChannelType GetChannelTypeForChannel(wxString channelName);
+
+		DatalogChannelType GetDefaultUnknownChannelType(wxString name);
 
 	private:
 		int 				m_serialPort;

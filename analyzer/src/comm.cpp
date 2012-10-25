@@ -173,12 +173,17 @@ int RaceAnalyzerComm::FlushReceiveBuffer(CComm* comPort){
 
 wxString RaceAnalyzerComm::SendCommand(CComm *comPort, const wxString &buffer, int timeout){
 
-	wxLogMessage("Send Cmd (%d): %s",buffer.Len(), buffer.ToAscii());
-	wxString response;
-	size_t bufferSize = 8192;
-	comPort->sendCommand(buffer.ToAscii(),wxStringBuffer(response,bufferSize),bufferSize,DEFAULT_TIMEOUT,true);
-	wxLogMessage("Cmd Response: %s", response.ToAscii());
-	return response;
+	try{
+		wxLogMessage("Send Cmd (%d): %s",buffer.Len(), buffer.ToAscii());
+		wxString response;
+		size_t bufferSize = 8192;
+		comPort->sendCommand(buffer.ToAscii(),wxStringBuffer(response,bufferSize),bufferSize,DEFAULT_TIMEOUT,true);
+		wxLogMessage("Cmd Response: %s", response.ToAscii());
+		return response;
+	}
+	catch(SerialException e){
+		throw CommException(e.GetErrorStatus(), e.GetErrorDetail());
+	}
 }
 
 int RaceAnalyzerComm::WriteLine(CComm * comPort, wxString &buffer, int timeout){
@@ -502,6 +507,7 @@ void RaceAnalyzerComm::readConfig(RaceCaptureConfig *config,RaceAnalyzerCommCall
 	catch(CommException e){
 		callback->ReadConfigComplete(false, e.GetErrorMessage());
 	}
+	CloseSerialPort();
 }
 
 void RaceAnalyzerComm::updateWriteConfigPct(int count,RaceAnalyzerCommCallback *callback){
@@ -639,18 +645,25 @@ void RaceAnalyzerComm::writeConfig(RaceCaptureConfig *config, RaceAnalyzerCommCa
 	catch(CommException e){
 		callback->WriteConfigComplete(false, e.GetErrorMessage());
 	}
+	CloseSerialPort();
 }
 
 void RaceAnalyzerComm::flashCurrentConfig(){
-	wxDateTime start = wxDateTime::UNow();
-	CComm *serialPort = GetSerialPort();
-	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
-	wxString cmd = "flashLoggerCfg";
+	try{
+		wxDateTime start = wxDateTime::UNow();
+		CComm *serialPort = GetSerialPort();
+		if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
+		wxString cmd = "flashLoggerCfg";
 
-	wxString result = SendCommand(serialPort, cmd);
-	CheckThrowResult(result);
-	wxTimeSpan dur = wxDateTime::UNow() - start;
-	wxLogMessage("flash config in %f",dur.GetMilliseconds().ToDouble());
+		wxString result = SendCommand(serialPort, cmd);
+		CheckThrowResult(result);
+		wxTimeSpan dur = wxDateTime::UNow() - start;
+		wxLogMessage("flash config in %f",dur.GetMilliseconds().ToDouble());
+	}
+	catch(CommException e){
+		wxLogMessage("Error during flash: " + e.GetErrorMessage());
+	}
+	CloseSerialPort();
 }
 
 wxString RaceAnalyzerComm::AppendStringParam(wxString &cmd, wxString param){

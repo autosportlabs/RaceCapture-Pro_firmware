@@ -118,6 +118,7 @@
 								</option>
 								<option id="gnu.cpp.link.option.paths.362168868" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks/MinGW-Debug}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sqlite}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sqlite/MinGW-Debug}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\wxWidgets-2.8.10\msw-debug\lib&quot;"/>
 								</option>
@@ -150,7 +151,6 @@
 					</externalSetting>
 				</externalSettings>
 			</storageModule>
-			<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 			<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 			<storageModule moduleId="org.eclipse.cdt.core.language.mapping"/>
 		</cconfiguration>
@@ -235,6 +235,7 @@
 								</option>
 								<option id="gnu.cpp.link.option.paths.705923325" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sqlite}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\projects\wxctb\lib&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\wxWidgets-2.8.10\msw-release\lib&quot;"/>
 								</option>
@@ -260,7 +261,6 @@
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
-			<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 			<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 			<storageModule moduleId="org.eclipse.cdt.core.language.mapping"/>
 		</cconfiguration>
@@ -402,7 +402,6 @@
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 			<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 			<storageModule moduleId="org.eclipse.cdt.core.language.mapping"/>
-			<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 		</cconfiguration>
 		<cconfiguration id="cdt.managedbuild.config.gnu.cygwin.exe.release.788673344">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.cygwin.exe.release.788673344" moduleId="org.eclipse.cdt.core.settings" name="Linux-Release">
@@ -456,7 +455,6 @@
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 			<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 			<storageModule moduleId="org.eclipse.cdt.core.language.mapping"/>
-			<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
@@ -1707,4 +1705,5 @@
 		</scannerConfigBuildInfo>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>

@@ -39,14 +39,7 @@ DigitalGaugePane::~DigitalGaugePane(){
 
 void DigitalGaugePane::CreateGauge(int datalogId, wxString channelName){
 
-	DatalogStore *store = m_chartParams.datalogStore;
-
-	DatalogChannelTypes channelTypes;
-	store->GetChannelTypes(channelTypes);
-
-	DatalogChannel channel;
-	store->GetChannel(datalogId,channelName,channel);
-	DatalogChannelType &type = channelTypes[channel.typeId];
+	DatalogChannelType type = m_chartParams.appOptions->GetChannelTypeForChannel(channelName);
 
 	AppOptions *options = m_chartParams.appOptions;
 
@@ -59,33 +52,17 @@ void DigitalGaugePane::CreateGauge(int datalogId, wxString channelName){
 		m_lcdDisplay->SetLightColour(gaugeType.digitOnColor);
 		m_valuePrecision = gaugeType.valuePrecision;
 	}
-
-	wxArrayString channelNames;
-	channelNames.Add(channelName);
-	store->ReadDatalog(m_channelData,datalogId,channelNames,0);
-
-	SetOffset(0);
-}
-
-
-void DigitalGaugePane::SetOffset(int offset){
-	m_dataOffset = offset;
-	RefreshGaugeValue();
-}
-
-void DigitalGaugePane::RefreshGaugeValue(){
-
-	DatastoreRow &row = m_channelData[m_dataOffset];
-	double value = row.values[0];
-	m_lcdDisplay->SetValue(wxString::Format(VALUE_FORMAT[m_valuePrecision],value));
+	m_channelName = channelName;
 }
 
 void DigitalGaugePane::SetChartParams(ChartParams params){
 	m_chartParams = params;
 }
 
-void DigitalGaugePane::UpdateValue(wxString &name, float value){
+void DigitalGaugePane::SetBufferSize(wxString &channelName, size_t size){}
 
+void DigitalGaugePane::UpdateValue(wxString &name, size_t index, double value){
+	if (m_channelName == name && DatalogValue::NULL_VALUE != value) m_lcdDisplay->SetValue(wxString::Format(VALUE_FORMAT[m_valuePrecision],value));
 }
 
 void DigitalGaugePane::InitComponents(){

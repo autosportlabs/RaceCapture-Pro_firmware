@@ -28,14 +28,13 @@ public:
 	void InitComponents();
 
 	void CreateGPSView(int datalogId, wxString &latitudeChannelName, wxString &longitudeChannelName);
-	void SetOffset(size_t offset);
 	void ReloadGPSPoints();
 
 
 	//from RaceAnalyzerChannelView
 	void SetChartParams(ChartParams params);
-	void UpdateValue(wxString &name, float value);
-	void SetOffset(int offset);
+	void SetBufferSize(wxString &channelName, size_t size);
+	void UpdateValue(wxString &name, size_t index, double value);
 
 private:
 	void AddGPSPoint(double latitude, double longitude);
