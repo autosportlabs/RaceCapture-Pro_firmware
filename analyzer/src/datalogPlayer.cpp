@@ -14,26 +14,55 @@ DatalogPlayer::~DatalogPlayer(){
 	delete(m_shouldPlay);
 }
 
-void DatalogPlayer::Play(int datalogId){
+void DatalogPlayer::PlayFwd(int datalogId){
 	if (m_datalogId != datalogId) Requery(datalogId);
+	SetPlaybackMultiplier(1);
+	m_shouldPlay->Post();
+}
+
+void DatalogPlayer::PlayRev(int datalogId){
+	if (m_datalogId != datalogId) Requery(datalogId);
+	SetPlaybackMultiplier(-1);
 	m_shouldPlay->Post();
 }
 
 void DatalogPlayer::Pause(){
-	m_shouldPlay->Wait();
+	m_shouldPlay->TryWait();
 }
 
-void DatalogPlayer::FastForwardBeginning(){
+void DatalogPlayer::SkipFwd(){
 	m_offset = 0;
+	Tick(m_offset);
 }
 
-void DatalogPlayer::FastForwardEnd(){
+void DatalogPlayer::SkipRev(){
 	m_offset = m_datalogData.Count() - 1;
+	Tick(m_offset);
+}
+
+void DatalogPlayer::SeekFwd(){
+	int playbackMultiplier = GetPlaybackMultiplier();
+	if (playbackMultiplier < MAX_PLAYBACK_MULTIPLIER){
+		SetPlaybackMultiplier(playbackMultiplier + 1);
+		m_shouldPlay->Post();
+	}
+}
+
+void DatalogPlayer::SeekRev(){
+	int playbackMultiplier = GetPlaybackMultiplier();
+	if (playbackMultiplier > -MAX_PLAYBACK_MULTIPLIER){
+		SetPlaybackMultiplier(playbackMultiplier - 1);
+		m_shouldPlay->Post();
+	}
 }
 
 void DatalogPlayer::SetPlaybackMultiplier(int multiplier)
 {
 	m_multiplier = multiplier;
+}
+
+int DatalogPlayer::GetPlaybackMultiplier(){
+	return m_multiplier;
 }
 
 void DatalogPlayer::Create(DatalogStore *datalogStore, RaceAnalyzerChannelViews *views )  {
@@ -42,21 +71,10 @@ void DatalogPlayer::Create(DatalogStore *datalogStore, RaceAnalyzerChannelViews 
   	wxThread::Create();
 }
 
-void DatalogPlayer::UpdateDataHistory(HistoricalView *view, wxString &channel, size_t fromIndex, size_t toIndex){
-
-	ChartValues values;
-	values.Alloc(toIndex - fromIndex);
-	int channelId = DatalogChannelUtil::FindChannelIdByName(m_datalogChannels, channel);
-	if ( channelId >= 0){
-		for (size_t i = fromIndex; i < toIndex; i++){
-			DatastoreRow row = m_datalogData[i - fromIndex];
-			double value = row.values[channelId];
-			values.Add(value);
-		}
-		if (NULL != view) view->UpdateValueRange(channel, fromIndex, toIndex, values);
-	}
+void DatalogPlayer::StopPlayback(){
+	SetPlaybackMultiplier(0);
+	Pause();
 }
-
 
 void * DatalogPlayer::Entry(){
 	while (! TestDestroy()){
@@ -64,7 +82,18 @@ void * DatalogPlayer::Entry(){
 		Tick(m_offset);
 		m_shouldPlay->Post();
 		wxThread::Sleep(33);
-		if (m_offset < m_datalogData.Count() - 1) m_offset++;
+
+		m_offset += m_multiplier;
+
+		int ubound = m_datalogData.Count() - 1;
+		if (m_offset < 0 ){
+			StopPlayback();
+			m_offset = 0;
+		}
+		if (m_offset > ubound ){
+			StopPlayback();
+			m_offset = ubound;
+		}
 	}
 	return NULL;
 }
@@ -82,11 +111,47 @@ void DatalogPlayer::Requery(int datalogId){
 
 	size_t datalogLength = m_datalogData.Count();
 	for (size_t i = 0; i < m_views->Count(); i++){
-		for (size_t ii = 0; ii < m_datalogChannels.Count(); ii++){
-			wxString channel = m_datalogChannels[ii].name;
-			(*m_views)[i]->SetBufferSize(channel, datalogLength);
+		InitView((*m_views)[i], datalogLength);
+	}
+}
+
+void DatalogPlayer::AddView(RaceAnalyzerChannelView *view){
+	InitView(view, m_datalogData.Count());
+}
+
+void DatalogPlayer::InitView(RaceAnalyzerChannelView *view, size_t datalogLength){
+
+	wxArrayString channels;
+	for (size_t ii = 0; ii < m_datalogChannels.Count(); ii++){
+		wxString channel = m_datalogChannels[ii].name;
+		channels.Add(channel);
+	}
+
+	HistoricalView *hv = dynamic_cast<HistoricalView *>(view);
+	if (NULL != hv) hv->SetBufferSize(channels, datalogLength);
+
+}
+
+void DatalogPlayer::UpdateDataHistory(HistoricalView *view, wxArrayString &channels, size_t fromIndex, size_t toIndex){
+
+	ViewDataHistoryArray viewDataHistoryArray;
+
+	for (wxArrayString::iterator it = channels.begin(); it != channels.end(); ++it){
+
+		ChartValues values;
+		values.Alloc(toIndex - fromIndex);
+		int channelId = DatalogChannelUtil::FindChannelIdByName(m_datalogChannels, *it);
+		if ( channelId >= 0){
+			for (size_t i = fromIndex; i < toIndex; i++){
+				DatastoreRow row = m_datalogData[i - fromIndex];
+				double value = row.values[channelId];
+				values.Add(value);
+			}
+			ViewDataHistory history(*it, values);
+			viewDataHistoryArray.Add(history);
 		}
 	}
+	if (NULL != view) view->UpdateValueRange(viewDataHistoryArray, fromIndex, toIndex);
 }
 
 void DatalogPlayer::Tick(size_t index){

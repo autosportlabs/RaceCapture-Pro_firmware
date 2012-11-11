@@ -24,7 +24,10 @@ GPSPane::GPSPane(wxWindow *parent,
 						pos,
 						size,
 						style,
-						name)
+						name),
+			m_currentLatitude(0),
+			m_currentLongitude(0)
+
 {
 	InitComponents();
 }
@@ -35,26 +38,53 @@ void GPSPane::CreateGPSView(int datalogId, wxString &latitudeChannelName, wxStri
 	m_datalogId = datalogId;
 	m_latitudeChannelName = latitudeChannelName;
 	m_longitudeChannelName = longitudeChannelName;
-
-	ReloadGPSPoints();
+	ClearGPSPoints();
 }
 
-void GPSPane::ReloadGPSPoints(){
-/*
-	size_t count = m_channelData.Count();
-	for (size_t i = 0; i < count; i++){
-		DatastoreRow &row = m_channelData[i];
+void GPSPane::SetBufferSize(wxArrayString &channels, size_t size){
 
-		double latitude = row.values[LATITUDE_INDEX];
-		double longitude = row.values[LONGITUDE_INDEX];
-		if (latitude != NULL_VALUE && longitude != NULL_VALUE){
-			AddGPSPoint(latitude,longitude);
+	wxCommandEvent addEvent(REQUEST_DATALOG_DATA_EVENT, ID_REQUEST_DATALOG_DATA);
+	RequestDatalogRangeParams *params = new RequestDatalogRangeParams(this, channels, 0, size - 1);
+	addEvent.SetClientData(params);
+	GetParent()->AddPendingEvent(addEvent);
+}
+
+void GPSPane::UpdateValueRange(ViewDataHistoryArray &historyArray, size_t fromIndex, size_t toIndex){
+
+	ChartValues *latitudeValues = NULL;
+	ChartValues *longitudeValues = NULL;
+
+	for (size_t i = 0; i < historyArray.Count(); i++){
+		ViewDataHistory &history = historyArray[i];
+		if (history.channelName == m_latitudeChannelName){
+			latitudeValues = &history.values;
+		}
+		else if(history.channelName == m_longitudeChannelName){
+			longitudeValues = &history.values;
 		}
 	}
-	*/
+
+	if (latitudeValues && longitudeValues){
+		ClearGPSPoints();
+		for (size_t i = fromIndex; i < toIndex; i++){
+			AddGPSPoint((*latitudeValues)[i], (*longitudeValues)[i]);
+		}
+	}
 }
 
+
+void GPSPane::ClearGPSPoints(){
+	m_gpsView->ClearGPSPoints();
+}
+
+
+
 void GPSPane::AddGPSPoint(double latitude, double longitude){
+	m_gpsView->AddGPSPoint(ProjectPoint(latitude,longitude));
+}
+
+
+GPSPoint GPSPane::ProjectPoint(double latitude, double longitude){
 
 	double pi = 3.14159;
 	// convert lat/long to radians
@@ -77,8 +107,7 @@ void GPSPane::AddGPSPoint(double latitude, double longitude){
 
 	projected_x = - projected_x;
 	projected_y = - projected_y;
-
-	m_gpsView->AddGPSPoint(GPSPoint(projected_x,projected_y,0,0,0));
+	return GPSPoint(projected_x, projected_y, 0, 0, 0);
 }
 
 void GPSPane::InitComponents(){
@@ -96,10 +125,15 @@ void GPSPane::SetChartParams(ChartParams params){
 	m_chartParams = params;
 }
 
-void GPSPane::SetBufferSize(wxString &channelName, size_t size){}
 
 void GPSPane::UpdateValue(wxString &name, size_t index, double value){
-
+	if (name == m_latitudeChannelName){
+		m_currentLatitude = value;
+	}
+	if (name == m_longitudeChannelName){
+		m_currentLongitude = value;
+	}
+	m_gpsView->SetMarker(ProjectPoint(m_currentLatitude, m_currentLongitude));
 }
 
 BEGIN_EVENT_TABLE ( GPSPane , wxPanel )

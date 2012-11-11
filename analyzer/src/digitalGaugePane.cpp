@@ -59,10 +59,11 @@ void DigitalGaugePane::SetChartParams(ChartParams params){
 	m_chartParams = params;
 }
 
-void DigitalGaugePane::SetBufferSize(wxString &channelName, size_t size){}
 
 void DigitalGaugePane::UpdateValue(wxString &name, size_t index, double value){
-	if (m_channelName == name && DatalogValue::NULL_VALUE != value) m_lcdDisplay->SetValue(wxString::Format(VALUE_FORMAT[m_valuePrecision],value));
+	if (m_channelName == name && DatalogValue::NULL_VALUE != value){
+		m_lcdDisplay->SetValue(wxString::Format(VALUE_FORMAT[m_valuePrecision],value));
+	}
 }
 
 void DigitalGaugePane::InitComponents(){

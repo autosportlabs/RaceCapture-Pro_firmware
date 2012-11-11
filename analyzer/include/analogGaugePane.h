@@ -32,7 +32,6 @@ public:
 
 	//from RaceAnalyzerChannelView
 	void SetChartParams(ChartParams params);
-	void SetBufferSize(wxString &channelName, size_t size);
 	void UpdateValue(wxString &channelName, size_t index, double value);
 
 

@@ -96,6 +96,7 @@ class MainFrame : public wxFrame, public RuntimeListener
 	void NewRaceEvent(wxString fileName);
 	void CloseRaceEvent();
 
+	wxString GetMultipleSelectionLabel(DatalogChannelSelectionSet *selectionSet);
 	void AddNewLineChart(DatalogChannelSelectionSet *selectionSet);
 	void AddAnalogGauges(DatalogChannelSelectionSet *selectionSet);
 	void AddDigitalGauges(DatalogChannelSelectionSet *selectionSet);
@@ -142,10 +143,13 @@ class MainFrame : public wxFrame, public RuntimeListener
 	void OnAddGPSView(wxCommandEvent &event);
 	void OnUpdateStatus(wxCommandEvent &event);
 	void OnUpdateActivity(wxCommandEvent &event);
-	void OnPlayDatalog(wxCommandEvent &event);
+	void OnPlayFwdDatalog(wxCommandEvent &event);
+	void OnPlayRevDatalog(wxCommandEvent &event);
 	void OnPauseDatalog(wxCommandEvent &event);
 	void OnJumpBeginningDatalog(wxCommandEvent &event);
 	void OnJumpEndDatalog(wxCommandEvent &event);
+	void OnSeekFwdDatalog(wxCommandEvent &event);
+	void OnSeekRevDatalog(wxCommandEvent &event);
 
 	//RuntimeListener
 	void OnRuntimeValueUpdated(wxString &name, float value);

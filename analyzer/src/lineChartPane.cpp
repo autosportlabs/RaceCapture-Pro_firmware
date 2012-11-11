@@ -11,7 +11,6 @@
 #define	SCROLLBAR_THUMBSIZE 100
 #define SCROLLBAR_PAGESIZE 100
 
-DEFINE_EVENT_TYPE ( REQUEST_DATALOG_DATA_EVENT )
 
 LineChartPane::LineChartPane() : wxPanel()
 {
@@ -78,24 +77,34 @@ void LineChartPane::SetChartParams(ChartParams params){
 	m_chartParams = params;
 }
 
-void LineChartPane::SetBufferSize(wxString &channel, size_t size){
-	Series *series = m_lineChart->GetSeries(channel);
-	if (NULL != series){
-		series->SetBufferSize(size);
-		wxCommandEvent addEvent(REQUEST_DATALOG_DATA_EVENT, ID_REQUEST_DATALOG_DATA);
-		RequestDatalogRangeParams *params = new RequestDatalogRangeParams(this, channel, 0, size - 1);
-		addEvent.SetClientData(params);
-		GetParent()->AddPendingEvent(addEvent);
+void LineChartPane::SetBufferSize(wxArrayString &channels, size_t size){
+
+	wxArrayString enabledChannels;
+	for (wxArrayString::iterator it = channels.begin(); it != channels.end(); ++it){
+		Series *series = m_lineChart->GetSeries(*it);
+		if (NULL != series){
+			enabledChannels.Add(*it);
+			series->SetBufferSize(size);
+		}
 	}
+
+	wxCommandEvent addEvent(REQUEST_DATALOG_DATA_EVENT, ID_REQUEST_DATALOG_DATA);
+	RequestDatalogRangeParams *params = new RequestDatalogRangeParams(this, enabledChannels, 0, size - 1);
+	addEvent.SetClientData(params);
+	GetParent()->AddPendingEvent(addEvent);
 }
 
-void LineChartPane::UpdateValueRange(wxString &channel, size_t fromIndex, size_t toIndex, ChartValues &values){
-	Series *series = m_lineChart->GetSeries(channel);
-	if (NULL != series){
-		for (size_t i = fromIndex; i < toIndex; i++){
-			series->SetValueAt(i, values[i]);
+void LineChartPane::UpdateValueRange(ViewDataHistoryArray &historyArray, size_t fromIndex, size_t toIndex){
+
+	for (size_t i = 0; i < historyArray.size(); i++){
+		ViewDataHistory &history = historyArray[i];
+		Series *series = m_lineChart->GetSeries(history.channelName);
+		if (NULL != series){
+			for (size_t i = fromIndex; i < toIndex; i++){
+				series->SetValueAt(i, history.values[i]);
+			}
+			m_lineChart->Refresh();
 		}
-		m_lineChart->Refresh();
 	}
 }
 

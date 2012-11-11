@@ -7,9 +7,17 @@
 
 #include "datalogChannelsPanel.h"
 #include "addChannelWizardDialog.h"
-#include "add.xpm"
-#include "player_play.xpm"
-#include "player_pause.xpm"
+#include "list_add.xpm"
+#include "media_play_forward.xpm"
+#include "media_play_backward.xpm"
+#include "media_stop.xpm"
+#include "media_pause.xpm"
+#include "media_seek_forward.xpm"
+#include "media_seek_backward.xpm"
+#include "media_skip_backward.xpm"
+#include "media_skip_forward.xpm"
+
+
 
 #define GRID_ROWS 5
 
@@ -50,13 +58,16 @@ void DatalogChannelsPanel::InitComponents(){
 
 	//initialize tool bar
 	wxToolBar* toolBar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_HORIZONTAL | wxTB_FLAT | wxTB_NODIVIDER);
-	wxBitmap bmpNew(add_xpm);
 
-	toolBar->AddTool(ID_ADD_CHANNEL, bmpNew, wxT("Add Channel View"));
-	toolBar->AddTool(ID_PLAY_DATALOG, player_play_xpm, wxT("Play datalog"));
-	toolBar->AddTool(ID_PAUSE_DATALOG,player_pause_xpm, wxT("Pause datalog"));
-//	toolBar->AddTool(ID_JUMP_BEGINNING_DATALOG, bmpToBeginning, wxT("Jump to Beginning"));/
-//	toolBar->AddTool(ID_JUMP_END_DATALOG, bmpToEnd, wxT("Jump to End"));
+	toolBar->AddTool(ID_ADD_CHANNEL, list_add_xpm, wxT("Add Channel View"));
+
+	toolBar->AddTool(ID_SKIP_DATALOG_REV, media_skip_backward_xpm, 	"Skip datalog to beginning");
+	toolBar->AddTool(ID_SEEK_DATALOG_REV, media_seek_backward_xpm, 	"Seek datalog reverse");
+	toolBar->AddTool(ID_PLAY_DATALOG_REV, media_play_backward_xpm, 	"Play datalog reverse");
+	toolBar->AddTool(ID_PAUSE_DATALOG,	  media_pause_xpm, 			"Pause datalog");
+	toolBar->AddTool(ID_PLAY_DATALOG_FWD, media_play_forward_xpm, 	"Play datalog forward");
+	toolBar->AddTool(ID_SEEK_DATALOG_FWD, media_seek_forward_xpm, 	"Seek datalog forward");
+	toolBar->AddTool(ID_SKIP_DATALOG_FWD, media_skip_forward_xpm, 	"Skip datalog to end");
 
 	toolBar->Realize();
 	sizer->Add(toolBar,1,wxEXPAND);
@@ -250,8 +261,8 @@ void DatalogChannelsPanel::OnAddChannelView(wxCommandEvent &event){
 	wiz->Show(true);
 }
 
-void DatalogChannelsPanel::OnPlay(wxCommandEvent &event){
-	wxCommandEvent playEvent( PLAY_DATALOG_EVENT, PLAY_DATALOG);
+void DatalogChannelsPanel::OnPlayForward(wxCommandEvent &event){
+	wxCommandEvent playEvent( PLAY_FWD_DATALOG_EVENT, PLAY_FWD_DATALOG);
 	GetParent()->AddPendingEvent(playEvent);
 }
 
@@ -260,6 +271,30 @@ void DatalogChannelsPanel::OnPause(wxCommandEvent &event){
 	GetParent()->AddPendingEvent(pauseEvent);
 }
 
+void DatalogChannelsPanel::OnPlayReverse(wxCommandEvent &event){
+	wxCommandEvent playEvent( PLAY_REV_DATALOG_EVENT, PLAY_REV_DATALOG);
+	GetParent()->AddPendingEvent(playEvent);
+}
+
+void DatalogChannelsPanel::OnSkipForward(wxCommandEvent &event){
+	wxCommandEvent evt( JUMP_END_DATALOG_EVENT, JUMP_END_DATALOG);
+	GetParent()->AddPendingEvent(evt);
+}
+
+void DatalogChannelsPanel::OnSkipReverse(wxCommandEvent &event){
+	wxCommandEvent evt( JUMP_BEGINNING_DATALOG_EVENT, JUMP_BEGINNING_DATALOG);
+	GetParent()->AddPendingEvent(evt);
+}
+
+void DatalogChannelsPanel::OnSeekForward(wxCommandEvent &event){
+	wxCommandEvent evt( SEEK_FWD_DATALOG_EVENT, SEEK_FWD_DATALOG);
+	GetParent()->AddPendingEvent(evt);
+}
+
+void DatalogChannelsPanel::OnSeekReverse(wxCommandEvent &event){
+	wxCommandEvent evt( SEEK_REV_DATALOG_EVENT, SEEK_REV_DATALOG);
+	GetParent()->AddPendingEvent(evt);
+}
 
 void DatalogChannelsPanel::DoGridContextMenu(wxGridEvent &event){
 	PopupMenu(m_gridPopupMenu);
@@ -271,8 +306,14 @@ BEGIN_EVENT_TABLE ( DatalogChannelsPanel, wxPanel )
 	EVT_MENU(ID_NEW_DIGITAL_GAUGE, DatalogChannelsPanel::OnNewDigitalGauge)
 	EVT_MENU(ID_NEW_GPS_VIEW, DatalogChannelsPanel::OnNewGPSView)
 	EVT_MENU(ID_ADD_CHANNEL, DatalogChannelsPanel::OnAddChannelView)
-	EVT_MENU(ID_PLAY_DATALOG, DatalogChannelsPanel::OnPlay)
+
+	EVT_MENU(ID_SKIP_DATALOG_REV, DatalogChannelsPanel::OnSkipReverse)
+	EVT_MENU(ID_SEEK_DATALOG_REV, DatalogChannelsPanel::OnSeekReverse)
+	EVT_MENU(ID_PLAY_DATALOG_REV, DatalogChannelsPanel::OnPlayReverse)
 	EVT_MENU(ID_PAUSE_DATALOG, DatalogChannelsPanel::OnPause)
+	EVT_MENU(ID_PLAY_DATALOG_FWD, DatalogChannelsPanel::OnPlayForward)
+	EVT_MENU(ID_SEEK_DATALOG_FWD, DatalogChannelsPanel::OnSeekForward)
+	EVT_MENU(ID_SKIP_DATALOG_FWD, DatalogChannelsPanel::OnSkipForward)
 
 	EVT_GRID_CELL_RIGHT_CLICK(DatalogChannelsPanel::DoGridContextMenu)
 END_EVENT_TABLE()

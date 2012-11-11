@@ -41,13 +41,15 @@ public:
 	    ~GPSView();
 	    void OnSize(wxSizeEvent& event);
 	    void OnPaint(wxPaintEvent& event);
-	    void Render();
 	    void ClearGPSPoints();
 	    void AddGPSPoint(GPSPoint point);
 	    void OnEraseBackground(wxEraseEvent& event);
 	    void OnEnterWindow( wxMouseEvent& event );
+	    void SetMarker(GPSPoint p);
+	    GPSPoint GetMarker();
 private:
 	    GPSPoints		m_gpsPoints;
+	    GPSPoint		m_marker;
 	    double			m_minX;
 	    double			m_maxX;
 	    double			m_minY;

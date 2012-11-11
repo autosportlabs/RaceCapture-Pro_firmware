@@ -118,7 +118,6 @@
 								</option>
 								<option id="gnu.cpp.link.option.paths.362168868" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks/MinGW-Debug}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sqlite}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sqlite/MinGW-Debug}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\wxWidgets-2.8.10\msw-debug\lib&quot;"/>
 								</option>

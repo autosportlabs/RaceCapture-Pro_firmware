@@ -13,7 +13,7 @@
 #include "chartBase.h"
 
 
-class GPSPane : public wxPanel, public RaceAnalyzerChannelView {
+class GPSPane : public wxPanel, public RaceAnalyzerChannelView, public HistoricalView {
 
 public:
 	GPSPane();
@@ -26,14 +26,15 @@ public:
 				);
 	~GPSPane();
 	void InitComponents();
+	GPSPoint ProjectPoint(double latitude, double longitude);
 
 	void CreateGPSView(int datalogId, wxString &latitudeChannelName, wxString &longitudeChannelName);
-	void ReloadGPSPoints();
+	void ClearGPSPoints();
+	void UpdateValueRange(ViewDataHistoryArray &historyArray, size_t fromIndex, size_t toIndex);
 
-
-	//from RaceAnalyzerChannelView
 	void SetChartParams(ChartParams params);
-	void SetBufferSize(wxString &channelName, size_t size);
+	void SetBufferSize(wxArrayString &channels, size_t size);
+
 	void UpdateValue(wxString &name, size_t index, double value);
 
 private:
@@ -50,6 +51,8 @@ private:
 	int					m_datalogId;
 	wxString			m_longitudeChannelName;
 	wxString 			m_latitudeChannelName;
+	double				m_currentLatitude;
+	double 				m_currentLongitude;
 
 	DECLARE_EVENT_TABLE()
 };

@@ -57,7 +57,6 @@ void AnalogGaugePane::SetChartParams(ChartParams params){
 	m_chartParams = params;
 }
 
-void AnalogGaugePane::SetBufferSize(wxString &channelName, size_t size){}
 
 void AnalogGaugePane::UpdateValue(wxString &channelName, size_t index, double value){
 	if (m_channelName == channelName && DatalogValue::NULL_VALUE != value) m_angularMeter->SetValue(value);
@@ -70,6 +69,7 @@ void AnalogGaugePane::InitComponents(){
 	sizer->AddGrowableRow(0);
 	m_angularMeter = new AngularMeter(this,-1);
 	m_angularMeter->SetMinSize(wxSize(150,150));
+	m_angularMeter->SetBackColour(*wxBLACK);
 	sizer->Add(m_angularMeter,1,wxEXPAND);
 	this->SetSizer(sizer);
 }

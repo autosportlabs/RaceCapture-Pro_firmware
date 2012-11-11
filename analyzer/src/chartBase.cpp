@@ -10,3 +10,8 @@
 
 WX_DEFINE_OBJARRAY(RaceAnalyzerChannelViews);
 
+WX_DEFINE_OBJARRAY(ViewDataHistoryArray);
+
+DEFINE_EVENT_TYPE ( REQUEST_DATALOG_DATA_EVENT )
+
+

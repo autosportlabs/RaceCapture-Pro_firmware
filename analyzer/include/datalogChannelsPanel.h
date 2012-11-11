@@ -70,8 +70,13 @@ class DatalogChannelsPanel : public wxPanel{
 		void OnNewGPSView(wxCommandEvent &event);
 		void OnAddChannelView(wxCommandEvent &event);
 		void DoGridContextMenu(wxGridEvent &event);
-		void OnPlay(wxCommandEvent &event);
+		void OnPlayForward(wxCommandEvent &event);
+		void OnPlayReverse(wxCommandEvent &event);
 		void OnPause(wxCommandEvent &event);
+		void OnSkipForward(wxCommandEvent &event);
+		void OnSkipReverse(wxCommandEvent &event);
+		void OnSeekForward(wxCommandEvent &event);
+		void OnSeekReverse(wxCommandEvent &event);
 
 
 		wxArrayInt		m_datalogIdList;
@@ -96,8 +101,13 @@ enum{
 	ID_NEW_DIGITAL_GAUGE,
 	ID_NEW_GPS_VIEW,
 	ID_ADD_CHANNEL,
-	ID_PLAY_DATALOG,
+	ID_SKIP_DATALOG_REV,
+	ID_SEEK_DATALOG_REV,
+	ID_PLAY_DATALOG_REV,
 	ID_PAUSE_DATALOG,
+	ID_PLAY_DATALOG_FWD,
+	ID_SEEK_DATALOG_FWD,
+	ID_SKIP_DATALOG_FWD,
 	ID_JUMP_BEGINNING_DATALOG,
 	ID_JUMP_END_DATALOG
 

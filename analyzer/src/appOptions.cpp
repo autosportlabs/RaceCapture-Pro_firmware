@@ -152,7 +152,7 @@ void AppOptions::LoadDefaultStandardChannelTypes(DatalogChannelTypes &types){
 
 	types.Add( DatalogChannelType("Raw","Number", 0, 0, 1024, 0) );
 	types.Add( DatalogChannelType("GForce", "G", 5, -2.0, 2.0, 2) );
-	types.Add( DatalogChannelType("Rotation", "Degrees/Sec", 5, -10.0, 10.0, 2) );
+	types.Add( DatalogChannelType("Rotation", "Degrees/Sec", 5, -300.0, 300.0, 2) );
 	types.Add( DatalogChannelType("TimeDate", "UTC", 0, 0, 0, 2) );
 	types.Add( DatalogChannelType("Count", "Count", 0,0, 1000.0, 0) );
 	types.Add( DatalogChannelSystemTypes::GetLatitudeChannelType());
@@ -246,6 +246,7 @@ void AppOptions::LoadDefaultAnalogGaugeTypes(AnalogGaugeTypes &analogGaugeTypes)
 	analogGaugeTypes["RPM"] = AnalogGaugeType(100.0, 50.0, 0);
 	analogGaugeTypes["Duration"] = AnalogGaugeType(10.0, 5.0, 0);
 	analogGaugeTypes["Percent"] = AnalogGaugeType(10.0, 5.0, 0);
+	analogGaugeTypes["Time"] = AnalogGaugeType(1,0,0);
 }
 
 void AppOptions::LoadDefaultDigitalGaugeTypes(DigitalGaugeTypes &digitalGaugeTypes){
@@ -262,4 +263,5 @@ void AppOptions::LoadDefaultDigitalGaugeTypes(DigitalGaugeTypes &digitalGaugeTyp
 	digitalGaugeTypes["RPM"] = DigitalGaugeType(4,0);
 	digitalGaugeTypes["Duration"] = DigitalGaugeType(3,1);
 	digitalGaugeTypes["Percent"] = DigitalGaugeType(2,0);
+	digitalGaugeTypes["Time"] = DigitalGaugeType(2,3);
 }
