@@ -135,13 +135,13 @@ void fileWriterTask(void *params){
 
 			int rc = InitFS();
 			if (0 != rc){
-				EnableLED(LED3);
+				enableLED(LED3);
 			}
 
 			//open next log file
 			rc = openNextLogFile(&g_logfile);
 			if (0 != rc){
-				EnableLED(LED3);
+				enableLED(LED3);
 			}
 
 			g_writingActive = 1;
@@ -163,7 +163,7 @@ void fileWriterTask(void *params){
 				f_close(&g_logfile);
 				UnmountFS();
 				g_writingActive = 0;
-				DisableLED(LED3);
+				disableLED(LED3);
 			}
 		}
 	}
