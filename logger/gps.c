@@ -210,11 +210,11 @@ void GPSTask( void *pvParameters ){
 				char * data = g_GPSdataLine + 3;
 				if (strstr(data,"GGA,")){
 					parseGGA(data + 4);
-					if (flashCount == 0) DisableLED(LED1);
+					if (flashCount == 0) disableLED(LED1);
 					flashCount++;
 					int targetFlashCount = (g_gpsQuality == GPS_QUALITY_NO_FIX ? GPS_NOFIX_FLASH_COUNT: GPS_LOCK_FLASH_COUNT);
 					if (flashCount >= targetFlashCount){
-						EnableLED(LED1);
+						enableLED(LED1);
 						flashCount = 0;		
 					}
 					updateStartFinish();

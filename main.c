@@ -114,11 +114,11 @@ void fatalError(int type){
 	
 	while(1){
 		for (int c = 0; c < count; c++){
-			EnableLED(LED1);
-			EnableLED(LED2);
+			enableLED(LED1);
+			enableLED(LED2);
 			for (int i=0;i<flash;i++){}
-			DisableLED(LED1);
-			DisableLED(LED2);
+			disableLED(LED1);
+			disableLED(LED2);
 			for (int i=0;i<flash;i++){}
 		}
 		for (int i=0;i<pause;i++){}	

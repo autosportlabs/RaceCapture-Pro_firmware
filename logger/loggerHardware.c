@@ -389,7 +389,7 @@ void InitADC(void){
 }
 
 
-void ReadAllADC(	unsigned int *a0, 
+void readAllADC(	unsigned int *a0, 
 						unsigned int *a1, 
 						unsigned int *a2,
 						unsigned int *a3,
@@ -415,7 +415,7 @@ void ReadAllADC(	unsigned int *a0,
                                                 
 }
 
-unsigned int ReadADC(unsigned int channel){
+unsigned int readADC(unsigned int channel){
 	
        /* Clear all previous setting and result */
     //   AT91F_ADC_SoftReset (AT91C_BASE_ADC);
@@ -497,15 +497,15 @@ void InitPushbutton(void){
 	AT91C_BASE_PIOA->PIO_MDER = PIO_PUSHBUTTON_SWITCH; //enable multi drain
 }
 
-void EnableLED(unsigned int Led){
+void enableLED(unsigned int Led){
         AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, Led );
 }
 
-void DisableLED(unsigned int Led){
+void disableLED(unsigned int Led){
         AT91F_PIO_SetOutput( AT91C_BASE_PIOA, Led );
 }
 
-void ToggleLED (unsigned int Led){
+void toggleLED (unsigned int Led){
     if ( (AT91F_PIO_GetInput(AT91C_BASE_PIOA) & Led ) == Led )
     {
         AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, Led );

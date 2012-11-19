@@ -948,7 +948,7 @@ int Lua_GetAnalog(lua_State *L){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		ADCConfig *ac = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL != ac){
-			unsigned int adcRaw = ReadADC(channel);
+			unsigned int adcRaw = readADC(channel);
 			switch(ac->scalingMode){
 			case SCALING_MODE_RAW:
 				analogValue = adcRaw;
@@ -971,7 +971,7 @@ int Lua_GetAnalogRaw(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		if (channel >= 0 && channel < CONFIG_ADC_CHANNELS){
-			result = (int)ReadADC(channel);
+			result = (int)readADC(channel);
 		}
 	}
 	lua_pushnumber(L,result);
@@ -1292,10 +1292,10 @@ int Lua_SetLED(lua_State *L){
 				break;
 		}
 		if (state){
-			EnableLED(mask);
+			enableLED(mask);
 		}
 		else{
-			DisableLED(mask);	
+			disableLED(mask);	
 		}
 	}
 	return 0;

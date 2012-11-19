@@ -153,7 +153,7 @@ void loggerTask(void *params){
 			while (g_loggingShouldRun){
 				currentTicks += xFrequency;
 				
-				ToggleLED(LED2);
+				toggleLED(LED2);
 
 				//reset line
 				g_loggerLineBuffer[0] = '\0';
@@ -190,7 +190,7 @@ void loggerTask(void *params){
 			}
 			f_close(&g_logfile);
 			UnmountFS();
-			DisableLED(LED2);
+			disableLED(LED2);
 		}
 	}
 }
@@ -315,7 +315,7 @@ void writeAccelerometer(portTickType currentTicks, LoggerConfig *config){
 void writeADC(portTickType currentTicks, LoggerConfig *config){
 	
 	unsigned int adc[CONFIG_ADC_CHANNELS];
-	ReadAllADC(&adc[0],&adc[1],&adc[2],&adc[3],&adc[4],&adc[5],&adc[6],&adc[7]);	
+	readAllADC(&adc[0],&adc[1],&adc[2],&adc[3],&adc[4],&adc[5],&adc[6],&adc[7]);	
 	
 	for (unsigned int i=0; i < CONFIG_ADC_CHANNELS;i++){
 		ADCConfig *ac = &(config->ADCConfigs[i]);

@@ -26,9 +26,9 @@ void InitADC(void);
 void InitLEDs(void);
 void InitPushbutton(void);
 
-void EnableLED(unsigned int Led);
-void DisableLED(unsigned int Led);
-void ToggleLED (unsigned int Led);
+void enableLED(unsigned int Led);
+void disableLED(unsigned int Led);
+void toggleLED (unsigned int Led);
 
 void ResetWatchdog();
 
@@ -48,7 +48,7 @@ void ClearFREQ_ANALOG(unsigned int freqAnalogPort);
 
 //Read all ADC ports
 
-void ReadAllADC(unsigned int *a0, 
+void readAllADC(unsigned int *a0, 
 						unsigned int *a1, 
 						unsigned int *a2,
 						unsigned int *a3,
@@ -58,7 +58,7 @@ void ReadAllADC(unsigned int *a0,
 						unsigned int *a7 );
 					
 //Read specified ADC channel												
-unsigned int ReadADC(unsigned int channel);
+unsigned int readADC(unsigned int channel);
 
 //PWM Channel Functions
 void InitPWM(LoggerConfig *loggerConfig);

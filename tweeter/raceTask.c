@@ -781,7 +781,7 @@ void raceTask(void *params){
 
 	memset(g_receivedText,0,TEXT_MSG_LEN);
 
-	EnableLED(LED2);
+	enableLED(LED2);
 	while(1){
 		portTickType xLastWakeTime, startTickTime;
 		const portTickType xFrequency = FREQ_5Hz;
@@ -796,7 +796,7 @@ void raceTask(void *params){
 			}
 		}
 		else{
-			ToggleLED(LED2);
+			toggleLED(LED2);
 			if (xQueueReceive(textMsgRxQueue,g_receivedText,0)){
 				handleTxt(g_receivedText);
 			}
