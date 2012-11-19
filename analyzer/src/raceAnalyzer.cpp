@@ -49,10 +49,9 @@
 //wxAUI string definitions
 #define PANE_CONFIGURATION 		"config"
 #define PANE_RUNTIME			"runtime"
-#define PANE_ANALYZE			"analysis"
 #define PANE_SCRIPT				"script"
 
-#define CAPTION_RUNTIME 		"Runtime"
+#define CAPTION_CHANNELS 		"Channels"
 #define CAPTION_CONFIG			"Configuration"
 #define CAPTION_SCRIPT			"Script"
 
@@ -157,7 +156,7 @@ void MainFrame::InitComms(){
 }
 
 void MainFrame::InitDatalogPlayer(){
-	m_datalogPlayer.Create(&m_datalogData, &m_channelViews);
+	m_datalogPlayer.Create(&m_datalogStore, &m_channelViews);
 	m_datalogPlayer.Run();
 }
 
@@ -230,7 +229,6 @@ void MainFrame::CreateDefaultPerspectives(){
 
 	CreateDefaultConfigPerspective();
 	CreateDefaultRuntimePerspective();
-	CreateDefaultAnalyzePerspective();
 	CreateDefaultScriptPerspective();
 	_appPrefs.SaveAppPrefs();
 }
@@ -238,7 +236,6 @@ void MainFrame::CreateDefaultPerspectives(){
 void MainFrame::CreateDefaultConfigPerspective(){
 
 	_frameManager.GetPane(wxT(PANE_CONFIGURATION)).Show(true);
-	_frameManager.GetPane(wxT(PANE_ANALYZE)).Show(false);
 	_frameManager.GetPane(wxT(PANE_RUNTIME)).Show(false);
 	_frameManager.GetPane(wxT(PANE_SCRIPT)).Show(false);
 	_frameManager.Update();
@@ -252,7 +249,6 @@ void MainFrame::CreateDefaultConfigPerspective(){
 void MainFrame::CreateDefaultScriptPerspective(){
 
 	_frameManager.GetPane(wxT(PANE_CONFIGURATION)).Show(false);
-	_frameManager.GetPane(wxT(PANE_ANALYZE)).Show(false);
 	_frameManager.GetPane(wxT(PANE_RUNTIME)).Show(false);
 	_frameManager.GetPane(wxT(PANE_SCRIPT)).Show(true);
 	_frameManager.Update();
@@ -266,7 +262,6 @@ void MainFrame::CreateDefaultScriptPerspective(){
 void MainFrame::CreateDefaultRuntimePerspective(){
 
 	_frameManager.GetPane(wxT(PANE_CONFIGURATION)).Show(false);
-	_frameManager.GetPane(wxT(PANE_ANALYZE)).Show(false);
 	_frameManager.GetPane(wxT(PANE_RUNTIME)).Show(true);
 	_frameManager.GetPane(wxT(PANE_SCRIPT)).Show(false);
 	_frameManager.Update();
@@ -275,21 +270,6 @@ void MainFrame::CreateDefaultRuntimePerspective(){
 
 	_appPrefs.GetPerspectives().Add(perspective);
 	_appPrefs.GetPerspectiveNames().Add(PERSPECTIVE_RUNTIME);
-}
-
-void MainFrame::CreateDefaultAnalyzePerspective(){
-
-	_frameManager.GetPane(wxT(PANE_CONFIGURATION)).Show(false);
-	_frameManager.GetPane(wxT(PANE_ANALYZE)).Show(true);
-	_frameManager.GetPane(wxT(PANE_RUNTIME)).Show(false);
-	_frameManager.GetPane(wxT(PANE_SCRIPT)).Show(false);
-	_frameManager.Update();
-
-	wxString perspective = _frameManager.SavePerspective();
-
-	_appPrefs.GetPerspectives().Add(perspective);
-	_appPrefs.GetPerspectiveNames().Add(PERSPECTIVE_ANALYZE);
-
 }
 
 
@@ -319,14 +299,9 @@ void MainFrame::OnRuntimePerspective(wxCommandEvent& event){
 	SwitchToPerspective(1);
 }
 
-void MainFrame::OnAnalyzePerspective(wxCommandEvent& event){
-	SaveCurrentPerspective();
-	SwitchToPerspective(2);
-}
-
 void MainFrame::OnScriptPerspective(wxCommandEvent &event){
 	SaveCurrentPerspective();
-	SwitchToPerspective(3);
+	SwitchToPerspective(2);
 }
 
 void MainFrame::InitializeMenus(){
@@ -410,12 +385,14 @@ void MainFrame::InitializeMenus(){
 
 void MainFrame::InitializeComponents(){
 
-	m_channelsPanel = new DatalogChannelsPanel(this);
-	m_channelsPanel->SetDatalogStore(&m_datalogStore);
-	m_channelsPanel->SetAppOptions(&m_appOptions);
-	m_channelsPanel->SetAppPrefs(&_appPrefs);
+	m_channelsPanel = new DatalogChannelsPanel(DatalogChannelsParams(
+			&m_currentConfig,
+			&_appPrefs,
+			&m_appOptions,
+			&m_datalogStore),
+			this);
 
-	_frameManager.AddPane(m_channelsPanel, wxAuiPaneInfo().Name(wxT(PANE_RUNTIME)).Caption(wxT(CAPTION_RUNTIME)).Center().Hide());
+	_frameManager.AddPane(m_channelsPanel, wxAuiPaneInfo().Name(wxT(PANE_RUNTIME)).Caption(wxT(CAPTION_CHANNELS)).Center().Hide());
 
 	m_configPanel = new ConfigPanel(ConfigPanelParams(&m_raceAnalyzerComm, &m_currentConfig), this);
 	_frameManager.AddPane(m_configPanel, wxAuiPaneInfo().Name(wxT(PANE_CONFIGURATION)).Caption(wxT(CAPTION_CONFIG)).Center().Hide());
@@ -441,6 +418,16 @@ void MainFrame::NotifyConfigChanged(){
 	event.SetEventObject(this);
 	m_configPanel->AddPendingEvent(event);
 	m_channelsPanel->AddPendingEvent(event);
+}
+
+
+void MainFrame::OnRequestDatalogData(wxCommandEvent &event){
+	event.StopPropagation();
+	RequestDatalogRangeParams *params = (RequestDatalogRangeParams *)event.GetClientData();
+
+	m_datalogPlayer.UpdateDataHistory(params->view, params->channelNames, params->fromIndex, params->toIndex);
+
+	delete params;
 }
 
 
@@ -726,16 +713,29 @@ void MainFrame::TerminateApp(){
 	Destroy();
 }
 
+wxString MainFrame::GetMultipleSelectionLabel(DatalogChannelSelectionSet *selectionSet){
+
+	wxString label;
+	size_t selCount = selectionSet->Count();
+	for (size_t selIndex = 0; selIndex < selCount; selIndex++){
+		DatalogChannelSelection &sel = selectionSet->Item(selIndex);
+		wxArrayString &channelNames = sel.channelNames;
+		for (size_t channelIndex = 0; channelIndex < channelNames.Count(); channelIndex++){
+			label.Append(wxString::Format("%s %s", (selIndex == 0 && channelIndex == 0 ? " " : " : "), channelNames[channelIndex].ToAscii()));
+		}
+	}
+	return label;
+}
+
 void MainFrame::AddNewLineChart(DatalogChannelSelectionSet *selectionSet){
 
-
 	LineChartPane *logViewer = new LineChartPane(this, -1);
-	logViewer->SetChartParams(ChartParams(&_appPrefs,&m_appOptions,&m_datalogStore));
-	logViewer->CreateChart(selectionSet);
+	logViewer->SetChartParams(ChartParams(&_appPrefs,&m_appOptions));
+	logViewer->ConfigureChart(selectionSet);
 
 	m_channelViews.Add(logViewer);
 	wxString name = wxString::Format("lineChart_%lu", (unsigned long)m_channelViews.Count());
-	wxString caption = wxString::Format("Line Chart");
+	wxString caption = wxString::Format(GetMultipleSelectionLabel(selectionSet));
 
 	_frameManager.AddPane(logViewer,
 			wxAuiPaneInfo().
@@ -749,6 +749,7 @@ void MainFrame::AddNewLineChart(DatalogChannelSelectionSet *selectionSet){
 			Show(true));
 
 	_frameManager.Update();
+	m_datalogPlayer.AddView(logViewer);
 }
 
 void MainFrame::AddAnalogGauges(DatalogChannelSelectionSet *selectionSet){
@@ -762,7 +763,7 @@ void MainFrame::AddAnalogGauges(DatalogChannelSelectionSet *selectionSet){
 			wxString channelName = sel.channelNames[c];
 
 			AnalogGaugePane *gaugePane = new AnalogGaugePane(this, -1);
-			gaugePane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions,&m_datalogStore));
+			gaugePane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions));
 			gaugePane->CreateGauge(datalogId,channelName);
 			m_channelViews.Add(gaugePane);
 
@@ -798,7 +799,7 @@ void MainFrame::AddDigitalGauges(DatalogChannelSelectionSet *selectionSet){
 		for (size_t c = 0; c < sel.channelNames.Count(); c++){
 
 			DigitalGaugePane *gaugePane = new DigitalGaugePane(this, -1);
-			gaugePane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions,&m_datalogStore));
+			gaugePane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions));
 			wxString channelName = sel.channelNames[c];
 
 			gaugePane->CreateGauge(datalogId,channelName);
@@ -850,7 +851,7 @@ void MainFrame::AddGPSView(DatalogChannelSelectionSet *selectionSet){
 
 			GPSPane *gpsPane = new GPSPane(this, -1);
 
-			gpsPane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions,&m_datalogStore));
+			gpsPane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions));
 			gpsPane->CreateGPSView(datalogId,latitudeChannelName,longitudeChannelName);
 			wxString name = wxString::Format("GPS_%lu", (unsigned long)m_channelViews.Count());
 			wxString caption = wxString::Format("GPS %d", datalogId);
@@ -867,6 +868,8 @@ void MainFrame::AddGPSView(DatalogChannelSelectionSet *selectionSet){
 					Show(true));
 
 			_frameManager.Update();
+			m_channelViews.Add(gpsPane);
+			m_datalogPlayer.AddView(gpsPane);
 		}
 		else{
 			wxMessageDialog dlg(this,"Please Select the Channels containing the GPS Latitude and Longitude information", "Error", wxOK);
@@ -908,8 +911,12 @@ void MainFrame::OnUpdateActivity(wxCommandEvent &event){
 	SetActivityMessage(event.GetString());
 }
 
-void MainFrame::OnPlayDatalog(wxCommandEvent &event){
-	m_datalogPlayer.Play();
+void MainFrame::OnPlayFwdDatalog(wxCommandEvent &event){
+	m_datalogPlayer.PlayFwd(1);
+}
+
+void MainFrame::OnPlayRevDatalog(wxCommandEvent &event){
+	m_datalogPlayer.PlayRev(1);
 }
 
 void MainFrame::OnPauseDatalog(wxCommandEvent &event){
@@ -917,18 +924,25 @@ void MainFrame::OnPauseDatalog(wxCommandEvent &event){
 }
 
 void MainFrame::OnJumpBeginningDatalog(wxCommandEvent &event){
-
+	m_datalogPlayer.SkipFwd();
 }
 
 void MainFrame::OnJumpEndDatalog(wxCommandEvent &event){
-
+	m_datalogPlayer.SkipRev();
 }
 
+void MainFrame::OnSeekFwdDatalog(wxCommandEvent &event){
+	m_datalogPlayer.SeekFwd();
+}
+
+void MainFrame::OnSeekRevDatalog(wxCommandEvent &event){
+	m_datalogPlayer.SeekRev();
+}
 
 void MainFrame::OnRuntimeValueUpdated(wxString &name, float value){
 
 	for (size_t i = 0; i < m_channelViews.Count(); i++){
-		m_channelViews[i]->UpdateValue(name,value);
+		m_channelViews[i]->UpdateValue(name, 0, value);
 	}
 }
 
@@ -1062,6 +1076,7 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
     EVT_MENU(ID_IMPORT_DATALOG,MainFrame::OnImportDatalog)
 
     EVT_COMMAND( CONFIG_CHANGED, CONFIG_CHANGED_EVENT, MainFrame::OnConfigChanged )
+    EVT_COMMAND( ID_REQUEST_DATALOG_DATA, REQUEST_DATALOG_DATA_EVENT, MainFrame::OnRequestDatalogData )
 
 	EVT_MENU( ID_CONFIG_MODE, MainFrame::OnConfigPerspective)
 	EVT_MENU( ID_RUNTIME_MODE, MainFrame::OnRuntimePerspective)
@@ -1086,10 +1101,13 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 	EVT_COMMAND(UPDATE_STATUS, UPDATE_STATUS_EVENT, MainFrame::OnUpdateStatus)
 	EVT_COMMAND(UPDATE_ACTIVITY, UPDATE_ACTIVITY_EVENT, MainFrame::OnUpdateActivity)
 
-	EVT_COMMAND(PLAY_DATALOG, PLAY_DATALOG_EVENT, MainFrame::OnPlayDatalog)
+	EVT_COMMAND(PLAY_FWD_DATALOG, PLAY_FWD_DATALOG_EVENT, MainFrame::OnPlayFwdDatalog)
+	EVT_COMMAND(PLAY_REV_DATALOG, PLAY_REV_DATALOG_EVENT, MainFrame::OnPlayRevDatalog)
 	EVT_COMMAND(PAUSE_DATALOG, PAUSE_DATALOG_EVENT, MainFrame::OnPauseDatalog)
 	EVT_COMMAND(JUMP_BEGINNING_DATALOG, JUMP_BEGINNING_DATALOG_EVENT, MainFrame::OnJumpBeginningDatalog)
 	EVT_COMMAND(JUMP_END_DATALOG, JUMP_END_DATALOG_EVENT, MainFrame::OnJumpEndDatalog)
+	EVT_COMMAND(SEEK_FWD_DATALOG, SEEK_FWD_DATALOG_EVENT, MainFrame::OnSeekFwdDatalog)
+	EVT_COMMAND(SEEK_REV_DATALOG, SEEK_REV_DATALOG_EVENT, MainFrame::OnSeekRevDatalog)
 
 	//this must always be last
 	EVT_MENU_RANGE(ID_PERSPECTIVES, ID_PERSPECTIVES + MAX_PERSPECTIVES, MainFrame::OnSwitchView)

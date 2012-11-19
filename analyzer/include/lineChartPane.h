@@ -13,7 +13,7 @@
 #include "chartBase.h"
 
 
-class LineChartPane : public wxPanel, public RaceAnalyzerChannelView {
+class LineChartPane : public wxPanel, public RaceAnalyzerChannelView, public HistoricalView {
 
 public:
 	LineChartPane();
@@ -29,11 +29,14 @@ public:
 	LineChart * GetLineChart();
 
 	void OnScroll(wxScrollEvent &event);
-	void CreateChart(DatalogChannelSelectionSet *selectionSet);
+	void ConfigureChart(DatalogChannelSelectionSet *selectionSet);
 
 	//from RaceAnalyzerChannelView
 	void SetChartParams(ChartParams params);
-	void UpdateValue(wxString &name, float value);
+	void SetBufferSize(wxArrayString &channelNames, size_t size);
+	void UpdateValueRange(ViewDataHistoryArray &historyArray, size_t fromIndex, size_t toIndex);
+	void UpdateValue(wxString &name, size_t index, double value);
+	void ScrollLineChart(int thumbPosition);
 	void SetOffset(int offset);
 
 private:
@@ -44,9 +47,4 @@ private:
 	DECLARE_EVENT_TABLE()
 };
 
-enum{
-
-   ID_LOGVIEWER_SCROLL			= wxID_HIGHEST + 1,
-
-};
 #endif /* LOGVIEWER_H_ */

@@ -15,25 +15,40 @@
 class DatalogPlayer : public wxThread {
 
 public:
+	const static int MAX_PLAYBACK_MULTIPLIER = 25;
 	DatalogPlayer();
 	~DatalogPlayer();
-	void Play();
+	void PlayFwd(int datalogId);
+	void PlayRev(int datalogId);
+	void Requery(int datalogId);
+	void AddView(RaceAnalyzerChannelView *view);
+	void InitView(RaceAnalyzerChannelView *view, size_t datalogLength);
 	void Pause();
-	void FastForwardBeginning();
-	void FastForwardEnd();
+	void SkipFwd();
+	void SkipRev();
+	void SeekFwd();
+	void SeekRev();
+	void StopPlayback();
 	void SetPlaybackMultiplier(int multiplier);
+	int GetPlaybackMultiplier();
+	void UpdateDataHistory(HistoricalView *view, wxArrayString &channels, size_t fromIndex, size_t toIndex);
 
-	void Create(DatalogStoreRows *data, RaceAnalyzerChannelViews *views);
+	void Create(DatalogStore *datalogStore, RaceAnalyzerChannelViews *views);
 	void * Entry();
 
 private:
-	void Tick();
+	void Tick(size_t offset);
 
+	int m_datalogId;
 	int m_offset;
 	int m_multiplier;
-	DatalogStoreRows * m_datalogData;
+
+	DatalogStore *m_datalogStore;
+	DatalogChannels m_datalogChannels;
+	DatalogStoreRows  m_datalogData;
 	RaceAnalyzerChannelViews * m_views;
 	wxSemaphore * m_shouldPlay;
+
 
 };
 

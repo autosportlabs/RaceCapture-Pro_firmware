@@ -12,12 +12,19 @@
 #ifndef DATALOGDATA_H_
 #define DATALOGDATA_H_
 
+class DatalogValue{
+public:
+	DatalogValue(double value): value(value){}
+	const static double NULL_VALUE = -0xFFFFFFFFFFFFFFF;
+	double value;
+};
+
 WX_DEFINE_ARRAY_DOUBLE(double, RowValues);
 
 class DatastoreRow{
 
 public:
-	const static double NULL_VALUE = -0xFFFFFFFFFFFFFFF;
+
 	DatastoreRow() : timePoint(0)
 	{}
 
@@ -36,7 +43,8 @@ WX_DECLARE_OBJARRAY(DatastoreRow,DatalogStoreRows);
 class DatalogChannelType{
 
 public:
-	DatalogChannelType(wxString newName, wxString newUnitsLabel, int newSmoothingLevel, double newMinValue, double newMaxValue);
+	static const int DEFAULT_PRECISION = 2;
+	DatalogChannelType(wxString newName, wxString newUnitsLabel, int newSmoothingLevel, double newMinValue, double newMaxValue, int precision);
 	bool operator==(const DatalogChannelType &rh){
 		return (name == rh.name);
 	}
@@ -45,13 +53,14 @@ public:
 	int smoothingLevel;
 	double minValue;
 	double maxValue;
+	int precision;
 };
 
 class DatalogChannelSystemTypes {
 
 public:
-	static DatalogChannelType GetLatitudeChannelType(){ return DatalogChannelType("Latitude", "Degrees", 0, -90.0, 90.0);}
-	static DatalogChannelType GetLongitudeChannelType(){ return DatalogChannelType ("Longitude", "Degrees", 0, -180.0, 180.0);}
+	static DatalogChannelType GetLatitudeChannelType(){ return DatalogChannelType("Latitude", "Degrees", 0, -90.0, 90.0, 5);}
+	static DatalogChannelType GetLongitudeChannelType(){ return DatalogChannelType ("Longitude", "Degrees", 0, -180.0, 180.0, 5);}
 };
 
 

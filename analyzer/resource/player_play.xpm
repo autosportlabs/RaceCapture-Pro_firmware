@@ -1,5 +1,5 @@
 /* XPM */
-static char * player_play_xpm[] = {
+const char * player_play_xpm[] = {
 "16 15 26 1",
 " 	c None",
 ".	c #024266",

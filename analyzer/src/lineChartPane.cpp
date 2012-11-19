@@ -38,9 +38,8 @@ LineChartPane::~LineChartPane(){
 
 }
 
-void LineChartPane::CreateChart(DatalogChannelSelectionSet *selectionSet){
+void LineChartPane::ConfigureChart(DatalogChannelSelectionSet *selectionSet){
 
-	DatalogStore *store = m_chartParams.datalogStore;
 	LineChart *lineChart = GetLineChart();
 
 	AppOptions *appOptions = m_chartParams.appOptions;
@@ -48,34 +47,27 @@ void LineChartPane::CreateChart(DatalogChannelSelectionSet *selectionSet){
 	size_t maxColors = chartColors.Count();
 	size_t currentColor = 0;
 
-	DatalogChannelTypes channelTypes;
-	store->GetChannelTypes(channelTypes);
+	lineChart->ClearAllSeries();
 
 	size_t selCount = selectionSet->Count();
 	for (size_t selIndex = 0; selIndex < selCount; selIndex++){
 		DatalogChannelSelection &sel = selectionSet->Item(selIndex);
 
-		int datalogId = sel.datalogId;
-
 		wxArrayString &channelNames = sel.channelNames;
-
-		DatalogStoreRows	*datalogData = new DatalogStoreRows();
-		store->ReadDatalog(*datalogData,datalogId,channelNames,0);
 
 		for (size_t channelIndex = 0; channelIndex < channelNames.Count(); channelIndex++){
 
 			wxString channelName = channelNames[channelIndex];
-			DatalogChannel channel;
-			store->GetChannel(datalogId,channelName,channel);
 
-			DatalogChannelType &channelType = channelTypes[channel.typeId];
+			DatalogChannelType channelType = appOptions->GetChannelTypeForChannel(channelName);
 
 			Range *range = new Range(channelType.minValue,channelType.maxValue,channelType.unitsLabel);
 
 			int newRangeId = lineChart->AddRange(range);
-			Series *series = new Series(datalogData,channelIndex, newRangeId, 0, channelName, chartColors[currentColor]);
+
+			Series *series = new Series(0, newRangeId, 0, channelName, chartColors[currentColor], channelType.precision);
 			currentColor =  currentColor < maxColors - 1 ? currentColor + 1 : 0;
-			lineChart->AddSeries(series);
+			lineChart->AddSeries(channelName, series);
 		}
 	}
 }
@@ -85,8 +77,55 @@ void LineChartPane::SetChartParams(ChartParams params){
 	m_chartParams = params;
 }
 
-void LineChartPane::UpdateValue(wxString &name, float value){
+void LineChartPane::SetBufferSize(wxArrayString &channels, size_t size){
 
+	wxArrayString enabledChannels;
+	for (wxArrayString::iterator it = channels.begin(); it != channels.end(); ++it){
+		Series *series = m_lineChart->GetSeries(*it);
+		if (NULL != series){
+			enabledChannels.Add(*it);
+			series->SetBufferSize(size);
+		}
+	}
+
+	wxCommandEvent addEvent(REQUEST_DATALOG_DATA_EVENT, ID_REQUEST_DATALOG_DATA);
+	RequestDatalogRangeParams *params = new RequestDatalogRangeParams(this, enabledChannels, 0, size - 1);
+	addEvent.SetClientData(params);
+	GetParent()->AddPendingEvent(addEvent);
+}
+
+void LineChartPane::UpdateValueRange(ViewDataHistoryArray &historyArray, size_t fromIndex, size_t toIndex){
+
+	for (size_t i = 0; i < historyArray.size(); i++){
+		ViewDataHistory &history = historyArray[i];
+		Series *series = m_lineChart->GetSeries(history.channelName);
+		if (NULL != series){
+			for (size_t i = fromIndex; i < toIndex; i++){
+				series->SetValueAt(i, history.values[i]);
+			}
+			m_lineChart->Refresh();
+		}
+	}
+}
+
+void LineChartPane::UpdateValue(wxString &name, size_t index, double value){
+	Series *series = m_lineChart->GetSeries(name);
+	if (NULL != series){
+		m_lineChart->SetMarkerIndex(index);
+		int center = m_lineChart->GetSize().GetWidth() / 2;
+		double adjustedIndex = (double)index - center;
+		adjustedIndex = adjustedIndex >= 0 ? adjustedIndex : 0;
+		size_t len = series->GetBufferSize();
+		double factor = adjustedIndex / (double)len;
+		double thumbPos = SCROLLBAR_RANGE * factor;
+		m_scrollBar->SetThumbPosition(thumbPos);
+		ScrollLineChart(thumbPos);
+	}
+}
+
+void LineChartPane::ScrollLineChart(int thumbPosition){
+	double pct = ((double)thumbPosition) / SCROLLBAR_RANGE;
+	m_lineChart->SetViewOffsetFactor(pct);
 }
 
 void LineChartPane::SetOffset(int offset){
@@ -105,7 +144,6 @@ void LineChartPane::InitComponents(){
 
 	m_scrollBar->SetScrollbar(0,SCROLLBAR_THUMBSIZE, SCROLLBAR_RANGE, SCROLLBAR_PAGESIZE,false);
 
-
 	sizer->Add(m_lineChart,1,wxEXPAND);
 	sizer->Add(m_scrollBar,1,wxEXPAND);
 	this->SetSizer(sizer);
@@ -117,12 +155,7 @@ LineChart * LineChartPane::GetLineChart(){
 }
 
 void LineChartPane::OnScroll(wxScrollEvent &event){
-	double pos = m_scrollBar->GetThumbPosition();
-
-	double pct = pos / SCROLLBAR_RANGE;
-
-	m_lineChart->SetViewOffsetPercent(pct);
-	m_lineChart->Refresh();
+	ScrollLineChart(m_scrollBar->GetThumbPosition());
 }
 
 BEGIN_EVENT_TABLE ( LineChartPane, wxPanel )

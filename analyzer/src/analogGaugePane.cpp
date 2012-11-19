@@ -34,15 +34,9 @@ AnalogGaugePane::~AnalogGaugePane(){
 
 void AnalogGaugePane::CreateGauge(int datalogId, wxString channelName){
 
-	DatalogStore *store = m_chartParams.datalogStore;
+	m_channelName = channelName;
+	DatalogChannelType type = m_chartParams.appOptions->GetChannelTypeForChannel(channelName);
 
-	DatalogChannel channel;
-	store->GetChannel(datalogId,channelName, channel);
-
-	DatalogChannelTypes channelTypes;
-	store->GetChannelTypes(channelTypes);
-
-	DatalogChannelType &type = channelTypes[channel.typeId];
 	m_angularMeter->SetRange(type.minValue, type.maxValue);
 	AppOptions *options = m_chartParams.appOptions;
 
@@ -57,33 +51,15 @@ void AnalogGaugePane::CreateGauge(int datalogId, wxString channelName){
 		m_angularMeter->SetValuePrecision(gaugeType.valuePrecision);
 		m_angularMeter->SetLabel(type.unitsLabel);
 	}
-
-	wxArrayString channelNames;
-	channelNames.Add(channelName);
-	store->ReadDatalog(m_channelData,datalogId,channelNames,0);
-
-	SetOffset(0);
-}
-
-
-void AnalogGaugePane::SetOffset(int offset){
-	m_dataOffset = offset;
-	RefreshGaugeValue();
-}
-
-void AnalogGaugePane::RefreshGaugeValue(){
-
-	DatastoreRow &row = m_channelData[m_dataOffset];
-	double value = row.values[0];
-	m_angularMeter->SetValue(value);
 }
 
 void AnalogGaugePane::SetChartParams(ChartParams params){
 	m_chartParams = params;
 }
 
-void AnalogGaugePane::UpdateValue(wxString &channelName, float value){
 
+void AnalogGaugePane::UpdateValue(wxString &channelName, size_t index, double value){
+	if (m_channelName == channelName && DatalogValue::NULL_VALUE != value) m_angularMeter->SetValue(value);
 }
 
 void AnalogGaugePane::InitComponents(){
@@ -93,6 +69,7 @@ void AnalogGaugePane::InitComponents(){
 	sizer->AddGrowableRow(0);
 	m_angularMeter = new AngularMeter(this,-1);
 	m_angularMeter->SetMinSize(wxSize(150,150));
+	m_angularMeter->SetBackColour(*wxBLACK);
 	sizer->Add(m_angularMeter,1,wxEXPAND);
 	this->SetSizer(sizer);
 }

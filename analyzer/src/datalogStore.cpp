@@ -560,7 +560,7 @@ void DatalogStore::GetChannelTypes(DatalogChannelTypes &channelTypes){
 		double min = sqlite3_column_double(query,3);
 		double max = sqlite3_column_double(query,4);
 
-		channelTypes.Add(DatalogChannelType(name, units, smoothing, min, max));
+		channelTypes.Add(DatalogChannelType(name, units, smoothing, min, max, 2));
 	}
 
 	sqlite3_finalize(query);
@@ -777,7 +777,7 @@ void DatalogStore::ReadChannelTypes(DatalogChannelTypes &channelTypes){
 		double min = sqlite3_column_double(query,4);
 		double max = sqlite3_column_double(query,5);
 
-		channelTypes.Add(DatalogChannelType(typeName, typeUnits, smoothing, min, max));
+		channelTypes.Add(DatalogChannelType(typeName, typeUnits, smoothing, min, max, 2));
 	}
 	sqlite3_finalize(query);
 }
@@ -786,7 +786,7 @@ void DatalogStore::ReadChannels(DatalogChannels &channels){
 
 	channels.Clear();
 
-	const char *READ_CHANNELS_SQL = "SELECT id, name, typeId, description ORDER BY id ASC";
+	const char *READ_CHANNELS_SQL = "SELECT id, name, typeId, description FROM channels ORDER BY id ASC";
 
 	sqlite3_stmt *query;
 	{
@@ -815,13 +815,13 @@ void DatalogStore::ReadDatalog(DatalogStoreRows &results, int datalogId, wxArray
 		toTimePoint = GetTopTimePoint();
 	}
 
-	const char * READ_CHANNEL_SQL = "SELECT id, timePoint @ FROM datalog WHERE id = ? AND timePoint >= ? AND timePoint <= ? ORDER BY timePoint ASC";
+	const char * READ_CHANNEL_SQL = "SELECT @ FROM datalog WHERE id = ? AND timePoint >= ? AND timePoint <= ? ORDER BY timePoint ASC";
 
 	wxString querySql(READ_CHANNEL_SQL);
 	wxString nameList;
 	size_t channelCount = names.size();
 	for (size_t col = 0; col < channelCount; col++){
-		nameList.Append(",");
+		if (col > 0 ) nameList.Append(",");
 		nameList.Append(names[col]);
 	}
 	querySql.Replace("@", nameList, true);
@@ -858,13 +858,12 @@ void DatalogStore::ReadDatalog(DatalogStoreRows &results, int datalogId, wxArray
 
 		DatastoreRow row;
 		row.timePoint = sqlite3_column_int(query,0);
-		for (size_t channelCol = 0; channelCol < channelCount;channelCol++){
-			int dataCol = channelCol + 2;
-			if (sqlite3_column_type(query,dataCol) == SQLITE_NULL){
-				row.values.Add(DatastoreRow::NULL_VALUE);
+		for (size_t channelCol = 0; channelCol < channelCount; channelCol++){
+			if (sqlite3_column_type(query,channelCol) == SQLITE_NULL){
+				row.values.Add(DatalogValue::NULL_VALUE);
 			}
 			else{
-				row.values.Add(sqlite3_column_double(query,dataCol));
+				row.values.Add(sqlite3_column_double(query,channelCol));
 			}
 		}
 		results.Add(row);

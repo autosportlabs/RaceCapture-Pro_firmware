@@ -15,13 +15,33 @@
 #include "commonEvents.h"
 #include "appOptions.h"
 #include "appPrefs.h"
+#include "raceCapture/raceCaptureConfig.h"
 
+
+class DatalogChannelsParams{
+public:
+	DatalogChannelsParams(
+			RaceCaptureConfig *config,
+			AppPrefs *prefs,
+			AppOptions *options,
+			DatalogStore *store) :
+				raceCaptureConfig(config),
+				appPrefs(prefs),
+				appOptions(options),
+				datalogStore(store)
+	{}
+
+	RaceCaptureConfig *raceCaptureConfig;
+	AppPrefs *appPrefs;
+	AppOptions *appOptions;
+	DatalogStore *datalogStore;
+};
 
 class DatalogChannelsPanel : public wxPanel{
 
 	public:
-		DatalogChannelsPanel();
-		DatalogChannelsPanel(wxWindow *parent,
+		DatalogChannelsPanel(DatalogChannelsParams params,
+					wxWindow *parent,
 					wxWindowID id = -1,
 					const wxPoint &pos = wxDefaultPosition,
 					const wxSize &size = wxDefaultSize,
@@ -32,9 +52,6 @@ class DatalogChannelsPanel : public wxPanel{
 		void UpdateDatalogSessions();
 		void AddDatalogSession(int id);
 		void ReloadChannels(DatalogChannels &channels, DatalogChannelTypes &channelTypes, wxGrid *grid);
-		void SetDatalogStore(DatalogStore *datalogStore);
-		void SetAppOptions(AppOptions *appOptions);
-		void SetAppPrefs(AppPrefs *appPrefs);
 		void UpdateRuntimeValues();
 
 		void SetMarkerOffset(size_t offset);
@@ -51,10 +68,15 @@ class DatalogChannelsPanel : public wxPanel{
 		void OnNewAnalogGauge(wxCommandEvent &event);
 		void OnNewDigitalGauge(wxCommandEvent &event);
 		void OnNewGPSView(wxCommandEvent &event);
-		void OnAddChannel(wxCommandEvent &event);
+		void OnAddChannelView(wxCommandEvent &event);
 		void DoGridContextMenu(wxGridEvent &event);
-		void OnPlay(wxCommandEvent &event);
+		void OnPlayForward(wxCommandEvent &event);
+		void OnPlayReverse(wxCommandEvent &event);
 		void OnPause(wxCommandEvent &event);
+		void OnSkipForward(wxCommandEvent &event);
+		void OnSkipReverse(wxCommandEvent &event);
+		void OnSeekForward(wxCommandEvent &event);
+		void OnSeekReverse(wxCommandEvent &event);
 
 
 		wxArrayInt		m_datalogIdList;
@@ -63,6 +85,7 @@ class DatalogChannelsPanel : public wxPanel{
 		DatalogStore 	*m_datalogStore;
 		AppOptions		*m_appOptions;
 		AppPrefs		*m_appPrefs;
+		RaceCaptureConfig *m_raceCaptureConfig;
 		wxMenu			*m_gridPopupMenu;
 
 
@@ -78,8 +101,13 @@ enum{
 	ID_NEW_DIGITAL_GAUGE,
 	ID_NEW_GPS_VIEW,
 	ID_ADD_CHANNEL,
-	ID_PLAY_DATALOG,
+	ID_SKIP_DATALOG_REV,
+	ID_SEEK_DATALOG_REV,
+	ID_PLAY_DATALOG_REV,
 	ID_PAUSE_DATALOG,
+	ID_PLAY_DATALOG_FWD,
+	ID_SEEK_DATALOG_FWD,
+	ID_SKIP_DATALOG_FWD,
 	ID_JUMP_BEGINNING_DATALOG,
 	ID_JUMP_END_DATALOG
 

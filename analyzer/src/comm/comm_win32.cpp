@@ -16,6 +16,7 @@
 
 #include <windows.h>
 #include "stdio.h"
+#include "serialComm.h"
 #include "comm_win32.h"
 #include <wx/log.h>
 
@@ -236,7 +237,7 @@ char CComm::readChar( int* cnt )
         result = ReadFile( m_hCommPort, &c, 1, &dwCount, NULL );
         if (result == 0) {
                 int err = GetLastError();
-                //throw exception
+                throw SerialException(err,"Error reading serial port");
         }
 
         *cnt = dwCount;
@@ -279,7 +280,8 @@ size_t CComm::writeBuffer(const char * p, unsigned short cnt )
         DWORD count;
         bool result = WriteFile( m_hCommPort, p, cnt, &count, NULL );
         if (!result){
-        	//handle error - throw, etc
+        	int err = GetLastError();
+			throw SerialException(err,"Error writing buffer to serial port");
         }
         return count;
 }
@@ -311,7 +313,7 @@ size_t CComm::readLine(char *buf, size_t bufSize, size_t timeout){
     	bool result = ReadFile(m_hCommPort, (buf + totalRead), 1, &charsRead, NULL);
     	if (!result){
 			int err = GetLastError();
-			//throw an exception
+			throw SerialException(err, "error reading line from serial port");
     	}
     	if ('\r' == *(buf + totalRead)) break;
     	totalRead += charsRead;
@@ -363,6 +365,7 @@ size_t CComm::readLine2(char *buf, size_t bufSize, size_t timeout, size_t lines)
     	bool result = ReadFile(m_hCommPort, (buf + totalRead), (DWORD)(bufSize - totalRead), &charsRead, NULL);
     	if (!result){
 			int err = GetLastError();
+			throw SerialException(err, "error reading line from serial port");
 			//throw an exception
     	}
     	for (size_t i = totalRead; i < totalRead + charsRead; i++ ){

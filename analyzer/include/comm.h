@@ -2,7 +2,7 @@
 #define _COMM_H_
 
 #include "configData.h"
-#include "comm_win32.h"
+#include "serialComm.h"
 #include "raceCapture/raceCaptureConfig.h"
 #include "raceCapture/raceCaptureRuntime.h"
 
