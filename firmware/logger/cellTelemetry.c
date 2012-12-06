@@ -4,6 +4,7 @@
 #include "task.h"
 #include "modp_numtoa.h"
 #include "loggerHardware.h"
+#include "loggerConfig.h"
 #include <string.h>
 
 static int g_telemetryActive;
@@ -66,6 +67,8 @@ void cellTelemetryTask(void *params){
 	SampleRecord *sr = NULL;
 	uint32_t sampleTick = 0;
 
+	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+
 	while(1){
 		g_telemetryActive = 0;
 		int cellReady = 0;
@@ -88,8 +91,8 @@ void cellTelemetryTask(void *params){
 			}
 			else{
 				if (0 == g_telemetryActive){
-					if( 0 == connectNet("67.222.3.214","8080",0) &&
-						0 == writeAuthJSON("8f4240f8-0816-4896-8527-f1d7c5285ad9")){
+					if( 0 == connectNet(loggerConfig->LoggerOutputConfig.telemetryServerHost,"8080",0) &&
+						0 == writeAuthJSON(loggerConfig->LoggerOutputConfig.telemetryDeviceId)){
 							g_telemetryActive = 1;
 						}
 						else{

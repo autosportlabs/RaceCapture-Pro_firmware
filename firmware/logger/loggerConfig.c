@@ -114,6 +114,8 @@ char filterTelemetryMode(char mode){
 			return TELEMETRY_MODE_P2P;
 		case TELEMETRY_MODE_CELL:
 			return TELEMETRY_MODE_CELL;
+		case TELEMETRY_MODE_BLUETOOTH:
+			return TELEMETRY_MODE_BLUETOOTH;
 		default:
 		case TELEMETRY_MODE_DISABLED:
 			return TELEMETRY_MODE_DISABLED;
@@ -284,15 +286,19 @@ AccelConfig * getAccelConfigChannel(int channel){
 	return c;		
 }
 
-void setLabelGeneric(char *dest, const char *source){
-
+void setTextField(char *dest, const char *source, unsigned int maxlen){
 	const char *from = source;
 	if (*from == '"') from++;
 	int len = strlen(from);
 	if (*(from + len -1) == '"') len--;
-	if (len > DEFAULT_LABEL_LENGTH) len = DEFAULT_LABEL_LENGTH;
+	if (len > maxlen) len = maxlen;
 	strncpy(dest ,from, len);
 	dest[len] = '\0';
+
+}
+
+void setLabelGeneric(char *dest, const char *source){
+	setTextField(dest, source, DEFAULT_LABEL_LENGTH);
 }
 
 void calibrateAccelZero(){
@@ -363,4 +369,5 @@ int getHighestSampleRate(LoggerConfig *config){
 	}
 	return (portTickType)s;
 }
+
 
