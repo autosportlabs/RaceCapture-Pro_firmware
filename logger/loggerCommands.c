@@ -14,6 +14,7 @@
 #include "sdcard.h"
 #include "loggerData.h"
 #include "sampleRecord.h"
+#include "usart.h"
 
 void SampleData(unsigned int argc, char **argv){
 	SampleRecord sr;
@@ -373,6 +374,8 @@ void GetLoggerOutputConfig(unsigned int argc, char **argv){
 	SendNameInt("telemetryMode",c->telemetryMode);
 	SendNameUint("p2pDestAddrHigh",c->p2pDestinationAddrHigh);
 	SendNameUint("p2pDestAddrLow",c->p2pDestinationAddrLow);
+	SendNameString("telemetryServerHost", c->telemetryServerHost);
+	SendNameString("telemetryDeviceId", c->telemetryDeviceId);
 }
 
 void SetLoggerOutputConfig(unsigned int argc, char **argv){
@@ -381,5 +384,65 @@ void SetLoggerOutputConfig(unsigned int argc, char **argv){
 	if (argc > 2) c->telemetryMode = filterTelemetryMode((char)modp_atoui(argv[2]));
 	if (argc > 3) c->p2pDestinationAddrHigh = modp_atoui(argv[3]);
 	if (argc > 4) c->p2pDestinationAddrLow = modp_atoui(argv[4]);
+	if (argc > 5) setTextField(c->telemetryServerHost, argv[5], TELEMETRY_SERVER_HOST_LENGTH);
+	if (argc > 6) setTextField(c->telemetryDeviceId, argv[6], DEVICE_ID_LENGTH);
 	SendCommandOK();
+}
+
+
+static void StartTerminal0(unsigned int baud){
+	initUsart0(USART_MODE_8N1, baud);
+	while (1){
+		char c = ReadChar();
+		if (c == 27) break;
+		if (c){
+			SendChar(c);
+			if (c == '\r') SendChar('\n');
+			usart0_putchar(c);
+			if (c == '\r') usart0_putchar('\n');
+		}
+		c = usart0_getcharWait(0);
+		if (c){
+			SendChar(c);
+			if (c == '\r') SendChar('\n');
+		}
+	}
+}
+
+static void StartTerminal1(unsigned int baud){
+	initUsart0(USART_MODE_8N1, baud);
+	if (baud == 460800){
+		SendString("Fixing Baud\r\n");
+		AT91C_BASE_US0->US_BRGR = BOARD_MCK / (8 * 460800);
+	}
+	while (1){
+		char c = usart1_getcharWait(0);
+		if (c) SendChar(c);
+		c = ReadChar();
+		if (c == 27) break;
+		if (c) usart1_putchar(c);
+	}
+}
+
+void StartTerminal(unsigned int argc, char **argv){
+	if (argc < 3){
+		SendCommandError(ERROR_CODE_MISSING_PARAMS);
+		return;
+	}
+
+	SendString("Entering Terminal. Press ESC to exit\r\n");
+
+	unsigned int port = modp_atoui(argv[1]);
+	unsigned int baud = modp_atoui(argv[2]);
+
+	switch(port){
+		case 0:
+			StartTerminal0(baud);
+			break;
+		case 1:
+			StartTerminal1(baud);
+			break;
+		default:
+			SendCommandError(ERROR_CODE_INVALID_PARAM);
+	}
 }

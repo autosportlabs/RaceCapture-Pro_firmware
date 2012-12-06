@@ -270,9 +270,14 @@ typedef struct _GPSConfig{
 							DEFAULT_GPS_TIME_CONFIG, \
 							DEFAULT_GPS_VELOCITY_CONFIG}
 
+#define DEVICE_ID_LENGTH 36
+#define TELEMETRY_SERVER_HOST_LENGTH 100
+
 typedef struct _LoggerOutputConfig {
 	char telemetryMode;
 	char sdLoggingMode;
+	char telemetryDeviceId[DEVICE_ID_LENGTH + 1]; // + 1 terminating character
+	char telemetryServerHost[TELEMETRY_SERVER_HOST_LENGTH + 1]; // + 1 terminating character
 	unsigned int p2pDestinationAddrHigh;
 	unsigned int p2pDestinationAddrLow;
 } LoggerOutputConfig;
@@ -280,12 +285,13 @@ typedef struct _LoggerOutputConfig {
 #define TELEMETRY_MODE_DISABLED 				0
 #define TELEMETRY_MODE_P2P 						1
 #define TELEMETRY_MODE_CELL						2
+#define TELEMETRY_MODE_BLUETOOTH				3
 
 #define SD_LOGGING_MODE_DISABLED				0
 #define SD_LOGGING_MODE_CSV						1
 #define SD_LOGGING_MODE_BINARY					2
 
-#define DEFAULT_TELEMETRY_MODE 					TELEMETRY_MODE_DISABLED
+#define DEFAULT_TELEMETRY_MODE 					TELEMETRY_MODE_BLUETOOTH
 #define DEFAULT_SD_LOGGING_MODE					SD_LOGGING_MODE_CSV
 
 #define DEFAULT_P2P_DESTINATION_ADDR_HIGH	 	0x00000000
@@ -293,9 +299,11 @@ typedef struct _LoggerOutputConfig {
 
 #define DEFAULT_LOGGER_OUTPUT_CONFIG { 	DEFAULT_TELEMETRY_MODE, \
 										DEFAULT_SD_LOGGING_MODE, \
+										"", \
+										"67.222.3.214", \
 										DEFAULT_P2P_DESTINATION_ADDR_HIGH, \
 										DEFAULT_P2P_DESTINATION_ADDR_LOW \
-										}
+										} //autosportlabs.com
 
 typedef struct _LoggerConfig {
 	//ADC Calibrations
@@ -366,6 +374,7 @@ GPIOConfig * getGPIOConfigChannel(int channel);
 AccelConfig * getAccelConfigChannel(int channel);
 
 void setLabelGeneric(char *dest, const char *source);
+void setTextField(char *dest, const char *source, unsigned int maxlen);
 
 void calibrateAccelZero();
 

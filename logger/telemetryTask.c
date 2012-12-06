@@ -17,7 +17,7 @@
 #include "string.h"
 #include "p2pTelemetry.h"
 #include "cellTelemetry.h"
-
+#include "btTelemetry.h"
 
 static xQueueHandle g_sampleRecordQueue = NULL;
 
@@ -58,6 +58,8 @@ void createTelemetryTask(){
 		case TELEMETRY_MODE_P2P:
 			xTaskCreate( p2pTelemetryTask, ( signed portCHAR * ) "telemetry", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
 			break;
+		case TELEMETRY_MODE_BLUETOOTH:
+			xTaskCreate( btTelemetryTask, ( signed portCHAR * ) "telemetry", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
 	}
 }
 

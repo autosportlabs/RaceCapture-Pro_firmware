@@ -19,7 +19,7 @@ extern const struct cmd_t g_loggerCommands[];
 {"flashLoggerCfg", "Write the active Logger Configuration to flash.","", FlashLoggerConfig}, \
 \
 {"getOutputCfg", "Gets the Output Configuration","",GetLoggerOutputConfig}, \
-{"setOutputCfg", "Sets the Output Configuration","[sdLoggingMode] [telemetryMode] [p2pDestAddrHigh] [p2pDestAddrLow]",SetLoggerOutputConfig}, \
+{"setOutputCfg", "Sets the Output Configuration","[sdLoggingMode] [telemetryMode] [p2pDestAddrHigh] [p2pDestAddrLow] [telemetryHost] [telemetryDeviceId]",SetLoggerOutputConfig}, \
 \
 {"getAnalogCfg", "Gets the configuration for the specified analog channel","<channel>", GetAnalogConfig}, \
 {"setAnalogCfg", "Sets the configuration for the specified analog channel","<channel> [label] [units] [sampleRate] [loggingPrecision] [scalingMode] [linearScaling] < [mapRaw_0] [mapRaw_1] [mapRaw_2] [mapRaw_3] [mapRaw_4] [mapScaled_0] [mapScaled_1] [mapScaled_2] [mapScaled_3] [mapScaled_4] >",SetAnalogConfig}, \
@@ -48,7 +48,9 @@ extern const struct cmd_t g_loggerCommands[];
 {"getAccelInstalled", "Gets the installed state of the accelerometer.","", GetAccelInstalled}, \
 {"setAccelInstalled", "Sets the installed state of the accelerometer.","<installed>", SetAccelInstalled}, \
 \
-{"calibrateAccelZero", "Calibrates the current accelerometer values as the zero point.","", CalibrateAccelZero}
+{"calibrateAccelZero", "Calibrates the current accelerometer values as the zero point.","", CalibrateAccelZero}, \
+\
+{"startTerminal", "Starts a debugging terminal session on the specified port.","<port> <baud>", StartTerminal }
 
 
 
@@ -90,5 +92,6 @@ void SetAccelConfig(unsigned int argc, char **argv);
 
 void CalibrateAccelZero(unsigned int argc, char **argv);
 
+void StartTerminal(unsigned int argc, char **argv);
 
 #endif /* LOGGERCOMMANDS_H_ */
