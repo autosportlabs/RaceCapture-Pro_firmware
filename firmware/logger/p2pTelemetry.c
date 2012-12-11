@@ -27,16 +27,6 @@ static int g_telemetryActive;
 
 static TxFrame g_xBeeFrame;
 
-static void putQuotedStringXbee(char *s){
-	usart0_putchar('"');
-	usart0_puts(s);
-	usart0_putchar('"');
-}
-
-static void putsXbee(const char *s){
-	usart0_puts(s);
-}
-
 static void putcXbee(char c){
 	usart0_putchar(c);
 }
@@ -54,28 +44,6 @@ static void putEscXbee(char c){
 			break;
 	}
 	putcXbee(c);
-}
-
-static void putUintXbee(uint32_t num){
-	char buf[10];
-	modp_uitoa10(num,buf);
-	putsXbee(buf);
-}
-
-static void putIntXbee(int num){
-	char buf[10];
-	modp_itoa10(num,buf);
-	putsXbee(buf);
-}
-
-static void putFloatXbee(float num, int precision){
-	char buf[20];
-	modp_ftoa(num, buf, precision);
-	putsXbee(buf);
-}
-
-static void flushXbee(void){
-	usart0_flush();
 }
 
 static void initTxFrame(TxFrame *frame){
