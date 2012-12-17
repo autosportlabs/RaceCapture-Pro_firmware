@@ -28,7 +28,8 @@ static void writeAccelerometer(SampleRecord *sampleRecord, portTickType currentT
 		portTickType sr = ac->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
-				sampleRecord->AccelSamples[i].floatValue = convertAccelRawToG(accelValues[i],ac->zeroValue);
+				float value = (i == ACCEL_CHANNEL_ZT ? convertYawRawToDegreesPerSec(accelValues[i],ac->zeroValue) : convertAccelRawToG(accelValues[i],ac->zeroValue));
+				sampleRecord->AccelSamples[i].floatValue = value;
 			}
 		}
 	}
