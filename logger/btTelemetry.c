@@ -6,7 +6,7 @@
 #include <string.h>
 #include "usart.h"
 
-#define DEBUG
+//#define DEBUG
 
 #define IDLE_TIMEOUT	configTICK_RATE_HZ / 1
 #define COMMAND_WAIT 	600
@@ -89,8 +89,8 @@ static int sendCommand(const char * cmd){
 static int configureBt(){
 	SendString("configuring...\r\n");
 	//set baud rate
-	if (!sendCommand("AT+BAUD8")) return -1;
-	initUsart0(USART_MODE_8N1, 115200);
+	if (!sendCommand("AT+BAUD9")) return -1;
+	initUsart0(USART_MODE_8N1, 230400);
 	//set Device Name
 	if (!sendCommandWaitResponse("AT+NAMERaceCapturePro","OK",COMMAND_WAIT)) return -2;
 	return 0;
@@ -100,14 +100,13 @@ static int initBluetooth(){
 
 
 	vTaskDelay(1000);
-	SendString("done waiting\r\n");
 
 	initUsart0(USART_MODE_8N1, 9600);
 	if (sendCommand("AT")){
 		SendString("looks like 9600\r\n");
 		if (configureBt() != 0) return -1;
 	}
-	initUsart0(USART_MODE_8N1, 115200);
+	initUsart0(USART_MODE_8N1, 230400);
 	if (!sendCommand("AT")) return -1;
 	return 0;
 }

@@ -255,7 +255,7 @@ typedef struct _GPSConfig{
 #define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "deg", SAMPLE_1Hz}
 #define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "deg", SAMPLE_1Hz}
 #define DEFAULT_GPS_TIME_CONFIG {"Time", "Time", SAMPLE_1Hz}
-#define DEFAULT_GPS_VELOCITY_CONFIG {"Velocity", "kph", SAMPLE_5Hz}
+#define DEFAULT_GPS_VELOCITY_CONFIG {"Velocity", "MPH", SAMPLE_5Hz}
 
 #define DEFAULT_GPS_CONFIG {CONFIG_FEATURE_INSTALLED, \
 							DEFAULT_GPS_START_FINISH_LATITUDE, \
@@ -283,9 +283,9 @@ typedef struct _LoggerOutputConfig {
 } LoggerOutputConfig;
 
 #define TELEMETRY_MODE_DISABLED 				0
-#define TELEMETRY_MODE_P2P 						1
+#define TELEMETRY_MODE_BLUETOOTH				1
 #define TELEMETRY_MODE_CELL						2
-#define TELEMETRY_MODE_BLUETOOTH				3
+#define TELEMETRY_MODE_P2P 						3
 
 #define SD_LOGGING_MODE_DISABLED				0
 #define SD_LOGGING_MODE_CSV						1
