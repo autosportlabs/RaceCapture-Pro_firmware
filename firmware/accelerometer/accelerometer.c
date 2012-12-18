@@ -8,6 +8,8 @@
 
 
 #define ACCEL_COUNTS_PER_G 				1024
+#define YAW_COUNTS_PER_DEGREE_PER_SEC	6.826666
+
 #define ACCEL_MAX_RANGE 				ACCEL_COUNTS_PER_G * 4
 
 /* PCS_0 for NPCS0, PCS_1 for NPCS1 ... */
@@ -156,6 +158,12 @@ unsigned char accel_readControlRegister(){
 	accel_spiSend(0x03, 0);
 	unsigned char ctrl = accel_spiSend(0xff, 1);
 	return ctrl;	
+}
+
+float convertYawRawToDegreesPerSec(int yawRaw, unsigned int zeroValue){
+	yawRaw = yawRaw - zeroValue;
+	float dps = (float)yawRaw / YAW_COUNTS_PER_DEGREE_PER_SEC;
+	return dps;
 }
 
 float convertAccelRawToG(int accelRaw, unsigned int zeroValue){

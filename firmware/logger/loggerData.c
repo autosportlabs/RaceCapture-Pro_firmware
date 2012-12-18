@@ -28,7 +28,8 @@ static void writeAccelerometer(SampleRecord *sampleRecord, portTickType currentT
 		portTickType sr = ac->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
-				sampleRecord->AccelSamples[i].floatValue = convertAccelRawToG(accelValues[i],ac->zeroValue);
+				float value = (i == ACCEL_CHANNEL_ZT ? convertYawRawToDegreesPerSec(accelValues[i],ac->zeroValue) : convertAccelRawToG(accelValues[i],ac->zeroValue));
+				sampleRecord->AccelSamples[i].floatValue = value;
 			}
 		}
 	}
@@ -37,7 +38,7 @@ static void writeAccelerometer(SampleRecord *sampleRecord, portTickType currentT
 static void writeADC(SampleRecord *sampleRecord, portTickType currentTicks, LoggerConfig *config){
 
 	unsigned int adc[CONFIG_ADC_CHANNELS];
-	ReadAllADC(&adc[0],&adc[1],&adc[2],&adc[3],&adc[4],&adc[5],&adc[6],&adc[7]);
+	readAllADC(&adc[0],&adc[1],&adc[2],&adc[3],&adc[4],&adc[5],&adc[6],&adc[7]);
 
 	for (unsigned int i=0; i < CONFIG_ADC_CHANNELS;i++){
 		ADCConfig *ac = &(config->ADCConfigs[i]);

@@ -17,6 +17,7 @@ void accel_initSPI();
 void accel_spiSetSpeed(unsigned char speed);
 unsigned char accel_spiSend(unsigned char outgoing, int last);
 unsigned char accel_readControlRegister();
+float convertYawRawToDegreesPerSec(int yawRaw, unsigned int zeroVale);
 float convertAccelRawToG(int rawValue, unsigned int zeroValue);
 unsigned int readAccelChannel(unsigned char channel);
 unsigned int getLastAccelRead(unsigned char channel);

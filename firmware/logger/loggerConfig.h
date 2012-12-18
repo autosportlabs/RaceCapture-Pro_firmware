@@ -56,7 +56,7 @@ typedef struct _ADCConfig{
 } ADCConfig;
 
 #define DEFAULT_ADC_LOGGING_PRECISION		2
-#define DEFAULT_SCALING_MAP {{0,1024,2048,3072,4095},{0,1.25,2.5,3.75,5.0}}
+#define DEFAULT_SCALING_MAP {{0,256,512,768,1023},{0,1.25,2.5,3.75,5.0}}
 
 #define DEFAULT_ADC0_CONFIG {{"Analog1","Units",SAMPLE_DISABLED},DEFAULT_ADC_LOGGING_PRECISION,0.0048875f,DEFAULT_SCALING_MODE,DEFAULT_SCALING_MAP}
 #define DEFAULT_ADC1_CONFIG {{"Analog2","Units",SAMPLE_DISABLED},DEFAULT_ADC_LOGGING_PRECISION,0.0048875f,DEFAULT_SCALING_MODE,DEFAULT_SCALING_MAP}
@@ -255,7 +255,7 @@ typedef struct _GPSConfig{
 #define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "deg", SAMPLE_1Hz}
 #define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "deg", SAMPLE_1Hz}
 #define DEFAULT_GPS_TIME_CONFIG {"Time", "Time", SAMPLE_1Hz}
-#define DEFAULT_GPS_VELOCITY_CONFIG {"Velocity", "kph", SAMPLE_5Hz}
+#define DEFAULT_GPS_VELOCITY_CONFIG {"Velocity", "MPH", SAMPLE_5Hz}
 
 #define DEFAULT_GPS_CONFIG {CONFIG_FEATURE_INSTALLED, \
 							DEFAULT_GPS_START_FINISH_LATITUDE, \
@@ -270,16 +270,22 @@ typedef struct _GPSConfig{
 							DEFAULT_GPS_TIME_CONFIG, \
 							DEFAULT_GPS_VELOCITY_CONFIG}
 
+#define DEVICE_ID_LENGTH 36
+#define TELEMETRY_SERVER_HOST_LENGTH 100
+
 typedef struct _LoggerOutputConfig {
 	char telemetryMode;
 	char sdLoggingMode;
+	char telemetryDeviceId[DEVICE_ID_LENGTH + 1]; // + 1 terminating character
+	char telemetryServerHost[TELEMETRY_SERVER_HOST_LENGTH + 1]; // + 1 terminating character
 	unsigned int p2pDestinationAddrHigh;
 	unsigned int p2pDestinationAddrLow;
 } LoggerOutputConfig;
 
 #define TELEMETRY_MODE_DISABLED 				0
-#define TELEMETRY_MODE_P2P 						1
+#define TELEMETRY_MODE_BLUETOOTH				1
 #define TELEMETRY_MODE_CELL						2
+#define TELEMETRY_MODE_P2P 						3
 
 #define SD_LOGGING_MODE_DISABLED				0
 #define SD_LOGGING_MODE_CSV						1
@@ -293,9 +299,11 @@ typedef struct _LoggerOutputConfig {
 
 #define DEFAULT_LOGGER_OUTPUT_CONFIG { 	DEFAULT_TELEMETRY_MODE, \
 										DEFAULT_SD_LOGGING_MODE, \
+										"", \
+										"67.222.3.214", \
 										DEFAULT_P2P_DESTINATION_ADDR_HIGH, \
 										DEFAULT_P2P_DESTINATION_ADDR_LOW \
-										}
+										} //autosportlabs.com
 
 typedef struct _LoggerConfig {
 	//ADC Calibrations
@@ -366,6 +374,7 @@ GPIOConfig * getGPIOConfigChannel(int channel);
 AccelConfig * getAccelConfigChannel(int channel);
 
 void setLabelGeneric(char *dest, const char *source);
+void setTextField(char *dest, const char *source, unsigned int maxlen);
 
 void calibrateAccelZero();
 

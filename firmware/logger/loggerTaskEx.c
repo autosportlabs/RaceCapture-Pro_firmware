@@ -71,7 +71,7 @@ void loggerTaskEx(void *params){
 			while (g_loggingShouldRun){
 				ResetWatchdog();
 
-				ToggleLED(LED2);
+				toggleLED(LED2);
 
 				currentTicks += xFrequency;
 
@@ -93,7 +93,7 @@ void loggerTaskEx(void *params){
 			queueLogfileRecord(NULL);
 			queueTelemetryRecord(NULL);
 
-			DisableLED(LED2);
+			disableLED(LED2);
 		}
 	}
 

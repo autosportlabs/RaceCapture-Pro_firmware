@@ -15,10 +15,6 @@
 
 #include "command.h"
 
-//#define MAJOR_REV "0"
-//#define MINOR_REV "3"
-//#define	BUGFIX_REV "1"
-
 #define WELCOME_MSG "Welcome to RaceCapture/Pro : Firmware Version " MAJOR_REV "." MINOR_REV "." BUGFIX_REV
 #define COMMAND_PROMPT "RaceCapture/Pro"
 
