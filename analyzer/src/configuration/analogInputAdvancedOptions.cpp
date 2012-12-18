@@ -190,11 +190,11 @@ StripChart * AnalogInputAdvancedDialog::GetAnalogScalingChart(){
 	m_analogScalingChart = new StripChart(this,ANALOG_SCALING_MAP_CHART);
 	m_analogScalingChart->SetMinSize(wxSize(492,200));
 	m_analogScalingChart->SetBackgroundColour(*wxBLACK);
-	m_analogScalingChart->SetLogBufferSize(4096);
+	m_analogScalingChart->SetLogBufferSize(MAX_ANALOG_RAW + 1);
 	m_chartScale = new ChartScale(MIN_ANALOG_RAW,MAX_ANALOG_RAW,10, ChartScale::ORIENTATION_LEFT,"Scaled Value");
 	m_chartScaleId = m_analogScalingChart->AddScale(m_chartScale);
 	m_analogScalingChart->AddLogItemType(new LogItemType(m_chartScaleId, *wxGREEN, "Scaled Value", "scaled"));
-	m_analogScalingChart->SetZoom(12);
+	m_analogScalingChart->SetZoom(48);
 	m_analogScalingChart->ShowData(false);
 	m_analogScalingChart->ShowScale(false);
 

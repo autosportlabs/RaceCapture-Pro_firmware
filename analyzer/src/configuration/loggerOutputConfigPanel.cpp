@@ -75,8 +75,9 @@ void LoggerOutputConfigPanel::InitComponents(){
 
 		m_telemetryModeCombo = new wxComboBox(this,wxID_ANY,"",wxDefaultPosition,wxDefaultSize);
 		m_telemetryModeCombo->Append("Telemetry Disabled");
-		m_telemetryModeCombo->Append("Peer to Peer Mesh Network");
+		m_telemetryModeCombo->Append("Bluetooth");
 		m_telemetryModeCombo->Append("Cellular Module");
+		m_telemetryModeCombo->Append("Peer to Peer Mesh Network");
 		m_telemetryModeCombo->Select(0);
 		optionsSizer->Add(m_telemetryModeCombo,0,wxALIGN_LEFT);
 		m_telemetryModeCombo->Connect(wxEVT_COMMAND_COMBOBOX_SELECTED, wxCommandEventHandler(LoggerOutputConfigPanel::OnTelemetryModeChanged),NULL,this);
@@ -88,7 +89,7 @@ void LoggerOutputConfigPanel::InitComponents(){
 		p2pAddrSizer->Add(new wxStaticText(this,wxID_ANY,"Specify the 2-part address of the Base Station Node"));
 		p2pAddrSizer->AddSpacer(10);
 
-		wxFlexGridSizer* p2pOptionsSizer = new wxFlexGridSizer(2,3,6,6);
+		wxFlexGridSizer* p2pOptionsSizer = new wxFlexGridSizer(3,3,6,6);
 
 		p2pOptionsSizer->AddStretchSpacer(1);
 		p2pOptionsSizer->Add(new wxStaticText(this,wxID_ANY,"High"),1,wxALIGN_LEFT);
@@ -102,6 +103,16 @@ void LoggerOutputConfigPanel::InitComponents(){
 		m_p2pAddressLowTextCtrl =new wxTextCtrl(this,wxID_ANY,"",wxDefaultPosition,wxDefaultSize,0,wxTextValidator(wxFILTER_NUMERIC));
 		m_p2pAddressLowTextCtrl->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(LoggerOutputConfigPanel::OnP2PAddressLowChanged),NULL,this);
 		p2pOptionsSizer->Add(m_p2pAddressLowTextCtrl);
+
+		p2pOptionsSizer->Add(new wxStaticText(this,wxID_ANY,"Telemetry Server"),1,wxALIGN_LEFT);
+		m_telemetryServerTextCtrl = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0, wxTextValidator(wxFILTER_ALPHANUMERIC));
+		p2pOptionsSizer->Add(m_telemetryServerTextCtrl, 1, wxEXPAND);
+		p2pOptionsSizer->AddStretchSpacer(1);
+
+		p2pOptionsSizer->Add(new wxStaticText(this,wxID_ANY,"Telemetry Device Id"),1,wxALIGN_LEFT);
+		m_deviceIdTextCtrl = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0, wxTextValidator(wxFILTER_ALPHANUMERIC));
+		p2pOptionsSizer->Add(m_deviceIdTextCtrl, 1, wxEXPAND);
+		p2pOptionsSizer->AddStretchSpacer(1);
 
 		p2pAddrSizer->Add(p2pOptionsSizer,1,wxEXPAND);
 		telemetryModeSizer->Add(p2pAddrSizer,1,wxEXPAND);
