@@ -73,7 +73,7 @@ ChannelConfigExtraFields AccelInputPanel::CreateExtendedChannelFields(int i){
 		ChannelConfigExtraField f;
 		SteppedSpinCtrl *spin = new SteppedSpinCtrl(this,wxID_ANY);
 		spin->SetStepValue(1);
-		spin->SetRange(MIN_ANALOG_RAW,MAX_ANALOG_RAW);
+		spin->SetRange(MIN_ACCEL_RAW,MAX_ACCEL_RAW);
 		spin->SetClientData(&cfg);
 		spin->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(AccelInputPanel::OnAccelZeroChanged),NULL,this);
 		m_accelZeroValue[i] = spin;

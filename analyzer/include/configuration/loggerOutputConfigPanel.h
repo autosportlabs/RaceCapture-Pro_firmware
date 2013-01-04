@@ -39,6 +39,8 @@ class LoggerOutputConfigPanel :  public BaseConfigPanel{
 		wxComboBox * m_telemetryModeCombo;
 		wxTextCtrl * m_p2pAddressHighTextCtrl;
 		wxTextCtrl * m_p2pAddressLowTextCtrl;
+		wxTextCtrl * m_telemetryServerTextCtrl;
+		wxTextCtrl * m_deviceIdTextCtrl;
 
 
 		DECLARE_EVENT_TABLE()
