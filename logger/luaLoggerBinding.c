@@ -34,9 +34,9 @@ void registerLuaLoggerBindings(){
 
 	lua_registerlight(L,"isSDCardPresent", Lua_IsSDCardPresent);
 	lua_registerlight(L,"isSDCardWritable", Lua_IsSDCardWritable);
+
 	lua_registerlight(L,"setPWMDutyCycle",Lua_SetPWMDutyCycle);
 	lua_registerlight(L,"setPWMDutyCycleRaw",Lua_SetPWMDutyCycleRaw);
-
 	lua_registerlight(L,"setPwmPeriod",Lua_SetPWMPeriod);
 	lua_registerlight(L,"setPwmPeriodRaw",Lua_SetPWMPeriodRaw);
 	lua_registerlight(L,"setAnalogOut",Lua_SetAnalogOut);
@@ -47,13 +47,11 @@ void registerLuaLoggerBindings(){
 	lua_registerlight(L,"getTimerFrequency",Lua_GetFrequency);
 	lua_registerlight(L,"getTimerRaw",Lua_GetTimerRaw);
 
-
 	lua_registerlight(L,"resetTimerCount",Lua_ResetTimerCount);
 	lua_registerlight(L,"getTimerCount",Lua_GetTimerCount);
 	
 	lua_registerlight(L,"getAnalog",Lua_GetAnalog);
 	lua_registerlight(L,"getAnalogRaw",Lua_GetAnalogRaw);
-
 
 	lua_registerlight(L,"readSerial", Lua_ReadSerialLine);
 	lua_registerlight(L,"writeSerial", Lua_WriteSerial);
@@ -65,14 +63,14 @@ void registerLuaLoggerBindings(){
 	lua_registerlight(L,"getGpsTime", Lua_GetGPSTime);
 	lua_registerlight(L,"getLapCount", Lua_GetLapCount);
 	lua_registerlight(L,"getLapTime", Lua_GetLapTime);
-	lua_registerlight(L,"getGpsSecondsSinceMidnight", Lua_GetGPSSecondsSinceMidnight);
+	lua_registerlight(L,"getGpsSec", Lua_GetGPSSecondsSinceMidnight);
 	lua_registerlight(L,"getAtStartFinish",Lua_GetGPSAtStartFinish);
 
 	lua_registerlight(L,"getTimeDiff", Lua_GetTimeDiff);
 	lua_registerlight(L,"getTimeSince", Lua_GetTimeSince);
 					
-	lua_registerlight(L,"readAccel",Lua_ReadAccelerometer);
-	lua_registerlight(L,"readAccelRaw",Lua_ReadAccelerometerRaw);
+	lua_registerlight(L,"getAccel",Lua_ReadAccelerometer);
+	lua_registerlight(L,"getAccelRaw",Lua_ReadAccelerometerRaw);
 	
 	lua_registerlight(L,"startLogging",Lua_StartLogging);
 	lua_registerlight(L,"stopLogging",Lua_StopLogging);
