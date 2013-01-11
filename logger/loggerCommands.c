@@ -393,7 +393,7 @@ void SetLoggerOutputConfig(unsigned int argc, char **argv){
 static void StartTerminal0(unsigned int baud){
 	initUsart0(USART_MODE_8N1, baud);
 	while (1){
-		char c = ReadChar();
+		char c = usb_getchar();
 		if (c == 27) break;
 		if (c){
 			SendChar(c);
@@ -418,7 +418,7 @@ static void StartTerminal1(unsigned int baud){
 	while (1){
 		char c = usart1_getcharWait(0);
 		if (c) SendChar(c);
-		c = ReadChar();
+		c = usb_getchar();
 		if (c == 27) break;
 		if (c) usart1_putchar(c);
 	}
