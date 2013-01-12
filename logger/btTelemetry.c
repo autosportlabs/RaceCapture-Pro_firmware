@@ -1,5 +1,4 @@
 #include "btTelemetry.h"
-#include "usb_comm.h"
 #include "task.h"
 #include "modp_numtoa.h"
 #include "loggerHardware.h"

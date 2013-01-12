@@ -10,7 +10,6 @@
 #include "loggerData.h"
 #include "gps.h"
 #include "accelerometer.h"
-#include "usb_comm.h"
 #include "luaScript.h"
 #include "luaTask.h"
 #include <string.h>

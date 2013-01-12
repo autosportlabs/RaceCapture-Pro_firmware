@@ -11,6 +11,7 @@
 // Standard includes
 #include "FreeRTOS.h"
 #include "task.h"
+#include "serial.h"
 #include "usb_comm.h"
 #include "baseCommands.h"
 #include "constants.h"
@@ -85,8 +86,10 @@ static int setupHardware( void )
 	// Enable reset-button
 	AT91F_RSTSetMode( AT91C_BASE_RSTC , AT91C_RSTC_URSTEN );
 
-	if (!initSerial()) return 0;
+	if (!initUsart()) return 0;
 	if (!vInitUSBInterface()) return 0;	
+
+	init_serial();
 
 	InitLoggerHardware();
 	return 1;
