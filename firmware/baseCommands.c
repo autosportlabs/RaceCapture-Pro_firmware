@@ -5,30 +5,28 @@
  *      Author: brent
  */
 #include "baseCommands.h"
-#include "usb_comm.h"
 #include "task.h"
 
+void ShowTaskInfo(Serial *serial, unsigned int argc, char **argv){
 
-void ShowTaskInfo(unsigned int argc, char **argv){
-
-	SendString("Task Info");
-	SendCrlf();
-	SendString("Status\tPri\tStack\tTask#\tName");
-	SendCrlf();
+	serial->put_s("Task Info");
+	put_crlf(serial);
+	serial->put_s("Status\tPri\tStack\tTask#\tName");
+	put_crlf(serial);
 	char *taskList = (char *)pvPortMalloc(1024);
 	if (NULL != taskList){
 		vTaskList(taskList);
-		SendString(taskList);
+		serial->put_s(taskList);
 		vPortFree(taskList);
 	}
 	else{
-		SendString("Out of Memory!");
+		serial->put_s("Out of Memory!");
 	}
-	SendCrlf();
+	put_crlf(serial);
 }
 
-void GetVersion(unsigned int argc, char **argv){
-	SendNameString("major", MAJOR_REV);
-	SendNameString("minor", MINOR_REV);
-	SendNameString("bugfix", BUGFIX_REV);
+void GetVersion(Serial *serial, unsigned int argc, char **argv){
+	put_nameString(serial, "major", MAJOR_REV);
+	put_nameString(serial, "minor", MINOR_REV);
+	put_nameString(serial, "bugfix", BUGFIX_REV);
 }

@@ -87,7 +87,6 @@ static int sendCommand(const char * cmd){
 }
 
 static int configureBt(){
-	SendString("configuring...\r\n");
 	//set baud rate
 	if (!sendCommand("AT+BAUD9")) return -1;
 	initUsart0(USART_MODE_8N1, 230400);
@@ -103,7 +102,6 @@ static int initBluetooth(){
 
 	initUsart0(USART_MODE_8N1, 9600);
 	if (sendCommand("AT")){
-		SendString("looks like 9600\r\n");
 		if (configureBt() != 0) return -1;
 	}
 	initUsart0(USART_MODE_8N1, 230400);

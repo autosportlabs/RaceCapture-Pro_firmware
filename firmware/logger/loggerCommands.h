@@ -54,44 +54,44 @@ extern const struct cmd_t g_loggerCommands[];
 
 
 
-void SampleData(unsigned int argc, char **argv);
+void SampleData(Serial *serial, unsigned int argc, char **argv);
 
-void TestSD(unsigned int argc, char **argv);
+void TestSD(Serial *serial, unsigned int argc, char **argv);
 
-void FlashLoggerConfig(unsigned int argc, char **argv);
+void FlashLoggerConfig(Serial *serial, unsigned int argc, char **argv);
 
-void GetLoggerOutputConfig(unsigned int argc, char **argv);
-void SetLoggerOutputConfig(unsigned int argc, char **argv);
+void GetLoggerOutputConfig(Serial *serial, unsigned int argc, char **argv);
+void SetLoggerOutputConfig(Serial *serial, unsigned int argc, char **argv);
 
-void GetAnalogConfig(unsigned int argc, char **argv);
-void SetAnalogConfig(unsigned int argc, char **argv);
+void GetAnalogConfig(Serial *serial, unsigned int argc, char **argv);
+void SetAnalogConfig(Serial *serial, unsigned int argc, char **argv);
 
-void GetPwmConfig(unsigned int argc, char **argv);
-void SetPwmConfig(unsigned int argc, char **argv);
+void GetPwmConfig(Serial *serial, unsigned int argc, char **argv);
+void SetPwmConfig(Serial *serial, unsigned int argc, char **argv);
 
-void SetPwmClockFreq(unsigned int argc, char **argv);
-void GetPwmClockFreq(unsigned int argc, char **argv);
+void SetPwmClockFreq(Serial *serial, unsigned int argc, char **argv);
+void GetPwmClockFreq(Serial *serial, unsigned int argc, char **argv);
 
-void GetGpsConfig(unsigned int argc, char **argv);
-void SetGpsConfig(unsigned int argc, char **argv);
+void GetGpsConfig(Serial *serial, unsigned int argc, char **argv);
+void SetGpsConfig(Serial *serial, unsigned int argc, char **argv);
 
-void GetStartFinishConfig(unsigned int argc, char **argv);
-void SetStartFinishConfig(unsigned int argc, char **argv);
+void GetStartFinishConfig(Serial *serial, unsigned int argc, char **argv);
+void SetStartFinishConfig(Serial *serial, unsigned int argc, char **argv);
 
-void GetGpioConfig(unsigned int argc, char **argv);
-void SetGpioConfig(unsigned int argc, char **argv);
+void GetGpioConfig(Serial *serial, unsigned int argc, char **argv);
+void SetGpioConfig(Serial *serial, unsigned int argc, char **argv);
 
-void GetTimerConfig(unsigned int argc, char **argv);
-void SetTimerConfig(unsigned int argc, char **argv);
+void GetTimerConfig(Serial *serial, unsigned int argc, char **argv);
+void SetTimerConfig(Serial *serial, unsigned int argc, char **argv);
 
-void SetAccelInstalled(unsigned int argc, char **argv);
-void GetAccelInstalled(unsigned int argc, char **argv);
+void SetAccelInstalled(Serial *serial, unsigned int argc, char **argv);
+void GetAccelInstalled(Serial *serial, unsigned int argc, char **argv);
 
-void GetAccelConfig(unsigned int argc, char **argv);
-void SetAccelConfig(unsigned int argc, char **argv);
+void GetAccelConfig(Serial *serial, unsigned int argc, char **argv);
+void SetAccelConfig(Serial *serial, unsigned int argc, char **argv);
 
-void CalibrateAccelZero(unsigned int argc, char **argv);
+void CalibrateAccelZero(Serial *serial, unsigned int argc, char **argv);
 
-void StartTerminal(unsigned int argc, char **argv);
+void StartTerminal(Serial *serial, unsigned int argc, char **argv);
 
 #endif /* LOGGERCOMMANDS_H_ */
