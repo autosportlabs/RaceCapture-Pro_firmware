@@ -101,6 +101,7 @@ $(UTIL_DIR)/taskUtil.c \
 $(USB_SRC_DIR)/source/usb_comm.c \
 $(USB_SRC_DIR)/source/USB-CDC.c \
 $(UART_SRC_DIR)/usart.c \
+$(CMD_SRC_DIR)/command.c \
 $(SERIAL_SRC_DIR)/serial.c \
 $(FAT_SD_SRC_DIR)/fattime.c \
 $(FAT_SD_SRC_DIR)/ff.c \

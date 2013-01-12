@@ -3,10 +3,11 @@
 
 #include "ff.h"
 #include "diskio.h"
+#include "serial.h"
 
 void createDiskTimerTask();
 void diskTimerTask(void *params);
-void TestSDWrite(int lines,int doFlush);
+void TestSDWrite(Serial *serial, int lines,int doFlush);
 void InitFSHardware(void);
 int InitFS();
 int UnmountFS();

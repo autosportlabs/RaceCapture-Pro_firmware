@@ -9,6 +9,7 @@
 #define BASECOMMANDS_H_
 
 #include "constants.h"
+#include "serial.h"
 
 
 #define BASE_COMMANDS \
@@ -17,7 +18,7 @@
 
 
 
-void ShowTaskInfo(unsigned int argc, char **argv);
-void GetVersion(unsigned int argc, char **argv);
+void ShowTaskInfo(Serial *serial, unsigned int argc, char **argv);
+void GetVersion(Serial *serial, unsigned int argc, char **argv);
 
 #endif /* BASECOMMANDS_H_ */
