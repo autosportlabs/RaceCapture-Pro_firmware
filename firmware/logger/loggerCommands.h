@@ -8,10 +8,9 @@
 #ifndef LOGGERCOMMANDS_H_
 #define LOGGERCOMMANDS_H_
 
-#include "usb_comm.h"
 #include "command.h"
 
-extern const struct cmd_t g_loggerCommands[];
+extern const cmd_t g_loggerCommands[];
 
 #define LOGGER_COMMANDS \
 {"sample", "Gets a single sample of the currently enabled channels","",SampleData}, \

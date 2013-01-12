@@ -8,7 +8,6 @@
 #include "loggerHardware.h"
 #include "gps.h"
 #include "modp_numtoa.h"
-#include "usb_comm.h"
 #include "string.h"
 #include "accelerometer.h"
 #include "math.h"

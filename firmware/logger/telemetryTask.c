@@ -12,7 +12,6 @@
 #include "modp_numtoa.h"
 #include "loggerHardware.h"
 #include "loggerConfig.h"
-#include "usb_comm.h"
 #include "usart.h"
 #include "string.h"
 #include "p2pTelemetry.h"

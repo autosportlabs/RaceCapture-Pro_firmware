@@ -7,7 +7,6 @@
 #include "usart.h"
 #include "modp_numtoa.h"
 #include "modp_atonum.h"
-#include "usb_comm.h"
 #include "geometry.h"
 
 #include <string.h>

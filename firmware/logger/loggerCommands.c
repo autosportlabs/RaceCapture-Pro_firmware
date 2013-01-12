@@ -389,34 +389,22 @@ void SetLoggerOutputConfig(Serial *serial, unsigned int argc, char **argv){
 	put_commandOK(serial);
 }
 
+static void StartTerminalSession(Serial *fromSerial, Serial *toSerial){
 
-static void StartTerminal0(Serial *serial, unsigned int baud){
-	initUsart0(USART_MODE_8N1, baud);
 	while (1){
-		char c = usb_getchar();
+		char c = fromSerial->get_c_wait(0);
 		if (c == 27) break;
 		if (c){
-			serial->put_c(c);
-			if (c == '\r') serial->put_c('\n');
-			usart0_putchar(c);
-			if (c == '\r') usart0_putchar('\n');
+			fromSerial->put_c(c);
+			if (c == '\r') fromSerial->put_c('\n');
+			toSerial->put_c(c);
+			if (c == '\r') toSerial->put_c('\n');
 		}
-		c = usart0_getcharWait(0);
+		c = toSerial->get_c_wait(0);
 		if (c){
-			serial->put_c(c);
-			if (c == '\r') serial->put_c('\n');
+			fromSerial->put_c(c);
+			if (c == '\r') fromSerial->put_c('\n');
 		}
-	}
-}
-
-static void StartTerminal1(Serial *serial, unsigned int baud){
-	initUsart0(USART_MODE_8N1, baud);
-	while (1){
-		char c = usart1_getcharWait(0);
-		if (c) serial->put_c(c);
-		c = usb_getchar();
-		if (c == 27) break;
-		if (c) usart1_putchar(c);
 	}
 }
 
@@ -433,10 +421,12 @@ void StartTerminal(Serial *serial, unsigned int argc, char **argv){
 
 	switch(port){
 		case 0:
-			StartTerminal0(serial, baud);
+			initUsart0(USART_MODE_8N1, baud);
+			StartTerminalSession(serial, get_serial_usart0());
 			break;
 		case 1:
-			StartTerminal1(serial, baud);
+			initUsart1(USART_MODE_8N1, baud);
+			StartTerminalSession(serial, get_serial_usart1());
 			break;
 		default:
 			put_commandError(serial, ERROR_CODE_INVALID_PARAM);

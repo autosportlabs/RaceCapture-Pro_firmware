@@ -7,7 +7,6 @@
 #include "loggerHardware.h"
 #include "loggerData.h"
 #include "luaLoggerBinding.h"
-#include "usb_comm.h"
 #include "modp_numtoa.h"
 #include "string.h"
 #include "stdio.h"

@@ -11,7 +11,6 @@
 #include "sdcard.h"
 #include "sampleRecord.h"
 #include "loggerHardware.h"
-#include "usb_comm.h"
 #include "taskUtil.h"
 #include <string.h>
 

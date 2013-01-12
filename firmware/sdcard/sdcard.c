@@ -1,11 +1,9 @@
 #include "sdcard.h"
-#include "usb_comm.h"
 #include "string.h"
 #include "modp_numtoa.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "loggerHardware.h"
-#include "usb_comm.h"
 
 
 static FATFS Fatfs[1];
