@@ -91,7 +91,7 @@ void LineChartPane::SetBufferSize(wxArrayString &channels, size_t size){
 	wxCommandEvent addEvent(REQUEST_DATALOG_DATA_EVENT, ID_REQUEST_DATALOG_DATA);
 	RequestDatalogRangeParams *params = new RequestDatalogRangeParams(this, enabledChannels, 0, size - 1);
 	addEvent.SetClientData(params);
-	GetParent()->AddPendingEvent(addEvent);
+	GetParent()->GetEventHandler()->AddPendingEvent(addEvent);
 }
 
 void LineChartPane::UpdateValueRange(ViewDataHistoryArray &historyArray, size_t fromIndex, size_t toIndex){

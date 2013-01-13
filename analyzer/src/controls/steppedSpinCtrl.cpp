@@ -3,7 +3,7 @@
 void SteppedSpinCtrl::OnSpinChange(wxSpinEvent& event){
 
 		CheckRange();
-		wxSpinCtrl::OnSpinChange(event);
+		//wxSpinCtrl::OnSpinChange(event);
 }
 
 void SteppedSpinCtrl::OnFocusChange(wxFocusEvent& event){

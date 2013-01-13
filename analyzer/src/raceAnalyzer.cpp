@@ -416,8 +416,8 @@ void MainFrame::NotifyConfigChanged(){
 
 	wxCommandEvent event( CONFIG_STALE_EVENT, CONFIG_STALE );
 	event.SetEventObject(this);
-	m_configPanel->AddPendingEvent(event);
-	m_channelsPanel->AddPendingEvent(event);
+	m_configPanel->GetEventHandler()->AddPendingEvent(event);
+	m_channelsPanel->GetEventHandler()->AddPendingEvent(event);
 }
 
 
@@ -508,7 +508,7 @@ void MainFrame::OnNewRaceEvent(wxCommandEvent &event){
 
 	wxString defaultDir = _appPrefs.GetLastConfigFileDirectory();
 	wxString defaultFile = "";
-	wxFileDialog fileDialog(this, "New Race Event", defaultDir, defaultFile, OPEN_RACE_EVENT_FILTER, wxSAVE);
+	wxFileDialog fileDialog(this, "New Race Event", defaultDir, defaultFile, OPEN_RACE_EVENT_FILTER, wxFD_SAVE);
 
 	int result = fileDialog.ShowModal();
 
@@ -541,7 +541,7 @@ void MainFrame::OnOpenRaceEvent(wxCommandEvent& event){
 
 	wxString defaultDir = _appPrefs.GetLastConfigFileDirectory();
 	wxString defaultFile = "";
-	wxFileDialog fileDialog(this, "Open Race Event", defaultDir, defaultFile, OPEN_RACE_EVENT_FILTER, wxOPEN | wxFILE_MUST_EXIST);
+	wxFileDialog fileDialog(this, "Open Race Event", defaultDir, defaultFile, OPEN_RACE_EVENT_FILTER, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
 	int result = fileDialog.ShowModal();
 
@@ -972,7 +972,7 @@ void MainFrame::OnOpenConfig(wxCommandEvent& event){
 
 	wxString defaultDir = _appPrefs.GetLastConfigFileDirectory();
 	wxString defaultFile = "";
-	wxFileDialog fileDialog(this, "Open Configuration", defaultDir, defaultFile, CONFIG_FILE_FILTER, wxOPEN);
+	wxFileDialog fileDialog(this, "Open Configuration", defaultDir, defaultFile, CONFIG_FILE_FILTER, wxFD_OPEN);
 
 	int result = fileDialog.ShowModal();
 
@@ -1035,7 +1035,7 @@ void MainFrame::SaveAsCurrentConfig(){
 
 	wxString defaultDir = _appPrefs.GetLastConfigFileDirectory();
 	wxString defaultFile = "";
-	wxFileDialog fileDialog(this, "Save As Configuration", defaultDir, defaultFile, CONFIG_FILE_FILTER,wxSAVE);
+	wxFileDialog fileDialog(this, "Save As Configuration", defaultDir, defaultFile, CONFIG_FILE_FILTER,wxFD_SAVE);
 
 	int result = fileDialog.ShowModal();
 

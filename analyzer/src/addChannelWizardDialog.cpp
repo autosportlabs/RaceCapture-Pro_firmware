@@ -303,7 +303,7 @@ void AddChannelWizard::OnWizardFinished(wxWizardEvent &event){
 		ChannelView selectedView = selectedViews[viewIndex];
 		wxCommandEvent addEvent(selectedView.m_eventType, selectedView.m_eventId);
 		addEvent.SetClientData(selectionSet);
-		GetParent()->AddPendingEvent(addEvent);
+		GetParent()->GetEventHandler()->AddPendingEvent(addEvent);
 	}
 }
 

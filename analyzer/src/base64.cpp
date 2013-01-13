@@ -55,20 +55,22 @@ void Base64::Encode(wxString &data, wxString &result) {
   	for(size_t nPos = 0; nPos < nLength; nPos++) {
     char cCode;
 
+    const char * dataRaw = data.ToAscii();
+
     // Encode the first 6 bits
-    cCode = (data[nPos] >> 2) & 0x3f;
+    cCode = (dataRaw[nPos] >> 2) & 0x3f;
 
     result += sBase64Table[(int)cCode];
 
     // Encode the remaining 2 bits with the next 4 bits (if present)
-    cCode = (data[nPos] << 4) & 0x3f;
-    if(++nPos < nLength) cCode |= (data[nPos] >> 4) & 0x0f;
+    cCode = (dataRaw[nPos] << 4) & 0x3f;
+    if(++nPos < nLength) cCode |= (dataRaw[nPos] >> 4) & 0x0f;
 
     result += sBase64Table[(int)cCode];
 
     if(nPos < nLength) {
-      cCode = (data[nPos] << 2) & 0x3f;
-      if(++nPos < nLength) cCode |= (data[nPos] >> 6) & 0x03;
+      cCode = (dataRaw[nPos] << 2) & 0x3f;
+      if(++nPos < nLength) cCode |= (dataRaw[nPos] >> 6) & 0x03;
       result += sBase64Table[(int)cCode];
     } else {
       ++nPos;
@@ -76,7 +78,7 @@ void Base64::Encode(wxString &data, wxString &result) {
     }
 
     if(nPos < nLength) {
-      cCode = data[nPos] & 0x3f;
+      cCode = dataRaw[nPos] & 0x3f;
       result += sBase64Table[(int)cCode];
     } else {
 		result += cFillChar;

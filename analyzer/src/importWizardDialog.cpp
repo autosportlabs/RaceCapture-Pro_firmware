@@ -106,14 +106,14 @@ wxThread::ExitCode ImporterThread::Entry(){
 		resultEvent.SetInt(0);
 		resultEvent.SetString("An unspecified error occurred");
 	}
-	m_owner->AddPendingEvent(resultEvent);
+	m_owner->GetEventHandler()->AddPendingEvent(resultEvent);
 	return NULL;
 }
 
 void ImporterThread::UpdateProgress(int completePercent){
 	wxCommandEvent event( IMPORT_PROGRESS_EVENT, ID_IMPORT_WIZ_IMPORT_PROGRESS );
 	event.SetInt(completePercent);
-	m_owner->AddPendingEvent(event);
+	m_owner->GetEventHandler()->AddPendingEvent(event);
 }
 
 DatalogFileSelectPage::DatalogFileSelectPage(wxWizard *parent, ImportWizardParams *params) :
@@ -158,7 +158,7 @@ void DatalogFileSelectPage::OnBrowse(wxCommandEvent &evt){
 
 	ImportWizardParams *params = m_params;
 	AppPrefs *prefs = params->appPrefs;
-	wxFileDialog fileDialog(this, "Import Datalog", prefs->GetLastConfigFileDirectory(), "", LOGGING_FILE_FILTER, wxOPEN);
+	wxFileDialog fileDialog(this, "Import Datalog", prefs->GetLastConfigFileDirectory(), "", LOGGING_FILE_FILTER, wxFD_OPEN);
 
 	int result = fileDialog.ShowModal();
 	if (wxID_OK != result) return;

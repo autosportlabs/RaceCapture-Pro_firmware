@@ -114,13 +114,13 @@ void ConfigPanel::OnWriteConfig(wxCommandEvent &event){
 void ConfigPanel::UpdateStatus(wxString msg){
 	wxCommandEvent evt(UPDATE_STATUS_EVENT, UPDATE_STATUS);
 	evt.SetString(msg);
-	GetParent()->AddPendingEvent(evt);
+	GetParent()->GetEventHandler()->AddPendingEvent(evt);
 }
 
 void ConfigPanel::UpdateActivity(wxString msg){
 	wxCommandEvent evt(UPDATE_ACTIVITY_EVENT, UPDATE_ACTIVITY);
 	evt.SetString(msg);
-	GetParent()->AddPendingEvent(evt);
+	GetParent()->GetEventHandler()->AddPendingEvent(evt);
 }
 
 void ConfigPanel::OnProgress(int pct){

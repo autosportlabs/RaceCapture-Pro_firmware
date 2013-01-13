@@ -89,7 +89,7 @@ void LoggerOutputConfigPanel::InitComponents(){
 		p2pAddrSizer->Add(new wxStaticText(this,wxID_ANY,"Specify the 2-part address of the Base Station Node"));
 		p2pAddrSizer->AddSpacer(10);
 
-		wxFlexGridSizer* p2pOptionsSizer = new wxFlexGridSizer(3,3,6,6);
+		wxFlexGridSizer* p2pOptionsSizer = new wxFlexGridSizer(4,3,6,6);
 
 		p2pOptionsSizer->AddStretchSpacer(1);
 		p2pOptionsSizer->Add(new wxStaticText(this,wxID_ANY,"High"),1,wxALIGN_LEFT);

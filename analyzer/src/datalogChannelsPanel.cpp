@@ -224,7 +224,7 @@ void DatalogChannelsPanel::OnNewLineChart(wxCommandEvent &event){
 	PopulateSelectedChannels(selectionSet);
 	wxCommandEvent addEvent( ADD_NEW_LINE_CHART_EVENT, ADD_NEW_LINE_CHART );
 	addEvent.SetClientData(selectionSet);
-	GetParent()->AddPendingEvent(addEvent);
+	GetParent()->GetEventHandler()->AddPendingEvent(addEvent);
 }
 
 void DatalogChannelsPanel::OnNewAnalogGauge(wxCommandEvent &event){
@@ -233,7 +233,7 @@ void DatalogChannelsPanel::OnNewAnalogGauge(wxCommandEvent &event){
 	PopulateSelectedChannels(selectionSet);
 	wxCommandEvent addEvent( ADD_NEW_ANALOG_GAUGE_EVENT, ADD_NEW_ANALOG_GAUGE );
 	addEvent.SetClientData(selectionSet);
-	GetParent()->AddPendingEvent(addEvent);
+	GetParent()->GetEventHandler()->AddPendingEvent(addEvent);
 }
 
 void DatalogChannelsPanel::OnNewDigitalGauge(wxCommandEvent &event){
@@ -242,7 +242,7 @@ void DatalogChannelsPanel::OnNewDigitalGauge(wxCommandEvent &event){
 	PopulateSelectedChannels(selectionSet);
 	wxCommandEvent addEvent( ADD_NEW_DIGITAL_GAUGE_EVENT, ADD_NEW_DIGITAL_GAUGE );
 	addEvent.SetClientData(selectionSet);
-	GetParent()->AddPendingEvent(addEvent);
+	GetParent()->GetEventHandler()->AddPendingEvent(addEvent);
 }
 
 void DatalogChannelsPanel::OnNewGPSView(wxCommandEvent &event){
@@ -250,7 +250,7 @@ void DatalogChannelsPanel::OnNewGPSView(wxCommandEvent &event){
 	PopulateSelectedChannels(selectionSet);
 	wxCommandEvent addEvent( ADD_NEW_GPS_VIEW_EVENT, ADD_NEW_GPS_VIEW );
 	addEvent.SetClientData(selectionSet);
-	GetParent()->AddPendingEvent(addEvent);
+	GetParent()->GetEventHandler()->AddPendingEvent(addEvent);
 }
 
 
@@ -263,37 +263,37 @@ void DatalogChannelsPanel::OnAddChannelView(wxCommandEvent &event){
 
 void DatalogChannelsPanel::OnPlayForward(wxCommandEvent &event){
 	wxCommandEvent playEvent( PLAY_FWD_DATALOG_EVENT, PLAY_FWD_DATALOG);
-	GetParent()->AddPendingEvent(playEvent);
+	GetParent()->GetEventHandler()->AddPendingEvent(playEvent);
 }
 
 void DatalogChannelsPanel::OnPause(wxCommandEvent &event){
 	wxCommandEvent pauseEvent( PAUSE_DATALOG_EVENT, PAUSE_DATALOG);
-	GetParent()->AddPendingEvent(pauseEvent);
+	GetParent()->GetEventHandler()->AddPendingEvent(pauseEvent);
 }
 
 void DatalogChannelsPanel::OnPlayReverse(wxCommandEvent &event){
 	wxCommandEvent playEvent( PLAY_REV_DATALOG_EVENT, PLAY_REV_DATALOG);
-	GetParent()->AddPendingEvent(playEvent);
+	GetParent()->GetEventHandler()->AddPendingEvent(playEvent);
 }
 
 void DatalogChannelsPanel::OnSkipForward(wxCommandEvent &event){
 	wxCommandEvent evt( JUMP_END_DATALOG_EVENT, JUMP_END_DATALOG);
-	GetParent()->AddPendingEvent(evt);
+	GetParent()->GetEventHandler()->AddPendingEvent(evt);
 }
 
 void DatalogChannelsPanel::OnSkipReverse(wxCommandEvent &event){
 	wxCommandEvent evt( JUMP_BEGINNING_DATALOG_EVENT, JUMP_BEGINNING_DATALOG);
-	GetParent()->AddPendingEvent(evt);
+	GetParent()->GetEventHandler()->AddPendingEvent(evt);
 }
 
 void DatalogChannelsPanel::OnSeekForward(wxCommandEvent &event){
 	wxCommandEvent evt( SEEK_FWD_DATALOG_EVENT, SEEK_FWD_DATALOG);
-	GetParent()->AddPendingEvent(evt);
+	GetParent()->GetEventHandler()->AddPendingEvent(evt);
 }
 
 void DatalogChannelsPanel::OnSeekReverse(wxCommandEvent &event){
 	wxCommandEvent evt( SEEK_REV_DATALOG_EVENT, SEEK_REV_DATALOG);
-	GetParent()->AddPendingEvent(evt);
+	GetParent()->GetEventHandler()->AddPendingEvent(evt);
 }
 
 void DatalogChannelsPanel::DoGridContextMenu(wxGridEvent &event){
