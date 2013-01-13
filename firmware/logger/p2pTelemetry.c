@@ -7,7 +7,6 @@
 #include "p2pTelemetry.h"
 #include <string.h>
 #include "modp_numtoa.h"
-#include "usb_comm.h"
 #include "usart.h"
 
 #define DEFAULT_DESTINATION_ADDRESS				0x000000000000FFFF

@@ -12,7 +12,6 @@
 #include "modp_numtoa.h"
 #include "loggerHardware.h"
 #include "loggerConfig.h"
-#include "usb_comm.h"
 #include "usart.h"
 #include "string.h"
 #include "p2pTelemetry.h"
@@ -60,6 +59,7 @@ void createTelemetryTask(){
 			break;
 		case TELEMETRY_MODE_BLUETOOTH:
 			xTaskCreate( btTelemetryTask, ( signed portCHAR * ) "telemetry", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
+			break;
 	}
 }
 

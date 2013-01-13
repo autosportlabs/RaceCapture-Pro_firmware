@@ -1,11 +1,9 @@
 #include "sdcard.h"
-#include "usb_comm.h"
 #include "string.h"
 #include "modp_numtoa.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "loggerHardware.h"
-#include "usb_comm.h"
 
 
 static FATFS Fatfs[1];
@@ -30,38 +28,38 @@ int UnmountFS(){
 
 static FIL fatFile;
 
-void TestSDWrite(int lines,int doFlush)
+void TestSDWrite(Serial *serial, int lines,int doFlush)
 {
 
-	SendString("sizeof long ");
-	SendInt(sizeof(long));
-	SendCrlf();
-	SendString("Test Write: Lines: ");
-	SendInt(lines);
-	SendCrlf();
-	SendString("Flushing Enabled: " );
-	SendInt(doFlush);
-	SendCrlf();
+	serial->put_s("sizeof long ");
+	put_int(serial, sizeof(long));
+	put_crlf(serial);
+	serial->put_s("Test Write: Lines: ");
+	put_int(serial, lines);
+	put_crlf(serial);
+	serial->put_s("Flushing Enabled: " );
+	put_int(serial, doFlush);
+	put_crlf(serial);
 
-	SendString("Card Init...");
+	serial->put_s("Card Init...");
 	int res = InitFS();
-	SendInt(res);
-	SendCrlf();
+	put_int(serial, res);
+	put_crlf(serial);
 
 	if (res !=0) return;
 
-	SendString("Drive Mount...");
-	SendInt(res);
-	SendCrlf();
+	serial->put_s("Drive Mount...");
+	put_int(serial, res);
+	put_crlf(serial);
 	if (res !=0) return;
 
-	SendString("Opening File..");
+	serial->put_s("Opening File..");
 	res = f_open(&fatFile,"test1.txt", FA_WRITE | FA_CREATE_ALWAYS);
-	SendInt(res);
-	SendCrlf();
+	put_int(serial, res);
+	put_crlf(serial);
 	if (res !=0) return;
 
-	SendString("Writing file..");
+	serial->put_s("Writing file..");
 	portTickType startTicks = xTaskGetTickCount();
 	while (lines--){
 //		SendString("chars: ");
@@ -74,13 +72,13 @@ void TestSDWrite(int lines,int doFlush)
 	}
 	portTickType endTicks = xTaskGetTickCount();
 
-	SendString("Ticks to write: ");
-	SendInt(endTicks - startTicks);
-	SendCrlf();
+	serial->put_s("Ticks to write: ");
+	put_int(serial, endTicks - startTicks);
+	put_crlf(serial);
 	res = f_close(&fatFile);
 
-	SendString("Unmounting...");
+	serial->put_s("Unmounting...");
 	res = UnmountFS();
-	SendInt(res);
-	SendCrlf();
+	put_int(serial, res);
+	put_crlf(serial);
 }

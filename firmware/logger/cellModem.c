@@ -1,7 +1,6 @@
 #include "cellModem.h"
 #include "usart.h"
 #include <string.h>
-#include "usb_comm.h"
 #include "modp_numtoa.h"
 
 #define min(a,b) ((a)<(b)?(a):(b))

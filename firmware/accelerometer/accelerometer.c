@@ -1,5 +1,4 @@
 #include "accelerometer.h"
-#include "usb_comm.h"
 #include "loggerConfig.h"
 #include <string.h>
 

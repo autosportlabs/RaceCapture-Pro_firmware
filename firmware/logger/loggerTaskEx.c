@@ -19,7 +19,6 @@
 #include "luaLoggerBinding.h"
 #include "gps.h"
 #include "sdcard.h"
-#include "usb_comm.h"
 
 #define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 4 )
 #define LOGGER_STACK_SIZE  					200
