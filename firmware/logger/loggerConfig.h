@@ -300,7 +300,7 @@ typedef struct _LoggerOutputConfig {
 #define DEFAULT_LOGGER_OUTPUT_CONFIG { 	DEFAULT_TELEMETRY_MODE, \
 										DEFAULT_SD_LOGGING_MODE, \
 										"", \
-										"67.222.3.214", \
+										"race-capture.com", \
 										DEFAULT_P2P_DESTINATION_ADDR_HIGH, \
 										DEFAULT_P2P_DESTINATION_ADDR_LOW \
 										} //autosportlabs.com
