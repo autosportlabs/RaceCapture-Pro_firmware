@@ -24,11 +24,10 @@
 /* Memory Definitions */
 MEMORY
 {
-  FLASH (rx) : ORIGIN = 0x00100000, LENGTH = 0x00040000
+  FLASH (rx) : ORIGIN = 0x00101000, LENGTH = 256k - 4k
   DATA (rw)  : ORIGIN = 0x00200000, LENGTH = 0x00010000
   STACK (rw) : ORIGIN = 0x00210000, LENGTH = 0x00000000
 }
-
 
 /* Section Definitions */
 
