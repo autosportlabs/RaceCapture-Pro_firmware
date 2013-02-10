@@ -48,7 +48,7 @@
 
 
 // Internal Memory Base Addresses
-        .equ    FLASH_BASE,     0x00101000
+        .equ    FLASH_BASE,     0x00108000
         .equ    RAM_BASE,       0x00200000
 
 
