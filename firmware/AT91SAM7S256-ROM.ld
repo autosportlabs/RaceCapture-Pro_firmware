@@ -20,11 +20,17 @@
    - tested succesfully with AT91SAM7 GPIO Example and PEEDI debugger
      on AT91SAM7S-EK equipped with AT91SAM7S256 
 */
-
+/*PHDRS
+{
+	text PT_LOAD FLAGS(5);
+	data PT_LOAD;
+	bss PT_LOAD;
+}
+*/
 /* Memory Definitions */
 MEMORY
 {
-  FLASH (rx) : ORIGIN = 0x00101000, LENGTH = 256k - 4k
+  FLASH (rx) : ORIGIN = 0x00108000, LENGTH = 256k - 32k
   DATA (rw)  : ORIGIN = 0x00200000, LENGTH = 0x00010000
   STACK (rw) : ORIGIN = 0x00210000, LENGTH = 0x00000000
 }
