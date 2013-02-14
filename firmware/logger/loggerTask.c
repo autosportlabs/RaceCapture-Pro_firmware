@@ -282,8 +282,8 @@ void writeGPSChannelHeaders(FIL *f, GPSConfig *config){
 		fileWriteString(f, ",");	
 	}
 
-	if (config->velocityCfg.sampleRate != SAMPLE_DISABLED){
-		fileWriteQuotedString(f, config->velocityCfg.label);
+	if (config->speedCfg.sampleRate != SAMPLE_DISABLED){
+		fileWriteQuotedString(f, config->speedCfg.label);
 		fileWriteString(f, ",");
 	}
 }
@@ -381,9 +381,9 @@ void writeGPSChannels(portTickType currentTicks, GPSConfig *config){
 	}
 
 	{
-		portTickType sr = config->velocityCfg.sampleRate;
+		portTickType sr = config->speedCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) lineAppendFloat(getGPSVelocity(),2);
+			if ((currentTicks % sr) == 0) lineAppendFloat(getGPSSpeed(),2);
 			lineAppendString(",");
 		}
 	}

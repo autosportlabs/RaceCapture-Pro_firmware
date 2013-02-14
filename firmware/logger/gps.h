@@ -31,7 +31,7 @@ int getGPSQuality();
 
 int getSatellitesUsedForPosition();
 
-float getGPSVelocity();
+float getGPSSpeed();
 
 char * getGPSDataLine();
 

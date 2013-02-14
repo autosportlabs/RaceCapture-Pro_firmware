@@ -355,7 +355,7 @@ int getHighestSampleRate(LoggerConfig *config){
 			if HIGHER_SAMPLE(sr, s) s = sr;
 		}
 		{
-			int sr = gpsConfig->velocityCfg.sampleRate;
+			int sr = gpsConfig->speedCfg.sampleRate;
 			if HIGHER_SAMPLE(sr, s) s = sr;
 		}
 		{
