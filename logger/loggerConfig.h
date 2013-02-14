@@ -231,12 +231,12 @@ typedef struct _GPSConfig{
 	ChannelConfig latitudeCfg;
 	ChannelConfig longitudeCfg;
 	ChannelConfig timeCfg;
-	ChannelConfig velocityCfg;
+	ChannelConfig speedCfg;
 } GPSConfig;
 
 
 #define DEFAULT_GPS_POSITION_LOGGING_PRECISION 		6
-#define DEFAULT_GPS_VELOCITY_LOGGING_PRECISION 		2
+#define DEFAULT_GPS_SPEED_LOGGING_PRECISION 		2
 #define DEFAULT_GPS_RADIUS_LOGGING_PRECISION 		5
 #define DEFAULT_GPS_TIME_LOGGING_PRECISION 			3
 #define DEFAULT_LAP_COUNT_LOGGING_PRECISION			0
@@ -255,7 +255,7 @@ typedef struct _GPSConfig{
 #define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "deg", SAMPLE_1Hz}
 #define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "deg", SAMPLE_1Hz}
 #define DEFAULT_GPS_TIME_CONFIG {"Time", "Time", SAMPLE_1Hz}
-#define DEFAULT_GPS_VELOCITY_CONFIG {"Velocity", "MPH", SAMPLE_5Hz}
+#define DEFAULT_GPS_SPEED_CONFIG {"Speed", "MPH", SAMPLE_5Hz}
 
 #define DEFAULT_GPS_CONFIG {CONFIG_FEATURE_INSTALLED, \
 							DEFAULT_GPS_START_FINISH_LATITUDE, \
@@ -268,7 +268,7 @@ typedef struct _GPSConfig{
 							DEFAULT_GPS_LATITUDE_CONFIG, \
 							DEFAULT_GPS_LONGITUDE_CONFIG, \
 							DEFAULT_GPS_TIME_CONFIG, \
-							DEFAULT_GPS_VELOCITY_CONFIG}
+							DEFAULT_GPS_SPEED_CONFIG}
 
 #define DEVICE_ID_LENGTH 36
 #define TELEMETRY_SERVER_HOST_LENGTH 100

@@ -56,9 +56,9 @@ void initSampleRecord(LoggerConfig *loggerConfig,SampleRecord *sr){
 		s->intValue = NIL_SAMPLE;
 	}
 	{
-		ChannelSample *s = &(sr->GPS_VelocitySample);
-		s->precision = DEFAULT_GPS_VELOCITY_LOGGING_PRECISION;
-		s->channelConfig = &(loggerConfig->GPSConfig.velocityCfg);
+		ChannelSample *s = &(sr->GPS_SpeedSample);
+		s->precision = DEFAULT_GPS_SPEED_LOGGING_PRECISION;
+		s->channelConfig = &(loggerConfig->GPSConfig.speedCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{

@@ -97,9 +97,9 @@ static void writeGPSChannels(SampleRecord *sampleRecord, portTickType currentTic
 	}
 
 	{
-		portTickType sr = config->velocityCfg.sampleRate;
+		portTickType sr = config->speedCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->GPS_VelocitySample.floatValue = getGPSVelocity();
+			if ((currentTicks % sr) == 0) sampleRecord->GPS_SpeedSample.floatValue = getGPSSpeed();
 		}
 	}
 	{

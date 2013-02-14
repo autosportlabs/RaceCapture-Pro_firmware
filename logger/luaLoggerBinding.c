@@ -57,7 +57,7 @@ void registerLuaLoggerBindings(){
 
 	lua_registerlight(L,"getGpsLatitude",Lua_GetGPSLatitude);
 	lua_registerlight(L,"getGpsLongitude", Lua_GetGPSLongitude);
-	lua_registerlight(L,"getGpsVelocity",Lua_GetGPSVelocity);
+	lua_registerlight(L,"getGpsSpeed",Lua_GetGPSSpeed);
 	lua_registerlight(L,"getGpsQuality", Lua_GetGPSQuality);
 	lua_registerlight(L,"getGpsTime", Lua_GetGPSTime);
 	lua_registerlight(L,"getLapCount", Lua_GetLapCount);
@@ -133,14 +133,14 @@ void registerLuaLoggerBindings(){
 	lua_registerlight(L,"setGpsTimeLabel", Lua_SetGPSTimeLabel);
 	lua_registerlight(L,"getGpsTimeLabel", Lua_GetGPSTimeLabel);
 	
-	lua_registerlight(L,"setGpsVelocityLabel", Lua_SetGPSVelocityLabel);
-	lua_registerlight(L,"getGpsVelocityLabel", Lua_GetGPSVelocityLabel);
+	lua_registerlight(L,"setGpsSpeedLabel", Lua_SetGPSSpeedLabel);
+	lua_registerlight(L,"getGpsSpeedLabel", Lua_GetGPSSpeedLabel);
 	
 	lua_registerlight(L,"setGpsPositionSampleRate", Lua_SetGPSPositionSampleRate);
 	lua_registerlight(L,"getGpsPositionSampleRate", Lua_GetGPSPositionSampleRate);
 	
-	lua_registerlight(L,"setGpsVelocitySampleRate", Lua_SetGPSVelocitySampleRate);
-	lua_registerlight(L,"getGpsVelocitySampleRate", Lua_GetGPSVelocitySampleRate);
+	lua_registerlight(L,"setGpsSpeedSampleRate", Lua_SetGPSSpeedSampleRate);
+	lua_registerlight(L,"getGpsSpeedSampleRate", Lua_GetGPSSpeedSampleRate);
 	
 	lua_registerlight(L,"setGpsTimeSampleRate", Lua_SetGPSTimeSampleRate);
 	lua_registerlight(L,"getGpsTimeSampleRate", Lua_GetGPSTimeSampleRate);
@@ -640,15 +640,15 @@ int Lua_GetGPSTimeLabel(lua_State *L){
 	return 1;	
 }
 
-int Lua_SetGPSVelocityLabel(lua_State *L){
+int Lua_SetGPSSpeedLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.velocityCfg.label,lua_tostring(L,1));
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.speedCfg.label,lua_tostring(L,1));
 	}
 	return 0;
 }
 
-int Lua_GetGPSVelocityLabel(lua_State *L){
-	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.velocityCfg.label);
+int Lua_GetGPSSpeedLabel(lua_State *L){
+	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.speedCfg.label);
 	return 1;	
 }
 
@@ -666,15 +666,15 @@ int Lua_GetGPSPositionSampleRate(lua_State *L){
 	return 1;		
 }
 
-int Lua_SetGPSVelocitySampleRate(lua_State *L){
+int Lua_SetGPSSpeedSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1 ){
-		getWorkingLoggerConfig()->GPSConfig.velocityCfg.sampleRate = encodeSampleRate(lua_tointeger(L,1));
+		getWorkingLoggerConfig()->GPSConfig.speedCfg.sampleRate = encodeSampleRate(lua_tointeger(L,1));
 	}
 	return 0;
 }
 
-int Lua_GetGPSVelocitySampleRate(lua_State *L){
-	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfig.velocityCfg.sampleRate);
+int Lua_GetGPSSpeedSampleRate(lua_State *L){
+	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfig.speedCfg.sampleRate);
 	return 1;
 }
 
@@ -1134,8 +1134,8 @@ int Lua_GetGPSLatitude(lua_State *L){
 	return 1;
 }
 
-int Lua_GetGPSVelocity(lua_State *L){
-	lua_pushnumber(L,getGPSVelocity());
+int Lua_GetGPSSpeed(lua_State *L){
+	lua_pushnumber(L,getGPSSpeed());
 	return 1;
 }
 

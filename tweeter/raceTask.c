@@ -651,7 +651,7 @@ static void notifyPending(void){
 
 static void doSpeedChecks(void){
 
-	float speed = toMPH(getGPSVelocity());
+	float speed = toMPH(getGPSSpeed());
 	if (speed > g_personalTopSpeed.value){
 		g_personalTopSpeed.value = speed;
 		g_personalTopSpeed.updated = 1;

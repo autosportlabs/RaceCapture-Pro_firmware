@@ -27,7 +27,7 @@
 #define LONGITUDE_DATA_LEN 13
 
 #define UTC_TIME_BUFFER_LEN 11
-#define UTC_VELOCITY_BUFFER_LEN 10
+#define UTC_SPEED_BUFFER_LEN 10
 
 #define START_FINISH_TIME_THRESHOLD 30
 
@@ -39,7 +39,7 @@ static float 	g_longitude;
 static float	g_UTCTime;
 static float 	g_secondsSinceMidnight;
 
-static float	g_velocity;
+static float	g_speed;
 
 static int		g_gpsQuality;
 
@@ -110,8 +110,8 @@ int getSatellitesUsedForPosition(){
 	return g_satellitesUsedForPosition;
 }
 
-float getGPSVelocity(){
-	return g_velocity;
+float getGPSSpeed(){
+	return g_speed;
 }
 
 char * getGPSDataLine(){
@@ -187,7 +187,7 @@ void startGPSTask(){
 	g_UTCTime = 0.0;
 	g_gpsQuality = GPS_QUALITY_NO_FIX;
 	g_satellitesUsedForPosition = 0;
-	g_velocity = 0.0;
+	g_speed = 0.0;
 	g_atStartFinish = 0;
 	g_lastLapTime = 0;
 	g_prevAtStartFinish = 0;
@@ -366,7 +366,7 @@ void parseVTG(char *data){
 			case 6: //Speed over ground
 				{
 					if (strlen(data) >= 1){
-						g_velocity = modp_atof(data) * 0.621371; //convert to MPH
+						g_speed = modp_atof(data) * 0.621371; //convert to MPH
 					}
 					keepParsing = 0;
 				}

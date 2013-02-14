@@ -33,7 +33,7 @@ int Lua_WriteSerial(lua_State *L);
 
 int Lua_GetGPSLongitude(lua_State *L);
 int Lua_GetGPSLatitude(lua_State *L);
-int Lua_GetGPSVelocity(lua_State *L);
+int Lua_GetGPSSpeed(lua_State *L);
 int Lua_GetGPSQuality(lua_State *L);
 int Lua_GetGPSTime(lua_State *L);
 int Lua_GetLapTime(lua_State *L);
@@ -133,14 +133,14 @@ int Lua_GetGPSLongitudeLabel(lua_State *L);
 int Lua_SetGPSTimeLabel(lua_State *L);
 int Lua_GetGPSTimeLabel(lua_State *L);
 
-int Lua_SetGPSVelocityLabel(lua_State *L);
-int Lua_GetGPSVelocityLabel(lua_State *L);
+int Lua_SetGPSSpeedLabel(lua_State *L);
+int Lua_GetGPSSpeedLabel(lua_State *L);
 
 int Lua_SetGPSPositionSampleRate(lua_State *L);
 int Lua_GetGPSPositionSampleRate(lua_State *L);
 
-int Lua_SetGPSVelocitySampleRate(lua_State *L);
-int Lua_GetGPSVelocitySampleRate(lua_State *L);
+int Lua_SetGPSSpeedSampleRate(lua_State *L);
+int Lua_GetGPSSpeedSampleRate(lua_State *L);
 
 int Lua_SetGPSTimeSampleRate(lua_State *L);
 int Lua_GetGPSTimeSampleRate(lua_State *L);

@@ -32,7 +32,8 @@
 
 include version.mk
 RELEASE_DIR ?= .
-RELEASE_NAME = RaceCapturePro-$(MAJOR).$(MINOR).$(BUGFIX).bin
+RELEASE_NAME_BIN = RaceCapturePro-$(MAJOR).$(MINOR).$(BUGFIX).bin
+RELEASE_NAME_ELF = RaceCapturePro-$(MAJOR).$(MINOR).$(BUGFIX).elf
 
 # MCU name and submodel
 MCU      = arm7tdmi
@@ -563,7 +564,8 @@ build elf hex bin lss sym clean clean_list program
 
 
 release : clean all
-	mv main.bin $(RELEASE_DIR)/$(RELEASE_NAME)
+	mv main.bin $(RELEASE_DIR)/$(RELEASE_NAME_BIN)
+	mv main.elf $(RELEASE_DIR)/$(RELEASE_NAME_ELF)
 	cp RELEASE_NOTES.TXT $(RELEASE_DIR)
 	
 

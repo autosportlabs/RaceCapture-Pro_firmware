@@ -200,7 +200,7 @@ void GetGpsConfig(Serial *serial, unsigned int argc, char **argv){
 	put_nameInt(serial, "installed",cfg->GPSInstalled);
 	SendChannelConfigSuffix(serial, &(cfg->latitudeCfg),"lat");
 	SendChannelConfigSuffix(serial, &(cfg->longitudeCfg),"long");
-	SendChannelConfigSuffix(serial, &(cfg->velocityCfg),"vel");
+	SendChannelConfigSuffix(serial, &(cfg->speedCfg),"vel");
 	SendChannelConfigSuffix(serial, &(cfg->timeCfg),"time");
 	SendChannelConfigSuffix(serial, &(cfg->qualityCfg),"qual");
 	SendChannelConfigSuffix(serial, &(cfg->satellitesCfg),"sats");
@@ -211,7 +211,7 @@ void SetGpsConfig(Serial *serial, unsigned int argc, char **argv){
 	if (argc > 1) cfg->GPSInstalled = (modp_atoi(argv[1]) != 0);
 	if (argc > 2) SetChannelConfig(&(cfg->latitudeCfg),2,argc,argv);
 	if (argc > 5) SetChannelConfig(&(cfg->longitudeCfg),5,argc,argv);
-	if (argc > 8) SetChannelConfig(&(cfg->velocityCfg),8,argc,argv);
+	if (argc > 8) SetChannelConfig(&(cfg->speedCfg),8,argc,argv);
 	if (argc > 11) SetChannelConfig(&(cfg->timeCfg),11,argc,argv);
 	if (argc > 14) SetChannelConfig(&(cfg->qualityCfg),14,argc,argv);
 	if (argc > 17) SetChannelConfig(&(cfg->satellitesCfg),17,argc,argv);
