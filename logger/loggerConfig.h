@@ -252,8 +252,8 @@ typedef struct _GPSConfig{
 #define DEFAULT_LAP_TIME_CONFIG {"LapTime", "seconds", SAMPLE_DISABLED}
 #define DEFAULT_GPS_QUAL_CONFIG {"GpsQual", "", SAMPLE_DISABLED}
 #define DEFAULT_GPS_SATELLITES_CONFIG {"GpsSats", "", SAMPLE_DISABLED}
-#define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "deg", SAMPLE_1Hz}
-#define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "deg", SAMPLE_1Hz}
+#define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "Deg", SAMPLE_1Hz}
+#define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "Deg", SAMPLE_1Hz}
 #define DEFAULT_GPS_TIME_CONFIG {"Time", "Time", SAMPLE_1Hz}
 #define DEFAULT_GPS_SPEED_CONFIG {"Speed", "MPH", SAMPLE_5Hz}
 

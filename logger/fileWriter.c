@@ -66,11 +66,16 @@ static void writeHeaders(FIL *f, SampleRecord *sr){
 	for (int i = 0; i < SAMPLE_RECORD_CHANNELS;i++){
 		ChannelConfig *cfg = (sr->Samples[i].channelConfig);
 		if (SAMPLE_DISABLED != cfg->sampleRate){
-			if (headerCount++ > 0) fileWriteString(f,",");
-			fileWriteQuotedString(f,cfg->label);
+			if (headerCount++ > 0) fileWriteString(f, ",");
+			fileWriteQuotedString(f, cfg->label);
+			fileWriteString(f, "(");
+			fileWriteQuotedString(f, cfg->units);
+			fileWriteString(f, ",");
+			fileWriteInt(f, decodeSampleRate(cfg->sampleRate));
+			fileWriteString(f, ")");
 		}
 	}
-	fileWriteString(f,"\r\n");
+	fileWriteString(f,"\n");
 }
 
 
