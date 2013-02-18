@@ -669,7 +669,7 @@ static BYTE send_CMD0(void){
 	BYTE n, res;
 
 	SDEBUG("dummy clocks");
-	for (n = 200; n; n--) rcvr_spi();	/* 1600 dummy clocks */
+	for (n = 10; n; n--) rcvr_spi();	/* 80 dummy clocks */
 
 	xmit_spi(CMD0);
 	xmit_spi(0);		/* Argument[31..24] */
