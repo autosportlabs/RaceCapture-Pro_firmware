@@ -13,12 +13,12 @@ void InitFSHardware(void){
 }
 
 int InitFS(){
-	//taskENTER_CRITICAL();
+	taskENTER_CRITICAL();
 	int res = disk_initialize(0);
 	if (0 == res){
 		res = f_mount(0, &Fatfs[0]);
 	}
-	//taskEXIT_CRITICAL();
+	taskEXIT_CRITICAL();
 	return res;
 }
 
