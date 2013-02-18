@@ -68,11 +68,10 @@ static void writeHeaders(FIL *f, SampleRecord *sr){
 		if (SAMPLE_DISABLED != cfg->sampleRate){
 			if (headerCount++ > 0) fileWriteString(f, ",");
 			fileWriteQuotedString(f, cfg->label);
-			fileWriteString(f, "(");
+			fileWriteString(f, "|");
 			fileWriteQuotedString(f, cfg->units);
-			fileWriteString(f, ",");
+			fileWriteString(f, "|");
 			fileWriteInt(f, decodeSampleRate(cfg->sampleRate));
-			fileWriteString(f, ")");
 		}
 	}
 	fileWriteString(f,"\n");

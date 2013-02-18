@@ -105,7 +105,7 @@ void accel_initSPI(){
 	pPIOA->PIO_BSR = NPCS_BSR_BIT;
 
 	//normal speed
-	accel_spiSetSpeed(48);
+	accel_spiSetSpeed(10);
 }
 
 void accel_spiSetSpeed(unsigned char speed)
