@@ -51,6 +51,8 @@
 #define USE_SOCKSWITCHES  1
 #define USE_POWERCONTROL  0
 
+//#define SD_DEBUG
+
 #if USE_BOARD_H
 #include <board.h>
 #else /* !USE_BOARD_H */
@@ -59,6 +61,15 @@
 
 #include "diskio.h"
 #include "taskUtil.h"
+
+#ifdef SD_DEBUG
+#include "serial.h"
+#define SDEBUG(X) get_serial_usb()->put_s(X); get_serial_usb()->put_s("\r\n");
+#define SDEBUG_INT(X) put_int(get_serial_usb(), X); get_serial_usb()->put_s("\r\n");
+#else
+#define SDEBUG(X)
+#define SDEBUG_INT(X)
+#endif
 
 /* Definitions for MMC/SDC command */
 #define CMD0	(0x40+0)	/* GO_IDLE_STATE */
@@ -651,6 +662,31 @@ BOOL xmit_datablock (
 #endif /* _READONLY */
 
 
+/*-----------------------------------------------------------------------*/
+/* Send CMD0
+/*-----------------------------------------------------------------------*/
+static BYTE send_CMD0(void){
+	BYTE n, res;
+
+	SDEBUG("dummy clocks");
+	for (n = 200; n; n--) rcvr_spi();	/* 1600 dummy clocks */
+
+	xmit_spi(CMD0);
+	xmit_spi(0);		/* Argument[31..24] */
+	xmit_spi(0);		/* Argument[23..16] */
+	xmit_spi(0);		/* Argument[15..8] */
+	xmit_spi(0);		/* Argument[7..0] */
+	xmit_spi(0x95);		/* checksum */
+
+	n = 10;				/* Wait for a valid response in timeout of 10 attempts */
+	do{
+		res = rcvr_spi();
+		SDEBUG("chk CMD0");
+		SDEBUG_INT(res);
+	}
+	while (res != 1 && --n);
+	return res;
+}
 
 /*-----------------------------------------------------------------------*/
 /* Send a command packet to MMC                                          */
@@ -681,7 +717,6 @@ BYTE send_cmd (
 	xmit_spi((BYTE)(arg >> 8));			/* Argument[15..8] */
 	xmit_spi((BYTE)arg);				/* Argument[7..0] */
 	n = 0x01;							/* Dummy CRC + Stop */
-	if (cmd == CMD0) n = 0x95;			/* Valid CRC for CMD0(0) */
 	if (cmd == CMD8) n = 0x87;			/* Valid CRC for CMD8(0x1AA) */
 	xmit_spi(n);
 
@@ -740,10 +775,9 @@ DSTATUS disk_initialize (
 	// slow during init
 	if_spiSetSpeed(0xFE);
 
-	for (n = 10; n; n--) rcvr_spi();	/* 80 dummy clocks */
-
 	ty = 0;
-	if (send_cmd(CMD0, 0) == 1) {
+	if (send_CMD0() == 1) {
+		SDEBUG("CMD0 ok");
 		/* Enter Idle state */
 		if (send_cmd(CMD8, 0x1AA) == 1) {	/* SDHC */
 			for (n = 0; n < 4; n++) ocr[n] = rcvr_spi();		/* Get trailing return value of R7 resp */
@@ -766,13 +800,16 @@ DSTATUS disk_initialize (
 			if (!attempts || send_cmd(CMD16, 512) != 0)	ty = 0; /* Set R/W block length to 512 */
 		}
 	}
+	else{
+		SDEBUG("CMD0 fail");
+	}
 	CardType = ty;
 	release_spi();
 
-	if (ty) {			/* Initialization succeeded */
+	if (ty) {						/* Initialization succeeded */
 		Stat &= ~STA_NOINIT;		/* Clear STA_NOINIT */
 		if_spiSetSpeed(SPI_SCBR_MIN);
-	} else {			/* Initialization failed */
+	} else {						/* Initialization failed */
 		power_off();
 	}
 

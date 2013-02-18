@@ -13,12 +13,12 @@ void InitFSHardware(void){
 }
 
 int InitFS(){
-	taskENTER_CRITICAL();
+	//taskENTER_CRITICAL();
 	int res = disk_initialize(0);
 	if (0 == res){
 		res = f_mount(0, &Fatfs[0]);
 	}
-	taskEXIT_CRITICAL();
+	//taskEXIT_CRITICAL();
 	return res;
 }
 
@@ -31,9 +31,6 @@ static FIL fatFile;
 void TestSDWrite(Serial *serial, int lines,int doFlush)
 {
 
-	serial->put_s("sizeof long ");
-	put_int(serial, sizeof(long));
-	put_crlf(serial);
 	serial->put_s("Test Write: Lines: ");
 	put_int(serial, lines);
 	put_crlf(serial);
