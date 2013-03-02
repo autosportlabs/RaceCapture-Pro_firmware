@@ -4,9 +4,6 @@
 
 #define SPI_CSR_NUM      2
 
-//1G point for Kionix KXR94-2353
-#define ACCEL_COUNTS_PER_G 				819
-#define YAW_COUNTS_PER_DEGREE_PER_SEC	6.826666
 
 #define ACCEL_MAX_RANGE 				ACCEL_COUNTS_PER_G * 4
 
@@ -104,9 +101,8 @@ void accel_initSPI(){
 	pPIOA->PIO_BSR = NPCS_BSR_BIT;
 
 	//spi speed is 48054840 / value in MHz
-	//normal speed
-	//accel_spiSetSpeed(10);
-	accel_spiSetSpeed(48);
+	//normal speed 3.5MHz. Reduce this if accelerometer readings are unstable
+	accel_spiSetSpeed(14);
 
 }
 
