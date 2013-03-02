@@ -1195,7 +1195,8 @@ int Lua_ReadAccelerometer(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		if (channel >= ACCELEROMETER_CHANNEL_MIN && channel <= ACCELEROMETER_CHANNEL_MAX){
-			float g = convertAccelRawToG(readAccelChannel(channel),DEFAULT_ACCEL_ZERO);
+			unsigned long zeroValue = getWorkingLoggerConfig()->AccelConfigs[channel].zeroValue;
+			float g = convertAccelRawToG(readAccelChannel(channel), zeroValue);
 			lua_pushnumber(L,g);
 			return 1;
 		}
@@ -1208,7 +1209,7 @@ int Lua_ReadAccelerometerRaw(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		if (channel >= ACCELEROMETER_CHANNEL_MIN && channel <= ACCELEROMETER_CHANNEL_MAX){
-			int accelValue =  readAccelChannel(channel);
+			int accelValue =  readAccelerometerDevice(channel);
 			lua_pushinteger(L,accelValue);
 			return 1;
 		}
