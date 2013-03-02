@@ -3,6 +3,12 @@
 
 #include "board.h"
 
+//1G point for Kionix KXR94-2353
+#define ACCEL_COUNTS_PER_G 				819
+
+//ST LY330ALH is 3.752 mV/dps
+#define YAW_COUNTS_PER_DEGREE_PER_SEC	4.69
+
 #define ACCELEROMETER_CHANNEL_MIN 0
 #define ACCELEROMETER_CHANNEL_MAX 3
 #define ACCELEROMETER_BUFFER_SIZE 10
