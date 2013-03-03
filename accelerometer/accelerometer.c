@@ -102,7 +102,7 @@ void accel_initSPI(){
 
 	//spi speed is 48054840 / value in MHz
 	//normal speed 3.5MHz. Reduce this if accelerometer readings are unstable
-	accel_spiSetSpeed(14);
+	accel_spiSetSpeed(48);
 
 }
 
