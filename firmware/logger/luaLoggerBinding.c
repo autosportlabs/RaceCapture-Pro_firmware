@@ -524,8 +524,8 @@ int Lua_GetGPIOSampleRate(lua_State *L){
 
 int Lua_SetGPIOConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		int channel = lua_tointeger(L,1) - 1 ;
-		if (channel >= 0 && channel <= 2){//1 based
+		int channel = lua_tointeger(L,1);
+		if (channel >= 0 && channel <= 2){
 			GPIOConfig *c = getGPIOConfigChannel(channel);
 			//0= configure as input, 1=configure as output
 			if (NULL != c) c->mode = filterGpioMode(lua_tointeger(L,2));
@@ -537,7 +537,7 @@ int Lua_SetGPIOConfig(lua_State *L){
 
 int Lua_GetGPIOConfig(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		int channel = lua_tointeger(L,1) - 1;
+		int channel = lua_tointeger(L,1);
 		if (channel >= 0 && channel <= 2){
 			GPIOConfig *c = getGPIOConfigChannel(channel);
 			if (NULL !=c){
