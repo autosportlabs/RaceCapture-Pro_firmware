@@ -25,6 +25,12 @@ Instructions:
 
 Firmware Changelog:
 
+===1.1.3===
+Fixed lua binding range check issues
+
+===1.1.2===
+Fixed accelerometer calibration issues
+
 ===1.1.1===
 * changed to use new bootloader. install bootloader using SAM-BA then use bootloader to flash
   RaceCapture/Pro firmware
