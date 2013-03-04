@@ -25,6 +25,11 @@ Instructions:
 
 Firmware Changelog:
 
+===1.1.5===
+removed gps quality field
+added split time configuration, detection and logging field
+fixed usb comm race issue
+
 ===1.1.3===
 Fixed lua binding range check issues
 
