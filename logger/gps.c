@@ -46,12 +46,15 @@ static int		g_gpsQuality;
 static int		g_satellitesUsedForPosition;
 
 static int g_atStartFinish;
-
 static int g_prevAtStartFinish;
-
 static float g_lastStartFinishTimestamp;
 
+static int g_atSplit;
+static int g_prevAtSplit;
+static float g_lastSplitTimestamp;
+
 static float g_lastLapTime;
+static float g_lastSplitTime;
 
 static int g_lapCount;
 
@@ -67,6 +70,10 @@ float getLastLapTime(){
 	return g_lastLapTime;
 }
 
+float getLastSplitTime(){
+	return g_lastSplitTime;
+}
+
 float getTimeSince(float t1){
 	return getTimeDiff(t1,getSecondsSinceMidnight());
 }
@@ -80,6 +87,10 @@ float getTimeDiff(float from, float to){
 
 int getAtStartFinish(){
 	return g_atStartFinish;
+}
+
+int getAtSplit(){
+	return g_atSplit;
 }
 
 float getUTCTime(){
@@ -118,18 +129,18 @@ char * getGPSDataLine(){
 	return g_GPSdataLine;
 }
 
-static int atStartFinish(GPSConfig *gpsConfig){
+static int withinGpsTarget(GPSTargetConfig *targetConfig){
 
 	struct circ_area area;
 	struct point p;
-	p.x = gpsConfig->startFinishLongitude;
-	p.y = gpsConfig->startFinishLatitude;
+	p.x = targetConfig->longitude;
+	p.y = targetConfig->latitude;
 
 	struct point currentP;
 	currentP.x = getLongitude();
 	currentP.y = getLatitude();
 
-	create_circ(&area,&p,gpsConfig->startFinishRadius);
+	create_circ(&area,&p,targetConfig->targetRadius);
 	int within =  within_circ(&area,&currentP);
 /*	SendFloat(p.x,10);
 	SendString(" ");
@@ -143,19 +154,20 @@ static int atStartFinish(GPSConfig *gpsConfig){
 	return within;
 }
 
-static int isStartFinishDetectionEnabled(GPSConfig *gpsConfig){
-	return gpsConfig->startFinishLatitude != 0 && gpsConfig->startFinishLongitude != 0;
+static int isGpsTargetEnabled(GPSTargetConfig *targetConfig){
+	return targetConfig->latitude != 0 && targetConfig->longitude != 0;
 }
 
-
 static void updateStartFinish(void){
-	GPSConfig *gpsConfig = &(getWorkingLoggerConfig()->GPSConfig);
-	if (! isStartFinishDetectionEnabled(gpsConfig)) return;
+	GPSTargetConfig *targetConfig = &(getWorkingLoggerConfig()->GPSConfig.startFinishConfig);
 
-	g_atStartFinish = atStartFinish(gpsConfig);
+	if (! isGpsTargetEnabled(targetConfig)) return;
+
+	g_atStartFinish = withinGpsTarget(targetConfig);
 	if (g_atStartFinish){
 		if (g_prevAtStartFinish == 0){
 			if (g_lastStartFinishTimestamp == 0){
+				//loading of lap zero timestamp; e.g. first time crossing line
 				g_lastStartFinishTimestamp = getSecondsSinceMidnight();
 			}
 			else{
@@ -179,6 +191,32 @@ static void updateStartFinish(void){
 	}
 }
 
+static void updateSplit(void){
+	GPSTargetConfig *targetConfig = &(getWorkingLoggerConfig()->GPSConfig.splitConfig);
+
+	if (! isGpsTargetEnabled(targetConfig)) return;
+
+	g_atSplit = withinGpsTarget(targetConfig);
+	if (g_atSplit){
+		if (g_prevAtSplit == 0){
+			if (g_lastSplitTimestamp == 0){
+				g_lastSplitTimestamp = getSecondsSinceMidnight();
+			}
+			else{
+				if (g_lastStartFinishTimestamp != 0){
+					float currentTimestamp = getSecondsSinceMidnight();
+					float elapsed = getTimeDiff(g_lastStartFinishTimestamp, currentTimestamp);
+					g_lastSplitTime = elapsed / 60.0;
+
+				}
+			}
+		}
+		g_prevAtSplit = 1;
+	}
+	else{
+		g_prevAtSplit = 0;
+	}
+}
 
 
 void startGPSTask(){
@@ -188,10 +226,14 @@ void startGPSTask(){
 	g_gpsQuality = GPS_QUALITY_NO_FIX;
 	g_satellitesUsedForPosition = 0;
 	g_speed = 0.0;
-	g_atStartFinish = 0;
 	g_lastLapTime = 0;
+	g_lastSplitTime = 0;
+	g_atStartFinish = 0;
 	g_prevAtStartFinish = 0;
 	g_lastStartFinishTimestamp = 0;
+	g_atSplit = 0;
+	g_prevAtSplit = 0;
+	g_lastSplitTimestamp = 0;
 	g_lapCount = 0;
 	
 	initUsart1(USART_MODE_8N1, 38400);
@@ -217,6 +259,7 @@ void GPSTask( void *pvParameters ){
 						flashCount = 0;		
 					}
 					updateStartFinish();
+					updateSplit();
 				} else if (strstr(data,"VTG,")){ //Course Over Ground and Ground Speed
 					parseVTG(data + 4);
 				} else if (strstr(data,"GSA,")){ //GPS Fix data

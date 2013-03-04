@@ -30,10 +30,10 @@ extern const cmd_t g_loggerCommands[];
 {"getPwmClockFreq", "Gets the PWM clock frequency for the specified channel.","", GetPwmClockFreq}, \
 \
 {"getGpsCfg", "Gets the configuration for Gps features","",GetGpsConfig}, \
-{"setGpsCfg", "Sets the configuration for Gps features","[installed] [label_lat] [units_lat] [sampleRate_lat] [label_long] [units_long] [sampleRate_long] [label_vel] [units_vel] [sampleRate_vel] [label_time] [units_time] [sampleRate_time] [label_qual] [units_qual] [sampleRate_qual] [label_sats] [units_sats] [sampleRate_sats]",SetGpsConfig}, \
+{"setGpsCfg", "Sets the configuration for Gps features","[installed] [label_lat] [units_lat] [sampleRate_lat] [label_long] [units_long] [sampleRate_long] [label_vel] [units_vel] [sampleRate_vel] [label_time] [units_time] [sampleRate_time] [label_sats] [units_sats] [sampleRate_sats]",SetGpsConfig}, \
 \
 {"getStartFinishCfg", "Gets the start/finish line configuration","",GetStartFinishConfig}, \
-{"setStartFinishCfg", "Sets the start/finish line configuration","[label_lapCount] [units_lapCount] [sampleRate_lapCount] [label_lapTime] [units_lapTime] [sampleRate_lapTime] [startFinishLat] [startFinishLong] [startFinishRadius]",SetStartFinishConfig}, \
+{"setStartFinishCfg", "Sets the start/finish line configuration","[label_lapCount] [units_lapCount] [sampleRate_lapCount] [label_lapTime] [units_lapTime] [sampleRate_lapTime] [label_splitTime] [units_splitTime] [sampleRate_splitTime] [startFinishLat] [startFinishLong] [startFinishRadius] [splitLat] [splitLong] [splitRadius]",SetStartFinishConfig}, \
 \
 {"getGpioCfg","Gets the configuration for the specified GPIO port.","<port>", GetGpioConfig}, \
 {"setGpioCfg","Sets the configuration for the specified GPIO port.","<port> [label] [units] [sampleRate] [mode]", SetGpioConfig}, \

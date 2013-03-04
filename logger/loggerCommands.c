@@ -202,7 +202,6 @@ void GetGpsConfig(Serial *serial, unsigned int argc, char **argv){
 	SendChannelConfigSuffix(serial, &(cfg->longitudeCfg),"long");
 	SendChannelConfigSuffix(serial, &(cfg->speedCfg),"vel");
 	SendChannelConfigSuffix(serial, &(cfg->timeCfg),"time");
-	SendChannelConfigSuffix(serial, &(cfg->qualityCfg),"qual");
 	SendChannelConfigSuffix(serial, &(cfg->satellitesCfg),"sats");
 }
 
@@ -213,8 +212,7 @@ void SetGpsConfig(Serial *serial, unsigned int argc, char **argv){
 	if (argc > 5) SetChannelConfig(&(cfg->longitudeCfg),5,argc,argv);
 	if (argc > 8) SetChannelConfig(&(cfg->speedCfg),8,argc,argv);
 	if (argc > 11) SetChannelConfig(&(cfg->timeCfg),11,argc,argv);
-	if (argc > 14) SetChannelConfig(&(cfg->qualityCfg),14,argc,argv);
-	if (argc > 17) SetChannelConfig(&(cfg->satellitesCfg),17,argc,argv);
+	if (argc > 14) SetChannelConfig(&(cfg->satellitesCfg),14,argc,argv);
 	put_commandOK(serial);
 }
 
@@ -222,18 +220,26 @@ void GetStartFinishConfig(Serial *serial, unsigned int argc, char **argv){
 	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfig);
 	SendChannelConfigSuffix(serial, &(cfg->lapCountCfg),"lapCount");
 	SendChannelConfigSuffix(serial, &(cfg->lapTimeCfg),"lapTime");
-	put_nameFloat(serial, "startFinishLat",cfg->startFinishLatitude,DEFAULT_GPS_POSITION_LOGGING_PRECISION);
-	put_nameFloat(serial, "startFinishLong", cfg->startFinishLongitude,DEFAULT_GPS_POSITION_LOGGING_PRECISION);
-	put_nameFloat(serial, "startFinishRadius",cfg->startFinishRadius,DEFAULT_GPS_RADIUS_LOGGING_PRECISION);
+	SendChannelConfigSuffix(serial, &(cfg->splitTimeCfg), "splitTime");
+	put_nameFloat(serial, "startFinishLat",cfg->startFinishConfig.latitude,DEFAULT_GPS_POSITION_LOGGING_PRECISION);
+	put_nameFloat(serial, "startFinishLong", cfg->startFinishConfig.longitude,DEFAULT_GPS_POSITION_LOGGING_PRECISION);
+	put_nameFloat(serial, "startFinishRadius",cfg->startFinishConfig.targetRadius,DEFAULT_GPS_RADIUS_LOGGING_PRECISION);
+	put_nameFloat(serial, "splitLat", cfg->splitConfig.latitude, DEFAULT_GPS_POSITION_LOGGING_PRECISION);
+	put_nameFloat(serial, "splitLong", cfg->splitConfig.longitude, DEFAULT_GPS_POSITION_LOGGING_PRECISION);
+	put_nameFloat(serial, "splitRadius", cfg->splitConfig.targetRadius, DEFAULT_GPS_RADIUS_LOGGING_PRECISION);
 }
 
 void SetStartFinishConfig(Serial *serial, unsigned int argc, char **argv){
 	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfig);
 	if (argc > 1) SetChannelConfig(&(cfg->lapCountCfg),1,argc,argv);
 	if (argc > 4) SetChannelConfig(&(cfg->lapTimeCfg),4,argc,argv);
-	if (argc > 7) cfg->startFinishLatitude = modp_atof(argv[7]);
-	if (argc > 8) cfg->startFinishLongitude = modp_atof(argv[8]);
-	if (argc > 9) cfg->startFinishRadius = modp_atof(argv[9]);
+	if (argc > 7) SetChannelConfig(&(cfg->splitTimeCfg), 7, argc, argv);
+	if (argc > 10) cfg->startFinishConfig.latitude = modp_atof(argv[10]);
+	if (argc > 11) cfg->startFinishConfig.longitude = modp_atof(argv[11]);
+	if (argc > 12) cfg->startFinishConfig.targetRadius = modp_atof(argv[12]);
+	if (argc > 13) cfg->splitConfig.latitude = modp_atof(argv[13]);
+	if (argc > 14) cfg->splitConfig.longitude = modp_atof(argv[14]);
+	if (argc > 15) cfg->splitConfig.targetRadius = modp_atof(argv[15]);
 	put_commandOK(serial);
 }
 
