@@ -30,7 +30,6 @@
 #include "sdcard.h"
 
 //logging related tasks
-#include "loggerTask.h"
 #include "loggerTaskEx.h"
 #include "fileWriter.h"
 #include "telemetryTask.h"
@@ -50,9 +49,8 @@
 #define TC_CLKS_MCK1024          0x4
 
 /* Priorities for the demo application tasks. */
-#define USB_COMM_TASK_PRIORITY				( tskIDLE_PRIORITY + 2 )
+#define USB_COMM_TASK_PRIORITY				( tskIDLE_PRIORITY + 1 )
 #define mainUSB_PRIORITY					( tskIDLE_PRIORITY + 2 )
-#define mainDEFAULT_TASK_PRIORITY 			( tskIDLE_PRIORITY + 1 )
 
 #define mainUSB_TASK_STACK					( 100 )
 #define mainUSB_COMM_STACK					( 1000 )

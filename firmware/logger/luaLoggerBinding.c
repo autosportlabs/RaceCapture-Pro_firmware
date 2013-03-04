@@ -117,9 +117,6 @@ void registerLuaLoggerBindings(){
 	
 	lua_registerlight(L,"setGpsStartFinish",Lua_SetGPSStartFinish);
 	lua_registerlight(L,"getGpsStartFinish",Lua_GetGPSStartFinish);
-
-	lua_registerlight(L,"setGpsQualityLabel", Lua_SetGPSQualityLabel);
-	lua_registerlight(L,"getGpsQualityLabel", Lua_GetGPSQualityLabel);
 	
 	lua_registerlight(L,"setGpsSatsLabel", Lua_SetGPSSatsLabel);
 	lua_registerlight(L,"getGpsSatsLabel", Lua_GetGPSSatsLabel);
@@ -565,31 +562,47 @@ int Lua_GetGPSInstalled(lua_State *L){
 int Lua_SetGPSStartFinish(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfig);
-		c->startFinishLatitude = lua_tonumber(L,1);
-		c->startFinishLongitude = lua_tonumber(L,2);
-		if (lua_gettop(L) >=3) c->startFinishRadius = lua_tonumber(L,3);
+		c->startFinishConfig.latitude = lua_tonumber(L,1);
+		c->startFinishConfig.longitude = lua_tonumber(L,2);
+		if (lua_gettop(L) >=3) c->startFinishConfig.targetRadius = lua_tonumber(L,3);
 	}
 	return 0;
 }
 
 int Lua_GetGPSStartFinish(lua_State *L){
 	GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfig);
-	lua_pushnumber(L,c->startFinishLatitude);
-	lua_pushnumber(L,c->startFinishLongitude);
-	lua_pushnumber(L,c->startFinishRadius);
+	lua_pushnumber(L,c->startFinishConfig.latitude);
+	lua_pushnumber(L,c->startFinishConfig.longitude);
+	lua_pushnumber(L,c->startFinishConfig.targetRadius);
 	return 3;
 }
 
-int Lua_SetGPSQualityLabel(lua_State *L){
-	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.qualityCfg.label,lua_tostring(L,1));
+int Lua_GetGPSAtStartFinish(lua_State *L){
+	lua_pushinteger(L,getAtStartFinish());
+	return 1;
+}
+
+int Lua_SetSplit(lua_State *L){
+	if (lua_gettop(L) >= 2){
+		GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfig);
+		c->splitConfig.latitude = lua_tonumber(L,1);
+		c->splitConfig.longitude = lua_tonumber(L,2);
+		if (lua_gettop(L) >=3) c->splitConfig.targetRadius = lua_tonumber(L,3);
 	}
 	return 0;
 }
 
-int Lua_GetGPSQualityLabel(lua_State *L){
-	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.qualityCfg.label);
-	return 1;	
+int Lua_GetSplit(lua_State *L){
+	GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfig);
+	lua_pushnumber(L,c->splitConfig.latitude);
+	lua_pushnumber(L,c->splitConfig.longitude);
+	lua_pushnumber(L,c->splitConfig.targetRadius);
+	return 3;
+}
+
+int Lua_GetAtSplit(lua_State *L){
+	lua_pushinteger(L,getAtSplit());
+	return 1;
 }
 
 int Lua_SetGPSSatsLabel(lua_State *L){
@@ -1165,10 +1178,6 @@ int Lua_GetGPSSecondsSinceMidnight(lua_State *L){
 	return 1;
 }
 
-int Lua_GetGPSAtStartFinish(lua_State *L){
-	lua_pushinteger(L,getAtStartFinish());
-	return 1;
-}
 
 int Lua_GetTimeDiff(lua_State *L){
 

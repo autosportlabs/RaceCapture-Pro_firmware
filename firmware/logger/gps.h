@@ -11,7 +11,11 @@ int getLapCount();
 
 float getLastLapTime();
 
+float getLastSplitTime();
+
 int getAtStartFinish();
+
+int getAtSplit();
 
 void getUTCTimeFormatted(char * buf);
 
