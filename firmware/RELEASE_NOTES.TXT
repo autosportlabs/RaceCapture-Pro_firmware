@@ -25,6 +25,9 @@ Instructions:
 
 Firmware Changelog:
 
+===1.1.6===
+fixed bug in split time data logging (float vs int)
+
 ===1.1.5===
 removed gps quality field
 added split time configuration, detection and logging field
