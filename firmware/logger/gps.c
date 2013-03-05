@@ -8,6 +8,7 @@
 #include "modp_numtoa.h"
 #include "modp_atonum.h"
 #include "geometry.h"
+#include "serial.h"
 
 #include <string.h>
 
@@ -142,15 +143,7 @@ static int withinGpsTarget(GPSTargetConfig *targetConfig){
 
 	create_circ(&area,&p,targetConfig->targetRadius);
 	int within =  within_circ(&area,&currentP);
-/*	SendFloat(p.x,10);
-	SendString(" ");
-	SendFloat(p.y,10);
-	SendString(" within: ");
-	SendInt(within);
-	SendString(" ");
-	SendFloat(g_startFinishRadius,10);
-	SendCrlf();
-	*/
+
 	return within;
 }
 
@@ -199,17 +192,11 @@ static void updateSplit(void){
 	g_atSplit = withinGpsTarget(targetConfig);
 	if (g_atSplit){
 		if (g_prevAtSplit == 0){
-			if (g_lastSplitTimestamp == 0){
-				g_lastSplitTimestamp = getSecondsSinceMidnight();
-			}
-			else{
 				if (g_lastStartFinishTimestamp != 0){
 					float currentTimestamp = getSecondsSinceMidnight();
 					float elapsed = getTimeDiff(g_lastStartFinishTimestamp, currentTimestamp);
 					g_lastSplitTime = elapsed / 60.0;
-
 				}
-			}
 		}
 		g_prevAtSplit = 1;
 	}
