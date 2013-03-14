@@ -157,13 +157,14 @@ typedef struct _AccelConfig{
 #define	ACCEL_CHANNEL_ZT					3
 
 #define DEFAULT_ACCEL_LOGGING_PRECISION		3
-#define DEFAULT_ACCEL_ZERO					2047
+#define DEFAULT_ACCEL_ZERO					2048
+#define DEFAULT_YAW_ZERO					1862 //LY330ALH zero state voltage output is 1.5v
 
 
-#define DEFAULT_ACCEL_X_AXIS_CONFIG  {{"AccelX", "G", SAMPLE_5Hz}, MODE_ACCEL_NORMAL, ACCEL_CHANNEL_X,DEFAULT_ACCEL_ZERO}
-#define DEFAULT_ACCEL_Y_AXIS_CONFIG  {{"AccelY", "G", SAMPLE_5Hz}, MODE_ACCEL_NORMAL, ACCEL_CHANNEL_Y,DEFAULT_ACCEL_ZERO}
-#define DEFAULT_ACCEL_Z_AXIS_CONFIG  {{"AccelZ", "G", SAMPLE_5Hz}, MODE_ACCEL_NORMAL, ACCEL_CHANNEL_Z,DEFAULT_ACCEL_ZERO}
-#define DEFAULT_ACCEL_ZT_AXIS_CONFIG {{"Yaw", "Deg/Sec", SAMPLE_5Hz}, MODE_ACCEL_NORMAL, ACCEL_CHANNEL_ZT,DEFAULT_ACCEL_ZERO}
+#define DEFAULT_ACCEL_X_AXIS_CONFIG  {{"AccelX", "G", SAMPLE_30Hz}, MODE_ACCEL_NORMAL, ACCEL_CHANNEL_X,DEFAULT_ACCEL_ZERO}
+#define DEFAULT_ACCEL_Y_AXIS_CONFIG  {{"AccelY", "G", SAMPLE_30Hz}, MODE_ACCEL_NORMAL, ACCEL_CHANNEL_Y,DEFAULT_ACCEL_ZERO}
+#define DEFAULT_ACCEL_Z_AXIS_CONFIG  {{"AccelZ", "G", SAMPLE_30Hz}, MODE_ACCEL_NORMAL, ACCEL_CHANNEL_Z,DEFAULT_ACCEL_ZERO}
+#define DEFAULT_ACCEL_ZT_AXIS_CONFIG {{"Yaw", "Deg/Sec", SAMPLE_30Hz}, MODE_ACCEL_NORMAL, ACCEL_CHANNEL_ZT,DEFAULT_YAW_ZERO}
 #define DEFAULT_ACCEL_CONFIGS \
 			{ \
 				DEFAULT_ACCEL_X_AXIS_CONFIG, \
@@ -186,7 +187,7 @@ typedef struct _PWMConfig{
 /// PWM frequency in Hz.
 #define MAX_PWM_CLOCK_FREQUENCY             2000
 #define MIN_PWM_CLOCK_FREQUENCY				10
-#define DEFAULT_PWM_CLOCK_FREQUENCY			100
+#define DEFAULT_PWM_CLOCK_FREQUENCY			10000
 
 /// Maximum duty cycle value.
 #define MAX_PWM_DUTY_CYCLE              	100
@@ -219,14 +220,19 @@ typedef struct _PWMConfig{
 				DEFAULT_PWM4_CONFIG, \
 			}
 			
+typedef struct _GPSTargetConfig{
+	float latitude;
+	float longitude;
+	float targetRadius;
+} GPSTargetConfig;
+
 typedef struct _GPSConfig{
 	char GPSInstalled;
-	float startFinishLatitude;
-	float startFinishLongitude;
-	float startFinishRadius;
+	GPSTargetConfig startFinishConfig;
+	GPSTargetConfig splitConfig;
 	ChannelConfig lapCountCfg;
 	ChannelConfig lapTimeCfg;
-	ChannelConfig qualityCfg;
+	ChannelConfig splitTimeCfg;
 	ChannelConfig satellitesCfg;
 	ChannelConfig latitudeCfg;
 	ChannelConfig longitudeCfg;
@@ -243,27 +249,24 @@ typedef struct _GPSConfig{
 #define DEFAULT_LAP_TIME_LOGGING_PRECISION			3
 #define	DEFAULT_GPS_QUALITY_LOGGING_PRECISION 		0
 #define DEFAULT_GPS_SATELLITES_LOGGING_PRECISION 	0
-#define DEFAULT_GPS_START_FINISH_LONGITUDE 			0
-#define DEFAULT_GPS_START_FINISH_LATITUDE			0
-//currently in degrees. This is about a 73 foot diameter circle (in the pacific NW...)
-#define DEFAULT_GPS_START_FINISH_RADIUS				0.0001
 
+//currently in degrees. This is about a 73 foot diameter circle (in the pacific NW...)
+#define DEFAULT_GPS_TARGET_CONFIG {0,0, 0.0001}
 #define DEFAULT_LAP_COUNT_CONFIG {"LapCount", "", SAMPLE_DISABLED}
 #define DEFAULT_LAP_TIME_CONFIG {"LapTime", "seconds", SAMPLE_DISABLED}
-#define DEFAULT_GPS_QUAL_CONFIG {"GpsQual", "", SAMPLE_DISABLED}
+#define DEFAULT_SPLIT_TIME_CONFIG {"SplitTime", "seconds", SAMPLE_DISABLED}
 #define DEFAULT_GPS_SATELLITES_CONFIG {"GpsSats", "", SAMPLE_DISABLED}
-#define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "Deg", SAMPLE_1Hz}
-#define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "Deg", SAMPLE_1Hz}
+#define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "Deg", SAMPLE_10Hz}
+#define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "Deg", SAMPLE_10Hz}
 #define DEFAULT_GPS_TIME_CONFIG {"Time", "Time", SAMPLE_1Hz}
-#define DEFAULT_GPS_SPEED_CONFIG {"Speed", "MPH", SAMPLE_5Hz}
+#define DEFAULT_GPS_SPEED_CONFIG {"Speed", "MPH", SAMPLE_10Hz}
 
 #define DEFAULT_GPS_CONFIG {CONFIG_FEATURE_INSTALLED, \
-							DEFAULT_GPS_START_FINISH_LATITUDE, \
-							DEFAULT_GPS_START_FINISH_LONGITUDE, \
-							DEFAULT_GPS_START_FINISH_RADIUS, \
+							DEFAULT_GPS_TARGET_CONFIG, \
+							DEFAULT_GPS_TARGET_CONFIG, \
 							DEFAULT_LAP_COUNT_CONFIG, \
 							DEFAULT_LAP_TIME_CONFIG, \
-							DEFAULT_GPS_QUAL_CONFIG, \
+							DEFAULT_SPLIT_TIME_CONFIG, \
 							DEFAULT_GPS_SATELLITES_CONFIG, \
 							DEFAULT_GPS_LATITUDE_CONFIG, \
 							DEFAULT_GPS_LONGITUDE_CONFIG, \

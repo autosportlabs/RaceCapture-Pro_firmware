@@ -25,6 +25,23 @@ Instructions:
 
 Firmware Changelog:
 
+===1.1.5===
+removed gps quality field
+added split time configuration, detection and logging field
+fixed usb comm race issue
+
+===1.1.3===
+Fixed lua binding range check issues
+
+===1.1.2===
+Fixed accelerometer calibration issues
+
+===1.1.1===
+* changed to use new bootloader. install bootloader using SAM-BA then use bootloader to flash
+  RaceCapture/Pro firmware
+* Fixed SD card compatibility issue
+* added metadata in header for CSV file format
+
 ===0.4.0===
 * added bluetooth module telemetry/connectivity
 * fixed yaw sensor calibration

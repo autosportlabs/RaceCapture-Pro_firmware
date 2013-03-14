@@ -80,9 +80,9 @@ void initSampleRecord(LoggerConfig *loggerConfig,SampleRecord *sr){
 		s->intValue = NIL_SAMPLE;
 	}
 	{
-		ChannelSample *s = &(sr->GPS_QualitySample);
-		s->precision = DEFAULT_GPS_QUALITY_LOGGING_PRECISION;
-		s->channelConfig =  &(loggerConfig->GPSConfig.qualityCfg);
+		ChannelSample *s = &(sr->GPS_SplitTimeSample);
+		s->precision = DEFAULT_LAP_TIME_LOGGING_PRECISION;
+		s->channelConfig =  &(loggerConfig->GPSConfig.splitTimeCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{

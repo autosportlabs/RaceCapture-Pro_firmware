@@ -312,7 +312,10 @@ void calibrateAccelZero(){
 
 	for (int i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
 		AccelConfig * c = getAccelConfigChannel(i);
-		c->zeroValue = getLastAccelRead(c->accelChannel);  //we map the logical channel to the physical
+		unsigned long zeroValue = getLastAccelRead(c->accelChannel);
+		//adjust for gravity
+		if (c->accelChannel == ACCEL_CHANNEL_Z) zeroValue-= (ACCEL_COUNTS_PER_G * (c->mode != MODE_ACCEL_INVERTED ? 1 : -1));
+		c->zeroValue = zeroValue;
 	}
 }
 

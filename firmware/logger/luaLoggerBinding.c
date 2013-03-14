@@ -117,9 +117,6 @@ void registerLuaLoggerBindings(){
 	
 	lua_registerlight(L,"setGpsStartFinish",Lua_SetGPSStartFinish);
 	lua_registerlight(L,"getGpsStartFinish",Lua_GetGPSStartFinish);
-
-	lua_registerlight(L,"setGpsQualityLabel", Lua_SetGPSQualityLabel);
-	lua_registerlight(L,"getGpsQualityLabel", Lua_GetGPSQualityLabel);
 	
 	lua_registerlight(L,"setGpsSatsLabel", Lua_SetGPSSatsLabel);
 	lua_registerlight(L,"getGpsSatsLabel", Lua_GetGPSSatsLabel);
@@ -524,8 +521,8 @@ int Lua_GetGPIOSampleRate(lua_State *L){
 
 int Lua_SetGPIOConfig(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		int channel = lua_tointeger(L,1) - 1 ;
-		if (channel >= 0 && channel <= 2){//1 based
+		int channel = lua_tointeger(L,1);
+		if (channel >= 0 && channel <= 2){
 			GPIOConfig *c = getGPIOConfigChannel(channel);
 			//0= configure as input, 1=configure as output
 			if (NULL != c) c->mode = filterGpioMode(lua_tointeger(L,2));
@@ -537,7 +534,7 @@ int Lua_SetGPIOConfig(lua_State *L){
 
 int Lua_GetGPIOConfig(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		int channel = lua_tointeger(L,1) - 1;
+		int channel = lua_tointeger(L,1);
 		if (channel >= 0 && channel <= 2){
 			GPIOConfig *c = getGPIOConfigChannel(channel);
 			if (NULL !=c){
@@ -565,31 +562,47 @@ int Lua_GetGPSInstalled(lua_State *L){
 int Lua_SetGPSStartFinish(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfig);
-		c->startFinishLatitude = lua_tonumber(L,1);
-		c->startFinishLongitude = lua_tonumber(L,2);
-		if (lua_gettop(L) >=3) c->startFinishRadius = lua_tonumber(L,3);
+		c->startFinishConfig.latitude = lua_tonumber(L,1);
+		c->startFinishConfig.longitude = lua_tonumber(L,2);
+		if (lua_gettop(L) >=3) c->startFinishConfig.targetRadius = lua_tonumber(L,3);
 	}
 	return 0;
 }
 
 int Lua_GetGPSStartFinish(lua_State *L){
 	GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfig);
-	lua_pushnumber(L,c->startFinishLatitude);
-	lua_pushnumber(L,c->startFinishLongitude);
-	lua_pushnumber(L,c->startFinishRadius);
+	lua_pushnumber(L,c->startFinishConfig.latitude);
+	lua_pushnumber(L,c->startFinishConfig.longitude);
+	lua_pushnumber(L,c->startFinishConfig.targetRadius);
 	return 3;
 }
 
-int Lua_SetGPSQualityLabel(lua_State *L){
-	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.qualityCfg.label,lua_tostring(L,1));
+int Lua_GetGPSAtStartFinish(lua_State *L){
+	lua_pushinteger(L,getAtStartFinish());
+	return 1;
+}
+
+int Lua_SetSplit(lua_State *L){
+	if (lua_gettop(L) >= 2){
+		GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfig);
+		c->splitConfig.latitude = lua_tonumber(L,1);
+		c->splitConfig.longitude = lua_tonumber(L,2);
+		if (lua_gettop(L) >=3) c->splitConfig.targetRadius = lua_tonumber(L,3);
 	}
 	return 0;
 }
 
-int Lua_GetGPSQualityLabel(lua_State *L){
-	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.qualityCfg.label);
-	return 1;	
+int Lua_GetSplit(lua_State *L){
+	GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfig);
+	lua_pushnumber(L,c->splitConfig.latitude);
+	lua_pushnumber(L,c->splitConfig.longitude);
+	lua_pushnumber(L,c->splitConfig.targetRadius);
+	return 3;
+}
+
+int Lua_GetAtSplit(lua_State *L){
+	lua_pushinteger(L,getAtSplit());
+	return 1;
 }
 
 int Lua_SetGPSSatsLabel(lua_State *L){
@@ -1165,10 +1178,6 @@ int Lua_GetGPSSecondsSinceMidnight(lua_State *L){
 	return 1;
 }
 
-int Lua_GetGPSAtStartFinish(lua_State *L){
-	lua_pushinteger(L,getAtStartFinish());
-	return 1;
-}
 
 int Lua_GetTimeDiff(lua_State *L){
 
@@ -1195,8 +1204,10 @@ int Lua_ReadAccelerometer(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		if (channel >= ACCELEROMETER_CHANNEL_MIN && channel <= ACCELEROMETER_CHANNEL_MAX){
-			float g = convertAccelRawToG(readAccelChannel(channel),DEFAULT_ACCEL_ZERO);
-			lua_pushnumber(L,g);
+			unsigned long zeroValue = getWorkingLoggerConfig()->AccelConfigs[channel].zeroValue;
+			unsigned int rawValue = readAccelChannel(channel);
+			float value = (channel == ACCEL_CHANNEL_ZT ? convertYawRawToDegreesPerSec(rawValue, zeroValue) : convertAccelRawToG(rawValue, zeroValue));
+			lua_pushnumber(L,value);
 			return 1;
 		}
 	}
@@ -1208,7 +1219,7 @@ int Lua_ReadAccelerometerRaw(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		if (channel >= ACCELEROMETER_CHANNEL_MIN && channel <= ACCELEROMETER_CHANNEL_MAX){
-			int accelValue =  readAccelChannel(channel);
+			int accelValue =  readAccelerometerDevice(channel);
 			lua_pushinteger(L,accelValue);
 			return 1;
 		}
