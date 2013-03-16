@@ -28,6 +28,28 @@ static int writeAuthJSON(const char *deviceId){
 	return -1;
 }
 
+static void writeTelemetryMeta(SampleRecord *sampleRecord){
+	putsCell("{\"meta\":{");
+
+	int fieldCount = 0;
+	putsCell("\"channels\":[");
+	for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
+		ChannelSample * sample = &(sampleRecord->Samples[i]);
+		ChannelConfig * channelConfig = sample->channelConfig;
+		if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
+		if (fieldCount++ > 0) putcCell(',');
+		putsCell("{\"name\":");
+		putQuotedStringCell(channelConfig->label);
+		if (strlen(channelConfig->units) > 0){
+			putsCell(",\"units\":");
+			putQuotedStringCell(channelConfig->units);
+		}
+		putcCell('}');
+	}
+	putsCell("]}");
+	putsCell("}\n");
+}
+
 static void writeSampleRecordJSON(SampleRecord * sampleRecord, uint32_t sampleTick){
 
 	//check for closed connection
@@ -93,6 +115,7 @@ void cellTelemetryTask(void *params){
 					if( 0 == connectNet(loggerConfig->LoggerOutputConfig.telemetryServerHost,"8080",0) &&
 						0 == writeAuthJSON(loggerConfig->LoggerOutputConfig.telemetryDeviceId)){
 							g_telemetryActive = 1;
+							writeTelemetryMeta(sr);
 						}
 						else{
 							break;
