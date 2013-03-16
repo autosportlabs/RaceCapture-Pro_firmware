@@ -85,7 +85,7 @@ static void writeGPSChannels(SampleRecord *sampleRecord, portTickType currentTic
 	{
 		portTickType sr = config->splitTimeCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->GPS_SplitTimeSample.intValue = getLastSplitTime();
+			if ((currentTicks % sr) == 0) sampleRecord->GPS_SplitTimeSample.floatValue = getLastSplitTime();
 		}
 	}
 
