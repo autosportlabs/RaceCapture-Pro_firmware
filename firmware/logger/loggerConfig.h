@@ -251,7 +251,7 @@ typedef struct _GPSConfig{
 #define DEFAULT_GPS_SATELLITES_LOGGING_PRECISION 	0
 
 //currently in degrees. This is about a 73 foot diameter circle (in the pacific NW...)
-#define DEFAULT_GPS_TARGET_CONFIG {0,0, 0.0001}
+#define DEFAULT_GPS_TARGET_CONFIG {0,0, 0.0004}
 #define DEFAULT_LAP_COUNT_CONFIG {"LapCount", "", SAMPLE_DISABLED}
 #define DEFAULT_LAP_TIME_CONFIG {"LapTime", "seconds", SAMPLE_DISABLED}
 #define DEFAULT_SPLIT_TIME_CONFIG {"SplitTime", "seconds", SAMPLE_DISABLED}
@@ -303,7 +303,7 @@ typedef struct _LoggerOutputConfig {
 #define DEFAULT_LOGGER_OUTPUT_CONFIG { 	DEFAULT_TELEMETRY_MODE, \
 										DEFAULT_SD_LOGGING_MODE, \
 										"", \
-										"race-capture.com", \
+										"54.245.229.2", \
 										DEFAULT_P2P_DESTINATION_ADDR_HIGH, \
 										DEFAULT_P2P_DESTINATION_ADDR_LOW \
 										} //autosportlabs.com
