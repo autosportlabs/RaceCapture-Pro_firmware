@@ -60,6 +60,7 @@ Firmware Changelog:
 
 ===1.1.7===
 added metadata preamble to telemetry stream
+expanded default GPS target radius to 0.0004 degrees
 
 ===1.1.6===
 fixed bug in split time data logging (float vs int)
