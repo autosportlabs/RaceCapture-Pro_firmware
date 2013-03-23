@@ -7,8 +7,6 @@ http://www.atmel.com/tools/ATMELSAM-BAIN-SYSTEMPROGRAMMER.aspx
 
 There are alternate Linux tool available via 3rd parties.
 
-TODO: add links here
-
 The latest instructions can be found here:
 http://autosportlabs.net/RaceCapture/Pro_firmware_upgrade
 
