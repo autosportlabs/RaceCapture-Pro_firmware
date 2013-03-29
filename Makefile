@@ -440,13 +440,13 @@ gccversion :
 %.hex: %.elf
 	@echo
 	@echo $(MSG_FLASH) $@
-	$(OBJCOPY) -O $(FORMAT) $< $@
+	@$(OBJCOPY) -O $(FORMAT) $< $@
 	
 # Create final output file (.bin) from ELF output file.
 %.bin: %.elf
 	@echo
 	@echo $(MSG_FLASH) $@
-	$(OBJCOPY) -O $(FORMAT) $< $@
+	@$(OBJCOPY) -O $(FORMAT) $< $@
 
 
 # Create extended listing file from ELF output file.
@@ -461,7 +461,7 @@ gccversion :
 %.sym: %.elf
 	@echo
 	@echo $(MSG_SYMBOL_TABLE) $@
-	$(NM) -n $< > $@
+	@$(NM) -n $< > $@
 
 
 # Link: create ELF output file from object files.
@@ -470,32 +470,32 @@ gccversion :
 %.elf:  $(AOBJARM) $(AOBJ) $(COBJARM) $(COBJ) $(CPPOBJ) $(CPPOBJARM)
 	@echo
 	@echo $(MSG_LINKING) $@
-	$(CC) $(THUMB) $(ALL_CFLAGS) $(AOBJARM) $(AOBJ) $(COBJARM) $(COBJ) $(CPPOBJ) $(CPPOBJARM) --output $@ $(LDFLAGS)
+	@$(CC) $(THUMB) $(ALL_CFLAGS) $(AOBJARM) $(AOBJ) $(COBJARM) $(COBJ) $(CPPOBJ) $(CPPOBJARM) --output $@ $(LDFLAGS)
 #	$(CPP) $(THUMB) $(ALL_CFLAGS) $(AOBJARM) $(AOBJ) $(COBJARM) $(COBJ) $(CPPOBJ) $(CPPOBJARM) --output $@ $(LDFLAGS)
 
 # Compile: create object files from C source files. ARM/Thumb
 $(COBJ) : %.o : %.c
 	@echo
 	@echo $(MSG_COMPILING) $<
-	$(CC) -c $(THUMB) $(ALL_CFLAGS) $(CONLYFLAGS) $< -o $@ 
+	@$(CC) -c $(THUMB) $(ALL_CFLAGS) $(CONLYFLAGS) $< -o $@ 
 
 # Compile: create object files from C source files. ARM-only
 $(COBJARM) : %.o : %.c
 	@echo
 	@echo $(MSG_COMPILING_ARM) $<
-	$(CC) -c $(ALL_CFLAGS) $(CONLYFLAGS) $< -o $@ 
+	@$(CC) -c $(ALL_CFLAGS) $(CONLYFLAGS) $< -o $@ 
 
 # Compile: create object files from C++ source files. ARM/Thumb
 $(CPPOBJ) : %.o : %.cpp
 	@echo
 	@echo $(MSG_COMPILINGCPP) $<
-	$(CPP) -c $(THUMB) $(ALL_CFLAGS) $(CPPFLAGS) $< -o $@ 
+	@$(CPP) -c $(THUMB) $(ALL_CFLAGS) $(CPPFLAGS) $< -o $@ 
 
 # Compile: create object files from C++ source files. ARM-only
 $(CPPOBJARM) : %.o : %.cpp
 	@echo
 	@echo $(MSG_COMPILINGCPP_ARM) $<
-	$(CPP) -c $(ALL_CFLAGS) $(CPPFLAGS) $< -o $@ 
+	@$(CPP) -c $(ALL_CFLAGS) $(CPPFLAGS) $< -o $@ 
 
 
 # Compile: create assembler files from C source files. ARM/Thumb
@@ -508,14 +508,14 @@ $(CPPOBJARM) : %.o : %.cpp
 $(AOBJ) : %.o : %.S
 	@echo
 	@echo $(MSG_ASSEMBLING) $<
-	$(CC) -c $(THUMB) $(ALL_ASFLAGS) $< -o $@
+	@$(CC) -c $(THUMB) $(ALL_ASFLAGS) $< -o $@
 
 
 # Assemble: create object files from assembler source files. ARM-only
 $(AOBJARM) : %.o : %.S
 	@echo
 	@echo $(MSG_ASSEMBLING_ARM) $<
-	$(CC) -c $(ALL_ASFLAGS) $< -o $@
+	@$(CC) -c $(ALL_ASFLAGS) $< -o $@
 
 
 # Target: clean project.
