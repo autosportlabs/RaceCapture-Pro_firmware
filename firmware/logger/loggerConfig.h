@@ -65,7 +65,7 @@ typedef struct _ADCConfig{
 #define DEFAULT_ADC4_CONFIG {{"Analog5","Units",SAMPLE_DISABLED},DEFAULT_ADC_LOGGING_PRECISION,0.0048875f,DEFAULT_SCALING_MODE,DEFAULT_SCALING_MAP}
 #define DEFAULT_ADC5_CONFIG {{"Analog6","Units",SAMPLE_DISABLED},DEFAULT_ADC_LOGGING_PRECISION,0.0048875f,DEFAULT_SCALING_MODE,DEFAULT_SCALING_MAP}
 #define DEFAULT_ADC6_CONFIG {{"Analog7","Units",SAMPLE_DISABLED},DEFAULT_ADC_LOGGING_PRECISION,0.0048875f,DEFAULT_SCALING_MODE,DEFAULT_SCALING_MAP}
-#define BATTERY_ADC7_CONFIG {{"Battery","Volts",SAMPLE_DISABLED},DEFAULT_ADC_LOGGING_PRECISION,0.01955f,DEFAULT_SCALING_MODE,DEFAULT_SCALING_MAP}
+#define BATTERY_ADC7_CONFIG {{"Battery","Volts",SAMPLE_DISABLED},DEFAULT_ADC_LOGGING_PRECISION,0.0171f,DEFAULT_SCALING_MODE,DEFAULT_SCALING_MAP}
 #define DEFAULT_ADC_CONFIGS \
 			{ \
 			DEFAULT_ADC0_CONFIG, \
@@ -187,7 +187,7 @@ typedef struct _PWMConfig{
 /// PWM frequency in Hz.
 #define MAX_PWM_CLOCK_FREQUENCY             2000
 #define MIN_PWM_CLOCK_FREQUENCY				10
-#define DEFAULT_PWM_CLOCK_FREQUENCY			100
+#define DEFAULT_PWM_CLOCK_FREQUENCY			10000
 
 /// Maximum duty cycle value.
 #define MAX_PWM_DUTY_CYCLE              	100
@@ -220,14 +220,19 @@ typedef struct _PWMConfig{
 				DEFAULT_PWM4_CONFIG, \
 			}
 			
+typedef struct _GPSTargetConfig{
+	float latitude;
+	float longitude;
+	float targetRadius;
+} GPSTargetConfig;
+
 typedef struct _GPSConfig{
 	char GPSInstalled;
-	float startFinishLatitude;
-	float startFinishLongitude;
-	float startFinishRadius;
+	GPSTargetConfig startFinishConfig;
+	GPSTargetConfig splitConfig;
 	ChannelConfig lapCountCfg;
 	ChannelConfig lapTimeCfg;
-	ChannelConfig qualityCfg;
+	ChannelConfig splitTimeCfg;
 	ChannelConfig satellitesCfg;
 	ChannelConfig latitudeCfg;
 	ChannelConfig longitudeCfg;
@@ -244,14 +249,12 @@ typedef struct _GPSConfig{
 #define DEFAULT_LAP_TIME_LOGGING_PRECISION			3
 #define	DEFAULT_GPS_QUALITY_LOGGING_PRECISION 		0
 #define DEFAULT_GPS_SATELLITES_LOGGING_PRECISION 	0
-#define DEFAULT_GPS_START_FINISH_LONGITUDE 			0
-#define DEFAULT_GPS_START_FINISH_LATITUDE			0
-//currently in degrees. This is about a 73 foot diameter circle (in the pacific NW...)
-#define DEFAULT_GPS_START_FINISH_RADIUS				0.0001
 
+//currently in degrees. This is about a 73 foot diameter circle (in the pacific NW...)
+#define DEFAULT_GPS_TARGET_CONFIG {0,0, 0.0004}
 #define DEFAULT_LAP_COUNT_CONFIG {"LapCount", "", SAMPLE_DISABLED}
 #define DEFAULT_LAP_TIME_CONFIG {"LapTime", "seconds", SAMPLE_DISABLED}
-#define DEFAULT_GPS_QUAL_CONFIG {"GpsQual", "", SAMPLE_DISABLED}
+#define DEFAULT_SPLIT_TIME_CONFIG {"SplitTime", "seconds", SAMPLE_DISABLED}
 #define DEFAULT_GPS_SATELLITES_CONFIG {"GpsSats", "", SAMPLE_DISABLED}
 #define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "Deg", SAMPLE_10Hz}
 #define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "Deg", SAMPLE_10Hz}
@@ -259,12 +262,11 @@ typedef struct _GPSConfig{
 #define DEFAULT_GPS_SPEED_CONFIG {"Speed", "MPH", SAMPLE_10Hz}
 
 #define DEFAULT_GPS_CONFIG {CONFIG_FEATURE_INSTALLED, \
-							DEFAULT_GPS_START_FINISH_LATITUDE, \
-							DEFAULT_GPS_START_FINISH_LONGITUDE, \
-							DEFAULT_GPS_START_FINISH_RADIUS, \
+							DEFAULT_GPS_TARGET_CONFIG, \
+							DEFAULT_GPS_TARGET_CONFIG, \
 							DEFAULT_LAP_COUNT_CONFIG, \
 							DEFAULT_LAP_TIME_CONFIG, \
-							DEFAULT_GPS_QUAL_CONFIG, \
+							DEFAULT_SPLIT_TIME_CONFIG, \
 							DEFAULT_GPS_SATELLITES_CONFIG, \
 							DEFAULT_GPS_LATITUDE_CONFIG, \
 							DEFAULT_GPS_LONGITUDE_CONFIG, \
@@ -301,7 +303,7 @@ typedef struct _LoggerOutputConfig {
 #define DEFAULT_LOGGER_OUTPUT_CONFIG { 	DEFAULT_TELEMETRY_MODE, \
 										DEFAULT_SD_LOGGING_MODE, \
 										"", \
-										"race-capture.com", \
+										"54.245.229.2", \
 										DEFAULT_P2P_DESTINATION_ADDR_HIGH, \
 										DEFAULT_P2P_DESTINATION_ADDR_LOW \
 										} //autosportlabs.com
