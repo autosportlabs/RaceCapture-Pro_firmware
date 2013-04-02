@@ -1,7 +1,8 @@
 #include "cellModem.h"
 #include "usart.h"
-#include <string.h>
+#include "serial.h"
 #include "modp_numtoa.h"
+#include "mod_string.h"
 
 #define min(a,b) ((a)<(b)?(a):(b))
 
@@ -21,11 +22,12 @@ char g_latestTextMsg[200];
 
 static int readModemWait(portTickType delay){
 #ifdef DEBUG
-	SendString("Read:");
+	Serial * s = get_serial_usb();
+	s->put_s("Read:");
 #endif
 	int c = usart0_readLineWait(g_cellBuffer, sizeof(g_cellBuffer),delay);
 #ifdef DEBUG
-	SendString(g_cellBuffer);
+	s->put_s(g_cellBuffer);
 #endif
 	return c;
 }
@@ -37,14 +39,19 @@ static int readModem(void){
 static int putsModem(const char *s){
 	int c = usart0_puts(s);
 #ifdef DEBUG
-	SendString("Write: ");
-	SendString(s);
-	SendCrlf();
+	Serial * serial = get_serial_usb();
+	serial->put_s("Write: ");
+	serial->put_s(s);
+	put_crlf(serial);
 #endif
 	return c;
 }
 
-int putcCell(char c){
+int putcModem(char c){
+#ifdef DEBUG
+	Serial *serial = get_serial_usb();
+	serial->put_c(c);
+#endif
 	usart0_putchar(c);
 	return 0;
 }
@@ -151,7 +158,7 @@ int startNetData(){
 }
 
 int endNetData(){
-	putcCell(26);
+	putcModem(26);
 	while (1){
 		readModemWait(READ_TIMEOUT);
 		if (strncmp(g_cellBuffer,"DATA ACCEPT",7) == 0) return 0;
@@ -188,9 +195,9 @@ void putFloatCell(float num, int precision){
 }
 
 void putQuotedStringCell(char *s){
-	usart0_putchar('"');
-	usart0_puts(s);
-	usart0_putchar('"');
+	putcModem('"');
+	putsCell(s);
+	putcModem('"');
 }
 
 int isNetConnectionErrorOrClosed(){
@@ -295,7 +302,7 @@ int sendText(const char * number, const char * msg){
 	putsModem(number);
 	putsModem("\"\r");
 	putsModem(msg);
-	putcCell(26);
+	putcModem(26);
 	readModem();
 	readModem();
 	readModem();

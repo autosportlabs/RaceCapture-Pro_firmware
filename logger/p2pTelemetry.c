@@ -5,8 +5,8 @@
  *      Author: brent
  */
 #include "p2pTelemetry.h"
-#include <string.h>
 #include "modp_numtoa.h"
+#include "mod_string.h"
 #include "usart.h"
 
 #define DEFAULT_DESTINATION_ADDRESS				0x000000000000FFFF
@@ -155,6 +155,7 @@ static void writeSampleRecordBinary(SampleRecord * sampleRecord, uint32_t sample
 
 void p2pTelemetryTask(void *params){
 
+	initUsart0(USART_MODE_8N1, 115200);
 	xQueueHandle sampleRecordQueue = (xQueueHandle)params;
 	SampleRecord *sr = NULL;
 	uint32_t sampleTick = 0;
@@ -168,7 +169,6 @@ void p2pTelemetryTask(void *params){
 			writeSampleRecordBinary(NULL,sampleTick);
 		}
 		else{
-			//ToggleLED(LED3);
 			if (NULL != sr && 0 == g_telemetryActive){
 				g_telemetryActive = 1;
 				initTxFrame(&g_xBeeFrame);

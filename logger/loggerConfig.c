@@ -117,8 +117,8 @@ char filterTelemetryMode(char mode){
 		case TELEMETRY_MODE_BLUETOOTH:
 			return TELEMETRY_MODE_BLUETOOTH;
 		default:
-		case TELEMETRY_MODE_DISABLED:
-			return TELEMETRY_MODE_DISABLED;
+		case TELEMETRY_MODE_CONSOLE:
+			return TELEMETRY_MODE_CONSOLE;
 	}
 }
 
