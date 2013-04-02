@@ -25,7 +25,6 @@
 #include "sdcard.h"
 #include "gps.h"
 #include "loggerConfig.h"
-#include "raceTask.h"
 #include "loggerCommands.h"
 #include "sdcard.h"
 
@@ -49,7 +48,7 @@
 #define TC_CLKS_MCK1024          0x4
 
 /* Priorities for the demo application tasks. */
-#define USB_COMM_TASK_PRIORITY				( tskIDLE_PRIORITY + 1 )
+#define USB_COMM_TASK_PRIORITY				( tskIDLE_PRIORITY + 2 )
 #define mainUSB_PRIORITY					( tskIDLE_PRIORITY + 2 )
 
 #define mainUSB_TASK_STACK					( 100 )

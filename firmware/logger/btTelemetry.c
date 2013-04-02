@@ -1,8 +1,8 @@
 #include "btTelemetry.h"
 #include "task.h"
 #include "modp_numtoa.h"
+#include "mod_string.h"
 #include "loggerHardware.h"
-#include <string.h>
 #include "usart.h"
 
 //#define DEBUG
