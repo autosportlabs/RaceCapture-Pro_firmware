@@ -1,6 +1,6 @@
 #include "accelerometer.h"
 #include "loggerConfig.h"
-#include <string.h>
+#include <mod_string.h>
 
 #define SPI_CSR_NUM      2
 

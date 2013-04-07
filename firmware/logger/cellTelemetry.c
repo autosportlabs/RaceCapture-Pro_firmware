@@ -5,7 +5,7 @@
 #include "loggerHardware.h"
 #include "loggerConfig.h"
 #include "usart.h"
-#include <string.h>
+#include "mod_string.h"
 
 static int g_telemetryActive;
 #define IDLE_TIMEOUT							configTICK_RATE_HZ / 1
