@@ -14,7 +14,7 @@ extern const cmd_t g_loggerCommands[];
 
 #define LOGGER_COMMANDS \
 {"sample", "Gets a single sample of the currently enabled channels","",SampleData}, \
-{"testSD", "Test Write to SD card.","<lineWrites>", TestSD}, \
+{"testSD", "Test Write to SD card.","<lineWrites> <periodicFlush> <quietMode>", TestSD}, \
 {"flashLoggerCfg", "Write the active Logger Configuration to flash.","", FlashLoggerConfig}, \
 \
 {"getOutputCfg", "Gets the Output Configuration","",GetLoggerOutputConfig}, \
