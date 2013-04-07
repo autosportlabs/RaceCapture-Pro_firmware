@@ -38,6 +38,10 @@ sleep 10
 poll 
 
 flash probe 0 
-flash write_bank 0 main.bin 0x0 
+
+flash write_image erase unlock main.elf
+sleep 10
+verify_image main.elf
+
 sleep 10
 gdb_breakpoint_override hard
