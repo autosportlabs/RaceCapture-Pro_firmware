@@ -7,7 +7,7 @@
 
 void createDiskTimerTask();
 void diskTimerTask(void *params);
-void TestSDWrite(Serial *serial, int lines,int doFlush);
+void TestSDWrite(Serial *serial, int lines,int doFlush, int quiet);
 void InitFSHardware(void);
 int InitFS();
 int UnmountFS();
