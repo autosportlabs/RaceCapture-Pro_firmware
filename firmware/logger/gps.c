@@ -9,8 +9,6 @@
 #include "modp_atonum.h"
 #include "geometry.h"
 
-#include <string.h>
-
 #define GPS_DATA_LINE_BUFFER_LEN 	200
 #define GPS_TASK_PRIORITY 			( tskIDLE_PRIORITY + 2 )
 #define GPS_TASK_STACK_SIZE			100
