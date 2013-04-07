@@ -13,10 +13,10 @@
 #include "loggerHardware.h"
 #include "loggerConfig.h"
 #include "usart.h"
-#include "string.h"
 #include "p2pTelemetry.h"
 #include "cellTelemetry.h"
 #include "btTelemetry.h"
+#include "consoleConnectivity.h"
 
 static xQueueHandle g_sampleRecordQueue = NULL;
 
@@ -25,7 +25,7 @@ static xQueueHandle g_sampleRecordQueue = NULL;
 //#define TELEMETRY_QUEUE_WAIT_TIME					portMAX_DELAY
 
 #define TELEMETRY_TASK_PRIORITY					( tskIDLE_PRIORITY + 4 )
-#define TELEMETRY_STACK_SIZE  					200
+#define TELEMETRY_STACK_SIZE  					1000
 #define SAMPLE_RECORD_QUEUE_SIZE				10
 
 
@@ -40,8 +40,6 @@ portBASE_TYPE queueTelemetryRecord(SampleRecord * sr){
 
 void createTelemetryTask(){
 
-	initUsart0(USART_MODE_8N1, 115200);
-
 	g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( SampleRecord *));
 	if (NULL == g_sampleRecordQueue){
 		//TODO log error
@@ -49,7 +47,8 @@ void createTelemetryTask(){
 	}
 
 	switch(getWorkingLoggerConfig()->LoggerOutputConfig.telemetryMode){
-		case TELEMETRY_MODE_DISABLED:
+		case TELEMETRY_MODE_CONSOLE:
+			xTaskCreate( consoleConnectivityTask, ( signed portCHAR * ) "connectivity", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
 			break;
 		case TELEMETRY_MODE_CELL:
 			xTaskCreate( cellTelemetryTask, ( signed portCHAR * ) "telemetry", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );

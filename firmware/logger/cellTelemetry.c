@@ -4,7 +4,8 @@
 #include "modp_numtoa.h"
 #include "loggerHardware.h"
 #include "loggerConfig.h"
-#include <string.h>
+#include "usart.h"
+#include "mod_string.h"
 
 static int g_telemetryActive;
 #define IDLE_TIMEOUT							configTICK_RATE_HZ / 1
@@ -37,14 +38,14 @@ static void writeTelemetryMeta(SampleRecord *sampleRecord){
 		ChannelSample * sample = &(sampleRecord->Samples[i]);
 		ChannelConfig * channelConfig = sample->channelConfig;
 		if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
-		if (fieldCount++ > 0) putcCell(',');
+		if (fieldCount++ > 0) putcModem(',');
 		putsCell("{\"name\":");
 		putQuotedStringCell(channelConfig->label);
 		if (strlen(channelConfig->units) > 0){
 			putsCell(",\"units\":");
 			putQuotedStringCell(channelConfig->units);
 		}
-		putcCell('}');
+		putcModem('}');
 	}
 	putsCell("]}");
 	putsCell("}\n");
@@ -58,7 +59,7 @@ static void writeSampleRecordJSON(SampleRecord * sampleRecord, uint32_t sampleTi
 	int fieldCount = 0;
 	putsCell("\"tick\":");
 	putUintCell(sampleTick);
-	putcCell(',');
+	putcModem(',');
 	for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
 		ChannelSample * sample = &(sampleRecord->Samples[i]);
 		ChannelConfig * channelConfig = sample->channelConfig;
@@ -67,10 +68,10 @@ static void writeSampleRecordJSON(SampleRecord * sampleRecord, uint32_t sampleTi
 
 		if (sample->intValue == NIL_SAMPLE) continue;
 
-		if (fieldCount++ > 0) putcCell(',');
+		if (fieldCount++ > 0) putcModem(',');
 
 		putQuotedStringCell(channelConfig->label);
-		putcCell(':');
+		putcModem(':');
 		int precision = sample->precision;
 		if (precision > 0){
 			putFloatCell(sample->floatValue,precision);
@@ -83,6 +84,8 @@ static void writeSampleRecordJSON(SampleRecord * sampleRecord, uint32_t sampleTi
 }
 
 void cellTelemetryTask(void *params){
+
+	initUsart0(USART_MODE_8N1, 115200);
 
 	xQueueHandle sampleRecordQueue = (xQueueHandle)params;
 	SampleRecord *sr = NULL;

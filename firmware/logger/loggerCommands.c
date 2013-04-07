@@ -5,7 +5,7 @@
  *      Author: brent
  */
 #include <stddef.h>
-#include <string.h>
+#include "mod_string.h"
 #include "loggerCommands.h"
 #include "modp_numtoa.h"
 #include "modp_atonum.h"
@@ -43,9 +43,11 @@ void TestSD(Serial *serial, unsigned int argc, char **argv){
 
 	int lines = 1;
 	int doFlush = 0;
+	int quiet = 0;
 	if (argc > 1) lines = modp_atoi(argv[1]);
 	if (argc > 2) doFlush = modp_atoi(argv[2]);
-	TestSDWrite(serial, lines,doFlush);
+	if (argc > 3) quiet = modp_atoi(argv[3]);
+	TestSDWrite(serial, lines,doFlush, quiet);
 }
 
 void FlashLoggerConfig(Serial *serial, unsigned int argc, char **argv){

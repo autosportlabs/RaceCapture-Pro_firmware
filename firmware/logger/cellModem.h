@@ -17,7 +17,7 @@ int startUdpData();
 int startNetData();
 int endNetData();
 const char * readsCell(portTickType timeout);
-int putcCell(char c);
+int putcModem(char c);
 int putsCell(const char *data);
 void putQuotedStringCell(char *s);
 void putUintCell(uint32_t num);
