@@ -56,6 +56,13 @@ Once the firmware completes flashing, RaceCapture/Pro will reset and run normall
 
 Firmware Changelog:
 
+===1.1.8===
+PWM fixes (logical -> hardware channel mapping was wrong) and general refactoring
+Various changes to support testability
+Fixed up modp_ftoa temporarily to deal with overflow condition (0xDEADBEEF)
+Added lua garbage collect before processing interactive command
+
+
 ===1.1.7===
 added metadata preamble to telemetry stream
 expanded default GPS target radius to 0.0004 degrees
