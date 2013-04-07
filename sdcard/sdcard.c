@@ -1,5 +1,5 @@
 #include "sdcard.h"
-#include "string.h"
+#include "mod_string.h"
 #include "modp_numtoa.h"
 #include "FreeRTOS.h"
 #include "task.h"

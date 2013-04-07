@@ -12,7 +12,7 @@
 #include "accelerometer.h"
 #include "luaScript.h"
 #include "luaTask.h"
-#include <string.h>
+#include "mod_string.h"
 #include "usart.h"
 
 extern xSemaphoreHandle g_xLoggerStart;

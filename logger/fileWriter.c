@@ -12,7 +12,7 @@
 #include "sampleRecord.h"
 #include "loggerHardware.h"
 #include "taskUtil.h"
-#include <string.h>
+#include "mod_string.h"
 
 static int g_writingActive;
 static FIL g_logfile;

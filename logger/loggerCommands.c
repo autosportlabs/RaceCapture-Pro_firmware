@@ -5,7 +5,7 @@
  *      Author: brent
  */
 #include <stddef.h>
-#include <string.h>
+#include "mod_string.h"
 #include "loggerCommands.h"
 #include "modp_numtoa.h"
 #include "modp_atonum.h"
