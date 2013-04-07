@@ -62,7 +62,6 @@ unsigned int readADC(unsigned int channel);
 
 //PWM Channel Functions
 void InitPWM(LoggerConfig *loggerConfig);
-void EnablePWMChannel(unsigned int channel, PWMConfig *config);
 
 void StartPWM(unsigned int pwmChannel);
 void StartAllPWM();
@@ -70,37 +69,34 @@ void StartAllPWM();
 void StopPWM(unsigned int pwmChannel);
 void StopAllPWM();
 
-
-//Configure PWM clock
-void PWM_ConfigureClocks
-    (unsigned int clka,
-     unsigned int clkb,
-     unsigned int mck);
-     
-//Retrieve PWM clock configuration
-unsigned short PWM_GetClockConfiguration(
-    unsigned int frequency,
-    unsigned int mck);
-
 //Set PWM period for specified channel
 void PWM_SetPeriod(	unsigned int channel, unsigned short period);
 
 unsigned short PWM_GetPeriod(unsigned int channel);
-
-//Configure PWM channel
-void PWM_ConfigureChannel(
-    unsigned char channel,
-    unsigned int prescaler,
-    unsigned int alignment,
-    unsigned int polarity);
 
 //Set PWM duty cycle for specified channel
 void PWM_SetDutyCycle(unsigned int channel,	unsigned short duty);
 
 unsigned short PWM_GetDutyCycle(unsigned int channel);
 
-//Enable PWM channel
-void PWM_EnableChannel(unsigned int channel);
+//Configure PWM clock
+//void PWM_ConfigureClocks
+//    (unsigned int clka,
+//     unsigned int clkb,
+//     unsigned int mck);
+
+//Retrieve PWM clock configuration
+//unsigned short PWM_GetClockConfiguration(
+//    unsigned int frequency,
+//    unsigned int mck);
+
+//Configure PWM channel
+//void PWM_ConfigureChannel(
+//    unsigned char channel,
+//    unsigned int prescaler,
+//    unsigned int alignment,
+//    unsigned int polarity);
+
 
 void initTimerChannels(LoggerConfig *loggerConfig);	
 void initTimer0(TimerConfig *timerConfig);
