@@ -4,3 +4,7 @@
 [submodule "firmware/SAM7s_lua"]
 	path = firmware/SAM7s_lua
 	url = git@github.com:autosportlabs/SAM7s_lua_private.git
+[submodule "firmware/test/support/CppUTest"]
+	path = firmware/test/support/CppUTest
+	url = git@github.com:autosportlabs/CppUTest.git
+
