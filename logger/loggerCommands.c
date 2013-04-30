@@ -313,7 +313,7 @@ void SetTimerConfig(Serial *serial, unsigned int argc, char **argv){
 			c->calculatedScaling = modp_atoi(argv[10]);
 		}
 		else{
-			calculateTimerScaling(c);
+			calculateTimerScaling(BOARD_MCK, c);
 		}
 		put_commandOK(serial);
 	}

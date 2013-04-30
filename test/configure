@@ -2308,7 +2308,7 @@ fi
 
 # Define the identity of the package.
 
- PACKAGE=money
+ PACKAGE=RCPTests
  VERSION=0.1
 
 

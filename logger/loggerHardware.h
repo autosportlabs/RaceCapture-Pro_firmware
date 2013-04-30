@@ -117,5 +117,9 @@ inline unsigned int calculateFrequencyHz(unsigned int timerTicks, unsigned int s
 inline unsigned int calculatePeriodMs(unsigned int timerTicks, unsigned int scaling);
 inline unsigned int calculatePeriodUsec(unsigned int timerTicks, unsigned int scaling);
 
+void calibrateAccelZero();
+
+int flashLoggerConfig();
+
 
 #endif /*LOGGERHARDWARE_H_*/

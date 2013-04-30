@@ -6,14 +6,14 @@
 class NumtoaTest : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE( NumtoaTest );
-  CPPUNIT_TEST( testConversion );
+  CPPUNIT_TEST( testDoubleConversion );
   CPPUNIT_TEST_SUITE_END();
 
 public:
   void setUp();
   void tearDown();
 
-  void testConversion();
+  void testDoubleConversion();
 };
 
 #endif  // MONEYTEST_H
