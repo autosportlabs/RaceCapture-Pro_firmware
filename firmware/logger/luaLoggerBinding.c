@@ -465,7 +465,7 @@ int Lua_GetTimerDivider(lua_State *L){
 int Lua_CalculateTimerScaling(lua_State *L){
 	if (lua_gettop(L) >=1 ){
 		TimerConfig * c= getTimerConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) calculateTimerScaling(c);
+		if (NULL != c) calculateTimerScaling(BOARD_MCK, c);
 	}
 	return 0;
 }

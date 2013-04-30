@@ -1,27 +1,21 @@
 #include "loggerConfig.h"
-#include "accelerometer.h"
-#include "string.h"
-#include "memory.h"
-#include "AT91SAM7S256.h"
-#include "board.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "semphr.h"
-#include "FreeRTOSConfig.h"
+#include "mod_string.h"
 
-#define HIGHER_SAMPLE(X,Y) 					((X != SAMPLE_DISABLED && X < Y))
+#ifndef RCP_TESTING
+#include "memory.h"
+LoggerConfig g_savedLoggerConfig __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".text\n\t#"))) = DEFAULT_LOGGER_CONFIG;
+#else
+LoggerConfig g_savedLoggerConfig = DEFAULT_LOGGER_CONFIG;
+#endif
 
 LoggerConfig g_workingLoggerConfig;
-LoggerConfig g_savedLoggerConfig __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".text\n\t#"))) = DEFAULT_LOGGER_CONFIG;
+
+
+#define HIGHER_SAMPLE(X,Y) 					((X != SAMPLE_DISABLED && X < Y))
 
 
 void updateActiveLoggerConfig(){
 	memcpy(&g_workingLoggerConfig,&g_savedLoggerConfig,sizeof(LoggerConfig));
-}
-
-int flashLoggerConfig(){
-	return flashWriteRegion((void *)&g_savedLoggerConfig,(void *)&g_workingLoggerConfig, sizeof (LoggerConfig));
 }
 
 LoggerConfig * getSavedLoggerConfig(){
@@ -32,8 +26,8 @@ LoggerConfig * getWorkingLoggerConfig(){
 	return &g_workingLoggerConfig;
 }
 
-void calculateTimerScaling(TimerConfig *timerConfig){
-	unsigned int clock = BOARD_MCK / timerConfig->timerDivider;
+void calculateTimerScaling(unsigned int clockHz, TimerConfig *timerConfig){
+	unsigned int clock = clockHz / timerConfig->timerDivider;
 	clock = clock / timerConfig->pulsePerRevolution;
 	timerConfig->calculatedScaling = clock;
 }
@@ -301,25 +295,8 @@ void setLabelGeneric(char *dest, const char *source){
 	setTextField(dest, source, DEFAULT_LABEL_LENGTH);
 }
 
-void calibrateAccelZero(){
-	//fill the averaging buffer
-	int resample = ACCELEROMETER_BUFFER_SIZE;
-	while (resample-- > 0){
-		for (int i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
-			readAccelChannel(i);
-		}
-	}
 
-	for (int i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
-		AccelConfig * c = getAccelConfigChannel(i);
-		unsigned long zeroValue = getLastAccelRead(c->accelChannel);
-		//adjust for gravity
-		if (c->accelChannel == ACCEL_CHANNEL_Z) zeroValue-= (ACCEL_COUNTS_PER_G * (c->mode != MODE_ACCEL_INVERTED ? 1 : -1));
-		c->zeroValue = zeroValue;
-	}
-}
-
-int getHighestSampleRate(LoggerConfig *config){
+unsigned int getHighestSampleRate(LoggerConfig *config){
 
 	//start with the slowest sample rate
 	int s = SAMPLE_1Hz;
@@ -370,7 +347,7 @@ int getHighestSampleRate(LoggerConfig *config){
 			if HIGHER_SAMPLE(sr, s) s = sr;
 		}
 	}
-	return (portTickType)s;
+	return s;
 }
 
 

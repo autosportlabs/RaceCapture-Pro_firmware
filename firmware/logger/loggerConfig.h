@@ -1,7 +1,7 @@
 #ifndef LOGGERCONFIG_H_
 #define LOGGERCONFIG_H_
 
-#include "board.h"
+#define FLASH_PAGE_SIZE						((unsigned int) 256) // Internal FLASH Page Size: 256 bytes
 
 #define CONFIG_FEATURE_INSTALLED			1
 #define CONFIG_FEATURE_NOT_INSTALLED		0
@@ -326,7 +326,7 @@ typedef struct _LoggerConfig {
 	//Logger Output Configuration
 	LoggerOutputConfig LoggerOutputConfig;
 	//Padding data to accommodate flash routine
-	char padding_data[AT91C_IFLASH_PAGE_SIZE]; 
+	char padding_data[FLASH_PAGE_SIZE];
 } LoggerConfig;
 
 #define DEFAULT_LOGGER_CONFIG \
@@ -344,13 +344,12 @@ typedef struct _LoggerConfig {
 	}
 	
 
-int flashLoggerConfig();
 void updateActiveLoggerConfig();
 
 LoggerConfig * getSavedLoggerConfig();
 LoggerConfig * getWorkingLoggerConfig();
 
-void calculateTimerScaling(TimerConfig *timerConfig);
+void calculateTimerScaling(unsigned int clockHz, TimerConfig *timerConfig);
 
 int encodeSampleRate(int sampleRate);
 int decodeSampleRate(int sampleRateCode);
@@ -379,8 +378,7 @@ AccelConfig * getAccelConfigChannel(int channel);
 void setLabelGeneric(char *dest, const char *source);
 void setTextField(char *dest, const char *source, unsigned int maxlen);
 
-void calibrateAccelZero();
 
-int getHighestSampleRate(LoggerConfig *config);
+unsigned int getHighestSampleRate(LoggerConfig *config);
 
 #endif /*LOGGERCONFIG_H_*/

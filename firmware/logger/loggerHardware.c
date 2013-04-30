@@ -3,6 +3,7 @@
 #include "accelerometer.h"
 #include "sdcard.h"
 #include "constants.h"
+#include "memory.h"
 
 /* ADC field definition for the Mode Register: Reminder
                        TRGEN    => Selection bewteen Software or hardware start of conversion
@@ -764,3 +765,29 @@ inline unsigned int calculatePeriodMs(unsigned int timerTicks, unsigned int scal
 inline unsigned int calculatePeriodUsec(unsigned int timerTicks, unsigned int scaling){
 	return (timerTicks * 100000) / (scaling / 10);	
 }
+
+void calibrateAccelZero(){
+	//fill the averaging buffer
+	int resample = ACCELEROMETER_BUFFER_SIZE;
+	while (resample-- > 0){
+		for (int i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
+			readAccelChannel(i);
+		}
+	}
+
+	for (int i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
+		AccelConfig * c = getAccelConfigChannel(i);
+		unsigned long zeroValue = getLastAccelRead(c->accelChannel);
+		//adjust for gravity
+		if (c->accelChannel == ACCEL_CHANNEL_Z) zeroValue-= (ACCEL_COUNTS_PER_G * (c->mode != MODE_ACCEL_INVERTED ? 1 : -1));
+		c->zeroValue = zeroValue;
+	}
+}
+
+int flashLoggerConfig(){
+	void * savedLoggerConfig = getSavedLoggerConfig();
+	void * workingLoggerConfig = getWorkingLoggerConfig();
+
+	return flashWriteRegion(savedLoggerConfig, workingLoggerConfig, sizeof (LoggerConfig));
+}
+

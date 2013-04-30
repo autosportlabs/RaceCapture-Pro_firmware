@@ -63,8 +63,9 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__EXEEXT_1 = RCPTests$(EXEEXT)
-am_RCPTests_OBJECTS = RCPTests-numtoa_test.$(OBJEXT) \
-	RCPTests-RCPTest.$(OBJEXT)
+am_RCPTests_OBJECTS = RCPTests-mod_string.$(OBJEXT) \
+	RCPTests-modp_numtoa.$(OBJEXT) RCPTests-loggerConfig.$(OBJEXT) \
+	RCPTests-numtoa_test.$(OBJEXT) RCPTests-RCPTest.$(OBJEXT)
 RCPTests_OBJECTS = $(am_RCPTests_OBJECTS)
 RCPTests_LDADD = $(LDADD)
 RCPTests_LINK = $(CXXLD) $(RCPTests_CXXFLAGS) $(CXXFLAGS) \
@@ -73,15 +74,15 @@ DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
-	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-CCLD = $(CC)
-LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(RCPTests_SOURCES)
 DIST_SOURCES = $(RCPTests_SOURCES)
 am__can_run_installinfo = \
@@ -204,13 +205,24 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-RCPTests_SOURCES = numtoa_test.h numtoa_test.cpp RCPTest.cpp
-RCPTests_CXXFLAGS = $(CPPUNIT_CFLAGS)
-RCPTests_LDFLAGS = -ldl -lcppunit
+RCPTests_SOURCES = \
+	../SAM7s_base/util/mod_string.h \
+	../SAM7s_base/util/mod_string.c \
+	../SAM7s_base/util/modp_numtoa.h \
+	../SAM7s_base/util/modp_numtoa.c \
+	../logger/loggerConfig.h \
+	../logger/loggerConfig.c \
+	numtoa_test.h \
+	numtoa_test.cpp \
+	RCPTest.cpp 
+
+RCPTests_CXXFLAGS = $(CPPUNIT_CFLAGS) 
+RCPTests_CPPFLAGS = -std=gnu99 -I../SAM7s_base/util -I../logger -DRCP_TESTING
+RCPTests_LDFLAGS = -ldl -lcppunit 
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .cpp .o .obj
+.SUFFIXES: .c .cpp .o .obj
 am--refresh: Makefile
 	@:
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -259,7 +271,66 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RCPTests-RCPTest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RCPTests-loggerConfig.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RCPTests-mod_string.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RCPTests-modp_numtoa.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RCPTests-numtoa_test.Po@am__quote@
+
+.c.o:
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(COMPILE) -c $<
+
+.c.obj:
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+RCPTests-mod_string.o: ../SAM7s_base/util/mod_string.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT RCPTests-mod_string.o -MD -MP -MF $(DEPDIR)/RCPTests-mod_string.Tpo -c -o RCPTests-mod_string.o `test -f '../SAM7s_base/util/mod_string.c' || echo '$(srcdir)/'`../SAM7s_base/util/mod_string.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/RCPTests-mod_string.Tpo $(DEPDIR)/RCPTests-mod_string.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../SAM7s_base/util/mod_string.c' object='RCPTests-mod_string.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o RCPTests-mod_string.o `test -f '../SAM7s_base/util/mod_string.c' || echo '$(srcdir)/'`../SAM7s_base/util/mod_string.c
+
+RCPTests-mod_string.obj: ../SAM7s_base/util/mod_string.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT RCPTests-mod_string.obj -MD -MP -MF $(DEPDIR)/RCPTests-mod_string.Tpo -c -o RCPTests-mod_string.obj `if test -f '../SAM7s_base/util/mod_string.c'; then $(CYGPATH_W) '../SAM7s_base/util/mod_string.c'; else $(CYGPATH_W) '$(srcdir)/../SAM7s_base/util/mod_string.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/RCPTests-mod_string.Tpo $(DEPDIR)/RCPTests-mod_string.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../SAM7s_base/util/mod_string.c' object='RCPTests-mod_string.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o RCPTests-mod_string.obj `if test -f '../SAM7s_base/util/mod_string.c'; then $(CYGPATH_W) '../SAM7s_base/util/mod_string.c'; else $(CYGPATH_W) '$(srcdir)/../SAM7s_base/util/mod_string.c'; fi`
+
+RCPTests-modp_numtoa.o: ../SAM7s_base/util/modp_numtoa.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT RCPTests-modp_numtoa.o -MD -MP -MF $(DEPDIR)/RCPTests-modp_numtoa.Tpo -c -o RCPTests-modp_numtoa.o `test -f '../SAM7s_base/util/modp_numtoa.c' || echo '$(srcdir)/'`../SAM7s_base/util/modp_numtoa.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/RCPTests-modp_numtoa.Tpo $(DEPDIR)/RCPTests-modp_numtoa.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../SAM7s_base/util/modp_numtoa.c' object='RCPTests-modp_numtoa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o RCPTests-modp_numtoa.o `test -f '../SAM7s_base/util/modp_numtoa.c' || echo '$(srcdir)/'`../SAM7s_base/util/modp_numtoa.c
+
+RCPTests-modp_numtoa.obj: ../SAM7s_base/util/modp_numtoa.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT RCPTests-modp_numtoa.obj -MD -MP -MF $(DEPDIR)/RCPTests-modp_numtoa.Tpo -c -o RCPTests-modp_numtoa.obj `if test -f '../SAM7s_base/util/modp_numtoa.c'; then $(CYGPATH_W) '../SAM7s_base/util/modp_numtoa.c'; else $(CYGPATH_W) '$(srcdir)/../SAM7s_base/util/modp_numtoa.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/RCPTests-modp_numtoa.Tpo $(DEPDIR)/RCPTests-modp_numtoa.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../SAM7s_base/util/modp_numtoa.c' object='RCPTests-modp_numtoa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o RCPTests-modp_numtoa.obj `if test -f '../SAM7s_base/util/modp_numtoa.c'; then $(CYGPATH_W) '../SAM7s_base/util/modp_numtoa.c'; else $(CYGPATH_W) '$(srcdir)/../SAM7s_base/util/modp_numtoa.c'; fi`
+
+RCPTests-loggerConfig.o: ../logger/loggerConfig.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT RCPTests-loggerConfig.o -MD -MP -MF $(DEPDIR)/RCPTests-loggerConfig.Tpo -c -o RCPTests-loggerConfig.o `test -f '../logger/loggerConfig.c' || echo '$(srcdir)/'`../logger/loggerConfig.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/RCPTests-loggerConfig.Tpo $(DEPDIR)/RCPTests-loggerConfig.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../logger/loggerConfig.c' object='RCPTests-loggerConfig.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o RCPTests-loggerConfig.o `test -f '../logger/loggerConfig.c' || echo '$(srcdir)/'`../logger/loggerConfig.c
+
+RCPTests-loggerConfig.obj: ../logger/loggerConfig.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT RCPTests-loggerConfig.obj -MD -MP -MF $(DEPDIR)/RCPTests-loggerConfig.Tpo -c -o RCPTests-loggerConfig.obj `if test -f '../logger/loggerConfig.c'; then $(CYGPATH_W) '../logger/loggerConfig.c'; else $(CYGPATH_W) '$(srcdir)/../logger/loggerConfig.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/RCPTests-loggerConfig.Tpo $(DEPDIR)/RCPTests-loggerConfig.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../logger/loggerConfig.c' object='RCPTests-loggerConfig.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o RCPTests-loggerConfig.obj `if test -f '../logger/loggerConfig.c'; then $(CYGPATH_W) '../logger/loggerConfig.c'; else $(CYGPATH_W) '$(srcdir)/../logger/loggerConfig.c'; fi`
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -276,32 +347,32 @@ distclean-compile:
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 RCPTests-numtoa_test.o: numtoa_test.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(RCPTests_CXXFLAGS) $(CXXFLAGS) -MT RCPTests-numtoa_test.o -MD -MP -MF $(DEPDIR)/RCPTests-numtoa_test.Tpo -c -o RCPTests-numtoa_test.o `test -f 'numtoa_test.cpp' || echo '$(srcdir)/'`numtoa_test.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(RCPTests_CXXFLAGS) $(CXXFLAGS) -MT RCPTests-numtoa_test.o -MD -MP -MF $(DEPDIR)/RCPTests-numtoa_test.Tpo -c -o RCPTests-numtoa_test.o `test -f 'numtoa_test.cpp' || echo '$(srcdir)/'`numtoa_test.cpp
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/RCPTests-numtoa_test.Tpo $(DEPDIR)/RCPTests-numtoa_test.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='numtoa_test.cpp' object='RCPTests-numtoa_test.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(RCPTests_CXXFLAGS) $(CXXFLAGS) -c -o RCPTests-numtoa_test.o `test -f 'numtoa_test.cpp' || echo '$(srcdir)/'`numtoa_test.cpp
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(RCPTests_CXXFLAGS) $(CXXFLAGS) -c -o RCPTests-numtoa_test.o `test -f 'numtoa_test.cpp' || echo '$(srcdir)/'`numtoa_test.cpp
 
 RCPTests-numtoa_test.obj: numtoa_test.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(RCPTests_CXXFLAGS) $(CXXFLAGS) -MT RCPTests-numtoa_test.obj -MD -MP -MF $(DEPDIR)/RCPTests-numtoa_test.Tpo -c -o RCPTests-numtoa_test.obj `if test -f 'numtoa_test.cpp'; then $(CYGPATH_W) 'numtoa_test.cpp'; else $(CYGPATH_W) '$(srcdir)/numtoa_test.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(RCPTests_CXXFLAGS) $(CXXFLAGS) -MT RCPTests-numtoa_test.obj -MD -MP -MF $(DEPDIR)/RCPTests-numtoa_test.Tpo -c -o RCPTests-numtoa_test.obj `if test -f 'numtoa_test.cpp'; then $(CYGPATH_W) 'numtoa_test.cpp'; else $(CYGPATH_W) '$(srcdir)/numtoa_test.cpp'; fi`
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/RCPTests-numtoa_test.Tpo $(DEPDIR)/RCPTests-numtoa_test.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='numtoa_test.cpp' object='RCPTests-numtoa_test.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(RCPTests_CXXFLAGS) $(CXXFLAGS) -c -o RCPTests-numtoa_test.obj `if test -f 'numtoa_test.cpp'; then $(CYGPATH_W) 'numtoa_test.cpp'; else $(CYGPATH_W) '$(srcdir)/numtoa_test.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(RCPTests_CXXFLAGS) $(CXXFLAGS) -c -o RCPTests-numtoa_test.obj `if test -f 'numtoa_test.cpp'; then $(CYGPATH_W) 'numtoa_test.cpp'; else $(CYGPATH_W) '$(srcdir)/numtoa_test.cpp'; fi`
 
 RCPTests-RCPTest.o: RCPTest.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(RCPTests_CXXFLAGS) $(CXXFLAGS) -MT RCPTests-RCPTest.o -MD -MP -MF $(DEPDIR)/RCPTests-RCPTest.Tpo -c -o RCPTests-RCPTest.o `test -f 'RCPTest.cpp' || echo '$(srcdir)/'`RCPTest.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(RCPTests_CXXFLAGS) $(CXXFLAGS) -MT RCPTests-RCPTest.o -MD -MP -MF $(DEPDIR)/RCPTests-RCPTest.Tpo -c -o RCPTests-RCPTest.o `test -f 'RCPTest.cpp' || echo '$(srcdir)/'`RCPTest.cpp
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/RCPTests-RCPTest.Tpo $(DEPDIR)/RCPTests-RCPTest.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='RCPTest.cpp' object='RCPTests-RCPTest.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(RCPTests_CXXFLAGS) $(CXXFLAGS) -c -o RCPTests-RCPTest.o `test -f 'RCPTest.cpp' || echo '$(srcdir)/'`RCPTest.cpp
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(RCPTests_CXXFLAGS) $(CXXFLAGS) -c -o RCPTests-RCPTest.o `test -f 'RCPTest.cpp' || echo '$(srcdir)/'`RCPTest.cpp
 
 RCPTests-RCPTest.obj: RCPTest.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(RCPTests_CXXFLAGS) $(CXXFLAGS) -MT RCPTests-RCPTest.obj -MD -MP -MF $(DEPDIR)/RCPTests-RCPTest.Tpo -c -o RCPTests-RCPTest.obj `if test -f 'RCPTest.cpp'; then $(CYGPATH_W) 'RCPTest.cpp'; else $(CYGPATH_W) '$(srcdir)/RCPTest.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(RCPTests_CXXFLAGS) $(CXXFLAGS) -MT RCPTests-RCPTest.obj -MD -MP -MF $(DEPDIR)/RCPTests-RCPTest.Tpo -c -o RCPTests-RCPTest.obj `if test -f 'RCPTest.cpp'; then $(CYGPATH_W) 'RCPTest.cpp'; else $(CYGPATH_W) '$(srcdir)/RCPTest.cpp'; fi`
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/RCPTests-RCPTest.Tpo $(DEPDIR)/RCPTests-RCPTest.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='RCPTest.cpp' object='RCPTests-RCPTest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(RCPTests_CXXFLAGS) $(CXXFLAGS) -c -o RCPTests-RCPTest.obj `if test -f 'RCPTest.cpp'; then $(CYGPATH_W) 'RCPTest.cpp'; else $(CYGPATH_W) '$(srcdir)/RCPTest.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RCPTests_CPPFLAGS) $(CPPFLAGS) $(RCPTests_CXXFLAGS) $(CXXFLAGS) -c -o RCPTests-RCPTest.obj `if test -f 'RCPTest.cpp'; then $(CYGPATH_W) 'RCPTest.cpp'; else $(CYGPATH_W) '$(srcdir)/RCPTest.cpp'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
