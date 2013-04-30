@@ -1,0 +1,8 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(Makefile.am)
+AM_INIT_AUTOMAKE(money,0.1)
+AM_PATH_CPPUNIT(1.9.6)
+AC_PROG_CXX
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_OUTPUT(Makefile)
