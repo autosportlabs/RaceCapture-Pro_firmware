@@ -12,5 +12,5 @@ RCPTests_SOURCES = \
 	numtoa_test.cpp \
 	RCPTest.cpp 
 RCPTests_CXXFLAGS = $(CPPUNIT_CFLAGS) 
-RCPTests_CPPFLAGS =  -std=gnu99 -I../SAM7s_base/util -I../logger -DRCP_TESTING
-RCPTests_LDFLAGS = -ldl -lcppunit 
+RCPTests_CPPFLAGS = -I../SAM7s_base/util -I../logger -DRCP_TESTING -std=gnu99
+RCPTests_LDADD = $(CPPUNIT_LIBS) -ldl -lcppunit 
