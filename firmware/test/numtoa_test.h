@@ -16,4 +16,4 @@ public:
   void testDoubleConversion();
 };
 
-#endif  // MONEYTEST_H
+#endif  // NUMTOATEST_H
