@@ -57,7 +57,11 @@ static void writeADC(SampleRecord *sampleRecord, portTickType currentTicks, Logg
 					analogValue = GetMappedValue((float)adc[i],&(ac->scalingMap));
 					break;
 				}
-				sampleRecord->ADCSamples[i].floatValue = analogValue;
+				if (ac->loggingPrecision == 0){
+					sampleRecord->ADCSamples[i].intValue = analogValue;
+				}else{
+					sampleRecord->ADCSamples[i].floatValue = analogValue;
+				}
 			}
 		}
 	}
@@ -164,7 +168,12 @@ static void writeTimerChannels(SampleRecord *sampleRecord, portTickType currentT
 						value = -1;
 						break;
 				}
-				sampleRecord->TimerSamples[i].intValue = value;
+				if (c->loggingPrecision == 0){
+					sampleRecord->TimerSamples[i].intValue = value;
+				}
+				else{
+					sampleRecord->TimerSamples[i].floatValue = value;
+				}
 			}
 		}
 	}
@@ -177,18 +186,25 @@ static void writePWMChannels(SampleRecord *sampleRecord, portTickType currentTic
 		portTickType sr = c->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
+				float value = 0;
 				switch (c->loggingMode){
 					case MODE_LOGGING_PWM_PERIOD:
-						sampleRecord->PWMSamples[i].intValue = PWM_GetPeriod(i);
+						value = PWM_GetPeriod(i);
 						break;
 					case MODE_LOGGING_PWM_DUTY:
-						sampleRecord->PWMSamples[i].intValue = PWM_GetDutyCycle(i);
+						value = PWM_GetDutyCycle(i);
 						break;
 					case MODE_LOGGING_PWM_VOLTS:
-						sampleRecord->PWMSamples[i].floatValue =  PWM_GetDutyCycle(i) * c->voltageScaling;
+						value =  PWM_GetDutyCycle(i) * c->voltageScaling;
 						break;
 					default:
 						break;
+				}
+				if (c->loggingPrecision == 0){
+					sampleRecord->PWMSamples[i].intValue = value;
+				}
+				else{
+					sampleRecord->PWMSamples[i].floatValue = value;
 				}
 			}
 		}

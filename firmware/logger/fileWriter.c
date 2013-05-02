@@ -95,7 +95,7 @@ static void writeSampleRecord(FIL * logfile, SampleRecord * sampleRecord){
 
 		int precision = sample->precision;
 		if (precision > 0){
-			fileWriteFloat(logfile,sample->floatValue,precision);
+			fileWriteFloat(logfile, sample->floatValue, precision);
 		}
 		else{
 			fileWriteInt(logfile, sample->intValue);
