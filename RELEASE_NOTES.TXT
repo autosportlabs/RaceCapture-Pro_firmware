@@ -56,6 +56,9 @@ Once the firmware completes flashing, RaceCapture/Pro will reset and run normall
 
 Firmware Changelog:
 
+===1.1.9===
+Fixed corrupted data in analog and timer channels when logging precision is zero
+
 ===1.1.8===
 PWM fixes (logical -> hardware channel mapping was wrong) and general refactoring
 Various changes to support testability
