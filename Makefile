@@ -1,7 +1,7 @@
 # Hey Emacs, this is a -*- makefile -*-
 #
-# WinARM template makefile 
-# by Martin Thomas, Kaiserslautern, Germany 
+# WinARM template makefile
+# by Martin Thomas, Kaiserslautern, Germany
 # <eversmith@heizung-thomas.de>
 #
 # based on the WinAVR makefile written by Eric B. Weddington, J�rg Wunsch, et al.
@@ -145,12 +145,12 @@ $(LOGGER_SRC_DIR)/timerIsr.c
 
 # List C++ source files here.
 # use file-extension cpp for C++-files (use extension .cpp)
-CPPSRC = 
+CPPSRC =
 
 # List C++ source files here which must be compiled in ARM-Mode.
 # use file-extension cpp for C++-files (use extension .cpp)
 #CPPSRCARM = $(TARGET).cpp
-CPPSRCARM = 
+CPPSRCARM =
 
 # List Assembler source files here.
 # Make them always end in a capital .S.  Files ending in a lowercase .s
@@ -159,13 +159,13 @@ CPPSRCARM =
 # Even though the DOS/Win* filesystem matches both .s and .S the same,
 # it will preserve the spelling of the filenames, and gcc itself does
 # care about how the name is spelled on its command-line.
-ASRC = 
+ASRC =
 
 # List Assembler source files here which must be assembled in ARM-Mode..
 ASRCARM = startup_SAM7S.S
 #ASRCARM = crt.S
 
-# Optimization level, can be [0, 1, 2, 3, s]. 
+# Optimization level, can be [0, 1, 2, 3, s].
 # 0 = turn off optimization. s = optimize for size.
 # (Note: 3 is not always the best optimization level. See avr-libc FAQ.)
 OPT = s
@@ -176,7 +176,7 @@ OPT = s
 #DEBUG = stabs
 #DEBUG = dwarf-2
 DEBUG = -g
-#DEBUG = 
+#DEBUG =
 
 # List any extra directories to look for include files here.
 #     Each directory must be seperated by a space.
@@ -225,31 +225,31 @@ endif
 CFLAGS = $(DEBUG)
 CFLAGS += $(CDEFS) $(CINCS)
 CFLAGS += -O$(OPT)
-CFLAGS += -Wall 
+CFLAGS += -Wall
 CFLAGS += -fomit-frame-pointer
-CFLAGS += -Wcast-align -Wimplicit 
+CFLAGS += -Wcast-align -Wimplicit
 CFLAGS += -Wpointer-arith -Wswitch
 CFLAGS += -Wredundant-decls -Wreturn-type -Wshadow -Wunused
 CFLAGS += -ffunction-sections -fdata-sections
 #CFLAGS += -Wno-strict-aliasing -Wextra
-CFLAGS += -Wa,-adhlns=$(subst $(suffix $<),.lst,$<) 
+CFLAGS += -Wa,-adhlns=$(subst $(suffix $<),.lst,$<)
 CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
 #AT91-lib warnings with:
 ##CFLAGS += -Wcast-qual
 
 
 # flags only for C
-CONLYFLAGS += -Wnested-externs 
+CONLYFLAGS += -Wnested-externs
 CONLYFLAGS += $(CSTANDARD)
 #AT91-lib warnings with:
-##CONLYFLAGS += -Wmissing-prototypes 
+##CONLYFLAGS += -Wmissing-prototypes
 ##CONLYFLAGS += -Wstrict-prototypes
 ##CONLYFLAGS += -Wmissing-declarations
 
 
 # flags only for C++ (arm-elf-g++)
 # CPPFLAGS = -fno-rtti -fno-exceptions
-CPPFLAGS = 
+CPPFLAGS =
 
 # Assembler flags.
 #  -Wa,...:   tell GCC to pass this to the assembler.
@@ -291,7 +291,7 @@ LDFLAGS +=-T$(SUBMDL)-ROM.ld
 
 
 # ---------------------------------------------------------------------------
-# Flash-Programming support using lpc21isp by Martin Maurer 
+# Flash-Programming support using lpc21isp by Martin Maurer
 # only for Philips LPC and Analog ADu ARMs
 #
 # Settings and variables:
@@ -344,7 +344,7 @@ COPY = cp
 MSG_ERRORS_NONE = Errors: none
 MSG_BEGIN = "-------- begin (mode: $(RUN_MODE)) --------"
 MSG_END = --------  end  --------
-MSG_SIZE_BEFORE = Size before: 
+MSG_SIZE_BEFORE = Size before:
 MSG_SIZE_AFTER = Size after:
 MSG_FLASH = Creating load file for Flash:
 MSG_EXTENDED_LISTING = Creating Extended Listing:
@@ -362,11 +362,11 @@ MSG_LPC21_RESETREMINDER = You may have to bring the target in bootloader-mode no
 
 
 # Define all object files.
-COBJ      = $(SRC:.c=.o) 
+COBJ      = $(SRC:.c=.o)
 AOBJ      = $(ASRC:.S=.o)
 COBJARM   = $(SRCARM:.c=.o)
 AOBJARM   = $(ASRCARM:.S=.o)
-CPPOBJ    = $(CPPSRC:.cpp=.o) 
+CPPOBJ    = $(CPPSRC:.cpp=.o)
 CPPOBJARM = $(CPPSRCARM:.cpp=.o)
 
 # Define all listing files.
@@ -389,17 +389,17 @@ all: begin gccversion sizebefore build sizeafter finished end
 ifeq ($(FORMAT),ihex)
 build: elf hex lss sym
 hex: $(TARGET).hex
-else 
+else
 ifeq ($(FORMAT),binary)
 build: elf bin lss sym
 bin: $(TARGET).bin
-else 
+else
 $(error "$(MSG_FORMATERROR) $(FORMAT)")
 endif
 endif
 
 elf: $(TARGET).elf
-lss: $(TARGET).lss 
+lss: $(TARGET).lss
 sym: $(TARGET).sym
 
 # Eye candy.
@@ -428,7 +428,7 @@ sizeafter:
 
 
 # Display compiler version information.
-gccversion : 
+gccversion :
 	@$(CC) --version
 
 
@@ -440,7 +440,7 @@ gccversion :
 	@echo
 	@echo $(MSG_FLASH) $@
 	@$(OBJCOPY) -O $(FORMAT) $< $@
-	
+
 # Create final output file (.bin) from ELF output file.
 %.bin: %.elf
 	@echo
@@ -476,25 +476,25 @@ gccversion :
 $(COBJ) : %.o : %.c
 	@echo
 	@echo $(MSG_COMPILING) $<
-	@$(CC) -c $(THUMB) $(ALL_CFLAGS) $(CONLYFLAGS) $< -o $@ 
+	@$(CC) -c $(THUMB) $(ALL_CFLAGS) $(CONLYFLAGS) $< -o $@
 
 # Compile: create object files from C source files. ARM-only
 $(COBJARM) : %.o : %.c
 	@echo
 	@echo $(MSG_COMPILING_ARM) $<
-	@$(CC) -c $(ALL_CFLAGS) $(CONLYFLAGS) $< -o $@ 
+	@$(CC) -c $(ALL_CFLAGS) $(CONLYFLAGS) $< -o $@
 
 # Compile: create object files from C++ source files. ARM/Thumb
 $(CPPOBJ) : %.o : %.cpp
 	@echo
 	@echo $(MSG_COMPILINGCPP) $<
-	@$(CPP) -c $(THUMB) $(ALL_CFLAGS) $(CPPFLAGS) $< -o $@ 
+	@$(CPP) -c $(THUMB) $(ALL_CFLAGS) $(CPPFLAGS) $< -o $@
 
 # Compile: create object files from C++ source files. ARM-only
 $(CPPOBJARM) : %.o : %.cpp
 	@echo
 	@echo $(MSG_COMPILINGCPP_ARM) $<
-	@$(CPP) -c $(ALL_CFLAGS) $(CPPFLAGS) $< -o $@ 
+	@$(CPP) -c $(ALL_CFLAGS) $(CPPFLAGS) $< -o $@
 
 
 # Compile: create assembler files from C source files. ARM/Thumb
@@ -545,11 +545,12 @@ clean_list :
 	$(REMOVE) $(SRC:.c=.d)
 	$(REMOVE) $(SRCARM:.c=.s)
 	$(REMOVE) $(SRCARM:.c=.d)
-	$(REMOVE) $(CPPSRC:.cpp=.s) 
+	$(REMOVE) $(CPPSRC:.cpp=.s)
 	$(REMOVE) $(CPPSRC:.cpp=.d)
-	$(REMOVE) $(CPPSRCARM:.cpp=.s) 
+	$(REMOVE) $(CPPSRCARM:.cpp=.s)
 	$(REMOVE) $(CPPSRCARM:.cpp=.d)
 	$(REMOVE) .dep/*
+	$(REMOVE) cscope.* TAGS
 
 
 # Include the dependency files.
@@ -565,7 +566,7 @@ release : clean all
 	mv main.bin $(RELEASE_DIR)/$(RELEASE_NAME_BIN)
 	mv main.elf $(RELEASE_DIR)/$(RELEASE_NAME_ELF)
 	cp RELEASE_NOTES.TXT $(RELEASE_DIR)
-	
+
 
 # **********************************************************************************************
 #                            FLASH PROGRAMMING      (using OpenOCD 0.5.0 and Olimex ARM-USB-OCD)
@@ -575,4 +576,13 @@ release : clean all
 # program the AT91SAM7S256 internal flash memory
 program: $(PROGRAM_TARGET)
 	openocd -f flash.cfg
-	
+
+cscope.files:
+	@find . -type f -name '*.[hcS]' -print >cscope.files
+
+cscope: cscope.files
+	@rm -f cscope.out
+	@cscope -b -f cscope.out
+
+TAGS: cscope.files
+	@etags `cat cscope.files`
