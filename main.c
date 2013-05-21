@@ -1,7 +1,7 @@
 /*
  * RaceCapture Pro main
 	NOTE : Tasks run in system mode and the scheduler runs in Supervisor mode.
-	The processor MUST be in supervisor mode when vTaskStartScheduler is 
+	The processor MUST be in supervisor mode when vTaskStartScheduler is
 	called.  The demo applications included in the FreeRTOS.org download switch
 	to supervisor mode prior to main being called.  If you are not using one of
 	these demo application projects then ensure Supervisor mode is used.
@@ -27,6 +27,7 @@
 #include "loggerConfig.h"
 #include "loggerCommands.h"
 #include "sdcard.h"
+#include <tasks/heartbeat.h>
 
 //logging related tasks
 #include "loggerTaskEx.h"
@@ -70,7 +71,7 @@ static int setupHardware( void )
 	// the correct default state.  This line just ensures that this does not
 	// cause all interrupts to be masked at the start.
 	AT91C_BASE_AIC->AIC_EOICR = 0;
-		
+
 	// Enable the peripheral clock.
 	AT91F_PMC_EnablePeriphClock( AT91C_BASE_PMC, (1 << AT91C_ID_PIOA) |  //Enable Clock for PIO
 												(1 << AT91C_ID_IRQ0) |  //Enable Clock for IRQ0
@@ -84,7 +85,7 @@ static int setupHardware( void )
 	AT91F_RSTSetMode( AT91C_BASE_RSTC , AT91C_RSTC_URSTEN );
 
 	if (!initUsart()) return 0;
-	if (!vInitUSBInterface()) return 0;	
+	if (!vInitUSBInterface()) return 0;
 
 	init_serial();
 
@@ -94,14 +95,14 @@ static int setupHardware( void )
 
 
 void fatalError(int type){
-	
-	
+
+
 	int count;
 	int pause = 5000000;
 	int flash = 1000000;
-	
+
 	switch (type){
-		case FATAL_ERROR_HARDWARE: 	
+		case FATAL_ERROR_HARDWARE:
 			count = 1;
 			break;
 		case FATAL_ERROR_SCHEDULER:
@@ -111,7 +112,7 @@ void fatalError(int type){
 			count = 3;
 			break;
 	}
-	
+
 	while(1){
 		for (int c = 0; c < count; c++){
 			enableLED(LED1);
@@ -121,7 +122,7 @@ void fatalError(int type){
 			disableLED(LED2);
 			for (int i=0;i<flash;i++){}
 		}
-		for (int i=0;i<pause;i++){}	
+		for (int i=0;i<pause;i++){}
 	}
 }
 
@@ -144,12 +145,13 @@ int main( void )
 	createGPIOTasks();
 	createTelemetryTask();
 	startGPSTask();
+//      start_heartbeat_task();
 //	startRaceTask();
 
    /* Start the scheduler.
 
    NOTE : Tasks run in system mode and the scheduler runs in Supervisor mode.
-   The processor MUST be in supervisor mode when vTaskStartScheduler is 
+   The processor MUST be in supervisor mode when vTaskStartScheduler is
    called.  The demo applications included in the FreeRTOS.org download switch
    to supervisor mode prior to main being called.  If you are not using one of
    these demo application projects then ensure Supervisor mode is used here. */
