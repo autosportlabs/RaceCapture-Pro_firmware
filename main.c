@@ -66,6 +66,36 @@ void fatalError(int type);
 
 static int setupHardware( void )
 {
+
+	//* Set MCK at 48 054 850
+	// 1 Enabling the Main Oscillator:
+	// SCK = 1/32768 = 30.51 uSecond
+	// Start up time = 8 * 6 / SCK = 56 * 30.51 = 1,46484375 ms
+	AT91C_BASE_PMC->PMC_MOR = (( AT91C_CKGR_OSCOUNT & (0x06 <<8) | AT91C_CKGR_MOSCEN ));
+	// Wait the startup time
+	while(!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MOSCS));
+	// 2 Checking the Main Oscillator Frequency (Optional)
+	// 3 Setting PLL and divider:
+	// - div by 14 Fin = 1.3165 =(18,432 / 14)
+	// - Mul 72+1: Fout = 96.1097 =(3,6864 *73)
+	// for 96 MHz the error is 0.11%
+	// Field out NOT USED = 0
+	// PLLCOUNT pll startup time estimate at : 0.844 ms
+	// PLLCOUNT 28 = 0.000844 /(1/32768)
+	AT91C_BASE_PMC->PMC_PLLR = ((AT91C_CKGR_DIV & 14 ) | (AT91C_CKGR_PLLCOUNT & (28<<8)) | (AT91C_CKGR_MUL & (72<<16)));
+
+	// Wait the startup time
+	while(!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCK));
+	while(!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY));
+	// 4. Selection of Master Clock and Processor Clock
+	// select the PLL clock divided by 2
+	AT91C_BASE_PMC->PMC_MCKR = AT91C_PMC_PRES_CLK_2 ;
+	while(!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY));
+	AT91C_BASE_PMC->PMC_MCKR |= AT91C_PMC_CSS_PLL_CLK ;
+	while(!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY));
+
+	enableLED(LED2);
+
 	// When using the JTAG debugger the hardware is not always initialised to
 	// the correct default state.  This line just ensures that this does not
 	// cause all interrupts to be masked at the start.
@@ -127,6 +157,9 @@ void fatalError(int type){
 
 int main( void )
 {
+	InitLEDs();
+	enableLED(LED1);
+
 	//setup hardware
 	updateActiveLoggerConfig();
 	int success = setupHardware();
