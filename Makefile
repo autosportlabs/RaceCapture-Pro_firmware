@@ -137,7 +137,8 @@ $(LUA_SRC_DIR)/luaBaseBinding.c \
 $(LUA_SRC_DIR)/luaCommands.c \
 $(RTOS_PORT_DIR)/MemMang/heap_2_combine.c \
 $(RACE_CAPTURE_DIR)/printk.c \
-$(TASKS_DIR)/heartbeat.c
+$(RACE_CAPTURE_DIR)/ring_buffer.c \
+$(TASKS_DIR)/heartbeat.c \
 
 # List C source files here which must be compiled in ARM-Mode.
 # use file-extension c for "c-only"-files
