@@ -49,7 +49,8 @@ extern const cmd_t g_loggerCommands[];
 \
 {"calibrateAccelZero", "Calibrates the current accelerometer values as the zero point.","", CalibrateAccelZero}, \
 \
-{"startTerminal", "Starts a debugging terminal session on the specified port.","<port> <baud>", StartTerminal }
+{"startTerminal", "Starts a debugging terminal session on the specified port.","<port> <baud>", StartTerminal }, \
+{"viewLog", "Prints out logging messages to the terminal as they happen", ViewLog } \
 
 
 
@@ -92,5 +93,6 @@ void SetAccelConfig(Serial *serial, unsigned int argc, char **argv);
 void CalibrateAccelZero(Serial *serial, unsigned int argc, char **argv);
 
 void StartTerminal(Serial *serial, unsigned int argc, char **argv);
+void ViewLog(Serial *serial, unsigned int argc, char **argv);
 
 #endif /* LOGGERCOMMANDS_H_ */

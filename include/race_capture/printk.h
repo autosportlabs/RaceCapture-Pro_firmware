@@ -2,6 +2,12 @@
  * Race Capture printk
  */
 
+#ifndef __PRINTK_H__
+#define __PRINTK_H__
+
+#include <serial.h>
+#include <stddef.h>
+
 enum log_level {
         EMERG = 0,
         ALERT = 1,
@@ -16,4 +22,7 @@ enum log_level {
 #define pr_info(arg1) \
         printk(INFO, arg1)
 
+size_t write_log_serial(Serial *s);
 int printk(enum log_level level, const char *msg);
+
+#endif /* __PRINTK_H__ */

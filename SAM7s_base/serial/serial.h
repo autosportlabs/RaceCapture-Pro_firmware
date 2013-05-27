@@ -1,6 +1,5 @@
 /*
  * serial.h
-
  *
  *  Created on: Jan 10, 2013
  *      Author: brent

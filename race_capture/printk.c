@@ -18,14 +18,14 @@ const struct ring_buff log_buff = {
         .tail = _log_buffer
 };
 
+size_t write_log_serial(Serial *s)
+{
+
+}
 
 int printk(enum log_level level, const char *msg) {
         if (level > curr_level)
                 return 0;
-
-        Serial *s = get_serial_usb();
-        s->put_s(msg);
-        put_crlf(s);
 
         return 1;
 }
