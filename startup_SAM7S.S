@@ -89,7 +89,7 @@
 //               <3=> Read: 4 cycle / Write: 4 cycles
 // </e>
 */
-        .equ    EFC_SETUP,      0
+        .equ    EFC_SETUP,      1
         .equ    EFC_FMR_Val,    0x00320100
 
 
@@ -164,7 +164,7 @@
 //               <7=> Reserved
 // </e>
 */
-        .equ    PMC_SETUP,      0
+        .equ    PMC_SETUP,      1
         .equ    PMC_MOR_Val,    0x00000601
         .equ    PMC_PLLR_Val,   0x00191C05
         .equ    PMC_MCKR_Val,   0x00000007
@@ -297,7 +297,7 @@ Reset_Handler:
                 STR     R1, [R0, #WDT_MR]
 .endif
 
-/*
+
 // Setup PMC
 .if PMC_SETUP
                 LDR     R0, =PMC_BASE
@@ -328,7 +328,7 @@ PLL_Loop:       LDR     R2, [R0, #PMC_SR]
                 LDR     R1, =PMC_MCKR_Val
                 STR     R1, [R0, #PMC_MCKR]
 .endif
-*/
+
 
 // Setup Stack for each mode
 
@@ -450,7 +450,6 @@ __main_exit:    B       __main_exit
 				.endfunc
 
 .end
-
 
 
 

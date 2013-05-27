@@ -1,7 +1,7 @@
 /*
  * RaceCapture Pro main
 	NOTE : Tasks run in system mode and the scheduler runs in Supervisor mode.
-	The processor MUST be in supervisor mode when vTaskStartScheduler is 
+	The processor MUST be in supervisor mode when vTaskStartScheduler is
 	called.  The demo applications included in the FreeRTOS.org download switch
 	to supervisor mode prior to main being called.  If you are not using one of
 	these demo application projects then ensure Supervisor mode is used.
@@ -27,6 +27,7 @@
 #include "loggerConfig.h"
 #include "loggerCommands.h"
 #include "sdcard.h"
+#include <tasks/heartbeat.h>
 
 //logging related tasks
 #include "loggerTaskEx.h"
@@ -66,41 +67,11 @@ void fatalError(int type);
 
 static int setupHardware( void )
 {
-
-	//* Set MCK at 48 054 850
-	// 1 Enabling the Main Oscillator:
-	// SCK = 1/32768 = 30.51 uSecond
-	// Start up time = 8 * 6 / SCK = 56 * 30.51 = 1,46484375 ms
-	AT91C_BASE_PMC->PMC_MOR = (( AT91C_CKGR_OSCOUNT & (0x06 <<8) | AT91C_CKGR_MOSCEN ));
-	// Wait the startup time
-	while(!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MOSCS));
-	// 2 Checking the Main Oscillator Frequency (Optional)
-	// 3 Setting PLL and divider:
-	// - div by 14 Fin = 1.3165 =(18,432 / 14)
-	// - Mul 72+1: Fout = 96.1097 =(3,6864 *73)
-	// for 96 MHz the error is 0.11%
-	// Field out NOT USED = 0
-	// PLLCOUNT pll startup time estimate at : 0.844 ms
-	// PLLCOUNT 28 = 0.000844 /(1/32768)
-	AT91C_BASE_PMC->PMC_PLLR = ((AT91C_CKGR_DIV & 14 ) | (AT91C_CKGR_PLLCOUNT & (28<<8)) | (AT91C_CKGR_MUL & (72<<16)));
-
-	// Wait the startup time
-	while(!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCK));
-	while(!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY));
-	// 4. Selection of Master Clock and Processor Clock
-	// select the PLL clock divided by 2
-	AT91C_BASE_PMC->PMC_MCKR = AT91C_PMC_PRES_CLK_2 ;
-	while(!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY));
-	AT91C_BASE_PMC->PMC_MCKR |= AT91C_PMC_CSS_PLL_CLK ;
-	while(!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY));
-
-	enableLED(LED2);
-
 	// When using the JTAG debugger the hardware is not always initialised to
 	// the correct default state.  This line just ensures that this does not
 	// cause all interrupts to be masked at the start.
 	AT91C_BASE_AIC->AIC_EOICR = 0;
-		
+
 	// Enable the peripheral clock.
 	AT91F_PMC_EnablePeriphClock( AT91C_BASE_PMC, (1 << AT91C_ID_PIOA) |  //Enable Clock for PIO
 												(1 << AT91C_ID_IRQ0) |  //Enable Clock for IRQ0
@@ -114,7 +85,7 @@ static int setupHardware( void )
 	AT91F_RSTSetMode( AT91C_BASE_RSTC , AT91C_RSTC_URSTEN );
 
 	if (!initUsart()) return 0;
-	if (!vInitUSBInterface()) return 0;	
+	if (!vInitUSBInterface()) return 0;
 
 	init_serial();
 
@@ -124,14 +95,14 @@ static int setupHardware( void )
 
 
 void fatalError(int type){
-	
-	
+
+
 	int count;
 	int pause = 5000000;
 	int flash = 1000000;
-	
+
 	switch (type){
-		case FATAL_ERROR_HARDWARE: 	
+		case FATAL_ERROR_HARDWARE:
 			count = 1;
 			break;
 		case FATAL_ERROR_SCHEDULER:
@@ -141,7 +112,7 @@ void fatalError(int type){
 			count = 3;
 			break;
 	}
-	
+
 	while(1){
 		for (int c = 0; c < count; c++){
 			enableLED(LED1);
@@ -151,15 +122,12 @@ void fatalError(int type){
 			disableLED(LED2);
 			for (int i=0;i<flash;i++){}
 		}
-		for (int i=0;i<pause;i++){}	
+		for (int i=0;i<pause;i++){}
 	}
 }
 
 int main( void )
 {
-	InitLEDs();
-	enableLED(LED1);
-
 	//setup hardware
 	updateActiveLoggerConfig();
 	int success = setupHardware();
@@ -177,12 +145,13 @@ int main( void )
 	createGPIOTasks();
 	createTelemetryTask();
 	startGPSTask();
+//      start_heartbeat_task();
 //	startRaceTask();
 
    /* Start the scheduler.
 
    NOTE : Tasks run in system mode and the scheduler runs in Supervisor mode.
-   The processor MUST be in supervisor mode when vTaskStartScheduler is 
+   The processor MUST be in supervisor mode when vTaskStartScheduler is
    called.  The demo applications included in the FreeRTOS.org download switch
    to supervisor mode prior to main being called.  If you are not using one of
    these demo application projects then ensure Supervisor mode is used here. */
