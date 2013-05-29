@@ -526,7 +526,6 @@ $(AOBJARM) : %.o : %.S
 # Target: clean project.
 clean: begin clean_list finished end
 
-
 clean_list :
 	@echo
 	@echo $(MSG_CLEANING)
@@ -556,8 +555,9 @@ clean_list :
 	$(REMOVE) $(CPPSRCARM:.cpp=.s)
 	$(REMOVE) $(CPPSRCARM:.cpp=.d)
 	$(REMOVE) .dep/*
-	$(REMOVE) cscope.* TAGS
 
+clean_all: clean
+	$(REMOVE) cscope.* TAGS
 
 # Include the dependency files.
 -include $(shell mkdir .dep 2>/dev/null) $(wildcard .dep/*)
