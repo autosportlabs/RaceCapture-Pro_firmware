@@ -137,7 +137,8 @@ $(LUA_SRC_DIR)/luaBaseBinding.c \
 $(LUA_SRC_DIR)/luaCommands.c \
 $(RTOS_PORT_DIR)/MemMang/heap_2_combine.c \
 $(RACE_CAPTURE_DIR)/printk.c \
-$(TASKS_DIR)/heartbeat.c
+$(RACE_CAPTURE_DIR)/ring_buffer.c \
+$(TASKS_DIR)/heartbeat.c \
 
 # List C source files here which must be compiled in ARM-Mode.
 # use file-extension c for "c-only"-files
@@ -525,7 +526,6 @@ $(AOBJARM) : %.o : %.S
 # Target: clean project.
 clean: begin clean_list finished end
 
-
 clean_list :
 	@echo
 	@echo $(MSG_CLEANING)
@@ -555,8 +555,9 @@ clean_list :
 	$(REMOVE) $(CPPSRCARM:.cpp=.s)
 	$(REMOVE) $(CPPSRCARM:.cpp=.d)
 	$(REMOVE) .dep/*
-	$(REMOVE) cscope.* TAGS
 
+clean_all: clean
+	$(REMOVE) cscope.* TAGS
 
 # Include the dependency files.
 -include $(shell mkdir .dep 2>/dev/null) $(wildcard .dep/*)

@@ -11,6 +11,7 @@
 #include "modp_atonum.h"
 #include "loggerConfig.h"
 #include "loggerHardware.h"
+#include <race_capture/printk.h>
 #include "sdcard.h"
 #include "loggerData.h"
 #include "sampleRecord.h"
@@ -439,4 +440,41 @@ void StartTerminal(Serial *serial, unsigned int argc, char **argv){
 		default:
 			put_commandError(serial, ERROR_CODE_INVALID_PARAM);
 	}
+}
+
+void ViewLog(Serial *serial, unsigned int argc, char **argv)
+{
+        // Lets check for character input 5 times a second.
+        static const portTickType delay_ticks = configTICK_RATE_HZ / 5;
+
+        serial->put_s("Starting logging mode.  Hit \"q\" to exit\r\n");
+
+        while(1) {
+                // Write log to serial
+                read_log_to_serial(serial);
+
+                // Look for 'q' to exit.
+                char c = serial->get_c_wait(delay_ticks);
+                if (c == 'q')
+                        break;
+        }
+
+        // Give a little space when we finish up with log watching.
+        serial->put_s("\r\n\r\n");
+        serial->flush();
+}
+
+void SetLogLevel(Serial *serial, unsigned int argc, char **argv)
+{
+        // XXX make this more robust maybe.
+        if (argc < 1 || argv[1][0] < '0' || argv[1][0] > '7') {
+                serial->put_s("Failed\r\n");
+                return;
+        }
+
+        enum log_level level = (enum log_level) modp_atoui(argv[1]);
+        enum log_level new_level = set_log_level(level);
+        serial->put_s("New log level is ");
+        put_int(serial, (int) new_level);
+        serial->put_s("\r\n");
 }
