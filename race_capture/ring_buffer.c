@@ -2,13 +2,13 @@
  * Race Capture
  */
 
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
 
-#include "mod_string.h"
-#include "race_capture/ring_buffer.h"
+#include <mod_string.h>
+#include <race_capture/ring_buffer.h>
 
-static size_t get_end_dist(struct ring_buff *rb, char *p)
+static size_t get_end_dist(struct ring_buff *rb, const char *p)
 {
         return rb->buf + rb->size - p;
 }
@@ -27,7 +27,7 @@ bool have_space(struct ring_buff *rb, size_t size)
         return size <= get_space(rb);
 }
 
-size_t put_data(struct ring_buff *rb, void *data, size_t size)
+size_t put_data(struct ring_buff *rb, const void *data, size_t size)
 {
         // Check if we have the space.  If not, only write what we can
         size_t dist = get_space(rb);
@@ -71,4 +71,24 @@ size_t get_data(struct ring_buff *rb, void *data, size_t size)
         }
 
         return size;
+}
+
+size_t dump_data(struct ring_buff *rb, size_t size) {
+
+        size_t dist = get_used(rb);
+        if (size > dist)
+                size = dist;
+
+        dist = get_end_dist(rb, rb->tail);
+        if (size < dist) {
+                rb->tail += size;
+        } else {
+                rb->tail = rb->buf + size - dist;
+        }
+
+        return size;
+}
+
+bool has_data(struct ring_buff *rb) {
+        return rb->head != rb->tail;
 }

@@ -19,10 +19,10 @@ enum log_level {
         DEBUG = 7,
 };
 
-#define pr_info(arg1) \
-        printk(INFO, arg1)
+#define pr_info(arg1) printk(INFO, arg1)
 
-size_t write_log_serial(Serial *s);
+size_t read_log_to_serial(Serial *s);
 int printk(enum log_level level, const char *msg);
+enum log_level set_log_level(enum log_level level);
 
 #endif /* __PRINTK_H__ */

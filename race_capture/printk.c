@@ -1,31 +1,71 @@
 /*
- * Printk for Race capture
+ * Race capture
  */
 
+#include <mod_string.h>
 #include <race_capture/printk.h>
 #include <race_capture/ring_buffer.h>
 #include <serial.h>
+#include <stddef.h>
 
-static enum log_level curr_level = NOTICE;
+#define LOG_BUFFER_SIZE 512
+#define LOG_DUMP_SIZE 128
 
-#define LOG_BUFFER_SIZE 1024
-char _log_buffer[LOG_BUFFER_SIZE];
+static enum log_level curr_level = INFO;
+static char _log_buffer[LOG_BUFFER_SIZE];
 
-const struct ring_buff log_buff = {
-	.buf = _log_buffer,
-        .size = sizeof(_log_buffer),
+static struct ring_buff log_buff = {
+        .buf = _log_buffer,
+        .size = LOG_BUFFER_SIZE,
         .head = _log_buffer,
         .tail = _log_buffer
 };
+static struct ring_buff * const lbp = &log_buff;
 
-size_t write_log_serial(Serial *s)
+size_t read_log_to_serial(Serial *s)
 {
+        char buff[16];
+        size_t to_read = get_used(lbp);
 
+        while(has_data(lbp)) {
+                int read = get_data(lbp, &buff, sizeof(buff));
+                for(int i = 0; i < read; i++)
+                        s->put_c(buff[i]);
+        }
+
+        return to_read;
+}
+
+size_t write_to_log_buff(const char *msg) {
+        if (NULL == msg)
+                return 0;
+
+        size_t msg_size = strlen(msg) + 1;
+        size_t data_written = put_data(lbp, msg, msg_size);
+
+        if (data_written == msg_size)
+                return data_written;
+
+        // else if here we need to dump some log data.
+        // XXX: Log this?
+        int size_diff = msg_size - data_written;
+        dump_data(&log_buff, LOG_DUMP_SIZE);
+        data_written += put_data(lbp, msg + data_written, size_diff);
+
+        return data_written;
 }
 
 int printk(enum log_level level, const char *msg) {
         if (level > curr_level)
                 return 0;
 
-        return 1;
+        return write_to_log_buff(msg);
+}
+
+enum log_level set_log_level(enum log_level level)
+{
+        if (level <= DEBUG)
+                curr_level = level;
+
+        return curr_level;
 }
