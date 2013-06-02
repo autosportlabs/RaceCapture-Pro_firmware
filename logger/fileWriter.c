@@ -13,6 +13,9 @@
 #include "loggerHardware.h"
 #include "taskUtil.h"
 #include "mod_string.h"
+#include "race_capture/printk.h"
+#include "spi.h"
+
 
 static int g_writingActive;
 static FIL g_logfile;
@@ -120,6 +123,9 @@ static int openNextLogFile(FIL *f){
 		f_close(f);
 	}
 	if (i >= MAX_LOG_FILE_INDEX) return -2;
+	pr_debug("open ");
+	pr_debug(filename);
+	pr_debug("\r\n");
 	return rc;
 }
 
@@ -133,6 +139,7 @@ void fileWriterTask(void *params){
 		//wait for the next sample record
 		xQueueReceive(g_sampleRecordQueue, &(sr), portMAX_DELAY);
 
+		lock_spi();
 		if (NULL != sr && 0 == g_writingActive){
 			//start of a new logfile
 
@@ -146,11 +153,12 @@ void fileWriterTask(void *params){
 			if (0 != rc){
 				enableLED(LED3);
 			}
-
-			g_writingActive = 1;
-			writeHeaders(&g_logfile,sr);
-			flushTimeoutInterval = FLUSH_INTERVAL_SEC * 1000;
-			flushTimeoutStart = xTaskGetTickCount();
+			else{
+				g_writingActive = 1;
+				writeHeaders(&g_logfile,sr);
+				flushTimeoutInterval = FLUSH_INTERVAL_SEC * 1000;
+				flushTimeoutStart = xTaskGetTickCount();
+			}
 		}
 
 		if (g_writingActive){
@@ -158,17 +166,20 @@ void fileWriterTask(void *params){
 			if (NULL != sr){
 				writeSampleRecord(&g_logfile,sr);
 				if (isTimeoutMs(flushTimeoutStart, flushTimeoutInterval)){
+					pr_debug("f_sync\r\n");
 					f_sync(&g_logfile);
 					flushTimeoutStart = xTaskGetTickCount();
 				}
 			}
 			else{
+				pr_debug("f_close\r\n");
 				f_close(&g_logfile);
 				UnmountFS();
 				g_writingActive = 0;
 				disableLED(LED3);
 			}
 		}
+		unlock_spi();
 	}
 }
 

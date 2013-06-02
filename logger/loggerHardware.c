@@ -4,6 +4,7 @@
 #include "sdcard.h"
 #include "constants.h"
 #include "memory.h"
+#include "spi.h"
 
 /* ADC field definition for the Mode Register: Reminder
                        TRGEN    => Selection bewteen Software or hardware start of conversion
@@ -46,6 +47,7 @@ unsigned int g_timer2_overflow;
 unsigned int g_timer_counts[CONFIG_TIMER_CHANNELS];
 
 void InitLoggerHardware(){
+	init_spi_lock();
 	InitWatchdog(WATCHDOG_TIMEOUT_MS);
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 	InitGPIO(loggerConfig);
@@ -55,7 +57,6 @@ void InitLoggerHardware(){
 	InitLEDs();
 	InitPushbutton();
 	InitSDCard();
-	if (loggerConfig->AccelInstalled) accel_init();
 }
 
 void ResetWatchdog(){

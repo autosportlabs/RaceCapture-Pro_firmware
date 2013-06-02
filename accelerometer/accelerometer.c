@@ -1,7 +1,9 @@
 #include "accelerometer.h"
 #include "loggerConfig.h"
 #include <mod_string.h>
-
+#include "race_capture/printk.h"
+#include "modp_numtoa.h"
+#include "spi.h"
 #define SPI_CSR_NUM      2
 
 
@@ -33,11 +35,6 @@
 #define SPI_TDR_PCS      SPI_MR_PCS
 
 
-#define CS0_SPI_SPEED 1000000  /* 1MHz clock*/
-#define SPI_DLYBCT 1
-#define SPI_DLYBS 20
-#define MCK 48054840
-
 #define SPI_TRANSFER (AT91C_PA12_MISO | AT91C_PA13_MOSI | AT91C_PA14_SPCK)
 
 unsigned int g_averagedAccelValues[CONFIG_ACCEL_CHANNELS];
@@ -52,6 +49,7 @@ static unsigned int g_accelBufferPointer[CONFIG_ACCEL_CHANNELS];
 
 void accel_initSPI(){
 
+	lock_spi();
 	AT91PS_SPI pSPI      = AT91C_BASE_SPI;
 	AT91PS_PIO pPIOA     = AT91C_BASE_PIOA;
 	AT91PS_PMC pPMC      = AT91C_BASE_PMC;
@@ -81,7 +79,7 @@ void accel_initSPI(){
 	//       Take closer look on timing diagrams in datasheets.
 	// not working pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8 | AT91C_SPI_NCPHA;
 	// not working pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_BITS_8 | AT91C_SPI_NCPHA;
-	pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8 | AT91C_SPI_CSAAT;
+	pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_CPOL | AT91C_SPI_BITS_8 | AT91C_SPI_CSAAT;// | (0xFF << 16); //DLYBS
 	// not working pSPI->SPI_CSR[SPI_CSR_NUM] = AT91C_SPI_BITS_8;
 
 	// slow during init
@@ -103,7 +101,7 @@ void accel_initSPI(){
 	//spi speed is 48054840 / value in MHz
 	//normal speed 3.5MHz. Reduce this if accelerometer readings are unstable
 	accel_spiSetSpeed(48);
-
+	unlock_spi();
 }
 
 void accel_spiSetSpeed(unsigned char speed)
@@ -145,15 +143,19 @@ void initAccelBuffer(){
 }
 
 void accel_setup(){
+	lock_spi();
 	memset(g_averagedAccelValues,0,sizeof(g_averagedAccelValues));
 	accel_spiSend(0x04, 0);
 	accel_spiSend(0x04, 1);
 	for (unsigned int d = 0; d < 1000000;d++){} //200 ns???? recalcualate this...
+	unlock_spi();
 }
 
 unsigned char accel_readControlRegister(){
+	lock_spi();
 	accel_spiSend(0x03, 0);
 	unsigned char ctrl = accel_spiSend(0xff, 1);
+	unlock_spi();
 	return ctrl;	
 }
 
@@ -179,34 +181,40 @@ unsigned int calculateAccelAverage(unsigned char channel){
 }
 
 
+//#define ACCEL_SMOOTHING
+
 unsigned int readAccelChannel(unsigned char channel){
 	//read the accel channel, add to buffer,
 	//move pointer and calculate average
 	unsigned int value = readAccelerometerDevice(channel);
+#ifdef ACCEL_SMOOTHING
 	int currentIndex = g_accelBufferPointer[channel];
 	g_accelBuffer[channel][currentIndex] = value;
 	currentIndex++;
 	if (currentIndex >= ACCELEROMETER_BUFFER_SIZE) currentIndex = 0;
 	g_accelBufferPointer[channel]=currentIndex;
-	unsigned int averageValue = calculateAccelAverage(channel);
-	g_averagedAccelValues[channel] = averageValue;
-	return averageValue;
+	value = calculateAccelAverage(channel);
+	g_averagedAccelValues[channel] = value;
+#endif
+
+	return value;
 }
 
 
 
 unsigned int readAccelerometerDevice(unsigned char channel){
-	
+	lock_spi();
 	//aux input (i.e. Yaw input) is mapped to 0x07 on the
 	//kionix KXR94
 	unsigned char readChannel = channel;
 	if (readChannel == 3) readChannel = 7;
+	//for (unsigned int d = 0; d < 200;d++){} //200 ns???? recalcualate this...
 	accel_spiSend(readChannel, 0);
-	for (unsigned int d = 0; d < 200;d++){} //200 ns???? recalcualate this...
+	for (unsigned int d = 0; d < 1000;d++){} //40 us???? recalcualate this...
 	unsigned char dataMSB = accel_spiSend(0x00, 0);
 	unsigned char dataLSB = accel_spiSend(0x00, 1);
-	for (unsigned int d = 0; d < 1000;d++){} //40 us???? recalcualate this...
 	unsigned int value = (dataMSB << 4) + ((dataLSB >> 4) & 0x0f);
+	unlock_spi();
 	return value;
 }
 
