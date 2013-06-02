@@ -233,6 +233,8 @@ typedef struct _GPSConfig{
 	ChannelConfig lapCountCfg;
 	ChannelConfig lapTimeCfg;
 	ChannelConfig splitTimeCfg;
+	ChannelConfig lapDistanceCfg;
+	ChannelConfig totalDistanceCfg;
 	ChannelConfig satellitesCfg;
 	ChannelConfig latitudeCfg;
 	ChannelConfig longitudeCfg;

@@ -59,6 +59,10 @@ void loggerTaskEx(void *params){
 
 			g_loggingShouldRun = 1;
 
+			resetLapCount();
+			resetLapDistance();
+			resetTotalDistance();
+
 			portTickType currentTicks = 0;
 
 			for (int i=0; i < SAMPLE_RECORD_BUFFER_SIZE; i++) initSampleRecord(loggerConfig,&g_sampleRecordBuffer[i]);

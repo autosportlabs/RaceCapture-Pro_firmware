@@ -37,6 +37,9 @@ extern const cmd_t g_loggerCommands[];
 {"getGpsCfg", "Gets the configuration for Gps features","",GetGpsConfig}, \
 {"setGpsCfg", "Sets the configuration for Gps features","[installed] [label_lat] [units_lat] [sampleRate_lat] [label_long] [units_long] [sampleRate_long] [label_vel] [units_vel] [sampleRate_vel] [label_time] [units_time] [sampleRate_time] [label_sats] [units_sats] [sampleRate_sats]",SetGpsConfig}, \
 \
+{"getDistCfg", "Gets the configuration for the distance channels", "", GetDistanceConfig}, \
+{"setDistCfg", "Sets the configuration for the distance channels", "[label_lapDist] [units_lapDist] [sampleRate_lapDist] [label_totalDist] [units_totalDist] [sampleRate_totalDist]", SetDistanceConfig}, \
+\
 {"getStartFinishCfg", "Gets the start/finish line configuration","",GetStartFinishConfig}, \
 {"setStartFinishCfg", "Sets the start/finish line configuration","[label_lapCount] [units_lapCount] [sampleRate_lapCount] [label_lapTime] [units_lapTime] [sampleRate_lapTime] [label_splitTime] [units_splitTime] [sampleRate_splitTime] [startFinishLat] [startFinishLong] [startFinishRadius] [splitLat] [splitLong] [splitRadius]",SetStartFinishConfig}, \
 \
@@ -85,6 +88,9 @@ void GetPwmClockFreq(Serial *serial, unsigned int argc, char **argv);
 
 void GetGpsConfig(Serial *serial, unsigned int argc, char **argv);
 void SetGpsConfig(Serial *serial, unsigned int argc, char **argv);
+
+void GetDistanceConfig(Serial *serial, unsigned int argc, char **argv);
+void SetDistanceConfig(Serial *serial, unsigned int argc, char **argv);
 
 void GetStartFinishConfig(Serial *serial, unsigned int argc, char **argv);
 void SetStartFinishConfig(Serial *serial, unsigned int argc, char **argv);

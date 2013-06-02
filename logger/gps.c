@@ -32,6 +32,9 @@
 
 static char g_GPSdataLine[GPS_DATA_LINE_BUFFER_LEN];
 
+static float	g_prevLatitude;
+static float	g_prevLongitude;
+
 static float	g_latitude;
 static float 	g_longitude;
 
@@ -57,8 +60,27 @@ static float g_lastSplitTime;
 
 static int g_lapCount;
 
-void setLapCount(int lapCount){
-	g_lapCount = lapCount;
+static float	g_lapDistance;
+static float 	g_totalDistance;
+
+void resetTotalDistance(){
+	g_totalDistance = 0;
+}
+
+void resetLapDistance(){
+	g_lapDistance = 0;
+}
+
+float getTotalDistance(){
+	return g_totalDistance;
+}
+
+float getLapDistance(){
+	return g_lapDistance;
+}
+
+void resetLapCount(){
+	g_lapCount = 0;
 }
 
 int getLapCount(){
@@ -157,6 +179,18 @@ static int isGpsTargetEnabled(GPSTargetConfig *targetConfig){
 	return targetConfig->latitude != 0 && targetConfig->longitude != 0;
 }
 
+static float calcDistancesSinceLastSample(){
+	//todo add calculations here
+	return 0;
+}
+
+static void updateDistances(){
+	float distanceSinceLastSample  = calcDistancesSinceLastSample();
+	g_totalDistance += distanceSinceLastSample;
+	g_lapDistance += distanceSinceLastSample;
+}
+
+
 static void updateStartFinish(void){
 	GPSTargetConfig *targetConfig = &(getWorkingLoggerConfig()->GPSConfig.startFinishConfig);
 
@@ -180,6 +214,7 @@ static void updateStartFinish(void){
 					g_lapCount++;
 					g_lastLapTime = lapTime;
 					g_lastStartFinishTimestamp = currentTimestamp;
+					resetLapDistance();
 				}
 			}
 		}
@@ -219,6 +254,8 @@ static void updateSplit(void){
 
 
 void startGPSTask(){
+	g_prevLatitude = 0.0;
+	g_prevLongitude = 0.0;
 	g_latitude = 0.0;
 	g_longitude = 0.0;
 	g_UTCTime = 0.0;
@@ -234,6 +271,8 @@ void startGPSTask(){
 	g_prevAtSplit = 0;
 	g_lastSplitTimestamp = 0;
 	g_lapCount = 0;
+	g_totalDistance = 0;
+	g_lapDistance = 0;
 	
 	initUsart1(USART_MODE_8N1, 38400);
 	xTaskCreate( GPSTask, ( signed portCHAR * ) "GPSTask", GPS_TASK_STACK_SIZE, NULL, 	GPS_TASK_PRIORITY, 	NULL );
@@ -257,6 +296,7 @@ void GPSTask( void *pvParameters ){
 						enableLED(LED1);
 						flashCount = 0;		
 					}
+					updateDistances();
 					updateStartFinish();
 					updateSplit();
 				} else if (strstr(data,"VTG,")){ //Course Over Ground and Ground Speed
@@ -386,6 +426,8 @@ void parseGGA(char *data){
 		delim = strchr(data,',');
 	}
 
+	g_prevLatitude = g_latitude;
+	g_prevLongitude = g_longitude;
 	g_longitude = longitude;
 	g_latitude = latitude;
 }

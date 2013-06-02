@@ -232,6 +232,19 @@ void GetStartFinishConfig(Serial *serial, unsigned int argc, char **argv){
 	put_nameFloat(serial, "splitRadius", cfg->splitConfig.targetRadius, DEFAULT_GPS_RADIUS_LOGGING_PRECISION);
 }
 
+void GetDistanceConfig(Serial *serial, unsigned int argc, char **argv){
+	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfig);
+	SendChannelConfigSuffix(serial, &(cfg->lapDistanceCfg), "lapDist");
+	SendChannelConfigSuffix(serial, &(cfg->totalDistanceCfg), "totalDist");
+}
+
+void SetDistanceConfig(Serial *serial, unsigned int argc, char **argv){
+	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfig);
+	if (argc > 1) SetChannelConfig(&(cfg->lapDistanceCfg),1,argc,argv);
+	if (argc > 4) SetChannelConfig(&(cfg->totalDistanceCfg),4,argc,argv);
+	put_commandOK(serial);
+}
+
 void SetStartFinishConfig(Serial *serial, unsigned int argc, char **argv){
 	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfig);
 	if (argc > 1) SetChannelConfig(&(cfg->lapCountCfg),1,argc,argv);

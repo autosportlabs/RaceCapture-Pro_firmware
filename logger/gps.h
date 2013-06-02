@@ -5,7 +5,15 @@ void startGPSTask();
 
 void GPSTask( void *pvParameters );
 
-void setLapCount(int lapCount);
+void resetTotalDistance();
+
+void resetLapDistance();
+
+float getTotalDistance();
+
+float getLapDistance();
+
+void resetLapCount();
 
 int getLapCount();
 
@@ -38,7 +46,6 @@ int getSatellitesUsedForPosition();
 float getGPSSpeed();
 
 char * getGPSDataLine();
-
 
 void parseGGA(char *data);
 void parseVTG(char *data);
