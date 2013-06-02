@@ -3,6 +3,7 @@
 #include "serial.h"
 #include "modp_numtoa.h"
 #include "mod_string.h"
+#include "race_capture/printk.h"
 
 #define min(a,b) ((a)<(b)?(a):(b))
 
@@ -18,17 +19,11 @@ char g_latestTextMsg[200];
 #define MEDIUM_TIMEOUT 5000
 #define CONNECT_TIMEOUT 10000
 
-//#define DEBUG
-
 static int readModemWait(portTickType delay){
-#ifdef DEBUG
-	Serial * s = get_serial_usb();
-	s->put_s("Read:");
-#endif
+	printk(DEBUG, "cellRead: ");
 	int c = usart0_readLineWait(g_cellBuffer, sizeof(g_cellBuffer),delay);
-#ifdef DEBUG
-	s->put_s(g_cellBuffer);
-#endif
+	printk(DEBUG, g_cellBuffer);
+	printk(DEBUG, "\n");
 	return c;
 }
 
@@ -36,22 +31,7 @@ static int readModem(void){
 	return readModemWait(portMAX_DELAY);
 }
 
-static int putsModem(const char *s){
-	int c = usart0_puts(s);
-#ifdef DEBUG
-	Serial * serial = get_serial_usb();
-	serial->put_s("Write: ");
-	serial->put_s(s);
-	put_crlf(serial);
-#endif
-	return c;
-}
-
-int putcModem(char c){
-#ifdef DEBUG
-	Serial *serial = get_serial_usb();
-	serial->put_c(c);
-#endif
+static int putcModem(char c){
 	usart0_putchar(c);
 	return 0;
 }
@@ -70,7 +50,7 @@ static void stripTrailingWhitespace(char *data){
 
 static int sendCommandWait(const char *cmd, portTickType wait){
 	flushModem();
-	putsModem(cmd);
+	putsCell(cmd);
 	readModemWait(wait);
 	readModemWait(READ_TIMEOUT);
 	vTaskDelay(PAUSE_DELAY); //maybe take this out later - debugging SIM900
@@ -97,7 +77,7 @@ static int isDataReady(){
 }
 
 static int getIpAddress(){
-	putsModem("AT+CIFSR\r");
+	putsCell("AT+CIFSR\r");
 	readModemWait(MEDIUM_TIMEOUT);
 	readModemWait(READ_TIMEOUT);
 	if (strlen(g_cellBuffer) == 0) return -1;
@@ -106,11 +86,50 @@ static int getIpAddress(){
 	return 0;
 }
 
-int configureNet(void){
+int putsCell(const char *data){
+	int c = usart0_puts(data);
+	printk(DEBUG, "cellWrite: ");
+	printk(DEBUG, data);
+	printk(DEBUG, "\r\n");
+	return c;
+}
+
+void putUintCell(uint32_t num){
+	char buf[10];
+	modp_uitoa10(num,buf);
+	putsCell(buf);
+}
+
+void putIntCell(int num){
+	char buf[10];
+	modp_itoa10(num,buf);
+	putsCell(buf);
+}
+
+void putFloatCell(float num, int precision){
+	char buf[20];
+	modp_ftoa(num, buf, precision);
+	putsCell(buf);
+}
+
+void putQuotedStringCell(char *s){
+	putsCell("\"");
+	putsCell(s);
+	putsCell("\"");
+}
+
+int configureNet(const char *apnHost, const char *apnUser, const char *apnPass){
 	if (!sendCommand("AT+CIPMUX=0\r")) return -1;  //TODO enable for SIM900
 	if (!sendCommand("AT+CIPMODE=1\r")) return -1;
 	//if (!sendCommand("AT+CIPCCFG=3,2,256,1\r")) return -1;
-	if (!sendCommandWait("AT+CSTT=\"epc.tmobile.com\",\"\",\"\"\r", READ_TIMEOUT)) return -2;
+	strcpy(g_cellBuffer, "AT+CSTT=\"");
+	strcat(g_cellBuffer, apnHost);
+	strcat(g_cellBuffer, "\",\"");
+	strcat(g_cellBuffer, apnUser);
+	strcat(g_cellBuffer, "\",\"");
+	strcat(g_cellBuffer, apnPass);
+	strcat(g_cellBuffer, "\"\r");
+	if (!sendCommandWait(g_cellBuffer, READ_TIMEOUT)) return -2;
 //	if (!sendCommand("AT+CIPHEAD=1\r")) return -2;
 	if (!sendCommandWait("AT+CIICR\r", CONNECT_TIMEOUT)) return -4;
 	if (getIpAddress() !=0 ) return -5;
@@ -127,7 +146,7 @@ int connectNet(const char *host, const char *port, int udpMode){
 	strcat(g_cellBuffer, "\",\"");
 	strcat(g_cellBuffer, port);
 	strcat(g_cellBuffer, "\"\r");
-	putsModem(g_cellBuffer);
+	putsCell(g_cellBuffer);
 	int attempt = 0;
 	while (attempt++ < 5){
 		readModemWait(SHORT_TIMEOUT);
@@ -141,7 +160,7 @@ int connectNet(const char *host, const char *port, int udpMode){
 
 int closeNet(){
 	vTaskDelay(335); //~1000ms
-	putsModem("+++");
+	putsCell("+++");
 	vTaskDelay(168); //~500ms
 	if (!sendCommandWait("AT+CIPCLOSE\r", SHORT_TIMEOUT)) return -1;
 	return 0;
@@ -149,7 +168,7 @@ int closeNet(){
 
 int startNetData(){
 	flushModem();
-	putsModem("AT+CIPSEND\r");
+	putsCell("AT+CIPSEND\r");
 	while (1){
 		readModemWait(READ_TIMEOUT);
 		if (strncmp(g_cellBuffer,">",1) == 0) return 0;
@@ -172,33 +191,6 @@ const char * readsCell(portTickType timeout){
 	return g_cellBuffer;
 }
 
-int putsCell(const char *data){
-	return putsModem(data);
-}
-
-void putUintCell(uint32_t num){
-	char buf[10];
-	modp_uitoa10(num,buf);
-	putsCell(buf);
-}
-
-void putIntCell(int num){
-	char buf[10];
-	modp_itoa10(num,buf);
-	putsCell(buf);
-}
-
-void putFloatCell(float num, int precision){
-	char buf[20];
-	modp_ftoa(num, buf, precision);
-	putsCell(buf);
-}
-
-void putQuotedStringCell(char *s){
-	putcModem('"');
-	putsCell(s);
-	putcModem('"');
-}
 
 int isNetConnectionErrorOrClosed(){
 	const char * readData = readsCell(0);
@@ -270,11 +262,11 @@ void deleteSent(void){
 const char * receiveText(int txtNumber){
 
 	flushModem();
-	putsModem("AT+CMGR=");
+	putsCell("AT+CMGR=");
 	char txtNumberBuffer[10];
 	modp_itoa10(txtNumber,txtNumberBuffer);
-	putsModem(txtNumberBuffer);
-	putsModem("\r");
+	putsCell(txtNumberBuffer);
+	putsCell("\r");
 
 	readModem();
 	readModem();
@@ -298,10 +290,10 @@ const char * receiveText(int txtNumber){
 
 int sendText(const char * number, const char * msg){
 
-	putsModem("AT+CMGS=\"");
-	putsModem(number);
-	putsModem("\"\r");
-	putsModem(msg);
+	putsCell("AT+CMGS=\"");
+	putsCell(number);
+	putsCell("\"\r");
+	putsCell(msg);
 	putcModem(26);
 	readModem();
 	readModem();

@@ -51,14 +51,14 @@ static void initTxFrame(TxFrame *frame){
 	frame->startDelimeter = START_DELIMETER;
 	frame->frameType = TRANSMIT_FRAME_TYPE;
 
-	LoggerOutputConfig *config = &(getWorkingLoggerConfig()->LoggerOutputConfig);
+	ConnectivityConfig *config = &(getWorkingLoggerConfig()->ConnectivityConfig);
 
 	for (int i = 0; i < ADDRESS_LENGTH / 2;i++){
-		frame->address[i] = SWIZZLE_BIGENDIAN(config->p2pDestinationAddrHigh,i,32);
+		frame->address[i] = SWIZZLE_BIGENDIAN(config->p2pConfig.p2pDestinationAddrHigh,i,32);
 	}
 
 	for (int i = 0; i < ADDRESS_LENGTH / 2;i++){
-		frame->address[i+ (ADDRESS_LENGTH / 2)] = SWIZZLE_BIGENDIAN(config->p2pDestinationAddrLow,i,32);
+		frame->address[i+ (ADDRESS_LENGTH / 2)] = SWIZZLE_BIGENDIAN(config->p2pConfig.p2pDestinationAddrLow,i,32);
 	}
 
 	frame->reserved1 = RESERVED1;

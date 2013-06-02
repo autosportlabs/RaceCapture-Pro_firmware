@@ -273,40 +273,97 @@ typedef struct _GPSConfig{
 							DEFAULT_GPS_TIME_CONFIG, \
 							DEFAULT_GPS_SPEED_CONFIG}
 
-#define DEVICE_ID_LENGTH 36
-#define TELEMETRY_SERVER_HOST_LENGTH 100
+#define BT_DEVICE_NAME_LENGTH 20
+#define BT_PASSCODE_LENGTH 4
+#define DEFAULT_BT_DEVICE_NAME "RaceCapture/Pro"
+#define DEFAULT_BT_PASSCODE "1010"
 
-typedef struct _LoggerOutputConfig {
-	char telemetryMode;
-	char sdLoggingMode;
-	char telemetryDeviceId[DEVICE_ID_LENGTH + 1]; // + 1 terminating character
-	char telemetryServerHost[TELEMETRY_SERVER_HOST_LENGTH + 1]; // + 1 terminating character
-	unsigned int p2pDestinationAddrHigh;
-	unsigned int p2pDestinationAddrLow;
-} LoggerOutputConfig;
+typedef struct _BluetoothConfig{
+	char deviceName [BT_DEVICE_NAME_LENGTH + 1];
+	char passcode [BT_PASSCODE_LENGTH + 1];
+} BluetoothConfig;
 
-#define TELEMETRY_MODE_CONSOLE 					0
-#define TELEMETRY_MODE_BLUETOOTH				1
-#define TELEMETRY_MODE_CELL						2
-#define TELEMETRY_MODE_P2P 						3
+#define DEFAULT_BT_CONFIG { \
+	DEFAULT_BT_DEVICE_NAME, \
+	DEFAULT_BT_PASSCODE \
+}
 
-#define SD_LOGGING_MODE_DISABLED				0
-#define SD_LOGGING_MODE_CSV						1
-#define SD_LOGGING_MODE_BINARY					2
+#define CELL_APN_HOST_LENGTH 30
+#define CELL_APN_USER_LENGTH 20
+#define CELL_APN_PASS_LENGTH 20
+#define DEFAULT_APN_HOST "epc.tmobile.com"
+#define DEFAULT_APN_USER ""
+#define DEFAULT_APN_PASS ""
 
-#define DEFAULT_TELEMETRY_MODE 					TELEMETRY_MODE_CONSOLE
-#define DEFAULT_SD_LOGGING_MODE					SD_LOGGING_MODE_CSV
+typedef struct _CellularConfig{
+	char apnHost [CELL_APN_HOST_LENGTH + 1];
+	char apnUser [CELL_APN_USER_LENGTH + 1];
+	char apnPass [CELL_APN_PASS_LENGTH + 1];
+} CellularConfig;
+
+#define DEFAULT_CELL_CONFIG { \
+	DEFAULT_APN_HOST, \
+	DEFAULT_APN_USER, \
+	DEFAULT_APN_PASS \
+}
 
 #define DEFAULT_P2P_DESTINATION_ADDR_HIGH	 	0x00000000
 #define DEFAULT_P2P_DESTINATION_ADDR_LOW		0X0000FFFF
 
-#define DEFAULT_LOGGER_OUTPUT_CONFIG { 	DEFAULT_TELEMETRY_MODE, \
+typedef struct _P2PConfig{
+	unsigned int p2pDestinationAddrHigh;
+	unsigned int p2pDestinationAddrLow;
+} P2PConfig;
+
+#define DEFAULT_P2P_CONFIG { \
+		DEFAULT_P2P_DESTINATION_ADDR_HIGH, \
+		DEFAULT_P2P_DESTINATION_ADDR_LOW \
+}
+
+#define DEVICE_ID_LENGTH 36
+#define TELEMETRY_SERVER_HOST_LENGTH 100
+
+#define DEFAULT_DEVICE_ID ""
+#define DEFAULT_TELEMETRY_SERVER_HOST "54.245.229.2"
+
+typedef struct _TelemetryConfig {
+	char telemetryDeviceId[DEVICE_ID_LENGTH + 1];
+	char telemetryServerHost[TELEMETRY_SERVER_HOST_LENGTH + 1];
+} TelemetryConfig;
+
+#define DEFAULT_TELEMETRY_CONFIG { \
+		DEFAULT_DEVICE_ID, \
+		DEFAULT_TELEMETRY_SERVER_HOST \
+}
+
+typedef struct _ConnectivityConfig {
+	char connectivityMode;
+	char sdLoggingMode;
+	BluetoothConfig bluetoothConfig;
+	CellularConfig cellularConfig;
+	P2PConfig p2pConfig;
+	TelemetryConfig telemetryConfig;
+} ConnectivityConfig;
+
+
+#define CONNECTIVITY_MODE_CONSOLE 					0
+#define CONNECTIVITY_MODE_BLUETOOTH					1
+#define CONNECTIVITY_MODE_CELL						2
+#define CONNECTIVITY_MODE_P2P 						3
+
+#define SD_LOGGING_MODE_DISABLED					0
+#define SD_LOGGING_MODE_CSV							1
+
+#define DEFAULT_CONNECTIVITY_MODE 					CONNECTIVITY_MODE_CONSOLE
+#define DEFAULT_SD_LOGGING_MODE						SD_LOGGING_MODE_CSV
+
+#define DEFAULT_CONNECTIVITY_CONFIG { 	DEFAULT_CONNECTIVITY_MODE, \
 										DEFAULT_SD_LOGGING_MODE, \
-										"", \
-										"54.245.229.2", \
-										DEFAULT_P2P_DESTINATION_ADDR_HIGH, \
-										DEFAULT_P2P_DESTINATION_ADDR_LOW \
-										} //autosportlabs.com
+										DEFAULT_BT_CONFIG, \
+										DEFAULT_CELL_CONFIG, \
+										DEFAULT_P2P_CONFIG, \
+										DEFAULT_TELEMETRY_CONFIG \
+										}
 
 typedef struct _LoggerConfig {
 	//ADC Calibrations
@@ -323,8 +380,8 @@ typedef struct _LoggerConfig {
 	AccelConfig AccelConfigs[CONFIG_ACCEL_CHANNELS];
 	//GPS Configuration
 	GPSConfig GPSConfig;
-	//Logger Output Configuration
-	LoggerOutputConfig LoggerOutputConfig;
+	//Connectivity Configuration
+	ConnectivityConfig ConnectivityConfig;
 	//Padding data to accommodate flash routine
 	char padding_data[FLASH_PAGE_SIZE];
 } LoggerConfig;
@@ -339,7 +396,7 @@ typedef struct _LoggerConfig {
 	CONFIG_FEATURE_INSTALLED, \
 	DEFAULT_ACCEL_CONFIGS, \
 	DEFAULT_GPS_CONFIG, \
-	DEFAULT_LOGGER_OUTPUT_CONFIG, \
+	DEFAULT_CONNECTIVITY_CONFIG, \
 	"" \
 	}
 	

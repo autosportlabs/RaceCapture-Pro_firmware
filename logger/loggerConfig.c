@@ -94,8 +94,6 @@ char filterSdLoggingMode(char mode){
 	switch (mode){
 		case SD_LOGGING_MODE_CSV:
 			return SD_LOGGING_MODE_CSV;
-		case SD_LOGGING_MODE_BINARY:
-			return SD_LOGGING_MODE_BINARY;
 		default:
 		case SD_LOGGING_MODE_DISABLED:
 			return SD_LOGGING_MODE_DISABLED;
@@ -104,15 +102,15 @@ char filterSdLoggingMode(char mode){
 
 char filterTelemetryMode(char mode){
 	switch(mode){
-		case TELEMETRY_MODE_P2P:
-			return TELEMETRY_MODE_P2P;
-		case TELEMETRY_MODE_CELL:
-			return TELEMETRY_MODE_CELL;
-		case TELEMETRY_MODE_BLUETOOTH:
-			return TELEMETRY_MODE_BLUETOOTH;
+		case CONNECTIVITY_MODE_P2P:
+			return CONNECTIVITY_MODE_P2P;
+		case CONNECTIVITY_MODE_CELL:
+			return CONNECTIVITY_MODE_CELL;
+		case CONNECTIVITY_MODE_BLUETOOTH:
+			return CONNECTIVITY_MODE_BLUETOOTH;
 		default:
-		case TELEMETRY_MODE_CONSOLE:
-			return TELEMETRY_MODE_CONSOLE;
+		case CONNECTIVITY_MODE_CONSOLE:
+			return CONNECTIVITY_MODE_CONSOLE;
 	}
 }
 

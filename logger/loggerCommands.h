@@ -17,6 +17,11 @@ extern const cmd_t g_loggerCommands[];
 {"testSD", "Test Write to SD card.","<lineWrites> <periodicFlush> <quietMode>", TestSD}, \
 {"flashLoggerCfg", "Write the active Logger Configuration to flash.","", FlashLoggerConfig}, \
 \
+{"getCellCfg", "Gets the cellular connectivity configuration", "", GetCellConfig}, \
+{"setCellCfg", "Sets the cellular connectivity configuration", "<apnHost> <apnUser> <apnPassword>", SetCellConfig}, \
+\
+{"getBtCfg", "Gets the Bluetooth configuration", "", GetBluetoothConfig}, \
+{"setBtCfg", "Sets the Bluetooth configuration", "<deviceName> <passcode>", SetBluetoothConfig}, \
 {"getOutputCfg", "Gets the Output Configuration","",GetLoggerOutputConfig}, \
 {"setOutputCfg", "Sets the Output Configuration","[sdLoggingMode] [telemetryMode] [p2pDestAddrHigh] [p2pDestAddrLow] [telemetryHost] [telemetryDeviceId]",SetLoggerOutputConfig}, \
 \
@@ -59,6 +64,12 @@ void SampleData(Serial *serial, unsigned int argc, char **argv);
 void TestSD(Serial *serial, unsigned int argc, char **argv);
 
 void FlashLoggerConfig(Serial *serial, unsigned int argc, char **argv);
+
+void GetBluetoothConfig(Serial *serial, unsigned int argc, char **argv);
+void SetBluetoothConfig(Serial *serial, unsigned int argc, char **argv);
+
+void GetCellConfig(Serial *serial, unsigned int argc, char **argv);
+void SetCellConfig(Serial *serial, unsigned int argc, char **argv);
 
 void GetLoggerOutputConfig(Serial *serial, unsigned int argc, char **argv);
 void SetLoggerOutputConfig(Serial *serial, unsigned int argc, char **argv);

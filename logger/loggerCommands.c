@@ -377,24 +377,52 @@ void CalibrateAccelZero(Serial *serial, unsigned int argc, char **argv){
 
 }
 
+void GetBluetoothConfig(Serial *serial, unsigned int argc, char **argv){
+	BluetoothConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfig.bluetoothConfig);
+	put_nameString(serial, "btName", c->deviceName);
+	put_nameString(serial, "bpPass", c->passcode);
+}
+
+void SetBluetoothConfig(Serial *serial, unsigned int argc, char **argv){
+	BluetoothConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfig.bluetoothConfig);
+	if (argc > 1) setTextField(c->deviceName, argv[1], BT_DEVICE_NAME_LENGTH);
+	if (argc > 2) setTextField(c->passcode, argv[2], BT_PASSCODE_LENGTH);
+	put_commandOK(serial);
+}
+
+void GetCellConfig(Serial *serial, unsigned int argc, char **argv){
+	CellularConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfig.cellularConfig);
+	put_nameString(serial, "apnHost", c->apnHost);
+	put_nameString(serial, "apnUser", c->apnUser);
+	put_nameString(serial, "apnPass", c->apnPass);
+}
+
+void SetCellConfig(Serial *serial, unsigned int argc, char **argv){
+	CellularConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfig.cellularConfig);
+	if (argc > 1) setTextField(c->apnHost, argv[1], CELL_APN_HOST_LENGTH);
+	if (argc > 2) setTextField(c->apnUser, argv[2], CELL_APN_USER_LENGTH);
+	if (argc > 3) setTextField(c->apnPass, argv[3], CELL_APN_PASS_LENGTH);
+	put_commandOK(serial);
+}
+
 void GetLoggerOutputConfig(Serial *serial, unsigned int argc, char **argv){
-	LoggerOutputConfig *c = &(getWorkingLoggerConfig()->LoggerOutputConfig);
+	ConnectivityConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfig);
 	put_nameInt(serial, "sdLoggingMode",c->sdLoggingMode);
-	put_nameInt(serial, "telemetryMode",c->telemetryMode);
-	put_nameUint(serial, "p2pDestAddrHigh",c->p2pDestinationAddrHigh);
-	put_nameUint(serial, "p2pDestAddrLow",c->p2pDestinationAddrLow);
-	put_nameString(serial, "telemetryServerHost", c->telemetryServerHost);
-	put_nameString(serial, "telemetryDeviceId", c->telemetryDeviceId);
+	put_nameInt(serial, "telemetryMode",c->connectivityMode);
+	put_nameUint(serial, "p2pDestAddrHigh",c->p2pConfig.p2pDestinationAddrHigh);
+	put_nameUint(serial, "p2pDestAddrLow",c->p2pConfig.p2pDestinationAddrLow);
+	put_nameString(serial, "telemetryServerHost", c->telemetryConfig.telemetryServerHost);
+	put_nameString(serial, "telemetryDeviceId", c->telemetryConfig.telemetryDeviceId);
 }
 
 void SetLoggerOutputConfig(Serial *serial, unsigned int argc, char **argv){
-	LoggerOutputConfig *c = &(getWorkingLoggerConfig()->LoggerOutputConfig);
+	ConnectivityConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfig);
 	if (argc > 1) c->sdLoggingMode = filterSdLoggingMode((char)modp_atoui(argv[1]));
-	if (argc > 2) c->telemetryMode = filterTelemetryMode((char)modp_atoui(argv[2]));
-	if (argc > 3) c->p2pDestinationAddrHigh = modp_atoui(argv[3]);
-	if (argc > 4) c->p2pDestinationAddrLow = modp_atoui(argv[4]);
-	if (argc > 5) setTextField(c->telemetryServerHost, argv[5], TELEMETRY_SERVER_HOST_LENGTH);
-	if (argc > 6) setTextField(c->telemetryDeviceId, argv[6], DEVICE_ID_LENGTH);
+	if (argc > 2) c->connectivityMode = filterTelemetryMode((char)modp_atoui(argv[2]));
+	if (argc > 3) c->p2pConfig.p2pDestinationAddrHigh = modp_atoui(argv[3]);
+	if (argc > 4) c->p2pConfig.p2pDestinationAddrLow = modp_atoui(argv[4]);
+	if (argc > 5) setTextField(c->telemetryConfig.telemetryServerHost, argv[5], TELEMETRY_SERVER_HOST_LENGTH);
+	if (argc > 6) setTextField(c->telemetryConfig.telemetryDeviceId, argv[6], DEVICE_ID_LENGTH);
 	put_commandOK(serial);
 }
 

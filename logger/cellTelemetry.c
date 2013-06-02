@@ -38,14 +38,14 @@ static void writeTelemetryMeta(SampleRecord *sampleRecord){
 		ChannelSample * sample = &(sampleRecord->Samples[i]);
 		ChannelConfig * channelConfig = sample->channelConfig;
 		if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
-		if (fieldCount++ > 0) putcModem(',');
+		if (fieldCount++ > 0) putsCell(",");
 		putsCell("{\"name\":");
 		putQuotedStringCell(channelConfig->label);
 		if (strlen(channelConfig->units) > 0){
 			putsCell(",\"units\":");
 			putQuotedStringCell(channelConfig->units);
 		}
-		putcModem('}');
+		putsCell("}");
 	}
 	putsCell("]}");
 	putsCell("}\n");
@@ -59,7 +59,7 @@ static void writeSampleRecordJSON(SampleRecord * sampleRecord, uint32_t sampleTi
 	int fieldCount = 0;
 	putsCell("\"tick\":");
 	putUintCell(sampleTick);
-	putcModem(',');
+	putsCell(",");
 	for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
 		ChannelSample * sample = &(sampleRecord->Samples[i]);
 		ChannelConfig * channelConfig = sample->channelConfig;
@@ -68,10 +68,10 @@ static void writeSampleRecordJSON(SampleRecord * sampleRecord, uint32_t sampleTi
 
 		if (sample->intValue == NIL_SAMPLE) continue;
 
-		if (fieldCount++ > 0) putcModem(',');
+		if (fieldCount++ > 0) putsCell(",");
 
 		putQuotedStringCell(channelConfig->label);
-		putcModem(':');
+		putsCell(":");
 		int precision = sample->precision;
 		if (precision > 0){
 			putFloatCell(sample->floatValue,precision);
@@ -99,7 +99,8 @@ void cellTelemetryTask(void *params){
 
 		while (cellReady == 0){
 			if (0 == initCellModem()){
-				if (0 == configureNet()){
+				CellularConfig *cellCfg = &(loggerConfig->ConnectivityConfig.cellularConfig);
+				if (0 == configureNet(cellCfg->apnHost, cellCfg->apnUser, cellCfg->apnPass)){
 					cellReady = 1;
 				}
 			}
@@ -115,8 +116,8 @@ void cellTelemetryTask(void *params){
 			}
 			else{
 				if (0 == g_telemetryActive){
-					if( 0 == connectNet(loggerConfig->LoggerOutputConfig.telemetryServerHost,"8080",0) &&
-						0 == writeAuthJSON(loggerConfig->LoggerOutputConfig.telemetryDeviceId)){
+					if( 0 == connectNet(loggerConfig->ConnectivityConfig.telemetryConfig.telemetryServerHost,"8080",0) &&
+						0 == writeAuthJSON(loggerConfig->ConnectivityConfig.telemetryConfig.telemetryDeviceId)){
 							g_telemetryActive = 1;
 							writeTelemetryMeta(sr);
 						}

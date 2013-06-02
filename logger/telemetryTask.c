@@ -46,18 +46,18 @@ void createTelemetryTask(){
 		return;
 	}
 
-	switch(getWorkingLoggerConfig()->LoggerOutputConfig.telemetryMode){
-		case TELEMETRY_MODE_CONSOLE:
-			xTaskCreate( consoleConnectivityTask, ( signed portCHAR * ) "connectivity", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
+	switch(getWorkingLoggerConfig()->ConnectivityConfig.connectivityMode){
+		case CONNECTIVITY_MODE_CONSOLE:
+			xTaskCreate( consoleConnectivityTask, ( signed portCHAR * ) "connConsole", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
 			break;
-		case TELEMETRY_MODE_CELL:
-			xTaskCreate( cellTelemetryTask, ( signed portCHAR * ) "telemetry", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
+		case CONNECTIVITY_MODE_CELL:
+			xTaskCreate( cellTelemetryTask, ( signed portCHAR * ) "connCell", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
 			break;
-		case TELEMETRY_MODE_P2P:
-			xTaskCreate( p2pTelemetryTask, ( signed portCHAR * ) "telemetry", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
+		case CONNECTIVITY_MODE_P2P:
+			xTaskCreate( p2pTelemetryTask, ( signed portCHAR * ) "connP2P", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
 			break;
-		case TELEMETRY_MODE_BLUETOOTH:
-			xTaskCreate( btTelemetryTask, ( signed portCHAR * ) "telemetry", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
+		case CONNECTIVITY_MODE_BLUETOOTH:
+			xTaskCreate( btTelemetryTask, ( signed portCHAR * ) "connBT", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
 			break;
 	}
 }
