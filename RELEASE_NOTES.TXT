@@ -56,6 +56,12 @@ Once the firmware completes flashing, RaceCapture/Pro will reset and run normall
 
 Firmware Changelog:
 
+===1.1.10===
+Fixed periodic glitch in accelerometer readings
+Fixed periodic SD card file corruption
+Disabled accelerometer averaging based on user feedback
+Added beginning of logging infrastructure
+
 ===1.1.9===
 Fixed corrupted data in analog and timer channels when logging precision is zero
 

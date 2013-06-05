@@ -509,13 +509,11 @@ void SetLogLevel(Serial *serial, unsigned int argc, char **argv)
 {
         // XXX make this more robust maybe.
         if (argc < 1 || argv[1][0] < '0' || argv[1][0] > '7') {
-                serial->put_s("Failed\r\n");
+        		put_commandError(serial, ERROR_CODE_INVALID_PARAM);
                 return;
         }
 
         enum log_level level = (enum log_level) modp_atoui(argv[1]);
         enum log_level new_level = set_log_level(level);
-        serial->put_s("New log level is ");
-        put_int(serial, (int) new_level);
-        serial->put_s("\r\n");
+        put_commandOK(serial);
 }

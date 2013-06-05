@@ -75,6 +75,7 @@ USB_SRC_DIR = $(SAM7s_BASE_DIR)/usb
 SERIAL_SRC_DIR = $(SAM7s_BASE_DIR)/serial
 UART_SRC_DIR = $(SAM7s_BASE_DIR)/uart
 UTIL_DIR = $(SAM7s_BASE_DIR)/util
+SPI_DIR = $(SAM7s_BASE_DIR)/spi
 MEMORY_SRC_DIR = $(SAM7s_BASE_DIR)/memory
 LUA_SRC_DIR = $(SAM7s_BASE_DIR)/lua
 CMD_SRC_DIR = $(SAM7s_BASE_DIR)/command
@@ -101,6 +102,7 @@ $(RTOS_GCC_DIR)/port.c \
 $(UTIL_DIR)/modp_numtoa.c \
 $(UTIL_DIR)/modp_atonum.c \
 $(UTIL_DIR)/taskUtil.c \
+$(SPI_DIR)/spi.c \
 $(USB_SRC_DIR)/source/usb_comm.c \
 $(USB_SRC_DIR)/source/USB-CDC.c \
 $(UART_SRC_DIR)/usart.c \
@@ -209,7 +211,7 @@ CDEFS += -DSAM7_GCC
 CDEFS += -DTHUMB_INTERWORK
 
 # Place -I options here
-CINCS = -I. -I$(RTOS_MEMMANG_DIR) -I$(UTIL_DIR) -I$(LUA_SRC_DIR) -I$(MEMORY_SRC_DIR) -I$(FAT_SD_SRC_DIR) -I$(SDCARD_SRC_DIR) -I$(SERIAL_SRC_DIR) -I$(UART_SRC_DIR) -I$(ACCELEROMETER_SRC_DIR) -I$(LOGGER_SRC_DIR) -I$(USB_SRC_DIR)/include -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR) -I$(CMD_SRC_DIR) -I$(INCLUDE_DIR)
+CINCS = -I. -I$(RTOS_MEMMANG_DIR) -I$(UTIL_DIR) -I$(LUA_SRC_DIR) -I$(MEMORY_SRC_DIR) -I$(FAT_SD_SRC_DIR) -I$(SDCARD_SRC_DIR) -I$(SERIAL_SRC_DIR) -I$(SPI_DIR) -I$(UART_SRC_DIR) -I$(ACCELEROMETER_SRC_DIR) -I$(LOGGER_SRC_DIR) -I$(USB_SRC_DIR)/include -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR) -I$(CMD_SRC_DIR) -I$(INCLUDE_DIR)
 #CINCS = -I. -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
 # Place -D or -U options for ASM here
 ADEFS =  -D$(RUN_MODE)
