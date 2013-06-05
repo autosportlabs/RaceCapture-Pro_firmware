@@ -219,5 +219,9 @@ unsigned int readAccelerometerDevice(unsigned char channel){
 }
 
 unsigned int getLastAccelRead(unsigned char channel){
+#ifdef ACCEL_SMOOTHING
 	return g_averagedAccelValues[channel];
+#else
+	return readAccelerometerDevice(channel);
+#endif
 }
