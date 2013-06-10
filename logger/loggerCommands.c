@@ -198,7 +198,7 @@ void SetPwmConfig(Serial *serial, unsigned int argc, char **argv){
 }
 
 void GetGpsConfig(Serial *serial, unsigned int argc, char **argv){
-	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfig);
+	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfigs);
 	put_nameInt(serial, "installed",cfg->GPSInstalled);
 	SendChannelConfigSuffix(serial, &(cfg->latitudeCfg),"lat");
 	SendChannelConfigSuffix(serial, &(cfg->longitudeCfg),"long");
@@ -208,7 +208,7 @@ void GetGpsConfig(Serial *serial, unsigned int argc, char **argv){
 }
 
 void SetGpsConfig(Serial *serial, unsigned int argc, char **argv){
-	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfig);
+	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfigs);
 	if (argc > 1) cfg->GPSInstalled = (modp_atoi(argv[1]) != 0);
 	if (argc > 2) SetChannelConfig(&(cfg->latitudeCfg),2,argc,argv);
 	if (argc > 5) SetChannelConfig(&(cfg->longitudeCfg),5,argc,argv);
@@ -219,7 +219,7 @@ void SetGpsConfig(Serial *serial, unsigned int argc, char **argv){
 }
 
 void GetStartFinishConfig(Serial *serial, unsigned int argc, char **argv){
-	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfig);
+	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfigs);
 	SendChannelConfigSuffix(serial, &(cfg->lapCountCfg),"lapCount");
 	SendChannelConfigSuffix(serial, &(cfg->lapTimeCfg),"lapTime");
 	SendChannelConfigSuffix(serial, &(cfg->splitTimeCfg), "splitTime");
@@ -232,20 +232,20 @@ void GetStartFinishConfig(Serial *serial, unsigned int argc, char **argv){
 }
 
 void GetDistanceConfig(Serial *serial, unsigned int argc, char **argv){
-	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfig);
+	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfigs);
 	SendChannelConfigSuffix(serial, &(cfg->lapDistanceCfg), "lapDist");
 	SendChannelConfigSuffix(serial, &(cfg->totalDistanceCfg), "totalDist");
 }
 
 void SetDistanceConfig(Serial *serial, unsigned int argc, char **argv){
-	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfig);
+	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfigs);
 	if (argc > 1) SetChannelConfig(&(cfg->lapDistanceCfg),1,argc,argv);
 	if (argc > 4) SetChannelConfig(&(cfg->totalDistanceCfg),4,argc,argv);
 	put_commandOK(serial);
 }
 
 void SetStartFinishConfig(Serial *serial, unsigned int argc, char **argv){
-	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfig);
+	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfigs);
 	if (argc > 1) SetChannelConfig(&(cfg->lapCountCfg),1,argc,argv);
 	if (argc > 4) SetChannelConfig(&(cfg->lapTimeCfg),4,argc,argv);
 	if (argc > 7) SetChannelConfig(&(cfg->splitTimeCfg), 7, argc, argv);
@@ -390,27 +390,27 @@ void CalibrateAccelZero(Serial *serial, unsigned int argc, char **argv){
 }
 
 void GetBluetoothConfig(Serial *serial, unsigned int argc, char **argv){
-	BluetoothConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfig.bluetoothConfig);
+	BluetoothConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
 	put_nameString(serial, "btName", c->deviceName);
 	put_nameString(serial, "bpPass", c->passcode);
 }
 
 void SetBluetoothConfig(Serial *serial, unsigned int argc, char **argv){
-	BluetoothConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfig.bluetoothConfig);
+	BluetoothConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
 	if (argc > 1) setTextField(c->deviceName, argv[1], BT_DEVICE_NAME_LENGTH);
 	if (argc > 2) setTextField(c->passcode, argv[2], BT_PASSCODE_LENGTH);
 	put_commandOK(serial);
 }
 
 void GetCellConfig(Serial *serial, unsigned int argc, char **argv){
-	CellularConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfig.cellularConfig);
+	CellularConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
 	put_nameString(serial, "apnHost", c->apnHost);
 	put_nameString(serial, "apnUser", c->apnUser);
 	put_nameString(serial, "apnPass", c->apnPass);
 }
 
 void SetCellConfig(Serial *serial, unsigned int argc, char **argv){
-	CellularConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfig.cellularConfig);
+	CellularConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
 	if (argc > 1) setTextField(c->apnHost, argv[1], CELL_APN_HOST_LENGTH);
 	if (argc > 2) setTextField(c->apnUser, argv[2], CELL_APN_USER_LENGTH);
 	if (argc > 3) setTextField(c->apnPass, argv[3], CELL_APN_PASS_LENGTH);
@@ -418,7 +418,7 @@ void SetCellConfig(Serial *serial, unsigned int argc, char **argv){
 }
 
 void GetLoggerOutputConfig(Serial *serial, unsigned int argc, char **argv){
-	ConnectivityConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfig);
+	ConnectivityConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfigs);
 	put_nameInt(serial, "sdLoggingMode",c->sdLoggingMode);
 	put_nameInt(serial, "telemetryMode",c->connectivityMode);
 	put_nameUint(serial, "p2pDestAddrHigh",c->p2pConfig.p2pDestinationAddrHigh);
@@ -428,7 +428,7 @@ void GetLoggerOutputConfig(Serial *serial, unsigned int argc, char **argv){
 }
 
 void SetLoggerOutputConfig(Serial *serial, unsigned int argc, char **argv){
-	ConnectivityConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfig);
+	ConnectivityConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfigs);
 	if (argc > 1) c->sdLoggingMode = filterSdLoggingMode((char)modp_atoui(argv[1]));
 	if (argc > 2) c->connectivityMode = filterTelemetryMode((char)modp_atoui(argv[2]));
 	if (argc > 3) c->p2pConfig.p2pDestinationAddrHigh = modp_atoui(argv[3]);

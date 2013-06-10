@@ -21,15 +21,12 @@ typedef struct _api_context{
 typedef struct _api_t
 {
 	const char *cmd;
-	void (*func)(Serial *serial, jsmntok_t *json);
-} cmd_t;
+	void (*func)(Serial *serial, const jsmntok_t *json);
+} api_t;
 
 #define NULL_API {NULL, NULL}
 
-
 void process_api(Serial *serial, char * buffer, size_t bufferSize);
-
-void execute_api(Serial * serial, jsmntok_t *json);
 
 
 #endif /* API_H_ */

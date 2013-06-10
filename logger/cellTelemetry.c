@@ -99,7 +99,7 @@ void cellTelemetryTask(void *params){
 
 		while (cellReady == 0){
 			if (0 == initCellModem()){
-				CellularConfig *cellCfg = &(loggerConfig->ConnectivityConfig.cellularConfig);
+				CellularConfig *cellCfg = &(loggerConfig->ConnectivityConfigs.cellularConfig);
 				if (0 == configureNet(cellCfg->apnHost, cellCfg->apnUser, cellCfg->apnPass)){
 					cellReady = 1;
 				}
@@ -116,8 +116,8 @@ void cellTelemetryTask(void *params){
 			}
 			else{
 				if (0 == g_telemetryActive){
-					if( 0 == connectNet(loggerConfig->ConnectivityConfig.telemetryConfig.telemetryServerHost,"8080",0) &&
-						0 == writeAuthJSON(loggerConfig->ConnectivityConfig.telemetryConfig.telemetryDeviceId)){
+					if( 0 == connectNet(loggerConfig->ConnectivityConfigs.telemetryConfig.telemetryServerHost,"8080",0) &&
+						0 == writeAuthJSON(loggerConfig->ConnectivityConfigs.telemetryConfig.telemetryDeviceId)){
 							g_telemetryActive = 1;
 							writeTelemetryMeta(sr);
 						}

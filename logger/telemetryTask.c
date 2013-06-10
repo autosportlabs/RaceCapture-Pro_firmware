@@ -46,7 +46,7 @@ void createConnectivityTask(){
 		return;
 	}
 
-	switch(getWorkingLoggerConfig()->ConnectivityConfig.connectivityMode){
+	switch(getWorkingLoggerConfig()->ConnectivityConfigs.connectivityMode){
 		case CONNECTIVITY_MODE_CONSOLE:
 			xTaskCreate( consoleConnectivityTask, ( signed portCHAR * ) "connConsole", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
 			break;

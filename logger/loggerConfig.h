@@ -381,9 +381,9 @@ typedef struct _LoggerConfig {
 	char AccelInstalled;
 	AccelConfig AccelConfigs[CONFIG_ACCEL_CHANNELS];
 	//GPS Configuration
-	GPSConfig GPSConfig;
+	GPSConfig GPSConfigs;
 	//Connectivity Configuration
-	ConnectivityConfig ConnectivityConfig;
+	ConnectivityConfig ConnectivityConfigs;
 	//Padding data to accommodate flash routine
 	char padding_data[FLASH_PAGE_SIZE];
 } LoggerConfig;

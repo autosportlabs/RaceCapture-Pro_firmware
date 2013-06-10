@@ -12,6 +12,7 @@
 #include "baseCommands.h"
 #include "luaCommands.h"
 #include "loggerCommands.h"
+#include "api.h"
 
 #include "command.h"
 
@@ -21,6 +22,9 @@
 #define LUA_ENABLED
 
 #define SYSTEM_COMMANDS {LOGGER_COMMANDS, BASE_COMMANDS, LUA_COMMANDS, NULL_COMMAND}
+
+#define SYSTEM_APIS { NULL_API }
+
 
 //USB manufacturer string descriptor
 //first element = length of this entire array, in bytes

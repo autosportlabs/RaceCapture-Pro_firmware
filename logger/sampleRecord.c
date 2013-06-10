@@ -46,49 +46,49 @@ void initSampleRecord(LoggerConfig *loggerConfig,SampleRecord *sr){
 	{
 		ChannelSample *s = &(sr->GPS_LatitueSample);
 		s->precision = DEFAULT_GPS_POSITION_LOGGING_PRECISION;
-		s->channelConfig = &(loggerConfig->GPSConfig.latitudeCfg);
+		s->channelConfig = &(loggerConfig->GPSConfigs.latitudeCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->GPS_LongitudeSample);
 		s->precision = DEFAULT_GPS_POSITION_LOGGING_PRECISION;
-		s->channelConfig = &(loggerConfig->GPSConfig.longitudeCfg);
+		s->channelConfig = &(loggerConfig->GPSConfigs.longitudeCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->GPS_SpeedSample);
 		s->precision = DEFAULT_GPS_SPEED_LOGGING_PRECISION;
-		s->channelConfig = &(loggerConfig->GPSConfig.speedCfg);
+		s->channelConfig = &(loggerConfig->GPSConfigs.speedCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->GPS_TimeSample);
 		s->precision = DEFAULT_GPS_TIME_LOGGING_PRECISION;
-		s->channelConfig = &(loggerConfig->GPSConfig.timeCfg);
+		s->channelConfig = &(loggerConfig->GPSConfigs.timeCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->GPS_LapCountSample);
 		s->precision = DEFAULT_LAP_COUNT_LOGGING_PRECISION;
-		s->channelConfig = &(loggerConfig->GPSConfig.lapCountCfg);
+		s->channelConfig = &(loggerConfig->GPSConfigs.lapCountCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->GPS_LapTimeSample);
 		s->precision = DEFAULT_LAP_TIME_LOGGING_PRECISION;
-		s->channelConfig = &(loggerConfig->GPSConfig.lapTimeCfg);
+		s->channelConfig = &(loggerConfig->GPSConfigs.lapTimeCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->GPS_SplitTimeSample);
 		s->precision = DEFAULT_LAP_TIME_LOGGING_PRECISION;
-		s->channelConfig =  &(loggerConfig->GPSConfig.splitTimeCfg);
+		s->channelConfig =  &(loggerConfig->GPSConfigs.splitTimeCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->GPS_SatellitesSample);
 		s->precision = DEFAULT_GPS_SATELLITES_LOGGING_PRECISION;
-		s->channelConfig = &(loggerConfig->GPSConfig.satellitesCfg);
+		s->channelConfig = &(loggerConfig->GPSConfigs.satellitesCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 }

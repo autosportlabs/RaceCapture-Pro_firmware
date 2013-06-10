@@ -321,8 +321,8 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
 			if HIGHER_SAMPLE(sr, s) s = sr;
 		}
 	}
-	if (config->GPSConfig.GPSInstalled){
-		GPSConfig *gpsConfig = &(config->GPSConfig);
+	if (config->GPSConfigs.GPSInstalled){
+		GPSConfig *gpsConfig = &(config->GPSConfigs);
 		{
 			//TODO this represents "Position sample rate".
 			int sr = gpsConfig->latitudeCfg.sampleRate;

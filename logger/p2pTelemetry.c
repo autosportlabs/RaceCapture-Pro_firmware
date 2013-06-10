@@ -51,7 +51,7 @@ static void initTxFrame(TxFrame *frame){
 	frame->startDelimeter = START_DELIMETER;
 	frame->frameType = TRANSMIT_FRAME_TYPE;
 
-	ConnectivityConfig *config = &(getWorkingLoggerConfig()->ConnectivityConfig);
+	ConnectivityConfig *config = &(getWorkingLoggerConfig()->ConnectivityConfigs);
 
 	for (int i = 0; i < ADDRESS_LENGTH / 2;i++){
 		frame->address[i] = SWIZZLE_BIGENDIAN(config->p2pConfig.p2pDestinationAddrHigh,i,32);

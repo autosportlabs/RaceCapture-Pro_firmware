@@ -21,6 +21,9 @@ enum log_level {
 
 #define pr_info(arg1) printk(INFO, arg1)
 #define pr_debug(arg1) printk(DEBUG, arg1)
+#define pr_warning(arg1) printk(WARNING, arg1)
+#define pr_error(arg1) printk(ERR, arg1)
+
 
 
 size_t read_log_to_serial(Serial *s);

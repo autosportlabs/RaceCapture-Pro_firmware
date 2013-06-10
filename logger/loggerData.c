@@ -11,13 +11,13 @@
 #include "gps.h"
 
 
-static void writeAccelerometer(SampleRecord *sampleRecord, portTickType currentTicks, LoggerConfig *config){
+static void writeAccelerometer(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *config){
 
 	unsigned int accelValues[CONFIG_ACCEL_CHANNELS];
 
 	for (unsigned int i=0; i < CONFIG_ACCEL_CHANNELS;i++){
 		AccelConfig *ac = &(config->AccelConfigs[i]);
-		portTickType sr = ac->cfg.sampleRate;
+		size_t sr = ac->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED && (currentTicks % sr) == 0){
 			accelValues[i] = readAccelChannel(ac->accelChannel);
 		}
@@ -25,7 +25,7 @@ static void writeAccelerometer(SampleRecord *sampleRecord, portTickType currentT
 
 	for (unsigned int i=0; i < CONFIG_ACCEL_CHANNELS;i++){
 		AccelConfig *ac = &(config->AccelConfigs[i]);
-		portTickType sr = ac->cfg.sampleRate;
+		size_t sr = ac->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
 				float value = (i == ACCEL_CHANNEL_ZT ? convertYawRawToDegreesPerSec(accelValues[i],ac->zeroValue) : convertAccelRawToG(accelValues[i],ac->zeroValue));
@@ -35,14 +35,14 @@ static void writeAccelerometer(SampleRecord *sampleRecord, portTickType currentT
 	}
 }
 
-static void writeADC(SampleRecord *sampleRecord, portTickType currentTicks, LoggerConfig *config){
+static void writeADC(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *config){
 
 	unsigned int adc[CONFIG_ADC_CHANNELS];
 	readAllADC(&adc[0],&adc[1],&adc[2],&adc[3],&adc[4],&adc[5],&adc[6],&adc[7]);
 
 	for (unsigned int i=0; i < CONFIG_ADC_CHANNELS;i++){
 		ADCConfig *ac = &(config->ADCConfigs[i]);
-		portTickType sr = ac->cfg.sampleRate;
+		size_t sr = ac->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
 				float analogValue = 0;
@@ -67,17 +67,17 @@ static void writeADC(SampleRecord *sampleRecord, portTickType currentTicks, Logg
 	}
 }
 
-static void writeGPSChannels(SampleRecord *sampleRecord, portTickType currentTicks, GPSConfig *config){
+static void writeGPSChannels(SampleRecord *sampleRecord, size_t currentTicks, GPSConfig *config){
 
 	{
-		portTickType sr = config->timeCfg.sampleRate;
+		size_t sr = config->timeCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0) sampleRecord->GPS_TimeSample.floatValue = getUTCTime();
 		}
 	}
 	{
 		//latitude sample rate is a stand-in for position sample rate
-		portTickType sr = config->latitudeCfg.sampleRate;
+		size_t sr = config->latitudeCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
 				sampleRecord->GPS_LatitueSample.floatValue = getLatitude();
@@ -87,40 +87,40 @@ static void writeGPSChannels(SampleRecord *sampleRecord, portTickType currentTic
 	}
 
 	{
-		portTickType sr = config->splitTimeCfg.sampleRate;
+		size_t sr = config->splitTimeCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0) sampleRecord->GPS_SplitTimeSample.floatValue = getLastSplitTime();
 		}
 	}
 
 	{
-		portTickType sr = config->satellitesCfg.sampleRate;
+		size_t sr = config->satellitesCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0) sampleRecord->GPS_SatellitesSample.intValue = getSatellitesUsedForPosition();
 		}
 	}
 
 	{
-		portTickType sr = config->speedCfg.sampleRate;
+		size_t sr = config->speedCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0) sampleRecord->GPS_SpeedSample.floatValue = getGPSSpeed();
 		}
 	}
 	{
-		portTickType sr = config->lapCountCfg.sampleRate;
+		size_t sr = config->lapCountCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0) sampleRecord->GPS_LapCountSample.intValue = getLapCount();
 		}
 	}
 	{
-		portTickType sr = config->lapTimeCfg.sampleRate;
+		size_t sr = config->lapTimeCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0) sampleRecord->GPS_LapTimeSample.floatValue = getLastLapTime();
 		}
 	}
 }
 
-static void writeGPIOs(SampleRecord *sampleRecord, portTickType currentTicks, LoggerConfig *loggerConfig){
+static void writeGPIOs(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *loggerConfig){
 
 	unsigned int gpioMasks[CONFIG_GPIO_CHANNELS];
 
@@ -131,21 +131,21 @@ static void writeGPIOs(SampleRecord *sampleRecord, portTickType currentTicks, Lo
 	unsigned int gpioStates = AT91F_PIO_GetInput(AT91C_BASE_PIOA);
 	for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
 		GPIOConfig *c = &(loggerConfig->GPIOConfigs[i]);
-		portTickType sr = c->cfg.sampleRate;
+		size_t sr = c->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0) sampleRecord->GPIOSamples[i].intValue = ((gpioStates & gpioMasks[i]) != 0);
 		}
 	}
 }
 
-static void writeTimerChannels(SampleRecord *sampleRecord, portTickType currentTicks, LoggerConfig *loggerConfig){
+static void writeTimerChannels(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *loggerConfig){
 
 	unsigned int timers[CONFIG_TIMER_CHANNELS];
 	getAllTimerPeriods(timers,timers + 1,timers + 2);
 
 	for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++){
 		TimerConfig *c = &(loggerConfig->TimerConfigs[i]);
-		portTickType sr = c->cfg.sampleRate;
+		size_t sr = c->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
 				int value = 0;
@@ -179,11 +179,11 @@ static void writeTimerChannels(SampleRecord *sampleRecord, portTickType currentT
 	}
 }
 
-static void writePWMChannels(SampleRecord *sampleRecord, portTickType currentTicks, LoggerConfig *loggerConfig){
+static void writePWMChannels(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *loggerConfig){
 
 	for (int i = 0; i < CONFIG_PWM_CHANNELS; i++){
 		PWMConfig *c = &(loggerConfig->PWMConfigs[i]);
-		portTickType sr = c->cfg.sampleRate;
+		size_t sr = c->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
 				float value = 0;
@@ -212,10 +212,10 @@ static void writePWMChannels(SampleRecord *sampleRecord, portTickType currentTic
 }
 
 
-void populateSampleRecord(SampleRecord *sr, portTickType currentTicks, LoggerConfig *config){
+void populateSampleRecord(SampleRecord *sr, size_t currentTicks, LoggerConfig *config){
 
 	//perform logging tasks
-	unsigned int gpsInstalled = (unsigned int)config->GPSConfig.GPSInstalled;
+	unsigned int gpsInstalled = (unsigned int)config->GPSConfigs.GPSInstalled;
 	unsigned int accelInstalled = (unsigned int)config->AccelInstalled;
 
 	//Write ADC channels
@@ -231,7 +231,7 @@ void populateSampleRecord(SampleRecord *sr, portTickType currentTicks, LoggerCon
 	//Write Accelerometer
 	if (accelInstalled) writeAccelerometer(sr,currentTicks, config);
 	//Write GPS
-	if (gpsInstalled) writeGPSChannels(sr,currentTicks, &(config->GPSConfig));
+	if (gpsInstalled) writeGPSChannels(sr,currentTicks, &(config->GPSConfigs));
 
 }
 

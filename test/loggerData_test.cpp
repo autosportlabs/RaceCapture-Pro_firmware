@@ -1,4 +1,3 @@
-
 #include "loggerData_test.h"
 #include "loggerData.h"
 // Registers the fixture into the 'registry'

@@ -208,7 +208,7 @@ void registerLuaLoggerBindings(){
 // common functions
 ////////////////////////////////////////////////////
 static GPSConfig * getGPSConfig(){
-	return &(getWorkingLoggerConfig()->GPSConfig);
+	return &(getWorkingLoggerConfig()->GPSConfigs);
 }
 
 static int setLuaSampleRate(lua_State *L, int *sampleRate){
@@ -549,19 +549,19 @@ int Lua_GetGPIOConfig(lua_State *L){
 
 int Lua_SetGPSInstalled(lua_State *L){
 	if (lua_gettop(L) >=1 ){
-		getWorkingLoggerConfig()->GPSConfig.GPSInstalled = lua_toboolean(L,1);
+		getWorkingLoggerConfig()->GPSConfigs.GPSInstalled = lua_toboolean(L,1);
 	}
 	return 0;	
 }
 
 int Lua_GetGPSInstalled(lua_State *L){
-	lua_pushboolean(L,getWorkingLoggerConfig()->GPSConfig.GPSInstalled);
+	lua_pushboolean(L,getWorkingLoggerConfig()->GPSConfigs.GPSInstalled);
 	return 1;	
 }
 
 int Lua_SetGPSStartFinish(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfig);
+		GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfigs);
 		c->startFinishConfig.latitude = lua_tonumber(L,1);
 		c->startFinishConfig.longitude = lua_tonumber(L,2);
 		if (lua_gettop(L) >=3) c->startFinishConfig.targetRadius = lua_tonumber(L,3);
@@ -570,7 +570,7 @@ int Lua_SetGPSStartFinish(lua_State *L){
 }
 
 int Lua_GetGPSStartFinish(lua_State *L){
-	GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfig);
+	GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfigs);
 	lua_pushnumber(L,c->startFinishConfig.latitude);
 	lua_pushnumber(L,c->startFinishConfig.longitude);
 	lua_pushnumber(L,c->startFinishConfig.targetRadius);
@@ -584,7 +584,7 @@ int Lua_GetGPSAtStartFinish(lua_State *L){
 
 int Lua_SetSplit(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfig);
+		GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfigs);
 		c->splitConfig.latitude = lua_tonumber(L,1);
 		c->splitConfig.longitude = lua_tonumber(L,2);
 		if (lua_gettop(L) >=3) c->splitConfig.targetRadius = lua_tonumber(L,3);
@@ -593,7 +593,7 @@ int Lua_SetSplit(lua_State *L){
 }
 
 int Lua_GetSplit(lua_State *L){
-	GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfig);
+	GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfigs);
 	lua_pushnumber(L,c->splitConfig.latitude);
 	lua_pushnumber(L,c->splitConfig.longitude);
 	lua_pushnumber(L,c->splitConfig.targetRadius);
@@ -607,99 +607,99 @@ int Lua_GetAtSplit(lua_State *L){
 
 int Lua_SetGPSSatsLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.satellitesCfg.label,lua_tostring(L,1));
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfigs.satellitesCfg.label,lua_tostring(L,1));
 	}
 	return 0;
 }
 
 int Lua_GetGPSSatsLabel(lua_State *L){
-	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.satellitesCfg.label);
+	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfigs.satellitesCfg.label);
 	return 1;	
 }
 
 int Lua_SetGPSLatitudeLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.latitudeCfg.label,lua_tostring(L,1));
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfigs.latitudeCfg.label,lua_tostring(L,1));
 	}
 	return 0;
 }
 
 int Lua_GetGPSLatitudeLabel(lua_State *L){
-	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.latitudeCfg.label);
+	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfigs.latitudeCfg.label);
 	return 1;
 }
 
 int Lua_SetGPSLongitudeLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.longitudeCfg.label,lua_tostring(L,1));
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfigs.longitudeCfg.label,lua_tostring(L,1));
 	}
 	return 0;
 }
 
 int Lua_GetGPSLongitudeLabel(lua_State *L){
-	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.longitudeCfg.label);
+	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfigs.longitudeCfg.label);
 	return 1;	
 }
 
 int Lua_SetGPSTimeLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.timeCfg.label,lua_tostring(L,1));
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfigs.timeCfg.label,lua_tostring(L,1));
 	}
 	return 0;
 }
 
 int Lua_GetGPSTimeLabel(lua_State *L){
-	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.timeCfg.label);
+	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfigs.timeCfg.label);
 	return 1;	
 }
 
 int Lua_SetGPSSpeedLabel(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		setLabelGeneric(getWorkingLoggerConfig()->GPSConfig.speedCfg.label,lua_tostring(L,1));
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfigs.speedCfg.label,lua_tostring(L,1));
 	}
 	return 0;
 }
 
 int Lua_GetGPSSpeedLabel(lua_State *L){
-	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfig.speedCfg.label);
+	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfigs.speedCfg.label);
 	return 1;	
 }
 
 int Lua_SetGPSPositionSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		LoggerConfig *cfg = getWorkingLoggerConfig();
-		cfg->GPSConfig.latitudeCfg.sampleRate = cfg->GPSConfig.longitudeCfg.sampleRate = encodeSampleRate(lua_tointeger(L,1));
+		cfg->GPSConfigs.latitudeCfg.sampleRate = cfg->GPSConfigs.longitudeCfg.sampleRate = encodeSampleRate(lua_tointeger(L,1));
 	}
 	return 0;
 }
 
 int Lua_GetGPSPositionSampleRate(lua_State *L){
 	//TODO we pull one for all... is there a better way? individual settable sample rates?
-	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfig.latitudeCfg.sampleRate);
+	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfigs.latitudeCfg.sampleRate);
 	return 1;		
 }
 
 int Lua_SetGPSSpeedSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1 ){
-		getWorkingLoggerConfig()->GPSConfig.speedCfg.sampleRate = encodeSampleRate(lua_tointeger(L,1));
+		getWorkingLoggerConfig()->GPSConfigs.speedCfg.sampleRate = encodeSampleRate(lua_tointeger(L,1));
 	}
 	return 0;
 }
 
 int Lua_GetGPSSpeedSampleRate(lua_State *L){
-	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfig.speedCfg.sampleRate);
+	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfigs.speedCfg.sampleRate);
 	return 1;
 }
 
 int Lua_SetGPSTimeSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1 ){
-		getWorkingLoggerConfig()->GPSConfig.timeCfg.sampleRate = encodeSampleRate(lua_tointeger(L,1));
+		getWorkingLoggerConfig()->GPSConfigs.timeCfg.sampleRate = encodeSampleRate(lua_tointeger(L,1));
 	}
 	return 0;
 }
 
 int Lua_GetGPSTimeSampleRate(lua_State *L){
-	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfig.timeCfg.sampleRate);
+	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfigs.timeCfg.sampleRate);
 	return 1;
 }
 
