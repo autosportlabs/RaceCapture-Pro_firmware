@@ -35,8 +35,6 @@ typedef struct _cmd_t
 
 void process_command(Serial *serial, char * buffer, size_t bufferSize);
 
-void interactive_read_command(Serial * serial, char * buffer, size_t bufferSize);
-
 void execute_command(Serial * serial, char * buffer);
 
 void put_commandOK(Serial * serial);

@@ -143,7 +143,7 @@ int main( void )
 	//createLoggerTask();
 	createLoggerTaskEx();
 	createGPIOTasks();
-	createTelemetryTask();
+	createConnectivityTask();
 	startGPSTask();
 //      start_heartbeat_task();
 //	startRaceTask();

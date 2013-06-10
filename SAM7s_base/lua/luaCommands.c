@@ -32,7 +32,7 @@ void ExecLuaInterpreter(Serial *serial, unsigned int argc, char **argv){
 	int result;
 	while(1){
 		serial->put_s("> ");
-		interactive_read_command(serial, luaLine, cmdContext->lineBufferSize);
+		interactive_read_line(serial, luaLine, cmdContext->lineBufferSize);
 		if (strcmp(luaLine,"exit") == 0) break;
 		lockLua();
 		lua_gc(L,LUA_GCCOLLECT,0);

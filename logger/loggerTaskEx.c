@@ -60,8 +60,7 @@ void loggerTaskEx(void *params){
 			g_loggingShouldRun = 1;
 
 			resetLapCount();
-			resetLapDistance();
-			resetTotalDistance();
+			resetDistance();
 
 			portTickType currentTicks = 0;
 

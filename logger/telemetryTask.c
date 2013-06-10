@@ -38,7 +38,7 @@ portBASE_TYPE queueTelemetryRecord(SampleRecord * sr){
 	}
 }
 
-void createTelemetryTask(){
+void createConnectivityTask(){
 
 	g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( SampleRecord *));
 	if (NULL == g_sampleRecordQueue){

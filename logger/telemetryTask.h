@@ -13,6 +13,6 @@
 
 portBASE_TYPE queueTelemetryRecord(SampleRecord * sr);
 
-void createTelemetryTask();
+void createConnectivityTask();
 
 #endif /* TELEMETRYTASK_H_ */

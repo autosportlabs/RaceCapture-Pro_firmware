@@ -64,6 +64,8 @@ TARGET = main
 
 
 # Common directories
+INCLUDE_DIR = include
+SRC_DIR = src
 SAM7s_BASE_DIR = SAM7s_base
 HW_DIR = $(SAM7s_BASE_DIR)/hardware
 RTOS_DIR = $(SAM7s_BASE_DIR)/FreeRTOS
@@ -79,9 +81,10 @@ SPI_DIR = $(SAM7s_BASE_DIR)/spi
 MEMORY_SRC_DIR = $(SAM7s_BASE_DIR)/memory
 LUA_SRC_DIR = $(SAM7s_BASE_DIR)/lua
 CMD_SRC_DIR = $(SAM7s_BASE_DIR)/command
-INCLUDE_DIR = include
 RACE_CAPTURE_DIR = race_capture
 TASKS_DIR = tasks
+JSMN_SRC_DIR = $(SRC_DIR)/jsmn
+API_SRC_DIR = $(SRC_DIR)/api
 
 #App specific dirs
 FAT_SD_SRC_DIR = fat_sd
@@ -93,7 +96,9 @@ ACCELEROMETER_SRC_DIR = accelerometer
 # use file-extension c for "c-only"-files
 SRC	= \
 $(TARGET).c \
+$(JSMN_SRC_DIR)/jsmn.c \
 baseCommands.c \
+$(API_SRC_DIR)/api.c \
 $(HW_DIR)/lib_AT91SAM7S256.c \
 $(RTOS_SRC_DIR)/tasks.c \
 $(RTOS_SRC_DIR)/queue.c \
@@ -211,7 +216,28 @@ CDEFS += -DSAM7_GCC
 CDEFS += -DTHUMB_INTERWORK
 
 # Place -I options here
-CINCS = -I. -I$(RTOS_MEMMANG_DIR) -I$(UTIL_DIR) -I$(LUA_SRC_DIR) -I$(MEMORY_SRC_DIR) -I$(FAT_SD_SRC_DIR) -I$(SDCARD_SRC_DIR) -I$(SERIAL_SRC_DIR) -I$(SPI_DIR) -I$(UART_SRC_DIR) -I$(ACCELEROMETER_SRC_DIR) -I$(LOGGER_SRC_DIR) -I$(USB_SRC_DIR)/include -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR) -I$(CMD_SRC_DIR) -I$(INCLUDE_DIR)
+CINCS = \
+-I. \
+-I$(RTOS_MEMMANG_DIR) \
+-I$(UTIL_DIR) \
+-I$(LUA_SRC_DIR) \
+-I$(MEMORY_SRC_DIR) \
+-I$(FAT_SD_SRC_DIR) \
+-I$(SDCARD_SRC_DIR) \
+-I$(SERIAL_SRC_DIR) \
+-I$(SPI_DIR) \
+-I$(UART_SRC_DIR) \
+-I$(ACCELEROMETER_SRC_DIR) \
+-I$(LOGGER_SRC_DIR) \
+-I$(USB_SRC_DIR)/include \
+-I$(HW_DIR)/include \
+-I$(RTOS_SRC_DIR)/include \
+-I$(RTOS_GCC_DIR) \
+-I$(CMD_SRC_DIR) \
+-I$(INCLUDE_DIR) \
+-I$(INCLUDE_DIR)/jsmn \
+-I$(INCLUDE_DIR)/api
+
 #CINCS = -I. -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
 # Place -D or -U options for ASM here
 ADEFS =  -D$(RUN_MODE)

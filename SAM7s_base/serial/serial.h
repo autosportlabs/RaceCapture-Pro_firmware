@@ -81,6 +81,6 @@ void put_bytes(Serial *serial, char *data, unsigned int length);
 
 void put_crlf(Serial * serial);
 
-
+void interactive_read_line(Serial *serial, char * buffer, size_t bufferSize);
 
 #endif /* SERIAL_H_ */

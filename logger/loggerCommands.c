@@ -41,14 +41,13 @@ void SampleData(Serial *serial, unsigned int argc, char **argv){
 }
 
 void TestSD(Serial *serial, unsigned int argc, char **argv){
-
 	int lines = 1;
 	int doFlush = 0;
 	int quiet = 0;
 	if (argc > 1) lines = modp_atoi(argv[1]);
 	if (argc > 2) doFlush = modp_atoi(argv[2]);
 	if (argc > 3) quiet = modp_atoi(argv[3]);
-	TestSDWrite(serial, lines,doFlush, quiet);
+	TestSDWrite(serial, lines, doFlush, quiet);
 }
 
 void FlashLoggerConfig(Serial *serial, unsigned int argc, char **argv){
@@ -514,6 +513,6 @@ void SetLogLevel(Serial *serial, unsigned int argc, char **argv)
         }
 
         enum log_level level = (enum log_level) modp_atoui(argv[1]);
-        enum log_level new_level = set_log_level(level);
+        set_log_level(level);
         put_commandOK(serial);
 }
