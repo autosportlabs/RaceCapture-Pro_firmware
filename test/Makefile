@@ -1,5 +1,9 @@
 #-----Macros---------------------------------
 
+NAME=rcptest
+
+RCP_SRC=../SAM7s_base/util
+
 INCLUDES = 	-I. \
 		-I.. \
 		-I../SAM7s_base/util \
@@ -18,22 +22,19 @@ CXXFLAGS = -g $(INCLUDES)
 	$(CXX) $(CXXFLAGS) -c $<
 
 .cc :
-	$(CXX) $(CXXFLAGS) $< -o $@ -lm $(TLIB) -lg++
+	$(CXX) $(CXXFLAGS) $< -o $@ -lm -lcppunit
 
 #-----File Dependencies----------------------
 
 SRC = 	loggerData_test.cpp \
 	numtoa_test.cpp \
-	RCPTest.cpp
+	RCPTest.cpp \
+	$(RCP_SRC)/modp_numtoa.c 
 
 OBJ = $(addsuffix .o, $(basename $(SRC)))
 
-usepix: $(OBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJ) -lm $(TLIB) -lg++
-
-#-----Other stuff----------------------------
-depend:
-	makedepend $(CXXFLAGS) -Y $(SRC)
+all: $(OBJ)
+	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ) -lm -lcppunit
 
 clean:
-	rm -f $(OBJ)
+	rm -f $(OBJ) $(NAME)
