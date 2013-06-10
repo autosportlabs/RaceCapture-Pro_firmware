@@ -5,13 +5,9 @@ void startGPSTask();
 
 void GPSTask( void *pvParameters );
 
-void resetTotalDistance();
+void resetDistance();
 
-void resetLapDistance();
-
-float getTotalDistance();
-
-float getLapDistance();
+float getDistance();
 
 void resetLapCount();
 

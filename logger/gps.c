@@ -9,6 +9,11 @@
 #include "modp_atonum.h"
 #include "geometry.h"
 #include "mod_string.h"
+#include <math.h>
+
+//kilometers
+#define DISTANCE_SCALING 6371
+#define PI 3.1415
 
 #define GPS_DATA_LINE_BUFFER_LEN 	200
 #define GPS_TASK_PRIORITY 			( tskIDLE_PRIORITY + 2 )
@@ -60,23 +65,14 @@ static float g_lastSplitTime;
 
 static int g_lapCount;
 
-static float	g_lapDistance;
-static float 	g_totalDistance;
+static float	g_distance;
 
-void resetTotalDistance(){
-	g_totalDistance = 0;
+void resetDistance(){
+	g_distance = 0;
 }
 
-void resetLapDistance(){
-	g_lapDistance = 0;
-}
-
-float getTotalDistance(){
-	return g_totalDistance;
-}
-
-float getLapDistance(){
-	return g_lapDistance;
+float getDistance(){
+	return g_distance;
 }
 
 void resetLapCount(){
@@ -179,15 +175,29 @@ static int isGpsTargetEnabled(GPSTargetConfig *targetConfig){
 	return targetConfig->latitude != 0 && targetConfig->longitude != 0;
 }
 
-static float calcDistancesSinceLastSample(){
-	//todo add calculations here
-	return 0;
+static float toRadians(float degrees){
+	return degrees * PI / 180.0;
 }
+
+static float calcDistancesSinceLastSample(){
+
+	float lat1 = toRadians(g_prevLatitude);
+	float lon1 = toRadians(g_prevLongitude);
+
+	float lat2 = toRadians(g_latitude);
+	float lon2 = toRadians(g_longitude);
+
+	float x = (lon2-lon1) * cos((lat1+lat2)/2);
+	float y = (lat2-lat1);
+	float d = sqrtf(x*x + y*y) * DISTANCE_SCALING;
+
+	return d;
+}
+
 
 static void updateDistances(){
 	float distanceSinceLastSample  = calcDistancesSinceLastSample();
-	g_totalDistance += distanceSinceLastSample;
-	g_lapDistance += distanceSinceLastSample;
+	g_distance += distanceSinceLastSample;
 }
 
 
@@ -214,7 +224,7 @@ static void updateStartFinish(void){
 					g_lapCount++;
 					g_lastLapTime = lapTime;
 					g_lastStartFinishTimestamp = currentTimestamp;
-					resetLapDistance();
+					resetDistance();
 				}
 			}
 		}
@@ -271,8 +281,7 @@ void startGPSTask(){
 	g_prevAtSplit = 0;
 	g_lastSplitTimestamp = 0;
 	g_lapCount = 0;
-	g_totalDistance = 0;
-	g_lapDistance = 0;
+	g_distance = 0;
 	
 	initUsart1(USART_MODE_8N1, 38400);
 	xTaskCreate( GPSTask, ( signed portCHAR * ) "GPSTask", GPS_TASK_STACK_SIZE, NULL, 	GPS_TASK_PRIORITY, 	NULL );
