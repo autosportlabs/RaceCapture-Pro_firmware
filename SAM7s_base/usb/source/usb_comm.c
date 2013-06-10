@@ -1,4 +1,5 @@
 #include "usb_comm.h"
+#include "FreeRTOS.h"
 #include "task.h"
 #include "mod_string.h"
 #include "USB-CDC.h"
@@ -19,7 +20,7 @@ void usb_flush(void)
 	while(usb_getchar_wait(0));
 }
 
-char usb_getchar_wait(portTickType delay){
+char usb_getchar_wait(size_t delay){
 	char c = 0;
 	vUSBReceiveByteDelay(&c, delay);
 	return c;
@@ -34,7 +35,7 @@ int usb_readLine(char *s, int len)
 	return usb_readLineWait(s,len,portMAX_DELAY);
 }
 
-int usb_readLineWait(char *s, int len, portTickType delay)
+int usb_readLineWait(char *s, int len, size_t delay)
 {
 	int count = 0;
 	while(count < len - 1){

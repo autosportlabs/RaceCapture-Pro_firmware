@@ -225,7 +225,7 @@ void powerDownCellModem(){
 
 int initCellModem(void){
 
-	initUsart0(USART_MODE_8N1, 115200);
+	initUsart0(8, 0, 1, 115200);
 
 	closeNet();
 

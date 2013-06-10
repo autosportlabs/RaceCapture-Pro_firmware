@@ -32,6 +32,12 @@
 //------------------------------------------------------------------------------
 
 #include "usart.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+
+#include "board.h"
+
 
 
 #define USART_INTERRUPT_LEVEL 5
@@ -86,23 +92,62 @@ static int initQueues(){
 	return success;
 }
 
+static unsigned int createUartMode(unsigned int bits, unsigned int parity, unsigned int stopBits){
+
+	switch (bits){
+	case 5:
+		bits = AT91C_US_CHRL_5_BITS;
+		break;
+	case 6:
+		bits = AT91C_US_CHRL_6_BITS;
+		break;
+	case 7:
+		bits = AT91C_US_CHRL_7_BITS;
+		break;
+	case 8:
+	default:
+		bits = AT91C_US_CHRL_8_BITS;
+		break;
+	}
+
+	switch (parity){
+	case 1:
+		parity = AT91C_US_PAR_EVEN;
+		break;
+	case 2:
+		parity = AT91C_US_PAR_ODD;
+		break;
+	case 0:
+	default:
+		parity = AT91C_US_PAR_NONE;
+	}
+
+	switch (stopBits){
+	case 2:
+		stopBits = AT91C_US_NBSTOP_2_BIT;
+		break;
+	case 1:
+	default:
+		stopBits = AT91C_US_NBSTOP_1_BIT;
+		break;
+	}
+
+	return AT91C_US_CLKS_CLOCK | bits | parity | stopBits | AT91C_US_CHMODE_NORMAL;
+}
+
 int initUsart()
 {
 	if (!initQueues()) return 0;
-
-	unsigned int mode =
-                        AT91C_US_CLKS_CLOCK
-                        | AT91C_US_CHRL_8_BITS
-                        | AT91C_US_PAR_NONE
-                        | AT91C_US_NBSTOP_1_BIT
-                        | AT91C_US_CHMODE_NORMAL;
-
-	initUsart0(mode, 115200);
-	initUsart1(mode, 115200);
+	initUsart0(8, 0, 1, 115200);
+	initUsart1(8, 0, 1, 115200);
 	return 1;
 }
 
-void initUsart0(unsigned int mode, unsigned int baud){
+
+
+void initUsart0(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud){
+
+	unsigned int mode = createUartMode(bits, parity, stopBits);
 
 	//Enable USART0
 	
@@ -131,7 +176,9 @@ void initUsart0(unsigned int mode, unsigned int baud){
 	
 }
 
-void initUsart1(unsigned int mode, unsigned int baud){
+void initUsart1(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud){
+
+	unsigned int mode = createUartMode(bits, parity, stopBits);
 	
  	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA, 
 			AT91C_PA22_TXD1, 				// mux function A
@@ -171,7 +218,7 @@ void usart1_flush(void)
 }
 
 
-char usart0_getcharWait(portTickType delay){
+char usart0_getcharWait(size_t delay){
 	char rx = 0;
 	
 	/* Get the next character from the buffer.  Return false if no characters
@@ -185,7 +232,7 @@ char usart0_getchar()
 	return usart0_getcharWait(portMAX_DELAY);
 }
 
-char usart1_getcharWait(portTickType delay)
+char usart1_getcharWait(size_t delay)
 {
 	char rx = 0;
 	
@@ -227,7 +274,7 @@ int usart1_puts (const char* s )
 }
 
 
-int usart0_readLineWait(char *s, int len, portTickType delay)
+int usart0_readLineWait(char *s, int len, size_t delay)
 {
 	int count = 0;
 	while(count < len - 1){
@@ -247,7 +294,7 @@ int usart0_readLine(char *s, int len)
 	return usart0_readLineWait(s,len,portMAX_DELAY);
 }
 
-int usart1_readLineWait(char *s, int len, portTickType delay)
+int usart1_readLineWait(char *s, int len, size_t delay)
 {
 	int count = 0;
 	while(count < len - 1){

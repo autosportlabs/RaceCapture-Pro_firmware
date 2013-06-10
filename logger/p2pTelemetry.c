@@ -155,7 +155,7 @@ static void writeSampleRecordBinary(SampleRecord * sampleRecord, uint32_t sample
 
 void p2pTelemetryTask(void *params){
 
-	initUsart0(USART_MODE_8N1, 115200);
+	initUsart0(8, 0, 1, 115200);
 	xQueueHandle sampleRecordQueue = (xQueueHandle)params;
 	SampleRecord *sr = NULL;
 	uint32_t sampleTick = 0;

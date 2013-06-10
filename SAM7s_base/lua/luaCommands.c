@@ -12,6 +12,7 @@
 #include "lua.h"
 #include "luaTask.h"
 #include "memory.h"
+#include "FreeRTOS.h"
 
 //Stuff to provide memory statistics
 extern unsigned int _CONFIG_HEAP_SIZE;

@@ -66,6 +66,7 @@ TARGET = main
 # Common directories
 INCLUDE_DIR = include
 SRC_DIR = src
+
 SAM7s_BASE_DIR = SAM7s_base
 HW_DIR = $(SAM7s_BASE_DIR)/hardware
 RTOS_DIR = $(SAM7s_BASE_DIR)/FreeRTOS
@@ -99,6 +100,7 @@ $(TARGET).c \
 $(JSMN_SRC_DIR)/jsmn.c \
 baseCommands.c \
 $(API_SRC_DIR)/api.c \
+$(SRC_DIR)/$(LOGGER_SRC_DIR)/loggerApi.c \
 $(HW_DIR)/lib_AT91SAM7S256.c \
 $(RTOS_SRC_DIR)/tasks.c \
 $(RTOS_SRC_DIR)/queue.c \
@@ -236,7 +238,8 @@ CINCS = \
 -I$(CMD_SRC_DIR) \
 -I$(INCLUDE_DIR) \
 -I$(INCLUDE_DIR)/jsmn \
--I$(INCLUDE_DIR)/api
+-I$(INCLUDE_DIR)/api \
+-I$(INCLUDE_DIR)/logger
 
 #CINCS = -I. -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
 # Place -D or -U options for ASM here

@@ -85,7 +85,7 @@ static void writeSampleRecordJSON(SampleRecord * sampleRecord, uint32_t sampleTi
 
 void cellTelemetryTask(void *params){
 
-	initUsart0(USART_MODE_8N1, 115200);
+	initUsart0(8, 0, 1, 115200);
 
 	xQueueHandle sampleRecordQueue = (xQueueHandle)params;
 	SampleRecord *sr = NULL;

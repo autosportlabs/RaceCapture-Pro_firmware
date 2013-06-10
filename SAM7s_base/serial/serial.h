@@ -8,15 +8,15 @@
 #ifndef SERIAL_H_
 #define SERIAL_H_
 
-#include "FreeRTOS.h"
+#include <stddef.h>
 
 typedef struct _Serial{
 
-	char (*get_c_wait)(portTickType delay);
+	char (*get_c_wait)(size_t delay);
 	char (*get_c)(void);
 
 	int (*get_line)(char *s, int len);
-	int (*get_line_wait)(char *s, int len, portTickType delay);
+	int (*get_line_wait)(char *s, int len, size_t delay);
 
 	int (*put_c)(char c);
 	int (*put_s)(const char *);

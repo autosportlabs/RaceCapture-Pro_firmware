@@ -10,8 +10,6 @@
 
 #include "command.h"
 
-extern const cmd_t g_loggerCommands[];
-
 #define LOGGER_COMMANDS \
 {"sample", "Gets a single sample of the currently enabled channels","",SampleData}, \
 {"testSD", "Test Write to SD card.","<lineWrites> <periodicFlush> <quietMode>", TestSD}, \

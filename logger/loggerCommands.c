@@ -16,6 +16,7 @@
 #include "loggerData.h"
 #include "sampleRecord.h"
 #include "usart.h"
+#include "board.h"
 
 void SampleData(Serial *serial, unsigned int argc, char **argv){
 	SampleRecord sr;
@@ -470,11 +471,11 @@ void StartTerminal(Serial *serial, unsigned int argc, char **argv){
 
 	switch(port){
 		case 0:
-			initUsart0(USART_MODE_8N1, baud);
+			initUsart0(8, 0, 1, baud);
 			StartTerminalSession(serial, get_serial_usart0());
 			break;
 		case 1:
-			initUsart1(USART_MODE_8N1, baud);
+			initUsart1(8, 0, 1, baud);
 			StartTerminalSession(serial, get_serial_usart1());
 			break;
 		default:
@@ -484,9 +485,6 @@ void StartTerminal(Serial *serial, unsigned int argc, char **argv){
 
 void ViewLog(Serial *serial, unsigned int argc, char **argv)
 {
-        // Lets check for character input 5 times a second.
-        static const portTickType delay_ticks = configTICK_RATE_HZ / 5;
-
         serial->put_s("Starting logging mode.  Hit \"q\" to exit\r\n");
 
         while(1) {
@@ -494,9 +492,8 @@ void ViewLog(Serial *serial, unsigned int argc, char **argv)
                 read_log_to_serial(serial);
 
                 // Look for 'q' to exit.
-                char c = serial->get_c_wait(delay_ticks);
-                if (c == 'q')
-                        break;
+                char c = serial->get_c_wait(300 / 5); //TODO refactor this when we go to millisecond based delays
+                if (c == 'q') break;
         }
 
         // Give a little space when we finish up with log watching.

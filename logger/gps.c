@@ -283,7 +283,7 @@ void startGPSTask(){
 	g_lapCount = 0;
 	g_distance = 0;
 	
-	initUsart1(USART_MODE_8N1, 38400);
+	initUsart1(8, 0, 1, 38400);
 	xTaskCreate( GPSTask, ( signed portCHAR * ) "GPSTask", GPS_TASK_STACK_SIZE, NULL, 	GPS_TASK_PRIORITY, 	NULL );
 }
 

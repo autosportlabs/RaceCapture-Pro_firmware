@@ -5,6 +5,7 @@
  *      Author: brent
  */
 #include "baseCommands.h"
+#include "FreeRTOS.h"
 #include "task.h"
 
 void ShowTaskInfo(Serial *serial, unsigned int argc, char **argv){

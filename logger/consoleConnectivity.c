@@ -10,7 +10,7 @@ static char g_buffer[BUFFER_SIZE];
 
 void consoleConnectivityTask(void *params){
 
-	initUsart0(USART_MODE_8N1, 230400);
+	initUsart0(8, 0, 1, 230400);
 	Serial *serial = get_serial_usart0();
 
 	while (1) {

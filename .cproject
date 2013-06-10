@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?fileVersion 4.0.0?>
-
-<cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="converted.config.1228137579">
 			<storageModule buildSystemId="org.eclipse.cdt.core.defaultConfigDataProvider" id="converted.config.1228137579" moduleId="org.eclipse.cdt.core.settings" name="convertedConfig">
@@ -68,7 +66,7 @@
 			<target name="all" path="test" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 				<buildCommand>make</buildCommand>
 				<buildArguments/>
-				<buildTarget/>
+				<buildTarget>all</buildTarget>
 				<stopOnError>false</stopOnError>
 				<useDefaultCommand>true</useDefaultCommand>
 				<runAllBuilders>true</runAllBuilders>

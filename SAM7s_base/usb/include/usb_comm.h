@@ -1,17 +1,16 @@
 #ifndef USB_COMM_H_
 #define USB_COMM_H_
-
-#include "FreeRTOS.h"
+#include <stddef.h>
 
 void usb_flush(void);
 
 int usb_readLine(char *s, int len);
 
-int usb_readLineWait(char *s, int len, portTickType delay);
+int usb_readLineWait(char *s, int len, size_t delay);
 
 char usb_getchar(void);
 
-char usb_getchar_wait(portTickType delay);
+char usb_getchar_wait(size_t delay);
 
 int usb_putchar(char c);
 
