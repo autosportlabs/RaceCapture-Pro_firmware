@@ -21,5 +21,3 @@ void api_get_cell_config(Serial *serial, const jsmntok_t *json){
 }
 
 
-
-

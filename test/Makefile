@@ -27,8 +27,9 @@ INCLUDES = 	-I. \
 
 # set up compiler and options
 CXX = g++
+CC = g++
 CXXFLAGS = -g $(INCLUDES) -DRCP_TESTING
-CPPFLAGS = -g $(INCLUDES) -std=c99 -DRCP_TESTING
+CPPFLAGS = -g $(INCLUDES) -DRCP_TESTING
 
 #-----Suffix Rules---------------------------
 # set up C++ suffixes and relationship between .cc and .o files
@@ -49,6 +50,7 @@ SRC = 	loggerData_test.cpp \
 		RCPTest.cpp \
 		mock_uart.c \
 		mock_usb_comm.c \
+		mock_serial.c \
 		$(SAM7S_SRC)/util/modp_numtoa.c \
 		$(JSMN_SRC)/jsmn.c \
 		$(API_SRC)/api.c \

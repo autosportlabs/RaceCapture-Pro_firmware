@@ -26,6 +26,7 @@ typedef struct _api_t
 
 #define NULL_API {NULL, NULL}
 
+
 void process_api(Serial *serial, char * buffer, size_t bufferSize);
 
 

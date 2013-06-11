@@ -18,4 +18,5 @@
 void api_sample_data(Serial *serial, const jsmntok_t *json);
 void api_get_cell_config(Serial *serial, const jsmntok_t *json);
 
+
 #endif /* LOGGERAPI_H_ */

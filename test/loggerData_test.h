@@ -13,14 +13,14 @@
 class LoggerDataTest : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE( LoggerDataTest );
-  CPPUNIT_TEST( testPopulateAnalogChannels );
+  CPPUNIT_TEST( testConfigAnalogChannels );
   CPPUNIT_TEST_SUITE_END();
 
 public:
   void setUp();
   void tearDown();
 
-  void testPopulateAnalogChannels();
+  void testConfigAnalogChannels();
 };
 
 #endif /* LOGGERDATA_TEST_H_ */
