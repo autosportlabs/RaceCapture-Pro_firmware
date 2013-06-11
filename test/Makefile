@@ -8,6 +8,7 @@ RCP_INC=$(RCP_BASE)/include
 SAM7S_SRC=$(RCP_BASE)/SAM7s_base
 JSMN_SRC=$(RCP_SRC)/jsmn
 API_SRC=$(RCP_SRC)/api
+LOGGER_SRC=$(RCP_SRC)/logger
 
 
 INCLUDES = 	-I. \
@@ -16,6 +17,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_BASE)/logger \
 		-I$(RCP_INC)/jsmn \
 		-I$(RCP_INC)/api \
+		-I$(RCP_INC)/logger \
 		-I$(SAM7S_SRC)/serial \
 		-I$(SAM7S_SRC)/lua \
 		-I$(SAM7S_SRC)/command \
@@ -25,8 +27,8 @@ INCLUDES = 	-I. \
 
 # set up compiler and options
 CXX = g++
-CXXFLAGS = -g $(INCLUDES)
-CPPFLAGS = -g $(INCLUDES) -std=c99
+CXXFLAGS = -g $(INCLUDES) -DRCP_TESTING
+CPPFLAGS = -g $(INCLUDES) -std=c99 -DRCP_TESTING
 
 #-----Suffix Rules---------------------------
 # set up C++ suffixes and relationship between .cc and .o files
@@ -42,16 +44,19 @@ CPPFLAGS = -g $(INCLUDES) -std=c99
 #-----File Dependencies----------------------
 
 SRC = 	loggerData_test.cpp \
-	numtoa_test.cpp \
-	RCPTest.cpp \
-	uart_test.c \
-	usb_comm_test.c \
-	$(SAM7S_SRC)/util/modp_numtoa.c \
-	$(JSMN_SRC)/jsmn.c \
-	$(API_SRC)/api.c \
-	$(RCP_BASE)/race_capture/printk.c \
-	$(RCP_BASE)/race_capture/ring_buffer.c \
-	$(SAM7S_SRC)/serial/serial.c 
+		numtoa_test.cpp \
+		loggerApi_test.cpp \
+		RCPTest.cpp \
+		mock_uart.c \
+		mock_usb_comm.c \
+		$(SAM7S_SRC)/util/modp_numtoa.c \
+		$(JSMN_SRC)/jsmn.c \
+		$(API_SRC)/api.c \
+		$(RCP_BASE)/race_capture/printk.c \
+		$(RCP_BASE)/race_capture/ring_buffer.c \
+		$(SAM7S_SRC)/serial/serial.c \
+		$(LOGGER_SRC)/loggerApi.c \
+		$(RCP_BASE)/logger/loggerConfig.c
 	
 
 OBJ = $(addsuffix .o, $(basename $(SRC)))

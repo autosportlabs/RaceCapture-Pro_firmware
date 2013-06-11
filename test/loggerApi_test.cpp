@@ -7,6 +7,7 @@
 #include "loggerApi_test.h"
 
 #include "api.h"
+#include "loggerApi.h"
 
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( LoggerApiTest );
