@@ -11,8 +11,7 @@
 
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
-typedef void * (*getConfig_func)(size_t id);
-typedef ChannelConfig * (*getChannelConfig_func)(size_t id);
+typedef void (*getConfigs_func)(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg);
 typedef void (*setExtField_func)(const char *name, const char *value, void *cfg);
 
 void api_sampleData(Serial *serial, const jsmntok_t *json){
@@ -47,26 +46,27 @@ static void setChannelConfig(Serial *serial, const jsmntok_t *cfg, ChannelConfig
 	}
 }
 
-static void setMultiChannelConfigGeneric(Serial *serial, const jsmntok_t * json, setExtField_func setExtFieldFunc, getConfig_func getConfigFunc, getChannelConfig_func getChannelConfigFunc){
+static void setMultiChannelConfigGeneric(Serial *serial, const jsmntok_t * json, getConfigs_func getConfigs, setExtField_func setExtFieldFunc){
 	if (json->type == JSMN_OBJECT && json->size % 2 == 0){
 		for (int i = 1; i <= json->size; i += 2){
 			const jsmntok_t *idTok = json + i;
 			const jsmntok_t *cfgTok = json + i + 1;
 			jsmn_trimData(idTok);
 			size_t id = modp_atoi(idTok->data);
-			void *baseCfg = getConfigFunc(id);
-			ChannelConfig *channelCfg = getChannelConfigFunc(id);
+			void *baseCfg;
+			ChannelConfig *channelCfg;
+			getConfigs(id, &baseCfg, &channelCfg);
+//			void *baseCfg = getConfigFunc(id);
+			//ChannelConfig *channelCfg = getChannelConfigFunc(id);
 			setChannelConfig(serial, cfgTok, channelCfg, setExtFieldFunc, baseCfg);
 		}
 	}
 }
 
-static void * getAnalogBaseConfig(size_t id){
-	return &(getWorkingLoggerConfig()->ADCConfigs[id]);
-}
-
-static ChannelConfig * getAnalogChannelConfig(size_t id){
-	return &(getWorkingLoggerConfig()->ADCConfigs[id].cfg);
+static void getAnalogConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
+	ADCConfig *c =&(getWorkingLoggerConfig()->ADCConfigs[channelId]);
+	*baseCfg = c;
+	*channelCfg = &c->cfg;
 }
 
 static void setAnalogExtendedField(const char *name, const char *value, void *cfg){
@@ -78,5 +78,5 @@ static void setAnalogExtendedField(const char *name, const char *value, void *cf
 }
 
 void api_setAnalogConfig(Serial *serial, const jsmntok_t * json){
-	setMultiChannelConfigGeneric(serial, json, setAnalogExtendedField, getAnalogBaseConfig, getAnalogChannelConfig);
+	setMultiChannelConfigGeneric(serial, json, getAnalogConfigs, setAnalogExtendedField);
 }
