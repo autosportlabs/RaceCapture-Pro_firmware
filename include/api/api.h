@@ -11,6 +11,7 @@
 #include "jsmn.h"
 #include "serial.h"
 
+
 typedef struct _api_context{
 	Serial * serial;
 	char * lineBuffer;

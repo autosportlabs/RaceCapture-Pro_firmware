@@ -1,6 +1,6 @@
 #include "modp_atonum.h"
 
-unsigned int modp_atoui(char *str){
+unsigned int modp_atoui(const char *str){
 	unsigned int curval, newval;
 
 	while (*str == ' ')
@@ -27,7 +27,7 @@ unsigned int modp_atoui(char *str){
 	return curval;
 }
 
-int modp_atoi(char *str){
+int modp_atoi(const char *str){
 
 	int scale, curval, newval;
 
@@ -61,7 +61,7 @@ int modp_atoi(char *str){
 	return scale * curval;
 }
 
-double modp_atod(char *str){
+double modp_atod(const char *str){
 	
 	int negative = 0;
 	int fractionMode = 0;
@@ -93,7 +93,7 @@ double modp_atod(char *str){
 	
 }
 
-float modp_atof(char *str){
+float modp_atof(const char *str){
 	
 	int negative = 0;
 	int fractionMode = 0;

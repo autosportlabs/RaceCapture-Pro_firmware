@@ -2,9 +2,9 @@
 #define COM_MODP_STRINGENCODERS_ATONUM_H
 
 
-int modp_atoi(char *str);
-unsigned int modp_atoui(char *str);
-float modp_atof(char *str);
-double modp_atod(char *str);
+int modp_atoi(const char *str);
+unsigned int modp_atoui(const char *str);
+float modp_atof(const char *str);
+double modp_atod(const char *str);
 
 #endif
