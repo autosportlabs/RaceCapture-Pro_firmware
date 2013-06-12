@@ -4,7 +4,7 @@
 #include "mod_string.h"
 
 static jsmn_parser p;
-static jsmntok_t json_tok[10];
+static jsmntok_t json_tok[100];
 
 const api_t apis[] = SYSTEM_APIS;
 
@@ -24,15 +24,14 @@ static void dispatch_api(Serial *serial, const char * apiMsgName, const jsmntok_
 	}
 }
 
-static void execute_api(Serial * serial, char * buffer, jsmntok_t *json){
+static void execute_api(Serial * serial, const jsmntok_t *json){
 	const jsmntok_t *root = &json[0];
 	if (root->type == JSMN_OBJECT && root->size == 2){
 		const jsmntok_t *apiMsgName = &json[1];
 		const jsmntok_t *payload = &json[2];
 		if (apiMsgName->type == JSMN_STRING){
-			buffer[apiMsgName->end] = '\0';
-			const char * name = (buffer + apiMsgName->start);
-			dispatch_api(serial, name, payload);
+			jsmn_trimData(apiMsgName);
+			dispatch_api(serial, apiMsgName->data, payload);
 		}
 	}
 }
@@ -41,9 +40,9 @@ void process_api(Serial *serial, char * buffer, size_t bufferSize){
 	jsmn_init(&p);
 
 	interactive_read_line(serial, buffer, bufferSize);
-	int r = jsmn_parse(&p, buffer, json_tok, 10);
+	int r = jsmn_parse(&p, buffer, json_tok, 100);
 	if (r == JSMN_SUCCESS){
-		execute_api(serial, buffer, json_tok);
+		execute_api(serial, json_tok);
 	}
 	else{
 		pr_warning("API Error \r\n");

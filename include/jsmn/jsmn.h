@@ -34,6 +34,7 @@ typedef enum {
  */
 typedef struct {
 	jsmntype_t type;
+	char * data;
 	int start;
 	int end;
 	int size;
@@ -61,7 +62,9 @@ void jsmn_init(jsmn_parser *parser);
  * Run JSON parser. It parses a JSON data string into and array of tokens, each describing
  * a single JSON object.
  */
-jsmnerr_t jsmn_parse(jsmn_parser *parser, const char *js, 
+jsmnerr_t jsmn_parse(jsmn_parser *parser, const char *js,
 		jsmntok_t *tokens, unsigned int num_tokens);
+
+void jsmn_trimData(const jsmntok_t *tok);
 
 #endif /* __JSMN_H_ */

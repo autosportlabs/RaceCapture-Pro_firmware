@@ -12,6 +12,7 @@
 #include "baseCommands.h"
 #include "luaCommands.h"
 #include "loggerCommands.h"
+#include "loggerApi.h"
 #include "api.h"
 
 #include "command.h"
@@ -23,7 +24,7 @@
 
 #define SYSTEM_COMMANDS {LOGGER_COMMANDS, BASE_COMMANDS, LUA_COMMANDS, NULL_COMMAND}
 
-#define SYSTEM_APIS { NULL_API }
+#define SYSTEM_APIS {LOGGER_API, NULL_API }
 
 
 //USB manufacturer string descriptor

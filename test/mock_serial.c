@@ -21,12 +21,12 @@ void setupMockSerial(){
 	mockSerial.put_s = &mock_put_s;
 }
 
-void mock_setBuffer(char *src){
+void mock_setBuffer(const char *src){
 	strcpy(buffer, src);
 	bufIndex = 0;
 }
 
-void mock_appendBuffer(char *src){
+void mock_appendBuffer(const char *src){
 	strcat(buffer, src);
 }
 

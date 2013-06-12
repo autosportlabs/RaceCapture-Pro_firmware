@@ -13,10 +13,13 @@
 #include "api.h"
 
 #define LOGGER_API \
-{"sample", ,api_sample_data}
+{"sample", api_sampleData}, \
+{"getCellCfg", api_getCellConfig}, \
+{"setAnalogCfg", api_setAnalogConfig} \
 
-void api_sample_data(Serial *serial, const jsmntok_t *json);
-void api_get_cell_config(Serial *serial, const jsmntok_t *json);
 
+void api_sampleData(Serial *serial, const jsmntok_t *json);
+void api_getCellConfig(Serial *serial, const jsmntok_t *json);
+void api_setAnalogConfig(Serial *serial, const jsmntok_t * json);
 
 #endif /* LOGGERAPI_H_ */

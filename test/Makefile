@@ -52,6 +52,7 @@ SRC = 	loggerData_test.cpp \
 		mock_usb_comm.c \
 		mock_serial.c \
 		$(SAM7S_SRC)/util/modp_numtoa.c \
+		$(SAM7S_SRC)/util/modp_atonum.c \
 		$(JSMN_SRC)/jsmn.c \
 		$(API_SRC)/api.c \
 		$(RCP_BASE)/race_capture/printk.c \
