@@ -56,8 +56,6 @@ static void setMultiChannelConfigGeneric(Serial *serial, const jsmntok_t * json,
 			void *baseCfg;
 			ChannelConfig *channelCfg;
 			getConfigs(id, &baseCfg, &channelCfg);
-//			void *baseCfg = getConfigFunc(id);
-			//ChannelConfig *channelCfg = getChannelConfigFunc(id);
 			setChannelConfig(serial, cfgTok, channelCfg, setExtFieldFunc, baseCfg);
 		}
 	}
