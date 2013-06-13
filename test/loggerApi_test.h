@@ -10,17 +10,31 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
+using std::string;
+using std::ifstream;
+using std::ios;
+using std::istreambuf_iterator;
+
 class LoggerApiTest : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE( LoggerApiTest );
   CPPUNIT_TEST( testSetCellCfg );
+  CPPUNIT_TEST( testSetAnalogCfg );
   CPPUNIT_TEST_SUITE_END();
 
 public:
+  int findAndReplace(string & source, const string find, const string replace);
+  string readFile(string filename);
   void setUp();
   void tearDown();
 
   void testSetCellCfg();
+  void testSetAnalogCfg();
+
+private:
+  void testAnalogConfigFile(string filename);
+
+
 };
 
 
