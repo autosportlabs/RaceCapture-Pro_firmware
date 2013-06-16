@@ -321,14 +321,13 @@ void SetTimerConfig(Serial *serial, unsigned int argc, char **argv){
 		if (argc > 5) c->loggingPrecision = modp_atoi(argv[5]);
 		if (argc > 6) c->slowTimerEnabled = (modp_atoi(argv[6]) != 0);
 		if (argc > 7) c->mode = filterTimerMode(modp_atoi(argv[7]));
-		if (argc > 8) c->pulsePerRevolution = modp_atoi(argv[8]);
-		if (argc > 9) c->timerDivider = filterTimerDivider(modp_atoi(argv[9]));
-		if (argc > 10){
-			c->calculatedScaling = modp_atoi(argv[10]);
-		}
-		else{
+		if (argc > 8){
+			c->pulsePerRevolution = modp_atoi(argv[8]);
 			calculateTimerScaling(BOARD_MCK, c);
 		}
+		if (argc > 9) c->timerDivider = filterTimerDivider(modp_atoi(argv[9]));
+		if (argc > 10) c->calculatedScaling = modp_atoi(argv[10]);
+
 		put_commandOK(serial);
 	}
 }
