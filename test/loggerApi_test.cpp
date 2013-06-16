@@ -112,6 +112,55 @@ void LoggerApiTest::testSetAnalogCfg()
 	testAnalogConfigFile("setAnalogCfg3.json");
 }
 
+void LoggerApiTest::testAccelConfigFile(string filename){
+	char buffer[20000];
+
+	Serial *serial = getMockSerial();
+
+	string json = readFile(filename);
+
+	mock_setBuffer(json.c_str());
+
+	process_api(serial, buffer, 20000);
+
+	LoggerConfig *c = getWorkingLoggerConfig();
+
+	AccelConfig *accelCfg = &c->AccelConfigs[0];
+
+	CPPUNIT_ASSERT_EQUAL(string("accel1"),string(accelCfg->cfg.label));
+	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(accelCfg->cfg.sampleRate));
+	CPPUNIT_ASSERT_EQUAL(string("GG"),string(accelCfg->cfg.units));
+	CPPUNIT_ASSERT_EQUAL(1, (int)accelCfg->mode);
+	CPPUNIT_ASSERT_EQUAL(2, (int)accelCfg->accelChannel);
+	CPPUNIT_ASSERT_EQUAL(1234, (int)accelCfg->zeroValue);
+
+}
+
+void LoggerApiTest::testSetCellConfigFile(string filename){
+		char buffer[20000];
+
+		Serial *serial = getMockSerial();
+
+		string json = readFile(filename);
+
+		mock_setBuffer(json.c_str());
+
+		process_api(serial, buffer, 20000);
+
+		LoggerConfig *c = getWorkingLoggerConfig();
+
+		CellularConfig *accelCfg = &c->ConnectivityConfigs.cellularConfig;
+
+		CPPUNIT_ASSERT_EQUAL(1, (int)accelCfg->apnHost);
+		CPPUNIT_ASSERT_EQUAL(2, (int)accelCfg->apnUser);
+		CPPUNIT_ASSERT_EQUAL(1234, (int)accelCfg->apnPass);
+}
+
+void LoggerApiTest::testSetAccelCfg(){
+	testAccelConfigFile("setAccelCfg1.json");
+}
+
 void LoggerApiTest::testSetCellCfg()
 {
+	testSetCellConfigFile("setCellCfg1.json");
 }

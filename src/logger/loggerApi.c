@@ -14,17 +14,10 @@
 typedef void (*getConfigs_func)(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg);
 typedef const jsmntok_t * (*setExtField_func)(const jsmntok_t *json, const char *name, const char *value, void *cfg);
 
+
 void api_sampleData(Serial *serial, const jsmntok_t *json){
 
 
-}
-
-void api_getCellConfig(Serial *serial, const jsmntok_t *json){
-	CellularConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
-/*	put_nameString(serial, "apnHost", c->apnHost);
-	put_nameString(serial, "apnUser", c->apnUser);
-	put_nameString(serial, "apnPass", c->apnPass);
-	*/
 }
 
 static void setChannelConfig(Serial *serial, const jsmntok_t *cfg, ChannelConfig *channelCfg, setExtField_func setExtField, void *extCfg){
@@ -64,12 +57,6 @@ static void setMultiChannelConfigGeneric(Serial *serial, const jsmntok_t * json,
 			setChannelConfig(serial, cfgTok, channelCfg, setExtFieldFunc, baseCfg);
 		}
 	}
-}
-
-static void getAnalogConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
-	ADCConfig *c =&(getWorkingLoggerConfig()->ADCConfigs[channelId]);
-	*baseCfg = c;
-	*channelCfg = &c->cfg;
 }
 
 static const jsmntok_t * setScalingMapRaw(ADCConfig *adcCfg, const jsmntok_t *mapArrayTok){
@@ -132,6 +119,73 @@ static const jsmntok_t * setAnalogExtendedField(const jsmntok_t *valueTok, const
 	return valueTok + 1;
 }
 
+static void getAnalogConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
+	ADCConfig *c =&(getWorkingLoggerConfig()->ADCConfigs[channelId]);
+	*baseCfg = c;
+	*channelCfg = &c->cfg;
+}
+
 void api_setAnalogConfig(Serial *serial, const jsmntok_t * json){
 	setMultiChannelConfigGeneric(serial, json, getAnalogConfigs, setAnalogExtendedField);
+}
+
+
+static const jsmntok_t * setAccelExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
+	AccelConfig *accelCfg = (AccelConfig *)cfg;
+
+	if (NAME_EQU("mode",name)) accelCfg->mode = filterAccelMode(modp_atoi(value));
+	else if (NAME_EQU("chan",name)) accelCfg->accelChannel = filterAccelChannel(modp_atoi(value));
+	else if (NAME_EQU("zeroVal",name)) accelCfg->zeroValue = modp_atoi(value);
+	return valueTok + 1;
+}
+
+static void getAccelConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
+	AccelConfig *c = &(getWorkingLoggerConfig()->AccelConfigs[channelId]);
+	*baseCfg = c;
+	*channelCfg = &c->cfg;
+}
+
+void api_setAccelConfig(Serial *serial, const jsmntok_t *json){
+	setMultiChannelConfigGeneric(serial, json, getAccelConfigs, setAccelExtendedField);
+}
+
+static void setConfigGeneric(Serial *serial, const jsmntok_t * json, void *cfg, setExtField_func setExtField){
+	int size = json->size;
+	if (json->type == JSMN_OBJECT && json->size % 2 == 0){
+		json++;
+		for (int i = 0; i < size; i += 2 ){
+			const jsmntok_t *nameTok = json;
+			jsmn_trimData(nameTok);
+			json++;
+			const jsmntok_t *valueTok = json;
+			json++;
+			if (valueTok->type == JSMN_PRIMITIVE || valueTok->type == JSMN_STRING) jsmn_trimData(valueTok);
+
+			const char *name = nameTok->data;
+			const char *value = valueTok->data;
+
+			setExtField(valueTok, name, value, cfg);
+		}
+	}
+
+}
+
+void api_getCellConfig(Serial *serial, const jsmntok_t *json){
+	CellularConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
+/*	put_nameString(serial, "apnHost", c->apnHost);
+	put_nameString(serial, "apnUser", c->apnUser);
+	put_nameString(serial, "apnPass", c->apnPass);
+	*/
+}
+
+static const jsmntok_t * setCellExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
+	CellularConfig *cellCfg = (CellularConfig *)cfg;
+	if (NAME_EQU("apnHost", name))  setTextField(cellCfg->apnHost, value, CELL_APN_HOST_LENGTH);
+	else if (NAME_EQU("apnUser", name)) setTextField(cellCfg->apnUser, value, CELL_APN_USER_LENGTH);
+	else if (NAME_EQU("apnPass", name)) setTextField(cellCfg->apnPass, value, CELL_APN_PASS_LENGTH);
+}
+
+void api_setCellConfig(Serial *serial, const jsmntok_t *json){
+	CellularConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
+	setConfigGeneric(serial, json, cfg, setCellExtendedField);
 }

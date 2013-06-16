@@ -20,6 +20,7 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST_SUITE( LoggerApiTest );
   CPPUNIT_TEST( testSetCellCfg );
   CPPUNIT_TEST( testSetAnalogCfg );
+  CPPUNIT_TEST( testSetAccelCfg );
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -30,10 +31,12 @@ public:
 
   void testSetCellCfg();
   void testSetAnalogCfg();
+  void testSetAccelCfg();
 
 private:
   void testAnalogConfigFile(string filename);
-
+  void testAccelConfigFile(string filename);
+  void testSetCellConfigFile(string filename);
 
 };
 

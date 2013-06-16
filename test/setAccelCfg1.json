@@ -1,0 +1,12 @@
+{
+    "setAccelCfg": {
+        "0": {        
+            "nm": "accel1",
+            "ut": "GG",
+            "sr": 50,
+            "mode": 1,
+            "chan": 2,
+            "zeroVal", 1234
+        }
+    }
+}
