@@ -149,11 +149,11 @@ void LoggerApiTest::testSetCellConfigFile(string filename){
 
 		LoggerConfig *c = getWorkingLoggerConfig();
 
-		CellularConfig *accelCfg = &c->ConnectivityConfigs.cellularConfig;
+		CellularConfig *cellCfg = &c->ConnectivityConfigs.cellularConfig;
 
-		CPPUNIT_ASSERT_EQUAL(1, (int)accelCfg->apnHost);
-		CPPUNIT_ASSERT_EQUAL(2, (int)accelCfg->apnUser);
-		CPPUNIT_ASSERT_EQUAL(1234, (int)accelCfg->apnPass);
+		CPPUNIT_ASSERT_EQUAL(string("foo.xyz"), string(cellCfg->apnHost));
+		CPPUNIT_ASSERT_EQUAL(string("blarg"), string(cellCfg->apnUser));
+		CPPUNIT_ASSERT_EQUAL(string("blorg"), string(cellCfg->apnPass));
 }
 
 void LoggerApiTest::testSetAccelCfg(){

@@ -16,7 +16,8 @@
 {"sample", api_sampleData}, \
 {"getCellCfg", api_getCellConfig}, \
 {"setAnalogCfg", api_setAnalogConfig}, \
-{"setAccelCfg", api_setAccelConfig}
+{"setAccelCfg", api_setAccelConfig}, \
+{"setCellCfg", api_setCellConfig}
 
 
 void api_sampleData(Serial *serial, const jsmntok_t *json);
