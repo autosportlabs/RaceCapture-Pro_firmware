@@ -194,3 +194,28 @@ void LoggerApiTest::testSetPwmConfigFile(string filename){
 void LoggerApiTest::testSetPwmCfg(){
 	testSetPwmConfigFile("setPwmCfg1.json");
 }
+
+void LoggerApiTest::testSetGpioConfigFile(string filename){
+	char buffer[20000];
+
+	Serial *serial = getMockSerial();
+
+	string json = readFile(filename);
+
+	mock_setBuffer(json.c_str());
+
+	process_api(serial, buffer, 20000);
+
+	LoggerConfig *c = getWorkingLoggerConfig();
+
+	GPIOConfig *gpioCfg = &c->GPIOConfigs[0];
+
+	CPPUNIT_ASSERT_EQUAL(string("gpio1"),string(gpioCfg->cfg.label));
+	CPPUNIT_ASSERT_EQUAL(100, decodeSampleRate(gpioCfg->cfg.sampleRate));
+	CPPUNIT_ASSERT_EQUAL(string("ut1"),string(gpioCfg->cfg.units));
+	CPPUNIT_ASSERT_EQUAL(1, (int)gpioCfg->mode);
+}
+
+void LoggerApiTest::testSetGpioCfg(){
+	testSetGpioConfigFile("setGpioCfg1.json");
+}

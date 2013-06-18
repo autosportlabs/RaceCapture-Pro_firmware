@@ -18,7 +18,8 @@
 {"setAnalogCfg", api_setAnalogConfig}, \
 {"setAccelCfg", api_setAccelConfig}, \
 {"setCellCfg", api_setCellConfig}, \
-{"setPwmCfg", api_setPwmConfig}
+{"setPwmCfg", api_setPwmConfig}, \
+{"setGpioCfg", api_setGpioConfig}
 
 
 void api_sampleData(Serial *serial, const jsmntok_t *json);
@@ -27,4 +28,5 @@ void api_setCellConfig(Serial *serial, const jsmntok_t *json);
 void api_setAnalogConfig(Serial *serial, const jsmntok_t *json);
 void api_setAccelConfig(Serial *serial, const jsmntok_t *json);
 void api_setPwmConfig(Serial *serial, const jsmntok_t *json);
+void api_setGpioConfig(Serial *serial, const jsmntok_t *json);
 #endif /* LOGGERAPI_H_ */

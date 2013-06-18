@@ -212,3 +212,21 @@ static const jsmntok_t * setPwmExtendedField(const jsmntok_t *valueTok, const ch
 void api_setPwmConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getPwmConfigs, setPwmExtendedField);
 }
+
+static void getGpioConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
+	GPIOConfig *c =&(getWorkingLoggerConfig()->GPIOConfigs[channelId]);
+	*baseCfg = c;
+	*channelCfg = &c->cfg;
+}
+
+static const jsmntok_t * setGpioExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
+	GPIOConfig *gpioCfg = (GPIOConfig *)cfg;
+
+	if (NAME_EQU("mode", name)) gpioCfg->mode = filterGpioMode(modp_atoi(value));
+	return valueTok + 1;
+}
+
+void api_setGpioConfig(Serial *serial, const jsmntok_t *json){
+	setMultiChannelConfigGeneric(serial, json, getGpioConfigs, setGpioExtendedField);
+}
+
