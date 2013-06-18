@@ -164,3 +164,33 @@ void LoggerApiTest::testSetCellCfg()
 {
 	testSetCellConfigFile("setCellCfg1.json");
 }
+
+void LoggerApiTest::testSetPwmConfigFile(string filename){
+	char buffer[20000];
+
+	Serial *serial = getMockSerial();
+
+	string json = readFile(filename);
+
+	mock_setBuffer(json.c_str());
+
+	process_api(serial, buffer, 20000);
+
+	LoggerConfig *c = getWorkingLoggerConfig();
+
+	PWMConfig *pwmCfg = &c->PWMConfigs[0];
+
+	CPPUNIT_ASSERT_EQUAL(string("pwm1"),string(pwmCfg->cfg.label));
+	CPPUNIT_ASSERT_EQUAL(100, decodeSampleRate(pwmCfg->cfg.sampleRate));
+	CPPUNIT_ASSERT_EQUAL(string("ut1"),string(pwmCfg->cfg.units));
+	CPPUNIT_ASSERT_EQUAL(2, (int)pwmCfg->loggingPrecision);
+	CPPUNIT_ASSERT_EQUAL(1, (int)pwmCfg->outputMode);
+	CPPUNIT_ASSERT_EQUAL(1, (int)pwmCfg->loggingMode);
+	CPPUNIT_ASSERT_EQUAL(50, (int)pwmCfg->startupDutyCycle);
+	CPPUNIT_ASSERT_EQUAL(110, (int)pwmCfg->startupPeriod);
+	CPPUNIT_ASSERT_EQUAL(2.5F, (float)pwmCfg->voltageScaling);
+}
+
+void LoggerApiTest::testSetPwmCfg(){
+	testSetPwmConfigFile("setPwmCfg1.json");
+}

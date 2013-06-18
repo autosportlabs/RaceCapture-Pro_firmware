@@ -190,3 +190,25 @@ void api_setCellConfig(Serial *serial, const jsmntok_t *json){
 	CellularConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
 	setConfigGeneric(serial, json, cfg, setCellExtendedField);
 }
+
+static void getPwmConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
+	PWMConfig *c =&(getWorkingLoggerConfig()->PWMConfigs[channelId]);
+	*baseCfg = c;
+	*channelCfg = &c->cfg;
+}
+
+static const jsmntok_t * setPwmExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
+	PWMConfig *pwmCfg = (PWMConfig *)cfg;
+
+	if (NAME_EQU("logPrec", name)) pwmCfg->loggingPrecision = modp_atoi(value);
+	if (NAME_EQU("outMode", name)) pwmCfg->outputMode = filterPwmOutputMode(modp_atoi(value));
+	if (NAME_EQU("logMode", name)) pwmCfg->loggingMode = filterPwmLoggingMode(modp_atoi(value));
+	if (NAME_EQU("stDutyCyc", name)) pwmCfg->startupDutyCycle = filterPwmDutyCycle(modp_atoi(value));
+	if (NAME_EQU("stPeriod", name)) pwmCfg->startupPeriod = filterPwmPeriod(modp_atoi(value));
+	if (NAME_EQU("vScal", name)) pwmCfg->voltageScaling = modp_atof(value);
+	return valueTok + 1;
+}
+
+void api_setPwmConfig(Serial *serial, const jsmntok_t *json){
+	setMultiChannelConfigGeneric(serial, json, getPwmConfigs, setPwmExtendedField);
+}
