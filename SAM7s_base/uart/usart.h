@@ -14,9 +14,9 @@ char usart0_getcharWait(size_t delay);
 
 char usart0_getchar();
 
-int usart0_putchar(char c);
+void usart0_putchar(char c);
 
-int usart0_puts (const char* s );
+void usart0_puts (const char* s );
 
 int usart0_readLine(char *s, int len);
 
@@ -26,9 +26,9 @@ char usart1_getcharWait(size_t delay);
 
 char usart1_getchar();
 
-int usart1_putchar(char c);
+void usart1_putchar(char c);
 
-int usart1_puts (const char* s );
+void usart1_puts (const char* s );
 
 int usart1_readLine(char *s, int len);
 

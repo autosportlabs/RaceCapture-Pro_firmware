@@ -49,18 +49,14 @@ int usb_readLineWait(char *s, int len, size_t delay)
 	return count;
 }
 
-int usb_puts(const char *s){
-	int count = 0;
+void usb_puts(const char *s){
 	while ( *s ){
 		vUSBSendByte(*s++ );
-		count++;
 	}
-	return count;
 }
 
-int usb_putchar(char c){
+void usb_putchar(char c){
 	vUSBSendByte(c);
-	return 1;
 }
 
 void onUSBCommTask(void *pvParameters) {

@@ -183,6 +183,7 @@ static const jsmntok_t * setCellExtendedField(const jsmntok_t *valueTok, const c
 	if (NAME_EQU("apnHost", name))  setTextField(cellCfg->apnHost, value, CELL_APN_HOST_LENGTH);
 	else if (NAME_EQU("apnUser", name)) setTextField(cellCfg->apnUser, value, CELL_APN_USER_LENGTH);
 	else if (NAME_EQU("apnPass", name)) setTextField(cellCfg->apnPass, value, CELL_APN_PASS_LENGTH);
+	return valueTok + 1;
 }
 
 void api_setCellConfig(Serial *serial, const jsmntok_t *json){

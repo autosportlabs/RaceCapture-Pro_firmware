@@ -12,9 +12,9 @@ char usb_getchar(void);
 
 char usb_getchar_wait(size_t delay);
 
-int usb_putchar(char c);
+void usb_putchar(char c);
 
-int usb_puts(const char* s );
+void usb_puts(const char* s );
 
 void onUSBCommTask(void *);
 

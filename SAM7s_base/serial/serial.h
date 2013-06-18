@@ -18,8 +18,8 @@ typedef struct _Serial{
 	int (*get_line)(char *s, int len);
 	int (*get_line_wait)(char *s, int len, size_t delay);
 
-	int (*put_c)(char c);
-	int (*put_s)(const char *);
+	void (*put_c)(char c);
+	void (*put_s)(const char *);
 
 	void (*flush)(void);
 

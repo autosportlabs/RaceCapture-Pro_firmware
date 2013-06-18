@@ -27,12 +27,12 @@ int usb_readLineWait(char *s, int len, size_t delay)
 	return 0;
 }
 
-int usb_puts(const char *s){
-	return 0;
+void usb_puts(const char *s){
+
 }
 
-int usb_putchar(char c){
-	return 1;
+void usb_putchar(char c){
+
 }
 
 void onUSBCommTask(void *pvParameters) {

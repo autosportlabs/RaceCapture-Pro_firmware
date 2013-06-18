@@ -247,30 +247,26 @@ char usart1_getchar()
 	return usart1_getcharWait(portMAX_DELAY);
 }
 
-int usart0_putchar(char c){
+void usart0_putchar(char c){
 	xQueueSend( xUsart0Tx, &c, portMAX_DELAY );
 	//Enable transmitter interrupt
 	AT91F_US_EnableIt( AT91C_BASE_US0, AT91C_US_TXRDY | AT91C_US_RXRDY );
-	return 1;
 }
 
-int usart1_putchar(char c){
+void usart1_putchar(char c){
 	xQueueSend( xUsart1Tx, &c, portMAX_DELAY );
 	//Enable transmitter interrupt
 	AT91F_US_EnableIt( AT91C_BASE_US1, AT91C_US_TXRDY | AT91C_US_RXRDY );
-	return 1;
 }
 
-int usart0_puts (const char* s )
+void usart0_puts (const char* s )
 {
 	while ( *s ) usart0_putchar(*s++ );
-	return 0;
 }
 
-int usart1_puts (const char* s )
+void usart1_puts (const char* s )
 {
 	while ( *s ) usart1_putchar(*s++ );
-	return 0;
 }
 
 

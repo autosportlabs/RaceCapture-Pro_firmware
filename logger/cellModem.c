@@ -9,8 +9,7 @@
 
 #define NETWORK_CONNECT_MAX_TRIES 10
 
-char g_cellBuffer[200];
-char g_latestTextMsg[200];
+static char g_cellBuffer[200];
 
 #define PAUSE_DELAY 167
 
@@ -48,13 +47,18 @@ static void stripTrailingWhitespace(char *data){
 	*ch = 0;
 }
 
-static int sendCommandWait(const char *cmd, portTickType wait){
-	flushModem();
-	putsCell(cmd);
+static int waitCommandResponse(portTickType wait){
 	readModemWait(wait);
 	readModemWait(READ_TIMEOUT);
 	vTaskDelay(PAUSE_DELAY); //maybe take this out later - debugging SIM900
 	return strncmp(g_cellBuffer,"OK",2) == 0;
+}
+
+static int sendCommandWait(const char *cmd, portTickType wait){
+	flushModem();
+	putsCell(cmd);
+	return waitCommandResponse(wait);
+	readModemWait(wait);
 }
 
 static int sendCommand(const char * cmd){
@@ -86,12 +90,11 @@ static int getIpAddress(){
 	return 0;
 }
 
-int putsCell(const char *data){
-	int c = usart0_puts(data);
+void putsCell(const char *data){
+	usart0_puts(data);
 	printk(DEBUG, "cellWrite: ");
 	printk(DEBUG, data);
 	printk(DEBUG, "\r\n");
-	return c;
 }
 
 void putUintCell(uint32_t num){
@@ -121,17 +124,23 @@ void putQuotedStringCell(char *s){
 int configureNet(const char *apnHost, const char *apnUser, const char *apnPass){
 	if (!sendCommand("AT+CIPMUX=0\r")) return -1;  //TODO enable for SIM900
 	if (!sendCommand("AT+CIPMODE=1\r")) return -1;
+
 	//if (!sendCommand("AT+CIPCCFG=3,2,256,1\r")) return -1;
-	strcpy(g_cellBuffer, "AT+CSTT=\"");
-	strcat(g_cellBuffer, apnHost);
-	strcat(g_cellBuffer, "\",\"");
-	strcat(g_cellBuffer, apnUser);
-	strcat(g_cellBuffer, "\",\"");
-	strcat(g_cellBuffer, apnPass);
-	strcat(g_cellBuffer, "\"\r");
-	if (!sendCommandWait(g_cellBuffer, READ_TIMEOUT)) return -2;
+
+	flushModem();
+	putsCell("AT+CSTT=\"");
+	putsCell(apnHost);
+	putsCell("\",\"");
+	putsCell(apnUser);
+	putsCell("\",\"");
+	putsCell(apnPass);
+	putsCell("\"\r");
+	if (!waitCommandResponse(READ_TIMEOUT)) return -2;
+
 //	if (!sendCommand("AT+CIPHEAD=1\r")) return -2;
+
 	if (!sendCommandWait("AT+CIICR\r", CONNECT_TIMEOUT)) return -4;
+
 	if (getIpAddress() !=0 ) return -5;
 	return 0;
 }
@@ -259,7 +268,7 @@ void deleteSent(void){
 	sendCommand("AT+CMGDA=\"DEL SENT\"\r");
 }
 
-const char * receiveText(int txtNumber){
+void receiveText(int txtNumber, char * txtMsgBuffer, size_t txtMsgBufferLen){
 
 	flushModem();
 	putsCell("AT+CMGR=");
@@ -270,7 +279,7 @@ const char * receiveText(int txtNumber){
 
 	readModem();
 	readModem();
-	if (0 != strncmp(g_cellBuffer, "+CMGR",5)) return NULL;
+	if (0 != strncmp(g_cellBuffer, "+CMGR",5)) return;
 
 
 	size_t pos = 0;
@@ -279,13 +288,12 @@ const char * receiveText(int txtNumber){
 		if (0 == strncmp(g_cellBuffer,"OK",2)) break;
 		size_t len = strlen(g_cellBuffer);
 		if (len == 0) continue;
-		len = min(len, sizeof(g_latestTextMsg) - pos - 1);
-		memcpy(g_latestTextMsg + pos,g_cellBuffer,len);
+		len = min(len, txtMsgBufferLen - pos - 1);
+		memcpy(txtMsgBuffer + pos,g_cellBuffer,len);
 		pos += len;
 	}
-	g_latestTextMsg[pos]='\0';
-	stripTrailingWhitespace(g_latestTextMsg);
-	return g_latestTextMsg;
+	txtMsgBuffer[pos] = '\0';
+	stripTrailingWhitespace(txtMsgBuffer);
 }
 
 int sendText(const char * number, const char * msg){

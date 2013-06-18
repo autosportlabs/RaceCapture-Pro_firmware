@@ -35,14 +35,13 @@ static int putcBt(char c){
 	return 0;
 }
 
-static int putsBt(const char *data){
-	int c = usart0_puts(data);
+void putsBt(const char *data){
+	usart0_puts(data);
 #ifdef DEBUG
 	SendString("Write: ");
 	SendString(data);
 	SendCrlf();
 #endif
-	return c;
 }
 
 static void putUintBt(uint32_t num){

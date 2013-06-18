@@ -41,22 +41,22 @@ char usart1_getchar()
 	return 0;
 }
 
-int usart0_putchar(char c){
-	return 1;
+void usart0_putchar(char c){
+
 }
 
-int usart1_putchar(char c){
-	return 1;
+void usart1_putchar(char c){
+
 }
 
-int usart0_puts (const char* s )
+void usart0_puts (const char* s )
 {
-	return 0;
+
 }
 
-int usart1_puts (const char* s )
+void usart1_puts (const char* s )
 {
-	return 0;
+
 }
 
 

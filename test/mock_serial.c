@@ -54,15 +54,14 @@ char mock_get_c()
 	return mock_get_c_wait(0);
 }
 
-int mock_put_c(char c){
+void mock_put_c(char c){
 	//xQueueSend( xmockTx, &c, portMAX_DELAY );
-	return 1;
+
 }
 
-int mock_put_s(const char* s )
+void mock_put_s(const char* s )
 {
 	while ( *s ) mock_put_c(*s++ );
-	return 0;
 }
 
 int mock_get_line_wait(char *s, int len, size_t delay)

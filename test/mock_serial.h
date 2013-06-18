@@ -10,9 +10,9 @@ char mock_get_c_wait(size_t delay);
 
 char mock_get_c();
 
-int mock_put_c(char c);
+void mock_put_c(char c);
 
-int mock_put_s(const char* s );
+void mock_put_s(const char* s );
 
 int mock_get_line_wait(char *s, int len, size_t delay);
 
