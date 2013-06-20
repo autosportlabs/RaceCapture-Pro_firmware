@@ -60,6 +60,7 @@ string LoggerApiTest::readFile(string filename){
 
 void LoggerApiTest::setUp()
 {
+	updateActiveLoggerConfig();
 	setupMockSerial();
 }
 
@@ -218,4 +219,33 @@ void LoggerApiTest::testSetGpioConfigFile(string filename){
 
 void LoggerApiTest::testSetGpioCfg(){
 	testSetGpioConfigFile("setGpioCfg1.json");
+}
+
+void LoggerApiTest::testSetTimerConfigFile(string filename){
+	char buffer[20000];
+
+	LoggerConfig *c = getWorkingLoggerConfig();
+
+	TimerConfig *timerCfg = &c->TimerConfigs[0];
+
+	Serial *serial = getMockSerial();
+
+	string json = readFile(filename);
+
+	mock_setBuffer(json.c_str());
+
+	process_api(serial, buffer, 20000);
+
+	CPPUNIT_ASSERT_EQUAL(string("timer1"),string(timerCfg->cfg.label));
+	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(timerCfg->cfg.sampleRate));
+	CPPUNIT_ASSERT_EQUAL(string("ut1"),string(timerCfg->cfg.units));
+	CPPUNIT_ASSERT_EQUAL(3, (int)timerCfg->loggingPrecision);
+	CPPUNIT_ASSERT_EQUAL(1, (int)timerCfg->slowTimerEnabled);
+	CPPUNIT_ASSERT_EQUAL(1, (int)timerCfg->mode);
+	CPPUNIT_ASSERT_EQUAL(4, (int)timerCfg->pulsePerRevolution);
+	CPPUNIT_ASSERT_EQUAL(2, (int)timerCfg->timerDivider);
+}
+
+void LoggerApiTest::testSetTimerCfg(){
+	testSetTimerConfigFile("setTimerCfg1.json");
 }

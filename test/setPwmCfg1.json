@@ -1,0 +1,15 @@
+{
+    "setPwmCfg": {
+        "0": {        
+            "nm": "pwm1",
+            "ut": "ut1",
+            "sr": 100,
+            "logPrec": 2,
+            "outMode": 1,
+            "logMode": 1,
+            "stDutyCyc": 50,
+            "stPeriod" : 110,
+            "vScal": 2.5
+        }
+    }
+}

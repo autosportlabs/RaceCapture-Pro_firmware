@@ -21,7 +21,7 @@
             "ut": "Hz",
             "sr": 50,
             "scalMod": 2,
-	    "prec": 3,
+	   		"prec": 3,
             "linScal": 1.234
         }
     }

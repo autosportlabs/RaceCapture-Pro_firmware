@@ -230,3 +230,28 @@ void api_setGpioConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getGpioConfigs, setGpioExtendedField);
 }
 
+static void getTimerConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
+	TimerConfig *c =&(getWorkingLoggerConfig()->TimerConfigs[channelId]);
+	*baseCfg = c;
+	*channelCfg = &c->cfg;
+}
+
+static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
+	TimerConfig *timerCfg = (TimerConfig *)cfg;
+
+	int iValue = modp_atoi(value);
+	if (NAME_EQU("prec", name)) timerCfg->loggingPrecision = iValue;
+	if (NAME_EQU("sTimer", name)) timerCfg->slowTimerEnabled = (iValue != 0);
+	if (NAME_EQU("mode", name)) timerCfg->mode = filterTimerMode(iValue);
+	if (NAME_EQU("ppRev", name)) {
+		timerCfg->pulsePerRevolution = iValue;
+		calculateTimerScaling(BOARD_MCK, timerCfg);
+	}
+	if (NAME_EQU("timDiv", name)) timerCfg->timerDivider = filterTimerDivider(iValue);
+
+	return valueTok + 1;
+}
+
+void api_setTimerConfig(Serial *serial, const jsmntok_t *json){
+	setMultiChannelConfigGeneric(serial, json, getTimerConfigs, setTimerExtendedField);
+}

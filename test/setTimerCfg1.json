@@ -1,0 +1,14 @@
+{
+    "setTimerCfg": {
+        "0": {        
+            "nm": "timer1",
+            "ut": "ut1",
+            "sr": 10,
+            "prec": 3,
+            "sTimer": 1,
+            "mode": 1,
+            "ppRev": 4,
+            "timDiv": 2
+        }
+    }
+}
