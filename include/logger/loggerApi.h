@@ -22,6 +22,7 @@
 {"setAnalogCfg", api_setAnalogConfig}, \
 {"setAccelCfg", api_setAccelConfig}, \
 {"setCellCfg", api_setCellConfig}, \
+{"setBtCfg", api_setBluetoothConfig}, \
 {"setPwmCfg", api_setPwmConfig}, \
 {"setGpioCfg", api_setGpioConfig}, \
 {"setTimerCfg", api_setTimerConfig}
@@ -30,6 +31,7 @@
 void api_sampleData(Serial *serial, const jsmntok_t *json);
 void api_getCellConfig(Serial *serial, const jsmntok_t *json);
 void api_setCellConfig(Serial *serial, const jsmntok_t *json);
+void api_setBluetoothConfig(Serial *serial, const jsmntok_t *json);
 void api_setAnalogConfig(Serial *serial, const jsmntok_t *json);
 void api_setAccelConfig(Serial *serial, const jsmntok_t *json);
 void api_setPwmConfig(Serial *serial, const jsmntok_t *json);

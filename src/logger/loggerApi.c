@@ -191,6 +191,18 @@ void api_setCellConfig(Serial *serial, const jsmntok_t *json){
 	setConfigGeneric(serial, json, cfg, setCellExtendedField);
 }
 
+static const jsmntok_t * setBluetoothExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
+	BluetoothConfig *btCfg = (BluetoothConfig *)cfg;
+	if (NAME_EQU("btName", name)) setTextField(btCfg->deviceName, value, BT_DEVICE_NAME_LENGTH);
+	else if (NAME_EQU("btPass", name)) setTextField(btCfg->passcode, value, BT_PASSCODE_LENGTH);
+	return valueTok + 1;
+}
+
+void api_setBluetoothConfig(Serial *serial, const jsmntok_t *json){
+	BluetoothConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
+	setConfigGeneric(serial, json, cfg, setBluetoothExtendedField);
+}
+
 static void getPwmConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
 	PWMConfig *c =&(getWorkingLoggerConfig()->PWMConfigs[channelId]);
 	*baseCfg = c;

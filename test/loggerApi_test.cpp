@@ -137,6 +137,10 @@ void LoggerApiTest::testAccelConfigFile(string filename){
 
 }
 
+void LoggerApiTest::testSetAccelCfg(){
+	testAccelConfigFile("setAccelCfg1.json");
+}
+
 void LoggerApiTest::testSetCellConfigFile(string filename){
 		char buffer[20000];
 
@@ -157,13 +161,33 @@ void LoggerApiTest::testSetCellConfigFile(string filename){
 		CPPUNIT_ASSERT_EQUAL(string("blorg"), string(cellCfg->apnPass));
 }
 
-void LoggerApiTest::testSetAccelCfg(){
-	testAccelConfigFile("setAccelCfg1.json");
-}
-
 void LoggerApiTest::testSetCellCfg()
 {
 	testSetCellConfigFile("setCellCfg1.json");
+}
+
+void LoggerApiTest::testSetBtConfigFile(string filename){
+		char buffer[20000];
+
+		Serial *serial = getMockSerial();
+
+		string json = readFile(filename);
+
+		mock_setBuffer(json.c_str());
+
+		process_api(serial, buffer, 20000);
+
+		LoggerConfig *c = getWorkingLoggerConfig();
+
+		BluetoothConfig *btCfg = &c->ConnectivityConfigs.bluetoothConfig;
+
+		CPPUNIT_ASSERT_EQUAL(string("myRacecar"), string(btCfg->deviceName));
+		CPPUNIT_ASSERT_EQUAL(string("3311"), string(btCfg->passcode));
+}
+
+void LoggerApiTest::testSetBtCfg()
+{
+	testSetBtConfigFile("setBtCfg1.json");
 }
 
 void LoggerApiTest::testSetPwmConfigFile(string filename){
