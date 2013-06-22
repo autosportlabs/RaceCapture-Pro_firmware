@@ -11,13 +11,52 @@
 
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
+static unsigned int g_currentMessageId = 0;
+
 typedef void (*getConfigs_func)(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg);
 typedef const jsmntok_t * (*setExtField_func)(const jsmntok_t *json, const char *name, const char *value, void *cfg);
 
+static void json_uint(Serial *serial, const char *name, unsigned int value, int more){
+	serial->put_s(name);
+	serial->put_c(':');
+	put_uint(serial, value);
+	if (more) serial->put_c(',');
+}
+
+static void json_string(Serial *serial, const char *name, const char *value, int more){
+	serial->put_s(name);
+	serial->put_c(':');
+	serial->put_s(value);
+	if (more) serial->put_c(',');
+}
+
+static void json_float(Serial *serial, const char *name, float value, int precision, int more){
+	serial->put_s(name);
+	serial->put_c(':');
+	put_float(serial, value, precision);
+	if (more) serial->put_c(',');
+}
+
+static void json_blockStart(Serial *serial, const char * name, int more){
+	serial->put_c('"');
+	serial->put_s(name);
+	serial->put_s("\":{");
+}
+
+static void json_messageStart(Serial *serial, int more){
+	serial->put_c('{');
+	json_uint(serial, "mid", ++g_currentMessageId, 1);
+}
+
+static void json_blockEnd(Serial *serial, int more){
+	serial->put_s("}");
+	if (more) serial->put_c(',');
+}
 
 void api_sampleData(Serial *serial, const jsmntok_t *json){
+	json_messageStart(serial, 1);
 
-
+	json_blockEnd(serial,0);
 }
 
 static void setChannelConfig(Serial *serial, const jsmntok_t *cfg, ChannelConfig *channelCfg, setExtField_func setExtField, void *extCfg){
