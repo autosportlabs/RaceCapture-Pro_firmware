@@ -21,9 +21,9 @@
 //RaceCapture specific includes
 #include "loggerHardware.h"
 #include "gpioTasks.h"
+#include "gpsTask.h"
 #include "usart.h"
 #include "sdcard.h"
-#include "gps.h"
 #include "loggerConfig.h"
 #include "loggerCommands.h"
 #include "sdcard.h"

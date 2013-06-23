@@ -86,6 +86,7 @@ RACE_CAPTURE_DIR = race_capture
 TASKS_DIR = tasks
 JSMN_SRC_DIR = $(SRC_DIR)/jsmn
 API_SRC_DIR = $(SRC_DIR)/api
+ACCEL_SRC_DIR = $(SRC_DIR)/accelerometer
 
 #App specific dirs
 FAT_SD_SRC_DIR = fat_sd
@@ -134,6 +135,7 @@ $(LOGGER_SRC_DIR)/consoleConnectivity.c \
 $(LOGGER_SRC_DIR)/cellTelemetry.c \
 $(LOGGER_SRC_DIR)/btTelemetry.c \
 $(LOGGER_SRC_DIR)/gps.c \
+$(LOGGER_SRC_DIR)/gpsTask.c \
 $(LOGGER_SRC_DIR)/cellModem.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
 $(LOGGER_SRC_DIR)/geometry.c \
@@ -148,6 +150,7 @@ $(RTOS_PORT_DIR)/MemMang/heap_2_combine.c \
 $(RACE_CAPTURE_DIR)/printk.c \
 $(RACE_CAPTURE_DIR)/ring_buffer.c \
 $(TASKS_DIR)/heartbeat.c \
+$(ACCEL_SRC_DIR)/accelerometer_buffer.c
 
 # List C source files here which must be compiled in ARM-Mode.
 # use file-extension c for "c-only"-files
@@ -239,7 +242,8 @@ CINCS = \
 -I$(INCLUDE_DIR) \
 -I$(INCLUDE_DIR)/jsmn \
 -I$(INCLUDE_DIR)/api \
--I$(INCLUDE_DIR)/logger
+-I$(INCLUDE_DIR)/logger \
+-I$(INCLUDE_DIR)/accelerometer \
 
 #CINCS = -I. -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
 # Place -D or -U options for ASM here

@@ -1048,7 +1048,7 @@ int Lua_GetTimerCount(lua_State *L){
 }
 
 int Lua_GetButton(lua_State *L){
-	unsigned int pushbutton = GetGPIOBits() & PIO_PUSHBUTTON_SWITCH;
+	unsigned int pushbutton = isButtonPressed();
 	lua_pushinteger(L,(pushbutton == 0));
 	return 1;	
 }
@@ -1091,47 +1091,34 @@ int Lua_ReadSerialLine(lua_State *L){
 }
 
 int Lua_GetGPIO(lua_State *L){
+
 	unsigned int result = 0;
 	if (lua_gettop(L) >= 1){
+		unsigned int gpio[CONFIG_GPIO_CHANNELS];
+		readGpios(&gpio[0], &gpio[1], &gpio[2]);
+
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
-		unsigned int gpioBits = GetGPIOBits();
 		switch (channel){
 			case 0:
-				result = gpioBits & GPIO_1;
+				result = gpio[0];
 				break;
 			case 1:
-				result = gpioBits & GPIO_2;
+				result = gpio[1];
 				break;
 			case 2:
-				result = gpioBits & GPIO_3;
+				result = gpio[2];
 				break;
 		}
 	}
-	lua_pushinteger(L,(result != 0 ));
+	lua_pushinteger(L, result);
 	return 1;
 }
 
 int Lua_SetGPIO(lua_State *L){
 	if (lua_gettop(L) >=2){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
-		unsigned int state = (unsigned int)lua_tointeger(L,2);
-		unsigned int gpioBits = 0;
-		switch (channel){
-			case 0:
-				gpioBits = GPIO_1;
-				break;
-			case 1:
-				gpioBits = GPIO_2;
-				break;
-			case 2:
-				gpioBits = GPIO_3;
-				break;
-		}
-		if (state){
-			SetGPIOBits(gpioBits);
-		} else{
-			ClearGPIOBits(gpioBits);
-		}
+		unsigned int state = ((unsigned int)lua_tointeger(L,2) == 1);
+		setGpio(channel, state);
 	}
 	return 0;
 }
@@ -1206,7 +1193,7 @@ int Lua_ReadAccelerometer(lua_State *L){
 		if (channel >= ACCELEROMETER_CHANNEL_MIN && channel <= ACCELEROMETER_CHANNEL_MAX){
 			unsigned long zeroValue = getWorkingLoggerConfig()->AccelConfigs[channel].zeroValue;
 			unsigned int rawValue = readAccelChannel(channel);
-			float value = (channel == ACCEL_CHANNEL_ZT ? convertYawRawToDegreesPerSec(rawValue, zeroValue) : convertAccelRawToG(rawValue, zeroValue));
+			float value = (channel == ACCEL_CHANNEL_ZT ? YAW_RAW_TO_DEGREES_PER_SEC(rawValue, zeroValue) : ACCEL_RAW_TO_DEGREES_PER_SEC(rawValue, zeroValue));
 			lua_pushnumber(L,value);
 			return 1;
 		}

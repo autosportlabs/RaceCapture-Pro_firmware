@@ -1,10 +1,6 @@
 #include "gps.h"
-#include "board.h"
-#include "FreeRTOS.h"
-#include "task.h"
 #include "loggerHardware.h"
 #include "loggerConfig.h"
-#include "usart.h"
 #include "modp_numtoa.h"
 #include "modp_atonum.h"
 #include "geometry.h"
@@ -14,11 +10,6 @@
 //kilometers
 #define DISTANCE_SCALING 6371
 #define PI 3.1415
-
-#define GPS_DATA_LINE_BUFFER_LEN 	200
-#define GPS_TASK_PRIORITY 			( tskIDLE_PRIORITY + 2 )
-#define GPS_TASK_STACK_SIZE			100
-
 
 #define GPS_QUALITY_NO_FIX 0
 #define GPS_QUALITY_SPS 1
@@ -35,8 +26,7 @@
 
 #define START_FINISH_TIME_THRESHOLD 30
 
-static char g_GPSdataLine[GPS_DATA_LINE_BUFFER_LEN];
-
+static int		g_flashCount;
 static float	g_prevLatitude;
 static float	g_prevLongitude;
 
@@ -66,6 +56,183 @@ static float g_lastSplitTime;
 static int g_lapCount;
 
 static float	g_distance;
+
+//Parse Global Positioning System Fix Data.
+static void parseGGA(char *data){
+
+	//SendString(data);
+
+	char * delim = strchr(data,',');
+	int param = 0;
+
+	double latitude = 0.0;
+	double longitude = 0.0;
+
+	int keepParsing = 1;
+
+	while (delim != NULL && keepParsing){
+		*delim = '\0';
+		switch (param){
+			case 0:
+				{
+					unsigned int len = strlen(data);
+					if (len > 0 && len < UTC_TIME_BUFFER_LEN){
+						g_UTCTime = modp_atof(data);
+
+						char hh[3];
+						char mm[3];
+						char ss[7];
+
+						memcpy(hh,data,2);
+						hh[2] = '\0';
+						memcpy(mm,data+2,2);
+						mm[2] = '\0';
+						memcpy(ss,data+4,6);
+						ss[6] = '\0';
+						int hour = modp_atoi(hh);
+						int minutes = modp_atoi(mm);
+						float seconds = modp_atof(ss);
+
+						g_secondsSinceMidnight = (hour * 60.0 * 60.0) + (minutes * 60.0) + seconds;
+					}
+				}
+				break;
+			case 1:
+				{
+					unsigned int len = strlen(data);
+					if ( len > 0 && len <= LATITUDE_DATA_LEN ){
+						//Raw GPS Format is ddmm.mmmmmm
+//						latitude = modp_atod(data);
+
+						char degreesStr[3];
+						strncpy(degreesStr, data, 2);
+						degreesStr[2] = 0;
+						float minutes = modp_atof(data + 2);
+						minutes = minutes / 60.0;
+						latitude = modp_atoi(degreesStr) + minutes;
+
+					}
+					else{
+						latitude = 0;
+						//TODO log error
+					}
+				}
+				break;
+			case 2:
+				{
+					if (data[0] == 'S'){
+						latitude = -latitude;
+					}
+				}
+				break;
+			case 3:
+				{
+					unsigned int len = strlen(data);
+					if ( len > 0 && len <= LONGITUDE_DATA_LEN ){
+						//Raw GPS Format is dddmm.mmmmmm
+
+//						longitude = modp_atod(data);
+
+						char degreesStr[4];
+						strncpy(degreesStr, data, 3);
+						degreesStr[3] = 0;
+						float minutes = modp_atof(data + 3);
+						minutes = minutes / 60.0;
+						longitude = modp_atoi(degreesStr) + minutes;
+					}
+					else{
+						longitude = 0;
+						//TODO log error
+					}
+				}
+				break;
+			case 4:
+				{
+					if (data[0] == 'W'){
+						longitude = -longitude;
+					}
+				}
+				break;
+			case 5:
+				g_gpsQuality = modp_atoi(data);
+				break;
+			case 6:
+				g_satellitesUsedForPosition = modp_atoi(data);
+				keepParsing = 0;
+				break;
+		}
+		param++;
+		data = delim + 1;
+		delim = strchr(data,',');
+	}
+
+	g_prevLatitude = g_latitude;
+	g_prevLongitude = g_longitude;
+	g_longitude = longitude;
+	g_latitude = latitude;
+}
+
+//Parse GNSS DOP and Active Satellites
+static void parseGSA(char *data){
+
+}
+
+//Parse Course Over Ground and Ground Speed
+static void parseVTG(char *data){
+
+	char * delim = strchr(data,',');
+	int param = 0;
+
+	int keepParsing = 1;
+	while (delim != NULL && keepParsing){
+		*delim = '\0';
+		switch (param){
+			case 6: //Speed over ground
+				{
+					if (strlen(data) >= 1){
+						g_speed = modp_atof(data) * 0.621371; //convert to MPH
+					}
+					keepParsing = 0;
+				}
+				break;
+			default:
+				break;
+		}
+		param++;
+		data = delim + 1;
+		delim = strchr(data,',');
+	}
+}
+
+//Parse Geographic Position � Latitude / Longitude
+static void parseGLL(char *data){
+
+}
+
+//Parse Time & Date
+static void parseZDA(char *data){
+}
+
+//Parse GNSS Satellites in View
+static void parseGSV(char *data){
+
+}
+
+//Parse Recommended Minimum Navigation Information
+static void parseRMC(char *data){
+
+}
+
+
+
+
+
+
+
+
+
+
+
 
 void resetDistance(){
 	g_distance = 0;
@@ -140,10 +307,6 @@ int getSatellitesUsedForPosition(){
 
 float getGPSSpeed(){
 	return g_speed;
-}
-
-char * getGPSDataLine(){
-	return g_GPSdataLine;
 }
 
 static int withinGpsTarget(GPSTargetConfig *targetConfig){
@@ -262,8 +425,8 @@ static void updateSplit(void){
 	}
 }
 
-
-void startGPSTask(){
+void initGPS(){
+	g_flashCount = 0;
 	g_prevLatitude = 0.0;
 	g_prevLongitude = 0.0;
 	g_latitude = 0.0;
@@ -282,212 +445,37 @@ void startGPSTask(){
 	g_lastSplitTimestamp = 0;
 	g_lapCount = 0;
 	g_distance = 0;
-	
-	initUsart1(8, 0, 1, 38400);
-	xTaskCreate( GPSTask, ( signed portCHAR * ) "GPSTask", GPS_TASK_STACK_SIZE, NULL, 	GPS_TASK_PRIORITY, 	NULL );
 }
 
-void GPSTask( void *pvParameters ){
-	
-	int flashCount = 0;
-	for( ;; )
-	{
-		int len = usart1_readLine(g_GPSdataLine, GPS_DATA_LINE_BUFFER_LEN);
-		if (len > 0){
-			if (*g_GPSdataLine == '$' && *(g_GPSdataLine + 1) =='G' && *(g_GPSdataLine + 2) == 'P'){
-				char * data = g_GPSdataLine + 3;
-				if (strstr(data,"GGA,")){
-					parseGGA(data + 4);
-					if (flashCount == 0) disableLED(LED1);
-					flashCount++;
-					int targetFlashCount = (g_gpsQuality == GPS_QUALITY_NO_FIX ? GPS_NOFIX_FLASH_COUNT: GPS_LOCK_FLASH_COUNT);
-					if (flashCount >= targetFlashCount){
-						enableLED(LED1);
-						flashCount = 0;		
-					}
-					updateDistances();
-					updateStartFinish();
-					updateSplit();
-				} else if (strstr(data,"VTG,")){ //Course Over Ground and Ground Speed
-					parseVTG(data + 4);
-				} else if (strstr(data,"GSA,")){ //GPS Fix data
-					parseGSA(data + 4);						
-				} else if (strstr(data,"GSV,")){ //Satellites in view
-					parseGSV(data + 4);					
-				} else if (strstr(data,"RMC,")){ //Recommended Minimum Specific GNSS Data
-					parseRMC(data + 4);					
-				}  else if (strstr(data,"GLL,")){ //Geographic Position - Latitude/Longitude
-					parseGLL(data + 4);					
-				} else if (strstr(data,"ZDA,")){ //Time & Date
-					parseZDA(data + 4);
+void processGPSData(char *gpsData, size_t len){
+	if (len > 0){
+		if (*gpsData == '$' && *(gpsData + 1) =='G' && *(gpsData + 2) == 'P'){
+			char * data = gpsData + 3;
+			if (strstr(data,"GGA,")){
+				parseGGA(data + 4);
+				if (g_flashCount == 0) disableLED(LED1);
+				g_flashCount++;
+				int targetFlashCount = (g_gpsQuality == GPS_QUALITY_NO_FIX ? GPS_NOFIX_FLASH_COUNT: GPS_LOCK_FLASH_COUNT);
+				if (g_flashCount >= targetFlashCount){
+					enableLED(LED1);
+					g_flashCount = 0;
 				}
+				updateDistances();
+				updateStartFinish();
+				updateSplit();
+			} else if (strstr(data,"VTG,")){ //Course Over Ground and Ground Speed
+				parseVTG(data + 4);
+			} else if (strstr(data,"GSA,")){ //GPS Fix data
+				parseGSA(data + 4);
+			} else if (strstr(data,"GSV,")){ //Satellites in view
+				parseGSV(data + 4);
+			} else if (strstr(data,"RMC,")){ //Recommended Minimum Specific GNSS Data
+				parseRMC(data + 4);
+			}  else if (strstr(data,"GLL,")){ //Geographic Position - Latitude/Longitude
+				parseGLL(data + 4);
+			} else if (strstr(data,"ZDA,")){ //Time & Date
+				parseZDA(data + 4);
 			}
 		}
 	}
-}
-
-//Parse Global Positioning System Fix Data.
-void parseGGA(char *data){
-
-	//SendString(data);
-	
-	char * delim = strchr(data,',');
-	int param = 0;
-	
-	double latitude = 0.0;
-	double longitude = 0.0;
-	
-	int keepParsing = 1;
-	
-	while (delim != NULL && keepParsing){
-		*delim = '\0';
-		switch (param){
-			case 0:
-				{
-					unsigned int len = strlen(data);
-					if (len > 0 && len < UTC_TIME_BUFFER_LEN){
-						g_UTCTime = modp_atof(data);
-
-						char hh[3];
-						char mm[3];
-						char ss[7];
-
-						memcpy(hh,data,2);
-						hh[2] = '\0';
-						memcpy(mm,data+2,2);
-						mm[2] = '\0';
-						memcpy(ss,data+4,6);
-						ss[6] = '\0';
-						int hour = modp_atoi(hh);
-						int minutes = modp_atoi(mm);
-						float seconds = modp_atof(ss);
-
-						g_secondsSinceMidnight = (hour * 60.0 * 60.0) + (minutes * 60.0) + seconds;
-					}
-				}
-				break;
-			case 1:
-				{
-					unsigned int len = strlen(data);
-					if ( len > 0 && len <= LATITUDE_DATA_LEN ){
-						//Raw GPS Format is ddmm.mmmmmm
-//						latitude = modp_atod(data);
-												
-						char degreesStr[3];
-						strncpy(degreesStr, data, 2);
-						degreesStr[2] = 0;
-						float minutes = modp_atof(data + 2);
-						minutes = minutes / 60.0;
-						latitude = modp_atoi(degreesStr) + minutes;
-						
-					}
-					else{
-						latitude = 0;
-						//TODO log error	
-					}
-				}
-				break;
-			case 2:
-				{
-					if (data[0] == 'S'){
-						latitude = -latitude;
-					}
-				}
-				break;
-			case 3:
-				{	
-					unsigned int len = strlen(data);
-					if ( len > 0 && len <= LONGITUDE_DATA_LEN ){
-						//Raw GPS Format is dddmm.mmmmmm
-						
-//						longitude = modp_atod(data);
-
-						char degreesStr[4];
-						strncpy(degreesStr, data, 3);
-						degreesStr[3] = 0;
-						float minutes = modp_atof(data + 3);
-						minutes = minutes / 60.0;
-						longitude = modp_atoi(degreesStr) + minutes;
-					}
-					else{
-						longitude = 0;
-						//TODO log error	
-					}
-				}
-				break;
-			case 4:
-				{
-					if (data[0] == 'W'){
-						longitude = -longitude;
-					}	
-				}
-				break;
-			case 5:
-				g_gpsQuality = modp_atoi(data);
-				break;
-			case 6:
-				g_satellitesUsedForPosition = modp_atoi(data);
-				keepParsing = 0;
-				break;
-		}
-		param++;
-		data = delim + 1;
-		delim = strchr(data,',');
-	}
-
-	g_prevLatitude = g_latitude;
-	g_prevLongitude = g_longitude;
-	g_longitude = longitude;
-	g_latitude = latitude;
-}
-
-//Parse GNSS DOP and Active Satellites
-void parseGSA(char *data){
-	
-}
-
-//Parse Course Over Ground and Ground Speed
-void parseVTG(char *data){
-
-	char * delim = strchr(data,',');
-	int param = 0;
-	
-	int keepParsing = 1;
-	while (delim != NULL && keepParsing){
-		*delim = '\0';
-		switch (param){
-			case 6: //Speed over ground
-				{
-					if (strlen(data) >= 1){
-						g_speed = modp_atof(data) * 0.621371; //convert to MPH
-					}
-					keepParsing = 0;
-				}
-				break;
-			default:
-				break;
-		}
-		param++;
-		data = delim + 1;
-		delim = strchr(data,',');
-	}
-}
-
-//Parse Geographic Position � Latitude / Longitude
-void parseGLL(char *data){
-	
-}
-
-//Parse Time & Date
-void parseZDA(char *data){
-}
-
-//Parse GNSS Satellites in View
-void parseGSV(char *data){
-
-}
-
-//Parse Recommended Minimum Navigation Information
-void parseRMC(char *data){
-	
 }

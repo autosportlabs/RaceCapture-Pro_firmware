@@ -5,7 +5,16 @@
  *      Author: brent
  */
 #include "sampleRecord.h"
-#include "FreeRTOS.h"
+#ifndef pvPortMalloc
+#include <stdlib.h>
+#define pvPortMalloc malloc
+#endif
+
+#ifndef vPortFree
+#define vPortFree free
+#endif
+
+//#include "FreeRTOS.h"
 #include "loggerConfig.h"
 
 void initSampleRecord(LoggerConfig *loggerConfig,SampleRecord *sr){

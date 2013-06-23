@@ -11,6 +11,7 @@
 #include "serial.h"
 #include "jsmn.h"
 #include "api.h"
+#include "sampleRecord.h"
 
 #ifndef BOARD_MCK
 #define BOARD_MCK 48054840
@@ -26,6 +27,9 @@
 {"setPwmCfg", api_setPwmConfig}, \
 {"setGpioCfg", api_setGpioConfig}, \
 {"setTimerCfg", api_setTimerConfig}
+
+
+void writeSampleRecord(Serial *serial, SampleRecord *sr, int sendMeta);
 
 
 void api_sampleData(Serial *serial, const jsmntok_t *json);

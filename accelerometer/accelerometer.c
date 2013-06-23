@@ -4,6 +4,9 @@
 #include "race_capture/printk.h"
 #include "modp_numtoa.h"
 #include "spi.h"
+#include "board.h"
+#include "accelerometer_buffer.h"
+
 #define SPI_CSR_NUM      2
 
 
@@ -37,17 +40,42 @@
 
 #define SPI_TRANSFER (AT91C_PA12_MISO | AT91C_PA13_MOSI | AT91C_PA14_SPCK)
 
-unsigned int g_averagedAccelValues[CONFIG_ACCEL_CHANNELS];
-
-static unsigned int g_accelBuffer[CONFIG_ACCEL_CHANNELS][ACCELEROMETER_BUFFER_SIZE];
-static int g_accelBufferPointers[CONFIG_ACCEL_CHANNELS];
-static unsigned int g_accelBufferPointer[CONFIG_ACCEL_CHANNELS];
-
 #define NCPS_PDR_BIT     AT91C_PA10_NPCS2
 #define NCPS_ASR_BIT     0
 #define NPCS_BSR_BIT     AT91C_PA10_NPCS2
 
-void accel_initSPI(){
+static unsigned char accel_spiSend(unsigned char outgoing, int last)
+{
+	unsigned char incoming;
+
+	while(!(*AT91C_SPI_SR & AT91C_SPI_TDRE));
+	//*AT91C_SPI_TDR = outgoing;
+	*AT91C_SPI_TDR = ( (unsigned short)(outgoing) | ((unsigned int)(SPI_TDR_PCS)<<16) | (last ? AT91C_SPI_LASTXFER : 0) );
+
+	while(!(*AT91C_SPI_SR & AT91C_SPI_RDRF));
+	incoming = (unsigned char)*AT91C_SPI_RDR;
+	return incoming;
+}
+
+static void accel_setup(){
+	lock_spi();
+	accel_spiSend(0x04, 0);
+	accel_spiSend(0x04, 1);
+	for (unsigned int d = 0; d < 1000000;d++){} //200 ns???? recalcualate this...
+	unlock_spi();
+}
+
+static void accel_spiSetSpeed(unsigned char speed)
+{
+	unsigned int reg;
+	AT91PS_SPI pSPI      = AT91C_BASE_SPI;
+
+	reg = pSPI->SPI_CSR[SPI_CSR_NUM];
+	reg = ( reg & ~(AT91C_SPI_SCBR) ) | ( (unsigned int)speed << 8 );
+	pSPI->SPI_CSR[SPI_CSR_NUM] = reg;
+}
+
+static void accel_initSPI(){
 
 	lock_spi();
 	AT91PS_SPI pSPI      = AT91C_BASE_SPI;
@@ -104,82 +132,11 @@ void accel_initSPI(){
 	unlock_spi();
 }
 
-void accel_spiSetSpeed(unsigned char speed)
-{
-	unsigned int reg;
-	AT91PS_SPI pSPI      = AT91C_BASE_SPI;
-
-	reg = pSPI->SPI_CSR[SPI_CSR_NUM];
-	reg = ( reg & ~(AT91C_SPI_SCBR) ) | ( (unsigned int)speed << 8 );
-	pSPI->SPI_CSR[SPI_CSR_NUM] = reg;
-}
-
-unsigned char accel_spiSend(unsigned char outgoing, int last)
-{
-	unsigned char incoming;
-	
-	while(!(*AT91C_SPI_SR & AT91C_SPI_TDRE));
-	//*AT91C_SPI_TDR = outgoing;
-	*AT91C_SPI_TDR = ( (unsigned short)(outgoing) | ((unsigned int)(SPI_TDR_PCS)<<16) | (last ? AT91C_SPI_LASTXFER : 0) );
-	
-	while(!(*AT91C_SPI_SR & AT91C_SPI_RDRF));
-	incoming = (unsigned char)*AT91C_SPI_RDR;
-	return incoming;
-}
-
 void accel_init(){
 	accel_initSPI();
 	accel_setup();
 	initAccelBuffer();
 }
-
-void initAccelBuffer(){
-	for (int channel = 0; channel < CONFIG_ACCEL_CHANNELS; channel++){
-		for (int i = 0; i < ACCELEROMETER_BUFFER_SIZE; i++){
-			g_accelBuffer[channel][i] = readAccelerometerDevice(channel);
-		}
-		g_accelBufferPointers[channel] = 0;
-	}
-}
-
-void accel_setup(){
-	lock_spi();
-	memset(g_averagedAccelValues,0,sizeof(g_averagedAccelValues));
-	accel_spiSend(0x04, 0);
-	accel_spiSend(0x04, 1);
-	for (unsigned int d = 0; d < 1000000;d++){} //200 ns???? recalcualate this...
-	unlock_spi();
-}
-
-unsigned char accel_readControlRegister(){
-	lock_spi();
-	accel_spiSend(0x03, 0);
-	unsigned char ctrl = accel_spiSend(0xff, 1);
-	unlock_spi();
-	return ctrl;	
-}
-
-float convertYawRawToDegreesPerSec(int yawRaw, unsigned int zeroValue){
-	yawRaw = yawRaw - zeroValue;
-	float dps = (float)yawRaw / YAW_COUNTS_PER_DEGREE_PER_SEC;
-	return dps;
-}
-
-float convertAccelRawToG(int accelRaw, unsigned int zeroValue){
-	
-	accelRaw = accelRaw - zeroValue;
-	float gforce = (float)accelRaw / ACCEL_COUNTS_PER_G;
-	return gforce;	
-}
-
-unsigned int calculateAccelAverage(unsigned char channel){
-	unsigned int total = 0;
-	for (int i = 0; i < ACCELEROMETER_BUFFER_SIZE;i++){
-		total+=g_accelBuffer[channel][i];
-	}
-	return total / ACCELEROMETER_BUFFER_SIZE;
-}
-
 
 //#define ACCEL_SMOOTHING
 
@@ -199,8 +156,6 @@ unsigned int readAccelChannel(unsigned char channel){
 
 	return value;
 }
-
-
 
 unsigned int readAccelerometerDevice(unsigned char channel){
 	lock_spi();

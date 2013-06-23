@@ -1,9 +1,10 @@
 #ifndef GPS_H_
 #define GPS_H_
+#include <stddef.h>
 
-void startGPSTask();
+void initGPS();
 
-void GPSTask( void *pvParameters );
+void processGPSData(char *gpsData, size_t len);
 
 void resetDistance();
 
@@ -40,15 +41,5 @@ int getGPSQuality();
 int getSatellitesUsedForPosition();
 
 float getGPSSpeed();
-
-char * getGPSDataLine();
-
-void parseGGA(char *data);
-void parseVTG(char *data);
-void parseGSA(char *data);
-void parseGLL(char *data);
-void parseZDA(char *data);
-void parseGSV(char *data);
-void parseRMC(char *data);
 			
 #endif /*GPS_H_*/

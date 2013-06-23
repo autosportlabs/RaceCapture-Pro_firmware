@@ -8,6 +8,9 @@
 #include "loggerConfig.h"
 #include "modp_atonum.h"
 #include "mod_string.h"
+#include "sampleRecord.h"
+#include "loggerData.h"
+
 
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
@@ -15,6 +18,13 @@ static unsigned int g_currentMessageId = 0;
 
 typedef void (*getConfigs_func)(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg);
 typedef const jsmntok_t * (*setExtField_func)(const jsmntok_t *json, const char *name, const char *value, void *cfg);
+
+static void json_int(Serial *serial, const char *name, unsigned int value, int more){
+	serial->put_s(name);
+	serial->put_c(':');
+	put_int(serial, value);
+	if (more) serial->put_c(',');
+}
 
 static void json_uint(Serial *serial, const char *name, unsigned int value, int more){
 	serial->put_s(name);
@@ -54,9 +64,54 @@ static void json_blockEnd(Serial *serial, int more){
 }
 
 void api_sampleData(Serial *serial, const jsmntok_t *json){
+
+	int sendMeta = 0;
+	if (json->type == JSMN_OBJECT && json->size == 2){
+		const jsmntok_t * meta = json + 1;
+		const jsmntok_t * value = json + 2;
+
+		jsmn_trimData(meta);
+		jsmn_trimData(value);
+
+		if (NAME_EQU("meta",meta->data)){
+			sendMeta = modp_atoi(value->data);
+		}
+	}
+	SampleRecord sr;
+	LoggerConfig * config = getWorkingLoggerConfig();
+	initSampleRecord(config, &sr);
+	populateSampleRecord(&sr,0,config);
+	writeSampleRecord(serial, &sr, sendMeta);
+}
+
+void writeSampleRecord(Serial *serial, SampleRecord *sr, int sendMeta){
 	json_messageStart(serial, 1);
 
-	json_blockEnd(serial,0);
+	if (sendMeta){
+		json_blockStart(serial, "m", 1);
+		json_blockEnd(serial, 1);
+	}
+
+	json_blockStart(serial, "s",1);
+
+	for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
+		ChannelSample *sample = &(sr->Samples[i]);
+		ChannelConfig * channelConfig = sample->channelConfig;
+
+		if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
+		if (sample->intValue == NIL_SAMPLE) continue;
+
+		int precision = sample->precision;
+		int more = i < SAMPLE_RECORD_CHANNELS - 1;
+		if (precision > 0){
+			json_float(serial, channelConfig->label,sample->floatValue, precision, more);
+		}
+		else{
+			json_int(serial, channelConfig->label,sample->intValue, more);
+		}
+	}
+	json_blockEnd(serial, 0);
+	json_blockEnd(serial, 0);
 }
 
 static void setChannelConfig(Serial *serial, const jsmntok_t *cfg, ChannelConfig *channelCfg, setExtField_func setExtField, void *extCfg){

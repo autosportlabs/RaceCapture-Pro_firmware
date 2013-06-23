@@ -28,7 +28,7 @@ static void writeAccelerometer(SampleRecord *sampleRecord, size_t currentTicks, 
 		size_t sr = ac->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
-				float value = (i == ACCEL_CHANNEL_ZT ? convertYawRawToDegreesPerSec(accelValues[i],ac->zeroValue) : convertAccelRawToG(accelValues[i],ac->zeroValue));
+				float value = (i == ACCEL_CHANNEL_ZT ? YAW_RAW_TO_DEGREES_PER_SEC(accelValues[i],ac->zeroValue) : ACCEL_RAW_TO_DEGREES_PER_SEC(accelValues[i],ac->zeroValue));
 				sampleRecord->AccelSamples[i].floatValue = value;
 			}
 		}
@@ -122,18 +122,14 @@ static void writeGPSChannels(SampleRecord *sampleRecord, size_t currentTicks, GP
 
 static void writeGPIOs(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *loggerConfig){
 
-	unsigned int gpioMasks[CONFIG_GPIO_CHANNELS];
+	unsigned int gpio[CONFIG_GPIO_CHANNELS];
+	readGpios(&gpio[0], &gpio[1], &gpio[2]);
 
-	gpioMasks[0] = GPIO_1;
-	gpioMasks[1] = GPIO_2;
-	gpioMasks[2] = GPIO_3;
-
-	unsigned int gpioStates = AT91F_PIO_GetInput(AT91C_BASE_PIOA);
 	for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
 		GPIOConfig *c = &(loggerConfig->GPIOConfigs[i]);
 		size_t sr = c->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->GPIOSamples[i].intValue = ((gpioStates & gpioMasks[i]) != 0);
+			if ((currentTicks % sr) == 0) sampleRecord->GPIOSamples[i].intValue = gpio[i];
 		}
 	}
 }

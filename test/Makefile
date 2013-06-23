@@ -9,6 +9,7 @@ SAM7S_SRC=$(RCP_BASE)/SAM7s_base
 JSMN_SRC=$(RCP_SRC)/jsmn
 API_SRC=$(RCP_SRC)/api
 LOGGER_SRC=$(RCP_SRC)/logger
+MOCK_DIR=./logger_mock
 
 
 INCLUDES = 	-I. \
@@ -23,7 +24,9 @@ INCLUDES = 	-I. \
 		-I$(SAM7S_SRC)/command \
 		-I$(RCP_INC) \
 		-I$(SAM7S_SRC)/uart \
-		-I$(SAM7S_SRC)/usb/include
+		-I$(SAM7S_SRC)/usb/include \
+		-I$(RCP_BASE)/accelerometer \
+		-I$(MOCK_DIR)
 
 # set up compiler and options
 CXX = g++
@@ -59,7 +62,13 @@ SRC = 	loggerData_test.cpp \
 		$(RCP_BASE)/race_capture/ring_buffer.c \
 		$(SAM7S_SRC)/serial/serial.c \
 		$(LOGGER_SRC)/loggerApi.c \
-		$(RCP_BASE)/logger/loggerConfig.c
+		$(RCP_BASE)/logger/loggerConfig.c \
+		$(RCP_BASE)/logger/gps.c \
+		$(RCP_BASE)/logger/geometry.c \
+		$(RCP_BASE)/logger/sampleRecord.c \
+		$(RCP_BASE)/logger/loggerData.c \
+		$(MOCK_DIR)/accelerometer.c \
+		$(MOCK_DIR)/loggerHardware.c
 	
 
 OBJ = $(addsuffix .o, $(basename $(SRC)))

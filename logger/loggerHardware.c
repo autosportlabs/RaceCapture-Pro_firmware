@@ -1,6 +1,7 @@
 #include "loggerHardware.h"
 #include "board.h"
 #include "accelerometer.h"
+#include "accelerometer_buffer.h"
 #include "sdcard.h"
 #include "constants.h"
 #include "memory.h"
@@ -45,6 +46,18 @@ unsigned int g_timer0_overflow;
 unsigned int g_timer1_overflow;
 unsigned int g_timer2_overflow;
 unsigned int g_timer_counts[CONFIG_TIMER_CHANNELS];
+
+static unsigned int GetGPIOBits(void){
+	return AT91F_PIO_GetInput(AT91C_BASE_PIOA);
+}
+
+static void ClearGPIOBits(unsigned int portBits){
+	AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, portBits );
+}
+
+static void SetGPIOBits(unsigned int portBits){
+	AT91F_PIO_SetOutput( AT91C_BASE_PIOA, portBits );
+}
 
 void InitLoggerHardware(){
 	init_spi_lock();
@@ -126,16 +139,31 @@ int isButtonPressed(void){
 	return (GetGPIOBits() & PIO_PUSHBUTTON_SWITCH) == 0;
 }
 
-unsigned int GetGPIOBits(void){
-	return AT91F_PIO_GetInput(AT91C_BASE_PIOA);
+void setGpio(unsigned int channel, unsigned int state){
+	unsigned int gpioBits = 0;
+	switch (channel){
+		case 0:
+			gpioBits = GPIO_1;
+			break;
+		case 1:
+			gpioBits = GPIO_2;
+			break;
+		case 2:
+			gpioBits = GPIO_3;
+			break;
+	}
+	if (state){
+		SetGPIOBits(gpioBits);
+	} else{
+		ClearGPIOBits(gpioBits);
+	}
 }
 
-void SetGPIOBits(unsigned int portBits){
-	AT91F_PIO_SetOutput( AT91C_BASE_PIOA, portBits );
-}
-
-void ClearGPIOBits(unsigned int portBits){
-	AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, portBits );
+void readGpios(unsigned int *gpio1, unsigned int *gpio2, unsigned int *gpio3){
+	unsigned int gpioStates = AT91F_PIO_GetInput(AT91C_BASE_PIOA);
+	*gpio1 = ((gpioStates & GPIO_1) != 0);
+	*gpio2 = ((gpioStates & GPIO_2) != 0);
+	*gpio3 = ((gpioStates & GPIO_3) != 0);
 }
 
 void SetFREQ_ANALOG(unsigned int freqAnalogPort){
@@ -710,13 +738,13 @@ void getAllTimerPeriods(unsigned int *t0, unsigned int *t1, unsigned int *t2){
 	*t2 = getTimer2Period();	
 }
 
-inline void resetTimerCount(unsigned int channel){
+void resetTimerCount(unsigned int channel){
 	if (channel >= 0 && channel < CONFIG_TIMER_CHANNELS){
 		g_timer_counts[channel] = 0;			
 	}
 }
 
-inline unsigned int getTimerCount(unsigned int channel){
+unsigned int getTimerCount(unsigned int channel){
 	if (channel >= 0 && channel < CONFIG_TIMER_CHANNELS){
 		return g_timer_counts[channel];			
 	}
@@ -725,7 +753,7 @@ inline unsigned int getTimerCount(unsigned int channel){
 	}
 }
 
-inline unsigned int getTimerPeriod(unsigned int channel){
+unsigned int getTimerPeriod(unsigned int channel){
 	switch (channel){
 		case 0:
 			return getTimer0Period();
@@ -737,44 +765,39 @@ inline unsigned int getTimerPeriod(unsigned int channel){
 	return 0;
 }
 
-inline unsigned int getTimer0Period(){
+unsigned int getTimer0Period(){
 	return g_timer0_overflow ? MAX_TIMER_VALUE : AT91C_BASE_TC0->TC_RB;
 }
 
-inline unsigned int getTimer1Period(){
+unsigned int getTimer1Period(){
 	return g_timer1_overflow ? MAX_TIMER_VALUE : AT91C_BASE_TC1->TC_RB;
 }
 
-inline unsigned int getTimer2Period(){
+unsigned int getTimer2Period(){
 	return g_timer2_overflow ? MAX_TIMER_VALUE : AT91C_BASE_TC2->TC_RB;
 }
 
-inline unsigned int calculateRPM(unsigned int timerTicks, unsigned int scaling){
+unsigned int calculateRPM(unsigned int timerTicks, unsigned int scaling){
 	unsigned int usec = calculatePeriodUsec(timerTicks, scaling);
 	unsigned int rpm = 60000000 / usec;
 	return rpm;
 }
 
-inline unsigned int calculateFrequencyHz(unsigned int timerTicks, unsigned int scaling){
+unsigned int calculateFrequencyHz(unsigned int timerTicks, unsigned int scaling){
 	return 1000000 / calculatePeriodUsec(timerTicks, scaling);
 }
 
-inline unsigned int calculatePeriodMs(unsigned int timerTicks, unsigned int scaling){
+unsigned int calculatePeriodMs(unsigned int timerTicks, unsigned int scaling){
 	return (timerTicks * 1000) / scaling;
 }
 
-inline unsigned int calculatePeriodUsec(unsigned int timerTicks, unsigned int scaling){
+unsigned int calculatePeriodUsec(unsigned int timerTicks, unsigned int scaling){
 	return (timerTicks * 100000) / (scaling / 10);	
 }
 
 void calibrateAccelZero(){
 	//fill the averaging buffer
-	int resample = ACCELEROMETER_BUFFER_SIZE;
-	while (resample-- > 0){
-		for (int i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
-			readAccelChannel(i);
-		}
-	}
+	flushAccelBuffer();
 
 	for (int i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
 		AccelConfig * c = getAccelConfigChannel(i);
