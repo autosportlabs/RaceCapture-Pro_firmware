@@ -18,7 +18,7 @@
 #endif
 
 #define LOGGER_API \
-{"sample", api_sampleData}, \
+{"s", api_sampleData}, \
 {"getCellCfg", api_getCellConfig}, \
 {"setAnalogCfg", api_setAnalogConfig}, \
 {"setAccelCfg", api_setAccelConfig}, \

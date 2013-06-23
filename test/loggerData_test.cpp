@@ -28,7 +28,7 @@ void LoggerDataTest::testConfigAnalogChannels()
 	Serial *serial = getMockSerial();
 
 	char json[] = "{\"blah\":[]}\r\n";
-	mock_setBuffer(json);
+	mock_setRxBuffer(json);
 
 	unsigned int len = 3;
 

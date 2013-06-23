@@ -76,7 +76,7 @@ void LoggerApiTest::testAnalogConfigFile(string filename){
 
 	string json = readFile(filename);
 
-	mock_setBuffer(json.c_str());
+	mock_setRxBuffer(json.c_str());
 
 	process_api(serial, buffer, 20000);
 
@@ -120,7 +120,7 @@ void LoggerApiTest::testAccelConfigFile(string filename){
 
 	string json = readFile(filename);
 
-	mock_setBuffer(json.c_str());
+	mock_setRxBuffer(json.c_str());
 
 	process_api(serial, buffer, 20000);
 
@@ -148,7 +148,7 @@ void LoggerApiTest::testSetCellConfigFile(string filename){
 
 		string json = readFile(filename);
 
-		mock_setBuffer(json.c_str());
+		mock_setRxBuffer(json.c_str());
 
 		process_api(serial, buffer, 20000);
 
@@ -173,7 +173,7 @@ void LoggerApiTest::testSetBtConfigFile(string filename){
 
 		string json = readFile(filename);
 
-		mock_setBuffer(json.c_str());
+		mock_setRxBuffer(json.c_str());
 
 		process_api(serial, buffer, 20000);
 
@@ -197,7 +197,7 @@ void LoggerApiTest::testSetPwmConfigFile(string filename){
 
 	string json = readFile(filename);
 
-	mock_setBuffer(json.c_str());
+	mock_setRxBuffer(json.c_str());
 
 	process_api(serial, buffer, 20000);
 
@@ -227,7 +227,7 @@ void LoggerApiTest::testSetGpioConfigFile(string filename){
 
 	string json = readFile(filename);
 
-	mock_setBuffer(json.c_str());
+	mock_setRxBuffer(json.c_str());
 
 	process_api(serial, buffer, 20000);
 
@@ -256,7 +256,7 @@ void LoggerApiTest::testSetTimerConfigFile(string filename){
 
 	string json = readFile(filename);
 
-	mock_setBuffer(json.c_str());
+	mock_setRxBuffer(json.c_str());
 
 	process_api(serial, buffer, 20000);
 
@@ -272,4 +272,23 @@ void LoggerApiTest::testSetTimerConfigFile(string filename){
 
 void LoggerApiTest::testSetTimerCfg(){
 	testSetTimerConfigFile("setTimerCfg1.json");
+}
+
+void LoggerApiTest::testSampleData(){
+	testSampleDataFile("sampleData1.json", "sampleData_response1.json");
+	testSampleDataFile("sampleData2.json", "sampleData_response2.json");
+}
+
+void LoggerApiTest::testSampleDataFile(string requestFilename, string responseFilename){
+	char buffer[20000];
+
+	LoggerConfig *c = getWorkingLoggerConfig();
+	Serial *serial = getMockSerial();
+
+	string json = readFile(requestFilename);
+	mock_setRxBuffer(json.c_str());
+	mock_resetTxBuffer();
+	process_api(serial, buffer, 20000);
+	char *txBuffer = mock_getTxBuffer();
+	printf("txBuffer: %s\n", txBuffer);
 }

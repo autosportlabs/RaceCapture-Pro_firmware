@@ -3,10 +3,10 @@
     "s": {
     	"d":[1,2,3,4],
     	"meta":[
-			{"nm":"chan1", "ut":"u1", sr:10},
-			{"nm":"chan2", "ut":"u2", sr:5},
-			{"nm":"chan3", "ut":"u3", sr:10},
-			{"nm":"chan4", "ut":"u4", sr:1}    	
+			{"nm":"chan1", "ut":"u1", "sr":10},
+			{"nm":"chan2", "ut":"u2", "sr":5},
+			{"nm":"chan3", "ut":"u3", "sr":10},
+			{"nm":"chan4", "ut":"u4", "sr":1}    	
     	]
     }
 }

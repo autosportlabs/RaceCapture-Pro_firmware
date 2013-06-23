@@ -22,8 +22,12 @@ void setupMockSerial();
 
 Serial * getMockSerial();
 
-void mock_setBuffer(const char *src);
+void mock_setRxBuffer(const char *src);
 
-void mock_appendBuffer(const char *src);
+char * mock_getTxBuffer();
+
+void mock_appendRxBuffer(const char *src);
+
+void mock_resetTxBuffer();
 
 #endif /* MOCKSERIAL_H_ */

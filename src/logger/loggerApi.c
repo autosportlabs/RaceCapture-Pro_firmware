@@ -20,28 +20,38 @@ typedef void (*getConfigs_func)(size_t channelId, void ** baseCfg, ChannelConfig
 typedef const jsmntok_t * (*setExtField_func)(const jsmntok_t *json, const char *name, const char *value, void *cfg);
 
 static void json_int(Serial *serial, const char *name, unsigned int value, int more){
+	serial->put_c('"');
 	serial->put_s(name);
+	serial->put_c('"');
 	serial->put_c(':');
 	put_int(serial, value);
 	if (more) serial->put_c(',');
 }
 
 static void json_uint(Serial *serial, const char *name, unsigned int value, int more){
+	serial->put_c('"');
 	serial->put_s(name);
+	serial->put_c('"');
 	serial->put_c(':');
 	put_uint(serial, value);
 	if (more) serial->put_c(',');
 }
 
 static void json_string(Serial *serial, const char *name, const char *value, int more){
+	serial->put_c('"');
 	serial->put_s(name);
+	serial->put_c('"');
 	serial->put_c(':');
+	serial->put_c('"');
 	serial->put_s(value);
+	serial->put_c('"');
 	if (more) serial->put_c(',');
 }
 
 static void json_float(Serial *serial, const char *name, float value, int precision, int more){
+	serial->put_c('"');
 	serial->put_s(name);
+	serial->put_c('"');
 	serial->put_c(':');
 	put_float(serial, value, precision);
 	if (more) serial->put_c(',');
@@ -60,6 +70,17 @@ static void json_messageStart(Serial *serial, int more){
 
 static void json_blockEnd(Serial *serial, int more){
 	serial->put_s("}");
+	if (more) serial->put_c(',');
+}
+
+static void json_arrayStart(Serial *serial, const char * name, int more){
+	serial->put_c('"');
+	serial->put_s(name);
+	serial->put_s("\":[");
+}
+
+static void json_arrayEnd(Serial *serial, int more){
+	serial->put_s("]");
 	if (more) serial->put_c(',');
 }
 
@@ -88,29 +109,45 @@ void writeSampleRecord(Serial *serial, SampleRecord *sr, int sendMeta){
 	json_messageStart(serial, 1);
 
 	if (sendMeta){
-		json_blockStart(serial, "m", 1);
-		json_blockEnd(serial, 1);
+		json_arrayStart(serial, "m", 1);
+		for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
+			int more = i < SAMPLE_RECORD_CHANNELS - 1;
+			ChannelSample *sample = &(sr->Samples[i]);
+			ChannelConfig * channelConfig = sample->channelConfig;
+			if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
+			serial->put_c('{');
+			json_string(serial, "nm", channelConfig->label, 1);
+			json_string(serial, "ut", channelConfig->units, 1);
+			json_int(serial, "sr", channelConfig->sampleRate, 0);
+			serial->put_c('}');
+			if (more) serial->put_c(',');
+		}
+		json_arrayEnd(serial, 1);
 	}
 
-	json_blockStart(serial, "s",1);
+	json_arrayStart(serial, "s",1);
 
 	for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
+		int more = i < SAMPLE_RECORD_CHANNELS - 1;
 		ChannelSample *sample = &(sr->Samples[i]);
 		ChannelConfig * channelConfig = sample->channelConfig;
 
 		if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
-		if (sample->intValue == NIL_SAMPLE) continue;
-
-		int precision = sample->precision;
-		int more = i < SAMPLE_RECORD_CHANNELS - 1;
-		if (precision > 0){
-			json_float(serial, channelConfig->label,sample->floatValue, precision, more);
+		if (sample->intValue == NIL_SAMPLE){
+			serial->put_s("null");
 		}
 		else{
-			json_int(serial, channelConfig->label,sample->intValue, more);
+			int precision = sample->precision;
+			if (precision > 0){
+				put_float(serial, sample->floatValue,precision);
+			}
+			else{
+				put_int(serial, sample->intValue);
+			}
 		}
+		if (more) serial->put_c(',');
 	}
-	json_blockEnd(serial, 0);
+	json_arrayEnd(serial, 0);
 	json_blockEnd(serial, 0);
 }
 

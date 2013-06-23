@@ -8,7 +8,8 @@
 #include "mod_string.h"
 #include <stddef.h>
 static Serial mockSerial;
-static char buffer[20000];
+static char rxBuffer[20000];
+static char txBuffer[20000];
 size_t bufIndex;
 
 void setupMockSerial(){
@@ -21,13 +22,21 @@ void setupMockSerial(){
 	mockSerial.put_s = &mock_put_s;
 }
 
-void mock_setBuffer(const char *src){
-	strcpy(buffer, src);
+char * mock_getTxBuffer(){
+	return txBuffer;
+}
+
+void mock_setRxBuffer(const char *src){
+	strcpy(rxBuffer, src);
 	bufIndex = 0;
 }
 
-void mock_appendBuffer(const char *src){
-	strcat(buffer, src);
+void mock_appendRxBuffer(const char *src){
+	strcat(rxBuffer, src);
+}
+
+void mock_resetTxBuffer(){
+	txBuffer[0] = '\0';
 }
 
 Serial * getMockSerial(){
@@ -41,8 +50,8 @@ void mock_flush(void)
 
 char mock_get_c_wait(size_t delay){
 
-	if (bufIndex < strlen(buffer)){
-		return buffer[bufIndex++];
+	if (bufIndex < strlen(rxBuffer)){
+		return rxBuffer[bufIndex++];
 	}
 	else{
 		return 0;
@@ -55,8 +64,10 @@ char mock_get_c()
 }
 
 void mock_put_c(char c){
-	//xQueueSend( xmockTx, &c, portMAX_DELAY );
-
+	char append[2];
+	append[0] = c;
+	append[1] = '\0';
+	strcat(txBuffer, append);
 }
 
 void mock_put_s(const char* s )
