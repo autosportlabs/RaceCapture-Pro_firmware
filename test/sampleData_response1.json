@@ -1,12 +1,12 @@
 {
+    "mid":1234,
     "s": {
-    	"t":1234,
     	"d":[1,2,3,4],
-    	"m":[
-			{"nm":"chan1", "ut":"u1"},
-			{"nm":"chan2", "ut":"u2"},
-			{"nm":"chan3", "ut":"u3"},
-			{"nm":"chan4", "ut":"u4"}    	
+    	"meta":[
+			{"nm":"chan1", "ut":"u1", sr:10},
+			{"nm":"chan2", "ut":"u2", sr:5},
+			{"nm":"chan3", "ut":"u3", sr:10},
+			{"nm":"chan4", "ut":"u4", sr:1}    	
     	]
     }
 }

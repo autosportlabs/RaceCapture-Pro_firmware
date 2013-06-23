@@ -777,37 +777,6 @@ unsigned int getTimer2Period(){
 	return g_timer2_overflow ? MAX_TIMER_VALUE : AT91C_BASE_TC2->TC_RB;
 }
 
-unsigned int calculateRPM(unsigned int timerTicks, unsigned int scaling){
-	unsigned int usec = calculatePeriodUsec(timerTicks, scaling);
-	unsigned int rpm = 60000000 / usec;
-	return rpm;
-}
-
-unsigned int calculateFrequencyHz(unsigned int timerTicks, unsigned int scaling){
-	return 1000000 / calculatePeriodUsec(timerTicks, scaling);
-}
-
-unsigned int calculatePeriodMs(unsigned int timerTicks, unsigned int scaling){
-	return (timerTicks * 1000) / scaling;
-}
-
-unsigned int calculatePeriodUsec(unsigned int timerTicks, unsigned int scaling){
-	return (timerTicks * 100000) / (scaling / 10);	
-}
-
-void calibrateAccelZero(){
-	//fill the averaging buffer
-	flushAccelBuffer();
-
-	for (int i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
-		AccelConfig * c = getAccelConfigChannel(i);
-		unsigned long zeroValue = getLastAccelRead(c->accelChannel);
-		//adjust for gravity
-		if (c->accelChannel == ACCEL_CHANNEL_Z) zeroValue-= (ACCEL_COUNTS_PER_G * (c->mode != MODE_ACCEL_INVERTED ? 1 : -1));
-		c->zeroValue = zeroValue;
-	}
-}
-
 int flashLoggerConfig(){
 	void * savedLoggerConfig = getSavedLoggerConfig();
 	void * workingLoggerConfig = getWorkingLoggerConfig();

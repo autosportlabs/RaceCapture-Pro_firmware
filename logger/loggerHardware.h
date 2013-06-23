@@ -94,6 +94,10 @@ unsigned short PWM_GetDutyCycle(unsigned int channel);
 //    unsigned int alignment,
 //    unsigned int polarity);
 
+#define TIMER_PERIOD_TO_USEC(TICKS, SCALING) (TICKS * 100000) / (SCALING / 10)
+#define TIMER_PERIOD_TO_MS(TICKS, SCALING) (TICKS * 1000) / SCALING
+#define TIMER_PERIOD_TO_HZ(TICKS, SCALING) 1000000 / TIMER_PERIOD_TO_USEC(TICKS, SCALING)
+#define TIMER_PERIOD_TO_RPM(TICKS, SCALING) 60000000 / TIMER_PERIOD_TO_USEC(TICKS, SCALING)
 
 void initTimerChannels(LoggerConfig *loggerConfig);	
 void initTimer0(TimerConfig *timerConfig);
@@ -109,14 +113,6 @@ unsigned int getTimer0Period();
 unsigned int getTimer1Period();
 unsigned int getTimer2Period();
 
- unsigned int calculateRPM(unsigned int timerTicks, unsigned int scaling);
- unsigned int calculateFrequencyHz(unsigned int timerTicks, unsigned int scaling);
- unsigned int calculatePeriodMs(unsigned int timerTicks, unsigned int scaling);
- unsigned int calculatePeriodUsec(unsigned int timerTicks, unsigned int scaling);
-
-void calibrateAccelZero();
-
 int flashLoggerConfig();
-
 
 #endif /*LOGGERHARDWARE_H_*/

@@ -5,6 +5,17 @@
  *      Author: brent
  */
 #include "loggerHardware.h"
+#include "loggerConfig.h"
+
+static int g_isCardPresent = 0;
+static int g_isCardWritable = 0;
+static int g_isButtonPressed = 0;
+static int g_leds[3] = {0,0,0};
+static int g_gpio[CONFIG_GPIO_CHANNELS] = {0,0,0};
+static unsigned int g_adc[CONFIG_ADC_CHANNELS] = {0,0,0,0,0,0};
+static int g_pwmPeriod[CONFIG_PWM_CHANNELS] = {0,0,0,0};
+static int g_pwmDuty[CONFIG_PWM_CHANNELS] = {0,0,0,0};
+static int g_timer[CONFIG_TIMER_CHANNELS] = {0,0,0};
 
 void InitLoggerHardware(){
 
@@ -14,15 +25,28 @@ void InitGPIO(LoggerConfig *loggerConfig){}
 
 void InitSDCard(void){}
 
-int isCardPresent(void){
-	return 1;
+void mock_setIsCardPresent(int present){
+	g_isCardPresent = present;
 }
+
+int isCardPresent(void){
+	return g_isCardPresent;
+}
+
+void mock_setIsCardWritable(int writable){
+	g_isCardWritable = writable;
+}
+
 int isCardWritable(void){
-	return 1;
+	return g_isCardWritable;
+}
+
+void mock_setIsButtonPressed(int pressed){
+	g_isButtonPressed = pressed;
 }
 
 int isButtonPressed(void){
-	return 0;
+	return g_isButtonPressed;
 }
 
 void InitADC(void){}
@@ -31,20 +55,32 @@ void InitLEDs(void){}
 
 void InitPushbutton(void){}
 
-void enableLED(unsigned int Led){}
+void enableLED(unsigned int Led){
+	g_leds[Led] = 1;
+}
 
-void disableLED(unsigned int Led){}
+void disableLED(unsigned int Led){
+	g_leds[Led] = 0;
+}
 
-void toggleLED (unsigned int Led){}
+void toggleLED (unsigned int Led){
+	g_leds[Led] = g_leds[Led] == 1 ? 0 : 1;
+}
 
 void ResetWatchdog(){}
 
 void InitWatchdog(int timeoutMs){}
 
-void readGpios(unsigned int *gpio1, unsigned int *gpio2, unsigned int *gpio3){}
+void readGpios(unsigned int *gpio1, unsigned int *gpio2, unsigned int *gpio3){
+	*gpio1 = g_gpio[0];
+	*gpio2 = g_gpio[1];
+	*gpio3 = g_gpio[3];
+}
 
 
-void setGpio(unsigned int channel, unsigned int state){}
+void setGpio(unsigned int channel, unsigned int state){
+	g_gpio[channel] = state;
+}
 
 //Set bit for specified Frequency/Analog port
 void SetFREQ_ANALOG(unsigned int freqAnalogPort){}
@@ -61,11 +97,20 @@ void readAllADC(unsigned int *a0,
 						unsigned int *a4,
 						unsigned int *a5,
 						unsigned int *a6,
-						unsigned int *a7 ){}
+						unsigned int *a7 ){
+	*a0 = g_adc[0];
+	*a1 = g_adc[1];
+	*a2 = g_adc[2];
+	*a3 = g_adc[3];
+	*a4 = g_adc[4];
+	*a5 = g_adc[5];
+	*a6 = g_adc[6];
+	*a7 = g_adc[7];
+}
 
 //Read specified ADC channel
 unsigned int readADC(unsigned int channel){
-	return 0;
+	return g_adc[channel];
 }
 
 //PWM Channel Functions
@@ -78,33 +123,22 @@ void StopPWM(unsigned int pwmChannel){}
 void StopAllPWM(){}
 
 //Set PWM period for specified channel
-void PWM_SetPeriod(	unsigned int channel, unsigned short period){}
+void PWM_SetPeriod(	unsigned int channel, unsigned short period){
+	g_pwmPeriod[channel] = period;
+}
 
-unsigned short PWM_GetPeriod(unsigned int channel){}
+unsigned short PWM_GetPeriod(unsigned int channel){
+	return g_pwmPeriod[channel];
+}
 
 //Set PWM duty cycle for specified channel
-void PWM_SetDutyCycle(unsigned int channel,	unsigned short duty){}
+void PWM_SetDutyCycle(unsigned int channel,	unsigned short duty){
+	g_pwmDuty[channel] = duty;
+}
 
-unsigned short PWM_GetDutyCycle(unsigned int channel){}
-
-//Configure PWM clock
-//void PWM_ConfigureClocks
-//    (unsigned int clka,
-//     unsigned int clkb,
-//     unsigned int mck);
-
-//Retrieve PWM clock configuration
-//unsigned short PWM_GetClockConfiguration(
-//    unsigned int frequency,
-//    unsigned int mck);
-
-//Configure PWM channel
-//void PWM_ConfigureChannel(
-//    unsigned char channel,
-//    unsigned int prescaler,
-//    unsigned int alignment,
-//    unsigned int polarity);
-
+unsigned short PWM_GetDutyCycle(unsigned int channel){
+	return g_pwmDuty[channel];
+}
 
 void initTimerChannels(LoggerConfig *loggerConfig){}
 
@@ -119,7 +153,7 @@ unsigned int timerClockFromDivider(unsigned short divider){
 }
 
 unsigned int getTimerPeriod(unsigned int channel){
-	return 0;
+	return g_timer[channel];
 }
 
 unsigned int getTimerCount(unsigned int channel){
@@ -128,38 +162,23 @@ unsigned int getTimerCount(unsigned int channel){
 
 void resetTimerCount(unsigned int channel){}
 
-void getAllTimerPeriods(unsigned int *t0, unsigned int *t1, unsigned int *t2){}
-
+void getAllTimerPeriods(unsigned int *t0, unsigned int *t1, unsigned int *t2){
+	*t0 = g_timer[0];
+	*t1 = g_timer[1];
+	*t2 = g_timer[2];
+}
 
 unsigned int getTimer0Period(){
-	return 0;
+	return g_timer[0];
 }
 
 unsigned int getTimer1Period(){
-	return 0;
+	return g_timer[1];
 }
 
 unsigned int getTimer2Period(){
-	return 0;
+	return g_timer[2];
 }
-
-unsigned int calculateRPM(unsigned int timerTicks, unsigned int scaling){
-	return 0;
-}
-
-unsigned int calculateFrequencyHz(unsigned int timerTicks, unsigned int scaling){
-	return 0;
-}
-
-unsigned int calculatePeriodMs(unsigned int timerTicks, unsigned int scaling){
-	return 0;
-}
-
-unsigned int calculatePeriodUsec(unsigned int timerTicks, unsigned int scaling){
-	return 0;
-}
-
-void calibrateAccelZero(){}
 
 int flashLoggerConfig(){}
 

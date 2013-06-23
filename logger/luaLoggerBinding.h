@@ -15,7 +15,6 @@ int Lua_IsSDCardWritable(lua_State *L);
 int Lua_GetAnalog(lua_State *L);
 int Lua_GetAnalogRaw(lua_State *L);
 
-int calculateXTimerValue(lua_State *L, unsigned int (*scaler)(unsigned int,unsigned int));
 int Lua_GetRPM(lua_State *L);
 int Lua_GetPeriodMs(lua_State *L);
 int Lua_GetPeriodUsec(lua_State *L);

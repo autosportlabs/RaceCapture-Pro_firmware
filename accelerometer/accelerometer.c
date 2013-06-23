@@ -180,3 +180,16 @@ unsigned int getLastAccelRead(unsigned char channel){
 	return readAccelerometerDevice(channel);
 #endif
 }
+
+void calibrateAccelZero(){
+	//fill the averaging buffer
+	flushAccelBuffer();
+
+	for (int i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
+		AccelConfig * c = getAccelConfigChannel(i);
+		unsigned long zeroValue = getLastAccelRead(c->accelChannel);
+		//adjust for gravity
+		if (c->accelChannel == ACCEL_CHANNEL_Z) zeroValue-= (ACCEL_COUNTS_PER_G * (c->mode != MODE_ACCEL_INVERTED ? 1 : -1));
+		c->zeroValue = zeroValue;
+	}
+}

@@ -988,35 +988,58 @@ int Lua_GetAnalogRaw(lua_State *L){
 	return 1;
 }
 
-int calculateXTimerValue(lua_State *L, unsigned int (*scaler)(unsigned int,unsigned int)){
-	int result = -1;
+static int luaToTimerValues(lua_State *L, unsigned int *timerPeriod, unsigned int *scaling){
+	int result = 0;
 	if (lua_gettop(L) >=  1){
 		int channel = lua_tointeger(L,1);
 		TimerConfig *c = getTimerConfigChannel(channel);
-		if (c != NULL) result = (*scaler)(getTimerPeriod(channel),c->calculatedScaling);
+		if (NULL != c){
+			*timerPeriod = getTimerPeriod(channel);
+			*scaling = c->calculatedScaling;
+			result = 1;
+		}
 	}
 	return result;
 }
 
-
 int Lua_GetRPM(lua_State *L){
-	lua_pushinteger(L,calculateXTimerValue(L,calculateRPM));
-	return 1;
+	unsigned int timerPeriod, scaling;
+	int result = 0;
+	if (luaToTimerValues(L, &timerPeriod, &scaling)){
+		lua_pushinteger(L, TIMER_PERIOD_TO_RPM(timerPeriod, scaling));
+		result = 1;
+	}
+	return result;
 }
 
 int Lua_GetPeriodMs(lua_State *L){
-	lua_pushinteger(L,calculateXTimerValue(L,calculatePeriodMs));
-	return 1;
+	unsigned int timerPeriod, scaling;
+	int result = 0;
+	if (luaToTimerValues(L, &timerPeriod, &scaling)){
+		lua_pushinteger(L, TIMER_PERIOD_TO_MS(timerPeriod, scaling));
+		result = 1;
+	}
+	return result;
 }
 
 int Lua_GetPeriodUsec(lua_State *L){
-	lua_pushinteger(L,calculateXTimerValue(L,calculatePeriodUsec));
-	return 1;
+	unsigned int timerPeriod, scaling;
+	int result = 0;
+	if (luaToTimerValues(L, &timerPeriod, &scaling)){
+		lua_pushinteger(L, TIMER_PERIOD_TO_USEC(timerPeriod, scaling));
+		result = 1;
+	}
+	return result;
 }
 
 int Lua_GetFrequency(lua_State *L){
-	lua_pushinteger(L,calculateXTimerValue(L,calculateFrequencyHz));
-	return 1;
+	unsigned int timerPeriod, scaling;
+	int result = 0;
+	if (luaToTimerValues(L, &timerPeriod, &scaling)){
+		lua_pushinteger(L, TIMER_PERIOD_TO_HZ(timerPeriod, scaling));
+		result = 1;
+	}
+	return result;
 }
 
 int Lua_GetTimerRaw(lua_State *L){

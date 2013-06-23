@@ -149,16 +149,16 @@ static void writeTimerChannels(SampleRecord *sampleRecord, size_t currentTicks, 
 				unsigned int timerValue = timers[i];
 				switch (c->mode){
 					case MODE_LOGGING_TIMER_RPM:
-						value = calculateRPM(timerValue,scaling);
+						value = TIMER_PERIOD_TO_RPM(timerValue,scaling);
 						break;
 					case MODE_LOGGING_TIMER_FREQUENCY:
-						value = calculateFrequencyHz(timerValue,scaling);
+						value = TIMER_PERIOD_TO_HZ(timerValue,scaling);
 						break;
 					case MODE_LOGGING_TIMER_PERIOD_MS:
-						value = calculatePeriodMs(timerValue,scaling);
+						value = TIMER_PERIOD_TO_MS(timerValue,scaling);
 						break;
 					case MODE_LOGGING_TIMER_PERIOD_USEC:
-						value = calculatePeriodUsec(timerValue,scaling);
+						value = TIMER_PERIOD_TO_USEC(timerValue,scaling);
 						break;
 					default:
 						value = -1;
@@ -265,7 +265,4 @@ float GetMappedValue(float value, ScalingMap *scalingMap){
 	float y2 = scalingMap->scaledValues[nextBin];
 	float scaled = LinearInterpolate(value,x1,y1,x2,y2);
 	return scaled;
-
 }
-
-

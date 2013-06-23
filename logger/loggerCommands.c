@@ -11,6 +11,7 @@
 #include "modp_atonum.h"
 #include "loggerConfig.h"
 #include "loggerHardware.h"
+#include "accelerometer.h"
 #include <race_capture/printk.h>
 #include "sdcard.h"
 #include "loggerData.h"
