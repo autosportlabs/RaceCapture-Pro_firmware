@@ -235,14 +235,12 @@ void GetStartFinishConfig(Serial *serial, unsigned int argc, char **argv){
 
 void GetDistanceConfig(Serial *serial, unsigned int argc, char **argv){
 	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfigs);
-	SendChannelConfigSuffix(serial, &(cfg->lapDistanceCfg), "lapDist");
-	SendChannelConfigSuffix(serial, &(cfg->totalDistanceCfg), "totalDist");
+	SendChannelConfigSuffix(serial, &(cfg->lapDistanceCfg), "dist");
 }
 
 void SetDistanceConfig(Serial *serial, unsigned int argc, char **argv){
 	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfigs);
 	if (argc > 1) SetChannelConfig(&(cfg->lapDistanceCfg),1,argc,argv);
-	if (argc > 4) SetChannelConfig(&(cfg->totalDistanceCfg),4,argc,argv);
 	put_commandOK(serial);
 }
 
