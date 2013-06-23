@@ -65,7 +65,7 @@ static void send_header(Serial *serial, unsigned int len){
 	put_crlf(serial);
 }
 
-static void show_welcome(Serial *serial){
+void show_welcome(Serial *serial){
 	put_crlf(serial);
 	size_t len = strlen(welcomeMsg);
 	send_header(serial, len);
@@ -76,12 +76,12 @@ static void show_welcome(Serial *serial){
 	show_help(serial);
 }
 
-void execute_command(Serial *serial, char * buffer){
-	if (strlen(buffer) == 0){
-		show_welcome(serial);
-		return;
-	}
+void show_command_prompt(Serial *serial){
+	serial->put_s(cmdPrompt);
+	serial->put_s(" > ");
+}
 
+static void execute_command(Serial *serial, char *buffer){
 	unsigned char argc, i = 0;
 	char *argv[30];
 
@@ -109,15 +109,13 @@ void execute_command(Serial *serial, char * buffer){
 	}
 }
 
-void process_command(Serial *serial, char * buffer, size_t bufferSize) {
+void process_interactive_command(Serial *serial, char * buffer, size_t bufferSize){
 
-	interactive_read_line(serial, buffer, bufferSize);
-	//this is not thread safe. if needed, throw a mutex around here
+	//this is not thread safe. need to throw a mutex around here
 	set_command_context(serial, buffer, bufferSize);
 	execute_command(serial, buffer);
 	clear_command_context();
-	serial->put_s(cmdPrompt);
-	serial->put_s(" > ");
+	show_command_prompt(serial);
 }
 
 void put_commandOK(Serial *serial){

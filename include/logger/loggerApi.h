@@ -32,14 +32,14 @@
 void writeSampleRecord(Serial *serial, SampleRecord *sr, int sendMeta);
 
 
-void api_sampleData(Serial *serial, const jsmntok_t *json);
-void api_getCellConfig(Serial *serial, const jsmntok_t *json);
-void api_setCellConfig(Serial *serial, const jsmntok_t *json);
-void api_setBluetoothConfig(Serial *serial, const jsmntok_t *json);
-void api_setAnalogConfig(Serial *serial, const jsmntok_t *json);
-void api_setAccelConfig(Serial *serial, const jsmntok_t *json);
-void api_setPwmConfig(Serial *serial, const jsmntok_t *json);
-void api_setGpioConfig(Serial *serial, const jsmntok_t *json);
-void api_setTimerConfig(Serial *serial, const jsmntok_t *json);
+int api_sampleData(Serial *serial, const jsmntok_t *json);
+int api_getCellConfig(Serial *serial, const jsmntok_t *json);
+int api_setCellConfig(Serial *serial, const jsmntok_t *json);
+int api_setBluetoothConfig(Serial *serial, const jsmntok_t *json);
+int api_setAnalogConfig(Serial *serial, const jsmntok_t *json);
+int api_setAccelConfig(Serial *serial, const jsmntok_t *json);
+int api_setPwmConfig(Serial *serial, const jsmntok_t *json);
+int api_setGpioConfig(Serial *serial, const jsmntok_t *json);
+int api_setTimerConfig(Serial *serial, const jsmntok_t *json);
 
 #endif /* LOGGERAPI_H_ */

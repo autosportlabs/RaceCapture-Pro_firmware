@@ -28,6 +28,7 @@
 #include "loggerCommands.h"
 #include "sdcard.h"
 #include <tasks/heartbeat.h>
+#include "messaging.h"
 
 //logging related tasks
 #include "loggerTaskEx.h"
@@ -132,6 +133,8 @@ int main( void )
 	updateActiveLoggerConfig();
 	int success = setupHardware();
 	if (! success) fatalError(FATAL_ERROR_HARDWARE);
+
+	initMessaging();
 
 	xTaskCreate( vUSBCDCTask,		( signed portCHAR * ) "USB", 				mainUSB_TASK_STACK, NULL, 	mainUSB_PRIORITY, 		NULL );
 	xTaskCreate( onUSBCommTask,	( signed portCHAR * ) "OnUSBComm", 				mainUSB_COMM_STACK, NULL, 	USB_COMM_TASK_PRIORITY, NULL );

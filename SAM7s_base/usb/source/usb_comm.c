@@ -7,8 +7,8 @@
 #include "modp_numtoa.h"
 #include "modp_atonum.h"
 #include "memory.h"
-#include "command.h"
 #include "serial.h"
+#include "messaging.h"
 
 #define BUFFER_SIZE MEMORY_PAGE_SIZE * 2
 
@@ -63,12 +63,10 @@ void onUSBCommTask(void *pvParameters) {
 	while (!vUSBIsInitialized()){
 		vTaskDelay(1);
 	}
-	init_command();
-
 	Serial *serial = get_serial_usb();
 
 	while (1) {
-		process_command(serial, lineBuffer, BUFFER_SIZE);
+		process_message(serial, lineBuffer, BUFFER_SIZE);
 	}
 }
 

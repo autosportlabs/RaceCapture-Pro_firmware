@@ -33,9 +33,11 @@ typedef struct _cmd_t
 
 #define NULL_COMMAND {NULL, NULL,NULL, NULL}
 
-void process_command(Serial *serial, char * buffer, size_t bufferSize);
+void show_welcome(Serial *serial);
 
-void execute_command(Serial * serial, char * buffer);
+void show_command_prompt(Serial *serial);
+
+void process_interactive_command(Serial *serial, char * buffer, size_t bufferSize);
 
 void put_commandOK(Serial * serial);
 

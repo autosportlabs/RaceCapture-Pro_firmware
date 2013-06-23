@@ -234,7 +234,6 @@ typedef struct _GPSConfig{
 	ChannelConfig lapTimeCfg;
 	ChannelConfig splitTimeCfg;
 	ChannelConfig lapDistanceCfg;
-	ChannelConfig totalDistanceCfg;
 	ChannelConfig satellitesCfg;
 	ChannelConfig latitudeCfg;
 	ChannelConfig longitudeCfg;
@@ -257,6 +256,7 @@ typedef struct _GPSConfig{
 #define DEFAULT_LAP_COUNT_CONFIG {"LapCount", "", SAMPLE_DISABLED}
 #define DEFAULT_LAP_TIME_CONFIG {"LapTime", "seconds", SAMPLE_DISABLED}
 #define DEFAULT_SPLIT_TIME_CONFIG {"SplitTime", "seconds", SAMPLE_DISABLED}
+#define DEFAULT_DISTANCE_CONFIG {"Distance", "miles", SAMPLE_DISABLED}
 #define DEFAULT_GPS_SATELLITES_CONFIG {"GpsSats", "", SAMPLE_DISABLED}
 #define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "Deg", SAMPLE_10Hz}
 #define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "Deg", SAMPLE_10Hz}
@@ -269,6 +269,7 @@ typedef struct _GPSConfig{
 							DEFAULT_LAP_COUNT_CONFIG, \
 							DEFAULT_LAP_TIME_CONFIG, \
 							DEFAULT_SPLIT_TIME_CONFIG, \
+							DEFAULT_DISTANCE_CONFIG, \
 							DEFAULT_GPS_SATELLITES_CONFIG, \
 							DEFAULT_GPS_LATITUDE_CONFIG, \
 							DEFAULT_GPS_LONGITUDE_CONFIG, \

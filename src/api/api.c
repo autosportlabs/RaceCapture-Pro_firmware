@@ -3,10 +3,93 @@
 #include "race_capture/printk.h"
 #include "mod_string.h"
 
-static jsmn_parser p;
-static jsmntok_t json_tok[100];
+static unsigned int g_currentMessageId = 0;
+
+static jsmn_parser g_jsonParser;
+static jsmntok_t g_json_tok[100];
 
 const api_t apis[] = SYSTEM_APIS;
+
+void initApi(){
+	jsmn_init(&g_jsonParser);
+}
+
+void json_int(Serial *serial, const char *name, unsigned int value, int more){
+	serial->put_c('"');
+	serial->put_s(name);
+	serial->put_c('"');
+	serial->put_c(':');
+	put_int(serial, value);
+	if (more) serial->put_c(',');
+}
+
+void json_uint(Serial *serial, const char *name, unsigned int value, int more){
+	serial->put_c('"');
+	serial->put_s(name);
+	serial->put_c('"');
+	serial->put_c(':');
+	put_uint(serial, value);
+	if (more) serial->put_c(',');
+}
+
+void json_string(Serial *serial, const char *name, const char *value, int more){
+	serial->put_c('"');
+	serial->put_s(name);
+	serial->put_c('"');
+	serial->put_c(':');
+	serial->put_c('"');
+	serial->put_s(value);
+	serial->put_c('"');
+	if (more) serial->put_c(',');
+}
+
+void json_float(Serial *serial, const char *name, float value, int precision, int more){
+	serial->put_c('"');
+	serial->put_s(name);
+	serial->put_c('"');
+	serial->put_c(':');
+	put_float(serial, value, precision);
+	if (more) serial->put_c(',');
+}
+
+void json_blockStart(Serial *serial, const char * name){
+	serial->put_c('"');
+	serial->put_s(name);
+	serial->put_s("\":{");
+}
+
+void json_messageStart(Serial *serial, int messageId){
+	serial->put_c('{');
+	if (messageId != NULL_MESSAGE_ID) json_uint(serial, "mid", messageId, 1);
+}
+
+void json_asyncMessageStart(Serial *serial){
+	json_messageStart(serial, ++g_currentMessageId);
+}
+
+void json_blockEnd(Serial *serial, int more){
+	serial->put_s("}");
+	if (more) serial->put_c(',');
+}
+
+void json_arrayStart(Serial *serial, const char * name, int more){
+	serial->put_c('"');
+	serial->put_s(name);
+	serial->put_s("\":[");
+}
+
+void json_arrayEnd(Serial *serial, int more){
+	serial->put_s("]");
+	if (more) serial->put_c(',');
+}
+
+void json_sendResult(Serial *serial, const char *messageName, int resultCode){
+	json_messageStart(serial, NULL_MESSAGE_ID);
+	json_blockStart(serial,messageName);
+	json_int(serial, "rc", resultCode, 0);
+	json_blockEnd(serial,0);
+	json_blockEnd(serial,0);
+}
 
 static void dispatch_api(Serial *serial, const char * apiMsgName, const jsmntok_t *apiPayload){
 
@@ -14,14 +97,16 @@ static void dispatch_api(Serial *serial, const char * apiMsgName, const jsmntok_
 
 	while (api->cmd != NULL){
 		if (strcmp(api->cmd, apiMsgName) == 0){
-			api->func(serial, apiPayload );
+			int res = api->func(serial, apiPayload);
+			if (res != API_SUCCESS_NO_RETURN) json_sendResult(serial, apiMsgName, res);
 			break;
 		}
 		api++;
 	}
 	if (NULL == api->cmd){
-		//TODO: send error maybe?
+		json_sendResult(serial,apiMsgName,API_ERROR_UNKNOWN_MSG);
 	}
+	serial->put_s("\r\n");
 }
 
 static void execute_api(Serial * serial, const jsmntok_t *json){
@@ -36,16 +121,13 @@ static void execute_api(Serial * serial, const jsmntok_t *json){
 	}
 }
 
-void process_api(Serial *serial, char * buffer, size_t bufferSize){
-	jsmn_init(&p);
-
-	interactive_read_line(serial, buffer, bufferSize);
-	int r = jsmn_parse(&p, buffer, json_tok, 100);
+void process_api(Serial *serial, char *buffer, size_t bufferSize){
+	jsmn_init(&g_jsonParser);
+	int r = jsmn_parse(&g_jsonParser, buffer, g_json_tok, 100);
 	if (r == JSMN_SUCCESS){
-		execute_api(serial, json_tok);
+		execute_api(serial, g_json_tok);
 	}
 	else{
 		pr_warning("API Error \r\n");
 	}
 }
-

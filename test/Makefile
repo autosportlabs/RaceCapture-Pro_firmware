@@ -1,5 +1,7 @@
 #-----Macros---------------------------------
 
+include ../version.mk
+
 NAME=rcptest
 
 RCP_BASE=..
@@ -9,6 +11,8 @@ SAM7S_SRC=$(RCP_BASE)/SAM7s_base
 JSMN_SRC=$(RCP_SRC)/jsmn
 API_SRC=$(RCP_SRC)/api
 LOGGER_SRC=$(RCP_SRC)/logger
+MESSAGING_SRC=$(RCP_SRC)/messaging
+COMMAND_SRC=$(SAM7S_SRC)/command
 MOCK_DIR=./logger_mock
 
 
@@ -19,6 +23,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/jsmn \
 		-I$(RCP_INC)/api \
 		-I$(RCP_INC)/logger \
+		-I$(RCP_INC)/messaging \
 		-I$(SAM7S_SRC)/serial \
 		-I$(SAM7S_SRC)/lua \
 		-I$(SAM7S_SRC)/command \
@@ -31,8 +36,8 @@ INCLUDES = 	-I. \
 # set up compiler and options
 CXX = g++
 CC = g++
-CXXFLAGS = -g $(INCLUDES) -DRCP_TESTING
-CPPFLAGS = -g $(INCLUDES) -DRCP_TESTING
+CXXFLAGS = -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=\"$(MAJOR)\" -DMINOR_REV=\"$(MINOR)\" -DBUGFIX_REV=\"$(BUGFIX)\"
+CPPFLAGS = -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=\"$(MAJOR)\" -DMINOR_REV=\"$(MINOR)\" -DBUGFIX_REV=\"$(BUGFIX)\"
 
 #-----Suffix Rules---------------------------
 # set up C++ suffixes and relationship between .cc and .o files
@@ -68,8 +73,7 @@ SRC = 	loggerData_test.cpp \
 		$(RCP_BASE)/logger/sampleRecord.c \
 		$(RCP_BASE)/logger/loggerData.c \
 		$(MOCK_DIR)/accelerometer.c \
-		$(MOCK_DIR)/loggerHardware.c
-	
+		$(MOCK_DIR)/loggerHardware.c 	
 
 OBJ = $(addsuffix .o, $(basename $(SRC)))
 

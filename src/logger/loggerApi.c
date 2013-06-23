@@ -11,80 +11,14 @@
 #include "sampleRecord.h"
 #include "loggerData.h"
 
-
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
-
-static unsigned int g_currentMessageId = 0;
 
 typedef void (*getConfigs_func)(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg);
 typedef const jsmntok_t * (*setExtField_func)(const jsmntok_t *json, const char *name, const char *value, void *cfg);
 
-static void json_int(Serial *serial, const char *name, unsigned int value, int more){
-	serial->put_c('"');
-	serial->put_s(name);
-	serial->put_c('"');
-	serial->put_c(':');
-	put_int(serial, value);
-	if (more) serial->put_c(',');
-}
 
-static void json_uint(Serial *serial, const char *name, unsigned int value, int more){
-	serial->put_c('"');
-	serial->put_s(name);
-	serial->put_c('"');
-	serial->put_c(':');
-	put_uint(serial, value);
-	if (more) serial->put_c(',');
-}
 
-static void json_string(Serial *serial, const char *name, const char *value, int more){
-	serial->put_c('"');
-	serial->put_s(name);
-	serial->put_c('"');
-	serial->put_c(':');
-	serial->put_c('"');
-	serial->put_s(value);
-	serial->put_c('"');
-	if (more) serial->put_c(',');
-}
-
-static void json_float(Serial *serial, const char *name, float value, int precision, int more){
-	serial->put_c('"');
-	serial->put_s(name);
-	serial->put_c('"');
-	serial->put_c(':');
-	put_float(serial, value, precision);
-	if (more) serial->put_c(',');
-}
-
-static void json_blockStart(Serial *serial, const char * name, int more){
-	serial->put_c('"');
-	serial->put_s(name);
-	serial->put_s("\":{");
-}
-
-static void json_messageStart(Serial *serial, int more){
-	serial->put_c('{');
-	json_uint(serial, "mid", ++g_currentMessageId, 1);
-}
-
-static void json_blockEnd(Serial *serial, int more){
-	serial->put_s("}");
-	if (more) serial->put_c(',');
-}
-
-static void json_arrayStart(Serial *serial, const char * name, int more){
-	serial->put_c('"');
-	serial->put_s(name);
-	serial->put_s("\":[");
-}
-
-static void json_arrayEnd(Serial *serial, int more){
-	serial->put_s("]");
-	if (more) serial->put_c(',');
-}
-
-void api_sampleData(Serial *serial, const jsmntok_t *json){
+int api_sampleData(Serial *serial, const jsmntok_t *json){
 
 	int sendMeta = 0;
 	if (json->type == JSMN_OBJECT && json->size == 2){
@@ -103,10 +37,12 @@ void api_sampleData(Serial *serial, const jsmntok_t *json){
 	initSampleRecord(config, &sr);
 	populateSampleRecord(&sr,0,config);
 	writeSampleRecord(serial, &sr, sendMeta);
+	return API_SUCCESS_NO_RETURN;
 }
 
 void writeSampleRecord(Serial *serial, SampleRecord *sr, int sendMeta){
-	json_messageStart(serial, 1);
+
+	json_asyncMessageStart(serial);
 
 	if (sendMeta){
 		json_arrayStart(serial, "m", 1);
@@ -256,10 +192,10 @@ static void getAnalogConfigs(size_t channelId, void ** baseCfg, ChannelConfig **
 	*channelCfg = &c->cfg;
 }
 
-void api_setAnalogConfig(Serial *serial, const jsmntok_t * json){
+int api_setAnalogConfig(Serial *serial, const jsmntok_t * json){
 	setMultiChannelConfigGeneric(serial, json, getAnalogConfigs, setAnalogExtendedField);
+	return API_SUCCESS;
 }
-
 
 static const jsmntok_t * setAccelExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
 	AccelConfig *accelCfg = (AccelConfig *)cfg;
@@ -276,8 +212,9 @@ static void getAccelConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** 
 	*channelCfg = &c->cfg;
 }
 
-void api_setAccelConfig(Serial *serial, const jsmntok_t *json){
+int api_setAccelConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getAccelConfigs, setAccelExtendedField);
+	return API_SUCCESS;
 }
 
 static void setConfigGeneric(Serial *serial, const jsmntok_t * json, void *cfg, setExtField_func setExtField){
@@ -301,12 +238,13 @@ static void setConfigGeneric(Serial *serial, const jsmntok_t * json, void *cfg, 
 
 }
 
-void api_getCellConfig(Serial *serial, const jsmntok_t *json){
+int api_getCellConfig(Serial *serial, const jsmntok_t *json){
 	CellularConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
 /*	put_nameString(serial, "apnHost", c->apnHost);
 	put_nameString(serial, "apnUser", c->apnUser);
 	put_nameString(serial, "apnPass", c->apnPass);
 	*/
+	return API_SUCCESS_NO_RETURN;
 }
 
 static const jsmntok_t * setCellExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
@@ -317,9 +255,10 @@ static const jsmntok_t * setCellExtendedField(const jsmntok_t *valueTok, const c
 	return valueTok + 1;
 }
 
-void api_setCellConfig(Serial *serial, const jsmntok_t *json){
+int api_setCellConfig(Serial *serial, const jsmntok_t *json){
 	CellularConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
 	setConfigGeneric(serial, json, cfg, setCellExtendedField);
+	return API_SUCCESS;
 }
 
 static const jsmntok_t * setBluetoothExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
@@ -329,9 +268,10 @@ static const jsmntok_t * setBluetoothExtendedField(const jsmntok_t *valueTok, co
 	return valueTok + 1;
 }
 
-void api_setBluetoothConfig(Serial *serial, const jsmntok_t *json){
+int api_setBluetoothConfig(Serial *serial, const jsmntok_t *json){
 	BluetoothConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
 	setConfigGeneric(serial, json, cfg, setBluetoothExtendedField);
+	return API_SUCCESS;
 }
 
 static void getPwmConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
@@ -352,8 +292,9 @@ static const jsmntok_t * setPwmExtendedField(const jsmntok_t *valueTok, const ch
 	return valueTok + 1;
 }
 
-void api_setPwmConfig(Serial *serial, const jsmntok_t *json){
+int api_setPwmConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getPwmConfigs, setPwmExtendedField);
+	return API_SUCCESS;
 }
 
 static void getGpioConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
@@ -369,8 +310,9 @@ static const jsmntok_t * setGpioExtendedField(const jsmntok_t *valueTok, const c
 	return valueTok + 1;
 }
 
-void api_setGpioConfig(Serial *serial, const jsmntok_t *json){
+int api_setGpioConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getGpioConfigs, setGpioExtendedField);
+	return API_SUCCESS;
 }
 
 static void getTimerConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
@@ -395,6 +337,7 @@ static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok, const 
 	return valueTok + 1;
 }
 
-void api_setTimerConfig(Serial *serial, const jsmntok_t *json){
+int api_setTimerConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getTimerConfigs, setTimerExtendedField);
+	return API_SUCCESS;
 }
