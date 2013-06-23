@@ -85,7 +85,7 @@ void create_quad(struct quad_area *area,
 
 	slopes[0] = (base[1].y - base[0].y) / (base[1].x - base[0].x);
 	slopes[1] = -1.0 / slopes[0];
-	dir = (geometry_direction)(dir * -(base[1].y < base[0].y) | 1);
+	dir = (enum geometry_direction)(dir * -(base[1].y < base[0].y) | 1);
 
 	points[0] = base[0];
 	points[1] = base[1];
