@@ -16,8 +16,13 @@
 #include "race_capture/printk.h"
 #include "spi.h"
 
+enum writing_status {
+	WRITING_INACTIVE = 0,
+	WRITING_ACTIVE = 1,
+	WRITING_INITIALIZATION_ERROR = 2
+};
 
-static int g_writingActive;
+static enum writing_status g_writingStatus;
 static FIL g_logfile;
 static xQueueHandle g_sampleRecordQueue = NULL;
 
@@ -140,44 +145,48 @@ void fileWriterTask(void *params){
 		xQueueReceive(g_sampleRecordQueue, &(sr), portMAX_DELAY);
 
 		lock_spi();
-		if (NULL != sr && 0 == g_writingActive){
+		if (NULL != sr && WRITING_INACTIVE == g_writingStatus){
 			//start of a new logfile
 
 			int rc = InitFS();
 			if (0 != rc){
-				enableLED(LED3);
-			}
-
-			//open next log file
-			rc = openNextLogFile(&g_logfile);
-			if (0 != rc){
+				pr_error("FS init error\r\n");
 				enableLED(LED3);
 			}
 			else{
-				g_writingActive = 1;
-				writeHeaders(&g_logfile,sr);
-				flushTimeoutInterval = FLUSH_INTERVAL_SEC * 1000;
-				flushTimeoutStart = xTaskGetTickCount();
-			}
-		}
-
-		if (g_writingActive){
-			//a null sample record means end of sample run; like an EOF
-			if (NULL != sr){
-				writeSampleRecord(&g_logfile,sr);
-				if (isTimeoutMs(flushTimeoutStart, flushTimeoutInterval)){
-					pr_debug("f_sync\r\n");
-					f_sync(&g_logfile);
+				//open next log file
+				rc = openNextLogFile(&g_logfile);
+				if (0 != rc){
+					pr_error("File open error\r\n");
+					enableLED(LED3);
+				}
+				else{
+					g_writingStatus = WRITING_ACTIVE;
+					writeHeaders(&g_logfile,sr);
+					flushTimeoutInterval = FLUSH_INTERVAL_SEC * 1000;
 					flushTimeoutStart = xTaskGetTickCount();
 				}
 			}
-			else{
+			if (0 != rc) g_writingStatus = WRITING_INITIALIZATION_ERROR;
+		}
+
+		if (g_writingStatus == WRITING_ACTIVE && NULL != sr){
+			//a null sample record means end of sample run; like an EOF
+			writeSampleRecord(&g_logfile,sr);
+			if (isTimeoutMs(flushTimeoutStart, flushTimeoutInterval)){
+				pr_debug("f_sync\r\n");
+				f_sync(&g_logfile);
+				flushTimeoutStart = xTaskGetTickCount();
+			}
+		}
+		if (NULL == sr){
+			if (g_writingStatus == WRITING_ACTIVE){
 				pr_debug("f_close\r\n");
 				f_close(&g_logfile);
 				UnmountFS();
-				g_writingActive = 0;
-				disableLED(LED3);
 			}
+			g_writingStatus = WRITING_INACTIVE;
+			disableLED(LED3);
 		}
 		unlock_spi();
 	}
@@ -185,7 +194,7 @@ void fileWriterTask(void *params){
 
 void createFileWriterTask(){
 
-	g_writingActive = 0;
+	g_writingStatus = WRITING_INACTIVE;
 	g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( SampleRecord *));
 	if (NULL == g_sampleRecordQueue){
 		//TODO log error
