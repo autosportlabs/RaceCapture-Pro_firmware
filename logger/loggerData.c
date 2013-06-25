@@ -28,7 +28,7 @@ static void writeAccelerometer(SampleRecord *sampleRecord, size_t currentTicks, 
 		size_t sr = ac->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
-				float value = (i == ACCEL_CHANNEL_ZT ? YAW_RAW_TO_DEGREES_PER_SEC(accelValues[i],ac->zeroValue) : ACCEL_RAW_TO_DEGREES_PER_SEC(accelValues[i],ac->zeroValue));
+				float value = (i == ACCEL_CHANNEL_ZT ? YAW_RAW_TO_DEGREES_PER_SEC(accelValues[i],ac->zeroValue) : ACCEL_RAW_TO_GFORCE(accelValues[i],ac->zeroValue));
 				sampleRecord->AccelSamples[i].floatValue = value;
 			}
 		}

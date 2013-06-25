@@ -141,7 +141,7 @@ typedef struct _AccelConfig{
 	ChannelConfig cfg;
 	char mode;
 	unsigned char accelChannel;
-	unsigned long zeroValue;
+	unsigned int zeroValue;
 } AccelConfig;
 
 #define MIN_ACCEL_RAW						0
