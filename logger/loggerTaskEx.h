@@ -9,6 +9,9 @@
 #define LOGGERTASKEX_H_
 
 
+void startLogging();
+void stopLogging();
+
 void createLoggerTaskEx();
 void loggerTaskEx(void *params);
 

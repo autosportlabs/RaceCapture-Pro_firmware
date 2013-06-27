@@ -19,6 +19,7 @@
 
 #define LOGGER_API \
 {"s", api_sampleData}, \
+{"log", api_enableLogging}, \
 {"getCellCfg", api_getCellConfig}, \
 {"setAnalogCfg", api_setAnalogConfig}, \
 {"setAccelCfg", api_setAccelConfig}, \
@@ -33,6 +34,7 @@ void writeSampleRecord(Serial *serial, SampleRecord *sr, int sendMeta);
 
 
 int api_sampleData(Serial *serial, const jsmntok_t *json);
+int api_enableLogging(Serial *serial, const jsmntok_t *json);
 int api_getCellConfig(Serial *serial, const jsmntok_t *json);
 int api_setCellConfig(Serial *serial, const jsmntok_t *json);
 int api_setBluetoothConfig(Serial *serial, const jsmntok_t *json);

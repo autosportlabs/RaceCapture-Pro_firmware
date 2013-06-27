@@ -10,6 +10,7 @@
 #include "mod_string.h"
 #include "sampleRecord.h"
 #include "loggerData.h"
+#include "loggerTaskEx.h"
 
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
@@ -38,6 +39,22 @@ int api_sampleData(Serial *serial, const jsmntok_t *json){
 	populateSampleRecord(&sr,0,config);
 	writeSampleRecord(serial, &sr, sendMeta);
 	return API_SUCCESS_NO_RETURN;
+}
+
+int api_enableLogging(Serial *serial, const jsmntok_t *json){
+
+	int doLogging = 0;
+	if (json->type == JSMN_OBJECT && json->size == 2){
+		jsmn_trimData(json + 1);
+		doLogging = modp_atoi(json->data);
+		if (doLogging){
+			startLogging();
+		}
+		else{
+			stopLogging();
+		}
+	}
+	return API_SUCCESS;
 }
 
 void writeSampleRecord(Serial *serial, SampleRecord *sr, int sendMeta){

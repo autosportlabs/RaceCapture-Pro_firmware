@@ -27,6 +27,15 @@
 int g_loggingShouldRun;
 xSemaphoreHandle g_xLoggerStart;
 
+
+void startLogging(){
+	if (! g_loggingShouldRun) xSemaphoreGive(g_xLoggerStart);
+}
+
+void stopLogging(){
+	g_loggingShouldRun = 0;
+}
+
 void createLoggerTaskEx(){
 
 	g_loggingShouldRun = 0;
