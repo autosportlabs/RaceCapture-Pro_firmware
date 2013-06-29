@@ -325,7 +325,8 @@ void SetTimerConfig(Serial *serial, unsigned int argc, char **argv){
 			calculateTimerScaling(BOARD_MCK, c);
 		}
 		if (argc > 9) c->timerDivider = filterTimerDivider(modp_atoi(argv[9]));
-		if (argc > 10) c->calculatedScaling = modp_atoi(argv[10]);
+		//TODO new api will ignore calculated scaling
+		///if (argc > 10) c->calculatedScaling = modp_atoi(argv[10]);
 
 		put_commandOK(serial);
 	}
