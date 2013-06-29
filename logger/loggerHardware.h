@@ -94,8 +94,8 @@ unsigned short PWM_GetDutyCycle(unsigned int channel);
 //    unsigned int alignment,
 //    unsigned int polarity);
 
-#define TIMER_PERIOD_TO_USEC(TICKS, SCALING) (TICKS * 100000) / (SCALING / 10)
-#define TIMER_PERIOD_TO_MS(TICKS, SCALING) (TICKS * 1000) / SCALING
+#define TIMER_PERIOD_TO_USEC(TICKS, SCALING) (unsigned int)((TICKS * 100000) / (SCALING / 10))
+#define TIMER_PERIOD_TO_MS(TICKS, SCALING) (unsigned int)(TICKS * 1000) / SCALING
 #define TIMER_PERIOD_TO_HZ(TICKS, SCALING) 1000000 / TIMER_PERIOD_TO_USEC(TICKS, SCALING)
 #define TIMER_PERIOD_TO_RPM(TICKS, SCALING) 60000000 / TIMER_PERIOD_TO_USEC(TICKS, SCALING)
 

@@ -136,7 +136,7 @@ int isCardWritable(void){
 }
 
 int isButtonPressed(void){
-	return (GetGPIOBits() & PIO_PUSHBUTTON_SWITCH) == 0;
+	return (GetGPIOBits() & PIO_PUSHBUTTON_SWITCH) != 0;
 }
 
 void setGpio(unsigned int channel, unsigned int state){

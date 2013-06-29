@@ -145,20 +145,20 @@ static void writeTimerChannels(SampleRecord *sampleRecord, size_t currentTicks, 
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
 				int value = 0;
-				int scaling = c->calculatedScaling;
+				unsigned scaling = c->calculatedScaling;
 				unsigned int timerValue = timers[i];
 				switch (c->mode){
 					case MODE_LOGGING_TIMER_RPM:
-						value = TIMER_PERIOD_TO_RPM(timerValue,scaling);
+						value = TIMER_PERIOD_TO_RPM(timerValue, scaling);
 						break;
 					case MODE_LOGGING_TIMER_FREQUENCY:
-						value = TIMER_PERIOD_TO_HZ(timerValue,scaling);
+						value = TIMER_PERIOD_TO_HZ(timerValue, scaling);
 						break;
 					case MODE_LOGGING_TIMER_PERIOD_MS:
-						value = TIMER_PERIOD_TO_MS(timerValue,scaling);
+						value = TIMER_PERIOD_TO_MS(timerValue, scaling);
 						break;
 					case MODE_LOGGING_TIMER_PERIOD_USEC:
-						value = TIMER_PERIOD_TO_USEC(timerValue,scaling);
+						value = TIMER_PERIOD_TO_USEC(timerValue, scaling);
 						break;
 					default:
 						value = -1;

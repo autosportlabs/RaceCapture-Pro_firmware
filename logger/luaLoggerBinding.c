@@ -1008,7 +1008,8 @@ int Lua_GetRPM(lua_State *L){
 	unsigned int timerPeriod, scaling;
 	int result = 0;
 	if (luaToTimerValues(L, &timerPeriod, &scaling)){
-		lua_pushinteger(L, TIMER_PERIOD_TO_RPM(timerPeriod, scaling));
+		int rpm = TIMER_PERIOD_TO_RPM(timerPeriod, scaling);
+		lua_pushinteger(L, rpm);
 		result = 1;
 	}
 	return result;
