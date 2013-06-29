@@ -56,9 +56,14 @@ Once the firmware completes flashing, RaceCapture/Pro will reset and run normall
 
 Firmware Changelog:
 
+===1.1.12===
+Fixed regression in cellular APN initialization
+Additional JSON API
+
 ===1.1.11===
 Fixed issue where timer scaling was not being recalculated upon changes to pulse per revolution
 Work in progress for new JSON API to enable mobile app
+Initial work for making cellular modem APN configurable
 
 ===1.1.10===
 Fixed periodic glitch in accelerometer readings

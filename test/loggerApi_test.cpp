@@ -247,3 +247,19 @@ void LoggerApiTest::testSampleDataFile(string requestFilename, string responseFi
 	char *txBuffer = mock_getTxBuffer();
 	//printf("txBuffer: %s\n", txBuffer);
 }
+
+
+void LoggerApiTest::testLogStartStopFile(string filename){
+
+	string json = readFile(filename);
+	mock_resetTxBuffer();
+	process_api(getMockSerial(), (char *)json.c_str(), json.size());
+
+	LoggerConfig *c = getWorkingLoggerConfig();
+	char *txBuffer = mock_getTxBuffer();
+
+}
+
+void LoggerApiTest::testLogStartStop(){
+	testLogStartStopFile("log1.json");
+}

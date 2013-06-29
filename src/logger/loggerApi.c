@@ -48,10 +48,10 @@ int api_enableLogging(Serial *serial, const jsmntok_t *json){
 		jsmn_trimData(json + 1);
 		doLogging = modp_atoi(json->data);
 		if (doLogging){
-			startLogging();
+			//startLogging();
 		}
 		else{
-			stopLogging();
+			//stopLogging();
 		}
 	}
 	return API_SUCCESS;
