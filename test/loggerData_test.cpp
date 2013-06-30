@@ -31,11 +31,6 @@ void LoggerDataTest::testAccelChannels()
 
 	float x = ACCEL_RAW_TO_GFORCE(2866,2048);
 
-	printf("AccelX %f", x);
-
-
-
-
 }
 
 void LoggerDataTest::testAnalogChannels()

@@ -36,7 +36,7 @@ public:
   void setUp();
   void tearDown();
 
-  void assertGenericResponse(int responseCode);
+  void assertGenericResponse(char *buffer, const char *messageName, int responseCode);
   void testSampleData();
   void testLogStartStop();
   void testSetCellCfg();
@@ -48,7 +48,7 @@ public:
   void testSetTimerCfg();
 
 private:
-  void testLogStartStopFile(string filename);
+  void testLogStartStopFile(string filename, int expectedResponse);
   void testSampleDataFile(string requestFilename, string responseFilename);
   void testAnalogConfigFile(string filename);
   void testAccelConfigFile(string filename);

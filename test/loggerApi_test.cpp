@@ -11,31 +11,45 @@
 #include "mock_serial.h"
 #include "loggerConfig.h"
 #include "jsmn.h"
+#include "mod_string.h"
+#include "modp_atonum.h"
 
 #include <string>
 #include <fstream>
 #include <streambuf>
 
+#define JSON_TOKENS 10000
 #define FILE_PREFIX string("test/")
 
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( LoggerApiTest );
 
-int LoggerApiTest::assertGenericResponse(string messageName, int responseCode){
+void LoggerApiTest::assertGenericResponse(char *buffer, const char * messageName, int responseCode){
 	static jsmn_parser parser;
 	static jsmntok_t json_tok[JSON_TOKENS];
-	jsmn_init(&jsonParser);
-	int r = jsmn_parse(&jsonParser, buffer, json_tok, JSON_TOKENS);
+	jsmn_init(&parser);
+	int r = jsmn_parse(&parser, buffer, json_tok, JSON_TOKENS);
 	if (r == JSMN_SUCCESS){
 		if (json_tok->type == JSMN_OBJECT && json_tok->size == 2){
 			jsmntok_t * tok_msgName = json_tok + 1;
 			jsmn_trimData(tok_msgName);
-			if (strcmp(tok_msgName->data, messageName.c_str()) != 0){
+			if (strcmp(tok_msgName->data, messageName) != 0){
 				CPPUNIT_FAIL("assertGenericResponse: message name does not match");
 			}
 			jsmntok_t * tok_resultInfo = json_tok + 2;
-
-
+			if (tok_resultInfo->type== JSMN_OBJECT && tok_resultInfo->size == 2){
+				jsmntok_t *tok_rc = tok_resultInfo + 1;
+				jsmntok_t *tok_rcVal = tok_resultInfo + 2;
+				jsmn_trimData(tok_rc);
+				jsmn_trimData(tok_rcVal);
+				if (strcmp("rc", tok_rc->data) != 0){
+					CPPUNIT_FAIL("assertGenericResponse: rc element name does not match");
+				}
+				CPPUNIT_ASSERT_EQUAL(responseCode, modp_atoi(tok_rcVal->data));
+			}
+			else{
+				CPPUNIT_FAIL("assertGenericResponse: did not see expected result object");
+			}
 		}
 		else{
 			CPPUNIT_FAIL("assertGenericResponse: expected object at root level");
@@ -44,7 +58,6 @@ int LoggerApiTest::assertGenericResponse(string messageName, int responseCode){
 	else{
 		CPPUNIT_FAIL("assertGenericResponse: failed to parse");
 	}
-
 }
 
 int LoggerApiTest::findAndReplace(string & source, const string find, const string replace)
@@ -101,6 +114,7 @@ void LoggerApiTest::testAnalogConfigFile(string filename){
 
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);
+	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
 
 	LoggerConfig *c = getWorkingLoggerConfig();
@@ -126,6 +140,10 @@ void LoggerApiTest::testAnalogConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(1.3F, adcCfg->scalingMap.scaledValues[2]);
 	CPPUNIT_ASSERT_EQUAL(1.4F, adcCfg->scalingMap.scaledValues[3]);
 	CPPUNIT_ASSERT_EQUAL(1.5F, adcCfg->scalingMap.scaledValues[4]);
+
+	char *txBuffer = mock_getTxBuffer();
+	assertGenericResponse(txBuffer, "setAnalogCfg", 1);
+
 }
 
 
@@ -139,6 +157,7 @@ void LoggerApiTest::testSetAnalogCfg()
 void LoggerApiTest::testAccelConfigFile(string filename){
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);
+	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
 
 	LoggerConfig *c = getWorkingLoggerConfig();
@@ -152,6 +171,9 @@ void LoggerApiTest::testAccelConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(2, (int)accelCfg->accelChannel);
 	CPPUNIT_ASSERT_EQUAL(1234, (int)accelCfg->zeroValue);
 
+	char *txBuffer = mock_getTxBuffer();
+	assertGenericResponse(txBuffer, "setAccelCfg", 1);
+
 }
 
 void LoggerApiTest::testSetAccelCfg(){
@@ -161,6 +183,7 @@ void LoggerApiTest::testSetAccelCfg(){
 void LoggerApiTest::testSetCellConfigFile(string filename){
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);
+	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
 
 	LoggerConfig *c = getWorkingLoggerConfig();
@@ -170,6 +193,9 @@ void LoggerApiTest::testSetCellConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(string("foo.xyz"), string(cellCfg->apnHost));
 	CPPUNIT_ASSERT_EQUAL(string("blarg"), string(cellCfg->apnUser));
 	CPPUNIT_ASSERT_EQUAL(string("blorg"), string(cellCfg->apnPass));
+
+	char *txBuffer = mock_getTxBuffer();
+	assertGenericResponse(txBuffer, "setCellCfg", 1);
 }
 
 void LoggerApiTest::testSetCellCfg()
@@ -180,6 +206,7 @@ void LoggerApiTest::testSetCellCfg()
 void LoggerApiTest::testSetBtConfigFile(string filename){
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);
+	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
 
 	LoggerConfig *c = getWorkingLoggerConfig();
@@ -188,6 +215,9 @@ void LoggerApiTest::testSetBtConfigFile(string filename){
 
 	CPPUNIT_ASSERT_EQUAL(string("myRacecar"), string(btCfg->deviceName));
 	CPPUNIT_ASSERT_EQUAL(string("3311"), string(btCfg->passcode));
+
+	char *txBuffer = mock_getTxBuffer();
+	assertGenericResponse(txBuffer, "setBtCfg", 1);
 }
 
 void LoggerApiTest::testSetBtCfg()
@@ -198,6 +228,7 @@ void LoggerApiTest::testSetBtCfg()
 void LoggerApiTest::testSetPwmConfigFile(string filename){
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);
+	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
 
 	LoggerConfig *c = getWorkingLoggerConfig();
@@ -211,6 +242,10 @@ void LoggerApiTest::testSetPwmConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(50, (int)pwmCfg->startupDutyCycle);
 	CPPUNIT_ASSERT_EQUAL(110, (int)pwmCfg->startupPeriod);
 	CPPUNIT_ASSERT_EQUAL(2.5F, (float)pwmCfg->voltageScaling);
+
+	char *txBuffer = mock_getTxBuffer();
+	assertGenericResponse(txBuffer, "setPwmCfg", 1);
+
 }
 
 void LoggerApiTest::testSetPwmCfg(){
@@ -220,6 +255,7 @@ void LoggerApiTest::testSetPwmCfg(){
 void LoggerApiTest::testSetGpioConfigFile(string filename){
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);
+	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
 
 	LoggerConfig *c = getWorkingLoggerConfig();
@@ -229,6 +265,10 @@ void LoggerApiTest::testSetGpioConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(100, decodeSampleRate(gpioCfg->cfg.sampleRate));
 	CPPUNIT_ASSERT_EQUAL(string("ut1"),string(gpioCfg->cfg.units));
 	CPPUNIT_ASSERT_EQUAL(1, (int)gpioCfg->mode);
+
+	char *txBuffer = mock_getTxBuffer();
+	assertGenericResponse(txBuffer, "setGpioCfg", 1);
+
 }
 
 void LoggerApiTest::testSetGpioCfg(){
@@ -238,6 +278,7 @@ void LoggerApiTest::testSetGpioCfg(){
 void LoggerApiTest::testSetTimerConfigFile(string filename){
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);
+	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
 
 	LoggerConfig *c = getWorkingLoggerConfig();
@@ -251,6 +292,9 @@ void LoggerApiTest::testSetTimerConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(1, (int)timerCfg->mode);
 	CPPUNIT_ASSERT_EQUAL(4, (int)timerCfg->pulsePerRevolution);
 	CPPUNIT_ASSERT_EQUAL(2, (int)timerCfg->timerDivider);
+
+	char *txBuffer = mock_getTxBuffer();
+	assertGenericResponse(txBuffer, "setTimerCfg", 1);
 }
 
 void LoggerApiTest::testSetTimerCfg(){
@@ -272,19 +316,18 @@ void LoggerApiTest::testSampleDataFile(string requestFilename, string responseFi
 
 	LoggerConfig *c = getWorkingLoggerConfig();
 	char *txBuffer = mock_getTxBuffer();
-	//printf("txBuffer: %s\n", txBuffer);
 }
 
-void LoggerApiTest::testLogStartStopFile(string filename){
+void LoggerApiTest::testLogStartStopFile(string filename, int expectedResponse){
 
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(), (char *)json.c_str(), json.size());
-
-	LoggerConfig *c = getWorkingLoggerConfig();
 	char *txBuffer = mock_getTxBuffer();
+	assertGenericResponse(txBuffer,"log",expectedResponse);
 }
 
 void LoggerApiTest::testLogStartStop(){
-	testLogStartStopFile("log1.json");
+	testLogStartStopFile("log1.json", 1);
+	testLogStartStopFile("log2.json", 1);
 }
