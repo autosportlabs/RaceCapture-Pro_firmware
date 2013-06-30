@@ -8,13 +8,9 @@ RCP_BASE=..
 RCP_SRC=$(RCP_BASE)/src
 RCP_INC=$(RCP_BASE)/include
 SAM7S_SRC=$(RCP_BASE)/SAM7s_base
-JSMN_SRC=$(RCP_SRC)/jsmn
-API_SRC=$(RCP_SRC)/api
-LOGGER_SRC=$(RCP_SRC)/logger
 MESSAGING_SRC=$(RCP_SRC)/messaging
 COMMAND_SRC=$(SAM7S_SRC)/command
 MOCK_DIR=./logger_mock
-
 
 INCLUDES = 	-I. \
 		-I$(RCP_BASE) \
@@ -61,12 +57,12 @@ SRC = 	loggerData_test.cpp \
 		mock_serial.c \
 		$(SAM7S_SRC)/util/modp_numtoa.c \
 		$(SAM7S_SRC)/util/modp_atonum.c \
-		$(JSMN_SRC)/jsmn.c \
-		$(API_SRC)/api.c \
+		$(RCP_SRC)/jsmn/jsmn.c \
+		$(RCP_SRC)/api/api.c \
 		$(RCP_BASE)/race_capture/printk.c \
 		$(RCP_BASE)/race_capture/ring_buffer.c \
 		$(SAM7S_SRC)/serial/serial.c \
-		$(LOGGER_SRC)/loggerApi.c \
+		$(RCP_SRC)/logger/loggerApi.c \
 		$(RCP_BASE)/logger/loggerConfig.c \
 		$(RCP_BASE)/logger/gps.c \
 		$(RCP_BASE)/logger/geometry.c \

@@ -10,6 +10,7 @@
 #include "loggerApi.h"
 #include "mock_serial.h"
 #include "loggerConfig.h"
+#include "jsmn.h"
 
 #include <string>
 #include <fstream>
@@ -19,6 +20,32 @@
 
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( LoggerApiTest );
+
+int LoggerApiTest::assertGenericResponse(string messageName, int responseCode){
+	static jsmn_parser parser;
+	static jsmntok_t json_tok[JSON_TOKENS];
+	jsmn_init(&jsonParser);
+	int r = jsmn_parse(&jsonParser, buffer, json_tok, JSON_TOKENS);
+	if (r == JSMN_SUCCESS){
+		if (json_tok->type == JSMN_OBJECT && json_tok->size == 2){
+			jsmntok_t * tok_msgName = json_tok + 1;
+			jsmn_trimData(tok_msgName);
+			if (strcmp(tok_msgName->data, messageName.c_str()) != 0){
+				CPPUNIT_FAIL("assertGenericResponse: message name does not match");
+			}
+			jsmntok_t * tok_resultInfo = json_tok + 2;
+
+
+		}
+		else{
+			CPPUNIT_FAIL("assertGenericResponse: expected object at root level");
+		}
+	}
+	else{
+		CPPUNIT_FAIL("assertGenericResponse: failed to parse");
+	}
+
+}
 
 int LoggerApiTest::findAndReplace(string & source, const string find, const string replace)
 {
@@ -248,7 +275,6 @@ void LoggerApiTest::testSampleDataFile(string requestFilename, string responseFi
 	//printf("txBuffer: %s\n", txBuffer);
 }
 
-
 void LoggerApiTest::testLogStartStopFile(string filename){
 
 	string json = readFile(filename);
@@ -257,7 +283,6 @@ void LoggerApiTest::testLogStartStopFile(string filename){
 
 	LoggerConfig *c = getWorkingLoggerConfig();
 	char *txBuffer = mock_getTxBuffer();
-
 }
 
 void LoggerApiTest::testLogStartStop(){

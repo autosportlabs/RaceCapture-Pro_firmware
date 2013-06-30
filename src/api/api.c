@@ -3,10 +3,11 @@
 #include "race_capture/printk.h"
 #include "mod_string.h"
 
+#define JSON_TOKENS 100
 static unsigned int g_currentMessageId = 0;
 
 static jsmn_parser g_jsonParser;
-static jsmntok_t g_json_tok[100];
+static jsmntok_t g_json_tok[JSON_TOKENS];
 
 const api_t apis[] = SYSTEM_APIS;
 
@@ -123,7 +124,7 @@ static void execute_api(Serial * serial, const jsmntok_t *json){
 
 void process_api(Serial *serial, char *buffer, size_t bufferSize){
 	jsmn_init(&g_jsonParser);
-	int r = jsmn_parse(&g_jsonParser, buffer, g_json_tok, 100);
+	int r = jsmn_parse(&g_jsonParser, buffer, g_json_tok, JSON_TOKENS);
 	if (r == JSMN_SUCCESS){
 		execute_api(serial, g_json_tok);
 	}

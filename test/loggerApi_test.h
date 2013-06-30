@@ -30,11 +30,13 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST_SUITE_END();
 
 public:
+
   int findAndReplace(string & source, const string find, const string replace);
   string readFile(string filename);
   void setUp();
   void tearDown();
 
+  void assertGenericResponse(int responseCode);
   void testSampleData();
   void testLogStartStop();
   void testSetCellCfg();
