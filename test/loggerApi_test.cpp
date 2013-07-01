@@ -318,16 +318,30 @@ void LoggerApiTest::testSampleDataFile(string requestFilename, string responseFi
 	char *txBuffer = mock_getTxBuffer();
 }
 
-void LoggerApiTest::testLogStartStopFile(string filename, int expectedResponse){
+void LoggerApiTest::testLogStartStopFile(string filename){
 
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(), (char *)json.c_str(), json.size());
 	char *txBuffer = mock_getTxBuffer();
-	assertGenericResponse(txBuffer,"log",expectedResponse);
+	assertGenericResponse(txBuffer,"log", 1);
 }
 
 void LoggerApiTest::testLogStartStop(){
-	testLogStartStopFile("log1.json", 1);
-	testLogStartStopFile("log2.json", 1);
+	testLogStartStopFile("log1.json");
+	testLogStartStopFile("log2.json");
 }
+
+void LoggerApiTest::testCalibrateAccelFile(string filename){
+
+	string json = readFile(filename);
+	mock_resetTxBuffer();
+	process_api(getMockSerial(), (char *)json.c_str(), json.size());
+	char *txBuffer = mock_getTxBuffer();
+	assertGenericResponse(txBuffer,"calAccel",1);
+}
+
+void LoggerApiTest::testCalibrateAccel(){
+	testCalibrateAccelFile("calibrateAccel.json");
+}
+

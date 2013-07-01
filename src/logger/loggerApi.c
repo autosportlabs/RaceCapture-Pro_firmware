@@ -11,6 +11,7 @@
 #include "sampleRecord.h"
 #include "loggerData.h"
 #include "loggerTaskEx.h"
+#include "accelerometer.h"
 
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
@@ -356,5 +357,10 @@ static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok, const 
 
 int api_setTimerConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getTimerConfigs, setTimerExtendedField);
+	return API_SUCCESS;
+}
+
+int api_calibrateAccel(Serial *serial, const jsmntok_t *json){
+	calibrateAccelZero();
 	return API_SUCCESS;
 }

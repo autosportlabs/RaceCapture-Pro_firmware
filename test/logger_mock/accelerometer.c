@@ -33,3 +33,7 @@ unsigned int getLastAccelRead(unsigned char channel){
 unsigned int readAccelerometerDevice(unsigned char channel){
 	return channelValues[channel];
 }
+
+void calibrateAccelZero(){
+
+}

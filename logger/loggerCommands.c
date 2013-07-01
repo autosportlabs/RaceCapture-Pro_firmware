@@ -512,3 +512,5 @@ void SetLogLevel(Serial *serial, unsigned int argc, char **argv)
         set_log_level(level);
         put_commandOK(serial);
 }
+
+

@@ -27,7 +27,8 @@
 {"setBtCfg", api_setBluetoothConfig}, \
 {"setPwmCfg", api_setPwmConfig}, \
 {"setGpioCfg", api_setGpioConfig}, \
-{"setTimerCfg", api_setTimerConfig}
+{"setTimerCfg", api_setTimerConfig}, \
+{"calAccel", api_calibrateAccel}
 
 
 void writeSampleRecord(Serial *serial, SampleRecord *sr, int sendMeta);
@@ -43,5 +44,6 @@ int api_setAccelConfig(Serial *serial, const jsmntok_t *json);
 int api_setPwmConfig(Serial *serial, const jsmntok_t *json);
 int api_setGpioConfig(Serial *serial, const jsmntok_t *json);
 int api_setTimerConfig(Serial *serial, const jsmntok_t *json);
+int api_calibrateAccel(Serial *serial, const jsmntok_t *json);
 
 #endif /* LOGGERAPI_H_ */
