@@ -21,6 +21,43 @@ typedef const jsmntok_t * (*setExtField_func)(const jsmntok_t *json, const char 
 
 
 
+void unescapeTextField(char *data){
+	char *result = data;
+	while (*data){
+		if (*data == '\\'){
+			switch(*(data + 1)){
+				case 'n':
+					*result = '\n';
+					break;
+				case 'r':
+					*result = '\r';
+					break;
+				case '\\':
+					*result = '\\';
+					break;
+				case '"':
+					*result = '\"';
+					break;
+				case '\0': //this should *NOT* happen
+					*result = '\0';
+					return;
+					break;
+				default: // unknown escape char?
+					*result = ' ';
+					break;
+			}
+			result++;
+			data+=2;
+		}
+		else{
+			*result++ = *data++;
+		}
+	}
+	*result='\0';
+}
+
+
+
 int api_sampleData(Serial *serial, const jsmntok_t *json){
 
 	int sendMeta = 0;
@@ -118,8 +155,9 @@ static void setChannelConfig(Serial *serial, const jsmntok_t *cfg, ChannelConfig
 			cfg++;
 			if (valueTok->type == JSMN_PRIMITIVE || valueTok->type == JSMN_STRING) jsmn_trimData(valueTok);
 
-			const char *name = nameTok->data;
-			const char *value = valueTok->data;
+			char *name = nameTok->data;
+			char *value = valueTok->data;
+			unescapeTextField(value);
 
 			if (NAME_EQU("nm",name)) setLabelGeneric(channelCfg->label, value);
 			else if (NAME_EQU("ut", name)) setLabelGeneric(channelCfg->units, value);

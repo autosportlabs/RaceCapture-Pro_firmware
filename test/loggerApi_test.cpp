@@ -111,6 +111,36 @@ void LoggerApiTest::tearDown()
 {
 }
 
+void LoggerApiTest::testUnescapeTextField(){
+	{
+		char test[] =  "test1";
+		unescapeTextField(test);
+		CPPUNIT_ASSERT_EQUAL(string("test1"), string(test));
+	}
+
+	{
+		char test[] =  "test\\n1";
+		unescapeTextField(test);
+		CPPUNIT_ASSERT_EQUAL(string("test\n1"), string(test));
+	}
+	{
+		char test[] =  "test\\r1";
+		unescapeTextField(test);
+		CPPUNIT_ASSERT_EQUAL(string("test\r1"), string(test));
+	}
+	{
+		char test[] =  "test\\\\1";
+		unescapeTextField(test);
+		CPPUNIT_ASSERT_EQUAL(string("test\\1"), string(test));
+	}
+	{
+		char test[] =  "test\\\"1";
+		unescapeTextField(test);
+		CPPUNIT_ASSERT_EQUAL(string("test\"1"), string(test));
+	}
+
+}
+
 void LoggerApiTest::testAnalogConfigFile(string filename){
 
 	Serial *serial = getMockSerial();

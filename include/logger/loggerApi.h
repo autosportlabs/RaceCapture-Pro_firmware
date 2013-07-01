@@ -34,6 +34,7 @@
 
 void writeSampleRecord(Serial *serial, SampleRecord *sr, int sendMeta);
 
+void unescapeTextField(char *data);
 
 int api_sampleData(Serial *serial, const jsmntok_t *json);
 int api_enableLogging(Serial *serial, const jsmntok_t *json);

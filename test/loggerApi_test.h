@@ -18,6 +18,7 @@ using std::istreambuf_iterator;
 class LoggerApiTest : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE( LoggerApiTest );
+  CPPUNIT_TEST( testUnescapeTextField );
   CPPUNIT_TEST( testSetCellCfg );
   CPPUNIT_TEST( testSetBtCfg );
   CPPUNIT_TEST( testSetAnalogCfg );
@@ -39,6 +40,7 @@ public:
   void tearDown();
 
   void assertGenericResponse(char *buffer, const char *messageName, int responseCode);
+  void testUnescapeTextField();
   void testSampleData();
   void testLogStartStop();
   void testSetCellCfg();

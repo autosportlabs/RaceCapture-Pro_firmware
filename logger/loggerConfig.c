@@ -284,9 +284,18 @@ void setTextField(char *dest, const char *source, unsigned int maxlen){
 	int len = strlen(from);
 	if (*(from + len -1) == '"') len--;
 	if (len > maxlen) len = maxlen;
-	strncpy(dest ,from, len);
+	for (size_t i = 0; i < len; i++){
+		char c = from[i];
+		if (! ( (c >= '0' && c <= '9') ||
+				(c >= 'A' && c <= 'Z') ||
+				(c >= 'a' && c <= 'z') ||
+				c == '_' ||
+				c == '.' ) ){
+			c = '_';
+		}
+		dest[i] = c;
+	}
 	dest[len] = '\0';
-
 }
 
 void setLabelGeneric(char *dest, const char *source){
