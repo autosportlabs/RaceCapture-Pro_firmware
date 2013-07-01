@@ -100,7 +100,7 @@ char filterSdLoggingMode(char mode){
 	}
 }
 
-char filterTelemetryMode(char mode){
+char filterConnectivityMode(char mode){
 	switch(mode){
 		case CONNECTIVITY_MODE_P2P:
 			return CONNECTIVITY_MODE_P2P;

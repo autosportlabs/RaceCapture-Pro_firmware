@@ -430,7 +430,7 @@ void GetLoggerOutputConfig(Serial *serial, unsigned int argc, char **argv){
 void SetLoggerOutputConfig(Serial *serial, unsigned int argc, char **argv){
 	ConnectivityConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfigs);
 	if (argc > 1) c->sdLoggingMode = filterSdLoggingMode((char)modp_atoui(argv[1]));
-	if (argc > 2) c->connectivityMode = filterTelemetryMode((char)modp_atoui(argv[2]));
+	if (argc > 2) c->connectivityMode = filterConnectivityMode((char)modp_atoui(argv[2]));
 	if (argc > 3) c->p2pConfig.p2pDestinationAddrHigh = modp_atoui(argv[3]);
 	if (argc > 4) c->p2pConfig.p2pDestinationAddrLow = modp_atoui(argv[4]);
 	if (argc > 5) setTextField(c->telemetryConfig.telemetryServerHost, argv[5], TELEMETRY_SERVER_HOST_LENGTH);

@@ -225,7 +225,6 @@ void LoggerApiTest::testAccelConfigFile(string filename){
 
 	char *txBuffer = mock_getTxBuffer();
 	assertGenericResponse(txBuffer, "setAccelCfg", 1);
-
 }
 
 void LoggerApiTest::testSetAccelCfg(){
@@ -317,6 +316,45 @@ void LoggerApiTest::testGetBtCfg(){
 
 	CPPUNIT_ASSERT_EQUAL(string("myRacecar"), name);
 	CPPUNIT_ASSERT_EQUAL(string("3311"), pass);
+}
+
+
+void LoggerApiTest::testSetConnectivityCfgFile(string filename){
+	LoggerConfig *c = getWorkingLoggerConfig();
+	ConnectivityConfig *btCfg = &c->ConnectivityConfigs;
+	btCfg->sdLoggingMode = 0;
+	btCfg->connectivityMode = 0;
+
+	processApiGeneric(filename);
+
+	CPPUNIT_ASSERT_EQUAL(1, (int)btCfg->sdLoggingMode);
+	CPPUNIT_ASSERT_EQUAL(1, (int)btCfg->connectivityMode);
+
+	char *txBuffer = mock_getTxBuffer();
+	assertGenericResponse(txBuffer, "setConnCfg", 1);
+}
+
+void LoggerApiTest::testSetConnectivityCfg(){
+	testSetConnectivityCfgFile("setConnCfg1.json");
+}
+
+void LoggerApiTest::testGetConnectivityCfg(){
+	LoggerConfig *c = getWorkingLoggerConfig();
+	ConnectivityConfig *btCfg = &c->ConnectivityConfigs;
+	btCfg->sdLoggingMode = 0;
+	btCfg->connectivityMode = 2;
+
+	char *response = processApiGeneric("getConnCfg1.json");
+	Object json;
+	stringToJson(response, json);
+
+	Object &btJson = json["getConnCfg"];
+
+	int sdMode = (Number)btJson["sdMode"];
+	int connMode = (Number)btJson["connMode"];
+
+	CPPUNIT_ASSERT_EQUAL(0, sdMode);
+	CPPUNIT_ASSERT_EQUAL(2, connMode);
 }
 
 void LoggerApiTest::testSetPwmConfigFile(string filename){

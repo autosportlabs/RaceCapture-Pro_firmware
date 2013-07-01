@@ -26,6 +26,8 @@
 {"setAccelCfg", api_setAccelConfig}, \
 {"getBtCfg", api_getBluetoothConfig}, \
 {"setBtCfg", api_setBluetoothConfig}, \
+{"setConnCfg", api_setConnectivityConfig}, \
+{"getConnCfg", api_getConnectivityConfig}, \
 {"setPwmCfg", api_setPwmConfig}, \
 {"setGpioCfg", api_setGpioConfig}, \
 {"setTimerCfg", api_setTimerConfig}, \
@@ -43,6 +45,8 @@ int api_getCellConfig(Serial *serial, const jsmntok_t *json);
 int api_setCellConfig(Serial *serial, const jsmntok_t *json);
 int api_getBluetoothConfig(Serial *serial, const jsmntok_t *json);
 int api_setBluetoothConfig(Serial *serial, const jsmntok_t *json);
+int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json);
+int api_setConnectivityConfig(Serial *serial, const jsmntok_t *json);
 int api_setAnalogConfig(Serial *serial, const jsmntok_t *json);
 int api_setAccelConfig(Serial *serial, const jsmntok_t *json);
 int api_setPwmConfig(Serial *serial, const jsmntok_t *json);

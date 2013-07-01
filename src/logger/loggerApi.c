@@ -345,6 +345,30 @@ int api_getBluetoothConfig(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS_NO_RETURN;
 }
 
+static const jsmntok_t * setConnectivityExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
+	ConnectivityConfig *connCfg = (ConnectivityConfig *)cfg;
+	if (NAME_EQU("sdMode", name)) connCfg->sdLoggingMode = filterSdLoggingMode(modp_atoi(value));
+	else if (NAME_EQU("connMode", name)) connCfg->connectivityMode =  filterConnectivityMode(modp_atoi(value));
+	return valueTok + 1;
+}
+
+int api_setConnectivityConfig(Serial *serial, const jsmntok_t *json){
+	ConnectivityConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs);
+	setConfigGeneric(serial, json, cfg, setConnectivityExtendedField);
+	return API_SUCCESS;
+}
+
+int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json){
+	ConnectivityConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs);
+	json_messageStart(serial,NULL_MESSAGE_ID);
+	json_blockStart(serial, "getConnCfg");
+	json_int(serial, "sdMode", cfg->sdLoggingMode, 1);
+	json_int(serial, "connMode", cfg->connectivityMode, 0);
+	json_blockEnd(serial, 0);
+	json_blockEnd(serial, 0);
+	return API_SUCCESS_NO_RETURN;
+}
+
 static void getPwmConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
 	PWMConfig *c =&(getWorkingLoggerConfig()->PWMConfigs[channelId]);
 	*baseCfg = c;

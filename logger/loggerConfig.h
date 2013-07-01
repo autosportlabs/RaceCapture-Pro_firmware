@@ -416,7 +416,7 @@ int decodeSampleRate(int sampleRateCode);
 
 char filterAnalogScalingMode(char mode);
 char filterSdLoggingMode(char mode);
-char filterTelemetryMode(char mode);
+char filterConnectivityMode(char mode);
 char filterGpioMode(int config);
 char filterPwmOutputMode(int config);
 char filterPwmLoggingMode(int config);
