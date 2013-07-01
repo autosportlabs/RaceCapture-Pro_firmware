@@ -88,7 +88,7 @@ JSMN_SRC_DIR = $(SRC_DIR)/jsmn
 API_SRC_DIR = $(SRC_DIR)/api
 ACCEL_SRC_DIR = $(SRC_DIR)/accelerometer
 MESSAGING_SRC_DIR = $(SRC_DIR)/messaging
-
+JSON_DIR = ./json
 
 #App specific dirs
 FAT_SD_SRC_DIR = fat_sd
@@ -248,6 +248,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/logger \
 -I$(INCLUDE_DIR)/accelerometer \
 -I$(INCLUDE_DIR)/messaging \
+-I$(JSON_DIR)
 
 #CINCS = -I. -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
 # Place -D or -U options for ASM here

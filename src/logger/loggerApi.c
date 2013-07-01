@@ -331,6 +331,17 @@ int api_setBluetoothConfig(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS;
 }
 
+int api_getBluetoothConfig(Serial *serial, const jsmntok_t *json){
+	BluetoothConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
+	json_messageStart(serial,NULL_MESSAGE_ID);
+	json_blockStart(serial, "getBtCfg");
+	json_string(serial, "btName", cfg->deviceName, 1);
+	json_string(serial, "btPass", cfg->passcode, 0);
+	json_blockEnd(serial, 0);
+	json_blockEnd(serial, 0);
+	return API_SUCCESS_NO_RETURN;
+}
+
 static void getPwmConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
 	PWMConfig *c =&(getWorkingLoggerConfig()->PWMConfigs[channelId]);
 	*baseCfg = c;

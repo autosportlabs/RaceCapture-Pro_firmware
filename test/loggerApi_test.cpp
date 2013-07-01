@@ -14,7 +14,6 @@
 #include "jsmn.h"
 #include "mod_string.h"
 #include "modp_atonum.h"
-
 #include <string>
 #include <fstream>
 #include <streambuf>
@@ -24,6 +23,29 @@
 
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( LoggerApiTest );
+
+
+void LoggerApiTest::stringToJson(string buffer, Object &json){
+	std::stringstream stream;
+	for (size_t i = 0; i < buffer.size(); i++){
+		stream.put(buffer[i]);
+	}
+	try{
+			Reader::Read(json, stream);
+	}
+	catch (json::Exception &e){
+			throw ("Could not parse json string");
+	}
+}
+
+char * LoggerApiTest::processApiGeneric(string filename){
+	Serial *serial = getMockSerial();
+	string json = readFile(filename);
+	mock_resetTxBuffer();
+	process_api(getMockSerial(),(char *)json.c_str(), json.size());
+	char *txBuffer = mock_getTxBuffer();
+	return txBuffer;
+}
 
 void LoggerApiTest::assertGenericResponse(char *buffer, const char * messageName, int responseCode){
 	static jsmn_parser parser;
@@ -177,7 +199,6 @@ void LoggerApiTest::testAnalogConfigFile(string filename){
 
 }
 
-
 void LoggerApiTest::testSetAnalogCfg()
 {
 	testAnalogConfigFile("setAnalogCfg1.json");
@@ -254,6 +275,25 @@ void LoggerApiTest::testSetBtConfigFile(string filename){
 void LoggerApiTest::testSetBtCfg()
 {
 	testSetBtConfigFile("setBtCfg1.json");
+}
+
+void LoggerApiTest::testGetBtCfg(){
+	LoggerConfig *c = getWorkingLoggerConfig();
+	BluetoothConfig *btCfg = &c->ConnectivityConfigs.bluetoothConfig;
+	strcpy(btCfg->deviceName,"myRacecar");
+	strcpy(btCfg->passcode,"3311");
+
+	char *response = processApiGeneric("getBtCfg1.json");
+	Object json;
+	stringToJson(response, json);
+
+	Object &btConfig = json["getBtCfg"];
+
+	string name = (String)btConfig["btName"];
+	string pass = (String)btConfig["btPass"];
+
+	CPPUNIT_ASSERT_EQUAL(string("myRacecar"), name);
+	CPPUNIT_ASSERT_EQUAL(string("3311"), pass);
 }
 
 void LoggerApiTest::testSetPwmConfigFile(string filename){

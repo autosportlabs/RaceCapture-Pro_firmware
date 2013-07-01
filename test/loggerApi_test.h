@@ -9,7 +9,11 @@
 #define LOGGERAPI_TEST_H_
 
 #include <cppunit/extensions/HelperMacros.h>
+#include "json/reader.h"
+#include "json/writer.h"
+#include "json/elements.h"
 
+using namespace json;
 using std::string;
 using std::ifstream;
 using std::ios;
@@ -20,6 +24,7 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST_SUITE( LoggerApiTest );
   CPPUNIT_TEST( testUnescapeTextField );
   CPPUNIT_TEST( testSetCellCfg );
+  CPPUNIT_TEST( testGetBtCfg );
   CPPUNIT_TEST( testSetBtCfg );
   CPPUNIT_TEST( testSetAnalogCfg );
   CPPUNIT_TEST( testSetAccelCfg );
@@ -39,11 +44,15 @@ public:
   void setUp();
   void tearDown();
 
+  void stringToJson(string buffer, Object &json);
+  char * processApiGeneric(string filename);
+
   void assertGenericResponse(char *buffer, const char *messageName, int responseCode);
   void testUnescapeTextField();
   void testSampleData();
   void testLogStartStop();
   void testSetCellCfg();
+  void testGetBtCfg();
   void testSetBtCfg();
   void testSetAnalogCfg();
   void testSetAccelCfg();
