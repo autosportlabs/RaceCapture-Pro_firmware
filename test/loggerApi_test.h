@@ -60,6 +60,7 @@ public:
   void testGetConnectivityCfg();
   void testGetBtCfg();
   void testSetBtCfg();
+  void testGetAnalogCfg();
   void testSetAnalogCfg();
   void testSetAccelCfg();
   void testSetPwmCfg();
@@ -71,7 +72,8 @@ public:
 private:
   void testLogStartStopFile(string filename);
   void testSampleDataFile(string requestFilename, string responseFilename);
-  void testAnalogConfigFile(string filename);
+  void testGetAnalogConfigFile(string filename);
+  void testSetAnalogConfigFile(string filename);
   void testAccelConfigFile(string filename);
   void testSetCellConfigFile(string filename);
   void testSetBtConfigFile(string filename);

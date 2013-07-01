@@ -163,7 +163,57 @@ void LoggerApiTest::testUnescapeTextField(){
 
 }
 
-void LoggerApiTest::testAnalogConfigFile(string filename){
+void LoggerApiTest::testGetAnalogConfigFile(string filename){
+
+	LoggerConfig *c = getWorkingLoggerConfig();
+	ADCConfig *accelCfg = &c->ADCConfigs[0];
+
+	strcpy(accelCfg->cfg.label, "aLabel");
+	strcpy(accelCfg->cfg.units, "aUnits");
+	accelCfg->cfg.sampleRate = 100;
+	accelCfg->linearScaling = 3.21;
+	accelCfg->loggingPrecision = 5;
+	accelCfg->scalingMode = 2;
+	accelCfg->scalingMap.rawValues = {100, 200, 300, 400, 500};
+	accelCfg->scalingMap.scaledValues = {1.1, 2.2, 3.3, 4.4, 5.5};
+
+	processApiGeneric(filename);
+
+	Object json;
+	stringToJson(response, json);
+
+	Object &analogMap = json["map"];
+
+	string pass = (String)analogJson["ut"];
+	int	sampleRate = (Number)analogJson["sr"];
+	int scalingMode = (Number)analogJson["scalMod"];
+	int precision = (Number)analogJson["prec"];
+	float linearScaling = (Number)analogJson["linScal"];
+
+	CPPUNIT_ASSERT_EQUAL(string("aLabel"), string((String)analogJson["nm"]));
+	CPPUNIT_ASSERT_EQUAL(string("aUnits"), string((String)analogJson["ut"]));
+	CPPUNIT_ASSERT_EQUAL(100, (Number)analogJson["sr"]);
+	CPPUNIT_ASSERT_EQUAL(3.21, (Number)analogJson["linScal"]);
+	CPPUNIT_ASSERT_EQUAL(5, (Number)analogJson["prec"]);
+	CPPUNIT_ASSERT_EQUAL(2, (Number)analogJson["scalMod"]);
+
+	Object scalMap = (Object)analogJson["map"];
+	Array raw = (Array)scalMap["raw"];
+	Array scal = (Array)scalMap["scal"];
+
+	for (int i = 0; i < ANALOG_SCALING_BINS; i+=10){
+		CPPUNIT_ASSERT_EQUAL(i, (int)(Number)raw[i]);
+	}
+	for (float i = 0; i < ANALOG_SCALING_BINS; i+=1.1){
+		CPPUNIT_ASSERT_EQUAL(i, (float)(Number)scal[i]);
+	}
+}
+
+void LoggerApiTest::testGetAnalogConfig(){
+	testGetAnalogConfigFile("getAnalogCfg1.json");
+}
+
+void LoggerApiTest::testSetAnalogConfigFile(string filename){
 
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);

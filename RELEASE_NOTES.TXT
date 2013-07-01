@@ -59,6 +59,7 @@ Firmware Changelog:
 ===1.1.12===
 Fixed regression in cellular APN initialization
 Additional JSON API
+Additional fixes around scaling value on timer channels
 
 ===1.1.11===
 Fixed issue where timer scaling was not being recalculated upon changes to pulse per revolution
