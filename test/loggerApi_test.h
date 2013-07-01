@@ -23,6 +23,7 @@ class LoggerApiTest : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE( LoggerApiTest );
   CPPUNIT_TEST( testUnescapeTextField );
+  CPPUNIT_TEST( testGetCellCfg );
   CPPUNIT_TEST( testSetCellCfg );
   CPPUNIT_TEST( testGetBtCfg );
   CPPUNIT_TEST( testSetBtCfg );
@@ -51,6 +52,7 @@ public:
   void testUnescapeTextField();
   void testSampleData();
   void testLogStartStop();
+  void testGetCellCfg();
   void testSetCellCfg();
   void testGetBtCfg();
   void testSetBtCfg();

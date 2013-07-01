@@ -296,11 +296,14 @@ static void setConfigGeneric(Serial *serial, const jsmntok_t * json, void *cfg, 
 }
 
 int api_getCellConfig(Serial *serial, const jsmntok_t *json){
-	CellularConfig *c = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
-/*	put_nameString(serial, "apnHost", c->apnHost);
-	put_nameString(serial, "apnUser", c->apnUser);
-	put_nameString(serial, "apnPass", c->apnPass);
-	*/
+	CellularConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
+	json_messageStart(serial,NULL_MESSAGE_ID);
+	json_blockStart(serial, "getCellCfg");
+	json_string(serial, "apnHost", cfg->apnHost, 1);
+	json_string(serial, "apnUser", cfg->apnUser, 1);
+	json_string(serial, "apnPass", cfg->apnPass, 0);
+	json_blockEnd(serial, 0);
+	json_blockEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
 }
 

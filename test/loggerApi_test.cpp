@@ -255,6 +255,29 @@ void LoggerApiTest::testSetCellCfg()
 	testSetCellConfigFile("setCellCfg1.json");
 }
 
+void LoggerApiTest::testGetCellCfg(){
+	LoggerConfig *c = getWorkingLoggerConfig();
+	CellularConfig *cellCfg = &c->ConnectivityConfigs.cellularConfig;
+	strcpy(cellCfg->apnHost, "my.host");
+	strcpy(cellCfg->apnUser, "user1");
+	strcpy(cellCfg->apnPass, "pass1");
+
+	char *response = processApiGeneric("getCellCfg1.json");
+	Object json;
+	stringToJson(response, json);
+
+	Object &cellJson = json["getCellCfg"];
+
+	string host = (String)cellJson["apnHost"];
+	string user = (String)cellJson["apnUser"];
+	string pass = (String)cellJson["apnPass"];
+
+	CPPUNIT_ASSERT_EQUAL(string("my.host"), host);
+	CPPUNIT_ASSERT_EQUAL(string("user1"), user);
+	CPPUNIT_ASSERT_EQUAL(string("pass1"), pass);
+
+}
+
 void LoggerApiTest::testSetBtConfigFile(string filename){
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);
@@ -287,10 +310,10 @@ void LoggerApiTest::testGetBtCfg(){
 	Object json;
 	stringToJson(response, json);
 
-	Object &btConfig = json["getBtCfg"];
+	Object &btJson = json["getBtCfg"];
 
-	string name = (String)btConfig["btName"];
-	string pass = (String)btConfig["btPass"];
+	string name = (String)btJson["btName"];
+	string pass = (String)btJson["btPass"];
 
 	CPPUNIT_ASSERT_EQUAL(string("myRacecar"), name);
 	CPPUNIT_ASSERT_EQUAL(string("3311"), pass);
