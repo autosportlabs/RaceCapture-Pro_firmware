@@ -28,6 +28,7 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST( testSampleData );
   CPPUNIT_TEST( testLogStartStop );
   CPPUNIT_TEST( testCalibrateAccel);
+  CPPUNIT_TEST( testFlashConfig);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -48,6 +49,7 @@ public:
   void testSetGpioCfg();
   void testSetTimerCfg();
   void testCalibrateAccel();
+  void testFlashConfig();
 
 private:
   void testLogStartStopFile(string filename);
@@ -60,6 +62,7 @@ private:
   void testSetGpioConfigFile(string filename);
   void testSetTimerConfigFile(string filename);
   void testCalibrateAccelFile(string filename);
+  void testFlashConfigFile(string filename);
 };
 
 

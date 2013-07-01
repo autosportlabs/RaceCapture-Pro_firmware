@@ -17,6 +17,8 @@ static int g_pwmPeriod[CONFIG_PWM_CHANNELS] = {0,0,0,0};
 static int g_pwmDuty[CONFIG_PWM_CHANNELS] = {0,0,0,0};
 static int g_timer[CONFIG_TIMER_CHANNELS] = {0,0,0};
 
+static int g_isFlashed = 0;
+
 void InitLoggerHardware(){
 
 }
@@ -27,6 +29,14 @@ void InitSDCard(void){}
 
 void mock_setIsCardPresent(int present){
 	g_isCardPresent = present;
+}
+
+void mock_setIsFlashed(int isFlashed){
+	g_isFlashed = isFlashed;
+}
+
+int mock_getIsFlashed(){
+	return g_isFlashed;
 }
 
 int isCardPresent(void){
@@ -180,5 +190,8 @@ unsigned int getTimer2Period(){
 	return g_timer[2];
 }
 
-int flashLoggerConfig(){}
+int flashLoggerConfig(){
+	g_isFlashed = 1;
+	return 1;
+}
 

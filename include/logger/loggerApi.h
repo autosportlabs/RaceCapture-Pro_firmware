@@ -28,7 +28,8 @@
 {"setPwmCfg", api_setPwmConfig}, \
 {"setGpioCfg", api_setGpioConfig}, \
 {"setTimerCfg", api_setTimerConfig}, \
-{"calAccel", api_calibrateAccel}
+{"calAccel", api_calibrateAccel}, \
+{"flashCfg", api_flashConfig}
 
 
 void writeSampleRecord(Serial *serial, SampleRecord *sr, int sendMeta);
@@ -45,5 +46,6 @@ int api_setPwmConfig(Serial *serial, const jsmntok_t *json);
 int api_setGpioConfig(Serial *serial, const jsmntok_t *json);
 int api_setTimerConfig(Serial *serial, const jsmntok_t *json);
 int api_calibrateAccel(Serial *serial, const jsmntok_t *json);
+int api_flashConfig(Serial *serial, const jsmntok_t *json);
 
 #endif /* LOGGERAPI_H_ */

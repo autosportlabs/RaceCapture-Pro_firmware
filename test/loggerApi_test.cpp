@@ -9,6 +9,7 @@
 #include "api.h"
 #include "loggerApi.h"
 #include "mock_serial.h"
+#include "loggerHardware_mock.h"
 #include "loggerConfig.h"
 #include "jsmn.h"
 #include "mod_string.h"
@@ -343,5 +344,20 @@ void LoggerApiTest::testCalibrateAccelFile(string filename){
 
 void LoggerApiTest::testCalibrateAccel(){
 	testCalibrateAccelFile("calibrateAccel.json");
+}
+
+void LoggerApiTest::testFlashConfigFile(string filename){
+	mock_setIsFlashed(1);
+	string json = readFile(filename);
+	mock_resetTxBuffer();
+	process_api(getMockSerial(), (char *)json.c_str(), json.size());
+	char *txBuffer = mock_getTxBuffer();
+	int isFlashed = mock_getIsFlashed();
+	CPPUNIT_ASSERT_EQUAL(isFlashed, 1);
+	assertGenericResponse(txBuffer,"flashCfg",1);
+}
+
+void LoggerApiTest::testFlashConfig(){
+	testFlashConfigFile("flashCfg.json");
 }
 

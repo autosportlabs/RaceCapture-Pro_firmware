@@ -12,6 +12,7 @@
 #include "loggerData.h"
 #include "loggerTaskEx.h"
 #include "accelerometer.h"
+#include "loggerHardware.h"
 
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
@@ -363,4 +364,9 @@ int api_setTimerConfig(Serial *serial, const jsmntok_t *json){
 int api_calibrateAccel(Serial *serial, const jsmntok_t *json){
 	calibrateAccelZero();
 	return API_SUCCESS;
+}
+
+int api_flashConfig(Serial *serial, const jsmntok_t *json){
+	int rc = flashLoggerConfig();
+	return (rc == 0 ? 1 : rc); //success means on internal command; other errors passed through
 }

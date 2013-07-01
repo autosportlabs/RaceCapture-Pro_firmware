@@ -11,6 +11,8 @@
 void mock_setIsCardPresent(int present);
 void mock_setIsCardWritable(int writable);
 void mock_sButtonPressed(int pressed);
+void mock_setIsFlashed(int isFlashed);
+int mock_getIsFlashed();
 
 
 
