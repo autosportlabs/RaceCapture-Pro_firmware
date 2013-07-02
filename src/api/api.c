@@ -15,7 +15,7 @@ void initApi(){
 	jsmn_init(&g_jsonParser);
 }
 
-void json_int(Serial *serial, const char *name, unsigned int value, int more){
+void json_int(Serial *serial, const char *name, int value, int more){
 	serial->put_c('"');
 	serial->put_s(name);
 	serial->put_c('"');
@@ -53,9 +53,15 @@ void json_float(Serial *serial, const char *name, float value, int precision, in
 	if (more) serial->put_c(',');
 }
 
-void json_blockStart(Serial *serial, const char * name){
+void json_blockStart(Serial *serial, const char * label){
 	serial->put_c('"');
-	serial->put_s(name);
+	serial->put_s(label);
+	serial->put_s("\":{");
+}
+
+void json_blockStartInt(Serial *serial, int label){
+	serial->put_c('"');
+	put_int(serial, label);
 	serial->put_s("\":{");
 }
 
@@ -73,7 +79,7 @@ void json_blockEnd(Serial *serial, int more){
 	if (more) serial->put_c(',');
 }
 
-void json_arrayStart(Serial *serial, const char * name, int more){
+void json_arrayStart(Serial *serial, const char * name){
 	serial->put_c('"');
 	serial->put_s(name);
 	serial->put_s("\":[");

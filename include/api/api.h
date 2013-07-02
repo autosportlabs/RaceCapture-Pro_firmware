@@ -39,15 +39,16 @@ typedef struct _api_t
 
 void initApi();
 
-void json_int(Serial *serial, const char *name, unsigned int value, int more);
+void json_int(Serial *serial, const char *name, int value, int more);
 void json_uint(Serial *serial, const char *name, unsigned int value, int more);
 void json_string(Serial *serial, const char *name, const char *value, int more);
 void json_float(Serial *serial, const char *name, float value, int precision, int more);
-void json_blockStart(Serial *serial, const char * name);
+void json_blockStart(Serial *serial, const char * label);
+void json_blockStartInt(Serial *serial, int label);
 void json_messageStart(Serial *serial, int messageId);
 void json_asyncMessageStart(Serial *serial);
 void json_blockEnd(Serial *serial, int more);
-void json_arrayStart(Serial *serial, const char * name, int more);
+void json_arrayStart(Serial *serial, const char * name);
 void json_arrayEnd(Serial *serial, int more);
 void json_sendResult(Serial *serial, const char *messageName, int resultCode);
 
