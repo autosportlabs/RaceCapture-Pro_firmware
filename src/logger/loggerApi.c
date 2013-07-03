@@ -492,11 +492,43 @@ static void getGpioConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** c
 	*channelCfg = &c->cfg;
 }
 
+
 static const jsmntok_t * setGpioExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
 	GPIOConfig *gpioCfg = (GPIOConfig *)cfg;
 
 	if (NAME_EQU("mode", name)) gpioCfg->mode = filterGpioMode(modp_atoi(value));
 	return valueTok + 1;
+}
+
+static void sendGpioConfig(Serial *serial, size_t startIndex, size_t endIndex){
+	json_messageStart(serial, NULL_MESSAGE_ID);
+	json_blockStart(serial, "getGpioCfg");
+	for (size_t i = startIndex; i <= endIndex; i++){
+		GPIOConfig *cfg = &(getWorkingLoggerConfig()->GPIOConfigs[i]);
+		json_blockStartInt(serial, i);
+		json_channelConfig(serial, &(cfg->cfg));
+		json_uint(serial, "mode", cfg->mode, 0);
+		json_blockEnd(serial, i != endIndex);
+	}
+	json_blockEnd(serial, 0);
+	json_blockEnd(serial, 0);
+}
+
+
+int api_getGpioConfig(Serial *serial, const jsmntok_t *json){
+	size_t startIndex = 0;
+	size_t endIndex = 0;
+	if (json->type == JSMN_PRIMITIVE){
+		if (jsmn_isNull(json)){
+			startIndex = 0;
+			endIndex = CONFIG_GPIO_CHANNELS - 1;
+		}
+		else{
+			jsmn_trimData(json);
+			startIndex = endIndex = modp_atoi(json->data);
+		}
+	}
+	sendGpioConfig(serial, startIndex, endIndex);
 }
 
 int api_setGpioConfig(Serial *serial, const jsmntok_t *json){

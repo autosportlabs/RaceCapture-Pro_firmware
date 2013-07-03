@@ -168,25 +168,25 @@ void LoggerApiTest::testGetMultipleAnalogCfg(){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
 
-		ADCConfig *accelCfg = &c->ADCConfigs[i];
+		ADCConfig *analogCfg = &c->ADCConfigs[i];
 
 		std::ostringstream theLabel;
 		theLabel << "lab_" << i;
-		strcpy(accelCfg->cfg.label, theLabel.str().c_str());
+		strcpy(analogCfg->cfg.label, theLabel.str().c_str());
 		theLabel.str("");
 		theLabel << "ut_" << i;
-		strcpy(accelCfg->cfg.units, theLabel.str().c_str());
-		accelCfg->cfg.sampleRate = 1 + i;
-		accelCfg->linearScaling = 3.21 + i;
-		accelCfg->loggingPrecision = i;
-		accelCfg->scalingMode = i;
+		strcpy(analogCfg->cfg.units, theLabel.str().c_str());
+		analogCfg->cfg.sampleRate = 1 + i;
+		analogCfg->linearScaling = 3.21 + i;
+		analogCfg->loggingPrecision = i;
+		analogCfg->scalingMode = i;
 
 		for (int x = 0; x < ANALOG_SCALING_BINS; x++){
-			accelCfg->scalingMap.rawValues[x] = i * x;
+			analogCfg->scalingMap.rawValues[x] = i * x;
 		}
 
 		for (int x = 0; x < ANALOG_SCALING_BINS; x++){
-			accelCfg->scalingMap.scaledValues[x] = float(i * x) + 0.1F;
+			analogCfg->scalingMap.scaledValues[x] = float(i * x) + 0.1F;
 		}
 	}
 
@@ -227,23 +227,23 @@ void LoggerApiTest::testGetMultipleAnalogCfg(){
 void LoggerApiTest::testGetAnalogConfigFile(string filename, int index){
 
 	LoggerConfig *c = getWorkingLoggerConfig();
-	ADCConfig *accelCfg = &c->ADCConfigs[index];
+	ADCConfig *analogCfg = &c->ADCConfigs[index];
 
-	strcpy(accelCfg->cfg.label, "aLabel");
-	strcpy(accelCfg->cfg.units, "aUnits");
-	accelCfg->cfg.sampleRate = 100;
-	accelCfg->linearScaling = 3.21;
-	accelCfg->loggingPrecision = 5;
-	accelCfg->scalingMode = 2;
+	strcpy(analogCfg->cfg.label, "aLabel");
+	strcpy(analogCfg->cfg.units, "aUnits");
+	analogCfg->cfg.sampleRate = 100;
+	analogCfg->linearScaling = 3.21;
+	analogCfg->loggingPrecision = 5;
+	analogCfg->scalingMode = 2;
 
 
 	int i = 0;
 	for (int x = 0; x < ANALOG_SCALING_BINS; i+=10,x++){
-		accelCfg->scalingMap.rawValues[x] = i;
+		analogCfg->scalingMap.rawValues[x] = i;
 	}
 	float iv = 0;
 	for (int x = 0; x < ANALOG_SCALING_BINS; iv+=1.1,x++){
-		accelCfg->scalingMap.scaledValues[x] = iv;
+		analogCfg->scalingMap.scaledValues[x] = iv;
 	}
 	char * response = processApiGeneric(filename);
 
@@ -325,7 +325,7 @@ void LoggerApiTest::testSetAnalogCfg()
 	testSetAnalogConfigFile("setAnalogCfg3.json");
 }
 
-void LoggerApiTest::testAccelConfigFile(string filename){
+void LoggerApiTest::testSetAccelConfigFile(string filename){
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
@@ -347,7 +347,7 @@ void LoggerApiTest::testAccelConfigFile(string filename){
 }
 
 void LoggerApiTest::testSetAccelCfg(){
-	testAccelConfigFile("setAccelCfg1.json");
+	testSetAccelConfigFile("setAccelCfg1.json");
 }
 
 void LoggerApiTest::testSetCellConfigFile(string filename){
@@ -537,6 +537,34 @@ void LoggerApiTest::testSetPwmConfigFile(string filename){
 
 void LoggerApiTest::testSetPwmCfg(){
 	testSetPwmConfigFile("setPwmCfg1.json");
+}
+
+void LoggerApiTest::testGetGpioConfigFile(string filename, int index){
+	LoggerConfig *c = getWorkingLoggerConfig();
+	GPIOConfig *gpioCfg = &c->GPIOConfigs[index];
+
+	strcpy(gpioCfg->cfg.label, "gLabel");
+	strcpy(gpioCfg->cfg.units, "gUnits");
+	gpioCfg->cfg.sampleRate = 100;
+	gpioCfg->mode = 1;
+
+	char * response = processApiGeneric(filename);
+
+	Object json;
+	stringToJson(response, json);
+
+	std::ostringstream stringStream;
+	stringStream << index;
+	Object &analogJson = json["getGpioCfg"][stringStream.str()];
+
+	CPPUNIT_ASSERT_EQUAL(string("gLabel"), string((String)analogJson["nm"]));
+	CPPUNIT_ASSERT_EQUAL(string("gUnits"), string((String)analogJson["ut"]));
+	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)analogJson["sr"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["mode"]);
+}
+
+void LoggerApiTest::testGetGpioCfg(){
+	testGetGpioConfigFile("getGpioCfg1.json", 0);
 }
 
 void LoggerApiTest::testSetGpioConfigFile(string filename){

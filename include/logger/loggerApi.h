@@ -31,6 +31,7 @@
 {"getConnCfg", api_getConnectivityConfig}, \
 {"getPwmCfg", api_getPwmConfig}, \
 {"setPwmCfg", api_setPwmConfig}, \
+{"getGpioCfg", api_getGpioConfig}, \
 {"setGpioCfg", api_setGpioConfig}, \
 {"setTimerCfg", api_setTimerConfig}, \
 {"calAccel", api_calibrateAccel}, \
@@ -54,6 +55,7 @@ int api_setAnalogConfig(Serial *serial, const jsmntok_t *json);
 int api_setAccelConfig(Serial *serial, const jsmntok_t *json);
 int api_getPwmConfig(Serial *serial, const jsmntok_t *json);
 int api_setPwmConfig(Serial *serial, const jsmntok_t *json);
+int api_getGpioConfig(Serial *serial, const jsmntok_t *json);
 int api_setGpioConfig(Serial *serial, const jsmntok_t *json);
 int api_setTimerConfig(Serial *serial, const jsmntok_t *json);
 int api_calibrateAccel(Serial *serial, const jsmntok_t *json);
