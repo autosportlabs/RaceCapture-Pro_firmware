@@ -24,6 +24,15 @@
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( LoggerApiTest );
 
+char * LoggerApiTest::processApiGeneric(string filename){
+	Serial *serial = getMockSerial();
+	string json = readFile(filename);
+	mock_resetTxBuffer();
+	process_api(getMockSerial(),(char *)json.c_str(), json.size());
+	char *txBuffer = mock_getTxBuffer();
+	return txBuffer;
+}
+
 
 void LoggerApiTest::stringToJson(string buffer, Object &json){
 	std::stringstream stream;
@@ -36,15 +45,6 @@ void LoggerApiTest::stringToJson(string buffer, Object &json){
 	catch (json::Exception &e){
 			throw ("Could not parse json string");
 	}
-}
-
-char * LoggerApiTest::processApiGeneric(string filename){
-	Serial *serial = getMockSerial();
-	string json = readFile(filename);
-	mock_resetTxBuffer();
-	process_api(getMockSerial(),(char *)json.c_str(), json.size());
-	char *txBuffer = mock_getTxBuffer();
-	return txBuffer;
 }
 
 void LoggerApiTest::assertGenericResponse(char *buffer, const char * messageName, int responseCode){
@@ -194,8 +194,6 @@ void LoggerApiTest::testGetMultipleAnalogCfg(){
 
 	Object json;
 	stringToJson(response, json);
-
-	printf("%s", response);
 
 	for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
 		std::ostringstream stringStream;
@@ -474,6 +472,45 @@ void LoggerApiTest::testGetConnectivityCfg(){
 	CPPUNIT_ASSERT_EQUAL(0, sdMode);
 	CPPUNIT_ASSERT_EQUAL(2, connMode);
 }
+
+void LoggerApiTest::testGetPwmConfigFile(string filename, int index){
+	LoggerConfig *c = getWorkingLoggerConfig();
+	PWMConfig *accelCfg = &c->PWMConfigs[index];
+
+	strcpy(accelCfg->cfg.label, "pLabel");
+	strcpy(accelCfg->cfg.units, "pUnits");
+	accelCfg->cfg.sampleRate = 100;
+	accelCfg->loggingPrecision = 2;
+	accelCfg->outputMode = 3;
+	accelCfg->loggingMode = 1;
+	accelCfg->startupDutyCycle = 55;
+	accelCfg->startupPeriod = 321;
+	accelCfg->voltageScaling = 1.23;
+
+	char * response = processApiGeneric(filename);
+
+	Object json;
+	stringToJson(response, json);
+
+	std::ostringstream stringStream;
+	stringStream << index;
+	Object &analogJson = json["getPwmCfg"][stringStream.str()];
+
+	CPPUNIT_ASSERT_EQUAL(string("pLabel"), string((String)analogJson["nm"]));
+	CPPUNIT_ASSERT_EQUAL(string("pUnits"), string((String)analogJson["ut"]));
+	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)analogJson["sr"]);
+	CPPUNIT_ASSERT_EQUAL(2, (int)(Number)analogJson["logPrec"]);
+	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)analogJson["outMode"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["logMode"]);
+	CPPUNIT_ASSERT_EQUAL(55, (int)(Number)analogJson["stDutyCyc"]);
+	CPPUNIT_ASSERT_EQUAL(321, (int)(Number)analogJson["stPeriod"]);
+	CPPUNIT_ASSERT_EQUAL(1.23F, (float)(Number)analogJson["vScal"]);
+}
+
+void LoggerApiTest::testGetPwmCfg(){
+	testGetPwmConfigFile("getPwmCfg1.json", 0);
+}
+
 
 void LoggerApiTest::testSetPwmConfigFile(string filename){
 	Serial *serial = getMockSerial();

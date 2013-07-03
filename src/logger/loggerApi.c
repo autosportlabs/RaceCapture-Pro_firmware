@@ -426,6 +426,43 @@ int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS_NO_RETURN;
 }
 
+static void sendPwmConfig(Serial *serial, size_t startIndex, size_t endIndex){
+
+	json_messageStart(serial, NULL_MESSAGE_ID);
+	json_blockStart(serial, "getPwmCfg");
+	for (size_t i = startIndex; i <= endIndex; i++){
+		PWMConfig *cfg = &(getWorkingLoggerConfig()->PWMConfigs[i]);
+		json_blockStartInt(serial, i);
+		json_channelConfig(serial, &(cfg->cfg));
+		json_uint(serial, "logPrec", cfg->loggingPrecision, 1);
+		json_uint(serial, "outMode", cfg->outputMode, 1);
+		json_uint(serial, "logMode", cfg->loggingMode, 1);
+		json_uint(serial, "stDutyCyc", cfg->startupDutyCycle, 1);
+		json_uint(serial, "stPeriod", cfg->startupPeriod, 1);
+		json_float(serial, "vScal", cfg->voltageScaling, DEFAULT_PWM_LOGGING_PRECISION, 0);
+		json_blockEnd(serial, i != endIndex); //index
+	}
+	json_blockEnd(serial, 0);
+	json_blockEnd(serial, 0);
+}
+
+
+int api_getPwmConfig(Serial *serial, const jsmntok_t *json){
+	size_t startIndex = 0;
+	size_t endIndex = 0;
+	if (json->type == JSMN_PRIMITIVE){
+		if (jsmn_isNull(json)){
+			startIndex = 0;
+			endIndex = CONFIG_PWM_CHANNELS - 1;
+		}
+		else{
+			jsmn_trimData(json);
+			startIndex = endIndex = modp_atoi(json->data);
+		}
+	}
+	sendPwmConfig(serial, startIndex, endIndex);
+}
+
 static void getPwmConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
 	PWMConfig *c =&(getWorkingLoggerConfig()->PWMConfigs[channelId]);
 	*baseCfg = c;
