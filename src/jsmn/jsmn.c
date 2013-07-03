@@ -1,5 +1,5 @@
 #include <stdlib.h>
-
+#include "mod_string.h"
 #include "jsmn.h"
 
 /**
@@ -258,4 +258,8 @@ void jsmn_init(jsmn_parser *parser) {
 
 void jsmn_trimData(const jsmntok_t *tok){
 	tok->data[tok->end - tok->start] = '\0';
+}
+
+int jsmn_isNull(const jsmntok_t *tok){
+	return strncmp("null", tok->data, 3) == 0;
 }

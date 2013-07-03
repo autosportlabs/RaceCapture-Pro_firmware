@@ -260,51 +260,55 @@ static void json_channelConfig(Serial *serial, ChannelConfig *cfg){
 	json_int(serial, "sr", cfg->sampleRate, 1);
 }
 
-static void sendAnalogConfig(Serial *serial, int index){
-	ADCConfig *cfg = &(getWorkingLoggerConfig()->ADCConfigs[index]);
-	json_blockStartInt(serial, index);
-	json_channelConfig(serial, &(cfg->cfg));
-	json_int(serial, "scalMod", cfg->scalingMode, 1);
+static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex){
 
-	json_int(serial, "prec", cfg->loggingPrecision, 1);
-	json_float(serial, "linScal", cfg->linearScaling, ANALOG_SCALING_PRECISION, 1);
+	json_messageStart(serial, NULL_MESSAGE_ID);
+	json_blockStart(serial, "getAnalogCfg");
+	for (size_t i = startIndex; i <= endIndex; i++){
 
-	json_blockStart(serial, "map");
-	json_arrayStart(serial, "raw");
+		ADCConfig *cfg = &(getWorkingLoggerConfig()->ADCConfigs[i]);
+		json_blockStartInt(serial, i);
+		json_channelConfig(serial, &(cfg->cfg));
+		json_int(serial, "scalMod", cfg->scalingMode, 1);
 
-	for (size_t i = 0; i < ANALOG_SCALING_BINS; i++){
-		put_int(serial,  cfg->scalingMap.rawValues[i]);
-		if (i < ANALOG_SCALING_BINS - 1) serial->put_c(',');
+		json_int(serial, "prec", cfg->loggingPrecision, 1);
+		json_float(serial, "linScal", cfg->linearScaling, ANALOG_SCALING_PRECISION, 1);
+
+		json_blockStart(serial, "map");
+		json_arrayStart(serial, "raw");
+
+		for (size_t b = 0; b < ANALOG_SCALING_BINS; b++){
+			put_int(serial,  cfg->scalingMap.rawValues[b]);
+			if (b < ANALOG_SCALING_BINS - 1) serial->put_c(',');
+		}
+		json_arrayEnd(serial, 1);
+		json_arrayStart(serial, "scal");
+		for (size_t b = 0; b < ANALOG_SCALING_BINS; b++){
+			put_float(serial, cfg->scalingMap.scaledValues[b], ANALOG_SCALING_PRECISION);
+			if (b < ANALOG_SCALING_BINS - 1) serial->put_c(',');
+		}
+		json_arrayEnd(serial, 0);
+		json_blockEnd(serial, 0); //map
+		json_blockEnd(serial, i != endIndex); //index
 	}
-	json_arrayEnd(serial, 1);
-	json_arrayStart(serial, "scal");
-	for (size_t i = 0; i < ANALOG_SCALING_BINS; i++){
-		put_float(serial, cfg->scalingMap.scaledValues[i], ANALOG_SCALING_PRECISION);
-		if (i < ANALOG_SCALING_BINS - 1) serial->put_c(',');
-	}
-	json_arrayEnd(serial, 0);
-	json_blockEnd(serial, 0); //map
-	json_blockEnd(serial, 0); //index
+	json_blockEnd(serial, 0);
+	json_blockEnd(serial, 0);
 }
 
 int api_getAnalogConfig(Serial *serial, const jsmntok_t * json){
-	size_t index = 0;
+	size_t startIndex = 0;
+	size_t endIndex = 0;
 	if (json->type == JSMN_PRIMITIVE){
-		jsmn_trimData(json);
-		index = modp_atoi(json->data);
+		if (jsmn_isNull(json)){
+			startIndex = 0;
+			endIndex = CONFIG_ADC_CHANNELS - 1;
+		}
+		else{
+			jsmn_trimData(json);
+			startIndex = endIndex = modp_atoi(json->data);
+		}
 	}
-	if (index >= 0 && index < CONFIG_ADC_CHANNELS){
-		json_messageStart(serial,NULL_MESSAGE_ID);
-		json_blockStart(serial, "getAnalogCfg");
-		sendAnalogConfig(serial, index);
-		json_blockEnd(serial, 0);
-		json_blockEnd(serial, 0);
-		return API_SUCCESS_NO_RETURN;
-	}
-	else{
-		return API_ERROR_PARAMETER;
-	}
-
+	sendAnalogConfig(serial, startIndex, endIndex);
 }
 
 static const jsmntok_t * setAccelExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){

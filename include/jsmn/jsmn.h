@@ -65,6 +65,14 @@ void jsmn_init(jsmn_parser *parser);
 jsmnerr_t jsmn_parse(jsmn_parser *parser, const char *js,
 		jsmntok_t *tokens, unsigned int num_tokens);
 
+/**
+ * null terminate the string at the current token for convenience
+ */
 void jsmn_trimData(const jsmntok_t *tok);
+
+/*
+ * returns 1 if the token value is a JSON null, 0 if not
+ */
+int jsmn_isNull(const jsmntok_t *tok);
 
 #endif /* __JSMN_H_ */
