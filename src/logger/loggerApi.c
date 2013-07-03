@@ -558,6 +558,40 @@ static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok, const 
 	return valueTok + 1;
 }
 
+static void sendTimerConfig(Serial *serial, size_t startIndex, size_t endIndex){
+	json_messageStart(serial, NULL_MESSAGE_ID);
+	json_blockStart(serial, "getTimerCfg");
+	for (size_t i = startIndex; i <= endIndex; i++){
+		TimerConfig *cfg = &(getWorkingLoggerConfig()->TimerConfigs[i]);
+		json_blockStartInt(serial, i);
+		json_channelConfig(serial, &(cfg->cfg));
+		json_uint(serial, "prec", cfg->loggingPrecision, 1);
+		json_uint(serial, "sTimer", cfg->slowTimerEnabled, 1);
+		json_uint(serial, "mode", cfg->mode, 1);
+		json_uint(serial, "ppRev", cfg->pulsePerRevolution, 1);
+		json_uint(serial, "timDiv", cfg->timerDivider, 0);
+		json_blockEnd(serial, i != endIndex);
+	}
+	json_blockEnd(serial, 0);
+	json_blockEnd(serial, 0);
+}
+
+int api_getTimerConfig(Serial *serial, const jsmntok_t *json){
+	size_t startIndex = 0;
+	size_t endIndex = 0;
+	if (json->type == JSMN_PRIMITIVE){
+		if (jsmn_isNull(json)){
+			startIndex = 0;
+			endIndex = CONFIG_TIMER_CHANNELS - 1;
+		}
+		else{
+			jsmn_trimData(json);
+			startIndex = endIndex = modp_atoi(json->data);
+		}
+	}
+	sendTimerConfig(serial, startIndex, endIndex);
+}
+
 int api_setTimerConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getTimerConfigs, setTimerExtendedField);
 	return API_SUCCESS;

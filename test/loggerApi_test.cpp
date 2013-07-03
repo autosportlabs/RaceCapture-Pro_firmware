@@ -590,6 +590,42 @@ void LoggerApiTest::testSetGpioCfg(){
 	testSetGpioConfigFile("setGpioCfg1.json");
 }
 
+void LoggerApiTest::testGetTimerConfigFile(string filename, int index){
+	LoggerConfig *c = getWorkingLoggerConfig();
+	TimerConfig *timerCfg = &c->TimerConfigs[index];
+
+	strcpy(timerCfg->cfg.label, "gLabel");
+	strcpy(timerCfg->cfg.units, "gUnits");
+	timerCfg->cfg.sampleRate = 100;
+	timerCfg->loggingPrecision = 3;
+	timerCfg->slowTimerEnabled = 1;
+	timerCfg->mode = 2;
+	timerCfg->pulsePerRevolution = 3;
+	timerCfg->timerDivider = 30000;
+
+	char * response = processApiGeneric(filename);
+
+	Object json;
+	stringToJson(response, json);
+
+	std::ostringstream stringStream;
+	stringStream << index;
+	Object &analogJson = json["getTimerCfg"][stringStream.str()];
+
+	CPPUNIT_ASSERT_EQUAL(string("gLabel"), string((String)analogJson["nm"]));
+	CPPUNIT_ASSERT_EQUAL(string("gUnits"), string((String)analogJson["ut"]));
+	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)analogJson["sr"]);
+	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)analogJson["prec"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["sTimer"]);
+	CPPUNIT_ASSERT_EQUAL(2, (int)(Number)analogJson["mode"]);
+	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)analogJson["ppRev"]);
+	CPPUNIT_ASSERT_EQUAL(30000, (int)(Number)analogJson["timDiv"]);
+}
+
+void LoggerApiTest::testGetTimerCfg(){
+	testGetTimerConfigFile("getTimerCfg1.json", 1);
+}
+
 void LoggerApiTest::testSetTimerConfigFile(string filename){
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);

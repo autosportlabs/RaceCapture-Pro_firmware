@@ -37,6 +37,7 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST( testSetPwmCfg );
   CPPUNIT_TEST( testGetGpioCfg );
   CPPUNIT_TEST( testSetGpioCfg );
+  CPPUNIT_TEST( testGetTimerCfg );
   CPPUNIT_TEST( testSetTimerCfg );
   CPPUNIT_TEST( testSampleData );
   CPPUNIT_TEST( testLogStartStop );
@@ -72,6 +73,7 @@ public:
   void testSetPwmCfg();
   void testGetGpioCfg();
   void testSetGpioCfg();
+  void testGetTimerCfg();
   void testSetTimerCfg();
   void testCalibrateAccel();
   void testFlashConfig();
@@ -89,6 +91,7 @@ private:
   void testSetPwmConfigFile(string filename);
   void testGetGpioConfigFile(string filename, int index);
   void testSetGpioConfigFile(string filename);
+  void testGetTimerConfigFile(string filename, int index);
   void testSetTimerConfigFile(string filename);
   void testCalibrateAccelFile(string filename);
   void testFlashConfigFile(string filename);
