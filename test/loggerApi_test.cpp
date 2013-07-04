@@ -325,6 +325,39 @@ void LoggerApiTest::testSetAnalogCfg()
 	testSetAnalogConfigFile("setAnalogCfg3.json");
 }
 
+void LoggerApiTest::testGetAccelConfigFile(string filename, int index){
+	LoggerConfig *c = getWorkingLoggerConfig();
+	AccelConfig *accelCfg = &c->AccelConfigs[index];
+
+	strcpy(accelCfg->cfg.label, "pLabel");
+	strcpy(accelCfg->cfg.units, "pUnits");
+	accelCfg->cfg.sampleRate = 100;
+	accelCfg->mode = 1;
+	accelCfg->accelChannel = 3;
+	accelCfg->zeroValue = 1234;
+
+	char * response = processApiGeneric(filename);
+
+	Object json;
+	stringToJson(response, json);
+
+	std::ostringstream stringStream;
+	stringStream << index;
+	Object &analogJson = json["getAccelCfg"][stringStream.str()];
+
+	CPPUNIT_ASSERT_EQUAL(string("pLabel"), string((String)analogJson["nm"]));
+	CPPUNIT_ASSERT_EQUAL(string("pUnits"), string((String)analogJson["ut"]));
+	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)analogJson["sr"]);
+
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["mode"]);
+	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)analogJson["chan"]);
+	CPPUNIT_ASSERT_EQUAL(1234, (int)(Number)analogJson["zeroVal"]);
+}
+
+void LoggerApiTest::testGetAccelCfg(){
+	testGetAccelConfigFile("getAccelCfg1.json", 1);
+}
+
 void LoggerApiTest::testSetAccelConfigFile(string filename){
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);

@@ -20,10 +20,10 @@
 #define LOGGER_API \
 {"s", api_sampleData}, \
 {"log", api_enableLogging}, \
-{"getCellCfg", api_getCellConfig}, \
-{"setCellCfg", api_setCellConfig}, \
 {"setAnalogCfg", api_setAnalogConfig}, \
 {"getAnalogCfg", api_getAnalogConfig}, \
+{"calAccel", api_calibrateAccel}, \
+{"getAccelCfg", api_getAccelConfig}, \
 {"setAccelCfg", api_setAccelConfig}, \
 {"getBtCfg", api_getBluetoothConfig}, \
 {"setBtCfg", api_setBluetoothConfig}, \
@@ -35,7 +35,8 @@
 {"setGpioCfg", api_setGpioConfig}, \
 {"getTimerCfg", api_getTimerConfig}, \
 {"setTimerCfg", api_setTimerConfig}, \
-{"calAccel", api_calibrateAccel}, \
+{"getCellCfg", api_getCellConfig}, \
+{"setCellCfg", api_setCellConfig}, \
 {"flashCfg", api_flashConfig}
 
 
@@ -53,6 +54,7 @@ int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json);
 int api_setConnectivityConfig(Serial *serial, const jsmntok_t *json);
 int api_getAnalogConfig(Serial *serial, const jsmntok_t *json);
 int api_setAnalogConfig(Serial *serial, const jsmntok_t *json);
+int api_getAccelConfig(Serial *serial, const jsmntok_t *json);
 int api_setAccelConfig(Serial *serial, const jsmntok_t *json);
 int api_getPwmConfig(Serial *serial, const jsmntok_t *json);
 int api_setPwmConfig(Serial *serial, const jsmntok_t *json);

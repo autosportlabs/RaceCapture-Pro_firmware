@@ -32,6 +32,7 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST( testGetAnalogCfg );
   CPPUNIT_TEST( testGetMultipleAnalogCfg );
   CPPUNIT_TEST( testSetAnalogCfg );
+  CPPUNIT_TEST( testGetAccelCfg );
   CPPUNIT_TEST( testSetAccelCfg );
   CPPUNIT_TEST( testGetPwmCfg );
   CPPUNIT_TEST( testSetPwmCfg );
@@ -68,6 +69,7 @@ public:
   void testGetAnalogCfg();
   void testGetMultipleAnalogCfg();
   void testSetAnalogCfg();
+  void testGetAccelCfg();
   void testSetAccelCfg();
   void testGetPwmCfg();
   void testSetPwmCfg();
@@ -84,6 +86,7 @@ private:
   void testGetAnalogConfigFile(string filename, int index);
   void testSetAnalogConfigFile(string filename);
   void testSetAccelConfigFile(string filename);
+  void testGetAccelConfigFile(string filename, int index);
   void testSetCellConfigFile(string filename);
   void testSetBtConfigFile(string filename);
   void testSetConnectivityCfgFile(string filename);

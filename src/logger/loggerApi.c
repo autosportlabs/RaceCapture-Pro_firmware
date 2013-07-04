@@ -331,6 +331,39 @@ int api_setAccelConfig(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS;
 }
 
+static void sendAccelConfig(Serial *serial, size_t startIndex, size_t endIndex){
+	json_messageStart(serial, NULL_MESSAGE_ID);
+	json_blockStart(serial, "getAccelCfg");
+	for (size_t i = startIndex; i <= endIndex; i++){
+		AccelConfig *cfg = &(getWorkingLoggerConfig()->AccelConfigs[i]);
+		json_blockStartInt(serial, i);
+		json_channelConfig(serial, &(cfg->cfg));
+		json_uint(serial, "mode", cfg->mode, 1);
+		json_uint(serial, "chan", cfg->accelChannel, 1);
+		json_uint(serial, "zeroVal", cfg->zeroValue, 0);
+		json_blockEnd(serial, i != endIndex); //index
+	}
+	json_blockEnd(serial, 0);
+	json_blockEnd(serial, 0);
+}
+
+int api_getAccelConfig(Serial *serial, const jsmntok_t *json){
+	size_t startIndex = 0;
+	size_t endIndex = 0;
+	if (json->type == JSMN_PRIMITIVE){
+		if (jsmn_isNull(json)){
+			startIndex = 0;
+			endIndex = CONFIG_ACCEL_CHANNELS - 1;
+		}
+		else{
+			jsmn_trimData(json);
+			startIndex = endIndex = modp_atoi(json->data);
+		}
+	}
+	sendAccelConfig(serial, startIndex, endIndex);
+}
+
+
 static void setConfigGeneric(Serial *serial, const jsmntok_t * json, void *cfg, setExtField_func setExtField){
 	int size = json->size;
 	if (json->type == JSMN_OBJECT && json->size % 2 == 0){
