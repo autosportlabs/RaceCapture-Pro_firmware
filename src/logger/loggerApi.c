@@ -662,11 +662,16 @@ int api_setTimerConfig(Serial *serial, const jsmntok_t *json){
 int api_getGpsConfig(Serial *serial, const jsmntok_t *json){
 
 	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
+
+	json_messageStart(serial, NULL_MESSAGE_ID);
+	json_blockStart(serial, "getTimerCfg");
 	json_channelConfig(serial, &gpsCfg->latitudeCfg, 1);
 	json_channelConfig(serial, &gpsCfg->longitudeCfg, 1);
 	json_channelConfig(serial, &gpsCfg->speedCfg, 1);
 	json_channelConfig(serial, &gpsCfg->satellitesCfg, 1);
 	json_channelConfig(serial, &gpsCfg->timeCfg, 0);
+	json_blockEnd(serial, 0);
+	json_blockEnd(serial, 0);
 	return API_SUCCESS;
 }
 

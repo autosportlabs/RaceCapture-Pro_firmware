@@ -745,21 +745,37 @@ void LoggerApiTest::testFlashConfig(){
 }
 
 void LoggerApiTest::testSetGpsConfigFile(string filename){
+	processApiGeneric(filename);
+	char *txBuffer = mock_getTxBuffer();
+
 	LoggerConfig *c = getWorkingLoggerConfig();
 	GPSConfig *gpsCfg = &c->GPSConfigs;
 
-	processApiGeneric(filename);
-
-
-	char *txBuffer = mock_getTxBuffer();
-
 	assertGenericResponse(txBuffer, "setGpsCfg", 1);
 
+	CPPUNIT_ASSERT_EQUAL(string("latNm"), string(gpsCfg->latitudeCfg.label));
+	CPPUNIT_ASSERT_EQUAL(string("latUt"), string(gpsCfg->latitudeCfg.units));
+	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(gpsCfg->latitudeCfg.sampleRate));
 
+	CPPUNIT_ASSERT_EQUAL(string("longNm"), string(gpsCfg->longitudeCfg.label));
+	CPPUNIT_ASSERT_EQUAL(string("longUt"), string(gpsCfg->longitudeCfg.units));
+	CPPUNIT_ASSERT_EQUAL(20, decodeSampleRate(gpsCfg->longitudeCfg.sampleRate));
+
+	CPPUNIT_ASSERT_EQUAL(string("speedNm"), string(gpsCfg->speedCfg.label));
+	CPPUNIT_ASSERT_EQUAL(string("speedUt"), string(gpsCfg->speedCfg.units));
+	CPPUNIT_ASSERT_EQUAL(30, decodeSampleRate(gpsCfg->speedCfg.sampleRate));
+
+	CPPUNIT_ASSERT_EQUAL(string("timeNm"), string(gpsCfg->timeCfg.label));
+	CPPUNIT_ASSERT_EQUAL(string("timeUt"), string(gpsCfg->timeCfg.units));
+	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(gpsCfg->timeCfg.sampleRate));
+
+	CPPUNIT_ASSERT_EQUAL(string("satsNm"), string(gpsCfg->satellitesCfg.label));
+	CPPUNIT_ASSERT_EQUAL(string("satsUt"), string(gpsCfg->satellitesCfg.units));
+	CPPUNIT_ASSERT_EQUAL(100, decodeSampleRate(gpsCfg->satellitesCfg.sampleRate));
 }
 
 void LoggerApiTest::testSetGpsCfg(){
-	testSetGpioConfigFile("setGpsCfg1.json");
+	testSetGpsConfigFile("setGpsCfg1.json");
 }
 
 void LoggerApiTest::testGetGpsConfigFile(string filename){
