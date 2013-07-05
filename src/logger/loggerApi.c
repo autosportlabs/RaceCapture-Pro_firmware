@@ -143,7 +143,7 @@ void writeSampleRecord(Serial *serial, SampleRecord *sr, int sendMeta){
 	json_blockEnd(serial, 0);
 }
 
-static void setChannelConfig(Serial *serial, const jsmntok_t *cfg, ChannelConfig *channelCfg, setExtField_func setExtField, void *extCfg){
+static const jsmntok_t * setChannelConfig(Serial *serial, const jsmntok_t *cfg, ChannelConfig *channelCfg, setExtField_func setExtField, void *extCfg){
 	if (cfg->type == JSMN_OBJECT && cfg->size % 2 == 0){
 		int size = cfg->size;
 		cfg++;
@@ -162,10 +162,10 @@ static void setChannelConfig(Serial *serial, const jsmntok_t *cfg, ChannelConfig
 			if (NAME_EQU("nm",name)) setLabelGeneric(channelCfg->label, value);
 			else if (NAME_EQU("ut", name)) setLabelGeneric(channelCfg->units, value);
 			else if (NAME_EQU("sr", name)) channelCfg->sampleRate = encodeSampleRate(modp_atoi(value));
-
-			else cfg = setExtField(valueTok, name, value, extCfg);
+			else if (setExtField != NULL) cfg = setExtField(valueTok, name, value, extCfg);
 		}
 	}
+	return cfg;
 }
 
 static void setMultiChannelConfigGeneric(Serial *serial, const jsmntok_t * json, getConfigs_func getConfigs, setExtField_func setExtFieldFunc){
@@ -254,10 +254,10 @@ int api_setAnalogConfig(Serial *serial, const jsmntok_t * json){
 	return API_SUCCESS;
 }
 
-static void json_channelConfig(Serial *serial, ChannelConfig *cfg){
+static void json_channelConfig(Serial *serial, ChannelConfig *cfg, int more){
 	json_string(serial, "nm", cfg->label, 1);
 	json_string(serial, "ut", cfg->units, 1);
-	json_int(serial, "sr", cfg->sampleRate, 1);
+	json_int(serial, "sr", cfg->sampleRate, more);
 }
 
 static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex){
@@ -268,7 +268,7 @@ static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
 
 		ADCConfig *cfg = &(getWorkingLoggerConfig()->ADCConfigs[i]);
 		json_blockStartInt(serial, i);
-		json_channelConfig(serial, &(cfg->cfg));
+		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_int(serial, "scalMod", cfg->scalingMode, 1);
 
 		json_int(serial, "prec", cfg->loggingPrecision, 1);
@@ -308,7 +308,13 @@ int api_getAnalogConfig(Serial *serial, const jsmntok_t * json){
 			startIndex = endIndex = modp_atoi(json->data);
 		}
 	}
-	sendAnalogConfig(serial, startIndex, endIndex);
+	if (startIndex >= 0 && startIndex <= CONFIG_ADC_CHANNELS){
+		sendAnalogConfig(serial, startIndex, endIndex);
+		return API_SUCCESS_NO_RETURN;
+	}
+	else{
+		return API_ERROR_PARAMETER;
+	}
 }
 
 static const jsmntok_t * setAccelExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
@@ -337,7 +343,7 @@ static void sendAccelConfig(Serial *serial, size_t startIndex, size_t endIndex){
 	for (size_t i = startIndex; i <= endIndex; i++){
 		AccelConfig *cfg = &(getWorkingLoggerConfig()->AccelConfigs[i]);
 		json_blockStartInt(serial, i);
-		json_channelConfig(serial, &(cfg->cfg));
+		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_uint(serial, "mode", cfg->mode, 1);
 		json_uint(serial, "chan", cfg->accelChannel, 1);
 		json_uint(serial, "zeroVal", cfg->zeroValue, 0);
@@ -360,7 +366,13 @@ int api_getAccelConfig(Serial *serial, const jsmntok_t *json){
 			startIndex = endIndex = modp_atoi(json->data);
 		}
 	}
-	sendAccelConfig(serial, startIndex, endIndex);
+	if (startIndex >= 0 && startIndex <= CONFIG_ACCEL_CHANNELS){
+		sendAccelConfig(serial, startIndex, endIndex);
+		return API_SUCCESS_NO_RETURN;
+	}
+	else{
+		return API_ERROR_PARAMETER;
+	}
 }
 
 
@@ -466,7 +478,7 @@ static void sendPwmConfig(Serial *serial, size_t startIndex, size_t endIndex){
 	for (size_t i = startIndex; i <= endIndex; i++){
 		PWMConfig *cfg = &(getWorkingLoggerConfig()->PWMConfigs[i]);
 		json_blockStartInt(serial, i);
-		json_channelConfig(serial, &(cfg->cfg));
+		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_uint(serial, "logPrec", cfg->loggingPrecision, 1);
 		json_uint(serial, "outMode", cfg->outputMode, 1);
 		json_uint(serial, "logMode", cfg->loggingMode, 1);
@@ -493,7 +505,13 @@ int api_getPwmConfig(Serial *serial, const jsmntok_t *json){
 			startIndex = endIndex = modp_atoi(json->data);
 		}
 	}
-	sendPwmConfig(serial, startIndex, endIndex);
+	if (startIndex >= 0 && startIndex <= CONFIG_PWM_CHANNELS){
+		sendPwmConfig(serial, startIndex, endIndex);
+		return API_SUCCESS_NO_RETURN;
+	}
+	else{
+		return API_ERROR_PARAMETER;
+	}
 }
 
 static void getPwmConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
@@ -525,7 +543,6 @@ static void getGpioConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** c
 	*channelCfg = &c->cfg;
 }
 
-
 static const jsmntok_t * setGpioExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
 	GPIOConfig *gpioCfg = (GPIOConfig *)cfg;
 
@@ -539,7 +556,7 @@ static void sendGpioConfig(Serial *serial, size_t startIndex, size_t endIndex){
 	for (size_t i = startIndex; i <= endIndex; i++){
 		GPIOConfig *cfg = &(getWorkingLoggerConfig()->GPIOConfigs[i]);
 		json_blockStartInt(serial, i);
-		json_channelConfig(serial, &(cfg->cfg));
+		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_uint(serial, "mode", cfg->mode, 0);
 		json_blockEnd(serial, i != endIndex);
 	}
@@ -561,7 +578,13 @@ int api_getGpioConfig(Serial *serial, const jsmntok_t *json){
 			startIndex = endIndex = modp_atoi(json->data);
 		}
 	}
-	sendGpioConfig(serial, startIndex, endIndex);
+	if (startIndex >= 0 && startIndex <= CONFIG_GPIO_CHANNELS){
+		sendGpioConfig(serial, startIndex, endIndex);
+		return API_SUCCESS_NO_RETURN;
+	}
+	else{
+		return API_ERROR_PARAMETER;
+	}
 }
 
 int api_setGpioConfig(Serial *serial, const jsmntok_t *json){
@@ -597,7 +620,7 @@ static void sendTimerConfig(Serial *serial, size_t startIndex, size_t endIndex){
 	for (size_t i = startIndex; i <= endIndex; i++){
 		TimerConfig *cfg = &(getWorkingLoggerConfig()->TimerConfigs[i]);
 		json_blockStartInt(serial, i);
-		json_channelConfig(serial, &(cfg->cfg));
+		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_uint(serial, "prec", cfg->loggingPrecision, 1);
 		json_uint(serial, "sTimer", cfg->slowTimerEnabled, 1);
 		json_uint(serial, "mode", cfg->mode, 1);
@@ -622,11 +645,47 @@ int api_getTimerConfig(Serial *serial, const jsmntok_t *json){
 			startIndex = endIndex = modp_atoi(json->data);
 		}
 	}
-	sendTimerConfig(serial, startIndex, endIndex);
+	if (startIndex >= 0 && startIndex <= CONFIG_TIMER_CHANNELS){
+		sendTimerConfig(serial, startIndex, endIndex);
+		return API_SUCCESS_NO_RETURN;
+	}
+	else{
+		return API_ERROR_PARAMETER;
+	}
 }
 
 int api_setTimerConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getTimerConfigs, setTimerExtendedField);
+	return API_SUCCESS;
+}
+
+int api_getGpsConfig(Serial *serial, const jsmntok_t *json){
+
+	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
+	json_channelConfig(serial, &gpsCfg->latitudeCfg, 1);
+	json_channelConfig(serial, &gpsCfg->longitudeCfg, 1);
+	json_channelConfig(serial, &gpsCfg->speedCfg, 1);
+	json_channelConfig(serial, &gpsCfg->satellitesCfg, 1);
+	json_channelConfig(serial, &gpsCfg->timeCfg, 0);
+	return API_SUCCESS;
+}
+
+int api_setGpsConfig(Serial *serial, const jsmntok_t *json){
+
+	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
+	const jsmntok_t * channelData = json + 1;
+	while(channelData->type == JSMN_STRING){
+		jsmn_trimData(channelData);
+		char *name = channelData->data;
+		const jsmntok_t *channelDataPairs = channelData + 1;
+		if (channelDataPairs->type == JSMN_OBJECT){
+			if (NAME_EQU("lat", name)) channelData = setChannelConfig(serial, channelDataPairs, &gpsCfg->latitudeCfg, NULL, NULL);
+			else if (NAME_EQU("long", name)) channelData = setChannelConfig(serial, channelDataPairs, &gpsCfg->longitudeCfg, NULL, NULL);
+			else if (NAME_EQU("speed", name)) channelData = setChannelConfig(serial, channelDataPairs, &gpsCfg->speedCfg, NULL, NULL);
+			else if (NAME_EQU("time", name)) channelData = setChannelConfig(serial, channelDataPairs, &gpsCfg->timeCfg, NULL, NULL);
+			else if (NAME_EQU("sats", name)) channelData = setChannelConfig(serial, channelDataPairs, &gpsCfg->satellitesCfg, NULL, NULL);
+		}
+	}
 	return API_SUCCESS;
 }
 

@@ -1,0 +1,29 @@
+{
+    "setGpsCfg": {
+        "lat": {        
+            "nm": "latNm",
+            "ut": "latUt",
+            "sr": 10
+        },
+        "long": {        
+            "nm": "longNm",
+            "ut": "longUt",
+            "sr": 20
+        },
+        "speed": {        
+            "nm": "speedNm",
+            "ut": "speedUt",
+            "sr": 30
+        },
+        "time": {        
+            "nm": "timeNm",
+            "ut": "timeUt",
+            "sr": 50
+        },
+        "sats": {        
+            "nm": "satsNm",
+            "ut": "satsUt",
+            "sr": 100
+        }
+    }
+}

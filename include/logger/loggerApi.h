@@ -20,9 +20,11 @@
 #define LOGGER_API \
 {"s", api_sampleData}, \
 {"log", api_enableLogging}, \
+{"flashCfg", api_flashConfig}, \
 {"setAnalogCfg", api_setAnalogConfig}, \
 {"getAnalogCfg", api_getAnalogConfig}, \
-{"calAccel", api_calibrateAccel}, \
+{"getGpsCfg", api_getGpsConfig}, \
+{"setGpsCfg", api_setGpsConfig}, \
 {"getAccelCfg", api_getAccelConfig}, \
 {"setAccelCfg", api_setAccelConfig}, \
 {"getBtCfg", api_getBluetoothConfig}, \
@@ -37,7 +39,7 @@
 {"setTimerCfg", api_setTimerConfig}, \
 {"getCellCfg", api_getCellConfig}, \
 {"setCellCfg", api_setCellConfig}, \
-{"flashCfg", api_flashConfig}
+{"calAccel", api_calibrateAccel}
 
 
 void writeSampleRecord(Serial *serial, SampleRecord *sr, int sendMeta);
@@ -54,6 +56,8 @@ int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json);
 int api_setConnectivityConfig(Serial *serial, const jsmntok_t *json);
 int api_getAnalogConfig(Serial *serial, const jsmntok_t *json);
 int api_setAnalogConfig(Serial *serial, const jsmntok_t *json);
+int api_getGpsConfig(Serial *serial, const jsmntok_t *json);
+int api_setGpsConfig(Serial *serial, const jsmntok_t *json);
 int api_getAccelConfig(Serial *serial, const jsmntok_t *json);
 int api_setAccelConfig(Serial *serial, const jsmntok_t *json);
 int api_getPwmConfig(Serial *serial, const jsmntok_t *json);

@@ -508,17 +508,17 @@ void LoggerApiTest::testGetConnectivityCfg(){
 
 void LoggerApiTest::testGetPwmConfigFile(string filename, int index){
 	LoggerConfig *c = getWorkingLoggerConfig();
-	PWMConfig *accelCfg = &c->PWMConfigs[index];
+	PWMConfig *pwmCfg = &c->PWMConfigs[index];
 
-	strcpy(accelCfg->cfg.label, "pLabel");
-	strcpy(accelCfg->cfg.units, "pUnits");
-	accelCfg->cfg.sampleRate = 100;
-	accelCfg->loggingPrecision = 2;
-	accelCfg->outputMode = 3;
-	accelCfg->loggingMode = 1;
-	accelCfg->startupDutyCycle = 55;
-	accelCfg->startupPeriod = 321;
-	accelCfg->voltageScaling = 1.23;
+	strcpy(pwmCfg->cfg.label, "pLabel");
+	strcpy(pwmCfg->cfg.units, "pUnits");
+	pwmCfg->cfg.sampleRate = 100;
+	pwmCfg->loggingPrecision = 2;
+	pwmCfg->outputMode = 3;
+	pwmCfg->loggingMode = 1;
+	pwmCfg->startupDutyCycle = 55;
+	pwmCfg->startupPeriod = 321;
+	pwmCfg->voltageScaling = 1.23;
 
 	char * response = processApiGeneric(filename);
 
@@ -742,5 +742,31 @@ void LoggerApiTest::testFlashConfigFile(string filename){
 
 void LoggerApiTest::testFlashConfig(){
 	testFlashConfigFile("flashCfg.json");
+}
+
+void LoggerApiTest::testSetGpsConfigFile(string filename){
+	LoggerConfig *c = getWorkingLoggerConfig();
+	GPSConfig *gpsCfg = &c->GPSConfigs;
+
+	processApiGeneric(filename);
+
+
+	char *txBuffer = mock_getTxBuffer();
+
+	assertGenericResponse(txBuffer, "setGpsCfg", 1);
+
+
+}
+
+void LoggerApiTest::testSetGpsConfig(){
+	testSetGpioConfigFile("setGpsCfg1.json");
+}
+
+void LoggerApiTest::testGetGpsConfigFile(string filename){
+
+}
+
+void LoggerApiTest::testGetGpsConfig(){
+	testGetGpsConfigFile("getGpsCfg1.json");
 }
 
