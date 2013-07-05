@@ -758,7 +758,7 @@ void LoggerApiTest::testSetGpsConfigFile(string filename){
 
 }
 
-void LoggerApiTest::testSetGpsConfig(){
+void LoggerApiTest::testSetGpsCfg(){
 	testSetGpioConfigFile("setGpsCfg1.json");
 }
 
@@ -766,7 +766,7 @@ void LoggerApiTest::testGetGpsConfigFile(string filename){
 
 }
 
-void LoggerApiTest::testGetGpsConfig(){
+void LoggerApiTest::testGetGpsCfg(){
 	testGetGpsConfigFile("getGpsCfg1.json");
 }
 
