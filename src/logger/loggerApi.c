@@ -664,15 +664,31 @@ int api_getGpsConfig(Serial *serial, const jsmntok_t *json){
 	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
 
 	json_messageStart(serial, NULL_MESSAGE_ID);
-	json_blockStart(serial, "getTimerCfg");
-	json_channelConfig(serial, &gpsCfg->latitudeCfg, 1);
-	json_channelConfig(serial, &gpsCfg->longitudeCfg, 1);
-	json_channelConfig(serial, &gpsCfg->speedCfg, 1);
-	json_channelConfig(serial, &gpsCfg->satellitesCfg, 1);
+	json_blockStart(serial, "getGpsCfg");
+
+	json_blockStart(serial, "lat");
+	json_channelConfig(serial, &gpsCfg->latitudeCfg, 0);
+	json_blockEnd(serial, 1);
+
+	json_blockStart(serial, "long");
+	json_channelConfig(serial, &gpsCfg->longitudeCfg, 0);
+	json_blockEnd(serial, 1);
+
+	json_blockStart(serial, "speed");
+	json_channelConfig(serial, &gpsCfg->speedCfg, 0);
+	json_blockEnd(serial, 1);
+
+	json_blockStart(serial, "sats");
+	json_channelConfig(serial, &gpsCfg->satellitesCfg, 0);
+	json_blockEnd(serial, 1);
+
+	json_blockStart(serial, "time");
 	json_channelConfig(serial, &gpsCfg->timeCfg, 0);
 	json_blockEnd(serial, 0);
+
 	json_blockEnd(serial, 0);
-	return API_SUCCESS;
+	json_blockEnd(serial, 0);
+	return API_SUCCESS_NO_RETURN;
 }
 
 int api_setGpsConfig(Serial *serial, const jsmntok_t *json){

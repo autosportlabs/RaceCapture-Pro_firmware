@@ -779,7 +779,65 @@ void LoggerApiTest::testSetGpsCfg(){
 }
 
 void LoggerApiTest::testGetGpsConfigFile(string filename){
+	LoggerConfig *c = getWorkingLoggerConfig();
+	GPSConfig *gpsCfg = &c->GPSConfigs;
 
+	ChannelConfig *latCfg = &gpsCfg->latitudeCfg;
+	ChannelConfig *longCfg = &gpsCfg->longitudeCfg;
+	ChannelConfig *speedCfg = &gpsCfg->speedCfg;
+	ChannelConfig *timeCfg = &gpsCfg->timeCfg;
+	ChannelConfig *satsCfg = &gpsCfg->satellitesCfg;
+
+	strcpy(latCfg->label, "latNm");
+	strcpy(latCfg->units, "latUt");
+	latCfg->sampleRate = 10;
+
+	strcpy(longCfg->label, "longNm");
+	strcpy(longCfg->units, "longUt");
+	longCfg->sampleRate = 20;
+
+	strcpy(speedCfg->label, "speedNm");
+	strcpy(speedCfg->units, "speedUt");
+	speedCfg->sampleRate = 30;
+
+	strcpy(timeCfg->label, "timeNm");
+	strcpy(timeCfg->units, "timeUt");
+	timeCfg->sampleRate = 50;
+
+	strcpy(satsCfg->label, "satsNm");
+	strcpy(satsCfg->units, "satsUt");
+	satsCfg->sampleRate = 100;
+
+	char * response = processApiGeneric(filename);
+
+	Object json;
+	stringToJson(response, json);
+
+	Object &latJson = json["getGpsCfg"]["lat"];
+	Object &longJson = json["getGpsCfg"]["long"];
+	Object &speedJson = json["getGpsCfg"]["speed"];
+	Object &timeJson = json["getGpsCfg"]["time"];
+	Object &satsJson = json["getGpsCfg"]["sats"];
+
+	CPPUNIT_ASSERT_EQUAL(string("latNm"), string((String)latJson["nm"]));
+	CPPUNIT_ASSERT_EQUAL(string("latUt"), string((String)latJson["ut"]));
+	CPPUNIT_ASSERT_EQUAL(10, (int)(Number)latJson["sr"]);
+
+	CPPUNIT_ASSERT_EQUAL(string("longNm"), string((String)longJson["nm"]));
+	CPPUNIT_ASSERT_EQUAL(string("longUt"), string((String)longJson["ut"]));
+	CPPUNIT_ASSERT_EQUAL(20, (int)(Number)longJson["sr"]);
+
+	CPPUNIT_ASSERT_EQUAL(string("speedNm"), string((String)speedJson["nm"]));
+	CPPUNIT_ASSERT_EQUAL(string("speedUt"), string((String)speedJson["ut"]));
+	CPPUNIT_ASSERT_EQUAL(30, (int)(Number)speedJson["sr"]);
+
+	CPPUNIT_ASSERT_EQUAL(string("timeNm"), string((String)timeJson["nm"]));
+	CPPUNIT_ASSERT_EQUAL(string("timeUt"), string((String)timeJson["ut"]));
+	CPPUNIT_ASSERT_EQUAL(50, (int)(Number)timeJson["sr"]);
+
+	CPPUNIT_ASSERT_EQUAL(string("satsNm"), string((String)satsJson["nm"]));
+	CPPUNIT_ASSERT_EQUAL(string("satsUt"), string((String)satsJson["ut"]));
+	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)satsJson["sr"]);
 }
 
 void LoggerApiTest::testGetGpsCfg(){
