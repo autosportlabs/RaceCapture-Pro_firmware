@@ -710,6 +710,31 @@ int api_setGpsConfig(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS;
 }
 
+static void json_gpsTarget(Serial *serial, const char *name,  GPSTargetConfig *gpsTarget, int more){
+	json_blockStart(serial, "startFinish");
+	json_float(serial, "lat", gpsTarget->latitude, DEFAULT_GPS_POSITION_LOGGING_PRECISION, 1);
+	json_float(serial, "long", gpsTarget->longitude, DEFAULT_GPS_POSITION_LOGGING_PRECISION, 1);
+	json_float(serial, "rad", gpsTarget->targetRadius, DEFAULT_GPS_RADIUS_LOGGING_PRECISION, 0);
+	json_blockEnd(serial, more);
+}
+
+int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
+	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
+
+	json_messageStart(serial, NULL_MESSAGE_ID);
+	json_blockStart(serial, "getTrackCfg");
+	json_gpsTarget(serial, "startFinish", &gpsCfg->startFinishConfig, 1);
+	json_gpsTarget(serial, "split", &gpsCfg->splitConfig, 0);
+	json_blockEnd(serial, 0);
+	json_blockEnd(serial, 0);
+
+	return API_SUCCESS_NO_RETURN;
+}
+
+int api_setTrackConfig(Serial *serial, const jsmntok_t *json){
+
+}
+
 int api_calibrateAccel(Serial *serial, const jsmntok_t *json){
 	calibrateAccelZero();
 	return API_SUCCESS;

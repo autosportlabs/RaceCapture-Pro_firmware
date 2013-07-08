@@ -39,6 +39,8 @@
 {"setTimerCfg", api_setTimerConfig}, \
 {"getCellCfg", api_getCellConfig}, \
 {"setCellCfg", api_setCellConfig}, \
+{"getTrackCfg", api_getTrackConfig}, \
+{"setTrackCfg", api_setTrackConfig}, \
 {"calAccel", api_calibrateAccel}
 
 
@@ -58,6 +60,8 @@ int api_getAnalogConfig(Serial *serial, const jsmntok_t *json);
 int api_setAnalogConfig(Serial *serial, const jsmntok_t *json);
 int api_getGpsConfig(Serial *serial, const jsmntok_t *json);
 int api_setGpsConfig(Serial *serial, const jsmntok_t *json);
+int api_getTrackConfig(Serial *serial, const jsmntok_t *json);
+int api_setTrackConfig(Serial *serial, const jsmntok_t *json);
 int api_getAccelConfig(Serial *serial, const jsmntok_t *json);
 int api_setAccelConfig(Serial *serial, const jsmntok_t *json);
 int api_getPwmConfig(Serial *serial, const jsmntok_t *json);
