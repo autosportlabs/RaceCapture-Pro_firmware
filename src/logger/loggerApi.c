@@ -711,7 +711,7 @@ int api_setGpsConfig(Serial *serial, const jsmntok_t *json){
 }
 
 static void json_gpsTarget(Serial *serial, const char *name,  GPSTargetConfig *gpsTarget, int more){
-	json_blockStart(serial, "startFinish");
+	json_blockStart(serial, name);
 	json_float(serial, "lat", gpsTarget->latitude, DEFAULT_GPS_POSITION_LOGGING_PRECISION, 1);
 	json_float(serial, "long", gpsTarget->longitude, DEFAULT_GPS_POSITION_LOGGING_PRECISION, 1);
 	json_float(serial, "rad", gpsTarget->targetRadius, DEFAULT_GPS_RADIUS_LOGGING_PRECISION, 0);
@@ -731,8 +731,45 @@ int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS_NO_RETURN;
 }
 
+static const jsmntok_t * setTargetConfig(const jsmntok_t *cfg, GPSTargetConfig *targetConfig){
+	if (cfg->type == JSMN_OBJECT && cfg->size % 2 == 0){
+		int size = cfg->size;
+		cfg++;
+		for (int i = 0; i < size; i += 2 ){
+			const jsmntok_t *nameTok = cfg;
+			jsmn_trimData(nameTok);
+			cfg++;
+			const jsmntok_t *valueTok = cfg;
+			cfg++;
+			if (valueTok->type == JSMN_PRIMITIVE || valueTok->type == JSMN_STRING) jsmn_trimData(valueTok);
+
+			char *name = nameTok->data;
+			char *value = valueTok->data;
+
+			if (NAME_EQU("lat",name)) targetConfig->latitude = modp_atof(value);
+			else if (NAME_EQU("long", name)) targetConfig->longitude = modp_atof(value);
+			else if (NAME_EQU("rad", name)) targetConfig->targetRadius = modp_atof(value);
+		}
+	}
+	return cfg;
+}
+
 int api_setTrackConfig(Serial *serial, const jsmntok_t *json){
 
+	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
+
+	const jsmntok_t * targetData = json + 1;
+	while(targetData->type == JSMN_STRING){
+		jsmn_trimData(targetData);
+		char *name = targetData->data;
+		const jsmntok_t *targetDataPairs = targetData + 1;
+		if (targetDataPairs->type == JSMN_OBJECT){
+			if (NAME_EQU("startFinish", name)) targetData = setTargetConfig(targetDataPairs, &gpsCfg->startFinishConfig);
+			else if (NAME_EQU("split", name)) targetData = setTargetConfig(targetDataPairs, &gpsCfg->splitConfig);
+			else targetData += targetDataPairs->size;
+		}
+	}
+	return API_SUCCESS;
 }
 
 int api_calibrateAccel(Serial *serial, const jsmntok_t *json){
