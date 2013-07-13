@@ -256,8 +256,9 @@ void jsmn_init(jsmn_parser *parser) {
 	parser->toksuper = -1;
 }
 
-void jsmn_trimData(const jsmntok_t *tok){
+const jsmntok_t * jsmn_trimData(const jsmntok_t *tok){
 	tok->data[tok->end - tok->start] = '\0';
+	return tok;
 }
 
 int jsmn_isNull(const jsmntok_t *tok){

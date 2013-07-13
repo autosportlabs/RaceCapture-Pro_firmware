@@ -56,7 +56,14 @@ void unescapeTextField(char *data){
 	*result='\0';
 }
 
+const static jsmntok_t * findNode(const jsmntok_t *node, const char * name){
 
+	while (!(node->start == 0 && node->end == 0)){
+		if (strcmp(name, jsmn_trimData(node)->data) == 0) return node;
+		node++;
+	}
+	return NULL;
+}
 
 int api_sampleData(Serial *serial, const jsmntok_t *json){
 
@@ -695,18 +702,22 @@ int api_setGpsConfig(Serial *serial, const jsmntok_t *json){
 
 	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
 	const jsmntok_t * channelData = json + 1;
-	while(channelData->type == JSMN_STRING){
-		jsmn_trimData(channelData);
-		char *name = channelData->data;
-		const jsmntok_t *channelDataPairs = channelData + 1;
-		if (channelDataPairs->type == JSMN_OBJECT){
-			if (NAME_EQU("lat", name)) channelData = setChannelConfig(serial, channelDataPairs, &gpsCfg->latitudeCfg, NULL, NULL);
-			else if (NAME_EQU("long", name)) channelData = setChannelConfig(serial, channelDataPairs, &gpsCfg->longitudeCfg, NULL, NULL);
-			else if (NAME_EQU("speed", name)) channelData = setChannelConfig(serial, channelDataPairs, &gpsCfg->speedCfg, NULL, NULL);
-			else if (NAME_EQU("time", name)) channelData = setChannelConfig(serial, channelDataPairs, &gpsCfg->timeCfg, NULL, NULL);
-			else if (NAME_EQU("sats", name)) channelData = setChannelConfig(serial, channelDataPairs, &gpsCfg->satellitesCfg, NULL, NULL);
-		}
-	}
+
+	const jsmntok_t * latitudeNode = findNode(channelData, "lat");
+	if (latitudeNode != NULL) setChannelConfig(serial, latitudeNode + 1, &gpsCfg->latitudeCfg, NULL, NULL);
+
+	const jsmntok_t * longitudeNode = findNode(channelData, "long");
+	if (longitudeNode != NULL) setChannelConfig(serial, longitudeNode + 1, &gpsCfg->longitudeCfg, NULL, NULL);
+
+	const jsmntok_t * speedNode = findNode(channelData, "speed");
+	if (speedNode != NULL) setChannelConfig(serial, speedNode + 1, &gpsCfg->speedCfg, NULL, NULL);
+
+	const jsmntok_t * timeNode = findNode(channelData, "time");
+	if (timeNode != NULL) setChannelConfig(serial, timeNode + 1, &gpsCfg->timeCfg, NULL, NULL);
+
+	const jsmntok_t * satsNode = findNode(channelData, "sats");
+	if (satsNode != NULL) setChannelConfig(serial, satsNode + 1, &gpsCfg->satellitesCfg, NULL, NULL);
+
 	return API_SUCCESS;
 }
 
@@ -731,7 +742,7 @@ int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS_NO_RETURN;
 }
 
-static const jsmntok_t * setTargetConfig(const jsmntok_t *cfg, GPSTargetConfig *targetConfig){
+void setTargetConfig(const jsmntok_t *cfg, GPSTargetConfig *targetConfig){
 	if (cfg->type == JSMN_OBJECT && cfg->size % 2 == 0){
 		int size = cfg->size;
 		cfg++;
@@ -751,24 +762,19 @@ static const jsmntok_t * setTargetConfig(const jsmntok_t *cfg, GPSTargetConfig *
 			else if (NAME_EQU("rad", name)) targetConfig->targetRadius = modp_atof(value);
 		}
 	}
-	return cfg;
 }
 
 int api_setTrackConfig(Serial *serial, const jsmntok_t *json){
 
 	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
-
 	const jsmntok_t * targetData = json + 1;
-	while(targetData->type == JSMN_STRING){
-		jsmn_trimData(targetData);
-		char *name = targetData->data;
-		const jsmntok_t *targetDataPairs = targetData + 1;
-		if (targetDataPairs->type == JSMN_OBJECT){
-			if (NAME_EQU("startFinish", name)) targetData = setTargetConfig(targetDataPairs, &gpsCfg->startFinishConfig);
-			else if (NAME_EQU("split", name)) targetData = setTargetConfig(targetDataPairs, &gpsCfg->splitConfig);
-			else targetData += targetDataPairs->size;
-		}
-	}
+
+	const jsmntok_t *startFinish = findNode(targetData,"startFinish");
+	if (startFinish != NULL) setTargetConfig(startFinish + 1, &gpsCfg->startFinishConfig);
+
+	const jsmntok_t *split = findNode(targetData, "split");
+	if (split != NULL) setTargetConfig(split + 1, &gpsCfg->splitConfig);
+
 	return API_SUCCESS;
 }
 

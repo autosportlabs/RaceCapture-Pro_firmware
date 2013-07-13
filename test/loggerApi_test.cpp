@@ -879,7 +879,6 @@ void LoggerApiTest::testGetTrackConfigFile(string filename){
 	gpsCfg->splitConfig.targetRadius = 0.002;
 
 	char * response = processApiGeneric(filename);
-	printf("%s", response);
 
 	Object json;
 	stringToJson(response, json);
