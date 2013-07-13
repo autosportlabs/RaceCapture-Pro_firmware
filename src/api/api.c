@@ -130,8 +130,8 @@ static void execute_api(Serial * serial, const jsmntok_t *json){
 
 void process_api(Serial *serial, char *buffer, size_t bufferSize){
 	jsmn_init(&g_jsonParser);
-	size_t size = sizeof(g_json_tok);
-	memset(g_json_tok,0,size);
+	memset(g_json_tok,0,sizeof(g_json_tok));
+
 	int r = jsmn_parse(&g_jsonParser, buffer, g_json_tok, JSON_TOKENS);
 	if (r == JSMN_SUCCESS){
 		execute_api(serial, g_json_tok);
