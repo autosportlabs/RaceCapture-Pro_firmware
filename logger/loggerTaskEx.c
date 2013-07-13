@@ -55,8 +55,6 @@ void loggerTaskEx(void *params){
 
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 
-	if ( loggerConfig->AccelInstalled == CONFIG_FEATURE_INSTALLED ) accel_init();
-
 	while(1){
 		//wait for signal to start logging
 		if ( xSemaphoreTake(g_xLoggerStart, IDLE_TIMEOUT) != pdTRUE){

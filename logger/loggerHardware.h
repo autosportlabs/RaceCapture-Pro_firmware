@@ -32,6 +32,8 @@ void ResetWatchdog();
 
 void InitWatchdog(int timeoutMs);
 
+float readAccelerometer(unsigned char accelChannel, AccelConfig *ac);
+
 void readGpios(unsigned int *gpio1, unsigned int *gpio2, unsigned int *gpio3);
 
 
@@ -75,24 +77,6 @@ unsigned short PWM_GetPeriod(unsigned int channel);
 void PWM_SetDutyCycle(unsigned int channel,	unsigned short duty);
 
 unsigned short PWM_GetDutyCycle(unsigned int channel);
-
-//Configure PWM clock
-//void PWM_ConfigureClocks
-//    (unsigned int clka,
-//     unsigned int clkb,
-//     unsigned int mck);
-
-//Retrieve PWM clock configuration
-//unsigned short PWM_GetClockConfiguration(
-//    unsigned int frequency,
-//    unsigned int mck);
-
-//Configure PWM channel
-//void PWM_ConfigureChannel(
-//    unsigned char channel,
-//    unsigned int prescaler,
-//    unsigned int alignment,
-//    unsigned int polarity);
 
 #define TIMER_PERIOD_TO_USEC(TICKS, SCALING) (unsigned int)((TICKS * 100000) / (SCALING / 10))
 #define TIMER_PERIOD_TO_MS(TICKS, SCALING) (unsigned int)(TICKS * 1000) / SCALING

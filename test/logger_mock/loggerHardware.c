@@ -23,6 +23,10 @@ void InitLoggerHardware(){
 
 }
 
+float readAccelerometer(unsigned char channel, AccelConfig *ac){
+	return 0;
+}
+
 void InitGPIO(LoggerConfig *loggerConfig){}
 
 void InitSDCard(void){}

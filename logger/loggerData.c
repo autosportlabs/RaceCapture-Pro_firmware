@@ -13,24 +13,11 @@
 
 static void writeAccelerometer(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *config){
 
-	unsigned int accelValues[CONFIG_ACCEL_CHANNELS];
-
 	for (unsigned int i=0; i < CONFIG_ACCEL_CHANNELS;i++){
 		AccelConfig *ac = &(config->AccelConfigs[i]);
 		size_t sr = ac->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED && (currentTicks % sr) == 0){
-			accelValues[i] = readAccelChannel(ac->accelChannel);
-		}
-	}
-
-	for (unsigned int i=0; i < CONFIG_ACCEL_CHANNELS;i++){
-		AccelConfig *ac = &(config->AccelConfigs[i]);
-		size_t sr = ac->cfg.sampleRate;
-		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0){
-				float value = (i == ACCEL_CHANNEL_ZT ? YAW_RAW_TO_DEGREES_PER_SEC(accelValues[i],ac->zeroValue) : ACCEL_RAW_TO_GFORCE(accelValues[i],ac->zeroValue));
-				sampleRecord->AccelSamples[i].floatValue = value;
-			}
+			sampleRecord->AccelSamples[i].floatValue = readAccelerometer(i, ac);
 		}
 	}
 }

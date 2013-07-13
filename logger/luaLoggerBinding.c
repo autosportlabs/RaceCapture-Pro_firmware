@@ -1217,32 +1217,14 @@ int Lua_ReadAccelerometer(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		if (channel >= ACCELEROMETER_CHANNEL_MIN && channel <= ACCELEROMETER_CHANNEL_MAX){
-			unsigned int zeroValue = getWorkingLoggerConfig()->AccelConfigs[channel].zeroValue;
-			unsigned int rawValue = readAccelChannel(channel);
-			float value = (channel == ACCEL_CHANNEL_ZT ? YAW_RAW_TO_DEGREES_PER_SEC(rawValue, zeroValue) : ACCEL_RAW_TO_GFORCE(rawValue, zeroValue));
-
-			/*
-			char test[50];
-			modp_uitoa10(rawValue,test);
-			pr_debug("raw:");
-			pr_debug(test);
-			pr_debug("\r\n");
-			modp_uitoa10(zeroValue,test);
-			pr_debug("zero:");
-			pr_debug(test);
-			pr_debug("\r\n");
-			modp_ftoa(value, test, 3);
-			pr_debug("G:");
-			pr_debug(test);
-			pr_debug("\r\n");
-*/
-			lua_pushnumber(L,value);
+			AccelConfig *ac = &getWorkingLoggerConfig()->AccelConfigs[channel];
+			float accelG = readAccelerometer(channel,ac);
+			lua_pushnumber(L,accelG);
 			return 1;
 		}
 	}
 	return 0;
 }
-
 
 int Lua_ReadAccelerometerRaw(lua_State *L){
 	if (lua_gettop(L) >= 1){
@@ -1255,7 +1237,6 @@ int Lua_ReadAccelerometerRaw(lua_State *L){
 	}
 	return 0;
 }
-
 
 int Lua_SetPWMDutyCycle(lua_State *L){
 	return Lua_SetPWMDutyCycleRaw(L);

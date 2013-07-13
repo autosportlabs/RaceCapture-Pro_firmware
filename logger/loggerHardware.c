@@ -1,4 +1,5 @@
 #include "loggerHardware.h"
+#include "loggerConfig.h"
 #include "board.h"
 #include "accelerometer.h"
 #include "accelerometer_buffer.h"
@@ -61,8 +62,9 @@ static void SetGPIOBits(unsigned int portBits){
 
 void InitLoggerHardware(){
 	init_spi_lock();
-	InitWatchdog(WATCHDOG_TIMEOUT_MS);
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+	InitWatchdog(WATCHDOG_TIMEOUT_MS);
+	if ( loggerConfig->AccelInstalled == CONFIG_FEATURE_INSTALLED ) accel_init();
 	InitGPIO(loggerConfig);
 	InitADC();
 	InitPWM(loggerConfig);
@@ -80,6 +82,38 @@ void InitWatchdog(int timeoutMs){
 	 int counter= AT91F_WDTGetPeriod(timeoutMs);
 	 AT91F_WDTSetMode(AT91C_BASE_WDTC, AT91C_WDTC_WDRSTEN | AT91C_WDTC_WDRPROC | counter | (counter << 16));
 	 AT91F_WDTC_CfgPMC();
+}
+
+float readAccelerometer(unsigned char accelChannel, AccelConfig *ac){
+
+	unsigned int physicalChannel = ac->accelChannel;
+	unsigned int raw = readAccelChannel(physicalChannel);
+	float accelG = (accelChannel == ACCEL_CHANNEL_ZT ? YAW_RAW_TO_DEGREES_PER_SEC(raw ,ac->zeroValue) : ACCEL_RAW_TO_GFORCE(raw ,ac->zeroValue));
+
+	//invert physical channel to match industry-standard accelerometer mappings
+	switch(physicalChannel){
+		case ACCEL_CHANNEL_X:
+		case ACCEL_CHANNEL_Y:
+		case ACCEL_CHANNEL_ZT:
+			accelG = -accelG;
+			break;
+		default:
+			break;
+	}
+
+	//now invert based on configuration
+	switch (ac->mode){
+	case MODE_ACCEL_NORMAL:
+		break;
+	case MODE_ACCEL_INVERTED:
+		accelG = -accelG;
+		break;
+	case MODE_ACCEL_DISABLED:
+	default:
+		accelG = 0;
+		break;
+	}
+	return accelG;
 }
 
 void InitGPIO(LoggerConfig *loggerConfig){
@@ -611,12 +645,6 @@ void initTimer0x(TimerConfig *timerConfig){
 	}
 	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC0);
 }
-
-
-
-
-
-
 
 void initTimer0(TimerConfig *timerConfig){
 
