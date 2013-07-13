@@ -13,8 +13,8 @@
 #define LUA_COMMANDS \
 		{"lua", "Enter the lua script interpreter.","", ExecLuaInterpreter}, \
 		{"reloadScript", "Reloads the current script","",ReloadScript}, \
-		{"writeScriptPage", "Writes the base64 encoded script to the specified 256 byte page.","<page> <encodedScript>",WriteScriptPage}, \
-		{"readScriptPage", "Returns the specified script page in base64 encoded format.","<page>", ReadScriptPage}, \
+		{"writeScriptPage", "Writes the encoded script to the specified 256 byte page.","<page> <encodedScript>",WriteScriptPage}, \
+		{"readScriptPage", "Returns the specified script page in encoded format.","<page>", ReadScriptPage}, \
 		{"showLuaStats", "Info on Lua State and System memory.","", ShowLuaStats} \
 
 Serial *getLuaSerialContext();
