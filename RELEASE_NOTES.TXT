@@ -56,6 +56,11 @@ Once the firmware completes flashing, RaceCapture/Pro will reset and run normall
 
 Firmware Changelog:
 
+===1.1.13===
+Fixed analog scaling divide by zero issue with raw values outside of configured scaling map
+Fixed accelerometer mappings for invert settings and changed mapping to match industry standards
+More JSON APIs implemented
+
 ===1.1.12===
 Fixed regression in cellular APN initialization
 Additional JSON API
