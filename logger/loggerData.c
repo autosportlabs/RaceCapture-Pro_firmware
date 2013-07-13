@@ -253,11 +253,16 @@ float GetMappedValue(float value, ScalingMap *scalingMap){
 		bin--;
 	}
 	if (bin == 0 && value < *bins){
-		nextBin = 0;
+		return scalingMap->scaledValues[0];
 	}
 	else{
 		nextBin = bin;
-		if (bin < ANALOG_SCALING_BINS - 1) nextBin++;
+		if (bin < ANALOG_SCALING_BINS - 1){
+			nextBin++;
+		}
+		else{
+			return scalingMap->scaledValues[ANALOG_SCALING_BINS - 1];
+		}
 	}
 	float x1 = (float)scalingMap->rawValues[bin];
 	float y1 = scalingMap->scaledValues[bin];

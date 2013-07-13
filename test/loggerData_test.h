@@ -16,6 +16,7 @@ class LoggerDataTest : public CppUnit::TestFixture
   CPPUNIT_TEST( testAnalogChannels );
   CPPUNIT_TEST( testGpsChannels );
   CPPUNIT_TEST( testAccelChannels );
+  CPPUNIT_TEST( testMappedValue );
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -25,6 +26,7 @@ public:
   void testAnalogChannels();
   void testGpsChannels();
   void testAccelChannels();
+  void testMappedValue();
 };
 
 #endif /* LOGGERDATA_TEST_H_ */
