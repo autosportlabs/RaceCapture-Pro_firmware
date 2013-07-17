@@ -69,7 +69,7 @@
 
 /* Constants required to setup the PIT. */
 #define portPIT_CLOCK_DIVISOR			( ( unsigned portLONG ) 16 )
-#define portPIT_COUNTER_VALUE			( ( ( ( configCPU_CLOCK_HZ / portPIT_CLOCK_DIVISOR ) / 1000UL ) * portTICK_RATE_MS ) -1 )
+#define portPIT_COUNTER_VALUE		(unsigned int)( ( ( ( (double)configCPU_CLOCK_HZ / (double)portPIT_CLOCK_DIVISOR ) / (double)1000UL ) *  ((double)1000 / (double)configTICK_RATE_HZ) ) -1 )
 
 #define portINT_LEVEL_SENSITIVE  0
 #define portPIT_ENABLE      	( ( unsigned portSHORT ) 0x1 << 24 )
