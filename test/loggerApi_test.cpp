@@ -460,8 +460,8 @@ void LoggerApiTest::testGetBtCfg(){
 
 	Object &btJson = json["getBtCfg"];
 
-	string name = (String)btJson["btName"];
-	string pass = (String)btJson["btPass"];
+	string name = (String)btJson["name"];
+	string pass = (String)btJson["pass"];
 
 	CPPUNIT_ASSERT_EQUAL(string("myRacecar"), name);
 	CPPUNIT_ASSERT_EQUAL(string("3311"), pass);

@@ -1,6 +1,6 @@
 {
     "setBtCfg": {
-		"btName":"myRacecar",
-		"btPass":"3311"
+		"name":"myRacecar",
+		"pass":"3311"
     }
 }

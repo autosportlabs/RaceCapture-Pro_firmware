@@ -432,8 +432,8 @@ int api_setCellConfig(Serial *serial, const jsmntok_t *json){
 
 static const jsmntok_t * setBluetoothExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
 	BluetoothConfig *btCfg = (BluetoothConfig *)cfg;
-	if (NAME_EQU("btName", name)) setTextField(btCfg->deviceName, value, BT_DEVICE_NAME_LENGTH);
-	else if (NAME_EQU("btPass", name)) setTextField(btCfg->passcode, value, BT_PASSCODE_LENGTH);
+	if (NAME_EQU("name", name)) setTextField(btCfg->deviceName, value, BT_DEVICE_NAME_LENGTH);
+	else if (NAME_EQU("pass", name)) setTextField(btCfg->passcode, value, BT_PASSCODE_LENGTH);
 	return valueTok + 1;
 }
 
@@ -447,8 +447,8 @@ int api_getBluetoothConfig(Serial *serial, const jsmntok_t *json){
 	BluetoothConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
 	json_messageStart(serial,NULL_MESSAGE_ID);
 	json_blockStart(serial, "getBtCfg");
-	json_string(serial, "btName", cfg->deviceName, 1);
-	json_string(serial, "btPass", cfg->passcode, 0);
+	json_string(serial, "name", cfg->deviceName, 1);
+	json_string(serial, "pass", cfg->passcode, 0);
 	json_blockEnd(serial, 0);
 	json_blockEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
