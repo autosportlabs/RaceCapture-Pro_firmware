@@ -10,15 +10,10 @@
 		"rad":0.0006		
 	},
 	"channels":{
-		"dist":{
-            "nm": "dist",
-            "ut": "miles",
-            "sr": 10
-		},
-		"predTime":{
-            "nm": "predTime",
-            "ut": "sec",
-            "sr": 10
+		"lapCount"{
+            "nm": "lapCount",
+            "ut": "num",
+            "sr": 1
 		},
 		"lapTime"{
             "nm": "lapTime",
@@ -30,6 +25,15 @@
             "ut": "sec",
             "sr": 10
 		},
-				
+		"dist":{
+            "nm": "dist",
+            "ut": "miles",
+            "sr": 10
+		},
+		"predTime":{
+            "nm": "predTime",
+            "ut": "sec",
+            "sr": 10
+		}		
 	}
 }

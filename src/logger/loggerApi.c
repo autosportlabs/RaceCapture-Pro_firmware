@@ -735,7 +735,21 @@ int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
 	json_messageStart(serial, NULL_MESSAGE_ID);
 	json_blockStart(serial, "getTrackCfg");
 	json_gpsTarget(serial, "startFinish", &trackCfg->startFinishConfig, 1);
-	json_gpsTarget(serial, "split", &trackCfg->splitConfig, 0);
+	json_gpsTarget(serial, "split", &trackCfg->splitConfig, 1);
+	json_blockStart(serial, "lapCount");
+	json_channelConfig(serial, &trackCfg->lapCountCfg, 1);
+	json_blockEnd(serial, 1);
+	json_blockStart(serial, "lapTime");
+	json_channelConfig(serial, &trackCfg->lapTimeCfg, 1);
+	json_blockEnd(serial, 1);
+	json_blockStart(serial, "splitTime");
+	json_channelConfig(serial, &trackCfg->splitTimeCfg, 1);
+	json_blockEnd(serial, 1);
+	json_blockStart(serial, "dist");
+	json_channelConfig(serial, &trackCfg->distanceCfg, 1);
+	json_blockEnd(serial, 1);
+	json_blockStart(serial, "predTime");
+	json_channelConfig(serial, &trackCfg->predTimeCfg, 1);
 	json_blockEnd(serial, 0);
 	json_blockEnd(serial, 0);
 
@@ -774,6 +788,21 @@ int api_setTrackConfig(Serial *serial, const jsmntok_t *json){
 
 	const jsmntok_t *split = findNode(targetData, "split");
 	if (split != NULL) setTargetConfig(split + 1, &trackCfg->splitConfig);
+
+	const jsmntok_t *lapCount = findNode(targetData, "lapCount");
+	if (lapCount != NULL) setChannelConfig(serial, lapCount + 1, &trackCfg->lapCountCfg, NULL, NULL);
+
+	const jsmntok_t *lapTime = findNode(targetData, "lapTime");
+	if (lapTime != NULL) setChannelConfig(serial, lapTime + 1, &trackCfg->lapTimeCfg, NULL, NULL);
+
+	const jsmntok_t *splitTime = findNode(targetData, "splitTime");
+	if (splitTime != NULL) setChannelConfig(serial, splitTime + 1, &trackCfg->splitTimeCfg, NULL, NULL);
+
+	const jsmntok_t *distance = findNode(targetData, "dist");
+	if (distance != NULL) setChannelConfig(serial, distance + 1, &trackCfg->distanceCfg, NULL, NULL);
+
+	const jsmntok_t *predTime = findNode(targetData, "predTime");
+	if (predTime != NULL) setChannelConfig(serial, predTime + 1, &trackCfg->predTimeCfg, NULL, NULL);
 
 	return API_SUCCESS;
 }
