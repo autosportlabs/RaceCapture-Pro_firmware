@@ -88,6 +88,7 @@ JSMN_SRC_DIR = $(SRC_DIR)/jsmn
 API_SRC_DIR = $(SRC_DIR)/api
 ACCEL_SRC_DIR = $(SRC_DIR)/accelerometer
 MESSAGING_SRC_DIR = $(SRC_DIR)/messaging
+PRED_TIMER_DIR = $(SRC_DIR)/predictive_timer
 JSON_DIR = ./json
 
 #App specific dirs
@@ -153,7 +154,8 @@ $(RACE_CAPTURE_DIR)/printk.c \
 $(RACE_CAPTURE_DIR)/ring_buffer.c \
 $(TASKS_DIR)/heartbeat.c \
 $(ACCEL_SRC_DIR)/accelerometer_buffer.c \
-$(MESSAGING_SRC_DIR)/messaging.c
+$(MESSAGING_SRC_DIR)/messaging.c \
+$(PRED_TIMER_DIR)/predictive_timer.c
 
 # List C source files here which must be compiled in ARM-Mode.
 # use file-extension c for "c-only"-files
@@ -248,6 +250,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/logger \
 -I$(INCLUDE_DIR)/accelerometer \
 -I$(INCLUDE_DIR)/messaging \
+-I$(INCLUDE_DIR)/predictive_timer \
 -I$(JSON_DIR)
 
 #CINCS = -I. -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
