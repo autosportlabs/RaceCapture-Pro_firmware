@@ -96,8 +96,14 @@ void initSampleRecord(LoggerConfig *loggerConfig,SampleRecord *sr){
 	}
 	{
 		ChannelSample *s = &(sr->Track_DistanceSample);
+		s->precision = DEFAULT_DISTANCE_LOGGING_PRECISION;
+		s->channelConfig =  &(loggerConfig->TrackConfig.distanceCfg);
+		s->intValue = NIL_SAMPLE;
+	}
+	{
+		ChannelSample *s = &(sr->Track_PredTimeSample);
 		s->precision = DEFAULT_LAP_TIME_LOGGING_PRECISION;
-		s->channelConfig =  &(loggerConfig->TrackConfig.splitTimeCfg);
+		s->channelConfig =  &(loggerConfig->TrackConfig.predTimeCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
