@@ -3,11 +3,33 @@
 		"lat":38.161518,
 		"long":-122.454711,
 		"rad":0.0006
+	},
+	"split":{
+		"lat":38.166389,
+		"long":-122.462442,
+		"rad":0.0006		
+	},
+	"channels":{
+		"dist":{
+            "nm": "dist",
+            "ut": "miles",
+            "sr": 10
 		},
-		"split":{
-			"lat":38.166389,
-			"long":-122.462442,
-			"rad":0.0006		
-		}		
+		"predTime":{
+            "nm": "predTime",
+            "ut": "sec",
+            "sr": 10
+		},
+		"lapTime"{
+            "nm": "lapTime",
+            "ut": "sec",
+            "sr": 10
+		},
+		"splitTime"{
+            "nm": "splitTime",
+            "ut": "sec",
+            "sr": 10
+		},
+				
 	}
 }

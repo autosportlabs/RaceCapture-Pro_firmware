@@ -77,21 +77,27 @@ void initSampleRecord(LoggerConfig *loggerConfig,SampleRecord *sr){
 		s->intValue = NIL_SAMPLE;
 	}
 	{
-		ChannelSample *s = &(sr->GPS_LapCountSample);
+		ChannelSample *s = &(sr->Track_LapCountSample);
 		s->precision = DEFAULT_LAP_COUNT_LOGGING_PRECISION;
-		s->channelConfig = &(loggerConfig->GPSConfigs.lapCountCfg);
+		s->channelConfig = &(loggerConfig->TrackConfig.lapCountCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
-		ChannelSample *s = &(sr->GPS_LapTimeSample);
+		ChannelSample *s = &(sr->Track_LapTimeSample);
 		s->precision = DEFAULT_LAP_TIME_LOGGING_PRECISION;
-		s->channelConfig = &(loggerConfig->GPSConfigs.lapTimeCfg);
+		s->channelConfig = &(loggerConfig->TrackConfig.lapTimeCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
-		ChannelSample *s = &(sr->GPS_SplitTimeSample);
+		ChannelSample *s = &(sr->Track_SplitTimeSample);
 		s->precision = DEFAULT_LAP_TIME_LOGGING_PRECISION;
-		s->channelConfig =  &(loggerConfig->GPSConfigs.splitTimeCfg);
+		s->channelConfig =  &(loggerConfig->TrackConfig.splitTimeCfg);
+		s->intValue = NIL_SAMPLE;
+	}
+	{
+		ChannelSample *s = &(sr->Track_DistanceSample);
+		s->precision = DEFAULT_LAP_TIME_LOGGING_PRECISION;
+		s->channelConfig =  &(loggerConfig->TrackConfig.splitTimeCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{

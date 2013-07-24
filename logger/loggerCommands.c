@@ -221,7 +221,7 @@ void SetGpsConfig(Serial *serial, unsigned int argc, char **argv){
 }
 
 void GetStartFinishConfig(Serial *serial, unsigned int argc, char **argv){
-	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfigs);
+	TrackConfig *cfg = &(getWorkingLoggerConfig()->TrackConfig);
 	SendChannelConfigSuffix(serial, &(cfg->lapCountCfg),"lapCount");
 	SendChannelConfigSuffix(serial, &(cfg->lapTimeCfg),"lapTime");
 	SendChannelConfigSuffix(serial, &(cfg->splitTimeCfg), "splitTime");
@@ -234,18 +234,18 @@ void GetStartFinishConfig(Serial *serial, unsigned int argc, char **argv){
 }
 
 void GetDistanceConfig(Serial *serial, unsigned int argc, char **argv){
-	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfigs);
-	SendChannelConfigSuffix(serial, &(cfg->lapDistanceCfg), "dist");
+	TrackConfig *cfg = &(getWorkingLoggerConfig()->TrackConfig);
+	SendChannelConfigSuffix(serial, &(cfg->distanceCfg), "dist");
 }
 
 void SetDistanceConfig(Serial *serial, unsigned int argc, char **argv){
-	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfigs);
-	if (argc > 1) SetChannelConfig(&(cfg->lapDistanceCfg),1,argc,argv);
+	TrackConfig *cfg = &(getWorkingLoggerConfig()->TrackConfig);
+	if (argc > 1) SetChannelConfig(&(cfg->distanceCfg),1,argc,argv);
 	put_commandOK(serial);
 }
 
 void SetStartFinishConfig(Serial *serial, unsigned int argc, char **argv){
-	GPSConfig *cfg = &(getWorkingLoggerConfig()->GPSConfigs);
+	TrackConfig *cfg = &(getWorkingLoggerConfig()->TrackConfig);
 	if (argc > 1) SetChannelConfig(&(cfg->lapCountCfg),1,argc,argv);
 	if (argc > 4) SetChannelConfig(&(cfg->lapTimeCfg),4,argc,argv);
 	if (argc > 7) SetChannelConfig(&(cfg->splitTimeCfg), 7, argc, argv);

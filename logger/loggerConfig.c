@@ -347,14 +347,23 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
 			int sr = gpsConfig->speedCfg.sampleRate;
 			if HIGHER_SAMPLE(sr, s) s = sr;
 		}
-		{
-			int sr = gpsConfig->lapCountCfg.sampleRate;
-			if HIGHER_SAMPLE(sr, s) s = sr;
-		}
-		{
-			int sr = gpsConfig->lapTimeCfg.sampleRate;
-			if HIGHER_SAMPLE(sr, s) s = sr;
-		}
+	}
+	TrackConfig *trackCfg = &(config->TrackConfig);
+	{
+		int sr = trackCfg->lapCountCfg.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
+	}
+	{
+		int sr = trackCfg->lapTimeCfg.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
+	}
+	{
+		int sr = trackCfg->distanceCfg.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
+	}
+	{
+		int sr = trackCfg->predTimeCfg.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
 	}
 	return s;
 }

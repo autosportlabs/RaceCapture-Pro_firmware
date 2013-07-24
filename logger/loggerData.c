@@ -74,13 +74,6 @@ static void writeGPSChannels(SampleRecord *sampleRecord, size_t currentTicks, GP
 	}
 
 	{
-		size_t sr = config->splitTimeCfg.sampleRate;
-		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->GPS_SplitTimeSample.floatValue = getLastSplitTime();
-		}
-	}
-
-	{
 		size_t sr = config->satellitesCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0) sampleRecord->GPS_SatellitesSample.intValue = getSatellitesUsedForPosition();
@@ -93,16 +86,37 @@ static void writeGPSChannels(SampleRecord *sampleRecord, size_t currentTicks, GP
 			if ((currentTicks % sr) == 0) sampleRecord->GPS_SpeedSample.floatValue = getGPSSpeed();
 		}
 	}
+}
+
+static void writeTrackChannels(SampleRecord *sampleRecord, size_t currentTicks, TrackConfig *config){
 	{
 		size_t sr = config->lapCountCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->GPS_LapCountSample.intValue = getLapCount();
+			if ((currentTicks % sr) == 0) sampleRecord->Track_LapCountSample.intValue = getLapCount();
+		}
+	}
+	{
+		size_t sr = config->splitTimeCfg.sampleRate;
+		if (sr != SAMPLE_DISABLED){
+			if ((currentTicks % sr) == 0) sampleRecord->Track_SplitTimeSample.floatValue = getLastSplitTime();
 		}
 	}
 	{
 		size_t sr = config->lapTimeCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->GPS_LapTimeSample.floatValue = getLastLapTime();
+			if ((currentTicks % sr) == 0) sampleRecord->Track_LapTimeSample.floatValue = getLastLapTime();
+		}
+	}
+	{
+		size_t sr = config->distanceCfg.sampleRate;
+		if (sr != SAMPLE_DISABLED){
+			if ((currentTicks % sr) == 0) sampleRecord->Track_DistanceSample.floatValue = getDistance();
+		}
+	}
+	{
+		size_t sr = config->predTimeCfg.sampleRate;
+		if (sr != SAMPLE_DISABLED){
+			if ((currentTicks % sr) == 0) sampleRecord->Track_PredTimeSample.floatValue = 0; //getPredTime();
 		}
 	}
 }
@@ -214,7 +228,10 @@ void populateSampleRecord(SampleRecord *sr, size_t currentTicks, LoggerConfig *c
 	//Write Accelerometer
 	if (accelInstalled) writeAccelerometer(sr,currentTicks, config);
 	//Write GPS
-	if (gpsInstalled) writeGPSChannels(sr,currentTicks, &(config->GPSConfigs));
+	if (gpsInstalled){
+		writeGPSChannels(sr,currentTicks, &(config->GPSConfigs));
+		writeTrackChannels(sr, currentTicks, &(config->TrackConfig));
+	}
 
 }
 

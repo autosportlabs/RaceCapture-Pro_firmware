@@ -730,12 +730,12 @@ static void json_gpsTarget(Serial *serial, const char *name,  GPSTargetConfig *g
 }
 
 int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
-	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
+	TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfig);
 
 	json_messageStart(serial, NULL_MESSAGE_ID);
 	json_blockStart(serial, "getTrackCfg");
-	json_gpsTarget(serial, "startFinish", &gpsCfg->startFinishConfig, 1);
-	json_gpsTarget(serial, "split", &gpsCfg->splitConfig, 0);
+	json_gpsTarget(serial, "startFinish", &trackCfg->startFinishConfig, 1);
+	json_gpsTarget(serial, "split", &trackCfg->splitConfig, 0);
 	json_blockEnd(serial, 0);
 	json_blockEnd(serial, 0);
 
@@ -766,14 +766,14 @@ void setTargetConfig(const jsmntok_t *cfg, GPSTargetConfig *targetConfig){
 
 int api_setTrackConfig(Serial *serial, const jsmntok_t *json){
 
-	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
+	TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfig);
 	const jsmntok_t * targetData = json + 1;
 
 	const jsmntok_t *startFinish = findNode(targetData,"startFinish");
-	if (startFinish != NULL) setTargetConfig(startFinish + 1, &gpsCfg->startFinishConfig);
+	if (startFinish != NULL) setTargetConfig(startFinish + 1, &trackCfg->startFinishConfig);
 
 	const jsmntok_t *split = findNode(targetData, "split");
-	if (split != NULL) setTargetConfig(split + 1, &gpsCfg->splitConfig);
+	if (split != NULL) setTargetConfig(split + 1, &trackCfg->splitConfig);
 
 	return API_SUCCESS;
 }

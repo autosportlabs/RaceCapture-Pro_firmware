@@ -219,21 +219,9 @@ typedef struct _PWMConfig{
 				DEFAULT_PWM3_CONFIG, \
 				DEFAULT_PWM4_CONFIG, \
 			}
-			
-typedef struct _GPSTargetConfig{
-	float latitude;
-	float longitude;
-	float targetRadius;
-} GPSTargetConfig;
 
 typedef struct _GPSConfig{
 	char GPSInstalled;
-	GPSTargetConfig startFinishConfig;
-	GPSTargetConfig splitConfig;
-	ChannelConfig lapCountCfg;
-	ChannelConfig lapTimeCfg;
-	ChannelConfig splitTimeCfg;
-	ChannelConfig lapDistanceCfg;
 	ChannelConfig satellitesCfg;
 	ChannelConfig latitudeCfg;
 	ChannelConfig longitudeCfg;
@@ -252,11 +240,6 @@ typedef struct _GPSConfig{
 #define DEFAULT_GPS_SATELLITES_LOGGING_PRECISION 	0
 
 //currently in degrees. This is about a 73 foot diameter circle (in the pacific NW...)
-#define DEFAULT_GPS_TARGET_CONFIG {0,0, 0.0004}
-#define DEFAULT_LAP_COUNT_CONFIG {"LapCount", "", SAMPLE_DISABLED}
-#define DEFAULT_LAP_TIME_CONFIG {"LapTime", "seconds", SAMPLE_DISABLED}
-#define DEFAULT_SPLIT_TIME_CONFIG {"SplitTime", "seconds", SAMPLE_DISABLED}
-#define DEFAULT_DISTANCE_CONFIG {"Distance", "miles", SAMPLE_DISABLED}
 #define DEFAULT_GPS_SATELLITES_CONFIG {"GpsSats", "", SAMPLE_DISABLED}
 #define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "Deg", SAMPLE_10Hz}
 #define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "Deg", SAMPLE_10Hz}
@@ -264,17 +247,47 @@ typedef struct _GPSConfig{
 #define DEFAULT_GPS_SPEED_CONFIG {"Speed", "MPH", SAMPLE_10Hz}
 
 #define DEFAULT_GPS_CONFIG {CONFIG_FEATURE_INSTALLED, \
-							DEFAULT_GPS_TARGET_CONFIG, \
-							DEFAULT_GPS_TARGET_CONFIG, \
-							DEFAULT_LAP_COUNT_CONFIG, \
-							DEFAULT_LAP_TIME_CONFIG, \
-							DEFAULT_SPLIT_TIME_CONFIG, \
-							DEFAULT_DISTANCE_CONFIG, \
 							DEFAULT_GPS_SATELLITES_CONFIG, \
 							DEFAULT_GPS_LATITUDE_CONFIG, \
 							DEFAULT_GPS_LONGITUDE_CONFIG, \
 							DEFAULT_GPS_TIME_CONFIG, \
 							DEFAULT_GPS_SPEED_CONFIG}
+
+
+typedef struct _GPSTargetConfig{
+	float latitude;
+	float longitude;
+	float targetRadius;
+} GPSTargetConfig;
+
+#define DEFAULT_DISTANCE_LOGGING_PRECISION 2
+
+typedef struct _TrackConfig{
+	GPSTargetConfig startFinishConfig;
+	GPSTargetConfig splitConfig;
+	ChannelConfig lapCountCfg;
+	ChannelConfig lapTimeCfg;
+	ChannelConfig splitTimeCfg;
+	ChannelConfig distanceCfg;
+	ChannelConfig predTimeCfg;
+} TrackConfig;
+
+#define DEFAULT_GPS_TARGET_CONFIG {0,0, 0.0004}
+#define DEFAULT_LAP_COUNT_CONFIG {"LapCount", "", SAMPLE_DISABLED}
+#define DEFAULT_LAP_TIME_CONFIG {"LapTime", "seconds", SAMPLE_DISABLED}
+#define DEFAULT_SPLIT_TIME_CONFIG {"SplitTime", "seconds", SAMPLE_DISABLED}
+#define DEFAULT_DISTANCE_CONFIG {"Distance", "miles", SAMPLE_DISABLED}
+#define DEFAULT_PRED_TIME_CONFIG {"PredTime", "seconds", SAMPLE_DISABLED}
+
+#define DEFAULT_TRACK_CONFIG { \
+	DEFAULT_GPS_TARGET_CONFIG, \
+	DEFAULT_GPS_TARGET_CONFIG, \
+	DEFAULT_LAP_COUNT_CONFIG, \
+	DEFAULT_LAP_TIME_CONFIG, \
+	DEFAULT_SPLIT_TIME_CONFIG, \
+	DEFAULT_DISTANCE_CONFIG, \
+	DEFAULT_PRED_TIME_CONFIG}
+
 
 #define BT_DEVICE_NAME_LENGTH 20
 #define BT_PASSCODE_LENGTH 4
@@ -383,6 +396,8 @@ typedef struct _LoggerConfig {
 	AccelConfig AccelConfigs[CONFIG_ACCEL_CHANNELS];
 	//GPS Configuration
 	GPSConfig GPSConfigs;
+	//Track configuration
+	TrackConfig TrackConfig;
 	//Connectivity Configuration
 	ConnectivityConfig ConnectivityConfigs;
 	//Padding data to accommodate flash routine
@@ -399,6 +414,7 @@ typedef struct _LoggerConfig {
 	CONFIG_FEATURE_INSTALLED, \
 	DEFAULT_ACCEL_CONFIGS, \
 	DEFAULT_GPS_CONFIG, \
+	DEFAULT_TRACK_CONFIG, \
 	DEFAULT_CONNECTIVITY_CONFIG, \
 	"" \
 	}
