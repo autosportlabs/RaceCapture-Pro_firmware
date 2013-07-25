@@ -10,7 +10,7 @@
 
 #include <stddef.h>
 
-#define MAX_LOCATION_SAMPLES 100
+#define MAX_LOCATION_SAMPLES 10
 
 typedef struct _LocationSample{
 	float latitude;
@@ -20,10 +20,11 @@ typedef struct _LocationSample{
 typedef struct _LapBuffer{
 	LocationSample samples[MAX_LOCATION_SAMPLES];
 	size_t sampleInterval;
-	size_t lastSampleIndex;
+	size_t sampleCount;
 } LapBuffer;
 
 void init_timer();
+void end_lap();
 void add_sample(float latitude, float longitude);
 float getPredictedTime();
 
