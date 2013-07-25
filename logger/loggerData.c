@@ -230,7 +230,7 @@ void populateSampleRecord(SampleRecord *sr, size_t currentTicks, LoggerConfig *c
 	//Write GPS
 	if (gpsInstalled){
 		writeGPSChannels(sr,currentTicks, &(config->GPSConfigs));
-		writeTrackChannels(sr, currentTicks, &(config->TrackConfig));
+		writeTrackChannels(sr, currentTicks, &(config->TrackConfigs));
 	}
 
 }

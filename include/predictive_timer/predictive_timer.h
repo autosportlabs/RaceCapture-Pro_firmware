@@ -15,6 +15,8 @@
 typedef struct _LocationSample{
 	float latitude;
 	float longitude;
+	float speed;
+	float distance;
 } LocationSample;
 
 typedef struct _LapBuffer{
@@ -25,7 +27,7 @@ typedef struct _LapBuffer{
 
 void init_timer();
 void end_lap();
-void add_sample(float latitude, float longitude);
+void add_sample(float latitude, float longitude, float speed, float distance);
 float getPredictedTime();
 
 #endif /* PREDICTIVE_TIMER_H_ */

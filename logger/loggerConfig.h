@@ -397,7 +397,7 @@ typedef struct _LoggerConfig {
 	//GPS Configuration
 	GPSConfig GPSConfigs;
 	//Track configuration
-	TrackConfig TrackConfig;
+	TrackConfig TrackConfigs;
 	//Connectivity Configuration
 	ConnectivityConfig ConnectivityConfigs;
 	//Padding data to accommodate flash routine

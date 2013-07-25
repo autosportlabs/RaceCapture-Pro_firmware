@@ -348,7 +348,7 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
 			if HIGHER_SAMPLE(sr, s) s = sr;
 		}
 	}
-	TrackConfig *trackCfg = &(config->TrackConfig);
+	TrackConfig *trackCfg = &(config->TrackConfigs);
 	{
 		int sr = trackCfg->lapCountCfg.sampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr;

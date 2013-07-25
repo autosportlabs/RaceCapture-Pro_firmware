@@ -79,31 +79,31 @@ void initSampleRecord(LoggerConfig *loggerConfig,SampleRecord *sr){
 	{
 		ChannelSample *s = &(sr->Track_LapCountSample);
 		s->precision = DEFAULT_LAP_COUNT_LOGGING_PRECISION;
-		s->channelConfig = &(loggerConfig->TrackConfig.lapCountCfg);
+		s->channelConfig = &(loggerConfig->TrackConfigs.lapCountCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->Track_LapTimeSample);
 		s->precision = DEFAULT_LAP_TIME_LOGGING_PRECISION;
-		s->channelConfig = &(loggerConfig->TrackConfig.lapTimeCfg);
+		s->channelConfig = &(loggerConfig->TrackConfigs.lapTimeCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->Track_SplitTimeSample);
 		s->precision = DEFAULT_LAP_TIME_LOGGING_PRECISION;
-		s->channelConfig =  &(loggerConfig->TrackConfig.splitTimeCfg);
+		s->channelConfig =  &(loggerConfig->TrackConfigs.splitTimeCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->Track_DistanceSample);
 		s->precision = DEFAULT_DISTANCE_LOGGING_PRECISION;
-		s->channelConfig =  &(loggerConfig->TrackConfig.distanceCfg);
+		s->channelConfig =  &(loggerConfig->TrackConfigs.distanceCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
 		ChannelSample *s = &(sr->Track_PredTimeSample);
 		s->precision = DEFAULT_LAP_TIME_LOGGING_PRECISION;
-		s->channelConfig =  &(loggerConfig->TrackConfig.predTimeCfg);
+		s->channelConfig =  &(loggerConfig->TrackConfigs.predTimeCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{

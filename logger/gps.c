@@ -365,7 +365,7 @@ static void updateDistances(){
 
 
 static void updateStartFinish(void){
-	GPSTargetConfig *targetConfig = &(getWorkingLoggerConfig()->TrackConfig.startFinishConfig);
+	GPSTargetConfig *targetConfig = &(getWorkingLoggerConfig()->TrackConfigs.startFinishConfig);
 
 	if (! isGpsTargetEnabled(targetConfig)) return;
 
@@ -399,7 +399,7 @@ static void updateStartFinish(void){
 }
 
 static void updateSplit(void){
-	GPSTargetConfig *targetConfig = &(getWorkingLoggerConfig()->TrackConfig.splitConfig);
+	GPSTargetConfig *targetConfig = &(getWorkingLoggerConfig()->TrackConfigs.splitConfig);
 
 	if (! isGpsTargetEnabled(targetConfig)) return;
 

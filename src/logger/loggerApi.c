@@ -730,7 +730,7 @@ static void json_gpsTarget(Serial *serial, const char *name,  GPSTargetConfig *g
 }
 
 int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
-	TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfig);
+	TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs);
 
 	json_messageStart(serial, NULL_MESSAGE_ID);
 	json_blockStart(serial, "getTrackCfg");
@@ -780,7 +780,7 @@ void setTargetConfig(const jsmntok_t *cfg, GPSTargetConfig *targetConfig){
 
 int api_setTrackConfig(Serial *serial, const jsmntok_t *json){
 
-	TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfig);
+	TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs);
 	const jsmntok_t * targetData = json + 1;
 
 	const jsmntok_t *startFinish = findNode(targetData,"startFinish");

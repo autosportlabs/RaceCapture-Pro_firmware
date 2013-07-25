@@ -20,6 +20,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/api \
 		-I$(RCP_INC)/logger \
 		-I$(RCP_INC)/messaging \
+		-I$(RCP_INC)/predictive_timer \
 		-I$(SAM7S_SRC)/serial \
 		-I$(SAM7S_SRC)/lua \
 		-I$(SAM7S_SRC)/command \
@@ -64,6 +65,7 @@ SRC = 	loggerData_test.cpp \
 		$(RCP_BASE)/race_capture/ring_buffer.c \
 		$(SAM7S_SRC)/serial/serial.c \
 		$(RCP_SRC)/logger/loggerApi.c \
+		$(RCP_SRC)/predictive_timer/predictive_timer.c \
 		$(RCP_BASE)/logger/loggerConfig.c \
 		$(RCP_BASE)/logger/gps.c \
 		$(RCP_BASE)/logger/geometry.c \
