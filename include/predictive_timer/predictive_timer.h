@@ -13,21 +13,25 @@
 #define MAX_LOCATION_SAMPLES 10
 
 typedef struct _LocationSample{
-	float latitude;
-	float longitude;
 	float speed;
 	float distance;
 } LocationSample;
 
 typedef struct _LapBuffer{
 	LocationSample samples[MAX_LOCATION_SAMPLES];
-	size_t sampleInterval;
 	size_t sampleCount;
+	size_t sampleInterval;
+	size_t currentInterval;
+	float currentDistAccumulator;
+	float currentSpeedAccumulator;
 } LapBuffer;
 
 void init_timer();
 void end_lap();
-void add_sample(float latitude, float longitude, float speed, float distance);
+void add_sample(float speed, float distance);
+LapBuffer * get_last_lap_buffer();
+LapBuffer * get_current_lap_buffer();
+
 float getPredictedTime();
 
 #endif /* PREDICTIVE_TIMER_H_ */

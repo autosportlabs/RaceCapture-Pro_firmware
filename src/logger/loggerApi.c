@@ -737,19 +737,20 @@ int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
 	json_gpsTarget(serial, "startFinish", &trackCfg->startFinishConfig, 1);
 	json_gpsTarget(serial, "split", &trackCfg->splitConfig, 1);
 	json_blockStart(serial, "lapCount");
-	json_channelConfig(serial, &trackCfg->lapCountCfg, 1);
+	json_channelConfig(serial, &trackCfg->lapCountCfg, 0);
 	json_blockEnd(serial, 1);
 	json_blockStart(serial, "lapTime");
-	json_channelConfig(serial, &trackCfg->lapTimeCfg, 1);
+	json_channelConfig(serial, &trackCfg->lapTimeCfg, 0);
 	json_blockEnd(serial, 1);
 	json_blockStart(serial, "splitTime");
-	json_channelConfig(serial, &trackCfg->splitTimeCfg, 1);
+	json_channelConfig(serial, &trackCfg->splitTimeCfg, 0);
 	json_blockEnd(serial, 1);
 	json_blockStart(serial, "dist");
-	json_channelConfig(serial, &trackCfg->distanceCfg, 1);
+	json_channelConfig(serial, &trackCfg->distanceCfg, 0);
 	json_blockEnd(serial, 1);
 	json_blockStart(serial, "predTime");
-	json_channelConfig(serial, &trackCfg->predTimeCfg, 1);
+	json_channelConfig(serial, &trackCfg->predTimeCfg, 0);
+	json_blockEnd(serial, 0);
 	json_blockEnd(serial, 0);
 	json_blockEnd(serial, 0);
 

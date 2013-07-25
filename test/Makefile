@@ -53,6 +53,7 @@ SRC = 	loggerData_test.cpp \
 		numtoa_test.cpp \
 		loggerApi_test.cpp \
 		loggerConfig_test.cpp \
+		predictiveTime_test.cpp \
 		RCPTest.cpp \
 		mock_uart.c \
 		mock_usb_comm.c \
