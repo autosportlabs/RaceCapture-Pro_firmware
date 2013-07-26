@@ -13,14 +13,14 @@
 class PredictiveTimeTest : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE( PredictiveTimeTest );
-  CPPUNIT_TEST( testAddSample );
+  CPPUNIT_TEST( testAddSamples );
   CPPUNIT_TEST_SUITE_END();
 
 public:
   void setUp();
   void tearDown();
 
-  void testAddSample();
+  void testAddSamples();
 };
 
 

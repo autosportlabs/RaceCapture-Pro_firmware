@@ -8,7 +8,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( PredictiveTimeTest );
 
 void PredictiveTimeTest::setUp()
 {
-	init_timer();
+	init_predictive_timer();
 }
 
 
@@ -17,19 +17,17 @@ void PredictiveTimeTest::tearDown()
 }
 
 
-void PredictiveTimeTest::testAddSample()
+void PredictiveTimeTest::testAddSamples()
 {
 	for (size_t i = 0; i < 20; i++){
-		add_sample(100, 1);
+		add_predictive_sample(100, 1, 2);
 	}
 	LapBuffer * currentBuffer = get_current_lap_buffer();
 
 	CPPUNIT_ASSERT_EQUAL((size_t)10, currentBuffer->sampleCount);
 	CPPUNIT_ASSERT_EQUAL((size_t)2, currentBuffer->sampleInterval);
 
-	size_t totalDistance = 0;
-	for (size_t i = 0; i < 10; i++){
-		totalDistance += currentBuffer->samples[i].distance;
-	}
-	CPPUNIT_ASSERT_EQUAL((size_t)20, totalDistance);
+	//total distance
+	CPPUNIT_ASSERT_EQUAL((float)20, currentBuffer->samples[9].distance);
+	CPPUNIT_ASSERT_EQUAL((float)40, currentBuffer->samples[9].time);
 }

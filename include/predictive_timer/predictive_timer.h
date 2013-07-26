@@ -15,6 +15,7 @@
 typedef struct _LocationSample{
 	float speed;
 	float distance;
+	float time;
 } LocationSample;
 
 typedef struct _LapBuffer{
@@ -22,16 +23,17 @@ typedef struct _LapBuffer{
 	size_t sampleCount;
 	size_t sampleInterval;
 	size_t currentInterval;
-	float currentDistAccumulator;
 	float currentSpeedAccumulator;
+	float currentDistAccumulator;
+	float currentTimeAccumulator;
 } LapBuffer;
 
-void init_timer();
+void init_predictive_timer();
 void end_lap();
-void add_sample(float speed, float distance);
+void add_predictive_sample(float speed, float distance, float time);
 LapBuffer * get_last_lap_buffer();
 LapBuffer * get_current_lap_buffer();
 
-float getPredictedTime();
+float getPredictedTime(float currentSpeed);
 
 #endif /* PREDICTIVE_TIMER_H_ */
