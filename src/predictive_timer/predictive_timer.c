@@ -29,7 +29,15 @@ void init_predictive_timer(){
 }
 
 void end_lap(){
-	//move current buffer to last lap buffer
+	if (_currentLap == &_buffer1){
+		_currentLap = &_buffer2;
+		_lastLap = &_buffer1;
+	}
+	else{
+		_currentLap = &_buffer1;
+		_lastLap = &_buffer2;
+	}
+	init_lap_buffer(_currentLap);
 }
 
 #define AVERAGE_TWO(n1, n2) (n1 + n2) / 2;
@@ -90,19 +98,20 @@ static size_t getLastLapIndex(int startingIndex){
 	int i = currentDistance < _lastLap->samples[startingIndex].distance ? 0 : startingIndex;
 	for (; i < lastLapSampleCount; i++){
 		float dist1 = _lastLap->samples[i].distance;
-		float dist2 = (i < lastLapSampleCount ? _lastLap->samples[i + 1].distance : dist1);
+		float dist2 = (i < lastLapSampleCount - 1 ? _lastLap->samples[i + 1].distance : dist1);
 		if (currentDistance >= dist1 && currentDistance < dist2){
 			break;
 		}
-		else if (currentDistance > dist2){
+		else if (currentDistance > dist2 && i == lastLapSampleCount - 1){
 			i = SEARCH_INDEX_OUT_OF_RANGE;
 			break;
 		}
 	}
+	if (i >= lastLapSampleCount) i = SEARCH_INDEX_OUT_OF_RANGE;
 	return i;
 }
 
-float getPredictedTime(float currentSpeed){
+float get_predicted_time(float currentSpeed){
 
 	//Time so far on current lap
 	float predictedTime = _currentLap->currentTimeAccumulator + _currentLap->samples[_currentLap->sampleCount - 1].time;

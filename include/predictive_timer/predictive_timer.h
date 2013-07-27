@@ -34,6 +34,6 @@ void add_predictive_sample(float speed, float distance, float time);
 LapBuffer * get_last_lap_buffer();
 LapBuffer * get_current_lap_buffer();
 
-float getPredictedTime(float currentSpeed);
+float get_predicted_time(float currentSpeed);
 
 #endif /* PREDICTIVE_TIMER_H_ */
