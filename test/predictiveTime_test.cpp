@@ -27,6 +27,8 @@ void PredictiveTimeTest::testPredictedLapTimeFullLap(){
 		printf("%d: pred: %f\n", i, predTime);
 		add_predictive_sample(100, 1, .9);
 	}
+	float predTime = get_predicted_time(100);
+	printf("end pred: %f\n", predTime);
 }
 
 void PredictiveTimeTest::testPredictLapTime()
