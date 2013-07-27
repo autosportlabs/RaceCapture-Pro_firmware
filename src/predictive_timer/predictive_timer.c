@@ -95,20 +95,15 @@ static size_t getLastLapIndex(int startingIndex){
 	size_t lastLapSampleCount = _lastLap->sampleCount;
 
 	//start from the startingIndex to save time if possible.
-	int i = currentDistance < _lastLap->samples[startingIndex].distance ? 0 : startingIndex;
-	for (; i < lastLapSampleCount; i++){
-		float dist1 = _lastLap->samples[i].distance;
-		float dist2 = (i < lastLapSampleCount - 1 ? _lastLap->samples[i + 1].distance : dist1);
-		if (currentDistance >= dist1 && currentDistance < dist2){
-			break;
-		}
-		else if (currentDistance > dist2 && i == lastLapSampleCount - 1){
-			i = SEARCH_INDEX_OUT_OF_RANGE;
-			break;
-		}
+	int searchIndex = currentDistance < _lastLap->samples[startingIndex].distance ? 0 : startingIndex;
+	for (; searchIndex < lastLapSampleCount; searchIndex++){
+		float dist1 = _lastLap->samples[searchIndex].distance;
+		float dist2 = (searchIndex < lastLapSampleCount - 1 ? _lastLap->samples[searchIndex + 1].distance : dist1);
+		if (currentDistance < dist1) break;
+		if (currentDistance >= dist1 && currentDistance < dist2) break;
 	}
-	if (i >= lastLapSampleCount) i = SEARCH_INDEX_OUT_OF_RANGE;
-	return i;
+	if (searchIndex >= lastLapSampleCount) searchIndex = SEARCH_INDEX_OUT_OF_RANGE;
+	return searchIndex;
 }
 
 float get_predicted_time(float currentSpeed){
@@ -128,7 +123,7 @@ float get_predicted_time(float currentSpeed){
 		float timeAtSameDistanceOnLastLap = lastLapLocationSample->time; //need to linear interpolate
 		float speedAtSameDistanceOnLastLap = lastLapLocationSample->speed; //need to linear interpolate
 
-		float estimatedRemainingTime = lastLapTotalTime - timeAtSameDistanceOnLastLap * (currentSpeed / speedAtSameDistanceOnLastLap);
+		float estimatedRemainingTime = (lastLapTotalTime - timeAtSameDistanceOnLastLap) * (speedAtSameDistanceOnLastLap / currentSpeed );
 		predictedTime += estimatedRemainingTime;
 	}
 	cachedLastLapIndex = lastLapIndex;

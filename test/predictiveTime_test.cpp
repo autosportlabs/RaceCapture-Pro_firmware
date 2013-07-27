@@ -16,18 +16,30 @@ void PredictiveTimeTest::tearDown()
 {
 }
 
+void PredictiveTimeTest::testPredictedLapTimeFullLap(){
+	//load up a lap
+	for (size_t i = 0; i < 20; i++){
+		add_predictive_sample(90, 1, 1);
+	}
+	end_lap();
+	for (size_t i = 0; i < 20; i++){
+		float predTime = get_predicted_time(100);
+		printf("%d: pred: %f\n", i, predTime);
+		add_predictive_sample(100, 1, .9);
+	}
+}
 
 void PredictiveTimeTest::testPredictLapTime()
 {
 	for (size_t i = 0; i < 20; i++){
-		add_predictive_sample(100, 1, 2);
+		add_predictive_sample(90, 1, 1);
 	}
 	end_lap();
 	for (size_t i = 0; i < 10; i++){
-		add_predictive_sample(110, 1, 1.8);
+		add_predictive_sample(100, 1, .9);
 	}
-	float predTime = get_predicted_time(110);
-	printf("predictedTime: %f", predTime);
+	float predTime = get_predicted_time(100);
+	printf("predictedTime: %f\n", predTime);
 	}
 
 void PredictiveTimeTest::testAddSamples()

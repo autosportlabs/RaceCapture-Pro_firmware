@@ -15,6 +15,7 @@ class PredictiveTimeTest : public CppUnit::TestFixture
   CPPUNIT_TEST_SUITE( PredictiveTimeTest );
   CPPUNIT_TEST( testAddSamples );
   CPPUNIT_TEST( testPredictLapTime );
+  CPPUNIT_TEST( testPredictedLapTimeFullLap );
 
   CPPUNIT_TEST_SUITE_END();
 
@@ -23,6 +24,7 @@ public:
   void tearDown();
 
   void testPredictLapTime();
+  void testPredictedLapTimeFullLap();
   void testAddSamples();
 };
 
