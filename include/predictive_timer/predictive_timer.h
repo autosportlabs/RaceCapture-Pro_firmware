@@ -20,12 +20,10 @@ typedef struct _LocationSample{
 
 typedef struct _LapBuffer{
 	LocationSample samples[MAX_LOCATION_SAMPLES];
-	size_t sampleCount;
+	size_t sampleIndex;
 	size_t sampleInterval;
 	size_t currentInterval;
 	float currentSpeedAccumulator;
-	float currentDistAccumulator;
-	float currentTimeAccumulator;
 } LapBuffer;
 
 void init_predictive_timer();

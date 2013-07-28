@@ -1,6 +1,8 @@
 #include "predictiveTime_test.h"
 #include "predictive_timer.h"
+#include <stdlib.h>
 
+#define CPPUNIT_ASSERT_CLOSE_ENOUGH(ACTUAL, EXPECTED) CPPUNIT_ASSERT((abs((ACTUAL - EXPECTED)) < 0.00001))
 
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( PredictiveTimeTest );
@@ -24,25 +26,27 @@ void PredictiveTimeTest::testPredictedLapTimeFullLap(){
 	end_lap();
 	for (size_t i = 0; i < 20; i++){
 		float predTime = get_predicted_time(100);
-		printf("%d: pred: %f\n", i, predTime);
+		CPPUNIT_ASSERT_CLOSE_ENOUGH(predTime, 18);
 		add_predictive_sample(100, 1, .9);
 	}
 	float predTime = get_predicted_time(100);
-	printf("end pred: %f\n", predTime);
+	CPPUNIT_ASSERT_CLOSE_ENOUGH(predTime, 18);
 }
 
 void PredictiveTimeTest::testPredictLapTime()
 {
 	for (size_t i = 0; i < 20; i++){
+		//add speed, distance, time
 		add_predictive_sample(90, 1, 1);
 	}
 	end_lap();
 	for (size_t i = 0; i < 10; i++){
+		//add speed, distance, time
 		add_predictive_sample(100, 1, .9);
 	}
 	float predTime = get_predicted_time(100);
-	printf("predictedTime: %f\n", predTime);
-	}
+	CPPUNIT_ASSERT_CLOSE_ENOUGH(predTime, 18); //predicted time should be 18
+}
 
 void PredictiveTimeTest::testAddSamples()
 {
@@ -51,7 +55,11 @@ void PredictiveTimeTest::testAddSamples()
 	}
 	LapBuffer * currentBuffer = get_current_lap_buffer();
 
-	CPPUNIT_ASSERT_EQUAL((size_t)10, currentBuffer->sampleCount);
+	for (size_t i = 0; i < 10; i++){
+		LocationSample *s = &currentBuffer->samples[i];
+	}
+
+	CPPUNIT_ASSERT_EQUAL((size_t)9, currentBuffer->sampleIndex);
 	CPPUNIT_ASSERT_EQUAL((size_t)2, currentBuffer->sampleInterval);
 
 	//total distance

@@ -8,16 +8,21 @@ static LapBuffer * _currentLap;
 static LapBuffer * _lastLap;
 
 #define SEARCH_INDEX_OUT_OF_RANGE -1
+#define AVERAGE_TWO(n1, n2) (n1 + n2) / 2;
+
 static int cachedLastLapIndex;
 
 
 static void init_lap_buffer(LapBuffer *buffer){
-	buffer->currentDistAccumulator = 0;
-	buffer->currentSpeedAccumulator = 0;
-	buffer->currentTimeAccumulator = 0;
-	buffer->sampleCount = 0;
+
+	LocationSample *sample = &buffer->samples[0];
+	sample->distance = 0;
+	sample->speed = 0;
+	sample->time = 0;
+	buffer->sampleIndex = 0;
 	buffer->sampleInterval = 1;
 	buffer->currentInterval = 0;
+	buffer->currentSpeedAccumulator = 0;
 }
 
 void init_predictive_timer(){
@@ -40,13 +45,43 @@ void end_lap(){
 	init_lap_buffer(_currentLap);
 }
 
-#define AVERAGE_TWO(n1, n2) (n1 + n2) / 2;
+
+static float getCurrentDistance(){
+	return _currentLap->samples[_currentLap->sampleIndex].distance;
+}
+
+static float getCurrentTime(){
+	return _currentLap->samples[_currentLap->sampleIndex].time;
+}
+
+static float getLastLapTotalTime(){
+	return _lastLap->samples[_lastLap->sampleIndex].time;
+}
+
+static LocationSample * getCurrentLocationSample(){
+	return &_currentLap->samples[_currentLap->sampleIndex];
+}
+
+static size_t getLastLapIndex(int startingIndex){
+	float currentDistance = getCurrentDistance();
+
+	size_t lastLapSampleIndex = _lastLap->sampleIndex;
+
+	//start from the startingIndex to save time if possible.
+	int searchIndex = currentDistance < _lastLap->samples[startingIndex].distance ? 0 : startingIndex;
+	for (; searchIndex <= lastLapSampleIndex; searchIndex++){
+		float dist1 = _lastLap->samples[searchIndex].distance;
+		float dist2 = (searchIndex < lastLapSampleIndex ? _lastLap->samples[searchIndex + 1].distance : dist1);
+		if (currentDistance < dist1) break;
+		if (currentDistance >= dist1 && currentDistance < dist2) break;
+	}
+	if (searchIndex > lastLapSampleIndex) searchIndex = SEARCH_INDEX_OUT_OF_RANGE;
+	return searchIndex;
+}
 
 static void compact_lap_buffer(LapBuffer *buffer){
-	size_t sampleCount = buffer->sampleCount;
-	size_t newCount = buffer->sampleCount / 2;
 	size_t targetIndex = 0;
-	for (size_t i = 0; i < sampleCount; i+=2,targetIndex++){
+	for (size_t i = 0; i < MAX_LOCATION_SAMPLES; i+=2,targetIndex++){
 		LocationSample *s1 = &buffer->samples[i];
 		LocationSample *s2 = &buffer->samples[i+1];
 		LocationSample *target = &buffer->samples[targetIndex];
@@ -55,71 +90,52 @@ static void compact_lap_buffer(LapBuffer *buffer){
 		target->speed = AVERAGE_TWO(s1->speed, s2->speed);
 	}
 	buffer->sampleInterval++;
-	buffer->sampleCount = newCount;
+	buffer->sampleIndex = MAX_LOCATION_SAMPLES / 2;
 }
+
 
 void add_predictive_sample(float speed, float distance, float time){
 
-	_currentLap->currentSpeedAccumulator += speed;
-	_currentLap->currentDistAccumulator += distance;
-	_currentLap->currentTimeAccumulator += time;
-	_currentLap->currentInterval++;
-
-	size_t currentSampleCount = _currentLap->sampleCount;
 	if (_currentLap->currentInterval >= _currentLap->sampleInterval){
-		if (currentSampleCount >= MAX_LOCATION_SAMPLES){
+		_currentLap->sampleIndex++;
+		if (_currentLap->sampleIndex >= MAX_LOCATION_SAMPLES){
 			compact_lap_buffer(_currentLap);
 		}
+		_currentLap->currentSpeedAccumulator = 0;
+		_currentLap->currentInterval = 0;
+		LocationSample * sample = getCurrentLocationSample();
+		sample->speed = 0;
+		if (_currentLap->sampleIndex > 0 ){
+			sample->distance = _currentLap->samples[_currentLap->sampleIndex - 1].distance;
+			sample->time = _currentLap->samples[_currentLap->sampleIndex - 1].time;
+		}
 		else{
-			LocationSample *sample = &_currentLap->samples[currentSampleCount];
-			sample->speed = _currentLap->currentSpeedAccumulator / (float)_currentLap->sampleInterval;
-			sample->distance = _currentLap->currentDistAccumulator;
-			sample->time = _currentLap->currentTimeAccumulator;
-			if (currentSampleCount > 0 ){
-				sample->distance += _currentLap->samples[currentSampleCount - 1].distance;
-				sample->time += _currentLap->samples[currentSampleCount - 1].time;
-			}
-			_currentLap->currentSpeedAccumulator = 0;
-			_currentLap->currentDistAccumulator = 0;
-			_currentLap->currentTimeAccumulator = 0;
-			_currentLap->currentInterval = 0;
-			_currentLap->sampleCount++;
+			sample->distance = 0;
+			sample->time = 0;
 		}
 	}
-}
 
-static float getCurrentDistance(){
-	return _currentLap->currentDistAccumulator + _currentLap->samples[_currentLap->sampleCount - 1].distance;
-}
+	_currentLap->currentInterval++;
+	LocationSample * sample = getCurrentLocationSample();
 
-static size_t getLastLapIndex(int startingIndex){
-	float currentDistance = getCurrentDistance();
-
-	size_t lastLapSampleCount = _lastLap->sampleCount;
-
-	//start from the startingIndex to save time if possible.
-	int searchIndex = currentDistance < _lastLap->samples[startingIndex].distance ? 0 : startingIndex;
-	for (; searchIndex < lastLapSampleCount; searchIndex++){
-		float dist1 = _lastLap->samples[searchIndex].distance;
-		float dist2 = (searchIndex < lastLapSampleCount - 1 ? _lastLap->samples[searchIndex + 1].distance : dist1);
-		if (currentDistance < dist1) break;
-		if (currentDistance >= dist1 && currentDistance < dist2) break;
-	}
-	if (searchIndex >= lastLapSampleCount) searchIndex = SEARCH_INDEX_OUT_OF_RANGE;
-	return searchIndex;
+	//on the fly averaging of speed
+	_currentLap->currentSpeedAccumulator += speed;
+	sample->speed = _currentLap->currentSpeedAccumulator / _currentLap->currentInterval;
+	sample->distance += distance;
+	sample->time += time;
 }
 
 float get_predicted_time(float currentSpeed){
 
 	//Time so far on current lap
-	float predictedTime = _currentLap->currentTimeAccumulator + _currentLap->samples[_currentLap->sampleCount - 1].time;
+	float predictedTime = getCurrentTime();
 
 	//find the same point in last lap buffer based on distance
 	int lastLapIndex = getLastLapIndex(cachedLastLapIndex);
 
 	if (lastLapIndex != SEARCH_INDEX_OUT_OF_RANGE){		//calc estimated remaining time on last lap
 		//get the total time for the last lap
-		float lastLapTotalTime = _lastLap->samples[_lastLap->sampleCount - 1].time + _lastLap->currentTimeAccumulator;
+		float lastLapTotalTime =  getLastLapTotalTime();
 
 		//get the time and speed from the last lap at the same location
 		LocationSample *lastLapLocationSample = &_lastLap->samples[lastLapIndex];
