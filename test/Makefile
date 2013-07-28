@@ -21,6 +21,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/logger \
 		-I$(RCP_INC)/messaging \
 		-I$(RCP_INC)/predictive_timer \
+		-I$(RCP_INC)/util \
 		-I$(SAM7S_SRC)/serial \
 		-I$(SAM7S_SRC)/lua \
 		-I$(SAM7S_SRC)/command \
@@ -67,13 +68,14 @@ SRC = 	loggerData_test.cpp \
 		$(SAM7S_SRC)/serial/serial.c \
 		$(RCP_SRC)/logger/loggerApi.c \
 		$(RCP_SRC)/predictive_timer/predictive_timer.c \
+		$(RCP_SRC)/util/linear_interpolate.c \
 		$(RCP_BASE)/logger/loggerConfig.c \
 		$(RCP_BASE)/logger/gps.c \
 		$(RCP_BASE)/logger/geometry.c \
 		$(RCP_BASE)/logger/sampleRecord.c \
 		$(RCP_BASE)/logger/loggerData.c \
 		$(MOCK_DIR)/accelerometer.c \
-		$(MOCK_DIR)/loggerHardware.c 	
+		$(MOCK_DIR)/loggerHardware.c 
 
 OBJ = $(addsuffix .o, $(basename $(SRC)))
 

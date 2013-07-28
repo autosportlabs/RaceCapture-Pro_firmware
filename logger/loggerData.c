@@ -9,6 +9,7 @@
 #include "loggerHardware.h"
 #include "accelerometer.h"
 #include "gps.h"
+#include "linear_interpolate.h"
 
 
 static void writeAccelerometer(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *config){
@@ -233,15 +234,6 @@ void populateSampleRecord(SampleRecord *sr, size_t currentTicks, LoggerConfig *c
 		writeTrackChannels(sr, currentTicks, &(config->TrackConfigs));
 	}
 
-}
-
-
-//linear interpolation routine
-//            (y2 - y1)
-//  y = y1 +  --------- * (x - x1)
-//            (x2 - x1)
-static float LinearInterpolate(float x, float x1, float y1, float x2, float y2){
-	return y1 + (((y2 - y1))  / (x2 - x1)) * (x - x1);
 }
 
 

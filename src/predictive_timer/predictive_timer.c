@@ -1,5 +1,5 @@
 #include "predictive_timer.h"
-
+#include "linear_interpolate.h"
 
 static LapBuffer _buffer1;
 static LapBuffer _buffer2;
@@ -88,9 +88,12 @@ void add_predictive_sample(float speed, float distance, float time){
 	}
 }
 
+static float getCurrentDistance(){
+	return _currentLap->currentDistAccumulator + _currentLap->samples[_currentLap->sampleCount - 1].distance;
+}
 
 static size_t getLastLapIndex(int startingIndex){
-	float currentDistance = _currentLap->currentDistAccumulator + _currentLap->samples[_currentLap->sampleCount - 1].distance;
+	float currentDistance = getCurrentDistance();
 
 	size_t lastLapSampleCount = _lastLap->sampleCount;
 
@@ -120,8 +123,12 @@ float get_predicted_time(float currentSpeed){
 
 		//get the time and speed from the last lap at the same location
 		LocationSample *lastLapLocationSample = &_lastLap->samples[lastLapIndex];
-		float timeAtSameDistanceOnLastLap = lastLapLocationSample->time; //need to linear interpolate
-		float speedAtSameDistanceOnLastLap = lastLapLocationSample->speed; //need to linear interpolate
+		LocationSample *lastLapLocationSampleNext = &_lastLap->samples[lastLapIndex + 1];
+
+		float currentDistance = getCurrentDistance();
+
+		float timeAtSameDistanceOnLastLap = LinearInterpolate(currentDistance, lastLapLocationSample->distance, lastLapLocationSample->time, lastLapLocationSampleNext->distance, lastLapLocationSampleNext->time);
+		float speedAtSameDistanceOnLastLap = LinearInterpolate(currentDistance, lastLapLocationSample->distance, lastLapLocationSample->speed, lastLapLocationSampleNext->distance, lastLapLocationSampleNext->speed);
 
 		float estimatedRemainingTime = (lastLapTotalTime - timeAtSameDistanceOnLastLap) * (speedAtSameDistanceOnLastLap / currentSpeed );
 		predictedTime += estimatedRemainingTime;
