@@ -5,6 +5,7 @@
 #include "modp_atonum.h"
 #include "geometry.h"
 #include "mod_string.h"
+#include "predictive_timer.h"
 #include <math.h>
 
 //kilometers
@@ -24,7 +25,7 @@
 #define UTC_TIME_BUFFER_LEN 11
 #define UTC_SPEED_BUFFER_LEN 10
 
-#define START_FINISH_TIME_THRESHOLD 30
+#define START_FINISH_TIME_THRESHOLD 10
 
 static int		g_flashCount;
 static float	g_prevLatitude;
@@ -34,6 +35,7 @@ static float	g_latitude;
 static float 	g_longitude;
 
 static float	g_UTCTime;
+static float 	g_prevSecondsSinceMidnight;
 static float 	g_secondsSinceMidnight;
 
 static float	g_speed;
@@ -67,6 +69,7 @@ static void parseGGA(char *data){
 
 	double latitude = 0.0;
 	double longitude = 0.0;
+	double secondsSinceMidnight = 0.0;
 
 	int keepParsing = 1;
 
@@ -93,7 +96,7 @@ static void parseGGA(char *data){
 						int minutes = modp_atoi(mm);
 						float seconds = modp_atof(ss);
 
-						g_secondsSinceMidnight = (hour * 60.0 * 60.0) + (minutes * 60.0) + seconds;
+						secondsSinceMidnight = (hour * 60.0 * 60.0) + (minutes * 60.0) + seconds;
 					}
 				}
 				break;
@@ -166,6 +169,8 @@ static void parseGGA(char *data){
 		delim = strchr(data,',');
 	}
 
+	g_prevSecondsSinceMidnight = g_secondsSinceMidnight;
+	g_secondsSinceMidnight = secondsSinceMidnight;
 	g_prevLatitude = g_latitude;
 	g_prevLongitude = g_longitude;
 	g_longitude = longitude;
@@ -222,17 +227,6 @@ static void parseGSV(char *data){
 static void parseRMC(char *data){
 
 }
-
-
-
-
-
-
-
-
-
-
-
 
 void resetDistance(){
 	g_distance = 0;
@@ -322,15 +316,6 @@ static int withinGpsTarget(GPSTargetConfig *targetConfig){
 
 	create_circ(&area,&p,targetConfig->targetRadius);
 	int within =  within_circ(&area,&currentP);
-/*	SendFloat(p.x,10);
-	SendString(" ");
-	SendFloat(p.y,10);
-	SendString(" within: ");
-	SendInt(within);
-	SendString(" ");
-	SendFloat(g_startFinishRadius,10);
-	SendCrlf();
-	*/
 	return within;
 }
 
@@ -388,6 +373,7 @@ static void updateStartFinish(void){
 					g_lastLapTime = lapTime;
 					g_lastStartFinishTimestamp = currentTimestamp;
 					resetDistance();
+					end_lap();
 				}
 			}
 		}
@@ -426,6 +412,8 @@ static void updateSplit(void){
 }
 
 void initGPS(){
+	g_secondsSinceMidnight = 0;
+	g_prevSecondsSinceMidnight = 0;
 	g_flashCount = 0;
 	g_prevLatitude = 0.0;
 	g_prevLongitude = 0.0;
@@ -445,6 +433,7 @@ void initGPS(){
 	g_lastSplitTimestamp = 0;
 	g_lapCount = 0;
 	g_distance = 0;
+	init_predictive_timer();
 }
 
 void processGPSData(char *gpsData, size_t len){
@@ -463,6 +452,10 @@ void processGPSData(char *gpsData, size_t len){
 				updateDistances();
 				updateStartFinish();
 				updateSplit();
+				float distance = calcDistancesSinceLastSample();
+				//float timeSinceLastSample = calcTimeSinceLastSample();
+				//add_predictive_sample(g_speed, distance, time);
+
 			} else if (strstr(data,"VTG,")){ //Course Over Ground and Ground Speed
 				parseVTG(data + 4);
 			} else if (strstr(data,"GSA,")){ //GPS Fix data
