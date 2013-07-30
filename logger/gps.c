@@ -29,6 +29,8 @@
 
 #define TIME_NULL -1
 
+#define GPS_LOCKED_ON(QUALITY) QUALITY != GPS_QUALITY_NO_FIX
+
 static int		g_flashCount;
 static float	g_prevLatitude;
 static float	g_prevLongitude;
@@ -350,11 +352,8 @@ static float calcTimeSinceLastSample(){
 	return time;
 }
 
-static void processStartFinish(void){
-	GPSTargetConfig *targetConfig = &(getWorkingLoggerConfig()->TrackConfigs.startFinishConfig);
-
-	if (! isGpsTargetEnabled(targetConfig)) return;
-
+static int processStartFinish(GPSTargetConfig *targetConfig){
+	int lapDetected = 0;
 	g_atStartFinish = withinGpsTarget(targetConfig);
 	if (g_atStartFinish){
 		if (g_prevAtStartFinish == 0){
@@ -373,8 +372,7 @@ static void processStartFinish(void){
 					g_lapCount++;
 					g_lastLapTime = lapTime;
 					g_lastStartFinishTimestamp = currentTimestamp;
-					resetDistance();
-					end_lap();
+					lapDetected = 1;
 				}
 			}
 		}
@@ -383,13 +381,10 @@ static void processStartFinish(void){
 	else{
 		g_prevAtStartFinish = 0;
 	}
+	return lapDetected;
 }
 
-static void processSplit(void){
-	GPSTargetConfig *targetConfig = &(getWorkingLoggerConfig()->TrackConfigs.splitConfig);
-
-	if (! isGpsTargetEnabled(targetConfig)) return;
-
+static void processSplit(GPSTargetConfig *targetConfig){
 	g_atSplit = withinGpsTarget(targetConfig);
 	if (g_atSplit){
 		if (g_prevAtSplit == 0){
@@ -440,7 +435,7 @@ void initGPS(){
 static void flashGpsStatusLed(){
 	if (g_flashCount == 0) disableLED(LED1);
 	g_flashCount++;
-	int targetFlashCount = (g_gpsQuality == GPS_QUALITY_NO_FIX ? GPS_NOFIX_FLASH_COUNT: GPS_LOCK_FLASH_COUNT);
+	int targetFlashCount = (GPS_LOCKED_ON(g_gpsQuality) ? GPS_LOCK_FLASH_COUNT : GPS_NOFIX_FLASH_COUNT );
 	if (g_flashCount >= targetFlashCount){
 		enableLED(LED1);
 		g_flashCount = 0;
@@ -448,14 +443,27 @@ static void flashGpsStatusLed(){
 }
 
 static void onLocationUpdated(){
-	if (g_gpsQuality != GPS_QUALITY_NO_FIX){
-		processStartFinish();
-		processSplit();
+	GPSTargetConfig *startFinishCfg = &(getWorkingLoggerConfig()->TrackConfigs.startFinishConfig);
+	int startFinishEnabled = isGpsTargetEnabled(startFinishCfg);
 
+	GPSTargetConfig *splitCfg = &(getWorkingLoggerConfig()->TrackConfigs.splitConfig);
+	int splitEnabled = isGpsTargetEnabled(splitCfg);
+
+	if (GPS_LOCKED_ON(g_gpsQuality)){
 		float dist = calcDistancesSinceLastSample();
-		float time = calcTimeSinceLastSample();
 		g_distance += dist;
-		add_predictive_sample(g_speed,dist,time);
+
+		if (splitEnabled) processSplit(splitCfg);
+
+		if (startFinishEnabled){
+			float time = calcTimeSinceLastSample();
+			add_predictive_sample(g_speed,dist,time);
+			int lapDetected = processStartFinish(startFinishCfg);
+			if (lapDetected){
+				resetDistance();
+				end_lap();
+			}
+		}
 	}
 }
 
