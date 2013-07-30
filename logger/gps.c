@@ -27,6 +27,8 @@
 
 #define START_FINISH_TIME_THRESHOLD 10
 
+#define TIME_NULL -1
+
 static int		g_flashCount;
 static float	g_prevLatitude;
 static float	g_prevLongitude;
@@ -342,14 +344,13 @@ static float calcDistancesSinceLastSample(){
 	return d;
 }
 
-
-static void updateDistances(){
-	float distanceSinceLastSample  = calcDistancesSinceLastSample();
-	g_distance += distanceSinceLastSample;
+static float calcTimeSinceLastSample(){
+	float time = 0;
+	if (g_prevSecondsSinceMidnight >= 0) time = getTimeDiff(g_prevSecondsSinceMidnight, g_secondsSinceMidnight);
+	return time;
 }
 
-
-static void updateStartFinish(void){
+static void processStartFinish(void){
 	GPSTargetConfig *targetConfig = &(getWorkingLoggerConfig()->TrackConfigs.startFinishConfig);
 
 	if (! isGpsTargetEnabled(targetConfig)) return;
@@ -384,7 +385,7 @@ static void updateStartFinish(void){
 	}
 }
 
-static void updateSplit(void){
+static void processSplit(void){
 	GPSTargetConfig *targetConfig = &(getWorkingLoggerConfig()->TrackConfigs.splitConfig);
 
 	if (! isGpsTargetEnabled(targetConfig)) return;
@@ -413,7 +414,7 @@ static void updateSplit(void){
 
 void initGPS(){
 	g_secondsSinceMidnight = 0;
-	g_prevSecondsSinceMidnight = 0;
+	g_prevSecondsSinceMidnight = TIME_NULL;
 	g_flashCount = 0;
 	g_prevLatitude = 0.0;
 	g_prevLongitude = 0.0;
@@ -436,26 +437,36 @@ void initGPS(){
 	init_predictive_timer();
 }
 
+static void flashGpsStatusLed(){
+	if (g_flashCount == 0) disableLED(LED1);
+	g_flashCount++;
+	int targetFlashCount = (g_gpsQuality == GPS_QUALITY_NO_FIX ? GPS_NOFIX_FLASH_COUNT: GPS_LOCK_FLASH_COUNT);
+	if (g_flashCount >= targetFlashCount){
+		enableLED(LED1);
+		g_flashCount = 0;
+	}
+}
+
+static void onLocationUpdated(){
+	if (g_gpsQuality != GPS_QUALITY_NO_FIX){
+		processStartFinish();
+		processSplit();
+
+		float dist = calcDistancesSinceLastSample();
+		float time = calcTimeSinceLastSample();
+		g_distance += dist;
+		add_predictive_sample(g_speed,dist,time);
+	}
+}
+
 void processGPSData(char *gpsData, size_t len){
 	if (len > 0){
 		if (*gpsData == '$' && *(gpsData + 1) =='G' && *(gpsData + 2) == 'P'){
 			char * data = gpsData + 3;
 			if (strstr(data,"GGA,")){
 				parseGGA(data + 4);
-				if (g_flashCount == 0) disableLED(LED1);
-				g_flashCount++;
-				int targetFlashCount = (g_gpsQuality == GPS_QUALITY_NO_FIX ? GPS_NOFIX_FLASH_COUNT: GPS_LOCK_FLASH_COUNT);
-				if (g_flashCount >= targetFlashCount){
-					enableLED(LED1);
-					g_flashCount = 0;
-				}
-				updateDistances();
-				updateStartFinish();
-				updateSplit();
-				float distance = calcDistancesSinceLastSample();
-				//float timeSinceLastSample = calcTimeSinceLastSample();
-				//add_predictive_sample(g_speed, distance, time);
-
+				flashGpsStatusLed();
+				onLocationUpdated();
 			} else if (strstr(data,"VTG,")){ //Course Over Ground and Ground Speed
 				parseVTG(data + 4);
 			} else if (strstr(data,"GSA,")){ //GPS Fix data
