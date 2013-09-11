@@ -56,6 +56,9 @@ Once the firmware completes flashing, RaceCapture/Pro will reset and run normall
 
 Firmware Changelog:
 
+===1.1.14===
+Added - and : characters as allowed characters in filtered text fields
+
 ===1.1.13===
 Fixed 10% too fast logging rate (improved dramatically but still seems about 0.5 - 1% off; needs measurement on scope for fine tuning)
 Fixed analog scaling divide by zero issue with raw values outside of configured scaling map
