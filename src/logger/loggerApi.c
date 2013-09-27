@@ -13,6 +13,7 @@
 #include "loggerTaskEx.h"
 #include "accelerometer.h"
 #include "loggerHardware.h"
+#include "serial.h"
 
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 

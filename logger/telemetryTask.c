@@ -13,7 +13,6 @@
 #include "loggerHardware.h"
 #include "loggerConfig.h"
 #include "usart.h"
-#include "p2pTelemetry.h"
 #include "cellTelemetry.h"
 #include "btTelemetry.h"
 #include "consoleConnectivity.h"
@@ -48,16 +47,13 @@ void createConnectivityTask(){
 
 	switch(getWorkingLoggerConfig()->ConnectivityConfigs.connectivityMode){
 		case CONNECTIVITY_MODE_CONSOLE:
+		case CONNECTIVITY_MODE_BLUETOOTH:
 			xTaskCreate( consoleConnectivityTask, ( signed portCHAR * ) "connConsole", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
+			break;
+			xTaskCreate( btTelemetryTask, ( signed portCHAR * ) "connBT", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
 			break;
 		case CONNECTIVITY_MODE_CELL:
 			xTaskCreate( cellTelemetryTask, ( signed portCHAR * ) "connCell", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
-			break;
-		case CONNECTIVITY_MODE_P2P:
-			xTaskCreate( p2pTelemetryTask, ( signed portCHAR * ) "connP2P", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
-			break;
-		case CONNECTIVITY_MODE_BLUETOOTH:
-			xTaskCreate( btTelemetryTask, ( signed portCHAR * ) "connBT", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
 			break;
 	}
 }

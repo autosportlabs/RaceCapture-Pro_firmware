@@ -365,7 +365,6 @@ typedef struct _ConnectivityConfig {
 #define CONNECTIVITY_MODE_CONSOLE 					0
 #define CONNECTIVITY_MODE_BLUETOOTH					1
 #define CONNECTIVITY_MODE_CELL						2
-#define CONNECTIVITY_MODE_P2P 						3
 
 #define SD_LOGGING_MODE_DISABLED					0
 #define SD_LOGGING_MODE_CSV							1

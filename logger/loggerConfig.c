@@ -102,8 +102,6 @@ char filterSdLoggingMode(char mode){
 
 char filterConnectivityMode(char mode){
 	switch(mode){
-		case CONNECTIVITY_MODE_P2P:
-			return CONNECTIVITY_MODE_P2P;
 		case CONNECTIVITY_MODE_CELL:
 			return CONNECTIVITY_MODE_CELL;
 		case CONNECTIVITY_MODE_BLUETOOTH:
