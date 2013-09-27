@@ -290,8 +290,11 @@ void setTextField(char *dest, const char *source, unsigned int maxlen){
 				(c >= 'A' && c <= 'Z') ||
 				(c >= 'a' && c <= 'z') ||
 				c == '_' ||
+				c == '-' ||
 				c == '@' ||
 				c == '%' ||
+				c == '+' ||
+				c == ':' ||
 				c == '.' ) ){
 			c = '_';
 		}
