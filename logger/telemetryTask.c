@@ -47,9 +47,9 @@ void createConnectivityTask(){
 
 	switch(getWorkingLoggerConfig()->ConnectivityConfigs.connectivityMode){
 		case CONNECTIVITY_MODE_CONSOLE:
-		case CONNECTIVITY_MODE_BLUETOOTH:
-			xTaskCreate( consoleConnectivityTask, ( signed portCHAR * ) "connConsole", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
+			xTaskCreate( consoleConnectivityTask, ( signed portCHAR * ) "conn", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
 			break;
+		case CONNECTIVITY_MODE_BLUETOOTH:
 			xTaskCreate( btTelemetryTask, ( signed portCHAR * ) "connBT", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
 			break;
 		case CONNECTIVITY_MODE_CELL:

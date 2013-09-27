@@ -25,37 +25,8 @@ static void flushBt(void) {
 	usart0_flush();
 }
 
-static int putcBt(char c) {
-	usart0_putchar(c);
-	return 0;
-}
-
 void putsBt(const char *data) {
 	usart0_puts(data);
-}
-
-static void putUintBt(uint32_t num) {
-	char buf[10];
-	modp_uitoa10(num, buf);
-	putsBt(buf);
-}
-
-static void putIntBt(int num) {
-	char buf[10];
-	modp_itoa10(num, buf);
-	putsBt(buf);
-}
-
-static void putFloatBt(float num, int precision) {
-	char buf[20];
-	modp_ftoa(num, buf, precision);
-	putsBt(buf);
-}
-
-static void putQuotedStringBt(char *s) {
-	putcBt('"');
-	putsBt(s);
-	putcBt('"');
 }
 
 static int sendCommandWaitResponse(const char *cmd, const char *rsp,
