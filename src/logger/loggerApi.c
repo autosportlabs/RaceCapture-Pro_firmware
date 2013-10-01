@@ -106,48 +106,52 @@ int api_enableLogging(Serial *serial, const jsmntok_t *json){
 
 void writeSampleRecord(Serial *serial, SampleRecord *sr, int sendMeta){
 
-	json_asyncMessageStart(serial);
+	json_messageStart(serial, NULL_MESSAGE_ID);
+	json_blockStart(serial, "s");
 
-	if (sendMeta){
-		json_arrayStart(serial, "m");
+	{
+		int sampleCount = 0;
+		if (sendMeta){
+			json_arrayStart(serial, "meta");
+			for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
+				ChannelSample *sample = &(sr->Samples[i]);
+				ChannelConfig * channelConfig = sample->channelConfig;
+				if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
+				if (sampleCount++ > 0) serial->put_c(',');
+				serial->put_c('{');
+				json_string(serial, "nm", channelConfig->label, 1);
+				json_string(serial, "ut", channelConfig->units, 1);
+				json_int(serial, "sr", decodeSampleRate(channelConfig->sampleRate), 0);
+				serial->put_c('}');
+			}
+			json_arrayEnd(serial, 1);
+		}
+	}
+	{
+		json_arrayStart(serial,"d");
+		int sampleCount = 0;
 		for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
-			int more = i < SAMPLE_RECORD_CHANNELS - 1;
 			ChannelSample *sample = &(sr->Samples[i]);
 			ChannelConfig * channelConfig = sample->channelConfig;
+
 			if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
-			serial->put_c('{');
-			json_string(serial, "nm", channelConfig->label, 1);
-			json_string(serial, "ut", channelConfig->units, 1);
-			json_int(serial, "sr", channelConfig->sampleRate, 0);
-			serial->put_c('}');
-			if (more) serial->put_c(',');
-		}
-		json_arrayEnd(serial, 1);
-	}
-
-	json_arrayStart(serial, "s");
-
-	for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
-		int more = i < SAMPLE_RECORD_CHANNELS - 1;
-		ChannelSample *sample = &(sr->Samples[i]);
-		ChannelConfig * channelConfig = sample->channelConfig;
-
-		if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
-		if (sample->intValue == NIL_SAMPLE){
-			serial->put_s("null");
-		}
-		else{
-			int precision = sample->precision;
-			if (precision > 0){
-				put_float(serial, sample->floatValue,precision);
+			if (sampleCount++ > 0) serial->put_c(',');
+			if (sample->intValue == NIL_SAMPLE){
+				serial->put_s("null");
 			}
 			else{
-				put_int(serial, sample->intValue);
+				int precision = sample->precision;
+				if (precision > 0){
+					put_float(serial, sample->floatValue,precision);
+				}
+				else{
+					put_int(serial, sample->intValue);
+				}
 			}
 		}
-		if (more) serial->put_c(',');
+		json_arrayEnd(serial, 0);
 	}
-	json_arrayEnd(serial, 0);
+	json_blockEnd(serial, 0);
 	json_blockEnd(serial, 0);
 }
 

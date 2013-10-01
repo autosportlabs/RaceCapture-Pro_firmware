@@ -5,6 +5,7 @@
 #include "usart.h"
 #include "loggerApi.h"
 #include "messaging.h"
+#include "race_capture/printk.h"
 
 #define BUFFER_SIZE MEMORY_PAGE_SIZE * 2
 static char g_buffer[BUFFER_SIZE];
@@ -22,8 +23,8 @@ void consoleConnectivityTaskx(void *params){
 
 void consoleConnectivityTask(void *params){
 
-	int sendMeta = 0;
 	int samplingActive = 0;
+	int tick = 0;
 	xQueueHandle sampleRecordQueue = (xQueueHandle) params;
 
 	initUsart0(8, 0, 1, 230400);
@@ -38,7 +39,8 @@ void consoleConnectivityTask(void *params){
 			//writeSampleRecordBinary(NULL,sampleTick);
 		} else {
 			if (0 == samplingActive) {
-				sendMeta = 1;
+				pr_debug("sample start\n");
+				tick = 0;
 			} else {
 				break;
 			}
@@ -46,10 +48,12 @@ void consoleConnectivityTask(void *params){
 		if (samplingActive) {
 			//a null sample record means end of sample run; like an EOF
 			if (NULL != sr) {
-				writeSampleRecord(serial, sr, sendMeta);
-				sendMeta = 0;
+				writeSampleRecord(serial, sr, ++tick == 1);
+				serial->put_s("\r\n");
+				pr_debug("sample\n");
 			} else {
 				samplingActive = 0;
+				pr_debug("sample end\n");
 			}
 		}
 	}

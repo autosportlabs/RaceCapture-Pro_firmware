@@ -6,14 +6,16 @@
 #include "loggerApi.h"
 #include "serial.h"
 #include "usart.h"
-
+#include "race_capture/printk.h"
 //#define DEBUG
 
 #define IDLE_TIMEOUT	configTICK_RATE_HZ / 1
 #define COMMAND_WAIT 	600
+#define SAMPLE_ACK_WAIT 900
+#define SAMPLE_ACK		"{\"s\":\"ok\"}"
+#define SAMPLE_ACK_LEN	10
 
 static char g_buffer[200];
-static int g_telemetryActive;
 
 static int readBtWait(portTickType delay) {
 	int c = usart0_readLineWait(g_buffer, sizeof(g_buffer), delay);
@@ -29,13 +31,17 @@ void putsBt(const char *data) {
 	usart0_puts(data);
 }
 
-static int sendCommandWaitResponse(const char *cmd, const char *rsp,
-		portTickType wait) {
+static int sendCommandWaitResponse(const char *cmd, const char *rsp, portTickType wait) {
 	flushBt();
 	vTaskDelay(COMMAND_WAIT);
 	putsBt(cmd);
 	readBtWait(wait);
-	return strncmp(g_buffer, rsp, strlen(rsp)) == 0;
+	pr_debug("btrsp: ");
+	pr_debug(g_buffer);
+	pr_debug("\n");
+	int res = strncmp(g_buffer, rsp, strlen(rsp));
+	pr_debug(res == 0 ? "btMatch\n" : "btnomatch\n");
+	return  res == 0;
 }
 
 static int sendCommandWait(const char *cmd, portTickType wait) {
@@ -43,6 +49,9 @@ static int sendCommandWait(const char *cmd, portTickType wait) {
 }
 
 static int sendCommand(const char * cmd) {
+	pr_debug("btcmd: ");
+	pr_debug(cmd);
+	pr_debug("\n");
 	return sendCommandWait(cmd, COMMAND_WAIT);
 }
 
@@ -65,9 +74,7 @@ static int initBluetooth() {
 			return -1;
 	}
 	initUsart0(8, 0, 1, 230400);
-	if (!sendCommand("AT"))
-		return -1;
-	return 0;
+	if (sendCommand("AT")) return 0; else return -1;
 }
 
 void btTelemetryTask(void *params) {
@@ -76,11 +83,10 @@ void btTelemetryTask(void *params) {
 	SampleRecord *sr = NULL;
 	uint32_t sampleTick = 0;
 
-	int sendMeta = 0;
+	int tick = 0;
 	Serial *serial = get_serial_usart0();
 
 	while (1) {
-		g_telemetryActive = 0;
 		int btReady = 0;
 
 		while (btReady == 0) {
@@ -94,23 +100,15 @@ void btTelemetryTask(void *params) {
 			char res = xQueueReceive(sampleRecordQueue, &(sr), IDLE_TIMEOUT);
 			sampleTick++;
 			if (pdFALSE == res) {
-				//initTxFrame(&g_xBeeFrame);
-				//writeSampleRecordBinary(NULL,sampleTick);
+				//perform idle task?
 			} else {
-				if (0 == g_telemetryActive) {
-					g_telemetryActive = 1;
-					sendMeta = 1;
-				} else {
-					break;
-				}
-			}
-			if (g_telemetryActive) {
 				//a null sample record means end of sample run; like an EOF
 				if (NULL != sr) {
-					writeSampleRecord(serial, sr, sendMeta);
-					sendMeta = 0;
-				} else {
-					g_telemetryActive = 0;
+					writeSampleRecord(serial, sr, ++tick == 1);
+					serial->put_s("\r\n");
+				}
+				else{
+					tick = 0;
 				}
 			}
 		}
