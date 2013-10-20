@@ -104,7 +104,8 @@ void btTelemetryTask(void *params) {
 			} else {
 				//a null sample record means end of sample run; like an EOF
 				if (NULL != sr) {
-					writeSampleRecord(serial, sr, tick, ++tick == 1);
+					++tick;
+					writeSampleRecord(serial, sr, tick, tick == 1);
 					serial->put_s("\r\n");
 				}
 				else{
