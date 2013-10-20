@@ -57,9 +57,9 @@ static int sendCommand(const char * cmd) {
 
 static int configureBt() {
 	//set baud rate
-	if (!sendCommand("AT+BAUD9"))
+	if (!sendCommand("AT+BAUD8"))
 		return -1;
-	initUsart0(8, 0, 1, 230400);
+	initUsart0(8, 0, 1, 115200);
 	//set Device Name
 	if (!sendCommandWaitResponse("AT+NAMERaceCapturePro", "OK", COMMAND_WAIT))
 		return -2;
@@ -73,7 +73,7 @@ static int initBluetooth() {
 		if (configureBt() != 0)
 			return -1;
 	}
-	initUsart0(8, 0, 1, 230400);
+	initUsart0(8, 0, 1, 115200);
 	if (sendCommand("AT")) return 0; else return -1;
 }
 
