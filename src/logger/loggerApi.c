@@ -83,8 +83,8 @@ int api_sampleData(Serial *serial, const jsmntok_t *json){
 	SampleRecord sr;
 	LoggerConfig * config = getWorkingLoggerConfig();
 	initSampleRecord(config, &sr);
-	populateSampleRecord(&sr,0,config);
-	writeSampleRecord(serial, &sr, sendMeta);
+	populateSampleRecord(&sr,0, config);
+	writeSampleRecord(serial, &sr, 0, sendMeta);
 	return API_SUCCESS_NO_RETURN;
 }
 
@@ -104,12 +104,12 @@ int api_enableLogging(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS;
 }
 
-void writeSampleRecord(Serial *serial, SampleRecord *sr, int sendMeta){
-
+void writeSampleRecord(Serial *serial, SampleRecord *sr, unsigned int tick, int sendMeta){
 	json_messageStart(serial, NULL_MESSAGE_ID);
 	json_blockStart(serial, "s");
 
 	{
+		json_uint(serial,"t",tick,1);
 		int sampleCount = 0;
 		if (sendMeta){
 			json_arrayStart(serial, "meta");
@@ -128,21 +128,29 @@ void writeSampleRecord(Serial *serial, SampleRecord *sr, int sendMeta){
 		}
 	}
 	{
-		json_arrayStart(serial,"d");
-		int sampleCount = 0;
+		size_t channelCount = 0;
+		unsigned int channelsBitmask = 0;
 		for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
 			ChannelSample *sample = &(sr->Samples[i]);
 			ChannelConfig * channelConfig = sample->channelConfig;
-
-			if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
-			if (sampleCount++ > 0) serial->put_c(',');
-			if (sample->intValue == NIL_SAMPLE){
-				serial->put_s("null");
+			if (SAMPLE_DISABLED != channelConfig->sampleRate){
+				if (sample->intValue != NIL_SAMPLE){
+					channelsBitmask = channelsBitmask | (1 << channelCount);
+				}
+				channelCount++;
 			}
-			else{
+		}
+
+		json_arrayStart(serial, "d");
+		put_uint(serial, channelsBitmask);
+		for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
+			ChannelSample *sample = &(sr->Samples[i]);
+			ChannelConfig * channelConfig = sample->channelConfig;
+			if (SAMPLE_DISABLED != channelConfig->sampleRate && NIL_SAMPLE != sample->intValue){
+				serial->put_c(',');
 				int precision = sample->precision;
 				if (precision > 0){
-					put_float(serial, sample->floatValue,precision);
+					put_float(serial, sample->floatValue, precision);
 				}
 				else{
 					put_int(serial, sample->intValue);

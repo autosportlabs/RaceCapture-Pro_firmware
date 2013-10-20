@@ -44,7 +44,7 @@
 {"calAccel", api_calibrateAccel}
 
 
-void writeSampleRecord(Serial *serial, SampleRecord *sr, int sendMeta);
+void writeSampleRecord(Serial *serial, SampleRecord *sr, unsigned int tick, int sendMeta);
 
 void unescapeTextField(char *data);
 
