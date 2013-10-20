@@ -7,18 +7,18 @@
 #include "serial.h"
 #include "usart.h"
 #include "race_capture/printk.h"
-//#define DEBUG
+#include "messaging.h"
 
 #define IDLE_TIMEOUT	configTICK_RATE_HZ / 1
 #define COMMAND_WAIT 	600
-#define SAMPLE_ACK_WAIT 900
-#define SAMPLE_ACK		"{\"s\":\"ok\"}"
-#define SAMPLE_ACK_LEN	10
 
 static char g_buffer[200];
+size_t g_rxIndex;
+
+#define BUFFER_SIZE sizeof(g_buffer)
 
 static int readBtWait(portTickType delay) {
-	int c = usart0_readLineWait(g_buffer, sizeof(g_buffer), delay);
+	int c = usart0_readLineWait(g_buffer, BUFFER_SIZE, delay);
 	return c;
 }
 
@@ -77,6 +77,20 @@ static int initBluetooth() {
 	if (sendCommand("AT")) return 0; else return -1;
 }
 
+static void processRxMessage(Serial *serial){
+	size_t count = serial->get_line_wait(g_buffer + g_rxIndex, BUFFER_SIZE - g_rxIndex, 0);
+	g_rxIndex += count;
+	if (g_rxIndex >= BUFFER_SIZE - 1){
+		pr_error("Rx Buffer overflow:");
+		pr_error(g_buffer);
+		g_rxIndex = 0;
+	}
+	if ('\n' == g_buffer[g_rxIndex]){
+		process_message(serial,g_buffer, BUFFER_SIZE);
+		g_rxIndex = 0;
+	}
+}
+
 void btTelemetryTask(void *params) {
 
 	xQueueHandle sampleRecordQueue = (xQueueHandle) params;
@@ -88,7 +102,6 @@ void btTelemetryTask(void *params) {
 
 	while (1) {
 		int btReady = 0;
-
 		while (btReady == 0) {
 			if (initBluetooth() == 0) {
 				btReady = 1;
@@ -109,10 +122,11 @@ void btTelemetryTask(void *params) {
 					serial->put_s("\r\n");
 				}
 				else{
+					//end of sample
 					tick = 0;
 				}
 			}
+			processRxMessage(serial);
 		}
 	}
 }
-
