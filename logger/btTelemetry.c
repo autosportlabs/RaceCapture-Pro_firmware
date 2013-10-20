@@ -9,7 +9,6 @@
 #include "race_capture/printk.h"
 #include "messaging.h"
 
-#define INIT_DELAY		configTICK_RATE_HZ / 10
 #define IDLE_TIMEOUT	configTICK_RATE_HZ / 10
 #define COMMAND_WAIT 	600
 #define BUFFER_SIZE 	200
@@ -67,7 +66,6 @@ static int configureBt() {
 }
 
 static int initBluetooth() {
-	vTaskDelay(INIT_DELAY);
 	initUsart0(8, 0, 1, 9600);
 	if (sendCommand("AT")) {
 		if (configureBt() != 0)
