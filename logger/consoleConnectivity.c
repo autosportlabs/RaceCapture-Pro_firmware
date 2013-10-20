@@ -13,7 +13,7 @@ static char g_buffer[BUFFER_SIZE];
 
 void consoleConnectivityTaskx(void *params){
 
-	initUsart0(8, 0, 1, 230400);
+	initUsart0(8, 0, 1, 115200);
 	Serial *serial = get_serial_usart0();
 
 	while (1) {
@@ -27,7 +27,7 @@ void consoleConnectivityTask(void *params){
 	int tick = 0;
 	xQueueHandle sampleRecordQueue = (xQueueHandle) params;
 
-	initUsart0(8, 0, 1, 230400);
+	initUsart0(8, 0, 1, 115200);
 	Serial *serial = get_serial_usart0();
 
 	while (1) {
