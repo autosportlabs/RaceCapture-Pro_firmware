@@ -145,7 +145,6 @@ int main( void )
 	createGPIOTasks();
 	createConnectivityTask();
 	startGPSTask();
-//      start_heartbeat_task();
 
 	/* Start the scheduler.
 

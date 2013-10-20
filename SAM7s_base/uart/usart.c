@@ -269,7 +269,6 @@ void usart1_puts (const char* s )
 	while ( *s ) usart1_putchar(*s++ );
 }
 
-
 int usart0_readLineWait(char *s, int len, size_t delay)
 {
 	int count = 0;
