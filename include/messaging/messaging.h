@@ -12,7 +12,8 @@
 
 void initMessaging();
 
-void process_message(Serial *serial, char * buffer, size_t bufferSize);
+void process_msg_interactive(Serial *serial, char * buffer, size_t bufferSize);
+void process_msg(Serial *serial, char * buffer, size_t bufferSize);
 
 
 

@@ -15,8 +15,16 @@ void initMessaging(){
 	initApi();
 }
 
-void process_message(Serial *serial, char * buffer, size_t bufferSize){
+void process_msg(Serial *serial, char * buffer, size_t bufferSize){
+	if (buffer[0] == '{'){
+		process_api(serial, buffer, bufferSize);
+	}
+	else{
+		process_interactive_command(serial, buffer, bufferSize);
+	}
+}
 
+void process_msg_interactive(Serial *serial, char * buffer, size_t bufferSize){
 	interactive_read_line(serial, buffer, bufferSize);
 
 	if (strlen(buffer) == 0){
@@ -24,12 +32,7 @@ void process_message(Serial *serial, char * buffer, size_t bufferSize){
 		show_command_prompt(serial);
 	}
 	else{
-		if (buffer[0] == '{'){
-			process_api(serial, buffer, bufferSize);
-		}
-		else{
-			process_interactive_command(serial, buffer, bufferSize);
-		}
+		process_msg(serial, buffer, bufferSize);
 	}
 }
 

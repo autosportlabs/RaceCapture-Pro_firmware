@@ -17,7 +17,7 @@ void consoleConnectivityTaskx(void *params){
 	Serial *serial = get_serial_usart0();
 
 	while (1) {
-		process_message(serial, g_buffer, BUFFER_SIZE);
+		process_msg(serial, g_buffer, BUFFER_SIZE);
 	}
 }
 

@@ -9,13 +9,13 @@
 #include "race_capture/printk.h"
 #include "messaging.h"
 
-#define IDLE_TIMEOUT	configTICK_RATE_HZ / 1
+#define INIT_DELAY		configTICK_RATE_HZ / 10
+#define IDLE_TIMEOUT	configTICK_RATE_HZ / 10
 #define COMMAND_WAIT 	600
+#define BUFFER_SIZE 	200
 
-static char g_buffer[200];
-size_t g_rxIndex;
-
-#define BUFFER_SIZE sizeof(g_buffer)
+static char g_buffer[BUFFER_SIZE];
+size_t g_rxCount;
 
 static int readBtWait(portTickType delay) {
 	int c = usart0_readLineWait(g_buffer, BUFFER_SIZE, delay);
@@ -67,7 +67,7 @@ static int configureBt() {
 }
 
 static int initBluetooth() {
-	vTaskDelay(1000);
+	vTaskDelay(INIT_DELAY);
 	initUsart0(8, 0, 1, 9600);
 	if (sendCommand("AT")) {
 		if (configureBt() != 0)
@@ -78,16 +78,16 @@ static int initBluetooth() {
 }
 
 static void processRxMessage(Serial *serial){
-	size_t count = serial->get_line_wait(g_buffer + g_rxIndex, BUFFER_SIZE - g_rxIndex, 0);
-	g_rxIndex += count;
-	if (g_rxIndex >= BUFFER_SIZE - 1){
+	size_t count = serial->get_line_wait(g_buffer + g_rxCount, BUFFER_SIZE - g_rxCount, 0);
+	g_rxCount += count;
+	if (g_rxCount >= BUFFER_SIZE - 1){
 		pr_error("Rx Buffer overflow:");
 		pr_error(g_buffer);
-		g_rxIndex = 0;
+		g_rxCount = 0;
 	}
-	if ('\n' == g_buffer[g_rxIndex]){
-		process_message(serial,g_buffer, BUFFER_SIZE);
-		g_rxIndex = 0;
+	if ('\n' == g_buffer[g_rxCount - 1]){
+		process_msg(serial,g_buffer, BUFFER_SIZE);
+		g_rxCount = 0;
 	}
 }
 
