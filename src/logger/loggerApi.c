@@ -130,33 +130,26 @@ void writeSampleRecord(Serial *serial, SampleRecord *sr, unsigned int tick, int 
 	{
 		size_t channelCount = 0;
 		unsigned int channelsBitmask = 0;
+		json_arrayStart(serial, "d");
 		for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
 			ChannelSample *sample = &(sr->Samples[i]);
 			ChannelConfig * channelConfig = sample->channelConfig;
 			if (SAMPLE_DISABLED != channelConfig->sampleRate){
-				if (sample->intValue != NIL_SAMPLE){
+				if (NIL_SAMPLE != sample->intValue){
 					channelsBitmask = channelsBitmask | (1 << channelCount);
+					int precision = sample->precision;
+					if (precision > 0){
+						put_float(serial, sample->floatValue, precision);
+					}
+					else{
+						put_int(serial, sample->intValue);
+					}
+					serial->put_c(',');
 				}
 				channelCount++;
 			}
 		}
-
-		json_arrayStart(serial, "d");
 		put_uint(serial, channelsBitmask);
-		for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
-			ChannelSample *sample = &(sr->Samples[i]);
-			ChannelConfig * channelConfig = sample->channelConfig;
-			if (SAMPLE_DISABLED != channelConfig->sampleRate && NIL_SAMPLE != sample->intValue){
-				serial->put_c(',');
-				int precision = sample->precision;
-				if (precision > 0){
-					put_float(serial, sample->floatValue, precision);
-				}
-				else{
-					put_int(serial, sample->intValue);
-				}
-			}
-		}
 		json_arrayEnd(serial, 0);
 	}
 	json_blockEnd(serial, 0);
