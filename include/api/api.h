@@ -11,8 +11,6 @@
 #include "jsmn.h"
 #include "serial.h"
 
-#define NULL_MESSAGE_ID -1
-
 #define API_SUCCESS 			1
 #define API_SUCCESS_NO_RETURN 	0
 #define API_ERROR_PARAMETER 	-1
@@ -45,8 +43,8 @@ void json_string(Serial *serial, const char *name, const char *value, int more);
 void json_float(Serial *serial, const char *name, float value, int precision, int more);
 void json_blockStart(Serial *serial, const char * label);
 void json_blockStartInt(Serial *serial, int label);
-void json_messageStart(Serial *serial, int messageId);
-void json_asyncMessageStart(Serial *serial);
+void json_messageStart(Serial *serial);
+void json_messageEnd(Serial *serial);
 void json_blockEnd(Serial *serial, int more);
 void json_arrayStart(Serial *serial, const char * name);
 void json_arrayEnd(Serial *serial, int more);

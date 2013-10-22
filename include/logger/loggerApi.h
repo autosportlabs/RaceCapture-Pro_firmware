@@ -19,7 +19,7 @@
 
 #define LOGGER_API \
 {"s", api_sampleData}, \
-{"log", api_enableLogging}, \
+{"log", api_log}, \
 {"flashCfg", api_flashConfig}, \
 {"setAnalogCfg", api_setAnalogConfig}, \
 {"getAnalogCfg", api_getAnalogConfig}, \
@@ -44,12 +44,9 @@
 {"calAccel", api_calibrateAccel}
 
 
-void writeSampleRecord(Serial *serial, SampleRecord *sr, unsigned int tick, int sendMeta);
-
-void unescapeTextField(char *data);
-
+//commands
 int api_sampleData(Serial *serial, const jsmntok_t *json);
-int api_enableLogging(Serial *serial, const jsmntok_t *json);
+int api_log(Serial *serial, const jsmntok_t *json);
 int api_getCellConfig(Serial *serial, const jsmntok_t *json);
 int api_setCellConfig(Serial *serial, const jsmntok_t *json);
 int api_getBluetoothConfig(Serial *serial, const jsmntok_t *json);
@@ -72,5 +69,13 @@ int api_getTimerConfig(Serial *serial, const jsmntok_t *json);
 int api_setTimerConfig(Serial *serial, const jsmntok_t *json);
 int api_calibrateAccel(Serial *serial, const jsmntok_t *json);
 int api_flashConfig(Serial *serial, const jsmntok_t *json);
+
+//messages
+void api_sendLogStart(Serial *serial);
+void api_sendLogEnd(Serial *serial);
+void api_sendSampleRecord(Serial *serial, SampleRecord *sr, unsigned int tick, int sendMeta);
+
+//Utility functions
+void unescapeTextField(char *data);
 
 #endif /* LOGGERAPI_H_ */

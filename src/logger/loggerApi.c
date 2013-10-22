@@ -84,28 +84,39 @@ int api_sampleData(Serial *serial, const jsmntok_t *json){
 	LoggerConfig * config = getWorkingLoggerConfig();
 	initSampleRecord(config, &sr);
 	populateSampleRecord(&sr,0, config);
-	writeSampleRecord(serial, &sr, 0, sendMeta);
+	api_sendSampleRecord(serial, &sr, 0, sendMeta);
 	return API_SUCCESS_NO_RETURN;
 }
 
-int api_enableLogging(Serial *serial, const jsmntok_t *json){
+void api_sendLogStart(Serial *serial){
+	json_messageStart(serial);
+	json_int(serial, "logStart", 1, 0);
+	json_messageEnd(serial);
+}
 
+void api_sendLogEnd(Serial *serial){
+	json_messageStart(serial);
+	json_int(serial, "logEnd", 1, 0);
+	json_messageEnd(serial);
+}
+
+int api_log(Serial *serial, const jsmntok_t *json){
 	int doLogging = 0;
-	if (json->type == JSMN_OBJECT && json->size == 2){
-		jsmn_trimData(json + 1);
+	if (json->type == JSMN_PRIMITIVE && json->size == 0){
+		jsmn_trimData(json);
 		doLogging = modp_atoi(json->data);
 		if (doLogging){
-			//startLogging();
+			startLogging();
 		}
 		else{
-			//stopLogging();
+			stopLogging();
 		}
 	}
 	return API_SUCCESS;
 }
 
-void writeSampleRecord(Serial *serial, SampleRecord *sr, unsigned int tick, int sendMeta){
-	json_messageStart(serial, NULL_MESSAGE_ID);
+void api_sendSampleRecord(Serial *serial, SampleRecord *sr, unsigned int tick, int sendMeta){
+	json_messageStart(serial);
 	json_blockStart(serial, "s");
 
 	{
@@ -275,7 +286,7 @@ static void json_channelConfig(Serial *serial, ChannelConfig *cfg, int more){
 
 static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex){
 
-	json_messageStart(serial, NULL_MESSAGE_ID);
+	json_messageStart(serial);
 	json_blockStart(serial, "getAnalogCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 
@@ -351,7 +362,7 @@ int api_setAccelConfig(Serial *serial, const jsmntok_t *json){
 }
 
 static void sendAccelConfig(Serial *serial, size_t startIndex, size_t endIndex){
-	json_messageStart(serial, NULL_MESSAGE_ID);
+	json_messageStart(serial);
 	json_blockStart(serial, "getAccelCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		AccelConfig *cfg = &(getWorkingLoggerConfig()->AccelConfigs[i]);
@@ -412,7 +423,7 @@ static void setConfigGeneric(Serial *serial, const jsmntok_t * json, void *cfg, 
 
 int api_getCellConfig(Serial *serial, const jsmntok_t *json){
 	CellularConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
-	json_messageStart(serial,NULL_MESSAGE_ID);
+	json_messageStart(serial);
 	json_blockStart(serial, "getCellCfg");
 	json_string(serial, "apnHost", cfg->apnHost, 1);
 	json_string(serial, "apnUser", cfg->apnUser, 1);
@@ -451,7 +462,7 @@ int api_setBluetoothConfig(Serial *serial, const jsmntok_t *json){
 
 int api_getBluetoothConfig(Serial *serial, const jsmntok_t *json){
 	BluetoothConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
-	json_messageStart(serial,NULL_MESSAGE_ID);
+	json_messageStart(serial);
 	json_blockStart(serial, "getBtCfg");
 	json_string(serial, "btName", cfg->deviceName, 1);
 	json_string(serial, "btPass", cfg->passcode, 0);
@@ -475,7 +486,7 @@ int api_setConnectivityConfig(Serial *serial, const jsmntok_t *json){
 
 int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json){
 	ConnectivityConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs);
-	json_messageStart(serial,NULL_MESSAGE_ID);
+	json_messageStart(serial);
 	json_blockStart(serial, "getConnCfg");
 	json_int(serial, "sdMode", cfg->sdLoggingMode, 1);
 	json_int(serial, "connMode", cfg->connectivityMode, 0);
@@ -486,7 +497,7 @@ int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json){
 
 static void sendPwmConfig(Serial *serial, size_t startIndex, size_t endIndex){
 
-	json_messageStart(serial, NULL_MESSAGE_ID);
+	json_messageStart(serial);
 	json_blockStart(serial, "getPwmCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		PWMConfig *cfg = &(getWorkingLoggerConfig()->PWMConfigs[i]);
@@ -564,7 +575,7 @@ static const jsmntok_t * setGpioExtendedField(const jsmntok_t *valueTok, const c
 }
 
 static void sendGpioConfig(Serial *serial, size_t startIndex, size_t endIndex){
-	json_messageStart(serial, NULL_MESSAGE_ID);
+	json_messageStart(serial);
 	json_blockStart(serial, "getGpioCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		GPIOConfig *cfg = &(getWorkingLoggerConfig()->GPIOConfigs[i]);
@@ -628,7 +639,7 @@ static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok, const 
 }
 
 static void sendTimerConfig(Serial *serial, size_t startIndex, size_t endIndex){
-	json_messageStart(serial, NULL_MESSAGE_ID);
+	json_messageStart(serial);
 	json_blockStart(serial, "getTimerCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		TimerConfig *cfg = &(getWorkingLoggerConfig()->TimerConfigs[i]);
@@ -676,7 +687,7 @@ int api_getGpsConfig(Serial *serial, const jsmntok_t *json){
 
 	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
 
-	json_messageStart(serial, NULL_MESSAGE_ID);
+	json_messageStart(serial);
 	json_blockStart(serial, "getGpsCfg");
 
 	json_blockStart(serial, "lat");
@@ -738,7 +749,7 @@ static void json_gpsTarget(Serial *serial, const char *name,  GPSTargetConfig *g
 int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
 	TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs);
 
-	json_messageStart(serial, NULL_MESSAGE_ID);
+	json_messageStart(serial);
 	json_blockStart(serial, "getTrackCfg");
 	json_gpsTarget(serial, "startFinish", &trackCfg->startFinishConfig, 1);
 	json_gpsTarget(serial, "split", &trackCfg->splitConfig, 1);

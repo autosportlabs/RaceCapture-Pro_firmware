@@ -49,7 +49,7 @@ void consoleConnectivityTask(void *params){
 			//a null sample record means end of sample run; like an EOF
 			if (NULL != sr) {
 				++tick;
-				writeSampleRecord(serial, sr, tick, tick == 1);
+				api_sendSampleRecord(serial, sr, tick, tick == 1);
 				serial->put_s("\r\n");
 				pr_debug("sample\n");
 			} else {

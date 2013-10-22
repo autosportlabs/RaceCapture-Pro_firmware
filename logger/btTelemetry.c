@@ -115,11 +115,17 @@ void btTelemetryTask(void *params) {
 			} else {
 				//a null sample record means end of sample run; like an EOF
 				if (NULL != sr) {
+					if (0 == tick){
+						api_sendLogStart(serial);
+						put_crlf(serial);
+					}
 					++tick;
-					writeSampleRecord(serial, sr, tick, tick == 1);
-					serial->put_s("\r\n");
+					api_sendSampleRecord(serial, sr, tick, tick == 1);
+					put_crlf(serial);;
 				}
 				else{
+					api_sendLogEnd(serial);
+					put_crlf(serial);
 					//end of sample
 					tick = 0;
 				}
