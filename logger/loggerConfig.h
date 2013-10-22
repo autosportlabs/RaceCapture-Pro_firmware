@@ -273,11 +273,11 @@ typedef struct _TrackConfig{
 } TrackConfig;
 
 #define DEFAULT_GPS_TARGET_CONFIG {0,0, 0.0004}
-#define DEFAULT_LAP_COUNT_CONFIG {"LapCount", "", SAMPLE_DISABLED}
-#define DEFAULT_LAP_TIME_CONFIG {"LapTime", "seconds", SAMPLE_DISABLED}
-#define DEFAULT_SPLIT_TIME_CONFIG {"SplitTime", "seconds", SAMPLE_DISABLED}
-#define DEFAULT_DISTANCE_CONFIG {"Distance", "miles", SAMPLE_DISABLED}
-#define DEFAULT_PRED_TIME_CONFIG {"PredTime", "seconds", SAMPLE_DISABLED}
+#define DEFAULT_LAP_COUNT_CONFIG {"LapCount", "", SAMPLE_1Hz}
+#define DEFAULT_LAP_TIME_CONFIG {"LapTime", "seconds", SAMPLE_1Hz}
+#define DEFAULT_SPLIT_TIME_CONFIG {"SplitTime", "seconds", SAMPLE_1Hz}
+#define DEFAULT_DISTANCE_CONFIG {"Distance", "miles", SAMPLE_1Hz}
+#define DEFAULT_PRED_TIME_CONFIG {"PredTime", "seconds", SAMPLE_1Hz}
 
 #define DEFAULT_TRACK_CONFIG { \
 	DEFAULT_GPS_TARGET_CONFIG, \
