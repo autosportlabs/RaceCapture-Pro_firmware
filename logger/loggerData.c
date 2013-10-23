@@ -10,7 +10,7 @@
 #include "accelerometer.h"
 #include "gps.h"
 #include "linear_interpolate.h"
-
+#include "predictive_timer.h"
 
 static void writeAccelerometer(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *config){
 
@@ -117,7 +117,7 @@ static void writeTrackChannels(SampleRecord *sampleRecord, size_t currentTicks, 
 	{
 		size_t sr = config->predTimeCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->Track_PredTimeSample.floatValue = 0; //getPredTime();
+			if ((currentTicks % sr) == 0) sampleRecord->Track_PredTimeSample.floatValue = get_predicted_time(getGPSSpeed());
 		}
 	}
 }
