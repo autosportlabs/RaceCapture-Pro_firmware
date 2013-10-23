@@ -18,6 +18,11 @@ void PredictiveTimeTest::tearDown()
 {
 }
 
+void PredictiveTimeTest::testPredictedTimeGpsFeed(){
+
+
+}
+
 void PredictiveTimeTest::testPredictedLapTimeFullLap(){
 	//load up a lap
 	for (size_t i = 0; i < 20; i++){

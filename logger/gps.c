@@ -84,23 +84,8 @@ static void parseGGA(char *data){
 				{
 					unsigned int len = strlen(data);
 					if (len > 0 && len < UTC_TIME_BUFFER_LEN){
-						g_UTCTime = modp_atof(data);
-
-						char hh[3];
-						char mm[3];
-						char ss[7];
-
-						memcpy(hh,data,2);
-						hh[2] = '\0';
-						memcpy(mm,data+2,2);
-						mm[2] = '\0';
-						memcpy(ss,data+4,6);
-						ss[6] = '\0';
-						int hour = modp_atoi(hh);
-						int minutes = modp_atoi(mm);
-						float seconds = modp_atof(ss);
-
-						secondsSinceMidnight = (hour * 60.0 * 60.0) + (minutes * 60.0) + seconds;
+						setUTCTime(modp_atof(data));
+						secondsSinceMidnight = calculateSecondsSinceMidnight(data);
 					}
 				}
 				break;
@@ -109,15 +94,12 @@ static void parseGGA(char *data){
 					unsigned int len = strlen(data);
 					if ( len > 0 && len <= LATITUDE_DATA_LEN ){
 						//Raw GPS Format is ddmm.mmmmmm
-//						latitude = modp_atod(data);
-
 						char degreesStr[3];
 						strncpy(degreesStr, data, 2);
 						degreesStr[2] = 0;
 						float minutes = modp_atof(data + 2);
 						minutes = minutes / 60.0;
 						latitude = modp_atoi(degreesStr) + minutes;
-
 					}
 					else{
 						latitude = 0;
@@ -137,9 +119,6 @@ static void parseGGA(char *data){
 					unsigned int len = strlen(data);
 					if ( len > 0 && len <= LONGITUDE_DATA_LEN ){
 						//Raw GPS Format is dddmm.mmmmmm
-
-//						longitude = modp_atod(data);
-
 						char degreesStr[4];
 						strncpy(degreesStr, data, 3);
 						degreesStr[3] = 0;
@@ -172,9 +151,34 @@ static void parseGGA(char *data){
 		data = delim + 1;
 		delim = strchr(data,',');
 	}
+	updateSecondsSinceMidnight(secondsSinceMidnight);
+	updatePosition(latitude, longitude);
+}
 
+double calculateSecondsSinceMidnight(const char * rawTime){
+	char hh[3];
+	char mm[3];
+	char ss[7];
+
+	memcpy(hh, rawTime, 2);
+	hh[2] = '\0';
+	memcpy(mm, rawTime + 2, 2);
+	mm[2] = '\0';
+	memcpy(ss, rawTime + 4, 6);
+	ss[6] = '\0';
+	int hour = modp_atoi(hh);
+	int minutes = modp_atoi(mm);
+	float seconds = modp_atof(ss);
+
+	return (hour * 60.0 * 60.0) + (minutes * 60.0) + seconds;
+}
+
+void updateSecondsSinceMidnight(float secondsSinceMidnight){
 	g_prevSecondsSinceMidnight = g_secondsSinceMidnight;
 	g_secondsSinceMidnight = secondsSinceMidnight;
+}
+
+void updatePosition(float latitude, float longitude){
 	g_prevLatitude = g_latitude;
 	g_prevLongitude = g_longitude;
 	g_longitude = longitude;
@@ -199,7 +203,7 @@ static void parseVTG(char *data){
 			case 6: //Speed over ground
 				{
 					if (strlen(data) >= 1){
-						g_speed = modp_atof(data) * 0.621371; //convert to MPH
+						setGPSSpeed(modp_atof(data) * 0.621371); //convert to MPH
 					}
 					keepParsing = 0;
 				}
@@ -279,6 +283,10 @@ float getUTCTime(){
 	return g_UTCTime;
 }
 
+void setUTCTime(float UTCTime){
+	g_UTCTime = UTCTime;
+}
+
 float getSecondsSinceMidnight(){
 	return g_secondsSinceMidnight;
 }
@@ -305,6 +313,10 @@ int getSatellitesUsedForPosition(){
 
 float getGPSSpeed(){
 	return g_speed;
+}
+
+void setGPSSpeed(float speed){
+	g_speed = speed;
 }
 
 static int withinGpsTarget(GPSTargetConfig *targetConfig){

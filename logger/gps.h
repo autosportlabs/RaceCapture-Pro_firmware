@@ -26,7 +26,13 @@ void getUTCTimeFormatted(char * buf);
 
 float getUTCTime();
 
+void setUTCTime(float UTCTime);
+
 float getSecondsSinceMidnight();
+
+void updateSecondsSinceMidnight(float secondsSinceMidnight);
+
+double calculateSecondsSinceMidnight(const char * rawTime);
 
 float getTimeDiff(float from, float to);
 
@@ -36,10 +42,14 @@ float getLatitude();
 
 float getLongitude();
 
+void updatePosition(float latitude, float longitude);
+
 int getGPSQuality();
 
 int getSatellitesUsedForPosition();
 
 float getGPSSpeed();
+
+void setGPSSpeed(float speed);
 			
 #endif /*GPS_H_*/
