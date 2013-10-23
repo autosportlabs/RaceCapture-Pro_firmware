@@ -9,6 +9,9 @@
 #define PREDICTIVE_TIME_TEST_H_
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <string>
+using std::string;
+using std::vector;
 
 class PredictiveTimeTest : public CppUnit::TestFixture
 {
@@ -23,6 +26,10 @@ class PredictiveTimeTest : public CppUnit::TestFixture
 public:
   void setUp();
   void tearDown();
+
+  string readFile(string filename);
+  vector<string> split(string &s, char delim);
+  vector<string> &split(string &s, char delim, vector<string> &elems);
 
   void testPredictLapTime();
   void testPredictedLapTimeFullLap();

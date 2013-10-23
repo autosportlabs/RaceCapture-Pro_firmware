@@ -17,6 +17,7 @@
 #include <string>
 #include <fstream>
 #include <streambuf>
+#include "predictive_timer.h"
 
 #define JSON_TOKENS 10000
 #define FILE_PREFIX string("test/")
@@ -126,6 +127,7 @@ void LoggerApiTest::setUp()
 	initApi();
 	updateActiveLoggerConfig();
 	setupMockSerial();
+	init_predictive_timer();
 }
 
 
