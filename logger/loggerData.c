@@ -84,7 +84,7 @@ static void writeGPSChannels(SampleRecord *sampleRecord, size_t currentTicks, GP
 	{
 		size_t sr = config->speedCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->GPS_SpeedSample.floatValue = getGPSSpeed();
+			if ((currentTicks % sr) == 0) sampleRecord->GPS_SpeedSample.floatValue = getGPSSpeed() *  0.621371192; //convert to MPH
 		}
 	}
 }
@@ -111,7 +111,7 @@ static void writeTrackChannels(SampleRecord *sampleRecord, size_t currentTicks, 
 	{
 		size_t sr = config->distanceCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->Track_DistanceSample.floatValue = getDistance();
+			if ((currentTicks % sr) == 0) sampleRecord->Track_DistanceSample.floatValue = getDistance() * 0.621371192; //convert to miles
 		}
 	}
 	{

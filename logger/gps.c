@@ -203,7 +203,7 @@ static void parseVTG(char *data){
 			case 6: //Speed over ground
 				{
 					if (strlen(data) >= 1){
-						setGPSSpeed(modp_atof(data) * 0.621371); //convert to MPH
+						setGPSSpeed(modp_atof(data)); //convert to MPH
 					}
 					keepParsing = 0;
 				}
