@@ -6,6 +6,7 @@
 #include "geometry.h"
 #include "mod_string.h"
 #include "predictive_timer.h"
+#include "race_capture/printk.h"
 #include <math.h>
 
 //kilometers

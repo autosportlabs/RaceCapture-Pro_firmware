@@ -77,9 +77,12 @@ void PredictiveTimeTest::testPredictedTimeGpsFeed(){
 	startFinishCfg->targetRadius = 0.0004;
 	setGPSQuality(GPS_QUALITY_DIFFERENTIAL);
 
+	int lineNo = 0;
 	string line;
 	while (std::getline(iss, line))
 	{
+		lineNo++;
+
 		vector<string> values = split(line, ',');
 
 		string latitudeRaw = values[5];
@@ -87,7 +90,10 @@ void PredictiveTimeTest::testPredictedTimeGpsFeed(){
 		string speedRaw = values[7];
 		string timeRaw = values[8];
 
+		timeRaw = "0" + timeRaw;
+
 		if (values[0][0] != '#' && latitudeRaw.size() > 0 && longitudeRaw.size() > 0 && speedRaw.size() > 0 && timeRaw.size() > 0){
+			//printf("%s", line.c_str());
 			float lat = modp_atof(latitudeRaw.c_str());
 			float lon = modp_atof(longitudeRaw.c_str());
 			float speed = modp_atof(speedRaw.c_str());
@@ -96,10 +102,12 @@ void PredictiveTimeTest::testPredictedTimeGpsFeed(){
 			setGPSSpeed(speed);
 			setUTCTime(utcTime);
 			updatePosition(lat, lon);
+			printf("lat/lon %f %f\n", lat, lon);
 			double secondsSinceMidnight = calculateSecondsSinceMidnight(timeRaw.c_str());
 			updateSecondsSinceMidnight(secondsSinceMidnight);
 			onLocationUpdated();
-			printf("Lap/PredTime: %d %f\n", getLapCount(), get_predicted_time(speed));
+			float predTime = get_predicted_time(speed);
+			printf("%d Lap/PredTime: %d %f\n", lineNo, getLapCount(), predTime);
 		}
 
 
@@ -107,6 +115,7 @@ void PredictiveTimeTest::testPredictedTimeGpsFeed(){
 }
 
 void PredictiveTimeTest::testPredictedLapTimeFullLap(){
+	return;
 	//load up a lap
 	for (size_t i = 0; i < 20; i++){
 		add_predictive_sample(90, 1, 1);
@@ -123,6 +132,7 @@ void PredictiveTimeTest::testPredictedLapTimeFullLap(){
 
 void PredictiveTimeTest::testPredictLapTime()
 {
+	return;
 	for (size_t i = 0; i < 20; i++){
 		//add speed, distance, time
 		add_predictive_sample(90, 1, 1);
@@ -138,6 +148,7 @@ void PredictiveTimeTest::testPredictLapTime()
 
 void PredictiveTimeTest::testAddSamples()
 {
+	return;
 	for (size_t i = 0; i < 20; i++){
 		add_predictive_sample(100, 1, 2);
 	}

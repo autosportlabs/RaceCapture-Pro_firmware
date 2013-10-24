@@ -1,6 +1,6 @@
 #include "predictive_timer.h"
 #include "linear_interpolate.h"
-
+#include <stdio.h>
 static LapBuffer _buffer1;
 static LapBuffer _buffer2;
 
@@ -81,6 +81,12 @@ static size_t getLastLapIndex(int startingIndex){
 }
 
 static void compact_lap_buffer(LapBuffer *buffer){
+
+	for (size_t i = 0; i < MAX_LOCATION_SAMPLES; i++){
+		LocationSample *target = &buffer->samples[i];
+		printf("%d distance/time/speed %f %f %f\r\n", i, target->distance, target->time, target->speed );
+	}
+
 	size_t targetIndex = 0;
 	for (size_t i = 0; i < MAX_LOCATION_SAMPLES; i+=2,targetIndex++){
 		LocationSample *s1 = &buffer->samples[i];
@@ -89,6 +95,7 @@ static void compact_lap_buffer(LapBuffer *buffer){
 		target->distance = s2->distance;
 		target->time = s2->time;
 		target->speed = AVERAGE_TWO(s1->speed, s2->speed);
+		printf("%d %d distance/time/speed %f %f %f\r\n", i, targetIndex, target->distance, target->time, target->speed );
 	}
 	buffer->sampleInterval++;
 	buffer->sampleIndex = MAX_LOCATION_SAMPLES / 2;
@@ -124,6 +131,7 @@ void add_predictive_sample(float speed, float distance, float time){
 	sample->speed = _currentLap->currentSpeedAccumulator / _currentLap->currentInterval;
 	sample->distance += distance;
 	sample->time += time;
+	printf("dist/spd/time %f %f %f -- distance/speed/time %f %f %f\n", distance, speed, time, sample->distance, sample->speed, sample->time);
 }
 
 float get_predicted_time(float currentSpeed){
