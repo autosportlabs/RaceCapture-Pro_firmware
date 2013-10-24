@@ -43,6 +43,7 @@ void end_lap(){
 		_lastLap = &_buffer2;
 	}
 	init_lap_buffer(_currentLap);
+	cachedLastLapIndex = 0;
 }
 
 

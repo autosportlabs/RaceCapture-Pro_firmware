@@ -1,8 +1,13 @@
 #include "predictiveTime_test.h"
 #include "predictive_timer.h"
+#include "gps.h"
+#include "loggerConfig.h"
 #include <stdlib.h>
 #include <fstream>
 #include <streambuf>
+#include "mod_string.h"
+#include "modp_atonum.h"
+
 using std::ifstream;
 using std::ios;
 using std::istreambuf_iterator;
@@ -16,7 +21,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( PredictiveTimeTest );
 
 void PredictiveTimeTest::setUp()
 {
-	init_predictive_timer();
+	initGPS();
 }
 
 
@@ -66,11 +71,38 @@ void PredictiveTimeTest::testPredictedTimeGpsFeed(){
 
 	std::istringstream iss(log);
 
+	GPSTargetConfig *startFinishCfg = &(getWorkingLoggerConfig()->TrackConfigs.startFinishConfig);
+	startFinishCfg->latitude = 47.806934;
+	startFinishCfg->longitude = -122.341150;
+	startFinishCfg->targetRadius = 0.0004;
+	setGPSQuality(GPS_QUALITY_DIFFERENTIAL);
+
 	string line;
 	while (std::getline(iss, line))
 	{
 		vector<string> values = split(line, ',');
-		printf("%s\n", values[0].c_str());
+
+		string latitudeRaw = values[5];
+		string longitudeRaw = values[6];
+		string speedRaw = values[7];
+		string timeRaw = values[8];
+
+		if (values[0][0] != '#' && latitudeRaw.size() > 0 && longitudeRaw.size() > 0 && speedRaw.size() > 0 && timeRaw.size() > 0){
+			float lat = modp_atof(latitudeRaw.c_str());
+			float lon = modp_atof(longitudeRaw.c_str());
+			float speed = modp_atof(speedRaw.c_str());
+			float utcTime = modp_atof(timeRaw.c_str());
+
+			setGPSSpeed(speed);
+			setUTCTime(utcTime);
+			updatePosition(lat, lon);
+			double secondsSinceMidnight = calculateSecondsSinceMidnight(timeRaw.c_str());
+			updateSecondsSinceMidnight(secondsSinceMidnight);
+			onLocationUpdated();
+			printf("Lap/PredTime: %d %f\n", getLapCount(), get_predicted_time(speed));
+		}
+
+
 	}
 }
 

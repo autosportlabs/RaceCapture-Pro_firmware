@@ -1,4 +1,4 @@
-"Battery"|"Volts"|1,"AccelX"|"G"|30,"AccelY"|"G"|30,"AccelZ"|"G"|30,"Yaw"|"Deg_Sec"|30,"Latitude"|"Deg"|10,"Longitude"|"Deg"|10,"Speed"|"MPH"|10,"Time"|"Time"|10,"LapCount"|""|10,"LapTime"|"seconds"|10,"SplitTime"|"seconds"|10,"Distance"|"miles"|1,"PredTime"|"seconds"|1
+#"Battery"|"Volts"|1,"AccelX"|"G"|30,"AccelY"|"G"|30,"AccelZ"|"G"|30,"Yaw"|"Deg_Sec"|30,"Latitude"|"Deg"|10,"Longitude"|"Deg"|10,"Speed"|"MPH"|10,"Time"|"Time"|10,"LapCount"|""|10,"LapTime"|"seconds"|10,"SplitTime"|"seconds"|10,"Distance"|"miles"|1,"PredTime"|"seconds"|1
 ,0.045,0.490,0.913,10.235,,,,,,,,,
 ,,0.134,0.939,-9.595,,,,,,,,,
 ,-0.033,0.151,0.926,-10.021,47.807220,-122.346642,8.90,50726.301,0,0.000,0.000,,

@@ -12,10 +12,6 @@
 #define DISTANCE_SCALING 6371
 #define PI 3.1415
 
-#define GPS_QUALITY_NO_FIX 0
-#define GPS_QUALITY_SPS 1
-#define GPS_QUALITY_DIFFERENTIAL 2
-
 #define GPS_LOCK_FLASH_COUNT 2
 #define GPS_NOFIX_FLASH_COUNT 10
 
@@ -307,6 +303,10 @@ int getGPSQuality(){
 	return g_gpsQuality;
 }
 
+void setGPSQuality(int quality){
+	g_gpsQuality = quality;
+}
+
 int getSatellitesUsedForPosition(){
 	return g_satellitesUsedForPosition;
 }
@@ -344,17 +344,18 @@ static float toRadians(float degrees){
 }
 
 static float calcDistancesSinceLastSample(){
+	float d = 0;
+	if (0 != g_prevLatitude && 0 != g_prevLongitude){
+		float lat1 = toRadians(g_prevLatitude);
+		float lon1 = toRadians(g_prevLongitude);
 
-	float lat1 = toRadians(g_prevLatitude);
-	float lon1 = toRadians(g_prevLongitude);
+		float lat2 = toRadians(g_latitude);
+		float lon2 = toRadians(g_longitude);
 
-	float lat2 = toRadians(g_latitude);
-	float lon2 = toRadians(g_longitude);
-
-	float x = (lon2-lon1) * cos((lat1+lat2)/2);
-	float y = (lat2-lat1);
-	float d = sqrtf(x*x + y*y) * DISTANCE_SCALING;
-
+		float x = (lon2-lon1) * cos((lat1+lat2)/2);
+		float y = (lat2-lat1);
+		d = sqrtf(x*x + y*y) * DISTANCE_SCALING;
+	}
 	return d;
 }
 
@@ -420,7 +421,7 @@ static void processSplit(GPSTargetConfig *targetConfig){
 }
 
 void initGPS(){
-	g_secondsSinceMidnight = 0;
+	g_secondsSinceMidnight = TIME_NULL;
 	g_prevSecondsSinceMidnight = TIME_NULL;
 	g_flashCount = 0;
 	g_prevLatitude = 0.0;
@@ -454,7 +455,7 @@ static void flashGpsStatusLed(){
 	}
 }
 
-static void onLocationUpdated(){
+void onLocationUpdated(){
 	GPSTargetConfig *startFinishCfg = &(getWorkingLoggerConfig()->TrackConfigs.startFinishConfig);
 	int startFinishEnabled = isGpsTargetEnabled(startFinishCfg);
 
