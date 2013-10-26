@@ -1,5 +1,7 @@
 #include "predictive_timer.h"
 #include "linear_interpolate.h"
+//#include <stdio.h>
+
 static LapBuffer _buffer1;
 static LapBuffer _buffer2;
 
@@ -79,12 +81,16 @@ static size_t getLastLapIndex(int startingIndex){
 	return searchIndex;
 }
 
+static void outputLapBuffer(LapBuffer *buffer){
+	for (size_t i = 0; i < buffer->sampleIndex; i++){
+		LocationSample *target = &buffer->samples[i];
+		//printf("%d distance/time/speed %f %f %f\r\n", i, target->distance, target->time, target->speed );
+	}
+}
+
 static void compact_lap_buffer(LapBuffer *buffer){
 
-//	for (size_t i = 0; i < MAX_LOCATION_SAMPLES; i++){
-	//	LocationSample *target = &buffer->samples[i];
-//printf("%d distance/time/speed %f %f %f\r\n", i, target->distance, target->time, target->speed );
-//	}
+	outputLapBuffer(buffer);
 
 	size_t targetIndex = 0;
 	for (size_t i = 0; i < MAX_LOCATION_SAMPLES; i+=2,targetIndex++){
@@ -98,6 +104,8 @@ static void compact_lap_buffer(LapBuffer *buffer){
 	}
 	buffer->sampleInterval++;
 	buffer->sampleIndex = MAX_LOCATION_SAMPLES / 2;
+
+	outputLapBuffer(buffer);
 }
 
 
