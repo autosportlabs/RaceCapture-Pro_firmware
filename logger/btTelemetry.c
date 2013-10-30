@@ -121,7 +121,7 @@ void btTelemetryTask(void *params) {
 					}
 					++tick;
 					api_sendSampleRecord(serial, sr, tick, tick == 1);
-					put_crlf(serial);;
+					put_crlf(serial);
 				}
 				else{
 					api_sendLogEnd(serial);

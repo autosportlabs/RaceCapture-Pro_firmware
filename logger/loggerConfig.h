@@ -277,7 +277,7 @@ typedef struct _TrackConfig{
 #define DEFAULT_LAP_TIME_CONFIG {"LapTime", "seconds", SAMPLE_1Hz}
 #define DEFAULT_SPLIT_TIME_CONFIG {"SplitTime", "seconds", SAMPLE_1Hz}
 #define DEFAULT_DISTANCE_CONFIG {"Distance", "miles", SAMPLE_1Hz}
-#define DEFAULT_PRED_TIME_CONFIG {"PredTime", "seconds", SAMPLE_1Hz}
+#define DEFAULT_PRED_TIME_CONFIG {"PredTime", "seconds", SAMPLE_DISABLED}
 
 #define DEFAULT_TRACK_CONFIG { \
 	DEFAULT_GPS_TARGET_CONFIG, \

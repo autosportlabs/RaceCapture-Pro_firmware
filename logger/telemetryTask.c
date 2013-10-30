@@ -17,7 +17,7 @@
 #include "btTelemetry.h"
 #include "consoleConnectivity.h"
 
-static xQueueHandle g_sampleRecordQueue = NULL;
+static ConnParams g_connParams;
 
 //wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all
 #define TELEMETRY_QUEUE_WAIT_TIME					0
@@ -30,7 +30,7 @@ static xQueueHandle g_sampleRecordQueue = NULL;
 
 portBASE_TYPE queueTelemetryRecord(SampleRecord * sr){
 	if (NULL != g_sampleRecordQueue){
-		return xQueueSend(g_sampleRecordQueue, &sr, TELEMETRY_QUEUE_WAIT_TIME);
+		return xQueueSend(g_connParams.sampleQueue, &sr, TELEMETRY_QUEUE_WAIT_TIME);
 	}
 	else{
 		return errQUEUE_EMPTY;
@@ -38,26 +38,21 @@ portBASE_TYPE queueTelemetryRecord(SampleRecord * sr){
 }
 
 void createConnectivityTask(){
-
-	g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( SampleRecord *));
-	if (NULL == g_sampleRecordQueue){
+	g_connParams.sampleQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( SampleRecord *));
+	if (NULL == g_connParams.sampleQueue){
 		//TODO log error
 		return;
 	}
 
 	switch(getWorkingLoggerConfig()->ConnectivityConfigs.connectivityMode){
 		case CONNECTIVITY_MODE_CONSOLE:
-			xTaskCreate( consoleConnectivityTask, ( signed portCHAR * ) "conn", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
+			xTaskCreate( consoleConnectivityTask, ( signed portCHAR * ) "conn", TELEMETRY_STACK_SIZE, &g_connParams, TELEMETRY_TASK_PRIORITY, NULL );
 			break;
 		case CONNECTIVITY_MODE_BLUETOOTH:
-			xTaskCreate( btTelemetryTask, ( signed portCHAR * ) "connBT", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
+			xTaskCreate( btTelemetryTask, ( signed portCHAR * ) "connBT", TELEMETRY_STACK_SIZE, &g_connParams, TELEMETRY_TASK_PRIORITY, NULL );
 			break;
 		case CONNECTIVITY_MODE_CELL:
-			xTaskCreate( cellTelemetryTask, ( signed portCHAR * ) "connCell", TELEMETRY_STACK_SIZE, g_sampleRecordQueue, TELEMETRY_TASK_PRIORITY, NULL );
+			xTaskCreate( cellTelemetryTask, ( signed portCHAR * ) "connCell", TELEMETRY_STACK_SIZE, &g_connParams, TELEMETRY_TASK_PRIORITY, NULL );
 			break;
 	}
 }
-
-
-
-
