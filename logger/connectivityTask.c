@@ -13,6 +13,7 @@
 #include "usart.h"
 #include "race_capture/printk.h"
 #include "messaging.h"
+#include "telemetryTask.h"
 
 #define IDLE_TIMEOUT	configTICK_RATE_HZ / 10
 #define INIT_DELAY	 	600
@@ -42,18 +43,10 @@ static int processRxBuffer(Serial *serial){
 	return processMsg;
 }
 
-static int resetRxBuffer(){
-	g_rxCount = 0;
-}
-
-static int processRxMessage(Serial *serial){
-	process_msg(serial, g_buffer, BUFFER_SIZE);
-}
-
 void connectivityTask(void *params) {
 
 	ConnParams *connParams = (ConnParams*)params;
-	xQueueHandle sampleRecordQueue = (xQueueHandle)params->sampleRecord;
+	xQueueHandle sampleRecordQueue = connParams->sampleQueue;
 	SampleRecord *sr = NULL;
 	uint32_t sampleTick = 0;
 
@@ -98,10 +91,9 @@ void connectivityTask(void *params) {
 			//now process a complete message if necessary
 			if (msgReceived){
 				processRxMessage(serial);
-				resetRxBuffer();
+				g_rxCount = 0;
 			}
-
-			processRxMessage(serial, connParams);
+			process_msg(serial, g_buffer, BUFFER_SIZE);
 		}
 	}
 }

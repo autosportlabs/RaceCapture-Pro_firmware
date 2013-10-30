@@ -16,6 +16,8 @@
 #include "cellTelemetry.h"
 #include "btTelemetry.h"
 #include "consoleConnectivity.h"
+#include "connectivityTask.h"
+
 
 static ConnParams g_connParams;
 
@@ -29,8 +31,9 @@ static ConnParams g_connParams;
 
 
 portBASE_TYPE queueTelemetryRecord(SampleRecord * sr){
-	if (NULL != g_sampleRecordQueue){
-		return xQueueSend(g_connParams.sampleQueue, &sr, TELEMETRY_QUEUE_WAIT_TIME);
+	xQueueHandle sampleQueue = g_connParams.sampleQueue;
+	if (NULL != sampleQueue){
+		return xQueueSend(sampleQueue, &sr, TELEMETRY_QUEUE_WAIT_TIME);
 	}
 	else{
 		return errQUEUE_EMPTY;
@@ -55,4 +58,6 @@ void createConnectivityTask(){
 			xTaskCreate( cellTelemetryTask, ( signed portCHAR * ) "connCell", TELEMETRY_STACK_SIZE, &g_connParams, TELEMETRY_TASK_PRIORITY, NULL );
 			break;
 	}
+
+	xTaskCreate(connectivityTask, (signed portCHAR *) "connTask", TELEMETRY_STACK_SIZE, &g_connParams, TELEMETRY_TASK_PRIORITY, NULL );
 }
