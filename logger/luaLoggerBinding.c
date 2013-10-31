@@ -14,7 +14,7 @@
 #include "luaTask.h"
 #include "mod_string.h"
 #include "usart.h"
-#include "race_capture/printk.h"
+#include "printk.h"
 #include "modp_numtoa.h"
 
 extern xSemaphoreHandle g_xLoggerStart;

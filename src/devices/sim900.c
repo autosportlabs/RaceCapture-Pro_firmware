@@ -2,7 +2,7 @@
 #include "cellModem.h"
 #include "loggerConfig.h"
 #include "mod_string.h"
-#include "race_capture/printk.h"
+#include "printk.h"
 
 #define TELEMETRY_SERVER_PORT "8080"
 

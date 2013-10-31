@@ -5,7 +5,7 @@
 #ifndef __PRINTK_H__
 #define __PRINTK_H__
 
-#include <serial.h>
+#include "serial.h"
 #include <stddef.h>
 
 enum log_level {

@@ -82,7 +82,7 @@ SPI_DIR = $(SAM7s_BASE_DIR)/spi
 MEMORY_SRC_DIR = $(SAM7s_BASE_DIR)/memory
 LUA_SRC_DIR = $(SAM7s_BASE_DIR)/lua
 CMD_SRC_DIR = $(SAM7s_BASE_DIR)/command
-RACE_CAPTURE_DIR = race_capture
+LOGGING_DIR = $(SRC_DIR)/logging
 TASKS_DIR = tasks
 JSMN_SRC_DIR = $(SRC_DIR)/jsmn
 API_SRC_DIR = $(SRC_DIR)/api
@@ -148,8 +148,8 @@ $(LUA_SRC_DIR)/luaScript.c \
 $(LUA_SRC_DIR)/luaBaseBinding.c \
 $(LUA_SRC_DIR)/luaCommands.c \
 $(RTOS_PORT_DIR)/MemMang/heap_2_combine.c \
-$(RACE_CAPTURE_DIR)/printk.c \
-$(RACE_CAPTURE_DIR)/ring_buffer.c \
+$(LOGGING_DIR)/printk.c \
+$(LOGGING_DIR)/ring_buffer.c \
 $(TASKS_DIR)/heartbeat.c \
 $(ACCEL_SRC_DIR)/accelerometer_buffer.c \
 $(MESSAGING_SRC_DIR)/messaging.c \
@@ -250,6 +250,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/jsmn \
 -I$(INCLUDE_DIR)/api \
 -I$(INCLUDE_DIR)/logger \
+-I$(INCLUDE_DIR)/logging \
 -I$(INCLUDE_DIR)/accelerometer \
 -I$(INCLUDE_DIR)/messaging \
 -I$(INCLUDE_DIR)/predictive_timer \

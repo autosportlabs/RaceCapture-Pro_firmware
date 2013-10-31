@@ -5,7 +5,7 @@
 #include "usart.h"
 #include "loggerApi.h"
 #include "messaging.h"
-#include "race_capture/printk.h"
+#include "printk.h"
 
 #define BUFFER_SIZE MEMORY_PAGE_SIZE * 2
 static char g_buffer[BUFFER_SIZE];

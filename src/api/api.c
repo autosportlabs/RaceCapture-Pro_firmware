@@ -1,6 +1,6 @@
 #include "api.h"
 #include "constants.h"
-#include "race_capture/printk.h"
+#include "printk.h"
 #include "mod_string.h"
 
 #define JSON_TOKENS 100

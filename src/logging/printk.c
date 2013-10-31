@@ -3,8 +3,8 @@
  */
 
 #include "mod_string.h"
-#include "race_capture/printk.h"
-#include "race_capture/ring_buffer.h"
+#include "printk.h"
+#include "ring_buffer.h"
 #include "serial.h"
 #include "modp_numtoa.h"
 #include <stddef.h>

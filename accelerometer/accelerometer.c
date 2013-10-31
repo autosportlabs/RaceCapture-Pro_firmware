@@ -1,7 +1,7 @@
 #include "accelerometer.h"
 #include "loggerConfig.h"
 #include <mod_string.h>
-#include "race_capture/printk.h"
+#include "printk.h"
 #include "modp_numtoa.h"
 #include "spi.h"
 #include "board.h"

@@ -1,5 +1,5 @@
 #include "bluetooth.h"
-#include "race_capture/printk.h"
+#include "printk.h"
 #include "mod_string.h"
 #include "FreeRTOS.h"
 #include "task.h"

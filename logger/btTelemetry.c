@@ -6,7 +6,7 @@
 #include "loggerApi.h"
 #include "serial.h"
 #include "usart.h"
-#include "race_capture/printk.h"
+#include "printk.h"
 #include "messaging.h"
 
 #define IDLE_TIMEOUT	configTICK_RATE_HZ / 10

@@ -2,7 +2,7 @@
 #include "serial.h"
 #include "modp_numtoa.h"
 #include "mod_string.h"
-#include "race_capture/printk.h"
+#include "printk.h"
 #include "devices_common.h"
 
 #define min(a,b) ((a)<(b)?(a):(b))
