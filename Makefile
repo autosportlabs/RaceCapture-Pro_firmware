@@ -77,7 +77,7 @@ RTOS_MEMMANG_DIR = $(RTOS_PORT_DIR)/MemMang
 USB_SRC_DIR = $(SAM7s_BASE_DIR)/usb
 SERIAL_SRC_DIR = $(SAM7s_BASE_DIR)/serial
 UART_SRC_DIR = $(SAM7s_BASE_DIR)/uart
-UTIL_DIR = $(SAM7s_BASE_DIR)/util
+SAM7S_UTIL_DIR = $(SAM7s_BASE_DIR)/util
 SPI_DIR = $(SAM7s_BASE_DIR)/spi
 MEMORY_SRC_DIR = $(SAM7s_BASE_DIR)/memory
 LUA_SRC_DIR = $(SAM7s_BASE_DIR)/lua
@@ -90,7 +90,7 @@ ACCEL_SRC_DIR = $(SRC_DIR)/accelerometer
 MESSAGING_SRC_DIR = $(SRC_DIR)/messaging
 DEVICES_SRC_DIR = $(SRC_DIR)/devices
 PRED_TIMER_DIR = $(SRC_DIR)/predictive_timer
-UTIL2_DIR = $(SRC_DIR)/util
+UTIL_DIR = $(SRC_DIR)/util
 JSON_DIR = ./json
 
 #App specific dirs
@@ -114,7 +114,7 @@ $(RTOS_SRC_DIR)/list.c \
 $(RTOS_GCC_DIR)/port.c \
 $(UTIL_DIR)/modp_numtoa.c \
 $(UTIL_DIR)/modp_atonum.c \
-$(UTIL_DIR)/taskUtil.c \
+$(SAM7S_UTIL_DIR)/taskUtil.c \
 $(SPI_DIR)/spi.c \
 $(USB_SRC_DIR)/source/usb_comm.c \
 $(USB_SRC_DIR)/source/USB-CDC.c \
@@ -154,7 +154,7 @@ $(TASKS_DIR)/heartbeat.c \
 $(ACCEL_SRC_DIR)/accelerometer_buffer.c \
 $(MESSAGING_SRC_DIR)/messaging.c \
 $(PRED_TIMER_DIR)/predictive_timer.c \
-$(UTIL2_DIR)/linear_interpolate.c \
+$(UTIL_DIR)/linear_interpolate.c \
 $(DEVICES_SRC_DIR)/null_device.c \
 $(DEVICES_SRC_DIR)/bluetooth.c \
 $(DEVICES_SRC_DIR)/sim900.c
@@ -232,6 +232,7 @@ CINCS = \
 -I. \
 -I$(RTOS_MEMMANG_DIR) \
 -I$(UTIL_DIR) \
+-I$(SAM7S_UTIL_DIR) \
 -I$(LUA_SRC_DIR) \
 -I$(MEMORY_SRC_DIR) \
 -I$(FAT_SD_SRC_DIR) \
