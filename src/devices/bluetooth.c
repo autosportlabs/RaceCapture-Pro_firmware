@@ -1,5 +1,8 @@
 #include "bluetooth.h"
 #include "race_capture/printk.h"
+#include "mod_string.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 #define COMMAND_WAIT 	600
 
@@ -45,30 +48,21 @@ static int configureBt(DeviceConfig *config) {
 	//set baud rate
 	if (!sendCommand(config, "AT+BAUD8"))
 		return -1;
-	initUsart0(8, 0, 1, 115200);
+
+	config->serial->init(8, 0, 1, 115200);
 	//set Device Name
 	if (!sendBtCommandWaitResponse(config, "AT+NAMERaceCapturePro", "OK", COMMAND_WAIT))
 		return -2;
 	return 0;
 }
 
-static int initBluetooth(DeviceConfig *config) {
-	initUsart0(8, 0, 1, 9600);
-	if (sendCommand(config, "AT")) {
-		if (configureBt(config) != 0)
-			return -1;
-	}
-	initUsart0(8, 0, 1, 115200);
-	if (sendCommand(config, "AT")) return 0; else return -1;
-}
-
 int bt_init_connection(DeviceConfig *config){
-	initUsart0(8, 0, 1, 9600);
+	config->serial->init(8, 0, 1, 9600);
 	if (sendCommand(config, "AT")) {
 		if (configureBt(config) != 0)
 			return DEVICE_INIT_FAIL;
 	}
-	initUsart0(8, 0, 1, 115200);
+	config->serial->init(8, 0, 1, 115200);
 	if (sendCommand(config, "AT")) return DEVICE_INIT_SUCCESS; else return DEVICE_INIT_FAIL;
 }
 

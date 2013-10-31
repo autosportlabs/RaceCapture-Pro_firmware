@@ -15,6 +15,10 @@
 static char lineBuffer[BUFFER_SIZE];
 
 
+void usb_init(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud){
+	//null function - does not apply to USB CDC
+}
+
 void usb_flush(void)
 {
 	while(usb_getchar_wait(0));

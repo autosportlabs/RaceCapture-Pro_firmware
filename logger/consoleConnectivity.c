@@ -13,8 +13,8 @@ static char g_buffer[BUFFER_SIZE];
 
 void consoleConnectivityTaskx(void *params){
 
-	initUsart0(8, 0, 1, 115200);
 	Serial *serial = get_serial_usart0();
+	serial->init(8, 0, 1, 115200);
 
 	while (1) {
 		process_msg(serial, g_buffer, BUFFER_SIZE);

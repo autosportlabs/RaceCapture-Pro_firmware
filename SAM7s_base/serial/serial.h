@@ -12,6 +12,7 @@
 
 typedef struct _Serial{
 
+	void (*init)(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud);
 	char (*get_c_wait)(size_t delay);
 	char (*get_c)(void);
 

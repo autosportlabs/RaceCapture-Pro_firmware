@@ -136,7 +136,6 @@ $(LOGGER_SRC_DIR)/gpioTasks.c \
 $(LOGGER_SRC_DIR)/loggerTaskEx.c \
 $(LOGGER_SRC_DIR)/connectivityTask.c \
 $(LOGGER_SRC_DIR)/consoleConnectivity.c \
-$(LOGGER_SRC_DIR)/cellTelemetry.c \
 $(LOGGER_SRC_DIR)/gps.c \
 $(LOGGER_SRC_DIR)/gpsTask.c \
 $(LOGGER_SRC_DIR)/cellModem.c \
