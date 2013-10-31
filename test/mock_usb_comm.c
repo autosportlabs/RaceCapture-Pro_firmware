@@ -5,9 +5,9 @@
 static char lineBuffer[BUFFER_SIZE];
 
 
-void usb_flush(void)
-{
-}
+void usb_init(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud){}
+
+void usb_flush(void){}
 
 char usb_getchar_wait(size_t delay){
 	return 0;
