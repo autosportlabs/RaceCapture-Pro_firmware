@@ -12,6 +12,7 @@ MESSAGING_SRC=$(RCP_SRC)/messaging
 COMMAND_SRC=$(SAM7S_SRC)/command
 MOCK_DIR=./logger_mock
 GPS_DIR=./gps
+UTIL_DIR=./util
 
 INCLUDES = 	-I. \
 		-I$(RCP_BASE) \
@@ -32,7 +33,8 @@ INCLUDES = 	-I. \
 		-I$(SAM7S_SRC)/usb/include \
 		-I$(RCP_BASE)/accelerometer \
 		-I$(MOCK_DIR) \
-		-I$(GPS_DIR)
+		-I$(GPS_DIR) \
+		-I$(UTIL_DIR)
 
 # set up compiler and options
 CXX = g++
@@ -55,7 +57,7 @@ CPPFLAGS = -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=\"$(MAJOR)\" -DMINOR_RE
 
 SRC = 	loggerData_test.cpp \
 		$(GPS_DIR)/gps_test.cpp \
-		numtoa_test.cpp \
+		$(UTIL_DIR)/numtoa_test.cpp \
 		loggerApi_test.cpp \
 		loggerConfig_test.cpp \
 		predictiveTime_test.cpp \
