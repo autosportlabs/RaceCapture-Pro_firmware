@@ -58,6 +58,7 @@ CPPFLAGS = -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=\"$(MAJOR)\" -DMINOR_RE
 SRC = 	loggerData_test.cpp \
 		$(GPS_DIR)/gps_test.cpp \
 		$(UTIL_DIR)/numtoa_test.cpp \
+		$(UTIL_DIR)/atonum_test.cpp \
 		loggerApi_test.cpp \
 		loggerConfig_test.cpp \
 		predictiveTime_test.cpp \
