@@ -122,3 +122,13 @@ float modp_atof(const char *str){
 	if (negative) floatValue = -floatValue;
 	return floatValue;	
 }
+
+
+
+unsigned char modp_xtoc(const char *str){
+	char value = 0;
+    char digit1 = str[0] - 48;
+    char digit2 = str[1] - 48;
+    value = (digit1 << 4) + digit2;
+    return value;
+}
