@@ -33,7 +33,7 @@
 //logging related tasks
 #include "loggerTaskEx.h"
 #include "fileWriter.h"
-#include "telemetryTask.h"
+#include "connectivityTask.h"
 
 #ifdef LUA_ENABLED
 #include "luaTask.h"

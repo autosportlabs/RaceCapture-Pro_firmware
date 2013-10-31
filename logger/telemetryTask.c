@@ -18,12 +18,17 @@
 #include "consoleConnectivity.h"
 #include "connectivityTask.h"
 
+//devices
+#include "null_device.h"
+#include "bluetooth.h"
+#include "sim900.h"
 
 static ConnParams g_connParams;
 
-//wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all
-#define TELEMETRY_QUEUE_WAIT_TIME					0
-//#define TELEMETRY_QUEUE_WAIT_TIME					portMAX_DELAY
+#define BUFFER_SIZE 	201
+static char g_buffer[BUFFER_SIZE];
+size_t g_rxCount;
+
 
 #define TELEMETRY_TASK_PRIORITY					( tskIDLE_PRIORITY + 4 )
 #define TELEMETRY_STACK_SIZE  					1000
@@ -49,13 +54,16 @@ void createConnectivityTask(){
 
 	switch(getWorkingLoggerConfig()->ConnectivityConfigs.connectivityMode){
 		case CONNECTIVITY_MODE_CONSOLE:
-			xTaskCreate( consoleConnectivityTask, ( signed portCHAR * ) "conn", TELEMETRY_STACK_SIZE, &g_connParams, TELEMETRY_TASK_PRIORITY, NULL );
+			g_connParams.check_connection_status = &null_device_check_connection_status;
+			g_connParams.init_connection = &null_device_init_connection;
 			break;
 		case CONNECTIVITY_MODE_BLUETOOTH:
-			xTaskCreate( btTelemetryTask, ( signed portCHAR * ) "connBT", TELEMETRY_STACK_SIZE, &g_connParams, TELEMETRY_TASK_PRIORITY, NULL );
+			g_connParams.check_connection_status = &bt_check_connection_status;
+			g_connParams.init_connection = &bt_init_connection;
 			break;
 		case CONNECTIVITY_MODE_CELL:
-			xTaskCreate( cellTelemetryTask, ( signed portCHAR * ) "connCell", TELEMETRY_STACK_SIZE, &g_connParams, TELEMETRY_TASK_PRIORITY, NULL );
+			g_connParams.check_connection_status = &sim900_check_connection_status;
+			g_connParams.init_connection = &sim900_init_connection;
 			break;
 	}
 

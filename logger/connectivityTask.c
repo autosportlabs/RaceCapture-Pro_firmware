@@ -14,13 +14,32 @@
 #include "race_capture/printk.h"
 #include "messaging.h"
 #include "telemetryTask.h"
+#include "devices_common.h"
+
+//devices
+#include "null_device.h"
+#include "bluetooth.h"
+#include "sim900.h"
+
+
+//wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all
+#define TELEMETRY_QUEUE_WAIT_TIME					0
+//#define TELEMETRY_QUEUE_WAIT_TIME					portMAX_DELAY
+
 
 #define IDLE_TIMEOUT	configTICK_RATE_HZ / 10
 #define INIT_DELAY	 	600
 #define BUFFER_SIZE 	201
 
+#define TELEMETRY_TASK_PRIORITY					( tskIDLE_PRIORITY + 4 )
+#define TELEMETRY_STACK_SIZE  					1000
+#define SAMPLE_RECORD_QUEUE_SIZE				10
+
+
 static char g_buffer[BUFFER_SIZE];
-size_t g_rxCount;
+static size_t g_rxCount;
+static xQueueHandle g_sampleQueue;
+static ConnParams g_connParams;
 
 static int processRxBuffer(Serial *serial){
 	size_t count = serial->get_line_wait(g_buffer + g_rxCount, BUFFER_SIZE - g_rxCount, 0);
@@ -43,23 +62,60 @@ static int processRxBuffer(Serial *serial){
 	return processMsg;
 }
 
+portBASE_TYPE queueTelemetryRecord(SampleRecord * sr){
+	if (NULL != g_sampleQueue){
+		return xQueueSend(g_sampleQueue, &sr, TELEMETRY_QUEUE_WAIT_TIME);
+	}
+	else{
+		return errQUEUE_EMPTY;
+	}
+}
+
+void createConnectivityTask(){
+	g_sampleQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( SampleRecord *));
+	if (NULL == g_sampleQueue){
+		//TODO log error
+		return;
+	}
+
+	switch(getWorkingLoggerConfig()->ConnectivityConfigs.connectivityMode){
+		case CONNECTIVITY_MODE_CONSOLE:
+			g_connParams.check_connection_status = &null_device_check_connection_status;
+			g_connParams.init_connection = &null_device_init_connection;
+			break;
+		case CONNECTIVITY_MODE_BLUETOOTH:
+			g_connParams.check_connection_status = &bt_check_connection_status;
+			g_connParams.init_connection = &bt_init_connection;
+			break;
+		case CONNECTIVITY_MODE_CELL:
+			g_connParams.check_connection_status = &sim900_check_connection_status;
+			g_connParams.init_connection = &sim900_init_connection;
+			break;
+	}
+	xTaskCreate(connectivityTask, (signed portCHAR *) "connTask", TELEMETRY_STACK_SIZE, &g_connParams, TELEMETRY_TASK_PRIORITY, NULL );
+}
+
 void connectivityTask(void *params) {
 
 	ConnParams *connParams = (ConnParams*)params;
-	xQueueHandle sampleRecordQueue = connParams->sampleQueue;
 	SampleRecord *sr = NULL;
 	uint32_t sampleTick = 0;
 
-	int tick = 0;
 	Serial *serial = get_serial_usart0();
 
+	DeviceConfig deviceConfig;
+	deviceConfig.serial = serial;
+	deviceConfig.buffer = g_buffer;
+	deviceConfig.length = BUFFER_SIZE;
+
+	int tick = 0;
 	while (1) {
-		while (connParams->init_connection() != CONN_INIT_SUCCESS) {
+		while (connParams->init_connection(&deviceConfig) != DEVICE_INIT_SUCCESS) {
 			vTaskDelay(INIT_DELAY);
 		}
 		while (1) {
 			//wait for the next sample record
-			char res = xQueueReceive(sampleRecordQueue, &(sr), IDLE_TIMEOUT);
+			char res = xQueueReceive(g_sampleQueue, &(sr), IDLE_TIMEOUT);
 			sampleTick++;
 			if (pdFALSE == res) {
 				//perform idle task?
@@ -86,14 +142,13 @@ void connectivityTask(void *params) {
 			int msgReceived = processRxBuffer(serial);
 
 			//check the latest contents of the buffer for something that might indicate an error condition
-			if (connParams->check_connection_status(g_buffer, BUFFER_SIZE) != CONN_STATUS_NO_ERROR) break;
+			if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR) break;
 
 			//now process a complete message if necessary
 			if (msgReceived){
-				processRxMessage(serial);
+				process_msg(serial,g_buffer, BUFFER_SIZE);
 				g_rxCount = 0;
 			}
-			process_msg(serial, g_buffer, BUFFER_SIZE);
 		}
 	}
 }
