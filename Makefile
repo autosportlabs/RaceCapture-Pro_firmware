@@ -137,7 +137,6 @@ $(LOGGER_SRC_DIR)/loggerTaskEx.c \
 $(LOGGER_SRC_DIR)/connectivityTask.c \
 $(LOGGER_SRC_DIR)/gps.c \
 $(LOGGER_SRC_DIR)/gpsTask.c \
-$(LOGGER_SRC_DIR)/cellModem.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
 $(LOGGER_SRC_DIR)/geometry.c \
 $(LOGGER_SRC_DIR)/luaLoggerBinding.c \
@@ -155,6 +154,7 @@ $(ACCEL_SRC_DIR)/accelerometer_buffer.c \
 $(MESSAGING_SRC_DIR)/messaging.c \
 $(PRED_TIMER_DIR)/predictive_timer.c \
 $(UTIL_DIR)/linear_interpolate.c \
+$(DEVICES_SRC_DIR)/cellModem.c \
 $(DEVICES_SRC_DIR)/null_device.c \
 $(DEVICES_SRC_DIR)/bluetooth.c \
 $(DEVICES_SRC_DIR)/sim900.c
