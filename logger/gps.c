@@ -481,8 +481,23 @@ void onLocationUpdated(){
 	}
 }
 
+
+
+int checksumValid(const char *gpsData, size_t len){
+	int checksumValid = 0;
+	if (*gpsData == '$' && *(gpsData + len - 3)  == '*'){
+		unsigned char checksum = 0;
+		for (size_t i = 1; i < len - 3; i++){
+			checksum ^= *(gpsData + i);
+		}
+		unsigned char dataChecksum = modp_xtoc(gpsData + len - 2);
+		if (checksum == dataChecksum) checksumValid = 1;
+	}
+	return checksumValid;
+}
+
 void processGPSData(char *gpsData, size_t len){
-	if (len > 0){
+	if (len > 4 && checksumValid(gpsData, len)){
 		if (*gpsData == '$' && *(gpsData + 1) =='G' && *(gpsData + 2) == 'P'){
 			char * data = gpsData + 3;
 			if (strstr(data,"GGA,")){
