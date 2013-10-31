@@ -2,6 +2,7 @@
 #include "cellModem.h"
 #include "loggerConfig.h"
 #include "mod_string.h"
+#include "race_capture/printk.h"
 
 static int writeAuthJSON(Serial *serial, const char *deviceId){
 	//send linefeed at slow intervals until we have the auth packet ack from server
@@ -21,24 +22,39 @@ static int writeAuthJSON(Serial *serial, const char *deviceId){
 	return -1;
 }
 
-static void initCell(DeviceConfig *config){
-
+int sim900_init_connection(DeviceConfig *config){
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 	Serial *serial = config->serial;
 
-	int cellReady = 0;
-	while (cellReady == 0){
-		if (0 == initCellModem(serial)){
-			CellularConfig *cellCfg = &(loggerConfig->ConnectivityConfigs.cellularConfig);
-			if (0 == configureNet(serial, cellCfg->apnHost, cellCfg->apnUser, cellCfg->apnPass)){
-				cellReady = 1;
+	int initResult = DEVICE_INIT_FAIL;
+	if (0 == initCellModem(serial)){
+		CellularConfig *cellCfg = &(loggerConfig->ConnectivityConfigs.cellularConfig);
+		TelemetryConfig *telemetryConfig = &(loggerConfig->ConnectivityConfigs.telemetryConfig);
+		if (0 == configureNet(serial, cellCfg->apnHost, cellCfg->apnUser, cellCfg->apnPass)){
+			if( 0 == connectNet(serial, telemetryConfig->telemetryServerHost,"8080",0)){
+				if (0 == writeAuthJSON(serial, telemetryConfig->telemetryDeviceId)){
+					initResult = DEVICE_INIT_SUCCESS;
+				}
+				else{
+					pr_error("error auth- token: ");
+					pr_error(telemetryConfig->telemetryDeviceId);
+					pr_error("\n");
+				}
+			}
+			else{
+				pr_error("Failed to connect server: ");
+				pr_error(telemetryConfig->telemetryServerHost);
+				pr_error("\n");
 			}
 		}
+		else{
+			pr_error("Failed to configure network\n");
+		}
 	}
-}
-
-int sim900_init_connection(DeviceConfig *config){
-	return DEVICE_INIT_SUCCESS;
+	else{
+		pr_warning("Failed to init cell connection\n");
+	}
+	return initResult;
 }
 
 int sim900_check_connection_status(DeviceConfig *config){
