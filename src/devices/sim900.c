@@ -4,6 +4,8 @@
 #include "mod_string.h"
 #include "race_capture/printk.h"
 
+#define TELEMETRY_SERVER_PORT "8080"
+
 static int writeAuthJSON(Serial *serial, const char *deviceId){
 	//send linefeed at slow intervals until we have the auth packet ack from server
 	for (int i = 0; i < 5; i++){
@@ -31,18 +33,18 @@ int sim900_init_connection(DeviceConfig *config){
 		CellularConfig *cellCfg = &(loggerConfig->ConnectivityConfigs.cellularConfig);
 		TelemetryConfig *telemetryConfig = &(loggerConfig->ConnectivityConfigs.telemetryConfig);
 		if (0 == configureNet(serial, cellCfg->apnHost, cellCfg->apnUser, cellCfg->apnPass)){
-			if( 0 == connectNet(serial, telemetryConfig->telemetryServerHost,"8080",0)){
+			if( 0 == connectNet(serial, telemetryConfig->telemetryServerHost, TELEMETRY_SERVER_PORT, 0)){
 				if (0 == writeAuthJSON(serial, telemetryConfig->telemetryDeviceId)){
 					initResult = DEVICE_INIT_SUCCESS;
 				}
 				else{
-					pr_error("error auth- token: ");
+					pr_error("err: auth- token: ");
 					pr_error(telemetryConfig->telemetryDeviceId);
 					pr_error("\n");
 				}
 			}
 			else{
-				pr_error("Failed to connect server: ");
+				pr_error("err: server connect: ");
 				pr_error(telemetryConfig->telemetryServerHost);
 				pr_error("\n");
 			}
@@ -58,7 +60,7 @@ int sim900_init_connection(DeviceConfig *config){
 }
 
 int sim900_check_connection_status(DeviceConfig *config){
-	return DEVICE_STATUS_NO_ERROR;
+	return isNetConnectionErrorOrClosed(config->serial) ? DEVICE_STATUS_DISCONNECTED : DEVICE_STATUS_NO_ERROR;
 }
 
 
