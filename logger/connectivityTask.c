@@ -111,6 +111,7 @@ void connectivityTask(void *params) {
 	int tick = 0;
 	while (1) {
 		while (connParams->init_connection(&deviceConfig) != DEVICE_INIT_SUCCESS) {
+			pr_info("device not connected. retrying..");
 			vTaskDelay(INIT_DELAY);
 		}
 		while (1) {
@@ -127,6 +128,9 @@ void connectivityTask(void *params) {
 						put_crlf(serial);
 					}
 					++tick;
+					pr_debug("sample ");
+					pr_debug_int(tick);
+					pr_debug("\r\n");
 					api_sendSampleRecord(serial, sr, tick, tick == 1);
 					put_crlf(serial);
 				}
@@ -140,12 +144,17 @@ void connectivityTask(void *params) {
 
 			//read in available characters, process message as necessary
 			int msgReceived = processRxBuffer(serial);
-
 			//check the latest contents of the buffer for something that might indicate an error condition
-			if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR) break;
+			if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR){
+				pr_info("device disconnected\n");
+				break;
+			}
 
 			//now process a complete message if necessary
 			if (msgReceived){
+				pr_debug("msg rx:");
+				pr_debug(g_buffer);
+				pr_debug("\n");
 				process_msg(serial,g_buffer, BUFFER_SIZE);
 				g_rxCount = 0;
 			}

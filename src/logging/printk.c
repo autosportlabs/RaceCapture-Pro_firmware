@@ -68,6 +68,10 @@ int printk_int(enum log_level level, int value) {
 		return write_to_log_buff(buf);
 }
 
+inline enum log_level get_log_level(){
+	return curr_level;
+}
+
 enum log_level set_log_level(enum log_level level)
 {
         if (level <= DEBUG)

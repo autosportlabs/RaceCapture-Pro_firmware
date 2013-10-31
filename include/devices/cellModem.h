@@ -6,6 +6,7 @@
 #include "task.h"
 #include "serial.h"
 
+void setCellBuffer(char *buffer, size_t len);
 int loadDefaultCellConfig(Serial *serial);
 int initCellModem(Serial *serial);
 void powerDownCellModem(Serial *serial);

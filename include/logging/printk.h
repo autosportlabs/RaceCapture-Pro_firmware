@@ -31,9 +31,15 @@ enum log_level {
 #define pr_error(arg1) printk(ERR, arg1);
 #define pr_error_int(arg1) printk_int(ERR, arg1);
 
+#define DEBUG_LEVEL get_log_level() >= DEBUG
+#define INFO_LEVEL get_log_level() >= INFO
+#define NOTICE_LEVEL get_log_level() >= NOTICE
+#define WARNING_LEVEL get_log_level() >= WARNING
+
 size_t read_log_to_serial(Serial *s);
 int printk(enum log_level level, const char *msg);
 int printk_int(enum log_level level, int value);
 enum log_level set_log_level(enum log_level level);
+inline enum log_level get_log_level();
 
 #endif /* __PRINTK_H__ */

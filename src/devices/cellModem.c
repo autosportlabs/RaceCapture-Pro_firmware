@@ -9,7 +9,9 @@
 
 #define NETWORK_CONNECT_MAX_TRIES 10
 
-static char g_cellBuffer[200];
+
+static char *g_cellBuffer;
+static size_t g_bufferLen;
 
 #define PAUSE_DELAY 167
 
@@ -18,9 +20,14 @@ static char g_cellBuffer[200];
 #define MEDIUM_TIMEOUT 5000
 #define CONNECT_TIMEOUT 10000
 
+void setCellBuffer(char *buffer, size_t len){
+	g_cellBuffer = buffer;
+	g_bufferLen = len;
+}
+
 static int readModemWait(Serial *serial, portTickType delay){
 	printk(DEBUG, "cellRead: ");
-	int c = serial->get_line_wait(g_cellBuffer, sizeof(g_cellBuffer),delay);
+	int c = serial->get_line_wait(g_cellBuffer, g_bufferLen, delay);
 	printk(DEBUG, g_cellBuffer);
 	printk(DEBUG, "\n");
 	return c;
@@ -91,9 +98,9 @@ static int getIpAddress(Serial *serial){
 
 void putsCell(Serial *serial, const char *data){
 	serial->put_s(data);
-	printk(DEBUG, "cellWrite: ");
-	printk(DEBUG, data);
-	printk(DEBUG, "\r\n");
+	pr_debug("cellWrite: ");
+	pr_debug(data);
+	pr_debug("\r\n");
 }
 
 void putUintCell(Serial *serial, uint32_t num){
