@@ -26,10 +26,12 @@ void setCellBuffer(char *buffer, size_t len){
 }
 
 static int readModemWait(Serial *serial, portTickType delay){
-	printk(DEBUG, "cellRead: ");
 	int c = serial->get_line_wait(g_cellBuffer, g_bufferLen, delay);
-	printk(DEBUG, g_cellBuffer);
-	printk(DEBUG, "\n");
+	if (DEBUG_LEVEL && c > 0){
+		printk(DEBUG, "cellRead: ");
+		printk(DEBUG, g_cellBuffer);
+		printk(DEBUG, "\r\n");
+	}
 	return c;
 }
 
@@ -241,9 +243,9 @@ int initCellModem(Serial *serial){
 
 	serial->init(8, 0, 1, 115200);
 
-	closeNet(serial);
 
 	while (1){
+		closeNet(serial);
 		if (loadDefaultCellConfig(serial) == 0) break;
 		vTaskDelay(900);
 	}

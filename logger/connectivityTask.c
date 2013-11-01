@@ -29,7 +29,7 @@
 
 #define IDLE_TIMEOUT	configTICK_RATE_HZ / 10
 #define INIT_DELAY	 	600
-#define BUFFER_SIZE 	201
+#define BUFFER_SIZE 	401
 
 #define TELEMETRY_TASK_PRIORITY					( tskIDLE_PRIORITY + 4 )
 #define TELEMETRY_STACK_SIZE  					1000
@@ -114,6 +114,8 @@ void connectivityTask(void *params) {
 			pr_info("device not connected. retrying..");
 			vTaskDelay(INIT_DELAY);
 		}
+		serial->flush();
+		g_rxCount = 0;
 		while (1) {
 			//wait for the next sample record
 			char res = xQueueReceive(g_sampleQueue, &(sr), IDLE_TIMEOUT);
@@ -124,7 +126,7 @@ void connectivityTask(void *params) {
 				//a null sample record means end of sample run; like an EOF
 				if (NULL != sr) {
 					if (0 == tick){
-						api_sendLogStart(serial);
+						//api_sendLogStart(serial);
 						put_crlf(serial);
 					}
 					++tick;
@@ -135,7 +137,7 @@ void connectivityTask(void *params) {
 					put_crlf(serial);
 				}
 				else{
-					api_sendLogEnd(serial);
+				//	api_sendLogEnd(serial);
 					put_crlf(serial);
 					//end of sample
 					tick = 0;
@@ -155,7 +157,7 @@ void connectivityTask(void *params) {
 				pr_debug("msg rx:");
 				pr_debug(g_buffer);
 				pr_debug("\n");
-				process_msg(serial,g_buffer, BUFFER_SIZE);
+				if (g_buffer[0] == '{') process_api(serial, g_buffer, BUFFER_SIZE);
 				g_rxCount = 0;
 			}
 		}
