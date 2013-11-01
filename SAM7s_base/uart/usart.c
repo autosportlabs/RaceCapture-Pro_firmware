@@ -248,16 +248,24 @@ char usart1_getchar()
 }
 
 void usart0_putchar(char c){
-	char buf[2];
-	buf[0] = c;
-	buf[1] = '\0';
-	pr_debug(buf);
+	if (TRACE_LEVEL){
+		char buf[2];
+		buf[0] = c;
+		buf[1] = '\0';
+		pr_debug(buf);
+	}
 	xQueueSend( xUsart0Tx, &c, portMAX_DELAY );
 	//Enable transmitter interrupt
 	AT91F_US_EnableIt( AT91C_BASE_US0, AT91C_US_TXRDY | AT91C_US_RXRDY );
 }
 
 void usart1_putchar(char c){
+	if (TRACE_LEVEL){
+		char buf[2];
+		buf[0] = c;
+		buf[1] = '\0';
+		pr_debug(buf);
+	}
 	xQueueSend( xUsart1Tx, &c, portMAX_DELAY );
 	//Enable transmitter interrupt
 	AT91F_US_EnableIt( AT91C_BASE_US1, AT91C_US_TXRDY | AT91C_US_RXRDY );
