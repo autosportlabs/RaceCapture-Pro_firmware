@@ -17,13 +17,17 @@ enum log_level {
         NOTICE = 5,
         INFO = 6,
         DEBUG = 7,
+        TRACE = 8
 };
 
-#define pr_info(arg1) printk(INFO, arg1)
-#define pr_info_int(arg1) printk_int(INFO, arg1);
+#define pr_trace(arg1) printk(TRACE, arg1);
+#define pr_trace_int(arg1) printk_int(TRACE, arg1);
 
 #define pr_debug(arg1) printk(DEBUG, arg1);
 #define pr_debug_int(arg1) printk_int(DEBUG, arg1);
+
+#define pr_info(arg1) printk(INFO, arg1)
+#define pr_info_int(arg1) printk_int(INFO, arg1);
 
 #define pr_warning(arg1) printk(WARNING, arg1);
 #define pr_warning_int(arg1) printk_int(WARNING, arg1);
@@ -35,6 +39,7 @@ enum log_level {
 #define INFO_LEVEL get_log_level() >= INFO
 #define NOTICE_LEVEL get_log_level() >= NOTICE
 #define WARNING_LEVEL get_log_level() >= WARNING
+#define TRACE_LEVEL get_log_level() >= TRACE
 
 size_t read_log_to_serial(Serial *s);
 int printk(enum log_level level, const char *msg);

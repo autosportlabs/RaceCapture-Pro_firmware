@@ -29,7 +29,7 @@
 
 #define IDLE_TIMEOUT	configTICK_RATE_HZ / 10
 #define INIT_DELAY	 	600
-#define BUFFER_SIZE 	401
+#define BUFFER_SIZE 	201
 
 #define TELEMETRY_TASK_PRIORITY					( tskIDLE_PRIORITY + 4 )
 #define TELEMETRY_STACK_SIZE  					1000

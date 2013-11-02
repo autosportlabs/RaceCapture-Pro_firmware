@@ -92,6 +92,7 @@ DEVICES_SRC_DIR = $(SRC_DIR)/devices
 PRED_TIMER_DIR = $(SRC_DIR)/predictive_timer
 UTIL_DIR = $(SRC_DIR)/util
 JSON_DIR = ./json
+GPS_SRC_DIR = $(SRC_DIR)/gps
 
 #App specific dirs
 FAT_SD_SRC_DIR = fat_sd
@@ -135,10 +136,10 @@ $(LOGGER_SRC_DIR)/loggerData.c \
 $(LOGGER_SRC_DIR)/gpioTasks.c \
 $(LOGGER_SRC_DIR)/loggerTaskEx.c \
 $(LOGGER_SRC_DIR)/connectivityTask.c \
-$(LOGGER_SRC_DIR)/gps.c \
+$(GPS_SRC_DIR)/gps.c \
 $(LOGGER_SRC_DIR)/gpsTask.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
-$(LOGGER_SRC_DIR)/geometry.c \
+$(GPS_SRC_DIR)/geometry.c \
 $(LOGGER_SRC_DIR)/luaLoggerBinding.c \
 $(LOGGER_SRC_DIR)/loggerCommands.c \
 $(MEMORY_SRC_DIR)/memory.c \
@@ -257,6 +258,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/predictive_timer \
 -I$(INCLUDE_DIR)/util \
 -I$(INCLUDE_DIR)/devices \
+-I$(INCLUDE_DIR)/gps \
 -I$(JSON_DIR)
 
 #CINCS = -I. -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)

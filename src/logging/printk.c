@@ -74,7 +74,7 @@ inline enum log_level get_log_level(){
 
 enum log_level set_log_level(enum log_level level)
 {
-        if (level <= DEBUG)
+        if (level <= TRACE)
                 curr_level = level;
 
         return curr_level;
