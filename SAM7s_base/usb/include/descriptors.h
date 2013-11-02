@@ -86,7 +86,7 @@ const char pxDeviceDescriptor[] =
 	0x00,								/* bDeviceProtocol:		*/
 	0x08,								/* bMaxPacketSize0		*/
 	0xD0, 0x16,							/* idVendorL			*/
-	0x73, 0x06,							/* idProductL			*/
+	0xF1, 0x07,							/* idProductL			*/
 	0x10, 0x01,							/* bcdDeviceL			*/
 	usbMANUFACTURER_STRING,  			/* iManufacturer		*/
 	usbPRODUCT_STRING,					/* iProduct				*/
