@@ -20,6 +20,7 @@
 #define LOGGER_API \
 {"s", api_sampleData}, \
 {"log", api_log}, \
+{"getMeta", api_getMeta}, \
 {"flashCfg", api_flashConfig}, \
 {"setAnalogCfg", api_setAnalogConfig}, \
 {"getAnalogCfg", api_getAnalogConfig}, \
@@ -47,6 +48,7 @@
 //commands
 int api_sampleData(Serial *serial, const jsmntok_t *json);
 int api_log(Serial *serial, const jsmntok_t *json);
+int api_getMeta(Serial *serial, const jsmntok_t *json);
 int api_getCellConfig(Serial *serial, const jsmntok_t *json);
 int api_setCellConfig(Serial *serial, const jsmntok_t *json);
 int api_getBluetoothConfig(Serial *serial, const jsmntok_t *json);

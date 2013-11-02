@@ -15,6 +15,16 @@
 #include "loggerHardware.h"
 #include "serial.h"
 
+#ifndef pvPortMalloc
+#include <stdlib.h>
+//#define pvPortMalloc malloc
+#endif
+
+#ifndef vPortFree
+#include <stdlib.h>
+//#define vPortFree free
+#endif
+
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
 typedef void (*getConfigs_func)(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg);
@@ -80,11 +90,12 @@ int api_sampleData(Serial *serial, const jsmntok_t *json){
 			sendMeta = modp_atoi(value->data);
 		}
 	}
-	SampleRecord sr;
+	SampleRecord * sr = pvPortMalloc(sizeof(SampleRecord));
 	LoggerConfig * config = getWorkingLoggerConfig();
-	initSampleRecord(config, &sr);
-	populateSampleRecord(&sr,0, config);
-	api_sendSampleRecord(serial, &sr, 0, sendMeta);
+	initSampleRecord(config, sr);
+	populateSampleRecord(sr,0, config);
+	api_sendSampleRecord(serial, sr, 0, sendMeta);
+	vPortFree(sr);
 	return API_SUCCESS_NO_RETURN;
 }
 
@@ -115,54 +126,67 @@ int api_log(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS;
 }
 
+static void writeSampleMeta(Serial *serial, SampleRecord *sr, int more){
+	int sampleCount = 0;
+	json_arrayStart(serial, "meta");
+	for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
+		ChannelSample *sample = &(sr->Samples[i]);
+		ChannelConfig * channelConfig = sample->channelConfig;
+		if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
+		if (sampleCount++ > 0) serial->put_c(',');
+		serial->put_c('{');
+		json_string(serial, "nm", channelConfig->label, 1);
+		json_string(serial, "ut", channelConfig->units, 1);
+		json_int(serial, "sr", decodeSampleRate(channelConfig->sampleRate), 0);
+		serial->put_c('}');
+	}
+	json_arrayEnd(serial, more);
+}
+
+int api_getMeta(Serial *serial, const jsmntok_t *json){
+	json_messageStart(serial);
+	json_blockStart(serial, "meta");
+	SampleRecord * sr = malloc(sizeof(SampleRecord));
+	LoggerConfig * config = getWorkingLoggerConfig();
+	initSampleRecord(config, sr);
+	writeSampleMeta(serial, sr, 0);
+	vPortFree(sr);
+	json_blockEnd(serial, 0);
+	json_blockEnd(serial, 0);
+	return API_SUCCESS_NO_RETURN;
+}
+
 void api_sendSampleRecord(Serial *serial, SampleRecord *sr, unsigned int tick, int sendMeta){
 	json_messageStart(serial);
 	json_blockStart(serial, "s");
 
-	{
-		json_uint(serial,"t",tick,1);
-		int sampleCount = 0;
-		if (sendMeta){
-			json_arrayStart(serial, "meta");
-			for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
-				ChannelSample *sample = &(sr->Samples[i]);
-				ChannelConfig * channelConfig = sample->channelConfig;
-				if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
-				if (sampleCount++ > 0) serial->put_c(',');
-				serial->put_c('{');
-				json_string(serial, "nm", channelConfig->label, 1);
-				json_string(serial, "ut", channelConfig->units, 1);
-				json_int(serial, "sr", decodeSampleRate(channelConfig->sampleRate), 0);
-				serial->put_c('}');
-			}
-			json_arrayEnd(serial, 1);
-		}
-	}
-	{
-		size_t channelCount = 0;
-		unsigned int channelsBitmask = 0;
-		json_arrayStart(serial, "d");
-		for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
-			ChannelSample *sample = &(sr->Samples[i]);
-			ChannelConfig * channelConfig = sample->channelConfig;
-			if (SAMPLE_DISABLED != channelConfig->sampleRate){
-				if (NIL_SAMPLE != sample->intValue){
-					channelsBitmask = channelsBitmask | (1 << channelCount);
-					int precision = sample->precision;
-					if (precision > 0){
-						put_float(serial, sample->floatValue, precision);
-					}
-					else{
-						put_int(serial, sample->intValue);
-					}
-					serial->put_c(',');
+	json_uint(serial,"t",tick,1);
+	if (sendMeta) writeSampleMeta(serial, sr, 1);
+
+	size_t channelCount = 0;
+	unsigned int channelsBitmask = 0;
+	json_arrayStart(serial, "d");
+	for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
+		ChannelSample *sample = &(sr->Samples[i]);
+		ChannelConfig * channelConfig = sample->channelConfig;
+		if (SAMPLE_DISABLED != channelConfig->sampleRate){
+			if (NIL_SAMPLE != sample->intValue){
+				channelsBitmask = channelsBitmask | (1 << channelCount);
+				int precision = sample->precision;
+				if (precision > 0){
+					put_float(serial, sample->floatValue, precision);
 				}
-				channelCount++;
+				else{
+					put_int(serial, sample->intValue);
+				}
+				serial->put_c(',');
 			}
+			channelCount++;
 		}
-		put_uint(serial, channelsBitmask);
-		json_arrayEnd(serial, 0);
 	}
+	put_uint(serial, channelsBitmask);
+	json_arrayEnd(serial, 0);
+
 	json_blockEnd(serial, 0);
 	json_blockEnd(serial, 0);
 }
