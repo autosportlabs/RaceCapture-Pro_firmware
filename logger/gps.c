@@ -487,14 +487,17 @@ void onLocationUpdated(){
 int checksumValid(const char *gpsData, size_t len){
 	int valid = 0;
 	unsigned char checksum = 0;
-	for (size_t i = 0; i < len - 1; i++){
+	size_t i = 0;
+	for (; i < len - 1; i++){
 		char c = *(gpsData + i);
-		if (c == '$') continue;
-		else if (c == '*') break;
+		if (c == '*' || c == '\0') break;
+		else if (c == '$') continue;
 		else checksum ^= c;
 	}
-	unsigned char dataChecksum = modp_xtoc(gpsData + len - 2);
-	if (checksum == dataChecksum) valid = 1;
+	if (len > i + 2){
+		unsigned char dataChecksum = modp_xtoc(gpsData + i + 1);
+		if (checksum == dataChecksum) valid = 1;
+	}
 	return valid;
 }
 

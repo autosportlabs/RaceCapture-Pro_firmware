@@ -111,7 +111,7 @@ void connectivityTask(void *params) {
 	int tick = 0;
 	while (1) {
 		while (connParams->init_connection(&deviceConfig) != DEVICE_INIT_SUCCESS) {
-			pr_info("device not connected. retrying..");
+			pr_info("device not connected. retrying..\r\n");
 			vTaskDelay(INIT_DELAY);
 		}
 		serial->flush();
@@ -126,7 +126,7 @@ void connectivityTask(void *params) {
 				//a null sample record means end of sample run; like an EOF
 				if (NULL != sr) {
 					if (0 == tick){
-						//api_sendLogStart(serial);
+						api_sendLogStart(serial);
 						put_crlf(serial);
 					}
 					++tick;
@@ -137,7 +137,7 @@ void connectivityTask(void *params) {
 					put_crlf(serial);
 				}
 				else{
-				//	api_sendLogEnd(serial);
+					api_sendLogEnd(serial);
 					put_crlf(serial);
 					//end of sample
 					tick = 0;
