@@ -481,9 +481,6 @@ void onLocationUpdated(){
 	}
 }
 
-
-//if (*gpsData == '$' && *(gpsData + len - 3)  == '*'){
-
 int checksumValid(const char *gpsData, size_t len){
 	int valid = 0;
 	unsigned char checksum = 0;
