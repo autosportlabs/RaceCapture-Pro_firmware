@@ -14,16 +14,7 @@
 #include "accelerometer.h"
 #include "loggerHardware.h"
 #include "serial.h"
-
-#ifndef pvPortMalloc
-#include <stdlib.h>
-//#define pvPortMalloc malloc
-#endif
-
-#ifndef vPortFree
-#include <stdlib.h>
-//#define vPortFree free
-#endif
+#include "mem_mang.h"
 
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
@@ -90,12 +81,14 @@ int api_sampleData(Serial *serial, const jsmntok_t *json){
 			sendMeta = modp_atoi(value->data);
 		}
 	}
-	SampleRecord * sr = pvPortMalloc(sizeof(SampleRecord));
+	SampleRecord * sr = (SampleRecord *)portMalloc(sizeof(SampleRecord));
+	if (sr == 0) return API_ERROR_SEVERE;
+
 	LoggerConfig * config = getWorkingLoggerConfig();
 	initSampleRecord(config, sr);
 	populateSampleRecord(sr,0, config);
 	api_sendSampleRecord(serial, sr, 0, sendMeta);
-	vPortFree(sr);
+	portFree(sr);
 	return API_SUCCESS_NO_RETURN;
 }
 
@@ -146,11 +139,13 @@ static void writeSampleMeta(Serial *serial, SampleRecord *sr, int more){
 int api_getMeta(Serial *serial, const jsmntok_t *json){
 	json_messageStart(serial);
 	json_blockStart(serial, "meta");
-	SampleRecord * sr = malloc(sizeof(SampleRecord));
+	SampleRecord * sr = (SampleRecord *)portMalloc(sizeof(SampleRecord));
+	if (sr == 0) return API_ERROR_SEVERE;
+
 	LoggerConfig * config = getWorkingLoggerConfig();
 	initSampleRecord(config, sr);
 	writeSampleMeta(serial, sr, 0);
-	vPortFree(sr);
+	portFree(sr);
 	json_blockEnd(serial, 0);
 	json_blockEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;

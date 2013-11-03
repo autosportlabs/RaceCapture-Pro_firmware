@@ -5,17 +5,8 @@
  *      Author: brent
  */
 #include "sampleRecord.h"
-#ifndef pvPortMalloc
-#include <stdlib.h>
-#define pvPortMalloc malloc
-#endif
-
-#ifndef vPortFree
-#define vPortFree free
-#endif
-
-//#include "FreeRTOS.h"
 #include "loggerConfig.h"
+#include "mem_mang.h"
 
 void initSampleRecord(LoggerConfig *loggerConfig,SampleRecord *sr){
 
@@ -128,7 +119,7 @@ void clearSampleRecord(SampleRecord* sr){
 }
 
 SampleRecord ** createSampleRecordBuffer(LoggerConfig *loggerConfig, int size){
-	SampleRecord ** srBuff = (SampleRecord **)pvPortMalloc(sizeof(SampleRecord[size]));
+	SampleRecord ** srBuff = (SampleRecord **)portMalloc(sizeof(SampleRecord[size]));
 	initSampleRecordBuffer(loggerConfig, srBuff, size);
 	return srBuff;
 }
@@ -138,5 +129,5 @@ void initSampleRecordBuffer(LoggerConfig *loggerConfig, SampleRecord ** srBuff,i
 }
 
 void freeSampleRecordBuffer(SampleRecord ** sampleRecordBuffer){
-	vPortFree(sampleRecordBuffer);
+	portFree(sampleRecordBuffer);
 }
