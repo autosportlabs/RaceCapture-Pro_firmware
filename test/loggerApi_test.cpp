@@ -687,6 +687,10 @@ void LoggerApiTest::testSetTimerCfg(){
 	testSetTimerConfigFile("setTimerCfg1.json");
 }
 
+void LoggerApiTest::testGetMeta(){
+	testSampleDataFile("getMeta.json", "getMeta_response.json");
+}
+
 void LoggerApiTest::testSampleData(){
 	testSampleDataFile("sampleData1.json", "sampleData_response1.json");
 	testSampleDataFile("sampleData2.json", "sampleData_response2.json");
@@ -702,6 +706,8 @@ void LoggerApiTest::testSampleDataFile(string requestFilename, string responseFi
 
 	LoggerConfig *c = getWorkingLoggerConfig();
 	char *txBuffer = mock_getTxBuffer();
+	string txString(txBuffer);
+	CPPUNIT_ASSERT_EQUAL(txString, responseJson);
 }
 
 void LoggerApiTest::testLogStartStopFile(string filename){
