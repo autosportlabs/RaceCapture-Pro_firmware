@@ -503,7 +503,7 @@ void ViewLog(Serial *serial, unsigned int argc, char **argv)
 void SetLogLevel(Serial *serial, unsigned int argc, char **argv)
 {
         // XXX make this more robust maybe.
-        if (argc < 1 || argv[1][0] < '0' || argv[1][0] > '7') {
+        if (argc < 1 || argv[1][0] < '0' || argv[1][0] > '8') {
         		put_commandError(serial, ERROR_CODE_INVALID_PARAM);
                 return;
         }
