@@ -138,7 +138,6 @@ static void writeSampleMeta(Serial *serial, SampleRecord *sr, int more){
 
 int api_getMeta(Serial *serial, const jsmntok_t *json){
 	json_messageStart(serial);
-	json_blockStart(serial, "meta");
 	SampleRecord * sr = (SampleRecord *)portMalloc(sizeof(SampleRecord));
 	if (sr == 0) return API_ERROR_SEVERE;
 
@@ -146,7 +145,6 @@ int api_getMeta(Serial *serial, const jsmntok_t *json){
 	initSampleRecord(config, sr);
 	writeSampleMeta(serial, sr, 0);
 	portFree(sr);
-	json_blockEnd(serial, 0);
 	json_blockEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
 }
