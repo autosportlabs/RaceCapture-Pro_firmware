@@ -19,6 +19,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/util \
 		-I$(RCP_BASE)/logger \
 		-I$(RCP_INC)/logging \
+		-I$(RCP_INC)/gps \
 		-I$(RCP_INC)/jsmn \
 		-I$(RCP_INC)/api \
 		-I$(RCP_INC)/logger \
@@ -77,8 +78,8 @@ SRC = 	loggerData_test.cpp \
 		$(RCP_SRC)/predictive_timer/predictive_timer.c \
 		$(RCP_SRC)/util/linear_interpolate.c \
 		$(RCP_BASE)/logger/loggerConfig.c \
-		$(RCP_BASE)/logger/gps.c \
-		$(RCP_BASE)/logger/geometry.c \
+		$(RCP_SRC)/gps/gps.c \
+		$(RCP_SRC)/gps/geometry.c \
 		$(RCP_BASE)/logger/sampleRecord.c \
 		$(RCP_BASE)/logger/loggerData.c \
 		$(MOCK_DIR)/accelerometer.c \
