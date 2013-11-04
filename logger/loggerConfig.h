@@ -291,17 +291,20 @@ typedef struct _TrackConfig{
 
 #define BT_DEVICE_NAME_LENGTH 20
 #define BT_PASSCODE_LENGTH 4
-#define DEFAULT_BT_DEVICE_NAME "RaceCapture/Pro"
+#define DEFAULT_BT_DEVICE_NAME "RaceCapturePro"
 #define DEFAULT_BT_PASSCODE "1010"
+#define DEFAULT_BT_BAUD 115200
 
 typedef struct _BluetoothConfig{
 	char deviceName [BT_DEVICE_NAME_LENGTH + 1];
 	char passcode [BT_PASSCODE_LENGTH + 1];
+	unsigned int baudRate;
 } BluetoothConfig;
 
 #define DEFAULT_BT_CONFIG { \
 	DEFAULT_BT_DEVICE_NAME, \
-	DEFAULT_BT_PASSCODE \
+	DEFAULT_BT_PASSCODE, \
+	DEFAULT_BT_BAUD \
 }
 
 #define CELL_APN_HOST_LENGTH 30
