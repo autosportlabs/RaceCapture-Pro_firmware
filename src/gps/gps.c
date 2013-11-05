@@ -521,4 +521,7 @@ void processGPSData(char *gpsData, size_t len){
 			}
 		}
 	}
+	else{
+		pr_warning("GPS: corrupt frame\r\n");
+	}
 }
