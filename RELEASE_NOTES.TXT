@@ -56,6 +56,14 @@ Once the firmware completes flashing, RaceCapture/Pro will reset and run normall
 
 Firmware Changelog:
 
+===1.2.4===
+Bluetooth provisioning only attempts once before falling through - to deal with cases if Bluetooth is already connected and can't respond to AT commands
+
+===1.2.3===
+Added support for RaceCapture Mobile app and Petrel Data Solo Storm
+Redesigned Bluetooth / telemetry streaming API to 2.2
+
+
 ===1.1.14===
 Added - and : characters as allowed characters in filtered text fields
 
