@@ -110,14 +110,11 @@ int bt_init_connection(DeviceConfig *config){
 	BluetoothConfig *btConfig = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
 	unsigned int targetBaud = btConfig->baudRate;
 	const char *deviceName = btConfig->deviceName;
-	int attempts = 5;
-
-	while (attempts-- > 0){
-		if (bt_probe_config(115200, targetBaud, deviceName, config) == 0) return DEVICE_INIT_SUCCESS;
-		else if (bt_probe_config(9600, targetBaud, deviceName, config) == 0) return DEVICE_INIT_SUCCESS;
-		else if (bt_probe_config(230400, targetBaud, deviceName, config) ==0) return DEVICE_INIT_SUCCESS;
-	}
-	pr_debug("Giving provisioning - Assuming BT is already connected to host\r\n");
+	if (bt_probe_config(115200, targetBaud, deviceName, config) == 0) return DEVICE_INIT_SUCCESS;
+	else if (bt_probe_config(9600, targetBaud, deviceName, config) == 0) return DEVICE_INIT_SUCCESS;
+	else if (bt_probe_config(230400, targetBaud, deviceName, config) ==0) return DEVICE_INIT_SUCCESS;
+	pr_debug("Failed to provision - Assuming BT is already connected to host\r\n");
+	config->serial->init(8, 0, 1, btConfig->baudRate);
 	return DEVICE_INIT_SUCCESS;
 }
 
