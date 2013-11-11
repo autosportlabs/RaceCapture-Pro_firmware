@@ -2,6 +2,8 @@
 #define USB_COMM_H_
 #include <stddef.h>
 
+void usb_init(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud);
+
 void usb_flush(void);
 
 int usb_readLine(char *s, int len);

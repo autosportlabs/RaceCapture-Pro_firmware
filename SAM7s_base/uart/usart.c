@@ -35,7 +35,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
-
+#include "printk.h"
 #include "board.h"
 
 
@@ -248,12 +248,24 @@ char usart1_getchar()
 }
 
 void usart0_putchar(char c){
+	if (TRACE_LEVEL){
+		char buf[2];
+		buf[0] = c;
+		buf[1] = '\0';
+		pr_debug(buf);
+	}
 	xQueueSend( xUsart0Tx, &c, portMAX_DELAY );
 	//Enable transmitter interrupt
 	AT91F_US_EnableIt( AT91C_BASE_US0, AT91C_US_TXRDY | AT91C_US_RXRDY );
 }
 
 void usart1_putchar(char c){
+	if (TRACE_LEVEL){
+		char buf[2];
+		buf[0] = c;
+		buf[1] = '\0';
+		pr_debug(buf);
+	}
 	xQueueSend( xUsart1Tx, &c, portMAX_DELAY );
 	//Enable transmitter interrupt
 	AT91F_US_EnableIt( AT91C_BASE_US1, AT91C_US_TXRDY | AT91C_US_RXRDY );
@@ -268,7 +280,6 @@ void usart1_puts (const char* s )
 {
 	while ( *s ) usart1_putchar(*s++ );
 }
-
 
 int usart0_readLineWait(char *s, int len, size_t delay)
 {

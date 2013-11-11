@@ -8,6 +8,7 @@ static Serial Usart1;
 static Serial Usb;
 
 void init_serial(void){
+	Usart0.init = &initUsart0;
 	Usart0.flush = &usart0_flush;
 	Usart0.get_c = &usart0_getchar;
 	Usart0.get_c_wait = &usart0_getcharWait;
@@ -16,6 +17,7 @@ void init_serial(void){
 	Usart0.put_c = &usart0_putchar;
 	Usart0.put_s = &usart0_puts;
 
+	Usart1.init = &initUsart1;
 	Usart1.flush = &usart1_flush;
 	Usart1.get_c = &usart1_getchar;
 	Usart1.get_c_wait = &usart1_getcharWait;
@@ -24,6 +26,7 @@ void init_serial(void){
 	Usart1.put_c = &usart1_putchar;
 	Usart1.put_s = &usart1_puts;
 
+	Usb.init = &usb_init;
 	Usb.flush = &usb_flush;
 	Usb.get_c = &usb_getchar;
 	Usb.get_c_wait = &usb_getchar_wait;

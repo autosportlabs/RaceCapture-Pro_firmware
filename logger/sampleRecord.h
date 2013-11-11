@@ -11,7 +11,7 @@
 #include <limits.h>
 #include "loggerConfig.h"
 
-#define DISCRETE_GPS_CHANNELS 8
+#define DISCRETE_GPS_CHANNELS 10
 #define NIL_SAMPLE INT_MIN
 #define SAMPLE_RECORD_CHANNELS (DISCRETE_GPS_CHANNELS + CONFIG_ADC_CHANNELS + CONFIG_PWM_CHANNELS + CONFIG_GPIO_CHANNELS + CONFIG_TIMER_CHANNELS + CONFIG_ACCEL_CHANNELS)
 
@@ -38,14 +38,16 @@ typedef struct _SampleRecord
 		ChannelSample GPIOSamples[CONFIG_GPIO_CHANNELS];
 		ChannelSample TimerSamples[CONFIG_TIMER_CHANNELS];
 		ChannelSample AccelSamples[CONFIG_ACCEL_CHANNELS];
-		ChannelSample GPS_LapCountSample;
-		ChannelSample GPS_LapTimeSample;
 		ChannelSample GPS_LatitueSample;
 		ChannelSample GPS_LongitudeSample;
 		ChannelSample GPS_SpeedSample;
 		ChannelSample GPS_TimeSample;
-		ChannelSample GPS_SplitTimeSample;
 		ChannelSample GPS_SatellitesSample;
+		ChannelSample Track_LapCountSample;
+		ChannelSample Track_LapTimeSample;
+		ChannelSample Track_SplitTimeSample;
+		ChannelSample Track_DistanceSample;
+		ChannelSample Track_PredTimeSample;
 		};
 	};
 } SampleRecord;

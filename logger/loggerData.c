@@ -9,7 +9,8 @@
 #include "loggerHardware.h"
 #include "accelerometer.h"
 #include "gps.h"
-
+#include "linear_interpolate.h"
+#include "predictive_timer.h"
 
 static void writeAccelerometer(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *config){
 
@@ -74,13 +75,6 @@ static void writeGPSChannels(SampleRecord *sampleRecord, size_t currentTicks, GP
 	}
 
 	{
-		size_t sr = config->splitTimeCfg.sampleRate;
-		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->GPS_SplitTimeSample.floatValue = getLastSplitTime();
-		}
-	}
-
-	{
 		size_t sr = config->satellitesCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0) sampleRecord->GPS_SatellitesSample.intValue = getSatellitesUsedForPosition();
@@ -90,19 +84,40 @@ static void writeGPSChannels(SampleRecord *sampleRecord, size_t currentTicks, GP
 	{
 		size_t sr = config->speedCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->GPS_SpeedSample.floatValue = getGPSSpeed();
+			if ((currentTicks % sr) == 0) sampleRecord->GPS_SpeedSample.floatValue = getGPSSpeed() *  0.621371192; //convert to MPH
 		}
 	}
+}
+
+static void writeTrackChannels(SampleRecord *sampleRecord, size_t currentTicks, TrackConfig *config){
 	{
 		size_t sr = config->lapCountCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->GPS_LapCountSample.intValue = getLapCount();
+			if ((currentTicks % sr) == 0) sampleRecord->Track_LapCountSample.intValue = getLapCount();
+		}
+	}
+	{
+		size_t sr = config->splitTimeCfg.sampleRate;
+		if (sr != SAMPLE_DISABLED){
+			if ((currentTicks % sr) == 0) sampleRecord->Track_SplitTimeSample.floatValue = getLastSplitTime();
 		}
 	}
 	{
 		size_t sr = config->lapTimeCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->GPS_LapTimeSample.floatValue = getLastLapTime();
+			if ((currentTicks % sr) == 0) sampleRecord->Track_LapTimeSample.floatValue = getLastLapTime();
+		}
+	}
+	{
+		size_t sr = config->distanceCfg.sampleRate;
+		if (sr != SAMPLE_DISABLED){
+			if ((currentTicks % sr) == 0) sampleRecord->Track_DistanceSample.floatValue = getDistance() * 0.621371192; //convert to miles
+		}
+	}
+	{
+		size_t sr = config->predTimeCfg.sampleRate;
+		if (sr != SAMPLE_DISABLED){
+			if ((currentTicks % sr) == 0) sampleRecord->Track_PredTimeSample.floatValue = get_predicted_time(getGPSSpeed());
 		}
 	}
 }
@@ -214,17 +229,11 @@ void populateSampleRecord(SampleRecord *sr, size_t currentTicks, LoggerConfig *c
 	//Write Accelerometer
 	if (accelInstalled) writeAccelerometer(sr,currentTicks, config);
 	//Write GPS
-	if (gpsInstalled) writeGPSChannels(sr,currentTicks, &(config->GPSConfigs));
+	if (gpsInstalled){
+		writeGPSChannels(sr,currentTicks, &(config->GPSConfigs));
+		writeTrackChannels(sr, currentTicks, &(config->TrackConfigs));
+	}
 
-}
-
-
-//linear interpolation routine
-//            (y2 - y1)
-//  y = y1 +  --------- * (x - x1)
-//            (x2 - x1)
-static float LinearInterpolate(float x, float x1, float y1, float x2, float y2){
-	return y1 + (((y2 - y1))  / (x2 - x1)) * (x - x1);
 }
 
 

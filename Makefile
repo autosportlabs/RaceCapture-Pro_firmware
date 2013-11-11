@@ -77,18 +77,22 @@ RTOS_MEMMANG_DIR = $(RTOS_PORT_DIR)/MemMang
 USB_SRC_DIR = $(SAM7s_BASE_DIR)/usb
 SERIAL_SRC_DIR = $(SAM7s_BASE_DIR)/serial
 UART_SRC_DIR = $(SAM7s_BASE_DIR)/uart
-UTIL_DIR = $(SAM7s_BASE_DIR)/util
+SAM7S_UTIL_DIR = $(SAM7s_BASE_DIR)/util
 SPI_DIR = $(SAM7s_BASE_DIR)/spi
 MEMORY_SRC_DIR = $(SAM7s_BASE_DIR)/memory
 LUA_SRC_DIR = $(SAM7s_BASE_DIR)/lua
 CMD_SRC_DIR = $(SAM7s_BASE_DIR)/command
-RACE_CAPTURE_DIR = race_capture
+LOGGING_DIR = $(SRC_DIR)/logging
 TASKS_DIR = tasks
 JSMN_SRC_DIR = $(SRC_DIR)/jsmn
 API_SRC_DIR = $(SRC_DIR)/api
 ACCEL_SRC_DIR = $(SRC_DIR)/accelerometer
 MESSAGING_SRC_DIR = $(SRC_DIR)/messaging
+DEVICES_SRC_DIR = $(SRC_DIR)/devices
+PRED_TIMER_DIR = $(SRC_DIR)/predictive_timer
+UTIL_DIR = $(SRC_DIR)/util
 JSON_DIR = ./json
+GPS_SRC_DIR = $(SRC_DIR)/gps
 
 #App specific dirs
 FAT_SD_SRC_DIR = fat_sd
@@ -111,7 +115,7 @@ $(RTOS_SRC_DIR)/list.c \
 $(RTOS_GCC_DIR)/port.c \
 $(UTIL_DIR)/modp_numtoa.c \
 $(UTIL_DIR)/modp_atonum.c \
-$(UTIL_DIR)/taskUtil.c \
+$(SAM7S_UTIL_DIR)/taskUtil.c \
 $(SPI_DIR)/spi.c \
 $(USB_SRC_DIR)/source/usb_comm.c \
 $(USB_SRC_DIR)/source/USB-CDC.c \
@@ -131,16 +135,11 @@ $(LOGGER_SRC_DIR)/loggerHardware.c \
 $(LOGGER_SRC_DIR)/loggerData.c \
 $(LOGGER_SRC_DIR)/gpioTasks.c \
 $(LOGGER_SRC_DIR)/loggerTaskEx.c \
-$(LOGGER_SRC_DIR)/telemetryTask.c \
-$(LOGGER_SRC_DIR)/p2pTelemetry.c \
-$(LOGGER_SRC_DIR)/consoleConnectivity.c \
-$(LOGGER_SRC_DIR)/cellTelemetry.c \
-$(LOGGER_SRC_DIR)/btTelemetry.c \
-$(LOGGER_SRC_DIR)/gps.c \
+$(LOGGER_SRC_DIR)/connectivityTask.c \
+$(GPS_SRC_DIR)/gps.c \
 $(LOGGER_SRC_DIR)/gpsTask.c \
-$(LOGGER_SRC_DIR)/cellModem.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
-$(LOGGER_SRC_DIR)/geometry.c \
+$(GPS_SRC_DIR)/geometry.c \
 $(LOGGER_SRC_DIR)/luaLoggerBinding.c \
 $(LOGGER_SRC_DIR)/loggerCommands.c \
 $(MEMORY_SRC_DIR)/memory.c \
@@ -149,11 +148,17 @@ $(LUA_SRC_DIR)/luaScript.c \
 $(LUA_SRC_DIR)/luaBaseBinding.c \
 $(LUA_SRC_DIR)/luaCommands.c \
 $(RTOS_PORT_DIR)/MemMang/heap_2_combine.c \
-$(RACE_CAPTURE_DIR)/printk.c \
-$(RACE_CAPTURE_DIR)/ring_buffer.c \
+$(LOGGING_DIR)/printk.c \
+$(LOGGING_DIR)/ring_buffer.c \
 $(TASKS_DIR)/heartbeat.c \
 $(ACCEL_SRC_DIR)/accelerometer_buffer.c \
-$(MESSAGING_SRC_DIR)/messaging.c
+$(MESSAGING_SRC_DIR)/messaging.c \
+$(PRED_TIMER_DIR)/predictive_timer.c \
+$(UTIL_DIR)/linear_interpolate.c \
+$(DEVICES_SRC_DIR)/cellModem.c \
+$(DEVICES_SRC_DIR)/null_device.c \
+$(DEVICES_SRC_DIR)/bluetooth.c \
+$(DEVICES_SRC_DIR)/sim900.c
 
 # List C source files here which must be compiled in ARM-Mode.
 # use file-extension c for "c-only"-files
@@ -228,6 +233,7 @@ CINCS = \
 -I. \
 -I$(RTOS_MEMMANG_DIR) \
 -I$(UTIL_DIR) \
+-I$(SAM7S_UTIL_DIR) \
 -I$(LUA_SRC_DIR) \
 -I$(MEMORY_SRC_DIR) \
 -I$(FAT_SD_SRC_DIR) \
@@ -246,8 +252,13 @@ CINCS = \
 -I$(INCLUDE_DIR)/jsmn \
 -I$(INCLUDE_DIR)/api \
 -I$(INCLUDE_DIR)/logger \
+-I$(INCLUDE_DIR)/logging \
 -I$(INCLUDE_DIR)/accelerometer \
 -I$(INCLUDE_DIR)/messaging \
+-I$(INCLUDE_DIR)/predictive_timer \
+-I$(INCLUDE_DIR)/util \
+-I$(INCLUDE_DIR)/devices \
+-I$(INCLUDE_DIR)/gps \
 -I$(JSON_DIR)
 
 #CINCS = -I. -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)

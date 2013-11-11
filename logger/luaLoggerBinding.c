@@ -14,7 +14,7 @@
 #include "luaTask.h"
 #include "mod_string.h"
 #include "usart.h"
-#include "race_capture/printk.h"
+#include "printk.h"
 #include "modp_numtoa.h"
 
 extern xSemaphoreHandle g_xLoggerStart;
@@ -209,8 +209,9 @@ void registerLuaLoggerBindings(){
 ////////////////////////////////////////////////////
 // common functions
 ////////////////////////////////////////////////////
-static GPSConfig * getGPSConfig(){
-	return &(getWorkingLoggerConfig()->GPSConfigs);
+
+static TrackConfig * getTrackConfig(){
+	return &(getWorkingLoggerConfig()->TrackConfigs);
 }
 
 static int setLuaSampleRate(lua_State *L, int *sampleRate){
@@ -563,7 +564,7 @@ int Lua_GetGPSInstalled(lua_State *L){
 
 int Lua_SetGPSStartFinish(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfigs);
+		TrackConfig *c = &(getWorkingLoggerConfig()->TrackConfigs);
 		c->startFinishConfig.latitude = lua_tonumber(L,1);
 		c->startFinishConfig.longitude = lua_tonumber(L,2);
 		if (lua_gettop(L) >=3) c->startFinishConfig.targetRadius = lua_tonumber(L,3);
@@ -572,7 +573,7 @@ int Lua_SetGPSStartFinish(lua_State *L){
 }
 
 int Lua_GetGPSStartFinish(lua_State *L){
-	GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfigs);
+	TrackConfig *c = &(getWorkingLoggerConfig()->TrackConfigs);
 	lua_pushnumber(L,c->startFinishConfig.latitude);
 	lua_pushnumber(L,c->startFinishConfig.longitude);
 	lua_pushnumber(L,c->startFinishConfig.targetRadius);
@@ -586,7 +587,7 @@ int Lua_GetGPSAtStartFinish(lua_State *L){
 
 int Lua_SetSplit(lua_State *L){
 	if (lua_gettop(L) >= 2){
-		GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfigs);
+		TrackConfig *c = &(getWorkingLoggerConfig()->TrackConfigs);
 		c->splitConfig.latitude = lua_tonumber(L,1);
 		c->splitConfig.longitude = lua_tonumber(L,2);
 		if (lua_gettop(L) >=3) c->splitConfig.targetRadius = lua_tonumber(L,3);
@@ -595,7 +596,7 @@ int Lua_SetSplit(lua_State *L){
 }
 
 int Lua_GetSplit(lua_State *L){
-	GPSConfig *c = &(getWorkingLoggerConfig()->GPSConfigs);
+	TrackConfig *c = &(getWorkingLoggerConfig()->TrackConfigs);
 	lua_pushnumber(L,c->splitConfig.latitude);
 	lua_pushnumber(L,c->splitConfig.longitude);
 	lua_pushnumber(L,c->splitConfig.targetRadius);
@@ -706,35 +707,35 @@ int Lua_GetGPSTimeSampleRate(lua_State *L){
 }
 
 int Lua_SetLapCountSampleRate(lua_State *L){
-	return setLuaSampleRate(L, &(getGPSConfig()->lapCountCfg.sampleRate));
+	return setLuaSampleRate(L, &getTrackConfig()->lapCountCfg.sampleRate);
 }
 
 int Lua_GetLapCountSampleRate(lua_State *L){
-	return getLuaSampleRate(L, getGPSConfig()->lapCountCfg.sampleRate);
+	return getLuaSampleRate(L, getTrackConfig()->lapCountCfg.sampleRate);
 }
 
 int Lua_SetLapTimeSampleRate(lua_State *L){
-	return setLuaSampleRate(L, &(getGPSConfig()->lapTimeCfg.sampleRate));
+	return setLuaSampleRate(L, &getTrackConfig()->lapTimeCfg.sampleRate);
 }
 
 int Lua_GetLapTimeSampleRate(lua_State *L){
-	return getLuaSampleRate(L, getGPSConfig()->lapTimeCfg.sampleRate);
+	return getLuaSampleRate(L, getTrackConfig()->lapTimeCfg.sampleRate);
 }
 
 int Lua_SetLapCountLabel(lua_State *L){
-	return setLuaChannelLabel(L,getGPSConfig()->lapCountCfg.label);
+	return setLuaChannelLabel(L, getTrackConfig()->lapCountCfg.label);
 }
 
 int Lua_GetLapCountLabel(lua_State *L){
-	return getLuaChannelLabel(L,getGPSConfig()->lapCountCfg.label);
+	return getLuaChannelLabel(L, getTrackConfig()->lapCountCfg.label);
 }
 
 int Lua_SetLapTimeLabel(lua_State *L){
-	return setLuaChannelLabel(L,getGPSConfig()->lapTimeCfg.label);
+	return setLuaChannelLabel(L,getTrackConfig()->lapTimeCfg.label);
 }
 
 int Lua_GetLapTimeLabel(lua_State *L){
-	return getLuaChannelLabel(L,getGPSConfig()->lapTimeCfg.label);
+	return getLuaChannelLabel(L,getTrackConfig()->lapTimeCfg.label);
 }
 
 

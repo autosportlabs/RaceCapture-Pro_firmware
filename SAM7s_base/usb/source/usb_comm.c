@@ -15,6 +15,10 @@
 static char lineBuffer[BUFFER_SIZE];
 
 
+void usb_init(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud){
+	//null function - does not apply to USB CDC
+}
+
 void usb_flush(void)
 {
 	while(usb_getchar_wait(0));
@@ -66,7 +70,7 @@ void onUSBCommTask(void *pvParameters) {
 	Serial *serial = get_serial_usb();
 
 	while (1) {
-		process_message(serial, lineBuffer, BUFFER_SIZE);
+		process_msg_interactive(serial, lineBuffer, BUFFER_SIZE);
 	}
 }
 

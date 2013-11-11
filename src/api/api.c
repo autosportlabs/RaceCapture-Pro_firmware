@@ -1,10 +1,9 @@
 #include "api.h"
 #include "constants.h"
-#include "race_capture/printk.h"
+#include "printk.h"
 #include "mod_string.h"
 
 #define JSON_TOKENS 100
-static unsigned int g_currentMessageId = 0;
 
 static jsmn_parser g_jsonParser;
 static jsmntok_t g_json_tok[JSON_TOKENS];
@@ -65,13 +64,12 @@ void json_blockStartInt(Serial *serial, int label){
 	serial->put_s("\":{");
 }
 
-void json_messageStart(Serial *serial, int messageId){
+void json_messageStart(Serial *serial){
 	serial->put_c('{');
-	if (messageId != NULL_MESSAGE_ID) json_uint(serial, "mid", messageId, 1);
 }
 
-void json_asyncMessageStart(Serial *serial){
-	json_messageStart(serial, ++g_currentMessageId);
+void json_messageEnd(Serial *serial){
+	json_blockEnd(serial, 0);
 }
 
 void json_blockEnd(Serial *serial, int more){
@@ -91,7 +89,7 @@ void json_arrayEnd(Serial *serial, int more){
 }
 
 void json_sendResult(Serial *serial, const char *messageName, int resultCode){
-	json_messageStart(serial, NULL_MESSAGE_ID);
+	json_messageStart(serial);
 	json_blockStart(serial,messageName);
 	json_int(serial, "rc", resultCode, 0);
 	json_blockEnd(serial,0);

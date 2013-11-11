@@ -6,6 +6,7 @@
 #include "portable.h"
 #include "luaScript.h"
 #include "luaBaseBinding.h"
+#include "mem_mang.h"
 
 #define LUA_30Hz 10
 #define LUA_20Hz 15
@@ -43,7 +44,7 @@ void * myAlloc (void *ud, void *ptr, size_t osize,size_t nsize) {
 #endif
 
    if (nsize == 0) {
-     vPortFree(ptr);
+     portFree(ptr);
 #ifdef ALLOC_DEBUG
      if (g_allocDebug){
     	 SendString(" (free)");
@@ -55,7 +56,7 @@ void * myAlloc (void *ud, void *ptr, size_t osize,size_t nsize) {
    else{
 	 void *newPtr;
 	 if (osize != nsize){
-		 newPtr = pvPortRealloc(ptr, nsize);
+		 newPtr = portRealloc(ptr, nsize);
 	 }
 	 else{
 		 newPtr = ptr;

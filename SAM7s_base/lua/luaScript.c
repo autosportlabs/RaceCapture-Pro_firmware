@@ -1,6 +1,6 @@
 #include "luaScript.h"
 #include "memory.h"
-#include "heap.h"
+#include "mem_mang.h"
 #include "mod_string.h"
 
 #define SCRIPT_LENGTH SCRIPT_PAGES * MEMORY_PAGE_SIZE
@@ -17,7 +17,7 @@ int flashScriptPage(unsigned int page, const char *data){
 	char * scriptPageAddress = (char *)g_script;
 	scriptPageAddress += (page * MEMORY_PAGE_SIZE);
 	//if less than the page size, copy it into an expanded buffer
-	char * temp = pvPortMalloc(MEMORY_PAGE_SIZE);
+	char * temp = portMalloc(MEMORY_PAGE_SIZE);
 
 	if (temp){
 		int size = strlen(data);
@@ -25,7 +25,7 @@ int flashScriptPage(unsigned int page, const char *data){
 		memset(temp,0,MEMORY_PAGE_SIZE);
 		memcpy(temp,data,size);
 		result = flashWriteRegion((void *)scriptPageAddress,(void *)temp, MEMORY_PAGE_SIZE);
-		vPortFree(temp);
+		portFree(temp);
 	}
 	return result;
 }

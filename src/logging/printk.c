@@ -2,10 +2,11 @@
  * Race capture
  */
 
-#include <mod_string.h>
-#include <race_capture/printk.h>
-#include <race_capture/ring_buffer.h>
-#include <serial.h>
+#include "mod_string.h"
+#include "printk.h"
+#include "ring_buffer.h"
+#include "serial.h"
+#include "modp_numtoa.h"
 #include <stddef.h>
 
 #define LOG_BUFFER_SIZE 512
@@ -56,15 +57,24 @@ size_t write_to_log_buff(const char *msg) {
 }
 
 int printk(enum log_level level, const char *msg) {
-        if (level > curr_level)
-                return 0;
-
+        if (level > curr_level) return 0;
         return write_to_log_buff(msg);
+}
+
+int printk_int(enum log_level level, int value) {
+		if (level > curr_level) return 0;
+		char buf[12];
+		modp_itoa10(value,buf);
+		return write_to_log_buff(buf);
+}
+
+inline enum log_level get_log_level(){
+	return curr_level;
 }
 
 enum log_level set_log_level(enum log_level level)
 {
-        if (level <= DEBUG)
+        if (level <= TRACE)
                 curr_level = level;
 
         return curr_level;

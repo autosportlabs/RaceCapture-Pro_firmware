@@ -5,17 +5,8 @@
  *      Author: brent
  */
 #include "sampleRecord.h"
-#ifndef pvPortMalloc
-#include <stdlib.h>
-#define pvPortMalloc malloc
-#endif
-
-#ifndef vPortFree
-#define vPortFree free
-#endif
-
-//#include "FreeRTOS.h"
 #include "loggerConfig.h"
+#include "mem_mang.h"
 
 void initSampleRecord(LoggerConfig *loggerConfig,SampleRecord *sr){
 
@@ -77,21 +68,33 @@ void initSampleRecord(LoggerConfig *loggerConfig,SampleRecord *sr){
 		s->intValue = NIL_SAMPLE;
 	}
 	{
-		ChannelSample *s = &(sr->GPS_LapCountSample);
+		ChannelSample *s = &(sr->Track_LapCountSample);
 		s->precision = DEFAULT_LAP_COUNT_LOGGING_PRECISION;
-		s->channelConfig = &(loggerConfig->GPSConfigs.lapCountCfg);
+		s->channelConfig = &(loggerConfig->TrackConfigs.lapCountCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
-		ChannelSample *s = &(sr->GPS_LapTimeSample);
+		ChannelSample *s = &(sr->Track_LapTimeSample);
 		s->precision = DEFAULT_LAP_TIME_LOGGING_PRECISION;
-		s->channelConfig = &(loggerConfig->GPSConfigs.lapTimeCfg);
+		s->channelConfig = &(loggerConfig->TrackConfigs.lapTimeCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
-		ChannelSample *s = &(sr->GPS_SplitTimeSample);
+		ChannelSample *s = &(sr->Track_SplitTimeSample);
 		s->precision = DEFAULT_LAP_TIME_LOGGING_PRECISION;
-		s->channelConfig =  &(loggerConfig->GPSConfigs.splitTimeCfg);
+		s->channelConfig =  &(loggerConfig->TrackConfigs.splitTimeCfg);
+		s->intValue = NIL_SAMPLE;
+	}
+	{
+		ChannelSample *s = &(sr->Track_DistanceSample);
+		s->precision = DEFAULT_DISTANCE_LOGGING_PRECISION;
+		s->channelConfig =  &(loggerConfig->TrackConfigs.distanceCfg);
+		s->intValue = NIL_SAMPLE;
+	}
+	{
+		ChannelSample *s = &(sr->Track_PredTimeSample);
+		s->precision = DEFAULT_LAP_TIME_LOGGING_PRECISION;
+		s->channelConfig =  &(loggerConfig->TrackConfigs.predTimeCfg);
 		s->intValue = NIL_SAMPLE;
 	}
 	{
@@ -116,7 +119,7 @@ void clearSampleRecord(SampleRecord* sr){
 }
 
 SampleRecord ** createSampleRecordBuffer(LoggerConfig *loggerConfig, int size){
-	SampleRecord ** srBuff = (SampleRecord **)pvPortMalloc(sizeof(SampleRecord[size]));
+	SampleRecord ** srBuff = (SampleRecord **)portMalloc(sizeof(SampleRecord[size]));
 	initSampleRecordBuffer(loggerConfig, srBuff, size);
 	return srBuff;
 }
@@ -126,5 +129,5 @@ void initSampleRecordBuffer(LoggerConfig *loggerConfig, SampleRecord ** srBuff,i
 }
 
 void freeSampleRecordBuffer(SampleRecord ** sampleRecordBuffer){
-	vPortFree(sampleRecordBuffer);
+	portFree(sampleRecordBuffer);
 }

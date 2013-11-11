@@ -6,7 +6,7 @@
 #include <FreeRTOSConfig.h>
 #include <task.h>
 
-#include <race_capture/printk.h>
+#include <printk.h>
 #include <tasks/heartbeat.h>
 
 #define TASK_NAME ((signed portCHAR *) "heartbeat_task")

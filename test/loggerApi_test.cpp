@@ -17,6 +17,7 @@
 #include <string>
 #include <fstream>
 #include <streambuf>
+#include "predictive_timer.h"
 
 #define JSON_TOKENS 10000
 #define FILE_PREFIX string("test/")
@@ -126,6 +127,7 @@ void LoggerApiTest::setUp()
 	initApi();
 	updateActiveLoggerConfig();
 	setupMockSerial();
+	init_predictive_timer();
 }
 
 
@@ -685,6 +687,10 @@ void LoggerApiTest::testSetTimerCfg(){
 	testSetTimerConfigFile("setTimerCfg1.json");
 }
 
+void LoggerApiTest::testGetMeta(){
+	testSampleDataFile("getMeta.json", "getMeta_response.json");
+}
+
 void LoggerApiTest::testSampleData(){
 	testSampleDataFile("sampleData1.json", "sampleData_response1.json");
 	testSampleDataFile("sampleData2.json", "sampleData_response2.json");
@@ -700,6 +706,8 @@ void LoggerApiTest::testSampleDataFile(string requestFilename, string responseFi
 
 	LoggerConfig *c = getWorkingLoggerConfig();
 	char *txBuffer = mock_getTxBuffer();
+	string txString(txBuffer);
+	CPPUNIT_ASSERT_EQUAL(txString, responseJson);
 }
 
 void LoggerApiTest::testLogStartStopFile(string filename){
@@ -849,17 +857,17 @@ void LoggerApiTest::testSetTrackConfigFile(string filename){
 	char *txBuffer = mock_getTxBuffer();
 
 	LoggerConfig *c = getWorkingLoggerConfig();
-	GPSConfig *gpsCfg = &c->GPSConfigs;
+	TrackConfig *cfg = &c->TrackConfigs;
 
 	assertGenericResponse(txBuffer, "setTrackCfg", 1);
 
-	CPPUNIT_ASSERT_EQUAL(38.161518F, gpsCfg->startFinishConfig.latitude);
-	CPPUNIT_ASSERT_EQUAL(-122.454711F, gpsCfg->startFinishConfig.longitude);
-	CPPUNIT_ASSERT_EQUAL(0.0006F, gpsCfg->startFinishConfig.targetRadius);
+	CPPUNIT_ASSERT_EQUAL(38.161518F, cfg->startFinishConfig.latitude);
+	CPPUNIT_ASSERT_EQUAL(-122.454711F, cfg->startFinishConfig.longitude);
+	CPPUNIT_ASSERT_EQUAL(0.0006F, cfg->startFinishConfig.targetRadius);
 
-	CPPUNIT_ASSERT_EQUAL(38.166389F, gpsCfg->splitConfig.latitude);
-	CPPUNIT_ASSERT_EQUAL(-122.462442F, gpsCfg->splitConfig.longitude);
-	CPPUNIT_ASSERT_EQUAL(0.0006F, gpsCfg->splitConfig.targetRadius);
+	CPPUNIT_ASSERT_EQUAL(38.166389F, cfg->splitConfig.latitude);
+	CPPUNIT_ASSERT_EQUAL(-122.462442F, cfg->splitConfig.longitude);
+	CPPUNIT_ASSERT_EQUAL(0.0006F, cfg->splitConfig.targetRadius);
 }
 
 void LoggerApiTest::testSetTrackCfg(){
@@ -868,15 +876,15 @@ void LoggerApiTest::testSetTrackCfg(){
 
 void LoggerApiTest::testGetTrackConfigFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
-	GPSConfig *gpsCfg = &c->GPSConfigs;
+	TrackConfig *cfg = &c->TrackConfigs;
 
-	gpsCfg->startFinishConfig.latitude = 1.234;
-	gpsCfg->startFinishConfig.longitude = 5.678;
-	gpsCfg->startFinishConfig.targetRadius = 0.001;
+	cfg->startFinishConfig.latitude = 1.234;
+	cfg->startFinishConfig.longitude = 5.678;
+	cfg->startFinishConfig.targetRadius = 0.001;
 
-	gpsCfg->splitConfig.latitude = 11.234;
-	gpsCfg->splitConfig.longitude = 55.678;
-	gpsCfg->splitConfig.targetRadius = 0.002;
+	cfg->splitConfig.latitude = 11.234;
+	cfg->splitConfig.longitude = 55.678;
+	cfg->splitConfig.targetRadius = 0.002;
 
 	char * response = processApiGeneric(filename);
 

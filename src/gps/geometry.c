@@ -19,7 +19,6 @@ int within_circ(const struct circ_area *area,
 	xdelta = area->center.x - point->x;
 	ydelta = area->center.y - point->y;
 	dsquared = (xdelta * xdelta) + (ydelta * ydelta);
-
 	return area->rsquared >= dsquared;
 }
 

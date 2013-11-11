@@ -33,7 +33,7 @@
 //logging related tasks
 #include "loggerTaskEx.h"
 #include "fileWriter.h"
-#include "telemetryTask.h"
+#include "connectivityTask.h"
 
 #ifdef LUA_ENABLED
 #include "luaTask.h"
@@ -96,8 +96,6 @@ static int setupHardware( void )
 
 
 void fatalError(int type){
-
-
 	int count;
 	int pause = 5000000;
 	int flash = 1000000;
@@ -143,15 +141,12 @@ int main( void )
 	startLuaTask();
 #endif
 	createFileWriterTask();
-	//createLoggerTask();
 	createLoggerTaskEx();
 	createGPIOTasks();
 	createConnectivityTask();
 	startGPSTask();
-//      start_heartbeat_task();
-//	startRaceTask();
 
-   /* Start the scheduler.
+	/* Start the scheduler.
 
    NOTE : Tasks run in system mode and the scheduler runs in Supervisor mode.
    The processor MUST be in supervisor mode when vTaskStartScheduler is

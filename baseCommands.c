@@ -7,6 +7,7 @@
 #include "baseCommands.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "mem_mang.h"
 
 void ShowTaskInfo(Serial *serial, unsigned int argc, char **argv){
 
@@ -14,11 +15,11 @@ void ShowTaskInfo(Serial *serial, unsigned int argc, char **argv){
 	put_crlf(serial);
 	serial->put_s("Status\tPri\tStack\tTask#\tName");
 	put_crlf(serial);
-	char *taskList = (char *)pvPortMalloc(1024);
+	char *taskList = (char *)portMalloc(1024);
 	if (NULL != taskList){
 		vTaskList(taskList);
 		serial->put_s(taskList);
-		vPortFree(taskList);
+		portFree(taskList);
 	}
 	else{
 		serial->put_s("Out of Memory!");

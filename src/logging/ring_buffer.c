@@ -6,7 +6,7 @@
 #include <stddef.h>
 
 #include <mod_string.h>
-#include <race_capture/ring_buffer.h>
+#include <ring_buffer.h>
 
 static size_t get_end_dist(struct ring_buff *rb, const char *p)
 {

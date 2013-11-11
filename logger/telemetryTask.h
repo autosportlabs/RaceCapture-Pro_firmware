@@ -10,9 +10,9 @@
 #include "sampleRecord.h"
 #include "loggerConfig.h"
 #include "FreeRTOS.h"
+#include "queue.h"
 
-portBASE_TYPE queueTelemetryRecord(SampleRecord * sr);
 
-void createConnectivityTask();
+
 
 #endif /* TELEMETRYTASK_H_ */

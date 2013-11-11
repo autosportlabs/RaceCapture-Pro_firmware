@@ -102,8 +102,6 @@ char filterSdLoggingMode(char mode){
 
 char filterConnectivityMode(char mode){
 	switch(mode){
-		case CONNECTIVITY_MODE_P2P:
-			return CONNECTIVITY_MODE_P2P;
 		case CONNECTIVITY_MODE_CELL:
 			return CONNECTIVITY_MODE_CELL;
 		case CONNECTIVITY_MODE_BLUETOOTH:
@@ -350,14 +348,23 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
 			int sr = gpsConfig->speedCfg.sampleRate;
 			if HIGHER_SAMPLE(sr, s) s = sr;
 		}
-		{
-			int sr = gpsConfig->lapCountCfg.sampleRate;
-			if HIGHER_SAMPLE(sr, s) s = sr;
-		}
-		{
-			int sr = gpsConfig->lapTimeCfg.sampleRate;
-			if HIGHER_SAMPLE(sr, s) s = sr;
-		}
+	}
+	TrackConfig *trackCfg = &(config->TrackConfigs);
+	{
+		int sr = trackCfg->lapCountCfg.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
+	}
+	{
+		int sr = trackCfg->lapTimeCfg.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
+	}
+	{
+		int sr = trackCfg->distanceCfg.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
+	}
+	{
+		int sr = trackCfg->predTimeCfg.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
 	}
 	return s;
 }

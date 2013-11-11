@@ -9,7 +9,7 @@
 #include "semphr.h"
 
 #include "fileWriter.h"
-#include "telemetryTask.h"
+#include "connectivityTask.h"
 #include "sampleRecord.h"
 #include "loggerData.h"
 #include "loggerTaskEx.h"

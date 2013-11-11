@@ -5,15 +5,13 @@
 #include "modp_atonum.h"
 #include "geometry.h"
 #include "mod_string.h"
+#include "predictive_timer.h"
+#include "printk.h"
 #include <math.h>
 
 //kilometers
 #define DISTANCE_SCALING 6371
 #define PI 3.1415
-
-#define GPS_QUALITY_NO_FIX 0
-#define GPS_QUALITY_SPS 1
-#define GPS_QUALITY_DIFFERENTIAL 2
 
 #define GPS_LOCK_FLASH_COUNT 2
 #define GPS_NOFIX_FLASH_COUNT 10
@@ -24,7 +22,11 @@
 #define UTC_TIME_BUFFER_LEN 11
 #define UTC_SPEED_BUFFER_LEN 10
 
-#define START_FINISH_TIME_THRESHOLD 30
+#define START_FINISH_TIME_THRESHOLD 10
+
+#define TIME_NULL -1
+
+#define GPS_LOCKED_ON(QUALITY) QUALITY != GPS_QUALITY_NO_FIX
 
 static int		g_flashCount;
 static float	g_prevLatitude;
@@ -34,6 +36,7 @@ static float	g_latitude;
 static float 	g_longitude;
 
 static float	g_UTCTime;
+static float 	g_prevSecondsSinceMidnight;
 static float 	g_secondsSinceMidnight;
 
 static float	g_speed;
@@ -67,6 +70,7 @@ static void parseGGA(char *data){
 
 	double latitude = 0.0;
 	double longitude = 0.0;
+	double secondsSinceMidnight = 0.0;
 
 	int keepParsing = 1;
 
@@ -77,23 +81,8 @@ static void parseGGA(char *data){
 				{
 					unsigned int len = strlen(data);
 					if (len > 0 && len < UTC_TIME_BUFFER_LEN){
-						g_UTCTime = modp_atof(data);
-
-						char hh[3];
-						char mm[3];
-						char ss[7];
-
-						memcpy(hh,data,2);
-						hh[2] = '\0';
-						memcpy(mm,data+2,2);
-						mm[2] = '\0';
-						memcpy(ss,data+4,6);
-						ss[6] = '\0';
-						int hour = modp_atoi(hh);
-						int minutes = modp_atoi(mm);
-						float seconds = modp_atof(ss);
-
-						g_secondsSinceMidnight = (hour * 60.0 * 60.0) + (minutes * 60.0) + seconds;
+						setUTCTime(modp_atof(data));
+						secondsSinceMidnight = calculateSecondsSinceMidnight(data);
 					}
 				}
 				break;
@@ -102,15 +91,12 @@ static void parseGGA(char *data){
 					unsigned int len = strlen(data);
 					if ( len > 0 && len <= LATITUDE_DATA_LEN ){
 						//Raw GPS Format is ddmm.mmmmmm
-//						latitude = modp_atod(data);
-
 						char degreesStr[3];
 						strncpy(degreesStr, data, 2);
 						degreesStr[2] = 0;
 						float minutes = modp_atof(data + 2);
 						minutes = minutes / 60.0;
 						latitude = modp_atoi(degreesStr) + minutes;
-
 					}
 					else{
 						latitude = 0;
@@ -130,9 +116,6 @@ static void parseGGA(char *data){
 					unsigned int len = strlen(data);
 					if ( len > 0 && len <= LONGITUDE_DATA_LEN ){
 						//Raw GPS Format is dddmm.mmmmmm
-
-//						longitude = modp_atod(data);
-
 						char degreesStr[4];
 						strncpy(degreesStr, data, 3);
 						degreesStr[3] = 0;
@@ -165,7 +148,34 @@ static void parseGGA(char *data){
 		data = delim + 1;
 		delim = strchr(data,',');
 	}
+	updateSecondsSinceMidnight(secondsSinceMidnight);
+	updatePosition(latitude, longitude);
+}
 
+double calculateSecondsSinceMidnight(const char * rawTime){
+	char hh[3];
+	char mm[3];
+	char ss[7];
+
+	memcpy(hh, rawTime, 2);
+	hh[2] = '\0';
+	memcpy(mm, rawTime + 2, 2);
+	mm[2] = '\0';
+	memcpy(ss, rawTime + 4, 6);
+	ss[6] = '\0';
+	int hour = modp_atoi(hh);
+	int minutes = modp_atoi(mm);
+	float seconds = modp_atof(ss);
+
+	return (hour * 60.0 * 60.0) + (minutes * 60.0) + seconds;
+}
+
+void updateSecondsSinceMidnight(float secondsSinceMidnight){
+	g_prevSecondsSinceMidnight = g_secondsSinceMidnight;
+	g_secondsSinceMidnight = secondsSinceMidnight;
+}
+
+void updatePosition(float latitude, float longitude){
 	g_prevLatitude = g_latitude;
 	g_prevLongitude = g_longitude;
 	g_longitude = longitude;
@@ -190,7 +200,7 @@ static void parseVTG(char *data){
 			case 6: //Speed over ground
 				{
 					if (strlen(data) >= 1){
-						g_speed = modp_atof(data) * 0.621371; //convert to MPH
+						setGPSSpeed(modp_atof(data)); //convert to MPH
 					}
 					keepParsing = 0;
 				}
@@ -222,17 +232,6 @@ static void parseGSV(char *data){
 static void parseRMC(char *data){
 
 }
-
-
-
-
-
-
-
-
-
-
-
 
 void resetDistance(){
 	g_distance = 0;
@@ -281,6 +280,10 @@ float getUTCTime(){
 	return g_UTCTime;
 }
 
+void setUTCTime(float UTCTime){
+	g_UTCTime = UTCTime;
+}
+
 float getSecondsSinceMidnight(){
 	return g_secondsSinceMidnight;
 }
@@ -301,12 +304,20 @@ int getGPSQuality(){
 	return g_gpsQuality;
 }
 
+void setGPSQuality(int quality){
+	g_gpsQuality = quality;
+}
+
 int getSatellitesUsedForPosition(){
 	return g_satellitesUsedForPosition;
 }
 
 float getGPSSpeed(){
 	return g_speed;
+}
+
+void setGPSSpeed(float speed){
+	g_speed = speed;
 }
 
 static int withinGpsTarget(GPSTargetConfig *targetConfig){
@@ -322,15 +333,6 @@ static int withinGpsTarget(GPSTargetConfig *targetConfig){
 
 	create_circ(&area,&p,targetConfig->targetRadius);
 	int within =  within_circ(&area,&currentP);
-/*	SendFloat(p.x,10);
-	SendString(" ");
-	SendFloat(p.y,10);
-	SendString(" within: ");
-	SendInt(within);
-	SendString(" ");
-	SendFloat(g_startFinishRadius,10);
-	SendCrlf();
-	*/
 	return within;
 }
 
@@ -343,32 +345,29 @@ static float toRadians(float degrees){
 }
 
 static float calcDistancesSinceLastSample(){
+	float d = 0;
+	if (0 != g_prevLatitude && 0 != g_prevLongitude){
+		float lat1 = toRadians(g_prevLatitude);
+		float lon1 = toRadians(g_prevLongitude);
 
-	float lat1 = toRadians(g_prevLatitude);
-	float lon1 = toRadians(g_prevLongitude);
+		float lat2 = toRadians(g_latitude);
+		float lon2 = toRadians(g_longitude);
 
-	float lat2 = toRadians(g_latitude);
-	float lon2 = toRadians(g_longitude);
-
-	float x = (lon2-lon1) * cos((lat1+lat2)/2);
-	float y = (lat2-lat1);
-	float d = sqrtf(x*x + y*y) * DISTANCE_SCALING;
-
+		float x = (lon2-lon1) * cos((lat1+lat2)/2);
+		float y = (lat2-lat1);
+		d = sqrtf(x*x + y*y) * DISTANCE_SCALING;
+	}
 	return d;
 }
 
-
-static void updateDistances(){
-	float distanceSinceLastSample  = calcDistancesSinceLastSample();
-	g_distance += distanceSinceLastSample;
+static float calcTimeSinceLastSample(){
+	float time = 0;
+	if (g_prevSecondsSinceMidnight >= 0) time = getTimeDiff(g_prevSecondsSinceMidnight, g_secondsSinceMidnight);
+	return time;
 }
 
-
-static void updateStartFinish(void){
-	GPSTargetConfig *targetConfig = &(getWorkingLoggerConfig()->GPSConfigs.startFinishConfig);
-
-	if (! isGpsTargetEnabled(targetConfig)) return;
-
+static int processStartFinish(GPSTargetConfig *targetConfig){
+	int lapDetected = 0;
 	g_atStartFinish = withinGpsTarget(targetConfig);
 	if (g_atStartFinish){
 		if (g_prevAtStartFinish == 0){
@@ -387,7 +386,7 @@ static void updateStartFinish(void){
 					g_lapCount++;
 					g_lastLapTime = lapTime;
 					g_lastStartFinishTimestamp = currentTimestamp;
-					resetDistance();
+					lapDetected = 1;
 				}
 			}
 		}
@@ -396,13 +395,10 @@ static void updateStartFinish(void){
 	else{
 		g_prevAtStartFinish = 0;
 	}
+	return lapDetected;
 }
 
-static void updateSplit(void){
-	GPSTargetConfig *targetConfig = &(getWorkingLoggerConfig()->GPSConfigs.splitConfig);
-
-	if (! isGpsTargetEnabled(targetConfig)) return;
-
+static void processSplit(GPSTargetConfig *targetConfig){
 	g_atSplit = withinGpsTarget(targetConfig);
 	if (g_atSplit){
 		if (g_prevAtSplit == 0){
@@ -426,6 +422,8 @@ static void updateSplit(void){
 }
 
 void initGPS(){
+	g_secondsSinceMidnight = TIME_NULL;
+	g_prevSecondsSinceMidnight = TIME_NULL;
 	g_flashCount = 0;
 	g_prevLatitude = 0.0;
 	g_prevLongitude = 0.0;
@@ -445,24 +443,69 @@ void initGPS(){
 	g_lastSplitTimestamp = 0;
 	g_lapCount = 0;
 	g_distance = 0;
+	init_predictive_timer();
+}
+
+static void flashGpsStatusLed(){
+	if (g_flashCount == 0) disableLED(LED1);
+	g_flashCount++;
+	int targetFlashCount = (GPS_LOCKED_ON(g_gpsQuality) ? GPS_LOCK_FLASH_COUNT : GPS_NOFIX_FLASH_COUNT );
+	if (g_flashCount >= targetFlashCount){
+		enableLED(LED1);
+		g_flashCount = 0;
+	}
+}
+
+void onLocationUpdated(){
+	GPSTargetConfig *startFinishCfg = &(getWorkingLoggerConfig()->TrackConfigs.startFinishConfig);
+	int startFinishEnabled = isGpsTargetEnabled(startFinishCfg);
+
+	GPSTargetConfig *splitCfg = &(getWorkingLoggerConfig()->TrackConfigs.splitConfig);
+	int splitEnabled = isGpsTargetEnabled(splitCfg);
+
+	if (GPS_LOCKED_ON(g_gpsQuality)){
+		float dist = calcDistancesSinceLastSample();
+		g_distance += dist;
+
+		if (splitEnabled) processSplit(splitCfg);
+
+		if (startFinishEnabled){
+			float time = calcTimeSinceLastSample();
+			add_predictive_sample(g_speed,dist,time);
+			int lapDetected = processStartFinish(startFinishCfg);
+			if (lapDetected){
+				resetDistance();
+				end_lap();
+			}
+		}
+	}
+}
+
+int checksumValid(const char *gpsData, size_t len){
+	int valid = 0;
+	unsigned char checksum = 0;
+	size_t i = 0;
+	for (; i < len - 1; i++){
+		char c = *(gpsData + i);
+		if (c == '*' || c == '\0') break;
+		else if (c == '$') continue;
+		else checksum ^= c;
+	}
+	if (len > i + 2){
+		unsigned char dataChecksum = modp_xtoc(gpsData + i + 1);
+		if (checksum == dataChecksum) valid = 1;
+	}
+	return valid;
 }
 
 void processGPSData(char *gpsData, size_t len){
-	if (len > 0){
+	if (len > 4 && checksumValid(gpsData, len)){
 		if (*gpsData == '$' && *(gpsData + 1) =='G' && *(gpsData + 2) == 'P'){
 			char * data = gpsData + 3;
 			if (strstr(data,"GGA,")){
 				parseGGA(data + 4);
-				if (g_flashCount == 0) disableLED(LED1);
-				g_flashCount++;
-				int targetFlashCount = (g_gpsQuality == GPS_QUALITY_NO_FIX ? GPS_NOFIX_FLASH_COUNT: GPS_LOCK_FLASH_COUNT);
-				if (g_flashCount >= targetFlashCount){
-					enableLED(LED1);
-					g_flashCount = 0;
-				}
-				updateDistances();
-				updateStartFinish();
-				updateSplit();
+				flashGpsStatusLed();
+				onLocationUpdated();
 			} else if (strstr(data,"VTG,")){ //Course Over Ground and Ground Speed
 				parseVTG(data + 4);
 			} else if (strstr(data,"GSA,")){ //GPS Fix data
@@ -477,5 +520,8 @@ void processGPSData(char *gpsData, size_t len){
 				parseZDA(data + 4);
 			}
 		}
+	}
+	else{
+		pr_warning("GPS: corrupt frame\r\n");
 	}
 }

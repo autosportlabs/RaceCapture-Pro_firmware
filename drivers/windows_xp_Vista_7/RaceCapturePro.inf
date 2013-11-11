@@ -16,10 +16,10 @@ DriverVer=03/26/2007,6.0.2600.1
 DefaultDestDir = 12
 
 [VirComDevice.NT]
-%DESCRIPTION%=DriverInstall,USB\VID_16D0&PID_0673
+%DESCRIPTION%=DriverInstall,USB\VID_16D0&PID_07F1
 
 [VirComDevice.NTamd64]
-%DESCRIPTION%=DriverInstall,USB\VID_16D0&PID_0673
+%DESCRIPTION%=DriverInstall,USB\VID_16D0&PID_07F1
 
 [DriverInstall.NT]
 Include=mdmcpq.inf

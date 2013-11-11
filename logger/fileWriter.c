@@ -13,7 +13,7 @@
 #include "loggerHardware.h"
 #include "taskUtil.h"
 #include "mod_string.h"
-#include "race_capture/printk.h"
+#include "printk.h"
 #include "spi.h"
 
 enum writing_status {
