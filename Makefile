@@ -151,7 +151,7 @@ $(RTOS_PORT_DIR)/MemMang/heap_2_combine.c \
 $(LOGGING_DIR)/printk.c \
 $(LOGGING_DIR)/ring_buffer.c \
 $(TASKS_DIR)/heartbeat.c \
-$(ACCEL_SRC_DIR)/accelerometer_buffer.c \
+$(ACCEL_SRC_DIR)/accelerometer_filter.c \
 $(MESSAGING_SRC_DIR)/messaging.c \
 $(PRED_TIMER_DIR)/predictive_timer.c \
 $(UTIL_DIR)/linear_interpolate.c \

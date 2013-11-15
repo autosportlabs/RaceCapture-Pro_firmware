@@ -1,7 +1,7 @@
 #include "loggerHardware.h"
 #include "loggerConfig.h"
 #include "board.h"
-#include "accelerometer_buffer.h"
+#include "accelerometer_filter.h"
 #include "accelerometer.h"
 #include "sdcard.h"
 #include "constants.h"

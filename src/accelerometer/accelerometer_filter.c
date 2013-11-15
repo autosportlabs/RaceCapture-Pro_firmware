@@ -1,4 +1,4 @@
-#include "accelerometer_buffer.h"
+#include "accelerometer_filter.h"
 #include "loggerConfig.h"
 
 static int g_averagedAccelValues[CONFIG_ACCEL_CHANNELS];
