@@ -97,7 +97,9 @@ static int bt_probe_config(unsigned int probeBaud, unsigned int targetBaud, cons
 	}
 	config->serial->init(8, 0, 1, probeBaud);
 	if (sendCommand(config, "AT") && (targetBaud == probeBaud || configureBt(config, targetBaud, deviceName) == 0)){
-		pr_debug(" success\r\n");
+		pr_debug("provisioning @");
+		pr_debug_int(targetBaud);
+		pr_debug("success\r\n");
 		return DEVICE_INIT_SUCCESS;
 	}
 	else{
@@ -114,7 +116,7 @@ int bt_init_connection(DeviceConfig *config){
 	if (bt_probe_config(115200, targetBaud, deviceName, config) != 0){
 		if (bt_probe_config(9600, targetBaud, deviceName, config) != 0){
 			if (bt_probe_config(230400, targetBaud, deviceName, config) !=0){
-				return DEVICE_INIT_FAIL;
+				pr_debug("failed to provision BT module. assuming already connected.\r\n");
 			}
 		}
 	}
