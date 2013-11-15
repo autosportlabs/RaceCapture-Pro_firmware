@@ -130,9 +130,9 @@ void connectivityTask(void *params) {
 						put_crlf(serial);
 					}
 					++tick;
-					pr_debug("sample ");
-					pr_debug_int(tick);
-					pr_debug("\r\n");
+					pr_trace("sample ");
+					pr_trace_int(tick);
+					pr_trace("\r\n");
 					api_sendSampleRecord(serial, sr, tick, tick == 1);
 					put_crlf(serial);
 				}

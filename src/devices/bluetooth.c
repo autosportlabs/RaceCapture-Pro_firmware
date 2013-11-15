@@ -120,6 +120,7 @@ int bt_init_connection(DeviceConfig *config){
 			}
 		}
 	}
+	config->serial->init(8, 0, 1, targetBaud);
 	pr_debug("BT device initialized\r\n");
 	return DEVICE_INIT_SUCCESS;
 }
