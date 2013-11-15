@@ -15,10 +15,6 @@
 
 void accel_init();
 
-unsigned int readAccelChannel(unsigned char channel);
-unsigned int getLastAccelRead(unsigned char channel);
 unsigned int readAccelerometerDevice(unsigned char channel);
-
-void calibrateAccelZero();
 
 #endif /*ACCELEROMETER_H_*/

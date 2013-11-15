@@ -9,11 +9,8 @@
 #define ACCELEROMETER_BUFFER_H_
 #include <stddef.h>
 
-#define ACCELEROMETER_BUFFER_SIZE 10
-
-size_t getBufferSize();
-void initAccelBuffer();
-void flushAccelBuffer();
-unsigned int calculateAccelAverage(unsigned char channel);
+void initAccelFilter();
+int getCurrentAccelValue(size_t channel);
+int averageAccelValue(size_t channel, int rawValue);
 
 #endif /* ACCELEROMETER_BUFFER_H_ */

@@ -36,6 +36,8 @@
 #define SCALING_MODE_MAP					2
 #define DEFAULT_SCALING_MODE				SCALING_MODE_LINEAR
 
+#define HIGHER_SAMPLE(X,Y) 					((X != SAMPLE_DISABLED && X < Y))
+
 typedef struct _ChannelConfig{
 	char label[DEFAULT_LABEL_LENGTH];
 	char units[DEFAULT_UNITS_LENGTH];

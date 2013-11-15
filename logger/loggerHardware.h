@@ -3,6 +3,7 @@
 
 #include "loggerConfig.h"
 #include "loggerPinDefs.h"
+#include <stddef.h>
 
 #define TC_CLKS_MCK2            0x0
 #define TC_CLKS_MCK8            0x1
@@ -96,6 +97,11 @@ void getAllTimerPeriods(unsigned int *t0, unsigned int *t1, unsigned int *t2);
 unsigned int getTimer0Period();
 unsigned int getTimer1Period();
 unsigned int getTimer2Period();
+
+
+unsigned int readAccelChannel(size_t channel);
+unsigned int getLastAccelRead(size_t channel);
+void calibrateAccelZero();
 
 int flashLoggerConfig();
 

@@ -1,50 +1,32 @@
-/*
- * accelerometer_buffer.c
- *
- *  Created on: Jun 22, 2013
- *      Author: brent
- */
 #include "accelerometer_buffer.h"
 #include "loggerConfig.h"
-#include "accelerometer.h"
-#include "mod_string.h"
 
-static unsigned int g_averagedAccelValues[CONFIG_ACCEL_CHANNELS];
-static unsigned int g_accelBuffer[CONFIG_ACCEL_CHANNELS][ACCELEROMETER_BUFFER_SIZE];
-static int g_accelBufferPointers[CONFIG_ACCEL_CHANNELS];
+static int g_averagedAccelValues[CONFIG_ACCEL_CHANNELS];
 
+//This macros defines an alpha value between 0 and 1
+#define DSP_EMA_I32_ALPHA(x) ( (unsigned short)(x * 65535) )
+#define ALPHA 0.1
 
-size_t getBufferSize(){
-	return ACCELEROMETER_BUFFER_SIZE;
+static int dsp_ema_i32(int in, int average, unsigned short alpha){
+  long long tmp0; //calcs must be done in 64-bit math to avoid overflow
+  tmp0 = (long long)in * (alpha) + (long long)average * (65536 - alpha);
+  return (int)((tmp0 + 32768) / 65536); //scale back to 32-bit (with rounding)
 }
 
-void flushAccelBuffer(){
-	int resample = ACCELEROMETER_BUFFER_SIZE;
-	while (resample-- > 0){
-		for (int i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
-			readAccelChannel(i);
-		}
-	}
+void initAccelFilter(){
+	for (size_t i = 0; i < CONFIG_ACCEL_CHANNELS; i++) g_averagedAccelValues[i] = 0;
 }
 
-void initAccelBuffer(){
-	memset(g_averagedAccelValues,0,sizeof(g_averagedAccelValues));
-	for (int channel = 0; channel < CONFIG_ACCEL_CHANNELS; channel++){
-		for (int i = 0; i < ACCELEROMETER_BUFFER_SIZE; i++){
-			g_accelBuffer[channel][i] = readAccelerometerDevice(channel);
-		}
-		g_accelBufferPointers[channel] = 0;
-	}
+int getCurrentAccelValue(size_t channel){
+	return g_averagedAccelValues[channel];
 }
 
-unsigned int calculateAccelAverage(unsigned char channel){
-	unsigned int total = 0;
-	for (int i = 0; i < ACCELEROMETER_BUFFER_SIZE;i++){
-		total+=g_accelBuffer[channel][i];
-	}
-	return total / ACCELEROMETER_BUFFER_SIZE;
+int averageAccelValue(size_t channel, int rawValue){
+	int average = g_averagedAccelValues[channel];
+	average = dsp_ema_i32(rawValue, average, DSP_EMA_I32_ALPHA(ALPHA));
+	g_averagedAccelValues[channel] = average;
+	return average;
 }
-
 
 
 

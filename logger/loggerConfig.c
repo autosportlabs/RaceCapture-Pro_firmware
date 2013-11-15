@@ -11,9 +11,6 @@ LoggerConfig g_savedLoggerConfig = DEFAULT_LOGGER_CONFIG;
 LoggerConfig g_workingLoggerConfig;
 
 
-#define HIGHER_SAMPLE(X,Y) 					((X != SAMPLE_DISABLED && X < Y))
-
-
 void updateActiveLoggerConfig(){
 	memcpy(&g_workingLoggerConfig,&g_savedLoggerConfig,sizeof(LoggerConfig));
 }
