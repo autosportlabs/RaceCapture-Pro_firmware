@@ -245,7 +245,7 @@ typedef struct _GPSConfig{
 #define DEFAULT_GPS_SATELLITES_CONFIG {"GpsSats", "", SAMPLE_DISABLED}
 #define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "Deg", SAMPLE_10Hz}
 #define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "Deg", SAMPLE_10Hz}
-#define DEFAULT_GPS_TIME_CONFIG {"Time", "Time", SAMPLE_1Hz}
+#define DEFAULT_GPS_TIME_CONFIG {"Time", "Time", SAMPLE_10Hz}
 #define DEFAULT_GPS_SPEED_CONFIG {"Speed", "MPH", SAMPLE_10Hz}
 
 #define DEFAULT_GPS_CONFIG {CONFIG_FEATURE_INSTALLED, \
@@ -262,7 +262,7 @@ typedef struct _GPSTargetConfig{
 	float targetRadius;
 } GPSTargetConfig;
 
-#define DEFAULT_DISTANCE_LOGGING_PRECISION 2
+#define DEFAULT_DISTANCE_LOGGING_PRECISION 3
 
 typedef struct _TrackConfig{
 	GPSTargetConfig startFinishConfig;
