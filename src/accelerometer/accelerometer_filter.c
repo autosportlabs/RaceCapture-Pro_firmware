@@ -1,7 +1,7 @@
 #include "accelerometer_filter.h"
 #include "loggerConfig.h"
 
-static int g_averagedAccelValues[CONFIG_ACCEL_CHANNELS];
+static int g_filteredAccelValues[CONFIG_ACCEL_CHANNELS];
 
 //This macros defines an alpha value between 0 and 1
 #define DSP_EMA_I32_ALPHA(x) ( (unsigned short)(x * 65535) )
@@ -14,17 +14,17 @@ static int dsp_ema_i32(int in, int average, unsigned short alpha){
 }
 
 void initAccelFilter(){
-	for (size_t i = 0; i < CONFIG_ACCEL_CHANNELS; i++) g_averagedAccelValues[i] = 0;
+	for (size_t i = 0; i < CONFIG_ACCEL_CHANNELS; i++) g_filteredAccelValues[i] = 0;
 }
 
 int getCurrentAccelValue(size_t channel){
-	return g_averagedAccelValues[channel];
+	return g_filteredAccelValues[channel];
 }
 
 int averageAccelValue(size_t channel, int rawValue){
-	int average = g_averagedAccelValues[channel];
+	int average = g_filteredAccelValues[channel];
 	average = dsp_ema_i32(rawValue, average, DSP_EMA_I32_ALPHA(ALPHA));
-	g_averagedAccelValues[channel] = average;
+	g_filteredAccelValues[channel] = average;
 	return average;
 }
 
