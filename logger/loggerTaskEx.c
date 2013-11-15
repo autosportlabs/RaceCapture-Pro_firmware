@@ -29,11 +29,15 @@
 #define ACCELEROMETER_SAMPLE_RATE			SAMPLE_100Hz
 
 int g_loggingShouldRun;
-xSemaphoreHandle g_xLoggerStart;
+int g_isLogging;
 
+
+int isLogging(){
+	return g_isLogging;
+}
 
 void startLogging(){
-	if (! g_loggingShouldRun) xSemaphoreGive(g_xLoggerStart);
+	g_loggingShouldRun = 1;
 }
 
 void stopLogging(){
@@ -45,9 +49,6 @@ void createLoggerTaskEx(){
 	g_loggingShouldRun = 0;
 
 	registerLuaLoggerBindings();
-
-	vSemaphoreCreateBinary( g_xLoggerStart );
-	xSemaphoreTake( g_xLoggerStart, 1 );
 	xTaskCreate( loggerTaskEx,( signed portCHAR * ) "loggerEx",	LOGGER_STACK_SIZE, NULL, LOGGER_TASK_PRIORITY, NULL );
 }
 
@@ -69,8 +70,8 @@ void loggerTaskEx(void *params){
 	for (size_t i=0; i < SAMPLE_RECORD_BUFFER_SIZE; i++) initSampleRecord(loggerConfig,&g_sampleRecordBuffer[i]);
 	size_t bufferIndex = 0;
 
-	g_loggingShouldRun = false;
-	int loggingIsRunning = false;
+	g_loggingShouldRun = 0;
+	g_isLogging = 0;
 	size_t currentTicks = 0;
 
 	while(1){
@@ -82,7 +83,7 @@ void loggerTaskEx(void *params){
 		populateSampleRecord(sr, currentTicks, loggerConfig);
 
 		if ((currentTicks % loggingSampleRate) == 0){
-			if (loggingIsRunning){
+			if (g_isLogging){
 				if (g_loggingShouldRun){
 					toggleLED(LED2);
 					queueLogfileRecord(sr);
@@ -90,10 +91,10 @@ void loggerTaskEx(void *params){
 				else{
 					queueLogfileRecord(NULL);
 					queueTelemetryRecord(NULL);
-					loggingIsRunning = 0;
+					g_isLogging = 0;
 				}
 			}
-			else if (g_loggingShouldRun) loggingIsRunning = 1;
+			else if (g_loggingShouldRun) g_isLogging = 1;
 		}
 
 		if ((currentTicks % MAX_TELEMETRY_SAMPLE_RATE) == 0) queueTelemetryRecord(sr);
@@ -106,6 +107,7 @@ void loggerTaskEx(void *params){
 	}
 }
 
+/*
 void loggerTaskEx2(void *params){
 
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
@@ -164,3 +166,4 @@ void loggerTaskEx2(void *params){
 
 }
 
+*/

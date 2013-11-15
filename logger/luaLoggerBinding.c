@@ -16,6 +16,7 @@
 #include "usart.h"
 #include "printk.h"
 #include "modp_numtoa.h"
+#include "loggerTaskEx.h"
 
 extern xSemaphoreHandle g_xLoggerStart;
 extern int g_loggingShouldRun;
@@ -1285,7 +1286,7 @@ int Lua_SetAnalogOut(lua_State *L){
 
 
 int Lua_StartLogging(lua_State *L){
-	if (! g_loggingShouldRun) xSemaphoreGive(g_xLoggerStart);
+	startLogging();
 	return 0;
 }
 
