@@ -20,6 +20,7 @@
 #include "luaLoggerBinding.h"
 #include "gps.h"
 #include "sdcard.h"
+#include "printk.h"
 
 #define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 4 )
 #define LOGGER_STACK_SIZE  					200
@@ -92,12 +93,13 @@ void loggerTaskEx(void *params){
 					queueLogfileRecord(NULL);
 					queueTelemetryRecord(NULL);
 					g_isLogging = 0;
+					disableLED(LED2);
 				}
 			}
 			else if (g_loggingShouldRun) g_isLogging = 1;
 		}
 
-		if ((currentTicks % MAX_TELEMETRY_SAMPLE_RATE) == 0) queueTelemetryRecord(sr);
+		if ((currentTicks % telemetrySampleRate) == 0) queueTelemetryRecord(sr);
 
 		bufferIndex++;
 		if (bufferIndex >= SAMPLE_RECORD_BUFFER_SIZE ) bufferIndex = 0;
