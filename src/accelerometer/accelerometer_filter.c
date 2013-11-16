@@ -5,7 +5,7 @@ static int g_filteredAccelValues[CONFIG_ACCEL_CHANNELS];
 
 //This macros defines an alpha value between 0 and 1
 #define DSP_EMA_I32_ALPHA(x) ( (unsigned short)(x * 65535) )
-#define ALPHA 0.01
+#define ALPHA 0.1
 
 static int dsp_ema_i32(int in, int average, unsigned short alpha){
   long long tmp0; //calcs must be done in 64-bit math to avoid overflow
