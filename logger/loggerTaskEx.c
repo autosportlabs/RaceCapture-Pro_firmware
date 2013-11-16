@@ -32,6 +32,8 @@
 int g_loggingShouldRun;
 int g_isLogging;
 
+#define SAMPLE_RECORD_BUFFER_SIZE 10
+static SampleRecord g_sampleRecordBuffer[SAMPLE_RECORD_BUFFER_SIZE];
 
 int isLogging(){
 	return g_isLogging;
@@ -46,16 +48,10 @@ void stopLogging(){
 }
 
 void createLoggerTaskEx(){
-
 	g_loggingShouldRun = 0;
-
 	registerLuaLoggerBindings();
 	xTaskCreate( loggerTaskEx,( signed portCHAR * ) "loggerEx",	LOGGER_STACK_SIZE, NULL, LOGGER_TASK_PRIORITY, NULL );
 }
-
-#define SAMPLE_RECORD_BUFFER_SIZE 10
-
-static SampleRecord g_sampleRecordBuffer[SAMPLE_RECORD_BUFFER_SIZE];
 
 void loggerTaskEx(void *params){
 
@@ -86,14 +82,11 @@ void loggerTaskEx(void *params){
 		if ((currentTicks % loggingSampleRate) == 0){
 			if (g_isLogging){
 				if (g_loggingShouldRun){
-					toggleLED(LED2);
 					queueLogfileRecord(sr);
 				}
 				else{
 					queueLogfileRecord(NULL);
-					queueTelemetryRecord(NULL);
 					g_isLogging = 0;
-					disableLED(LED2);
 				}
 			}
 			else if (g_loggingShouldRun) g_isLogging = 1;

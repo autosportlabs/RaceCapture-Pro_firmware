@@ -128,9 +128,9 @@ static int openNextLogFile(FIL *f){
 		f_close(f);
 	}
 	if (i >= MAX_LOG_FILE_INDEX) return -2;
-	pr_debug("open ");
-	pr_debug(filename);
-	pr_debug("\r\n");
+	pr_info("open ");
+	pr_info(filename);
+	pr_info("\r\n");
 	return rc;
 }
 
@@ -173,20 +173,22 @@ void fileWriterTask(void *params){
 		if (g_writingStatus == WRITING_ACTIVE && NULL != sr){
 			//a null sample record means end of sample run; like an EOF
 			writeSampleRecord(&g_logfile,sr);
+			toggleLED(LED2);
 			if (isTimeoutMs(flushTimeoutStart, flushTimeoutInterval)){
-				pr_debug("f_sync\r\n");
+				pr_debug("flush logfile\r\n");
 				f_sync(&g_logfile);
 				flushTimeoutStart = xTaskGetTickCount();
 			}
 		}
 		if (NULL == sr){
 			if (g_writingStatus == WRITING_ACTIVE){
-				pr_debug("f_close\r\n");
+				pr_info("close logfile\r\n");
 				f_close(&g_logfile);
 				UnmountFS();
 			}
 			g_writingStatus = WRITING_INACTIVE;
 			disableLED(LED3);
+			disableLED(LED2);
 		}
 		unlock_spi();
 	}
