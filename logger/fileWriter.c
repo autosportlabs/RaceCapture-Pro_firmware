@@ -175,12 +175,10 @@ void fileWriterTask(void *params){
 			}
 			g_writingStatus = WRITING_INACTIVE;
 			disableLED(LED3);
-			disableLED(LED2);
 		}
 		else if (LOGGER_MSG_SAMPLE == msg->messageType && WRITING_ACTIVE == g_writingStatus){
 			if (0 == tick) writeHeaders(&g_logfile,msg->sampleRecord);
 			writeSampleRecord(&g_logfile,msg->sampleRecord);
-			toggleLED(LED2);
 			if (isTimeoutMs(flushTimeoutStart, flushTimeoutInterval)){
 				pr_debug("flush logfile\r\n");
 				f_sync(&g_logfile);

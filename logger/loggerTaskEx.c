@@ -102,6 +102,7 @@ void loggerTaskEx(void *params){
 			g_isLogging = 0;
 			queueLogfileRecord(&g_endLogMessage);
 			queueTelemetryRecord(&g_endLogMessage);
+			disableLED(LED2);
 		}
 
 		LoggerMessage *msg = &g_sampleRecordMsgBuffer[bufferIndex];
@@ -110,6 +111,7 @@ void loggerTaskEx(void *params){
 
 		if (g_isLogging && ((currentTicks % loggingSampleRate) == 0)){
 			queueLogfileRecord(msg);
+			toggleLED(LED2);
 		}
 
 		if ((currentTicks % telemetrySampleRate) == 0) queueTelemetryRecord(msg);
