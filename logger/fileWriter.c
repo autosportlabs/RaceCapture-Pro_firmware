@@ -36,9 +36,9 @@ static xQueueHandle g_sampleRecordQueue = NULL;
 #define SAMPLE_QUEUE_WAIT_TIME					0
 //#define SAMPLE_QUEUE_WAIT_TIME					portMAX_DELAY
 
-portBASE_TYPE queueLogfileRecord(SampleRecord * sr){
+portBASE_TYPE queueLogfileRecord(LoggerMessage * msg){
 	if (NULL != g_sampleRecordQueue){
-		return xQueueSend(g_sampleRecordQueue, &sr, SAMPLE_QUEUE_WAIT_TIME);
+		return xQueueSend(g_sampleRecordQueue, &msg, SAMPLE_QUEUE_WAIT_TIME);
 	}
 	else{
 		return errQUEUE_EMPTY;
@@ -135,19 +135,17 @@ static int openNextLogFile(FIL *f){
 }
 
 void fileWriterTask(void *params){
-
-
-	SampleRecord *sr = NULL;
+	LoggerMessage *msg = NULL;
 	unsigned int flushTimeoutInterval = 0;
 	portTickType flushTimeoutStart = 0;
+	size_t tick = 0;
 	while(1){
 		//wait for the next sample record
-		xQueueReceive(g_sampleRecordQueue, &(sr), portMAX_DELAY);
+		xQueueReceive(g_sampleRecordQueue, &(msg), portMAX_DELAY);
 
 		lock_spi();
-		if (NULL != sr && WRITING_INACTIVE == g_writingStatus){
+		if (LOGGER_MSG_START_LOG == msg->messageType && WRITING_INACTIVE == g_writingStatus){
 			//start of a new logfile
-
 			int rc = InitFS();
 			if (0 != rc){
 				pr_error("FS init error\r\n");
@@ -162,25 +160,14 @@ void fileWriterTask(void *params){
 				}
 				else{
 					g_writingStatus = WRITING_ACTIVE;
-					writeHeaders(&g_logfile,sr);
 					flushTimeoutInterval = FLUSH_INTERVAL_SEC * 1000;
 					flushTimeoutStart = xTaskGetTickCount();
+					tick = 0;
 				}
 			}
 			if (0 != rc) g_writingStatus = WRITING_INITIALIZATION_ERROR;
 		}
-
-		if (g_writingStatus == WRITING_ACTIVE && NULL != sr){
-			//a null sample record means end of sample run; like an EOF
-			writeSampleRecord(&g_logfile,sr);
-			toggleLED(LED2);
-			if (isTimeoutMs(flushTimeoutStart, flushTimeoutInterval)){
-				pr_debug("flush logfile\r\n");
-				f_sync(&g_logfile);
-				flushTimeoutStart = xTaskGetTickCount();
-			}
-		}
-		if (NULL == sr){
+		else if (LOGGER_MSG_END_LOG == msg->messageType){
 			if (g_writingStatus == WRITING_ACTIVE){
 				pr_info("close logfile\r\n");
 				f_close(&g_logfile);
@@ -189,6 +176,17 @@ void fileWriterTask(void *params){
 			g_writingStatus = WRITING_INACTIVE;
 			disableLED(LED3);
 			disableLED(LED2);
+		}
+		else if (LOGGER_MSG_SAMPLE == msg->messageType && WRITING_ACTIVE == g_writingStatus){
+			if (0 == tick) writeHeaders(&g_logfile,msg->sampleRecord);
+			writeSampleRecord(&g_logfile,msg->sampleRecord);
+			toggleLED(LED2);
+			if (isTimeoutMs(flushTimeoutStart, flushTimeoutInterval)){
+				pr_debug("flush logfile\r\n");
+				f_sync(&g_logfile);
+				flushTimeoutStart = xTaskGetTickCount();
+			}
+			tick++;
 		}
 		unlock_spi();
 	}

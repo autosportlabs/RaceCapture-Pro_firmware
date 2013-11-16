@@ -33,7 +33,10 @@ int g_loggingShouldRun;
 int g_isLogging;
 
 #define SAMPLE_RECORD_BUFFER_SIZE 10
+static LoggerMessage g_sampleRecordMsgBuffer[SAMPLE_RECORD_BUFFER_SIZE];
 static SampleRecord g_sampleRecordBuffer[SAMPLE_RECORD_BUFFER_SIZE];
+static LoggerMessage g_startLogMessage;
+static LoggerMessage g_endLogMessage;
 
 int isLogging(){
 	return g_isLogging;
@@ -53,6 +56,15 @@ void createLoggerTaskEx(){
 	xTaskCreate( loggerTaskEx,( signed portCHAR * ) "loggerEx",	LOGGER_STACK_SIZE, NULL, LOGGER_TASK_PRIORITY, NULL );
 }
 
+static void initSampleRecords(LoggerConfig *loggerConfig){
+	for (size_t i=0; i < SAMPLE_RECORD_BUFFER_SIZE; i++){
+		SampleRecord *sr = &g_sampleRecordBuffer[i];
+		initSampleRecord(loggerConfig, sr);
+		g_sampleRecordMsgBuffer[i].messageType = LOGGER_MSG_SAMPLE;
+		g_sampleRecordMsgBuffer[i].sampleRecord = sr;
+	}
+}
+
 void loggerTaskEx(void *params){
 
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
@@ -64,35 +76,43 @@ void loggerTaskEx(void *params){
 	if HIGHER_SAMPLE(telemetrySampleRate, MAX_TELEMETRY_SAMPLE_RATE) telemetrySampleRate = MAX_TELEMETRY_SAMPLE_RATE;
 	if HIGHER_SAMPLE(ACCELEROMETER_SAMPLE_RATE, sampleRateTimebase) sampleRateTimebase = ACCELEROMETER_SAMPLE_RATE;
 
-	for (size_t i=0; i < SAMPLE_RECORD_BUFFER_SIZE; i++) initSampleRecord(loggerConfig,&g_sampleRecordBuffer[i]);
+	initSampleRecords(loggerConfig);
 	size_t bufferIndex = 0;
 
 	g_loggingShouldRun = 0;
 	g_isLogging = 0;
 	size_t currentTicks = 0;
 
+	g_startLogMessage.messageType = LOGGER_MSG_START_LOG;
+	g_endLogMessage.messageType = LOGGER_MSG_END_LOG;
+
 	while(1){
 		portTickType xLastWakeTime = xTaskGetTickCount();
 		currentTicks += sampleRateTimebase;
 
-		SampleRecord *sr = &g_sampleRecordBuffer[bufferIndex];
-		clearSampleRecord(sr);
-		populateSampleRecord(sr, currentTicks, loggerConfig);
+		sampleAllAccel();
 
-		if ((currentTicks % loggingSampleRate) == 0){
-			if (g_isLogging){
-				if (g_loggingShouldRun){
-					queueLogfileRecord(sr);
-				}
-				else{
-					queueLogfileRecord(NULL);
-					g_isLogging = 0;
-				}
-			}
-			else if (g_loggingShouldRun) g_isLogging = 1;
+		if (g_loggingShouldRun && ! g_isLogging){
+			pr_info("startLog\r\n");
+			g_isLogging = 1;
+			queueLogfileRecord(&g_startLogMessage);
+			queueTelemetryRecord(&g_startLogMessage);
+		}
+		else if (! g_loggingShouldRun && g_isLogging){
+			g_isLogging = 0;
+			queueLogfileRecord(&g_endLogMessage);
+			queueTelemetryRecord(&g_endLogMessage);
 		}
 
-		if ((currentTicks % telemetrySampleRate) == 0) queueTelemetryRecord(sr);
+		LoggerMessage *msg = &g_sampleRecordMsgBuffer[bufferIndex];
+		clearSampleRecord(msg->sampleRecord);
+		populateSampleRecord(msg->sampleRecord, currentTicks, loggerConfig);
+
+		if (g_isLogging && ((currentTicks % loggingSampleRate) == 0)){
+			queueLogfileRecord(msg);
+		}
+
+		if ((currentTicks % telemetrySampleRate) == 0) queueTelemetryRecord(msg);
 
 		bufferIndex++;
 		if (bufferIndex >= SAMPLE_RECORD_BUFFER_SIZE ) bufferIndex = 0;
@@ -102,63 +122,3 @@ void loggerTaskEx(void *params){
 	}
 }
 
-/*
-void loggerTaskEx2(void *params){
-
-	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
-
-	while(1){
-		//wait for signal to start logging
-		if ( xSemaphoreTake(g_xLoggerStart, IDLE_TIMEOUT) != pdTRUE){
-			ResetWatchdog();
-			//perform idle tasks
-		}
-		else {
-			const portTickType xFrequency = getHighestSampleRate(loggerConfig);
-
-			g_loggingShouldRun = 1;
-
-			resetLapCount();
-			resetDistance();
-
-			portTickType currentTicks = 0;
-
-			for (int i=0; i < SAMPLE_RECORD_BUFFER_SIZE; i++) initSampleRecord(loggerConfig,&g_sampleRecordBuffer[i]);
-
-			int bufferIndex = 0;
-
-			//run until signalled to stop
-			portTickType xLastWakeTime = xTaskGetTickCount();
-			while (g_loggingShouldRun){
-				ResetWatchdog();
-
-				toggleLED(LED2);
-
-				currentTicks += xFrequency;
-
-				SampleRecord *sr = &g_sampleRecordBuffer[bufferIndex];//srBuffer[bufferIndex];
-
-				clearSampleRecord(sr);
-
-				populateSampleRecord(sr, currentTicks, loggerConfig);
-
-				queueLogfileRecord(sr);
-				queueTelemetryRecord(sr);
-
-				bufferIndex++;
-				if (bufferIndex >= SAMPLE_RECORD_BUFFER_SIZE ) bufferIndex = 0;
-
-				vTaskDelayUntil( &xLastWakeTime, xFrequency );
-			}
-
-			queueLogfileRecord(NULL);
-			queueTelemetryRecord(NULL);
-
-			disableLED(LED2);
-		}
-	}
-
-
-}
-
-*/

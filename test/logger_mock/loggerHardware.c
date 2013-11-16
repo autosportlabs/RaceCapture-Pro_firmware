@@ -23,7 +23,7 @@ void InitLoggerHardware(){
 
 }
 
-float readAccelerometer(unsigned char channel, AccelConfig *ac){
+float getAccelerometerValue(unsigned char channel, AccelConfig *ac){
 	return 0;
 }
 

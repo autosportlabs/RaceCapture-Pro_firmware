@@ -62,9 +62,9 @@ static int processRxBuffer(Serial *serial){
 	return processMsg;
 }
 
-portBASE_TYPE queueTelemetryRecord(SampleRecord * sr){
+portBASE_TYPE queueTelemetryRecord(LoggerMessage *msg){
 	if (NULL != g_sampleQueue){
-		return xQueueSend(g_sampleQueue, &sr, TELEMETRY_QUEUE_WAIT_TIME);
+		return xQueueSend(g_sampleQueue, &msg, TELEMETRY_QUEUE_WAIT_TIME);
 	}
 	else{
 		return errQUEUE_EMPTY;
@@ -72,7 +72,7 @@ portBASE_TYPE queueTelemetryRecord(SampleRecord * sr){
 }
 
 void createConnectivityTask(){
-	g_sampleQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( SampleRecord *));
+	g_sampleQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( LoggerMessage *));
 	if (NULL == g_sampleQueue){
 		//TODO log error
 		return;
@@ -98,8 +98,7 @@ void createConnectivityTask(){
 void connectivityTask(void *params) {
 
 	ConnParams *connParams = (ConnParams*)params;
-	SampleRecord *sr = NULL;
-	uint32_t sampleTick = 0;
+	LoggerMessage *msg = NULL;
 
 	Serial *serial = get_serial_usart0();
 
@@ -108,7 +107,7 @@ void connectivityTask(void *params) {
 	deviceConfig.buffer = g_buffer;
 	deviceConfig.length = BUFFER_SIZE;
 
-	int tick = 0;
+	size_t tick = 0;
 	while (1) {
 		while (connParams->init_connection(&deviceConfig) != DEVICE_INIT_SUCCESS) {
 			pr_info("device not connected. retrying..\r\n");
@@ -118,29 +117,37 @@ void connectivityTask(void *params) {
 		g_rxCount = 0;
 		while (1) {
 			//wait for the next sample record
-			char res = xQueueReceive(g_sampleQueue, &(sr), IDLE_TIMEOUT);
-			sampleTick++;
-			if (pdFALSE == res) {
-				//perform idle task?
-			} else {
-				//a null sample record means end of sample run; like an EOF
-				if (NULL != sr) {
-					if (0 == tick){
+			char res = xQueueReceive(g_sampleQueue, &(msg), IDLE_TIMEOUT);
+
+			////////////////////////////////////////////////////////////
+			// Process a pending message from logger task, if exists
+			////////////////////////////////////////////////////////////
+			if (pdFALSE != res) {
+				switch(msg->messageType){
+					case LOGGER_MSG_START_LOG:
 						api_sendLogStart(serial);
 						put_crlf(serial);
-					}
-					++tick;
-					api_sendSampleRecord(serial, sr, tick, tick == 1);
-					put_crlf(serial);
-				}
-				else{
-					api_sendLogEnd(serial);
-					put_crlf(serial);
-					//end of sample
-					tick = 0;
+						tick = 0;
+						break;
+					case LOGGER_MSG_END_LOG:
+						api_sendLogEnd(serial);
+						put_crlf(serial);
+						break;
+					case LOGGER_MSG_SAMPLE:
+						api_sendSampleRecord(serial, msg->sampleRecord, tick, tick == 0);
+						put_crlf(serial);
+						tick++;
+						break;
+					default:
+						pr_warning("unknown logger msg type ");
+						pr_warning_int(msg->messageType);
+						pr_warning("\r\n");
 				}
 			}
 
+			////////////////////////////////////////////////////////////
+			// Process incoming message, if available
+			////////////////////////////////////////////////////////////
 			//read in available characters, process message as necessary
 			int msgReceived = processRxBuffer(serial);
 			//check the latest contents of the buffer for something that might indicate an error condition

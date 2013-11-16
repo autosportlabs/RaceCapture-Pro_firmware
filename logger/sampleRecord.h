@@ -15,6 +15,9 @@
 #define NIL_SAMPLE INT_MIN
 #define SAMPLE_RECORD_CHANNELS (DISCRETE_GPS_CHANNELS + CONFIG_ADC_CHANNELS + CONFIG_PWM_CHANNELS + CONFIG_GPIO_CHANNELS + CONFIG_TIMER_CHANNELS + CONFIG_ACCEL_CHANNELS)
 
+#define LOGGER_MSG_SAMPLE    0
+#define LOGGER_MSG_START_LOG 1
+#define LOGGER_MSG_END_LOG   2
 
 typedef struct _ChannelSample
 	{
@@ -51,6 +54,12 @@ typedef struct _SampleRecord
 		};
 	};
 } SampleRecord;
+
+typedef struct _LoggerMessage
+{
+	int messageType;
+	SampleRecord *sampleRecord;
+} LoggerMessage;
 
 void clearSampleRecordBuffer(SampleRecord **srBuff, int size);
 
