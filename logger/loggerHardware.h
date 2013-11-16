@@ -33,7 +33,7 @@ void ResetWatchdog();
 
 void InitWatchdog(int timeoutMs);
 
-float readAccelerometer(unsigned char accelChannel, AccelConfig *ac);
+float getAccelerometerValue(unsigned char accelChannel, AccelConfig *ac);
 
 void readGpios(unsigned int *gpio1, unsigned int *gpio2, unsigned int *gpio3);
 
@@ -98,9 +98,8 @@ unsigned int getTimer0Period();
 unsigned int getTimer1Period();
 unsigned int getTimer2Period();
 
-
-unsigned int readAccelChannel(size_t channel);
-unsigned int getLastAccelRead(size_t channel);
+unsigned int readAccelChannel(size_t physicalChannel);
+void sampleAllAccel();
 void calibrateAccelZero();
 
 int flashLoggerConfig();

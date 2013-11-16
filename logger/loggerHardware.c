@@ -776,10 +776,12 @@ unsigned int getTimer2Period(){
 	return g_timer2_overflow ? MAX_TIMER_VALUE : AT91C_BASE_TC2->TC_RB;
 }
 
-float readAccelerometer(unsigned char accelChannel, AccelConfig *ac){
+
+
+float getAccelerometerValue(unsigned char accelChannel, AccelConfig *ac){
 
 	size_t physicalChannel = ac->accelChannel;
-	unsigned int raw = readAccelChannel(physicalChannel);
+	unsigned int raw = getCurrentAccelValue(physicalChannel);
 	float accelG = (accelChannel == ACCEL_CHANNEL_ZT ? YAW_RAW_TO_DEGREES_PER_SEC(raw ,ac->zeroValue) : ACCEL_RAW_TO_GFORCE(raw ,ac->zeroValue));
 
 	//invert physical channel to match industry-standard accelerometer mappings
@@ -808,27 +810,29 @@ float readAccelerometer(unsigned char accelChannel, AccelConfig *ac){
 	return accelG;
 }
 
-static void flushAccelBuffer(size_t channel){
+static void flushAccelBuffer(size_t physicalChannel){
 	for (size_t i = 0; i < 1000; i++){
-		readAccelChannel(channel);
+		readAccelChannel(physicalChannel);
 	}
 }
 
-unsigned int readAccelChannel(size_t channel){
-	unsigned int value = readAccelerometerDevice(channel);
-	return averageAccelValue(channel, value);
+unsigned int readAccelChannel(size_t physicalChannel){
+	unsigned int value = readAccelerometerDevice(physicalChannel);
+	return averageAccelValue(physicalChannel, value);
 }
 
-unsigned int getLastAccelRead(size_t channel){
-	return getCurrentAccelValue(channel);
+void sampleAllAccel(){
+	for (size_t i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
+		readAccelChannel(i);
+	}
 }
 
 void calibrateAccelZero(){
 	for (int i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
 		AccelConfig * c = getAccelConfigChannel(i);
-		size_t channel = c->accelChannel;
-		flushAccelBuffer(channel);
-		unsigned long zeroValue = getLastAccelRead(channel);
+		size_t physicalChannel = c->accelChannel;
+		flushAccelBuffer(physicalChannel);
+		unsigned long zeroValue = getCurrentAccelValue(physicalChannel);
 		//adjust for gravity
 		if (c->accelChannel == ACCEL_CHANNEL_Z) zeroValue-= (ACCEL_COUNTS_PER_G * (c->mode != MODE_ACCEL_INVERTED ? 1 : -1));
 		c->zeroValue = zeroValue;

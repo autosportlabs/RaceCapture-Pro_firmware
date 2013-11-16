@@ -1220,7 +1220,7 @@ int Lua_ReadAccelerometer(lua_State *L){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		if (channel >= ACCELEROMETER_CHANNEL_MIN && channel <= ACCELEROMETER_CHANNEL_MAX){
 			AccelConfig *ac = &getWorkingLoggerConfig()->AccelConfigs[channel];
-			float accelG = readAccelerometer(channel,ac);
+			float accelG = getAccelerometerValue(channel,ac);
 			lua_pushnumber(L,accelG);
 			return 1;
 		}
