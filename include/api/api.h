@@ -51,6 +51,6 @@ void json_arrayEnd(Serial *serial, int more);
 void json_sendResult(Serial *serial, const char *messageName, int resultCode);
 
 
-void process_api(Serial *serial, char * buffer, size_t bufferSize);
+int process_api(Serial *serial, char * buffer, size_t bufferSize);
 
 #endif /* API_H_ */

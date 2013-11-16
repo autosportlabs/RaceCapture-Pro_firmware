@@ -34,7 +34,7 @@
 #define TELEMETRY_TASK_PRIORITY					( tskIDLE_PRIORITY + 4 )
 #define TELEMETRY_STACK_SIZE  					1000
 #define SAMPLE_RECORD_QUEUE_SIZE				10
-
+#define BAD_MESSAGE_THRESHOLD					10
 
 static char g_buffer[BUFFER_SIZE];
 static size_t g_rxCount;
@@ -115,6 +115,7 @@ void connectivityTask(void *params) {
 		}
 		serial->flush();
 		g_rxCount = 0;
+		size_t badMsgCount = 0;
 		while (1) {
 			//wait for the next sample record
 			char res = xQueueReceive(g_sampleQueue, &(msg), IDLE_TIMEOUT);
@@ -149,6 +150,7 @@ void connectivityTask(void *params) {
 			// Process incoming message, if available
 			////////////////////////////////////////////////////////////
 			//read in available characters, process message as necessary
+			g_rxCount = 0;
 			int msgReceived = processRxBuffer(serial);
 			//check the latest contents of the buffer for something that might indicate an error condition
 			if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR){
@@ -156,13 +158,26 @@ void connectivityTask(void *params) {
 				break;
 			}
 
-			//now process a complete message if necessary
+			//now process a complete message if available
 			if (msgReceived){
-				pr_debug("msg rx:");
-				pr_debug(g_buffer);
-				pr_debug("\n");
-				if (g_buffer[0] == '{') process_api(serial, g_buffer, BUFFER_SIZE);
-				g_rxCount = 0;
+				int apiRes = API_ERROR_UNSPECIFIED;
+				if (strlen(g_buffer) > 0){
+					if (DEBUG_LEVEL){
+						pr_debug(" msg rx:'");
+						pr_debug(g_buffer);
+						pr_debug("'\r\n");
+					}
+					if (g_buffer[0] == '{'){
+						apiRes = process_api(serial, g_buffer, BUFFER_SIZE);
+					}
+				}
+				if (! (API_SUCCESS == apiRes|| API_SUCCESS_NO_RETURN == apiRes)) badMsgCount++;
+
+				if (badMsgCount >= BAD_MESSAGE_THRESHOLD){
+					pr_warning_int(badMsgCount);
+					pr_warning(" empty/bad msgs - re-connecting...\r\n");
+					break;
+				}
 			}
 		}
 	}

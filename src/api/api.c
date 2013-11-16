@@ -96,45 +96,54 @@ void json_sendResult(Serial *serial, const char *messageName, int resultCode){
 	json_blockEnd(serial,0);
 }
 
-static void dispatch_api(Serial *serial, const char * apiMsgName, const jsmntok_t *apiPayload){
+static int dispatch_api(Serial *serial, const char * apiMsgName, const jsmntok_t *apiPayload){
 
 	const api_t * api = apis;
-
+	int res = API_ERROR_UNSPECIFIED;
 	while (api->cmd != NULL){
 		if (strcmp(api->cmd, apiMsgName) == 0){
-			int res = api->func(serial, apiPayload);
+			res = api->func(serial, apiPayload);
 			if (res != API_SUCCESS_NO_RETURN) json_sendResult(serial, apiMsgName, res);
 			break;
 		}
 		api++;
 	}
 	if (NULL == api->cmd){
-		json_sendResult(serial,apiMsgName,API_ERROR_UNKNOWN_MSG);
+		res = API_ERROR_UNKNOWN_MSG;
+		json_sendResult(serial,apiMsgName, res);
 	}
 	serial->put_s("\r\n");
+	return res;
 }
 
-static void execute_api(Serial * serial, const jsmntok_t *json){
+static int execute_api(Serial * serial, const jsmntok_t *json){
 	const jsmntok_t *root = &json[0];
 	if (root->type == JSMN_OBJECT && root->size == 2){
 		const jsmntok_t *apiMsgName = &json[1];
 		const jsmntok_t *payload = &json[2];
 		if (apiMsgName->type == JSMN_STRING){
 			jsmn_trimData(apiMsgName);
-			dispatch_api(serial, apiMsgName->data, payload);
+			return dispatch_api(serial, apiMsgName->data, payload);
 		}
+		else{
+			return API_ERROR_MALFORMED;
+		}
+	}
+	else{
+		return API_ERROR_MALFORMED;
 	}
 }
 
-void process_api(Serial *serial, char *buffer, size_t bufferSize){
+int process_api(Serial *serial, char *buffer, size_t bufferSize){
 	jsmn_init(&g_jsonParser);
 	memset(g_json_tok,0,sizeof(g_json_tok));
 
 	int r = jsmn_parse(&g_jsonParser, buffer, g_json_tok, JSON_TOKENS);
 	if (r == JSMN_SUCCESS){
-		execute_api(serial, g_json_tok);
+		return execute_api(serial, g_json_tok);
 	}
 	else{
 		pr_warning("API Error \r\n");
+		return API_ERROR_MALFORMED;
 	}
 }
