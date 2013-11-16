@@ -707,7 +707,7 @@ void LoggerApiTest::testSampleDataFile(string requestFilename, string responseFi
 	LoggerConfig *c = getWorkingLoggerConfig();
 	char *txBuffer = mock_getTxBuffer();
 	string txString(txBuffer);
-	CPPUNIT_ASSERT_EQUAL(txString, responseJson);
+	CPPUNIT_ASSERT_EQUAL(responseJson, txString );
 }
 
 void LoggerApiTest::testLogStartStopFile(string filename){
