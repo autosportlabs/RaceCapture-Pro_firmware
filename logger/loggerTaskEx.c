@@ -26,7 +26,9 @@
 #define LOGGER_STACK_SIZE  					200
 #define IDLE_TIMEOUT						configTICK_RATE_HZ / 1
 
-#define MAX_TELEMETRY_SAMPLE_RATE			SAMPLE_50Hz
+#define SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_10Hz
+#define FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_50Hz
+
 #define ACCELEROMETER_SAMPLE_RATE			SAMPLE_100Hz
 
 int g_loggingShouldRun;
@@ -65,16 +67,23 @@ static void initSampleRecords(LoggerConfig *loggerConfig){
 	}
 }
 
+static size_t calcTelemetrySampleRate(LoggerConfig *config, size_t desiredSampleRate){
+	size_t maxRate = (CONNECTIVITY_MODE_CELL == config->ConnectivityConfigs.connectivityMode ?
+														SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE :
+														FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE);
+	if HIGHER_SAMPLE(desiredSampleRate, maxRate) desiredSampleRate = maxRate;
+	return desiredSampleRate;
+}
+
 void loggerTaskEx(void *params){
 
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 
 	size_t loggingSampleRate = getHighestSampleRate(loggerConfig);
-	size_t telemetrySampleRate = loggingSampleRate;
 	size_t sampleRateTimebase = loggingSampleRate;
 
-	if HIGHER_SAMPLE(telemetrySampleRate, MAX_TELEMETRY_SAMPLE_RATE) telemetrySampleRate = MAX_TELEMETRY_SAMPLE_RATE;
 	if HIGHER_SAMPLE(ACCELEROMETER_SAMPLE_RATE, sampleRateTimebase) sampleRateTimebase = ACCELEROMETER_SAMPLE_RATE;
+	size_t telemetrySampleRate = calcTelemetrySampleRate(loggerConfig, loggingSampleRate);
 
 	initSampleRecords(loggerConfig);
 	size_t bufferIndex = 0;
