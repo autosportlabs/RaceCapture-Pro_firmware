@@ -9,6 +9,7 @@
 #define LOGGERTASKEX_H_
 
 
+void configChanged();
 int isLogging();
 void startLogging();
 void stopLogging();

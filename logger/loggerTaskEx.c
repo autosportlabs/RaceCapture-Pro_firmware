@@ -30,12 +30,19 @@
 
 int g_loggingShouldRun;
 int g_isLogging;
+int g_configChanged;
+int g_telemetryBackgroundStreaming;
 
 #define SAMPLE_RECORD_BUFFER_SIZE 10
 static LoggerMessage g_sampleRecordMsgBuffer[SAMPLE_RECORD_BUFFER_SIZE];
 static SampleRecord g_sampleRecordBuffer[SAMPLE_RECORD_BUFFER_SIZE];
 static LoggerMessage g_startLogMessage;
 static LoggerMessage g_endLogMessage;
+
+
+void configChanged(){
+	g_configChanged = 1;
+}
 
 int isLogging(){
 	return g_isLogging;
@@ -74,27 +81,34 @@ void loggerTaskEx(void *params){
 
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 
-	size_t loggingSampleRate = getHighestSampleRate(loggerConfig);
-	size_t sampleRateTimebase = loggingSampleRate;
-
-	if HIGHER_SAMPLE(ACCELEROMETER_SAMPLE_RATE, sampleRateTimebase) sampleRateTimebase = ACCELEROMETER_SAMPLE_RATE;
-	size_t telemetrySampleRate = calcTelemetrySampleRate(loggerConfig, loggingSampleRate);
-
-	initSampleRecords(loggerConfig);
-	size_t bufferIndex = 0;
+	g_startLogMessage.messageType = LOGGER_MSG_START_LOG;
+	g_endLogMessage.messageType = LOGGER_MSG_END_LOG;
 
 	g_loggingShouldRun = 0;
 	g_isLogging = 0;
-	size_t currentTicks = 0;
+	g_configChanged = 1;
+	g_telemetryBackgroundStreaming = 0;
 
-	g_startLogMessage.messageType = LOGGER_MSG_START_LOG;
-	g_endLogMessage.messageType = LOGGER_MSG_END_LOG;
+	size_t bufferIndex = 0;
+	size_t currentTicks = 0;
+	size_t loggingSampleRate = SAMPLE_1Hz;
+	size_t sampleRateTimebase = SAMPLE_1Hz;
+	size_t telemetrySampleRate = SAMPLE_1Hz;
 
 	while(1){
 		portTickType xLastWakeTime = xTaskGetTickCount();
 		currentTicks += sampleRateTimebase;
 
 		sampleAllAccel();
+
+		if (g_configChanged){
+			loggingSampleRate = getHighestSampleRate(loggerConfig);
+			sampleRateTimebase = loggingSampleRate;
+			if HIGHER_SAMPLE(ACCELEROMETER_SAMPLE_RATE, sampleRateTimebase) sampleRateTimebase = ACCELEROMETER_SAMPLE_RATE;
+			telemetrySampleRate = calcTelemetrySampleRate(loggerConfig, loggingSampleRate);
+			initSampleRecords(loggerConfig);
+			g_configChanged = 0;
+		}
 
 		if (g_loggingShouldRun && ! g_isLogging){
 			pr_info("startLog\r\n");
@@ -118,7 +132,7 @@ void loggerTaskEx(void *params){
 			toggleLED(LED2);
 		}
 
-		if ((currentTicks % telemetrySampleRate) == 0) queueTelemetryRecord(msg);
+		if ((currentTicks % telemetrySampleRate) == 0 && (g_telemetryBackgroundStreaming || g_isLogging)) queueTelemetryRecord(msg);
 
 		bufferIndex++;
 		if (bufferIndex >= SAMPLE_RECORD_BUFFER_SIZE ) bufferIndex = 0;
