@@ -13,6 +13,9 @@
 #define CONFIG_PWM_CHANNELS					4
 #define CONFIG_TIMER_CHANNELS				3
 
+#define SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_10Hz
+#define FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_50Hz
+
 //standard sample rates based on OS timer ticks
 #define SAMPLE_100Hz 						3
 #define SAMPLE_50Hz 						6
@@ -22,7 +25,6 @@
 #define SAMPLE_5Hz 							60
 #define SAMPLE_1Hz 							300
 #define SAMPLE_DISABLED 					0
-
 
 #define DEFAULT_LABEL_LENGTH				11
 #define DEFAULT_UNITS_LENGTH				11
@@ -37,6 +39,7 @@
 #define DEFAULT_SCALING_MODE				SCALING_MODE_LINEAR
 
 #define HIGHER_SAMPLE(X,Y) 					((X != SAMPLE_DISABLED && X < Y))
+#define LOWER_SAMPLE_RATE(X,Y)				(X > Y ? X : Y)
 
 typedef struct _ChannelConfig{
 	char label[DEFAULT_LABEL_LENGTH];
@@ -431,6 +434,7 @@ LoggerConfig * getWorkingLoggerConfig();
 
 void calculateTimerScaling(unsigned int clockHz, TimerConfig *timerConfig);
 
+int getConnectivitySampleRateLimit();
 int encodeSampleRate(int sampleRate);
 int decodeSampleRate(int sampleRateCode);
 

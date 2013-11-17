@@ -26,9 +26,6 @@
 #define LOGGER_STACK_SIZE  					200
 #define IDLE_TIMEOUT						configTICK_RATE_HZ / 1
 
-#define SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_10Hz
-#define FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_50Hz
-
 #define ACCELEROMETER_SAMPLE_RATE			SAMPLE_100Hz
 
 int g_loggingShouldRun;
@@ -68,9 +65,7 @@ static void initSampleRecords(LoggerConfig *loggerConfig){
 }
 
 static size_t calcTelemetrySampleRate(LoggerConfig *config, size_t desiredSampleRate){
-	size_t maxRate = (CONNECTIVITY_MODE_CELL == config->ConnectivityConfigs.connectivityMode ?
-														SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE :
-														FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE);
+	size_t maxRate = getConnectivitySampleRateLimit();
 	if HIGHER_SAMPLE(desiredSampleRate, maxRate) desiredSampleRate = maxRate;
 	return desiredSampleRate;
 }

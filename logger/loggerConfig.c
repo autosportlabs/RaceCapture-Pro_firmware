@@ -29,6 +29,16 @@ void calculateTimerScaling(unsigned int clockHz, TimerConfig *timerConfig){
 	timerConfig->calculatedScaling = clock;
 }
 
+int getConnectivitySampleRateLimit(){
+	switch(getWorkingLoggerConfig()->ConnectivityConfigs.connectivityMode){
+		case CONNECTIVITY_MODE_BLUETOOTH:
+			return FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE;
+		case CONNECTIVITY_MODE_CELL:
+		default:
+			return SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE;
+	}
+}
+
 int encodeSampleRate(int sampleRate){
 
 	switch(sampleRate){
