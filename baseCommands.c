@@ -8,6 +8,51 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "mem_mang.h"
+#include "luaScript.h"
+#include "lua.h"
+#include "luaTask.h"
+#include "memory.h"
+#include "loggerConfig.h"
+
+//Stuff to provide memory statistics
+extern unsigned int _CONFIG_HEAP_SIZE;
+extern unsigned portCHAR  _heap_address[];
+
+
+void ShowStats(Serial *serial, unsigned int argc, char **argv){
+
+	serial->put_s("== Memory Info ==\r\n");
+	unsigned long heap = (unsigned long)_heap_address;
+	unsigned long lastPointer = getLastPointer();
+	serial->put_s("Heap address         :");
+	put_uint(serial, heap);
+	put_crlf(serial);
+	serial->put_s("Last pointer address :");
+	put_uint(serial, lastPointer);
+	put_crlf(serial);
+	serial->put_s("Heap size            :");
+	put_uint(serial, (unsigned int)&_CONFIG_HEAP_SIZE);
+	put_crlf(serial);
+	serial->put_s("Estimated Usage      :");
+	put_uint(serial, lastPointer - heap);
+	put_crlf(serial);
+	serial->put_s("== Lua Info ==\r\n");
+	lua_State *L = getLua();
+	lua_gc(L,LUA_GCCOLLECT,0);
+	serial->put_s("Lua Top              :");
+	put_int(serial, lua_gettop(L));
+	put_crlf(serial);
+	serial->put_s("Lua GC Count         :");
+	put_int(serial, lua_gc(L,LUA_GCCOUNT,0));
+	put_crlf(serial);
+	serial->put_s("== Misc ==\r\n");
+	serial->put_s("sizeof LoggerConfig  :");
+	put_int(serial, sizeof(LoggerConfig));
+	put_crlf(serial);
+	serial->put_s("sizeof SampleRecord  :");
+	put_int(serial, sizeof(SampleRecord));
+	put_crlf(serial);
+}
 
 void ShowTaskInfo(Serial *serial, unsigned int argc, char **argv){
 
