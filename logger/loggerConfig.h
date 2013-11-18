@@ -363,6 +363,7 @@ typedef struct _TelemetryConfig {
 typedef struct _ConnectivityConfig {
 	char connectivityMode;
 	char sdLoggingMode;
+	char backgroundStreaming;
 	BluetoothConfig bluetoothConfig;
 	CellularConfig cellularConfig;
 	P2PConfig p2pConfig;
@@ -377,11 +378,16 @@ typedef struct _ConnectivityConfig {
 #define SD_LOGGING_MODE_DISABLED					0
 #define SD_LOGGING_MODE_CSV							1
 
+#define BACKGROUND_STREAMING_ENABLED				1
+#define BACKGROUND_STREAMING_DISABLED				0
+
 #define DEFAULT_CONNECTIVITY_MODE 					CONNECTIVITY_MODE_BLUETOOTH
 #define DEFAULT_SD_LOGGING_MODE						SD_LOGGING_MODE_CSV
+#define DEFAULT_BACKGROUND_STREAMING				BACKGROUND_STREAMING_ENABLED
 
 #define DEFAULT_CONNECTIVITY_CONFIG { 	DEFAULT_CONNECTIVITY_MODE, \
 										DEFAULT_SD_LOGGING_MODE, \
+										DEFAULT_BACKGROUND_STREAMING, \
 										DEFAULT_BT_CONFIG, \
 										DEFAULT_CELL_CONFIG, \
 										DEFAULT_P2P_CONFIG, \

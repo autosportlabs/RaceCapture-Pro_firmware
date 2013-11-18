@@ -8,6 +8,8 @@
 
 void registerLuaLoggerBindings();
 
+int Lua_GetBackgroundStreaming(lua_State *L);
+int Lua_SetBackgroundStreaming(lua_State *L);
 
 int Lua_IsSDCardPresent(lua_State *L);
 int Lua_IsSDCardWritable(lua_State *L);

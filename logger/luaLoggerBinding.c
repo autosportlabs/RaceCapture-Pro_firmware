@@ -204,6 +204,9 @@ void registerLuaLoggerBindings(){
 
 	lua_registerlight(L,"calibrateAccelZero",Lua_CalibrateAccelZero);
 	
+	lua_registerlight(L,"setBgStreaming", Lua_SetBackgroundStreaming);
+	lua_registerlight(L,"getBgStreaming", Lua_GetBackgroundStreaming);
+
 	unlockLua();
 }
 
@@ -241,7 +244,17 @@ static int getLuaChannelLabel(lua_State *L, char *label){
 
 ////////////////////////////////////////////////////
 
+int Lua_SetBackgroundStreaming(lua_State *L){
+	if (lua_gettop(L) >= 1){
+		getWorkingLoggerConfig()->ConnectivityConfigs.backgroundStreaming = (lua_tointeger(L,1) == 1);
+	}
+	return 0;
+}
 
+int Lua_GetBackgroundStreaming(lua_State *L){
+	lua_pushinteger(L, getWorkingLoggerConfig()->ConnectivityConfigs.backgroundStreaming == 1);
+	return 1;
+}
 
 int Lua_IsSDCardPresent(lua_State *L){
 	lua_pushinteger(L,isCardPresent());
