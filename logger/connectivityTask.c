@@ -41,6 +41,18 @@ static size_t g_rxCount;
 static xQueueHandle g_sampleQueue;
 static ConnParams g_connParams;
 
+
+static size_t trimBuffer(char *buffer, size_t count){
+
+	char *c = (buffer + count - 1);
+	while (count > 0 && (*c == '\r' || *c == '\n')){
+		*c = '\0';
+		c--;
+		count--;
+	}
+	return count;
+}
+
 static int processRxBuffer(Serial *serial){
 	size_t count = serial->get_line_wait(g_buffer + g_rxCount, BUFFER_SIZE - g_rxCount, 0);
 	g_rxCount += count;
@@ -54,9 +66,8 @@ static int processRxBuffer(Serial *serial){
 		pr_error(g_buffer);
 		pr_error("\r\n");
 	}
-
 	if ('\n' == g_buffer[g_rxCount - 1]){
-		g_buffer[g_rxCount - 1] = '\0';
+		g_rxCount = trimBuffer(g_buffer, g_rxCount);
 		processMsg = 1;
 	}
 	return processMsg;
@@ -160,19 +171,13 @@ void connectivityTask(void *params) {
 
 			//now process a complete message if available
 			if (msgReceived){
-				int apiRes = API_ERROR_UNSPECIFIED;
-				if (strlen(g_buffer) > 0){
-					if (DEBUG_LEVEL){
-						pr_debug(" msg rx:'");
-						pr_debug(g_buffer);
-						pr_debug("'\r\n");
-					}
-					if (g_buffer[0] == '{'){
-						apiRes = process_api(serial, g_buffer, BUFFER_SIZE);
-					}
+				if (DEBUG_LEVEL){
+					pr_debug("msg rx: '");
+					pr_debug(g_buffer);
+					pr_debug("'\r\n");
 				}
-				if (! (API_SUCCESS == apiRes|| API_SUCCESS_NO_RETURN == apiRes)) badMsgCount++;
-
+				int msgRes = process_msg(serial, g_buffer, BUFFER_SIZE);
+				if (! MESSAGE_SUCCESS(msgRes)) badMsgCount++;
 				if (badMsgCount >= BAD_MESSAGE_THRESHOLD){
 					pr_warning_int(badMsgCount);
 					pr_warning(" empty/bad msgs - re-connecting...\r\n");
