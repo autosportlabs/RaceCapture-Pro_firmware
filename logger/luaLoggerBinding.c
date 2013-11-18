@@ -204,8 +204,8 @@ void registerLuaLoggerBindings(){
 
 	lua_registerlight(L,"calibrateAccelZero",Lua_CalibrateAccelZero);
 	
-	lua_registerlight(L,"setBgStreaming", Lua_SetBackgroundStreaming);
-	lua_registerlight(L,"getBgStreaming", Lua_GetBackgroundStreaming);
+	lua_registerlight(L,"setBgStream", Lua_SetBackgroundStreaming);
+	lua_registerlight(L,"getBgStream", Lua_GetBackgroundStreaming);
 
 	unlockLua();
 }
