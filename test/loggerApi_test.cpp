@@ -316,7 +316,7 @@ void LoggerApiTest::testSetAnalogConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(1.5F, adcCfg->scalingMap.scaledValues[4]);
 
 	char *txBuffer = mock_getTxBuffer();
-	assertGenericResponse(txBuffer, "setAnalogCfg", 1);
+	assertGenericResponse(txBuffer, "setAnalogCfg", API_SUCCESS);
 
 }
 
@@ -357,7 +357,7 @@ void LoggerApiTest::testGetAccelConfigFile(string filename, int index){
 }
 
 void LoggerApiTest::testGetAccelCfg(){
-	testGetAccelConfigFile("getAccelCfg1.json", 1);
+	testGetAccelConfigFile("getAccelCfg1.json", API_SUCCESS);
 }
 
 void LoggerApiTest::testSetAccelConfigFile(string filename){
@@ -378,7 +378,7 @@ void LoggerApiTest::testSetAccelConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(1234, (int)accelCfg->zeroValue);
 
 	char *txBuffer = mock_getTxBuffer();
-	assertGenericResponse(txBuffer, "setAccelCfg", 1);
+	assertGenericResponse(txBuffer, "setAccelCfg", API_SUCCESS);
 }
 
 void LoggerApiTest::testSetAccelCfg(){
@@ -400,7 +400,7 @@ void LoggerApiTest::testSetCellConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(string("blorg"), string(cellCfg->apnPass));
 
 	char *txBuffer = mock_getTxBuffer();
-	assertGenericResponse(txBuffer, "setCellCfg", 1);
+	assertGenericResponse(txBuffer, "setCellCfg", API_SUCCESS);
 }
 
 void LoggerApiTest::testSetCellCfg()
@@ -472,17 +472,19 @@ void LoggerApiTest::testGetBtCfg(){
 
 void LoggerApiTest::testSetConnectivityCfgFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
-	ConnectivityConfig *btCfg = &c->ConnectivityConfigs;
-	btCfg->sdLoggingMode = 0;
-	btCfg->connectivityMode = 0;
+	ConnectivityConfig *connCfg = &c->ConnectivityConfigs;
+	connCfg->sdLoggingMode = 0;
+	connCfg->connectivityMode = 0;
+	connCfg->backgroundStreaming = 0;
 
 	processApiGeneric(filename);
 
-	CPPUNIT_ASSERT_EQUAL(1, (int)btCfg->sdLoggingMode);
-	CPPUNIT_ASSERT_EQUAL(1, (int)btCfg->connectivityMode);
+	CPPUNIT_ASSERT_EQUAL(1, (int)connCfg->sdLoggingMode);
+	CPPUNIT_ASSERT_EQUAL(1, (int)connCfg->connectivityMode);
+	CPPUNIT_ASSERT_EQUAL(1, (int)connCfg->backgroundStreaming);
 
 	char *txBuffer = mock_getTxBuffer();
-	assertGenericResponse(txBuffer, "setConnCfg", 1);
+	assertGenericResponse(txBuffer, "setConnCfg", API_SUCCESS);
 }
 
 void LoggerApiTest::testSetConnectivityCfg(){
@@ -566,7 +568,7 @@ void LoggerApiTest::testSetPwmConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(2.5F, (float)pwmCfg->voltageScaling);
 
 	char *txBuffer = mock_getTxBuffer();
-	assertGenericResponse(txBuffer, "setPwmCfg", 1);
+	assertGenericResponse(txBuffer, "setPwmCfg", API_SUCCESS);
 
 }
 
@@ -617,7 +619,7 @@ void LoggerApiTest::testSetGpioConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(1, (int)gpioCfg->mode);
 
 	char *txBuffer = mock_getTxBuffer();
-	assertGenericResponse(txBuffer, "setGpioCfg", 1);
+	assertGenericResponse(txBuffer, "setGpioCfg", API_SUCCESS);
 
 }
 
@@ -658,7 +660,7 @@ void LoggerApiTest::testGetTimerConfigFile(string filename, int index){
 }
 
 void LoggerApiTest::testGetTimerCfg(){
-	testGetTimerConfigFile("getTimerCfg1.json", 1);
+	testGetTimerConfigFile("getTimerCfg1.json", API_SUCCESS);
 }
 
 void LoggerApiTest::testSetTimerConfigFile(string filename){
@@ -680,7 +682,7 @@ void LoggerApiTest::testSetTimerConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(2, (int)timerCfg->timerDivider);
 
 	char *txBuffer = mock_getTxBuffer();
-	assertGenericResponse(txBuffer, "setTimerCfg", 1);
+	assertGenericResponse(txBuffer, "setTimerCfg", API_SUCCESS);
 }
 
 void LoggerApiTest::testSetTimerCfg(){
@@ -716,7 +718,7 @@ void LoggerApiTest::testLogStartStopFile(string filename){
 	mock_resetTxBuffer();
 	process_api(getMockSerial(), (char *)json.c_str(), json.size());
 	char *txBuffer = mock_getTxBuffer();
-	assertGenericResponse(txBuffer,"log", 1);
+	assertGenericResponse(txBuffer,"log", API_SUCCESS);
 }
 
 void LoggerApiTest::testLogStartStop(){
@@ -759,7 +761,7 @@ void LoggerApiTest::testSetGpsConfigFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	GPSConfig *gpsCfg = &c->GPSConfigs;
 
-	assertGenericResponse(txBuffer, "setGpsCfg", 1);
+	assertGenericResponse(txBuffer, "setGpsCfg", API_SUCCESS);
 
 	CPPUNIT_ASSERT_EQUAL(string("latNm"), string(gpsCfg->latitudeCfg.label));
 	CPPUNIT_ASSERT_EQUAL(string("latUt"), string(gpsCfg->latitudeCfg.units));
@@ -859,7 +861,7 @@ void LoggerApiTest::testSetTrackConfigFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	TrackConfig *cfg = &c->TrackConfigs;
 
-	assertGenericResponse(txBuffer, "setTrackCfg", 1);
+	assertGenericResponse(txBuffer, "setTrackCfg", API_SUCCESS);
 
 	CPPUNIT_ASSERT_EQUAL(38.161518F, cfg->startFinishConfig.latitude);
 	CPPUNIT_ASSERT_EQUAL(-122.454711F, cfg->startFinishConfig.longitude);

@@ -11,8 +11,8 @@
 #include "jsmn.h"
 #include "serial.h"
 
-#define API_SUCCESS_NO_RETURN 	1
-#define API_SUCCESS 			2
+#define API_SUCCESS_NO_RETURN 	2
+#define API_SUCCESS 			1
 
 #define API_ERROR_UNKNOWN_MSG	0
 #define API_ERROR_PARAMETER 	-1

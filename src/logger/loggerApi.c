@@ -492,6 +492,7 @@ static const jsmntok_t * setConnectivityExtendedField(const jsmntok_t *valueTok,
 	ConnectivityConfig *connCfg = (ConnectivityConfig *)cfg;
 	if (NAME_EQU("sdMode", name)) connCfg->sdLoggingMode = filterSdLoggingMode(modp_atoi(value));
 	else if (NAME_EQU("connMode", name)) connCfg->connectivityMode =  filterConnectivityMode(modp_atoi(value));
+	else if (NAME_EQU("bgStream", name)) connCfg->backgroundStreaming = (modp_atoi(value) == 1);
 	return valueTok + 1;
 }
 
