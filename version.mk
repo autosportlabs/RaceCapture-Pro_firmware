@@ -1,3 +1,4 @@
 MAJOR	= 1
-MAJOR	= 2
-BUGFIX	= 4
+MINOR	= 2
+BUGFIX	= 5
+>>>>>>> Version2

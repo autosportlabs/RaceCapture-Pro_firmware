@@ -81,7 +81,7 @@ void show_command_prompt(Serial *serial){
 	serial->put_s(" > ");
 }
 
-static void execute_command(Serial *serial, char *buffer){
+static int execute_command(Serial *serial, char *buffer){
 	unsigned char argc, i = 0;
 	char *argv[30];
 
@@ -103,34 +103,31 @@ static void execute_command(Serial *serial, char *buffer){
 		}
 		cmd++;
 	}
-	if (NULL == cmd->cmd){
-		serial->put_s("Unknown Command- Press Enter for Help.");
-		put_crlf(serial);
-	}
+	return (NULL != cmd->cmd);
 }
 
-void process_interactive_command(Serial *serial, char * buffer, size_t bufferSize){
-
+int process_command(Serial *serial, char * buffer, size_t bufferSize){
 	//this is not thread safe. need to throw a mutex around here
 	set_command_context(serial, buffer, bufferSize);
-	execute_command(serial, buffer);
+
+	int res = execute_command(serial, buffer);
 	clear_command_context();
-	show_command_prompt(serial);
+	return res;
 }
 
 void put_commandOK(Serial *serial){
-	serial->put_s(COMMAND_OK);
+	serial->put_s(COMMAND_OK_MSG);
 }
 
 void put_commandParamError(Serial *serial, char *msg){
-	serial->put_s(COMMAND_ERROR);
+	serial->put_s(COMMAND_ERROR_MSG);
 	serial->put_s("extended=\"");
 	serial->put_s(msg);
 	serial->put_s("\";");
 }
 
 void put_commandError(Serial *serial, int result){
-	serial->put_s(COMMAND_ERROR);
+	serial->put_s(COMMAND_ERROR_MSG);
 	serial->put_s("code=");
 	put_int(serial, result);
 	serial->put_s(";");

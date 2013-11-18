@@ -16,6 +16,7 @@
 #include "usart.h"
 #include "printk.h"
 #include "modp_numtoa.h"
+#include "loggerTaskEx.h"
 
 extern xSemaphoreHandle g_xLoggerStart;
 extern int g_loggingShouldRun;
@@ -203,6 +204,9 @@ void registerLuaLoggerBindings(){
 
 	lua_registerlight(L,"calibrateAccelZero",Lua_CalibrateAccelZero);
 	
+	lua_registerlight(L,"setBgStream", Lua_SetBackgroundStreaming);
+	lua_registerlight(L,"getBgStream", Lua_GetBackgroundStreaming);
+
 	unlockLua();
 }
 
@@ -240,7 +244,17 @@ static int getLuaChannelLabel(lua_State *L, char *label){
 
 ////////////////////////////////////////////////////
 
+int Lua_SetBackgroundStreaming(lua_State *L){
+	if (lua_gettop(L) >= 1){
+		getWorkingLoggerConfig()->ConnectivityConfigs.backgroundStreaming = (lua_tointeger(L,1) == 1);
+	}
+	return 0;
+}
 
+int Lua_GetBackgroundStreaming(lua_State *L){
+	lua_pushinteger(L, getWorkingLoggerConfig()->ConnectivityConfigs.backgroundStreaming == 1);
+	return 1;
+}
 
 int Lua_IsSDCardPresent(lua_State *L){
 	lua_pushinteger(L,isCardPresent());
@@ -1219,7 +1233,7 @@ int Lua_ReadAccelerometer(lua_State *L){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		if (channel >= ACCELEROMETER_CHANNEL_MIN && channel <= ACCELEROMETER_CHANNEL_MAX){
 			AccelConfig *ac = &getWorkingLoggerConfig()->AccelConfigs[channel];
-			float accelG = readAccelerometer(channel,ac);
+			float accelG = getAccelerometerValue(channel,ac);
 			lua_pushnumber(L,accelG);
 			return 1;
 		}
@@ -1285,7 +1299,7 @@ int Lua_SetAnalogOut(lua_State *L){
 
 
 int Lua_StartLogging(lua_State *L){
-	if (! g_loggingShouldRun) xSemaphoreGive(g_xLoggerStart);
+	startLogging();
 	return 0;
 }
 

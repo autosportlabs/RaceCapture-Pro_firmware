@@ -119,7 +119,7 @@ int api_log(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS;
 }
 
-static void writeSampleMeta(Serial *serial, SampleRecord *sr, int more){
+static void writeSampleMeta(Serial *serial, SampleRecord *sr, int sampleRateLimit, int more){
 	int sampleCount = 0;
 	json_arrayStart(serial, "meta");
 	for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
@@ -130,7 +130,7 @@ static void writeSampleMeta(Serial *serial, SampleRecord *sr, int more){
 		serial->put_c('{');
 		json_string(serial, "nm", channelConfig->label, 1);
 		json_string(serial, "ut", channelConfig->units, 1);
-		json_int(serial, "sr", decodeSampleRate(channelConfig->sampleRate), 0);
+		json_int(serial, "sr", decodeSampleRate(LOWER_SAMPLE_RATE(channelConfig->sampleRate, sampleRateLimit)), 0);
 		serial->put_c('}');
 	}
 	json_arrayEnd(serial, more);
@@ -141,9 +141,9 @@ int api_getMeta(Serial *serial, const jsmntok_t *json){
 	SampleRecord * sr = (SampleRecord *)portMalloc(sizeof(SampleRecord));
 	if (sr == 0) return API_ERROR_SEVERE;
 
-	LoggerConfig * config = getWorkingLoggerConfig();
-	initSampleRecord(config, sr);
-	writeSampleMeta(serial, sr, 0);
+	initSampleRecord(getWorkingLoggerConfig(), sr);
+	writeSampleMeta(serial, sr, getConnectivitySampleRateLimit(), 0);
+
 	portFree(sr);
 	json_blockEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
@@ -154,7 +154,7 @@ void api_sendSampleRecord(Serial *serial, SampleRecord *sr, unsigned int tick, i
 	json_blockStart(serial, "s");
 
 	json_uint(serial,"t",tick,1);
-	if (sendMeta) writeSampleMeta(serial, sr, 1);
+	if (sendMeta) writeSampleMeta(serial, sr, getConnectivitySampleRateLimit(), 1);
 
 	size_t channelCount = 0;
 	unsigned int channelsBitmask = 0;
@@ -492,6 +492,7 @@ static const jsmntok_t * setConnectivityExtendedField(const jsmntok_t *valueTok,
 	ConnectivityConfig *connCfg = (ConnectivityConfig *)cfg;
 	if (NAME_EQU("sdMode", name)) connCfg->sdLoggingMode = filterSdLoggingMode(modp_atoi(value));
 	else if (NAME_EQU("connMode", name)) connCfg->connectivityMode =  filterConnectivityMode(modp_atoi(value));
+	else if (NAME_EQU("bgStream", name)) connCfg->backgroundStreaming = (modp_atoi(value) == 1);
 	return valueTok + 1;
 }
 
@@ -506,7 +507,8 @@ int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json){
 	json_messageStart(serial);
 	json_blockStart(serial, "getConnCfg");
 	json_int(serial, "sdMode", cfg->sdLoggingMode, 1);
-	json_int(serial, "connMode", cfg->connectivityMode, 0);
+	json_int(serial, "connMode", cfg->connectivityMode, 1);
+	json_int(serial, "bgStream", cfg->backgroundStreaming, 0);
 	json_blockEnd(serial, 0);
 	json_blockEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;

@@ -14,10 +14,6 @@
 #include "memory.h"
 #include "FreeRTOS.h"
 
-//Stuff to provide memory statistics
-extern unsigned int _CONFIG_HEAP_SIZE;
-extern unsigned portCHAR  _heap_address[];
-
 #define LINE_BUFFER_SIZE  256
 
 void ExecLuaInterpreter(Serial *serial, unsigned int argc, char **argv){
@@ -156,38 +152,3 @@ void ReadScriptPage(Serial *serial, unsigned int argc, char **argv){
 	}
 }
 
-void ShowLuaStats(Serial *serial, unsigned int argc, char **argv){
-
-	serial->put_s("== Memory Info ==");
-	put_crlf(serial);
-	unsigned long heap = (unsigned long)_heap_address;
-	unsigned long lastPointer = getLastPointer();
-	serial->put_s("Heap size: ");
-	put_uint(serial, (unsigned int)&_CONFIG_HEAP_SIZE);
-	put_crlf(serial);
-	serial->put_s("Heap address: " );
-	put_uint(serial, heap);
-	put_crlf(serial);
-	serial->put_s("Last pointer address: ");
-	put_uint(serial, lastPointer);
-	put_crlf(serial);
-	serial->put_s("Estimated Usage: " );
-	put_uint(serial, lastPointer - heap);
-	put_crlf(serial);
-	serial->put_s("== Lua Info ==");
-	put_crlf(serial);
-	lua_State *L = getLua();
-	lua_gc(L,LUA_GCCOLLECT,0);
-	serial->put_s("Lua Top: ");
-	put_int(serial, lua_gettop(L));
-	put_crlf(serial);
-	serial->put_s("Lua GC Count: ");
-	put_int(serial, lua_gc(L,LUA_GCCOUNT,0));
-	put_crlf(serial);
-	serial->put_s("sizeof float ");
-	put_int(serial, sizeof(float));
-	put_crlf(serial);
-	serial->put_s("sizeof double ");
-	put_int(serial, sizeof(double));
-	put_crlf(serial);
-}

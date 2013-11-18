@@ -7,6 +7,7 @@
 #include "queue.h"
 #include "semphr.h"
 #include "loggerHardware.h"
+#include "loggerTaskEx.h"
 
 
 #define DEBOUNCE_DELAY_PERIOD		( ( portTickType )30 / portTICK_RATE_MS  )
@@ -19,9 +20,6 @@ xSemaphoreHandle xOnPushbutton;
 xSemaphoreHandle xOnGPI1;
 xSemaphoreHandle xOnGPI2;
 xSemaphoreHandle xOnGPI3;
-
-extern xSemaphoreHandle g_xLoggerStart;
-extern int g_loggingShouldRun;
 
 void createGPIOTasks(){
 	
@@ -57,11 +55,11 @@ void onPushbuttonTask(void *pvParameters){
 		if ( xSemaphoreTake(xOnPushbutton, portMAX_DELAY) == pdTRUE){
 			vTaskDelay( xDelayPeriod );
 			if ((AT91F_PIO_GetInput(AT91C_BASE_PIOA) & PIO_PUSHBUTTON_SWITCH) == 0){
-				if (g_loggingShouldRun){
-					g_loggingShouldRun = 0;	//stop logging
+				if (isLogging()){
+					stopLogging();
 				}
 				else{
-					xSemaphoreGive(g_xLoggerStart);	//start logging					
+					startLogging();
 				}
 			}
 		}

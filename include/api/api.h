@@ -11,11 +11,12 @@
 #include "jsmn.h"
 #include "serial.h"
 
+#define API_SUCCESS_NO_RETURN 	2
 #define API_SUCCESS 			1
-#define API_SUCCESS_NO_RETURN 	0
+
+#define API_ERROR_UNKNOWN_MSG	0
 #define API_ERROR_PARAMETER 	-1
 #define API_ERROR_MALFORMED 	-2
-#define API_ERROR_UNKNOWN_MSG	-3
 #define API_ERROR_SEVERE		-99
 #define API_ERROR_UNSPECIFIED 	-100
 
@@ -51,6 +52,6 @@ void json_arrayEnd(Serial *serial, int more);
 void json_sendResult(Serial *serial, const char *messageName, int resultCode);
 
 
-void process_api(Serial *serial, char * buffer, size_t bufferSize);
+int process_api(Serial *serial, char * buffer, size_t bufferSize);
 
 #endif /* API_H_ */

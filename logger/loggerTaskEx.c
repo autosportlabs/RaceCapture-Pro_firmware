@@ -15,21 +15,41 @@
 #include "loggerTaskEx.h"
 #include "loggerHardware.h"
 #include "loggerData.h"
+#include "loggerConfig.h"
 #include "accelerometer.h"
 #include "luaLoggerBinding.h"
 #include "gps.h"
 #include "sdcard.h"
+#include "printk.h"
 
 #define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 4 )
 #define LOGGER_STACK_SIZE  					200
 #define IDLE_TIMEOUT						configTICK_RATE_HZ / 1
 
-int g_loggingShouldRun;
-xSemaphoreHandle g_xLoggerStart;
+#define ACCELEROMETER_SAMPLE_RATE			SAMPLE_100Hz
 
+int g_loggingShouldRun;
+int g_isLogging;
+int g_configChanged;
+int g_telemetryBackgroundStreaming;
+
+#define SAMPLE_RECORD_BUFFER_SIZE 10
+static LoggerMessage g_sampleRecordMsgBuffer[SAMPLE_RECORD_BUFFER_SIZE];
+static SampleRecord g_sampleRecordBuffer[SAMPLE_RECORD_BUFFER_SIZE];
+static LoggerMessage g_startLogMessage;
+static LoggerMessage g_endLogMessage;
+
+
+void configChanged(){
+	g_configChanged = 1;
+}
+
+int isLogging(){
+	return g_isLogging;
+}
 
 void startLogging(){
-	if (! g_loggingShouldRun) xSemaphoreGive(g_xLoggerStart);
+	g_loggingShouldRun = 1;
 }
 
 void stopLogging(){
@@ -37,84 +57,87 @@ void stopLogging(){
 }
 
 void createLoggerTaskEx(){
-
 	g_loggingShouldRun = 0;
-
 	registerLuaLoggerBindings();
-
-	vSemaphoreCreateBinary( g_xLoggerStart );
-	xSemaphoreTake( g_xLoggerStart, 1 );
 	xTaskCreate( loggerTaskEx,( signed portCHAR * ) "loggerEx",	LOGGER_STACK_SIZE, NULL, LOGGER_TASK_PRIORITY, NULL );
 }
 
-#define SAMPLE_RECORD_BUFFER_SIZE 10
+static void initSampleRecords(LoggerConfig *loggerConfig){
+	for (size_t i=0; i < SAMPLE_RECORD_BUFFER_SIZE; i++){
+		SampleRecord *sr = &g_sampleRecordBuffer[i];
+		initSampleRecord(loggerConfig, sr);
+		g_sampleRecordMsgBuffer[i].messageType = LOGGER_MSG_SAMPLE;
+		g_sampleRecordMsgBuffer[i].sampleRecord = sr;
+	}
+}
 
-static SampleRecord g_sampleRecordBuffer[SAMPLE_RECORD_BUFFER_SIZE];
+static size_t calcTelemetrySampleRate(LoggerConfig *config, size_t desiredSampleRate){
+	size_t maxRate = getConnectivitySampleRateLimit();
+	if HIGHER_SAMPLE(desiredSampleRate, maxRate) desiredSampleRate = maxRate;
+	return desiredSampleRate;
+}
 
 void loggerTaskEx(void *params){
 
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 
+	g_startLogMessage.messageType = LOGGER_MSG_START_LOG;
+	g_endLogMessage.messageType = LOGGER_MSG_END_LOG;
+
+	g_loggingShouldRun = 0;
+	g_isLogging = 0;
+	g_configChanged = 1;
+
+	size_t bufferIndex = 0;
+	size_t currentTicks = 0;
+	size_t loggingSampleRate = SAMPLE_1Hz;
+	size_t sampleRateTimebase = SAMPLE_1Hz;
+	size_t telemetrySampleRate = SAMPLE_1Hz;
+
 	while(1){
-		//wait for signal to start logging
-		if ( xSemaphoreTake(g_xLoggerStart, IDLE_TIMEOUT) != pdTRUE){
-			ResetWatchdog();
-			//perform idle tasks
+		portTickType xLastWakeTime = xTaskGetTickCount();
+		currentTicks += sampleRateTimebase;
+
+		sampleAllAccel();
+
+		if (g_configChanged){
+			loggingSampleRate = getHighestSampleRate(loggerConfig);
+			sampleRateTimebase = loggingSampleRate;
+			if HIGHER_SAMPLE(ACCELEROMETER_SAMPLE_RATE, sampleRateTimebase) sampleRateTimebase = ACCELEROMETER_SAMPLE_RATE;
+			telemetrySampleRate = calcTelemetrySampleRate(loggerConfig, loggingSampleRate);
+			initSampleRecords(loggerConfig);
+			g_configChanged = 0;
 		}
-		else {
-			const portTickType xFrequency = getHighestSampleRate(loggerConfig);
 
-			g_loggingShouldRun = 1;
-
-			resetLapCount();
-			resetDistance();
-
-			portTickType currentTicks = 0;
-
-			for (int i=0; i < SAMPLE_RECORD_BUFFER_SIZE; i++) initSampleRecord(loggerConfig,&g_sampleRecordBuffer[i]);
-
-			int bufferIndex = 0;
-
-			//run until signalled to stop
-			portTickType xLastWakeTime = xTaskGetTickCount();
-			while (g_loggingShouldRun){
-				ResetWatchdog();
-
-				toggleLED(LED2);
-
-				currentTicks += xFrequency;
-
-				SampleRecord *sr = &g_sampleRecordBuffer[bufferIndex];//srBuffer[bufferIndex];
-
-				clearSampleRecord(sr);
-
-				populateSampleRecord(sr, currentTicks, loggerConfig);
-
-				queueLogfileRecord(sr);
-				queueTelemetryRecord(sr);
-
-				bufferIndex++;
-				if (bufferIndex >= SAMPLE_RECORD_BUFFER_SIZE ) bufferIndex = 0;
-
-				vTaskDelayUntil( &xLastWakeTime, xFrequency );
-			}
-
-			queueLogfileRecord(NULL);
-			queueTelemetryRecord(NULL);
-
+		if (g_loggingShouldRun && ! g_isLogging){
+			pr_info("startLog\r\n");
+			g_isLogging = 1;
+			queueLogfileRecord(&g_startLogMessage);
+			queueTelemetryRecord(&g_startLogMessage);
+		}
+		else if (! g_loggingShouldRun && g_isLogging){
+			g_isLogging = 0;
+			queueLogfileRecord(&g_endLogMessage);
+			queueTelemetryRecord(&g_endLogMessage);
 			disableLED(LED2);
 		}
+
+		LoggerMessage *msg = &g_sampleRecordMsgBuffer[bufferIndex];
+		clearSampleRecord(msg->sampleRecord);
+		populateSampleRecord(msg->sampleRecord, currentTicks, loggerConfig);
+
+		if (g_isLogging && ((currentTicks % loggingSampleRate) == 0)){
+			queueLogfileRecord(msg);
+			toggleLED(LED2);
+		}
+
+		if ((currentTicks % telemetrySampleRate) == 0 && (loggerConfig->ConnectivityConfigs.backgroundStreaming|| g_isLogging)) queueTelemetryRecord(msg);
+
+		bufferIndex++;
+		if (bufferIndex >= SAMPLE_RECORD_BUFFER_SIZE ) bufferIndex = 0;
+
+		ResetWatchdog();
+		vTaskDelayUntil( &xLastWakeTime, sampleRateTimebase );
 	}
-
-
 }
 
-//test code for detecting power loss via +12v bus.
-/*				if (ReadADC(7) < 230){
-	g_loggingShouldRun = 0;
-
-	fileWriteString(&f,"x\r\n");
-	break;
-}
-
-*/

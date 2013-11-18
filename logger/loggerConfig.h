@@ -13,16 +13,18 @@
 #define CONFIG_PWM_CHANNELS					4
 #define CONFIG_TIMER_CHANNELS				3
 
+#define SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_10Hz
+#define FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_50Hz
+
 //standard sample rates based on OS timer ticks
 #define SAMPLE_100Hz 						3
 #define SAMPLE_50Hz 						6
-#define SAMPLE_30Hz 						10
+#define SAMPLE_30Hz 						9
 #define SAMPLE_20Hz 						15
 #define SAMPLE_10Hz 						30
 #define SAMPLE_5Hz 							60
 #define SAMPLE_1Hz 							300
 #define SAMPLE_DISABLED 					0
-
 
 #define DEFAULT_LABEL_LENGTH				11
 #define DEFAULT_UNITS_LENGTH				11
@@ -35,6 +37,9 @@
 #define SCALING_MODE_LINEAR					1
 #define SCALING_MODE_MAP					2
 #define DEFAULT_SCALING_MODE				SCALING_MODE_LINEAR
+
+#define HIGHER_SAMPLE(X,Y) 					((X != SAMPLE_DISABLED && X < Y))
+#define LOWER_SAMPLE_RATE(X,Y)				(X > Y ? X : Y)
 
 typedef struct _ChannelConfig{
 	char label[DEFAULT_LABEL_LENGTH];
@@ -243,7 +248,7 @@ typedef struct _GPSConfig{
 #define DEFAULT_GPS_SATELLITES_CONFIG {"GpsSats", "", SAMPLE_DISABLED}
 #define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "Deg", SAMPLE_10Hz}
 #define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "Deg", SAMPLE_10Hz}
-#define DEFAULT_GPS_TIME_CONFIG {"Time", "Time", SAMPLE_1Hz}
+#define DEFAULT_GPS_TIME_CONFIG {"Time", "Time", SAMPLE_10Hz}
 #define DEFAULT_GPS_SPEED_CONFIG {"Speed", "MPH", SAMPLE_10Hz}
 
 #define DEFAULT_GPS_CONFIG {CONFIG_FEATURE_INSTALLED, \
@@ -260,7 +265,7 @@ typedef struct _GPSTargetConfig{
 	float targetRadius;
 } GPSTargetConfig;
 
-#define DEFAULT_DISTANCE_LOGGING_PRECISION 2
+#define DEFAULT_DISTANCE_LOGGING_PRECISION 3
 
 typedef struct _TrackConfig{
 	GPSTargetConfig startFinishConfig;
@@ -358,6 +363,7 @@ typedef struct _TelemetryConfig {
 typedef struct _ConnectivityConfig {
 	char connectivityMode;
 	char sdLoggingMode;
+	char backgroundStreaming;
 	BluetoothConfig bluetoothConfig;
 	CellularConfig cellularConfig;
 	P2PConfig p2pConfig;
@@ -372,11 +378,16 @@ typedef struct _ConnectivityConfig {
 #define SD_LOGGING_MODE_DISABLED					0
 #define SD_LOGGING_MODE_CSV							1
 
+#define BACKGROUND_STREAMING_ENABLED				1
+#define BACKGROUND_STREAMING_DISABLED				0
+
 #define DEFAULT_CONNECTIVITY_MODE 					CONNECTIVITY_MODE_BLUETOOTH
 #define DEFAULT_SD_LOGGING_MODE						SD_LOGGING_MODE_CSV
+#define DEFAULT_BACKGROUND_STREAMING				BACKGROUND_STREAMING_ENABLED
 
 #define DEFAULT_CONNECTIVITY_CONFIG { 	DEFAULT_CONNECTIVITY_MODE, \
 										DEFAULT_SD_LOGGING_MODE, \
+										DEFAULT_BACKGROUND_STREAMING, \
 										DEFAULT_BT_CONFIG, \
 										DEFAULT_CELL_CONFIG, \
 										DEFAULT_P2P_CONFIG, \
@@ -429,6 +440,7 @@ LoggerConfig * getWorkingLoggerConfig();
 
 void calculateTimerScaling(unsigned int clockHz, TimerConfig *timerConfig);
 
+int getConnectivitySampleRateLimit();
 int encodeSampleRate(int sampleRate);
 int decodeSampleRate(int sampleRateCode);
 

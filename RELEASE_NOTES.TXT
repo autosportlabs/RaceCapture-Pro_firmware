@@ -56,6 +56,12 @@ Once the firmware completes flashing, RaceCapture/Pro will reset and run normall
 
 Firmware Changelog:
 
+===1.2.5===
+Implemented smoothing algorithm for accelerometer channels using Exponential Moving Average IIR filter
+Continuous streaming via connectivity port - added start/stop logging messages
+Implemented rate limiting for cellular telemetry & bluetooth - bluetooth limited to 50Hz, Cellular 10Hz. SD still logs at configured rate.
+Various code improvements / internal architecture
+
 ===1.2.4===
 Bluetooth provisioning only attempts once before falling through - to deal with cases if Bluetooth is already connected and can't respond to AT commands
 

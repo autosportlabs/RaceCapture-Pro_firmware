@@ -1,6 +1,7 @@
 {
     "setConnCfg": {
     	"sdMode":1,
-    	"connMode",1
+    	"connMode":1,
+    	"bgStream":1
     }
 }

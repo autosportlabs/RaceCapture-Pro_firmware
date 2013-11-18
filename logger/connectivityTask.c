@@ -34,12 +34,24 @@
 #define TELEMETRY_TASK_PRIORITY					( tskIDLE_PRIORITY + 4 )
 #define TELEMETRY_STACK_SIZE  					1000
 #define SAMPLE_RECORD_QUEUE_SIZE				10
-
+#define BAD_MESSAGE_THRESHOLD					10
 
 static char g_buffer[BUFFER_SIZE];
 static size_t g_rxCount;
 static xQueueHandle g_sampleQueue;
 static ConnParams g_connParams;
+
+
+static size_t trimBuffer(char *buffer, size_t count){
+
+	char *c = (buffer + count - 1);
+	while (count > 0 && (*c == '\r' || *c == '\n')){
+		*c = '\0';
+		c--;
+		count--;
+	}
+	return count;
+}
 
 static int processRxBuffer(Serial *serial){
 	size_t count = serial->get_line_wait(g_buffer + g_rxCount, BUFFER_SIZE - g_rxCount, 0);
@@ -54,17 +66,16 @@ static int processRxBuffer(Serial *serial){
 		pr_error(g_buffer);
 		pr_error("\r\n");
 	}
-
 	if ('\n' == g_buffer[g_rxCount - 1]){
-		g_buffer[g_rxCount - 1] = '\0';
+		g_rxCount = trimBuffer(g_buffer, g_rxCount);
 		processMsg = 1;
 	}
 	return processMsg;
 }
 
-portBASE_TYPE queueTelemetryRecord(SampleRecord * sr){
+portBASE_TYPE queueTelemetryRecord(LoggerMessage *msg){
 	if (NULL != g_sampleQueue){
-		return xQueueSend(g_sampleQueue, &sr, TELEMETRY_QUEUE_WAIT_TIME);
+		return xQueueSend(g_sampleQueue, &msg, TELEMETRY_QUEUE_WAIT_TIME);
 	}
 	else{
 		return errQUEUE_EMPTY;
@@ -72,7 +83,7 @@ portBASE_TYPE queueTelemetryRecord(SampleRecord * sr){
 }
 
 void createConnectivityTask(){
-	g_sampleQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( SampleRecord *));
+	g_sampleQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( LoggerMessage *));
 	if (NULL == g_sampleQueue){
 		//TODO log error
 		return;
@@ -98,8 +109,7 @@ void createConnectivityTask(){
 void connectivityTask(void *params) {
 
 	ConnParams *connParams = (ConnParams*)params;
-	SampleRecord *sr = NULL;
-	uint32_t sampleTick = 0;
+	LoggerMessage *msg = NULL;
 
 	Serial *serial = get_serial_usart0();
 
@@ -108,7 +118,7 @@ void connectivityTask(void *params) {
 	deviceConfig.buffer = g_buffer;
 	deviceConfig.length = BUFFER_SIZE;
 
-	int tick = 0;
+	size_t tick = 0;
 	while (1) {
 		while (connParams->init_connection(&deviceConfig) != DEVICE_INIT_SUCCESS) {
 			pr_info("device not connected. retrying..\r\n");
@@ -116,35 +126,42 @@ void connectivityTask(void *params) {
 		}
 		serial->flush();
 		g_rxCount = 0;
+		size_t badMsgCount = 0;
 		while (1) {
 			//wait for the next sample record
-			char res = xQueueReceive(g_sampleQueue, &(sr), IDLE_TIMEOUT);
-			sampleTick++;
-			if (pdFALSE == res) {
-				//perform idle task?
-			} else {
-				//a null sample record means end of sample run; like an EOF
-				if (NULL != sr) {
-					if (0 == tick){
+			char res = xQueueReceive(g_sampleQueue, &(msg), IDLE_TIMEOUT);
+
+			////////////////////////////////////////////////////////////
+			// Process a pending message from logger task, if exists
+			////////////////////////////////////////////////////////////
+			if (pdFALSE != res) {
+				switch(msg->messageType){
+					case LOGGER_MSG_START_LOG:
 						api_sendLogStart(serial);
 						put_crlf(serial);
-					}
-					++tick;
-					pr_debug("sample ");
-					pr_debug_int(tick);
-					pr_debug("\r\n");
-					api_sendSampleRecord(serial, sr, tick, tick == 1);
-					put_crlf(serial);
-				}
-				else{
-					api_sendLogEnd(serial);
-					put_crlf(serial);
-					//end of sample
-					tick = 0;
+						tick = 0;
+						break;
+					case LOGGER_MSG_END_LOG:
+						api_sendLogEnd(serial);
+						put_crlf(serial);
+						break;
+					case LOGGER_MSG_SAMPLE:
+						api_sendSampleRecord(serial, msg->sampleRecord, tick, tick == 0);
+						put_crlf(serial);
+						tick++;
+						break;
+					default:
+						pr_warning("unknown logger msg type ");
+						pr_warning_int(msg->messageType);
+						pr_warning("\r\n");
 				}
 			}
 
+			////////////////////////////////////////////////////////////
+			// Process incoming message, if available
+			////////////////////////////////////////////////////////////
 			//read in available characters, process message as necessary
+			g_rxCount = 0;
 			int msgReceived = processRxBuffer(serial);
 			//check the latest contents of the buffer for something that might indicate an error condition
 			if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR){
@@ -152,13 +169,20 @@ void connectivityTask(void *params) {
 				break;
 			}
 
-			//now process a complete message if necessary
+			//now process a complete message if available
 			if (msgReceived){
-				pr_debug("msg rx:");
-				pr_debug(g_buffer);
-				pr_debug("\n");
-				if (g_buffer[0] == '{') process_api(serial, g_buffer, BUFFER_SIZE);
-				g_rxCount = 0;
+				if (DEBUG_LEVEL){
+					pr_debug("msg rx: '");
+					pr_debug(g_buffer);
+					pr_debug("'\r\n");
+				}
+				int msgRes = process_msg(serial, g_buffer, BUFFER_SIZE);
+				if (! MESSAGE_SUCCESS(msgRes)) badMsgCount++;
+				if (badMsgCount >= BAD_MESSAGE_THRESHOLD){
+					pr_warning_int(badMsgCount);
+					pr_warning(" empty/bad msgs - re-connecting...\r\n");
+					break;
+				}
 			}
 		}
 	}

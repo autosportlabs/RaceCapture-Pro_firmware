@@ -5,22 +5,21 @@
  *      Author: brent
  */
 #include "messaging.h"
-#include "serial.h"
-#include "command.h"
-#include "api.h"
 #include "mod_string.h"
+#include "serial.h"
+#include "printk.h"
 
 void initMessaging(){
 	init_command();
 	initApi();
 }
 
-void process_msg(Serial *serial, char * buffer, size_t bufferSize){
+int process_msg(Serial *serial, char * buffer, size_t bufferSize){
 	if (buffer[0] == '{'){
-		process_api(serial, buffer, bufferSize);
+		return process_api(serial, buffer, bufferSize);
 	}
 	else{
-		process_interactive_command(serial, buffer, bufferSize);
+		return process_command(serial, buffer, bufferSize);
 	}
 }
 
@@ -32,7 +31,12 @@ void process_msg_interactive(Serial *serial, char * buffer, size_t bufferSize){
 		show_command_prompt(serial);
 	}
 	else{
-		process_msg(serial, buffer, bufferSize);
+		int res = process_msg(serial, buffer, bufferSize);
+		if (! MESSAGE_SUCCESS(res)){
+			serial->put_s("Unknown Command- Press Enter for Help.");
+			put_crlf(serial);
+		}
+		show_command_prompt(serial);
 	}
 }
 

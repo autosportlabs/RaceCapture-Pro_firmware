@@ -11,9 +11,6 @@ LoggerConfig g_savedLoggerConfig = DEFAULT_LOGGER_CONFIG;
 LoggerConfig g_workingLoggerConfig;
 
 
-#define HIGHER_SAMPLE(X,Y) 					((X != SAMPLE_DISABLED && X < Y))
-
-
 void updateActiveLoggerConfig(){
 	memcpy(&g_workingLoggerConfig,&g_savedLoggerConfig,sizeof(LoggerConfig));
 }
@@ -30,6 +27,16 @@ void calculateTimerScaling(unsigned int clockHz, TimerConfig *timerConfig){
 	unsigned int clock = clockHz / timerConfig->timerDivider;
 	clock = clock / timerConfig->pulsePerRevolution;
 	timerConfig->calculatedScaling = clock;
+}
+
+int getConnectivitySampleRateLimit(){
+	switch(getWorkingLoggerConfig()->ConnectivityConfigs.connectivityMode){
+		case CONNECTIVITY_MODE_BLUETOOTH:
+			return FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE;
+		case CONNECTIVITY_MODE_CELL:
+		default:
+			return SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE;
+	}
 }
 
 int encodeSampleRate(int sampleRate){

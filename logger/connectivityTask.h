@@ -13,7 +13,7 @@ typedef struct _ConnParams{
 	int (*check_connection_status)(DeviceConfig *config);
 } ConnParams;
 
-portBASE_TYPE queueTelemetryRecord(SampleRecord * sr);
+portBASE_TYPE queueTelemetryRecord(LoggerMessage * sr);
 
 void createConnectivityTask();
 

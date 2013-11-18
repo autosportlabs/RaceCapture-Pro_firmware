@@ -18,7 +18,7 @@ static void writeAccelerometer(SampleRecord *sampleRecord, size_t currentTicks, 
 		AccelConfig *ac = &(config->AccelConfigs[i]);
 		size_t sr = ac->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED && (currentTicks % sr) == 0){
-			sampleRecord->AccelSamples[i].floatValue = readAccelerometer(i, ac);
+			sampleRecord->AccelSamples[i].floatValue = getAccelerometerValue(i, ac);
 		}
 	}
 }

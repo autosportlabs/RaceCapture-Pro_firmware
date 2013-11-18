@@ -10,8 +10,10 @@
 
 #include "serial.h"
 
-#define COMMAND_OK "result=\"ok\";"
-#define COMMAND_ERROR "result=\"error\";"
+#define COMMAND_OK_MSG "result=\"ok\";"
+#define COMMAND_ERROR_MSG "result=\"error\";"
+#define COMMAND_OK 1
+#define COMMAND_UNKNOWN 0
 #define ERROR_CODE_INVALID_PARAM -1
 #define ERROR_CODE_MISSING_PARAMS -2
 #define ERROR_CODE_INVALID_COMMAND -3
@@ -37,7 +39,7 @@ void show_welcome(Serial *serial);
 
 void show_command_prompt(Serial *serial);
 
-void process_interactive_command(Serial *serial, char * buffer, size_t bufferSize);
+int process_command(Serial *serial, char * buffer, size_t bufferSize);
 
 void put_commandOK(Serial * serial);
 

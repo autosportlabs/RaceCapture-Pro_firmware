@@ -5,10 +5,8 @@
 #include "modp_numtoa.h"
 #include "spi.h"
 #include "board.h"
-#include "accelerometer_buffer.h"
 
 #define SPI_CSR_NUM      2
-
 
 #define ACCEL_MAX_RANGE 				ACCEL_COUNTS_PER_G * 4
 
@@ -135,26 +133,6 @@ static void accel_initSPI(){
 void accel_init(){
 	accel_initSPI();
 	accel_setup();
-	initAccelBuffer();
-}
-
-//#define ACCEL_SMOOTHING
-
-unsigned int readAccelChannel(unsigned char channel){
-	//read the accel channel, add to buffer,
-	//move pointer and calculate average
-	unsigned int value = readAccelerometerDevice(channel);
-#ifdef ACCEL_SMOOTHING
-	int currentIndex = g_accelBufferPointer[channel];
-	g_accelBuffer[channel][currentIndex] = value;
-	currentIndex++;
-	if (currentIndex >= ACCELEROMETER_BUFFER_SIZE) currentIndex = 0;
-	g_accelBufferPointer[channel]=currentIndex;
-	value = calculateAccelAverage(channel);
-	g_averagedAccelValues[channel] = value;
-#endif
-
-	return value;
 }
 
 unsigned int readAccelerometerDevice(unsigned char channel){
@@ -173,23 +151,3 @@ unsigned int readAccelerometerDevice(unsigned char channel){
 	return value;
 }
 
-unsigned int getLastAccelRead(unsigned char channel){
-#ifdef ACCEL_SMOOTHING
-	return g_averagedAccelValues[channel];
-#else
-	return readAccelerometerDevice(channel);
-#endif
-}
-
-void calibrateAccelZero(){
-	//fill the averaging buffer
-	flushAccelBuffer();
-
-	for (int i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
-		AccelConfig * c = getAccelConfigChannel(i);
-		unsigned long zeroValue = getLastAccelRead(c->accelChannel);
-		//adjust for gravity
-		if (c->accelChannel == ACCEL_CHANNEL_Z) zeroValue-= (ACCEL_COUNTS_PER_G * (c->mode != MODE_ACCEL_INVERTED ? 1 : -1));
-		c->zeroValue = zeroValue;
-	}
-}
