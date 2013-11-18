@@ -87,7 +87,6 @@ void loggerTaskEx(void *params){
 	g_loggingShouldRun = 0;
 	g_isLogging = 0;
 	g_configChanged = 1;
-	g_telemetryBackgroundStreaming = 0;
 
 	size_t bufferIndex = 0;
 	size_t currentTicks = 0;
@@ -132,7 +131,7 @@ void loggerTaskEx(void *params){
 			toggleLED(LED2);
 		}
 
-		if ((currentTicks % telemetrySampleRate) == 0 && (g_telemetryBackgroundStreaming || g_isLogging)) queueTelemetryRecord(msg);
+		if ((currentTicks % telemetrySampleRate) == 0 && (loggerConfig->ConnectivityConfigs.backgroundStreaming|| g_isLogging)) queueTelemetryRecord(msg);
 
 		bufferIndex++;
 		if (bufferIndex >= SAMPLE_RECORD_BUFFER_SIZE ) bufferIndex = 0;
