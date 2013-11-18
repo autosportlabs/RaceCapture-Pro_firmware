@@ -507,7 +507,8 @@ int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json){
 	json_messageStart(serial);
 	json_blockStart(serial, "getConnCfg");
 	json_int(serial, "sdMode", cfg->sdLoggingMode, 1);
-	json_int(serial, "connMode", cfg->connectivityMode, 0);
+	json_int(serial, "connMode", cfg->connectivityMode, 1);
+	json_int(serial, "bgStream", cfg->backgroundStreaming, 0);
 	json_blockEnd(serial, 0);
 	json_blockEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;

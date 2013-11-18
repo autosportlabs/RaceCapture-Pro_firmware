@@ -501,13 +501,15 @@ void LoggerApiTest::testGetConnectivityCfg(){
 	Object json;
 	stringToJson(response, json);
 
-	Object &btJson = json["getConnCfg"];
+	Object &connJson = json["getConnCfg"];
 
-	int sdMode = (Number)btJson["sdMode"];
-	int connMode = (Number)btJson["connMode"];
+	int sdMode = (Number)connJson["sdMode"];
+	int connMode = (Number)connJson["connMode"];
+	int bgStream = (Number)connJson["bgStream"];
 
 	CPPUNIT_ASSERT_EQUAL(0, sdMode);
 	CPPUNIT_ASSERT_EQUAL(2, connMode);
+	CPPUNIT_ASSERT_EQUAL(1, bgStream);
 }
 
 void LoggerApiTest::testGetPwmConfigFile(string filename, int index){
