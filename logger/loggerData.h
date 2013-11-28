@@ -13,7 +13,7 @@
 #include <stddef.h>
 
 
-void populateSampleRecord(SampleRecord *sr, size_t currentTicks, LoggerConfig * config);
+int populateSampleRecord(SampleRecord *sr, size_t currentTicks, LoggerConfig * config);
 
 float GetMappedValue(float value, ScalingMap *scalingMap);
 

@@ -64,10 +64,11 @@ void createLoggerTaskEx(){
 
 static void initSampleRecords(LoggerConfig *loggerConfig){
 	for (size_t i=0; i < SAMPLE_RECORD_BUFFER_SIZE; i++){
-		SampleRecord *sr = &g_sampleRecordBuffer[i];
+		LoggerMessage *msg = (g_sampleRecordMsgBuffer + i);
+		SampleRecord *sr = (g_sampleRecordBuffer + i);
 		initSampleRecord(loggerConfig, sr);
-		g_sampleRecordMsgBuffer[i].messageType = LOGGER_MSG_SAMPLE;
-		g_sampleRecordMsgBuffer[i].sampleRecord = sr;
+		msg->messageType = LOGGER_MSG_SAMPLE;
+		msg->sampleRecord = sr;
 	}
 }
 
@@ -76,6 +77,21 @@ static size_t calcTelemetrySampleRate(LoggerConfig *config, size_t desiredSample
 	if HIGHER_SAMPLE(desiredSampleRate, maxRate) desiredSampleRate = maxRate;
 	return desiredSampleRate;
 }
+
+void updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate, int *telemetrySampleRate, int *sampleRateTimebase){
+	*loggingSampleRate = getHighestSampleRate(loggerConfig);
+	*sampleRateTimebase = *loggingSampleRate;
+	if HIGHER_SAMPLE(ACCELEROMETER_SAMPLE_RATE, *sampleRateTimebase) *sampleRateTimebase = ACCELEROMETER_SAMPLE_RATE;
+	*telemetrySampleRate = calcTelemetrySampleRate(loggerConfig, *loggingSampleRate);
+	initSampleRecords(getWorkingLoggerConfig());
+	pr_info_int(*telemetrySampleRate);
+	pr_info("=tel sr\r\n");
+	pr_info_int(*loggingSampleRate);
+	pr_info("=log sr\r\n");
+	pr_info_int(*sampleRateTimebase);
+	pr_info("=timebase sr\r\n");
+}
+
 
 void loggerTaskEx(void *params){
 
@@ -86,13 +102,13 @@ void loggerTaskEx(void *params){
 
 	g_loggingShouldRun = 0;
 	g_isLogging = 0;
-	g_configChanged = 1;
-
 	size_t bufferIndex = 0;
 	size_t currentTicks = 0;
-	size_t loggingSampleRate = SAMPLE_1Hz;
-	size_t sampleRateTimebase = SAMPLE_1Hz;
-	size_t telemetrySampleRate = SAMPLE_1Hz;
+	g_configChanged = 1;
+
+	int loggingSampleRate = SAMPLE_DISABLED;
+	int sampleRateTimebase = SAMPLE_DISABLED;
+	int telemetrySampleRate = SAMPLE_DISABLED;
 
 	while(1){
 		portTickType xLastWakeTime = xTaskGetTickCount();
@@ -101,11 +117,10 @@ void loggerTaskEx(void *params){
 		sampleAllAccel();
 
 		if (g_configChanged){
-			loggingSampleRate = getHighestSampleRate(loggerConfig);
-			sampleRateTimebase = loggingSampleRate;
-			if HIGHER_SAMPLE(ACCELEROMETER_SAMPLE_RATE, sampleRateTimebase) sampleRateTimebase = ACCELEROMETER_SAMPLE_RATE;
-			telemetrySampleRate = calcTelemetrySampleRate(loggerConfig, loggingSampleRate);
-			initSampleRecords(loggerConfig);
+			currentTicks = 0;
+			updateSampleRates(loggerConfig, &loggingSampleRate, &telemetrySampleRate, &sampleRateTimebase);
+			resetLapCount();
+			resetDistance();
 			g_configChanged = 0;
 		}
 
@@ -124,14 +139,16 @@ void loggerTaskEx(void *params){
 
 		LoggerMessage *msg = &g_sampleRecordMsgBuffer[bufferIndex];
 		clearSampleRecord(msg->sampleRecord);
-		populateSampleRecord(msg->sampleRecord, currentTicks, loggerConfig);
+		int sampledRate = populateSampleRecord(msg->sampleRecord, currentTicks, loggerConfig);
 
-		if (g_isLogging && ((currentTicks % loggingSampleRate) == 0)){
+		if (g_isLogging && (sampledRate != SAMPLE_DISABLED && sampledRate >= loggingSampleRate)){
 			queueLogfileRecord(msg);
 			toggleLED(LED2);
 		}
 
-		if ((currentTicks % telemetrySampleRate) == 0 && (loggerConfig->ConnectivityConfigs.backgroundStreaming|| g_isLogging)) queueTelemetryRecord(msg);
+		if ((sampledRate != SAMPLE_DISABLED && sampledRate >= telemetrySampleRate) && (loggerConfig->ConnectivityConfigs.backgroundStreaming|| g_isLogging)){
+			queueTelemetryRecord(msg);
+		}
 
 		bufferIndex++;
 		if (bufferIndex >= SAMPLE_RECORD_BUFFER_SIZE ) bufferIndex = 0;

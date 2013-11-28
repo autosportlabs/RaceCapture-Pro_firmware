@@ -12,19 +12,21 @@
 #include "linear_interpolate.h"
 #include "predictive_timer.h"
 
-static void writeAccelerometer(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *config){
-
+static int writeAccelerometer(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *config){
+	int rate = SAMPLE_DISABLED;
 	for (unsigned int i=0; i < CONFIG_ACCEL_CHANNELS;i++){
 		AccelConfig *ac = &(config->AccelConfigs[i]);
 		size_t sr = ac->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED && (currentTicks % sr) == 0){
+			rate = HIGHER_SAMPLE_RATE(sr, rate);
 			sampleRecord->AccelSamples[i].floatValue = getAccelerometerValue(i, ac);
 		}
 	}
+	return rate;
 }
 
-static void writeADC(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *config){
-
+static int writeADC(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *config){
+	int rate = SAMPLE_DISABLED;
 	unsigned int adc[CONFIG_ADC_CHANNELS];
 	readAllADC(&adc[0],&adc[1],&adc[2],&adc[3],&adc[4],&adc[5],&adc[6],&adc[7]);
 
@@ -33,6 +35,7 @@ static void writeADC(SampleRecord *sampleRecord, size_t currentTicks, LoggerConf
 		size_t sr = ac->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
+				rate = HIGHER_SAMPLE_RATE(sr,rate);
 				float analogValue = 0;
 				switch(ac->scalingMode){
 				case SCALING_MODE_RAW:
@@ -53,14 +56,18 @@ static void writeADC(SampleRecord *sampleRecord, size_t currentTicks, LoggerConf
 			}
 		}
 	}
+	return rate;
 }
 
-static void writeGPSChannels(SampleRecord *sampleRecord, size_t currentTicks, GPSConfig *config){
-
+static int writeGPSChannels(SampleRecord *sampleRecord, size_t currentTicks, GPSConfig *config){
+	int rate = SAMPLE_DISABLED;
 	{
 		size_t sr = config->timeCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->GPS_TimeSample.floatValue = getUTCTime();
+			if ((currentTicks % sr) == 0){
+				rate = HIGHER_SAMPLE_RATE(sr, rate);
+				sampleRecord->GPS_TimeSample.floatValue = getUTCTime();
+			}
 		}
 	}
 	{
@@ -68,6 +75,7 @@ static void writeGPSChannels(SampleRecord *sampleRecord, size_t currentTicks, GP
 		size_t sr = config->latitudeCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
+				rate = HIGHER_SAMPLE_RATE(sr, rate);
 				sampleRecord->GPS_LatitueSample.floatValue = getLatitude();
 				sampleRecord->GPS_LongitudeSample.floatValue = getLongitude();
 			}
@@ -77,53 +85,77 @@ static void writeGPSChannels(SampleRecord *sampleRecord, size_t currentTicks, GP
 	{
 		size_t sr = config->satellitesCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->GPS_SatellitesSample.intValue = getSatellitesUsedForPosition();
+			if ((currentTicks % sr) == 0){
+				rate = HIGHER_SAMPLE_RATE(sr, rate);
+				sampleRecord->GPS_SatellitesSample.intValue = getSatellitesUsedForPosition();
+			}
 		}
 	}
 
 	{
 		size_t sr = config->speedCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->GPS_SpeedSample.floatValue = getGPSSpeed() *  0.621371192; //convert to MPH
+			if ((currentTicks % sr) == 0){
+				rate = HIGHER_SAMPLE_RATE(sr, rate);
+				sampleRecord->GPS_SpeedSample.floatValue = getGPSSpeed() *  0.621371192; //convert to MPH
+			}
 		}
 	}
+	return rate;
 }
 
-static void writeTrackChannels(SampleRecord *sampleRecord, size_t currentTicks, TrackConfig *config){
+static int writeTrackChannels(SampleRecord *sampleRecord, size_t currentTicks, TrackConfig *config){
+	int rate = SAMPLE_DISABLED;
 	{
 		size_t sr = config->lapCountCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->Track_LapCountSample.intValue = getLapCount();
+			if ((currentTicks % sr) == 0){
+				rate = HIGHER_SAMPLE_RATE(sr, rate);
+				sampleRecord->Track_LapCountSample.intValue = getLapCount();
+			}
 		}
 	}
 	{
 		size_t sr = config->splitTimeCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->Track_SplitTimeSample.floatValue = getLastSplitTime();
+			if ((currentTicks % sr) == 0){
+				rate = HIGHER_SAMPLE_RATE(sr, rate);
+				sampleRecord->Track_SplitTimeSample.floatValue = getLastSplitTime();
+			}
 		}
 	}
 	{
 		size_t sr = config->lapTimeCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->Track_LapTimeSample.floatValue = getLastLapTime();
+			if ((currentTicks % sr) == 0){
+				rate = HIGHER_SAMPLE_RATE(sr, rate);
+				sampleRecord->Track_LapTimeSample.floatValue = getLastLapTime();
+			}
 		}
 	}
 	{
 		size_t sr = config->distanceCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->Track_DistanceSample.floatValue = getDistance() * 0.621371192; //convert to miles
+			if ((currentTicks % sr) == 0){
+				rate = HIGHER_SAMPLE_RATE(sr, rate);
+				sampleRecord->Track_DistanceSample.floatValue = getDistance() * 0.621371192; //convert to miles
+			}
 		}
 	}
 	{
 		size_t sr = config->predTimeCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->Track_PredTimeSample.floatValue = get_predicted_time(getGPSSpeed());
+			if ((currentTicks % sr) == 0){
+				rate = HIGHER_SAMPLE_RATE(sr, rate);
+				sampleRecord->Track_PredTimeSample.floatValue = get_predicted_time(getGPSSpeed());
+			}
 		}
 	}
+	return rate;
 }
 
-static void writeGPIOs(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *loggerConfig){
-
+static int writeGPIOs(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *loggerConfig){
+	int rate = SAMPLE_DISABLED;
 	unsigned int gpio[CONFIG_GPIO_CHANNELS];
 	readGpios(&gpio[0], &gpio[1], &gpio[2]);
 
@@ -131,13 +163,17 @@ static void writeGPIOs(SampleRecord *sampleRecord, size_t currentTicks, LoggerCo
 		GPIOConfig *c = &(loggerConfig->GPIOConfigs[i]);
 		size_t sr = c->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
-			if ((currentTicks % sr) == 0) sampleRecord->GPIOSamples[i].intValue = gpio[i];
+			if ((currentTicks % sr) == 0){
+				rate = HIGHER_SAMPLE_RATE(sr, rate);
+				sampleRecord->GPIOSamples[i].intValue = gpio[i];
+			}
 		}
 	}
+	return rate;
 }
 
-static void writeTimerChannels(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *loggerConfig){
-
+static int writeTimerChannels(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *loggerConfig){
+	int rate = SAMPLE_DISABLED;
 	unsigned int timers[CONFIG_TIMER_CHANNELS];
 	getAllTimerPeriods(timers,timers + 1,timers + 2);
 
@@ -146,6 +182,7 @@ static void writeTimerChannels(SampleRecord *sampleRecord, size_t currentTicks, 
 		size_t sr = c->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
+				rate = HIGHER_SAMPLE_RATE(sr, rate);
 				int value = 0;
 				unsigned scaling = c->calculatedScaling;
 				unsigned int timerValue = timers[i];
@@ -175,15 +212,17 @@ static void writeTimerChannels(SampleRecord *sampleRecord, size_t currentTicks, 
 			}
 		}
 	}
+	return rate;
 }
 
-static void writePWMChannels(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *loggerConfig){
-
+static int writePWMChannels(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *loggerConfig){
+	int rate = SAMPLE_DISABLED;
 	for (int i = 0; i < CONFIG_PWM_CHANNELS; i++){
 		PWMConfig *c = &(loggerConfig->PWMConfigs[i]);
 		size_t sr = c->cfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
+				rate = HIGHER_SAMPLE_RATE(sr, rate);
 				float value = 0;
 				switch (c->loggingMode){
 					case MODE_LOGGING_PWM_PERIOD:
@@ -207,33 +246,36 @@ static void writePWMChannels(SampleRecord *sampleRecord, size_t currentTicks, Lo
 			}
 		}
 	}
+	return rate;
 }
 
 
-void populateSampleRecord(SampleRecord *sr, size_t currentTicks, LoggerConfig *config){
+int populateSampleRecord(SampleRecord *sr, size_t currentTicks, LoggerConfig *config){
+
+	int rate = SAMPLE_DISABLED;
 
 	//perform logging tasks
 	unsigned int gpsInstalled = (unsigned int)config->GPSConfigs.GPSInstalled;
 	unsigned int accelInstalled = (unsigned int)config->AccelInstalled;
 
 	//Write ADC channels
-	writeADC(sr, currentTicks, config);
+	rate = HIGHER_SAMPLE_RATE(writeADC(sr, currentTicks, config), rate);
 	//Write GPIO channels
-	writeGPIOs(sr,currentTicks, config);
+	rate = HIGHER_SAMPLE_RATE(writeGPIOs(sr,currentTicks, config), rate);
 	//Write Timer channels
-	writeTimerChannels(sr,currentTicks, config);
+	rate = HIGHER_SAMPLE_RATE(writeTimerChannels(sr,currentTicks, config), rate);
 	//Write PWM channels
-	writePWMChannels(sr,currentTicks, config);
+	rate = HIGHER_SAMPLE_RATE(writePWMChannels(sr,currentTicks, config), rate);
 
 	//Optional hardware
 	//Write Accelerometer
-	if (accelInstalled) writeAccelerometer(sr,currentTicks, config);
+	if (accelInstalled) rate = HIGHER_SAMPLE_RATE(writeAccelerometer(sr,currentTicks, config), rate);
 	//Write GPS
 	if (gpsInstalled){
-		writeGPSChannels(sr,currentTicks, &(config->GPSConfigs));
-		writeTrackChannels(sr, currentTicks, &(config->TrackConfigs));
+		rate = HIGHER_SAMPLE_RATE(writeGPSChannels(sr,currentTicks, &(config->GPSConfigs)), rate);
+		rate = HIGHER_SAMPLE_RATE(writeTrackChannels(sr, currentTicks, &(config->TrackConfigs)), rate);
 	}
-
+	return rate;
 }
 
 
