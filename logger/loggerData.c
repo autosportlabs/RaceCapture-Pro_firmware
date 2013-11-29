@@ -28,7 +28,7 @@ static int writeAccelerometer(SampleRecord *sampleRecord, size_t currentTicks, L
 static int writeADC(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *config){
 	int rate = SAMPLE_DISABLED;
 	unsigned int adc[CONFIG_ADC_CHANNELS];
-	readAllADC(&adc[0],&adc[1],&adc[2],&adc[3],&adc[4],&adc[5],&adc[6],&adc[7]);
+	int adcRead = 0;
 
 	for (unsigned int i=0; i < CONFIG_ADC_CHANNELS;i++){
 		ADCConfig *ac = &(config->ADCConfigs[i]);
@@ -36,6 +36,10 @@ static int writeADC(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfi
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
 				rate = HIGHER_SAMPLE_RATE(sr,rate);
+				if (!adcRead){
+					readAllADC(&adc[0],&adc[1],&adc[2],&adc[3],&adc[4],&adc[5],&adc[6],&adc[7]);
+					adcRead = 1;
+				}
 				float analogValue = 0;
 				switch(ac->scalingMode){
 				case SCALING_MODE_RAW:
