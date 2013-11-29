@@ -146,7 +146,7 @@ void loggerTaskEx(void *params){
 			toggleLED(LED2);
 		}
 
-		if ((sampledRate != SAMPLE_DISABLED && sampledRate >= telemetrySampleRate) && (loggerConfig->ConnectivityConfigs.backgroundStreaming|| g_isLogging)){
+		if ((sampledRate != SAMPLE_DISABLED && (sampledRate >= telemetrySampleRate || currentTicks % telemetrySampleRate == 0)) && (loggerConfig->ConnectivityConfigs.backgroundStreaming|| g_isLogging)){
 			queueTelemetryRecord(msg);
 		}
 
