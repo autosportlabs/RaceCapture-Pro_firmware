@@ -13,6 +13,7 @@
 #include "luaTask.h"
 #include "memory.h"
 #include "FreeRTOS.h"
+#include "printk.h"
 
 #define LINE_BUFFER_SIZE  256
 
@@ -109,13 +110,18 @@ void WriteScriptPage(Serial *serial, unsigned int argc, char **argv){
 	}
 
 	unsigned int page = modp_atoi(argv[1]);
-	char * scriptPage = argv[2];
+	char *scriptPage = "";
+	if (argc >= 3) scriptPage = argv[2];
 
 	if (page >=0 && page < SCRIPT_PAGES){
 		if (argc >= 2) unescape(scriptPage);
 		lockLua();
 		vPortEnterCritical();
-		int result = flashScriptPage(page,(argc >= 2 ? scriptPage : ""));
+		pr_info_int(strlen(scriptPage));
+		pr_info("=");
+		pr_info(scriptPage);
+		pr_info("\r\n");
+		int result = flashScriptPage(page, scriptPage);
 		vPortExitCritical();
 		unlockLua();
 		if (result == 0){
