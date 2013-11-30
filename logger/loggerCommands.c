@@ -30,7 +30,7 @@ void SampleData(Serial *serial, unsigned int argc, char **argv){
 		ChannelConfig * channelConfig = sample->channelConfig;
 
 		if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
-		if (sample->intValue == NIL_SAMPLE) continue;
+		//if (sample->intValue == NIL_SAMPLE) continue;
 
 		int precision = sample->precision;
 		if (precision > 0){
