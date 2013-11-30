@@ -18,6 +18,7 @@
 
 
 //standard sample rates based on OS timer ticks
+#define SAMPLE_200Hz						1
 #define SAMPLE_100Hz 						2
 #define SAMPLE_50Hz 						4
 #define SAMPLE_30Hz 						6

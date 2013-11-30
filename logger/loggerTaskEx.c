@@ -114,7 +114,7 @@ void loggerTaskEx(void *params){
 		portTickType xLastWakeTime = xTaskGetTickCount();
 		currentTicks += sampleRateTimebase;
 
-		sampleAllAccel();
+		if (currentTicks % ACCELEROMETER_SAMPLE_RATE) sampleAllAccel();
 
 		if (g_configChanged){
 			currentTicks = 0;
@@ -129,6 +129,7 @@ void loggerTaskEx(void *params){
 			g_isLogging = 1;
 			queueLogfileRecord(&g_startLogMessage);
 			queueTelemetryRecord(&g_startLogMessage);
+			disableLED(LED3);
 		}
 		else if (! g_loggingShouldRun && g_isLogging){
 			g_isLogging = 0;
@@ -142,7 +143,7 @@ void loggerTaskEx(void *params){
 		int sampledRate = populateSampleRecord(msg->sampleRecord, currentTicks, loggerConfig);
 
 		if (g_isLogging && (sampledRate != SAMPLE_DISABLED && sampledRate >= loggingSampleRate)){
-			queueLogfileRecord(msg);
+			if (queueLogfileRecord(msg) != pdTRUE) enableLED(LED3);
 			toggleLED(LED2);
 		}
 

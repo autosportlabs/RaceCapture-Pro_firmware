@@ -42,6 +42,8 @@ int getConnectivitySampleRateLimit(){
 int encodeSampleRate(int sampleRate){
 
 	switch(sampleRate){
+		case 200:
+			return SAMPLE_200Hz;
 		case 100:
 			return SAMPLE_100Hz;
 		case 50:
@@ -65,6 +67,8 @@ int encodeSampleRate(int sampleRate){
 int decodeSampleRate(int sampleRateCode){
 
 	switch(sampleRateCode){
+		case SAMPLE_200Hz:
+			return 200;
 		case SAMPLE_100Hz:
 			return 100;
 		case SAMPLE_50Hz:
