@@ -114,7 +114,7 @@ void loggerTaskEx(void *params){
 		portTickType xLastWakeTime = xTaskGetTickCount();
 		currentTicks += sampleRateTimebase;
 
-		if (currentTicks % ACCELEROMETER_SAMPLE_RATE) sampleAllAccel();
+		if (currentTicks % ACCELEROMETER_SAMPLE_RATE == 0) sampleAllAccel();
 
 		if (g_configChanged){
 			currentTicks = 0;
