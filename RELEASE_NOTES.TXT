@@ -56,6 +56,15 @@ Once the firmware completes flashing, RaceCapture/Pro will reset and run normall
 
 Firmware Changelog:
 
+===1.2.6===
+Fixed problem where saving an empty lua script caused garbage script to be saved
+Trimmed clock frequency to make logging more accurate (was about 1% off)
+Fixed error around omitting samples if samples did not fall on even sample boundaries (specific problem with 30Hz sampling rate)
+Implemented experimental 200Hz logging rate
+Switched OS preemption tick rate from 300Hz to 200Hz (performance optimization)
+Only poll the ADCs when the sample record needs to be written (performance optimziation)
+Removed AccelInstalled configuration feature (Accelerometer is always installed)
+
 ===1.2.5===
 Implemented smoothing algorithm for accelerometer channels using Exponential Moving Average IIR filter
 Continuous streaming via connectivity port - added start/stop logging messages
