@@ -50,9 +50,6 @@
 {"getAccelCfg", "Gets the configuration for the specified accelerometer channel.","<channel>",GetAccelConfig}, \
 {"setAccelCfg", "Sets the configuration for the specified accelerometer channel.","<channel> [label] [units] [sampleRate] [mode] [accelChannel] [zeroValue]",SetAccelConfig}, \
 \
-{"getAccelInstalled", "Gets the installed state of the accelerometer.","", GetAccelInstalled}, \
-{"setAccelInstalled", "Sets the installed state of the accelerometer.","<installed>", SetAccelInstalled}, \
-\
 {"calibrateAccelZero", "Calibrates the current accelerometer values as the zero point.","", CalibrateAccelZero},\
 \
 {"startTerminal", "Starts a debugging terminal session on the specified port.","<port> <baud>", StartTerminal },\
@@ -98,9 +95,6 @@ void SetGpioConfig(Serial *serial, unsigned int argc, char **argv);
 
 void GetTimerConfig(Serial *serial, unsigned int argc, char **argv);
 void SetTimerConfig(Serial *serial, unsigned int argc, char **argv);
-
-void SetAccelInstalled(Serial *serial, unsigned int argc, char **argv);
-void GetAccelInstalled(Serial *serial, unsigned int argc, char **argv);
 
 void GetAccelConfig(Serial *serial, unsigned int argc, char **argv);
 void SetAccelConfig(Serial *serial, unsigned int argc, char **argv);

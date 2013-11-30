@@ -338,11 +338,9 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
 		int sr = config->TimerConfigs[i].cfg.sampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr;
 	}
-	if (config->AccelInstalled){
-		for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
-			int sr = config->AccelConfigs[i].cfg.sampleRate;
-			if HIGHER_SAMPLE(sr, s) s = sr;
-		}
+	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
+		int sr = config->AccelConfigs[i].cfg.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
 	}
 	if (config->GPSConfigs.GPSInstalled){
 		GPSConfig *gpsConfig = &(config->GPSConfigs);

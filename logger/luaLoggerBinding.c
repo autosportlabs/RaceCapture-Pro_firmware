@@ -184,9 +184,6 @@ void registerLuaLoggerBindings(){
 	lua_registerlight(L,"calculateTimerScaling", Lua_CalculateTimerScaling);
 	lua_registerlight(L,"getTimerScaling", Lua_GetTimerScaling);
 	
-	lua_registerlight(L,"setAccelInstalled",Lua_SetAccelInstalled);
-	lua_registerlight(L,"getAccelInstalled",Lua_GetAccelInstalled);
-	
 	lua_registerlight(L,"setAccelLabel",Lua_SetAccelLabel);
 	lua_registerlight(L,"getAccelLabel",Lua_GetAccelLabel);
 	
@@ -264,18 +261,6 @@ int Lua_IsSDCardPresent(lua_State *L){
 int Lua_IsSDCardWritable(lua_State *L){
 	lua_pushinteger(L,isCardWritable());
 	return 1;
-}
-
-int Lua_SetAccelInstalled(lua_State *L){
-	if (lua_gettop(L) >= 1){
-		getWorkingLoggerConfig()->AccelInstalled = lua_toboolean(L,1);	
-	}
-	return 0;	
-}
-
-int Lua_GetAccelInstalled(lua_State *L){
-	lua_pushboolean(L,getWorkingLoggerConfig()->AccelInstalled);
-	return 1;	
 }
 
 int Lua_SetAccelLabel(lua_State *L){

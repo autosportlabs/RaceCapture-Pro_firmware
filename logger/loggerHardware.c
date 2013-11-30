@@ -64,10 +64,8 @@ void InitLoggerHardware(){
 	init_spi_lock();
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 	InitWatchdog(WATCHDOG_TIMEOUT_MS);
-	if ( loggerConfig->AccelInstalled == CONFIG_FEATURE_INSTALLED ){
-		accel_init();
-		initAccelFilter();
-	}
+	accel_init();
+	initAccelFilter();
 	InitGPIO(loggerConfig);
 	InitADC();
 	InitPWM(loggerConfig);

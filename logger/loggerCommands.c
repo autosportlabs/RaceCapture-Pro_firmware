@@ -84,17 +84,6 @@ static void SendChannelConfig(Serial *serial, ChannelConfig *c){
 	}
 }
 
-static LoggerConfig * AssertSetParam(Serial *serial, unsigned int argc, unsigned int requiredParams){
-	LoggerConfig *c = NULL;
-	if (argc >= requiredParams){
-		c = getWorkingLoggerConfig();
-	}
-	else{
-		put_commandError(serial, ERROR_CODE_MISSING_PARAMS);
-	}
-	return c;
-}
-
 static ADCConfig * AssertAdcGetChannel(Serial *serial, unsigned int argc, char **argv){
 	ADCConfig *c = NULL;
 	if (argc >= 2){
@@ -344,19 +333,6 @@ static AccelConfig * AssertAccelGetChannel(Serial *serial, unsigned int argc, ch
 	return c;
 }
 
-void SetAccelInstalled(Serial *serial, unsigned int argc, char **argv){
-	LoggerConfig * c = AssertSetParam(serial, argc,2);
-	if (NULL != c){
-		c->AccelInstalled = (modp_atoi(argv[1]) != 0);
-		put_commandOK(serial);
-	}
-}
-
-void GetAccelInstalled(Serial *serial, unsigned int argc, char **argv){
-	LoggerConfig * c = getWorkingLoggerConfig();
-	put_nameInt(serial, "installed",c->AccelInstalled);
-}
-
 void GetAccelConfig(Serial *serial, unsigned int argc, char **argv){
 	AccelConfig * c= AssertAccelGetChannel(serial, argc,argv);
 	if (NULL != c){
@@ -379,14 +355,8 @@ void SetAccelConfig(Serial *serial, unsigned int argc, char **argv){
 }
 
 void CalibrateAccelZero(Serial *serial, unsigned int argc, char **argv){
-	if (getWorkingLoggerConfig()->AccelInstalled){
-		calibrateAccelZero();
-		put_commandOK(serial);
-	}
-	else{
-		put_commandError(serial, ERROR_CODE_INVALID_COMMAND);
-	}
-
+	calibrateAccelZero();
+	put_commandOK(serial);
 }
 
 void GetBluetoothConfig(Serial *serial, unsigned int argc, char **argv){

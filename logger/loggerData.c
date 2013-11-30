@@ -260,7 +260,6 @@ int populateSampleRecord(SampleRecord *sr, size_t currentTicks, LoggerConfig *co
 
 	//perform logging tasks
 	unsigned int gpsInstalled = (unsigned int)config->GPSConfigs.GPSInstalled;
-	unsigned int accelInstalled = (unsigned int)config->AccelInstalled;
 
 	//Write ADC channels
 	rate = HIGHER_SAMPLE_RATE(writeADC(sr, currentTicks, config), rate);
@@ -271,9 +270,9 @@ int populateSampleRecord(SampleRecord *sr, size_t currentTicks, LoggerConfig *co
 	//Write PWM channels
 	rate = HIGHER_SAMPLE_RATE(writePWMChannels(sr,currentTicks, config), rate);
 
-	//Optional hardware
 	//Write Accelerometer
-	if (accelInstalled) rate = HIGHER_SAMPLE_RATE(writeAccelerometer(sr,currentTicks, config), rate);
+	rate = HIGHER_SAMPLE_RATE(writeAccelerometer(sr,currentTicks, config), rate);
+
 	//Write GPS
 	if (gpsInstalled){
 		rate = HIGHER_SAMPLE_RATE(writeGPSChannels(sr,currentTicks, &(config->GPSConfigs)), rate);

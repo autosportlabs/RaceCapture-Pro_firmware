@@ -408,7 +408,6 @@ typedef struct _LoggerConfig {
 	//Timer Configurations
 	TimerConfig TimerConfigs[CONFIG_TIMER_CHANNELS];
 	//Accelerometer Configurations
-	char AccelInstalled;
 	AccelConfig AccelConfigs[CONFIG_ACCEL_CHANNELS];
 	//GPS Configuration
 	GPSConfig GPSConfigs;
@@ -427,7 +426,6 @@ typedef struct _LoggerConfig {
 	DEFAULT_PWM_CONFIGS, \
 	DEFAULT_GPIO_CONFIGS, \
 	DEFAULT_TIMER_CONFIGS, \
-	CONFIG_FEATURE_INSTALLED, \
 	DEFAULT_ACCEL_CONFIGS, \
 	DEFAULT_GPS_CONFIG, \
 	DEFAULT_TRACK_CONFIG, \

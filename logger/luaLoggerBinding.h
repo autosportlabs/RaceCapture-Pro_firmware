@@ -62,10 +62,6 @@ int Lua_SetLED(lua_State *L);
 
 //logger config data
 
-
-int Lua_SetAccelInstalled(lua_State *L);
-int Lua_GetAccelInstalled(lua_State *L);
-
 int Lua_SetAccelLabel(lua_State *L);
 int Lua_GetAccelLabel(lua_State *L);
 
