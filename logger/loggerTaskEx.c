@@ -151,8 +151,10 @@ void loggerTaskEx(void *params){
 			queueTelemetryRecord(msg);
 		}
 
-		bufferIndex++;
-		if (bufferIndex >= SAMPLE_RECORD_BUFFER_SIZE ) bufferIndex = 0;
+		if (sampledRate != SAMPLE_DISABLED){
+			bufferIndex++;
+			if (bufferIndex >= SAMPLE_RECORD_BUFFER_SIZE ) bufferIndex = 0;
+		}
 
 		ResetWatchdog();
 		vTaskDelayUntil( &xLastWakeTime, sampleRateTimebase );
