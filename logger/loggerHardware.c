@@ -575,49 +575,9 @@ unsigned int timerClockFromDivider(unsigned short divider){
 	}	
 }
 
-//Enable this pullup on hardware revisions < F (on-board optoisolator)
-//Experimental timer init routine
-void initTimer0x(TimerConfig *timerConfig){
-
-	//pullup enable on timer 0
-	//AT91F_PIO_CfgInput(AT91C_BASE_PIOA, 1 << 0);
-	AT91C_BASE_PIOA->PIO_PPUER = (1 << 0);
-
-	/* Set PIO pins for Timer Counter 0 */
-	AT91F_PIO_CfgPeriph(
-		AT91C_BASE_PIOA, // PIO controller base address
-		0, // Peripheral A
-		((unsigned int) AT91C_PA0_TIOA0   ));
-
-   /* Enable TC0's clock in the PMC controller */
-   AT91F_TC0_CfgPMC();
-
-	AT91F_TC_Open (
-	AT91C_BASE_TC0,
-
-	TC_CLKS_MCK128 |
-	AT91C_TC_ETRGEDG_FALLING |
-	AT91C_TC_ABETRG |
-	AT91C_TC_LDRA_RISING |
-	AT91C_TC_LDRB_FALLING
-
-	,AT91C_ID_TC0
-	);
-
-	if (timerConfig->slowTimerEnabled){
-		AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC0, TIMER0_INTERRUPT_LEVEL,AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer0_slow_irq_handler);
-		AT91C_BASE_TC0->TC_IER = AT91C_TC_LDRBS | AT91C_TC_COVFS;  //  IRQ enable RB loading and overflow
-	}
-	else{
-		AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC0, TIMER0_INTERRUPT_LEVEL,AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer0_irq_handler);
-		AT91C_BASE_TC0->TC_IER = AT91C_TC_COVFS | AT91C_TC_LDRBS;  //  IRQ enable RB loading
-	}
-	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC0);
-}
-
 void initTimer0(TimerConfig *timerConfig){
 
-	g_timer1_overflow = 1;
+	g_timer0_overflow = 1;
 	g_timer_counts[0] = 0;
 
 	// Set PIO pins for Timer Counter 0
@@ -645,11 +605,11 @@ void initTimer0(TimerConfig *timerConfig){
 	
 	if (timerConfig->slowTimerEnabled){
 		AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC0, TIMER0_INTERRUPT_LEVEL,AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer0_slow_irq_handler);
-		AT91C_BASE_TC0->TC_IER = AT91C_TC_LDRBS | AT91C_TC_COVFS;  //  IRQ enable RB loading and overflow
+		AT91C_BASE_TC0->TC_IER = AT91C_TC_LDRBS | AT91C_TC_COVFS;  // IRQ enable RB loading and overflow
 	}
 	else{
 		AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC0, TIMER0_INTERRUPT_LEVEL,AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer0_irq_handler);
-		AT91C_BASE_TC0->TC_IER = AT91C_TC_COVFS | AT91C_TC_LDRBS;  //  IRQ enable RB loading
+		AT91C_BASE_TC0->TC_IER = AT91C_TC_COVFS;  // IRQ enable overflow
 	}
 	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC0);	
 }
@@ -683,11 +643,11 @@ void initTimer1(TimerConfig *timerConfig){
 	
 	if (timerConfig->slowTimerEnabled){
 		AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC1, TIMER1_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer1_slow_irq_handler);
-		AT91C_BASE_TC1->TC_IER = AT91C_TC_LDRBS | AT91C_TC_COVFS;  //  IRQ enable RB loading and overflow
+		AT91C_BASE_TC1->TC_IER = AT91C_TC_LDRBS | AT91C_TC_COVFS;  // IRQ enable RB loading and overflow
 	}
 	else{
 		AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC1, TIMER1_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer1_irq_handler);
-		AT91C_BASE_TC1->TC_IER = AT91C_TC_LDRBS;  //  IRQ enable RB loading
+		AT91C_BASE_TC1->TC_IER = AT91C_TC_COVFS;  // IRQ enable overflow
 	}
 	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC1);	
 }
@@ -720,11 +680,11 @@ void initTimer2(TimerConfig *timerConfig){
 	
 	if (timerConfig->slowTimerEnabled){
 		AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC2, TIMER2_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer2_slow_irq_handler);
-		AT91C_BASE_TC2->TC_IER =AT91C_TC_LDRBS | AT91C_TC_COVFS;  //  IRQ enable RB loading and overflow
+		AT91C_BASE_TC2->TC_IER =AT91C_TC_LDRBS | AT91C_TC_COVFS;  // IRQ enable RB loading and overflow
 	}
 	else{
 		AT91F_AIC_ConfigureIt ( AT91C_BASE_AIC, AT91C_ID_TC2, TIMER2_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_EXT_NEGATIVE_EDGE, timer2_irq_handler);
-		AT91C_BASE_TC2->TC_IER =AT91C_TC_LDRBS;  //  IRQ enable RB loading
+		AT91C_BASE_TC2->TC_IER = AT91C_TC_COVFS;  // IRQ enable overflow
 	}	
 	AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC2);
 }
@@ -763,15 +723,15 @@ unsigned int getTimerPeriod(unsigned int channel){
 }
 
 unsigned int getTimer0Period(){
-	return g_timer0_overflow ? MAX_TIMER_VALUE : AT91C_BASE_TC0->TC_RB;
+	return g_timer0_overflow ? 0 : AT91C_BASE_TC0->TC_RB;
 }
 
 unsigned int getTimer1Period(){
-	return g_timer1_overflow ? MAX_TIMER_VALUE : AT91C_BASE_TC1->TC_RB;
+	return g_timer1_overflow ? 0 : AT91C_BASE_TC1->TC_RB;
 }
 
 unsigned int getTimer2Period(){
-	return g_timer2_overflow ? MAX_TIMER_VALUE : AT91C_BASE_TC2->TC_RB;
+	return g_timer2_overflow ? 0 : AT91C_BASE_TC2->TC_RB;
 }
 
 
