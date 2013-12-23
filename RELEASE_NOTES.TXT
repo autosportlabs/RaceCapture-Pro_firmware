@@ -56,6 +56,10 @@ Once the firmware completes flashing, RaceCapture/Pro will reset and run normall
 
 Firmware Changelog:
 
+===1.2.7===
+Fixed problem where zero values in log file were not being recorded (treated as nulls)
+Optimized code that read channels and populated the sample record object.
+
 ===1.2.6===
 Fixed problem where saving an empty lua script caused garbage script to be saved
 Trimmed clock frequency to make logging more accurate (was about 1% off)
