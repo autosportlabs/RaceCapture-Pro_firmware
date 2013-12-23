@@ -255,30 +255,51 @@ static int writePWMChannels(SampleRecord *sampleRecord, size_t currentTicks, Log
 
 
 int populateSampleRecord(SampleRecord *sr, size_t currentTicks, LoggerConfig *config){
-
-	int rate = SAMPLE_DISABLED;
-
-	//perform logging tasks
-	unsigned int gpsInstalled = (unsigned int)config->GPSConfigs.GPSInstalled;
+	int highestRate = SAMPLE_DISABLED;
 
 	//Write ADC channels
-	rate = HIGHER_SAMPLE_RATE(writeADC(sr, currentTicks, config), rate);
+	{
+		int rate = writeADC(sr, currentTicks, config);
+		highestRate = HIGHER_SAMPLE_RATE(rate, highestRate);
+	}
+
 	//Write GPIO channels
-	rate = HIGHER_SAMPLE_RATE(writeGPIOs(sr,currentTicks, config), rate);
+	{
+		int rate = writeGPIOs(sr,currentTicks, config);
+		highestRate = HIGHER_SAMPLE_RATE(rate, highestRate);
+	}
+
 	//Write Timer channels
-	rate = HIGHER_SAMPLE_RATE(writeTimerChannels(sr,currentTicks, config), rate);
+	{
+		int rate = writeTimerChannels(sr,currentTicks, config);
+		highestRate = HIGHER_SAMPLE_RATE(rate, highestRate);
+
+	}
+
 	//Write PWM channels
-	rate = HIGHER_SAMPLE_RATE(writePWMChannels(sr,currentTicks, config), rate);
+	{
+		int rate = writePWMChannels(sr,currentTicks, config);
+		highestRate = HIGHER_SAMPLE_RATE(rate, highestRate);
+	}
 
 	//Write Accelerometer
-	rate = HIGHER_SAMPLE_RATE(writeAccelerometer(sr,currentTicks, config), rate);
+	{
+		int rate = writeAccelerometer(sr,currentTicks, config);
+		highestRate = HIGHER_SAMPLE_RATE(rate, highestRate);
+	}
 
 	//Write GPS
-	if (gpsInstalled){
-		rate = HIGHER_SAMPLE_RATE(writeGPSChannels(sr,currentTicks, &(config->GPSConfigs)), rate);
-		rate = HIGHER_SAMPLE_RATE(writeTrackChannels(sr, currentTicks, &(config->TrackConfigs)), rate);
+	if ((unsigned int)config->GPSConfigs.GPSInstalled){
+		{
+			int rate = writeGPSChannels(sr,currentTicks, &(config->GPSConfigs));
+			highestRate = HIGHER_SAMPLE_RATE(rate, highestRate);
+		}
+		{
+			int rate = writeTrackChannels(sr, currentTicks, &(config->TrackConfigs));
+			highestRate = HIGHER_SAMPLE_RATE(rate, highestRate);
+		}
 	}
-	return rate;
+	return highestRate;
 }
 
 
