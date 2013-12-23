@@ -57,6 +57,7 @@ Once the firmware completes flashing, RaceCapture/Pro will reset and run normall
 Firmware Changelog:
 
 ===1.2.7===
+RPM/Timer input value now goes to zero when input signal goes away (i.e. when internal timer counter overflows)
 Fixed problem where zero values in log file were not being recorded (treated as nulls)
 Optimized code that read channels and populated the sample record object.
 
