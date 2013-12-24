@@ -14,7 +14,6 @@
 #include "loggerData.h"
 #include "loggerTaskEx.h"
 #include "loggerHardware.h"
-#include "loggerData.h"
 #include "loggerConfig.h"
 #include "accelerometer.h"
 #include "luaLoggerBinding.h"
@@ -26,7 +25,7 @@
 #define LOGGER_STACK_SIZE  					200
 #define IDLE_TIMEOUT						configTICK_RATE_HZ / 1
 
-#define ACCELEROMETER_SAMPLE_RATE			SAMPLE_100Hz
+#define BACKGROUND_SAMPLE_RATE				SAMPLE_100Hz
 
 int g_loggingShouldRun;
 int g_isLogging;
@@ -81,7 +80,7 @@ static size_t calcTelemetrySampleRate(LoggerConfig *config, size_t desiredSample
 void updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate, int *telemetrySampleRate, int *sampleRateTimebase){
 	*loggingSampleRate = getHighestSampleRate(loggerConfig);
 	*sampleRateTimebase = *loggingSampleRate;
-	if HIGHER_SAMPLE(ACCELEROMETER_SAMPLE_RATE, *sampleRateTimebase) *sampleRateTimebase = ACCELEROMETER_SAMPLE_RATE;
+	if HIGHER_SAMPLE(BACKGROUND_SAMPLE_RATE, *sampleRateTimebase) *sampleRateTimebase = BACKGROUND_SAMPLE_RATE;
 	*telemetrySampleRate = calcTelemetrySampleRate(loggerConfig, *loggingSampleRate);
 	initSampleRecords(getWorkingLoggerConfig());
 	pr_info_int(*telemetrySampleRate);
@@ -114,7 +113,7 @@ void loggerTaskEx(void *params){
 		portTickType xLastWakeTime = xTaskGetTickCount();
 		currentTicks += sampleRateTimebase;
 
-		if (currentTicks % ACCELEROMETER_SAMPLE_RATE == 0) sampleAllAccel();
+		if (currentTicks % BACKGROUND_SAMPLE_RATE == 0) doBackgroundSampling();
 
 		if (g_configChanged){
 			currentTicks = 0;

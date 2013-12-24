@@ -4,6 +4,6 @@ typedef struct _Filter{
 	int current_value;
 } Filter;
 
-void init_filter(Filter *filter);
+void init_filter(Filter *filter, float alpha);
 
 int update_filter(Filter *filter, int value);

@@ -82,11 +82,11 @@ SPI_DIR = $(SAM7s_BASE_DIR)/spi
 MEMORY_SRC_DIR = $(SAM7s_BASE_DIR)/memory
 LUA_SRC_DIR = $(SAM7s_BASE_DIR)/lua
 CMD_SRC_DIR = $(SAM7s_BASE_DIR)/command
+FILTER_DIR = $(SRC_DIR)/filter
 LOGGING_DIR = $(SRC_DIR)/logging
 TASKS_DIR = tasks
 JSMN_SRC_DIR = $(SRC_DIR)/jsmn
 API_SRC_DIR = $(SRC_DIR)/api
-ACCEL_SRC_DIR = $(SRC_DIR)/accelerometer
 MESSAGING_SRC_DIR = $(SRC_DIR)/messaging
 DEVICES_SRC_DIR = $(SRC_DIR)/devices
 PRED_TIMER_DIR = $(SRC_DIR)/predictive_timer
@@ -149,9 +149,9 @@ $(LUA_SRC_DIR)/luaBaseBinding.c \
 $(LUA_SRC_DIR)/luaCommands.c \
 $(RTOS_PORT_DIR)/MemMang/heap_2_combine.c \
 $(LOGGING_DIR)/printk.c \
+$(FILTER_DIR)/filter.c \
 $(LOGGING_DIR)/ring_buffer.c \
 $(TASKS_DIR)/heartbeat.c \
-$(ACCEL_SRC_DIR)/accelerometer_filter.c \
 $(MESSAGING_SRC_DIR)/messaging.c \
 $(PRED_TIMER_DIR)/predictive_timer.c \
 $(UTIL_DIR)/linear_interpolate.c \
@@ -253,7 +253,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/api \
 -I$(INCLUDE_DIR)/logger \
 -I$(INCLUDE_DIR)/logging \
--I$(INCLUDE_DIR)/accelerometer \
+-I$(INCLUDE_DIR)/filter \
 -I$(INCLUDE_DIR)/messaging \
 -I$(INCLUDE_DIR)/predictive_timer \
 -I$(INCLUDE_DIR)/util \

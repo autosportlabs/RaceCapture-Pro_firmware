@@ -20,6 +20,7 @@
 
 //RaceCapture specific includes
 #include "loggerHardware.h"
+#include "loggerData.h"
 #include "gpioTasks.h"
 #include "gpsTask.h"
 #include "usart.h"
@@ -131,7 +132,7 @@ int main( void )
 	updateActiveLoggerConfig();
 	int success = setupHardware();
 	if (! success) fatalError(FATAL_ERROR_HARDWARE);
-
+	init_logger_data();
 	initMessaging();
 
 	xTaskCreate( vUSBCDCTask,		( signed portCHAR * ) "USB", 				mainUSB_TASK_STACK, NULL, 	mainUSB_PRIORITY, 		NULL );

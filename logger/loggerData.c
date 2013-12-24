@@ -11,6 +11,76 @@
 #include "gps.h"
 #include "linear_interpolate.h"
 #include "predictive_timer.h"
+#include "filter.h"
+
+//Channel Filters
+#define ACCEL_ALPHA 0.1
+static Filter g_accel_filter[CONFIG_ACCEL_CHANNELS];
+
+static void init_filters(){
+	for (size_t i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
+		init_filter(&g_accel_filter[i], ACCEL_ALPHA);
+	}
+}
+
+void init_logger_data(){
+	init_filters();
+}
+
+void doBackgroundSampling(){
+	for (size_t i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
+		update_filter(&g_accel_filter[i], readAccelChannel(i));
+	}
+}
+
+float getAccelerometerValue(unsigned char accelChannel, AccelConfig *ac){
+	size_t physicalChannel = ac->accelChannel;
+	unsigned int raw = g_accel_filter[physicalChannel].current_value;
+	float accelG = (accelChannel == ACCEL_CHANNEL_ZT ? YAW_RAW_TO_DEGREES_PER_SEC(raw ,ac->zeroValue) : ACCEL_RAW_TO_GFORCE(raw ,ac->zeroValue));
+
+	//invert physical channel to match industry-standard accelerometer mappings
+	switch(physicalChannel){
+		case ACCEL_CHANNEL_X:
+		case ACCEL_CHANNEL_Y:
+		case ACCEL_CHANNEL_ZT:
+			accelG = -accelG;
+			break;
+		default:
+			break;
+	}
+
+	//now invert based on configuration
+	switch (ac->mode){
+	case MODE_ACCEL_NORMAL:
+		break;
+	case MODE_ACCEL_INVERTED:
+		accelG = -accelG;
+		break;
+	case MODE_ACCEL_DISABLED:
+	default:
+		accelG = 0;
+		break;
+	}
+	return accelG;
+}
+
+static void flushAccelBuffer(size_t physicalChannel){
+	for (size_t i = 0; i < 1000; i++){
+		readAccelChannel(physicalChannel);
+	}
+}
+
+void calibrateAccelZero(){
+	for (int i = ACCELEROMETER_CHANNEL_MIN; i <= ACCELEROMETER_CHANNEL_MAX; i++){
+		AccelConfig * c = getAccelConfigChannel(i);
+		size_t physicalChannel = c->accelChannel;
+		flushAccelBuffer(physicalChannel);
+		unsigned int zeroValue = g_accel_filter[physicalChannel].current_value;
+		//adjust for gravity
+		if (c->accelChannel == ACCEL_CHANNEL_Z) zeroValue-= (ACCEL_COUNTS_PER_G * (c->mode != MODE_ACCEL_INVERTED ? 1 : -1));
+		c->zeroValue = zeroValue;
+	}
+}
 
 static int writeAccelerometer(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfig *config){
 	int rate = SAMPLE_DISABLED;
