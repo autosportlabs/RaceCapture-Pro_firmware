@@ -36,8 +36,8 @@ static xQueueHandle g_sampleRecordQueue = NULL;
 #define SAMPLE_QUEUE_WAIT_TIME					0
 
 #define WRITE_SUCCESS  0
-#define WRITE_FAIL     -1
-#define FILE_WRITE_OR_FAIL(F,S) if (f_puts(S, F) == EOF) return WRITE_FAIL
+#define WRITE_FAIL     EOF
+#define FILE_WRITE(F,S) f_puts(S, F)
 
 portBASE_TYPE queue_logfile_record(LoggerMessage * msg){
 	if (NULL != g_sampleRecordQueue){
@@ -49,71 +49,72 @@ portBASE_TYPE queue_logfile_record(LoggerMessage * msg){
 }
 
 static int write_quoted_string(FIL *f, char *s){
-	FILE_WRITE_OR_FAIL(f, "\"");
-	FILE_WRITE_OR_FAIL(f, s);
-	FILE_WRITE_OR_FAIL(f, "\"");
-	return WRITE_SUCCESS;
+	int rc = FILE_WRITE(f, "\"");
+	rc = FILE_WRITE(f, s);
+	rc = FILE_WRITE(f, "\"");
+	return rc;
 }
 
 
 static int write_int(FIL *f, int num){
 	char buf[10];
 	modp_itoa10(num,buf);
-	FILE_WRITE_OR_FAIL(f, buf);
-	return WRITE_SUCCESS;
+	return FILE_WRITE(f, buf);
 }
 
 static int write_float(FIL *f, float num, int precision){
 	char buf[20];
 	modp_ftoa(num, buf, precision);
-	FILE_WRITE_OR_FAIL(f, buf);
-	return WRITE_SUCCESS;
+	return FILE_WRITE(f, buf);
 }
 
 static int write_headers(FIL *f, SampleRecord *sr){
+	int rc = WRITE_SUCCESS;
 	int headerCount = 0;
 	for (int i = 0; i < SAMPLE_RECORD_CHANNELS;i++){
 		ChannelConfig *cfg = (sr->Samples[i].channelConfig);
 		if (SAMPLE_DISABLED != cfg->sampleRate){
-			if (headerCount++ > 0) FILE_WRITE_OR_FAIL(f, ",");
-			if (write_quoted_string(f, cfg->label) == WRITE_FAIL) return WRITE_FAIL;
-			FILE_WRITE_OR_FAIL(f, "|");
-			if (write_quoted_string(f, cfg->units) == WRITE_FAIL) return WRITE_FAIL;
-			FILE_WRITE_OR_FAIL(f, "|");
-			if (write_int(f, decodeSampleRate(cfg->sampleRate)) == WRITE_FAIL) return WRITE_FAIL;
+			if (headerCount++ > 0) rc = FILE_WRITE(f, ",");
+			rc = write_quoted_string(f, cfg->label);
+			rc = FILE_WRITE(f, "|");
+			rc = write_quoted_string(f, cfg->units);
+			rc = FILE_WRITE(f, "|");
+			rc = write_int(f, decodeSampleRate(cfg->sampleRate));
 		}
 	}
-	FILE_WRITE_OR_FAIL(f, "\n");
-	return WRITE_SUCCESS;
+	rc = FILE_WRITE(f, "\n");
+	return rc;
 }
 
 
 static int write_sample_record(FIL *f, SampleRecord * sampleRecord){
-	if (NULL == sampleRecord){
-		pr_debug("null sample record..\r\n");
-		return WRITE_SUCCESS;
-	}
-	int fieldCount = 0;
-	for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
-		ChannelSample *sample = &(sampleRecord->Samples[i]);
-		ChannelConfig * channelConfig = sample->channelConfig;
+	int rc = WRITE_SUCCESS;
+	if (NULL != sampleRecord){
+		int fieldCount = 0;
+		for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
+			ChannelSample *sample = &(sampleRecord->Samples[i]);
+			ChannelConfig * channelConfig = sample->channelConfig;
 
-		if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
+			if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
 
-		if (fieldCount++ > 0) FILE_WRITE_OR_FAIL(f, ",");
+			if (fieldCount++ > 0) rc = FILE_WRITE(f, ",");
 
-		if (sample->intValue == NIL_SAMPLE) continue;
+			if (sample->intValue == NIL_SAMPLE) continue;
 
-		int precision = sample->precision;
-		if (precision > 0){
-			if(write_float(f, sample->floatValue, precision) == WRITE_FAIL) return WRITE_FAIL;
+			int precision = sample->precision;
+			if (precision > 0){
+				rc = write_float(f, sample->floatValue, precision);
+			}
+			else{
+				rc = write_int(f, sample->intValue);
+			}
 		}
-		else{
-			if (write_int(f, sample->intValue) == WRITE_FAIL) return WRITE_FAIL;
-		}
+		rc = FILE_WRITE(f, "\n");
 	}
-	FILE_WRITE_OR_FAIL(f, "\n");
-	return WRITE_SUCCESS;
+	else{
+		pr_debug("null sample record\r\n");
+	}
+	return rc;
 }
 
 static int open_next_logfile(FIL *f){
