@@ -42,6 +42,8 @@ enum log_level {
 #define TRACE_LEVEL get_log_level() >= TRACE
 
 size_t read_log_to_serial(Serial *s);
+int writek(const char *msg);
+int writek_int(int value);
 int printk(enum log_level level, const char *msg);
 int printk_int(enum log_level level, int value);
 enum log_level set_log_level(enum log_level level);

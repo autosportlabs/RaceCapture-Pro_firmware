@@ -56,6 +56,16 @@ size_t write_to_log_buff(const char *msg) {
         return data_written;
 }
 
+int writek(const char *msg){
+	return write_to_log_buff(msg);
+}
+
+int writek_int(int value){
+	char buf[12];
+	modp_itoa10(value, buf);
+	return write_to_log_buff(buf);
+}
+
 int printk(enum log_level level, const char *msg) {
         if (level > curr_level) return 0;
         return write_to_log_buff(msg);
@@ -63,9 +73,7 @@ int printk(enum log_level level, const char *msg) {
 
 int printk_int(enum log_level level, int value) {
 		if (level > curr_level) return 0;
-		char buf[12];
-		modp_itoa10(value,buf);
-		return write_to_log_buff(buf);
+		return writek_int(value);
 }
 
 inline enum log_level get_log_level(){
