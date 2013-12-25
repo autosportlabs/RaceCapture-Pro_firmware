@@ -34,7 +34,10 @@ static xQueueHandle g_sampleRecordQueue = NULL;
 
 //wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all
 #define SAMPLE_QUEUE_WAIT_TIME					0
-//#define SAMPLE_QUEUE_WAIT_TIME					portMAX_DELAY
+
+#define WRITE_SUCCESS  0
+#define WRITE_FAIL     -1
+#define FILE_WRITE_OR_FAIL(F,S) if (f_puts(S, F) == EOF) return WRITE_FAIL
 
 portBASE_TYPE queue_logfile_record(LoggerMessage * msg){
 	if (NULL != g_sampleRecordQueue){
@@ -45,50 +48,50 @@ portBASE_TYPE queue_logfile_record(LoggerMessage * msg){
 	}
 }
 
-static void append_quoted_string(char *line, char *s){
-	strcat(line, "\"");
-	strcat(line, s);
-	strcat(line, "\"");
+static int write_quoted_string(FIL *f, char *s){
+	FILE_WRITE_OR_FAIL(f, "\"");
+	FILE_WRITE_OR_FAIL(f, s);
+	FILE_WRITE_OR_FAIL(f, "\"");
+	return WRITE_SUCCESS;
 }
 
 
-static void append_int(char *line, int num){
+static int write_int(FIL *f, int num){
 	char buf[10];
 	modp_itoa10(num,buf);
-	strcat(line,buf);
+	FILE_WRITE_OR_FAIL(f, buf);
+	return WRITE_SUCCESS;
 }
 
-static void append_float(char *line, float num, int precision){
+static int write_float(FIL *f, float num, int precision){
 	char buf[20];
 	modp_ftoa(num, buf, precision);
-	strcat(line,buf);
+	FILE_WRITE_OR_FAIL(f, buf);
+	return WRITE_SUCCESS;
 }
 
-static char * create_headers(char *line, SampleRecord *sr){
-
-	line[0] = '\0';
+static int write_headers(FIL *f, SampleRecord *sr){
 	int headerCount = 0;
 	for (int i = 0; i < SAMPLE_RECORD_CHANNELS;i++){
 		ChannelConfig *cfg = (sr->Samples[i].channelConfig);
 		if (SAMPLE_DISABLED != cfg->sampleRate){
-			if (headerCount++ > 0) strcat(line, ",");
-			append_quoted_string(line, cfg->label);
-			strcat(line, "|");
-			append_quoted_string(line, cfg->units);
-			strcat(line, "|");
-			append_int(line, decodeSampleRate(cfg->sampleRate));
+			if (headerCount++ > 0) FILE_WRITE_OR_FAIL(f, ",");
+			if (write_quoted_string(f, cfg->label) == WRITE_FAIL) return WRITE_FAIL;
+			FILE_WRITE_OR_FAIL(f, "|");
+			if (write_quoted_string(f, cfg->units) == WRITE_FAIL) return WRITE_FAIL;
+			FILE_WRITE_OR_FAIL(f, "|");
+			if (write_int(f, decodeSampleRate(cfg->sampleRate)) == WRITE_FAIL) return WRITE_FAIL;
 		}
 	}
-	strcat(line, "\n");
-	return line;
+	FILE_WRITE_OR_FAIL(f, "\n");
+	return WRITE_SUCCESS;
 }
 
 
-static char * create_sample_record(char *line, SampleRecord * sampleRecord){
-	line[0] = '\0';
+static int write_sample_record(FIL *f, SampleRecord * sampleRecord){
 	if (NULL == sampleRecord){
 		pr_debug("null sample record..\r\n");
-		return;
+		return WRITE_SUCCESS;
 	}
 	int fieldCount = 0;
 	for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
@@ -97,20 +100,20 @@ static char * create_sample_record(char *line, SampleRecord * sampleRecord){
 
 		if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
 
-		if (fieldCount++ > 0) strcat(line, ",");
+		if (fieldCount++ > 0) FILE_WRITE_OR_FAIL(f, ",");
 
 		if (sample->intValue == NIL_SAMPLE) continue;
 
 		int precision = sample->precision;
 		if (precision > 0){
-			append_float(line, sample->floatValue, precision);
+			if(write_float(f, sample->floatValue, precision) == WRITE_FAIL) return WRITE_FAIL;
 		}
 		else{
-			append_int(line, sample->intValue);
+			if (write_int(f, sample->intValue) == WRITE_FAIL) return WRITE_FAIL;
 		}
 	}
-	strcat(line,"\n");
-	return line;
+	FILE_WRITE_OR_FAIL(f, "\n");
+	return WRITE_SUCCESS;
 }
 
 static int open_next_logfile(FIL *f){
@@ -135,36 +138,12 @@ static int open_next_logfile(FIL *f){
 	return rc;
 }
 
-static char * create_sample_line_buffer(){
-	//budget 30 characters per channel 'column' plus 1 delimiter.
-	//in the future the number of sample records will be dynamic and the LoggerMessage will need to be passed in.
-	int bufferSize = SAMPLE_RECORD_CHANNELS * 31;
-	pr_debug_int(bufferSize);
-	pr_debug("=sample buffer size\r\n");
-	char * buffer = (char *)portMalloc(bufferSize);
-	return buffer;
-}
-
-static void free_sample_line_buffer(char *lineBuffer){
-	if (lineBuffer != NULL){
-		portFree(lineBuffer);
-		pr_debug("free sample buffer\r\n");
-	}
-}
-
 static void end_logfile(){
 	pr_info("close logfile\r\n");
 	lock_spi();
 	f_close(&g_logfile);
 	UnmountFS();
 	unlock_spi();
-}
-
-static int write_logfile(const char *buffer, FIL *file){
-	lock_spi();
-	int rc = f_puts(buffer, file);
-	unlock_spi();
-	return rc;
 }
 
 static void flush_logfile(FIL *file){
@@ -208,7 +187,6 @@ void fileWriterTask(void *params){
 	portTickType flushTimeoutStart = 0;
 	size_t tick = 0;
 	enum writing_status writingStatus = WRITING_INACTIVE;
-	char *lineBuffer = NULL;
 
 	while(1){
 		while(1){
@@ -220,15 +198,7 @@ void fileWriterTask(void *params){
 				flushTimeoutInterval = FLUSH_INTERVAL_SEC * 1000;
 				flushTimeoutStart = xTaskGetTickCount();
 				tick = 0;
-
-				lineBuffer = create_sample_line_buffer();
-				if (0 == lineBuffer){
-					pr_error("Could not create line buffer\r\n");
-					enableLED(LED3);
-				}
-				else{
-					writingStatus = open_new_logfile();
-				}
+				writingStatus = open_new_logfile();
 			}
 
 			else if (LOGGER_MSG_END_LOG == msg->messageType){
@@ -238,14 +208,16 @@ void fileWriterTask(void *params){
 			}
 
 			else if (LOGGER_MSG_SAMPLE == msg->messageType && WRITING_ACTIVE == writingStatus){
+				lock_spi();
 				if (0 == tick){
-					write_logfile(create_headers(lineBuffer, msg->sampleRecord), &g_logfile);
+					write_headers(&g_logfile, msg->sampleRecord);
 				}
-				int rc = write_logfile(create_sample_record(lineBuffer, msg->sampleRecord), &g_logfile);
+				int rc = write_sample_record(&g_logfile, msg->sampleRecord);
+				unlock_spi();
 
-				if (rc == EOF){
+				if (rc == WRITE_FAIL){
 					enableLED(LED3);
-					pr_error("Error writing file- EOF\r\n");
+					pr_error("Error writing file\r\n");
 					break;
 				}
 				if (isTimeoutMs(flushTimeoutStart, flushTimeoutInterval)){
@@ -255,8 +227,6 @@ void fileWriterTask(void *params){
 				tick++;
 			}
 		}
-		free_sample_line_buffer(lineBuffer);
-		lineBuffer = NULL;
 		end_logfile();
 		writingStatus = WRITING_INACTIVE;
 	}

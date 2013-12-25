@@ -72,7 +72,7 @@
 
 #include "ff.h"			/* FatFs configurations and declarations */
 #include "diskio.h"		/* Declarations of low level disk I/O functions */
-
+#include "printk.h"
 /*--------------------------------------------------------------------------
 
    Module Private Definitions
@@ -1877,8 +1877,8 @@ FRESULT f_write (
 					clst = create_chain(fp->fs, fp->curr_clust);			/* Follow or stretch cluster chain */
 				}
 				if (clst == 0) break;				/* Could not allocate a new cluster (disk full) */
-				if (clst == 1) ABORT(fp->fs, FR_INT_ERR);
-				if (clst == 0xFFFFFFFF) ABORT(fp->fs, FR_DISK_ERR);
+				if (clst == 1) {pr_debug("e1\r\n");ABORT(fp->fs, FR_INT_ERR);}
+				if (clst == 0xFFFFFFFF) {pr_debug("e2\r\n");ABORT(fp->fs, FR_DISK_ERR);}
 				fp->curr_clust = clst;				/* Update current cluster */
 				fp->csect = 0;						/* Reset sector address in the cluster */
 			}
@@ -1888,19 +1888,19 @@ FRESULT f_write (
 #else
 			if (fp->flag & FA__DIRTY) {		/* Write back data buffer prior to following direct transfer */
 				if (disk_write(fp->fs->drive, fp->buf, fp->dsect, 1) != RES_OK)
-					ABORT(fp->fs, FR_DISK_ERR);
+					{pr_debug("e3\r\n");ABORT(fp->fs, FR_DISK_ERR);}
 				fp->flag &= ~FA__DIRTY;
 			}
 #endif
 			sect = clust2sect(fp->fs, fp->curr_clust);	/* Get current sector */
-			if (!sect) ABORT(fp->fs, FR_INT_ERR);
+			if (!sect) {pr_debug("e4\r\n");ABORT(fp->fs, FR_INT_ERR);}
 			sect += fp->csect;
 			cc = btw / SS(fp->fs);					/* When remaining bytes >= sector size, */
 			if (cc) {								/* Write maximum contiguous sectors directly */
 				if (fp->csect + cc > fp->fs->csize)	/* Clip at cluster boundary */
 					cc = fp->fs->csize - fp->csect;
 				if (disk_write(fp->fs->drive, wbuff, sect, (BYTE)cc) != RES_OK)
-					ABORT(fp->fs, FR_DISK_ERR);
+					{pr_debug("e5\r\n");ABORT(fp->fs, FR_DISK_ERR);}
 #if _FS_TINY
 				if (fp->fs->winsect - sect < cc) {	/* Refill sector cache if it gets dirty by the direct write */
 					mem_cpy(fp->fs->win, wbuff + ((fp->fs->winsect - sect) * SS(fp->fs)), SS(fp->fs));
@@ -1925,7 +1925,7 @@ FRESULT f_write (
 			if (fp->dsect != sect) {				/* Fill sector buffer with file data */
 				if (fp->fptr < fp->fsize &&
 					disk_read(fp->fs->drive, fp->buf, sect, 1) != RES_OK)
-						ABORT(fp->fs, FR_DISK_ERR);
+						{pr_debug("e6\r\n");ABORT(fp->fs, FR_DISK_ERR);}
 			}
 #endif
 			fp->dsect = sect;
