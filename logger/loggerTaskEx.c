@@ -126,13 +126,13 @@ void loggerTaskEx(void *params){
 		if (g_loggingShouldRun && ! g_isLogging){
 			pr_info("startLog\r\n");
 			g_isLogging = 1;
-			queueLogfileRecord(&g_startLogMessage);
+			queue_logfile_record(&g_startLogMessage);
 			queueTelemetryRecord(&g_startLogMessage);
 			disableLED(LED3);
 		}
 		else if (! g_loggingShouldRun && g_isLogging){
 			g_isLogging = 0;
-			queueLogfileRecord(&g_endLogMessage);
+			queue_logfile_record(&g_endLogMessage);
 			queueTelemetryRecord(&g_endLogMessage);
 			disableLED(LED2);
 		}
@@ -142,7 +142,7 @@ void loggerTaskEx(void *params){
 		int sampledRate = populateSampleRecord(msg->sampleRecord, currentTicks, loggerConfig);
 
 		if (g_isLogging && (sampledRate != SAMPLE_DISABLED && sampledRate >= loggingSampleRate)){
-			if (queueLogfileRecord(msg) != pdTRUE) enableLED(LED3);
+			if (queue_logfile_record(msg) != pdTRUE) enableLED(LED3);
 			toggleLED(LED2);
 		}
 
