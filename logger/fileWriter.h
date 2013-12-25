@@ -8,6 +8,6 @@
 
 void createFileWriterTask();
 void fileWriterTask(void *params);
-portBASE_TYPE queueLogfileRecord(LoggerMessage * sr);
+portBASE_TYPE queue_logfile_record(LoggerMessage * sr);
 
 #endif /* FILEWRITER_H_ */
