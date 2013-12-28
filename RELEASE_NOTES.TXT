@@ -60,6 +60,9 @@ Firmware Changelog:
 RPM/Timer input value now goes to zero when input signal goes away (i.e. when internal timer counter overflows)
 Fixed problem where zero values in log file were not being recorded (treated as nulls)
 Optimized code that read channels and populated the sample record object.
+Auto file recovery attempt if file write error occurs; falls back to creating a new log file if it cannot auto-recover.
+Improved SD performance/reliability when writing at high logging rates (>=100Hz)
+Updated to ChanFS 0.10
 
 ===1.2.6===
 Fixed problem where saving an empty lua script caused garbage script to be saved
