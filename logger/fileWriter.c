@@ -229,7 +229,10 @@ void fileWriterTask(void *params){
 					//try to recover
 					lock_spi();
 					f_close(&g_logfile);
+					UnmountFS();
+					unlock_spi();
 					pr_error("Error writing file, recovering..\r\n");
+					InitFS();
 					rc = open_logfile(&g_logfile, filename);
 					if (0 != rc){
 						pr_error("could not recover file ");
@@ -240,7 +243,6 @@ void fileWriterTask(void *params){
 					else{
 						disableLED(LED3);
 					}
-					unlock_spi();
 				}
 				if (isTimeoutMs(flushTimeoutStart, flushTimeoutInterval)){
 					flush_logfile(&g_logfile);
