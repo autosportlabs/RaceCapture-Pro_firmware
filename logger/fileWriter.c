@@ -27,7 +27,7 @@ static xQueueHandle g_sampleRecordQueue = NULL;
 
 #define FILE_WRITER_TASK_PRIORITY				( tskIDLE_PRIORITY + 3 )
 #define FILE_WRITER_STACK_SIZE  				200
-#define SAMPLE_RECORD_QUEUE_SIZE				20
+#define SAMPLE_RECORD_QUEUE_SIZE				10
 
 #define FILENAME_LEN							13
 #define MAX_LOG_FILE_INDEX 						99999
