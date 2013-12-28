@@ -26,11 +26,17 @@ int UnmountFS(){
 	return f_mount(NULL, "0", 1);
 }
 
-static FIL fatFile;
-
 void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet, int delay)
 {
 	int res = 0;
+	FIL *fatFile = NULL;
+
+	fatFile = pvPortMalloc(sizeof(FIL));
+	if (NULL == fatFile){
+		serial->put_s("could not allocate file object\r\n");
+		goto exit;
+	}
+
 	if (!quiet){
 		serial->put_s("Test Write: Lines: ");
 		put_int(serial, lines);
@@ -51,7 +57,7 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet, int delay)
 		serial->put_s("Opening File... ");
 	}
 	lock_spi();
-	res = f_open(&fatFile,"test1.txt", FA_WRITE | FA_CREATE_ALWAYS);
+	res = f_open(fatFile,"test1.txt", FA_WRITE | FA_CREATE_ALWAYS);
 	unlock_spi();
 	if (!quiet){
 		put_int(serial, res);
@@ -64,8 +70,8 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet, int delay)
 	for (size_t i = 1; i <= lines; i++){
 		delayMs(delay);
 		lock_spi();
-		res = f_puts("The quick brown fox jumped over the lazy dog\n",&fatFile);
-		if (doFlush) f_sync(&fatFile);
+		res = f_puts("The quick brown fox jumped over the lazy dog\n",fatFile);
+		if (doFlush) f_sync(fatFile);
 		unlock_spi();
 		if (res == EOF){
 			serial->put_s("failed writing at line ");
@@ -88,7 +94,7 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet, int delay)
 	}
 
 	lock_spi();
-	res = f_close(&fatFile);
+	res = f_close(fatFile);
 	unlock_spi();
 	if (!quiet){
 		put_int(serial, res);
@@ -115,4 +121,5 @@ exit:
 		put_int(serial, res);
 		put_crlf(serial);
 	}
+	if (fatFile != NULL) vPortFree(fatFile);
 }
