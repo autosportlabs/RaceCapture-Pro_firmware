@@ -146,6 +146,10 @@ unsigned int readAccelerometerDevice(unsigned char channel){
 	for (unsigned int d = 0; d < 1000;d++){} //40 us???? recalcualate this...
 	unsigned char dataMSB = accel_spiSend(0x00, 0);
 	unsigned char dataLSB = accel_spiSend(0x00, 1);
+	accel_spiSend(0x00, 1);
+	accel_spiSend(0x00, 1);
+	accel_spiSend(0x00, 1);
+	accel_spiSend(0x00, 1);
 	unsigned int value = (dataMSB << 4) + ((dataLSB >> 4) & 0x0f);
 	unlock_spi();
 	return value;

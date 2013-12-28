@@ -126,7 +126,6 @@ $(FAT_SD_SRC_DIR)/fattime.c \
 $(FAT_SD_SRC_DIR)/ff.c \
 $(FAT_SD_SRC_DIR)/sd_spi_at91.c \
 $(FAT_SD_SRC_DIR)/rtc.c \
-$(FAT_SD_SRC_DIR)/option/ccsbcs.c \
 $(SDCARD_SRC_DIR)/sdcard.c \
 $(ACCELEROMETER_SRC_DIR)/accelerometer.c \
 $(LOGGER_SRC_DIR)/sampleRecord.c \

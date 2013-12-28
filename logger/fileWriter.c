@@ -19,18 +19,20 @@
 
 enum writing_status {
 	WRITING_INACTIVE = 0,
-	WRITING_ACTIVE = 1,
-	WRITING_INITIALIZATION_ERROR = 2
+	WRITING_ACTIVE = 1
 };
 
 static FIL g_logfile;
 static xQueueHandle g_sampleRecordQueue = NULL;
 
-#define FILE_WRITER_TASK_PRIORITY				( tskIDLE_PRIORITY + 4 )
+#define FILE_WRITER_TASK_PRIORITY				( tskIDLE_PRIORITY + 3 )
 #define FILE_WRITER_STACK_SIZE  				200
-#define SAMPLE_RECORD_QUEUE_SIZE				10
+#define SAMPLE_RECORD_QUEUE_SIZE				20
+
+#define FILENAME_LEN							13
 #define MAX_LOG_FILE_INDEX 						99999
-#define FLUSH_INTERVAL_SEC						5
+#define FLUSH_INTERVAL_MS						5000
+#define ERROR_SLEEP_DELAY_MS					1000
 
 //wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all
 #define SAMPLE_QUEUE_WAIT_TIME					0
@@ -117,9 +119,14 @@ static int write_sample_record(FIL *f, SampleRecord * sampleRecord){
 	return rc;
 }
 
-static int open_next_logfile(FIL *f){
+static int open_logfile(FIL *f, char *filename){
+	lock_spi();
+	int rc = f_open(f,filename, FA_WRITE);
+	unlock_spi();
+	return rc;
+}
 
-	char filename[13];
+static int open_next_logfile(FIL *f, char *filename){
 	int i = 0;
 	int rc;
 	for (; i < MAX_LOG_FILE_INDEX; i++){
@@ -158,8 +165,8 @@ static void flush_logfile(FIL *file){
 	unlock_spi();
 }
 
-static int open_new_logfile(){
-	int status = WRITING_INITIALIZATION_ERROR;
+static int open_new_logfile(char *filename){
+	int status = WRITING_INACTIVE;
 	lock_spi();
 	//start of a new logfile
 	int rc = InitFS();
@@ -169,7 +176,7 @@ static int open_new_logfile(){
 	}
 	else{
 		//open next log file
-		rc = open_next_logfile(&g_logfile);
+		rc = open_next_logfile(&g_logfile, filename);
 		if (0 != rc){
 			pr_error("File open error\r\n");
 			enableLED(LED3);
@@ -188,18 +195,19 @@ void fileWriterTask(void *params){
 	portTickType flushTimeoutStart = 0;
 	size_t tick = 0;
 	enum writing_status writingStatus = WRITING_INACTIVE;
+	char filename[FILENAME_LEN];
 
 	while(1){
 		while(1){
 			//wait for the next sample record
 			xQueueReceive(g_sampleRecordQueue, &(msg), portMAX_DELAY);
-
-			if (LOGGER_MSG_START_LOG == msg->messageType && WRITING_INACTIVE == writingStatus){
+			if ((LOGGER_MSG_START_LOG == msg->messageType || LOGGER_MSG_SAMPLE == msg->messageType) && WRITING_INACTIVE == writingStatus){
+				pr_debug("start logging\r\n");
 				disableLED(LED3);
-				flushTimeoutInterval = FLUSH_INTERVAL_SEC * 1000;
+				flushTimeoutInterval = FLUSH_INTERVAL_MS;
 				flushTimeoutStart = xTaskGetTickCount();
 				tick = 0;
-				writingStatus = open_new_logfile();
+				writingStatus = open_new_logfile(filename);
 			}
 
 			else if (LOGGER_MSG_END_LOG == msg->messageType){
@@ -218,8 +226,21 @@ void fileWriterTask(void *params){
 
 				if (rc == WRITE_FAIL){
 					enableLED(LED3);
-					pr_error("Error writing file\r\n");
-					break;
+					//try to recover
+					lock_spi();
+					f_close(&g_logfile);
+					pr_error("Error writing file, recovering..\r\n");
+					rc = open_logfile(&g_logfile, filename);
+					if (0 != rc){
+						pr_error("could not recover file ");
+						pr_error(filename);
+						pr_error("\r\n");
+						break;
+					}
+					else{
+						disableLED(LED3);
+					}
+					unlock_spi();
 				}
 				if (isTimeoutMs(flushTimeoutStart, flushTimeoutInterval)){
 					flush_logfile(&g_logfile);
@@ -230,6 +251,7 @@ void fileWriterTask(void *params){
 		}
 		end_logfile();
 		writingStatus = WRITING_INACTIVE;
+		delayMs(ERROR_SLEEP_DELAY_MS);
 	}
 }
 

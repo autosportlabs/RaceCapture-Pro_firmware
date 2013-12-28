@@ -840,7 +840,7 @@ DRESULT disk_read (
 	BYTE drv,			/* Physical drive number (0) */
 	BYTE *buff,			/* Pointer to the data buffer to store read data */
 	DWORD sector,		/* Start sector number (LBA) */
-	BYTE count			/* Sector count (1..255) */
+	UINT count			/* Sector count (1..255) */
 )
 {
 	if (drv || !count) return RES_PARERR;
@@ -878,7 +878,7 @@ DRESULT disk_write (
 	BYTE drv,			/* Physical drive number (0) */
 	const BYTE *buff,	/* Pointer to the data to be written */
 	DWORD sector,		/* Start sector number (LBA) */
-	BYTE count			/* Sector count (1..255) */
+	UINT count			/* Sector count (1..255) */
 )
 {
 	if (drv || !count) return RES_PARERR;
