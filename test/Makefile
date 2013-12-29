@@ -22,6 +22,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/gps \
 		-I$(RCP_INC)/jsmn \
 		-I$(RCP_INC)/api \
+		-I$(RCP_INC)/filter \
 		-I$(RCP_INC)/logger \
 		-I$(RCP_INC)/messaging \
 		-I$(RCP_INC)/predictive_timer \
@@ -75,6 +76,7 @@ SRC = 	loggerData_test.cpp \
 		$(RCP_SRC)/logging/ring_buffer.c \
 		$(SAM7S_SRC)/serial/serial.c \
 		$(RCP_SRC)/logger/loggerApi.c \
+		$(RCP_SRC)/filter/filter.c \
 		$(RCP_SRC)/predictive_timer/predictive_timer.c \
 		$(RCP_SRC)/util/linear_interpolate.c \
 		$(RCP_BASE)/logger/loggerConfig.c \

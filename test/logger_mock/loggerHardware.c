@@ -6,6 +6,7 @@
  */
 #include "loggerHardware.h"
 #include "loggerConfig.h"
+#include "accelerometer.h"
 
 static int g_isCardPresent = 0;
 static int g_isCardWritable = 0;
@@ -21,10 +22,6 @@ static int g_isFlashed = 0;
 
 void InitLoggerHardware(){
 
-}
-
-float getAccelerometerValue(unsigned char channel, AccelConfig *ac){
-	return 0;
 }
 
 void InitGPIO(LoggerConfig *loggerConfig){}
@@ -197,5 +194,10 @@ unsigned int getTimer2Period(){
 int flashLoggerConfig(){
 	g_isFlashed = 1;
 	return 1;
+}
+
+int readAccelChannel(size_t physicalChannel){
+	return readAccelerometerDevice(physicalChannel);
+
 }
 

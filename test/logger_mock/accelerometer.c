@@ -22,18 +22,6 @@ void accel_init(){
 	}
 }
 
-unsigned int readAccelChannel(unsigned char channel){
-	return readAccelerometerDevice(channel);
-}
-
-unsigned int getLastAccelRead(unsigned char channel){
-	return readAccelChannel(channel);
-}
-
 unsigned int readAccelerometerDevice(unsigned char channel){
 	return channelValues[channel];
-}
-
-void calibrateAccelZero(){
-
 }
