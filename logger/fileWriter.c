@@ -244,6 +244,7 @@ void fileWriterTask(void *params){
 						disableLED(LED3);
 					}
 				}
+				disableLED(LED3);
 				if (isTimeoutMs(flushTimeoutStart, flushTimeoutInterval)){
 					flush_logfile(&g_logfile);
 					flushTimeoutStart = xTaskGetTickCount();
