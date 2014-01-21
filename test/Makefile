@@ -19,6 +19,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/util \
 		-I$(RCP_BASE)/logger \
 		-I$(RCP_BASE)/fat_sd \
+		-I$(RCP_INC)\
 		-I$(RCP_INC)/logging \
 		-I$(RCP_INC)/gps \
 		-I$(RCP_INC)/jsmn \
@@ -76,6 +77,7 @@ SRC = 	loggerData_test.cpp \
 		loggerConfig_test.cpp \
 		predictiveTime_test.cpp \
 		sampleRecord_test.cpp \
+		PredictiveTimeTest2.cpp \
 		RCPTest.cpp \
 		mock_uart.c \
 		mock_usb_comm.c \
@@ -110,9 +112,11 @@ SRC = 	loggerData_test.cpp \
 		$(MOCK_DIR)/watchdog_device_mock.c \
 		$(MOCK_DIR)/CAN_device_mock.c \
 		$(RCP_SRC)/predictive_timer/predictive_timer.c \
+		$(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 		$(RCP_SRC)/util/linear_interpolate.c \
 		$(RCP_BASE)/logger/loggerConfig.c \
 		$(RCP_SRC)/gps/gps.c \
+		$(RCP_SRC)/geopoint.c \
 		$(RCP_SRC)/gps/geometry.c \
 		$(RCP_BASE)/logger/sampleRecord.c \
 		$(RCP_BASE)/logger/loggerSampleData.c \
