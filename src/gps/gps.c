@@ -1,4 +1,5 @@
 #include "gps.h"
+#include "geopoint.h"
 #include "loggerHardware.h"
 #include "loggerConfig.h"
 #include "modp_numtoa.h"
@@ -6,6 +7,7 @@
 #include "geometry.h"
 #include "mod_string.h"
 #include "predictive_timer.h"
+#include "predictive_timer_2.h"
 #include "printk.h"
 #include <math.h>
 
@@ -470,12 +472,20 @@ void onLocationUpdated(){
 		if (splitEnabled) processSplit(splitCfg);
 
 		if (startFinishEnabled){
+			GeoPoint gp;
+			populateGeoPoint(&gp);
+			float utcTime = getUTCTime();
 			float time = calcTimeSinceLastSample();
+
 			add_predictive_sample(g_speed,dist,time);
+
 			int lapDetected = processStartFinish(startFinishCfg);
 			if (lapDetected){
 				resetDistance();
 				end_lap();
+				startFinishCrossed(gp, utcTime);
+			} else {
+				addGpsSample(gp, utcTime);
 			}
 		}
 	}
