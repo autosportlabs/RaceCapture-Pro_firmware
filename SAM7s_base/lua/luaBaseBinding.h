@@ -19,4 +19,9 @@ int Lua_Println(lua_State *L);
 int Lua_GetStackSize(lua_State *L);
 int Lua_SetTickRate(lua_State *L);
 int Lua_GetTickRate(lua_State *L);
+int Lua_WriteLog(lua_State *L);
+int Lua_WriteLogLn(lua_State *L);
+int Lua_SetLogLevel(lua_State *L);
+int Lua_GetLogLevel(lua_State *L);
+
 #endif /* LUABASEBINDINGS_H_ */
