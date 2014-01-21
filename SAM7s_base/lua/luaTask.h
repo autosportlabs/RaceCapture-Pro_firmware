@@ -23,4 +23,7 @@ int getAllocDebug();
 int getShouldReloadScript(void);
 void setShouldReloadScript(int reload);
 
+void set_ontick_freq(size_t freq);
+size_t get_ontick_freq();
+
 #endif /*LUATASK_H_*/

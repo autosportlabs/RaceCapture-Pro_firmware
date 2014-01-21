@@ -3,6 +3,7 @@
 #include "modp_numtoa.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "taskUtil.h"
 #include "loggerHardware.h"
 #include "spi.h"
 

@@ -13,12 +13,16 @@
 #include "luaScript.h"
 #include "luaCommands.h"
 #include "command.h"
+#include "taskUtil.h"
+#include "luaTask.h"
 
 void registerBaseLuaFunctions(lua_State *L){
 	//Utility
 	lua_registerlight(L,"print",Lua_Print);
 	lua_registerlight(L,"println", Lua_Println);
 	lua_registerlight(L,"getStackSize", Lua_GetStackSize);
+	lua_registerlight(L,"setTickRate", Lua_SetTickRate);
+	lua_registerlight(L,"getTickRate", Lua_GetTickRate);
 }
 
 int Lua_Println(lua_State *L){
@@ -42,3 +46,17 @@ int Lua_GetStackSize(lua_State *L){
 	lua_pushinteger(L,lua_gettop(L));
 	return 1;
 }
+
+int Lua_SetTickRate(lua_State *L){
+	if (lua_gettop(L) >= 1){
+		int freq = lua_tointeger(L, 1);
+		set_ontick_freq(freq);
+	}
+	return 0;
+}
+
+int Lua_GetTickRate(lua_State *L){
+	lua_pushinteger(L, get_ontick_freq());
+	return 1;
+}
+

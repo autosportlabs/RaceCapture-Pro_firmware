@@ -1,9 +1,3 @@
-/*
- * taskUtil.c
- *
- *  Created on: Feb 18, 2012
- *      Author: brent
- */
 #include "taskUtil.h"
 
 inline int isTimeoutMs(portTickType start,unsigned int timeout){
@@ -11,8 +5,21 @@ inline int isTimeoutMs(portTickType start,unsigned int timeout){
 }
 
 inline void delayMs(unsigned int delay){
-	vTaskDelay(delay / portTICK_RATE_MS);
+	vTaskDelay(msToTicks(delay));
 }
+
+inline void delayTicks(size_t ticks){
+	vTaskDelay(ticks);
+}
+
+inline size_t msToTicks(size_t ms){
+	return ms / portTICK_RATE_MS;
+}
+
+inline size_t ticksToMs(size_t ticks){
+	return ticks * portTICK_RATE_MS;
+}
+
 
 
 

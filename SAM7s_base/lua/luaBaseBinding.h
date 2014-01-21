@@ -17,5 +17,6 @@ void registerBaseLuaFunctions(lua_State *L);
 int Lua_Print(lua_State *L);
 int Lua_Println(lua_State *L);
 int Lua_GetStackSize(lua_State *L);
-
+int Lua_SetTickRate(lua_State *L);
+int Lua_GetTickRate(lua_State *L);
 #endif /* LUABASEBINDINGS_H_ */

@@ -7,13 +7,11 @@
 #include "luaScript.h"
 #include "luaBaseBinding.h"
 #include "mem_mang.h"
+#include "taskUtil.h"
 
-#define LUA_30Hz 10
-#define LUA_20Hz 15
-#define LUA_10Hz 30
-#define LUA_5Hz 60
-#define LUA_1Hz 300
 
+#define DEFAULT_ONTICK_HZ 1
+#define MAX_ONTICK_HZ 30
 #define LUA_STACK_SIZE 1000
 #define LUA_PRIORITY 2
 
@@ -24,6 +22,7 @@ static lua_State *g_lua;
 static xSemaphoreHandle xLuaLock;
 static unsigned int lastPointer;
 static int g_shouldReloadScript;
+static size_t onTickSleepInterval;
 
 //#define ALLOC_DEBUG
 
@@ -105,18 +104,25 @@ void unlockLua(void){
 	xSemaphoreGive(xLuaLock);
 }
 
-int getShouldReloadScript(void){
+void set_ontick_freq(size_t freq){
+	if (freq <= MAX_ONTICK_HZ) onTickSleepInterval = msToTicks(1000 / freq);
+}
+
+size_t get_ontick_freq(){
+	return 1000 / ticksToMs(onTickSleepInterval);
+}
+
+inline int getShouldReloadScript(void){
 	return g_shouldReloadScript;
 }
 
-void setShouldReloadScript(int reload){
+inline void setShouldReloadScript(int reload){
 	g_shouldReloadScript = reload;
 }
 
 void startLuaTask(){
-
-
-	g_shouldReloadScript = 0;
+	setShouldReloadScript(0);
+	set_ontick_freq(DEFAULT_ONTICK_HZ);
 
 	vSemaphoreCreateBinary(xLuaLock);
 
@@ -145,18 +151,14 @@ static void doScript(void){
 }
 
 void luaTask(void *params){
-
 	doScript();
-
 	while(1){
 		portTickType xLastWakeTime, startTickTime;
-		const portTickType xFrequency = LUA_1Hz;
 		startTickTime = xLastWakeTime = xTaskGetTickCount();
 		if (getShouldReloadScript()){
 			doScript();
 			setShouldReloadScript(0);
 		}
-
 		lockLua();
  		lua_getglobal(g_lua, LUA_PERIODIC_FUNCTION);
     	if (! lua_isnil(g_lua,-1)){
@@ -174,8 +176,7 @@ void luaTask(void *params){
 	        lua_pop(g_lua,1);
 	    }
     	unlockLua();
-
-		vTaskDelayUntil( &xLastWakeTime, xFrequency );
+		vTaskDelayUntil( &xLastWakeTime, onTickSleepInterval );
 	}
 }
 
