@@ -8,12 +8,10 @@
 #ifndef TASKUTIL_H_
 #define TASKUTIL_H_
 
-#include <stdint.h>
-#include "FreeRTOSConfig.h"
-#include "FreeRTOS.h"
-#include "task.h"
+#include <stddef.h>
 
-int isTimeoutMs(portTickType start, unsigned int timeout);
+unsigned int getCurrentTicks();
+int isTimeoutMs(unsigned int startTicks, unsigned int timeoutMs);
 inline void delayMs(unsigned int delay);
 void delayTicks(size_t ticks);
 inline size_t msToTicks(size_t ms);
