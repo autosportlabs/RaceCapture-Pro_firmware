@@ -68,6 +68,7 @@ INCLUDE_DIR = include
 SRC_DIR = src
 
 SAM7s_BASE_DIR = SAM7s_base
+MCP2515_DIR = $(SAM7s_BASE_DIR)/MCP2515
 HW_DIR = $(SAM7s_BASE_DIR)/hardware
 RTOS_DIR = $(SAM7s_BASE_DIR)/FreeRTOS
 RTOS_SRC_DIR = $(RTOS_DIR)/Source
@@ -83,6 +84,7 @@ MEMORY_SRC_DIR = $(SAM7s_BASE_DIR)/memory
 LUA_SRC_DIR = $(SAM7s_BASE_DIR)/lua
 CMD_SRC_DIR = $(SAM7s_BASE_DIR)/command
 FILTER_DIR = $(SRC_DIR)/filter
+CAN_DIR = $(SRC_DIR)/CAN
 LOGGING_DIR = $(SRC_DIR)/logging
 TASKS_DIR = tasks
 JSMN_SRC_DIR = $(SRC_DIR)/jsmn
@@ -142,6 +144,7 @@ $(GPS_SRC_DIR)/geometry.c \
 $(LOGGER_SRC_DIR)/luaLoggerBinding.c \
 $(LOGGER_SRC_DIR)/loggerCommands.c \
 $(MEMORY_SRC_DIR)/memory.c \
+$(MCP2515_DIR)/CAN_device_MCP2515.c \
 $(LUA_SRC_DIR)/luaTask.c \
 $(LUA_SRC_DIR)/luaScript.c \
 $(LUA_SRC_DIR)/luaBaseBinding.c \
@@ -149,6 +152,7 @@ $(LUA_SRC_DIR)/luaCommands.c \
 $(RTOS_PORT_DIR)/MemMang/heap_2_combine.c \
 $(LOGGING_DIR)/printk.c \
 $(FILTER_DIR)/filter.c \
+$(CAN_DIR)/CAN.c \
 $(LOGGING_DIR)/ring_buffer.c \
 $(TASKS_DIR)/heartbeat.c \
 $(MESSAGING_SRC_DIR)/messaging.c \
@@ -253,6 +257,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/logger \
 -I$(INCLUDE_DIR)/logging \
 -I$(INCLUDE_DIR)/filter \
+-I$(INCLUDE_DIR)/CAN \
 -I$(INCLUDE_DIR)/messaging \
 -I$(INCLUDE_DIR)/predictive_timer \
 -I$(INCLUDE_DIR)/util \
