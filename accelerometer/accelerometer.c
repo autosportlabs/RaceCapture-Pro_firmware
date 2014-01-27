@@ -125,7 +125,7 @@ static void accel_initSPI(){
 	pPIOA->PIO_BSR = NPCS_BSR_BIT;
 
 	//spi speed is 48054840 / value in MHz
-	//normal speed 3.5MHz. Reduce this if accelerometer readings are unstable
+	//normal speed ~1 MHz. Reduce this if accelerometer readings are unstable
 	accel_spiSetSpeed(48);
 	unlock_spi();
 }
