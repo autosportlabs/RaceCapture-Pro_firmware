@@ -6,6 +6,7 @@
 #include "constants.h"
 #include "memory.h"
 #include "spi.h"
+#include "CAN.h"
 
 /* ADC field definition for the Mode Register: Reminder
                        TRGEN    => Selection bewteen Software or hardware start of conversion
@@ -71,6 +72,23 @@ void InitLoggerHardware(){
 	InitLEDs();
 	InitPushbutton();
 	InitSDCard();
+	CAN_init();
+	CAN_set_baud(CAN_BAUD_250K);
+
+	CAN_msg msg;
+	msg.adrsValue = 0x7df;
+	msg.isExtendedAdrs = 0;
+	msg.remoteTxRequest = 0;
+	msg.dataLength = 8;
+	msg.data[0] = 0x02;
+	msg.data[1] = 0x01;
+	msg.data[2] = 0X0d;
+	msg.data[3] = 0;
+	msg.data[4] = 0;
+	msg.data[5] = 0;
+	msg.data[6] = 0;
+	msg.data[7] = 0;
+	CAN_tx_msg(&msg,1000);
 }
 
 void ResetWatchdog(){
