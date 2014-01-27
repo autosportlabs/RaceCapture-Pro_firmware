@@ -188,9 +188,9 @@ static void AT91_CAN_SPI_init(){
 	pPIOA->PIO_BSR = NPCS_BSR_BIT;
 
 	//spi speed is 48054840 / value in MHz
-	//normal speed 3.5MHz. Reduce this if accelerometer readings are unstable
+	//normal speed is ~1 MHz. Reduce this if accelerometer readings are unstable
 	//TODO slow for testing, speed up later
-	AT91_CAN_SPI_set_speed(0xFE);
+	AT91_CAN_SPI_set_speed(48);
 	unlock_spi();
 }
 
@@ -267,22 +267,22 @@ static int MCP2515_set_baud(int baud){
 		brp = 0;
 		break;
 	}
-	CAN_SPI_send(MCP2515_CMD_WRITE, 1);
-	CAN_SPI_send(MCP2515_REG_CNF1, 1);
-	CAN_SPI_send(brp & 0x3f, 0); //0b00111111
+	CAN_SPI_send(MCP2515_CMD_WRITE, 0);
+	CAN_SPI_send(MCP2515_REG_CNF1, 0);
+	CAN_SPI_send(brp & 0x3f, 1); //0b00111111
 
 	//PRSEG<2:0> = 0x01, 2 time quantum for prop
 	//PHSEG<2:0> = 0x06, 7 time constants to PS1 sample
 	//SAM = 0, just 1 sampling
 	//BTLMODE = 1, PS2 determined by CNF3
-	CAN_SPI_send(MCP2515_CMD_WRITE, 1);
-	CAN_SPI_send(MCP2515_REG_CNF2, 1);
-	CAN_SPI_send(0xB1, 0); //0b10110001
+	CAN_SPI_send(MCP2515_CMD_WRITE, 0);
+	CAN_SPI_send(MCP2515_REG_CNF2, 0);
+	CAN_SPI_send(0xB0, 1); //0b10110001
 
 	//PHSEG2<2:0> = 5 for 6 time constants after sample
-	CAN_SPI_send(MCP2515_CMD_WRITE, 1);
-	CAN_SPI_send(MCP2515_REG_CNF3, 1);
-	CAN_SPI_send(0x05, 0);
+	CAN_SPI_send(MCP2515_CMD_WRITE, 0);
+	CAN_SPI_send(MCP2515_REG_CNF3, 0);
+	CAN_SPI_send(0x06, 1);
 
 	//SyncSeg + PropSeg + PS1 + PS2 = 1 + 2 + 7 + 6 = 16
 
@@ -314,6 +314,7 @@ static int MCP2515_set_normal_mode(int oneShotMode){
 int CAN_device_init(){
 	AT91_CAN_SPI_init();
 	return 	MCP2515_setup() &&
+			MCP2515_set_baud(CAN_BAUD_500K) &&
 			MCP2515_set_normal_mode(0);
 }
 
