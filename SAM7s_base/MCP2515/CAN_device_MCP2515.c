@@ -310,15 +310,24 @@ static int MCP2515_set_normal_mode(int oneShotMode){
 	pr_info(" MCP2515 mode confirm\r\n");
 	if(mode != 0) return 0; else return 1;
 }
+
 static void MCP2515_read_reg_values(unsigned char reg, unsigned char * values, unsigned int length){
 	  CAN_SPI_send(MCP2515_CMD_READ, 0);
-	  CAN_SPI_send(MCP2515_REG_RXB0D0, 0);
+	  CAN_SPI_send(reg, 0);
 	  for(int i = 0; i < length; i++){
 		  values[i] = CAN_SPI_send(0, (i == length - 1));
 		  pr_info_int(values[i]);
 		  pr_info(" ");
 	  }
 	  pr_info("= can msg\r\n");
+}
+
+static void MCP2515_write_reg_values(unsigned char reg, unsigned char *values, unsigned int length){
+	CAN_SPI_send(MCP2515_CMD_WRITE, 0);
+	CAN_SPI_send(reg, 0);
+	for(int i = 0; i < length; i++){
+	  CAN_SPI_send(values[i], (i == length - 1));
+	}
 }
 
 int CAN_device_init(){
@@ -365,13 +374,7 @@ int CAN_device_tx_msg(CAN_msg *msg, unsigned int timeoutMs){
 	if(msg->remoteTxRequest) msgLen = msgLen |  (1 << MCP2515_BIT_TXRTR);
 	MCP2515_write_reg(MCP2515_REG_TXB0DLC, msgLen);
 
-	//Message bytes
-	CAN_SPI_send(MCP2515_CMD_WRITE, 0);
-	CAN_SPI_send(MCP2515_REG_TXB0D0, 0);
-	int dataLen = msg->dataLength;
-	for(int i = 0; i < dataLen; i++){
-	  CAN_SPI_send(msg->data[i], (i == dataLen - 1));
-	}
+	MCP2515_write_reg_values(MCP2515_REG_TXB0D0, msg->data, msg->dataLength);
 
 	//Transmit the message
 	MCP2515_write_reg_bit(MCP2515_REG_TXB0CTRL, MCP2515_BIT_TXREQ, 1);
