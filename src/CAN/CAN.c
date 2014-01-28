@@ -15,4 +15,6 @@ int CAN_tx_msg(CAN_msg *msg, unsigned int timeoutMs){
 	return CAN_device_tx_msg(msg, timeoutMs);
 }
 
-
+int CAN_rx_msg(CAN_msg *msg, unsigned int timeoutMs){
+	return CAN_device_rx_msg(msg, timeoutMs);
+}

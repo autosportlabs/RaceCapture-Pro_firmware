@@ -310,6 +310,16 @@ static int MCP2515_set_normal_mode(int oneShotMode){
 	pr_info(" MCP2515 mode confirm\r\n");
 	if(mode != 0) return 0; else return 1;
 }
+static void MCP2515_read_reg_values(unsigned char reg, unsigned char * values, unsigned int length){
+	  CAN_SPI_send(MCP2515_CMD_READ, 0);
+	  CAN_SPI_send(MCP2515_REG_RXB0D0, 0);
+	  for(int i = 0; i < length; i++){
+		  values[i] = CAN_SPI_send(0, (i == length - 1));
+		  pr_info_int(values[i]);
+		  pr_info(" ");
+	  }
+	  pr_info("= can msg\r\n");
+}
 
 int CAN_device_init(){
 	AT91_CAN_SPI_init();
@@ -402,4 +412,60 @@ int CAN_device_tx_msg(CAN_msg *msg, unsigned int timeoutMs){
 
 	unlock_spi();
 	return sentMessage;
+}
+
+int CAN_device_rx_msg(CAN_msg *msg, unsigned int timeoutMs){
+	lock_spi();
+	unsigned int startTicks = getCurrentTicks();
+	unsigned short standardID = 0;
+	int gotMessage = 0;
+	int x = 0;
+		while (x++ < 200)
+	//while(! isTimeoutMs(startTicks, timeoutMs))
+	{
+	  unsigned char val = MCP2515_read_reg(MCP2515_REG_CANINTF);
+	  //If we have a message available, read it
+	  if(val & (1 << MCP2515_BIT_RX0IF))
+	  {
+		pr_info("rx message\r\n");
+		gotMessage = 1;
+		break;
+	  }
+	}
+
+	if(gotMessage)
+	{
+	  unsigned char val = MCP2515_read_reg(MCP2515_REG_RXB0CTRL);
+	  msg->remoteTxRequest = (val & (1 << MCP2515_BIT_RXRTR)) ? 1 : 0;
+
+	  //Address received from
+	  val = MCP2515_read_reg(MCP2515_REG_RXB0SIDH);
+	  standardID |= (val << 3);
+	  val = MCP2515_read_reg(MCP2515_REG_RXB0SIDL);
+	  standardID |= (val >> 5);
+
+	  msg->adrsValue = (long)standardID;
+	  msg->isExtendedAdrs = ((val & (1 << MCP2515_BIT_EXIDE)) ? 1 : 0);
+	  if(msg->isExtendedAdrs)
+	  {
+		pr_info("msg is extended\r\n");
+		msg->adrsValue = ((msg->adrsValue << 2) | (val & 0x03));
+		val = MCP2515_read_reg(MCP2515_REG_RXB0EID8);
+		msg->adrsValue = (msg->adrsValue << 8) | val;
+		val = MCP2515_read_reg(MCP2515_REG_RXB0EID0);
+		msg->adrsValue = (msg->adrsValue << 8) | val;
+	  }
+	  msg->adrsValue = 0x1FFFFFFF & msg->adrsValue; // mask out extra bits
+	  //Read data bytes
+	  pr_info_int(msg->adrsValue);
+	  pr_info("=CAN address\r\n");
+	  val = MCP2515_read_reg(MCP2515_REG_RXB0DLC);
+	  msg->dataLength = (val & 0xf);
+	  MCP2515_read_reg_values(MCP2515_REG_RXB0D0, msg->data, msg->dataLength);
+
+	  //And clear read interrupt
+	  MCP2515_write_reg_bit(MCP2515_REG_CANINTF, MCP2515_BIT_RX0IF, 0);
+	}
+	unlock_spi();
+	return gotMessage;
 }

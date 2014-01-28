@@ -28,7 +28,7 @@ typedef struct _CAN_msg
 int CAN_init(void);
 int CAN_set_baud(int baud);
 int CAN_tx_msg(CAN_msg *msg, unsigned int timeoutMs);
-
+int CAN_rx_msg(CAN_msg *msg, unsigned int timeoutMs);
 
 
 #endif /* CAN_H_ */
