@@ -60,6 +60,12 @@ int Lua_StopLogging(lua_State *L);
 
 int Lua_SetLED(lua_State *L);
 
+int Lua_InitCAN(lua_State *L);
+int Lua_SendCANMessage(lua_State *L);
+int Lua_ReceiveCANMessage(lua_State *L);
+int Lua_QueryOBD(lua_State *L);
+
+
 //logger config data
 
 int Lua_SetAccelLabel(lua_State *L);
@@ -96,7 +102,6 @@ int Lua_GetTimerDivider(lua_State *L);
 
 int Lua_CalculateTimerScaling(lua_State *L);
 int Lua_GetTimerScaling(lua_State *L);
-
 
 int Lua_SetGPIOLabel(lua_State *L);
 int Lua_GetGPIOLabel(lua_State *L);
@@ -188,5 +193,6 @@ int Lua_SetAnalogChannelScaling(lua_State *L);
 int Lua_GetAnalogChannelScaling(lua_State *L);
 
 int Lua_FlashLoggerConfig(lua_State *L);
+
 
 #endif /*LUALOGGERBINDING_H_*/

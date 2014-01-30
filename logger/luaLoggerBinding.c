@@ -17,6 +17,7 @@
 #include "printk.h"
 #include "modp_numtoa.h"
 #include "loggerTaskEx.h"
+#include "CAN.h"
 
 extern xSemaphoreHandle g_xLoggerStart;
 extern int g_loggingShouldRun;
@@ -67,6 +68,11 @@ void registerLuaLoggerBindings(){
 	lua_registerlight(L,"getLapTime", Lua_GetLapTime);
 	lua_registerlight(L,"getGpsSec", Lua_GetGPSSecondsSinceMidnight);
 	lua_registerlight(L,"getAtStartFinish",Lua_GetGPSAtStartFinish);
+
+	lua_registerLight(L, "initCAN", Lua_InitCAN);
+	lua_registerLight(L, "txCAN", Lua_SendCANMessage);
+	lua_registerLight(L, "rxCAN", Lua_ReceiveCANMessage);
+	lua_registerLight(L, "queryOBD", Lua_QueryOBD);
 
 	lua_registerlight(L,"getTimeDiff", Lua_GetTimeDiff);
 	lua_registerlight(L,"getTimeSince", Lua_GetTimeSince);
@@ -1282,6 +1288,34 @@ int Lua_SetAnalogOut(lua_State *L){
 	return 0;
 }
 
+int Lua_InitCAN(lua_State *L){
+	int rc = CAN_init();
+	lua_pushinteger(L, rc);
+	return 1;
+}
+
+int Lua_SendCANMessage(lua_State *L){
+	int rc = -1;
+	if (lua_gettop(L) >= 2){
+		CAN_msg msg;
+		msg.addressValue = (unsigned int)lua_tointeger(L, 1);
+		msg.isExtendedAddress = lua_tointeger(L, 2);
+
+		CAN_device_tx_msg(msg, timeoutMs);
+		lua_pushinteger(L, rc);
+		rc = 1;
+	}
+	lua_pushinteger(L, rc);
+	return rc;
+}
+
+int Lua_ReceiveCANMessage(lua_State *L){
+
+}
+
+int Lua_QueryOBD(lua_State *L){
+
+}
 
 int Lua_StartLogging(lua_State *L){
 	startLogging();

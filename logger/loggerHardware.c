@@ -77,8 +77,8 @@ void InitLoggerHardware(){
 //	/CAN_set_baud(CAN_BAUD_250K);
 
 	CAN_msg msg;
-	msg.adrsValue = 0x7df;
-	msg.isExtendedAdrs = 0;
+	msg.addressValue = 0x7df;
+	msg.isExtendedAddress = 0;
 	msg.remoteTxRequest = 0;
 	msg.dataLength = 8;
 	msg.data[0] = 0x02;

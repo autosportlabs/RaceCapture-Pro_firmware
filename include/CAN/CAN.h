@@ -17,8 +17,8 @@
 
 typedef struct _CAN_msg
 {
-  int isExtendedAdrs;
-  unsigned long adrsValue;
+  int isExtendedAddress;
+  unsigned int addressValue;
   int remoteTxRequest;
   unsigned char dataLength;
   unsigned char data[8];
