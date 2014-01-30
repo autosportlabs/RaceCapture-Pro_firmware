@@ -345,9 +345,9 @@ int CAN_device_tx_msg(CAN_msg *msg, unsigned int timeoutMs){
 	unsigned int startTime = getCurrentTicks();
 	lock_spi();
 
-	if(!msg->isExtendedAdrs)
+	if(!msg->isExtendedAddress)
 	{
-		unsigned short standardID = (short)msg->adrsValue;
+		unsigned short standardID = (short)msg->addressValue;
 		//Write standard ID registers
 		unsigned short val = standardID >> 3;
 		MCP2515_write_reg(MCP2515_REG_TXB0SIDH, val);
@@ -357,16 +357,16 @@ int CAN_device_tx_msg(CAN_msg *msg, unsigned int timeoutMs){
 	else
 	{
 		//Write extended ID registers, which use the standard ID registers
-		unsigned short val = msg->adrsValue >> 21;
+		unsigned short val = msg->addressValue >> 21;
 		MCP2515_write_reg(MCP2515_REG_TXB0SIDH, val);
-		val = msg->adrsValue >> 16;
+		val = msg->addressValue >> 16;
 		val = val & 0x3; // 0b00000011
-		val = val | (msg->adrsValue >> 13 & 0xE0); //0b11100000
+		val = val | (msg->addressValue >> 13 & 0xE0); //0b11100000
 		val |= 1 << MCP2515_BIT_EXIDE;
 		MCP2515_write_reg(MCP2515_REG_TXB0SIDL, val);
-		val = msg->adrsValue >> 8;
+		val = msg->addressValue >> 8;
 		MCP2515_write_reg(MCP2515_REG_TXB0EID8, val);
-		val = msg->adrsValue;
+		val = msg->addressValue;
 		MCP2515_write_reg(MCP2515_REG_TXB0EID0, val);
 	}
 
@@ -447,20 +447,20 @@ int CAN_device_rx_msg(CAN_msg *msg, unsigned int timeoutMs){
 	  val = MCP2515_read_reg(MCP2515_REG_RXB0SIDL);
 	  standardID |= (val >> 5);
 
-	  msg->adrsValue = (long)standardID;
-	  msg->isExtendedAdrs = ((val & (1 << MCP2515_BIT_EXIDE)) ? 1 : 0);
-	  if(msg->isExtendedAdrs)
+	  msg->addressValue = (long)standardID;
+	  msg->isExtendedAddress = ((val & (1 << MCP2515_BIT_EXIDE)) ? 1 : 0);
+	  if(msg->isExtendedAddress)
 	  {
 		pr_info("msg is extended\r\n");
-		msg->adrsValue = ((msg->adrsValue << 2) | (val & 0x03));
+		msg->addressValue = ((msg->addressValue << 2) | (val & 0x03));
 		val = MCP2515_read_reg(MCP2515_REG_RXB0EID8);
-		msg->adrsValue = (msg->adrsValue << 8) | val;
+		msg->addressValue = (msg->addressValue << 8) | val;
 		val = MCP2515_read_reg(MCP2515_REG_RXB0EID0);
-		msg->adrsValue = (msg->adrsValue << 8) | val;
+		msg->addressValue = (msg->addressValue << 8) | val;
 	  }
-	  msg->adrsValue = 0x1FFFFFFF & msg->adrsValue; // mask out extra bits
+	  msg->addressValue = 0x1FFFFFFF & msg->addressValue; // mask out extra bits
 	  //Read data bytes
-	  pr_info_int(msg->adrsValue);
+	  pr_info_int(msg->addressValue);
 	  pr_info("=CAN address\r\n");
 	  val = MCP2515_read_reg(MCP2515_REG_RXB0DLC);
 	  msg->dataLength = (val & 0xf);
