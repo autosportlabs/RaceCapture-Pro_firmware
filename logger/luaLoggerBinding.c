@@ -1319,10 +1319,7 @@ int Lua_SendCANMessage(lua_State *L){
 			}
 		}
 		msg.dataLength = size;
-
-		CAN_tx_msg(&msg, timeout);
-		lua_pushinteger(L, rc);
-		rc = 1;
+		rc = CAN_tx_msg(&msg, timeout);
 	}
 	lua_pushinteger(L, rc);
 	return rc;
