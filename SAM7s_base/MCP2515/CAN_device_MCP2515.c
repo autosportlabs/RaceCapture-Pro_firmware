@@ -330,10 +330,10 @@ static void MCP2515_write_reg_values(unsigned char reg, unsigned char *values, u
 	}
 }
 
-int CAN_device_init(){
+int CAN_device_init(int baud){
 	AT91_CAN_SPI_init();
 	return 	MCP2515_setup() &&
-			MCP2515_set_baud(CAN_BAUD_500K) &&
+			MCP2515_set_baud(baud) &&
 			MCP2515_set_normal_mode(0);
 }
 
@@ -371,7 +371,6 @@ int CAN_device_tx_msg(CAN_msg *msg, unsigned int timeoutMs){
 	}
 
 	unsigned short msgLen = msg->dataLength & 0x0f;
-	if(msg->remoteTxRequest) msgLen = msgLen |  (1 << MCP2515_BIT_TXRTR);
 	MCP2515_write_reg(MCP2515_REG_TXB0DLC, msgLen);
 
 	MCP2515_write_reg_values(MCP2515_REG_TXB0D0, msg->data, msg->dataLength);
@@ -439,7 +438,6 @@ int CAN_device_rx_msg(CAN_msg *msg, unsigned int timeoutMs){
 	if(gotMessage)
 	{
 	  unsigned char val = MCP2515_read_reg(MCP2515_REG_RXB0CTRL);
-	  msg->remoteTxRequest = (val & (1 << MCP2515_BIT_RXRTR)) ? 1 : 0;
 
 	  //Address received from
 	  val = MCP2515_read_reg(MCP2515_REG_RXB0SIDH);
