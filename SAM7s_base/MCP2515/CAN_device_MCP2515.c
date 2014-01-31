@@ -257,10 +257,16 @@ static void MCP2515_write_reg_values(unsigned char reg, unsigned char *values, u
 	unlock_spi();
 }
 
-static int MCP2515_setup(){
-	int rc = 0;
+static void MCP2515_reset(){
 	lock_spi();
 	CAN_SPI_send(MCP2515_CMD_RESET, 1);
+	unlock_spi();
+}
+
+static int MCP2515_setup(){
+	int rc = 0;
+	MCP2515_reset();
+
 	for (int i=0; i< 1000000; i++){}
 	int mode = MCP2515_read_reg(MCP2515_REG_CANSTAT) >> 5;
 	if (mode == 0x04){ //0b100
@@ -271,7 +277,6 @@ static int MCP2515_setup(){
 		pr_info_int(mode);
 		pr_error("=mode; Failed to reset CAN controller\r\n");
 	}
-	unlock_spi();
 	return rc;
 }
 
