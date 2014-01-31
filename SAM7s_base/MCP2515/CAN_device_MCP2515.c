@@ -207,19 +207,24 @@ static unsigned char CAN_SPI_send(unsigned char outgoing, int last)
 }
 
 static unsigned char MCP2515_read_reg(unsigned char regNum){
+	lock_spi();
 	CAN_SPI_send(MCP2515_CMD_READ, 0);
 	CAN_SPI_send(regNum, 0);
 	unsigned char regValue = CAN_SPI_send(0, 1);
+	unlock_spi();
 	return regValue;
 }
 
 static void MCP2515_write_reg(unsigned char regNum, unsigned char value){
+	lock_spi();
 	CAN_SPI_send(MCP2515_CMD_WRITE, 0);
 	CAN_SPI_send(regNum, 0);
 	CAN_SPI_send(value, 1);
+	unlock_spi();
 }
 
 static void MCP2515_write_reg_bit(unsigned char regNum, unsigned char bitNum, unsigned char value){
+	lock_spi();
 	CAN_SPI_send(MCP2515_CMD_BIT_MODIFY, 0);
 	CAN_SPI_send(regNum, 0);
 	CAN_SPI_send(1 << bitNum, 0);
@@ -229,6 +234,27 @@ static void MCP2515_write_reg_bit(unsigned char regNum, unsigned char bitNum, un
 	else{
 		CAN_SPI_send(0x00, 1);
 	}
+	unlock_spi();
+}
+
+static void MCP2515_read_reg_values(unsigned char reg, unsigned char * values, unsigned int length){
+	lock_spi();
+	CAN_SPI_send(MCP2515_CMD_READ, 0);
+	CAN_SPI_send(reg, 0);
+	for(int i = 0; i < length; i++){
+	  values[i] = CAN_SPI_send(0, (i == length - 1));
+	}
+	unlock_spi();
+}
+
+static void MCP2515_write_reg_values(unsigned char reg, unsigned char *values, unsigned int length){
+	lock_spi();
+	CAN_SPI_send(MCP2515_CMD_WRITE, 0);
+	CAN_SPI_send(reg, 0);
+	for(int i = 0; i < length; i++){
+	  CAN_SPI_send(values[i], (i == length - 1));
+	}
+	unlock_spi();
 }
 
 static int MCP2515_setup(){
@@ -238,12 +264,12 @@ static int MCP2515_setup(){
 	for (int i=0; i< 1000000; i++){}
 	int mode = MCP2515_read_reg(MCP2515_REG_CANSTAT) >> 5;
 	if (mode == 0x04){ //0b100
-		pr_info("MCP2515 CAN controller reset\r\n");
+		pr_info("CAN controller reset\r\n");
 		rc = 1;
 	}
 	else{
 		pr_info_int(mode);
-		pr_error("=mode; Failed to SW reset MCP2515 CAN controller\r\n");
+		pr_error("=mode; Failed to reset CAN controller\r\n");
 	}
 	unlock_spi();
 	return rc;
@@ -300,34 +326,11 @@ static int MCP2515_set_normal_mode(int oneShotMode){
 
 //	unsigned char settings = (0x02 << 5) | 0x07 | (oneShotMode << 3);
 	unsigned char settings = 0x07 | (oneShotMode << 3);
-	pr_info_int(settings);
-	pr_info("setting mode\r\n");
-
 	MCP2515_write_reg(MCP2515_REG_CANCTRL, settings);
+
 	//Read mode and make sure it is normal
 	unsigned char mode = MCP2515_read_reg(MCP2515_REG_CANSTAT) >> 5;
-	pr_info_int(mode);
-	pr_info(" MCP2515 mode confirm\r\n");
 	if(mode != 0) return 0; else return 1;
-}
-
-static void MCP2515_read_reg_values(unsigned char reg, unsigned char * values, unsigned int length){
-	  CAN_SPI_send(MCP2515_CMD_READ, 0);
-	  CAN_SPI_send(reg, 0);
-	  for(int i = 0; i < length; i++){
-		  values[i] = CAN_SPI_send(0, (i == length - 1));
-		  pr_info_int(values[i]);
-		  pr_info(" ");
-	  }
-	  pr_info("= can msg\r\n");
-}
-
-static void MCP2515_write_reg_values(unsigned char reg, unsigned char *values, unsigned int length){
-	CAN_SPI_send(MCP2515_CMD_WRITE, 0);
-	CAN_SPI_send(reg, 0);
-	for(int i = 0; i < length; i++){
-	  CAN_SPI_send(values[i], (i == length - 1));
-	}
 }
 
 int CAN_device_init(int baud){
@@ -337,13 +340,8 @@ int CAN_device_init(int baud){
 			MCP2515_set_normal_mode(0);
 }
 
-int CAN_device_set_baud(int baud){
-	return MCP2515_set_baud(baud);
-}
-
 int CAN_device_tx_msg(CAN_msg *msg, unsigned int timeoutMs){
-	unsigned int startTime = getCurrentTicks();
-	lock_spi();
+	unsigned int startTicks = getCurrentTicks();
 
 	if(!msg->isExtendedAddress)
 	{
@@ -379,9 +377,7 @@ int CAN_device_tx_msg(CAN_msg *msg, unsigned int timeoutMs){
 	MCP2515_write_reg_bit(MCP2515_REG_TXB0CTRL, MCP2515_BIT_TXREQ, 1);
 
 	int sentMessage = 0;
-	int x = 0;
-	while (x++ < 20)
-	//while(!isTimeoutMs(startTime, timeoutMs))
+	while(!isTimeoutMs(startTicks, timeoutMs))
 	{
 		unsigned char regVal = MCP2515_read_reg(MCP2515_REG_CANINTF);
 		pr_info_int(regVal);
@@ -411,19 +407,14 @@ int CAN_device_tx_msg(CAN_msg *msg, unsigned int timeoutMs){
 
 	//And clear write interrupt
 	MCP2515_write_reg_bit(MCP2515_REG_CANINTF, MCP2515_BIT_TX0IF, 0);
-
-	unlock_spi();
 	return sentMessage;
 }
 
 int CAN_device_rx_msg(CAN_msg *msg, unsigned int timeoutMs){
-	lock_spi();
 	unsigned int startTicks = getCurrentTicks();
 	unsigned short standardID = 0;
 	int gotMessage = 0;
-	int x = 0;
-		while (x++ < 200)
-	//while(! isTimeoutMs(startTicks, timeoutMs))
+	while(! isTimeoutMs(startTicks, timeoutMs))
 	{
 	  unsigned char val = MCP2515_read_reg(MCP2515_REG_CANINTF);
 	  //If we have a message available, read it
@@ -467,6 +458,5 @@ int CAN_device_rx_msg(CAN_msg *msg, unsigned int timeoutMs){
 	  //And clear read interrupt
 	  MCP2515_write_reg_bit(MCP2515_REG_CANINTF, MCP2515_BIT_RX0IF, 0);
 	}
-	unlock_spi();
 	return gotMessage;
 }
