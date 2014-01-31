@@ -69,10 +69,10 @@ void registerLuaLoggerBindings(){
 	lua_registerlight(L,"getGpsSec", Lua_GetGPSSecondsSinceMidnight);
 	lua_registerlight(L,"getAtStartFinish",Lua_GetGPSAtStartFinish);
 
-	lua_registerLight(L, "initCAN", Lua_InitCAN);
-	lua_registerLight(L, "txCAN", Lua_SendCANMessage);
-	lua_registerLight(L, "rxCAN", Lua_ReceiveCANMessage);
-	lua_registerLight(L, "queryOBD", Lua_QueryOBD);
+	lua_registerlight(L, "initCAN", Lua_InitCAN);
+	lua_registerlight(L, "txCAN", Lua_SendCANMessage);
+	lua_registerlight(L, "rxCAN", Lua_ReceiveCANMessage);
+	lua_registerlight(L, "queryOBD", Lua_QueryOBD);
 
 	lua_registerlight(L,"getTimeDiff", Lua_GetTimeDiff);
 	lua_registerlight(L,"getTimeSince", Lua_GetTimeSince);
@@ -1289,19 +1289,38 @@ int Lua_SetAnalogOut(lua_State *L){
 }
 
 int Lua_InitCAN(lua_State *L){
-	int rc = CAN_init();
-	lua_pushinteger(L, rc);
-	return 1;
+	if (lua_gettop(L) >= 1){
+		int baud = lua_tointeger(L, 1);
+		int rc = CAN_init(baud);
+		lua_pushinteger(L, rc);
+		return 1;
+	}
+	else{
+		return 0;
+	}
 }
 
 int Lua_SendCANMessage(lua_State *L){
+	size_t timeout = 1000;
 	int rc = -1;
-	if (lua_gettop(L) >= 2){
+	if (lua_gettop(L) >= 3){
 		CAN_msg msg;
 		msg.addressValue = (unsigned int)lua_tointeger(L, 1);
 		msg.isExtendedAddress = lua_tointeger(L, 2);
 
-		CAN_device_tx_msg(msg, timeoutMs);
+		int size = luaL_getn(L, 3);
+		if (size <= CAN_MSG_SIZE){
+			for (int i = 1; i <= size; i++){
+				lua_pushnumber(L,i);
+				lua_gettable(L, 3);
+				int val = lua_tonumber(L, -1);
+				msg.data[i - 1] = val;
+				lua_pop(L, 1);
+			}
+		}
+		msg.dataLength = size;
+
+		CAN_tx_msg(&msg, timeout);
 		lua_pushinteger(L, rc);
 		rc = 1;
 	}
@@ -1310,11 +1329,27 @@ int Lua_SendCANMessage(lua_State *L){
 }
 
 int Lua_ReceiveCANMessage(lua_State *L){
-
+	size_t timeout = 1000;
+	CAN_msg msg;
+	int rc = CAN_rx_msg(&msg,timeout);
+	if (rc == 1){
+		lua_pushinteger(L, msg.addressValue);
+		lua_pushinteger(L, msg.isExtendedAddress);
+		lua_newtable(L);
+		for (int i = 1; i <= msg.dataLength; i++){
+			lua_pushnumber(L, i);
+			lua_pushnumber(L, msg.data[i - 1]);
+			lua_rawset(L, -3);
+		}
+		return 3;
+	}
+	else{
+		return 0;
+	}
 }
 
 int Lua_QueryOBD(lua_State *L){
-
+ return 0;
 }
 
 int Lua_StartLogging(lua_State *L){

@@ -15,18 +15,17 @@
 #define CAN_BAUD_500K			500000
 #define CAN_BAUD_1M				1000000
 
+#define CAN_MSG_SIZE 8
 typedef struct _CAN_msg
 {
   int isExtendedAddress;
   unsigned int addressValue;
-  int remoteTxRequest;
   unsigned char dataLength;
-  unsigned char data[8];
+  unsigned char data[CAN_MSG_SIZE];
 }  CAN_msg;
 
 
-int CAN_init(void);
-int CAN_set_baud(int baud);
+int CAN_init(int baud);
 int CAN_tx_msg(CAN_msg *msg, unsigned int timeoutMs);
 int CAN_rx_msg(CAN_msg *msg, unsigned int timeoutMs);
 
