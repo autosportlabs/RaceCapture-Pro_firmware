@@ -144,6 +144,27 @@ float get_gps_sample(int channelId){
 }
 
 float get_lap_stat_sample(int channelId){
-
+	float value = 0;
+	switch(channelId){
+		lap_stat_channel_lapcount:
+			value = getLapCount();
+			break;
+		lap_stat_channel_laptime:
+			value = getLastLapTime();
+			break;
+		lap_stat_channel_splittime:
+			value = getLastSplitTime();
+			break;
+		lap_stat_channel_distance:
+			value = getDistance();
+			break;
+		lap_stat_channel_predtime:
+			value = get_predicted_time();
+			break;
+		default:
+			value = -1;
+			break;
+	}
+	return value;
 }
 
