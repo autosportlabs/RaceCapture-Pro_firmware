@@ -33,8 +33,10 @@ void ResetWatchdog();
 
 void InitWatchdog(int timeoutMs);
 
+
 void readGpios(unsigned int *gpio1, unsigned int *gpio2, unsigned int *gpio3);
 
+void readGpio(unsigned int channel);
 
 void setGpio(unsigned int channel, unsigned int state);
 
@@ -96,7 +98,6 @@ unsigned int getTimer0Period();
 unsigned int getTimer1Period();
 unsigned int getTimer2Period();
 
-int readAccelChannel(size_t physicalChannel);
 int flashLoggerConfig();
 
 #endif /*LOGGERHARDWARE_H_*/

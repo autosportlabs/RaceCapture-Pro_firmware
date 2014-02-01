@@ -69,6 +69,7 @@ SRC_DIR = src
 
 SAM7s_BASE_DIR = SAM7s_base
 MCP2515_DIR = $(SAM7s_BASE_DIR)/MCP2515
+KXR94_2353_DIR = $(SAM7s_BASE_DIR)/KXR94_2353
 HW_DIR = $(SAM7s_BASE_DIR)/hardware
 RTOS_DIR = $(SAM7s_BASE_DIR)/FreeRTOS
 RTOS_SRC_DIR = $(RTOS_DIR)/Source
@@ -85,6 +86,7 @@ LUA_SRC_DIR = $(SAM7s_BASE_DIR)/lua
 CMD_SRC_DIR = $(SAM7s_BASE_DIR)/command
 FILTER_DIR = $(SRC_DIR)/filter
 CAN_DIR = $(SRC_DIR)/CAN
+ACCELEROMETER_SRC_DIR = $(SRC_DIR)/accelerometer
 LOGGING_DIR = $(SRC_DIR)/logging
 TASKS_DIR = tasks
 JSMN_SRC_DIR = $(SRC_DIR)/jsmn
@@ -100,7 +102,6 @@ GPS_SRC_DIR = $(SRC_DIR)/gps
 FAT_SD_SRC_DIR = fat_sd
 LOGGER_SRC_DIR = logger
 SDCARD_SRC_DIR = sdcard
-ACCELEROMETER_SRC_DIR = accelerometer
 
 # List C source files here. (C dependencies are automatically generated.)
 # use file-extension c for "c-only"-files
@@ -145,6 +146,7 @@ $(LOGGER_SRC_DIR)/luaLoggerBinding.c \
 $(LOGGER_SRC_DIR)/loggerCommands.c \
 $(MEMORY_SRC_DIR)/memory.c \
 $(MCP2515_DIR)/CAN_device_MCP2515.c \
+$(KXR94_2353_DIR)/accelerometer_device_KXR94_2353.c \
 $(LUA_SRC_DIR)/luaTask.c \
 $(LUA_SRC_DIR)/luaScript.c \
 $(LUA_SRC_DIR)/luaBaseBinding.c \
@@ -258,6 +260,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/logging \
 -I$(INCLUDE_DIR)/filter \
 -I$(INCLUDE_DIR)/CAN \
+-I$(INCLUDE_DIR)/accelerometer \
 -I$(INCLUDE_DIR)/messaging \
 -I$(INCLUDE_DIR)/predictive_timer \
 -I$(INCLUDE_DIR)/util \
