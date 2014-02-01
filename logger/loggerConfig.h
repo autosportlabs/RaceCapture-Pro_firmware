@@ -278,6 +278,14 @@ typedef struct _GPSTargetConfig{
 
 #define DEFAULT_DISTANCE_LOGGING_PRECISION 3
 
+enum lap_stat_channels{
+	lap_stat_channel_lapcount,
+	lap_stat_channel_laptime,
+	lap_stat_channel_splittime,
+	lap_stat_channel_distance,
+	lap_stat_channel_predtime
+};
+
 typedef struct _TrackConfig{
 	GPSTargetConfig startFinishConfig;
 	GPSTargetConfig splitConfig;
