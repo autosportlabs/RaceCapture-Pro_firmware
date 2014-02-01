@@ -1,10 +1,16 @@
-#include "accelerometer.h"
+#include "accelerometer_device.h"
 #include "loggerConfig.h"
 #include <mod_string.h>
 #include "printk.h"
 #include "modp_numtoa.h"
 #include "spi.h"
 #include "board.h"
+
+//1G point for Kionix KXR94-2353
+#define ACCEL_DEVICE_COUNTS_PER_G 				819
+
+//ST LY330ALH is 3.752 mV/dps
+#define YAW_DEVICE_COUNTS_PER_DEGREE_PER_SEC	4.69
 
 #define SPI_CSR_NUM      2
 
@@ -130,12 +136,12 @@ static void accel_initSPI(){
 	unlock_spi();
 }
 
-void accel_init(){
+void accelerometer_device_init(){
 	accel_initSPI();
 	accel_setup();
 }
 
-unsigned int readAccelerometerDevice(unsigned char channel){
+unsigned int accelerometer_device_read(unsigned int channel){
 	lock_spi();
 	//aux input (i.e. Yaw input) is mapped to 0x07 on the
 	//kionix KXR94
@@ -149,5 +155,9 @@ unsigned int readAccelerometerDevice(unsigned char channel){
 	unsigned int value = (dataMSB << 4) + ((dataLSB >> 4) & 0x0f);
 	unlock_spi();
 	return value;
+}
+
+unsigned int accelerometer_device_counts_per_unit(unsigned int channel){
+	return (channel == ACCEL_CHANNEL_ZT ? YAW_DEVICE_COUNTS_PER_DEGREE_PER_SEC : ACCEL_DEVICE_COUNTS_PER_G);
 }
 

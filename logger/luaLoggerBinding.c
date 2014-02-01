@@ -1222,9 +1222,9 @@ int Lua_GetTimeSince(lua_State *L){
 int Lua_ReadAccelerometer(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
-		if (channel >= ACCELEROMETER_CHANNEL_MIN && channel <= ACCELEROMETER_CHANNEL_MAX){
+		if (channel >= 0 && channel < CONFIG_ACCEL_CHANNELS){
 			AccelConfig *ac = &getWorkingLoggerConfig()->AccelConfigs[channel];
-			float accelG = getAccelerometerValue(channel,ac);
+			float accelG = accelerometer_read_value(channel,ac);
 			lua_pushnumber(L,accelG);
 			return 1;
 		}
@@ -1235,8 +1235,8 @@ int Lua_ReadAccelerometer(lua_State *L){
 int Lua_ReadAccelerometerRaw(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
-		if (channel >= ACCELEROMETER_CHANNEL_MIN && channel <= ACCELEROMETER_CHANNEL_MAX){
-			int accelValue =  readAccelerometerDevice(channel);
+		if (channel >= 0 && channel <= CONFIG_ACCEL_CHANNELS){
+			int accelValue =  accelerometer_read(channel);
 			lua_pushinteger(L,accelValue);
 			return 1;
 		}

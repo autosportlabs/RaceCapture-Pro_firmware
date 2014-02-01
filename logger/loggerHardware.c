@@ -65,7 +65,7 @@ void InitLoggerHardware(){
 	init_spi_lock();
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 	InitWatchdog(WATCHDOG_TIMEOUT_MS);
-	accel_init();
+	accelerometer_init();
 	InitGPIO(loggerConfig);
 	InitADC();
 	InitPWM(loggerConfig);
@@ -161,6 +161,25 @@ void setGpio(unsigned int channel, unsigned int state){
 	} else{
 		ClearGPIOBits(gpioBits);
 	}
+}
+
+void readGpio(unsigned int channel){
+	unsigned int gpioStates = AT91F_PIO_GetInput(AT91C_BASE_PIOA);
+	int value = 0;
+	switch (channel){
+		case 0:
+			value = ((gpioStates & GPIO_1) != 0);
+			break;
+		case 1:
+			value = ((gpioStates & GPIO_2) != 0);
+			break;
+		case 2:
+			value = ((gpioStates & GPIO_3) != 0);
+			break;
+		default:
+			break;
+	}
+	return value;
 }
 
 void readGpios(unsigned int *gpio1, unsigned int *gpio2, unsigned int *gpio3){
@@ -733,11 +752,6 @@ unsigned int getTimer1Period(){
 
 unsigned int getTimer2Period(){
 	return g_timer2_overflow ? 0 : AT91C_BASE_TC2->TC_RB;
-}
-
-int readAccelChannel(size_t physicalChannel){
-	return readAccelerometerDevice(physicalChannel);
-
 }
 
 int flashLoggerConfig(){
