@@ -228,6 +228,14 @@ typedef struct _PWMConfig{
 				DEFAULT_PWM4_CONFIG, \
 			}
 
+enum gps_channels{
+	gps_channel_latitude,
+	gps_channel_longitude,
+	gps_channel_speed,
+	gps_channel_time,
+	gps_channel_satellites
+};
+
 typedef struct _GPSConfig{
 	char GPSInstalled;
 	ChannelConfig satellitesCfg;

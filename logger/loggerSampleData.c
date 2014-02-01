@@ -3,6 +3,7 @@
 #include "loggerConfig.h"
 #include "loggerData.h"
 #include "accelerometer.h"
+#include "gps.h"
 
 
 static float get_mapped_value(float value, ScalingMap *scalingMap){
@@ -118,7 +119,28 @@ float get_accel_sample(int channelId){
 }
 
 float get_gps_sample(int channelId){
-
+	float value = 0;
+	switch(channelId){
+		gps_channel_latitude:
+			value = getLatitude();
+			break;
+		gps_channel_longitude:
+			value = getLongitude();
+			break;
+		gps_channel_speed:
+			value = getGPSSpeed() *  0.621371192; //convert to MPH
+			break;
+		gps_channel_time:
+			value - getUTCTime();
+			break;
+		gps_channel_satellites:
+			value = getSatellitesUsedForPosition();
+			break;
+		default:
+			value = -1;
+			break;
+	}
+	return value;
 }
 
 float get_lap_stat_sample(int channelId){
