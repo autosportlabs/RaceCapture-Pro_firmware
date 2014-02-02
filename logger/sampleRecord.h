@@ -24,6 +24,7 @@ typedef struct _ChannelSample
 	{
 	ChannelConfig * channelConfig;
 	int precision;
+	size_t channelIndex;
 	float (*get_sample)(int);
 	union
 	{
