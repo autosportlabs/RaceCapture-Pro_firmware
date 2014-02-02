@@ -196,8 +196,3 @@ int flashLoggerConfig(){
 	return 1;
 }
 
-int readAccelChannel(size_t physicalChannel){
-	return readAccelerometerDevice(physicalChannel);
-
-}
-

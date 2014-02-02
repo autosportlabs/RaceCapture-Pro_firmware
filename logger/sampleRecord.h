@@ -64,6 +64,10 @@ typedef struct _LoggerMessage
 	SampleRecord *sampleRecord;
 } LoggerMessage;
 
+ChannelSample ** create_channel_sample_buffer(LoggerConfig *loggerConfig);
+
+void free_channel_sample_buffer(ChannelSample ** samples);
+
 void clearSampleRecordBuffer(SampleRecord **srBuff, int size);
 
 void clearSampleRecord(SampleRecord* sr);

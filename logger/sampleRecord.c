@@ -10,8 +10,12 @@
 
 ChannelSample ** create_channel_sample_buffer(LoggerConfig *loggerConfig){
 	size_t channelCount = get_enabled_channel_count(loggerConfig);
-	ChannelSample ** samples = portMalloc(sizeof(ChannelSample[channelCount]));
+	ChannelSample ** samples = (ChannelSample **)portMalloc(sizeof(ChannelSample[channelCount]));
 	return samples;
+}
+
+void free_channel_sample_buffer(ChannelSample ** samples){
+	portFree(samples);
 }
 
 void initSampleRecord(LoggerConfig *loggerConfig,SampleRecord *sr){
