@@ -6,6 +6,166 @@
 #include "gps.h"
 
 
+void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample ** samples, size_t count){
+	ChannelSample *sample = samples[0];
+
+	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
+		AccelConfig *config = &(loggerConfig->AccelConfigs[i]);
+		if (config->cfg.sampleRate != SAMPLE_DISABLED){
+			sample->precision = config->loggingPrecision;
+			sample->channelConfig = &(config->cfg);
+			sample->intValue = NIL_SAMPLE;
+			sample->channelIndex = i;
+			sample->get_sample = get_accel_sample;
+		}
+		sample++;
+	}
+
+	for (int i=0; i < CONFIG_ADC_CHANNELS; i++){
+		ADCConfig *config = &(loggerConfig->ADCConfigs[i]);
+		if (config->cfg.sampleRate != SAMPLE_DISABLED){
+			sample->precision = config->loggingPrecision;
+			sample->channelConfig = &(config->cfg);
+			sample->intValue = NIL_SAMPLE;
+			sample->channelIndex = i;
+			sample->get_sample = get_accel_sample;
+		}
+		sample++;
+	}
+
+	for (int i=0; i < CONFIG_TIMER_CHANNELS; i++){
+		TimerConfig *config = &(loggerConfig->TimerConfigs[i]);
+		if (config->cfg.sampleRate != SAMPLE_DISABLED){
+			sample->precision = config->loggingPrecision;
+			sample->channelConfig = &(config->cfg);
+			sample->intValue = NIL_SAMPLE;
+			sample->channelIndex = i;
+			sample->get_sample = get_accel_sample;
+		}
+		sample++;
+	}
+
+	for (int i=0; i < CONFIG_GPIO_CHANNELS; i++){
+		GPIOConfig *config = &(loggerConfig->GPIOConfigs[i]);
+		if (config->cfg.sampleRate != SAMPLE_DISABLED){
+			sample->precision = DEFAULT_GPIO_LOGGING_PRECISION;
+			sample->channelConfig = &(config->cfg);
+			sample->intValue = NIL_SAMPLE;
+			sample->channelIndex = i;
+			sample->get_sample = get_accel_sample;
+		}
+		sample++;
+	}
+
+	for (int i=0; i < CONFIG_PWM_CHANNELS; i++){
+		PWMConfig *config = &(loggerConfig->PWMConfigs[i]);
+		if (config->cfg.sampleRate != SAMPLE_DISABLED){
+			sample->precision = config->loggingPrecision;
+			sample->channelConfig = &(config->cfg);
+			sample->intValue = NIL_SAMPLE;
+			sample->channelIndex = i;
+			sample->get_sample = get_accel_sample;
+		}
+		sample++;
+	}
+
+	{
+		GPSConfig *gpsConfig = &(loggerConfig->GPSConfigs);
+		if (gpsConfig->latitudeCfg.sampleRate != SAMPLE_DISABLED){
+			sample->precision = DEFAULT_GPS_POSITION_LOGGING_PRECISION;
+			sample->channelConfig = &(gpsConfig->latitudeCfg);
+			sample->intValue = NIL_SAMPLE;
+			sample->channelIndex = gps_channel_latitude;
+			sample->get_sample = get_gps_sample;
+			sample++;
+		}
+
+		if (gpsConfig->longitudeCfg.sampleRate != SAMPLE_DISABLED){
+			sample->precision = DEFAULT_GPS_POSITION_LOGGING_PRECISION;
+			sample->channelConfig = &(gpsConfig->longitudeCfg);
+			sample->intValue = NIL_SAMPLE;
+			sample->channelIndex = gps_channel_longitude;
+			sample->get_sample = get_gps_sample;
+			sample++;
+		}
+
+		if (gpsConfig->speedCfg.sampleRate != SAMPLE_DISABLED){
+			sample->precision = DEFAULT_GPS_SPEED_LOGGING_PRECISION;
+			sample->channelConfig = &(gpsConfig->speedCfg);
+			sample->intValue = NIL_SAMPLE;
+			sample->channelIndex = gps_channel_speed;
+			sample->get_sample = get_gps_sample;
+			sample++;
+		}
+
+		if (gpsConfig->timeCfg.sampleRate != SAMPLE_DISABLED){
+			sample->precision = DEFAULT_GPS_TIME_LOGGING_PRECISION;
+			sample->channelConfig = &(gpsConfig->timeCfg);
+			sample->intValue = NIL_SAMPLE;
+			sample->channelIndex = gps_channel_time;
+			sample->get_sample = get_gps_sample;
+			sample++;
+		}
+
+		if (gpsConfig->satellitesCfg.sampleRate != SAMPLE_DISABLED){
+			sample->precision = DEFAULT_GPS_SATELLITES_LOGGING_PRECISION;
+			sample->channelConfig = &(gpsConfig->satellitesCfg);
+			sample->intValue = NIL_SAMPLE;
+			sample->channelIndex = gps_channel_satellites;
+			sample->get_sample = get_gps_sample;
+			sample++;
+		}
+	}
+
+	{
+		TrackConfig *trackConfig = &(loggerConfig->TrackConfigs);
+		if (trackConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED){
+			sample->precision = DEFAULT_LAP_COUNT_LOGGING_PRECISION;
+			sample->channelConfig = &(trackConfig->lapCountCfg);
+			sample->intValue = NIL_SAMPLE;
+			sample->channelIndex = lap_stat_channel_lapcount;
+			sample->get_sample = get_lap_stat_sample;
+			sample++;
+		}
+
+		if (trackConfig->lapTimeCfg.sampleRate != SAMPLE_DISABLED){
+			sample->precision = DEFAULT_LAP_TIME_LOGGING_PRECISION;
+			sample->channelConfig = &(trackConfig->lapTimeCfg);
+			sample->intValue = NIL_SAMPLE;
+			sample->channelIndex = lap_stat_channel_laptime;
+			sample->get_sample = get_lap_stat_sample;
+			sample++;
+		}
+
+		if (trackConfig->splitTimeCfg.sampleRate != SAMPLE_DISABLED){
+			sample->precision = DEFAULT_LAP_TIME_LOGGING_PRECISION;
+			sample->channelConfig = &(trackConfig->splitTimeCfg);
+			sample->intValue = NIL_SAMPLE;
+			sample->channelIndex = lap_stat_channel_splittime;
+			sample->get_sample = get_lap_stat_sample;
+			sample++;
+		}
+
+		if (trackConfig->distanceCfg.sampleRate != SAMPLE_DISABLED){
+			sample->precision = DEFAULT_DISTANCE_LOGGING_PRECISION;
+			sample->channelConfig = &(trackConfig->distanceCfg);
+			sample->intValue = NIL_SAMPLE;
+			sample->channelIndex = lap_stat_channel_distance;
+			sample->get_sample = get_lap_stat_sample;
+			sample++;
+		}
+
+		if (trackConfig->predTimeCfg.sampleRate != SAMPLE_DISABLED){
+			sample->precision = DEFAULT_LAP_TIME_LOGGING_PRECISION;
+			sample->channelConfig = &(trackConfig->predTimeCfg);
+			sample->intValue = NIL_SAMPLE;
+			sample->channelIndex = lap_stat_channel_predtime;
+			sample->get_sample = get_lap_stat_sample;
+			sample++;
+		}
+	}
+}
+
 
 static float get_mapped_value(float value, ScalingMap *scalingMap){
 	unsigned short *bins;
