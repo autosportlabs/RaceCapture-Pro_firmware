@@ -28,7 +28,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample ** sam
 			sample->channelConfig = &(config->cfg);
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = i;
-			sample->get_sample = get_accel_sample;
+			sample->get_sample = get_analog_sample;
 		}
 		sample++;
 	}
@@ -40,7 +40,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample ** sam
 			sample->channelConfig = &(config->cfg);
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = i;
-			sample->get_sample = get_accel_sample;
+			sample->get_sample = get_timer_sample;
 		}
 		sample++;
 	}
@@ -52,7 +52,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample ** sam
 			sample->channelConfig = &(config->cfg);
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = i;
-			sample->get_sample = get_accel_sample;
+			sample->get_sample = get_gpio_sample;
 		}
 		sample++;
 	}
@@ -64,7 +64,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample ** sam
 			sample->channelConfig = &(config->cfg);
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = i;
-			sample->get_sample = get_accel_sample;
+			sample->get_sample = get_pwm_sample;
 		}
 		sample++;
 	}
