@@ -163,7 +163,7 @@ void setGpio(unsigned int channel, unsigned int state){
 	}
 }
 
-void readGpio(unsigned int channel){
+int readGpio(unsigned int channel){
 	unsigned int gpioStates = AT91F_PIO_GetInput(AT91C_BASE_PIOA);
 	int value = 0;
 	switch (channel){

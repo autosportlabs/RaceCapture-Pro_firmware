@@ -135,6 +135,7 @@ $(LOGGER_SRC_DIR)/sampleRecord.c \
 $(LOGGER_SRC_DIR)/fileWriter.c \
 $(LOGGER_SRC_DIR)/loggerHardware.c \
 $(LOGGER_SRC_DIR)/loggerData.c \
+$(LOGGER_SRC_DIR)/loggerSampleData.c \
 $(LOGGER_SRC_DIR)/gpioTasks.c \
 $(LOGGER_SRC_DIR)/loggerTaskEx.c \
 $(LOGGER_SRC_DIR)/connectivityTask.c \

@@ -3,8 +3,31 @@
 #include "loggerConfig.h"
 #include "loggerData.h"
 #include "accelerometer.h"
+#include "sampleRecord.h"
 #include "gps.h"
+#include "predictive_timer.h"
+#include "linear_interpolate.h"
 
+
+
+void populate_sample_buffer(ChannelSample ** samples,  size_t count, size_t currentTicks){
+	for (size_t i = 0; i < count; i++){
+		ChannelSample *sample = samples[i];
+		if (currentTicks % sample->channelConfig->sampleRate == 0){
+			size_t channelIndex = sample->channelIndex;
+			float value = sample->get_sample(channelIndex); //polymorphic behavior
+			if (sample->precision == 0){
+				sample->intValue = (int)value;
+			}
+			else{
+				sample->floatValue = value;
+			}
+		}
+		else{
+			sample->intValue = NIL_SAMPLE;
+		}
+	}
+}
 
 void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample ** samples, size_t count){
 	ChannelSample *sample = samples[0];
@@ -12,7 +35,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample ** sam
 	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
 		AccelConfig *config = &(loggerConfig->AccelConfigs[i]);
 		if (config->cfg.sampleRate != SAMPLE_DISABLED){
-			sample->precision = config->loggingPrecision;
+			sample->precision = DEFAULT_ACCEL_LOGGING_PRECISION;
 			sample->channelConfig = &(config->cfg);
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = i;
@@ -199,8 +222,8 @@ static float get_mapped_value(float value, ScalingMap *scalingMap){
 }
 
 float get_analog_sample(int channelId){
-	LoggerConfig * config = getWorkingLoggerConfig();
-	ADCConfig *ac = &(config->ADCConfigs[channelId]);
+	LoggerConfig * loggerConfig = getWorkingLoggerConfig();
+	ADCConfig *ac = &(loggerConfig->ADCConfigs[channelId]);
 	unsigned int value = readADC(channelId);
 	float analogValue = 0;
 	switch(ac->scalingMode){
@@ -221,11 +244,11 @@ float get_analog_sample(int channelId){
 }
 
 float get_timer_sample(int channelId){
-	LoggerConfig *config = getWorkingLoggerConfig();
-	TimerConfig *c = &(config->TimerConfigs[i]);
-	size_t sr = c->cfg.sampleRate;
+	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+	TimerConfig *c = &(loggerConfig->TimerConfigs[channelId]);
 	unsigned int value = getTimerPeriod(channelId);
 	float timerValue = 0;
+	unsigned int scaling = c->calculatedScaling;
 	switch (c->mode){
 		case MODE_LOGGING_TIMER_RPM:
 			timerValue = TIMER_PERIOD_TO_RPM(value, scaling);
@@ -247,8 +270,8 @@ float get_timer_sample(int channelId){
 }
 
 float get_pwm_sample(int channelId){
-	LoggerConfig *config = getWorkingLoggerConfig();
-	PWMConfig *pc = &(loggerConfig->PWMConfigs[i]);
+	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+	PWMConfig *c = &(loggerConfig->PWMConfigs[channelId]);
 	float pwmValue = 0;
 	switch (c->loggingMode){
 		case MODE_LOGGING_PWM_PERIOD:
@@ -282,19 +305,19 @@ float get_accel_sample(int channelId){
 float get_gps_sample(int channelId){
 	float value = 0;
 	switch(channelId){
-		gps_channel_latitude:
+		case gps_channel_latitude:
 			value = getLatitude();
 			break;
-		gps_channel_longitude:
+		case gps_channel_longitude:
 			value = getLongitude();
 			break;
-		gps_channel_speed:
+		case gps_channel_speed:
 			value = getGPSSpeed() *  0.621371192; //convert to MPH
 			break;
-		gps_channel_time:
+		case gps_channel_time:
 			value - getUTCTime();
 			break;
-		gps_channel_satellites:
+		case gps_channel_satellites:
 			value = getSatellitesUsedForPosition();
 			break;
 		default:
@@ -307,20 +330,20 @@ float get_gps_sample(int channelId){
 float get_lap_stat_sample(int channelId){
 	float value = 0;
 	switch(channelId){
-		lap_stat_channel_lapcount:
+		case lap_stat_channel_lapcount:
 			value = getLapCount();
 			break;
-		lap_stat_channel_laptime:
+		case lap_stat_channel_laptime:
 			value = getLastLapTime();
 			break;
-		lap_stat_channel_splittime:
+		case lap_stat_channel_splittime:
 			value = getLastSplitTime();
 			break;
-		lap_stat_channel_distance:
+		case lap_stat_channel_distance:
 			value = getDistance();
 			break;
-		lap_stat_channel_predtime:
-			value = get_predicted_time();
+		case lap_stat_channel_predtime:
+			value = get_predicted_time(getGPSSpeed());
 			break;
 		default:
 			value = -1;

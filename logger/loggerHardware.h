@@ -36,7 +36,7 @@ void InitWatchdog(int timeoutMs);
 
 void readGpios(unsigned int *gpio1, unsigned int *gpio2, unsigned int *gpio3);
 
-void readGpio(unsigned int channel);
+int readGpio(unsigned int channel);
 
 void setGpio(unsigned int channel, unsigned int state);
 

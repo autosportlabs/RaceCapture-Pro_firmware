@@ -377,7 +377,7 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
 	return s;
 }
 
-static size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
+size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
 	size_t channels = 0;
 	for (int i=0; i < CONFIG_ACCEL_CHANNELS; i++){
 		if (loggerConfig->AccelConfigs[i].cfg.sampleRate != SAMPLE_DISABLED) channels++;
@@ -392,7 +392,7 @@ static size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
 	}
 
 	for (int i=0; i < CONFIG_GPIO_CHANNELS; i++){
-		if (loggerConfig->GPIOConfigs[i].cfg.cfg.sampleRate != SAMPLE_DISABLED) channels++;
+		if (loggerConfig->GPIOConfigs[i].cfg.sampleRate != SAMPLE_DISABLED) channels++;
 	}
 
 	for (int i=0; i < CONFIG_PWM_CHANNELS; i++){
