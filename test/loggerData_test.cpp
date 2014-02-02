@@ -25,11 +25,6 @@ void LoggerDataTest::tearDown()
 
 void LoggerDataTest::testAccelChannels()
 {
-//	mock_setAccelValue(0,2048);
-//	mock_setAccelValue(1,2048);
-//	mock_setAccelValue(1,2866);
-
-	float x = ACCEL_RAW_TO_GFORCE(2866,2048);
 
 }
 

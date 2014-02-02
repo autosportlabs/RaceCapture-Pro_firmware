@@ -8,8 +8,6 @@
 #include "predictive_timer.h"
 #include "linear_interpolate.h"
 
-
-
 void populate_sample_buffer(ChannelSample ** samples,  size_t count, size_t currentTicks){
 	for (size_t i = 0; i < count; i++){
 		ChannelSample *sample = samples[i];
