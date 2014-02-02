@@ -1,6 +1,7 @@
 #ifndef LOGGERCONFIG_H_
 #define LOGGERCONFIG_H_
 
+#include <stddef.h>
 #define FLASH_PAGE_SIZE						((unsigned int) 256) // Internal FLASH Page Size: 256 bytes
 
 #define CONFIG_FEATURE_INSTALLED			1
@@ -487,6 +488,6 @@ void setTextField(char *dest, const char *source, unsigned int maxlen);
 
 
 unsigned int getHighestSampleRate(LoggerConfig *config);
-static size_t get_enabled_channel_count(LoggerConfig *loggerConfig);
+size_t get_enabled_channel_count(LoggerConfig *loggerConfig);
 
 #endif /*LOGGERCONFIG_H_*/

@@ -15,7 +15,6 @@ ChannelSample ** create_channel_sample_buffer(LoggerConfig *loggerConfig){
 }
 
 void initSampleRecord(LoggerConfig *loggerConfig,SampleRecord *sr){
-
 	for (int i=0; i < CONFIG_ADC_CHANNELS; i++){
 		ChannelSample *s = &(sr->ADCSamples[i]);
 		ADCConfig *adcCfg = &(loggerConfig->ADCConfigs[i]);
