@@ -316,7 +316,6 @@ void setLabelGeneric(char *dest, const char *source){
 	setTextField(dest, source, DEFAULT_LABEL_LENGTH);
 }
 
-
 unsigned int getHighestSampleRate(LoggerConfig *config){
 
 	//start with the slowest sample rate
@@ -378,4 +377,40 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
 	return s;
 }
 
+static size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
+	size_t channels = 0;
+	for (int i=0; i < CONFIG_ACCEL_CHANNELS; i++){
+		if (loggerConfig->AccelConfigs[i].cfg.sampleRate != SAMPLE_DISABLED) channels++;
+	}
+
+	for (int i=0; i < CONFIG_ADC_CHANNELS; i++){
+		if (loggerConfig->ADCConfigs[i].cfg.sampleRate != SAMPLE_DISABLED) channels++;
+	}
+
+	for (int i=0; i < CONFIG_TIMER_CHANNELS; i++){
+		if (loggerConfig->TimerConfigs[i].cfg.sampleRate != SAMPLE_DISABLED) channels++;
+	}
+
+	for (int i=0; i < CONFIG_GPIO_CHANNELS; i++){
+		if (loggerConfig->GPIOConfigs[i].cfg.cfg.sampleRate != SAMPLE_DISABLED) channels++;
+	}
+
+	for (int i=0; i < CONFIG_PWM_CHANNELS; i++){
+		if (loggerConfig->PWMConfigs[i].cfg.sampleRate != SAMPLE_DISABLED) channels++;
+	}
+
+	if (loggerConfig->GPSConfigs.latitudeCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (loggerConfig->GPSConfigs.longitudeCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (loggerConfig->GPSConfigs.speedCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (loggerConfig->GPSConfigs.timeCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (loggerConfig->GPSConfigs.satellitesCfg.sampleRate != SAMPLE_DISABLED) channels++;
+
+	if (loggerConfig->TrackConfigs.lapCountCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (loggerConfig->TrackConfigs.lapTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (loggerConfig->TrackConfigs.splitTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (loggerConfig->TrackConfigs.distanceCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (loggerConfig->TrackConfigs.predTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
+
+	return channels;
+}
 

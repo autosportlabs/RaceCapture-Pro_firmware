@@ -6,6 +6,7 @@
 #include "gps.h"
 
 
+
 static float get_mapped_value(float value, ScalingMap *scalingMap){
 	unsigned short *bins;
 	unsigned int bin, nextBin;

@@ -19,10 +19,12 @@
 #define LOGGER_MSG_START_LOG 1
 #define LOGGER_MSG_END_LOG   2
 
+
 typedef struct _ChannelSample
 	{
 	ChannelConfig * channelConfig;
 	int precision;
+	float (*get_sample)(int);
 	union
 	{
 		int intValue;

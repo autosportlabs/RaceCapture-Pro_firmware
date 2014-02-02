@@ -487,5 +487,6 @@ void setTextField(char *dest, const char *source, unsigned int maxlen);
 
 
 unsigned int getHighestSampleRate(LoggerConfig *config);
+static size_t get_enabled_channel_count(LoggerConfig *loggerConfig);
 
 #endif /*LOGGERCONFIG_H_*/
