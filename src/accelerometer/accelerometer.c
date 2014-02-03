@@ -23,8 +23,8 @@ void accelerometer_sample_all(){
 float accelerometer_read_value(unsigned char accelChannel, AccelConfig *ac){
 	size_t physicalChannel = ac->accelChannel;
 	unsigned int raw = g_accel_filter[physicalChannel].current_value;
-	unsigned int countsPerUnit = accelerometer_device_counts_per_unit(accelChannel);
-	float accelG = ((float)((int)raw - (int)ac->zeroValue) / (float)countsPerUnit);
+	float countsPerUnit = accelerometer_device_counts_per_unit(accelChannel);
+	float accelG = ((float)((int)raw - (int)ac->zeroValue) / countsPerUnit);
 
 	//invert physical channel to match industry-standard accelerometer mappings
 	switch(physicalChannel){
@@ -65,7 +65,7 @@ void calibrateAccelZero(){
 		flushAccelBuffer(physicalChannel);
 		unsigned int zeroValue = g_accel_filter[physicalChannel].current_value;
 		//adjust for gravity
-		unsigned int accelCountsPerUnit = accelerometer_device_counts_per_unit(physicalChannel);
+		float accelCountsPerUnit = accelerometer_device_counts_per_unit(physicalChannel);
 		if (c->accelChannel == ACCEL_CHANNEL_Z) zeroValue-= (accelCountsPerUnit * (c->mode != MODE_ACCEL_INVERTED ? 1 : -1));
 		c->zeroValue = zeroValue;
 	}
