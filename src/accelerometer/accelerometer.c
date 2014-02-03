@@ -54,7 +54,7 @@ float accelerometer_read_value(unsigned char accelChannel, AccelConfig *ac){
 
 static void flushAccelBuffer(size_t physicalChannel){
 	for (size_t i = 0; i < 1000; i++){
-		update_filter(&g_accel_filter[i], accelerometer_read(i));
+		update_filter(&g_accel_filter[physicalChannel], accelerometer_read(physicalChannel));
 	}
 }
 
