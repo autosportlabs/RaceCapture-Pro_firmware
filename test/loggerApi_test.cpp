@@ -302,7 +302,7 @@ void LoggerApiTest::testSetAnalogConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(string("Hz"),string(adcCfg->cfg.units));
 
 	CPPUNIT_ASSERT_EQUAL(2, (int)adcCfg->scalingMode);
-	CPPUNIT_ASSERT_EQUAL(3, adcCfg->loggingPrecision);
+	CPPUNIT_ASSERT_EQUAL((unsigned int)3, adcCfg->loggingPrecision);
 	CPPUNIT_ASSERT_EQUAL(1.234F, adcCfg->linearScaling);
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)adcCfg->scalingMap.rawValues[0]);

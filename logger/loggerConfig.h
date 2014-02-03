@@ -58,7 +58,7 @@ typedef struct _ScalingMap{
 
 typedef struct _ADCConfig{
 	ChannelConfig cfg;
-	int loggingPrecision;
+	unsigned int loggingPrecision;
 	float linearScaling;
 	char scalingMode;
 	ScalingMap scalingMap;
@@ -184,7 +184,7 @@ typedef struct _AccelConfig{
 	
 typedef struct _PWMConfig{
 	ChannelConfig cfg;
-	int loggingPrecision;
+	unsigned int loggingPrecision;
 	char outputMode;
 	char loggingMode;
 	unsigned short startupDutyCycle;

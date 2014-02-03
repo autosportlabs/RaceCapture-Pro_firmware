@@ -8,9 +8,9 @@
 #include "loggerConfig.h"
 #include "mem_mang.h"
 
-ChannelSample ** create_channel_sample_buffer(LoggerConfig *loggerConfig){
-	size_t channelCount = get_enabled_channel_count(loggerConfig);
-	ChannelSample ** samples = (ChannelSample **)portMalloc(sizeof(ChannelSample[channelCount]));
+ChannelSample * create_channel_sample_buffer(LoggerConfig *loggerConfig, size_t channelCount){
+	size_t size = sizeof(ChannelSample[channelCount]);
+	ChannelSample * samples = (ChannelSample *)portMalloc(size);
 	return samples;
 }
 
