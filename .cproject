@@ -95,7 +95,7 @@
 		<buildTargets>
 			<target name="all" path="test" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 				<buildCommand>make</buildCommand>
-				<buildArguments>-j4</buildArguments>
+				<buildArguments>-j8</buildArguments>
 				<buildTarget>all</buildTarget>
 				<stopOnError>true</stopOnError>
 				<useDefaultCommand>false</useDefaultCommand>
