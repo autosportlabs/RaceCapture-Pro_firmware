@@ -77,7 +77,8 @@ SRC = 	loggerData_test.cpp \
 		$(SAM7S_SRC)/serial/serial.c \
 		$(RCP_SRC)/logger/loggerApi.c \
 		$(RCP_SRC)/filter/filter.c \
-		$(RCP_SRC)/accelerometer/accelerometer_device_mock.c \
+		$(RCP_SRC)/accelerometer/accelerometer.c \
+		$(MOCK_DIR)/accelerometer_device_mock.c \
 		$(RCP_SRC)/predictive_timer/predictive_timer.c \
 		$(RCP_SRC)/util/linear_interpolate.c \
 		$(RCP_BASE)/logger/loggerConfig.c \
@@ -85,7 +86,6 @@ SRC = 	loggerData_test.cpp \
 		$(RCP_SRC)/gps/geometry.c \
 		$(RCP_BASE)/logger/sampleRecord.c \
 		$(RCP_BASE)/logger/loggerData.c \
-		$(MOCK_DIR)/accelerometer.c \
 		$(MOCK_DIR)/loggerHardware.c 
 
 OBJ = $(addsuffix .o, $(basename $(SRC)))
