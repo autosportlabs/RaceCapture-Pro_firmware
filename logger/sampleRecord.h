@@ -23,7 +23,7 @@
 typedef struct _ChannelSample
 	{
 	ChannelConfig * channelConfig;
-	int precision;
+	unsigned int precision;
 	size_t channelIndex;
 	float (*get_sample)(int);
 	union
@@ -64,7 +64,7 @@ typedef struct _LoggerMessage
 	SampleRecord *sampleRecord;
 } LoggerMessage;
 
-ChannelSample ** create_channel_sample_buffer(LoggerConfig *loggerConfig);
+ChannelSample * create_channel_sample_buffer(LoggerConfig *loggerConfig, size_t channelCount);
 
 void free_channel_sample_buffer(ChannelSample ** samples);
 

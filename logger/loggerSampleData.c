@@ -27,8 +27,8 @@ void populate_sample_buffer(ChannelSample ** samples,  size_t count, size_t curr
 	}
 }
 
-void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample ** samples, size_t count){
-	ChannelSample *sample = samples[0];
+void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samples, size_t channelCount){
+	ChannelSample *sample = samples;
 
 	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
 		AccelConfig *config = &(loggerConfig->AccelConfigs[i]);
@@ -38,8 +38,8 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample ** sam
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = i;
 			sample->get_sample = get_accel_sample;
+			sample++;
 		}
-		sample++;
 	}
 
 	for (int i=0; i < CONFIG_ADC_CHANNELS; i++){
@@ -50,8 +50,8 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample ** sam
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = i;
 			sample->get_sample = get_analog_sample;
+			sample++;
 		}
-		sample++;
 	}
 
 	for (int i=0; i < CONFIG_TIMER_CHANNELS; i++){
@@ -62,8 +62,8 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample ** sam
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = i;
 			sample->get_sample = get_timer_sample;
+			sample++;
 		}
-		sample++;
 	}
 
 	for (int i=0; i < CONFIG_GPIO_CHANNELS; i++){
@@ -74,8 +74,8 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample ** sam
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = i;
 			sample->get_sample = get_gpio_sample;
+			sample++;
 		}
-		sample++;
 	}
 
 	for (int i=0; i < CONFIG_PWM_CHANNELS; i++){
@@ -86,8 +86,8 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample ** sam
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = i;
 			sample->get_sample = get_pwm_sample;
+			sample++;
 		}
-		sample++;
 	}
 
 	{

@@ -83,6 +83,10 @@ void ResetWatchdog(){}
 
 void InitWatchdog(int timeoutMs){}
 
+int readGpio(unsigned int channel){
+	return g_gpio[channel];
+}
+
 void readGpios(unsigned int *gpio1, unsigned int *gpio2, unsigned int *gpio3){
 	*gpio1 = g_gpio[0];
 	*gpio2 = g_gpio[1];

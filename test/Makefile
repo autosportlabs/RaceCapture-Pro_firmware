@@ -86,6 +86,7 @@ SRC = 	loggerData_test.cpp \
 		$(RCP_SRC)/gps/gps.c \
 		$(RCP_SRC)/gps/geometry.c \
 		$(RCP_BASE)/logger/sampleRecord.c \
+		$(RCP_BASE)/logger/loggerSampleData.c \
 		$(RCP_BASE)/logger/loggerData.c \
 		$(MOCK_DIR)/loggerHardware.c 
 
