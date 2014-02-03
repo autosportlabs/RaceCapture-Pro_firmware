@@ -157,7 +157,7 @@ unsigned int accelerometer_device_read(unsigned int channel){
 	return value;
 }
 
-unsigned int accelerometer_device_counts_per_unit(unsigned int channel){
+float accelerometer_device_counts_per_unit(unsigned int channel){
 	return (channel == ACCEL_CHANNEL_ZT ? YAW_DEVICE_COUNTS_PER_DEGREE_PER_SEC : ACCEL_DEVICE_COUNTS_PER_G);
 }
 
