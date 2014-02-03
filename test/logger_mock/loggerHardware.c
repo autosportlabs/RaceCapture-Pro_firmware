@@ -21,6 +21,7 @@ static int g_timer[CONFIG_TIMER_CHANNELS] = {0,0,0};
 static int g_isFlashed = 0;
 
 void InitLoggerHardware(){
+	accelerometer_init();
 
 }
 

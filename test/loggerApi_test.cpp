@@ -10,6 +10,7 @@
 #include "loggerApi.h"
 #include "mock_serial.h"
 #include "loggerHardware_mock.h"
+#include "accelerometer.h"
 #include "loggerConfig.h"
 #include "jsmn.h"
 #include "mod_string.h"
@@ -128,6 +129,7 @@ void LoggerApiTest::setUp()
 	updateActiveLoggerConfig();
 	setupMockSerial();
 	init_predictive_timer();
+	accelerometer_init();
 }
 
 
