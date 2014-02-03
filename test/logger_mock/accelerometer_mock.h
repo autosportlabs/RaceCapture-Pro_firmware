@@ -8,6 +8,6 @@
 #ifndef ACCELEROMETER_MOCK_H_
 #define ACCELEROMETER_MOCK_H_
 
-void mock_setAccelValue(unsigned int channel, unsigned int value);
+void accelerometer_mock_set_value(unsigned int channel, unsigned int value);
 
 #endif /* ACCELEROMETER_MOCK_H_ */

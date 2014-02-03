@@ -77,7 +77,7 @@ SRC = 	loggerData_test.cpp \
 		$(SAM7S_SRC)/serial/serial.c \
 		$(RCP_SRC)/logger/loggerApi.c \
 		$(RCP_SRC)/filter/filter.c \
-		$(RCP_SRC)/accelerometer/accelerometer.c \
+		$(RCP_SRC)/accelerometer/accelerometer_device_mock.c \
 		$(RCP_SRC)/predictive_timer/predictive_timer.c \
 		$(RCP_SRC)/util/linear_interpolate.c \
 		$(RCP_BASE)/logger/loggerConfig.c \
