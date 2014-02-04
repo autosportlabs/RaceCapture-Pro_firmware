@@ -8,6 +8,8 @@
 #ifndef LOGGERHARDWARE_MOCK_H_
 #define LOGGERHARDWARE_MOCK_H_
 
+void mock_setADC(unsigned int channel, unsigned int value);
+
 void mock_setIsCardPresent(int present);
 void mock_setIsCardWritable(int writable);
 void mock_sButtonPressed(int pressed);

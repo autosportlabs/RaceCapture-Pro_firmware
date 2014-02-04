@@ -5,6 +5,7 @@
  *      Author: brent
  */
 #include "loggerHardware.h"
+#include "loggerHardware_mock.h"
 #include "loggerConfig.h"
 #include "accelerometer.h"
 
@@ -22,7 +23,6 @@ static int g_isFlashed = 0;
 
 void InitLoggerHardware(){
 	accelerometer_init();
-
 }
 
 void InitGPIO(LoggerConfig *loggerConfig){}
@@ -127,6 +127,10 @@ void readAllADC(unsigned int *a0,
 //Read specified ADC channel
 unsigned int readADC(unsigned int channel){
 	return g_adc[channel];
+}
+
+void mock_setADC(unsigned int channel, unsigned int value){
+	g_adc[channel] = value;
 }
 
 //PWM Channel Functions
