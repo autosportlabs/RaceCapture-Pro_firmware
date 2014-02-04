@@ -8,22 +8,22 @@
 #include "predictive_timer.h"
 #include "linear_interpolate.h"
 
-void populate_sample_buffer(ChannelSample ** samples,  size_t count, size_t currentTicks){
+void populate_sample_buffer(ChannelSample * samples,  size_t count, size_t currentTicks){
 	for (size_t i = 0; i < count; i++){
-		ChannelSample *sample = samples[i];
-		if (currentTicks % sample->channelConfig->sampleRate == 0){
-			size_t channelIndex = sample->channelIndex;
-			float value = sample->get_sample(channelIndex); //polymorphic behavior
-			if (sample->precision == 0){
-				sample->intValue = (int)value;
+		if (currentTicks % samples->channelConfig->sampleRate == 0){
+			size_t channelIndex = samples->channelIndex;
+			float value = samples->get_sample(channelIndex); //polymorphic behavior
+			if (samples->precision == 0){
+				samples->intValue = (int)value;
 			}
 			else{
-				sample->floatValue = value;
+				samples->floatValue = value;
 			}
 		}
 		else{
-			sample->intValue = NIL_SAMPLE;
+			samples->intValue = NIL_SAMPLE;
 		}
+		samples++;
 	}
 }
 

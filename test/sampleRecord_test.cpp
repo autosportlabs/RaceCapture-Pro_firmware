@@ -3,6 +3,9 @@
 #include "sampleRecord.h"
 #include "loggerSampleData.h"
 #include "sampleRecord_test.h"
+#include "loggerHardware.h"
+#include "loggerHardware_mock.h"
+#include "accelerometer.h"
 
 #include <string>
 
@@ -13,6 +16,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( SampleRecordTest );
 
 void SampleRecordTest::setUp()
 {
+	InitLoggerHardware();
 	updateActiveLoggerConfig();
 }
 
@@ -21,6 +25,37 @@ void SampleRecordTest::tearDown()
 {
 }
 
+
+void SampleRecordTest::testPopulateSampleRecord(){
+	LoggerConfig *lc = getWorkingLoggerConfig();
+
+	//mock up some values to test later
+	lc->ADCConfigs[7].scalingMode = SCALING_MODE_RAW;
+	lc->ADCConfigs[7].loggingPrecision = 0;
+	mock_setADC(7, 123);
+
+	size_t channelCount = get_enabled_channel_count(lc);
+	ChannelSample * samples = create_channel_sample_buffer(lc, channelCount);
+	init_channel_sample_buffer(lc, samples, channelCount);
+
+	populate_sample_buffer(samples, channelCount, 0);
+
+	CPPUNIT_ASSERT_EQUAL(accelerometer_read_value(0, &lc->AccelConfigs[0]), samples->floatValue);
+
+	samples++;
+	CPPUNIT_ASSERT_EQUAL(accelerometer_read_value(1, &lc->AccelConfigs[1]), samples->floatValue);
+
+	samples++;
+	CPPUNIT_ASSERT_EQUAL(accelerometer_read_value(2, &lc->AccelConfigs[2]), samples->floatValue);
+
+	samples++;
+	CPPUNIT_ASSERT_EQUAL(accelerometer_read_value(3, &lc->AccelConfigs[3]), samples->floatValue);
+
+	samples++;
+	CPPUNIT_ASSERT_EQUAL(123, samples->intValue);
+
+
+}
 
 void SampleRecordTest::testInitSampleRecord()
 {

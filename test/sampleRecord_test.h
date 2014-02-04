@@ -8,6 +8,7 @@ class SampleRecordTest : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE( SampleRecordTest );
   CPPUNIT_TEST( testInitSampleRecord );
+  CPPUNIT_TEST( testPopulateSampleRecord );
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -15,6 +16,7 @@ public:
   void setUp();
   void tearDown();
   void testInitSampleRecord();
+  void testPopulateSampleRecord();
 
 private:
 
