@@ -6,6 +6,7 @@
 #include "loggerHardware.h"
 #include "loggerHardware_mock.h"
 #include "accelerometer.h"
+#include "gps.h"
 
 #include <string>
 
@@ -17,6 +18,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( SampleRecordTest );
 void SampleRecordTest::setUp()
 {
 	InitLoggerHardware();
+	initGPS();
 	updateActiveLoggerConfig();
 }
 
@@ -54,6 +56,29 @@ void SampleRecordTest::testPopulateSampleRecord(){
 	samples++;
 	CPPUNIT_ASSERT_EQUAL(123, samples->intValue);
 
+	samples++;
+	CPPUNIT_ASSERT_EQUAL((float)0, samples->floatValue);
+
+	samples++;
+	CPPUNIT_ASSERT_EQUAL((float)0, samples->floatValue);
+
+	samples++;
+	CPPUNIT_ASSERT_EQUAL((float)0, samples->floatValue);
+
+	samples++;
+	CPPUNIT_ASSERT_EQUAL((float)0, samples->floatValue);
+
+	samples++;
+	CPPUNIT_ASSERT_EQUAL((float)0, samples->floatValue);
+
+	samples++;
+	CPPUNIT_ASSERT_EQUAL((float)0, samples->floatValue);
+
+	samples++;
+	CPPUNIT_ASSERT_EQUAL((float)0, samples->floatValue);
+
+	samples++;
+	CPPUNIT_ASSERT_EQUAL((float)0, samples->floatValue);
 
 }
 
