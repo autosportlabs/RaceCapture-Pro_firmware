@@ -146,7 +146,7 @@ void connectivityTask(void *params) {
 						put_crlf(serial);
 						break;
 					case LOGGER_MSG_SAMPLE:
-						api_sendSampleRecord(serial, msg->sampleRecord, tick, tick == 0);
+						api_sendSampleRecord(serial, msg->channelSamples, msg->sampleCount, tick, tick == 0);
 						put_crlf(serial);
 						tick++;
 						break;

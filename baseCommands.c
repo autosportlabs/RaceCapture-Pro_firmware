@@ -49,8 +49,8 @@ void ShowStats(Serial *serial, unsigned int argc, char **argv){
 	serial->put_s("sizeof LoggerConfig  :");
 	put_int(serial, sizeof(LoggerConfig));
 	put_crlf(serial);
-	serial->put_s("sizeof SampleRecord  :");
-	put_int(serial, sizeof(SampleRecord));
+	serial->put_s("sizeof ChannelSample  :");
+	put_int(serial, sizeof(ChannelSample));
 	put_crlf(serial);
 }
 
