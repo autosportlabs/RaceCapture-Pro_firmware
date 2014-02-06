@@ -83,7 +83,7 @@ static size_t getLastLapIndex(int startingIndex){
 
 static void outputLapBuffer(LapBuffer *buffer){
 	for (size_t i = 0; i < buffer->sampleIndex; i++){
-		LocationSample *target = &buffer->samples[i];
+		//LocationSample *target = &buffer->samples[i];
 		//printf("%d distance/time/speed %f %f %f\r\n", i, target->distance, target->time, target->speed );
 	}
 }

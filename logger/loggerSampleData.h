@@ -11,7 +11,7 @@
 #include "sampleRecord.h"
 #include "loggerConfig.h"
 
-void populate_sample_buffer(ChannelSample * samples,  size_t count, size_t currentTicks);
+int populate_sample_buffer(ChannelSample * samples,  size_t count, size_t currentTicks);
 void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samples, size_t channelCount);
 
 float get_analog_sample(int channelId);

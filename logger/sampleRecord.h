@@ -33,51 +33,13 @@ typedef struct _ChannelSample
 	};
 } ChannelSample;
 
-typedef struct _SampleRecord
-{
-	union
-	{
-		ChannelSample Samples[SAMPLE_RECORD_CHANNELS];
-	struct{
-		ChannelSample ADCSamples[CONFIG_ADC_CHANNELS];
-		ChannelSample PWMSamples[CONFIG_PWM_CHANNELS];
-		ChannelSample GPIOSamples[CONFIG_GPIO_CHANNELS];
-		ChannelSample TimerSamples[CONFIG_TIMER_CHANNELS];
-		ChannelSample AccelSamples[CONFIG_ACCEL_CHANNELS];
-		ChannelSample GPS_LatitueSample;
-		ChannelSample GPS_LongitudeSample;
-		ChannelSample GPS_SpeedSample;
-		ChannelSample GPS_TimeSample;
-		ChannelSample GPS_SatellitesSample;
-		ChannelSample Track_LapCountSample;
-		ChannelSample Track_LapTimeSample;
-		ChannelSample Track_SplitTimeSample;
-		ChannelSample Track_DistanceSample;
-		ChannelSample Track_PredTimeSample;
-		};
-	};
-} SampleRecord;
-
 typedef struct _LoggerMessage
 {
 	int messageType;
-	SampleRecord *sampleRecord;
+	size_t sampleCount;
+	ChannelSample * channelSamples;
 } LoggerMessage;
 
 ChannelSample * create_channel_sample_buffer(LoggerConfig *loggerConfig, size_t channelCount);
-
-void free_channel_sample_buffer(ChannelSample ** samples);
-
-void clearSampleRecordBuffer(SampleRecord **srBuff, int size);
-
-void clearSampleRecord(SampleRecord* sr);
-
-SampleRecord ** createSampleRecordBuffer(LoggerConfig *loggerConfig, int size);
-
-void initSampleRecord(LoggerConfig *loggerConfig,SampleRecord *sr);
-
-void initSampleRecordBuffer(LoggerConfig *loggerConfig, SampleRecord ** srBuff,int size);
-
-void freeSampleRecordBuffer(SampleRecord ** sampleRecordBuffer);
 
 #endif /* SAMPLERECORD_H_ */

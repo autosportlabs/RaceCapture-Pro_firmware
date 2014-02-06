@@ -11,6 +11,7 @@
 #include "fileWriter.h"
 #include "connectivityTask.h"
 #include "sampleRecord.h"
+#include "loggerSampleData.h"
 #include "loggerData.h"
 #include "loggerTaskEx.h"
 #include "loggerHardware.h"
@@ -32,9 +33,8 @@ int g_isLogging;
 int g_configChanged;
 int g_telemetryBackgroundStreaming;
 
-#define SAMPLE_RECORD_BUFFER_SIZE 10
-static LoggerMessage g_sampleRecordMsgBuffer[SAMPLE_RECORD_BUFFER_SIZE];
-static SampleRecord g_sampleRecordBuffer[SAMPLE_RECORD_BUFFER_SIZE];
+#define LOGGER_MESSAGE_BUFFER_SIZE 10
+static LoggerMessage g_sampleRecordMsgBuffer[LOGGER_MESSAGE_BUFFER_SIZE];
 static LoggerMessage g_startLogMessage;
 static LoggerMessage g_endLogMessage;
 
@@ -61,14 +61,17 @@ void createLoggerTaskEx(){
 	xTaskCreate( loggerTaskEx,( signed portCHAR * ) "loggerEx",	LOGGER_STACK_SIZE, NULL, LOGGER_TASK_PRIORITY, NULL );
 }
 
-static void initSampleRecords(LoggerConfig *loggerConfig){
-	for (size_t i=0; i < SAMPLE_RECORD_BUFFER_SIZE; i++){
+static size_t initSampleRecords(LoggerConfig *loggerConfig){
+	size_t channelSampleCount = get_enabled_channel_count(loggerConfig);
+
+	for (size_t i=0; i < LOGGER_MESSAGE_BUFFER_SIZE; i++){
 		LoggerMessage *msg = (g_sampleRecordMsgBuffer + i);
-		SampleRecord *sr = (g_sampleRecordBuffer + i);
-		initSampleRecord(loggerConfig, sr);
+		ChannelSample *channelSamples = create_channel_sample_buffer(loggerConfig, channelSampleCount);
+		init_channel_sample_buffer(loggerConfig, channelSamples, channelSampleCount);
 		msg->messageType = LOGGER_MSG_SAMPLE;
-		msg->sampleRecord = sr;
+		msg->channelSamples = channelSamples;
 	}
+	return channelSampleCount;
 }
 
 static size_t calcTelemetrySampleRate(LoggerConfig *config, size_t desiredSampleRate){
@@ -77,18 +80,19 @@ static size_t calcTelemetrySampleRate(LoggerConfig *config, size_t desiredSample
 	return desiredSampleRate;
 }
 
-void updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate, int *telemetrySampleRate, int *sampleRateTimebase){
+size_t updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate, int *telemetrySampleRate, int *sampleRateTimebase){
 	*loggingSampleRate = getHighestSampleRate(loggerConfig);
 	*sampleRateTimebase = *loggingSampleRate;
 	if HIGHER_SAMPLE(BACKGROUND_SAMPLE_RATE, *sampleRateTimebase) *sampleRateTimebase = BACKGROUND_SAMPLE_RATE;
 	*telemetrySampleRate = calcTelemetrySampleRate(loggerConfig, *loggingSampleRate);
-	initSampleRecords(getWorkingLoggerConfig());
+	size_t channelCount = initSampleRecords(loggerConfig);
 	pr_info_int(*telemetrySampleRate);
-	pr_info("=tel sr\r\n");
-	pr_info_int(*loggingSampleRate);
-	pr_info("=log sr\r\n");
-	pr_info_int(*sampleRateTimebase);
+	pr_info("=telemetry sr\r\n");
+	pr_info_int(decodeSampleRate(*loggingSampleRate));
+	pr_info("=loging  sr\r\n");
+	pr_info_int(decodeSampleRate(*sampleRateTimebase));
 	pr_info("=timebase sr\r\n");
+	return channelCount;
 }
 
 
@@ -104,6 +108,7 @@ void loggerTaskEx(void *params){
 	size_t bufferIndex = 0;
 	size_t currentTicks = 0;
 	g_configChanged = 1;
+	size_t channelCount = 0;
 
 	int loggingSampleRate = SAMPLE_DISABLED;
 	int sampleRateTimebase = SAMPLE_DISABLED;
@@ -117,7 +122,7 @@ void loggerTaskEx(void *params){
 
 		if (g_configChanged){
 			currentTicks = 0;
-			updateSampleRates(loggerConfig, &loggingSampleRate, &telemetrySampleRate, &sampleRateTimebase);
+			channelCount = updateSampleRates(loggerConfig, &loggingSampleRate, &telemetrySampleRate, &sampleRateTimebase);
 			resetLapCount();
 			resetDistance();
 			g_configChanged = 0;
@@ -138,8 +143,8 @@ void loggerTaskEx(void *params){
 		}
 
 		LoggerMessage *msg = &g_sampleRecordMsgBuffer[bufferIndex];
-		clearSampleRecord(msg->sampleRecord);
-		int sampledRate = populateSampleRecord(msg->sampleRecord, currentTicks, loggerConfig);
+		int sampledRate = populate_sample_buffer(msg->channelSamples, channelCount, currentTicks);
+		msg->sampleCount = channelCount;
 
 		if (g_isLogging && (sampledRate != SAMPLE_DISABLED && sampledRate >= loggingSampleRate)){
 			if (queue_logfile_record(msg) != pdTRUE) enableLED(LED3);
@@ -152,7 +157,7 @@ void loggerTaskEx(void *params){
 
 		if (sampledRate != SAMPLE_DISABLED){
 			bufferIndex++;
-			if (bufferIndex >= SAMPLE_RECORD_BUFFER_SIZE ) bufferIndex = 0;
+			if (bufferIndex >= LOGGER_MESSAGE_BUFFER_SIZE ) bufferIndex = 0;
 		}
 
 		ResetWatchdog();

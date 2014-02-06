@@ -70,11 +70,12 @@ static int write_float(FIL *f, float num, int precision){
 	return FILE_WRITE(f, buf);
 }
 
-static int write_headers(FIL *f, SampleRecord *sr){
+static int write_headers(FIL *f, ChannelSample *channelSamples, size_t sampleCount){
 	int rc = WRITE_SUCCESS;
 	int headerCount = 0;
-	for (int i = 0; i < SAMPLE_RECORD_CHANNELS;i++){
-		ChannelConfig *cfg = (sr->Samples[i].channelConfig);
+	ChannelSample *sample = channelSamples;
+	for (int i = 0; i < sampleCount;i++){
+		ChannelConfig *cfg = sample->channelConfig;
 		if (SAMPLE_DISABLED != cfg->sampleRate){
 			if (headerCount++ > 0) rc = FILE_WRITE(f, ",");
 			rc = write_quoted_string(f, cfg->label);
@@ -83,21 +84,19 @@ static int write_headers(FIL *f, SampleRecord *sr){
 			rc = FILE_WRITE(f, "|");
 			rc = write_int(f, decodeSampleRate(cfg->sampleRate));
 		}
+		sample++;
 	}
 	rc = FILE_WRITE(f, "\n");
 	return rc;
 }
 
 
-static int write_sample_record(FIL *f, SampleRecord * sampleRecord){
+static int write_channel_samples(FIL *f, ChannelSample * channelSamples, size_t channelCount){
 	int rc = WRITE_SUCCESS;
-	if (NULL != sampleRecord){
+	if (NULL != channelSamples){
 		int fieldCount = 0;
-		for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
-			ChannelSample *sample = &(sampleRecord->Samples[i]);
-			ChannelConfig * channelConfig = sample->channelConfig;
-
-			if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
+		for (int i = 0; i < channelCount; i++){
+			ChannelSample *sample = (channelSamples + i);
 
 			if (fieldCount++ > 0) rc = FILE_WRITE(f, ",");
 
@@ -219,9 +218,9 @@ void fileWriterTask(void *params){
 			else if (LOGGER_MSG_SAMPLE == msg->messageType && WRITING_ACTIVE == writingStatus){
 				lock_spi();
 				if (0 == tick){
-					write_headers(&g_logfile, msg->sampleRecord);
+					write_headers(&g_logfile, msg->channelSamples, msg->sampleCount);
 				}
-				int rc = write_sample_record(&g_logfile, msg->sampleRecord);
+				int rc = write_channel_samples(&g_logfile, msg->channelSamples, msg->sampleCount);
 				unlock_spi();
 
 				if (rc == WRITE_FAIL){
@@ -260,7 +259,7 @@ void fileWriterTask(void *params){
 
 void createFileWriterTask(){
 
-	g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( SampleRecord *));
+	g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( ChannelSample *));
 	if (NULL == g_sampleRecordQueue){
 		pr_error("Could not create sample record queue!");
 		return;

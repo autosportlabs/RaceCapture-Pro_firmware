@@ -15,6 +15,8 @@ float accelerometer_read_value(unsigned char accelChannel, AccelConfig *ac);
 
 void accelerometer_init();
 
+void calibrateAccelZero();
+
 unsigned int accelerometer_read(unsigned int channel);
 
 

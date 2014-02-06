@@ -16,21 +16,27 @@
 #include "sdcard.h"
 #include "loggerData.h"
 #include "sampleRecord.h"
+#include "loggerSampleData.h"
 #include "usart.h"
 #include "board.h"
+#include "mem_mang.h"
+#include "accelerometer.h"
 
 void SampleData(Serial *serial, unsigned int argc, char **argv){
-	SampleRecord sr;
 	LoggerConfig * config = getWorkingLoggerConfig();
-	initSampleRecord(config, &sr);
-	populateSampleRecord(&sr,0,config);
+	size_t channelCount = get_enabled_channel_count(config);
+	ChannelSample *channelSamples = create_channel_sample_buffer(config, channelCount);
+	if (channelSamples == 0){
+		put_commandError(serial, -3);
+		return;
+	}
 
-	for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
-		ChannelSample *sample = &(sr.Samples[i]);
+	init_channel_sample_buffer(config, channelSamples, channelCount);
+	populate_sample_buffer(channelSamples, channelCount, 0);
+
+	ChannelSample *sample = channelSamples;
+	for (int i = 0; i < channelCount; i++){
 		ChannelConfig * channelConfig = sample->channelConfig;
-
-		if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
-		//if (sample->intValue == NIL_SAMPLE) continue;
 
 		int precision = sample->precision;
 		if (precision > 0){
@@ -39,7 +45,9 @@ void SampleData(Serial *serial, unsigned int argc, char **argv){
 		else{
 			put_nameInt(serial, channelConfig->label,sample->intValue);
 		}
+		sample++;
 	}
+	portFree(channelSamples);
 }
 
 void TestSD(Serial *serial, unsigned int argc, char **argv){

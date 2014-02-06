@@ -8,9 +8,12 @@
 #include "predictive_timer.h"
 #include "linear_interpolate.h"
 
-void populate_sample_buffer(ChannelSample * samples,  size_t count, size_t currentTicks){
+int populate_sample_buffer(ChannelSample * samples,  size_t count, size_t currentTicks){
+	int highestRate = SAMPLE_DISABLED;
 	for (size_t i = 0; i < count; i++){
-		if (currentTicks % samples->channelConfig->sampleRate == 0){
+		int sampleRate = samples->channelConfig->sampleRate;
+		highestRate = HIGHER_SAMPLE_RATE(sampleRate, highestRate);
+		if (currentTicks % sampleRate == 0){
 			size_t channelIndex = samples->channelIndex;
 			float value = samples->get_sample(channelIndex); //polymorphic behavior
 			if (samples->precision == 0){
@@ -25,6 +28,7 @@ void populate_sample_buffer(ChannelSample * samples,  size_t count, size_t curre
 		}
 		samples++;
 	}
+	return highestRate;
 }
 
 void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samples, size_t channelCount){

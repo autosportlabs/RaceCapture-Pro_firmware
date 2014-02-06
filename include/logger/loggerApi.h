@@ -77,7 +77,7 @@ int api_getLogfile(Serial *serial, const jsmntok_t *json);
 //messages
 void api_sendLogStart(Serial *serial);
 void api_sendLogEnd(Serial *serial);
-void api_sendSampleRecord(Serial *serial, SampleRecord *sr, unsigned int tick, int sendMeta);
+void api_sendSampleRecord(Serial *serial, ChannelSample *sr, size_t channelCount, unsigned int tick, int sendMeta);
 
 //Utility functions
 void unescapeTextField(char *data);

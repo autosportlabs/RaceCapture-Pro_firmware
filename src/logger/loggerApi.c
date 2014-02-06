@@ -9,6 +9,7 @@
 #include "modp_atonum.h"
 #include "mod_string.h"
 #include "sampleRecord.h"
+#include "loggerSampleData.h"
 #include "loggerData.h"
 #include "loggerTaskEx.h"
 #include "accelerometer.h"
@@ -83,14 +84,16 @@ int api_sampleData(Serial *serial, const jsmntok_t *json){
 			sendMeta = modp_atoi(value->data);
 		}
 	}
-	SampleRecord * sr = (SampleRecord *)portMalloc(sizeof(SampleRecord));
-	if (sr == 0) return API_ERROR_SEVERE;
-
 	LoggerConfig * config = getWorkingLoggerConfig();
-	initSampleRecord(config, sr);
-	populateSampleRecord(sr,0, config);
-	api_sendSampleRecord(serial, sr, 0, sendMeta);
-	portFree(sr);
+	size_t channelCount = get_enabled_channel_count(config);
+	ChannelSample *samples = create_channel_sample_buffer(config, channelCount);
+
+	if (samples == 0) return API_ERROR_SEVERE;
+
+	init_channel_sample_buffer(config, samples, channelCount);
+	populate_sample_buffer(samples, channelCount, 0);
+	api_sendSampleRecord(serial, samples, channelCount, 0, sendMeta);
+	portFree(samples);
 	return API_SUCCESS_NO_RETURN;
 }
 
@@ -121,11 +124,11 @@ int api_log(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS;
 }
 
-static void writeSampleMeta(Serial *serial, SampleRecord *sr, int sampleRateLimit, int more){
+static void writeSampleMeta(Serial *serial, ChannelSample *channelSamples, size_t channelCount, int sampleRateLimit, int more){
 	int sampleCount = 0;
 	json_arrayStart(serial, "meta");
+	ChannelSample *sample = channelSamples;
 	for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
-		ChannelSample *sample = &(sr->Samples[i]);
 		ChannelConfig * channelConfig = sample->channelConfig;
 		if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
 		if (sampleCount++ > 0) serial->put_c(',');
@@ -134,50 +137,51 @@ static void writeSampleMeta(Serial *serial, SampleRecord *sr, int sampleRateLimi
 		json_string(serial, "ut", channelConfig->units, 1);
 		json_int(serial, "sr", decodeSampleRate(LOWER_SAMPLE_RATE(channelConfig->sampleRate, sampleRateLimit)), 0);
 		serial->put_c('}');
+		sample++;
 	}
 	json_arrayEnd(serial, more);
 }
 
 int api_getMeta(Serial *serial, const jsmntok_t *json){
 	json_messageStart(serial);
-	SampleRecord * sr = (SampleRecord *)portMalloc(sizeof(SampleRecord));
-	if (sr == 0) return API_ERROR_SEVERE;
 
-	initSampleRecord(getWorkingLoggerConfig(), sr);
-	writeSampleMeta(serial, sr, getConnectivitySampleRateLimit(), 0);
+	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+	size_t channelCount = get_enabled_channel_count(loggerConfig);
+	ChannelSample *channelSamples = create_channel_sample_buffer(loggerConfig, channelCount);
 
-	portFree(sr);
+	if (channelSamples == 0) return API_ERROR_SEVERE;
+
+	init_channel_sample_buffer(loggerConfig, channelSamples, channelCount);
+	writeSampleMeta(serial, channelSamples, channelCount, getConnectivitySampleRateLimit(), 0);
+
+	portFree(channelSamples);
 	json_blockEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
 }
 
-void api_sendSampleRecord(Serial *serial, SampleRecord *sr, unsigned int tick, int sendMeta){
+void api_sendSampleRecord(Serial *serial, ChannelSample *channelSamples, size_t channelCount, unsigned int tick, int sendMeta){
 	json_messageStart(serial);
 	json_blockStart(serial, "s");
 
 	json_uint(serial,"t",tick,1);
-	if (sendMeta) writeSampleMeta(serial, sr, getConnectivitySampleRateLimit(), 1);
+	if (sendMeta) writeSampleMeta(serial, channelSamples, channelCount, getConnectivitySampleRateLimit(), 1);
 
-	size_t channelCount = 0;
 	unsigned int channelsBitmask = 0;
 	json_arrayStart(serial, "d");
-	for (int i = 0; i < SAMPLE_RECORD_CHANNELS; i++){
-		ChannelSample *sample = &(sr->Samples[i]);
-		ChannelConfig * channelConfig = sample->channelConfig;
-		if (SAMPLE_DISABLED != channelConfig->sampleRate){
-			if (NIL_SAMPLE != sample->intValue){
-				channelsBitmask = channelsBitmask | (1 << channelCount);
-				int precision = sample->precision;
-				if (precision > 0){
-					put_float(serial, sample->floatValue, precision);
-				}
-				else{
-					put_int(serial, sample->intValue);
-				}
-				serial->put_c(',');
+	ChannelSample *sample = channelSamples;
+	for (size_t i = 0; i < channelCount; i++){
+		if (NIL_SAMPLE != sample->intValue){
+			channelsBitmask = channelsBitmask | (1 << i);
+			int precision = sample->precision;
+			if (precision > 0){
+				put_float(serial, sample->floatValue, precision);
 			}
-			channelCount++;
+			else{
+				put_int(serial, sample->intValue);
+			}
+			serial->put_c(',');
 		}
+		sample++;
 	}
 	put_uint(serial, channelsBitmask);
 	json_arrayEnd(serial, 0);
