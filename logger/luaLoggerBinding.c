@@ -10,6 +10,7 @@
 #include "loggerData.h"
 #include "gps.h"
 #include "accelerometer.h"
+#include "ADC.h"
 #include "luaScript.h"
 #include "luaTask.h"
 #include "mod_string.h"
@@ -966,7 +967,7 @@ int Lua_GetAnalog(lua_State *L){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		ADCConfig *ac = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL != ac){
-			unsigned int adcRaw = readADC(channel);
+			unsigned int adcRaw = ADC_read(channel);
 			switch(ac->scalingMode){
 			case SCALING_MODE_RAW:
 				analogValue = adcRaw;
@@ -989,7 +990,7 @@ int Lua_GetAnalogRaw(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		if (channel >= 0 && channel < CONFIG_ADC_CHANNELS){
-			result = (int)readADC(channel);
+			result = (int)ADC_read(channel);
 		}
 	}
 	lua_pushnumber(L,result);

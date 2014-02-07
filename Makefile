@@ -70,6 +70,7 @@ SRC_DIR = src
 SAM7s_BASE_DIR = SAM7s_base
 MCP2515_DIR = $(SAM7s_BASE_DIR)/MCP2515
 KXR94_2353_DIR = $(SAM7s_BASE_DIR)/KXR94_2353
+ADC_AT91_DIR = $(SAM7s_BASE_DIR)/ADC_at91
 HW_DIR = $(SAM7s_BASE_DIR)/hardware
 RTOS_DIR = $(SAM7s_BASE_DIR)/FreeRTOS
 RTOS_SRC_DIR = $(RTOS_DIR)/Source
@@ -86,6 +87,7 @@ LUA_SRC_DIR = $(SAM7s_BASE_DIR)/lua
 CMD_SRC_DIR = $(SAM7s_BASE_DIR)/command
 FILTER_DIR = $(SRC_DIR)/filter
 CAN_DIR = $(SRC_DIR)/CAN
+ADC_DIR = $(SRC_DIR)/ADC
 ACCELEROMETER_SRC_DIR = $(SRC_DIR)/accelerometer
 LOGGING_DIR = $(SRC_DIR)/logging
 TASKS_DIR = tasks
@@ -148,6 +150,7 @@ $(LOGGER_SRC_DIR)/loggerCommands.c \
 $(MEMORY_SRC_DIR)/memory.c \
 $(MCP2515_DIR)/CAN_device_MCP2515.c \
 $(KXR94_2353_DIR)/accelerometer_device_KXR94_2353.c \
+$(ADC_AT91_DIR)/ADC_device_at91.c \
 $(LUA_SRC_DIR)/luaTask.c \
 $(LUA_SRC_DIR)/luaScript.c \
 $(LUA_SRC_DIR)/luaBaseBinding.c \
@@ -156,6 +159,7 @@ $(RTOS_PORT_DIR)/MemMang/heap_2_combine.c \
 $(LOGGING_DIR)/printk.c \
 $(FILTER_DIR)/filter.c \
 $(CAN_DIR)/CAN.c \
+$(ADC_DIR)/ADC.c \
 $(LOGGING_DIR)/ring_buffer.c \
 $(TASKS_DIR)/heartbeat.c \
 $(MESSAGING_SRC_DIR)/messaging.c \
@@ -261,6 +265,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/logging \
 -I$(INCLUDE_DIR)/filter \
 -I$(INCLUDE_DIR)/CAN \
+-I$(INCLUDE_DIR)/ADC \
 -I$(INCLUDE_DIR)/accelerometer \
 -I$(INCLUDE_DIR)/messaging \
 -I$(INCLUDE_DIR)/predictive_timer \
