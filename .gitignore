@@ -5,3 +5,4 @@ main.elf
 main.map
 main.sym
 .dep/
+test/rcptest

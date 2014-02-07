@@ -20,8 +20,6 @@ int isCardPresent(void);
 int isCardWritable(void);
 int isButtonPressed(void);
 
-void InitADC(void);
-
 void InitLEDs(void);
 void InitPushbutton(void);
 
@@ -45,20 +43,6 @@ void SetFREQ_ANALOG(unsigned int freqAnalogPort);
 
 //Clear bit for specified Frequency/Analog port
 void ClearFREQ_ANALOG(unsigned int freqAnalogPort);
-
-//Read all ADC ports
-
-void readAllADC(unsigned int *a0, 
-						unsigned int *a1, 
-						unsigned int *a2,
-						unsigned int *a3,
-						unsigned int *a4,
-						unsigned int *a5,
-						unsigned int *a6,
-						unsigned int *a7 );
-					
-//Read specified ADC channel												
-unsigned int readADC(unsigned int channel);
 
 //PWM Channel Functions
 void InitPWM(LoggerConfig *loggerConfig);

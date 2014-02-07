@@ -3,6 +3,7 @@
 #include "loggerConfig.h"
 #include "loggerData.h"
 #include "accelerometer.h"
+#include "ADC.h"
 #include "sampleRecord.h"
 #include "gps.h"
 #include "predictive_timer.h"
@@ -226,7 +227,7 @@ static float get_mapped_value(float value, ScalingMap *scalingMap){
 float get_analog_sample(int channelId){
 	LoggerConfig * loggerConfig = getWorkingLoggerConfig();
 	ADCConfig *ac = &(loggerConfig->ADCConfigs[channelId]);
-	unsigned int value = readADC(channelId);
+	unsigned int value = ADC_read(channelId);
 	float analogValue = 0;
 	switch(ac->scalingMode){
 		case SCALING_MODE_RAW:
