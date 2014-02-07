@@ -16,7 +16,6 @@ static int g_leds[3] = {0,0,0};
 static int g_gpio[CONFIG_GPIO_CHANNELS] = {0,0,0};
 static int g_pwmPeriod[CONFIG_PWM_CHANNELS] = {0,0,0,0};
 static int g_pwmDuty[CONFIG_PWM_CHANNELS] = {0,0,0,0};
-static int g_timer[CONFIG_TIMER_CHANNELS] = {0,0,0};
 
 static int g_isFlashed = 0;
 
@@ -128,46 +127,6 @@ void PWM_SetDutyCycle(unsigned int channel,	unsigned short duty){
 
 unsigned short PWM_GetDutyCycle(unsigned int channel){
 	return g_pwmDuty[channel];
-}
-
-void initTimerChannels(LoggerConfig *loggerConfig){}
-
-void initTimer0(TimerConfig *timerConfig){}
-
-void initTimer1(TimerConfig *timerConfig){}
-
-void initTimer2(TimerConfig *timerConfig){}
-
-unsigned int timerClockFromDivider(unsigned short divider){
-	return 0;
-}
-
-unsigned int getTimerPeriod(unsigned int channel){
-	return g_timer[channel];
-}
-
-unsigned int getTimerCount(unsigned int channel){
-	return 0;
-}
-
-void resetTimerCount(unsigned int channel){}
-
-void getAllTimerPeriods(unsigned int *t0, unsigned int *t1, unsigned int *t2){
-	*t0 = g_timer[0];
-	*t1 = g_timer[1];
-	*t2 = g_timer[2];
-}
-
-unsigned int getTimer0Period(){
-	return g_timer[0];
-}
-
-unsigned int getTimer1Period(){
-	return g_timer[1];
-}
-
-unsigned int getTimer2Period(){
-	return g_timer[2];
 }
 
 int flashLoggerConfig(){

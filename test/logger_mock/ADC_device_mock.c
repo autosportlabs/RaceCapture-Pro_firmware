@@ -1,5 +1,5 @@
 #include "ADC_device.h"
-#include "loggerConifg.h"
+#include "loggerConfig.h"
 
 static unsigned int g_adc[CONFIG_ADC_CHANNELS] = {0,0,0,0,0,0};
 
