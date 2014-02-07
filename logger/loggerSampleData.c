@@ -4,6 +4,7 @@
 #include "loggerData.h"
 #include "accelerometer.h"
 #include "ADC.h"
+#include "timer.h"
 #include "sampleRecord.h"
 #include "gps.h"
 #include "predictive_timer.h"
@@ -249,7 +250,7 @@ float get_analog_sample(int channelId){
 float get_timer_sample(int channelId){
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 	TimerConfig *c = &(loggerConfig->TimerConfigs[channelId]);
-	unsigned int value = getTimerPeriod(channelId);
+	unsigned int value = timer_get_period(channelId);
 	float timerValue = 0;
 	unsigned int scaling = c->calculatedScaling;
 	switch (c->mode){

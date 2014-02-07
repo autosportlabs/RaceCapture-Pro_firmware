@@ -11,6 +11,8 @@
 #include "gps.h"
 #include "accelerometer.h"
 #include "ADC.h"
+#include "timer.h"
+#include "CAN.h"
 #include "luaScript.h"
 #include "luaTask.h"
 #include "mod_string.h"
@@ -18,7 +20,6 @@
 #include "printk.h"
 #include "modp_numtoa.h"
 #include "loggerTaskEx.h"
-#include "CAN.h"
 
 extern xSemaphoreHandle g_xLoggerStart;
 extern int g_loggingShouldRun;
@@ -1003,7 +1004,7 @@ static int luaToTimerValues(lua_State *L, unsigned int *timerPeriod, unsigned in
 		int channel = lua_tointeger(L,1);
 		TimerConfig *c = getTimerConfigChannel(channel);
 		if (NULL != c){
-			*timerPeriod = getTimerPeriod(channel);
+			*timerPeriod = timer_get_period(channel);
 			*scaling = c->calculatedScaling;
 			result = 1;
 		}
@@ -1056,7 +1057,7 @@ int Lua_GetTimerRaw(lua_State *L){
 	int result = -1;
 	if (lua_gettop(L) >= 1){
 		int channel = lua_tointeger(L,1);
-		result = getTimerPeriod(channel);
+		result = timer_get_period(channel);
 	}
 	lua_pushinteger(L,result);
 	return 1;
@@ -1064,7 +1065,7 @@ int Lua_GetTimerRaw(lua_State *L){
 
 int Lua_ResetTimerCount(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		resetTimerCount(lua_tointeger(L,1));
+		timer_reset_count(lua_tointeger(L,1));
 	}
 	return 0;
 }
@@ -1074,7 +1075,7 @@ int Lua_GetTimerCount(lua_State *L){
 	int result = -1;
 	if (lua_gettop(L) >= 1){
 		int channel = lua_tointeger(L,1);
-		result = getTimerCount(channel);		
+		result = timer_get_count(channel);
 	}
 	lua_pushinteger(L,result);
 	return 1;

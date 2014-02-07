@@ -34,6 +34,8 @@ INCLUDES = 	-I. \
 		-I$(SAM7S_SRC)/uart \
 		-I$(SAM7S_SRC)/usb/include \
 		-I$(RCP_INC)/accelerometer \
+		-I$(RCP_INC)/ADC \
+		-I$(RCP_INC)/timer \
 		-I$(MOCK_DIR) \
 		-I$(GPS_DIR) \
 		-I$(UTIL_DIR)
@@ -79,7 +81,11 @@ SRC = 	loggerData_test.cpp \
 		$(RCP_SRC)/logger/loggerApi.c \
 		$(RCP_SRC)/filter/filter.c \
 		$(RCP_SRC)/accelerometer/accelerometer.c \
+		$(RCP_SRC)/ADC/ADC.c \
+		$(RCP_SRC)/timer/timer.c \
 		$(MOCK_DIR)/accelerometer_device_mock.c \
+		$(MOCK_DIR)/timer_device_mock.c \
+		$(MOCK_DIR)/ADC_device_mock.c \
 		$(RCP_SRC)/predictive_timer/predictive_timer.c \
 		$(RCP_SRC)/util/linear_interpolate.c \
 		$(RCP_BASE)/logger/loggerConfig.c \
