@@ -1,6 +1,5 @@
 #include "loggerHardware.h"
 #include "loggerConfig.h"
-#include "board.h"
 #include "accelerometer.h"
 #include "ADC.h"
 #include "timer.h"
@@ -10,14 +9,14 @@
 #include "GPIO.h"
 #include "watchdog.h"
 #include "sdcard.h"
-#include "constants.h"
 #include "memory.h"
 #include "spi.h"
-#include "printk.h"
+#include "memory.h"
+#include "constants.h"
 
 void InitLoggerHardware(){
-	init_spi_lock();
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+	init_spi_lock();
 	watchdog_init(WATCHDOG_TIMEOUT_MS);
 	LED_init();
 	accelerometer_init();
@@ -27,11 +26,4 @@ void InitLoggerHardware(){
 	GPIO_init(loggerConfig);
 	InitFSHardware();
 	CAN_init(CAN_BAUD_500K);
-}
-
-int flashLoggerConfig(){
-	void * savedLoggerConfig = getSavedLoggerConfig();
-	void * workingLoggerConfig = getWorkingLoggerConfig();
-
-	return flashWriteRegion(savedLoggerConfig, workingLoggerConfig, sizeof (LoggerConfig));
 }

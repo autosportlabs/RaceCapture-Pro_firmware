@@ -76,6 +76,8 @@ TIMER_AT91_DIR= $(SAM7s_BASE_DIR)/timer_at91
 LED_AT91_DIR= $(SAM7s_BASE_DIR)/LED_at91
 GPIO_AT91_DIR= $(SAM7s_BASE_DIR)/GPIO_at91
 WATCHDOG_AT91_DIR= $(SAM7s_BASE_DIR)/watchdog_at91
+MEMORY_AT91_DIR= $(SAM7s_BASE_DIR)/memory_at91
+MEM_MANG_DIR = $(SAM7s_BASE_DIR)/mem_mang
 HW_DIR = $(SAM7s_BASE_DIR)/hardware
 RTOS_DIR = $(SAM7s_BASE_DIR)/FreeRTOS
 RTOS_SRC_DIR = $(RTOS_DIR)/Source
@@ -87,7 +89,7 @@ SERIAL_SRC_DIR = $(SAM7s_BASE_DIR)/serial
 UART_SRC_DIR = $(SAM7s_BASE_DIR)/uart
 SAM7S_UTIL_DIR = $(SAM7s_BASE_DIR)/util
 SPI_DIR = $(SAM7s_BASE_DIR)/spi
-MEMORY_SRC_DIR = $(SAM7s_BASE_DIR)/memory
+MEMORY_SRC_DIR = $(SRC_DIR)/memory
 LUA_SRC_DIR = $(SAM7s_BASE_DIR)/lua
 CMD_SRC_DIR = $(SAM7s_BASE_DIR)/command
 FILTER_DIR = $(SRC_DIR)/filter
@@ -113,7 +115,7 @@ GPS_SRC_DIR = $(SRC_DIR)/gps
 #App specific dirs
 FAT_SD_SRC_DIR = fat_sd
 LOGGER_SRC_DIR = logger
-SDCARD_SRC_DIR = sdcard
+SDCARD_SRC_DIR = $(SRC_DIR)/sdcard
 
 # List C source files here. (C dependencies are automatically generated.)
 # use file-extension c for "c-only"-files
@@ -165,6 +167,7 @@ $(PWM_AT91_DIR)/PWM_device_at91.c \
 $(LED_AT91_DIR)/LED_device_at91.c \
 $(GPIO_AT91_DIR)/GPIO_device_at91.c \
 $(WATCHDOG_AT91_DIR)/watchdog_device_at91.c \
+$(MEMORY_AT91_DIR)/memory_device_at91.c \
 $(GPIO_AT91_DIR)/gpioTasks.c \
 $(LUA_SRC_DIR)/luaTask.c \
 $(LUA_SRC_DIR)/luaScript.c \
@@ -265,15 +268,15 @@ CINCS = \
 -I$(UTIL_DIR) \
 -I$(SAM7S_UTIL_DIR) \
 -I$(LUA_SRC_DIR) \
--I$(MEMORY_SRC_DIR) \
+-I$(MEM_MANG_DIR) \
 -I$(FAT_SD_SRC_DIR) \
--I$(SDCARD_SRC_DIR) \
 -I$(SERIAL_SRC_DIR) \
 -I$(SPI_DIR) \
 -I$(UART_SRC_DIR) \
 -I$(ACCELEROMETER_SRC_DIR) \
 -I$(LOGGER_SRC_DIR) \
 -I$(USB_SRC_DIR)/include \
+-I$(MEMORY_AT91_DIR) \
 -I$(HW_DIR)/include \
 -I$(RTOS_SRC_DIR)/include \
 -I$(RTOS_GCC_DIR) \
@@ -291,12 +294,14 @@ CINCS = \
 -I$(INCLUDE_DIR)/LED \
 -I$(INCLUDE_DIR)/GPIO \
 -I$(INCLUDE_DIR)/watchdog \
+-I$(INCLUDE_DIR)/memory \
 -I$(INCLUDE_DIR)/accelerometer \
 -I$(INCLUDE_DIR)/messaging \
 -I$(INCLUDE_DIR)/predictive_timer \
 -I$(INCLUDE_DIR)/util \
 -I$(INCLUDE_DIR)/devices \
 -I$(INCLUDE_DIR)/gps \
+-I$(INCLUDE_DIR)/sdcard \
 -I$(JSON_DIR)
 
 #CINCS = -I. -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)

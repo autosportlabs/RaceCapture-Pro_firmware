@@ -1,9 +1,10 @@
 #include "loggerConfig.h"
 #include "mod_string.h"
+#include "memory.h"
 
 #ifndef RCP_TESTING
 #include "memory.h"
-LoggerConfig g_savedLoggerConfig __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".text\n\t#"))) = DEFAULT_LOGGER_CONFIG;
+LoggerConfig g_savedLoggerConfig __attribute__ ((aligned (FLASH_MEMORY_PAGE_SIZE))) __attribute__((section(".text\n\t#"))) = DEFAULT_LOGGER_CONFIG;
 #else
 LoggerConfig g_savedLoggerConfig = DEFAULT_LOGGER_CONFIG;
 #endif
@@ -412,5 +413,12 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
 	if (loggerConfig->TrackConfigs.predTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
 
 	return channels;
+}
+
+int flashLoggerConfig(){
+	void * savedLoggerConfig = getSavedLoggerConfig();
+	void * workingLoggerConfig = getWorkingLoggerConfig();
+
+	return memory_flash_region(savedLoggerConfig, workingLoggerConfig, sizeof (LoggerConfig));
 }
 

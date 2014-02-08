@@ -1,26 +1,13 @@
-#include "memory.h"
+#include "memory_device.h"
+#include "board.h"
+#include "memory_device_page_size.h"
 
+#ifndef RCP_TESTING /* groan */
+    #define RAMFUNC __attribute__ ((long_call, section (".fastrun")))
+#else
+    #define RAMFUNC
+#endif
 
-/**
- * Name:      flash_write
- * Purpose:   Writes a page in the flash memory
- * Inputs:
- *  - Destination address in the flash
- *  - Source data buffer
- * Output: OK if write is successful, ERROR otherwise
- */
- 
-int flashWriteRegion(void *vAddress, void *vData, unsigned int length){
-
-	unsigned int pages = length / AT91C_IFLASH_PAGE_SIZE;
-	for (unsigned int i = 0; i < pages; i++){
-		unsigned int offset = (i * AT91C_IFLASH_PAGE_SIZE);
-		if (flash_write((void *)((unsigned int)vAddress + offset),(void *)((unsigned int)vData + offset)) != 0 ){
-			return -1;	
-		}
-	}
-	return 0;
-}
 
 int RAMFUNC flash_write(void * vAddress, void * vData){
 
@@ -33,7 +20,7 @@ int RAMFUNC flash_write(void * vAddress, void * vData){
 
   // Program FMCN field in Flash Mode Register
   AT91C_BASE_MC->MC_FMR = ((BOARD_MCK / 666666 << 16) & AT91C_MC_FMCN) | AT91C_MC_FWS_1FWS;
- 
+
   // Calculate page number and flash address
   page = ((((unsigned int) pAddress - (unsigned int) MEMORY_START_ADDRESS) / AT91C_IFLASH_PAGE_SIZE) << 8) & AT91C_MC_PAGEN;
 
@@ -62,4 +49,15 @@ int RAMFUNC flash_write(void * vAddress, void * vData){
   else {
     return 0;
   }
+}
+
+int memory_device_flash_region(void *address, void *data, unsigned int length){
+	unsigned int pages = length / AT91C_IFLASH_PAGE_SIZE;
+	for (unsigned int i = 0; i < pages; i++){
+		unsigned int offset = (i * AT91C_IFLASH_PAGE_SIZE);
+		if (flash_write((void *)((unsigned int)address + offset),(void *)((unsigned int)data + offset)) != 0 ){
+			return -1;
+		}
+	}
+	return 0;
 }

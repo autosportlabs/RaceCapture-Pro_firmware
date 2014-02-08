@@ -9,12 +9,12 @@
 #include "api.h"
 #include "loggerApi.h"
 #include "mock_serial.h"
-#include "loggerHardware_mock.h"
 #include "accelerometer.h"
 #include "loggerConfig.h"
 #include "jsmn.h"
 #include "mod_string.h"
 #include "modp_atonum.h"
+#include "memory_mock.h"
 #include <string>
 #include <fstream>
 #include <streambuf>
@@ -744,12 +744,12 @@ void LoggerApiTest::testCalibrateAccel(){
 }
 
 void LoggerApiTest::testFlashConfigFile(string filename){
-	mock_setIsFlashed(1);
+	memory_mock_set_is_flashed(1);
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(), (char *)json.c_str(), json.size());
 	char *txBuffer = mock_getTxBuffer();
-	int isFlashed = mock_getIsFlashed();
+	int isFlashed = memory_mock_get_is_flashed();
 	CPPUNIT_ASSERT_EQUAL(isFlashed, 1);
 	assertGenericResponse(txBuffer,"flashCfg",1);
 }

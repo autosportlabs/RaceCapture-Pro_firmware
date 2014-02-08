@@ -1,5 +1,4 @@
 #include "gpioTasks.h"
-#include "loggerPinDefs.h"
 #include "board.h"
 #include "lib_AT91SAM7S256.h"
 #include "FreeRTOS.h"

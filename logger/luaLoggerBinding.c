@@ -1,7 +1,5 @@
 #include "luaLoggerBinding.h"
 
-#include "loggerPinDefs.h"
-#include "loggerHardware.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"

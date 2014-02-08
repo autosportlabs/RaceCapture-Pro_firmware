@@ -24,7 +24,7 @@ int flashScriptPage(unsigned int page, const char *data){
 		if (size > MEMORY_PAGE_SIZE) size = MEMORY_PAGE_SIZE;
 		memset(temp,0,MEMORY_PAGE_SIZE);
 		memcpy(temp,data,size);
-		result = flashWriteRegion((void *)scriptPageAddress,(void *)temp, MEMORY_PAGE_SIZE);
+		result = memory_flash_region((void *)scriptPageAddress,(void *)temp, MEMORY_PAGE_SIZE);
 		portFree(temp);
 	}
 	return result;

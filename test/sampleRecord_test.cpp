@@ -4,7 +4,6 @@
 #include "loggerSampleData.h"
 #include "sampleRecord_test.h"
 #include "loggerHardware.h"
-#include "loggerHardware_mock.h"
 #include "ADC_mock.h"
 #include "accelerometer.h"
 #include "gps.h"
