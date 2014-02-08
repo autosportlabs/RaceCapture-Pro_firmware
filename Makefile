@@ -75,6 +75,7 @@ PWM_AT91_DIR = $(SAM7s_BASE_DIR)/PWM_at91
 TIMER_AT91_DIR= $(SAM7s_BASE_DIR)/timer_at91
 LED_AT91_DIR= $(SAM7s_BASE_DIR)/LED_at91
 GPIO_AT91_DIR= $(SAM7s_BASE_DIR)/GPIO_at91
+WATCHDOG_AT91_DIR= $(SAM7s_BASE_DIR)/watchdog_at91
 HW_DIR = $(SAM7s_BASE_DIR)/hardware
 RTOS_DIR = $(SAM7s_BASE_DIR)/FreeRTOS
 RTOS_SRC_DIR = $(RTOS_DIR)/Source
@@ -96,6 +97,7 @@ TIMER_DIR = $(SRC_DIR)/timer
 PWM_DIR = $(SRC_DIR)/PWM
 LED_DIR = $(SRC_DIR)/LED
 GPIO_DIR = $(SRC_DIR)/GPIO
+WATCHDOG_DIR = $(SRC_DIR)/watchdog
 ACCELEROMETER_SRC_DIR = $(SRC_DIR)/accelerometer
 LOGGING_DIR = $(SRC_DIR)/logging
 TASKS_DIR = tasks
@@ -162,6 +164,7 @@ $(TIMER_AT91_DIR)/timer_device_at91.c \
 $(PWM_AT91_DIR)/PWM_device_at91.c \
 $(LED_AT91_DIR)/LED_device_at91.c \
 $(GPIO_AT91_DIR)/GPIO_device_at91.c \
+$(WATCHDOG_AT91_DIR)/watchdog_device_at91.c \
 $(GPIO_AT91_DIR)/gpioTasks.c \
 $(LUA_SRC_DIR)/luaTask.c \
 $(LUA_SRC_DIR)/luaScript.c \
@@ -176,6 +179,7 @@ $(TIMER_DIR)/timer.c \
 $(PWM_DIR)/PWM.c \
 $(LED_DIR)/LED.c \
 $(GPIO_DIR)/GPIO.c \
+$(WATCHDOG_DIR)/watchdog.c \
 $(LOGGING_DIR)/ring_buffer.c \
 $(TASKS_DIR)/heartbeat.c \
 $(MESSAGING_SRC_DIR)/messaging.c \
@@ -286,6 +290,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/PWM \
 -I$(INCLUDE_DIR)/LED \
 -I$(INCLUDE_DIR)/GPIO \
+-I$(INCLUDE_DIR)/watchdog \
 -I$(INCLUDE_DIR)/accelerometer \
 -I$(INCLUDE_DIR)/messaging \
 -I$(INCLUDE_DIR)/predictive_timer \
