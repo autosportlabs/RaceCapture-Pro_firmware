@@ -22,7 +22,7 @@
 #include "LED.h"
 #include "loggerHardware.h"
 #include "loggerData.h"
-#include "gpioTasks.h"
+//#include "gpioTasks.h"
 #include "gpsTask.h"
 #include "usart.h"
 #include "sdcard.h"
@@ -143,7 +143,6 @@ int main( void )
 #endif
 	createFileWriterTask();
 	createLoggerTaskEx();
-	createGPIOTasks();
 	createConnectivityTask();
 	startGPSTask();
 

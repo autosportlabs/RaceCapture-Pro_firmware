@@ -21,6 +21,7 @@
 #include "board.h"
 #include "mem_mang.h"
 #include "accelerometer.h"
+#include "GPIO.h"
 
 void SampleData(Serial *serial, unsigned int argc, char **argv){
 	LoggerConfig * config = getWorkingLoggerConfig();
@@ -282,7 +283,7 @@ void SetGpioConfig(Serial *serial, unsigned int argc, char **argv){
 	if (NULL != c){
 		SetChannelConfig(&(c->cfg),2,argc,argv);
 		if (argc > 5) c->mode = filterGpioMode(modp_atoi(argv[5]));
-		InitGPIO(getWorkingLoggerConfig());
+		GPIO_init(getWorkingLoggerConfig());
 		put_commandOK(serial);
 	}
 }

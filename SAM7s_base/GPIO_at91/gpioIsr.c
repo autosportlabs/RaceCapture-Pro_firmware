@@ -3,7 +3,7 @@
 #include "semphr.h"
 #include "board.h"
 #include "task.h"
-#include "loggerPinDefs.h"
+#include "GPIO_device_at91_pin_map.h"
 
 extern xSemaphoreHandle xOnPushbutton;
 extern xSemaphoreHandle xOnGPI1;
