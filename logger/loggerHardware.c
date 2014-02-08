@@ -6,6 +6,7 @@
 #include "timer.h"
 #include "CAN.h"
 #include "PWM.h"
+#include "LED.h"
 #include "sdcard.h"
 #include "constants.h"
 #include "memory.h"
@@ -28,12 +29,12 @@ void InitLoggerHardware(){
 	init_spi_lock();
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 	InitWatchdog(WATCHDOG_TIMEOUT_MS);
+	LED_init();
 	accelerometer_init();
 	ADC_init();
 	timer_init(loggerConfig);
 	PWM_init(loggerConfig);
 	InitGPIO(loggerConfig);
-	InitLEDs();
 	InitPushbutton();
 	InitSDCard();
 	CAN_init(CAN_BAUD_500K);
@@ -152,11 +153,6 @@ void readGpios(unsigned int *gpio1, unsigned int *gpio2, unsigned int *gpio3){
 	*gpio3 = ((gpioStates & GPIO_3) != 0);
 }
 
-void InitLEDs(void){
-    AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, LED_MASK ) ;
-   //* Clear the LED's.
-    AT91F_PIO_SetOutput( AT91C_BASE_PIOA, LED_MASK ) ;
-}
 
 void InitPushbutton(void){
 	AT91F_PIO_CfgInput(AT91C_BASE_PIOA, PIO_PUSHBUTTON_SWITCH);
@@ -164,26 +160,6 @@ void InitPushbutton(void){
 	AT91C_BASE_PIOA->PIO_IFER = PIO_PUSHBUTTON_SWITCH; //enable input filter
 	AT91C_BASE_PIOA->PIO_MDER = PIO_PUSHBUTTON_SWITCH; //enable multi drain
 }
-
-void enableLED(unsigned int Led){
-        AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, Led );
-}
-
-void disableLED(unsigned int Led){
-        AT91F_PIO_SetOutput( AT91C_BASE_PIOA, Led );
-}
-
-void toggleLED (unsigned int Led){
-    if ( (AT91F_PIO_GetInput(AT91C_BASE_PIOA) & Led ) == Led )
-    {
-        AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, Led );
-    }
-    else
-    {
-        AT91F_PIO_SetOutput( AT91C_BASE_PIOA, Led );
-    }
-}
-
 
 int flashLoggerConfig(){
 	void * savedLoggerConfig = getSavedLoggerConfig();

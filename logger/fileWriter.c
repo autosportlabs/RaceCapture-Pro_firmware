@@ -16,6 +16,7 @@
 #include "printk.h"
 #include "spi.h"
 #include "mem_mang.h"
+#include "LED.h"
 
 enum writing_status {
 	WRITING_INACTIVE = 0,
@@ -171,14 +172,14 @@ static int open_new_logfile(char *filename){
 	int rc = InitFS();
 	if (0 != rc){
 		pr_error("FS init error\r\n");
-		enableLED(LED3);
+		LED_enable(3);
 	}
 	else{
 		//open next log file
 		rc = open_next_logfile(&g_logfile, filename);
 		if (0 != rc){
 			pr_error("File open error\r\n");
-			enableLED(LED3);
+			LED_enable(3);
 		}
 		else{
 			status = WRITING_ACTIVE;
@@ -202,7 +203,7 @@ void fileWriterTask(void *params){
 			xQueueReceive(g_sampleRecordQueue, &(msg), portMAX_DELAY);
 			if ((LOGGER_MSG_START_LOG == msg->messageType || LOGGER_MSG_SAMPLE == msg->messageType) && WRITING_INACTIVE == writingStatus){
 				pr_debug("start logging\r\n");
-				disableLED(LED3);
+				LED_disable(3);
 				flushTimeoutInterval = FLUSH_INTERVAL_MS;
 				flushTimeoutStart = xTaskGetTickCount();
 				tick = 0;
@@ -224,7 +225,7 @@ void fileWriterTask(void *params){
 				unlock_spi();
 
 				if (rc == WRITE_FAIL){
-					enableLED(LED3);
+					LED_enable(3);
 					//try to recover
 					lock_spi();
 					f_close(&g_logfile);
@@ -240,10 +241,10 @@ void fileWriterTask(void *params){
 						break;
 					}
 					else{
-						disableLED(LED3);
+						LED_disable(3);
 					}
 				}
-				disableLED(LED3);
+				LED_disable(3);
 				if (isTimeoutMs(flushTimeoutStart, flushTimeoutInterval)){
 					flush_logfile(&g_logfile);
 					flushTimeoutStart = xTaskGetTickCount();

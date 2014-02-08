@@ -73,6 +73,7 @@ KXR94_2353_DIR = $(SAM7s_BASE_DIR)/KXR94_2353
 ADC_AT91_DIR = $(SAM7s_BASE_DIR)/ADC_at91
 PWM_AT91_DIR = $(SAM7s_BASE_DIR)/PWM_at91
 TIMER_AT91_DIR= $(SAM7s_BASE_DIR)/timer_at91
+LED_AT91_DIR= $(SAM7s_BASE_DIR)/LED_at91
 HW_DIR = $(SAM7s_BASE_DIR)/hardware
 RTOS_DIR = $(SAM7s_BASE_DIR)/FreeRTOS
 RTOS_SRC_DIR = $(RTOS_DIR)/Source
@@ -92,6 +93,7 @@ CAN_DIR = $(SRC_DIR)/CAN
 ADC_DIR = $(SRC_DIR)/ADC
 TIMER_DIR = $(SRC_DIR)/timer
 PWM_DIR = $(SRC_DIR)/PWM
+LED_DIR = $(SRC_DIR)/LED
 ACCELEROMETER_SRC_DIR = $(SRC_DIR)/accelerometer
 LOGGING_DIR = $(SRC_DIR)/logging
 TASKS_DIR = tasks
@@ -157,6 +159,7 @@ $(KXR94_2353_DIR)/accelerometer_device_KXR94_2353.c \
 $(ADC_AT91_DIR)/ADC_device_at91.c \
 $(TIMER_AT91_DIR)/timer_device_at91.c \
 $(PWM_AT91_DIR)/PWM_device_at91.c \
+$(LED_AT91_DIR)/LED_device_at91.c \
 $(LUA_SRC_DIR)/luaTask.c \
 $(LUA_SRC_DIR)/luaScript.c \
 $(LUA_SRC_DIR)/luaBaseBinding.c \
@@ -168,6 +171,7 @@ $(CAN_DIR)/CAN.c \
 $(ADC_DIR)/ADC.c \
 $(TIMER_DIR)/timer.c \
 $(PWM_DIR)/PWM.c \
+$(LED_DIR)/LED.c \
 $(LOGGING_DIR)/ring_buffer.c \
 $(TASKS_DIR)/heartbeat.c \
 $(MESSAGING_SRC_DIR)/messaging.c \
@@ -276,6 +280,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/ADC \
 -I$(INCLUDE_DIR)/timer \
 -I$(INCLUDE_DIR)/PWM \
+-I$(INCLUDE_DIR)/LED \
 -I$(INCLUDE_DIR)/accelerometer \
 -I$(INCLUDE_DIR)/messaging \
 -I$(INCLUDE_DIR)/predictive_timer \

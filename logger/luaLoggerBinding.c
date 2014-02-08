@@ -14,6 +14,7 @@
 #include "timer.h"
 #include "CAN.h"
 #include "PWM.h"
+#include "LED.h"
 #include "luaScript.h"
 #include "luaTask.h"
 #include "mod_string.h"
@@ -1366,23 +1367,11 @@ int Lua_SetLED(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		unsigned int LED = lua_tointeger(L,1);
 		unsigned int state = lua_tointeger(L,2);
-		unsigned int mask = 0;
-		switch (LED){
-			case 1:
-				mask = LED1;
-				break;
-			case 2:
-				mask = LED2;
-				break;
-			case 3:
-				mask = LED3;
-				break;
-		}
 		if (state){
-			enableLED(mask);
+			LED_enable(LED);
 		}
 		else{
-			disableLED(mask);	
+			LED_disable(LED);
 		}
 	}
 	return 0;

@@ -1,5 +1,6 @@
 #include "gps.h"
 #include "loggerHardware.h"
+#include "LED.h"
 #include "loggerConfig.h"
 #include "modp_numtoa.h"
 #include "modp_atonum.h"
@@ -447,11 +448,11 @@ void initGPS(){
 }
 
 static void flashGpsStatusLed(){
-	if (g_flashCount == 0) disableLED(LED1);
+	if (g_flashCount == 0) LED_disable(1);
 	g_flashCount++;
 	int targetFlashCount = (GPS_LOCKED_ON(g_gpsQuality) ? GPS_LOCK_FLASH_COUNT : GPS_NOFIX_FLASH_COUNT );
 	if (g_flashCount >= targetFlashCount){
-		enableLED(LED1);
+		LED_enable(1);
 		g_flashCount = 0;
 	}
 }
