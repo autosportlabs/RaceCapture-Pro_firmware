@@ -152,17 +152,6 @@ void readGpios(unsigned int *gpio1, unsigned int *gpio2, unsigned int *gpio3){
 	*gpio3 = ((gpioStates & GPIO_3) != 0);
 }
 
-void SetFREQ_ANALOG(unsigned int freqAnalogPort){
-	AT91F_PIO_SetOutput( AT91C_BASE_PIOA, freqAnalogPort );	
-}
-
-void ClearFREQ_ANALOG(unsigned int freqAnalogPort){
-	AT91F_PIO_ClearOutput( AT91C_BASE_PIOA, freqAnalogPort );
-}
-
-
-
-
 void InitLEDs(void){
     AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, LED_MASK ) ;
    //* Clear the LED's.
