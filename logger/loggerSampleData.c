@@ -6,6 +6,7 @@
 #include "ADC.h"
 #include "timer.h"
 #include "PWM.h"
+#include "GPIO.h"
 #include "sampleRecord.h"
 #include "gps.h"
 #include "predictive_timer.h"
@@ -296,7 +297,7 @@ float get_pwm_sample(int channelId){
 }
 
 float get_gpio_sample(int channelId){
-	int gpioValue = readGpio(channelId);
+	int gpioValue = GPIO_get(channelId);
 	return (float)gpioValue;
 }
 

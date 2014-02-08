@@ -8,7 +8,7 @@
 #include "semphr.h"
 #include "loggerHardware.h"
 #include "loggerTaskEx.h"
-
+#include "GPIO_device_at91_pin_map.h"
 
 #define DEBOUNCE_DELAY_PERIOD		( ( portTickType )30 / portTICK_RATE_MS  )
 #define GPIO_TASK_PRIORITY 			( tskIDLE_PRIORITY + 4 )

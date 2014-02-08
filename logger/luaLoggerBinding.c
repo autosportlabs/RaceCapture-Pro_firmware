@@ -15,6 +15,7 @@
 #include "CAN.h"
 #include "PWM.h"
 #include "LED.h"
+#include "GPIO.h"
 #include "luaScript.h"
 #include "luaTask.h"
 #include "mod_string.h"
@@ -264,12 +265,12 @@ int Lua_GetBackgroundStreaming(lua_State *L){
 }
 
 int Lua_IsSDCardPresent(lua_State *L){
-	lua_pushinteger(L,isCardPresent());
+	lua_pushinteger(L,GPIO_is_SD_card_present());
 	return 1;
 }
 
 int Lua_IsSDCardWritable(lua_State *L){
-	lua_pushinteger(L,isCardWritable());
+	lua_pushinteger(L,GPIO_is_SD_card_writable());
 	return 1;
 }
 
@@ -538,7 +539,7 @@ int Lua_SetGPIOConfig(lua_State *L){
 			GPIOConfig *c = getGPIOConfigChannel(channel);
 			//0= configure as input, 1=configure as output
 			if (NULL != c) c->mode = filterGpioMode(lua_tointeger(L,2));
-			InitGPIO(getWorkingLoggerConfig()); //reload configuration
+			GPIO_init(getWorkingLoggerConfig()); //reload configuration
 		}
 	}
 	return 0;
@@ -1084,7 +1085,7 @@ int Lua_GetTimerCount(lua_State *L){
 }
 
 int Lua_GetButton(lua_State *L){
-	unsigned int pushbutton = isButtonPressed();
+	unsigned int pushbutton = GPIO_is_button_pressed();
 	lua_pushinteger(L,(pushbutton == 0));
 	return 1;	
 }
@@ -1128,25 +1129,12 @@ int Lua_ReadSerialLine(lua_State *L){
 
 int Lua_GetGPIO(lua_State *L){
 
-	unsigned int result = 0;
+	unsigned int state = 0;
 	if (lua_gettop(L) >= 1){
-		unsigned int gpio[CONFIG_GPIO_CHANNELS];
-		readGpios(&gpio[0], &gpio[1], &gpio[2]);
-
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
-		switch (channel){
-			case 0:
-				result = gpio[0];
-				break;
-			case 1:
-				result = gpio[1];
-				break;
-			case 2:
-				result = gpio[2];
-				break;
-		}
+		state = GPIO_get(channel);
 	}
-	lua_pushinteger(L, result);
+	lua_pushinteger(L, state);
 	return 1;
 }
 
@@ -1154,7 +1142,7 @@ int Lua_SetGPIO(lua_State *L){
 	if (lua_gettop(L) >=2){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		unsigned int state = ((unsigned int)lua_tointeger(L,2) == 1);
-		setGpio(channel, state);
+		GPIO_set(channel, state);
 	}
 	return 0;
 }
