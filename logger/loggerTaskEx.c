@@ -8,6 +8,7 @@
 #include "task.h"
 #include "semphr.h"
 
+#include "watchdog.h"
 #include "LED.h"
 #include "fileWriter.h"
 #include "connectivityTask.h"
@@ -161,7 +162,7 @@ void loggerTaskEx(void *params){
 			if (bufferIndex >= LOGGER_MESSAGE_BUFFER_SIZE ) bufferIndex = 0;
 		}
 
-		ResetWatchdog();
+		watchdog_reset();
 		vTaskDelayUntil( &xLastWakeTime, sampleRateTimebase );
 	}
 }

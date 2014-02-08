@@ -6,6 +6,7 @@
 #include "taskUtil.h"
 #include "loggerHardware.h"
 #include "spi.h"
+#include "watchdog.h"
 
 static FATFS Fatfs[1];
 
@@ -83,7 +84,7 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet, int delay)
 			put_crlf(serial);
 			goto exit;
 		}
-		ResetWatchdog();
+		watchdog_reset();
 	}
 	portTickType endTicks = xTaskGetTickCount();
 
