@@ -14,8 +14,6 @@ static int g_isCardWritable = 0;
 static int g_isButtonPressed = 0;
 static int g_leds[3] = {0,0,0};
 static int g_gpio[CONFIG_GPIO_CHANNELS] = {0,0,0};
-static int g_pwmPeriod[CONFIG_PWM_CHANNELS] = {0,0,0,0};
-static int g_pwmDuty[CONFIG_PWM_CHANNELS] = {0,0,0,0};
 
 static int g_isFlashed = 0;
 
@@ -99,35 +97,6 @@ void SetFREQ_ANALOG(unsigned int freqAnalogPort){}
 
 //Clear bit for specified Frequency/Analog port
 void ClearFREQ_ANALOG(unsigned int freqAnalogPort){}
-
-//Read all ADC ports
-
-//PWM Channel Functions
-void InitPWM(LoggerConfig *loggerConfig){}
-
-void StartPWM(unsigned int pwmChannel){}
-void StartAllPWM(){}
-
-void StopPWM(unsigned int pwmChannel){}
-void StopAllPWM(){}
-
-//Set PWM period for specified channel
-void PWM_SetPeriod(	unsigned int channel, unsigned short period){
-	g_pwmPeriod[channel] = period;
-}
-
-unsigned short PWM_GetPeriod(unsigned int channel){
-	return g_pwmPeriod[channel];
-}
-
-//Set PWM duty cycle for specified channel
-void PWM_SetDutyCycle(unsigned int channel,	unsigned short duty){
-	g_pwmDuty[channel] = duty;
-}
-
-unsigned short PWM_GetDutyCycle(unsigned int channel){
-	return g_pwmDuty[channel];
-}
 
 int flashLoggerConfig(){
 	g_isFlashed = 1;

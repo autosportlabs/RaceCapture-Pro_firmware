@@ -13,6 +13,7 @@
 #include "ADC.h"
 #include "timer.h"
 #include "CAN.h"
+#include "PWM.h"
 #include "luaScript.h"
 #include "luaTask.h"
 #include "mod_string.h"
@@ -1255,7 +1256,7 @@ int Lua_SetPWMDutyCycleRaw(lua_State *L){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		unsigned int dutyCycleRaw = (unsigned int)lua_tointeger(L,2);
 		if (channel >= 0 && channel < CONFIG_PWM_CHANNELS){
-			PWM_SetDutyCycle( channel, (unsigned short)dutyCycleRaw);
+			PWM_set_duty_cycle( channel, (unsigned short)dutyCycleRaw);
 		}
 	}
 	return 0;
@@ -1270,7 +1271,7 @@ int Lua_SetPWMPeriodRaw(lua_State *L){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		unsigned int periodRaw = (unsigned int)lua_tointeger(L,2);
 		if (channel >= 0 && channel < CONFIG_PWM_CHANNELS){
-			PWM_SetPeriod( channel, (unsigned short)periodRaw);
+			PWM_channel_set_period(channel, (unsigned short)periodRaw);
 		}
 	}	
 	return 0;
@@ -1283,7 +1284,7 @@ int Lua_SetAnalogOut(lua_State *L){
 			unsigned int channel = (unsigned int)lua_tointeger(L,1);
 			if (channel >= 0 && channel < CONFIG_PWM_CHANNELS){
 				float dutyCycle = (float)lua_tonumber(L,2) / c->voltageScaling;
-				PWM_SetDutyCycle(channel,(unsigned short)dutyCycle);
+				PWM_set_duty_cycle(channel,(unsigned short)dutyCycle);
 			}
 		}
 	}

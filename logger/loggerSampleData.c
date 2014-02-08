@@ -5,6 +5,7 @@
 #include "accelerometer.h"
 #include "ADC.h"
 #include "timer.h"
+#include "PWM.h"
 #include "sampleRecord.h"
 #include "gps.h"
 #include "predictive_timer.h"
@@ -279,13 +280,13 @@ float get_pwm_sample(int channelId){
 	float pwmValue = 0;
 	switch (c->loggingMode){
 		case MODE_LOGGING_PWM_PERIOD:
-			pwmValue = PWM_GetPeriod(channelId);
+			pwmValue = PWM_channel_get_period(channelId);
 			break;
 		case MODE_LOGGING_PWM_DUTY:
-			pwmValue = PWM_GetDutyCycle(channelId);
+			pwmValue = PWM_get_duty_cycle(channelId);
 			break;
 		case MODE_LOGGING_PWM_VOLTS:
-			pwmValue = PWM_GetDutyCycle(channelId) * c->voltageScaling;
+			pwmValue = PWM_get_duty_cycle(channelId) * c->voltageScaling;
 			break;
 		default:
 			pwmValue = -1;

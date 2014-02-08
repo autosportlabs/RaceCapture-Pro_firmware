@@ -5,6 +5,7 @@
 #include "ADC.h"
 #include "timer.h"
 #include "CAN.h"
+#include "PWM.h"
 #include "sdcard.h"
 #include "constants.h"
 #include "memory.h"
@@ -30,8 +31,8 @@ void InitLoggerHardware(){
 	accelerometer_init();
 	ADC_init();
 	timer_init(loggerConfig);
+	PWM_init(loggerConfig);
 	InitGPIO(loggerConfig);
-	InitPWM(loggerConfig);
 	InitLEDs();
 	InitPushbutton();
 	InitSDCard();
