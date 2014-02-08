@@ -19,6 +19,7 @@
 #include "USB-CDC.h"
 
 //RaceCapture specific includes
+#include "LED.h"
 #include "loggerHardware.h"
 #include "loggerData.h"
 #include "gpioTasks.h"
@@ -115,11 +116,11 @@ void fatalError(int type){
 
 	while(1){
 		for (int c = 0; c < count; c++){
-			enableLED(LED1);
-			enableLED(LED2);
+			LED_enable(1);
+			LED_enable(2);
 			for (int i=0;i<flash;i++){}
-			disableLED(LED1);
-			disableLED(LED2);
+			LED_disable(1);
+			LED_disable(2);
 			for (int i=0;i<flash;i++){}
 		}
 		for (int i=0;i<pause;i++){}

@@ -20,12 +20,7 @@ int isCardPresent(void);
 int isCardWritable(void);
 int isButtonPressed(void);
 
-void InitLEDs(void);
 void InitPushbutton(void);
-
-void enableLED(unsigned int Led);
-void disableLED(unsigned int Led);
-void toggleLED (unsigned int Led);
 
 void ResetWatchdog();
 

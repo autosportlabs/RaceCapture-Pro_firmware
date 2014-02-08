@@ -8,6 +8,7 @@
 #include "task.h"
 #include "semphr.h"
 
+#include "LED.h"
 #include "fileWriter.h"
 #include "connectivityTask.h"
 #include "sampleRecord.h"
@@ -133,13 +134,13 @@ void loggerTaskEx(void *params){
 			g_isLogging = 1;
 			queue_logfile_record(&g_startLogMessage);
 			queueTelemetryRecord(&g_startLogMessage);
-			disableLED(LED3);
+			LED_disable(3);
 		}
 		else if (! g_loggingShouldRun && g_isLogging){
 			g_isLogging = 0;
 			queue_logfile_record(&g_endLogMessage);
 			queueTelemetryRecord(&g_endLogMessage);
-			disableLED(LED2);
+			LED_disable(2);
 		}
 
 		LoggerMessage *msg = &g_sampleRecordMsgBuffer[bufferIndex];
@@ -147,8 +148,8 @@ void loggerTaskEx(void *params){
 		msg->sampleCount = channelCount;
 
 		if (g_isLogging && (sampledRate != SAMPLE_DISABLED && sampledRate >= loggingSampleRate)){
-			if (queue_logfile_record(msg) != pdTRUE) enableLED(LED3);
-			toggleLED(LED2);
+			if (queue_logfile_record(msg) != pdTRUE) LED_enable(3);
+			LED_toggle(2);
 		}
 
 		if ((sampledRate != SAMPLE_DISABLED && (sampledRate >= telemetrySampleRate || currentTicks % telemetrySampleRate == 0)) && (loggerConfig->ConnectivityConfigs.backgroundStreaming|| g_isLogging)){

@@ -19,10 +19,5 @@
 #define ENABLED_GPIO_PINS GPIO_MASK
 #define PUSHBUTTON_INTERRUPT_LEVEL	4
 
-//define PIOs for status LEDs
-#define LED1 			(1 << 1)
-#define LED2 			(1 << 2)
-#define LED3			(1 << 31)
-#define LED_MASK        (LED1 | LED2 | LED3)
 
 #endif
