@@ -36,6 +36,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/accelerometer \
 		-I$(RCP_INC)/ADC \
 		-I$(RCP_INC)/timer \
+		-I$(RCP_INC)/PWM \
 		-I$(MOCK_DIR) \
 		-I$(GPS_DIR) \
 		-I$(UTIL_DIR)
@@ -83,9 +84,11 @@ SRC = 	loggerData_test.cpp \
 		$(RCP_SRC)/accelerometer/accelerometer.c \
 		$(RCP_SRC)/ADC/ADC.c \
 		$(RCP_SRC)/timer/timer.c \
+		$(RCP_SRC)/PWM/PWM.c \
 		$(MOCK_DIR)/accelerometer_device_mock.c \
 		$(MOCK_DIR)/timer_device_mock.c \
 		$(MOCK_DIR)/ADC_device_mock.c \
+		$(MOCK_DIR)/PWM_device_mock.c \
 		$(RCP_SRC)/predictive_timer/predictive_timer.c \
 		$(RCP_SRC)/util/linear_interpolate.c \
 		$(RCP_BASE)/logger/loggerConfig.c \
