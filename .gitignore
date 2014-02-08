@@ -1,5 +1,6 @@
 *.o
 *.lst
+*.elf
 main.bin
 main.elf
 main.map
