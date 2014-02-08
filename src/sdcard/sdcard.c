@@ -7,6 +7,7 @@
 #include "loggerHardware.h"
 #include "spi.h"
 #include "watchdog.h"
+#include "diskio.h"
 
 static FATFS Fatfs[1];
 

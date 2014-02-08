@@ -18,6 +18,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_BASE) \
 		-I$(RCP_INC)/util \
 		-I$(RCP_BASE)/logger \
+		-I$(RCP_BASE)/fat_sd \
 		-I$(RCP_INC)/logging \
 		-I$(RCP_INC)/gps \
 		-I$(RCP_INC)/jsmn \
@@ -38,8 +39,12 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/timer \
 		-I$(RCP_INC)/PWM \
 		-I$(RCP_INC)/LED \
+		-I$(RCP_INC)/CAN \
 		-I$(RCP_INC)/GPIO \
 		-I$(RCP_INC)/watchdog \
+		-I$(RCP_INC)/memory \
+		-I$(RCP_INC)/sdcard \
+		-I$(SAM7S_SRC)/spi \
 		-I$(MOCK_DIR) \
 		-I$(GPS_DIR) \
 		-I$(UTIL_DIR)
@@ -86,17 +91,24 @@ SRC = 	loggerData_test.cpp \
 		$(RCP_SRC)/filter/filter.c \
 		$(RCP_SRC)/accelerometer/accelerometer.c \
 		$(RCP_SRC)/ADC/ADC.c \
+		$(RCP_SRC)/memory/memory.c \
 		$(RCP_SRC)/timer/timer.c \
 		$(RCP_SRC)/PWM/PWM.c \
 		$(RCP_SRC)/LED/LED.c \
 		$(RCP_SRC)/GPIO/GPIO.c \
+		$(RCP_SRC)/watchdog/watchdog.c \
+		$(RCP_SRC)/CAN/CAN.c \
 		$(MOCK_DIR)/accelerometer_device_mock.c \
 		$(MOCK_DIR)/timer_device_mock.c \
 		$(MOCK_DIR)/ADC_device_mock.c \
 		$(MOCK_DIR)/PWM_device_mock.c \
 		$(MOCK_DIR)/LED_device_mock.c \
 		$(MOCK_DIR)/GPIO_device_mock.c \
+		$(MOCK_DIR)/memory_device_mock.c \
+		$(MOCK_DIR)/sdcard_mock.c \
+		$(MOCK_DIR)/spi_mock.c \
 		$(MOCK_DIR)/watchdog_device_mock.c \
+		$(MOCK_DIR)/CAN_device_mock.c \
 		$(RCP_SRC)/predictive_timer/predictive_timer.c \
 		$(RCP_SRC)/util/linear_interpolate.c \
 		$(RCP_BASE)/logger/loggerConfig.c \
@@ -105,7 +117,7 @@ SRC = 	loggerData_test.cpp \
 		$(RCP_BASE)/logger/sampleRecord.c \
 		$(RCP_BASE)/logger/loggerSampleData.c \
 		$(RCP_BASE)/logger/loggerData.c \
-		$(MOCK_DIR)/loggerHardware.c 
+		$(RCP_BASE)/logger/loggerHardware.c 
 
 OBJ = $(addsuffix .o, $(basename $(SRC)))
 

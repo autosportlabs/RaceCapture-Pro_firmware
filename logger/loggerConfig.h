@@ -490,4 +490,6 @@ void setTextField(char *dest, const char *source, unsigned int maxlen);
 unsigned int getHighestSampleRate(LoggerConfig *config);
 size_t get_enabled_channel_count(LoggerConfig *loggerConfig);
 
+int flashLoggerConfig();
+
 #endif /*LOGGERCONFIG_H_*/

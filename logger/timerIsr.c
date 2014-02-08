@@ -4,7 +4,6 @@
 #include "board.h"
 #include "task.h"
 #include "loggerHardware.h"
-#include "loggerPinDefs.h"
 #include "lib_AT91SAM7S256.h"
 
 extern unsigned int g_timer0_overflow;
