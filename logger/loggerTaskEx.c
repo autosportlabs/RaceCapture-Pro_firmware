@@ -40,6 +40,7 @@ static LoggerMessage g_sampleRecordMsgBuffer[LOGGER_MESSAGE_BUFFER_SIZE];
 static LoggerMessage g_startLogMessage;
 static LoggerMessage g_endLogMessage;
 
+xSemaphoreHandle onTick;
 
 void configChanged(){
 	g_configChanged = 1;
@@ -89,16 +90,17 @@ size_t updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate, int
 	*telemetrySampleRate = calcTelemetrySampleRate(loggerConfig, *loggingSampleRate);
 	size_t channelCount = initSampleRecords(loggerConfig);
 	pr_info_int(*telemetrySampleRate);
-	pr_info("=telemetry sr\r\n");
+	pr_info("=telemetry sample rate\r\n");
 	pr_info_int(decodeSampleRate(*loggingSampleRate));
-	pr_info("=loging  sr\r\n");
+	pr_info("=loging sample rate\r\n");
 	pr_info_int(decodeSampleRate(*sampleRateTimebase));
 	pr_info("=timebase sr\r\n");
 	return channelCount;
 }
 
-
 void loggerTaskEx(void *params){
+
+	vSemaphoreCreateBinary( onTick );
 
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 
@@ -117,10 +119,8 @@ void loggerTaskEx(void *params){
 	int telemetrySampleRate = SAMPLE_DISABLED;
 
 	while(1){
-		portTickType xLastWakeTime = xTaskGetTickCount();
+		xSemaphoreTake(onTick, portMAX_DELAY);
 		currentTicks += sampleRateTimebase;
-
-		if (currentTicks % BACKGROUND_SAMPLE_RATE == 0) doBackgroundSampling();
 
 		if (g_configChanged){
 			currentTicks = 0;
@@ -131,7 +131,7 @@ void loggerTaskEx(void *params){
 		}
 
 		if (g_loggingShouldRun && ! g_isLogging){
-			pr_info("startLog\r\n");
+			pr_info("start logging\r\n");
 			g_isLogging = 1;
 			queue_logfile_record(&g_startLogMessage);
 			queueTelemetryRecord(&g_startLogMessage);
@@ -161,9 +161,8 @@ void loggerTaskEx(void *params){
 			bufferIndex++;
 			if (bufferIndex >= LOGGER_MESSAGE_BUFFER_SIZE ) bufferIndex = 0;
 		}
-
 		watchdog_reset();
-		vTaskDelayUntil( &xLastWakeTime, sampleRateTimebase );
+		if (currentTicks % BACKGROUND_SAMPLE_RATE == 0) doBackgroundSampling();
 	}
 }
 
