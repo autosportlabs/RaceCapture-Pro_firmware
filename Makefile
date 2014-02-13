@@ -200,7 +200,8 @@ interrupt_utils.c \
 $(USB_SRC_DIR)/source/USBIsr.c \
 $(GPIO_AT91_DIR)/gpioIsr.c \
 $(UART_SRC_DIR)/serialIsr.c \
-$(LOGGER_SRC_DIR)/timerIsr.c
+$(LOGGER_SRC_DIR)/timerIsr.c \
+$(LOGGER_SRC_DIR)/onTickHandler.c
 
 # List C++ source files here.
 # use file-extension cpp for C++-files (use extension .cpp)
