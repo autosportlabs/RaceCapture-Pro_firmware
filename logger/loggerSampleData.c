@@ -321,7 +321,7 @@ float get_gps_sample(int channelId){
 			value = getGPSSpeed() *  0.621371192; //convert to MPH
 			break;
 		case gps_channel_time:
-			value - getUTCTime();
+			value = getUTCTime();
 			break;
 		case gps_channel_satellites:
 			value = getSatellitesUsedForPosition();
