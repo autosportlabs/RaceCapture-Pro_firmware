@@ -51,7 +51,7 @@
 #define configUSE_PREEMPTION		1
 #define configUSE_IDLE_HOOK			0
 #define configUSE_TICK_HOOK			1
-#define configCPU_CLOCK_TRIM_HZ		-150754
+#define configCPU_CLOCK_TRIM_HZ		-149096
 #define configCPU_CLOCK_HZ			( ( unsigned portLONG ) 48054840 + configCPU_CLOCK_TRIM_HZ )
 #define configTICK_RATE_HZ			( ( portTickType ) 200 )
 #define configMAX_PRIORITIES		( ( unsigned portBASE_TYPE ) 5 )
