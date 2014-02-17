@@ -64,7 +64,6 @@ SRC = 	loggerData_test.cpp \
 		$(UTIL_DIR)/atonum_test.cpp \
 		loggerApi_test.cpp \
 		loggerConfig_test.cpp \
-		predictiveTime_test.cpp \
 		PredictiveTimeTest2.cpp \
 		RCPTest.cpp \
 		mock_uart.c \
@@ -79,7 +78,6 @@ SRC = 	loggerData_test.cpp \
 		$(SAM7S_SRC)/serial/serial.c \
 		$(RCP_SRC)/logger/loggerApi.c \
 		$(RCP_SRC)/filter/filter.c \
-		$(RCP_SRC)/predictive_timer/predictive_timer.c \
 		$(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 		$(RCP_SRC)/util/linear_interpolate.c \
 		$(RCP_BASE)/logger/loggerConfig.c \

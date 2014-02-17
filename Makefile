@@ -152,7 +152,6 @@ $(FILTER_DIR)/filter.c \
 $(LOGGING_DIR)/ring_buffer.c \
 $(TASKS_DIR)/heartbeat.c \
 $(MESSAGING_SRC_DIR)/messaging.c \
-$(PRED_TIMER_DIR)/predictive_timer.c \
 $(PRED_TIMER_DIR)/predictive_timer_2.c \
 $(UTIL_DIR)/linear_interpolate.c \
 $(DEVICES_SRC_DIR)/cellModem.c \
