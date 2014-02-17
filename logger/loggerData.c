@@ -11,7 +11,8 @@
 #include "ADC.h"
 #include "gps.h"
 #include "linear_interpolate.h"
-#include "predictive_timer.h"
+#include "predictive_timer_2.h"
+#include "filter.h"
 
 
 
@@ -22,7 +23,6 @@ void doBackgroundSampling(){
 	accelerometer_sample_all();
 	ADC_sample_all();
 }
-
 
 
 float GetMappedValue(float value, ScalingMap *scalingMap){

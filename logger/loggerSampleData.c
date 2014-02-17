@@ -9,7 +9,7 @@
 #include "GPIO.h"
 #include "sampleRecord.h"
 #include "gps.h"
-#include "predictive_timer.h"
+#include "predictive_timer_2.h"
 #include "linear_interpolate.h"
 
 int populate_sample_buffer(ChannelSample * samples,  size_t count, size_t currentTicks){
@@ -349,7 +349,10 @@ float get_lap_stat_sample(int channelId){
 			value = getDistance();
 			break;
 		case lap_stat_channel_predtime:
-			value = get_predicted_time(getGPSSpeed());
+			GeoPoint gp;
+			populateGeoPoint(&gp);
+			float utcTime = getUTCTime();
+			value = getPredictedTime(gp, utcTime);
 			break;
 		default:
 			value = -1;

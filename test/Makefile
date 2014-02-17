@@ -75,7 +75,6 @@ SRC = 	loggerData_test.cpp \
 		$(UTIL_DIR)/atonum_test.cpp \
 		loggerApi_test.cpp \
 		loggerConfig_test.cpp \
-		predictiveTime_test.cpp \
 		sampleRecord_test.cpp \
 		PredictiveTimeTest2.cpp \
 		RCPTest.cpp \
@@ -111,7 +110,6 @@ SRC = 	loggerData_test.cpp \
 		$(MOCK_DIR)/spi_mock.c \
 		$(MOCK_DIR)/watchdog_device_mock.c \
 		$(MOCK_DIR)/CAN_device_mock.c \
-		$(RCP_SRC)/predictive_timer/predictive_timer.c \
 		$(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 		$(RCP_SRC)/util/linear_interpolate.c \
 		$(RCP_BASE)/logger/loggerConfig.c \
