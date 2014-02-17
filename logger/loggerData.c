@@ -10,7 +10,7 @@
 #include "accelerometer.h"
 #include "gps.h"
 #include "linear_interpolate.h"
-#include "predictive_timer.h"
+#include "predictive_timer_2.h"
 #include "filter.h"
 
 //Channel Filters
@@ -221,7 +221,10 @@ static int writeTrackChannels(SampleRecord *sampleRecord, size_t currentTicks, T
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
 				rate = HIGHER_SAMPLE_RATE(sr, rate);
-				sampleRecord->Track_PredTimeSample.floatValue = get_predicted_time(getGPSSpeed());
+				GeoPoint gp;
+				populateGeoPoint(&gp);
+				float utcTime = getUTCTime();
+				sampleRecord->Track_PredTimeSample.floatValue = getPredictedTime(gp, utcTime);
 			}
 		}
 	}

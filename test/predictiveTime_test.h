@@ -3,7 +3,13 @@
  *
  *  Created on: Jul 24, 2013
  *      Author: brent
+ *
+ * THIS FILE IS DEPRECATED & SCHEDULED FOR DELETION
+ *
+ * Keeping this around now for any useful code it may have.  DO NOT ADD TO THIS FILE.
+ * YOU HAVE BEEN WARNED!!!
  */
+
 
 #ifndef PREDICTIVE_TIME_TEST_H_
 #define PREDICTIVE_TIME_TEST_H_
