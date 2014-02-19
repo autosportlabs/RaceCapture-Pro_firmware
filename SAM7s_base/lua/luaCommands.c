@@ -117,10 +117,6 @@ void WriteScriptPage(Serial *serial, unsigned int argc, char **argv){
 		if (argc >= 2) unescape(scriptPage);
 		lockLua();
 		vPortEnterCritical();
-		pr_info_int(strlen(scriptPage));
-		pr_info("=");
-		pr_info(scriptPage);
-		pr_info("\r\n");
 		int result = flashScriptPage(page, scriptPage);
 		vPortExitCritical();
 		unlockLua();
