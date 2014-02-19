@@ -46,6 +46,8 @@ void put_double(Serial * serial, double f, int precision);
 
 void put_uint(Serial * serial, unsigned int n);
 
+void put_escapedString(Serial * serial, const char *v, int length);
+
 void put_nameUint(Serial * serial, const char *s, unsigned int n);
 
 void put_nameSuffixUint(Serial * serial, const char *s, const char *suf, unsigned int n);

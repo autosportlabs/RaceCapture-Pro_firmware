@@ -203,6 +203,27 @@ void put_nameIndexString(Serial *serial, const char *s, int i, const char *v){
 	serial->put_s("\";");
 }
 
+void put_escapedString(Serial * serial, const char *v, int length){
+	const char *value = v;
+	while (value - v < length){
+		switch(*value){
+			case '\n':
+				serial->put_s("\\n");
+				break;
+			case '\r':
+				serial->put_s("\\r");
+				break;
+			case '"':
+				serial->put_s("\\\"");
+				break;
+			default:
+				serial->put_c(*value);
+				break;
+		}
+		value++;
+	}
+}
+
 void put_nameEscapedString(Serial *serial, const char *s, const char *v, int length){
 	serial->put_s(s);
 	serial->put_s("=\"");
@@ -229,6 +250,7 @@ void put_nameEscapedString(Serial *serial, const char *s, const char *v, int len
 	}
 	serial->put_s("\";");
 }
+
 
 void put_bytes(Serial *serial, char *data, unsigned int length){
 	while (length > 0){
