@@ -1,11 +1,12 @@
 #include "gps.h"
+#include "geopoint.h"
 #include "loggerHardware.h"
 #include "loggerConfig.h"
 #include "modp_numtoa.h"
 #include "modp_atonum.h"
 #include "geometry.h"
 #include "mod_string.h"
-#include "predictive_timer.h"
+#include "predictive_timer_2.h"
 #include "printk.h"
 #include <math.h>
 
@@ -360,12 +361,6 @@ static float calcDistancesSinceLastSample(){
 	return d;
 }
 
-static float calcTimeSinceLastSample(){
-	float time = 0;
-	if (g_prevSecondsSinceMidnight >= 0) time = getTimeDiff(g_prevSecondsSinceMidnight, g_secondsSinceMidnight);
-	return time;
-}
-
 static int processStartFinish(GPSTargetConfig *targetConfig){
 	int lapDetected = 0;
 	g_atStartFinish = withinGpsTarget(targetConfig);
@@ -443,7 +438,7 @@ void initGPS(){
 	g_lastSplitTimestamp = 0;
 	g_lapCount = 0;
 	g_distance = 0;
-	init_predictive_timer();
+	resetPredictiveTimer();
 }
 
 static void flashGpsStatusLed(){
@@ -470,12 +465,16 @@ void onLocationUpdated(){
 		if (splitEnabled) processSplit(splitCfg);
 
 		if (startFinishEnabled){
-			float time = calcTimeSinceLastSample();
-			add_predictive_sample(g_speed,dist,time);
+			GeoPoint gp;
+			populateGeoPoint(&gp);
+			float utcTime = getUTCTime();
 			int lapDetected = processStartFinish(startFinishCfg);
+
 			if (lapDetected){
 				resetDistance();
-				end_lap();
+				startFinishCrossed(gp, utcTime);
+			} else {
+				addGpsSample(gp, utcTime);
 			}
 		}
 	}

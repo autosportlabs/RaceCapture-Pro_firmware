@@ -152,12 +152,13 @@ $(FILTER_DIR)/filter.c \
 $(LOGGING_DIR)/ring_buffer.c \
 $(TASKS_DIR)/heartbeat.c \
 $(MESSAGING_SRC_DIR)/messaging.c \
-$(PRED_TIMER_DIR)/predictive_timer.c \
+$(PRED_TIMER_DIR)/predictive_timer_2.c \
 $(UTIL_DIR)/linear_interpolate.c \
 $(DEVICES_SRC_DIR)/cellModem.c \
 $(DEVICES_SRC_DIR)/null_device.c \
 $(DEVICES_SRC_DIR)/bluetooth.c \
-$(DEVICES_SRC_DIR)/sim900.c
+$(DEVICES_SRC_DIR)/sim900.c \
+$(SRC_DIR)/geopoint.c \
 
 # List C source files here which must be compiled in ARM-Mode.
 # use file-extension c for "c-only"-files
