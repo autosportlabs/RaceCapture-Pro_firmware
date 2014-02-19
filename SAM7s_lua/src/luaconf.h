@@ -515,7 +515,7 @@
 */
 #define LUAI_UACNUMBER	double
 
-#define LUA_NUMBER_PRECISION 8
+#define LUA_NUMBER_PRECISION 3
 
 
 /*
