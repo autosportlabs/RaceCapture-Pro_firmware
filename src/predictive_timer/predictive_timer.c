@@ -1,10 +1,3 @@
-/*
- * THIS FILE IS DEPRECATED & SCHEDULED FOR DELETION
- *
- * Keeping this around now for any useful code it may have.  DO NOT ADD TO THIS FILE.
- * YOU HAVE BEEN WARNED!!!
- */
-
 #include "predictive_timer.h"
 #include "linear_interpolate.h"
 //#include <stdio.h>
