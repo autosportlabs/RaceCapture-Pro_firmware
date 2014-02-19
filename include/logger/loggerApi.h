@@ -42,7 +42,8 @@
 {"setCellCfg", api_setCellConfig}, \
 {"getTrackCfg", api_getTrackConfig}, \
 {"setTrackCfg", api_setTrackConfig}, \
-{"calAccel", api_calibrateAccel}
+{"calAccel", api_calibrateAccel}, \
+{"getLogfile", api_getLogfile}
 
 
 //commands
@@ -71,6 +72,7 @@ int api_getTimerConfig(Serial *serial, const jsmntok_t *json);
 int api_setTimerConfig(Serial *serial, const jsmntok_t *json);
 int api_calibrateAccel(Serial *serial, const jsmntok_t *json);
 int api_flashConfig(Serial *serial, const jsmntok_t *json);
+int api_getLogfile(Serial *serial, const jsmntok_t *json);
 
 //messages
 void api_sendLogStart(Serial *serial);

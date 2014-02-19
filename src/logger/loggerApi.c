@@ -15,6 +15,8 @@
 #include "loggerHardware.h"
 #include "serial.h"
 #include "mem_mang.h"
+#include "printk.h"
+
 
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
@@ -485,6 +487,16 @@ int api_getBluetoothConfig(Serial *serial, const jsmntok_t *json){
 	json_string(serial, "pass", cfg->passcode, 0);
 	json_blockEnd(serial, 0);
 	json_blockEnd(serial, 0);
+	return API_SUCCESS_NO_RETURN;
+}
+
+int api_getLogfile(Serial *serial, const jsmntok_t *json){
+	json_messageStart(serial);
+	json_valueStart(serial, "logfile");
+	serial->put_c('"');
+	read_log_to_serial(serial, 1);
+	serial->put_c('"');
+	json_blockEnd(serial,0);
 	return API_SUCCESS_NO_RETURN;
 }
 

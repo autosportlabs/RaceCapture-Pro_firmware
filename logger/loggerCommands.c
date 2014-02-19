@@ -460,7 +460,7 @@ void ViewLog(Serial *serial, unsigned int argc, char **argv)
 
         while(1) {
                 // Write log to serial
-                read_log_to_serial(serial);
+                read_log_to_serial(serial, 0);
 
                 // Look for 'q' to exit.
                 char c = serial->get_c_wait(300 / 5); //TODO refactor this when we go to millisecond based delays
