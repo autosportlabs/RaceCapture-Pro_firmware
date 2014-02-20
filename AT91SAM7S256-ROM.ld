@@ -25,21 +25,35 @@
 	text PT_LOAD FLAGS(5);
 	data PT_LOAD;
 	bss PT_LOAD;
-}
+}	
 */
 /* Memory Definitions */
 MEMORY
 {
-  FLASH (rx) : ORIGIN = 0x00108000, LENGTH = 256k - 32k
-  DATA (rw)  : ORIGIN = 0x00200000, LENGTH = 0x00010000
-  STACK (rw) : ORIGIN = 0x00210000, LENGTH = 0x00000000
+  FLASH (rx)  : ORIGIN = 0x00108000, LENGTH = 256k - 32k
+  SCRIPT (rx) : ORIGIN = 0x00104000, LENGTH = 16k
+  CONFIG (rx) : ORIGIN = 0x00102000, LENGTH = 8k	
+  DATA (rw)   : ORIGIN = 0x00200000, LENGTH = 0x00010000
+  STACK (rw)  : ORIGIN = 0x00210000, LENGTH = 0x00000000
 }
 
 /* Section Definitions */
 
 SECTIONS
 {
+
+  config :
+  {
+    . = ALIGN(4);
+    KEEP (*(.config))
+  } > CONFIG
   
+  script :
+  {
+    . = ALIGN(4);
+    KEEP (*(.script))
+  } > SCRIPT
+    
   /* first section is .text which is used for code */
   
   .text :

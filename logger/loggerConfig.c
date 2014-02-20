@@ -4,7 +4,7 @@
 
 #ifndef RCP_TESTING
 #include "memory.h"
-LoggerConfig g_savedLoggerConfig __attribute__ ((aligned (FLASH_MEMORY_PAGE_SIZE))) __attribute__((section(".text\n\t#"))) = DEFAULT_LOGGER_CONFIG;
+LoggerConfig g_savedLoggerConfig __attribute__ ((aligned (FLASH_MEMORY_PAGE_SIZE))) __attribute__((section(".config\n\t#"))) = DEFAULT_LOGGER_CONFIG;
 #else
 LoggerConfig g_savedLoggerConfig = DEFAULT_LOGGER_CONFIG;
 #endif
