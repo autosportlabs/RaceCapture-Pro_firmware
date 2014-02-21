@@ -197,7 +197,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 }
 
 
-static float get_mapped_value(float value, ScalingMap *scalingMap){
+float get_mapped_value(float value, ScalingMap *scalingMap){
 	unsigned short *bins;
 	unsigned int bin, nextBin;
 

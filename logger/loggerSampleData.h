@@ -14,6 +14,8 @@
 int populate_sample_buffer(ChannelSample * samples,  size_t count, size_t currentTicks);
 void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samples, size_t channelCount);
 
+float get_mapped_value(float value, ScalingMap *scalingMap);
+
 float get_analog_sample(int channelId);
 float get_timer_sample(int channelId);
 float get_pwm_sample(int channelId);

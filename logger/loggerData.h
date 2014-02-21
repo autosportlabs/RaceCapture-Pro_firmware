@@ -14,6 +14,4 @@
 
 void doBackgroundSampling();
 
-float GetMappedValue(float value, ScalingMap *scalingMap);
-
 #endif /* LOGGERDATA_H_ */

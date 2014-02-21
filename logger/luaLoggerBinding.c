@@ -21,6 +21,7 @@
 #include "printk.h"
 #include "modp_numtoa.h"
 #include "loggerTaskEx.h"
+#include "loggerSampleData.h"
 
 extern xSemaphoreHandle g_xLoggerStart;
 extern int g_loggingShouldRun;
@@ -978,7 +979,7 @@ int Lua_GetAnalog(lua_State *L){
 				analogValue = (ac->linearScaling * (float)adcRaw);
 				break;
 			case SCALING_MODE_MAP:
-				analogValue = GetMappedValue((float)adcRaw,&(ac->scalingMap));
+				analogValue = get_mapped_value((float)adcRaw,&(ac->scalingMap));
 				break;
 			}
 		}
