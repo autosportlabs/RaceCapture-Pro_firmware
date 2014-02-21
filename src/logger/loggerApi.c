@@ -148,7 +148,6 @@ int api_getMeta(Serial *serial, const jsmntok_t *json){
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 	size_t channelCount = get_enabled_channel_count(loggerConfig);
 	ChannelSample *channelSamples = create_channel_sample_buffer(loggerConfig, channelCount);
-
 	if (channelSamples == 0) return API_ERROR_SEVERE;
 
 	init_channel_sample_buffer(loggerConfig, channelSamples, channelCount);
