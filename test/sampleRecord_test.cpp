@@ -96,18 +96,6 @@ void SampleRecordTest::testInitSampleRecord()
 
 	ChannelSample * ts = samples;
 
-	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
-		AccelConfig *ac = &lc->AccelConfigs[i];
-		if (ac->cfg.sampleRate != SAMPLE_DISABLED){
-			CPPUNIT_ASSERT_EQUAL((size_t)i,ts->channelIndex);
-			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
-			CPPUNIT_ASSERT_EQUAL((unsigned int)DEFAULT_ACCEL_LOGGING_PRECISION, ts->precision);
-			CPPUNIT_ASSERT_EQUAL((void *)&ac->cfg, (void *)ts->channelConfig);
-			CPPUNIT_ASSERT_EQUAL((void *)get_accel_sample, (void *)ts->get_sample);
-			ts++;
-		}
-	}
-
 	for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
 		ADCConfig *ac = &lc->ADCConfigs[i];
 		if (ac->cfg.sampleRate != SAMPLE_DISABLED){
@@ -116,6 +104,18 @@ void SampleRecordTest::testInitSampleRecord()
 			CPPUNIT_ASSERT_EQUAL(ac->loggingPrecision, ts->precision);
 			CPPUNIT_ASSERT_EQUAL((void *)&ac->cfg, (void *)ts->channelConfig);
 			CPPUNIT_ASSERT_EQUAL((void *)get_analog_sample, (void *)ts->get_sample);
+			ts++;
+		}
+	}
+
+	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
+		AccelConfig *ac = &lc->AccelConfigs[i];
+		if (ac->cfg.sampleRate != SAMPLE_DISABLED){
+			CPPUNIT_ASSERT_EQUAL((size_t)i,ts->channelIndex);
+			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
+			CPPUNIT_ASSERT_EQUAL((unsigned int)DEFAULT_ACCEL_LOGGING_PRECISION, ts->precision);
+			CPPUNIT_ASSERT_EQUAL((void *)&ac->cfg, (void *)ts->channelConfig);
+			CPPUNIT_ASSERT_EQUAL((void *)get_accel_sample, (void *)ts->get_sample);
 			ts++;
 		}
 	}

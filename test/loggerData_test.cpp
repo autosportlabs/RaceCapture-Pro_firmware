@@ -1,5 +1,5 @@
 #include "loggerData_test.h"
-#include "loggerData.h"
+#include "loggerSampleData.h"
 #include "loggerApi.h"
 #include "mod_string.h"
 #include "mock_serial.h"
@@ -23,20 +23,6 @@ void LoggerDataTest::tearDown()
 }
 
 
-void LoggerDataTest::testAccelChannels()
-{
-
-}
-
-void LoggerDataTest::testAnalogChannels()
-{
-	//todo test reading analog channels and scaling functions etc.
-}
-
-void LoggerDataTest::testGpsChannels()
-{
-}
-
 void LoggerDataTest::testMappedValue()
 {
 	ScalingMap m;
@@ -53,7 +39,7 @@ void LoggerDataTest::testMappedValue()
 	m.scaledValues[4] = 5.0f;
 
 	for (int i = 0; i < 1024; i++){
-		float scaled = GetMappedValue(i, &m);
+		float scaled = get_mapped_value(i, &m);
 		float expected = (float)i / 100.0f;
 		if (i <= 100) expected = 1.0f;
 		else if (i >= 500) expected = 5.0f;

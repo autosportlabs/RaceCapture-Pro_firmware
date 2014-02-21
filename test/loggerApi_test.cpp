@@ -777,7 +777,7 @@ void LoggerApiTest::testSetGpsConfigFile(string filename){
 
 	CPPUNIT_ASSERT_EQUAL(string("speedNm"), string(gpsCfg->speedCfg.label));
 	CPPUNIT_ASSERT_EQUAL(string("speedUt"), string(gpsCfg->speedCfg.units));
-	CPPUNIT_ASSERT_EQUAL(30, decodeSampleRate(gpsCfg->speedCfg.sampleRate));
+	CPPUNIT_ASSERT_EQUAL(40, decodeSampleRate(gpsCfg->speedCfg.sampleRate));
 
 	CPPUNIT_ASSERT_EQUAL(string("timeNm"), string(gpsCfg->timeCfg.label));
 	CPPUNIT_ASSERT_EQUAL(string("timeUt"), string(gpsCfg->timeCfg.units));

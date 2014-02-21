@@ -13,7 +13,7 @@
         "speed": {        
             "nm": "speedNm",
             "ut": "speedUt",
-            "sr": 30
+            "sr": 40
         },
         "time": {        
             "nm": "timeNm",
