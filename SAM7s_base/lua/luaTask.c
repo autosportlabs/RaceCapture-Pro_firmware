@@ -8,6 +8,7 @@
 #include "luaBaseBinding.h"
 #include "mem_mang.h"
 #include "taskUtil.h"
+#include "printk.h"
 
 
 #define DEFAULT_ONTICK_HZ 1
@@ -146,7 +147,14 @@ void startLuaTask(){
 
 static void doScript(void){
 	lockLua();
-	luaL_dostring(g_lua,getScript());
+	int result = luaL_dostring(g_lua,getScript());
+	if (0 != result){
+		printk(ERR, "error running script: (");
+		printk(ERR, lua_tostring(g_lua,-1));
+		printk(ERR, ")\r\n");
+		lua_pop(g_lua,1);
+	}
+
 	unlockLua();
 }
 
