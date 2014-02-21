@@ -5,6 +5,7 @@
 #include "sampleRecord_test.h"
 #include "loggerHardware.h"
 #include "ADC_mock.h"
+#include "ADC.h"
 #include "accelerometer.h"
 #include "gps.h"
 
@@ -35,6 +36,7 @@ void SampleRecordTest::testPopulateSampleRecord(){
 	lc->ADCConfigs[7].scalingMode = SCALING_MODE_RAW;
 	lc->ADCConfigs[7].loggingPrecision = 0;
 	ADC_mock_set_value(7, 123);
+	ADC_sample_all();
 
 	size_t channelCount = get_enabled_channel_count(lc);
 	ChannelSample * samples = create_channel_sample_buffer(lc, channelCount);
@@ -42,6 +44,11 @@ void SampleRecordTest::testPopulateSampleRecord(){
 
 	populate_sample_buffer(samples, channelCount, 0);
 
+	//analog channel
+	CPPUNIT_ASSERT_EQUAL(123, samples->intValue);
+
+	//accelerometer channels
+	samples++;
 	CPPUNIT_ASSERT_EQUAL(accelerometer_read_value(0, &lc->AccelConfigs[0]), samples->floatValue);
 
 	samples++;
@@ -53,9 +60,7 @@ void SampleRecordTest::testPopulateSampleRecord(){
 	samples++;
 	CPPUNIT_ASSERT_EQUAL(accelerometer_read_value(3, &lc->AccelConfigs[3]), samples->floatValue);
 
-	samples++;
-	CPPUNIT_ASSERT_EQUAL(123, samples->intValue);
-
+	//GPS / Track channels
 	samples++;
 	CPPUNIT_ASSERT_EQUAL((float)0, samples->floatValue);
 
