@@ -36,6 +36,8 @@ const MagicInfo * get_saved_magic_info();
 
 MagicInfo * get_working_magic_info();
 
+void sync_magic_info_version();
+
 int flash_magic_info();
 
 #endif /* MAGIC_H_ */

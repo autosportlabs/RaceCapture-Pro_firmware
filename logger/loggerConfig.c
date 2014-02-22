@@ -33,12 +33,12 @@ void initialize_logger_config(){
 
 	if (!is_config_init()){
 		pr_info("logger config is valid\r\n");
-		should_flash_default_configFlashDefault = 1;
+		should_flash_default_config = 1;
 	}
 
 	if (get_working_magic_info()->current_version.major != MAJOR_REV){
 		pr_info("firmware major version changed\r\n");
-		should_flash_default_configFlashDefault = 1;
+		should_flash_default_config = 1;
 	}
 
 	if (!firmware_version_matches_last()){
@@ -47,7 +47,7 @@ void initialize_logger_config(){
 		should_flash_magic_info = 1;
 	}
 
-	if (should_flash_default_configFlashDefault){
+	if (should_flash_default_config){
 		int result = flash_default_logger_config();
 		if (result == 0) should_flash_magic_info = 1;
 	}
