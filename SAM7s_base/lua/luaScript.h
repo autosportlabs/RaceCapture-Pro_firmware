@@ -3,6 +3,10 @@
 
 #define SCRIPT_PAGES 40
 
+int flash_default_script();
+
+void initialize_script();
+
 const const char * getScript();
 
 int flashScriptPage(unsigned int page, const char *data);
