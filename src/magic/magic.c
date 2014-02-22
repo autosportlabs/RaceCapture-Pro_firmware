@@ -35,7 +35,7 @@ MagicInfo * get_working_magic_info(){
 
 int flash_magic_info(){
 	pr_info("flashing magic info...");
-	int result = memory_flash_region(&g_saved_magic_info, &g_working_magic_info, sizeof (MagicInfo) + (256 - sizeof(MagicInfo)));
+	int result = memory_flash_region(&g_saved_magic_info, &g_working_magic_info, sizeof(MagicInfo));
 	if (result == 0) pr_info("success\r\n"); else pr_info("failed\r\n");
 	return result;
 }
