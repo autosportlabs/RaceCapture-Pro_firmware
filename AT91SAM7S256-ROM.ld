@@ -31,8 +31,9 @@
 MEMORY
 {
   FLASH (rx)  : ORIGIN = 0x00108000, LENGTH = 256k - 32k
-  SCRIPT (rx) : ORIGIN = 0x00104000, LENGTH = 16k
+  MAGIC  (rx) : ORIGIN = 0x00101C00, LENGTH = 1k
   CONFIG (rx) : ORIGIN = 0x00102000, LENGTH = 8k	
+  SCRIPT (rx) : ORIGIN = 0x00104000, LENGTH = 16k
   DATA (rw)   : ORIGIN = 0x00200000, LENGTH = 0x00010000
   STACK (rw)  : ORIGIN = 0x00210000, LENGTH = 0x00000000
 }
@@ -41,6 +42,11 @@ MEMORY
 
 SECTIONS
 {
+  magic :
+  {
+    . = ALIGN(4);
+    KEEP (*(.magic))
+  } > MAGIC
 
   config :
   {

@@ -14,10 +14,17 @@
 #include "loggerCommands.h"
 #include "loggerApi.h"
 #include "api.h"
-
 #include "command.h"
 
-#define WELCOME_MSG "Welcome to RaceCapture/Pro : Firmware Version " MAJOR_REV "." MINOR_REV "." BUGFIX_REV
+
+#define XSTR(s) STR(s)
+#define STR(s) #s
+
+#define MAJOR_REV_STR  XSTR(MAJOR_REV)
+#define MINOR_REV_STR  XSTR(MINOR_REV)
+#define BUGFIX_REV_STR XSTR(BUGFIX_REV)
+
+#define WELCOME_MSG "Welcome to RaceCapture/Pro : Firmware Version " MAJOR_REV_STR "." MINOR_REV_STR "." BUGFIX_REV_STR
 #define COMMAND_PROMPT "RaceCapture/Pro"
 
 #define LUA_ENABLED

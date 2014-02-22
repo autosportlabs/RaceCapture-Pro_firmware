@@ -73,7 +73,7 @@ void ShowTaskInfo(Serial *serial, unsigned int argc, char **argv){
 }
 
 void GetVersion(Serial *serial, unsigned int argc, char **argv){
-	put_nameString(serial, "major", MAJOR_REV);
-	put_nameString(serial, "minor", MINOR_REV);
-	put_nameString(serial, "bugfix", BUGFIX_REV);
+	put_nameString(serial, "major", MAJOR_REV_STR);
+	put_nameString(serial, "minor", MINOR_REV_STR);
+	put_nameString(serial, "bugfix", BUGFIX_REV_STR);
 }

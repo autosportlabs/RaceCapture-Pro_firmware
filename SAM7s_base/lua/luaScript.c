@@ -5,7 +5,9 @@
 
 #define SCRIPT_LENGTH SCRIPT_PAGES * MEMORY_PAGE_SIZE
 
-static const char g_script[SCRIPT_LENGTH + 1] __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".script\n\t#"))) = DEFAULT_SCRIPT;
+static const char g_script[SCRIPT_LENGTH + 1] __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".script\n\t#")));
+
+static const char * g_defaultScript = DEFAULT_SCRIPT;
 
 const char * getScript(){
 	return g_script;

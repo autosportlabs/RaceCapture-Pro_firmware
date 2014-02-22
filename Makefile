@@ -90,6 +90,7 @@ UART_SRC_DIR = $(SAM7s_BASE_DIR)/uart
 SAM7S_UTIL_DIR = $(SAM7s_BASE_DIR)/util
 SPI_DIR = $(SAM7s_BASE_DIR)/spi
 MEMORY_SRC_DIR = $(SRC_DIR)/memory
+MAGIC_SRC_DIR = $(SRC_DIR)/magic
 LUA_SRC_DIR = $(SAM7s_BASE_DIR)/lua
 CMD_SRC_DIR = $(SAM7s_BASE_DIR)/command
 FILTER_DIR = $(SRC_DIR)/filter
@@ -159,6 +160,7 @@ $(GPS_SRC_DIR)/geometry.c \
 $(LOGGER_SRC_DIR)/luaLoggerBinding.c \
 $(LOGGER_SRC_DIR)/loggerCommands.c \
 $(MEMORY_SRC_DIR)/memory.c \
+$(MAGIC_SRC_DIR)/magic.c \
 $(MCP2515_DIR)/CAN_device_MCP2515.c \
 $(KXR94_2353_DIR)/accelerometer_device_KXR94_2353.c \
 $(ADC_AT91_DIR)/ADC_device_at91.c \
@@ -255,7 +257,7 @@ EXTRA_LIBDIRS = SAM7s_lua/src
 CSTANDARD = -std=gnu99
 
 # Place -D or -U options for C here
-CDEFS  = -D$(RUN_MODE) -DMAJOR_REV=\"$(MAJOR)\" -DMINOR_REV=\"$(MINOR)\" -DBUGFIX_REV=\"$(BUGFIX)\"
+CDEFS  = -D$(RUN_MODE) -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
 
 # Compile for SAM7 using GCC
 CDEFS += -DSAM7_GCC
@@ -297,6 +299,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/GPIO \
 -I$(INCLUDE_DIR)/watchdog \
 -I$(INCLUDE_DIR)/memory \
+-I$(INCLUDE_DIR)/magic \
 -I$(INCLUDE_DIR)/accelerometer \
 -I$(INCLUDE_DIR)/messaging \
 -I$(INCLUDE_DIR)/predictive_timer \
