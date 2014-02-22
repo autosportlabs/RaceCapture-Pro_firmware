@@ -33,6 +33,13 @@ MagicInfo * get_working_magic_info(){
 	return &g_working_magic_info;
 }
 
+void sync_magic_info_version(){
+	VersionInfo *version = &g_working_magic_info.current_version;
+	version->major = MAJOR_REV;
+	version->minor = MINOR_REV;
+	version->bugfix = BUGFIX_REV;
+}
+
 int flash_magic_info(){
 	pr_info("flashing magic info...");
 	int result = memory_flash_region(&g_saved_magic_info, &g_working_magic_info, sizeof(MagicInfo));
