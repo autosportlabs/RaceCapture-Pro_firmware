@@ -3,7 +3,7 @@
 
 static int g_isFlashed = 0;
 
-int memory_device_flash_region(void *vAddress, void *vData, unsigned int length){
+int memory_device_flash_region(const void *vAddress, const void *vData, unsigned int length){
 	g_isFlashed = 1;
 	return 1;
 }

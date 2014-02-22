@@ -451,9 +451,9 @@ typedef struct _LoggerConfig {
 	}
 	
 
-void updateActiveLoggerConfig();
+void initialize_logger_config();
 
-LoggerConfig * getSavedLoggerConfig();
+const LoggerConfig * getSavedLoggerConfig();
 LoggerConfig * getWorkingLoggerConfig();
 
 void calculateTimerScaling(unsigned int clockHz, TimerConfig *timerConfig);

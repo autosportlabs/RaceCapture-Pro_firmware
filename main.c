@@ -12,6 +12,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "serial.h"
+#include "magic.h"
 #include "usb_comm.h"
 #include "baseCommands.h"
 #include "constants.h"
@@ -129,8 +130,8 @@ void fatalError(int type){
 
 int main( void )
 {
-	//setup hardware
-	updateActiveLoggerConfig();
+	initialize_magic_info();
+	initialize_logger_config();
 	int success = setupHardware();
 	if (! success) fatalError(FATAL_ERROR_HARDWARE);
 	initMessaging();

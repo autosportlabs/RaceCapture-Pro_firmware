@@ -1,22 +1,57 @@
 #include "loggerConfig.h"
 #include "mod_string.h"
 #include "memory.h"
+#include "magic.h"
+#include "printk.h"
 
 #ifndef RCP_TESTING
 #include "memory.h"
-LoggerConfig g_savedLoggerConfig __attribute__ ((aligned (FLASH_MEMORY_PAGE_SIZE))) __attribute__((section(".text\n\t#"))) = DEFAULT_LOGGER_CONFIG;
+static const LoggerConfig g_savedLoggerConfig __attribute__ ((aligned (FLASH_MEMORY_PAGE_SIZE))) __attribute__((section(".config\n\t#"))) = DEFAULT_LOGGER_CONFIG;
 #else
-LoggerConfig g_savedLoggerConfig = DEFAULT_LOGGER_CONFIG;
+static const LoggerConfig g_savedLoggerConfig = DEFAULT_LOGGER_CONFIG;
 #endif
 
-LoggerConfig g_workingLoggerConfig;
+static const LoggerConfig g_defaultLoggerConfig = DEFAULT_LOGGER_CONFIG;
+
+static LoggerConfig g_workingLoggerConfig;
 
 
-void updateActiveLoggerConfig(){
+static int flash_default_logger_config(){
+	return memory_flash_region(&g_savedLoggerConfig, &g_defaultLoggerConfig, sizeof (LoggerConfig));
+}
+
+int flashLoggerConfig(){
+	return memory_flash_region(&g_savedLoggerConfig, &g_workingLoggerConfig, sizeof (LoggerConfig));
+}
+
+void initialize_logger_config(){
+	if (is_config_init()){
+		pr_info("logger config is valid\r\n");
+	}
+	else
+	{
+		pr_info_int(get_working_magic_info()->config_init);
+		pr_info("##");
+		pr_info(getSavedLoggerConfig()->ADCConfigs[0].cfg.label);
+		pr_info("##\r\n");
+		pr_info("flashing default logger config...");
+		int result = flash_default_logger_config();
+		if (result == 0){
+			pr_info("success\r\n");
+			MagicInfo *magicInfo = get_working_magic_info();
+			magicInfo->config_init = MAGIC_INFO_SCRIPT_IS_INIT;
+			flash_magic_info();
+		}
+		else{
+			pr_info("failed: ");
+			pr_info_int(result);
+			pr_info("\r\n");
+		}
+	}
 	memcpy(&g_workingLoggerConfig,&g_savedLoggerConfig,sizeof(LoggerConfig));
 }
 
-LoggerConfig * getSavedLoggerConfig(){
+const LoggerConfig * getSavedLoggerConfig(){
 	return &g_savedLoggerConfig;	
 }
 
@@ -415,10 +450,4 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
 	return channels;
 }
 
-int flashLoggerConfig(){
-	void * savedLoggerConfig = getSavedLoggerConfig();
-	void * workingLoggerConfig = getWorkingLoggerConfig();
-
-	return memory_flash_region(savedLoggerConfig, workingLoggerConfig, sizeof (LoggerConfig));
-}
 

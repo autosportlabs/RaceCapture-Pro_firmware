@@ -4,6 +4,6 @@
 
 #define FLASH_MEMORY_PAGE_SIZE MEMORY_PAGE_SIZE
 
-int memory_flash_region(void *vAddress, void *vData, unsigned int length);
+int memory_flash_region(const void *vAddress, const void *vData, unsigned int length);
 
 #endif /* MEMORY_H_ */

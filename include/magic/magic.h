@@ -8,8 +8,8 @@
 #ifndef MAGIC_H_
 #define MAGIC_H_
 
-#define SCRIPT_IS_INIT 0xDECAFBAD
-#define CONFIG_IS_INIT 0xDECAFBAD
+#define MAGIC_INFO_SCRIPT_IS_INIT 0xDECAFBAD
+#define MAGIC_INFO_CONFIG_IS_INIT 0xDECAFBAD
 
 typedef struct _VersionInfo{
 	unsigned int major;
@@ -32,7 +32,7 @@ int firmware_version_matches_last();
 
 void initialize_magic_info();
 
-MagicInfo * get_saved_magic_info();
+const MagicInfo * get_saved_magic_info();
 
 MagicInfo * get_working_magic_info();
 
