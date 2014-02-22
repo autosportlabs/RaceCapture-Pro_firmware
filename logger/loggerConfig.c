@@ -17,7 +17,10 @@ static LoggerConfig g_workingLoggerConfig;
 
 
 static int flash_default_logger_config(){
-	return memory_flash_region(&g_savedLoggerConfig, &g_defaultLoggerConfig, sizeof (LoggerConfig));
+	pr_info("flashing default logger config...");
+	int result = memory_flash_region(&g_savedLoggerConfig, &g_defaultLoggerConfig, sizeof (LoggerConfig));
+	if (result == 0) pr_info("success\r\n"); else pr_info("failed\r\n");
+	return result;
 }
 
 int flashLoggerConfig(){
@@ -30,22 +33,11 @@ void initialize_logger_config(){
 	}
 	else
 	{
-		pr_info_int(get_working_magic_info()->config_init);
-		pr_info("##");
-		pr_info(getSavedLoggerConfig()->ADCConfigs[0].cfg.label);
-		pr_info("##\r\n");
-		pr_info("flashing default logger config...");
 		int result = flash_default_logger_config();
 		if (result == 0){
-			pr_info("success\r\n");
 			MagicInfo *magicInfo = get_working_magic_info();
 			magicInfo->config_init = MAGIC_INFO_SCRIPT_IS_INIT;
 			flash_magic_info();
-		}
-		else{
-			pr_info("failed: ");
-			pr_info_int(result);
-			pr_info("\r\n");
 		}
 	}
 	memcpy(&g_workingLoggerConfig,&g_savedLoggerConfig,sizeof(LoggerConfig));
