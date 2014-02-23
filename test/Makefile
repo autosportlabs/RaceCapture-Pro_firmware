@@ -27,6 +27,9 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/filter \
 		-I$(RCP_INC)/logger \
 		-I$(RCP_INC)/messaging \
+		-I$(RCP_INC)/lua \
+		-I$(RCP_INC)/command \
+		-I$(RCP_INC)/spi \
 		-I$(RCP_INC)/predictive_timer \
 		-I$(RCP_INC)/util \
 		-I$(SAM7S_SRC)/serial \
@@ -116,12 +119,13 @@ SRC = 	loggerData_test.cpp \
 		$(RCP_SRC)/util/linear_interpolate.c \
 		$(RCP_BASE)/logger/loggerConfig.c \
 		$(RCP_SRC)/gps/gps.c \
-		$(RCP_SRC)/geopoint.c \
+		$(RCP_SRC)/gps/geopoint.c \
 		$(RCP_SRC)/gps/geometry.c \
 		$(RCP_BASE)/logger/sampleRecord.c \
 		$(RCP_BASE)/logger/loggerSampleData.c \
 		$(RCP_BASE)/logger/loggerData.c \
-		$(RCP_BASE)/logger/loggerHardware.c 
+		$(RCP_BASE)/logger/loggerHardware.c \
+		 $(RCP_BASE)/logger/loggerTaskEx.c \
 
 OBJ = $(addsuffix .o, $(basename $(SRC)))
 
