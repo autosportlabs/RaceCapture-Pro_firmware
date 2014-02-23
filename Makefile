@@ -159,6 +159,7 @@ $(GPS_SRC_DIR)/gps.c \
 $(LOGGER_SRC_DIR)/gpsTask.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
 $(GPS_SRC_DIR)/geometry.c \
+$(GPS_SRC_DIR)/geopoint.c \
 $(LOGGER_SRC_DIR)/luaLoggerBinding.c \
 $(LOGGER_SRC_DIR)/loggerCommands.c \
 $(MEMORY_SRC_DIR)/memory.c \
@@ -197,7 +198,6 @@ $(DEVICES_SRC_DIR)/cellModem.c \
 $(DEVICES_SRC_DIR)/null_device.c \
 $(DEVICES_SRC_DIR)/bluetooth.c \
 $(DEVICES_SRC_DIR)/sim900.c \
-$(SRC_DIR)/geopoint.c \
 
 # List C source files here which must be compiled in ARM-Mode.
 # use file-extension c for "c-only"-files
