@@ -190,7 +190,6 @@ $(LED_DIR)/LED.c \
 $(GPIO_DIR)/GPIO.c \
 $(WATCHDOG_DIR)/watchdog.c \
 $(LOGGING_DIR)/ring_buffer.c \
-$(TASKS_DIR)/heartbeat.c \
 $(MESSAGING_SRC_DIR)/messaging.c \
 $(PRED_TIMER_DIR)/predictive_timer_2.c \
 $(UTIL_DIR)/linear_interpolate.c \
@@ -203,7 +202,6 @@ $(SRC_DIR)/geopoint.c \
 # List C source files here which must be compiled in ARM-Mode.
 # use file-extension c for "c-only"-files
 SRCARM = $(RTOS_GCC_DIR)/portISR.c \
-interrupt_utils.c \
 $(USB_SRC_DIR)/source/USBIsr.c \
 $(GPIO_AT91_DIR)/gpioIsr.c \
 $(UART_SRC_DIR)/serialIsr.c \
