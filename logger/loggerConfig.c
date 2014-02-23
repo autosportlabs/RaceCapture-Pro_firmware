@@ -16,14 +16,14 @@ static const LoggerConfig g_defaultLoggerConfig = DEFAULT_LOGGER_CONFIG;
 static LoggerConfig g_workingLoggerConfig;
 
 
-static int flash_default_logger_config(){
+int flash_default_logger_config(void){
 	pr_info("flashing default logger config...");
 	int result = memory_flash_region(&g_savedLoggerConfig, &g_defaultLoggerConfig, sizeof (LoggerConfig));
 	if (result == 0) pr_info("success\r\n"); else pr_info("failed\r\n");
 	return result;
 }
 
-int flashLoggerConfig(){
+int flashLoggerConfig(void){
 	return memory_flash_region(&g_savedLoggerConfig, &g_workingLoggerConfig, sizeof (LoggerConfig));
 }
 
