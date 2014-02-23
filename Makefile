@@ -94,7 +94,7 @@ CPU_SRC_DIR = $(SRC_DIR)/cpu
 MEMORY_SRC_DIR = $(SRC_DIR)/memory
 MAGIC_SRC_DIR = $(SRC_DIR)/magic
 LUA_SRC_DIR = $(SRC_DIR)/lua
-CMD_SRC_DIR = $(SAM7s_BASE_DIR)/command
+CMD_SRC_DIR = $(SRC_DIR)/command
 FILTER_DIR = $(SRC_DIR)/filter
 CAN_DIR = $(SRC_DIR)/CAN
 ADC_DIR = $(SRC_DIR)/ADC
@@ -312,6 +312,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/devices \
 -I$(INCLUDE_DIR)/gps \
 -I$(INCLUDE_DIR)/sdcard \
+-I$(INCLUDE_DIR)/command \
 -I$(JSON_DIR)
 
 #CINCS = -I. -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
