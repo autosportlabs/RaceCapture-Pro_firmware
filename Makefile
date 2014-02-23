@@ -93,7 +93,7 @@ SPI_DIR = $(SRC_DIR)/spi
 CPU_SRC_DIR = $(SRC_DIR)/cpu
 MEMORY_SRC_DIR = $(SRC_DIR)/memory
 MAGIC_SRC_DIR = $(SRC_DIR)/magic
-LUA_SRC_DIR = $(SAM7s_BASE_DIR)/lua
+LUA_SRC_DIR = $(SRC_DIR)/lua
 CMD_SRC_DIR = $(SAM7s_BASE_DIR)/command
 FILTER_DIR = $(SRC_DIR)/filter
 CAN_DIR = $(SRC_DIR)/CAN
@@ -304,6 +304,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/cpu \
 -I$(INCLUDE_DIR)/spi \
 -I$(INCLUDE_DIR)/magic \
+-I$(INCLUDE_DIR)/lua \
 -I$(INCLUDE_DIR)/accelerometer \
 -I$(INCLUDE_DIR)/messaging \
 -I$(INCLUDE_DIR)/predictive_timer \
