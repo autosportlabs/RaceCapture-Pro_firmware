@@ -13,7 +13,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( LoggerConfigTest );
 
 void LoggerConfigTest::setUp()
 {
-	updateActiveLoggerConfig();
+	initialize_logger_config();
 }
 
 

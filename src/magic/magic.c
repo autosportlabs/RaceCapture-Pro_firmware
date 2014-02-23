@@ -4,7 +4,13 @@
 #include "printk.h"
 
 
+#ifndef RCP_TESTING
+#include "memory.h"
 const MagicInfo g_saved_magic_info __attribute__ ((aligned (FLASH_MEMORY_PAGE_SIZE))) __attribute__((section(".magic\n\t#")));
+#else
+const MagicInfo g_saved_magic_info = {{0,0,0},0,0};
+#endif
+
 
 static MagicInfo g_working_magic_info;
 

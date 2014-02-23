@@ -44,6 +44,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/GPIO \
 		-I$(RCP_INC)/watchdog \
 		-I$(RCP_INC)/memory \
+		-I$(RCP_INC)/magic \
 		-I$(RCP_INC)/sdcard \
 		-I$(SAM7S_SRC)/spi \
 		-I$(MOCK_DIR) \
@@ -53,8 +54,8 @@ INCLUDES = 	-I. \
 # set up compiler and options
 CXX = g++
 CC = g++
-CXXFLAGS = -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=\"$(MAJOR)\" -DMINOR_REV=\"$(MINOR)\" -DBUGFIX_REV=\"$(BUGFIX)\"
-CPPFLAGS = -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=\"$(MAJOR)\" -DMINOR_REV=\"$(MINOR)\" -DBUGFIX_REV=\"$(BUGFIX)\"
+CXXFLAGS = -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
+CPPFLAGS = -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
 
 #-----Suffix Rules---------------------------
 # set up C++ suffixes and relationship between .cc and .o files
@@ -93,6 +94,7 @@ SRC = 	loggerData_test.cpp \
 		$(RCP_SRC)/accelerometer/accelerometer.c \
 		$(RCP_SRC)/ADC/ADC.c \
 		$(RCP_SRC)/memory/memory.c \
+		$(RCP_SRC)/magic/magic.c \
 		$(RCP_SRC)/timer/timer.c \
 		$(RCP_SRC)/PWM/PWM.c \
 		$(RCP_SRC)/LED/LED.c \

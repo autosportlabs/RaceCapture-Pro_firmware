@@ -90,10 +90,8 @@ int encodeSampleRate(int sampleRate){
 			return SAMPLE_100Hz;
 		case 50:
 			return SAMPLE_50Hz;
-		case 40:
-			return SAMPLE_40Hz;
-		case 20:
-			return SAMPLE_20Hz;
+		case 25:
+			return SAMPLE_25Hz;
 		case 10:
 			return SAMPLE_10Hz;
 		case 5:
@@ -115,10 +113,8 @@ int decodeSampleRate(int sampleRateCode){
 			return 100;
 		case SAMPLE_50Hz:
 			return 50;
-		case SAMPLE_40Hz:
-			return 40;
-		case SAMPLE_20Hz:
-			return 20;
+		case SAMPLE_25Hz:
+			return 25;
 		case SAMPLE_10Hz:
 			return 10;
 		case SAMPLE_5Hz:

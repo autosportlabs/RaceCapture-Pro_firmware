@@ -14,7 +14,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( LoggerDataTest );
 void LoggerDataTest::setUp()
 {
 	setupMockSerial();
-	updateActiveLoggerConfig();
+	initialize_logger_config();
 }
 
 

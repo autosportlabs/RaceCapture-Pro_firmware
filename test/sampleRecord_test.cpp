@@ -20,7 +20,7 @@ void SampleRecordTest::setUp()
 {
 	InitLoggerHardware();
 	initGPS();
-	updateActiveLoggerConfig();
+	initialize_logger_config();
 }
 
 

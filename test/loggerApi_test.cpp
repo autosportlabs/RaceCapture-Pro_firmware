@@ -126,7 +126,7 @@ string LoggerApiTest::readFile(string filename){
 void LoggerApiTest::setUp()
 {
 	initApi();
-	updateActiveLoggerConfig();
+	initialize_logger_config();
 	setupMockSerial();
 	accelerometer_init();
 	resetPredictiveTimer();
@@ -769,15 +769,15 @@ void LoggerApiTest::testSetGpsConfigFile(string filename){
 
 	CPPUNIT_ASSERT_EQUAL(string("latNm"), string(gpsCfg->latitudeCfg.label));
 	CPPUNIT_ASSERT_EQUAL(string("latUt"), string(gpsCfg->latitudeCfg.units));
-	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(gpsCfg->latitudeCfg.sampleRate));
+	CPPUNIT_ASSERT_EQUAL(5, decodeSampleRate(gpsCfg->latitudeCfg.sampleRate));
 
 	CPPUNIT_ASSERT_EQUAL(string("longNm"), string(gpsCfg->longitudeCfg.label));
 	CPPUNIT_ASSERT_EQUAL(string("longUt"), string(gpsCfg->longitudeCfg.units));
-	CPPUNIT_ASSERT_EQUAL(20, decodeSampleRate(gpsCfg->longitudeCfg.sampleRate));
+	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(gpsCfg->longitudeCfg.sampleRate));
 
 	CPPUNIT_ASSERT_EQUAL(string("speedNm"), string(gpsCfg->speedCfg.label));
 	CPPUNIT_ASSERT_EQUAL(string("speedUt"), string(gpsCfg->speedCfg.units));
-	CPPUNIT_ASSERT_EQUAL(40, decodeSampleRate(gpsCfg->speedCfg.sampleRate));
+	CPPUNIT_ASSERT_EQUAL(25, decodeSampleRate(gpsCfg->speedCfg.sampleRate));
 
 	CPPUNIT_ASSERT_EQUAL(string("timeNm"), string(gpsCfg->timeCfg.label));
 	CPPUNIT_ASSERT_EQUAL(string("timeUt"), string(gpsCfg->timeCfg.units));

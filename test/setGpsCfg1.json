@@ -3,17 +3,17 @@
         "lat": {        
             "nm": "latNm",
             "ut": "latUt",
-            "sr": 10
+            "sr": 5
         },
         "long": {        
             "nm": "longNm",
             "ut": "longUt",
-            "sr": 20
+            "sr": 10
         },
         "speed": {        
             "nm": "speedNm",
             "ut": "speedUt",
-            "sr": 40
+            "sr": 25
         },
         "time": {        
             "nm": "timeNm",
