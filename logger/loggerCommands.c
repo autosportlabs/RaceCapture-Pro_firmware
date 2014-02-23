@@ -10,6 +10,7 @@
 #include "modp_numtoa.h"
 #include "modp_atonum.h"
 #include "loggerConfig.h"
+#include "luaScript.h"
 #include "loggerHardware.h"
 #include "accelerometer.h"
 #include "printk.h"
@@ -37,6 +38,14 @@ void TestSD(Serial *serial, unsigned int argc, char **argv){
 }
 
 
+void ResetConfig(Serial *serial, unsigned int argc, char **argv){
+	if (flash_default_logger_config() == 0 && flash_default_script() == 0){
+		put_commandOK(serial);
+	}
+	else{
+		put_commandError(serial, ERROR_CODE_CRITICAL_ERROR);
+	}
+}
 
 static void StartTerminalSession(Serial *fromSerial, Serial *toSerial){
 
