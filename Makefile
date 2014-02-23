@@ -89,7 +89,7 @@ USB_SRC_DIR = $(SAM7s_BASE_DIR)/usb
 SERIAL_SRC_DIR = $(SAM7s_BASE_DIR)/serial
 UART_SRC_DIR = $(SAM7s_BASE_DIR)/uart
 SAM7S_UTIL_DIR = $(SAM7s_BASE_DIR)/util
-SPI_DIR = $(SAM7s_BASE_DIR)/spi
+SPI_DIR = $(SRC_DIR)/spi
 CPU_SRC_DIR = $(SRC_DIR)/cpu
 MEMORY_SRC_DIR = $(SRC_DIR)/memory
 MAGIC_SRC_DIR = $(SRC_DIR)/magic
@@ -302,6 +302,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/watchdog \
 -I$(INCLUDE_DIR)/memory \
 -I$(INCLUDE_DIR)/cpu \
+-I$(INCLUDE_DIR)/spi \
 -I$(INCLUDE_DIR)/magic \
 -I$(INCLUDE_DIR)/accelerometer \
 -I$(INCLUDE_DIR)/messaging \
