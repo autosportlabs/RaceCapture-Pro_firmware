@@ -11,7 +11,7 @@ void vApplicationTickHook(void){
 	portCHAR xTaskWoken = pdFALSE;
 	tickCount++;
 
-	if (tickCount == 4){
+	if (tickCount == 1){
 		xSemaphoreGiveFromISR( onTick, xTaskWoken );
 		tickCount = 0;
 	}

@@ -12,13 +12,14 @@
 #include "geopoint.h"
 #include "predictive_timer_2.h"
 #include "linear_interpolate.h"
+#include "printk.h"
 
 int populate_sample_buffer(ChannelSample * samples,  size_t count, size_t currentTicks){
 	int highestRate = SAMPLE_DISABLED;
 	for (size_t i = 0; i < count; i++){
 		int sampleRate = samples->channelConfig->sampleRate;
-		highestRate = HIGHER_SAMPLE_RATE(sampleRate, highestRate);
 		if (currentTicks % sampleRate == 0){
+			highestRate = HIGHER_SAMPLE_RATE(sampleRate, highestRate);
 			size_t channelIndex = samples->channelIndex;
 			float value = samples->get_sample(channelIndex); //polymorphic behavior
 			if (samples->precision == 0){

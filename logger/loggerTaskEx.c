@@ -120,7 +120,12 @@ void loggerTaskEx(void *params){
 
 	while(1){
 		xSemaphoreTake(onTick, portMAX_DELAY);
-		currentTicks += sampleRateTimebase;
+		watchdog_reset();
+
+		currentTicks++;
+		if (currentTicks % BACKGROUND_SAMPLE_RATE == 0){
+			doBackgroundSampling();
+		}
 
 		if (g_configChanged){
 			currentTicks = 0;
@@ -129,6 +134,8 @@ void loggerTaskEx(void *params){
 			resetDistance();
 			g_configChanged = 0;
 		}
+
+		if (currentTicks % loggingSampleRate != 0) continue;
 
 		if (g_loggingShouldRun && ! g_isLogging){
 			pr_info("start logging\r\n");
@@ -161,8 +168,6 @@ void loggerTaskEx(void *params){
 			bufferIndex++;
 			if (bufferIndex >= LOGGER_MESSAGE_BUFFER_SIZE ) bufferIndex = 0;
 		}
-		watchdog_reset();
-		if (currentTicks % BACKGROUND_SAMPLE_RATE == 0) doBackgroundSampling();
 	}
 }
 
