@@ -227,7 +227,7 @@ CPPSRCARM =
 ASRC =
 
 # List Assembler source files here which must be assembled in ARM-Mode..
-ASRCARM = startup_SAM7S.S
+ASRCARM = $(SAM7s_BASE_DIR)/startup_SAM7S.S
 #ASRCARM = crt.S
 
 # Optimization level, can be [0, 1, 2, 3, s].
@@ -393,7 +393,7 @@ LDFLAGS += $(patsubst %,-l%,$(EXTRA_LIBS))
 
 
 # Set Linker-Script Depending On Selected Memory and Controller
-LDFLAGS +=-T$(SUBMDL)-ROM.ld
+LDFLAGS +=-T$(SAM7s_BASE_DIR)/$(SUBMDL)-ROM.ld
 
 
 
