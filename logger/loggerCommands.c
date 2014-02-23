@@ -12,7 +12,6 @@
 #include "loggerConfig.h"
 #include "luaScript.h"
 #include "loggerHardware.h"
-#include "accelerometer.h"
 #include "printk.h"
 #include "sdcard.h"
 #include "loggerData.h"
@@ -21,7 +20,7 @@
 #include "usart.h"
 #include "board.h"
 #include "mem_mang.h"
-#include "accelerometer.h"
+#include "loggerTaskEx.h"
 #include "GPIO.h"
 
 
@@ -41,6 +40,7 @@ void TestSD(Serial *serial, unsigned int argc, char **argv){
 void ResetConfig(Serial *serial, unsigned int argc, char **argv){
 	if (flash_default_logger_config() == 0 && flash_default_script() == 0){
 		put_commandOK(serial);
+		configChanged();
 	}
 	else{
 		put_commandError(serial, ERROR_CODE_CRITICAL_ERROR);

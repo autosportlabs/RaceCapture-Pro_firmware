@@ -7,7 +7,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
-
+#include "mod_string.h"
 #include "watchdog.h"
 #include "LED.h"
 #include "fileWriter.h"
@@ -59,9 +59,8 @@ void stopLogging(){
 }
 
 void createLoggerTaskEx(){
-	g_loggingShouldRun = 0;
 	registerLuaLoggerBindings();
-	xTaskCreate( loggerTaskEx,( signed portCHAR * ) "loggerEx",	LOGGER_STACK_SIZE, NULL, LOGGER_TASK_PRIORITY, NULL );
+	xTaskCreate( loggerTaskEx,( signed portCHAR * ) "logger",	LOGGER_STACK_SIZE, NULL, LOGGER_TASK_PRIORITY, NULL );
 }
 
 static size_t initSampleRecords(LoggerConfig *loggerConfig){
@@ -69,9 +68,12 @@ static size_t initSampleRecords(LoggerConfig *loggerConfig){
 
 	for (size_t i=0; i < LOGGER_MESSAGE_BUFFER_SIZE; i++){
 		LoggerMessage *msg = (g_sampleRecordMsgBuffer + i);
+		msg->messageType = LOGGER_MSG_SAMPLE;
+		if (msg->channelSamples != NULL){
+			vPortFree(msg->channelSamples);
+		}
 		ChannelSample *channelSamples = create_channel_sample_buffer(loggerConfig, channelSampleCount);
 		init_channel_sample_buffer(loggerConfig, channelSamples, channelSampleCount);
-		msg->messageType = LOGGER_MSG_SAMPLE;
 		msg->channelSamples = channelSamples;
 	}
 	return channelSampleCount;
@@ -99,7 +101,8 @@ size_t updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate, int
 }
 
 void loggerTaskEx(void *params){
-
+	g_loggingShouldRun = 0;
+	memset(&g_sampleRecordMsgBuffer, 0, sizeof(g_sampleRecordMsgBuffer));
 	vSemaphoreCreateBinary( onTick );
 
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();

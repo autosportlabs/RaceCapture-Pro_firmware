@@ -297,6 +297,7 @@ static void getAnalogConfigs(size_t channelId, void ** baseCfg, ChannelConfig **
 
 int api_setAnalogConfig(Serial *serial, const jsmntok_t * json){
 	setMultiChannelConfigGeneric(serial, json, getAnalogConfigs, setAnalogExtendedField);
+	configChanged();
 	return API_SUCCESS;
 }
 
@@ -380,6 +381,7 @@ static void getAccelConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** 
 
 int api_setAccelConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getAccelConfigs, setAccelExtendedField);
+	configChanged();
 	return API_SUCCESS;
 }
 
@@ -466,6 +468,7 @@ static const jsmntok_t * setCellExtendedField(const jsmntok_t *valueTok, const c
 int api_setCellConfig(Serial *serial, const jsmntok_t *json){
 	CellularConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
 	setConfigGeneric(serial, json, cfg, setCellExtendedField);
+	configChanged();
 	return API_SUCCESS;
 }
 
@@ -479,6 +482,7 @@ static const jsmntok_t * setBluetoothExtendedField(const jsmntok_t *valueTok, co
 int api_setBluetoothConfig(Serial *serial, const jsmntok_t *json){
 	BluetoothConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
 	setConfigGeneric(serial, json, cfg, setBluetoothExtendedField);
+	configChanged();
 	return API_SUCCESS;
 }
 
@@ -514,6 +518,7 @@ static const jsmntok_t * setConnectivityExtendedField(const jsmntok_t *valueTok,
 int api_setConnectivityConfig(Serial *serial, const jsmntok_t *json){
 	ConnectivityConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs);
 	setConfigGeneric(serial, json, cfg, setConnectivityExtendedField);
+	configChanged();
 	return API_SUCCESS;
 }
 
@@ -592,6 +597,7 @@ static const jsmntok_t * setPwmExtendedField(const jsmntok_t *valueTok, const ch
 
 int api_setPwmConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getPwmConfigs, setPwmExtendedField);
+	configChanged();
 	return API_SUCCESS;
 }
 
@@ -647,6 +653,7 @@ int api_getGpioConfig(Serial *serial, const jsmntok_t *json){
 
 int api_setGpioConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getGpioConfigs, setGpioExtendedField);
+	configChanged();
 	return API_SUCCESS;
 }
 
@@ -714,6 +721,7 @@ int api_getTimerConfig(Serial *serial, const jsmntok_t *json){
 
 int api_setTimerConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getTimerConfigs, setTimerExtendedField);
+	configChanged();
 	return API_SUCCESS;
 }
 
@@ -768,7 +776,7 @@ int api_setGpsConfig(Serial *serial, const jsmntok_t *json){
 
 	const jsmntok_t * satsNode = findNode(channelData, "sats");
 	if (satsNode != NULL) setChannelConfig(serial, satsNode + 1, &gpsCfg->satellitesCfg, NULL, NULL);
-
+	configChanged();
 	return API_SUCCESS;
 }
 
@@ -855,6 +863,7 @@ int api_setTrackConfig(Serial *serial, const jsmntok_t *json){
 
 	const jsmntok_t *predTime = findNode(targetData, "predTime");
 	if (predTime != NULL) setChannelConfig(serial, predTime + 1, &trackCfg->predTimeCfg, NULL, NULL);
+	configChanged();
 
 	return API_SUCCESS;
 }

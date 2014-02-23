@@ -13,7 +13,3 @@ ChannelSample * create_channel_sample_buffer(LoggerConfig *loggerConfig, size_t 
 	ChannelSample * samples = (ChannelSample *)portMalloc(size);
 	return samples;
 }
-
-void free_channel_sample_buffer(ChannelSample ** samples){
-	portFree(samples);
-}
