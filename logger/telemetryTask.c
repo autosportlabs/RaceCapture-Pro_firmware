@@ -45,7 +45,7 @@ portBASE_TYPE queueTelemetryRecord(SampleRecord * sr){
 	}
 }
 
-void createConnectivityTask(){
+void startConnectivityTask(){
 	g_connParams.sampleQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( SampleRecord *));
 	if (NULL == g_connParams.sampleQueue){
 		//TODO log error

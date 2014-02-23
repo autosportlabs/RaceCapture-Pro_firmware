@@ -82,7 +82,7 @@ portBASE_TYPE queueTelemetryRecord(LoggerMessage *msg){
 	}
 }
 
-void createConnectivityTask(){
+void startConnectivityTask(){
 	g_sampleQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( LoggerMessage *));
 	if (NULL == g_sampleQueue){
 		//TODO log error

@@ -9,6 +9,7 @@
 #define GPIO_DEVICE_H_
 
 void GPIO_device_init_port(unsigned int port, unsigned int mode);
+void GPIO_device_init_base(void);
 void GPIO_device_init_SD_card_IO(void);
 void GPIO_device_init_pushbutton(void);
 void GPIO_device_init_events(void);

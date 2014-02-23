@@ -258,7 +258,7 @@ void fileWriterTask(void *params){
 	}
 }
 
-void createFileWriterTask(){
+void startFileWriterTask(){
 
 	g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( ChannelSample *));
 	if (NULL == g_sampleRecordQueue){

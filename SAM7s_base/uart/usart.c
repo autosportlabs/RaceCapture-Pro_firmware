@@ -137,6 +137,7 @@ static unsigned int createUartMode(unsigned int bits, unsigned int parity, unsig
 
 int initUsart()
 {
+	AT91F_PMC_EnablePeriphClock( AT91C_BASE_PMC,(1 << AT91C_ID_US0) | (1 << AT91C_ID_US1));
 	if (!initQueues()) return 0;
 	initUsart0(8, 0, 1, 115200);
 	initUsart1(8, 0, 1, 115200);

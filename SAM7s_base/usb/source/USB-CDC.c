@@ -124,6 +124,13 @@ static unsigned int uiCurrentBank;
 
 /*------------------------------------------------------------*/
 
+#define mainUSB_PRIORITY					( tskIDLE_PRIORITY + 2 )
+#define mainUSB_TASK_STACK					( 100 )
+
+void startUSBCDCTask(void){
+	xTaskCreate( vUSBCDCTask,		( signed portCHAR * ) "USB", 				mainUSB_TASK_STACK, NULL, 	mainUSB_PRIORITY, 		NULL );
+}
+
 
 void vUSBCDCTask( void *pvParameters )
 {

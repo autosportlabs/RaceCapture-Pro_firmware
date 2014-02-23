@@ -2,6 +2,10 @@
 #define USB_COMM_H_
 #include <stddef.h>
 
+void startUSBCommTask(void);
+
+void onUSBCommTask(void *);
+
 void usb_init(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud);
 
 void usb_flush(void);
@@ -17,8 +21,5 @@ char usb_getchar_wait(size_t delay);
 void usb_putchar(char c);
 
 void usb_puts(const char* s );
-
-void onUSBCommTask(void *);
-
 
 #endif /*USB_COMM_H_*/

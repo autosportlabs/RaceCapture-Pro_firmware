@@ -14,6 +14,23 @@
 
 static char lineBuffer[BUFFER_SIZE];
 
+#define USB_COMM_TASK_PRIORITY				( tskIDLE_PRIORITY + 2 )
+#define mainUSB_COMM_STACK					( 1000 )
+
+void startUSBCommTask(void){
+	xTaskCreate( onUSBCommTask,	( signed portCHAR * ) "OnUSBComm", mainUSB_COMM_STACK, NULL, USB_COMM_TASK_PRIORITY, NULL );
+}
+
+void onUSBCommTask(void *pvParameters) {
+	while (!vUSBIsInitialized()){
+		vTaskDelay(1);
+	}
+	Serial *serial = get_serial_usb();
+
+	while (1) {
+		process_msg_interactive(serial, lineBuffer, BUFFER_SIZE);
+	}
+}
 
 void usb_init(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud){
 	//null function - does not apply to USB CDC
@@ -62,16 +79,3 @@ void usb_puts(const char *s){
 void usb_putchar(char c){
 	vUSBSendByte(c);
 }
-
-void onUSBCommTask(void *pvParameters) {
-	while (!vUSBIsInitialized()){
-		vTaskDelay(1);
-	}
-	Serial *serial = get_serial_usb();
-
-	while (1) {
-		process_msg_interactive(serial, lineBuffer, BUFFER_SIZE);
-	}
-}
-
-

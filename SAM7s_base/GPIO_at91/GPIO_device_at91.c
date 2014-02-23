@@ -45,6 +45,11 @@ void GPIO_device_init_port(unsigned int port, unsigned int mode){
 	}
 }
 
+void GPIO_device_init_base(void){
+	// Enable the peripheral clock.
+	AT91F_PMC_EnablePeriphClock( AT91C_BASE_PMC, (1 << AT91C_ID_PIOA) | (1 << AT91C_ID_IRQ0));
+}
+
 void GPIO_device_init_SD_card_IO(void){
 	AT91F_PIO_CfgInput(AT91C_BASE_PIOA, SD_CARD_DETECT | SD_WRITE_PROTECT);
 	AT91C_BASE_PIOA->PIO_PPUER = SD_CARD_DETECT | SD_WRITE_PROTECT; //enable pullup

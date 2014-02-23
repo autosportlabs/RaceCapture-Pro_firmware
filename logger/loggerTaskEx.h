@@ -14,7 +14,7 @@ int isLogging();
 void startLogging();
 void stopLogging();
 
-void createLoggerTaskEx();
+void startLoggerTaskEx();
 void loggerTaskEx(void *params);
 
 #endif /* LOGGERTASKEX_H_ */

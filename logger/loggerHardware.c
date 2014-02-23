@@ -17,7 +17,6 @@
 void InitLoggerHardware(){
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 	init_spi_lock();
-	watchdog_init(WATCHDOG_TIMEOUT_MS);
 	LED_init();
 	accelerometer_init();
 	ADC_init();

@@ -161,6 +161,7 @@ void PWM_device_channel_init(unsigned int channel, unsigned short period, unsign
 }
 
 int PWM_device_init(){
+	AT91F_PMC_EnablePeriphClock( AT91C_BASE_PMC,(1 << AT91C_ID_PWMC));
 	PWM_configure_ports();
 	return 1;
 }
