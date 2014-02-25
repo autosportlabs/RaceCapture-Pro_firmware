@@ -89,6 +89,7 @@ USB_SRC_DIR = $(SAM7s_BASE_DIR)/usb
 SERIAL_SRC_DIR = $(SAM7s_BASE_DIR)/serial
 UART_SRC_DIR = $(SAM7s_BASE_DIR)/uart
 SAM7S_UTIL_DIR = $(SAM7s_BASE_DIR)/util
+LOGGER_SRC_DIR = $(SRC_DIR)/logger
 SPI_DIR = $(SRC_DIR)/spi
 CPU_SRC_DIR = $(SRC_DIR)/cpu
 MEMORY_SRC_DIR = $(SRC_DIR)/memory
@@ -117,7 +118,6 @@ GPS_SRC_DIR = $(SRC_DIR)/gps
 
 #App specific dirs
 FAT_SD_SRC_DIR = $(SAM7s_BASE_DIR)/fat_sd_at91
-LOGGER_SRC_DIR = logger
 SDCARD_SRC_DIR = $(SRC_DIR)/sdcard
 
 # List C source files here. (C dependencies are automatically generated.)
@@ -127,7 +127,7 @@ $(TARGET).c \
 $(JSMN_SRC_DIR)/jsmn.c \
 baseCommands.c \
 $(API_SRC_DIR)/api.c \
-$(SRC_DIR)/$(LOGGER_SRC_DIR)/loggerApi.c \
+$(LOGGER_SRC_DIR)/loggerApi.c \
 $(HW_DIR)/lib_AT91SAM7S256.c \
 $(RTOS_SRC_DIR)/tasks.c \
 $(RTOS_SRC_DIR)/queue.c \
