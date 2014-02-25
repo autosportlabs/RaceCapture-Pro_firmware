@@ -125,7 +125,7 @@ SDCARD_SRC_DIR = $(SRC_DIR)/sdcard
 SRC	= \
 $(TARGET).c \
 $(JSMN_SRC_DIR)/jsmn.c \
-baseCommands.c \
+$(CMD_SRC_DIR)/baseCommands.c \
 $(API_SRC_DIR)/api.c \
 $(LOGGER_SRC_DIR)/loggerApi.c \
 $(HW_DIR)/lib_AT91SAM7S256.c \
