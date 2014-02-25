@@ -156,7 +156,7 @@ $(LOGGER_SRC_DIR)/loggerSampleData.c \
 $(LOGGER_SRC_DIR)/loggerTaskEx.c \
 $(LOGGER_SRC_DIR)/connectivityTask.c \
 $(GPS_SRC_DIR)/gps.c \
-$(LOGGER_SRC_DIR)/gpsTask.c \
+$(GPS_SRC_DIR)/gpsTask.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
 $(GPS_SRC_DIR)/geometry.c \
 $(GPS_SRC_DIR)/geopoint.c \
@@ -205,7 +205,7 @@ SRCARM = $(RTOS_GCC_DIR)/portISR.c \
 $(USB_SRC_DIR)/source/USBIsr.c \
 $(GPIO_AT91_DIR)/gpioIsr.c \
 $(UART_SRC_DIR)/serialIsr.c \
-$(LOGGER_SRC_DIR)/timerIsr.c \
+$(TIMER_AT91_DIR)/timerIsr.c \
 $(LOGGER_SRC_DIR)/onTickHandler.c
 
 # List C++ source files here.
