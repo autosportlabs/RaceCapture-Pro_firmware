@@ -116,7 +116,7 @@ JSON_DIR = ./json
 GPS_SRC_DIR = $(SRC_DIR)/gps
 
 #App specific dirs
-FAT_SD_SRC_DIR = fat_sd
+FAT_SD_SRC_DIR = $(SAM7s_BASE_DIR)/fat_sd_at91
 LOGGER_SRC_DIR = logger
 SDCARD_SRC_DIR = $(SRC_DIR)/sdcard
 
