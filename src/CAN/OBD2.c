@@ -15,48 +15,50 @@ static int decode_pid(unsigned char pid, CAN_msg *msg, int *result){
 			pid == msg[2]){
 
 		switch(pid){
-		case 0x04: //calculated engine load
-			*result = A * 100 / 255;
-			break;
-		case 0x05: //engine coolant temperature (C)
-			*result = A - 40;
-			break;
-		case 0x06: //short term fuel % trim - Bank 1
-		case 0x07: //short term fuel % trim - Bank 1
-		case 0x08: //short term fuel % trim - Bank 2
-		case 0x09: //short term fuel % trim - Bank 2
-			*result = (A - 128) * 100 / 128;
-			break;
-		case 0x0A: //fuel pressure (KPa (gauge))
-			*result  = A * 3;
-			break;
-		case 0x0B: //intake manifold pressure (KPa absolute)
-			*result = A;
-			break;
-		case 0x0C: //RPM
-			*result = ((A*256)+B)/4;
-			break;
-		case 0x0D: //vehicle speed (km/ h)
-			*result = A;
-			break;
-		case 0x0E: //timing advance (degrees)
-			*result = (A-128)/2;
-			break;
-		case 0x0F: //Intake air temperature (C)
-			*result = A - 40;
-			break;
-		case 0x10: //MAF airflow rate (grams / sec)
-			*result = ((A*256)+B) / 100;
-			break;
-		case 0x11: //throttle position %
-			*result = A*100/255;
-			break;
-		case 0x2F: //fuel level input %
-			*result = A*100/255;
-			break;
+			case 0x04: //calculated engine load
+				*result = A * 100 / 255;
+				break;
+			case 0x05: //engine coolant temperature (C)
+				*result = A - 40;
+				break;
+			case 0x06: //short term fuel % trim - Bank 1
+			case 0x07: //short term fuel % trim - Bank 1
+			case 0x08: //short term fuel % trim - Bank 2
+			case 0x09: //short term fuel % trim - Bank 2
+				*result = (A - 128) * 100 / 128;
+				break;
+			case 0x0A: //fuel pressure (KPa (gauge))
+				*result  = A * 3;
+				break;
+			case 0x0B: //intake manifold pressure (KPa absolute)
+				*result = A;
+				break;
+			case 0x0C: //RPM
+				*result = ((A*256)+B)/4;
+				break;
+			case 0x0D: //vehicle speed (km/ h)
+				*result = A;
+				break;
+			case 0x0E: //timing advance (degrees)
+				*result = (A-128)/2;
+				break;
+			case 0x0F: //Intake air temperature (C)
+				*result = A - 40;
+				break;
+			case 0x10: //MAF airflow rate (grams / sec)
+				*result = ((A*256)+B) / 100;
+				break;
+			case 0x11: //throttle position %
+				*result = A*100/255;
+				break;
+			case 0x2F: //fuel level input %
+				*result = A*100/255;
+				break;
+			case 0x5C: //Engine oil temp (C)
+				*result = A - 40;
+				break;
 		}
 	}
-
 }
 
 int OBD2_request_PID(unsigned char pid, int *value, size_t timeout){
