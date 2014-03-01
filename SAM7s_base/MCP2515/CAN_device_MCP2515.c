@@ -274,7 +274,7 @@ static int MCP2515_setup(){
 		rc = 1;
 	}
 	else{
-		pr_info_int(mode);
+		pr_error_int(mode);
 		pr_error("=mode; Failed to reset CAN controller\r\n");
 	}
 	return rc;
@@ -345,7 +345,23 @@ int CAN_device_init(int baud){
 			MCP2515_set_normal_mode(0);
 }
 
+static void trace_output_msg(CAN_msg *msg){
+
+	pr_trace_int(msg->addressValue);
+	pr_trace("=address;");
+	pr_trace_int(msg->dataLength);
+	pr_trace("=dataLen;");
+	pr_trace_int(msg->isExtendedAddress);
+	pr_trace("=isExtended;data=");
+	for (int i=0; i < msg->dataLength; i++){
+		pr_trace_int(msg->data[i]);
+		pr_trace(" ");
+	}
+	pr_trace("\r\n");
+}
+
 int CAN_device_tx_msg(CAN_msg *msg, unsigned int timeoutMs){
+	if (TRACE_LEVEL) trace_output_msg(msg);
 	unsigned int startTicks = getCurrentTicks();
 
 	if(!msg->isExtendedAddress)
@@ -385,23 +401,25 @@ int CAN_device_tx_msg(CAN_msg *msg, unsigned int timeoutMs){
 	while(!isTimeoutMs(startTicks, timeoutMs))
 	{
 		unsigned char regVal = MCP2515_read_reg(MCP2515_REG_CANINTF);
-		pr_info_int(regVal);
-		pr_info("=reg \r\n");
 		if(regVal & (1 << MCP2515_BIT_TX0IF))
 		{
-			pr_info("CAN sent\r\n");
+			pr_trace("CAN sent\r\n");
 			sentMessage = 1;
 			break;
 		}
 	}
 
 	unsigned char errFlags = MCP2515_read_reg(MCP2515_REG_EFLG);
-	pr_info_int(errFlags);
-	pr_info("=error flags\r\n");
+	if(TRACE_LEVEL){
+		pr_trace_int(errFlags);
+		pr_trace("=error flags\r\n");
+	}
 
 	unsigned char regFlags = MCP2515_read_reg(MCP2515_REG_TXB0CTRL);
-	pr_info_int(regFlags);
-	pr_info("=reg flags\r\n");
+	if (TRACE_LEVEL){
+		pr_trace_int(regFlags);
+		pr_trace("=reg flags\r\n");
+	}
 
 	if(!sentMessage){
 		pr_warning("CAN msg TX timeout\r\n");
@@ -425,7 +443,6 @@ int CAN_device_rx_msg(CAN_msg *msg, unsigned int timeoutMs){
 	  //If we have a message available, read it
 	  if(val & (1 << MCP2515_BIT_RX0IF))
 	  {
-		pr_info("rx message\r\n");
 		gotMessage = 1;
 		break;
 	  }
@@ -433,6 +450,7 @@ int CAN_device_rx_msg(CAN_msg *msg, unsigned int timeoutMs){
 
 	if(gotMessage)
 	{
+	  pr_trace("rx CAN msg\r\n");
 	  unsigned char val = MCP2515_read_reg(MCP2515_REG_RXB0CTRL);
 
 	  //Address received from
@@ -445,7 +463,6 @@ int CAN_device_rx_msg(CAN_msg *msg, unsigned int timeoutMs){
 	  msg->isExtendedAddress = ((val & (1 << MCP2515_BIT_EXIDE)) ? 1 : 0);
 	  if(msg->isExtendedAddress)
 	  {
-		pr_info("msg is extended\r\n");
 		msg->addressValue = ((msg->addressValue << 2) | (val & 0x03));
 		val = MCP2515_read_reg(MCP2515_REG_RXB0EID8);
 		msg->addressValue = (msg->addressValue << 8) | val;
@@ -454,14 +471,17 @@ int CAN_device_rx_msg(CAN_msg *msg, unsigned int timeoutMs){
 	  }
 	  msg->addressValue = 0x1FFFFFFF & msg->addressValue; // mask out extra bits
 	  //Read data bytes
-	  pr_info_int(msg->addressValue);
-	  pr_info("=CAN address\r\n");
 	  val = MCP2515_read_reg(MCP2515_REG_RXB0DLC);
 	  msg->dataLength = (val & 0xf);
 	  MCP2515_read_reg_values(MCP2515_REG_RXB0D0, msg->data, msg->dataLength);
 
 	  //And clear read interrupt
 	  MCP2515_write_reg_bit(MCP2515_REG_CANINTF, MCP2515_BIT_RX0IF, 0);
+	  if (TRACE_LEVEL) trace_output_msg(msg);
 	}
+	else{
+		  pr_trace("no rx CAN msg\r\n");
+	}
+
 	return gotMessage;
 }

@@ -17,6 +17,7 @@
 #include "constants.h"
 #include "USB-CDC.h"
 #include "cpu.h"
+#include "OBD2_task.h"
 #include "watchdog.h"
 #include "LED.h"
 #include "loggerHardware.h"
@@ -64,6 +65,9 @@ static void fatalError(int type){
 	}
 }
 
+#define OBD2_TASK_STACK 	100
+#define OBD2_TASK_PRIORITY	2
+
 int main( void )
 {
 	cpu_init();
@@ -83,6 +87,8 @@ int main( void )
 	startLoggerTaskEx();
 	startConnectivityTask();
 	startGPSTask();
+
+	xTaskCreate( OBD2Task, ( signed portCHAR * )"OBD2Task", OBD2_TASK_STACK, NULL, 	OBD2_TASK_PRIORITY, NULL );
 
 	/* Start the scheduler.
 

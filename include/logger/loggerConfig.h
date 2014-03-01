@@ -242,7 +242,7 @@ typedef struct _OBD2Config{
 	PidConfig pids[OBD2_CHANNELS];
 } OBD2Config;
 
-#define DEFAULT_ENABLED_PIDS 0
+#define DEFAULT_ENABLED_PIDS 1
 #define DEFAULT_OBD2_SAMPLE_RATE SAMPLE_10Hz
 
 #define DEFAULT_OBD2_CONFIG \
@@ -250,7 +250,7 @@ typedef struct _OBD2Config{
 	DEFAULT_OBD2_SAMPLE_RATE, \
 	DEFAULT_ENABLED_PIDS, \
 	{ \
-		{0}, \
+		{0x0C}, \
 		{0}, \
 		{0}, \
 		{0}, \
