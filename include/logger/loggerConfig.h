@@ -232,6 +232,7 @@ typedef struct _PWMConfig{
 #define OBD2_CHANNELS 20
 
 typedef struct _PidConfig{
+	ChannelConfig cfg;
 	unsigned short pid;
 } PidConfig;
 
@@ -239,7 +240,7 @@ typedef struct _PidConfig{
 
 typedef struct _OBD2Config{
 	unsigned char obd2SampleRate;
-	size_t enabledPids;
+	unsigned short enabledPids;
 	PidConfig pids[OBD2_CHANNELS];
 } OBD2Config;
 
@@ -251,26 +252,26 @@ typedef struct _OBD2Config{
 	DEFAULT_OBD2_SAMPLE_RATE, \
 	DEFAULT_ENABLED_PIDS, \
 	{ \
-		{0x0C}, \
-		{0}, \
-		{0}, \
-		{0}, \
-		{0}, \
-		{0}, \
-		{0}, \
-		{0}, \
-		{0}, \
-		{0}, \
-		{0}, \
-		{0}, \
-		{0}, \
-		{0}, \
-		{0}, \
-		{0}, \
-		{0}, \
-		{0}, \
-		{0}, \
-		{0} \
+		{{CHANNEL_RPM, SAMPLE_1Hz}, 0x0C}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0} \
 	} \
 }
 

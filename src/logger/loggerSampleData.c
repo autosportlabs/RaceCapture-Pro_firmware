@@ -7,6 +7,7 @@
 #include "timer.h"
 #include "PWM.h"
 #include "GPIO.h"
+#include "OBD2.h"
 #include "sampleRecord.h"
 #include "gps.h"
 #include "geopoint.h"
@@ -100,6 +101,18 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 		}
 	}
 
+	{
+		OBD2Config *obd2Config = &(loggerConfig->OBD2Config);
+		size_t enabledPids = obd2Config->enabledPids;
+		for (size_t i = 0; i < enabledPids; i++){
+			sample->precision = 0;
+			sample->channelConfig = &obd2Config->pids[i].cfg;
+			sample->intValue = NIL_SAMPLE;
+			sample->channelIndex = i;
+			sample->get_sample = get_obd2_sample;
+			sample++;
+		}
+	}
 	{
 		GPSConfig *gpsConfig = &(loggerConfig->GPSConfigs);
 		if (gpsConfig->latitudeCfg.sampleRate != SAMPLE_DISABLED){
@@ -296,6 +309,10 @@ float get_pwm_sample(int channelId){
 			break;
 	}
 	return pwmValue;
+}
+
+float get_obd2_sample(int channelId){
+	return (float)OBD2_get_current_PID_value(channelId);
 }
 
 float get_gpio_sample(int channelId){
