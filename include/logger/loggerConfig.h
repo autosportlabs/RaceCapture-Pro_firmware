@@ -228,6 +228,65 @@ typedef struct _PWMConfig{
 				DEFAULT_PWM4_CONFIG, \
 			}
 
+#define OBD2_CHANNELS 20
+
+typedef struct _PidConfig{
+	unsigned short pid;
+} PidConfig;
+
+#define OBD2_CHANNELS 20
+
+typedef struct _OBD2Config{
+	int obd2SampleRate;
+	size_t enabledPids;
+	PidConfig pids[OBD2_CHANNELS];
+} OBD2Config;
+
+#define DEFAULT_ENABLED_PIDS 0
+#define DEFAULT_OBD2_SAMPLE_RATE SAMPLE_10Hz
+
+#define DEFAULT_OBD2_CONFIG \
+{ \
+	DEFAULT_OBD2_SAMPLE_RATE, \
+	DEFAULT_ENABLED_PIDS, \
+	{ \
+		{0}, \
+		{0}, \
+		{0}, \
+		{0}, \
+		{0}, \
+		{0}, \
+		{0}, \
+		{0}, \
+		{0}, \
+		{0}, \
+		{0}, \
+		{0}, \
+		{0}, \
+		{0}, \
+		{0}, \
+		{0}, \
+		{0}, \
+		{0}, \
+		{0}, \
+		{0} \
+	} \
+}
+
+typedef struct _CANConfig{
+	unsigned char enabled;
+	size_t CANbaudRate;
+} CANConfig;
+
+#define DEFAULT_CAN_BAUD_RATE 500000
+
+#define DEFAULT_CAN_CONFIG \
+{ \
+	CONFIG_FEATURE_NOT_INSTALLED, \
+	DEFAULT_CAN_BAUD_RATE \
+}
+
+
 enum gps_channels{
 	gps_channel_latitude,
 	gps_channel_longitude,
@@ -425,6 +484,8 @@ typedef struct _LoggerConfig {
 	TimerConfig TimerConfigs[CONFIG_TIMER_CHANNELS];
 	//Accelerometer Configurations
 	AccelConfig AccelConfigs[CONFIG_ACCEL_CHANNELS];
+	//OBD2 Config
+	OBD2Config OBD2Config;
 	//GPS Configuration
 	GPSConfig GPSConfigs;
 	//Track configuration
@@ -443,6 +504,7 @@ typedef struct _LoggerConfig {
 	DEFAULT_GPIO_CONFIGS, \
 	DEFAULT_TIMER_CONFIGS, \
 	DEFAULT_ACCEL_CONFIGS, \
+	DEFAULT_OBD2_CONFIG, \
 	DEFAULT_GPS_CONFIG, \
 	DEFAULT_TRACK_CONFIG, \
 	DEFAULT_CONNECTIVITY_CONFIG, \

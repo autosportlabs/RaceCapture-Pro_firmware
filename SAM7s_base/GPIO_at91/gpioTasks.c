@@ -16,17 +16,10 @@
 void gpio_irq_handler ( void );
 
 xSemaphoreHandle xOnPushbutton;
-xSemaphoreHandle xOnGPI1;
-xSemaphoreHandle xOnGPI2;
-xSemaphoreHandle xOnGPI3;
 
 void createGPIOTasks(){
 	
 	vSemaphoreCreateBinary( xOnPushbutton );
-	vSemaphoreCreateBinary( xOnGPI1 );
-	vSemaphoreCreateBinary( xOnGPI2 );
-	vSemaphoreCreateBinary( xOnGPI3 );
-
 	
 	portENTER_CRITICAL();
     AT91PS_AIC     pAic;
@@ -39,9 +32,6 @@ void createGPIOTasks(){
 	portEXIT_CRITICAL();
 
 	xTaskCreate( onPushbuttonTask, 	( signed portCHAR * ) "PushbuttonTask", 	GPIO_TASK_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
-	xTaskCreate( onGPI1Task, 		( signed portCHAR * ) "GPI1Task", 			GPIO_TASK_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
-	xTaskCreate( onGPI2Task,	 	( signed portCHAR * ) "GPI2Task", 			GPIO_TASK_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
-	xTaskCreate( onGPI3Task,	 	( signed portCHAR * ) "GPI3Task", 			GPIO_TASK_STACK_SIZE, 	NULL, 	GPIO_TASK_PRIORITY, 	NULL );
 
 }
 
@@ -61,27 +51,6 @@ void onPushbuttonTask(void *pvParameters){
 					startLogging();
 				}
 			}
-		}
-	}
-}
-
-void onGPI1Task(void *params){
-	while(1){
-		if ( xSemaphoreTake(xOnGPI1, portMAX_DELAY) == pdTRUE){
-		}
-	}
-}
-
-void onGPI2Task(void *params){
-	while(1){
-		if ( xSemaphoreTake(xOnGPI2, portMAX_DELAY) == pdTRUE){
-		}
-	}
-}
-
-void onGPI3Task(void *params){
-	while(1){
-		if ( xSemaphoreTake(xOnGPI3, portMAX_DELAY) == pdTRUE){
 		}
 	}
 }

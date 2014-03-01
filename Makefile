@@ -98,6 +98,7 @@ LUA_SRC_DIR = $(SRC_DIR)/lua
 CMD_SRC_DIR = $(SRC_DIR)/command
 FILTER_DIR = $(SRC_DIR)/filter
 CAN_DIR = $(SRC_DIR)/CAN
+OBD2_DIR =$(SRC_DIR)/OBD2
 ADC_DIR = $(SRC_DIR)/ADC
 TIMER_DIR = $(SRC_DIR)/timer
 PWM_DIR = $(SRC_DIR)/PWM
@@ -184,6 +185,8 @@ $(RTOS_PORT_DIR)/MemMang/heap_2_combine.c \
 $(LOGGING_DIR)/printk.c \
 $(FILTER_DIR)/filter.c \
 $(CAN_DIR)/CAN.c \
+$(OBD2_DIR)/OBD2.c \
+$(OBD2_DIR)/OBD2_task.c \
 $(ADC_DIR)/ADC.c \
 $(TIMER_DIR)/timer.c \
 $(PWM_DIR)/PWM.c \
@@ -294,6 +297,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/logging \
 -I$(INCLUDE_DIR)/filter \
 -I$(INCLUDE_DIR)/CAN \
+-I$(INCLUDE_DIR)/OBD2 \
 -I$(INCLUDE_DIR)/ADC \
 -I$(INCLUDE_DIR)/timer \
 -I$(INCLUDE_DIR)/PWM \

@@ -6,9 +6,6 @@
 #include "GPIO_device_at91_pin_map.h"
 
 extern xSemaphoreHandle xOnPushbutton;
-extern xSemaphoreHandle xOnGPI1;
-extern xSemaphoreHandle xOnGPI2;
-extern xSemaphoreHandle xOnGPI3;
 
 
 /* The ISR can cause a context switch so is declared naked. */
@@ -28,16 +25,6 @@ void gpio_irq_handler( void )
 	if( (pio_input & PIO_PUSHBUTTON_SWITCH) == 0){
 		xTaskWoken = xSemaphoreGiveFromISR( xOnPushbutton, xTaskWoken );
 	}
-/*	if( (pio_input & GPIO_1) == 0) {
-		xTaskWoken = xSemaphoreGiveFromISR( xOnGPI1, xTaskWoken );
-	}
-	if( (pio_input & GPIO_2) == 0) {
-		xTaskWoken = xSemaphoreGiveFromISR( xOnGPI2, xTaskWoken);	
-	}
-	if( (pio_input & GPIO_3) == 0) {
-		xTaskWoken = xSemaphoreGiveFromISR( xOnGPI3, xTaskWoken);	
-	}
-	*/
 	/* Clear AIC to complete ISR processing */
 	AT91C_BASE_AIC->AIC_EOICR = 0;
 	portEXIT_SWITCHING_ISR( xTaskWoken );
