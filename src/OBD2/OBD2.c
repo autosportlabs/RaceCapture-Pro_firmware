@@ -2,6 +2,8 @@
 #include "CAN.h"
 #include "loggerConfig.h"
 #include "printk.h"
+#include "taskUtil.h"
+
 
 #define STANDARD_PID_RESPONSE 			0x7e8
 #define CUSTOM_MODE_SHOW_CURRENT_DATA 	0x41
@@ -94,6 +96,7 @@ int OBD2_request_PID(unsigned char pid, int *value, size_t timeout){
 	msg.isExtendedAddress = 0;
 
 	int result = CAN_tx_msg(&msg, timeout);
+	delayMs(5);
 	if (result) result = CAN_rx_msg(&msg, timeout);
 	if (result) result = decode_pid(pid, &msg, value);
 	return result;

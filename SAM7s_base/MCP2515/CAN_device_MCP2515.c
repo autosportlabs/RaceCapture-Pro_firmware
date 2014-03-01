@@ -446,6 +446,7 @@ int CAN_device_rx_msg(CAN_msg *msg, unsigned int timeoutMs){
 		gotMessage = 1;
 		break;
 	  }
+      delayMs(5); //yield for other tasks
 	}
 
 	if(gotMessage)
