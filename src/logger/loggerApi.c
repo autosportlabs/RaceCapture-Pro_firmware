@@ -6,6 +6,8 @@
  */
 #include "loggerApi.h"
 #include "loggerConfig.h"
+#include "channelMeta.h"
+#include "channelMeta.h"
 #include "modp_atonum.h"
 #include "mod_string.h"
 #include "sampleRecord.h"
@@ -21,7 +23,7 @@
 
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
-typedef void (*getConfigs_func)(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg);
+typedef void (*getConfigs_func)(size_t channeNameId, void ** baseCfg, ChannelConfig ** channelCfg);
 typedef const jsmntok_t * (*setExtField_func)(const jsmntok_t *json, const char *name, const char *value, void *cfg);
 
 
@@ -133,8 +135,9 @@ static void writeSampleMeta(Serial *serial, ChannelSample *channelSamples, size_
 		if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
 		if (sampleCount++ > 0) serial->put_c(',');
 		serial->put_c('{');
-		json_string(serial, "nm", channelConfig->label, 1);
-		json_string(serial, "ut", channelConfig->units, 1);
+		const ChannelName *field = get_channel_name(channelConfig->channeNameId);
+		json_string(serial, "nm", field->label, 1);
+		json_string(serial, "ut", field->units, 1);
 		json_int(serial, "sr", decodeSampleRate(LOWER_SAMPLE_RATE(channelConfig->sampleRate, sampleRateLimit)), 0);
 		serial->put_c('}');
 		sample++;
@@ -205,8 +208,7 @@ static const jsmntok_t * setChannelConfig(Serial *serial, const jsmntok_t *cfg, 
 			char *value = valueTok->data;
 			unescapeTextField(value);
 
-			if (NAME_EQU("nm",name)) setLabelGeneric(channelCfg->label, value);
-			else if (NAME_EQU("ut", name)) setLabelGeneric(channelCfg->units, value);
+			if (NAME_EQU("nid", name)) channelCfg->channeNameId = filter_channel_name(modp_atoi(value));
 			else if (NAME_EQU("sr", name)) channelCfg->sampleRate = encodeSampleRate(modp_atoi(value));
 			else if (setExtField != NULL) cfg = setExtField(valueTok, name, value, extCfg);
 		}
@@ -302,8 +304,7 @@ int api_setAnalogConfig(Serial *serial, const jsmntok_t * json){
 }
 
 static void json_channelConfig(Serial *serial, ChannelConfig *cfg, int more){
-	json_string(serial, "nm", cfg->label, 1);
-	json_string(serial, "ut", cfg->units, 1);
+	json_int(serial, "nid", cfg->channeNameId, 1);
 	json_int(serial, "sr", cfg->sampleRate, more);
 }
 

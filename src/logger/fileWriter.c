@@ -15,6 +15,7 @@
 #include "mod_string.h"
 #include "printk.h"
 #include "spi.h"
+#include "channelMeta.h"
 #include "mem_mang.h"
 #include "LED.h"
 
@@ -51,7 +52,7 @@ portBASE_TYPE queue_logfile_record(LoggerMessage * msg){
 	}
 }
 
-static int write_quoted_string(FIL *f, char *s){
+static int write_quoted_string(FIL *f, const char *s){
 	int rc = FILE_WRITE(f, "\"");
 	rc = FILE_WRITE(f, s);
 	rc = FILE_WRITE(f, "\"");
@@ -79,9 +80,10 @@ static int write_headers(FIL *f, ChannelSample *channelSamples, size_t sampleCou
 		ChannelConfig *cfg = sample->channelConfig;
 		if (SAMPLE_DISABLED != cfg->sampleRate){
 			if (headerCount++ > 0) rc = FILE_WRITE(f, ",");
-			rc = write_quoted_string(f, cfg->label);
+			const ChannelName *field = get_channel_name(cfg->channeNameId);
+			rc = write_quoted_string(f, field->label);
 			rc = FILE_WRITE(f, "|");
-			rc = write_quoted_string(f, cfg->units);
+			rc = write_quoted_string(f, field->units);
 			rc = FILE_WRITE(f, "|");
 			rc = write_int(f, decodeSampleRate(cfg->sampleRate));
 		}
