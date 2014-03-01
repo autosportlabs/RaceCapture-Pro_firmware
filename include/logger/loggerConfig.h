@@ -47,7 +47,7 @@
 typedef struct _ChannelConfig{
 	char label[DEFAULT_LABEL_LENGTH];
 	char units[DEFAULT_UNITS_LENGTH];
-	int sampleRate;
+	unsigned char sampleRate;
 } ChannelConfig;
 
 typedef struct _ScalingMap{
@@ -57,9 +57,9 @@ typedef struct _ScalingMap{
 
 typedef struct _ADCConfig{
 	ChannelConfig cfg;
-	unsigned int loggingPrecision;
+	unsigned char loggingPrecision;
 	float linearScaling;
-	char scalingMode;
+	unsigned char scalingMode;
 	ScalingMap scalingMap;
 } ADCConfig;
 
@@ -88,10 +88,10 @@ typedef struct _ADCConfig{
 
 typedef struct _TimerConfig{
 	ChannelConfig cfg;
-	unsigned int loggingPrecision;
+	unsigned char loggingPrecision;
 	char slowTimerEnabled;
-	char mode;
-	char pulsePerRevolution;
+	unsigned char mode;
+	unsigned char pulsePerRevolution;
 	unsigned short timerDivider;
 	unsigned int calculatedScaling;
 } TimerConfig;
@@ -128,7 +128,7 @@ typedef struct _TimerConfig{
 
 typedef struct _GPIOConfig{
 	ChannelConfig cfg;
-	char mode;
+	unsigned char mode;
 } GPIOConfig;
 
 #define	CONFIG_GPIO_IN  					0
@@ -147,9 +147,9 @@ typedef struct _GPIOConfig{
 			
 typedef struct _AccelConfig{
 	ChannelConfig cfg;
-	char mode;
+	unsigned char mode;
 	unsigned char accelChannel;
-	unsigned int zeroValue;
+	unsigned short zeroValue;
 } AccelConfig;
 
 #define MIN_ACCEL_RAW						0
@@ -183,10 +183,10 @@ typedef struct _AccelConfig{
 	
 typedef struct _PWMConfig{
 	ChannelConfig cfg;
-	unsigned int loggingPrecision;
-	char outputMode;
-	char loggingMode;
-	unsigned short startupDutyCycle;
+	unsigned char loggingPrecision;
+	unsigned char outputMode;
+	unsigned char loggingMode;
+	unsigned char startupDutyCycle;
 	unsigned short startupPeriod;
 	float voltageScaling;
 } PWMConfig;
@@ -237,7 +237,7 @@ typedef struct _PidConfig{
 #define OBD2_CHANNELS 20
 
 typedef struct _OBD2Config{
-	int obd2SampleRate;
+	unsigned char obd2SampleRate;
 	size_t enabledPids;
 	PidConfig pids[OBD2_CHANNELS];
 } OBD2Config;
@@ -275,7 +275,7 @@ typedef struct _OBD2Config{
 
 typedef struct _CANConfig{
 	unsigned char enabled;
-	size_t CANbaudRate;
+	unsigned int CANbaudRate;
 } CANConfig;
 
 #define DEFAULT_CAN_BAUD_RATE 500000
@@ -409,19 +409,6 @@ typedef struct _CellularConfig{
 	DEFAULT_APN_PASS \
 }
 
-#define DEFAULT_P2P_DESTINATION_ADDR_HIGH	 	0x00000000
-#define DEFAULT_P2P_DESTINATION_ADDR_LOW		0X0000FFFF
-
-typedef struct _P2PConfig{
-	unsigned int p2pDestinationAddrHigh;
-	unsigned int p2pDestinationAddrLow;
-} P2PConfig;
-
-#define DEFAULT_P2P_CONFIG { \
-		DEFAULT_P2P_DESTINATION_ADDR_HIGH, \
-		DEFAULT_P2P_DESTINATION_ADDR_LOW \
-}
-
 #define DEVICE_ID_LENGTH 36
 #define TELEMETRY_SERVER_HOST_LENGTH 100
 
@@ -444,7 +431,6 @@ typedef struct _ConnectivityConfig {
 	char backgroundStreaming;
 	BluetoothConfig bluetoothConfig;
 	CellularConfig cellularConfig;
-	P2PConfig p2pConfig;
 	TelemetryConfig telemetryConfig;
 } ConnectivityConfig;
 
@@ -468,7 +454,6 @@ typedef struct _ConnectivityConfig {
 										DEFAULT_BACKGROUND_STREAMING, \
 										DEFAULT_BT_CONFIG, \
 										DEFAULT_CELL_CONFIG, \
-										DEFAULT_P2P_CONFIG, \
 										DEFAULT_TELEMETRY_CONFIG \
 										}
 
