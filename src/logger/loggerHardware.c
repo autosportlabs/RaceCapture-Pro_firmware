@@ -13,10 +13,12 @@
 #include "spi.h"
 #include "memory.h"
 #include "constants.h"
+#include "virtual_channel.h"
 
 void InitLoggerHardware(){
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 	init_spi_lock();
+	init_virtual_channels();
 	LED_init();
 	accelerometer_init();
 	ADC_init();
