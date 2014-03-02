@@ -28,7 +28,16 @@ static int init_or_expand_virtual_channels(){
 	return result;
 }
 
-int create_virtual_channel(int channelNameId, unsigned char sampleRate){
+VirtualChannel * get_virtual_channel(size_t id){
+	if (id < g_virtualChannelCount){
+		return g_virtualChannels + id;
+	}
+	else{
+		return NULL;
+	}
+}
+
+int create_virtual_channel(int channelNameId, unsigned char precision, unsigned short sampleRate){
 
 	int newChannelId = -1;
 	if (init_or_expand_virtual_channels() && g_virtualChannelCount > 0){
@@ -36,10 +45,12 @@ int create_virtual_channel(int channelNameId, unsigned char sampleRate){
 		VirtualChannel * newChannel = g_virtualChannels + newChannelId;
 		newChannel->config.channeNameId = channelNameId;
 		newChannel->config.sampleRate = sampleRate;
+		newChannel->precision = precision;
 	}
 	else{
 		pr_error("could not allocate new channel\r\n");
 	}
+	configChanged();
 	return newChannelId;
 }
 
@@ -47,10 +58,12 @@ void set_virtual_channel_value(size_t id, float value){
 	if (id < g_virtualChannelCount)	g_virtualChannels[id].currentValue = value;
 }
 
-float get_virtual_channel_value(size_t id){
+float get_virtual_channel_value(int id){
 	float value = 0;
 	if (id < g_virtualChannelCount) value = g_virtualChannels[id].currentValue;
 	return value;
 }
 
-
+size_t get_virtual_channel_count(){
+	return g_virtualChannelCount;
+}

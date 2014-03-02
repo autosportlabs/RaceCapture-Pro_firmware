@@ -77,15 +77,14 @@ static int write_headers(FIL *f, ChannelSample *channelSamples, size_t sampleCou
 	int headerCount = 0;
 	ChannelSample *sample = channelSamples;
 	for (int i = 0; i < sampleCount;i++){
-		ChannelConfig *cfg = sample->channelConfig;
-		if (SAMPLE_DISABLED != cfg->sampleRate){
+		if (SAMPLE_DISABLED != sample->sampleRate){
 			if (headerCount++ > 0) rc = FILE_WRITE(f, ",");
-			const ChannelName *field = get_channel_name(cfg->channeNameId);
+			const ChannelName *field = get_channel_name(sample->channelNameId);
 			rc = write_quoted_string(f, field->label);
 			rc = FILE_WRITE(f, "|");
 			rc = write_quoted_string(f, field->units);
 			rc = FILE_WRITE(f, "|");
-			rc = write_int(f, decodeSampleRate(cfg->sampleRate));
+			rc = write_int(f, decodeSampleRate(sample->sampleRate));
 		}
 		sample++;
 	}

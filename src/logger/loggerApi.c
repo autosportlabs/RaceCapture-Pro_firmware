@@ -131,14 +131,13 @@ static void writeSampleMeta(Serial *serial, ChannelSample *channelSamples, size_
 	json_arrayStart(serial, "meta");
 	ChannelSample *sample = channelSamples;
 	for (int i = 0; i < channelCount; i++){
-		ChannelConfig * channelConfig = sample->channelConfig;
-		if (SAMPLE_DISABLED == channelConfig->sampleRate) continue;
+		if (SAMPLE_DISABLED == sample->sampleRate) continue;
 		if (sampleCount++ > 0) serial->put_c(',');
 		serial->put_c('{');
-		const ChannelName *field = get_channel_name(channelConfig->channeNameId);
+		const ChannelName *field = get_channel_name(sample->channelNameId);
 		json_string(serial, "nm", field->label, 1);
 		json_string(serial, "ut", field->units, 1);
-		json_int(serial, "sr", decodeSampleRate(LOWER_SAMPLE_RATE(channelConfig->sampleRate, sampleRateLimit)), 0);
+		json_int(serial, "sr", decodeSampleRate(LOWER_SAMPLE_RATE(sample->sampleRate, sampleRateLimit)), 0);
 		serial->put_c('}');
 		sample++;
 	}

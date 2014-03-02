@@ -3,6 +3,7 @@
 #include "memory.h"
 #include "magic.h"
 #include "printk.h"
+#include "virtual_channel.h"
 
 #ifndef RCP_TESTING
 #include "memory.h"
@@ -451,6 +452,7 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
 	if (loggerConfig->TrackConfigs.distanceCfg.sampleRate != SAMPLE_DISABLED) channels++;
 	if (loggerConfig->TrackConfigs.predTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
 
+	channels += get_virtual_channel_count();
 	return channels;
 }
 

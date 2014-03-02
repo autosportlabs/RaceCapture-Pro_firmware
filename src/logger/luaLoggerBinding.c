@@ -22,6 +22,7 @@
 #include "modp_numtoa.h"
 #include "loggerTaskEx.h"
 #include "loggerSampleData.h"
+#include "virtual_channel.h"
 
 extern xSemaphoreHandle g_xLoggerStart;
 extern int g_loggingShouldRun;
@@ -132,6 +133,8 @@ void registerLuaLoggerBindings(){
 	lua_registerlight(L,"setBgStream", Lua_SetBackgroundStreaming);
 	lua_registerlight(L,"getBgStream", Lua_GetBackgroundStreaming);
 
+	lua_registerlight(L, "addChannel", Lua_AddVirtualChannel);
+	lua_registerlight(L, "setChannel", Lua_SetVirtualChannelValue);
 	unlockLua();
 }
 
@@ -389,6 +392,7 @@ int Lua_SetAnalogChannelSampleRate(lua_State *L){
 	}
 	return 0;	
 }
+
 
 int Lua_GetAnalogChannelSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1){
@@ -806,5 +810,27 @@ int Lua_FlashLoggerConfig(lua_State *L){
 	int result = flashLoggerConfig();
 	lua_pushinteger(L,result);
 	return 1;	
+}
+
+int Lua_AddVirtualChannel(lua_State *L){
+	if (lua_gettop(L) >= 3){
+		int nameId = lua_tointeger(L, 1);
+		unsigned short precision = lua_tonumber(L, 2);
+		unsigned short sampleRate = encodeSampleRate(lua_tonumber(L, 3));
+		int result = create_virtual_channel(nameId, precision, sampleRate);
+		lua_pushinteger(L, result);
+		return 1;
+	}
+	return 0;
+
+}
+
+int Lua_SetVirtualChannelValue(lua_State *L){
+	if (lua_gettop(L) >= 2){
+		int id = lua_tointeger(L, 1);
+		float value = lua_tonumber(L, 2);
+		set_virtual_channel_value(id,value);
+	}
+	return 0;
 }
 

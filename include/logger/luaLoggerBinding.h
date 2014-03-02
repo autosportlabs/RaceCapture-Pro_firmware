@@ -113,5 +113,8 @@ int Lua_GetAnalogChannelSampleRate(lua_State *L);
 
 int Lua_FlashLoggerConfig(lua_State *L);
 
+int Lua_AddVirtualChannel(lua_State *L);
+int Lua_SetVirtualChannelValue(lua_State *L);
+
 
 #endif /*LUALOGGERBINDING_H_*/
