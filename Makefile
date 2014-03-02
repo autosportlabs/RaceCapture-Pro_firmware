@@ -112,6 +112,7 @@ API_SRC_DIR = $(SRC_DIR)/api
 MESSAGING_SRC_DIR = $(SRC_DIR)/messaging
 DEVICES_SRC_DIR = $(SRC_DIR)/devices
 PRED_TIMER_DIR = $(SRC_DIR)/predictive_timer
+VIRTUAL_CHANNEL_SRC_DIR = $(SRC_DIR)/virtual_channel
 UTIL_DIR = $(SRC_DIR)/util
 JSON_DIR = ./json
 GPS_SRC_DIR = $(SRC_DIR)/gps
@@ -201,6 +202,7 @@ $(DEVICES_SRC_DIR)/cellModem.c \
 $(DEVICES_SRC_DIR)/null_device.c \
 $(DEVICES_SRC_DIR)/bluetooth.c \
 $(DEVICES_SRC_DIR)/sim900.c \
+$(VIRTUAL_CHANNEL_SRC_DIR)/virtual_channel.c
 
 # List C source files here which must be compiled in ARM-Mode.
 # use file-extension c for "c-only"-files
@@ -317,6 +319,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/gps \
 -I$(INCLUDE_DIR)/sdcard \
 -I$(INCLUDE_DIR)/command \
+-I$(INCLUDE_DIR)/virtual_channel \
 -I$(JSON_DIR)
 
 #CINCS = -I. -I$(HW_DIR)/include -I$(RTOS_SRC_DIR)/include -I$(RTOS_GCC_DIR)
