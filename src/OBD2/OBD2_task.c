@@ -11,7 +11,7 @@
 void OBD2Task(void *pvParameters){
 	pr_info("Start OBD2 task\r\n");
 	LoggerConfig *config = getWorkingLoggerConfig();
-	OBD2Config *oc = &config->OBD2Config;
+	OBD2Config *oc = &config->OBD2Configs;
 	while(1){
 		for (size_t i = 0; i < oc->enabledPids; i++){
 			PidConfig *pidCfg = &oc->pids[i];

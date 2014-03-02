@@ -9,16 +9,15 @@ RCP_SRC=$(RCP_BASE)/src
 RCP_INC=$(RCP_BASE)/include
 SAM7S_SRC=$(RCP_BASE)/SAM7s_base
 MESSAGING_SRC=$(RCP_SRC)/messaging
-COMMAND_SRC=$(SAM7S_SRC)/command
+COMMAND_SRC=$(RCP_SRC)/command
 MOCK_DIR=./logger_mock
 GPS_DIR=./gps
 UTIL_DIR=./util
 
 INCLUDES = 	-I. \
 		-I$(RCP_BASE) \
-		-I$(RCP_INC)/util \
 		-I$(RCP_BASE)/logger \
-		-I$(RCP_BASE)/fat_sd \
+		-I$(SAM7S_SRC)/fat_sd_at91 \
 		-I$(RCP_INC)\
 		-I$(RCP_INC)/logging \
 		-I$(RCP_INC)/gps \
@@ -44,6 +43,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/PWM \
 		-I$(RCP_INC)/LED \
 		-I$(RCP_INC)/CAN \
+		-I$(RCP_INC)/OBD2 \
 		-I$(RCP_INC)/GPIO \
 		-I$(RCP_INC)/watchdog \
 		-I$(RCP_INC)/memory \
@@ -73,22 +73,24 @@ CPPFLAGS = -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(
 
 #-----File Dependencies----------------------
 
-SRC = 	loggerData_test.cpp \
-		$(GPS_DIR)/gps_test.cpp \
-		$(UTIL_DIR)/numtoa_test.cpp \
-		$(UTIL_DIR)/atonum_test.cpp \
+SRC =	RCPTest.cpp \
 		loggerApi_test.cpp \
 		loggerConfig_test.cpp \
 		sampleRecord_test.cpp \
 		PredictiveTimeTest2.cpp \
-		RCPTest.cpp \
+		loggerData_test.cpp \
+		$(GPS_DIR)/gps_test.cpp \
+		$(UTIL_DIR)/numtoa_test.cpp \
+		$(UTIL_DIR)/atonum_test.cpp \
 		mock_uart.c \
 		mock_usb_comm.c \
 		mock_serial.c \
+		$(MOCK_DIR)/util/taskUtil_mock.c \
 		$(RCP_SRC)/util/modp_numtoa.c \
 		$(RCP_SRC)/util/modp_atonum.c \
 		$(RCP_SRC)/jsmn/jsmn.c \
 		$(RCP_SRC)/api/api.c \
+		$(RCP_SRC)/OBD2/OBD2.c \
 		$(RCP_SRC)/logging/printk.c \
 		$(RCP_SRC)/logging/ring_buffer.c \
 		$(SAM7S_SRC)/serial/serial.c \
@@ -111,21 +113,24 @@ SRC = 	loggerData_test.cpp \
 		$(MOCK_DIR)/LED_device_mock.c \
 		$(MOCK_DIR)/GPIO_device_mock.c \
 		$(MOCK_DIR)/memory_device_mock.c \
+		$(MOCK_DIR)/loggerNotifications_mock.c \
 		$(MOCK_DIR)/sdcard_mock.c \
 		$(MOCK_DIR)/spi_mock.c \
 		$(MOCK_DIR)/watchdog_device_mock.c \
 		$(MOCK_DIR)/CAN_device_mock.c \
 		$(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 		$(RCP_SRC)/util/linear_interpolate.c \
-		$(RCP_BASE)/logger/loggerConfig.c \
+		$(RCP_SRC)/logger/loggerConfig.c \
 		$(RCP_SRC)/gps/gps.c \
 		$(RCP_SRC)/gps/geopoint.c \
 		$(RCP_SRC)/gps/geometry.c \
-		$(RCP_BASE)/logger/sampleRecord.c \
-		$(RCP_BASE)/logger/loggerSampleData.c \
-		$(RCP_BASE)/logger/loggerData.c \
-		$(RCP_BASE)/logger/loggerHardware.c \
-		 $(RCP_BASE)/logger/loggerTaskEx.c \
+		$(RCP_SRC)/logger/sampleRecord.c \
+		$(RCP_SRC)/logger/loggerSampleData.c \
+		$(RCP_SRC)/logger/loggerData.c \
+		$(RCP_SRC)/logger/loggerHardware.c \
+		$(RCP_SRC)/logger/channelMeta.c \
+
+#		$(RCP_SRC)/logger/loggerTaskEx.c \
 
 OBJ = $(addsuffix .o, $(basename $(SRC)))
 

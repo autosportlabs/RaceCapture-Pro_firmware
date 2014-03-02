@@ -1,8 +1,7 @@
 {
     "setTimerCfg": {
-        "0": {        
-            "nm": "timer1",
-            "ut": "ut1",
+        "0": {
+        	"nid":22,        
             "sr": 10,
             "prec": 3,
             "sTimer": 1,

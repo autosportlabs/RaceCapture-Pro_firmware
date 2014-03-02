@@ -13,7 +13,7 @@
 #include "sampleRecord.h"
 #include "loggerSampleData.h"
 #include "loggerData.h"
-#include "loggerTaskEx.h"
+#include "loggerNotifications.h"
 #include "accelerometer.h"
 #include "loggerHardware.h"
 #include "serial.h"

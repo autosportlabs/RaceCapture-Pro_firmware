@@ -21,7 +21,6 @@
 #include "accelerometer.h"
 #include "luaLoggerBinding.h"
 #include "gps.h"
-#include "sdcard.h"
 #include "printk.h"
 
 #define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 4 )

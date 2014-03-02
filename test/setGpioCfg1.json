@@ -1,8 +1,7 @@
 {
     "setGpioCfg": {
-        "0": {        
-            "nm": "gpio1",
-            "ut": "ut1",
+        "0": {
+        	"nid": 55,        
             "sr": 100,
             "mode": 1
         }

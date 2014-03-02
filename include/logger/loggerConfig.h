@@ -244,7 +244,7 @@ typedef struct _OBD2Config{
 	PidConfig pids[OBD2_CHANNELS];
 } OBD2Config;
 
-#define DEFAULT_ENABLED_PIDS 1
+#define DEFAULT_ENABLED_PIDS 0
 #define DEFAULT_OBD2_SAMPLE_RATE SAMPLE_10Hz
 
 #define DEFAULT_OBD2_CONFIG \
@@ -252,7 +252,7 @@ typedef struct _OBD2Config{
 	DEFAULT_OBD2_SAMPLE_RATE, \
 	DEFAULT_ENABLED_PIDS, \
 	{ \
-		{{CHANNEL_RPM, SAMPLE_1Hz}, 0x0C}, \
+		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
 		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
 		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
 		{{CHANNEL_Unknown, SAMPLE_DISABLED}, 0}, \
@@ -319,7 +319,7 @@ typedef struct _GPSConfig{
 //currently in degrees. This is about a 73 foot diameter circle (in the pacific NW...)
 #define DEFAULT_GPS_SATELLITES_CONFIG {CHANNEL_GPSSats, SAMPLE_DISABLED}
 #define DEFAULT_GPS_LATITUDE_CONFIG {CHANNEL_Latitude, SAMPLE_10Hz}
-#define DEFAULT_GPS_LONGITUDE_CONFIG {CHANNEL_Latitude, SAMPLE_10Hz}
+#define DEFAULT_GPS_LONGITUDE_CONFIG {CHANNEL_Longitude, SAMPLE_10Hz}
 #define DEFAULT_GPS_TIME_CONFIG {CHANNEL_Time, SAMPLE_10Hz}
 #define DEFAULT_GPS_SPEED_CONFIG {CHANNEL_Speed, SAMPLE_10Hz}
 
@@ -472,7 +472,7 @@ typedef struct _LoggerConfig {
 	//Accelerometer Configurations
 	AccelConfig AccelConfigs[CONFIG_ACCEL_CHANNELS];
 	//OBD2 Config
-	OBD2Config OBD2Config;
+	OBD2Config OBD2Configs;
 	//GPS Configuration
 	GPSConfig GPSConfigs;
 	//Track configuration

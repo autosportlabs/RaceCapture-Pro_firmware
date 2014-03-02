@@ -102,7 +102,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 	}
 
 	{
-		OBD2Config *obd2Config = &(loggerConfig->OBD2Config);
+		OBD2Config *obd2Config = &(loggerConfig->OBD2Configs);
 		size_t enabledPids = obd2Config->enabledPids;
 		for (size_t i = 0; i < enabledPids; i++){
 			sample->precision = 0;

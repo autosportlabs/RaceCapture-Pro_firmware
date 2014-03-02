@@ -1,8 +1,7 @@
 {
     "setPwmCfg": {
         "0": {        
-            "nm": "pwm1",
-            "ut": "ut1",
+            "nid": 39,
             "sr": 100,
             "logPrec": 2,
             "outMode": 1,

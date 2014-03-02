@@ -1,28 +1,23 @@
 {
     "setGpsCfg": {
-        "lat": {        
-            "nm": "latNm",
-            "ut": "latUt",
+        "lat": {
+        	"nid":31,        
             "sr": 5
         },
-        "long": {        
-            "nm": "longNm",
-            "ut": "longUt",
+        "long": {
+			"nid":32,        
             "sr": 10
         },
-        "speed": {        
-            "nm": "speedNm",
-            "ut": "speedUt",
+        "speed": {
+			"nid":33,        
             "sr": 25
         },
-        "time": {        
-            "nm": "timeNm",
-            "ut": "timeUt",
+        "time": {
+			"nid":34,        
             "sr": 50
         },
-        "sats": {        
-            "nm": "satsNm",
-            "ut": "satsUt",
+        "sats": {
+			"nid":35,        
             "sr": 100
         }
     }

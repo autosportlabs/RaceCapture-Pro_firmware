@@ -437,7 +437,7 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
 		if (loggerConfig->PWMConfigs[i].cfg.sampleRate != SAMPLE_DISABLED) channels++;
 	}
 
-	channels+=loggerConfig->OBD2Config.enabledPids;
+	channels+=loggerConfig->OBD2Configs.enabledPids;
 
 	if (loggerConfig->GPSConfigs.latitudeCfg.sampleRate != SAMPLE_DISABLED) channels++;
 	if (loggerConfig->GPSConfigs.longitudeCfg.sampleRate != SAMPLE_DISABLED) channels++;

@@ -8,8 +8,8 @@
 #ifndef LOGGERTASKEX_H_
 #define LOGGERTASKEX_H_
 
+#include "loggerNotifications.h"
 
-void configChanged();
 int isLogging();
 void startLogging();
 void stopLogging();
