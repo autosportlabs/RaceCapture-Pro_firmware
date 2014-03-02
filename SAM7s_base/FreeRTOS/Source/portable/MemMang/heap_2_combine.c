@@ -308,6 +308,16 @@ xBlockLink *pxLink;
 	}
 }
 
+static void * mcp(void * dest, void * src, size_t count){
+	 char* dst8 = (char*)dest;
+	        char* src8 = (char*)src;
+
+	        while (count--) {
+	            *dst8++ = *src8++;
+	        }
+	        return dest;
+}
+
 void * pvPortRealloc( void *pv, size_t xWantedSize){
 
 	if (! pv){
@@ -324,7 +334,7 @@ void * pvPortRealloc( void *pv, size_t xWantedSize){
 		}
 		else{
 			void *newPv = pvPortMalloc(xWantedSize);
-			memcpy(newPv, pv, xWantedSize < origSize ? xWantedSize : origSize);
+			mcp(newPv, pv, xWantedSize < origSize ? xWantedSize : origSize);
 			vPortFree(pv);
 			return newPv;
 		}
