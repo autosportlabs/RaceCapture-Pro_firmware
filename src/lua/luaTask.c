@@ -123,7 +123,6 @@ inline void setShouldReloadScript(int reload){
 
 
 void startLuaTask(){
-	initialize_script();
 	setShouldReloadScript(0);
 	set_ontick_freq(DEFAULT_ONTICK_HZ);
 

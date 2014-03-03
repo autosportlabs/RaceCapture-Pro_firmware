@@ -10,6 +10,7 @@
 
 #define MAGIC_INFO_SCRIPT_IS_INIT 0xDECAFBAD
 #define MAGIC_INFO_CONFIG_IS_INIT 0xDECAFBAD
+#define MAGIC_INFO_CHANNELS_IS_INIT 0xDECAFBAD
 
 typedef struct _VersionInfo{
 	unsigned int major;
@@ -21,6 +22,7 @@ typedef struct _MagicInfo {
 	VersionInfo current_version;
 	unsigned int script_init;
 	unsigned int config_init;
+	unsigned int channels_init;
 } MagicInfo;
 
 
@@ -28,15 +30,13 @@ int is_script_init();
 
 int is_config_init();
 
-int firmware_version_matches_last();
+int is_channels_init();
 
 void initialize_magic_info();
 
 const MagicInfo * get_saved_magic_info();
 
 MagicInfo * get_working_magic_info();
-
-void sync_magic_info_version();
 
 int flash_magic_info();
 

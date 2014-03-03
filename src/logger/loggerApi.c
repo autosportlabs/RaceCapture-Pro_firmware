@@ -207,7 +207,7 @@ static const jsmntok_t * setChannelConfig(Serial *serial, const jsmntok_t *cfg, 
 			char *value = valueTok->data;
 			unescapeTextField(value);
 
-			if (NAME_EQU("nid", name)) channelCfg->channeNameId = filter_channel_name(modp_atoi(value));
+			if (NAME_EQU("nid", name)) channelCfg->channeNameId = filter_channel_name_id(modp_atoi(value));
 			else if (NAME_EQU("sr", name)) channelCfg->sampleRate = encodeSampleRate(modp_atoi(value));
 			else if (setExtField != NULL) cfg = setExtField(valueTok, name, value, extCfg);
 		}

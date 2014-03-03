@@ -18,16 +18,6 @@ int flash_default_script(){
 	return result;
 }
 
-void initialize_script(){
-	if (!is_script_init()){
-		int result = flash_default_script();
-		if (result == 0){
-			get_working_magic_info()->script_init = MAGIC_INFO_SCRIPT_IS_INIT;
-			flash_magic_info();
-		}
-	}
-}
-
 const char * getScript(){
 	return g_script;
 }

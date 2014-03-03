@@ -2,6 +2,9 @@
 #include "memory.h"
 #include "mod_string.h"
 #include "printk.h"
+#include "loggerConfig.h"
+#include "channelMeta.h"
+#include "luaScript.h"
 
 
 #ifndef RCP_TESTING
@@ -14,6 +17,23 @@ const MagicInfo g_saved_magic_info = {{0,0,0},0,0};
 
 static MagicInfo g_working_magic_info;
 
+static void sync_magic_info_version(){
+	VersionInfo *version = &g_working_magic_info.current_version;
+	version->major = MAJOR_REV;
+	version->minor = MINOR_REV;
+	version->bugfix = BUGFIX_REV;
+}
+
+static int firmware_major_version_matches_last(){
+	VersionInfo * version = &g_working_magic_info.current_version;
+	return version->major == MAJOR_REV;
+}
+
+static int firmware_version_matches_last(){
+	VersionInfo * version = &g_working_magic_info.current_version;
+	return version->major == MAJOR_REV && version->minor == MINOR_REV && version->bugfix == BUGFIX_REV;
+}
+
 int is_script_init(){
 	return g_working_magic_info.script_init == MAGIC_INFO_SCRIPT_IS_INIT;
 }
@@ -22,13 +42,42 @@ int is_config_init(){
 	return g_working_magic_info.config_init == MAGIC_INFO_CONFIG_IS_INIT;
 }
 
-int firmware_version_matches_last(){
-	VersionInfo * version = &g_working_magic_info.current_version;
-	return version->major == MAJOR_REV && version->minor == MINOR_REV && version->bugfix == BUGFIX_REV;
+int is_channels_init(){
+	return g_working_magic_info.channels_init = MAGIC_INFO_CHANNELS_IS_INIT;
 }
 
 void initialize_magic_info(){
 	memcpy(&g_working_magic_info,&g_saved_magic_info,sizeof(MagicInfo));
+	int config_valid = is_config_init();
+	int channels_valid = is_channels_init();
+	int script_valid = is_script_init();
+
+	int firmware_matches_last = firmware_version_matches_last();
+	if (!firmware_matches_last){
+		pr_info("new firmware detected\r\n");
+	}
+
+	int firmware_major_matches_last = firmware_major_version_matches_last();
+	if (!firmware_major_matches_last){
+		pr_info("firmware major version changed\r\n");
+	}
+
+	if (!config_valid || !firmware_major_matches_last){
+		if (flash_default_logger_config()) g_working_magic_info.config_init = MAGIC_INFO_CONFIG_IS_INIT;
+	}
+
+	if (!channels_valid || !firmware_major_matches_last) {
+		if (flash_default_channels()) g_working_magic_info.channels_init = MAGIC_INFO_CHANNELS_IS_INIT;
+	}
+
+	if (!script_valid || !firmware_major_matches_last){
+		if (flash_default_script()) g_working_magic_info.script_init = MAGIC_INFO_SCRIPT_IS_INIT;
+	}
+
+	sync_magic_info_version();
+	if (!config_valid || !channels_valid || !script_valid || !firmware_matches_last){
+		flash_magic_info();
+	}
 }
 
 const MagicInfo * get_saved_magic_info(){
@@ -37,13 +86,6 @@ const MagicInfo * get_saved_magic_info(){
 
 MagicInfo * get_working_magic_info(){
 	return &g_working_magic_info;
-}
-
-void sync_magic_info_version(){
-	VersionInfo *version = &g_working_magic_info.current_version;
-	version->major = MAJOR_REV;
-	version->minor = MINOR_REV;
-	version->bugfix = BUGFIX_REV;
 }
 
 int flash_magic_info(){

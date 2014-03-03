@@ -5,8 +5,6 @@
 
 int flash_default_script();
 
-void initialize_script();
-
 const const char * getScript();
 
 int flashScriptPage(unsigned int page, const char *data);

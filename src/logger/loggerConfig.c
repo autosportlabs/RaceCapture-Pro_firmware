@@ -29,32 +29,6 @@ int flashLoggerConfig(void){
 }
 
 void initialize_logger_config(){
-	int should_flash_default_config= 0;
-	int should_flash_magic_info = 0;
-
-	if (!is_config_init()){
-		pr_info("logger config is valid\r\n");
-		should_flash_default_config = 1;
-	}
-
-	if (get_working_magic_info()->current_version.major != MAJOR_REV){
-		pr_info("firmware major version changed\r\n");
-		should_flash_default_config = 1;
-	}
-
-	if (!firmware_version_matches_last()){
-		pr_info("new firmware detected\r\n");
-		sync_magic_info_version();
-		should_flash_magic_info = 1;
-	}
-
-	if (should_flash_default_config){
-		int result = flash_default_logger_config();
-		if (result == 0) should_flash_magic_info = 1;
-	}
-
-	if (should_flash_magic_info) flash_magic_info();
-
 	memcpy(&g_workingLoggerConfig,&g_savedLoggerConfig,sizeof(LoggerConfig));
 }
 

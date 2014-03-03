@@ -16,6 +16,11 @@ typedef struct _ChannelMeta{
 	ChannelName channelNames[CHANNEL_COUNT];
 } ChannelMeta;
 
+int flash_default_channels(void);
+const ChannelName * get_channel_name(size_t id);
+size_t filter_channel_name_id(size_t id);
+size_t find_channel_name_id(char * name);
+
 typedef enum{
 CHANNEL_Unknown = 0,
 CHANNEL_Analog1,
@@ -140,9 +145,5 @@ CHANNEL_COUNT, \
 {"Distance", "Miles"} \
 } \
 }
-
-const ChannelName * get_channel_name(size_t id);
-size_t filter_channel_name(size_t id);
-
 
 #endif /* CHANNELMETA_H_ */
