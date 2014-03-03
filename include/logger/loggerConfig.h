@@ -48,7 +48,7 @@
 
 typedef struct _ChannelConfig{
 	unsigned short channeNameId;
-	unsigned char sampleRate;
+	unsigned short sampleRate;
 } ChannelConfig;
 
 typedef struct _ScalingMap{

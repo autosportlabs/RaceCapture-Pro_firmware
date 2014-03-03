@@ -146,14 +146,14 @@ static TrackConfig * getTrackConfig(){
 	return &(getWorkingLoggerConfig()->TrackConfigs);
 }
 
-static int setLuaSampleRate(lua_State *L, unsigned char *sampleRate){
+static int setLuaSampleRate(lua_State *L, unsigned short *sampleRate){
 	if (lua_gettop(L) >= 1 ){
 		*sampleRate = encodeSampleRate(lua_tointeger(L,1));
 	}
 	return 0;
 }
 
-static int getLuaSampleRate(lua_State *L, unsigned char sampleRate){
+static int getLuaSampleRate(lua_State *L, unsigned short sampleRate){
 	lua_pushinteger(L,sampleRate);
 	return 1;
 }
