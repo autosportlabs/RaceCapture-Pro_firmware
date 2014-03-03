@@ -18,7 +18,8 @@ typedef struct _VirtualChannel{
 	float currentValue;
 } VirtualChannel;
 
-int init_virtual_channels(void);
+#define MAX_VIRTUAL_CHANNELS 10
+
 int create_virtual_channel(int channelNameId, unsigned char precision, unsigned short sampleRate);
 VirtualChannel * get_virtual_channel(size_t id);
 size_t get_virtual_channel_count();

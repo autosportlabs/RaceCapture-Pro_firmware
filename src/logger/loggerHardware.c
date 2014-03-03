@@ -18,7 +18,6 @@
 void InitLoggerHardware(){
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 	init_spi_lock();
-	init_virtual_channels();
 	LED_init();
 	accelerometer_init();
 	ADC_init();
