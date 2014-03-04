@@ -107,7 +107,8 @@ void SampleRecordTest::testInitSampleRecord()
 			CPPUNIT_ASSERT_EQUAL((size_t)i, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL(ac->loggingPrecision, ts->precision);
-			CPPUNIT_ASSERT_EQUAL((void *)&ac->cfg, (void *)ts->channelConfig);
+			CPPUNIT_ASSERT_EQUAL(ac->cfg.channeNameId, ts->channelNameId);
+			CPPUNIT_ASSERT_EQUAL(ac->cfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL((void *)get_analog_sample, (void *)ts->get_sample);
 			ts++;
 		}
@@ -119,7 +120,8 @@ void SampleRecordTest::testInitSampleRecord()
 			CPPUNIT_ASSERT_EQUAL((size_t)i,ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL((unsigned char)DEFAULT_ACCEL_LOGGING_PRECISION, ts->precision);
-			CPPUNIT_ASSERT_EQUAL((void *)&ac->cfg, (void *)ts->channelConfig);
+			CPPUNIT_ASSERT_EQUAL(ac->cfg.channeNameId, ts->channelNameId);
+			CPPUNIT_ASSERT_EQUAL(ac->cfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL((void *)get_accel_sample, (void *)ts->get_sample);
 			ts++;
 		}
@@ -131,7 +133,8 @@ void SampleRecordTest::testInitSampleRecord()
 			CPPUNIT_ASSERT_EQUAL((size_t)i, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL(tc->loggingPrecision, ts->precision);
-			CPPUNIT_ASSERT_EQUAL((void *)&tc->cfg, (void *)ts->channelConfig);
+			CPPUNIT_ASSERT_EQUAL(tc->cfg.channeNameId, ts->channelNameId);
+			CPPUNIT_ASSERT_EQUAL(tc->cfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL((void *)get_timer_sample, (void *)ts->get_sample);
 			ts++;
 		}
@@ -143,7 +146,8 @@ void SampleRecordTest::testInitSampleRecord()
 			CPPUNIT_ASSERT_EQUAL((size_t)i, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL((unsigned char)DEFAULT_GPIO_LOGGING_PRECISION, ts->precision);
-			CPPUNIT_ASSERT_EQUAL((void *)&gc->cfg, (void *)ts->channelConfig);
+			CPPUNIT_ASSERT_EQUAL(gc->cfg.channeNameId, ts->channelNameId);
+			CPPUNIT_ASSERT_EQUAL(gc->cfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL((void *)get_gpio_sample, (void *)ts->get_sample);
 			ts++;
 		}
@@ -155,7 +159,8 @@ void SampleRecordTest::testInitSampleRecord()
 			CPPUNIT_ASSERT_EQUAL((size_t)i, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL(pc->loggingPrecision, ts->precision);
-			CPPUNIT_ASSERT_EQUAL((void *)&pc->cfg, (void *)ts->channelConfig);
+			CPPUNIT_ASSERT_EQUAL(pc->cfg.channeNameId, ts->channelNameId);
+			CPPUNIT_ASSERT_EQUAL(pc->cfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL((void *)get_timer_sample, (void *)ts->get_sample);
 			ts++;
 		}
@@ -165,7 +170,8 @@ void SampleRecordTest::testInitSampleRecord()
 		GPSConfig *gpsConfig = &(lc->GPSConfigs);
 		if (gpsConfig->latitudeCfg.sampleRate != SAMPLE_DISABLED){
 			CPPUNIT_ASSERT_EQUAL((unsigned char)DEFAULT_GPS_POSITION_LOGGING_PRECISION, ts->precision);
-			CPPUNIT_ASSERT_EQUAL((void *)&gpsConfig->latitudeCfg, (void *)ts->channelConfig);
+			CPPUNIT_ASSERT_EQUAL(gpsConfig->latitudeCfg.channeNameId, ts->channelNameId);
+			CPPUNIT_ASSERT_EQUAL(gpsConfig->latitudeCfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL((size_t)gps_channel_latitude, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL((void *)get_gps_sample, (void *)ts->get_sample);
@@ -174,7 +180,8 @@ void SampleRecordTest::testInitSampleRecord()
 
 		if (gpsConfig->longitudeCfg.sampleRate != SAMPLE_DISABLED){
 			CPPUNIT_ASSERT_EQUAL((unsigned char)DEFAULT_GPS_POSITION_LOGGING_PRECISION, ts->precision);
-			CPPUNIT_ASSERT_EQUAL((void *)&gpsConfig->longitudeCfg, (void *)ts->channelConfig);
+			CPPUNIT_ASSERT_EQUAL(gpsConfig->longitudeCfg.channeNameId, ts->channelNameId);
+			CPPUNIT_ASSERT_EQUAL(gpsConfig->longitudeCfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL((size_t)gps_channel_longitude, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL((void *)get_gps_sample, (void *)ts->get_sample);
@@ -183,7 +190,8 @@ void SampleRecordTest::testInitSampleRecord()
 
 		if (gpsConfig->speedCfg.sampleRate != SAMPLE_DISABLED){
 			CPPUNIT_ASSERT_EQUAL((unsigned char)DEFAULT_GPS_SPEED_LOGGING_PRECISION, ts->precision);
-			CPPUNIT_ASSERT_EQUAL((void *)&gpsConfig->speedCfg, (void *)ts->channelConfig);
+			CPPUNIT_ASSERT_EQUAL(gpsConfig->speedCfg.channeNameId, ts->channelNameId);
+			CPPUNIT_ASSERT_EQUAL(gpsConfig->speedCfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL((size_t)gps_channel_speed, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL((void *)get_gps_sample, (void *)ts->get_sample);
@@ -192,7 +200,8 @@ void SampleRecordTest::testInitSampleRecord()
 
 		if (gpsConfig->timeCfg.sampleRate != SAMPLE_DISABLED){
 			CPPUNIT_ASSERT_EQUAL((unsigned char)DEFAULT_GPS_TIME_LOGGING_PRECISION, ts->precision);
-			CPPUNIT_ASSERT_EQUAL((void *)&gpsConfig->timeCfg, (void *)ts->channelConfig);
+			CPPUNIT_ASSERT_EQUAL(gpsConfig->timeCfg.channeNameId, ts->channelNameId);
+			CPPUNIT_ASSERT_EQUAL(gpsConfig->timeCfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL((size_t)gps_channel_time, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL((void *)get_gps_sample, (void *)ts->get_sample);
@@ -201,7 +210,8 @@ void SampleRecordTest::testInitSampleRecord()
 
 		if (gpsConfig->satellitesCfg.sampleRate != SAMPLE_DISABLED){
 			CPPUNIT_ASSERT_EQUAL((unsigned char)DEFAULT_GPS_SATELLITES_LOGGING_PRECISION, ts->precision);
-			CPPUNIT_ASSERT_EQUAL((void *)&gpsConfig->satellitesCfg, (void *)ts->channelConfig);
+			CPPUNIT_ASSERT_EQUAL(gpsConfig->satellitesCfg.channeNameId, ts->channelNameId);
+			CPPUNIT_ASSERT_EQUAL(gpsConfig->satellitesCfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL((size_t)gps_channel_satellites, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL((void *)get_gps_sample, (void *)ts->get_sample);
@@ -213,7 +223,8 @@ void SampleRecordTest::testInitSampleRecord()
 		TrackConfig *trackConfig = &(lc->TrackConfigs);
 		if (trackConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED){
 			CPPUNIT_ASSERT_EQUAL((unsigned char)DEFAULT_LAP_COUNT_LOGGING_PRECISION, ts->precision);
-			CPPUNIT_ASSERT_EQUAL((void *)&trackConfig->lapCountCfg, (void *)ts->channelConfig);
+			CPPUNIT_ASSERT_EQUAL(trackConfig->lapCountCfg.channeNameId, ts->channelNameId);
+			CPPUNIT_ASSERT_EQUAL(trackConfig->lapCountCfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL((size_t)lap_stat_channel_lapcount, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL((void *)get_lap_stat_sample, (void *)ts->get_sample);
@@ -222,7 +233,8 @@ void SampleRecordTest::testInitSampleRecord()
 
 		if (trackConfig->lapTimeCfg.sampleRate != SAMPLE_DISABLED){
 			CPPUNIT_ASSERT_EQUAL((unsigned char)DEFAULT_LAP_TIME_LOGGING_PRECISION, ts->precision);
-			CPPUNIT_ASSERT_EQUAL((void *)&trackConfig->lapTimeCfg, (void *)ts->channelConfig);
+			CPPUNIT_ASSERT_EQUAL(trackConfig->lapTimeCfg.channeNameId, ts->channelNameId);
+			CPPUNIT_ASSERT_EQUAL(trackConfig->lapTimeCfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL((size_t)lap_stat_channel_laptime, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL((void *)get_lap_stat_sample, (void *)ts->get_sample);
@@ -231,7 +243,8 @@ void SampleRecordTest::testInitSampleRecord()
 
 		if (trackConfig->splitTimeCfg.sampleRate != SAMPLE_DISABLED){
 			CPPUNIT_ASSERT_EQUAL((unsigned char)DEFAULT_LAP_TIME_LOGGING_PRECISION, ts->precision);
-			CPPUNIT_ASSERT_EQUAL((void *)&trackConfig->splitTimeCfg, (void *)ts->channelConfig);
+			CPPUNIT_ASSERT_EQUAL(trackConfig->splitTimeCfg.channeNameId, ts->channelNameId);
+			CPPUNIT_ASSERT_EQUAL(trackConfig->splitTimeCfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL((size_t)lap_stat_channel_splittime, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL((void *)get_lap_stat_sample, (void *)ts->get_sample);
@@ -240,7 +253,8 @@ void SampleRecordTest::testInitSampleRecord()
 
 		if (trackConfig->distanceCfg.sampleRate != SAMPLE_DISABLED){
 			CPPUNIT_ASSERT_EQUAL((unsigned char)DEFAULT_DISTANCE_LOGGING_PRECISION, ts->precision);
-			CPPUNIT_ASSERT_EQUAL((void *)&trackConfig->distanceCfg, (void *)ts->channelConfig);
+			CPPUNIT_ASSERT_EQUAL(trackConfig->distanceCfg.channeNameId, ts->channelNameId);
+			CPPUNIT_ASSERT_EQUAL(trackConfig->distanceCfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL((size_t)lap_stat_channel_distance, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL((void *)get_lap_stat_sample, (void *)ts->get_sample);
@@ -249,7 +263,8 @@ void SampleRecordTest::testInitSampleRecord()
 
 		if (trackConfig->predTimeCfg.sampleRate != SAMPLE_DISABLED){
 			CPPUNIT_ASSERT_EQUAL((unsigned char)DEFAULT_LAP_COUNT_LOGGING_PRECISION, ts->precision);
-			CPPUNIT_ASSERT_EQUAL((void *)&trackConfig->predTimeCfg, (void *)ts->channelConfig);
+			CPPUNIT_ASSERT_EQUAL(trackConfig->predTimeCfg.channeNameId, ts->channelNameId);
+			CPPUNIT_ASSERT_EQUAL(trackConfig->predTimeCfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL((size_t)lap_stat_channel_predtime, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL((void *)get_lap_stat_sample, (void *)ts->get_sample);

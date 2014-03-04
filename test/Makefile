@@ -25,6 +25,9 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/api \
 		-I$(RCP_INC)/filter \
 		-I$(RCP_INC)/logger \
+		-I$(RCP_INC)/channels \
+		-I$(RCP_INC)/virtual_channel \
+		-I$(RCP_INC)/tracks \
 		-I$(RCP_INC)/messaging \
 		-I$(RCP_INC)/lua \
 		-I$(RCP_INC)/command \
@@ -86,6 +89,7 @@ SRC =	RCPTest.cpp \
 		mock_usb_comm.c \
 		mock_serial.c \
 		$(MOCK_DIR)/util/taskUtil_mock.c \
+		$(RCP_SRC)/lua/luaScript.c \
 		$(RCP_SRC)/util/modp_numtoa.c \
 		$(RCP_SRC)/util/modp_atonum.c \
 		$(RCP_SRC)/jsmn/jsmn.c \
@@ -121,6 +125,8 @@ SRC =	RCPTest.cpp \
 		$(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 		$(RCP_SRC)/util/linear_interpolate.c \
 		$(RCP_SRC)/logger/loggerConfig.c \
+		$(RCP_SRC)/virtual_channel/virtual_channel.c \
+		$(RCP_SRC)/tracks/tracks.c \
 		$(RCP_SRC)/gps/gps.c \
 		$(RCP_SRC)/gps/geopoint.c \
 		$(RCP_SRC)/gps/geometry.c \
@@ -128,7 +134,7 @@ SRC =	RCPTest.cpp \
 		$(RCP_SRC)/logger/loggerSampleData.c \
 		$(RCP_SRC)/logger/loggerData.c \
 		$(RCP_SRC)/logger/loggerHardware.c \
-		$(RCP_SRC)/logger/channelMeta.c \
+		$(RCP_SRC)/channels/channelMeta.c \
 
 #		$(RCP_SRC)/logger/loggerTaskEx.c \
 

@@ -5,7 +5,7 @@
 
 int flash_default_script();
 
-const const char * getScript();
+const char * getScript();
 
 int flashScriptPage(unsigned int page, const char *data);
 

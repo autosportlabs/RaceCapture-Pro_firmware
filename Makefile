@@ -89,6 +89,8 @@ USB_SRC_DIR = $(SAM7s_BASE_DIR)/usb
 SERIAL_SRC_DIR = $(SAM7s_BASE_DIR)/serial
 UART_SRC_DIR = $(SAM7s_BASE_DIR)/uart
 LOGGER_SRC_DIR = $(SRC_DIR)/logger
+CHANNELS_SRC_DIR = $(SRC_DIR)/channels
+TRACKS_SRC_DIR = $(SRC_DIR)/tracks
 SPI_DIR = $(SRC_DIR)/spi
 CPU_SRC_DIR = $(SRC_DIR)/cpu
 MEMORY_SRC_DIR = $(SRC_DIR)/memory
@@ -159,7 +161,8 @@ $(LOGGER_SRC_DIR)/connectivityTask.c \
 $(GPS_SRC_DIR)/gps.c \
 $(GPS_SRC_DIR)/gpsTask.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
-$(LOGGER_SRC_DIR)/channelMeta.c \
+$(CHANNELS_SRC_DIR)/channelMeta.c \
+$(TRACKS_SRC_DIR)/tracks.c \
 $(GPS_SRC_DIR)/geometry.c \
 $(GPS_SRC_DIR)/geopoint.c \
 $(LOGGER_SRC_DIR)/luaLoggerBinding.c \
@@ -296,6 +299,8 @@ CINCS = \
 -I$(INCLUDE_DIR)/jsmn \
 -I$(INCLUDE_DIR)/api \
 -I$(INCLUDE_DIR)/logger \
+-I$(INCLUDE_DIR)/channels \
+-I$(INCLUDE_DIR)/tracks \
 -I$(INCLUDE_DIR)/logging \
 -I$(INCLUDE_DIR)/filter \
 -I$(INCLUDE_DIR)/CAN \

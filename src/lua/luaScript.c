@@ -7,7 +7,12 @@
 
 #define SCRIPT_LENGTH SCRIPT_PAGES * MEMORY_PAGE_SIZE
 
-static const char g_script[SCRIPT_LENGTH + 1] __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".script\n\t#")));
+#ifndef RCP_TESTING
+static const char g_script[SCRIPT_LENGTH] __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".script\n\t#")));
+#else
+static const char g_script[SCRIPT_LENGTH] = DEFAULT_SCRIPT;
+#endif
+
 
 static const char g_defaultScript[] = DEFAULT_SCRIPT;
 
@@ -29,7 +34,7 @@ int flashScriptPage(unsigned int page, const char *data){
 	char * scriptPageAddress = (char *)g_script;
 	scriptPageAddress += (page * MEMORY_PAGE_SIZE);
 	//if less than the page size, copy it into an expanded buffer
-	char * temp = portMalloc(MEMORY_PAGE_SIZE);
+	char * temp = (char *)portMalloc(MEMORY_PAGE_SIZE);
 
 	if (temp){
 		int size = strlen(data);

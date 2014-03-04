@@ -1,6 +1,7 @@
 #include "channelMeta.h"
 #include "mod_string.h"
 #include "printk.h"
+#include "memory.h"
 
 #ifndef RCP_TESTING
 #include "memory.h"

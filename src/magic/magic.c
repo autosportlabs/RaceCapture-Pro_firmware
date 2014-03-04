@@ -4,6 +4,7 @@
 #include "printk.h"
 #include "loggerConfig.h"
 #include "channelMeta.h"
+#include "tracks.h"
 #include "luaScript.h"
 
 
@@ -11,7 +12,7 @@
 #include "memory.h"
 const MagicInfo g_saved_magic_info __attribute__ ((aligned (FLASH_MEMORY_PAGE_SIZE))) __attribute__((section(".magic\n\t#")));
 #else
-const MagicInfo g_saved_magic_info = {{0,0,0},0,0};
+const MagicInfo g_saved_magic_info = {{0,0,0},0,0,0,0};
 #endif
 
 
@@ -43,14 +44,20 @@ int is_config_init(){
 }
 
 int is_channels_init(){
-	return g_working_magic_info.channels_init = MAGIC_INFO_CHANNELS_IS_INIT;
+	return g_working_magic_info.channels_init == MAGIC_INFO_CHANNELS_IS_INIT;
+}
+
+int is_tracks_init(){
+	return g_working_magic_info.tracks_init == MAGIC_INFO_TRACKS_IS_INIT;
 }
 
 void initialize_magic_info(){
 	memcpy(&g_working_magic_info,&g_saved_magic_info,sizeof(MagicInfo));
+
 	int config_valid = is_config_init();
 	int channels_valid = is_channels_init();
 	int script_valid = is_script_init();
+	int tracks_valid = is_tracks_init();
 
 	int firmware_matches_last = firmware_version_matches_last();
 	if (!firmware_matches_last){
@@ -63,19 +70,23 @@ void initialize_magic_info(){
 	}
 
 	if (!config_valid || !firmware_major_matches_last){
-		if (flash_default_logger_config()) g_working_magic_info.config_init = MAGIC_INFO_CONFIG_IS_INIT;
+		if (flash_default_logger_config() == 0) g_working_magic_info.config_init = MAGIC_INFO_CONFIG_IS_INIT;
 	}
 
 	if (!channels_valid || !firmware_major_matches_last) {
-		if (flash_default_channels()) g_working_magic_info.channels_init = MAGIC_INFO_CHANNELS_IS_INIT;
+		if (flash_default_channels() == 0) g_working_magic_info.channels_init = MAGIC_INFO_CHANNELS_IS_INIT;
 	}
 
 	if (!script_valid || !firmware_major_matches_last){
-		if (flash_default_script()) g_working_magic_info.script_init = MAGIC_INFO_SCRIPT_IS_INIT;
+		if (flash_default_script() == 0) g_working_magic_info.script_init = MAGIC_INFO_SCRIPT_IS_INIT;
+	}
+
+	if (!tracks_valid || !firmware_major_matches_last){
+		if (flash_default_tracks() == 0) g_working_magic_info.tracks_init = MAGIC_INFO_TRACKS_IS_INIT;
 	}
 
 	sync_magic_info_version();
-	if (!config_valid || !channels_valid || !script_valid || !firmware_matches_last){
+	if (!config_valid || !channels_valid || !script_valid || !tracks_valid || !firmware_matches_last){
 		flash_magic_info();
 	}
 }
