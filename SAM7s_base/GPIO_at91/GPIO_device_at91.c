@@ -1,10 +1,16 @@
 #include "GPIO_device.h"
 #include "GPIO_device_at91_pin_map.h"
 #include "board.h"
-#include "gpioTasks.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "semphr.h"
 
 #define	MODE_INPUT	0
 #define MODE_OUTPUT	1
+
+void gpio_irq_handler ( void );
+xSemaphoreHandle xOnPushbutton;
 
 static unsigned int GetGPIOBits(void){
 	return AT91F_PIO_GetInput(AT91C_BASE_PIOA);
@@ -48,6 +54,17 @@ void GPIO_device_init_port(unsigned int port, unsigned int mode){
 void GPIO_device_init_base(void){
 	// Enable the peripheral clock.
 	AT91F_PMC_EnablePeriphClock( AT91C_BASE_PMC, (1 << AT91C_ID_PIOA) | (1 << AT91C_ID_IRQ0));
+
+	portENTER_CRITICAL();
+    AT91PS_AIC     pAic;
+	pAic = AT91C_BASE_AIC;
+
+	AT91F_PIO_InterruptEnable(AT91C_BASE_PIOA,PIO_PUSHBUTTON_SWITCH);
+
+	AT91F_AIC_ConfigureIt ( pAic, AT91C_ID_PIOA, PUSHBUTTON_INTERRUPT_LEVEL, AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL, gpio_irq_handler);
+	AT91F_AIC_EnableIt (pAic, AT91C_ID_PIOA);
+	portEXIT_CRITICAL();
+
 }
 
 void GPIO_device_init_SD_card_IO(void){
@@ -120,8 +137,4 @@ void GPIO_device_init_pushbutton(void){
 	AT91C_BASE_PIOA->PIO_PPUER = PIO_PUSHBUTTON_SWITCH; //enable pullup
 	AT91C_BASE_PIOA->PIO_IFER = PIO_PUSHBUTTON_SWITCH; //enable input filter
 	AT91C_BASE_PIOA->PIO_MDER = PIO_PUSHBUTTON_SWITCH; //enable multi drain
-}
-
-void GPIO_device_init_events(void){
-	createGPIOTasks();
 }

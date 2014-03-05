@@ -19,10 +19,6 @@ void GPIO_device_init_pushbutton(void){
 
 }
 
-void GPIO_device_init_events(void){
-
-}
-
 unsigned int GPIO_device_get(unsigned int port){
 	return g_gpio[port];
 }

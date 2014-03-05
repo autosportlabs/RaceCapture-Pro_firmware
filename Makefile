@@ -180,7 +180,7 @@ $(GPIO_AT91_DIR)/GPIO_device_at91.c \
 $(WATCHDOG_AT91_DIR)/watchdog_device_at91.c \
 $(MEMORY_AT91_DIR)/memory_device_at91.c \
 $(CPU_AT91_DIR)/cpu_device_at91.c \
-$(GPIO_AT91_DIR)/gpioTasks.c \
+$(GPIO_DIR)/gpioTasks.c \
 $(LUA_SRC_DIR)/luaTask.c \
 $(LUA_SRC_DIR)/luaScript.c \
 $(LUA_SRC_DIR)/luaBaseBinding.c \

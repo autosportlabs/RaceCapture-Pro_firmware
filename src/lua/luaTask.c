@@ -14,7 +14,6 @@
 #define DEFAULT_ONTICK_HZ 1
 #define MAX_ONTICK_HZ 30
 #define LUA_STACK_SIZE 1000
-#define LUA_PRIORITY 2
 
 #define LUA_PERIODIC_FUNCTION "onTick"
 
@@ -122,7 +121,7 @@ inline void setShouldReloadScript(int reload){
 }
 
 
-void startLuaTask(){
+void startLuaTask(int priority){
 	setShouldReloadScript(0);
 	set_ontick_freq(DEFAULT_ONTICK_HZ);
 
@@ -142,7 +141,7 @@ void startLuaTask(){
 					( signed portCHAR * ) "luaTask",
 					LUA_STACK_SIZE,
 					NULL,
-					LUA_PRIORITY,
+					priority,
 					NULL);
 }
 

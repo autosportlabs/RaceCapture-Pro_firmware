@@ -6,7 +6,7 @@
 #include "sampleRecord.h"
 
 
-void startFileWriterTask();
+void startFileWriterTask( int priority );
 void fileWriterTask(void *params);
 portBASE_TYPE queue_logfile_record(LoggerMessage * sr);
 

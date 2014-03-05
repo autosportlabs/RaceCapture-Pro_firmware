@@ -11,7 +11,6 @@
 #include "task.h"
 
 #define GPS_DATA_LINE_BUFFER_LEN 	200
-#define GPS_TASK_PRIORITY 			( tskIDLE_PRIORITY + 2 )
 #define GPS_TASK_STACK_SIZE			100
 
 static char g_GPSdataLine[GPS_DATA_LINE_BUFFER_LEN];
@@ -24,9 +23,9 @@ void GPSTask( void *pvParameters ){
 	}
 }
 
-void startGPSTask(){
+void startGPSTask(int priority){
 	initGPS();
 	initUsart1(8, 0, 1, 38400);
-	xTaskCreate( GPSTask, ( signed portCHAR * )"GPSTask", GPS_TASK_STACK_SIZE, NULL, 	GPS_TASK_PRIORITY, 	NULL );
+	xTaskCreate( GPSTask, ( signed portCHAR * )"GPSTask", GPS_TASK_STACK_SIZE, NULL, priority, NULL );
 }
 

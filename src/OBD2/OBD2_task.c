@@ -5,8 +5,19 @@
 #include "CAN.h"
 #include "OBD2.h"
 #include "printk.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "semphr.h"
 
+
+
+#define OBD2_TASK_STACK 	100
 #define OBD2_PID_TIMEOUT_MS 100
+
+void startOBD2Task(int priority){
+	xTaskCreate( OBD2Task, ( signed portCHAR * )"OBD2Task", OBD2_TASK_STACK, NULL, 	priority, NULL );
+}
 
 void OBD2Task(void *pvParameters){
 	pr_info("Start OBD2 task\r\n");

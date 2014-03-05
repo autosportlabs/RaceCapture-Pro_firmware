@@ -8,7 +8,7 @@
 void lockLua(void);
 void unlockLua(void);
 
-void startLuaTask(void);
+void startLuaTask(int priority);
 void luaTask(void *params);
 
 void *myAlloc (void *ud, void *ptr, size_t osize,size_t nsize);

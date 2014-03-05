@@ -27,7 +27,6 @@ enum writing_status {
 static FIL g_logfile;
 static xQueueHandle g_sampleRecordQueue = NULL;
 
-#define FILE_WRITER_TASK_PRIORITY				( tskIDLE_PRIORITY + 3 )
 #define FILE_WRITER_STACK_SIZE  				200
 #define SAMPLE_RECORD_QUEUE_SIZE				10
 
@@ -259,12 +258,12 @@ void fileWriterTask(void *params){
 	}
 }
 
-void startFileWriterTask(){
+void startFileWriterTask( int priority ){
 
 	g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( ChannelSample *));
 	if (NULL == g_sampleRecordQueue){
 		pr_error("Could not create sample record queue!");
 		return;
 	}
-	xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter", FILE_WRITER_STACK_SIZE, NULL, FILE_WRITER_TASK_PRIORITY, NULL );
+	xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter", FILE_WRITER_STACK_SIZE, NULL, priority, NULL );
 }

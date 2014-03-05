@@ -23,6 +23,7 @@
 #include "loggerHardware.h"
 #include "gpsTask.h"
 #include "usart.h"
+#include "gpioTasks.h"
 #include "messaging.h"
 
 //logging related tasks
@@ -65,8 +66,16 @@ static void fatalError(int type){
 	}
 }
 
-#define OBD2_TASK_STACK 	100
-#define OBD2_TASK_PRIORITY	2
+#define OBD2_TASK_PRIORITY					( tskIDLE_PRIORITY + 2 )
+#define GPS_TASK_PRIORITY 					( tskIDLE_PRIORITY + 2 )
+#define CONNECTIVITY_TASK_PRIORITY 			( tskIDLE_PRIORITY + 4 )
+#define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 4 )
+#define FILE_WRITER_TASK_PRIORITY			( tskIDLE_PRIORITY + 3 )
+#define LUA_TASK_PRIORITY					( tskIDLE_PRIORITY + 2 )
+#define USB_COMM_TASK_PRIORITY				( tskIDLE_PRIORITY + 2 )
+#define USB_CDC_TASK_PRIORITY				( tskIDLE_PRIORITY + 2 )
+#define GPIO_TASK_PRIORITY 					( tskIDLE_PRIORITY + 4 )
+
 
 int main( void )
 {
@@ -80,15 +89,15 @@ int main( void )
 	InitLoggerHardware();
 	initMessaging();
 
-	startUSBCDCTask();
-	startUSBCommTask();
-	startLuaTask();
-	startFileWriterTask();
-	startLoggerTaskEx();
-	startConnectivityTask();
-	startGPSTask();
-
-	xTaskCreate( OBD2Task, ( signed portCHAR * )"OBD2Task", OBD2_TASK_STACK, NULL, 	OBD2_TASK_PRIORITY, NULL );
+	startGPIOTasks			( GPIO_TASK_PRIORITY );
+	startUSBCDCTask			( USB_CDC_TASK_PRIORITY );
+	startUSBCommTask		( USB_COMM_TASK_PRIORITY );
+	startLuaTask			( LUA_TASK_PRIORITY );
+	startFileWriterTask		( FILE_WRITER_TASK_PRIORITY );
+	startLoggerTaskEx		( LOGGER_TASK_PRIORITY );
+	startConnectivityTask	( CONNECTIVITY_TASK_PRIORITY );
+	startGPSTask			( GPS_TASK_PRIORITY );
+	startOBD2Task			( OBD2_TASK_PRIORITY);
 
 	/* Start the scheduler.
 

@@ -15,7 +15,7 @@ typedef struct _ConnParams{
 
 portBASE_TYPE queueTelemetryRecord(LoggerMessage * sr);
 
-void startConnectivityTask();
+void startConnectivityTask(int priority);
 
 void connectivityTask(void *params);
 

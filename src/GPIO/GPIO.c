@@ -2,12 +2,12 @@
 #include "GPIO_device.h"
 
 int GPIO_init(LoggerConfig *loggerConfig){
+	GPIO_device_init_base();
 	GPIO_device_init_SD_card_IO();
 	GPIO_device_init_pushbutton();
 	for (size_t i = 0; i < CONFIG_GPIO_CHANNELS; i++){
 		GPIO_device_init_port(i, loggerConfig->GPIOConfigs[i].mode);
 	}
-	GPIO_device_init_events();
 	return 1;
 }
 

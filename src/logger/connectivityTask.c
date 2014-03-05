@@ -31,7 +31,6 @@
 #define INIT_DELAY	 	600
 #define BUFFER_SIZE 	201
 
-#define TELEMETRY_TASK_PRIORITY					( tskIDLE_PRIORITY + 4 )
 #define TELEMETRY_STACK_SIZE  					1000
 #define SAMPLE_RECORD_QUEUE_SIZE				10
 #define BAD_MESSAGE_THRESHOLD					10
@@ -82,7 +81,7 @@ portBASE_TYPE queueTelemetryRecord(LoggerMessage *msg){
 	}
 }
 
-void startConnectivityTask(){
+void startConnectivityTask(int priority){
 	g_sampleQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( LoggerMessage *));
 	if (NULL == g_sampleQueue){
 		//TODO log error
@@ -103,7 +102,7 @@ void startConnectivityTask(){
 			g_connParams.init_connection = &sim900_init_connection;
 			break;
 	}
-	xTaskCreate(connectivityTask, (signed portCHAR *) "connTask", TELEMETRY_STACK_SIZE, &g_connParams, TELEMETRY_TASK_PRIORITY, NULL );
+	xTaskCreate(connectivityTask, (signed portCHAR *) "connTask", TELEMETRY_STACK_SIZE, &g_connParams, priority, NULL );
 }
 
 void connectivityTask(void *params) {

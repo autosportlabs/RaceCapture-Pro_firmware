@@ -14,11 +14,10 @@
 
 static char lineBuffer[BUFFER_SIZE];
 
-#define USB_COMM_TASK_PRIORITY				( tskIDLE_PRIORITY + 2 )
 #define mainUSB_COMM_STACK					( 1000 )
 
-void startUSBCommTask(void){
-	xTaskCreate( onUSBCommTask,	( signed portCHAR * ) "OnUSBComm", mainUSB_COMM_STACK, NULL, USB_COMM_TASK_PRIORITY, NULL );
+void startUSBCommTask(int priority){
+	xTaskCreate( onUSBCommTask,	( signed portCHAR * ) "OnUSBComm", mainUSB_COMM_STACK, NULL, priority, NULL );
 }
 
 void onUSBCommTask(void *pvParameters) {

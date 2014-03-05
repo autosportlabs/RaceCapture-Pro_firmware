@@ -76,7 +76,7 @@ typedef struct
 
 /*-----------------------------------------------------------*/
 
-void startUSBCDCTask(void);
+void startUSBCDCTask(int priority);
 void vUSBCDCTask( void *pvParameters );
 
 int vInitUSBInterface();
