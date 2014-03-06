@@ -82,7 +82,7 @@ int GPIO_device_is_SD_card_writable(void){
 }
 
 int GPIO_device_is_button_pressed(void){
-	return (GetGPIOBits() & PIO_PUSHBUTTON_SWITCH) != 0;
+	return (GetGPIOBits() & PIO_PUSHBUTTON_SWITCH) == 0;
 }
 
 void GPIO_device_set(unsigned int port, unsigned int state){

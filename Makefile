@@ -310,6 +310,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/PWM \
 -I$(INCLUDE_DIR)/LED \
 -I$(INCLUDE_DIR)/GPIO \
+-I$(GPIO_AT91_DIR) \
 -I$(INCLUDE_DIR)/watchdog \
 -I$(INCLUDE_DIR)/memory \
 -I$(INCLUDE_DIR)/cpu \
