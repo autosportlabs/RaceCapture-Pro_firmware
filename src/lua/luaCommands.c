@@ -17,8 +17,11 @@
 
 #define LINE_BUFFER_SIZE  256
 
+static int g_interactive_mode = 0;
+
 void ExecLuaInterpreter(Serial *serial, unsigned int argc, char **argv){
 
+	g_interactive_mode = 1;
 	serial->put_s("Entering Lua Interpreter. enter 'exit' to leave");
 	put_crlf(serial);
 
@@ -56,6 +59,7 @@ void ExecLuaInterpreter(Serial *serial, unsigned int argc, char **argv){
 		}
 		unlockLua();
 	}
+	g_interactive_mode = 0;
 }
 
 //unescapes a string in place
@@ -152,5 +156,9 @@ void ReadScriptPage(Serial *serial, unsigned int argc, char **argv){
 	else{
 		put_commandError(serial, ERROR_CODE_INVALID_PARAM);
 	}
+}
+
+int in_interactive_mode(){
+	return g_interactive_mode;
 }
 

@@ -23,4 +23,5 @@ void WriteScriptPage(Serial *serial, unsigned int argc, char **argv);
 void ReadScriptPage(Serial *serial, unsigned int argc, char **argv);
 void ShowMemInfo(Serial *serial, unsigned int argc, char **argv);
 
+int in_interactive_mode();
 #endif /* LUACOMMANDS_H_ */

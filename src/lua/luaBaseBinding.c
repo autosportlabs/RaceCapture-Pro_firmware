@@ -50,8 +50,17 @@ static int printLog(lua_State *L, int addNewline){
 	if (lua_gettop(L) >= 1){
 		const char *msg = lua_tostring(L, 1);
 		int level = lua_gettop(L) >= 2 ? lua_tointeger(L, 2) : INFO;
-		printk(level, msg);
-		if (addNewline) printk(level, "\r\n");
+		if (in_interactive_mode()){
+			Serial *serial = get_command_context()->serial;
+				if (lua_gettop(L) >= 1 && serial){
+					serial->put_s(lua_tostring(L,1));
+					if (addNewline) put_crlf(serial);
+				}
+		}
+		else{
+			printk(level, msg);
+			if (addNewline) printk(level, "\r\n");
+		}
 	}
 	return 0;
 }
