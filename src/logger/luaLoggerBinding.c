@@ -11,6 +11,7 @@
 #include "ADC.h"
 #include "timer.h"
 #include "CAN.h"
+#include "OBD2.h"
 #include "PWM.h"
 #include "LED.h"
 #include "GPIO.h"
@@ -778,7 +779,15 @@ int Lua_ReceiveCANMessage(lua_State *L){
 }
 
 int Lua_QueryOBD(lua_State *L){
- return 0;
+	if (lua_gettop(L) >= 1){
+		unsigned char pid = (unsigned char)lua_tointeger(L, 1);
+		int value;
+		if (OBD2_request_PID(pid, &value, OBD2_PID_DEFAULT_TIMEOUT_MS)){
+			lua_pushnumber(L, value);
+			return 1;
+		}
+	}
+	return 0;
 }
 
 int Lua_StartLogging(lua_State *L){

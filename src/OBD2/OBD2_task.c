@@ -13,7 +13,6 @@
 
 
 #define OBD2_TASK_STACK 	100
-#define OBD2_PID_TIMEOUT_MS 100
 
 void startOBD2Task(int priority){
 	xTaskCreate( OBD2Task, ( signed portCHAR * )"OBD2Task", OBD2_TASK_STACK, NULL, 	priority, NULL );
@@ -28,7 +27,7 @@ void OBD2Task(void *pvParameters){
 			PidConfig *pidCfg = &oc->pids[i];
 			int value;
 			unsigned char pid = pidCfg->pid;
-			if (OBD2_request_PID(pid, &value, OBD2_PID_TIMEOUT_MS)){
+			if (OBD2_request_PID(pid, &value, OBD2_PID_DEFAULT_TIMEOUT_MS)){
 				OBD2_set_current_PID_value(i, value);
 				if (DEBUG_LEVEL){
 					pr_debug("read OBD2 PID ");
