@@ -45,7 +45,7 @@
 #define LOWER_SAMPLE_RATE(X,Y)				(X > Y ? X : Y)
 
 typedef struct _ChannelConfig{
-	unsigned short channeNameId;
+	unsigned short channeId;
 	unsigned short sampleRate;
 } ChannelConfig;
 

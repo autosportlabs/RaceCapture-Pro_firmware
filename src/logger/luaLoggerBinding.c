@@ -849,11 +849,10 @@ int Lua_FlashLoggerConfig(lua_State *L){
 }
 
 int Lua_AddVirtualChannel(lua_State *L){
-	if (lua_gettop(L) >= 3){
-		int nameId = lua_tointeger(L, 1);
-		unsigned short precision = lua_tonumber(L, 2);
-		unsigned short sampleRate = encodeSampleRate(lua_tonumber(L, 3));
-		int result = create_virtual_channel(nameId, precision, sampleRate);
+	if (lua_gettop(L) >= 2){
+		const char *name = lua_tostring(L, 1);
+		unsigned short sampleRate = encodeSampleRate(lua_tonumber(L, 2));
+		int result = create_virtual_channel(name, sampleRate);
 		lua_pushinteger(L, result);
 		return 1;
 	}

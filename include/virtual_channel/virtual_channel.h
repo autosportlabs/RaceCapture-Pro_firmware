@@ -13,14 +13,13 @@
 #include "loggerNotifications.h"
 
 typedef struct _VirtualChannel{
-	unsigned char precision;
 	ChannelConfig config;
 	float currentValue;
 } VirtualChannel;
 
 #define MAX_VIRTUAL_CHANNELS 10
 
-int create_virtual_channel(int channelNameId, unsigned char precision, unsigned short sampleRate);
+int create_virtual_channel(const char *name, unsigned short sampleRate);
 VirtualChannel * get_virtual_channel(size_t id);
 size_t get_virtual_channel_count();
 void set_virtual_channel_value(size_t id, float value);

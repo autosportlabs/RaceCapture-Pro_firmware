@@ -34,6 +34,8 @@ char *strncpy(char * __restrict s1, register const char * __restrict s2, size_t 
 
 int strcmp(const char *s1, const char *s2);
 
+int strcasecmp(const char *s1, const char *s2);
+
 char *strtok(char * __restrict s1, const char * __restrict s2);
 
 char *strtok_r(char * __restrict s1, const char * __restrict s2, char ** __restrict next_start);

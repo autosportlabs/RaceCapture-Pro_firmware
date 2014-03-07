@@ -2,7 +2,7 @@
 #define CHANNELMETA_H_
 #include "stddef.h"
 
-#define CHANNEL_COUNT			58
+#define CHANNEL_COUNT			59
 #define DEFAULT_LABEL_LENGTH	11
 #define DEFAULT_UNITS_LENGTH	11
 
@@ -20,7 +20,7 @@ typedef struct _Channels{
 int flash_default_channels(void);
 const Channel * get_channel(size_t id);
 size_t filter_channel_id(size_t id);
-size_t find_channel_name_id(char * name);
+size_t find_channel_id(const char * name);
 
 #define DEFAULT_GPS_POSITION_PRECISION 		6
 #define DEFAULT_GPS_RADIUS_PRECISION 		5
@@ -49,6 +49,7 @@ CHANNEL_PWM1,
 CHANNEL_PWM2,
 CHANNEL_PWM3,
 CHANNEL_PWM4,
+CHANNEL_Coolant,
 CHANNEL_EngineTemp,
 CHANNEL_FuelLevel,
 CHANNEL_OilPress,
@@ -112,6 +113,7 @@ CHANNEL_COUNT, \
 {"PWM2", "", 0}, \
 {"PWM3", "", 0}, \
 {"PWM4", "", 0}, \
+{"Coolant", "F", 0}, \
 {"EngineTemp", "F", 0}, \
 {"FuelLevel", "%", 0}, \
 {"OilPress", "PSI", 0}, \

@@ -48,7 +48,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 		ADCConfig *config = &(loggerConfig->ADCConfigs[i]);
 		if (config->cfg.sampleRate != SAMPLE_DISABLED){
 			ChannelConfig *cc = &(config->cfg);
-			sample->channelId = cc->channeNameId;
+			sample->channelId = cc->channeId;
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = i;
@@ -61,7 +61,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 		AccelConfig *config = &(loggerConfig->AccelConfigs[i]);
 		if (config->cfg.sampleRate != SAMPLE_DISABLED){
 			ChannelConfig *cc = &(config->cfg);
-			sample->channelId = cc->channeNameId;
+			sample->channelId = cc->channeId;
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = i;
@@ -74,7 +74,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 		TimerConfig *config = &(loggerConfig->TimerConfigs[i]);
 		if (config->cfg.sampleRate != SAMPLE_DISABLED){
 			ChannelConfig *cc = &(config->cfg);
-			sample->channelId = cc->channeNameId;
+			sample->channelId = cc->channeId;
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = i;
@@ -87,7 +87,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 		GPIOConfig *config = &(loggerConfig->GPIOConfigs[i]);
 		if (config->cfg.sampleRate != SAMPLE_DISABLED){
 			ChannelConfig *cc = &(config->cfg);
-			sample->channelId = cc->channeNameId;
+			sample->channelId = cc->channeId;
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = i;
@@ -100,7 +100,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 		PWMConfig *config = &(loggerConfig->PWMConfigs[i]);
 		if (config->cfg.sampleRate != SAMPLE_DISABLED){
 			ChannelConfig *cc = &(config->cfg);
-			sample->channelId = cc->channeNameId;
+			sample->channelId = cc->channeId;
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = i;
@@ -114,7 +114,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 		size_t enabledPids = obd2Config->enabledPids;
 		for (size_t i = 0; i < enabledPids; i++){
 			ChannelConfig *cc = &obd2Config->pids[i].cfg;
-			sample->channelId = cc->channeNameId;
+			sample->channelId = cc->channeId;
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = i;
@@ -127,7 +127,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 		for (size_t i = 0; i < virtualChannelCount; i++){
 			VirtualChannel *vc = get_virtual_channel(i);
 			ChannelConfig *cc = &vc->config;
-			sample->channelId = cc->channeNameId;
+			sample->channelId = cc->channeId;
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = i;
@@ -139,7 +139,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 		GPSConfig *gpsConfig = &(loggerConfig->GPSConfigs);
 		if (gpsConfig->latitudeCfg.sampleRate != SAMPLE_DISABLED){
 			ChannelConfig *cc = &(gpsConfig->latitudeCfg);
-			sample->channelId = cc->channeNameId;
+			sample->channelId = cc->channeId;
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = gps_channel_latitude;
@@ -149,7 +149,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 
 		if (gpsConfig->longitudeCfg.sampleRate != SAMPLE_DISABLED){
 			ChannelConfig *cc = &(gpsConfig->longitudeCfg);
-			sample->channelId = cc->channeNameId;
+			sample->channelId = cc->channeId;
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = gps_channel_longitude;
@@ -159,7 +159,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 
 		if (gpsConfig->speedCfg.sampleRate != SAMPLE_DISABLED){
 			ChannelConfig *cc = &(gpsConfig->speedCfg);
-			sample->channelId = cc->channeNameId;
+			sample->channelId = cc->channeId;
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = gps_channel_speed;
@@ -169,7 +169,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 
 		if (gpsConfig->timeCfg.sampleRate != SAMPLE_DISABLED){
 			ChannelConfig *cc = &(gpsConfig->timeCfg);
-			sample->channelId = cc->channeNameId;
+			sample->channelId = cc->channeId;
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = gps_channel_time;
@@ -179,7 +179,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 
 		if (gpsConfig->satellitesCfg.sampleRate != SAMPLE_DISABLED){
 			ChannelConfig *cc = &(gpsConfig->satellitesCfg);
-			sample->channelId = cc->channeNameId;
+			sample->channelId = cc->channeId;
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = gps_channel_satellites;
@@ -192,7 +192,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 		TrackConfig *trackConfig = &(loggerConfig->TrackConfigs);
 		if (trackConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED){
 			ChannelConfig *cc = &(trackConfig->lapCountCfg);
-			sample->channelId = cc->channeNameId;
+			sample->channelId = cc->channeId;
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = lap_stat_channel_lapcount;
@@ -202,7 +202,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 
 		if (trackConfig->lapTimeCfg.sampleRate != SAMPLE_DISABLED){
 			ChannelConfig *cc = &(trackConfig->lapTimeCfg);
-			sample->channelId = cc->channeNameId;
+			sample->channelId = cc->channeId;
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = lap_stat_channel_laptime;
@@ -212,7 +212,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 
 		if (trackConfig->splitTimeCfg.sampleRate != SAMPLE_DISABLED){
 			ChannelConfig *cc = &(trackConfig->splitTimeCfg);
-			sample->channelId = cc->channeNameId;
+			sample->channelId = cc->channeId;
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = lap_stat_channel_splittime;
@@ -222,7 +222,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 
 		if (trackConfig->distanceCfg.sampleRate != SAMPLE_DISABLED){
 			ChannelConfig *cc = &(trackConfig->distanceCfg);
-			sample->channelId = cc->channeNameId;
+			sample->channelId = cc->channeId;
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = lap_stat_channel_distance;
@@ -232,7 +232,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 
 		if (trackConfig->predTimeCfg.sampleRate != SAMPLE_DISABLED){
 			ChannelConfig *cc = &(trackConfig->predTimeCfg);
-			sample->channelId = cc->channeNameId;
+			sample->channelId = cc->channeId;
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = lap_stat_channel_predtime;

@@ -22,9 +22,9 @@ size_t filter_channel_id(size_t id){
 	return id;
 }
 
-size_t find_channel_id(char * name){
+size_t find_channel_id(const char * name){
 	for (size_t i = 0; i < CHANNEL_COUNT; i++){
-		if (strcmp(name, g_channels.channels[i].label) == 0) return i;
+		if (strcasecmp(name, g_channels.channels[i].label) == 0) return i;
 	}
 	return 0;
 }
