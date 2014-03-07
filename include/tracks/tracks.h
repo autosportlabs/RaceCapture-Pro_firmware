@@ -24,6 +24,7 @@ typedef struct _Tracks{
 
 int flash_default_tracks(void);
 Track * find_track(float latitude, float longitude);
+const Tracks * get_tracks();
 
 
 

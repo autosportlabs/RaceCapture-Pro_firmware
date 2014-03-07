@@ -65,7 +65,7 @@ void json_objStart(Serial *serial, const char * label){
 	serial->put_s("\":{");
 }
 
-void json_blockStartInt(Serial *serial, int label){
+void json_objStartInt(Serial *serial, int label){
 	serial->put_c('"');
 	put_int(serial, label);
 	serial->put_s("\":{");
@@ -85,9 +85,17 @@ void json_objEnd(Serial *serial, int more){
 }
 
 void json_arrayStart(Serial *serial, const char * name){
-	serial->put_c('"');
-	serial->put_s(name);
-	serial->put_s("\":[");
+	if (name != NULL){
+		serial->put_c('"');
+		serial->put_s(name);
+		serial->put_s("\":");
+	}
+	serial->put_s("[");
+}
+
+void json_arrayElementFloat(Serial *serial, float value, int precision, int more){
+	put_float(serial, value, precision);
+	if (more) serial->put_c(',');
 }
 
 void json_arrayEnd(Serial *serial, int more){

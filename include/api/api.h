@@ -44,11 +44,12 @@ void json_uint(Serial *serial, const char *name, unsigned int value, int more);
 void json_string(Serial *serial, const char *name, const char *value, int more);
 void json_float(Serial *serial, const char *name, float value, int precision, int more);
 void json_objStart(Serial *serial, const char * label);
-void json_blockStartInt(Serial *serial, int label);
+void json_objStartInt(Serial *serial, int label);
 void json_messageStart(Serial *serial);
 void json_messageEnd(Serial *serial);
 void json_objEnd(Serial *serial, int more);
 void json_arrayStart(Serial *serial, const char * name);
+void json_arrayElementFloat(Serial *serial, float value, int precision, int more);
 void json_arrayEnd(Serial *serial, int more);
 void json_sendResult(Serial *serial, const char *messageName, int resultCode);
 

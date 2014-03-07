@@ -18,3 +18,7 @@ int flash_default_tracks(void){
 	if (result == 0) pr_info("success\r\n"); else pr_info("failed\r\n");
 	return result;
 }
+
+const Tracks * get_tracks(){
+	return &g_tracks;
+}

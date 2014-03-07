@@ -15,6 +15,7 @@
 #include "loggerData.h"
 #include "loggerNotifications.h"
 #include "accelerometer.h"
+#include "tracks.h"
 #include "loggerHardware.h"
 #include "serial.h"
 #include "mem_mang.h"
@@ -314,7 +315,7 @@ static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
 	for (size_t i = startIndex; i <= endIndex; i++){
 
 		ADCConfig *cfg = &(getWorkingLoggerConfig()->ADCConfigs[i]);
-		json_blockStartInt(serial, i);
+		json_objStartInt(serial, i);
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_int(serial, "scalMod", cfg->scalingMode, 1);
 
@@ -387,7 +388,7 @@ static void sendAccelConfig(Serial *serial, size_t startIndex, size_t endIndex){
 	json_objStart(serial, "getAccelCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		AccelConfig *cfg = &(getWorkingLoggerConfig()->AccelConfigs[i]);
-		json_blockStartInt(serial, i);
+		json_objStartInt(serial, i);
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_uint(serial, "mode", cfg->mode, 1);
 		json_uint(serial, "chan", cfg->accelChannel, 1);
@@ -537,7 +538,7 @@ static void sendPwmConfig(Serial *serial, size_t startIndex, size_t endIndex){
 	json_objStart(serial, "getPwmCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		PWMConfig *cfg = &(getWorkingLoggerConfig()->PWMConfigs[i]);
-		json_blockStartInt(serial, i);
+		json_objStartInt(serial, i);
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_uint(serial, "outMode", cfg->outputMode, 1);
 		json_uint(serial, "logMode", cfg->loggingMode, 1);
@@ -614,7 +615,7 @@ static void sendGpioConfig(Serial *serial, size_t startIndex, size_t endIndex){
 	json_objStart(serial, "getGpioCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		GPIOConfig *cfg = &(getWorkingLoggerConfig()->GPIOConfigs[i]);
-		json_blockStartInt(serial, i);
+		json_objStartInt(serial, i);
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_uint(serial, "mode", cfg->mode, 0);
 		json_objEnd(serial, i != endIndex);
@@ -678,7 +679,7 @@ static void sendTimerConfig(Serial *serial, size_t startIndex, size_t endIndex){
 	json_objStart(serial, "getTimerCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		TimerConfig *cfg = &(getWorkingLoggerConfig()->TimerConfigs[i]);
-		json_blockStartInt(serial, i);
+		json_objStartInt(serial, i);
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_uint(serial, "sTimer", cfg->slowTimerEnabled, 1);
 		json_uint(serial, "mode", cfg->mode, 1);
@@ -872,5 +873,32 @@ int api_flashConfig(Serial *serial, const jsmntok_t *json){
 }
 
 int api_getTracks(Serial *serial, const jsmntok_t *json){
+	const Tracks * tracks = get_tracks();
 
+	json_messageStart(serial);
+	json_objStart(serial, "tracks");
+	json_int(serial,"size", tracks->count, 1);
+	const Track *track = tracks->tracks;
+	size_t track_count = tracks->count;
+	for (size_t track_index = 0; track_index < track_count; track_index++){
+		json_objStartInt(serial, track_index);
+		json_arrayStart(serial, "sf");
+		json_arrayElementFloat(serial, track->startFinish.latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
+		json_arrayElementFloat(serial, track->startFinish.longitude, DEFAULT_GPS_POSITION_PRECISION, 0);
+		json_arrayEnd(serial, 1);
+		json_arrayStart(serial, "sec");
+		for (size_t i = 0; i < SECTOR_COUNT; i++){
+			const GPSPoint *p = &track->sectors[i];
+			json_arrayStart(serial, NULL);
+			json_arrayElementFloat(serial, p->latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
+			json_arrayElementFloat(serial, p->longitude, DEFAULT_GPS_POSITION_PRECISION, 0);
+			json_arrayEnd(serial, i < SECTOR_COUNT - 1);
+		}
+		json_arrayEnd(serial, 0);
+		json_objEnd(serial, track_index < track_count - 1);
+	}
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
+	return API_SUCCESS_NO_RETURN;
 }
+
