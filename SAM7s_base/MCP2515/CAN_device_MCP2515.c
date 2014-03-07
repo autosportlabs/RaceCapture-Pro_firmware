@@ -101,6 +101,22 @@
 #define MCP2515_CMD_BIT_MODIFY 	0x05
 
 
+#define MCP2515_MODE_NORMAL     0x00
+#define MCP2515_MODE_SLEEP      0x20
+#define MCP2515_MODE_LOOPBACK   0x40
+#define MCP2515_MODE_LISTENONLY 0x60
+#define MCP2515_MODE_CONFIG     0x80
+#define MCP2515_MODE_POWERUP    0xE0
+#define MCP2515_MODE_MASK       0xE0
+#define MCP2515_ABORT_TX        0x10
+#define MCP2515_MODE_ONESHOT    0x08
+#define MCP2515_CLKOUT_ENABLE   0x04
+#define MCP2515_CLKOUT_DISABLE  0x00
+#define MCP2515_CLKOUT_PS1      0x00
+#define MCP2515_CLKOUT_PS2      0x01
+#define MCP2515_CLKOUT_PS4      0x02
+#define MCP2515_CLKOUT_PS8     	0x03
+
 #define SPI_CSR_NUM      1
 
 /* PCS_0 for NPCS0, PCS_1 for NPCS1 ... */
@@ -270,7 +286,7 @@ static int MCP2515_setup(){
 	for (int i=0; i< 1000000; i++){}
 	int mode = MCP2515_read_reg(MCP2515_REG_CANSTAT) >> 5;
 	if (mode == 0x04){ //0b100
-		pr_info("CAN controller reset\r\n");
+		pr_debug("CAN controller reset\r\n");
 		rc = 1;
 	}
 	else{
@@ -321,28 +337,72 @@ static int MCP2515_set_baud(int baud){
 	return 1;
 }
 
-static int MCP2515_set_normal_mode(int oneShotMode){
+static int MCP2515_set_mode(uint8_t mode){
+	MCP2515_write_reg(MCP2515_REG_CANCTRL, mode);
+	uint8_t regValue = MCP2515_read_reg(MCP2515_REG_CANCTRL);
+	if (regValue == mode){
+		pr_debug_int(mode);
+		pr_debug("=set MCP2515 mode\r\n");
+	}
+	else{
+		pr_error("CAN set mode ");
+		pr_error_int(mode);
+		pr_error(" failed; ")
+		pr_error_int(regValue);
+		pr_error(" returned\r\n");
+	}
+	return regValue == mode;
+}
 
-	//REQOP2<2:0> = 000 for normal mode
-	//ABAT = 0, do not abort pending transmission
-	//OSM = 0, not one shot
-	//CLKEN = 1, disable output clock
-	//CLKPRE = 0b11, clk/8
+static uint8_t MCP2515_get_status(){
+	return MCP2515_read_reg(MCP2515_REG_CANSTAT);
+}
 
-//	unsigned char settings = (0x02 << 5) | 0x07 | (oneShotMode << 3);
-	unsigned char settings = 0x07 | (oneShotMode << 3);
-	MCP2515_write_reg(MCP2515_REG_CANCTRL, settings);
+static int MCP2515_set_normal_mode(){
+	return  MCP2515_set_mode(MCP2515_MODE_NORMAL | MCP2515_CLKOUT_PS8) &&
+			(MCP2515_get_status() & MCP2515_MODE_MASK) == MCP2515_MODE_NORMAL;
+}
 
-	//Read mode and make sure it is normal
-	unsigned char mode = MCP2515_read_reg(MCP2515_REG_CANSTAT) >> 5;
-	if(mode != 0) return 0; else return 1;
+static void MCP2515_write_id(uint8_t reg, int extended, uint32_t id){
+
+	uint8_t id_buf[4];
+	size_t buf_len;
+
+	if(! extended)
+	{
+		unsigned short standardID = (unsigned short)id;
+		//Write standard ID registers
+		id_buf[0] = standardID >> 3;
+		id_buf[1] = standardID << 5;
+		buf_len = 2;
+	}
+	else
+	{
+		//Write extended ID registers, which use the standard ID registers
+		unsigned short val = id >> 21;
+		id_buf[0] = val;
+		val = id >> 16;
+		val = val & 0x3; // 0b00000011
+		val = val | (id >> 13 & 0xE0); //0b11100000
+		val |= 1 << MCP2515_BIT_EXIDE;
+		id_buf[1] = val;
+		val = id >> 8;
+		id_buf[2] = val;
+		val = id;
+		id_buf[3] = val;
+		buf_len = 4;
+	}
+	MCP2515_write_reg_values(reg, id_buf, buf_len);
 }
 
 int CAN_device_init(int baud){
 	AT91_CAN_SPI_init();
-	return 	MCP2515_setup() &&
+	int initSuccess = MCP2515_setup() &&
 			MCP2515_set_baud(baud) &&
-			MCP2515_set_normal_mode(0);
+			MCP2515_set_normal_mode();
+
+	pr_info(initSuccess ? "CAN init win\r\n" : "CAN init fail\r\n");
+	return initSuccess;
 }
 
 static void trace_output_msg(CAN_msg *msg){
@@ -360,34 +420,58 @@ static void trace_output_msg(CAN_msg *msg){
 	pr_trace("\r\n");
 }
 
+int CAN_device_set_mask(uint8_t id, uint8_t extended, uint32_t filter){
+	int result = 1;
+	MCP2515_set_mode(MCP2515_MODE_CONFIG);
+	switch(id){
+	case 0:
+		MCP2515_write_id(MCP2515_REG_RXM0SIDH, extended, filter);
+		break;
+	case 1:
+		MCP2515_write_id(MCP2515_REG_RXM1SIDH, extended, filter);
+		break;
+	default:
+		result = 0;
+	}
+	MCP2515_set_normal_mode();
+	return result;
+}
+
+int CAN_device_set_filter(uint8_t id, uint8_t extended, uint32_t filter){
+	int result = 1;
+	MCP2515_set_mode(MCP2515_MODE_CONFIG);
+	switch(id){
+	case 0:
+		MCP2515_write_id(MCP2515_REG_RXF0SIDH, extended, filter);
+		break;
+	case 1:
+		MCP2515_write_id(MCP2515_REG_RXF1SIDH, extended, filter);
+		break;
+	case 2:
+		MCP2515_write_id(MCP2515_REG_RXF2SIDH, extended, filter);
+		break;
+	case 3:
+		MCP2515_write_id(MCP2515_REG_RXF3SIDH, extended, filter);
+		break;
+	case 4:
+		MCP2515_write_id(MCP2515_REG_RXF4SIDH, extended, filter);
+		break;
+	case 5:
+		MCP2515_write_id(MCP2515_REG_RXF5SIDH, extended, filter);
+		break;
+	default:
+		result = 0;
+	}
+	MCP2515_set_normal_mode();
+	return result;
+}
+
+
 int CAN_device_tx_msg(CAN_msg *msg, unsigned int timeoutMs){
 	if (TRACE_LEVEL) trace_output_msg(msg);
 	unsigned int startTicks = getCurrentTicks();
 
-	if(!msg->isExtendedAddress)
-	{
-		unsigned short standardID = (short)msg->addressValue;
-		//Write standard ID registers
-		unsigned short val = standardID >> 3;
-		MCP2515_write_reg(MCP2515_REG_TXB0SIDH, val);
-		val = standardID << 5;
-		MCP2515_write_reg(MCP2515_REG_TXB0SIDL, val);
-	}
-	else
-	{
-		//Write extended ID registers, which use the standard ID registers
-		unsigned short val = msg->addressValue >> 21;
-		MCP2515_write_reg(MCP2515_REG_TXB0SIDH, val);
-		val = msg->addressValue >> 16;
-		val = val & 0x3; // 0b00000011
-		val = val | (msg->addressValue >> 13 & 0xE0); //0b11100000
-		val |= 1 << MCP2515_BIT_EXIDE;
-		MCP2515_write_reg(MCP2515_REG_TXB0SIDL, val);
-		val = msg->addressValue >> 8;
-		MCP2515_write_reg(MCP2515_REG_TXB0EID8, val);
-		val = msg->addressValue;
-		MCP2515_write_reg(MCP2515_REG_TXB0EID0, val);
-	}
+	MCP2515_write_id(MCP2515_REG_TXB0SIDH, msg->isExtendedAddress, msg->addressValue);
 
 	unsigned short msgLen = msg->dataLength & 0x0f;
 	MCP2515_write_reg(MCP2515_REG_TXB0DLC, msgLen);
