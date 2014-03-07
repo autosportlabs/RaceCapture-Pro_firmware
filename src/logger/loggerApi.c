@@ -156,13 +156,13 @@ int api_getMeta(Serial *serial, const jsmntok_t *json){
 	writeSampleMeta(serial, channelSamples, channelCount, getConnectivitySampleRateLimit(), 0);
 
 	portFree(channelSamples);
-	json_blockEnd(serial, 0);
+	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
 }
 
 void api_sendSampleRecord(Serial *serial, ChannelSample *channelSamples, size_t channelCount, unsigned int tick, int sendMeta){
 	json_messageStart(serial);
-	json_blockStart(serial, "s");
+	json_objStart(serial, "s");
 
 	json_uint(serial,"t",tick,1);
 	if (sendMeta) writeSampleMeta(serial, channelSamples, channelCount, getConnectivitySampleRateLimit(), 1);
@@ -188,8 +188,8 @@ void api_sendSampleRecord(Serial *serial, ChannelSample *channelSamples, size_t 
 	put_uint(serial, channelsBitmask);
 	json_arrayEnd(serial, 0);
 
-	json_blockEnd(serial, 0);
-	json_blockEnd(serial, 0);
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
 }
 
 static const jsmntok_t * setChannelConfig(Serial *serial, const jsmntok_t *cfg, ChannelConfig *channelCfg, setExtField_func setExtField, void *extCfg){
@@ -310,7 +310,7 @@ static void json_channelConfig(Serial *serial, ChannelConfig *cfg, int more){
 static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex){
 
 	json_messageStart(serial);
-	json_blockStart(serial, "getAnalogCfg");
+	json_objStart(serial, "getAnalogCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 
 		ADCConfig *cfg = &(getWorkingLoggerConfig()->ADCConfigs[i]);
@@ -318,7 +318,7 @@ static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_int(serial, "scalMod", cfg->scalingMode, 1);
 
-		json_blockStart(serial, "map");
+		json_objStart(serial, "map");
 		json_arrayStart(serial, "raw");
 
 		for (size_t b = 0; b < ANALOG_SCALING_BINS; b++){
@@ -332,11 +332,11 @@ static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
 			if (b < ANALOG_SCALING_BINS - 1) serial->put_c(',');
 		}
 		json_arrayEnd(serial, 0);
-		json_blockEnd(serial, 0); //map
-		json_blockEnd(serial, i != endIndex); //index
+		json_objEnd(serial, 0); //map
+		json_objEnd(serial, i != endIndex); //index
 	}
-	json_blockEnd(serial, 0);
-	json_blockEnd(serial, 0);
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
 }
 
 int api_getAnalogConfig(Serial *serial, const jsmntok_t * json){
@@ -384,7 +384,7 @@ int api_setAccelConfig(Serial *serial, const jsmntok_t *json){
 
 static void sendAccelConfig(Serial *serial, size_t startIndex, size_t endIndex){
 	json_messageStart(serial);
-	json_blockStart(serial, "getAccelCfg");
+	json_objStart(serial, "getAccelCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		AccelConfig *cfg = &(getWorkingLoggerConfig()->AccelConfigs[i]);
 		json_blockStartInt(serial, i);
@@ -392,10 +392,10 @@ static void sendAccelConfig(Serial *serial, size_t startIndex, size_t endIndex){
 		json_uint(serial, "mode", cfg->mode, 1);
 		json_uint(serial, "chan", cfg->accelChannel, 1);
 		json_uint(serial, "zeroVal", cfg->zeroValue, 0);
-		json_blockEnd(serial, i != endIndex); //index
+		json_objEnd(serial, i != endIndex); //index
 	}
-	json_blockEnd(serial, 0);
-	json_blockEnd(serial, 0);
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
 }
 
 int api_getAccelConfig(Serial *serial, const jsmntok_t *json){
@@ -445,12 +445,12 @@ static void setConfigGeneric(Serial *serial, const jsmntok_t * json, void *cfg, 
 int api_getCellConfig(Serial *serial, const jsmntok_t *json){
 	CellularConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
 	json_messageStart(serial);
-	json_blockStart(serial, "getCellCfg");
+	json_objStart(serial, "getCellCfg");
 	json_string(serial, "apnHost", cfg->apnHost, 1);
 	json_string(serial, "apnUser", cfg->apnUser, 1);
 	json_string(serial, "apnPass", cfg->apnPass, 0);
-	json_blockEnd(serial, 0);
-	json_blockEnd(serial, 0);
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
 }
 
@@ -486,11 +486,11 @@ int api_setBluetoothConfig(Serial *serial, const jsmntok_t *json){
 int api_getBluetoothConfig(Serial *serial, const jsmntok_t *json){
 	BluetoothConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
 	json_messageStart(serial);
-	json_blockStart(serial, "getBtCfg");
+	json_objStart(serial, "getBtCfg");
 	json_string(serial, "name", cfg->deviceName, 1);
 	json_string(serial, "pass", cfg->passcode, 0);
-	json_blockEnd(serial, 0);
-	json_blockEnd(serial, 0);
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
 }
 
@@ -500,7 +500,7 @@ int api_getLogfile(Serial *serial, const jsmntok_t *json){
 	serial->put_c('"');
 	read_log_to_serial(serial, 1);
 	serial->put_c('"');
-	json_blockEnd(serial,0);
+	json_objEnd(serial,0);
 	return API_SUCCESS_NO_RETURN;
 }
 
@@ -522,19 +522,19 @@ int api_setConnectivityConfig(Serial *serial, const jsmntok_t *json){
 int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json){
 	ConnectivityConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs);
 	json_messageStart(serial);
-	json_blockStart(serial, "getConnCfg");
+	json_objStart(serial, "getConnCfg");
 	json_int(serial, "sdMode", cfg->sdLoggingMode, 1);
 	json_int(serial, "connMode", cfg->connectivityMode, 1);
 	json_int(serial, "bgStream", cfg->backgroundStreaming, 0);
-	json_blockEnd(serial, 0);
-	json_blockEnd(serial, 0);
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
 }
 
 static void sendPwmConfig(Serial *serial, size_t startIndex, size_t endIndex){
 
 	json_messageStart(serial);
-	json_blockStart(serial, "getPwmCfg");
+	json_objStart(serial, "getPwmCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		PWMConfig *cfg = &(getWorkingLoggerConfig()->PWMConfigs[i]);
 		json_blockStartInt(serial, i);
@@ -544,10 +544,10 @@ static void sendPwmConfig(Serial *serial, size_t startIndex, size_t endIndex){
 		json_uint(serial, "stDutyCyc", cfg->startupDutyCycle, 1);
 		json_uint(serial, "stPeriod", cfg->startupPeriod, 1);
 		json_float(serial, "vScal", cfg->voltageScaling, DEFAULT_VOLTAGE_SCALING_PRECISION, 0);
-		json_blockEnd(serial, i != endIndex); //index
+		json_objEnd(serial, i != endIndex); //index
 	}
-	json_blockEnd(serial, 0);
-	json_blockEnd(serial, 0);
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
 }
 
 
@@ -611,16 +611,16 @@ static const jsmntok_t * setGpioExtendedField(const jsmntok_t *valueTok, const c
 
 static void sendGpioConfig(Serial *serial, size_t startIndex, size_t endIndex){
 	json_messageStart(serial);
-	json_blockStart(serial, "getGpioCfg");
+	json_objStart(serial, "getGpioCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		GPIOConfig *cfg = &(getWorkingLoggerConfig()->GPIOConfigs[i]);
 		json_blockStartInt(serial, i);
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_uint(serial, "mode", cfg->mode, 0);
-		json_blockEnd(serial, i != endIndex);
+		json_objEnd(serial, i != endIndex);
 	}
-	json_blockEnd(serial, 0);
-	json_blockEnd(serial, 0);
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
 }
 
 
@@ -675,7 +675,7 @@ static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok, const 
 
 static void sendTimerConfig(Serial *serial, size_t startIndex, size_t endIndex){
 	json_messageStart(serial);
-	json_blockStart(serial, "getTimerCfg");
+	json_objStart(serial, "getTimerCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		TimerConfig *cfg = &(getWorkingLoggerConfig()->TimerConfigs[i]);
 		json_blockStartInt(serial, i);
@@ -684,10 +684,10 @@ static void sendTimerConfig(Serial *serial, size_t startIndex, size_t endIndex){
 		json_uint(serial, "mode", cfg->mode, 1);
 		json_uint(serial, "ppRev", cfg->pulsePerRevolution, 1);
 		json_uint(serial, "timDiv", cfg->timerDivider, 0);
-		json_blockEnd(serial, i != endIndex);
+		json_objEnd(serial, i != endIndex);
 	}
-	json_blockEnd(serial, 0);
-	json_blockEnd(serial, 0);
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
 }
 
 int api_getTimerConfig(Serial *serial, const jsmntok_t *json){
@@ -723,30 +723,30 @@ int api_getGpsConfig(Serial *serial, const jsmntok_t *json){
 	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
 
 	json_messageStart(serial);
-	json_blockStart(serial, "getGpsCfg");
+	json_objStart(serial, "getGpsCfg");
 
-	json_blockStart(serial, "lat");
+	json_objStart(serial, "lat");
 	json_channelConfig(serial, &gpsCfg->latitudeCfg, 0);
-	json_blockEnd(serial, 1);
+	json_objEnd(serial, 1);
 
-	json_blockStart(serial, "long");
+	json_objStart(serial, "long");
 	json_channelConfig(serial, &gpsCfg->longitudeCfg, 0);
-	json_blockEnd(serial, 1);
+	json_objEnd(serial, 1);
 
-	json_blockStart(serial, "speed");
+	json_objStart(serial, "speed");
 	json_channelConfig(serial, &gpsCfg->speedCfg, 0);
-	json_blockEnd(serial, 1);
+	json_objEnd(serial, 1);
 
-	json_blockStart(serial, "sats");
+	json_objStart(serial, "sats");
 	json_channelConfig(serial, &gpsCfg->satellitesCfg, 0);
-	json_blockEnd(serial, 1);
+	json_objEnd(serial, 1);
 
-	json_blockStart(serial, "time");
+	json_objStart(serial, "time");
 	json_channelConfig(serial, &gpsCfg->timeCfg, 0);
-	json_blockEnd(serial, 0);
+	json_objEnd(serial, 0);
 
-	json_blockEnd(serial, 0);
-	json_blockEnd(serial, 0);
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
 }
 
@@ -774,37 +774,37 @@ int api_setGpsConfig(Serial *serial, const jsmntok_t *json){
 }
 
 static void json_gpsTarget(Serial *serial, const char *name,  GPSTargetConfig *gpsTarget, int more){
-	json_blockStart(serial, name);
+	json_objStart(serial, name);
 	json_float(serial, "lat", gpsTarget->latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
 	json_float(serial, "long", gpsTarget->longitude, DEFAULT_GPS_POSITION_PRECISION, 1);
 	json_float(serial, "rad", gpsTarget->targetRadius, DEFAULT_GPS_RADIUS_PRECISION, 0);
-	json_blockEnd(serial, more);
+	json_objEnd(serial, more);
 }
 
 int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
 	TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs);
 
 	json_messageStart(serial);
-	json_blockStart(serial, "getTrackCfg");
+	json_objStart(serial, "getTrackCfg");
 	json_gpsTarget(serial, "startFinish", &trackCfg->startFinishConfig, 1);
 	json_gpsTarget(serial, "split", &trackCfg->splitConfig, 1);
-	json_blockStart(serial, "lapCount");
+	json_objStart(serial, "lapCount");
 	json_channelConfig(serial, &trackCfg->lapCountCfg, 0);
-	json_blockEnd(serial, 1);
-	json_blockStart(serial, "lapTime");
+	json_objEnd(serial, 1);
+	json_objStart(serial, "lapTime");
 	json_channelConfig(serial, &trackCfg->lapTimeCfg, 0);
-	json_blockEnd(serial, 1);
-	json_blockStart(serial, "splitTime");
+	json_objEnd(serial, 1);
+	json_objStart(serial, "splitTime");
 	json_channelConfig(serial, &trackCfg->splitTimeCfg, 0);
-	json_blockEnd(serial, 1);
-	json_blockStart(serial, "dist");
+	json_objEnd(serial, 1);
+	json_objStart(serial, "dist");
 	json_channelConfig(serial, &trackCfg->distanceCfg, 0);
-	json_blockEnd(serial, 1);
-	json_blockStart(serial, "predTime");
+	json_objEnd(serial, 1);
+	json_objStart(serial, "predTime");
 	json_channelConfig(serial, &trackCfg->predTimeCfg, 0);
-	json_blockEnd(serial, 0);
-	json_blockEnd(serial, 0);
-	json_blockEnd(serial, 0);
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
 
 	return API_SUCCESS_NO_RETURN;
 }
@@ -869,4 +869,8 @@ int api_calibrateAccel(Serial *serial, const jsmntok_t *json){
 int api_flashConfig(Serial *serial, const jsmntok_t *json){
 	int rc = flashLoggerConfig();
 	return (rc == 0 ? 1 : rc); //success means on internal command; other errors passed through
+}
+
+int api_getTracks(Serial *serial, const jsmntok_t *json){
+
 }
