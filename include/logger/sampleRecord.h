@@ -20,9 +20,8 @@
 
 typedef struct _ChannelSample
 	{
-	unsigned short channelNameId;
+	unsigned short channelId;
 	unsigned short sampleRate;
-	unsigned char precision;
 	size_t channelIndex;
 	float (*get_sample)(int);
 	union

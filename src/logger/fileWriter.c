@@ -78,7 +78,7 @@ static int write_headers(FIL *f, ChannelSample *channelSamples, size_t sampleCou
 	for (int i = 0; i < sampleCount;i++){
 		if (SAMPLE_DISABLED != sample->sampleRate){
 			if (headerCount++ > 0) rc = FILE_WRITE(f, ",");
-			const ChannelName *field = get_channel_name(sample->channelNameId);
+			const Channel *field = get_channel(sample->channelId);
 			rc = write_quoted_string(f, field->label);
 			rc = FILE_WRITE(f, "|");
 			rc = write_quoted_string(f, field->units);
@@ -103,7 +103,7 @@ static int write_channel_samples(FIL *f, ChannelSample * channelSamples, size_t 
 
 			if (sample->intValue == NIL_SAMPLE) continue;
 
-			int precision = sample->precision;
+			int precision = get_channel(sample->channelId)->precision;
 			if (precision > 0){
 				rc = write_float(f, sample->floatValue, precision);
 			}

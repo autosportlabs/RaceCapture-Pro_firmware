@@ -134,7 +134,7 @@ static void writeSampleMeta(Serial *serial, ChannelSample *channelSamples, size_
 		if (SAMPLE_DISABLED == sample->sampleRate) continue;
 		if (sampleCount++ > 0) serial->put_c(',');
 		serial->put_c('{');
-		const ChannelName *field = get_channel_name(sample->channelNameId);
+		const Channel *field = get_channel(sample->channelId);
 		json_string(serial, "nm", field->label, 1);
 		json_string(serial, "ut", field->units, 1);
 		json_int(serial, "sr", decodeSampleRate(LOWER_SAMPLE_RATE(sample->sampleRate, sampleRateLimit)), 0);
@@ -171,9 +171,10 @@ void api_sendSampleRecord(Serial *serial, ChannelSample *channelSamples, size_t 
 	json_arrayStart(serial, "d");
 	ChannelSample *sample = channelSamples;
 	for (size_t i = 0; i < channelCount; i++){
+		const Channel *channel = get_channel(sample->channelId);
 		if (NIL_SAMPLE != sample->intValue){
 			channelsBitmask = channelsBitmask | (1 << i);
-			int precision = sample->precision;
+			int precision = channel->precision;
 			if (precision > 0){
 				put_float(serial, sample->floatValue, precision);
 			}
@@ -207,7 +208,7 @@ static const jsmntok_t * setChannelConfig(Serial *serial, const jsmntok_t *cfg, 
 			char *value = valueTok->data;
 			unescapeTextField(value);
 
-			if (NAME_EQU("nid", name)) channelCfg->channeNameId = filter_channel_name_id(modp_atoi(value));
+			if (NAME_EQU("nid", name)) channelCfg->channeNameId = filter_channel_id(modp_atoi(value));
 			else if (NAME_EQU("sr", name)) channelCfg->sampleRate = encodeSampleRate(modp_atoi(value));
 			else if (setExtField != NULL) cfg = setExtField(valueTok, name, value, extCfg);
 		}
@@ -276,8 +277,7 @@ static const jsmntok_t * setScalingRow(ADCConfig *adcCfg, const jsmntok_t *mapRo
 
 static const jsmntok_t * setAnalogExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
 	ADCConfig *adcCfg = (ADCConfig *)cfg;
-	if (NAME_EQU("prec",name)) adcCfg->loggingPrecision = modp_atoi(value);
-	else if (NAME_EQU("scalMod", name)) adcCfg->scalingMode = filterAnalogScalingMode(modp_atoi(value));
+	if (NAME_EQU("scalMod", name)) adcCfg->scalingMode = filterAnalogScalingMode(modp_atoi(value));
 	else if (NAME_EQU("linScal", name)) adcCfg->linearScaling = modp_atof(value);
 	else if (NAME_EQU("map", name)){
 		if (valueTok->type == JSMN_OBJECT) {
@@ -318,9 +318,6 @@ static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_int(serial, "scalMod", cfg->scalingMode, 1);
 
-		json_int(serial, "prec", cfg->loggingPrecision, 1);
-		json_float(serial, "linScal", cfg->linearScaling, ANALOG_SCALING_PRECISION, 1);
-
 		json_blockStart(serial, "map");
 		json_arrayStart(serial, "raw");
 
@@ -331,7 +328,7 @@ static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
 		json_arrayEnd(serial, 1);
 		json_arrayStart(serial, "scal");
 		for (size_t b = 0; b < ANALOG_SCALING_BINS; b++){
-			put_float(serial, cfg->scalingMap.scaledValues[b], ANALOG_SCALING_PRECISION);
+			put_float(serial, cfg->scalingMap.scaledValues[b], DEFAULT_ANALOG_SCALING_PRECISION);
 			if (b < ANALOG_SCALING_BINS - 1) serial->put_c(',');
 		}
 		json_arrayEnd(serial, 0);
@@ -542,12 +539,11 @@ static void sendPwmConfig(Serial *serial, size_t startIndex, size_t endIndex){
 		PWMConfig *cfg = &(getWorkingLoggerConfig()->PWMConfigs[i]);
 		json_blockStartInt(serial, i);
 		json_channelConfig(serial, &(cfg->cfg), 1);
-		json_uint(serial, "logPrec", cfg->loggingPrecision, 1);
 		json_uint(serial, "outMode", cfg->outputMode, 1);
 		json_uint(serial, "logMode", cfg->loggingMode, 1);
 		json_uint(serial, "stDutyCyc", cfg->startupDutyCycle, 1);
 		json_uint(serial, "stPeriod", cfg->startupPeriod, 1);
-		json_float(serial, "vScal", cfg->voltageScaling, DEFAULT_PWM_LOGGING_PRECISION, 0);
+		json_float(serial, "vScal", cfg->voltageScaling, DEFAULT_VOLTAGE_SCALING_PRECISION, 0);
 		json_blockEnd(serial, i != endIndex); //index
 	}
 	json_blockEnd(serial, 0);
@@ -586,7 +582,6 @@ static void getPwmConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** ch
 static const jsmntok_t * setPwmExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
 	PWMConfig *pwmCfg = (PWMConfig *)cfg;
 
-	if (NAME_EQU("logPrec", name)) pwmCfg->loggingPrecision = modp_atoi(value);
 	if (NAME_EQU("outMode", name)) pwmCfg->outputMode = filterPwmOutputMode(modp_atoi(value));
 	if (NAME_EQU("logMode", name)) pwmCfg->loggingMode = filterPwmLoggingMode(modp_atoi(value));
 	if (NAME_EQU("stDutyCyc", name)) pwmCfg->startupDutyCycle = filterPwmDutyCycle(modp_atoi(value));
@@ -667,7 +662,6 @@ static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok, const 
 	TimerConfig *timerCfg = (TimerConfig *)cfg;
 
 	int iValue = modp_atoi(value);
-	if (NAME_EQU("prec", name)) timerCfg->loggingPrecision = iValue;
 	if (NAME_EQU("sTimer", name)) timerCfg->slowTimerEnabled = (iValue != 0);
 	if (NAME_EQU("mode", name)) timerCfg->mode = filterTimerMode(iValue);
 	if (NAME_EQU("ppRev", name)) {
@@ -686,7 +680,6 @@ static void sendTimerConfig(Serial *serial, size_t startIndex, size_t endIndex){
 		TimerConfig *cfg = &(getWorkingLoggerConfig()->TimerConfigs[i]);
 		json_blockStartInt(serial, i);
 		json_channelConfig(serial, &(cfg->cfg), 1);
-		json_uint(serial, "prec", cfg->loggingPrecision, 1);
 		json_uint(serial, "sTimer", cfg->slowTimerEnabled, 1);
 		json_uint(serial, "mode", cfg->mode, 1);
 		json_uint(serial, "ppRev", cfg->pulsePerRevolution, 1);
@@ -782,9 +775,9 @@ int api_setGpsConfig(Serial *serial, const jsmntok_t *json){
 
 static void json_gpsTarget(Serial *serial, const char *name,  GPSTargetConfig *gpsTarget, int more){
 	json_blockStart(serial, name);
-	json_float(serial, "lat", gpsTarget->latitude, DEFAULT_GPS_POSITION_LOGGING_PRECISION, 1);
-	json_float(serial, "long", gpsTarget->longitude, DEFAULT_GPS_POSITION_LOGGING_PRECISION, 1);
-	json_float(serial, "rad", gpsTarget->targetRadius, DEFAULT_GPS_RADIUS_LOGGING_PRECISION, 0);
+	json_float(serial, "lat", gpsTarget->latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
+	json_float(serial, "long", gpsTarget->longitude, DEFAULT_GPS_POSITION_PRECISION, 1);
+	json_float(serial, "rad", gpsTarget->targetRadius, DEFAULT_GPS_RADIUS_PRECISION, 0);
 	json_blockEnd(serial, more);
 }
 

@@ -9,17 +9,25 @@
 typedef struct _ChannelName{
 	char label[DEFAULT_LABEL_LENGTH];
 	char units[DEFAULT_UNITS_LENGTH];
-} ChannelName;
+	unsigned char precision;
+} Channel;
 
-typedef struct _ChannelMeta{
+typedef struct _Channels{
 	size_t count;
-	ChannelName channelNames[CHANNEL_COUNT];
-} ChannelMeta;
+	Channel channels[CHANNEL_COUNT];
+} Channels;
 
 int flash_default_channels(void);
-const ChannelName * get_channel_name(size_t id);
-size_t filter_channel_name_id(size_t id);
+const Channel * get_channel(size_t id);
+size_t filter_channel_id(size_t id);
 size_t find_channel_name_id(char * name);
+
+#define DEFAULT_GPS_POSITION_PRECISION 		6
+#define DEFAULT_GPS_RADIUS_PRECISION 		5
+#define DEFAULT_VOLTAGE_SCALING_PRECISION	2
+#define DEFAULT_ANALOG_SCALING_PRECISION	2
+
+
 
 typedef enum{
 CHANNEL_Unknown = 0,
@@ -85,64 +93,64 @@ CHANNEL_Distance
 #define DEFAULT_CHANNEL_META { \
 CHANNEL_COUNT, \
 { \
-{"Unknown", ""}, \
-{"Analog1", ""}, \
-{"Analog2", ""}, \
-{"Analog3", ""}, \
-{"Analog4", ""}, \
-{"Analog5", ""}, \
-{"Analog6", ""}, \
-{"Analog7", ""}, \
-{"Analog8", ""}, \
-{"Freq1", ""}, \
-{"Freq2", ""}, \
-{"Freq3", ""}, \
-{"GPIO1", ""}, \
-{"GPIO2", ""}, \
-{"GPIO3", ""}, \
-{"PWM1", ""}, \
-{"PWM2", ""}, \
-{"PWM3", ""}, \
-{"PWM4", ""}, \
-{"EngineTemp", "F"}, \
-{"FuelLevel", "%"}, \
-{"OilPress", "PSI"}, \
-{"OilTemp", "F"}, \
-{"AFR", "AFR"}, \
-{"IAT", "F"}, \
-{"MAP", "kPa"}, \
-{"Boost", "PSI"}, \
-{"EGT", "F"}, \
-{"TPS", "%"}, \
-{"Battery", "Volts"}, \
-{"FuelPress", "PSI"}, \
-{"Injector", "ms"}, \
-{"RPM", "RPM"}, \
-{"Wheel", "RPM"}, \
-{"Gear", "Count"}, \
-{"Steering", "degrees"}, \
-{"Brake", "PSI"}, \
-{"LF_Height", "mm"}, \
-{"RF_Height", "mm"}, \
-{"LR_Height", "mm"}, \
-{"RR_Height", "mm"}, \
-{"AccelX", "G"}, \
-{"AccelY", "G"}, \
-{"AccelZ", "G"}, \
-{"Yaw", "Deg/sec"}, \
-{"Pitch", "Deg/sec"}, \
-{"Roll", "Deg/sec"}, \
-{"GPSSats", "Count"}, \
-{"Time", "Time"}, \
-{"Latitude", "Degrees"}, \
-{"Longitude", "Degrees"}, \
-{"Speed", "MPH"}, \
-{"SectorTime", "Time"}, \
-{"SplitTime", "Time"}, \
-{"LapTime", "Time"}, \
-{"PredTime", "Time"}, \
-{"LapCount", "Count"}, \
-{"Distance", "Miles"} \
+{"Unknown", "", 0}, \
+{"Analog1", "", 0}, \
+{"Analog2", "", 0}, \
+{"Analog3", "", 0}, \
+{"Analog4", "", 0}, \
+{"Analog5", "", 0}, \
+{"Analog6", "", 0}, \
+{"Analog7", "", 0}, \
+{"Analog8", "", 0}, \
+{"Freq1", "", 0}, \
+{"Freq2", "", 0}, \
+{"Freq3", "", 0}, \
+{"GPIO1", "", 0}, \
+{"GPIO2", "", 0}, \
+{"GPIO3", "", 0}, \
+{"PWM1", "", 0}, \
+{"PWM2", "", 0}, \
+{"PWM3", "", 0}, \
+{"PWM4", "", 0}, \
+{"EngineTemp", "F", 0}, \
+{"FuelLevel", "%", 0}, \
+{"OilPress", "PSI", 0}, \
+{"OilTemp", "F", 0}, \
+{"AFR", "AFR", 2}, \
+{"IAT", "F", 0}, \
+{"MAP", "kPa", 0}, \
+{"Boost", "PSI", 1}, \
+{"EGT", "F", 0}, \
+{"TPS", "%", 0}, \
+{"Battery", "Volts", 2}, \
+{"FuelPress", "PSI", 0}, \
+{"Injector", "ms", 0}, \
+{"RPM", "RPM", 0}, \
+{"Wheel", "RPM", 0}, \
+{"Gear", "Count", 0}, \
+{"Steering", "degrees", 0}, \
+{"Brake", "PSI", 0}, \
+{"LF_Height", "mm", 0}, \
+{"RF_Height", "mm", 0}, \
+{"LR_Height", "mm", 0}, \
+{"RR_Height", "mm", 0}, \
+{"AccelX", "G", 2}, \
+{"AccelY", "G", 2}, \
+{"AccelZ", "G", 2}, \
+{"Yaw", "Deg/sec", 0}, \
+{"Pitch", "Deg/sec", 0}, \
+{"Roll", "Deg/sec", 0}, \
+{"GPSSats", "Count", 0}, \
+{"Time", "Time", 6}, \
+{"Latitude", "Degrees", 6}, \
+{"Longitude", "Degrees", 6}, \
+{"Speed", "MPH", 2}, \
+{"SectorTime", "Time", 3}, \
+{"SplitTime", "Time", 3}, \
+{"LapTime", "Time", 3}, \
+{"PredTime", "Time", 3}, \
+{"LapCount", "Count", 0}, \
+{"Distance", "Miles", 3} \
 } \
 }
 
