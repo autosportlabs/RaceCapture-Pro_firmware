@@ -22,6 +22,8 @@ typedef struct _Tracks{
 	Track tracks[TRACKS_COUNT];
 } Tracks;
 
+int flash_tracks(const Tracks *source, size_t rawSize);
+int update_track(const Track *track, size_t index, int mode);
 int flash_default_tracks(void);
 Track * find_track(float latitude, float longitude);
 const Tracks * get_tracks();
