@@ -877,10 +877,10 @@ int api_getTracks(Serial *serial, const jsmntok_t *json){
 
 	json_messageStart(serial);
 	json_objStart(serial, "tracks");
-	json_int(serial,"size", tracks->count, 1);
-	const Track *track = tracks->tracks;
 	size_t track_count = tracks->count;
+	json_int(serial,"size", track_count, 1);
 	for (size_t track_index = 0; track_index < track_count; track_index++){
+		const Track *track = tracks->tracks + track_index;
 		json_objStartInt(serial, track_index);
 		json_arrayStart(serial, "sf");
 		json_arrayElementFloat(serial, track->startFinish.latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
@@ -902,3 +902,23 @@ int api_getTracks(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS_NO_RETURN;
 }
 
+int api_getChannels(Serial *serial, const jsmntok_t *json){
+
+	const Channels *channelsInfo = get_channels();
+
+	json_messageStart(serial);
+	json_objStart(serial, "channels");
+	size_t channels_count = channelsInfo->count;
+	json_int(serial, "size", channels_count, 1);
+	for (size_t channel_index = 0; channel_index < channels_count; channel_index++){
+		const Channel *channel = channelsInfo->channels + channel_index;
+		json_objStartInt(serial, channel_index);
+		json_string(serial, "nm", channel->label, 1);
+		json_string(serial, "ut", channel->units, 1);
+		json_int(serial, "prec", channel->precision, 0);
+		json_objEnd(serial, channel_index < channels_count - 1);
+	}
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
+	return API_SUCCESS_NO_RETURN;
+}

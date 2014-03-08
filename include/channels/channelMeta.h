@@ -19,6 +19,7 @@ typedef struct _Channels{
 
 int flash_default_channels(void);
 const Channel * get_channel(size_t id);
+const Channels * get_channels();
 size_t filter_channel_id(size_t id);
 size_t find_channel_id(const char * name);
 

@@ -44,7 +44,8 @@
 {"setTrackCfg", api_setTrackConfig}, \
 {"calAccel", api_calibrateAccel}, \
 {"getLogfile", api_getLogfile}, \
-{"getTracks", api_getTracks}
+{"getTracks", api_getTracks}, \
+{"getChannels", api_getChannels}
 
 
 //commands
@@ -75,6 +76,8 @@ int api_calibrateAccel(Serial *serial, const jsmntok_t *json);
 int api_flashConfig(Serial *serial, const jsmntok_t *json);
 int api_getLogfile(Serial *serial, const jsmntok_t *json);
 int api_getTracks(Serial *serial, const jsmntok_t *json);
+int api_getChannels(Serial *serial, const jsmntok_t *json);
+
 
 //messages
 void api_sendLogStart(Serial *serial);

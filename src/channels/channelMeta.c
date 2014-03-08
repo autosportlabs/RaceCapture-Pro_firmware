@@ -12,6 +12,10 @@ static const Channels g_channels = DEFAULT_CHANNEL_META;
 
 static const Channels g_defaultChannelMeta = DEFAULT_CHANNEL_META;
 
+const Channels * get_channels(){
+	return &g_channels;
+}
+
 const Channel * get_channel(size_t id){
 	if (id >= CHANNEL_COUNT) id = 0;
 	return &g_channels.channels[id];
