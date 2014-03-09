@@ -5,3 +5,8 @@ main.elf
 main.map
 main.sym
 .dep/
+RaceCapturePro_Firmware
+test/rcptest
+*.bin
+*.elf
+Race*.zip
