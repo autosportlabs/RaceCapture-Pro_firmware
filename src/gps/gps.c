@@ -235,11 +235,11 @@ static void parseRMC(char *data){
 
 }
 
-void resetDistance(){
+void resetGpsDistance(){
 	g_distance = 0;
 }
 
-float getDistance(){
+float getGpsDistance(){
 	return g_distance;
 }
 
@@ -472,7 +472,7 @@ void onLocationUpdated(){
 			int lapDetected = processStartFinish(startFinishCfg);
 
 			if (lapDetected){
-				resetDistance();
+				resetGpsDistance();
 				startFinishCrossed(gp, utcTime);
 			} else {
 				addGpsSample(gp, utcTime);

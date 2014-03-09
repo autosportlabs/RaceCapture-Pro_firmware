@@ -16,7 +16,6 @@ int Lua_GetAnalogRaw(lua_State *L);
 
 int Lua_GetRPM(lua_State *L);
 int Lua_GetPeriodMs(lua_State *L);
-int Lua_GetPeriodUsec(lua_State *L);
 int Lua_GetFrequency(lua_State *L);
 int Lua_GetTimerRaw(lua_State *L);
 int Lua_ResetTimerCount(lua_State *L);
@@ -29,12 +28,12 @@ int Lua_SetGPIO(lua_State *L);
 int Lua_ReadSerialLine(lua_State *L);
 int Lua_WriteSerial(lua_State *L);
 
-int Lua_GetGPSLongitude(lua_State *L);
-int Lua_GetGPSLatitude(lua_State *L);
+int Lua_GetGPSPosition(lua_State *L);
 int Lua_GetGPSSpeed(lua_State *L);
 int Lua_GetGPSQuality(lua_State *L);
 int Lua_GetGPSTime(lua_State *L);
 int Lua_GetLapTime(lua_State *L);
+int Lua_GetGPSDistance(lua_State *L);
 int Lua_GetLapCount(lua_State *L);
 int Lua_GetGPSSecondsSinceMidnight(lua_State *L);
 int Lua_GetGPSAtStartFinish(lua_State *L);
@@ -45,10 +44,7 @@ int Lua_ReadAccelerometer(lua_State *L);
 int Lua_ReadAccelerometerRaw(lua_State *L);
 
 int Lua_SetPWMDutyCycle(lua_State *L);
-int Lua_SetPWMDutyCycleRaw(lua_State *L);
-
 int Lua_SetPWMPeriod(lua_State *L);
-int Lua_SetPWMPeriodRaw(lua_State *L);
 
 int Lua_SetAnalogOut(lua_State *L);
 
@@ -69,9 +65,6 @@ int Lua_ReadOBD2(lua_State *L);
 
 int Lua_SetAccelSampleRate(lua_State *L);
 int Lua_GetAccelSampleRate(lua_State *L);
-
-int Lua_SetAccelZeroValue(lua_State *L);
-int Lua_GetAccelZeroValue(lua_State *L);
 
 int Lua_CalibrateAccelZero(lua_State *L);
 

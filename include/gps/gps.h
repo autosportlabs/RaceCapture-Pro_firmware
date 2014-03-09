@@ -12,9 +12,9 @@ int checksumValid(const char *gpsData, size_t len);
 
 void processGPSData(char *gpsData, size_t len);
 
-void resetDistance();
+void resetGpsDistance();
 
-float getDistance();
+float getGpsDistance();
 
 void resetLapCount();
 

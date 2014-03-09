@@ -38,18 +38,15 @@ void registerLuaLoggerBindings(){
 	lockLua();
 	//Read / control inputs and outputs
 	lua_registerlight(L,"getGpio",Lua_GetGPIO);
-	lua_registerlight(L,"getButton",Lua_GetButton);
 	lua_registerlight(L,"setGpio",Lua_SetGPIO);
+	lua_registerlight(L,"getButton",Lua_GetButton);
 
 	lua_registerlight(L,"setPWMDutyCycle",Lua_SetPWMDutyCycle);
-	lua_registerlight(L,"setPWMDutyCycleRaw",Lua_SetPWMDutyCycleRaw);
 	lua_registerlight(L,"setPwmPeriod",Lua_SetPWMPeriod);
-	lua_registerlight(L,"setPwmPeriodRaw",Lua_SetPWMPeriodRaw);
 	lua_registerlight(L,"setAnalogOut",Lua_SetAnalogOut);
 
 	lua_registerlight(L,"getTimerRpm",Lua_GetRPM);
 	lua_registerlight(L,"getTimerPeriodMs",Lua_GetPeriodMs);
-	lua_registerlight(L,"getTimerPeriodUsec",Lua_GetPeriodUsec);
 	lua_registerlight(L,"getTimerFrequency",Lua_GetFrequency);
 	lua_registerlight(L,"getTimerRaw",Lua_GetTimerRaw);
 	lua_registerlight(L,"resetTimerCount",Lua_ResetTimerCount);
@@ -58,18 +55,21 @@ void registerLuaLoggerBindings(){
 	lua_registerlight(L,"getAnalog",Lua_GetAnalog);
 	lua_registerlight(L,"getAnalogRaw",Lua_GetAnalogRaw);
 
-	lua_registerlight(L,"readSerial", Lua_ReadSerialLine);
-	lua_registerlight(L,"writeSerial", Lua_WriteSerial);
+	lua_registerlight(L,"getAccel",Lua_ReadAccelerometer);
+	lua_registerlight(L,"getAccelRaw",Lua_ReadAccelerometerRaw);
 
-	lua_registerlight(L,"getGpsLatitude",Lua_GetGPSLatitude);
-	lua_registerlight(L,"getGpsLongitude", Lua_GetGPSLongitude);
+	lua_registerlight(L,"getGpsPos", Lua_GetGPSPosition);
 	lua_registerlight(L,"getGpsSpeed",Lua_GetGPSSpeed);
 	lua_registerlight(L,"getGpsQuality", Lua_GetGPSQuality);
 	lua_registerlight(L,"getGpsTime", Lua_GetGPSTime);
+	lua_registerlight(L,"getGpsDist", Lua_GetGPSDistance);
 	lua_registerlight(L,"getLapCount", Lua_GetLapCount);
 	lua_registerlight(L,"getLapTime", Lua_GetLapTime);
 	lua_registerlight(L,"getGpsSec", Lua_GetGPSSecondsSinceMidnight);
 	lua_registerlight(L,"getAtStartFinish",Lua_GetGPSAtStartFinish);
+
+	lua_registerlight(L,"getTimeDiff", Lua_GetTimeDiff);
+	lua_registerlight(L,"getTimeSince", Lua_GetTimeSince);
 
 	lua_registerlight(L, "initCAN", Lua_InitCAN);
 	lua_registerlight(L, "txCAN", Lua_SendCANMessage);
@@ -78,16 +78,13 @@ void registerLuaLoggerBindings(){
 	lua_registerlight(L, "setCANmask", Lua_SetCANMask);
 	lua_registerlight(L, "readOBD2", Lua_ReadOBD2);
 
-	lua_registerlight(L,"getTimeDiff", Lua_GetTimeDiff);
-	lua_registerlight(L,"getTimeSince", Lua_GetTimeSince);
-					
-	lua_registerlight(L,"getAccel",Lua_ReadAccelerometer);
-	lua_registerlight(L,"getAccelRaw",Lua_ReadAccelerometerRaw);
-	
 	lua_registerlight(L,"startLogging",Lua_StartLogging);
 	lua_registerlight(L,"stopLogging",Lua_StopLogging);
 
 	lua_registerlight(L,"setLed",Lua_SetLED);
+
+	lua_registerlight(L,"readSerial", Lua_ReadSerialLine);
+	lua_registerlight(L,"writeSerial", Lua_WriteSerial);
 
 	//Logger configuration editing
 	lua_registerlight(L,"flashLoggerConfig", Lua_FlashLoggerConfig);
@@ -100,9 +97,6 @@ void registerLuaLoggerBindings(){
 
 	lua_registerlight(L,"setPwmSampleRate", Lua_SetPWMSampleRate);
 	lua_registerlight(L,"getPwmSampleRate", Lua_GetPWMSampleRate);
-
-	lua_registerlight(L,"setGpsStartFinish",Lua_SetGPSStartFinish);
-	lua_registerlight(L,"getGpsStartFinish",Lua_GetGPSStartFinish);
 
 	lua_registerlight(L,"setGpsPositionSampleRate", Lua_SetGPSPositionSampleRate);
 	lua_registerlight(L,"getGpsPositionSampleRate", Lua_GetGPSPositionSampleRate);
@@ -128,10 +122,10 @@ void registerLuaLoggerBindings(){
 	lua_registerlight(L,"setAccelSampleRate",Lua_SetAccelSampleRate);
 	lua_registerlight(L,"getAccelSampleRate",Lua_GetAccelSampleRate);
 	
-	lua_registerlight(L,"setAccelZeroValue",Lua_SetAccelZeroValue);
-	lua_registerlight(L,"getAccelZeroValue",Lua_GetAccelZeroValue);
-
 	lua_registerlight(L,"calibrateAccelZero",Lua_CalibrateAccelZero);
+
+	lua_registerlight(L,"setGpsStartFinish",Lua_SetGPSStartFinish);
+	lua_registerlight(L,"getGpsStartFinish",Lua_GetGPSStartFinish);
 	
 	lua_registerlight(L,"setBgStream", Lua_SetBackgroundStreaming);
 	lua_registerlight(L,"getBgStream", Lua_GetBackgroundStreaming);
@@ -189,24 +183,6 @@ int Lua_GetAccelSampleRate(lua_State *L){
 		if (NULL !=c ){
 			lua_pushnumber(L,c->cfg.sampleRate);
 			return 1;	
-		}
-	}
-	return 0;	
-}
-int Lua_SetAccelZeroValue(lua_State *L){
-	if (lua_gettop(L) >= 2){
-		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->zeroValue = filterAccelRawValue(lua_tointeger(L,2));
-	}
-	return 0;
-}
-
-int Lua_GetAccelZeroValue(lua_State *L){
-	if (lua_gettop(L) >=2 ){
-		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
-		if (NULL != c){
-			lua_pushinteger(L,c->zeroValue);
-			return 1;
 		}
 	}
 	return 0;	
@@ -479,16 +455,6 @@ int Lua_GetPeriodMs(lua_State *L){
 	return result;
 }
 
-int Lua_GetPeriodUsec(lua_State *L){
-	unsigned int timerPeriod, scaling;
-	int result = 0;
-	if (luaToTimerValues(L, &timerPeriod, &scaling)){
-		lua_pushinteger(L, TIMER_PERIOD_TO_USEC(timerPeriod, scaling));
-		result = 1;
-	}
-	return result;
-}
-
 int Lua_GetFrequency(lua_State *L){
 	unsigned int timerPeriod, scaling;
 	int result = 0;
@@ -590,15 +556,10 @@ int Lua_SetGPIO(lua_State *L){
 	return 0;
 }
 
-int Lua_GetGPSLongitude(lua_State *L){
-	lua_pushnumber(L,getLongitude());
-	return 1;
-}
-
-
-int Lua_GetGPSLatitude(lua_State *L){
-	lua_pushnumber(L,getLatitude());
-	return 1;
+int Lua_GetGPSPosition(lua_State *L){
+	lua_pushnumber(L, getLatitude());
+	lua_pushnumber(L, getLongitude());
+	return 2;
 }
 
 int Lua_GetGPSSpeed(lua_State *L){
@@ -613,6 +574,11 @@ int Lua_GetGPSQuality(lua_State *L){
 
 int Lua_GetGPSTime(lua_State *L){
 	lua_pushnumber(L,getUTCTime());
+	return 1;
+}
+
+int Lua_GetGPSDistance(lua_State *L){
+	lua_pushnumber(L, getGpsDistance());
 	return 1;
 }
 
@@ -679,11 +645,8 @@ int Lua_ReadAccelerometerRaw(lua_State *L){
 	return 0;
 }
 
-int Lua_SetPWMDutyCycle(lua_State *L){
-	return Lua_SetPWMDutyCycleRaw(L);
-}
 
-int Lua_SetPWMDutyCycleRaw(lua_State *L){
+int Lua_SetPWMDutyCycle(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		unsigned int dutyCycleRaw = (unsigned int)lua_tointeger(L,2);
@@ -695,10 +658,6 @@ int Lua_SetPWMDutyCycleRaw(lua_State *L){
 }
 
 int Lua_SetPWMPeriod(lua_State *L){
-	return Lua_SetPWMPeriodRaw(L);
-}
-
-int Lua_SetPWMPeriodRaw(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		unsigned int periodRaw = (unsigned int)lua_tointeger(L,2);

@@ -397,7 +397,7 @@ float get_lap_stat_sample(int channelId){
 			value = getLastSplitTime();
 			break;
 		case lap_stat_channel_distance:
-			value = getDistance();
+			value = getGpsDistance();
 			break;
 		case lap_stat_channel_predtime:
 		{
