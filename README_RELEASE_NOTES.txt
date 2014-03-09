@@ -1,60 +1,39 @@
-How to program RaceCapture firmware:
-
-
-Windows / Linux:
-
-http://www.atmel.com/tools/ATMELSAM-BAIN-SYSTEMPROGRAMMER.aspx
-
-There are alternate Linux tool available via 3rd parties.
-
-The latest instructions can be found here:
-http://autosportlabs.net/RaceCapture/Pro_firmware_upgrade
-
-Instructions:
+================================
+================================
+Instructions and Release Notes
+================================
+================================
 
 **Save your configuration
 
 WARNING: Updating firmware restores the default configuration on RaceCapture/Pro
 Be sure to save your configuration using the Race Analyzer software.
 
-Download the new firmware and firmware update utility from Downloads section
-You will need both the flasher utility as well as the firmware image you wish to use.
+================================
+Windows
+================================
 
-Place these downloaded files in a known directory on your computer. for example, c:\firmware
+Flash the firmware by double-clicking the flashRCP.bat file in Windows Explorer and follow the instructions.
 
-**Connect RaceCapture/Pro in Bootloader Mode
+================================
+Linux
+================================
+While holding down the button on RaceCapture/Pro, plug the unit into USB. You should see 3 green LEDs light up.
 
-while holding down the front panel button connect RaceCapture/Pro to your computer using the USB cable.
-You should observe the power LED, and the two rightmost green LEDs illuminated steady. You can now release the front panel button.
-RaceCapture/Pro is now in bootloader mode
+Now flash the firmware by executing the flasher application at the command line:
 
-**Install flasher device driver
-If this is your first time installing new firmware, you will need to install the device drivers for the flasher utility. The drivers are included with the firmware update utility zip file. Download Here
-Install the bootloader drivers by running at the command line:
-c:\firmware>bootloader_drivers.exe
-Answer yes to the all of the prompts before proceeding.
+#flasher RaceCapturePro-X.X.X.elf
 
-**Important Notes
-RaceCapture/Pro must be connected to the computer in bootloader mode when the drivers are installed. See previous step.
-You won't have to do this again the next time you load new firmware
-
-**Open a command prompt
-Open a command prompt and navigate to the directory where you placed the downloaded files.
-e.g. for Windows:
-cd c:\firmware
-
-**Issue firmware flash command
-At the command prompt, issue the command flasher RaceCapturePro-X.X.X.elf where X.X.X represents the firmware version. Example:
-c:\firmware>flasher RaceCapturePro-1.1.6.elf
-
+================================
+Flashing process
+================================
 The flasher application should find the RaceCapture/Pro device and then start flashing new firmware. The red front panel LED on RaceCapture/Pro will flash while firmware is written.
 
 Once the firmware completes flashing, RaceCapture/Pro will reset and run normally with the default configuration.
 
-
-
-
-Firmware Changelog:
+================================
+Firmware Changelog
+================================
 
 ===1.2.7===
 RPM/Timer input value now goes to zero when input signal goes away (i.e. when internal timer counter overflows)

@@ -31,9 +31,12 @@
 #
 
 include version.mk
-RELEASE_DIR ?= .
-RELEASE_NAME_BIN = RaceCapturePro-$(MAJOR).$(MINOR).$(BUGFIX).bin
-RELEASE_NAME_ELF = RaceCapturePro-$(MAJOR).$(MINOR).$(BUGFIX).elf
+RCP_RELEASE_DIR ?= .
+RELEASE_NAME = RaceCapturePro-$(MAJOR).$(MINOR).$(BUGFIX)
+RELEASE_NAME_ZIP = $(RELEASE_NAME).zip
+RELEASE_NAME_BIN = $(RELEASE_NAME).bin
+RELEASE_NAME_ELF = $(RELEASE_NAME).elf
+RCP_INSTALL_DIR = RaceCapturePro_Firmware
 
 # MCU name and submodel
 MCU      = arm7tdmi
@@ -619,10 +622,15 @@ build elf hex bin lss sym clean clean_list program
 
 
 release : clean all
-	mv main.bin $(RELEASE_DIR)/$(RELEASE_NAME_BIN)
-	mv main.elf $(RELEASE_DIR)/$(RELEASE_NAME_ELF)
-	cp RELEASE_NOTES.TXT $(RELEASE_DIR)
-
+	rm -rf $(RELEASE_NAME_ZIP)
+	cp main.elf $(RCP_RELEASE_DIR)/$(RELEASE_NAME_ELF)
+	rm -rf $(RCP_INSTALL_DIR)
+	mkdir $(RCP_INSTALL_DIR)
+	cp installer/* $(RCP_INSTALL_DIR)
+	cp $(RELEASE_NAME_ELF) $(RCP_INSTALL_DIR)
+	cp README_RELEASE_NOTES.txt $(RCP_INSTALL_DIR)
+	zip -r $(RELEASE_NAME_ZIP) $(RCP_INSTALL_DIR)
+	cp $(RELEASE_NAME_ZIP) $(RCP_RELEASE_DIR) 
 
 # **********************************************************************************************
 #                            FLASH PROGRAMMING      (using OpenOCD 0.5.0 and Olimex ARM-USB-OCD)
