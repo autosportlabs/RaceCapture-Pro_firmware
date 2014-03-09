@@ -101,11 +101,11 @@
 				<useDefaultCommand>false</useDefaultCommand>
 				<runAllBuilders>true</runAllBuilders>
 			</target>
-			<target name="clean" path="test" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+			<target name="clean" path="test" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 				<buildCommand>make</buildCommand>
 				<buildArguments/>
 				<buildTarget>clean</buildTarget>
-				<stopOnError>true</stopOnError>
+				<stopOnError>false</stopOnError>
 				<useDefaultCommand>true</useDefaultCommand>
 				<runAllBuilders>true</runAllBuilders>
 			</target>
