@@ -29,6 +29,8 @@ extern xSemaphoreHandle g_xLoggerStart;
 extern int g_loggingShouldRun;
 
 #define TEMP_BUFFER_LEN 200
+#define DEFAULT_CAN_TIMEOUT 	100
+
 
 char g_tempBuffer[TEMP_BUFFER_LEN];
 
@@ -745,7 +747,9 @@ int Lua_SendCANMessage(lua_State *L){
 }
 
 int Lua_ReceiveCANMessage(lua_State *L){
-	size_t timeout = 1000;
+	size_t timeout = DEFAULT_CAN_TIMEOUT;
+	if (lua_gettop(L) >= 1) timeout = lua_tointeger(L, 1);
+
 	CAN_msg msg;
 	int rc = CAN_rx_msg(&msg,timeout);
 	if (rc == 1){
