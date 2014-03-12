@@ -1,0 +1,38 @@
+#:kivy 1.0.4
+<RaceAnalyzerApp>:
+
+<AnalogChannel>:
+    BoxLayout:
+        orientation: 'horizontal'            
+        GridLayout:
+            size_hint: (0.25, 1.0)
+            cols: 2
+            Label:
+                text: 'Raw'
+            CheckBox:
+                group: 'scalingType'
+            Label:
+                text: 'Simple'
+            CheckBox:
+                group: 'scalingType'
+            Label:
+                text: 'Mapped'
+            CheckBox:
+                group: 'scalingType'
+        Graph:
+            id: graph
+            size_hint: (0.75, 1.0)
+            xlabel: 'Volts'
+            ylabel: 'Scaled'
+            x_ticks_minor: 1.25
+            x_ticks_major: 25
+            y_grid_label: True
+            x_grid_label: True
+            padding: 5
+            x_grid: True
+            y_grid: True
+            xmin: 0
+            xmax: 5
+            ymin: -100
+            ymax: 100
+    
