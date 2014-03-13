@@ -17,15 +17,24 @@ class AnalogChannel(BoxLayout):
         super(AnalogChannel, self).__init__(**kwargs)
 
 
+
+#    	for child in self.children[2].children:
+ #   		print(child)
+
+  #      graph = self.children[0].children[0]
+        plot = MeshLinePlot(color=[1, 0, 0, 1])
+        plot.points = [[0,0],[5,10]]
+     #   graph.add_plot(plot)
+
     
 class RaceAnalyzerApp(App):
 
     def build(self):
 
-	accordion = Accordion(orientation='vertical', size_hint=(None, None), size=(500, 50 * 30))
+	accordion = Accordion(orientation='vertical', size_hint=(None, None), size=(500, 60 * 8))
 
         # add button into that grid
-        for i in range(30):
+        for i in range(8):
 		channel = AccordionItem(title='Analog ' + str(i + 1))
 		editor = AnalogChannel()
 		channel.add_widget(editor)
