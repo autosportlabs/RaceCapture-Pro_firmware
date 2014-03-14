@@ -16,11 +16,10 @@ class AnalogScaler(Graph):
         # make sure we aren't overriding any important functionality
         super(AnalogScaler, self).__init__(**kwargs)
 
-  #      graph = self.children[0].children[0]
- #       plot = MeshLinePlot(color=[1, 0, 0, 1])
-  #      plot.points = [[0,0],[5,10]]
-     #   graph.add_plot(plot)
-
+        plot = MeshLinePlot(color=[0, 1, 0, 1])
+        plot.points = [[0,-100],[5,100]]
+        self.add_plot(plot)
+        
 
 class AnalogChannel(BoxLayout):
     def __init__(self, **kwargs):
@@ -28,21 +27,11 @@ class AnalogChannel(BoxLayout):
         super(AnalogChannel, self).__init__(**kwargs)
 
     
-
-
-    	
-
-  #      graph = self.children[0].children[0]
-        plot = MeshLinePlot(color=[1, 0, 0, 1])
-        plot.points = [[0,0],[5,10]]
-     #   graph.add_plot(plot)
-
-    
 class RaceAnalyzerApp(App):
 
     def build(self):
 
-	accordion = Accordion(orientation='vertical', size_hint=(None, None), size=(500, 60 * 8))
+	accordion = Accordion(orientation='vertical', size_hint=(None, None), size=(500, 70 * 8))
 
         # add button into that grid
         for i in range(8):

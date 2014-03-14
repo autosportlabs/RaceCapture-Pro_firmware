@@ -21,6 +21,8 @@
 
 <AnalogChannel>:
 	orientation: 'horizontal'            
+    padding: [5,5,5,5]
+	
 	GridLayout:
 	    size_hint: (0.25, 1.0)
 	    cols: 2
@@ -36,5 +38,47 @@
 	    	text: 'Mapped'
 	    CheckBox:
 	    	group: 'scalingType'
-    AnalogScaler:
-    
+    BoxLayout:
+        orientation: 'vertical'
+        AnalogScaler:
+            size_hint: (1.0, 0.6)
+        GridLayout:
+            cols: 6
+            size_hint: (1.0, 0.4)
+            Label:
+                text: ''
+            Label:
+                text: '1'
+            Label:
+                text: '2'
+            Label:
+                text: '3'
+            Label:
+                text: '4'
+            Label:
+                text: '5'
+            Label:
+                text: 'Volts'
+            TextInput:
+                text: '0.00'
+            TextInput:
+                text: '1.25'
+            TextInput:
+                text: '2.50'
+            TextInput:
+                text: '3.75'
+            TextInput:
+                text: '5.00'
+            Label:
+                text: 'Scaled'
+            TextInput:
+                text: '0.00'
+            TextInput:
+                text: '1.25'
+            TextInput:
+                text: '2.50'
+            TextInput:
+                text: '3.75'
+            TextInput:
+                text: '5.00'
+                
