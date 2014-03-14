@@ -11,15 +11,26 @@ from kivy.uix.label import Label
 from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.garden.graph import Graph, MeshLinePlot
 
+class AnalogScaler(Graph):
+    def __init__(self, **kwargs):
+        # make sure we aren't overriding any important functionality
+        super(AnalogScaler, self).__init__(**kwargs)
+
+  #      graph = self.children[0].children[0]
+ #       plot = MeshLinePlot(color=[1, 0, 0, 1])
+  #      plot.points = [[0,0],[5,10]]
+     #   graph.add_plot(plot)
+
+
 class AnalogChannel(BoxLayout):
     def __init__(self, **kwargs):
         # make sure we aren't overriding any important functionality
         super(AnalogChannel, self).__init__(**kwargs)
 
+    
 
 
-#    	for child in self.children[2].children:
- #   		print(child)
+    	
 
   #      graph = self.children[0].children[0]
         plot = MeshLinePlot(color=[1, 0, 0, 1])
