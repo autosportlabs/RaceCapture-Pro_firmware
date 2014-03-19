@@ -40,7 +40,7 @@ class GPIOChannelsView(BoxLayout):
 class AccelGyroChannelsView(BoxLayout):
     pass
 
-class PulseAnalogOutputChannelsView(BoxLayout):
+class AnalogPulseOutputChannelsView(BoxLayout):
     pass
 
 class AnalogChannelsView(BoxLayout):
@@ -101,7 +101,7 @@ class RaceAnalyzerApp(App):
         attach_node('Pulse Inputs', n, PulseChannelsView())
         attach_node('Digital Input/Outputs', n, GPIOChannelsView())
         attach_node('Accelerometer / Gyro', n, AccelGyroChannelsView())
-        attach_node('Analog / Pulse Outputs', n, PulseAnalogOutputChannelsView())
+        attach_node('Analog / Pulse Outputs', n, AnalogPulseOutputChannelsView())
         n = create_tree('Telemetry')
         attach_node('Cellular Telemetry', n, PulseChannelsView())
         attach_node('Bluetooth Link', n, PulseChannelsView())
