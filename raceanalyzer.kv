@@ -1,6 +1,13 @@
 #:kivy 1.0.4
 <RaceAnalyzerApp>:
 
+<SampleRateSelectorView>:
+    BoxLayout:
+        Label:
+            text: 'Sample Rate'
+        Spinner:
+            values: ('Disabled', '1 Hz', '5 Hz', '10 Hz', '25 Hz', '50 Hz', '100 Hz')
+
 <SplashView>:
     Label:
         text: 'Welcome to RaceCapture!'
@@ -8,9 +15,31 @@
 <AnalogChannelsView>:
 
 <GPSChannelsView>:
+    spacing: 20
+    orientation: 'vertical'
+    SampleRateSelectorView:
+        size_hint: (1.0,0.1)
+    GridLayout:
+        size_hint: (1.0,0.4)
+        cols: 2
+        Label:
+            text: 'Position'
+        CheckBox:
+        Label:
+            text: 'Speed'
+        CheckBox:
+        Label:
+            text: 'Distance'
+        CheckBox:
+        Label:
+            text: 'Time of Day'
+        CheckBox:
+        Label:
+            text: 'Satellites'
+        CheckBox:
     Label:
-        text:'GPS Channel Configuration'
-
+        size_hint: (1.0, 1.0)
+        
 <PulseChannelsView>:
     Label:
         text:'Pulse Input Channel Configuration'

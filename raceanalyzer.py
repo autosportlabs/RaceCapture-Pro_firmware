@@ -28,6 +28,9 @@ class AnalogChannel(BoxLayout):
         # make sure we aren't overriding any important functionality
         super(AnalogChannel, self).__init__(**kwargs)
 
+class SampleRateSelectorView(BoxLayout):
+    pass
+
 class SplashView(BoxLayout):
     pass
 
