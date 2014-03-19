@@ -1,19 +1,47 @@
 #:kivy 1.0.4
+
+[VSeparator@Widget]:
+    size_hint_x: None
+    width: 10
+    canvas:
+        Color:
+            rgba: .8, .8, .8, .3
+        Rectangle:
+            size: 1, self.height
+            pos: self.center_x, self.y
+
+[HSeparator@Label]:
+    size_hint_y: None
+    height: max(dp(45), self.texture_size[1] + dp(10))
+    text: ctx.text if 'text' in ctx else ''
+    text_size: self.width, None
+    valign: 'middle'
+    halign: 'center'
+    canvas.before:
+        Color:
+            rgba: .2, .2, .2, .8
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
 <RaceAnalyzerApp>:
+
+<SampleRateSpinner>:
+    Spinner:
+        values: ('Disabled', '1 Hz', '5 Hz', '10 Hz', '25 Hz', '50 Hz', '100 Hz')
 
 <SampleRateSelectorView>:
     BoxLayout:
         Label:
             text: 'Sample Rate'
-        Spinner:
-            values: ('Disabled', '1 Hz', '5 Hz', '10 Hz', '25 Hz', '50 Hz', '100 Hz')
+        SampleRateSpinner:
 
 <SplashView>:
     Label:
         text: 'Welcome to RaceCapture!'
 
 <AnalogChannelsView>:
-
+  
 <GPSChannelsView>:
     spacing: 20
     orientation: 'vertical'
@@ -40,6 +68,50 @@
     Label:
         size_hint: (1.0, 1.0)
         
+<TrackConfigView>:
+    spacing: 20
+    orientation:  'vertical'
+    HSeparator:
+        text: 'Start/Finish Line'
+    GridLayout:
+        size_hints: (1.0,0.1)
+        cols: 3
+        Label:
+            text: 'Target Latitude / Longitude'
+        TextInput:
+            multiline: False
+        TextInput:
+            multiline: False
+        Label:
+            text: 'Target Radius'
+        TextInput:
+        Label:
+            text: 'Degrees'
+    HSeparator:
+        text: 'Channels'
+    GridLayout:
+        size_hints:(1.0,0.5)
+        cols: 2
+        Label:
+            text: 'Current Predicted Time'
+        SampleRateSpinner:
+        Label:
+            text: 'Last Lap Time'
+        SampleRateSpinner:
+        Label:
+            text: 'Split Time'
+        SampleRateSpinner:
+        Label:
+            text: 'Lap Count'
+        SampleRateSpinner:
+    Label:
+        size_hints:(1.0,1.0)
+        text:   'stuff'
+            
+
+   
+    
+    
 <PulseChannelsView>:
     Label:
         text:'Pulse Input Channel Configuration'
@@ -72,8 +144,6 @@
     xmax: 5
     ymin: -100
     ymax: 100
-
-
 
 <AnalogChannel>:
 	orientation: 'horizontal'            

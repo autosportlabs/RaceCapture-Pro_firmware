@@ -28,6 +28,9 @@ class AnalogChannel(BoxLayout):
         # make sure we aren't overriding any important functionality
         super(AnalogChannel, self).__init__(**kwargs)
 
+class SampleRateSpinner(BoxLayout):
+    pass
+
 class SampleRateSelectorView(BoxLayout):
     pass
 
@@ -35,6 +38,9 @@ class SplashView(BoxLayout):
     pass
 
 class GPSChannelsView(BoxLayout):
+    pass
+
+class TrackConfigView(BoxLayout):
     pass
     
 class GPIOChannelsView(BoxLayout):
@@ -100,6 +106,7 @@ class RaceAnalyzerApp(App):
         tree.bind(selected_node=self.on_select_node)
         n = create_tree('Channels')
         attach_node('GPS', n, GPSChannelsView())
+        attach_node('Track Channels', n, TrackConfigView())
         attach_node('Analog Inputs', n, AnalogChannelsView())
         attach_node('Pulse Inputs', n, PulseChannelsView())
         attach_node('Digital Input/Outputs', n, GPIOChannelsView())
