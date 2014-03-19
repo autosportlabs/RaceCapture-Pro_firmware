@@ -10,6 +10,8 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.garden.graph import Graph, MeshLinePlot
+from kivy.uix.treeview import TreeView, TreeViewLabel
+
 
 class AnalogScaler(Graph):
     def __init__(self, **kwargs):
@@ -26,25 +28,95 @@ class AnalogChannel(BoxLayout):
         # make sure we aren't overriding any important functionality
         super(AnalogChannel, self).__init__(**kwargs)
 
+class SplashView(BoxLayout):
+    pass
+
+class GPSChannelsView(BoxLayout):
+    pass
+    
+class GPIOChannelsView(BoxLayout):
+    pass
+
+class AccelGyroChannelsView(BoxLayout):
+    pass
+
+class PulseAnalogOutputChannelsView(BoxLayout):
+    pass
+
+class AnalogChannelsView(BoxLayout):
+    def __init__(self, **kwargs):
+        super(AnalogChannelsView, self).__init__(**kwargs)
+        print('init!')
+        accordion = Accordion(orientation='vertical', size_hint=(None, None), size=(500, 70 * 8))
+    
+        # add button into that grid
+        for i in range(8):
+            channel = AccordionItem(title='Analog ' + str(i + 1))
+            editor = AnalogChannel()
+            channel.add_widget(editor)
+            accordion.add_widget(channel)
+		
+    
+        #create a scroll view, with a size < size of the grid
+        sv = ScrollView(size_hint=(1.0,1.0), pos_hint={'center_x': .5, 'center_y': .5}, do_scroll_x=False)
+        sv = ScrollView(size_hint=(1.0,1.0), do_scroll_x=False)
+        sv.add_widget(accordion)
+        self.add_widget(sv)
+        
+class PulseChannelsView(BoxLayout):
+    pass
+
+class LinkedTreeViewLabel(TreeViewLabel):
+    view = None
     
 class RaceAnalyzerApp(App):
 
+    def on_select_node(self, instance, value):
+        # ensure that any keyboard is released
+        self.content.get_parent_window().release_keyboard()
+
+        try:
+            self.content.clear_widgets()
+            self.content.add_widget(value.view)
+        except Exception, e:
+            print e
+
+
     def build(self):
 
-	accordion = Accordion(orientation='vertical', size_hint=(None, None), size=(500, 70 * 8))
+        tree = TreeView(size_hint=(None, 1), width=200, hide_root=True, indent_level=0)
 
-        # add button into that grid
-        for i in range(8):
-		channel = AccordionItem(title='Analog ' + str(i + 1))
-		editor = AnalogChannel()
-		channel.add_widget(editor)
-		accordion.add_widget(channel)
-		
+        def create_tree(text):
+            return tree.add_node(LinkedTreeViewLabel(text=text, is_open=True, no_selection=True))
 
-        # create a scroll view, with a size < size of the grid
-        root = ScrollView(size_hint=(None, None), size=(500, 320), pos_hint={'center_x': .5, 'center_y': .5}, do_scroll_x=False)
-        root.add_widget(accordion)
+        def attach_node(text, n, view):
+            label = LinkedTreeViewLabel(text=text)
+            label.view = view
+            tree.add_node(label, n)
 
+        tree.bind(selected_node=self.on_select_node)
+        n = create_tree('Channels')
+        attach_node('GPS', n, GPSChannelsView())
+        attach_node('Analog Inputs', n, AnalogChannelsView())
+        attach_node('Pulse Inputs', n, PulseChannelsView())
+        attach_node('Digital Input/Outputs', n, GPIOChannelsView())
+        attach_node('Accelerometer / Gyro', n, AccelGyroChannelsView())
+        attach_node('Analog / Pulse Outputs', n, PulseAnalogOutputChannelsView())
+        n = create_tree('Telemetry')
+        attach_node('Cellular Telemetry', n, PulseChannelsView())
+        attach_node('Bluetooth Link', n, PulseChannelsView())
+        n = create_tree('Scripting / Logging')
+        attach_node('Lua Script', n, PulseChannelsView())
+
+
+        content = SplashView()
+
+        root = BoxLayout(orientation='horizontal', padding=20, spacing=20)
+        root.add_widget(tree)
+        root.add_widget(content)
+
+        self.content = content
+        self.tree = tree        
         return root
 
 if __name__ == '__main__':

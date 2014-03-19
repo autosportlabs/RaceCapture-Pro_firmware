@@ -1,6 +1,32 @@
 #:kivy 1.0.4
 <RaceAnalyzerApp>:
 
+<SplashView>:
+    Label:
+        text: 'Welcome to RaceCapture!'
+
+<AnalogChannelsView>:
+
+<GPSChannelsView>:
+    Label:
+        text:'GPS Channel Configuration'
+
+<PulseChannelsView>:
+    Label:
+        text:'Pulse Input Channel Configuration'
+
+<GPIOChannelsView>:
+    Label:
+        text:'Digital Input/Output Channel Configuration'
+
+<AccelGyroChannelsView>:
+    Label:
+        text:'Accelerometer / Gyro Channel Configuration'
+
+<AnalogPulseOutputChannelsView>:
+    Label:
+        text:'Pulse / Analog Output Channel Configuration'
+
 <AnalogScaler>:
     id: graph
     size_hint: (0.75, 1.0)
@@ -17,6 +43,7 @@
     xmax: 5
     ymin: -100
     ymax: 100
+
 
 
 <AnalogChannel>:
