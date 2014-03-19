@@ -1,5 +1,6 @@
 #:kivy 1.0.4
 
+
 [VSeparator@Widget]:
     size_hint_x: None
     width: 10
@@ -74,8 +75,10 @@
     HSeparator:
         text: 'Start/Finish Line'
     GridLayout:
-        size_hints: (1.0,0.1)
+        size_hints:(None,0.3)
         cols: 3
+        padding: [20,20]
+        spacing: [20,20]
         Label:
             text: 'Target Latitude / Longitude'
         TextInput:
@@ -87,10 +90,15 @@
         TextInput:
         Label:
             text: 'Degrees'
+            halign: 'left'
+            text_size: (150, None)
+    VerticalSpacer:
+        size_hints:(None,0.4)
     HSeparator:
         text: 'Channels'
     GridLayout:
-        size_hints:(1.0,0.5)
+        spacing: [3,3]
+        size_hints:(None,0.3)
         cols: 2
         Label:
             text: 'Current Predicted Time'
@@ -104,10 +112,6 @@
         Label:
             text: 'Lap Count'
         SampleRateSpinner:
-    Label:
-        size_hints:(1.0,1.0)
-        text:   'stuff'
-            
 
    
     

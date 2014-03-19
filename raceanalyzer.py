@@ -12,6 +12,9 @@ from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.garden.graph import Graph, MeshLinePlot
 from kivy.uix.treeview import TreeView, TreeViewLabel
 
+from spacer import *
+from boundedlabel import BoundedLabel
+
 
 class AnalogScaler(Graph):
     def __init__(self, **kwargs):
@@ -118,16 +121,22 @@ class RaceAnalyzerApp(App):
         n = create_tree('Scripting / Logging')
         attach_node('Lua Script', n, PulseChannelsView())
 
-
         content = SplashView()
 
-        root = BoxLayout(orientation='horizontal', padding=20, spacing=20)
-        root.add_widget(tree)
-        root.add_widget(content)
+        main = BoxLayout(orientation='horizontal', 
+                            padding=20, spacing=20, size=(1024,576), 
+                            size_hint=(None, None), pos_hint={'center_x': .5, 'center_y': .5})
 
+        main.add_widget(tree)
+        main.add_widget(content)
+
+        
+#        root = FloatLayout()
+ #       root.add_widget(main)
         self.content = content
         self.tree = tree        
-        return root
+        return main     
+  #      return root
 
 if __name__ == '__main__':
 
