@@ -228,17 +228,27 @@
     BoxLayout:
         orientation: 'horizontal'
         BoxLayout: 
+            padding: [5, 5]
             size_hint: (1.0,1.0)
             orientation: 'vertical'
+            HSeparator:
+                text: 'Configuration'
             ChannelNameSelectorView:
             SampleRateSelectorView:
         BoxLayout:
-            size_hint: (1.0,0.5)
-            orientation: 'horizontal'
+            padding: [5, 5]
+            orientation: 'vertical'
+            HSeparator:
+                text: 'Options'
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint: (1.0,0.5)
+                Label:
+                    text: 'Mode'
+                Spinner:
+                    values: ['Input','Output']
             Label:
-                text: 'Mode'
-            Spinner:
-                values: ['Input','Output']
+                size_hint: (None, 0.5)
 
 <AccelGyroChannelsView>:
     Label:

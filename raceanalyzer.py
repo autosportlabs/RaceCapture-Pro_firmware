@@ -74,7 +74,7 @@ class TrackConfigView(BoxLayout):
 class GPIOChannelsView(BoxLayout):
     def __init__(self, **kwargs):
         super(GPIOChannelsView, self).__init__(**kwargs)
-        accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=80 * 3)
+        accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=100 * 3)
     
         # add button into that grid
         for i in range(3):
