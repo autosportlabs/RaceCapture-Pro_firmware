@@ -38,6 +38,10 @@ class GPIOChannel(BoxLayout):
     def __init__(self, **kwargs):
         super(GPIOChannel, self).__init__(**kwargs)
 
+class PulseChannel(BoxLayout):
+    def __init__(self, **kwargs):
+        super(PulseChannel, self).__init__(**kwargs)
+
 class ChannelNameSpinner(Spinner):
     def __init__(self, **kwargs):
         super(ChannelNameSpinner, self).__init__(**kwargs)
@@ -108,7 +112,6 @@ class AnalogChannelsView(BoxLayout):
             editor = AnalogChannel()
             channel.add_widget(editor)
             accordion.add_widget(channel)
-		
     
         #create a scroll view, with a size < size of the grid
         sv = ScrollView(size_hint=(1.0,1.0), do_scroll_x=False)
@@ -116,7 +119,21 @@ class AnalogChannelsView(BoxLayout):
         self.add_widget(sv)
         
 class PulseChannelsView(BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        super(PulseChannelsView, self).__init__(**kwargs)
+        accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=110 * 3)
+    
+        # add button into that grid
+        for i in range(3):
+            channel = AccordionItem(title='Pulse Input ' + str(i + 1))
+            editor = PulseChannel()
+            channel.add_widget(editor)
+            accordion.add_widget(channel)
+    
+        #create a scroll view, with a size < size of the grid
+        sv = ScrollView(size_hint=(1.0,1.0), do_scroll_x=False)
+        sv.add_widget(accordion)
+        self.add_widget(sv)
 
 class LinkedTreeViewLabel(TreeViewLabel):
     view = None

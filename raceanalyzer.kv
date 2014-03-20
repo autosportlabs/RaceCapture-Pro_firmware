@@ -178,12 +178,52 @@
             Label:
                 text: 'Engine Oil Temp (C)'
             SampleRateSpinner:
-    
-<PulseChannelsView>:
-    Label:
-        text:'Pulse Input Channel Configuration'
 
 <GPIOChannelsView>:
+
+<PulseChannelsView>:
+
+<PulseChannel>:
+    BoxLayout:
+        orientation: 'horizontal'
+        BoxLayout: 
+            padding: [5, 5]
+#            size_hint: (1.0,1.0)
+            orientation: 'vertical'
+            HSeparator:
+                text: 'Channel Configuration'
+            ChannelNameSelectorView:
+            SampleRateSelectorView:
+            Label:
+                size_hint: (None, 0.4)
+        BoxLayout:
+            padding: [5, 5]
+            orientation: 'vertical'
+            HSeparator:
+                text: 'Channel Options'
+            BoxLayout:
+                padding: [2, 2]
+                orientation: 'horizontal'
+                Label:
+                    text: 'Channel Operation Mode'
+                Spinner:
+                    values: ['RPM','Frequency', 'Duration (ms)']
+            BoxLayout:
+                padding: [2, 2]
+                orientation: 'horizontal'
+                Label:
+                    text: 'Clock Divider'
+                Spinner:
+                    values: ['Clock/128','Clock/64']
+            BoxLayout:
+                padding: [2, 2]
+                orientation: 'horizontal'
+                Label:
+                    text: 'Pulse per Revolution/\nTeeth per Wheel'
+                Spinner:
+                    values: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32']             
+
+
 
 <GPIOChannel>:
     BoxLayout:
