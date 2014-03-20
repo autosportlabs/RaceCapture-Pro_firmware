@@ -13,7 +13,7 @@
 
 [HSeparator@Label]:
     size_hint_y: None
-    height: max(dp(45), self.texture_size[1] + dp(10))
+    height: max(dp(40), self.texture_size[1] + dp(10))
     text: ctx.text if 'text' in ctx else ''
     text_size: self.width, None
     valign: 'middle'
@@ -27,12 +27,18 @@
 
 <RaceAnalyzerApp>:
 
-<SampleRateSpinner>:
-    Spinner:
-        values: ('Disabled', '1 Hz', '5 Hz', '10 Hz', '25 Hz', '50 Hz', '100 Hz')
+<ChannelNameSelectorView>:
+    BoxLayout:
+        padding:[2,2]
+        orientation: 'horizontal'
+        Label:
+            text: 'Channel Name'
+        ChannelNameSpinner:
 
 <SampleRateSelectorView>:
     BoxLayout:
+        padding:[2,2]
+        orientation: 'horizontal'
         Label:
             text: 'Sample Rate'
         SampleRateSpinner:
@@ -68,61 +74,132 @@
         CheckBox:
     Label:
         size_hint: (1.0, 1.0)
+
+<TargetConfigView>:
+    cols: 3
+    padding: [10,10]
+    spacing: [10,10]
+    Label:
+        text: 'Target Latitude / Longitude'
+    TextInput:
+        multiline: False
+    TextInput:
+        multiline: False
+    Label:
+        text: 'Target Radius'
+    TextInput:
+    Label:
+        text: 'Degrees'
+        halign: 'left'
+        text_size: (150, None)
         
 <TrackConfigView>:
-    spacing: 20
     orientation:  'vertical'
     HSeparator:
-        text: 'Start/Finish Line'
-    GridLayout:
-        size_hints:(None,0.3)
-        cols: 3
-        padding: [20,20]
-        spacing: [20,20]
-        Label:
-            text: 'Target Latitude / Longitude'
-        TextInput:
-            multiline: False
-        TextInput:
-            multiline: False
-        Label:
-            text: 'Target Radius'
-        TextInput:
-        Label:
-            text: 'Degrees'
-            halign: 'left'
-            text_size: (150, None)
-    VerticalSpacer:
-        size_hints:(None,0.4)
+        text: 'Start/Finish Point'
+    TargetConfigView:
+    HSeparator:
+        text: 'Split Point'
+    TargetConfigView:
     HSeparator:
         text: 'Channels'
-    GridLayout:
-        spacing: [3,3]
-        size_hints:(None,0.3)
-        cols: 2
-        Label:
-            text: 'Current Predicted Time'
-        SampleRateSpinner:
-        Label:
-            text: 'Last Lap Time'
-        SampleRateSpinner:
-        Label:
-            text: 'Split Time'
-        SampleRateSpinner:
-        Label:
-            text: 'Lap Count'
-        SampleRateSpinner:
-
+    BoxLayout:
+        padding: [5,5]
+        orientation: 'vertical'
+        GridLayout:
+            spacing: [3,3]
+            cols: 2
+            Label:
+                text: 'Current Predicted Time'
+            SampleRateSpinner:
+            Label:
+                text: 'Last Lap Time'
+            SampleRateSpinner:
+            Label:
+                text: 'Split Time'
+            SampleRateSpinner:
+            Label:
+                text: 'Lap Count'
+            SampleRateSpinner:
+    Label:
+        size_hints:(None,0.1)
    
-    
+<CANChannelsView>:
+    Label:
+        text: 'CAN channels'
+
+<OBD2ChannelsView>:
+    orientation: 'vertical'
+    padding: [2,2]
+    HSeparator:
+        padding: [10,10]
+        text: 'OBD2 Channels'
+    ScrollView:
+        id: scrlobd2
+        do_scroll_x:False
+        GridLayout:
+            padding: [20,20]
+            spacing: [10,10]
+            height: max(self.minimum_height, scrlobd2.height)
+            cols: 2
+            Label:
+                text: 'Engine Load'
+            SampleRateSpinner:
+            Label:
+                text: 'Coolant Temperature (C)'
+            SampleRateSpinner:
+            Label:
+                text: 'Fuel Pressure (KPa gauge)'
+            SampleRateSpinner:
+            Label:
+                text: 'Intake Manifold Pressure (KPa absolute)'
+            SampleRateSpinner:
+            Label:
+                text: 'RPM'
+            SampleRateSpinner:
+            Label:
+                text: 'Vehicle Speed (km/h)'
+            SampleRateSpinner:
+            Label:
+                text: 'Ignition Advance (degrees)'
+            SampleRateSpinner:
+            Label:
+                text: 'Intake Air Temperature (C)'
+            SampleRateSpinner:
+            Label:
+                text: 'MAF Airflow Rate (gm / sec)'
+            SampleRateSpinner:
+            Label:
+                text: 'Throttle Position (%)'
+            SampleRateSpinner:
+            Label:
+                text: 'Fuel Level (%)'
+            SampleRateSpinner:
+            Label:
+                text: 'Engine Oil Temp (C)'
+            SampleRateSpinner:
     
 <PulseChannelsView>:
     Label:
         text:'Pulse Input Channel Configuration'
 
 <GPIOChannelsView>:
-    Label:
-        text:'Digital Input/Output Channel Configuration'
+
+<GPIOChannel>:
+    BoxLayout:
+        orientation: 'horizontal'
+        BoxLayout: 
+            size_hint: (1.0,1.0)
+            orientation: 'vertical'
+            ChannelNameSelectorView:
+            SampleRateSelectorView:
+        BoxLayout:
+            size_hint: (1.0,0.5)
+            orientation: 'horizontal'
+            Label:
+                text: 'Mode'
+            Spinner:
+                values: ['Input','Output']
 
 <AccelGyroChannelsView>:
     Label:
@@ -150,26 +227,41 @@
     ymax: 100
 
 <AnalogChannel>:
+    padding: [5,5]
 	orientation: 'horizontal'            
-    padding: [5,5,5,5]
-	
-	GridLayout:
-	    size_hint: (0.25, 1.0)
-	    cols: 2
-	    Label:
-    		text: 'Raw'
-	    CheckBox:
-	    	group: 'scalingType'
-	    Label:
-	    	text: 'Simple'
-	    CheckBox:
-	    	group: 'scalingType'
-	    Label:
-	    	text: 'Mapped'
-	    CheckBox:
-	    	group: 'scalingType'
+	BoxLayout:
+        orientation: 'vertical'
+        padding: [0,0,2,0]
+        spacing: [2,2]
+        HSeparator:
+            text: 'Configuration'
+        ChannelNameSelectorView:
+            size_hint: (1.0,0.3)
+        SampleRateSelectorView:
+            size_hint: (1.0,0.3)
+        HSeparator:
+            text: 'Mode'
+	    GridLayout:
+	        size_hint: (1.0, 1.0)
+	        cols: 2
+	        Label:
+        		text: 'Raw (0 - 1023)'
+	        CheckBox:
+	        	group: 'scalingType'
+	        Label:
+	        	text: 'Simple'
+	        CheckBox:
+	        	group: 'scalingType'
+	        Label:
+	        	text: 'Mapped'
+	        CheckBox:
+	        	group: 'scalingType'
+    VSeparator:
     BoxLayout:
         orientation: 'vertical'
+        padding: [2,0,0,0]
+        HSeparator:
+            text: 'Calibration'
         AnalogScaler:
             size_hint: (1.0, 0.6)
         GridLayout:

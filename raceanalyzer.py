@@ -1,3 +1,8 @@
+import kivy
+kivy.require('1.8.0')
+from kivy.config import Config
+Config.set('graphics', 'width', '1024')
+Config.set('graphics', 'height', '576')
 from kivy.app import App, Builder
 from kivy.graphics import Color, Rectangle
 from kivy.uix.floatlayout import FloatLayout
@@ -18,7 +23,6 @@ from boundedlabel import BoundedLabel
 
 class AnalogScaler(Graph):
     def __init__(self, **kwargs):
-        # make sure we aren't overriding any important functionality
         super(AnalogScaler, self).__init__(**kwargs)
 
         plot = MeshLinePlot(color=[0, 1, 0, 1])
@@ -28,13 +32,27 @@ class AnalogScaler(Graph):
 
 class AnalogChannel(BoxLayout):
     def __init__(self, **kwargs):
-        # make sure we aren't overriding any important functionality
         super(AnalogChannel, self).__init__(**kwargs)
 
-class SampleRateSpinner(BoxLayout):
-    pass
+class GPIOChannel(BoxLayout):
+    def __init__(self, **kwargs):
+        super(GPIOChannel, self).__init__(**kwargs)
+
+class ChannelNameSpinner(Spinner):
+    def __init__(self, **kwargs):
+        super(ChannelNameSpinner, self).__init__(**kwargs)
+        self.values = ["OilTemp", "Battery", "AFR"]
+
+class SampleRateSpinner(Spinner):
+    def __init__(self, **kwargs):
+        super(SampleRateSpinner, self).__init__(**kwargs)
+        self.values = ['Disabled', '1 Hz', '5 Hz', '10 Hz', '25 Hz', '50 Hz', '100 Hz']
+
 
 class SampleRateSelectorView(BoxLayout):
+    pass
+
+class ChannelNameSelectorView(BoxLayout):
     pass
 
 class SplashView(BoxLayout):
@@ -43,11 +61,29 @@ class SplashView(BoxLayout):
 class GPSChannelsView(BoxLayout):
     pass
 
+class TargetConfigView(GridLayout):
+    pass
+
 class TrackConfigView(BoxLayout):
     pass
     
 class GPIOChannelsView(BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        super(GPIOChannelsView, self).__init__(**kwargs)
+        accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=80 * 3)
+    
+        # add button into that grid
+        for i in range(3):
+            channel = AccordionItem(title='Digital Input/Output ' + str(i + 1))
+            editor = GPIOChannel()
+            channel.add_widget(editor)
+            accordion.add_widget(channel)
+    
+        #create a scroll view, with a size < size of the grid
+        sv = ScrollView(size_hint=(1.0,1.0), do_scroll_x=False)
+        sv.add_widget(accordion)
+        self.add_widget(sv)
+    
 
 class AccelGyroChannelsView(BoxLayout):
     pass
@@ -55,11 +91,16 @@ class AccelGyroChannelsView(BoxLayout):
 class AnalogPulseOutputChannelsView(BoxLayout):
     pass
 
+class CANChannelsView(BoxLayout):
+    pass
+
+class OBD2ChannelsView(BoxLayout):
+    pass
+
 class AnalogChannelsView(BoxLayout):
     def __init__(self, **kwargs):
         super(AnalogChannelsView, self).__init__(**kwargs)
-        print('init!')
-        accordion = Accordion(orientation='vertical', size_hint=(None, None), size=(500, 70 * 8))
+        accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=80 * 8)
     
         # add button into that grid
         for i in range(8):
@@ -70,7 +111,6 @@ class AnalogChannelsView(BoxLayout):
 		
     
         #create a scroll view, with a size < size of the grid
-        sv = ScrollView(size_hint=(1.0,1.0), pos_hint={'center_x': .5, 'center_y': .5}, do_scroll_x=False)
         sv = ScrollView(size_hint=(1.0,1.0), do_scroll_x=False)
         sv.add_widget(accordion)
         self.add_widget(sv)
@@ -104,6 +144,7 @@ class RaceAnalyzerApp(App):
         def attach_node(text, n, view):
             label = LinkedTreeViewLabel(text=text)
             label.view = view
+            label.color_selected =   [1.0,0,0,1]
             tree.add_node(label, n)
 
         tree.bind(selected_node=self.on_select_node)
@@ -115,6 +156,9 @@ class RaceAnalyzerApp(App):
         attach_node('Digital Input/Outputs', n, GPIOChannelsView())
         attach_node('Accelerometer / Gyro', n, AccelGyroChannelsView())
         attach_node('Analog / Pulse Outputs', n, AnalogPulseOutputChannelsView())
+        n = create_tree('CAN bus')
+        attach_node('CAN Channels', n, CANChannelsView())
+        attach_node('OBD2 Channels', n, OBD2ChannelsView())
         n = create_tree('Telemetry')
         attach_node('Cellular Telemetry', n, PulseChannelsView())
         attach_node('Bluetooth Link', n, PulseChannelsView())
@@ -130,13 +174,9 @@ class RaceAnalyzerApp(App):
         main.add_widget(tree)
         main.add_widget(content)
 
-        
-#        root = FloatLayout()
- #       root.add_widget(main)
         self.content = content
         self.tree = tree        
         return main     
-  #      return root
 
 if __name__ == '__main__':
 
