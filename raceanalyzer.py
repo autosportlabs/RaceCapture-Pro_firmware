@@ -42,6 +42,10 @@ class PulseChannel(BoxLayout):
     def __init__(self, **kwargs):
         super(PulseChannel, self).__init__(**kwargs)
 
+class AnalogPulseOutputChannel(BoxLayout):
+    def __init__(self, **kwargs):
+        super(AnalogPulseOutputChannel, self).__init__(**kwargs)
+
 class OrientationSpinner(Spinner):
     def __init__(self, **kwargs):
         super(OrientationSpinner, self).__init__(**kwargs)
@@ -50,7 +54,7 @@ class OrientationSpinner(Spinner):
 class ChannelNameSpinner(Spinner):
     def __init__(self, **kwargs):
         super(ChannelNameSpinner, self).__init__(**kwargs)
-        self.values = ["OilTemp", "Battery", "AFR"]
+        self.values = ["OilTemp", "Battery", "AFR", "WingAngle"]
 
 class AccelMappingSpinner(Spinner):
     def __init__(self, **kwargs):
@@ -113,7 +117,21 @@ class GPIOChannelsView(BoxLayout):
         self.add_widget(sv)
     
 class AnalogPulseOutputChannelsView(BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        super(AnalogPulseOutputChannelsView, self).__init__(**kwargs)
+        accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=90 * 3)
+    
+        # add button into that grid
+        for i in range(3):
+            channel = AccordionItem(title='Pulse / Analog Output ' + str(i + 1))
+            editor = AnalogPulseOutputChannel()
+            channel.add_widget(editor)
+            accordion.add_widget(channel)
+    
+        #create a scroll view, with a size < size of the grid
+        sv = ScrollView(size_hint=(1.0,1.0), do_scroll_x=False)
+        sv.add_widget(accordion)
+        self.add_widget(sv)
 
 class CANChannelsView(BoxLayout):
     pass
@@ -195,7 +213,7 @@ class RaceAnalyzerApp(App):
         attach_node('Pulse Inputs', n, PulseChannelsView())
         attach_node('Digital Input/Outputs', n, GPIOChannelsView())
         attach_node('Accelerometer / Gyro', n, AccelGyroChannelsView())
-        attach_node('Analog / Pulse Outputs', n, AnalogPulseOutputChannelsView())
+        attach_node('Pulse / Analog Outputs', n, AnalogPulseOutputChannelsView())
         n = create_tree('CAN bus')
         attach_node('CAN Channels', n, CANChannelsView())
         attach_node('OBD2 Channels', n, OBD2ChannelsView())
