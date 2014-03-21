@@ -86,6 +86,15 @@ class TargetConfigView(GridLayout):
 class TrackConfigView(BoxLayout):
     pass
     
+class CellTelemetryView(BoxLayout):
+    pass
+
+class BluetoothTelemetryView(BoxLayout):
+    pass
+
+class LuaScriptingView(BoxLayout):
+    pass
+
 class GPIOChannelsView(BoxLayout):
     def __init__(self, **kwargs):
         super(GPIOChannelsView, self).__init__(**kwargs)
@@ -191,10 +200,10 @@ class RaceAnalyzerApp(App):
         attach_node('CAN Channels', n, CANChannelsView())
         attach_node('OBD2 Channels', n, OBD2ChannelsView())
         n = create_tree('Telemetry')
-        attach_node('Cellular Telemetry', n, PulseChannelsView())
-        attach_node('Bluetooth Link', n, PulseChannelsView())
+        attach_node('Cellular Telemetry', n, CellTelemetryView())
+        attach_node('Bluetooth Link', n, BluetoothTelemetryView())
         n = create_tree('Scripting / Logging')
-        attach_node('Lua Script', n, PulseChannelsView())
+        attach_node('Lua Script', n, LuaScriptingView())
 
         content = SplashView()
 
