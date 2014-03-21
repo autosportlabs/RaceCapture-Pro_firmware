@@ -20,7 +20,21 @@
     halign: 'center'
     canvas.before:
         Color:
-            rgba: .2, .2, .2, .8
+            rgba: .21, .75, .95, .6
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+[HSeparatorMinor@Label]:
+    size_hint_y: None
+    height: max(dp(40), self.texture_size[1] + dp(10))
+    text: ctx.text if 'text' in ctx else ''
+    text_size: self.width, None
+    valign: 'middle'
+    halign: 'center'
+    canvas.before:
+        Color:
+            rgba: .1, .1, .1, .8
         Rectangle:
             size: self.size
             pos: self.pos
@@ -46,8 +60,6 @@
 <SplashView>:
     Label:
         text: 'Welcome to RaceCapture!'
-
-<AnalogChannelsView>:
   
 <GPSChannelsView>:
     spacing: 20
@@ -179,8 +191,6 @@
                 text: 'Engine Oil Temp (C)'
             SampleRateSpinner:
 
-<GPIOChannelsView>:
-
 <PulseChannelsView>:
 
 <PulseChannel>:
@@ -190,7 +200,7 @@
             padding: [5, 5]
             orientation: 'vertical'
             HSeparator:
-                text: 'Channel Configuration'
+                text: 'Configuration'
             ChannelNameSelectorView:
             SampleRateSelectorView:
             Label:
@@ -199,7 +209,7 @@
             padding: [5, 5]
             orientation: 'vertical'
             HSeparator:
-                text: 'Channel Options'
+                text: 'Options'
             BoxLayout:
                 padding: [2, 2]
                 orientation: 'horizontal'
@@ -222,7 +232,7 @@
                 Spinner:
                     values: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32']             
 
-
+<GPIOChannelsView>:
 
 <GPIOChannel>:
     BoxLayout:
@@ -237,6 +247,7 @@
             SampleRateSelectorView:
         BoxLayout:
             padding: [5, 5]
+            size_hint: (1.0,1.0)
             orientation: 'vertical'
             HSeparator:
                 text: 'Options'
@@ -251,12 +262,91 @@
                 size_hint: (None, 0.5)
 
 <AccelGyroChannelsView>:
-    Label:
-        text:'Accelerometer / Gyro Channel Configuration'
+    orientation: 'vertical'
+    padding: [5,5]
+    SampleRateSelectorView:
+        size_hint: (1.0,0.2)
+    HSeparator:
+        text: 'Accelerometer Channels'
+    GridLayout:
+        size_hint: (1.0,0.6)
+        padding: [5,5]
+        spacing: [5,5]
+        cols: 5
+        HSeparatorMinor:
+            text: 'Axis'
+        HSeparatorMinor:
+            text: 'Enabled'
+        HSeparatorMinor:
+            text: 'Mode'
+        HSeparatorMinor:
+            text: 'Hardware Mapping'
+        HSeparatorMinor:
+            text: 'Zero Level'
+        Label:
+            text: 'X'   
+        CheckBox:
+        OrientationSpinner:
+        AccelMappingSpinner:
+        TextInput:
+            text: '2048'
+
+        Label:
+            text: 'Y'
+        CheckBox:
+        OrientationSpinner:
+        AccelMappingSpinner:
+        TextInput:
+            text: '2048'
+
+        Label:
+            text: 'Z'
+        CheckBox:
+        OrientationSpinner:
+        AccelMappingSpinner:
+        TextInput:
+            text: '2048'
+
+    HSeparator:
+        text: 'Gyro Channels'
+    GridLayout:
+        size_hint: (1.0,0.3)
+        padding: [5,5]
+        spacing: [5,5]
+        cols: 5
+        HSeparatorMinor:
+            text: 'Axis'
+        HSeparatorMinor:
+            text: 'Enabled'
+        HSeparatorMinor:
+            text: 'Mode'
+        HSeparatorMinor:
+            text: 'Hardware Mapping'
+        HSeparatorMinor:
+            text: 'Zero Level'
+
+        Label:
+            text: 'Yaw'
+        CheckBox:
+        OrientationSpinner:
+        GyroMappingSpinner:
+        TextInput:
+            text: '1862'
+    HSeparator:
+        text: 'Calibration'
+    BoxLayout:
+        size_hint: (0.5, 0.2)
+        spacing: [10,10]
+        padding: [10,10]
+        Button:
+            text: 'Set Zero Value'
+
 
 <AnalogPulseOutputChannelsView>:
     Label:
         text:'Analog / Pulse Output Channel Configuration'
+
+<AnalogChannelsView>:
 
 <AnalogScaler>:
     id: graph
@@ -352,4 +442,7 @@
                 text: '3.75'
             TextInput:
                 text: '5.00'
+
+
+
                 

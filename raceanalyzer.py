@@ -42,10 +42,25 @@ class PulseChannel(BoxLayout):
     def __init__(self, **kwargs):
         super(PulseChannel, self).__init__(**kwargs)
 
+class OrientationSpinner(Spinner):
+    def __init__(self, **kwargs):
+        super(OrientationSpinner, self).__init__(**kwargs)
+        self.values = ["Normal", "Inverted"]
+
 class ChannelNameSpinner(Spinner):
     def __init__(self, **kwargs):
         super(ChannelNameSpinner, self).__init__(**kwargs)
         self.values = ["OilTemp", "Battery", "AFR"]
+
+class AccelMappingSpinner(Spinner):
+    def __init__(self, **kwargs):
+        super(AccelMappingSpinner, self).__init__(**kwargs)
+        self.values = ['X', 'Y', 'Z']
+
+class GyroMappingSpinner(Spinner):
+    def __init__(self, **kwargs):
+        super(GyroMappingSpinner, self).__init__(**kwargs)
+        self.values = ['Yaw']
 
 class SampleRateSpinner(Spinner):
     def __init__(self, **kwargs):
@@ -74,7 +89,7 @@ class TrackConfigView(BoxLayout):
 class GPIOChannelsView(BoxLayout):
     def __init__(self, **kwargs):
         super(GPIOChannelsView, self).__init__(**kwargs)
-        accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=100 * 3)
+        accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=90 * 3)
     
         # add button into that grid
         for i in range(3):
@@ -88,10 +103,6 @@ class GPIOChannelsView(BoxLayout):
         sv.add_widget(accordion)
         self.add_widget(sv)
     
-
-class AccelGyroChannelsView(BoxLayout):
-    pass
-
 class AnalogPulseOutputChannelsView(BoxLayout):
     pass
 
@@ -135,6 +146,9 @@ class PulseChannelsView(BoxLayout):
         sv.add_widget(accordion)
         self.add_widget(sv)
 
+class AccelGyroChannelsView(BoxLayout):
+    pass
+
 class LinkedTreeViewLabel(TreeViewLabel):
     view = None
     
@@ -161,7 +175,7 @@ class RaceAnalyzerApp(App):
         def attach_node(text, n, view):
             label = LinkedTreeViewLabel(text=text)
             label.view = view
-            label.color_selected =   [1.0,0,0,1]
+            label.color_selected =   [1.0,0,0,0.6]
             tree.add_node(label, n)
 
         tree.bind(selected_node=self.on_select_node)
