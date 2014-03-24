@@ -11,7 +11,7 @@
 #include "task.h"
 
 #define GPS_DATA_LINE_BUFFER_LEN 	200
-#define GPS_TASK_STACK_SIZE			100
+#define GPS_TASK_STACK_SIZE			130
 
 static char g_GPSdataLine[GPS_DATA_LINE_BUFFER_LEN];
 
