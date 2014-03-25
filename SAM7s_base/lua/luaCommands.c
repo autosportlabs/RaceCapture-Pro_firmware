@@ -34,7 +34,7 @@ void ExecLuaInterpreter(Serial *serial, unsigned int argc, char **argv){
 		if (strcmp(luaLine,"exit") == 0) break;
 		lockLua();
 		lua_gc(L,LUA_GCCOLLECT,0);
-		result = luaL_loadstring(L,luaLine);
+		result = luaL_loadbuffer(L, luaLine, strlen(luaLine), "");
 		if (0 != result){
 			serial->put_s("error: (");
 			serial->put_s(lua_tostring(L,-1));

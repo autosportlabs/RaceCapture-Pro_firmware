@@ -8,7 +8,8 @@
 #include "luaBaseBinding.h"
 #include "mem_mang.h"
 #include "taskUtil.h"
-
+#include "printk.h"
+#include "mod_string.h"
 
 #define DEFAULT_ONTICK_HZ 1
 #define MAX_ONTICK_HZ 30
@@ -146,7 +147,26 @@ void startLuaTask(){
 
 static void doScript(void){
 	lockLua();
-	luaL_dostring(g_lua,getScript());
+	const char *script = getScript();
+	size_t len = strlen(script);
+	pr_info("running lua script len(");
+	pr_info_int(len);
+	pr_info(")...");
+
+	lua_gc(g_lua, LUA_GCCOLLECT,0);
+
+	int result = (luaL_loadbuffer(g_lua, script, len, "startup") || lua_pcall(g_lua, 0, LUA_MULTRET, 0));
+	if (0 != result){
+		pr_error("startup script error: (");
+		pr_error(lua_tostring(g_lua,-1));
+		pr_error(")\r\n");
+		lua_pop(g_lua,1);
+	}
+	pr_info("done\r\n");
+	lua_gc(g_lua, LUA_GCCOLLECT,0);
+	pr_info("lua memory usage: ");
+	pr_info_int(lua_gc(g_lua, LUA_GCCOUNT,0));
+	pr_info("Kb\r\n");
 	unlockLua();
 }
 
