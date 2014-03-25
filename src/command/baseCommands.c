@@ -42,7 +42,7 @@ void ShowStats(Serial *serial, unsigned int argc, char **argv){
 	serial->put_s("Lua Top              :");
 	put_int(serial, lua_gettop(L));
 	put_crlf(serial);
-	serial->put_s("Lua GC Count         :");
+	serial->put_s("Lua memory usage(Kb) :");
 	put_int(serial, lua_gc(L,LUA_GCCOUNT,0));
 	put_crlf(serial);
 	serial->put_s("== Misc ==\r\n");
