@@ -49,8 +49,9 @@ def writeScript(ser, script):
     res = 0
     while True:
         if len(script) >= 256:
-            scr = script[:255]
-            script = script[255:]
+            scr = script[:256]
+            script = script[256:]
+            print("len:" + str(len(scr)))
             res = writeScriptPage(ser, scr, i)
             if res == 0:
                 print 'Error: ' + str(i)
