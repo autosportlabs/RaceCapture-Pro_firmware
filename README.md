@@ -1,4 +1,4 @@
-RaceAnalyzer2
+RaceCapture App
 =============
 
-Experimental new version of RaceAnalyzer
+Next Gen version of the RaceCapture App.
