@@ -25,10 +25,8 @@ extern int g_loggingShouldRun;
 
 char g_tempBuffer[TEMP_BUFFER_LEN];
 
-void registerLuaLoggerBindings(){
+void registerLuaLoggerBindings(lua_State *L){
 
-	lua_State *L = getLua();
-	lockLua();
 	//Read / control inputs and outputs
 	lua_registerlight(L,"getGpio",Lua_GetGPIO);
 	lua_registerlight(L,"getButton",Lua_GetButton);
@@ -203,8 +201,6 @@ void registerLuaLoggerBindings(){
 	
 	lua_registerlight(L,"setBgStream", Lua_SetBackgroundStreaming);
 	lua_registerlight(L,"getBgStream", Lua_GetBackgroundStreaming);
-
-	unlockLua();
 }
 
 ////////////////////////////////////////////////////

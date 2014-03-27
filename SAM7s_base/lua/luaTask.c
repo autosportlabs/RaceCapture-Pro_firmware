@@ -6,6 +6,7 @@
 #include "portable.h"
 #include "luaScript.h"
 #include "luaBaseBinding.h"
+#include "luaLoggerBinding.h"
 #include "mem_mang.h"
 #include "taskUtil.h"
 #include "printk.h"
@@ -121,13 +122,9 @@ inline void setShouldReloadScript(int reload){
 	g_shouldReloadScript = reload;
 }
 
-void startLuaTask(){
-	setShouldReloadScript(0);
-	set_ontick_freq(DEFAULT_ONTICK_HZ);
-
-	vSemaphoreCreateBinary(xLuaLock);
-
+static void initLuaState(){
 	lockLua();
+	if (g_lua != NULL) lua_close(g_lua);
 	g_lua=lua_newstate( myAlloc, NULL);
 	//open optional libraries
 	luaopen_base(g_lua);
@@ -135,7 +132,16 @@ void startLuaTask(){
 	luaopen_string(g_lua);
 	luaopen_math(g_lua);
 	registerBaseLuaFunctions(g_lua);
+	registerLuaLoggerBindings(g_lua);
 	unlockLua();
+}
+
+void startLuaTask(){
+	g_lua = NULL;
+	setShouldReloadScript(0);
+	vSemaphoreCreateBinary(xLuaLock);
+	initLuaState();
+	set_ontick_freq(DEFAULT_ONTICK_HZ);
 
 	xTaskCreate( luaTask,
 					( signed portCHAR * ) "luaTask",
@@ -176,6 +182,7 @@ void luaTask(void *params){
 		portTickType xLastWakeTime, startTickTime;
 		startTickTime = xLastWakeTime = xTaskGetTickCount();
 		if (getShouldReloadScript()){
+			initLuaState();
 			doScript();
 			setShouldReloadScript(0);
 		}

@@ -57,7 +57,6 @@ void stopLogging(){
 
 void createLoggerTaskEx(){
 	g_loggingShouldRun = 0;
-	registerLuaLoggerBindings();
 	xTaskCreate( loggerTaskEx,( signed portCHAR * ) "loggerEx",	LOGGER_STACK_SIZE, NULL, LOGGER_TASK_PRIORITY, NULL );
 }
 
