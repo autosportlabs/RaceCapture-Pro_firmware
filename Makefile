@@ -688,7 +688,6 @@ clean_all: clean
 .PHONY : all begin finish end sizebefore sizeafter gccversion \
 build elf hex bin lss sym clean clean_list program
 
-
 release : clean all
 	rm -rf $(RELEASE_NAME_ZIP)
 	cp main.elf $(RCP_RELEASE_DIR)/$(RELEASE_NAME_ELF)
@@ -697,6 +696,7 @@ release : clean all
 	cp installer/* $(RCP_INSTALL_DIR)
 	cp $(RELEASE_NAME_ELF) $(RCP_INSTALL_DIR)
 	cp README_RELEASE_NOTES.txt $(RCP_INSTALL_DIR)
+	cp HOW_TO_FLASH.txt $(RCP_INSTALL_DIR)
 	zip -r $(RELEASE_NAME_ZIP) $(RCP_INSTALL_DIR)
 	cp $(RELEASE_NAME_ZIP) $(RCP_RELEASE_DIR) 
 
