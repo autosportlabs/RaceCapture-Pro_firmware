@@ -34,10 +34,8 @@ extern int g_loggingShouldRun;
 
 char g_tempBuffer[TEMP_BUFFER_LEN];
 
-void registerLuaLoggerBindings(){
+void registerLuaLoggerBindings(lua_State *L){
 
-	lua_State *L = getLua();
-	lockLua();
 	//Read / control inputs and outputs
 	lua_registerlight(L,"getGpio",Lua_GetGPIO);
 	lua_registerlight(L,"setGpio",Lua_SetGPIO);
@@ -134,7 +132,6 @@ void registerLuaLoggerBindings(){
 
 	lua_registerlight(L, "addChannel", Lua_AddVirtualChannel);
 	lua_registerlight(L, "setChannel", Lua_SetVirtualChannelValue);
-	unlockLua();
 }
 
 ////////////////////////////////////////////////////

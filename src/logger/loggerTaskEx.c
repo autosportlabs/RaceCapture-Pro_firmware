@@ -19,7 +19,6 @@
 #include "loggerHardware.h"
 #include "loggerConfig.h"
 #include "accelerometer.h"
-#include "luaLoggerBinding.h"
 #include "gps.h"
 #include "printk.h"
 
@@ -58,7 +57,6 @@ void stopLogging(){
 }
 
 void startLoggerTaskEx(int priority){
-	registerLuaLoggerBindings();
 	xTaskCreate( loggerTaskEx,( signed portCHAR * ) "logger",	LOGGER_STACK_SIZE, NULL, priority, NULL );
 }
 

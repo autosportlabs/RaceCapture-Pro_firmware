@@ -6,7 +6,7 @@
 #include "lualib.h"
 
 
-void registerLuaLoggerBindings();
+void registerLuaLoggerBindings(lua_State *L);
 
 int Lua_GetBackgroundStreaming(lua_State *L);
 int Lua_SetBackgroundStreaming(lua_State *L);
