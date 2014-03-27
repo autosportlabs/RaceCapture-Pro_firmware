@@ -36,6 +36,7 @@
 #define SAMPLE_RECORD_QUEUE_SIZE				10
 #define BAD_MESSAGE_THRESHOLD					10
 
+#define METADATA_SAMPLE_INTERVAL				100
 static char g_buffer[BUFFER_SIZE];
 static size_t g_rxCount;
 static xQueueHandle g_sampleQueue;
@@ -146,7 +147,7 @@ void connectivityTask(void *params) {
 						put_crlf(serial);
 						break;
 					case LOGGER_MSG_SAMPLE:
-						api_sendSampleRecord(serial, msg->sampleRecord, tick, tick == 0);
+						api_sendSampleRecord(serial, msg->sampleRecord, tick, (tick == 0 || tick % METADATA_SAMPLE_INTERVAL == 0));
 						put_crlf(serial);
 						tick++;
 						break;
