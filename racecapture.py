@@ -189,7 +189,7 @@ class LuaCodeInput(CodeInput):
         super(LuaCodeInput, self).__init__(**kwargs)
         self.lexer= lexers.get_lexer_by_name('lua')
 
-class RaceAnalyzerApp(App):
+class RaceCaptureApp(App):
 
     def on_select_node(self, instance, value):
         # ensure that any keyboard is released
@@ -248,4 +248,4 @@ class RaceAnalyzerApp(App):
 
 if __name__ == '__main__':
 
-    RaceAnalyzerApp().run()
+    RaceCaptureApp().run()
