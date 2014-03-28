@@ -18,6 +18,7 @@ from kivy.garden.graph import Graph, MeshLinePlot
 from kivy.uix.treeview import TreeView, TreeViewLabel
 from kivy.extras.highlight import KivyLexer
 from kivy.uix.codeinput import CodeInput
+from pygments import lexers
 
 from spacer import *
 from boundedlabel import BoundedLabel
@@ -186,7 +187,7 @@ class LinkedTreeViewLabel(TreeViewLabel):
 class LuaCodeInput(CodeInput):
     def __init__(self, **kwargs):
         super(LuaCodeInput, self).__init__(**kwargs)
-        self.lexer=KivyLexer()
+        self.lexer= lexers.get_lexer_by_name('lua')
 
 class RaceAnalyzerApp(App):
 
