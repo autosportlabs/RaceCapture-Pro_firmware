@@ -9,12 +9,27 @@ def decodeScript(s):
 def encodeScript(s):
     return s.replace('\n','\\n').replace(' ', '\_').replace('\r', '\\r').replace('"', '\\"')
 
+def readLine(ser):
+    retries = 5
+    line = None
+    while retries > 0:
+        print('attempt ' + str(retries))
+        line = ser.readline()
+        if line: 
+            break
+        ser.write(' ')
+        retries -= 1
+        
+    return line
+
 def writeScriptPage(ser, script, page):
+    ser.flushInput()
+    ser.flushOutput()
     cmd = 'writeScriptPage ' + str(page) + ' ' + encodeScript(script) + '\r'
     print(cmd)
     ser.write(cmd)
-    line = ser.readline()
-    line = ser.readline()
+    line = readLine(ser)
+    line = readLine(ser)
     print(line)
     if 'result="ok"' in line:
         return 1
@@ -22,11 +37,14 @@ def writeScriptPage(ser, script, page):
         return 0
 
 def readScriptPage(ser, page):
+    ser.flushInput()
+    ser.flushOutput()
     cmd = 'readScriptPage ' + str(page) + '\r'
-    print("page: " + cmd)
+    print('page:: ' + cmd)
     ser.write(cmd)
-    line = ser.readline()
-    line = ser.readline()
+    line = readLine(ser)
+    line = readLine(ser)
+    print('the script: ')
     print(line)
     line = decodeScript(line)
     return line
@@ -68,7 +86,9 @@ def writeScript(ser, script):
 
 data = open("script.lua").read()
 
-ser = serial.Serial('/dev/ttyACM0', timeout = 1000)
+ser = serial.Serial('/dev/ttyACM0', timeout = .5)
+ser.flushInput()
+ser.flushOutput()
 
 res = writeScript(ser, data)
 print(str(res))
