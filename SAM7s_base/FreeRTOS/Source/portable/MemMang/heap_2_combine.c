@@ -4,12 +4,7 @@
 */
 
 /*
- * A sample implementation of pvPortMalloc() and vPortFree() that permits
- * allocated blocks to be freed, but does not combine adjacent free blocks
- * into a single larger block.
- *
- * See heap_1.c and heap_3.c for alternative implementations, and the memory
- * management pages of http://www.FreeRTOS.org for more information.
+ * An enhancement to heap_2.c that attempts simple coalescing of adjacent blocks.
  */
 #include <stdlib.h>
 
