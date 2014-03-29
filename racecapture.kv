@@ -39,7 +39,7 @@
             size: self.size
             pos: self.pos
 
-<RaceAnalyzerApp>:
+<RaceCaptureApp>:
 
 <ChannelNameSelectorView>:
     BoxLayout:
@@ -392,9 +392,50 @@
     Label:
         text: 'Bluetooth Telemetry View'
 
+<LuaCodeInput>:
+
 <LuaScriptingView>:
-    Label:
-        text: 'Lua Scripting View'
+    BoxLayout:
+        spacing: [5,5]
+        padding: [5,5]
+        orientation: 'vertical'
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: 0.9
+            ScrollView:
+                size_hint_y: 0.75
+                do_scroll_x:False
+                id: luaScriptScrollView
+                LuaCodeInput:
+                    size_hint_y: None
+                    font_name: 'data/fonts/DroidSansMono.ttf'
+                    font_size: 16
+                    height: max(self.minimum_height, luaScriptScrollView.height)
+            Splitter:
+                horizontal: False
+                sizable_from: 'top'
+                ScrollView:
+                    size_hint_y: 0.25
+                    id: loggingScrollView
+                    do_scroll_x:False
+                    TextInput:
+                        size_hint_y: None
+                        height: max(self.minimum_height, loggingScrollView.height)
+        BoxLayout:
+            size_hint_y: 0.1
+            padding: [10,10]
+            orientation: 'horizontal'
+            height: 30
+            Button:
+                size_hint_x: 0.25
+                text: "Read"
+            Button:
+                size_hint_x: 0.25
+                text: "Write"
+            Button:
+                size_hint_x: 0.25
+                text: "Run"
+
 
 <AnalogChannelsView>:
 

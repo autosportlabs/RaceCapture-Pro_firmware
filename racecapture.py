@@ -16,9 +16,13 @@ from kivy.uix.label import Label
 from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.garden.graph import Graph, MeshLinePlot
 from kivy.uix.treeview import TreeView, TreeViewLabel
+from kivy.extras.highlight import KivyLexer
+from kivy.uix.codeinput import CodeInput
+from pygments import lexers
 
 from spacer import *
 from boundedlabel import BoundedLabel
+from rcpserial import *
 
 
 class AnalogScaler(Graph):
@@ -178,8 +182,14 @@ class AccelGyroChannelsView(BoxLayout):
 
 class LinkedTreeViewLabel(TreeViewLabel):
     view = None
-    
-class RaceAnalyzerApp(App):
+   
+
+class LuaCodeInput(CodeInput):
+    def __init__(self, **kwargs):
+        super(LuaCodeInput, self).__init__(**kwargs)
+        self.lexer= lexers.get_lexer_by_name('lua')
+
+class RaceCaptureApp(App):
 
     def on_select_node(self, instance, value):
         # ensure that any keyboard is released
@@ -238,4 +248,4 @@ class RaceAnalyzerApp(App):
 
 if __name__ == '__main__':
 
-    RaceAnalyzerApp().run()
+    RaceCaptureApp().run()

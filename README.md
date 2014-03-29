@@ -1,4 +1,12 @@
-RaceAnalyzer2
+RaceCapture App
 =============
 
-Experimental new version of RaceAnalyzer
+Next Gen version of the RaceCapture App.
+
+Dependencies:
+* Python 2.7.x
+* Kivy 1.8.x
+* Pyserial 2.6.x
+
+to run:
+python racecapture.py
