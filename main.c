@@ -129,7 +129,7 @@ void fatalError(int type){
 
 int main( void )
 {
-	initMemoryPool();
+	//initMemoryPool();
 	//setup hardware
 	updateActiveLoggerConfig();
 	int success = setupHardware();

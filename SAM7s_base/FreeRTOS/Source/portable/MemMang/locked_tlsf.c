@@ -9,6 +9,9 @@ extern unsigned char  _heap_address[];
 
 void initMemoryPool(){
 	init_memory_pool(configTOTAL_HEAP_SIZE, _heap_address);
+
+	//void *address = _heap_address;
+	//init_memory_pool(50000, address);
 }
 
 void * pvPortMalloc( size_t xWantedSize ){

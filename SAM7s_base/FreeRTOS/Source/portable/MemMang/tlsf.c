@@ -169,8 +169,8 @@
 
 #ifdef USE_PRINTF
 //#include <stdio.h>
-# define PRINT_MSG(fmt, args...) printf(fmt, ## args)
-# define ERROR_MSG(fmt, args...) printf(fmt, ## args)
+//# define PRINT_MSG(fmt, args...) printf(fmt, ## args)
+//# define ERROR_MSG(fmt, args...) printf(fmt, ## args)
 #else
 # if !defined(PRINT_MSG)
 #  define PRINT_MSG(fmt, args...)
