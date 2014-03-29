@@ -149,7 +149,8 @@ $(LUA_SRC_DIR)/luaTask.c \
 $(LUA_SRC_DIR)/luaScript.c \
 $(LUA_SRC_DIR)/luaBaseBinding.c \
 $(LUA_SRC_DIR)/luaCommands.c \
-$(RTOS_PORT_DIR)/MemMang/heap_2_combine.c \
+$(RTOS_PORT_DIR)/MemMang/locked_tlsf.c \
+$(RTOS_PORT_DIR)/MemMang/tlsf.c \
 $(LOGGING_DIR)/printk.c \
 $(FILTER_DIR)/filter.c \
 $(LOGGING_DIR)/ring_buffer.c \

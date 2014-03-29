@@ -7,7 +7,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
-
+#include "luaTask.h"
 #include "fileWriter.h"
 #include "connectivityTask.h"
 #include "sampleRecord.h"
@@ -57,6 +57,7 @@ void stopLogging(){
 
 void createLoggerTaskEx(){
 	g_loggingShouldRun = 0;
+	registerLuaLoggerBindings(getLua());
 	xTaskCreate( loggerTaskEx,( signed portCHAR * ) "loggerEx",	LOGGER_STACK_SIZE, NULL, LOGGER_TASK_PRIORITY, NULL );
 }
 

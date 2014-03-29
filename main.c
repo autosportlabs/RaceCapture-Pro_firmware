@@ -11,6 +11,7 @@
 // Standard includes
 #include "FreeRTOS.h"
 #include "task.h"
+#include "heap.h"
 #include "serial.h"
 #include "usb_comm.h"
 #include "baseCommands.h"
@@ -128,6 +129,7 @@ void fatalError(int type){
 
 int main( void )
 {
+	initMemoryPool();
 	//setup hardware
 	updateActiveLoggerConfig();
 	int success = setupHardware();

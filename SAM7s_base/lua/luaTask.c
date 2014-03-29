@@ -6,7 +6,6 @@
 #include "portable.h"
 #include "luaScript.h"
 #include "luaBaseBinding.h"
-#include "luaLoggerBinding.h"
 #include "mem_mang.h"
 #include "taskUtil.h"
 #include "printk.h"
@@ -122,9 +121,13 @@ inline void setShouldReloadScript(int reload){
 	g_shouldReloadScript = reload;
 }
 
-static void initLuaState(){
+void startLuaTask(){
+	setShouldReloadScript(0);
+	set_ontick_freq(DEFAULT_ONTICK_HZ);
+
+	vSemaphoreCreateBinary(xLuaLock);
+
 	lockLua();
-	if (g_lua != NULL) lua_close(g_lua);
 	g_lua=lua_newstate( myAlloc, NULL);
 	//open optional libraries
 	luaopen_base(g_lua);
@@ -132,16 +135,7 @@ static void initLuaState(){
 	luaopen_string(g_lua);
 	luaopen_math(g_lua);
 	registerBaseLuaFunctions(g_lua);
-	registerLuaLoggerBindings(g_lua);
 	unlockLua();
-}
-
-void startLuaTask(){
-	g_lua = NULL;
-	setShouldReloadScript(0);
-	vSemaphoreCreateBinary(xLuaLock);
-	initLuaState();
-	set_ontick_freq(DEFAULT_ONTICK_HZ);
 
 	xTaskCreate( luaTask,
 					( signed portCHAR * ) "luaTask",
@@ -160,8 +154,8 @@ static void doScript(void){
 	pr_info(")...");
 
 	lua_gc(g_lua, LUA_GCCOLLECT,0);
-
-	int result = (luaL_loadbuffer(g_lua, script, len, "startup") || lua_pcall(g_lua, 0, LUA_MULTRET, 0));
+	int result = 0;
+	//int result = (luaL_loadbuffer(g_lua, script, len, "startup"));// || lua_pcall(g_lua, 0, LUA_MULTRET, 0));
 	if (0 != result){
 		pr_error("startup script error: (");
 		pr_error(lua_tostring(g_lua,-1));
@@ -182,7 +176,6 @@ void luaTask(void *params){
 		portTickType xLastWakeTime, startTickTime;
 		startTickTime = xLastWakeTime = xTaskGetTickCount();
 		if (getShouldReloadScript()){
-			initLuaState();
 			doScript();
 			setShouldReloadScript(0);
 		}
@@ -210,4 +203,3 @@ void luaTask(void *params){
 lua_State * getLua(){
 	return g_lua;
 }
-
