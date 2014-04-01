@@ -281,6 +281,7 @@ CDEFS += -DTHUMB_INTERWORK
 # Place -I options here
 CINCS = \
 -I. \
+-I$(SAM7s_BASE_DIR) \
 -I$(RTOS_MEMMANG_DIR) \
 -I$(UTIL_DIR) \
 -I$(SAM7S_UTIL_DIR) \
