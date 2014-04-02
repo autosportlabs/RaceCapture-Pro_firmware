@@ -91,6 +91,7 @@ RTOS_MEMMANG_DIR = $(RTOS_PORT_DIR)/MemMang
 USB_SRC_DIR = $(SAM7s_BASE_DIR)/usb
 SERIAL_SRC_DIR = $(SAM7s_BASE_DIR)/serial
 UART_SRC_DIR = $(SAM7s_BASE_DIR)/uart
+AUTO_CONFIG_SRC_DIR = $(SRC_DIR)/auto_config
 LOGGER_SRC_DIR = $(SRC_DIR)/logger
 CHANNELS_SRC_DIR = $(SRC_DIR)/channels
 TRACKS_SRC_DIR = $(SRC_DIR)/tracks
@@ -209,6 +210,7 @@ $(DEVICES_SRC_DIR)/null_device.c \
 $(DEVICES_SRC_DIR)/bluetooth.c \
 $(DEVICES_SRC_DIR)/sim900.c \
 $(VIRTUAL_CHANNEL_SRC_DIR)/virtual_channel.c \
+$(AUTO_CONFIG_SRC_DIR)/auto_track.c \
 
 # List C source files here which must be compiled in ARM-Mode.
 # use file-extension c for "c-only"-files
@@ -300,6 +302,7 @@ CINCS = \
 -I$(CMD_SRC_DIR) \
 -I$(INCLUDE_DIR) \
 -I$(INCLUDE_DIR)/jsmn \
+-I$(INCLUDE_DIR)/auto_config \
 -I$(INCLUDE_DIR)/api \
 -I$(INCLUDE_DIR)/logger \
 -I$(INCLUDE_DIR)/channels \
@@ -698,7 +701,7 @@ release : clean all
 	cp README_RELEASE_NOTES.txt $(RCP_INSTALL_DIR)
 	cp HOW_TO_FLASH.txt $(RCP_INSTALL_DIR)
 	zip -r $(RELEASE_NAME_ZIP) $(RCP_INSTALL_DIR)
-	cp $(RELEASE_NAME_ZIP) $(RCP_RELEASE_DIR) 
+	cp $(RELEASE_NAME_ZIP) $(RCP_RELEASE_DIR)
 
 # **********************************************************************************************
 #                            FLASH PROGRAMMING      (using OpenOCD 0.5.0 and Olimex ARM-USB-OCD)

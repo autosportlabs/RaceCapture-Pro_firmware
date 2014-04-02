@@ -1,3 +1,4 @@
+#include "auto_track.h"
 #include "gps.h"
 #include "geopoint.h"
 #include "loggerHardware.h"
@@ -291,7 +292,7 @@ float getSecondsSinceMidnight(){
 }
 
 void getUTCTimeFormatted(char * buf){
-	
+
 }
 
 float getLatitude(){
@@ -452,6 +453,18 @@ static void flashGpsStatusLed(){
 	}
 }
 
+/**
+ * Method that runs only once after a GPS signal is first acquired
+ */
+static void firstLockRoutine(GeoPoint gp) {
+   static int hasRun = 0;
+   if (hasRun) return;
+   ++hasRun;
+
+   GPSTargetConfig *startFinishCfg = &(getWorkingLoggerConfig()->TrackConfigs.startFinishConfig);
+   auto_configure_track(startFinishCfg, gp);
+}
+
 void onLocationUpdated(){
 	GPSTargetConfig *startFinishCfg = &(getWorkingLoggerConfig()->TrackConfigs.startFinishConfig);
 	int startFinishEnabled = isGpsTargetEnabled(startFinishCfg);
@@ -459,15 +472,18 @@ void onLocationUpdated(){
 	GPSTargetConfig *splitCfg = &(getWorkingLoggerConfig()->TrackConfigs.splitConfig);
 	int splitEnabled = isGpsTargetEnabled(splitCfg);
 
-	if (GPS_LOCKED_ON(g_gpsQuality)){
+	if (GPS_LOCKED_ON(g_gpsQuality)) {
+           GeoPoint gp;
+           populateGeoPoint(&gp);
+
+           firstLockRoutine(gp);
+
 		float dist = calcDistancesSinceLastSample();
 		g_distance += dist;
 
 		if (splitEnabled) processSplit(splitCfg);
 
 		if (startFinishEnabled){
-			GeoPoint gp;
-			populateGeoPoint(&gp);
 			float utcTime = getUTCTime();
 			int lapDetected = processStartFinish(startFinishCfg);
 
