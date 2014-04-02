@@ -33,6 +33,8 @@ AutoTrackStatus auto_configure_track(GPSTargetConfig *cfg, GeoPoint gp) {
       if (track_distance >= best_track_dist)
          continue;
 
+      // If here then we have a new best.  Set it accordingly
+      best_track_dist = track_distance;
       cfg->latitude = gp_sf.latitude;
       cfg->longitude = gp_sf.longitude;
    }
