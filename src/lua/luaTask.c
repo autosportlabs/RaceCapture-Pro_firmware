@@ -12,6 +12,7 @@
 #include "printk.h"
 #include "mod_string.h"
 #include "watchdog.h"
+#include "LED.h"
 
 #define DEFAULT_ONTICK_HZ 1
 #define MAX_ONTICK_HZ 30
