@@ -5,7 +5,6 @@ Release Notes
 ===1.2.8===
 Initial Support for Y-adapter (periodically send metadata packet when BT module is in read only mode)
 Fixed Lua hang issue when scripts above one page size (256) are uploaded
-Lua runtime is re-initialized whenever main script is 're run'
 more logging about about memory usage of Lua runtime
 
 ===1.2.7===
