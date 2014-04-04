@@ -10,3 +10,9 @@ void watchdog_device_init(int timeoutMs){
 	 AT91F_WDTSetMode(AT91C_BASE_WDTC, AT91C_WDTC_WDRSTEN | AT91C_WDTC_WDRPROC | counter | (counter << 16));
 	 AT91F_WDTC_CfgPMC();
 }
+
+int watchdog_device_is_watchdog_reset(){
+	  int reset_status = AT91F_RSTGetStatus(AT91C_BASE_RSTC);
+	  reset_status &= AT91C_RSTC_RSTTYP;
+	  return (reset_status == AT91C_RSTC_RSTTYP_WATCHDOG);
+}

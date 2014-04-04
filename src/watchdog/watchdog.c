@@ -6,6 +6,10 @@ inline void watchdog_reset(){
 }
 
 void watchdog_init(int timeoutMs){
+	watchdog_device_init(timeoutMs);
+}
 
+int watchdog_is_watchdog_reset(){
+	return watchdog_device_is_watchdog_reset();
 }
 
