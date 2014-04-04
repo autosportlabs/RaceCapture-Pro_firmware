@@ -137,12 +137,10 @@ static void initLuaState(){
 
 void startLuaTask(int priority){
 	g_lua = NULL;
-	setShouldReloadScript(0);
+	setShouldReloadScript(1);
 	set_ontick_freq(DEFAULT_ONTICK_HZ);
 
 	vSemaphoreCreateBinary(xLuaLock);
-
-	initLuaState();
 
 	xTaskCreate( luaTask,
 					( signed portCHAR * ) "luaTask",
@@ -151,11 +149,6 @@ void startLuaTask(int priority){
 					priority,
 					NULL);
 }
-
-
-
-
-
 
 static void doScript(void){
     lockLua();
@@ -183,7 +176,6 @@ static void doScript(void){
 }
 
 void luaTask(void *params){
-	doScript();
 	while(1){
 		portTickType xLastWakeTime, startTickTime;
 		startTickTime = xLastWakeTime = xTaskGetTickCount();
