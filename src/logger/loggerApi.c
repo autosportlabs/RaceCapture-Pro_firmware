@@ -20,6 +20,7 @@
 #include "serial.h"
 #include "mem_mang.h"
 #include "printk.h"
+#include "geopoint.h"
 
 
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
@@ -888,7 +889,7 @@ int api_getTracks(Serial *serial, const jsmntok_t *json){
 		json_arrayEnd(serial, 1);
 		json_arrayStart(serial, "sec");
 		for (size_t i = 0; i < SECTOR_COUNT; i++){
-			const GPSPoint *p = &track->sectors[i];
+			const GeoPoint *p = &track->sectors[i];
 			json_arrayStart(serial, NULL);
 			json_arrayElementFloat(serial, p->latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
 			json_arrayElementFloat(serial, p->longitude, DEFAULT_GPS_POSITION_PRECISION, 0);

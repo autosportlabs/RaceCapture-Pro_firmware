@@ -24,19 +24,17 @@ AutoTrackStatus auto_configure_track(GPSTargetConfig *cfg, GeoPoint gp) {
    int i;
    for (i = 0; i < tracks->count; ++i) {
       const Track *track = &(tracks->tracks[i]);
-      GPSPoint sf = track->startFinish;
-      GeoPoint gp_sf = {sf.latitude, sf.longitude};
 
       // XXX: inaccurate but fast.  Good enough for now.
-      float track_distance = distPythag(&gp_sf, &gp);
+      float track_distance = distPythag(&track->startFinish, &gp);
 
       if (track_distance >= best_track_dist)
          continue;
 
       // If here then we have a new best.  Set it accordingly
       best_track_dist = track_distance;
-      cfg->latitude = gp_sf.latitude;
-      cfg->longitude = gp_sf.longitude;
+      cfg->latitude = track->startFinish.latitude;
+      cfg->longitude = track->startFinish.longitude;
    }
 
    // If latitude is not 0, then we have auto-detcted a track.

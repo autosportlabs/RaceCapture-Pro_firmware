@@ -3,18 +3,14 @@
 
 #include "stddef.h"
 #include "default_tracks.h"
+#include "geopoint.h"
 
 #define TRACKS_COUNT			100
 #define SECTOR_COUNT			10
 
-typedef struct _GPSPoint{
-	float latitude;
-	float longitude;
-} GPSPoint;
-
 typedef struct _Track{
-	GPSPoint startFinish;
-	GPSPoint sectors[SECTOR_COUNT];
+	GeoPoint startFinish;
+	GeoPoint sectors[SECTOR_COUNT];
 } Track;
 
 typedef struct _Tracks{
@@ -25,7 +21,6 @@ typedef struct _Tracks{
 int flash_tracks(const Tracks *source, size_t rawSize);
 int update_track(const Track *track, size_t index, int mode);
 int flash_default_tracks(void);
-Track * find_track(float latitude, float longitude);
 const Tracks * get_tracks();
 
 

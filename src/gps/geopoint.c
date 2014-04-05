@@ -24,7 +24,7 @@ GeoPoint* populateGeoPoint(GeoPoint *gp) {
 	return gp;
 }
 
-float distPythag(GeoPoint *a, GeoPoint *b) {
+float distPythag(const GeoPoint *a, const GeoPoint *b) {
 	float dLatRad = toRad(b->latitude - a->latitude);
 	float dLonRad = toRad(b->longitude - a->longitude);
 	float latARad = toRad(a->latitude);

@@ -35,7 +35,7 @@ GeoPoint* populateGeoPoint(GeoPoint *gp);
  * @param b Point b
  * @return The distance between the two points in Meters
  */
-float distPythag(GeoPoint *a, GeoPoint *b);
+float distPythag(const GeoPoint *a, const GeoPoint *b);
 
 /**
  * Finds the distance between two points using the spherical law of cosines.
