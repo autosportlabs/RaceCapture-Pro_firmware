@@ -453,32 +453,25 @@ static void flashGpsStatusLed(){
 	}
 }
 
-/**
- * Method that runs only once after a GPS signal is first acquired
- */
-static void firstLockRoutine(GeoPoint gp) {
-   static int hasRun = 0;
-   if (hasRun) return;
-   ++hasRun;
-
-   GPSTargetConfig *startFinishCfg = &(getWorkingLoggerConfig()->TrackConfigs.startFinishConfig);
-   auto_configure_track(startFinishCfg, gp);
-}
-
 void onLocationUpdated(){
-	GPSTargetConfig *startFinishCfg = &(getWorkingLoggerConfig()->TrackConfigs.startFinishConfig);
-	int startFinishEnabled = isGpsTargetEnabled(startFinishCfg);
-
-	GPSTargetConfig *splitCfg = &(getWorkingLoggerConfig()->TrackConfigs.splitConfig);
-	int splitEnabled = isGpsTargetEnabled(splitCfg);
+	static int configured = 0;
 
 	if (GPS_LOCKED_ON(g_gpsQuality)) {
-           GeoPoint gp;
-           populateGeoPoint(&gp);
+		GeoPoint gp;
+		populateGeoPoint(&gp);
 
-           firstLockRoutine(gp);
+       	GPSTargetConfig *startFinishCfg = &(getWorkingLoggerConfig()->TrackConfigs.startFinishConfig);
+       	GPSTargetConfig *splitCfg = &(getWorkingLoggerConfig()->TrackConfigs.splitConfig);
 
-		float dist = calcDistancesSinceLastSample();
+       	if (! configured){
+     	   auto_configure_track(startFinishCfg, gp);
+     	   ++configured;
+       	}
+
+       	int startFinishEnabled = isGpsTargetEnabled(startFinishCfg);
+       	int splitEnabled = isGpsTargetEnabled(splitCfg);
+
+       	float dist = calcDistancesSinceLastSample();
 		g_distance += dist;
 
 		if (splitEnabled) processSplit(splitCfg);
