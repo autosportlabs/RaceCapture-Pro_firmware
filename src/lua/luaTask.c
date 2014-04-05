@@ -10,7 +10,9 @@
 #include "mem_mang.h"
 #include "taskUtil.h"
 #include "printk.h"
-
+#include "mod_string.h"
+#include "watchdog.h"
+#include "LED.h"
 
 #define DEFAULT_ONTICK_HZ 1
 #define MAX_ONTICK_HZ 30
@@ -142,8 +144,6 @@ void startLuaTask(int priority){
 
 	vSemaphoreCreateBinary(xLuaLock);
 
-	initLuaState();
-
 	xTaskCreate( luaTask,
 					( signed portCHAR * ) "luaTask",
 					LUA_STACK_SIZE,
@@ -151,11 +151,6 @@ void startLuaTask(int priority){
 					priority,
 					NULL);
 }
-
-
-
-
-
 
 static void doScript(void){
     lockLua();
@@ -182,8 +177,19 @@ static void doScript(void){
     unlockLua();
 }
 
+static void guardedDoScript(void){
+	if (!watchdog_is_watchdog_reset()){
+		doScript();
+	}
+	else{
+		pr_error("watchdog reset detected; bypassing Lua Script\r\n");
+		LED_enable(3);
+	}
+}
+
 void luaTask(void *params){
-	doScript();
+	initLuaState();
+	guardedDoScript();
 	while(1){
 		portTickType xLastWakeTime, startTickTime;
 		startTickTime = xLastWakeTime = xTaskGetTickCount();

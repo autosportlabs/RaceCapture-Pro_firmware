@@ -53,7 +53,7 @@
 		'/', 0x00, 'P', 0x00, 'r', 0x00, 'o', 0x00 \
 	}
 
-#define WATCHDOG_TIMEOUT_MS 3000
+#define WATCHDOG_TIMEOUT_MS 1000
 
 
 #endif /* CONSTANTS_H_ */
