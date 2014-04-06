@@ -44,7 +44,7 @@ int update_track(const Track *track, size_t index, int mode){
 			pr_info("freeing previous tracks buffer\r\n");
 			portFree(g_tracksBuffer);
 		}
-		g_tracksBuffer = portMalloc(sizeof(Tracks));
+		g_tracksBuffer = (Tracks *)portMalloc(sizeof(Tracks));
 		if (g_tracksBuffer != NULL){
 			memcpy(g_tracksBuffer, &g_tracks, sizeof(Tracks));
 		}

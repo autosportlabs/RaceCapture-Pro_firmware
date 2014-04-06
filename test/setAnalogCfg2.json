@@ -1,11 +1,9 @@
 {
     "setAnalogCfg": {
         "0": {
-            "nm": "analog1",
-            "ut": "Hz",
+            "id": 1,
             "sr": 50,
             "scalMod": 2,
-	    "prec": 3,
             "linScal": 1.234
             "map": {
                 "raw": [

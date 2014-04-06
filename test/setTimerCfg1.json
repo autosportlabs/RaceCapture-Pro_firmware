@@ -1,7 +1,7 @@
 {
     "setTimerCfg": {
         "0": {
-        	"nid":22,        
+        	"id":22,        
             "sr": 10,
             "prec": 3,
             "sTimer": 1,

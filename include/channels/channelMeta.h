@@ -140,7 +140,7 @@ CHANNEL_COUNT, \
 {"AccelX", "G", 2}, \
 {"AccelY", "G", 2}, \
 {"AccelZ", "G", 2}, \
-{"Yaw", "Deg/sec", 0}, \
+{"Yaw", "Deg/sec", 1}, \
 {"Pitch", "Deg/sec", 0}, \
 {"Roll", "Deg/sec", 0}, \
 {"GPSSats", "Count", 0}, \

@@ -33,6 +33,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/command \
 		-I$(RCP_INC)/spi \
 		-I$(RCP_INC)/predictive_timer \
+		-I$(RCP_INC)/auto_config \
 		-I$(RCP_INC)/util \
 		-I$(SAM7S_SRC)/serial \
 		-I$(SAM7S_SRC)/lua \
@@ -123,6 +124,7 @@ SRC =	RCPTest.cpp \
 		$(MOCK_DIR)/watchdog_device_mock.c \
 		$(MOCK_DIR)/CAN_device_mock.c \
 		$(RCP_SRC)/predictive_timer/predictive_timer_2.c \
+		$(RCP_SRC)/auto_config/auto_track.c \
 		$(RCP_SRC)/util/linear_interpolate.c \
 		$(RCP_SRC)/logger/loggerConfig.c \
 		$(RCP_SRC)/virtual_channel/virtual_channel.c \

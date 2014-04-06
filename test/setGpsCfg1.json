@@ -1,23 +1,23 @@
 {
     "setGpsCfg": {
         "lat": {
-        	"nid":31,        
+        	"id":31,        
             "sr": 5
         },
         "long": {
-			"nid":32,        
+			"id":32,        
             "sr": 10
         },
         "speed": {
-			"nid":33,        
+			"id":33,        
             "sr": 25
         },
         "time": {
-			"nid":34,        
+			"id":34,        
             "sr": 50
         },
         "sats": {
-			"nid":35,        
+			"id":35,        
             "sr": 100
         }
     }

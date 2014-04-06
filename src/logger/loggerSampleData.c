@@ -186,10 +186,21 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 			sample->get_sample = get_gps_sample;
 			sample++;
 		}
+
+		if (gpsConfig->distanceCfg.sampleRate != SAMPLE_DISABLED){
+			ChannelConfig *cc = &(gpsConfig->distanceCfg);
+			sample->channelId = cc->channeId;
+			sample->sampleRate = cc->sampleRate;
+			sample->intValue = NIL_SAMPLE;
+			sample->channelIndex = gps_channel_distance;
+			sample->get_sample = get_gps_sample;
+			sample++;
+		}
+
 	}
 
 	{
-		TrackConfig *trackConfig = &(loggerConfig->TrackConfigs);
+		LapConfig *trackConfig = &(loggerConfig->LapConfigs);
 		if (trackConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED){
 			ChannelConfig *cc = &(trackConfig->lapCountCfg);
 			sample->channelId = cc->channeId;
@@ -216,16 +227,6 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = lap_stat_channel_splittime;
-			sample->get_sample = get_lap_stat_sample;
-			sample++;
-		}
-
-		if (trackConfig->distanceCfg.sampleRate != SAMPLE_DISABLED){
-			ChannelConfig *cc = &(trackConfig->distanceCfg);
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->intValue = NIL_SAMPLE;
-			sample->channelIndex = lap_stat_channel_distance;
 			sample->get_sample = get_lap_stat_sample;
 			sample++;
 		}
@@ -374,6 +375,9 @@ float get_gps_sample(int channelId){
 		case gps_channel_time:
 			value = getUTCTime();
 			break;
+		case gps_channel_distance:
+			value = getGpsDistance();
+			break;
 		case gps_channel_satellites:
 			value = getSatellitesUsedForPosition();
 			break;
@@ -395,9 +399,6 @@ float get_lap_stat_sample(int channelId){
 			break;
 		case lap_stat_channel_splittime:
 			value = getLastSplitTime();
-			break;
-		case lap_stat_channel_distance:
-			value = getGpsDistance();
 			break;
 		case lap_stat_channel_predtime:
 		{

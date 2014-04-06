@@ -6,23 +6,28 @@
 #include "geopoint.h"
 #include "loggerConfig.h"
 #include "tracks.h"
+#include "printk.h"
 
 
-AutoTrackStatus auto_configure_track(GPSTargetConfig *cfg, GeoPoint gp) {
-   if (cfg->latitude || cfg->longitude) {
+const Track * auto_configure_track(Track *defaultCfg, GeoPoint gp) {
+	pr_info("Configuring start/finish...");
+   if (defaultCfg->startFinish.latitude && defaultCfg->startFinish.longitude) {
+	  pr_info("using fixed config\r\n");
       // Then this has been configured and we don't touch it.
-      return ATS_ALREADY_CONFIGURED;
+      return defaultCfg;
    }
 
    const Tracks *tracks = get_tracks();
    if (!tracks || tracks->count <= 0) {
       // Well shit!
-      return ATS_NO_DATA;
+	  pr_info("error!\r\n");
+      return defaultCfg;
    }
 
    float best_track_dist = MAX_DIST_FROM_SF;
-   int i;
-   for (i = 0; i < tracks->count; ++i) {
+   const Track *foundTrack = NULL;
+
+   for (int i = 0; i < tracks->count; ++i) {
       const Track *track = &(tracks->tracks[i]);
 
       // XXX: inaccurate but fast.  Good enough for now.
@@ -33,10 +38,14 @@ AutoTrackStatus auto_configure_track(GPSTargetConfig *cfg, GeoPoint gp) {
 
       // If here then we have a new best.  Set it accordingly
       best_track_dist = track_distance;
-      cfg->latitude = track->startFinish.latitude;
-      cfg->longitude = track->startFinish.longitude;
+      foundTrack = track;
    }
 
-   // If latitude is not 0, then we have auto-detcted a track.
-   return cfg->latitude ? ATS_TRACK_FOUND : ATS_NO_TRACK_FOUND;
+   // if no track found, fall back to default
+   if (! foundTrack){
+	   pr_info("no ");
+	   foundTrack = defaultCfg;
+   }
+   pr_info("track found\r\n");
+   return foundTrack;
 }

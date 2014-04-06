@@ -1,7 +1,7 @@
 {
     "setAccelCfg": {
         "0": {        
-        	"nid":33,
+        	"id":33,
             "sr": 50,
             "mode": 1,
             "chan": 2,

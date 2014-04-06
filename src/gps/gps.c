@@ -31,6 +31,8 @@
 
 #define GPS_LOCKED_ON(QUALITY) QUALITY != GPS_QUALITY_NO_FIX
 
+static const Track * g_activeTrack;
+
 static int		g_flashCount;
 static float	g_prevLatitude;
 static float	g_prevLongitude;
@@ -323,24 +325,29 @@ void setGPSSpeed(float speed){
 	g_speed = speed;
 }
 
-static int withinGpsTarget(GPSTargetConfig *targetConfig){
+static int withinGpsTarget(const Track *track){
 
 	struct circ_area area;
 	struct point p;
-	p.x = targetConfig->longitude;
-	p.y = targetConfig->latitude;
+	p.x = track->startFinish.longitude;
+	p.y = track->startFinish.latitude;
 
 	struct point currentP;
 	currentP.x = getLongitude();
 	currentP.y = getLatitude();
 
-	create_circ(&area,&p,targetConfig->targetRadius);
+	create_circ(&area,&p,track->radius);
 	int within =  within_circ(&area,&currentP);
 	return within;
 }
 
-static int isGpsTargetEnabled(GPSTargetConfig *targetConfig){
-	return targetConfig->latitude != 0 && targetConfig->longitude != 0;
+static int isStartFinishEnabled(const Track *track){
+	int isEnabled = 0;
+	if (track != NULL){
+		const GeoPoint *p = &track->startFinish;
+		isEnabled = p->latitude != 0 && p->longitude != 0;
+	}
+	return isEnabled;
 }
 
 static float toRadians(float degrees){
@@ -363,9 +370,9 @@ static float calcDistancesSinceLastSample(){
 	return d;
 }
 
-static int processStartFinish(GPSTargetConfig *targetConfig){
+static int processStartFinish(const Track *track){
 	int lapDetected = 0;
-	g_atStartFinish = withinGpsTarget(targetConfig);
+	g_atStartFinish = withinGpsTarget(track);
 	if (g_atStartFinish){
 		if (g_prevAtStartFinish == 0){
 			if (g_lastStartFinishTimestamp == 0){
@@ -395,8 +402,8 @@ static int processStartFinish(GPSTargetConfig *targetConfig){
 	return lapDetected;
 }
 
-static void processSplit(GPSTargetConfig *targetConfig){
-	g_atSplit = withinGpsTarget(targetConfig);
+static void processSplit(const Track *track){
+	g_atSplit = withinGpsTarget(track);
 	if (g_atSplit){
 		if (g_prevAtSplit == 0){
 			if (g_lastSplitTimestamp == 0){
@@ -419,6 +426,7 @@ static void processSplit(GPSTargetConfig *targetConfig){
 }
 
 void initGPS(){
+	g_activeTrack = NULL;
 	g_secondsSinceMidnight = TIME_NULL;
 	g_prevSecondsSinceMidnight = TIME_NULL;
 	g_flashCount = 0;
@@ -460,25 +468,22 @@ void onLocationUpdated(){
 		GeoPoint gp;
 		populateGeoPoint(&gp);
 
-       	GPSTargetConfig *startFinishCfg = &(getWorkingLoggerConfig()->TrackConfigs.startFinishConfig);
-       	GPSTargetConfig *splitCfg = &(getWorkingLoggerConfig()->TrackConfigs.splitConfig);
-
        	if (! configured){
-     	   auto_configure_track(startFinishCfg, gp);
-     	   ++configured;
+           Track *defaultTrack = &(getWorkingLoggerConfig()->TrackConfigs.track);
+       	   g_activeTrack = auto_configure_track(defaultTrack, gp);
+     	   configured = 1;
        	}
 
-       	int startFinishEnabled = isGpsTargetEnabled(startFinishCfg);
-       	int splitEnabled = isGpsTargetEnabled(splitCfg);
+       	int startFinishEnabled = isStartFinishEnabled(g_activeTrack);
 
        	float dist = calcDistancesSinceLastSample();
 		g_distance += dist;
 
-		if (splitEnabled) processSplit(splitCfg);
+		//if (splitEnabled) processSplit(splitCfg);
 
 		if (startFinishEnabled){
 			float utcTime = getUTCTime();
-			int lapDetected = processStartFinish(startFinishCfg);
+			int lapDetected = processStartFinish(g_activeTrack);
 
 			if (lapDetected){
 				resetGpsDistance();

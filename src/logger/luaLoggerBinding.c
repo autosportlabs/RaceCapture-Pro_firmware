@@ -233,42 +233,24 @@ int Lua_GetGPIOSampleRate(lua_State *L){
 int Lua_SetGPSStartFinish(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		TrackConfig *c = &(getWorkingLoggerConfig()->TrackConfigs);
-		c->startFinishConfig.latitude = lua_tonumber(L,1);
-		c->startFinishConfig.longitude = lua_tonumber(L,2);
-		if (lua_gettop(L) >=3) c->startFinishConfig.targetRadius = lua_tonumber(L,3);
+		c->track.startFinish.latitude = lua_tonumber(L,1);
+		c->track.startFinish.longitude = lua_tonumber(L,2);
+		if (lua_gettop(L) >=3) c->track.radius = lua_tonumber(L,3);
 	}
 	return 0;
 }
 
 int Lua_GetGPSStartFinish(lua_State *L){
 	TrackConfig *c = &(getWorkingLoggerConfig()->TrackConfigs);
-	lua_pushnumber(L,c->startFinishConfig.latitude);
-	lua_pushnumber(L,c->startFinishConfig.longitude);
-	lua_pushnumber(L,c->startFinishConfig.targetRadius);
+	lua_pushnumber(L,c->track.startFinish.latitude);
+	lua_pushnumber(L,c->track.startFinish.longitude);
+	lua_pushnumber(L,c->track.radius);
 	return 3;
 }
 
 int Lua_GetGPSAtStartFinish(lua_State *L){
 	lua_pushinteger(L,getAtStartFinish());
 	return 1;
-}
-
-int Lua_SetSplit(lua_State *L){
-	if (lua_gettop(L) >= 2){
-		TrackConfig *c = &(getWorkingLoggerConfig()->TrackConfigs);
-		c->splitConfig.latitude = lua_tonumber(L,1);
-		c->splitConfig.longitude = lua_tonumber(L,2);
-		if (lua_gettop(L) >=3) c->splitConfig.targetRadius = lua_tonumber(L,3);
-	}
-	return 0;
-}
-
-int Lua_GetSplit(lua_State *L){
-	TrackConfig *c = &(getWorkingLoggerConfig()->TrackConfigs);
-	lua_pushnumber(L,c->splitConfig.latitude);
-	lua_pushnumber(L,c->splitConfig.longitude);
-	lua_pushnumber(L,c->splitConfig.targetRadius);
-	return 3;
 }
 
 int Lua_GetAtSplit(lua_State *L){

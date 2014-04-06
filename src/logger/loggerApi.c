@@ -210,7 +210,7 @@ static const jsmntok_t * setChannelConfig(Serial *serial, const jsmntok_t *cfg, 
 			char *value = valueTok->data;
 			unescapeTextField(value);
 
-			if (NAME_EQU("nid", name)) channelCfg->channeId = filter_channel_id(modp_atoi(value));
+			if (NAME_EQU("id", name)) channelCfg->channeId = filter_channel_id(modp_atoi(value));
 			else if (NAME_EQU("sr", name)) channelCfg->sampleRate = encodeSampleRate(modp_atoi(value));
 			else if (setExtField != NULL) cfg = setExtField(valueTok, name, value, extCfg);
 		}
@@ -305,8 +305,8 @@ int api_setAnalogConfig(Serial *serial, const jsmntok_t * json){
 }
 
 static void json_channelConfig(Serial *serial, ChannelConfig *cfg, int more){
-	json_int(serial, "nid", cfg->channeId, 1);
-	json_int(serial, "sr", cfg->sampleRate, more);
+	json_int(serial, "id", cfg->channeId, 1);
+	json_int(serial, "sr", decodeSampleRate(cfg->sampleRate), more);
 }
 
 static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex){
@@ -319,6 +319,7 @@ static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
 		json_objStartInt(serial, i);
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_int(serial, "scalMod", cfg->scalingMode, 1);
+		json_float(serial, "linScal", cfg->linearScaling, LINEAR_SCALING_PRECISION, 1);
 
 		json_objStart(serial, "map");
 		json_arrayStart(serial, "raw");
@@ -747,6 +748,10 @@ int api_getGpsConfig(Serial *serial, const jsmntok_t *json){
 	json_channelConfig(serial, &gpsCfg->timeCfg, 0);
 	json_objEnd(serial, 0);
 
+	json_objStart(serial, "dist");
+	json_channelConfig(serial, &gpsCfg->distanceCfg, 0);
+	json_objEnd(serial, 1);
+
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
@@ -771,16 +776,67 @@ int api_setGpsConfig(Serial *serial, const jsmntok_t *json){
 
 	const jsmntok_t * satsNode = findNode(channelData, "sats");
 	if (satsNode != NULL) setChannelConfig(serial, satsNode + 1, &gpsCfg->satellitesCfg, NULL, NULL);
+
+	const jsmntok_t *distance = findNode(json, "dist");
+	if (distance != NULL) setChannelConfig(serial, distance + 1, &gpsCfg->distanceCfg, NULL, NULL);
+
 	configChanged();
 	return API_SUCCESS;
 }
 
-static void json_gpsTarget(Serial *serial, const char *name,  GPSTargetConfig *gpsTarget, int more){
-	json_objStart(serial, name);
-	json_float(serial, "lat", gpsTarget->latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
-	json_float(serial, "long", gpsTarget->longitude, DEFAULT_GPS_POSITION_PRECISION, 1);
-	json_float(serial, "rad", gpsTarget->targetRadius, DEFAULT_GPS_RADIUS_PRECISION, 0);
-	json_objEnd(serial, more);
+int api_setLapConfig(Serial *serial, const jsmntok_t *json){
+	LapConfig *lapCfg = &(getWorkingLoggerConfig()->LapConfigs);
+
+	const jsmntok_t *lapCount = findNode(json, "lapCount");
+	if (lapCount != NULL) setChannelConfig(serial, lapCount + 1, &lapCfg->lapCountCfg, NULL, NULL);
+
+	const jsmntok_t *lapTime = findNode(json, "lapTime");
+	if (lapTime != NULL) setChannelConfig(serial, lapTime + 1, &lapCfg->lapTimeCfg, NULL, NULL);
+
+	const jsmntok_t *predTime = findNode(json, "predTime");
+	if (predTime != NULL) setChannelConfig(serial, predTime + 1, &lapCfg->predTimeCfg, NULL, NULL);
+
+	configChanged();
+	return API_SUCCESS;
+}
+
+int api_getLapConfig(Serial *serial, const jsmntok_t *json){
+	LapConfig *lapCfg = &(getWorkingLoggerConfig()->LapConfigs);
+
+	json_messageStart(serial);
+	json_objStart(serial, "lapCfg");
+
+	json_objStart(serial, "lapCount");
+	json_channelConfig(serial, &lapCfg->lapCountCfg, 0);
+	json_objEnd(serial, 1);
+
+	json_objStart(serial, "lapTime");
+	json_channelConfig(serial, &lapCfg->lapTimeCfg, 0);
+	json_objEnd(serial, 1);
+
+	json_objStart(serial, "predTime");
+	json_channelConfig(serial, &lapCfg->predTimeCfg, 0);
+	json_objEnd(serial, 0);
+
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
+	return API_SUCCESS_NO_RETURN;
+}
+
+static void json_track(Serial *serial, const Track *track){
+	json_arrayStart(serial, "sf");
+	json_arrayElementFloat(serial, track->startFinish.latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
+	json_arrayElementFloat(serial, track->startFinish.longitude, DEFAULT_GPS_POSITION_PRECISION, 0);
+	json_arrayEnd(serial, 1);
+	json_arrayStart(serial, "sec");
+	for (size_t i = 0; i < SECTOR_COUNT; i++){
+		const GeoPoint *p = &track->sectors[i];
+		json_arrayStart(serial, NULL);
+		json_arrayElementFloat(serial, p->latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
+		json_arrayElementFloat(serial, p->longitude, DEFAULT_GPS_POSITION_PRECISION, 0);
+		json_arrayEnd(serial, i < SECTOR_COUNT - 1);
+	}
+	json_arrayEnd(serial, 0);
 }
 
 int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
@@ -788,22 +844,9 @@ int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
 
 	json_messageStart(serial);
 	json_objStart(serial, "getTrackCfg");
-	json_gpsTarget(serial, "startFinish", &trackCfg->startFinishConfig, 1);
-	json_gpsTarget(serial, "split", &trackCfg->splitConfig, 1);
-	json_objStart(serial, "lapCount");
-	json_channelConfig(serial, &trackCfg->lapCountCfg, 0);
-	json_objEnd(serial, 1);
-	json_objStart(serial, "lapTime");
-	json_channelConfig(serial, &trackCfg->lapTimeCfg, 0);
-	json_objEnd(serial, 1);
-	json_objStart(serial, "splitTime");
-	json_channelConfig(serial, &trackCfg->splitTimeCfg, 0);
-	json_objEnd(serial, 1);
-	json_objStart(serial, "dist");
-	json_channelConfig(serial, &trackCfg->distanceCfg, 0);
-	json_objEnd(serial, 1);
-	json_objStart(serial, "predTime");
-	json_channelConfig(serial, &trackCfg->predTimeCfg, 0);
+	json_float(serial, "rad", trackCfg->track.radius, DEFAULT_GPS_RADIUS_PRECISION, 1);
+	json_objStart(serial, "track");
+	json_track(serial, &trackCfg->track);
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
@@ -811,53 +854,46 @@ int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS_NO_RETURN;
 }
 
-void setTargetConfig(const jsmntok_t *cfg, GPSTargetConfig *targetConfig){
-	if (cfg->type == JSMN_OBJECT && cfg->size % 2 == 0){
-		int size = cfg->size;
-		cfg++;
-		for (int i = 0; i < size; i += 2 ){
-			const jsmntok_t *nameTok = cfg;
-			jsmn_trimData(nameTok);
-			cfg++;
-			const jsmntok_t *valueTok = cfg;
-			cfg++;
-			if (valueTok->type == JSMN_PRIMITIVE || valueTok->type == JSMN_STRING) jsmn_trimData(valueTok);
-
-			char *name = nameTok->data;
-			char *value = valueTok->data;
-
-			if (NAME_EQU("lat",name)) targetConfig->latitude = modp_atof(value);
-			else if (NAME_EQU("long", name)) targetConfig->longitude = modp_atof(value);
-			else if (NAME_EQU("rad", name)) targetConfig->targetRadius = modp_atof(value);
+static void setFloatValueIfExists(const jsmntok_t *root, const char * fieldName, float *target ){
+	const jsmntok_t *field = findNode(root, fieldName);
+	if (field != NULL){
+		field++;
+		if (field->type == JSMN_PRIMITIVE){
+			jsmn_trimData(field);
+			*target = modp_atof(field->data);
 		}
 	}
+}
+
+void setTrack(const jsmntok_t *cfg, Track *track){
+	{
+		const jsmntok_t *startFinish = findNode(cfg, "sf");
+		if (startFinish != NULL){
+			const jsmntok_t *sfValues = startFinish + 1;
+			if (sfValues != NULL && sfValues->type == JSMN_ARRAY && sfValues->size == 2){
+				sfValues++;
+				if (sfValues->type == JSMN_PRIMITIVE){
+					jsmn_trimData(sfValues);
+					track->startFinish.latitude = modp_atof(sfValues->data);
+				}
+				sfValues++;
+				if (sfValues->type == JSMN_PRIMITIVE){
+					jsmn_trimData(sfValues);
+					track->startFinish.longitude = modp_atof(sfValues->data);
+				}
+			}
+		}
+	}
+	setFloatValueIfExists(cfg, "rad", &track->radius);
 }
 
 int api_setTrackConfig(Serial *serial, const jsmntok_t *json){
 
 	TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs);
-	const jsmntok_t * targetData = json + 1;
 
-	const jsmntok_t *startFinish = findNode(targetData,"startFinish");
-	if (startFinish != NULL) setTargetConfig(startFinish + 1, &trackCfg->startFinishConfig);
+	const jsmntok_t *track = findNode(json, "track");
+	if (track != NULL) setTrack(track + 1, &trackCfg->track);
 
-	const jsmntok_t *split = findNode(targetData, "split");
-	if (split != NULL) setTargetConfig(split + 1, &trackCfg->splitConfig);
-
-	const jsmntok_t *lapCount = findNode(targetData, "lapCount");
-	if (lapCount != NULL) setChannelConfig(serial, lapCount + 1, &trackCfg->lapCountCfg, NULL, NULL);
-
-	const jsmntok_t *lapTime = findNode(targetData, "lapTime");
-	if (lapTime != NULL) setChannelConfig(serial, lapTime + 1, &trackCfg->lapTimeCfg, NULL, NULL);
-
-	const jsmntok_t *splitTime = findNode(targetData, "splitTime");
-	if (splitTime != NULL) setChannelConfig(serial, splitTime + 1, &trackCfg->splitTimeCfg, NULL, NULL);
-
-	const jsmntok_t *distance = findNode(targetData, "dist");
-	if (distance != NULL) setChannelConfig(serial, distance + 1, &trackCfg->distanceCfg, NULL, NULL);
-
-	const jsmntok_t *predTime = findNode(targetData, "predTime");
-	if (predTime != NULL) setChannelConfig(serial, predTime + 1, &trackCfg->predTimeCfg, NULL, NULL);
 	configChanged();
 
 	return API_SUCCESS;
@@ -883,19 +919,7 @@ int api_getTracks(Serial *serial, const jsmntok_t *json){
 	for (size_t track_index = 0; track_index < track_count; track_index++){
 		const Track *track = tracks->tracks + track_index;
 		json_objStartInt(serial, track_index);
-		json_arrayStart(serial, "sf");
-		json_arrayElementFloat(serial, track->startFinish.latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
-		json_arrayElementFloat(serial, track->startFinish.longitude, DEFAULT_GPS_POSITION_PRECISION, 0);
-		json_arrayEnd(serial, 1);
-		json_arrayStart(serial, "sec");
-		for (size_t i = 0; i < SECTOR_COUNT; i++){
-			const GeoPoint *p = &track->sectors[i];
-			json_arrayStart(serial, NULL);
-			json_arrayElementFloat(serial, p->latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
-			json_arrayElementFloat(serial, p->longitude, DEFAULT_GPS_POSITION_PRECISION, 0);
-			json_arrayEnd(serial, i < SECTOR_COUNT - 1);
-		}
-		json_arrayEnd(serial, 0);
+		json_track(serial, track);
 		json_objEnd(serial, track_index < track_count - 1);
 	}
 	json_objEnd(serial, 0);

@@ -369,18 +369,19 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
 			int sr = gpsConfig->speedCfg.sampleRate;
 			if HIGHER_SAMPLE(sr, s) s = sr;
 		}
+		{
+			int sr = gpsConfig->distanceCfg.sampleRate;
+			if HIGHER_SAMPLE(sr, s) s = sr;
+		}
+
 	}
-	TrackConfig *trackCfg = &(config->TrackConfigs);
+	LapConfig *trackCfg = &(config->LapConfigs);
 	{
 		int sr = trackCfg->lapCountCfg.sampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr;
 	}
 	{
 		int sr = trackCfg->lapTimeCfg.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;
-	}
-	{
-		int sr = trackCfg->distanceCfg.sampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr;
 	}
 	{
@@ -414,17 +415,19 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
 
 	channels+=loggerConfig->OBD2Configs.enabledPids;
 
-	if (loggerConfig->GPSConfigs.latitudeCfg.sampleRate != SAMPLE_DISABLED) channels++;
-	if (loggerConfig->GPSConfigs.longitudeCfg.sampleRate != SAMPLE_DISABLED) channels++;
-	if (loggerConfig->GPSConfigs.speedCfg.sampleRate != SAMPLE_DISABLED) channels++;
-	if (loggerConfig->GPSConfigs.timeCfg.sampleRate != SAMPLE_DISABLED) channels++;
-	if (loggerConfig->GPSConfigs.satellitesCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	GPSConfig *gpsConfigs = &loggerConfig->GPSConfigs;
+	if (gpsConfigs->latitudeCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (gpsConfigs->longitudeCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (gpsConfigs->speedCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (gpsConfigs->timeCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (gpsConfigs->satellitesCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (gpsConfigs->distanceCfg.sampleRate != SAMPLE_DISABLED) channels++;
 
-	if (loggerConfig->TrackConfigs.lapCountCfg.sampleRate != SAMPLE_DISABLED) channels++;
-	if (loggerConfig->TrackConfigs.lapTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
-	if (loggerConfig->TrackConfigs.splitTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
-	if (loggerConfig->TrackConfigs.distanceCfg.sampleRate != SAMPLE_DISABLED) channels++;
-	if (loggerConfig->TrackConfigs.predTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	LapConfig *lapConfig = &loggerConfig->LapConfigs;
+	if (lapConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (lapConfig->lapTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (lapConfig->splitTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (lapConfig->predTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
 
 	channels += get_virtual_channel_count();
 	return channels;

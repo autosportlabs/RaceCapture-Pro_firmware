@@ -78,10 +78,6 @@ int Lua_SetGPSStartFinish(lua_State *L);
 int Lua_GetGPSStartFinish(lua_State *L);
 int Lua_GetAtStartFinish(lua_State *L);
 
-int Lua_GetSplit(lua_State *L);
-int Lua_SetSplit(lua_State *L);
-int Lua_GetAtSplit(lua_State *L);
-
 int Lua_SetGPSPositionSampleRate(lua_State *L);
 int Lua_GetGPSPositionSampleRate(lua_State *L);
 

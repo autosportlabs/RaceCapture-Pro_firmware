@@ -9,6 +9,7 @@
 #define SECTOR_COUNT			10
 
 typedef struct _Track{
+	float radius;
 	GeoPoint startFinish;
 	GeoPoint sectors[SECTOR_COUNT];
 } Track;

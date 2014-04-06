@@ -42,6 +42,8 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST( testSetTimerCfg );
   CPPUNIT_TEST( testSetGpsCfg );
   CPPUNIT_TEST( testGetGpsCfg );
+  CPPUNIT_TEST( testSetLapCfg );
+  CPPUNIT_TEST( testGetLapCfg );
   CPPUNIT_TEST( testSetTrackCfg );
   CPPUNIT_TEST( testGetTrackCfg );
   CPPUNIT_TEST( testSampleData );
@@ -86,6 +88,8 @@ public:
   void testGetGpsCfg();
   void testSetGpsCfg();
   void testSetTrackCfg();
+  void testSetLapCfg();
+  void testGetLapCfg();
   void testGetTrackCfg();
   void testCalibrateAccel();
   void testFlashConfig();
@@ -110,6 +114,8 @@ private:
   void testSetGpsConfigFile(string filename);
   void testGetTrackConfigFile(string filename);
   void testSetTrackConfigFile(string filename);
+  void testSetLapConfigFile(string filename);
+  void testGetLapConfigFile(string filename);
   void testCalibrateAccelFile(string filename);
   void testFlashConfigFile(string filename);
 };
