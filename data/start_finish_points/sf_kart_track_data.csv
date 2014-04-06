@@ -1,0 +1,92 @@
+type  latitude longitude name
+W     30.246222222       -81.828277778 103rd Street Kart Track
+W     50.136333333       1.840666667   Abbeville - Kart East
+W     50.133583333       1.831388889   Abbeville - Kart South
+W     39.662555556       -105.186500000          Action Karting - Bandimere
+W     45.683361111       5.074111111             Actua Lyon Karting - East
+W     45.684333333       5.074638889             Actua Lyon Karting - North
+W     45.683388889       5.072916667             Actua Lyon Karting - West
+W     41.618805556       0.405111111             Alcarras - Kart Track
+W     66.422416667       14.441722222            Arctic Circle Kart Track
+W     39.266944444       -106.879250000          Aspen Kart Track
+W     37.986583333       23.363888889            Athens Kart Circuit
+W     34.436416667       -84.175222222           Atlanta Motorsports Park - Kart
+W     41.452027778       -88.124416667           Autobahn Country Club - Kart
+W     33.035111111       130.976555556           Autopolis - Kart Track
+W     -23.282277778      -51.161944444           Ayrton Senna - Kart Track
+W     13.820722222       121.277138889           Batangas Kart Track
+W     52.234694444       -0.473055556            Bedford Kart Track
+W     12.921944444       101.007972222           Bira Go Kart Track
+W     38.575861111       -121.732750000          Blue Max Kart Club
+W     14.553666667       120.985944444           Boomland Kart Track
+W     46.417722222       -94.278805556           Brainerd Kart Course
+W     35.492194444       -119.543222222          Buttonwillow Kart Track
+W     50.437944444       30.299138889            Chaika Kart Track
+W     56.274388889       -2.602361111            Crail Kart Track
+W     45.258500000       33.399805556            Crimea GP Kart Track
+W     -25.451888889      -49.193111111           Curitiba - Raceland Kartodromo
+W     -33.805361111      150.882611111           Eastern Creek Kart Track
+W     14.281361111       121.094027778           Enchanted Kingdom Kart Track
+W     29.845444444       -82.056611111           FIRM - Kart Track
+W     -16.720083333      -49.187638889           Goiania - Kart Track
+W     -28.844722222      -51.854111111           Guapore - Kart Track
+W     19.675000000       -155.026722222          Hilo Kart Track
+W     25.454527778       -80.415527778           Homestead Kart Track
+W     32.895361111       130.873861111           Honda Kyushu - Kart Track
+W     45.680361111       -74.025250000           ICAR - Kart Track
+W     -34.697555556      -58.467750000           Juan y Oscar Galvez - Kart Track
+W     59.380888889       14.509722222            Karlskoga Kart Track
+W     -46.442222222      168.251527778           Kartsport Southland
+W     52.001416667       -8.326388889            KartWorld
+W     -33.821972222      18.528444444            Killarney Kart Track
+W     -25.996583333      28.070500000            Kyalami Kart Track
+W     40.129361111       18.349972222            La Conca Kart Track
+W     51.492666667       0.286222222             Lakeside Karting
+W     45.466527778       5.297527778             Laquais Kart Track
+W     58.393638889       15.718916667            Linkopings Kart Track
+W     36.264833333       -115.021722222          LVMS Kart Track
+W     22.132916667       113.560694444           Macau Kart Track
+W     20.814027778       -156.457083333          Maui Puunene Kart Track
+W     42.417055556       -122.804472222          Medford Kart Track
+W     52.711583333       -1.794111111            Midland Karting - Intl. Circuit
+W     52.711250000       -1.795194444            Midland Karting - National Circuit
+W     40.585083333       -112.377611111          Miller Motorsports Kart Track
+W     25.857277778       -100.217444444          Monterrey - Kart Track
+W     30.500277778       -83.795055556           Monticello Karting
+W     41.075472222       -0.188638889            Motorland Aragon - Kart
+W     29.277555556       -95.425250000           MSR Houston Kart Track
+W     34.783527778       134.177777778           Nakayama Kart Track
+W     42.557888889       -2.168000000            Navarro - Kart Track
+W     -15.778388889      -47.896500000           Nelson Piquet - Kart Track
+W     34.914666667       134.217861111           Okayama Kart Track
+W     28.412722222       -81.379666667           Orlando Kart Center
+W     53.133388889       -8.353027778            Pallas Karting - 1500m
+W     53.133777778       -8.354750000            Pallas Karting - 500m
+W     26.920555556       -80.307055556           PBIR Kart Track
+W     40.849777778       -80.344555556           Pitt Race - Winslow Kart Track
+W     37.233194444       -8.636361111            Portimao Kart Track
+W     48.553472222       0.274472222             Quest Karting - Essay
+W     24.383222222       45.976500000            Reem Kart Track
+W     41.957638889       3.176166667             Regencos Kart Track
+W     59.368111111       11.260722222            Rudskogen Kart Track
+W     -45.903666667      -67.543361111           San Martin Kart Track
+W     45.528166667       -72.881916667           Sanair Kart Track
+W     38.288361111       140.623527778           Sendai Hi-Land - North Kart Track
+W     2.763638889        101.729166667           Sepang Kart Track
+W     41.073722222       23.519388889            Serres Kart Track
+W     47.360916667       2.049222222             Sologne Karting - Salbris
+W     51.433944444       -3.496416667            South Wales Karting Centre
+W     47.658083333       -117.591527778          Spokane Kart Track
+W     38.141277778       140.772000000           Sportsland SUGO - Kart Track
+W     51.998527778       13.689944444            Spreewaldring Kart Track
+W     34.843194444       136.528388889           Suzuka Kart Track
+W     -30.050722222      -51.020500000           Taruma - Kart Track
+W     57.074055556       8.690333333             Thy Karting
+W     42.810250000       13.688361111            Val Vibrata Kartodromo
+W     46.322083333       3.359027778             Varennes Karting
+W     41.587861111       -8.445111111            Vasco Sameiro - Kart Track
+W     26.028638889       50.506472222            VIVA Karting Track (Bahrain)
+W     34.870888889       -118.266555556          Willow Kart Track
+W     24.477111111       54.607250000            Yas Marina Kartzone
+W     41.829222222       -0.812500000            Zeura Kart Track
+W     -25.809888889      28.109833333            Zwartkops Kart Track
