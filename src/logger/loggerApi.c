@@ -746,11 +746,11 @@ int api_getGpsConfig(Serial *serial, const jsmntok_t *json){
 
 	json_objStart(serial, "time");
 	json_channelConfig(serial, &gpsCfg->timeCfg, 0);
-	json_objEnd(serial, 0);
+	json_objEnd(serial, 1);
 
 	json_objStart(serial, "dist");
 	json_channelConfig(serial, &gpsCfg->distanceCfg, 0);
-	json_objEnd(serial, 1);
+	json_objEnd(serial, 0);
 
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);

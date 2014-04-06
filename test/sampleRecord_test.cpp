@@ -212,7 +212,7 @@ void SampleRecordTest::testInitSampleRecord()
 			CPPUNIT_ASSERT_EQUAL(gpsConfig->distanceCfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL((size_t)gps_channel_distance, ts->channelIndex);
-			CPPUNIT_ASSERT_EQUAL((void *)get_lap_stat_sample, (void *)ts->get_sample);
+			CPPUNIT_ASSERT_EQUAL((void *)get_gps_sample, (void *)ts->get_sample);
 			ts++;
 		}
 

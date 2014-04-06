@@ -748,7 +748,7 @@ void LoggerApiTest::testSetGpsConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(100, decodeSampleRate(gpsCfg->satellitesCfg.sampleRate));
 
 	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Distance, (int)gpsCfg->distanceCfg.channeId);
-	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(gpsCfg->distanceCfg.sampleRate));
+	CPPUNIT_ASSERT_EQUAL(100, decodeSampleRate(gpsCfg->distanceCfg.sampleRate));
 
 }
 
@@ -795,21 +795,26 @@ void LoggerApiTest::testGetGpsConfigFile(string filename){
 	Object &speedJson = json["getGpsCfg"]["speed"];
 	Object &timeJson = json["getGpsCfg"]["time"];
 	Object &satsJson = json["getGpsCfg"]["sats"];
+	Object &distJson = json["getGpsCfg"]["dist"];
 
-	CPPUNIT_ASSERT_EQUAL(4, (int)(Number)latJson["id"]);
+	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Latitude, (int)(Number)latJson["id"]);
 	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)latJson["sr"]);
 
-	CPPUNIT_ASSERT_EQUAL(6, (int)(Number)longJson["id"]);
+	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Longitude, (int)(Number)longJson["id"]);
 	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)longJson["sr"]);
 
-	CPPUNIT_ASSERT_EQUAL(8, (int)(Number)speedJson["id"]);
+	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Speed, (int)(Number)speedJson["id"]);
 	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)speedJson["sr"]);
 
-	CPPUNIT_ASSERT_EQUAL(10, (int)(Number)timeJson["id"]);
+	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Time, (int)(Number)timeJson["id"]);
 	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)timeJson["sr"]);
 
-	CPPUNIT_ASSERT_EQUAL(12, (int)(Number)satsJson["id"]);
+	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_GPSSats, (int)(Number)satsJson["id"]);
 	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)satsJson["sr"]);
+
+	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Distance, (int)(Number)distJson["id"]);
+	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)distJson["sr"]);
+
 }
 
 void LoggerApiTest::testGetGpsCfg(){
@@ -859,11 +864,6 @@ void LoggerApiTest::testGetLapConfigFile(string filename){
 	{
 		Object &channel = json["lapCfg"]["lapTime"];
 		CPPUNIT_ASSERT_EQUAL((int)CHANNEL_LapTime, (int)(Number)channel["id"]);
-		CPPUNIT_ASSERT_EQUAL(50, (int)(Number)channel["sr"]);
-	}
-	{
-		Object &channel = json["lapCfg"]["dist"];
-		CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Distance, (int)(Number)channel["id"]);
 		CPPUNIT_ASSERT_EQUAL(50, (int)(Number)channel["sr"]);
 	}
 	{
