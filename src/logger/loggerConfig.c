@@ -354,26 +354,11 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
 		int sr = config->AccelConfigs[i].cfg.sampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr;
 	}
-	if (config->GPSConfigs.GPSInstalled){
-		GPSConfig *gpsConfig = &(config->GPSConfigs);
-		{
-			//TODO this represents "Position sample rate".
-			int sr = gpsConfig->latitudeCfg.sampleRate;
-			if HIGHER_SAMPLE(sr, s) s = sr;
-		}
-		{
-			int sr = gpsConfig->timeCfg.sampleRate;
-			if HIGHER_SAMPLE(sr, s) s = sr;
-		}
-		{
-			int sr = gpsConfig->speedCfg.sampleRate;
-			if HIGHER_SAMPLE(sr, s) s = sr;
-		}
-		{
-			int sr = gpsConfig->distanceCfg.sampleRate;
-			if HIGHER_SAMPLE(sr, s) s = sr;
-		}
-
+	GPSConfig *gpsConfig = &(config->GPSConfigs);
+	{
+		//TODO this represents "Position sample rate".
+		int sr = gpsConfig->sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
 	}
 	LapConfig *trackCfg = &(config->LapConfigs);
 	{
@@ -416,12 +401,13 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
 	channels+=loggerConfig->OBD2Configs.enabledPids;
 
 	GPSConfig *gpsConfigs = &loggerConfig->GPSConfigs;
-	if (gpsConfigs->latitudeCfg.sampleRate != SAMPLE_DISABLED) channels++;
-	if (gpsConfigs->longitudeCfg.sampleRate != SAMPLE_DISABLED) channels++;
-	if (gpsConfigs->speedCfg.sampleRate != SAMPLE_DISABLED) channels++;
-	if (gpsConfigs->timeCfg.sampleRate != SAMPLE_DISABLED) channels++;
-	if (gpsConfigs->satellitesCfg.sampleRate != SAMPLE_DISABLED) channels++;
-	if (gpsConfigs->distanceCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (gpsConfigs->sampleRate != SAMPLE_DISABLED){
+		if (gpsConfigs->positionEnabled) channels+=2;
+		if (gpsConfigs->speedEnabled) channels++;
+		if (gpsConfigs->timeEnabled != SAMPLE_DISABLED) channels++;
+		if (gpsConfigs->satellitesEnabled != SAMPLE_DISABLED) channels++;
+		if (gpsConfigs->distanceEnabled != SAMPLE_DISABLED) channels++;
+	}
 
 	LapConfig *lapConfig = &loggerConfig->LapConfigs;
 	if (lapConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED) channels++;

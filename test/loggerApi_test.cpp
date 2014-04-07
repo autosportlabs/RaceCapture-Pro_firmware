@@ -723,7 +723,7 @@ void LoggerApiTest::testFlashConfig(){
 	testFlashConfigFile("flashCfg.json");
 }
 
-void LoggerApiTest::testSetGpsConfigFile(string filename){
+void LoggerApiTest::testSetGpsConfigFile(string filename, unsigned char channelsEnabled, unsigned short sampleRate){
 	processApiGeneric(filename);
 	char *txBuffer = mock_getTxBuffer();
 
@@ -732,89 +732,46 @@ void LoggerApiTest::testSetGpsConfigFile(string filename){
 
 	assertGenericResponse(txBuffer, "setGpsCfg", API_SUCCESS);
 
-	CPPUNIT_ASSERT_EQUAL(31, (int)gpsCfg->latitudeCfg.channeId);
-	CPPUNIT_ASSERT_EQUAL(5, decodeSampleRate(gpsCfg->latitudeCfg.sampleRate));
+	CPPUNIT_ASSERT_EQUAL((unsigned short)sampleRate, (unsigned short)decodeSampleRate(gpsCfg->sampleRate));
 
-	CPPUNIT_ASSERT_EQUAL(32, (int)gpsCfg->longitudeCfg.channeId);
-	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(gpsCfg->longitudeCfg.sampleRate));
-
-	CPPUNIT_ASSERT_EQUAL(33, (int)gpsCfg->speedCfg.channeId);
-	CPPUNIT_ASSERT_EQUAL(25, decodeSampleRate(gpsCfg->speedCfg.sampleRate));
-
-	CPPUNIT_ASSERT_EQUAL(34, (int)gpsCfg->timeCfg.channeId);
-	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(gpsCfg->timeCfg.sampleRate));
-
-	CPPUNIT_ASSERT_EQUAL(35, (int)gpsCfg->satellitesCfg.channeId);
-	CPPUNIT_ASSERT_EQUAL(100, decodeSampleRate(gpsCfg->satellitesCfg.sampleRate));
-
-	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Distance, (int)gpsCfg->distanceCfg.channeId);
-	CPPUNIT_ASSERT_EQUAL(100, decodeSampleRate(gpsCfg->distanceCfg.sampleRate));
-
+	CPPUNIT_ASSERT_EQUAL(channelsEnabled, gpsCfg->distanceEnabled);
+	CPPUNIT_ASSERT_EQUAL(channelsEnabled, gpsCfg->positionEnabled);
+	CPPUNIT_ASSERT_EQUAL(channelsEnabled, gpsCfg->satellitesEnabled);
+	CPPUNIT_ASSERT_EQUAL(channelsEnabled, gpsCfg->speedEnabled);
+	CPPUNIT_ASSERT_EQUAL(channelsEnabled, gpsCfg->timeEnabled);
 }
 
 void LoggerApiTest::testSetGpsCfg(){
-	testSetGpsConfigFile("setGpsCfg1.json");
+	testSetGpsConfigFile("setGpsCfg1.json", 1, 100);
+	testSetGpsConfigFile("setGpsCfg2.json", 0, 50);
 }
 
 void LoggerApiTest::testGetGpsConfigFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	GPSConfig *gpsCfg = &c->GPSConfigs;
 
-	ChannelConfig *latCfg = &gpsCfg->latitudeCfg;
-	ChannelConfig *longCfg = &gpsCfg->longitudeCfg;
-	ChannelConfig *speedCfg = &gpsCfg->speedCfg;
-	ChannelConfig *timeCfg = &gpsCfg->timeCfg;
-	ChannelConfig *satsCfg = &gpsCfg->satellitesCfg;
-	ChannelConfig *distCfg = &gpsCfg->distanceCfg;
+	gpsCfg->sampleRate = encodeSampleRate(100);
 
-	latCfg->channeId = CHANNEL_Latitude;
-	latCfg->sampleRate = encodeSampleRate(100);
-
-	longCfg->channeId = CHANNEL_Longitude;
-	longCfg->sampleRate = encodeSampleRate(100);
-
-	speedCfg->channeId = CHANNEL_Speed;
-	speedCfg->sampleRate = encodeSampleRate(100);
-
-	timeCfg->channeId = CHANNEL_Time;
-	timeCfg->sampleRate = encodeSampleRate(100);
-
-	satsCfg->channeId = CHANNEL_GPSSats;
-	satsCfg->sampleRate = encodeSampleRate(100);
-
-	distCfg->channeId = CHANNEL_Distance;
-	distCfg->sampleRate = encodeSampleRate(100);
+	gpsCfg->distanceEnabled = 1;
+	gpsCfg->positionEnabled = 1;
+	gpsCfg->satellitesEnabled = 1;
+	gpsCfg->speedEnabled = 1;
+	gpsCfg->timeEnabled = 1;
 
 	char * response = processApiGeneric(filename);
 
 	Object json;
 	stringToJson(response, json);
 
-	Object &latJson = json["getGpsCfg"]["lat"];
-	Object &longJson = json["getGpsCfg"]["long"];
-	Object &speedJson = json["getGpsCfg"]["speed"];
-	Object &timeJson = json["getGpsCfg"]["time"];
-	Object &satsJson = json["getGpsCfg"]["sats"];
-	Object &distJson = json["getGpsCfg"]["dist"];
+	Object &gpsCfgJson = json["getGpsCfg"];
 
-	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Latitude, (int)(Number)latJson["id"]);
-	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)latJson["sr"]);
+	CPPUNIT_ASSERT_EQUAL((int)100, (int)(Number)gpsCfgJson["sr"]);
 
-	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Longitude, (int)(Number)longJson["id"]);
-	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)longJson["sr"]);
-
-	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Speed, (int)(Number)speedJson["id"]);
-	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)speedJson["sr"]);
-
-	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Time, (int)(Number)timeJson["id"]);
-	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)timeJson["sr"]);
-
-	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_GPSSats, (int)(Number)satsJson["id"]);
-	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)satsJson["sr"]);
-
-	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Distance, (int)(Number)distJson["id"]);
-	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)distJson["sr"]);
-
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["dist"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["pos"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["sats"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["speed"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["time"]);
 }
 
 void LoggerApiTest::testGetGpsCfg(){

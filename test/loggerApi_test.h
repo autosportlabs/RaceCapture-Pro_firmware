@@ -111,7 +111,7 @@ private:
   void testGetTimerConfigFile(string filename, int index);
   void testSetTimerConfigFile(string filename);
   void testGetGpsConfigFile(string filename);
-  void testSetGpsConfigFile(string filename);
+  void testSetGpsConfigFile(string filename, unsigned char channelsEnabled, unsigned short sampleRate);
   void testGetTrackConfigFile(string filename);
   void testSetTrackConfigFile(string filename);
   void testSetLapConfigFile(string filename);

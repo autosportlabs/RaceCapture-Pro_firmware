@@ -137,66 +137,60 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 	}
 	{
 		GPSConfig *gpsConfig = &(loggerConfig->GPSConfigs);
-		if (gpsConfig->latitudeCfg.sampleRate != SAMPLE_DISABLED){
-			ChannelConfig *cc = &(gpsConfig->latitudeCfg);
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->intValue = NIL_SAMPLE;
-			sample->channelIndex = gps_channel_latitude;
-			sample->get_sample = get_gps_sample;
-			sample++;
-		}
+		unsigned short gpsSampleRate = gpsConfig->sampleRate;
+		if (gpsSampleRate != SAMPLE_DISABLED){
+			if (gpsConfig->positionEnabled){
+				sample->channelId = CHANNEL_Latitude;
+				sample->sampleRate = gpsSampleRate;
+				sample->intValue = NIL_SAMPLE;
+				sample->channelIndex = gps_channel_latitude;
+				sample->get_sample = get_gps_sample;
+				sample++;
 
-		if (gpsConfig->longitudeCfg.sampleRate != SAMPLE_DISABLED){
-			ChannelConfig *cc = &(gpsConfig->longitudeCfg);
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->intValue = NIL_SAMPLE;
-			sample->channelIndex = gps_channel_longitude;
-			sample->get_sample = get_gps_sample;
-			sample++;
-		}
+				sample->channelId = CHANNEL_Longitude;
+				sample->sampleRate = gpsSampleRate;
+				sample->intValue = NIL_SAMPLE;
+				sample->channelIndex = gps_channel_longitude;
+				sample->get_sample = get_gps_sample;
+				sample++;
+			}
 
-		if (gpsConfig->speedCfg.sampleRate != SAMPLE_DISABLED){
-			ChannelConfig *cc = &(gpsConfig->speedCfg);
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->intValue = NIL_SAMPLE;
-			sample->channelIndex = gps_channel_speed;
-			sample->get_sample = get_gps_sample;
-			sample++;
-		}
+			if (gpsConfig->speedEnabled){
+				sample->channelId = CHANNEL_Speed;
+				sample->sampleRate = gpsSampleRate;
+				sample->intValue = NIL_SAMPLE;
+				sample->channelIndex = gps_channel_speed;
+				sample->get_sample = get_gps_sample;
+				sample++;
+			}
 
-		if (gpsConfig->timeCfg.sampleRate != SAMPLE_DISABLED){
-			ChannelConfig *cc = &(gpsConfig->timeCfg);
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->intValue = NIL_SAMPLE;
-			sample->channelIndex = gps_channel_time;
-			sample->get_sample = get_gps_sample;
-			sample++;
-		}
+			if (gpsConfig->timeEnabled){
+				sample->channelId = CHANNEL_Time;
+				sample->sampleRate = gpsSampleRate;
+				sample->intValue = NIL_SAMPLE;
+				sample->channelIndex = gps_channel_time;
+				sample->get_sample = get_gps_sample;
+				sample++;
+			}
 
-		if (gpsConfig->satellitesCfg.sampleRate != SAMPLE_DISABLED){
-			ChannelConfig *cc = &(gpsConfig->satellitesCfg);
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->intValue = NIL_SAMPLE;
-			sample->channelIndex = gps_channel_satellites;
-			sample->get_sample = get_gps_sample;
-			sample++;
-		}
+			if (gpsConfig->satellitesEnabled){
+				sample->channelId = CHANNEL_GPSSats;
+				sample->sampleRate = gpsSampleRate;
+				sample->intValue = NIL_SAMPLE;
+				sample->channelIndex = gps_channel_satellites;
+				sample->get_sample = get_gps_sample;
+				sample++;
+			}
 
-		if (gpsConfig->distanceCfg.sampleRate != SAMPLE_DISABLED){
-			ChannelConfig *cc = &(gpsConfig->distanceCfg);
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->intValue = NIL_SAMPLE;
-			sample->channelIndex = gps_channel_distance;
-			sample->get_sample = get_gps_sample;
-			sample++;
+			if (gpsConfig->distanceEnabled){
+				sample->channelId = CHANNEL_Distance;
+				sample->sampleRate = gpsSampleRate;
+				sample->intValue = NIL_SAMPLE;
+				sample->channelIndex = gps_channel_distance;
+				sample->get_sample = get_gps_sample;
+				sample++;
+			}
 		}
-
 	}
 
 	{

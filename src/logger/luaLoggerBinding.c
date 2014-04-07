@@ -98,15 +98,9 @@ void registerLuaLoggerBindings(lua_State *L){
 	lua_registerlight(L,"setPwmSampleRate", Lua_SetPWMSampleRate);
 	lua_registerlight(L,"getPwmSampleRate", Lua_GetPWMSampleRate);
 
-	lua_registerlight(L,"setGpsPositionSampleRate", Lua_SetGPSPositionSampleRate);
-	lua_registerlight(L,"getGpsPositionSampleRate", Lua_GetGPSPositionSampleRate);
+	lua_registerlight(L,"setGpsSampleRate", Lua_SetGPSSampleRate);
+	lua_registerlight(L,"getGpsSampleRate", Lua_GetGPSSampleRate);
 	
-	lua_registerlight(L,"setGpsSpeedSampleRate", Lua_SetGPSSpeedSampleRate);
-	lua_registerlight(L,"getGpsSpeedSampleRate", Lua_GetGPSSpeedSampleRate);
-	
-	lua_registerlight(L,"setGpsTimeSampleRate", Lua_SetGPSTimeSampleRate);
-	lua_registerlight(L,"getGpsTimeSampleRate", Lua_GetGPSTimeSampleRate);
-
 	lua_registerlight(L,"setLapCountSampleRate", Lua_SetLapCountSampleRate);
 	lua_registerlight(L,"getLapCountSampleRate", Lua_GetLapCountSampleRate);
 
@@ -138,8 +132,8 @@ void registerLuaLoggerBindings(lua_State *L){
 // common functions
 ////////////////////////////////////////////////////
 
-static TrackConfig * getTrackConfig(){
-	return &(getWorkingLoggerConfig()->TrackConfigs);
+static LapConfig * getLapConfig(){
+	return &(getWorkingLoggerConfig()->LapConfigs);
 }
 
 static int setLuaSampleRate(lua_State *L, unsigned short *sampleRate){
@@ -258,58 +252,33 @@ int Lua_GetAtSplit(lua_State *L){
 	return 1;
 }
 
-int Lua_SetGPSPositionSampleRate(lua_State *L){
+int Lua_SetGPSSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		LoggerConfig *cfg = getWorkingLoggerConfig();
-		cfg->GPSConfigs.latitudeCfg.sampleRate = cfg->GPSConfigs.longitudeCfg.sampleRate = encodeSampleRate(lua_tointeger(L,1));
+		cfg->GPSConfigs.sampleRate = encodeSampleRate(lua_tointeger(L,1));
 	}
 	return 0;
 }
 
-int Lua_GetGPSPositionSampleRate(lua_State *L){
-	//TODO we pull one for all... is there a better way? individual settable sample rates?
-	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfigs.latitudeCfg.sampleRate);
+int Lua_GetGPSSampleRate(lua_State *L){
+	lua_pushinteger(L, decodeSampleRate(getWorkingLoggerConfig()->GPSConfigs.sampleRate));
 	return 1;		
 }
 
-int Lua_SetGPSSpeedSampleRate(lua_State *L){
-	if (lua_gettop(L) >= 1 ){
-		getWorkingLoggerConfig()->GPSConfigs.speedCfg.sampleRate = encodeSampleRate(lua_tointeger(L,1));
-	}
-	return 0;
-}
-
-int Lua_GetGPSSpeedSampleRate(lua_State *L){
-	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfigs.speedCfg.sampleRate);
-	return 1;
-}
-
-int Lua_SetGPSTimeSampleRate(lua_State *L){
-	if (lua_gettop(L) >= 1 ){
-		getWorkingLoggerConfig()->GPSConfigs.timeCfg.sampleRate = encodeSampleRate(lua_tointeger(L,1));
-	}
-	return 0;
-}
-
-int Lua_GetGPSTimeSampleRate(lua_State *L){
-	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfigs.timeCfg.sampleRate);
-	return 1;
-}
-
 int Lua_SetLapCountSampleRate(lua_State *L){
-	return setLuaSampleRate(L, &getTrackConfig()->lapCountCfg.sampleRate);
+	return setLuaSampleRate(L, &getLapConfig()->lapCountCfg.sampleRate);
 }
 
 int Lua_GetLapCountSampleRate(lua_State *L){
-	return getLuaSampleRate(L, getTrackConfig()->lapCountCfg.sampleRate);
+	return getLuaSampleRate(L, getLapConfig()->lapCountCfg.sampleRate);
 }
 
 int Lua_SetLapTimeSampleRate(lua_State *L){
-	return setLuaSampleRate(L, &getTrackConfig()->lapTimeCfg.sampleRate);
+	return setLuaSampleRate(L, &getLapConfig()->lapTimeCfg.sampleRate);
 }
 
 int Lua_GetLapTimeSampleRate(lua_State *L){
-	return getLuaSampleRate(L, getTrackConfig()->lapTimeCfg.sampleRate);
+	return getLuaSampleRate(L, getLapConfig()->lapTimeCfg.sampleRate);
 }
 
 int Lua_SetPWMClockFrequency(lua_State *L){

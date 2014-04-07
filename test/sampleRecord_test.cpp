@@ -162,60 +162,61 @@ void SampleRecordTest::testInitSampleRecord()
 
 	{
 		GPSConfig *gpsConfig = &(lc->GPSConfigs);
-		if (gpsConfig->latitudeCfg.sampleRate != SAMPLE_DISABLED){
-			CPPUNIT_ASSERT_EQUAL(gpsConfig->latitudeCfg.channeId, ts->channelId);
-			CPPUNIT_ASSERT_EQUAL(gpsConfig->latitudeCfg.sampleRate, ts->sampleRate);
-			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
-			CPPUNIT_ASSERT_EQUAL((size_t)gps_channel_latitude, ts->channelIndex);
-			CPPUNIT_ASSERT_EQUAL((void *)get_gps_sample, (void *)ts->get_sample);
-			ts++;
-		}
 
-		if (gpsConfig->longitudeCfg.sampleRate != SAMPLE_DISABLED){
-			CPPUNIT_ASSERT_EQUAL(gpsConfig->longitudeCfg.channeId, ts->channelId);
-			CPPUNIT_ASSERT_EQUAL(gpsConfig->longitudeCfg.sampleRate, ts->sampleRate);
-			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
-			CPPUNIT_ASSERT_EQUAL((size_t)gps_channel_longitude, ts->channelIndex);
-			CPPUNIT_ASSERT_EQUAL((void *)get_gps_sample, (void *)ts->get_sample);
-			ts++;
-		}
+		if (gpsConfig->sampleRate != SAMPLE_DISABLED){
+			if (gpsConfig->positionEnabled){
+				CPPUNIT_ASSERT_EQUAL((unsigned short)CHANNEL_Latitude, ts->channelId);
+				CPPUNIT_ASSERT_EQUAL(gpsConfig->sampleRate, ts->sampleRate);
+				CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
+				CPPUNIT_ASSERT_EQUAL((size_t)gps_channel_latitude, ts->channelIndex);
+				CPPUNIT_ASSERT_EQUAL((void *)get_gps_sample, (void *)ts->get_sample);
+				ts++;
+			}
+			{
+				CPPUNIT_ASSERT_EQUAL((unsigned short)CHANNEL_Longitude, ts->channelId);
+				CPPUNIT_ASSERT_EQUAL(gpsConfig->sampleRate, ts->sampleRate);
+				CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
+				CPPUNIT_ASSERT_EQUAL((size_t)gps_channel_longitude, ts->channelIndex);
+				CPPUNIT_ASSERT_EQUAL((void *)get_gps_sample, (void *)ts->get_sample);
+				ts++;
+			}
 
-		if (gpsConfig->speedCfg.sampleRate != SAMPLE_DISABLED){
-			CPPUNIT_ASSERT_EQUAL(gpsConfig->speedCfg.channeId, ts->channelId);
-			CPPUNIT_ASSERT_EQUAL(gpsConfig->speedCfg.sampleRate, ts->sampleRate);
-			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
-			CPPUNIT_ASSERT_EQUAL((size_t)gps_channel_speed, ts->channelIndex);
-			CPPUNIT_ASSERT_EQUAL((void *)get_gps_sample, (void *)ts->get_sample);
-			ts++;
-		}
+			if (gpsConfig->speedEnabled){
+				CPPUNIT_ASSERT_EQUAL((unsigned short)CHANNEL_Speed, ts->channelId);
+				CPPUNIT_ASSERT_EQUAL(gpsConfig->sampleRate, ts->sampleRate);
+				CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
+				CPPUNIT_ASSERT_EQUAL((size_t)gps_channel_speed, ts->channelIndex);
+				CPPUNIT_ASSERT_EQUAL((void *)get_gps_sample, (void *)ts->get_sample);
+				ts++;
+			}
 
-		if (gpsConfig->timeCfg.sampleRate != SAMPLE_DISABLED){
-			CPPUNIT_ASSERT_EQUAL(gpsConfig->timeCfg.channeId, ts->channelId);
-			CPPUNIT_ASSERT_EQUAL(gpsConfig->timeCfg.sampleRate, ts->sampleRate);
-			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
-			CPPUNIT_ASSERT_EQUAL((size_t)gps_channel_time, ts->channelIndex);
-			CPPUNIT_ASSERT_EQUAL((void *)get_gps_sample, (void *)ts->get_sample);
-			ts++;
-		}
+			if (gpsConfig->timeEnabled){
+				CPPUNIT_ASSERT_EQUAL((unsigned short)CHANNEL_Time, ts->channelId);
+				CPPUNIT_ASSERT_EQUAL(gpsConfig->sampleRate, ts->sampleRate);
+				CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
+				CPPUNIT_ASSERT_EQUAL((size_t)gps_channel_time, ts->channelIndex);
+				CPPUNIT_ASSERT_EQUAL((void *)get_gps_sample, (void *)ts->get_sample);
+				ts++;
+			}
 
-		if (gpsConfig->satellitesCfg.sampleRate != SAMPLE_DISABLED){
-			CPPUNIT_ASSERT_EQUAL(gpsConfig->satellitesCfg.channeId, ts->channelId);
-			CPPUNIT_ASSERT_EQUAL(gpsConfig->satellitesCfg.sampleRate, ts->sampleRate);
-			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
-			CPPUNIT_ASSERT_EQUAL((size_t)gps_channel_satellites, ts->channelIndex);
-			CPPUNIT_ASSERT_EQUAL((void *)get_gps_sample, (void *)ts->get_sample);
-			ts++;
-		}
+			if (gpsConfig->satellitesEnabled){
+				CPPUNIT_ASSERT_EQUAL((unsigned short)CHANNEL_GPSSats, ts->channelId);
+				CPPUNIT_ASSERT_EQUAL(gpsConfig->sampleRate, ts->sampleRate);
+				CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
+				CPPUNIT_ASSERT_EQUAL((size_t)gps_channel_satellites, ts->channelIndex);
+				CPPUNIT_ASSERT_EQUAL((void *)get_gps_sample, (void *)ts->get_sample);
+				ts++;
+			}
 
-		if (gpsConfig->distanceCfg.sampleRate != SAMPLE_DISABLED){
-			CPPUNIT_ASSERT_EQUAL(gpsConfig->distanceCfg.channeId, ts->channelId);
-			CPPUNIT_ASSERT_EQUAL(gpsConfig->distanceCfg.sampleRate, ts->sampleRate);
-			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
-			CPPUNIT_ASSERT_EQUAL((size_t)gps_channel_distance, ts->channelIndex);
-			CPPUNIT_ASSERT_EQUAL((void *)get_gps_sample, (void *)ts->get_sample);
-			ts++;
+			if (gpsConfig->distanceEnabled){
+				CPPUNIT_ASSERT_EQUAL((unsigned short)CHANNEL_Distance, ts->channelId);
+				CPPUNIT_ASSERT_EQUAL(gpsConfig->sampleRate, ts->sampleRate);
+				CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
+				CPPUNIT_ASSERT_EQUAL((size_t)gps_channel_distance, ts->channelIndex);
+				CPPUNIT_ASSERT_EQUAL((void *)get_gps_sample, (void *)ts->get_sample);
+				ts++;
+			}
 		}
-
 	}
 
 	{

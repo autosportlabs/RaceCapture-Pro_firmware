@@ -66,12 +66,38 @@ void unescapeTextField(char *data){
 }
 
 const static jsmntok_t * findNode(const jsmntok_t *node, const char * name){
-
 	while (!(node->start == 0 && node->end == 0)){
 		if (strcmp(name, jsmn_trimData(node)->data) == 0) return node;
 		node++;
 	}
 	return NULL;
+}
+
+const static jsmntok_t * findValueNode(const jsmntok_t *node, const char *name){
+	const jsmntok_t *field = findNode(node, name);
+	if (field != NULL){
+		field++;
+		if (field->type == JSMN_PRIMITIVE){
+			jsmn_trimData(field);
+			return field;
+		}
+	}
+	return NULL;
+}
+
+static void setUnsignedCharValueIfExists(const jsmntok_t *root, const char * fieldName, unsigned char *target){
+	const jsmntok_t *valueNode = findValueNode(root, fieldName);
+	if (valueNode) * target = modp_atoi(valueNode->data);
+}
+
+static void setIntValueIfExists(const jsmntok_t *root, const char * fieldName, int *target){
+	const jsmntok_t *valueNode = findValueNode(root, fieldName);
+	if (valueNode) * target = modp_atoi(valueNode->data);
+}
+
+static void setFloatValueIfExists(const jsmntok_t *root, const char * fieldName, float *target ){
+	const jsmntok_t *valueNode = findValueNode(root, fieldName);
+	if (valueNode) * target = modp_atof(valueNode->data);
 }
 
 int api_sampleData(Serial *serial, const jsmntok_t *json){
@@ -728,29 +754,13 @@ int api_getGpsConfig(Serial *serial, const jsmntok_t *json){
 	json_messageStart(serial);
 	json_objStart(serial, "getGpsCfg");
 
-	json_objStart(serial, "lat");
-	json_channelConfig(serial, &gpsCfg->latitudeCfg, 0);
-	json_objEnd(serial, 1);
+	json_int(serial, "sr", decodeSampleRate(gpsCfg->sampleRate), 1);
 
-	json_objStart(serial, "long");
-	json_channelConfig(serial, &gpsCfg->longitudeCfg, 0);
-	json_objEnd(serial, 1);
-
-	json_objStart(serial, "speed");
-	json_channelConfig(serial, &gpsCfg->speedCfg, 0);
-	json_objEnd(serial, 1);
-
-	json_objStart(serial, "sats");
-	json_channelConfig(serial, &gpsCfg->satellitesCfg, 0);
-	json_objEnd(serial, 1);
-
-	json_objStart(serial, "time");
-	json_channelConfig(serial, &gpsCfg->timeCfg, 0);
-	json_objEnd(serial, 1);
-
-	json_objStart(serial, "dist");
-	json_channelConfig(serial, &gpsCfg->distanceCfg, 0);
-	json_objEnd(serial, 0);
+	json_int(serial, "pos", gpsCfg->positionEnabled, 1);
+	json_int(serial, "speed", gpsCfg->speedEnabled, 1);
+	json_int(serial, "time", gpsCfg->timeEnabled, 1);
+	json_int(serial, "dist", gpsCfg->distanceEnabled, 1);
+	json_int(serial, "sats", gpsCfg->satellitesEnabled, 0);
 
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
@@ -760,25 +770,14 @@ int api_getGpsConfig(Serial *serial, const jsmntok_t *json){
 int api_setGpsConfig(Serial *serial, const jsmntok_t *json){
 
 	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
-	const jsmntok_t * channelData = json + 1;
-
-	const jsmntok_t * latitudeNode = findNode(channelData, "lat");
-	if (latitudeNode != NULL) setChannelConfig(serial, latitudeNode + 1, &gpsCfg->latitudeCfg, NULL, NULL);
-
-	const jsmntok_t * longitudeNode = findNode(channelData, "long");
-	if (longitudeNode != NULL) setChannelConfig(serial, longitudeNode + 1, &gpsCfg->longitudeCfg, NULL, NULL);
-
-	const jsmntok_t * speedNode = findNode(channelData, "speed");
-	if (speedNode != NULL) setChannelConfig(serial, speedNode + 1, &gpsCfg->speedCfg, NULL, NULL);
-
-	const jsmntok_t * timeNode = findNode(channelData, "time");
-	if (timeNode != NULL) setChannelConfig(serial, timeNode + 1, &gpsCfg->timeCfg, NULL, NULL);
-
-	const jsmntok_t * satsNode = findNode(channelData, "sats");
-	if (satsNode != NULL) setChannelConfig(serial, satsNode + 1, &gpsCfg->satellitesCfg, NULL, NULL);
-
-	const jsmntok_t *distance = findNode(json, "dist");
-	if (distance != NULL) setChannelConfig(serial, distance + 1, &gpsCfg->distanceCfg, NULL, NULL);
+	int sr = 0;
+	setIntValueIfExists(json, "sr", &sr);
+	if (sr) gpsCfg->sampleRate = encodeSampleRate(sr);
+	setUnsignedCharValueIfExists(json, "pos", &gpsCfg->positionEnabled);
+	setUnsignedCharValueIfExists(json, "speed", &gpsCfg->speedEnabled);
+	setUnsignedCharValueIfExists(json, "time", &gpsCfg->timeEnabled);
+	setUnsignedCharValueIfExists(json, "dist", &gpsCfg->distanceEnabled);
+	setUnsignedCharValueIfExists(json, "sats", &gpsCfg->satellitesEnabled);
 
 	configChanged();
 	return API_SUCCESS;
@@ -852,17 +851,6 @@ int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
 	json_objEnd(serial, 0);
 
 	return API_SUCCESS_NO_RETURN;
-}
-
-static void setFloatValueIfExists(const jsmntok_t *root, const char * fieldName, float *target ){
-	const jsmntok_t *field = findNode(root, fieldName);
-	if (field != NULL){
-		field++;
-		if (field->type == JSMN_PRIMITIVE){
-			jsmn_trimData(field);
-			*target = modp_atof(field->data);
-		}
-	}
 }
 
 void setTrack(const jsmntok_t *cfg, Track *track){

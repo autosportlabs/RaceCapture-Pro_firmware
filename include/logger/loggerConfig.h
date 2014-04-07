@@ -290,32 +290,15 @@ enum gps_channels{
 };
 
 typedef struct _GPSConfig{
-	char GPSInstalled;
-	ChannelConfig satellitesCfg;
-	ChannelConfig latitudeCfg;
-	ChannelConfig longitudeCfg;
-	ChannelConfig timeCfg;
-	ChannelConfig speedCfg;
-	ChannelConfig distanceCfg;
+	unsigned short sampleRate;
+	unsigned char positionEnabled;
+	unsigned char timeEnabled;
+	unsigned char speedEnabled;
+	unsigned char distanceEnabled;
+	unsigned char satellitesEnabled;
 } GPSConfig;
 
-//currently in degrees. This is about a 73 foot diameter circle (in the pacific NW...)
-#define DEFAULT_GPS_SATELLITES_CONFIG {CHANNEL_GPSSats, SAMPLE_DISABLED}
-#define DEFAULT_GPS_LATITUDE_CONFIG {CHANNEL_Latitude, SAMPLE_10Hz}
-#define DEFAULT_GPS_LONGITUDE_CONFIG {CHANNEL_Longitude, SAMPLE_10Hz}
-#define DEFAULT_GPS_TIME_CONFIG {CHANNEL_Time, SAMPLE_10Hz}
-#define DEFAULT_GPS_SPEED_CONFIG {CHANNEL_Speed, SAMPLE_10Hz}
-#define DEFAULT_DISTANCE_CONFIG {CHANNEL_Distance, SAMPLE_10Hz}
-
-
-#define DEFAULT_GPS_CONFIG {CONFIG_FEATURE_INSTALLED, \
-							DEFAULT_GPS_SATELLITES_CONFIG, \
-							DEFAULT_GPS_LATITUDE_CONFIG, \
-							DEFAULT_GPS_LONGITUDE_CONFIG, \
-							DEFAULT_GPS_TIME_CONFIG, \
-							DEFAULT_GPS_SPEED_CONFIG, \
-							DEFAULT_DISTANCE_CONFIG \
-	}
+#define DEFAULT_GPS_CONFIG { SAMPLE_10Hz, 1, 1, 1, 1, 0 }
 
 enum lap_stat_channels{
 	lap_stat_channel_lapcount,
