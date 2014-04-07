@@ -3,8 +3,8 @@
 #include "loggerApi.h"
 #include "mod_string.h"
 #include "mock_serial.h"
-#include "accelerometer_mock.h"
-#include "accelerometer.h"
+#include "imu_mock.h"
+#include "imu.h"
 #include <stdlib.h>
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( LoggerDataTest );

@@ -22,7 +22,7 @@ public:
 
   void testAnalogChannels();
   void testGpsChannels();
-  void testAccelChannels();
+  void testImuChannels();
   void testMappedValue();
 };
 

@@ -41,7 +41,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC) \
 		-I$(SAM7S_SRC)/uart \
 		-I$(SAM7S_SRC)/usb/include \
-		-I$(RCP_INC)/accelerometer \
+		-I$(RCP_INC)/imu \
 		-I$(RCP_INC)/ADC \
 		-I$(RCP_INC)/timer \
 		-I$(RCP_INC)/PWM \
@@ -101,7 +101,7 @@ SRC =	RCPTest.cpp \
 		$(SAM7S_SRC)/serial/serial.c \
 		$(RCP_SRC)/logger/loggerApi.c \
 		$(RCP_SRC)/filter/filter.c \
-		$(RCP_SRC)/accelerometer/accelerometer.c \
+		$(RCP_SRC)/imu/imu.c \
 		$(RCP_SRC)/ADC/ADC.c \
 		$(RCP_SRC)/memory/memory.c \
 		$(RCP_SRC)/magic/magic.c \
@@ -111,7 +111,7 @@ SRC =	RCPTest.cpp \
 		$(RCP_SRC)/GPIO/GPIO.c \
 		$(RCP_SRC)/watchdog/watchdog.c \
 		$(RCP_SRC)/CAN/CAN.c \
-		$(MOCK_DIR)/accelerometer_device_mock.c \
+		$(MOCK_DIR)/imu_device_mock.c \
 		$(MOCK_DIR)/timer_device_mock.c \
 		$(MOCK_DIR)/ADC_device_mock.c \
 		$(MOCK_DIR)/PWM_device_mock.c \

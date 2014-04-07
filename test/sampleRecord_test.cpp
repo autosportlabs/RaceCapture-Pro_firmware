@@ -6,7 +6,7 @@
 #include "loggerHardware.h"
 #include "ADC_mock.h"
 #include "ADC.h"
-#include "accelerometer.h"
+#include "imu.h"
 #include "gps.h"
 
 #include <string>
@@ -119,7 +119,7 @@ void SampleRecordTest::testInitSampleRecord()
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL(ac->cfg.channeId, ts->channelId);
 			CPPUNIT_ASSERT_EQUAL(ac->cfg.sampleRate, ts->sampleRate);
-			CPPUNIT_ASSERT_EQUAL((void *)get_accel_sample, (void *)ts->get_sample);
+			CPPUNIT_ASSERT_EQUAL((void *)get_imu_sample, (void *)ts->get_sample);
 			ts++;
 		}
 	}

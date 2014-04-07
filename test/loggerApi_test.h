@@ -32,8 +32,8 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST( testGetAnalogCfg );
   CPPUNIT_TEST( testGetMultipleAnalogCfg );
   CPPUNIT_TEST( testSetAnalogCfg );
-  CPPUNIT_TEST( testGetAccelCfg );
-  CPPUNIT_TEST( testSetAccelCfg );
+  CPPUNIT_TEST( testGetImuCfg );
+  CPPUNIT_TEST( testSetImuCfg );
   CPPUNIT_TEST( testGetPwmCfg );
   CPPUNIT_TEST( testSetPwmCfg );
   CPPUNIT_TEST( testGetGpioCfg );
@@ -49,7 +49,7 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST( testSampleData );
   CPPUNIT_TEST( testGetMeta );
   CPPUNIT_TEST( testLogStartStop );
-  CPPUNIT_TEST( testCalibrateAccel);
+  CPPUNIT_TEST( testCalibrateImu);
   CPPUNIT_TEST( testFlashConfig);
   CPPUNIT_TEST_SUITE_END();
 
@@ -77,8 +77,8 @@ public:
   void testGetAnalogCfg();
   void testGetMultipleAnalogCfg();
   void testSetAnalogCfg();
-  void testGetAccelCfg();
-  void testSetAccelCfg();
+  void testGetImuCfg();
+  void testSetImuCfg();
   void testGetPwmCfg();
   void testSetPwmCfg();
   void testGetGpioCfg();
@@ -91,7 +91,7 @@ public:
   void testSetLapCfg();
   void testGetLapCfg();
   void testGetTrackCfg();
-  void testCalibrateAccel();
+  void testCalibrateImu();
   void testFlashConfig();
 
 private:
@@ -99,8 +99,8 @@ private:
   void testSampleDataFile(string requestFilename, string responseFilename);
   void testGetAnalogConfigFile(string filename, int index);
   void testSetAnalogConfigFile(string filename);
-  void testSetAccelConfigFile(string filename);
-  void testGetAccelConfigFile(string filename, int index);
+  void testSetImuConfigFile(string filename);
+  void testGetImuConfigFile(string filename, int index);
   void testSetCellConfigFile(string filename);
   void testSetBtConfigFile(string filename);
   void testSetConnectivityCfgFile(string filename);
@@ -116,7 +116,7 @@ private:
   void testSetTrackConfigFile(string filename);
   void testSetLapConfigFile(string filename);
   void testGetLapConfigFile(string filename);
-  void testCalibrateAccelFile(string filename);
+  void testCalibrateImuFile(string filename);
   void testFlashConfigFile(string filename);
 };
 

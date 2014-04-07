@@ -9,7 +9,7 @@
 #include "api.h"
 #include "loggerApi.h"
 #include "mock_serial.h"
-#include "accelerometer.h"
+#include "imu.h"
 #include "loggerConfig.h"
 #include "channelMeta.h"
 #include "jsmn.h"
@@ -312,15 +312,15 @@ void LoggerApiTest::testSetAnalogCfg()
 	testSetAnalogConfigFile("setAnalogCfg3.json");
 }
 
-void LoggerApiTest::testGetAccelConfigFile(string filename, int index){
+void LoggerApiTest::testGetImuConfigFile(string filename, int index){
 	LoggerConfig *c = getWorkingLoggerConfig();
-	ImuConfig *accelCfg = &c->ImuConfigs[index];
+	ImuConfig *imuCfg = &c->ImuConfigs[index];
 
-	accelCfg->cfg.channeId = 1;
-	accelCfg->cfg.sampleRate = encodeSampleRate(100);
-	accelCfg->mode = 1;
-	accelCfg->physicalChannel = 3;
-	accelCfg->zeroValue = 1234;
+	imuCfg->cfg.channeId = 1;
+	imuCfg->cfg.sampleRate = encodeSampleRate(100);
+	imuCfg->mode = 1;
+	imuCfg->physicalChannel = 3;
+	imuCfg->zeroValue = 1234;
 
 	char * response = processApiGeneric(filename);
 
@@ -329,7 +329,7 @@ void LoggerApiTest::testGetAccelConfigFile(string filename, int index){
 
 	std::ostringstream stringStream;
 	stringStream << index;
-	Object &analogJson = json["accelCfg"][stringStream.str()];
+	Object &analogJson = json["imuCfg"][stringStream.str()];
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["id"]);
 	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)analogJson["sr"]);
@@ -339,11 +339,11 @@ void LoggerApiTest::testGetAccelConfigFile(string filename, int index){
 	CPPUNIT_ASSERT_EQUAL(1234, (int)(Number)analogJson["zeroVal"]);
 }
 
-void LoggerApiTest::testGetAccelCfg(){
-	testGetAccelConfigFile("getAccelCfg1.json", API_SUCCESS);
+void LoggerApiTest::testGetImuCfg(){
+	testGetImuConfigFile("getImuCfg1.json", API_SUCCESS);
 }
 
-void LoggerApiTest::testSetAccelConfigFile(string filename){
+void LoggerApiTest::testSetImuConfigFile(string filename){
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
@@ -351,20 +351,20 @@ void LoggerApiTest::testSetAccelConfigFile(string filename){
 
 	LoggerConfig *c = getWorkingLoggerConfig();
 
-	ImuConfig *accelCfg = &c->ImuConfigs[0];
+	ImuConfig *imuCfg = &c->ImuConfigs[0];
 
-	CPPUNIT_ASSERT_EQUAL(33, (int)accelCfg->cfg.channeId);
-	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(accelCfg->cfg.sampleRate));
-	CPPUNIT_ASSERT_EQUAL(1, (int)accelCfg->mode);
-	CPPUNIT_ASSERT_EQUAL(2, (int)accelCfg->physicalChannel);
-	CPPUNIT_ASSERT_EQUAL(1234, (int)accelCfg->zeroValue);
+	CPPUNIT_ASSERT_EQUAL(33, (int)imuCfg->cfg.channeId);
+	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(imuCfg->cfg.sampleRate));
+	CPPUNIT_ASSERT_EQUAL(1, (int)imuCfg->mode);
+	CPPUNIT_ASSERT_EQUAL(2, (int)imuCfg->physicalChannel);
+	CPPUNIT_ASSERT_EQUAL(1234, (int)imuCfg->zeroValue);
 
 	char *txBuffer = mock_getTxBuffer();
-	assertGenericResponse(txBuffer, "setAccelCfg", API_SUCCESS);
+	assertGenericResponse(txBuffer, "setImuCfg", API_SUCCESS);
 }
 
-void LoggerApiTest::testSetAccelCfg(){
-	testSetAccelConfigFile("setAccelCfg1.json");
+void LoggerApiTest::testSetImuCfg(){
+	testSetImuConfigFile("setImuCfg1.json");
 }
 
 void LoggerApiTest::testSetCellConfigFile(string filename){
@@ -695,17 +695,17 @@ void LoggerApiTest::testLogStartStop(){
 	testLogStartStopFile("log2.json");
 }
 
-void LoggerApiTest::testCalibrateAccelFile(string filename){
+void LoggerApiTest::testCalibrateImuFile(string filename){
 
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(), (char *)json.c_str(), json.size());
 	char *txBuffer = mock_getTxBuffer();
-	assertGenericResponse(txBuffer,"calAccel",1);
+	assertGenericResponse(txBuffer,"calImu",1);
 }
 
-void LoggerApiTest::testCalibrateAccel(){
-	testCalibrateAccelFile("calibrateAccel.json");
+void LoggerApiTest::testCalibrateImu(){
+	testCalibrateImuFile("calibrateImu.json");
 }
 
 void LoggerApiTest::testFlashConfigFile(string filename){

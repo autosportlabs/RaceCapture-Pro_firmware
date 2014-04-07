@@ -1,5 +1,5 @@
 {
-    "setAccelCfg": {
+    "setImuCfg": {
         "0": {        
         	"id":33,
             "sr": 50,
