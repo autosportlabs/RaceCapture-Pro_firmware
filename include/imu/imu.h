@@ -5,7 +5,7 @@
 
 void imu_sample_all();
 
-float imu_read_value(unsigned char accelChannel, ImuConfig *ac);
+float imu_read_value(unsigned char imuChannel, ImuConfig *ac);
 
 void imu_init();
 

@@ -239,11 +239,11 @@ void SampleRecordTest::testInitSampleRecord()
 			ts++;
 		}
 
-		if (trackConfig->splitTimeCfg.sampleRate != SAMPLE_DISABLED){
-			CPPUNIT_ASSERT_EQUAL(trackConfig->splitTimeCfg.channeId, ts->channelId);
-			CPPUNIT_ASSERT_EQUAL(trackConfig->splitTimeCfg.sampleRate, ts->sampleRate);
+		if (trackConfig->sectorTimeCfg.sampleRate != SAMPLE_DISABLED){
+			CPPUNIT_ASSERT_EQUAL(trackConfig->sectorTimeCfg.channeId, ts->channelId);
+			CPPUNIT_ASSERT_EQUAL(trackConfig->sectorTimeCfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
-			CPPUNIT_ASSERT_EQUAL((size_t)lap_stat_channel_splittime, ts->channelIndex);
+			CPPUNIT_ASSERT_EQUAL((size_t)lap_stat_channel_sectortime, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL((void *)get_lap_stat_sample, (void *)ts->get_sample);
 			ts++;
 		}

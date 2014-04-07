@@ -149,26 +149,26 @@ typedef struct _ImuConfig{
 	unsigned short zeroValue;
 } ImuConfig;
 
-#define MIN_ACCEL_RAW						0
-#define MAX_ACCEL_RAW						4097
+#define MIN_IMU_RAW						0
+#define MAX_IMU_RAW						4097
 
-#define MODE_ACCEL_DISABLED  				0
-#define MODE_ACCEL_NORMAL  					1
-#define MODE_ACCEL_INVERTED  				2
+#define MODE_IMU_DISABLED  				0
+#define MODE_IMU_NORMAL  					1
+#define MODE_IMU_INVERTED  				2
 
-#define ACCEL_CHANNEL_X						0
-#define ACCEL_CHANNEL_Y						1
-#define ACCEL_CHANNEL_Z						2
-#define	ACCEL_CHANNEL_YAW					3
+#define IMU_CHANNEL_X						0
+#define IMU_CHANNEL_Y						1
+#define IMU_CHANNEL_Z						2
+#define	IMU_CHANNEL_YAW						3
 
 #define DEFAULT_ACCEL_ZERO					2048
-#define DEFAULT_GYTO_ZERO					1862 //LY330ALH zero state voltage output is 1.5v
+#define DEFAULT_GYRO_ZERO					1862 //LY330ALH zero state voltage output is 1.5v
 
 
-#define DEFAULT_ACCEL_X_AXIS_CONFIG  {{CHANNEL_AccelX, SAMPLE_25Hz}, MODE_ACCEL_NORMAL, ACCEL_CHANNEL_X,DEFAULT_ACCEL_ZERO}
-#define DEFAULT_ACCEL_Y_AXIS_CONFIG  {{CHANNEL_AccelY, SAMPLE_25Hz}, MODE_ACCEL_NORMAL, ACCEL_CHANNEL_Y,DEFAULT_ACCEL_ZERO}
-#define DEFAULT_ACCEL_Z_AXIS_CONFIG  {{CHANNEL_AccelZ, SAMPLE_25Hz}, MODE_ACCEL_NORMAL, ACCEL_CHANNEL_Z,DEFAULT_ACCEL_ZERO}
-#define DEFAULT_GYRO_YAW_AXIS_CONFIG {{CHANNEL_Yaw, SAMPLE_25Hz}, MODE_ACCEL_NORMAL, ACCEL_CHANNEL_YAW,DEFAULT_GYTO_ZERO}
+#define DEFAULT_ACCEL_X_AXIS_CONFIG  {{CHANNEL_AccelX, SAMPLE_25Hz}, MODE_IMU_NORMAL, IMU_CHANNEL_X,DEFAULT_ACCEL_ZERO}
+#define DEFAULT_ACCEL_Y_AXIS_CONFIG  {{CHANNEL_AccelY, SAMPLE_25Hz}, MODE_IMU_NORMAL, IMU_CHANNEL_Y,DEFAULT_ACCEL_ZERO}
+#define DEFAULT_ACCEL_Z_AXIS_CONFIG  {{CHANNEL_AccelZ, SAMPLE_25Hz}, MODE_IMU_NORMAL, IMU_CHANNEL_Z,DEFAULT_ACCEL_ZERO}
+#define DEFAULT_GYRO_YAW_AXIS_CONFIG {{CHANNEL_Yaw, SAMPLE_25Hz}, MODE_IMU_NORMAL, IMU_CHANNEL_YAW,DEFAULT_GYRO_ZERO}
 #define DEFAULT_IMU_CONFIGS \
 			{ \
 				DEFAULT_ACCEL_X_AXIS_CONFIG, \
@@ -303,26 +303,26 @@ typedef struct _GPSConfig{
 enum lap_stat_channels{
 	lap_stat_channel_lapcount,
 	lap_stat_channel_laptime,
-	lap_stat_channel_splittime,
+	lap_stat_channel_sectortime,
 	lap_stat_channel_predtime
 };
 
 typedef struct _LapConfig{
 	ChannelConfig lapCountCfg;
 	ChannelConfig lapTimeCfg;
-	ChannelConfig splitTimeCfg;
+	ChannelConfig sectorTimeCfg;
 	ChannelConfig predTimeCfg;
 } LapConfig;
 
 #define DEFAULT_LAP_COUNT_CONFIG {CHANNEL_LapCount, SAMPLE_1Hz}
 #define DEFAULT_LAP_TIME_CONFIG {CHANNEL_LapTime, SAMPLE_1Hz}
-#define DEFAULT_SPLIT_TIME_CONFIG {CHANNEL_SplitTime, SAMPLE_1Hz}
+#define DEFAULT_SECTOR_TIME_CONFIG {CHANNEL_SectorTime, SAMPLE_1Hz}
 #define DEFAULT_PRED_TIME_CONFIG {CHANNEL_PredTime, SAMPLE_DISABLED}
 
 #define DEFAULT_LAP_CONFIG { \
 	DEFAULT_LAP_COUNT_CONFIG, \
 	DEFAULT_LAP_TIME_CONFIG, \
-	DEFAULT_SPLIT_TIME_CONFIG, \
+	DEFAULT_SECTOR_TIME_CONFIG, \
 	DEFAULT_PRED_TIME_CONFIG \
 }
 
@@ -498,18 +498,18 @@ char filterPwmOutputMode(int config);
 char filterPwmLoggingMode(int config);
 unsigned short filterPwmDutyCycle(int dutyCycle);
 unsigned short filterPwmPeriod(int period);
-int filterAccelRawValue(int accelRawValue);
+int filterImuRawValue(int accelRawValue);
 int filterPwmClockFrequency(int frequency);
 char filterTimerMode(int config);
 unsigned short filterTimerDivider(unsigned short divider);
-int filterAccelMode(int mode);
-int filterAccelChannel(int channel);
+int filterImuMode(int mode);
+int filterImuChannel(int channel);
 
 TimerConfig * getTimerConfigChannel(int channel);
 ADCConfig * getADCConfigChannel(int channel);
 PWMConfig * getPwmConfigChannel(int channel);
 GPIOConfig * getGPIOConfigChannel(int channel);
-ImuConfig * getAccelConfigChannel(int channel);
+ImuConfig * getImuConfigChannel(int channel);
 
 void setLabelGeneric(char *dest, const char *source);
 void setTextField(char *dest, const char *source, unsigned int maxlen);

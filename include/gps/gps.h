@@ -6,6 +6,8 @@
 #define GPS_QUALITY_SPS 1
 #define GPS_QUALITY_DIFFERENTIAL 2
 
+void gpsConfigChanged(void);
+
 void initGPS();
 
 int checksumValid(const char *gpsData, size_t len);
@@ -22,11 +24,13 @@ int getLapCount();
 
 float getLastLapTime();
 
-float getLastSplitTime();
+float getLastSectorTime();
+
+int getLastSector();
 
 int getAtStartFinish();
 
-int getAtSplit();
+int getAtSector();
 
 void getUTCTimeFormatted(char * buf);
 

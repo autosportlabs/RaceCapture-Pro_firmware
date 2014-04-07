@@ -1,6 +1,6 @@
 #include "loggerHardware.h"
 #include "loggerConfig.h"
-#include "accelerometer.h"
+#include "imu.h"
 #include "ADC.h"
 #include "timer.h"
 #include "CAN.h"

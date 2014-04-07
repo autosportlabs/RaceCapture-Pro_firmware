@@ -3,7 +3,7 @@
 #include "loggerConfig.h"
 #include "loggerData.h"
 #include "virtual_channel.h"
-#include "accelerometer.h"
+#include "imu.h"
 #include "ADC.h"
 #include "timer.h"
 #include "PWM.h"
@@ -65,7 +65,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
 			sample->channelIndex = i;
-			sample->get_sample = get_accel_sample;
+			sample->get_sample = get_imu_sample;
 			sample++;
 		}
 	}
@@ -215,12 +215,12 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 			sample++;
 		}
 
-		if (trackConfig->splitTimeCfg.sampleRate != SAMPLE_DISABLED){
-			ChannelConfig *cc = &(trackConfig->splitTimeCfg);
+		if (trackConfig->sectorTimeCfg.sampleRate != SAMPLE_DISABLED){
+			ChannelConfig *cc = &(trackConfig->sectorTimeCfg);
 			sample->channelId = cc->channeId;
 			sample->sampleRate = cc->sampleRate;
 			sample->intValue = NIL_SAMPLE;
-			sample->channelIndex = lap_stat_channel_splittime;
+			sample->channelIndex = lap_stat_channel_sectortime;
 			sample->get_sample = get_lap_stat_sample;
 			sample++;
 		}
@@ -347,10 +347,10 @@ float get_gpio_sample(int channelId){
 	return (float)gpioValue;
 }
 
-float get_accel_sample(int channelId){
+float get_imu_sample(int channelId){
 	LoggerConfig *config = getWorkingLoggerConfig();
-	ImuConfig *ac = &(config->ImuConfigs[channelId]);
-	float value = imu_read_value(channelId, ac);
+	ImuConfig *c = &(config->ImuConfigs[channelId]);
+	float value = imu_read_value(channelId, c);
 	return value;
 }
 
@@ -391,8 +391,8 @@ float get_lap_stat_sample(int channelId){
 		case lap_stat_channel_laptime:
 			value = getLastLapTime();
 			break;
-		case lap_stat_channel_splittime:
-			value = getLastSplitTime();
+		case lap_stat_channel_sectortime:
+			value = getLastSectorTime();
 			break;
 		case lap_stat_channel_predtime:
 		{

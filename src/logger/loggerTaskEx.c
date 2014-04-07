@@ -18,7 +18,7 @@
 #include "loggerTaskEx.h"
 #include "loggerHardware.h"
 #include "loggerConfig.h"
-#include "accelerometer.h"
+#include "imu.h"
 #include "gps.h"
 #include "printk.h"
 

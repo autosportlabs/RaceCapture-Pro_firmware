@@ -110,7 +110,7 @@ PWM_DIR = $(SRC_DIR)/PWM
 LED_DIR = $(SRC_DIR)/LED
 GPIO_DIR = $(SRC_DIR)/GPIO
 WATCHDOG_DIR = $(SRC_DIR)/watchdog
-ACCELEROMETER_SRC_DIR = $(SRC_DIR)/accelerometer
+IMU_SRC_DIR = $(SRC_DIR)/imu
 LOGGING_DIR = $(SRC_DIR)/logging
 TASKS_DIR = tasks
 JSMN_SRC_DIR = $(SRC_DIR)/jsmn
@@ -154,7 +154,7 @@ $(FAT_SD_SRC_DIR)/ff.c \
 $(FAT_SD_SRC_DIR)/sd_spi_at91.c \
 $(FAT_SD_SRC_DIR)/rtc.c \
 $(SDCARD_SRC_DIR)/sdcard.c \
-$(ACCELEROMETER_SRC_DIR)/accelerometer.c \
+$(IMU_SRC_DIR)/imu.c \
 $(LOGGER_SRC_DIR)/sampleRecord.c \
 $(LOGGER_SRC_DIR)/fileWriter.c \
 $(LOGGER_SRC_DIR)/loggerHardware.c \
@@ -175,7 +175,7 @@ $(MEMORY_SRC_DIR)/memory.c \
 $(CPU_SRC_DIR)/cpu.c \
 $(MAGIC_SRC_DIR)/magic.c \
 $(MCP2515_DIR)/CAN_device_MCP2515.c \
-$(KXR94_2353_DIR)/accelerometer_device_KXR94_2353.c \
+$(KXR94_2353_DIR)/imu_device_KXR94-2353_LY330ALH.c \
 $(ADC_AT91_DIR)/ADC_device_at91.c \
 $(TIMER_AT91_DIR)/timer_device_at91.c \
 $(PWM_AT91_DIR)/PWM_device_at91.c \
@@ -293,7 +293,7 @@ CINCS = \
 -I$(SERIAL_SRC_DIR) \
 -I$(SPI_DIR) \
 -I$(UART_SRC_DIR) \
--I$(ACCELEROMETER_SRC_DIR) \
+-I$(IMU_SRC_DIR) \
 -I$(LOGGER_SRC_DIR) \
 -I$(USB_SRC_DIR)/include \
 -I$(MEMORY_AT91_DIR) \
@@ -323,7 +323,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/spi \
 -I$(INCLUDE_DIR)/magic \
 -I$(INCLUDE_DIR)/lua \
--I$(INCLUDE_DIR)/accelerometer \
+-I$(INCLUDE_DIR)/imu \
 -I$(INCLUDE_DIR)/messaging \
 -I$(INCLUDE_DIR)/predictive_timer \
 -I$(INCLUDE_DIR)/util \

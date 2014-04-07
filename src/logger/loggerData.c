@@ -7,7 +7,7 @@
 
 #include "loggerData.h"
 #include "loggerHardware.h"
-#include "accelerometer.h"
+#include "imu.h"
 #include "ADC.h"
 #include "gps.h"
 #include "linear_interpolate.h"

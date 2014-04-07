@@ -14,7 +14,7 @@
 #include "loggerSampleData.h"
 #include "loggerData.h"
 #include "loggerNotifications.h"
-#include "accelerometer.h"
+#include "imu.h"
 #include "tracks.h"
 #include "loggerHardware.h"
 #include "serial.h"
@@ -390,30 +390,30 @@ int api_getAnalogConfig(Serial *serial, const jsmntok_t * json){
 	}
 }
 
-static const jsmntok_t * setAccelExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
-	ImuConfig *accelCfg = (ImuConfig *)cfg;
+static const jsmntok_t * setImuExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
+	ImuConfig *imuCfg = (ImuConfig *)cfg;
 
-	if (NAME_EQU("mode",name)) accelCfg->mode = filterAccelMode(modp_atoi(value));
-	else if (NAME_EQU("chan",name)) accelCfg->physicalChannel = filterAccelChannel(modp_atoi(value));
-	else if (NAME_EQU("zeroVal",name)) accelCfg->zeroValue = modp_atoi(value);
+	if (NAME_EQU("mode",name)) imuCfg->mode = filterImuMode(modp_atoi(value));
+	else if (NAME_EQU("chan",name)) imuCfg->physicalChannel = filterImuChannel(modp_atoi(value));
+	else if (NAME_EQU("zeroVal",name)) imuCfg->zeroValue = modp_atoi(value);
 	return valueTok + 1;
 }
 
-static void getAccelConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
+static void getImuConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
 	ImuConfig *c = &(getWorkingLoggerConfig()->ImuConfigs[channelId]);
 	*baseCfg = c;
 	*channelCfg = &c->cfg;
 }
 
-int api_setAccelConfig(Serial *serial, const jsmntok_t *json){
-	setMultiChannelConfigGeneric(serial, json, getAccelConfigs, setAccelExtendedField);
+int api_setImuConfig(Serial *serial, const jsmntok_t *json){
+	setMultiChannelConfigGeneric(serial, json, getImuConfigs, setImuExtendedField);
 	configChanged();
 	return API_SUCCESS;
 }
 
-static void sendAccelConfig(Serial *serial, size_t startIndex, size_t endIndex){
+static void sendImuConfig(Serial *serial, size_t startIndex, size_t endIndex){
 	json_messageStart(serial);
-	json_objStart(serial, "accelCfg");
+	json_objStart(serial, "imuCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		ImuConfig *cfg = &(getWorkingLoggerConfig()->ImuConfigs[i]);
 		json_objStartInt(serial, i);
@@ -427,7 +427,7 @@ static void sendAccelConfig(Serial *serial, size_t startIndex, size_t endIndex){
 	json_objEnd(serial, 0);
 }
 
-int api_getAccelConfig(Serial *serial, const jsmntok_t *json){
+int api_getImuConfig(Serial *serial, const jsmntok_t *json){
 	size_t startIndex = 0;
 	size_t endIndex = 0;
 	if (json->type == JSMN_PRIMITIVE){
@@ -441,7 +441,7 @@ int api_getAccelConfig(Serial *serial, const jsmntok_t *json){
 		}
 	}
 	if (startIndex >= 0 && startIndex <= CONFIG_IMU_CHANNELS){
-		sendAccelConfig(serial, startIndex, endIndex);
+		sendImuConfig(serial, startIndex, endIndex);
 		return API_SUCCESS_NO_RETURN;
 	}
 	else{
@@ -887,7 +887,7 @@ int api_setTrackConfig(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS;
 }
 
-int api_calibrateAccel(Serial *serial, const jsmntok_t *json){
+int api_calibrateImu(Serial *serial, const jsmntok_t *json){
 	imu_calibrate_zero();
 	return API_SUCCESS;
 }

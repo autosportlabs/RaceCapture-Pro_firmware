@@ -7,7 +7,7 @@
 #include "loggerConfig.h"
 #include "loggerData.h"
 #include "gps.h"
-#include "accelerometer.h"
+#include "imu.h"
 #include "ADC.h"
 #include "timer.h"
 #include "CAN.h"
@@ -55,8 +55,8 @@ void registerLuaLoggerBindings(lua_State *L){
 	lua_registerlight(L,"getAnalog",Lua_GetAnalog);
 	lua_registerlight(L,"getAnalogRaw",Lua_GetAnalogRaw);
 
-	lua_registerlight(L,"getAccel",Lua_ReadAccelerometer);
-	lua_registerlight(L,"getAccelRaw",Lua_ReadAccelerometerRaw);
+	lua_registerlight(L,"getImu",Lua_ReadImu);
+	lua_registerlight(L,"getImuRaw",Lua_ReadImuRaw);
 
 	lua_registerlight(L,"getGpsPos", Lua_GetGPSPosition);
 	lua_registerlight(L,"getGpsSpeed",Lua_GetGPSSpeed);
@@ -113,10 +113,10 @@ void registerLuaLoggerBindings(lua_State *L){
 	lua_registerlight(L,"setTimerSampleRate", Lua_SetTimerSampleRate);
 	lua_registerlight(L,"getTimerSampleRate", Lua_GetTimerSampleRate);
 
-	lua_registerlight(L,"setAccelSampleRate",Lua_SetAccelSampleRate);
-	lua_registerlight(L,"getAccelSampleRate",Lua_GetAccelSampleRate);
+	lua_registerlight(L,"setImuSampleRate",Lua_SetImuSampleRate);
+	lua_registerlight(L,"getImuSampleRate",Lua_GetImuSampleRate);
 	
-	lua_registerlight(L,"calibrateAccelZero",Lua_CalibrateAccelZero);
+	lua_registerlight(L,"calibrateImuZero",Lua_CalibrateImuZero);
 
 	lua_registerlight(L,"setGpsStartFinish",Lua_SetGPSStartFinish);
 	lua_registerlight(L,"getGpsStartFinish",Lua_GetGPSStartFinish);
@@ -162,17 +162,17 @@ int Lua_GetBackgroundStreaming(lua_State *L){
 	return 1;
 }
 
-int Lua_SetAccelSampleRate(lua_State *L){
+int Lua_SetImuSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2 ){
-		ImuConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
+		ImuConfig *c = getImuConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->cfg.sampleRate = encodeSampleRate(lua_tointeger(L,2));
 	}	
 	return 0;
 }
 
-int Lua_GetAccelSampleRate(lua_State *L){
+int Lua_GetImuSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		ImuConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
+		ImuConfig *c = getImuConfigChannel(lua_tointeger(L,1));
 		if (NULL !=c ){
 			lua_pushnumber(L,c->cfg.sampleRate);
 			return 1;	
@@ -181,7 +181,7 @@ int Lua_GetAccelSampleRate(lua_State *L){
 	return 0;	
 }
 
-int Lua_CalibrateAccelZero(lua_State *L){
+int Lua_CalibrateImuZero(lua_State *L){
 	imu_calibrate_zero();
 	return 0;
 }
@@ -248,7 +248,7 @@ int Lua_GetGPSAtStartFinish(lua_State *L){
 }
 
 int Lua_GetAtSplit(lua_State *L){
-	lua_pushinteger(L,getAtSplit());
+	lua_pushinteger(L,getAtSector());
 	return 1;
 }
 
@@ -570,25 +570,25 @@ int Lua_GetTimeSince(lua_State *L){
 	return 0;
 }
 
-int Lua_ReadAccelerometer(lua_State *L){
+int Lua_ReadImu(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		if (channel >= 0 && channel < CONFIG_IMU_CHANNELS){
 			ImuConfig *ac = &getWorkingLoggerConfig()->ImuConfigs[channel];
-			float accelG = imu_read_value(channel,ac);
-			lua_pushnumber(L,accelG);
+			float value = imu_read_value(channel,ac);
+			lua_pushnumber(L, value);
 			return 1;
 		}
 	}
 	return 0;
 }
 
-int Lua_ReadAccelerometerRaw(lua_State *L){
+int Lua_ReadImuRaw(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		if (channel >= 0 && channel <= CONFIG_IMU_CHANNELS){
-			int accelValue =  imu_read(channel);
-			lua_pushinteger(L,accelValue);
+			int value =  imu_read(channel);
+			lua_pushinteger(L,value);
 			return 1;
 		}
 	}

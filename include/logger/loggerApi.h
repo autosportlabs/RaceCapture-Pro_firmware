@@ -26,8 +26,8 @@
 {"getAnalogCfg", api_getAnalogConfig}, \
 {"getGpsCfg", api_getGpsConfig}, \
 {"setGpsCfg", api_setGpsConfig}, \
-{"getAccelCfg", api_getAccelConfig}, \
-{"setAccelCfg", api_setAccelConfig}, \
+{"getImuCfg", api_getImuConfig}, \
+{"setImuCfg", api_setImuConfig}, \
 {"getBtCfg", api_getBluetoothConfig}, \
 {"setBtCfg", api_setBluetoothConfig}, \
 {"setConnCfg", api_setConnectivityConfig}, \
@@ -44,7 +44,7 @@
 {"getLapCfg", api_getLapConfig}, \
 {"getTrackCfg", api_getTrackConfig}, \
 {"setTrackCfg", api_setTrackConfig}, \
-{"calAccel", api_calibrateAccel}, \
+{"calImu", api_calibrateImu}, \
 {"getLogfile", api_getLogfile}, \
 {"getTracks", api_getTracks}, \
 {"getChannels", api_getChannels}
@@ -68,15 +68,15 @@ int api_setLapConfig(Serial *serial, const jsmntok_t *json);
 int api_getLapConfig(Serial *serial, const jsmntok_t *json);
 int api_getTrackConfig(Serial *serial, const jsmntok_t *json);
 int api_setTrackConfig(Serial *serial, const jsmntok_t *json);
-int api_getAccelConfig(Serial *serial, const jsmntok_t *json);
-int api_setAccelConfig(Serial *serial, const jsmntok_t *json);
+int api_getImuConfig(Serial *serial, const jsmntok_t *json);
+int api_setImuConfig(Serial *serial, const jsmntok_t *json);
 int api_getPwmConfig(Serial *serial, const jsmntok_t *json);
 int api_setPwmConfig(Serial *serial, const jsmntok_t *json);
 int api_getGpioConfig(Serial *serial, const jsmntok_t *json);
 int api_setGpioConfig(Serial *serial, const jsmntok_t *json);
 int api_getTimerConfig(Serial *serial, const jsmntok_t *json);
 int api_setTimerConfig(Serial *serial, const jsmntok_t *json);
-int api_calibrateAccel(Serial *serial, const jsmntok_t *json);
+int api_calibrateImu(Serial *serial, const jsmntok_t *json);
 int api_flashConfig(Serial *serial, const jsmntok_t *json);
 int api_getLogfile(Serial *serial, const jsmntok_t *json);
 int api_getTracks(Serial *serial, const jsmntok_t *json);

@@ -85,7 +85,6 @@ CHANNEL_Latitude,
 CHANNEL_Longitude,
 CHANNEL_Speed,
 CHANNEL_SectorTime,
-CHANNEL_SplitTime,
 CHANNEL_LapTime,
 CHANNEL_PredTime,
 CHANNEL_LapCount,
@@ -149,7 +148,6 @@ CHANNEL_COUNT, \
 {"Longitude", "Degrees", 6}, \
 {"Speed", "MPH", 2}, \
 {"SectorTime", "Time", 3}, \
-{"SplitTime", "Time", 3}, \
 {"LapTime", "Time", 3}, \
 {"PredTime", "Time", 3}, \
 {"LapCount", "Count", 0}, \

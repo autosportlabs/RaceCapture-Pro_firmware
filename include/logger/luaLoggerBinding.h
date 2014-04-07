@@ -40,8 +40,8 @@ int Lua_GetGPSAtStartFinish(lua_State *L);
 int Lua_GetTimeDiff(lua_State *L);
 int Lua_GetTimeSince(lua_State *L);
 
-int Lua_ReadAccelerometer(lua_State *L);
-int Lua_ReadAccelerometerRaw(lua_State *L);
+int Lua_ReadImu(lua_State *L);
+int Lua_ReadImuRaw(lua_State *L);
 
 int Lua_SetPWMDutyCycle(lua_State *L);
 int Lua_SetPWMPeriod(lua_State *L);
@@ -63,10 +63,10 @@ int Lua_ReadOBD2(lua_State *L);
 
 //logger config data
 
-int Lua_SetAccelSampleRate(lua_State *L);
-int Lua_GetAccelSampleRate(lua_State *L);
+int Lua_SetImuSampleRate(lua_State *L);
+int Lua_GetImuSampleRate(lua_State *L);
 
-int Lua_CalibrateAccelZero(lua_State *L);
+int Lua_CalibrateImuZero(lua_State *L);
 
 int Lua_SetTimerSampleRate(lua_State *L);
 int Lua_GetTimerSampleRate(lua_State *L);

@@ -198,38 +198,38 @@ char filterTimerMode(int mode){
 	}
 }
 
-int filterAccelChannel(int config){
+int filterImuChannel(int config){
 	switch(config){
-		case ACCEL_CHANNEL_Y:
-			return ACCEL_CHANNEL_Y;
-		case ACCEL_CHANNEL_Z:
-			return ACCEL_CHANNEL_Z;
-		case ACCEL_CHANNEL_YAW:
-			return ACCEL_CHANNEL_YAW;
+		case IMU_CHANNEL_Y:
+			return IMU_CHANNEL_Y;
+		case IMU_CHANNEL_Z:
+			return IMU_CHANNEL_Z;
+		case IMU_CHANNEL_YAW:
+			return IMU_CHANNEL_YAW;
 		default:
-		case ACCEL_CHANNEL_X:
-			return ACCEL_CHANNEL_X;
+		case IMU_CHANNEL_X:
+			return IMU_CHANNEL_X;
 	}
 }	
 
-int filterAccelRawValue(int accelRawValue){
-	if (accelRawValue > MAX_ACCEL_RAW){
-		accelRawValue = MAX_ACCEL_RAW;
-	} else if (accelRawValue < MIN_ACCEL_RAW){
-		accelRawValue = MIN_ACCEL_RAW;	
+int filterImuRawValue(int imuRawValue){
+	if (imuRawValue > MAX_IMU_RAW){
+		imuRawValue = MAX_IMU_RAW;
+	} else if (imuRawValue < MIN_IMU_RAW){
+		imuRawValue = MIN_IMU_RAW;
 	}
-	return accelRawValue;
+	return imuRawValue;
 }
 
-int filterAccelMode(int mode){
+int filterImuMode(int mode){
 	switch (mode){
-		case MODE_ACCEL_DISABLED:
-			return MODE_ACCEL_DISABLED;
-		case MODE_ACCEL_INVERTED:
-			return MODE_ACCEL_INVERTED;
+		case MODE_IMU_DISABLED:
+			return MODE_IMU_DISABLED;
+		case MODE_IMU_INVERTED:
+			return MODE_IMU_INVERTED;
 		default:
-		case MODE_ACCEL_NORMAL:
-			return MODE_ACCEL_NORMAL;
+		case MODE_IMU_NORMAL:
+			return MODE_IMU_NORMAL;
 	}
 }
 
@@ -292,7 +292,7 @@ GPIOConfig * getGPIOConfigChannel(int channel){
 	return c;	
 }
 
-ImuConfig * getAccelConfigChannel(int channel){
+ImuConfig * getImuConfigChannel(int channel){
 	ImuConfig * c = NULL;
 	if (channel >= 0 && channel < CONFIG_IMU_CHANNELS){
 		c = &(getWorkingLoggerConfig()->ImuConfigs[channel]);
@@ -412,7 +412,7 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
 	LapConfig *lapConfig = &loggerConfig->LapConfigs;
 	if (lapConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED) channels++;
 	if (lapConfig->lapTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
-	if (lapConfig->splitTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (lapConfig->sectorTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
 	if (lapConfig->predTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
 
 	channels += get_virtual_channel_count();

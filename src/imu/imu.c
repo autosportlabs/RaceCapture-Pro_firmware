@@ -1,5 +1,5 @@
-#include "accelerometer.h"
-#include "accelerometer_device.h"
+#include "imu.h"
+#include "imu_device.h"
 #include "loggerConfig.h"
 #include "filter.h"
 #include "stddef.h"
@@ -20,36 +20,37 @@ void imu_sample_all(){
 	}
 }
 
-float imu_read_value(unsigned char accelChannel, ImuConfig *ac){
+float imu_read_value(unsigned char imuChannel, ImuConfig *ac){
 	size_t physicalChannel = ac->physicalChannel;
 	unsigned int raw = g_imu_filter[physicalChannel].current_value;
-	float countsPerUnit = imu_device_counts_per_unit(accelChannel);
-	float accelG = ((float)((int)raw - (int)ac->zeroValue) / countsPerUnit);
+	float countsPerUnit = imu_device_counts_per_unit(imuChannel);
+	float scaledValue = ((float)((int)raw - (int)ac->zeroValue) / countsPerUnit);
 
 	//invert physical channel to match industry-standard accelerometer mappings
 	switch(physicalChannel){
-		case ACCEL_CHANNEL_X:
-		case ACCEL_CHANNEL_Y:
-		case ACCEL_CHANNEL_YAW:
-			accelG = -accelG;
+		case IMU_CHANNEL_X:
+		case IMU_CHANNEL_Y:
+		case IMU_CHANNEL_YAW:
+			scaledValue = -scaledValue;
 			break;
+
 		default:
 			break;
 	}
 
 	//now invert based on configuration
 	switch (ac->mode){
-	case MODE_ACCEL_NORMAL:
+	case MODE_IMU_NORMAL:
 		break;
-	case MODE_ACCEL_INVERTED:
-		accelG = -accelG;
+	case MODE_IMU_INVERTED:
+		scaledValue = -scaledValue;
 		break;
-	case MODE_ACCEL_DISABLED:
+	case MODE_IMU_DISABLED:
 	default:
-		accelG = 0;
+		scaledValue = 0;
 		break;
 	}
-	return accelG;
+	return scaledValue;
 }
 
 static void imu_flush_filter(size_t physicalChannel){
@@ -60,13 +61,13 @@ static void imu_flush_filter(size_t physicalChannel){
 
 void imu_calibrate_zero(){
 	for (int i = 0; i < CONFIG_IMU_CHANNELS; i++){
-		ImuConfig * c = getAccelConfigChannel(i);
+		ImuConfig * c = getImuConfigChannel(i);
 		size_t physicalChannel = c->physicalChannel;
 		imu_flush_filter(physicalChannel);
 		unsigned int zeroValue = g_imu_filter[physicalChannel].current_value;
 		//adjust for gravity
-		float accelCountsPerUnit = imu_device_counts_per_unit(physicalChannel);
-		if (c->physicalChannel == ACCEL_CHANNEL_Z) zeroValue-= (accelCountsPerUnit * (c->mode != MODE_ACCEL_INVERTED ? 1 : -1));
+		float countsPerUnit = imu_device_counts_per_unit(physicalChannel);
+		if (c->physicalChannel == IMU_CHANNEL_Z) zeroValue-= (countsPerUnit * (c->mode != MODE_IMU_INVERTED ? 1 : -1));
 		c->zeroValue = zeroValue;
 	}
 }

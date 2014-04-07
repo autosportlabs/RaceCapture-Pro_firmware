@@ -33,6 +33,7 @@
 
 static const Track * g_activeTrack;
 
+static int		g_configured;
 static int		g_flashCount;
 static float	g_prevLatitude;
 static float	g_prevLongitude;
@@ -50,19 +51,19 @@ static int		g_gpsQuality;
 
 static int		g_satellitesUsedForPosition;
 
-static int g_atStartFinish;
-static int g_prevAtStartFinish;
-static float g_lastStartFinishTimestamp;
+static int 		g_atStartFinish;
+static int 		g_prevAtStartFinish;
+static float 	g_lastStartFinishTimestamp;
 
-static int g_atSplit;
-static int g_prevAtSplit;
-static float g_lastSplitTimestamp;
+static int 		g_atTarget;
+static int 		g_prevAtTarget;
+static float 	g_lastSectorTimestamp;
 
-static float g_lastLapTime;
-static float g_lastSplitTime;
+static int		g_sector;
+static float 	g_lastLapTime;
+static float 	g_lastSectorTime;
 
-static int g_lapCount;
-
+static int 		g_lapCount;
 static float	g_distance;
 
 //Parse Global Positioning System Fix Data.
@@ -258,8 +259,12 @@ float getLastLapTime(){
 	return g_lastLapTime;
 }
 
-float getLastSplitTime(){
-	return g_lastSplitTime;
+float getLastSectorTime(){
+	return g_lastSectorTime;
+}
+
+int getLastSector(){
+	return g_sector;
 }
 
 float getTimeSince(float t1){
@@ -277,8 +282,8 @@ int getAtStartFinish(){
 	return g_atStartFinish;
 }
 
-int getAtSplit(){
-	return g_atSplit;
+int getAtSector(){
+	return g_atTarget;
 }
 
 float getUTCTime(){
@@ -325,18 +330,18 @@ void setGPSSpeed(float speed){
 	g_speed = speed;
 }
 
-static int withinGpsTarget(const Track *track){
+static int withinGpsTarget(const GeoPoint *point, float radius){
 
 	struct circ_area area;
 	struct point p;
-	p.x = track->startFinish.longitude;
-	p.y = track->startFinish.latitude;
+	p.x = point->longitude;
+	p.y = point->latitude;
 
 	struct point currentP;
 	currentP.x = getLongitude();
 	currentP.y = getLatitude();
 
-	create_circ(&area,&p,track->radius);
+	create_circ(&area,&p, radius);
 	int within =  within_circ(&area,&currentP);
 	return within;
 }
@@ -372,7 +377,7 @@ static float calcDistancesSinceLastSample(){
 
 static int processStartFinish(const Track *track){
 	int lapDetected = 0;
-	g_atStartFinish = withinGpsTarget(track);
+	g_atStartFinish = withinGpsTarget(&track->startFinish, track->radius);
 	if (g_atStartFinish){
 		if (g_prevAtStartFinish == 0){
 			if (g_lastStartFinishTimestamp == 0){
@@ -391,6 +396,7 @@ static int processStartFinish(const Track *track){
 					g_lastLapTime = lapTime;
 					g_lastStartFinishTimestamp = currentTimestamp;
 					lapDetected = 1;
+					g_sector = 0;
 				}
 			}
 		}
@@ -402,30 +408,37 @@ static int processStartFinish(const Track *track){
 	return lapDetected;
 }
 
-static void processSplit(const Track *track){
-	g_atSplit = withinGpsTarget(track);
-	if (g_atSplit){
-		if (g_prevAtSplit == 0){
-			if (g_lastSplitTimestamp == 0){
-				g_lastSplitTimestamp = getSecondsSinceMidnight();
-			}
-			else{
-				if (g_lastStartFinishTimestamp != 0){
+static void processSector(const Track *track){
+	const GeoPoint *nextSectorPoint = (track->sectors + g_sector);
+	if (nextSectorPoint->latitude != 0 && nextSectorPoint->longitude != 0 ){
+		g_atTarget = withinGpsTarget(nextSectorPoint, track->radius);
+		if (g_atTarget){
+			if (g_prevAtTarget == 0){
+				//first sector refreences from start finish; subsequent sectors reference from last sector timestamp
+				float fromTimestamp = g_sector = 0 ? g_lastStartFinishTimestamp : g_lastSectorTimestamp;
+
+				if (fromTimestamp != 0){
 					float currentTimestamp = getSecondsSinceMidnight();
 					float elapsed = getTimeDiff(g_lastStartFinishTimestamp, currentTimestamp);
-					g_lastSplitTime = elapsed / 60.0;
-
+					g_lastSectorTime = elapsed / 60.0;
+					g_lastSectorTimestamp = currentTimestamp;
+					if (g_sector < SECTOR_COUNT - 1) g_sector++;
 				}
 			}
+			g_prevAtTarget = 1;
 		}
-		g_prevAtSplit = 1;
-	}
-	else{
-		g_prevAtSplit = 0;
+		else{
+			g_prevAtTarget = 0;
+		}
 	}
 }
 
+void gpsConfigChanged(void){
+	g_configured = 0;
+}
+
 void initGPS(){
+	g_configured = 0;
 	g_activeTrack = NULL;
 	g_secondsSinceMidnight = TIME_NULL;
 	g_prevSecondsSinceMidnight = TIME_NULL;
@@ -439,15 +452,16 @@ void initGPS(){
 	g_satellitesUsedForPosition = 0;
 	g_speed = 0.0;
 	g_lastLapTime = 0;
-	g_lastSplitTime = 0;
+	g_lastSectorTime = 0;
 	g_atStartFinish = 0;
 	g_prevAtStartFinish = 0;
 	g_lastStartFinishTimestamp = 0;
-	g_atSplit = 0;
-	g_prevAtSplit = 0;
-	g_lastSplitTimestamp = 0;
+	g_atTarget = 0;
+	g_prevAtTarget = 0;
+	g_lastSectorTimestamp = 0;
 	g_lapCount = 0;
 	g_distance = 0;
+	g_sector = 0;
 	resetPredictiveTimer();
 }
 
@@ -462,24 +476,30 @@ static void flashGpsStatusLed(){
 }
 
 void onLocationUpdated(){
-	static int configured = 0;
+	static int sectorEnabled = 0;
+	static int startFinishEnabled = 0;
 
 	if (GPS_LOCKED_ON(g_gpsQuality)) {
+		LoggerConfig *config = getWorkingLoggerConfig();
+
 		GeoPoint gp;
 		populateGeoPoint(&gp);
 
-       	if (! configured){
-           Track *defaultTrack = &(getWorkingLoggerConfig()->TrackConfigs.track);
+       	if (! g_configured){
+           Track *defaultTrack = &(config->TrackConfigs.track);
        	   g_activeTrack = auto_configure_track(defaultTrack, gp);
-     	   configured = 1;
+       	   startFinishEnabled = isStartFinishEnabled(g_activeTrack);
+       	   sectorEnabled = config->LapConfigs.sectorTimeCfg.sampleRate != SAMPLE_DISABLED && startFinishEnabled;
+     	   g_configured = 1;
        	}
 
-       	int startFinishEnabled = isStartFinishEnabled(g_activeTrack);
 
        	float dist = calcDistancesSinceLastSample();
 		g_distance += dist;
 
-		//if (splitEnabled) processSplit(splitCfg);
+		if (sectorEnabled){
+			processSector(g_activeTrack);
+		}
 
 		if (startFinishEnabled){
 			float utcTime = getUTCTime();
