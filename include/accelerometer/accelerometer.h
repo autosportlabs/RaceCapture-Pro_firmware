@@ -1,23 +1,17 @@
-/*
- * accelerometer.h
- *
- *  Created on: Jan 31, 2014
- *      Author: brentp
- */
 
-#ifndef ACCELEROMETER_H_
-#define ACCELEROMETER_H_
+#ifndef IMU_H_
+#define IMU_H_
 #include "loggerConfig.h"
 
-void accelerometer_sample_all();
+void imu_sample_all();
 
-float accelerometer_read_value(unsigned char accelChannel, ImuConfig *ac);
+float imu_read_value(unsigned char accelChannel, ImuConfig *ac);
 
-void accelerometer_init();
+void imu_init();
 
-void calibrateAccelZero();
+void imu_calibrate_zero();
 
-unsigned int accelerometer_read(unsigned int channel);
+unsigned int imu_read(unsigned int channel);
 
 
-#endif /* ACCELEROMETER_H_ */
+#endif /* IMU_H_ */

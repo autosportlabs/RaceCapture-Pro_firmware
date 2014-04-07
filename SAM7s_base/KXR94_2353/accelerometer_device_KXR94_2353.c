@@ -136,12 +136,12 @@ static void accel_initSPI(){
 	unlock_spi();
 }
 
-void accelerometer_device_init(){
+void imu_device_init(){
 	accel_initSPI();
 	accel_setup();
 }
 
-unsigned int accelerometer_device_read(unsigned int channel){
+unsigned int imu_device_read(unsigned int channel){
 	lock_spi();
 	//aux input (i.e. Yaw input) is mapped to 0x07 on the
 	//kionix KXR94
@@ -157,7 +157,7 @@ unsigned int accelerometer_device_read(unsigned int channel){
 	return value;
 }
 
-float accelerometer_device_counts_per_unit(unsigned int channel){
-	return (channel == ACCEL_CHANNEL_ZT ? YAW_DEVICE_COUNTS_PER_DEGREE_PER_SEC : ACCEL_DEVICE_COUNTS_PER_G);
+float imu_device_counts_per_unit(unsigned int channel){
+	return (channel == ACCEL_CHANNEL_YAW ? YAW_DEVICE_COUNTS_PER_DEGREE_PER_SEC : ACCEL_DEVICE_COUNTS_PER_G);
 }
 

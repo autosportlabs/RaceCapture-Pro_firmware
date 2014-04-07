@@ -129,7 +129,7 @@ void LoggerApiTest::setUp()
 	initApi();
 	initialize_logger_config();
 	setupMockSerial();
-	accelerometer_init();
+	imu_init();
 	resetPredictiveTimer();
 }
 
@@ -314,7 +314,7 @@ void LoggerApiTest::testSetAnalogCfg()
 
 void LoggerApiTest::testGetAccelConfigFile(string filename, int index){
 	LoggerConfig *c = getWorkingLoggerConfig();
-	ImuConfig *accelCfg = &c->AccelConfigs[index];
+	ImuConfig *accelCfg = &c->ImuConfigs[index];
 
 	accelCfg->cfg.channeId = 1;
 	accelCfg->cfg.sampleRate = encodeSampleRate(100);
@@ -351,7 +351,7 @@ void LoggerApiTest::testSetAccelConfigFile(string filename){
 
 	LoggerConfig *c = getWorkingLoggerConfig();
 
-	ImuConfig *accelCfg = &c->AccelConfigs[0];
+	ImuConfig *accelCfg = &c->ImuConfigs[0];
 
 	CPPUNIT_ASSERT_EQUAL(33, (int)accelCfg->cfg.channeId);
 	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(accelCfg->cfg.sampleRate));

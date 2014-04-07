@@ -400,7 +400,7 @@ static const jsmntok_t * setAccelExtendedField(const jsmntok_t *valueTok, const 
 }
 
 static void getAccelConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
-	ImuConfig *c = &(getWorkingLoggerConfig()->AccelConfigs[channelId]);
+	ImuConfig *c = &(getWorkingLoggerConfig()->ImuConfigs[channelId]);
 	*baseCfg = c;
 	*channelCfg = &c->cfg;
 }
@@ -415,7 +415,7 @@ static void sendAccelConfig(Serial *serial, size_t startIndex, size_t endIndex){
 	json_messageStart(serial);
 	json_objStart(serial, "accelCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
-		ImuConfig *cfg = &(getWorkingLoggerConfig()->AccelConfigs[i]);
+		ImuConfig *cfg = &(getWorkingLoggerConfig()->ImuConfigs[i]);
 		json_objStartInt(serial, i);
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_uint(serial, "mode", cfg->mode, 1);
@@ -433,14 +433,14 @@ int api_getAccelConfig(Serial *serial, const jsmntok_t *json){
 	if (json->type == JSMN_PRIMITIVE){
 		if (jsmn_isNull(json)){
 			startIndex = 0;
-			endIndex = CONFIG_ACCEL_CHANNELS - 1;
+			endIndex = CONFIG_IMU_CHANNELS - 1;
 		}
 		else{
 			jsmn_trimData(json);
 			startIndex = endIndex = modp_atoi(json->data);
 		}
 	}
-	if (startIndex >= 0 && startIndex <= CONFIG_ACCEL_CHANNELS){
+	if (startIndex >= 0 && startIndex <= CONFIG_IMU_CHANNELS){
 		sendAccelConfig(serial, startIndex, endIndex);
 		return API_SUCCESS_NO_RETURN;
 	}
@@ -888,7 +888,7 @@ int api_setTrackConfig(Serial *serial, const jsmntok_t *json){
 }
 
 int api_calibrateAccel(Serial *serial, const jsmntok_t *json){
-	calibrateAccelZero();
+	imu_calibrate_zero();
 	return API_SUCCESS;
 }
 

@@ -57,8 +57,8 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 		}
 	}
 
-	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
-		ImuConfig *config = &(loggerConfig->AccelConfigs[i]);
+	for (int i = 0; i < CONFIG_IMU_CHANNELS; i++){
+		ImuConfig *config = &(loggerConfig->ImuConfigs[i]);
 		if (config->cfg.sampleRate != SAMPLE_DISABLED){
 			ChannelConfig *cc = &(config->cfg);
 			sample->channelId = cc->channeId;
@@ -349,8 +349,8 @@ float get_gpio_sample(int channelId){
 
 float get_accel_sample(int channelId){
 	LoggerConfig *config = getWorkingLoggerConfig();
-	ImuConfig *ac = &(config->AccelConfigs[channelId]);
-	float value = accelerometer_read_value(channelId, ac);
+	ImuConfig *ac = &(config->ImuConfigs[channelId]);
+	float value = imu_read_value(channelId, ac);
 	return value;
 }
 

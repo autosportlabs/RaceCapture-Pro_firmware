@@ -20,6 +20,6 @@ void init_logger_data(){
 }
 
 void doBackgroundSampling(){
-	accelerometer_sample_all();
+	imu_sample_all();
 	ADC_sample_all();
 }

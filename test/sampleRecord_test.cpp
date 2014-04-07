@@ -48,16 +48,16 @@ void SampleRecordTest::testPopulateSampleRecord(){
 
 	//accelerometer channels
 	samples++;
-	CPPUNIT_ASSERT_EQUAL(accelerometer_read_value(0, &lc->AccelConfigs[0]), samples->floatValue);
+	CPPUNIT_ASSERT_EQUAL(imu_read_value(0, &lc->ImuConfigs[0]), samples->floatValue);
 
 	samples++;
-	CPPUNIT_ASSERT_EQUAL(accelerometer_read_value(1, &lc->AccelConfigs[1]), samples->floatValue);
+	CPPUNIT_ASSERT_EQUAL(imu_read_value(1, &lc->ImuConfigs[1]), samples->floatValue);
 
 	samples++;
-	CPPUNIT_ASSERT_EQUAL(accelerometer_read_value(2, &lc->AccelConfigs[2]), samples->floatValue);
+	CPPUNIT_ASSERT_EQUAL(imu_read_value(2, &lc->ImuConfigs[2]), samples->floatValue);
 
 	samples++;
-	CPPUNIT_ASSERT_EQUAL(accelerometer_read_value(3, &lc->AccelConfigs[3]), samples->floatValue);
+	CPPUNIT_ASSERT_EQUAL(imu_read_value(3, &lc->ImuConfigs[3]), samples->floatValue);
 
 	//GPS / Track channels
 	samples++;
@@ -112,8 +112,8 @@ void SampleRecordTest::testInitSampleRecord()
 		}
 	}
 
-	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
-		ImuConfig *ac = &lc->AccelConfigs[i];
+	for (int i = 0; i < CONFIG_IMU_CHANNELS; i++){
+		ImuConfig *ac = &lc->ImuConfigs[i];
 		if (ac->cfg.sampleRate != SAMPLE_DISABLED){
 			CPPUNIT_ASSERT_EQUAL((size_t)i,ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);

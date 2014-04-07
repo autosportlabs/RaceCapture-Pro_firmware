@@ -1,17 +1,11 @@
-/*
- * accelerometer_device.h
- *
- *  Created on: Jan 31, 2014
- *      Author: brentp
- */
 
-#ifndef ACCELEROMETER_DEVICE_H_
-#define ACCELEROMETER_DEVICE_H_
+#ifndef IMU_DEVICE_H_
+#define IMU_DEVICE_H_
 
-void accelerometer_device_init();
+void imu_device_init();
 
-unsigned int accelerometer_device_read(unsigned int channel);
+unsigned int imu_device_read(unsigned int channel);
 
-float accelerometer_device_counts_per_unit(unsigned int channel);
+float imu_device_counts_per_unit(unsigned int channel);
 
-#endif /* ACCELEROMETER_DEVICE_H_ */
+#endif /* IMU_DEVICE_H_ */

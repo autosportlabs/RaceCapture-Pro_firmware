@@ -182,7 +182,7 @@ int Lua_GetAccelSampleRate(lua_State *L){
 }
 
 int Lua_CalibrateAccelZero(lua_State *L){
-	calibrateAccelZero();
+	imu_calibrate_zero();
 	return 0;
 }
 
@@ -573,9 +573,9 @@ int Lua_GetTimeSince(lua_State *L){
 int Lua_ReadAccelerometer(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
-		if (channel >= 0 && channel < CONFIG_ACCEL_CHANNELS){
-			ImuConfig *ac = &getWorkingLoggerConfig()->AccelConfigs[channel];
-			float accelG = accelerometer_read_value(channel,ac);
+		if (channel >= 0 && channel < CONFIG_IMU_CHANNELS){
+			ImuConfig *ac = &getWorkingLoggerConfig()->ImuConfigs[channel];
+			float accelG = imu_read_value(channel,ac);
 			lua_pushnumber(L,accelG);
 			return 1;
 		}
@@ -586,8 +586,8 @@ int Lua_ReadAccelerometer(lua_State *L){
 int Lua_ReadAccelerometerRaw(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
-		if (channel >= 0 && channel <= CONFIG_ACCEL_CHANNELS){
-			int accelValue =  accelerometer_read(channel);
+		if (channel >= 0 && channel <= CONFIG_IMU_CHANNELS){
+			int accelValue =  imu_read(channel);
 			lua_pushinteger(L,accelValue);
 			return 1;
 		}

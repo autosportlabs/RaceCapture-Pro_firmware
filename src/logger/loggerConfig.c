@@ -204,8 +204,8 @@ int filterAccelChannel(int config){
 			return ACCEL_CHANNEL_Y;
 		case ACCEL_CHANNEL_Z:
 			return ACCEL_CHANNEL_Z;
-		case ACCEL_CHANNEL_ZT:
-			return ACCEL_CHANNEL_ZT;
+		case ACCEL_CHANNEL_YAW:
+			return ACCEL_CHANNEL_YAW;
 		default:
 		case ACCEL_CHANNEL_X:
 			return ACCEL_CHANNEL_X;
@@ -294,8 +294,8 @@ GPIOConfig * getGPIOConfigChannel(int channel){
 
 ImuConfig * getAccelConfigChannel(int channel){
 	ImuConfig * c = NULL;
-	if (channel >= 0 && channel < CONFIG_ACCEL_CHANNELS){
-		c = &(getWorkingLoggerConfig()->AccelConfigs[channel]);
+	if (channel >= 0 && channel < CONFIG_IMU_CHANNELS){
+		c = &(getWorkingLoggerConfig()->ImuConfigs[channel]);
 	}
 	return c;		
 }
@@ -350,8 +350,8 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
 		int sr = config->TimerConfigs[i].cfg.sampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr;
 	}
-	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
-		int sr = config->AccelConfigs[i].cfg.sampleRate;
+	for (int i = 0; i < CONFIG_IMU_CHANNELS; i++){
+		int sr = config->ImuConfigs[i].cfg.sampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr;
 	}
 	GPSConfig *gpsConfig = &(config->GPSConfigs);
@@ -378,8 +378,8 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
 
 size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
 	size_t channels = 0;
-	for (int i=0; i < CONFIG_ACCEL_CHANNELS; i++){
-		if (loggerConfig->AccelConfigs[i].cfg.sampleRate != SAMPLE_DISABLED) channels++;
+	for (int i=0; i < CONFIG_IMU_CHANNELS; i++){
+		if (loggerConfig->ImuConfigs[i].cfg.sampleRate != SAMPLE_DISABLED) channels++;
 	}
 
 	for (int i=0; i < CONFIG_ADC_CHANNELS; i++){
