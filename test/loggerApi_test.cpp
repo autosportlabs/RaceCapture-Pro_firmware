@@ -197,7 +197,7 @@ void LoggerApiTest::testGetMultipleAnalogCfg(){
 	for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
 		std::ostringstream stringStream;
 		stringStream << i;
-		Object &analogJson = json["getAnalogCfg"][stringStream.str().c_str()];
+		Object &analogJson = json["analogCfg"][stringStream.str().c_str()];
 
 		CPPUNIT_ASSERT_EQUAL(1 + i, (int)(Number)analogJson["id"]);
 		CPPUNIT_ASSERT_EQUAL(100, (int)(Number)analogJson["sr"]);
@@ -243,7 +243,7 @@ void LoggerApiTest::testGetAnalogConfigFile(string filename, int index){
 
 	std::ostringstream stringStream;
 	stringStream << index;
-	Object &analogJson = json["getAnalogCfg"][stringStream.str()];
+	Object &analogJson = json["analogCfg"][stringStream.str()];
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["id"]);
 	CPPUNIT_ASSERT_EQUAL(50, (int)(Number)analogJson["sr"]);
@@ -329,7 +329,7 @@ void LoggerApiTest::testGetAccelConfigFile(string filename, int index){
 
 	std::ostringstream stringStream;
 	stringStream << index;
-	Object &analogJson = json["getAccelCfg"][stringStream.str()];
+	Object &analogJson = json["accelCfg"][stringStream.str()];
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["id"]);
 	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)analogJson["sr"]);
@@ -401,7 +401,7 @@ void LoggerApiTest::testGetCellCfg(){
 	Object json;
 	stringToJson(response, json);
 
-	Object &cellJson = json["getCellCfg"];
+	Object &cellJson = json["cellCfg"];
 
 	string host = (String)cellJson["apnHost"];
 	string user = (String)cellJson["apnUser"];
@@ -442,7 +442,7 @@ void LoggerApiTest::testGetBtCfg(){
 	Object json;
 	stringToJson(response, json);
 
-	Object &btJson = json["getBtCfg"];
+	Object &btJson = json["btCfg"];
 
 	string name = (String)btJson["name"];
 	string pass = (String)btJson["pass"];
@@ -483,7 +483,7 @@ void LoggerApiTest::testGetConnectivityCfg(){
 	Object json;
 	stringToJson(response, json);
 
-	Object &connJson = json["getConnCfg"];
+	Object &connJson = json["connCfg"];
 
 	int sdMode = (Number)connJson["sdMode"];
 	int connMode = (Number)connJson["connMode"];
@@ -513,7 +513,7 @@ void LoggerApiTest::testGetPwmConfigFile(string filename, int index){
 
 	std::ostringstream stringStream;
 	stringStream << index;
-	Object &analogJson = json["getPwmCfg"][stringStream.str()];
+	Object &analogJson = json["pwmCfg"][stringStream.str()];
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["id"]);
 	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)analogJson["sr"]);
@@ -569,7 +569,7 @@ void LoggerApiTest::testGetGpioConfigFile(string filename, int index){
 
 	std::ostringstream stringStream;
 	stringStream << index;
-	Object &analogJson = json["getGpioCfg"][stringStream.str()];
+	Object &analogJson = json["gpioCfg"][stringStream.str()];
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["id"]);
 	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)analogJson["sr"]);
@@ -620,7 +620,7 @@ void LoggerApiTest::testGetTimerConfigFile(string filename, int index){
 
 	std::ostringstream stringStream;
 	stringStream << index;
-	Object &analogJson = json["getTimerCfg"][stringStream.str()];
+	Object &analogJson = json["timerCfg"][stringStream.str()];
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["id"]);
 	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)analogJson["sr"]);
@@ -763,7 +763,7 @@ void LoggerApiTest::testGetGpsConfigFile(string filename){
 	Object json;
 	stringToJson(response, json);
 
-	Object &gpsCfgJson = json["getGpsCfg"];
+	Object &gpsCfgJson = json["gpsCfg"];
 
 	CPPUNIT_ASSERT_EQUAL((int)100, (int)(Number)gpsCfgJson["sr"]);
 
@@ -866,9 +866,9 @@ void LoggerApiTest::testGetTrackConfigFile(string filename){
 	Object json;
 	stringToJson(response, json);
 
-	CPPUNIT_ASSERT_EQUAL(0.001F, (float)(Number)json["getTrackCfg"]["rad"]);
+	CPPUNIT_ASSERT_EQUAL(0.001F, (float)(Number)json["trackCfg"]["rad"]);
 
-	Array &startFinish = json["getTrackCfg"]["track"]["sf"];
+	Array &startFinish = json["trackCfg"]["track"]["sf"];
 
 	CPPUNIT_ASSERT_EQUAL(1.234F, (float)(Number)startFinish[0]);
 	CPPUNIT_ASSERT_EQUAL(5.678F, (float)(Number)startFinish[1]);

@@ -338,7 +338,7 @@ static void json_channelConfig(Serial *serial, ChannelConfig *cfg, int more){
 static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex){
 
 	json_messageStart(serial);
-	json_objStart(serial, "getAnalogCfg");
+	json_objStart(serial, "analogCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 
 		ADCConfig *cfg = &(getWorkingLoggerConfig()->ADCConfigs[i]);
@@ -413,7 +413,7 @@ int api_setAccelConfig(Serial *serial, const jsmntok_t *json){
 
 static void sendAccelConfig(Serial *serial, size_t startIndex, size_t endIndex){
 	json_messageStart(serial);
-	json_objStart(serial, "getAccelCfg");
+	json_objStart(serial, "accelCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		AccelConfig *cfg = &(getWorkingLoggerConfig()->AccelConfigs[i]);
 		json_objStartInt(serial, i);
@@ -474,7 +474,7 @@ static void setConfigGeneric(Serial *serial, const jsmntok_t * json, void *cfg, 
 int api_getCellConfig(Serial *serial, const jsmntok_t *json){
 	CellularConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
 	json_messageStart(serial);
-	json_objStart(serial, "getCellCfg");
+	json_objStart(serial, "cellCfg");
 	json_string(serial, "apnHost", cfg->apnHost, 1);
 	json_string(serial, "apnUser", cfg->apnUser, 1);
 	json_string(serial, "apnPass", cfg->apnPass, 0);
@@ -515,7 +515,7 @@ int api_setBluetoothConfig(Serial *serial, const jsmntok_t *json){
 int api_getBluetoothConfig(Serial *serial, const jsmntok_t *json){
 	BluetoothConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
 	json_messageStart(serial);
-	json_objStart(serial, "getBtCfg");
+	json_objStart(serial, "btCfg");
 	json_string(serial, "name", cfg->deviceName, 1);
 	json_string(serial, "pass", cfg->passcode, 0);
 	json_objEnd(serial, 0);
@@ -551,7 +551,7 @@ int api_setConnectivityConfig(Serial *serial, const jsmntok_t *json){
 int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json){
 	ConnectivityConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs);
 	json_messageStart(serial);
-	json_objStart(serial, "getConnCfg");
+	json_objStart(serial, "connCfg");
 	json_int(serial, "sdMode", cfg->sdLoggingMode, 1);
 	json_int(serial, "connMode", cfg->connectivityMode, 1);
 	json_int(serial, "bgStream", cfg->backgroundStreaming, 0);
@@ -563,7 +563,7 @@ int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json){
 static void sendPwmConfig(Serial *serial, size_t startIndex, size_t endIndex){
 
 	json_messageStart(serial);
-	json_objStart(serial, "getPwmCfg");
+	json_objStart(serial, "pwmCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		PWMConfig *cfg = &(getWorkingLoggerConfig()->PWMConfigs[i]);
 		json_objStartInt(serial, i);
@@ -640,7 +640,7 @@ static const jsmntok_t * setGpioExtendedField(const jsmntok_t *valueTok, const c
 
 static void sendGpioConfig(Serial *serial, size_t startIndex, size_t endIndex){
 	json_messageStart(serial);
-	json_objStart(serial, "getGpioCfg");
+	json_objStart(serial, "gpioCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		GPIOConfig *cfg = &(getWorkingLoggerConfig()->GPIOConfigs[i]);
 		json_objStartInt(serial, i);
@@ -704,7 +704,7 @@ static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok, const 
 
 static void sendTimerConfig(Serial *serial, size_t startIndex, size_t endIndex){
 	json_messageStart(serial);
-	json_objStart(serial, "getTimerCfg");
+	json_objStart(serial, "timerCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		TimerConfig *cfg = &(getWorkingLoggerConfig()->TimerConfigs[i]);
 		json_objStartInt(serial, i);
@@ -752,7 +752,7 @@ int api_getGpsConfig(Serial *serial, const jsmntok_t *json){
 	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
 
 	json_messageStart(serial);
-	json_objStart(serial, "getGpsCfg");
+	json_objStart(serial, "gpsCfg");
 
 	json_int(serial, "sr", decodeSampleRate(gpsCfg->sampleRate), 1);
 
@@ -842,7 +842,7 @@ int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
 	TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs);
 
 	json_messageStart(serial);
-	json_objStart(serial, "getTrackCfg");
+	json_objStart(serial, "trackCfg");
 	json_float(serial, "rad", trackCfg->track.radius, DEFAULT_GPS_RADIUS_PRECISION, 1);
 	json_objStart(serial, "track");
 	json_track(serial, &trackCfg->track);
