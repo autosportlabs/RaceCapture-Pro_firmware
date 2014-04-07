@@ -142,12 +142,12 @@ typedef struct _GPIOConfig{
 			DEFAULT_GPIO3_CONFIG \
 			}
 			
-typedef struct _AccelConfig{
+typedef struct _ImuConfig{
 	ChannelConfig cfg;
 	unsigned char mode;
 	unsigned char physicalChannel;
 	unsigned short zeroValue;
-} AccelConfig;
+} ImuConfig;
 
 #define MIN_ACCEL_RAW						0
 #define MAX_ACCEL_RAW						4097
@@ -447,7 +447,7 @@ typedef struct _LoggerConfig {
 	//Timer Configurations
 	TimerConfig TimerConfigs[CONFIG_TIMER_CHANNELS];
 	//Accelerometer Configurations
-	AccelConfig AccelConfigs[CONFIG_ACCEL_CHANNELS];
+	ImuConfig AccelConfigs[CONFIG_ACCEL_CHANNELS];
 	//OBD2 Config
 	OBD2Config OBD2Configs;
 	//GPS Configuration
@@ -509,7 +509,7 @@ TimerConfig * getTimerConfigChannel(int channel);
 ADCConfig * getADCConfigChannel(int channel);
 PWMConfig * getPwmConfigChannel(int channel);
 GPIOConfig * getGPIOConfigChannel(int channel);
-AccelConfig * getAccelConfigChannel(int channel);
+ImuConfig * getAccelConfigChannel(int channel);
 
 void setLabelGeneric(char *dest, const char *source);
 void setTextField(char *dest, const char *source, unsigned int maxlen);

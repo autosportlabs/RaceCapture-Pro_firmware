@@ -113,7 +113,7 @@ void SampleRecordTest::testInitSampleRecord()
 	}
 
 	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
-		AccelConfig *ac = &lc->AccelConfigs[i];
+		ImuConfig *ac = &lc->AccelConfigs[i];
 		if (ac->cfg.sampleRate != SAMPLE_DISABLED){
 			CPPUNIT_ASSERT_EQUAL((size_t)i,ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);

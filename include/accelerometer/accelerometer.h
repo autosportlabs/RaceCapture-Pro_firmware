@@ -11,7 +11,7 @@
 
 void accelerometer_sample_all();
 
-float accelerometer_read_value(unsigned char accelChannel, AccelConfig *ac);
+float accelerometer_read_value(unsigned char accelChannel, ImuConfig *ac);
 
 void accelerometer_init();
 

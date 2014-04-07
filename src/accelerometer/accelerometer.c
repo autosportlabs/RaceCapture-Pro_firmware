@@ -20,7 +20,7 @@ void accelerometer_sample_all(){
 	}
 }
 
-float accelerometer_read_value(unsigned char accelChannel, AccelConfig *ac){
+float accelerometer_read_value(unsigned char accelChannel, ImuConfig *ac){
 	size_t physicalChannel = ac->physicalChannel;
 	unsigned int raw = g_accel_filter[physicalChannel].current_value;
 	float countsPerUnit = accelerometer_device_counts_per_unit(accelChannel);
@@ -60,7 +60,7 @@ static void flushAccelBuffer(size_t physicalChannel){
 
 void calibrateAccelZero(){
 	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
-		AccelConfig * c = getAccelConfigChannel(i);
+		ImuConfig * c = getAccelConfigChannel(i);
 		size_t physicalChannel = c->physicalChannel;
 		flushAccelBuffer(physicalChannel);
 		unsigned int zeroValue = g_accel_filter[physicalChannel].current_value;

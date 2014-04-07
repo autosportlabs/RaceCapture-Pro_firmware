@@ -391,7 +391,7 @@ int api_getAnalogConfig(Serial *serial, const jsmntok_t * json){
 }
 
 static const jsmntok_t * setAccelExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
-	AccelConfig *accelCfg = (AccelConfig *)cfg;
+	ImuConfig *accelCfg = (ImuConfig *)cfg;
 
 	if (NAME_EQU("mode",name)) accelCfg->mode = filterAccelMode(modp_atoi(value));
 	else if (NAME_EQU("chan",name)) accelCfg->physicalChannel = filterAccelChannel(modp_atoi(value));
@@ -400,7 +400,7 @@ static const jsmntok_t * setAccelExtendedField(const jsmntok_t *valueTok, const 
 }
 
 static void getAccelConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
-	AccelConfig *c = &(getWorkingLoggerConfig()->AccelConfigs[channelId]);
+	ImuConfig *c = &(getWorkingLoggerConfig()->AccelConfigs[channelId]);
 	*baseCfg = c;
 	*channelCfg = &c->cfg;
 }
@@ -415,7 +415,7 @@ static void sendAccelConfig(Serial *serial, size_t startIndex, size_t endIndex){
 	json_messageStart(serial);
 	json_objStart(serial, "accelCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
-		AccelConfig *cfg = &(getWorkingLoggerConfig()->AccelConfigs[i]);
+		ImuConfig *cfg = &(getWorkingLoggerConfig()->AccelConfigs[i]);
 		json_objStartInt(serial, i);
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_uint(serial, "mode", cfg->mode, 1);

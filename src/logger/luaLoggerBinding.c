@@ -164,7 +164,7 @@ int Lua_GetBackgroundStreaming(lua_State *L){
 
 int Lua_SetAccelSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 2 ){
-		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
+		ImuConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL != c) c->cfg.sampleRate = encodeSampleRate(lua_tointeger(L,2));
 	}	
 	return 0;
@@ -172,7 +172,7 @@ int Lua_SetAccelSampleRate(lua_State *L){
 
 int Lua_GetAccelSampleRate(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		AccelConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
+		ImuConfig *c = getAccelConfigChannel(lua_tointeger(L,1));
 		if (NULL !=c ){
 			lua_pushnumber(L,c->cfg.sampleRate);
 			return 1;	
@@ -574,7 +574,7 @@ int Lua_ReadAccelerometer(lua_State *L){
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		if (channel >= 0 && channel < CONFIG_ACCEL_CHANNELS){
-			AccelConfig *ac = &getWorkingLoggerConfig()->AccelConfigs[channel];
+			ImuConfig *ac = &getWorkingLoggerConfig()->AccelConfigs[channel];
 			float accelG = accelerometer_read_value(channel,ac);
 			lua_pushnumber(L,accelG);
 			return 1;

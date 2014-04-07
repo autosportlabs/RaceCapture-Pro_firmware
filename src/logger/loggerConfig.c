@@ -292,8 +292,8 @@ GPIOConfig * getGPIOConfigChannel(int channel){
 	return c;	
 }
 
-AccelConfig * getAccelConfigChannel(int channel){
-	AccelConfig * c = NULL;
+ImuConfig * getAccelConfigChannel(int channel){
+	ImuConfig * c = NULL;
 	if (channel >= 0 && channel < CONFIG_ACCEL_CHANNELS){
 		c = &(getWorkingLoggerConfig()->AccelConfigs[channel]);
 	}
