@@ -319,7 +319,7 @@ void LoggerApiTest::testGetAccelConfigFile(string filename, int index){
 	accelCfg->cfg.channeId = 1;
 	accelCfg->cfg.sampleRate = encodeSampleRate(100);
 	accelCfg->mode = 1;
-	accelCfg->accelChannel = 3;
+	accelCfg->physicalChannel = 3;
 	accelCfg->zeroValue = 1234;
 
 	char * response = processApiGeneric(filename);
@@ -356,7 +356,7 @@ void LoggerApiTest::testSetAccelConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(33, (int)accelCfg->cfg.channeId);
 	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(accelCfg->cfg.sampleRate));
 	CPPUNIT_ASSERT_EQUAL(1, (int)accelCfg->mode);
-	CPPUNIT_ASSERT_EQUAL(2, (int)accelCfg->accelChannel);
+	CPPUNIT_ASSERT_EQUAL(2, (int)accelCfg->physicalChannel);
 	CPPUNIT_ASSERT_EQUAL(1234, (int)accelCfg->zeroValue);
 
 	char *txBuffer = mock_getTxBuffer();

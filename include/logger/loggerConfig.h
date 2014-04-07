@@ -145,7 +145,7 @@ typedef struct _GPIOConfig{
 typedef struct _AccelConfig{
 	ChannelConfig cfg;
 	unsigned char mode;
-	unsigned char accelChannel;
+	unsigned char physicalChannel;
 	unsigned short zeroValue;
 } AccelConfig;
 

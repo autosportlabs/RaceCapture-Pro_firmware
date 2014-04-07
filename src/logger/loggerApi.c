@@ -394,7 +394,7 @@ static const jsmntok_t * setAccelExtendedField(const jsmntok_t *valueTok, const 
 	AccelConfig *accelCfg = (AccelConfig *)cfg;
 
 	if (NAME_EQU("mode",name)) accelCfg->mode = filterAccelMode(modp_atoi(value));
-	else if (NAME_EQU("chan",name)) accelCfg->accelChannel = filterAccelChannel(modp_atoi(value));
+	else if (NAME_EQU("chan",name)) accelCfg->physicalChannel = filterAccelChannel(modp_atoi(value));
 	else if (NAME_EQU("zeroVal",name)) accelCfg->zeroValue = modp_atoi(value);
 	return valueTok + 1;
 }
@@ -419,7 +419,7 @@ static void sendAccelConfig(Serial *serial, size_t startIndex, size_t endIndex){
 		json_objStartInt(serial, i);
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_uint(serial, "mode", cfg->mode, 1);
-		json_uint(serial, "chan", cfg->accelChannel, 1);
+		json_uint(serial, "chan", cfg->physicalChannel, 1);
 		json_uint(serial, "zeroVal", cfg->zeroValue, 0);
 		json_objEnd(serial, i != endIndex); //index
 	}
