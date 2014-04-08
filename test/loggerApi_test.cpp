@@ -22,7 +22,7 @@
 #include "predictive_timer_2.h"
 
 #define JSON_TOKENS 10000
-#define FILE_PREFIX string("test/")
+#define FILE_PREFIX string("test/json_api_files/")
 
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( LoggerApiTest );
