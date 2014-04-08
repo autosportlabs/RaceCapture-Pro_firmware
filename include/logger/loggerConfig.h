@@ -304,24 +304,28 @@ enum lap_stat_channels{
 	lap_stat_channel_lapcount,
 	lap_stat_channel_laptime,
 	lap_stat_channel_sectortime,
+	lap_stat_channel_sector,
 	lap_stat_channel_predtime
 };
 
 typedef struct _LapConfig{
 	ChannelConfig lapCountCfg;
 	ChannelConfig lapTimeCfg;
+	ChannelConfig sectorCfg;
 	ChannelConfig sectorTimeCfg;
 	ChannelConfig predTimeCfg;
 } LapConfig;
 
 #define DEFAULT_LAP_COUNT_CONFIG {CHANNEL_LapCount, SAMPLE_1Hz}
 #define DEFAULT_LAP_TIME_CONFIG {CHANNEL_LapTime, SAMPLE_1Hz}
+#define DEFAULT_SECTOR_CONFIG {CHANNEL_Sector, SAMPLE_1Hz}
 #define DEFAULT_SECTOR_TIME_CONFIG {CHANNEL_SectorTime, SAMPLE_1Hz}
 #define DEFAULT_PRED_TIME_CONFIG {CHANNEL_PredTime, SAMPLE_DISABLED}
 
 #define DEFAULT_LAP_CONFIG { \
 	DEFAULT_LAP_COUNT_CONFIG, \
 	DEFAULT_LAP_TIME_CONFIG, \
+	DEFAULT_SECTOR_CONFIG, \
 	DEFAULT_SECTOR_TIME_CONFIG, \
 	DEFAULT_PRED_TIME_CONFIG \
 }

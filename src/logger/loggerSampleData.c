@@ -215,6 +215,16 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 			sample++;
 		}
 
+		if (trackConfig->sectorCfg.sampleRate != SAMPLE_DISABLED){
+			ChannelConfig *cc = &(trackConfig->sectorCfg);
+			sample->channelId = cc->channeId;
+			sample->sampleRate = cc->sampleRate;
+			sample->intValue = NIL_SAMPLE;
+			sample->channelIndex = lap_stat_channel_sector;
+			sample->get_sample = get_lap_stat_sample;
+			sample++;
+		}
+
 		if (trackConfig->sectorTimeCfg.sampleRate != SAMPLE_DISABLED){
 			ChannelConfig *cc = &(trackConfig->sectorTimeCfg);
 			sample->channelId = cc->channeId;
@@ -390,6 +400,9 @@ float get_lap_stat_sample(int channelId){
 			break;
 		case lap_stat_channel_laptime:
 			value = getLastLapTime();
+			break;
+		case lap_stat_channel_sector:
+			value = getLastSector();
 			break;
 		case lap_stat_channel_sectortime:
 			value = getLastSectorTime();

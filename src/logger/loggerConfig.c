@@ -370,9 +370,18 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
 		if HIGHER_SAMPLE(sr, s) s = sr;
 	}
 	{
+		int sr = trackCfg->sectorCfg.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
+	}
+	{
+		int sr = trackCfg->sectorTimeCfg.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
+	}
+	{
 		int sr = trackCfg->predTimeCfg.sampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr;
 	}
+
 	return s;
 }
 
@@ -412,6 +421,7 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
 	LapConfig *lapConfig = &loggerConfig->LapConfigs;
 	if (lapConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED) channels++;
 	if (lapConfig->lapTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
+	if (lapConfig->sectorCfg.sampleRate != SAMPLE_DISABLED) channels++;
 	if (lapConfig->sectorTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
 	if (lapConfig->predTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
 

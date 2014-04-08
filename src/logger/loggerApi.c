@@ -795,6 +795,12 @@ int api_setLapConfig(Serial *serial, const jsmntok_t *json){
 	const jsmntok_t *predTime = findNode(json, "predTime");
 	if (predTime != NULL) setChannelConfig(serial, predTime + 1, &lapCfg->predTimeCfg, NULL, NULL);
 
+	const jsmntok_t *sector = findNode(json, "sector");
+	if (sector != NULL) setChannelConfig(serial, sector + 1, &lapCfg->sectorCfg, NULL, NULL);
+
+	const jsmntok_t *sectorTime = findNode(json, "sectorTime");
+	if (sectorTime != NULL) setChannelConfig(serial, sectorTime + 1, &lapCfg->sectorTimeCfg, NULL, NULL);
+
 	configChanged();
 	return API_SUCCESS;
 }
@@ -815,6 +821,14 @@ int api_getLapConfig(Serial *serial, const jsmntok_t *json){
 
 	json_objStart(serial, "predTime");
 	json_channelConfig(serial, &lapCfg->predTimeCfg, 0);
+	json_objEnd(serial, 1);
+
+	json_objStart(serial, "sector");
+	json_channelConfig(serial, &lapCfg->sectorCfg, 0);
+	json_objEnd(serial, 1);
+
+	json_objStart(serial, "sectorTime");
+	json_channelConfig(serial, &lapCfg->sectorTimeCfg, 0);
 	json_objEnd(serial, 0);
 
 	json_objEnd(serial, 0);

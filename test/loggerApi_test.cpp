@@ -799,6 +799,13 @@ void LoggerApiTest::testSetLapConfigFile(string filename){
 
 	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_PredTime, (int)cfg->predTimeCfg.channeId);
 	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(cfg->predTimeCfg.sampleRate));
+
+	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Sector, (int)cfg->sectorCfg.channeId);
+	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(cfg->predTimeCfg.sampleRate));
+
+	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_SectorTime, (int)cfg->sectorTimeCfg.channeId);
+	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(cfg->predTimeCfg.sampleRate));
+
 }
 
 void LoggerApiTest::testGetLapConfigFile(string filename){
@@ -808,6 +815,8 @@ void LoggerApiTest::testGetLapConfigFile(string filename){
 	cfg->lapCountCfg.sampleRate = encodeSampleRate(50);
 	cfg->lapTimeCfg.sampleRate = encodeSampleRate(50);
 	cfg->predTimeCfg.sampleRate = encodeSampleRate(50);
+	cfg->sectorCfg.sampleRate = encodeSampleRate(50);
+	cfg->sectorTimeCfg.sampleRate = encodeSampleRate(50);
 
 	char * response = processApiGeneric(filename);
 
@@ -828,6 +837,17 @@ void LoggerApiTest::testGetLapConfigFile(string filename){
 		CPPUNIT_ASSERT_EQUAL((int)CHANNEL_PredTime, (int)(Number)channel["id"]);
 		CPPUNIT_ASSERT_EQUAL(50, (int)(Number)channel["sr"]);
 	}
+	{
+		Object &channel = json["lapCfg"]["sector"];
+		CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Sector, (int)(Number)channel["id"]);
+		CPPUNIT_ASSERT_EQUAL(50, (int)(Number)channel["sr"]);
+	}
+	{
+		Object &channel = json["lapCfg"]["sectorTime"];
+		CPPUNIT_ASSERT_EQUAL((int)CHANNEL_SectorTime, (int)(Number)channel["id"]);
+		CPPUNIT_ASSERT_EQUAL(50, (int)(Number)channel["sr"]);
+	}
+
 }
 
 void LoggerApiTest::testGetLapCfg(){

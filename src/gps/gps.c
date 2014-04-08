@@ -60,6 +60,7 @@ static int 		g_prevAtTarget;
 static float 	g_lastSectorTimestamp;
 
 static int		g_sector;
+static int		g_lastSector;
 static float 	g_lastLapTime;
 static float 	g_lastSectorTime;
 
@@ -255,16 +256,16 @@ int getLapCount(){
 	return g_lapCount;
 }
 
+int getLastSector(){
+	return g_lastSector;
+}
+
 float getLastLapTime(){
 	return g_lastLapTime;
 }
 
 float getLastSectorTime(){
 	return g_lastSectorTime;
-}
-
-int getLastSector(){
-	return g_sector;
 }
 
 float getTimeSince(float t1){
@@ -410,10 +411,10 @@ static int processStartFinish(const Track *track){
 
 static void processSector(const Track *track){
 	const GeoPoint *nextSectorPoint = (track->sectors + g_sector);
-	if (nextSectorPoint->latitude != 0 && nextSectorPoint->longitude != 0 ){
+	if (nextSectorPoint->latitude != 0 && nextSectorPoint->longitude != 0 ){ //valid sector target?
 		g_atTarget = withinGpsTarget(nextSectorPoint, track->radius);
 		if (g_atTarget){
-			if (g_prevAtTarget == 0){
+			if (g_prevAtTarget == 0){ //latching effect, to avoid double triggering
 				//first sector refreences from start finish; subsequent sectors reference from last sector timestamp
 				float fromTimestamp = g_sector = 0 ? g_lastStartFinishTimestamp : g_lastSectorTimestamp;
 
@@ -421,8 +422,11 @@ static void processSector(const Track *track){
 					float currentTimestamp = getSecondsSinceMidnight();
 					float elapsed = getTimeDiff(g_lastStartFinishTimestamp, currentTimestamp);
 					g_lastSectorTime = elapsed / 60.0;
+
+					//set some channel values now
 					g_lastSectorTimestamp = currentTimestamp;
 					if (g_sector < SECTOR_COUNT - 1) g_sector++;
+					g_lastSector = g_sector;
 				}
 			}
 			g_prevAtTarget = 1;
@@ -462,6 +466,7 @@ void initGPS(){
 	g_lapCount = 0;
 	g_distance = 0;
 	g_sector = 0;
+	g_lastSector = 0;
 	resetPredictiveTimer();
 }
 

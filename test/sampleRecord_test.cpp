@@ -90,7 +90,7 @@ void SampleRecordTest::testInitSampleRecord()
 {
 	LoggerConfig *lc = getWorkingLoggerConfig();
 
-	size_t expectedEnabledChannels = 13;
+	size_t expectedEnabledChannels = 14;
 
 	size_t channelCount = get_enabled_channel_count(lc);
 	CPPUNIT_ASSERT_EQUAL(channelCount, expectedEnabledChannels); //current logger config enables 13 channels
@@ -220,37 +220,46 @@ void SampleRecordTest::testInitSampleRecord()
 	}
 
 	{
-		LapConfig *trackConfig = &(lc->LapConfigs);
-		if (trackConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED){
-			CPPUNIT_ASSERT_EQUAL(trackConfig->lapCountCfg.channeId, ts->channelId);
-			CPPUNIT_ASSERT_EQUAL(trackConfig->lapCountCfg.sampleRate, ts->sampleRate);
+		LapConfig *lapConfig = &(lc->LapConfigs);
+		if (lapConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED){
+			CPPUNIT_ASSERT_EQUAL(lapConfig->lapCountCfg.channeId, ts->channelId);
+			CPPUNIT_ASSERT_EQUAL(lapConfig->lapCountCfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL((size_t)lap_stat_channel_lapcount, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL((void *)get_lap_stat_sample, (void *)ts->get_sample);
 			ts++;
 		}
 
-		if (trackConfig->lapTimeCfg.sampleRate != SAMPLE_DISABLED){
-			CPPUNIT_ASSERT_EQUAL(trackConfig->lapTimeCfg.channeId, ts->channelId);
-			CPPUNIT_ASSERT_EQUAL(trackConfig->lapTimeCfg.sampleRate, ts->sampleRate);
+		if (lapConfig->lapTimeCfg.sampleRate != SAMPLE_DISABLED){
+			CPPUNIT_ASSERT_EQUAL(lapConfig->lapTimeCfg.channeId, ts->channelId);
+			CPPUNIT_ASSERT_EQUAL(lapConfig->lapTimeCfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL((size_t)lap_stat_channel_laptime, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL((void *)get_lap_stat_sample, (void *)ts->get_sample);
 			ts++;
 		}
 
-		if (trackConfig->sectorTimeCfg.sampleRate != SAMPLE_DISABLED){
-			CPPUNIT_ASSERT_EQUAL(trackConfig->sectorTimeCfg.channeId, ts->channelId);
-			CPPUNIT_ASSERT_EQUAL(trackConfig->sectorTimeCfg.sampleRate, ts->sampleRate);
+		if (lapConfig->sectorCfg.sampleRate != SAMPLE_DISABLED){
+			CPPUNIT_ASSERT_EQUAL(lapConfig->sectorCfg.channeId, ts->channelId);
+			CPPUNIT_ASSERT_EQUAL(lapConfig->sectorCfg.sampleRate, ts->sampleRate);
+			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
+			CPPUNIT_ASSERT_EQUAL((size_t)lap_stat_channel_sector, ts->channelIndex);
+			CPPUNIT_ASSERT_EQUAL((void *)get_lap_stat_sample, (void *)ts->get_sample);
+			ts++;
+		}
+
+		if (lapConfig->sectorTimeCfg.sampleRate != SAMPLE_DISABLED){
+			CPPUNIT_ASSERT_EQUAL(lapConfig->sectorTimeCfg.channeId, ts->channelId);
+			CPPUNIT_ASSERT_EQUAL(lapConfig->sectorTimeCfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL((size_t)lap_stat_channel_sectortime, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL((void *)get_lap_stat_sample, (void *)ts->get_sample);
 			ts++;
 		}
 
-		if (trackConfig->predTimeCfg.sampleRate != SAMPLE_DISABLED){
-			CPPUNIT_ASSERT_EQUAL(trackConfig->predTimeCfg.channeId, ts->channelId);
-			CPPUNIT_ASSERT_EQUAL(trackConfig->predTimeCfg.sampleRate, ts->sampleRate);
+		if (lapConfig->predTimeCfg.sampleRate != SAMPLE_DISABLED){
+			CPPUNIT_ASSERT_EQUAL(lapConfig->predTimeCfg.channeId, ts->channelId);
+			CPPUNIT_ASSERT_EQUAL(lapConfig->predTimeCfg.sampleRate, ts->sampleRate);
 			CPPUNIT_ASSERT_EQUAL(NIL_SAMPLE, ts->intValue);
 			CPPUNIT_ASSERT_EQUAL((size_t)lap_stat_channel_predtime, ts->channelIndex);
 			CPPUNIT_ASSERT_EQUAL((void *)get_lap_stat_sample, (void *)ts->get_sample);
