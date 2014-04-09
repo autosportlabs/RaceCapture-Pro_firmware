@@ -335,7 +335,7 @@ typedef struct _TrackConfig{
 } TrackConfig;
 
 #define DEFAULT_TRACK { \
-	0.00004, \
+	0.0001, \
 	{0, 0}, \
 	{ \
 		{0, 0}, \

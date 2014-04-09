@@ -416,7 +416,7 @@ static void processSector(const Track *track){
 		if (g_atTarget){
 			if (g_prevAtTarget == 0){ //latching effect, to avoid double triggering
 				//first sector refreences from start finish; subsequent sectors reference from last sector timestamp
-				float fromTimestamp = g_sector = 0 ? g_lastStartFinishTimestamp : g_lastSectorTimestamp;
+				float fromTimestamp = g_sector == 0 ? g_lastStartFinishTimestamp : g_lastSectorTimestamp;
 
 				if (fromTimestamp != 0){
 					float currentTimestamp = getSecondsSinceMidnight();
@@ -425,8 +425,9 @@ static void processSector(const Track *track){
 
 					//set some channel values now
 					g_lastSectorTimestamp = currentTimestamp;
-					if (g_sector < SECTOR_COUNT - 1) g_sector++;
+					g_sector++;
 					g_lastSector = g_sector;
+					if (g_sector >= SECTOR_COUNT) g_sector = 0;
 				}
 			}
 			g_prevAtTarget = 1;

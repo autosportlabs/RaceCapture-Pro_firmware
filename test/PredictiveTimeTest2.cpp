@@ -114,7 +114,7 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
 			populateGeoPoint(&gp);
 			float predTime = getPredictedTime(gp, utcTime);
 
-			printf("Lap:%d- pred: %f - last lap: %f\n", getLapCount(), predTime / 60.0f, getLastLapTime());
+//			/printf("Lap:%d- pred: %f - last lap: %f\n", getLapCount(), predTime / 60.0f, getLastLapTime());
 		}
 	}
 }
