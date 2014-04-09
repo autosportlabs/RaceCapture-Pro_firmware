@@ -21,6 +21,7 @@ public:
   vector<string> split(string &s, char delim);
   vector<string> &split(string &s, char delim, vector<string> &elems);
 
+  float sumSectorTimes(vector<float> & sectorTimes);
   void outputSectorTimes(vector<float> & sectorTimes, int lap);
   void testSectorTimes();
 };

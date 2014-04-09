@@ -67,28 +67,36 @@ string SectorTest::readFile(string filename){
 
 #define Test_Track { \
 	0.0001, \
-	{47.806934,-122.341150}, \
 	{ \
-		{47.806875,-122.335818}, \
-		{47.79974,-122.335704}, \
-		{47.799719,-122.346416}, \
-		{47.806886,-122.346494}, \
-		{0, 0}, \
-		{0, 0}, \
-		{0, 0}, \
-		{0, 0}, \
-		{0, 0}, \
-		{0, 0} \
+		{ \
+			{47.806934,-122.341150}, \
+			{47.806875,-122.335818}, \
+			{47.79974,-122.335704}, \
+			{47.799719,-122.346416}, \
+			{47.806886,-122.346494}, \
+			{0, 0}, \
+			{0, 0}, \
+			{0, 0}, \
+			{0, 0}, \
+			{0, 0} \
+		}\
 	} \
 	}
 
 void SectorTest::outputSectorTimes(vector<float> & sectorTimes, int lap){
 	for (size_t i = 0; i < sectorTimes.size(); i++){
-		printf("lap %d | sector %d | %f\r", lap, i, sectorTimes[i]);
+		printf("lap %d | sector %d | %f\r", lap, i + 1, sectorTimes[i]);
 	}
-
-
 }
+
+float SectorTest::sumSectorTimes(vector<float> & sectorTimes){
+	float sum = 0;
+	for (size_t i = 0; i < sectorTimes.size(); i++){
+		sum += sectorTimes[i];
+	}
+	return sum;
+}
+
 void SectorTest::testSectorTimes(){
 	printf("\rSector Times:\r");
 	string log = readFile("predictive_time_test_lap.log");
@@ -136,32 +144,20 @@ void SectorTest::testSectorTimes(){
 			if (sector != currentSector){
 				if (sector < currentSector) {
 					sectorTimes.clear();
-					currentSector = 0;
 				}
 				currentSector = sector;
 				sectorTimes.push_back(getLastSectorTime());
 			}
 			int lap = getLapCount();
-			//only 3 laps to test in this data, lap 4 is the last and never crosses any sector points.
 			size_t sectorCounts = sectorTimes.size();
 			if (lap > currentLap ){
-				switch (lap){
-				case 1:
-					outputSectorTimes(sectorTimes, currentLap);
-					CPPUNIT_ASSERT_EQUAL(4, (int)sectorCounts);
-					break;
-				case 2:
-					outputSectorTimes(sectorTimes, currentLap);
-					CPPUNIT_ASSERT_EQUAL(4, (int)sectorCounts);
-					break;
-				case 3:
-					outputSectorTimes(sectorTimes, currentLap);
-					CPPUNIT_ASSERT_EQUAL(4, (int)sectorCounts);
-				case 4:
-					outputSectorTimes(sectorTimes, currentLap);
-					CPPUNIT_ASSERT_EQUAL(4, (int)sectorCounts);
-					break;
-				}
+				float lastLapTime = getLastLapTime();
+				float sum = sumSectorTimes(sectorTimes);
+				printf("\rlap %d time: %f | sum of sector times: %f\r", lap, lastLapTime, sum);
+				outputSectorTimes(sectorTimes, lap);
+				CPPUNIT_ASSERT_EQUAL(5, (int)sectorCounts);
+				CPPUNIT_ASSERT_CLOSE_ENOUGH(sum, lastLapTime);
+
 				currentLap = lap;
 			}
 			//printf("%.7f,%.7f | lapTime (%d) %f | sectorTime: (%d) %f\r\n", lat, lon, getLapCount(), getLastLapTime(), getLastSector(), getLastSectorTime());
