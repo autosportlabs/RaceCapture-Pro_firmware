@@ -21,6 +21,8 @@
 #include <streambuf>
 #include "predictive_timer_2.h"
 
+#define CPPUNIT_ASSERT_CLOSE_ENOUGH(ACTUAL, EXPECTED) CPPUNIT_ASSERT((abs((ACTUAL - EXPECTED)) < 0.00001))
+
 #define JSON_TOKENS 10000
 #define FILE_PREFIX string("test/json_api_files/")
 
@@ -863,10 +865,18 @@ void LoggerApiTest::testSetTrackConfigFile(string filename){
 
 	assertGenericResponse(txBuffer, "setTrackCfg", API_SUCCESS);
 
-	CPPUNIT_ASSERT_EQUAL(11.1111111F, cfg->track.startFinish.latitude);
-	CPPUNIT_ASSERT_EQUAL(22.2222222F, cfg->track.startFinish.longitude);
-	CPPUNIT_ASSERT_EQUAL(0.00004F, cfg->track.radius);
+	CPPUNIT_ASSERT_CLOSE_ENOUGH(0.0001F, cfg->track.radius);
+	CPPUNIT_ASSERT_CLOSE_ENOUGH(1.1F, cfg->track.startFinish.latitude);
+	CPPUNIT_ASSERT_CLOSE_ENOUGH(2.1F, cfg->track.startFinish.longitude);
 
+	float startingValue = 1.1;
+
+	for (int i = 0; i < SECTOR_COUNT; i++){
+		CPPUNIT_ASSERT_CLOSE_ENOUGH(startingValue, cfg->track.sectors[i].latitude);
+		startingValue++;
+		CPPUNIT_ASSERT_CLOSE_ENOUGH(startingValue, cfg->track.sectors[i].longitude);
+		startingValue++;
+	}
 }
 
 void LoggerApiTest::testSetTrackCfg(){
@@ -877,22 +887,32 @@ void LoggerApiTest::testGetTrackConfigFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	TrackConfig *cfg = &c->TrackConfigs;
 
-	cfg->track.startFinish.latitude = 1.234;
-	cfg->track.startFinish.longitude = 5.678;
-	cfg->track.radius = 0.001;
+	float startingValue = 1.1;
+	for (size_t i = 0; i < SECTOR_COUNT; i++){
+		GeoPoint *point = (cfg->track.sectors + i);
+		point->latitude = startingValue;
+		startingValue++;
+		point->longitude = startingValue;
+		startingValue++;
+	}
+	cfg->track.radius = 0.009;
 
 	char * response = processApiGeneric(filename);
 
 	Object json;
 	stringToJson(response, json);
 
-	CPPUNIT_ASSERT_EQUAL(0.001F, (float)(Number)json["trackCfg"]["rad"]);
+	CPPUNIT_ASSERT_EQUAL(0.009F, (float)(Number)json["trackCfg"]["rad"]);
 
-	Array &startFinish = json["trackCfg"]["track"]["sf"];
+	Array &sectors = json["trackCfg"]["track"]["sec"];
 
-	CPPUNIT_ASSERT_EQUAL(1.234F, (float)(Number)startFinish[0]);
-	CPPUNIT_ASSERT_EQUAL(5.678F, (float)(Number)startFinish[1]);
-
+	startingValue = 1.1;
+	for (size_t i = 0; i < SECTOR_COUNT; i++){
+		CPPUNIT_ASSERT_CLOSE_ENOUGH(startingValue, (float)(Number) sectors[i][0]);
+		startingValue++;
+		CPPUNIT_ASSERT_CLOSE_ENOUGH(startingValue, (float)(Number) sectors[i][1]);
+		startingValue++;
+	}
 }
 
 void LoggerApiTest::testGetTrackCfg(){

@@ -868,25 +868,27 @@ int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
 }
 
 void setTrack(const jsmntok_t *cfg, Track *track){
-	{
-		const jsmntok_t *startFinish = findNode(cfg, "sf");
-		if (startFinish != NULL){
-			const jsmntok_t *sfValues = startFinish + 1;
-			if (sfValues != NULL && sfValues->type == JSMN_ARRAY && sfValues->size == 2){
-				sfValues++;
-				if (sfValues->type == JSMN_PRIMITIVE){
-					jsmn_trimData(sfValues);
-					track->startFinish.latitude = modp_atof(sfValues->data);
-				}
-				sfValues++;
-				if (sfValues->type == JSMN_PRIMITIVE){
-					jsmn_trimData(sfValues);
-					track->startFinish.longitude = modp_atof(sfValues->data);
-				}
+	setFloatValueIfExists(cfg, "rad", &track->radius);
+	const jsmntok_t *sectors = findNode(cfg, "sec");
+	if (sectors != NULL){
+		sectors++;
+		if (sectors != NULL && sectors->type == JSMN_ARRAY){
+			sectors++;
+			size_t sectorIndex = 0;
+			TrackConfig * trackConfig = &getWorkingLoggerConfig()->TrackConfigs;
+			while (sectors != NULL && sectors->type == JSMN_ARRAY && sectors->size == 2 && sectorIndex < SECTOR_COUNT){
+				GeoPoint *sector = (trackConfig->track.sectors + sectorIndex);
+				const jsmntok_t *lat = sectors + 1;
+				const jsmntok_t *lon = sectors + 2;
+				jsmn_trimData(lat);
+				jsmn_trimData(lon);
+				sector->latitude = modp_atof(lat->data);
+				sector->longitude = modp_atof(lon->data);
+				sectorIndex++;
+				sectors +=3;
 			}
 		}
 	}
-	setFloatValueIfExists(cfg, "rad", &track->radius);
 }
 
 int api_setTrackConfig(Serial *serial, const jsmntok_t *json){
