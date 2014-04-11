@@ -70,7 +70,6 @@ string PredictiveTimeTest2::readFile(string filename) {
 }
 
 void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
-	return;
 	string log = readFile("predictive_time_test_lap.log");
 
 	std::istringstream iss(log);
@@ -115,7 +114,7 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
 			populateGeoPoint(&gp);
 			float predTime = getPredictedTime(gp, utcTime);
 
-//			/printf("Lap:%d- pred: %f - last lap: %f\n", getLapCount(), predTime / 60.0f, getLastLapTime());
+			printf("Lap:%d- pred: %f - last lap: %f\n", getLapCount(), predTime / 60.0f, getLastLapTime());
 		}
 	}
 }
