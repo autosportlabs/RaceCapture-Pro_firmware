@@ -81,7 +81,7 @@ int printk_int(enum log_level level, int value) {
 		return writek_int(value);
 }
 
-inline enum log_level get_log_level(){
+enum log_level get_log_level(){
 	return curr_level;
 }
 

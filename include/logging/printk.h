@@ -47,6 +47,6 @@ int writek_int(int value);
 int printk(enum log_level level, const char *msg);
 int printk_int(enum log_level level, int value);
 enum log_level set_log_level(enum log_level level);
-inline enum log_level get_log_level();
+enum log_level get_log_level();
 
 #endif /* __PRINTK_H__ */

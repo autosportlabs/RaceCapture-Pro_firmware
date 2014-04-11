@@ -51,6 +51,7 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST( testLogStartStop );
   CPPUNIT_TEST( testCalibrateImu);
   CPPUNIT_TEST( testFlashConfig);
+  CPPUNIT_TEST( testSetLogLevel);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -93,6 +94,7 @@ public:
   void testGetTrackCfg();
   void testCalibrateImu();
   void testFlashConfig();
+  void testSetLogLevel();
 
 private:
   void testLogStartStopFile(string filename);
@@ -118,6 +120,8 @@ private:
   void testGetLapConfigFile(string filename);
   void testCalibrateImuFile(string filename);
   void testFlashConfigFile(string filename);
+  void testSetLogLevelFile(string filename, int expectedResponse);
+
 };
 
 

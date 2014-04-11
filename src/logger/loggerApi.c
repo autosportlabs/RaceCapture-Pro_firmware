@@ -87,19 +87,22 @@ const static jsmntok_t * findValueNode(const jsmntok_t *node, const char *name){
 	return NULL;
 }
 
-static void setUnsignedCharValueIfExists(const jsmntok_t *root, const char * fieldName, unsigned char *target){
+static int setUnsignedCharValueIfExists(const jsmntok_t *root, const char * fieldName, unsigned char *target){
 	const jsmntok_t *valueNode = findValueNode(root, fieldName);
 	if (valueNode) * target = modp_atoi(valueNode->data);
+	return (valueNode != NULL);
 }
 
-static void setIntValueIfExists(const jsmntok_t *root, const char * fieldName, int *target){
+static int setIntValueIfExists(const jsmntok_t *root, const char * fieldName, int *target){
 	const jsmntok_t *valueNode = findValueNode(root, fieldName);
 	if (valueNode) * target = modp_atoi(valueNode->data);
+	return (valueNode != NULL);
 }
 
-static void setFloatValueIfExists(const jsmntok_t *root, const char * fieldName, float *target ){
+static int setFloatValueIfExists(const jsmntok_t *root, const char * fieldName, float *target ){
 	const jsmntok_t *valueNode = findValueNode(root, fieldName);
 	if (valueNode) * target = modp_atof(valueNode->data);
+	return (valueNode != NULL);
 }
 
 int api_sampleData(Serial *serial, const jsmntok_t *json){
@@ -539,6 +542,17 @@ int api_getLogfile(Serial *serial, const jsmntok_t *json){
 	serial->put_c('"');
 	json_objEnd(serial,0);
 	return API_SUCCESS_NO_RETURN;
+}
+
+int api_setLogfileLevel(Serial *serial, const jsmntok_t *json){
+	int level;
+	if (setIntValueIfExists(json, "level", &level)){
+		set_log_level((log_level)level);
+		return API_SUCCESS;
+	}
+	else{
+		return API_ERROR_PARAMETER;
+	}
 }
 
 static const jsmntok_t * setConnectivityExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){

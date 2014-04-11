@@ -16,6 +16,7 @@
 #include "mod_string.h"
 #include "modp_atonum.h"
 #include "memory_mock.h"
+#include "printk.h"
 #include <string>
 #include <fstream>
 #include <streambuf>
@@ -927,4 +928,17 @@ void LoggerApiTest::testGetTrackConfigFile(string filename){
 
 void LoggerApiTest::testGetTrackCfg(){
 	testGetTrackConfigFile("getTrackCfg1.json");
+}
+
+void LoggerApiTest::testSetLogLevelFile(string filename, int expectedResponse){
+	processApiGeneric(filename);
+
+	//set_log_level(DEBUG);
+	//char *txBuffer = mock_getTxBuffer();
+	CPPUNIT_ASSERT_EQUAL( 7, (int)get_log_level());
+	//assertGenericResponse(txBuffer, "setLogfileLevel", expectedResponse);
+}
+
+void LoggerApiTest::testSetLogLevel(){
+	testSetLogLevelFile("setLogLevel1.json", API_SUCCESS);
 }
