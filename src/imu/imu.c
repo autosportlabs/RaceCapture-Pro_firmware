@@ -5,12 +5,13 @@
 #include "stddef.h"
 
 //Channel Filters
-#define IMU_ALPHA 0.1
 static Filter g_imu_filter[CONFIG_IMU_CHANNELS];
 
-static void init_filters(){
+static void init_filters(LoggerConfig *loggerConfig){
+	ImuConfig *config  = loggerConfig->ImuConfigs;
 	for (size_t i = 0; i < CONFIG_IMU_CHANNELS; i++){
-		init_filter(&g_imu_filter[i], IMU_ALPHA);
+		float alpha = (config + i)->filterAlpha;
+		init_filter(&g_imu_filter[i], alpha);
 	}
 }
 
@@ -72,9 +73,9 @@ void imu_calibrate_zero(){
 	}
 }
 
-void imu_init(){
+void imu_init(LoggerConfig *loggerConfig){
 	imu_device_init();
-	init_filters();
+	init_filters(loggerConfig);
 }
 
 unsigned int imu_read(unsigned int channel){

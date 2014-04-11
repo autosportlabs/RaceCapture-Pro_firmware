@@ -128,10 +128,11 @@ string LoggerApiTest::readFile(string filename){
 
 void LoggerApiTest::setUp()
 {
+	LoggerConfig *config = getWorkingLoggerConfig();
 	initApi();
 	initialize_logger_config();
 	setupMockSerial();
-	imu_init();
+	imu_init(config);
 	resetPredictiveTimer();
 }
 
@@ -226,8 +227,9 @@ void LoggerApiTest::testGetAnalogConfigFile(string filename, int index){
 
 	analogCfg->cfg.channeId = 1;
 	analogCfg->cfg.sampleRate = encodeSampleRate(50);
-	analogCfg->linearScaling = 1.234;
+	analogCfg->linearScaling = 1.234F;
 	analogCfg->scalingMode = 2;
+	analogCfg->filterAlpha = 0.6F;
 
 
 	int i = 0;
@@ -250,6 +252,7 @@ void LoggerApiTest::testGetAnalogConfigFile(string filename, int index){
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["id"]);
 	CPPUNIT_ASSERT_EQUAL(50, (int)(Number)analogJson["sr"]);
 	CPPUNIT_ASSERT_EQUAL(1.234F, (float)(Number)analogJson["linScal"]);
+	CPPUNIT_ASSERT_EQUAL(0.6F, (float)(Number)analogJson["alpha"]);
 	CPPUNIT_ASSERT_EQUAL(2, (int)(Number)analogJson["scalMod"]);
 
 	Object scalMap = (Object)analogJson["map"];
@@ -289,6 +292,7 @@ void LoggerApiTest::testSetAnalogConfigFile(string filename){
 
 	CPPUNIT_ASSERT_EQUAL(2, (int)adcCfg->scalingMode);
 	CPPUNIT_ASSERT_EQUAL(1.234F, adcCfg->linearScaling);
+	CPPUNIT_ASSERT_EQUAL(0.6F, adcCfg->filterAlpha);
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)adcCfg->scalingMap.rawValues[0]);
 	CPPUNIT_ASSERT_EQUAL(2, (int)adcCfg->scalingMap.rawValues[1]);
@@ -323,6 +327,7 @@ void LoggerApiTest::testGetImuConfigFile(string filename, int index){
 	imuCfg->mode = 1;
 	imuCfg->physicalChannel = 3;
 	imuCfg->zeroValue = 1234;
+	imuCfg->filterAlpha = 0.7F;
 
 	char * response = processApiGeneric(filename);
 
@@ -331,14 +336,15 @@ void LoggerApiTest::testGetImuConfigFile(string filename, int index){
 
 	std::ostringstream stringStream;
 	stringStream << index;
-	Object &analogJson = json["imuCfg"][stringStream.str()];
+	Object &imuJson = json["imuCfg"][stringStream.str()];
 
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["id"]);
-	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)analogJson["sr"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)imuJson["id"]);
+	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)imuJson["sr"]);
 
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["mode"]);
-	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)analogJson["chan"]);
-	CPPUNIT_ASSERT_EQUAL(1234, (int)(Number)analogJson["zeroVal"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)imuJson["mode"]);
+	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)imuJson["chan"]);
+	CPPUNIT_ASSERT_EQUAL(1234, (int)(Number)imuJson["zeroVal"]);
+	CPPUNIT_ASSERT_EQUAL(0.7F, (float)(Number)imuJson["alpha"]);
 }
 
 void LoggerApiTest::testGetImuCfg(){
@@ -360,6 +366,7 @@ void LoggerApiTest::testSetImuConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(1, (int)imuCfg->mode);
 	CPPUNIT_ASSERT_EQUAL(2, (int)imuCfg->physicalChannel);
 	CPPUNIT_ASSERT_EQUAL(1234, (int)imuCfg->zeroValue);
+	CPPUNIT_ASSERT_EQUAL(0.7F, imuCfg->filterAlpha);
 
 	char *txBuffer = mock_getTxBuffer();
 	assertGenericResponse(txBuffer, "setImuCfg", API_SUCCESS);
@@ -612,6 +619,7 @@ void LoggerApiTest::testGetTimerConfigFile(string filename, int index){
 	timerCfg->cfg.sampleRate = encodeSampleRate(100);
 	timerCfg->slowTimerEnabled = 1;
 	timerCfg->mode = 2;
+	timerCfg->filterAlpha = 0.5F;
 	timerCfg->pulsePerRevolution = 3;
 	timerCfg->timerDivider = 30000;
 
@@ -622,14 +630,15 @@ void LoggerApiTest::testGetTimerConfigFile(string filename, int index){
 
 	std::ostringstream stringStream;
 	stringStream << index;
-	Object &analogJson = json["timerCfg"][stringStream.str()];
+	Object &timerJson = json["timerCfg"][stringStream.str()];
 
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["id"]);
-	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)analogJson["sr"]);
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["sTimer"]);
-	CPPUNIT_ASSERT_EQUAL(2, (int)(Number)analogJson["mode"]);
-	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)analogJson["ppRev"]);
-	CPPUNIT_ASSERT_EQUAL(30000, (int)(Number)analogJson["timDiv"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)timerJson["id"]);
+	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)timerJson["sr"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)timerJson["sTimer"]);
+	CPPUNIT_ASSERT_EQUAL(2, (int)(Number)timerJson["mode"]);
+	CPPUNIT_ASSERT_EQUAL(0.5F, (float)(Number)timerJson["alpha"]);
+	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)timerJson["ppRev"]);
+	CPPUNIT_ASSERT_EQUAL(30000, (int)(Number)timerJson["timDiv"]);
 }
 
 void LoggerApiTest::testGetTimerCfg(){
@@ -649,6 +658,7 @@ void LoggerApiTest::testSetTimerConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(22, (int)timerCfg->cfg.channeId);
 	CPPUNIT_ASSERT_EQUAL(1, (int)timerCfg->slowTimerEnabled);
 	CPPUNIT_ASSERT_EQUAL(1, (int)timerCfg->mode);
+	CPPUNIT_ASSERT_EQUAL(0.5F, timerCfg->filterAlpha);
 	CPPUNIT_ASSERT_EQUAL(4, (int)timerCfg->pulsePerRevolution);
 	CPPUNIT_ASSERT_EQUAL(2, (int)timerCfg->timerDivider);
 

@@ -21,7 +21,9 @@
 #include "mem_mang.h"
 #include "printk.h"
 #include "geopoint.h"
-
+#include "timer.h"
+#include "ADC.h"
+#include "imu.h"
 
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
@@ -307,6 +309,7 @@ static const jsmntok_t * setAnalogExtendedField(const jsmntok_t *valueTok, const
 	ADCConfig *adcCfg = (ADCConfig *)cfg;
 	if (NAME_EQU("scalMod", name)) adcCfg->scalingMode = filterAnalogScalingMode(modp_atoi(value));
 	else if (NAME_EQU("linScal", name)) adcCfg->linearScaling = modp_atof(value);
+	else if (NAME_EQU("alpha", name))adcCfg->filterAlpha = modp_atof(value);
 	else if (NAME_EQU("map", name)){
 		if (valueTok->type == JSMN_OBJECT) {
 			valueTok++;
@@ -327,6 +330,7 @@ static void getAnalogConfigs(size_t channelId, void ** baseCfg, ChannelConfig **
 int api_setAnalogConfig(Serial *serial, const jsmntok_t * json){
 	setMultiChannelConfigGeneric(serial, json, getAnalogConfigs, setAnalogExtendedField);
 	configChanged();
+	ADC_init(getWorkingLoggerConfig());
 	return API_SUCCESS;
 }
 
@@ -346,6 +350,7 @@ static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_int(serial, "scalMod", cfg->scalingMode, 1);
 		json_float(serial, "linScal", cfg->linearScaling, LINEAR_SCALING_PRECISION, 1);
+		json_float(serial, "alpha", cfg->filterAlpha, FILTER_ALPHA_PRECISION, 1);
 
 		json_objStart(serial, "map");
 		json_arrayStart(serial, "raw");
@@ -396,6 +401,7 @@ static const jsmntok_t * setImuExtendedField(const jsmntok_t *valueTok, const ch
 	if (NAME_EQU("mode",name)) imuCfg->mode = filterImuMode(modp_atoi(value));
 	else if (NAME_EQU("chan",name)) imuCfg->physicalChannel = filterImuChannel(modp_atoi(value));
 	else if (NAME_EQU("zeroVal",name)) imuCfg->zeroValue = modp_atoi(value);
+	else if (NAME_EQU("alpha", name)) imuCfg->filterAlpha = modp_atof(value);
 	return valueTok + 1;
 }
 
@@ -408,6 +414,7 @@ static void getImuConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** ch
 int api_setImuConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getImuConfigs, setImuExtendedField);
 	configChanged();
+	imu_init(getWorkingLoggerConfig());
 	return API_SUCCESS;
 }
 
@@ -420,7 +427,8 @@ static void sendImuConfig(Serial *serial, size_t startIndex, size_t endIndex){
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_uint(serial, "mode", cfg->mode, 1);
 		json_uint(serial, "chan", cfg->physicalChannel, 1);
-		json_uint(serial, "zeroVal", cfg->zeroValue, 0);
+		json_uint(serial, "zeroVal", cfg->zeroValue, 1);
+		json_float(serial, "alpha", cfg->filterAlpha, FILTER_ALPHA_PRECISION, 0 );
 		json_objEnd(serial, i != endIndex); //index
 	}
 	json_objEnd(serial, 0);
@@ -693,6 +701,7 @@ static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok, const 
 	int iValue = modp_atoi(value);
 	if (NAME_EQU("sTimer", name)) timerCfg->slowTimerEnabled = (iValue != 0);
 	if (NAME_EQU("mode", name)) timerCfg->mode = filterTimerMode(iValue);
+	if (NAME_EQU("alpha", name)) timerCfg->filterAlpha = modp_atof(value);
 	if (NAME_EQU("ppRev", name)) {
 		timerCfg->pulsePerRevolution = iValue;
 		calculateTimerScaling(BOARD_MCK, timerCfg);
@@ -711,6 +720,7 @@ static void sendTimerConfig(Serial *serial, size_t startIndex, size_t endIndex){
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_uint(serial, "sTimer", cfg->slowTimerEnabled, 1);
 		json_uint(serial, "mode", cfg->mode, 1);
+		json_float(serial, "alpha", cfg->filterAlpha, FILTER_ALPHA_PRECISION, 1);
 		json_uint(serial, "ppRev", cfg->pulsePerRevolution, 1);
 		json_uint(serial, "timDiv", cfg->timerDivider, 0);
 		json_objEnd(serial, i != endIndex);
@@ -744,6 +754,7 @@ int api_getTimerConfig(Serial *serial, const jsmntok_t *json){
 int api_setTimerConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getTimerConfigs, setTimerExtendedField);
 	configChanged();
+	timer_init(getWorkingLoggerConfig());
 	return API_SUCCESS;
 }
 
