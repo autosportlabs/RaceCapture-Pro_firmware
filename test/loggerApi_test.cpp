@@ -24,7 +24,7 @@
 #define CPPUNIT_ASSERT_CLOSE_ENOUGH(ACTUAL, EXPECTED) CPPUNIT_ASSERT((abs((ACTUAL - EXPECTED)) < 0.00001))
 
 #define JSON_TOKENS 10000
-#define FILE_PREFIX string("test/json_api_files/")
+#define FILE_PREFIX string("json_api_files/")
 
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( LoggerApiTest );
