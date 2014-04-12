@@ -15,6 +15,18 @@ class RcpSerial:
     def open():
         return serial.Serial('/dev/ttyACM0', timeout = 1000)
 
+    def readLine(ser):
+        retries = 5
+        line = None
+        while retries > 0:
+            print('attempt ' + str(retries))
+            line = ser.readline()
+            if line: 
+                break
+            ser.write(' ')
+            retries -= 1        
+        return line
+    
     def decodeScript(s):
         return s.replace('\\n','\n').replace('\_',' ').replace('\\r','\r').replace('\\"','"')
 
@@ -25,8 +37,8 @@ class RcpSerial:
         cmd = 'writeScriptPage ' + str(page) + ' ' + encodeScript(script) + '\r'
         print(cmd)
         ser.write(cmd)
-        line = ser.readline()
-        line = ser.readline()
+        line = readLine(ser)
+        line = readLine(ser)
         print(line)
         if 'result="ok"' in line:
             return 1
@@ -37,8 +49,8 @@ class RcpSerial:
         cmd = 'readScriptPage ' + str(page) + '\r'
         print("page: " + cmd)
         ser.write(cmd)
-        line = ser.readline()
-        line = ser.readline()
+        line = readLine(ser)
+        line = readLine(ser)
         print(line)
         line = line[9:]
         line = line[:-4]

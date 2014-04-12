@@ -177,17 +177,36 @@ class PulseChannelsView(BoxLayout):
         sv.add_widget(accordion)
         self.add_widget(sv)
 
+
 class AccelGyroChannelsView(BoxLayout):
     pass
 
 class LinkedTreeViewLabel(TreeViewLabel):
     view = None
    
-
 class LuaCodeInput(CodeInput):
     def __init__(self, **kwargs):
         super(LuaCodeInput, self).__init__(**kwargs)
         self.lexer= lexers.get_lexer_by_name('lua')
+
+class LuaScriptingView(BoxLayout):
+    #def __init__(self, **kwargs):
+     #   print("init")
+        
+    def readScript(self):
+        print("read script")
+
+    def writeScript(self):
+        print("write script")
+
+    def runScript(self):
+        print("run script")
+
+class ToolbarView(BoxLayout):
+    pass
+
+class ToolbarButton(Button):
+    pass
 
 class RaceCaptureApp(App):
 
@@ -200,7 +219,6 @@ class RaceCaptureApp(App):
             self.content.add_widget(value.view)
         except Exception, e:
             print e
-
 
     def build(self):
 
@@ -235,16 +253,25 @@ class RaceCaptureApp(App):
 
         content = SplashView()
 
-        main = BoxLayout(orientation='horizontal', 
-                            padding=20, spacing=20, size=(1024,576), 
-                            size_hint=(None, None), pos_hint={'center_x': .5, 'center_y': .5})
+        main = BoxLayout(orientation = 'horizontal', size_hint=(1.0, 0.95))
 
         main.add_widget(tree)
         main.add_widget(content)
 
+        toolbar = ToolbarView(size_hint=(None, 0.05))
+
         self.content = content
-        self.tree = tree        
-        return main     
+        self.tree = tree
+        self.toolbar = toolbar
+
+        outer = BoxLayout(orientation='vertical', 
+                            padding=5, spacing=5, size=(1024,576), 
+                            size_hint=(None, None), pos_hint={'center_x': .5, 'center_y': .5})
+
+        outer.add_widget(toolbar)
+        outer.add_widget(main)
+
+        return outer
 
 if __name__ == '__main__':
 

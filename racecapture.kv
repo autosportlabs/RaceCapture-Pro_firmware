@@ -39,6 +39,22 @@
             size: self.size
             pos: self.pos
 
+<ToolbarButton>:
+    background_color: [0.25,0.25,0.25,1]
+    font_size: 25
+    font_name: 'fa.ttf'
+    
+<ToolbarView>:
+    BoxLayout:
+        orientation: 'horizontal'
+        ToolbarButton:
+            id: 'read'
+            text: ''
+        ToolbarButton:
+            id: 'write'
+            text: ''
+
+
 <RaceCaptureApp>:
 
 <ChannelNameSelectorView>:
@@ -429,13 +445,15 @@
             Button:
                 size_hint_x: 0.25
                 text: "Read"
+                on_release: root.readScript()
             Button:
                 size_hint_x: 0.25
                 text: "Write"
+                on_release: root.writeScript()
             Button:
                 size_hint_x: 0.25
                 text: "Run"
-
+                on_release: root.runScript()
 
 <AnalogChannelsView>:
 
