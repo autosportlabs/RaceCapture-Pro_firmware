@@ -14,7 +14,6 @@ from kivy.uix.spinner import Spinner
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.accordion import Accordion, AccordionItem
-from kivy.garden.graph import Graph, MeshLinePlot
 from kivy.uix.treeview import TreeView, TreeViewLabel
 from kivy.extras.highlight import KivyLexer
 from kivy.uix.codeinput import CodeInput
@@ -23,19 +22,9 @@ from pygments import lexers
 from spacer import *
 from boundedlabel import BoundedLabel
 from rcpserial import *
-
-class AnalogScaler(Graph):
-    def __init__(self, **kwargs):
-        super(AnalogScaler, self).__init__(**kwargs)
-
-        plot = MeshLinePlot(color=[0, 1, 0, 1])
-        plot.points = [[0,-100],[5,100]]
-        self.add_plot(plot)
-        
-
-class AnalogChannel(BoxLayout):
-    def __init__(self, **kwargs):
-        super(AnalogChannel, self).__init__(**kwargs)
+from analogchannelsview import *
+from rcpconfig import *
+from channels import *
 
 class GPIOChannel(BoxLayout):
     def __init__(self, **kwargs):
@@ -56,8 +45,14 @@ class OrientationSpinner(Spinner):
 
 class ChannelNameSpinner(Spinner):
     def __init__(self, **kwargs):
+        self.register_event_type('on_channels_updated')
         super(ChannelNameSpinner, self).__init__(**kwargs)
-        self.values = ["OilTemp", "Battery", "AFR", "WingAngle"]
+        self.category = kwargs.get('category', None)
+        self.values = []
+     
+    def on_channels_updated(self, channels):
+        print("on channels updated")
+        self.values = channels.getNamesList(self.category)
 
 class AccelMappingSpinner(Spinner):
     def __init__(self, **kwargs):
@@ -79,7 +74,9 @@ class SampleRateSelectorView(BoxLayout):
     pass
 
 class ChannelNameSelectorView(BoxLayout):
-    pass
+    def setValue(self, value):
+        print(value)
+        self.ids.channelName.text = value
 
 class SplashView(BoxLayout):
     pass
@@ -141,23 +138,6 @@ class CANChannelsView(BoxLayout):
 
 class OBD2ChannelsView(BoxLayout):
     pass
-
-class AnalogChannelsView(BoxLayout):
-    def __init__(self, **kwargs):
-        super(AnalogChannelsView, self).__init__(**kwargs)
-        accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=80 * 8)
-    
-        # add button into that grid
-        for i in range(8):
-            channel = AccordionItem(title='Analog ' + str(i + 1))
-            editor = AnalogChannel()
-            channel.add_widget(editor)
-            accordion.add_widget(channel)
-    
-        #create a scroll view, with a size < size of the grid
-        sv = ScrollView(size_hint=(1.0,1.0), do_scroll_x=False)
-        sv.add_widget(accordion)
-        self.add_widget(sv)
         
 class PulseChannelsView(BoxLayout):
     def __init__(self, **kwargs):
@@ -202,24 +182,39 @@ class LuaScriptingView(BoxLayout):
         print("run script")
 
 class ToolbarView(BoxLayout):
+
     def __init__(self, **kwargs):
+        self.register_event_type('on_read_config')
         super(ToolbarView, self).__init__(**kwargs)
         self.rcp = kwargs.get('rcp', None)
+        self.app = kwargs.get('app', None)
 
     def readConfig(self):
-        print("read config")
-        analog = self.rcp.getAnalogCfg(None)
-        print('analog: ' + str(analog))
+        self.dispatch('on_read_config', None)
 
+    def on_read_config(self, instance, *args):
+        pass
 
 class ToolbarButton(Button):
     pass
 
-class RaceCaptureApp(App):        
+class RaceCaptureApp(App):
     def __init__(self, **kwargs):
+        self.register_event_type('on_config_updated')
         super(RaceCaptureApp, self).__init__(**kwargs)
+
+        #RaceCapture serial I/O 
         rcp = RcpSerial()
         self.rcp = rcp
+        
+        #Central configuration object
+        self.rcpConfig  = RcpConfig()
+
+        #List of Channels
+        self.channels = Channels()
+        
+        #List of config views
+        self.configViews = []
 
     def on_select_node(self, instance, value):
         # ensure that any keyboard is released
@@ -231,8 +226,21 @@ class RaceCaptureApp(App):
         except Exception, e:
             print e
 
+    def on_read_config(self, instance, *args):
+        config = self.rcp.getAnalogCfg(None)
+        self.rcpConfig.fromJson(config)
+        self.dispatch('on_config_updated', self.rcpConfig)
+
+    def on_config_updated(self, rcpConfig):
+        print('on config updated')
+        self.analogChannelsView.dispatch('on_config_updated', rcpConfig)
+
+    def updateConfig(self, json):
+        self.rcpConfig.fromJson(json)
+#        self.analogChannelsView.update(self.config)    
+        print("updateConfig")
+
     def build(self):
-        tree = TreeView(size_hint=(None, 1), width=200, hide_root=True, indent_level=0)
 
         def create_tree(text):
             return tree.add_node(LinkedTreeViewLabel(text=text, is_open=True, no_selection=True))
@@ -242,24 +250,29 @@ class RaceCaptureApp(App):
             label.view = view
             label.color_selected =   [1.0,0,0,0.6]
             tree.add_node(label, n)
+            self.configViews.append(view)
 
+        def createConfigViews(tree):
+            n = create_tree('Channels')
+            attach_node('GPS', n, GPSChannelsView())
+            attach_node('Track Channels', n, TrackConfigView())
+            attach_node('Analog Inputs', n, AnalogChannelsView(channels=8))
+            attach_node('Pulse Inputs', n, PulseChannelsView())
+            attach_node('Digital Input/Outputs', n, GPIOChannelsView())
+            attach_node('Accelerometer / Gyro', n, AccelGyroChannelsView())
+            attach_node('Pulse / Analog Outputs', n, AnalogPulseOutputChannelsView())
+            n = create_tree('CAN bus')
+            attach_node('CAN Channels', n, CANChannelsView())
+            attach_node('OBD2 Channels', n, OBD2ChannelsView())
+            n = create_tree('Telemetry')
+            attach_node('Cellular Telemetry', n, CellTelemetryView())
+            attach_node('Bluetooth Link', n, BluetoothTelemetryView())
+            n = create_tree('Scripting / Logging')
+            attach_node('Lua Script', n, LuaScriptingView())
+
+        tree = TreeView(size_hint=(None, 1), width=200, hide_root=True, indent_level=0)
         tree.bind(selected_node=self.on_select_node)
-        n = create_tree('Channels')
-        attach_node('GPS', n, GPSChannelsView())
-        attach_node('Track Channels', n, TrackConfigView())
-        attach_node('Analog Inputs', n, AnalogChannelsView())
-        attach_node('Pulse Inputs', n, PulseChannelsView())
-        attach_node('Digital Input/Outputs', n, GPIOChannelsView())
-        attach_node('Accelerometer / Gyro', n, AccelGyroChannelsView())
-        attach_node('Pulse / Analog Outputs', n, AnalogPulseOutputChannelsView())
-        n = create_tree('CAN bus')
-        attach_node('CAN Channels', n, CANChannelsView())
-        attach_node('OBD2 Channels', n, OBD2ChannelsView())
-        n = create_tree('Telemetry')
-        attach_node('Cellular Telemetry', n, CellTelemetryView())
-        attach_node('Bluetooth Link', n, BluetoothTelemetryView())
-        n = create_tree('Scripting / Logging')
-        attach_node('Lua Script', n, LuaScriptingView())
+        createConfigViews(tree)
 
         content = SplashView()
 
@@ -268,7 +281,8 @@ class RaceCaptureApp(App):
         main.add_widget(tree)
         main.add_widget(content)
 
-        toolbar = ToolbarView(size_hint=(None, 0.05), rcp=self.rcp)
+        toolbar = ToolbarView(size_hint=(None, 0.05), rcp=self.rcp, app=self)
+        toolbar.bind(on_read_config=self.on_read_config)
         
         self.content = content
         self.tree = tree
@@ -280,6 +294,12 @@ class RaceCaptureApp(App):
 
         outer.add_widget(toolbar)
         outer.add_widget(main)
+
+        for view in self.configViews:
+            channelWidgets = list(kvquery(view, __class__=ChannelNameSpinner))
+            for channelWidget in channelWidgets:
+                print('dispatching channel updated')
+                channelWidget.dispatch('on_channels_updated', self.channels)
 
         return outer
 
