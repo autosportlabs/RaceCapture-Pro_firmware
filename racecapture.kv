@@ -40,8 +40,9 @@
             pos: self.pos
 
 <ToolbarButton>:
-    background_color: [0.25,0.25,0.25,1]
+    background_color: [1 ,1 ,1 ,1]
     font_size: 25
+    color: [0, 1.0, 0, 1]
     font_name: 'fa.ttf'
     
 <ToolbarView>:
@@ -50,10 +51,10 @@
         ToolbarButton:
             id: 'read'
             text: ''
+            on_release: root.readConfig()
         ToolbarButton:
             id: 'write'
             text: ''
-
 
 <RaceCaptureApp>:
 

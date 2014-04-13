@@ -1,39 +1,81 @@
 import serial
 import io
+import json
 
 class RcpSerial:
-
     def __init__(self, **kwargs):
-        super(RcpSerial, self).__init__(**kwargs)
         self.ser = None
 
-    def getSerial():
-        if not self.serialPort:
-            self.serialPort = open()
-        return self.serialPort
-            
-    def open():
-        return serial.Serial('/dev/ttyACM0', timeout = 1000)
+    def sendCommand(self, cmd):
+        rsp = None
+        ser = self.getSerial()
+        ser.flushInput()
+        ser.flushOutput()
+        print('send cmd: ' + cmd)
+        ser.write(cmd + '\r')
 
-    def readLine(ser):
-        retries = 5
-        line = None
-        while retries > 0:
-            print('attempt ' + str(retries))
-            line = ser.readline()
-            if line: 
-                break
-            ser.write(' ')
-            retries -= 1        
-        return line
+        echo = self.readLine(ser)
+        if echo:
+            rsp = self.readLine(ser)
+        print('rsp: ' + rsp)
+
+        if rsp:
+            rsp = json.loads(rsp)
+        return rsp      
+
+    def sendGet(self, name, id):
+        if id == None:
+            id = 'null'
+        else:
+            id = str(id)
+        cmd = '{"' + name + '":' + id + '}'
+        return self.sendCommand(cmd)
+
+    def getSerial(self):
+        if not self.ser:
+            self.ser = self.open()
+        return self.ser
+            
+    def open(self):
+        print('Opening serial')
+        ser = serial.Serial('/dev/pts/1', timeout = 3)
+        ser.flushInput()
+        ser.flushOutput()
+        return ser
+
+    def close(self, ser):
+        if ser != None:
+            ser.close()
+        ser = None
     
-    def decodeScript(s):
+    def readLine(self, ser):
+        eol = b'\n'
+        eol2 = b'\r'
+
+        leneol = len(eol)
+        line = bytearray()
+        while True:
+            c = ser.read(1)
+            if c == eol or c == eol2:
+                break
+            else:
+                line += c
+        line = bytes(line)
+        line = line.replace('\r', '')
+        line = line.replace('\n', '')
+        return line
+
+    def getAnalogCfg(self, id):
+        rsp = self.sendGet('getAnalogCfg', id)
+        return rsp
+
+    def decodeScript(self, s):
         return s.replace('\\n','\n').replace('\_',' ').replace('\\r','\r').replace('\\"','"')
 
-    def encodeScript(s):
+    def encodeScript(self, s):
         return s.replace('\n','\\n').replace(' ', '\_').replace('\r', '\\r').replace('"', '\\"')
 
-    def writeScriptPage(ser, script, page):
+    def writeScriptPage(self, ser, script, page):
         cmd = 'writeScriptPage ' + str(page) + ' ' + encodeScript(script) + '\r'
         print(cmd)
         ser.write(cmd)
@@ -45,7 +87,7 @@ class RcpSerial:
         else:
             return 0
 
-    def readScriptPage(ser, page):
+    def readScriptPage(self, ser, page):
         cmd = 'readScriptPage ' + str(page) + '\r'
         print("page: " + cmd)
         ser.write(cmd)
@@ -58,7 +100,7 @@ class RcpSerial:
         return line
 
 
-    def readScript():
+    def readScript(self):
         i = 0
         lua = ''
         ser = getSerial()
@@ -71,7 +113,7 @@ class RcpSerial:
                 break
         return lua
 
-    def writeScript(script):
+    def writeScript(self, script):
         i = 0
         res = 0
         ser = getSerial()

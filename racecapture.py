@@ -24,7 +24,6 @@ from spacer import *
 from boundedlabel import BoundedLabel
 from rcpserial import *
 
-
 class AnalogScaler(Graph):
     def __init__(self, **kwargs):
         super(AnalogScaler, self).__init__(**kwargs)
@@ -203,12 +202,24 @@ class LuaScriptingView(BoxLayout):
         print("run script")
 
 class ToolbarView(BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        super(ToolbarView, self).__init__(**kwargs)
+        self.rcp = kwargs.get('rcp', None)
+
+    def readConfig(self):
+        print("read config")
+        analog = self.rcp.getAnalogCfg(None)
+        print('analog: ' + str(analog))
+
 
 class ToolbarButton(Button):
     pass
 
-class RaceCaptureApp(App):
+class RaceCaptureApp(App):        
+    def __init__(self, **kwargs):
+        super(RaceCaptureApp, self).__init__(**kwargs)
+        rcp = RcpSerial()
+        self.rcp = rcp
 
     def on_select_node(self, instance, value):
         # ensure that any keyboard is released
@@ -221,7 +232,6 @@ class RaceCaptureApp(App):
             print e
 
     def build(self):
-
         tree = TreeView(size_hint=(None, 1), width=200, hide_root=True, indent_level=0)
 
         def create_tree(text):
@@ -258,8 +268,8 @@ class RaceCaptureApp(App):
         main.add_widget(tree)
         main.add_widget(content)
 
-        toolbar = ToolbarView(size_hint=(None, 0.05))
-
+        toolbar = ToolbarView(size_hint=(None, 0.05), rcp=self.rcp)
+        
         self.content = content
         self.tree = tree
         self.toolbar = toolbar

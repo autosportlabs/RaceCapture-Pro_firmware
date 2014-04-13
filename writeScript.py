@@ -86,7 +86,7 @@ def writeScript(ser, script):
 
 data = open("script.lua").read()
 
-ser = serial.Serial('/dev/ttyACM0', timeout = .5)
+ser = serial.Serial('/dev/pts/0', timeout = .5)
 ser.flushInput()
 ser.flushOutput()
 
