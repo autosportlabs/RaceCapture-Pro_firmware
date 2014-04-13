@@ -280,17 +280,14 @@ class RaceCaptureApp(App):
         tree.bind(selected_node=on_select_node)
         createConfigViews(tree)
 
-        content = SplashView()
-
         main = BoxLayout(orientation = 'horizontal', size_hint=(1.0, 0.95))
-
         main.add_widget(tree)
         main.add_widget(content)
 
         toolbar = ToolbarView(size_hint=(None, 0.05), rcp=self.rcp, app=self)
         toolbar.bind(on_read_config=self.on_read_config)
         
-        self.content = content
+        self.content = SplashView()
         self.tree = tree
         self.toolbar = toolbar
 
