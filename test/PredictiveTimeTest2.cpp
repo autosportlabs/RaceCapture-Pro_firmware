@@ -106,7 +106,7 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
 			float utcTime = modp_atof(timeRaw.c_str());
 
          if (sfCrossTime < 0)
-           sfCrossTime = utcTime;
+           sfCrossTime = getSecondsSinceMidnight();
 
 			printf("---\nlat = %f : lon = %f : speed = %f : time = %f\n", lat, lon, speed, utcTime);
 
@@ -120,7 +120,7 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
 
 			GeoPoint gp;
 			populateGeoPoint(&gp);
-			float predTime = getPredictedTime(gp, utcTime);
+			float predTime = getPredictedTime(gp, secondsSinceMidnight);
 
 			printf("Lap #%d - Predicted Time: %3.3f seconds\n", getLapCount(), predTime);
 
@@ -129,11 +129,7 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
          if (currentLapCount > lapCount) {
            lapCount = getLapCount();
            printf("Start Finish Crossed!\n");
-           float rcpUtcTime = getUTCTime();
-           printf("RCP Utc Time is %3.3f seconds\n", rcpUtcTime);
-           float lapTime = utcTime - sfCrossTime;
-           printf("Lap completed in %3.3f seconds (Unit test math)\n", lapTime);
-           printf("RCP lap timer claims %3.3f seconds\n", getLastLapTime() * 60);
+           printf("RCP lap timer shows %3.3f seconds\n", getLastLapTime() * 60);
            sfCrossTime = utcTime;
          }
 		}

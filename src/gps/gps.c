@@ -507,7 +507,8 @@ void onLocationUpdated(){
 		}
 
 		if (startFinishEnabled){
-			float utcTime = getUTCTime();
+         // HACK!  Need seconds since epoch.  This solution sucks.
+			float utcTime = getSecondsSinceMidnight();
 			int lapDetected = processStartFinish(g_activeTrack);
 
 			if (lapDetected){
