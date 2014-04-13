@@ -201,11 +201,11 @@ class ToolbarButton(Button):
 class RaceCaptureApp(App):
     def __init__(self, **kwargs):
         self.register_event_type('on_config_updated')
+        self.register_event_type('on_channels_updated')
         super(RaceCaptureApp, self).__init__(**kwargs)
 
         #RaceCapture serial I/O 
-        rcp = RcpSerial()
-        self.rcp = rcp
+        self.rcp = RcpSerial()
         
         #Central configuration object
         self.rcpConfig  = RcpConfig()
@@ -215,16 +215,6 @@ class RaceCaptureApp(App):
         
         #List of config views
         self.configViews = []
-
-    def on_select_node(self, instance, value):
-        # ensure that any keyboard is released
-        self.content.get_parent_window().release_keyboard()
-
-        try:
-            self.content.clear_widgets()
-            self.content.add_widget(value.view)
-        except Exception, e:
-            print e
 
     def on_read_config(self, instance, *args):
         config = self.rcp.getAnalogCfg(None)
@@ -240,8 +230,14 @@ class RaceCaptureApp(App):
 #        self.analogChannelsView.update(self.config)    
         print("updateConfig")
 
-    def build(self):
+    def on_channels_updated(self, channels):
+        for view in self.configViews:
+            channelWidgets = list(kvquery(view, __class__=ChannelNameSpinner))
+            for channelWidget in channelWidgets:
+                print('dispatching channel updated')
+                channelWidget.dispatch('on_channels_updated', channels)
 
+    def build(self):
         def create_tree(text):
             return tree.add_node(LinkedTreeViewLabel(text=text, is_open=True, no_selection=True))
 
@@ -270,8 +266,18 @@ class RaceCaptureApp(App):
             n = create_tree('Scripting / Logging')
             attach_node('Lua Script', n, LuaScriptingView())
 
+        def on_select_node(instance, value):
+            # ensure that any keyboard is released
+            self.content.get_parent_window().release_keyboard()
+
+            try:
+                self.content.clear_widgets()
+                self.content.add_widget(value.view)
+            except Exception, e:
+                print e
+
         tree = TreeView(size_hint=(None, 1), width=200, hide_root=True, indent_level=0)
-        tree.bind(selected_node=self.on_select_node)
+        tree.bind(selected_node=on_select_node)
         createConfigViews(tree)
 
         content = SplashView()
@@ -295,11 +301,7 @@ class RaceCaptureApp(App):
         outer.add_widget(toolbar)
         outer.add_widget(main)
 
-        for view in self.configViews:
-            channelWidgets = list(kvquery(view, __class__=ChannelNameSpinner))
-            for channelWidget in channelWidgets:
-                print('dispatching channel updated')
-                channelWidget.dispatch('on_channels_updated', self.channels)
+        self.dispatch('on_channels_updated', self.channels)
 
         return outer
 
