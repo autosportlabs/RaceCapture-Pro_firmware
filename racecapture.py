@@ -324,7 +324,7 @@ class RaceCaptureApp(App):
             n = create_tree('Channels')
             attach_node('GPS', n, GPSChannelsView())
             attach_node('Track Channels', n, TrackConfigView())
-            attach_node('Analog Inputs', n, AnalogChannelsView(channels=8))
+            attach_node('Analog Inputs', n, AnalogChannelsView(channelCount=8))
             attach_node('Pulse Inputs', n, PulseChannelsView())
             attach_node('Digital Input/Outputs', n, GPIOChannelsView())
             attach_node('Accelerometer / Gyro', n, AccelGyroChannelsView())
