@@ -87,8 +87,7 @@ class GPSChannelsView(BoxLayout):
         self.register_event_type('on_config_updated')
 
     def on_config_updated(self, rcpCfg):
-        self.update(rcpCfg)
-
+        pass
 
 class TargetConfigView(GridLayout):
     pass
@@ -100,7 +99,7 @@ class TrackConfigView(BoxLayout):
         self.register_event_type('on_config_updated')
 
     def on_config_updated(self, rcpCfg):
-        self.update(rcpCfg)
+        pass
 
     
 class CellTelemetryView(BoxLayout):
@@ -110,7 +109,7 @@ class CellTelemetryView(BoxLayout):
         self.register_event_type('on_config_updated')
 
     def on_config_updated(self, rcpCfg):
-        self.update(rcpCfg)
+        pass
 
 
 class BluetoothTelemetryView(BoxLayout):
@@ -120,7 +119,7 @@ class BluetoothTelemetryView(BoxLayout):
         self.register_event_type('on_config_updated')
 
     def on_config_updated(self, rcpCfg):
-        self.update(rcpCfg)
+        pass
 
 
 class LuaScriptingView(BoxLayout):
@@ -130,7 +129,7 @@ class LuaScriptingView(BoxLayout):
         self.register_event_type('on_config_updated')
 
     def on_config_updated(self, rcpCfg):
-        self.update(rcpCfg)
+        pass
 
 
 class GPIOChannelsView(BoxLayout):
@@ -152,7 +151,7 @@ class GPIOChannelsView(BoxLayout):
         self.add_widget(sv)
 
     def on_config_updated(self, rcpCfg):
-        self.update(rcpCfg)
+        pass
     
 class AnalogPulseOutputChannelsView(BoxLayout):
     def __init__(self, **kwargs):
@@ -173,7 +172,7 @@ class AnalogPulseOutputChannelsView(BoxLayout):
         self.add_widget(sv)
 
     def on_config_updated(self, rcpCfg):
-        self.update(rcpCfg)
+        pass
 
 class CANChannelsView(BoxLayout):
     def __init__(self, **kwargs):
@@ -182,7 +181,7 @@ class CANChannelsView(BoxLayout):
         self.register_event_type('on_config_updated')
 
     def on_config_updated(self, rcpCfg):
-        self.update(rcpCfg)
+        pass
 
 class OBD2ChannelsView(BoxLayout):
     def __init__(self, **kwargs):
@@ -191,11 +190,12 @@ class OBD2ChannelsView(BoxLayout):
         self.register_event_type('on_config_updated')
 
     def on_config_updated(self, rcpCfg):
-        self.update(rcpCfg)
+        pass
         
 class PulseChannelsView(BoxLayout):
     def __init__(self, **kwargs):
         super(PulseChannelsView, self).__init__(**kwargs)
+        self.register_event_type('on_config_updated')
         accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=110 * 3)
     
         # add button into that grid
@@ -210,6 +210,8 @@ class PulseChannelsView(BoxLayout):
         sv.add_widget(accordion)
         self.add_widget(sv)
 
+    def on_config_updated(self, rcpCfg):
+        pass
 
 class AccelGyroChannelsView(BoxLayout):
     def __init__(self, **kwargs):
@@ -218,7 +220,7 @@ class AccelGyroChannelsView(BoxLayout):
         self.register_event_type('on_config_updated')
 
     def on_config_updated(self, rcpCfg):
-        self.update(rcpCfg)
+        pass
 
 
 class LinkedTreeViewLabel(TreeViewLabel):
@@ -230,8 +232,13 @@ class LuaCodeInput(CodeInput):
         self.lexer= lexers.get_lexer_by_name('lua')
 
 class LuaScriptingView(BoxLayout):
-    #def __init__(self, **kwargs):
-     #   print("init")
+    def __init__(self, **kwargs):
+        super(LuaScriptingView, self).__init__(**kwargs)
+#        Builder.load_file('analogchannelsview.kv')
+        self.register_event_type('on_config_updated')
+
+    def on_config_updated(self, rcpCfg):
+        pass
         
     def readScript(self):
         print("read script")
@@ -284,9 +291,7 @@ class RaceCaptureApp(App):
 
     def on_config_updated(self, rcpConfig):
         for view in self.configViews:
-            channelWidgets = list(kvquery(view, __class__=ConfigView))
-            for channelWidget in channelWidgets:
-                channelWidget.dispatch('on_config_updated', rcpConfig)
+            view.dispatch('on_config_updated', rcpConfig)                
 
     def on_channels_updated(self, channels):
         for view in self.configViews:
