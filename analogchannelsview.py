@@ -7,8 +7,9 @@ from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.scrollview import ScrollView
 from kivy.app import Builder
 from utils import *
+from configview import *
     
-class AnalogChannelsView(BoxLayout):
+class AnalogChannelsView(ConfigView):
     def __init__(self, **kwargs):
         Builder.load_file('analogchannelsview.kv')
         self.register_event_type('on_config_updated')

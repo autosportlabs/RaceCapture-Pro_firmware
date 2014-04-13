@@ -51,7 +51,6 @@ class ChannelNameSpinner(Spinner):
         self.values = []
      
     def on_channels_updated(self, channels):
-        print("on channels updated")
         self.values = channels.getNamesList(self.category)
 
 class AccelMappingSpinner(Spinner):
@@ -82,26 +81,62 @@ class SplashView(BoxLayout):
     pass
 
 class GPSChannelsView(BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        super(GPSChannelsView, self).__init__(**kwargs)
+#        Builder.load_file('analogchannelsview.kv')
+        self.register_event_type('on_config_updated')
+
+    def on_config_updated(self, rcpCfg):
+        self.update(rcpCfg)
+
 
 class TargetConfigView(GridLayout):
     pass
 
 class TrackConfigView(BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        super(TrackConfigView, self).__init__(**kwargs)
+#        Builder.load_file('analogchannelsview.kv')
+        self.register_event_type('on_config_updated')
+
+    def on_config_updated(self, rcpCfg):
+        self.update(rcpCfg)
+
     
 class CellTelemetryView(BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        super(CellTelemetryView, self).__init__(**kwargs)
+#        Builder.load_file('analogchannelsview.kv')
+        self.register_event_type('on_config_updated')
+
+    def on_config_updated(self, rcpCfg):
+        self.update(rcpCfg)
+
 
 class BluetoothTelemetryView(BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        super(BluetoothTelemetryView, self).__init__(**kwargs)
+#        Builder.load_file('analogchannelsview.kv')
+        self.register_event_type('on_config_updated')
+
+    def on_config_updated(self, rcpCfg):
+        self.update(rcpCfg)
+
 
 class LuaScriptingView(BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        super(LuaScriptingView, self).__init__(**kwargs)
+#        Builder.load_file('analogchannelsview.kv')
+        self.register_event_type('on_config_updated')
+
+    def on_config_updated(self, rcpCfg):
+        self.update(rcpCfg)
+
 
 class GPIOChannelsView(BoxLayout):
     def __init__(self, **kwargs):
         super(GPIOChannelsView, self).__init__(**kwargs)
+        self.register_event_type('on_config_updated')
         accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=90 * 3)
     
         # add button into that grid
@@ -115,9 +150,13 @@ class GPIOChannelsView(BoxLayout):
         sv = ScrollView(size_hint=(1.0,1.0), do_scroll_x=False)
         sv.add_widget(accordion)
         self.add_widget(sv)
+
+    def on_config_updated(self, rcpCfg):
+        self.update(rcpCfg)
     
 class AnalogPulseOutputChannelsView(BoxLayout):
     def __init__(self, **kwargs):
+        self.register_event_type('on_config_updated')
         super(AnalogPulseOutputChannelsView, self).__init__(**kwargs)
         accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=90 * 3)
     
@@ -133,11 +172,26 @@ class AnalogPulseOutputChannelsView(BoxLayout):
         sv.add_widget(accordion)
         self.add_widget(sv)
 
+    def on_config_updated(self, rcpCfg):
+        self.update(rcpCfg)
+
 class CANChannelsView(BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        super(CANChannelsView, self).__init__(**kwargs)
+#        Builder.load_file('analogchannelsview.kv')
+        self.register_event_type('on_config_updated')
+
+    def on_config_updated(self, rcpCfg):
+        self.update(rcpCfg)
 
 class OBD2ChannelsView(BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        super(OBD2ChannelsView, self).__init__(**kwargs)
+#        Builder.load_file('analogchannelsview.kv')
+        self.register_event_type('on_config_updated')
+
+    def on_config_updated(self, rcpCfg):
+        self.update(rcpCfg)
         
 class PulseChannelsView(BoxLayout):
     def __init__(self, **kwargs):
@@ -158,7 +212,14 @@ class PulseChannelsView(BoxLayout):
 
 
 class AccelGyroChannelsView(BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        super(AccelGyroChannelsView, self).__init__(**kwargs)
+#        Builder.load_file('analogchannelsview.kv')
+        self.register_event_type('on_config_updated')
+
+    def on_config_updated(self, rcpCfg):
+        self.update(rcpCfg)
+
 
 class LinkedTreeViewLabel(TreeViewLabel):
     view = None
@@ -222,24 +283,30 @@ class RaceCaptureApp(App):
         self.dispatch('on_config_updated', self.rcpConfig)
 
     def on_config_updated(self, rcpConfig):
-        print('on config updated')
-        self.analogChannelsView.dispatch('on_config_updated', rcpConfig)
-
-    def updateConfig(self, json):
-        self.rcpConfig.fromJson(json)
-#        self.analogChannelsView.update(self.config)    
-        print("updateConfig")
+        for view in self.configViews:
+            channelWidgets = list(kvquery(view, __class__=ConfigView))
+            for channelWidget in channelWidgets:
+                channelWidget.dispatch('on_config_updated', rcpConfig)
 
     def on_channels_updated(self, channels):
         for view in self.configViews:
             channelWidgets = list(kvquery(view, __class__=ChannelNameSpinner))
             for channelWidget in channelWidgets:
-                print('dispatching channel updated')
                 channelWidget.dispatch('on_channels_updated', channels)
 
     def build(self):
         def create_tree(text):
             return tree.add_node(LinkedTreeViewLabel(text=text, is_open=True, no_selection=True))
+
+        def on_select_node(instance, value):
+            # ensure that any keyboard is released
+            self.content.get_parent_window().release_keyboard()
+
+            try:
+                self.content.clear_widgets()
+                self.content.add_widget(value.view)
+            except Exception, e:
+                print e
 
         def attach_node(text, n, view):
             label = LinkedTreeViewLabel(text=text)
@@ -266,19 +333,11 @@ class RaceCaptureApp(App):
             n = create_tree('Scripting / Logging')
             attach_node('Lua Script', n, LuaScriptingView())
 
-        def on_select_node(instance, value):
-            # ensure that any keyboard is released
-            self.content.get_parent_window().release_keyboard()
-
-            try:
-                self.content.clear_widgets()
-                self.content.add_widget(value.view)
-            except Exception, e:
-                print e
-
         tree = TreeView(size_hint=(None, 1), width=200, hide_root=True, indent_level=0)
         tree.bind(selected_node=on_select_node)
         createConfigViews(tree)
+
+        content = SplashView()
 
         main = BoxLayout(orientation = 'horizontal', size_hint=(1.0, 0.95))
         main.add_widget(tree)
@@ -287,7 +346,7 @@ class RaceCaptureApp(App):
         toolbar = ToolbarView(size_hint=(None, 0.05), rcp=self.rcp, app=self)
         toolbar.bind(on_read_config=self.on_read_config)
         
-        self.content = SplashView()
+        self.content = content
         self.tree = tree
         self.toolbar = toolbar
 
