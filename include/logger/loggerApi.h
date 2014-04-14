@@ -46,6 +46,7 @@
 {"setTrackCfg", api_setTrackConfig}, \
 {"calImu", api_calibrateImu}, \
 {"getLogfile", api_getLogfile}, \
+{"setLogfileLevel", api_setLogfileLevel}, \
 {"getTracks", api_getTracks}, \
 {"getChannels", api_getChannels}
 
@@ -78,6 +79,7 @@ int api_getTimerConfig(Serial *serial, const jsmntok_t *json);
 int api_setTimerConfig(Serial *serial, const jsmntok_t *json);
 int api_calibrateImu(Serial *serial, const jsmntok_t *json);
 int api_flashConfig(Serial *serial, const jsmntok_t *json);
+int api_setLogfileLevel(Serial *serial, const jsmntok_t *json);
 int api_getLogfile(Serial *serial, const jsmntok_t *json);
 int api_getTracks(Serial *serial, const jsmntok_t *json);
 int api_getChannels(Serial *serial, const jsmntok_t *json);

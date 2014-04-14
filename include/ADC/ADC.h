@@ -1,14 +1,8 @@
-/*
- * ADC.h
- *
- *  Created on: Feb 6, 2014
- *      Author: brentp
- */
-
 #ifndef ADC_H_
 #define ADC_H_
+#include "loggerConfig.h"
 
-int ADC_init(void);
+int ADC_init(LoggerConfig *loggerConfig);
 
 void ADC_sample_all(void);
 

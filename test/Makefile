@@ -3,6 +3,7 @@
 include ../version.mk
 
 NAME=rcptest
+SIMNAME = rcpsim
 
 RCP_BASE=..
 RCP_SRC=$(RCP_BASE)/src
@@ -77,16 +78,17 @@ CPPFLAGS = -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(
 
 #-----File Dependencies----------------------
 
-SRC =	RCPTest.cpp \
-		loggerApi_test.cpp \
+T_SRC = loggerApi_test.cpp \
 		loggerConfig_test.cpp \
 		sampleRecord_test.cpp \
 		PredictiveTimeTest2.cpp \
+		sector_test.cpp \
 		loggerData_test.cpp \
 		$(GPS_DIR)/gps_test.cpp \
 		$(UTIL_DIR)/numtoa_test.cpp \
-		$(UTIL_DIR)/atonum_test.cpp \
-		mock_uart.c \
+		$(UTIL_DIR)/atonum_test.cpp 
+		
+SRC = 	mock_uart.c \
 		mock_usb_comm.c \
 		mock_serial.c \
 		$(MOCK_DIR)/util/taskUtil_mock.c \
@@ -140,10 +142,17 @@ SRC =	RCPTest.cpp \
 
 #		$(RCP_SRC)/logger/loggerTaskEx.c \
 
-OBJ = $(addsuffix .o, $(basename $(SRC)))
 
-all: $(OBJ)
+OBJ = $(addsuffix .o, $(basename $(SRC) $(T_SRC) RCPTest.cpp))
+OBJSIM = $(addsuffix .o, $(basename $(SRC) RCPSim.cpp ))
+
+all: test sim
+
+test: $(OBJ)
 	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ) -lm -lcppunit
 
+sim: $(OBJSIM)
+	$(CXX) $(CXXFLAGS) -o $(SIMNAME) $(OBJSIM) -lm 
+	
 clean:
-	rm -f $(OBJ) $(NAME)
+	rm -f $(OBJ) $(NAME) $(OBJSIM)

@@ -82,8 +82,7 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
 
 	int lineNo = 0;
 	string line;
-   float sfCrossTime = -1;
-   int lapCount = getLapCount();
+        int lapCount = getLapCount();
 
 	while (std::getline(iss, line)) {
 		lineNo++;
@@ -105,11 +104,6 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
 			float speed = modp_atof(speedRaw.c_str());
 			float utcTime = modp_atof(timeRaw.c_str());
 
-         if (sfCrossTime < 0)
-           sfCrossTime = getSecondsSinceMidnight();
-
-			printf("---\nlat = %f : lon = %f : speed = %f : time = %f\n", lat, lon, speed, utcTime);
-
 			setGPSSpeed(speed);
 			setUTCTime(utcTime);
 			updatePosition(lat, lon);
@@ -120,18 +114,18 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
 
 			GeoPoint gp;
 			populateGeoPoint(&gp);
+
 			float predTime = getPredictedTime(gp, secondsSinceMidnight);
+                        int currentLapCount = getLapCount();
 
-			printf("Lap #%d - Predicted Time: %3.3f seconds\n", getLapCount(), predTime);
+                        // Check for Laps.  Print out info if detected.5B
+                        if (currentLapCount > lapCount) {
+                          lapCount = getLapCount();
+                          printf("Start Finish Crossed!\n");
+                          printf("RCP lap timer shows %3.3f seconds\n", getLastLapTime() * 60);
+                        }
 
-         // Check for Laps.  Print out info if detected.5B
-         int currentLapCount = getLapCount();
-         if (currentLapCount > lapCount) {
-           lapCount = getLapCount();
-           printf("Start Finish Crossed!\n");
-           printf("RCP lap timer shows %3.3f seconds\n", getLastLapTime() * 60);
-           sfCrossTime = utcTime;
-         }
+			printf("Lap:%d- pred: %f\n", currentLapCount, predTime);
 		}
 	}
 }

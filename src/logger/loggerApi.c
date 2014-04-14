@@ -21,7 +21,9 @@
 #include "mem_mang.h"
 #include "printk.h"
 #include "geopoint.h"
-
+#include "timer.h"
+#include "ADC.h"
+#include "imu.h"
 
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
@@ -85,19 +87,22 @@ const static jsmntok_t * findValueNode(const jsmntok_t *node, const char *name){
 	return NULL;
 }
 
-static void setUnsignedCharValueIfExists(const jsmntok_t *root, const char * fieldName, unsigned char *target){
+static int setUnsignedCharValueIfExists(const jsmntok_t *root, const char * fieldName, unsigned char *target){
 	const jsmntok_t *valueNode = findValueNode(root, fieldName);
 	if (valueNode) * target = modp_atoi(valueNode->data);
+	return (valueNode != NULL);
 }
 
-static void setIntValueIfExists(const jsmntok_t *root, const char * fieldName, int *target){
+static int setIntValueIfExists(const jsmntok_t *root, const char * fieldName, int *target){
 	const jsmntok_t *valueNode = findValueNode(root, fieldName);
 	if (valueNode) * target = modp_atoi(valueNode->data);
+	return (valueNode != NULL);
 }
 
-static void setFloatValueIfExists(const jsmntok_t *root, const char * fieldName, float *target ){
+static int setFloatValueIfExists(const jsmntok_t *root, const char * fieldName, float *target ){
 	const jsmntok_t *valueNode = findValueNode(root, fieldName);
 	if (valueNode) * target = modp_atof(valueNode->data);
+	return (valueNode != NULL);
 }
 
 int api_sampleData(Serial *serial, const jsmntok_t *json){
@@ -307,6 +312,7 @@ static const jsmntok_t * setAnalogExtendedField(const jsmntok_t *valueTok, const
 	ADCConfig *adcCfg = (ADCConfig *)cfg;
 	if (NAME_EQU("scalMod", name)) adcCfg->scalingMode = filterAnalogScalingMode(modp_atoi(value));
 	else if (NAME_EQU("linScal", name)) adcCfg->linearScaling = modp_atof(value);
+	else if (NAME_EQU("alpha", name))adcCfg->filterAlpha = modp_atof(value);
 	else if (NAME_EQU("map", name)){
 		if (valueTok->type == JSMN_OBJECT) {
 			valueTok++;
@@ -327,6 +333,7 @@ static void getAnalogConfigs(size_t channelId, void ** baseCfg, ChannelConfig **
 int api_setAnalogConfig(Serial *serial, const jsmntok_t * json){
 	setMultiChannelConfigGeneric(serial, json, getAnalogConfigs, setAnalogExtendedField);
 	configChanged();
+	ADC_init(getWorkingLoggerConfig());
 	return API_SUCCESS;
 }
 
@@ -346,6 +353,7 @@ static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_int(serial, "scalMod", cfg->scalingMode, 1);
 		json_float(serial, "linScal", cfg->linearScaling, LINEAR_SCALING_PRECISION, 1);
+		json_float(serial, "alpha", cfg->filterAlpha, FILTER_ALPHA_PRECISION, 1);
 
 		json_objStart(serial, "map");
 		json_arrayStart(serial, "raw");
@@ -396,6 +404,7 @@ static const jsmntok_t * setImuExtendedField(const jsmntok_t *valueTok, const ch
 	if (NAME_EQU("mode",name)) imuCfg->mode = filterImuMode(modp_atoi(value));
 	else if (NAME_EQU("chan",name)) imuCfg->physicalChannel = filterImuChannel(modp_atoi(value));
 	else if (NAME_EQU("zeroVal",name)) imuCfg->zeroValue = modp_atoi(value);
+	else if (NAME_EQU("alpha", name)) imuCfg->filterAlpha = modp_atof(value);
 	return valueTok + 1;
 }
 
@@ -408,6 +417,7 @@ static void getImuConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** ch
 int api_setImuConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getImuConfigs, setImuExtendedField);
 	configChanged();
+	imu_init(getWorkingLoggerConfig());
 	return API_SUCCESS;
 }
 
@@ -420,7 +430,8 @@ static void sendImuConfig(Serial *serial, size_t startIndex, size_t endIndex){
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_uint(serial, "mode", cfg->mode, 1);
 		json_uint(serial, "chan", cfg->physicalChannel, 1);
-		json_uint(serial, "zeroVal", cfg->zeroValue, 0);
+		json_uint(serial, "zeroVal", cfg->zeroValue, 1);
+		json_float(serial, "alpha", cfg->filterAlpha, FILTER_ALPHA_PRECISION, 0 );
 		json_objEnd(serial, i != endIndex); //index
 	}
 	json_objEnd(serial, 0);
@@ -531,6 +542,17 @@ int api_getLogfile(Serial *serial, const jsmntok_t *json){
 	serial->put_c('"');
 	json_objEnd(serial,0);
 	return API_SUCCESS_NO_RETURN;
+}
+
+int api_setLogfileLevel(Serial *serial, const jsmntok_t *json){
+	int level;
+	if (setIntValueIfExists(json, "level", &level)){
+		set_log_level((enum log_level) level);
+		return API_SUCCESS;
+	}
+	else{
+		return API_ERROR_PARAMETER;
+	}
 }
 
 static const jsmntok_t * setConnectivityExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
@@ -693,6 +715,7 @@ static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok, const 
 	int iValue = modp_atoi(value);
 	if (NAME_EQU("sTimer", name)) timerCfg->slowTimerEnabled = (iValue != 0);
 	if (NAME_EQU("mode", name)) timerCfg->mode = filterTimerMode(iValue);
+	if (NAME_EQU("alpha", name)) timerCfg->filterAlpha = modp_atof(value);
 	if (NAME_EQU("ppRev", name)) {
 		timerCfg->pulsePerRevolution = iValue;
 		calculateTimerScaling(BOARD_MCK, timerCfg);
@@ -711,6 +734,7 @@ static void sendTimerConfig(Serial *serial, size_t startIndex, size_t endIndex){
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_uint(serial, "sTimer", cfg->slowTimerEnabled, 1);
 		json_uint(serial, "mode", cfg->mode, 1);
+		json_float(serial, "alpha", cfg->filterAlpha, FILTER_ALPHA_PRECISION, 1);
 		json_uint(serial, "ppRev", cfg->pulsePerRevolution, 1);
 		json_uint(serial, "timDiv", cfg->timerDivider, 0);
 		json_objEnd(serial, i != endIndex);
@@ -744,6 +768,7 @@ int api_getTimerConfig(Serial *serial, const jsmntok_t *json){
 int api_setTimerConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getTimerConfigs, setTimerExtendedField);
 	configChanged();
+	timer_init(getWorkingLoggerConfig());
 	return API_SUCCESS;
 }
 
@@ -868,25 +893,27 @@ int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
 }
 
 void setTrack(const jsmntok_t *cfg, Track *track){
-	{
-		const jsmntok_t *startFinish = findNode(cfg, "sf");
-		if (startFinish != NULL){
-			const jsmntok_t *sfValues = startFinish + 1;
-			if (sfValues != NULL && sfValues->type == JSMN_ARRAY && sfValues->size == 2){
-				sfValues++;
-				if (sfValues->type == JSMN_PRIMITIVE){
-					jsmn_trimData(sfValues);
-					track->startFinish.latitude = modp_atof(sfValues->data);
-				}
-				sfValues++;
-				if (sfValues->type == JSMN_PRIMITIVE){
-					jsmn_trimData(sfValues);
-					track->startFinish.longitude = modp_atof(sfValues->data);
-				}
+	setFloatValueIfExists(cfg, "rad", &track->radius);
+	const jsmntok_t *sectors = findNode(cfg, "sec");
+	if (sectors != NULL){
+		sectors++;
+		if (sectors != NULL && sectors->type == JSMN_ARRAY){
+			sectors++;
+			size_t sectorIndex = 0;
+			TrackConfig * trackConfig = &getWorkingLoggerConfig()->TrackConfigs;
+			while (sectors != NULL && sectors->type == JSMN_ARRAY && sectors->size == 2 && sectorIndex < SECTOR_COUNT){
+				GeoPoint *sector = (trackConfig->track.sectors + sectorIndex);
+				const jsmntok_t *lat = sectors + 1;
+				const jsmntok_t *lon = sectors + 2;
+				jsmn_trimData(lat);
+				jsmn_trimData(lon);
+				sector->latitude = modp_atof(lat->data);
+				sector->longitude = modp_atof(lon->data);
+				sectorIndex++;
+				sectors +=3;
 			}
 		}
 	}
-	setFloatValueIfExists(cfg, "rad", &track->radius);
 }
 
 int api_setTrackConfig(Serial *serial, const jsmntok_t *json){

@@ -16,13 +16,16 @@
 #include "mod_string.h"
 #include "modp_atonum.h"
 #include "memory_mock.h"
+#include "printk.h"
 #include <string>
 #include <fstream>
 #include <streambuf>
 #include "predictive_timer_2.h"
 
+#define CPPUNIT_ASSERT_CLOSE_ENOUGH(ACTUAL, EXPECTED) CPPUNIT_ASSERT((abs((ACTUAL - EXPECTED)) < 0.00001))
+
 #define JSON_TOKENS 10000
-#define FILE_PREFIX string("test/json_api_files/")
+#define FILE_PREFIX string("json_api_files/")
 
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( LoggerApiTest );
@@ -126,10 +129,11 @@ string LoggerApiTest::readFile(string filename){
 
 void LoggerApiTest::setUp()
 {
+	LoggerConfig *config = getWorkingLoggerConfig();
 	initApi();
 	initialize_logger_config();
 	setupMockSerial();
-	imu_init();
+	imu_init(config);
 	resetPredictiveTimer();
 }
 
@@ -224,8 +228,9 @@ void LoggerApiTest::testGetAnalogConfigFile(string filename, int index){
 
 	analogCfg->cfg.channeId = 1;
 	analogCfg->cfg.sampleRate = encodeSampleRate(50);
-	analogCfg->linearScaling = 1.234;
+	analogCfg->linearScaling = 1.234F;
 	analogCfg->scalingMode = 2;
+	analogCfg->filterAlpha = 0.6F;
 
 
 	int i = 0;
@@ -248,6 +253,7 @@ void LoggerApiTest::testGetAnalogConfigFile(string filename, int index){
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["id"]);
 	CPPUNIT_ASSERT_EQUAL(50, (int)(Number)analogJson["sr"]);
 	CPPUNIT_ASSERT_EQUAL(1.234F, (float)(Number)analogJson["linScal"]);
+	CPPUNIT_ASSERT_EQUAL(0.6F, (float)(Number)analogJson["alpha"]);
 	CPPUNIT_ASSERT_EQUAL(2, (int)(Number)analogJson["scalMod"]);
 
 	Object scalMap = (Object)analogJson["map"];
@@ -287,6 +293,7 @@ void LoggerApiTest::testSetAnalogConfigFile(string filename){
 
 	CPPUNIT_ASSERT_EQUAL(2, (int)adcCfg->scalingMode);
 	CPPUNIT_ASSERT_EQUAL(1.234F, adcCfg->linearScaling);
+	CPPUNIT_ASSERT_EQUAL(0.6F, adcCfg->filterAlpha);
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)adcCfg->scalingMap.rawValues[0]);
 	CPPUNIT_ASSERT_EQUAL(2, (int)adcCfg->scalingMap.rawValues[1]);
@@ -321,6 +328,7 @@ void LoggerApiTest::testGetImuConfigFile(string filename, int index){
 	imuCfg->mode = 1;
 	imuCfg->physicalChannel = 3;
 	imuCfg->zeroValue = 1234;
+	imuCfg->filterAlpha = 0.7F;
 
 	char * response = processApiGeneric(filename);
 
@@ -329,14 +337,15 @@ void LoggerApiTest::testGetImuConfigFile(string filename, int index){
 
 	std::ostringstream stringStream;
 	stringStream << index;
-	Object &analogJson = json["imuCfg"][stringStream.str()];
+	Object &imuJson = json["imuCfg"][stringStream.str()];
 
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["id"]);
-	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)analogJson["sr"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)imuJson["id"]);
+	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)imuJson["sr"]);
 
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["mode"]);
-	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)analogJson["chan"]);
-	CPPUNIT_ASSERT_EQUAL(1234, (int)(Number)analogJson["zeroVal"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)imuJson["mode"]);
+	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)imuJson["chan"]);
+	CPPUNIT_ASSERT_EQUAL(1234, (int)(Number)imuJson["zeroVal"]);
+	CPPUNIT_ASSERT_EQUAL(0.7F, (float)(Number)imuJson["alpha"]);
 }
 
 void LoggerApiTest::testGetImuCfg(){
@@ -358,6 +367,7 @@ void LoggerApiTest::testSetImuConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(1, (int)imuCfg->mode);
 	CPPUNIT_ASSERT_EQUAL(2, (int)imuCfg->physicalChannel);
 	CPPUNIT_ASSERT_EQUAL(1234, (int)imuCfg->zeroValue);
+	CPPUNIT_ASSERT_EQUAL(0.7F, imuCfg->filterAlpha);
 
 	char *txBuffer = mock_getTxBuffer();
 	assertGenericResponse(txBuffer, "setImuCfg", API_SUCCESS);
@@ -610,6 +620,7 @@ void LoggerApiTest::testGetTimerConfigFile(string filename, int index){
 	timerCfg->cfg.sampleRate = encodeSampleRate(100);
 	timerCfg->slowTimerEnabled = 1;
 	timerCfg->mode = 2;
+	timerCfg->filterAlpha = 0.5F;
 	timerCfg->pulsePerRevolution = 3;
 	timerCfg->timerDivider = 30000;
 
@@ -620,14 +631,15 @@ void LoggerApiTest::testGetTimerConfigFile(string filename, int index){
 
 	std::ostringstream stringStream;
 	stringStream << index;
-	Object &analogJson = json["timerCfg"][stringStream.str()];
+	Object &timerJson = json["timerCfg"][stringStream.str()];
 
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["id"]);
-	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)analogJson["sr"]);
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["sTimer"]);
-	CPPUNIT_ASSERT_EQUAL(2, (int)(Number)analogJson["mode"]);
-	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)analogJson["ppRev"]);
-	CPPUNIT_ASSERT_EQUAL(30000, (int)(Number)analogJson["timDiv"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)timerJson["id"]);
+	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)timerJson["sr"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)timerJson["sTimer"]);
+	CPPUNIT_ASSERT_EQUAL(2, (int)(Number)timerJson["mode"]);
+	CPPUNIT_ASSERT_EQUAL(0.5F, (float)(Number)timerJson["alpha"]);
+	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)timerJson["ppRev"]);
+	CPPUNIT_ASSERT_EQUAL(30000, (int)(Number)timerJson["timDiv"]);
 }
 
 void LoggerApiTest::testGetTimerCfg(){
@@ -647,6 +659,7 @@ void LoggerApiTest::testSetTimerConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(22, (int)timerCfg->cfg.channeId);
 	CPPUNIT_ASSERT_EQUAL(1, (int)timerCfg->slowTimerEnabled);
 	CPPUNIT_ASSERT_EQUAL(1, (int)timerCfg->mode);
+	CPPUNIT_ASSERT_EQUAL(0.5F, timerCfg->filterAlpha);
 	CPPUNIT_ASSERT_EQUAL(4, (int)timerCfg->pulsePerRevolution);
 	CPPUNIT_ASSERT_EQUAL(2, (int)timerCfg->timerDivider);
 
@@ -863,10 +876,18 @@ void LoggerApiTest::testSetTrackConfigFile(string filename){
 
 	assertGenericResponse(txBuffer, "setTrackCfg", API_SUCCESS);
 
-	CPPUNIT_ASSERT_EQUAL(11.1111111F, cfg->track.startFinish.latitude);
-	CPPUNIT_ASSERT_EQUAL(22.2222222F, cfg->track.startFinish.longitude);
-	CPPUNIT_ASSERT_EQUAL(0.00004F, cfg->track.radius);
+	CPPUNIT_ASSERT_CLOSE_ENOUGH(0.0001F, cfg->track.radius);
+	CPPUNIT_ASSERT_CLOSE_ENOUGH(1.1F, cfg->track.startFinish.latitude);
+	CPPUNIT_ASSERT_CLOSE_ENOUGH(2.1F, cfg->track.startFinish.longitude);
 
+	float startingValue = 1.1;
+
+	for (int i = 0; i < SECTOR_COUNT; i++){
+		CPPUNIT_ASSERT_CLOSE_ENOUGH(startingValue, cfg->track.sectors[i].latitude);
+		startingValue++;
+		CPPUNIT_ASSERT_CLOSE_ENOUGH(startingValue, cfg->track.sectors[i].longitude);
+		startingValue++;
+	}
 }
 
 void LoggerApiTest::testSetTrackCfg(){
@@ -877,24 +898,47 @@ void LoggerApiTest::testGetTrackConfigFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	TrackConfig *cfg = &c->TrackConfigs;
 
-	cfg->track.startFinish.latitude = 1.234;
-	cfg->track.startFinish.longitude = 5.678;
-	cfg->track.radius = 0.001;
+	float startingValue = 1.1;
+	for (size_t i = 0; i < SECTOR_COUNT; i++){
+		GeoPoint *point = (cfg->track.sectors + i);
+		point->latitude = startingValue;
+		startingValue++;
+		point->longitude = startingValue;
+		startingValue++;
+	}
+	cfg->track.radius = 0.009;
 
 	char * response = processApiGeneric(filename);
 
 	Object json;
 	stringToJson(response, json);
 
-	CPPUNIT_ASSERT_EQUAL(0.001F, (float)(Number)json["trackCfg"]["rad"]);
+	CPPUNIT_ASSERT_EQUAL(0.009F, (float)(Number)json["trackCfg"]["rad"]);
 
-	Array &startFinish = json["trackCfg"]["track"]["sf"];
+	Array &sectors = json["trackCfg"]["track"]["sec"];
 
-	CPPUNIT_ASSERT_EQUAL(1.234F, (float)(Number)startFinish[0]);
-	CPPUNIT_ASSERT_EQUAL(5.678F, (float)(Number)startFinish[1]);
-
+	startingValue = 1.1;
+	for (size_t i = 0; i < SECTOR_COUNT; i++){
+		CPPUNIT_ASSERT_CLOSE_ENOUGH(startingValue, (float)(Number) sectors[i][0]);
+		startingValue++;
+		CPPUNIT_ASSERT_CLOSE_ENOUGH(startingValue, (float)(Number) sectors[i][1]);
+		startingValue++;
+	}
 }
 
 void LoggerApiTest::testGetTrackCfg(){
 	testGetTrackConfigFile("getTrackCfg1.json");
+}
+
+void LoggerApiTest::testSetLogLevelFile(string filename, int expectedResponse){
+	processApiGeneric(filename);
+
+	//set_log_level(DEBUG);
+	//char *txBuffer = mock_getTxBuffer();
+	CPPUNIT_ASSERT_EQUAL( 7, (int)get_log_level());
+	//assertGenericResponse(txBuffer, "setLogfileLevel", expectedResponse);
+}
+
+void LoggerApiTest::testSetLogLevel(){
+	testSetLogLevelFile("setLogLevel1.json", API_SUCCESS);
 }

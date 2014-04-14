@@ -9,6 +9,7 @@ main.sym
 test/rcptest
 RaceCapturePro_Firmware
 test/rcptest
+test/rcpsim
 *.bin
 *.elf
 Race*.zip

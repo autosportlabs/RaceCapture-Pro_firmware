@@ -10,8 +10,10 @@
 
 typedef struct _Track{
 	float radius;
-	GeoPoint startFinish;
-	GeoPoint sectors[SECTOR_COUNT];
+	union{
+		GeoPoint sectors[SECTOR_COUNT];
+		GeoPoint startFinish;
+	};
 } Track;
 
 typedef struct _Tracks{

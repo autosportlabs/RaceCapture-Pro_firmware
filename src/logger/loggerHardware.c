@@ -19,8 +19,8 @@ void InitLoggerHardware(){
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 	init_spi_lock();
 	LED_init();
-	imu_init();
-	ADC_init();
+	imu_init(loggerConfig);
+	ADC_init(loggerConfig);
 	timer_init(loggerConfig);
 	PWM_init(loggerConfig);
 	GPIO_init(loggerConfig);

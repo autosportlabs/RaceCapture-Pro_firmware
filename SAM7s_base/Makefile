@@ -175,7 +175,7 @@ $(MEMORY_SRC_DIR)/memory.c \
 $(CPU_SRC_DIR)/cpu.c \
 $(MAGIC_SRC_DIR)/magic.c \
 $(MCP2515_DIR)/CAN_device_MCP2515.c \
-$(KXR94_2353_DIR)/imu_device_KXR94-2353_LY330ALH.c \
+$(KXR94_2353_DIR)/imu_device_KXR94_2353.c \
 $(ADC_AT91_DIR)/ADC_device_at91.c \
 $(TIMER_AT91_DIR)/timer_device_at91.c \
 $(PWM_AT91_DIR)/PWM_device_at91.c \
