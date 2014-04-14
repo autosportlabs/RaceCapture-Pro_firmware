@@ -1,4 +1,5 @@
 #include "auto_track.h"
+#include "dateTime.h"
 #include "gps.h"
 #include "geopoint.h"
 #include "loggerHardware.h"
@@ -47,6 +48,7 @@ static float 	g_longitude;
 static float	g_UTCTime;
 static float 	g_prevSecondsSinceMidnight;
 static float 	g_secondsSinceMidnight;
+static float   g_secondsSinceFirstFix;
 
 static float	g_speed;
 
@@ -69,6 +71,11 @@ static float 	g_lastSectorTime;
 
 static int 		g_lapCount;
 static float	g_distance;
+
+/**
+ * Date and time this GPS fix was taken.
+ */
+static DateTime g_dateTime;
 
 //Parse Global Positioning System Fix Data.
 static void parseGGA(char *data){
@@ -229,8 +236,77 @@ static void parseGLL(char *data){
 
 }
 
+static int8_t getOffsetTimeFromUtcTimeString(const char * utcTimeStr, int offset){
+   // NMEA UTC Time String Format is HHMMSS.SS
+   char buff[3] = {0};
+   memcpy(buff, utcTimeStr, 2);
+   return (int8_t) modp_atoi(buff);
+}
+
+static int8_t getHourFromUtcTimeString(const char * utcTimeStr){
+   return getOffsetTimeFromUtcTimeString(utcTimeStr, 0);
+}
+
+static int8_t getMinutesFromUtcTimeString(const char * utcTimeStr){
+   return getOffsetTimeFromUtcTimeString(utcTimeStr, 2);
+}
+
+static int8_t getSecondsFromUtcTimeString(const char * utcTimeStr){
+   return getOffsetTimeFromUtcTimeString(utcTimeStr, 4);
+}
+
+static int8_t getDecisecondsFromUtcTimeString(const char * utcTimeStr){
+   return getOffsetTimeFromUtcTimeString(utcTimeStr, 7);
+}
+
 //Parse Time & Date
-static void parseZDA(char *data){
+static void parseZDA(char *data) {
+   /*
+     $GPZDA
+
+     Date & Time
+
+     UTC, day, month, year, and local time zone.
+
+     $--ZDA,hhmmss.ss,xx,xx,xxxx,xx,xx
+     hhmmss.ss = UTC
+     xx = Day, 01 to 31
+     xx = Month, 01 to 12
+     xxxx = Year
+     xx = Local zone description, 00 to +/- 13 hours
+     xx = Local zone minutes description (same sign as hours)
+   */
+
+   char *delim = strchr(data,',');
+   int param = 0;
+   DateTime dt = {0};
+
+   while (delim){
+      *delim = '\0';
+      switch (param){
+      case 0: //UTC Time (HHMMSS.SS)
+         dt.hour = getHourFromUtcTimeString(param);
+         dt.minutes = getMinutesFromUtcTimeString(param);
+         dt.seconds = getSecondsFromUtcTimeString(param);
+         dt.deciseconds = getDecisecondsFromUtcTimeString(param);
+         break;
+      case 1: //Day
+         day = (int8_t) modp_atoui(data);
+         break;
+      case 2: //Month
+         month = (int8_t) modp_atoui(data);
+         break;
+      case 3: //Year
+         year = (int16_t) modp_atoui(data);
+         break;
+      }
+
+      ++param;
+      data = ++delim;
+      delim = strchr(delim, ',');
+   }
+
+   g_dateTime = dt;
 }
 
 //Parse GNSS Satellites in View
@@ -335,6 +411,10 @@ float getGPSSpeed(){
 
 void setGPSSpeed(float speed){
 	g_speed = speed;
+}
+
+DateTime getDateTime() {
+   return g_dateTime;
 }
 
 static int withinGpsTarget(const GeoPoint *point, float radius){
@@ -496,45 +576,52 @@ static void flashGpsStatusLed(){
 	}
 }
 
+
+static void updateTimeSinceFirstFix() {
+
+}
+
 void onLocationUpdated(){
-	static int sectorEnabled = 0;
-	static int startFinishEnabled = 0;
+   static int sectorEnabled = 0;
+   static int startFinishEnabled = 0;
 
-	if (GPS_LOCKED_ON(g_gpsQuality)) {
-		LoggerConfig *config = getWorkingLoggerConfig();
+   if (GPS_LOCKED_ON(g_gpsQuality)) {
+      LoggerConfig *config = getWorkingLoggerConfig();
 
-		GeoPoint gp;
-		populateGeoPoint(&gp);
+      GeoPoint gp;
+      populateGeoPoint(&gp);
 
-       	if (! g_configured){
-           Track *defaultTrack = &(config->TrackConfigs.track);
-       	   g_activeTrack = auto_configure_track(defaultTrack, gp);
-       	   startFinishEnabled = isStartFinishEnabled(g_activeTrack);
-       	   sectorEnabled = config->LapConfigs.sectorTimeCfg.sampleRate != SAMPLE_DISABLED && startFinishEnabled;
-     	   g_configured = 1;
-       	}
+      if (! g_configured){
+         Track *defaultTrack = &(config->TrackConfigs.track);
+         g_activeTrack = auto_configure_track(defaultTrack, gp);
+         startFinishEnabled = isStartFinishEnabled(g_activeTrack);
+         sectorEnabled = config->LapConfigs.sectorTimeCfg.sampleRate !=
+            SAMPLE_DISABLED && startFinishEnabled;
+         g_configured = 1;
+      }
 
+      float secondsSinceFirstFix = updateTimeSinceFirstFix();
 
-       	float dist = calcDistancesSinceLastSample();
-		g_distance += dist;
+      float dist = calcDistancesSinceLastSample();
+      g_distance += dist;
 
-		if (sectorEnabled){
-			processSector(g_activeTrack);
-		}
+      if (sectorEnabled){
+         processSector(g_activeTrack);
+      }
 
-		if (startFinishEnabled){
+      if (startFinishEnabled){
          // HACK!  Need seconds since epoch.  This solution sucks.
-			float utcTime = getSecondsSinceMidnight();
-			int lapDetected = processStartFinish(g_activeTrack);
+         float utcTime = getSecondsSinceMidnight();
+         int lapDetected = processStartFinish(g_activeTrack);
 
-			if (lapDetected){
-				resetGpsDistance();
-				startFinishCrossed(gp, utcTime);
-			} else {
-				addGpsSample(gp, utcTime);
-			}
-		}
-	}
+         if (lapDetected){
+            resetGpsDistance();
+            startFinishCrossed(gp, utcTime);
+         } else {
+            addGpsSample(gp, utcTime);
+         }
+      }
+   }
 }
 
 int checksumValid(const char *gpsData, size_t len){

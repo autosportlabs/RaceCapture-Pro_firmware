@@ -164,6 +164,7 @@ $(LOGGER_SRC_DIR)/loggerTaskEx.c \
 $(LOGGER_SRC_DIR)/connectivityTask.c \
 $(GPS_SRC_DIR)/gps.c \
 $(GPS_SRC_DIR)/gpsTask.c \
+$(GPS_SRC_DIR)/dateTime.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
 $(CHANNELS_SRC_DIR)/channelMeta.c \
 $(TRACKS_SRC_DIR)/tracks.c \
@@ -702,7 +703,7 @@ release : clean all
 	cp README_RELEASE_NOTES.txt $(RCP_INSTALL_DIR)
 	cp HOW_TO_FLASH.txt $(RCP_INSTALL_DIR)
 	zip -r $(RELEASE_NAME_ZIP) $(RCP_INSTALL_DIR)
-	cp $(RELEASE_NAME_ZIP) $(RCP_RELEASE_DIR) 
+	cp $(RELEASE_NAME_ZIP) $(RCP_RELEASE_DIR)
 
 # **********************************************************************************************
 #                            FLASH PROGRAMMING      (using OpenOCD 0.5.0 and Olimex ARM-USB-OCD)

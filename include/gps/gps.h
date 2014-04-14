@@ -1,5 +1,7 @@
 #ifndef GPS_H_
 #define GPS_H_
+
+#include "dateTime.h"
 #include <stddef.h>
 
 #define GPS_QUALITY_NO_FIX 0
@@ -65,5 +67,10 @@ int getSatellitesUsedForPosition();
 float getGPSSpeed();
 
 void setGPSSpeed(float speed);
-			
+
+/**
+ * Returns Date time information as provided by the GPS system.
+ */
+DateTime getDateTime();
+
 #endif /*GPS_H_*/
