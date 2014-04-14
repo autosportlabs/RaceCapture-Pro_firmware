@@ -11,6 +11,18 @@ class Channels:
         items.append(Channel(name='AFR', units='AFR'))
         self.items = items
 
+    def getNameForId(self, id):
+        try:
+            return self.items[id].name
+        except IndexError:
+            return 'Unknown'
+
+    def getUnitsForId(self, id):
+        try:
+            return self.items[id].units
+        except IndexError:
+            return ''
+
     def getNamesList(self, category):
         names = []
         for channel in self.items:

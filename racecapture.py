@@ -68,13 +68,16 @@ class SampleRateSpinner(Spinner):
         super(SampleRateSpinner, self).__init__(**kwargs)
         self.values = ['Disabled', '1 Hz', '5 Hz', '10 Hz', '25 Hz', '50 Hz', '100 Hz']
 
-
 class SampleRateSelectorView(BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        super(SampleRateSelectorView, self).__init__(**kwargs)
+        self.valueMap = {0:'Disabled', 1:'1 Hz', 5:'5 Hz', 10:'10 Hz', 25:'25 Hz', 50:'50 Hz', 100:'100 Hz'}
+
+    def setValue(self, value):
+        self.ids.sampleRate.text = self.valueMap[value]
 
 class ChannelNameSelectorView(BoxLayout):
     def setValue(self, value):
-        print(value)
         self.ids.channelName.text = value
 
 class SplashView(BoxLayout):
@@ -324,7 +327,7 @@ class RaceCaptureApp(App):
             n = create_tree('Channels')
             attach_node('GPS', n, GPSChannelsView())
             attach_node('Track Channels', n, TrackConfigView())
-            attach_node('Analog Inputs', n, AnalogChannelsView(channelCount=8))
+            attach_node('Analog Inputs', n, AnalogChannelsView(channelCount=8, channels=self.channels))
             attach_node('Pulse Inputs', n, PulseChannelsView())
             attach_node('Digital Input/Outputs', n, GPIOChannelsView())
             attach_node('Accelerometer / Gyro', n, AccelGyroChannelsView())

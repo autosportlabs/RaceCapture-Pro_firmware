@@ -15,7 +15,7 @@
             rcpid: 'chan'
             size_hint: (1.0,0.3)
         SampleRateSelectorView:
-            id: sampleRate
+            rcpid: 'sr'
             size_hint: (1.0,0.3)
         HSeparator:
             text: 'Mode'
@@ -26,14 +26,17 @@
         		text: 'Raw (0 - 1023)'
 	        CheckBox:
 	        	group: 'scalingType'
+                rcpid: 'smRaw'
 	        Label:
 	        	text: 'Simple'
 	        CheckBox:
 	        	group: 'scalingType'
+                rcpid: 'smLinear'
 	        Label:
 	        	text: 'Mapped'
 	        CheckBox:
 	        	group: 'scalingType'
+                rcpid: 'smMapped'
     VSeparator:
     BoxLayout:
         orientation: 'vertical'

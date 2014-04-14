@@ -8,13 +8,16 @@ from kivy.uix.scrollview import ScrollView
 from kivy.app import Builder
 from utils import *
 from configview import *
-    
+from rcpconfig import *
+
 class AnalogChannelsView(ConfigView):
     def __init__(self, **kwargs):
         Builder.load_file('analogchannelsview.kv')
         self.register_event_type('on_config_updated')
 
         self.channelCount = kwargs['channelCount']
+        self.channels = kwargs['channels']
+
         super(AnalogChannelsView, self).__init__(**kwargs)
         accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=80 * self.channelCount)
     
@@ -31,15 +34,36 @@ class AnalogChannelsView(ConfigView):
         self.add_widget(sv)
 
     def update(self, rcpCfg):
-        print('updating config')
-
         analogCfg = rcpCfg.analogConfig
         channelCount = analogCfg.channelCount
+
         for i in range(channelCount):
             editor = kvquery(self, id='analog' + str(i)).next()
-            channel = kvquery(editor, rcpid='chan').next()
-            channelId = analogCfg.channels[i].channelId
-#            channel.setValue(self.channels[channelId])
+
+            analogChannel = analogCfg.channels[i]
+            channelSpinner = kvquery(editor, rcpid='chan').next()
+            channelSpinner.setValue(self.channels.getNameForId(analogChannel.channelId))
+
+            sampleRateSpinner = kvquery(editor, rcpid='sr').next()
+            sampleRateSpinner.setValue(analogChannel.sampleRate)
+
+            scalingMode = analogChannel.scalingMode
+
+            checkRaw = kvquery(editor, rcpid='smRaw').next()
+            checkLinear = kvquery(editor, rcpid='smLinear').next()
+            checkMapped = kvquery(editor, rcpid='smMapped').next()
+            if scalingMode == 0:
+                checkRaw.active = True
+                checkLinear.active = False
+                checkMapped.active = False
+            elif scalingMode == 1:
+                checkRaw.active = False
+                checkLinear.active = True
+                checkMapped.active = False
+            elif scalingMode == 2:
+                checkRaw.active = False
+                checkLinear.active = False
+                checkMapped.active = True
         
     def on_config_updated(self, rcpCfg):
         self.update(rcpCfg)
