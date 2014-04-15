@@ -43,55 +43,16 @@
         padding: [2,0,0,0]
         HSeparator:
             text: 'Calibration'
-        AnalogScaler:
-            size_hint: (1.0, 0.6)
-        GridLayout:
-            cols: 6
-            size_hint: (1.0, 0.4)
-            Label:
-                text: ''
-            Label:
-                text: '1'
-            Label:
-                text: '2'
-            Label:
-                text: '3'
-            Label:
-                text: '4'
-            Label:
-                text: '5'
-            Label:
-                text: 'Volts'
-            TextInput:
-                text: '0.00'
-            TextInput:
-                text: '1.25'
-            TextInput:
-                text: '2.50'
-            TextInput:
-                text: '3.75'
-            TextInput:
-                text: '5.00'
-            Label:
-                text: 'Scaled'
-            TextInput:
-                text: '0.00'
-            TextInput:
-                text: '1.25'
-            TextInput:
-                text: '2.50'
-            TextInput:
-                text: '3.75'
-            TextInput:
-                text: '5.00'
-
+        AnalogScalingMapEditor:
+            rcpid: 'mapEditor'
+ 
 <AnalogScaler>:
     id: graph
     size_hint: (0.75, 1.0)
     xlabel: 'Volts'
     ylabel: 'Scaled'
-    x_ticks_minor: 1.25
-    x_ticks_major: 25
+    x_ticks_minor: 1
+    x_ticks_major: 1
     y_grid_label: True
     x_grid_label: True
     padding: 5
@@ -99,7 +60,59 @@
     y_grid: True
     xmin: 0
     xmax: 5
-    ymin: -100
-    ymax: 100
 
+<AnalogScalingMapEditor>:
+    orientation: 'vertical'
+    AnalogScaler:
+        size_hint: (1.0, 0.6)
+        rcpid: 'scalingGraph'
+    GridLayout:
+        cols: 6
+        size_hint: (1.0, 0.4)
+        Label:
+            text: ''
+        Label:
+            text: '1'
+        Label:
+            text: '2'
+        Label:
+            text: '3'
+        Label:
+            text: '4'
+        Label:
+            text: '5'
+        Label:
+            text: 'Volts'
+        TextInput:
+            rcpid: 'v_0'
+            text: ''
+        TextInput:
+            rcpid: 'v_1'
+            text: ''
+        TextInput:
+            rcpid: 'v_2'
+            text: ''
+        TextInput:
+            rcpid: 'v_3'
+            text: ''
+        TextInput:
+            rcpid: 'v_4'
+            text: ''
+        Label:
+            text: 'Scaled'
+        TextInput:
+            rcpid: 's_0'
+            text: ''
+        TextInput:
+            rcpid: 's_1'
+            text: ''
+        TextInput:
+            rcpid: 's_2'
+            text: ''
+        TextInput:
+            rcpid: 's_3'
+            text: ''
+        TextInput:
+            rcpid: 's_4'
+            text: ''
 

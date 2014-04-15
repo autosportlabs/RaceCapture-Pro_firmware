@@ -64,6 +64,9 @@ class AnalogChannelsView(ConfigView):
                 checkRaw.active = False
                 checkLinear.active = False
                 checkMapped.active = True
+            
+            mapEditor = kvquery(editor, rcpid='mapEditor').next()
+            mapEditor.update(analogChannel.scalingMap)
         
     def on_config_updated(self, rcpCfg):
         self.update(rcpCfg)
@@ -74,15 +77,44 @@ class AnalogChannel(BoxLayout):
     def __init__(self, **kwargs):
         super(AnalogChannel, self).__init__(**kwargs)
 
-    def update(self, data):
-        self.ids.channelName.text = 'fooo'
-        #self.ids.config.ids.sampleRate.text = '25'
 
 class AnalogScaler(Graph):
     def __init__(self, **kwargs):
         super(AnalogScaler, self).__init__(**kwargs)
 
+
+class AnalogScalingMapEditor(BoxLayout):
+    def __init__(self, **kwargs):
+        super(AnalogScalingMapEditor, self).__init__(**kwargs)
+
+    def update(self, scalingMap):
+        graph = kvquery(self, rcpid='scalingGraph').next()
+        editor = kvquery(self, rcpid='mapEditor').next()
+        
         plot = MeshLinePlot(color=[0, 1, 0, 1])
-        plot.points = [[0,-100],[5,100]]
-        self.add_plot(plot)
+        mapSize = scalingMap.points
+        points = []
+        maxScaled = None
+        minScaled = None
+        for i in range(mapSize):
+            volts = (5.0 * scalingMap.raw[i]) / 1024.0
+            scaled = scalingMap.scaled[i]
+            points.append([volts, scaled])
+            if maxScaled == None or scaled > maxScaled:
+                maxScaled = scaled
+            if minScaled == None or scaled < minScaled:
+                minScaled = scaled
+
+            voltsCell = kvquery(editor, rcpid='v_' + str(i)).next()
+            scaledCell = kvquery(editor, rcpid='s_' + str(i)).next()
+
+            voltsCell.text = str(volts)
+            scaledCell.text = str(scaled)
+            
+        plot.points = points
+        graph.ymin = minScaled
+        graph.ymax = maxScaled
+        graph.add_plot(plot)
+
+        
 
