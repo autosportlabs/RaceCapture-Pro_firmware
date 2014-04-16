@@ -6,13 +6,15 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.scrollview import ScrollView
 from kivy.app import Builder
+from valuefield import *
 from utils import *
 from configview import *
 from rcpconfig import *
 
+Builder.load_file('analogchannelsview.kv')
+
 class AnalogChannelsView(ConfigView):
     def __init__(self, **kwargs):
-        Builder.load_file('analogchannelsview.kv')
         self.register_event_type('on_config_updated')
 
         self.channelCount = kwargs['channelCount']
@@ -86,13 +88,30 @@ class AnalogScaler(Graph):
 class AnalogScalingMapEditor(BoxLayout):
     def __init__(self, **kwargs):
         super(AnalogScalingMapEditor, self).__init__(**kwargs)
+        self.mapSize = 5
+        lastField = None    
+
+    def setTabStops(self, mapSize):
+        voltsCellFirst = kvquery(self, rcpid='v_0').next()
+        voltsCellNext = None
+        for i in range(mapSize):
+            voltsCell = kvquery(self, rcpid='v_' + str(i)).next()
+            scaledCell = kvquery(self, rcpid='s_' + str(i)).next()
+            voltsCell.set_next(scaledCell)
+            if (i < mapSize - 1):
+                voltsCellNext = kvquery(self, rcpid='v_' + str(i + 1)).next()
+            else:
+                voltsCellNext = voltsCellFirst
+            scaledCell.set_next(voltsCellNext)
 
     def update(self, scalingMap):
         graph = kvquery(self, rcpid='scalingGraph').next()
         editor = kvquery(self, rcpid='mapEditor').next()
-        
+
+        mapSize = self.mapSize
+        self.setTabStops(mapSize)
+
         plot = MeshLinePlot(color=[0, 1, 0, 1])
-        mapSize = scalingMap.points
         points = []
         maxScaled = None
         minScaled = None
@@ -108,8 +127,8 @@ class AnalogScalingMapEditor(BoxLayout):
             voltsCell = kvquery(editor, rcpid='v_' + str(i)).next()
             scaledCell = kvquery(editor, rcpid='s_' + str(i)).next()
 
-            voltsCell.text = str(volts)
-            scaledCell.text = str(scaled)
+            voltsCell.text = '{:.3g}'.format(volts)
+            scaledCell.text = '{:.3g}'.format(scaled)
             
         plot.points = points
         graph.ymin = minScaled
