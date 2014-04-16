@@ -65,8 +65,20 @@ class RcpSerial:
         line = line.replace('\n', '')
         return line
 
+    def getRcpCfg(self):
+        analogCfg = self.getAnalogCfg(None)
+        imuCfg = self.getImuCfg(None)
+        rcpCfg = {}
+        rcpCfg["analogCfg"] = analogCfg["analogCfg"]
+        rcpCfg["imuCfg"] = imuCfg["imuCfg"]
+        return rcpCfg
+
     def getAnalogCfg(self, id):
         rsp = self.sendGet('getAnalogCfg', id)
+        return rsp
+
+    def getImuCfg(self, id):
+        rsp = self.sendGet('getImuCfg', id)
         return rsp
 
     def decodeScript(self, s):

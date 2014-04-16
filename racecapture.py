@@ -288,7 +288,7 @@ class RaceCaptureApp(App):
         self.configViews = []
 
     def on_read_config(self, instance, *args):
-        config = self.rcp.getAnalogCfg(None)
+        config = self.rcp.getRcpCfg()
         self.rcpConfig.fromJson(config)
         self.dispatch('on_config_updated', self.rcpConfig)
 
