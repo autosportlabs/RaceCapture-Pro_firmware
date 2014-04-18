@@ -9,25 +9,36 @@ from utils import *
 
 Builder.load_file('imuchannelsview.kv')
 
+class OrientationSpinner(Spinner):
+    def __init__(self, **kwargs):
+        super(OrientationSpinner, self).__init__(**kwargs)
+        self.values = ['Normal', 'Inverted']
+        self.valueMappings = {0:'', 1:'Normal', 2:'Inverted'}
+        
+    def setFromValue(self, value):
+        self.text = self.valueMappings.get(value, '')
+
+class ImuMappingSpinner(Spinner):
+    def __init__(self, **kwargs):
+        super(ImuMappingSpinner, self).__init__(**kwargs)
+        self.valueMappings = {0:'X', 1:'X', 2:'Y', 3:'Yaw', 4:'Pitch', 5:'Roll'}
+
+        type = kwargs.get('type', 'accel')
+        if type == 'accel':
+            self.values = ['X', 'Y', 'Z']
+        elif type == 'gyro':
+            self.values = ['Yaw', 'Pitch', 'Roll']            
+        
+    def setFromValue(self, value):
+        self.text = self.valueMappings.get(value, '')
+
 class GyroChannelsView(BoxLayout):
     def __init__(self, **kwargs):
         super(GyroChannelsView, self).__init__(**kwargs)
-        #self.id = 'gc'
 
 class AccelChannelsView(BoxLayout):
     def __init__(self, **kwargs):
         super(AccelChannelsView, self).__init__(**kwargs)
-        #self.id = 'ac'
-
-class AccelMappingSpinner(Spinner):
-    def __init__(self, **kwargs):
-        super(AccelMappingSpinner, self).__init__(**kwargs)
-        self.values = ['X', 'Y', 'Z']
-
-class GyroMappingSpinner(Spinner):
-    def __init__(self, **kwargs):
-        super(GyroMappingSpinner, self).__init__(**kwargs)
-        self.values = ['Yaw']
 
 class ImuChannel(BoxLayout):
     def __init__(self, **kwargs):
@@ -42,16 +53,44 @@ class ImuChannelsView(BoxLayout):
         accelContainer = kvquery(self, imu_id='ac').next()
         gyroContainer = kvquery(self, imu_id='gc').next()
 
-        self.appendImuChannels(accelContainer, IMU_ACCEL_CHANNEL_IDS)
-        self.appendImuChannels(gyroContainer, IMU_GYRO_CHANNEL_IDS)
+        channelEditors = []
         
-    def appendImuChannels(self, container, ids):
+        self.appendImuChannels(accelContainer, channelEditors, IMU_ACCEL_CHANNEL_IDS)
+        self.appendImuChannels(gyroContainer, channelEditors, IMU_GYRO_CHANNEL_IDS)
+        self.channelEditors = channelEditors
+        
+        self.channelLabels = {0:'X', 1:'Y', 2:'Z', 3:'Yaw'}
+        
+    def appendImuChannels(self, container, channelEditors, ids):
         for i in ids:
             editor = ImuChannel(imu_id='imu_chan_' + str(i))
             container.add_widget(editor)
+            channelEditors.append(editor)
+        
+        
+    def update(self, rcpCfg):
+        imuCfg = rcpCfg.imuConfig
+        channelCount = imuCfg.channelCount
+
+        for i in range(channelCount):
+            imuChannel = imuCfg.channels[i]
+            editor = self.channelEditors[i]
+            label = kvquery(editor, imu_id='label').next()
+            enabled = kvquery(editor, imu_id='enabled').next()
+            orientation = kvquery(editor, imu_id='orientation').next()
+            mapping = kvquery(editor, imu_id='mapping').next()
+            zeroValue = kvquery(editor, imu_id='zeroValue').next()
+        
+            label.text = self.channelLabels[i]
+            enabled.active = not imuChannel.mode == 0
+            orientation.setFromValue(imuChannel.mode)
+            mapping.setFromValue(imuChannel.chan)
+            zeroValue.text = str(imuChannel.zeroValue)
+            
+        
         
         
     def on_config_updated(self, rcpCfg):
-        print("config updated imu")
-        pass
+        self.update(rcpCfg)
+
 

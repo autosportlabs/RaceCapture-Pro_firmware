@@ -11,7 +11,7 @@
         imu_id: 'enabled'
     OrientationSpinner:
         imu_id: 'orientation'
-    AccelMappingSpinner:
+    ImuMappingSpinner:
     	imu_id: 'mapping'
     TextInput:
     	imu_id: 'zeroValue'
@@ -19,7 +19,6 @@
 
 <AccelChannelsView>:
 	imu_id: 'ac'
-    orientation: 'vertical'
     orientation: 'vertical'
     size_hint: (1.0,0.6)
     BoxLayout:
@@ -31,13 +30,12 @@
         HSeparatorMinor:
             text: 'Mode'
         HSeparatorMinor:
-            text: 'Hardware Mapping'
+            text: 'Physical Mapping'
         HSeparatorMinor:
             text: 'Zero Level'
 
 <GyroChannelsView>:
 	imu_id: 'gc'
-    orientation: 'vertical'
     orientation: 'vertical'
     size_hint: (1.0,0.3)
     padding: [5,5]
@@ -72,8 +70,9 @@
         text: 'Calibration'
     BoxLayout:
         size_hint: (0.5, 0.2)
+        pos_hint: {'center_x': .5, 'center_y': .5}
         spacing: [10,10]
         padding: [10,10]
         Button:
-            text: 'Set Zero Value'
+            text: 'Calibrate'
 

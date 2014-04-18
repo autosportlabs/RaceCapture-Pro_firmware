@@ -40,11 +40,6 @@ class AnalogPulseOutputChannel(BoxLayout):
     def __init__(self, **kwargs):
         super(AnalogPulseOutputChannel, self).__init__(**kwargs)
 
-class OrientationSpinner(Spinner):
-    def __init__(self, **kwargs):
-        super(OrientationSpinner, self).__init__(**kwargs)
-        self.values = ["Normal", "Inverted"]
-
 class ChannelNameSpinner(Spinner):
     def __init__(self, **kwargs):
         self.register_event_type('on_channels_updated')
@@ -279,7 +274,6 @@ class RaceCaptureApp(App):
 
     def on_config_updated(self, rcpConfig):
         for view in self.configViews:
-            print(str(view))
             view.dispatch('on_config_updated', rcpConfig)                
 
     def on_channels_updated(self, channels):

@@ -64,14 +64,14 @@ class ImuChannel:
         self.sampleRate = 0
         self.mode = 0
         self.chan = 0
-        self.zeroVal = 0
+        self.zeroValue = 0
         self.alpha = 0
 
     def fromJson(self, imuChannelJson):
         self.sampleRate =  imuChannelJson.get('sr', self.sampleRate)
         self.mode = imuChannelJson.get('mode', self.mode)
         self.chan = imuChannelJson.get('chan', self.chan)
-        self.zeroVal = imuChannelJson.get('zeroVal', self.zeroVal)
+        self.zeroValue = imuChannelJson.get('zeroVal', self.zeroValue)
         self.alpha = imuChannelJson.get('alpha', self.alpha)
     
 IMU_ACCEL_CHANNEL_IDS = [0,1,2]
