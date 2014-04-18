@@ -7,27 +7,27 @@
     	gps_id: 'sr'
         size_hint: (1.0,0.1)
     GridLayout:
-        size_hint: (1.0,0.4)
+        size_hint: (1.0,0.6)
         cols: 2
         Label:
             text: 'Position'
-        CheckBox:
+        Switch:
         	gps_id: 'pos'
         Label:
             text: 'Speed'
-        CheckBox:
+        Switch:
         	gps_id: 'speed'
         Label:
             text: 'Distance'
-        CheckBox:
+        Switch:
         	gps_id: 'dist'
         Label:
             text: 'Time of Day'
-        CheckBox:
+        Switch:
         	gps_id: 'time'
         Label:
             text: 'Satellites'
-        CheckBox:
+        Switch:
         	gps_id: 'sats'
     Label:
-        size_hint: (1.0, 1.0)
+        size_hint: (1.0, 0.4)
