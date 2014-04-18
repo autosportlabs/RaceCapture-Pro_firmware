@@ -52,7 +52,6 @@ int main(int argc, char* argv[])
 		}
 
 		printf("rx: (%d): %s\r\n",strlen(line), line);
-		write(pt, line, strlen(line));
 		mock_resetTxBuffer();
 		process_api(getMockSerial(), line, strlen(line));
 		char *txBuffer = mock_getTxBuffer();
