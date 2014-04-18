@@ -52,5 +52,6 @@ class ImuChannelsView(BoxLayout):
         
         
     def on_config_updated(self, rcpCfg):
+        print("config updated imu")
         pass
 
