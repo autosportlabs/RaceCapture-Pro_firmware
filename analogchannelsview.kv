@@ -12,10 +12,10 @@
         HSeparator:
             text: 'Configuration'
         ChannelNameSelectorView:
-            rcpid: 'chan'
+            rcid: 'chan'
             size_hint: (1.0,0.3)
         SampleRateSelectorView:
-            rcpid: 'sr'
+            rcid: 'sr'
             size_hint: (1.0,0.3)
         HSeparator:
             text: 'Mode'
@@ -26,17 +26,17 @@
         		text: 'Raw (0 - 1023)'
 	        CheckBox:
 	        	group: 'scalingType'
-                rcpid: 'smRaw'
+                rcid: 'smRaw'
 	        Label:
 	        	text: 'Simple'
 	        CheckBox:
 	        	group: 'scalingType'
-                rcpid: 'smLinear'
+                rcid: 'smLinear'
 	        Label:
 	        	text: 'Mapped'
 	        CheckBox:
 	        	group: 'scalingType'
-                rcpid: 'smMapped'
+                rcid: 'smMapped'
     VSeparator:
     BoxLayout:
         orientation: 'vertical'
@@ -44,7 +44,7 @@
         HSeparator:
             text: 'Calibration'
         AnalogScalingMapEditor:
-            rcpid: 'mapEditor'
+            rcid: 'mapEditor'
  
 <AnalogScaler>:
     id: graph
@@ -65,7 +65,7 @@
     orientation: 'vertical'
     AnalogScaler:
         size_hint: (1.0, 0.6)
-        rcpid: 'scalingGraph'
+        rcid: 'scalingGraph'
     GridLayout:
         cols: 6
         size_hint: (1.0, 0.4)
@@ -84,35 +84,35 @@
         Label:
             text: 'Volts'
         ValueField:
-            rcpid: 'v_0'
+            rcid: 'v_0'
             text: ''
         ValueField:
-            rcpid: 'v_1'
+            rcid: 'v_1'
             text: ''
         ValueField:
-            rcpid: 'v_2'
+            rcid: 'v_2'
             text: ''
         ValueField:
-            rcpid: 'v_3'
+            rcid: 'v_3'
             text: ''
         ValueField:
-            rcpid: 'v_4'
+            rcid: 'v_4'
             text: ''
         Label:
             text: 'Scaled'
         ValueField:
-            rcpid: 's_0'
+            rcid: 's_0'
             text: ''
         ValueField:
-            rcpid: 's_1'
+            rcid: 's_1'
             text: ''
         ValueField:
-            rcpid: 's_2'
+            rcid: 's_2'
             text: ''
         ValueField:
-            rcpid: 's_3'
+            rcid: 's_3'
             text: ''
         ValueField:
-            rcpid: 's_4'
+            rcid: 's_4'
             text: ''
 
