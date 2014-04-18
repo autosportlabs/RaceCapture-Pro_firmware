@@ -13,3 +13,4 @@ test/rcpsim
 *.bin
 *.elf
 Race*.zip
+.settings
