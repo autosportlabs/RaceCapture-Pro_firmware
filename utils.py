@@ -8,12 +8,11 @@ __all__ = ('intersection', 'difference', 'curry', 'strtotuple',
            'get_color_from_hex', 'get_random_color',
            'is_color_transparent', 'boundary',
            'deprecated', 'SafeList',
-           'interpolate', 'OrderedDict',
+           'interpolate', 'OrderedDict', 'kvFind',
            'breadth_first', 'walk_tree', 'filter_tree', 'kvquery')
 
 from re import match, split
 from UserDict import DictMixin
-
 
 def boundary(value, minvalue, maxvalue):
     '''Limit a value between a minvalue and maxvalue'''
@@ -271,6 +270,19 @@ class OrderedDict(dict, DictMixin):
     def __ne__(self, other):
         return not self == other
 
+
+def kvFind(w, k, v):
+    print('kvFind')
+    for child in w.children:
+        att = getattr(child, k, None)
+        print('child: ' + str(child) + ' ' + str(att))
+        if v == att:
+            return child
+        sub = kvFind(child, k, v)
+        if sub:
+            return sub
+
+    return None
 
 def breadth_first(root, children=iter):
     '''walk tree is a generator function for breadth first tree traversal.

@@ -72,22 +72,31 @@ class RcpSerial:
     def getRcpCfg(self):
         analogCfg = self.getAnalogCfg(None)
         imuCfg = self.getImuCfg(None)
+        gpsCfg = self.getGpsCfg()
+        
         rcpCfg = {}
         
         if analogCfg:
-            rcpCfg["analogCfg"] = analogCfg['analogCfg']
+            rcpCfg['analogCfg'] = analogCfg['analogCfg']
             
         if rcpCfg:
-            rcpCfg["imuCfg"] = imuCfg['imuCfg']
-            
+            rcpCfg['imuCfg'] = imuCfg['imuCfg']
+        
+        if gpsCfg:
+            rcpCfg['gpsCfg'] = gpsCfg['gpsCfg']
+                
         return rcpCfg
 
-    def getAnalogCfg(self, id):
-        rsp = self.sendGet('getAnalogCfg', id)
+    def getAnalogCfg(self, channelId):
+        rsp = self.sendGet('getAnalogCfg', channelId)
         return rsp
 
-    def getImuCfg(self, id):
-        rsp = self.sendGet('getImuCfg', id)
+    def getImuCfg(self, channelId):
+        rsp = self.sendGet('getImuCfg', channelId)
+        return rsp
+    
+    def getGpsCfg(self):
+        rsp = self.sendGet('getGpsCfg', None)
         return rsp
 
     def decodeScript(self, s):
@@ -97,11 +106,11 @@ class RcpSerial:
         return s.replace('\n','\\n').replace(' ', '\_').replace('\r', '\\r').replace('"', '\\"')
 
     def writeScriptPage(self, ser, script, page):
-        cmd = 'writeScriptPage ' + str(page) + ' ' + encodeScript(script) + '\r'
+        cmd = 'writeScriptPage ' + str(page) + ' ' + self.encodeScript(script) + '\r'
         print(cmd)
         ser.write(cmd)
-        line = readLine(ser)
-        line = readLine(ser)
+        line = self.readLine(ser)
+        line = self.readLine(ser)
         print(line)
         if 'result="ok"' in line:
             return 1
@@ -112,21 +121,21 @@ class RcpSerial:
         cmd = 'readScriptPage ' + str(page) + '\r'
         print("page: " + cmd)
         ser.write(cmd)
-        line = readLine(ser)
-        line = readLine(ser)
+        line = self.readLine(ser)
+        line = self.readLine(ser)
         print(line)
         line = line[9:]
         line = line[:-4]
-        deScript(line)
+        self.decodeScript(line)
         return line
 
 
     def readScript(self):
         i = 0
         lua = ''
-        ser = getSerial()
+        ser = self.getSerial()
         while True:
-            script = readScriptPage(ser, i)
+            script = self.readScriptPage(ser, i)
             if script:
                 lua = lua + script
                 i+=1
@@ -137,19 +146,19 @@ class RcpSerial:
     def writeScript(self, script):
         i = 0
         res = 0
-        ser = getSerial()
+        ser = self.getSerial()
         while True:
             if len(script) >= 256:
                 scr = script[:256]
                 script = script[256:]
-                res = writeScriptPage(ser, scr, i)
+                res = self.writeScriptPage(ser, scr, i)
                 if res == 0:
                     print 'Error: ' + str(i)
                     break
                 i = i + 1
             else:
-                writeScriptPage(ser, script, i)
-                writeScriptPage(ser, '', i + 1)
+                self.writeScriptPage(ser, script, i)
+                self.writeScriptPage(ser, '', i + 1)
                 res = 1
                 break
         return res

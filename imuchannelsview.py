@@ -22,11 +22,12 @@ class ImuMappingSpinner(Spinner):
     def __init__(self, **kwargs):
         super(ImuMappingSpinner, self).__init__(**kwargs)
         self.valueMappings = {0:'X', 1:'X', 2:'Y', 3:'Yaw', 4:'Pitch', 5:'Roll'}
+        self.values = []
 
-        type = kwargs.get('type', 'accel')
-        if type == 'accel':
+    def setImuType(self, imuType):
+        if imuType == 'accel':
             self.values = ['X', 'Y', 'Z']
-        elif type == 'gyro':
+        elif imuType == 'gyro':
             self.values = ['Yaw', 'Pitch', 'Roll']            
         
     def setFromValue(self, value):
@@ -79,6 +80,12 @@ class ImuChannelsView(BoxLayout):
             enabled = kvquery(editor, imu_id='enabled').next()
             orientation = kvquery(editor, imu_id='orientation').next()
             mapping = kvquery(editor, imu_id='mapping').next()
+            
+            if i in(IMU_ACCEL_CHANNEL_IDS):
+                mapping.setImuType('accel')
+            elif i in(IMU_GYRO_CHANNEL_IDS):
+                mapping.setImuType('gyro')
+                
             zeroValue = kvquery(editor, imu_id='zeroValue').next()
         
             label.text = self.channelLabels[i]

@@ -91,10 +91,29 @@ class ImuConfig:
             if imuChannelJson:
                 self.channels[i].fromJson(imuChannelJson)
                   
+class GpsConfig:
+    def __init__(self, **kwargs):
+        self.sampleRate = 0
+        self.positionEnabled = False
+        self.speedEnabled = False
+        self.distanceEnabled = False
+        self.timeEnabled = False
+        self.satellitesEnabled = False
+
+    def fromJson(self, gpsConfigJson):
+        if gpsConfigJson:
+            self.sampleRate = int(gpsConfigJson.get('sr', self.sampleRate))
+            self.positionEnabled = int(gpsConfigJson.get('pos', self.positionEnabled)) == 1
+            self.speedEnabled = int(gpsConfigJson.get('speed', self.speedEnabled))
+            self.timeEnabled = int(gpsConfigJson.get('time', self.timeEnabled))
+            self.distanceEnabled = int(gpsConfigJson.get('dist', self.timeEnabled))
+            self.satellitesEnabled = int(gpsConfigJson.get('sats', self.satellitesEnabled))
+    
 class RcpConfig:
     def __init__(self, **kwargs):
         self.analogConfig = AnalogConfig()
         self.imuConfig = ImuConfig()
+        self.gpsConfig = GpsConfig()
 
     def fromJson(self, json):
         analogCfgJson = json.get('analogCfg', None)
@@ -104,6 +123,10 @@ class RcpConfig:
         imuCfgJson = json.get('imuCfg', None)
         if imuCfgJson:
             self.imuConfig.fromJson(imuCfgJson)
+            
+        gpsCfgJson = json.get('gpsCfg', None)
+        if gpsCfgJson:
+            self.gpsConfig.fromJson(gpsCfgJson)
              
 
     def toJson(self):

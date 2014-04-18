@@ -1,0 +1,33 @@
+#:kivy 1.0.4
+
+<GPSChannelsView>:
+    spacing: 20
+    orientation: 'vertical'
+    SampleRateSelectorView:
+    	gps_id: 'sr'
+        size_hint: (1.0,0.1)
+    GridLayout:
+        size_hint: (1.0,0.4)
+        cols: 2
+        Label:
+            text: 'Position'
+        CheckBox:
+        	gps_id: 'pos'
+        Label:
+            text: 'Speed'
+        CheckBox:
+        	gps_id: 'speed'
+        Label:
+            text: 'Distance'
+        CheckBox:
+        	gps_id: 'dist'
+        Label:
+            text: 'Time of Day'
+        CheckBox:
+        	gps_id: 'time'
+        Label:
+            text: 'Satellites'
+        CheckBox:
+        	gps_id: 'sats'
+    Label:
+        size_hint: (1.0, 1.0)
