@@ -73,6 +73,7 @@ class RcpSerial:
         analogCfg = self.getAnalogCfg(None)
         imuCfg = self.getImuCfg(None)
         gpsCfg = self.getGpsCfg()
+        timerCfg = self.getTimerCfg(None)
         
         rcpCfg = {}
         
@@ -84,21 +85,24 @@ class RcpSerial:
         
         if gpsCfg:
             rcpCfg['gpsCfg'] = gpsCfg['gpsCfg']
-                
+            
+        if timerCfg:
+            rcpCfg['timerCfg'] = timerCfg['timerCfg']
+
         return rcpCfg
 
     def getAnalogCfg(self, channelId):
-        rsp = self.sendGet('getAnalogCfg', channelId)
-        return rsp
+        return self.sendGet('getAnalogCfg', channelId)
 
     def getImuCfg(self, channelId):
-        rsp = self.sendGet('getImuCfg', channelId)
-        return rsp
+        return self.sendGet('getImuCfg', channelId)
     
     def getGpsCfg(self):
-        rsp = self.sendGet('getGpsCfg', None)
-        return rsp
+        return self.sendGet('getGpsCfg', None)
 
+    def getTimerCfg(self, channelId):
+        return self.sendGet('getTimerCfg', channelId)
+    
     def decodeScript(self, s):
         return s.replace('\\n','\n').replace('\_',' ').replace('\\r','\r').replace('\\"','"')
 

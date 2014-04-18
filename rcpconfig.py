@@ -35,13 +35,13 @@ class AnalogChannel:
         self.alpha = 0
         self.scalingMap = ScalingMap()
     
-    def fromJson(self, analogChannelJson):
-        self.channelId = analogChannelJson.get('id', self.channelId)
-        self.sampleRate = analogChannelJson.get('sr', self.sampleRate)
-        self.scalingMode = analogChannelJson.get('scalMod', self.scalingMode)
-        self.linearScaling = analogChannelJson.get('scalMod', self.linearScaling)
-        self.alpha = analogChannelJson.get('alpha', self.alpha)
-        mapJson = analogChannelJson.get('map', None)
+    def fromJson(self, json):
+        self.channelId = json.get('id', self.channelId)
+        self.sampleRate = json.get('sr', self.sampleRate)
+        self.scalingMode = json.get('scalMod', self.scalingMode)
+        self.linearScaling = json.get('scalMod', self.linearScaling)
+        self.alpha = json.get('alpha', self.alpha)
+        mapJson = json.get('map', None)
         if mapJson:
             self.scalingMap.fromJson(mapJson)
     
@@ -100,20 +100,52 @@ class GpsConfig:
         self.timeEnabled = False
         self.satellitesEnabled = False
 
-    def fromJson(self, gpsConfigJson):
-        if gpsConfigJson:
-            self.sampleRate = int(gpsConfigJson.get('sr', self.sampleRate))
-            self.positionEnabled = int(gpsConfigJson.get('pos', self.positionEnabled)) == 1
-            self.speedEnabled = int(gpsConfigJson.get('speed', self.speedEnabled))
-            self.timeEnabled = int(gpsConfigJson.get('time', self.timeEnabled))
-            self.distanceEnabled = int(gpsConfigJson.get('dist', self.timeEnabled))
-            self.satellitesEnabled = int(gpsConfigJson.get('sats', self.satellitesEnabled))
+    def fromJson(self, json):
+        if json:
+            self.sampleRate = int(json.get('sr', self.sampleRate))
+            self.positionEnabled = int(json.get('pos', self.positionEnabled)) == 1
+            self.speedEnabled = int(json.get('speed', self.speedEnabled))
+            self.timeEnabled = int(json.get('time', self.timeEnabled))
+            self.distanceEnabled = int(json.get('dist', self.timeEnabled))
+            self.satellitesEnabled = int(json.get('sats', self.satellitesEnabled))
+    
+class TimerChannel:
+    def __init__(self, **kwargs):
+        self.channelId = 0
+        self.sampleRate = 0
+        self.mode = 0
+        self.divider = 0
+        self.pulsePerRev = 0
+        
+    def fromJson(self, json):
+        if (json):
+            self.channelId = json.get('id', self.channelId)
+            self.sampleRate = json.get('sr', self.sampleRate)
+            self.mode = json.get('mode', self.mode)
+            self.divider = json.get('divider', self.divider)
+            self.pulsePerRev = json.get('ppr', self.pulsePerRev)
+
+class TimerConfig:
+    def __init__(self, **kwargs):
+        self.channelCount = 8
+        self.channels = []
+
+        for i in range (self.channelCount):
+            self.channels.append(TimerChannel())   
+
+    def fromJson(self, json):
+        for i in range (self.channelCount):
+            timerChannelJson = json.get(str(i), None)
+            if timerChannelJson:
+                self.channels[i].fromJson(timerChannelJson)
     
 class RcpConfig:
     def __init__(self, **kwargs):
         self.analogConfig = AnalogConfig()
         self.imuConfig = ImuConfig()
         self.gpsConfig = GpsConfig()
+        self.timerConfig = TimerConfig()
+        
 
     def fromJson(self, json):
         analogCfgJson = json.get('analogCfg', None)
