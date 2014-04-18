@@ -643,7 +643,7 @@ int checksumValid(const char *gpsData, size_t len){
 
 void processGPSData(char *gpsData, size_t len){
 	if (len > 4 && checksumValid(gpsData, len)){
-		if (*gpsData == '$' && *(gpsData + 1) =='G' && *(gpsData + 2) == 'P'){
+		if (strstr(gpsData,"$GP") == gpsData){
 			char * data = gpsData + 3;
 			if (strstr(data,"GGA,")){
 				parseGGA(data + 4);
