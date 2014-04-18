@@ -217,12 +217,6 @@ class LuaCodeInput(CodeInput):
         super(LuaCodeInput, self).__init__(**kwargs)
         self.lexer= lexers.get_lexer_by_name('lua')
 
-class LuaScriptingView(BoxLayout):
-    def __init__(self, **kwargs):
-        super(LuaScriptingView, self).__init__(**kwargs)
-#        Builder.load_file('analogchannelsview.kv')
-        self.register_event_type('on_config_updated')
-
     def on_config_updated(self, rcpCfg):
         pass
         
@@ -285,6 +279,7 @@ class RaceCaptureApp(App):
 
     def on_config_updated(self, rcpConfig):
         for view in self.configViews:
+            print(str(view))
             view.dispatch('on_config_updated', rcpConfig)                
 
     def on_channels_updated(self, channels):

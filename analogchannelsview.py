@@ -13,7 +13,7 @@ from rcpconfig import *
 
 Builder.load_file('analogchannelsview.kv')
 
-class AnalogChannelsView(ConfigView):
+class AnalogChannelsView(BoxLayout):
     def __init__(self, **kwargs):
         self.register_event_type('on_config_updated')
 

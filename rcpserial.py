@@ -21,9 +21,9 @@ class RcpSerial:
         echo = self.readLine(ser)
         if echo:
             rsp = self.readLine(ser)
-        print('rsp: ' + rsp)
 
         if rsp:
+            print('rsp: ' + rsp)
             rsp = json.loads(rsp)
         return rsp      
 
@@ -73,8 +73,13 @@ class RcpSerial:
         analogCfg = self.getAnalogCfg(None)
         imuCfg = self.getImuCfg(None)
         rcpCfg = {}
-        rcpCfg["analogCfg"] = analogCfg["analogCfg"]
-        rcpCfg["imuCfg"] = imuCfg["imuCfg"]
+        
+        if analogCfg:
+            rcpCfg["analogCfg"] = analogCfg['analogCfg']
+            
+        if rcpCfg:
+            rcpCfg["imuCfg"] = imuCfg['imuCfg']
+            
         return rcpCfg
 
     def getAnalogCfg(self, id):

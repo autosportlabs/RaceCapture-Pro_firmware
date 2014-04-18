@@ -106,6 +106,6 @@ class RcpConfig:
             self.imuConfig.fromJson(imuCfgJson)
              
 
-    def toJson():
+    def toJson(self):
         print('toJson')
     
