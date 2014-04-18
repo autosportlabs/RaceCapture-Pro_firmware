@@ -73,18 +73,18 @@ class PulseChannelsView(BoxLayout):
             timerChannel = timerCfg.channels[i]
             editor = kvquery(self, id='timer' + str(i)).next()
 
-            sampleRateSpinner = kvquery(editor, timer_id='sr').next()
+            sampleRateSpinner = kvquery(editor, rcid='sr').next()
             sampleRateSpinner.setValue(timerChannel.sampleRate)
 
-            channelSpinner = kvquery(editor, timer_id='chan').next()
+            channelSpinner = kvquery(editor, rcid='chan').next()
             channelSpinner.setValue(self.channels.getNameForId(timerChannel.channelId))
             
-            modeSpinner = kvquery(editor, timer_id='mode').next()
+            modeSpinner = kvquery(editor, rcid='mode').next()
             modeSpinner.setFromValue(timerChannel.mode)
             
-            dividerSpinner = kvquery(editor, timer_id='divider').next()
+            dividerSpinner = kvquery(editor, rcid='divider').next()
             dividerSpinner.setFromValue(timerChannel.divider)
             
-            pulsePerRevSpinner = kvquery(editor, timer_id='ppr').next()
+            pulsePerRevSpinner = kvquery(editor, rcid='ppr').next()
             pulsePerRevSpinner.setFromValue(timerChannel.pulsePerRev)
         

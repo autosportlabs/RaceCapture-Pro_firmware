@@ -13,9 +13,9 @@
             HSeparator:
                 text: 'Configuration'
             ChannelNameSelectorView:
-            	timer_id: 'chan'
+            	rcid: 'chan'
             SampleRateSelectorView:
-            	timer_id: 'sr'
+            	rcid: 'sr'
             Label:
                 size_hint: (None, 1.0)
         BoxLayout:
@@ -29,18 +29,18 @@
                 Label:
                     text: 'Channel Operation Mode'
                 TimerModeSpinner:
-                	timer_id: 'mode'
+                	rcid: 'mode'
             BoxLayout:
                 padding: [2, 2]
                 orientation: 'horizontal'
                 Label:
                     text: 'Clock Divider'
                 DividerSpinner:
-                	timer_id: 'divider'
+                	rcid: 'divider'
             BoxLayout:
                 padding: [2, 2]
                 orientation: 'horizontal'
                 Label:
                     text: 'Pulse per Revolution/\nTeeth per Wheel'
                 PulsePerRevSpinner:
-                	timer_id: 'ppr'
+                	rcid: 'ppr'
