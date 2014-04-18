@@ -40,9 +40,9 @@ class ImuChannelsView(BoxLayout):
         self.register_event_type('on_config_updated')
         
         accelContainer = kvquery(self, imu_id='ac').next()
-        self.appendImuChannels(accelContainer, IMU_ACCEL_CHANNEL_IDS)
-
         gyroContainer = kvquery(self, imu_id='gc').next()
+
+        self.appendImuChannels(accelContainer, IMU_ACCEL_CHANNEL_IDS)
         self.appendImuChannels(gyroContainer, IMU_GYRO_CHANNEL_IDS)
         
     def appendImuChannels(self, container, ids):
