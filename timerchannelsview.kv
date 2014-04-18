@@ -1,5 +1,7 @@
 #:kivy 1.0.4
 
+<PulsePerRevSpinner>:
+
 <PulseChannelsView>:
 
 <PulseChannel>:
@@ -11,7 +13,9 @@
             HSeparator:
                 text: 'Configuration'
             ChannelNameSelectorView:
+            	timer_id: 'chan'
             SampleRateSelectorView:
+            	timer_id: 'sr'
             Label:
                 size_hint: (None, 1.0)
         BoxLayout:
@@ -24,19 +28,19 @@
                 orientation: 'horizontal'
                 Label:
                     text: 'Channel Operation Mode'
-                Spinner:
-                    values: ['RPM','Frequency', 'Duration (ms)']
+                TimerModeSpinner:
+                	timer_id: 'mode'
             BoxLayout:
                 padding: [2, 2]
                 orientation: 'horizontal'
                 Label:
                     text: 'Clock Divider'
-                Spinner:
-                    values: ['Clock/128','Clock/64']
+                DividerSpinner:
+                	timer_id: 'divider'
             BoxLayout:
                 padding: [2, 2]
                 orientation: 'horizontal'
                 Label:
                     text: 'Pulse per Revolution/\nTeeth per Wheel'
-                Spinner:
-                    values: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32']             
+                PulsePerRevSpinner:
+                	timer_id: 'ppr'

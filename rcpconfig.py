@@ -127,7 +127,7 @@ class TimerChannel:
 
 class TimerConfig:
     def __init__(self, **kwargs):
-        self.channelCount = 8
+        self.channelCount = 3
         self.channels = []
 
         for i in range (self.channelCount):
