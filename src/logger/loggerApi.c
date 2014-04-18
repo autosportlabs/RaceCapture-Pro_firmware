@@ -547,7 +547,7 @@ int api_getLogfile(Serial *serial, const jsmntok_t *json){
 int api_setLogfileLevel(Serial *serial, const jsmntok_t *json){
 	int level;
 	if (setIntValueIfExists(json, "level", &level)){
-		set_log_level((log_level)level);
+		set_log_level((enum log_level)level);
 		return API_SUCCESS;
 	}
 	else{
