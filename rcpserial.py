@@ -5,6 +5,10 @@ import json
 class RcpSerial:
     def __init__(self, **kwargs):
         self.ser = None
+        self.port = kwargs.get('port', None)
+
+    def setPort(self, port):
+        self.port = port
 
     def sendCommand(self, cmd):
         rsp = None
@@ -38,7 +42,7 @@ class RcpSerial:
             
     def open(self):
         print('Opening serial')
-        ser = serial.Serial('/dev/pts/1', timeout = 3)
+        ser = serial.Serial(self.port, timeout = 3)
         ser.flushInput()
         ser.flushOutput()
         return ser

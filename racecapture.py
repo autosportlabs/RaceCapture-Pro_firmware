@@ -1,4 +1,5 @@
 import kivy
+import argparse
 kivy.require('1.8.0')
 from kivy.config import Config
 Config.set('graphics', 'width', '1024')
@@ -23,6 +24,7 @@ from spacer import *
 from boundedlabel import BoundedLabel
 from rcpserial import *
 from analogchannelsview import *
+from imuchannelsview import *
 from rcpconfig import *
 from channels import *
 
@@ -52,16 +54,6 @@ class ChannelNameSpinner(Spinner):
      
     def on_channels_updated(self, channels):
         self.values = channels.getNamesList(self.category)
-
-class AccelMappingSpinner(Spinner):
-    def __init__(self, **kwargs):
-        super(AccelMappingSpinner, self).__init__(**kwargs)
-        self.values = ['X', 'Y', 'Z']
-
-class GyroMappingSpinner(Spinner):
-    def __init__(self, **kwargs):
-        super(GyroMappingSpinner, self).__init__(**kwargs)
-        self.values = ['Yaw']
 
 class SampleRateSpinner(Spinner):
     def __init__(self, **kwargs):
@@ -93,7 +85,8 @@ class GPSChannelsView(BoxLayout):
         pass
 
 class TargetConfigView(GridLayout):
-    pass
+    def __init__(self, **kwargs):
+        super(TargetConfigView, self).__init__(**kwargs)
 
 class TrackConfigView(BoxLayout):
     def __init__(self, **kwargs):
@@ -216,16 +209,6 @@ class PulseChannelsView(BoxLayout):
     def on_config_updated(self, rcpCfg):
         pass
 
-class AccelGyroChannelsView(BoxLayout):
-    def __init__(self, **kwargs):
-        super(AccelGyroChannelsView, self).__init__(**kwargs)
-#        Builder.load_file('analogchannelsview.kv')
-        self.register_event_type('on_config_updated')
-
-    def on_config_updated(self, rcpCfg):
-        pass
-
-
 class LinkedTreeViewLabel(TreeViewLabel):
     view = None
    
@@ -286,6 +269,14 @@ class RaceCaptureApp(App):
         
         #List of config views
         self.configViews = []
+    
+        self.processArgs()
+
+    def processArgs(self):
+        parser = argparse.ArgumentParser(description='Autosport Labs Race Capture App')
+        parser.add_argument('-p','--port', help='Port', required=False)
+        args = vars(parser.parse_args())
+        self.rcp.setPort(args['port'])
 
     def on_read_config(self, instance, *args):
         config = self.rcp.getRcpCfg()
@@ -330,7 +321,7 @@ class RaceCaptureApp(App):
             attach_node('Analog Inputs', n, AnalogChannelsView(channelCount=8, channels=self.channels))
             attach_node('Pulse Inputs', n, PulseChannelsView())
             attach_node('Digital Input/Outputs', n, GPIOChannelsView())
-            attach_node('Accelerometer / Gyro', n, AccelGyroChannelsView())
+            attach_node('Accelerometer / Gyro', n, ImuChannelsView())
             attach_node('Pulse / Analog Outputs', n, AnalogPulseOutputChannelsView())
             n = create_tree('CAN bus')
             attach_node('CAN Channels', n, CANChannelsView())

@@ -23,7 +23,6 @@ class AnalogChannelsView(ConfigView):
         super(AnalogChannelsView, self).__init__(**kwargs)
         accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=80 * self.channelCount)
     
-        # add button into that grid
         for i in range(self.channelCount):
             channel = AccordionItem(title='Analog ' + str(i + 1))
             editor = AnalogChannel(id='analog' + str(i)) 

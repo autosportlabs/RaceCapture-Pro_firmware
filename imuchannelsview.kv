@@ -1,0 +1,76 @@
+#:kivy 1.0.4
+
+<ImuChannel>:
+    BoxLayout:
+        padding: [5,5]
+        spacing: [5,5]
+        orientation: 'horizontal'
+        Label:
+            text: ''
+            rcpid: 'label'   
+        CheckBox:
+            rcpid: 'enabled'
+        OrientationSpinner:
+            rcpid: 'orientation'
+        AccelMappingSpinner:
+        TextInput:
+            text: ''
+
+<AccelChannelsView>:
+    orientation: 'vertical'
+    orientation: 'vertical'
+    size_hint: (1.0,0.6)
+    BoxLayout:
+        orientation: 'horizontal'
+        HSeparatorMinor:
+            text: 'Axis'
+        HSeparatorMinor:
+            text: 'Enabled'
+        HSeparatorMinor:
+            text: 'Mode'
+        HSeparatorMinor:
+            text: 'Hardware Mapping'
+        HSeparatorMinor:
+            text: 'Zero Level'
+
+<GyroChannelsView>:
+    orientation: 'vertical'
+    orientation: 'vertical'
+    size_hint: (1.0,0.3)
+    padding: [5,5]
+    spacing: [5,5]
+    BoxLayout:
+        orientation: 'horizontal'
+        HSeparatorMinor:
+            text: 'Axis'
+        HSeparatorMinor:
+            text: 'Enabled'
+        HSeparatorMinor:
+            text: 'Mode'
+        HSeparatorMinor:
+            text: 'Hardware Mapping'
+        HSeparatorMinor:
+            text: 'Zero Level'
+
+<ImuChannelsView>:
+    orientation: 'vertical'
+    padding: [5,5]
+    SampleRateSelectorView:
+        size_hint: (1.0,0.2)
+    HSeparator:
+        text: 'Accelerometer Channels'
+    AccelChannelsView:
+
+    HSeparator:
+        text: 'Gyro Channels'
+    GyroChannelsView:        
+
+    HSeparator:
+        text: 'Calibration'
+    BoxLayout:
+        size_hint: (0.5, 0.2)
+        spacing: [10,10]
+        padding: [10,10]
+        Button:
+            text: 'Set Zero Value'
+
