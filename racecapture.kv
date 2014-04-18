@@ -184,35 +184,6 @@
                 text: 'Engine Oil Temp (C)'
             SampleRateSpinner:
 
-<GPIOChannelsView>:
-
-<GPIOChannel>:
-    BoxLayout:
-        orientation: 'horizontal'
-        BoxLayout: 
-            padding: [5, 5]
-            size_hint: (1.0,1.0)
-            orientation: 'vertical'
-            HSeparator:
-                text: 'Configuration'
-            ChannelNameSelectorView:
-            SampleRateSelectorView:
-        BoxLayout:
-            padding: [5, 5]
-            size_hint: (1.0,1.0)
-            orientation: 'vertical'
-            HSeparator:
-                text: 'Options'
-            BoxLayout:
-                orientation: 'horizontal'
-                size_hint: (1.0,0.5)
-                Label:
-                    text: 'Mode'
-                Spinner:
-                    values: ['Input','Output']
-            Label:
-                size_hint: (None, 0.5)
-
 
 <AnalogPulseOutputChannel>:
     BoxLayout:

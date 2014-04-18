@@ -6,38 +6,29 @@ from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.spinner import Spinner
 from kivy.app import Builder
+from mappedspinner import MappedSpinner
 from rcpconfig import *
 from utils import *
 
 Builder.load_file('timerchannelsview.kv')
 
-class TimerModeSpinner(Spinner):
+class TimerModeSpinner(MappedSpinner):
     def __init__(self, **kwargs):
         super(TimerModeSpinner, self).__init__(**kwargs)
-        self.valueMappings = {0:'RPM', 1:'Frequency', 2:'Period(MS)', 3:'Period(us)'}
-        
-    def setFromValue(self, value):
-        self.text = self.valueMappings.get(value, 'RPM')
-    
-class DividerSpinner(Spinner):
+        self.setValueMap({0:'RPM', 1:'Frequency', 2:'Period (ms)', 3:'Period (us)'}, 'RPM')
+            
+class DividerSpinner(MappedSpinner):
     def __init__(self, **kwargs):
         super(DividerSpinner, self).__init__(**kwargs)
-        self.valueMappings = {2:'2', 8:'8', 32:'32', 128:'128', 1024:'1024'}
-        
-    def setFromValue(self, value):
-        self.text = self.valueMappings.get(value, '128')
+        self.setValueMap({2:'2', 8:'8', 32:'32', 128:'128', 1024:'1024'}, '128')
     
-class PulsePerRevSpinner(Spinner):
+class PulsePerRevSpinner(MappedSpinner):
     def __init__(self, **kwargs):
         super(PulsePerRevSpinner, self).__init__(**kwargs)
-        valueMappings = {}
+        valueMap = {}
         for i in range (1, 64):
-            valueMappings[i] = str(i)
-            
-        self.valueMappings = valueMappings
-        
-    def setFromValue(self, value):
-        self.text = self.valueMappings.get(value, '1')
+            valueMap[i] = str(i)
+        self.setValueMap(valueMap, '1');
     
 class PulseChannel(BoxLayout):
     def __init__(self, **kwargs):

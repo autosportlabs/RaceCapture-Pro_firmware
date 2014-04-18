@@ -27,12 +27,12 @@ class RcpSerial:
             rsp = json.loads(rsp)
         return rsp      
 
-    def sendGet(self, name, id):
-        if id == None:
-            id = 'null'
+    def sendGet(self, name, index):
+        if index == None:
+            index = 'null'
         else:
-            id = str(id)
-        cmd = '{"' + name + '":' + id + '}'
+            index = str(index)
+        cmd = '{"' + name + '":' + index + '}'
         return self.sendCommand(cmd)
 
     def getSerial(self):
@@ -74,6 +74,7 @@ class RcpSerial:
         imuCfg = self.getImuCfg(None)
         gpsCfg = self.getGpsCfg()
         timerCfg = self.getTimerCfg(None)
+        gpioCfg = self.getGpioCfg(None)
         
         rcpCfg = {}
         
@@ -88,6 +89,9 @@ class RcpSerial:
             
         if timerCfg:
             rcpCfg['timerCfg'] = timerCfg['timerCfg']
+            
+        if gpioCfg:
+            rcpCfg['gpioCfg'] = gpioCfg['gpioCfg']
 
         return rcpCfg
 
@@ -102,6 +106,9 @@ class RcpSerial:
 
     def getTimerCfg(self, channelId):
         return self.sendGet('getTimerCfg', channelId)
+    
+    def getGpioCfg(self, channelId):
+        return self.sendGet('getGpioCfg', channelId)
     
     def decodeScript(self, s):
         return s.replace('\\n','\n').replace('\_',' ').replace('\\r','\r').replace('\\"','"')

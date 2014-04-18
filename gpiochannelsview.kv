@@ -1,0 +1,33 @@
+#:kivy 1.0.4
+
+
+<GPIOChannelsView>:
+
+<GPIOChannel>:
+    BoxLayout:
+        orientation: 'horizontal'
+        BoxLayout: 
+            padding: [5, 5]
+            size_hint: (1.0,1.0)
+            orientation: 'vertical'
+            HSeparator:
+                text: 'Configuration'
+            ChannelNameSelectorView:
+            	rcid: 'chan'
+            SampleRateSelectorView:
+            	rcid: 'sr'
+        BoxLayout:
+            padding: [5, 5]
+            size_hint: (1.0,1.0)
+            orientation: 'vertical'
+            HSeparator:
+                text: 'Options'
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint: (1.0,0.5)
+                Label:
+                    text: 'Mode'
+                GPIOModeSpinner:
+					rcid: 'mode'
+            Label:
+                size_hint: (None, 0.5)

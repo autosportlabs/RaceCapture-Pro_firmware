@@ -27,12 +27,9 @@ from analogchannelsview import *
 from imuchannelsview import *
 from gpschannelsview import *
 from timerchannelsview import *
+from gpiochannelsview import *
 from rcpconfig import *
 from channels import *
-
-class GPIOChannel(BoxLayout):
-    def __init__(self, **kwargs):
-        super(GPIOChannel, self).__init__(**kwargs)
 
 class AnalogPulseOutputChannel(BoxLayout):
     def __init__(self, **kwargs):
@@ -107,28 +104,6 @@ class LuaScriptingView(BoxLayout):
         super(LuaScriptingView, self).__init__(**kwargs)
 #        Builder.load_file('analogchannelsview.kv')
         self.register_event_type('on_config_updated')
-
-    def on_config_updated(self, rcpCfg):
-        pass
-
-
-class GPIOChannelsView(BoxLayout):
-    def __init__(self, **kwargs):
-        super(GPIOChannelsView, self).__init__(**kwargs)
-        self.register_event_type('on_config_updated')
-        accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=90 * 3)
-    
-        # add button into that grid
-        for i in range(3):
-            channel = AccordionItem(title='Digital Input/Output ' + str(i + 1))
-            editor = GPIOChannel()
-            channel.add_widget(editor)
-            accordion.add_widget(channel)
-    
-        #create a scroll view, with a size < size of the grid
-        sv = ScrollView(size_hint=(1.0,1.0), do_scroll_x=False)
-        sv.add_widget(accordion)
-        self.add_widget(sv)
 
     def on_config_updated(self, rcpCfg):
         pass
@@ -277,7 +252,7 @@ class RaceCaptureApp(App):
             attach_node('Track Channels', n, TrackConfigView())
             attach_node('Analog Inputs', n, AnalogChannelsView(channelCount=8, channels=self.channels))
             attach_node('Pulse Inputs', n, PulseChannelsView(channelCount=3, channels=self.channels))
-            attach_node('Digital Input/Outputs', n, GPIOChannelsView())
+            attach_node('Digital Input/Outputs', n, GPIOChannelsView(channelCount=3, channels=self.channels))
             attach_node('Accelerometer / Gyro', n, ImuChannelsView())
             attach_node('Pulse / Analog Outputs', n, AnalogPulseOutputChannelsView())
             n = create_tree('CAN bus')

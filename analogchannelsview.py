@@ -34,7 +34,7 @@ class AnalogChannelsView(BoxLayout):
         sv.add_widget(accordion)
         self.add_widget(sv)
 
-    def update(self, rcpCfg):
+    def on_config_updated(self, rcpCfg):
         analogCfg = rcpCfg.analogConfig
         channelCount = analogCfg.channelCount
 
@@ -68,9 +68,7 @@ class AnalogChannelsView(BoxLayout):
             
             mapEditor = kvquery(editor, rcid='mapEditor').next()
             mapEditor.update(analogChannel.scalingMap)
-        
-    def on_config_updated(self, rcpCfg):
-        self.update(rcpCfg)
+
 
         
 
