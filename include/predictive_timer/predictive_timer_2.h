@@ -8,14 +8,9 @@
 #ifndef PREDICTIVE_TIMER_2_H_
 #define PREDICTIVE_TIMER_2_H_
 
-// HACK STUPID BOOLEAN STUFF AND MIXING C and C++.  YIKES!
-#ifndef RCP_TESTING
-	typedef int bool;
-	#define false 0;
-	#define true !false;
-#endif
-
+#include <stdbool.h>
 #include "geopoint.h"
+
 /**
  * Method invoked whenever we detect that we have crossed the start finish line
  * @param point The location of the start/finish line.

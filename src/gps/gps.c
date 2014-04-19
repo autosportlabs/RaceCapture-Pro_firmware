@@ -236,68 +236,68 @@ static void parseGLL(char *data){
 
 }
 
-static int8_t getOffsetTimeFromUtcTimeString(const char * utcTimeStr, int offset){
-   // NMEA UTC Time String Format is HHMMSS.SS
-   char buff[3] = {0};
-   memcpy(buff, utcTimeStr, 2);
-   return (int8_t) modp_atoi(buff);
+static int getOffsetTimeFromUtcTimeString(const char *utcTimeStr, int offset, int len) {
+   // Time String Format is HHMMSS.SSS
+   char buff[4] = {0};
+   memcpy(buff, utcTimeStr, len);
+   return modp_atoi(buff);
 }
 
 static int8_t getHourFromUtcTimeString(const char * utcTimeStr){
-   return getOffsetTimeFromUtcTimeString(utcTimeStr, 0);
+   return (int8_t) getOffsetTimeFromUtcTimeString(utcTimeStr, 0, 2);
 }
 
 static int8_t getMinutesFromUtcTimeString(const char * utcTimeStr){
-   return getOffsetTimeFromUtcTimeString(utcTimeStr, 2);
+   return (int8_t) getOffsetTimeFromUtcTimeString(utcTimeStr, 2, 2);
 }
 
 static int8_t getSecondsFromUtcTimeString(const char * utcTimeStr){
-   return getOffsetTimeFromUtcTimeString(utcTimeStr, 4);
+   return (int8_t) getOffsetTimeFromUtcTimeString(utcTimeStr, 4, 2);
 }
 
-static int8_t getDecisecondsFromUtcTimeString(const char * utcTimeStr){
-   return getOffsetTimeFromUtcTimeString(utcTimeStr, 7);
+static int16_t getMillisecondsFromUtcTimeString(const char * utcTimeStr){
+   return (int16_t) getOffsetTimeFromUtcTimeString(utcTimeStr, 7, 3);
 }
 
 //Parse Time & Date
 static void parseZDA(char *data) {
    /*
-     $GPZDA
+    $GPZDA
 
-     Date & Time
+    Date & Time
 
-     UTC, day, month, year, and local time zone.
+    UTC, day, month, year, and local time zone.
 
-     $--ZDA,hhmmss.ss,xx,xx,xxxx,xx,xx
-     hhmmss.ss = UTC
-     xx = Day, 01 to 31
-     xx = Month, 01 to 12
-     xxxx = Year
-     xx = Local zone description, 00 to +/- 13 hours
-     xx = Local zone minutes description (same sign as hours)
-   */
-
-   char *delim = strchr(data,',');
+    $--ZDA,hhmmss.ss,xx,xx,xxxx,xx,xx
+    hhmmss.ss = UTC
+    xx = Day, 01 to 31
+    xx = Month, 01 to 12
+    xxxx = Year
+    xx = Local zone description, 00 to +/- 13 hours
+    xx = Local zone minutes description (same sign as hours)
+    */
+   return;
+   char *delim = strchr(data, ',');
    int param = 0;
-   DateTime dt = {0};
+   DateTime dt = { 0 };
 
-   while (delim){
+   while (delim) {
       *delim = '\0';
-      switch (param){
-      case 0: //UTC Time (HHMMSS.SS)
-         dt.hour = getHourFromUtcTimeString(param);
-         dt.minutes = getMinutesFromUtcTimeString(param);
-         dt.seconds = getSecondsFromUtcTimeString(param);
-         dt.deciseconds = getDecisecondsFromUtcTimeString(param);
+      switch (param) {
+      case 0: //UTC Time (HHMMSS.SSS)
+         dt.hour = getHourFromUtcTimeString(data);
+         dt.minute = getMinutesFromUtcTimeString(data);
+         dt.second = getSecondsFromUtcTimeString(data);
+         dt.millisecond = getMillisecondsFromUtcTimeString(data);
          break;
       case 1: //Day
-         day = (int8_t) modp_atoui(data);
+         dt.day = (int8_t) modp_atoui(data);
          break;
       case 2: //Month
-         month = (int8_t) modp_atoui(data);
+         dt.month = (int8_t) modp_atoui(data);
          break;
       case 3: //Year
-         year = (int16_t) modp_atoui(data);
+         dt.partialYear = (int8_t) modp_atoui(data);
          break;
       }
 
@@ -599,8 +599,6 @@ void onLocationUpdated(){
             SAMPLE_DISABLED && startFinishEnabled;
          g_configured = 1;
       }
-
-      float secondsSinceFirstFix = updateTimeSinceFirstFix();
 
       float dist = calcDistancesSinceLastSample();
       g_distance += dist;
