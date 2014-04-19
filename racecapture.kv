@@ -62,8 +62,9 @@
     BoxLayout:
         padding:[2,2]
         orientation: 'horizontal'
-        Label:
+        FieldLabel:
             text: 'Channel Name'
+            halign: 'right'
         ChannelNameSpinner:
             id: channelName
 
@@ -71,8 +72,9 @@
     BoxLayout:
         padding:[2,2]
         orientation: 'horizontal'
-        Label:
+        FieldLabel:
             text: 'Sample Rate'
+            halign: 'right'
         SampleRateSpinner:
             id: sampleRate
 
@@ -183,49 +185,6 @@
             Label:
                 text: 'Engine Oil Temp (C)'
             SampleRateSpinner:
-
-
-<AnalogPulseOutputChannel>:
-    BoxLayout:
-        orientation: 'horizontal'
-        BoxLayout: 
-            padding: [5, 5]
-            orientation: 'vertical'
-            HSeparator:
-                text: 'Configuration'
-            ChannelNameSelectorView:
-                size_hint:[1.0, 0.25]
-            SampleRateSelectorView:
-                size_hint:[1.0, 0.25]
-            BoxLayout:
-                size_hint:[1.0, 0.25]
-                orientation: 'horizontal'
-                Label:
-                    text: 'Logging Scale Factor'
-                TextInput:
-                    
-        BoxLayout:
-            padding: [5, 5]
-            orientation: 'vertical'
-            HSeparator:
-                text: 'Startup Options'
-            BoxLayout:
-                padding: [2, 2]
-                orientation: 'horizontal'
-                Label:
-                    text: 'Duty Cycle (0-100%)'
-                TextInput:
-            BoxLayout:
-                padding: [2, 2]
-                orientation: 'horizontal'
-                Label:
-                    text: 'Period (0-4095)'
-                TextInput:
-            Label:
-                size_hint: (None, 0.5)
-
-
-<AnalogPulseOutputChannelsView>:
 
 <CellTelemetryView>:
     Label:

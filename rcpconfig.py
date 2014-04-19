@@ -165,6 +165,42 @@ class GpioConfig:
             if channelJson:
                 self.channels[i].fromJson(channelJson)
     
+class PwmChannel:
+    def __init__(self, **kwargs):
+        self.channelId = 0
+        self.sampleRate = 0
+        self.outputMode = 0
+        self.loggingMode = 0
+        self.startupPeriod = 0
+        self.startupDutyCycle = 0
+        self.voltageScaling = 0
+        
+        
+    def fromJson(self, json):
+        if (json):
+            self.channelId = json.get('id', self.channelId)
+            self.sampleRate = json.get('sr', self.sampleRate)
+            self.outputMode = json.get('outMode', self.outputMode)
+            self.loggingMode = json.get('logMode', self.loggingMode)
+            self.startupDutyCycle = json.get('stDutyCyc', self.startupDutyCycle)
+            self.startupPeriod = json.get('stPeriod', self.startupPeriod)
+            self.voltageScaling = json.get('vScal', self.voltageScaling)
+    
+class PwmConfig:
+    def __init__(self, **kwargs):
+        self.channelCount = 4
+        self.channels = []
+
+        for i in range (self.channelCount):
+            self.channels.append(PwmChannel())   
+
+    def fromJson(self, json):
+        for i in range (self.channelCount):
+            channelJson = json.get(str(i), None)
+            if channelJson:
+                self.channels[i].fromJson(channelJson)
+        
+        
 class RcpConfig:
     def __init__(self, **kwargs):
         self.analogConfig = AnalogConfig()
@@ -172,6 +208,7 @@ class RcpConfig:
         self.gpsConfig = GpsConfig()
         self.timerConfig = TimerConfig()
         self.gpioConfig = GpioConfig()
+        self.pwmConfig = PwmConfig()
         
 
     def fromJson(self, json):
@@ -190,6 +227,10 @@ class RcpConfig:
         gpioCfgJson = json.get('gpioCfg', None)
         if gpioCfgJson:
             self.gpioConfig.fromJson(gpioCfgJson)
+            
+        pwmCfgJson = json.get('pwmCfg', None)
+        if (pwmCfgJson):
+            self.pwmConfig.fromJson(pwmCfgJson)
              
 
     def toJson(self):

@@ -75,6 +75,7 @@ class RcpSerial:
         gpsCfg = self.getGpsCfg()
         timerCfg = self.getTimerCfg(None)
         gpioCfg = self.getGpioCfg(None)
+        pwmCfg = self.getPwmCfg(None)
         
         rcpCfg = {}
         
@@ -92,6 +93,9 @@ class RcpSerial:
             
         if gpioCfg:
             rcpCfg['gpioCfg'] = gpioCfg['gpioCfg']
+            
+        if pwmCfg:
+            rcpCfg['pwmCfg'] = pwmCfg['pwmCfg']
 
         return rcpCfg
 
@@ -109,6 +113,9 @@ class RcpSerial:
     
     def getGpioCfg(self, channelId):
         return self.sendGet('getGpioCfg', channelId)
+    
+    def getPwmCfg(self, channelId):
+        return self.sendGet('getPwmCfg', channelId)
     
     def decodeScript(self, s):
         return s.replace('\\n','\n').replace('\_',' ').replace('\\r','\r').replace('\\"','"')

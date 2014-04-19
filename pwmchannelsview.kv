@@ -1,0 +1,72 @@
+#:kivy 1.0.4
+
+<AnalogPulseOutputChannel>:
+    BoxLayout:
+        orientation: 'horizontal'
+        BoxLayout: 
+            padding: [5, 5]
+            orientation: 'vertical'
+            HSeparator:
+                text: 'Configuration'
+            ChannelNameSelectorView:
+            	rcid: 'chan'
+                size_hint:[1.0, 0.25]
+            SampleRateSelectorView:
+            	rcid: 'sr'
+                size_hint:[1.0, 0.25]
+            BoxLayout:
+                size_hint:[1.0, 0.25]
+                orientation: 'horizontal'
+                FieldLabel:
+                    text: 'Output Mode'
+                    halign: 'right'
+                PwmOutputModeSpinner:
+                	rcid: 'outputMode'
+            BoxLayout:
+                size_hint:[1.0, 0.25]
+                padding:[2,2]
+                orientation: 'horizontal'
+                FieldLabel:
+                    text: 'Logging Mode'
+                    halign: 'right'
+                    
+                PwmLoggingModeSpinner:
+                	rcid: 'loggingMode'
+            BoxLayout:
+                size_hint:[1.0, 0.25]
+                padding:[2,2]
+                orientation: 'horizontal'
+                FieldLabel:
+                    text: 'Logging Scale Factor'
+                    halign: 'right'
+                TextInput:
+                	rcid: 'vScal'
+                    
+        BoxLayout:
+            padding: [5, 5]
+            orientation: 'vertical'
+            HSeparator:
+                text: 'Startup Options'
+            BoxLayout:
+            	size_hint: (1.0, 0.2)
+                padding: [2, 2]
+                orientation: 'horizontal'
+                FieldLabel:
+                    text: 'Duty Cycle (0-100%)'
+                    halign: 'right'
+                TextInput:
+                	rcid: 'dutyCycle'
+            BoxLayout:
+            	size_hint: (1.0, 0.2)
+                padding: [2, 2]
+                orientation: 'horizontal'
+                FieldLabel:
+                    text: 'Period (0-4095)'
+                    halign: 'right'
+                TextInput:
+                	rcid: 'period'
+            Label:
+                size_hint: (1.0, 0.6)
+
+
+<AnalogPulseOutputChannelsView>:
