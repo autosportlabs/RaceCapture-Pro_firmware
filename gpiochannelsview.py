@@ -8,7 +8,6 @@ from kivy.uix.scrollview import ScrollView
 from kivy.app import Builder
 from utils import *
 
-from configview import *
 from rcpconfig import *
 from mappedspinner import MappedSpinner
 

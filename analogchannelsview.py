@@ -8,7 +8,6 @@ from kivy.uix.scrollview import ScrollView
 from kivy.app import Builder
 from valuefield import *
 from utils import *
-from configview import *
 from rcpconfig import *
 
 Builder.load_file('analogchannelsview.kv')
