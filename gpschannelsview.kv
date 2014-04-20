@@ -1,12 +1,20 @@
 #:kivy 1.0.4
 
 <GPSChannelsView>:
-    spacing: 20
+    padding: [30,30]
     orientation: 'vertical'
-    SampleRateSelectorView:
-    	gps_id: 'sr'
-        size_hint: (1.0,0.1)
+    BoxLayout:
+    	size_hint: (1.0,0.1)
+    	orientation: 'horizontal'
+    	Label:
+    		text: 'SampleRate'
+    	SampleRateSelectorView:
+    		gps_id: 'sr'
+	HSeparator:
+		text: 'Channels'    		
     GridLayout:
+    	spacing: [30,30]
+    	padding: [30,30]
         size_hint: (1.0,0.6)
         cols: 2
         Label:
