@@ -11,4 +11,4 @@ class FieldLabel(Label):
         self.spacing = (20,3)
         
     def width_changed(self, instance, size):
-        self.text_size = (size, instance.height)
+        self.text_size = (size, None)
