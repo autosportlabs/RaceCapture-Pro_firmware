@@ -81,55 +81,6 @@
 <SplashView>:
     Label:
         text: 'Welcome to RaceCapture!'
-
-<TargetConfigView>:
-    cols: 3
-    padding: [10,10]
-    spacing: [10,10]
-    Label:
-        text: 'Target Latitude / Longitude'
-    TextInput:
-        multiline: False
-    TextInput:
-        multiline: False
-    Label:
-        text: 'Target Radius'
-    TextInput:
-    Label:
-        text: 'Degrees'
-        halign: 'left'
-        text_size: (150, None)
-        
-<TrackConfigView>:
-    orientation:  'vertical'
-    HSeparator:
-        text: 'Start/Finish Point'
-    TargetConfigView:
-    HSeparator:
-        text: 'Split Point'
-    TargetConfigView:
-    HSeparator:
-        text: 'Channels'
-    BoxLayout:
-        padding: [5,5]
-        orientation: 'vertical'
-        GridLayout:
-            spacing: [3,3]
-            cols: 2
-            Label:
-                text: 'Current Predicted Time'
-            SampleRateSpinner:
-            Label:
-                text: 'Last Lap Time'
-            SampleRateSpinner:
-            Label:
-                text: 'Split Time'
-            SampleRateSpinner:
-            Label:
-                text: 'Lap Count'
-            SampleRateSpinner:
-    Label:
-        size_hints:(None,0.1)
    
 <CANChannelsView>:
     Label:

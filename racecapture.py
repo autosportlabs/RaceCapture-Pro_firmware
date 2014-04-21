@@ -30,6 +30,7 @@ from gpschannelsview import *
 from timerchannelsview import *
 from gpiochannelsview import *
 from pwmchannelsview import *
+from trackconfigview import *
 from rcpconfig import *
 from channels import *
 
@@ -63,18 +64,6 @@ class ChannelNameSelectorView(BoxLayout):
 class SplashView(BoxLayout):
     pass
 
-class TargetConfigView(GridLayout):
-    def __init__(self, **kwargs):
-        super(TargetConfigView, self).__init__(**kwargs)
-
-class TrackConfigView(BoxLayout):
-    def __init__(self, **kwargs):
-        super(TrackConfigView, self).__init__(**kwargs)
-#        Builder.load_file('analogchannelsview.kv')
-        self.register_event_type('on_config_updated')
-
-    def on_config_updated(self, rcpCfg):
-        pass
 
     
 class CellTelemetryView(BoxLayout):
