@@ -41,6 +41,9 @@ static float	g_prevLongitude;
 static float	g_latitude;
 static float 	g_longitude;
 
+/**
+ * This is NMEA formatted UTCTime.  HHMMSS.SS converted to a float.
+ */
 static float	g_UTCTime;
 static float 	g_prevSecondsSinceMidnight;
 static float 	g_secondsSinceMidnight;
@@ -287,6 +290,9 @@ int getAtSector(){
 	return g_atTarget;
 }
 
+/**
+ * @return NMEA formatted UTCTime as a float (HHMMSS.SS)
+ */
 float getUTCTime(){
 	return g_UTCTime;
 }
@@ -517,7 +523,8 @@ void onLocationUpdated(){
 		}
 
 		if (startFinishEnabled){
-			float utcTime = getUTCTime();
+         // HACK!  Need seconds since epoch.  This solution sucks.
+			float utcTime = getSecondsSinceMidnight();
 			int lapDetected = processStartFinish(g_activeTrack);
 
 			if (lapDetected){
