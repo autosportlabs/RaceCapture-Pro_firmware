@@ -1,50 +1,56 @@
 #:kivy 1.8.0
-
-<TargetConfigView>:
-    cols: 3
-    padding: [10,10]
-    spacing: [10,10]
-    Label:
-        text: 'Target Latitude / Longitude'
-    TextInput:
-        multiline: False
-    TextInput:
-        multiline: False
-    Label:
-        text: 'Target Radius'
-    TextInput:
-    Label:
-        text: 'Degrees'
-        halign: 'left'
-        text_size: (150, None)
         
+<SectorPointView>:
+	orientation: 'horizontal'
+	Label:
+		text: "Sector"
+		rcid: 'label'
+	ValueField:
+		rcid: 'lat'
+	ValueField:
+		rcid: 'lon'
+
 <TrackConfigView>:
-    orientation:  'vertical'
+	orientation: 'vertical'
+	BoxLayout:
+		size_hint: (1.0, 0.2)
+		orientation: 'horizontal'
+		FieldLabel:
+			halign: 'right'
+			text: 'Enable auto track detection'
+		Switch:
+			rcid: 'autoTrack'
     HSeparator:
-        text: 'Start/Finish Point'
-    TargetConfigView:
-    HSeparator:
-        text: 'Split Point'
-    TargetConfigView:
-    HSeparator:
-        text: 'Channels'
+        text: 'Manual Configuration'
+	BoxLayout:
+		size_hint: (1.0, 0.2)
+		orientation: 'horizontal'
+		FieldLabel:
+			halign: 'right'
+			text: 'Separate start and finish lines'
+		Switch:
+			rcid: 'separateSfLine'
     BoxLayout:
-        padding: [5,5]
-        orientation: 'vertical'
-        GridLayout:
-            spacing: [3,3]
-            cols: 2
-            Label:
-                text: 'Current Predicted Time'
-            SampleRateSpinner:
-            Label:
-                text: 'Last Lap Time'
-            SampleRateSpinner:
-            Label:
-                text: 'Split Time'
-            SampleRateSpinner:
-            Label:
-                text: 'Lap Count'
-            SampleRateSpinner:
-    Label:
-        size_hints:(None,0.1)
+    	padding: (30, 5)
+    	orientation: 'vertical'
+    	size_hint: (1.0, 1.0)
+	    BoxLayout:
+	    	size_hint: (1.0, 0.2)
+			orientation: 'horizontal'
+	    	Label: 
+	    		text: 'Type'
+	    	Label:
+	    		text: 'Latitude'
+			Label:
+				text: 'Longitude'
+	    ScrollView:
+	    	size_hint: (1.0,0.8)
+			do_scroll_x: False
+	    	GridLayout:
+	    		spacing: (5,5)
+	    		rcid: 'sectorsGrid'
+	    		cols: 1
+	Label:
+		size_hint:(1.0, 0.2)
+
+    
