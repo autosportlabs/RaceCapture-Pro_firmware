@@ -4,7 +4,7 @@
 	orientation: 'horizontal'
 	Label:
 		text: "Sector"
-		rcid: 'label'
+		rcid: 'title'
 	ValueField:
 		rcid: 'lat'
 	ValueField:
@@ -22,14 +22,23 @@
 			rcid: 'autoTrack'
     HSeparator:
         text: 'Manual Configuration'
-	BoxLayout:
+    BoxLayout:
 		size_hint: (1.0, 0.2)
-		orientation: 'horizontal'
+    	orientation: 'vertical'
+		BoxLayout:
+			orientation: 'horizontal'
+			FieldLabel:
+				halign: 'right'
+				font_size: 20
+				text: 'Separate start and finish lines'
+			Switch:
+				rcid: 'separateSfLine'
 		FieldLabel:
-			halign: 'right'
-			text: 'Separate start and finish lines'
-		Switch:
-			rcid: 'separateSfLine'
+			halign: 'left'
+			color: 0.5, 0.5, 0.5, 1.0
+			text: "Specify a separate start / finish line for Stage Rally, Hill Climb or Autocross type courses; Leave off for circuit type courses"
+
+		
     BoxLayout:
     	padding: (30, 5)
     	orientation: 'vertical'
