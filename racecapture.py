@@ -247,8 +247,7 @@ class RaceCaptureApp(App):
         self.tree = tree
         self.toolbar = toolbar
 
-        outer = BoxLayout(orientation='vertical', 
-                            padding=5, spacing=5, size=(1024,576), 
+        outer = BoxLayout(orientation='vertical', size=(1024,576), 
                             size_hint=(None, None), pos_hint={'center_x': .5, 'center_y': .5})
 
         outer.add_widget(toolbar)
