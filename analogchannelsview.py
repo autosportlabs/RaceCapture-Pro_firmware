@@ -21,12 +21,16 @@ class AnalogChannelsView(BoxLayout):
 
         super(AnalogChannelsView, self).__init__(**kwargs)
         accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=80 * self.channelCount)
-    
+
+        editors = []    
         for i in range(self.channelCount):
             channel = AccordionItem(title='Analog ' + str(i + 1))
             editor = AnalogChannel(id='analog' + str(i)) 
             channel.add_widget(editor)
             accordion.add_widget(channel)
+            editors.append(editor)
+            
+        self.editors = editors
     
         #create a scroll view, with a size < size of the grid
         sv = ScrollView(size_hint=(1.0,1.0), do_scroll_x=False)
@@ -38,10 +42,10 @@ class AnalogChannelsView(BoxLayout):
         channelCount = analogCfg.channelCount
 
         for i in range(channelCount):
-            editor = kvquery(self, id='analog' + str(i)).next()
+            editor = self.editors[i]
 
             analogChannel = analogCfg.channels[i]
-            channelSpinner = kvquery(editor, rcid='chan').next()
+            channelSpinner = kvFind(editor, 'rcid', 'chan')
             channelSpinner.setValue(self.channels.getNameForId(analogChannel.channelId))
 
             sampleRateSpinner = kvquery(editor, rcid='sr').next()

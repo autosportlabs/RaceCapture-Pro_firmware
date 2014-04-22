@@ -11,6 +11,7 @@
 		rcid: 'lon'
 
 <TrackConfigView>:
+	padding: (10, 10)
 	orientation: 'vertical'
 	BoxLayout:
 		size_hint: (1.0, 0.2)
@@ -24,6 +25,7 @@
         text: 'Manual Configuration'
     BoxLayout:
 		size_hint: (1.0, 0.2)
+		spacing: (5,5)
     	orientation: 'vertical'
 		BoxLayout:
 			orientation: 'horizontal'
@@ -36,7 +38,7 @@
 		FieldLabel:
 			halign: 'left'
 			color: 0.5, 0.5, 0.5, 1.0
-			text: "Specify a separate start / finish line for Stage Rally, Hill Climb or Autocross type courses; Leave off for circuit type courses"
+			text: "Specify a separate start / finish line for Stage Rally, Hill Climb or Autocross type courses. Leave off for circuit type courses"
 
 		
     BoxLayout:
