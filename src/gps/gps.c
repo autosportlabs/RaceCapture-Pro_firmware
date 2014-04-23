@@ -12,6 +12,7 @@
 #include "predictive_timer_2.h"
 #include "printk.h"
 #include <math.h>
+#include <stdint.h>
 
 //kilometers
 #define DISTANCE_SCALING 6371
@@ -71,7 +72,48 @@ static float g_distance;
 /**
  * Date and time this GPS fix was taken.
  */
-static DateTime g_dateTime;
+static DateTime g_dtFirstFix;
+static DateTime g_dtLastFix;
+
+/**
+ * Does a partial update of the g_dtLastFix value.  Happens when we only have the UTC time string.
+ * @param fixDateTime
+ */
+static void updatePartialDateTime(DateTime fixDateTime) {
+   g_dtLastFix.millisecond = fixDateTime.millisecond;
+   g_dtLastFix.second = fixDateTime.second;
+   g_dtLastFix.minute = fixDateTime.minute;
+   g_dtLastFix.hour = fixDateTime.hour;
+}
+
+/**
+ * Performs a full update of the g_dtLastFix value.  Also update the g_dtFirstFix value if it hasn't
+ * already been set.
+ * @param fixDateTime The DateTime of the GPS fix.
+ */
+static void updateFullDateTime(DateTime fixDateTime) {
+   g_dtLastFix = fixDateTime;
+   if (g_dtFirstFix.partialYear == 0)
+      g_dtFirstFix = fixDateTime;
+}
+
+/**
+ * Like atoi, but is non-destructive to the string passed in and provides an offset and length
+ * functionality.  Max Len is 3.
+ * @param str The start of the String to parse.
+ * @param offset How far in to start reading the string.
+ * @param len The number of characters to read.
+ */
+static int atoiOffsetLenSafe(const char *str, int offset, int len) {
+   char buff[4] = { 0 };
+
+   // Bounds check.  Don't want any bleeding hearts in here...
+   if (len > (sizeof(buff) - 1))
+         len = sizeof(buff) - 1;
+
+   memcpy(buff, str + offset, len);
+   return modp_atoi(buff);
+}
 
 //Parse Global Positioning System Fix Data.
 static void parseGGA(char *data) {
@@ -93,8 +135,16 @@ static void parseGGA(char *data) {
       case 0: {
          unsigned int len = strlen(data);
          if (len > 0 && len < UTC_TIME_BUFFER_LEN) {
+            DateTime dt;
+
             setUTCTime(modp_atof(data));
             secondsSinceMidnight = calculateSecondsSinceMidnight(data);
+
+            dt.hour = (int8_t) atoiOffsetLenSafe(data, 0, 2);
+            dt.minute = (int8_t) atoiOffsetLenSafe(data, 2, 2);
+            dt.second = (int8_t) atoiOffsetLenSafe(data, 4, 2);
+            dt.millisecond = (int8_t) atoiOffsetLenSafe(data, 7, 3);
+            updatePartialDateTime(dt);
          }
       }
          break;
@@ -225,24 +275,6 @@ static void parseGLL(char *data) {
 
 }
 
-/**
- * Like atoi, but is non-destructive to the string passed in and provides an offset and length
- * functionality.  Max Len is 3.
- * @param str The start of the String to parse.
- * @param offset How far in to start reading the string.
- * @param len The number of characters to read.
- */
-static int atoiOffsetLenSafe(const char *str, int offset, int len) {
-   char buff[4] = { 0 };
-
-   // Bounds check.  Don't want any bleeding hearts in here...
-   if (len > (sizeof(buff) - 1))
-         len = sizeof(buff) - 1;
-
-   memcpy(buff, str + offset, len);
-   return modp_atoi(buff);
-}
-
 //Parse Time & Date
 static void parseZDA(char *data) {
    /*
@@ -315,7 +347,7 @@ static void parseRMC(char *data) {
       delim = strchr(delim, ',');
    }
 
-   g_dateTime = dt;
+   updateFullDateTime(dt);
 }
 
 void resetGpsDistance() {
@@ -409,8 +441,8 @@ void setGPSSpeed(float speed) {
    g_speed = speed;
 }
 
-DateTime getDateTime() {
-   return g_dateTime;
+DateTime getLastFixDateTime() {
+   return g_dtLastFix;
 }
 
 static int withinGpsTarget(const GeoPoint *point, float radius) {
@@ -561,6 +593,7 @@ void initGPS() {
    g_sector = 1;
    g_lastSector = 0;
    resetPredictiveTimer();
+   g_dtFirstFix = g_dtLastFix = (DateTime) { 0 };
 }
 
 static void flashGpsStatusLed() {

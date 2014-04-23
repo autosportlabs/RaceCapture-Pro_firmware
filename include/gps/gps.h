@@ -71,6 +71,6 @@ void setGPSSpeed(float speed);
 /**
  * Returns Date time information as provided by the GPS system.
  */
-DateTime getDateTime();
+DateTime getLastFixDateTime();
 
 #endif /*GPS_H_*/
