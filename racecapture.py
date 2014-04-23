@@ -57,14 +57,9 @@ class SampleRateSelectorView(BoxLayout):
     def setValue(self, value):
         self.ids.sampleRate.text = self.valueMap[value]
 
-class ChannelNameSelectorView(BoxLayout):
-    def setValue(self, value):
-        self.ids.channelName.text = value
 
 class SplashView(BoxLayout):
     pass
-
-
     
 class CellTelemetryView(BoxLayout):
     def __init__(self, **kwargs):

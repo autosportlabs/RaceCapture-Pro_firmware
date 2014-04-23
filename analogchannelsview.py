@@ -9,23 +9,24 @@ from kivy.app import Builder
 from valuefield import *
 from utils import *
 from rcpconfig import *
+from channelnameselectorview import ChannelNameSelectorView
 
 Builder.load_file('analogchannelsview.kv')
 
 class AnalogChannelsView(BoxLayout):
     def __init__(self, **kwargs):
+        super(AnalogChannelsView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
 
         self.channelCount = kwargs['channelCount']
         self.channels = kwargs['channels']
 
-        super(AnalogChannelsView, self).__init__(**kwargs)
         accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=80 * self.channelCount)
 
         editors = []    
         for i in range(self.channelCount):
             channel = AccordionItem(title='Analog ' + str(i + 1))
-            editor = AnalogChannel(id='analog' + str(i)) 
+            editor = AnalogChannel(id='analog' + str(i))
             channel.add_widget(editor)
             accordion.add_widget(channel)
             editors.append(editor)
@@ -43,7 +44,10 @@ class AnalogChannelsView(BoxLayout):
 
         for i in range(channelCount):
             editor = self.editors[i]
+            
+            c = editor.children[2].children
 
+            print("before kvfind")            
             analogChannel = analogCfg.channels[i]
             channelSpinner = kvFind(editor, 'rcid', 'chan')
             channelSpinner.setValue(self.channels.getNameForId(analogChannel.channelId))

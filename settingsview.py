@@ -15,7 +15,7 @@ Builder.load_file('settingsview.kv')
 class SettingsView(BoxLayout):
     help_text = StringProperty('')
     label_text = StringProperty('')
-    
+    rcid = StringProperty('')
     def __init__(self, **kwargs):
         super(SettingsView, self).__init__(**kwargs)
         self.bind(help_text = self.on_help_text)

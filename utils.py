@@ -272,17 +272,20 @@ class OrderedDict(dict, DictMixin):
 
 
 def kvFind(w, k, v):
-    #print('kvFind')
-    for child in w.children:
-        att = getattr(child, k, None)
-        #print('child: ' + str(child) + ' ' + str(att))
+    print("kvFind " + str(w) + " " + k + ' ' + v)
+    if hasattr(w, k):
+        att = getattr(w, k, None)
+        print("= " + str(att))    
         if v == att:
-            return child
-        sub = kvFind(child, k, v)
-        if sub:
-            return sub
-
-    return None
+            print("found " + k + " " + v)
+            return w
+        else:
+            print("searching children")
+            for child in w.children:
+                foundWidget = kvFind(child, k, v)
+                if foundWidget:
+                    return foundWidget
+            return None
 
 def breadth_first(root, children=iter):
     '''walk tree is a generator function for breadth first tree traversal.
