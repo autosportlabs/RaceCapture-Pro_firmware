@@ -14,5 +14,6 @@ test/rcpsim
 *.elf
 Race*.zip
 .cproject
+.externalToolBuilders
 .project
 .settings
