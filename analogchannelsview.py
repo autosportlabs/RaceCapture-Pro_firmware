@@ -47,7 +47,6 @@ class AnalogChannelsView(BoxLayout):
             
             c = editor.children[2].children
 
-            print("before kvfind")            
             analogChannel = analogCfg.channels[i]
             channelSpinner = kvFind(editor, 'rcid', 'chan')
             channelSpinner.setValue(self.channels.getNameForId(analogChannel.channelId))

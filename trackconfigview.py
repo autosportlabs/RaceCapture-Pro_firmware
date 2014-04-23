@@ -24,7 +24,7 @@ class TrackConfigView(BoxLayout):
         super(TrackConfigView, self).__init__(**kwargs)
         self.separateStartFinish = False        
         self.register_event_type('on_config_updated')
-        
+
         sectors = kvFind(self, 'rcid', 'sectorsGrid')
         self.addSectorViews(sectors)
             

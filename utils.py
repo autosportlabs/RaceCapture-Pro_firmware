@@ -8,7 +8,7 @@ __all__ = ('intersection', 'difference', 'curry', 'strtotuple',
            'get_color_from_hex', 'get_random_color',
            'is_color_transparent', 'boundary',
            'deprecated', 'SafeList',
-           'interpolate', 'OrderedDict', 'kvFind',
+           'interpolate', 'OrderedDict', 'kvFind', 'kvPrintAttr',
            'breadth_first', 'walk_tree', 'filter_tree', 'kvquery')
 
 from re import match, split
@@ -271,21 +271,31 @@ class OrderedDict(dict, DictMixin):
         return not self == other
 
 
+def kvPrintAttr(w, k):
+    print 'kvPrintAttr ' + str(w) + ' ',
+    if hasattr(w, k):
+        print(getattr(w, k))
+    else:
+        print 'None'
+    for c in w.children:
+        kvPrintAttr(c, k)
+        
 def kvFind(w, k, v):
-    print("kvFind " + str(w) + " " + k + ' ' + v)
+    #print "kvFind " + str(w) + " for " + k + ':' + v ,
     if hasattr(w, k):
         att = getattr(w, k, None)
-        print("= " + str(att))    
+      #  print("= " + str(att)),
         if v == att:
-            print("found " + k + " " + v)
+     #       print ' found ' + k + ':' + v + '! ' + str(w)
             return w
-        else:
-            print("searching children")
-            for child in w.children:
-                foundWidget = kvFind(child, k, v)
-                if foundWidget:
-                    return foundWidget
-            return None
+
+    #print 'searching children for ' + k + ':' + v 
+    for child in w.children:
+     #   print '\nsearching child ' + str(child) + ' of ' + str(w) + ' for ' + k + ':' + v 
+        foundWidget = kvFind(child, k, v)
+        if foundWidget:
+            return foundWidget
+    return None
 
 def breadth_first(root, children=iter):
     '''walk tree is a generator function for breadth first tree traversal.
