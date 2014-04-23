@@ -867,7 +867,7 @@ void LoggerApiTest::testGetLapCfg(){
 	testGetLapConfigFile("getLapCfg1.json");
 }
 
-void LoggerApiTest::testSetTrackConfigFile(string filename){
+void LoggerApiTest::testSetTrackConfigFile(string filename, int sectors){
 	processApiGeneric(filename);
 	char *txBuffer = mock_getTxBuffer();
 
@@ -882,7 +882,7 @@ void LoggerApiTest::testSetTrackConfigFile(string filename){
 
 	float startingValue = 1.1;
 
-	for (int i = 0; i < SECTOR_COUNT; i++){
+	for (int i = 0; i < sectors; i++){
 		CPPUNIT_ASSERT_CLOSE_ENOUGH(startingValue, cfg->track.sectors[i].latitude);
 		startingValue++;
 		CPPUNIT_ASSERT_CLOSE_ENOUGH(startingValue, cfg->track.sectors[i].longitude);
@@ -891,7 +891,7 @@ void LoggerApiTest::testSetTrackConfigFile(string filename){
 }
 
 void LoggerApiTest::testSetTrackCfg(){
-	testSetTrackConfigFile("setTrackCfg1.json");
+	testSetTrackConfigFile("setTrackCfg1.json", 10);
 }
 
 void LoggerApiTest::testGetTrackConfigFile(string filename){

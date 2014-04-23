@@ -115,7 +115,7 @@ private:
   void testGetGpsConfigFile(string filename);
   void testSetGpsConfigFile(string filename, unsigned char channelsEnabled, unsigned short sampleRate);
   void testGetTrackConfigFile(string filename);
-  void testSetTrackConfigFile(string filename);
+  void testSetTrackConfigFile(string filename, int includedSectors);
   void testSetLapConfigFile(string filename);
   void testGetLapConfigFile(string filename);
   void testCalibrateImuFile(string filename);

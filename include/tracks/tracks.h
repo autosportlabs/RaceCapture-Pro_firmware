@@ -5,11 +5,16 @@
 #include "default_tracks.h"
 #include "geopoint.h"
 
-#define TRACKS_COUNT			100
-#define SECTOR_COUNT			10
+#define TRACKS_COUNT			40
+#define SECTOR_COUNT			20
+
+
+#define TRACK_TYPE_CIRCUIT 		0
+#define TRACK_TYPE_SINGLE		1
 
 typedef struct _Track{
 	float radius;
+	char track_type;
 	union{
 		GeoPoint sectors[SECTOR_COUNT];
 		GeoPoint startFinish;
