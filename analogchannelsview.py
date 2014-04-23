@@ -51,14 +51,14 @@ class AnalogChannelsView(BoxLayout):
             channelSpinner = kvFind(editor, 'rcid', 'chan')
             channelSpinner.setValue(self.channels.getNameForId(analogChannel.channelId))
 
-            sampleRateSpinner = kvquery(editor, rcid='sr').next()
+            sampleRateSpinner = kvFind(editor, 'rcid', 'sr')
             sampleRateSpinner.setValue(analogChannel.sampleRate)
 
             scalingMode = analogChannel.scalingMode
 
-            checkRaw = kvquery(editor, rcid='smRaw').next()
-            checkLinear = kvquery(editor, rcid='smLinear').next()
-            checkMapped = kvquery(editor, rcid='smMapped').next()
+            checkRaw = kvFind(editor, 'rcid','smRaw')
+            checkLinear = kvFind(editor, 'rcid', 'smLinear')
+            checkMapped = kvFind(editor, 'rcid', 'smMapped')
             if scalingMode == 0:
                 checkRaw.active = True
                 checkLinear.active = False
@@ -72,7 +72,7 @@ class AnalogChannelsView(BoxLayout):
                 checkLinear.active = False
                 checkMapped.active = True
             
-            mapEditor = kvquery(editor, rcid='mapEditor').next()
+            mapEditor = kvFind(editor, 'rcid', 'mapEditor')
             mapEditor.update(analogChannel.scalingMap)
 
 
@@ -95,21 +95,21 @@ class AnalogScalingMapEditor(BoxLayout):
         lastField = None    
 
     def setTabStops(self, mapSize):
-        voltsCellFirst = kvquery(self, rcid='v_0').next()
+        voltsCellFirst = kvFind(self, 'rcid', 'v_0')
         voltsCellNext = None
         for i in range(mapSize):
-            voltsCell = kvquery(self, rcid='v_' + str(i)).next()
-            scaledCell = kvquery(self, rcid='s_' + str(i)).next()
+            voltsCell = kvFind(self, 'rcid', 'v_' + str(i))
+            scaledCell = kvFind(self, 'rcid', 's_' + str(i))
             voltsCell.set_next(scaledCell)
             if (i < mapSize - 1):
-                voltsCellNext = kvquery(self, rcid='v_' + str(i + 1)).next()
+                voltsCellNext = kvFind(self, 'rcid', 'v_' + str(i + 1))
             else:
                 voltsCellNext = voltsCellFirst
             scaledCell.set_next(voltsCellNext)
 
     def update(self, scalingMap):
-        graph = kvquery(self, rcid='scalingGraph').next()
-        editor = kvquery(self, rcid='mapEditor').next()
+        graph = kvFind(self, 'rcid', 'scalingGraph')
+        editor = kvFind(self, 'rcid', 'mapEditor')
 
         mapSize = self.mapSize
         self.setTabStops(mapSize)
@@ -127,8 +127,8 @@ class AnalogScalingMapEditor(BoxLayout):
             if minScaled == None or scaled < minScaled:
                 minScaled = scaled
 
-            voltsCell = kvquery(editor, rcid='v_' + str(i)).next()
-            scaledCell = kvquery(editor, rcid='s_' + str(i)).next()
+            voltsCell = kvFind(editor, 'rcid', 'v_' + str(i))
+            scaledCell = kvFind(editor, 'rcid', 's_' + str(i))
 
             voltsCell.text = '{:.3g}'.format(volts)
             scaledCell.text = '{:.3g}'.format(scaled)

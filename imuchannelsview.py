@@ -51,8 +51,8 @@ class ImuChannelsView(BoxLayout):
         super(ImuChannelsView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
         
-        accelContainer = kvquery(self, imu_id='ac').next()
-        gyroContainer = kvquery(self, imu_id='gc').next()
+        accelContainer = kvFind(self, 'rcid', 'ac')
+        gyroContainer = kvFind(self, 'rcid', 'gc')
 
         channelEditors = []
         
@@ -64,7 +64,7 @@ class ImuChannelsView(BoxLayout):
         
     def appendImuChannels(self, container, channelEditors, ids):
         for i in ids:
-            editor = ImuChannel(imu_id='imu_chan_' + str(i))
+            editor = ImuChannel(rcid='imu_chan_' + str(i))
             container.add_widget(editor)
             channelEditors.append(editor)
         
@@ -76,17 +76,17 @@ class ImuChannelsView(BoxLayout):
         for i in range(channelCount):
             imuChannel = imuCfg.channels[i]
             editor = self.channelEditors[i]
-            label = kvquery(editor, imu_id='label').next()
-            enabled = kvquery(editor, imu_id='enabled').next()
-            orientation = kvquery(editor, imu_id='orientation').next()
-            mapping = kvquery(editor, imu_id='mapping').next()
+            label = kvFind(editor, 'rcid', 'label')
+            enabled = kvFind(editor, 'rcid', 'enabled')
+            orientation = kvFind(editor, 'rcid', 'orientation')
+            mapping = kvFind(editor, 'rcid', 'mapping')
             
             if i in(IMU_ACCEL_CHANNEL_IDS):
                 mapping.setImuType('accel')
             elif i in(IMU_GYRO_CHANNEL_IDS):
                 mapping.setImuType('gyro')
                 
-            zeroValue = kvquery(editor, imu_id='zeroValue').next()
+            zeroValue = kvFind(editor, 'rcid', 'zeroValue')
         
             label.text = self.channelLabels[i]
             enabled.active = not imuChannel.mode == 0

@@ -5,20 +5,20 @@
     padding: [5,5]
     spacing: [5,5]
     Label:
-        imu_id: 'label'   
+        rcid: 'label'   
         text: ''
     CheckBox:
-        imu_id: 'enabled'
+        rcid: 'enabled'
     OrientationSpinner:
-        imu_id: 'orientation'
+        rcid: 'orientation'
     ImuMappingSpinner:
-    	imu_id: 'mapping'
+    	rcid: 'mapping'
     TextInput:
-    	imu_id: 'zeroValue'
+    	rcid: 'zeroValue'
         text: ''
 
 <AccelChannelsView>:
-	imu_id: 'ac'
+	rcid: 'ac'
     orientation: 'vertical'
     size_hint: (1.0,0.6)
     BoxLayout:
@@ -35,7 +35,7 @@
             text: 'Zero Level'
 
 <GyroChannelsView>:
-	imu_id: 'gc'
+	rcid: 'gc'
     orientation: 'vertical'
     size_hint: (1.0,0.3)
     padding: [5,5]

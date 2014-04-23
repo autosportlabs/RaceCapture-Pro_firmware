@@ -49,16 +49,16 @@ class GPIOChannelsView(BoxLayout):
 
         for i in range(channelCount):
             
-            editor = kvquery(self, id='gpio' + str(i)).next()
+            editor = kvFind(self, 'id', 'gpio' + str(i))
             gpioChannel = gpioCfg.channels[i]
             
-            channelSpinner = kvquery(editor, rcid='chan').next()
+            channelSpinner = kvFind(editor, 'rcid', 'chan')
             channelSpinner.setValue(self.channels.getNameForId(gpioChannel.channelId))
 
-            sampleRateSpinner = kvquery(editor, rcid='sr').next()
+            sampleRateSpinner = kvFind(editor, 'rcid', 'sr')
             sampleRateSpinner.setValue(gpioChannel.sampleRate)
             
-            modeSpinner = kvquery(editor, rcid='mode').next()
+            modeSpinner = kvFind(editor, 'rcid', 'mode')
             modeSpinner.setFromValue(gpioChannel.mode)
             
             

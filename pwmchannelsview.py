@@ -53,28 +53,28 @@ class AnalogPulseOutputChannelsView(BoxLayout):
 
         for i in range(channelCount):
             
-            editor = kvquery(self, id='pwm' + str(i)).next()
+            editor = kvFind(self, 'id', 'pwm' + str(i))
             pwmChannel = pwmCfg.channels[i]
             
-            channelSpinner = kvquery(editor, rcid='chan').next()
+            channelSpinner = kvFind(editor, 'rcid', 'chan')
             channelSpinner.setValue(self.channels.getNameForId(pwmChannel.channelId))
 
-            sampleRateSpinner = kvquery(editor, rcid='sr').next()
+            sampleRateSpinner = kvFind(editor, 'rcid', 'sr')
             sampleRateSpinner.setValue(pwmChannel.sampleRate)
             
-            voltageScalingField = kvquery(editor, rcid='vScal').next()
+            voltageScalingField = kvFind(editor, 'rcid', 'vScal')
             voltageScalingField.text =  '{:.3g}'.format(pwmChannel.voltageScaling)
             
-            startupDutyCycle = kvquery(editor, rcid='dutyCycle').next()
+            startupDutyCycle = kvFind(editor, 'rcid', 'dutyCycle')
             startupDutyCycle.text = str(pwmChannel.startupDutyCycle)
             
-            startupPeriod = kvquery(editor, rcid='period').next()
+            startupPeriod = kvFind(editor, 'rcid', 'period')
             startupPeriod.text = str(pwmChannel.startupPeriod)
             
-            outputModeSpinner = kvquery(editor, rcid='outputMode').next()
+            outputModeSpinner = kvFind(editor, 'rcid', 'outputMode')
             outputModeSpinner.setFromValue(pwmChannel.outputMode)
             
-            loggingModeSpinner = kvquery(editor, rcid='loggingMode').next()
+            loggingModeSpinner = kvFind(editor, 'rcid', 'loggingMode')
             loggingModeSpinner.setFromValue(pwmChannel.loggingMode)
             
             
