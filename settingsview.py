@@ -13,29 +13,28 @@ from kivy.properties import StringProperty
 Builder.load_file('settingsview.kv')
 
 class SettingsView(BoxLayout):
-    help_text = StringProperty('foobar')
+    help_text = StringProperty('')
+    label_text = StringProperty('')
+    
     def __init__(self, **kwargs):
         super(SettingsView, self).__init__(**kwargs)
-        fieldLabelText = kwargs.get('label_text', '')
-        print("help texddddddddddddddddddddddddddt: " + self.help_text)        
-        settingsCtrl = kwargs.get('settings_ctrl', '')
+        self.bind(help_text = self.on_help_text)
+        self.bind(label_text = self.on_label_text)
         
-        fieldLabel = kvFind(self, 'rcid', 'fieldLabel')
-        settingsCtrlContainer = kvFind(self, 'rcid', 'settingsCtrl')
-        helpLabel = kvFind(self, 'rcid', 'helpLabel')
         
-        fieldLabel.text = fieldLabelText
-        helpLabel.text = helpText
-        if settingsCtrl:
-            settingsCtrlContainer.add_widget(settingsCtrl)
+    def on_help_text(self, instance, value):
+        pass
+
+    def on_label_text(self, instance, value):
+        pass
         
         
 class SettingsViewSwitch(SettingsView):
     def __init__(self, **kwargs):
-        switch = Switch()
-        kwargs['settings_ctrl'] =  switch
-        self.switch = switch
-        print("the argsss" + str(kwargs))
+#        switch = Switch()
+#        kwargs['settings_ctrl'] =  switch
+#        self.switch = switch
+#        print("the argsss" + str(kwargs))
         super(SettingsViewSwitch, self).__init__(**kwargs)
         
     
