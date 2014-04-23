@@ -1,40 +1,3 @@
-================================
-================================
-Instructions and Release Notes
-================================
-================================
-
-**Save your configuration
-
-WARNING: Updating firmware restores the default configuration on RaceCapture/Pro
-Be sure to save your configuration using the Race Analyzer software.
-
-================================
-Windows
-================================
-
-Flash the firmware by double-clicking the flashRCP.bat file in Windows Explorer and follow the instructions.
-
-================================
-Linux
-================================
-While holding down the button on RaceCapture/Pro, plug the unit into USB. You should see 3 green LEDs light up.
-
-Now flash the firmware by executing the flasher application at the command line:
-
-#flasher RaceCapturePro-X.X.X.elf
-
-================================
-Flashing process
-================================
-The flasher application should find the RaceCapture/Pro device and then start flashing new firmware. The red front panel LED on RaceCapture/Pro will flash while firmware is written.
-
-Once the firmware completes flashing, RaceCapture/Pro will reset and run normally with the default configuration.
-
-================================
-Firmware Changelog
-================================
-
 ===1.2.7===
 RPM/Timer input value now goes to zero when input signal goes away (i.e. when internal timer counter overflows)
 Fixed problem where zero values in log file were not being recorded (treated as nulls)
@@ -143,7 +106,7 @@ Fixed accelerometer calibration issues
 - Select telemetry logging mode at strup based on configuration
 - Fixed SD card detection / init bug
 - Removed extraneous debug code
-- Removed activation of LED3 during cellular initialization 
+- Removed activation of LED3 during cellular initialization
 
 ===0.3.0===
 
@@ -156,7 +119,3 @@ Fixed accelerometer calibration issues
 - Various fixes/ updates to support RaceAnalyzer application
 - Fixed script flashing routine
 - Added sample runtime channels
-
-
-
-
