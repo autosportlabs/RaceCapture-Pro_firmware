@@ -11,16 +11,13 @@
 		rcid: 'lon'
 
 <TrackConfigView>:
-	padding: (10, 10)
+	padding: (10,10)
+	spacing: 10
 	orientation: 'vertical'
-	BoxLayout:
-		size_hint: (1.0, 0.2)
-		orientation: 'horizontal'
-		FieldLabel:
-			halign: 'right'
-			text: 'Enable auto track detection'
-		Switch:
-			rcid: 'autoTrack'
+	SettingsViewSwitch:
+		rcid: 'autoTrack'
+		label_text: 'Enable automatic track detection'
+		help_text: 'Automatically detect and configure the race track upon GPS lock, after power-up. If you want a fixed configuration, leave off and configure your start/finish and sector targets below'
     HSeparator:
         text: 'Manual Configuration'
     SettingsViewSwitch:
