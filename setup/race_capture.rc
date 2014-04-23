@@ -1,0 +1,16 @@
+#!/bin/bash
+#
+# RC file for race-capture
+#
+# Copy this file to your home directory and update it per your configuration.
+#
+
+# Working directory for the Race Capture Code (directory where you checked out the code)
+export RC_WORK_DIR="$HOME/Devel/Racecapture"
+
+# Paths to setup for the compiler
+export RC_CC_BINDIR="$RC_WORK_DIR/gnuarm-4.0.2/bin"
+
+
+# Setup the environment variables.  May change this later.
+export PATH="${PATH}:${RC_CC_BINDIR}"
