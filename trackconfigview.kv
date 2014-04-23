@@ -23,24 +23,9 @@
 			rcid: 'autoTrack'
     HSeparator:
         text: 'Manual Configuration'
-    BoxLayout:
-		size_hint: (1.0, 0.2)
-		spacing: (5,5)
-    	orientation: 'vertical'
-		BoxLayout:
-			orientation: 'horizontal'
-			FieldLabel:
-				halign: 'right'
-				font_size: 20
-				text: 'Separate start and finish lines'
-			Switch:
-				rcid: 'separateSfLine'
-		FieldLabel:
-			halign: 'left'
-			color: 0.5, 0.5, 0.5, 1.0
-			text: "Specify a separate start / finish line for Stage Rally, Hill Climb or Autocross type courses. Leave off for circuit type courses"
-
-		
+    SettingsViewSwitch:
+    	label_text: 'Separate start and finish lines'
+    	help_text: 'Specify a separate start / finish line for Stage Rally, Hill Climb or Autocross type courses. Leave off for circuit type courses'
     BoxLayout:
     	padding: (30, 5)
     	orientation: 'vertical'
@@ -63,5 +48,6 @@
 	    		cols: 1
 	Label:
 		size_hint:(1.0, 0.2)
+		text:
 
     

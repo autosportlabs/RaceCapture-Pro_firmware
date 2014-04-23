@@ -1,0 +1,24 @@
+#:kivy 1.8.0
+
+
+<SettingsViewSwitch>:
+
+<SettingsView>:
+	size_hint: (1.0, 0.2)
+	spacing: (5,5)
+	orientation: 'vertical'
+	BoxLayout:
+		orientation: 'horizontal'
+		FieldLabel:
+			rcid: 'fieldLabel'
+			halign: 'right'
+			font_size: 20
+			text: ''
+		BoxLayout:
+			rcid: 'settingsCtrl'
+	HelpLabel:
+		rcid: 'helpLabel'
+		halign: 'left'
+		text: ''
+
+	

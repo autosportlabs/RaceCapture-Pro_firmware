@@ -5,6 +5,9 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.app import Builder
+from helplabel import HelpLabel
+from fieldlabel import FieldLabel
+from settingsview import *
 from utils import *
 
 Builder.load_file('trackconfigview.kv')
