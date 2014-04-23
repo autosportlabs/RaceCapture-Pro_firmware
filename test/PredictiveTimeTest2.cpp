@@ -104,8 +104,6 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
 			float speed = modp_atof(speedRaw.c_str());
 			float utcTime = modp_atof(timeRaw.c_str());
 
-         if (sfCrossTime < 0)
-           sfCrossTime = utcTime;
 
 			printf("---\nlat = %f : lon = %f : speed = %f : time = %f\n", lat, lon, speed, utcTime);
 
@@ -119,7 +117,7 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
 
 			GeoPoint gp;
 			populateGeoPoint(&gp);
-
+			float predTime = getPredictedTime(gp, secondsSinceMidnight);
 			printf("Lap #%d - Predicted Time: %f\n", getLapCount(), predTime);
 		}
 	}
