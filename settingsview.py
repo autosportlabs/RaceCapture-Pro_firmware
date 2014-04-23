@@ -8,14 +8,13 @@ from fieldlabel import FieldLabel
 from helplabel import HelpLabel
 from kivy.app import Builder
 from utils import *
-from kivy.properties import StringProperty, ObjectProperty
+from kivy.properties import StringProperty
 
 Builder.load_file('settingsview.kv')
 
 class SettingsView(BoxLayout):
     help_text = StringProperty('')
     label_text = StringProperty('')
-    edit_widget = ObjectProperty(None)
     
     def __init__(self, **kwargs):
         super(SettingsView, self).__init__(**kwargs)
@@ -32,10 +31,6 @@ class SettingsView(BoxLayout):
         
 class SettingsViewSwitch(SettingsView):
     def __init__(self, **kwargs):
-#        switch = Switch()
-#        kwargs['settings_ctrl'] =  switch
-#        self.switch = switch
-#        print("the argsss" + str(kwargs))
         super(SettingsViewSwitch, self).__init__(**kwargs)
         
     

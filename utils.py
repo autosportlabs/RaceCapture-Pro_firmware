@@ -272,10 +272,10 @@ class OrderedDict(dict, DictMixin):
 
 
 def kvFind(w, k, v):
-#    print('kvFind')
+    #print('kvFind')
     for child in w.children:
         att = getattr(child, k, None)
- #       print('child: ' + str(child) + ' ' + str(att))
+        #print('child: ' + str(child) + ' ' + str(att))
         if v == att:
             return child
         sub = kvFind(child, k, v)
