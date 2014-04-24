@@ -878,6 +878,7 @@ void LoggerApiTest::testSetTrackConfigFile(string filename, int sectors){
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)cfg->track.track_type);
 	CPPUNIT_ASSERT_CLOSE_ENOUGH(0.0001F, cfg->radius);
+	CPPUNIT_ASSERT_EQUAL(0, (int)cfg->auto_detect);
 	CPPUNIT_ASSERT_CLOSE_ENOUGH(1.1F, cfg->track.startFinish.latitude);
 	CPPUNIT_ASSERT_CLOSE_ENOUGH(2.1F, cfg->track.startFinish.longitude);
 
@@ -908,6 +909,7 @@ void LoggerApiTest::testGetTrackConfigFile(string filename){
 		startingValue++;
 	}
 	cfg->radius = 0.009;
+	cfg->auto_detect = 0;
 	cfg->track.track_type = 1;
 
 	char * response = processApiGeneric(filename);
@@ -916,6 +918,7 @@ void LoggerApiTest::testGetTrackConfigFile(string filename){
 	stringToJson(response, json);
 
 	CPPUNIT_ASSERT_EQUAL(0.009F, (float)(Number)json["trackCfg"]["rad"]);
+	CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["trackCfg"]["autoDetect"]);
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)json["trackCfg"]["track"]["type"]);
 
 	Array &sectors = json["trackCfg"]["track"]["sec"];

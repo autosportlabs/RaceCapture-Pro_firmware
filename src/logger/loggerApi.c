@@ -884,6 +884,7 @@ int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
 	json_messageStart(serial);
 	json_objStart(serial, "trackCfg");
 	json_float(serial, "rad", trackCfg->radius, DEFAULT_GPS_RADIUS_PRECISION, 1);
+	json_int(serial, "autoDetect", trackCfg->auto_detect, 1);
 	json_objStart(serial, "track");
 	json_track(serial, &trackCfg->track);
 	json_objEnd(serial, 0);
@@ -920,7 +921,8 @@ void setTrack(const jsmntok_t *cfg, Track *track){
 int api_setTrackConfig(Serial *serial, const jsmntok_t *json){
 
 	TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs);
-	setFloatValueIfExists(json,"rad", &trackCfg->radius);
+	setFloatValueIfExists(json, "rad", &trackCfg->radius);
+	setUnsignedCharValueIfExists(json, "autoDetect", &trackCfg->auto_detect);
 
 	const jsmntok_t *track = findNode(json, "track");
 	if (track != NULL) setTrack(track + 1, &trackCfg->track);
