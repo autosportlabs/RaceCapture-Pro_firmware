@@ -8,7 +8,7 @@ from fieldlabel import FieldLabel
 from helplabel import HelpLabel
 from kivy.app import Builder
 from utils import *
-from kivy.properties import StringProperty
+from kivy.properties import StringProperty, BooleanProperty
 
 Builder.load_file('settingsview.kv')
 
@@ -30,8 +30,13 @@ class SettingsView(BoxLayout):
         label.text = value
         
 class SettingsViewSwitch(SettingsView):
+    active = BooleanProperty()
     def __init__(self, **kwargs):
         super(SettingsViewSwitch, self).__init__(**kwargs)
+    
+    def setValue(self, value):
+        switch = kvFind(self, 'rcid', 'settingsCtrl')
+        switch.active = value
         
     
         

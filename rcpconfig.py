@@ -199,6 +199,42 @@ class PwmConfig:
             channelJson = json.get(str(i), None)
             if channelJson:
                 self.channels[i].fromJson(channelJson)
+
+CONFIG_SECTOR_COUNT = 20
+
+class GeoPoint:
+    def __init__(self, **kwargs):
+        self.latitude = 0
+        self.longitude = 0
+    
+    def fromJson(self, json):
+        self.latitude = json[0]
+        self.longitude = json[1]
+        
+class TrackConfig:
+    def __init__(self, **kwargs):
+        self.sectorCount = CONFIG_SECTOR_COUNT
+        self.startLine = GeoPoint()
+        self.finishLine = GeoPoint()
+        self.sectors = []
+        self.radius = 0
+        self.autoDetect = 0
+        self.trackType = 0
+        
+    def fromJson(self, json):
+        self.radius = json.get('rad', self.radius)
+        self.autoDetect = json.get('autoDetect', self.autoDetect)
+        
+        trackJson = json.get('track', None)
+        if trackJson:
+            self.trackType = trackJson.get('type', self.trackType)
+            sectorsJson = trackJson.get('sec', None)
+            if sectorsJson:
+                for i in range(self.sectorCount):
+                    sectorJson = sectorsJson[i]
+                    sector = GeoPoint()
+                    sector.fromJson(sectorJson)
+                    self.sectors.append(sector)
         
         
 class RcpConfig:
@@ -209,6 +245,7 @@ class RcpConfig:
         self.timerConfig = TimerConfig()
         self.gpioConfig = GpioConfig()
         self.pwmConfig = PwmConfig()
+        self.trackConfig = TrackConfig()
         
 
     def fromJson(self, json):
@@ -231,6 +268,10 @@ class RcpConfig:
         pwmCfgJson = json.get('pwmCfg', None)
         if (pwmCfgJson):
             self.pwmConfig.fromJson(pwmCfgJson)
+            
+        trackCfgJson = json.get('trackCfg', None)
+        if (trackCfgJson):
+            self.trackConfig.fromJson(trackCfgJson)
              
 
     def toJson(self):

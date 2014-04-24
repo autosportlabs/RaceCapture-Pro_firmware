@@ -76,6 +76,7 @@ class RcpSerial:
         timerCfg = self.getTimerCfg(None)
         gpioCfg = self.getGpioCfg(None)
         pwmCfg = self.getPwmCfg(None)
+        trackCfg = self.getTrackCfg()
         
         rcpCfg = {}
         
@@ -97,6 +98,9 @@ class RcpSerial:
         if pwmCfg:
             rcpCfg['pwmCfg'] = pwmCfg['pwmCfg']
 
+        if trackCfg:
+            rcpCfg['trackCfg'] = trackCfg['trackCfg']
+            
         return rcpCfg
 
     def getAnalogCfg(self, channelId):
@@ -116,6 +120,9 @@ class RcpSerial:
     
     def getPwmCfg(self, channelId):
         return self.sendGet('getPwmCfg', channelId)
+    
+    def getTrackCfg(self):
+        return self.sendGet('getTrackCfg', None)
     
     def decodeScript(self, s):
         return s.replace('\\n','\n').replace('\_',' ').replace('\\r','\r').replace('\\"','"')
