@@ -336,6 +336,7 @@ typedef struct _LapConfig{
 
 typedef struct _TrackConfig{
 	float radius;
+	unsigned char auto_detect;
 	Track track;
 } TrackConfig;
 
@@ -369,6 +370,7 @@ typedef struct _TrackConfig{
 
 #define DEFAULT_TRACK_CONFIG { \
 	DEFAULT_TRACK_TARGET_RADIUS, \
+	1, \
 	DEFAULT_TRACK \
 }
 
