@@ -876,7 +876,7 @@ void LoggerApiTest::testSetTrackConfigFile(string filename, int sectors){
 
 	assertGenericResponse(txBuffer, "setTrackCfg", API_SUCCESS);
 
-	CPPUNIT_ASSERT_CLOSE_ENOUGH(0.0001F, cfg->track.radius);
+	CPPUNIT_ASSERT_CLOSE_ENOUGH(0.0001F, cfg->radius);
 	CPPUNIT_ASSERT_CLOSE_ENOUGH(1.1F, cfg->track.startFinish.latitude);
 	CPPUNIT_ASSERT_CLOSE_ENOUGH(2.1F, cfg->track.startFinish.longitude);
 
@@ -906,7 +906,7 @@ void LoggerApiTest::testGetTrackConfigFile(string filename){
 		point->longitude = startingValue;
 		startingValue++;
 	}
-	cfg->track.radius = 0.009;
+	cfg->radius = 0.009;
 
 	char * response = processApiGeneric(filename);
 

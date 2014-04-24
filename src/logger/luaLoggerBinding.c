@@ -229,7 +229,7 @@ int Lua_SetGPSStartFinish(lua_State *L){
 		TrackConfig *c = &(getWorkingLoggerConfig()->TrackConfigs);
 		c->track.startFinish.latitude = lua_tonumber(L,1);
 		c->track.startFinish.longitude = lua_tonumber(L,2);
-		if (lua_gettop(L) >=3) c->track.radius = lua_tonumber(L,3);
+		if (lua_gettop(L) >=3) c->radius = lua_tonumber(L,3);
 	}
 	return 0;
 }
@@ -238,7 +238,7 @@ int Lua_GetGPSStartFinish(lua_State *L){
 	TrackConfig *c = &(getWorkingLoggerConfig()->TrackConfigs);
 	lua_pushnumber(L,c->track.startFinish.latitude);
 	lua_pushnumber(L,c->track.startFinish.longitude);
-	lua_pushnumber(L,c->track.radius);
+	lua_pushnumber(L,c->radius);
 	return 3;
 }
 

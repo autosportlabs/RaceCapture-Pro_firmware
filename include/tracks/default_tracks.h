@@ -9,7 +9,6 @@
 #define DEFAULT_TRACKS_H_
 
 #define The_Ridge_Motorsports_Park { \
-	0.0001, \
 	TRACK_TYPE_CIRCUIT, \
 	{ \
 		{ \
@@ -38,7 +37,6 @@
 }
 
 #define Pacific_Raceways { \
-	0.0001, \
 	TRACK_TYPE_CIRCUIT, \
 	{ \
 		{ \

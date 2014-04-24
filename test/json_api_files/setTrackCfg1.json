@@ -1,7 +1,7 @@
 {
     "setTrackCfg": {
+        "rad": 0.0001,
         "track": {
-            "rad": 0.0001,
             "type": 1,
             "sec": [
                 [1.1, 2.1],

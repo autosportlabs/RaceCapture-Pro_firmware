@@ -490,9 +490,9 @@ static float calcDistancesSinceLastSample() {
    return d;
 }
 
-static int processStartFinish(const Track *track) {
+static int processStartFinish(const Track *track, float targetRadius) {
    int lapDetected = 0;
-   g_atStartFinish = withinGpsTarget(&track->startFinish, track->radius);
+   g_atStartFinish = withinGpsTarget(&track->startFinish, targetRadius);
    if (g_atStartFinish) {
       if (g_prevAtStartFinish == 0) {
          if (g_lastStartFinishTimestamp == 0) {
@@ -522,11 +522,11 @@ static int processStartFinish(const Track *track) {
    return lapDetected;
 }
 
-static void processSector(const Track *track) {
+static void processSector(const Track *track, float targetRadius) {
    const GeoPoint *upcomingSectorPoint = (track->sectors + g_sector);
    if (upcomingSectorPoint->latitude != 0
          && upcomingSectorPoint->longitude != 0) { //valid sector target?
-      g_atTarget = withinGpsTarget(upcomingSectorPoint, track->radius);
+      g_atTarget = withinGpsTarget(upcomingSectorPoint, targetRadius);
       if (g_atTarget) {
          if (g_prevAtTarget == 0) { //latching effect, to avoid double triggering
             //first sector references from start finish; subsequent sectors reference from last sector timestamp
@@ -631,14 +631,15 @@ void onLocationUpdated() {
       float dist = calcDistancesSinceLastSample();
       g_distance += dist;
 
+	  float targetRadius = config->TrackConfigs.radius;
       if (sectorEnabled) {
-         processSector(g_activeTrack);
+         processSector(g_activeTrack, targetRadius);
       }
 
       if (startFinishEnabled) {
          // HACK!  Need seconds since epoch.  This solution sucks.
          float utcTime = getSecondsSinceMidnight();
-         int lapDetected = processStartFinish(g_activeTrack);
+         int lapDetected = processStartFinish(g_activeTrack, targetRadius);
 
          if (lapDetected) {
             resetGpsDistance();

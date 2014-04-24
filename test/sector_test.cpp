@@ -66,7 +66,6 @@ string SectorTest::readFile(string filename){
 }
 
 #define Test_Track { \
-	0.0001, \
 	0, \
 	{ \
 		{ \
