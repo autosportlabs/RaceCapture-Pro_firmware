@@ -620,8 +620,9 @@ void onLocationUpdated() {
       populateGeoPoint(&gp);
 
       if (!g_configured) {
-         Track *defaultTrack = &(config->TrackConfigs.track);
-         g_activeTrack = auto_configure_track(defaultTrack, gp);
+    	 TrackConfig *trackConfig = &(config->TrackConfigs);
+    	 Track *defaultTrack = &trackConfig->track;
+         g_activeTrack = trackConfig->auto_detect ? auto_configure_track(defaultTrack, gp) : defaultTrack;
          startFinishEnabled = isStartFinishEnabled(g_activeTrack);
          sectorEnabled = config->LapConfigs.sectorTimeCfg.sampleRate !=
          SAMPLE_DISABLED && startFinishEnabled;
