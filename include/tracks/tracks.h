@@ -18,6 +18,10 @@ typedef struct _Track{
 	union{
 		GeoPoint sectors[SECTOR_COUNT];
 		GeoPoint startFinish;
+		struct{
+			GeoPoint finish;
+			GeoPoint start;
+		};
 	};
 } Track;
 
