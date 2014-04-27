@@ -14,15 +14,15 @@ unsigned int convertToFullYear(int partialYear) {
    return  partialYear + (partialYear >= 70 ? 1900 : 2000);
 }
 
-bool isLeapPartialYear(unsigned int partialYear) {
-   return isLeapYear(convertToFullYear(partialYear));
-}
-
 bool isLeapYear(unsigned int year) {
    /*
     * Credit to http://www.dispersiondesign.com/articles/time/determining_leap_years
     */
    return (year % 4) || ((year % 100 == 0) && (year % 400));
+}
+
+bool isLeapPartialYear(unsigned int partialYear) {
+   return isLeapYear(convertToFullYear(partialYear));
 }
 
 /**

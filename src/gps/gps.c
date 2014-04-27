@@ -74,6 +74,12 @@ static float g_distance;
  */
 static DateTime g_dtFirstFix;
 static DateTime g_dtLastFix;
+static long g_millisSinceUnixEpoch;
+
+static void updateMillisSinceEpoch(DateTime fixDateTime) {
+   if (fixDateTime.partialYear <= 0) return;
+   g_millisSinceUnixEpoch = getMillisecondsSinceUnixEpoch(fixDateTime);
+}
 
 /**
  * Does a partial update of the g_dtLastFix value.  Happens when we only have the UTC time string.
@@ -145,6 +151,11 @@ static void parseGGA(char *data) {
             dt.second = (int8_t) atoiOffsetLenSafe(data, 4, 2);
             dt.millisecond = (int8_t) atoiOffsetLenSafe(data, 7, 3);
             updatePartialDateTime(dt);
+            /*
+             * Putting this here since I know GGA is provided every time.  May move to the sentence
+             * after the parsing of RMC since that should always have the _Full_ dateTime.
+             */
+            updateMillisSinceEpoch(g_dtLastFix);
          }
       }
          break;
