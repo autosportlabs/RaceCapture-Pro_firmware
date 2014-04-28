@@ -76,20 +76,15 @@ static DateTime g_dtFirstFix;
 static DateTime g_dtLastFix;
 static long g_millisSinceUnixEpoch;
 
-static void updateMillisSinceEpoch(DateTime fixDateTime) {
-   if (fixDateTime.partialYear <= 0) return;
-   g_millisSinceUnixEpoch = getMillisecondsSinceUnixEpoch(fixDateTime);
+/**
+ * @return true if we haven't parsed any data yet, false otherwise.
+ */
+static bool isGpsDataCold() {
+   return g_millisSinceUnixEpoch == 0;
 }
 
-/**
- * Does a partial update of the g_dtLastFix value.  Happens when we only have the UTC time string.
- * @param fixDateTime
- */
-static void updatePartialDateTime(DateTime fixDateTime) {
-   g_dtLastFix.millisecond = fixDateTime.millisecond;
-   g_dtLastFix.second = fixDateTime.second;
-   g_dtLastFix.minute = fixDateTime.minute;
-   g_dtLastFix.hour = fixDateTime.hour;
+static void updateMillisSinceEpoch(DateTime fixDateTime) {
+   g_millisSinceUnixEpoch = getMillisecondsSinceUnixEpoch(fixDateTime);
 }
 
 /**
@@ -141,21 +136,8 @@ static void parseGGA(char *data) {
       case 0: {
          unsigned int len = strlen(data);
          if (len > 0 && len < UTC_TIME_BUFFER_LEN) {
-            DateTime dt;
-
             setUTCTime(modp_atof(data));
             secondsSinceMidnight = calculateSecondsSinceMidnight(data);
-
-            dt.hour = (int8_t) atoiOffsetLenSafe(data, 0, 2);
-            dt.minute = (int8_t) atoiOffsetLenSafe(data, 2, 2);
-            dt.second = (int8_t) atoiOffsetLenSafe(data, 4, 2);
-            dt.millisecond = (int8_t) atoiOffsetLenSafe(data, 7, 3);
-            updatePartialDateTime(dt);
-            /*
-             * Putting this here since I know GGA is provided every time.  May move to the sentence
-             * after the parsing of RMC since that should always have the _Full_ dateTime.
-             */
-            updateMillisSinceEpoch(g_dtLastFix);
          }
       }
          break;
@@ -359,6 +341,7 @@ static void parseRMC(char *data) {
    }
 
    updateFullDateTime(dt);
+   updateMillisSinceEpoch(dt);
 }
 
 void resetGpsDistance() {
@@ -685,28 +668,36 @@ int checksumValid(const char *gpsData, size_t len) {
 }
 
 void processGPSData(char *gpsData, size_t len) {
-   if (len > 4 && checksumValid(gpsData, len)) {
-      if (strstr(gpsData, "$GP") == gpsData) {
-         char * data = gpsData + 3;
-         if (strstr(data, "GGA,")) {
-            parseGGA(data + 4);
-            flashGpsStatusLed();
-            onLocationUpdated();
-         } else if (strstr(data, "VTG,")) { //Course Over Ground and Ground Speed
-            parseVTG(data + 4);
-         } else if (strstr(data, "GSA,")) { //GPS Fix data
-            parseGSA(data + 4);
-         } else if (strstr(data, "GSV,")) { //Satellites in view
-            parseGSV(data + 4);
-         } else if (strstr(data, "RMC,")) { //Recommended Minimum Specific GNSS Data
-            parseRMC(data + 4);
-         } else if (strstr(data, "GLL,")) { //Geographic Position - Latitude/Longitude
-            parseGLL(data + 4);
-         } else if (strstr(data, "ZDA,")) { //Time & Date
-            parseZDA(data + 4);
-         }
-      }
-   } else {
+   if (len <= 4 || !checksumValid(gpsData, len) || strstr(gpsData, "$GP") != gpsData) {
       pr_warning("GPS: corrupt frame\r\n");
+      return;
+   }
+
+   // Advance the pointer 3 spaces since we know it begins with "$GP"
+   gpsData += 3;
+   if (strstr(gpsData, "GGA,")) {
+      /*
+       * GGA is always the first sentence in a new NMEA paragraph from the GPS Mouse.  So if we see
+       * it, call onLocationUpdated if we have parsed GPS data before.  This methodology ensures
+       * that we parse all sentences before processing the GPS data.
+       */
+      if (!isGpsDataCold()) {
+         onLocationUpdated();
+         flashGpsStatusLed();
+      }
+
+      parseGGA(gpsData + 4);
+   } else if (strstr(gpsData, "VTG,")) { //Course Over Ground and Ground Speed
+      parseVTG(gpsData + 4);
+   } else if (strstr(gpsData, "GSA,")) { //GPS Fix gpsData
+      parseGSA(gpsData + 4);
+   } else if (strstr(gpsData, "GSV,")) { //Satellites in view
+      parseGSV(gpsData + 4);
+   } else if (strstr(gpsData, "RMC,")) { //Recommended Minimum Specific GNSS Data
+      parseRMC(gpsData + 4);
+   } else if (strstr(gpsData, "GLL,")) { //Geographic Position - Latitude/Longitude
+      parseGLL(gpsData + 4);
+   } else if (strstr(gpsData, "ZDA,")) { //Time & Date
+      parseZDA(gpsData + 4);
    }
 }
