@@ -95,6 +95,9 @@ public:
   void testCalibrateImu();
   void testFlashConfig();
   void testSetLogLevel();
+  void testSetObd2Cfg();
+  void testGetObd2Cfg();
+
 
 private:
   void testLogStartStopFile(string filename);
@@ -121,6 +124,8 @@ private:
   void testCalibrateImuFile(string filename);
   void testFlashConfigFile(string filename);
   void testSetLogLevelFile(string filename, int expectedResponse);
+  void testGetObd2ConfigFile(string filename);
+  void testSetObd2ConfigFile(string filename);
 
 };
 

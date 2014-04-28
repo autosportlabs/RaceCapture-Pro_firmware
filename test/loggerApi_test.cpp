@@ -948,3 +948,20 @@ void LoggerApiTest::testSetLogLevelFile(string filename, int expectedResponse){
 void LoggerApiTest::testSetLogLevel(){
 	testSetLogLevelFile("setLogLevel1.json", API_SUCCESS);
 }
+
+void testSetObd2Cfg(){
+
+}
+
+void testGetObd2Cfg(){
+
+}
+
+
+void testGetObd2ConfigFile(string filename){
+
+}
+
+void testSetObd2ConfigFile(string filename){
+
+}
