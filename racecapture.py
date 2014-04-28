@@ -31,6 +31,8 @@ from timerchannelsview import *
 from gpiochannelsview import *
 from pwmchannelsview import *
 from trackconfigview import *
+from obd2channelsview import *
+from canchannelsview import *
 from rcpconfig import *
 from channels import *
 
@@ -90,23 +92,6 @@ class LuaScriptingView(BoxLayout):
     def on_config_updated(self, rcpCfg):
         pass
 
-class CANChannelsView(BoxLayout):
-    def __init__(self, **kwargs):
-        super(CANChannelsView, self).__init__(**kwargs)
-#        Builder.load_file('analogchannelsview.kv')
-        self.register_event_type('on_config_updated')
-
-    def on_config_updated(self, rcpCfg):
-        pass
-
-class OBD2ChannelsView(BoxLayout):
-    def __init__(self, **kwargs):
-        super(OBD2ChannelsView, self).__init__(**kwargs)
-#        Builder.load_file('analogchannelsview.kv')
-        self.register_event_type('on_config_updated')
-
-    def on_config_updated(self, rcpCfg):
-        pass
         
 class LinkedTreeViewLabel(TreeViewLabel):
     view = None

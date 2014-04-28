@@ -235,7 +235,30 @@ class TrackConfig:
                     sector = GeoPoint()
                     sector.fromJson(sectorJson)
                     self.sectors.append(sector)
+
+class PidConfig:
+    def __init__(self, **kwargs):
+        self.channelId = 0
+        self.sampleRate = 0
+        self.pidId = 0
         
+    def fromJson(self, json):
+        self.channelRate = json.get("id", self.channelId)
+        self.sampleRate = json.get("sr", self.sampleRate)
+        self.pid = json.get("pid", self.pid)
+        
+        
+class Obd2Config:
+    def __init__(self, **kwargs):
+        self.pids = []
+    
+    def fromJson(self, json):
+        pidsJson = json.get("pids", None)
+        if pidsJson:
+            for pidJson in pidsJson:
+                pid = PidConfig()
+                pid.fromJson(pidJson)
+                self.pids.append(pid)
         
 class RcpConfig:
     def __init__(self, **kwargs):
@@ -246,6 +269,7 @@ class RcpConfig:
         self.gpioConfig = GpioConfig()
         self.pwmConfig = PwmConfig()
         self.trackConfig = TrackConfig()
+        self.obd2Config = Obd2Config()
         
 
     def fromJson(self, json):

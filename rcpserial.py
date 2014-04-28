@@ -77,6 +77,7 @@ class RcpSerial:
         gpioCfg = self.getGpioCfg(None)
         pwmCfg = self.getPwmCfg(None)
         trackCfg = self.getTrackCfg()
+        obd2Cfg = self.getObd2Cfg()
         
         rcpCfg = {}
         
@@ -101,6 +102,9 @@ class RcpSerial:
         if trackCfg:
             rcpCfg['trackCfg'] = trackCfg['trackCfg']
             
+        if obd2Cfg:
+            rcpCfg['obd2Cfg'] = obd2Cfg['obd2Cfg']
+            
         return rcpCfg
 
     def getAnalogCfg(self, channelId):
@@ -123,6 +127,9 @@ class RcpSerial:
     
     def getTrackCfg(self):
         return self.sendGet('getTrackCfg', None)
+    
+    def getObd2Cfg(self):
+        return self.sendGet('getObd2Cfg', None)
     
     def decodeScript(self, s):
         return s.replace('\\n','\n').replace('\_',' ').replace('\\r','\r').replace('\\"','"')
