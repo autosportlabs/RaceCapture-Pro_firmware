@@ -1,0 +1,52 @@
+#:kivy 1.8.0
+
+<OBD2ChannelsView>:
+    orientation: 'vertical'
+    padding: [2,2]
+    HSeparator:
+        padding: [10,10]
+        text: 'OBD2 Channels'
+    ScrollView:
+        id: scrlobd2
+        do_scroll_x:False
+        GridLayout:
+            padding: [20,20]
+            spacing: [10,10]
+            height: max(self.minimum_height, scrlobd2.height)
+            cols: 2
+            Label:
+                text: 'Engine Load'
+            SampleRateSpinner:
+            Label:
+                text: 'Coolant Temperature (C)'
+            SampleRateSpinner:
+            Label:
+                text: 'Fuel Pressure (KPa gauge)'
+            SampleRateSpinner:
+            Label:
+                text: 'Intake Manifold Pressure (KPa absolute)'
+            SampleRateSpinner:
+            Label:
+                text: 'RPM'
+            SampleRateSpinner:
+            Label:
+                text: 'Vehicle Speed (km/h)'
+            SampleRateSpinner:
+            Label:
+                text: 'Ignition Advance (degrees)'
+            SampleRateSpinner:
+            Label:
+                text: 'Intake Air Temperature (C)'
+            SampleRateSpinner:
+            Label:
+                text: 'MAF Airflow Rate (gm / sec)'
+            SampleRateSpinner:
+            Label:
+                text: 'Throttle Position (%)'
+            SampleRateSpinner:
+            Label:
+                text: 'Fuel Level (%)'
+            SampleRateSpinner:
+            Label:
+                text: 'Engine Oil Temp (C)'
+            SampleRateSpinner:
