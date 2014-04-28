@@ -24,4 +24,5 @@ int8_t partialYear;
 } DateTime;
 
 unsigned long getMillisecondsSinceUnixEpoch(DateTime dt);
+long getTimeDeltaInMillis(DateTime a, DateTime b);
 #endif //__DATE_TIME_H__

@@ -603,6 +603,11 @@ static void flashGpsStatusLed() {
    }
 }
 
+static float getSecondsSinceFirstFix() {
+   long diffInMillis = getTimeDeltaInMillis(g_dtLastFix, g_dtFirstFix);
+   return ((float) diffInMillis) / 1000;
+}
+
 void onLocationUpdated() {
    static int sectorEnabled = 0;
    static int startFinishEnabled = 0;
@@ -632,15 +637,15 @@ void onLocationUpdated() {
       }
 
       if (startFinishEnabled) {
-         // HACK!  Need seconds since epoch.  This solution sucks.
-         float utcTime = getSecondsSinceMidnight();
-         int lapDetected = processStartFinish(g_activeTrack, targetRadius);
 
+         // Seconds since first fix is good until we alter the code to use millis directly
+         float secondsSinceFirstFix = getSecondsSinceFirstFix();
+         int lapDetected = processStartFinish(g_activeTrack, targetRadius);
          if (lapDetected) {
             resetGpsDistance();
-            startFinishCrossed(gp, utcTime);
+            startFinishCrossed(gp, secondsSinceFirstFix);
          } else {
-            addGpsSample(gp, utcTime);
+            addGpsSample(gp, secondsSinceFirstFix);
          }
       }
    }
