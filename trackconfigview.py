@@ -75,11 +75,11 @@ class TrackConfigView(BoxLayout):
         trackCfg = rcpCfg.trackConfig
         
         autoDetectSwitch = kvFind(self, 'rcid', 'autoDetect')
-        autoDetectSwitch.active = trackCfg.autoDetect == 1
+        autoDetectSwitch.setValue(trackCfg.autoDetect)
         
         separateStartFinishSwitch = kvFind(self, 'rcid', 'trackSepStartFinish')
         separateStartFinish = trackCfg.trackType == 1
-        separateStartFinishSwitch.active = separateStartFinish 
+        separateStartFinishSwitch.setValue(separateStartFinish) 
 
         if separateStartFinish != self.separateStartFinish:
             self.initSectorViews(separateStartFinish)
