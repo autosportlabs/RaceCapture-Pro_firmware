@@ -808,6 +808,38 @@ int api_setGpsConfig(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS;
 }
 
+int api_getObd2Config(Serial *serial, const jsmntok_t *json){
+	json_messageStart(serial);
+	json_objStart(serial, "obd2Cfg");
+
+	OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
+
+	int enabledPids = obd2Cfg->enabledPids;
+	json_arrayStart(serial, "pids");
+
+	for (int i = 0; i < enabledPids; i++){
+		PidConfig *pidCfg = &obd2Cfg->pids[i];
+		json_objStartInt(serial, i);
+		json_int(serial,"id",pidCfg->cfg.channeId, 1);
+		json_int(serial,"sr",pidCfg->cfg.sampleRate, 1);
+		json_int(serial,"pid",pidCfg->pid, 1);
+		json_objEnd(serial, i < enabledPids - 1);
+	}
+	json_arrayEnd(serial, 0);
+	json_objEnd(serial,0);
+	json_messageEnd(serial);
+	return API_SUCCESS_NO_RETURN;
+}
+
+int api_setObd2Config(Serial *serial, const jsmntok_t *json){
+	OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
+
+	const jsmntok_t *pids = findNode(json, "pids");
+	if (pids != NULL && pids->type == JSMN_ARRAY){
+
+	}
+}
+
 int api_setLapConfig(Serial *serial, const jsmntok_t *json){
 	LapConfig *lapCfg = &(getWorkingLoggerConfig()->LapConfigs);
 
@@ -980,3 +1012,4 @@ int api_getChannels(Serial *serial, const jsmntok_t *json){
 	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
 }
+

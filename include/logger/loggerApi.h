@@ -48,7 +48,9 @@
 {"getLogfile", api_getLogfile}, \
 {"setLogfileLevel", api_setLogfileLevel}, \
 {"getTracks", api_getTracks}, \
-{"getChannels", api_getChannels}
+{"getChannels", api_getChannels}, \
+{"getObd2Cfg", api_getObd2Config}, \
+{"setObd2Cfg", api_setObd2Config}
 
 
 //commands
@@ -83,6 +85,9 @@ int api_setLogfileLevel(Serial *serial, const jsmntok_t *json);
 int api_getLogfile(Serial *serial, const jsmntok_t *json);
 int api_getTracks(Serial *serial, const jsmntok_t *json);
 int api_getChannels(Serial *serial, const jsmntok_t *json);
+int api_getObd2Config(Serial *serial, const jsmntok_t *json);
+int api_setObd2Config(Serial *serial, const jsmntok_t *json);
+
 
 
 //messages
