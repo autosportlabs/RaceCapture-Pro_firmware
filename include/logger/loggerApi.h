@@ -50,7 +50,9 @@
 {"getTracks", api_getTracks}, \
 {"getChannels", api_getChannels}, \
 {"getObd2Cfg", api_getObd2Config}, \
-{"setObd2Cfg", api_setObd2Config}
+{"setObd2Cfg", api_setObd2Config}, \
+{"getScript", api_getScript}, \
+{"setScript", api_setScript}
 
 
 //commands
@@ -87,8 +89,8 @@ int api_getTracks(Serial *serial, const jsmntok_t *json);
 int api_getChannels(Serial *serial, const jsmntok_t *json);
 int api_getObd2Config(Serial *serial, const jsmntok_t *json);
 int api_setObd2Config(Serial *serial, const jsmntok_t *json);
-
-
+int api_getScript(Serial *serial, const jsmntok_t *json);
+int api_setScript(Serial *serial, const jsmntok_t *json);
 
 //messages
 void api_sendLogStart(Serial *serial);

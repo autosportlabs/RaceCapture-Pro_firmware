@@ -24,6 +24,8 @@
 #include "timer.h"
 #include "ADC.h"
 #include "imu.h"
+#include "luaScript.h"
+
 
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
@@ -1029,4 +1031,48 @@ int api_getChannels(Serial *serial, const jsmntok_t *json){
 	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
 }
+
+int api_getScript(Serial *serial, const jsmntok_t *json){
+	char *script = getScript();
+
+	json_objStart(serial);
+	json_objStartString(serial, "script");
+	json_null(serial, "page", 1);
+	json_string(serial, "data", script,0);
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
+
+	return API_SUCCESS_NO_RETURN;
+}
+
+int api_setScript(Serial *serial, const jsmntok_t *json){
+
+	int returnStatus = API_ERROR_UNSPECIFIED;
+
+	const jsmntok_t *setScript = findNode(json, "setScript");
+	if (setScript != NULL){
+		const jsmntok_t *dataTok = findNode(setScript, "data");
+		const jsmntok_t *pageTok = findNode(setScript, "page");
+		if (dataTok != NULL && pageTok != NULL){
+			jsmn_trimData(dataTok);
+			jsmn_trimData(pageTok);
+			size_t page = modp_atoi(pageTok->data);
+			if (page < SCRIPT_PAGES){
+				int flashResult = flashScriptPage(page, dataTok->data);
+				returnStatus = flashResult == 0 ? API_SUCCESS : API_ERROR_SEVERE;
+			}
+			else{
+				returnStatus = API_ERROR_PARAMETER;
+			}
+		}
+		else{
+			returnStatus = API_ERROR_PARAMETER;
+		}
+	}
+	else{
+		returnStatus = API_ERROR_MALFORMED;
+	}
+	return returnStatus;
+}
+
 

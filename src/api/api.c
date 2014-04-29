@@ -21,6 +21,14 @@ void json_valueStart(Serial *serial, const char *name){
 	serial->put_c(':');
 }
 
+void json_null(Serial *serial, const char *name, int more){
+	serial->put_c('"');
+	serial->put_s(name);
+	serial->put_c('"');
+	serial->put_c(':null');
+	if (more) serial->put_c(',');
+}
+
 void json_int(Serial *serial, const char *name, int value, int more){
 	serial->put_c('"');
 	serial->put_s(name);

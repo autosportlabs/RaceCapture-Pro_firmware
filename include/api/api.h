@@ -39,6 +39,7 @@ typedef struct _api_t
 void initApi();
 
 void json_valueStart(Serial *serial, const char *name);
+void json_null(Serial *serial, const char *name, int more);
 void json_int(Serial *serial, const char *name, int value, int more);
 void json_uint(Serial *serial, const char *name, unsigned int value, int more);
 void json_string(Serial *serial, const char *name, const char *value, int more);
