@@ -25,7 +25,7 @@ void json_null(Serial *serial, const char *name, int more){
 	serial->put_c('"');
 	serial->put_s(name);
 	serial->put_c('"');
-	serial->put_c(':null');
+	serial->put_s(":null");
 	if (more) serial->put_c(',');
 }
 
@@ -44,6 +44,17 @@ void json_uint(Serial *serial, const char *name, unsigned int value, int more){
 	serial->put_c('"');
 	serial->put_c(':');
 	put_uint(serial, value);
+	if (more) serial->put_c(',');
+}
+
+void json_escapedString(Serial *serial, const char *name, const char *value, int more){
+	serial->put_c('"');
+	serial->put_s(name);
+	serial->put_c('"');
+	serial->put_c(':');
+	serial->put_c('"');
+	put_escapedString(serial, value, strlen(value));
+	serial->put_c('"');
 	if (more) serial->put_c(',');
 }
 

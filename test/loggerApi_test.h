@@ -54,6 +54,8 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST( testSetLogLevel);
   CPPUNIT_TEST( testSetObd2Cfg);
   CPPUNIT_TEST( testGetObd2Cfg);
+  CPPUNIT_TEST( testGetScript);
+  CPPUNIT_TEST( testSetScript);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -99,9 +101,13 @@ public:
   void testSetLogLevel();
   void testSetObd2Cfg();
   void testGetObd2Cfg();
+  void testSetScript();
+  void testGetScript();
 
 
 private:
+  void testSetScriptFile(string filename);
+  void testGetScriptFile(string filename);
   void testLogStartStopFile(string filename);
   void testSampleDataFile(string requestFilename, string responseFilename);
   void testGetAnalogConfigFile(string filename, int index);

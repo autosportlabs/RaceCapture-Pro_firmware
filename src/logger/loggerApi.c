@@ -1033,12 +1033,12 @@ int api_getChannels(Serial *serial, const jsmntok_t *json){
 }
 
 int api_getScript(Serial *serial, const jsmntok_t *json){
-	char *script = getScript();
+	const char *script = getScript();
 
 	json_objStart(serial);
 	json_objStartString(serial, "script");
 	json_null(serial, "page", 1);
-	json_string(serial, "data", script,0);
+	json_escapedString(serial, "data", script,0);
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
 

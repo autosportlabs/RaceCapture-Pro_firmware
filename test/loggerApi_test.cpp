@@ -1007,7 +1007,26 @@ void LoggerApiTest::testSetObd2ConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(26, (int)pidCfg2->cfg.channeId);
 	CPPUNIT_ASSERT_EQUAL((int)SAMPLE_50Hz, (int)pidCfg2->cfg.sampleRate);
 	CPPUNIT_ASSERT_EQUAL(6, (int)pidCfg2->pid);
+}
 
+void LoggerApiTest::testSetScript(){
+	testSetScriptFile("setScript1.json");
+}
 
+void LoggerApiTest::testGetScript(){
+	testGetScriptFile("getScript1.json");
+}
+
+void LoggerApiTest::testGetScriptFile(string filename){
+	char * response = processApiGeneric(filename);
+
+	Object json;
+	stringToJson(response, json);
+
+	CPPUNIT_ASSERT_EQUAL(string("function onTick() end"), (string)(String)json["script"]["data"]);
+
+}
+
+void LoggerApiTest::testSetScriptFile(string filename){
 
 }
