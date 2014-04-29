@@ -59,7 +59,7 @@ void json_float(Serial *serial, const char *name, float value, int precision, in
 	if (more) serial->put_c(',');
 }
 
-void json_objStart(Serial *serial, const char * label){
+void json_objStartString(Serial *serial, const char * label){
 	serial->put_c('"');
 	serial->put_s(label);
 	serial->put_s("\":{");
@@ -71,12 +71,8 @@ void json_objStartInt(Serial *serial, int label){
 	serial->put_s("\":{");
 }
 
-void json_messageStart(Serial *serial){
+void json_objStart(Serial *serial){
 	serial->put_c('{');
-}
-
-void json_messageEnd(Serial *serial){
-	json_objEnd(serial, 0);
 }
 
 void json_objEnd(Serial *serial, int more){
@@ -104,8 +100,8 @@ void json_arrayEnd(Serial *serial, int more){
 }
 
 void json_sendResult(Serial *serial, const char *messageName, int resultCode){
-	json_messageStart(serial);
-	json_objStart(serial,messageName);
+	json_objStart(serial);
+	json_objStartString(serial,messageName);
 	json_int(serial, "rc", resultCode, 0);
 	json_objEnd(serial,0);
 	json_objEnd(serial,0);

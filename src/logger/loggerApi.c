@@ -87,6 +87,12 @@ const static jsmntok_t * findValueNode(const jsmntok_t *node, const char *name){
 	return NULL;
 }
 
+static int setUnsignedShortValueIfExists(const jsmntok_t *root, const char * fieldName, unsigned short *target){
+	const jsmntok_t *valueNode = findValueNode(root, fieldName);
+	if (valueNode) * target = modp_atoi(valueNode->data);
+	return (valueNode != NULL);
+}
+
 static int setUnsignedCharValueIfExists(const jsmntok_t *root, const char * fieldName, unsigned char *target){
 	const jsmntok_t *valueNode = findValueNode(root, fieldName);
 	if (valueNode) * target = modp_atoi(valueNode->data);
@@ -133,15 +139,15 @@ int api_sampleData(Serial *serial, const jsmntok_t *json){
 }
 
 void api_sendLogStart(Serial *serial){
-	json_messageStart(serial);
+	json_objStart(serial);
 	json_int(serial, "logStart", 1, 0);
-	json_messageEnd(serial);
+	json_objEnd(serial, 0);
 }
 
 void api_sendLogEnd(Serial *serial){
-	json_messageStart(serial);
+	json_objStart(serial);
 	json_int(serial, "logEnd", 1, 0);
-	json_messageEnd(serial);
+	json_objEnd(serial, 0);
 }
 
 int api_log(Serial *serial, const jsmntok_t *json){
@@ -178,7 +184,7 @@ static void writeSampleMeta(Serial *serial, ChannelSample *channelSamples, size_
 }
 
 int api_getMeta(Serial *serial, const jsmntok_t *json){
-	json_messageStart(serial);
+	json_objStart(serial);
 
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 	size_t channelCount = get_enabled_channel_count(loggerConfig);
@@ -194,8 +200,8 @@ int api_getMeta(Serial *serial, const jsmntok_t *json){
 }
 
 void api_sendSampleRecord(Serial *serial, ChannelSample *channelSamples, size_t channelCount, unsigned int tick, int sendMeta){
-	json_messageStart(serial);
-	json_objStart(serial, "s");
+	json_objStart(serial);
+	json_objStartString(serial, "s");
 
 	json_uint(serial,"t",tick,1);
 	if (sendMeta) writeSampleMeta(serial, channelSamples, channelCount, getConnectivitySampleRateLimit(), 1);
@@ -344,8 +350,8 @@ static void json_channelConfig(Serial *serial, ChannelConfig *cfg, int more){
 
 static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex){
 
-	json_messageStart(serial);
-	json_objStart(serial, "analogCfg");
+	json_objStart(serial);
+	json_objStartString(serial, "analogCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 
 		ADCConfig *cfg = &(getWorkingLoggerConfig()->ADCConfigs[i]);
@@ -355,7 +361,7 @@ static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
 		json_float(serial, "linScal", cfg->linearScaling, LINEAR_SCALING_PRECISION, 1);
 		json_float(serial, "alpha", cfg->filterAlpha, FILTER_ALPHA_PRECISION, 1);
 
-		json_objStart(serial, "map");
+		json_objStartString(serial, "map");
 		json_arrayStart(serial, "raw");
 
 		for (size_t b = 0; b < ANALOG_SCALING_BINS; b++){
@@ -422,8 +428,8 @@ int api_setImuConfig(Serial *serial, const jsmntok_t *json){
 }
 
 static void sendImuConfig(Serial *serial, size_t startIndex, size_t endIndex){
-	json_messageStart(serial);
-	json_objStart(serial, "imuCfg");
+	json_objStart(serial);
+	json_objStartString(serial, "imuCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		ImuConfig *cfg = &(getWorkingLoggerConfig()->ImuConfigs[i]);
 		json_objStartInt(serial, i);
@@ -484,8 +490,8 @@ static void setConfigGeneric(Serial *serial, const jsmntok_t * json, void *cfg, 
 
 int api_getCellConfig(Serial *serial, const jsmntok_t *json){
 	CellularConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
-	json_messageStart(serial);
-	json_objStart(serial, "cellCfg");
+	json_objStart(serial);
+	json_objStartString(serial, "cellCfg");
 	json_string(serial, "apnHost", cfg->apnHost, 1);
 	json_string(serial, "apnUser", cfg->apnUser, 1);
 	json_string(serial, "apnPass", cfg->apnPass, 0);
@@ -525,8 +531,8 @@ int api_setBluetoothConfig(Serial *serial, const jsmntok_t *json){
 
 int api_getBluetoothConfig(Serial *serial, const jsmntok_t *json){
 	BluetoothConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
-	json_messageStart(serial);
-	json_objStart(serial, "btCfg");
+	json_objStart(serial);
+	json_objStartString(serial, "btCfg");
 	json_string(serial, "name", cfg->deviceName, 1);
 	json_string(serial, "pass", cfg->passcode, 0);
 	json_objEnd(serial, 0);
@@ -535,7 +541,7 @@ int api_getBluetoothConfig(Serial *serial, const jsmntok_t *json){
 }
 
 int api_getLogfile(Serial *serial, const jsmntok_t *json){
-	json_messageStart(serial);
+	json_objStart(serial);
 	json_valueStart(serial, "logfile");
 	serial->put_c('"');
 	read_log_to_serial(serial, 1);
@@ -572,8 +578,8 @@ int api_setConnectivityConfig(Serial *serial, const jsmntok_t *json){
 
 int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json){
 	ConnectivityConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs);
-	json_messageStart(serial);
-	json_objStart(serial, "connCfg");
+	json_objStart(serial);
+	json_objStartString(serial, "connCfg");
 	json_int(serial, "sdMode", cfg->sdLoggingMode, 1);
 	json_int(serial, "connMode", cfg->connectivityMode, 1);
 	json_int(serial, "bgStream", cfg->backgroundStreaming, 0);
@@ -584,8 +590,8 @@ int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json){
 
 static void sendPwmConfig(Serial *serial, size_t startIndex, size_t endIndex){
 
-	json_messageStart(serial);
-	json_objStart(serial, "pwmCfg");
+	json_objStart(serial);
+	json_objStartString(serial, "pwmCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		PWMConfig *cfg = &(getWorkingLoggerConfig()->PWMConfigs[i]);
 		json_objStartInt(serial, i);
@@ -661,8 +667,8 @@ static const jsmntok_t * setGpioExtendedField(const jsmntok_t *valueTok, const c
 }
 
 static void sendGpioConfig(Serial *serial, size_t startIndex, size_t endIndex){
-	json_messageStart(serial);
-	json_objStart(serial, "gpioCfg");
+	json_objStart(serial);
+	json_objStartString(serial, "gpioCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		GPIOConfig *cfg = &(getWorkingLoggerConfig()->GPIOConfigs[i]);
 		json_objStartInt(serial, i);
@@ -726,8 +732,8 @@ static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok, const 
 }
 
 static void sendTimerConfig(Serial *serial, size_t startIndex, size_t endIndex){
-	json_messageStart(serial);
-	json_objStart(serial, "timerCfg");
+	json_objStart(serial);
+	json_objStartString(serial, "timerCfg");
 	for (size_t i = startIndex; i <= endIndex; i++){
 		TimerConfig *cfg = &(getWorkingLoggerConfig()->TimerConfigs[i]);
 		json_objStartInt(serial, i);
@@ -776,8 +782,8 @@ int api_getGpsConfig(Serial *serial, const jsmntok_t *json){
 
 	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
 
-	json_messageStart(serial);
-	json_objStart(serial, "gpsCfg");
+	json_objStart(serial);
+	json_objStartString(serial, "gpsCfg");
 
 	json_int(serial, "sr", decodeSampleRate(gpsCfg->sampleRate), 1);
 
@@ -809,8 +815,8 @@ int api_setGpsConfig(Serial *serial, const jsmntok_t *json){
 }
 
 int api_getObd2Config(Serial *serial, const jsmntok_t *json){
-	json_messageStart(serial);
-	json_objStart(serial, "obd2Cfg");
+	json_objStart(serial);
+	json_objStartString(serial, "obd2Cfg");
 
 	OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
 
@@ -819,25 +825,36 @@ int api_getObd2Config(Serial *serial, const jsmntok_t *json){
 
 	for (int i = 0; i < enabledPids; i++){
 		PidConfig *pidCfg = &obd2Cfg->pids[i];
-		json_objStartInt(serial, i);
+		json_objStart(serial);
 		json_int(serial,"id",pidCfg->cfg.channeId, 1);
 		json_int(serial,"sr",pidCfg->cfg.sampleRate, 1);
-		json_int(serial,"pid",pidCfg->pid, 1);
+		json_int(serial,"pid",pidCfg->pid, 0);
 		json_objEnd(serial, i < enabledPids - 1);
 	}
 	json_arrayEnd(serial, 0);
 	json_objEnd(serial,0);
-	json_messageEnd(serial);
+	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
 }
 
 int api_setObd2Config(Serial *serial, const jsmntok_t *json){
 	OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
 
+	size_t pidIndex = 0;
 	const jsmntok_t *pids = findNode(json, "pids");
-	if (pids != NULL && pids->type == JSMN_ARRAY){
-
+	if (pids != NULL){
+		pids+=2;
+		while (pids != NULL && pids->type == JSMN_OBJECT && pidIndex < OBD2_CHANNELS){
+			PidConfig *pidConfig = (obd2Cfg->pids + pidIndex);
+			setUnsignedShortValueIfExists( pids, "id", &pidConfig->cfg.channeId);
+			setUnsignedShortValueIfExists( pids, "sr", &pidConfig->cfg.sampleRate);
+			setUnsignedShortValueIfExists( pids, "pid", &pidConfig->pid);
+			pids+=7;
+			pidIndex++;
+		}
 	}
+	obd2Cfg->enabledPids = pidIndex;
+	return API_SUCCESS;
 }
 
 int api_setLapConfig(Serial *serial, const jsmntok_t *json){
@@ -865,26 +882,26 @@ int api_setLapConfig(Serial *serial, const jsmntok_t *json){
 int api_getLapConfig(Serial *serial, const jsmntok_t *json){
 	LapConfig *lapCfg = &(getWorkingLoggerConfig()->LapConfigs);
 
-	json_messageStart(serial);
-	json_objStart(serial, "lapCfg");
+	json_objStart(serial);
+	json_objStartString(serial, "lapCfg");
 
-	json_objStart(serial, "lapCount");
+	json_objStartString(serial, "lapCount");
 	json_channelConfig(serial, &lapCfg->lapCountCfg, 0);
 	json_objEnd(serial, 1);
 
-	json_objStart(serial, "lapTime");
+	json_objStartString(serial, "lapTime");
 	json_channelConfig(serial, &lapCfg->lapTimeCfg, 0);
 	json_objEnd(serial, 1);
 
-	json_objStart(serial, "predTime");
+	json_objStartString(serial, "predTime");
 	json_channelConfig(serial, &lapCfg->predTimeCfg, 0);
 	json_objEnd(serial, 1);
 
-	json_objStart(serial, "sector");
+	json_objStartString(serial, "sector");
 	json_channelConfig(serial, &lapCfg->sectorCfg, 0);
 	json_objEnd(serial, 1);
 
-	json_objStart(serial, "sectorTime");
+	json_objStartString(serial, "sectorTime");
 	json_channelConfig(serial, &lapCfg->sectorTimeCfg, 0);
 	json_objEnd(serial, 0);
 
@@ -913,11 +930,11 @@ static void json_track(Serial *serial, const Track *track){
 int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
 	TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs);
 
-	json_messageStart(serial);
-	json_objStart(serial, "trackCfg");
+	json_objStart(serial);
+	json_objStartString(serial, "trackCfg");
 	json_float(serial, "rad", trackCfg->radius, DEFAULT_GPS_RADIUS_PRECISION, 1);
 	json_int(serial, "autoDetect", trackCfg->auto_detect, 1);
-	json_objStart(serial, "track");
+	json_objStartString(serial, "track");
 	json_track(serial, &trackCfg->track);
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
@@ -977,8 +994,8 @@ int api_flashConfig(Serial *serial, const jsmntok_t *json){
 int api_getTracks(Serial *serial, const jsmntok_t *json){
 	const Tracks * tracks = get_tracks();
 
-	json_messageStart(serial);
-	json_objStart(serial, "tracks");
+	json_objStart(serial);
+	json_objStartString(serial, "tracks");
 	size_t track_count = tracks->count;
 	json_int(serial,"size", track_count, 1);
 	for (size_t track_index = 0; track_index < track_count; track_index++){
@@ -996,8 +1013,8 @@ int api_getChannels(Serial *serial, const jsmntok_t *json){
 
 	const Channels *channelsInfo = get_channels();
 
-	json_messageStart(serial);
-	json_objStart(serial, "channels");
+	json_objStart(serial);
+	json_objStartString(serial, "channels");
 	size_t channels_count = channelsInfo->count;
 	json_int(serial, "size", channels_count, 1);
 	for (size_t channel_index = 0; channel_index < channels_count; channel_index++){

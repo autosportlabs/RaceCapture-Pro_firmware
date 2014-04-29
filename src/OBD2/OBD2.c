@@ -81,6 +81,7 @@ static int decode_pid(unsigned char pid, CAN_msg *msg, int *value){
 				break;
 			default:
 				result = 0;
+				break;
 		}
 	}
 	return result;

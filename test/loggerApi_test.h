@@ -52,6 +52,8 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST( testCalibrateImu);
   CPPUNIT_TEST( testFlashConfig);
   CPPUNIT_TEST( testSetLogLevel);
+  CPPUNIT_TEST( testSetObd2Cfg);
+  CPPUNIT_TEST( testGetObd2Cfg);
   CPPUNIT_TEST_SUITE_END();
 
 public:

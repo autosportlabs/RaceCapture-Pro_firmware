@@ -1,1 +1,7 @@
-{"obd2Cfg":{"pids":[]}}
+{"setObd2Cfg":
+	{"pids":[
+		{"id":19,"sr":200,"pid":5},
+		{"id":26,"sr":4,"pid":6}
+		]
+	}
+}

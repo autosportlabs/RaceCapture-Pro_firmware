@@ -949,19 +949,65 @@ void LoggerApiTest::testSetLogLevel(){
 	testSetLogLevelFile("setLogLevel1.json", API_SUCCESS);
 }
 
-void testSetObd2Cfg(){
-
+void LoggerApiTest::testSetObd2Cfg(){
+	testSetObd2ConfigFile("setObd2Cfg1.json");
 }
 
-void testGetObd2Cfg(){
-
+void LoggerApiTest::testGetObd2Cfg(){
+	testGetObd2ConfigFile("getObd2Cfg1.json");
 }
 
 
-void testGetObd2ConfigFile(string filename){
+void LoggerApiTest::testGetObd2ConfigFile(string filename){
+	LoggerConfig *c = getWorkingLoggerConfig();
+	OBD2Config *obd2Config = &c->OBD2Configs;
 
+	obd2Config->enabledPids = 2;
+	obd2Config->pids[0].cfg.channeId = CHANNEL_AFR;
+	obd2Config->pids[0].cfg.sampleRate = SAMPLE_1Hz;
+	obd2Config->pids[0].pid = 0x05;
+
+	obd2Config->pids[1].cfg.channeId = CHANNEL_Boost;
+	obd2Config->pids[1].cfg.sampleRate = SAMPLE_50Hz;
+	obd2Config->pids[1].pid = 0x06;
+
+	char * response = processApiGeneric(filename);
+
+	Object json;
+	stringToJson(response, json);
+
+	Object pid1 = (Object)json["obd2Cfg"]["pids"][0];
+	Object pid2 = (Object)json["obd2Cfg"]["pids"][1];
+
+	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_AFR, (int)(Number)pid1["id"]);
+	CPPUNIT_ASSERT_EQUAL(SAMPLE_1Hz, (int)(Number)pid1["sr"]);
+	CPPUNIT_ASSERT_EQUAL(0x05, (int)(Number)pid1["pid"]);
+
+	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Boost, (int)(Number)pid2["id"]);
+	CPPUNIT_ASSERT_EQUAL(SAMPLE_50Hz, (int)(Number)pid2["sr"]);
+	CPPUNIT_ASSERT_EQUAL(0x06, (int)(Number)pid2["pid"]);
 }
 
-void testSetObd2ConfigFile(string filename){
+void LoggerApiTest::testSetObd2ConfigFile(string filename){
+	processApiGeneric(filename);
+	char *txBuffer = mock_getTxBuffer();
+
+	LoggerConfig *c = getWorkingLoggerConfig();
+	OBD2Config *obd2Config = &c->OBD2Configs;
+
+	CPPUNIT_ASSERT_EQUAL(2, (int)obd2Config->enabledPids);
+
+	PidConfig *pidCfg1 = &obd2Config->pids[0];
+	PidConfig *pidCfg2 = &obd2Config->pids[1];
+
+	CPPUNIT_ASSERT_EQUAL(19, (int)pidCfg1->cfg.channeId);
+	CPPUNIT_ASSERT_EQUAL((int)SAMPLE_1Hz, (int)pidCfg1->cfg.sampleRate);
+	CPPUNIT_ASSERT_EQUAL(5, (int)pidCfg1->pid);
+
+	CPPUNIT_ASSERT_EQUAL(26, (int)pidCfg2->cfg.channeId);
+	CPPUNIT_ASSERT_EQUAL((int)SAMPLE_50Hz, (int)pidCfg2->cfg.sampleRate);
+	CPPUNIT_ASSERT_EQUAL(6, (int)pidCfg2->pid);
+
+
 
 }
