@@ -18,15 +18,11 @@ class LuaScriptingView(BoxLayout):
         luaScript = rcpCfg.luaScript
         scriptView = kvFind(self, 'rcpid', 'luaScript')
         scriptView.text = luaScript.script
-
-        
    
 class LuaCodeInput(CodeInput):
     def __init__(self, **kwargs):
         super(LuaCodeInput, self).__init__(**kwargs)
         self.lexer= lexers.get_lexer_by_name('lua')
-
-        
         
     def readScript(self):
         print("read script")

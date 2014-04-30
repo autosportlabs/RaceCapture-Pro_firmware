@@ -33,30 +33,8 @@ from canchannelsview import *
 from rcpconfig import *
 from channels import *
 from scriptview import *
-
-class ChannelNameSpinner(Spinner):
-    def __init__(self, **kwargs):
-        self.register_event_type('on_channels_updated')
-        super(ChannelNameSpinner, self).__init__(**kwargs)
-        self.category = kwargs.get('category', None)
-        self.values = []
-     
-    def on_channels_updated(self, channels):
-        self.values = channels.getNamesList(self.category)
-
-class SampleRateSpinner(Spinner):
-    def __init__(self, **kwargs):
-        super(SampleRateSpinner, self).__init__(**kwargs)
-        self.values = ['Disabled', '1 Hz', '5 Hz', '10 Hz', '25 Hz', '50 Hz', '100 Hz']
-
-class SampleRateSelectorView(BoxLayout):
-    def __init__(self, **kwargs):
-        super(SampleRateSelectorView, self).__init__(**kwargs)
-        self.valueMap = {0:'Disabled', 1:'1 Hz', 5:'5 Hz', 10:'10 Hz', 25:'25 Hz', 50:'50 Hz', 100:'100 Hz'}
-
-    def setValue(self, value):
-        self.ids.sampleRate.text = self.valueMap[value]
-
+from samplerateview import *
+from channelnamespinner import *
 
 class SplashView(BoxLayout):
     pass
