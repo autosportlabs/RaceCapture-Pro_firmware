@@ -40,22 +40,6 @@
             size: self.size
             pos: self.pos
 
-<ToolbarButton>:
-    background_color: [1 ,1 ,1 ,1]
-    font_size: 25
-    color: [.21, .75, .95, .6]
-    font_name: 'fa.ttf'
-    
-<ToolbarView>:
-    BoxLayout:
-        orientation: 'horizontal'
-        ToolbarButton:
-            id: 'read'
-            text: ''
-            on_release: root.readConfig()
-        ToolbarButton:
-            id: 'write'
-            text: ''
 
 <RaceCaptureApp>:
 

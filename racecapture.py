@@ -32,9 +32,10 @@ from obd2channelsview import *
 from canchannelsview import *
 from rcpconfig import *
 from channels import *
-from scriptview import *
-from samplerateview import *
-from channelnamespinner import *
+from scriptview import LuaScriptingView
+from samplerateview import SampleRateSelectorView
+from channelnamespinner import ChannelNameSpinner
+from toolbarview import ToolbarView
 
 class SplashView(BoxLayout):
     pass
@@ -63,22 +64,6 @@ class LinkedTreeViewLabel(TreeViewLabel):
     view = None
 
 
-class ToolbarView(BoxLayout):
-
-    def __init__(self, **kwargs):
-        self.register_event_type('on_read_config')
-        super(ToolbarView, self).__init__(**kwargs)
-        self.rcp = kwargs.get('rcp', None)
-        self.app = kwargs.get('app', None)
-
-    def readConfig(self):
-        self.dispatch('on_read_config', None)
-
-    def on_read_config(self, instance, *args):
-        pass
-
-class ToolbarButton(Button):
-    pass
 
 class RaceCaptureApp(App):
     def __init__(self, **kwargs):
