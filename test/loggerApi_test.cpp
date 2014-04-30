@@ -21,6 +21,8 @@
 #include <fstream>
 #include <streambuf>
 #include "predictive_timer_2.h"
+#include "luaScript.h"
+
 
 #define CPPUNIT_ASSERT_CLOSE_ENOUGH(ACTUAL, EXPECTED) CPPUNIT_ASSERT((abs((ACTUAL - EXPECTED)) < 0.00001))
 
@@ -1028,5 +1030,17 @@ void LoggerApiTest::testGetScriptFile(string filename){
 }
 
 void LoggerApiTest::testSetScriptFile(string filename){
+	processApiGeneric(filename);
+		char *txBuffer = mock_getTxBuffer();
+
+		LoggerConfig *c = getWorkingLoggerConfig();
+		TrackConfig *cfg = &c->TrackConfigs;
+
+		assertGenericResponse(txBuffer, "setScript", API_SUCCESS);
+
+		const char * script = getScript();
+
+		//todo enable after dealing with const
+		//CPPUNIT_ASSERT_EQUAL(string("function hello() end"), string(script));
 
 }

@@ -1,10 +1,13 @@
 #include "memory_device.h"
 #include "memory_mock.h"
+#include "mod_string.h"
 
 static int g_isFlashed = 0;
 
 int memory_device_flash_region(const void *vAddress, const void *vData, unsigned int length){
 	g_isFlashed = 1;
+	void * addr = (void *)vAddress;
+	//memcpy(addr, vData, length);
 	return 1;
 }
 
