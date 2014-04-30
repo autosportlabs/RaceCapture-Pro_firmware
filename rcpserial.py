@@ -78,6 +78,7 @@ class RcpSerial:
         pwmCfg = self.getPwmCfg(None)
         trackCfg = self.getTrackCfg()
         obd2Cfg = self.getObd2Cfg()
+        scriptCfg = self.getScript()
         
         rcpCfg = {}
         
@@ -104,6 +105,9 @@ class RcpSerial:
             
         if obd2Cfg:
             rcpCfg['obd2Cfg'] = obd2Cfg['obd2Cfg']
+        
+        if scriptCfg:
+            rcpCfg['script'] = scriptCfg['script']
             
         return rcpCfg
 
@@ -130,6 +134,9 @@ class RcpSerial:
     
     def getObd2Cfg(self):
         return self.sendGet('getObd2Cfg', None)
+    
+    def getScript(self):
+        return self.sendGet('getScript', None)
     
     def decodeScript(self, s):
         return s.replace('\\n','\n').replace('\_',' ').replace('\\r','\r').replace('\\"','"')
@@ -160,7 +167,6 @@ class RcpSerial:
         line = line[:-4]
         self.decodeScript(line)
         return line
-
 
     def readScript(self):
         i = 0

@@ -259,6 +259,13 @@ class Obd2Config:
                 pid = PidConfig()
                 pid.fromJson(pidJson)
                 self.pids.append(pid)
+    
+class LuaScript:
+    def __init__(self, **kwargs):
+        self.script =""
+        
+    def fromJson(self, json):
+        self.script = json['data']
         
 class RcpConfig:
     def __init__(self, **kwargs):
@@ -270,7 +277,8 @@ class RcpConfig:
         self.pwmConfig = PwmConfig()
         self.trackConfig = TrackConfig()
         self.obd2Config = Obd2Config()
-        
+        self.luaScript = LuaScript()
+    
 
     def fromJson(self, json):
         analogCfgJson = json.get('analogCfg', None)
@@ -290,12 +298,24 @@ class RcpConfig:
             self.gpioConfig.fromJson(gpioCfgJson)
             
         pwmCfgJson = json.get('pwmCfg', None)
-        if (pwmCfgJson):
+        if pwmCfgJson:
             self.pwmConfig.fromJson(pwmCfgJson)
             
         trackCfgJson = json.get('trackCfg', None)
-        if (trackCfgJson):
+        if trackCfgJson:
             self.trackConfig.fromJson(trackCfgJson)
+            
+        obd2CfgJson = json.get('obd2Cfg', None)
+        if obd2CfgJson:
+            self.obd2Config.fromJson(obd2CfgJson)
+        
+        scriptJson = json.get('script', None)
+        if scriptJson:
+            self.luaScript.fromJson(scriptJson)
+            
+        
+            
+                
              
 
     def toJson(self):

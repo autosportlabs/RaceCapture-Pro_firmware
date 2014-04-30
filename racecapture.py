@@ -16,9 +16,6 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.treeview import TreeView, TreeViewLabel
-from kivy.extras.highlight import KivyLexer
-from kivy.uix.codeinput import CodeInput
-from pygments import lexers
 
 from spacer import *
 from fieldlabel import FieldLabel
@@ -35,6 +32,7 @@ from obd2channelsview import *
 from canchannelsview import *
 from rcpconfig import *
 from channels import *
+from scriptview import *
 
 class ChannelNameSpinner(Spinner):
     def __init__(self, **kwargs):
@@ -83,35 +81,9 @@ class BluetoothTelemetryView(BoxLayout):
         pass
 
 
-class LuaScriptingView(BoxLayout):
-    def __init__(self, **kwargs):
-        super(LuaScriptingView, self).__init__(**kwargs)
-#        Builder.load_file('analogchannelsview.kv')
-        self.register_event_type('on_config_updated')
-
-    def on_config_updated(self, rcpCfg):
-        pass
-
-        
 class LinkedTreeViewLabel(TreeViewLabel):
     view = None
-   
-class LuaCodeInput(CodeInput):
-    def __init__(self, **kwargs):
-        super(LuaCodeInput, self).__init__(**kwargs)
-        self.lexer= lexers.get_lexer_by_name('lua')
 
-    def on_config_updated(self, rcpCfg):
-        pass
-        
-    def readScript(self):
-        print("read script")
-
-    def writeScript(self):
-        print("write script")
-
-    def runScript(self):
-        print("run script")
 
 class ToolbarView(BoxLayout):
 
