@@ -36,10 +36,8 @@ from scriptview import LuaScriptingView
 from samplerateview import SampleRateSelectorView
 from channelnamespinner import ChannelNameSpinner
 from toolbarview import ToolbarView
+from splashview import SplashView
 
-class SplashView(BoxLayout):
-    pass
-    
 class CellTelemetryView(BoxLayout):
     def __init__(self, **kwargs):
         super(CellTelemetryView, self).__init__(**kwargs)
