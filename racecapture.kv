@@ -1,44 +1,6 @@
 #:kivy 1.8.0
 
 
-[VSeparator@Widget]:
-    size_hint_x: None
-    width: 10
-    canvas:
-        Color:
-            rgba: .8, .8, .8, .3
-        Rectangle:
-            size: 1, self.height
-            pos: self.center_x, self.y
-
-[HSeparator@Label]:
-    size_hint_y: None
-    height: max(dp(40), self.texture_size[1] + dp(10))
-    text: ctx.text if 'text' in ctx else ''
-    text_size: self.width, None
-    valign: 'middle'
-    halign: 'center'
-    font_size: 20
-    canvas.before:
-        Color:
-            rgba: .21, .75, .95, .6
-        Rectangle:
-            size: self.size
-            pos: self.pos
-
-[HSeparatorMinor@Label]:
-    size_hint_y: None
-    height: max(dp(40), self.texture_size[1] + dp(10))
-    text: ctx.text if 'text' in ctx else ''
-    text_size: self.width, None
-    valign: 'middle'
-    halign: 'center'
-    canvas.before:
-        Color:
-            rgba: .1, .1, .1, .8
-        Rectangle:
-            size: self.size
-            pos: self.pos
 
 
 <RaceCaptureApp>:

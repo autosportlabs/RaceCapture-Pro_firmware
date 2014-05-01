@@ -37,6 +37,7 @@ from samplerateview import SampleRateSelectorView
 from channelnamespinner import ChannelNameSpinner
 from toolbarview import ToolbarView
 from splashview import SplashView
+from separator import *
 
 class CellTelemetryView(BoxLayout):
     def __init__(self, **kwargs):
@@ -60,8 +61,6 @@ class BluetoothTelemetryView(BoxLayout):
 
 class LinkedTreeViewLabel(TreeViewLabel):
     view = None
-
-
 
 class RaceCaptureApp(App):
     def __init__(self, **kwargs):
