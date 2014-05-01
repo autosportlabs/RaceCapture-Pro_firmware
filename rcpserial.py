@@ -27,6 +27,10 @@ class RcpSerial:
             rsp = json.loads(rsp)
         return rsp      
 
+    def sendSet(self, setCmd, json):
+        cmd = '{"' + setCmd + '":' + json.dumps(json) + '}'
+        print(cmd)
+        
     def sendGet(self, name, index):
         if index == None:
             index = 'null'
@@ -110,16 +114,22 @@ class RcpSerial:
             rcpCfg['script'] = scriptCfg['script']
             
         return rcpCfg
+    
+    def setRcpCfg(self, rcpCfg):
+        self.setGpsCfg(rcpCfg.gpsConfig)
 
     def getAnalogCfg(self, channelId):
-        return self.sendGet('getAnalogCfg', channelId)
+        return self.sendGet('getAnalogCfg', channelId)    
 
     def getImuCfg(self, channelId):
         return self.sendGet('getImuCfg', channelId)
     
     def getGpsCfg(self):
         return self.sendGet('getGpsCfg', None)
-
+    
+    def setGpsCfg(self, gpsCfg):
+        return self.sendSet('setGpsCfg')
+    
     def getTimerCfg(self, channelId):
         return self.sendGet('getTimerCfg', channelId)
     

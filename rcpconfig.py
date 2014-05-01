@@ -1,3 +1,4 @@
+import json
 
 class ScalingMap:
     def __init__(self, **kwargs):
@@ -108,6 +109,20 @@ class GpsConfig:
             self.timeEnabled = int(json.get('time', self.timeEnabled))
             self.distanceEnabled = int(json.get('dist', self.timeEnabled))
             self.satellitesEnabled = int(json.get('sats', self.satellitesEnabled))
+            
+    def toJson(self):
+        gpsJson = {'gpsCfg':{
+                              'sr' : self.sampleRate,
+                              'pos' : self.positionEnabled,
+                              'speed' : self.speedEnabled,
+                              'time' : self.timeEnabled,
+                              'dist' : self.distanceEnabled,
+                              'sats' : self.satellitesEnabled
+                              }
+                    }
+                   
+        return gpsJson
+        
     
 class TimerChannel:
     def __init__(self, **kwargs):
@@ -279,7 +294,6 @@ class RcpConfig:
         self.obd2Config = Obd2Config()
         self.luaScript = LuaScript()
     
-
     def fromJson(self, json):
         analogCfgJson = json.get('analogCfg', None)
         if analogCfgJson:
@@ -313,11 +327,12 @@ class RcpConfig:
         if scriptJson:
             self.luaScript.fromJson(scriptJson)
             
-        
-            
-                
-             
-
     def toJson(self):
-        print('toJson')
-    
+        
+        gpsCfgJson = self.gpsConfig.toJson()
+        
+        rcpJson = {'rcpCfg':{
+                             'gpsCfg':gpsCfgJson.get('gpsCfg', None)
+                             }
+                   }
+        return rcpJson

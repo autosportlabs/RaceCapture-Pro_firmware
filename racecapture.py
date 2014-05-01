@@ -88,6 +88,11 @@ class RaceCaptureApp(App):
         args = vars(parser.parse_args())
         self.rcp.setPort(args['port'])
 
+    def on_write_config(self, instance, *args):
+        rcpConfig = self.rcpConfig
+        rcpJson = rcpConfig.toJson()
+        print(json.dumps(rcpJson))
+        
     def on_read_config(self, instance, *args):
         config = self.rcp.getRcpCfg()
         self.rcpConfig.fromJson(config)
@@ -154,6 +159,7 @@ class RaceCaptureApp(App):
 
         toolbar = ToolbarView(size_hint=(None, 0.05), rcp=self.rcp, app=self)
         toolbar.bind(on_read_config=self.on_read_config)
+        toolbar.bind(on_write_config=self.on_write_config)
         
         self.content = content
         self.tree = tree
