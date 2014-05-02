@@ -92,7 +92,6 @@ class RaceCaptureApp(App):
         rcpConfig = self.rcpConfig
         rcpJson = rcpConfig.toJson()
         self.rcp.writeRcpCfg(rcpJson)
-        print(json.dumps(rcpJson))
         
     def on_read_config(self, instance, *args):
         config = self.rcp.getRcpCfg()

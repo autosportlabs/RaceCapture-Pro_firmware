@@ -74,6 +74,15 @@ class ImuChannel:
         self.chan = imuChannelJson.get('chan', self.chan)
         self.zeroValue = imuChannelJson.get('zeroVal', self.zeroValue)
         self.alpha = imuChannelJson.get('alpha', self.alpha)
+        
+    def toJson(self):
+        jsonCfg = {}
+        jsonCfg['sr'] = self.sampleRate
+        jsonCfg['mode'] = self.mode
+        jsonCfg['chan'] = self.chan
+        jsonCfg['zeroVal'] = self.zeroValue
+        jsonCfg['alpha'] = self.alpha
+        return jsonCfg
     
 IMU_ACCEL_CHANNEL_IDS = [0,1,2]
 IMU_GYRO_CHANNEL_IDS = [3]
@@ -93,11 +102,12 @@ class ImuConfig:
                 self.channels[i].fromJson(imuChannelJson)
                 
     def toJson(self):
-        imuCfgJson = {'imuCfg':{}}
-        
+        imuCfgJson = {}
         for i in range (self.channelCount):
             imuChannel = self.channels[i]
             imuCfgJson[str(i)]=imuChannel.toJson()
+            
+        return {'imuCfg':imuCfgJson}
         
             
                   
@@ -338,10 +348,10 @@ class RcpConfig:
             
     def toJson(self):
         
-        gpsCfgJson = self.gpsConfig.toJson()
-        
         rcpJson = {'rcpCfg':{
-                             'gpsCfg':gpsCfgJson.get('gpsCfg', None)
+                             'gpsCfg':self.gpsConfig.toJson().get('gpsCfg'),
+                             'imuCfg':self.imuConfig.toJson().get('imuCfg')
                              }
                    }
+        print('rcpJson ' + json.dumps(rcpJson))
         return rcpJson

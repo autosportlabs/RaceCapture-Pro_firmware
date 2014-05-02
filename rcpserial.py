@@ -119,6 +119,10 @@ class RcpSerial:
             gpsCfg = rcpCfg.get('gpsCfg', None)
             if gpsCfg:
                 self.sendCommand({'setGpsCfg':gpsCfg})
+            imuCfg = rcpCfg.get('imuCfg', None)
+            if imuCfg:
+                self.sendCommand({'setImuCfg':imuCfg})
+        
 
     def getAnalogCfg(self, channelId):
         return self.sendGet('getAnalogCfg', channelId)    
@@ -158,11 +162,9 @@ class RcpSerial:
 
     def writeScriptPage(self, ser, script, page):
         cmd = 'writeScriptPage ' + str(page) + ' ' + self.encodeScript(script) + '\r'
-        print(cmd)
         ser.write(cmd)
         line = self.readLine(ser)
         line = self.readLine(ser)
-        print(line)
         if 'result="ok"' in line:
             return 1
         else:
