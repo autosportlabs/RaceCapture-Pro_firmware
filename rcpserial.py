@@ -15,8 +15,8 @@ class RcpSerial:
         ser = self.getSerial()
         ser.flushInput()
         ser.flushOutput()
-        print('send cmd: ' + cmd)
-        ser.write(cmd + '\r')
+        print('send cmd: ' + json.dumps(cmd))
+        ser.write(json.dumps(cmd) + '\r')
 
         echo = self.readLine(ser)
         if echo:
@@ -26,17 +26,15 @@ class RcpSerial:
             print('rsp: ' + rsp)
             rsp = json.loads(rsp)
         return rsp      
-
-    def sendSet(self, setCmd, json):
-        cmd = '{"' + setCmd + '":' + json.dumps(json) + '}'
-        print(cmd)
         
     def sendGet(self, name, index):
         if index == None:
-            index = 'null'
+            index = None
         else:
             index = str(index)
-        cmd = '{"' + name + '":' + index + '}'
+        cmd = {name:index}
+        
+        #cmd = '{"' + name + '":' + index + '}'
         return self.sendCommand(cmd)
 
     def getSerial(self):
@@ -115,8 +113,12 @@ class RcpSerial:
             
         return rcpCfg
     
-    def setRcpCfg(self, rcpCfg):
-        self.setGpsCfg(rcpCfg.gpsConfig)
+    def writeRcpCfg(self, cfg):
+        rcpCfg = cfg.get('rcpCfg', None)
+        if rcpCfg:
+            gpsCfg = rcpCfg.get('gpsCfg', None)
+            if gpsCfg:
+                self.sendCommand({'setGpsCfg':gpsCfg})
 
     def getAnalogCfg(self, channelId):
         return self.sendGet('getAnalogCfg', channelId)    
@@ -128,7 +130,7 @@ class RcpSerial:
         return self.sendGet('getGpsCfg', None)
     
     def setGpsCfg(self, gpsCfg):
-        return self.sendSet('setGpsCfg')
+        return self.sendSet('setGpsCfg', gpsCfg)
     
     def getTimerCfg(self, channelId):
         return self.sendGet('getTimerCfg', channelId)

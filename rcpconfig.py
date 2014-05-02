@@ -104,7 +104,7 @@ class GpsConfig:
     def fromJson(self, json):
         if json:
             self.sampleRate = int(json.get('sr', self.sampleRate))
-            self.positionEnabled = int(json.get('pos', self.positionEnabled)) == 1
+            self.positionEnabled = int(json.get('pos', self.positionEnabled))
             self.speedEnabled = int(json.get('speed', self.speedEnabled))
             self.timeEnabled = int(json.get('time', self.timeEnabled))
             self.distanceEnabled = int(json.get('dist', self.timeEnabled))
