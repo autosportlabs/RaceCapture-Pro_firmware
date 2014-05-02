@@ -16,9 +16,10 @@ class RcpSerial:
         ser.flushInput()
         ser.flushOutput()
         print('send cmd: ' + json.dumps(cmd))
-        ser.write(json.dumps(cmd) + '\r')
+        ser.write(json.dumps(cmd) + '\n\r')
 
         echo = self.readLine(ser)
+        print('echo: ' + str(echo))
         if echo:
             rsp = self.readLine(ser)
 
@@ -62,7 +63,7 @@ class RcpSerial:
         line = bytearray()
         while True:
             c = ser.read(1)
-            if c == eol or c == eol2:
+            if  c == eol2:
                 break
             else:
                 line += c
@@ -87,6 +88,7 @@ class RcpSerial:
         if analogCfg:
             rcpCfg['analogCfg'] = analogCfg['analogCfg']
             
+    
         if rcpCfg:
             rcpCfg['imuCfg'] = imuCfg['imuCfg']
         
@@ -95,7 +97,7 @@ class RcpSerial:
             
         if timerCfg:
             rcpCfg['timerCfg'] = timerCfg['timerCfg']
-            
+           
         if gpioCfg:
             rcpCfg['gpioCfg'] = gpioCfg['gpioCfg']
             
