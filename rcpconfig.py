@@ -91,6 +91,15 @@ class ImuConfig:
             imuChannelJson = imuConfigJson.get(str(i), None)
             if imuChannelJson:
                 self.channels[i].fromJson(imuChannelJson)
+                
+    def toJson(self):
+        imuCfgJson = {'imuCfg':{}}
+        
+        for i in range (self.channelCount):
+            imuChannel = self.channels[i]
+            imuCfgJson[str(i)]=imuChannel.toJson()
+        
+            
                   
 class GpsConfig:
     def __init__(self, **kwargs):
