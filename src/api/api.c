@@ -142,7 +142,7 @@ static int dispatch_api(Serial *serial, const char * apiMsgName, const jsmntok_t
 		res = API_ERROR_UNKNOWN_MSG;
 		json_sendResult(serial,apiMsgName, res);
 	}
-	serial->put_s("\r\n");
+	serial->put_s("\r");
 	return res;
 }
 

@@ -285,6 +285,6 @@ void interactive_read_line(Serial *serial, char * buffer, size_t bufferSize){
 			}
 		}
 	}
-	serial->put_s("\n\r");
+	serial->put_s("\r");
 	buffer[bufIndex]='\0';
 }
