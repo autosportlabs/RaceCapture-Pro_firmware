@@ -15,3 +15,6 @@ class SampleRateSelectorView(BoxLayout):
 
     def setValue(self, value):
         self.ids.sampleRate.text = self.valueMap[value]
+
+    def onSelect(self, instance, value):
+        print("onselect")
