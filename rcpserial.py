@@ -1,6 +1,7 @@
 import serial
 import io
 import json
+from rcpconfig import ANALOG_CHANNEL_COUNT
 
 class RcpSerial:
     def __init__(self, **kwargs):
@@ -127,10 +128,18 @@ class RcpSerial:
         if rcpCfg:
             gpsCfg = rcpCfg.get('gpsCfg', None)
             if gpsCfg:
-                self.sendCommand({'setGpsCfg':gpsCfg})
+                self.sendCommand({'setGpsCfg': gpsCfg})
+                
             imuCfg = rcpCfg.get('imuCfg', None)
             if imuCfg:
-                self.sendCommand({'setImuCfg':imuCfg})
+                self.sendCommand({'setImuCfg': imuCfg})
+                
+            analogCfg = rcpCfg.get('analogCfg', None)
+            if analogCfg:
+                for i in range(ANALOG_CHANNEL_COUNT):
+                    analogChannel = analogCfg.get(str(i))
+                    if analogChannel:
+                        self.sendCommand({'setAnalogCfg': {str(i): analogChannel}})
         
 
     def getAnalogCfg(self, channelId):

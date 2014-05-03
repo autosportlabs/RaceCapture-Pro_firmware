@@ -29,7 +29,22 @@ class ScalingMap:
             for scaledValue in scaledJson:
                 self.scaled[i] = scaledValue
                 i+=1
-
+                
+    def toJson(self):
+        mapJson = {}
+        rawBins = []
+        scaledBins = []
+        for rawValue in self.raw:
+            rawBins.append(rawValue)
+        
+        for scaledValue in self.scaled:
+            scaledBins.append(scaledValue)
+            
+        mapJson['raw'] = rawBins
+        mapJson['scal'] = scaledBins
+        
+        return mapJson 
+        
     def getVolts(self, mapBin):
         try:
             return (5.0 * self.raw[mapBin]) / 1024.0
@@ -86,10 +101,22 @@ class AnalogChannel:
         mapJson = json.get('map', None)
         if mapJson:
             self.scalingMap.fromJson(mapJson)
+            
+    def toJson(self):
+        channelJson = {}
+        channelJson['id'] = self.channelId
+        channelJson['sr'] = self.sampleRate
+        channelJson['scalMod'] = self.scalingMode
+        channelJson['linScal'] = self.linearScaling
+        channelJson['alpha'] = self.alpha
+        channelJson['map'] = self.scalingMap.toJson()
+        return channelJson
     
+ANALOG_CHANNEL_COUNT = 8
+
 class AnalogConfig:
     def __init__(self, **kwargs):
-        self.channelCount = 8
+        self.channelCount = ANALOG_CHANNEL_COUNT
         self.channels = []
 
         for i in range (self.channelCount):
@@ -101,6 +128,14 @@ class AnalogConfig:
             if analogChannelJson:
                 self.channels[i].fromJson(analogChannelJson)
 
+    def toJson(self):
+        analogCfgJson = {}
+        for i in range(ANALOG_CHANNEL_COUNT):
+            analogChannel = self.channels[i]
+            analogCfgJson[str(i)] = analogChannel.toJson()
+        return {'analogCfg':analogCfgJson}
+            
+        
 class ImuChannel:
     def __init__(self, **kwargs):
         self.sampleRate = 0
@@ -391,7 +426,8 @@ class RcpConfig:
         
         rcpJson = {'rcpCfg':{
                              'gpsCfg':self.gpsConfig.toJson().get('gpsCfg'),
-                             'imuCfg':self.imuConfig.toJson().get('imuCfg')
+                             'imuCfg':self.imuConfig.toJson().get('imuCfg'),
+                             'analogCfg': self.analogConfig.toJson().get('analogCfg')
                              }
                    }
         print('rcpJson ' + json.dumps(rcpJson))
