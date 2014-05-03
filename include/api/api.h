@@ -20,6 +20,8 @@
 #define API_ERROR_SEVERE		-99
 #define API_ERROR_UNSPECIFIED 	-100
 
+#define API_MSG_SUCCESS(X) (X == API_SUCCESS || X == API_SUCCESS_NO_RETURN )
+
 
 typedef struct _api_context{
 	Serial * serial;

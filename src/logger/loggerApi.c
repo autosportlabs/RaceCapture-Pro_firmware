@@ -1,9 +1,4 @@
-/*
- * loggerApi.c
- *
- *  Created on: Jun 10, 2013
- *      Author: brent
- */
+#include "constants.h"
 #include "loggerApi.h"
 #include "loggerConfig.h"
 #include "channelMeta.h"
@@ -111,6 +106,17 @@ static int setFloatValueIfExists(const jsmntok_t *root, const char * fieldName, 
 	const jsmntok_t *valueNode = findValueNode(root, fieldName);
 	if (valueNode) * target = modp_atof(valueNode->data);
 	return (valueNode != NULL);
+}
+
+int api_getVersion(Serial *serial, const jsmntok_t *json){
+	json_objStart(serial);
+	json_objStartString(serial,"ver");
+	json_int(serial, "major", MAJOR_REV, 1);
+	json_int(serial, "minor", MINOR_REV, 1);
+	json_int(serial, "bugfix", BUGFIX_REV, 0);
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
+	return API_SUCCESS_NO_RETURN;
 }
 
 int api_sampleData(Serial *serial, const jsmntok_t *json){
@@ -1067,5 +1073,6 @@ int api_setScript(Serial *serial, const jsmntok_t *json){
 	}
 	return returnStatus;
 }
+
 
 

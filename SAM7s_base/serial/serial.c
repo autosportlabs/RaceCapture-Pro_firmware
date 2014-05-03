@@ -264,6 +264,23 @@ void put_crlf(Serial *serial){
 	serial->put_s("\r\n");
 }
 
+void read_line(Serial *serial, char *buffer, size_t bufferSize){
+	int bufIndex = 0;
+    char c;
+	while(bufIndex < bufferSize - 1){
+		c = serial->get_c();
+		if (c) {
+			if ('\r' == c){
+				break;
+			}
+			else {
+				buffer[bufIndex++] = c;
+			}
+		}
+	}
+	buffer[bufIndex]='\0';
+}
+
 void interactive_read_line(Serial *serial, char * buffer, size_t bufferSize){
 	int bufIndex = 0;
     char c;

@@ -52,10 +52,12 @@
 {"getObd2Cfg", api_getObd2Config}, \
 {"setObd2Cfg", api_setObd2Config}, \
 {"getScript", api_getScript}, \
-{"setScript", api_setScript}
+{"setScript", api_setScript}, \
+{"getVer", api_getVersion}
 
 
 //commands
+int api_getVersion(Serial *serial, const jsmntok_t *json);
 int api_sampleData(Serial *serial, const jsmntok_t *json);
 int api_log(Serial *serial, const jsmntok_t *json);
 int api_getMeta(Serial *serial, const jsmntok_t *json);

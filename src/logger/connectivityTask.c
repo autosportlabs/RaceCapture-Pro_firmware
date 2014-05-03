@@ -12,7 +12,7 @@
 #include "serial.h"
 #include "usart.h"
 #include "printk.h"
-#include "messaging.h"
+#include "api.h"
 #include "telemetryTask.h"
 #include "devices_common.h"
 
@@ -153,6 +153,7 @@ void connectivityTask(void *params) {
 						pr_warning("unknown logger msg type ");
 						pr_warning_int(msg->messageType);
 						pr_warning("\r\n");
+						break;
 				}
 			}
 
@@ -175,8 +176,8 @@ void connectivityTask(void *params) {
 					pr_debug(g_buffer);
 					pr_debug("'\r\n");
 				}
-				int msgRes = process_msg(serial, g_buffer, BUFFER_SIZE);
-				if (! MESSAGE_SUCCESS(msgRes)) badMsgCount++;
+				int msgRes = process_api(serial, g_buffer, BUFFER_SIZE);
+				if (! API_MSG_SUCCESS(msgRes)) badMsgCount++;
 				if (badMsgCount >= BAD_MESSAGE_THRESHOLD){
 					pr_warning_int(badMsgCount);
 					pr_warning(" empty/bad msgs - re-connecting...\r\n");

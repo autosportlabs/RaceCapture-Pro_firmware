@@ -27,7 +27,7 @@ void onUSBCommTask(void *pvParameters) {
 	Serial *serial = get_serial_usb();
 
 	while (1) {
-		process_msg_interactive(serial, lineBuffer, BUFFER_SIZE);
+		process_msg(serial, lineBuffer, BUFFER_SIZE);
 	}
 }
 

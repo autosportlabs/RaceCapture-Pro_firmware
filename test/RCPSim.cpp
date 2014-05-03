@@ -42,7 +42,6 @@ int main(int argc, char* argv[])
 		while (count < LINE_BUFFER_SIZE){
 			char c;
 			read(pt, &c, 1);
-			write(pt, &c, 1);
 			line[count] = c;
 			count++;
 			if (c == '\r'){
