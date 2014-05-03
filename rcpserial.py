@@ -17,11 +17,11 @@ class RcpSerial:
         ser.flushInput()
         ser.flushOutput()
         print('send cmd: ' + json.dumps(cmd))
-        ser.write(json.dumps(cmd) + '\r')
-
-        echo = self.readLine(ser)
-        print('echo: ' + str(echo))
-        if echo:
+        cmdStr = json.dumps(cmd) + '\r'
+        ser.write(cmdStr)
+        
+        rsp = self.readLine(ser)
+        if cmdStr.startswith(rsp):
             rsp = self.readLine(ser)
 
         if rsp:
@@ -41,7 +41,10 @@ class RcpSerial:
 
     def getSerial(self):
         if not self.ser:
-            self.ser = self.open()
+            ser = self.open()
+            ser.flushInput()
+            ser.flushOutput()
+            self.ser = ser
         return self.ser
             
     def open(self):
@@ -74,7 +77,7 @@ class RcpSerial:
             else:
                 line += c
                 
-        line = bytes(line)
+        line = bytes(line).strip()
         line = line.replace('\r', '')
         line = line.replace('\n', '')
         return line
@@ -171,7 +174,10 @@ class RcpSerial:
     
     def getScript(self):
         return self.sendGet('getScript', None)
-    
+
+    def getVersion(self):
+        rsp = self.sendCommand("getVer", None)
+            
     def decodeScript(self, s):
         return s.replace('\\n','\n').replace('\_',' ').replace('\\r','\r').replace('\\"','"')
 
