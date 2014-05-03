@@ -48,7 +48,7 @@ class AnalogChannelsView(BoxLayout):
             c = editor.children[2].children
 
             analogChannel = analogCfg.channels[i]
-            channelSpinner = kvFind(editor, 'rcid', 'chan')
+            channelSpinner = kvFind(editor, 'rcid', 'chanId')
             channelSpinner.setValue(self.channels.getNameForId(analogChannel.channelId))
 
             sampleRateSpinner = kvFind(editor, 'rcid', 'sr')
@@ -81,7 +81,12 @@ class AnalogChannelsView(BoxLayout):
 class AnalogChannel(BoxLayout):
     def __init__(self, **kwargs):
         super(AnalogChannel, self).__init__(**kwargs)
+        kvFind(self, 'rcid', 'id').bind(on_channel = self.on_channel)        
 
+    def on_channel(self, instance, value):
+        #if self.gpsConfig:
+            print('channel ' + str(value))            
+            #self.gpsConfig.sampleRate = value
 
 class AnalogScaler(Graph):
     def __init__(self, **kwargs):

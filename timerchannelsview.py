@@ -67,7 +67,7 @@ class PulseChannelsView(BoxLayout):
             sampleRateSpinner = kvFind(editor, 'rcid', 'sr')
             sampleRateSpinner.setValue(timerChannel.sampleRate)
 
-            channelSpinner = kvFind(editor, 'rcid', 'chan')
+            channelSpinner = kvFind(editor, 'rcid', 'chanId')
             channelSpinner.setValue(self.channels.getNameForId(timerChannel.channelId))
             
             modeSpinner = kvFind(editor, 'rcid', 'mode')
