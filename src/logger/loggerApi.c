@@ -804,8 +804,7 @@ int api_setGpsConfig(Serial *serial, const jsmntok_t *json){
 
 	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
 	int sr = 0;
-	setIntValueIfExists(json, "sr", &sr);
-	if (sr) gpsCfg->sampleRate = encodeSampleRate(sr);
+	if (setIntValueIfExists(json, "sr", &sr)) gpsCfg->sampleRate = encodeSampleRate(sr);
 	setUnsignedCharValueIfExists(json, "pos", &gpsCfg->positionEnabled);
 	setUnsignedCharValueIfExists(json, "speed", &gpsCfg->speedEnabled);
 	setUnsignedCharValueIfExists(json, "time", &gpsCfg->timeEnabled);
