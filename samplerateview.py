@@ -3,6 +3,9 @@ kivy.require('1.8.0')
 from kivy.uix.spinner import Spinner
 from kivy.uix.boxlayout import BoxLayout
 
+from kivy.app import Builder
+Builder.load_file('samplerateview.kv')            
+
 class SampleRateSpinner(Spinner):
     def __init__(self, **kwargs):
         super(SampleRateSpinner, self).__init__(**kwargs)
@@ -17,4 +20,4 @@ class SampleRateSelectorView(BoxLayout):
         self.ids.sampleRate.text = self.valueMap[value]
 
     def onSelect(self, instance, value):
-        print("onselect")
+        print("onselect" + str(instance) + str(value))
