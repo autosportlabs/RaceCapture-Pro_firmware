@@ -42,7 +42,6 @@ class GPSChannelsView(BoxLayout):
     
     def on_sample_rate(self, instance, value):
         if self.gpsConfig:
-            print('value ' + str(value))
             self.gpsConfig.sampleRate = value
         
     def on_config_updated(self, rcpCfg):

@@ -1,5 +1,8 @@
 import json
 
+MAX_ANALOG_RAW_VALUE = 1023
+MIN_ANALOG_RAW_VALUE = 0
+
 class ScalingMap:
     def __init__(self, **kwargs):
         points = 5
@@ -26,6 +29,44 @@ class ScalingMap:
             for scaledValue in scaledJson:
                 self.scaled[i] = scaledValue
                 i+=1
+
+    def getVolts(self, mapBin):
+        try:
+            return (5.0 * self.raw[mapBin]) / 1024.0
+        except IndexError:
+            print('Index error getting volts')
+            return 0
+     
+    def setVolts(self, mapBin, value):
+        try:
+            value = float(value)
+            raw = value * 204.6
+            raw = int(raw)
+            raw = MAX_ANALOG_RAW_VALUE if raw >= MAX_ANALOG_RAW_VALUE else raw
+            raw = MIN_ANALOG_RAW_VALUE if raw <= MIN_ANALOG_RAW_VALUE else raw
+            self.raw[mapBin] = raw
+        except IndexError:
+            print('Index error setting bin')
+            
+    def getScaled(self, mapBin):
+        try:
+            return self.scaled[mapBin]
+        except IndexError:
+            print('Index error getting scaled value')
+            return 0
+    
+    def setScaled(self, mapBin, value):
+        try:
+            self.scaled[mapBin] = float(value)
+        except IndexError:
+            print('Index error setting bin')
+        
+            
+            
+            
+ANALOG_SCALING_MODE_RAW     = 0
+ANALOG_SCALING_MODE_LINEAR  = 1
+ANALOG_SCALING_MODE_MAP     = 2
 
 class AnalogChannel:
     def __init__(self, **kwargs):

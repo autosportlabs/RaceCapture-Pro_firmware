@@ -27,16 +27,19 @@
 	        CheckBox:
 	        	group: 'scalingType'
                 rcid: 'smRaw'
+                on_active: root.on_scaling_type_raw(*args)
 	        Label:
-	        	text: 'Simple'
+	        	text: 'Linear'
 	        CheckBox:
 	        	group: 'scalingType'
                 rcid: 'smLinear'
+                on_active: root.on_scaling_type_linear(*args)
 	        Label:
 	        	text: 'Mapped'
 	        CheckBox:
 	        	group: 'scalingType'
                 rcid: 'smMapped'
+                on_active: root.on_scaling_type_map(*args)
     VSeparator:
     BoxLayout:
         orientation: 'vertical'
@@ -86,33 +89,42 @@
         ValueField:
             rcid: 'v_0'
             text: ''
+            on_text: root.on_volts(0, *args)
         ValueField:
             rcid: 'v_1'
             text: ''
+            on_text: root.on_volts(1, *args)            
         ValueField:
             rcid: 'v_2'
             text: ''
+            on_text: root.on_volts(2, *args)            
         ValueField:
             rcid: 'v_3'
             text: ''
+            on_text: root.on_volts(3, *args)            
         ValueField:
             rcid: 'v_4'
             text: ''
+            on_text: root.on_volts(4, *args)            
         Label:
             text: 'Scaled'
         ValueField:
             rcid: 's_0'
             text: ''
+            on_text: root.on_scaled(0, *args)            
         ValueField:
             rcid: 's_1'
             text: ''
+            on_text: root.on_scaled(1, *args)            
         ValueField:
             rcid: 's_2'
             text: ''
+            on_text: root.on_scaled(2, *args)            
         ValueField:
             rcid: 's_3'
             text: ''
+            on_text: root.on_scaled(3, *args)            
         ValueField:
             rcid: 's_4'
             text: ''
-
+            on_text: root.on_scaled(4, *args)            
