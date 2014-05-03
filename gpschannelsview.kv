@@ -19,21 +19,26 @@
             text: 'Position'
         Switch:
         	rcid: 'pos'
+        	on_active: root.onPosActive(*args)
         Label:
             text: 'Speed'
         Switch:
         	rcid: 'speed'
+        	on_active: root.onSpeedActive(*args)
         Label:
             text: 'Distance'
         Switch:
         	rcid: 'dist'
+        	on_active: root.onDistActive(*args)
         Label:
             text: 'Time of Day'
         Switch:
         	rcid: 'time'
+        	on_active: root.onTimeActive(*args)
         Label:
             text: 'Satellites'
         Switch:
         	rcid: 'sats'
+        	on_active: root.onSatsActive(*args)
     Label:
         size_hint: (1.0, 0.4)

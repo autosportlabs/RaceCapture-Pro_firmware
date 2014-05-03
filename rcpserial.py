@@ -16,7 +16,7 @@ class RcpSerial:
         ser.flushInput()
         ser.flushOutput()
         print('send cmd: ' + json.dumps(cmd))
-        ser.write(json.dumps(cmd) + '\n\r')
+        ser.write(json.dumps(cmd) + '\r')
 
         echo = self.readLine(ser)
         print('echo: ' + str(echo))
@@ -45,7 +45,7 @@ class RcpSerial:
             
     def open(self):
         print('Opening serial')
-        ser = serial.Serial(self.port, timeout = 3)
+        ser = serial.Serial(self.port, timeout = 1)
         ser.flushInput()
         ser.flushOutput()
         return ser
@@ -56,17 +56,23 @@ class RcpSerial:
         ser = None
     
     def readLine(self, ser):
-        eol = b'\n'
         eol2 = b'\r'
-
-        leneol = len(eol)
+        retryCount = 0
         line = bytearray()
+
         while True:
             c = ser.read(1)
             if  c == eol2:
                 break
+            elif c == '':
+                if retryCount > 10:
+                    raise Exception('Could not read message')
+                retryCount +=1
+                print('Timeout - retry: ' + str(retryCount))
+                ser.write(' ')
             else:
                 line += c
+                
         line = bytes(line)
         line = line.replace('\r', '')
         line = line.replace('\n', '')
@@ -81,7 +87,8 @@ class RcpSerial:
         pwmCfg = self.getPwmCfg(None)
         trackCfg = self.getTrackCfg()
         obd2Cfg = self.getObd2Cfg()
-        scriptCfg = self.getScript()
+        #scriptCfg = self.getScript()
+        scriptCfg = None
         
         rcpCfg = {}
         
