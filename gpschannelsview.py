@@ -14,11 +14,12 @@ class GPSChannelsView(BoxLayout):
     def __init__(self, **kwargs):
         super(GPSChannelsView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
+        kvFind(self, 'rcid', 'sr').bind(on_sample_rate = self.on_sample_rate)
 
     def setCheckBox(self, gpsCfg, key, active):
         checkbox = kvFind(self, 'rcid', key)
         checkbox.active = active
-        
+                
     def onPosActive(self, instance, value):
         if self.gpsConfig:
             self.gpsConfig.positionEnabled = 1 if value else 0
@@ -38,6 +39,11 @@ class GPSChannelsView(BoxLayout):
     def onSatsActive(self, instance, value):
         if self.gpsConfig:        
             self.gpsConfig.satellitesEnabled = 1 if value else 0
+    
+    def on_sample_rate(self, instance, value):
+        if self.gpsConfig:
+            print('value ' + str(value))
+            self.gpsConfig.sampleRate = value
         
     def on_config_updated(self, rcpCfg):
         gpsConfig = rcpCfg.gpsConfig
