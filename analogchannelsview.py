@@ -14,6 +14,7 @@ from channelnameselectorview import ChannelNameSelectorView
 Builder.load_file('analogchannelsview.kv')
 
 class AnalogChannelsView(BoxLayout):
+    editors = []    
     def __init__(self, **kwargs):
         super(AnalogChannelsView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')

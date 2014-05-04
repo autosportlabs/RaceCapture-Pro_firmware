@@ -30,6 +30,7 @@
                     text: 'Channel Operation Mode'
                 TimerModeSpinner:
                 	rcid: 'mode'
+                	on_text: root.on_mode(*args)
             BoxLayout:
                 padding: [2, 2]
                 orientation: 'horizontal'
@@ -37,6 +38,7 @@
                     text: 'Clock Divider'
                 DividerSpinner:
                 	rcid: 'divider'
+                	on_text: root.on_divider(*args)
             BoxLayout:
                 padding: [2, 2]
                 orientation: 'horizontal'
@@ -44,3 +46,4 @@
                     text: 'Pulse per Revolution/\nTeeth per Wheel'
                 PulsePerRevSpinner:
                 	rcid: 'ppr'
+                	on_text: root.on_pulse_per_rev(*args)

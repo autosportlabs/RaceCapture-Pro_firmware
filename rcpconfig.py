@@ -75,9 +75,6 @@ class ScalingMap:
             self.scaled[mapBin] = float(value)
         except IndexError:
             print('Index error setting bin')
-        
-            
-            
             
 ANALOG_SCALING_MODE_RAW     = 0
 ANALOG_SCALING_MODE_LINEAR  = 1
@@ -219,6 +216,8 @@ class GpsConfig:
         return gpsJson
         
     
+TIMER_CHANNEL_COUNT = 3
+
 class TimerChannel:
     def __init__(self, **kwargs):
         self.channelId = 0
@@ -226,18 +225,30 @@ class TimerChannel:
         self.mode = 0
         self.divider = 0
         self.pulsePerRev = 0
+        self.slowTimer = 0
         
-    def fromJson(self, json):
-        if (json):
-            self.channelId = json.get('id', self.channelId)
-            self.sampleRate = json.get('sr', self.sampleRate)
-            self.mode = json.get('mode', self.mode)
-            self.divider = json.get('divider', self.divider)
-            self.pulsePerRev = json.get('ppr', self.pulsePerRev)
+    def fromJson(self, timerJson):
+        if (timerJson):
+            self.channelId = timerJson.get('id', self.channelId)
+            self.sampleRate = timerJson.get('sr', self.sampleRate)
+            self.mode = timerJson.get('mode', self.mode)
+            self.divider = timerJson.get('timDiv', self.divider)
+            self.pulsePerRev = timerJson.get('ppRev', self.pulsePerRev)
+            self.slowTimer = timerJson.get('sTimer', self.slowTimer)
+            
+    def toJson(self):
+        timerJson = {}
+        timerJson['id'] = self.channelId
+        timerJson['sr'] = self.sampleRate
+        timerJson['mode'] = self.mode
+        timerJson['ppRev'] = self.pulsePerRev
+        timerJson['timDiv'] = self.divider
+        timerJson['sTimer'] = self.slowTimer
+        return timerJson
 
 class TimerConfig:
     def __init__(self, **kwargs):
-        self.channelCount = 3
+        self.channelCount = TIMER_CHANNEL_COUNT
         self.channels = []
 
         for i in range (self.channelCount):
@@ -249,6 +260,13 @@ class TimerConfig:
             if timerChannelJson:
                 self.channels[i].fromJson(timerChannelJson)
     
+    def toJson(self):
+        timerCfgJson = {}
+        for i in range(TIMER_CHANNEL_COUNT):
+            timerChannel = self.channels[i]
+            timerCfgJson[str(i)] = timerChannel.toJson()
+        return {'timerCfg':timerCfgJson}
+        
 class GpioChannel:
     def __init__(self, **kwargs):
         self.channelId = 0
@@ -394,6 +412,10 @@ class RcpConfig:
         if analogCfgJson:
             self.analogConfig.fromJson(analogCfgJson)
 
+        timerCfgJson = json.get('timerCfg', None)
+        if timerCfgJson:
+            self.timerConfig.fromJson(timerCfgJson)
+            
         imuCfgJson = json.get('imuCfg', None)
         if imuCfgJson:
             self.imuConfig.fromJson(imuCfgJson)
@@ -427,7 +449,8 @@ class RcpConfig:
         rcpJson = {'rcpCfg':{
                              'gpsCfg':self.gpsConfig.toJson().get('gpsCfg'),
                              'imuCfg':self.imuConfig.toJson().get('imuCfg'),
-                             'analogCfg': self.analogConfig.toJson().get('analogCfg')
+                             'analogCfg': self.analogConfig.toJson().get('analogCfg'),
+                             'timerCfg' : self.timerConfig.toJson().get('timerCfg')
                              }
                    }
         print('rcpJson ' + json.dumps(rcpJson))

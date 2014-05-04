@@ -1,7 +1,7 @@
 import serial
 import io
 import json
-from rcpconfig import ANALOG_CHANNEL_COUNT
+from rcpconfig import *
 
 class RcpSerial:
     def __init__(self, **kwargs):
@@ -95,7 +95,6 @@ class RcpSerial:
         
         if analogCfg:
             rcpCfg['analogCfg'] = analogCfg['analogCfg']
-            
     
         if rcpCfg:
             rcpCfg['imuCfg'] = imuCfg['imuCfg']
@@ -141,6 +140,12 @@ class RcpSerial:
                     if analogChannel:
                         self.sendCommand({'setAnalogCfg': {str(i): analogChannel}})
         
+            timerCfg = rcpCfg.get('timerCfg', None)
+            if timerCfg:
+                for i in range(TIMER_CHANNEL_COUNT):
+                    timerChannel = timerCfg.get(str(i))
+                    if timerChannel:
+                        self.sendCommand({'setTimerCfg': {str(i): timerChannel}})
 
     def getAnalogCfg(self, channelId):
         return self.sendGet('getAnalogCfg', channelId)    

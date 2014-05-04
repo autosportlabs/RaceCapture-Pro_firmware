@@ -31,10 +31,54 @@ class PulsePerRevSpinner(MappedSpinner):
         self.setValueMap(valueMap, '1');
     
 class PulseChannel(BoxLayout):
+    channelConfig = None
+    channels = None
     def __init__(self, **kwargs):
         super(PulseChannel, self).__init__(**kwargs)
+        kvFind(self, 'rcid', 'sr').bind(on_sample_rate = self.on_sample_rate)
+        kvFind(self, 'rcid', 'chanId').bind(on_channel = self.on_channel)
+
+    def on_channel(self, instance, value):
+        if self.channelConfig:
+            self.channelConfig.channelId = self.channels.getIdForName(value)
+
+    def on_sample_rate(self, instance, value):
+        if self.channelConfig:
+            self.channelConfig.sampleRate = value
+
+    def on_pulse_per_rev(self, instance, value):
+        if self.channelConfig:
+            self.channelConfig.pulsePerRev = int(value)
+            
+    def on_mode(self, instance, value):
+        if self.channelConfig:
+            self.channelConfig.mode = int(instance.getValueFromKey(value))
+            
+    def on_divider(self, instance, value):
+        if self.channelConfig:
+            self.channelConfig.divider = int(value)
+                
+    def on_config_updated(self, channelConfig, channels):
+        sampleRateSpinner = kvFind(self, 'rcid', 'sr')
+        sampleRateSpinner.setValue(channelConfig.sampleRate)
+    
+        channelSpinner = kvFind(self, 'rcid', 'chanId')
+        channelSpinner.setValue(channels.getNameForId(channelConfig.channelId))
+        
+        modeSpinner = kvFind(self, 'rcid', 'mode')
+        modeSpinner.setFromValue(channelConfig.mode)
+        
+        dividerSpinner = kvFind(self, 'rcid', 'divider')
+        dividerSpinner.setFromValue(channelConfig.divider)
+        
+        pulsePerRevSpinner = kvFind(self, 'rcid', 'ppr')
+        pulsePerRevSpinner.setFromValue(channelConfig.pulsePerRev)
+        
+        self.channelConfig = channelConfig
+        self.channels = channels
 
 class PulseChannelsView(BoxLayout):
+    editors = []
     def __init__(self, **kwargs):
         super(PulseChannelsView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
@@ -44,13 +88,16 @@ class PulseChannelsView(BoxLayout):
         
         accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=110 * 3)
     
+        editors = []
         # add button into that grid
         for i in range(self.channelCount):
             channel = AccordionItem(title='Pulse Input ' + str(i + 1))
             editor = PulseChannel(id='timer' + str(i))
             channel.add_widget(editor)
             accordion.add_widget(channel)
+            editors.append(editor)
     
+        self.editors = editors
         #create a scroll view, with a size < size of the grid
         sv = ScrollView(size_hint=(1.0,1.0), do_scroll_x=False)
         sv.add_widget(accordion)
@@ -62,20 +109,6 @@ class PulseChannelsView(BoxLayout):
         
         for i in range(channelCount):
             timerChannel = timerCfg.channels[i]
-            editor = kvFind(self, 'id', 'timer' + str(i))
-
-            sampleRateSpinner = kvFind(editor, 'rcid', 'sr')
-            sampleRateSpinner.setValue(timerChannel.sampleRate)
-
-            channelSpinner = kvFind(editor, 'rcid', 'chanId')
-            channelSpinner.setValue(self.channels.getNameForId(timerChannel.channelId))
-            
-            modeSpinner = kvFind(editor, 'rcid', 'mode')
-            modeSpinner.setFromValue(timerChannel.mode)
-            
-            dividerSpinner = kvFind(editor, 'rcid', 'divider')
-            dividerSpinner.setFromValue(timerChannel.divider)
-            
-            pulsePerRevSpinner = kvFind(editor, 'rcid', 'ppr')
-            pulsePerRevSpinner.setFromValue(timerChannel.pulsePerRev)
+            editor = self.editors[i]
+            editor.on_config_updated(timerChannel, self.channels)
         
