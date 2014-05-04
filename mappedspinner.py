@@ -8,6 +8,7 @@ class MappedSpinner(Spinner):
         self.valueMappings = {}
         self.keyMappings = {}
         self.values = []
+        self.defaultValue = ''
         super(MappedSpinner, self).__init__(**kwargs)
         
     def setValueMap(self, valueMap, defaultValue):

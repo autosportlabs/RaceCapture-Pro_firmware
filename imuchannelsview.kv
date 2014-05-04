@@ -9,13 +9,17 @@
         text: ''
     CheckBox:
         rcid: 'enabled'
+        on_active: root.on_enabled(*args)
     OrientationSpinner:
         rcid: 'orientation'
+        on_text: root.on_orientation(*args)
     ImuMappingSpinner:
     	rcid: 'mapping'
+    	on_text: root.on_mapping(*args)
     TextInput:
     	rcid: 'zeroValue'
         text: ''
+        on_text: root.on_zero_value(*args)
 
 <AccelChannelsView>:
 	rcid: 'ac'
@@ -49,7 +53,7 @@
         HSeparatorMinor:
             text: 'Mode'
         HSeparatorMinor:
-            text: 'Hardware Mapping'
+            text: 'Physical Mapping'
         HSeparatorMinor:
             text: 'Zero Level'
 
@@ -58,6 +62,7 @@
     padding: [5,5]
     SampleRateSelectorView:
         size_hint: (1.0,0.2)
+        rcid: 'sr'
     HSeparator:
         text: 'Accelerometer Channels'
     AccelChannelsView:

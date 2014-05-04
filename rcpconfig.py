@@ -157,12 +157,16 @@ class ImuChannel:
         jsonCfg['alpha'] = self.alpha
         return jsonCfg
     
-IMU_ACCEL_CHANNEL_IDS = [0,1,2]
-IMU_GYRO_CHANNEL_IDS = [3]
+IMU_CHANNEL_COUNT = 4
+IMU_ACCEL_CHANNEL_IDS   = [0,1,2]
+IMU_GYRO_CHANNEL_IDS    = [3]
+IMU_MODE_DISABLED       = 0
+IMU_MODE_NORMAL         = 1
+IMU_MODE_INVERTED       = 2
 
 class ImuConfig:
     def __init__(self, **kwargs):
-        self.channelCount = 4
+        self.channelCount = IMU_CHANNEL_COUNT
         self.channels = []
         
         for i in range(self.channelCount):
