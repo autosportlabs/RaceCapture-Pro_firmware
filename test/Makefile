@@ -132,6 +132,7 @@ SRC = 	mock_uart.c \
 		$(RCP_SRC)/virtual_channel/virtual_channel.c \
 		$(RCP_SRC)/tracks/tracks.c \
 		$(RCP_SRC)/gps/gps.c \
+		$(RCP_SRC)/gps/dateTime.c \
 		$(RCP_SRC)/gps/geopoint.c \
 		$(RCP_SRC)/gps/geometry.c \
 		$(RCP_SRC)/logger/sampleRecord.c \

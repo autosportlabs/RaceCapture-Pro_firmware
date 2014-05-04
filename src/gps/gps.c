@@ -74,7 +74,7 @@ static float g_distance;
  */
 static DateTime g_dtFirstFix;
 static DateTime g_dtLastFix;
-static long g_millisSinceUnixEpoch;
+static unsigned long g_millisSinceUnixEpoch;
 
 /**
  * @return true if we haven't parsed any data yet, false otherwise.
@@ -83,8 +83,12 @@ static bool isGpsDataCold() {
    return g_millisSinceUnixEpoch == 0;
 }
 
-static void updateMillisSinceEpoch(DateTime fixDateTime) {
+void updateMillisSinceEpoch(DateTime fixDateTime) {
    g_millisSinceUnixEpoch = getMillisecondsSinceUnixEpoch(fixDateTime);
+}
+
+long getMillisSinceEpoch() {
+   return g_millisSinceUnixEpoch;
 }
 
 /**
@@ -92,7 +96,7 @@ static void updateMillisSinceEpoch(DateTime fixDateTime) {
  * already been set.
  * @param fixDateTime The DateTime of the GPS fix.
  */
-static void updateFullDateTime(DateTime fixDateTime) {
+void updateFullDateTime(DateTime fixDateTime) {
    g_dtLastFix = fixDateTime;
    if (g_dtFirstFix.partialYear == 0)
       g_dtFirstFix = fixDateTime;
@@ -105,7 +109,7 @@ static void updateFullDateTime(DateTime fixDateTime) {
  * @param offset How far in to start reading the string.
  * @param len The number of characters to read.
  */
-static int atoiOffsetLenSafe(const char *str, int offset, int len) {
+int atoiOffsetLenSafe(const char *str, int offset, int len) {
    char buff[4] = { 0 };
 
    // Bounds check.  Don't want any bleeding hearts in here...
@@ -326,7 +330,7 @@ static void parseRMC(char *data) {
          dt.hour = (int8_t) atoiOffsetLenSafe(data, 0, 2);
          dt.minute = (int8_t) atoiOffsetLenSafe(data, 2, 2);
          dt.second = (int8_t) atoiOffsetLenSafe(data, 4, 2);
-         dt.millisecond = (int8_t) atoiOffsetLenSafe(data, 7, 3);
+         dt.millisecond = (int16_t) atoiOffsetLenSafe(data, 7, 3);
          break;
       case 8: //Date (DDMMYY)
          dt.day = (int8_t) atoiOffsetLenSafe(data, 0, 2);
@@ -603,7 +607,7 @@ static void flashGpsStatusLed() {
    }
 }
 
-static float getSecondsSinceFirstFix() {
+float getSecondsSinceFirstFix() {
    long diffInMillis = getTimeDeltaInMillis(g_dtLastFix, g_dtFirstFix);
    return ((float) diffInMillis) / 1000;
 }

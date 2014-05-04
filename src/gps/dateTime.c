@@ -74,23 +74,20 @@ unsigned int getDayCountUpToPartialYearSinceUnixEpoch(const unsigned int partial
 }
 
 unsigned long getMillisecondsSinceUnixEpoch(DateTime dt) {
-   unsigned long millis = 0;
+   unsigned long seconds = 0;
 
    // Get everything as seconds first
-   millis += dt.second;
-   millis += dt.minute * SECONDS_PER_MINUTE;
-   millis += dt.hour * SECONDS_PER_HOUR;
-   millis += dt.day * SECONDS_PER_DAY;
+   seconds += dt.second;
+   seconds += dt.minute * SECONDS_PER_MINUTE;
+   seconds += dt.hour * SECONDS_PER_HOUR;
+   seconds += dt.day * SECONDS_PER_DAY;
 
    const unsigned int year = convertToFullYear(dt.partialYear);
-   millis += getDayCountUpToMonthWithYear(dt.month, year) * SECONDS_PER_DAY;
-   millis += getDayCountUpToYearSinceUnixEpoch(year) * SECONDS_PER_DAY;
+   seconds += getDayCountUpToMonthWithYear(dt.month, year) * SECONDS_PER_DAY;
+   seconds += getDayCountUpToYearSinceUnixEpoch(year) * SECONDS_PER_DAY;
 
-   // Then convert to millis.
-   millis *= MILLIS_PER_SECOND;
-
-   // And then add in the remaining millis and return it.
-   return millis += dt.millisecond;
+   // And then convert seconds to millis and add in the remaining millis
+   return seconds * MILLIS_PER_SECOND + dt.millisecond;
 }
 
 long getTimeDeltaInMillis(DateTime a, DateTime b) {
