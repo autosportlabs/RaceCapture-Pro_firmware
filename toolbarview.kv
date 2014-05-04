@@ -1,17 +1,11 @@
-<ToolbarButton>:
-    background_color: [1 ,1 ,1 ,1]
-    font_size: 25
-    color: [.21, .75, .95, .6]
-    font_name: 'fa.ttf'
-    
 <ToolbarView>:
     BoxLayout:
         orientation: 'horizontal'
-        ToolbarButton:
+        IconButton:
             id: 'read'
-            text: ''
+            text: '\357\200\231'
             on_release: root.readConfig()
-        ToolbarButton:
+        IconButton:
             id: 'write'
-            text: ''
+            text: '\357\202\223'
             on_release: root.writeConfig()

@@ -140,7 +140,7 @@ class RaceCaptureApp(App):
             attach_node('Pulse / Analog Outputs', n, AnalogPulseOutputChannelsView(channelCount=4, channels=self.channels))
             n = create_tree('CAN bus')
 #            attach_node('CAN Channels', n, CANChannelsView())
-            attach_node('OBD2 Channels', n, OBD2ChannelsView())
+            attach_node('OBDII Channels', n, OBD2ChannelsView())
             n = create_tree('Telemetry')
             attach_node('Cellular Telemetry', n, CellTelemetryView())
             attach_node('Bluetooth Link', n, BluetoothTelemetryView())

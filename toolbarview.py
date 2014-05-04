@@ -1,8 +1,8 @@
 import kivy
 kivy.require('1.8.0')
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
 from kivy.app import Builder
+from iconbutton import IconButton
 
 Builder.load_file('toolbarview.kv')
 
@@ -27,5 +27,3 @@ class ToolbarView(BoxLayout):
     def writeConfig(self):
         self.dispatch('on_write_config', None)
 
-class ToolbarButton(Button):
-    pass

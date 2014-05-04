@@ -2,9 +2,14 @@ import kivy
 kivy.require('1.8.0')
 from kivy.uix.boxlayout import BoxLayout
 from kivy.app import Builder
+from iconbutton import IconButton
+from settingsview import SettingsViewSwitch
 
 Builder.load_file('obd2channelsview.kv')
 
+class OBD2Channel(BoxLayout):
+    pass
+    
 class OBD2ChannelsView(BoxLayout):
     def __init__(self, **kwargs):
         super(OBD2ChannelsView, self).__init__(**kwargs)

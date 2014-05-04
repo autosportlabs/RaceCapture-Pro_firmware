@@ -1,52 +1,83 @@
 #:kivy 1.8.0
 
+<OBD2Channel>:
+    spacing: 10
+    size_hint_y: None
+    height: 30
+    orientation: 'horizontal'
+    Label:
+    	rcid: 'obd2id'
+    	text: '1'
+    	font_size: 20
+    	size_hint_x: 0.1    	
+    ChannelNameSpinner:
+    	size_hint_x: 0.4
+        rcid: 'chan'
+    SampleRateSpinner:
+    	size_hint_x: 0.4
+        rcid: 'sr'
+    IconButton:
+    	size_hint_x: 0.1
+    	text: '\357\200\224'
+
 <OBD2ChannelsView>:
+    padding: (10,10)
+    spacing: 20
     orientation: 'vertical'
-    padding: [2,2]
-    HSeparator:
-        padding: [10,10]
-        text: 'OBD2 Channels'
-    ScrollView:
-        id: scrlobd2
-        do_scroll_x:False
-        GridLayout:
-            padding: [20,20]
-            spacing: [10,10]
-            height: max(self.minimum_height, scrlobd2.height)
-            cols: 2
-            Label:
-                text: 'Engine Load'
-            SampleRateSpinner:
-            Label:
-                text: 'Coolant Temperature (C)'
-            SampleRateSpinner:
-            Label:
-                text: 'Fuel Pressure (KPa gauge)'
-            SampleRateSpinner:
-            Label:
-                text: 'Intake Manifold Pressure (KPa absolute)'
-            SampleRateSpinner:
-            Label:
-                text: 'RPM'
-            SampleRateSpinner:
-            Label:
-                text: 'Vehicle Speed (km/h)'
-            SampleRateSpinner:
-            Label:
-                text: 'Ignition Advance (degrees)'
-            SampleRateSpinner:
-            Label:
-                text: 'Intake Air Temperature (C)'
-            SampleRateSpinner:
-            Label:
-                text: 'MAF Airflow Rate (gm / sec)'
-            SampleRateSpinner:
-            Label:
-                text: 'Throttle Position (%)'
-            SampleRateSpinner:
-            Label:
-                text: 'Fuel Level (%)'
-            SampleRateSpinner:
-            Label:
-                text: 'Engine Oil Temp (C)'
-            SampleRateSpinner:
+	SettingsViewSwitch:
+		rcid: 'obd2enable'
+		label_text: 'Enable OBDII channels'
+		help_text: 'Specify one or more OBDII Channels to query and the logged sample rate.\n\nNote, OBDII channels are queried sequentially; actual data update rate is independent of the selected logging rate'
+		size_hint_y: 0.3
+	Label:
+		size_hint_y: 0.02
+	BoxLayout:
+		spacing: 5
+		orientation: 'vertical'		
+	    HSeparator:
+	        text: 'OBDII Channels'
+		BoxLayout:
+			orientation: 'horizontal'
+			size_hint: (1.0, 0.15)
+			spacing: 10
+	        HSeparatorMinor:
+	            text: 'Channel'
+	        	size_hint_x: 0.3            
+	        HSeparatorMinor:
+	            text: 'Logging Rate'
+	        	size_hint_x: 0.3
+	    ScrollView:
+	        id: scrlobd2
+	        size_hint_y: 0.75
+	        do_scroll_x:False
+	        do_scroll_y:True
+	        GridLayout:
+	            padding: [20,20]
+	            spacing: [10,10]
+	            size_hint_y: None
+	            height: max(self.minimum_height, scrlobd2.height)
+	            cols: 1
+	
+	            OBD2Channel:
+	            OBD2Channel:
+	            OBD2Channel:
+	            OBD2Channel:
+	            OBD2Channel:
+	            OBD2Channel:
+	            OBD2Channel:
+	            OBD2Channel:
+	            OBD2Channel:
+	            OBD2Channel:
+	            OBD2Channel:
+	            OBD2Channel:
+	            OBD2Channel:
+	            OBD2Channel:
+    BoxLayout:
+    	size_hint_y: 0.2
+    	spacing: dp(5)
+    	orientation: 'vertical'
+    	IconButton:
+    		pos_hint: {'center_x': .5, 'center_y': .5}
+    		size_hint: (0.1, 0.1)
+    		text: '\357\201\247'
+        
