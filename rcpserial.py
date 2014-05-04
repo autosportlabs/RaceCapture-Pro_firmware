@@ -157,6 +157,13 @@ class RcpSerial:
                     if gpioChannel:
                         self.sendCommand({'setGpioCfg': {str(i): gpioChannel}})
 
+            pwmCfg = rcpCfg.get('pwmCfg', None)
+            if pwmCfg:
+                for i in range(PWM_CHANNEL_COUNT):
+                    pwmChannel = pwmCfg.get(str(i))
+                    if pwmChannel:
+                        self.sendCommand({'setPwmCfg': {str(i): pwmChannel}})
+
     def getAnalogCfg(self, channelId):
         return self.sendGet('getAnalogCfg', channelId)    
 

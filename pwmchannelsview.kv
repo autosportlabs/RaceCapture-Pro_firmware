@@ -9,7 +9,7 @@
             HSeparator:
                 text: 'Configuration'
             ChannelNameSelectorView:
-            	rcid: 'chan'
+            	rcid: 'chanId'
                 size_hint:[1.0, 0.25]
             SampleRateSelectorView:
             	rcid: 'sr'
@@ -23,6 +23,7 @@
                     halign: 'right'
                 PwmOutputModeSpinner:
                 	rcid: 'outputMode'
+                	on_text: root.on_output_mode(*args)
             BoxLayout:
                 size_hint:[1.0, 0.25]
                 padding:[2,2]
@@ -30,9 +31,9 @@
                 FieldLabel:
                     text: 'Logging Mode'
                     halign: 'right'
-                    
                 PwmLoggingModeSpinner:
                 	rcid: 'loggingMode'
+                	on_text: root.on_logging_mode(*args)
             BoxLayout:
                 size_hint:[1.0, 0.25]
                 padding:[2,2]
@@ -42,6 +43,7 @@
                     halign: 'right'
                 TextInput:
                 	rcid: 'vScal'
+                	on_text: root.on_voltage_scaling(*args)
                     
         BoxLayout:
             padding: [5, 5]
@@ -57,6 +59,7 @@
                     halign: 'right'
                 TextInput:
                 	rcid: 'dutyCycle'
+                	on_text: root.on_startup_duty_cycle(*args)
             BoxLayout:
             	size_hint: (1.0, 0.2)
                 padding: [2, 2]
@@ -66,6 +69,7 @@
                     halign: 'right'
                 TextInput:
                 	rcid: 'period'
+                	on_text: root.on_startup_period(*args)
             Label:
                 size_hint: (1.0, 0.6)
 

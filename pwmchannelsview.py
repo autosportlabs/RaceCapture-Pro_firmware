@@ -23,10 +23,68 @@ class PwmLoggingModeSpinner(MappedSpinner):
         self.setValueMap({0:'Period', 1:'Duty Cycle', 2:'Volts'}, 'Duty Cycle')
     
 class AnalogPulseOutputChannel(BoxLayout):
+    channelConfig = None
+    channels = None    
     def __init__(self, **kwargs):
         super(AnalogPulseOutputChannel, self).__init__(**kwargs)
+        kvFind(self, 'rcid', 'sr').bind(on_sample_rate = self.on_sample_rate)
+        kvFind(self, 'rcid', 'chanId').bind(on_channel = self.on_channel)
+
+    def on_channel(self, instance, value):
+        if self.channelConfig:
+            self.channelConfig.channelId = self.channels.getIdForName(value)
+
+    def on_sample_rate(self, instance, value):
+        if self.channelConfig:
+            self.channelConfig.sampleRate = value
+
+    def on_output_mode(self, instance, value):
+        if self.channelConfig:
+            self.channelConfig.outputMode = instance.getValueFromKey(value)
+
+    def on_logging_mode(self, instance, value):
+        if self.channelConfig:
+            self.channelConfig.loggingMode = instance.getValueFromKey(value)
     
+    def on_startup_duty_cycle(self, instance, value):
+        if self.channelConfig:
+            self.channelConfig.loggingMode = int(value)
+    
+    def on_startup_period(self, instance, value):
+        if self.channelConfig:
+            self.channelConfig.startupPeriod = int(value)
+    
+    def on_voltage_scaling(self, instance, value):
+        if self.channelConfig:
+            self.channelConfig.voltageScaling = float(value)
+    
+    def on_config_updated(self, channelConfig, channels ):
+        channelSpinner = kvFind(self, 'rcid', 'chanId')
+        channelSpinner.setValue(channels.getNameForId(channelConfig.channelId))
+
+        sampleRateSpinner = kvFind(self, 'rcid', 'sr')
+        sampleRateSpinner.setValue(channelConfig.sampleRate)
+        
+        voltageScalingField = kvFind(self, 'rcid', 'vScal')
+        voltageScalingField.text =  '{:.3g}'.format(channelConfig.voltageScaling)
+        
+        startupDutyCycle = kvFind(self, 'rcid', 'dutyCycle')
+        startupDutyCycle.text = str(channelConfig.startupDutyCycle)
+        
+        startupPeriod = kvFind(self, 'rcid', 'period')
+        startupPeriod.text = str(channelConfig.startupPeriod)
+        
+        outputModeSpinner = kvFind(self, 'rcid', 'outputMode')
+        outputModeSpinner.setFromValue(channelConfig.outputMode)
+        
+        loggingModeSpinner = kvFind(self, 'rcid', 'loggingMode')
+        loggingModeSpinner.setFromValue(channelConfig.loggingMode)
+        
+        self.channelConfig = channelConfig
+        self.channels = channels
+        
 class AnalogPulseOutputChannelsView(BoxLayout):
+    editors = []
     def __init__(self, **kwargs):
         self.register_event_type('on_config_updated')
         self.channelCount = kwargs['channelCount']
@@ -41,6 +99,7 @@ class AnalogPulseOutputChannelsView(BoxLayout):
             editor = AnalogPulseOutputChannel(id='pwm' + str(i))
             channel.add_widget(editor)
             accordion.add_widget(channel)
+            self.editors.append(editor)
     
         #create a scroll view, with a size < size of the grid
         sv = ScrollView(size_hint=(1.0,1.0), do_scroll_x=False)
@@ -52,29 +111,6 @@ class AnalogPulseOutputChannelsView(BoxLayout):
         channelCount = pwmCfg.channelCount
 
         for i in range(channelCount):
-            
-            editor = kvFind(self, 'id', 'pwm' + str(i))
+            editor = self.editors[i]
             pwmChannel = pwmCfg.channels[i]
-            
-            channelSpinner = kvFind(editor, 'rcid', 'chan')
-            channelSpinner.setValue(self.channels.getNameForId(pwmChannel.channelId))
-
-            sampleRateSpinner = kvFind(editor, 'rcid', 'sr')
-            sampleRateSpinner.setValue(pwmChannel.sampleRate)
-            
-            voltageScalingField = kvFind(editor, 'rcid', 'vScal')
-            voltageScalingField.text =  '{:.3g}'.format(pwmChannel.voltageScaling)
-            
-            startupDutyCycle = kvFind(editor, 'rcid', 'dutyCycle')
-            startupDutyCycle.text = str(pwmChannel.startupDutyCycle)
-            
-            startupPeriod = kvFind(editor, 'rcid', 'period')
-            startupPeriod.text = str(pwmChannel.startupPeriod)
-            
-            outputModeSpinner = kvFind(editor, 'rcid', 'outputMode')
-            outputModeSpinner.setFromValue(pwmChannel.outputMode)
-            
-            loggingModeSpinner = kvFind(editor, 'rcid', 'loggingMode')
-            loggingModeSpinner.setFromValue(pwmChannel.loggingMode)
-            
-            
+            editor.on_config_updated(pwmChannel, self.channels)

@@ -52,7 +52,6 @@ class ImuChannel(BoxLayout):
     
     def on_orientation(self, instance, value):
         if self.channelConfig and value:
-            print('ovalue ' + str(value))
             mode = int(instance.getValueFromKey(value))
             if mode:
                 self.channelConfig.mode = mode
@@ -62,17 +61,14 @@ class ImuChannel(BoxLayout):
             self.channelConfig.chan = int(instance.getValueFromKey(value))
                 
     def on_enabled(self, instance, value):
-        print('enabled ' + str(value))
         self.enable_view(value)
         if self.channelConfig:
             mode = IMU_MODE_NORMAL
             orientation = kvFind(self, 'rcid', 'orientation')
             if not value:
-                print("not")
                 mode = IMU_MODE_DISABLED
             orientation.setFromValue(mode)
             self.channelConfig.mode = mode
-            print('mode: ' + str(self.channelConfig.mode))
 
     def on_config_updated(self, channelIndex, channelConfig, channelLabels):
         label = kvFind(self, 'rcid', 'label')

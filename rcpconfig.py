@@ -334,10 +334,23 @@ class PwmChannel:
             self.startupDutyCycle = json.get('stDutyCyc', self.startupDutyCycle)
             self.startupPeriod = json.get('stPeriod', self.startupPeriod)
             self.voltageScaling = json.get('vScal', self.voltageScaling)
-    
+            
+    def toJson(self):
+        pwmJson = {}
+        pwmJson['id'] = self.channelId
+        pwmJson['sr'] = self.sampleRate
+        pwmJson['outMode'] = self.outputMode
+        pwmJson['logMode'] = self.loggingMode
+        pwmJson['stDutyCyc'] = self.startupDutyCycle
+        pwmJson['stPeriod'] = self.startupPeriod
+        pwmJson['vScal'] = self.voltageScaling
+        return pwmJson
+
+PWM_CHANNEL_COUNT = 4   
+
 class PwmConfig:
     def __init__(self, **kwargs):
-        self.channelCount = 4
+        self.channelCount = PWM_CHANNEL_COUNT
         self.channels = []
 
         for i in range (self.channelCount):
@@ -349,6 +362,14 @@ class PwmConfig:
             if channelJson:
                 self.channels[i].fromJson(channelJson)
 
+    def toJson(self):
+        pwmCfgJson = {}
+        for i in range(PWM_CHANNEL_COUNT):
+            pwmChannel = self.channels[i]
+            pwmCfgJson[str(i)] = pwmChannel.toJson()
+        return {'pwmCfg':pwmCfgJson}
+        
+        
 CONFIG_SECTOR_COUNT = 20
 
 class GeoPoint:
@@ -472,7 +493,8 @@ class RcpConfig:
                              'imuCfg':self.imuConfig.toJson().get('imuCfg'),
                              'analogCfg':self.analogConfig.toJson().get('analogCfg'),
                              'timerCfg':self.timerConfig.toJson().get('timerCfg'),
-                             'gpioCfg':self.gpioConfig.toJson().get('gpioCfg')
+                             'gpioCfg':self.gpioConfig.toJson().get('gpioCfg'),
+                             'pwmCfg':self.pwmConfig.toJson().get('pwmCfg')
                              }
                    }
         print('rcpJson ' + json.dumps(rcpJson))
