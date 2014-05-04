@@ -7,6 +7,7 @@ from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.scrollview import ScrollView
 from kivy.app import Builder
 from fieldlabel import FieldLabel
+from valuefield import ValueField
 from mappedspinner import MappedSpinner
 from utils import *
 
@@ -48,7 +49,7 @@ class AnalogPulseOutputChannel(BoxLayout):
     
     def on_startup_duty_cycle(self, instance, value):
         if self.channelConfig:
-            self.channelConfig.loggingMode = int(value)
+            self.channelConfig.startupDutyCycle = int(value)
     
     def on_startup_period(self, instance, value):
         if self.channelConfig:

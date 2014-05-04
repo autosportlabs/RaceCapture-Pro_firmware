@@ -5,6 +5,7 @@ class ValueField(TextInput):
 
     def __init__(self, *args, **kwargs):
         self.next = kwargs.pop('next', None)
+        self.multiline = False
         super(ValueField, self).__init__(*args, **kwargs)
 
     def set_next(self, next):
