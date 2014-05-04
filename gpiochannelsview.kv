@@ -13,7 +13,7 @@
             HSeparator:
                 text: 'Configuration'
             ChannelNameSelectorView:
-            	rcid: 'chan'
+            	rcid: 'chanId'
             SampleRateSelectorView:
             	rcid: 'sr'
         BoxLayout:
@@ -29,5 +29,6 @@
                     text: 'Mode'
                 GPIOModeSpinner:
 					rcid: 'mode'
+					on_text: root.on_mode(*args)
             Label:
                 size_hint: (None, 0.5)

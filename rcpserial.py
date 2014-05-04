@@ -146,6 +146,13 @@ class RcpSerial:
                     timerChannel = timerCfg.get(str(i))
                     if timerChannel:
                         self.sendCommand({'setTimerCfg': {str(i): timerChannel}})
+                        
+            gpioCfg = rcpCfg.get('gpioCfg', None)
+            if gpioCfg:
+                for i in range(GPIO_CHANNEL_COUNT):
+                    gpioChannel = gpioCfg.get(str(i))
+                    if gpioChannel:
+                        self.sendCommand({'setGpioCfg': {str(i): gpioChannel}})
 
     def getAnalogCfg(self, channelId):
         return self.sendGet('getAnalogCfg', channelId)    

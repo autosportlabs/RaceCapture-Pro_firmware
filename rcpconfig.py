@@ -279,9 +279,18 @@ class GpioChannel:
             self.sampleRate = json.get('sr', self.sampleRate)
             self.mode = json.get('mode', self.mode)
             
+    def toJson(self):
+        gpioJson = {}
+        gpioJson['sr'] = self.sampleRate
+        gpioJson['id'] = self.channelId
+        gpioJson['mode'] = self.mode
+        return gpioJson
+         
+GPIO_CHANNEL_COUNT = 3
+
 class GpioConfig:
     def __init__(self, **kwargs):
-        self.channelCount = 3
+        self.channelCount = GPIO_CHANNEL_COUNT
         self.channels = []
 
         for i in range (self.channelCount):
@@ -292,6 +301,14 @@ class GpioConfig:
             channelJson = json.get(str(i), None)
             if channelJson:
                 self.channels[i].fromJson(channelJson)
+                
+    def toJson(self):
+        gpioCfgJson = {}
+        for i in range(GPIO_CHANNEL_COUNT):
+            gpioChannel = self.channels[i]
+            gpioCfgJson[str(i)] = gpioChannel.toJson()
+        return {'gpioCfg':gpioCfgJson}
+        
     
 class PwmChannel:
     def __init__(self, **kwargs):
@@ -449,8 +466,9 @@ class RcpConfig:
         rcpJson = {'rcpCfg':{
                              'gpsCfg':self.gpsConfig.toJson().get('gpsCfg'),
                              'imuCfg':self.imuConfig.toJson().get('imuCfg'),
-                             'analogCfg': self.analogConfig.toJson().get('analogCfg'),
-                             'timerCfg' : self.timerConfig.toJson().get('timerCfg')
+                             'analogCfg':self.analogConfig.toJson().get('analogCfg'),
+                             'timerCfg':self.timerConfig.toJson().get('timerCfg'),
+                             'gpioCfg':self.gpioConfig.toJson().get('gpioCfg')
                              }
                    }
         print('rcpJson ' + json.dumps(rcpJson))
