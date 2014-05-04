@@ -232,18 +232,18 @@ class TimerChannel:
             self.channelId = timerJson.get('id', self.channelId)
             self.sampleRate = timerJson.get('sr', self.sampleRate)
             self.mode = timerJson.get('mode', self.mode)
-            self.divider = timerJson.get('timDiv', self.divider)
-            self.pulsePerRev = timerJson.get('ppRev', self.pulsePerRev)
-            self.slowTimer = timerJson.get('sTimer', self.slowTimer)
+            self.divider = timerJson.get('div', self.divider)
+            self.pulsePerRev = timerJson.get('ppr', self.pulsePerRev)
+            self.slowTimer = timerJson.get('st', self.slowTimer)
             
     def toJson(self):
         timerJson = {}
         timerJson['id'] = self.channelId
         timerJson['sr'] = self.sampleRate
         timerJson['mode'] = self.mode
-        timerJson['ppRev'] = self.pulsePerRev
-        timerJson['timDiv'] = self.divider
-        timerJson['sTimer'] = self.slowTimer
+        timerJson['ppr'] = self.pulsePerRev
+        timerJson['div'] = self.divider
+        timerJson['st'] = self.slowTimer
         return timerJson
 
 class TimerConfig:
