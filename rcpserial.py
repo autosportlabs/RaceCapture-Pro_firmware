@@ -16,8 +16,8 @@ class RcpSerial:
         ser = self.getSerial()
         ser.flushInput()
         ser.flushOutput()
-        print('send cmd: ' + json.dumps(cmd))
-        cmdStr = json.dumps(cmd) + '\r'
+        cmdStr = json.dumps(cmd, separators=(',', ':')) + '\r'
+        print('send cmd: ' + cmdStr)
         ser.write(cmdStr)
         
         rsp = self.readLine(ser)
