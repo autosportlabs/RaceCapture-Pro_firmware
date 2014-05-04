@@ -131,8 +131,11 @@ class RcpSerial:
                 
             imuCfg = rcpCfg.get('imuCfg', None)
             if imuCfg:
-                self.sendCommand({'setImuCfg': imuCfg})
-                
+                for i in range(IMU_CHANNEL_COUNT):
+                    imuChannel = imuCfg.get(str(i))
+                    if imuChannel:
+                        self.sendCommand({'setImuCfg': {str(i): imuChannel}})
+            
             analogCfg = rcpCfg.get('analogCfg', None)
             if analogCfg:
                 for i in range(ANALOG_CHANNEL_COUNT):

@@ -13,7 +13,7 @@ Builder.load_file('imuchannelsview.kv')
 class OrientationSpinner(MappedSpinner):
     def __init__(self, **kwargs):
         super(OrientationSpinner, self).__init__(**kwargs)
-        self.setValueMap({0:'Disabled', 1:'Normal', 2:'Inverted'}, 'Disabled')
+        self.setValueMap({1:'Normal', 2:'Inverted'}, '')
 
 class ImuMappingSpinner(MappedSpinner):
     def __init__(self, **kwargs):
@@ -40,34 +40,49 @@ class ImuChannel(BoxLayout):
         super(ImuChannel, self).__init__(**kwargs)
         self.imu_id = kwargs.get('imu_id', None)
     
-    def on_zero_value(self, instance, value):
-        pass
-    
-    def on_orientation(self, instance, value):
-        pass
-    
-    def on_mapping(self, instance, value):
-        pass
-    
-    def on_mode(self, instance, value):
-        pass
-    
-    def on_enabled(self, instance, value):
-        disabled = not value
+    def enable_view(self, enabled):
+        disabled = not enabled
         kvFind(self, 'rcid', 'orientation').disabled = disabled
         kvFind(self, 'rcid', 'mapping').disabled = disabled
         kvFind(self, 'rcid', 'zeroValue').disabled = disabled
-        if self.channelConfig:
-            pass
 
+    def on_zero_value(self, instance, value):
+        if self.channelConfig:
+            self.channelConfig.zeroValue = int(value)
+    
+    def on_orientation(self, instance, value):
+        if self.channelConfig and value:
+            print('ovalue ' + str(value))
+            mode = int(instance.getValueFromKey(value))
+            if mode:
+                self.channelConfig.mode = mode
+    
+    def on_mapping(self, instance, value):
+        if self.channelConfig:
+            self.channelConfig.chan = int(instance.getValueFromKey(value))
+                
+    def on_enabled(self, instance, value):
+        print('enabled ' + str(value))
+        self.enable_view(value)
+        if self.channelConfig:
+            mode = IMU_MODE_NORMAL
+            orientation = kvFind(self, 'rcid', 'orientation')
+            if not value:
+                print("not")
+                mode = IMU_MODE_DISABLED
+            orientation.setFromValue(mode)
+            self.channelConfig.mode = mode
+            print('mode: ' + str(self.channelConfig.mode))
 
     def on_config_updated(self, channelIndex, channelConfig, channelLabels):
         label = kvFind(self, 'rcid', 'label')
         label.text = channelLabels[channelIndex]
 
         enabled = kvFind(self, 'rcid', 'enabled')
-        enabled.active = not channelConfig.mode == 0
-
+        active = not channelConfig.mode == IMU_MODE_DISABLED
+        self.enable_view(active)
+        enabled.active = active
+        
         orientation = kvFind(self, 'rcid', 'orientation')
         orientation.setFromValue(channelConfig.mode)
 
@@ -116,10 +131,13 @@ class ImuChannelsView(BoxLayout):
         imuCfg = rcpCfg.imuConfig
         channelCount = imuCfg.channelCount
 
+        commonSampleRate = 0
         for i in range(channelCount):
             imuChannel = imuCfg.channels[i]
             editor = self.editors[i]
             editor.on_config_updated(i, imuChannel, self.channelLabels)
+            commonSampleRate = imuChannel.sampleRate if commonSampleRate < imuChannel.sampleRate else commonSampleRate
         
+        kvFind(self, 'rcid', 'sr').setValue(commonSampleRate)
         self.imuCfg = imuCfg
 
