@@ -731,7 +731,7 @@ static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok, const 
 	if (NAME_EQU("mode", name)) timerCfg->mode = filterTimerMode(iValue);
 	if (NAME_EQU("alpha", name)) timerCfg->filterAlpha = modp_atof(value);
 	if (NAME_EQU("ppRev", name)) {
-		timerCfg->pulsePerRevolution = iValue;
+		timerCfg->pulsePerRevolution = filterPulsePerRevolution(iValue);
 		calculateTimerScaling(BOARD_MCK, timerCfg);
 	}
 	if (NAME_EQU("timDiv", name)) timerCfg->timerDivider = filterTimerDivider(iValue);

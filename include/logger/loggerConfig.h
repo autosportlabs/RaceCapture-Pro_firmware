@@ -524,6 +524,7 @@ unsigned short filterPwmPeriod(int period);
 int filterImuRawValue(int accelRawValue);
 int filterPwmClockFrequency(int frequency);
 char filterTimerMode(int config);
+unsigned char filterPulsePerRevolution(unsigned char pulsePerRev);
 unsigned short filterTimerDivider(unsigned short divider);
 int filterImuMode(int mode);
 int filterImuChannel(int channel);

@@ -168,6 +168,10 @@ char filterPwmLoggingMode(int config){
 	}
 }
 
+unsigned char filterPulsePerRevolution(unsigned char pulsePerRev){
+	return pulsePerRev == 0 ? 1 : pulsePerRev;
+}
+
 unsigned short filterTimerDivider(unsigned short divider){
 	switch(divider){
 	case TIMER_MCK_2:
