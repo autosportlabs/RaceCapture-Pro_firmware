@@ -67,8 +67,6 @@ class OBD2ChannelsView(BoxLayout):
                 add_disabled = False
                 
         kvFind(self, 'rcid', 'addpid').disabled = add_disabled
-                
-            
             
     def reload_obd2_channel_grid(self):
         self.obd2Grid.clear_widgets()
@@ -77,6 +75,8 @@ class OBD2ChannelsView(BoxLayout):
             pidConfig = self.obd2Cfg.pids[i]
             self.add_obd2_channel(i, pidConfig)
             
+        self.update_view_enabled()
+
     def on_delete_pid(self, instance, pidId):
         del self.obd2Cfg.pids[pidId]
         self.reload_obd2_channel_grid()
@@ -87,10 +87,10 @@ class OBD2ChannelsView(BoxLayout):
         obd2Channel.set_channel(index, pidConfig, self.channels)
         self.obd2Grid.add_widget(obd2Channel)
         
-        
     def on_add_obd2_channel(self):
         if (self.obd2Cfg):
             pidConfig = PidConfig()
             self.obd2Cfg.pids.append(pidConfig)
             self.add_obd2_channel(len(self.obd2Cfg.pids) - 1, pidConfig)
+            self.update_view_enabled()
         

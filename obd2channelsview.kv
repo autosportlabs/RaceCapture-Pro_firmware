@@ -21,7 +21,6 @@
     IconButton:
     	size_hint_x: 0.1
     	text: '\357\200\224'
-    	rcid: 'addpid'
     	on_release: root.on_delete()
 
 <OBD2ChannelsView>:
@@ -72,4 +71,8 @@
     		size_hint: (0.1, 0.1)
     		text: '\357\201\247'
     		on_release: root.on_add_obd2_channel()
+	    	disabled: True
+	    	rcid: 'addpid'
+	    	
+    		
         
