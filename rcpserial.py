@@ -35,8 +35,6 @@ class RcpSerial:
         else:
             index = str(index)
         cmd = {name:index}
-        
-        #cmd = '{"' + name + '":' + index + '}'
         return self.sendCommand(cmd)
 
     def getSerial(self):
@@ -91,8 +89,7 @@ class RcpSerial:
         pwmCfg = self.getPwmCfg(None)
         trackCfg = self.getTrackCfg()
         obd2Cfg = self.getObd2Cfg()
-        #scriptCfg = self.getScript()
-        scriptCfg = None
+        scriptCfg = self.getScript()
         
         rcpCfg = {}
         
