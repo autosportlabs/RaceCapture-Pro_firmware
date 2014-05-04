@@ -48,6 +48,7 @@ class OBD2ChannelsView(BoxLayout):
         self.register_event_type('on_config_updated')
         self.obd2Grid = kvFind(self, 'rcid', 'obd2grid')
         self.channels = kwargs['channels']
+        self.update_view_enabled()
 
     def on_config_updated(self, rcpCfg):
         obd2Cfg = rcpCfg.obd2Config
@@ -57,8 +58,18 @@ class OBD2ChannelsView(BoxLayout):
         self.obd2Grid.clear_widgets()
         self.obd2Cfg = obd2Cfg
         self.reload_obd2_channel_grid()
+        self.update_view_enabled()
 
-        
+    def update_view_enabled(self):
+        add_disabled = True
+        if self.obd2Cfg:
+            if len(self.obd2Cfg.pids) < OBD2_CONFIG_MAX_PIDS:
+                add_disabled = False
+                
+        kvFind(self, 'rcid', 'addpid').disabled = add_disabled
+                
+            
+            
     def reload_obd2_channel_grid(self):
         self.obd2Grid.clear_widgets()
         
