@@ -413,23 +413,45 @@ class PidConfig:
         self.pidId = 0
         
     def fromJson(self, json):
-        self.channelRate = json.get("id", self.channelId)
+        self.channelId = json.get("id", self.channelId)
         self.sampleRate = json.get("sr", self.sampleRate)
-        self.pid = json.get("pid", self.pid)
+        self.pid = json.get("pid", self.pidId)
         
+    def toJson(self):
+        pidJson = {}
+        pidJson['id'] = self.channelId
+        pidJson['sr'] = self.sampleRate
+        pidJson['pid'] = self.pidId
+        return pidJson
         
+OBD2_CONFIG_MAX_PIDS = 20
+
 class Obd2Config:
+    pids = []
+    enabled = False
     def __init__(self, **kwargs):
-        self.pids = []
+        pass
     
     def fromJson(self, json):
         pidsJson = json.get("pids", None)
         if pidsJson:
+            del self.pids[:]
             for pidJson in pidsJson:
                 pid = PidConfig()
                 pid.fromJson(pidJson)
                 self.pids.append(pid)
-    
+                
+    def toJson(self):
+        pidsJson = []
+        pidCount = len(self.pids)
+        pidCount = pidCount if pidCount <= OBD2_CONFIG_MAX_PIDS else OBD2_CONFIG_MAX_PIDS
+        
+        for i in range(pidCount):
+            pidsJson.append(self.pids[i].toJson())
+            
+        obd2Json =  {'obd2Cfg':{'en': 1 if self.enabled else 0, 'pids':pidsJson }}
+        return obd2Json
+        
 class LuaScript:
     def __init__(self, **kwargs):
         self.script =""
@@ -494,7 +516,8 @@ class RcpConfig:
                              'analogCfg':self.analogConfig.toJson().get('analogCfg'),
                              'timerCfg':self.timerConfig.toJson().get('timerCfg'),
                              'gpioCfg':self.gpioConfig.toJson().get('gpioCfg'),
-                             'pwmCfg':self.pwmConfig.toJson().get('pwmCfg')
+                             'pwmCfg':self.pwmConfig.toJson().get('pwmCfg'),
+                             'obd2Cfg':self.obd2Config.toJson().get('obd2Cfg')
                              }
                    }
         print('rcpJson ' + json.dumps(rcpJson))

@@ -6,19 +6,22 @@
     height: 30
     orientation: 'horizontal'
     Label:
-    	rcid: 'obd2id'
-    	text: '1'
+    	rcid: 'pidId'
+    	text: ''
     	font_size: 20
     	size_hint_x: 0.1    	
     ChannelNameSpinner:
     	size_hint_x: 0.4
-        rcid: 'chan'
+        rcid: 'chanId'
+        on_text: root.on_channel(*args)
     SampleRateSpinner:
     	size_hint_x: 0.4
         rcid: 'sr'
+        on_text: root.on_sample_rate(*args)
     IconButton:
     	size_hint_x: 0.1
     	text: '\357\200\224'
+    	on_release: root.on_delete()
 
 <OBD2ChannelsView>:
     padding: (10,10)
@@ -52,26 +55,13 @@
 	        do_scroll_x:False
 	        do_scroll_y:True
 	        GridLayout:
+	        	rcid: 'obd2grid'
 	            padding: [20,20]
 	            spacing: [10,10]
 	            size_hint_y: None
 	            height: max(self.minimum_height, scrlobd2.height)
 	            cols: 1
 	
-	            OBD2Channel:
-	            OBD2Channel:
-	            OBD2Channel:
-	            OBD2Channel:
-	            OBD2Channel:
-	            OBD2Channel:
-	            OBD2Channel:
-	            OBD2Channel:
-	            OBD2Channel:
-	            OBD2Channel:
-	            OBD2Channel:
-	            OBD2Channel:
-	            OBD2Channel:
-	            OBD2Channel:
     BoxLayout:
     	size_hint_y: 0.2
     	spacing: dp(5)
@@ -80,4 +70,5 @@
     		pos_hint: {'center_x': .5, 'center_y': .5}
     		size_hint: (0.1, 0.1)
     		text: '\357\201\247'
+    		on_release: root.on_add_obd2_channel()
         

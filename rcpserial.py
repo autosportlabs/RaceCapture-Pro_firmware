@@ -164,6 +164,10 @@ class RcpSerial:
                     if pwmChannel:
                         self.sendCommand({'setPwmCfg': {str(i): pwmChannel}})
 
+            obd2Cfg = rcpCfg.get('obd2Cfg', None)
+            if obd2Cfg:
+                self.sendCommand({'setObd2Cfg': obd2Cfg})
+                
     def getAnalogCfg(self, channelId):
         return self.sendGet('getAnalogCfg', channelId)    
 
