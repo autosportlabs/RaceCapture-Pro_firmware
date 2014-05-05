@@ -114,12 +114,13 @@ class TrackConfigView(BoxLayout):
         autoDetectSwitch.setValue(trackCfg.autoDetect)
         
         separateStartFinishSwitch = kvFind(self, 'rcid', 'sepStartFinish')
-        self.separateStartFinish = trackCfg.trackType == TRACK_TYPE_SEPARATE_START_FINISH
+        self.separateStartFinish = trackCfg.trackType == TRACK_TYPE_STAGE
         separateStartFinishSwitch.setValue(self.separateStartFinish) 
         
         self.updateTrackViewState()
 
         self.startLineView.setPoint(trackCfg.startLine)
+        self.finishLineView.setPoint(trackCfg.finishLine)
         
         for i in range(0, CONFIG_SECTOR_COUNT - 1):
             sectorView = self.sectorViews[i]

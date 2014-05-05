@@ -384,8 +384,8 @@ class GeoPoint:
     def toJson(self):
         return [self.latitude, self.longitude]
         
-TRACK_TYPE_COMMON_START_FINISH = 0
-TRACK_TYPE_SEPARATE_START_FINISH = 1
+TRACK_TYPE_CIRCUIT  = 0
+TRACK_TYPE_STAGE    = 1
         
 class TrackConfig:
     def __init__(self, **kwargs):
@@ -395,7 +395,7 @@ class TrackConfig:
         self.sectors = []
         self.radius = 0
         self.autoDetect = 0
-        self.trackType = TRACK_TYPE_COMMON_START_FINISH
+        self.trackType = TRACK_TYPE_CIRCUIT
         
     def fromJson(self, json):
         self.radius = json.get('rad', self.radius)
@@ -424,7 +424,13 @@ class TrackConfig:
         trackJson = {}
         trackJson['sec']  = sectors
         trackJson['type'] = self.trackType
-
+        
+        if self.trackType == TRACK_TYPE_STAGE:
+            trackJson['st'] = self.startLine.toJson()
+            trackJson['fin'] = self.finishLine.toJson()
+        else:
+            trackJson['sf'] = self.startLine.toJson()
+            
         trackCfgJson['track'] = trackJson
             
         return {'trackCfg':trackCfgJson}
