@@ -405,6 +405,7 @@ class TrackConfig:
         if trackJson:
             self.trackType = trackJson.get('type', self.trackType)
             sectorsJson = trackJson.get('sec', None)
+            del self.sectors[:]
             if sectorsJson:
                 for i in range(self.sectorCount):
                     sectorJson = sectorsJson[i]
@@ -417,14 +418,16 @@ class TrackConfig:
         trackCfgJson['rad'] = self.radius
         trackCfgJson['autoDetect'] = self.autoDetect
         
-        trackJson = {}
-        trackJson['trackType'] = self.trackType
         sectors = []
         for sector in self.sectors:
             sectors.append(sector.toJson())
+        trackJson = {}
+        trackJson['sec']  = sectors
+        trackJson['type'] = self.trackType
+
+        trackCfgJson['track'] = trackJson
             
-        trackJson['sec'] = sectors
-        return {'trackCfg':trackJson}
+        return {'trackCfg':trackCfgJson}
 
 class PidConfig:
     def __init__(self, **kwargs):

@@ -49,7 +49,6 @@ class TrackConfigView(BoxLayout):
         
     def on_separate_start_finish(self, instance, value):        
         if self.trackCfg:
-            print(str(value))
             self.trackCfg.trackType = 1 if value else 0
               
     def initSectorViews(self):
