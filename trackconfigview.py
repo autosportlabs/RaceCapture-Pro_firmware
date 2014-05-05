@@ -28,71 +28,71 @@ class SectorPointView(BoxLayout):
         
     
 class TrackConfigView(BoxLayout):
+    trackCfg = None
+    sectorViews = []
+    startLineView = None
+    finishLineView = None
+    separateStartFinish = False
+    
     def __init__(self, **kwargs):
         super(TrackConfigView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
-
+        kvFind(self, 'rcid', 'sepStartFinish').bind(on_setting_active=self.on_separate_start_finish)
         self.separateStartFinish = False        
         sectorsContainer = kvFind(self, 'rcid', 'sectorsGrid')
         self.sectorsContainer = sectorsContainer
         
-        startLineView, finishLineView, sectorViews = self.initSectorViews(self.separateStartFinish)
-        
-        self.startLineView  = startLineView
-        self.finishLineView = finishLineView
-        self.sectorViews = sectorViews
+        self.initSectorViews()
             
         sectorsContainer.height = 35 * CONFIG_SECTOR_COUNT
         sectorsContainer.size_hint = (1.0, None)
         
-    
-    def initSectorViews(self, separateStartFinish):
+    def on_separate_start_finish(self, instance, value):        
+        if self.trackCfg:
+            print(str(value))
+            self.trackCfg.trackType = 1 if value else 0
+              
+    def initSectorViews(self):
         
         sectorsContainer = self.sectorsContainer
         sectorsContainer.clear_widgets()
         
-        sectorViews = []
-        startLineView = None
-        finishLineView = None
-        
-        if not separateStartFinish:
-            startLineView = SectorPointView(title='Start / Finish')
-        else:
-            startLineView = SectorPointView(title='Start Line')
-            finishLineView = SectorPointView(title='Finish Line')
-            
-        if startLineView: 
-            sectorsContainer.add_widget(startLineView)
+        self.startLineView = kvFind(self, 'rcid', 'startLine')
+        self.finishLineView = kvFind(self, 'rcid', 'finishLine')
+                    
         for i in range(1, CONFIG_SECTOR_COUNT):
             sectorView = SectorPointView(title = 'Sector ' + str(i))
             sectorsContainer.add_widget(sectorView)
-            sectorViews.append(sectorView)
-        if finishLineView:
-            sectorsContainer.add_widget(finishLineView)
+            self.sectorViews.append(sectorView)
             
-        return startLineView, finishLineView, sectorViews
-
+        self.updateTrackViewState()
+            
+    def updateTrackViewState(self):
+        if not self.separateStartFinish:
+            self.startLineView.setTitle('Start / Finish')
+            self.finishLineView.setTitle('- - -')            
+            self.finishLineView.disabled = True
+        else:
+            self.startLineView.setTitle('Start Line')
+            self.finishLineView.setTitle('Finish Line')
+            self.finishLineView.disabled = False
+        
     def on_config_updated(self, rcpCfg):
         trackCfg = rcpCfg.trackConfig
         
         autoDetectSwitch = kvFind(self, 'rcid', 'autoDetect')
         autoDetectSwitch.setValue(trackCfg.autoDetect)
         
-        separateStartFinishSwitch = kvFind(self, 'rcid', 'trackSepStartFinish')
-        separateStartFinish = trackCfg.trackType == 1
-        separateStartFinishSwitch.setValue(separateStartFinish) 
+        separateStartFinishSwitch = kvFind(self, 'rcid', 'sepStartFinish')
+        self.separateStartFinish = trackCfg.trackType == TRACK_TYPE_SEPARATE_START_FINISH
+        separateStartFinishSwitch.setValue(self.separateStartFinish) 
+        
+        self.updateTrackViewState()
 
-        if separateStartFinish != self.separateStartFinish:
-            self.initSectorViews(separateStartFinish)
-            self.separateStartFinish = separateStartFinish
-        
-        if (separateStartFinish):
-            self.finishLineView.setPoint(trackCfg.finishLine)
-        
         self.startLineView.setPoint(trackCfg.startLine)
         
         for i in range(0, CONFIG_SECTOR_COUNT - 1):
             sectorView = self.sectorViews[i]
             sectorView.setPoint(trackCfg.sectors[i])
         
-        
+        self.trackCfg = trackCfg

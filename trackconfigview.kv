@@ -25,7 +25,7 @@
 	    HSeparator:
 	        text: 'Manual Configuration'
 	    SettingsViewSwitch:
-	    	rcid: 'trackSepStartFinish'
+	    	rcid: 'sepStartFinish'
 	    	label_text: 'Separate start and finish lines'
 	    	help_text: 'Specify a separate start / finish line for Stage Rally, Hill Climb or Autocross type courses. Leave off for circuit type courses'
     BoxLayout:
@@ -46,8 +46,10 @@
 				text: 'Longitude'
 
     	SectorPointView:
+    		rcid:'startLine'
     		size_hint_y: 0.1
     	SectorPointView:
+    		rcid:'finishLine'
     		size_hint_y: 0.1
 	    	
         HSeparatorMinor:

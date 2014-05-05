@@ -168,6 +168,10 @@ class RcpSerial:
             if obd2Cfg:
                 self.sendCommand({'setObd2Cfg': obd2Cfg})
                 
+            trackCfg = rcpCfg.get('trackCfg', None)
+            if trackCfg:
+                self.sendCommand({'setTrackCfg': trackCfg})
+                
     def getAnalogCfg(self, channelId):
         return self.sendGet('getAnalogCfg', channelId)    
 

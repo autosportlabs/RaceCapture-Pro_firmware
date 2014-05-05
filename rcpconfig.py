@@ -380,6 +380,12 @@ class GeoPoint:
     def fromJson(self, json):
         self.latitude = json[0]
         self.longitude = json[1]
+    
+    def toJson(self):
+        return [self.latitude, self.longitude]
+        
+TRACK_TYPE_COMMON_START_FINISH = 0
+TRACK_TYPE_SEPARATE_START_FINISH = 1
         
 class TrackConfig:
     def __init__(self, **kwargs):
@@ -389,7 +395,7 @@ class TrackConfig:
         self.sectors = []
         self.radius = 0
         self.autoDetect = 0
-        self.trackType = 0
+        self.trackType = TRACK_TYPE_COMMON_START_FINISH
         
     def fromJson(self, json):
         self.radius = json.get('rad', self.radius)
@@ -405,6 +411,20 @@ class TrackConfig:
                     sector = GeoPoint()
                     sector.fromJson(sectorJson)
                     self.sectors.append(sector)
+                    
+    def toJson(self):
+        trackCfgJson = {}
+        trackCfgJson['rad'] = self.radius
+        trackCfgJson['autoDetect'] = self.autoDetect
+        
+        trackJson = {}
+        trackJson['trackType'] = self.trackType
+        sectors = []
+        for sector in self.sectors:
+            sectors.append(sector.toJson())
+            
+        trackJson['sec'] = sectors
+        return {'trackCfg':trackJson}
 
 class PidConfig:
     def __init__(self, **kwargs):
@@ -518,7 +538,8 @@ class RcpConfig:
                              'timerCfg':self.timerConfig.toJson().get('timerCfg'),
                              'gpioCfg':self.gpioConfig.toJson().get('gpioCfg'),
                              'pwmCfg':self.pwmConfig.toJson().get('pwmCfg'),
-                             'obd2Cfg':self.obd2Config.toJson().get('obd2Cfg')
+                             'obd2Cfg':self.obd2Config.toJson().get('obd2Cfg'),
+                             'trackCfg':self.trackConfig.toJson().get('trackCfg')
                              }
                    }
         print('rcpJson ' + json.dumps(rcpJson))
