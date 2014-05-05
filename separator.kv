@@ -26,14 +26,16 @@
             pos: self.pos
 
 [HSeparatorMinor@Label]:
-    height: max(dp(40), self.texture_size[1] + dp(10))
+	size_hint_y: None
+    height: max(dp(30), self.texture_size[1] + dp(5))
     text: ctx.text if 'text' in ctx else ''
     text_size: self.width, None
     valign: 'middle'
     halign: 'center'
+    font_size: 18
     canvas.before:
         Color:
-            rgba: .1, .1, .1, .8
+            rgba: .1, .1, .1, .9
         Rectangle:
             size: self.size
             pos: self.pos

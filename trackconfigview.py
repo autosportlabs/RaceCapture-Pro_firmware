@@ -16,9 +16,10 @@ Builder.load_file('trackconfigview.kv')
 class SectorPointView(BoxLayout):
     def __init__(self, **kwargs):
         super(SectorPointView, self).__init__(**kwargs)
-        label = kvFind(self, 'rcid', 'title')
-        label.text = kwargs.get('title', 'Sector')
 
+    def setTitle(self, title):
+        kvFind(self, 'rcid', 'title').text = title
+        
     def setPoint(self, geoPoint):
         latView = kvFind(self, 'rcid', 'lat')
         lonView = kvFind(self, 'rcid', 'lon')
