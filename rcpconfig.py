@@ -433,6 +433,7 @@ class Obd2Config:
         pass
     
     def fromJson(self, json):
+        self.enabled = 1 if json.get('en', None) == 1 else 0 
         pidsJson = json.get("pids", None)
         if pidsJson:
             del self.pids[:]

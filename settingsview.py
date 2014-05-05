@@ -33,10 +33,17 @@ class SettingsViewSwitch(SettingsView):
     active = BooleanProperty()
     def __init__(self, **kwargs):
         super(SettingsViewSwitch, self).__init__(**kwargs)
+        self.register_event_type('on_setting_active')
+
+    def on_setting_active(self, value):
+        pass
     
     def setValue(self, value):
         switch = kvFind(self, 'rcid', 'settingsCtrl')
         switch.active = value
+    
+    def on_switch_active(self, instance, value):
+        self.dispatch('on_setting_active', value)
         
     
         

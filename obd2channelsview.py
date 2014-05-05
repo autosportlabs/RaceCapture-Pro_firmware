@@ -47,9 +47,14 @@ class OBD2ChannelsView(BoxLayout):
         super(OBD2ChannelsView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
         self.obd2Grid = kvFind(self, 'rcid', 'obd2grid')
+        kvFind(self, 'rcid', 'obd2enable').bind(on_setting_active=self.on_obd2_enabled)
         self.channels = kwargs['channels']
         self.update_view_enabled()
 
+    def on_obd2_enabled(self, instance, value):
+        if self.obd2Cfg:
+            self.obd2Cfg.enabled = value
+        
     def on_config_updated(self, rcpCfg):
         obd2Cfg = rcpCfg.obd2Config
         
