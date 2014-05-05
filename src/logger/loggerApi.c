@@ -921,10 +921,23 @@ int api_getLapConfig(Serial *serial, const jsmntok_t *json){
 
 static void json_track(Serial *serial, const Track *track){
 	json_int(serial, "type", track->track_type, 1);
-	json_arrayStart(serial, "sf");
-	json_arrayElementFloat(serial, track->startFinish.latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
-	json_arrayElementFloat(serial, track->startFinish.longitude, DEFAULT_GPS_POSITION_PRECISION, 0);
-	json_arrayEnd(serial, 1);
+	if (track->track_type == TRACK_TYPE_CIRCUIT){
+		json_arrayStart(serial, "sf");
+			json_arrayElementFloat(serial, track->startFinish.latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
+			json_arrayElementFloat(serial, track->startFinish.longitude, DEFAULT_GPS_POSITION_PRECISION, 0);
+			json_arrayEnd(serial, 1);
+	}
+	else{
+		json_arrayStart(serial, "st");
+			json_arrayElementFloat(serial, track->start.latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
+			json_arrayElementFloat(serial, track->start.longitude, DEFAULT_GPS_POSITION_PRECISION, 0);
+			json_arrayEnd(serial, 1);
+			json_arrayStart(serial, "fin");
+			json_arrayElementFloat(serial, track->finish.latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
+			json_arrayElementFloat(serial, track->finish.longitude, DEFAULT_GPS_POSITION_PRECISION, 0);
+			json_arrayEnd(serial, 1);
+	}
+
 	json_arrayStart(serial, "sec");
 	for (size_t i = 0; i < SECTOR_COUNT; i++){
 		const GeoPoint *p = &track->sectors[i];
@@ -952,9 +965,35 @@ int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS_NO_RETURN;
 }
 
-void setTrack(const jsmntok_t *cfg, Track *track){
-	setUnsignedCharValueIfExists(cfg, "type", &track->track_type);
-	const jsmntok_t *sectors = findNode(cfg, "sec");
+static int setGeoPointIfExists(const jsmntok_t *root, const char * name, GeoPoint *geoPoint){
+	int success = 0;
+	const jsmntok_t *geoPointNode  = findNode(root, name);
+	geoPointNode++;
+	if (geoPointNode && geoPointNode->type == JSMN_ARRAY && geoPointNode->size == 2){
+		geoPointNode += 1;
+		jsmn_trimData(geoPointNode);
+		geoPoint->latitude = modp_atof(geoPointNode->data);
+		geoPointNode += 1;
+		jsmn_trimData(geoPointNode);
+		geoPoint->longitude = modp_atof(geoPointNode->data);
+		success = 1;
+	}
+	return success;
+}
+
+static void setTrack(const jsmntok_t *trackNode, Track *track){
+	unsigned char trackType;
+	if (setUnsignedCharValueIfExists(trackNode, "type", &trackType)){
+		track->track_type = trackType;
+		if (trackType == TRACK_TYPE_SINGLE){
+			setGeoPointIfExists(trackNode, "st", &track->start);
+			setGeoPointIfExists(trackNode, "fin", &track->finish);
+		}
+		else{
+			setGeoPointIfExists(trackNode, "sf", &track->startFinish);
+		}
+	}
+	const jsmntok_t *sectors = findNode(trackNode, "sec");
 	if (sectors != NULL){
 		sectors++;
 		if (sectors != NULL && sectors->type == JSMN_ARRAY){
