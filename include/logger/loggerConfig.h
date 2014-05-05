@@ -153,12 +153,12 @@ typedef struct _ImuConfig{
 	float filterAlpha;
 } ImuConfig;
 
-#define MIN_IMU_RAW						0
-#define MAX_IMU_RAW						4097
+#define MIN_IMU_RAW							0
+#define MAX_IMU_RAW							4097
 
-#define MODE_IMU_DISABLED  				0
+#define MODE_IMU_DISABLED  					0
 #define MODE_IMU_NORMAL  					1
-#define MODE_IMU_INVERTED  				2
+#define MODE_IMU_INVERTED  					2
 
 #define IMU_CHANNEL_X						0
 #define IMU_CHANNEL_Y						1
@@ -234,6 +234,7 @@ typedef struct _PidConfig{
 #define OBD2_CHANNELS 20
 
 typedef struct _OBD2Config{
+	unsigned char enabled;
 	unsigned char obd2SampleRate;
 	unsigned short enabledPids;
 	PidConfig pids[OBD2_CHANNELS];
@@ -244,6 +245,7 @@ typedef struct _OBD2Config{
 
 #define DEFAULT_OBD2_CONFIG \
 { \
+	CONFIG_FEATURE_NOT_INSTALLED, \
 	DEFAULT_OBD2_SAMPLE_RATE, \
 	DEFAULT_ENABLED_PIDS, \
 	{ \

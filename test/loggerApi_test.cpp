@@ -972,6 +972,7 @@ void LoggerApiTest::testGetObd2ConfigFile(string filename){
 	obd2Config->pids[1].cfg.channeId = CHANNEL_Boost;
 	obd2Config->pids[1].cfg.sampleRate = SAMPLE_50Hz;
 	obd2Config->pids[1].pid = 0x06;
+	obd2Config->enabled = 1;
 
 	char * response = processApiGeneric(filename);
 
@@ -981,6 +982,7 @@ void LoggerApiTest::testGetObd2ConfigFile(string filename){
 	Object pid1 = (Object)json["obd2Cfg"]["pids"][0];
 	Object pid2 = (Object)json["obd2Cfg"]["pids"][1];
 
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)json["obd2Cfg"]["en"]);
 	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_AFR, (int)(Number)pid1["id"]);
 	CPPUNIT_ASSERT_EQUAL(SAMPLE_1Hz, (int)(Number)pid1["sr"]);
 	CPPUNIT_ASSERT_EQUAL(0x05, (int)(Number)pid1["pid"]);
@@ -997,6 +999,7 @@ void LoggerApiTest::testSetObd2ConfigFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	OBD2Config *obd2Config = &c->OBD2Configs;
 
+	CPPUNIT_ASSERT_EQUAL(1, (int)obd2Config->enabled);
 	CPPUNIT_ASSERT_EQUAL(2, (int)obd2Config->enabledPids);
 
 	PidConfig *pidCfg1 = &obd2Config->pids[0];

@@ -828,6 +828,7 @@ int api_getObd2Config(Serial *serial, const jsmntok_t *json){
 	OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
 
 	int enabledPids = obd2Cfg->enabledPids;
+	json_int(serial,"en", obd2Cfg->enabled, 1);
 	json_arrayStart(serial, "pids");
 
 	for (int i = 0; i < enabledPids; i++){
@@ -847,6 +848,7 @@ int api_getObd2Config(Serial *serial, const jsmntok_t *json){
 int api_setObd2Config(Serial *serial, const jsmntok_t *json){
 	OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
 
+	setUnsignedCharValueIfExists(json, "en", &obd2Cfg->enabled);
 	size_t pidIndex = 0;
 	const jsmntok_t *pids = findNode(json, "pids");
 	if (pids != NULL){

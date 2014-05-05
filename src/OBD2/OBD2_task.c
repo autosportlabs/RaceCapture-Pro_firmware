@@ -14,6 +14,7 @@
 
 #define OBD2_TASK_STACK 	100
 
+#define OBD2_FEATURE_DISABLED_DELAY_MS 2000
 void startOBD2Task(int priority){
 	xTaskCreate( OBD2Task, ( signed portCHAR * )"OBD2Task", OBD2_TASK_STACK, NULL, 	priority, NULL );
 }
@@ -23,27 +24,30 @@ void OBD2Task(void *pvParameters){
 	LoggerConfig *config = getWorkingLoggerConfig();
 	OBD2Config *oc = &config->OBD2Configs;
 	while(1){
-		for (size_t i = 0; i < oc->enabledPids; i++){
-			PidConfig *pidCfg = &oc->pids[i];
-			int value;
-			unsigned char pid = pidCfg->pid;
-			if (OBD2_request_PID(pid, &value, OBD2_PID_DEFAULT_TIMEOUT_MS)){
-				OBD2_set_current_PID_value(i, value);
-				if (DEBUG_LEVEL){
-					pr_debug("read OBD2 PID ");
-					pr_debug_int(pid);
-					pr_debug("=")
-					pr_debug_int(value);
-					pr_debug("\r\n");
+		while(oc->enabled){
+			for (size_t i = 0; i < oc->enabledPids; i++){
+				PidConfig *pidCfg = &oc->pids[i];
+				int value;
+				unsigned char pid = pidCfg->pid;
+				if (OBD2_request_PID(pid, &value, OBD2_PID_DEFAULT_TIMEOUT_MS)){
+					OBD2_set_current_PID_value(i, value);
+					if (DEBUG_LEVEL){
+						pr_debug("read OBD2 PID ");
+						pr_debug_int(pid);
+						pr_debug("=")
+						pr_debug_int(value);
+						pr_debug("\r\n");
+					}
 				}
-			}
-			else{
-				pr_warning("read OBD2 PID fail: ");
-				pr_warning_int(pid);
-				pr_warning("\r\n");
+				else{
+					pr_warning("read OBD2 PID fail: ");
+					pr_warning_int(pid);
+					pr_warning("\r\n");
+				}
+				delayTicks(oc->obd2SampleRate);
 			}
 			delayTicks(oc->obd2SampleRate);
 		}
-		delayTicks(oc->obd2SampleRate);
+		delayMs(OBD2_FEATURE_DISABLED_DELAY_MS);
 	}
 }
