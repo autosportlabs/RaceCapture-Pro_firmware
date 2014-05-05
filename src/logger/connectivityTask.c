@@ -29,7 +29,7 @@
 
 #define IDLE_TIMEOUT	configTICK_RATE_HZ / 10
 #define INIT_DELAY	 	600
-#define BUFFER_SIZE 	2049
+#define BUFFER_SIZE 	1025
 
 #define TELEMETRY_STACK_SIZE  					1000
 #define SAMPLE_RECORD_QUEUE_SIZE				10
