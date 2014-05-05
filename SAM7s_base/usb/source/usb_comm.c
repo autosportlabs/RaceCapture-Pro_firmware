@@ -10,7 +10,7 @@
 #include "serial.h"
 #include "messaging.h"
 
-#define BUFFER_SIZE 512
+#define BUFFER_SIZE 2049
 
 static char lineBuffer[BUFFER_SIZE];
 
