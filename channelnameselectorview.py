@@ -12,7 +12,6 @@ class ChannelNameSelectorView(BoxLayout):
     def __init__(self, **kwargs):
         super(ChannelNameSelectorView, self).__init__(**kwargs)
         self.register_event_type('on_channel')
-
     
     def setValue(self, value):
         spinner = kvFind(self, 'rcid', 'id')

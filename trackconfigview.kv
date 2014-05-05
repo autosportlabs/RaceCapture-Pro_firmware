@@ -1,14 +1,17 @@
 #:kivy 1.8.0
         
 <SectorPointView>:
-	orientation: 'horizontal'
-	Label:
-		text: "Sector"
-		rcid: 'title'
-	ValueField:
-		rcid: 'lat'
-	ValueField:
-		rcid: 'lon'
+	BoxLayout:
+		orientation: 'horizontal'
+		Label:
+			text: "Sector"
+			rcid: 'title'
+		ValueField:
+			rcid: 'lat'
+			on_text: root.on_lat(*args)
+		ValueField:
+			rcid: 'lon'
+			on_text: root.on_lon(*args)
 
 <TrackConfigView>:
 	padding: (dp(10),dp(10))

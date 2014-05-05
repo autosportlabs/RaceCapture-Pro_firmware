@@ -14,19 +14,37 @@ from rcpconfig import *
 Builder.load_file('trackconfigview.kv')
 
 class SectorPointView(BoxLayout):
+    geoPoint = None
+    latView = None
+    lonView = None
     def __init__(self, **kwargs):
         super(SectorPointView, self).__init__(**kwargs)
 
+    def setNext(self, widget):
+        self.lonView.set_next(widget)
+        
+    def getPrevious(self):
+        return self.latView
+    
     def setTitle(self, title):
         kvFind(self, 'rcid', 'title').text = title
         
     def setPoint(self, geoPoint):
-        latView = kvFind(self, 'rcid', 'lat')
-        lonView = kvFind(self, 'rcid', 'lon')
-        latView.text = str(geoPoint.latitude)
-        lonView.text = str(geoPoint.longitude)
+        self.latView = kvFind(self, 'rcid', 'lat')
+        self.lonView = kvFind(self, 'rcid', 'lon')
+        self.latView.text = str(geoPoint.latitude)
+        self.lonView.text = str(geoPoint.longitude)
+        self.latView.set_next(self.lonView)        
+        self.geoPoint = geoPoint
         
+    def on_lat(self, instance, value):
+        if self.geoPoint:
+            self.geoPoint.latitude = float(value)
     
+    def on_lon(self, instance, value):
+        if self.geoPoint:
+            self.geoPoint.longitude = float(value)
+        
 class TrackConfigView(BoxLayout):
     trackCfg = None
     sectorViews = []
@@ -38,18 +56,24 @@ class TrackConfigView(BoxLayout):
         super(TrackConfigView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
         kvFind(self, 'rcid', 'sepStartFinish').bind(on_setting_active=self.on_separate_start_finish)
+        kvFind(self, 'rcid', 'autoDetect').bind(on_setting_active=self.on_auto_detect)
         self.separateStartFinish = False        
         sectorsContainer = kvFind(self, 'rcid', 'sectorsGrid')
         self.sectorsContainer = sectorsContainer
-        
         self.initSectorViews()
             
         sectorsContainer.height = 35 * CONFIG_SECTOR_COUNT
         sectorsContainer.size_hint = (1.0, None)
+                
+    def on_auto_detect(self, instance, value):
+        if self.trackCfg:
+            self.trackCfg.autoDetect = value
         
     def on_separate_start_finish(self, instance, value):        
         if self.trackCfg:
             self.trackCfg.trackType = 1 if value else 0
+        self.separateStartFinish = value
+        self.updateTrackViewState()
               
     def initSectorViews(self):
         
@@ -75,6 +99,13 @@ class TrackConfigView(BoxLayout):
             self.startLineView.setTitle('Start Line')
             self.finishLineView.setTitle('Finish Line')
             self.finishLineView.disabled = False
+    
+    def update_tabs(self):
+        prevSectorView = None
+        for sectorView in self.sectorViews:
+            if prevSectorView:
+                prevSectorView.setNext(sectorView.getPrevious())
+            prevSectorView = sectorView
         
     def on_config_updated(self, rcpCfg):
         trackCfg = rcpCfg.trackConfig
@@ -95,3 +126,5 @@ class TrackConfigView(BoxLayout):
             sectorView.setPoint(trackCfg.sectors[i])
         
         self.trackCfg = trackCfg
+        self.update_tabs()
+        
