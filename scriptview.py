@@ -15,8 +15,8 @@ class LuaScriptingView(BoxLayout):
         self.register_event_type('on_config_updated')
 
     def on_config_updated(self, rcpCfg):
-        luaScript = rcpCfg.luaScript
-        scriptView = kvFind(self, 'rcpid', 'luaScript')
+        luaScript = rcpCfg.scriptConfig
+        scriptView = kvFind(self, 'rcid', 'script')
         scriptView.text = luaScript.script
    
 class LuaCodeInput(CodeInput):

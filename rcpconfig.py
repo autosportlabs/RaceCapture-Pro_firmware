@@ -416,7 +416,7 @@ class TrackConfig:
     def toJson(self):
         trackCfgJson = {}
         trackCfgJson['rad'] = self.radius
-        trackCfgJson['autoDetect'] = self.autoDetect
+        trackCfgJson['autoDetect'] = 1 if self.autoDetect else 0 
         
         sectors = []
         for sector in self.sectors:
@@ -483,11 +483,23 @@ class Obd2Config:
         return obd2Json
         
 class LuaScript:
+    script = ""
     def __init__(self, **kwargs):
-        self.script =""
+        pass
+    
+    def decodeScript(self, s):
+        return s.replace('\\n','\n').replace('\_',' ').replace('\\r','\r').replace('\\"','"')
+
+    def encodeScript(self, s):
+        return s.replace('\n','\\n').replace(' ', '\_').replace('\r', '\\r').replace('"', '\\"')
         
     def fromJson(self, json):
-        self.script = json['data']
+        self.script = self.decodeScript(json['data'])
+        
+    def toJson(self):
+        scriptJson = {"scriptCfg":{'data':self.encodeScript(self.script),'page':None}}
+        return scriptJson
+        
         
 class RcpConfig:
     def __init__(self, **kwargs):
@@ -499,7 +511,7 @@ class RcpConfig:
         self.pwmConfig = PwmConfig()
         self.trackConfig = TrackConfig()
         self.obd2Config = Obd2Config()
-        self.luaScript = LuaScript()
+        self.scriptConfig = LuaScript()
     
     def fromJson(self, json):
         analogCfgJson = json.get('analogCfg', None)
@@ -534,9 +546,9 @@ class RcpConfig:
         if obd2CfgJson:
             self.obd2Config.fromJson(obd2CfgJson)
         
-        scriptJson = json.get('script', None)
+        scriptJson = json.get('scriptCfg', None)
         if scriptJson:
-            self.luaScript.fromJson(scriptJson)
+            self.scriptConfig.fromJson(scriptJson)
             
     def toJson(self):
         
@@ -548,7 +560,8 @@ class RcpConfig:
                              'gpioCfg':self.gpioConfig.toJson().get('gpioCfg'),
                              'pwmCfg':self.pwmConfig.toJson().get('pwmCfg'),
                              'obd2Cfg':self.obd2Config.toJson().get('obd2Cfg'),
-                             'trackCfg':self.trackConfig.toJson().get('trackCfg')
+                             'trackCfg':self.trackConfig.toJson().get('trackCfg'),
+                             'scriptCfg':self.scriptConfig.toJson().get('scriptCfg')
                              }
                    }
         print('rcpJson ' + json.dumps(rcpJson))

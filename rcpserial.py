@@ -118,7 +118,7 @@ class RcpSerial:
             rcpCfg['obd2Cfg'] = obd2Cfg['obd2Cfg']
         
         if scriptCfg:
-            rcpCfg['script'] = scriptCfg['script']
+            rcpCfg['scriptCfg'] = scriptCfg['scriptCfg']
             
         return rcpCfg
     
@@ -171,6 +171,10 @@ class RcpSerial:
             trackCfg = rcpCfg.get('trackCfg', None)
             if trackCfg:
                 self.sendCommand({'setTrackCfg': trackCfg})
+                
+            scriptCfg = rcpCfg.get('scriptCfg', None)
+            if scriptCfg:
+                self.writeScript(scriptCfg)
                 
     def getAnalogCfg(self, channelId):
         return self.sendGet('getAnalogCfg', channelId)    
@@ -225,21 +229,6 @@ class RcpSerial:
     def getVersion(self):
         rsp = self.sendCommand("getVer", None)
             
-    def decodeScript(self, s):
-        return s.replace('\\n','\n').replace('\_',' ').replace('\\r','\r').replace('\\"','"')
-
-    def encodeScript(self, s):
-        return s.replace('\n','\\n').replace(' ', '\_').replace('\r', '\\r').replace('"', '\\"')
-
-    def writeScriptPage(self, ser, script, page):
-        cmd = 'writeScriptPage ' + str(page) + ' ' + self.encodeScript(script) + '\r'
-        ser.write(cmd)
-        line = self.readLine(ser)
-        line = self.readLine(ser)
-        if 'result="ok"' in line:
-            return 1
-        else:
-            return 0
 
 
 
