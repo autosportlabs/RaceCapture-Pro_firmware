@@ -214,14 +214,14 @@ class RcpSerial:
             if len(script) >= 256:
                 scr = script[:256]
                 script = script[256:]
-                res = self.sendCommand({'setScript': {'data':scr,'page':i}})
+                res = self.sendCommand({'setScriptCfg': {'data':scr,'page':i}})
                 if res == 0:
                     print 'Error: ' + str(i)
                     break
                 i = i + 1
             else:
-                self.sendCommand({'setScript': {'data':script,'page':i}})
-                self.sendCommand({'setScript': {'data':'','page':i + 1}})
+                self.sendCommand({'setScriptCfg': {'data':script,'page':i}})
+                self.sendCommand({'setScriptCfg': {'data':'','page':i + 1}})
                 res = 1
                 break
         return res

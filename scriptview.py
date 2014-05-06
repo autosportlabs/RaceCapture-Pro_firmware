@@ -10,15 +10,21 @@ from utils import *
 Builder.load_file('scriptview.kv')
 
 class LuaScriptingView(BoxLayout):
+    scriptCfg = None
     def __init__(self, **kwargs):
         super(LuaScriptingView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
 
     def on_config_updated(self, rcpCfg):
-        luaScript = rcpCfg.scriptConfig
+        scriptCfg = rcpCfg.scriptConfig
         scriptView = kvFind(self, 'rcid', 'script')
-        scriptView.text = luaScript.script
+        scriptView.text = scriptCfg.script
+        self.scriptCfg = scriptCfg
    
+    def on_script_changed(self, instance, value):
+        if self.scriptCfg:
+            self.scriptCfg.script = value
+        
 class LuaCodeInput(CodeInput):
     def __init__(self, **kwargs):
         super(LuaCodeInput, self).__init__(**kwargs)
