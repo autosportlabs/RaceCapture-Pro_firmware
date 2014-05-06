@@ -486,18 +486,12 @@ class LuaScript:
     script = ""
     def __init__(self, **kwargs):
         pass
-    
-    def decodeScript(self, s):
-        return s.replace('\\n','\n').replace('\_',' ').replace('\\r','\r').replace('\\"','"')
-
-    def encodeScript(self, s):
-        return s.replace('\n','\\n').replace(' ', '\_').replace('\r', '\\r').replace('"', '\\"')
-        
+            
     def fromJson(self, json):
-        self.script = self.decodeScript(json['data'])
+        self.script = json['data']
         
     def toJson(self):
-        scriptJson = {"scriptCfg":{'data':self.encodeScript(self.script),'page':None}}
+        scriptJson = {"scriptCfg":{'data':self.script,'page':None}}
         return scriptJson
         
         
