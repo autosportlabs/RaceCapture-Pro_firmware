@@ -202,6 +202,26 @@ class RcpSerial:
     def getScript(self):
         return self.sendGet('getScript', None)
 
+    def writeScript(self, scriptCfg):
+        i = 0
+        res = 0
+        script = scriptCfg['data']
+        while True:
+            if len(script) >= 256:
+                scr = script[:256]
+                script = script[256:]
+                res = self.sendCommand({'setScript': {'data':scr,'page':i}})
+                if res == 0:
+                    print 'Error: ' + str(i)
+                    break
+                i = i + 1
+            else:
+                self.sendCommand({'setScript': {'data':script,'page':i}})
+                self.sendCommand({'setScript': {'data':'','page':i + 1}})
+                res = 1
+                break
+        return res
+        
     def getVersion(self):
         rsp = self.sendCommand("getVer", None)
             
@@ -221,49 +241,5 @@ class RcpSerial:
         else:
             return 0
 
-    def readScriptPage(self, ser, page):
-        cmd = 'readScriptPage ' + str(page) + '\r'
-        print("page: " + cmd)
-        ser.write(cmd)
-        line = self.readLine(ser)
-        line = self.readLine(ser)
-        print(line)
-        line = line[9:]
-        line = line[:-4]
-        self.decodeScript(line)
-        return line
-
-    def readScript(self):
-        i = 0
-        lua = ''
-        ser = self.getSerial()
-        while True:
-            script = self.readScriptPage(ser, i)
-            if script:
-                lua = lua + script
-                i+=1
-            else:
-                break
-        return lua
-
-    def writeScript(self, script):
-        i = 0
-        res = 0
-        ser = self.getSerial()
-        while True:
-            if len(script) >= 256:
-                scr = script[:256]
-                script = script[256:]
-                res = self.writeScriptPage(ser, scr, i)
-                if res == 0:
-                    print 'Error: ' + str(i)
-                    break
-                i = i + 1
-            else:
-                self.writeScriptPage(ser, script, i)
-                self.writeScriptPage(ser, '', i + 1)
-                res = 1
-                break
-        return res
 
 
