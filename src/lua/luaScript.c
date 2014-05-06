@@ -28,7 +28,7 @@ const char * getScript(){
 }
 
 //unescapes a string in place
-void unescape(char *data){
+void unescapeScript(char *data){
 	char *result = data;
 	while (*data){
 		if (*data == '\\'){

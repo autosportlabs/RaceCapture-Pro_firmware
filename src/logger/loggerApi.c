@@ -1104,7 +1104,9 @@ int api_setScript(Serial *serial, const jsmntok_t *json){
 		jsmn_trimData(pageTok);
 		size_t page = modp_atoi(pageTok->data);
 		if (page < SCRIPT_PAGES){
-			int flashResult = flashScriptPage(page, dataTok->data);
+			char *script = dataTok->data;
+			unescapeScript(script);
+			int flashResult = flashScriptPage(page, script);
 			returnStatus = flashResult == 0 ? API_SUCCESS : API_ERROR_SEVERE;
 		}
 		else{
