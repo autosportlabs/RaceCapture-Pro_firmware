@@ -204,7 +204,7 @@ class RcpSerial:
         return self.sendGet('getObd2Cfg', None)
     
     def getScript(self):
-        return self.sendGet('getScript', None)
+        return self.sendGet('getScriptCfg', None)
 
     def writeScript(self, scriptCfg):
         i = 0
