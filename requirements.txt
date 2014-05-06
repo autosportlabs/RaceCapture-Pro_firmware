@@ -1,0 +1,4 @@
+Kivy-Garden==0.1.1
+pyserial==2.7
+requests==2.2.1
+wsgiref==0.1.2
