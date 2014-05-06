@@ -80,7 +80,7 @@ void WriteScriptPage(Serial *serial, unsigned int argc, char **argv){
 	if (argc >= 3) scriptPage = argv[2];
 
 	if (page >=0 && page < SCRIPT_PAGES){
-		if (argc >= 2) unescape(scriptPage);
+		if (argc >= 2) unescapeScript(scriptPage);
 		lockLua();
 		vPortEnterCritical();
 		int result = flashScriptPage(page, scriptPage);
