@@ -10,6 +10,7 @@ from fieldlabel import FieldLabel
 from settingsview import *
 from utils import *
 from rcpconfig import *
+from valuefield import FloatValueField
 
 Builder.load_file('trackconfigview.kv')
 

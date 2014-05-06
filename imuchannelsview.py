@@ -7,6 +7,7 @@ from kivy.uix.spinner import Spinner
 from mappedspinner import MappedSpinner
 from rcpconfig import *
 from utils import *
+from valuefield import IntegerValueField, FloatValueField
 
 Builder.load_file('imuchannelsview.kv')
 

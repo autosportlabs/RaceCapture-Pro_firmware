@@ -41,7 +41,7 @@
                 FieldLabel:
                     text: 'Logging Scale Factor'
                     halign: 'right'
-                ValueField:
+                FloatValueField:
                 	rcid: 'vScal'
                 	on_text: root.on_voltage_scaling(*args)
                     
@@ -57,7 +57,7 @@
                 FieldLabel:
                     text: 'Duty Cycle (0-100%)'
                     halign: 'right'
-                ValueField:
+                IntegerValueField:
                 	rcid: 'dutyCycle'
                 	on_text: root.on_startup_duty_cycle(*args)
             BoxLayout:
@@ -67,7 +67,7 @@
                 FieldLabel:
                     text: 'Period (0-2000)'
                     halign: 'right'
-                ValueField:
+                IntegerValueField:
                 	rcid: 'period'
                 	on_text: root.on_startup_period(*args)
             Label:
