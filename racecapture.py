@@ -16,6 +16,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.treeview import TreeView, TreeViewLabel
+from kivy.uix.popup import Popup
 
 from spacer import *
 from fieldlabel import FieldLabel
@@ -88,15 +89,28 @@ class RaceCaptureApp(App):
         args = vars(parser.parse_args())
         self.rcp.setPort(args['port'])
 
+    def _serial_warning(self):
+        popup = Popup(title='Warning',
+                      content=Label(text='You have not selected a serial port'),
+                      size_hint=(None, None), size=(400, 400))
+        popup.open()
+
     def on_write_config(self, instance, *args):
         rcpConfig = self.rcpConfig
         rcpJson = rcpConfig.toJson()
-        self.rcp.writeRcpCfg(rcpJson)
+
+        try:
+            self.rcp.writeRcpCfg(rcpJson)
+        except:
+            self._serial_warning()
         
     def on_read_config(self, instance, *args):
-        config = self.rcp.getRcpCfg()
-        self.rcpConfig.fromJson(config)
-        self.dispatch('on_config_updated', self.rcpConfig)
+        try:
+            config = self.rcp.getRcpCfg()
+            self.rcpConfig.fromJson(config)
+            self.dispatch('on_config_updated', self.rcpConfig)
+        except:
+            self._serial_warning()
 
     def on_config_updated(self, rcpConfig):
         for view in self.configViews:
