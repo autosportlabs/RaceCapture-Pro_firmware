@@ -51,8 +51,8 @@
 {"getChannels", api_getChannels}, \
 {"getObd2Cfg", api_getObd2Config}, \
 {"setObd2Cfg", api_setObd2Config}, \
-{"getScript", api_getScript}, \
-{"setScript", api_setScript}, \
+{"getScriptCfg", api_getScript}, \
+{"setScriptCfg", api_setScript}, \
 {"getVer", api_getVersion}
 
 

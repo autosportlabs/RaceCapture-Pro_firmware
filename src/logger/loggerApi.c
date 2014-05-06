@@ -1082,7 +1082,7 @@ int api_getScript(Serial *serial, const jsmntok_t *json){
 	const char *script = getScript();
 
 	json_objStart(serial);
-	json_objStartString(serial, "script");
+	json_objStartString(serial, "scriptCfg");
 	json_null(serial, "page", 1);
 	json_escapedString(serial, "data", script,0);
 	json_objEnd(serial, 0);
@@ -1098,12 +1098,14 @@ int api_setScript(Serial *serial, const jsmntok_t *json){
 	const jsmntok_t *dataTok = findNode(json, "data");
 	const jsmntok_t *pageTok = findNode(json, "page");
 	if (dataTok != NULL && pageTok != NULL){
+		dataTok++;
+		pageTok++;
 		jsmn_trimData(dataTok);
 		jsmn_trimData(pageTok);
 		size_t page = modp_atoi(pageTok->data);
 		if (page < SCRIPT_PAGES){
 			int flashResult = flashScriptPage(page, dataTok->data);
-			returnStatus = flashResult == 1 ? API_SUCCESS : API_ERROR_SEVERE;
+			returnStatus = flashResult == 0 ? API_SUCCESS : API_ERROR_SEVERE;
 		}
 		else{
 			returnStatus = API_ERROR_PARAMETER;
