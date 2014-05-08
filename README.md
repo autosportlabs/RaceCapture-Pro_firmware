@@ -45,11 +45,11 @@ to run:
 ## dev installation (Win7)
 
 1. Do the "installation" instructions above
-2. download Eclipse (https://www.eclipse.org/downloads/)
+2. download [Eclipse] (https://www.eclipse.org/downloads/)
 3. Set path variables for current shell: `my_kivy_install_folder\kivy.bat`
 4. `set path`
 5. Right click My Computer...System Properties...Advanced...Environment Variables...System Variables and add the extra folders that were added to the path to your system path
-6. Install PyDev for Eclipse (http://pydev.org/manual_101_install.html) and use auto-config
+6. Install [PyDev for Eclipse] (http://pydev.org/manual_101_install.html) and use auto-config
 7. (Bit hazy on this part as I tried a few things and was a bit drunk) Make a new project in Eclipse, using the folder with Racecapture in it
 8. Right-click the project...Properties...pyDev-PYTHONPATH...External Libraries - in there, add my_kivy_install_folder\kivy
 9. Run the project
