@@ -10,6 +10,16 @@
             size: 1, self.height
             pos: self.center_x, self.y
 
+[HLineSeparator@Widget]:
+    size_hint_x: None
+    height: 10
+    canvas:
+        Color:
+            rgba: .8, .8, .8, .3
+        Rectangle:
+            size: self.width, 1
+            pos: self.x, self.center_y
+
 [HSeparator@Label]:
     size_hint_y: None
     height: max(dp(40), self.texture_size[1] + dp(10))

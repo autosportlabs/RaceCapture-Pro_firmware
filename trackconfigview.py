@@ -56,8 +56,16 @@ class TrackConfigView(BoxLayout):
     def __init__(self, **kwargs):
         super(TrackConfigView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
-        kvFind(self, 'rcid', 'sepStartFinish').bind(on_setting_active=self.on_separate_start_finish)
-        kvFind(self, 'rcid', 'autoDetect').bind(on_setting_active=self.on_auto_detect)
+        
+        
+        sepStartFinish = kvFind(self, 'rcid', 'sepStartFinish') 
+        sepStartFinish.bind(on_setting=self.on_separate_start_finish)
+        sepStartFinish.setControl(SettingsSwitch())
+
+        autoDetect = kvFind(self, 'rcid', 'autoDetect') 
+        autoDetect.bind(on_setting=self.on_auto_detect)
+        autoDetect.setControl(SettingsSwitch())
+        
         self.separateStartFinish = False        
         sectorsContainer = kvFind(self, 'rcid', 'sectorsGrid')
         self.sectorsContainer = sectorsContainer

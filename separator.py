@@ -5,6 +5,9 @@ from kivy.uix.widget import Widget
 from kivy.app import Builder
 
 Builder.load_file('separator.kv')
+class HLineSeparator(Label):
+    pass
+
 class HSeparator(Label):
     pass
     

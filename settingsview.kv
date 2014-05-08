@@ -1,10 +1,6 @@
 #:kivy 1.8.0
 
-
-
 <SettingsView>:
-
-<SettingsViewSwitch>:
 	size_hint: (1.0, 0.2)
 	spacing: 40
 	orientation: 'vertical'
@@ -16,13 +12,14 @@
 			halign: 'right'
 			font_size: 20
 			text: ''
-		Switch:
-			rcid: 'settingsCtrl'
-			on_active: root.on_switch_active(*args)
+		BoxLayout:
+			rcid: 'control'
 			
 	HelpLabel:
 		rcid: 'helpLabel'
 		halign: 'left'
 		text: ''
 
-	
+<SettingsSwitch>:	
+	rcid: 'settingsCtrl'
+	on_active: root.on_switch_active(args[1])

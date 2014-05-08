@@ -39,6 +39,7 @@ from channelnamespinner import ChannelNameSpinner
 from toolbarview import ToolbarView
 from splashview import SplashView
 from separator import *
+from bluetoothconfigview import *
 
 class CellTelemetryView(BoxLayout):
     def __init__(self, **kwargs):
@@ -50,14 +51,6 @@ class CellTelemetryView(BoxLayout):
         pass
 
 
-class BluetoothTelemetryView(BoxLayout):
-    def __init__(self, **kwargs):
-        super(BluetoothTelemetryView, self).__init__(**kwargs)
-#        Builder.load_file('analogchannelsview.kv')
-        self.register_event_type('on_config_updated')
-
-    def on_config_updated(self, rcpCfg):
-        pass
 
 
 class LinkedTreeViewLabel(TreeViewLabel):
@@ -105,12 +98,12 @@ class RaceCaptureApp(App):
             self._serial_warning()
         
     def on_read_config(self, instance, *args):
-        try:
+        #try:
             config = self.rcp.getRcpCfg()
             self.rcpConfig.fromJson(config)
             self.dispatch('on_config_updated', self.rcpConfig)
-        except:
-            self._serial_warning()
+       # except:
+        #    self._serial_warning()
 
     def on_config_updated(self, rcpConfig):
         for view in self.configViews:

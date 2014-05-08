@@ -1,9 +1,11 @@
 import kivy
 kivy.require('1.8.0')
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.switch import Switch
 from kivy.app import Builder
 from iconbutton import IconButton
-from settingsview import SettingsViewSwitch
+from settingsview import SettingsSwitch
+
 from utils import *
 from rcpconfig import *
 
@@ -47,7 +49,10 @@ class OBD2ChannelsView(BoxLayout):
         super(OBD2ChannelsView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
         self.obd2Grid = kvFind(self, 'rcid', 'obd2grid')
-        kvFind(self, 'rcid', 'obd2enable').bind(on_setting_active=self.on_obd2_enabled)
+        obd2Enable = kvFind(self, 'rcid', 'obd2enable')
+        obd2Enable.bind(on_setting=self.on_obd2_enabled)
+        obd2Enable.setControl(SettingsSwitch())
+        
         self.channels = kwargs['channels']
         self.update_view_enabled()
 
