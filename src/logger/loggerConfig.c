@@ -102,7 +102,7 @@ int decodeSampleRate(int sampleRateCode){
 	}
 }
 
-char filterAnalogScalingMode(char mode){
+unsigned char filterAnalogScalingMode(unsigned char mode){
 	switch(mode){
 		case SCALING_MODE_LINEAR:
 			return SCALING_MODE_LINEAR;
@@ -114,7 +114,7 @@ char filterAnalogScalingMode(char mode){
 	}
 }
 
-char filterSdLoggingMode(char mode){
+unsigned char filterSdLoggingMode(unsigned char mode){
 	switch (mode){
 		case SD_LOGGING_MODE_CSV:
 			return SD_LOGGING_MODE_CSV;
@@ -124,7 +124,7 @@ char filterSdLoggingMode(char mode){
 	}
 }
 
-char filterConnectivityMode(char mode){
+unsigned char filterConnectivityMode(unsigned char mode){
 	switch(mode){
 		case CONNECTIVITY_MODE_CELL:
 			return CONNECTIVITY_MODE_CELL;

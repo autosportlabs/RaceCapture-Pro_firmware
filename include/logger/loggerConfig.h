@@ -430,9 +430,9 @@ typedef struct _TelemetryConfig {
 }
 
 typedef struct _ConnectivityConfig {
-	char connectivityMode;
-	char sdLoggingMode;
-	char backgroundStreaming;
+	unsigned char connectivityMode;
+	unsigned char sdLoggingMode;
+	unsigned char backgroundStreaming;
 	BluetoothConfig bluetoothConfig;
 	CellularConfig cellularConfig;
 	TelemetryConfig telemetryConfig;
@@ -515,9 +515,9 @@ int getConnectivitySampleRateLimit();
 int encodeSampleRate(int sampleRate);
 int decodeSampleRate(int sampleRateCode);
 
-char filterAnalogScalingMode(char mode);
-char filterSdLoggingMode(char mode);
-char filterConnectivityMode(char mode);
+unsigned char filterAnalogScalingMode(unsigned char mode);
+unsigned char filterSdLoggingMode(unsigned char mode);
+unsigned char filterConnectivityMode(unsigned char mode);
 char filterGpioMode(int config);
 char filterPwmOutputMode(int config);
 char filterPwmLoggingMode(int config);

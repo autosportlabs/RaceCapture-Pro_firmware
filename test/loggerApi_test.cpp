@@ -379,91 +379,6 @@ void LoggerApiTest::testSetImuCfg(){
 	testSetImuConfigFile("setImuCfg1.json");
 }
 
-void LoggerApiTest::testSetCellConfigFile(string filename){
-	Serial *serial = getMockSerial();
-	string json = readFile(filename);
-	mock_resetTxBuffer();
-	process_api(getMockSerial(),(char *)json.c_str(), json.size());
-
-	LoggerConfig *c = getWorkingLoggerConfig();
-
-	CellularConfig *cellCfg = &c->ConnectivityConfigs.cellularConfig;
-
-	CPPUNIT_ASSERT_EQUAL(string("foo.xyz"), string(cellCfg->apnHost));
-	CPPUNIT_ASSERT_EQUAL(string("blarg"), string(cellCfg->apnUser));
-	CPPUNIT_ASSERT_EQUAL(string("blorg"), string(cellCfg->apnPass));
-
-	char *txBuffer = mock_getTxBuffer();
-	assertGenericResponse(txBuffer, "setCellCfg", API_SUCCESS);
-}
-
-void LoggerApiTest::testSetCellCfg()
-{
-	testSetCellConfigFile("setCellCfg1.json");
-}
-
-void LoggerApiTest::testGetCellCfg(){
-	LoggerConfig *c = getWorkingLoggerConfig();
-	CellularConfig *cellCfg = &c->ConnectivityConfigs.cellularConfig;
-	strcpy(cellCfg->apnHost, "my.host");
-	strcpy(cellCfg->apnUser, "user1");
-	strcpy(cellCfg->apnPass, "pass1");
-
-	char *response = processApiGeneric("getCellCfg1.json");
-	Object json;
-	stringToJson(response, json);
-
-	Object &cellJson = json["cellCfg"];
-
-	string host = (String)cellJson["apnHost"];
-	string user = (String)cellJson["apnUser"];
-	string pass = (String)cellJson["apnPass"];
-
-	CPPUNIT_ASSERT_EQUAL(string("my.host"), host);
-	CPPUNIT_ASSERT_EQUAL(string("user1"), user);
-	CPPUNIT_ASSERT_EQUAL(string("pass1"), pass);
-
-}
-
-void LoggerApiTest::testSetBtConfigFile(string filename){
-	Serial *serial = getMockSerial();
-	string json = readFile(filename);
-	mock_resetTxBuffer();
-	process_api(getMockSerial(),(char *)json.c_str(), json.size());
-
-	LoggerConfig *c = getWorkingLoggerConfig();
-
-	BluetoothConfig *btCfg = &c->ConnectivityConfigs.bluetoothConfig;
-
-	CPPUNIT_ASSERT_EQUAL(string("myRacecar"), string(btCfg->deviceName));
-	CPPUNIT_ASSERT_EQUAL(string("3311"), string(btCfg->passcode));
-}
-
-void LoggerApiTest::testSetBtCfg()
-{
-	testSetBtConfigFile("setBtCfg1.json");
-}
-
-void LoggerApiTest::testGetBtCfg(){
-	LoggerConfig *c = getWorkingLoggerConfig();
-	BluetoothConfig *btCfg = &c->ConnectivityConfigs.bluetoothConfig;
-	strcpy(btCfg->deviceName,"myRacecar");
-	strcpy(btCfg->passcode,"3311");
-
-	char *response = processApiGeneric("getBtCfg1.json");
-	Object json;
-	stringToJson(response, json);
-
-	Object &btJson = json["btCfg"];
-
-	string name = (String)btJson["name"];
-	string pass = (String)btJson["pass"];
-
-	CPPUNIT_ASSERT_EQUAL(string("myRacecar"), name);
-	CPPUNIT_ASSERT_EQUAL(string("3311"), pass);
-}
-
-
 void LoggerApiTest::testSetConnectivityCfgFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	ConnectivityConfig *connCfg = &c->ConnectivityConfigs;
@@ -472,13 +387,22 @@ void LoggerApiTest::testSetConnectivityCfgFile(string filename){
 	connCfg->backgroundStreaming = 0;
 
 	processApiGeneric(filename);
+	char *txBuffer = mock_getTxBuffer();
+	assertGenericResponse(txBuffer, "setConnCfg", API_SUCCESS);
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)connCfg->sdLoggingMode);
 	CPPUNIT_ASSERT_EQUAL(1, (int)connCfg->connectivityMode);
 	CPPUNIT_ASSERT_EQUAL(1, (int)connCfg->backgroundStreaming);
 
-	char *txBuffer = mock_getTxBuffer();
-	assertGenericResponse(txBuffer, "setConnCfg", API_SUCCESS);
+	CPPUNIT_ASSERT_EQUAL(string("foo.xyz"), string(connCfg->cellularConfig.apnHost));
+	CPPUNIT_ASSERT_EQUAL(string("blarg"), string(connCfg->cellularConfig.apnUser));
+	CPPUNIT_ASSERT_EQUAL(string("blorg"), string(connCfg->cellularConfig.apnPass));
+
+	CPPUNIT_ASSERT_EQUAL(string("myRacecar"), string(connCfg->bluetoothConfig.deviceName));
+	CPPUNIT_ASSERT_EQUAL(string("3311"), string(connCfg->bluetoothConfig.passcode));
+
+	CPPUNIT_ASSERT_EQUAL(string("xyz123"), string(connCfg->telemetryConfig.telemetryDeviceId));
+	CPPUNIT_ASSERT_EQUAL(string("a.b.c"), string(connCfg->telemetryConfig.telemetryServerHost));
 }
 
 void LoggerApiTest::testSetConnectivityCfg(){
@@ -490,6 +414,14 @@ void LoggerApiTest::testGetConnectivityCfg(){
 	ConnectivityConfig *btCfg = &c->ConnectivityConfigs;
 	btCfg->sdLoggingMode = 0;
 	btCfg->connectivityMode = 2;
+	btCfg->backgroundStreaming = 1;
+
+	strcpy(btCfg->bluetoothConfig.deviceName, "btDevName");
+	strcpy(btCfg->bluetoothConfig.passcode, "6543");
+
+	strcpy(btCfg->cellularConfig.apnHost, "apnHost");
+	strcpy(btCfg->cellularConfig.apnUser, "apnUser");
+	strcpy(btCfg->cellularConfig.apnPass, "apnPass");
 
 	char *response = processApiGeneric("getConnCfg1.json");
 	Object json;
@@ -497,13 +429,19 @@ void LoggerApiTest::testGetConnectivityCfg(){
 
 	Object &connJson = json["connCfg"];
 
-	int sdMode = (Number)connJson["sdMode"];
-	int connMode = (Number)connJson["connMode"];
-	int bgStream = (Number)connJson["bgStream"];
+	CPPUNIT_ASSERT_EQUAL(0, (int)(Number)connJson["connModes"]["sdMode"]);
+	CPPUNIT_ASSERT_EQUAL(2, (int)(Number)connJson["connModes"]["connMode"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)connJson["connModes"]["bgStream"]);
 
-	CPPUNIT_ASSERT_EQUAL(0, sdMode);
-	CPPUNIT_ASSERT_EQUAL(2, connMode);
-	CPPUNIT_ASSERT_EQUAL(1, bgStream);
+	CPPUNIT_ASSERT_EQUAL(string(btCfg->bluetoothConfig.deviceName), string((String)connJson["btCfg"]["name"]));
+	CPPUNIT_ASSERT_EQUAL(string(btCfg->bluetoothConfig.passcode), string((String)connJson["btCfg"]["pass"]));
+
+	CPPUNIT_ASSERT_EQUAL(string(btCfg->cellularConfig.apnHost), string((String)connJson["cellCfg"]["apnHost"]));
+	CPPUNIT_ASSERT_EQUAL(string(btCfg->cellularConfig.apnUser), string((String)connJson["cellCfg"]["apnUser"]));
+	CPPUNIT_ASSERT_EQUAL(string(btCfg->cellularConfig.apnPass), string((String)connJson["cellCfg"]["apnPass"]));
+
+	CPPUNIT_ASSERT_EQUAL(string(btCfg->telemetryConfig.telemetryDeviceId), string((String)connJson["telCfg"]["deviceId"]));
+	CPPUNIT_ASSERT_EQUAL(string(btCfg->telemetryConfig.telemetryServerHost), string((String)connJson["telCfg"]["host"]));
 }
 
 void LoggerApiTest::testGetPwmConfigFile(string filename, int index){

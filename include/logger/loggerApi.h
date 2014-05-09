@@ -28,8 +28,6 @@
 {"setGpsCfg", api_setGpsConfig}, \
 {"getImuCfg", api_getImuConfig}, \
 {"setImuCfg", api_setImuConfig}, \
-{"getBtCfg", api_getBluetoothConfig}, \
-{"setBtCfg", api_setBluetoothConfig}, \
 {"setConnCfg", api_setConnectivityConfig}, \
 {"getConnCfg", api_getConnectivityConfig}, \
 {"getPwmCfg", api_getPwmConfig}, \
@@ -38,8 +36,6 @@
 {"setGpioCfg", api_setGpioConfig}, \
 {"getTimerCfg", api_getTimerConfig}, \
 {"setTimerCfg", api_setTimerConfig}, \
-{"getCellCfg", api_getCellConfig}, \
-{"setCellCfg", api_setCellConfig}, \
 {"setLapCfg", api_setLapConfig}, \
 {"getLapCfg", api_getLapConfig}, \
 {"getTrackCfg", api_getTrackConfig}, \
@@ -61,10 +57,6 @@ int api_getVersion(Serial *serial, const jsmntok_t *json);
 int api_sampleData(Serial *serial, const jsmntok_t *json);
 int api_log(Serial *serial, const jsmntok_t *json);
 int api_getMeta(Serial *serial, const jsmntok_t *json);
-int api_getCellConfig(Serial *serial, const jsmntok_t *json);
-int api_setCellConfig(Serial *serial, const jsmntok_t *json);
-int api_getBluetoothConfig(Serial *serial, const jsmntok_t *json);
-int api_setBluetoothConfig(Serial *serial, const jsmntok_t *json);
 int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json);
 int api_setConnectivityConfig(Serial *serial, const jsmntok_t *json);
 int api_getAnalogConfig(Serial *serial, const jsmntok_t *json);

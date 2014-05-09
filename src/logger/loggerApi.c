@@ -72,6 +72,18 @@ const static jsmntok_t * findNode(const jsmntok_t *node, const char * name){
 	return NULL;
 }
 
+const static jsmntok_t * findStringValueNode(const jsmntok_t *node, const char *name){
+	const jsmntok_t *field = findNode(node, name);
+	if (field != NULL){
+		field++;
+		if (field->type == JSMN_STRING){
+			jsmn_trimData(field);
+			return field;
+		}
+	}
+	return NULL;
+}
+
 const static jsmntok_t * findValueNode(const jsmntok_t *node, const char *name){
 	const jsmntok_t *field = findNode(node, name);
 	if (field != NULL){
@@ -90,9 +102,11 @@ static int setUnsignedShortValueIfExists(const jsmntok_t *root, const char * fie
 	return (valueNode != NULL);
 }
 
-static int setUnsignedCharValueIfExists(const jsmntok_t *root, const char * fieldName, unsigned char *target){
+static int setUnsignedCharValueIfExists(const jsmntok_t *root, const char * fieldName, unsigned char *target, unsigned char (*filter)(unsigned char)){
 	const jsmntok_t *valueNode = findValueNode(root, fieldName);
-	if (valueNode) * target = modp_atoi(valueNode->data);
+	unsigned char value = modp_atoi(valueNode->data);
+	if (filter != NULL) value = filter(value);
+	if (valueNode) * target = value;
 	return (valueNode != NULL);
 }
 
@@ -105,6 +119,12 @@ static int setIntValueIfExists(const jsmntok_t *root, const char * fieldName, in
 static int setFloatValueIfExists(const jsmntok_t *root, const char * fieldName, float *target ){
 	const jsmntok_t *valueNode = findValueNode(root, fieldName);
 	if (valueNode) * target = modp_atof(valueNode->data);
+	return (valueNode != NULL);
+}
+
+static int setStringValueIfExists(const jsmntok_t *root, const char * fieldName, char *target, size_t maxLen ){
+	const jsmntok_t *valueNode = findStringValueNode(root, fieldName);
+	if (valueNode) setTextField(target, valueNode->data, maxLen);
 	return (valueNode != NULL);
 }
 
@@ -508,35 +528,6 @@ int api_getCellConfig(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS_NO_RETURN;
 }
 
-static const jsmntok_t * setCellExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
-	CellularConfig *cellCfg = (CellularConfig *)cfg;
-	if (NAME_EQU("apnHost", name))  setTextField(cellCfg->apnHost, value, CELL_APN_HOST_LENGTH);
-	else if (NAME_EQU("apnUser", name)) setTextField(cellCfg->apnUser, value, CELL_APN_USER_LENGTH);
-	else if (NAME_EQU("apnPass", name)) setTextField(cellCfg->apnPass, value, CELL_APN_PASS_LENGTH);
-	return valueTok + 1;
-}
-
-int api_setCellConfig(Serial *serial, const jsmntok_t *json){
-	CellularConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
-	setConfigGeneric(serial, json, cfg, setCellExtendedField);
-	configChanged();
-	return API_SUCCESS;
-}
-
-static const jsmntok_t * setBluetoothExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
-	BluetoothConfig *btCfg = (BluetoothConfig *)cfg;
-	if (NAME_EQU("name", name)) setTextField(btCfg->deviceName, value, BT_DEVICE_NAME_LENGTH);
-	else if (NAME_EQU("pass", name)) setTextField(btCfg->passcode, value, BT_PASSCODE_LENGTH);
-	return valueTok + 1;
-}
-
-int api_setBluetoothConfig(Serial *serial, const jsmntok_t *json){
-	BluetoothConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
-	setConfigGeneric(serial, json, cfg, setBluetoothExtendedField);
-	configChanged();
-	return API_SUCCESS;
-}
-
 int api_getBluetoothConfig(Serial *serial, const jsmntok_t *json){
 	BluetoothConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
 	json_objStart(serial);
@@ -569,17 +560,53 @@ int api_setLogfileLevel(Serial *serial, const jsmntok_t *json){
 	}
 }
 
-static const jsmntok_t * setConnectivityExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
-	ConnectivityConfig *connCfg = (ConnectivityConfig *)cfg;
-	if (NAME_EQU("sdMode", name)) connCfg->sdLoggingMode = filterSdLoggingMode(modp_atoi(value));
-	else if (NAME_EQU("connMode", name)) connCfg->connectivityMode =  filterConnectivityMode(modp_atoi(value));
-	else if (NAME_EQU("bgStream", name)) connCfg->backgroundStreaming = (modp_atoi(value) == 1);
-	return valueTok + 1;
+static void setCellConfig(const jsmntok_t *root){
+	const jsmntok_t *cellCfgNode = findNode(root, "cellCfg");
+	if (cellCfgNode){
+		CellularConfig *cellCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
+		cellCfgNode++;
+		setStringValueIfExists(cellCfgNode, "apnHost", cellCfg->apnHost, CELL_APN_HOST_LENGTH);
+		setStringValueIfExists(cellCfgNode, "apnUser", cellCfg->apnUser, CELL_APN_PASS_LENGTH);
+		setStringValueIfExists(cellCfgNode, "apnPass", cellCfg->apnPass, CELL_APN_PASS_LENGTH);
+	}
+}
+
+static void setBluetoothConfig(const jsmntok_t *root){
+	const jsmntok_t *btCfgNode = findNode(root, "btCfg");
+	if (btCfgNode != NULL){
+		btCfgNode++;
+		BluetoothConfig *btCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
+		setStringValueIfExists(btCfgNode, "name", btCfg->deviceName, BT_DEVICE_NAME_LENGTH);
+		setStringValueIfExists(btCfgNode, "pass", btCfg->passcode, BT_PASSCODE_LENGTH);
+	}
+}
+
+static void setTelemetryConfig(const jsmntok_t *root){
+	const jsmntok_t *telemetryCfgNode = findNode(root, "telCfg");
+	if (telemetryCfgNode){
+		telemetryCfgNode++;
+		TelemetryConfig *telemetryCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.telemetryConfig);
+		setStringValueIfExists(telemetryCfgNode, "deviceId", telemetryCfg->telemetryDeviceId, DEVICE_ID_LENGTH);
+		setStringValueIfExists(telemetryCfgNode, "host", telemetryCfg->telemetryServerHost, TELEMETRY_SERVER_HOST_LENGTH);
+	}
+}
+
+static void setConnectivityModes(const jsmntok_t *root){
+	const jsmntok_t *connectivityModesNode = findNode(root, "connModes");
+	if (connectivityModesNode){
+		connectivityModesNode++;
+		ConnectivityConfig *connCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs);
+		setUnsignedCharValueIfExists(connectivityModesNode, "sdMode", &connCfg->sdLoggingMode, &filterSdLoggingMode);
+		setUnsignedCharValueIfExists(connectivityModesNode, "connMode", &connCfg->connectivityMode, &filterConnectivityMode);
+		setUnsignedCharValueIfExists(connectivityModesNode, "bgStream", &connCfg->backgroundStreaming, NULL);
+	}
 }
 
 int api_setConnectivityConfig(Serial *serial, const jsmntok_t *json){
-	ConnectivityConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs);
-	setConfigGeneric(serial, json, cfg, setConnectivityExtendedField);
+	setBluetoothConfig(json);
+	setCellConfig(json);
+	setTelemetryConfig(json);
+	setConnectivityModes(json);
 	configChanged();
 	return API_SUCCESS;
 }
@@ -588,9 +615,28 @@ int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json){
 	ConnectivityConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs);
 	json_objStart(serial);
 	json_objStartString(serial, "connCfg");
+
+	json_objStartString(serial, "btCfg");
+	json_string(serial, "name", cfg->bluetoothConfig.deviceName, 1);
+	json_string(serial, "pass", cfg->bluetoothConfig.passcode, 0);
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial, "cellCfg");
+	json_string(serial, "apnHost", cfg->cellularConfig.apnHost, 1);
+	json_string(serial, "apnUser", cfg->cellularConfig.apnUser, 1);
+	json_string(serial, "apnPass", cfg->cellularConfig.apnPass, 0);
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial, "telCfg");
+	json_string(serial, "deviceId", cfg->telemetryConfig.telemetryDeviceId, 1);
+	json_string(serial, "host", cfg->telemetryConfig.telemetryServerHost, 0);
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial,"connModes");
 	json_int(serial, "sdMode", cfg->sdLoggingMode, 1);
 	json_int(serial, "connMode", cfg->connectivityMode, 1);
 	json_int(serial, "bgStream", cfg->backgroundStreaming, 0);
+	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
@@ -811,11 +857,11 @@ int api_setGpsConfig(Serial *serial, const jsmntok_t *json){
 	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
 	int sr = 0;
 	if (setIntValueIfExists(json, "sr", &sr)) gpsCfg->sampleRate = encodeSampleRate(sr);
-	setUnsignedCharValueIfExists(json, "pos", &gpsCfg->positionEnabled);
-	setUnsignedCharValueIfExists(json, "speed", &gpsCfg->speedEnabled);
-	setUnsignedCharValueIfExists(json, "time", &gpsCfg->timeEnabled);
-	setUnsignedCharValueIfExists(json, "dist", &gpsCfg->distanceEnabled);
-	setUnsignedCharValueIfExists(json, "sats", &gpsCfg->satellitesEnabled);
+	setUnsignedCharValueIfExists(json, "pos", &gpsCfg->positionEnabled, NULL);
+	setUnsignedCharValueIfExists(json, "speed", &gpsCfg->speedEnabled, NULL);
+	setUnsignedCharValueIfExists(json, "time", &gpsCfg->timeEnabled, NULL);
+	setUnsignedCharValueIfExists(json, "dist", &gpsCfg->distanceEnabled, NULL);
+	setUnsignedCharValueIfExists(json, "sats", &gpsCfg->satellitesEnabled, NULL);
 
 	configChanged();
 	return API_SUCCESS;
@@ -848,7 +894,7 @@ int api_getObd2Config(Serial *serial, const jsmntok_t *json){
 int api_setObd2Config(Serial *serial, const jsmntok_t *json){
 	OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
 
-	setUnsignedCharValueIfExists(json, "en", &obd2Cfg->enabled);
+	setUnsignedCharValueIfExists(json, "en", &obd2Cfg->enabled, NULL);
 	size_t pidIndex = 0;
 	const jsmntok_t *pids = findNode(json, "pids");
 	if (pids != NULL){
@@ -983,7 +1029,7 @@ static int setGeoPointIfExists(const jsmntok_t *root, const char * name, GeoPoin
 
 static void setTrack(const jsmntok_t *trackNode, Track *track){
 	unsigned char trackType;
-	if (setUnsignedCharValueIfExists(trackNode, "type", &trackType)){
+	if (setUnsignedCharValueIfExists(trackNode, "type", &trackType, NULL)){
 		track->track_type = trackType;
 		if (trackType == TRACK_TYPE_SINGLE){
 			setGeoPointIfExists(trackNode, "st", &track->start);
@@ -1019,7 +1065,7 @@ int api_setTrackConfig(Serial *serial, const jsmntok_t *json){
 
 	TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs);
 	setFloatValueIfExists(json, "rad", &trackCfg->radius);
-	setUnsignedCharValueIfExists(json, "autoDetect", &trackCfg->auto_detect);
+	setUnsignedCharValueIfExists(json, "autoDetect", &trackCfg->auto_detect, NULL);
 
 	const jsmntok_t *track = findNode(json, "track");
 	if (track != NULL) setTrack(track + 1, &trackCfg->track);
