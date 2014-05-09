@@ -4,22 +4,21 @@
 <BluetoothTelemetryView>:
 	orientation: 'vertical'
 	SettingsView:
+		size_hint_y: 0.25
 		rcid: 'btenable'
 		label_text: 'Enable Bluetooth channels'
 		help_text: 'Enable Bluetooth connectivity'
-		size_hint_y: 0.3
 	HLineSeparator:
-	BoxLayout:
-		orientation: 'vertical'
-        BoxLayout:
-        	orientation: 'horizontal'
-		    Label:
-		        text: 'Bluetooth device settings'
-	        Button:
-	        	text: 'Configure'
+		size_hint_y: 0.1
+	SettingsView:
+		size_hint_y: 0.25
+		rcid: 'btconfig'
+		label_text: 'Configure Bluetooth device'
+		help_text: 'Configure Bluetooth device username and password. This should be used while connected via USB'
+	Label:
+		size_hint_y: 0.4
 
-
-
+	
 
 
 

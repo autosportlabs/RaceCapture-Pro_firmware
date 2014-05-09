@@ -4,6 +4,7 @@ kivy.require('1.8.0')
 from kivy.uix.label import Label
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.switch import Switch
+from kivy.uix.button import Button
 from fieldlabel import FieldLabel
 from helplabel import HelpLabel
 from kivy.app import Builder
@@ -11,6 +12,20 @@ from utils import *
 from kivy.properties import StringProperty, BooleanProperty
 
 Builder.load_file('settingsview.kv')
+
+class SettingsButton(Button):
+    def __init__(self, **kwargs):
+        super(SettingsButton, self).__init__(**kwargs)
+        self.register_event_type('on_control')
+
+    def on_control(self, value):
+        pass
+
+    def setValue(self, value):
+        self.active = value
+    
+    def on_button_active(self, value):
+        self.dispatch('on_control', value)
 
 class SettingsSwitch(Switch):
     def __init__(self, **kwargs):

@@ -23,3 +23,11 @@
 <SettingsSwitch>:	
 	rcid: 'settingsCtrl'
 	on_active: root.on_switch_active(args[1])
+
+<SettingsButton>:	
+	rcid: 'settingsCtrl'
+	size_hint: (None, 0.2)
+	on_release: root.on_button_active(*args)
+	#size: (dp(60), dp(40))
+	pos_hint: {'center_x': .5, 'center_y': .5}
+		
