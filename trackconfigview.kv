@@ -19,15 +19,18 @@
 	orientation: 'vertical'
 	BoxLayout:
 		orientation: 'vertical'
-		size_hint_y: 0.35
+		size_hint_y: 0.4
 		spacing: dp(20)
 		SettingsView:
+			size_hint_y: 0.4
 			rcid: 'autoDetect'
 			label_text: 'Enable automatic track detection'
 			help_text: 'Automatically detect and configure the race track upon GPS lock, after power-up. If you want a fixed configuration, leave off and configure your start/finish and sector targets below'
 	    HSeparator:
 	        text: 'Manual Configuration'
+	        size_hint_y: 0.1
 	    SettingsView:
+	    	size_hint_y: 0.5
 	    	rcid: 'sepStartFinish'
 	    	label_text: 'Separate start and finish lines'
 	    	help_text: 'Specify a separate start / finish line for Stage Rally, Hill Climb or Autocross type courses. Leave off for circuit type courses'
@@ -35,7 +38,7 @@
     	padding: (dp(30), dp(5))
     	spacing: dp(8)
     	orientation: 'vertical'
-    	size_hint_y: 0.65
+    	size_hint_y: 0.6
 	    	
 	    BoxLayout:
 	    	size_hint_y: 0.1

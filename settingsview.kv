@@ -1,33 +1,43 @@
 #:kivy 1.8.0
 
 <SettingsView>:
-	size_hint: (1.0, 0.2)
-	spacing: 40
 	orientation: 'vertical'
 	BoxLayout:
+		size_hint_y: 0.4
+		spacing: 40
 		rcid: 'fieldContainer'
 		orientation: 'horizontal'
 		FieldLabel:
+			size_hint: (0.5, None)
 			rcid: 'fieldLabel'
 			halign: 'right'
 			font_size: 20
 			text: ''
-		BoxLayout:
+		AnchorLayout:
+			anchor_x: 'center'
+			anchor_y: 'center'
+			size_hint: (0.5, None)
 			rcid: 'control'
 			
 	HelpLabel:
+		size_hint_y: 0.6
 		rcid: 'helpLabel'
 		halign: 'left'
 		text: ''
 
+<SettingsMappedSpinner>:
+	rcid: 'settingsCtrl'
+	size_hint: (0.4, 0.3)
+	#size: (dp(100), dp(40))
+	on_text: root.on_text(*args)
+	
 <SettingsSwitch>:	
 	rcid: 'settingsCtrl'
 	on_active: root.on_switch_active(args[1])
 
 <SettingsButton>:	
 	rcid: 'settingsCtrl'
-	size_hint: (None, 0.2)
+	size_hint: (None, None)
+	size: (dp(80), dp(40))
 	on_release: root.on_button_active(*args)
-	#size: (dp(60), dp(40))
-	pos_hint: {'center_x': .5, 'center_y': .5}
 		

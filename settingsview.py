@@ -3,12 +3,16 @@ kivy.require('1.8.0')
 
 from kivy.uix.label import Label
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.switch import Switch
 from kivy.uix.button import Button
+from kivy.uix.spinner import Spinner
 from fieldlabel import FieldLabel
 from helplabel import HelpLabel
 from kivy.app import Builder
 from utils import *
+from mappedspinner import MappedSpinner
+
 from kivy.properties import StringProperty, BooleanProperty
 
 Builder.load_file('settingsview.kv')
@@ -41,7 +45,21 @@ class SettingsSwitch(Switch):
     def on_switch_active(self, value):
         self.dispatch('on_control', value)
 
-class SettingsView(BoxLayout):
+class SettingsMappedSpinner(MappedSpinner):
+    def __init__(self, **kwargs):
+        super(SettingsMappedSpinner, self).__init__(**kwargs)
+        self.register_event_type('on_control')
+
+    def on_control(self, value):
+        pass
+
+    def setValue(self, value):
+        self.active = value
+    
+    def on_text(self, instance, value):
+        self.dispatch('on_control', value)
+
+class SettingsView(AnchorLayout):
     help_text = StringProperty('')
     label_text = StringProperty('')
     control = None

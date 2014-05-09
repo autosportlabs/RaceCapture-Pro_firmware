@@ -39,7 +39,7 @@ from channelnamespinner import ChannelNameSpinner
 from toolbarview import ToolbarView
 from splashview import SplashView
 from separator import *
-from bluetoothconfigview import *
+from telemetryconfigview import *
 
 class CellTelemetryView(BoxLayout):
     def __init__(self, **kwargs):
@@ -148,9 +148,8 @@ class RaceCaptureApp(App):
             n = create_tree('CAN bus')
 #            attach_node('CAN Channels', n, CANChannelsView())
             attach_node('OBDII Channels', n, OBD2ChannelsView(channels=self.channels))
-            n = create_tree('Telemetry')
-            attach_node('Cellular Telemetry', n, CellTelemetryView())
-            attach_node('Bluetooth Link', n, BluetoothTelemetryView())
+            n = create_tree('Connections')
+            attach_node('Telemetry', n, TelemetryConfigView())
             n = create_tree('Scripting / Logging')
             attach_node('Lua Script', n, LuaScriptingView())
 
