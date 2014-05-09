@@ -1,0 +1,18 @@
+{
+    "cellProviders": [
+        {
+            "key": "tmo_usa",
+            "name": "T-Mobile (USA)",
+            "apn_host": "epc.tmobile.com",
+            "apn_user": "",
+            "apn_pass": ""
+        },
+        {
+            "key": "att",
+            "name": "AT&T (USA)",
+            "apn_host": "wap.cingular",
+            "apn_user": "wap@cingulargprs.com",
+            "apn_pass": "cingular1"
+        }
+    ]
+}
