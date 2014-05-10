@@ -5,64 +5,13 @@
 	padding: (dp(10),dp(10))
 	spacing: dp(20)
 	orientation: 'vertical'
-	HSeparator:
+	HSeparatorMinor:
 		text: 'Telemetry Configuration'
-		
+		halign: 'left'
 	SettingsView:
-		size_hint_y: 0.18
-		rcid: 'btenable'
-		label_text: 'Enable Bluetooth'
-		help_text: 'If the Bluetooth module add-on is connected to the expansion port, enable it here'
-		
-	SettingsView:
-		size_hint_y: 0.15
-		rcid: 'btconfig'
-		label_text: 'Configure Bluetooth device'
-		help_text: 'Configure Bluetooth device username and password.\nNote: ensure you are connected via USB and Bluetooth is not connected.'
-
-	HLineSeparator:
-		size_hint_y: 0.2
-		
-	SettingsView:
-		size_hint_y: 0.15
-		rcid: 'telemetryenable'
-		label_text: 'Enable Telemetry Module'
-		help_text: 'If the Real-Time telemetry module is installed, enable it here'
-
-	SettingsView:
-		size_hint_y: 0.15
-		rcid: 'cellprovider'
-		label_text: 'Cellular Provider'
-		help_text: 'Select the cellular provider used with the Real-Time module, or specify custom APN settings below'
-	
-	BoxLayout:
-		size_hint_y: 0.2
-		orientation: 'horizontal'
-		Label:
-			size_hint_x: 0.25
-			text: 'Custom Settings'
-			font_size: 20
-		GridLayout:
-			spacing: (dp(30), dp(5))
-			size_hint_x: 0.6
-			cols: 2
-			FieldLabel:
-				text: 'APN Host'
-				halign: 'right'
-			ValueField:
-				rcid: 'apnHost'
-				disabled: True
-			FieldLabel:
-				halign: 'right'
-				text: 'APN User Name'
-			ValueField:
-				rcid: 'apnUser'
-				disabled: True
-			FieldLabel:
-				halign: 'right'
-				text: 'APN Password'
-			ValueField:
-				rcid: 'apnPass'
-				disabled: True
-		Label:
-			size_hint_x: 0.15
+		size_hint_y: 0.25
+		rcid: 'deviceId'
+		label_text: 'Telemetry Device Id'
+		help_text: 'Enter the telemetry device Id assigned to you from race-capture.com'
+	Label:
+		size_hint_y: 0.75

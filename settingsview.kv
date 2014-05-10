@@ -28,7 +28,6 @@
 <SettingsMappedSpinner>:
 	rcid: 'settingsCtrl'
 	size_hint: (0.4, 0.3)
-	#size: (dp(100), dp(40))
 	on_text: root.on_text(*args)
 	
 <SettingsSwitch>:	
@@ -40,4 +39,10 @@
 	size_hint: (None, None)
 	size: (dp(80), dp(40))
 	on_release: root.on_button_active(*args)
+	
+<SettingsTextField>:
+	rcid: 'settingsCtrl'
+	size_hint: (0.6, 0.3)
+	on_text: root.on_text(*args)
+	
 		

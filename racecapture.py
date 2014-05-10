@@ -40,6 +40,7 @@ from toolbarview import ToolbarView
 from splashview import SplashView
 from separator import *
 from telemetryconfigview import *
+from wirelessconfigview import *
 
 class CellTelemetryView(BoxLayout):
     def __init__(self, **kwargs):
@@ -149,6 +150,7 @@ class RaceCaptureApp(App):
 #            attach_node('CAN Channels', n, CANChannelsView())
             attach_node('OBDII Channels', n, OBD2ChannelsView(channels=self.channels))
             n = create_tree('Connections')
+            attach_node('Wireless', n, WirelessConfigView())
             attach_node('Telemetry', n, TelemetryConfigView())
             n = create_tree('Scripting / Logging')
             attach_node('Lua Script', n, LuaScriptingView())

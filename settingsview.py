@@ -1,4 +1,5 @@
 import kivy
+from valuefield import ValueField
 kivy.require('1.8.0')
 
 from kivy.uix.label import Label
@@ -59,6 +60,22 @@ class SettingsMappedSpinner(MappedSpinner):
     def on_text(self, instance, value):
         self.dispatch('on_control', value)
 
+class SettingsTextField(ValueField):
+    def __init__(self, **kwargs):
+        super(SettingsTextField, self).__init__(**kwargs)
+        self.register_event_type('on_control')
+
+    def on_control(self, value):
+        pass
+
+    def setValue(self, value):
+        self.active = value
+    
+    def on_text(self, instance, value):
+        self.dispatch('on_control', value)
+    
+    
+    
 class SettingsView(AnchorLayout):
     help_text = StringProperty('')
     label_text = StringProperty('')
