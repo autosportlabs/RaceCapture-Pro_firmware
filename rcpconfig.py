@@ -487,14 +487,113 @@ class LuaScript:
     def __init__(self, **kwargs):
         pass
             
-    def fromJson(self, json):
-        self.script = json['data']
+    def fromJson(self, jsonScript):
+        self.script = jsonScript['data']
         
     def toJson(self):
         scriptJson = {"scriptCfg":{'data':self.script,'page':None}}
         return scriptJson
         
+class BluetoothConfig:
+    name = ""
+    passKey = ""
+    def __init__(self, **kwargs):
+        pass
+
+    def fromJson(self, btCfgJson):
+        self.name = btCfgJson['name']
+        self.passKey = btCfgJson['pass']
         
+    def toJson(self):
+        btCfgJson = {}
+        btCfgJson['name'] = self.name
+        btCfgJson['passKey'] = self.passKey
+        return btCfgJson 
+
+class CellConfig:
+    apnHost = ""
+    apnUser = ""
+    apnPass = ""
+    def __init__(self, **kwargs):
+        pass
+    
+    def fromJson(self, cellCfgJson):
+        self.apnHost = cellCfgJson['apnHost']
+        self.apnUser = cellCfgJson['apnUser']
+        self.apnPass = cellCfgJson['apnPass']
+
+    def toJson(self):
+        cellConfigJson = {}
+        cellConfigJson['apnHost'] = self.apnHost
+        cellConfigJson['apnUser'] = self.apnUser
+        cellConfigJson['apnPass'] = self.apnPass
+        return cellConfigJson        
+    
+class TelemetryConfig:
+    deviceId = ""
+    
+    def fromJson(self, telCfgJson):
+        self.deviceId = telCfgJson['deviceId']
+        
+    def toJson(self):
+        telCfgJson = {}
+        telCfgJson['deviceId'] = self.deviceId
+        return telCfgJson
+
+class ConnectionModes:
+    sdMode = 0
+    connectionModes = 0
+    backgroundStreaming = 0
+    def __init__(self, **kwargs):
+        pass
+
+    def fromJson(self, connModeJson):
+        self.sdMode = connModeJson['sdMode']
+        self.connectionModes = connModeJson['connMode']
+        self.backgroundStreaming = connModeJson['bgStream']
+    
+    def toJson(self):
+        connModeJson = {}
+        connModeJson['sdMode'] = self.sdMode
+        connModeJson['connMode'] = self.connectionModes
+        connModeJson['bgStream'] = self.backgroundStreaming
+        return connModeJson
+
+    
+class ConnectivityConfig:
+    bluetoothConfig = BluetoothConfig()
+    cellConfig = CellConfig()
+    telemetryConfig = TelemetryConfig()
+    connectionModes = ConnectionModes()
+    
+    def fromJson(self, connCfgJson):
+        btCfgJson = connCfgJson.get('btCfg')
+        if btCfgJson:
+            self.bluetoothConfig.fromJson(btCfgJson)
+            
+        cellCfgJson = connCfgJson.get('cellCfg')
+        if cellCfgJson:
+            self.cellConfig.fromJson(cellCfgJson)
+            
+        telCfgJson = connCfgJson.get('telCfg')
+        if telCfgJson:
+            self.telemetryConfig.fromJson(telCfgJson)
+            
+        connModesJson = connCfgJson.get('connModes')
+        if connModesJson:
+            self.connectionModes.fromJson(connModesJson)
+            
+            
+    def toJson(self):
+        connCfgJson = {'btCfg' : self.bluetoothConfig.toJson(),
+                       'cellCfg' : self.cellConfig.toJson(),
+                       'telCfg' : self.telemetryConfig.toJson(),
+                       'connModes': self.connectionModes.toJson()}
+        
+        return {'connCfg':connCfgJson}
+
+
+    
 class RcpConfig:
     def __init__(self, **kwargs):
         self.analogConfig = AnalogConfig()
@@ -504,6 +603,7 @@ class RcpConfig:
         self.gpioConfig = GpioConfig()
         self.pwmConfig = PwmConfig()
         self.trackConfig = TrackConfig()
+        self.connectivityConfig = ConnectivityConfig()
         self.obd2Config = Obd2Config()
         self.scriptConfig = LuaScript()
     
@@ -536,6 +636,10 @@ class RcpConfig:
         if trackCfgJson:
             self.trackConfig.fromJson(trackCfgJson)
             
+        connectivtyCfgJson = json.get('connCfg', None)
+        if connectivtyCfgJson:
+            self.connectivityConfig.fromJson(connectivtyCfgJson)
+            
         obd2CfgJson = json.get('obd2Cfg', None)
         if obd2CfgJson:
             self.obd2Config.fromJson(obd2CfgJson)
@@ -554,6 +658,7 @@ class RcpConfig:
                              'gpioCfg':self.gpioConfig.toJson().get('gpioCfg'),
                              'pwmCfg':self.pwmConfig.toJson().get('pwmCfg'),
                              'obd2Cfg':self.obd2Config.toJson().get('obd2Cfg'),
+                             'connCfg':self.connectivityConfig.toJson().get('connCfg'),
                              'trackCfg':self.trackConfig.toJson().get('trackCfg'),
                              'scriptCfg':self.scriptConfig.toJson().get('scriptCfg')
                              }

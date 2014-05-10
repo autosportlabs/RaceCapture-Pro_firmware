@@ -90,6 +90,7 @@ class RcpSerial:
         trackCfg = self.getTrackCfg()
         obd2Cfg = self.getObd2Cfg()
         scriptCfg = self.getScript()
+        connCfg = self.getConnectivityCfg()
         
         rcpCfg = {}
         
@@ -114,6 +115,9 @@ class RcpSerial:
         if trackCfg:
             rcpCfg['trackCfg'] = trackCfg['trackCfg']
             
+        if connCfg:
+            rcpCfg['connCfg'] = connCfg['connCfg']
+
         if obd2Cfg:
             rcpCfg['obd2Cfg'] = obd2Cfg['obd2Cfg']
         
@@ -164,6 +168,10 @@ class RcpSerial:
                     if pwmChannel:
                         self.sendCommand({'setPwmCfg': {str(i): pwmChannel}})
 
+            connCfg = rcpCfg.get('connCfg', None)
+            if connCfg:
+                self.sendCommand({'setConnCfg' : connCfg})
+                
             obd2Cfg = rcpCfg.get('obd2Cfg', None)
             if obd2Cfg:
                 self.sendCommand({'setObd2Cfg': obd2Cfg})
@@ -202,6 +210,9 @@ class RcpSerial:
     
     def getObd2Cfg(self):
         return self.sendGet('getObd2Cfg', None)
+    
+    def getConnectivityCfg(self):
+        return self.sendGet('getConnCfg', None)
     
     def getScript(self):
         return self.sendGet('getScriptCfg', None)
