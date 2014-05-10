@@ -6,7 +6,7 @@
 	spacing: dp(20)
 	orientation: 'vertical'
 	HSeparatorMinor:
-		text: 'Wireless Configuration'
+		text: 'Bluetooth Configuration'
 		halign: 'left'
 		
 	SettingsView:
@@ -19,19 +19,20 @@
 		size_hint_y: 0.15
 		rcid: 'btconfig'
 		label_text: 'Configure Bluetooth device'
-		help_text: 'Configure Bluetooth device username and password.\nNote: ensure you are connected via USB and Bluetooth is not connected.'
+		help_text: 'Configure Bluetooth device username and password.\nNote: ensure you are first connected via USB and Bluetooth is disconnected'
 
-	HLineSeparator:
-		size_hint_y: 0.2
+	HSeparatorMinor:
+		text: 'Cellular Module Configuration'
+		halign: 'left'
 		
 	SettingsView:
-		size_hint_y: 0.15
+		size_hint_y: 0.20
 		rcid: 'telemetryenable'
 		label_text: 'Enable Telemetry Module'
 		help_text: 'If the Real-Time telemetry module is installed, enable it here'
 
 	SettingsView:
-		size_hint_y: 0.15
+		size_hint_y: 0.10
 		rcid: 'cellprovider'
 		label_text: 'Cellular Provider'
 		help_text: 'Select the cellular provider used with the Real-Time module, or specify custom APN settings below'

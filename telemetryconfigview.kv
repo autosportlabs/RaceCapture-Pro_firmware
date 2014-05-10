@@ -9,9 +9,23 @@
 		text: 'Telemetry Configuration'
 		halign: 'left'
 	SettingsView:
-		size_hint_y: 0.25
+		size_hint_y: 0.3
 		rcid: 'deviceId'
 		label_text: 'Telemetry Device Id'
 		help_text: 'Enter the telemetry device Id assigned to you from race-capture.com'
+		
+	HLineSeparator:
+		size_hint_y: 0.05
+		
+	SettingsView:
+		size_hint_y: 0.2
+		rcid: 'bgStream'
+		label_text: 'Background Streaming'
+		help_text: 'Enable to stream real-time telemetry continuously in the background.'
+	HelpLabel:
+		size_hint_y: 0.1
+		text: 'When disabled, telemetry is synchronized with SD logging.'
+		halign: 'left'
 	Label:
-		size_hint_y: 0.75
+		size_hint_y: 0.7
+	

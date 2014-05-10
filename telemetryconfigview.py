@@ -5,7 +5,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 import json
 
-from settingsview import SettingsView, SettingsTextField
+from settingsview import SettingsView, SettingsTextField, SettingsSwitch
 from separator import HLineSeparator
 from valuefield import ValueField
 from utils import *
@@ -22,7 +22,14 @@ class TelemetryConfigView(BoxLayout):
         btEnable.bind(on_setting=self.on_device_id)
         btEnable.setControl(SettingsTextField())
         
+        bgStream = kvFind(self, 'rcid', 'bgStream')
+        bgStream.bind(on_setting=self.on_bg_stream)
+        bgStream.setControl(SettingsSwitch())
+        
     def on_device_id(self, instance, value):
+        pass
+    
+    def on_bg_stream(self, instance, value):
         pass
     
     def on_config_updated(self, rcpCfg):
