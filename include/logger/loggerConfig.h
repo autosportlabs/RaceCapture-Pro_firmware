@@ -537,10 +537,6 @@ PWMConfig * getPwmConfigChannel(int channel);
 GPIOConfig * getGPIOConfigChannel(int channel);
 ImuConfig * getImuConfigChannel(int channel);
 
-void setLabelGeneric(char *dest, const char *source);
-void setTextField(char *dest, const char *source, unsigned int maxlen);
-
-
 unsigned int getHighestSampleRate(LoggerConfig *config);
 size_t get_enabled_channel_count(LoggerConfig *loggerConfig);
 

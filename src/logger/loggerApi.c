@@ -124,7 +124,7 @@ static int setFloatValueIfExists(const jsmntok_t *root, const char * fieldName, 
 
 static int setStringValueIfExists(const jsmntok_t *root, const char * fieldName, char *target, size_t maxLen ){
 	const jsmntok_t *valueNode = findStringValueNode(root, fieldName);
-	if (valueNode) setTextField(target, valueNode->data, maxLen);
+	if (valueNode) strncpy(target, valueNode->data, maxLen);
 	return (valueNode != NULL);
 }
 
@@ -566,7 +566,7 @@ static void setCellConfig(const jsmntok_t *root){
 		CellularConfig *cellCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
 		cellCfgNode++;
 		setStringValueIfExists(cellCfgNode, "apnHost", cellCfg->apnHost, CELL_APN_HOST_LENGTH);
-		setStringValueIfExists(cellCfgNode, "apnUser", cellCfg->apnUser, CELL_APN_PASS_LENGTH);
+		setStringValueIfExists(cellCfgNode, "apnUser", cellCfg->apnUser, CELL_APN_USER_LENGTH);
 		setStringValueIfExists(cellCfgNode, "apnPass", cellCfg->apnPass, CELL_APN_PASS_LENGTH);
 	}
 }

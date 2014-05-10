@@ -304,35 +304,6 @@ ImuConfig * getImuConfigChannel(int channel){
 	return c;		
 }
 
-void setTextField(char *dest, const char *source, unsigned int maxlen){
-	const char *from = source;
-	if (*from == '"') from++;
-	int len = strlen(from);
-	if (*(from + len -1) == '"') len--;
-	if (len > maxlen) len = maxlen;
-	for (size_t i = 0; i < len; i++){
-		char c = from[i];
-		if (! ( (c >= '0' && c <= '9') ||
-				(c >= 'A' && c <= 'Z') ||
-				(c >= 'a' && c <= 'z') ||
-				c == '_' ||
-				c == '-' ||
-				c == '@' ||
-				c == '%' ||
-				c == '+' ||
-				c == ':' ||
-				c == '.' ) ){
-			c = '_';
-		}
-		dest[i] = c;
-	}
-	dest[len] = '\0';
-}
-
-void setLabelGeneric(char *dest, const char *source){
-	setTextField(dest, source, DEFAULT_LABEL_LENGTH);
-}
-
 unsigned int getHighestSampleRate(LoggerConfig *config){
 
 	//start with the slowest sample rate
