@@ -36,7 +36,7 @@ class TelemetryConfigView(BoxLayout):
     
     def on_config_updated(self, rcpCfg):
         connectivityConfig = rcpCfg.connectivityConfig
-        kvFind(self, 'rcid', 'bgStream').setValue(connectivityConfig.connectionModes.backgroundStreaming)
+        kvFind(self, 'rcid', 'bgStream').setValue(connectivityConfig.telemetryConfig.backgroundStreaming)
         kvFind(self, 'rcid', 'deviceId').setValue(connectivityConfig.telemetryConfig.deviceId)
         self.connectivityConfig = connectivityConfig
         

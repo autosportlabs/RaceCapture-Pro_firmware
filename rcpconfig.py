@@ -497,20 +497,24 @@ class LuaScript:
 class BluetoothConfig:
     name = ""
     passKey = ""
+    btEnabled = False
     def __init__(self, **kwargs):
         pass
 
     def fromJson(self, btCfgJson):
+        self.btEnabled = btCfgJson['btEn'] == 1
         self.name = btCfgJson['name']
         self.passKey = btCfgJson['pass']
         
     def toJson(self):
         btCfgJson = {}
+        btCfgJson['btEn'] = 1 if self.btEnabled else 0
         btCfgJson['name'] = self.name
         btCfgJson['passKey'] = self.passKey
         return btCfgJson 
 
 class CellConfig:
+    cellEnabled = False
     apnHost = ""
     apnUser = ""
     apnPass = ""
@@ -518,12 +522,14 @@ class CellConfig:
         pass
     
     def fromJson(self, cellCfgJson):
+        self.cellEnabled = cellCfgJson['cellEn'] == 1
         self.apnHost = cellCfgJson['apnHost']
         self.apnUser = cellCfgJson['apnUser']
         self.apnPass = cellCfgJson['apnPass']
 
     def toJson(self):
         cellConfigJson = {}
+        cellConfigJson['cellEn'] = 1 if self.cellEnabled else 0
         cellConfigJson['apnHost'] = self.apnHost
         cellConfigJson['apnUser'] = self.apnUser
         cellConfigJson['apnPass'] = self.apnPass
@@ -531,40 +537,22 @@ class CellConfig:
     
 class TelemetryConfig:
     deviceId = ""
+    backgroundStreaming = 0
     
     def fromJson(self, telCfgJson):
         self.deviceId = telCfgJson['deviceId']
+        self.backgroundStreaming = True if telCfgJson['bgStream'] == 1 else False 
         
     def toJson(self):
         telCfgJson = {}
         telCfgJson['deviceId'] = self.deviceId
+        telCfgJson['bgStream'] = 1 if self.backgroundStreaming else 0
         return telCfgJson
-
-class ConnectionModes:
-    sdMode = 0
-    connectionModes = 0
-    backgroundStreaming = 0
-    def __init__(self, **kwargs):
-        pass
-
-    def fromJson(self, connModeJson):
-        self.sdMode = connModeJson['sdMode']
-        self.connectionModes = connModeJson['connMode']
-        self.backgroundStreaming = True if connModeJson['bgStream'] == 1 else False 
-    
-    def toJson(self):
-        connModeJson = {}
-        connModeJson['sdMode'] = self.sdMode
-        connModeJson['connMode'] = self.connectionModes
-        connModeJson['bgStream'] = 1 if self.backgroundStreaming else 0
-        return connModeJson
-
     
 class ConnectivityConfig:
     bluetoothConfig = BluetoothConfig()
     cellConfig = CellConfig()
     telemetryConfig = TelemetryConfig()
-    connectionModes = ConnectionModes()
     
     def fromJson(self, connCfgJson):
         btCfgJson = connCfgJson.get('btCfg')
@@ -579,16 +567,10 @@ class ConnectivityConfig:
         if telCfgJson:
             self.telemetryConfig.fromJson(telCfgJson)
             
-        connModesJson = connCfgJson.get('connModes')
-        if connModesJson:
-            self.connectionModes.fromJson(connModesJson)
-            
-            
     def toJson(self):
         connCfgJson = {'btCfg' : self.bluetoothConfig.toJson(),
                        'cellCfg' : self.cellConfig.toJson(),
-                       'telCfg' : self.telemetryConfig.toJson(),
-                       'connModes': self.connectionModes.toJson()}
+                       'telCfg' : self.telemetryConfig.toJson()}
         
         return {'connCfg':connCfgJson}
 

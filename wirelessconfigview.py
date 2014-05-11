@@ -25,7 +25,7 @@ class WirelessConfigView(BoxLayout):
         super(WirelessConfigView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
 
-        btEnable = kvFind(self, 'rcid', 'btenable') 
+        btEnable = kvFind(self, 'rcid', 'btEnable') 
         btEnable.bind(on_setting=self.on_bt_enable)
         btEnable.setControl(SettingsSwitch())
         
@@ -33,16 +33,16 @@ class WirelessConfigView(BoxLayout):
         btConfig.bind(on_setting=self.on_bt_configure)
         btConfig.setControl(SettingsButton(text='Configure', disabled=True))
         
-        telemetryEnable = kvFind(self, 'rcid', 'telemetryenable')
-        telemetryEnable.bind(on_setting=self.on_telemetry_enable)
-        telemetryEnable.setControl(SettingsSwitch())
+        cellEnable = kvFind(self, 'rcid', 'cellEnable')
+        cellEnable.bind(on_setting=self.on_cell_enable)
+        cellEnable.setControl(SettingsSwitch())
 
-        telemetryEnable = kvFind(self, 'rcid', 'cellprovider')
-        telemetryEnable.bind(on_setting=self.on_cell_provider)
+        cellProvider = kvFind(self, 'rcid', 'cellprovider')
+        cellProvider.bind(on_setting=self.on_cell_provider)
         apnSpinner = SettingsMappedSpinner()
         self.loadApnSettingsSpinner(apnSpinner)
         self.apnSpinner = apnSpinner
-        telemetryEnable.setControl(apnSpinner)
+        cellProvider.setControl(apnSpinner)
     
         self.apnHostField = kvFind(self, 'rcid', 'apnHost')
         self.apnUserField = kvFind(self, 'rcid', 'apnUser')
@@ -66,14 +66,16 @@ class WirelessConfigView(BoxLayout):
         self.setCustomApnFieldsDisabled(knownProvider)
         
     
-    def on_telemetry_enable(self, instance, value):
-        pass
+    def on_cell_enable(self, instance, value):
+        if self.connectivityConfig:
+            self.connectivityConfig.cellConfig.cellEnabled = value
     
     def on_bt_configure(self, instance, value):
         pass
-        
+    
     def on_bt_enable(self, instance, value):
-        pass
+        if self.connectivityConfig:
+            self.connectivityConfig.bluetoothConfig.btEnabled = value
     
     def on_apn_host(self, instance, value):
         if self.connectivityConfig:
@@ -128,10 +130,11 @@ class WirelessConfigView(BoxLayout):
     def on_config_updated(self, rcpCfg):
         connectivityConfig = rcpCfg.connectivityConfig
         
-        bluetoothEnabled = False
-        telemetryEnabled = False
-        kvFind(self, 'rcid', 'btenable').setValue(bluetoothEnabled)
-        kvFind(self, 'rcid', 'telemetryenable').setValue(telemetryEnabled)
+        bluetoothEnabled = connectivityConfig.bluetoothConfig.btEnabled
+        cellEnabled = connectivityConfig.cellConfig.cellEnabled
+
+        kvFind(self, 'rcid', 'btEnable').setValue(bluetoothEnabled)
+        kvFind(self, 'rcid', 'cellEnable').setValue(cellEnabled)
         
         self.apnHostField.text = connectivityConfig.cellConfig.apnHost
         self.apnUserField.text = connectivityConfig.cellConfig.apnUser
