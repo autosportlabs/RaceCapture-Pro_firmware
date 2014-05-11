@@ -1,4 +1,5 @@
 import kivy
+import logging
 import argparse
 kivy.require('1.8.0')
 from kivy.config import Config
@@ -96,15 +97,16 @@ class RaceCaptureApp(App):
         try:
             self.rcp.writeRcpCfg(rcpJson)
         except:
+            logging.exception('')
             self._serial_warning()
         
     def on_read_config(self, instance, *args):
-        #try:
+        try:
             config = self.rcp.getRcpCfg()
             self.rcpConfig.fromJson(config)
             self.dispatch('on_config_updated', self.rcpConfig)
-       # except:
-        #    self._serial_warning()
+        except:
+            self._serial_warning()
 
     def on_config_updated(self, rcpConfig):
         for view in self.configViews:
