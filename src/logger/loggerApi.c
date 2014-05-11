@@ -565,6 +565,7 @@ static void setCellConfig(const jsmntok_t *root){
 	if (cellCfgNode){
 		CellularConfig *cellCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
 		cellCfgNode++;
+		setUnsignedCharValueIfExists(cellCfgNode, "cellEn", &cellCfg->cellEnabled, NULL);
 		setStringValueIfExists(cellCfgNode, "apnHost", cellCfg->apnHost, CELL_APN_HOST_LENGTH);
 		setStringValueIfExists(cellCfgNode, "apnUser", cellCfg->apnUser, CELL_APN_USER_LENGTH);
 		setStringValueIfExists(cellCfgNode, "apnPass", cellCfg->apnPass, CELL_APN_PASS_LENGTH);
@@ -576,6 +577,7 @@ static void setBluetoothConfig(const jsmntok_t *root){
 	if (btCfgNode != NULL){
 		btCfgNode++;
 		BluetoothConfig *btCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
+		setUnsignedCharValueIfExists(btCfgNode, "btEn", &btCfg->btEnabled, NULL);
 		setStringValueIfExists(btCfgNode, "name", btCfg->deviceName, BT_DEVICE_NAME_LENGTH);
 		setStringValueIfExists(btCfgNode, "pass", btCfg->passcode, BT_PASSCODE_LENGTH);
 	}
@@ -591,22 +593,10 @@ static void setTelemetryConfig(const jsmntok_t *root){
 	}
 }
 
-static void setConnectivityModes(const jsmntok_t *root){
-	const jsmntok_t *connectivityModesNode = findNode(root, "connModes");
-	if (connectivityModesNode){
-		connectivityModesNode++;
-		ConnectivityConfig *connCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs);
-		setUnsignedCharValueIfExists(connectivityModesNode, "sdMode", &connCfg->sdLoggingMode, &filterSdLoggingMode);
-		setUnsignedCharValueIfExists(connectivityModesNode, "connMode", &connCfg->connectivityMode, &filterConnectivityMode);
-		setUnsignedCharValueIfExists(connectivityModesNode, "bgStream", &connCfg->backgroundStreaming, NULL);
-	}
-}
-
 int api_setConnectivityConfig(Serial *serial, const jsmntok_t *json){
 	setBluetoothConfig(json);
 	setCellConfig(json);
 	setTelemetryConfig(json);
-	setConnectivityModes(json);
 	configChanged();
 	return API_SUCCESS;
 }
@@ -617,26 +607,24 @@ int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json){
 	json_objStartString(serial, "connCfg");
 
 	json_objStartString(serial, "btCfg");
+	json_int(serial, "btEn", cfg->bluetoothConfig.btEnabled, 1);
 	json_string(serial, "name", cfg->bluetoothConfig.deviceName, 1);
 	json_string(serial, "pass", cfg->bluetoothConfig.passcode, 0);
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "cellCfg");
+	json_int(serial, "cellEn", cfg->cellularConfig.cellEnabled, 1);
 	json_string(serial, "apnHost", cfg->cellularConfig.apnHost, 1);
 	json_string(serial, "apnUser", cfg->cellularConfig.apnUser, 1);
 	json_string(serial, "apnPass", cfg->cellularConfig.apnPass, 0);
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "telCfg");
+	json_int(serial, "bgStream", cfg->telemetryConfig.backgroundStreaming, 1);
 	json_string(serial, "deviceId", cfg->telemetryConfig.telemetryDeviceId, 1);
 	json_string(serial, "host", cfg->telemetryConfig.telemetryServerHost, 0);
-	json_objEnd(serial, 1);
-
-	json_objStartString(serial,"connModes");
-	json_int(serial, "sdMode", cfg->sdLoggingMode, 1);
-	json_int(serial, "connMode", cfg->connectivityMode, 1);
-	json_int(serial, "bgStream", cfg->backgroundStreaming, 0);
 	json_objEnd(serial, 0);
+
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;

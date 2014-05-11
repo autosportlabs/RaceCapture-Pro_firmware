@@ -47,13 +47,12 @@ void calculateTimerScaling(unsigned int clockHz, TimerConfig *timerConfig){
 }
 
 int getConnectivitySampleRateLimit(){
-	switch(getWorkingLoggerConfig()->ConnectivityConfigs.connectivityMode){
-		case CONNECTIVITY_MODE_BLUETOOTH:
-			return FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE;
-		case CONNECTIVITY_MODE_CELL:
-		default:
-			return SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE;
+	ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
+	int sampleRateLimit = SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE;
+	if (connConfig->bluetoothConfig.btEnabled && ! connConfig->cellularConfig.cellEnabled){
+		sampleRateLimit = FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE;
 	}
+	return sampleRateLimit;
 }
 
 int encodeSampleRate(int sampleRate){

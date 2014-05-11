@@ -376,23 +376,32 @@ typedef struct _TrackConfig{
 	DEFAULT_TRACK \
 }
 
+#define BLUETOOTH_ENABLED				1
+#define BLUETOOTH_DISABLED				0
+
 #define BT_DEVICE_NAME_LENGTH 20
 #define BT_PASSCODE_LENGTH 4
 #define DEFAULT_BT_DEVICE_NAME "RaceCapturePro"
 #define DEFAULT_BT_PASSCODE "1010"
 #define DEFAULT_BT_BAUD 115200
+#define DEFAULT_BT_ENABLED BLUETOOTH_ENABLED
 
 typedef struct _BluetoothConfig{
+	unsigned char btEnabled;
 	char deviceName [BT_DEVICE_NAME_LENGTH + 1];
 	char passcode [BT_PASSCODE_LENGTH + 1];
 	unsigned int baudRate;
 } BluetoothConfig;
 
 #define DEFAULT_BT_CONFIG { \
+	DEFAULT_BT_ENABLED, \
 	DEFAULT_BT_DEVICE_NAME, \
 	DEFAULT_BT_PASSCODE, \
 	DEFAULT_BT_BAUD \
 }
+
+#define CELL_ENABLED				1
+#define CELL_DISABLED				0
 
 #define CELL_APN_HOST_LENGTH 30
 #define CELL_APN_USER_LENGTH 20
@@ -400,14 +409,17 @@ typedef struct _BluetoothConfig{
 #define DEFAULT_APN_HOST "epc.tmobile.com"
 #define DEFAULT_APN_USER ""
 #define DEFAULT_APN_PASS ""
+#define DEFAULT_CELL_ENABLED CELL_ENABLED
 
 typedef struct _CellularConfig{
+	unsigned char cellEnabled;
 	char apnHost [CELL_APN_HOST_LENGTH + 1];
 	char apnUser [CELL_APN_USER_LENGTH + 1];
 	char apnPass [CELL_APN_PASS_LENGTH + 1];
 } CellularConfig;
 
 #define DEFAULT_CELL_CONFIG { \
+	DEFAULT_CELL_ENABLED, \
 	DEFAULT_APN_HOST, \
 	DEFAULT_APN_USER, \
 	DEFAULT_APN_PASS \
@@ -419,25 +431,26 @@ typedef struct _CellularConfig{
 #define DEFAULT_DEVICE_ID ""
 #define DEFAULT_TELEMETRY_SERVER_HOST "54.245.229.2"
 
+#define BACKGROUND_STREAMING_ENABLED				1
+#define BACKGROUND_STREAMING_DISABLED				0
+
 typedef struct _TelemetryConfig {
+	unsigned char backgroundStreaming;
 	char telemetryDeviceId[DEVICE_ID_LENGTH + 1];
 	char telemetryServerHost[TELEMETRY_SERVER_HOST_LENGTH + 1];
 } TelemetryConfig;
 
 #define DEFAULT_TELEMETRY_CONFIG { \
+		BACKGROUND_STREAMING_ENABLED, \
 		DEFAULT_DEVICE_ID, \
 		DEFAULT_TELEMETRY_SERVER_HOST \
 }
 
 typedef struct _ConnectivityConfig {
-	unsigned char connectivityMode;
-	unsigned char sdLoggingMode;
-	unsigned char backgroundStreaming;
 	BluetoothConfig bluetoothConfig;
 	CellularConfig cellularConfig;
 	TelemetryConfig telemetryConfig;
 } ConnectivityConfig;
-
 
 #define CONNECTIVITY_MODE_CONSOLE 					0
 #define CONNECTIVITY_MODE_BLUETOOTH					1
@@ -446,16 +459,7 @@ typedef struct _ConnectivityConfig {
 #define SD_LOGGING_MODE_DISABLED					0
 #define SD_LOGGING_MODE_CSV							1
 
-#define BACKGROUND_STREAMING_ENABLED				1
-#define BACKGROUND_STREAMING_DISABLED				0
-
-#define DEFAULT_CONNECTIVITY_MODE 					CONNECTIVITY_MODE_BLUETOOTH
-#define DEFAULT_SD_LOGGING_MODE						SD_LOGGING_MODE_CSV
-#define DEFAULT_BACKGROUND_STREAMING				BACKGROUND_STREAMING_ENABLED
-
-#define DEFAULT_CONNECTIVITY_CONFIG { 	DEFAULT_CONNECTIVITY_MODE, \
-										DEFAULT_SD_LOGGING_MODE, \
-										DEFAULT_BACKGROUND_STREAMING, \
+#define DEFAULT_CONNECTIVITY_CONFIG { \
 										DEFAULT_BT_CONFIG, \
 										DEFAULT_CELL_CONFIG, \
 										DEFAULT_TELEMETRY_CONFIG \

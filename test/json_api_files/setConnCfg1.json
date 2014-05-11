@@ -1,10 +1,12 @@
 {
     "setConnCfg": {
         "btCfg": {
+        	"btEn": 1,
             "name": "myRacecar",
             "pass": "3311"
         },
         "cellCfg": {
+        	"cellEn" : 1,
             "apnHost": "foo.xyz",
             "apnUser": "blarg",
             "apnPass": "blorg"
@@ -12,11 +14,7 @@
         "telCfg": {
             "deviceId": "xyz123",
             "host": "a.b.c"
-        },
-        "connModes": {
-            "sdMode": 1,
-            "connMode": 1,
-            "bgStream": 1
+            "bgStream" : 1
         }
     }
 }

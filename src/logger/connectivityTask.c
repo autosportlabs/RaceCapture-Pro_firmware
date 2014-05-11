@@ -84,24 +84,24 @@ portBASE_TYPE queueTelemetryRecord(LoggerMessage *msg){
 void startConnectivityTask(int priority){
 	g_sampleQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( LoggerMessage *));
 	if (NULL == g_sampleQueue){
-		//TODO log error
+		pr_error("fatal: could not create samplequeue\r\n");
 		return;
 	}
+	//defaults
+	g_connParams.check_connection_status = &null_device_check_connection_status;
+	g_connParams.init_connection = &null_device_init_connection;
 
-	switch(getWorkingLoggerConfig()->ConnectivityConfigs.connectivityMode){
-		case CONNECTIVITY_MODE_CONSOLE:
-			g_connParams.check_connection_status = &null_device_check_connection_status;
-			g_connParams.init_connection = &null_device_init_connection;
-			break;
-		case CONNECTIVITY_MODE_BLUETOOTH:
-			g_connParams.check_connection_status = &bt_check_connection_status;
-			g_connParams.init_connection = &bt_init_connection;
-			break;
-		case CONNECTIVITY_MODE_CELL:
-			g_connParams.check_connection_status = &sim900_check_connection_status;
-			g_connParams.init_connection = &sim900_init_connection;
-			break;
+	ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
+	if (connConfig->bluetoothConfig.btEnabled){
+		g_connParams.check_connection_status = &bt_check_connection_status;
+		g_connParams.init_connection = &bt_init_connection;
 	}
+	//cell overrides bluetooth
+	if (connConfig->cellularConfig.cellEnabled){
+		g_connParams.check_connection_status = &sim900_check_connection_status;
+		g_connParams.init_connection = &sim900_init_connection;
+	}
+
 	xTaskCreate(connectivityTask, (signed portCHAR *) "connTask", TELEMETRY_STACK_SIZE, &g_connParams, priority, NULL );
 }
 
