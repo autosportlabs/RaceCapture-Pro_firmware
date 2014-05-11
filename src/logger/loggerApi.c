@@ -494,7 +494,8 @@ int api_getImuConfig(Serial *serial, const jsmntok_t *json){
 	}
 }
 
-
+#ifdef FALSE
+// DELETE ME after June 1, 2014 if not used.
 static void setConfigGeneric(Serial *serial, const jsmntok_t * json, void *cfg, setExtField_func setExtField){
 	int size = json->size;
 	if (json->type == JSMN_OBJECT && json->size % 2 == 0){
@@ -515,6 +516,7 @@ static void setConfigGeneric(Serial *serial, const jsmntok_t * json, void *cfg, 
 	}
 
 }
+#endif
 
 int api_getCellConfig(Serial *serial, const jsmntok_t *json){
 	CellularConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
