@@ -452,7 +452,26 @@ class PidConfig:
         pidJson['sr'] = self.sampleRate
         pidJson['pid'] = self.pidId
         return pidJson
+
+class CanConfig:
+    enabled = False
+    baudRate = 0
+
+    def __init__(self, **kwargs):
+        pass
+    
+    def fromJson(self, canCfgJson):
+        self.enabled = True if canCfgJson.get('en', self.enabled) == 1 else False 
+        self.baudRate = canCfgJson.get('baud', self.baudRate)
         
+    def toJson(self):
+        canCfgJson = {}
+        canCfgJson['en'] = 1 if self.enabled else 0
+        canCfgJson['baud'] = self.baudRate
+        return {'canCfg':canCfgJson}        
+        
+        
+            
 OBD2_CONFIG_MAX_PIDS = 20
 
 class Obd2Config:
@@ -461,9 +480,9 @@ class Obd2Config:
     def __init__(self, **kwargs):
         pass
     
-    def fromJson(self, json):
-        self.enabled = 1 if json.get('en', None) == 1 else 0 
-        pidsJson = json.get("pids", None)
+    def fromJson(self, obd2CfgJson):
+        self.enabled = obd2CfgJson.get('en', self.enabled) 
+        pidsJson = obd2CfgJson.get("pids", None)
         if pidsJson:
             del self.pids[:]
             for pidJson in pidsJson:
@@ -586,6 +605,7 @@ class RcpConfig:
         self.pwmConfig = PwmConfig()
         self.trackConfig = TrackConfig()
         self.connectivityConfig = ConnectivityConfig()
+        self.canConfig = CanConfig()
         self.obd2Config = Obd2Config()
         self.scriptConfig = LuaScript()
     
@@ -622,6 +642,10 @@ class RcpConfig:
         if connectivtyCfgJson:
             self.connectivityConfig.fromJson(connectivtyCfgJson)
             
+        canCfgJson = json.get('canCfg', None)
+        if canCfgJson:
+            self.canConfig.fromJson(canCfgJson)
+            
         obd2CfgJson = json.get('obd2Cfg', None)
         if obd2CfgJson:
             self.obd2Config.fromJson(obd2CfgJson)
@@ -639,11 +663,12 @@ class RcpConfig:
                              'timerCfg':self.timerConfig.toJson().get('timerCfg'),
                              'gpioCfg':self.gpioConfig.toJson().get('gpioCfg'),
                              'pwmCfg':self.pwmConfig.toJson().get('pwmCfg'),
+                             'canCfg':self.canConfig.toJson().get('canCfg'),
                              'obd2Cfg':self.obd2Config.toJson().get('obd2Cfg'),
                              'connCfg':self.connectivityConfig.toJson().get('connCfg'),
                              'trackCfg':self.trackConfig.toJson().get('trackCfg'),
                              'scriptCfg':self.scriptConfig.toJson().get('scriptCfg')
                              }
                    }
-        print('rcpJson ' + json.dumps(rcpJson))
+        print('\n\n\n\nRCP JSON ' + json.dumps(rcpJson) + '\n\n\n')
         return rcpJson

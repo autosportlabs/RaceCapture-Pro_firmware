@@ -88,6 +88,7 @@ class RcpSerial:
         gpioCfg = self.getGpioCfg(None)
         pwmCfg = self.getPwmCfg(None)
         trackCfg = self.getTrackCfg()
+        canCfg = self.getCanCfg()
         obd2Cfg = self.getObd2Cfg()
         scriptCfg = self.getScript()
         connCfg = self.getConnectivityCfg()
@@ -118,6 +119,9 @@ class RcpSerial:
         if connCfg:
             rcpCfg['connCfg'] = connCfg['connCfg']
 
+        if canCfg:
+            canCfg['canCfg'] = canCfg['canCfg']
+            
         if obd2Cfg:
             rcpCfg['obd2Cfg'] = obd2Cfg['obd2Cfg']
         
@@ -172,6 +176,10 @@ class RcpSerial:
             if connCfg:
                 self.sendCommand({'setConnCfg' : connCfg})
                 
+            canCfg = rcpCfg.get('canCfg', None)
+            if canCfg:
+                self.sendCommand({'setCanCfg': canCfg})
+                
             obd2Cfg = rcpCfg.get('obd2Cfg', None)
             if obd2Cfg:
                 self.sendCommand({'setObd2Cfg': obd2Cfg})
@@ -207,6 +215,9 @@ class RcpSerial:
     
     def getTrackCfg(self):
         return self.sendGet('getTrackCfg', None)
+    
+    def getCanCfg(self):
+        return self.sendGet('getCanCfg', None)
     
     def getObd2Cfg(self):
         return self.sendGet('getObd2Cfg', None)
