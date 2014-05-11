@@ -274,7 +274,7 @@ typedef struct _OBD2Config{
 
 typedef struct _CANConfig{
 	unsigned char enabled;
-	unsigned int CANbaudRate;
+	int baudRate;
 } CANConfig;
 
 #define DEFAULT_CAN_BAUD_RATE 500000
@@ -477,6 +477,8 @@ typedef struct _LoggerConfig {
 	TimerConfig TimerConfigs[CONFIG_TIMER_CHANNELS];
 	//IMU Configurations
 	ImuConfig ImuConfigs[CONFIG_IMU_CHANNELS];
+	//CAN Configuration
+	CANConfig CanConfig;
 	//OBD2 Config
 	OBD2Config OBD2Configs;
 	//GPS Configuration
@@ -499,6 +501,7 @@ typedef struct _LoggerConfig {
 	DEFAULT_GPIO_CONFIGS, \
 	DEFAULT_TIMER_CONFIGS, \
 	DEFAULT_IMU_CONFIGS, \
+	DEFAULT_CAN_CONFIG, \
 	DEFAULT_OBD2_CONFIG, \
 	DEFAULT_GPS_CONFIG, \
 	DEFAULT_LAP_CONFIG, \

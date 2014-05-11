@@ -855,6 +855,27 @@ int api_setGpsConfig(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS;
 }
 
+int api_getCanConfig(Serial *serial, const jsmntok_t *json){
+
+	CANConfig *canCfg = &getWorkingLoggerConfig()->CanConfig;
+	json_objStart(serial);
+	json_objStartString(serial, "canCfg");
+	json_int(serial, "en", canCfg->enabled, 1);
+	json_int(serial, "baud", canCfg->baudRate, 0);
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
+
+	return API_SUCCESS_NO_RETURN;
+}
+
+int api_setCanConfig(Serial *serial, const jsmntok_t *json){
+
+	CANConfig *canCfg = &getWorkingLoggerConfig()->CanConfig;
+	setUnsignedCharValueIfExists( json, "en", &canCfg->enabled, NULL);
+	setIntValueIfExists( json, "baud", &canCfg->baudRate);
+	return API_SUCCESS;
+}
+
 int api_getObd2Config(Serial *serial, const jsmntok_t *json){
 	json_objStart(serial);
 	json_objStartString(serial, "obd2Cfg");

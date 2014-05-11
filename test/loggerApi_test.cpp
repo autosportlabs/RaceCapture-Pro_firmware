@@ -881,6 +881,39 @@ void LoggerApiTest::testSetLogLevel(){
 	testSetLogLevelFile("setLogLevel1.json", API_SUCCESS);
 }
 
+void LoggerApiTest::testGetCanCfg(){
+	testGetCanCfgFile("getCanCfg1.json");
+}
+
+void LoggerApiTest::testGetCanCfgFile(string filename){
+	LoggerConfig *c = getWorkingLoggerConfig();
+	CANConfig *canConfig= &c->CanConfig;
+
+	canConfig->enabled = 1;
+	canConfig->baudRate = 1000000;
+	char * response = processApiGeneric(filename);
+
+	Object json;
+	stringToJson(response, json);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)json["canCfg"]["en"]);
+	CPPUNIT_ASSERT_EQUAL(1000000, (int)(Number)json["canCfg"]["baud"]);
+}
+
+void LoggerApiTest::testSetCanCfg(){
+	testSetCanCfgFile("setCanCfg1.json");
+}
+
+void LoggerApiTest::testSetCanCfgFile(string filename){
+	processApiGeneric(filename);
+	char *txBuffer = mock_getTxBuffer();
+
+	LoggerConfig *c = getWorkingLoggerConfig();
+	CANConfig *canCfg = &c->CanConfig;
+
+	CPPUNIT_ASSERT_EQUAL(1, (int)canCfg->enabled );
+	CPPUNIT_ASSERT_EQUAL(50000, (int)canCfg->baudRate);
+}
+
 void LoggerApiTest::testSetObd2Cfg(){
 	testSetObd2ConfigFile("setObd2Cfg1.json");
 }

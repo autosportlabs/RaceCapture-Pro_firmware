@@ -43,12 +43,14 @@
 {"calImu", api_calibrateImu}, \
 {"getLogfile", api_getLogfile}, \
 {"setLogfileLevel", api_setLogfileLevel}, \
-{"getTracks", api_getTracks}, \
-{"getChannels", api_getChannels}, \
+{"getCanCfg", api_getCanConfig}, \
+{"setCanCfg", api_setCanConfig}, \
 {"getObd2Cfg", api_getObd2Config}, \
 {"setObd2Cfg", api_setObd2Config}, \
 {"getScriptCfg", api_getScript}, \
 {"setScriptCfg", api_setScript}, \
+{"getTracks", api_getTracks}, \
+{"getChannels", api_getChannels}, \
 {"getVer", api_getVersion}
 
 
@@ -83,6 +85,8 @@ int api_getTracks(Serial *serial, const jsmntok_t *json);
 int api_getChannels(Serial *serial, const jsmntok_t *json);
 int api_getObd2Config(Serial *serial, const jsmntok_t *json);
 int api_setObd2Config(Serial *serial, const jsmntok_t *json);
+int api_getCanConfig(Serial *serial, const jsmntok_t *json);
+int api_setCanConfig(Serial *serial, const jsmntok_t *json);
 int api_getScript(Serial *serial, const jsmntok_t *json);
 int api_setScript(Serial *serial, const jsmntok_t *json);
 
