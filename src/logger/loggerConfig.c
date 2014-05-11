@@ -47,13 +47,12 @@ void calculateTimerScaling(unsigned int clockHz, TimerConfig *timerConfig){
 }
 
 int getConnectivitySampleRateLimit(){
-	switch(getWorkingLoggerConfig()->ConnectivityConfigs.connectivityMode){
-		case CONNECTIVITY_MODE_BLUETOOTH:
-			return FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE;
-		case CONNECTIVITY_MODE_CELL:
-		default:
-			return SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE;
+	ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
+	int sampleRateLimit = SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE;
+	if (connConfig->bluetoothConfig.btEnabled && ! connConfig->cellularConfig.cellEnabled){
+		sampleRateLimit = FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE;
 	}
+	return sampleRateLimit;
 }
 
 int encodeSampleRate(int sampleRate){
@@ -102,7 +101,7 @@ int decodeSampleRate(int sampleRateCode){
 	}
 }
 
-char filterAnalogScalingMode(char mode){
+unsigned char filterAnalogScalingMode(unsigned char mode){
 	switch(mode){
 		case SCALING_MODE_LINEAR:
 			return SCALING_MODE_LINEAR;
@@ -114,7 +113,7 @@ char filterAnalogScalingMode(char mode){
 	}
 }
 
-char filterSdLoggingMode(char mode){
+unsigned char filterSdLoggingMode(unsigned char mode){
 	switch (mode){
 		case SD_LOGGING_MODE_CSV:
 			return SD_LOGGING_MODE_CSV;
@@ -124,7 +123,7 @@ char filterSdLoggingMode(char mode){
 	}
 }
 
-char filterConnectivityMode(char mode){
+unsigned char filterConnectivityMode(unsigned char mode){
 	switch(mode){
 		case CONNECTIVITY_MODE_CELL:
 			return CONNECTIVITY_MODE_CELL;
@@ -302,35 +301,6 @@ ImuConfig * getImuConfigChannel(int channel){
 		c = &(getWorkingLoggerConfig()->ImuConfigs[channel]);
 	}
 	return c;		
-}
-
-void setTextField(char *dest, const char *source, unsigned int maxlen){
-	const char *from = source;
-	if (*from == '"') from++;
-	int len = strlen(from);
-	if (*(from + len -1) == '"') len--;
-	if (len > maxlen) len = maxlen;
-	for (size_t i = 0; i < len; i++){
-		char c = from[i];
-		if (! ( (c >= '0' && c <= '9') ||
-				(c >= 'A' && c <= 'Z') ||
-				(c >= 'a' && c <= 'z') ||
-				c == '_' ||
-				c == '-' ||
-				c == '@' ||
-				c == '%' ||
-				c == '+' ||
-				c == ':' ||
-				c == '.' ) ){
-			c = '_';
-		}
-		dest[i] = c;
-	}
-	dest[len] = '\0';
-}
-
-void setLabelGeneric(char *dest, const char *source){
-	setTextField(dest, source, DEFAULT_LABEL_LENGTH);
 }
 
 unsigned int getHighestSampleRate(LoggerConfig *config){

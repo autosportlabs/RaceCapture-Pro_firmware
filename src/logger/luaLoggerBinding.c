@@ -152,13 +152,13 @@ static int getLuaSampleRate(lua_State *L, unsigned short sampleRate){
 
 int Lua_SetBackgroundStreaming(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		getWorkingLoggerConfig()->ConnectivityConfigs.backgroundStreaming = (lua_tointeger(L,1) == 1);
+		getWorkingLoggerConfig()->ConnectivityConfigs.telemetryConfig.backgroundStreaming = (lua_tointeger(L,1) == 1);
 	}
 	return 0;
 }
 
 int Lua_GetBackgroundStreaming(lua_State *L){
-	lua_pushinteger(L, getWorkingLoggerConfig()->ConnectivityConfigs.backgroundStreaming == 1);
+	lua_pushinteger(L, getWorkingLoggerConfig()->ConnectivityConfigs.telemetryConfig.backgroundStreaming == 1);
 	return 1;
 }
 

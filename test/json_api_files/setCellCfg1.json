@@ -1,7 +1,0 @@
-{
-    "setCellCfg": {
-		"apnHost":"foo.xyz",
-		"apnUser":"blarg",
-		"apnPass":"blorg"
-    }
-}

@@ -9,7 +9,7 @@
 #include "loggerConfig.h"
 #include "mod_string.h"
 
-#define LINE_BUFFER_SIZE 2048
+#define LINE_BUFFER_SIZE 2049
 int main(int argc, char* argv[])
 {
 

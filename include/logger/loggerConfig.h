@@ -153,12 +153,12 @@ typedef struct _ImuConfig{
 	float filterAlpha;
 } ImuConfig;
 
-#define MIN_IMU_RAW						0
-#define MAX_IMU_RAW						4097
+#define MIN_IMU_RAW							0
+#define MAX_IMU_RAW							4097
 
-#define MODE_IMU_DISABLED  				0
+#define MODE_IMU_DISABLED  					0
 #define MODE_IMU_NORMAL  					1
-#define MODE_IMU_INVERTED  				2
+#define MODE_IMU_INVERTED  					2
 
 #define IMU_CHANNEL_X						0
 #define IMU_CHANNEL_Y						1
@@ -234,6 +234,7 @@ typedef struct _PidConfig{
 #define OBD2_CHANNELS 20
 
 typedef struct _OBD2Config{
+	unsigned char enabled;
 	unsigned char obd2SampleRate;
 	unsigned short enabledPids;
 	PidConfig pids[OBD2_CHANNELS];
@@ -244,6 +245,7 @@ typedef struct _OBD2Config{
 
 #define DEFAULT_OBD2_CONFIG \
 { \
+	CONFIG_FEATURE_NOT_INSTALLED, \
 	DEFAULT_OBD2_SAMPLE_RATE, \
 	DEFAULT_ENABLED_PIDS, \
 	{ \
@@ -272,7 +274,7 @@ typedef struct _OBD2Config{
 
 typedef struct _CANConfig{
 	unsigned char enabled;
-	unsigned int CANbaudRate;
+	int baudRate;
 } CANConfig;
 
 #define DEFAULT_CAN_BAUD_RATE 500000
@@ -374,23 +376,32 @@ typedef struct _TrackConfig{
 	DEFAULT_TRACK \
 }
 
+#define BLUETOOTH_ENABLED				1
+#define BLUETOOTH_DISABLED				0
+
 #define BT_DEVICE_NAME_LENGTH 20
 #define BT_PASSCODE_LENGTH 4
 #define DEFAULT_BT_DEVICE_NAME "RaceCapturePro"
 #define DEFAULT_BT_PASSCODE "1010"
 #define DEFAULT_BT_BAUD 115200
+#define DEFAULT_BT_ENABLED BLUETOOTH_ENABLED
 
 typedef struct _BluetoothConfig{
+	unsigned char btEnabled;
 	char deviceName [BT_DEVICE_NAME_LENGTH + 1];
 	char passcode [BT_PASSCODE_LENGTH + 1];
 	unsigned int baudRate;
 } BluetoothConfig;
 
 #define DEFAULT_BT_CONFIG { \
+	DEFAULT_BT_ENABLED, \
 	DEFAULT_BT_DEVICE_NAME, \
 	DEFAULT_BT_PASSCODE, \
 	DEFAULT_BT_BAUD \
 }
+
+#define CELL_ENABLED				1
+#define CELL_DISABLED				0
 
 #define CELL_APN_HOST_LENGTH 30
 #define CELL_APN_USER_LENGTH 20
@@ -398,14 +409,17 @@ typedef struct _BluetoothConfig{
 #define DEFAULT_APN_HOST "epc.tmobile.com"
 #define DEFAULT_APN_USER ""
 #define DEFAULT_APN_PASS ""
+#define DEFAULT_CELL_ENABLED CELL_ENABLED
 
 typedef struct _CellularConfig{
+	unsigned char cellEnabled;
 	char apnHost [CELL_APN_HOST_LENGTH + 1];
 	char apnUser [CELL_APN_USER_LENGTH + 1];
 	char apnPass [CELL_APN_PASS_LENGTH + 1];
 } CellularConfig;
 
 #define DEFAULT_CELL_CONFIG { \
+	DEFAULT_CELL_ENABLED, \
 	DEFAULT_APN_HOST, \
 	DEFAULT_APN_USER, \
 	DEFAULT_APN_PASS \
@@ -417,25 +431,26 @@ typedef struct _CellularConfig{
 #define DEFAULT_DEVICE_ID ""
 #define DEFAULT_TELEMETRY_SERVER_HOST "54.245.229.2"
 
+#define BACKGROUND_STREAMING_ENABLED				1
+#define BACKGROUND_STREAMING_DISABLED				0
+
 typedef struct _TelemetryConfig {
+	unsigned char backgroundStreaming;
 	char telemetryDeviceId[DEVICE_ID_LENGTH + 1];
 	char telemetryServerHost[TELEMETRY_SERVER_HOST_LENGTH + 1];
 } TelemetryConfig;
 
 #define DEFAULT_TELEMETRY_CONFIG { \
+		BACKGROUND_STREAMING_ENABLED, \
 		DEFAULT_DEVICE_ID, \
 		DEFAULT_TELEMETRY_SERVER_HOST \
 }
 
 typedef struct _ConnectivityConfig {
-	char connectivityMode;
-	char sdLoggingMode;
-	char backgroundStreaming;
 	BluetoothConfig bluetoothConfig;
 	CellularConfig cellularConfig;
 	TelemetryConfig telemetryConfig;
 } ConnectivityConfig;
-
 
 #define CONNECTIVITY_MODE_CONSOLE 					0
 #define CONNECTIVITY_MODE_BLUETOOTH					1
@@ -444,16 +459,7 @@ typedef struct _ConnectivityConfig {
 #define SD_LOGGING_MODE_DISABLED					0
 #define SD_LOGGING_MODE_CSV							1
 
-#define BACKGROUND_STREAMING_ENABLED				1
-#define BACKGROUND_STREAMING_DISABLED				0
-
-#define DEFAULT_CONNECTIVITY_MODE 					CONNECTIVITY_MODE_BLUETOOTH
-#define DEFAULT_SD_LOGGING_MODE						SD_LOGGING_MODE_CSV
-#define DEFAULT_BACKGROUND_STREAMING				BACKGROUND_STREAMING_ENABLED
-
-#define DEFAULT_CONNECTIVITY_CONFIG { 	DEFAULT_CONNECTIVITY_MODE, \
-										DEFAULT_SD_LOGGING_MODE, \
-										DEFAULT_BACKGROUND_STREAMING, \
+#define DEFAULT_CONNECTIVITY_CONFIG { \
 										DEFAULT_BT_CONFIG, \
 										DEFAULT_CELL_CONFIG, \
 										DEFAULT_TELEMETRY_CONFIG \
@@ -471,6 +477,8 @@ typedef struct _LoggerConfig {
 	TimerConfig TimerConfigs[CONFIG_TIMER_CHANNELS];
 	//IMU Configurations
 	ImuConfig ImuConfigs[CONFIG_IMU_CHANNELS];
+	//CAN Configuration
+	CANConfig CanConfig;
 	//OBD2 Config
 	OBD2Config OBD2Configs;
 	//GPS Configuration
@@ -493,6 +501,7 @@ typedef struct _LoggerConfig {
 	DEFAULT_GPIO_CONFIGS, \
 	DEFAULT_TIMER_CONFIGS, \
 	DEFAULT_IMU_CONFIGS, \
+	DEFAULT_CAN_CONFIG, \
 	DEFAULT_OBD2_CONFIG, \
 	DEFAULT_GPS_CONFIG, \
 	DEFAULT_LAP_CONFIG, \
@@ -513,9 +522,9 @@ int getConnectivitySampleRateLimit();
 int encodeSampleRate(int sampleRate);
 int decodeSampleRate(int sampleRateCode);
 
-char filterAnalogScalingMode(char mode);
-char filterSdLoggingMode(char mode);
-char filterConnectivityMode(char mode);
+unsigned char filterAnalogScalingMode(unsigned char mode);
+unsigned char filterSdLoggingMode(unsigned char mode);
+unsigned char filterConnectivityMode(unsigned char mode);
 char filterGpioMode(int config);
 char filterPwmOutputMode(int config);
 char filterPwmLoggingMode(int config);
@@ -534,10 +543,6 @@ ADCConfig * getADCConfigChannel(int channel);
 PWMConfig * getPwmConfigChannel(int channel);
 GPIOConfig * getGPIOConfigChannel(int channel);
 ImuConfig * getImuConfigChannel(int channel);
-
-void setLabelGeneric(char *dest, const char *source);
-void setTextField(char *dest, const char *source, unsigned int maxlen);
-
 
 unsigned int getHighestSampleRate(LoggerConfig *config);
 size_t get_enabled_channel_count(LoggerConfig *loggerConfig);
