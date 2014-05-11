@@ -550,13 +550,13 @@ class ConnectionModes:
     def fromJson(self, connModeJson):
         self.sdMode = connModeJson['sdMode']
         self.connectionModes = connModeJson['connMode']
-        self.backgroundStreaming = connModeJson['bgStream']
+        self.backgroundStreaming = True if connModeJson['bgStream'] == 1 else False 
     
     def toJson(self):
         connModeJson = {}
         connModeJson['sdMode'] = self.sdMode
         connModeJson['connMode'] = self.connectionModes
-        connModeJson['bgStream'] = self.backgroundStreaming
+        connModeJson['bgStream'] = 1 if self.backgroundStreaming else 0
         return connModeJson
 
     

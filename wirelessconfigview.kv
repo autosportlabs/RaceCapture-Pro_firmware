@@ -5,12 +5,12 @@
 	padding: (dp(10),dp(10))
 	spacing: dp(20)
 	orientation: 'vertical'
-	HSeparatorMinor:
+	HSeparator:
 		text: 'Bluetooth Configuration'
 		halign: 'left'
 		
 	SettingsView:
-		size_hint_y: 0.18
+		size_hint_y: 0.20
 		rcid: 'btenable'
 		label_text: 'Enable Bluetooth'
 		help_text: 'If the Bluetooth module add-on is connected to the expansion port, enable it here'
@@ -21,7 +21,7 @@
 		label_text: 'Configure Bluetooth device'
 		help_text: 'Configure Bluetooth device username and password.\nNote: ensure you are first connected via USB and Bluetooth is disconnected'
 
-	HSeparatorMinor:
+	HSeparator:
 		text: 'Cellular Module Configuration'
 		halign: 'left'
 		
@@ -38,7 +38,7 @@
 		help_text: 'Select the cellular provider used with the Real-Time module, or specify custom APN settings below'
 	
 	BoxLayout:
-		size_hint_y: 0.2
+		size_hint_y: 0.27
 		orientation: 'horizontal'
 		Label:
 			size_hint_x: 0.25
@@ -54,17 +54,20 @@
 			ValueField:
 				rcid: 'apnHost'
 				disabled: True
+				on_text: root.on_apn_host(*args)
 			FieldLabel:
 				halign: 'right'
 				text: 'APN User Name'
 			ValueField:
 				rcid: 'apnUser'
 				disabled: True
+				on_text: root.on_apn_user(*args)
 			FieldLabel:
 				halign: 'right'
 				text: 'APN Password'
 			ValueField:
 				rcid: 'apnPass'
 				disabled: True
+				on_text: root.on_apn_pass(*args)
 		Label:
 			size_hint_x: 0.15
