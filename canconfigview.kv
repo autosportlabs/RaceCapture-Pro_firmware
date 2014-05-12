@@ -1,0 +1,27 @@
+#:kivy 1.8.0
+
+
+<CANConfigView>:
+	padding: (dp(10),dp(10))
+	spacing: dp(20)
+	orientation: 'vertical'
+	HSeparator:
+		text: 'CAN bus Configuration'
+		halign: 'left'
+	SettingsView:
+		size_hint_y: 0.2
+		rcid: 'canEnabled'
+		label_text: 'CAN bus enabled'
+		help_text: 'Enable the CAN interface'
+		
+	HLineSeparator:
+		size_hint_y: 0.05
+		
+	SettingsView:
+		size_hint_y: 0.2
+		rcid: 'canBaud'
+		label_text: 'CAN Baud Rate'
+		help_text: 'Specify the baud rate for the CAN interface'
+	
+	Label:
+		size_hint_y: 0.5

@@ -2,7 +2,6 @@ import kivy
 kivy.require('1.8.0')
 from kivy.app import Builder
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
 import json
 
 from settingsview import SettingsView, SettingsTextField, SettingsSwitch

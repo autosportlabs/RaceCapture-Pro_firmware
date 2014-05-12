@@ -120,7 +120,7 @@ class RcpSerial:
             rcpCfg['connCfg'] = connCfg['connCfg']
 
         if canCfg:
-            canCfg['canCfg'] = canCfg['canCfg']
+            rcpCfg['canCfg'] = canCfg['canCfg']
             
         if obd2Cfg:
             rcpCfg['obd2Cfg'] = obd2Cfg['obd2Cfg']

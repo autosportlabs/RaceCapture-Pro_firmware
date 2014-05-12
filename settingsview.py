@@ -55,10 +55,10 @@ class SettingsMappedSpinner(MappedSpinner):
         pass
 
     def setValue(self, value):
-        self.active = value
+        self.setFromValue(value)
     
     def on_text(self, instance, value):
-        self.dispatch('on_control', value)
+        self.dispatch('on_control', instance.getValueFromKey(value))
 
 class SettingsTextField(ValueField):
     def __init__(self, **kwargs):

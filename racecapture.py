@@ -31,7 +31,7 @@ from gpiochannelsview import *
 from pwmchannelsview import *
 from trackconfigview import *
 from obd2channelsview import *
-from canchannelsview import *
+from canconfigview import *
 from rcpconfig import *
 from channels import *
 from scriptview import LuaScriptingView
@@ -106,6 +106,7 @@ class RaceCaptureApp(App):
             self.rcpConfig.fromJson(config)
             self.dispatch('on_config_updated', self.rcpConfig)
         except:
+            logging.exception('')
             self._serial_warning()
 
     def on_config_updated(self, rcpConfig):
@@ -149,7 +150,7 @@ class RaceCaptureApp(App):
             attach_node('Accelerometer / Gyro', n, ImuChannelsView())
             attach_node('Pulse / Analog Outputs', n, AnalogPulseOutputChannelsView(channelCount=4, channels=self.channels))
             n = create_tree('CAN bus')
-#            attach_node('CAN Channels', n, CANChannelsView())
+            attach_node('CAN Settings', n, CANConfigView())
             attach_node('OBDII Channels', n, OBD2ChannelsView(channels=self.channels))
             n = create_tree('Connections')
             attach_node('Wireless', n, WirelessConfigView())
