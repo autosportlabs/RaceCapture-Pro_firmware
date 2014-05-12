@@ -1,8 +1,9 @@
 # -*- mode: python -*-
+from kivy.tools.packaging.pyinstaller_hooks import install_hooks
+install_hooks(globals())
 a = Analysis(['racecapture.py'],
-             pathex=['C:\\Users\\chrisrae\\Documents\\GitHub\\RaceCapture_App'],
+             pathex=['.'],
              hiddenimports=[],
-             hookspath=None,
              runtime_hooks=None)
 pyz = PYZ(a.pure)
 exe = EXE(pyz,
@@ -14,6 +15,7 @@ exe = EXE(pyz,
           upx=True,
           console=True )
 coll = COLLECT(exe,
+			   Tree('.'),
                a.binaries,
                a.zipfiles,
                a.datas,

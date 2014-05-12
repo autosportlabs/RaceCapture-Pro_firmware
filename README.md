@@ -41,7 +41,7 @@ to run:
 ## running (Win7)
 
     kivy racecapture.py
-		
+
 ## dev installation (Win7)
 
 1. Do the "installation" instructions above
@@ -50,6 +50,20 @@ to run:
 4. `set path`
 5. Right click My Computer...System Properties...Advanced...Environment Variables...System Variables and add the extra folders that were added to the path to your system path
 6. Install [PyDev for Eclipse] (http://pydev.org/manual_101_install.html) and use auto-config
-7. (Bit hazy on this part as I tried a few things and was a bit drunk) Make a new project in Eclipse, using the folder with Racecapture in it
-8. Right-click the project...Properties...pyDev-PYTHONPATH...External Libraries - in there, add my_kivy_install_folder\kivy
+7. Make a new project in Eclipse, select "PyDev project" and specify the folder with Racecapture in it
+8. Right-click the project...Properties...pyDev-PYTHONPATH...External Libraries - Add source folder, add my_kivy_install_folder\kivy
 9. Run the project
+
+## Building installers
+
+1. Install [PYInstaller] (http://www.pyinstaller.org) `pip install pyinstaller`
+2. Install [PyWin32] (http://sourceforge.net/projects/pywin32/files/) `pip install pywin32`
+3. Try `pyinstaller --version` - should return "2.1" or similar
+
+## Creating installer for current version
+
+1. Go into RaceCapture_App folder
+2. `kivy`
+3. `pyinstaller -y racecapture.spec` (may need to run several times - first few times get weird missing file reports)
+4. `dist\racecapture\racecapture`
+5. Observe "ImportError: No module named decimal" message. Sob sadly. According to [this] (http://mayankjohri.wordpress.com/2008/05/08/faq-resolving-the-importerror-no-module-named-decimal-error/) the problem can be solved by importing Decimal in your own code (it may be because Kivy garden is doing some too-clever import stuff). However, it kicks the can down the road again to a new error ("AttributeError: 'module' object has no attribute 'PythonLexer'") so I haven't done it.
