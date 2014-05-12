@@ -197,7 +197,7 @@ static void writeSampleMeta(Serial *serial, ChannelSample *channelSamples, size_
 	int sampleCount = 0;
 	json_arrayStart(serial, "meta");
 	ChannelSample *sample = channelSamples;
-	for (int i = 0; i < channelCount; i++){
+	for (size_t i = 0; i < channelCount; i++){
 		if (SAMPLE_DISABLED == sample->sampleRate) continue;
 		if (sampleCount++ > 0) serial->put_c(',');
 		serial->put_c('{');

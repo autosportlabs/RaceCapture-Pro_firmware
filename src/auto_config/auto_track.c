@@ -27,7 +27,7 @@ const Track * auto_configure_track(Track *defaultCfg, GeoPoint gp) {
    float best_track_dist = MAX_DIST_FROM_SF;
    const Track *foundTrack = NULL;
 
-   for (int i = 0; i < tracks->count; ++i) {
+   for (unsigned i = 0; i < tracks->count; ++i) {
       const Track *track = &(tracks->tracks[i]);
 
       // XXX: inaccurate but fast.  Good enough for now.

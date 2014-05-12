@@ -75,7 +75,7 @@ static int write_headers(FIL *f, ChannelSample *channelSamples, size_t sampleCou
 	int rc = WRITE_SUCCESS;
 	int headerCount = 0;
 	ChannelSample *sample = channelSamples;
-	for (int i = 0; i < sampleCount;i++){
+	for (size_t i = 0; i < sampleCount;i++){
 		if (SAMPLE_DISABLED != sample->sampleRate){
 			if (headerCount++ > 0) rc = FILE_WRITE(f, ",");
 			const Channel *field = get_channel(sample->channelId);
@@ -96,7 +96,7 @@ static int write_channel_samples(FIL *f, ChannelSample * channelSamples, size_t 
 	int rc = WRITE_SUCCESS;
 	if (NULL != channelSamples){
 		int fieldCount = 0;
-		for (int i = 0; i < channelCount; i++){
+		for (size_t i = 0; i < channelCount; i++){
 			ChannelSample *sample = (channelSamples + i);
 
 			if (fieldCount++ > 0) rc = FILE_WRITE(f, ",");

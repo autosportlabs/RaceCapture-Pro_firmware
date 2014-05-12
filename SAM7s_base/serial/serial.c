@@ -265,7 +265,7 @@ void put_crlf(Serial *serial){
 }
 
 void read_line(Serial *serial, char *buffer, size_t bufferSize){
-	int bufIndex = 0;
+	size_t bufIndex = 0;
     char c;
 	while(bufIndex < bufferSize - 1){
 		c = serial->get_c();
@@ -282,7 +282,7 @@ void read_line(Serial *serial, char *buffer, size_t bufferSize){
 }
 
 void interactive_read_line(Serial *serial, char * buffer, size_t bufferSize){
-	int bufIndex = 0;
+	size_t bufIndex = 0;
     char c;
 	while(bufIndex < bufferSize - 1){
 		c = serial->get_c();

@@ -109,7 +109,7 @@ void updateFullDateTime(DateTime fixDateTime) {
  * @param offset How far in to start reading the string.
  * @param len The number of characters to read.
  */
-int atoiOffsetLenSafe(const char *str, int offset, int len) {
+int atoiOffsetLenSafe(const char *str, size_t offset, size_t len) {
    char buff[4] = { 0 };
 
    // Bounds check.  Don't want any bleeding hearts in here...
