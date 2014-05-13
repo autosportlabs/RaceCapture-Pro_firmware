@@ -257,7 +257,7 @@ static void MCP2515_read_reg_values(unsigned char reg, unsigned char * values, u
 	lock_spi();
 	CAN_SPI_send(MCP2515_CMD_READ, 0);
 	CAN_SPI_send(reg, 0);
-	for(int i = 0; i < length; i++){
+	for(unsigned i = 0; i < length; i++){
 	  values[i] = CAN_SPI_send(0, (i == length - 1));
 	}
 	unlock_spi();
@@ -267,7 +267,7 @@ static void MCP2515_write_reg_values(unsigned char reg, unsigned char *values, u
 	lock_spi();
 	CAN_SPI_send(MCP2515_CMD_WRITE, 0);
 	CAN_SPI_send(reg, 0);
-	for(int i = 0; i < length; i++){
+	for(unsigned i = 0; i < length; i++){
 	  CAN_SPI_send(values[i], (i == length - 1));
 	}
 	unlock_spi();

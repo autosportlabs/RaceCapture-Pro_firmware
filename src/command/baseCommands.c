@@ -20,7 +20,6 @@ extern unsigned portCHAR  _heap_address[];
 
 
 void ShowStats(Serial *serial, unsigned int argc, char **argv){
-
 	serial->put_s("== Memory Info ==\r\n");
 	unsigned long heap = (unsigned long)_heap_address;
 	unsigned long lastPointer = getLastPointer();
@@ -55,7 +54,6 @@ void ShowStats(Serial *serial, unsigned int argc, char **argv){
 }
 
 void ShowTaskInfo(Serial *serial, unsigned int argc, char **argv){
-
 	serial->put_s("Task Info");
 	put_crlf(serial);
 	serial->put_s("Status\tPri\tStack\tTask#\tName");

@@ -70,7 +70,7 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet, int delay)
 
 	if (!quiet) serial->put_s("Writing file..");
 	portTickType startTicks = xTaskGetTickCount();
-	for (size_t i = 1; i <= lines; i++){
+	for (int i = 1; i <= lines; i++){
 		delayMs(delay);
 		lock_spi();
 		res = f_puts("The quick brown fox jumped over the lazy dog\n",fatFile);

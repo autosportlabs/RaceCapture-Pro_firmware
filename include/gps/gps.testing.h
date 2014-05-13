@@ -24,7 +24,7 @@ void updateFullDateTime(DateTime fixDateTime);
  * @param offset How far in to start reading the string.
  * @param len The number of characters to read.
  */
-int atoiOffsetLenSafe(const char *str, int offset, int len);
+int atoiOffsetLenSafe(const char *str, size_t offset, size_t len);
 
 /**
  * Updates the milliseconds since Unix Epoch

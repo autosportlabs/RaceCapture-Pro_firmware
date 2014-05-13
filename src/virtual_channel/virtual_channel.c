@@ -43,9 +43,8 @@ void set_virtual_channel_value(size_t id, float value){
 }
 
 float get_virtual_channel_value(int id){
-	float value = 0;
-	if (id < g_virtualChannelCount) value = g_virtualChannels[id].currentValue;
-	return value;
+	if (((size_t) id) >= g_virtualChannelCount) return 0.0;
+	return g_virtualChannels[id].currentValue;
 }
 
 size_t get_virtual_channel_count(){

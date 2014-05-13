@@ -75,7 +75,7 @@ int flashScriptPage(unsigned int page, const char *data){
 	char * temp = (char *)portMalloc(MEMORY_PAGE_SIZE);
 
 	if (temp){
-		int size = strlen(data);
+		size_t size = strlen(data);
 		if (size > MEMORY_PAGE_SIZE) size = MEMORY_PAGE_SIZE;
 		memset(temp,0,MEMORY_PAGE_SIZE);
 		memcpy(temp,data,size);
