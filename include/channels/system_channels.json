@@ -1,0 +1,538 @@
+{"system_channels":[
+	{
+	"name":"Unknown",
+	"units":"",
+	"sys":true,
+	"types":[],
+	"precision":0,
+	"min":0,
+	"max":1024
+},
+	{
+	"name":"Analog1",
+	"units":"",
+	"sys":true,
+	"types":["analog"],
+	"precision":2,
+	"min":0,
+	"max":5
+},
+	{
+	"name":"Analog2",
+	"units":"",
+	"sys":true,
+	"types":["analog"],
+	"precision":2,
+	"min":0,
+	"max":5
+},
+	{
+	"name":"Analog3",
+	"units":"",
+	"sys":true,
+	"types":["analog"],
+	"precision":2,
+	"min":0,
+	"max":5
+},
+	{
+	"name":"Analog4",
+	"units":"",
+	"sys":true,
+	"types":["analog"],
+	"precision":2,
+	"min":0,
+	"max":5
+},
+	{
+	"name":"Analog5",
+	"units":"",
+	"sys":true,
+	"types":["analog"],
+	"precision":2,
+	"min":0,
+	"max":5
+},
+	{
+	"name":"Analog6",
+	"units":"",
+	"sys":true,
+	"types":["analog"],
+	"precision":2,
+	"min":0,
+	"max":5
+},
+	{
+	"name":"Analog7",
+	"units":"",
+	"sys":true,
+	"types":["analog"],
+	"precision":2,
+	"min":0,
+	"max":5
+},
+	{
+	"name":"Analog8",
+	"units":"",
+	"sys":true,
+	"types":["analog"],
+	"precision":2,
+	"min":0,
+	"max":5
+},
+	{
+	"name":"Freq1",
+	"units":"",
+	"sys":true,
+	"types":["freq"],
+	"precision":0,
+	"min":0,
+	"max":1000
+},
+	{
+	"name":"Freq2",
+	"units":"",
+	"sys":true,
+	"types":["freq"],
+	"precision":0,
+	"min":0,
+	"max":1000
+},
+	{
+	"name":"Freq3",
+	"units":"",
+	"sys":true,
+	"types":["freq"],
+	"precision":0,
+	"min":0,
+	"max":1000
+},
+	{
+	"name":"GPIO1",
+	"units":"",
+	"sys":true,
+	"types":["digital"],
+	"precision":0,
+	"min":0,
+	"max":1
+},
+	{
+	"name":"GPIO2",
+	"units":"",
+	"sys":true,
+	"types":["digital"],
+	"precision":0,
+	"min":0,
+	"max":1
+},
+	{
+	"name":"GPIO3",
+	"units":"",
+	"sys":true,
+	"types":["digital"],
+	"precision":0,
+	"min":0,
+	"max":1
+},
+	{
+	"name":"PWM1",
+	"units":"",
+	"sys":true,
+	"types":["pwm"],
+	"precision":0,
+	"min":0,
+	"max":100
+},
+	{
+	"name":"PWM2",
+	"units":"",
+	"sys":true,
+	"types":["pwm"],
+	"precision":0,
+	"min":0,
+	"max":100
+},
+	{
+	"name":"PWM3",
+	"units":"",
+	"sys":true,
+	"types":["pwm"],
+	"precision":0,
+	"min":0,
+	"max":100
+},
+	{
+	"name":"PWM4",
+	"units":"",
+	"sys":true,
+	"types":["pwm"],
+	"precision":0,
+	"min":0,
+	"max":100
+},
+	{
+	"name":"Coolant",
+	"units":"F",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":0,
+	"max":300
+},
+	{
+	"name":"EngineTemp",
+	"units":"F",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":0,
+	"max":300
+},
+	{
+	"name":"FuelLevel",
+	"units":"F",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":0,
+	"max":100
+},
+	{
+	"name":"OilPress",
+	"units":"PSI",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":0,
+	"max":150
+},
+	{
+	"name":"OilTemp",
+	"units":"F",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":0,
+	"max":300
+},
+	{
+	"name":"AFR",
+	"units":"ratio",
+	"sys":true,
+	"types":["analog"],
+	"precision":2,
+	"min":0,
+	"max":20
+},
+	{
+	"name":"IAT",
+	"units":"F",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":0,
+	"max":300	
+},
+	{
+	"name":"MAP",
+	"units":"KPa",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":0,
+	"max":255	
+},
+	{
+	"name":"Boost",
+	"units":"PSI",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":0,
+	"max":50	
+},
+	{
+	"name":"EGT",
+	"units":"F",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":0,
+	"max":2000	
+},
+	{
+	"name":"TPS",
+	"units":"%",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":0,
+	"max":100	
+},
+	{
+	"name":"Battery",
+	"units":"Volts",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":0,
+	"max":20	
+},
+	{
+	"name":"FuelPress",
+	"units":"PSI",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":0,
+	"max":150	
+},
+	{
+	"name":"InjectorPW",
+	"units":"ms",
+	"sys":true,
+	"types":["analog"],
+	"precision":2,
+	"min":0,
+	"max":100
+},
+	{
+	"name":"RPM",
+	"units":"",
+	"sys":true,
+	"types":["freq"],
+	"precision":0,
+	"min":0,
+	"max":10000	
+},
+	{
+	"name":"Wheel",
+	"units":"RPM",
+	"sys":true,
+	"types":["freq"],
+	"precision":0,
+	"min":0,
+	"max":5000	
+},
+	{
+	"name":"Gear",
+	"units":"",
+	"sys":true,
+	"types":["digital"],
+	"precision":0,
+	"min":0,
+	"max":10	
+},
+	{
+	"name":"Steering",
+	"units":"%",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":-100,
+	"max":100
+},
+	{
+	"name":"Brake",
+	"units":"PSI",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":0,
+	"max":2000	
+},
+	{
+	"name":"LF_Height",
+	"units":"mm",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":0,
+	"max":255	
+},
+	{
+	"name":"RF_Height",
+	"units":"mm",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":0,
+	"max":255	
+},
+	{
+	"name":"LR_Height",
+	"units":"mm",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":0,
+	"max":255	
+},
+	{
+	"name":"RR_Height",
+	"units":"mm",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":0,
+	"max":255	
+},
+	{
+	"name":"AccelX",
+	"units":"G",
+	"sys":true,
+	"types":["gforce"],
+	"precision":2,
+	"min":-3,
+	"max":3	
+},
+	{
+	"name":"AccelY",
+	"units":"G",
+	"sys":true,
+	"types":["gforce"],
+	"precision":2,
+	"min":-3,
+	"max":3	
+},
+	{
+	"name":"AccelZ",
+	"units":"G",
+	"sys":true,
+	"types":["gforce"],
+	"precision":2,
+	"min":-3,
+	"max":3	
+},
+	{
+	"name":"Yaw",
+	"units":"G",
+	"sys":true,
+	"types":["gyro"],
+	"precision":0,
+	"min":-300,
+	"max":300
+},
+	{
+	"name":"Pitch",
+	"units":"G",
+	"sys":true,
+	"types":["gyro"],
+	"precision":0,
+	"min":-300,
+	"max":300
+},
+	{
+	"name":"Roll",
+	"units":"G",
+	"sys":true,
+	"types":["gyro"],
+	"precision":0,
+	"min":-300,
+	"max":300
+},
+	{
+	"name":"GPSSats",
+	"units":"",
+	"sys":true,
+	"types":["digital"],
+	"precision":0,
+	"min":0,
+	"max":100
+},
+	{
+	"name":"Time",
+	"units":"",
+	"sys":true,
+	"types":["time"],
+	"precision":3,
+	"min":0,
+	"max":0
+},
+	{
+	"name":"Latitude",
+	"units":"Degrees",
+	"sys":true,
+	"types":["position"],
+	"precision":6,
+	"min":-180,
+	"max":180
+},
+	{
+	"name":"Longitude",
+	"units":"Degrees",
+	"sys":true,
+	"types":["position"],
+	"precision":6,
+	"min":-180,
+	"max":180
+},
+	{
+	"name":"Speed",
+	"units":"MPH",
+	"sys":true,
+	"types":["analog"],
+	"precision":0,
+	"min":0,
+	"max":150
+},
+	{
+	"name":"Sector",
+	"units":"",
+	"sys":true,
+	"types":["digital"],
+	"precision":0,
+	"min":0,
+	"max":100
+},
+	{
+	"name":"SectorTime",
+	"units":"",
+	"sys":true,
+	"types":["time"],
+	"precision":3,
+	"min":0,
+	"max":0
+},
+	{
+	"name":"LapTime",
+	"units":"",
+	"sys":true,
+	"types":["time"],
+	"precision":3,
+	"min":0,
+	"max":0
+},
+	{
+	"name":"PredTime",
+	"units":"",
+	"sys":true,
+	"types":["time"],
+	"precision":3,
+	"min":0,
+	"max":0
+},
+	{
+	"name":"LapCount",
+	"units":"",
+	"sys":true,
+	"types":["time"],
+	"precision":0,
+	"min":0,
+	"max":1000
+},
+	{
+	"name":"Distance",
+	"units":"",
+	"sys":true,
+	"types":["distance"],
+	"precision":3,
+	"min":0,
+	"max":0
+}
+
+
+
+
+
+]}
