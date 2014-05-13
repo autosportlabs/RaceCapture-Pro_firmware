@@ -49,7 +49,8 @@
 {"setObd2Cfg", api_setObd2Config}, \
 {"getScriptCfg", api_getScript}, \
 {"setScriptCfg", api_setScript}, \
-{"getTracks", api_getTracks}, \
+{"getTrackDb", api_getTrackDb}, \
+{"setTrackDb", api_setTrackDb}, \
 {"getChannels", api_getChannels}, \
 {"getVer", api_getVersion}
 
@@ -81,7 +82,8 @@ int api_calibrateImu(Serial *serial, const jsmntok_t *json);
 int api_flashConfig(Serial *serial, const jsmntok_t *json);
 int api_setLogfileLevel(Serial *serial, const jsmntok_t *json);
 int api_getLogfile(Serial *serial, const jsmntok_t *json);
-int api_getTracks(Serial *serial, const jsmntok_t *json);
+int api_getTrackDb(Serial *serial, const jsmntok_t *json);
+int api_setTrackDb(Serial *serial, const jsmntok_t *json);
 int api_getChannels(Serial *serial, const jsmntok_t *json);
 int api_getObd2Config(Serial *serial, const jsmntok_t *json);
 int api_setObd2Config(Serial *serial, const jsmntok_t *json);

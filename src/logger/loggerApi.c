@@ -1094,7 +1094,12 @@ int api_flashConfig(Serial *serial, const jsmntok_t *json){
 	return (rc == 0 ? 1 : rc); //success means on internal command; other errors passed through
 }
 
-int api_getTracks(Serial *serial, const jsmntok_t *json){
+int api_setTrackDb(Serial *serial, const jsmntok_t *json){
+
+	return API_SUCCESS;
+}
+
+int api_getTrackDb(Serial *serial, const jsmntok_t *json){
 	const Tracks * tracks = get_tracks();
 
 	json_objStart(serial);
