@@ -93,7 +93,7 @@ class AnalogChannel:
         self.channelId = json.get('id', self.channelId)
         self.sampleRate = json.get('sr', self.sampleRate)
         self.scalingMode = json.get('scalMod', self.scalingMode)
-        self.linearScaling = json.get('scalMod', self.linearScaling)
+        self.linearScaling = json.get('linScal', self.linearScaling)
         self.alpha = json.get('alpha', self.alpha)
         mapJson = json.get('map', None)
         if mapJson:
