@@ -96,7 +96,7 @@ CHANNEL_COUNT, \
 {"Boost", "PSI", 0} , \
 {"EGT", "F", 0} , \
 {"TPS", "%", 0} , \
-{"Battery", "Volts", 0} , \
+{"Battery", "Volts", 2} , \
 {"FuelPress", "PSI", 0} , \
 {"InjectorPW", "ms", 2} , \
 {"RPM", "", 0} , \
