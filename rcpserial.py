@@ -192,6 +192,9 @@ class RcpSerial:
             if scriptCfg:
                 self.writeScript(scriptCfg)
                 
+            self.flashConfig()
+        
+                
     def getAnalogCfg(self, channelId):
         return self.sendGet('getAnalogCfg', channelId)    
 
@@ -248,6 +251,8 @@ class RcpSerial:
                 break
         return res
         
+    def flashConfig(self):
+        return self.sendCommand({'flashCfg':None})
     def getVersion(self):
         rsp = self.sendCommand("getVer", None)
             
