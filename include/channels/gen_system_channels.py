@@ -2,7 +2,7 @@ import json
 
 channels = json.load(open('system_channels.json'))
 
-sys_channels = channels['system_channels']
+sys_channels = channels['channels']
 
 channel_len = len(sys_channels)
 
@@ -28,7 +28,11 @@ for i in range(channel_len):
     name = channel['name']
     units = channel['units']
     precision = channel['precision']
-    print '{"' + name + '", "' + units + '", ' + str(precision) + '}',
+    flags = 0
+    min = channel['min']
+    max = channel['max']
+    
+    print '{"' + name + '", "' + units + '", ' + str(precision) + ', ' + str(flags) + ', ' + str(min) + ', ' + str(max) + '}',
     print ', \\' if i < channel_len - 1 else ' \\'
 print '} \\'
 print '}'

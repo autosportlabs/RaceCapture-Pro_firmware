@@ -2,7 +2,7 @@
 #define CHANNELMETA_H_
 #include "stddef.h"
 
-#define CHANNEL_COUNT				100
+#define CHANNEL_COUNT				90
 #define DEFAULT_LABEL_LENGTH		11
 #define DEFAULT_UNITS_LENGTH		11
 
@@ -13,6 +13,8 @@ typedef struct _ChannelName{
 	char units[DEFAULT_UNITS_LENGTH];
 	unsigned char precision;
 	unsigned char flags;
+	float min;
+	float max;
 } Channel;
 
 typedef struct _Channels{
@@ -25,7 +27,7 @@ const Channel * get_channel(size_t id);
 const Channels * get_channels();
 size_t filter_channel_id(size_t id);
 size_t find_channel_id(const char * name);
-int is_system_channel(Channel *channel);
+int is_system_channel(const Channel *channel);
 int flash_channels(const Channels *source, size_t rawSize);
 int add_channel(const Channel *channel, int mode, size_t index);
 #define DEFAULT_GPS_POSITION_PRECISION 		6

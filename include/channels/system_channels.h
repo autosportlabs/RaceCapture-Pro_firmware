@@ -66,65 +66,65 @@ CHANNEL_Distance = 58
 #define DEFAULT_CHANNEL_META { \
 CHANNEL_COUNT, \
 { \
-{"Unknown", "", 0} , \
-{"Analog1", "", 2} , \
-{"Analog2", "", 2} , \
-{"Analog3", "", 2} , \
-{"Analog4", "", 2} , \
-{"Analog5", "", 2} , \
-{"Analog6", "", 2} , \
-{"Analog7", "", 2} , \
-{"Analog8", "", 2} , \
-{"Freq1", "", 0} , \
-{"Freq2", "", 0} , \
-{"Freq3", "", 0} , \
-{"GPIO1", "", 0} , \
-{"GPIO2", "", 0} , \
-{"GPIO3", "", 0} , \
-{"PWM1", "", 0} , \
-{"PWM2", "", 0} , \
-{"PWM3", "", 0} , \
-{"PWM4", "", 0} , \
-{"Coolant", "F", 0} , \
-{"EngineTemp", "F", 0} , \
-{"FuelLevel", "F", 0} , \
-{"OilPress", "PSI", 0} , \
-{"OilTemp", "F", 0} , \
-{"AFR", "ratio", 2} , \
-{"IAT", "F", 0} , \
-{"MAP", "KPa", 0} , \
-{"Boost", "PSI", 0} , \
-{"EGT", "F", 0} , \
-{"TPS", "%", 0} , \
-{"Battery", "Volts", 2} , \
-{"FuelPress", "PSI", 0} , \
-{"InjectorPW", "ms", 2} , \
-{"RPM", "", 0} , \
-{"Wheel", "RPM", 0} , \
-{"Gear", "", 0} , \
-{"Steering", "%", 0} , \
-{"Brake", "PSI", 0} , \
-{"LF_Height", "mm", 0} , \
-{"RF_Height", "mm", 0} , \
-{"LR_Height", "mm", 0} , \
-{"RR_Height", "mm", 0} , \
-{"AccelX", "G", 2} , \
-{"AccelY", "G", 2} , \
-{"AccelZ", "G", 2} , \
-{"Yaw", "G", 0} , \
-{"Pitch", "G", 0} , \
-{"Roll", "G", 0} , \
-{"GPSSats", "", 0} , \
-{"Time", "", 3} , \
-{"Latitude", "Degrees", 6} , \
-{"Longitude", "Degrees", 6} , \
-{"Speed", "MPH", 0} , \
-{"Sector", "", 0} , \
-{"SectorTime", "", 3} , \
-{"LapTime", "", 3} , \
-{"PredTime", "", 3} , \
-{"LapCount", "", 0} , \
-{"Distance", "", 3}  \
+{"Unknown", "", 0, 0, 0, 1024} , \
+{"Analog1", "", 2, 0, 0, 5} , \
+{"Analog2", "", 2, 0, 0, 5} , \
+{"Analog3", "", 2, 0, 0, 5} , \
+{"Analog4", "", 2, 0, 0, 5} , \
+{"Analog5", "", 2, 0, 0, 5} , \
+{"Analog6", "", 2, 0, 0, 5} , \
+{"Analog7", "", 2, 0, 0, 5} , \
+{"Analog8", "", 2, 0, 0, 5} , \
+{"Freq1", "", 0, 0, 0, 1000} , \
+{"Freq2", "", 0, 0, 0, 1000} , \
+{"Freq3", "", 0, 0, 0, 1000} , \
+{"GPIO1", "", 0, 0, 0, 1} , \
+{"GPIO2", "", 0, 0, 0, 1} , \
+{"GPIO3", "", 0, 0, 0, 1} , \
+{"PWM1", "", 0, 0, 0, 100} , \
+{"PWM2", "", 0, 0, 0, 100} , \
+{"PWM3", "", 0, 0, 0, 100} , \
+{"PWM4", "", 0, 0, 0, 100} , \
+{"Coolant", "F", 0, 0, 0, 300} , \
+{"EngineTemp", "F", 0, 0, 0, 300} , \
+{"FuelLevel", "F", 0, 0, 0, 100} , \
+{"OilPress", "PSI", 0, 0, 0, 150} , \
+{"OilTemp", "F", 0, 0, 0, 300} , \
+{"AFR", "ratio", 2, 0, 0, 20} , \
+{"IAT", "F", 0, 0, 0, 300} , \
+{"MAP", "KPa", 0, 0, 0, 255} , \
+{"Boost", "PSI", 0, 0, 0, 50} , \
+{"EGT", "F", 0, 0, 0, 2000} , \
+{"TPS", "%", 0, 0, 0, 100} , \
+{"Battery", "Volts", 2, 0, 0, 20} , \
+{"FuelPress", "PSI", 0, 0, 0, 150} , \
+{"InjectorPW", "ms", 2, 0, 0, 100} , \
+{"RPM", "", 0, 0, 0, 10000} , \
+{"Wheel", "RPM", 0, 0, 0, 5000} , \
+{"Gear", "", 0, 0, 0, 10} , \
+{"Steering", "%", 0, 0, -100, 100} , \
+{"Brake", "PSI", 0, 0, 0, 2000} , \
+{"LF_Height", "mm", 0, 0, 0, 255} , \
+{"RF_Height", "mm", 0, 0, 0, 255} , \
+{"LR_Height", "mm", 0, 0, 0, 255} , \
+{"RR_Height", "mm", 0, 0, 0, 255} , \
+{"AccelX", "G", 2, 0, -3, 3} , \
+{"AccelY", "G", 2, 0, -3, 3} , \
+{"AccelZ", "G", 2, 0, -3, 3} , \
+{"Yaw", "G", 0, 0, -300, 300} , \
+{"Pitch", "G", 0, 0, -300, 300} , \
+{"Roll", "G", 0, 0, -300, 300} , \
+{"GPSSats", "", 0, 0, 0, 100} , \
+{"Time", "", 3, 0, 0, 0} , \
+{"Latitude", "Degrees", 6, 0, -180, 180} , \
+{"Longitude", "Degrees", 6, 0, -180, 180} , \
+{"Speed", "MPH", 0, 0, 0, 150} , \
+{"Sector", "", 0, 0, 0, 100} , \
+{"SectorTime", "", 3, 0, 0, 0} , \
+{"LapTime", "", 3, 0, 0, 0} , \
+{"PredTime", "", 3, 0, 0, 0} , \
+{"LapCount", "", 0, 0, 0, 1000} , \
+{"Distance", "", 3, 0, 0, 0}  \
 } \
 }
 #endif
