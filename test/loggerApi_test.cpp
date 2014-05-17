@@ -868,6 +868,25 @@ void LoggerApiTest::testGetTrackCfg(){
 	testGetTrackConfigFile("getTrackCfg1.json");
 }
 
+void LoggerApiTest::testGetChannels(){
+	testGetChannelsFile("getChannels1.json");
+}
+
+void LoggerApiTest::testGetChannelsFile(string filename){
+
+	char * response = processApiGeneric(filename);
+
+	Object json;
+	printf("%s", response);
+	stringToJson(response, json);
+
+	string jsonCompare = readFile("../include/channels/system_channels.json");
+
+
+
+
+}
+
 void LoggerApiTest::testSetLogLevelFile(string filename, int expectedResponse){
 	processApiGeneric(filename);
 

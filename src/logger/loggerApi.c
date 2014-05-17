@@ -1025,15 +1025,17 @@ int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
 static int setGeoPointIfExists(const jsmntok_t *root, const char * name, GeoPoint *geoPoint){
 	int success = 0;
 	const jsmntok_t *geoPointNode  = findNode(root, name);
-	geoPointNode++;
-	if (geoPointNode && geoPointNode->type == JSMN_ARRAY && geoPointNode->size == 2){
-		geoPointNode += 1;
-		jsmn_trimData(geoPointNode);
-		geoPoint->latitude = modp_atof(geoPointNode->data);
-		geoPointNode += 1;
-		jsmn_trimData(geoPointNode);
-		geoPoint->longitude = modp_atof(geoPointNode->data);
-		success = 1;
+	if (geoPointNode){
+		geoPointNode++;
+		if (geoPointNode && geoPointNode->type == JSMN_ARRAY && geoPointNode->size == 2){
+			geoPointNode += 1;
+			jsmn_trimData(geoPointNode);
+			geoPoint->latitude = modp_atof(geoPointNode->data);
+			geoPointNode += 1;
+			jsmn_trimData(geoPointNode);
+			geoPoint->longitude = modp_atof(geoPointNode->data);
+			success = 1;
+		}
 	}
 	return success;
 }
@@ -1119,23 +1121,30 @@ int api_getTrackDb(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS_NO_RETURN;
 }
 
+int api_addChannel(Serial *serial, const jsmntok_t *json){
+
+	return API_SUCCESS;
+}
+
 int api_getChannels(Serial *serial, const jsmntok_t *json){
 
 	const Channels *channelsInfo = get_channels();
+	size_t channels_count = channelsInfo->count;
 
 	json_objStart(serial);
-	json_objStartString(serial, "channels");
-	size_t channels_count = channelsInfo->count;
-	json_int(serial, "size", channels_count, 1);
+	json_arrayStart(serial, "channels");
 	for (size_t channel_index = 0; channel_index < channels_count; channel_index++){
+		json_objStart(serial);
 		const Channel *channel = channelsInfo->channels + channel_index;
-		json_objStartInt(serial, channel_index);
 		json_string(serial, "nm", channel->label, 1);
 		json_string(serial, "ut", channel->units, 1);
-		json_int(serial, "prec", channel->precision, 0);
+		json_int(serial, "sys", is_system_channel(channel),1);
+		json_int(serial, "prec", channel->precision, 1);
+		json_float(serial, "min", channel->min, channel->precision, 1);
+		json_float(serial, "max", channel->max, channel->precision, 0);
 		json_objEnd(serial, channel_index < channels_count - 1);
 	}
-	json_objEnd(serial, 0);
+	json_arrayEnd(serial, 0);
 	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
 }
