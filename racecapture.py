@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import kivy
 import logging
 import argparse
@@ -66,6 +68,7 @@ class RaceCaptureApp(App):
 
         #RaceCapture serial I/O 
         self.rcp = RcpSerial()
+
         
         #Central configuration object
         self.rcpConfig  = RcpConfig()
@@ -83,6 +86,9 @@ class RaceCaptureApp(App):
         parser.add_argument('-p','--port', help='Port', required=False)
         args = vars(parser.parse_args())
         self.rcp.setPort(args['port'])
+
+        if not self.rcp.port:
+            self.rcp.autoDetect()
 
     def _serial_warning(self):
         popup = Popup(title='Warning',

@@ -2,6 +2,7 @@ import serial
 import io
 import json
 from rcpconfig import *
+from serial.tools import list_ports
 
 class RcpSerial:
     def __init__(self, **kwargs):
@@ -253,9 +254,28 @@ class RcpSerial:
         
     def flashConfig(self):
         return self.sendCommand({'flashCfg':None})
+
     def getVersion(self):
-        rsp = self.sendCommand("getVer", None)
-            
+        rsp = self.sendCommand({"getVer":None})
+        return rsp
+
+    def autoDetect(self):
+        ports = [x[0] for x in list_ports.comports()]
+
+        print "Searching for RaceCapture on all serial ports"
+        ver = None
+        for p in ports:
+            try:
+                print "Trying", p
+                self.port = p
+                ver = self.getVersion()
+                break
+            except:
+                self.port = None
+                self.close(self.ser)
+
+        if not ver == None:
+            print "Found racecapture on port:", self.port
 
 
 
