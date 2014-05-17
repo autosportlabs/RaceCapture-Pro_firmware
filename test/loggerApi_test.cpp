@@ -877,12 +877,22 @@ void LoggerApiTest::testGetChannelsFile(string filename){
 	char * response = processApiGeneric(filename);
 
 	Object json;
-	printf("%s", response);
 	stringToJson(response, json);
 
-	string jsonCompare = readFile("../include/channels/system_channels.json");
+	Object jsonCompare;
+	string compare= readFile("../include/channels/system_channels.json");
+	stringToJson(compare, jsonCompare);
 
+	Array channelsCompare = jsonCompare["channels"];
+	Array channelsResponse = json["channels"];
 
+	CPPUNIT_ASSERT_EQUAL(channelsCompare.Size(), channelsResponse.Size());
+	for (int i = 0; i < channelsCompare.Size(); i++){
+		Object channelCompare = channelsCompare[i];
+		Object channel = channelsResponse[i];
+		CPPUNIT_ASSERT_EQUAL((string)(String)channelCompare["nm"], (string)(String)channel["nm"]);
+
+	}
 
 
 }

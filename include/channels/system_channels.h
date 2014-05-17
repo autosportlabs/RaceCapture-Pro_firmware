@@ -64,7 +64,7 @@ CHANNEL_Distance = 58
 } ChannelIds;
 
 #define DEFAULT_CHANNEL_META { \
-CHANNEL_COUNT, \
+59, \
 { \
 {"Unknown", "", 0, 0, 0, 1024} , \
 {"Analog1", "", 2, 0, 0, 5} , \

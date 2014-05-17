@@ -1,649 +1,649 @@
 {
     "channels": [
         {
-            "name": "Unknown",
-            "units": "",
-            "sys": true,
+            "nm": "Unknown",
+            "ut": "",
+            "sys": 1,
             "types": [],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 1024
         },
         {
-            "name": "Analog1",
-            "units": "",
-            "sys": true,
+            "nm": "Analog1",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 2,
+            "prec": 2,
             "min": 0,
             "max": 5
         },
         {
-            "name": "Analog2",
-            "units": "",
-            "sys": true,
+            "nm": "Analog2",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 2,
+            "prec": 2,
             "min": 0,
             "max": 5
         },
         {
-            "name": "Analog3",
-            "units": "",
-            "sys": true,
+            "nm": "Analog3",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 2,
+            "prec": 2,
             "min": 0,
             "max": 5
         },
         {
-            "name": "Analog4",
-            "units": "",
-            "sys": true,
+            "nm": "Analog4",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 2,
+            "prec": 2,
             "min": 0,
             "max": 5
         },
         {
-            "name": "Analog5",
-            "units": "",
-            "sys": true,
+            "nm": "Analog5",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 2,
+            "prec": 2,
             "min": 0,
             "max": 5
         },
         {
-            "name": "Analog6",
-            "units": "",
-            "sys": true,
+            "nm": "Analog6",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 2,
+            "prec": 2,
             "min": 0,
             "max": 5
         },
         {
-            "name": "Analog7",
-            "units": "",
-            "sys": true,
+            "nm": "Analog7",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 2,
+            "prec": 2,
             "min": 0,
             "max": 5
         },
         {
-            "name": "Analog8",
-            "units": "",
-            "sys": true,
+            "nm": "Analog8",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 2,
+            "prec": 2,
             "min": 0,
             "max": 5
         },
         {
-            "name": "Freq1",
-            "units": "",
-            "sys": true,
+            "nm": "Freq1",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "freq"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 1000
         },
         {
-            "name": "Freq2",
-            "units": "",
-            "sys": true,
+            "nm": "Freq2",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "freq"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 1000
         },
         {
-            "name": "Freq3",
-            "units": "",
-            "sys": true,
+            "nm": "Freq3",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "freq"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 1000
         },
         {
-            "name": "GPIO1",
-            "units": "",
-            "sys": true,
+            "nm": "GPIO1",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "digital"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 1
         },
         {
-            "name": "GPIO2",
-            "units": "",
-            "sys": true,
+            "nm": "GPIO2",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "digital"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 1
         },
         {
-            "name": "GPIO3",
-            "units": "",
-            "sys": true,
+            "nm": "GPIO3",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "digital"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 1
         },
         {
-            "name": "PWM1",
-            "units": "",
-            "sys": true,
+            "nm": "PWM1",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "pwm"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 100
         },
         {
-            "name": "PWM2",
-            "units": "",
-            "sys": true,
+            "nm": "PWM2",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "pwm"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 100
         },
         {
-            "name": "PWM3",
-            "units": "",
-            "sys": true,
+            "nm": "PWM3",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "pwm"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 100
         },
         {
-            "name": "PWM4",
-            "units": "",
-            "sys": true,
+            "nm": "PWM4",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "pwm"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 100
         },
         {
-            "name": "Coolant",
-            "units": "F",
-            "sys": true,
+            "nm": "Coolant",
+            "ut": "F",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 300
         },
         {
-            "name": "EngineTemp",
-            "units": "F",
-            "sys": true,
+            "nm": "EngineTemp",
+            "ut": "F",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 300
         },
         {
-            "name": "FuelLevel",
-            "units": "F",
-            "sys": true,
+            "nm": "FuelLevel",
+            "ut": "F",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 100
         },
         {
-            "name": "OilPress",
-            "units": "PSI",
-            "sys": true,
+            "nm": "OilPress",
+            "ut": "PSI",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 150
         },
         {
-            "name": "OilTemp",
-            "units": "F",
-            "sys": true,
+            "nm": "OilTemp",
+            "ut": "F",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 300
         },
         {
-            "name": "AFR",
-            "units": "ratio",
-            "sys": true,
+            "nm": "AFR",
+            "ut": "ratio",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 2,
+            "prec": 2,
             "min": 0,
             "max": 20
         },
         {
-            "name": "IAT",
-            "units": "F",
-            "sys": true,
+            "nm": "IAT",
+            "ut": "F",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 300
         },
         {
-            "name": "MAP",
-            "units": "KPa",
-            "sys": true,
+            "nm": "MAP",
+            "ut": "KPa",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 255
         },
         {
-            "name": "Boost",
-            "units": "PSI",
-            "sys": true,
+            "nm": "Boost",
+            "ut": "PSI",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 50
         },
         {
-            "name": "EGT",
-            "units": "F",
-            "sys": true,
+            "nm": "EGT",
+            "ut": "F",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 2000
         },
         {
-            "name": "TPS",
-            "units": "%",
-            "sys": true,
+            "nm": "TPS",
+            "ut": "%",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 100
         },
         {
-            "name": "Battery",
-            "units": "Volts",
-            "sys": true,
+            "nm": "Battery",
+            "ut": "Volts",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 2,
+            "prec": 2,
             "min": 0,
             "max": 20
         },
         {
-            "name": "FuelPress",
-            "units": "PSI",
-            "sys": true,
+            "nm": "FuelPress",
+            "ut": "PSI",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 150
         },
         {
-            "name": "InjectorPW",
-            "units": "ms",
-            "sys": true,
+            "nm": "InjectorPW",
+            "ut": "ms",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 2,
+            "prec": 2,
             "min": 0,
             "max": 100
         },
         {
-            "name": "RPM",
-            "units": "",
-            "sys": true,
+            "nm": "RPM",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "freq"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 10000
         },
         {
-            "name": "Wheel",
-            "units": "RPM",
-            "sys": true,
+            "nm": "Wheel",
+            "ut": "RPM",
+            "sys": 1,
             "types": [
                 "freq"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 5000
         },
         {
-            "name": "Gear",
-            "units": "",
-            "sys": true,
+            "nm": "Gear",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "digital"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 10
         },
         {
-            "name": "Steering",
-            "units": "%",
-            "sys": true,
+            "nm": "Steering",
+            "ut": "%",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": -100,
             "max": 100
         },
         {
-            "name": "Brake",
-            "units": "PSI",
-            "sys": true,
+            "nm": "Brake",
+            "ut": "PSI",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 2000
         },
         {
-            "name": "LF_Height",
-            "units": "mm",
-            "sys": true,
+            "nm": "LF_Height",
+            "ut": "mm",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 255
         },
         {
-            "name": "RF_Height",
-            "units": "mm",
-            "sys": true,
+            "nm": "RF_Height",
+            "ut": "mm",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 255
         },
         {
-            "name": "LR_Height",
-            "units": "mm",
-            "sys": true,
+            "nm": "LR_Height",
+            "ut": "mm",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 255
         },
         {
-            "name": "RR_Height",
-            "units": "mm",
-            "sys": true,
+            "nm": "RR_Height",
+            "ut": "mm",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 255
         },
         {
-            "name": "AccelX",
-            "units": "G",
-            "sys": true,
+            "nm": "AccelX",
+            "ut": "G",
+            "sys": 1,
             "types": [
                 "gforce"
             ],
-            "precision": 2,
+            "prec": 2,
             "min": -3,
             "max": 3
         },
         {
-            "name": "AccelY",
-            "units": "G",
-            "sys": true,
+            "nm": "AccelY",
+            "ut": "G",
+            "sys": 1,
             "types": [
                 "gforce"
             ],
-            "precision": 2,
+            "prec": 2,
             "min": -3,
             "max": 3
         },
         {
-            "name": "AccelZ",
-            "units": "G",
-            "sys": true,
+            "nm": "AccelZ",
+            "ut": "G",
+            "sys": 1,
             "types": [
                 "gforce"
             ],
-            "precision": 2,
+            "prec": 2,
             "min": -3,
             "max": 3
         },
         {
-            "name": "Yaw",
-            "units": "G",
-            "sys": true,
+            "nm": "Yaw",
+            "ut": "G",
+            "sys": 1,
             "types": [
                 "gyro"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": -300,
             "max": 300
         },
         {
-            "name": "Pitch",
-            "units": "G",
-            "sys": true,
+            "nm": "Pitch",
+            "ut": "G",
+            "sys": 1,
             "types": [
                 "gyro"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": -300,
             "max": 300
         },
         {
-            "name": "Roll",
-            "units": "G",
-            "sys": true,
+            "nm": "Roll",
+            "ut": "G",
+            "sys": 1,
             "types": [
                 "gyro"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": -300,
             "max": 300
         },
         {
-            "name": "GPSSats",
-            "units": "",
-            "sys": true,
+            "nm": "GPSSats",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "digital"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 100
         },
         {
-            "name": "Time",
-            "units": "",
-            "sys": true,
+            "nm": "Time",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "time"
             ],
-            "precision": 3,
+            "prec": 3,
             "min": 0,
             "max": 0
         },
         {
-            "name": "Latitude",
-            "units": "Degrees",
-            "sys": true,
+            "nm": "Latitude",
+            "ut": "Degrees",
+            "sys": 1,
             "types": [
                 "position"
             ],
-            "precision": 6,
+            "prec": 6,
             "min": -180,
             "max": 180
         },
         {
-            "name": "Longitude",
-            "units": "Degrees",
-            "sys": true,
+            "nm": "Longitude",
+            "ut": "Degrees",
+            "sys": 1,
             "types": [
                 "position"
             ],
-            "precision": 6,
+            "prec": 6,
             "min": -180,
             "max": 180
         },
         {
-            "name": "Speed",
-            "units": "MPH",
-            "sys": true,
+            "nm": "Speed",
+            "ut": "MPH",
+            "sys": 1,
             "types": [
                 "analog"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 150
         },
         {
-            "name": "Sector",
-            "units": "",
-            "sys": true,
+            "nm": "Sector",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "digital"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 100
         },
         {
-            "name": "SectorTime",
-            "units": "",
-            "sys": true,
+            "nm": "SectorTime",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "time"
             ],
-            "precision": 3,
+            "prec": 3,
             "min": 0,
             "max": 0
         },
         {
-            "name": "LapTime",
-            "units": "",
-            "sys": true,
+            "nm": "LapTime",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "time"
             ],
-            "precision": 3,
+            "prec": 3,
             "min": 0,
             "max": 0
         },
         {
-            "name": "PredTime",
-            "units": "",
-            "sys": true,
+            "nm": "PredTime",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "time"
             ],
-            "precision": 3,
+            "prec": 3,
             "min": 0,
             "max": 0
         },
         {
-            "name": "LapCount",
-            "units": "",
-            "sys": true,
+            "nm": "LapCount",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "time"
             ],
-            "precision": 0,
+            "prec": 0,
             "min": 0,
             "max": 1000
         },
         {
-            "name": "Distance",
-            "units": "",
-            "sys": true,
+            "nm": "Distance",
+            "ut": "",
+            "sys": 1,
             "types": [
                 "distance"
             ],
-            "precision": 3,
+            "prec": 3,
             "min": 0,
             "max": 0
         }

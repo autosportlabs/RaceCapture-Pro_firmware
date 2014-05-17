@@ -29,17 +29,17 @@ const Channels * get_channels(){
 }
 
 const Channel * get_channel(size_t id){
-	if (id >= CHANNEL_COUNT) id = 0;
+	if (id >= MAX_CHANNEL_COUNT) id = 0;
 	return &g_channels.channels[id];
 }
 
 size_t filter_channel_id(size_t id){
-	if (id >= CHANNEL_COUNT) id = 0;
+	if (id >= MAX_CHANNEL_COUNT) id = 0;
 	return id;
 }
 
 size_t find_channel_id(const char * name){
-	for (size_t i = 0; i < CHANNEL_COUNT; i++){
+	for (size_t i = 0; i < MAX_CHANNEL_COUNT; i++){
 		if (strcasecmp(name, g_channels.channels[i].label) == 0) return i;
 	}
 	return 0;
@@ -60,7 +60,7 @@ int flash_channels(const Channels *source, size_t rawSize){
 int add_channel(const Channel *channel, int mode,  size_t index){
 	int result = CHANNEL_ADD_RESULT_OK;
 
-	if (index < CHANNEL_COUNT){
+	if (index < MAX_CHANNEL_COUNT){
 		if (mode == CHANNEL_ADD_MODE_IN_PROGRESS || mode == CHANNEL_ADD_MODE_COMPLETE){
 			if (g_channelsMetaBuffer == NULL){
 				pr_info("allocating new channels buffer\r\n");

@@ -2,7 +2,7 @@
 #define CHANNELMETA_H_
 #include "stddef.h"
 
-#define CHANNEL_COUNT				90
+#define MAX_CHANNEL_COUNT			90
 #define DEFAULT_LABEL_LENGTH		11
 #define DEFAULT_UNITS_LENGTH		11
 
@@ -19,7 +19,7 @@ typedef struct _ChannelName{
 
 typedef struct _Channels{
 	size_t count;
-	Channel channels[CHANNEL_COUNT];
+	Channel channels[MAX_CHANNEL_COUNT];
 } Channels;
 
 int flash_default_channels(void);

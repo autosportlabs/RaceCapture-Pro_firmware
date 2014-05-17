@@ -14,20 +14,20 @@ print 'typedef enum{'
 
 for i in range(channel_len):
     channel = sys_channels[i]
-    name = channel['name']
+    name = channel['nm']
     print 'CHANNEL_' + name + ' = ' + str(i),
     print ',' if i < channel_len - 1 else ''
 print '} ChannelIds;'
 
 print ''
 print '#define DEFAULT_CHANNEL_META { \\'
-print 'CHANNEL_COUNT, \\'
+print str(channel_len) + ', \\'
 print '{ \\'
 for i in range(channel_len):
     channel = sys_channels[i]
-    name = channel['name']
-    units = channel['units']
-    precision = channel['precision']
+    name = channel['nm']
+    units = channel['ut']
+    precision = channel['prec']
     flags = 0
     min = channel['min']
     max = channel['max']
