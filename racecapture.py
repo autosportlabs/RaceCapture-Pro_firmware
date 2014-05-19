@@ -110,6 +110,9 @@ class RaceCaptureApp(App):
             if not self.channels.isLoaded():
                 channelsList = self.rcpComms.getChannels()
                 self.channels.fromJson(channelsList)
+                self.dispatch('on_channels_updated', self.channels)
+                self.notifyChannelsUpdated()
+                
                 
             config = self.rcpComms.getRcpCfg()
             self.rcpConfig.fromJson(config)
@@ -117,6 +120,9 @@ class RaceCaptureApp(App):
         except:
             logging.exception('')
             self._serial_warning()
+
+    def notifyChannelsUpdated(self):
+        self.dispatch('on_channels_updated', self.channels)
 
     def on_config_updated(self, rcpConfig):
         for view in self.configViews:
@@ -190,9 +196,6 @@ class RaceCaptureApp(App):
 
         outer.add_widget(toolbar)
         outer.add_widget(main)
-
-        self.dispatch('on_channels_updated', self.channels)
-
         return outer
 
 if __name__ == '__main__':

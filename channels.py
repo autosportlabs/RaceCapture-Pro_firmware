@@ -50,6 +50,7 @@ class Channels:
                 channel = Channel()
                 channel.fromJson(channelJson)
                 self.items.append(channel)
+                
         
     def toJson(self):
         channelsListJson = []
