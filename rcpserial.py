@@ -255,6 +255,9 @@ class RcpSerial:
     def flashConfig(self):
         return self.sendCommand({'flashCfg':None})
 
+    def getChannels(self):
+        return self.sendGet("getChannels", None)
+        
     def getVersion(self):
         rsp = self.sendCommand({"getVer":None})
         return rsp
@@ -278,4 +281,5 @@ class RcpSerial:
             print "Found racecapture on port:", self.port
 
 
+    
 

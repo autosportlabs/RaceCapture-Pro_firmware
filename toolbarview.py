@@ -12,7 +12,7 @@ class ToolbarView(BoxLayout):
         self.register_event_type('on_read_config')
         self.register_event_type('on_write_config')
         super(ToolbarView, self).__init__(**kwargs)
-        self.rcp = kwargs.get('rcp', None)
+        self.rcpComms = kwargs.get('rcpComms', None)
         self.app = kwargs.get('app', None)
 
     def on_read_config(self, instance, *args):
