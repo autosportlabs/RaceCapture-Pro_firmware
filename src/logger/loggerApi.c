@@ -1141,7 +1141,15 @@ int api_getChannels(Serial *serial, const jsmntok_t *json){
 		json_int(serial, "sys", is_system_channel(channel),1);
 		json_int(serial, "prec", channel->precision, 1);
 		json_float(serial, "min", channel->min, channel->precision, 1);
-		json_float(serial, "max", channel->max, channel->precision, 0);
+		json_float(serial, "max", channel->max, channel->precision, 1);
+		char *type = NULL;
+		if (is_channel_type(channel, CHANNEL_TYPE_ANALOG)) type = "analog";
+		else if (is_channel_type(channel, CHANNEL_TYPE_FREQ)) type = "freq";
+		else if (is_channel_type(channel, CHANNEL_TYPE_GPIO)) type = "gpio";
+		else if (is_channel_type(channel, CHANNEL_TYPE_IMU)) type = "imu";
+		else if (is_channel_type(channel, CHANNEL_TYPE_GPS)) type = "gps";
+		else if (is_channel_type(channel, CHANNEL_TYPE_STATISTICS)) type = "stat";
+		json_string(serial, "type", type, 0);
 		json_objEnd(serial, channel_index < channels_count - 1);
 	}
 	json_arrayEnd(serial, 0);

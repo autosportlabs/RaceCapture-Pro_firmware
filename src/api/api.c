@@ -64,7 +64,7 @@ void json_string(Serial *serial, const char *name, const char *value, int more){
 	serial->put_c('"');
 	serial->put_c(':');
 	serial->put_c('"');
-	serial->put_s(value);
+	serial->put_s(value ? value : "null");
 	serial->put_c('"');
 	if (more) serial->put_c(',');
 }
@@ -106,6 +106,13 @@ void json_arrayStart(Serial *serial, const char * name){
 		serial->put_s("\":");
 	}
 	serial->put_s("[");
+}
+
+void json_arrayElementString(Serial *serial, const char *value, int more){
+	serial->put_c('"');
+	serial->put_s(value);
+	serial->put_c('"');
+	if (more) serial->put_c(',');
 }
 
 void json_arrayElementFloat(Serial *serial, float value, int precision, int more){

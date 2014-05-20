@@ -20,6 +20,14 @@ static const Channels g_channels = DEFAULT_CHANNEL_META;
 static const Channels g_defaultChannelMeta = DEFAULT_CHANNEL_META;
 static Channels * g_channelsMetaBuffer = NULL;
 
+int is_channel_type(const Channel *channel, unsigned char flag){
+	return (channel != NULL && (channel->flags & flag) != 0);
+}
+
+void set_channel_type(Channel *channel, unsigned char flag){
+	if (channel != NULL) channel->flags = channel->flags | flag;
+}
+
 int is_system_channel(const Channel *channel){
 	return channel != NULL && (channel->flags & CHANNEL_SYSTEM_CHANNEL_FLAG);
 }
