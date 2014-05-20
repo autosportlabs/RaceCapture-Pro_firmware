@@ -14,7 +14,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 2,
             "min": 0,
@@ -25,7 +25,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 2,
             "min": 0,
@@ -36,7 +36,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 2,
             "min": 0,
@@ -47,7 +47,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 2,
             "min": 0,
@@ -58,7 +58,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 2,
             "min": 0,
@@ -69,7 +69,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 2,
             "min": 0,
@@ -80,7 +80,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 2,
             "min": 0,
@@ -91,7 +91,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 2,
             "min": 0,
@@ -135,7 +135,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "digital"
+                "gpio"
             ],
             "prec": 0,
             "min": 0,
@@ -146,7 +146,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "digital"
+                "gpio"
             ],
             "prec": 0,
             "min": 0,
@@ -157,7 +157,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "digital"
+                "gpio"
             ],
             "prec": 0,
             "min": 0,
@@ -168,7 +168,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "pwm"
+                "freq"
             ],
             "prec": 0,
             "min": 0,
@@ -179,7 +179,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "pwm"
+                "freq"
             ],
             "prec": 0,
             "min": 0,
@@ -190,7 +190,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "pwm"
+                "freq"
             ],
             "prec": 0,
             "min": 0,
@@ -201,7 +201,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "pwm"
+                "freq"
             ],
             "prec": 0,
             "min": 0,
@@ -212,7 +212,7 @@
             "ut": "F",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 0,
             "min": 0,
@@ -223,7 +223,7 @@
             "ut": "F",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 0,
             "min": 0,
@@ -234,7 +234,7 @@
             "ut": "F",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 0,
             "min": 0,
@@ -245,7 +245,7 @@
             "ut": "PSI",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 0,
             "min": 0,
@@ -256,7 +256,7 @@
             "ut": "F",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 0,
             "min": 0,
@@ -267,7 +267,7 @@
             "ut": "ratio",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 2,
             "min": 0,
@@ -278,7 +278,7 @@
             "ut": "F",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 0,
             "min": 0,
@@ -289,7 +289,7 @@
             "ut": "KPa",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 0,
             "min": 0,
@@ -300,7 +300,7 @@
             "ut": "PSI",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 0,
             "min": 0,
@@ -311,7 +311,7 @@
             "ut": "F",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 0,
             "min": 0,
@@ -322,7 +322,7 @@
             "ut": "%",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 0,
             "min": 0,
@@ -333,7 +333,7 @@
             "ut": "Volts",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 2,
             "min": 0,
@@ -344,7 +344,7 @@
             "ut": "PSI",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 0,
             "min": 0,
@@ -355,7 +355,7 @@
             "ut": "ms",
             "sys": 1,
             "types": [
-                "analog"
+                "freq"
             ],
             "prec": 2,
             "min": 0,
@@ -388,7 +388,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "digital"
+                "adc"
             ],
             "prec": 0,
             "min": 0,
@@ -399,7 +399,7 @@
             "ut": "%",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 0,
             "min": -100,
@@ -410,7 +410,7 @@
             "ut": "PSI",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 0,
             "min": 0,
@@ -421,7 +421,7 @@
             "ut": "mm",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 0,
             "min": 0,
@@ -432,7 +432,7 @@
             "ut": "mm",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 0,
             "min": 0,
@@ -443,7 +443,7 @@
             "ut": "mm",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 0,
             "min": 0,
@@ -454,7 +454,7 @@
             "ut": "mm",
             "sys": 1,
             "types": [
-                "analog"
+                "adc"
             ],
             "prec": 0,
             "min": 0,
@@ -465,7 +465,7 @@
             "ut": "G",
             "sys": 1,
             "types": [
-                "gforce"
+                "imu"
             ],
             "prec": 2,
             "min": -3,
@@ -476,7 +476,7 @@
             "ut": "G",
             "sys": 1,
             "types": [
-                "gforce"
+                "imu"
             ],
             "prec": 2,
             "min": -3,
@@ -487,7 +487,7 @@
             "ut": "G",
             "sys": 1,
             "types": [
-                "gforce"
+                "imu"
             ],
             "prec": 2,
             "min": -3,
@@ -498,7 +498,7 @@
             "ut": "G",
             "sys": 1,
             "types": [
-                "gyro"
+                "imu"
             ],
             "prec": 0,
             "min": -300,
@@ -509,7 +509,7 @@
             "ut": "G",
             "sys": 1,
             "types": [
-                "gyro"
+                "imu"
             ],
             "prec": 0,
             "min": -300,
@@ -520,18 +520,29 @@
             "ut": "G",
             "sys": 1,
             "types": [
-                "gyro"
+                "imu"
             ],
             "prec": 0,
             "min": -300,
             "max": 300
         },
         {
+            "nm": "Heading",
+            "ut": "Degrees",
+            "sys": 1,
+            "types": [
+                "imu"
+            ],
+            "prec": 0,
+            "min": 1,
+            "max": 360
+        },
+        {
             "nm": "GPSSats",
             "ut": "",
             "sys": 1,
             "types": [
-                "digital"
+                "gps"
             ],
             "prec": 0,
             "min": 0,
@@ -542,7 +553,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "time"
+                "gps"
             ],
             "prec": 3,
             "min": 0,
@@ -553,7 +564,7 @@
             "ut": "Degrees",
             "sys": 1,
             "types": [
-                "position"
+                "gps"
             ],
             "prec": 6,
             "min": -180,
@@ -564,7 +575,7 @@
             "ut": "Degrees",
             "sys": 1,
             "types": [
-                "position"
+                "gps"
             ],
             "prec": 6,
             "min": -180,
@@ -575,18 +586,29 @@
             "ut": "MPH",
             "sys": 1,
             "types": [
-                "analog"
+                "gps"
             ],
             "prec": 0,
             "min": 0,
             "max": 150
         },
         {
+            "nm": "Distance",
+            "ut": "",
+            "sys": 1,
+            "types": [
+                "gps"
+            ],
+            "prec": 3,
+            "min": 0,
+            "max": 0
+        },
+        {
             "nm": "Sector",
             "ut": "",
             "sys": 1,
             "types": [
-                "digital"
+                "stat"
             ],
             "prec": 0,
             "min": 0,
@@ -597,7 +619,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "time"
+                "stat"
             ],
             "prec": 3,
             "min": 0,
@@ -608,7 +630,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "time"
+                "stat"
             ],
             "prec": 3,
             "min": 0,
@@ -619,7 +641,7 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "time"
+                "stat"
             ],
             "prec": 3,
             "min": 0,
@@ -630,22 +652,11 @@
             "ut": "",
             "sys": 1,
             "types": [
-                "time"
+                "stat"
             ],
             "prec": 0,
             "min": 0,
             "max": 1000
-        },
-        {
-            "nm": "Distance",
-            "ut": "",
-            "sys": 1,
-            "types": [
-                "distance"
-            ],
-            "prec": 3,
-            "min": 0,
-            "max": 0
         }
     ]
 }

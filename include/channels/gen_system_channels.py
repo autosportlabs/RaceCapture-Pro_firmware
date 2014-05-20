@@ -29,6 +29,8 @@ for i in range(channel_len):
     units = channel['ut']
     precision = channel['prec']
     flags = 0
+    sys = channel['sys']
+    
     min = channel['min']
     max = channel['max']
     
