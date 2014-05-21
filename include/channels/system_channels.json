@@ -4,7 +4,7 @@
             "nm": "Unknown",
             "ut": "",
             "sys": 1,
-            "type": "",
+            "type": 0,
             "prec": 0,
             "min": 0,
             "max": 1024
@@ -13,7 +13,7 @@
             "nm": "Analog1",
             "ut": "",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 2,
             "min": 0,
             "max": 5
@@ -22,7 +22,7 @@
             "nm": "Analog2",
             "ut": "",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 2,
             "min": 0,
             "max": 5
@@ -31,7 +31,7 @@
             "nm": "Analog3",
             "ut": "",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 2,
             "min": 0,
             "max": 5
@@ -40,7 +40,7 @@
             "nm": "Analog4",
             "ut": "",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 2,
             "min": 0,
             "max": 5
@@ -49,7 +49,7 @@
             "nm": "Analog5",
             "ut": "",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 2,
             "min": 0,
             "max": 5
@@ -58,7 +58,7 @@
             "nm": "Analog6",
             "ut": "",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 2,
             "min": 0,
             "max": 5
@@ -67,7 +67,7 @@
             "nm": "Analog7",
             "ut": "",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 2,
             "min": 0,
             "max": 5
@@ -76,7 +76,7 @@
             "nm": "Analog8",
             "ut": "",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 2,
             "min": 0,
             "max": 5
@@ -85,7 +85,7 @@
             "nm": "Freq1",
             "ut": "",
             "sys": 1,
-            "type": "freq",
+            "type": 2,
             "prec": 0,
             "min": 0,
             "max": 1000
@@ -94,7 +94,7 @@
             "nm": "Freq2",
             "ut": "",
             "sys": 1,
-            "type": "freq",
+            "type": 2,
             "prec": 0,
             "min": 0,
             "max": 1000
@@ -103,7 +103,7 @@
             "nm": "Freq3",
             "ut": "",
             "sys": 1,
-            "type": "freq",
+            "type": 2,
             "prec": 0,
             "min": 0,
             "max": 1000
@@ -112,7 +112,7 @@
             "nm": "GPIO1",
             "ut": "",
             "sys": 1,
-            "type": "gpio",
+            "type": 3,
             "prec": 0,
             "min": 0,
             "max": 1
@@ -121,7 +121,7 @@
             "nm": "GPIO2",
             "ut": "",
             "sys": 1,
-            "type": "gpio",
+            "type": 3,
             "prec": 0,
             "min": 0,
             "max": 1
@@ -130,7 +130,7 @@
             "nm": "GPIO3",
             "ut": "",
             "sys": 1,
-            "type": "gpio",
+            "type": 3,
             "prec": 0,
             "min": 0,
             "max": 1
@@ -139,7 +139,7 @@
             "nm": "PWM1",
             "ut": "",
             "sys": 1,
-            "type": "pwm",
+            "type": 4,
             "prec": 0,
             "min": 0,
             "max": 100
@@ -148,7 +148,7 @@
             "nm": "PWM2",
             "ut": "",
             "sys": 1,
-            "type": "pwm",
+            "type": 4,
             "prec": 0,
             "min": 0,
             "max": 100
@@ -157,7 +157,7 @@
             "nm": "PWM3",
             "ut": "",
             "sys": 1,
-            "type": "pwm",
+            "type": 4,
             "prec": 0,
             "min": 0,
             "max": 100
@@ -166,7 +166,7 @@
             "nm": "PWM4",
             "ut": "",
             "sys": 1,
-            "type": "pwm",
+            "type": 4,
             "prec": 0,
             "min": 0,
             "max": 100
@@ -175,7 +175,7 @@
             "nm": "Coolant",
             "ut": "F",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 0,
             "min": 0,
             "max": 300
@@ -184,7 +184,7 @@
             "nm": "EngineTemp",
             "ut": "F",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 0,
             "min": 0,
             "max": 300
@@ -193,7 +193,7 @@
             "nm": "FuelLevel",
             "ut": "F",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 0,
             "min": 0,
             "max": 100
@@ -202,7 +202,7 @@
             "nm": "OilPress",
             "ut": "PSI",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 0,
             "min": 0,
             "max": 150
@@ -211,7 +211,7 @@
             "nm": "OilTemp",
             "ut": "F",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 0,
             "min": 0,
             "max": 300
@@ -220,7 +220,7 @@
             "nm": "AFR",
             "ut": "ratio",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 2,
             "min": 0,
             "max": 20
@@ -229,7 +229,7 @@
             "nm": "IAT",
             "ut": "F",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 0,
             "min": 0,
             "max": 300
@@ -238,7 +238,7 @@
             "nm": "MAP",
             "ut": "KPa",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 0,
             "min": 0,
             "max": 255
@@ -247,7 +247,7 @@
             "nm": "Boost",
             "ut": "PSI",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 0,
             "min": 0,
             "max": 50
@@ -256,7 +256,7 @@
             "nm": "EGT",
             "ut": "F",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 0,
             "min": 0,
             "max": 2000
@@ -265,7 +265,7 @@
             "nm": "TPS",
             "ut": "%",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 0,
             "min": 0,
             "max": 100
@@ -274,7 +274,7 @@
             "nm": "Battery",
             "ut": "Volts",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 2,
             "min": 0,
             "max": 20
@@ -283,7 +283,7 @@
             "nm": "FuelPress",
             "ut": "PSI",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 0,
             "min": 0,
             "max": 150
@@ -292,7 +292,7 @@
             "nm": "InjectorPW",
             "ut": "ms",
             "sys": 1,
-            "type": "freq",
+            "type": 2,
             "prec": 2,
             "min": 0,
             "max": 100
@@ -301,7 +301,7 @@
             "nm": "RPM",
             "ut": "",
             "sys": 1,
-            "type": "freq",
+            "type": 2,
             "prec": 0,
             "min": 0,
             "max": 10000
@@ -310,7 +310,7 @@
             "nm": "Wheel",
             "ut": "RPM",
             "sys": 1,
-            "type": "freq",
+            "type": 2,
             "prec": 0,
             "min": 0,
             "max": 5000
@@ -319,7 +319,7 @@
             "nm": "Gear",
             "ut": "",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 0,
             "min": 0,
             "max": 10
@@ -328,7 +328,7 @@
             "nm": "Steering",
             "ut": "%",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 0,
             "min": -100,
             "max": 100
@@ -337,7 +337,7 @@
             "nm": "Brake",
             "ut": "PSI",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 0,
             "min": 0,
             "max": 2000
@@ -346,7 +346,7 @@
             "nm": "LF_Height",
             "ut": "mm",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 0,
             "min": 0,
             "max": 255
@@ -355,7 +355,7 @@
             "nm": "RF_Height",
             "ut": "mm",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 0,
             "min": 0,
             "max": 255
@@ -364,7 +364,7 @@
             "nm": "LR_Height",
             "ut": "mm",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 0,
             "min": 0,
             "max": 255
@@ -373,7 +373,7 @@
             "nm": "RR_Height",
             "ut": "mm",
             "sys": 1,
-            "type": "analog",
+            "type": 1,
             "prec": 0,
             "min": 0,
             "max": 255
@@ -382,7 +382,7 @@
             "nm": "AccelX",
             "ut": "G",
             "sys": 1,
-            "type": "imu",
+            "type": 5,
             "prec": 2,
             "min": -3,
             "max": 3
@@ -391,7 +391,7 @@
             "nm": "AccelY",
             "ut": "G",
             "sys": 1,
-            "type": "imu",
+            "type": 5,
             "prec": 2,
             "min": -3,
             "max": 3
@@ -400,7 +400,7 @@
             "nm": "AccelZ",
             "ut": "G",
             "sys": 1,
-            "type": "imu",
+            "type": 5,
             "prec": 2,
             "min": -3,
             "max": 3
@@ -409,7 +409,7 @@
             "nm": "Yaw",
             "ut": "G",
             "sys": 1,
-            "type": "imu",
+            "type": 5,
             "prec": 0,
             "min": -300,
             "max": 300
@@ -418,7 +418,7 @@
             "nm": "Pitch",
             "ut": "G",
             "sys": 1,
-            "type": "imu",
+            "type": 5,
             "prec": 0,
             "min": -300,
             "max": 300
@@ -427,7 +427,7 @@
             "nm": "Roll",
             "ut": "G",
             "sys": 1,
-            "type": "imu",
+            "type": 5,
             "prec": 0,
             "min": -300,
             "max": 300
@@ -436,7 +436,7 @@
             "nm": "Heading",
             "ut": "Degrees",
             "sys": 1,
-            "type": "imu",
+            "type": 5,
             "prec": 0,
             "min": 1,
             "max": 360
@@ -445,7 +445,7 @@
             "nm": "GPSSats",
             "ut": "",
             "sys": 1,
-            "type": "gps",
+            "type": 6,
             "prec": 0,
             "min": 0,
             "max": 100
@@ -454,7 +454,7 @@
             "nm": "Time",
             "ut": "",
             "sys": 1,
-            "type": "gps",
+            "type": 6,
             "prec": 3,
             "min": 0,
             "max": 0
@@ -463,7 +463,7 @@
             "nm": "Latitude",
             "ut": "Degrees",
             "sys": 1,
-            "type": "gps",
+            "type": 6,
             "prec": 6,
             "min": -180,
             "max": 180
@@ -472,7 +472,7 @@
             "nm": "Longitude",
             "ut": "Degrees",
             "sys": 1,
-            "type": "gps",
+            "type": 6,
             "prec": 6,
             "min": -180,
             "max": 180
@@ -481,7 +481,7 @@
             "nm": "Speed",
             "ut": "MPH",
             "sys": 1,
-            "type": "gps",
+            "type": 6,
             "prec": 0,
             "min": 0,
             "max": 150
@@ -490,7 +490,7 @@
             "nm": "Distance",
             "ut": "",
             "sys": 1,
-            "type": "gps",
+            "type": 6,
             "prec": 3,
             "min": 0,
             "max": 0
@@ -499,7 +499,7 @@
             "nm": "Sector",
             "ut": "",
             "sys": 1,
-            "type": "stat",
+            "type": 7,
             "prec": 0,
             "min": 0,
             "max": 100
@@ -508,7 +508,7 @@
             "nm": "SectorTime",
             "ut": "",
             "sys": 1,
-            "type": "stat",
+            "type": 7,
             "prec": 3,
             "min": 0,
             "max": 0
@@ -517,7 +517,7 @@
             "nm": "LapTime",
             "ut": "",
             "sys": 1,
-            "type": "stat",
+            "type": 7,
             "prec": 3,
             "min": 0,
             "max": 0
@@ -526,7 +526,7 @@
             "nm": "PredTime",
             "ut": "",
             "sys": 1,
-            "type": "stat",
+            "type": 7,
             "prec": 3,
             "min": 0,
             "max": 0
@@ -535,7 +535,7 @@
             "nm": "LapCount",
             "ut": "",
             "sys": 1,
-            "type": "stat",
+            "type": 7,
             "prec": 0,
             "min": 0,
             "max": 1000

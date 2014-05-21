@@ -8,17 +8,19 @@
 #include "memory.h"
 static const Channels g_channels __attribute__ ((aligned (FLASH_MEMORY_PAGE_SIZE))) __attribute__((section(".channels\n\t#")));
 #else
-static const Channels g_channels = DEFAULT_CHANNEL_META;
+static Channels g_channels = DEFAULT_CHANNEL_META;
 #endif
-
-#define CHANNEL_ADD_RESULT_OK  		 	1
-#define CHANNEL_ADD_RESULT_FAIL  		0
-
-#define CHANNEL_ADD_MODE_IN_PROGRESS	0
-#define CHANNEL_ADD_MODE_COMPLETE 		2
 
 static const Channels g_defaultChannelMeta = DEFAULT_CHANNEL_META;
 static Channels * g_channelsMetaBuffer = NULL;
+
+unsigned char get_channel_type(const Channel *channel){
+	unsigned char channelType = CHANNEL_TYPE_UNKNOWN;
+	if (channel){
+		channelType = channel->flags >> 1;
+	}
+	return channelType;
+}
 
 int is_channel_type(const Channel *channel, unsigned char type){
 	return (channel != NULL && (((channel->flags >> 1) & 0xF) == type ));
@@ -60,7 +62,7 @@ int flash_default_channels(void){
 }
 
 int flash_channels(const Channels *source, size_t rawSize){
-	int result = memory_flash_region(source, &g_defaultChannelMeta, rawSize);
+	int result = memory_flash_region(&g_channels, source, rawSize);
 	if (result == 0) pr_info("success\r\n"); else pr_info("failed\r\n");
 	return result;
 }

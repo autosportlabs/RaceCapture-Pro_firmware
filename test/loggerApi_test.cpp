@@ -868,6 +868,30 @@ void LoggerApiTest::testGetTrackCfg(){
 	testGetTrackConfigFile("getTrackCfg1.json");
 }
 
+void LoggerApiTest::testAddChannel(){
+	testAddChannelFile("addChannel1.json");
+}
+
+void LoggerApiTest::testAddChannelFile(string filename){
+	processApiGeneric(filename);
+	char *txBuffer = mock_getTxBuffer();
+	const Channels *channels = get_channels();
+
+	Object jsonCompare;
+	string compare = readFile(filename);
+	stringToJson(compare, jsonCompare);
+
+	int index = (int)(Number)jsonCompare["addChannel"]["index"];
+	const Channel *channel = channels->channels + index;
+	CPPUNIT_ASSERT_EQUAL(string((String)jsonCompare["addChannel"]["nm"]), string(channel->label));
+	CPPUNIT_ASSERT_EQUAL(string((String)jsonCompare["addChannel"]["ut"]), string(channel->units));
+	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonCompare["addChannel"]["prec"], (int)channel->precision);
+	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonCompare["addChannel"]["type"], (int)get_channel_type(channel));
+	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonCompare["addChannel"]["sys"], (int)is_system_channel(channel));
+	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addChannel"]["min"], channel->min);
+	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addChannel"]["max"], channel->max);
+}
+
 void LoggerApiTest::testGetChannels(){
 	testGetChannelsFile("getChannels1.json");
 }
@@ -891,10 +915,7 @@ void LoggerApiTest::testGetChannelsFile(string filename){
 		Object channelCompare = channelsCompare[i];
 		Object channel = channelsResponse[i];
 		CPPUNIT_ASSERT_EQUAL((string)(String)channelCompare["nm"], (string)(String)channel["nm"]);
-
 	}
-
-
 }
 
 void LoggerApiTest::testSetLogLevelFile(string filename, int expectedResponse){
@@ -1020,7 +1041,7 @@ void LoggerApiTest::testGetScriptFile(string filename){
 	Object json;
 	stringToJson(response, json);
 
-	CPPUNIT_ASSERT_EQUAL(string("function onTick() end"), (string)(String)json["script"]["data"]);
+	CPPUNIT_ASSERT_EQUAL(string("function onTick() end"), (string)(String)json["scriptCfg"]["data"]);
 
 }
 
@@ -1031,7 +1052,7 @@ void LoggerApiTest::testSetScriptFile(string filename){
 		LoggerConfig *c = getWorkingLoggerConfig();
 		TrackConfig *cfg = &c->TrackConfigs;
 
-		assertGenericResponse(txBuffer, "setScript", API_SUCCESS);
+		assertGenericResponse(txBuffer, "setScriptCfg", API_SUCCESS);
 
 		const char * script = getScript();
 

@@ -42,23 +42,7 @@ for i in range(channel_len):
     precision = channel['prec']
     sys = channel['sys']
     
-    type = channel['type']
-    if type == 'analog':
-        channelType = CHANNEL_TYPE_ANALOG
-    elif type == 'freq':
-        channelType = CHANNEL_TYPE_FREQ
-    elif type == 'gpio':
-        channelType = CHANNEL_TYPE_GPIO
-    elif type == 'pwm':
-        channelType = CHANNEL_TYPE_PWM
-    elif type == 'imu':
-        channelType = CHANNEL_TYPE_IMU
-    elif type == 'gps':
-        channelType = CHANNEL_TYPE_GPS
-    elif type == 'stat':
-        channelType = CHANNEL_TYPE_STATISTICS
-    else:
-        channelType = CHANNEL_TYPE_UNKNOWN
+    channelType = channel['type']
     
     flags = 0
     if sys:

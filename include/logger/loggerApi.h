@@ -51,6 +51,7 @@
 {"setScriptCfg", api_setScript}, \
 {"getTrackDb", api_getTrackDb}, \
 {"setTrackDb", api_setTrackDb}, \
+{"addChannel", api_addChannel}, \
 {"getChannels", api_getChannels}, \
 {"getVer", api_getVersion}
 

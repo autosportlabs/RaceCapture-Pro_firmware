@@ -104,9 +104,11 @@ static int setUnsignedShortValueIfExists(const jsmntok_t *root, const char * fie
 
 static int setUnsignedCharValueIfExists(const jsmntok_t *root, const char * fieldName, unsigned char *target, unsigned char (*filter)(unsigned char)){
 	const jsmntok_t *valueNode = findValueNode(root, fieldName);
-	unsigned char value = modp_atoi(valueNode->data);
-	if (filter != NULL) value = filter(value);
-	if (valueNode) * target = value;
+	if (valueNode){
+		unsigned char value = modp_atoi(valueNode->data);
+		if (filter != NULL) value = filter(value);
+		* target = value;
+	}
 	return (valueNode != NULL);
 }
 
@@ -1123,7 +1125,30 @@ int api_getTrackDb(Serial *serial, const jsmntok_t *json){
 
 int api_addChannel(Serial *serial, const jsmntok_t *json){
 
-	return API_SUCCESS;
+	unsigned char mode = 0;
+	int index = 0;
+
+	if (setUnsignedCharValueIfExists(json, "mode", &mode, NULL) &&
+		setIntValueIfExists(json, "index", &index)){
+		Channel channel;
+		setStringValueIfExists(json, "nm", channel.label, DEFAULT_LABEL_LENGTH);
+		setStringValueIfExists(json, "ut", channel.units, DEFAULT_UNITS_LENGTH);
+
+		unsigned char systemChannel = 0;
+		if (setUnsignedCharValueIfExists(json, "sys", &systemChannel, NULL)){
+			systemChannel = systemChannel ? 1 : 0;
+		}
+		unsigned char channelType = CHANNEL_TYPE_UNKNOWN;
+		setUnsignedCharValueIfExists(json, "type", &channelType, NULL);
+		channel.flags = (channelType << 1) + systemChannel;
+		setUnsignedCharValueIfExists(json, "prec", &channel.precision, NULL);
+		setFloatValueIfExists(json, "min", &channel.min);
+		setFloatValueIfExists(json, "max", &channel.max);
+
+		add_channel(&channel, mode, index);
+		return API_SUCCESS;
+	}
+	return API_ERROR_PARAMETER;
 }
 
 int api_getChannels(Serial *serial, const jsmntok_t *json){
@@ -1142,15 +1167,7 @@ int api_getChannels(Serial *serial, const jsmntok_t *json){
 		json_int(serial, "prec", channel->precision, 1);
 		json_float(serial, "min", channel->min, channel->precision, 1);
 		json_float(serial, "max", channel->max, channel->precision, 1);
-		char *type = NULL;
-		if (is_channel_type(channel, CHANNEL_TYPE_ANALOG)) type = "analog";
-		else if (is_channel_type(channel, CHANNEL_TYPE_FREQ)) type = "freq";
-		else if (is_channel_type(channel, CHANNEL_TYPE_GPIO)) type = "gpio";
-		else if (is_channel_type(channel, CHANNEL_TYPE_PWM)) type = "pwm";
-		else if (is_channel_type(channel, CHANNEL_TYPE_IMU)) type = "imu";
-		else if (is_channel_type(channel, CHANNEL_TYPE_GPS)) type = "gps";
-		else if (is_channel_type(channel, CHANNEL_TYPE_STATISTICS)) type = "stat";
-		json_string(serial, "type", type, 0);
+		json_int(serial, "type", get_channel_type(channel), 0);
 		json_objEnd(serial, channel_index < channels_count - 1);
 	}
 	json_arrayEnd(serial, 0);

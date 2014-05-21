@@ -10,7 +10,7 @@
 #ifndef RCP_TESTING
 static const char g_script[SCRIPT_LENGTH] __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".script\n\t#")));
 #else
-static const char g_script[SCRIPT_LENGTH] = DEFAULT_SCRIPT;
+static char g_script[SCRIPT_LENGTH] = DEFAULT_SCRIPT;
 #endif
 
 

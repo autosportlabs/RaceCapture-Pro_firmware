@@ -9,7 +9,7 @@
 #include "memory.h"
 static const LoggerConfig g_savedLoggerConfig __attribute__ ((aligned (FLASH_MEMORY_PAGE_SIZE))) __attribute__((section(".config\n\t#"))) = DEFAULT_LOGGER_CONFIG;
 #else
-static const LoggerConfig g_savedLoggerConfig = DEFAULT_LOGGER_CONFIG;
+static LoggerConfig g_savedLoggerConfig = DEFAULT_LOGGER_CONFIG;
 #endif
 
 static const LoggerConfig g_defaultLoggerConfig = DEFAULT_LOGGER_CONFIG;

@@ -33,9 +33,6 @@
 #define SAMPLE_1Hz 							200
 #define SAMPLE_DISABLED 					0
 
-#define DEFAULT_LABEL_LENGTH				11
-#define DEFAULT_UNITS_LENGTH				11
-
 #define ANALOG_SCALING_BINS					5
 
 #define SCALING_MODE_RAW					0
