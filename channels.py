@@ -1,3 +1,12 @@
+CHANNEL_TYPE_UNKNOWN    = 0
+CHANNEL_TYPE_ANALOG     = 1
+CHANNEL_TYPE_FREQ       = 2
+CHANNEL_TYPE_GPIO       = 3
+CHANNEL_TYPE_PWM        = 4
+CHANNEL_TYPE_IMU        = 5
+CHANNEL_TYPE_GPS        = 6
+CHANNEL_TYPE_STATISTICS = 7
+
 class Channel:
     name = ""
     units = ""

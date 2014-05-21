@@ -9,6 +9,7 @@ from kivy.app import Builder
 from valuefield import *
 from utils import *
 from rcpconfig import *
+from channels import *
 from channelnameselectorview import ChannelNameSelectorView
 
 Builder.load_file('analogchannelsview.kv')
