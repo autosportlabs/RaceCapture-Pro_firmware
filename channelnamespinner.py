@@ -7,7 +7,6 @@ class ChannelNameSpinner(Spinner):
     def __init__(self, **kwargs):
         self.register_event_type('on_channels_updated')
         super(ChannelNameSpinner, self).__init__(**kwargs)
-        self.channelType = kwargs.get('channelType', None)
         self.values = []
      
     def on_channels_updated(self, channels):

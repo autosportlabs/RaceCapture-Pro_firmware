@@ -5,7 +5,7 @@ class Channel:
     min = 0
     max = 0
     systemChannel = 0
-    types = []
+    channelType = None
     
     def __init__(self, **kwargs):
         self.name = kwargs.get('name', 'Unknown')
@@ -21,11 +21,7 @@ class Channel:
             sysChannel = channelJson.get('sys', None)
             if sysChannel:
                 self.systemChannel = True if sysChannel == 1 else False
-            typesList = channelJson.get('types', None)
-            if typesList:
-                del self.types[:]
-                for types in typesList:
-                    self.types.append(types)
+            self.channelType = channelJson.get('type', self.channelType)
 
     def toJson(self):
         channelJson = {}
@@ -35,7 +31,7 @@ class Channel:
         channelJson['min'] = self.min
         channelJson['max'] = self.max
         channelJson['sys'] = 1 if self.systemChannel else 0
-        channelJson['types'] = list(self.types)
+        channelJson['type'] = self.channelType
         
 class Channels:
     items = []
@@ -82,9 +78,10 @@ class Channels:
             return ''
 
     def getNamesList(self, channelType):
+
         names = []
         for channel in self.items:
-            if channelType == None or channelType in channel.types:
+            if channelType == None or channelType == channel.channelType:
                 names.append(channel.name)
         return names
 
