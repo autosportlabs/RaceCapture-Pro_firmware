@@ -1146,6 +1146,7 @@ int api_getChannels(Serial *serial, const jsmntok_t *json){
 		if (is_channel_type(channel, CHANNEL_TYPE_ANALOG)) type = "analog";
 		else if (is_channel_type(channel, CHANNEL_TYPE_FREQ)) type = "freq";
 		else if (is_channel_type(channel, CHANNEL_TYPE_GPIO)) type = "gpio";
+		else if (is_channel_type(channel, CHANNEL_TYPE_PWM)) type = "pwm";
 		else if (is_channel_type(channel, CHANNEL_TYPE_IMU)) type = "imu";
 		else if (is_channel_type(channel, CHANNEL_TYPE_GPS)) type = "gps";
 		else if (is_channel_type(channel, CHANNEL_TYPE_STATISTICS)) type = "stat";

@@ -63,9 +63,14 @@ void json_string(Serial *serial, const char *name, const char *value, int more){
 	serial->put_s(name);
 	serial->put_c('"');
 	serial->put_c(':');
-	serial->put_c('"');
-	serial->put_s(value ? value : "null");
-	serial->put_c('"');
+	if (value){
+		serial->put_c('"');
+		serial->put_s(value);
+		serial->put_c('"');
+	}
+	else{
+		serial->put_s("null");
+	}
 	if (more) serial->put_c(',');
 }
 

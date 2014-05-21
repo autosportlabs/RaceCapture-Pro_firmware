@@ -12,9 +12,10 @@
 #define CHANNEL_TYPE_ANALOG				1
 #define CHANNEL_TYPE_FREQ				2
 #define CHANNEL_TYPE_GPIO				3
-#define CHANNEL_TYPE_IMU				4
-#define CHANNEL_TYPE_GPS				5
-#define CHANNEL_TYPE_STATISTICS			6
+#define CHANNEL_TYPE_PWM				4
+#define CHANNEL_TYPE_IMU				5
+#define CHANNEL_TYPE_GPS				6
+#define CHANNEL_TYPE_STATISTICS			7
 
 
 typedef struct _ChannelName{
@@ -36,8 +37,8 @@ const Channel * get_channel(size_t id);
 const Channels * get_channels();
 size_t filter_channel_id(size_t id);
 size_t find_channel_id(const char * name);
-int is_channel_type(const Channel *channel, unsigned char flag);
-void set_channel_type(Channel *channel, unsigned char flag);
+int is_channel_type(const Channel *channel, unsigned char type);
+void set_channel_type(Channel *channel, unsigned char type);
 int is_system_channel(const Channel *channel);
 int flash_channels(const Channels *source, size_t rawSize);
 int add_channel(const Channel *channel, int mode, size_t index);

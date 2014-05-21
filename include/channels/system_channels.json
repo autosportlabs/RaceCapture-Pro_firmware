@@ -139,7 +139,7 @@
             "nm": "PWM1",
             "ut": "",
             "sys": 1,
-            "type": "freq",
+            "type": "pwm",
             "prec": 0,
             "min": 0,
             "max": 100
@@ -148,7 +148,7 @@
             "nm": "PWM2",
             "ut": "",
             "sys": 1,
-            "type": "freq",
+            "type": "pwm",
             "prec": 0,
             "min": 0,
             "max": 100
@@ -157,7 +157,7 @@
             "nm": "PWM3",
             "ut": "",
             "sys": 1,
-            "type": "freq",
+            "type": "pwm",
             "prec": 0,
             "min": 0,
             "max": 100
@@ -166,7 +166,7 @@
             "nm": "PWM4",
             "ut": "",
             "sys": 1,
-            "type": "freq",
+            "type": "pwm",
             "prec": 0,
             "min": 0,
             "max": 100
