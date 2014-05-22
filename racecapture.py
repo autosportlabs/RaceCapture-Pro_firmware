@@ -36,25 +36,14 @@ from obd2channelsview import *
 from canconfigview import *
 from rcpconfig import *
 from channels import *
-from scriptview import LuaScriptingView
-from samplerateview import SampleRateSelectorView
-from channelnamespinner import ChannelNameSpinner
+from telemetryconfigview import *
+from wirelessconfigview import *
+from scriptview import *
+from samplerateview import *
+from channelnamespinner import *
 from toolbarview import ToolbarView
 from splashview import SplashView
 from separator import *
-from telemetryconfigview import *
-from wirelessconfigview import *
-
-class CellTelemetryView(BoxLayout):
-    def __init__(self, **kwargs):
-        super(CellTelemetryView, self).__init__(**kwargs)
-#        Builder.load_file('analogchannelsview.kv')
-        self.register_event_type('on_config_updated')
-
-    def on_config_updated(self, rcpCfg):
-        pass
-
-
 
 
 class LinkedTreeViewLabel(TreeViewLabel):

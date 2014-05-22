@@ -1,6 +1,11 @@
 <ToolbarView>:
     BoxLayout:
         orientation: 'horizontal'
+        Label:
+        	id: 'menu'
+        	font_name: 'fa.ttf'
+        	text: ''
+        	on_touch_down: root.mainMenu()
         IconButton:
             id: 'read'
             text: '\357\200\231'
