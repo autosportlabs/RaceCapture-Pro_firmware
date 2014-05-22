@@ -4,6 +4,7 @@ kivy.require('1.8.0')
 from kivy.uix.boxlayout import BoxLayout
 from kivy.app import Builder
 from rcpconfig import *
+from samplerateview import *
 from utils import *
 
 Builder.load_file('gpschannelsview.kv')            

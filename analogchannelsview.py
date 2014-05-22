@@ -11,6 +11,7 @@ from utils import *
 from rcpconfig import *
 from channels import *
 from channelnameselectorview import ChannelNameSelectorView
+from channelnamespinner import ChannelNameSpinner
 
 Builder.load_file('analogchannelsview.kv')
 

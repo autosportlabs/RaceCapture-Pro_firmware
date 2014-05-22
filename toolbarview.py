@@ -3,17 +3,16 @@ kivy.require('1.8.0')
 from kivy.uix.boxlayout import BoxLayout
 from kivy.app import Builder
 from iconbutton import IconButton
-from statusicon import StatusIcon
 
 Builder.load_file('toolbarview.kv')
 
 class ToolbarView(BoxLayout):
 
     def __init__(self, **kwargs):
+        super(ToolbarView, self).__init__(**kwargs)
         self.register_event_type('on_main_menu')
         self.register_event_type('on_read_config')
         self.register_event_type('on_write_config')
-        super(ToolbarView, self).__init__(**kwargs)
         self.rcpComms = kwargs.get('rcpComms', None)
         self.app = kwargs.get('app', None)
 
