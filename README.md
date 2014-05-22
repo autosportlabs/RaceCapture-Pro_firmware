@@ -56,14 +56,15 @@ to run:
 
 ## Building installers
 
-1. Install [PYInstaller] (http://www.pyinstaller.org) `pip install pyinstaller`
-2. Install [PyWin32] (http://sourceforge.net/projects/pywin32/files/) `pip install pywin32`
-3. Try `pyinstaller --version` - should return "2.1" or similar
+1. activate the virtualenv: `_ve\Scripts\activate`
+2. Install [PYInstaller] (http://www.pyinstaller.org) `pip install pyinstaller`
+3. Install [PyWin32] (http://sourceforge.net/projects/pywin32/files/) `pip install pywin`
+4. Try `pyinstaller --version` - should return "2.1" or similar
 
 ## Creating installer for current version
 
 1. Go into RaceCapture_App folder
-2. `kivy`
-3. `pyinstaller -y racecapture.spec` (may need to run several times - first few times get weird missing file reports)
+2. `kivy` (to get paths set up)
+3. `pyinstaller -y racecapture.spec` (if you get weird file permissions errors on subsequent builds you may have to delete the 'build' folder and try it again)
 4. `dist\racecapture\racecapture`
-5. Observe "ImportError: No module named decimal" message. Sob sadly. According to [this] (http://mayankjohri.wordpress.com/2008/05/08/faq-resolving-the-importerror-no-module-named-decimal-error/) the problem can be solved by importing Decimal in your own code (it may be because Kivy garden is doing some too-clever import stuff). However, it kicks the can down the road again to a new error ("AttributeError: 'module' object has no attribute 'PythonLexer'") so I haven't done it.
+5. Observe error ("AttributeError: 'module' object has no attribute 'PythonLexer'"). This appears to be because the KivyLexer import in scriptview.py doesn't get bundled in the installer. If you comment out attach_node('Lua Script', n, LuaScriptingView()) in racecapture.py then the app runs fine.
