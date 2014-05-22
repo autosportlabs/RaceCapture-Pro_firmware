@@ -4,6 +4,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.codeinput import CodeInput
 from kivy.app import Builder
 from kivy.extras.highlight import KivyLexer
+#from pygments.lexers.agile import PythonLexer 
 from pygments import lexers
 from utils import *
 
@@ -27,6 +28,7 @@ class LuaScriptingView(BoxLayout):
         
 class LuaCodeInput(CodeInput):
     def __init__(self, **kwargs):
+        testing = lexers.PythonLexer()
         super(LuaCodeInput, self).__init__(**kwargs)
         self.lexer= lexers.get_lexer_by_name('lua')
         
