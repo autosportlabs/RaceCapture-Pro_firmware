@@ -3,6 +3,7 @@ kivy.require('1.8.0')
 from kivy.uix.boxlayout import BoxLayout
 from kivy.app import Builder
 from iconbutton import IconButton
+from statusicon import StatusIcon
 
 Builder.load_file('toolbarview.kv')
 
