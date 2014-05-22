@@ -20,6 +20,7 @@ from kivy.uix.label import Label
 from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.treeview import TreeView, TreeViewLabel
 from kivy.uix.popup import Popup
+from kivy.garden.navigationdrawer import NavigationDrawer
 
 from spacer import *
 from fieldlabel import FieldLabel
@@ -41,6 +42,7 @@ from wirelessconfigview import *
 from scriptview import *
 from samplerateview import *
 from channelnamespinner import *
+
 from toolbarview import ToolbarView
 from splashview import SplashView
 from separator import *
@@ -123,7 +125,7 @@ class RaceCaptureApp(App):
             for channelWidget in channelWidgets:
                 channelWidget.dispatch('on_channels_updated', channels)
 
-    def build(self):
+    def buildx(self):
         def create_tree(text):
             return tree.add_node(LinkedTreeViewLabel(text=text, is_open=True, no_selection=True))
 

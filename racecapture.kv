@@ -1,7 +1,24 @@
 #:kivy 1.8.0
 
-<RaceCaptureApp>:
-
+#<RaceCaptureApp>:
+BoxLayout:
+	orientation: 'vertical'
+	size: (1024, 576)
+	size_hint: (None, None)
+	pos_hint: {'center_x': .5, 'center_y': .5}
+	
+	ToolbarView:
+		size_hint: (None, 0.05)
+	
+	NavigationDrawer:
+		BoxLayout:
+			Label:
+				text: 'main menu'
+		BoxLayout:
+			rcid: 'main'
+			Label:
+				text: 'main content'
+			
 
 
 
