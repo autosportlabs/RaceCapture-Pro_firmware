@@ -19,6 +19,8 @@ from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.treeview import TreeView, TreeViewLabel
 from kivy.uix.popup import Popup
 
+from decimal import Decimal
+
 from spacer import *
 from fieldlabel import FieldLabel
 from boundedlabel import BoundedLabel
