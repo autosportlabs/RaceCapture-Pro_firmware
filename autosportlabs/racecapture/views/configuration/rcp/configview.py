@@ -21,7 +21,7 @@ from autosportlabs.racecapture.views.configuration.rcp.scriptview import *
 from rcpconfig import *
 from channels import *
 
-Builder.load_file('configview.kv')
+Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/configview.kv')
 
 class LinkedTreeViewLabel(TreeViewLabel):
     view = None

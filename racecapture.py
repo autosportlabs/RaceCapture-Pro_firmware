@@ -17,7 +17,7 @@ from kivy.garden.navigationdrawer import NavigationDrawer
 from rcpserial import *
 from channels import *
 from utils import *
-from configview import ConfigView
+from autosportlabs.racecapture.views.configuration.rcp.configview import ConfigView
 from autosportlabs.racecapture.menu.mainmenu import MainMenu
 
 from toolbarview import ToolbarView
