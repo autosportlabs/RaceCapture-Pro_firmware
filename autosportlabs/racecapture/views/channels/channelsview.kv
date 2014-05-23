@@ -1,5 +1,90 @@
 #:kivy 1.8.0
 
+
+<ChannelEditor>:
+	orientation: 'vertical'
+	GridLayout:
+		cols: 2
+		BoxLayout:
+			orientation: 'vertical'
+			HSeparatorMinor:
+				text: 'Channel'
+			GridLayout:
+				cols: 2
+				FieldLabel:
+					text: 'Name'
+				ValueField:
+					rcid: 'name'
+				FieldLabel:
+					text: 'Units'
+				ValueField:
+					rcid: 'units'
+		BoxLayout:
+			orientation: 'vertical'
+			HSeparatorMinor:
+				text: 'Settings'
+			GridLayout:
+				cols: 2
+				FieldLabel:
+					text: 'Precision'
+				ValueField:
+					rcid: 'prec'
+				FieldLabel:
+					text: 'min/max'
+				BoxLayout:
+					orientation: 'horizontal'
+					ValueField:
+						rcid: 'min'
+					ValueField:
+						rcid: 'max'
+					
+				
+<ChannelView>:
+    spacing: dp(10)
+    size_hint_y: None
+    height: dp(30)
+	BoxLayout:
+		orientation: 'horizontal'
+		FieldLabel:
+			rcid: 'name'
+			font_size: dp(25)
+		IconButton:
+			rcid: 'edit'
+			text: '\357\201\204'
+		IconButton:
+			rcid: 'delete'
+			text: '\357\200\224'			
+	
+	
 <ChannelsView>:
-	Label:
-		text: 'ChannelsView'
+	padding: (dp(10),dp(10))
+	spacing: dp(20)
+	orientation: 'vertical'
+    HSeparator:
+    	text: 'Data Channels'
+    	
+    ScrollView:
+        id: scrlChan
+        size_hint_y: 0.75
+        do_scroll_x:False
+        do_scroll_y:True
+        GridLayout:
+        	rcid: 'channelsContainer'
+            padding: [dp(20), dp(20)]
+            spacing: [dp(10), dp(10)]
+            size_hint_y: None
+            height: max(self.minimum_height, scrlChan.height)
+            cols: 1
+    	
+    BoxLayout:
+    	size_hint_y: 0.2
+    	spacing: dp(5)
+    	orientation: 'vertical'
+    	IconButton:
+    		pos_hint: {'center_x': .5, 'center_y': .5}
+    		size_hint: (0.1, 0.1)
+    		text: '\357\201\247'
+#    		on_release: root.on_add_obd2_channel()
+	    	disabled: True
+	    	rcid: 'addChan'
+    	

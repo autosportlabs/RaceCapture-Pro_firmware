@@ -1,14 +1,14 @@
 #:kivy 1.8.0
 
 <OBD2Channel>:
-    spacing: 10
+    spacing: dp(10)
     size_hint_y: None
-    height: 30
+    height: dp(30)
     orientation: 'horizontal'
     Label:
     	rcid: 'pidId'
     	text: ''
-    	font_size: 20
+    	font_size: dp(20)
     	size_hint_x: 0.1    	
     ChannelNameSpinner:
     	size_hint_x: 0.4
@@ -25,7 +25,7 @@
 
 <OBD2ChannelsView>:
     padding: (10,10)
-    spacing: 20
+    spacing: dp(20)
     orientation: 'vertical'
 	SettingsView:
 		rcid: 'obd2enable'
@@ -42,7 +42,7 @@
 		BoxLayout:
 			orientation: 'horizontal'
 			size_hint: (1.0, 0.15)
-			spacing: 10
+			spacing: dp(10)
 	        HSeparatorMinor:
 	            text: 'Channel'
 	        	size_hint_x: 0.3            
@@ -56,8 +56,8 @@
 	        do_scroll_y:True
 	        GridLayout:
 	        	rcid: 'obd2grid'
-	            padding: [20,20]
-	            spacing: [10,10]
+	            padding: [dp(20), dp(20)]
+	            spacing: [dp(10), dp(10)]
 	            size_hint_y: None
 	            height: max(self.minimum_height, scrlobd2.height)
 	            cols: 1

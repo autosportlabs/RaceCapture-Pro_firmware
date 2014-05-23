@@ -5,7 +5,7 @@ from kivy.uix.boxlayout import BoxLayout
 import json
 
 from settingsview import SettingsView, SettingsTextField, SettingsSwitch
-from separator import HLineSeparator
+from autosportlabs.widgets.separator import HLineSeparator
 from valuefield import ValueField
 from utils import *
 

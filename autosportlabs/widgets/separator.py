@@ -4,7 +4,7 @@ from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from kivy.app import Builder
 
-Builder.load_file('separator.kv')
+Builder.load_file('autosportlabs/widgets/separator.kv')
 
 class HLineSeparator(Label):
     pass

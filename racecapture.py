@@ -84,15 +84,12 @@ class RaceCaptureApp(App):
             logging.exception('')
             self._serial_warning()
     
-    def on_configuration_view(self, instance, *args):
-        print("on config view")
         
     def on_read_config(self, instance, *args):
         try:
             if not self.channels.isLoaded():
                 channelsList = self.rcpComms.getChannels()
                 self.channels.fromJson(channelsList)
-                self.dispatch('on_channels_updated', self.channels)
                 self.notifyChannelsUpdated()
                 
                 
@@ -110,7 +107,8 @@ class RaceCaptureApp(App):
         self.configView.dispatch('on_config_updated', rcpConfig)
 
     def on_channels_updated(self, channels):
-        self.configView.dispatch('on_channels_updated', channels)
+        for view in self.mainViews.itervalues():
+            view.dispatch('on_channels_updated', channels)
 
     def switchMainView(self, viewKey):
         mainView = self.mainViews.get(viewKey)

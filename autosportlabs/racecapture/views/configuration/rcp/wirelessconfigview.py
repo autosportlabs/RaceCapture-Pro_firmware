@@ -6,7 +6,7 @@ from kivy.uix.button import Button
 import json
 
 from settingsview import SettingsView, SettingsSwitch, SettingsButton, SettingsMappedSpinner
-from separator import HLineSeparator
+from autosportlabs.widgets.separator import HLineSeparator
 from valuefield import ValueField
 from utils import *
 
