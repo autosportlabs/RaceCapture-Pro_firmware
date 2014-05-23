@@ -16,4 +16,5 @@ class VSeparator(Widget):
     pass
     
 class HSeparatorMinor(Label):
-    pass
+    def __init__(self, **kwargs):
+        super(HSeparatorMinor, self).__init__(**kwargs)

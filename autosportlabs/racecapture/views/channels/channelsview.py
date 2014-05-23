@@ -3,14 +3,19 @@ kivy.require('1.8.0')
 from kivy.metrics import dp
 from kivy.uix.boxlayout import BoxLayout
 from kivy.app import Builder
+from kivy.uix.label import Label
 from kivy.uix.accordion import Accordion, AccordionItem
-from autosportlabs.widgets.separator import HSeparator
+from autosportlabs.widgets.separator import HSeparator, HSeparatorMinor
 from utils import *
 from rcpconfig import *
 from channels import Channels, Channel
 
 Builder.load_file('autosportlabs/racecapture/views/channels/channelsview.kv')
 
+class ChannelLabel(Label):
+    def __init__(self, **kwargs):
+        super(ChannelLabel, self).__init__(**kwargs)
+    
 class ChannelView(BoxLayout):
     channel = None
     name = None
