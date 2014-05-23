@@ -7,7 +7,7 @@ from kivy.extras.highlight import KivyLexer
 from pygments import lexers
 from utils import *
 
-Builder.load_file('scriptview.kv')
+Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/scriptview.kv')
 
 class LuaScriptingView(BoxLayout):
     scriptCfg = None

@@ -12,7 +12,7 @@ from utils import *
 from rcpconfig import *
 from valuefield import FloatValueField
 
-Builder.load_file('trackconfigview.kv')
+Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/trackconfigview.kv')
 
 class SectorPointView(BoxLayout):
     geoPoint = None

@@ -5,20 +5,21 @@ from kivy.app import Builder
 from utils import *
 from kivy.uix.treeview import TreeView, TreeViewLabel
 
-from analogchannelsview import *
-from imuchannelsview import *
-from gpschannelsview import *
-from timerchannelsview import *
-from gpiochannelsview import *
-from pwmchannelsview import *
-from trackconfigview import *
-from obd2channelsview import *
-from canconfigview import *
+from autosportlabs.racecapture.views.configuration.rcp.analogchannelsview import *
+from autosportlabs.racecapture.views.configuration.rcp.imuchannelsview import *
+from autosportlabs.racecapture.views.configuration.rcp.gpschannelsview import *
+from autosportlabs.racecapture.views.configuration.rcp.timerchannelsview import *
+from autosportlabs.racecapture.views.configuration.rcp.gpiochannelsview import *
+from autosportlabs.racecapture.views.configuration.rcp.pwmchannelsview import *
+from autosportlabs.racecapture.views.configuration.rcp.trackconfigview import *
+from autosportlabs.racecapture.views.configuration.rcp.obd2channelsview import *
+from autosportlabs.racecapture.views.configuration.rcp.canconfigview import *
+from autosportlabs.racecapture.views.configuration.rcp.telemetryconfigview import *
+from autosportlabs.racecapture.views.configuration.rcp.wirelessconfigview import *
+from autosportlabs.racecapture.views.configuration.rcp.scriptview import *
+
 from rcpconfig import *
 from channels import *
-from telemetryconfigview import *
-from wirelessconfigview import *
-from scriptview import *
 
 Builder.load_file('configview.kv')
 

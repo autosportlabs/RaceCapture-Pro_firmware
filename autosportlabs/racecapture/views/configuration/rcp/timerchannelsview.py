@@ -10,7 +10,7 @@ from mappedspinner import MappedSpinner
 from rcpconfig import *
 from utils import *
 
-Builder.load_file('timerchannelsview.kv')
+Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/timerchannelsview.kv')
 
 class TimerModeSpinner(MappedSpinner):
     def __init__(self, **kwargs):

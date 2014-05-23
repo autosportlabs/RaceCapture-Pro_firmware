@@ -11,7 +11,7 @@ from valuefield import IntegerValueField
 from mappedspinner import MappedSpinner
 from utils import *
 
-Builder.load_file('pwmchannelsview.kv')
+Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/pwmchannelsview.kv')
     
 class PwmOutputModeSpinner(MappedSpinner):
     def __init__(self, **kwargs):

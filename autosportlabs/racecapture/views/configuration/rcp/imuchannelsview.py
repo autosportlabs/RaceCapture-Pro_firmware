@@ -9,7 +9,7 @@ from rcpconfig import *
 from utils import *
 from valuefield import IntegerValueField, FloatValueField
 
-Builder.load_file('imuchannelsview.kv')
+Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/imuchannelsview.kv')
 
 class OrientationSpinner(MappedSpinner):
     def __init__(self, **kwargs):

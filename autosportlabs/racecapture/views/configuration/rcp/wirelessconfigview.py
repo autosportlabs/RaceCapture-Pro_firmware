@@ -10,7 +10,7 @@ from separator import HLineSeparator
 from valuefield import ValueField
 from utils import *
 
-Builder.load_file('wirelessconfigview.kv')
+Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/wirelessconfigview.kv')
 
 class WirelessConfigView(BoxLayout):
     customApnLabel = 'Custom APN'

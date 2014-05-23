@@ -9,7 +9,7 @@ from separator import HLineSeparator
 from valuefield import ValueField
 from utils import *
 
-Builder.load_file('telemetryconfigview.kv')
+Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/telemetryconfigview.kv')
 
 class TelemetryConfigView(BoxLayout):
     connectivityConfig = None
