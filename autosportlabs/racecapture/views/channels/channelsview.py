@@ -23,7 +23,9 @@ class ChannelView(BoxLayout):
         super(ChannelView, self).__init__(**kwargs)
         self.channel = kwargs.get('channel', None)
         self.name = kwargs.get('name', '')
-        kvFind(self, 'rcid', 'name').text = self.channel.name + ' (System)' if self.channel.systemChannel else ''
+        
+        kvFind(self, 'rcid', 'delete').text = '\357\200\227' if self.channel.systemChannel else '\357\200\224'
+        kvFind(self, 'rcid', 'name').text = self.channel.name
 
 class ChannelEditor(BoxLayout):
     channel = None
