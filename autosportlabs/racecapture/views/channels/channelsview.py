@@ -23,9 +23,11 @@ class ChannelView(BoxLayout):
         super(ChannelView, self).__init__(**kwargs)
         self.channel = kwargs.get('channel', None)
         self.name = kwargs.get('name', '')
-        
-        kvFind(self, 'rcid', 'delete').text = '\357\200\227' if self.channel.systemChannel else '\357\200\224'
-        kvFind(self, 'rcid', 'name').text = self.channel.name
+        kvFind(self, 'rcid', 'sysChan').text = '\357\200\243' if self.channel.systemChannel else ''
+        deleteButton = kvFind(self, 'rcid', 'delete')
+        deleteButton.disabled = self.channel.systemChannel
+        deleteButton.text = '\357\200\224' 
+        kvFind(self, 'rcid', 'name').text = self.channel.name + ('' if self.channel.units == '' else ' (' + self.channel.units + ')')
 
 class ChannelEditor(BoxLayout):
     channel = None

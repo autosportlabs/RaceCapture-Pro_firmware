@@ -60,6 +60,10 @@
     size_hint_y: None
 	BoxLayout:
 		orientation: 'horizontal'
+		IconButton:
+			size_hint_x: 0.05
+			rcid: 'sysChan'
+			text: ''
 		ChannelLabel:
 			size_hint_x: 0.7
 			rcid: 'name'
@@ -71,7 +75,7 @@
 		IconButton:
 			size_hint_x: 0.05
 			rcid: 'delete'
-			text: ''			
+			text: '\357\200\224'			
 	
 	
 <ChannelsView>:
@@ -88,7 +92,7 @@
         do_scroll_y:True
         GridLayout:
         	rcid: 'channelsContainer'
-            padding: [dp(80), dp(20)]
+            padding: [dp(200), dp(20)]
             spacing: [dp(10), dp(10)]
             size_hint_y: None
             height: max(self.minimum_height, scrlChan.height)
