@@ -4,39 +4,49 @@
 <ChannelEditor>:
 	orientation: 'vertical'
 	GridLayout:
+		spacing: dp(20)
 		cols: 2
 		BoxLayout:
+			spacing: dp(20)
 			orientation: 'vertical'
 			HSeparatorMinor:
 				text: 'Channel'
 			GridLayout:
 				cols: 2
+				spacing: dp(10)
 				FieldLabel:
 					text: 'Name'
 				ValueField:
 					rcid: 'name'
+					on_text: root.on_name(*args)
 				FieldLabel:
 					text: 'Units'
 				ValueField:
 					rcid: 'units'
+					on_text: root.on_units(*args)
 		BoxLayout:
+			spacing: dp(20)		
 			orientation: 'vertical'
 			HSeparatorMinor:
 				text: 'Settings'
 			GridLayout:
 				cols: 2
+				spacing: dp(10)
 				FieldLabel:
 					text: 'Precision'
-				ValueField:
+				IntegerValueField:
 					rcid: 'prec'
+					on_text: root.on_precision(*args)
 				FieldLabel:
-					text: 'min/max'
+					text: 'Min / max'
 				BoxLayout:
 					orientation: 'horizontal'
-					ValueField:
+					FloatValueField:
 						rcid: 'min'
-					ValueField:
+						on_text: root.on_min(*args)
+					FloatValueField:
 						rcid: 'max'
+						on_text: root.on_max(*args)
 
 <ChannelLabel>:
 	size_hint_y: None
@@ -71,6 +81,7 @@
 		IconButton:
 			size_hint_x: 0.05
 			rcid: 'edit'
+			on_release: root.on_edit()
 			text: '\357\201\204'
 		IconButton:
 			size_hint_x: 0.05
