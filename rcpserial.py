@@ -4,6 +4,9 @@ import json
 from rcpconfig import *
 from serial.tools import list_ports
 
+CHANNEL_ADD_MODE_IN_PROGRESS = 1
+CHANNEL_ADD_MODE_COMPLETE = 2
+
 class RcpSerial:
     def __init__(self, **kwargs):
         self.ser = None
@@ -257,7 +260,15 @@ class RcpSerial:
 
     def getChannels(self):
         return self.sendGet("getChannels", None)
-        
+                
+    def addChannel(self, channelJson, index, mode):
+        return self.sendCommand({'addChannel': 
+                                 {'index': index, 
+                                 'mode': mode,
+                                 'channel': channelJson
+                                 }
+                                 })
+                                  
     def getVersion(self):
         rsp = self.sendCommand({"getVer":None})
         return rsp

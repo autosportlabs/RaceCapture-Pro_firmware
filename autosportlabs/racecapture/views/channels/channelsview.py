@@ -1,8 +1,10 @@
 import kivy
+from rcpserial import CHANNEL_ADD_MODE_IN_PROGRESS, CHANNEL_ADD_MODE_COMPLETE
 kivy.require('1.8.0')
 from kivy.metrics import dp
 from kivy.uix.popup import Popup
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.stacklayout import StackLayout
 from kivy.app import Builder
 from kivy.uix.label import Label
 from kivy.uix.accordion import Accordion, AccordionItem
@@ -38,6 +40,9 @@ class ChannelView(BoxLayout):
                       size_hint=(None, None), size = (dp(500), dp(180)))
         popup.open()
         popup.bind(on_dismiss=self.on_edited)
+        
+    def on_delete(self):
+        print('delete')
         
     def on_edited(self, *args):
         self.updateView()
@@ -89,8 +94,11 @@ class ChannelEditor(BoxLayout):
 class ChannelsView(BoxLayout):
     channelsContainer = None
     channels = None
+    rcpComms = None
     def __init__(self, **kwargs):
         super(ChannelsView, self).__init__(**kwargs)
+        self.channels = kwargs.get('channels', self.channels)
+        self.rcpComms = kwargs.get('rcpComms', self.rcpComms)
         self.register_event_type('on_channels_updated')
         self.channelsContainer = kvFind(self, 'rcid', 'channelsContainer')
      
@@ -101,10 +109,25 @@ class ChannelsView(BoxLayout):
         self.channels = channels
         kvFind(self, 'rcid', 'addChan').disabled = False
             
-            
     def on_add_channel(self):
         newChannel = Channel(name='Channel', units='',precision=0, min=0, max=100)
         self.channels.items.append(newChannel)
         channelView = ChannelView(channel=newChannel)
         self.channelsContainer.add_widget(channelView)
         channelView.on_edit()
+        
+    def on_read_channels(self):
+        if self.rcpComms:
+            channelsJson = self.rcpComms.getChannels()
+            self.channels.fromJson(channelsJson)
+            self.on_channels_updated(self.channels)
+        
+    def on_write_channels(self):
+        print('write ch')
+        if self.rcpComms:
+            index = 0
+            channelCount = len(self.channels.items)
+            for channel in self.channels.items:
+                mode = CHANNEL_ADD_MODE_IN_PROGRESS if index < channelCount - 1 else CHANNEL_ADD_MODE_COMPLETE
+                self.rcpComms.addChannel( channel.toJson(), index, mode)
+                index += 1

@@ -137,10 +137,9 @@ class RaceCaptureApp(App):
         #slide_above_simple
         #fade_in
         self.mainNav.anim_type = 'slide_above_anim'
-
         
         self.configView = ConfigView(channels=self.channels)
-        self.channelsView = ChannelsView(channels=self.channels)
+        self.channelsView = ChannelsView(channels=self.channels, rcpComms = self.rcpComms)
         
         self.mainViews = {'config' : self.configView, 
                           'channels' : self.channelsView}

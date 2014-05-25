@@ -86,7 +86,8 @@
 		IconButton:
 			size_hint_x: 0.05
 			rcid: 'delete'
-			text: '\357\200\224'			
+			text: '\357\200\224'
+			on_release: root.on_delete()			
 	
 	
 <ChannelsView>:
@@ -95,10 +96,24 @@
 	orientation: 'vertical'
     HSeparator:
     	text: 'Data Channels'
+    	size_hint_y: 0.1
+	StackLayout:
+		pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+		size_hint_y: 0.1
+    	IconButton:
+			size_hint: (0.05, 0.1)
+            text: '\357\202\223'    		
+    		rcid: 'readChannels'    		
+    		on_release: root.on_read_channels()
+    	IconButton:
+			size_hint: (0.05, 0.1)
+            text: '\357\200\231'    		
+    		rcid: 'writeChannels'
+    		on_release: root.on_write_channels()
 
     ScrollView:
         id: scrlChan
-        size_hint_y: 0.75
+        size_hint_y: 0.7
         do_scroll_x:False
         do_scroll_y:True
         GridLayout:
@@ -110,12 +125,10 @@
             cols: 1
     	
     BoxLayout:
-    	size_hint_y: 0.2
-    	spacing: dp(5)
-    	orientation: 'vertical'
+    	size_hint_y: 0.1
+    	spacing: dp(10)
+    	orientation: 'horizontal'
     	IconButton:
-    		pos_hint: {'center_x': .5, 'center_y': .5}
-    		size_hint: (0.1, 0.1)
     		text: '\357\201\247'
     		on_release: root.on_add_channel()
 	    	disabled: True

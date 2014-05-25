@@ -44,6 +44,7 @@ class Channel:
         channelJson['max'] = self.max
         channelJson['sys'] = 1 if self.systemChannel else 0
         channelJson['type'] = self.channelType
+        return channelJson
         
 class Channels:
     items = []
