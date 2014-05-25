@@ -19,11 +19,12 @@ class ChannelLabel(Label):
     
 class ChannelView(BoxLayout):
     channel = None
-    name = None
     def __init__(self, **kwargs):
         super(ChannelView, self).__init__(**kwargs)
         self.channel = kwargs.get('channel', None)
-        self.name = kwargs.get('name', '')
+        self.updateView()
+        
+    def updateView(self):
         kvFind(self, 'rcid', 'sysChan').text = '\357\200\243' if self.channel.systemChannel else ''
         deleteButton = kvFind(self, 'rcid', 'delete')
         deleteButton.disabled = self.channel.systemChannel
@@ -36,6 +37,10 @@ class ChannelView(BoxLayout):
                       content = ChannelEditor(channel = channel), 
                       size_hint=(None, None), size = (dp(500), dp(180)))
         popup.open()
+        popup.bind(on_dismiss=self.on_edited)
+        
+    def on_edited(self, *args):
+        self.updateView()
 
 class ChannelEditor(BoxLayout):
     channel = None
@@ -81,7 +86,6 @@ class ChannelEditor(BoxLayout):
     def on_max(self, instance, value):
         self.channel.max = float(value)
         
-
 class ChannelsView(BoxLayout):
     channelsContainer = None
     channels = None
@@ -94,5 +98,13 @@ class ChannelsView(BoxLayout):
         self.channelsContainer.clear_widgets()
         for channel in channels.items:
             self.channelsContainer.add_widget(ChannelView(channel=channel))
+        self.channels = channels
         kvFind(self, 'rcid', 'addChan').disabled = False
             
+            
+    def on_add_channel(self):
+        newChannel = Channel(name='Channel', units='',precision=0, min=0, max=100)
+        self.channels.items.append(newChannel)
+        channelView = ChannelView(channel=newChannel)
+        self.channelsContainer.add_widget(channelView)
+        channelView.on_edit()

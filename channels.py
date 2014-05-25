@@ -17,8 +17,11 @@ class Channel:
     channelType = None
     
     def __init__(self, **kwargs):
-        self.name = kwargs.get('name', 'Unknown')
-        self.units = kwargs.get('units', 'Unknown')
+        self.name = kwargs.get('name', self.name)
+        self.units = kwargs.get('units', self.units)
+        self.precision = kwargs.get('precision', self.precision)
+        self.min = kwargs.get('min', self.min)
+        self.max = kwargs.get('max', self.max)
         
     def fromJson(self, channelJson):
         if channelJson:
