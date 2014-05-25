@@ -23,7 +23,8 @@ class ChannelView(BoxLayout):
     channel = None
     def __init__(self, **kwargs):
         super(ChannelView, self).__init__(**kwargs)
-        self.channel = kwargs.get('channel', None)
+        self.channel = kwargs.get('channel', self.channel)
+        self.register_event_type('on_delete_channel')
         self.updateView()
         
     def updateView(self):
@@ -42,7 +43,10 @@ class ChannelView(BoxLayout):
         popup.bind(on_dismiss=self.on_edited)
         
     def on_delete(self):
-        print('delete')
+        self.dispatch('on_delete_channel', self.channel)
+        
+    def on_delete_channel(self, *args):
+        pass
         
     def on_edited(self, *args):
         self.updateView()
@@ -105,10 +109,20 @@ class ChannelsView(BoxLayout):
     def on_channels_updated(self, channels):
         self.channelsContainer.clear_widgets()
         for channel in channels.items:
-            self.channelsContainer.add_widget(ChannelView(channel=channel))
+            channelView = ChannelView(channel=channel)
+            channelView.bind(on_delete_channel = self.on_delete_channel)
+            self.channelsContainer.add_widget(channelView)
         self.channels = channels
         kvFind(self, 'rcid', 'addChan').disabled = False
             
+    def on_delete_channel(self, instance, value):
+        channelItems = self.channels.items
+        for channel in channelItems:
+            if value == channel:
+                channelItems.remove(channel)
+                break
+        self.on_channels_updated(self.channels)
+        
     def on_add_channel(self):
         newChannel = Channel(name='Channel', units='',precision=0, min=0, max=100)
         self.channels.items.append(newChannel)
@@ -123,7 +137,6 @@ class ChannelsView(BoxLayout):
             self.on_channels_updated(self.channels)
         
     def on_write_channels(self):
-        print('write ch')
         if self.rcpComms:
             index = 0
             channelCount = len(self.channels.items)
