@@ -95,6 +95,7 @@ SRC = 	mock_uart.c \
 		$(RCP_SRC)/lua/luaScript.c \
 		$(RCP_SRC)/util/modp_numtoa.c \
 		$(RCP_SRC)/util/modp_atonum.c \
+		$(RCP_SRC)/util/mod_string.c \
 		$(RCP_SRC)/jsmn/jsmn.c \
 		$(RCP_SRC)/api/api.c \
 		$(RCP_SRC)/OBD2/OBD2.c \

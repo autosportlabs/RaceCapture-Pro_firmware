@@ -9,8 +9,8 @@
 #define CHANNEL_ADD_MODE_COMPLETE 		2
 
 #define MAX_CHANNEL_COUNT			90
-#define DEFAULT_LABEL_LENGTH		10
-#define DEFAULT_UNITS_LENGTH		10
+#define DEFAULT_LABEL_LENGTH		11
+#define DEFAULT_UNITS_LENGTH		11
 
 
 #define CHANNEL_SYSTEM_CHANNEL_FLAG 	0
@@ -26,8 +26,8 @@
 
 
 typedef struct _ChannelName{
-	char label[DEFAULT_LABEL_LENGTH + 1];
-	char units[DEFAULT_UNITS_LENGTH + 1];
+	char label[DEFAULT_LABEL_LENGTH];
+	char units[DEFAULT_UNITS_LENGTH];
 	unsigned char precision;
 	unsigned char flags;
 	float min;

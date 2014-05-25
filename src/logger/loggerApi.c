@@ -126,7 +126,7 @@ static int setFloatValueIfExists(const jsmntok_t *root, const char * fieldName, 
 
 static int setStringValueIfExists(const jsmntok_t *root, const char * fieldName, char *target, size_t maxLen ){
 	const jsmntok_t *valueNode = findStringValueNode(root, fieldName);
-	if (valueNode) strncpy(target, valueNode->data, maxLen);
+	if (valueNode) strlcpy(target, valueNode->data, maxLen);
 	return (valueNode != NULL);
 }
 
