@@ -883,13 +883,13 @@ void LoggerApiTest::testAddChannelFile(string filename){
 
 	int index = (int)(Number)jsonCompare["addChannel"]["index"];
 	const Channel *channel = channels->channels + index;
-	CPPUNIT_ASSERT_EQUAL(string((String)jsonCompare["addChannel"]["nm"]), string(channel->label));
-	CPPUNIT_ASSERT_EQUAL(string((String)jsonCompare["addChannel"]["ut"]), string(channel->units));
-	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonCompare["addChannel"]["prec"], (int)channel->precision);
-	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonCompare["addChannel"]["type"], (int)get_channel_type(channel));
-	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonCompare["addChannel"]["sys"], (int)is_system_channel(channel));
-	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addChannel"]["min"], channel->min);
-	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addChannel"]["max"], channel->max);
+	CPPUNIT_ASSERT_EQUAL(string((String)jsonCompare["addChannel"]["channel"]["nm"]), string(channel->label));
+	CPPUNIT_ASSERT_EQUAL(string((String)jsonCompare["addChannel"]["channel"]["ut"]), string(channel->units));
+	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonCompare["addChannel"]["channel"]["prec"], (int)channel->precision);
+	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonCompare["addChannel"]["channel"]["type"], (int)get_channel_type(channel));
+	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonCompare["addChannel"]["channel"]["sys"], (int)is_system_channel(channel));
+	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addChannel"]["channel"]["min"], channel->min);
+	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addChannel"]["channel"]["max"], channel->max);
 }
 
 void LoggerApiTest::testGetChannels(){

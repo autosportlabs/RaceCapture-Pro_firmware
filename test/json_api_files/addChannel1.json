@@ -2,12 +2,14 @@
     "addChannel": {
         "index": 0,
         "mode": 2,
-        "nm": "Analog2",
-        "ut": "",
-        "sys": 1,
-        "type": 1,
-        "prec": 2,
-        "min": 0,
-        "max": 5
+        "channel": {
+            "nm": "Analog2",
+            "ut": "",
+            "sys": 1,
+            "type": 1,
+            "prec": 2,
+            "min": 0,
+            "max": 5
+        }
     }
 }

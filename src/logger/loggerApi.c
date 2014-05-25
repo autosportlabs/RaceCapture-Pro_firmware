@@ -1134,21 +1134,24 @@ int api_addChannel(Serial *serial, const jsmntok_t *json){
 		setStringValueIfExists(json, "nm", channel.label, DEFAULT_LABEL_LENGTH);
 		setStringValueIfExists(json, "ut", channel.units, DEFAULT_UNITS_LENGTH);
 
-		unsigned char systemChannel = 0;
-		if (setUnsignedCharValueIfExists(json, "sys", &systemChannel, NULL)){
-			systemChannel = systemChannel ? 1 : 0;
-		}
-		unsigned char channelType = CHANNEL_TYPE_UNKNOWN;
-		setUnsignedCharValueIfExists(json, "type", &channelType, NULL);
-		channel.flags = (channelType << 1) + systemChannel;
-		setUnsignedCharValueIfExists(json, "prec", &channel.precision, NULL);
-		setFloatValueIfExists(json, "min", &channel.min);
-		setFloatValueIfExists(json, "max", &channel.max);
+		const jsmntok_t *channelNode = findNode(json, "channel");
+		if (channelNode){
+			unsigned char systemChannel = 0;
+			if (setUnsignedCharValueIfExists(channelNode, "sys", &systemChannel, NULL)){
+				systemChannel = systemChannel ? 1 : 0;
+			}
+			unsigned char channelType = CHANNEL_TYPE_UNKNOWN;
+			setUnsignedCharValueIfExists(channelNode, "type", &channelType, NULL);
+			channel.flags = (channelType << 1) + systemChannel;
+			setUnsignedCharValueIfExists(channelNode, "prec", &channel.precision, NULL);
+			setFloatValueIfExists(channelNode, "min", &channel.min);
+			setFloatValueIfExists(channelNode, "max", &channel.max);
 
-		add_channel(&channel, mode, index);
-		return API_SUCCESS;
+			add_channel(&channel, mode, index);
+			return API_SUCCESS;
+		}
 	}
-	return API_ERROR_PARAMETER;
+	return API_ERROR_MALFORMED;
 }
 
 int api_getChannels(Serial *serial, const jsmntok_t *json){
