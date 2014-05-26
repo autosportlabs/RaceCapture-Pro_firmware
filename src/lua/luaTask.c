@@ -13,6 +13,10 @@
 #include "mod_string.h"
 #include "watchdog.h"
 #include "LED.h"
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
+
 
 #define DEFAULT_ONTICK_HZ 1
 #define MAX_ONTICK_HZ 30
@@ -219,7 +223,7 @@ void luaTask(void *params){
 	}
 }
 
-lua_State * getLua(){
+void * getLua(){
 	return g_lua;
 }
 

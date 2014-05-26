@@ -20,6 +20,7 @@
 #include "ADC.h"
 #include "imu.h"
 #include "luaScript.h"
+#include "luaTask.h"
 
 
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
@@ -1220,5 +1221,8 @@ int api_setScript(Serial *serial, const jsmntok_t *json){
 	return returnStatus;
 }
 
-
+int api_runScript(Serial *serial, const jsmntok_t *json){
+	setShouldReloadScript(1);
+	return API_SUCCESS;
+}
 

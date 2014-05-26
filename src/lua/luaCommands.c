@@ -14,6 +14,9 @@
 #include "memory.h"
 #include "FreeRTOS.h"
 #include "printk.h"
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
 
 #define LINE_BUFFER_SIZE  256
 

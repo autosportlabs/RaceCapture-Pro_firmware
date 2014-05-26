@@ -36,7 +36,7 @@ void ShowStats(Serial *serial, unsigned int argc, char **argv){
 	put_uint(serial, lastPointer - heap);
 	put_crlf(serial);
 	serial->put_s("== Lua Info ==\r\n");
-	lua_State *L = getLua();
+	lua_State *L = (lua_State *)getLua(); //TODO: this was done for unit testing. fix when Lua runtime is part of unit testing framework
 	lua_gc(L,LUA_GCCOLLECT,0);
 	serial->put_s("Lua Top              :");
 	put_int(serial, lua_gettop(L));

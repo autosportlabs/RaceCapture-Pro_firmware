@@ -119,6 +119,7 @@ SRC = 	mock_uart.c \
 		$(MOCK_DIR)/ADC_device_mock.c \
 		$(MOCK_DIR)/PWM_device_mock.c \
 		$(MOCK_DIR)/LED_device_mock.c \
+		$(MOCK_DIR)/luaTask_mock.c \
 		$(MOCK_DIR)/GPIO_device_mock.c \
 		$(MOCK_DIR)/memory_device_mock.c \
 		$(MOCK_DIR)/loggerNotifications_mock.c \

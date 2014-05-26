@@ -1047,16 +1047,25 @@ void LoggerApiTest::testGetScriptFile(string filename){
 
 void LoggerApiTest::testSetScriptFile(string filename){
 	processApiGeneric(filename);
-		char *txBuffer = mock_getTxBuffer();
+	char *txBuffer = mock_getTxBuffer();
 
-		LoggerConfig *c = getWorkingLoggerConfig();
-		TrackConfig *cfg = &c->TrackConfigs;
+	LoggerConfig *c = getWorkingLoggerConfig();
+	TrackConfig *cfg = &c->TrackConfigs;
 
-		assertGenericResponse(txBuffer, "setScriptCfg", API_SUCCESS);
+	assertGenericResponse(txBuffer, "setScriptCfg", API_SUCCESS);
 
-		const char * script = getScript();
+	const char * script = getScript();
 
-		//todo enable after dealing with const
-		//CPPUNIT_ASSERT_EQUAL(string("function hello() end"), string(script));
+	//todo enable after dealing with const
+	CPPUNIT_ASSERT_EQUAL(string("function hello() end"), string(script));
+}
 
+void LoggerApiTest::testRunScript(){
+	testRunScriptFile("runScript1.json");
+}
+
+void LoggerApiTest::testRunScriptFile(string filename){
+	processApiGeneric(filename);
+	char *txBuffer = mock_getTxBuffer();
+	assertGenericResponse(txBuffer, "runScript", API_SUCCESS);
 }

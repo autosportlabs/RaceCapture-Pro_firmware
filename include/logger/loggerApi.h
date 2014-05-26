@@ -49,6 +49,7 @@
 {"setObd2Cfg", api_setObd2Config}, \
 {"getScriptCfg", api_getScript}, \
 {"setScriptCfg", api_setScript}, \
+{"runScript", api_runScript}, \
 {"getTrackDb", api_getTrackDb}, \
 {"setTrackDb", api_setTrackDb}, \
 {"addChannel", api_addChannel}, \
@@ -93,6 +94,7 @@ int api_getCanConfig(Serial *serial, const jsmntok_t *json);
 int api_setCanConfig(Serial *serial, const jsmntok_t *json);
 int api_getScript(Serial *serial, const jsmntok_t *json);
 int api_setScript(Serial *serial, const jsmntok_t *json);
+int api_runScript(Serial *serial, const jsmntok_t *json);
 
 //messages
 void api_sendLogStart(Serial *serial);
