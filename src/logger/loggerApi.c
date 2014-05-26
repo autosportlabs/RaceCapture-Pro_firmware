@@ -1160,6 +1160,7 @@ int api_getChannels(Serial *serial, const jsmntok_t *json){
 	size_t channels_count = channelsInfo->count;
 
 	json_objStart(serial);
+	json_int(serial,"size", channels_count, 1);
 	json_arrayStart(serial, "channels");
 	for (size_t channel_index = 0; channel_index < channels_count; channel_index++){
 		json_objStart(serial);

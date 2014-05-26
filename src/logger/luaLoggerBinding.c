@@ -41,7 +41,7 @@ void registerLuaLoggerBindings(lua_State *L){
 	lua_registerlight(L,"setGpio",Lua_SetGPIO);
 	lua_registerlight(L,"getButton",Lua_GetButton);
 
-	lua_registerlight(L,"setPWMDutyCycle",Lua_SetPWMDutyCycle);
+	lua_registerlight(L,"setPwmDutyCycle",Lua_SetPWMDutyCycle);
 	lua_registerlight(L,"setPwmPeriod",Lua_SetPWMPeriod);
 	lua_registerlight(L,"setAnalogOut",Lua_SetAnalogOut);
 
