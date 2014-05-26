@@ -1,2 +1,2 @@
 #/bin/bash
-openocd -f flash.cfg
+openocd -f sam7s_flash.cfg
