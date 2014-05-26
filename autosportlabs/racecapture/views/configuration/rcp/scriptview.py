@@ -6,6 +6,7 @@ from kivy.app import Builder
 from kivy.extras.highlight import KivyLexer
 from pygments import lexers
 from utils import *
+from iconbutton import IconButton
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/scriptview.kv')
 
@@ -24,12 +25,7 @@ class LuaScriptingView(BoxLayout):
     def on_script_changed(self, instance, value):
         if self.scriptCfg:
             self.scriptCfg.script = value
-        
-class LuaCodeInput(CodeInput):
-    def __init__(self, **kwargs):
-        super(LuaCodeInput, self).__init__(**kwargs)
-        self.lexer= lexers.get_lexer_by_name('lua')
-        
+
     def readScript(self):
         print("read script")
 
@@ -38,3 +34,9 @@ class LuaCodeInput(CodeInput):
 
     def runScript(self):
         print("run script")
+        
+class LuaCodeInput(CodeInput):
+    def __init__(self, **kwargs):
+        super(LuaCodeInput, self).__init__(**kwargs)
+        self.lexer= lexers.get_lexer_by_name('lua')
+        
