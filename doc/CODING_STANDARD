@@ -1,0 +1,16 @@
+To keep our sanity and not stomp over one another's commits
+unnecessarily we have adopted the Linux coding standard as defined
+here https://www.kernel.org/doc/Documentation/CodingStyle with the
+following exceptions:
+
+* While I like tabs and fundamentally agree with the Linux folks
+  logic, method names are sometimes necessarily long and 4 spaces is
+  just easier to work with and keep consistent.  Thus we use spaces only
+  and keep it at 4 spaces for indentation.  This also is close to what
+  exists in the current code base, so its less of a drastic change.
+
+* Simple one line IF statements happen _on the same line_.  Rationale
+  is that its more readable and helps to prevent mistakes where a
+  programmer forgets to include braces around the IF statements.  If
+  its not easily readable, break it into a multi-line if statement
+  with braces.
