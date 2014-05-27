@@ -796,8 +796,10 @@ void LoggerApiTest::testGetLapCfg(){
 	testGetLapConfigFile("getLapCfg1.json");
 }
 
-void LoggerApiTest::testSetTrackConfigFile(string filename, int sectors){
-	processApiGeneric(filename);
+void LoggerApiTest::testSetTrackCfgCircuit(){
+
+	int sectors = 10; //to match file
+	processApiGeneric("setTrackCfg1.json");
 	char *txBuffer = mock_getTxBuffer();
 
 	LoggerConfig *c = getWorkingLoggerConfig();
@@ -805,33 +807,31 @@ void LoggerApiTest::testSetTrackConfigFile(string filename, int sectors){
 
 	assertGenericResponse(txBuffer, "setTrackCfg", API_SUCCESS);
 
-	CPPUNIT_ASSERT_EQUAL(1, (int)cfg->track.track_type);
+	CPPUNIT_ASSERT_EQUAL(0, (int)cfg->track.track_type);
 	CPPUNIT_ASSERT_CLOSE_ENOUGH(0.0001F, cfg->radius);
 	CPPUNIT_ASSERT_EQUAL(0, (int)cfg->auto_detect);
-	CPPUNIT_ASSERT_CLOSE_ENOUGH(1.1F, cfg->track.startFinish.latitude);
-	CPPUNIT_ASSERT_CLOSE_ENOUGH(2.1F, cfg->track.startFinish.longitude);
+	CPPUNIT_ASSERT_CLOSE_ENOUGH(1.0F, cfg->track.circuit.startFinish.latitude);
+	CPPUNIT_ASSERT_CLOSE_ENOUGH(2.0F, cfg->track.circuit.startFinish.longitude);
 
 	float startingValue = 1.1;
 
 	for (int i = 0; i < sectors; i++){
-		CPPUNIT_ASSERT_CLOSE_ENOUGH(startingValue, cfg->track.sectors[i].latitude);
+		CPPUNIT_ASSERT_CLOSE_ENOUGH(startingValue, cfg->track.circuit.sectors[i].latitude);
 		startingValue++;
-		CPPUNIT_ASSERT_CLOSE_ENOUGH(startingValue, cfg->track.sectors[i].longitude);
+		CPPUNIT_ASSERT_CLOSE_ENOUGH(startingValue, cfg->track.circuit.sectors[i].longitude);
 		startingValue++;
 	}
 }
 
-void LoggerApiTest::testSetTrackCfg(){
-	testSetTrackConfigFile("setTrackCfg1.json", 10);
-}
-
-void LoggerApiTest::testGetTrackConfigFile(string filename){
+void LoggerApiTest::testGetTrackCfgCircuit(){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	TrackConfig *cfg = &c->TrackConfigs;
 
+	cfg->track.circuit.startFinish.latitude  = 1.0;
+	cfg->track.circuit.startFinish.longitude = 2.0;
 	float startingValue = 1.1;
-	for (size_t i = 0; i < SECTOR_COUNT; i++){
-		GeoPoint *point = (cfg->track.sectors + i);
+	for (size_t i = 0; i < CIRCUIT_SECTOR_COUNT; i++){
+		GeoPoint *point = (cfg->track.circuit.sectors + i);
 		point->latitude = startingValue;
 		startingValue++;
 		point->longitude = startingValue;
@@ -839,30 +839,29 @@ void LoggerApiTest::testGetTrackConfigFile(string filename){
 	}
 	cfg->radius = 0.009;
 	cfg->auto_detect = 0;
-	cfg->track.track_type = 1;
+	cfg->track.track_type = TRACK_TYPE_CIRCUIT;
 
-	char * response = processApiGeneric(filename);
+	char * response = processApiGeneric("getTrackCfg1.json");
 
 	Object json;
 	stringToJson(response, json);
 
 	CPPUNIT_ASSERT_EQUAL(0.009F, (float)(Number)json["trackCfg"]["rad"]);
 	CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["trackCfg"]["autoDetect"]);
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)json["trackCfg"]["track"]["type"]);
+	CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["trackCfg"]["track"]["type"]);
+
+	CPPUNIT_ASSERT_EQUAL(1.0F, (float)(Number)json["trackCfg"]["track"]["sf"][0]);
+	CPPUNIT_ASSERT_EQUAL(2.0F, (float)(Number)json["trackCfg"]["track"]["sf"][1]);
 
 	Array &sectors = json["trackCfg"]["track"]["sec"];
 
 	startingValue = 1.1;
-	for (size_t i = 0; i < SECTOR_COUNT; i++){
+	for (size_t i = 0; i < CIRCUIT_SECTOR_COUNT; i++){
 		CPPUNIT_ASSERT_CLOSE_ENOUGH(startingValue, (float)(Number) sectors[i][0]);
 		startingValue++;
 		CPPUNIT_ASSERT_CLOSE_ENOUGH(startingValue, (float)(Number) sectors[i][1]);
 		startingValue++;
 	}
-}
-
-void LoggerApiTest::testGetTrackCfg(){
-	testGetTrackConfigFile("getTrackCfg1.json");
 }
 
 void LoggerApiTest::testAddChannel(){

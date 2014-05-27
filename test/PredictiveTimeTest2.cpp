@@ -77,8 +77,8 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
 
 
 	TrackConfig *trackCfg  = 	&(getWorkingLoggerConfig()->TrackConfigs);
-	trackCfg->track.startFinish.latitude = 47.806934;
-	trackCfg->track.startFinish.longitude = -122.341150;
+	trackCfg->track.circuit.startFinish.latitude = 47.806934;
+	trackCfg->track.circuit.startFinish.longitude = -122.341150;
 	trackCfg->radius = 0.0004;
 	setGPSQuality (GPS_QUALITY_DIFFERENTIAL);
 

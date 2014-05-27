@@ -40,8 +40,8 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST( testGetGpsCfg );
   CPPUNIT_TEST( testSetLapCfg );
   CPPUNIT_TEST( testGetLapCfg );
-  CPPUNIT_TEST( testSetTrackCfg );
-  CPPUNIT_TEST( testGetTrackCfg );
+  CPPUNIT_TEST( testSetTrackCfgCircuit );
+  CPPUNIT_TEST( testGetTrackCfgCircuit );
   CPPUNIT_TEST( testGetChannels );
   CPPUNIT_TEST( testAddChannel );
   CPPUNIT_TEST( testSampleData );
@@ -87,10 +87,10 @@ public:
   void testSetTimerCfg();
   void testGetGpsCfg();
   void testSetGpsCfg();
-  void testSetTrackCfg();
   void testSetLapCfg();
   void testGetLapCfg();
-  void testGetTrackCfg();
+  void testSetTrackCfgCircuit();
+  void testGetTrackCfgCircuit();
   void testGetChannels();
   void testAddChannel();
   void testCalibrateImu();
@@ -123,8 +123,6 @@ private:
   void testSetTimerConfigFile(string filename);
   void testGetGpsConfigFile(string filename);
   void testSetGpsConfigFile(string filename, unsigned char channelsEnabled, unsigned short sampleRate);
-  void testGetTrackConfigFile(string filename);
-  void testSetTrackConfigFile(string filename, int includedSectors);
   void testAddChannelFile(string filename);
   void testGetChannelsFile(string filename);
   void testSetLapConfigFile(string filename);
