@@ -322,8 +322,6 @@ class PwmChannel:
         self.loggingMode = 0
         self.startupPeriod = 0
         self.startupDutyCycle = 0
-        self.voltageScaling = 0
-        
         
     def fromJson(self, json):
         if (json):
@@ -333,7 +331,6 @@ class PwmChannel:
             self.loggingMode = json.get('logMode', self.loggingMode)
             self.startupDutyCycle = json.get('stDutyCyc', self.startupDutyCycle)
             self.startupPeriod = json.get('stPeriod', self.startupPeriod)
-            self.voltageScaling = json.get('vScal', self.voltageScaling)
             
     def toJson(self):
         pwmJson = {}
@@ -343,7 +340,6 @@ class PwmChannel:
         pwmJson['logMode'] = self.loggingMode
         pwmJson['stDutyCyc'] = self.startupDutyCycle
         pwmJson['stPeriod'] = self.startupPeriod
-        pwmJson['vScal'] = self.voltageScaling
         return pwmJson
 
 PWM_CHANNEL_COUNT = 4   

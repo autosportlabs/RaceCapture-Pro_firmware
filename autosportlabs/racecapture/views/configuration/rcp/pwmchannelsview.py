@@ -65,10 +65,7 @@ class AnalogPulseOutputChannel(BoxLayout):
 
         sampleRateSpinner = kvFind(self, 'rcid', 'sr')
         sampleRateSpinner.setValue(channelConfig.sampleRate)
-        
-        voltageScalingField = kvFind(self, 'rcid', 'vScal')
-        voltageScalingField.text =  '{:.3g}'.format(channelConfig.voltageScaling)
-        
+                
         startupDutyCycle = kvFind(self, 'rcid', 'dutyCycle')
         startupDutyCycle.text = str(channelConfig.startupDutyCycle)
         

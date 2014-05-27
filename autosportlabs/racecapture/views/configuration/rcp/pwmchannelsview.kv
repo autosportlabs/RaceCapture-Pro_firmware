@@ -35,16 +35,6 @@
                 PwmLoggingModeSpinner:
                 	rcid: 'loggingMode'
                 	on_text: root.on_logging_mode(*args)
-            BoxLayout:
-                size_hint:[1.0, 0.25]
-                padding:[2,2]
-                orientation: 'horizontal'
-                FieldLabel:
-                    text: 'Logging Scale Factor'
-                    halign: 'right'
-                FloatValueField:
-                	rcid: 'vScal'
-                	on_text: root.on_voltage_scaling(*args)
                     
         BoxLayout:
             padding: [5, 5]
