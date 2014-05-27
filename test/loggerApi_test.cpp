@@ -446,7 +446,6 @@ void LoggerApiTest::testGetPwmConfigFile(string filename, int index){
 	pwmCfg->loggingMode = 1;
 	pwmCfg->startupDutyCycle = 55;
 	pwmCfg->startupPeriod = 321;
-	pwmCfg->voltageScaling = 1.23;
 
 	char * response = processApiGeneric(filename);
 
@@ -463,7 +462,6 @@ void LoggerApiTest::testGetPwmConfigFile(string filename, int index){
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["logMode"]);
 	CPPUNIT_ASSERT_EQUAL(55, (int)(Number)analogJson["stDutyCyc"]);
 	CPPUNIT_ASSERT_EQUAL(321, (int)(Number)analogJson["stPeriod"]);
-	CPPUNIT_ASSERT_EQUAL(1.23F, (float)(Number)analogJson["vScal"]);
 }
 
 void LoggerApiTest::testGetPwmCfg(){
@@ -485,7 +483,6 @@ void LoggerApiTest::testSetPwmConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(1, (int)pwmCfg->loggingMode);
 	CPPUNIT_ASSERT_EQUAL(50, (int)pwmCfg->startupDutyCycle);
 	CPPUNIT_ASSERT_EQUAL(110, (int)pwmCfg->startupPeriod);
-	CPPUNIT_ASSERT_EQUAL(2.5F, (float)pwmCfg->voltageScaling);
 
 	char *txBuffer = mock_getTxBuffer();
 	assertGenericResponse(txBuffer, "setPwmCfg", API_SUCCESS);

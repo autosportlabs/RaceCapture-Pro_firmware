@@ -646,7 +646,7 @@ static void sendPwmConfig(Serial *serial, size_t startIndex, size_t endIndex){
 		json_uint(serial, "outMode", cfg->outputMode, 1);
 		json_uint(serial, "logMode", cfg->loggingMode, 1);
 		json_uint(serial, "stDutyCyc", cfg->startupDutyCycle, 1);
-		json_uint(serial, "stPeriod", cfg->startupPeriod, 1);
+		json_uint(serial, "stPeriod", cfg->startupPeriod, 0);
 		json_objEnd(serial, i != endIndex); //index
 	}
 	json_objEnd(serial, 0);
