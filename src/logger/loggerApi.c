@@ -647,7 +647,6 @@ static void sendPwmConfig(Serial *serial, size_t startIndex, size_t endIndex){
 		json_uint(serial, "logMode", cfg->loggingMode, 1);
 		json_uint(serial, "stDutyCyc", cfg->startupDutyCycle, 1);
 		json_uint(serial, "stPeriod", cfg->startupPeriod, 1);
-		json_float(serial, "vScal", cfg->voltageScaling, DEFAULT_VOLTAGE_SCALING_PRECISION, 0);
 		json_objEnd(serial, i != endIndex); //index
 	}
 	json_objEnd(serial, 0);
@@ -690,7 +689,6 @@ static const jsmntok_t * setPwmExtendedField(const jsmntok_t *valueTok, const ch
 	if (NAME_EQU("logMode", name)) pwmCfg->loggingMode = filterPwmLoggingMode(modp_atoi(value));
 	if (NAME_EQU("stDutyCyc", name)) pwmCfg->startupDutyCycle = filterPwmDutyCycle(modp_atoi(value));
 	if (NAME_EQU("stPeriod", name)) pwmCfg->startupPeriod = filterPwmPeriod(modp_atoi(value));
-	if (NAME_EQU("vScal", name)) pwmCfg->voltageScaling = modp_atof(value);
 	return valueTok + 1;
 }
 

@@ -624,7 +624,7 @@ int Lua_SetAnalogOut(lua_State *L){
 		if (NULL != c){
 			unsigned int channel = (unsigned int)lua_tointeger(L,1);
 			if (channel >= 0 && channel < CONFIG_PWM_CHANNELS){
-				float dutyCycle = (float)lua_tonumber(L,2) / c->voltageScaling;
+				float dutyCycle = (float)lua_tonumber(L,2) / PWM_VOLTAGE_SCALING;
 				PWM_set_duty_cycle(channel,(unsigned short)dutyCycle);
 			}
 		}
