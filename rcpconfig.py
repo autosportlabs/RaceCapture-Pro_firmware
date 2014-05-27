@@ -382,7 +382,10 @@ class GeoPoint:
         
 TRACK_TYPE_CIRCUIT  = 0
 TRACK_TYPE_STAGE    = 1
-        
+
+CONFIG_SECTOR_COUNT_CIRCUIT = 19
+CONFIG_SECTOR_COUNT_STAGE = 18
+
 class TrackConfig:
     def __init__(self, **kwargs):
         self.sectorCount = CONFIG_SECTOR_COUNT
@@ -402,12 +405,16 @@ class TrackConfig:
             self.trackType = trackJson.get('type', self.trackType)
             sectorsJson = trackJson.get('sec', None)
             del self.sectors[:]
+            sectorCount = CONFIG_SECTOR_COUNT_CIRCUIT if self.trackType == TRACK_TYPE_CIRCUIT else CONFIG_SECTOR_COUNT_STAGE
+            returnedSectorCount = len(sectorsJson)
             if sectorsJson:
-                for i in range(self.sectorCount):
-                    sectorJson = sectorsJson[i]
+                for i in range(sectorCount):
                     sector = GeoPoint()
-                    sector.fromJson(sectorJson)
+                    if i < returnedSectorCount:
+                        sectorJson = sectorsJson[i]
+                        sector.fromJson(sectorJson)
                     self.sectors.append(sector)
+            self.sectorCount = sectorCount
                     
     def toJson(self):
         trackCfgJson = {}
