@@ -2,12 +2,29 @@
 
 <ConfigView>:
 	orientation: 'horizontal'
-	TreeView:
-		rcid: 'menu'
-		size_hint: (None, 1)
-		width: dp(200)
-		hide_root: True
-		indent_level: 0
 	BoxLayout:
+		size_hint_x: 0.2
+		orientation: 'vertical'
+		TreeView:
+			size_hint_y: 0.9
+			rcid: 'menu'
+			size_hint: (None, 1)
+			width: dp(200)
+			hide_root: True
+			indent_level: 0
+		BoxLayout:
+			size_hint_y: 0.1
+			orientation: 'horizontal'
+	        IconButton:
+	            id: 'read'
+	            text: '\357\202\223'
+	            on_release: root.readConfig()
+	        IconButton:
+	            id: 'write'
+	            text: '\357\200\231'
+	            on_release: root.writeConfig()
+			
+	BoxLayout:
+		size_hint_x: 0.8
 		rcid: 'content'
 	

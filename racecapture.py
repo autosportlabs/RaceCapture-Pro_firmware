@@ -121,8 +121,6 @@ class RaceCaptureApp(App):
         Builder.load_file('racecapture.kv')
         toolbar = kvFind(self.root, 'rcid', 'statusbar')
         toolbar.bind(on_main_menu=self.on_main_menu)    
-        toolbar.bind(on_read_config=self.on_read_config)
-        toolbar.bind(on_write_config=self.on_write_config)
         
         mainMenu = kvFind(self.root, 'rcid', 'mainMenu')
         mainMenu.bind(on_main_menu_item=self.on_main_menu_item)
@@ -138,12 +136,17 @@ class RaceCaptureApp(App):
         #fade_in
         self.mainNav.anim_type = 'slide_above_anim'
         
-        self.configView = ConfigView(channels=self.channels)
-        self.channelsView = ChannelsView(channels=self.channels, rcpComms = self.rcpComms)
+        configView = ConfigView(channels=self.channels)
+        configView.bind(on_read_config=self.on_read_config)
+        configView.bind(on_write_config=self.on_write_config)
         
-        self.mainViews = {'config' : self.configView, 
-                          'channels' : self.channelsView}
-            
+        channelsView = ChannelsView(channels=self.channels, rcpComms = self.rcpComms)
+        
+        self.mainViews = {'config' : configView, 
+                          'channels' : channelsView}
+
+        self.configView = configView
+        self.channelsView = channelsView
 if __name__ == '__main__':
 
     RaceCaptureApp().run()

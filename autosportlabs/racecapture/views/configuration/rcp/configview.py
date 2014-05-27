@@ -40,6 +40,9 @@ class ConfigView(BoxLayout):
         self.menu = kvFind(self, 'rcid', 'menu')
         self.channels = kwargs.get('channels', None)
         self.createConfigViews(self.menu)
+        self.register_event_type('on_read_config')
+        self.register_event_type('on_write_config')
+        
         
     def on_channels_updated(self, channels):
         for view in self.configViews:
@@ -92,4 +95,18 @@ class ConfigView(BoxLayout):
         
         tree.bind(selected_node=on_select_node)
         
+    def on_read_config(self, instance, *args):
+        pass
+    
+    def on_write_config(self, instance, *args):
+        pass
+    
+    def readConfig(self):
+        print('read')
+        self.dispatch('on_read_config', None)
+
+    def writeConfig(self):
+        print('write')
+        self.dispatch('on_write_config', None)
+
 
