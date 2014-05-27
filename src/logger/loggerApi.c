@@ -977,34 +977,32 @@ int api_getLapConfig(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS_NO_RETURN;
 }
 
+static void json_geoPointArray(Serial *serial, const char *name, const GeoPoint *point, int more){
+	json_arrayStart(serial, name);
+	json_arrayElementFloat(serial, point->latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
+	json_arrayElementFloat(serial, point->longitude, DEFAULT_GPS_POSITION_PRECISION, 0);
+	json_arrayEnd(serial, more);
+}
+
 static void json_track(Serial *serial, const Track *track){
 	json_int(serial, "type", track->track_type, 1);
 	if (track->track_type == TRACK_TYPE_CIRCUIT){
-		json_arrayStart(serial, "sf");
-			json_arrayElementFloat(serial, track->startFinish.latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
-			json_arrayElementFloat(serial, track->startFinish.longitude, DEFAULT_GPS_POSITION_PRECISION, 0);
-			json_arrayEnd(serial, 1);
+		json_geoPointArray(serial, "sf", &track->circuit.startFinish, 1);
+		json_arrayStart(serial, "sec");
+		for (size_t i = 0; i < CIRCUIT_SECTOR_COUNT; i++){
+			json_geoPointArray(serial, NULL, &track->circuit.sectors[i], i < CIRCUIT_SECTOR_COUNT - 1);
+		}
+		json_arrayEnd(serial, 0);
 	}
 	else{
-		json_arrayStart(serial, "st");
-			json_arrayElementFloat(serial, track->start.latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
-			json_arrayElementFloat(serial, track->start.longitude, DEFAULT_GPS_POSITION_PRECISION, 0);
-			json_arrayEnd(serial, 1);
-			json_arrayStart(serial, "fin");
-			json_arrayElementFloat(serial, track->finish.latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
-			json_arrayElementFloat(serial, track->finish.longitude, DEFAULT_GPS_POSITION_PRECISION, 0);
-			json_arrayEnd(serial, 1);
+		json_geoPointArray(serial, "st", &track->stage.start, 1);
+		json_geoPointArray(serial, "fin", &track->stage.finish, 1);
+		json_arrayStart(serial, "sec");
+		for (size_t i = 0; i < STAGE_SECTOR_COUNT; i++){
+			json_geoPointArray(serial, NULL, &track->stage.sectors[i], i < STAGE_SECTOR_COUNT - 1);
+		}
+		json_arrayEnd(serial, 0);
 	}
-
-	json_arrayStart(serial, "sec");
-	for (size_t i = 0; i < SECTOR_COUNT; i++){
-		const GeoPoint *p = &track->sectors[i];
-		json_arrayStart(serial, NULL);
-		json_arrayElementFloat(serial, p->latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
-		json_arrayElementFloat(serial, p->longitude, DEFAULT_GPS_POSITION_PRECISION, 0);
-		json_arrayEnd(serial, i < SECTOR_COUNT - 1);
-	}
-	json_arrayEnd(serial, 0);
 }
 
 int api_getTrackConfig(Serial *serial, const jsmntok_t *json){
@@ -1045,31 +1043,34 @@ static void setTrack(const jsmntok_t *trackNode, Track *track){
 	unsigned char trackType;
 	if (setUnsignedCharValueIfExists(trackNode, "type", &trackType, NULL)){
 		track->track_type = trackType;
-		if (trackType == TRACK_TYPE_SINGLE){
-			setGeoPointIfExists(trackNode, "st", &track->start);
-			setGeoPointIfExists(trackNode, "fin", &track->finish);
+		GeoPoint *sectorsList = track->circuit.sectors;
+		size_t maxSectors = CIRCUIT_SECTOR_COUNT;
+		if (trackType == TRACK_TYPE_CIRCUIT){
+			setGeoPointIfExists(trackNode, "sf", &track->circuit.startFinish);
 		}
 		else{
-			setGeoPointIfExists(trackNode, "sf", &track->startFinish);
+			setGeoPointIfExists(trackNode, "st", &track->stage.start);
+			setGeoPointIfExists(trackNode, "fin", &track->stage.finish);
+			sectorsList = track->stage.sectors;
+			maxSectors = STAGE_SECTOR_COUNT;
 		}
-	}
-	const jsmntok_t *sectors = findNode(trackNode, "sec");
-	if (sectors != NULL){
-		sectors++;
-		if (sectors != NULL && sectors->type == JSMN_ARRAY){
+		const jsmntok_t *sectors = findNode(trackNode, "sec");
+		if (sectors != NULL){
 			sectors++;
-			size_t sectorIndex = 0;
-			TrackConfig * trackConfig = &getWorkingLoggerConfig()->TrackConfigs;
-			while (sectors != NULL && sectors->type == JSMN_ARRAY && sectors->size == 2 && sectorIndex < SECTOR_COUNT){
-				GeoPoint *sector = (trackConfig->track.sectors + sectorIndex);
-				const jsmntok_t *lat = sectors + 1;
-				const jsmntok_t *lon = sectors + 2;
-				jsmn_trimData(lat);
-				jsmn_trimData(lon);
-				sector->latitude = modp_atof(lat->data);
-				sector->longitude = modp_atof(lon->data);
-				sectorIndex++;
-				sectors +=3;
+			if (sectors != NULL && sectors->type == JSMN_ARRAY){
+				sectors++;
+				size_t sectorIndex = 0;
+				while (sectors != NULL && sectors->type == JSMN_ARRAY && sectors->size == 2 && sectorIndex < maxSectors){
+					GeoPoint *sector = sectorsList + sectorIndex;
+					const jsmntok_t *lat = sectors + 1;
+					const jsmntok_t *lon = sectors + 2;
+					jsmn_trimData(lat);
+					jsmn_trimData(lon);
+					sector->latitude = modp_atof(lat->data);
+					sector->longitude = modp_atof(lon->data);
+					sectorIndex++;
+					sectors +=3;
+				}
 			}
 		}
 	}

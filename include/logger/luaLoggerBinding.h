@@ -74,8 +74,6 @@ int Lua_GetTimerSampleRate(lua_State *L);
 int Lua_SetGPIOSampleRate(lua_State *L);
 int Lua_GetGPIOSampleRate(lua_State *L);
 
-int Lua_SetGPSStartFinish(lua_State *L);
-int Lua_GetGPSStartFinish(lua_State *L);
 int Lua_GetAtStartFinish(lua_State *L);
 
 int Lua_SetGPSSampleRate(lua_State *L);

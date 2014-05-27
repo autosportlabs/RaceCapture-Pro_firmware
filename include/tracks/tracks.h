@@ -7,21 +7,33 @@
 
 #define TRACKS_COUNT				40
 #define SECTOR_COUNT				20
+#define CIRCUIT_SECTOR_COUNT		SECTOR_COUNT - 1
+#define STAGE_SECTOR_COUNT			SECTOR_COUNT - 2
 
 #define DEFAULT_TRACK_TARGET_RADIUS	0.0001
 
 #define TRACK_TYPE_CIRCUIT 			0
 #define TRACK_TYPE_SINGLE			1
 
+typedef struct _Circuit{
+	GeoPoint startFinish;
+	GeoPoint sectors[CIRCUIT_SECTOR_COUNT];
+} Circuit;
+
+typedef struct _Stage{
+	GeoPoint start;
+	GeoPoint sectors[STAGE_SECTOR_COUNT];
+	GeoPoint finish;
+} Stage;
+
+
 typedef struct _Track{
 	unsigned char track_type;
 	union{
-		GeoPoint sectors[SECTOR_COUNT];
-		GeoPoint startFinish;
-		struct{
-			GeoPoint finish;
-			GeoPoint start;
-		};
+		GeoPoint allSectors[SECTOR_COUNT];
+		Stage stage;
+		Circuit circuit;
+		GeoPoint startLine;
 	};
 } Track;
 

@@ -118,9 +118,6 @@ void registerLuaLoggerBindings(lua_State *L){
 	
 	lua_registerlight(L,"calibrateImuZero",Lua_CalibrateImuZero);
 
-	lua_registerlight(L,"setGpsStartFinish",Lua_SetGPSStartFinish);
-	lua_registerlight(L,"getGpsStartFinish",Lua_GetGPSStartFinish);
-	
 	lua_registerlight(L,"setBgStream", Lua_SetBackgroundStreaming);
 	lua_registerlight(L,"getBgStream", Lua_GetBackgroundStreaming);
 
@@ -222,24 +219,6 @@ int Lua_GetGPIOSampleRate(lua_State *L){
 		}
 	}	
 	return 0;
-}
-
-int Lua_SetGPSStartFinish(lua_State *L){
-	if (lua_gettop(L) >= 2){
-		TrackConfig *c = &(getWorkingLoggerConfig()->TrackConfigs);
-		c->track.startFinish.latitude = lua_tonumber(L,1);
-		c->track.startFinish.longitude = lua_tonumber(L,2);
-		if (lua_gettop(L) >=3) c->radius = lua_tonumber(L,3);
-	}
-	return 0;
-}
-
-int Lua_GetGPSStartFinish(lua_State *L){
-	TrackConfig *c = &(getWorkingLoggerConfig()->TrackConfigs);
-	lua_pushnumber(L,c->track.startFinish.latitude);
-	lua_pushnumber(L,c->track.startFinish.longitude);
-	lua_pushnumber(L,c->radius);
-	return 3;
 }
 
 int Lua_GetGPSAtStartFinish(lua_State *L){

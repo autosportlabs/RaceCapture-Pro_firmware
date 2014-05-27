@@ -462,7 +462,7 @@ static int withinGpsTarget(const GeoPoint *point, float radius) {
 static int isStartFinishEnabled(const Track *track) {
    int isEnabled = 0;
    if (track != NULL) {
-      const GeoPoint *p = &track->startFinish;
+      const GeoPoint *p = &track->startLine;
       isEnabled = p->latitude != 0 && p->longitude != 0;
    }
    return isEnabled;
@@ -490,7 +490,7 @@ static float calcDistancesSinceLastSample() {
 
 static int processStartFinish(const Track *track, float targetRadius) {
    int lapDetected = 0;
-   g_atStartFinish = withinGpsTarget(&track->startFinish, targetRadius);
+   g_atStartFinish = withinGpsTarget(&track->startLine, targetRadius);
    if (g_atStartFinish) {
       if (g_prevAtStartFinish == 0) {
          if (g_lastStartFinishTimestamp == 0) {
@@ -521,7 +521,7 @@ static int processStartFinish(const Track *track, float targetRadius) {
 }
 
 static void processSector(const Track *track, float targetRadius) {
-   const GeoPoint *upcomingSectorPoint = (track->sectors + g_sector);
+   const GeoPoint *upcomingSectorPoint = (track->allSectors + g_sector);
    if (upcomingSectorPoint->latitude != 0
          && upcomingSectorPoint->longitude != 0) { //valid sector target?
       g_atTarget = withinGpsTarget(upcomingSectorPoint, targetRadius);
@@ -546,7 +546,7 @@ static void processSector(const Track *track, float targetRadius) {
                   g_lastSector++;
                }
                g_sector++;
-               const GeoPoint *nextSector = (track->sectors + g_sector);
+               const GeoPoint *nextSector = (track->allSectors + g_sector);
                if (g_sector >= SECTOR_COUNT || nextSector->latitude == 0
                      || nextSector->longitude == 0) {
                   g_sector = 0; //loop to the start finish line as the last sector
