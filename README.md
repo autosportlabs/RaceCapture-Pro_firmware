@@ -65,6 +65,5 @@ to run:
 
 1. Go into RaceCapture_App folder
 2. `kivy` (to get paths set up)
-3. `pyinstaller -y racecapture.spec` (if you get weird file permissions errors on subsequent builds you may have to delete the 'build' folder and try it again)
-4. `dist\racecapture\racecapture`
+3. `pyinstall.bat` - deletes old build folders, builds installer and tries to run the package (to run manually use `dist\racecapture\racecapture`)
 5. Observe error ("AttributeError: 'module' object has no attribute 'PythonLexer'"). This appears to be because the KivyLexer import in scriptview.py doesn't get bundled in the installer. If you comment out attach_node('Lua Script', n, LuaScriptingView()) in racecapture.py then the app runs fine.
