@@ -1,6 +1,6 @@
 # -*- mode: python -*-
 from kivy.tools.packaging.pyinstaller_hooks import install_hooks
-install_hooks(globals())
+install_hooks(globals(), ['hooks'])
 a = Analysis(['racecapture.py'],
              pathex=['.'],
              hiddenimports=[],
@@ -14,6 +14,8 @@ exe = EXE(pyz,
           strip=None,
           upx=True,
           console=True )
+
+# This should eventually not be the complete folder (e.g. we don't want pyinstall.bat)
 coll = COLLECT(exe,
 			   Tree('.'),
                a.binaries,
