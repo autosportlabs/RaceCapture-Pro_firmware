@@ -44,10 +44,12 @@ void registerLuaLoggerBindings(lua_State *L){
 	lua_registerlight(L,"setPwmDutyCycle",Lua_SetPWMDutyCycle);
 	lua_registerlight(L,"setPwmPeriod",Lua_SetPWMPeriod);
 	lua_registerlight(L,"setAnalogOut",Lua_SetAnalogOut);
+	lua_registerlight(L,"setPwmClockFreq",Lua_SetPWMClockFrequency);
+	lua_registerlight(L,"getPwmClockFreq",Lua_GetPWMClockFrequency);
 
 	lua_registerlight(L,"getTimerRpm",Lua_GetRPM);
 	lua_registerlight(L,"getTimerPeriodMs",Lua_GetPeriodMs);
-	lua_registerlight(L,"getTimerFrequency",Lua_GetFrequency);
+	lua_registerlight(L,"getTimerFreq",Lua_GetFrequency);
 	lua_registerlight(L,"getTimerRaw",Lua_GetTimerRaw);
 	lua_registerlight(L,"resetTimerCount",Lua_ResetTimerCount);
 	lua_registerlight(L,"getTimerCount",Lua_GetTimerCount);
@@ -87,34 +89,7 @@ void registerLuaLoggerBindings(lua_State *L){
 	lua_registerlight(L,"writeSerial", Lua_WriteSerial);
 
 	//Logger configuration editing
-	lua_registerlight(L,"flashLoggerConfig", Lua_FlashLoggerConfig);
-
-	lua_registerlight(L,"setAnalogSampleRate", Lua_SetAnalogChannelSampleRate);
-	lua_registerlight(L,"getAnalogSampleRate", Lua_GetAnalogChannelSampleRate);
-
-	lua_registerlight(L,"setPwmClockFrequency",Lua_SetPWMClockFrequency);
-	lua_registerlight(L,"getPwmClockFrequency",Lua_GetPWMClockFrequency);
-
-	lua_registerlight(L,"setPwmSampleRate", Lua_SetPWMSampleRate);
-	lua_registerlight(L,"getPwmSampleRate", Lua_GetPWMSampleRate);
-
-	lua_registerlight(L,"setGpsSampleRate", Lua_SetGPSSampleRate);
-	lua_registerlight(L,"getGpsSampleRate", Lua_GetGPSSampleRate);
-	
-	lua_registerlight(L,"setLapCountSampleRate", Lua_SetLapCountSampleRate);
-	lua_registerlight(L,"getLapCountSampleRate", Lua_GetLapCountSampleRate);
-
-	lua_registerlight(L,"setLapTimeSampleRate", Lua_SetLapTimeSampleRate);
-	lua_registerlight(L,"getLapTimeSampleRate", Lua_GetLapTimeSampleRate);
-	
-	lua_registerlight(L,"setGpioSampleRate", Lua_SetGPIOSampleRate);
-	lua_registerlight(L,"getGpioSampleRate", Lua_GetGPIOSampleRate);
-
-	lua_registerlight(L,"setTimerSampleRate", Lua_SetTimerSampleRate);
-	lua_registerlight(L,"getTimerSampleRate", Lua_GetTimerSampleRate);
-
-	lua_registerlight(L,"setImuSampleRate",Lua_SetImuSampleRate);
-	lua_registerlight(L,"getImuSampleRate",Lua_GetImuSampleRate);
+	lua_registerlight(L,"flashLoggerCfg", Lua_FlashLoggerConfig);
 	
 	lua_registerlight(L,"calibrateImuZero",Lua_CalibrateImuZero);
 
@@ -123,26 +98,6 @@ void registerLuaLoggerBindings(lua_State *L){
 
 	lua_registerlight(L, "addChannel", Lua_AddVirtualChannel);
 	lua_registerlight(L, "setChannel", Lua_SetVirtualChannelValue);
-}
-
-////////////////////////////////////////////////////
-// common functions
-////////////////////////////////////////////////////
-
-static LapConfig * getLapConfig(){
-	return &(getWorkingLoggerConfig()->LapConfigs);
-}
-
-static int setLuaSampleRate(lua_State *L, unsigned short *sampleRate){
-	if (lua_gettop(L) >= 1 ){
-		*sampleRate = encodeSampleRate(lua_tointeger(L,1));
-	}
-	return 0;
-}
-
-static int getLuaSampleRate(lua_State *L, unsigned short sampleRate){
-	lua_pushinteger(L,sampleRate);
-	return 1;
 }
 
 ////////////////////////////////////////////////////
@@ -159,65 +114,8 @@ int Lua_GetBackgroundStreaming(lua_State *L){
 	return 1;
 }
 
-int Lua_SetImuSampleRate(lua_State *L){
-	if (lua_gettop(L) >= 2 ){
-		ImuConfig *c = getImuConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->cfg.sampleRate = encodeSampleRate(lua_tointeger(L,2));
-	}	
-	return 0;
-}
-
-int Lua_GetImuSampleRate(lua_State *L){
-	if (lua_gettop(L) >= 1){
-		ImuConfig *c = getImuConfigChannel(lua_tointeger(L,1));
-		if (NULL !=c ){
-			lua_pushnumber(L,c->cfg.sampleRate);
-			return 1;	
-		}
-	}
-	return 0;	
-}
-
 int Lua_CalibrateImuZero(lua_State *L){
 	imu_calibrate_zero();
-	return 0;
-}
-
-int Lua_SetTimerSampleRate(lua_State *L){
-	if (lua_gettop(L) >= 2){
-		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->cfg.sampleRate = encodeSampleRate(lua_tointeger(L,2));
-	}
-	return 0;
-}
-
-int Lua_GetTimerSampleRate(lua_State *L){
-	if (lua_gettop(L) >= 1){
-		TimerConfig *c = getTimerConfigChannel(lua_tointeger(L,1));
-		if (NULL != c){
-			lua_pushinteger(L,c->cfg.sampleRate);
-			return 1;
-		}
-	}
-	return 0;
-}
-
-int Lua_SetGPIOSampleRate(lua_State *L){
-	if (lua_gettop(L) >= 2){
-		GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->cfg.sampleRate = encodeSampleRate(lua_tointeger(L,2));
-	}
-	return 0;
-}
-
-int Lua_GetGPIOSampleRate(lua_State *L){
-	if (lua_gettop(L) >= 1){
-		GPIOConfig *c = getGPIOConfigChannel(lua_tointeger(L,1));
-		if (NULL !=c){
-			lua_pushinteger(L,c->cfg.sampleRate);
-			return 1;	
-		}
-	}	
 	return 0;
 }
 
@@ -231,34 +129,6 @@ int Lua_GetAtSplit(lua_State *L){
 	return 1;
 }
 
-int Lua_SetGPSSampleRate(lua_State *L){
-	if (lua_gettop(L) >= 1){
-		LoggerConfig *cfg = getWorkingLoggerConfig();
-		cfg->GPSConfigs.sampleRate = encodeSampleRate(lua_tointeger(L,1));
-	}
-	return 0;
-}
-
-int Lua_GetGPSSampleRate(lua_State *L){
-	lua_pushinteger(L, decodeSampleRate(getWorkingLoggerConfig()->GPSConfigs.sampleRate));
-	return 1;		
-}
-
-int Lua_SetLapCountSampleRate(lua_State *L){
-	return setLuaSampleRate(L, &getLapConfig()->lapCountCfg.sampleRate);
-}
-
-int Lua_GetLapCountSampleRate(lua_State *L){
-	return getLuaSampleRate(L, getLapConfig()->lapCountCfg.sampleRate);
-}
-
-int Lua_SetLapTimeSampleRate(lua_State *L){
-	return setLuaSampleRate(L, &getLapConfig()->lapTimeCfg.sampleRate);
-}
-
-int Lua_GetLapTimeSampleRate(lua_State *L){
-	return getLuaSampleRate(L, getLapConfig()->lapTimeCfg.sampleRate);
-}
 
 int Lua_SetPWMClockFrequency(lua_State *L){
 	if (lua_gettop(L) >= 1){
@@ -270,47 +140,6 @@ int Lua_SetPWMClockFrequency(lua_State *L){
 int Lua_GetPWMClockFrequency(lua_State *L){
 	lua_pushinteger(L,getWorkingLoggerConfig()->PWMClockFrequency);
 	return 1;	
-}
-
-int Lua_SetPWMSampleRate(lua_State *L){
-	if (lua_gettop(L) >= 2){
-		PWMConfig *c = getPwmConfigChannel(lua_tointeger(L,1));
-		if (NULL != c) c->cfg.sampleRate = encodeSampleRate(lua_tointeger(L,2));
-	}
-	return 0;
-}
-
-int Lua_GetPWMSampleRate(lua_State *L){
-	if (lua_gettop(L) >=1){
-		PWMConfig *c = getPwmConfigChannel(lua_tointeger(L,1));
-		if (NULL != c){
-			lua_pushinteger(L,c->cfg.sampleRate);
-			return 1;
-		}	
-	}	
-	return 0;
-}
-
-int Lua_SetAnalogChannelSampleRate(lua_State *L){
-	if (lua_gettop(L) >= 2){
-		ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
-		if (NULL != c){
-			c->cfg.sampleRate = encodeSampleRate(lua_tointeger(L,2));
-		}
-	}
-	return 0;	
-}
-
-
-int Lua_GetAnalogChannelSampleRate(lua_State *L){
-	if (lua_gettop(L) >= 1){
-		ADCConfig *c = getADCConfigChannel(lua_tointeger(L,1));
-		if (NULL !=c ){
-			lua_pushinteger(L,c->cfg.sampleRate);
-			return 1;	
-		}	
-	}	
-	return 0;
 }
 
 int Lua_GetAnalog(lua_State *L){
