@@ -35,16 +35,27 @@
             size_hint_y: 0.1
             padding: [10,10]
             orientation: 'horizontal'
-            height: 30
+            BoxLayout:
+            	size_hint_x: 0.65
+            	orientation: 'horizontal'
+            	CheckBox:
+            		rcid: 'pollLog'
+            		size_hint_x: 0.1
+            	FieldLabel:
+            		size_hint_x: 0.9
+            		halign: 'left'
+            		text: 'Poll logfile'
             IconButton:
-                size_hint_x: 0.25
+                size_hint_x: 0.1
                 text: "\357\202\223"
                 on_release: root.readScript()
             IconButton:
-                size_hint_x: 0.25
+                size_hint_x: 0.1
                 text: "\357\200\231"
                 on_release: root.writeScript()
+            Label:
+            	size_hint_x: 0.1
             IconButton:
-                size_hint_x: 0.25
+                size_hint_x: 0.05
                 text: "\357\200\241"
                 on_release: root.runScript()
