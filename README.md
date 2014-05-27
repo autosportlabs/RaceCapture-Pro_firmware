@@ -67,3 +67,4 @@ to run:
 2. `kivy` (to get paths set up)
 3. `pyinstall.bat` - deletes old build folders, builds installer and tries to run the package (to run manually use `dist\racecapture\racecapture`)
 5. Observe error ("AttributeError: 'module' object has no attribute 'PythonLexer'"). This appears to be because the KivyLexer import in scriptview.py doesn't get bundled in the installer. If you comment out attach_node('Lua Script', n, LuaScriptingView()) in racecapture.py then the app runs fine.
+6. To fix this error, open (from your Kivy folder) `\Python27\Lib\site-packages\pygments\lexers\__init__.py` and add a line "from pygments.lexers.agile import PythonLexer" near the top. Yes, I know this is bad form.
