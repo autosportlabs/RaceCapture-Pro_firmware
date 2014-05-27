@@ -20,6 +20,9 @@ class SectorPointView(BoxLayout):
     lonView = None
     def __init__(self, **kwargs):
         super(SectorPointView, self).__init__(**kwargs)
+        title = kwargs.get('title', None)
+        if title:
+            self.setTitle(title)
 
     def setNext(self, widget):
         self.lonView.set_next(widget)

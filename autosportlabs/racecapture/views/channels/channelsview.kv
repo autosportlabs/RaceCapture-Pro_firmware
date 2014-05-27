@@ -97,19 +97,6 @@
     HSeparator:
     	text: 'Data Channels'
     	size_hint_y: 0.1
-	StackLayout:
-		pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-		size_hint_y: 0.1
-    	IconButton:
-			size_hint: (0.05, 0.1)
-            text: '\357\202\223'    		
-    		rcid: 'readChannels'    		
-    		on_release: root.on_read_channels()
-    	IconButton:
-			size_hint: (0.05, 0.1)
-            text: '\357\200\231'    		
-    		rcid: 'writeChannels'
-    		on_release: root.on_write_channels()
 
     ScrollView:
         id: scrlChan
@@ -125,13 +112,28 @@
             cols: 1
     	
     BoxLayout:
-    	size_hint_y: 0.1
-    	spacing: dp(10)
-    	orientation: 'horizontal'
+        size_hint_y: 0.1
+        padding: [10,10]
+        orientation: 'horizontal'
+        Label:
+        	size_hint_x: 0.75
+        IconButton:
+            size_hint_x: 0.1
+            text: "\357\202\223"
+            on_release: root.on_read_channels()
+        IconButton:
+            size_hint_x: 0.1
+            text: "\357\200\231"
+            on_release: root.on_write_channels()
+        Label:
+        	size_hint_x: 0.1
     	IconButton:
     		text: '\357\201\247'
+            size_hint_x: 0.05    		
     		on_release: root.on_add_channel()
 	    	disabled: True
 	    	rcid: 'addChan'
-	    	
+    	
+    	
+    	    	
     	
