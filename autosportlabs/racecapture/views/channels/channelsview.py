@@ -127,6 +127,7 @@ class ChannelsView(BoxLayout):
         newChannel = Channel(name='Channel', units='',precision=0, min=0, max=100)
         self.channels.items.append(newChannel)
         channelView = ChannelView(channel=newChannel)
+        channelView.bind(on_delete_channel = self.on_delete_channel)
         self.channelsContainer.add_widget(channelView)
         channelView.on_edit()
         
