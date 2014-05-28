@@ -1,5 +1,6 @@
 import kivy
 kivy.require('1.8.0')
+from kivy.uix.stacklayout import StackLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.app import Builder
 from iconbutton import IconButton
