@@ -5,4 +5,4 @@ rm -rf racecapture.app
 mv racecapture racecapture.app
 hdiutil create ./RaceCapture.dmg -srcfolder racecapture.app -ov
 popd
-dist/racecapture/racecapture.exe
+dist/racecapture.app/racecapture.exe
