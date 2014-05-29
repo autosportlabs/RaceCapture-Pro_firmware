@@ -119,7 +119,6 @@ class ConfigView(BoxLayout):
 
 
     def openConfig(self):
-        print('open')
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
         self._popup = Popup(title="Load file", content=content, size_hint=(0.9, 0.9))
         self._popup.open()        
@@ -132,14 +131,13 @@ class ConfigView(BoxLayout):
     def load(self, path, filename):
         with open(os.path.join(path, filename[0])) as stream:
             self.text_input.text = stream.read()
-
         self.dismiss_popup()
 
     def save(self, path, filename):
         with open(os.path.join(path, filename), 'w') as stream:
             stream.write(self.text_input.text)
-
         self.dismiss_popup()        
 
     def dismiss_popup(self):
-        self._popup.dismiss()        
+        self._popup.dismiss()
+                

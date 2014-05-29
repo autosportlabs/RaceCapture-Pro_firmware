@@ -85,6 +85,7 @@ class RcpSerial:
         return line
 
     def getRcpCfg(self):
+        versionCfg = self.getVersion()
         analogCfg = self.getAnalogCfg(None)
         imuCfg = self.getImuCfg(None)
         gpsCfg = self.getGpsCfg()
@@ -99,6 +100,9 @@ class RcpSerial:
         
         rcpCfg = {}
         
+        if versionCfg:
+            rcpCfg['ver'] = versionCfg['ver']
+            
         if analogCfg:
             rcpCfg['analogCfg'] = analogCfg['analogCfg']
     
@@ -131,7 +135,7 @@ class RcpSerial:
         
         if scriptCfg:
             rcpCfg['scriptCfg'] = scriptCfg['scriptCfg']
-            
+        
         return rcpCfg
     
     def writeRcpCfg(self, cfg):

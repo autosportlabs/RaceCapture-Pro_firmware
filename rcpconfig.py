@@ -597,9 +597,25 @@ class ConnectivityConfig:
         return {'connCfg':connCfgJson}
 
 
+class VersionConfig:
+    major = 0
+    minor = 0
+    bugfix = 0
+    def __init__(self, **kwargs):
+        pass
     
+    def fromJson(self, versionJson):
+        self.major = versionJson.get('major', self.major)
+        self.minor = versionJson.get('minor', self.minor)
+        self.bugfix = versionJson.get('bugfix', self.bugfix)
+        
+    def toJson(self):
+        versionJson = {'major': self.major, 'minor': self.minor, 'bugfix': self.bugfix}
+        return {'ver': versionJson}
+        
 class RcpConfig:
     def __init__(self, **kwargs):
+        self.versionConfig = VersionConfig()
         self.analogConfig = AnalogConfig()
         self.imuConfig = ImuConfig()
         self.gpsConfig = GpsConfig()
@@ -613,6 +629,10 @@ class RcpConfig:
         self.scriptConfig = LuaScript()
     
     def fromJson(self, json):
+        versionJson = json.get('ver', None)
+        if versionJson:
+            self.versionConfig.fromJson(versionJson)
+
         analogCfgJson = json.get('analogCfg', None)
         if analogCfgJson:
             self.analogConfig.fromJson(analogCfgJson)
@@ -657,6 +677,8 @@ class RcpConfig:
         if scriptJson:
             self.scriptConfig.fromJson(scriptJson)
             
+        print('RCP config version ' + str(self.versionConfig.major) + '.' + str(self.versionConfig.minor) + '.' + str(self.versionConfig.minor) + ' Loaded')
+        
     def toJson(self):
         
         rcpJson = {'rcpCfg':{
