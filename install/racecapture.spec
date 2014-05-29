@@ -9,16 +9,16 @@ install_hooks(globals(), ['hooks'])
 def addKVs():
     import os
     extraDatas = []
-    for file in os.listdir('.'):
+    for file in os.listdir('..'):
         if file.endswith(".kv") | file.endswith(".ttf"):
-            extraDatas.append((file, file, 'DATA'))
+            print "Adding datafile: " + file
+            extraDatas.append((file, "../" + file, 'DATA'))
     return extraDatas
 
-a = Analysis(['racecapture.py'],
-             pathex=['.'],
+a = Analysis(['..//racecapture.py'],
+             pathex=['..//'],
              hiddenimports=[],
              runtime_hooks=None)
-#a.datas += [('channelnameselectorview.kv','C:\\Users\\chrisrae\\Documents\\GitHub\\RaceCapture_App\\channelnameselectorview.kv','DATA')]
 a.datas += addKVs()
 pyz = PYZ(a.pure)
 exe = EXE(pyz,
@@ -30,7 +30,6 @@ exe = EXE(pyz,
           upx=True,
           console=True )
 
-# This should eventually not be the complete folder (e.g. we don't want pyinstall.bat)
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
