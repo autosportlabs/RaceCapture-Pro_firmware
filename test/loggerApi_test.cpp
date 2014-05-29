@@ -6,6 +6,7 @@
  */
 #include "loggerApi_test.h"
 
+#include "constants.h"
 #include "api.h"
 #include "loggerApi.h"
 #include "mock_serial.h"
@@ -1064,4 +1065,15 @@ void LoggerApiTest::testRunScriptFile(string filename){
 	processApiGeneric(filename);
 	char *txBuffer = mock_getTxBuffer();
 	assertGenericResponse(txBuffer, "runScript", API_SUCCESS);
+}
+
+void LoggerApiTest::testGetVersion(){
+	char * response = processApiGeneric("getVersion1.json");
+
+	Object json;
+	stringToJson(response, json);
+
+	CPPUNIT_ASSERT_EQUAL(MAJOR_REV, (int)(Number)json["ver"]["major"]);
+	CPPUNIT_ASSERT_EQUAL(MINOR_REV, (int)(Number)json["ver"]["minor"]);
+	CPPUNIT_ASSERT_EQUAL(BUGFIX_REV, (int)(Number)json["ver"]["bugfix"]);
 }

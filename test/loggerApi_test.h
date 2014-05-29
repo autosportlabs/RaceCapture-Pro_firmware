@@ -55,6 +55,7 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST( testGetScript);
   CPPUNIT_TEST( testSetScript);
   CPPUNIT_TEST( testRunScript);
+  CPPUNIT_TEST( testGetVersion);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -103,6 +104,7 @@ public:
   void testSetScript();
   void testGetScript();
   void testRunScript();
+  void testGetVersion();
 
 private:
   void testSetScriptFile(string filename);
