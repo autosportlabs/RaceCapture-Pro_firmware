@@ -3,6 +3,7 @@ kivy.require('1.8.0')
 from kivy.uix.boxlayout import BoxLayout
 from kivy.app import Builder
 from utils import *
+from kivy.metrics import dp
 from kivy.uix.treeview import TreeView, TreeViewLabel
 from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
@@ -22,6 +23,7 @@ from autosportlabs.racecapture.views.configuration.rcp.wirelessconfigview import
 from autosportlabs.racecapture.views.configuration.rcp.scriptview import *
 from autosportlabs.racecapture.views.file.loaddialogview import LoadDialog
 from autosportlabs.racecapture.views.file.savedialogview import SaveDialog
+from autosportlabs.racecapture.views.util.alertview import alertPopup
 
 from rcpconfig import *
 from channels import *
@@ -42,13 +44,16 @@ class ConfigView(BoxLayout):
     content = None
     menu = None
     channels = None
+    rcpConfig = None
     def __init__(self, **kwargs):
+        self.channels = kwargs.get('channels', None)
+        self.rcpConfig = kwargs.get('rcpConfig', None)
+
         super(ConfigView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
         self.register_event_type('on_channels_updated')
         self.content = kvFind(self, 'rcid', 'content')
         self.menu = kvFind(self, 'rcid', 'menu')
-        self.channels = kwargs.get('channels', None)
         self.createConfigViews(self.menu)
         self.register_event_type('on_read_config')
         self.register_event_type('on_write_config')
@@ -62,7 +67,7 @@ class ConfigView(BoxLayout):
         
     def on_config_updated(self, config):
         for view in self.configViews:
-            view.dispatch('on_config_updated', config)                
+            view.dispatch('on_config_updated', config)
         
     def createConfigViews(self, tree):
         
@@ -115,8 +120,10 @@ class ConfigView(BoxLayout):
         self.dispatch('on_read_config', None)
 
     def writeConfig(self):
-        self.dispatch('on_write_config', None)
-
+        if self.rcpConfig.loaded:
+            self.dispatch('on_write_config', None)
+        else:
+            alertPopup('Warning', 'Please load or read a configuration before writing')
 
     def openConfig(self):
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
@@ -124,19 +131,28 @@ class ConfigView(BoxLayout):
         self._popup.open()        
     
     def saveConfig(self):
-        content = SaveDialog(save=self.save, cancel=self.dismiss_popup)
-        self._popup = Popup(title="Save file", content=content, size_hint=(0.9, 0.9))
-        self._popup.open()
+        if self.rcpConfig.loaded:
+            content = SaveDialog(save=self.save, cancel=self.dismiss_popup)
+            self._popup = Popup(title="Save file", content=content, size_hint=(0.9, 0.9))
+            self._popup.open()
+        else:
+            alertPopup('Warning', 'Please load or read a configuration before saving')
         
     def load(self, path, filename):
-        with open(os.path.join(path, filename[0])) as stream:
-            self.text_input.text = stream.read()
         self.dismiss_popup()
-
+        try:
+            with open(os.path.join(path, filename[0])) as stream:
+                self.rcpConfig.fromJsonString(stream.read())
+        except Exception as detail:
+            alertPopup('Error Loading', 'Failed to Load Configuration:\n\n' + str(detail))
     def save(self, path, filename):
-        with open(os.path.join(path, filename), 'w') as stream:
-            stream.write(self.text_input.text)
-        self.dismiss_popup()        
+        self.dismiss_popup()
+        try:        
+            with open(os.path.join(path, filename), 'w') as stream:
+                configJson = self.rcpConfig.toJsonString()
+                stream.write(configJson)
+        except Exception as detail:
+            alertPopup('Error Saving', 'Failed to save:\n\n' + str(detail))
 
     def dismiss_popup(self):
         self._popup.dismiss()

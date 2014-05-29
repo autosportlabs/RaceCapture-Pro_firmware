@@ -614,6 +614,7 @@ class VersionConfig:
         return {'ver': versionJson}
         
 class RcpConfig:
+    loaded = False
     def __init__(self, **kwargs):
         self.versionConfig = VersionConfig()
         self.analogConfig = AnalogConfig()
@@ -678,10 +679,18 @@ class RcpConfig:
             self.scriptConfig.fromJson(scriptJson)
             
         print('RCP config version ' + str(self.versionConfig.major) + '.' + str(self.versionConfig.minor) + '.' + str(self.versionConfig.minor) + ' Loaded')
+        self.loaded = True
+    
+    def fromJsonString(self, rcpJsonString):
+        rcpJson = json.loads(rcpJsonString)
+        self.fromJson(rcpJson)
         
+    def toJsonString(self, pretty = True):
+        return json.dumps(self.toJson(), sort_keys=True, indent=2, separators=(',', ': '))
+
     def toJson(self):
-        
         rcpJson = {'rcpCfg':{
+                             'ver': self.versionConfig.toJson().get('ver'),
                              'gpsCfg':self.gpsConfig.toJson().get('gpsCfg'),
                              'imuCfg':self.imuConfig.toJson().get('imuCfg'),
                              'analogCfg':self.analogConfig.toJson().get('analogCfg'),

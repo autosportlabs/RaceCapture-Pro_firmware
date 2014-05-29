@@ -6,6 +6,7 @@
         orientation: "vertical"
         FileChooserListView:
             id: filechooser
+            filters: ['*.rcap']
             on_selection: text_input.text = self.selection and self.selection[0] or ''
 
         TextInput:

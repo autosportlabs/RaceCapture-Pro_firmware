@@ -4,6 +4,7 @@ import kivy
 import logging
 import argparse
 from autosportlabs.racecapture.views.channels.channelsview import ChannelsView
+from autosportlabs.racecapture.views.util.alertview import alertPopup
 kivy.require('1.8.0')
 from kivy.config import Config
 Config.set('graphics', 'width', '1024')
@@ -13,6 +14,7 @@ from kivy.app import App, Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
+
 from kivy.garden.navigationdrawer import NavigationDrawer
 
 from rcpserial import *
@@ -62,10 +64,7 @@ class RaceCaptureApp(App):
             self.rcpComms.autoDetect()
 
     def _serial_warning(self):
-        popup = Popup(title='Warning',
-                      content=Label(text='You have not selected a serial port'),
-                      size_hint=(None, None), size=(400, 400))
-        popup.open()
+        alertPopup('Warning', 'You have not selected a serial port')
 
     def on_main_menu_item(self, instance, value):
         self.mainNav.toggle_state()
@@ -136,7 +135,7 @@ class RaceCaptureApp(App):
         #fade_in
         self.mainNav.anim_type = 'slide_above_anim'
         
-        configView = ConfigView(channels=self.channels)
+        configView = ConfigView(channels=self.channels, rcpConfig=self.rcpConfig)
         configView.bind(on_read_config=self.on_read_config)
         configView.bind(on_write_config=self.on_write_config)
         
