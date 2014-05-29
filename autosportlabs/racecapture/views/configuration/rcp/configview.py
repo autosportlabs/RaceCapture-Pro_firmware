@@ -102,11 +102,14 @@ class ConfigView(BoxLayout):
         pass
     
     def readConfig(self):
-        print('read')
         self.dispatch('on_read_config', None)
 
     def writeConfig(self):
-        print('write')
         self.dispatch('on_write_config', None)
 
 
+    def openConfig(self):
+        print('open')
+    
+    def saveConfig(self):
+        print('save')
