@@ -15,17 +15,32 @@ to run:
 
 ## dev installation (OS X)
 
-1. download [Kivy](http://kivy.org/#download) (current is 1.8.0) 
+1. download [Kivy](http://kivy.org/#download) (current is 1.8.0)
 2. follow Kivy install instructions
+- Chris Rae: I found step 3 a bit easier installing pip (`sudo easy_install pip`) and then virtualenv (`sudo pip install virtualenv`). But I don't know about Macs so I'm not actually editing the instructions. :)
 3. install [virtualenv](http://www.virtualenv.org)
 4. create a virtual environment (perhaps in this directory): `virtualenv _ve`
 5. activate the virtualenv: `. _ve/bin/activate`
-6. install pip requirements: `pip install -r requirements.txt`
+6. install pip requirements: `pip install -r requirements.txt` (you may be required to upgrade your version of setuptools via the provided command)
 7. install graph via garden: `garden install graph`
 
 ## running (OS X)
 
     /Applications/Kivy.app/Contents/Resources/script racecapture.py
+
+## Preparing to build installers (OSX)
+
+1. activate the virtualenv: `_ve/bin/activate`
+2. Install [PYInstaller] (http://www.pyinstaller.org) `pip install pyinstaller`
+3. Try `pyinstaller --version` - should return "2.1" or similar
+
+## Creating installer for current version (OSX)
+
+1. activate the virtualenv: `_ve/bin/activate`
+2.`./buildmacinstall.sh`
+3. Upon running `dist/racecapture/racecapture.exe`, Observe error ("AttributeError: 'module' object has no attribute 'PythonLexer'"). This appears to be because the KivyLexer import in scriptview.py doesn't get bundled in the installer. If you comment out attach_node('Lua Script', n, LuaScriptingView()) in racecapture.py then the app runs fine.
+4. To fix this error, open  `/Applications/Kivy.app/Contents/Resources/lib/sitepackages/pygments/lexers/__init__.py` and add a line "from pygments.lexers.agile import PythonLexer" near the top. Yes, I know this is bad form.
+5. The install builder creates a .dmg file in the dist folder that is intended to be the app for distribution. However, it doesn't work right now ("Application damaged or incomplete") and I'm not sure why. -CLR 2014-05-29
 
 ## installation (Win7)
 
@@ -54,17 +69,17 @@ to run:
 8. Right-click the project...Properties...pyDev-PYTHONPATH...External Libraries - Add source folder, add my_kivy_install_folder\kivy
 9. Run the project
 
-## Building installers
+## Preparing to build installers (Win7)
 
 1. activate the virtualenv: `_ve\Scripts\activate`
 2. Install [PYInstaller] (http://www.pyinstaller.org) `pip install pyinstaller`
 3. Install [PyWin32] (http://sourceforge.net/projects/pywin32/files/) `pip install pywin`
 4. Try `pyinstaller --version` - should return "2.1" or similar
 
-## Creating installer for current version
+## Creating installer for current version (Win7)
 
 1. Go into RaceCapture_App folder
 2. `kivy` (to get paths set up)
-3. `pyinstall.bat` - deletes old build folders, builds installer and tries to run the package (to run manually use `dist\racecapture\racecapture`)
+3. `buildwininstall.bat` - deletes old build folders, builds installer and tries to run the package (to run manually use `dist\racecapture\racecapture`)
 5. Observe error ("AttributeError: 'module' object has no attribute 'PythonLexer'"). This appears to be because the KivyLexer import in scriptview.py doesn't get bundled in the installer. If you comment out attach_node('Lua Script', n, LuaScriptingView()) in racecapture.py then the app runs fine.
 6. To fix this error, open (from your Kivy folder) `\Python27\Lib\site-packages\pygments\lexers\__init__.py` and add a line "from pygments.lexers.agile import PythonLexer" near the top. Yes, I know this is bad form.
