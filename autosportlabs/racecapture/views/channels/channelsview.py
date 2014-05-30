@@ -9,6 +9,7 @@ from kivy.app import Builder
 from kivy.uix.label import Label
 from kivy.uix.accordion import Accordion, AccordionItem
 from autosportlabs.widgets.separator import HSeparator, HSeparatorMinor
+from autosportlabs.racecapture.views.util.alertview import alertPopup
 from utils import *
 from rcpconfig import *
 from channels import Channels, Channel
@@ -131,17 +132,33 @@ class ChannelsView(BoxLayout):
         self.channelsContainer.add_widget(channelView)
         channelView.on_edit()
         
+        
+        try:
+            with open(os.path.join(path, filename[0])) as stream:
+                self.rcpConfig.fromJsonString(stream.read())
+        except Exception as detail:
+            alertPopup('Error Loading', 'Failed to Load Configuration:\n\n' + str(detail))
+        
     def on_read_channels(self):
         if self.rcpComms:
-            channelsJson = self.rcpComms.getChannels()
-            self.channels.fromJson(channelsJson)
-            self.on_channels_updated(self.channels)
+            try:
+                channelsJson = self.rcpComms.getChannels()
+                self.channels.fromJson(channelsJson)
+                self.on_channels_updated(self.channels)
+            except Exception as detail:
+                alertPopup('Error Reading', 'Could not read channels:\n\n' + str(detail))
         
     def on_write_channels(self):
         if self.rcpComms:
-            index = 0
-            channelCount = len(self.channels.items)
-            for channel in self.channels.items:
-                mode = CHANNEL_ADD_MODE_IN_PROGRESS if index < channelCount - 1 else CHANNEL_ADD_MODE_COMPLETE
-                self.rcpComms.addChannel( channel.toJson(), index, mode)
-                index += 1
+            try:
+                index = 0
+                channelCount = len(self.channels.items)
+                for channel in self.channels.items:
+                    mode = CHANNEL_ADD_MODE_IN_PROGRESS if index < channelCount - 1 else CHANNEL_ADD_MODE_COMPLETE
+                    self.rcpComms.addChannel( channel.toJson(), index, mode)
+                    index += 1
+            except Exception as detail:
+                alertPopup('Error Writing', 'Could not write channels:\n\n' + str(detail))
+        else:
+            alertPopup('Warning', 'Please load channels before writing')
+            
