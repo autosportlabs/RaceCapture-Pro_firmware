@@ -5,6 +5,7 @@ from kivy.uix.stacklayout import StackLayout
 from kivy.uix.codeinput import CodeInput
 from kivy.app import Builder
 from kivy.extras.highlight import KivyLexer
+#from pygments.lexers.agile import PythonLexer 
 from pygments import lexers
 from utils import *
 from iconbutton import IconButton
@@ -26,7 +27,12 @@ class LuaScriptingView(BoxLayout):
     def on_script_changed(self, instance, value):
         if self.scriptCfg:
             self.scriptCfg.script = value
-
+        
+class LuaCodeInput(CodeInput):
+    def __init__(self, **kwargs):
+        super(LuaCodeInput, self).__init__(**kwargs)
+        self.lexer= lexers.get_lexer_by_name('lua')
+        
     def readScript(self):
         print("read script")
 
