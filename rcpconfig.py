@@ -615,6 +615,9 @@ class VersionConfig:
     def __init__(self, **kwargs):
         pass
     
+    def toString(self):
+        return str(self.major) + "." + str(self.minor) + "." + str(self.bugfix)
+    
     def fromJson(self, versionJson):
         self.major = versionJson.get('major', self.major)
         self.minor = versionJson.get('minor', self.minor)

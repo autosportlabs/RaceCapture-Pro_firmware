@@ -6,6 +6,7 @@ from serial.tools import list_ports
 
 CHANNEL_ADD_MODE_IN_PROGRESS = 1
 CHANNEL_ADD_MODE_COMPLETE = 2
+DEFAULT_READ_RETRIES = 5
 
 class RcpSerial:
     def __init__(self, **kwargs):
@@ -15,7 +16,7 @@ class RcpSerial:
     def setPort(self, port):
         self.port = port
 
-    def sendCommand(self, cmd):
+    def sendCommand(self, cmd, retry = DEFAULT_READ_RETRIES):
         rsp = None
         ser = self.getSerial()
         ser.flushInput()
@@ -24,9 +25,9 @@ class RcpSerial:
         print('send cmd: ' + cmdStr)
         ser.write(cmdStr)
         
-        rsp = self.readLine(ser)
+        rsp = self.readLine(ser, retry)
         if cmdStr.startswith(rsp):
-            rsp = self.readLine(ser)
+            rsp = self.readLine(ser, retry)
 
         if rsp:
             print('rsp: ' + rsp)
@@ -51,17 +52,17 @@ class RcpSerial:
             
     def open(self):
         print('Opening serial')
-        ser = serial.Serial(self.port, timeout = 1)
+        ser = serial.Serial(self.port, timeout = 1.0)
         ser.flushInput()
         ser.flushOutput()
         return ser
 
-    def close(self, ser):
-        if ser != None:
-            ser.close()
-        ser = None
+    def close(self):
+        if self.ser != None:
+            self.ser.close()
+        self.ser = None
     
-    def readLine(self, ser):
+    def readLine(self, ser, retries = DEFAULT_READ_RETRIES):
         eol2 = b'\r'
         retryCount = 0
         line = bytearray()
@@ -71,7 +72,7 @@ class RcpSerial:
             if  c == eol2:
                 break
             elif c == '':
-                if retryCount > 10:
+                if retryCount >= retries:
                     raise Exception('Could not read message')
                 retryCount +=1
                 print('Timeout - retry: ' + str(retryCount))
@@ -274,26 +275,30 @@ class RcpSerial:
                                  })
                                   
     def getVersion(self):
-        rsp = self.sendCommand({"getVer":None})
+        rsp = self.sendCommand({"getVer":None}, 1)
         return rsp
 
     def autoDetect(self):
         ports = [x[0] for x in list_ports.comports()]
 
         print "Searching for RaceCapture on all serial ports"
-        ver = None
+        testVer = VersionConfig()
+        verJson = None
         for p in ports:
             try:
                 print "Trying", p
                 self.port = p
-                ver = self.getVersion()
-                break
-            except:
+                verJson = self.getVersion()
+                testVer.fromJson(verJson.get('ver', None))
+                if testVer.major > 0 or testVer.minor > 0 or testVer.bugfix > 0:
+                    break
+            except Exception as detail:
+                print('Failed: ' + str(detail))
                 self.port = None
-                self.close(self.ser)
+                self.close()
 
-        if not ver == None:
-            print "Found racecapture on port:", self.port
+        if not verJson == None:
+            print "Found racecapture version " + testVer.toString() + " on port:", self.port
 
 
     
