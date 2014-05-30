@@ -142,7 +142,9 @@ class ConfigView(BoxLayout):
         self.dismiss_popup()
         try:
             with open(os.path.join(path, filename[0])) as stream:
-                self.rcpConfig.fromJsonString(stream.read())
+                rcpConfigJsonString = stream.read()
+                self.rcpConfig.fromJsonString(rcpConfigJsonString)
+                self.dispatch('on_config_updated', self.rcpConfig)                
         except Exception as detail:
             alertPopup('Error Loading', 'Failed to Load Configuration:\n\n' + str(detail))
     def save(self, path, filename):

@@ -41,9 +41,4 @@ class LuaCodeInput(CodeInput):
 
     def runScript(self):
         print("run script")
-        
-class LuaCodeInput(CodeInput):
-    def __init__(self, **kwargs):
-        super(LuaCodeInput, self).__init__(**kwargs)
-        self.lexer= lexers.get_lexer_by_name('lua')
-        
+                

@@ -136,7 +136,7 @@ class RcpSerial:
         if scriptCfg:
             rcpCfg['scriptCfg'] = scriptCfg['scriptCfg']
         
-        return rcpCfg
+        return {'rcpCfg': rcpCfg}
     
     def writeRcpCfg(self, cfg):
         rcpCfg = cfg.get('rcpCfg', None)
