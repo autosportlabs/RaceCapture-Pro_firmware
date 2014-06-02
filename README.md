@@ -72,6 +72,7 @@ to run:
 
 ## Preparing to build installers (Win7)
 
+1. `kivy` (to get paths set up)
 1. activate the virtualenv: `_ve\Scripts\activate`
 1. Install [PYInstaller] (http://www.pyinstaller.org) `pip install pyinstaller`
 1. Install [PyWin32] (http://sourceforge.net/projects/pywin32/files/) `pip install pywin`
