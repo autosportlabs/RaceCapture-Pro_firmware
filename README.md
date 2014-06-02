@@ -23,6 +23,7 @@ to run:
 5. activate the virtualenv: `. _ve/bin/activate`
 6. install pip requirements: `pip install -r requirements.txt` (you may be required to upgrade your version of setuptools via the provided command)
 7. install graph via garden: `garden install graph`
+8. install navigation drawer via garden: `garden install navigationdrawer`
 
 ## running (OS X)
 
@@ -51,6 +52,7 @@ to run:
 6. activate the virtualenv: `_ve\Scripts\activate`
 7. install pip requirements: `pip install -r requirements.txt`
 8. install graph via garden: `garden install graph`
+9. install navigation drawer via garden: `garden install navigationdrawer`
 
 ## running (Win7)
 

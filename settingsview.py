@@ -14,7 +14,7 @@ from kivy.app import Builder
 from utils import *
 from mappedspinner import MappedSpinner
 
-from kivy.properties import StringProperty, BooleanProperty
+from kivy.properties import StringProperty
 
 Builder.load_file('settingsview.kv')
 

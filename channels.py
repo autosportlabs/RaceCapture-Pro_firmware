@@ -1,18 +1,72 @@
+CHANNEL_TYPE_UNKNOWN    = 0
+CHANNEL_TYPE_ANALOG     = 1
+CHANNEL_TYPE_FREQ       = 2
+CHANNEL_TYPE_GPIO       = 3
+CHANNEL_TYPE_PWM        = 4
+CHANNEL_TYPE_IMU        = 5
+CHANNEL_TYPE_GPS        = 6
+CHANNEL_TYPE_STATISTICS = 7
+
 class Channel:
+    name = ""
+    units = ""
+    precision = 0
+    min = 0
+    max = 0
+    systemChannel = 0
+    channelType = None
+    
     def __init__(self, **kwargs):
         self.name = kwargs.get('name', 'Unknown')
         self.units = kwargs.get('units', 'Unknown')
+        
+    def fromJson(self, channelJson):
+        if channelJson:
+            self.name = channelJson.get('nm', self.name)
+            self.units = channelJson.get('ut', self.units)
+            self.precision = channelJson.get('prec', self.precision)
+            self.min = channelJson.get('min', self.min)
+            self.max = channelJson.get('max', self.max)
+            sysChannel = channelJson.get('sys', None)
+            if sysChannel:
+                self.systemChannel = True if sysChannel == 1 else False
+            self.channelType = channelJson.get('type', self.channelType)
 
+    def toJson(self):
+        channelJson = {}
+        channelJson['nm'] = self.name
+        channelJson['ut'] = self.units
+        channelJson['prec'] = self.precision
+        channelJson['min'] = self.min
+        channelJson['max'] = self.max
+        channelJson['sys'] = 1 if self.systemChannel else 0
+        channelJson['type'] = self.channelType
+        
 class Channels:
     items = []
     def __init__(self, **kwargs):
-        items = []
-        items.append(Channel(name='Unknown', units=''))
-        items.append(Channel(name='OilTemp', units='F'))
-        items.append(Channel(name='Battery', units='V'))
-        items.append(Channel(name='AFR', units='AFR'))
-        self.items = items
+        pass
 
+    def fromJson(self, channelsJson):
+        channelsList = channelsJson.get('channels')
+        if channelsList:
+            del self.items[:]
+            for channelJson in channelsList:
+                channel = Channel()
+                channel.fromJson(channelJson)
+                self.items.append(channel)
+                
+        
+    def toJson(self):
+        channelsListJson = []
+        for channel in self.items:
+            channelsListJson.append(channel.toJson())
+            
+        return {'channels': channelsListJson}
+        
+    def isLoaded(self):
+        return len(self.items) > 0
+    
     def getIdForName(self, name):
         for i in range(len(self.items)):
             item = self.items[i]
@@ -32,10 +86,12 @@ class Channels:
         except IndexError:
             return ''
 
-    def getNamesList(self, category):
+    def getNamesList(self, channelType):
+
         names = []
         for channel in self.items:
-            names.append(channel.name)
+            if channelType == None or channelType == channel.channelType:
+                names.append(channel.name)
         return names
 
                 

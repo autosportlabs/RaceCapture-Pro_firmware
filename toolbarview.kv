@@ -2,6 +2,10 @@
     BoxLayout:
         orientation: 'horizontal'
         IconButton:
+        	id: 'menu'
+        	text: '\357\203\211'
+        	on_release: root.mainMenu()
+        IconButton:
             id: 'read'
             text: '\357\200\231'
             on_release: root.readConfig()

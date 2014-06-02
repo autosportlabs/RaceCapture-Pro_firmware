@@ -1,0 +1,46 @@
+#:kivy 1.8.0
+
+<MainMenuItem>:
+	orientation: 'horizontal'
+	spacing: dp(10)
+	Label:
+		size_hint_x: 0.05
+	FieldLabel:
+		size_hint_x: 0.2
+		font_size: dp(40)
+		rcid: 'icon'
+		font_name: 'fa.ttf'
+	FieldLabel:
+		size_hint_x: 0.75
+		font_size: dp(25)
+		rcid: 'desc'
+		
+<MainMenu>:
+	orientation: 'vertical'
+	MainMenuItem:
+		size_hint_y: 0.1
+		icon: '\357\203\244'
+		description: 'Dashboard'
+	MainMenuItem:
+		size_hint_y: 0.1
+		icon: '\357\202\200'
+		description: 'Analysis'
+	MainMenuItem:
+		size_hint_y: 0.1
+		icon: '\357\202\205'
+		description: 'Configuration'
+	MainMenuItem:
+		size_hint_y: 0.1
+		icon: '\357\200\230'
+		description: 'Race Tracks'
+	MainMenuItem:
+		size_hint_y: 0.1
+		icon: '\357\201\204'
+		description: 'Channels'
+	Label:
+		size_hint_y: 0.7
+			
+			
+	
+		
+		
