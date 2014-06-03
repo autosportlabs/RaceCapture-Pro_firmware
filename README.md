@@ -39,6 +39,7 @@ to run:
 ## Creating installer for current version (OSX)
 
 1. activate the virtualenv: `_ve/bin/activate`
+1. `cd install`
 1.`./buildmacinstall.sh`
 1. The install builder creates a .dmg file in the dist folder that is intended to be the app for distribution. However, it doesn't work right now ("Application damaged or incomplete") and I'm not sure why. -CLR 2014-05-29
 
