@@ -37,3 +37,8 @@ coll = COLLECT(exe,
                strip=None,
                upx=True,
                name='racecapture')
+
+if sys.platform == 'darwin':
+     app = BUNDLE(coll,
+                  name='racecapture.app',
+                  icon=None)
