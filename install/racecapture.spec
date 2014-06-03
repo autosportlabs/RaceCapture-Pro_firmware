@@ -24,7 +24,7 @@ pyz = PYZ(a.pure)
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
-          name='racecapture.exe',
+          name='racecapture' + ('.exe' if sys.platform == 'win32' else ''),
           debug=False,
           strip=None,
           upx=True,
