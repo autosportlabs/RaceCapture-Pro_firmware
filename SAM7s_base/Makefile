@@ -698,13 +698,14 @@ build elf hex bin lss sym clean clean_list program
 
 release : clean all
 	rm -rf $(RELEASE_NAME_ZIP)
-	cp main.elf $(RCP_RELEASE_DIR)/$(RELEASE_NAME_ELF)
+	cp main.elf $(RELEASE_NAME_ELF)
+	cp $(RELEASE_NAME_ELF) $(RCP_RELEASE_DIR)
 	rm -rf $(RCP_INSTALL_DIR)
 	mkdir $(RCP_INSTALL_DIR)
-	cp installer/* $(RCP_INSTALL_DIR)
+	cp $(SAM7s_BASE_DIR)/installer/* $(RCP_INSTALL_DIR)
 	cp $(RELEASE_NAME_ELF) $(RCP_INSTALL_DIR)
-	cp README_RELEASE_NOTES.txt $(RCP_INSTALL_DIR)
-	cp HOW_TO_FLASH.txt $(RCP_INSTALL_DIR)
+	cp CHANGELOG $(RCP_INSTALL_DIR)
+	cp $(SAM7s_BASE_DIR)/HOW_TO_FLASH.txt $(RCP_INSTALL_DIR)
 	zip -r $(RELEASE_NAME_ZIP) $(RCP_INSTALL_DIR)
 	cp $(RELEASE_NAME_ZIP) $(RCP_RELEASE_DIR)
 
