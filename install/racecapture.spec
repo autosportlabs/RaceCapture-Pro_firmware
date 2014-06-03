@@ -41,4 +41,4 @@ coll = COLLECT(exe,
 if sys.platform == 'darwin':
      app = BUNDLE(coll,
                   name='racecapture.app',
-                  icon=None)
+                  icon='..//resource//race_capture_icon_large.icns')

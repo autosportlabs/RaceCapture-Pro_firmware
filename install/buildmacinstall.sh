@@ -7,4 +7,7 @@ kivy /usr/local/bin/pyinstaller -y racecapture.spec
 #mv racecapture racecapture.app
 #hdiutil create ./RaceCapture.dmg -srcfolder racecapture.app -ov
 #popd
+pushd dist
+zip -r -9 racecapture.zip racecapture.app
+popd
 dist/racecapture/racecapture
