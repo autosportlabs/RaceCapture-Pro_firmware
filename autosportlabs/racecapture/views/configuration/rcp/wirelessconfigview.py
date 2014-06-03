@@ -6,11 +6,11 @@ from kivy.uix.button import Button
 import json
 
 from settingsview import SettingsView, SettingsSwitch, SettingsButton, SettingsMappedSpinner
-from separator import HLineSeparator
+from autosportlabs.widgets.separator import HLineSeparator
 from valuefield import ValueField
 from utils import *
 
-Builder.load_file('wirelessconfigview.kv')
+Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/wirelessconfigview.kv')
 
 class WirelessConfigView(BoxLayout):
     customApnLabel = 'Custom APN'

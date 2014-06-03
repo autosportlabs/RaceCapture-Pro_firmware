@@ -9,7 +9,7 @@ from settingsview import SettingsSwitch
 from utils import *
 from rcpconfig import *
 
-Builder.load_file('obd2channelsview.kv')
+Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/obd2channelsview.kv')
 
 class OBD2Channel(BoxLayout):
     obd2Channel = None

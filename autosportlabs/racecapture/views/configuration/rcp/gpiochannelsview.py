@@ -11,7 +11,7 @@ from utils import *
 from rcpconfig import *
 from mappedspinner import MappedSpinner
 
-Builder.load_file('gpiochannelsview.kv')
+Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/gpiochannelsview.kv')
 
 
 

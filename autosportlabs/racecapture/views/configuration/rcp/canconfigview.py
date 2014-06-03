@@ -7,7 +7,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.app import Builder
 from utils import *
 
-Builder.load_file('canconfigview.kv')
+Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/canconfigview.kv')
 
 class CANBaudRateSpinner(SettingsMappedSpinner):
     def __init__(self, **kwargs):    

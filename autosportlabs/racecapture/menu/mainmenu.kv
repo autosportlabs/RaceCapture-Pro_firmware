@@ -18,25 +18,35 @@
 <MainMenu>:
 	orientation: 'vertical'
 	MainMenuItem:
+		rcid: 'dash'
 		size_hint_y: 0.1
 		icon: '\357\203\244'
 		description: 'Dashboard'
+		on_main_menu_item_selected: root.on_main_menu_item_selected(*args)
 	MainMenuItem:
+		rcid: 'analysis'
 		size_hint_y: 0.1
 		icon: '\357\202\200'
 		description: 'Analysis'
+		on_main_menu_item_selected: root.on_main_menu_item_selected(*args)		
 	MainMenuItem:
+		rcid: 'config'
 		size_hint_y: 0.1
 		icon: '\357\202\205'
 		description: 'Configuration'
+		on_main_menu_item_selected: root.on_main_menu_item_selected(*args)		
 	MainMenuItem:
+		rcid: 'tracks'
 		size_hint_y: 0.1
 		icon: '\357\200\230'
 		description: 'Race Tracks'
+		on_main_menu_item_selected: root.on_main_menu_item_selected(*args)		
 	MainMenuItem:
+		rcid: 'channels'
 		size_hint_y: 0.1
 		icon: '\357\201\204'
 		description: 'Channels'
+		on_main_menu_item_selected: root.on_main_menu_item_selected(*args)		
 	Label:
 		size_hint_y: 0.7
 			

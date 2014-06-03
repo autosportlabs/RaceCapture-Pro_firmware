@@ -11,7 +11,7 @@ from valuefield import IntegerValueField
 from mappedspinner import MappedSpinner
 from utils import *
 
-Builder.load_file('pwmchannelsview.kv')
+Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/pwmchannelsview.kv')
     
 class PwmOutputModeSpinner(MappedSpinner):
     def __init__(self, **kwargs):
@@ -65,10 +65,7 @@ class AnalogPulseOutputChannel(BoxLayout):
 
         sampleRateSpinner = kvFind(self, 'rcid', 'sr')
         sampleRateSpinner.setValue(channelConfig.sampleRate)
-        
-        voltageScalingField = kvFind(self, 'rcid', 'vScal')
-        voltageScalingField.text =  '{:.3g}'.format(channelConfig.voltageScaling)
-        
+                
         startupDutyCycle = kvFind(self, 'rcid', 'dutyCycle')
         startupDutyCycle.text = str(channelConfig.startupDutyCycle)
         

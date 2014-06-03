@@ -5,11 +5,11 @@ from kivy.uix.boxlayout import BoxLayout
 import json
 
 from settingsview import SettingsView, SettingsTextField, SettingsSwitch
-from separator import HLineSeparator
+from autosportlabs.widgets.separator import HLineSeparator
 from valuefield import ValueField
 from utils import *
 
-Builder.load_file('telemetryconfigview.kv')
+Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/telemetryconfigview.kv')
 
 class TelemetryConfigView(BoxLayout):
     connectivityConfig = None

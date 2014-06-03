@@ -1,15 +1,40 @@
 <ToolbarView>:
-    BoxLayout:
-        orientation: 'horizontal'
-        IconButton:
-        	id: 'menu'
-        	text: '\357\203\211'
-        	on_release: root.mainMenu()
-        IconButton:
-            id: 'read'
-            text: '\357\200\231'
-            on_release: root.readConfig()
-        IconButton:
-            id: 'write'
-            text: '\357\202\223'
-            on_release: root.writeConfig()
+    orientation: 'horizontal'
+    IconButton:
+    	id: 'menu'
+    	text: '\357\203\211'
+    	on_release: root.mainMenu()
+    	size_hint_x: None
+    	width: dp(30)
+    Label:
+    	width: dp(10)
+    	size_hint_x: None
+    	
+    IconButton:
+    	rid: 'telemetryUpStatus'
+    	text: '\357\203\256'
+    	width: dp(30)
+    	color: [0.0, 1.0, 0.0, 0.8]    	
+    	size_hint_x: None
+    IconButton:
+    	id: 'telemetryDownStatus'
+    	text: '\357\203\255'
+    	width: dp(30)
+    	color: [0.0, 0.8, 1.0, 0.8]
+    	size_hint_x: None
+    IconButton:
+    	rid: 'txStatus'
+    	text: '\357\200\231'
+    	width: dp(30)
+    	color: [0.0, 1.0, 0.0, 0.8]    	
+    	size_hint_x: None
+    IconButton:
+    	rid: 'rxStatus'
+    	text: '\357\202\223'
+    	width: dp(30)
+    	color: [0.0, 0.8, 1.0, 0.8]    	
+    	size_hint_x: None
+	Label:
+		size_hint_x: 1.0        	
+        	
+        	

@@ -13,7 +13,7 @@ from channels import *
 from channelnameselectorview import ChannelNameSelectorView
 from channelnamespinner import ChannelNameSpinner
 
-Builder.load_file('analogchannelsview.kv')
+Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/analogchannelsview.kv')
 
 class AnalogChannelsView(BoxLayout):
     editors = []    

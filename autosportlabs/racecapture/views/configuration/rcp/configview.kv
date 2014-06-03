@@ -1,0 +1,41 @@
+#:kivy 1.8.0
+
+<ConfigView>:
+	orientation: 'horizontal'
+	BoxLayout:
+		size_hint_x: 0.2
+		orientation: 'vertical'
+		TreeView:
+			size_hint_y: 0.9
+			rcid: 'menu'
+			size_hint: (None, 1)
+			width: dp(200)
+			hide_root: True
+			indent_level: 0
+		BoxLayout:
+			size_hint_y: 0.1
+			orientation: 'horizontal'
+	        IconButton:
+	        	id: 'open'
+	        	text: '\357\204\225'
+	        	on_release: root.openConfig()
+	        IconButton:
+	        	id: 'save'
+	        	text: '\357\203\207'
+	        	on_release: root.saveConfig()
+		BoxLayout:
+			size_hint_y: 0.1
+			orientation: 'horizontal'
+	        IconButton:
+	            id: 'read'
+	            text: '\357\202\223'
+	            on_release: root.readConfig()
+	        IconButton:
+	            id: 'write'
+	            text: '\357\200\231'
+	            on_release: root.writeConfig()
+			
+	BoxLayout:
+		size_hint_x: 0.8
+		rcid: 'content'
+	

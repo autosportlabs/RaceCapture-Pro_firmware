@@ -4,7 +4,7 @@ from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from kivy.app import Builder
 
-Builder.load_file('separator.kv')
+Builder.load_file('autosportlabs/widgets/separator.kv')
 
 class HLineSeparator(Label):
     pass
@@ -16,4 +16,5 @@ class VSeparator(Widget):
     pass
     
 class HSeparatorMinor(Label):
-    pass
+    def __init__(self, **kwargs):
+        super(HSeparatorMinor, self).__init__(**kwargs)

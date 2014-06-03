@@ -7,7 +7,7 @@ from rcpconfig import *
 from samplerateview import *
 from utils import *
 
-Builder.load_file('gpschannelsview.kv')            
+Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/gpschannelsview.kv')            
             
 class GPSChannelsView(BoxLayout):
     gpsConfig = None

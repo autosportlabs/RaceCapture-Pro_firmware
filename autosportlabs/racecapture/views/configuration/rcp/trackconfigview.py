@@ -12,7 +12,7 @@ from utils import *
 from rcpconfig import *
 from valuefield import FloatValueField
 
-Builder.load_file('trackconfigview.kv')
+Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/trackconfigview.kv')
 
 class SectorPointView(BoxLayout):
     geoPoint = None
@@ -20,6 +20,9 @@ class SectorPointView(BoxLayout):
     lonView = None
     def __init__(self, **kwargs):
         super(SectorPointView, self).__init__(**kwargs)
+        title = kwargs.get('title', None)
+        if title:
+            self.setTitle(title)
 
     def setNext(self, widget):
         self.lonView.set_next(widget)
@@ -91,12 +94,7 @@ class TrackConfigView(BoxLayout):
         
         self.startLineView = kvFind(self, 'rcid', 'startLine')
         self.finishLineView = kvFind(self, 'rcid', 'finishLine')
-                    
-        for i in range(1, CONFIG_SECTOR_COUNT):
-            sectorView = SectorPointView(title = 'Sector ' + str(i))
-            sectorsContainer.add_widget(sectorView)
-            self.sectorViews.append(sectorView)
-            
+                                
         self.updateTrackViewState()
             
     def updateTrackViewState(self):
@@ -126,15 +124,19 @@ class TrackConfigView(BoxLayout):
         self.separateStartFinish = trackCfg.trackType == TRACK_TYPE_STAGE
         separateStartFinishSwitch.setValue(self.separateStartFinish) 
         
-        self.updateTrackViewState()
+        sectorsContainer = self.sectorsContainer
+
+        sectorsContainer.clear_widgets()
+        for i in range(1, trackCfg.sectorCount):
+            sectorView = SectorPointView(title = 'Sector ' + str(i))
+            sectorsContainer.add_widget(sectorView)
+            sectorView.setPoint(trackCfg.sectors[i])
+            self.sectorViews.append(sectorView)
 
         self.startLineView.setPoint(trackCfg.startLine)
         self.finishLineView.setPoint(trackCfg.finishLine)
         
-        for i in range(0, CONFIG_SECTOR_COUNT - 1):
-            sectorView = self.sectorViews[i]
-            sectorView.setPoint(trackCfg.sectors[i])
-        
         self.trackCfg = trackCfg
+        self.updateTrackViewState()
         self.update_tabs()
         

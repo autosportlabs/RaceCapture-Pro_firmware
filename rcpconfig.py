@@ -322,8 +322,6 @@ class PwmChannel:
         self.loggingMode = 0
         self.startupPeriod = 0
         self.startupDutyCycle = 0
-        self.voltageScaling = 0
-        
         
     def fromJson(self, json):
         if (json):
@@ -333,7 +331,6 @@ class PwmChannel:
             self.loggingMode = json.get('logMode', self.loggingMode)
             self.startupDutyCycle = json.get('stDutyCyc', self.startupDutyCycle)
             self.startupPeriod = json.get('stPeriod', self.startupPeriod)
-            self.voltageScaling = json.get('vScal', self.voltageScaling)
             
     def toJson(self):
         pwmJson = {}
@@ -343,7 +340,6 @@ class PwmChannel:
         pwmJson['logMode'] = self.loggingMode
         pwmJson['stDutyCyc'] = self.startupDutyCycle
         pwmJson['stPeriod'] = self.startupPeriod
-        pwmJson['vScal'] = self.voltageScaling
         return pwmJson
 
 PWM_CHANNEL_COUNT = 4   
@@ -377,16 +373,22 @@ class GeoPoint:
         self.latitude = 0
         self.longitude = 0
     
-    def fromJson(self, json):
-        self.latitude = json[0]
-        self.longitude = json[1]
+    def fromJson(self, geoPointJson):
+        try:
+            self.latitude = geoPointJson[0]
+            self.longitude = geoPointJson[1]
+        except:
+            print('Malformed GeoPoint: ' + str(geoPointJson))
     
     def toJson(self):
         return [self.latitude, self.longitude]
         
 TRACK_TYPE_CIRCUIT  = 0
 TRACK_TYPE_STAGE    = 1
-        
+
+CONFIG_SECTOR_COUNT_CIRCUIT = 19
+CONFIG_SECTOR_COUNT_STAGE = 18
+
 class TrackConfig:
     def __init__(self, **kwargs):
         self.sectorCount = CONFIG_SECTOR_COUNT
@@ -406,12 +408,24 @@ class TrackConfig:
             self.trackType = trackJson.get('type', self.trackType)
             sectorsJson = trackJson.get('sec', None)
             del self.sectors[:]
+            
+            if self.trackType == TRACK_TYPE_CIRCUIT:
+                self.startLine.fromJson(trackJson.get('sf', None))
+                sectorCount = CONFIG_SECTOR_COUNT_CIRCUIT
+            else:
+                self.startLine.fromJson(trackJson.get('st', self.startLine))
+                self.finishLine.fromJson(trackJson.get('fin', self.finishLine))
+                sectorCount = CONFIG_SECTOR_COUNT_STAGE
+
+            returnedSectorCount = len(sectorsJson)
             if sectorsJson:
-                for i in range(self.sectorCount):
-                    sectorJson = sectorsJson[i]
+                for i in range(sectorCount):
                     sector = GeoPoint()
-                    sector.fromJson(sectorJson)
+                    if i < returnedSectorCount:
+                        sectorJson = sectorsJson[i]
+                        sector.fromJson(sectorJson)
                     self.sectors.append(sector)
+            self.sectorCount = sectorCount
                     
     def toJson(self):
         trackCfgJson = {}
@@ -522,8 +536,8 @@ class BluetoothConfig:
 
     def fromJson(self, btCfgJson):
         self.btEnabled = btCfgJson['btEn'] == 1
-        self.name = btCfgJson['name']
-        self.passKey = btCfgJson['pass']
+        self.name = btCfgJson.get('name', self.name)
+        self.passKey = btCfgJson.get('pass', self.passKey)
         
     def toJson(self):
         btCfgJson = {}
@@ -542,9 +556,9 @@ class CellConfig:
     
     def fromJson(self, cellCfgJson):
         self.cellEnabled = cellCfgJson['cellEn'] == 1
-        self.apnHost = cellCfgJson['apnHost']
-        self.apnUser = cellCfgJson['apnUser']
-        self.apnPass = cellCfgJson['apnPass']
+        self.apnHost = cellCfgJson.get('apnHost', self.apnHost)
+        self.apnUser = cellCfgJson.get('apnUser', self.apnUser)
+        self.apnPass = cellCfgJson.get('apnPass', self.apnUser)
 
     def toJson(self):
         cellConfigJson = {}
@@ -559,8 +573,8 @@ class TelemetryConfig:
     backgroundStreaming = 0
     
     def fromJson(self, telCfgJson):
-        self.deviceId = telCfgJson['deviceId']
-        self.backgroundStreaming = True if telCfgJson['bgStream'] == 1 else False 
+        self.deviceId = telCfgJson.get('deviceId', self.deviceId)
+        self.backgroundStreaming = True if telCfgJson.get('bgStream', 0) == 1 else False 
         
     def toJson(self):
         telCfgJson = {}
@@ -594,9 +608,29 @@ class ConnectivityConfig:
         return {'connCfg':connCfgJson}
 
 
-    
-class RcpConfig:
+class VersionConfig:
+    major = 0
+    minor = 0
+    bugfix = 0
     def __init__(self, **kwargs):
+        pass
+    
+    def toString(self):
+        return str(self.major) + "." + str(self.minor) + "." + str(self.bugfix)
+    
+    def fromJson(self, versionJson):
+        self.major = versionJson.get('major', self.major)
+        self.minor = versionJson.get('minor', self.minor)
+        self.bugfix = versionJson.get('bugfix', self.bugfix)
+        
+    def toJson(self):
+        versionJson = {'major': self.major, 'minor': self.minor, 'bugfix': self.bugfix}
+        return {'ver': versionJson}
+        
+class RcpConfig:
+    loaded = False
+    def __init__(self, **kwargs):
+        self.versionConfig = VersionConfig()
         self.analogConfig = AnalogConfig()
         self.imuConfig = ImuConfig()
         self.gpsConfig = GpsConfig()
@@ -609,54 +643,71 @@ class RcpConfig:
         self.obd2Config = Obd2Config()
         self.scriptConfig = LuaScript()
     
-    def fromJson(self, json):
-        analogCfgJson = json.get('analogCfg', None)
-        if analogCfgJson:
-            self.analogConfig.fromJson(analogCfgJson)
+    def fromJson(self, rcpJson):
+        if rcpJson:
+            rcpJson = rcpJson.get('rcpCfg', None)
+            if rcpJson:
+                versionJson = rcpJson.get('ver', None)
+                if versionJson:
+                    self.versionConfig.fromJson(versionJson)
+        
+                analogCfgJson = rcpJson.get('analogCfg', None)
+                if analogCfgJson:
+                    self.analogConfig.fromJson(analogCfgJson)
+        
+                timerCfgJson = rcpJson.get('timerCfg', None)
+                if timerCfgJson:
+                    self.timerConfig.fromJson(timerCfgJson)
+                    
+                imuCfgJson = rcpJson.get('imuCfg', None)
+                if imuCfgJson:
+                    self.imuConfig.fromJson(imuCfgJson)
+                    
+                gpsCfgJson = rcpJson.get('gpsCfg', None)
+                if gpsCfgJson:
+                    self.gpsConfig.fromJson(gpsCfgJson)
+                    
+                gpioCfgJson = rcpJson.get('gpioCfg', None)
+                if gpioCfgJson:
+                    self.gpioConfig.fromJson(gpioCfgJson)
 
-        timerCfgJson = json.get('timerCfg', None)
-        if timerCfgJson:
-            self.timerConfig.fromJson(timerCfgJson)
-            
-        imuCfgJson = json.get('imuCfg', None)
-        if imuCfgJson:
-            self.imuConfig.fromJson(imuCfgJson)
-            
-        gpsCfgJson = json.get('gpsCfg', None)
-        if gpsCfgJson:
-            self.gpsConfig.fromJson(gpsCfgJson)
-            
-        gpioCfgJson = json.get('gpioCfg', None)
-        if gpioCfgJson:
-            self.gpioConfig.fromJson(gpioCfgJson)
-            
-        pwmCfgJson = json.get('pwmCfg', None)
-        if pwmCfgJson:
-            self.pwmConfig.fromJson(pwmCfgJson)
-            
-        trackCfgJson = json.get('trackCfg', None)
-        if trackCfgJson:
-            self.trackConfig.fromJson(trackCfgJson)
-            
-        connectivtyCfgJson = json.get('connCfg', None)
-        if connectivtyCfgJson:
-            self.connectivityConfig.fromJson(connectivtyCfgJson)
-            
-        canCfgJson = json.get('canCfg', None)
-        if canCfgJson:
-            self.canConfig.fromJson(canCfgJson)
-            
-        obd2CfgJson = json.get('obd2Cfg', None)
-        if obd2CfgJson:
-            self.obd2Config.fromJson(obd2CfgJson)
+                pwmCfgJson = rcpJson.get('pwmCfg', None)
+                if pwmCfgJson:
+                    self.pwmConfig.fromJson(pwmCfgJson)
+                    
+                trackCfgJson = rcpJson.get('trackCfg', None)
+                if trackCfgJson:
+                    self.trackConfig.fromJson(trackCfgJson)
+                    
+                connectivtyCfgJson = rcpJson.get('connCfg', None)
+                if connectivtyCfgJson:
+                    self.connectivityConfig.fromJson(connectivtyCfgJson)
+                    
+                canCfgJson = rcpJson.get('canCfg', None)
+                if canCfgJson:
+                    self.canConfig.fromJson(canCfgJson)
+                    
+                obd2CfgJson = rcpJson.get('obd2Cfg', None)
+                if obd2CfgJson:
+                    self.obd2Config.fromJson(obd2CfgJson)
+                
+                scriptJson = rcpJson.get('scriptCfg', None)
+                if scriptJson:
+                    self.scriptConfig.fromJson(scriptJson)
+                    
+                print('RCP config version ' + str(self.versionConfig.major) + '.' + str(self.versionConfig.minor) + '.' + str(self.versionConfig.minor) + ' Loaded')
+                self.loaded = True
+    
+    def fromJsonString(self, rcpJsonString):
+        rcpJson = json.loads(rcpJsonString)
+        self.fromJson(rcpJson)
         
-        scriptJson = json.get('scriptCfg', None)
-        if scriptJson:
-            self.scriptConfig.fromJson(scriptJson)
-            
+    def toJsonString(self, pretty = True):
+        return json.dumps(self.toJson(), sort_keys=True, indent=2, separators=(',', ': '))
+
     def toJson(self):
-        
         rcpJson = {'rcpCfg':{
+                             'ver': self.versionConfig.toJson().get('ver'),
                              'gpsCfg':self.gpsConfig.toJson().get('gpsCfg'),
                              'imuCfg':self.imuConfig.toJson().get('imuCfg'),
                              'analogCfg':self.analogConfig.toJson().get('analogCfg'),
@@ -670,5 +721,4 @@ class RcpConfig:
                              'scriptCfg':self.scriptConfig.toJson().get('scriptCfg')
                              }
                    }
-        print('\n\n\n\nRCP JSON ' + json.dumps(rcpJson) + '\n\n\n')
         return rcpJson

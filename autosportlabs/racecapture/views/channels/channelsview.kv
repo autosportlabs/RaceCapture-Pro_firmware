@@ -1,0 +1,141 @@
+#:kivy 1.8.0
+
+
+<ChannelEditor>:
+	orientation: 'vertical'
+	GridLayout:
+		spacing: dp(20)
+		cols: 2
+		BoxLayout:
+			spacing: dp(20)
+			orientation: 'vertical'
+			HSeparatorMinor:
+				text: 'Channel'
+			GridLayout:
+				cols: 2
+				spacing: dp(10)
+				FieldLabel:
+					text: 'Name'
+				ValueField:
+					rcid: 'name'
+					on_text: root.on_name(*args)
+				FieldLabel:
+					text: 'Units'
+				ValueField:
+					rcid: 'units'
+					on_text: root.on_units(*args)
+		BoxLayout:
+			spacing: dp(20)		
+			orientation: 'vertical'
+			HSeparatorMinor:
+				text: 'Settings'
+			GridLayout:
+				cols: 2
+				spacing: dp(10)
+				FieldLabel:
+					text: 'Precision'
+				IntegerValueField:
+					rcid: 'prec'
+					on_text: root.on_precision(*args)
+				FieldLabel:
+					text: 'Min / max'
+				BoxLayout:
+					orientation: 'horizontal'
+					FloatValueField:
+						rcid: 'min'
+						on_text: root.on_min(*args)
+					FloatValueField:
+						rcid: 'max'
+						on_text: root.on_max(*args)
+
+<ChannelLabel>:
+	size_hint_y: None
+	padding_x: -10
+    height: max(dp(30), self.texture_size[1] + dp(5))
+    text_size: self.width, None
+    valign: 'middle'
+    halign: 'left'
+    font_size: 18
+    canvas.before:
+        Color:
+            rgba: .1, .1, .1, .9
+        Rectangle:
+            size: self.size
+            pos: self.pos
+					
+				
+<ChannelView>:
+    spacing: dp(10)
+    height: dp(30)
+    size_hint_y: None
+	BoxLayout:
+		orientation: 'horizontal'
+		IconButton:
+			size_hint_x: 0.05
+			rcid: 'sysChan'
+			text: ''
+		ChannelLabel:
+			size_hint_x: 0.7
+			rcid: 'name'
+			font_size: dp(25)
+		IconButton:
+			size_hint_x: 0.05
+			rcid: 'edit'
+			on_release: root.on_edit()
+			text: '\357\201\204'
+		IconButton:
+			size_hint_x: 0.05
+			rcid: 'delete'
+			text: '\357\200\224'
+			on_release: root.on_delete()			
+	
+	
+<ChannelsView>:
+	padding: (dp(10),dp(10))
+	spacing: dp(20)
+	orientation: 'vertical'
+    HSeparator:
+    	text: 'Data Channels'
+    	size_hint_y: 0.1
+	BoxLayout:
+		padding: (dp(200), dp(10))
+		spacing: dp(20)
+		orientation: 'vertical'
+	    ScrollView:
+	        id: scrlChan
+	        size_hint_y: 0.7
+	        do_scroll_x:False
+	        do_scroll_y:True
+	        GridLayout:
+	        	rcid: 'channelsContainer'
+	            padding: [dp(20), dp(20)]
+	            spacing: [dp(10), dp(10)]
+	            size_hint_y: None
+	            height: max(self.minimum_height, scrlChan.height)
+	            cols: 1
+	    	
+	    BoxLayout:
+	    	size_hint_y: 0.05
+	    	IconButton:
+	    		text: '\357\201\247'
+	    		on_release: root.on_add_channel()
+		    	disabled: True
+		    	rcid: 'addChan'
+    BoxLayout:
+        size_hint_y: 0.05	
+        spacing: dp(10)
+        orientation: 'horizontal'
+        IconButton:
+            size_hint_x: 0.1
+            text: "\357\202\223"
+            on_release: root.on_read_channels()
+        IconButton:
+            size_hint_x: 0.1
+            text: "\357\200\231"
+            on_release: root.on_write_channels()
+        Label:
+        	size_hint_x: 0.8
+    	
+    	
+    	    	
+    	
