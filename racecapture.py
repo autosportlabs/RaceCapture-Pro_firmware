@@ -87,18 +87,20 @@ class RaceCaptureApp(App):
     def on_read_config(self, instance, *args):
         try:
             if not self.channels.isLoaded():
-                channelsList = self.rcpComms.getChannels()
-                self.channels.fromJson(channelsList)
-                self.notifyChannelsUpdated()
-                
-                
-            config = self.rcpComms.getRcpCfg()
-            self.rcpConfig.fromJson(config)
-            self.dispatch('on_config_updated', self.rcpConfig)
+                self.rcpComms.getChannels(self.on_channels_config_complete)
+            self.rcpComms.getRcpCfg(self.on_read_config_complete)
         except:
             logging.exception('')
             self._serial_warning()
 
+    def on_channels_config_complete(self, channelsList):
+            self.channels.fromJson(channelsList)
+            self.notifyChannelsUpdated()
+        
+    def on_read_config_complete(self, rcpConfigJson):
+        self.rcpConfig.fromJson(rcpConfigJson)
+        self.dispatch('on_config_updated', self.rcpConfig)
+        
     def notifyChannelsUpdated(self):
         self.dispatch('on_channels_updated', self.channels)
 

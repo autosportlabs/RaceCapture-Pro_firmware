@@ -1,6 +1,8 @@
 import serial
 import io
 import json
+import Queue
+from threading import Thread
 from rcpconfig import *
 from serial.tools import list_ports
 
@@ -8,14 +10,43 @@ CHANNEL_ADD_MODE_IN_PROGRESS = 1
 CHANNEL_ADD_MODE_COMPLETE = 2
 DEFAULT_READ_RETRIES = 5
 
+class RcpCmd:
+    cmd = None
+    callback = None
+    def __init__(self, **kwargs):
+        self.cmd = kwargs.get('cmd', None)
+        self.callback = kwargs.get('callback', None)
+            
 class RcpSerial:
+    cmdQueue = None
     def __init__(self, **kwargs):
         self.ser = None
         self.port = kwargs.get('port', None)
-
+        self.cmdQueue = Queue.Queue()
+        t = Thread(target=self.worker)
+        t.daemon = True
+        t.start()
+     
     def setPort(self, port):
         self.port = port
 
+    def worker(self):
+        q = self.cmdQueue
+        while True:
+            try:
+                cmd = q.get()
+                print('worker: ' + str(cmd))
+                rsp = cmd.cmd(None)
+                callback = cmd.callback
+                if callback:
+                    callback(rsp) 
+                q.task_done()
+            except Exception:
+                print('Aysnc command exception: ' + str(Exception))
+        
+    def queueCommand(self, cmd, callback):
+        self.cmdQueue.put(RcpCmd(cmd=cmd, callback=callback))
+        
     def sendCommand(self, cmd, retry = DEFAULT_READ_RETRIES):
         rsp = None
         ser = self.getSerial()
@@ -85,59 +116,63 @@ class RcpSerial:
         line = line.replace('\n', '')
         return line
 
-    def getRcpCfg(self):
-        versionCfg = self.getVersion()
-        analogCfg = self.getAnalogCfg(None)
-        imuCfg = self.getImuCfg(None)
-        gpsCfg = self.getGpsCfg()
-        timerCfg = self.getTimerCfg(None)
-        gpioCfg = self.getGpioCfg(None)
-        pwmCfg = self.getPwmCfg(None)
-        trackCfg = self.getTrackCfg()
-        canCfg = self.getCanCfg()
-        obd2Cfg = self.getObd2Cfg()
-        scriptCfg = self.getScript()
-        connCfg = self.getConnectivityCfg()
+    def getRcpCfg(self, callback):
         
-        rcpCfg = {}
-        
-        if versionCfg:
-            rcpCfg['ver'] = versionCfg['ver']
+        if callback:
+            self.queueCommand(self.getRcpCfg, callback)
+        else:
+            versionCfg = self.getVersion()
+            analogCfg = self.getAnalogCfg(None)
+            imuCfg = self.getImuCfg(None)
+            gpsCfg = self.getGpsCfg()
+            timerCfg = self.getTimerCfg(None)
+            gpioCfg = self.getGpioCfg(None)
+            pwmCfg = self.getPwmCfg(None)
+            trackCfg = self.getTrackCfg()
+            canCfg = self.getCanCfg()
+            obd2Cfg = self.getObd2Cfg()
+            scriptCfg = self.getScript()
+            connCfg = self.getConnectivityCfg()
             
-        if analogCfg:
-            rcpCfg['analogCfg'] = analogCfg['analogCfg']
+            rcpCfg = {}
+            
+            if versionCfg:
+                rcpCfg['ver'] = versionCfg['ver']
+                
+            if analogCfg:
+                rcpCfg['analogCfg'] = analogCfg['analogCfg']
+        
+            if rcpCfg:
+                rcpCfg['imuCfg'] = imuCfg['imuCfg']
+            
+            if gpsCfg:
+                rcpCfg['gpsCfg'] = gpsCfg['gpsCfg']
+                
+            if timerCfg:
+                rcpCfg['timerCfg'] = timerCfg['timerCfg']
+               
+            if gpioCfg:
+                rcpCfg['gpioCfg'] = gpioCfg['gpioCfg']
+                
+            if pwmCfg:
+                rcpCfg['pwmCfg'] = pwmCfg['pwmCfg']
     
-        if rcpCfg:
-            rcpCfg['imuCfg'] = imuCfg['imuCfg']
-        
-        if gpsCfg:
-            rcpCfg['gpsCfg'] = gpsCfg['gpsCfg']
+            if trackCfg:
+                rcpCfg['trackCfg'] = trackCfg['trackCfg']
+                
+            if connCfg:
+                rcpCfg['connCfg'] = connCfg['connCfg']
+    
+            if canCfg:
+                rcpCfg['canCfg'] = canCfg['canCfg']
+                
+            if obd2Cfg:
+                rcpCfg['obd2Cfg'] = obd2Cfg['obd2Cfg']
             
-        if timerCfg:
-            rcpCfg['timerCfg'] = timerCfg['timerCfg']
-           
-        if gpioCfg:
-            rcpCfg['gpioCfg'] = gpioCfg['gpioCfg']
+            if scriptCfg:
+                rcpCfg['scriptCfg'] = scriptCfg['scriptCfg']
             
-        if pwmCfg:
-            rcpCfg['pwmCfg'] = pwmCfg['pwmCfg']
-
-        if trackCfg:
-            rcpCfg['trackCfg'] = trackCfg['trackCfg']
-            
-        if connCfg:
-            rcpCfg['connCfg'] = connCfg['connCfg']
-
-        if canCfg:
-            rcpCfg['canCfg'] = canCfg['canCfg']
-            
-        if obd2Cfg:
-            rcpCfg['obd2Cfg'] = obd2Cfg['obd2Cfg']
-        
-        if scriptCfg:
-            rcpCfg['scriptCfg'] = scriptCfg['scriptCfg']
-        
-        return {'rcpCfg': rcpCfg}
+            return {'rcpCfg': rcpCfg}
     
     def writeRcpCfg(self, cfg):
         rcpCfg = cfg.get('rcpCfg', None)
@@ -263,8 +298,11 @@ class RcpSerial:
     def flashConfig(self):
         return self.sendCommand({'flashCfg':None})
 
-    def getChannels(self):
-        return self.sendGet("getChannels", None)
+    def getChannels(self, callback):
+        if callback:
+            self.queueCommand(self.getChannels, callback)
+        else:
+            return self.sendGet("getChannels", None)
                 
     def addChannel(self, channelJson, index, mode):
         return self.sendCommand({'addChannel': 
