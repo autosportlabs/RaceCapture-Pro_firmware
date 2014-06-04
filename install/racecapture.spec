@@ -10,7 +10,7 @@ def addKVs():
     allFiles = Tree('..//')
     extraDatas = []
     for file in allFiles:
-        if file[0].endswith(".kv") | file[0].endswith(".ttf"):
+        if file[0].endswith('.kv') | file[0].endswith('.ttf') | file[0].startswith('resource/'):
             print "Adding datafile: " + file[0]
             extraDatas.append(file)
     return extraDatas
@@ -41,4 +41,4 @@ coll = COLLECT(exe,
 if sys.platform == 'darwin':
      app = BUNDLE(coll,
                   name='racecapture.app',
-                  icon='..//resource//race_capture_icon_large.icns')
+                  icon='resource//race_capture_icon_large.icns')
