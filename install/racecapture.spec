@@ -23,6 +23,7 @@ a.datas += addKVs()
 pyz = PYZ(a.pure)
 exe = EXE(pyz,
           a.scripts,
+          [('v', None, 'OPTION')],
           exclude_binaries=True,
           name='racecapture' + ('.exe' if sys.platform == 'win32' else ''),
           debug=False,
