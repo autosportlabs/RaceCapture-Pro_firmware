@@ -47,17 +47,18 @@ to run:
 
 1. download [Kivy](http://kivy.org/#download) (current is 1.8.0) - remember to get the py2.7 version
 1. follow Kivy install instructions
-1. Set path variables for current shell: `my_kivy_install_folder\kivy.bat`
+1. `my_kivy_install_folder\kivy.bat` (sets path variables for current shell)
 1. install [virtualenv]: `pip install virtualenv`
 1. create a virtual environment (perhaps in this directory): `virtualenv _ve`
 1. activate the virtualenv: `_ve\Scripts\activate`
-1. install pip requirements: `pip install -r requirements.txt`
+1. install pip requirements: `pip install -r requirements.txt` (if this crashes you installed the py3.3 version of Kivy, doughball)
 1. install graph via garden: `garden install graph`
 1. install navigation drawer via garden: `garden install navigationdrawer`
 
 ## running (Win7)
 
     kivy racecapture.py
+	Note: If you get an error doing this ("cannot find text provider") then you might be like me and be unable to run RaceCapture inside a virtualenv for some reason. Try performing the above steps without the virtual env part.
 
 ## dev installation (Win7)
 
@@ -79,7 +80,7 @@ to run:
 1. Install [PyWin32] (http://sourceforge.net/projects/pywin32/files/) `pip install pywin`
 1. Try `pyinstaller --version` - should return "2.1" or similar
 1. Install [nullsoft scriptable install system] (http://nsis.sourceforge.net/Download) stable version (currently 2.46)
-1. Open (from your Kivy folder) `\Python27\Lib\site-packages\pygments\lexers\__init__.py` and add a line "from pygments.lexers.agile import PythonLexer" near the top. Yes, I know this is bad form. It's to fix an error ("AttributeError: 'module' object has no attribute 'PythonLexer'") where PyInstaller failed to find an import and I couldn't work out how to force it. -CLR 2014-05-29
+1. Open (from your Kivy folder) `\Python27\Lib\site-packages\pygments\lexers\__init__.py` and add a line "from pygments.lexers.agile import PythonLexer" near the top. Yes, I know this is bad form. It's to fix an error ("AttributeError: 'module' object has no attribute 'PythonLexer'") where PyInstaller failed to find an import and I couldn't work out how to force it. You would think that this could be forced by creating a hook-pygments.lexers.py file with hiddenimports = ['agile'] in it, but you'd be wrong as this file already exists in the default PyInstaller hooks and it doesn't fix this problem. -CLR 2014-05-29
 
 ## Creating installer for current version (Win7)
 
