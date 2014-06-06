@@ -1,6 +1,7 @@
 import serial
 import io
 import json
+import traceback
 import Queue
 from threading import Thread
 from rcpconfig import *
@@ -12,10 +13,12 @@ DEFAULT_READ_RETRIES = 5
 
 class RcpCmd:
     cmd = None
+    payload = None
     callback = None
     def __init__(self, **kwargs):
         self.cmd = kwargs.get('cmd', None)
         self.callback = kwargs.get('callback', None)
+        self.payload = kwargs.get('payload', None)
             
 class RcpSerial:    
     msgListeners = {}
@@ -61,16 +64,23 @@ class RcpSerial:
             try:
                 cmd = q.get()
                 print('worker: ' + str(cmd))
-                rsp = cmd.cmd(None)
+                
+                payload = cmd.payload
+                if payload:
+                    rsp = cmd.cmd(payload)
+                else:
+                    rsp = cmd.cmd()
+                    
                 callback = cmd.callback
                 if callback:
                     callback(rsp) 
                 q.task_done()
             except Exception:
                 print('Aysnc command exception: ' + str(Exception))
+                traceback.print_exc()
         
-    def queueCommand(self, cmd, callback):
-        self.cmdQueue.put(RcpCmd(cmd=cmd, callback=callback))
+    def queueCommand(self, cmd, callback, payload = None):
+        self.cmdQueue.put(RcpCmd(cmd=cmd, callback=callback, payload=payload))
         
     def sendCommand(self, cmd, retry = DEFAULT_READ_RETRIES):
         rsp = None
@@ -141,8 +151,7 @@ class RcpSerial:
         line = line.replace('\n', '')
         return line
 
-    def getRcpCfg(self, callback):
-        
+    def getRcpCfg(self, callback = None):
         if callback:
             self.queueCommand(self.getRcpCfg, callback)
         else:
@@ -199,69 +208,74 @@ class RcpSerial:
             
             return {'rcpCfg': rcpCfg}
     
-    def writeRcpCfg(self, cfg):
-        rcpCfg = cfg.get('rcpCfg', None)
-        if rcpCfg:
-            gpsCfg = rcpCfg.get('gpsCfg', None)
-            if gpsCfg:
-                self.sendCommand({'setGpsCfg': gpsCfg})
+    def writeRcpCfg(self, cfg, callback = None):
+        if callback:
+            self.queueCommand(self.writeRcpCfg, callback, cfg)
+        else:
+            rcpCfg = cfg.get('rcpCfg', None)
+            if rcpCfg:
+                gpsCfg = rcpCfg.get('gpsCfg', None)
+                if gpsCfg:
+                    self.sendCommand({'setGpsCfg': gpsCfg})
+                    
+                imuCfg = rcpCfg.get('imuCfg', None)
+                if imuCfg:
+                    for i in range(IMU_CHANNEL_COUNT):
+                        imuChannel = imuCfg.get(str(i))
+                        if imuChannel:
+                            self.sendCommand({'setImuCfg': {str(i): imuChannel}})
                 
-            imuCfg = rcpCfg.get('imuCfg', None)
-            if imuCfg:
-                for i in range(IMU_CHANNEL_COUNT):
-                    imuChannel = imuCfg.get(str(i))
-                    if imuChannel:
-                        self.sendCommand({'setImuCfg': {str(i): imuChannel}})
+                analogCfg = rcpCfg.get('analogCfg', None)
+                if analogCfg:
+                    for i in range(ANALOG_CHANNEL_COUNT):
+                        analogChannel = analogCfg.get(str(i))
+                        if analogChannel:
+                            self.sendCommand({'setAnalogCfg': {str(i): analogChannel}})
             
-            analogCfg = rcpCfg.get('analogCfg', None)
-            if analogCfg:
-                for i in range(ANALOG_CHANNEL_COUNT):
-                    analogChannel = analogCfg.get(str(i))
-                    if analogChannel:
-                        self.sendCommand({'setAnalogCfg': {str(i): analogChannel}})
-        
-            timerCfg = rcpCfg.get('timerCfg', None)
-            if timerCfg:
-                for i in range(TIMER_CHANNEL_COUNT):
-                    timerChannel = timerCfg.get(str(i))
-                    if timerChannel:
-                        self.sendCommand({'setTimerCfg': {str(i): timerChannel}})
-                        
-            gpioCfg = rcpCfg.get('gpioCfg', None)
-            if gpioCfg:
-                for i in range(GPIO_CHANNEL_COUNT):
-                    gpioChannel = gpioCfg.get(str(i))
-                    if gpioChannel:
-                        self.sendCommand({'setGpioCfg': {str(i): gpioChannel}})
-
-            pwmCfg = rcpCfg.get('pwmCfg', None)
-            if pwmCfg:
-                for i in range(PWM_CHANNEL_COUNT):
-                    pwmChannel = pwmCfg.get(str(i))
-                    if pwmChannel:
-                        self.sendCommand({'setPwmCfg': {str(i): pwmChannel}})
-
-            connCfg = rcpCfg.get('connCfg', None)
-            if connCfg:
-                self.sendCommand({'setConnCfg' : connCfg})
+                timerCfg = rcpCfg.get('timerCfg', None)
+                if timerCfg:
+                    for i in range(TIMER_CHANNEL_COUNT):
+                        timerChannel = timerCfg.get(str(i))
+                        if timerChannel:
+                            self.sendCommand({'setTimerCfg': {str(i): timerChannel}})
+                            
+                gpioCfg = rcpCfg.get('gpioCfg', None)
+                if gpioCfg:
+                    for i in range(GPIO_CHANNEL_COUNT):
+                        gpioChannel = gpioCfg.get(str(i))
+                        if gpioChannel:
+                            self.sendCommand({'setGpioCfg': {str(i): gpioChannel}})
+    
+                pwmCfg = rcpCfg.get('pwmCfg', None)
+                if pwmCfg:
+                    for i in range(PWM_CHANNEL_COUNT):
+                        pwmChannel = pwmCfg.get(str(i))
+                        if pwmChannel:
+                            self.sendCommand({'setPwmCfg': {str(i): pwmChannel}})
+    
+                connCfg = rcpCfg.get('connCfg', None)
+                if connCfg:
+                    self.sendCommand({'setConnCfg' : connCfg})
+                    
+                canCfg = rcpCfg.get('canCfg', None)
+                if canCfg:
+                    self.sendCommand({'setCanCfg': canCfg})
+                    
+                obd2Cfg = rcpCfg.get('obd2Cfg', None)
+                if obd2Cfg:
+                    self.sendCommand({'setObd2Cfg': obd2Cfg})
+                    
+                trackCfg = rcpCfg.get('trackCfg', None)
+                if trackCfg:
+                    self.sendCommand({'setTrackCfg': trackCfg})
+                    
+                scriptCfg = rcpCfg.get('scriptCfg', None)
+                if scriptCfg:
+                    self.writeScript(scriptCfg)
+                                        
+                self.flashConfig()
                 
-            canCfg = rcpCfg.get('canCfg', None)
-            if canCfg:
-                self.sendCommand({'setCanCfg': canCfg})
-                
-            obd2Cfg = rcpCfg.get('obd2Cfg', None)
-            if obd2Cfg:
-                self.sendCommand({'setObd2Cfg': obd2Cfg})
-                
-            trackCfg = rcpCfg.get('trackCfg', None)
-            if trackCfg:
-                self.sendCommand({'setTrackCfg': trackCfg})
-                
-            scriptCfg = rcpCfg.get('scriptCfg', None)
-            if scriptCfg:
-                self.writeScript(scriptCfg)
-                
-            self.flashConfig()
+                return True
         
                 
     def getAnalogCfg(self, channelId):

@@ -64,7 +64,7 @@ class RaceCaptureApp(App):
             self.rcpComms.autoDetect()
 
     def _serial_warning(self):
-        alertPopup('Warning', 'You have not selected a serial port')
+        alertPopup('Warning', 'Command failed. Ensure you have selected a correct serial port')
 
     def on_main_menu_item(self, instance, value):
         self.mainNav.toggle_state()
@@ -78,11 +78,13 @@ class RaceCaptureApp(App):
         rcpJson = rcpConfig.toJson()
 
         try:
-            self.rcpComms.writeRcpCfg(rcpJson)
+            self.rcpComms.writeRcpCfg(rcpJson, self.on_write_config_complete)
         except:
             logging.exception('')
             self._serial_warning()
     
+    def on_write_config_complete(self, result):
+        print('Write config complete: ' + str(result))
         
     def on_read_config(self, instance, *args):
         try:
