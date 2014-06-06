@@ -17,7 +17,8 @@ class RcpCmd:
         self.cmd = kwargs.get('cmd', None)
         self.callback = kwargs.get('callback', None)
             
-class RcpSerial:
+class RcpSerial:    
+    msgListeners = {}
     cmdQueue = None
     def __init__(self, **kwargs):
         self.ser = None
@@ -30,6 +31,30 @@ class RcpSerial:
     def setPort(self, port):
         self.port = port
 
+    def addListener(self, messageName, callback):
+        listeners = self.msgListeners.get(messageName, None)
+        if listeners:
+            listeners.append(callback)
+        else:
+            listeners = []
+            listeners.append(callback)
+            self[messageName] = listeners
+
+    def msgRxWorker(self):
+        while True:
+            serial = self.getSerial()
+            try:
+                msg = serial.readLine()
+                msgJson = json.loads(msg)
+                for messageName in msgJson.keys():
+                    listeners = self.msgListeners.get(messageName, None)
+                    if listeners:
+                        for listener in listeners:
+                            listener(msg)
+                    break
+            except Exception:
+                print('Message Rx Exception: ' + str(Exception))
+        
     def worker(self):
         q = self.cmdQueue
         while True:
