@@ -5,7 +5,6 @@
 ;Include Modern UI
 
   !include "MUI2.nsh"
-  !include "fileAssoc.nsh"
 
 ;--------------------------------
 ;General
@@ -17,25 +16,20 @@
 !endif
 
 !ifndef RA_DIR
-	!define RA_DIR "..\.."
+	!define RA_DIR "dist\racecapture"
 !endif
 
-!ifndef EXE_DIR
-	!define EXE_DIR "${RA_DIR}\MinGW-Release"
-!endif
-
-
-!define APP_TITLE "Race Analyzer v${VERSION_STRING}"
-!define APP_NAME "Race Analyzer"
-!define APP_INSTALL_DIR "RaceAnalyzer_v${VERSION_STRING}"
-!define APP_REG_NAME "RaceAnalyzer_${VERSION_STRING}"
+!define APP_TITLE "Race Capture v${VERSION_STRING}"
+!define APP_NAME "Race Capture"
+!define APP_INSTALL_DIR "RaceCapture_v${VERSION_STRING}"
+!define APP_REG_NAME "RaceCapture_${VERSION_STRING}"
   ;Name and file
   
   Var /GLOBAL APP_SM
   Var /GLOBAL MUI_TEMP
 
   Name "${APP_TITLE}"
-  OutFile "raceAnalyzer_${VERSION_STRING}.exe"
+  OutFile "dist\raceCapture_${VERSION_STRING}.exe"
 
 
   ;Default installation folder
@@ -48,7 +42,7 @@
 ;Interface Settings
 
   !define MUI_HEADERIMAGE
-  !define MUI_HEADERIMAGE_BITMAP "installer_graphic.bmp" ; optional
+  ;!define MUI_HEADERIMAGE_BITMAP "installer_graphic.bmp" ; optional
   ;!define MUI_HEADERIMAGE_BITMAP_NOSTRETCH
   !define MUI_HEADER_TRANSPARENT_TEXT
   !define MUI_ABORTWARNING
@@ -56,7 +50,7 @@
 ;--------------------------------
 ;Pages
 
-  !insertmacro MUI_PAGE_LICENSE "License.txt"
+  !insertmacro MUI_PAGE_LICENSE "${RA_DIR}\LICENSE"
   !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_STARTMENU "Application" $APP_SM
   !insertmacro MUI_PAGE_DIRECTORY
@@ -77,22 +71,16 @@
 
 
 
-Section "Race Analyzer" SecRaceAnalyzer
+Section "Race Capture" SecRaceCapture
 
   SetOutPath "$INSTDIR"
 
   ;ADD YOUR OWN FILES HERE...
-  File ${EXE_DIR}\raceAnalyzer.exe
-  File libgcc_s_dw2-1.dll
-  File libstdc++-6.dll
-  File License.txt
-  File ${RA_DIR}\RELEASE_NOTES.txt
+  File /r ${RA_DIR}\*.*
 
   CreateDirectory $SMPROGRAMS\$APP_SM
-  CreateShortCut "$SMPROGRAMS\$APP_SM\${APP_NAME}.lnk" "$INSTDIR\raceAnalyzer.exe"
+  CreateShortCut "$SMPROGRAMS\$APP_SM\${APP_NAME}.lnk" "$INSTDIR\raceCapture.exe"
   CreateShortCut "$SMPROGRAMS\$APP_SM\Uninstall.lnk" "$INSTDIR\uninstall.exe"
-  CreateShortCut "$SMPROGRAMS\$APP_SM\RELEASE_NOTES.lnk" "$INSTDIR\RELEASE_NOTES.txt"
-  CreateShortCut "$SMPROGRAMS\$APP_SM\License.lnk" "$INSTDIR\License.txt"
 
   ;Store installation folder
   WriteRegStr HKCU "Software\${APP_REG_NAME}" "" $INSTDIR
@@ -106,20 +94,13 @@ Section "Race Analyzer" SecRaceAnalyzer
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_REG_NAME}" \
 				  "Publisher" "Autosport Labs"
 
-
-  !insertmacro APP_ASSOCIATE "rcap" "raceCapturePro.configurationFile" "RaceCapture/Pro Configuration file" "$INSTDIR\raceAnalyzer.exe,0" \
-    "Open with Race Analyzer" "$INSTDIR\raceAnalyzer.exe $\"%1$\""
-
-  !insertmacro APP_ASSOCIATE "radb" "raceAnalyzer.raceEvent" "Race Analyzer Race Event file" "$INSTDIR\raceAnalyzer.exe,0" \
-    "Open with Race Analyzer" "$INSTDIR\raceAnalyzer.exe $\"%1$\""
-
 SectionEnd
 
 ;--------------------------------
 ;Descriptions
 
   ;Language strings
-  LangString DESC_SecRaceAnalyzer ${LANG_ENGLISH} "Installs the Autosport Labs Race Analyzer software"
+  LangString DESC_SecRaceCapture ${LANG_ENGLISH} "Installs the Autosport Labs Race Capture software"
 
   ;Assign language strings to sections
 ;;  !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
@@ -145,20 +126,9 @@ RMDir /r "$MUI_TEMP"
   Delete  "$SMPROGRAMS\$APP_SM\Release_Notes.lnk"
   RMDir  "$SMPROGRAMS\$APP_SM"
 
-  Delete "$INSTDIR\raceAnalyzer.exe"
-  Delete "$INSTDIR\libgcc_s_dw2-1.dll"
-  Delete "$INSTDIR\libstdc++-6.dll"
-  Delete "$INSTDIR\Uninstall.exe"
-  ;Delete "$INSTDIR\Quickstart_README.txt"
-  ;Delete "$INSTDIR\Release_Notes.txt"
-  Delete "$INSTDIR\License.txt"
-
-  RMDir "$INSTDIR"
+  RMDir /r "$INSTDIR"
 
 DeleteRegKey /ifempty HKCU "Software\${APP_REG_NAME}"
 DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_REG_NAME}"
-
-!insertmacro APP_UNASSOCIATE "rcap" "raceCapturePro.configurationFile"
-!insertmacro APP_UNASSOCIATE "radb" "raceAnalyzer.raceEvent"
 
 SectionEnd
