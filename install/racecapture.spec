@@ -10,7 +10,7 @@ def addKVs():
     allFiles = Tree('..//')
     extraDatas = []
     for file in allFiles:
-        if file[0].endswith('.kv') | file[0].endswith('.ttf') | file[0].startswith('resource/') | file[0].startswith('resource\\'):
+        if file[0].endswith('.kv') | file[0].endswith('.ttf') | file[0].startswith('resource/') | file[0].startswith('resource\\') | (file[0] == 'LICENSE'):
             print "Adding datafile: " + file[0]
             extraDatas.append(file)
     return extraDatas
