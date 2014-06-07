@@ -53,6 +53,7 @@ class RaceCaptureApp(App):
         self.register_event_type('on_channels_updated')
         super(RaceCaptureApp, self).__init__(**kwargs)
         self.processArgs()
+        self.rcpComms.initSerial()
 
     def processArgs(self):
         parser = argparse.ArgumentParser(description='Autosport Labs Race Capture App')
@@ -88,8 +89,8 @@ class RaceCaptureApp(App):
         
     def on_read_config(self, instance, *args):
         try:
-            if not self.channels.isLoaded():
-                self.rcpComms.getChannels(self.on_channels_config_complete)
+            #if not self.channels.isLoaded():
+             #   self.rcpComms.getChannels(self.on_channels_config_complete)
             self.rcpComms.getRcpCfg(self.on_read_config_complete)
         except:
             logging.exception('')
