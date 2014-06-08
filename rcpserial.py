@@ -134,7 +134,6 @@ class RcpSerial:
                 result = q.get()
                 name = rcpCmd.name
                 responseResults[name] = result[name]
-            print('full sequence results ' + str(responseResults))
             if rootName:
                 callback({rootName: responseResults})
             else:
@@ -441,6 +440,7 @@ class RcpSerial:
                     break
             except Exception as detail:
                 print('Failed: ' + str(detail))
+                traceback.print_exc()                
                 self.port = None
                 self.close()
 
