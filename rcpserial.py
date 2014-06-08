@@ -139,7 +139,7 @@ class RcpSerial:
     def queueCommand(self, cmd, callback, payload = None):
         self.cmdQueue.put(SingleRcpCmd(None, cmd, payload, callback))
         
-    def sendCommand(self, cmd):
+    def sendCommand(self, cmd, sync = False, retry = DEFAULT_READ_RETRIES):
         rsp = None
         ser = self.getSerial()
         ser.flushInput()
@@ -147,6 +147,12 @@ class RcpSerial:
         cmdStr = json.dumps(cmd, separators=(',', ':')) + '\r'
         print('send cmd: ' + cmdStr)
         ser.write(cmdStr)
+        if sync:
+            rsp = self.readLine(ser, retry)
+            if cmdStr.startswith(rsp):
+                rsp = self.readLine(ser, retry)
+                return rsp
+            
         
     def sendGet(self, name, index):
         if index == None:
@@ -390,8 +396,8 @@ class RcpSerial:
                                  }
                                  })
                                   
-    def getVersion(self):
-        rsp = self.sendCommand({"getVer":None})
+    def getVersion(self, sync = False):
+        rsp = self.sendCommand({"getVer":None}, sync)
         return rsp
 
     def autoDetect(self):
@@ -404,7 +410,7 @@ class RcpSerial:
             try:
                 print "Trying", p
                 self.port = p
-                verJson = self.getVersion()
+                verJson = self.getVersion(True)
                 testVer.fromJson(verJson.get('ver', None))
                 if testVer.major > 0 or testVer.minor > 0 or testVer.bugfix > 0:
                     break
