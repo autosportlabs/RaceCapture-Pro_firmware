@@ -14,13 +14,11 @@ class MappedSpinner(Spinner):
     def setValueMap(self, valueMap, defaultValue):
         keyMappings = {}
         values = []
-        for k,v in valueMap.items():
-            values.append(v)
-            keyMappings[v] = k
-        try:
-            values.sort(key=int)
-        except ValueError:
-            values.sort()
+        sortedValues = sorted(valueMap)
+
+        for item in sortedValues:
+            values.append(valueMap[item])
+            keyMappings[valueMap[item]] = item
             
         self.defaultValue = defaultValue
         self.valueMappings = valueMap
