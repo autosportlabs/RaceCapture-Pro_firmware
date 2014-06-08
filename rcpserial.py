@@ -122,7 +122,8 @@ class RcpSerial:
         
     def executeSequence(self, cmdSequence, rootName, winCallback, failCallback):
         self.cmdSequenceLock.acquire()
-        
+        print('Execute Sequence begin')
+                
         q = self.cmdSequenceQueue
         
         responseResults = {}
@@ -179,7 +180,7 @@ class RcpSerial:
             failCallback(detail)
         finally:
             self.cmdSequenceLock.release()
-        print('Execute Sequence exiting')
+        print('Execute Sequence complete')
         
     def queueCommand(self, cmd, callback, payload = None):
         self.cmdQueue.put(SingleRcpCmd(None, cmd, payload, callback))
