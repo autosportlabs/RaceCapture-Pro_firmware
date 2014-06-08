@@ -118,7 +118,7 @@ class RcpSerial:
         print('POKE')
         self.getSerial().write(' ')
         
-    def executeSequence(self, cmdSequence, rootName, callback):
+    def executeSequence(self, cmdSequence, rootName, winCallback, failCallback):
         self.cmdSequenceLock.acquire()
         self.setListeners(cmdSequence, self.rcpCfgComplete)
         
@@ -156,12 +156,13 @@ class RcpSerial:
                     
                 responseResults[name] = result[name]
             if rootName:
-                callback({rootName: responseResults})
+                winCallback({rootName: responseResults})
             else:
-                callback(responseResults)
+                winCallback(responseResults)
         except Exception:
             print('Command sequence exception: ' + str(Exception))
             traceback.print_exc()
+            failCallback(Exception)
         finally:
             self.cmdSequenceLock.release()
         print('Execute Sequence exiting')
@@ -240,7 +241,7 @@ class RcpSerial:
         line = line.replace('\n', '')
         return line
         
-    def getRcpCfg(self, winCallback):
+    def getRcpCfg(self, winCallback, failCallback):
         cmdSequence = [       RcpCmd('ver', self.getVersion),
                               RcpCmd('analogCfg', self.getAnalogCfg),
                               RcpCmd('imuCfg',    self.getImuCfg),
@@ -255,11 +256,11 @@ class RcpSerial:
                               RcpCmd('connCfg', self.getConnectivityCfg)
                            ]
                 
-        getRcpCfgThread = Thread(target=self.executeSequence, args=(cmdSequence, 'rcpCfg', winCallback,))
+        getRcpCfgThread = Thread(target=self.executeSequence, args=(cmdSequence, 'rcpCfg', winCallback, failCallback))
         getRcpCfgThread.daemon = True
         getRcpCfgThread.start()
             
-    def writeRcpCfg(self, cfg, winCallback = None):
+    def writeRcpCfg(self, cfg, winCallback = None, failCallback = None):
         cmdSequence = []
         rcpCfg = cfg.get('rcpCfg', None)
         if rcpCfg:
@@ -323,7 +324,7 @@ class RcpSerial:
 
             cmdSequence.append(RcpCmd('flashCfg', self.flashConfig))
                 
-        getRcpCfgThread = Thread(target=self.executeSequence, args=(cmdSequence, 'setRcpCfg', winCallback,))
+        getRcpCfgThread = Thread(target=self.executeSequence, args=(cmdSequence, 'setRcpCfg', winCallback, failCallback,))
         getRcpCfgThread.daemon = True
         getRcpCfgThread.start()
                         
@@ -414,14 +415,14 @@ class RcpSerial:
     def getChannels(self):
         self.sendGet('getChannels')
         
-    def getChannelList(self, winCallback):
+    def getChannelList(self, winCallback, failCallback):
         cmdSequence = [ RcpCmd('channels', self.getChannels) ]
                 
-        getRcpCfgThread = Thread(target=self.executeSequence, args=(cmdSequence, None, winCallback,))
+        getRcpCfgThread = Thread(target=self.executeSequence, args=(cmdSequence, None, winCallback, failCallback))
         getRcpCfgThread.daemon = True
         getRcpCfgThread.start()
                 
-    def setChannelList(self, channels, winCallback):
+    def setChannelList(self, channels, winCallback, failCallback):
         cmdSequence = []
         
         channels = channels.get('channels', None)
@@ -433,7 +434,7 @@ class RcpSerial:
                 cmdSequence.append(RcpCmd('addChannel', self.addChannel, channel, index, mode))
                 index += 1
             
-            getRcpCfgThread = Thread(target=self.executeSequence, args=(cmdSequence, None, winCallback,))
+            getRcpCfgThread = Thread(target=self.executeSequence, args=(cmdSequence, None, winCallback, failCallback))
             getRcpCfgThread.daemon = True
             getRcpCfgThread.start()
         

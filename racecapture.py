@@ -51,7 +51,6 @@ class RaceCaptureApp(App):
     mainViews = {}
     
     def __init__(self, **kwargs):
-        self.register_event_type('on_config_updated')
         self.register_event_type('on_channels_updated')
         self.register_event_type('on_read_channels')
         super(RaceCaptureApp, self).__init__(**kwargs)
@@ -76,65 +75,90 @@ class RaceCaptureApp(App):
         
     def on_main_menu(self, instance, *args):
         self.mainNav.toggle_state()
-        
+
+    
+    
+    
+    #Write Configuration        
     def on_write_config(self, instance, *args):
         rcpConfig = self.rcpConfig
         rcpJson = rcpConfig.toJson()
 
         try:
-            self.rcpComms.writeRcpCfg(rcpJson, self.on_write_config_complete)
+            self.rcpComms.writeRcpCfg(rcpJson, self.on_write_config_complete, self.on_write_config_error)
         except:
             logging.exception('')
             self._serial_warning()
-    
+            
     def on_write_config_complete(self, result):
         print('Write config complete: ' + str(result))
         
+    def on_write_config_error(self, detail):
+        alertPopup('Error Writing', 'Could not write configuration:\n\n' + str(detail))
+
+    
+    
+    
+    #Read Configuration        
     def on_read_config(self, instance, *args):
         try:
             if not self.channels.isLoaded():
                 self.on_read_channels()
-            self.rcpComms.getRcpCfg(self.on_read_config_complete)
+            self.rcpComms.getRcpCfg(self.on_read_config_complete, self.on_read_channels_error)
         except:
             logging.exception('')
             self._serial_warning()
 
+    def on_read_config_complete(self, rcpConfigJson):
+        self.rcpConfig.fromJson(rcpConfigJson)
+        Clock.schedule_once(lambda dt: self.notifyReadComplete())
+        
+    def on_read_config_error(self, detail):
+        alertPopup('Error Reading', 'Could not read configuration:\n\n' + str(detail))
+
+    def notifyReadComplete(self):
+        self.configView.dispatch('on_config_updated', self.rcpConfig)
+
+
+
+
+
+    #Read Channels                
+    def on_read_channels(self, *args):
+        self.rcpComms.getChannelList(self.on_read_channels_complete, self.on_read_channels_error)
+        
     def on_read_channels_complete(self, channelsList):
         self.channels.fromJson(channelsList)
         Clock.schedule_once(lambda dt: self.notifyChannelsUpdated())
     
     def on_read_channels_error(self, detail):
-        alertPopup('Error Reading', 'Could not read channels:\n\n' + str(detail))
+        alertPopup('Error Reading', 'Error reading channels:\n\n' + str(detail))
         
+    def on_channels_updated(self, channels):
+        for view in self.mainViews.itervalues():
+            view.dispatch('on_channels_updated', channels)
+            
+            
+            
+            
+    #Write Channels
+    def on_write_channels(self, *args):
+        self.rcpComms.setChannelList(self.channels.toJson(), self.on_write_channels_complete, self.on_write_channels_error)
+
     def on_write_channels_complete(self, response):
         print('write channels complete')
         
     def on_write_channels_error(self, detail):
-#            except Exception as detail:
-        alertPopup('Error Writing', 'Could not write channels:\n\n' + str(detail))
-        
-    def on_read_config_complete(self, rcpConfigJson):
-        self.rcpConfig.fromJson(rcpConfigJson)
-        Clock.schedule_once(lambda dt: self.notifyReadComplete())
-        
-    def notifyReadComplete(self):
-        self.dispatch('on_config_updated', self.rcpConfig)
-        
+        alertPopup('Error Writing', 'Error writing channels:\n\n' + str(detail))
+    
     def notifyChannelsUpdated(self):
         self.dispatch('on_channels_updated', self.channels)
 
-    def on_config_updated(self, rcpConfig):
-        self.configView.dispatch('on_config_updated', rcpConfig)
 
-    def on_read_channels(self, *args):
-        self.rcpComms.getChannelList(self.on_read_channels_complete)
-        
-    def on_write_channels(self, *args):
-        self.rcpComms.setChannelList(self.channels.toJson(), self.on_write_channels_complete)
 
-    def on_channels_updated(self, channels):
-        for view in self.mainViews.itervalues():
-            view.dispatch('on_channels_updated', channels)
+
+
+
 
     def switchMainView(self, viewKey):
         mainView = self.mainViews.get(viewKey)
