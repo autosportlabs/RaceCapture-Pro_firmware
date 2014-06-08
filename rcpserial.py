@@ -9,9 +9,10 @@ from serial.tools import list_ports
 
 CHANNEL_ADD_MODE_IN_PROGRESS = 1
 CHANNEL_ADD_MODE_COMPLETE = 2
-DEFAULT_READ_RETRIES = 5
-DEFAULT_TIMEOUT = 1
-DEFAULT_MSG_RX_TIMEOUT = 1
+DEFAULT_READ_RETRIES = 2
+DEFAULT_LEVEL2_RETRIES = 4
+DEFAULT_SERIAL_TIMEOUT = None
+DEFAULT_MSG_RX_TIMEOUT = 1.0
 
 
 class RcpCmd:
@@ -39,7 +40,7 @@ class RcpSerial:
     cmdSequenceQueue = Queue.Queue()
     cmdSequenceLock = Lock()
     retryCount = DEFAULT_READ_RETRIES
-    timeout = DEFAULT_TIMEOUT
+    timeout = DEFAULT_SERIAL_TIMEOUT
     
     def __init__(self, **kwargs):
         self.ser = None
@@ -67,6 +68,11 @@ class RcpSerial:
             listeners.add(callback)
             self.msgListeners[messageName] = listeners
 
+    def removeListener(self, messageName, callback):
+        listeners = self.msgListeners.get(messageName, None)
+        if listeners:
+            listeners.discard(callback)
+            
     def msgRxWorker(self):
         print('msgRxWorker started')
         while True:
@@ -107,20 +113,15 @@ class RcpSerial:
                 print('Aysnc command exception: ' + str(Exception))
                 traceback.print_exc()
 
-    def setListeners(self, messageNames, callback):
-        for message in messageNames:
-            self.addListener(message.name, callback)
-            
     def rcpCfgComplete(self, msgReply):
         self.cmdSequenceQueue.put(msgReply)
                 
     def recoverTimeout(self):
         print('POKE')
-        self.getSerial().write(' ')
+        self.getSerial().write('\r')
         
     def executeSequence(self, cmdSequence, rootName, winCallback, failCallback):
         self.cmdSequenceLock.acquire()
-        self.setListeners(cmdSequence, self.rcpCfgComplete)
         
         q = self.cmdSequenceQueue
         
@@ -130,39 +131,52 @@ class RcpSerial:
                 payload = rcpCmd.payload
                 index = rcpCmd.index
                 option = rcpCmd.option
-                
-                if not payload == None and not index == None and not option == None:
-                    rcpCmd.cmd(payload, index, option)
-                elif not payload == None and not index == None:
-                    rcpCmd.cmd(payload, index)
-                elif not payload == None:
-                    rcpCmd.cmd(payload)
-                else:
-                    rcpCmd.cmd()
 
+                level2Retry = 0
                 name = rcpCmd.name
                 result = None
-                retry = 0
-                while not result and retry < self.retryCount:
-                    try:
-                        result = q.get(True, DEFAULT_MSG_RX_TIMEOUT)
-                    except Exception:
-                        print('Read message timeout')
-                        self.recoverTimeout()
-                        retry += 1
+                
+                self.addListener(name, self.rcpCfgComplete)
+                while not result and level2Retry < DEFAULT_LEVEL2_RETRIES:
+                    
+                    if not payload == None and not index == None and not option == None:
+                        rcpCmd.cmd(payload, index, option)
+                    elif not payload == None and not index == None:
+                        rcpCmd.cmd(payload, index)
+                    elif not payload == None:
+                        rcpCmd.cmd(payload)
+                    else:
+                        rcpCmd.cmd()
+    
+                    retry = 0
+                    while not result and retry < self.retryCount:
+                        try:
+                            result = q.get(True, DEFAULT_MSG_RX_TIMEOUT)
+                            if not result.get(name, None):
+                                print('rx message did not match expected name ' + str(name) + '; ' + str(result))
+                                result = None
+                        except Exception:
+                            print('Read message timeout')
+                            self.recoverTimeout()
+                            retry += 1
+                    if not result:
+                        print('Level 2 retry for ' + name)
+                        level2Retry += 1
 
                 if not result:
                     raise Exception('Timeout waiting for ' + name)
-                    
+                                    
                 responseResults[name] = result[name]
+                self.removeListener(name, self.rcpCfgComplete)
+                
             if rootName:
                 winCallback({rootName: responseResults})
             else:
                 winCallback(responseResults)
-        except Exception:
-            print('Command sequence exception: ' + str(Exception))
+        except Exception as detail:
+            print('Command sequence exception: ' + str(detail))
             traceback.print_exc()
-            failCallback(Exception)
+            failCallback(detail)
         finally:
             self.cmdSequenceLock.release()
         print('Execute Sequence exiting')
@@ -232,6 +246,7 @@ class RcpSerial:
                     raise Exception('Could not read message')
                 retryCount +=1
                 print('Timeout - retry: ' + str(retryCount))
+                print("POKE")
                 ser.write(' ')
             else:
                 line += c
@@ -474,7 +489,7 @@ class RcpSerial:
                 self.close()
 
         self.retryCount = DEFAULT_READ_RETRIES
-        self.timeout = DEFAULT_TIMEOUT
+        self.timeout = DEFAULT_SERIAL_TIMEOUT
         if not verJson == None:
             print "Found racecapture version " + testVer.toString() + " on port:", self.port
             self.close()
