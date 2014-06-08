@@ -5,6 +5,8 @@ import logging
 import argparse
 from autosportlabs.racecapture.views.channels.channelsview import ChannelsView
 from autosportlabs.racecapture.views.util.alertview import alertPopup
+from functools import partial
+from kivy.clock import Clock
 kivy.require('1.8.0')
 from kivy.config import Config
 Config.set('graphics', 'width', '1024')
@@ -51,6 +53,7 @@ class RaceCaptureApp(App):
     def __init__(self, **kwargs):
         self.register_event_type('on_config_updated')
         self.register_event_type('on_channels_updated')
+        self.register_event_type('on_read_channels')
         super(RaceCaptureApp, self).__init__(**kwargs)
         self.processArgs()
         self.rcpComms.initSerial()
@@ -89,19 +92,32 @@ class RaceCaptureApp(App):
         
     def on_read_config(self, instance, *args):
         try:
-            #if not self.channels.isLoaded():
-             #   self.rcpComms.getChannels(self.on_channels_config_complete)
+            if not self.channels.isLoaded():
+                self.on_read_channels()
             self.rcpComms.getRcpCfg(self.on_read_config_complete)
         except:
             logging.exception('')
             self._serial_warning()
 
-    def on_channels_config_complete(self, channelsList):
-            self.channels.fromJson(channelsList)
-            self.notifyChannelsUpdated()
+    def on_read_channels_complete(self, channelsList):
+        self.channels.fromJson(channelsList)
+        Clock.schedule_once(lambda dt: self.notifyChannelsUpdated())
+    
+    def on_read_channels_error(self, detail):
+        alertPopup('Error Reading', 'Could not read channels:\n\n' + str(detail))
+        
+    def on_write_channels_complete(self, response):
+        print('write channels complete')
+        
+    def on_write_channels_error(self, detail):
+#            except Exception as detail:
+        alertPopup('Error Writing', 'Could not write channels:\n\n' + str(detail))
         
     def on_read_config_complete(self, rcpConfigJson):
         self.rcpConfig.fromJson(rcpConfigJson)
+        Clock.schedule_once(lambda dt: self.notifyReadComplete())
+        
+    def notifyReadComplete(self):
         self.dispatch('on_config_updated', self.rcpConfig)
         
     def notifyChannelsUpdated(self):
@@ -109,6 +125,12 @@ class RaceCaptureApp(App):
 
     def on_config_updated(self, rcpConfig):
         self.configView.dispatch('on_config_updated', rcpConfig)
+
+    def on_read_channels(self, *args):
+        self.rcpComms.getChannelList(self.on_read_channels_complete)
+        
+    def on_write_channels(self, *args):
+        self.rcpComms.setChannelList(self.channels.toJson(), self.on_write_channels_complete)
 
     def on_channels_updated(self, channels):
         for view in self.mainViews.itervalues():
@@ -145,6 +167,8 @@ class RaceCaptureApp(App):
         configView.bind(on_write_config=self.on_write_config)
         
         channelsView = ChannelsView(channels=self.channels, rcpComms = self.rcpComms)
+        channelsView.bind(on_read_channels=self.on_read_channels)
+        channelsView.bind(on_write_channels=self.on_write_channels)
         
         self.mainViews = {'config' : configView, 
                           'channels' : channelsView}

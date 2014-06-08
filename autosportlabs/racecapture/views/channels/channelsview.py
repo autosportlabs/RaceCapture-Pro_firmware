@@ -105,6 +105,8 @@ class ChannelsView(BoxLayout):
         self.channels = kwargs.get('channels', self.channels)
         self.rcpComms = kwargs.get('rcpComms', self.rcpComms)
         self.register_event_type('on_channels_updated')
+        self.register_event_type('on_read_channels')
+        self.register_event_type('on_write_channels')
         self.channelsContainer = kvFind(self, 'rcid', 'channelsContainer')
      
     def on_channels_updated(self, channels):
@@ -115,7 +117,19 @@ class ChannelsView(BoxLayout):
             self.channelsContainer.add_widget(channelView)
         self.channels = channels
         kvFind(self, 'rcid', 'addChan').disabled = False
-            
+          
+    def on_read_all_channels(self):
+        if self.channels:
+            self.dispatch('on_read_channels')
+        else:
+            alertPopup('Warning', 'Please load channels before writing')
+        
+    def on_write_all_channels(self):
+        self.dispatch('on_write_channels')
+        
+    def on_read_channels(self, *args):
+        pass
+    
     def on_delete_channel(self, instance, value):
         channelItems = self.channels.items
         for channel in channelItems:
@@ -131,34 +145,7 @@ class ChannelsView(BoxLayout):
         channelView.bind(on_delete_channel = self.on_delete_channel)
         self.channelsContainer.add_widget(channelView)
         channelView.on_edit()
-        
-        
-        try:
-            with open(os.path.join(path, filename[0])) as stream:
-                self.rcpConfig.fromJsonString(stream.read())
-        except Exception as detail:
-            alertPopup('Error Loading', 'Failed to Load Configuration:\n\n' + str(detail))
-        
-    def on_read_channels(self):
-        if self.rcpComms:
-            try:
-                channelsJson = self.rcpComms.getChannels()
-                self.channels.fromJson(channelsJson)
-                self.on_channels_updated(self.channels)
-            except Exception as detail:
-                alertPopup('Error Reading', 'Could not read channels:\n\n' + str(detail))
-        
-    def on_write_channels(self):
-        if self.rcpComms:
-            try:
-                index = 0
-                channelCount = len(self.channels.items)
-                for channel in self.channels.items:
-                    mode = CHANNEL_ADD_MODE_IN_PROGRESS if index < channelCount - 1 else CHANNEL_ADD_MODE_COMPLETE
-                    self.rcpComms.addChannel( channel.toJson(), index, mode)
-                    index += 1
-            except Exception as detail:
-                alertPopup('Error Writing', 'Could not write channels:\n\n' + str(detail))
-        else:
-            alertPopup('Warning', 'Please load channels before writing')
+                        
+    def on_write_channels(self, *args):
+        pass
             

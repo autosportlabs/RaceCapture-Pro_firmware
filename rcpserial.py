@@ -3,7 +3,7 @@ import io
 import json
 import traceback
 import Queue
-from threading import Thread
+from threading import Thread, Lock
 from rcpconfig import *
 from serial.tools import list_ports
 
@@ -11,18 +11,18 @@ CHANNEL_ADD_MODE_IN_PROGRESS = 1
 CHANNEL_ADD_MODE_COMPLETE = 2
 DEFAULT_READ_RETRIES = 5
 
-    
-
 class RcpCmd:
     name = None
     cmd = None
     payload = None
     index = None
-    def __init__(self, name, cmd, payload = None, index = None):
+    option = None
+    def __init__(self, name, cmd, payload = None, index = None, option = None):
         self.name = name
         self.cmd = cmd
         self.payload = payload
         self.index = index
+        self.option = option
 
 class SingleRcpCmd(RcpCmd):
     callback = None
@@ -34,6 +34,7 @@ class RcpSerial:
     msgListeners = {}
     cmdQueue = Queue.Queue()
     cmdSequenceQueue = Queue.Queue()
+    cmdSequenceLock = Lock()
     
     def __init__(self, **kwargs):
         self.ser = None
@@ -109,7 +110,7 @@ class RcpSerial:
         self.cmdSequenceQueue.put(msgReply)
                 
     def executeSequence(self, cmdSequence, rootName, callback):
-
+        self.cmdSequenceLock.acquire()
         self.setListeners(cmdSequence, self.rcpCfgComplete)
         
         q = self.cmdSequenceQueue
@@ -119,7 +120,11 @@ class RcpSerial:
             for rcpCmd in cmdSequence:
                 payload = rcpCmd.payload
                 index = rcpCmd.index
-                if not payload == None and not index == None:
+                option = rcpCmd.option
+                
+                if not payload == None and not index == None and not option == None:
+                    rcpCmd.cmd(payload, index, option)
+                elif not payload == None and not index == None:
                     rcpCmd.cmd(payload, index)
                 elif not payload == None:
                     rcpCmd.cmd(payload)
@@ -130,10 +135,15 @@ class RcpSerial:
                 name = rcpCmd.name
                 responseResults[name] = result[name]
             print('full sequence results ' + str(responseResults))
-            callback({rootName: responseResults})
+            if rootName:
+                callback({rootName: responseResults})
+            else:
+                callback(responseResults)
         except Exception:
             print('Command sequence exception: ' + str(Exception))
             traceback.print_exc()
+        finally:
+            self.cmdSequenceLock.release()
         print('Execute Sequence exiting')
         
     def queueCommand(self, cmd, callback, payload = None):
@@ -148,7 +158,7 @@ class RcpSerial:
         print('send cmd: ' + cmdStr)
         ser.write(cmdStr)
         
-    def sendGet(self, name, index):
+    def sendGet(self, name, index = None):
         if index == None:
             index = None
         else:
@@ -172,7 +182,7 @@ class RcpSerial:
             
     def open(self):
         print('Opening serial')
-        ser = serial.Serial(self.port, timeout = None)
+        ser = serial.Serial(self.port)
         ser.flushInput()
         ser.flushOutput()
         return ser
@@ -376,12 +386,33 @@ class RcpSerial:
     def flashConfig(self):
         self.sendCommand({'flashCfg':None})
 
-    def getChannels(self, callback):
-        if callback:
-            self.queueCommand(self.getChannels, callback)
-        else:
-            return self.sendGet("getChannels", None)
+    def getChannels(self):
+        self.sendGet('getChannels')
+        
+    def getChannelList(self, winCallback):
+        cmdSequence = [ RcpCmd('channels', self.getChannels) ]
                 
+        getRcpCfgThread = Thread(target=self.executeSequence, args=(cmdSequence, None, winCallback,))
+        getRcpCfgThread.daemon = True
+        getRcpCfgThread.start()
+                
+    def setChannelList(self, channels, winCallback):
+        cmdSequence = []
+        
+        channels = channels.get('channels', None)
+        if channels:
+            index = 0
+            channelCount = len(channels)
+            for channel in channels:
+                mode = CHANNEL_ADD_MODE_IN_PROGRESS if index < channelCount - 1 else CHANNEL_ADD_MODE_COMPLETE
+                cmdSequence.append(RcpCmd('addChannel', self.addChannel, channel, index, mode))
+                index += 1
+            
+            getRcpCfgThread = Thread(target=self.executeSequence, args=(cmdSequence, None, winCallback,))
+            getRcpCfgThread.daemon = True
+            getRcpCfgThread.start()
+        
+                    
     def addChannel(self, channelJson, index, mode):
         return self.sendCommand({'addChannel': 
                                  {'index': index, 
