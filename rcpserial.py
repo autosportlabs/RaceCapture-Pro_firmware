@@ -10,6 +10,9 @@ from serial.tools import list_ports
 CHANNEL_ADD_MODE_IN_PROGRESS = 1
 CHANNEL_ADD_MODE_COMPLETE = 2
 DEFAULT_READ_RETRIES = 5
+DEFAULT_TIMEOUT = 1
+DEFAULT_MSG_RX_TIMEOUT = 1
+
 
 class RcpCmd:
     name = None
@@ -35,6 +38,8 @@ class RcpSerial:
     cmdQueue = Queue.Queue()
     cmdSequenceQueue = Queue.Queue()
     cmdSequenceLock = Lock()
+    retryCount = DEFAULT_READ_RETRIES
+    timeout = DEFAULT_TIMEOUT
     
     def __init__(self, **kwargs):
         self.ser = None
@@ -109,6 +114,10 @@ class RcpSerial:
     def rcpCfgComplete(self, msgReply):
         self.cmdSequenceQueue.put(msgReply)
                 
+    def recoverTimeout(self):
+        print('POKE')
+        self.getSerial().write(' ')
+        
     def executeSequence(self, cmdSequence, rootName, callback):
         self.cmdSequenceLock.acquire()
         self.setListeners(cmdSequence, self.rcpCfgComplete)
@@ -131,8 +140,20 @@ class RcpSerial:
                 else:
                     rcpCmd.cmd()
 
-                result = q.get()
                 name = rcpCmd.name
+                result = None
+                retry = 0
+                while not result and retry < self.retryCount:
+                    try:
+                        result = q.get(True, DEFAULT_MSG_RX_TIMEOUT)
+                    except Exception:
+                        print('Read message timeout')
+                        self.recoverTimeout()
+                        retry += 1
+
+                if not result:
+                    raise Exception('Timeout waiting for ' + name)
+                    
                 responseResults[name] = result[name]
             if rootName:
                 callback({rootName: responseResults})
@@ -148,7 +169,7 @@ class RcpSerial:
     def queueCommand(self, cmd, callback, payload = None):
         self.cmdQueue.put(SingleRcpCmd(None, cmd, payload, callback))
         
-    def sendCommand(self, cmd, sync = False, retry = DEFAULT_READ_RETRIES):
+    def sendCommand(self, cmd, sync = False):
         rsp = None
         ser = self.getSerial()
         ser.flushInput()
@@ -157,11 +178,10 @@ class RcpSerial:
         print('send cmd: ' + cmdStr)
         ser.write(cmdStr)
         if sync:
-            rsp = self.readLine(ser, retry)
+            rsp = self.readLine(ser)
             if cmdStr.startswith(rsp):
-                rsp = self.readLine(ser, retry)
-                return rsp
-            
+                rsp = self.readLine(ser)
+            return json.loads(rsp)
         
     def sendGet(self, name, index = None):
         if index == None:
@@ -187,7 +207,7 @@ class RcpSerial:
             
     def open(self):
         print('Opening serial')
-        ser = serial.Serial(self.port)
+        ser = serial.Serial(self.port, timeout=self.timeout)
         ser.flushInput()
         ser.flushOutput()
         return ser
@@ -197,7 +217,7 @@ class RcpSerial:
             self.ser.close()
         self.ser = None
     
-    def readLine(self, ser, retries = DEFAULT_READ_RETRIES):
+    def readLine(self, ser):
         eol2 = b'\r'
         retryCount = 0
         line = bytearray()
@@ -207,7 +227,7 @@ class RcpSerial:
             if  c == eol2:
                 break
             elif c == '':
-                if retryCount >= retries:
+                if retryCount >= self.retryCount:
                     raise Exception('Could not read message')
                 retryCount +=1
                 print('Timeout - retry: ' + str(retryCount))
@@ -433,6 +453,8 @@ class RcpSerial:
     def autoDetect(self):
         ports = [x[0] for x in list_ports.comports()]
 
+        self.retryCount = 0
+        self.timeout = 0.5
         print "Searching for RaceCapture on all serial ports"
         testVer = VersionConfig()
         verJson = None
@@ -450,8 +472,12 @@ class RcpSerial:
                 self.port = None
                 self.close()
 
+        self.retryCount = DEFAULT_READ_RETRIES
+        self.timeout = DEFAULT_TIMEOUT
         if not verJson == None:
             print "Found racecapture version " + testVer.toString() + " on port:", self.port
+            self.close()
+        
 
 
     
