@@ -17,6 +17,7 @@ class LuaScriptingView(BoxLayout):
     def __init__(self, **kwargs):
         super(LuaScriptingView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
+        self.register_event_type('on_run_script')
 
     def on_config_updated(self, rcpCfg):
         scriptCfg = rcpCfg.scriptConfig
@@ -27,18 +28,16 @@ class LuaScriptingView(BoxLayout):
     def on_script_changed(self, instance, value):
         if self.scriptCfg:
             self.scriptCfg.script = value
+
+    def on_run_script(self):
+        pass
+    
+    def runScript(self):
+        self.dispatch('on_run_script')
         
 class LuaCodeInput(CodeInput):
     def __init__(self, **kwargs):
         super(LuaCodeInput, self).__init__(**kwargs)
         self.lexer= lexers.get_lexer_by_name('lua')
         
-    def readScript(self):
-        print("read script")
-
-    def writeScript(self):
-        print("write script")
-
-    def runScript(self):
-        print("run script")
                 

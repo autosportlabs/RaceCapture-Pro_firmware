@@ -29,10 +29,12 @@ class RcpCmd:
         self.option = option
 
 class SingleRcpCmd(RcpCmd):
-    callback = None
-    def __init__(self, name, cmd, payload, callback):
-        super(SingleRcpCmd, self).__init__(name, cmd, payload)
-        self.callback = callback
+    winCallback = None
+    failCallback = None
+    def __init__(self, name, cmd, winCallback, failCallback, payload = None, index = None, option = None):
+        super(SingleRcpCmd, self).__init__(name, cmd, payload, index, option)
+        self.winCallback = winCallback
+        self.failCallback = failCallback
             
 class RcpSerial:    
     msgListeners = {}
@@ -52,12 +54,7 @@ class RcpSerial:
     def initSerial(self):
         rxThread = Thread(target=self.msgRxWorker)
         rxThread.daemon = True
-        rxThread.start()
-
-        txThread = Thread(target=self.msgTxWorker)
-        txThread.daemon = True
-        txThread.start()
-        
+        rxThread.start()        
 
     def addListener(self, messageName, callback):
         listeners = self.msgListeners.get(messageName, None)
@@ -92,33 +89,18 @@ class RcpSerial:
                 print('Message Rx Exception: ' + str(Exception))
                 traceback.print_exc()
         
-    def msgTxWorker(self):
-        q = self.cmdQueue
-        while True:
-            try:
-                cmd = q.get()
-                print('worker: ' + str(cmd))
-                
-                payload = cmd.payload
-                if payload:
-                    rsp = cmd.cmd(payload)
-                else:
-                    rsp = cmd.cmd()
-                    
-                callback = cmd.callback
-                if callback:
-                    callback(rsp) 
-                q.task_done()
-            except Exception:
-                print('Aysnc command exception: ' + str(Exception))
-                traceback.print_exc()
-
-    def rcpCfgComplete(self, msgReply):
+    def rcpCmdComplete(self, msgReply):
         self.cmdSequenceQueue.put(msgReply)
                 
     def recoverTimeout(self):
         print('POKE')
         self.getSerial().write('\r')
+        
+    def executeSingle(self, rcpCmd, winCallback, failCallback):
+        t = Thread(target=self.executeSequence, args=([rcpCmd], None, winCallback, failCallback))
+        t.daemon = True
+        t.start()
+        
         
     def executeSequence(self, cmdSequence, rootName, winCallback, failCallback):
         self.cmdSequenceLock.acquire()
@@ -137,7 +119,7 @@ class RcpSerial:
                 name = rcpCmd.name
                 result = None
                 
-                self.addListener(name, self.rcpCfgComplete)
+                self.addListener(name, self.rcpCmdComplete)
                 while not result and level2Retry < DEFAULT_LEVEL2_RETRIES:
                     
                     if not payload == None and not index == None and not option == None:
@@ -168,7 +150,7 @@ class RcpSerial:
                     raise Exception('Timeout waiting for ' + name)
                                     
                 responseResults[name] = result[name]
-                self.removeListener(name, self.rcpCfgComplete)
+                self.removeListener(name, self.rcpCmdComplete)
                 
             if rootName:
                 winCallback({rootName: responseResults})
@@ -181,10 +163,7 @@ class RcpSerial:
         finally:
             self.cmdSequenceLock.release()
         print('Execute Sequence complete')
-        
-    def queueCommand(self, cmd, callback, payload = None):
-        self.cmdQueue.put(SingleRcpCmd(None, cmd, payload, callback))
-        
+                
     def sendCommand(self, cmd, sync = False):
         rsp = None
         ser = self.getSerial()
@@ -272,9 +251,9 @@ class RcpSerial:
                               RcpCmd('connCfg', self.getConnectivityCfg)
                            ]
                 
-        getRcpCfgThread = Thread(target=self.executeSequence, args=(cmdSequence, 'rcpCfg', winCallback, failCallback))
-        getRcpCfgThread.daemon = True
-        getRcpCfgThread.start()
+        t = Thread(target=self.executeSequence, args=(cmdSequence, 'rcpCfg', winCallback, failCallback))
+        t.daemon = True
+        t.start()
             
     def writeRcpCfg(self, cfg, winCallback = None, failCallback = None):
         cmdSequence = []
@@ -340,9 +319,9 @@ class RcpSerial:
 
             cmdSequence.append(RcpCmd('flashCfg', self.flashConfig))
                 
-        getRcpCfgThread = Thread(target=self.executeSequence, args=(cmdSequence, 'setRcpCfg', winCallback, failCallback,))
-        getRcpCfgThread.daemon = True
-        getRcpCfgThread.start()
+        t = Thread(target=self.executeSequence, args=(cmdSequence, 'setRcpCfg', winCallback, failCallback,))
+        t.daemon = True
+        t.start()
                         
                 
     def getAnalogCfg(self, channelId = None):
@@ -425,8 +404,14 @@ class RcpSerial:
                 cmdSequence.append(RcpCmd('setScriptCfg', self.setScriptPage, '', i + 1))
                 break
         
+    def sendRunScript(self):
+        self.sendCommand({'runScript': None})
+        
+    def runScript(self, winCallback, failCallback):
+        self.executeSingle(RcpCmd('runScript', self.sendRunScript), winCallback, failCallback)
+        
     def flashConfig(self):
-        self.sendCommand({'flashCfg':None})
+        self.sendCommand({'flashCfg': None})
 
     def getChannels(self):
         self.sendGet('getChannels')
@@ -434,9 +419,9 @@ class RcpSerial:
     def getChannelList(self, winCallback, failCallback):
         cmdSequence = [ RcpCmd('channels', self.getChannels) ]
                 
-        getRcpCfgThread = Thread(target=self.executeSequence, args=(cmdSequence, None, winCallback, failCallback))
-        getRcpCfgThread.daemon = True
-        getRcpCfgThread.start()
+        t = Thread(target=self.executeSequence, args=(cmdSequence, None, winCallback, failCallback))
+        t.daemon = True
+        t.start()
                 
     def setChannelList(self, channels, winCallback, failCallback):
         cmdSequence = []

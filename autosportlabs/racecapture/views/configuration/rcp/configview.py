@@ -57,6 +57,7 @@ class ConfigView(BoxLayout):
         self.createConfigViews(self.menu)
         self.register_event_type('on_read_config')
         self.register_event_type('on_write_config')
+        self.register_event_type('on_run_script')
         
         
     def on_channels_updated(self, channels):
@@ -106,7 +107,9 @@ class ConfigView(BoxLayout):
         attach_node('Wireless', n, WirelessConfigView())
         attach_node('Telemetry', n, TelemetryConfigView())
         n = create_tree('Scripting / Logging')
-        attach_node('Lua Script', n, LuaScriptingView())
+        luaScriptView = LuaScriptingView()
+        luaScriptView.bind(on_run_script=self.runScript)
+        attach_node('Lua Script', n, luaScriptView)
         
         tree.bind(selected_node=on_select_node)
         
@@ -116,6 +119,12 @@ class ConfigView(BoxLayout):
     def on_write_config(self, instance, *args):
         pass
     
+    def on_run_script(self):
+        pass
+    
+    def runScript(self, instance):
+        self.dispatch('on_run_script')
+        
     def readConfig(self):
         self.dispatch('on_read_config', None)
 
