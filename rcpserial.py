@@ -109,7 +109,7 @@ class RcpSerial:
         
     def notifyProgress(self, count, total):
         if self.on_progress:
-            self.on_progress((count / total) * 1000)
+            self.on_progress((float(count) / float(total)) * 100)
         
         
     def executeSequence(self, cmdSequence, rootName, winCallback, failCallback):
@@ -132,6 +132,7 @@ class RcpSerial:
                 level2Retry = 0
                 name = rcpCmd.name
                 result = None
+                self.on_tx(True)
                 
                 self.addListener(name, self.rcpCmdComplete)
                 while not result and level2Retry < DEFAULT_LEVEL2_RETRIES:
@@ -143,16 +144,18 @@ class RcpSerial:
                         rcpCmd.cmd(payload)
                     else:
                         rcpCmd.cmd()
+                    
+
                     retry = 0
                     while not result and retry < self.retryCount:
                         try:
                             self.on_rx(True)
                             result = q.get(True, DEFAULT_MSG_RX_TIMEOUT)
+                            self.on_tx(False)
                             msgName = result.keys()[0]
                             if not msgName == name:
                                 print('rx message did not match expected name ' + str(name) + '; ' + str(msgName))
                                 result = None
-                            self.on_rx(False)
                         except Exception:
                             print('Read message timeout')
                             self.recoverTimeout()
@@ -161,11 +164,14 @@ class RcpSerial:
                         print('Level 2 retry for ' + name)
                         level2Retry += 1
 
+
                 if not result:
                     raise Exception('Timeout waiting for ' + name)
+                            
                                     
                 responseResults[name] = result[name]
                 self.removeListener(name, self.rcpCmdComplete)
+                self.on_rx(False)
                 cmdCount += 1
                 self.notifyProgress(cmdCount, cmdLength)
                 
@@ -182,7 +188,6 @@ class RcpSerial:
         print('Execute Sequence complete')
                 
     def sendCommand(self, cmd, sync = False):
-        self.on_tx(True)
         try:
             self.sendCommandLock.acquire()
             rsp = None
@@ -199,7 +204,6 @@ class RcpSerial:
                 return json.loads(rsp)
         finally:
             self.sendCommandLock.release()
-        self.on_tx(False)
         
     def sendGet(self, name, index = None):
         if index == None:
