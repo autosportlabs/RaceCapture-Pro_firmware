@@ -52,6 +52,13 @@
             Label:
             	size_hint_x: 0.1
             IconButton:
+            	size_hint_x: 0.05
+            	text: ""
+            	on_release: root.clearLog()
+            Label:
+            	size_hint_x: 0.1
+            IconButton:
                 size_hint_x: 0.05
                 text: "\357\200\241"
                 on_release: root.runScript()
+            	

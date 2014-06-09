@@ -48,6 +48,9 @@ class LuaScriptingView(BoxLayout):
         self.logfileView.text = text + value
         self.logfileScrollView.scroll_y = 0.0
         
+    
+    def clearLog(self):
+        self.logfileView.text = ''
         
     def runScript(self):
         self.dispatch('on_run_script')
