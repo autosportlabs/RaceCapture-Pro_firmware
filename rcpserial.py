@@ -43,9 +43,9 @@ class RcpSerial:
     cmdSequenceQueue = Queue.Queue()
     cmdSequenceLock = Lock()
     sendCommandLock = Lock()
-    on_progress = lambda value: None
-    on_tx = lambda value: None
-    on_rx = lambda value: None
+    on_progress = lambda value: value
+    on_tx = lambda self, value: None
+    on_rx = lambda self, value: None
     
     retryCount = DEFAULT_READ_RETRIES
     timeout = DEFAULT_SERIAL_TIMEOUT
