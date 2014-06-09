@@ -76,6 +76,17 @@ class RaceCaptureApp(App):
     def on_main_menu(self, instance, *args):
         self.mainNav.toggle_state()
     
+    
+    
+    #Logfile
+    def on_poll_logfile(self, instance):
+        self.rcpComms.getLogfile()
+
+
+
+
+        
+    #Run Script
     def on_run_script(self, instance):
         self.rcpComms.runScript(self.on_run_script_complete, self.on_run_script_error)
 
@@ -84,6 +95,15 @@ class RaceCaptureApp(App):
             
     def on_run_script_error(self, detail):
         alertPopup('Error Running', 'Error Running Script:\n\n' + str(detail))
+    
+    
+    
+    
+    
+    
+    
+    
+    
         
     #Write Configuration        
     def on_write_config(self, instance, *args):
@@ -196,6 +216,9 @@ class RaceCaptureApp(App):
         configView.bind(on_read_config=self.on_read_config)
         configView.bind(on_write_config=self.on_write_config)
         configView.bind(on_run_script=self.on_run_script)
+        configView.bind(on_poll_logfile=self.on_poll_logfile)
+        
+        self.rcpComms.addListener('logfile', lambda value: Clock.schedule_once(lambda dt: configView.on_logfile(value)))
         
         channelsView = ChannelsView(channels=self.channels, rcpComms = self.rcpComms)
         channelsView.bind(on_read_channels=self.on_read_channels)

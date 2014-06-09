@@ -6,6 +6,7 @@ import Queue
 from threading import Thread, Lock
 from rcpconfig import *
 from serial.tools import list_ports
+from functools import partial
 
 CHANNEL_ADD_MODE_IN_PROGRESS = 1
 CHANNEL_ADD_MODE_COMPLETE = 2
@@ -41,6 +42,8 @@ class RcpSerial:
     cmdQueue = Queue.Queue()
     cmdSequenceQueue = Queue.Queue()
     cmdSequenceLock = Lock()
+    sendCommandLock = Lock()
+    
     retryCount = DEFAULT_READ_RETRIES
     timeout = DEFAULT_SERIAL_TIMEOUT
     
@@ -77,7 +80,7 @@ class RcpSerial:
             try:
                 msg = self.readLine(serial)
                 print('msgRxWorker Rx: ' + str(msg))
-                msgJson = json.loads(msg)
+                msgJson = json.loads(msg, strict = False)
                 for messageName in msgJson.keys():
                     print('processing message ' + messageName)
                     listeners = self.msgListeners.get(messageName, None)
@@ -100,7 +103,6 @@ class RcpSerial:
         t = Thread(target=self.executeSequence, args=([rcpCmd], None, winCallback, failCallback))
         t.daemon = True
         t.start()
-        
         
     def executeSequence(self, cmdSequence, rootName, winCallback, failCallback):
         self.cmdSequenceLock.acquire()
@@ -135,8 +137,9 @@ class RcpSerial:
                     while not result and retry < self.retryCount:
                         try:
                             result = q.get(True, DEFAULT_MSG_RX_TIMEOUT)
-                            if not result.get(name, None):
-                                print('rx message did not match expected name ' + str(name) + '; ' + str(result))
+                            msgName = result.keys()[0]
+                            if not msgName == name:
+                                print('rx message did not match expected name ' + str(name) + '; ' + str(msgName))
                                 result = None
                         except Exception:
                             print('Read message timeout')
@@ -165,18 +168,22 @@ class RcpSerial:
         print('Execute Sequence complete')
                 
     def sendCommand(self, cmd, sync = False):
-        rsp = None
-        ser = self.getSerial()
-        ser.flushInput()
-        ser.flushOutput()
-        cmdStr = json.dumps(cmd, separators=(',', ':')) + '\r'
-        print('send cmd: ' + cmdStr)
-        ser.write(cmdStr)
-        if sync:
-            rsp = self.readLine(ser)
-            if cmdStr.startswith(rsp):
+        try:
+            self.sendCommandLock.acquire()
+            rsp = None
+            ser = self.getSerial()
+            ser.flushInput()
+            ser.flushOutput()
+            cmdStr = json.dumps(cmd, separators=(',', ':')) + '\r'
+            print('send cmd: ' + cmdStr)
+            ser.write(cmdStr)
+            if sync:
                 rsp = self.readLine(ser)
-            return json.loads(rsp)
+                if cmdStr.startswith(rsp):
+                    rsp = self.readLine(ser)
+                return json.loads(rsp)
+        finally:
+            self.sendCommandLock.release()
         
     def sendGet(self, name, index = None):
         if index == None:
@@ -237,18 +244,18 @@ class RcpSerial:
         return line
         
     def getRcpCfg(self, winCallback, failCallback):
-        cmdSequence = [       RcpCmd('ver', self.getVersion),
-                              RcpCmd('analogCfg', self.getAnalogCfg),
-                              RcpCmd('imuCfg',    self.getImuCfg),
-                              RcpCmd('gpsCfg',    self.getGpsCfg),
-                              RcpCmd('timerCfg',  self.getTimerCfg),
-                              RcpCmd('gpioCfg',   self.getGpioCfg),
-                              RcpCmd('pwmCfg',    self.getPwmCfg),
-                              RcpCmd('trackCfg',  self.getTrackCfg),
-                              RcpCmd('canCfg',    self.getCanCfg),
-                              RcpCmd('obd2Cfg',   self.getObd2Cfg),
-                              RcpCmd('scriptCfg', self.getScript),
-                              RcpCmd('connCfg', self.getConnectivityCfg)
+        cmdSequence = [       RcpCmd('ver',         self.getVersion),
+                              RcpCmd('analogCfg',   self.getAnalogCfg),
+                              RcpCmd('imuCfg',      self.getImuCfg),
+                              RcpCmd('gpsCfg',      self.getGpsCfg),
+                              RcpCmd('timerCfg',    self.getTimerCfg),
+                              RcpCmd('gpioCfg',     self.getGpioCfg),
+                              RcpCmd('pwmCfg',      self.getPwmCfg),
+                              RcpCmd('trackCfg',    self.getTrackCfg),
+                              RcpCmd('canCfg',      self.getCanCfg),
+                              RcpCmd('obd2Cfg',     self.getObd2Cfg),
+                              RcpCmd('scriptCfg',   self.getScript),
+                              RcpCmd('connCfg',     self.getConnectivityCfg)
                            ]
                 
         t = Thread(target=self.executeSequence, args=(cmdSequence, 'rcpCfg', winCallback, failCallback))
@@ -317,7 +324,7 @@ class RcpSerial:
             if scriptCfg:
                 self.sequenceWriteScript(scriptCfg, cmdSequence)
 
-            cmdSequence.append(RcpCmd('flashCfg', self.flashConfig))
+            cmdSequence.append(RcpCmd('flashCfg', self.sendFlashConfig))
                 
         t = Thread(target=self.executeSequence, args=(cmdSequence, 'setRcpCfg', winCallback, failCallback,))
         t.daemon = True
@@ -410,7 +417,16 @@ class RcpSerial:
     def runScript(self, winCallback, failCallback):
         self.executeSingle(RcpCmd('runScript', self.sendRunScript), winCallback, failCallback)
         
-    def flashConfig(self):
+    def getLogfile(self, winCallback = None, failCallback = None):
+        def getLogfileCmd():
+            self.sendCommand({'getLogfile': None})
+            
+        if winCallback and failCallback:
+            self.executeSingle(RcpCmd('logfile', getLogfileCmd), winCallback, failCallback)
+        else:
+            getLogfileCmd()
+            
+    def sendFlashConfig(self):
         self.sendCommand({'flashCfg': None})
 
     def getChannels(self):
