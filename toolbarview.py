@@ -11,6 +11,8 @@ from iconbutton import IconButton
 Builder.load_file('toolbarview.kv')
 
 TOOLBAR_LED_DURATION = 0.1
+PROGRESS_COMPLETE_LINGER_DURATION = 5.0
+
 class ToolbarView(BoxLayout):
     txOffColor = [0.0, 1.0, 0.0, 0.2]
     rxOffColor = [0.0, 0.8, 1.0, 0.2]
@@ -35,6 +37,8 @@ class ToolbarView(BoxLayout):
         if not self.progressBar:
             self.progressBar = kvFind(self, 'rcid', 'pbar')
         self.progressBar.value = value
+        if value == 100:
+            Clock.schedule_once(lambda dt: self.on_progress(0), PROGRESS_COMPLETE_LINGER_DURATION)
         
     def on_main_menu(self, instance, *args):
         pass
