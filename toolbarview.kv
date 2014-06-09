@@ -10,31 +10,39 @@
     	width: dp(10)
     	size_hint_x: None
     	
+	ProgressBar:
+		rcid: 'pbar'
+		size_hint_x: 0.05       	
+
+    Label:
+    	width: dp(10)
+    	size_hint_x: None
+
     IconButton:
-    	rid: 'telemetryUpStatus'
+    	rcid: 'teleTxStatus'
     	text: '\357\203\256'
     	width: dp(30)
-    	color: [0.0, 1.0, 0.0, 0.8]    	
+    	color: [0.0, 1.0, 0.0, 0.2]    	
     	size_hint_x: None
     IconButton:
-    	id: 'telemetryDownStatus'
+    	rcid: 'teleRxStatus'
     	text: '\357\203\255'
     	width: dp(30)
-    	color: [0.0, 0.8, 1.0, 0.8]
+    	color: [0.0, 0.8, 1.0, 0.2]
     	size_hint_x: None
     IconButton:
-    	rid: 'txStatus'
+    	rcid: 'rcTxStatus'
     	text: '\357\200\231'
     	width: dp(30)
-    	color: [0.0, 1.0, 0.0, 0.8]    	
+    	color: [0.0, 1.0, 0.0, 0.2]    	
     	size_hint_x: None
     IconButton:
-    	rid: 'rxStatus'
+    	rcid: 'rcRxStatus'
     	text: '\357\202\223'
     	width: dp(30)
-    	color: [0.0, 0.8, 1.0, 0.8]    	
+    	color: [0.0, 0.8, 1.0, 0.2]    	
     	size_hint_x: None
 	Label:
-		size_hint_x: 1.0        	
+		size_hint_x: 0.95
         	
         	

@@ -27,8 +27,11 @@
                 ScrollView:
                     size_hint_y: 0.25
                     id: loggingScrollView
+                    rcid: 'logfileSv'
                     do_scroll_x:False
                     TextInput:
+                    	rcid: 'logfile'
+                    	disabled: True
                         size_hint_y: None
                         height: max(self.minimum_height, loggingScrollView.height)
         BoxLayout:
@@ -41,18 +44,11 @@
             	CheckBox:
             		rcid: 'pollLog'
             		size_hint_x: 0.1
+            		on_active: root.enableScript(*args)
             	FieldLabel:
             		size_hint_x: 0.9
             		halign: 'left'
             		text: 'Poll logfile'
-            IconButton:
-                size_hint_x: 0.1
-                text: "\357\202\223"
-                on_release: root.readScript()
-            IconButton:
-                size_hint_x: 0.1
-                text: "\357\200\231"
-                on_release: root.writeScript()
             Label:
             	size_hint_x: 0.1
             IconButton:

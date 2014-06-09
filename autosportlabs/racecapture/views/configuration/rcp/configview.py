@@ -3,6 +3,7 @@ kivy.require('1.8.0')
 from kivy.uix.boxlayout import BoxLayout
 from kivy.app import Builder
 from utils import *
+from copy import *
 from kivy.metrics import dp
 from kivy.uix.treeview import TreeView, TreeViewLabel
 from kivy.properties import ObjectProperty
@@ -45,6 +46,7 @@ class ConfigView(BoxLayout):
     menu = None
     channels = None
     rcpConfig = None
+    scriptView = None
     def __init__(self, **kwargs):
         self.channels = kwargs.get('channels', None)
         self.rcpConfig = kwargs.get('rcpConfig', None)
@@ -57,18 +59,10 @@ class ConfigView(BoxLayout):
         self.createConfigViews(self.menu)
         self.register_event_type('on_read_config')
         self.register_event_type('on_write_config')
+        self.register_event_type('on_run_script')
+        self.register_event_type('on_poll_logfile')
         
-        
-    def on_channels_updated(self, channels):
-        for view in self.configViews:
-            channelWidgets = list(kvquery(view, __class__=ChannelNameSpinner))
-            for channelWidget in channelWidgets:
-                channelWidget.dispatch('on_channels_updated', channels)
-        
-    def on_config_updated(self, config):
-        for view in self.configViews:
-            view.dispatch('on_config_updated', config)
-        
+            
     def createConfigViews(self, tree):
         
         def create_tree(text):
@@ -106,9 +100,23 @@ class ConfigView(BoxLayout):
         attach_node('Wireless', n, WirelessConfigView())
         attach_node('Telemetry', n, TelemetryConfigView())
         n = create_tree('Scripting / Logging')
-        attach_node('Lua Script', n, LuaScriptingView())
+        scriptView = LuaScriptingView()
+        scriptView.bind(on_run_script=self.runScript)
+        scriptView.bind(on_poll_logfile=self.pollLogfile)
+        attach_node('Lua Script', n, scriptView)
+        self.scriptView = scriptView
         
         tree.bind(selected_node=on_select_node)
+        
+    def on_channels_updated(self, channels):
+        for view in self.configViews:
+            channelWidgets = list(kvquery(view, __class__=ChannelNameSpinner))
+            for channelWidget in channelWidgets:
+                channelWidget.dispatch('on_channels_updated', channels)
+        
+    def on_config_updated(self, config):
+        for view in self.configViews:
+            view.dispatch('on_config_updated', config)
         
     def on_read_config(self, instance, *args):
         pass
@@ -116,6 +124,23 @@ class ConfigView(BoxLayout):
     def on_write_config(self, instance, *args):
         pass
     
+    def on_run_script(self):
+        pass
+        
+    def on_logfile(self, logfileJson):
+        if self.scriptView:
+            logfileText = logfileJson.get('logfile').replace('\r','')
+            self.scriptView.dispatch('on_logfile', logfileText)
+        
+    def runScript(self, instance):
+        self.dispatch('on_run_script')
+
+    def on_poll_logfile(self):
+        pass
+
+    def pollLogfile(self, instance):
+        self.dispatch('on_poll_logfile')
+                
     def readConfig(self):
         self.dispatch('on_read_config', None)
 
@@ -147,6 +172,7 @@ class ConfigView(BoxLayout):
                 self.dispatch('on_config_updated', self.rcpConfig)                
         except Exception as detail:
             alertPopup('Error Loading', 'Failed to Load Configuration:\n\n' + str(detail))
+            
     def save(self, path, filename):
         self.dismiss_popup()
         try:        

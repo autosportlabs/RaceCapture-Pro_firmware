@@ -3,8 +3,9 @@
 import kivy
 import logging
 import argparse
-from autosportlabs.racecapture.views.channels.channelsview import ChannelsView
 from autosportlabs.racecapture.views.util.alertview import alertPopup
+from functools import partial
+from kivy.clock import Clock
 kivy.require('1.8.0')
 from kivy.config import Config
 Config.set('graphics', 'width', '1024')
@@ -20,6 +21,8 @@ from installfix_garden_navigationdrawer import NavigationDrawer
 from rcpserial import *
 from channels import *
 from utils import *
+from autosportlabs.racecapture.views.channels.channelsview import ChannelsView
+from autosportlabs.racecapture.views.tracks.tracksview import TracksView
 from autosportlabs.racecapture.views.configuration.rcp.configview import ConfigView
 from autosportlabs.racecapture.menu.mainmenu import MainMenu
 
@@ -35,6 +38,8 @@ class RaceCaptureApp(App):
     #RaceCapture serial I/O 
     rcpComms = RcpSerial()
     
+    statusBar = None
+    
     #Main Views
     configView = None
     channelsView = None
@@ -49,10 +54,11 @@ class RaceCaptureApp(App):
     mainViews = {}
     
     def __init__(self, **kwargs):
-        self.register_event_type('on_config_updated')
         self.register_event_type('on_channels_updated')
+        self.register_event_type('on_read_channels')
         super(RaceCaptureApp, self).__init__(**kwargs)
         self.processArgs()
+        self.rcpComms.initSerial()
 
     def processArgs(self):
         parser = argparse.ArgumentParser(description='Autosport Labs Race Capture App')
@@ -72,46 +78,112 @@ class RaceCaptureApp(App):
         
     def on_main_menu(self, instance, *args):
         self.mainNav.toggle_state()
+    
+    
+    
+    #Logfile
+    def on_poll_logfile(self, instance):
+        self.rcpComms.getLogfile()
+
+
+
+
         
+    #Run Script
+    def on_run_script(self, instance):
+        self.rcpComms.runScript(self.on_run_script_complete, self.on_run_script_error)
+
+    def on_run_script_complete(self, result):
+        print('run script complete: ' + str(result))
+            
+    def on_run_script_error(self, detail):
+        alertPopup('Error Running', 'Error Running Script:\n\n' + str(detail))
+    
+    
+    
+    
+    
+    
+    
+    
+    
+        
+    #Write Configuration        
     def on_write_config(self, instance, *args):
         rcpConfig = self.rcpConfig
         rcpJson = rcpConfig.toJson()
 
         try:
-            self.rcpComms.writeRcpCfg(rcpJson, self.on_write_config_complete)
+            self.rcpComms.writeRcpCfg(rcpJson, self.on_write_config_complete, self.on_write_config_error)
         except:
             logging.exception('')
             self._serial_warning()
-    
+            
     def on_write_config_complete(self, result):
         print('Write config complete: ' + str(result))
         
+    def on_write_config_error(self, detail):
+        alertPopup('Error Writing', 'Could not write configuration:\n\n' + str(detail))
+
+    
+    
+    
+    #Read Configuration        
     def on_read_config(self, instance, *args):
         try:
             if not self.channels.isLoaded():
-                self.rcpComms.getChannels(self.on_channels_config_complete)
-            self.rcpComms.getRcpCfg(self.on_read_config_complete)
+                self.on_read_channels()
+            self.rcpComms.getRcpCfg(self.on_read_config_complete, self.on_read_channels_error)
         except:
             logging.exception('')
             self._serial_warning()
 
-    def on_channels_config_complete(self, channelsList):
-            self.channels.fromJson(channelsList)
-            self.notifyChannelsUpdated()
-        
     def on_read_config_complete(self, rcpConfigJson):
         self.rcpConfig.fromJson(rcpConfigJson)
-        self.dispatch('on_config_updated', self.rcpConfig)
+        Clock.schedule_once(lambda dt: self.notifyReadComplete())
         
-    def notifyChannelsUpdated(self):
-        self.dispatch('on_channels_updated', self.channels)
+    def on_read_config_error(self, detail):
+        alertPopup('Error Reading', 'Could not read configuration:\n\n' + str(detail))
 
-    def on_config_updated(self, rcpConfig):
-        self.configView.dispatch('on_config_updated', rcpConfig)
+    def notifyReadComplete(self):
+        self.configView.dispatch('on_config_updated', self.rcpConfig)
 
+
+
+
+
+    #Read Channels                
+    def on_read_channels(self, *args):
+        self.rcpComms.getChannelList(self.on_read_channels_complete, self.on_read_channels_error)
+        
+    def on_read_channels_complete(self, channelsList):
+        self.channels.fromJson(channelsList)
+        Clock.schedule_once(lambda dt: self.notifyChannelsUpdated())
+    
+    def on_read_channels_error(self, detail):
+        alertPopup('Error Reading', 'Error reading channels:\n\n' + str(detail))
+        
     def on_channels_updated(self, channels):
         for view in self.mainViews.itervalues():
             view.dispatch('on_channels_updated', channels)
+            
+            
+            
+            
+    #Write Channels
+    def on_write_channels(self, *args):
+        self.rcpComms.setChannelList(self.channels.toJson(), self.on_write_channels_complete, self.on_write_channels_error)
+
+    def on_write_channels_complete(self, response):
+        print('write channels complete')
+        
+    def on_write_channels_error(self, detail):
+        alertPopup('Error Writing', 'Error writing channels:\n\n' + str(detail))
+    
+    def notifyChannelsUpdated(self):
+        self.dispatch('on_channels_updated', self.channels)
+
+
 
     def switchMainView(self, viewKey):
         mainView = self.mainViews.get(viewKey)
@@ -122,8 +194,8 @@ class RaceCaptureApp(App):
         
     def build(self):
         Builder.load_file('racecapture.kv')
-        toolbar = kvFind(self.root, 'rcid', 'statusbar')
-        toolbar.bind(on_main_menu=self.on_main_menu)    
+        statusBar = kvFind(self.root, 'rcid', 'statusbar')
+        statusBar.bind(on_main_menu=self.on_main_menu)
         
         mainMenu = kvFind(self.root, 'rcid', 'mainMenu')
         mainMenu.bind(on_main_menu_item=self.on_main_menu_item)
@@ -142,14 +214,29 @@ class RaceCaptureApp(App):
         configView = ConfigView(channels=self.channels, rcpConfig=self.rcpConfig)
         configView.bind(on_read_config=self.on_read_config)
         configView.bind(on_write_config=self.on_write_config)
+        configView.bind(on_run_script=self.on_run_script)
+        configView.bind(on_poll_logfile=self.on_poll_logfile)
+        
+        self.rcpComms.addListener('logfile', lambda value: Clock.schedule_once(lambda dt: configView.on_logfile(value)))
+        self.rcpComms.on_progress = lambda value: statusBar.dispatch('on_progress', value)
+        self.rcpComms.on_rx = lambda value: statusBar.dispatch('on_rc_rx', value)
+        self.rcpComms.on_tx = lambda value: statusBar.dispatch('on_rc_tx', value)
         
         channelsView = ChannelsView(channels=self.channels, rcpComms = self.rcpComms)
+        channelsView.bind(on_read_channels=self.on_read_channels)
+        channelsView.bind(on_write_channels=self.on_write_channels)
+        
+        tracksView = TracksView()
+        #bind tracks
         
         self.mainViews = {'config' : configView, 
-                          'channels' : channelsView}
+                          'channels' : channelsView,
+                          'tracks': tracksView}
 
         self.configView = configView
         self.channelsView = channelsView
+        self.statusBar = statusBar
+        
 if __name__ == '__main__':
 
     RaceCaptureApp().run()

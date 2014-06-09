@@ -695,7 +695,7 @@ class RcpConfig:
                 if scriptJson:
                     self.scriptConfig.fromJson(scriptJson)
                     
-                print('RCP config version ' + str(self.versionConfig.major) + '.' + str(self.versionConfig.minor) + '.' + str(self.versionConfig.minor) + ' Loaded')
+                print('RCP config version ' + str(self.versionConfig.major) + '.' + str(self.versionConfig.minor) + '.' + str(self.versionConfig.bugfix) + ' Loaded')
                 self.loaded = True
     
     def fromJsonString(self, rcpJsonString):
