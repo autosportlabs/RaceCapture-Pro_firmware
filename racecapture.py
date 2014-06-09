@@ -196,7 +196,7 @@ class RaceCaptureApp(App):
     def build(self):
         Builder.load_file('racecapture.kv')
         toolbar = kvFind(self.root, 'rcid', 'statusbar')
-        toolbar.bind(on_main_menu=self.on_main_menu)    
+        toolbar.bind(on_main_menu=self.on_main_menu)
         
         mainMenu = kvFind(self.root, 'rcid', 'mainMenu')
         mainMenu.bind(on_main_menu_item=self.on_main_menu_item)
@@ -219,6 +219,7 @@ class RaceCaptureApp(App):
         configView.bind(on_poll_logfile=self.on_poll_logfile)
         
         self.rcpComms.addListener('logfile', lambda value: Clock.schedule_once(lambda dt: configView.on_logfile(value)))
+        self.rcpComms.progressListener = lambda value: toolbar.dispatch('on_progress', value)
         
         channelsView = ChannelsView(channels=self.channels, rcpComms = self.rcpComms)
         channelsView.bind(on_read_channels=self.on_read_channels)

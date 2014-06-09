@@ -43,6 +43,7 @@ class RcpSerial:
     cmdSequenceQueue = Queue.Queue()
     cmdSequenceLock = Lock()
     sendCommandLock = Lock()
+    progressListener = None
     
     retryCount = DEFAULT_READ_RETRIES
     timeout = DEFAULT_SERIAL_TIMEOUT
@@ -104,13 +105,22 @@ class RcpSerial:
         t.daemon = True
         t.start()
         
+    def notifyProgress(self, count, total):
+        if self.progressListener:
+            self.progressListener((count / total) * 1000)
+        
+        
     def executeSequence(self, cmdSequence, rootName, winCallback, failCallback):
+                    
         self.cmdSequenceLock.acquire()
         print('Execute Sequence begin')
                 
         q = self.cmdSequenceQueue
         
         responseResults = {}
+        cmdCount = 0
+        cmdLength = len(cmdSequence)
+        self.notifyProgress(cmdCount, cmdLength)
         try:
             for rcpCmd in cmdSequence:
                 payload = rcpCmd.payload
@@ -154,6 +164,8 @@ class RcpSerial:
                                     
                 responseResults[name] = result[name]
                 self.removeListener(name, self.rcpCmdComplete)
+                cmdCount += 1
+                self.notifyProgress(cmdCount, cmdLength)
                 
             if rootName:
                 winCallback({rootName: responseResults})
