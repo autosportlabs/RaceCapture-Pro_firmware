@@ -1,3 +1,13 @@
 <TracksView>:
-    Label:
-        text: 'Tracks View!'
+	ScrollView:
+		id: scrltracks
+	    size_hint_y: 0.75
+	    do_scroll_x:False
+	    do_scroll_y:True
+	    GridLayout:
+	    	rcid: 'tracksgrid'
+	        padding: [dp(20), dp(20)]
+	        spacing: [dp(10), dp(10)]
+	        size_hint_y: None
+	        height: max(self.minimum_height, scrltracks.height)
+	        cols: 1
