@@ -1,7 +1,7 @@
 import kivy
 kivy.require('1.8.0')
 
-from kivy.garden.graph import Graph, MeshLinePlot
+from installfix_garden_graph import Graph, MeshLinePlot
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.scrollview import ScrollView

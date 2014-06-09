@@ -60,14 +60,13 @@ to run:
     kivy racecapture.py
 	Note: If you get an error doing this ("cannot find text provider") then you might be like me and be unable to run RaceCapture inside a virtualenv for some reason. Try performing the above steps without the virtual env part.
 
-## dev installation (Win7)
+## dev installation (Eclipse on Win7, but probably applies to Eclipse on any platform)
 
 1. Do the "installation" instructions above
 1. download [Eclipse] (https://www.eclipse.org/downloads/)
-1. Set path variables for current shell: `my_kivy_install_folder\kivy.bat`
-1. `set path`
-1. Right click My Computer...System Properties...Advanced...Environment Variables...System Variables and add the extra folders that were added to the path to your system path
 1. Install [PyDev for Eclipse] (http://pydev.org/manual_101_install.html) and use auto-config
+1. In Window..Preferences..PyDev..Interpreter..Python Interpreter..Environment, add a variable "PATH" with value c:\kivy;c:\kivy\Python;c:\kivy\gstreamer\bin;c:\kivy\MinGW\bin;%PATH%
+1. In Window..Preferences..PyDev..Interpreter..Python Interpreter..Forced Builtins, add "kivy" to the list
 1. Make a new project in Eclipse, select "PyDev project" and specify the folder with Racecapture in it
 1. Right-click the project...Properties...pyDev-PYTHONPATH...External Libraries - Add source folder, add my_kivy_install_folder\kivy
 1. Run the project

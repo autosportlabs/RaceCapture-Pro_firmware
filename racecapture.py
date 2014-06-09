@@ -16,7 +16,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 
-from kivy.garden.navigationdrawer import NavigationDrawer
+from installfix_garden_navigationdrawer import NavigationDrawer
 
 from rcpserial import *
 from channels import *
