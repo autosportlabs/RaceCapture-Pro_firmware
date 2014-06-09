@@ -3,7 +3,6 @@
 import kivy
 import logging
 import argparse
-from autosportlabs.racecapture.views.channels.channelsview import ChannelsView
 from autosportlabs.racecapture.views.util.alertview import alertPopup
 from functools import partial
 from kivy.clock import Clock
@@ -22,6 +21,8 @@ from kivy.garden.navigationdrawer import NavigationDrawer
 from rcpserial import *
 from channels import *
 from utils import *
+from autosportlabs.racecapture.views.channels.channelsview import ChannelsView
+from autosportlabs.racecapture.views.tracks.tracksview import TracksView
 from autosportlabs.racecapture.views.configuration.rcp.configview import ConfigView
 from autosportlabs.racecapture.menu.mainmenu import MainMenu
 
@@ -225,8 +226,12 @@ class RaceCaptureApp(App):
         channelsView.bind(on_read_channels=self.on_read_channels)
         channelsView.bind(on_write_channels=self.on_write_channels)
         
+        tracksView = TracksView()
+        #bind tracks
+        
         self.mainViews = {'config' : configView, 
-                          'channels' : channelsView}
+                          'channels' : channelsView,
+                          'tracks': tracksView}
 
         self.configView = configView
         self.channelsView = channelsView
