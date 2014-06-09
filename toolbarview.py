@@ -5,10 +5,12 @@ from kivy.uix.stacklayout import StackLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.progressbar import ProgressBar
 from kivy.app import Builder
+from kivy.clock import Clock
 from iconbutton import IconButton
 
 Builder.load_file('toolbarview.kv')
 
+TOOLBAR_LED_DURATION = 0.1
 class ToolbarView(BoxLayout):
     txOffColor = [0.0, 1.0, 0.0, 0.2]
     rxOffColor = [0.0, 0.8, 1.0, 0.2]
@@ -44,11 +46,13 @@ class ToolbarView(BoxLayout):
         if not self.rcTxStatus:
             self.rcTxStatus = kvFind(self, 'rcid', 'rcTxStatus')            
         self.rcTxStatus.color = self.txOnColor if value else self.txOffColor
+        Clock.schedule_once(lambda dx: self.on_rc_tx(False), TOOLBAR_LED_DURATION)
     
     def on_rc_rx(self, value):
         if not self.rcRxStatus:
             self.rcRxStatus = kvFind(self, 'rcid', 'rcRxStatus')    
         self.rcRxStatus.color = self.rxOnColor if value else self.rxOffColor
+        Clock.schedule_once(lambda dx: self.on_rc_rx(False), TOOLBAR_LED_DURATION)        
     
     def on_tele_tx(self, value):
         if not self.teleTxStatus:

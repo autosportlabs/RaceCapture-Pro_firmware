@@ -84,6 +84,7 @@ class RcpSerial:
                 msg = self.readLine(serial)
                 print('msgRxWorker Rx: ' + str(msg))
                 msgJson = json.loads(msg, strict = False)
+                self.on_rx(True)
                 for messageName in msgJson.keys():
                     print('processing message ' + messageName)
                     listeners = self.msgListeners.get(messageName, None)
@@ -132,7 +133,6 @@ class RcpSerial:
                 level2Retry = 0
                 name = rcpCmd.name
                 result = None
-                self.on_tx(True)
                 
                 self.addListener(name, self.rcpCmdComplete)
                 while not result and level2Retry < DEFAULT_LEVEL2_RETRIES:
@@ -149,9 +149,7 @@ class RcpSerial:
                     retry = 0
                     while not result and retry < self.retryCount:
                         try:
-                            self.on_rx(True)
                             result = q.get(True, DEFAULT_MSG_RX_TIMEOUT)
-                            self.on_tx(False)
                             msgName = result.keys()[0]
                             if not msgName == name:
                                 print('rx message did not match expected name ' + str(name) + '; ' + str(msgName))
@@ -171,7 +169,6 @@ class RcpSerial:
                                     
                 responseResults[name] = result[name]
                 self.removeListener(name, self.rcpCmdComplete)
-                self.on_rx(False)
                 cmdCount += 1
                 self.notifyProgress(cmdCount, cmdLength)
                 
@@ -204,6 +201,7 @@ class RcpSerial:
                 return json.loads(rsp)
         finally:
             self.sendCommandLock.release()
+            self.on_tx(True)
         
     def sendGet(self, name, index = None):
         if index == None:
