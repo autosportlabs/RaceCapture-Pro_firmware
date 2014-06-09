@@ -504,8 +504,8 @@ class RcpSerial:
                 if testVer.major > 0 or testVer.minor > 0 or testVer.bugfix > 0:
                     break
             except Exception as detail:
-                print('Failed: ' + str(detail))
-                traceback.print_exc()                
+                print('Not found on port')
+                #traceback.print_exc()                
                 self.port = None
                 self.close()
 

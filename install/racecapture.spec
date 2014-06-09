@@ -10,7 +10,7 @@ def addKVs():
     allFiles = Tree('..//')
     extraDatas = []
     for file in allFiles:
-        if file[0].endswith('.kv') | file[0].endswith('.ttf') | file[0].startswith('resource/') | file[0].startswith('resource\\'):
+        if file[0].endswith('.kv') | file[0].endswith('.ttf') | file[0].startswith('resource/') | file[0].startswith('resource\\') | (file[0] == 'LICENSE'):
             print "Adding datafile: " + file[0]
             extraDatas.append(file)
     return extraDatas
@@ -23,13 +23,13 @@ a.datas += addKVs()
 pyz = PYZ(a.pure)
 exe = EXE(pyz,
           a.scripts,
-          [('v', None, 'OPTION')],
+          #[('v', None, 'OPTION')],
           exclude_binaries=True,
           name='racecapture' + ('.exe' if sys.platform == 'win32' else ''),
           debug=False,
           strip=None,
           upx=True,
-          console=True )
+          console=False )
 
 coll = COLLECT(exe,
                a.binaries,
