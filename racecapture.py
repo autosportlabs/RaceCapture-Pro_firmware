@@ -37,6 +37,8 @@ class RaceCaptureApp(App):
     #RaceCapture serial I/O 
     rcpComms = RcpSerial()
     
+    statusBar = None
+    
     #Main Views
     configView = None
     channelsView = None
@@ -182,10 +184,6 @@ class RaceCaptureApp(App):
 
 
 
-
-
-
-
     def switchMainView(self, viewKey):
         mainView = self.mainViews.get(viewKey)
         if mainView:
@@ -195,8 +193,8 @@ class RaceCaptureApp(App):
         
     def build(self):
         Builder.load_file('racecapture.kv')
-        toolbar = kvFind(self.root, 'rcid', 'statusbar')
-        toolbar.bind(on_main_menu=self.on_main_menu)
+        statusBar = kvFind(self.root, 'rcid', 'statusbar')
+        statusBar.bind(on_main_menu=self.on_main_menu)
         
         mainMenu = kvFind(self.root, 'rcid', 'mainMenu')
         mainMenu.bind(on_main_menu_item=self.on_main_menu_item)
@@ -219,7 +217,9 @@ class RaceCaptureApp(App):
         configView.bind(on_poll_logfile=self.on_poll_logfile)
         
         self.rcpComms.addListener('logfile', lambda value: Clock.schedule_once(lambda dt: configView.on_logfile(value)))
-        self.rcpComms.progressListener = lambda value: toolbar.dispatch('on_progress', value)
+        self.rcpComms.on_progress = lambda value: statusBar.dispatch('on_progress', value)
+        self.rcpComms.on_rx = lambda value: statusBar.dispatch('on_rc_rx', value)
+        self.rcpComms.on_tx = lambda value: statusBar.dispatch('on_rc_tx', value)
         
         channelsView = ChannelsView(channels=self.channels, rcpComms = self.rcpComms)
         channelsView.bind(on_read_channels=self.on_read_channels)
@@ -230,6 +230,8 @@ class RaceCaptureApp(App):
 
         self.configView = configView
         self.channelsView = channelsView
+        self.statusBar = statusBar
+        
 if __name__ == '__main__':
 
     RaceCaptureApp().run()

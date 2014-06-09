@@ -43,7 +43,9 @@ class RcpSerial:
     cmdSequenceQueue = Queue.Queue()
     cmdSequenceLock = Lock()
     sendCommandLock = Lock()
-    progressListener = None
+    on_progress = lambda value: None
+    on_tx = lambda value: None
+    on_rx = lambda value: None
     
     retryCount = DEFAULT_READ_RETRIES
     timeout = DEFAULT_SERIAL_TIMEOUT
@@ -106,8 +108,8 @@ class RcpSerial:
         t.start()
         
     def notifyProgress(self, count, total):
-        if self.progressListener:
-            self.progressListener((count / total) * 1000)
+        if self.on_progress:
+            self.on_progress((count / total) * 1000)
         
         
     def executeSequence(self, cmdSequence, rootName, winCallback, failCallback):
@@ -133,7 +135,6 @@ class RcpSerial:
                 
                 self.addListener(name, self.rcpCmdComplete)
                 while not result and level2Retry < DEFAULT_LEVEL2_RETRIES:
-                    
                     if not payload == None and not index == None and not option == None:
                         rcpCmd.cmd(payload, index, option)
                     elif not payload == None and not index == None:
@@ -142,15 +143,16 @@ class RcpSerial:
                         rcpCmd.cmd(payload)
                     else:
                         rcpCmd.cmd()
-    
                     retry = 0
                     while not result and retry < self.retryCount:
                         try:
+                            self.on_rx(True)
                             result = q.get(True, DEFAULT_MSG_RX_TIMEOUT)
                             msgName = result.keys()[0]
                             if not msgName == name:
                                 print('rx message did not match expected name ' + str(name) + '; ' + str(msgName))
                                 result = None
+                            self.on_rx(False)
                         except Exception:
                             print('Read message timeout')
                             self.recoverTimeout()
@@ -180,6 +182,7 @@ class RcpSerial:
         print('Execute Sequence complete')
                 
     def sendCommand(self, cmd, sync = False):
+        self.on_tx(True)
         try:
             self.sendCommandLock.acquire()
             rsp = None
@@ -196,6 +199,7 @@ class RcpSerial:
                 return json.loads(rsp)
         finally:
             self.sendCommandLock.release()
+        self.on_tx(False)
         
     def sendGet(self, name, index = None):
         if index == None:
@@ -242,6 +246,7 @@ class RcpSerial:
                 break
             elif c == '':
                 if retryCount >= self.retryCount:
+                    self.close()
                     raise Exception('Could not read message')
                 retryCount +=1
                 print('Timeout - retry: ' + str(retryCount))
