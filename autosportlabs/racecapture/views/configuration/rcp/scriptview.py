@@ -16,6 +16,7 @@ Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/scriptview.
 class LuaScriptingView(BoxLayout):
     scriptCfg = None
     logfileView = None
+    scriptView = None
     def __init__(self, **kwargs):
         super(LuaScriptingView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
@@ -23,11 +24,11 @@ class LuaScriptingView(BoxLayout):
         self.register_event_type('on_poll_logfile')
         self.register_event_type('on_logfile')
         self.logfileView = kvFind(self, 'rcid', 'logfile')
+        self.scriptView = kvFind(self, 'rcid', 'script') 
 
     def on_config_updated(self, rcpCfg):
         scriptCfg = rcpCfg.scriptConfig
-        scriptView = kvFind(self, 'rcid', 'script')
-        scriptView.text = scriptCfg.script
+        self.scriptView.text = scriptCfg.script
         self.scriptCfg = scriptCfg
    
     def on_script_changed(self, instance, value):
