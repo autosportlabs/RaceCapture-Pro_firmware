@@ -10,7 +10,7 @@
 #include "serial.h"
 #include "messaging.h"
 
-#define BUFFER_SIZE 512
+#define BUFFER_SIZE 1025
 
 static char lineBuffer[BUFFER_SIZE];
 
@@ -27,7 +27,7 @@ void onUSBCommTask(void *pvParameters) {
 	Serial *serial = get_serial_usb();
 
 	while (1) {
-		process_msg_interactive(serial, lineBuffer, BUFFER_SIZE);
+		process_msg(serial, lineBuffer, BUFFER_SIZE);
 	}
 }
 

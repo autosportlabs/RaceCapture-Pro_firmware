@@ -13,6 +13,7 @@ unsigned int getPageSize();
 
 unsigned int getScriptPages();
 
+void unescapeScript(char *data);
 
 #define DEFAULT_SCRIPT "function onTick() end"
 	

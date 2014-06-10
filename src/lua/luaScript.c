@@ -10,7 +10,7 @@
 #ifndef RCP_TESTING
 static const char g_script[SCRIPT_LENGTH] __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".script\n\t#")));
 #else
-static const char g_script[SCRIPT_LENGTH] = DEFAULT_SCRIPT;
+static char g_script[SCRIPT_LENGTH] = DEFAULT_SCRIPT;
 #endif
 
 
@@ -27,6 +27,44 @@ const char * getScript(){
 	return g_script;
 }
 
+//unescapes a string in place
+void unescapeScript(char *data){
+	char *result = data;
+	while (*data){
+		if (*data == '\\'){
+			switch(*(data + 1)){
+				case '_':
+					*result = ' ';
+					break;
+				case 'n':
+					*result = '\n';
+					break;
+				case 'r':
+					*result = '\r';
+					break;
+				case '\\':
+					*result = '\\';
+					break;
+				case '"':
+					*result = '\"';
+					break;
+				case '\0': //this should *NOT* happen
+					*result = '\0';
+					return;
+					break;
+				default: // unknown escape char?
+					*result = ' ';
+					break;
+			}
+			result++;
+			data+=2;
+		}
+		else{
+			*result++ = *data++;
+		}
+	}
+	*result='\0';
+}
 
 int flashScriptPage(unsigned int page, const char *data){
 	
@@ -37,7 +75,7 @@ int flashScriptPage(unsigned int page, const char *data){
 	char * temp = (char *)portMalloc(MEMORY_PAGE_SIZE);
 
 	if (temp){
-		int size = strlen(data);
+		size_t size = strlen(data);
 		if (size > MEMORY_PAGE_SIZE) size = MEMORY_PAGE_SIZE;
 		memset(temp,0,MEMORY_PAGE_SIZE);
 		memcpy(temp,data,size);

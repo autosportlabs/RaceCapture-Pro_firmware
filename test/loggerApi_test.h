@@ -23,10 +23,6 @@ class LoggerApiTest : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE( LoggerApiTest );
   CPPUNIT_TEST( testUnescapeTextField );
-  CPPUNIT_TEST( testGetCellCfg );
-  CPPUNIT_TEST( testSetCellCfg );
-  CPPUNIT_TEST( testGetBtCfg );
-  CPPUNIT_TEST( testSetBtCfg );
   CPPUNIT_TEST( testSetConnectivityCfg );
   CPPUNIT_TEST( testGetConnectivityCfg );
   CPPUNIT_TEST( testGetAnalogCfg );
@@ -44,14 +40,22 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST( testGetGpsCfg );
   CPPUNIT_TEST( testSetLapCfg );
   CPPUNIT_TEST( testGetLapCfg );
-  CPPUNIT_TEST( testSetTrackCfg );
-  CPPUNIT_TEST( testGetTrackCfg );
+  CPPUNIT_TEST( testSetTrackCfgCircuit );
+  CPPUNIT_TEST( testGetTrackCfgCircuit );
+  CPPUNIT_TEST( testGetChannels );
+  CPPUNIT_TEST( testAddChannel );
   CPPUNIT_TEST( testSampleData );
   CPPUNIT_TEST( testGetMeta );
   CPPUNIT_TEST( testLogStartStop );
   CPPUNIT_TEST( testCalibrateImu);
   CPPUNIT_TEST( testFlashConfig);
   CPPUNIT_TEST( testSetLogLevel);
+  CPPUNIT_TEST( testSetObd2Cfg);
+  CPPUNIT_TEST( testGetObd2Cfg);
+  CPPUNIT_TEST( testGetScript);
+  CPPUNIT_TEST( testSetScript);
+  CPPUNIT_TEST( testRunScript);
+  CPPUNIT_TEST( testGetVersion);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -69,12 +73,8 @@ public:
   void testSampleData();
   void testGetMeta();
   void testLogStartStop();
-  void testGetCellCfg();
-  void testSetCellCfg();
   void testSetConnectivityCfg();
   void testGetConnectivityCfg();
-  void testGetBtCfg();
-  void testSetBtCfg();
   void testGetAnalogCfg();
   void testGetMultipleAnalogCfg();
   void testSetAnalogCfg();
@@ -88,23 +88,34 @@ public:
   void testSetTimerCfg();
   void testGetGpsCfg();
   void testSetGpsCfg();
-  void testSetTrackCfg();
   void testSetLapCfg();
   void testGetLapCfg();
-  void testGetTrackCfg();
+  void testSetTrackCfgCircuit();
+  void testGetTrackCfgCircuit();
+  void testGetChannels();
+  void testAddChannel();
   void testCalibrateImu();
   void testFlashConfig();
   void testSetLogLevel();
+  void testGetCanCfg();
+  void testSetCanCfg();
+  void testSetObd2Cfg();
+  void testGetObd2Cfg();
+  void testSetScript();
+  void testGetScript();
+  void testRunScript();
+  void testGetVersion();
 
 private:
+  void testSetScriptFile(string filename);
+  void testGetScriptFile(string filename);
+  void testRunScriptFile(string filename);
   void testLogStartStopFile(string filename);
   void testSampleDataFile(string requestFilename, string responseFilename);
   void testGetAnalogConfigFile(string filename, int index);
   void testSetAnalogConfigFile(string filename);
   void testSetImuConfigFile(string filename);
   void testGetImuConfigFile(string filename, int index);
-  void testSetCellConfigFile(string filename);
-  void testSetBtConfigFile(string filename);
   void testSetConnectivityCfgFile(string filename);
   void testGetPwmConfigFile(string filename, int index);
   void testSetPwmConfigFile(string filename);
@@ -114,13 +125,17 @@ private:
   void testSetTimerConfigFile(string filename);
   void testGetGpsConfigFile(string filename);
   void testSetGpsConfigFile(string filename, unsigned char channelsEnabled, unsigned short sampleRate);
-  void testGetTrackConfigFile(string filename);
-  void testSetTrackConfigFile(string filename);
+  void testAddChannelFile(string filename);
+  void testGetChannelsFile(string filename);
   void testSetLapConfigFile(string filename);
   void testGetLapConfigFile(string filename);
   void testCalibrateImuFile(string filename);
   void testFlashConfigFile(string filename);
   void testSetLogLevelFile(string filename, int expectedResponse);
+  void testGetCanCfgFile(string filename);
+  void testSetCanCfgFile(string filename);
+  void testGetObd2ConfigFile(string filename);
+  void testSetObd2ConfigFile(string filename);
 
 };
 

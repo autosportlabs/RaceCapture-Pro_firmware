@@ -28,8 +28,6 @@
 {"setGpsCfg", api_setGpsConfig}, \
 {"getImuCfg", api_getImuConfig}, \
 {"setImuCfg", api_setImuConfig}, \
-{"getBtCfg", api_getBluetoothConfig}, \
-{"setBtCfg", api_setBluetoothConfig}, \
 {"setConnCfg", api_setConnectivityConfig}, \
 {"getConnCfg", api_getConnectivityConfig}, \
 {"getPwmCfg", api_getPwmConfig}, \
@@ -38,8 +36,6 @@
 {"setGpioCfg", api_setGpioConfig}, \
 {"getTimerCfg", api_getTimerConfig}, \
 {"setTimerCfg", api_setTimerConfig}, \
-{"getCellCfg", api_getCellConfig}, \
-{"setCellCfg", api_setCellConfig}, \
 {"setLapCfg", api_setLapConfig}, \
 {"getLapCfg", api_getLapConfig}, \
 {"getTrackCfg", api_getTrackConfig}, \
@@ -47,18 +43,25 @@
 {"calImu", api_calibrateImu}, \
 {"getLogfile", api_getLogfile}, \
 {"setLogfileLevel", api_setLogfileLevel}, \
-{"getTracks", api_getTracks}, \
-{"getChannels", api_getChannels}
+{"getCanCfg", api_getCanConfig}, \
+{"setCanCfg", api_setCanConfig}, \
+{"getObd2Cfg", api_getObd2Config}, \
+{"setObd2Cfg", api_setObd2Config}, \
+{"getScriptCfg", api_getScript}, \
+{"setScriptCfg", api_setScript}, \
+{"runScript", api_runScript}, \
+{"getTrackDb", api_getTrackDb}, \
+{"setTrackDb", api_setTrackDb}, \
+{"addChannel", api_addChannel}, \
+{"getChannels", api_getChannels}, \
+{"getVer", api_getVersion}
 
 
 //commands
+int api_getVersion(Serial *serial, const jsmntok_t *json);
 int api_sampleData(Serial *serial, const jsmntok_t *json);
 int api_log(Serial *serial, const jsmntok_t *json);
 int api_getMeta(Serial *serial, const jsmntok_t *json);
-int api_getCellConfig(Serial *serial, const jsmntok_t *json);
-int api_setCellConfig(Serial *serial, const jsmntok_t *json);
-int api_getBluetoothConfig(Serial *serial, const jsmntok_t *json);
-int api_setBluetoothConfig(Serial *serial, const jsmntok_t *json);
 int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json);
 int api_setConnectivityConfig(Serial *serial, const jsmntok_t *json);
 int api_getAnalogConfig(Serial *serial, const jsmntok_t *json);
@@ -81,9 +84,17 @@ int api_calibrateImu(Serial *serial, const jsmntok_t *json);
 int api_flashConfig(Serial *serial, const jsmntok_t *json);
 int api_setLogfileLevel(Serial *serial, const jsmntok_t *json);
 int api_getLogfile(Serial *serial, const jsmntok_t *json);
-int api_getTracks(Serial *serial, const jsmntok_t *json);
+int api_getTrackDb(Serial *serial, const jsmntok_t *json);
+int api_setTrackDb(Serial *serial, const jsmntok_t *json);
 int api_getChannels(Serial *serial, const jsmntok_t *json);
-
+int api_addChannel(Serial *serial, const jsmntok_t *json);
+int api_getObd2Config(Serial *serial, const jsmntok_t *json);
+int api_setObd2Config(Serial *serial, const jsmntok_t *json);
+int api_getCanConfig(Serial *serial, const jsmntok_t *json);
+int api_setCanConfig(Serial *serial, const jsmntok_t *json);
+int api_getScript(Serial *serial, const jsmntok_t *json);
+int api_setScript(Serial *serial, const jsmntok_t *json);
+int api_runScript(Serial *serial, const jsmntok_t *json);
 
 //messages
 void api_sendLogStart(Serial *serial);

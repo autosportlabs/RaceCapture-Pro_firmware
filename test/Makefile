@@ -95,6 +95,7 @@ SRC = 	mock_uart.c \
 		$(RCP_SRC)/lua/luaScript.c \
 		$(RCP_SRC)/util/modp_numtoa.c \
 		$(RCP_SRC)/util/modp_atonum.c \
+		$(RCP_SRC)/util/mod_string.c \
 		$(RCP_SRC)/jsmn/jsmn.c \
 		$(RCP_SRC)/api/api.c \
 		$(RCP_SRC)/OBD2/OBD2.c \
@@ -118,6 +119,7 @@ SRC = 	mock_uart.c \
 		$(MOCK_DIR)/ADC_device_mock.c \
 		$(MOCK_DIR)/PWM_device_mock.c \
 		$(MOCK_DIR)/LED_device_mock.c \
+		$(MOCK_DIR)/luaTask_mock.c \
 		$(MOCK_DIR)/GPIO_device_mock.c \
 		$(MOCK_DIR)/memory_device_mock.c \
 		$(MOCK_DIR)/loggerNotifications_mock.c \
@@ -132,6 +134,7 @@ SRC = 	mock_uart.c \
 		$(RCP_SRC)/virtual_channel/virtual_channel.c \
 		$(RCP_SRC)/tracks/tracks.c \
 		$(RCP_SRC)/gps/gps.c \
+		$(RCP_SRC)/gps/dateTime.c \
 		$(RCP_SRC)/gps/geopoint.c \
 		$(RCP_SRC)/gps/geometry.c \
 		$(RCP_SRC)/logger/sampleRecord.c \

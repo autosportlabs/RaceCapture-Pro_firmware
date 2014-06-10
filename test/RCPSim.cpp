@@ -8,8 +8,9 @@
 #include "predictive_timer_2.h"
 #include "loggerConfig.h"
 #include "mod_string.h"
+#include "printk.h"
 
-#define LINE_BUFFER_SIZE 2048
+#define LINE_BUFFER_SIZE 2049
 int main(int argc, char* argv[])
 {
 
@@ -36,13 +37,13 @@ int main(int argc, char* argv[])
 
 	char line[LINE_BUFFER_SIZE];
 	memset(line, 0, LINE_BUFFER_SIZE);
+	int messageCount = 0;
 	while(1){
 		size_t count = 0;
 		line[0] = '\0';
 		while (count < LINE_BUFFER_SIZE){
 			char c;
 			read(pt, &c, 1);
-			write(pt, &c, 1);
 			line[count] = c;
 			count++;
 			if (c == '\r'){
@@ -57,6 +58,8 @@ int main(int argc, char* argv[])
 		char *txBuffer = mock_getTxBuffer();
 		printf("tx: (%d) %s\r\n", strlen(txBuffer), txBuffer);
 		write(pt, txBuffer, strlen(txBuffer));
+		pr_info_int(++messageCount);
+		pr_info(" messages\r\n");
 	}
 	return 0;
 }

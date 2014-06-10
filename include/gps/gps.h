@@ -71,6 +71,18 @@ void setGPSSpeed(float speed);
 /**
  * Returns Date time information as provided by the GPS system.
  */
-DateTime getDateTime();
+DateTime getLastFixDateTime();
+
+/**
+ * @return Milliseconds since Unix Epoch.
+ */
+long getMillisSinceEpoch();
+
+/**
+ * This exists for backwards compatibility and will be deprecated in the future.  Use
+ * #getLastFixDateTime() or #getMillisSinceEpoch() instead if possible.
+ * @return the seconds since the first GPS fix.
+ */
+float getSecondsSinceFirstFix();
 
 #endif /*GPS_H_*/

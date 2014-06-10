@@ -16,11 +16,11 @@ static const Tracks g_defaultTracks = DEFAULT_TRACKS;
 static Tracks *g_tracksBuffer = NULL;
 
 int flash_default_tracks(void){
+	pr_info("flashing default tracks...");
 	return flash_tracks(&g_defaultTracks, sizeof (g_defaultTracks));
 }
 
 int flash_tracks(const Tracks *source, size_t rawSize){
-	pr_info("flashing default tracks...");
 	int result = memory_flash_region(&g_tracks, source, rawSize);
 	if (result == 0) pr_info("success\r\n"); else pr_info("failed\r\n");
 	return result;

@@ -23,7 +23,6 @@ int8_t month;
 int8_t partialYear;
 } DateTime;
 
-bool isLeapYear(const unsigned int year);
-unsigned int getDaysInMonth(const unsigned int, bool);
-
+unsigned long getMillisecondsSinceUnixEpoch(DateTime dt);
+long getTimeDeltaInMillis(DateTime a, DateTime b);
 #endif //__DATE_TIME_H__

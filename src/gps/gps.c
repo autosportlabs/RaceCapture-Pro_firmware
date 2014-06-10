@@ -12,6 +12,7 @@
 #include "predictive_timer_2.h"
 #include "printk.h"
 #include <math.h>
+#include <stdint.h>
 
 //kilometers
 #define DISTANCE_SCALING 6371
@@ -71,7 +72,53 @@ static float g_distance;
 /**
  * Date and time this GPS fix was taken.
  */
-static DateTime g_dateTime;
+static DateTime g_dtFirstFix;
+static DateTime g_dtLastFix;
+static unsigned long g_millisSinceUnixEpoch;
+
+/**
+ * @return true if we haven't parsed any data yet, false otherwise.
+ */
+static bool isGpsDataCold() {
+   return g_millisSinceUnixEpoch == 0;
+}
+
+void updateMillisSinceEpoch(DateTime fixDateTime) {
+   g_millisSinceUnixEpoch = getMillisecondsSinceUnixEpoch(fixDateTime);
+}
+
+long getMillisSinceEpoch() {
+   return g_millisSinceUnixEpoch;
+}
+
+/**
+ * Performs a full update of the g_dtLastFix value.  Also update the g_dtFirstFix value if it hasn't
+ * already been set.
+ * @param fixDateTime The DateTime of the GPS fix.
+ */
+void updateFullDateTime(DateTime fixDateTime) {
+   g_dtLastFix = fixDateTime;
+   if (g_dtFirstFix.partialYear == 0)
+      g_dtFirstFix = fixDateTime;
+}
+
+/**
+ * Like atoi, but is non-destructive to the string passed in and provides an offset and length
+ * functionality.  Max Len is 3.
+ * @param str The start of the String to parse.
+ * @param offset How far in to start reading the string.
+ * @param len The number of characters to read.
+ */
+int atoiOffsetLenSafe(const char *str, size_t offset, size_t len) {
+   char buff[4] = { 0 };
+
+   // Bounds check.  Don't want any bleeding hearts in here...
+   if (len > (sizeof(buff) - 1))
+         len = sizeof(buff) - 1;
+
+   memcpy(buff, str + offset, len);
+   return modp_atoi(buff);
+}
 
 //Parse Global Positioning System Fix Data.
 static void parseGGA(char *data) {
@@ -225,24 +272,6 @@ static void parseGLL(char *data) {
 
 }
 
-/**
- * Like atoi, but is non-destructive to the string passed in and provides an offset and length
- * functionality.  Max Len is 3.
- * @param str The start of the String to parse.
- * @param offset How far in to start reading the string.
- * @param len The number of characters to read.
- */
-static int atoiOffsetLenSafe(const char *str, int offset, int len) {
-   char buff[4] = { 0 };
-
-   // Bounds check.  Don't want any bleeding hearts in here...
-   if (len > (sizeof(buff) - 1))
-         len = sizeof(buff) - 1;
-
-   memcpy(buff, str + offset, len);
-   return modp_atoi(buff);
-}
-
 //Parse Time & Date
 static void parseZDA(char *data) {
    /*
@@ -301,7 +330,7 @@ static void parseRMC(char *data) {
          dt.hour = (int8_t) atoiOffsetLenSafe(data, 0, 2);
          dt.minute = (int8_t) atoiOffsetLenSafe(data, 2, 2);
          dt.second = (int8_t) atoiOffsetLenSafe(data, 4, 2);
-         dt.millisecond = (int8_t) atoiOffsetLenSafe(data, 7, 3);
+         dt.millisecond = (int16_t) atoiOffsetLenSafe(data, 7, 3);
          break;
       case 8: //Date (DDMMYY)
          dt.day = (int8_t) atoiOffsetLenSafe(data, 0, 2);
@@ -315,7 +344,8 @@ static void parseRMC(char *data) {
       delim = strchr(delim, ',');
    }
 
-   g_dateTime = dt;
+   updateFullDateTime(dt);
+   updateMillisSinceEpoch(dt);
 }
 
 void resetGpsDistance() {
@@ -409,8 +439,8 @@ void setGPSSpeed(float speed) {
    g_speed = speed;
 }
 
-DateTime getDateTime() {
-   return g_dateTime;
+DateTime getLastFixDateTime() {
+   return g_dtLastFix;
 }
 
 static int withinGpsTarget(const GeoPoint *point, float radius) {
@@ -432,7 +462,7 @@ static int withinGpsTarget(const GeoPoint *point, float radius) {
 static int isStartFinishEnabled(const Track *track) {
    int isEnabled = 0;
    if (track != NULL) {
-      const GeoPoint *p = &track->startFinish;
+      const GeoPoint *p = &track->startLine;
       isEnabled = p->latitude != 0 && p->longitude != 0;
    }
    return isEnabled;
@@ -458,9 +488,9 @@ static float calcDistancesSinceLastSample() {
    return d;
 }
 
-static int processStartFinish(const Track *track) {
+static int processStartFinish(const Track *track, float targetRadius) {
    int lapDetected = 0;
-   g_atStartFinish = withinGpsTarget(&track->startFinish, track->radius);
+   g_atStartFinish = withinGpsTarget(&track->startLine, targetRadius);
    if (g_atStartFinish) {
       if (g_prevAtStartFinish == 0) {
          if (g_lastStartFinishTimestamp == 0) {
@@ -490,11 +520,11 @@ static int processStartFinish(const Track *track) {
    return lapDetected;
 }
 
-static void processSector(const Track *track) {
-   const GeoPoint *upcomingSectorPoint = (track->sectors + g_sector);
+static void processSector(const Track *track, float targetRadius) {
+   const GeoPoint *upcomingSectorPoint = (track->allSectors + g_sector);
    if (upcomingSectorPoint->latitude != 0
          && upcomingSectorPoint->longitude != 0) { //valid sector target?
-      g_atTarget = withinGpsTarget(upcomingSectorPoint, track->radius);
+      g_atTarget = withinGpsTarget(upcomingSectorPoint, targetRadius);
       if (g_atTarget) {
          if (g_prevAtTarget == 0) { //latching effect, to avoid double triggering
             //first sector references from start finish; subsequent sectors reference from last sector timestamp
@@ -516,7 +546,7 @@ static void processSector(const Track *track) {
                   g_lastSector++;
                }
                g_sector++;
-               const GeoPoint *nextSector = (track->sectors + g_sector);
+               const GeoPoint *nextSector = (track->allSectors + g_sector);
                if (g_sector >= SECTOR_COUNT || nextSector->latitude == 0
                      || nextSector->longitude == 0) {
                   g_sector = 0; //loop to the start finish line as the last sector
@@ -561,6 +591,7 @@ void initGPS() {
    g_sector = 1;
    g_lastSector = 0;
    resetPredictiveTimer();
+   g_dtFirstFix = g_dtLastFix = (DateTime) { 0 };
 }
 
 static void flashGpsStatusLed() {
@@ -576,6 +607,11 @@ static void flashGpsStatusLed() {
    }
 }
 
+float getSecondsSinceFirstFix() {
+   long diffInMillis = getTimeDeltaInMillis(g_dtLastFix, g_dtFirstFix);
+   return ((float) diffInMillis) / 1000;
+}
+
 void onLocationUpdated() {
    static int sectorEnabled = 0;
    static int startFinishEnabled = 0;
@@ -587,8 +623,9 @@ void onLocationUpdated() {
       populateGeoPoint(&gp);
 
       if (!g_configured) {
-         Track *defaultTrack = &(config->TrackConfigs.track);
-         g_activeTrack = auto_configure_track(defaultTrack, gp);
+    	 TrackConfig *trackConfig = &(config->TrackConfigs);
+    	 Track *defaultTrack = &trackConfig->track;
+         g_activeTrack = trackConfig->auto_detect ? auto_configure_track(defaultTrack, gp) : defaultTrack;
          startFinishEnabled = isStartFinishEnabled(g_activeTrack);
          sectorEnabled = config->LapConfigs.sectorTimeCfg.sampleRate !=
          SAMPLE_DISABLED && startFinishEnabled;
@@ -598,20 +635,21 @@ void onLocationUpdated() {
       float dist = calcDistancesSinceLastSample();
       g_distance += dist;
 
+	  float targetRadius = config->TrackConfigs.radius;
       if (sectorEnabled) {
-         processSector(g_activeTrack);
+         processSector(g_activeTrack, targetRadius);
       }
 
       if (startFinishEnabled) {
-         // HACK!  Need seconds since epoch.  This solution sucks.
-         float utcTime = getSecondsSinceMidnight();
-         int lapDetected = processStartFinish(g_activeTrack);
 
+         // Seconds since first fix is good until we alter the code to use millis directly
+         float secondsSinceFirstFix = getSecondsSinceFirstFix();
+         int lapDetected = processStartFinish(g_activeTrack, targetRadius);
          if (lapDetected) {
             resetGpsDistance();
-            startFinishCrossed(gp, utcTime);
+            startFinishCrossed(gp, secondsSinceFirstFix);
          } else {
-            addGpsSample(gp, utcTime);
+            addGpsSample(gp, secondsSinceFirstFix);
          }
       }
    }
@@ -639,28 +677,36 @@ int checksumValid(const char *gpsData, size_t len) {
 }
 
 void processGPSData(char *gpsData, size_t len) {
-   if (len > 4 && checksumValid(gpsData, len)) {
-      if (strstr(gpsData, "$GP") == gpsData) {
-         char * data = gpsData + 3;
-         if (strstr(data, "GGA,")) {
-            parseGGA(data + 4);
-            flashGpsStatusLed();
-            onLocationUpdated();
-         } else if (strstr(data, "VTG,")) { //Course Over Ground and Ground Speed
-            parseVTG(data + 4);
-         } else if (strstr(data, "GSA,")) { //GPS Fix data
-            parseGSA(data + 4);
-         } else if (strstr(data, "GSV,")) { //Satellites in view
-            parseGSV(data + 4);
-         } else if (strstr(data, "RMC,")) { //Recommended Minimum Specific GNSS Data
-            parseRMC(data + 4);
-         } else if (strstr(data, "GLL,")) { //Geographic Position - Latitude/Longitude
-            parseGLL(data + 4);
-         } else if (strstr(data, "ZDA,")) { //Time & Date
-            parseZDA(data + 4);
-         }
-      }
-   } else {
+   if (len <= 4 || !checksumValid(gpsData, len) || strstr(gpsData, "$GP") != gpsData) {
       pr_warning("GPS: corrupt frame\r\n");
+      return;
+   }
+
+   // Advance the pointer 3 spaces since we know it begins with "$GP"
+   gpsData += 3;
+   if (strstr(gpsData, "GGA,")) {
+      /*
+       * GGA is always the first sentence in a new NMEA paragraph from the GPS Mouse.  So if we see
+       * it, call onLocationUpdated if we have parsed GPS data before.  This methodology ensures
+       * that we parse all sentences before processing the GPS data.
+       */
+      if (!isGpsDataCold()) {
+         onLocationUpdated();
+         flashGpsStatusLed();
+      }
+
+      parseGGA(gpsData + 4);
+   } else if (strstr(gpsData, "VTG,")) { //Course Over Ground and Ground Speed
+      parseVTG(gpsData + 4);
+   } else if (strstr(gpsData, "GSA,")) { //GPS Fix gpsData
+      parseGSA(gpsData + 4);
+   } else if (strstr(gpsData, "GSV,")) { //Satellites in view
+      parseGSV(gpsData + 4);
+   } else if (strstr(gpsData, "RMC,")) { //Recommended Minimum Specific GNSS Data
+      parseRMC(gpsData + 4);
+   } else if (strstr(gpsData, "GLL,")) { //Geographic Position - Latitude/Longitude
+      parseGLL(gpsData + 4);
+   } else if (strstr(gpsData, "ZDA,")) { //Time & Date
+      parseZDA(gpsData + 4);
    }
 }

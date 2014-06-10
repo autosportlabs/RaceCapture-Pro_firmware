@@ -1,9 +1,6 @@
 #ifndef LUATASK_H_
 #define LUATASK_H_
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
-
+#include <stddef.h>
 
 void lockLua(void);
 void unlockLua(void);
@@ -13,7 +10,7 @@ void luaTask(void *params);
 
 void *myAlloc (void *ud, void *ptr, size_t osize,size_t nsize);
 
-lua_State * getLua(void);
+void * getLua(void);
 
 unsigned int getLastPointer();
 

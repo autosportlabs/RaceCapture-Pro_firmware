@@ -14,6 +14,9 @@
 #include "memory.h"
 #include "FreeRTOS.h"
 #include "printk.h"
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
 
 #define LINE_BUFFER_SIZE  256
 
@@ -62,44 +65,6 @@ void ExecLuaInterpreter(Serial *serial, unsigned int argc, char **argv){
 	g_interactive_mode = 0;
 }
 
-//unescapes a string in place
-void unescape(char *data){
-	char *result = data;
-	while (*data){
-		if (*data == '\\'){
-			switch(*(data + 1)){
-				case '_':
-					*result = ' ';
-					break;
-				case 'n':
-					*result = '\n';
-					break;
-				case 'r':
-					*result = '\r';
-					break;
-				case '\\':
-					*result = '\\';
-					break;
-				case '"':
-					*result = '\"';
-					break;
-				case '\0': //this should *NOT* happen
-					*result = '\0';
-					return;
-					break;
-				default: // unknown escape char?
-					*result = ' ';
-					break;
-			}
-			result++;
-			data+=2;
-		}
-		else{
-			*result++ = *data++;
-		}
-	}
-	*result='\0';
-}
 
 void ReloadScript(Serial *serial, unsigned int argc, char **argv){
 	setShouldReloadScript(1);
@@ -118,7 +83,7 @@ void WriteScriptPage(Serial *serial, unsigned int argc, char **argv){
 	if (argc >= 3) scriptPage = argv[2];
 
 	if (page >=0 && page < SCRIPT_PAGES){
-		if (argc >= 2) unescape(scriptPage);
+		if (argc >= 2) unescapeScript(scriptPage);
 		lockLua();
 		vPortEnterCritical();
 		int result = flashScriptPage(page, scriptPage);

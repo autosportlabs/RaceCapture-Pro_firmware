@@ -1,5 +1,5 @@
 #include "sector_test.h"
-#include "gps.h"
+#include "gps.testing.h"
 #include "loggerConfig.h"
 #include <stdlib.h>
 #include <fstream>
@@ -66,7 +66,7 @@ string SectorTest::readFile(string filename){
 }
 
 #define Test_Track { \
-	0.0001, \
+	0, \
 	{ \
 		{ \
 			{47.806934,-122.341150}, \
@@ -74,11 +74,21 @@ string SectorTest::readFile(string filename){
 			{47.79974,-122.335704}, \
 			{47.799719,-122.346416}, \
 			{47.806886,-122.346494}, \
-			{0, 0}, \
-			{0, 0}, \
-			{0, 0}, \
-			{0, 0}, \
-			{0, 0} \
+			{0.0, 0.0}, \
+			{0.0, 0.0}, \
+			{0.0, 0.0}, \
+			{0.0, 0.0}, \
+			{0.0, 0.0}, \
+			{0.0, 0.0}, \
+			{0.0, 0.0}, \
+			{0.0, 0.0}, \
+			{0.0, 0.0}, \
+			{0.0, 0.0}, \
+			{0.0, 0.0}, \
+			{0.0, 0.0}, \
+			{0.0, 0.0}, \
+			{0.0, 0.0}, \
+			{0.0, 0.0} \
 		}\
 	} \
 	}
@@ -131,12 +141,25 @@ void SectorTest::testSectorTimes(){
 			float lat = modp_atof(latitudeRaw.c_str());
 			float lon = modp_atof(longitudeRaw.c_str());
 			float speed = modp_atof(speedRaw.c_str());
-			float utcTime = modp_atof(timeRaw.c_str());
+
+         const char *utcTimeStr = timeRaw.c_str();
+         float utcTime = modp_atof(utcTimeStr);
+
+         DateTime dt;
+         dt.partialYear = 14;
+         dt.month = 5;
+         dt.day = 3;
+         dt.hour = (int8_t) atoiOffsetLenSafe(utcTimeStr, 0, 2);
+         dt.minute = (int8_t) atoiOffsetLenSafe(utcTimeStr, 2, 2);
+         dt.second = (int8_t) atoiOffsetLenSafe(utcTimeStr, 4, 2);
+         dt.millisecond = (int16_t) atoiOffsetLenSafe(utcTimeStr, 7, 3);
+         updateFullDateTime(dt);
+         updateMillisSinceEpoch(dt);
 
 			setGPSSpeed(speed);
 			setUTCTime(utcTime);
 			updatePosition(lat, lon);
-			double secondsSinceMidnight = calculateSecondsSinceMidnight(timeRaw.c_str());
+			double secondsSinceMidnight = calculateSecondsSinceMidnight(utcTimeStr);
 			updateSecondsSinceMidnight(secondsSinceMidnight);
 			onLocationUpdated();
 

@@ -11,7 +11,7 @@
 
 const Track * auto_configure_track(Track *defaultCfg, GeoPoint gp) {
 	pr_info("Configuring start/finish...");
-   if (defaultCfg->startFinish.latitude && defaultCfg->startFinish.longitude) {
+   if (defaultCfg->startLine.latitude && defaultCfg->startLine.longitude) {
 	  pr_info("using fixed config\r\n");
       // Then this has been configured and we don't touch it.
       return defaultCfg;
@@ -27,11 +27,11 @@ const Track * auto_configure_track(Track *defaultCfg, GeoPoint gp) {
    float best_track_dist = MAX_DIST_FROM_SF;
    const Track *foundTrack = NULL;
 
-   for (int i = 0; i < tracks->count; ++i) {
+   for (unsigned i = 0; i < tracks->count; ++i) {
       const Track *track = &(tracks->tracks[i]);
 
       // XXX: inaccurate but fast.  Good enough for now.
-      float track_distance = distPythag(&track->startFinish, &gp);
+      float track_distance = distPythag(&track->startLine, &gp);
 
       if (track_distance >= best_track_dist)
          continue;

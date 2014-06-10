@@ -8,7 +8,6 @@
             "logMode": 1,
             "stDutyCyc": 50,
             "stPeriod" : 110,
-            "vScal": 2.5
         }
     }
 }

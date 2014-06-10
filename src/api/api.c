@@ -21,6 +21,14 @@ void json_valueStart(Serial *serial, const char *name){
 	serial->put_c(':');
 }
 
+void json_null(Serial *serial, const char *name, int more){
+	serial->put_c('"');
+	serial->put_s(name);
+	serial->put_c('"');
+	serial->put_s(":null");
+	if (more) serial->put_c(',');
+}
+
 void json_int(Serial *serial, const char *name, int value, int more){
 	serial->put_c('"');
 	serial->put_s(name);
@@ -39,14 +47,30 @@ void json_uint(Serial *serial, const char *name, unsigned int value, int more){
 	if (more) serial->put_c(',');
 }
 
-void json_string(Serial *serial, const char *name, const char *value, int more){
+void json_escapedString(Serial *serial, const char *name, const char *value, int more){
 	serial->put_c('"');
 	serial->put_s(name);
 	serial->put_c('"');
 	serial->put_c(':');
 	serial->put_c('"');
-	serial->put_s(value);
+	put_escapedString(serial, value, strlen(value));
 	serial->put_c('"');
+	if (more) serial->put_c(',');
+}
+
+void json_string(Serial *serial, const char *name, const char *value, int more){
+	serial->put_c('"');
+	serial->put_s(name);
+	serial->put_c('"');
+	serial->put_c(':');
+	if (value){
+		serial->put_c('"');
+		serial->put_s(value);
+		serial->put_c('"');
+	}
+	else{
+		serial->put_s("null");
+	}
 	if (more) serial->put_c(',');
 }
 
@@ -59,7 +83,7 @@ void json_float(Serial *serial, const char *name, float value, int precision, in
 	if (more) serial->put_c(',');
 }
 
-void json_objStart(Serial *serial, const char * label){
+void json_objStartString(Serial *serial, const char * label){
 	serial->put_c('"');
 	serial->put_s(label);
 	serial->put_s("\":{");
@@ -71,12 +95,8 @@ void json_objStartInt(Serial *serial, int label){
 	serial->put_s("\":{");
 }
 
-void json_messageStart(Serial *serial){
+void json_objStart(Serial *serial){
 	serial->put_c('{');
-}
-
-void json_messageEnd(Serial *serial){
-	json_objEnd(serial, 0);
 }
 
 void json_objEnd(Serial *serial, int more){
@@ -93,6 +113,13 @@ void json_arrayStart(Serial *serial, const char * name){
 	serial->put_s("[");
 }
 
+void json_arrayElementString(Serial *serial, const char *value, int more){
+	serial->put_c('"');
+	serial->put_s(value);
+	serial->put_c('"');
+	if (more) serial->put_c(',');
+}
+
 void json_arrayElementFloat(Serial *serial, float value, int precision, int more){
 	put_float(serial, value, precision);
 	if (more) serial->put_c(',');
@@ -104,8 +131,8 @@ void json_arrayEnd(Serial *serial, int more){
 }
 
 void json_sendResult(Serial *serial, const char *messageName, int resultCode){
-	json_messageStart(serial);
-	json_objStart(serial,messageName);
+	json_objStart(serial);
+	json_objStartString(serial,messageName);
 	json_int(serial, "rc", resultCode, 0);
 	json_objEnd(serial,0);
 	json_objEnd(serial,0);
@@ -127,7 +154,7 @@ static int dispatch_api(Serial *serial, const char * apiMsgName, const jsmntok_t
 		res = API_ERROR_UNKNOWN_MSG;
 		json_sendResult(serial,apiMsgName, res);
 	}
-	serial->put_s("\r\n");
+	put_crlf(serial);
 	return res;
 }
 

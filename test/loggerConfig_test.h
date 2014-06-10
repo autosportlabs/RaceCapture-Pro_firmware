@@ -13,14 +13,12 @@
 class LoggerConfigTest : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE( LoggerConfigTest );
-  CPPUNIT_TEST( testSetTextField );
   CPPUNIT_TEST_SUITE_END();
 
 public:
   void setUp();
   void tearDown();
 
-  void testSetTextField();
 };
 
 #endif /* LOGGERDATA_TEST_H_ */

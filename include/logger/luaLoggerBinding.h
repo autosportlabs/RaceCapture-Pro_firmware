@@ -45,6 +45,8 @@ int Lua_ReadImuRaw(lua_State *L);
 
 int Lua_SetPWMDutyCycle(lua_State *L);
 int Lua_SetPWMPeriod(lua_State *L);
+int Lua_SetPWMClockFrequency(lua_State *L);
+int Lua_GetPWMClockFrequency(lua_State *L);
 
 int Lua_SetAnalogOut(lua_State *L);
 
@@ -62,39 +64,9 @@ int Lua_ReadOBD2(lua_State *L);
 
 
 //logger config data
-
-int Lua_SetImuSampleRate(lua_State *L);
-int Lua_GetImuSampleRate(lua_State *L);
-
 int Lua_CalibrateImuZero(lua_State *L);
 
-int Lua_SetTimerSampleRate(lua_State *L);
-int Lua_GetTimerSampleRate(lua_State *L);
-
-int Lua_SetGPIOSampleRate(lua_State *L);
-int Lua_GetGPIOSampleRate(lua_State *L);
-
-int Lua_SetGPSStartFinish(lua_State *L);
-int Lua_GetGPSStartFinish(lua_State *L);
 int Lua_GetAtStartFinish(lua_State *L);
-
-int Lua_SetGPSSampleRate(lua_State *L);
-int Lua_GetGPSSampleRate(lua_State *L);
-
-int Lua_SetLapCountSampleRate(lua_State *L);
-int Lua_GetLapCountSampleRate(lua_State *L);
-
-int Lua_SetLapTimeSampleRate(lua_State *L);
-int Lua_GetLapTimeSampleRate(lua_State *L);
-
-int Lua_SetPWMClockFrequency(lua_State *L);
-int Lua_GetPWMClockFrequency(lua_State *L);
-
-int Lua_SetPWMSampleRate(lua_State *L);
-int Lua_GetPWMSampleRate(lua_State *L);
-
-int Lua_SetAnalogChannelSampleRate(lua_State *L);
-int Lua_GetAnalogChannelSampleRate(lua_State *L);
 
 int Lua_FlashLoggerConfig(lua_State *L);
 

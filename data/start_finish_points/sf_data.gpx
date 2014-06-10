@@ -1,0 +1,1886 @@
+<gpx creator="GPS Visualizer http://www.gpsvisualizer.com/" version="1.1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<wpt lat="30.246222222" lon="-81.828277778">
+<name>103rd Street Kart Track</name>
+</wpt>
+<wpt lat="50.136333333" lon="1.840666667">
+<name>Abbeville - Kart East</name>
+</wpt>
+<wpt lat="50.133583333" lon="1.831388889">
+<name>Abbeville - Kart South</name>
+</wpt>
+<wpt lat="50.134111111" lon="1.833361111">
+<name>Abbeville Circuit</name>
+</wpt>
+<wpt lat="39.662555556" lon="-105.1865">
+<name>Action Karting - Bandimere</name>
+</wpt>
+<wpt lat="45.683361111" lon="5.074111111">
+<name>Actua Lyon Karting - East</name>
+</wpt>
+<wpt lat="45.684333333" lon="5.074638889">
+<name>Actua Lyon Karting - North</name>
+</wpt>
+<wpt lat="45.683388889" lon="5.072916667">
+<name>Actua Lyon Karting - West</name>
+</wpt>
+<wpt lat="34.008555556" lon="-117.382277778">
+<name>Adams Motorsports Park</name>
+</wpt>
+<wpt lat="-34.930361111" lon="138.6205">
+<name>Adelaide GP Circuit</name>
+</wpt>
+<wpt lat="-34.69925" lon="138.568472222">
+<name>Adelaide Intl. Raceway</name>
+</wpt>
+<wpt lat="43.853277778" lon="-75.453194444">
+<name>Adirondack Intl. Speedway</name>
+</wpt>
+<wpt lat="45.044722222" lon="12.147805556">
+<name>Adria Intl. Raceway</name>
+</wpt>
+<wpt lat="61.003666667" lon="24.417972222">
+<name>Ahvenisto Race Circuit</name>
+</wpt>
+<wpt lat="53.475277778" lon="-2.939916667">
+<name>Aintree Motor Racing Circuit</name>
+</wpt>
+<wpt lat="60.976222222" lon="22.658166667">
+<name>Alastaro Circuit</name>
+</wpt>
+<wpt lat="39.005138889" lon="-1.795611111">
+<name>Albacete</name>
+</wpt>
+<wpt lat="43.916027778" lon="2.118805556">
+<name>Albi</name>
+</wpt>
+<wpt lat="41.61925" lon="0.402916667">
+<name>Alcarras - Circuit</name>
+</wpt>
+<wpt lat="41.618805556" lon="0.405111111">
+<name>Alcarras - Kart Track</name>
+</wpt>
+<wpt lat="37.088611111" lon="-2.26925">
+<name>Almeria</name>
+</wpt>
+<wpt lat="27.606027778" lon="-82.541638889">
+<name>Andersen RacePark</name>
+</wpt>
+<wpt lat="48.290527778" lon="2.007166667">
+<name>Angerville - East Track</name>
+</wpt>
+<wpt lat="48.289694444" lon="2.003527778">
+<name>Angerville - Gabriel Thirouin</name>
+</wpt>
+<wpt lat="53.188361111" lon="-4.496388889">
+<name>Anglesey Club Circuit</name>
+</wpt>
+<wpt lat="53.188361111" lon="-4.496388889">
+<name>Anglesey Coastal Circuit</name>
+</wpt>
+<wpt lat="53.188361111" lon="-4.496388889">
+<name>Anglesey GP Circuit</name>
+</wpt>
+<wpt lat="53.190166667" lon="-4.4975">
+<name>Anglesey National Circuit</name>
+</wpt>
+<wpt lat="-23.515638889" lon="-46.645055556">
+<name>Anhembi Parque</name>
+</wpt>
+<wpt lat="41.263666667" lon="1.519944444">
+<name>Applus IDIADA</name>
+</wpt>
+<wpt lat="66.422416667" lon="14.441722222">
+<name>Arctic Circle Kart Track</name>
+</wpt>
+<wpt lat="66.423694444" lon="14.446305556">
+<name>Arctic Circle Raceway</name>
+</wpt>
+<wpt lat="51.493944444" lon="0.282833333">
+<name>Arena Essex - Oval</name>
+</wpt>
+<wpt lat="33.513722222" lon="-112.390472222">
+<name>Arizona Motorsports Park</name>
+</wpt>
+<wpt lat="32.236833333" lon="-107.429666667">
+<name>Arroyo Seco Raceway</name>
+</wpt>
+<wpt lat="36.824861111" lon="-5.083333333">
+<name>Ascari Race Resort</name>
+</wpt>
+<wpt lat="39.266944444" lon="-106.87925">
+<name>Aspen Kart Track</name>
+</wpt>
+<wpt lat="39.266416667" lon="-106.880111111">
+<name>Aspen Sports Car Club</name>
+</wpt>
+<wpt lat="37.987027778" lon="23.362888889">
+<name>Athens Circuit</name>
+</wpt>
+<wpt lat="37.986583333" lon="23.363888889">
+<name>Athens Kart Circuit</name>
+</wpt>
+<wpt lat="33.385722222" lon="-84.316888889">
+<name>Atlanta Motor Speedway</name>
+</wpt>
+<wpt lat="34.433166667" lon="-84.176222222">
+<name>Atlanta Motorsports Park</name>
+</wpt>
+<wpt lat="34.436416667" lon="-84.175222222">
+<name>Atlanta Motorsports Park - Kart</name>
+</wpt>
+<wpt lat="45.145055556" lon="-63.449777778">
+<name>Atlantic Motorsport Park</name>
+</wpt>
+<wpt lat="58.402277778" lon="24.448138889">
+<name>Audru Ring</name>
+</wpt>
+<wpt lat="52.2185" lon="-106.661527778">
+<name>Auto Clearing Motor Speedway</name>
+</wpt>
+<wpt lat="34.089333333" lon="-117.500194444">
+<name>Auto Club Speedway - Infield</name>
+</wpt>
+<wpt lat="34.086083333" lon="-117.500555556">
+<name>Auto Club Speedway - Oval</name>
+</wpt>
+<wpt lat="41.452027778" lon="-88.124416667">
+<name>Autobahn Country Club - Kart</name>
+</wpt>
+<wpt lat="41.456555556" lon="-88.125888889">
+<name>Autobahn Country Club - North</name>
+</wpt>
+<wpt lat="41.455194444" lon="-88.126861111">
+<name>Autobahn Country Club - South</name>
+</wpt>
+<wpt lat="33.0375" lon="130.975416667">
+<name>Autopolis</name>
+</wpt>
+<wpt lat="33.035111111" lon="130.976555556">
+<name>Autopolis - Kart Track</name>
+</wpt>
+<wpt lat="-23.281861111" lon="-51.168805556">
+<name>Ayrton Senna - Circuit</name>
+</wpt>
+<wpt lat="-23.282277778" lon="-51.161944444">
+<name>Ayrton Senna - Kart Track</name>
+</wpt>
+<wpt lat="-8.232916667" lon="-35.987111111">
+<name>Ayrton Senna Caruaru</name>
+</wpt>
+<wpt lat="26.032222222" lon="50.512416667">
+<name>Bahrain Intl. Circuit</name>
+</wpt>
+<wpt lat="-31.664111111" lon="115.786361111">
+<name>Barbagallo Raceway</name>
+</wpt>
+<wpt lat="33.532611111" lon="-86.619694444">
+<name>Barber Motorsports Park</name>
+</wpt>
+<wpt lat="41.57" lon="2.261222222">
+<name>Barcelona</name>
+</wpt>
+<wpt lat="-42.746416667" lon="147.29475">
+<name>Baskerville Raceway</name>
+</wpt>
+<wpt lat="13.820722222" lon="121.277138889">
+<name>Batangas Kart Track</name>
+</wpt>
+<wpt lat="13.820166667" lon="121.277305556">
+<name>Batangas Racing Circuit</name>
+</wpt>
+<wpt lat="48.03575" lon="-0.743694444">
+<name>Beausoleil - Laval</name>
+</wpt>
+<wpt lat="52.234055556" lon="-0.460916667">
+<name>Bedford - East Circuit</name>
+</wpt>
+<wpt lat="52.235111111" lon="-0.474305556">
+<name>Bedford - Full GT Circuit</name>
+</wpt>
+<wpt lat="52.237194444" lon="-0.466944444">
+<name>Bedford - North Circuit</name>
+</wpt>
+<wpt lat="52.232333333" lon="-0.473416667">
+<name>Bedford - SEN Circuit</name>
+</wpt>
+<wpt lat="52.232333333" lon="-0.473416667">
+<name>Bedford - South Circuit</name>
+</wpt>
+<wpt lat="52.235111111" lon="-0.474305556">
+<name>Bedford - SW Circuit</name>
+</wpt>
+<wpt lat="52.235111111" lon="-0.474305556">
+<name>Bedford - West Circuit</name>
+</wpt>
+<wpt lat="52.234694444" lon="-0.473055556">
+<name>Bedford Kart Track</name>
+</wpt>
+<wpt lat="-20.248222222" lon="-70.087861111">
+<name>Benardo O'Higgins</name>
+</wpt>
+<wpt lat="43.702944444" lon="20.714166667">
+<name>Beranovac</name>
+</wpt>
+<wpt lat="56.965" lon="24.229138889">
+<name>Bikernieki Race Circuit</name>
+</wpt>
+<wpt lat="12.921944444" lon="101.007972222">
+<name>Bira Go Kart Track</name>
+</wpt>
+<wpt lat="12.920694444" lon="101.008555556">
+<name>Bira Intl. Circuit</name>
+</wpt>
+<wpt lat="54.303305556" lon="-5.581777778">
+<name>Bishopscourt</name>
+</wpt>
+<wpt lat="42.488444444" lon="-89.117527778">
+<name>Blackhawk Farms Raceway</name>
+</wpt>
+<wpt lat="38.575861111" lon="-121.73275">
+<name>Blue Max Kart Club</name>
+</wpt>
+<wpt lat="38.764555556" lon="-84.803083333">
+<name>Bluegrass Motorsports Park</name>
+</wpt>
+<wpt lat="41.173361111" lon="-8.687638889">
+<name>Boavista</name>
+</wpt>
+<wpt lat="14.590833333" lon="101.426722222">
+<name>Bonanza Raceway</name>
+</wpt>
+<wpt lat="40.799722222" lon="-113.8">
+<name>Bonneville Salt Flats</name>
+</wpt>
+<wpt lat="14.553666667" lon="120.985944444">
+<name>Boomland Kart Track</name>
+</wpt>
+<wpt lat="62.624472222" lon="22.015361111">
+<name>Botniaring Racing Circuit</name>
+</wpt>
+<wpt lat="46.416861111" lon="-94.274805556">
+<name>Brainerd Competition Course</name>
+</wpt>
+<wpt lat="46.420111111" lon="-94.276222222">
+<name>Brainerd Donnybrooke Course</name>
+</wpt>
+<wpt lat="46.417722222" lon="-94.278805556">
+<name>Brainerd Kart Course</name>
+</wpt>
+<wpt lat="51.360305556" lon="0.260333333">
+<name>Brands Hatch Circuit</name>
+</wpt>
+<wpt lat="47.490166667" lon="-122.753777778">
+<name>Bremerton Motorsports Park</name>
+</wpt>
+<wpt lat="49.202861111" lon="16.445444444">
+<name>Brno Circuit</name>
+</wpt>
+<wpt lat="-37.215916667" lon="145.082388889">
+<name>Broadford Track</name>
+</wpt>
+<wpt lat="28.351611111" lon="77.534472222">
+<name>Buddh Intl. Circuit</name>
+</wpt>
+<wpt lat="13.139166667" lon="-59.467361111">
+<name>Bushy Park Circuit</name>
+</wpt>
+<wpt lat="35.492194444" lon="-119.543222222">
+<name>Buttonwillow Kart Track</name>
+</wpt>
+<wpt lat="35.48875" lon="-119.5445">
+<name>Buttonwillow Raceway</name>
+</wpt>
+<wpt lat="-52.968111111" lon="-70.836555556">
+<name>Cabo Negro</name>
+</wpt>
+<wpt lat="53.310222222" lon="-0.059444444">
+<name>Cadwell Park Racing Circuit</name>
+</wpt>
+<wpt lat="45.301777778" lon="-76.671444444">
+<name>Calabogie Motorsports Park</name>
+</wpt>
+<wpt lat="40.932194444" lon="0.839444444">
+<name>Calafat</name>
+</wpt>
+<wpt lat="-37.670888889" lon="144.753777778">
+<name>Calder Park - Combined Track</name>
+</wpt>
+<wpt lat="-37.670888889" lon="144.753777778">
+<name>Calder Park - National Circuit</name>
+</wpt>
+<wpt lat="-37.673055556" lon="144.76">
+<name>Calder Park - Thunderdome Oval</name>
+</wpt>
+<wpt lat="44.051944444" lon="-78.688305556">
+<name>Canadian Tire Driver Dev Track</name>
+</wpt>
+<wpt lat="44.054388889" lon="-78.674472222">
+<name>Canadian Tire GP Circuit</name>
+</wpt>
+<wpt lat="44.051666667" lon="-78.685194444">
+<name>Canadian Tire Speedway Oval</name>
+</wpt>
+<wpt lat="14.2815" lon="121.009027778">
+<name>Carmona Racing Circuit</name>
+</wpt>
+<wpt lat="34.486694444" lon="-80.595722222">
+<name>Carolina Motorsports Park</name>
+</wpt>
+<wpt lat="37.644444444" lon="-1.035222222">
+<name>Cartagena</name>
+</wpt>
+<wpt lat="-24.982166667" lon="-53.388694444">
+<name>Cascavel</name>
+</wpt>
+<wpt lat="51.49275" lon="-2.216027778">
+<name>Castle Combe Circuit</name>
+</wpt>
+<wpt lat="41.185638889" lon="13.853416667">
+<name>Cellole</name>
+</wpt>
+<wpt lat="-39.937833333" lon="175.05">
+<name>Cemetery Circuit</name>
+</wpt>
+<wpt lat="-38.852" lon="-68.152777778">
+<name>Centenario</name>
+</wpt>
+<wpt lat="50.439166667" lon="30.293166667">
+<name>Chaika Circuit</name>
+</wpt>
+<wpt lat="50.437944444" lon="30.299138889">
+<name>Chaika Kart Track</name>
+</wpt>
+<wpt lat="50.437861111" lon="30.299916667">
+<name>Chaika Oval Track</name>
+</wpt>
+<wpt lat="45.740388889" lon="3.026166667">
+<name>Charade</name>
+</wpt>
+<wpt lat="26.908777778" lon="-82.000388889">
+<name>Charlotte County Speedway</name>
+</wpt>
+<wpt lat="35.35225" lon="-80.685583333">
+<name>Charlotte Motor Speedway</name>
+</wpt>
+<wpt lat="30.58725" lon="104.119777778">
+<name>Chengdu Goldenport Circuit</name>
+</wpt>
+<wpt lat="16.777888889" lon="-93.251583333">
+<name>Chiapas</name>
+</wpt>
+<wpt lat="41.473138889" lon="-88.059833333">
+<name>Chicagoland Speedway</name>
+</wpt>
+<wpt lat="42.262722222" lon="-84.050138889">
+<name>Chrysler Proving Grounds</name>
+</wpt>
+<wpt lat="33.753666667" lon="-115.319611111">
+<name>Chuckwalla Valley Raceway</name>
+</wpt>
+<wpt lat="30.131888889" lon="-97.639861111">
+<name>Circuit of the Americas</name>
+</wpt>
+<wpt lat="15.20775" lon="120.538833333">
+<name>Clark Intl. Speedway</name>
+</wpt>
+<wpt lat="51.441583333" lon="-2.281555556">
+<name>Colerne Airfield</name>
+</wpt>
+<wpt lat="39.675777778" lon="-104.113916667">
+<name>Colorado Motorsports Park</name>
+</wpt>
+<wpt lat="40.062388889" lon="-104.973472222">
+<name>Colorado National Speedway</name>
+</wpt>
+<wpt lat="39.749861111" lon="-105.176111111">
+<name>Colorado State Patrol Track</name>
+</wpt>
+<wpt lat="41.518944444" lon="-72.359222222">
+<name>Consumer Reports Test Track</name>
+</wpt>
+<wpt lat="56.274388889" lon="-2.602361111">
+<name>Crail Kart Track</name>
+</wpt>
+<wpt lat="56.271444444" lon="-2.604666667">
+<name>Crail Raceway</name>
+</wpt>
+<wpt lat="45.2585" lon="33.399805556">
+<name>Crimea GP Kart Track</name>
+</wpt>
+<wpt lat="45.259166667" lon="33.397166667">
+<name>Crimea Grand Prix</name>
+</wpt>
+<wpt lat="50.378944444" lon="2.296277778">
+<name>Croix-en-Ternois</name>
+</wpt>
+<wpt lat="52.712555556" lon="-1.8075">
+<name>Curborough Sprint Course</name>
+</wpt>
+<wpt lat="-25.448583333" lon="-49.195388889">
+<name>Curitiba - Circuit</name>
+</wpt>
+<wpt lat="-25.451888889" lon="-49.193111111">
+<name>Curitiba - Raceland Kartodromo</name>
+</wpt>
+<wpt lat="29.187666667" lon="-81.072777778">
+<name>Daytona Intl. Speedway</name>
+</wpt>
+<wpt lat="47.363583333" lon="4.898055556">
+<name>Dijon-Prenois</name>
+</wpt>
+<wpt lat="-36.327472222" lon="-57.696083333">
+<name>Dolores</name>
+</wpt>
+<wpt lat="52.829805556" lon="-1.379555556">
+<name>Donington Park Circuit</name>
+</wpt>
+<wpt lat="53.029777778" lon="13.54275">
+<name>Driving Center</name>
+</wpt>
+<wpt lat="25.047416667" lon="55.239583333">
+<name>Dubai Autodrome</name>
+</wpt>
+<wpt lat="-45.885833333" lon="170.496972222">
+<name>Dunedin Street Circuit</name>
+</wpt>
+<wpt lat="-29.838722222" lon="31.035138889">
+<name>Durban Street Circuit</name>
+</wpt>
+<wpt lat="33.367611111" lon="-97.429666667">
+<name>Eagles Canyon Raceway</name>
+</wpt>
+<wpt lat="-33.805361111" lon="150.882611111">
+<name>Eastern Creek Kart Track</name>
+</wpt>
+<wpt lat="37.641888889" lon="140.371388889">
+<name>Ebisu - Drift Stadium</name>
+</wpt>
+<wpt lat="37.644305556" lon="140.37075">
+<name>Ebisu - Higashi East Course</name>
+</wpt>
+<wpt lat="37.646111111" lon="140.364111111">
+<name>Ebisu - Kita North Course</name>
+</wpt>
+<wpt lat="37.639055556" lon="140.374111111">
+<name>Ebisu - Nishi Short Course</name>
+</wpt>
+<wpt lat="37.639694444" lon="140.371055556">
+<name>Ebisu - Nishi West Course</name>
+</wpt>
+<wpt lat="37.64625" lon="140.369388889">
+<name>Ebisu - Togue Course</name>
+</wpt>
+<wpt lat="13.810305556" lon="-89.331388889">
+<name>El Jabali</name>
+</wpt>
+<wpt lat="14.281361111" lon="121.094027778">
+<name>Enchanted Kingdom Kart Track</name>
+</wpt>
+<wpt lat="44.344388889" lon="11.714027778">
+<name>Enzo e Dino Ferrari</name>
+</wpt>
+<wpt lat="53.447805556" lon="9.693277778">
+<name>Estering</name>
+</wpt>
+<wpt lat="38.749972222" lon="-9.392583333">
+<name>Estoril</name>
+</wpt>
+<wpt lat="55.445027778" lon="37.661861111">
+<name>Eurasia Domodedovo</name>
+</wpt>
+<wpt lat="47.146472222" lon="19.458666667">
+<name>Euro-Ring</name>
+</wpt>
+<wpt lat="51.535083333" lon="13.928222222">
+<name>EuroSpeedway Lausitz</name>
+</wpt>
+<wpt lat="37.296361111" lon="127.206416667">
+<name>Everland Speedway</name>
+</wpt>
+<wpt lat="39.1025" lon="-75.418611111">
+<name>Fairlane Acres Speedway</name>
+</wpt>
+<wpt lat="56.97625" lon="12.566444444">
+<name>Falkenbergs Motorbana</name>
+</wpt>
+<wpt lat="29.846416667" lon="-82.05675">
+<name>FIRM - East Loop Circuit</name>
+</wpt>
+<wpt lat="29.843916667" lon="-82.058083333">
+<name>FIRM - Full Road Course</name>
+</wpt>
+<wpt lat="29.845444444" lon="-82.056611111">
+<name>FIRM - Kart Track</name>
+</wpt>
+<wpt lat="29.843916667" lon="-82.058083333">
+<name>FIRM - West Loop Circuit</name>
+</wpt>
+<wpt lat="29.845861111" lon="-82.057305556">
+<name>Florida Intl. Rally and Motorsports</name>
+</wpt>
+<wpt lat="35.373833333" lon="138.92975">
+<name>Fuji Speedway</name>
+</wpt>
+<wpt lat="60.18975" lon="11.13675">
+<name>Gardermoen Raceway</name>
+</wpt>
+<wpt lat="38.650444444" lon="-90.136916667">
+<name>Gateway Intl. Raceway</name>
+</wpt>
+<wpt lat="45.500055556" lon="-73.522666667">
+<name>Gilles Villeneuve</name>
+</wpt>
+<wpt lat="50.62875" lon="-97.050277778">
+<name>Gimli Motorsports Park</name>
+</wpt>
+<wpt lat="42.408" lon="-86.140472222">
+<name>Gingerman Raceway</name>
+</wpt>
+<wpt lat="-16.719416667" lon="-49.193027778">
+<name>Goiania - Circuit</name>
+</wpt>
+<wpt lat="-16.720083333" lon="-49.187638889">
+<name>Goiania - Kart Track</name>
+</wpt>
+<wpt lat="57.953888889" lon="-3.995333333">
+<name>Golspie</name>
+</wpt>
+<wpt lat="50.857944444" lon="-0.752611111">
+<name>Goodwood Motorcircuit</name>
+</wpt>
+<wpt lat="57.714305556" lon="11.962083333">
+<name>Gothenburg City Race</name>
+</wpt>
+<wpt lat="57.83875" lon="18.839333333">
+<name>Gotland Ring Altar Track</name>
+</wpt>
+<wpt lat="57.834277778" lon="18.827888889">
+<name>Gotland Ring Full GP Circuit</name>
+</wpt>
+<wpt lat="57.837638889" lon="18.831472222">
+<name>Gotland Ring North Circuit</name>
+</wpt>
+<wpt lat="57.834277778" lon="18.827888889">
+<name>Gotland Ring South Circuit</name>
+</wpt>
+<wpt lat="57.837638889" lon="18.831472222">
+<name>Gotland Ring Tvelvar Track</name>
+</wpt>
+<wpt lat="-39.076416667" lon="-67.580388889">
+<name>Gral Roca</name>
+</wpt>
+<wpt lat="39.108694444" lon="-108.49175">
+<name>Grand Junction Motor Speedway</name>
+</wpt>
+<wpt lat="43.633944444" lon="-79.412555556">
+<name>Grand Prix of Toronto</name>
+</wpt>
+<wpt lat="29.324722222" lon="-95.046277778">
+<name>GrandSport Speedway</name>
+</wpt>
+<wpt lat="34.621972222" lon="-117.169833333">
+<name>Grange Motor Circuit</name>
+</wpt>
+<wpt lat="43.095916667" lon="-85.38525">
+<name>Grattan Raceway</name>
+</wpt>
+<wpt lat="45.382777778" lon="14.509305556">
+<name>Grobnik</name>
+</wpt>
+<wpt lat="41.410166667" lon="-88.416666667">
+<name>Grundy County Speedway</name>
+</wpt>
+<wpt lat="9.974416667" lon="-84.248055556">
+<name>Guacima</name>
+</wpt>
+<wpt lat="37.399694444" lon="-3.073027778">
+<name>Guadix</name>
+</wpt>
+<wpt lat="23.271277778" lon="112.818138889">
+<name>Guandong Intl. Circuit</name>
+</wpt>
+<wpt lat="-28.843916667" lon="-51.851583333">
+<name>Guapore - Circuit</name>
+</wpt>
+<wpt lat="-28.844722222" lon="-51.854111111">
+<name>Guapore - Kart Track</name>
+</wpt>
+<wpt lat="36.220666667" lon="-96.590388889">
+<name>Hallett Motor Racing Circuit</name>
+</wpt>
+<wpt lat="-37.782611111" lon="175.2695">
+<name>Hamilton Street Circuit</name>
+</wpt>
+<wpt lat="-37.356138889" lon="175.077638889">
+<name>Hampton Downs Circuit</name>
+</wpt>
+<wpt lat="62.59925" lon="17.815277778">
+<name>Harnosands Motorpark</name>
+</wpt>
+<wpt lat="29.918527778" lon="-97.873611111">
+<name>Harris Hill Road</name>
+</wpt>
+<wpt lat="38.926583333" lon="-95.676666667">
+<name>Heartland Park</name>
+</wpt>
+<wpt lat="53.452222222" lon="10.363972222">
+<name>Heidburgring</name>
+</wpt>
+<wpt lat="19.406166667" lon="-99.092805556">
+<name>Hermanos Rodriguez</name>
+</wpt>
+<wpt lat="-12.448361111" lon="130.907722222">
+<name>Hidden Valley Raceway</name>
+</wpt>
+<wpt lat="39.735027778" lon="-103.894444444">
+<name>High Plains Raceway</name>
+</wpt>
+<wpt lat="19.675" lon="-155.026722222">
+<name>Hilo Kart Track</name>
+</wpt>
+<wpt lat="49.32775" lon="8.565833333">
+<name>Hockenheimring</name>
+</wpt>
+<wpt lat="42.921611111" lon="140.7145">
+<name>Hokkaido Speed Park</name>
+</wpt>
+<wpt lat="25.454527778" lon="-80.415527778">
+<name>Homestead Kart Track</name>
+</wpt>
+<wpt lat="25.453666667" lon="-80.409694444">
+<name>Homestead Miami Speedway</name>
+</wpt>
+<wpt lat="35.271138889" lon="-117.957944444">
+<name>Honda CA Proving Grounds</name>
+</wpt>
+<wpt lat="32.895361111" lon="130.873861111">
+<name>Honda Kyushu - Kart Track</name>
+</wpt>
+<wpt lat="32.897722222" lon="130.877305556">
+<name>Honda Kyushu Circuit</name>
+</wpt>
+<wpt lat="47.578888889" lon="19.248388889">
+<name>Hungaroring</name>
+</wpt>
+<wpt lat="35.054388889" lon="-118.032861111">
+<name>Hyundai CA Proving Grounds</name>
+</wpt>
+<wpt lat="38.400722222" lon="-104.61425">
+<name>I-25 Speedway</name>
+</wpt>
+<wpt lat="40.263083333" lon="-103.840777778">
+<name>I-76 Speedway</name>
+</wpt>
+<wpt lat="45.681055556" lon="-74.023305556">
+<name>ICAR - Circuit</name>
+</wpt>
+<wpt lat="45.680361111" lon="-74.02525">
+<name>ICAR - Kart Track</name>
+</wpt>
+<wpt lat="63.954972222" lon="-22.445444444">
+<name>Iceland MotoPark</name>
+</wpt>
+<wpt lat="40.043083333" lon="-104.949694444">
+<name>IMI Paved Course</name>
+</wpt>
+<wpt lat="32.228166667" lon="-110.009638889">
+<name>Inde - North Course</name>
+</wpt>
+<wpt lat="32.225444444" lon="-110.005722222">
+<name>Inde - South Course</name>
+</wpt>
+<wpt lat="32.225444444" lon="-110.005722222">
+<name>Inde Motorsports Ranch</name>
+</wpt>
+<wpt lat="39.793138889" lon="-86.238861111">
+<name>Indianapolis Motor Speedway</name>
+</wpt>
+<wpt lat="39.812527778" lon="-86.341833333">
+<name>Indianapolis Raceway Park</name>
+</wpt>
+<wpt lat="-38.620722222" lon="-72.466972222">
+<name>Interlomas</name>
+</wpt>
+<wpt lat="41.67375" lon="-93.01475">
+<name>Iowa Speedway</name>
+</wpt>
+<wpt lat="13.000944444" lon="79.98975">
+<name>Irungattukottai</name>
+</wpt>
+<wpt lat="41.701416667" lon="13.142916667">
+<name>ISAM Italy</name>
+</wpt>
+<wpt lat="40.952194444" lon="29.406194444">
+<name>Istanbul Racing Circuit</name>
+</wpt>
+<wpt lat="-22.974333333" lon="-43.396138889">
+<name>Jacarepagua</name>
+</wpt>
+<wpt lat="40.617138889" lon="-3.584194444">
+<name>Jarama</name>
+</wpt>
+<wpt lat="30.574888889" lon="-83.156416667">
+<name>Jennings GP</name>
+</wpt>
+<wpt lat="36.709694444" lon="-6.032527778">
+<name>Jerez</name>
+</wpt>
+<wpt lat="1.480138889" lon="103.908361111">
+<name>Johor Circuit</name>
+</wpt>
+<wpt lat="-23.70375" lon="-46.699944444">
+<name>Jose Carlos Pace</name>
+</wpt>
+<wpt lat="-34.694555556" lon="-58.461694444">
+<name>Juan y Oscar Galvez - Circuit</name>
+</wpt>
+<wpt lat="-34.697555556" lon="-58.46775">
+<name>Juan y Oscar Galvez - Kart Track</name>
+</wpt>
+<wpt lat="-29.982388889" lon="-71.221027778">
+<name>Juvenal Jeraldo</name>
+</wpt>
+<wpt lat="56.176388889" lon="9.660055556">
+<name>Jyllandsringen</name>
+</wpt>
+<wpt lat="12.944555556" lon="99.706194444">
+<name>Kaeng Krachan Circuit</name>
+</wpt>
+<wpt lat="-30.697833333" lon="121.469">
+<name>Kalgoorlie Intl. Speedway</name>
+</wpt>
+<wpt lat="39.116583333" lon="-94.833833333">
+<name>Kansas Speedway</name>
+</wpt>
+<wpt lat="10.900972222" lon="77.051555556">
+<name>Kari Motor Speedway</name>
+</wpt>
+<wpt lat="59.380888889" lon="14.509722222">
+<name>Karlskoga Kart Track</name>
+</wpt>
+<wpt lat="59.383527778" lon="14.514444444">
+<name>Karlskoga Motorstadion</name>
+</wpt>
+<wpt lat="-46.442222222" lon="168.251527778">
+<name>Kartsport Southland</name>
+</wpt>
+<wpt lat="52.001416667" lon="-8.326388889">
+<name>KartWorld</name>
+</wpt>
+<wpt lat="55.866555556" lon="49.260388889">
+<name>Kazanring</name>
+</wpt>
+<wpt lat="63.42025" lon="23.983194444">
+<name>Kemora Circuit</name>
+</wpt>
+<wpt lat="50.960888889" lon="20.539722222">
+<name>Kielce</name>
+</wpt>
+<wpt lat="-33.821972222" lon="18.528444444">
+<name>Killarney Kart Track</name>
+</wpt>
+<wpt lat="-33.823722222" lon="18.529083333">
+<name>Killarney Road Course</name>
+</wpt>
+<wpt lat="52.462333333" lon="-7.182277778">
+<name>Kiltorcan Raceway</name>
+</wpt>
+<wpt lat="58.546944444" lon="13.397722222">
+<name>Kinnekulle Ring</name>
+</wpt>
+<wpt lat="54.456666667" lon="-5.472166667">
+<name>Kirkistown</name>
+</wpt>
+<wpt lat="56.130916667" lon="-3.506583333">
+<name>Knockhill Racing Circuit</name>
+</wpt>
+<wpt lat="55.98725" lon="13.113583333">
+<name>Knutstorp</name>
+</wpt>
+<wpt lat="34.730722222" lon="126.418277778">
+<name>Korean Intl. Circuit</name>
+</wpt>
+<wpt lat="-25.998777778" lon="28.069916667">
+<name>Kyalami GP Circuit</name>
+</wpt>
+<wpt lat="-25.996583333" lon="28.0705">
+<name>Kyalami Kart Track</name>
+</wpt>
+<wpt lat="48.75925" lon="1.371888889">
+<name>L'Ouest Parisien</name>
+</wpt>
+<wpt lat="40.129361111" lon="18.349972222">
+<name>La Conca Kart Track</name>
+</wpt>
+<wpt lat="38.043805556" lon="-103.519361111">
+<name>La Junta Raceway</name>
+</wpt>
+<wpt lat="-29.957444444" lon="-71.353666667">
+<name>La Pampilla</name>
+</wpt>
+<wpt lat="36.586472222" lon="-121.756638889">
+<name>Laguna Seca</name>
+</wpt>
+<wpt lat="51.492666667" lon="0.286222222">
+<name>Lakeside Karting</name>
+</wpt>
+<wpt lat="-27.228472222" lon="152.964888889">
+<name>Lakeside Park</name>
+</wpt>
+<wpt lat="-35.338194444" lon="138.581694444">
+<name>Lanac Park</name>
+</wpt>
+<wpt lat="34.153777778" lon="-83.812277778">
+<name>Lanier National Speedway</name>
+</wpt>
+<wpt lat="45.469722222" lon="5.296388889">
+<name>Laquais Circuit</name>
+</wpt>
+<wpt lat="45.466527778" lon="5.297527778">
+<name>Laquais Kart Track</name>
+</wpt>
+<wpt lat="55.752" lon="-3.978444444">
+<name>Larkhall</name>
+</wpt>
+<wpt lat="18.467944444" lon="-69.749305556">
+<name>Las Americas</name>
+</wpt>
+<wpt lat="43.00575" lon="1.882166667">
+<name>Lavelanet</name>
+</wpt>
+<wpt lat="47.949861111" lon="0.207527778">
+<name>Le Mans</name>
+</wpt>
+<wpt lat="43.923166667" lon="4.504138889">
+<name>Ledenon</name>
+</wpt>
+<wpt lat="21.035694444" lon="-101.574861111">
+<name>Leon</name>
+</wpt>
+<wpt lat="40.995083333" lon="16.743138889">
+<name>Levante</name>
+</wpt>
+<wpt lat="41.928583333" lon="-73.381">
+<name>Lime Rock Park</name>
+</wpt>
+<wpt lat="48.622972222" lon="2.245833333">
+<name>Linas-Montlhery</name>
+</wpt>
+<wpt lat="58.393638889" lon="15.718916667">
+<name>Linkopings Kart Track</name>
+</wpt>
+<wpt lat="58.395777778" lon="15.718833333">
+<name>Linkopings Road Course</name>
+</wpt>
+<wpt lat="51.432472222" lon="-3.498694444">
+<name>Llandow Circuit</name>
+</wpt>
+<wpt lat="45.236777778" lon="7.72475">
+<name>Lombardore</name>
+</wpt>
+<wpt lat="33.76225" lon="-118.187222222">
+<name>Long Beach Grand Prix</name>
+</wpt>
+<wpt lat="25.489083333" lon="51.449694444">
+<name>Losail Intl. Circuit</name>
+</wpt>
+<wpt lat="36.264" lon="-115.01975">
+<name>LVMS Bullring</name>
+</wpt>
+<wpt lat="36.285472222" lon="-115.010027778">
+<name>LVMS Dirt Course</name>
+</wpt>
+<wpt lat="36.281305556" lon="-115.020472222">
+<name>LVMS Exotic Course</name>
+</wpt>
+<wpt lat="36.272083333" lon="-115.010138889">
+<name>LVMS Inside Road Course</name>
+</wpt>
+<wpt lat="36.264833333" lon="-115.021722222">
+<name>LVMS Kart Track</name>
+</wpt>
+<wpt lat="36.266388889" lon="-115.022722222">
+<name>LVMS Offroad Course</name>
+</wpt>
+<wpt lat="36.268111111" lon="-115.016833333">
+<name>LVMS Outside Road Course</name>
+</wpt>
+<wpt lat="36.2745" lon="-115.012583333">
+<name>LVMS Superspeedway Oval</name>
+</wpt>
+<wpt lat="51.177333333" lon="1.198166667">
+<name>Lydden Hill</name>
+</wpt>
+<wpt lat="22.132916667" lon="113.560694444">
+<name>Macau Kart Track</name>
+</wpt>
+<wpt lat="46.864083333" lon="3.163722222">
+<name>Magny-Cours</name>
+</wpt>
+<wpt lat="-34.415277778" lon="138.505916667">
+<name>Mallala Motor Racing Circuit</name>
+</wpt>
+<wpt lat="52.598638889" lon="-1.336972222">
+<name>Mallory Park</name>
+</wpt>
+<wpt lat="-40.235777778" lon="175.558444444">
+<name>Manfield Autocourse</name>
+</wpt>
+<wpt lat="58.369111111" lon="15.283777778">
+<name>Mantorp Park</name>
+</wpt>
+<wpt lat="-37.99475" lon="-57.638722222">
+<name>Mar del Plata</name>
+</wpt>
+<wpt lat="1.290472222" lon="103.864333333">
+<name>Marina Bay Street Circuit</name>
+</wpt>
+<wpt lat="36.634222222" lon="-79.852277778">
+<name>Martinsville Speedway</name>
+</wpt>
+<wpt lat="45.936111111" lon="2.301694444">
+<name>Mas du Clos</name>
+</wpt>
+<wpt lat="20.814027778" lon="-156.457083333">
+<name>Maui Puunene Kart Track</name>
+</wpt>
+<wpt lat="37.744916667" lon="138.801722222">
+<name>Maze Sea Park</name>
+</wpt>
+<wpt lat="-37.832833333" lon="140.64975">
+<name>McNamara Park</name>
+</wpt>
+<wpt lat="46.217277778" lon="-74.109">
+<name>Mecaglisse</name>
+</wpt>
+<wpt lat="42.417055556" lon="-122.804472222">
+<name>Medford Kart Track</name>
+</wpt>
+<wpt lat="-37.850055556" lon="144.969">
+<name>Melbourne GP Circuit</name>
+</wpt>
+<wpt lat="35.282166667" lon="-89.946833333">
+<name>Memphis Motorsports Park</name>
+</wpt>
+<wpt lat="34.403638889" lon="-82.037">
+<name>Michelin Proving Grounds</name>
+</wpt>
+<wpt lat="41.594277778" lon="-86.410444444">
+<name>Michiana Raceway Park</name>
+</wpt>
+<wpt lat="41.024555556" lon="-95.821222222">
+<name>Mid America Motorplex</name>
+</wpt>
+<wpt lat="40.689444444" lon="-82.635277778">
+<name>Mid-Ohio Sports Car Course</name>
+</wpt>
+<wpt lat="52.711583333" lon="-1.794111111">
+<name>Midland Karting - Intl. Circuit</name>
+</wpt>
+<wpt lat="52.71125" lon="-1.795194444">
+<name>Midland Karting - National Circuit</name>
+</wpt>
+<wpt lat="19.027916667" lon="-97.98975">
+<name>Miguel E Abed</name>
+</wpt>
+<wpt lat="40.583138889" lon="-112.376388889">
+<name>Miller Motorsports - East</name>
+</wpt>
+<wpt lat="40.583138889" lon="-112.376388889">
+<name>Miller Motorsports - Full</name>
+</wpt>
+<wpt lat="40.583138889" lon="-112.376388889">
+<name>Miller Motorsports - Outer</name>
+</wpt>
+<wpt lat="40.583083333" lon="-112.382416667">
+<name>Miller Motorsports - West</name>
+</wpt>
+<wpt lat="40.585083333" lon="-112.377611111">
+<name>Miller Motorsports Kart Track</name>
+</wpt>
+<wpt lat="43.020444444" lon="-88.012888889">
+<name>Milwaukee Mile</name>
+</wpt>
+<wpt lat="43.962194444" lon="12.684222222">
+<name>Misano World Circuit</name>
+</wpt>
+<wpt lat="49.126694444" lon="-122.325583333">
+<name>Mission Raceway Park</name>
+</wpt>
+<wpt lat="43.735027778" lon="7.42125">
+<name>Monaco</name>
+</wpt>
+<wpt lat="53.256972222" lon="-6.745083333">
+<name>Mondello Park</name>
+</wpt>
+<wpt lat="46.193305556" lon="-74.6115">
+<name>Mont-Tremblant</name>
+</wpt>
+<wpt lat="41.846194444" lon="-7.757194444">
+<name>Montalegre</name>
+</wpt>
+<wpt lat="37.358833333" lon="-6.571472222">
+<name>Monteblanco</name>
+</wpt>
+<wpt lat="25.860611111" lon="-100.218027778">
+<name>Monterrey - Circuit</name>
+</wpt>
+<wpt lat="25.857277778" lon="-100.217444444">
+<name>Monterrey - Kart Track</name>
+</wpt>
+<wpt lat="41.623916667" lon="-74.698444444">
+<name>Monticello - Full Course</name>
+</wpt>
+<wpt lat="41.619805556" lon="-74.697638889">
+<name>Monticello - Mushroom Course</name>
+</wpt>
+<wpt lat="41.623916667" lon="-74.698444444">
+<name>Monticello - North Course</name>
+</wpt>
+<wpt lat="41.623916667" lon="-74.698444444">
+<name>Monticello - South Course</name>
+</wpt>
+<wpt lat="30.500277778" lon="-83.795055556">
+<name>Monticello Karting</name>
+</wpt>
+<wpt lat="45.618972222" lon="9.281194444">
+<name>Monza</name>
+</wpt>
+<wpt lat="40.508277778" lon="8.832083333">
+<name>Mores</name>
+</wpt>
+<wpt lat="-28.262055556" lon="152.036416667">
+<name>Morgan Park Raceway</name>
+</wpt>
+<wpt lat="55.564527778" lon="37.991055556">
+<name>Moscow Autodrom</name>
+</wpt>
+<wpt lat="55.996055556" lon="36.270527778">
+<name>Moscow Raceway</name>
+</wpt>
+<wpt lat="50.519444444" lon="13.60775">
+<name>Most</name>
+</wpt>
+<wpt lat="36.53275" lon="140.226194444">
+<name>Motegi Oval</name>
+</wpt>
+<wpt lat="36.533" lon="140.226722222">
+<name>Motegi Road Course</name>
+</wpt>
+<wpt lat="62.057638889" lon="27.559861111">
+<name>Motopark Raceway</name>
+</wpt>
+<wpt lat="41.078305556" lon="-0.197833333">
+<name>Motorland Aragon</name>
+</wpt>
+<wpt lat="41.075472222" lon="-0.188638889">
+<name>Motorland Aragon - Kart</name>
+</wpt>
+<wpt lat="52.027527778" lon="11.278111111">
+<name>Motorsport Arena Oschersleben</name>
+</wpt>
+<wpt lat="40.580138889" lon="-98.351277778">
+<name>Motorsports Park Hastings</name>
+</wpt>
+<wpt lat="-33.439388889" lon="149.55825">
+<name>Mount Panorama Circuit</name>
+</wpt>
+<wpt lat="32.523111111" lon="-97.615277778">
+<name>MSR Cresson East Course</name>
+</wpt>
+<wpt lat="32.523111111" lon="-97.615277778">
+<name>MSR Cresson Full Track</name>
+</wpt>
+<wpt lat="32.523416667" lon="-97.619694444">
+<name>MSR Cresson West Course</name>
+</wpt>
+<wpt lat="29.279" lon="-95.422416667">
+<name>MSR Houston Full Track</name>
+</wpt>
+<wpt lat="29.277555556" lon="-95.42525">
+<name>MSR Houston Kart Track</name>
+</wpt>
+<wpt lat="29.279" lon="-95.422416667">
+<name>MSR Houston LeMons Loop</name>
+</wpt>
+<wpt lat="29.276555556" lon="-95.422888889">
+<name>MSR Houston Long Outer Loop</name>
+</wpt>
+<wpt lat="29.279" lon="-95.422416667">
+<name>MSR Houston NASCAR Loop</name>
+</wpt>
+<wpt lat="29.276555556" lon="-95.422888889">
+<name>MSR Houston Short Outer Loop</name>
+</wpt>
+<wpt lat="29.279" lon="-95.422416667">
+<name>MSR Houston Trooper Loop</name>
+</wpt>
+<wpt lat="43.997583333" lon="11.371444444">
+<name>Mugello Circuit</name>
+</wpt>
+<wpt lat="34.786083333" lon="134.177">
+<name>Nakayama Circuit</name>
+</wpt>
+<wpt lat="34.783527778" lon="134.177777778">
+<name>Nakayama Kart Track</name>
+</wpt>
+<wpt lat="40.318611111" lon="17.826666667">
+<name>Nardo Handling Track</name>
+</wpt>
+<wpt lat="40.318416667" lon="17.806">
+<name>Nardo Ring</name>
+</wpt>
+<wpt lat="36.046222222" lon="-86.409666667">
+<name>Nashville Superspeedway</name>
+</wpt>
+<wpt lat="36.970805556" lon="140.127416667">
+<name>Nasu Motor Sports Land</name>
+</wpt>
+<wpt lat="44.836611111" lon="19.963055556">
+<name>Navak Track</name>
+</wpt>
+<wpt lat="42.559222222" lon="-2.168055556">
+<name>Navarra - Circuit</name>
+</wpt>
+<wpt lat="42.557888889" lon="-2.168">
+<name>Navarro - Kart Track</name>
+</wpt>
+<wpt lat="36.479388889" lon="-77.579833333">
+<name>NCCAR</name>
+</wpt>
+<wpt lat="37.001583333" lon="-86.368833333">
+<name>NCM Motorsports Park</name>
+</wpt>
+<wpt lat="41.307083333" lon="-81.014111111">
+<name>Nelson Ledges Road Course</name>
+</wpt>
+<wpt lat="-15.772833333" lon="-47.90025">
+<name>Nelson Piquet - Circuit</name>
+</wpt>
+<wpt lat="-15.778388889" lon="-47.8965">
+<name>Nelson Piquet - Kart Track</name>
+</wpt>
+<wpt lat="54.915694444" lon="23.703944444">
+<name>Nemuno Ziedas</name>
+</wpt>
+<wpt lat="43.363083333" lon="-71.462">
+<name>New Hampshire Intl. Speedway</name>
+</wpt>
+<wpt lat="39.361472222" lon="-75.054111111">
+<name>NJ Motorsports Park - Lightning</name>
+</wpt>
+<wpt lat="39.360805556" lon="-75.073611111">
+<name>NJ Motorsports Park - Thunderbolt</name>
+</wpt>
+<wpt lat="30.018333333" lon="-91.08075">
+<name>No Problem Raceway Park</name>
+</wpt>
+<wpt lat="29.885388889" lon="-90.199166667">
+<name>Nola Motorsports Park</name>
+</wpt>
+<wpt lat="49.431138889" lon="11.124666667">
+<name>Norisring</name>
+</wpt>
+<wpt lat="64.785305556" lon="-147.395">
+<name>North Pole Speedway</name>
+</wpt>
+<wpt lat="61.559055556" lon="-149.274583333">
+<name>Northstar Speedway</name>
+</wpt>
+<wpt lat="50.335583333" lon="6.947583333">
+<name>Nurburgring Grand Prix</name>
+</wpt>
+<wpt lat="50.343583333" lon="6.960055556">
+<name>Nurburgring Nordschleife</name>
+</wpt>
+<wpt lat="54.622861111" lon="-6.144083333">
+<name>Nutts Corner</name>
+</wpt>
+<wpt lat="29.228472222" lon="-82.189805556">
+<name>Ocala Gran Prix</name>
+</wpt>
+<wpt lat="34.914277778" lon="134.218944444">
+<name>Okayama Intl. Circuit</name>
+</wpt>
+<wpt lat="34.914666667" lon="134.217861111">
+<name>Okayama Kart Track</name>
+</wpt>
+<wpt lat="40.334916667" lon="-74.353555556">
+<name>Old Bridge Township Raceway</name>
+</wpt>
+<wpt lat="54.259944444" lon="-0.409444444">
+<name>Oliver's Mount</name>
+</wpt>
+<wpt lat="-34.007861111" lon="150.733027778">
+<name>Oran Park Raceway</name>
+</wpt>
+<wpt lat="39.623666667" lon="109.869722222">
+<name>Ordos Intl. Circuit</name>
+</wpt>
+<wpt lat="45.363777778" lon="-120.744527778">
+<name>Oregon Raceway Park</name>
+</wpt>
+<wpt lat="28.412722222" lon="-81.379666667">
+<name>Orlando Kart Center</name>
+</wpt>
+<wpt lat="-20.475916667" lon="-54.466027778">
+<name>Orlando Moura</name>
+</wpt>
+<wpt lat="53.18" lon="-2.612833333">
+<name>Oulton Park Circuit</name>
+</wpt>
+<wpt lat="21.721833333" lon="-102.328555556">
+<name>Ovalo Aguascalientes Mexico</name>
+</wpt>
+<wpt lat="47.324194444" lon="-122.151777778">
+<name>Pacific Raceways Grand Prix</name>
+</wpt>
+<wpt lat="47.320916667" lon="-122.147527778">
+<name>Pacific Raceways Road Course</name>
+</wpt>
+<wpt lat="54.869111111" lon="9.275694444">
+<name>Padborg Park</name>
+</wpt>
+<wpt lat="-37.379638889" lon="175.669777778">
+<name>Paeroa Street Circuit</name>
+</wpt>
+<wpt lat="53.133388889" lon="-8.353027778">
+<name>Pallas Karting - 1500m</name>
+</wpt>
+<wpt lat="53.133777778" lon="-8.35475">
+<name>Pallas Karting - 500m</name>
+</wpt>
+<wpt lat="26.920722222" lon="-80.305944444">
+<name>Palm Beach Intl. Raceway</name>
+</wpt>
+<wpt lat="41.592138889" lon="1.688083333">
+<name>Parcmotor Castelloli</name>
+</wpt>
+<wpt lat="43.447111111" lon="-0.5325">
+<name>Pau Arnos</name>
+</wpt>
+<wpt lat="43.770638889" lon="-0.040555556">
+<name>Paul Armagnac (Nogaro)</name>
+</wpt>
+<wpt lat="43.251194444" lon="5.793055556">
+<name>Paul Ricard</name>
+</wpt>
+<wpt lat="26.920555556" lon="-80.307055556">
+<name>PBIR Kart Track</name>
+</wpt>
+<wpt lat="14.382472222" lon="-90.820666667">
+<name>Pedro Cofino</name>
+</wpt>
+<wpt lat="51.705861111" lon="-4.323833333">
+<name>Pembrey Circuit</name>
+</wpt>
+<wpt lat="37.520166667" lon="14.305444444">
+<name>Pergusa</name>
+</wpt>
+<wpt lat="-27.904694444" lon="26.709527778">
+<name>Phakisa Oval Track</name>
+</wpt>
+<wpt lat="-27.904777778" lon="26.711166667">
+<name>Phakisa Road Course</name>
+</wpt>
+<wpt lat="-38.502388889" lon="145.232194444">
+<name>Phillip Island Circuit</name>
+</wpt>
+<wpt lat="33.375916667" lon="-112.311361111">
+<name>Phoenix Intl. Raceway</name>
+</wpt>
+<wpt lat="38.90125" lon="-105.003472222">
+<name>Pikes Peak Intl. Hill Climb</name>
+</wpt>
+<wpt lat="38.590944444" lon="-104.678305556">
+<name>Pikes Peak Intl. Raceway</name>
+</wpt>
+<wpt lat="39.891027778" lon="18.133583333">
+<name>Pista Salentina-Ugento</name>
+</wpt>
+<wpt lat="40.850722222" lon="-80.34775">
+<name>Pitt Race - North Course</name>
+</wpt>
+<wpt lat="40.844972222" lon="-80.347333333">
+<name>Pitt Race - South Course</name>
+</wpt>
+<wpt lat="40.849777778" lon="-80.344555556">
+<name>Pitt Race - Winslow Kart Track</name>
+</wpt>
+<wpt lat="45.699694444" lon="-73.866833333">
+<name>PMG Test Track</name>
+</wpt>
+<wpt lat="41.057361111" lon="-75.504916667">
+<name>Pocono - East Course</name>
+</wpt>
+<wpt lat="41.052638889" lon="-75.511722222">
+<name>Pocono - Full Track</name>
+</wpt>
+<wpt lat="41.054388889" lon="-75.51475">
+<name>Pocono - North Course</name>
+</wpt>
+<wpt lat="41.052472222" lon="-75.5065">
+<name>Pocono - South Course</name>
+</wpt>
+<wpt lat="17.971666667" lon="-66.676916667">
+<name>Ponce Intl. Speedway</name>
+</wpt>
+<wpt lat="51.405527778" lon="12.2975">
+<name>Porsche Leipzig</name>
+</wpt>
+<wpt lat="37.229777778" lon="-8.629944444">
+<name>Portimao Circuit</name>
+</wpt>
+<wpt lat="37.233194444" lon="-8.636361111">
+<name>Portimao Kart Track</name>
+</wpt>
+<wpt lat="45.595027778" lon="-122.694472222">
+<name>Portland Intl. Raceway</name>
+</wpt>
+<wpt lat="22.091277778" lon="-100.725638889">
+<name>Potosino</name>
+</wpt>
+<wpt lat="-33.223916667" lon="-66.238361111">
+<name>Potrero de los Funes Circuit</name>
+</wpt>
+<wpt lat="-43.530583333" lon="172.480944444">
+<name>Powerbuilt Raceway</name>
+</wpt>
+<wpt lat="52.420305556" lon="16.8065">
+<name>Poznan</name>
+</wpt>
+<wpt lat="51.963305556" lon="-2.023444444">
+<name>Prescott</name>
+</wpt>
+<wpt lat="-33.049527778" lon="27.87">
+<name>Prince George Circuit</name>
+</wpt>
+<wpt lat="38.299888889" lon="-104.677416667">
+<name>Pueblo Motorsports Park</name>
+</wpt>
+<wpt lat="-37.215555556" lon="174.915833333">
+<name>Pukekohe Park Raceway</name>
+</wpt>
+<wpt lat="39.582305556" lon="-86.742305556">
+<name>Putnam Park Road Course</name>
+</wpt>
+<wpt lat="-27.690638889" lon="152.654611111">
+<name>Queensland Raceway</name>
+</wpt>
+<wpt lat="20.585583333" lon="-100.328916667">
+<name>Queretaro</name>
+</wpt>
+<wpt lat="48.553472222" lon="0.274472222">
+<name>Quest Karting - Essay</name>
+</wpt>
+<wpt lat="50.943944444" lon="-113.933611111">
+<name>Race City Motorsport Park</name>
+</wpt>
+<wpt lat="51.530055556" lon="-2.140305556">
+<name>RAF Hullavington</name>
+</wpt>
+<wpt lat="52.647138889" lon="0.558416667">
+<name>RAF Marham</name>
+</wpt>
+<wpt lat="47.22" lon="14.765111111">
+<name>Red Bull Ring</name>
+</wpt>
+<wpt lat="-26.075083333" lon="28.755166667">
+<name>Red Star Raceway</name>
+</wpt>
+<wpt lat="24.382722222" lon="45.979222222">
+<name>Reem Intl. Circuit</name>
+</wpt>
+<wpt lat="24.383222222" lon="45.9765">
+<name>Reem Kart Track</name>
+</wpt>
+<wpt lat="41.957638889" lon="3.176166667">
+<name>Regencos Kart Track</name>
+</wpt>
+<wpt lat="39.539388889" lon="-119.241833333">
+<name>Reno-Fernley Raceway</name>
+</wpt>
+<wpt lat="44.680666667" lon="10.020916667">
+<name>Riccardo Paletti</name>
+</wpt>
+<wpt lat="37.591083333" lon="-77.419666667">
+<name>Richmond Intl. Raceway</name>
+</wpt>
+<wpt lat="56.337194444" lon="10.682388889">
+<name>Ring Djursland</name>
+</wpt>
+<wpt lat="46.631805556" lon="-71.788305556">
+<name>Riverside Speedway Ste-Croix</name>
+</wpt>
+<wpt lat="43.797888889" lon="-87.989638889">
+<name>Road America</name>
+</wpt>
+<wpt lat="34.150361111" lon="-83.814194444">
+<name>Road Atlanta</name>
+</wpt>
+<wpt lat="52.514722222" lon="-0.662333333">
+<name>Rockingham Motor Speedway</name>
+</wpt>
+<wpt lat="34.975833333" lon="-79.610888889">
+<name>Rockingham Raceway Park</name>
+</wpt>
+<wpt lat="32.167055556" lon="-81.322861111">
+<name>Roebling Road Raceway</name>
+</wpt>
+<wpt lat="-30.547694444" lon="136.886083333">
+<name>Roxby Downs</name>
+</wpt>
+<wpt lat="59.368111111" lon="11.260722222">
+<name>Rudskogen Kart Track</name>
+</wpt>
+<wpt lat="59.365722222" lon="11.263194444">
+<name>Rudskogen Road Course</name>
+</wpt>
+<wpt lat="18.43675" lon="-66.210111111">
+<name>Sabana Seca</name>
+</wpt>
+<wpt lat="50.791777778" lon="12.688083333">
+<name>Sachsenring</name>
+</wpt>
+<wpt lat="45.573472222" lon="-73.965916667">
+<name>Saint-Eustache</name>
+</wpt>
+<wpt lat="-2.235722222" lon="-80.879222222">
+<name>Salinas</name>
+</wpt>
+<wpt lat="17.970416667" lon="-66.265666667">
+<name>Salinas Intl. Speedway</name>
+</wpt>
+<wpt lat="47.823055556" lon="13.169055556">
+<name>Salzburgring</name>
+</wpt>
+<wpt lat="22.182472222" lon="-100.990722222">
+<name>San Luis 400</name>
+</wpt>
+<wpt lat="-45.90275" lon="-67.543777778">
+<name>San Martin</name>
+</wpt>
+<wpt lat="-45.903666667" lon="-67.543361111">
+<name>San Martin Kart Track</name>
+</wpt>
+<wpt lat="45.528166667" lon="-72.881916667">
+<name>Sanair Kart Track</name>
+</wpt>
+<wpt lat="45.532611111" lon="-72.878555556">
+<name>Sanair Oval Track</name>
+</wpt>
+<wpt lat="45.529638889" lon="-72.882666667">
+<name>Sanair Road Course</name>
+</wpt>
+<wpt lat="45.531138889" lon="-72.875444444">
+<name>Sanair Speedway Road Course</name>
+</wpt>
+<wpt lat="45.530972222" lon="-72.876222222">
+<name>Sanair Super Speedway</name>
+</wpt>
+<wpt lat="45.525583333" lon="-72.887416667">
+<name>Sanair Winter Course</name>
+</wpt>
+<wpt lat="47.243388889" lon="-123.150805556">
+<name>Sanderson Field</name>
+</wpt>
+<wpt lat="35.020611111" lon="-106.858861111">
+<name>Sandia Motor Speedway</name>
+</wpt>
+<wpt lat="-37.949361111" lon="145.164333333">
+<name>Sandown Motor Racing Circuit</name>
+</wpt>
+<wpt lat="-29.800888889" lon="-52.434166667">
+<name>Santa Cruz do Sul</name>
+</wpt>
+<wpt lat="40.837638889" lon="14.567638889">
+<name>Sarno</name>
+</wpt>
+<wpt lat="57.2615" lon="13.599361111">
+<name>Scandinavian Raceway</name>
+</wpt>
+<wpt lat="50.560916667" lon="11.821277778">
+<name>Schleizer Dreieck</name>
+</wpt>
+<wpt lat="27.450222222" lon="-81.35375">
+<name>Sebring Intl. Raceway</name>
+</wpt>
+<wpt lat="40.604305556" lon="14.949138889">
+<name>Sele</name>
+</wpt>
+<wpt lat="38.288361111" lon="140.623527778">
+<name>Sendai Hi-Land - North Kart Track</name>
+</wpt>
+<wpt lat="38.286472222" lon="140.621972222">
+<name>Sendai Hi-Land Raceway</name>
+</wpt>
+<wpt lat="-6.536416667" lon="106.856361111">
+<name>Sentul Intl. Circuit</name>
+</wpt>
+<wpt lat="2.76075" lon="101.738333333">
+<name>Sepang Intl. Circuit</name>
+</wpt>
+<wpt lat="2.763638889" lon="101.729166667">
+<name>Sepang Kart Track</name>
+</wpt>
+<wpt lat="2.76075" lon="101.738333333">
+<name>Sepang North Track</name>
+</wpt>
+<wpt lat="2.759638889" lon="101.737416667">
+<name>Sepang South Track</name>
+</wpt>
+<wpt lat="-18.38825" lon="-70.334055556">
+<name>Sergio Santander Benavente</name>
+</wpt>
+<wpt lat="41.073722222" lon="23.519388889">
+<name>Serres Kart Track</name>
+</wpt>
+<wpt lat="41.073138889" lon="23.517805556">
+<name>Serres Racing Circuit</name>
+</wpt>
+<wpt lat="31.337277778" lon="121.220583333">
+<name>Shanghai Intl. Circuit</name>
+</wpt>
+<wpt lat="44.228944444" lon="-77.164916667">
+<name>Shannonville - Fabi Circuit</name>
+</wpt>
+<wpt lat="44.225027778" lon="-77.159388889">
+<name>Shannonville - Long Track</name>
+</wpt>
+<wpt lat="44.225027778" lon="-77.159388889">
+<name>Shannonville - Nelson Circuit</name>
+</wpt>
+<wpt lat="44.225027778" lon="-77.159388889">
+<name>Shannonville - Pro Track</name>
+</wpt>
+<wpt lat="52.078694444" lon="-1.016972222">
+<name>Silverstone Circuit</name>
+</wpt>
+<wpt lat="37.067861111" lon="15.252722222">
+<name>Siracusa</name>
+</wpt>
+<wpt lat="51.879083333" lon="20.928055556">
+<name>Slomczyn</name>
+</wpt>
+<wpt lat="54.987583333" lon="33.365861111">
+<name>Smolensk Ring</name>
+</wpt>
+<wpt lat="52.463388889" lon="0.944722222">
+<name>Snetterton Circuit</name>
+</wpt>
+<wpt lat="47.360916667" lon="2.049222222">
+<name>Sologne Karting - Salbris</name>
+</wpt>
+<wpt lat="38.161472222" lon="-122.454722222">
+<name>Sonoma Raceway</name>
+</wpt>
+<wpt lat="51.433944444" lon="-3.496416667">
+<name>South Wales Karting Centre</name>
+</wpt>
+<wpt lat="42.418222222" lon="-122.793944444">
+<name>Southern Oregon Speedway</name>
+</wpt>
+<wpt lat="50.444083333" lon="5.968333333">
+<name>Spa-Francorchamps</name>
+</wpt>
+<wpt lat="47.658083333" lon="-117.591527778">
+<name>Spokane Kart Track</name>
+</wpt>
+<wpt lat="47.659861111" lon="-117.57175">
+<name>Spokane Raceway - Oval Track</name>
+</wpt>
+<wpt lat="47.660583333" lon="-117.57475">
+<name>Spokane Raceway - Road Course</name>
+</wpt>
+<wpt lat="38.142277778" lon="140.777694444">
+<name>Sportsland SUGO</name>
+</wpt>
+<wpt lat="38.141277778" lon="140.772">
+<name>Sportsland SUGO - Kart Track</name>
+</wpt>
+<wpt lat="51.998527778" lon="13.689944444">
+<name>Spreewaldring Kart Track</name>
+</wpt>
+<wpt lat="51.999555556" lon="13.687722222">
+<name>Spreewaldring Motodrom</name>
+</wpt>
+<wpt lat="36.17225" lon="-115.910111111">
+<name>Spring Mountain</name>
+</wpt>
+<wpt lat="36.169083333" lon="-115.909833333">
+<name>Spring Mountain - Large</name>
+</wpt>
+<wpt lat="53.736416667" lon="-113.233916667">
+<name>Stratotech Park</name>
+</wpt>
+<wpt lat="34.874805556" lon="-118.258722222">
+<name>Streets of Willow</name>
+</wpt>
+<wpt lat="55.5315" lon="13.357388889">
+<name>Sturup Raceway</name>
+</wpt>
+<wpt lat="14.798611111" lon="120.267333333">
+<name>Subic Intl. Raceway</name>
+</wpt>
+<wpt lat="39.235194444" lon="-77.969055556">
+<name>Summit Point Raceway</name>
+</wpt>
+<wpt lat="-27.986166667" lon="153.42725">
+<name>Surfers Paradise Street Circuit</name>
+</wpt>
+<wpt lat="34.842916667" lon="136.540694444">
+<name>Suzuka Circuit</name>
+</wpt>
+<wpt lat="34.843194444" lon="136.528388889">
+<name>Suzuka Kart Track</name>
+</wpt>
+<wpt lat="-33.803777778" lon="150.870944444">
+<name>Sydney Motorsports Park</name>
+</wpt>
+<wpt lat="-41.657583333" lon="147.249972222">
+<name>Symmons Plains Raceway</name>
+</wpt>
+<wpt lat="37.082694444" lon="129.018388889">
+<name>Taebaek Racing Park</name>
+</wpt>
+<wpt lat="33.504694444" lon="-86.001444444">
+<name>Talladega Gran Prix Raceway</name>
+</wpt>
+<wpt lat="33.563277778" lon="-86.069222222">
+<name>Talladega Super Speedway</name>
+</wpt>
+<wpt lat="-30.050722222" lon="-51.017361111">
+<name>Taruma - Circuit</name>
+</wpt>
+<wpt lat="-30.050722222" lon="-51.0205">
+<name>Taruma - Kart Track</name>
+</wpt>
+<wpt lat="-38.662694444" lon="176.146666667">
+<name>Taupo Motorsport Park</name>
+</wpt>
+<wpt lat="-46.441" lon="168.263111111">
+<name>Teretonga Park</name>
+</wpt>
+<wpt lat="33.037305556" lon="-97.28425">
+<name>Texas Motor Speedway</name>
+</wpt>
+<wpt lat="30.538027778" lon="-96.224416667">
+<name>Texas World Speedway</name>
+</wpt>
+<wpt lat="13.910861111" lon="100.167361111">
+<name>Thailand Circuit - Full</name>
+</wpt>
+<wpt lat="13.911944444" lon="100.168">
+<name>Thailand Circuit - North</name>
+</wpt>
+<wpt lat="13.910861111" lon="100.167361111">
+<name>Thailand Circuit - South</name>
+</wpt>
+<wpt lat="47.254694444" lon="-123.192472222">
+<name>The Ridge Motorsports Park</name>
+</wpt>
+<wpt lat="39.569833333" lon="-104.831055556">
+<name>The Track at Centennial</name>
+</wpt>
+<wpt lat="41.981833333" lon="-71.825583333">
+<name>Thompson Speedway - Oval</name>
+</wpt>
+<wpt lat="41.979805556" lon="-71.827416667">
+<name>Thompson Speedway - Road Course</name>
+</wpt>
+<wpt lat="53.506138889" lon="-2.632861111">
+<name>Three Sisters Race Circuit</name>
+</wpt>
+<wpt lat="51.207666667" lon="-1.608972222">
+<name>Thruxton Circuit</name>
+</wpt>
+<wpt lat="39.538472222" lon="-122.331194444">
+<name>Thunderhill Raceway</name>
+</wpt>
+<wpt lat="57.074055556" lon="8.690333333">
+<name>Thy Karting</name>
+</wpt>
+<wpt lat="31.078833333" lon="121.115083333">
+<name>Tianma Circuit</name>
+</wpt>
+<wpt lat="-44.296527778" lon="171.202777778">
+<name>Timaru Intl. Motor Raceway</name>
+</wpt>
+<wpt lat="52.467888889" lon="-7.792805556">
+<name>Tipperary Intl. Raceway</name>
+</wpt>
+<wpt lat="4.961138889" lon="-73.94725">
+<name>Tocancipa</name>
+</wpt>
+<wpt lat="51.118666667" lon="-0.536444444">
+<name>Top Gear UK Track</name>
+</wpt>
+<wpt lat="33.670944444" lon="-117.734277778">
+<name>Top Gear USA Track</name>
+</wpt>
+<wpt lat="42.903" lon="-79.857944444">
+<name>Toronto Motorsports - Full Track</name>
+</wpt>
+<wpt lat="42.905111111" lon="-79.854833333">
+<name>Toronto Motorsports - North Course</name>
+</wpt>
+<wpt lat="42.903" lon="-79.857944444">
+<name>Toronto Motorsports - West Course</name>
+</wpt>
+<wpt lat="-19.272055556" lon="146.810944444">
+<name>Townsville Street Circuit</name>
+</wpt>
+<wpt lat="20.445111111" lon="-103.269027778">
+<name>Triovalo Bernardo Obregon</name>
+</wpt>
+<wpt lat="36.150138889" lon="139.919527778">
+<name>Tsukuba Circuit</name>
+</wpt>
+<wpt lat="36.151" lon="139.924861111">
+<name>Tsukuba Circuit 1000</name>
+</wpt>
+<wpt lat="36.152055556" lon="139.921388889">
+<name>Tsukuba Oval</name>
+</wpt>
+<wpt lat="52.962305556" lon="6.524111111">
+<name>TT Circuit Assen</name>
+</wpt>
+<wpt lat="10.140194444" lon="-67.508388889">
+<name>Turagua</name>
+</wpt>
+<wpt lat="43.13125" lon="12.239111111">
+<name>Umbria</name>
+</wpt>
+<wpt lat="47.007722222" lon="-0.431472222">
+<name>Val d'Argenton</name>
+</wpt>
+<wpt lat="46.197583333" lon="0.633805556">
+<name>Val de Vienne</name>
+</wpt>
+<wpt lat="42.81025" lon="13.688361111">
+<name>Val Vibrata Kartodromo</name>
+</wpt>
+<wpt lat="39.4835" lon="-0.631">
+<name>Valencia</name>
+</wpt>
+<wpt lat="39.457861111" lon="-0.331722222">
+<name>Valencia Street Circuit</name>
+</wpt>
+<wpt lat="60.702111111" lon="11.813722222">
+<name>Valerbanen</name>
+</wpt>
+<wpt lat="37.386166667" lon="13.752972222">
+<name>Valle dei Templi</name>
+</wpt>
+<wpt lat="42.157666667" lon="12.369">
+<name>Vallelunga Circuit</name>
+</wpt>
+<wpt lat="46.322083333" lon="3.359027778">
+<name>Varennes Karting</name>
+</wpt>
+<wpt lat="41.588222222" lon="-8.443111111">
+<name>Vasco Sameiro - Circuit</name>
+</wpt>
+<wpt lat="41.587861111" lon="-8.445111111">
+<name>Vasco Sameiro - Kart Track</name>
+</wpt>
+<wpt lat="-40.257972222" lon="-73.029444444">
+<name>Vegas Quilaco</name>
+</wpt>
+<wpt lat="36.568583333" lon="-79.207805556">
+<name>Virginia Intl. Raceway</name>
+</wpt>
+<wpt lat="37.166888889" lon="-77.526">
+<name>Virginia Motorsports Park</name>
+</wpt>
+<wpt lat="26.028638889" lon="50.506472222">
+<name>VIVA Karting Track (Bahrain)</name>
+</wpt>
+<wpt lat="55.874055556" lon="49.265388889">
+<name>Vysokaya Gora</name>
+</wpt>
+<wpt lat="-34.840194444" lon="149.685138889">
+<name>Wakefield Park Raceway</name>
+</wpt>
+<wpt lat="47.243472222" lon="-123.159138889">
+<name>Washington State Patrol Track</name>
+</wpt>
+<wpt lat="42.708555556" lon="-83.391222222">
+<name>Waterford Hills Raceway</name>
+</wpt>
+<wpt lat="52.126083333" lon="-7.559694444">
+<name>Waterford Raceway</name>
+</wpt>
+<wpt lat="42.340972222" lon="-76.928833333">
+<name>Watkins Glen Intl. Raceway</name>
+</wpt>
+<wpt lat="48.473361111" lon="-123.500333333">
+<name>Western Speedway</name>
+</wpt>
+<wpt lat="33.264222222" lon="-111.967638889">
+<name>Wild Horse Pass - Bondurant</name>
+</wpt>
+<wpt lat="33.264111111" lon="-111.959166667">
+<name>Wild Horse Pass - Dirt</name>
+</wpt>
+<wpt lat="33.273777778" lon="-111.963333333">
+<name>Wild Horse Pass - East</name>
+</wpt>
+<wpt lat="33.269027778" lon="-111.969333333">
+<name>Wild Horse Pass - Firebird</name>
+</wpt>
+<wpt lat="33.266222222" lon="-111.971777778">
+<name>Wild Horse Pass - West</name>
+</wpt>
+<wpt lat="34.878083333" lon="-118.263027778">
+<name>Willow Horse Thief Mile</name>
+</wpt>
+<wpt lat="34.870888889" lon="-118.266555556">
+<name>Willow Kart Track</name>
+</wpt>
+<wpt lat="34.8715" lon="-118.263722222">
+<name>Willow Springs Raceway</name>
+</wpt>
+<wpt lat="-22.569305556" lon="17.001388889">
+<name>Windhoek</name>
+</wpt>
+<wpt lat="-36.51975" lon="146.087888889">
+<name>Winton Motor Raceway</name>
+</wpt>
+<wpt lat="0.380027778" lon="-78.098583333">
+<name>Yahuarcocha</name>
+</wpt>
+<wpt lat="24.469944444" lon="54.605222222">
+<name>Yas Marina Circuit - Full Track</name>
+</wpt>
+<wpt lat="24.469944444" lon="54.605222222">
+<name>Yas Marina Circuit - North Course</name>
+</wpt>
+<wpt lat="24.464888889" lon="54.605333333">
+<name>Yas Marina Circuit - South Course</name>
+</wpt>
+<wpt lat="24.477111111" lon="54.60725">
+<name>Yas Marina Kartzone</name>
+</wpt>
+<wpt lat="52.388861111" lon="4.540777778">
+<name>Zandvoort</name>
+</wpt>
+<wpt lat="41.827805556" lon="-0.811777778">
+<name>Zeura Intl. Circuit</name>
+</wpt>
+<wpt lat="41.829222222" lon="-0.8125">
+<name>Zeura Kart Track</name>
+</wpt>
+<wpt lat="22.367111111" lon="113.559888889">
+<name>Zhuhai Intl. Circuit</name>
+</wpt>
+<wpt lat="50.989027778" lon="5.255722222">
+<name>Zolder</name>
+</wpt>
+<wpt lat="-25.809888889" lon="28.109833333">
+<name>Zwartkops Kart Track</name>
+</wpt>
+<wpt lat="-25.809972222" lon="28.112472222">
+<name>Zwartkops Raceway</name>
+</wpt>
+</gpx>

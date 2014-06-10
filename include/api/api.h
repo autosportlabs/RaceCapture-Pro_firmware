@@ -20,6 +20,8 @@
 #define API_ERROR_SEVERE		-99
 #define API_ERROR_UNSPECIFIED 	-100
 
+#define API_MSG_SUCCESS(X) (X == API_SUCCESS || X == API_SUCCESS_NO_RETURN )
+
 
 typedef struct _api_context{
 	Serial * serial;
@@ -39,16 +41,18 @@ typedef struct _api_t
 void initApi();
 
 void json_valueStart(Serial *serial, const char *name);
+void json_null(Serial *serial, const char *name, int more);
 void json_int(Serial *serial, const char *name, int value, int more);
 void json_uint(Serial *serial, const char *name, unsigned int value, int more);
+void json_escapedString(Serial *serial, const char *name, const char *value, int more);
 void json_string(Serial *serial, const char *name, const char *value, int more);
 void json_float(Serial *serial, const char *name, float value, int precision, int more);
-void json_objStart(Serial *serial, const char * label);
+void json_objStartString(Serial *serial, const char * label);
 void json_objStartInt(Serial *serial, int label);
-void json_messageStart(Serial *serial);
-void json_messageEnd(Serial *serial);
+void json_objStart(Serial *serial);
 void json_objEnd(Serial *serial, int more);
 void json_arrayStart(Serial *serial, const char * name);
+void json_arrayElementString(Serial *serial, const char *value, int more);
 void json_arrayElementFloat(Serial *serial, float value, int precision, int more);
 void json_arrayEnd(Serial *serial, int more);
 void json_sendResult(Serial *serial, const char *messageName, int resultCode);

@@ -3,12 +3,11 @@
         "0": {
         	"id":22,        
             "sr": 10,
-            "prec": 3,
-            "sTimer": 1,
+            "st": 1,
             "mode": 1,
             "alpha": 0.5,
-            "ppRev": 4,
-            "timDiv": 2
+            "ppr": 4,
+            "div": 2
         }
     }
 }

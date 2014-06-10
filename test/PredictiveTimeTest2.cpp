@@ -9,8 +9,9 @@
 
 #include <stdlib.h>
 
+#include "dateTime.h"
 #include "geopoint.h"
-#include "gps.h"
+#include "gps.testing.h"
 #include "modp_atonum.h"
 #include "predictive_timer_2.h"
 #include "loggerConfig.h"
@@ -74,9 +75,10 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
 
 	std::istringstream iss(log);
 
-	Track *trackCfg  = 	&(getWorkingLoggerConfig()->TrackConfigs.track);
-	trackCfg->startFinish.latitude = 47.806934;
-	trackCfg->startFinish.longitude = -122.341150;
+
+	TrackConfig *trackCfg  = 	&(getWorkingLoggerConfig()->TrackConfigs);
+	trackCfg->track.circuit.startFinish.latitude = 47.806934;
+	trackCfg->track.circuit.startFinish.longitude = -122.341150;
 	trackCfg->radius = 0.0004;
 	setGPSQuality (GPS_QUALITY_DIFFERENTIAL);
 
@@ -102,25 +104,40 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
 			float lat = modp_atof(latitudeRaw.c_str());
 			float lon = modp_atof(longitudeRaw.c_str());
 			float speed = modp_atof(speedRaw.c_str());
-			float utcTime = modp_atof(timeRaw.c_str());
 
-         if (sfCrossTime < 0)
-           sfCrossTime = utcTime;
+         const char *utcTimeStr = timeRaw.c_str();
+         float utcTime = modp_atof(utcTimeStr);
+         double secondsSinceMidnight = calculateSecondsSinceMidnight(utcTimeStr);
 
-			printf("---\nlat = %f : lon = %f : speed = %f : time = %f\n", lat, lon, speed, utcTime);
+         DateTime dt;
+         dt.partialYear = 14;
+         dt.month = 5;
+         dt.day = 3;
+         dt.hour = (int8_t) atoiOffsetLenSafe(utcTimeStr, 0, 2);
+         dt.minute = (int8_t) atoiOffsetLenSafe(utcTimeStr, 2, 2);
+         dt.second = (int8_t) atoiOffsetLenSafe(utcTimeStr, 4, 2);
+         dt.millisecond = (int16_t) atoiOffsetLenSafe(utcTimeStr, 7, 3);
+         updateFullDateTime(dt);
+         updateMillisSinceEpoch(dt);
 
-			setGPSSpeed(speed);
-			setUTCTime(utcTime);
-			updatePosition(lat, lon);
-			double secondsSinceMidnight = calculateSecondsSinceMidnight(
-					timeRaw.c_str());
-			updateSecondsSinceMidnight(secondsSinceMidnight);
-			onLocationUpdated();
+         const unsigned long millis = getMillisSinceEpoch();
+         printf("---\n");
+         printf("DateTime - YY MM DD HH MM SS.mmm : %02d %02d %02d %02d %02d %02d.%03d\n", dt.partialYear,
+               dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.millisecond);
+         printf("lat = %f : lon = %f : speed = %f : UTC_Str = \"%s\" : time = %f : millis = %lu\n",
+               lat, lon, speed, utcTimeStr, utcTime, millis);
 
-			GeoPoint gp;
-			populateGeoPoint(&gp);
+         setGPSSpeed(speed);
+         setUTCTime(utcTime);
+         updatePosition(lat, lon);
+         updateSecondsSinceMidnight(secondsSinceMidnight);
+         onLocationUpdated();
 
-			printf("Lap #%d - Predicted Time: %f\n", getLapCount(), predTime);
+         GeoPoint gp;
+         populateGeoPoint(&gp);
+         const float secondsSinceFirstFix = getSecondsSinceFirstFix();
+         float predTime = getPredictedTime(gp, secondsSinceFirstFix);
+         printf("Lap #%d - Predicted Time: %f\n", getLapCount(), predTime);
 		}
 	}
 }

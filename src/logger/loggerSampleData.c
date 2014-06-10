@@ -339,7 +339,7 @@ float get_pwm_sample(int channelId){
 			pwmValue = PWM_get_duty_cycle(channelId);
 			break;
 		case MODE_LOGGING_PWM_VOLTS:
-			pwmValue = PWM_get_duty_cycle(channelId) * c->voltageScaling;
+			pwmValue = PWM_get_duty_cycle(channelId) * PWM_VOLTAGE_SCALING;
 			break;
 		default:
 			pwmValue = -1;
