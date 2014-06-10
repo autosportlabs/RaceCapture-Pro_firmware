@@ -229,10 +229,13 @@ class RcpSerial:
             
     def open(self):
         print('Opening serial')
-        ser = serial.Serial(self.port, timeout=self.timeout, writeTimeout = self.writeTimeout) 
-        ser.flushInput()
-        ser.flushOutput()
-        return ser
+        if self.port == None:
+            return None
+        else:
+            ser = serial.Serial(self.port, timeout=self.timeout, writeTimeout = self.writeTimeout) 
+            ser.flushInput()
+            ser.flushOutput()
+            return ser
 
     def close(self):
         if self.ser != None:
@@ -507,7 +510,7 @@ class RcpSerial:
                 if testVer.major > 0 or testVer.minor > 0 or testVer.bugfix > 0:
                     break
             except Exception as detail:
-                print('Not found on port')
+                print('Not found on ' + self.port)
                 #traceback.print_exc()                
                 self.port = None
                 self.close()
