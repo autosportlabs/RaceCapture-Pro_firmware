@@ -1,7 +1,11 @@
-<TracksView>:
+#:kivy 1.8.0
+
+<TracksView1>:
+    size_hint: (1.0, 1.0)
+    orientation: 'vertical'
 	ScrollView:
 		id: scrltracks
-	    size_hint_y: 0.75
+	    
 	    do_scroll_x:False
 	    do_scroll_y:True
 	    GridLayout:
@@ -11,3 +15,12 @@
 	        size_hint_y: None
 	        height: max(self.minimum_height, scrltracks.height)
 	        cols: 1
+			RaceTrackView:
+				rcid: 'racetrack1'
+
+<TracksView>:
+    size_hint: (1.0, 1.0)
+    orientation: 'vertical'
+	RaceTrackView:
+		rcid: 'racetrack1'
+	        

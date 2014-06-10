@@ -1,0 +1,15 @@
+#:kivy 1.8.0
+
+<RaceTrackView>:
+	orientation: 'vertical'
+	BoxLayout:
+		size_hint_y: 1.0
+		Scatter:
+			TrackMap:
+				rcid: 'trackmap1'
+				#size: (dp(300), dp(300))
+	Button:
+		size_hint_y: 0.1
+		text: 'load'
+		on_release: root.loadTracks()
+		
