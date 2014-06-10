@@ -229,7 +229,7 @@ class RcpSerial:
             
     def open(self):
         print('Opening serial')
-        ser = serial.Serial(self.port, timeout=self.timeout, writeTimeout = 0) 
+        ser = serial.Serial(self.port, timeout=self.timeout, writeTimeout = self.writeTimeout) 
         ser.flushInput()
         ser.flushOutput()
         return ser
