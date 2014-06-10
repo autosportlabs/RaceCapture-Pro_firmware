@@ -17,6 +17,12 @@
 		
 <MainMenu>:
 	orientation: 'vertical'
+	canvas.before:
+		Color:
+			rgba: 0.4, 0.05, 0.05, 1
+		Rectangle:
+		    pos: self.pos
+		    size: self.size
 	MainMenuItem:
 		rcid: 'dash'
 		size_hint_y: 0.1
