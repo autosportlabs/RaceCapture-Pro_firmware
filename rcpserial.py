@@ -12,7 +12,8 @@ CHANNEL_ADD_MODE_IN_PROGRESS = 1
 CHANNEL_ADD_MODE_COMPLETE = 2
 DEFAULT_READ_RETRIES = 2
 DEFAULT_LEVEL2_RETRIES = 4
-DEFAULT_SERIAL_TIMEOUT = None
+DEFAULT_SERIAL_READ_TIMEOUT = None
+DEFAULT_SERIAL_WRITE_TIMEOUT = 0
 DEFAULT_MSG_RX_TIMEOUT = 1.0
 
 
@@ -48,7 +49,8 @@ class RcpSerial:
     on_rx = lambda self, value: None
     
     retryCount = DEFAULT_READ_RETRIES
-    timeout = DEFAULT_SERIAL_TIMEOUT
+    timeout = DEFAULT_SERIAL_READ_TIMEOUT
+    writeTimeout = DEFAULT_SERIAL_WRITE_TIMEOUT
     
     def __init__(self, **kwargs):
         self.ser = None
@@ -227,7 +229,7 @@ class RcpSerial:
             
     def open(self):
         print('Opening serial')
-        ser = serial.Serial(self.port, timeout=self.timeout)
+        ser = serial.Serial(self.port, timeout=self.timeout, writeTimeout = 0) 
         ser.flushInput()
         ser.flushOutput()
         return ser
@@ -492,6 +494,7 @@ class RcpSerial:
 
         self.retryCount = 0
         self.timeout = 0.5
+        self.writeTimeout = 0
         print "Searching for RaceCapture on all serial ports"
         testVer = VersionConfig()
         verJson = None
@@ -510,7 +513,8 @@ class RcpSerial:
                 self.close()
 
         self.retryCount = DEFAULT_READ_RETRIES
-        self.timeout = DEFAULT_SERIAL_TIMEOUT
+        self.timeout = DEFAULT_SERIAL_READ_TIMEOUT
+        self.writeTimeout = DEFAULT_SERIAL_WRITE_TIMEOUT
         if not verJson == None:
             print "Found racecapture version " + testVer.toString() + " on port:", self.port
             self.close()
