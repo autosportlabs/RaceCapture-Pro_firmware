@@ -1,5 +1,7 @@
 import json
 
+from autosportlabs.racecapture.geo.geopoint import GeoPoint
+
 MAX_ANALOG_RAW_VALUE = 1023
 MIN_ANALOG_RAW_VALUE = 0
 
@@ -367,21 +369,6 @@ class PwmConfig:
         
         
 CONFIG_SECTOR_COUNT = 20
-
-class GeoPoint:
-    def __init__(self, **kwargs):
-        self.latitude = 0
-        self.longitude = 0
-    
-    def fromJson(self, geoPointJson):
-        try:
-            self.latitude = geoPointJson[0]
-            self.longitude = geoPointJson[1]
-        except:
-            print('Malformed GeoPoint: ' + str(geoPointJson))
-    
-    def toJson(self):
-        return [self.latitude, self.longitude]
         
 TRACK_TYPE_CIRCUIT  = 0
 TRACK_TYPE_STAGE    = 1
