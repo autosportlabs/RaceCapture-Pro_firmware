@@ -1,48 +1,49 @@
 <ToolbarView>:
     orientation: 'horizontal'
     IconButton:
+    	margin_x: 10
+	    background_color: [0.4, 0.05, 0.05, 1]
     	id: 'menu'
     	text: '\357\203\211'
     	on_release: root.mainMenu()
     	size_hint_x: None
     	width: dp(30)
-    Label:
-    	width: dp(10)
-    	size_hint_x: None
+    Button:
+	    background_color: [0.4, 0.05, 0.05, 1]
+	    background_down: ''
+    	text: 'Menu'
+    	size_hint_x: 0.07
+    	on_release: root.mainMenu()
     	
-	ProgressBar:
-		rcid: 'pbar'
-		size_hint_x: 0.05       	
-
-    Label:
-    	width: dp(10)
-    	size_hint_x: None
-
-    IconButton:
-    	rcid: 'teleTxStatus'
-    	text: '\357\203\256'
-    	width: dp(30)
-    	color: [0.0, 1.0, 0.0, 0.2]    	
-    	size_hint_x: None
-    IconButton:
-    	rcid: 'teleRxStatus'
-    	text: '\357\203\255'
-    	width: dp(30)
-    	color: [0.0, 0.8, 1.0, 0.2]
-    	size_hint_x: None
-    IconButton:
-    	rcid: 'rcTxStatus'
-    	text: '\357\200\231'
-    	width: dp(30)
-    	color: [0.0, 1.0, 0.0, 0.2]    	
-    	size_hint_x: None
-    IconButton:
-    	rcid: 'rcRxStatus'
-    	text: '\357\202\223'
-    	width: dp(30)
-    	color: [0.0, 0.8, 1.0, 0.2]    	
-    	size_hint_x: None
-	Label:
-		size_hint_x: 0.95
-        	
-        	
+	AnchorLayout:
+		anchor_x: 'right'
+		BoxLayout:
+			size_hint_x: 0.3
+		    ProgressBar:
+				rcid: 'pbar'
+		    IconButton:
+		    	rcid: 'teleTxStatus'
+		    	text: '\357\203\256'
+		    	width: dp(30)
+		    	color: [0.0, 1.0, 0.0, 0.2]    	
+		    	size_hint_x: None
+		    IconButton:
+		    	rcid: 'teleRxStatus'
+		    	text: '\357\203\255'
+		    	width: dp(30)
+		    	color: [0.0, 0.8, 1.0, 0.2]
+		    	size_hint_x: None
+		    IconButton:
+		    	rcid: 'rcTxStatus'
+		    	text: '\357\200\231'
+		    	width: dp(30)
+		    	color: [0.0, 1.0, 0.0, 0.2]    	
+		    	size_hint_x: None
+		    IconButton:
+		    	rcid: 'rcRxStatus'
+		    	text: '\357\202\223'
+		    	width: dp(30)
+		    	color: [0.0, 0.8, 1.0, 0.2]    	
+		    	size_hint_x: None
+	    	
+	    	
