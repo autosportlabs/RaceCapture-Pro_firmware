@@ -236,6 +236,7 @@ class RaceCaptureApp(App):
         self.configView = configView
         self.channelsView = channelsView
         self.statusBar = statusBar
+        self.icon = 'resource/race_capture_icon.png' # doesn't work in Windows due to https://github.com/kivy/kivy/issues/2202
         
 if __name__ == '__main__':
 
