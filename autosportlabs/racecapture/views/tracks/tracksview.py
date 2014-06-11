@@ -1,6 +1,7 @@
 import kivy
 kivy.require('1.8.0')
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
 from kivy.app import Builder
 from autosportlabs.uix.track.trackmap import TrackMap
 from autosportlabs.uix.track.racetrackview import RaceTrackView
@@ -15,7 +16,18 @@ class TracksView(BoxLayout):
     def __init__(self, **kwargs):
         super(TracksView, self).__init__(**kwargs)
         self.register_event_type('on_channels_updated')
+        self.initTracksList()
         
     def on_channels_updated(self, channels):
         pass
     
+    def initTracksList(self):
+        
+        trackCount = 2
+        grid = kvFind(self, 'rcid', 'tracksgrid')
+        grid.height = 300 * trackCount
+        for i in range(trackCount):
+            track = RaceTrackView()
+            #track = Label(text='blah')
+            track.initMap()
+            grid.add_widget(track)

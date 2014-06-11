@@ -2,14 +2,18 @@
 
 <RaceTrackView>:
 	orientation: 'vertical'
+	Label:
+		size_hint_y: 0.05
+		text: 'The Ridge Motorsports Park'
 	BoxLayout:
-		size_hint_y: 1.0
-		Scatter:
-			TrackMap:
-				rcid: 'trackmap1'
-				#size: (dp(300), dp(300))
-	Button:
-		size_hint_y: 0.1
-		text: 'load'
-		on_release: root.loadTracks()
+		size_hint_y: 0.95
+		orientation: 'horizontal'
+		CheckBox:
+			size_hint_x: 0.01
+		TrackMap:
+			pos: root.pos
+			size: root.size		
+			size_hint_x: 0.95
+			rcid: 'trackmap1'
+			size: (dp(300), dp(300))
 		

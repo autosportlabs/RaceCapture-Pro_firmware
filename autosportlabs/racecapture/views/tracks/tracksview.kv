@@ -1,6 +1,6 @@
 #:kivy 1.8.0
 
-<TracksView1>:
+<TracksView>:
     size_hint: (1.0, 1.0)
     orientation: 'vertical'
 	ScrollView:
@@ -13,14 +13,6 @@
 	        padding: [dp(20), dp(20)]
 	        spacing: [dp(10), dp(10)]
 	        size_hint_y: None
-	        height: max(self.minimum_height, scrltracks.height)
+	        #height: max(self.minimum_height, scrltracks.height)
 	        cols: 1
-			RaceTrackView:
-				rcid: 'racetrack1'
-
-<TracksView>:
-    size_hint: (1.0, 1.0)
-    orientation: 'vertical'
-	RaceTrackView:
-		rcid: 'racetrack1'
 	        

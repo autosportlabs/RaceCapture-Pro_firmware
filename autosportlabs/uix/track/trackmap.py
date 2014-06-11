@@ -2,9 +2,10 @@ import kivy
 import math
 kivy.require('1.8.0')
 from kivy.uix.label import Label
-from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.widget import Widget
 from kivy.uix.scatter import Scatter
+from kivy.graphics import Rectangle
 from kivy.app import Builder
 from kivy.metrics import dp
 from kivy.graphics import Color, Line
@@ -29,6 +30,11 @@ class TrackMap(Widget):
     
     def __init__(self, **kwargs):
         super(TrackMap, self).__init__(**kwargs)
+        self.bind(pos=self.update_map)
+        self.bind(size=self.update_map)
+
+    def update_map(self, *args):
+        pass
         
     def setTrackPoints(self, geoPoints):
         points = self.genMapPoints(geoPoints)
@@ -38,7 +44,7 @@ class TrackMap(Widget):
             linePoints.append(scaledPoint.x)
             linePoints.append(scaledPoint.y)
         
-        with self.canvas:
+        with self.canvas.after:
             Color(1., 0, 0)
             Line(points=linePoints, width=dp(2), closed=True)
         
@@ -74,6 +80,10 @@ class TrackMap(Widget):
             point.y = point.y - minXY.y
             maxXY.x = point.x if maxXY.x == -1 else max(maxXY.x, point.x)
             maxXY.y = point.y if maxXY.y == -1 else max(maxXY.y, point.y);
+        
+            point.x += self.pos[0]
+            point.y += self.pos[1]
+        
         
         
         paddingBothSides = self.MIN_PADDING * 2
