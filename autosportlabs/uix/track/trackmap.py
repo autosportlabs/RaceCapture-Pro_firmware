@@ -28,25 +28,29 @@ class TrackMap(Widget):
     heightPadding = 0
     widthPadding = 0
     
+    mapPoints = []
+    
     def __init__(self, **kwargs):
         super(TrackMap, self).__init__(**kwargs)
         self.bind(pos=self.update_map)
         self.bind(size=self.update_map)
 
     def update_map(self, *args):
-        pass
+        print('update map ' + str(self.pos) + ' ' + str(self.size))
+        self.canvas.clear()
+        
+        with self.canvas:
+            Color(1., 0, 0)
+            Line(points=self.linePoints, width=dp(2), closed=True)
         
     def setTrackPoints(self, geoPoints):
-        points = self.genMapPoints(geoPoints)
+        self.mapPoints = self.genMapPoints(geoPoints)
         linePoints = []
         for point in points:
             scaledPoint = self.scalePoint(point, self.height)
             linePoints.append(scaledPoint.x)
             linePoints.append(scaledPoint.y)
-        
-        with self.canvas.after:
-            Color(1., 0, 0)
-            Line(points=linePoints, width=dp(2), closed=True)
+        self.linePoints = linePoints
         
         
     def projectPoint(self, geoPoint):
@@ -80,10 +84,7 @@ class TrackMap(Widget):
             point.y = point.y - minXY.y
             maxXY.x = point.x if maxXY.x == -1 else max(maxXY.x, point.x)
             maxXY.y = point.y if maxXY.y == -1 else max(maxXY.y, point.y);
-        
-            point.x += self.pos[0]
-            point.y += self.pos[1]
-        
+                
         
         
         paddingBothSides = self.MIN_PADDING * 2
