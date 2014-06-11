@@ -29,6 +29,8 @@ class TrackMap(Widget):
     widthPadding = 0
     
     mapPoints = []
+    minXY = 0
+    maxXY = 0
     
     def __init__(self, **kwargs):
         super(TrackMap, self).__init__(**kwargs)
@@ -36,21 +38,47 @@ class TrackMap(Widget):
         self.bind(size=self.update_map)
 
     def update_map(self, *args):
-        print('update map ' + str(self.pos) + ' ' + str(self.size))
         self.canvas.clear()
+        
+        paddingBothSides = self.MIN_PADDING * 2
+        
+        width = self.size[0] 
+        height = self.size[1]
+        
+        left = self.pos[0]
+        bottom = self.pos[1]
+        
+        # the actual drawing space for the map on the image
+        mapWidth = width - paddingBothSides;
+        mapHeight = height - paddingBothSides;
+
+        #determine the width and height ratio because we need to magnify the map to fit into the given image dimension
+        mapWidthRatio = float(mapWidth) / float(self.maxXY.x)
+        mapHeightRatio = float(mapHeight) / float(self.maxXY.y)
+
+        # using different ratios for width and height will cause the map to be stretched. So, we have to determine
+        # the global ratio that will perfectly fit into the given image dimension
+        self.globalRatio = min(mapWidthRatio, mapHeightRatio);
+
+        #now we need to readjust the padding to ensure the map is always drawn on the center of the given image dimension
+        self.heightPadding = (height - (self.globalRatio * self.maxXY.y)) / 2.0
+        self.widthPadding = (width - (self.globalRatio * self.maxXY.x)) / 2.0
+        self.offsetPoint = self.minXY;
+        
+        points = self.mapPoints
+        linePoints = []
+        for point in points:
+            scaledPoint = self.scalePoint(point, self.height, left, bottom)
+            linePoints.append(scaledPoint.x)
+            linePoints.append(scaledPoint.y)
+        self.linePoints = linePoints
         
         with self.canvas:
             Color(1., 0, 0)
             Line(points=self.linePoints, width=dp(2), closed=True)
         
     def setTrackPoints(self, geoPoints):
-        self.mapPoints = self.genMapPoints(geoPoints)
-        linePoints = []
-        for point in points:
-            scaledPoint = self.scalePoint(point, self.height)
-            linePoints.append(scaledPoint.x)
-            linePoints.append(scaledPoint.y)
-        self.linePoints = linePoints
+        self.genMapPoints(geoPoints)
         
         
     def projectPoint(self, geoPoint):
@@ -59,10 +87,10 @@ class TrackMap(Widget):
         point = Point(longitude, float(math.log(math.tan((math.pi / 4.0) + 0.5 * latitude))))
         return point;
 
-    def scalePoint(self, point, height):
-        adjustedX = int((self.widthPadding + (point.x * self.globalRatio)))
+    def scalePoint(self, point, height, left, bottom):
+        adjustedX = int((self.widthPadding + (point.x * self.globalRatio))) + left
         #need to invert the Y since 0,0 starts at top left
-        adjustedY = int((self.heightPadding + (point.y * self.globalRatio)))
+        adjustedY = int((self.heightPadding + (point.y * self.globalRatio))) + bottom
         return Point(adjustedX, adjustedY)
 
     def genMapPoints(self, geoPoints):
@@ -85,33 +113,8 @@ class TrackMap(Widget):
             maxXY.x = point.x if maxXY.x == -1 else max(maxXY.x, point.x)
             maxXY.y = point.y if maxXY.y == -1 else max(maxXY.y, point.y);
                 
-        
-        
-        paddingBothSides = self.MIN_PADDING * 2
-        
-        width = float(self.width)
-        height = float(self.height)
-
-        print(str(width) + ' ' + str(height))        
-        # the actual drawing space for the map on the image
-        mapWidth = width - paddingBothSides;
-        mapHeight = height - paddingBothSides;
-
-        print(str(mapWidth) + ' ' + str(mapHeight))
-        #determine the width and height ratio because we need to magnify the map to fit into the given image dimension
-        mapWidthRatio = float(mapWidth) / float(maxXY.x)
-        mapHeightRatio = float(mapHeight) / float(maxXY.y)
-
-        # using different ratios for width and height will cause the map to be stretched. So, we have to determine
-        # the global ratio that will perfectly fit into the given image dimension
-        self.globalRatio = min(mapWidthRatio, mapHeightRatio);
-
-        #now we need to readjust the padding to ensure the map is always drawn on the center of the given image dimension
-        self.heightPadding = (height - (self.globalRatio * maxXY.y)) / 2.0
-        self.widthPadding = (width - (self.globalRatio * maxXY.x)) / 2.0
-        self.offsetPoint = minXY;
-        
-        return points
-        
+        self.minXY = minXY
+        self.maxXY = maxXY                
+        self.mapPoints =  points        
         
         
