@@ -3,9 +3,38 @@
 <TracksView>:
     size_hint: (1.0, 1.0)
     orientation: 'vertical'
+    BoxLayout:
+	    size_hint_y: 0.06
+    	orientation: 'horizontal'
+    	Label:
+    		size_hint_x: 0.125
+    		text: 'Search'
+		TextInput:
+			size_hint_x: 0.50
+			rcid: 'namefilter'
+		Label:
+			size_hint_x: 0.125
+			text: 'Region'
+		Spinner:
+			size_hint_x: 0.25
+			rcid: 'regionselect'
+			values: ('All', 'North America', 'North America West', 'North America East', 'North America Central', 'United Kingom', 'Europe', 'Australia / New Zealand', 'Canada', 'South America', 'Eastern Europe', 'Africa') 			
+				
+    BoxLayout:
+    	size_hint_y: 0.1
+    	padding: dp(5)
+		orientation: 'horizontal'
+	    HSeparatorMinor:
+	    	text: 'Select'
+    		size_hint_y: 0.05
+		HSeparatorMinor:
+			text: 'Track'
+			size_hint_y: 0.90
+		
 	ScrollView:
+		size_hint_y: 0.84
 		id: scrltracks
-	    
+			
 	    do_scroll_x:False
 	    do_scroll_y:True
 	    GridLayout:
@@ -15,4 +44,4 @@
 	        size_hint_y: None
 	        #height: max(self.minimum_height, scrltracks.height)
 	        cols: 1
-	        
+	       
