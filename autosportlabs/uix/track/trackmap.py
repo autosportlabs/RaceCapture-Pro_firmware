@@ -22,6 +22,8 @@ class Point:
         self.y = y
     
 class TrackMap(Widget):
+    trackWidth = dp(6)
+    trackColor = Color(1.0, 1.0, 1.0, 0.2)
     MIN_PADDING = dp(1)
     offsetPoint = Point(0,0)
     globalRatio = 0
@@ -74,8 +76,8 @@ class TrackMap(Widget):
         self.linePoints = linePoints
         
         with self.canvas:
-            Color(1., 0, 0)
-            Line(points=self.linePoints, width=dp(2), closed=True)
+            Color(self.trackColor)
+            Line(points=self.linePoints, width=dp(self.trackWidth), closed=True)
         
     def setTrackPoints(self, geoPoints):
         self.genMapPoints(geoPoints)
