@@ -63,6 +63,10 @@ class AnalogChannel(BoxLayout):
         if self.channelConfig:
             self.channelConfig.channelId = self.channels.getIdForName(value)
 
+    def on_linear_map_value(self, instance, value):
+        if self.channelConfig:
+            self.channelConfig.linearScaling = float(value)
+
     def on_sample_rate(self, instance, value):
         if self.channelConfig:
             self.channelConfig.sampleRate = value
@@ -104,6 +108,7 @@ class AnalogChannel(BoxLayout):
             checkLinear.active = False
             checkMapped.active = True
         
+        kvFind(self, 'rcid', 'linearscaling').text = str(channelConfig.linearScaling)
         mapEditor = kvFind(self, 'rcid', 'mapEditor')
         mapEditor.on_config_changed(channelConfig.scalingMap)
         
@@ -174,5 +179,6 @@ class AnalogScalingMapEditor(BoxLayout):
     def on_scaled(self, mapBin, instance, value):
         if self.scalingMap:
             self.scalingMap.setScaled(mapBin, value)
+            
         
 
