@@ -28,7 +28,18 @@ from autosportlabs.racecapture.menu.mainmenu import MainMenu
 
 from toolbarview import ToolbarView
 
+class AppConfig():
+    userDir = "."
+    
+    def setUserDir(self, userDir):
+        print('using user storage directory: ' + userDir)
+        self.userDir = userDir
+        pass
+    
 class RaceCaptureApp(App):
+    
+    appConfig = AppConfig()
+    
     #Central configuration object
     rcpConfig  = RcpConfig()
     
@@ -59,7 +70,8 @@ class RaceCaptureApp(App):
         super(RaceCaptureApp, self).__init__(**kwargs)
         self.processArgs()
         self.rcpComms.initSerial()
-
+        self.appConfig.setUserDir(self.user_data_dir)
+        
     def processArgs(self):
         parser = argparse.ArgumentParser(description='Autosport Labs Race Capture App')
         parser.add_argument('-p','--port', help='Port', required=False)

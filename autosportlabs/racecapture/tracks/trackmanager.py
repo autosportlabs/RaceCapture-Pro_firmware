@@ -76,7 +76,7 @@ class TrackManager:
                 
         retrievedVenueCount = len(self.trackList)                 
         if (not totalVenues == retrievedVenueCount):
-            print('Warning - track list count does not reflect number of tracks retrieved: ' + str(totalVenues) + '/' + str(retrievedVenueCount))
+            print('Warning - reported track count not reflect number of tracks retrieved: ' + str(totalVenues) + '/' + str(retrievedVenueCount))
         
                 
             
