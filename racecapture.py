@@ -2,6 +2,7 @@
 
 import kivy
 import logging
+import sys
 import argparse
 from autosportlabs.racecapture.views.util.alertview import alertPopup
 from functools import partial
@@ -248,6 +249,7 @@ class RaceCaptureApp(App):
         self.configView = configView
         self.channelsView = channelsView
         self.statusBar = statusBar
+        self.icon = ('resource/race_capture_icon_large.ico' if sys.platform == 'win32' else 'resource/race_capture_icon.png')
         
 if __name__ == '__main__':
 

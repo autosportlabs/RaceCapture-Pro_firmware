@@ -21,26 +21,31 @@
         HSeparator:
             text: 'Mode'
 	    GridLayout:
-	        size_hint: (1.0, 1.0)
-	        cols: 2
+	        size_hint: (1.0, 0.5)
+	        cols: 3
 	        Label:
         		text: 'Raw (0 - 1023)'
 	        CheckBox:
 	        	group: 'scalingType'
                 rcid: 'smRaw'
                 on_active: root.on_scaling_type_raw(*args)
+            Label:
 	        Label:
 	        	text: 'Linear'
 	        CheckBox:
 	        	group: 'scalingType'
                 rcid: 'smLinear'
                 on_active: root.on_scaling_type_linear(*args)
+			FloatValueField:
+				rcid: 'linearscaling'
+				on_text: root.on_linear_map_value(*args)	
 	        Label:
 	        	text: 'Mapped'
 	        CheckBox:
 	        	group: 'scalingType'
                 rcid: 'smMapped'
                 on_active: root.on_scaling_type_map(*args)
+			Label:               
     VSeparator:
     BoxLayout:
         orientation: 'vertical'

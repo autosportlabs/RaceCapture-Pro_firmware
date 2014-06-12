@@ -42,6 +42,8 @@
 ;Interface Settings
 
   !define MUI_HEADERIMAGE
+  !define MUI_ICON "resource\race_capture_icon_large.ico"
+  !define MUI_UNICON "resource\race_capture_icon_large.ico"
   ;!define MUI_HEADERIMAGE_BITMAP "installer_graphic.bmp" ; optional
   ;!define MUI_HEADERIMAGE_BITMAP_NOSTRETCH
   !define MUI_HEADER_TRANSPARENT_TEXT
