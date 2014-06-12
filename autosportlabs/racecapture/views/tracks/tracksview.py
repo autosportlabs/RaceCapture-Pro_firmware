@@ -11,6 +11,10 @@ from autosportlabs.racecapture.geo.geopoint import GeoPoint
 
 Builder.load_file('autosportlabs/racecapture/views/tracks/tracksview.kv')
 
+class TrackItemView(BoxLayout):
+    def __init__(self, **kwargs):
+        super(TrackItemView, self).__init__(**kwargs)
+    
 class TracksView(BoxLayout):
     trackmap = None
     trackMinHeight = dp(100)
@@ -28,6 +32,5 @@ class TracksView(BoxLayout):
         grid = kvFind(self, 'rcid', 'tracksgrid')
         grid.height = self.trackMinHeight * trackCount
         for i in range(trackCount):
-            track = RaceTrackView()
-            track.initMap()
+            track = TrackItemView()
             grid.add_widget(track)

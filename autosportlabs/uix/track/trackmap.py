@@ -31,8 +31,8 @@ class TrackMap(Widget):
     widthPadding = 0
     
     mapPoints = []
-    minXY = 0
-    maxXY = 0
+    minXY = Point(-1, -1)
+    maxXY = Point(-1, -1)
     
     def __init__(self, **kwargs):
         super(TrackMap, self).__init__(**kwargs)

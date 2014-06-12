@@ -1,8 +1,24 @@
 #:kivy 1.8.0
 
+<TrackItemView>:
+	orientation: 'horizontal'
+	CheckBox:
+		size_hint_x: 0.10
+	RaceTrackView:
+		size_hint_x: 0.90
+
 <TracksView>:
     size_hint: (1.0, 1.0)
     orientation: 'vertical'
+    padding: [5,5]
+    spacing: [5,5]    
+	HSeparator:
+		text: 'Race Tracks'
+		size_hint_y: 0.05
+		halign: 'left'    
+	BoxLayout:
+		size_hint_y: 0.01
+		Label:
     BoxLayout:
 	    size_hint_y: 0.06
     	orientation: 'horizontal'
@@ -19,20 +35,9 @@
 			size_hint_x: 0.25
 			rcid: 'regionselect'
 			values: ('All', 'North America', 'North America West', 'North America East', 'North America Central', 'United Kingom', 'Europe', 'Australia / New Zealand', 'Canada', 'South America', 'Eastern Europe', 'Africa') 			
-				
-    BoxLayout:
-    	size_hint_y: 0.1
-    	padding: dp(5)
-		orientation: 'horizontal'
-	    HSeparatorMinor:
-	    	text: 'Select'
-    		size_hint_y: 0.05
-		HSeparatorMinor:
-			text: 'Track'
-			size_hint_y: 0.90
-		
+						
 	ScrollView:
-		size_hint_y: 0.84
+		size_hint_y: 0.68
 		id: scrltracks
 			
 	    do_scroll_x:False
@@ -44,4 +49,17 @@
 	        size_hint_y: None
 	        #height: max(self.minimum_height, scrltracks.height)
 	        cols: 1
+	        
+    BoxLayout:
+    	size_hint_y: 0.06
+    	orientation: 'horizontal'
+    	CheckBox:
+    		size_hint_x: 0.05
+    		rcid: 'selectall'
+    	Label:
+    		size_hint_x: 0.25
+    		text: 'Select All'
+    	Label:
+    		size_hint_x: 0.7
+	    
 	       
