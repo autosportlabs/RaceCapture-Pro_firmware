@@ -6,7 +6,7 @@ class GeoPoint:
     
     @classmethod
     def fromPoint(cls, latitude, longitude):
-        g = cls()
+        g = GeoPoint()
         g.latitude = latitude
         g.longitude = longitude
         return g

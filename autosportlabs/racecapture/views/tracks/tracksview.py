@@ -22,7 +22,7 @@ class TrackItemView(BoxLayout):
     
 class TracksView(BoxLayout):
     trackmap = None
-    trackMinHeight = dp(100)
+    trackMinHeight = dp(300)
     trackManager = None
     def __init__(self, **kwargs):
         super(TracksView, self).__init__(**kwargs)
@@ -34,14 +34,17 @@ class TracksView(BoxLayout):
     
     def on_update_check(self):
         self.trackManager.downloadAllTracks()
-        self.initTracksList(self.trackManager.tracks)
+        #self.initTracksList(self.trackManager.tracks)
         
     def initTracksList(self, tracks):
-        trackCount = len(tracks.keys())
+        trackCount = len(tracks)
         grid = kvFind(self, 'rcid', 'tracksgrid')
         grid.height = self.trackMinHeight * trackCount
         grid.clear_widgets()
-        for value in tracks:
-            track = tracks[value]
+        
+        for track in tracks:
+            for p in track.mapPoints:
+                print('track json foo ' + str(p[0]) + ' ' + str(p[0]))
+                break
             trackView = TrackItemView(track=track)
             grid.add_widget(trackView)
