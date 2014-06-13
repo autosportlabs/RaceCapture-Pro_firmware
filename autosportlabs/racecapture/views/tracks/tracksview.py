@@ -12,25 +12,36 @@ from autosportlabs.racecapture.geo.geopoint import GeoPoint
 Builder.load_file('autosportlabs/racecapture/views/tracks/tracksview.kv')
 
 class TrackItemView(BoxLayout):
+    track = None
     def __init__(self, **kwargs):
         super(TrackItemView, self).__init__(**kwargs)
+        track = kwargs.get('track', None)
+        if track:
+            raceTrackView = kvFind(self, 'rcid', 'track')
+            raceTrackView.loadTrack(track)
     
 class TracksView(BoxLayout):
     trackmap = None
     trackMinHeight = dp(100)
+    trackManager = None
     def __init__(self, **kwargs):
         super(TracksView, self).__init__(**kwargs)
+        self.trackManager = kwargs.get('trackManager')
         self.register_event_type('on_channels_updated')
-        self.initTracksList()
         
     def on_channels_updated(self, channels):
         pass
     
-    def initTracksList(self):
+    def on_update_check(self):
+        self.trackManager.downloadAllTracks()
+        self.initTracksList(self.trackManager.tracks)
         
-        trackCount = 50
+    def initTracksList(self, tracks):
+        trackCount = len(tracks.keys())
         grid = kvFind(self, 'rcid', 'tracksgrid')
         grid.height = self.trackMinHeight * trackCount
-        for i in range(trackCount):
-            track = TrackItemView()
-            grid.add_widget(track)
+        grid.clear_widgets()
+        for value in tracks:
+            track = tracks[value]
+            trackView = TrackItemView(track=track)
+            grid.add_widget(trackView)

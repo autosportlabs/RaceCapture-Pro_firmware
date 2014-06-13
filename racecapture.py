@@ -22,6 +22,7 @@ from installfix_garden_navigationdrawer import NavigationDrawer
 from rcpserial import *
 from channels import *
 from utils import *
+from autosportlabs.racecapture.tracks.trackmanager import TrackManager
 from autosportlabs.racecapture.views.channels.channelsview import ChannelsView
 from autosportlabs.racecapture.views.tracks.tracksview import TracksView
 from autosportlabs.racecapture.views.configuration.rcp.configview import ConfigView
@@ -41,7 +42,7 @@ class RaceCaptureApp(App):
     
     appConfig = AppConfig()
     
-    #Central configuration object
+    #Central RCP configuration object
     rcpConfig  = RcpConfig()
     
     #List of Channels
@@ -50,6 +51,10 @@ class RaceCaptureApp(App):
     #RaceCapture serial I/O 
     rcpComms = RcpSerial()
     
+    #Track database manager
+    trackManager = None
+
+    #Application Status bars    
     statusBar = None
     
     #Main Views
@@ -62,6 +67,7 @@ class RaceCaptureApp(App):
     #main content view
     mainView = None
     
+    
     #collection of main views to be swapped into mainView 
     mainViews = {}
     
@@ -72,6 +78,8 @@ class RaceCaptureApp(App):
         self.processArgs()
         self.rcpComms.initSerial()
         self.appConfig.setUserDir(self.user_data_dir)
+        self.trackManager = TrackManager(user_dir=self.user_data_dir)
+
         
     def processArgs(self):
         parser = argparse.ArgumentParser(description='Autosport Labs Race Capture App')
@@ -92,15 +100,9 @@ class RaceCaptureApp(App):
     def on_main_menu(self, instance, *args):
         self.mainNav.toggle_state()
     
-    
-    
     #Logfile
     def on_poll_logfile(self, instance):
         self.rcpComms.getLogfile()
-
-
-
-
         
     #Run Script
     def on_run_script(self, instance):
@@ -239,8 +241,7 @@ class RaceCaptureApp(App):
         channelsView.bind(on_read_channels=self.on_read_channels)
         channelsView.bind(on_write_channels=self.on_write_channels)
         
-        tracksView = TracksView()
-        #bind tracks
+        tracksView = TracksView(trackManager=self.trackManager)
         
         self.mainViews = {'config' : configView, 
                           'channels' : channelsView,

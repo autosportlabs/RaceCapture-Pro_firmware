@@ -5,6 +5,7 @@
 	CheckBox:
 		size_hint_x: 0.10
 	RaceTrackView:
+		rcid: 'track'
 		size_hint_x: 0.90
 
 <TracksView>:
@@ -61,5 +62,9 @@
     		text: 'Select All'
     	Label:
     		size_hint_x: 0.7
+    	IconButton:
+    		size_hint_x: 0.05
+    		text: ''
+    		on_press: root.on_update_check()
 	    
 	       
