@@ -1,18 +1,98 @@
 #:kivy 1.8.0
 
 <TrackItemView>:
-	orientation: 'horizontal'
-	CheckBox:
-		size_hint_x: 0.10
-	RaceTrackView:
-		rcid: 'track'
-		size_hint_x: 0.90
-
+	BoxLayout:
+		orientation: 'horizontal'
+		CheckBox:
+			size_hint_x: 0.10
+		BoxLayout:
+			orientation: 'vertical'
+			spacing: dp(10)
+			canvas.before:
+		        Color:
+		            rgba: 0.1, 0.1, 0.1, 1
+		        Rectangle:
+		            pos: self.pos
+		            size: self.size
+			Label:
+		    	font_size: dp(20)
+		    	size_hint_y: 0.1
+				text: ''
+				rcid: 'name'
+			BoxLayout:
+				orientation: 'horizontal'
+				BoxLayout:
+					size_hint_x: 0.90
+					padding: (dp(10), dp(10))
+					spacing: dp(30)
+					orientation: 'horizontal'
+					RaceTrackView:
+						rcid: 'track'
+						size_hint_x: 0.65
+				    BoxLayout:
+		            	spacing: dp(10)
+				    	orientation: 'vertical'
+						size_hint_x: 0.35
+				    	padding: (dp(10), dp(10))
+						canvas.before:
+					        Color:
+					            rgba: 0.15, 0.15, 0.15, 1
+					        Rectangle:
+					            pos: self.pos
+					            size: self.size
+					            
+			            BoxLayout:
+			            	size_hint_y: 0.2
+			            	orientation: 'horizontal'
+			            	spacing: dp(10)	            	
+							Label:
+								canvas.before:
+							        Color:
+							            rgba: 0.2, 0.2, 0.2, 1
+							        Rectangle:
+							            pos: self.pos
+							            size: self.size
+								size_hint_x: 1.0
+								font_size: 18
+								text: 'Location'
+								bold: True
+		
+						BoxLayout:
+							size_hint_y: 0.15
+							orientation: 'horizontal'
+			            	spacing: dp(10)					
+							FieldLabel:
+								halign: 'right'
+								size_hint_x: 0.4
+								text: 'Configuration'
+								bold: True
+							FieldLabel:
+								halign: 'left'
+								size_hint_x: 0.6
+								rcid: 'configuration'
+								text: 'configuration name'
+		
+						BoxLayout:
+							size_hint_y: 0.15
+							orientation: 'horizontal'
+			            	spacing: dp(10)					
+							FieldLabel:
+								halign: 'right'
+								size_hint_x: 0.4
+								halign: 'right'
+								text: 'Length'
+								bold: True
+							FieldLabel:
+								halign: 'left'
+								size_hint_x: 0.6
+								rcid: 'length'
+						BoxLayout:
+							size_hint_y: 0.5
 <TracksView>:
     size_hint: (1.0, 1.0)
     orientation: 'vertical'
-    padding: [5,5]
-    spacing: [5,5]    
+    padding: [dp(5),dp(5)]
+    spacing: dp(5)
 	HSeparator:
 		text: 'Race Tracks'
 		size_hint_y: 0.05
@@ -37,20 +117,20 @@
 			size_hint_x: 0.25
 			rcid: 'regionselect'
 			values: ('All', 'North America', 'North America West', 'North America East', 'North America Central', 'United Kingom', 'Europe', 'Australia / New Zealand', 'Canada', 'South America', 'Eastern Europe', 'Africa') 			
-						
-	ScrollView:
+	BoxLayout:
+    	spacing: dp(30)
 		size_hint_y: 0.68
-		id: scrltracks
-			
-	    do_scroll_x:False
-	    do_scroll_y:True
-	    GridLayout:
-	    	rcid: 'tracksgrid'
-	        padding: [dp(20), dp(20)]
-	        spacing: [dp(10), dp(10)]
-	        size_hint_y: None
-	        #height: max(self.minimum_height, scrltracks.height)
-	        cols: 1
+		ScrollView:
+			id: scrltracks
+		    do_scroll_x:False
+		    do_scroll_y:True
+		    GridLayout:
+		    	rcid: 'tracksgrid'
+		        padding: [dp(20), dp(20)]
+		        spacing: [dp(10), dp(10)]
+		        size_hint_y: None
+		        #height: max(self.minimum_height, scrltracks.height)
+		        cols: 1
 	        
     BoxLayout:
     	size_hint_y: 0.06

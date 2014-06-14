@@ -19,6 +19,11 @@ class TrackItemView(BoxLayout):
         if track:
             raceTrackView = kvFind(self, 'rcid', 'track')
             raceTrackView.loadTrack(track)
+            trackLabel = kvFind(self, 'rcid', 'name')
+            trackLabel.text = track.name
+            lengthLabel = kvFind(self, 'rcid', 'length')
+            lengthLabel.text = str(track.length) + ' mi.'
+            
     
 class TracksView(BoxLayout):
     trackmap = None
