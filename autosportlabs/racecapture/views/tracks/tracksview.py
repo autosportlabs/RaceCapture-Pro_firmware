@@ -6,6 +6,7 @@ from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.app import Builder
 from kivy.metrics import dp
+from autosportlabs.racecapture.views.util.alertview import alertPopup
 from autosportlabs.uix.track.trackmap import TrackMap
 from autosportlabs.uix.track.racetrackview import RaceTrackView
 from utils import *
@@ -46,12 +47,13 @@ class TracksView(BoxLayout):
     trackMinHeight = dp(300)
     trackManager = None
     tracksUpdatePopup = None
-    
+    tracksGrid = None
     def __init__(self, **kwargs):
         super(TracksView, self).__init__(**kwargs)
         self.trackManager = kwargs.get('trackManager')
         self.register_event_type('on_channels_updated')
         self.loadCurrentTracks()
+        self.tracksGrid = kvFind(self, 'rcid', 'tracksgrid')
         
     def on_channels_updated(self, channels):
         pass
@@ -62,7 +64,9 @@ class TracksView(BoxLayout):
         
     def loadCurrentTracksError(self, details):
         self.initTracksList()
-        self.tracksUpdatePopup.content.on_message('Error loading:\n ' + str(details))
+        self.dismissPopups()
+        alertPopup('Error Loading', str(details))        
+        
         
     def loadCurrentTracks(self):
         tracksUpdateView = TracksUpdateStatusView()
@@ -84,7 +88,9 @@ class TracksView(BoxLayout):
         
     def on_update_check_error(self, details):
         self.initTracksList()
-        self.tracksUpdatePopup.content.on_message('Error updating:\n ' + str(details))
+        self.dismissPopups() 
+        print('Error updating: ' + str(details))       
+        alertPopup('Error Updating', 'There was an error updating the track list.\n\nPlease check your network connection and try again')
             
     def on_update_check(self):
         self.setViewDisabled(True)
@@ -100,8 +106,7 @@ class TracksView(BoxLayout):
                 trackView = TrackItemView(track=track)
                 trackView.size_hint_y = None
                 trackView.height = self.trackMinHeight
-                grid = kvFind(self, 'rcid', 'tracksgrid')
-                grid.add_widget(trackView)
+                self.tracksGrid.add_widget(trackView)
                 Clock.schedule_once(lambda dt: self.addNextTrack(index + 1, keys))
             else:
                 self.dismissPopups()
@@ -112,8 +117,8 @@ class TracksView(BoxLayout):
         tracks = self.trackManager.tracks
         trackCount = len(tracks)
         grid = kvFind(self, 'rcid', 'tracksgrid')
-        grid.height = self.trackMinHeight * trackCount
-        grid.clear_widgets()
+        self.tracksGrid.height = self.trackMinHeight * trackCount
+        self.tracksGrid.clear_widgets()
         self.addNextTrack(0, tracks.keys())
             
             

@@ -199,7 +199,7 @@ class TrackManager:
                     if progressCallback:
                         progressCallback(count, trackCount, trackMap.name)
                 except Exception as detail:
-                    print('failed to read track file ' + trackPath + '; ' + str(detail))
+                    print('failed to read track file\n' + trackPath + ';\n' + str(detail))
                         
     def updateAllTracksWorker(self, winCallback, failCallback, progressCallback=None):
         try:
