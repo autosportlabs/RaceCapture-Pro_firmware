@@ -48,13 +48,17 @@ class TracksView(BoxLayout):
     trackManager = None
     tracksUpdatePopup = None
     tracksGrid = None
+    lastNameSearch = None
+    searchDelay = 1.5
+    
     def __init__(self, **kwargs):
         super(TracksView, self).__init__(**kwargs)
         self.trackManager = kwargs.get('trackManager')
         self.register_event_type('on_channels_updated')
         self.loadCurrentTracks()
         self.tracksGrid = kvFind(self, 'rcid', 'tracksgrid')
-        
+        self.lastNameSearch = ''
+            
     def on_channels_updated(self, channels):
         pass
     
@@ -77,10 +81,24 @@ class TracksView(BoxLayout):
     
     def setViewDisabled(self, disabled):
         kvFind(self, 'rcid', 'updatecheck').disabled = disabled
+        kvFind(self, 'rcid', 'namefilter').disabled = disabled
     
     def dismissPopups(self):
         if self.tracksUpdatePopup:
             self.tracksUpdatePopup.dismiss()
+         
+    def searchAndUpdate(self, dt):
+        foundTrackIds = self.trackManager.searchTracksByName(self.lastNameSearch)
+        self.initTracksList(foundTrackIds)
+
+    def on_search_track_name(self, instance, search):
+        
+        if search == '' and len(self.lastNameSearch) > 0:
+            self.initTracksList()
+        elif not self.lastNameSearch == search:
+            self.lastNameSearch = search
+            Clock.unschedule(self.searchAndUpdate)
+            Clock.schedule_once(self.searchAndUpdate, self.searchDelay)
         
     def on_update_check_success(self):
         self.initTracksList()
@@ -113,12 +131,14 @@ class TracksView(BoxLayout):
                 self.setViewDisabled(False)
                 
         
-    def initTracksList(self):
-        tracks = self.trackManager.tracks
-        trackCount = len(tracks)
+    def initTracksList(self, trackIds = None):
+        self.setViewDisabled(True)
+        if trackIds == None:
+            trackIds = self.trackManager.tracks.keys()
+        trackCount = len(trackIds)
         grid = kvFind(self, 'rcid', 'tracksgrid')
         self.tracksGrid.height = self.trackMinHeight * trackCount
         self.tracksGrid.clear_widgets()
-        self.addNextTrack(0, tracks.keys())
+        self.addNextTrack(0, trackIds)
             
             

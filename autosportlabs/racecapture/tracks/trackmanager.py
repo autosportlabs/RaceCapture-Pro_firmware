@@ -2,6 +2,7 @@ import json
 import time
 import copy
 import errno
+import string
 from threading import Thread, Lock
 from os import listdir, makedirs
 from urlparse import urljoin, urlparse
@@ -98,6 +99,14 @@ class TrackManager:
     def load_tracks(self):
         pass
     
+    def searchTracksByName(self, name):
+        keys = []
+        for trackId in self.tracks.keys():
+            trackName = self.tracks[trackId].name
+            if string.lower(name.strip()) in string.lower(trackName.strip()):
+                keys.append(trackId)
+        return keys
+                
     def findClosestTrack(self, point, radius):
         pass
 
