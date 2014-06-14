@@ -33,10 +33,15 @@ class TracksView(BoxLayout):
         super(TracksView, self).__init__(**kwargs)
         self.trackManager = kwargs.get('trackManager')
         self.register_event_type('on_channels_updated')
+        self.loadCurrentTracks()
         
     def on_channels_updated(self, channels):
         pass
     
+    def loadCurrentTracks(self):
+        self.trackManager.loadCurrentTracks()
+        self.initTracksList(self.trackManager.tracks)
+        
     def on_update_check(self):
         self.trackManager.updateAllTracks()
         self.initTracksList(self.trackManager.tracks)
