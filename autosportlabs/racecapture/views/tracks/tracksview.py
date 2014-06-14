@@ -38,7 +38,7 @@ class TracksView(BoxLayout):
         pass
     
     def on_update_check(self):
-        self.trackManager.downloadAllTracks()
+        self.trackManager.updateAllTracks()
         self.initTracksList(self.trackManager.tracks)
         
     def initTracksList(self, tracks):
