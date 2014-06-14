@@ -34,7 +34,7 @@ class TracksView(BoxLayout):
     
     def on_update_check(self):
         self.trackManager.downloadAllTracks()
-        #self.initTracksList(self.trackManager.tracks)
+        self.initTracksList(self.trackManager.tracks)
         
     def initTracksList(self, tracks):
         trackCount = len(tracks)
@@ -42,9 +42,7 @@ class TracksView(BoxLayout):
         grid.height = self.trackMinHeight * trackCount
         grid.clear_widgets()
         
-        for track in tracks:
-            for p in track.mapPoints:
-                print('track json foo ' + str(p[0]) + ' ' + str(p[0]))
-                break
+        for venueId in tracks.keys():
+            track = tracks[venueId]
             trackView = TrackItemView(track=track)
             grid.add_widget(trackView)

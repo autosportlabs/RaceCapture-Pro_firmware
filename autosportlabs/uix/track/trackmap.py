@@ -22,7 +22,7 @@ class Point:
         self.y = y
     
 class TrackMap(Widget):
-    trackWidthScale =0.03
+    trackWidthScale =0.01
     trackColor = Color(1.0, 1.0, 1.0, 0.2)
     MIN_PADDING = dp(1)
     offsetPoint = Point(0,0)
@@ -85,8 +85,8 @@ class TrackMap(Widget):
         
         
     def projectPoint(self, geoPoint):
-        latitude = geoPoint[0] * float(math.pi / 180.0)
-        longitude = geoPoint[1] * float(math.pi / 180.0)
+        latitude = geoPoint.latitude * float(math.pi / 180.0)
+        longitude = geoPoint.longitude * float(math.pi / 180.0)
         point = Point(longitude, float(math.log(math.tan((math.pi / 4.0) + 0.5 * latitude))))
         return point;
 
@@ -103,9 +103,6 @@ class TrackMap(Widget):
         minXY = Point(-1, -1)
         maxXY = Point(-1, -1)
         
-        print('genMapPoints')
-        geoPoint = geoPoints[0]
-        print('trackmap pt: ' + str(geoPoint[0]) + ' ' + str(geoPoint[1]))
         for geoPoint in geoPoints:
             point = self.projectPoint(geoPoint)
             minXY.x = point.x if minXY.x == -1 else min(minXY.x, point.x)

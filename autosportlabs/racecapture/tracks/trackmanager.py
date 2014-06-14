@@ -22,10 +22,11 @@ class Venue:
         self.updatedAt = venueJson.get('updated', self.updatedAt)
         
 class TrackMap:
-    mapPoints = []
-    sectorPoints = []
+    mapPoints = None
+    sectorPoints = None
     name = ''
     updatedAt = None
+    length = 0
     def __init__(self, **kwargs):
         pass
     
@@ -34,18 +35,20 @@ class TrackMap:
         if (venueNode):
             self.updatedAt = venueNode.get('updated', self.updatedAt)
             self.name = venueNode.get('name', self.name)
+            self.length = venueNode.get('length', self.length)
             mapPointsNode = venueNode.get('track_map_array')
+            mapPoints = []
             if mapPointsNode:
-                del self.mapPoints[:]
                 for point in mapPointsNode:
-                    latitude = point[0]
-                    longitude = point[1]
-                    self.mapPoints.append([float(latitude), float(longitude)])
+                    mapPoints.append(GeoPoint.fromPoint(point[0], point[1]))
+            self.mapPoints = mapPoints
                     
             sectorNode = venueNode.get('sector_points')
+            sectorPoints = []
             if sectorNode:
                 for point in sectorNode:
                     self.sectorPoints.append(GeoPoint.fromPoint(point[0], point[1]))
+            self.sectorPoints = sectorPoints
         
 class TrackManager:
     user_dir = '.'
@@ -66,7 +69,6 @@ class TrackManager:
         pass
 
     def loadJson(self, uri):
-        print('loading json from ' + uri)
         retries = 0
         while retries < self.readRetries:
             try:
@@ -88,7 +90,6 @@ class TrackManager:
         totalVenues = None
         nextUri = self.rcp_venue_url + '?start=' + str(start)
         self.trackList.clear()
-        count = 0
         while nextUri:
             venuesDocJson = self.loadJson(nextUri)
             try:
@@ -104,12 +105,8 @@ class TrackManager:
                     venue.fromJson(venueJson)
                     self.trackList[venue.venueId] = venue
                     print('found venue id: ' + venue.venueId)
-                    count += 1
-                    if count > 2:
-                        break
                                 
                 nextUri = venuesDocJson.get('nextURI')
-                nextUri = None
             except Exception as detail:
                 print('Malformed venue JSON from url ' + nextUri + '; json =  ' + str(venueJson) + ' ' + str(detail))
                 
@@ -122,7 +119,6 @@ class TrackManager:
         trackJson = self.loadJson(trackUrl)
         trackMap = TrackMap()
         trackMap.fromJson(trackJson)
-        print('downloadTrack point1 ' + str(trackMap.mapPoints[0][0]) + ' ' + str(trackMap.mapPoints[0][1]))                
         
         return copy.deepcopy(trackMap)
         
@@ -132,17 +128,7 @@ class TrackManager:
         for trackId in self.trackList.keys():
             print('downloading track: ' + trackId)
             trackMap = self.downloadTrack(trackId)
-            point = trackMap.mapPoints[0]
-            print(trackMap.name + ' track json download point pre ' + str(point[0]) + ' ' + str(point[1]))
             self.tracks[trackId] = trackMap
-            t = self.tracks[trackId]
-            point2 = t.mapPoints[0]
-            print(t.name + ' foooooooooooos ' + str(point2[0]) + ' ' + str(point2[1]))
-            
-        for trackId in self.trackList.keys():
-            t = self.tracks.get(trackId)
-            point = t.mapPoints[0]
-            print(t.name + ' track json download point post ' + str(point[0]) + ' ' + str(point[1]))
             
             
             
