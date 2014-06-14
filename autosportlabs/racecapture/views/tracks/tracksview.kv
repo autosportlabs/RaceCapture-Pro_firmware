@@ -1,5 +1,12 @@
 #:kivy 1.8.0
 
+<TracksUpdateStatusView>:
+	orientation: 'vertical'
+	ProgressBar:
+		rcid: 'progress'
+	Label:
+		rcid: 'updatemsg'
+		
 <TrackItemView>:
 	BoxLayout:
 		orientation: 'horizontal'
@@ -145,7 +152,9 @@
     		size_hint_x: 0.7
     	IconButton:
     		size_hint_x: 0.05
-    		text: ''
+    		rcid: 'updatecheck'
+    		text: '\357\200\241'
+    		disabled: True
     		on_press: root.on_update_check()
 	    
 	       

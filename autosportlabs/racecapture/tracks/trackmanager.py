@@ -2,6 +2,7 @@ import json
 import time
 import copy
 import errno
+from threading import Thread, Lock
 from os import listdir, makedirs
 from urlparse import urljoin, urlparse
 import urllib2
@@ -71,6 +72,7 @@ class TrackMap:
         return {'venue': venueJson}
         
 class TrackManager:
+    updateLock = None
     tracks_user_dir = '.'
     track_user_subdir = '/venues'
     on_progress = lambda self, value: value
@@ -81,6 +83,7 @@ class TrackManager:
     tracks = {}
     def __init__(self, **kwargs):
         self.setTracksUserDir(kwargs.get('user_dir', self.tracks_user_dir) + self.track_user_subdir)
+        self.updateLock = Lock()
         
     def setTracksUserDir(self, path):
         try:
@@ -140,7 +143,7 @@ class TrackManager:
                 print('Malformed venue JSON from url ' + nextUri + '; json =  ' + str(venueJson) + ' ' + str(detail))
                 
         retrievedVenueCount = len(trackList)
-        print(str(retrievedVenueCount) + ' in downloaded track list')                 
+        print('fetched list of ' + str(retrievedVenueCount) + ' tracks')                 
         if (not totalVenues == retrievedVenueCount):
             print('Warning - track list count does not reflect downloaded track list size ' + str(totalVenues) + '/' + str(retrievedVenueCount))
         return trackList
@@ -159,52 +162,85 @@ class TrackManager:
         with open(path, 'w') as text_file:
             text_file.write(trackJsonString)
     
-    def downloadAllTracks(self):
-        self.downloadTrackList()
-        self.tracks.clear()
-        for trackId in self.trackList.keys():
-            print('downloading track: ' + trackId)
-            trackMap = self.downloadTrack(trackId)
-            self.tracks[trackId] = trackMap
-            
-    def loadCurrentTracks(self):
-        existingTracksFilenames = listdir(self.tracks_user_dir)
-        self.tracks.clear()
-        self.trackList.clear()
-        for trackPath in existingTracksFilenames:
-            try:
-                json_data = open(self.tracks_user_dir + '/' + trackPath)
-                trackJson = json.load(json_data)
-                trackMap = TrackMap()
-                trackMap.fromJson(trackJson)
-                
-                venueNode = trackJson['venue']
-                if venueNode:
-                    venue = Venue()
-                    venue.fromJson(venueNode)
-                    self.tracks[venue.venueId] = trackMap
-            except Exception as detail:
-                print('failed to read track file ' + trackPath + '; ' + str(detail))
-            
-                        
-    def updateAllTracks(self):
-        self.loadCurrentTracks()
-        updatedTrackList = self.downloadTrackList()
+    def loadCurrentTracksWorker(self, winCallback, failCallback, progressCallback=None):
+        try:
+            self.updateLock.acquire()
+            self.loadCurrentTracks(progressCallback)
+            winCallback()
+        except Exception as detail:
+            failCallback(detail)
+        finally:
+            self.updateLock.release()
         
-        currentTracks = self.tracks
-        for trackId in updatedTrackList.keys():
-            updateTrack = False
-            if currentTracks.get(trackId) == None:
-                print('new track detected ' + trackId)
-                updateTrack = True
-            elif not currentTracks[trackId].updatedAt == updatedTrackList[trackId].updatedAt:
-                print('existing map changed ' + trackId)
-                updateTrack = True
-            if updateTrack:
-                updatedTrackMap = self.downloadTrack(trackId)
-                self.saveTrack(updatedTrackMap, trackId)
-                
-        self.loadCurrentTracks()
+    def loadCurrentTracks(self, progressCallback=None, winCallback=None, failCallback=None):
+        if winCallback and failCallback:
+            t = Thread(target=self.loadCurrentTracksWorker, args=(winCallback, failCallback, progressCallback))
+            t.daemon=True
+            t.start()
+        else:
+            existingTracksFilenames = listdir(self.tracks_user_dir)
+            self.tracks.clear()
+            self.trackList.clear()
+            trackCount = len(existingTracksFilenames)
+            count = 0
+            for trackPath in existingTracksFilenames:
+                try:
+                    json_data = open(self.tracks_user_dir + '/' + trackPath)
+                    trackJson = json.load(json_data)
+                    trackMap = TrackMap()
+                    trackMap.fromJson(trackJson)
+                    
+                    venueNode = trackJson['venue']
+                    if venueNode:
+                        venue = Venue()
+                        venue.fromJson(venueNode)
+                        self.tracks[venue.venueId] = trackMap
+                    count += 1
+                    if progressCallback:
+                        progressCallback(count, trackCount, trackMap.name)
+                except Exception as detail:
+                    print('failed to read track file ' + trackPath + '; ' + str(detail))
+                        
+    def updateAllTracksWorker(self, winCallback, failCallback, progressCallback=None):
+        try:
+            self.updateLock.acquire()
+            self.updateAllTracks(progressCallback)
+            winCallback()
+        except Exception as detail:
+            failCallback(detail)
+        finally:
+            self.updateLock.release()
+            
+    def updateAllTracks(self, progressCallback=None, winCallback=None, failCallback=None):
+        if winCallback and failCallback:
+            t = Thread(target=self.updateAllTracksWorker, args=(winCallback, failCallback, progressCallback))
+            t.daemon=True
+            t.start()
+        else:
+            self.loadCurrentTracks()
+            updatedTrackList = self.downloadTrackList()
+            
+            currentTracks = self.tracks
+            updatedIds = updatedTrackList.keys()
+            updatedCount = len(updatedIds)
+            count = 0
+            for trackId in updatedIds:
+                updateTrack = False
+                count += 1
+                if currentTracks.get(trackId) == None:
+                    print('new track detected ' + trackId)
+                    updateTrack = True
+                elif not currentTracks[trackId].updatedAt == updatedTrackList[trackId].updatedAt:
+                    print('existing map changed ' + trackId)
+                    updateTrack = True
+                if updateTrack:
+                    updatedTrackMap = self.downloadTrack(trackId)
+                    self.saveTrack(updatedTrackMap, trackId)
+                    if progressCallback:
+                        progressCallback(count, updatedCount, updatedTrackMap.name)
+                else:
+                    progressCallback(count, updatedCount)
+            self.loadCurrentTracks()
                 
         
         
