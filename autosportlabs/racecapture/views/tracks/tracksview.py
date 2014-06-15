@@ -83,11 +83,9 @@ class TracksView(BoxLayout):
          
     def searchAndUpdate(self, dt):
         foundTrackIds = self.trackManager.filterTracksByName(self.lastNameSearch, self.trackManager.getRegionTrackIds())
-        self.showProgressPopup('Searching', 'Searching Tracks')
         self.initTracksList(foundTrackIds)
 
     def loadAll(self, dt):
-        self.showProgressPopup('Loading', 'Loading all for region')
         self.initTracksList(self.trackManager.getRegionTrackIds())
         
     def on_search_track_name(self, instance, search):
@@ -105,7 +103,6 @@ class TracksView(BoxLayout):
     def on_region_selected(self, instance, search):
         if self.initialized:
             foundIds = self.trackManager.filterTracksByRegion(search)
-            self.showProgressPopup('Loading', 'Searching Tracks')
             self.initTracksList(foundIds)
         
     def on_update_check_success(self):
@@ -157,10 +154,11 @@ class TracksView(BoxLayout):
         regions = self.trackManager.regions
         regionsSpinner = self.regionsSpinner
         values = []
-        for regionName in regions.keys():
+        for region in regions:
+            name = region.name
             if regionsSpinner.text == '':
-                regionsSpinner.text = regionName
-            values.append(regionName)
+                regionsSpinner.text = name
+            values.append(name)
         self.regionsSpinner.values = values
         
         

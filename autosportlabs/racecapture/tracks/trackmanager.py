@@ -95,7 +95,7 @@ class TrackManager:
     def __init__(self, **kwargs):
         self.setTracksUserDir(kwargs.get('user_dir', self.tracks_user_dir) + self.track_user_subdir)
         self.updateLock = Lock()
-        self.regions = {}
+        self.regions = []
         self.trackList = {}
         self.tracks = {}
         self.regionTrackIds = []
@@ -113,7 +113,7 @@ class TrackManager:
         self.loadCurrentTracks(progressCallback, winCallback, failCallback)
         
     def loadRegions(self):
-        self.regions.clear()
+        del(self.regions[:])
         try:
             regionsJson = json.load(open('resource/settings/geo_regions.json'))
             regionsNode = regionsJson.get('regions')
@@ -121,7 +121,7 @@ class TrackManager:
                 for regionNode in regionsNode: 
                     region = Region()
                     region.fromJson(regionNode)
-                    self.regions[region.name] = region
+                    self.regions.append(region)
         except Exception as detail:
             print('Error loading regions data ' + str(detail))
     
@@ -149,9 +149,8 @@ class TrackManager:
         if regionName == None:
             regionTrackIds.extend(allTrackIds)
         else:
-            for name in self.regions.keys():
-                if name == regionName:
-                    region = self.regions[name]
+            for region in self.regions:
+                if region.name == regionName:
                     if len(region.points) > 0:
                         for trackId in allTrackIds:
                             track = self.tracks[trackId]
