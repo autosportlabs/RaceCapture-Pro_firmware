@@ -303,6 +303,7 @@ class TrackManager:
                         progressCallback(count, updatedCount, updatedTrackMap.name)
                 else:
                     progressCallback(count, updatedCount)
+            self.loadCurrentTracks(None)
                 
         
         

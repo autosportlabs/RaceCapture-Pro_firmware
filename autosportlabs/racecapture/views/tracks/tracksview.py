@@ -103,6 +103,13 @@ class TracksView(BoxLayout):
         if self.initialized:
             foundIds = self.trackManager.filterTracksByRegion(search)
             self.initTracksList(foundIds)
+
+    def showProgressPopup(self, title, content):
+        if type(content) is str:
+            content = Label(text=content)
+        popup = Popup(title=title, content=content, auto_dismiss=False, size_hint=(None, None), size=(dp(400), dp(200)))
+        popup.open()
+        self.tracksUpdatePopup = popup
         
     def on_update_check_success(self):
         self.initTracksList()
@@ -113,13 +120,6 @@ class TracksView(BoxLayout):
         self.dismissPopups() 
         print('Error updating: ' + str(details))       
         alertPopup('Error Updating', 'There was an error updating the track list.\n\nPlease check your network connection and try again')
-            
-    def showProgressPopup(self, title, content):
-        if type(content) is str:
-            content = Label(text=content)
-        popup = Popup(title=title, content=content, auto_dismiss=False, size_hint=(None, None), size=(dp(400), dp(200)))
-        popup.open()
-        self.tracksUpdatePopup = popup
         
     def on_update_check(self):
         self.setViewDisabled(True)

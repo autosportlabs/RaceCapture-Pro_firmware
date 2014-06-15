@@ -53,6 +53,7 @@
 			            	orientation: 'horizontal'
 			            	spacing: dp(10)	            	
 							Label:
+								rcid: 'country'
 								canvas.before:
 							        Color:
 							            rgba: 0.2, 0.2, 0.2, 1
@@ -61,7 +62,7 @@
 							            size: self.size
 								size_hint_x: 1.0
 								font_size: 18
-								text: 'Location'
+								text: 'Country'
 								bold: True
 		
 						BoxLayout:
@@ -77,7 +78,7 @@
 								halign: 'left'
 								size_hint_x: 0.6
 								rcid: 'configuration'
-								text: 'configuration name'
+								text: 'Standard'
 		
 						BoxLayout:
 							size_hint_y: 0.15
