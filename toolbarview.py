@@ -46,25 +46,43 @@ class ToolbarView(BoxLayout):
     def mainMenu(self):
         self.dispatch('on_main_menu', None)
     
+    def on_rc_tx_decay(self, dt):
+        self.on_rc_tx(False)
+        
     def on_rc_tx(self, value):
         if not self.rcTxStatus:
             self.rcTxStatus = kvFind(self, 'rcid', 'rcTxStatus')            
         self.rcTxStatus.color = self.txOnColor if value else self.txOffColor
-        Clock.schedule_once(lambda dx: self.on_rc_tx(False), TOOLBAR_LED_DURATION)
+        Clock.unschedule(self.on_rc_tx_decay)
+        Clock.schedule_once(self.on_rc_tx_decay, TOOLBAR_LED_DURATION)
     
+    def on_rc_rx_decay(self, dt):
+        self.on_rc_rx(False)
+        
     def on_rc_rx(self, value):
         if not self.rcRxStatus:
             self.rcRxStatus = kvFind(self, 'rcid', 'rcRxStatus')    
         self.rcRxStatus.color = self.rxOnColor if value else self.rxOffColor
-        Clock.schedule_once(lambda dx: self.on_rc_rx(False), TOOLBAR_LED_DURATION)        
+        Clock.unschedule(self.on_rc_rx_decay)
+        Clock.schedule_once(self.on_rc_rx_decay, TOOLBAR_LED_DURATION)
     
+    def on_tele_tx_decay(self):
+        self.on_tele_tx(False)
+        
     def on_tele_tx(self, value):
         if not self.teleTxStatus:
-            self.teleTxStatus = kvFind(self, 'rcid', 'teleRxStatus')                                                           
+            self.teleTxStatus = kvFind(self, 'rcid', 'teleRxStatus')
         self.teleTxStatus.color = self.txOnColor if value else self.txOnColor
+        Clock.unschedule(self.on_tele_tx_decay)
+        Clock.schedule_once(self.on_tele_tx_decay, TOOLBAR_LED_DURATION)
 
+    def on_tele_rx_decay(self):
+        self.on_tele_rx(False)
+        
     def on_tele_rx(self, value):
         if not self.teleRxStatus:
             self.teleRxStatus = kvFind(self, 'rcid', 'teleTxStatus')
         self.teleRxStatus.color = self.rxOnColor if value else self.rxOffColor
+        Clock.unschedule(self.on_tele_rx_decay)
+        Clock.schedule_once(self.on_tele_rx_decay, TOOLBAR_LED_DURATION)
     
