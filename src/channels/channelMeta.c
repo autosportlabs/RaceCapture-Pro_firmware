@@ -97,7 +97,7 @@ int add_channel(const Channel *channel, int mode,  size_t index){
 				}
 			}
 			else{
-				pr_error("could not allocate buffer for tracks\r\n");
+				pr_error("could not allocate buffer for channels\r\n");
 				result = CHANNEL_ADD_RESULT_FAIL;
 			}
 		}
