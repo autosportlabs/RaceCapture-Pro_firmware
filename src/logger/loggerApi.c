@@ -2,7 +2,7 @@
 #include "loggerApi.h"
 #include "loggerConfig.h"
 #include "channelMeta.h"
-#include "channelMeta.h"
+#include "tracks.h"
 #include "modp_atonum.h"
 #include "mod_string.h"
 #include "sampleRecord.h"
@@ -1071,6 +1071,12 @@ static void setTrack(const jsmntok_t *trackNode, Track *track){
 					sectorIndex++;
 					sectors +=3;
 				}
+				while (sectorIndex < maxSectors){
+					GeoPoint *sector = sectorsList + sectorIndex;
+					sector->latitude = 0;
+					sector->longitude = 0;
+					sectorIndex++;
+				}
 			}
 		}
 	}
@@ -1102,7 +1108,17 @@ int api_flashConfig(Serial *serial, const jsmntok_t *json){
 
 int api_addTrackDb(Serial *serial, const jsmntok_t *json){
 
-	return API_SUCCESS;
+	unsigned char mode = 0;
+	int index = 0;
+
+	if (setUnsignedCharValueIfExists(json, "mode", &mode, NULL) && setIntValueIfExists(json, "index", &index)){
+		Track track;
+		const jsmntok_t *trackNode = findNode(json, "track");
+		if (trackNode != NULL) setTrack(trackNode + 1, &track);
+		add_track(&track, index, mode);
+		return API_SUCCESS;
+	}
+	return API_ERROR_MALFORMED;
 }
 
 int api_getTrackDb(Serial *serial, const jsmntok_t *json){
@@ -1114,7 +1130,7 @@ int api_getTrackDb(Serial *serial, const jsmntok_t *json){
 	json_arrayStart(serial, "trackDb");
 	for (size_t track_index = 0; track_index < track_count; track_index++){
 		const Track *track = tracks->tracks + track_index;
-		json_objStartInt(serial, track_index);
+		json_objStart(serial);
 		json_track(serial, track);
 		json_objEnd(serial, track_index < track_count - 1);
 	}

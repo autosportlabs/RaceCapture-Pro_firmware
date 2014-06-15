@@ -31,7 +31,7 @@ const Tracks * get_tracks(){
 }
 
 
-int update_track(const Track *track, size_t index, int mode){
+int add_track(const Track *track, size_t index, int mode){
 	int result = TRACK_ADD_RESULT_OK;
 
 	if (index < MAX_TRACK_COUNT){
