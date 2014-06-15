@@ -44,6 +44,7 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST( testGetTrackCfgCircuit );
   CPPUNIT_TEST( testGetChannels );
   CPPUNIT_TEST( testAddChannel );
+  CPPUNIT_TEST( testAddTrackDb );
   CPPUNIT_TEST( testSampleData );
   CPPUNIT_TEST( testGetMeta );
   CPPUNIT_TEST( testLogStartStop );
@@ -94,6 +95,7 @@ public:
   void testGetTrackCfgCircuit();
   void testGetChannels();
   void testAddChannel();
+  void testAddTrackDb();
   void testCalibrateImu();
   void testFlashConfig();
   void testSetLogLevel();
@@ -127,6 +129,7 @@ private:
   void testSetGpsConfigFile(string filename, unsigned char channelsEnabled, unsigned short sampleRate);
   void testAddChannelFile(string filename);
   void testGetChannelsFile(string filename);
+  void testAddTrackDbFile(string filename);
   void testSetLapConfigFile(string filename);
   void testGetLapConfigFile(string filename);
   void testCalibrateImuFile(string filename);

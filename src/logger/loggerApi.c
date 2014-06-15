@@ -1100,7 +1100,7 @@ int api_flashConfig(Serial *serial, const jsmntok_t *json){
 	return (rc == 0 ? 1 : rc); //success means on internal command; other errors passed through
 }
 
-int api_setTrackDb(Serial *serial, const jsmntok_t *json){
+int api_addTrackDb(Serial *serial, const jsmntok_t *json){
 
 	return API_SUCCESS;
 }
@@ -1108,17 +1108,17 @@ int api_setTrackDb(Serial *serial, const jsmntok_t *json){
 int api_getTrackDb(Serial *serial, const jsmntok_t *json){
 	const Tracks * tracks = get_tracks();
 
-	json_objStart(serial);
-	json_objStartString(serial, "tracks");
 	size_t track_count = tracks->count;
+	json_objStart(serial);
 	json_int(serial,"size", track_count, 1);
+	json_arrayStart(serial, "trackDb");
 	for (size_t track_index = 0; track_index < track_count; track_index++){
 		const Track *track = tracks->tracks + track_index;
 		json_objStartInt(serial, track_index);
 		json_track(serial, track);
 		json_objEnd(serial, track_index < track_count - 1);
 	}
-	json_objEnd(serial, 0);
+	json_arrayEnd(serial, 0);
 	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
 }

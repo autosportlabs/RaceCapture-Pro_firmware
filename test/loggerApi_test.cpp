@@ -865,6 +865,40 @@ void LoggerApiTest::testGetTrackCfgCircuit(){
 	}
 }
 
+void LoggerApiTest::testAddTrackDb(){
+	testAddTrackDbFile("addTrackDb1.json");
+}
+
+void LoggerApiTest::testAddTrackDbFile(string filename){
+	processApiGeneric(filename);
+	char *txBuffer = mock_getTxBuffer();
+	const Tracks *tracks = get_tracks();
+
+	Object jsonCompare;
+	string compare = readFile(filename);
+	stringToJson(compare, jsonCompare);
+
+	int index = (int)(Number)jsonCompare["addTrackDb"]["index"];
+	const Track *track = tracks->tracks + index;
+
+	int trackType = (int)(Number)jsonCompare["addTrackDb"]["track"]["type"];
+	CPPUNIT_ASSERT_EQUAL(trackType, (int)track->track_type);
+	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][0], (float)track->startLine.latitude);
+	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][1], (float)track->startLine.longitude);
+
+	Array secNode = (Array)jsonCompare["addTrackDb"]["track"]["sec"];
+	for (int i = 0; i < secNode.Size(); i++){
+		if (trackType == TRACK_TYPE_CIRCUIT){
+			CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sec"][i][0], (float)track->circuit.sectors[i].latitude);
+			CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sec"][i][1], (float)track->circuit.sectors[i].longitude);
+		}
+		else{
+			CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sec"][0], (float)track->stage.sectors[i].latitude);
+			CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sec"][1], (float)track->stage.sectors[i].longitude);
+		}
+	}
+}
+
 void LoggerApiTest::testAddChannel(){
 	testAddChannelFile("addChannel1.json");
 }
