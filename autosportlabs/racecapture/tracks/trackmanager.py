@@ -3,6 +3,7 @@ import time
 import copy
 import errno
 import string
+import logging
 from threading import Thread, Lock
 from os import listdir, makedirs
 from urlparse import urljoin, urlparse
@@ -90,19 +91,18 @@ class TrackManager:
     trackList = None
     tracks = None
     regions = None
-    
+    regionTrackIds = None
     def __init__(self, **kwargs):
         self.setTracksUserDir(kwargs.get('user_dir', self.tracks_user_dir) + self.track_user_subdir)
         self.updateLock = Lock()
         self.regions = {}
         self.trackList = {}
         self.tracks = {}
+        self.regionTrackIds = []
         
     def setTracksUserDir(self, path):
         try:
-            print('here ' + path)
             makedirs(path)
-            print("the path " + path)     
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise
@@ -125,24 +125,42 @@ class TrackManager:
         except Exception as detail:
             print('Error loading regions data ' + str(detail))
     
-    def searchTracksByName(self, name):
-        foundTrackIds = []
-        for trackId in self.tracks.keys():
+    def getAllTrackIds(self):
+        return self.tracks.keys()
+    
+    def getRegionTrackIds(self):
+        return self.regionTrackIds
+        
+    def filterTracksByName(self, name, trackIds=None):
+        if trackIds == None:
+            trackIds = self.tracks.keys()
+        filteredTrackIds = []
+        for trackId in trackIds:
             trackName = self.tracks[trackId].name
             if string.lower(name.strip()) in string.lower(trackName.strip()):
-                foundTrackIds.append(trackId)
-        return foundTrackIds
+                filteredTrackIds.append(trackId)
+        return filteredTrackIds
                 
-    def searchTracksByRegion(self, regionName):
-        foundTrackIds = []
-        for name in self.regions.keys():
-            if name == regionName:
-                region = self.regions[name]
-                for trackId in self.tracks.keys():
-                    track = self.tracks[trackId]
-                    if region.withinRegion(track.getCenterPoint()):
-                        foundTrackIds.append(trackId)
-        return foundTrackIds
+    def filterTracksByRegion(self, regionName):
+        allTrackIds = self.tracks.keys()
+        regionTrackIds = self.regionTrackIds
+        del regionTrackIds[:]
+        
+        if regionName == None:
+            regionTrackIds.extend(allTrackIds)
+        else:
+            for name in self.regions.keys():
+                if name == regionName:
+                    region = self.regions[name]
+                    if len(region.points) > 0:
+                        for trackId in allTrackIds:
+                            track = self.tracks[trackId]
+                            if region.withinRegion(track.getCenterPoint()):
+                                regionTrackIds.append(trackId)
+                    else:
+                        regionTrackIds.extend(allTrackIds)
+                    break
+        return regionTrackIds
 
     def loadJson(self, uri):
         retries = 0
@@ -211,6 +229,7 @@ class TrackManager:
             self.loadCurrentTracks(progressCallback)
             winCallback()
         except Exception as detail:
+            logging.exception('')            
             failCallback(detail)
         finally:
             self.updateLock.release()
@@ -243,6 +262,8 @@ class TrackManager:
                         progressCallback(count, trackCount, trackMap.name)
                 except Exception as detail:
                     print('failed to read track file\n' + trackPath + ';\n' + str(detail))
+            del self.regionTrackIds[:]
+            self.regionTrackIds.extend(self.tracks.keys())
                         
     def updateAllTracksWorker(self, winCallback, failCallback, progressCallback=None):
         try:
@@ -250,6 +271,7 @@ class TrackManager:
             self.updateAllTracks(progressCallback)
             winCallback()
         except Exception as detail:
+            logging.exception('')            
             failCallback(detail)
         finally:
             self.updateLock.release()
@@ -260,7 +282,6 @@ class TrackManager:
             t.daemon=True
             t.start()
         else:
-            self.initData()
             updatedTrackList = self.downloadTrackList()
             
             currentTracks = self.tracks
@@ -283,7 +304,6 @@ class TrackManager:
                         progressCallback(count, updatedCount, updatedTrackMap.name)
                 else:
                     progressCallback(count, updatedCount)
-            self.initData()
                 
         
         

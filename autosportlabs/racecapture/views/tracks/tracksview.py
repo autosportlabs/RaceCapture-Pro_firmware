@@ -52,6 +52,7 @@ class TracksView(BoxLayout):
     regionsSpinner = None
     lastNameSearch = None
     searchDelay = 1.5
+    initialized = False
     
     def __init__(self, **kwargs):
         super(TracksView, self).__init__(**kwargs)
@@ -70,6 +71,7 @@ class TracksView(BoxLayout):
         self.trackManager = trackManager
         self.initTracksList()
         self.initRegionsList()
+        self.initialized = True
         
     def setViewDisabled(self, disabled):
         kvFind(self, 'rcid', 'updatecheck').disabled = disabled
@@ -80,17 +82,31 @@ class TracksView(BoxLayout):
             self.tracksUpdatePopup.dismiss()
          
     def searchAndUpdate(self, dt):
-        foundTrackIds = self.trackManager.searchTracksByName(self.lastNameSearch)
+        foundTrackIds = self.trackManager.filterTracksByName(self.lastNameSearch, self.trackManager.getRegionTrackIds())
+        self.showProgressPopup('Searching', 'Searching Tracks')
         self.initTracksList(foundTrackIds)
 
-    def on_search_track_name(self, instance, search):
+    def loadAll(self, dt):
+        self.showProgressPopup('Loading', 'Loading all for region')
+        self.initTracksList(self.trackManager.getRegionTrackIds())
         
-        if search == '' and len(self.lastNameSearch) > 0:
-            self.initTracksList()
-        elif not self.lastNameSearch == search:
-            self.lastNameSearch = search
-            Clock.unschedule(self.searchAndUpdate)
-            Clock.schedule_once(self.searchAndUpdate, self.searchDelay)
+    def on_search_track_name(self, instance, search):
+        if self.initialized:
+            if search == '' and len(self.lastNameSearch) > 0:
+                Clock.unschedule(self.searchAndUpdate)
+                Clock.unschedule(self.loadAll)
+                Clock.schedule_once(self.loadAll, self.searchDelay)
+            elif not self.lastNameSearch == search:
+                self.lastNameSearch = search
+                Clock.unschedule(self.searchAndUpdate)
+                Clock.unschedule(self.loadAll)
+                Clock.schedule_once(self.searchAndUpdate, self.searchDelay)
+        
+    def on_region_selected(self, instance, search):
+        if self.initialized:
+            foundIds = self.trackManager.filterTracksByRegion(search)
+            self.showProgressPopup('Loading', 'Searching Tracks')
+            self.initTracksList(foundIds)
         
     def on_update_check_success(self):
         self.initTracksList()
@@ -102,31 +118,35 @@ class TracksView(BoxLayout):
         print('Error updating: ' + str(details))       
         alertPopup('Error Updating', 'There was an error updating the track list.\n\nPlease check your network connection and try again')
             
+    def showProgressPopup(self, title, content):
+        if type(content) is str:
+            content = Label(text=content)
+        popup = Popup(title=title, content=content, auto_dismiss=False, size_hint=(None, None), size=(dp(400), dp(200)))
+        popup.open()
+        self.tracksUpdatePopup = popup
+        
     def on_update_check(self):
         self.setViewDisabled(True)
         tracksUpdateView = TracksUpdateStatusView()
-        popup = Popup(title='Checking for updates', content=tracksUpdateView, auto_dismiss=False, size_hint=(None, None), size=(dp(400), dp(200)))
-        popup.open()
-        self.tracksUpdatePopup = popup
+        self.showProgressPopup('Checking for updates', tracksUpdateView)
         self.trackManager.updateAllTracks(tracksUpdateView.on_progress, self.on_update_check_success, self.on_update_check_error)
         
     def addNextTrack(self, index, keys):
-            if index < len(keys):
-                track = self.trackManager.tracks[keys[index]]
-                trackView = TrackItemView(track=track)
-                trackView.size_hint_y = None
-                trackView.height = self.trackMinHeight
-                self.tracksGrid.add_widget(trackView)
-                Clock.schedule_once(lambda dt: self.addNextTrack(index + 1, keys))
-            else:
-                self.dismissPopups()
-                self.setViewDisabled(False)
-                
+        if index < len(keys):
+            track = self.trackManager.tracks[keys[index]]
+            trackView = TrackItemView(track=track)
+            trackView.size_hint_y = None
+            trackView.height = self.trackMinHeight
+            self.tracksGrid.add_widget(trackView)
+            Clock.schedule_once(lambda dt: self.addNextTrack(index + 1, keys))
+        else:
+            self.dismissPopups()
+            self.setViewDisabled(False)
         
     def initTracksList(self, trackIds = None):
         self.setViewDisabled(True)
         if trackIds == None:
-            trackIds = self.trackManager.tracks.keys()
+            trackIds = self.trackManager.getAllTrackIds()
         trackCount = len(trackIds)
         grid = kvFind(self, 'rcid', 'tracksgrid')
         self.tracksGrid.height = self.trackMinHeight * trackCount
@@ -135,11 +155,12 @@ class TracksView(BoxLayout):
             
     def initRegionsList(self):
         regions = self.trackManager.regions
-
-        values = ['All']
+        regionsSpinner = self.regionsSpinner
+        values = []
         for regionName in regions.keys():
+            if regionsSpinner.text == '':
+                regionsSpinner.text = regionName
             values.append(regionName)
-
         self.regionsSpinner.values = values
         
         

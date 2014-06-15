@@ -124,7 +124,8 @@
 		Spinner:
 			size_hint_x: 0.25
 			rcid: 'regions'
-			values: ('All', 'North America', 'North America West', 'North America East', 'North America Central', 'United Kingom', 'Europe', 'Australia / New Zealand', 'Canada', 'South America', 'Eastern Europe', 'Africa') 			
+			on_text: root.on_region_selected(*args)
+			 			
 	BoxLayout:
     	spacing: dp(30)
 		size_hint_y: 0.68

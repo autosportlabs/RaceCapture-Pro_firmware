@@ -47,12 +47,12 @@ class Region:
             y = geoPoint.latitude
             x = geoPoint.longitude
             firstPoint = self.points[0]
-            p1x = firstPoint[0]
-            p1y = firstPoint[1]
+            p1x = firstPoint.longitude
+            p1y = firstPoint.latitude
             for i in range(n+1):
                 pt = self.points[i % n]
-                p2x = pt[0]
-                p2y = pt[1]
+                p2x = pt.longitude
+                p2y = pt.latitude
                 if y > min(p1y,p2y):
                     if y <= max(p1y,p2y):
                         if x <= max(p1x,p2x):
