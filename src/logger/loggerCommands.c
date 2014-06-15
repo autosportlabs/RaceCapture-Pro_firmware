@@ -5,6 +5,7 @@
  *      Author: brent
  */
 #include <stddef.h>
+#include "gpsTask.h"
 #include "mod_string.h"
 #include "loggerCommands.h"
 #include "modp_numtoa.h"
@@ -123,4 +124,17 @@ void SetLogLevel(Serial *serial, unsigned int argc, char **argv)
         put_commandOK(serial);
 }
 
+void LogGpsData(Serial *serial, unsigned int argc, char **argv) {
+   if (argc != 2) {
+      serial->put_s("Must pas one argument only.  Enter 0 to disable, or non-zero to enable\r\n");
+      put_commandError(serial, ERROR_CODE_INVALID_PARAM);
+   } else {
+      const bool enable = (argv[1][0] != '0');
+      setGpsDataLogging(enable);
+      serial->put_s(enable ? "Enabling" : "Disabling");
+      serial->put_s(" the printing of raw GPS data to the log.\r\n");
+      put_commandOK(serial);
+   }
 
+   serial->flush();
+}
