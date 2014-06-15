@@ -487,7 +487,14 @@ class RcpSerial:
                                  'channel': channelJson
                                  }
                                  })
-                                  
+                
+                
+    def setTrackList(self, tracks, winCallback, failCallback):
+        pass
+    
+    def addTrack(self, trackJson, index, mode):
+        pass
+                                          
     def getVersion(self, sync = False):
         rsp = self.sendCommand({"getVer":None}, sync)
         return rsp
