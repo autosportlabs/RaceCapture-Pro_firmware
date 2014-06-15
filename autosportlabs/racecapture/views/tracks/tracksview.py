@@ -75,7 +75,6 @@ class TracksView(BoxLayout):
         
     def setViewDisabled(self, disabled):
         kvFind(self, 'rcid', 'updatecheck').disabled = disabled
-        kvFind(self, 'rcid', 'namefilter').disabled = disabled
     
     def dismissPopups(self):
         if self.tracksUpdatePopup:
