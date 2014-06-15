@@ -7,8 +7,8 @@ from threading import Thread, Lock
 from os import listdir, makedirs
 from urlparse import urljoin, urlparse
 import urllib2
-from autosportlabs.racecapture.geo.geopoint import GeoPoint
-
+from autosportlabs.racecapture.geo.geopoint import GeoPoint, Region
+        
 class Venue:
     venueId = None
     uri = None
@@ -31,8 +31,15 @@ class TrackMap:
     length = 0
     trackId = None
     def __init__(self, **kwargs):
+        self.mapPoints = []
+        self.sectorPoints = []
         pass
-                        
+                    
+    def getCenterPoint(self):
+        if len(self.mapPoints) > 0:
+            return self.mapPoints[0]
+        return None
+    
     def fromJson(self, trackJson):
         venueNode = trackJson.get('venue')
         if (venueNode):
@@ -80,11 +87,16 @@ class TrackManager:
     rcp_venue_url = 'http://race-capture.com/api/v1/venues'
     readRetries = 3
     retryDelay = 1.0
-    trackList = {}
-    tracks = {}
+    trackList = None
+    tracks = None
+    regions = None
+    
     def __init__(self, **kwargs):
         self.setTracksUserDir(kwargs.get('user_dir', self.tracks_user_dir) + self.track_user_subdir)
         self.updateLock = Lock()
+        self.regions = {}
+        self.trackList = {}
+        self.tracks = {}
         
     def setTracksUserDir(self, path):
         try:
@@ -96,19 +108,41 @@ class TrackManager:
                 raise
         self.tracks_user_dir = path
         
-    def load_tracks(self):
-        pass
+    def init(self, progressCallback, winCallback, failCallback):
+        self.loadRegions()
+        self.loadCurrentTracks(progressCallback, winCallback, failCallback)
+        
+    def loadRegions(self):
+        self.regions.clear()
+        try:
+            regionsJson = json.load(open('resource/settings/geo_regions.json'))
+            regionsNode = regionsJson.get('regions')
+            if regionsNode:
+                for regionNode in regionsNode: 
+                    region = Region()
+                    region.fromJson(regionNode)
+                    self.regions[region.name] = region
+        except Exception as detail:
+            print('Error loading regions data ' + str(detail))
     
     def searchTracksByName(self, name):
-        keys = []
+        foundTrackIds = []
         for trackId in self.tracks.keys():
             trackName = self.tracks[trackId].name
             if string.lower(name.strip()) in string.lower(trackName.strip()):
-                keys.append(trackId)
-        return keys
+                foundTrackIds.append(trackId)
+        return foundTrackIds
                 
-    def findClosestTrack(self, point, radius):
-        pass
+    def searchTracksByRegion(self, regionName):
+        foundTrackIds = []
+        for name in self.regions.keys():
+            if name == regionName:
+                region = self.regions[name]
+                for trackId in self.tracks.keys():
+                    track = self.tracks[trackId]
+                    if region.withinRegion(track.getCenterPoint()):
+                        foundTrackIds.append(trackId)
+        return foundTrackIds
 
     def loadJson(self, uri):
         retries = 0
@@ -226,7 +260,7 @@ class TrackManager:
             t.daemon=True
             t.start()
         else:
-            self.loadCurrentTracks()
+            self.initData()
             updatedTrackList = self.downloadTrackList()
             
             currentTracks = self.tracks
@@ -249,7 +283,7 @@ class TrackManager:
                         progressCallback(count, updatedCount, updatedTrackMap.name)
                 else:
                     progressCallback(count, updatedCount)
-            self.loadCurrentTracks()
+            self.initData()
                 
         
         

@@ -6,6 +6,7 @@ from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.app import Builder
 from kivy.metrics import dp
+import json
 from autosportlabs.racecapture.views.util.alertview import alertPopup
 from autosportlabs.uix.track.trackmap import TrackMap
 from autosportlabs.uix.track.racetrackview import RaceTrackView
@@ -48,6 +49,7 @@ class TracksView(BoxLayout):
     trackManager = None
     tracksUpdatePopup = None
     tracksGrid = None
+    regionsSpinner = None
     lastNameSearch = None
     searchDelay = 1.5
     
@@ -55,30 +57,20 @@ class TracksView(BoxLayout):
         super(TracksView, self).__init__(**kwargs)
         self.trackManager = kwargs.get('trackManager')
         self.register_event_type('on_channels_updated')
-        self.loadCurrentTracks()
+        self.register_event_type('on_tracks_updated')
         self.tracksGrid = kvFind(self, 'rcid', 'tracksgrid')
+        self.regionsSpinner = kvFind(self, 'rcid', 'regions')
         self.lastNameSearch = ''
+        self.setViewDisabled(True)
             
     def on_channels_updated(self, channels):
         pass
-    
-    def loadCurrentTracksSuccess(self):
+        
+    def on_tracks_updated(self, trackManager):
+        self.trackManager = trackManager
         self.initTracksList()
-        self.tracksUpdatePopup.content.on_message('Processing...')
+        self.initRegionsList()
         
-    def loadCurrentTracksError(self, details):
-        self.initTracksList()
-        self.dismissPopups()
-        alertPopup('Error Loading', str(details))        
-        
-        
-    def loadCurrentTracks(self):
-        tracksUpdateView = TracksUpdateStatusView()
-        popup = Popup(title='Loading Tracks', content=tracksUpdateView, auto_dismiss=False, size_hint=(None, None), size=(dp(400), dp(200)))
-        popup.open()
-        self.tracksUpdatePopup = popup
-        self.trackManager.loadCurrentTracks(tracksUpdateView.on_progress, self.loadCurrentTracksSuccess, self.loadCurrentTracksError)
-    
     def setViewDisabled(self, disabled):
         kvFind(self, 'rcid', 'updatecheck').disabled = disabled
         kvFind(self, 'rcid', 'namefilter').disabled = disabled
@@ -141,4 +133,14 @@ class TracksView(BoxLayout):
         self.tracksGrid.clear_widgets()
         self.addNextTrack(0, trackIds)
             
-            
+    def initRegionsList(self):
+        regions = self.trackManager.regions
+
+        values = ['All']
+        for regionName in regions.keys():
+            values.append(regionName)
+
+        self.regionsSpinner.values = values
+        
+        
+        

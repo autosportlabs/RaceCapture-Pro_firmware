@@ -66,19 +66,20 @@ class RaceCaptureApp(App):
     
     #main content view
     mainView = None
-    
-    
+        
     #collection of main views to be swapped into mainView 
     mainViews = {}
     
     def __init__(self, **kwargs):
         self.register_event_type('on_channels_updated')
+        self.register_event_type('on_tracks_updated')
         self.register_event_type('on_read_channels')
         super(RaceCaptureApp, self).__init__(**kwargs)
         self.processArgs()
         self.rcpComms.initSerial()
         self.appConfig.setUserDir(self.user_data_dir)
         self.trackManager = TrackManager(user_dir=self.user_data_dir)
+        self.initData()
 
         
     def processArgs(self):
@@ -90,16 +91,20 @@ class RaceCaptureApp(App):
         if not self.rcpComms.port:
             self.rcpComms.autoDetect()
 
+
+    def loadCurrentTracksSuccess(self):
+        print('Curent Tracks Loaded')
+        Clock.schedule_once(lambda dt: self.notifyTracksUpdated())        
+        
+    def loadCurrentTracksError(self, details):
+        alertPopup('Error Loading Tracks', str(details))        
+        
+    def initData(self):
+        self.trackManager.init(None, self.loadCurrentTracksSuccess, self.loadCurrentTracksError)
+
     def _serial_warning(self):
         alertPopup('Warning', 'Command failed. Ensure you have selected a correct serial port')
-
-    def on_main_menu_item(self, instance, value):
-        self.mainNav.toggle_state()
-        self.switchMainView(value)
-        
-    def on_main_menu(self, instance, *args):
-        self.mainNav.toggle_state()
-    
+   
     #Logfile
     def on_poll_logfile(self, instance):
         self.rcpComms.getLogfile()
@@ -182,7 +187,9 @@ class RaceCaptureApp(App):
         for view in self.mainViews.itervalues():
             view.dispatch('on_channels_updated', channels)
             
-            
+    def on_tracks_updated(self, trackManager):
+        for view in self.mainViews.itervalues():
+            view.dispatch('on_tracks_updated', trackManager)
             
             
     #Write Channels
@@ -198,7 +205,16 @@ class RaceCaptureApp(App):
     def notifyChannelsUpdated(self):
         self.dispatch('on_channels_updated', self.channels)
 
+    def notifyTracksUpdated(self):
+        self.dispatch('on_tracks_updated', self.trackManager)
 
+
+    def on_main_menu_item(self, instance, value):
+        self.mainNav.toggle_state()
+        self.switchMainView(value)
+        
+    def on_main_menu(self, instance, *args):
+        self.mainNav.toggle_state()
 
     def switchMainView(self, viewKey):
         mainView = self.mainViews.get(viewKey)
@@ -241,7 +257,7 @@ class RaceCaptureApp(App):
         channelsView.bind(on_read_channels=self.on_read_channels)
         channelsView.bind(on_write_channels=self.on_write_channels)
         
-        tracksView = TracksView(trackManager=self.trackManager)
+        tracksView = TracksView()
         
         self.mainViews = {'config' : configView, 
                           'channels' : channelsView,

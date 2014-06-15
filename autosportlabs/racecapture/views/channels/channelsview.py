@@ -105,6 +105,7 @@ class ChannelsView(BoxLayout):
         self.channels = kwargs.get('channels', self.channels)
         self.rcpComms = kwargs.get('rcpComms', self.rcpComms)
         self.register_event_type('on_channels_updated')
+        self.register_event_type('on_tracks_updated')
         self.register_event_type('on_read_channels')
         self.register_event_type('on_write_channels')
         self.channelsContainer = kvFind(self, 'rcid', 'channelsContainer')
@@ -117,7 +118,10 @@ class ChannelsView(BoxLayout):
             self.channelsContainer.add_widget(channelView)
         self.channels = channels
         kvFind(self, 'rcid', 'addChan').disabled = False
-          
+    
+    def on_tracks_updated(self, trackManager):
+        pass
+    
     def on_read_all_channels(self):
         if self.channels:
             self.dispatch('on_read_channels')

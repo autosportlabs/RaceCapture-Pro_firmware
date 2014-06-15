@@ -54,6 +54,7 @@ class ConfigView(BoxLayout):
         super(ConfigView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
         self.register_event_type('on_channels_updated')
+        self.register_event_type('on_tracks_updated')
         self.content = kvFind(self, 'rcid', 'content')
         self.menu = kvFind(self, 'rcid', 'menu')
         self.createConfigViews(self.menu)
@@ -118,6 +119,9 @@ class ConfigView(BoxLayout):
         for view in self.configViews:
             view.dispatch('on_config_updated', config)
         
+    def on_tracks_updated(self, trackManager):
+        pass
+    
     def on_read_config(self, instance, *args):
         pass
     
