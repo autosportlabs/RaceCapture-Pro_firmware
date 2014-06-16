@@ -1126,8 +1126,9 @@ int api_getTrackDb(Serial *serial, const jsmntok_t *json){
 
 	size_t track_count = tracks->count;
 	json_objStart(serial);
+	json_objStartString(serial, "trackDb");
 	json_int(serial,"size", track_count, 1);
-	json_arrayStart(serial, "trackDb");
+	json_arrayStart(serial, "tracks");
 	for (size_t track_index = 0; track_index < track_count; track_index++){
 		const Track *track = tracks->tracks + track_index;
 		json_objStart(serial);
@@ -1135,6 +1136,7 @@ int api_getTrackDb(Serial *serial, const jsmntok_t *json){
 		json_objEnd(serial, track_index < track_count - 1);
 	}
 	json_arrayEnd(serial, 0);
+	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
 }
