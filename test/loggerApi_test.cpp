@@ -911,7 +911,6 @@ void LoggerApiTest::testGetTrackDbFile(string filename, string addedFilename){
 	//now get all the tracks
 	char * response = processApiGeneric(filename);
 
-	printf("%s", response);
 	Object jsonResponse;
 	stringToJson(response, jsonResponse);
 
@@ -919,20 +918,18 @@ void LoggerApiTest::testGetTrackDbFile(string filename, string addedFilename){
 	string compare= readFile(addedFilename);
 	stringToJson(compare, jsonCompare);
 
-	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonResponse["size"], 1);
-	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonResponse["trackDb"][0]["type"], (int)(Number)jsonCompare["addTrackDb"]["track"]["type"]);
+	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonResponse["trackDb"]["size"], 1);
+	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonResponse["trackDb"]["tracks"][0]["type"], (int)(Number)jsonCompare["addTrackDb"]["track"]["type"]);
 
-	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonResponse["trackDb"][0]["sf"][0], (float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][0]);
-	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonResponse["trackDb"][0]["sf"][1], (float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][1]);
+	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonResponse["trackDb"]["tracks"][0]["sf"][0], (float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][0]);
+	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonResponse["trackDb"]["tracks"][0]["sf"][1], (float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][1]);
 
-	Array secNode = (Array)jsonResponse["trackDb"][0]["sec"];
+	Array secNode = (Array)jsonResponse["trackDb"]["tracks"][0]["sec"];
 
 	for (int i = 0; i < secNode.Size(); i++){
-		CPPUNIT_ASSERT_EQUAL((float)(Number)jsonResponse["trackDb"][0]["sec"][i][0], (float)(Number)jsonCompare["addTrackDb"]["track"]["sec"][i][0]);
-		CPPUNIT_ASSERT_EQUAL((float)(Number)jsonResponse["trackDb"][0]["sec"][i][1], (float)(Number)jsonCompare["addTrackDb"]["track"]["sec"][i][1]);
+		CPPUNIT_ASSERT_EQUAL((float)(Number)jsonResponse["trackDb"]["tracks"][0]["sec"][i][0], (float)(Number)jsonCompare["addTrackDb"]["track"]["sec"][i][0]);
+		CPPUNIT_ASSERT_EQUAL((float)(Number)jsonResponse["trackDb"]["tracks"][0]["sec"][i][1], (float)(Number)jsonCompare["addTrackDb"]["track"]["sec"][i][1]);
 	}
-
-
 }
 
 
