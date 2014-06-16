@@ -449,8 +449,7 @@ class TrackConfig:
 class TracksDb:
     tracks = None
     def __init__(self, **kwargs):
-        tracks = []
-        
+        self.tracks = []
         
     def toJson(self):
         tracksJson = []
@@ -466,7 +465,6 @@ class TracksDb:
                 track = TrackConfig()
                 track.fromJson(trackNode)
                 self.tracks.append(track)
-        
         
 class PidConfig:
     def __init__(self, **kwargs):
@@ -661,6 +659,7 @@ class RcpConfig:
         self.canConfig = CanConfig()
         self.obd2Config = Obd2Config()
         self.scriptConfig = LuaScript()
+        self.tracksDb = TracksDb()
     
     def fromJson(self, rcpJson):
         if rcpJson:
