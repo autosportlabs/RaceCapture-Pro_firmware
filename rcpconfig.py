@@ -436,6 +436,28 @@ class TrackConfig:
             
         return {'trackCfg':trackCfgJson}
 
+class TracksDb:
+    tracks = None
+    def __init__(self, **kwargs):
+        tracks = []
+        
+        
+    def toJson(self):
+        tracksJson = []
+        for track in self.tracks:
+            tracksJson.append(track.toJson())
+        return {"tracksDb":tracksJson}
+    
+    def fromJson(self, tracksDbJson):
+        del self.tracks[:]
+        tracksNode = tracksDbJson.get('tracksDb')
+        if tracksNode:
+            for trackNode in tracksNode:
+                track = TrackConfig()
+                track.fromJson(trackNode)
+                self.tracks.append(track)
+        
+        
 class PidConfig:
     def __init__(self, **kwargs):
         self.channelId = 0

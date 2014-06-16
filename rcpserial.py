@@ -10,10 +10,16 @@ from functools import partial
 
 CHANNEL_ADD_MODE_IN_PROGRESS = 1
 CHANNEL_ADD_MODE_COMPLETE = 2
+
+TRACK_ADD_MODE_IN_PROGRESS = 1
+TRACK_ADD_MODE_COMPLETE = 2
+
 DEFAULT_READ_RETRIES = 2
 DEFAULT_LEVEL2_RETRIES = 4
+
 DEFAULT_SERIAL_READ_TIMEOUT = None
 DEFAULT_SERIAL_WRITE_TIMEOUT = 0
+
 DEFAULT_MSG_RX_TIMEOUT = 1.0
 
 
@@ -458,7 +464,6 @@ class RcpSerial:
         
     def getChannelList(self, winCallback, failCallback):
         cmdSequence = [ RcpCmd('channels', self.getChannels) ]
-                
         t = Thread(target=self.executeSequence, args=(cmdSequence, None, winCallback, failCallback))
         t.daemon = True
         t.start()
@@ -489,11 +494,34 @@ class RcpSerial:
                                  })
                 
                 
-    def setTrackList(self, tracks, winCallback, failCallback):
-        pass
+    def setTrackDb(self, tracksDbJson, winCallback, failCallback):
+        cmdSequence = []
+        
+        tracksJson = tracksDbJson.get('tracksDb')
+        if tracksJson:
+            index = 0
+            trackCount = len(tracksJson)
+            for trackJson in tracksJson:
+                mode = TRACK_ADD_MODE_IN_PROGRESS if index < trackCount - 1 else TRACK_ADD_MODE_COMPLETE
+                cmdSequence.append(RcpCmd('addTrackDb', self.addChannel, trackJson, index, mode))
+                index += 1
     
-    def addTrack(self, trackJson, index, mode):
-        pass
+    def addTrackDb(self, trackJson, index, mode):
+        return self.sendCommand({'addTrackDb':
+                                 {'index':index, 
+                                  'mode':mode, 
+                                  'track': trackJson
+                                  }
+                                 })
+
+    def getTrackDb(self):
+        self.sendGet('getTrackDb')
+        
+    def getTrackDbList(self, winCallback, failCallback):
+        cmdSequence = [ RcpCmd('trackDb', self.getTrackDb) ]
+        t = Thread(target=self.executeSequence, args=(cmdSequence, None, winCallback, failCallback))
+        t.daemon = True
+        t.start()
                                           
     def getVersion(self, sync = False):
         rsp = self.sendCommand({"getVer":None}, sync)

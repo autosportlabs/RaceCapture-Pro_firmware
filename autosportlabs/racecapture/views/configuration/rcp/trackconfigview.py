@@ -1,6 +1,7 @@
 import kivy
 kivy.require('1.8.0')
 
+from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
@@ -49,25 +50,18 @@ class SectorPointView(BoxLayout):
         if self.geoPoint:
             self.geoPoint.longitude = float(value)
         
-class TrackConfigView(BoxLayout):
-    trackCfg = None
-    sectorViews = []
-    startLineView = None
-    finishLineView = None
-    separateStartFinish = False
-    
-    def __init__(self, **kwargs):
-        super(TrackConfigView, self).__init__(**kwargs)
-        self.register_event_type('on_config_updated')
         
+class AutomaticTrackConfigScreen(Screen):
+    pass
+        
+class ManualTrackConfigScreen(Screen):
+    trackCfg = None
+    def __init__(self, **kwargs):
+        super(ManualTrackConfigScreen, self).__init__(**kwargs)
         
         sepStartFinish = kvFind(self, 'rcid', 'sepStartFinish') 
         sepStartFinish.bind(on_setting=self.on_separate_start_finish)
         sepStartFinish.setControl(SettingsSwitch())
-
-        autoDetect = kvFind(self, 'rcid', 'autoDetect') 
-        autoDetect.bind(on_setting=self.on_auto_detect)
-        autoDetect.setControl(SettingsSwitch())
         
         self.separateStartFinish = False        
         sectorsContainer = kvFind(self, 'rcid', 'sectorsGrid')
@@ -76,11 +70,7 @@ class TrackConfigView(BoxLayout):
             
         sectorsContainer.height = 35 * CONFIG_SECTOR_COUNT
         sectorsContainer.size_hint = (1.0, None)
-                
-    def on_auto_detect(self, instance, value):
-        if self.trackCfg:
-            self.trackCfg.autoDetect = value
-        
+                        
     def on_separate_start_finish(self, instance, value):        
         if self.trackCfg:
             self.trackCfg.trackType = 1 if value else 0
@@ -117,9 +107,6 @@ class TrackConfigView(BoxLayout):
     def on_config_updated(self, rcpCfg):
         trackCfg = rcpCfg.trackConfig
         
-        autoDetectSwitch = kvFind(self, 'rcid', 'autoDetect')
-        autoDetectSwitch.setValue(trackCfg.autoDetect)
-        
         separateStartFinishSwitch = kvFind(self, 'rcid', 'sepStartFinish')
         self.separateStartFinish = trackCfg.trackType == TRACK_TYPE_STAGE
         separateStartFinishSwitch.setValue(self.separateStartFinish) 
@@ -139,4 +126,40 @@ class TrackConfigView(BoxLayout):
         self.trackCfg = trackCfg
         self.updateTrackViewState()
         self.update_tabs()
+            
+class TrackConfigView(BoxLayout):
+    trackCfg = None
+    sectorViews = []
+    startLineView = None
+    finishLineView = None
+    separateStartFinish = False
+    manualTrackConfigView = None
+    autoConfigView = None
+    
+    def __init__(self, **kwargs):
+        super(TrackConfigView, self).__init__(**kwargs)
+        self.register_event_type('on_config_updated')
+        
+        self.manualTrackConfigView = ManualTrackConfigScreen(name='manual')
+        self.autoConfigView = AutomaticTrackConfigScreen(name='auto')
+        
+        screenMgr = kvFind(self, 'rcid', 'screenmgr')
+        screenMgr.add_widget(self.manualTrackConfigView)
+
+        autoDetect = kvFind(self, 'rcid', 'autoDetect') 
+        autoDetect.bind(on_setting=self.on_auto_detect)
+        autoDetect.setControl(SettingsSwitch())
+
+    def on_config_updated(self, rcpCfg):
+        trackCfg = rcpCfg.trackConfig
+        
+        autoDetectSwitch = kvFind(self, 'rcid', 'autoDetect')
+        autoDetectSwitch.setValue(trackCfg.autoDetect)
+        
+        self.manualTrackConfigView.on_config_updated(rcpCfg)
+        self.trackCfg = trackCfg
+        
+    def on_auto_detect(self, instance, value):
+        if self.trackCfg:
+            self.trackCfg.autoDetect = value
         
