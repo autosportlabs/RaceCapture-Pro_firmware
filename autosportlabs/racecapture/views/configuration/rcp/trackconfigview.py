@@ -56,6 +56,11 @@ class AutomaticTrackConfigScreen(Screen):
         
 class ManualTrackConfigScreen(Screen):
     trackCfg = None
+    sectorViews = []
+    startLineView = None
+    finishLineView = None
+    separateStartFinish = False
+
     def __init__(self, **kwargs):
         super(ManualTrackConfigScreen, self).__init__(**kwargs)
         
@@ -129,10 +134,8 @@ class ManualTrackConfigScreen(Screen):
             
 class TrackConfigView(BoxLayout):
     trackCfg = None
-    sectorViews = []
-    startLineView = None
-    finishLineView = None
-    separateStartFinish = False
+
+    screenManager = None
     manualTrackConfigView = None
     autoConfigView = None
     
@@ -145,7 +148,8 @@ class TrackConfigView(BoxLayout):
         
         screenMgr = kvFind(self, 'rcid', 'screenmgr')
         screenMgr.add_widget(self.manualTrackConfigView)
-
+        self.screenManager = screenMgr
+        
         autoDetect = kvFind(self, 'rcid', 'autoDetect') 
         autoDetect.bind(on_setting=self.on_auto_detect)
         autoDetect.setControl(SettingsSwitch())
@@ -160,6 +164,11 @@ class TrackConfigView(BoxLayout):
         self.trackCfg = trackCfg
         
     def on_auto_detect(self, instance, value):
+        if value:
+            self.screenManager.switch_to(self.autoConfigView)
+        else:
+            self.screenManager.switch_to(self.manualTrackConfigView)
+
         if self.trackCfg:
             self.trackCfg.autoDetect = value
         

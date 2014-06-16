@@ -32,9 +32,21 @@ class TracksUpdateStatusView(BoxLayout):
 
 class TrackItemView(BoxLayout):
     track = None
+    trackInfoView = None
     def __init__(self, **kwargs):
         super(TrackItemView, self).__init__(**kwargs)
         track = kwargs.get('track', None)
+        trackInfoView = kvFind(self, 'rcid', 'trackinfo')
+        trackInfoView.setTrack(track)
+        self.track = track
+        self.trackInfoView = trackInfoView
+        
+class TrackInfoView(BoxLayout):
+    track = None
+    def __init__(self, **kwargs):
+        super(TrackInfoView, self).__init__(**kwargs)
+        
+    def setTrack(self, track):
         if track:
             raceTrackView = kvFind(self, 'rcid', 'track')
             raceTrackView.loadTrack(track)
@@ -42,6 +54,7 @@ class TrackItemView(BoxLayout):
             trackLabel.text = track.name
             lengthLabel = kvFind(self, 'rcid', 'length')
             lengthLabel.text = str(track.length) + ' mi.'
+            self.track = track
     
 class TracksView(BoxLayout):
     trackmap = None
