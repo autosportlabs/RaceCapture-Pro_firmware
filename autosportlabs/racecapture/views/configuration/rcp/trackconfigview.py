@@ -1,6 +1,7 @@
 import kivy
 kivy.require('1.8.0')
 
+from kivy.metrics import dp
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
@@ -12,6 +13,7 @@ from settingsview import *
 from utils import *
 from rcpconfig import *
 from valuefield import FloatValueField
+from autosportlabs.racecapture.views.tracks.tracksview import TrackInfoView
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/trackconfigview.kv')
 
@@ -52,7 +54,15 @@ class SectorPointView(BoxLayout):
         
         
 class AutomaticTrackConfigScreen(Screen):
-    pass
+    tracksDb = None
+    tracksGrid = None
+    def __init__(self, **kwargs):
+        super(AutomaticTrackConfigScreen, self).__init__(**kwargs)
+        self.tracksGrid = kvFind(self, 'rcid', 'tracksgrid')
+        
+    def on_config_updated(self, rcpCfg):
+        self.tracksDb = rcpCfg.tracksDb
+        
         
 class ManualTrackConfigScreen(Screen):
     trackCfg = None
@@ -73,12 +83,12 @@ class ManualTrackConfigScreen(Screen):
         self.sectorsContainer = sectorsContainer
         self.initSectorViews()
             
-        sectorsContainer.height = 35 * CONFIG_SECTOR_COUNT
+        sectorsContainer.height = dp(35) * CONFIG_SECTOR_COUNT
         sectorsContainer.size_hint = (1.0, None)
                         
     def on_separate_start_finish(self, instance, value):        
         if self.trackCfg:
-            self.trackCfg.trackType = 1 if value else 0
+            self.trackCfg.track.trackType = 1 if value else 0
         self.separateStartFinish = value
         self.updateTrackViewState()
               
@@ -113,20 +123,20 @@ class ManualTrackConfigScreen(Screen):
         trackCfg = rcpCfg.trackConfig
         
         separateStartFinishSwitch = kvFind(self, 'rcid', 'sepStartFinish')
-        self.separateStartFinish = trackCfg.trackType == TRACK_TYPE_STAGE
+        self.separateStartFinish = trackCfg.track.trackType == TRACK_TYPE_STAGE
         separateStartFinishSwitch.setValue(self.separateStartFinish) 
         
         sectorsContainer = self.sectorsContainer
 
         sectorsContainer.clear_widgets()
-        for i in range(1, trackCfg.sectorCount):
+        for i in range(1, trackCfg.track.sectorCount):
             sectorView = SectorPointView(title = 'Sector ' + str(i))
             sectorsContainer.add_widget(sectorView)
-            sectorView.setPoint(trackCfg.sectors[i])
+            sectorView.setPoint(trackCfg.track.sectors[i])
             self.sectorViews.append(sectorView)
 
-        self.startLineView.setPoint(trackCfg.startLine)
-        self.finishLineView.setPoint(trackCfg.finishLine)
+        self.startLineView.setPoint(trackCfg.track.startLine)
+        self.finishLineView.setPoint(trackCfg.track.finishLine)
         
         self.trackCfg = trackCfg
         self.updateTrackViewState()

@@ -31,15 +31,24 @@
 
 
 <AutomaticTrackConfigScreen>:
-	Label:
-		text: 'automatic mode'
+	BoxLayout:
+    	spacing: dp(30)
+		size_hint_y: 0.68
+		ScrollView:
+			id: scrltracks
+		    do_scroll_x:False
+		    do_scroll_y:True
+		    GridLayout:
+		    	rcid: 'tracksgrid'
+		        padding: [dp(20), dp(20)]
+		        spacing: [dp(10), dp(10)]
+		        size_hint_y: None
+		        cols: 1
+
 	
 <ManualTrackConfigScreen>:
 	BoxLayout:
 		orientation: 'vertical'
-
-	
-	
 		SettingsView:
 			size_hint_y: 0.25
 			rcid: 'sepStartFinish'

@@ -376,49 +376,38 @@ TRACK_TYPE_STAGE    = 1
 CONFIG_SECTOR_COUNT_CIRCUIT = 19
 CONFIG_SECTOR_COUNT_STAGE = 18
 
-class TrackConfig:
+class Track:
     def __init__(self, **kwargs):
+        self.trackType = TRACK_TYPE_CIRCUIT
         self.sectorCount = CONFIG_SECTOR_COUNT
         self.startLine = GeoPoint()
         self.finishLine = GeoPoint()
         self.sectors = []
-        self.radius = 0
-        self.autoDetect = 0
-        self.trackType = TRACK_TYPE_CIRCUIT
+    
+    def fromJson(self, trackJson):
+        self.trackType = trackJson.get('type', self.trackType)
+        sectorsJson = trackJson.get('sec', None)
+        del self.sectors[:]
         
-    def fromJson(self, json):
-        self.radius = json.get('rad', self.radius)
-        self.autoDetect = json.get('autoDetect', self.autoDetect)
-        
-        trackJson = json.get('track', None)
-        if trackJson:
-            self.trackType = trackJson.get('type', self.trackType)
-            sectorsJson = trackJson.get('sec', None)
-            del self.sectors[:]
-            
-            if self.trackType == TRACK_TYPE_CIRCUIT:
-                self.startLine.fromJson(trackJson.get('sf', None))
-                sectorCount = CONFIG_SECTOR_COUNT_CIRCUIT
-            else:
-                self.startLine.fromJson(trackJson.get('st', self.startLine))
-                self.finishLine.fromJson(trackJson.get('fin', self.finishLine))
-                sectorCount = CONFIG_SECTOR_COUNT_STAGE
+        if self.trackType == TRACK_TYPE_CIRCUIT:
+            self.startLine.fromJson(trackJson.get('sf', None))
+            sectorCount = CONFIG_SECTOR_COUNT_CIRCUIT
+        else:
+            self.startLine.fromJson(trackJson.get('st', self.startLine))
+            self.finishLine.fromJson(trackJson.get('fin', self.finishLine))
+            sectorCount = CONFIG_SECTOR_COUNT_STAGE
 
-            returnedSectorCount = len(sectorsJson)
-            if sectorsJson:
-                for i in range(sectorCount):
-                    sector = GeoPoint()
-                    if i < returnedSectorCount:
-                        sectorJson = sectorsJson[i]
-                        sector.fromJson(sectorJson)
-                    self.sectors.append(sector)
-            self.sectorCount = sectorCount
-                    
-    def toJson(self):
-        trackCfgJson = {}
-        trackCfgJson['rad'] = self.radius
-        trackCfgJson['autoDetect'] = 1 if self.autoDetect else 0 
+        returnedSectorCount = len(sectorsJson)
+        if sectorsJson:
+            for i in range(sectorCount):
+                sector = GeoPoint()
+                if i < returnedSectorCount:
+                    sectorJson = sectorsJson[i]
+                    sector.fromJson(sectorJson)
+                self.sectors.append(sector)
+        self.sectorCount = sectorCount
         
+    def toJson(self):
         sectors = []
         for sector in self.sectors:
             sectors.append(sector.toJson())
@@ -431,9 +420,30 @@ class TrackConfig:
             trackJson['fin'] = self.finishLine.toJson()
         else:
             trackJson['sf'] = self.startLine.toJson()
+        return trackJson
+        
+class TrackConfig:
+    def __init__(self, **kwargs):
+        self.track = None
+        self.radius = 0
+        self.autoDetect = 0
+        
+    def fromJson(self, json):
+        self.radius = json.get('rad', self.radius)
+        self.autoDetect = json.get('autoDetect', self.autoDetect)
+        
+        trackJson = json.get('track', None)
+        if trackJson:
+            self.track = Track()
+            self.track.fromJson(trackJson)
             
-        trackCfgJson['track'] = trackJson
-            
+                    
+    def toJson(self):
+        trackCfgJson = {}
+        trackCfgJson['rad'] = self.radius
+        trackCfgJson['autoDetect'] = 1 if self.autoDetect else 0 
+        trackCfgJson['track'] = self.track.toJson()
+
         return {'trackCfg':trackCfgJson}
 
 class TracksDb:
