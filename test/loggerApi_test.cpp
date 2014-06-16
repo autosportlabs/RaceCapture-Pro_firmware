@@ -919,6 +919,7 @@ void LoggerApiTest::testGetTrackDbFile(string filename, string addedFilename){
 	stringToJson(compare, jsonCompare);
 
 	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonResponse["trackDb"]["size"], 1);
+	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonResponse["trackDb"]["max"], MAX_TRACK_COUNT);
 	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonResponse["trackDb"]["tracks"][0]["type"], (int)(Number)jsonCompare["addTrackDb"]["track"]["type"]);
 
 	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonResponse["trackDb"]["tracks"][0]["sf"][0], (float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][0]);
@@ -977,6 +978,7 @@ void LoggerApiTest::testGetChannelsFile(string filename){
 	Array channelsResponse = json["channels"];
 
 	CPPUNIT_ASSERT_EQUAL(channelsCompare.Size(), channelsResponse.Size());
+	CPPUNIT_ASSERT_EQUAL(MAX_CHANNEL_COUNT, (int)(Number)json["max"]);
 	for (int i = 0; i < channelsCompare.Size(); i++){
 		Object channelCompare = channelsCompare[i];
 		Object channel = channelsResponse[i];

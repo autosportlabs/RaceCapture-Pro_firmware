@@ -1128,6 +1128,7 @@ int api_getTrackDb(Serial *serial, const jsmntok_t *json){
 	json_objStart(serial);
 	json_objStartString(serial, "trackDb");
 	json_int(serial,"size", track_count, 1);
+	json_int(serial, "max", MAX_TRACK_COUNT, 1);
 	json_arrayStart(serial, "tracks");
 	for (size_t track_index = 0; track_index < track_count; track_index++){
 		const Track *track = tracks->tracks + track_index;
@@ -1179,6 +1180,7 @@ int api_getChannels(Serial *serial, const jsmntok_t *json){
 
 	json_objStart(serial);
 	json_int(serial,"size", channels_count, 1);
+	json_int(serial, "max", MAX_CHANNEL_COUNT, 1);
 	json_arrayStart(serial, "channels");
 	for (size_t channel_index = 0; channel_index < channels_count; channel_index++){
 		json_objStart(serial);
