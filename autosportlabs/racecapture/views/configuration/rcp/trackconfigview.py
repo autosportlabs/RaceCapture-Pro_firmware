@@ -54,14 +54,14 @@ class SectorPointView(BoxLayout):
         
         
 class AutomaticTrackConfigScreen(Screen):
-    tracksDb = None
+    trackDb = None
     tracksGrid = None
     def __init__(self, **kwargs):
         super(AutomaticTrackConfigScreen, self).__init__(**kwargs)
         self.tracksGrid = kvFind(self, 'rcid', 'tracksgrid')
         
     def on_config_updated(self, rcpCfg):
-        self.tracksDb = rcpCfg.tracksDb
+        self.trackDb = rcpCfg.trackDb
         
         
 class ManualTrackConfigScreen(Screen):

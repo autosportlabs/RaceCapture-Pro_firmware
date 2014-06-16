@@ -453,16 +453,17 @@ class TracksDb:
         
     def toJson(self):
         tracksJson = []
-        for track in self.tracks:
+        tracks = self.tracks
+        for track in tracks:
             tracksJson.append(track.toJson())
-        return {"tracksDb":tracksJson}
+        return {"trackDb":{'size':len(tracks),'tracks': tracksJson}}
     
     def fromJson(self, tracksDbJson):
         del self.tracks[:]
-        tracksNode = tracksDbJson.get('tracksDb')
+        tracksNode = tracksDbJson.get('tracks')
         if tracksNode:
             for trackNode in tracksNode:
-                track = TrackConfig()
+                track = Track()
                 track.fromJson(trackNode)
                 self.tracks.append(track)
         
@@ -659,7 +660,7 @@ class RcpConfig:
         self.canConfig = CanConfig()
         self.obd2Config = Obd2Config()
         self.scriptConfig = LuaScript()
-        self.tracksDb = TracksDb()
+        self.trackDb = TracksDb()
     
     def fromJson(self, rcpJson):
         if rcpJson:
@@ -713,6 +714,10 @@ class RcpConfig:
                 if scriptJson:
                     self.scriptConfig.fromJson(scriptJson)
                     
+                trackDbJson = rcpJson.get('trackDb', None)
+                if trackDbJson:
+                    self.trackDb.fromJson(trackDbJson)
+                    
                 print('RCP config version ' + str(self.versionConfig.major) + '.' + str(self.versionConfig.minor) + '.' + str(self.versionConfig.bugfix) + ' Loaded')
                 self.loaded = True
     
@@ -736,7 +741,8 @@ class RcpConfig:
                              'obd2Cfg':self.obd2Config.toJson().get('obd2Cfg'),
                              'connCfg':self.connectivityConfig.toJson().get('connCfg'),
                              'trackCfg':self.trackConfig.toJson().get('trackCfg'),
-                             'scriptCfg':self.scriptConfig.toJson().get('scriptCfg')
+                             'scriptCfg':self.scriptConfig.toJson().get('scriptCfg'),
+                             'trackDb': self.trackDb.toJson().get('trackDb')
                              }
                    }
         return rcpJson

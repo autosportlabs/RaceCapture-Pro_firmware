@@ -285,7 +285,8 @@ class RcpSerial:
                               RcpCmd('canCfg',      self.getCanCfg),
                               RcpCmd('obd2Cfg',     self.getObd2Cfg),
                               RcpCmd('scriptCfg',   self.getScript),
-                              RcpCmd('connCfg',     self.getConnectivityCfg)
+                              RcpCmd('connCfg',     self.getConnectivityCfg),
+                              RcpCmd('trackDb',    self.getTrackDb)
                            ]
                 
         t = Thread(target=self.executeSequence, args=(cmdSequence, 'rcpCfg', winCallback, failCallback))
@@ -354,6 +355,10 @@ class RcpSerial:
             if scriptCfg:
                 self.sequenceWriteScript(scriptCfg, cmdSequence)
 
+            trackDb = rcpCfg.get('trackDb', None)
+            if trackDb:
+                self.sequenceWriteTrackDb(trackDb, cmdSequence)
+                
             cmdSequence.append(RcpCmd('flashCfg', self.sendFlashConfig))
                 
         t = Thread(target=self.executeSequence, args=(cmdSequence, 'setRcpCfg', winCallback, failCallback,))
@@ -494,16 +499,16 @@ class RcpSerial:
                                  })
                 
                 
-    def setTrackDb(self, tracksDbJson, winCallback, failCallback):
-        cmdSequence = []
+    
+    def sequenceWriteTrackDb(self, tracksDbJson, cmdSequence):
         
-        tracksJson = tracksDbJson.get('tracksDb')
-        if tracksJson:
+        trackDbJson = tracksDbJson.get('tracks')
+        if trackDbJson:
             index = 0
-            trackCount = len(tracksJson)
-            for trackJson in tracksJson:
+            trackCount = len(trackDbJson)
+            for trackJson in trackDbJson:
                 mode = TRACK_ADD_MODE_IN_PROGRESS if index < trackCount - 1 else TRACK_ADD_MODE_COMPLETE
-                cmdSequence.append(RcpCmd('addTrackDb', self.addChannel, trackJson, index, mode))
+                cmdSequence.append(RcpCmd('addTrackDb', self.addTrackDb, trackJson, index, mode))
                 index += 1
     
     def addTrackDb(self, trackJson, index, mode):
@@ -516,13 +521,7 @@ class RcpSerial:
 
     def getTrackDb(self):
         self.sendGet('getTrackDb')
-        
-    def getTrackDbList(self, winCallback, failCallback):
-        cmdSequence = [ RcpCmd('trackDb', self.getTrackDb) ]
-        t = Thread(target=self.executeSequence, args=(cmdSequence, None, winCallback, failCallback))
-        t.daemon = True
-        t.start()
-                                          
+                                                  
     def getVersion(self, sync = False):
         rsp = self.sendCommand({"getVer":None}, sync)
         return rsp
