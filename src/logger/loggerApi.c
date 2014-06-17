@@ -348,7 +348,8 @@ static const jsmntok_t * setScalingRow(ADCConfig *adcCfg, const jsmntok_t *mapRo
 static const jsmntok_t * setAnalogExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
 	ADCConfig *adcCfg = (ADCConfig *)cfg;
 	if (NAME_EQU("scalMod", name)) adcCfg->scalingMode = filterAnalogScalingMode(modp_atoi(value));
-	else if (NAME_EQU("linScal", name)) adcCfg->linearScaling = modp_atof(value);
+	else if (NAME_EQU("scaling", name)) adcCfg->linearScaling = modp_atof(value);
+	else if (NAME_EQU("offset", name)) adcCfg->linearOffset = modp_atof(value);
 	else if (NAME_EQU("alpha", name))adcCfg->filterAlpha = modp_atof(value);
 	else if (NAME_EQU("map", name)){
 		if (valueTok->type == JSMN_OBJECT) {
@@ -389,7 +390,8 @@ static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
 		json_objStartInt(serial, i);
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_int(serial, "scalMod", cfg->scalingMode, 1);
-		json_float(serial, "linScal", cfg->linearScaling, LINEAR_SCALING_PRECISION, 1);
+		json_float(serial, "scaling", cfg->linearScaling, LINEAR_SCALING_PRECISION, 1);
+		json_float(serial, "offset", cfg->linearOffset, LINEAR_SCALING_PRECISION, 1);
 		json_float(serial, "alpha", cfg->filterAlpha, FILTER_ALPHA_PRECISION, 1);
 
 		json_objStartString(serial, "map");

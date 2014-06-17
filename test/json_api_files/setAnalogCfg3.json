@@ -20,7 +20,8 @@
                 ]
             },            
             "scalMod": 2,
-            "linScal": 1.234,
+            "scaling": 1.234,
+            "offset": 9.9,
             "alpha": 0.6
         }
     }

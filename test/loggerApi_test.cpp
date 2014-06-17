@@ -185,6 +185,7 @@ void LoggerApiTest::testGetMultipleAnalogCfg(){
 		analogCfg->cfg.channeId = CHANNEL_Analog1 + i;
 		analogCfg->cfg.sampleRate = encodeSampleRate(100);
 		analogCfg->linearScaling = 3.21 + i;
+		analogCfg->linearOffset = 9.0 + i;
 		analogCfg->scalingMode = i;
 
 		for (int x = 0; x < ANALOG_SCALING_BINS; x++){
@@ -208,7 +209,8 @@ void LoggerApiTest::testGetMultipleAnalogCfg(){
 
 		CPPUNIT_ASSERT_EQUAL(1 + i, (int)(Number)analogJson["id"]);
 		CPPUNIT_ASSERT_EQUAL(100, (int)(Number)analogJson["sr"]);
-		CPPUNIT_ASSERT_EQUAL(3.21F + i, (float)(Number)analogJson["linScal"]);
+		CPPUNIT_ASSERT_EQUAL(3.21F + i, (float)(Number)analogJson["scaling"]);
+		CPPUNIT_ASSERT_EQUAL(9.0F + i, (float)(Number)analogJson["offset"]);
 		CPPUNIT_ASSERT_EQUAL(i, (int)(Number)analogJson["scalMod"]);
 
 		Object scalMap = (Object)analogJson["map"];
@@ -232,6 +234,7 @@ void LoggerApiTest::testGetAnalogConfigFile(string filename, int index){
 	analogCfg->cfg.channeId = 1;
 	analogCfg->cfg.sampleRate = encodeSampleRate(50);
 	analogCfg->linearScaling = 1.234F;
+	analogCfg->linearOffset = 9.9F;
 	analogCfg->scalingMode = 2;
 	analogCfg->filterAlpha = 0.6F;
 
@@ -255,7 +258,8 @@ void LoggerApiTest::testGetAnalogConfigFile(string filename, int index){
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["id"]);
 	CPPUNIT_ASSERT_EQUAL(50, (int)(Number)analogJson["sr"]);
-	CPPUNIT_ASSERT_EQUAL(1.234F, (float)(Number)analogJson["linScal"]);
+	CPPUNIT_ASSERT_EQUAL(1.234F, (float)(Number)analogJson["scaling"]);
+	CPPUNIT_ASSERT_EQUAL(9.9F, (float)(Number)analogJson["offset"]);
 	CPPUNIT_ASSERT_EQUAL(0.6F, (float)(Number)analogJson["alpha"]);
 	CPPUNIT_ASSERT_EQUAL(2, (int)(Number)analogJson["scalMod"]);
 
@@ -296,6 +300,7 @@ void LoggerApiTest::testSetAnalogConfigFile(string filename){
 
 	CPPUNIT_ASSERT_EQUAL(2, (int)adcCfg->scalingMode);
 	CPPUNIT_ASSERT_EQUAL(1.234F, adcCfg->linearScaling);
+	CPPUNIT_ASSERT_EQUAL(9.9F, adcCfg->linearOffset);
 	CPPUNIT_ASSERT_EQUAL(0.6F, adcCfg->filterAlpha);
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)adcCfg->scalingMap.rawValues[0]);
