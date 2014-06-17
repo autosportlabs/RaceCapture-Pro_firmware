@@ -87,7 +87,7 @@ class ConfigView(BoxLayout):
             self.configViews.append(view)
         
         #n = create_tree('Track')
-        attach_node('Track / Sectors', None, TrackConfigView())
+        attach_node('Race Track / Sectors', None, TrackConfigView())
         n = create_tree('Channels')
         attach_node('GPS', n, GPSChannelsView())
         attach_node('Analog Inputs', n, AnalogChannelsView(channelCount=8, channels=self.channels))

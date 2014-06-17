@@ -19,30 +19,57 @@
 	orientation: 'vertical'
 	BoxLayout:
 		orientation: 'vertical'
-		size_hint_y: 0.2
+		size_hint_y: 0.15
 		spacing: dp(20)
 		SettingsView:
 			rcid: 'autoDetect'
 			label_text: 'Automatic track detection'
 			help_text: 'Automatically detect and configure the race track upon GPS lock, after power-up. If you want a fixed configuration, leave off and configure your start/finish and sector targets below'
+	HLineSeparator:
+		height: dp(5)
 	ScreenManager:
 		rcid: 'screenmgr'
-		size_hint_y: 0.8
+		size_hint_y: 0.85
 
+<EmptyTrackDbView>:
+	BoxLayout:
+		orientation: 'vertical'
+		size_hint_y: 0.5
+		pos_hint: {'center_x': .5, 'center_y': .5}		
+		Label:
+			font_size: dp(20)
+			text: 'No tracks selected'
+		Label:
+			size_hint_y: 0.2
+		Label:
+			text: 'Press the add button below to auto-detect your favorite race tracks'
+			
 <TrackDbItemView>:
 	BoxLayout:
 		orientation: 'horizontal'
 		TrackInfoView:
-			size_hint_x: 0.9
+			size_hint_x: 0.95
 			rcid: 'trackinfo'
 		IconButton:
-			size_hint_x: 0.1
+			size_hint_x: 0.05
 			text: '\357\200\224'
 
 <AutomaticTrackConfigScreen>:
 	BoxLayout:
-    	spacing: dp(30)
+		orientation: 'vertical'
+    	spacing: dp(10)
+		Label:
+			font_size: dp(20)
+			text: 'Installed Race Tracks'
+			size_hint_y: 0.05
 		ScrollView:
+			canvas.before:
+		        Color:
+		            rgba: 0.05, 0.05, 0.05, 1
+		        Rectangle:
+		            pos: self.pos
+		            size: self.size
+			size_hint_y: 0.90
 			id: scrltracks
 		    do_scroll_x:False
 		    do_scroll_y:True
@@ -52,6 +79,18 @@
 		        spacing: [dp(10), dp(10)]
 		        size_hint_y: None
 		        cols: 1
+	    BoxLayout:
+	    	size_hint_y: 0.05
+	    	spacing: dp(10)
+	    	orientation: 'vertical'
+	    	IconButton:
+	    		pos_hint: {'center_x': .5, 'center_y': .5}
+	    		size_hint: (0.1, 0.1)
+	    		text: '\357\201\247'
+	    		on_release: root.on_add_track_db()
+		    	disabled: False
+		    	rcid: 'addpid'
+	        
 
 	
 <ManualTrackConfigScreen>:

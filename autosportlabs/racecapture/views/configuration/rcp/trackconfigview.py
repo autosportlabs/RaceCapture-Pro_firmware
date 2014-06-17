@@ -53,6 +53,10 @@ class SectorPointView(BoxLayout):
         if self.geoPoint:
             self.geoPoint.longitude = float(value)
         
+class EmptyTrackDbView(BoxLayout):
+    def __init__(self, **kwargs):
+        super(EmptyTrackDbView, self).__init__(**kwargs)
+        
 class TrackDbItemView(BoxLayout):
     track = None
     trackInfoView = None
@@ -68,7 +72,9 @@ class AutomaticTrackConfigScreen(Screen):
     trackDb = None
     tracksGrid = None
     trackManager = None
-    trackItemMinHeight = 300
+    trackItemMinHeight = 200
+    searchRadiusMeters = 2000
+    searchBearing = 360
     def __init__(self, **kwargs):
         super(AutomaticTrackConfigScreen, self).__init__(**kwargs)
         self.tracksGrid = kvFind(self, 'rcid', 'tracksgrid')
@@ -80,13 +86,15 @@ class AutomaticTrackConfigScreen(Screen):
     def on_tracks_updated(self, trackManager):
         self.trackManager = trackManager
         self.init_tracks_list()
-        
+    
+    def on_add_track_db(self):
+        pass
     def init_tracks_list(self):
         if self.trackManager and self.trackDb:
             matchedTracks = []
             for track in self.trackDb.tracks:
                 startPoint = track.startLine
-                radius = startPoint.metersToDegrees(2000, 360)
+                radius = startPoint.metersToDegrees(self.searchRadiusMeters, self.searchBearing)
                 matchedTrack = self.trackManager.findNearbyTrack(track.startLine, radius)
                 if matchedTrack:
                     matchedTracks.append(matchedTrack)
@@ -94,11 +102,14 @@ class AutomaticTrackConfigScreen(Screen):
             grid = kvFind(self, 'rcid', 'tracksgrid')
             self.tracksGrid.height = self.trackItemMinHeight * len(matchedTracks)
             grid.clear_widgets()
-            for track in matchedTracks:
-                trackDbView = TrackDbItemView(track=track)
-                trackDbView.size_hint_y = None
-                trackDbView.height = self.trackItemMinHeight
-                grid.add_widget(trackDbView)
+            if len(matchedTracks) == 0:
+                grid.add_widget(EmptyTrackDbView())
+            else:
+                for track in matchedTracks:
+                    trackDbView = TrackDbItemView(track=track)
+                    trackDbView.size_hint_y = None
+                    trackDbView.height = self.trackItemMinHeight
+                    grid.add_widget(trackDbView)
                 
         
 class ManualTrackConfigScreen(Screen):
