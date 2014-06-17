@@ -1,3 +1,5 @@
+import math
+RADIUS_EARTH_KM = 6371;
 
 class GeoPoint:
     def __init__(self, **kwargs):
@@ -21,6 +23,28 @@ class GeoPoint:
     def toJson(self):
         return [self.latitude, self.longitude]
 
+
+    def withinCircle(self, point, radiusDeg):
+        rSquared = radiusDeg * radiusDeg
+        xdelta = point.longitude - self.longitude
+        ydelta = point.latitude - self.latitude
+        dsquared = (xdelta * xdelta) + (ydelta * ydelta)
+        return rSquared >= dsquared
+
+    
+    def metersToDegrees(self, meters, bearingAngle):
+        d = meters / 1000.0
+        R = RADIUS_EARTH_KM
+        brng = math.radians(bearingAngle)
+        
+        lat1 = self.latitude
+        lon1 = self.longitude
+        
+        lat2 = math.degrees((d / R) * math.cos(brng)) + lat1
+        lon2 = math.degrees((d / (R * math.sin(math.radians(lat2)))) * math.sin(brng)) + lon1
+
+        distanceDegrees = math.fabs(math.sqrt(math.pow((lat1 - lat2), 2)  + math.pow((lon1 - lon2), 2)))
+        return distanceDegrees
 
 class Region:
     name = None

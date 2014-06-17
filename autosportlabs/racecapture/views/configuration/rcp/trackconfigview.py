@@ -53,25 +53,53 @@ class SectorPointView(BoxLayout):
         if self.geoPoint:
             self.geoPoint.longitude = float(value)
         
-        
+class TrackDbItemView(BoxLayout):
+    track = None
+    trackInfoView = None
+    def __init__(self, **kwargs):
+        super(TrackDbItemView, self).__init__(**kwargs)
+        track = kwargs.get('track', None)
+        trackInfoView = kvFind(self, 'rcid', 'trackinfo')
+        trackInfoView.setTrack(track)
+        self.track = track
+        self.trackInfoView = trackInfoView
+
 class AutomaticTrackConfigScreen(Screen):
     trackDb = None
     tracksGrid = None
     trackManager = None
+    trackItemMinHeight = 300
     def __init__(self, **kwargs):
         super(AutomaticTrackConfigScreen, self).__init__(**kwargs)
         self.tracksGrid = kvFind(self, 'rcid', 'tracksgrid')
         
     def on_config_updated(self, rcpCfg):
         self.trackDb = rcpCfg.trackDb
+        self.init_tracks_list()
         
     def on_tracks_updated(self, trackManager):
         self.trackManager = trackManager
+        self.init_tracks_list()
         
     def init_tracks_list(self):
         if self.trackManager and self.trackDb:
-            print('init tracks list nao!')
-            
+            matchedTracks = []
+            for track in self.trackDb.tracks:
+                startPoint = track.startLine
+                radius = startPoint.metersToDegrees(2000, 360)
+                matchedTrack = self.trackManager.findNearbyTrack(track.startLine, radius)
+                if matchedTrack:
+                    matchedTracks.append(matchedTrack)
+                    
+            grid = kvFind(self, 'rcid', 'tracksgrid')
+            self.tracksGrid.height = self.trackItemMinHeight * len(matchedTracks)
+            grid.clear_widgets()
+            for track in matchedTracks:
+                trackDbView = TrackDbItemView(track=track)
+                trackDbView.size_hint_y = None
+                trackDbView.height = self.trackItemMinHeight
+                grid.add_widget(trackDbView)
+                
         
 class ManualTrackConfigScreen(Screen):
     trackCfg = None
@@ -183,6 +211,7 @@ class TrackConfigView(BaseConfigView):
         autoDetectSwitch.setValue(trackCfg.autoDetect)
         
         self.manualTrackConfigView.on_config_updated(rcpCfg)
+        self.autoConfigView.on_config_updated(rcpCfg)
         self.trackCfg = trackCfg
         
     def on_auto_detect(self, instance, value):

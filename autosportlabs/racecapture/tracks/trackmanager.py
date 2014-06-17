@@ -131,6 +131,14 @@ class TrackManager:
     def getRegionTrackIds(self):
         return self.regionTrackIds
         
+    def findNearbyTrack(self, point, searchRadius):
+        for trackId in self.tracks.keys():
+            track = self.tracks[trackId]
+            trackCenter = track.getCenterPoint()
+            if trackCenter and trackCenter.withinCircle(point, searchRadius):
+                return track
+        return None
+        
     def filterTracksByName(self, name, trackIds=None):
         if trackIds == None:
             trackIds = self.tracks.keys()
