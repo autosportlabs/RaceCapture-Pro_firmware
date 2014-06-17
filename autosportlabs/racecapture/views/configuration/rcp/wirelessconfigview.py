@@ -9,10 +9,11 @@ from settingsview import SettingsView, SettingsSwitch, SettingsButton, SettingsM
 from autosportlabs.widgets.separator import HLineSeparator
 from valuefield import ValueField
 from utils import *
+from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/wirelessconfigview.kv')
 
-class WirelessConfigView(BoxLayout):
+class WirelessConfigView(BaseConfigView):
     customApnLabel = 'Custom APN'
     apnSpinner = None
     cellProviderInfo = None

@@ -8,6 +8,7 @@ from mappedspinner import MappedSpinner
 from rcpconfig import *
 from utils import *
 from valuefield import IntegerValueField, FloatValueField
+from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/imuchannelsview.kv')
 
@@ -96,7 +97,7 @@ class ImuChannel(BoxLayout):
         self.channelConfig = channelConfig
         self.channelLabels = channelLabels
         
-class ImuChannelsView(BoxLayout):
+class ImuChannelsView(BaseConfigView):
     editors = []
     imuCfg = None
     channelLabels = {0:'X', 1:'Y', 2:'Z', 3:'Yaw'}

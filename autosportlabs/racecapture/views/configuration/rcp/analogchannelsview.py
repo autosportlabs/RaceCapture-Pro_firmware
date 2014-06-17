@@ -12,10 +12,11 @@ from rcpconfig import *
 from channels import *
 from channelnameselectorview import ChannelNameSelectorView
 from channelnamespinner import ChannelNameSpinner
+from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/analogchannelsview.kv')
 
-class AnalogChannelsView(BoxLayout):
+class AnalogChannelsView(BaseConfigView):
     editors = []    
     def __init__(self, **kwargs):
         super(AnalogChannelsView, self).__init__(**kwargs)
@@ -49,7 +50,6 @@ class AnalogChannelsView(BoxLayout):
             editor = self.editors[i]
             analogChannel = analogCfg.channels[i]
             editor.on_config_updated(analogChannel, self.channels)
-            
 
 class AnalogChannel(BoxLayout):
     channelConfig = None

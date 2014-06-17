@@ -120,6 +120,8 @@ class ConfigView(BoxLayout):
             view.dispatch('on_config_updated', config)
         
     def on_tracks_updated(self, trackManager):
+        for view in self.configViews:
+            view.dispatch('on_tracks_updated', trackManager)
         pass
     
     def on_read_config(self, instance, *args):

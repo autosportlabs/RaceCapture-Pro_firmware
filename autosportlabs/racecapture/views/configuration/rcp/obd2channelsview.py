@@ -5,7 +5,7 @@ from kivy.uix.switch import Switch
 from kivy.app import Builder
 from iconbutton import IconButton
 from settingsview import SettingsSwitch
-
+from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
 from utils import *
 from rcpconfig import *
 
@@ -42,7 +42,7 @@ class OBD2Channel(BoxLayout):
         channelSpinner.on_channels_updated(channels)
         channelSpinner.text = channels.getNameForId(channel.channelId)
     
-class OBD2ChannelsView(BoxLayout):
+class OBD2ChannelsView(BaseConfigView):
     obd2Cfg = None
     obd2Grid = None
     def __init__(self, **kwargs):

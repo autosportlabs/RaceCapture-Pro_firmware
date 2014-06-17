@@ -14,6 +14,7 @@ from utils import *
 from rcpconfig import *
 from valuefield import FloatValueField
 from autosportlabs.racecapture.views.tracks.tracksview import TrackInfoView
+from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/trackconfigview.kv')
 
@@ -56,6 +57,7 @@ class SectorPointView(BoxLayout):
 class AutomaticTrackConfigScreen(Screen):
     trackDb = None
     tracksGrid = None
+    trackManager = None
     def __init__(self, **kwargs):
         super(AutomaticTrackConfigScreen, self).__init__(**kwargs)
         self.tracksGrid = kvFind(self, 'rcid', 'tracksgrid')
@@ -63,6 +65,13 @@ class AutomaticTrackConfigScreen(Screen):
     def on_config_updated(self, rcpCfg):
         self.trackDb = rcpCfg.trackDb
         
+    def on_tracks_updated(self, trackManager):
+        self.trackManager = trackManager
+        
+    def init_tracks_list(self):
+        if self.trackManager and self.trackDb:
+            print('init tracks list nao!')
+            
         
 class ManualTrackConfigScreen(Screen):
     trackCfg = None
@@ -142,7 +151,7 @@ class ManualTrackConfigScreen(Screen):
         self.updateTrackViewState()
         self.update_tabs()
             
-class TrackConfigView(BoxLayout):
+class TrackConfigView(BaseConfigView):
     trackCfg = None
 
     screenManager = None
@@ -164,6 +173,9 @@ class TrackConfigView(BoxLayout):
         autoDetect.bind(on_setting=self.on_auto_detect)
         autoDetect.setControl(SettingsSwitch())
 
+    def on_tracks_updated(self, trackManager):
+        self.autoConfigView.on_tracks_updated(trackManager)
+        
     def on_config_updated(self, rcpCfg):
         trackCfg = rcpCfg.trackConfig
         

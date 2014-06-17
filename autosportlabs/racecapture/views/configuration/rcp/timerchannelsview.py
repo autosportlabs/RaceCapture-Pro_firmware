@@ -9,6 +9,7 @@ from kivy.app import Builder
 from mappedspinner import MappedSpinner
 from rcpconfig import *
 from utils import *
+from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/timerchannelsview.kv')
 
@@ -77,7 +78,7 @@ class PulseChannel(BoxLayout):
         self.channelConfig = channelConfig
         self.channels = channels
 
-class PulseChannelsView(BoxLayout):
+class PulseChannelsView(BaseConfigView):
     editors = []
     def __init__(self, **kwargs):
         super(PulseChannelsView, self).__init__(**kwargs)

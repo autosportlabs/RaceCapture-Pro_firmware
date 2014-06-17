@@ -6,10 +6,11 @@ from kivy.app import Builder
 from rcpconfig import *
 from samplerateview import *
 from utils import *
+from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/gpschannelsview.kv')            
             
-class GPSChannelsView(BoxLayout):
+class GPSChannelsView(BaseConfigView):
     gpsConfig = None
     
     def __init__(self, **kwargs):

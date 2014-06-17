@@ -7,13 +7,11 @@ from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.scrollview import ScrollView
 from kivy.app import Builder
 from utils import *
-
+from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
 from rcpconfig import *
 from mappedspinner import MappedSpinner
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/gpiochannelsview.kv')
-
-
 
 class GPIOModeSpinner(MappedSpinner):
     def __init__(self, **kwargs):
@@ -53,7 +51,7 @@ class GPIOChannel(BoxLayout):
         self.channelConfig = channelConfig
         self.channels = channels
         
-class GPIOChannelsView(BoxLayout):
+class GPIOChannelsView(BaseConfigView):
     editors = []
     def __init__(self, **kwargs):
         super(GPIOChannelsView, self).__init__(**kwargs)

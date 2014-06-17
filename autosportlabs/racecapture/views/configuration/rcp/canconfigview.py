@@ -6,6 +6,7 @@ from mappedspinner import MappedSpinner
 from kivy.uix.boxlayout import BoxLayout
 from kivy.app import Builder
 from utils import *
+from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/canconfigview.kv')
 
@@ -14,7 +15,7 @@ class CANBaudRateSpinner(SettingsMappedSpinner):
         super(CANBaudRateSpinner, self).__init__(**kwargs)
         self.setValueMap({50000: '50K Baud', 125000: '125K Baud', 250000:'250K Baud', 500000:'500K Baud', 1000000:'1M Baud'}, '500K Baud')
     
-class CANConfigView(BoxLayout):
+class CANConfigView(BaseConfigView):
     canConfig = None
     def __init__(self, **kwargs):    
         super(CANConfigView, self).__init__(**kwargs)

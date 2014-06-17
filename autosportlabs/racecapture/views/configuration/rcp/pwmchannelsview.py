@@ -10,6 +10,7 @@ from fieldlabel import FieldLabel
 from valuefield import IntegerValueField
 from mappedspinner import MappedSpinner
 from utils import *
+from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/pwmchannelsview.kv')
     
@@ -81,7 +82,7 @@ class AnalogPulseOutputChannel(BoxLayout):
         self.channelConfig = channelConfig
         self.channels = channels
         
-class AnalogPulseOutputChannelsView(BoxLayout):
+class AnalogPulseOutputChannelsView(BaseConfigView):
     editors = []
     def __init__(self, **kwargs):
         self.register_event_type('on_config_updated')

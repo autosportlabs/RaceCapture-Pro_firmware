@@ -8,10 +8,11 @@ from settingsview import SettingsView, SettingsTextField, SettingsSwitch
 from autosportlabs.widgets.separator import HLineSeparator
 from valuefield import ValueField
 from utils import *
+from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/telemetryconfigview.kv')
 
-class TelemetryConfigView(BoxLayout):
+class TelemetryConfigView(BaseConfigView):
     connectivityConfig = None
     def __init__(self, **kwargs):    
         super(TelemetryConfigView, self).__init__(**kwargs)
