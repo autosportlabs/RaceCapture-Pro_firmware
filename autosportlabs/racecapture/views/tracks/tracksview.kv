@@ -67,12 +67,12 @@
 	            	spacing: dp(10)					
 					FieldLabel:
 						halign: 'right'
-						size_hint_x: 0.4
+						size_hint_x: 0.5
 						text: 'Configuration'
 						bold: True
 					FieldLabel:
 						halign: 'left'
-						size_hint_x: 0.6
+						size_hint_x: 0.5
 						rcid: 'configuration'
 						text: 'Standard'
 
@@ -82,13 +82,13 @@
 	            	spacing: dp(10)					
 					FieldLabel:
 						halign: 'right'
-						size_hint_x: 0.4
+						size_hint_x: 0.5
 						halign: 'right'
 						text: 'Length'
 						bold: True
 					FieldLabel:
 						halign: 'left'
-						size_hint_x: 0.6
+						size_hint_x: 0.5
 						rcid: 'length'
 				BoxLayout:
 					size_hint_y: 0.5
@@ -99,6 +99,7 @@
 		CheckBox:
 			size_hint_x: 0.10
 			on_active: root.track_select(*args)
+			rcid: 'select'
 		TrackInfoView:
 			rcid: 'trackinfo'
 
@@ -144,6 +145,7 @@
     	CheckBox:
     		size_hint_x: 0.05
     		rcid: 'selectall'
+    		on_active: root.selectAll(*args)
     	FieldLabel:
     		size_hint_x: 0.25
     		text: 'Select All'

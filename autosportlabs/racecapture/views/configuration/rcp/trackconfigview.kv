@@ -34,29 +34,19 @@
 <EmptyTrackDbView>:
 	BoxLayout:
 		orientation: 'vertical'
-		size_hint_y: 0.5
 		pos_hint: {'center_x': .5, 'center_y': .5}		
 		Label:
 			font_size: dp(20)
 			text: 'No tracks selected'
 		Label:
-			size_hint_y: 0.2
+			height: dp(30)
 		Label:
 			text: 'Press the add button below to select your favorite tracks for auto-detection'
 			
-<TrackDbItemView>:
-	BoxLayout:
-		orientation: 'horizontal'
-		TrackInfoView:
-			size_hint_x: 0.95
-			rcid: 'trackinfo'
-		IconButton:
-			size_hint_x: 0.05
-			text: '\357\200\224'
-
 <TrackSelectionPopup>:
 	orientation: 'vertical'
 	TracksBrowser:
+		trackHeight: 200
 		rcid: 'browser'
 		size_hint_y: 0.90
 	BoxLayout:
@@ -67,6 +57,17 @@
 			on_release: root.confirmAddTracks()
 		
 	
+<TrackDbItemView>:
+	BoxLayout:
+		orientation: 'horizontal'
+		TrackInfoView:
+			size_hint_x: 0.95
+			rcid: 'trackinfo'
+		IconButton:
+			size_hint_x: 0.05
+			text: '\357\200\224'
+			on_release: root.removeTrack()
+			
 
 <AutomaticTrackConfigScreen>:
 	BoxLayout:

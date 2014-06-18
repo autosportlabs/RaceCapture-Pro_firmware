@@ -1,5 +1,6 @@
 import kivy
 kivy.require('1.8.0')
+from kivy.properties import NumericProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 from kivy.uix.label import Label
@@ -48,6 +49,9 @@ class TrackItemView(BoxLayout):
             
     def on_track_selected(self, selected, trackId):
         pass
+    
+    def setSelected(self, selected):
+        kvFind(self, 'rcid', 'select').active = selected
         
 class TrackInfoView(BoxLayout):
     track = None
@@ -79,7 +83,7 @@ class TracksView(BoxLayout):
         
 class TracksBrowser(BoxLayout):
     trackmap = None
-    trackMinHeight = dp(300)
+    trackHeight = NumericProperty(dp(400))
     trackManager = None
     tracksUpdatePopup = None
     lastNameSearch = None
@@ -102,6 +106,12 @@ class TracksBrowser(BoxLayout):
         
     def setViewDisabled(self, disabled):
         kvFind(self, 'rcid', 'updatecheck').disabled = disabled
+        kvFind(self, 'rcid', 'regions').disabled = disabled
+        searchFilter = kvFind(self, 'rcid', 'namefilter')
+        searchFilter.disabled = disabled
+        if not disabled:
+            searchFilter.focus = True
+        
     
     def dismissPopups(self):
         if self.tracksUpdatePopup:
@@ -160,7 +170,7 @@ class TracksBrowser(BoxLayout):
             trackView = TrackItemView(track=track)
             trackView.bind(on_track_selected=self.on_track_selected)
             trackView.size_hint_y = None
-            trackView.height = self.trackMinHeight
+            trackView.height = self.trackHeight
             self.tracksGrid.add_widget(trackView)
             Clock.schedule_once(lambda dt: self.addNextTrack(index + 1, keys))
         else:
@@ -173,7 +183,7 @@ class TracksBrowser(BoxLayout):
             trackIds = self.trackManager.getAllTrackIds()
         trackCount = len(trackIds)
         grid = kvFind(self, 'rcid', 'tracksgrid')
-        grid.height = self.trackMinHeight * trackCount
+        grid.height = self.trackHeight * (trackCount + 1)
         grid.clear_widgets()
         self.tracksGrid = grid
         self.addNextTrack(0, trackIds)
@@ -194,3 +204,8 @@ class TracksBrowser(BoxLayout):
             self.selectedTrackIds.add(trackId)
         else:
             self.selectedTrackIds.discard(trackId)
+            
+    def selectAll(self, instance, value):
+        if self.tracksGrid:
+            for trackView in self.tracksGrid.children:
+                trackView.setSelected(value)

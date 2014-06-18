@@ -62,14 +62,23 @@ class EmptyTrackDbView(BoxLayout):
 class TrackDbItemView(BoxLayout):
     track = None
     trackInfoView = None
+    index = 0
     def __init__(self, **kwargs):
         super(TrackDbItemView, self).__init__(**kwargs)
         track = kwargs.get('track', None)
+        self.index = kwargs.get('index', 0)
         trackInfoView = kvFind(self, 'rcid', 'trackinfo')
         trackInfoView.setTrack(track)
         self.track = track
         self.trackInfoView = trackInfoView
+        self.register_event_type('on_remove_track')
 
+    def on_remove_track(self, index):
+        pass
+    
+    def removeTrack(self):
+        self.dispatch('on_remove_track', self.index)
+        
 class TrackSelectionPopup(BoxLayout):
     trackBrowser = None
     def __init__(self, **kwargs):
@@ -110,14 +119,18 @@ class AutomaticTrackConfigScreen(Screen):
     
     def on_tracks_selected(self, instance, selectedTrackIds):
         if self.trackDb:
+            failures = False
             for trackId in selectedTrackIds:
                 trackMap = self.trackManager.getTrackById(trackId)
                 if trackMap:
-                    if not trackMap.startFinishPoint:
-                        alertPopup('Cannot Add Track', 'Cannot add track; no start/finish point defined')
-                    else:
+                    startFinish = trackMap.startFinishPoint
+                    if startFinish and startFinish.latitude and startFinish.longitude:
                         track = Track.fromTrackMap(trackMap)
                         self.trackDb.tracks.append(track)
+                    else:
+                        failures = True
+            if failures:
+                alertPopup('Cannot Add Tracks', 'One or more tracks could not be added due to missing start/finish points.\n\nPlease check for track map updates and try again.')            
             self.init_tracks_list()
             self.trackSelectionPopup.dismiss()
         
@@ -140,19 +153,30 @@ class AutomaticTrackConfigScreen(Screen):
                     matchedTracks.append(matchedTrack)
                     
             grid = kvFind(self, 'rcid', 'tracksgrid')
-            self.tracksGrid.height = self.trackItemMinHeight * len(matchedTracks)
             grid.clear_widgets()
             if len(matchedTracks) == 0:
                 grid.add_widget(EmptyTrackDbView())
+                self.tracksGrid.height = self.trackItemMinHeight
             else:
+                self.tracksGrid.height = self.trackItemMinHeight * (len(matchedTracks) + 1)
+                index = 0
                 for track in matchedTracks:
-                    trackDbView = TrackDbItemView(track=track)
+                    trackDbView = TrackDbItemView(track=track, index=index)
+                    trackDbView.bind(on_remove_track=self.on_remove_track)
                     trackDbView.size_hint_y = None
                     trackDbView.height = self.trackItemMinHeight
                     grid.add_widget(trackDbView)
+                    index += 1
                 
             self.disableView(False)
             
+    def on_remove_track(self, instance, index):
+            try:
+                del self.trackDb.tracks[index]
+                self.init_tracks_list()
+            except Exception as detail:
+                print('Error removing track from list ' + str(detail))
+                    
     def disableView(self, disabled):
         kvFind(self, 'rcid', 'addtrack').disabled = disabled
         
