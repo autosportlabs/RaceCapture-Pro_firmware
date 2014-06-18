@@ -7,6 +7,7 @@ from kivy.uix.popup import Popup
 from kivy.app import Builder
 from kivy.metrics import dp
 import json
+import sets
 from autosportlabs.racecapture.views.util.alertview import alertPopup
 from autosportlabs.uix.track.trackmap import TrackMap
 from autosportlabs.uix.track.racetrackview import RaceTrackView
@@ -40,6 +41,13 @@ class TrackItemView(BoxLayout):
         trackInfoView.setTrack(track)
         self.track = track
         self.trackInfoView = trackInfoView
+        self.register_event_type('on_track_selected')
+        
+    def track_select(self, instance, value):
+        self.dispatch('on_track_selected', value, self.track.trackId)
+            
+    def on_track_selected(self, selected, trackId):
+        pass
         
 class TrackInfoView(BoxLayout):
     track = None
@@ -57,29 +65,35 @@ class TrackInfoView(BoxLayout):
             self.track = track
     
 class TracksView(BoxLayout):
-    trackmap = None
-    trackMinHeight = dp(300)
-    trackManager = None
-    tracksUpdatePopup = None
-    tracksGrid = None
-    regionsSpinner = None
-    lastNameSearch = None
-    searchDelay = 1.5
-    initialized = False
-    
     def __init__(self, **kwargs):
         super(TracksView, self).__init__(**kwargs)
         self.trackManager = kwargs.get('trackManager')
         self.register_event_type('on_channels_updated')
         self.register_event_type('on_tracks_updated')
-        self.tracksGrid = kvFind(self, 'rcid', 'tracksgrid')
-        self.regionsSpinner = kvFind(self, 'rcid', 'regions')
-        self.lastNameSearch = ''
-        self.setViewDisabled(True)
-            
+        
     def on_channels_updated(self, channels):
         pass
         
+    def on_tracks_updated(self, trackManager):
+        kvFind(self, 'rcid', 'browser').on_tracks_updated(trackManager)
+        
+class TracksBrowser(BoxLayout):
+    trackmap = None
+    trackMinHeight = dp(300)
+    trackManager = None
+    tracksUpdatePopup = None
+    lastNameSearch = None
+    searchDelay = 1.5
+    initialized = False
+    tracksGrid = None
+    selectedTrackIds = None
+    def __init__(self, **kwargs):
+        super(TracksBrowser, self).__init__(**kwargs)
+        self.register_event_type('on_tracks_updated')
+        self.register_event_type('on_track_selected')
+        self.lastNameSearch = ''
+        self.selectedTrackIds = set()
+            
     def on_tracks_updated(self, trackManager):
         self.trackManager = trackManager
         self.initTracksList()
@@ -144,6 +158,7 @@ class TracksView(BoxLayout):
         if index < len(keys):
             track = self.trackManager.tracks[keys[index]]
             trackView = TrackItemView(track=track)
+            trackView.bind(on_track_selected=self.on_track_selected)
             trackView.size_hint_y = None
             trackView.height = self.trackMinHeight
             self.tracksGrid.add_widget(trackView)
@@ -158,20 +173,24 @@ class TracksView(BoxLayout):
             trackIds = self.trackManager.getAllTrackIds()
         trackCount = len(trackIds)
         grid = kvFind(self, 'rcid', 'tracksgrid')
-        self.tracksGrid.height = self.trackMinHeight * trackCount
-        self.tracksGrid.clear_widgets()
+        grid.height = self.trackMinHeight * trackCount
+        grid.clear_widgets()
+        self.tracksGrid = grid
         self.addNextTrack(0, trackIds)
             
     def initRegionsList(self):
         regions = self.trackManager.regions
-        regionsSpinner = self.regionsSpinner
+        regionsSpinner = kvFind(self, 'rcid', 'regions')
         values = []
         for region in regions:
             name = region.name
             if regionsSpinner.text == '':
                 regionsSpinner.text = name
             values.append(name)
-        self.regionsSpinner.values = values
+        regionsSpinner.values = values
         
-        
-        
+    def on_track_selected(self, instance, selected, trackId):
+        if selected:
+            self.selectedTrackIds.add(trackId)
+        else:
+            self.selectedTrackIds.discard(trackId)

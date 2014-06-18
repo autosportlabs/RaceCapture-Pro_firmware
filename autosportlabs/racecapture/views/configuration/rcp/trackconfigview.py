@@ -6,6 +6,7 @@ from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
+from kivy.uix.popup import Popup
 from kivy.app import Builder
 from helplabel import HelpLabel
 from fieldlabel import FieldLabel
@@ -13,7 +14,8 @@ from settingsview import *
 from utils import *
 from rcpconfig import *
 from valuefield import FloatValueField
-from autosportlabs.racecapture.views.tracks.tracksview import TrackInfoView
+from autosportlabs.racecapture.views.util.alertview import alertPopup
+from autosportlabs.racecapture.views.tracks.tracksview import TrackInfoView, TracksView
 from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/trackconfigview.kv')
@@ -68,6 +70,23 @@ class TrackDbItemView(BoxLayout):
         self.track = track
         self.trackInfoView = trackInfoView
 
+class TrackSelectionPopup(BoxLayout):
+    trackBrowser = None
+    def __init__(self, **kwargs):
+        super(TrackSelectionPopup, self).__init__(**kwargs)
+        trackManager = kwargs.get('trackManager', None)
+        trackBrowser = kvFind(self, 'rcid', 'browser')
+        trackBrowser.on_tracks_updated(trackManager)
+        self.register_event_type('on_tracks_selected')
+        self.trackBrowser = trackBrowser
+        
+    def on_tracks_selected(self, selectedTrackIds):
+        pass
+    
+    def confirmAddTracks(self):
+        self.dispatch('on_tracks_selected', self.trackBrowser.selectedTrackIds)        
+        
+            
 class AutomaticTrackConfigScreen(Screen):
     trackDb = None
     tracksGrid = None
@@ -75,10 +94,12 @@ class AutomaticTrackConfigScreen(Screen):
     trackItemMinHeight = 200
     searchRadiusMeters = 2000
     searchBearing = 360
+    trackSelectionPopup = None
     def __init__(self, **kwargs):
         super(AutomaticTrackConfigScreen, self).__init__(**kwargs)
         self.tracksGrid = kvFind(self, 'rcid', 'tracksgrid')
-        
+        self.register_event_type('on_tracks_selected')
+                
     def on_config_updated(self, rcpCfg):
         self.trackDb = rcpCfg.trackDb
         self.init_tracks_list()
@@ -87,8 +108,27 @@ class AutomaticTrackConfigScreen(Screen):
         self.trackManager = trackManager
         self.init_tracks_list()
     
+    def on_tracks_selected(self, instance, selectedTrackIds):
+        if self.trackDb:
+            for trackId in selectedTrackIds:
+                trackMap = self.trackManager.getTrackById(trackId)
+                if trackMap:
+                    if not trackMap.startFinishPoint:
+                        alertPopup('Cannot Add Track', 'Cannot add track; no start/finish point defined')
+                    else:
+                        track = Track.fromTrackMap(trackMap)
+                        self.trackDb.tracks.append(track)
+            self.init_tracks_list()
+            self.trackSelectionPopup.dismiss()
+        
     def on_add_track_db(self):
-        pass
+        trackSelectionPopup = TrackSelectionPopup(trackManager=self.trackManager)
+        popup = Popup(title = 'Add Race Tracks', content = trackSelectionPopup, size_hint=(0.9, 0.9))
+        trackSelectionPopup.bind(on_tracks_selected=self.on_tracks_selected)
+        popup.open()
+        self.trackSelectionPopup = popup
+        
+    
     def init_tracks_list(self):
         if self.trackManager and self.trackDb:
             matchedTracks = []
@@ -111,6 +151,10 @@ class AutomaticTrackConfigScreen(Screen):
                     trackDbView.height = self.trackItemMinHeight
                     grid.add_widget(trackDbView)
                 
+            self.disableView(False)
+            
+    def disableView(self, disabled):
+        kvFind(self, 'rcid', 'addtrack').disabled = disabled
         
 class ManualTrackConfigScreen(Screen):
     trackCfg = None
@@ -192,7 +236,8 @@ class ManualTrackConfigScreen(Screen):
             
 class TrackConfigView(BaseConfigView):
     trackCfg = None
-
+    trackDb = None
+    
     screenManager = None
     manualTrackConfigView = None
     autoConfigView = None
@@ -217,6 +262,7 @@ class TrackConfigView(BaseConfigView):
         
     def on_config_updated(self, rcpCfg):
         trackCfg = rcpCfg.trackConfig
+        trackDb = rcpCfg.trackDb
         
         autoDetectSwitch = kvFind(self, 'rcid', 'autoDetect')
         autoDetectSwitch.setValue(trackCfg.autoDetect)
@@ -224,6 +270,7 @@ class TrackConfigView(BaseConfigView):
         self.manualTrackConfigView.on_config_updated(rcpCfg)
         self.autoConfigView.on_config_updated(rcpCfg)
         self.trackCfg = trackCfg
+        self.trackDb = trackDb
         
     def on_auto_detect(self, instance, value):
         if value:

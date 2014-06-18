@@ -42,7 +42,7 @@
 		Label:
 			size_hint_y: 0.2
 		Label:
-			text: 'Press the add button below to auto-detect your favorite race tracks'
+			text: 'Press the add button below to select your favorite tracks for auto-detection'
 			
 <TrackDbItemView>:
 	BoxLayout:
@@ -53,6 +53,20 @@
 		IconButton:
 			size_hint_x: 0.05
 			text: '\357\200\224'
+
+<TrackSelectionPopup>:
+	orientation: 'vertical'
+	TracksBrowser:
+		rcid: 'browser'
+		size_hint_y: 0.90
+	BoxLayout:
+		size_hint_y: 0.1
+		orientation: 'horizontal'
+		IconButton:
+			text: '\357\200\214'
+			on_release: root.confirmAddTracks()
+		
+	
 
 <AutomaticTrackConfigScreen>:
 	BoxLayout:
@@ -88,8 +102,8 @@
 	    		size_hint: (0.1, 0.1)
 	    		text: '\357\201\247'
 	    		on_release: root.on_add_track_db()
-		    	disabled: False
-		    	rcid: 'addpid'
+		    	disabled: True
+		    	rcid: 'addtrack'
 	        
 
 	

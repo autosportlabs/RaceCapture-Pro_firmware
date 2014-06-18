@@ -31,6 +31,9 @@ class TrackMap:
     updatedAt = None
     length = 0
     trackId = None
+    startFinishPoint = None
+    finishPoint = None
+    countryCode = None
     def __init__(self, **kwargs):
         self.mapPoints = []
         self.sectorPoints = []
@@ -44,6 +47,9 @@ class TrackMap:
     def fromJson(self, trackJson):
         venueNode = trackJson.get('venue')
         if (venueNode):
+            self.startFinishPoint = GeoPoint.fromPointJson(venueNode.get('start_finish'))
+            self.finishPoint = GeoPoint.fromPointJson(venueNode.get('finish'))
+            self.countryCode = venueNode.get('country_code')
             self.updatedAt = venueNode.get('updated', self.updatedAt)
             self.name = venueNode.get('name', self.name)
             self.length = venueNode.get('length', self.length)
@@ -64,10 +70,16 @@ class TrackMap:
     
     def toJson(self):
         venueJson = {}
+        if self.startFinishPoint:
+            venueJson['start_finish'] = self.startFinishPoint.toJson()
+        if self.finishPoint:
+            venueJson['finish'] = self.finishPoint.toJson()
+        venueJson['country_code'] = self.countryCode
         venueJson['updated'] = self.updatedAt
         venueJson['name'] = self.name
         venueJson['length'] = self.length
         venueJson['id'] = self.trackId
+
         trackPoints = []
         for point in self.mapPoints:
             trackPoints.append([point.latitude, point.longitude])
@@ -169,6 +181,9 @@ class TrackManager:
                     break
         return regionTrackIds
 
+    def getTrackById(self, trackId):
+        return self.tracks.get(trackId)
+    
     def loadJson(self, uri):
         retries = 0
         while retries < self.readRetries:

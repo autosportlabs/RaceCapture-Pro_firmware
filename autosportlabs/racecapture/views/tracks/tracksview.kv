@@ -7,7 +7,6 @@
 	Label:
 		rcid: 'updatemsg'
 		
-		
 <TrackInfoView>:
 	orientation: 'vertical'
 	spacing: dp(10)
@@ -99,22 +98,13 @@
 		orientation: 'horizontal'
 		CheckBox:
 			size_hint_x: 0.10
+			on_active: root.track_select(*args)
 		TrackInfoView:
 			rcid: 'trackinfo'
-							
-							
-<TracksView>:
-    size_hint: (1.0, 1.0)
-    orientation: 'vertical'
-    padding: [dp(5),dp(5)]
-    spacing: dp(5)
-	HSeparator:
-		text: 'Race Tracks'
-		size_hint_y: 0.05
-		halign: 'left'    
-	BoxLayout:
-		size_hint_y: 0.01
-		Label:
+
+<TracksBrowser>:
+	orientation: 'vertical'
+	spacing: dp(10)
     BoxLayout:
 	    size_hint_y: None
 	    height: dp(30)
@@ -146,7 +136,6 @@
 		        padding: [dp(20), dp(20)]
 		        spacing: [dp(10), dp(10)]
 		        size_hint_y: None
-		        #height: max(self.minimum_height, scrltracks.height)
 		        cols: 1
 	        
     BoxLayout:
@@ -164,7 +153,21 @@
     	IconButton:
     		size_hint_x: 0.05
     		rcid: 'updatecheck'
+    		disabled: True
     		text: '\357\203\255'
     		on_press: root.on_update_check()
-	    
-	       
+							
+<TracksView>:
+    size_hint: (1.0, 1.0)
+    orientation: 'vertical'
+    padding: [dp(5),dp(5)]
+    spacing: dp(5)
+	HSeparator:
+		text: 'Race Tracks'
+		size_hint_y: 0.05
+		halign: 'left'    
+	BoxLayout:
+		size_hint_y: 0.01
+		Label:
+	TracksBrowser:
+		rcid: 'browser'

@@ -13,6 +13,15 @@ class GeoPoint:
         g.longitude = longitude
         return g
     
+    @classmethod
+    def fromPointJson(cls, geoPointJson):
+        g = None
+        if geoPointJson:
+            g = GeoPoint()
+            g.latitude = geoPointJson[0]
+            g.longitude = geoPointJson[1]
+        return g
+    
     def fromJson(self, geoPointJson):
         try:
             self.latitude = geoPointJson[0]

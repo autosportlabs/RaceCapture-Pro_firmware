@@ -1,4 +1,5 @@
 import json
+from copy import copy
 
 from autosportlabs.racecapture.geo.geopoint import GeoPoint
 
@@ -88,6 +89,7 @@ class AnalogChannel:
         self.sampleRate = 0
         self.scalingMode = 0
         self.linearScaling = 0
+        self.linearOffset = 0
         self.alpha = 0
         self.scalingMap = ScalingMap()
     
@@ -95,7 +97,8 @@ class AnalogChannel:
         self.channelId = json.get('id', self.channelId)
         self.sampleRate = json.get('sr', self.sampleRate)
         self.scalingMode = json.get('scalMod', self.scalingMode)
-        self.linearScaling = json.get('linScal', self.linearScaling)
+        self.linearScaling = json.get('scaling', self.linearScaling)
+        self.linearOffset = json.get('offset', self.linearOffset)
         self.alpha = json.get('alpha', self.alpha)
         mapJson = json.get('map', None)
         if mapJson:
@@ -106,7 +109,8 @@ class AnalogChannel:
         channelJson['id'] = self.channelId
         channelJson['sr'] = self.sampleRate
         channelJson['scalMod'] = self.scalingMode
-        channelJson['linScal'] = self.linearScaling
+        channelJson['scaling'] = self.linearScaling
+        channelJson['offset'] = self.linearOffset
         channelJson['alpha'] = self.alpha
         channelJson['map'] = self.scalingMap.toJson()
         return channelJson
@@ -406,6 +410,22 @@ class Track:
                     sector.fromJson(sectorJson)
                 self.sectors.append(sector)
         self.sectorCount = sectorCount
+        
+    @classmethod
+    def fromTrackMap(cls, trackMap):
+        t = Track()
+        t.trackType = TRACK_TYPE_STAGE if trackMap.finishPoint else TRACK_TYPE_CIRCUIT
+        t.startLine = copy(trackMap.startFinishPoint)
+        t.finishLine = copy(trackMap.finishPoint)
+
+        maxSectorCount = CONFIG_SECTOR_COUNT_CIRCUIT if t.trackType == TRACK_TYPE_CIRCUIT else CONFIG_SECTOR_COUNT_STAGE
+        sectorCount = 0
+        for point in trackMap.sectorPoints:
+            sectorCount += 1
+            if sectorCount > maxSectorCount: break
+            t.sectors.append(copy(point))
+        return t
+
         
     def toJson(self):
         sectors = []
