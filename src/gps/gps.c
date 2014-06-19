@@ -149,8 +149,8 @@ static void parseGGA(char *data) {
          unsigned int len = strlen(data);
          if (len > 0 && len <= LATITUDE_DATA_LEN) {
             //Raw GPS Format is ddmm.mmmmmm
-            char degreesStr[3];
-            strncpy(degreesStr, data, 2);
+            char degreesStr[3] = { 0 };
+            memcpy(degreesStr, data, 2);
             degreesStr[2] = 0;
             float minutes = modp_atof(data + 2);
             minutes = minutes / 60.0;
@@ -171,8 +171,8 @@ static void parseGGA(char *data) {
          unsigned int len = strlen(data);
          if (len > 0 && len <= LONGITUDE_DATA_LEN) {
             //Raw GPS Format is dddmm.mmmmmm
-            char degreesStr[4];
-            strncpy(degreesStr, data, 3);
+            char degreesStr[4] = { 0 };
+            memcpy(degreesStr, data, 3);
             degreesStr[3] = 0;
             float minutes = modp_atof(data + 3);
             minutes = minutes / 60.0;
