@@ -50,8 +50,8 @@
 {"getScriptCfg", api_getScript}, \
 {"setScriptCfg", api_setScript}, \
 {"runScript", api_runScript}, \
+{"addTrackDb", api_addTrackDb}, \
 {"getTrackDb", api_getTrackDb}, \
-{"setTrackDb", api_setTrackDb}, \
 {"addChannel", api_addChannel}, \
 {"getChannels", api_getChannels}, \
 {"getVer", api_getVersion}
@@ -85,7 +85,7 @@ int api_flashConfig(Serial *serial, const jsmntok_t *json);
 int api_setLogfileLevel(Serial *serial, const jsmntok_t *json);
 int api_getLogfile(Serial *serial, const jsmntok_t *json);
 int api_getTrackDb(Serial *serial, const jsmntok_t *json);
-int api_setTrackDb(Serial *serial, const jsmntok_t *json);
+int api_addTrackDb(Serial *serial, const jsmntok_t *json);
 int api_getChannels(Serial *serial, const jsmntok_t *json);
 int api_addChannel(Serial *serial, const jsmntok_t *json);
 int api_getObd2Config(Serial *serial, const jsmntok_t *json);

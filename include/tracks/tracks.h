@@ -5,7 +5,13 @@
 #include "default_tracks.h"
 #include "geopoint.h"
 
-#define TRACKS_COUNT				40
+#define TRACK_ADD_RESULT_OK  		1
+#define TRACK_ADD_RESULT_FAIL  		0
+
+#define TRACK_ADD_MODE_IN_PROGRESS	1
+#define TRACK_ADD_MODE_COMPLETE 	2
+
+#define MAX_TRACK_COUNT				40
 #define SECTOR_COUNT				20
 #define CIRCUIT_SECTOR_COUNT		SECTOR_COUNT - 1
 #define STAGE_SECTOR_COUNT			SECTOR_COUNT - 2
@@ -39,11 +45,11 @@ typedef struct _Track{
 
 typedef struct _Tracks{
 	size_t count;
-	Track tracks[TRACKS_COUNT];
+	Track tracks[MAX_TRACK_COUNT];
 } Tracks;
 
 int flash_tracks(const Tracks *source, size_t rawSize);
-int update_track(const Track *track, size_t index, int mode);
+int add_track(const Track *track, size_t index, int mode);
 int flash_default_tracks(void);
 const Tracks * get_tracks();
 

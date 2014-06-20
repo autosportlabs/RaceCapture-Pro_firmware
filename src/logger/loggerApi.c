@@ -2,7 +2,7 @@
 #include "loggerApi.h"
 #include "loggerConfig.h"
 #include "channelMeta.h"
-#include "channelMeta.h"
+#include "tracks.h"
 #include "modp_atonum.h"
 #include "mod_string.h"
 #include "sampleRecord.h"
@@ -348,7 +348,8 @@ static const jsmntok_t * setScalingRow(ADCConfig *adcCfg, const jsmntok_t *mapRo
 static const jsmntok_t * setAnalogExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
 	ADCConfig *adcCfg = (ADCConfig *)cfg;
 	if (NAME_EQU("scalMod", name)) adcCfg->scalingMode = filterAnalogScalingMode(modp_atoi(value));
-	else if (NAME_EQU("linScal", name)) adcCfg->linearScaling = modp_atof(value);
+	else if (NAME_EQU("scaling", name)) adcCfg->linearScaling = modp_atof(value);
+	else if (NAME_EQU("offset", name)) adcCfg->linearOffset = modp_atof(value);
 	else if (NAME_EQU("alpha", name))adcCfg->filterAlpha = modp_atof(value);
 	else if (NAME_EQU("map", name)){
 		if (valueTok->type == JSMN_OBJECT) {
@@ -389,7 +390,8 @@ static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
 		json_objStartInt(serial, i);
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_int(serial, "scalMod", cfg->scalingMode, 1);
-		json_float(serial, "linScal", cfg->linearScaling, LINEAR_SCALING_PRECISION, 1);
+		json_float(serial, "scaling", cfg->linearScaling, LINEAR_SCALING_PRECISION, 1);
+		json_float(serial, "offset", cfg->linearOffset, LINEAR_SCALING_PRECISION, 1);
 		json_float(serial, "alpha", cfg->filterAlpha, FILTER_ALPHA_PRECISION, 1);
 
 		json_objStartString(serial, "map");
@@ -1071,6 +1073,12 @@ static void setTrack(const jsmntok_t *trackNode, Track *track){
 					sectorIndex++;
 					sectors +=3;
 				}
+				while (sectorIndex < maxSectors){
+					GeoPoint *sector = sectorsList + sectorIndex;
+					sector->latitude = 0;
+					sector->longitude = 0;
+					sectorIndex++;
+				}
 			}
 		}
 	}
@@ -1100,24 +1108,37 @@ int api_flashConfig(Serial *serial, const jsmntok_t *json){
 	return (rc == 0 ? 1 : rc); //success means on internal command; other errors passed through
 }
 
-int api_setTrackDb(Serial *serial, const jsmntok_t *json){
+int api_addTrackDb(Serial *serial, const jsmntok_t *json){
 
-	return API_SUCCESS;
+	unsigned char mode = 0;
+	int index = 0;
+
+	if (setUnsignedCharValueIfExists(json, "mode", &mode, NULL) && setIntValueIfExists(json, "index", &index)){
+		Track track;
+		const jsmntok_t *trackNode = findNode(json, "track");
+		if (trackNode != NULL) setTrack(trackNode + 1, &track);
+		add_track(&track, index, mode);
+		return API_SUCCESS;
+	}
+	return API_ERROR_MALFORMED;
 }
 
 int api_getTrackDb(Serial *serial, const jsmntok_t *json){
 	const Tracks * tracks = get_tracks();
 
-	json_objStart(serial);
-	json_objStartString(serial, "tracks");
 	size_t track_count = tracks->count;
+	json_objStart(serial);
+	json_objStartString(serial, "trackDb");
 	json_int(serial,"size", track_count, 1);
+	json_int(serial, "max", MAX_TRACK_COUNT, 1);
+	json_arrayStart(serial, "tracks");
 	for (size_t track_index = 0; track_index < track_count; track_index++){
 		const Track *track = tracks->tracks + track_index;
-		json_objStartInt(serial, track_index);
+		json_objStart(serial);
 		json_track(serial, track);
 		json_objEnd(serial, track_index < track_count - 1);
 	}
+	json_arrayEnd(serial, 0);
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
@@ -1161,6 +1182,7 @@ int api_getChannels(Serial *serial, const jsmntok_t *json){
 
 	json_objStart(serial);
 	json_int(serial,"size", channels_count, 1);
+	json_int(serial, "max", MAX_CHANNEL_COUNT, 1);
 	json_arrayStart(serial, "channels");
 	for (size_t channel_index = 0; channel_index < channels_count; channel_index++){
 		json_objStart(serial);
