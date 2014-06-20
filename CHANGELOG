@@ -1,3 +1,10 @@
+===2.0.4===
+removed trivial optimization that prevented correct logging at 10Hz and possibly other Hz.
+
+===2.0.0===
+Major release - new JSON API, predictive timing, virtual channels, CAN and OBD2 support.
+
+
 ===1.2.7===
 RPM/Timer input value now goes to zero when input signal goes away (i.e. when internal timer counter overflows)
 Fixed problem where zero values in log file were not being recorded (treated as nulls)
