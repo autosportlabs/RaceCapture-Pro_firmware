@@ -135,7 +135,6 @@ void loggerTaskEx(void *params){
 			g_configChanged = 0;
 		}
 
-		if (currentTicks % loggingSampleRate != 0) continue;
 
 		if (g_loggingShouldRun && ! g_isLogging){
 			pr_info("start logging\r\n");
