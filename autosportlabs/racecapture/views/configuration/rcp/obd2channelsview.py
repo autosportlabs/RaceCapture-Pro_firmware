@@ -60,6 +60,7 @@ class OBD2ChannelsView(BaseConfigView):
     def on_obd2_enabled(self, instance, value):
         if self.obd2Cfg:
             self.obd2Cfg.enabled = value
+            self.obd2Cfg.stale = True
         
     def on_config_updated(self, rcpCfg):
         obd2Cfg = rcpCfg.obd2Config
@@ -91,6 +92,7 @@ class OBD2ChannelsView(BaseConfigView):
     def on_delete_pid(self, instance, pidId):
         del self.obd2Cfg.pids[pidId]
         self.reload_obd2_channel_grid()
+        self.obd2Cfg.stale = True
         
     def add_obd2_channel(self, index, pidConfig):
         obd2Channel = OBD2Channel()
@@ -104,4 +106,5 @@ class OBD2ChannelsView(BaseConfigView):
             self.obd2Cfg.pids.append(pidConfig)
             self.add_obd2_channel(len(self.obd2Cfg.pids) - 1, pidConfig)
             self.update_view_enabled()
+            self.obd2Cfg.stale = True
         

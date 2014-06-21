@@ -25,26 +25,32 @@ class GPSChannelsView(BaseConfigView):
     def onPosActive(self, instance, value):
         if self.gpsConfig:
             self.gpsConfig.positionEnabled = 1 if value else 0
+            self.gpsConfig.stale = True
         
     def onSpeedActive(self, instance, value):
         if self.gpsConfig:        
             self.gpsConfig.speedEnabled = 1 if value else 0
-        
+            self.gpsConfig.stale = True
+            
     def onDistActive(self, instance, value):
         if self.gpsConfig:        
             self.gpsConfig.distanceEnabled = 1 if value else 0
-        
+            self.gpsConfig.stale = True
+            
     def onTimeActive(self, instance, value):
         if self.gpsConfig:        
             self.gpsConfig.timeEnabled = 1 if value else 0
-        
+            self.gpsConfig.stale = True
+            
     def onSatsActive(self, instance, value):
         if self.gpsConfig:        
             self.gpsConfig.satellitesEnabled = 1 if value else 0
+            self.gpsConfig.stale = True
     
     def on_sample_rate(self, instance, value):
         if self.gpsConfig:
             self.gpsConfig.sampleRate = value
+            self.gpsConfig.stale = True
         
     def on_config_updated(self, rcpCfg):
         gpsConfig = rcpCfg.gpsConfig
