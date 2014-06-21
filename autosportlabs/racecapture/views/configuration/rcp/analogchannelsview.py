@@ -31,6 +31,7 @@ class AnalogChannelsView(BaseConfigView):
         for i in range(self.channelCount):
             channel = AccordionItem(title='Analog ' + str(i + 1))
             editor = AnalogChannel(id='analog' + str(i))
+            editor.bind(on_modified=self.on_modified)
             channel.add_widget(editor)
             accordion.add_widget(channel)
             editors.append(editor)
@@ -41,7 +42,7 @@ class AnalogChannelsView(BaseConfigView):
         sv = ScrollView(size_hint=(1.0,1.0), do_scroll_x=False)
         sv.add_widget(accordion)
         self.add_widget(sv)
-
+    
     def on_config_updated(self, rcpCfg):
         analogCfg = rcpCfg.analogConfig
         channelCount = analogCfg.channelCount
@@ -58,37 +59,47 @@ class AnalogChannel(BoxLayout):
         super(AnalogChannel, self).__init__(**kwargs)
         kvFind(self, 'rcid', 'sr').bind(on_sample_rate = self.on_sample_rate)
         kvFind(self, 'rcid', 'chanId').bind(on_channel = self.on_channel)
-
+        self.register_event_type('on_modified')
+    
+    def on_modified(self):
+        pass
+    
     def on_channel(self, instance, value):
         if self.channelConfig:
             self.channelConfig.channelId = self.channels.getIdForName(value)
             self.channelConfig.stale = True
+            self.dispatch('on_modified')
 
     def on_linear_map_value(self, instance, value):
         if self.channelConfig:
             self.channelConfig.linearScaling = float(value)
             self.channelConfig.stale = True
-
+            self.dispatch('on_modified')
+            
     def on_sample_rate(self, instance, value):
         if self.channelConfig:
             self.channelConfig.sampleRate = value
             self.channelConfig.stale = True
-        
+            self.dispatch('on_modified')
+                    
     def on_scaling_type_raw(self, instance, value):
         if self.channelConfig and value:
             self.channelConfig.scalingMode = ANALOG_SCALING_MODE_RAW
             self.channelConfig.stale = True
-            
+            self.dispatch('on_modified')
+                        
     def on_scaling_type_linear(self, instance, value):
         if self.channelConfig and value:
             self.channelConfig.scalingMode = ANALOG_SCALING_MODE_LINEAR
             self.channelConfig.stale = True
-            
+            self.dispatch('on_modified')
+                        
     def on_scaling_type_map(self, instance, value):
         if self.channelConfig and value:
             self.channelConfig.scalingMode = ANALOG_SCALING_MODE_MAP
             self.channelConfig.stale = True
-        
+            self.dispatch('on_modified')
+                    
     def on_config_updated(self, channelConfig, channels):
         channelSpinner = kvFind(self, 'rcid', 'chanId')
         channelSpinner.setValue(channels.getNameForId(channelConfig.channelId))
@@ -124,6 +135,7 @@ class AnalogChannel(BoxLayout):
         
     def on_map_updated(self, *args):
         self.channelConfig.stale = True
+        self.dispatch('on_modified')        
         
 class AnalogScaler(Graph):
     def __init__(self, **kwargs):

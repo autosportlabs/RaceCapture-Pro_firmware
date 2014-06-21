@@ -63,6 +63,9 @@ class ConfigView(BoxLayout):
         self.register_event_type('on_run_script')
         self.register_event_type('on_poll_logfile')
         
+
+    def on_modified(self, *args):
+        print('on modified')
             
     def createConfigViews(self, tree):
         
@@ -78,13 +81,14 @@ class ConfigView(BoxLayout):
                 self.content.add_widget(value.view)
             except Exception, e:
                 print e
-                
+            
         def attach_node(text, n, view):
             label = LinkedTreeViewLabel(text=text)
             label.view = view
             label.color_selected =   [1.0,0,0,0.6]
             tree.add_node(label, n)
             self.configViews.append(view)
+            view.bind(on_modified=self.on_modified)
         
         #n = create_tree('Track')
         attach_node('Race Track / Sectors', None, TrackConfigView())
