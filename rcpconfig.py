@@ -85,6 +85,7 @@ ANALOG_SCALING_MODE_MAP     = 2
 
 class AnalogChannel:
     def __init__(self, **kwargs):
+        self.stale = False
         self.channelId = 0
         self.sampleRate = 0
         self.scalingMode = 0
@@ -103,7 +104,8 @@ class AnalogChannel:
         mapJson = json.get('map', None)
         if mapJson:
             self.scalingMap.fromJson(mapJson)
-            
+        self.stale = False
+        
     def toJson(self):
         channelJson = {}
         channelJson['id'] = self.channelId
@@ -141,6 +143,7 @@ class AnalogConfig:
         
 class ImuChannel:
     def __init__(self, **kwargs):
+        self.stale = False
         self.sampleRate = 0
         self.mode = 0
         self.chan = 0
@@ -153,6 +156,7 @@ class ImuChannel:
         self.chan = imuChannelJson.get('chan', self.chan)
         self.zeroValue = imuChannelJson.get('zeroVal', self.zeroValue)
         self.alpha = imuChannelJson.get('alpha', self.alpha)
+        self.stale = False
         
     def toJson(self):
         jsonCfg = {}
@@ -196,6 +200,7 @@ class ImuConfig:
                   
 class GpsConfig:
     def __init__(self, **kwargs):
+        self.stale = False
         self.sampleRate = 0
         self.positionEnabled = False
         self.speedEnabled = False
@@ -211,6 +216,7 @@ class GpsConfig:
             self.timeEnabled = int(json.get('time', self.timeEnabled))
             self.distanceEnabled = int(json.get('dist', self.timeEnabled))
             self.satellitesEnabled = int(json.get('sats', self.satellitesEnabled))
+            self.stale = False
             
     def toJson(self):
         gpsJson = {'gpsCfg':{
@@ -230,6 +236,7 @@ TIMER_CHANNEL_COUNT = 3
 
 class TimerChannel:
     def __init__(self, **kwargs):
+        self.stale = False
         self.channelId = 0
         self.sampleRate = 0
         self.mode = 0
@@ -245,6 +252,7 @@ class TimerChannel:
             self.divider = timerJson.get('div', self.divider)
             self.pulsePerRev = timerJson.get('ppr', self.pulsePerRev)
             self.slowTimer = timerJson.get('st', self.slowTimer)
+            self.stale = False
             
     def toJson(self):
         timerJson = {}
@@ -279,6 +287,7 @@ class TimerConfig:
         
 class GpioChannel:
     def __init__(self, **kwargs):
+        self.stale = False
         self.channelId = 0
         self.sampleRate = 0
         self.mode = 0
@@ -288,6 +297,7 @@ class GpioChannel:
             self.channelId = json.get('id', self.channelId)
             self.sampleRate = json.get('sr', self.sampleRate)
             self.mode = json.get('mode', self.mode)
+            self.stale = False
             
     def toJson(self):
         gpioJson = {}
@@ -322,6 +332,7 @@ class GpioConfig:
     
 class PwmChannel:
     def __init__(self, **kwargs):
+        self.stale = False
         self.channelId = 0
         self.sampleRate = 0
         self.outputMode = 0
@@ -329,24 +340,25 @@ class PwmChannel:
         self.startupPeriod = 0
         self.startupDutyCycle = 0
         
-    def fromJson(self, json):
-        if (json):
-            self.channelId = json.get('id', self.channelId)
-            self.sampleRate = json.get('sr', self.sampleRate)
-            self.outputMode = json.get('outMode', self.outputMode)
-            self.loggingMode = json.get('logMode', self.loggingMode)
-            self.startupDutyCycle = json.get('stDutyCyc', self.startupDutyCycle)
-            self.startupPeriod = json.get('stPeriod', self.startupPeriod)
+    def fromJson(self, pwmChannelJson):
+        if (pwmChannelJson):
+            self.channelId = pwmChannelJson.get('id', self.channelId)
+            self.sampleRate = pwmChannelJson.get('sr', self.sampleRate)
+            self.outputMode = pwmChannelJson.get('outMode', self.outputMode)
+            self.loggingMode = pwmChannelJson.get('logMode', self.loggingMode)
+            self.startupDutyCycle = pwmChannelJson.get('stDutyCyc', self.startupDutyCycle)
+            self.startupPeriod = pwmChannelJson.get('stPeriod', self.startupPeriod)
+            self.stale = False
             
     def toJson(self):
-        pwmJson = {}
-        pwmJson['id'] = self.channelId
-        pwmJson['sr'] = self.sampleRate
-        pwmJson['outMode'] = self.outputMode
-        pwmJson['logMode'] = self.loggingMode
-        pwmJson['stDutyCyc'] = self.startupDutyCycle
-        pwmJson['stPeriod'] = self.startupPeriod
-        return pwmJson
+        pwmChannelJson = {}
+        pwmChannelJson['id'] = self.channelId
+        pwmChannelJson['sr'] = self.sampleRate
+        pwmChannelJson['outMode'] = self.outputMode
+        pwmChannelJson['logMode'] = self.loggingMode
+        pwmChannelJson['stDutyCyc'] = self.startupDutyCycle
+        pwmChannelJson['stPeriod'] = self.startupPeriod
+        return pwmChannelJson
 
 PWM_CHANNEL_COUNT = 4   
 
@@ -382,6 +394,7 @@ CONFIG_SECTOR_COUNT_STAGE = 18
 
 class Track:
     def __init__(self, **kwargs):
+        self.stale = False
         self.trackType = TRACK_TYPE_CIRCUIT
         self.sectorCount = CONFIG_SECTOR_COUNT
         self.startLine = GeoPoint()
@@ -389,27 +402,29 @@ class Track:
         self.sectors = []
     
     def fromJson(self, trackJson):
-        self.trackType = trackJson.get('type', self.trackType)
-        sectorsJson = trackJson.get('sec', None)
-        del self.sectors[:]
-        
-        if self.trackType == TRACK_TYPE_CIRCUIT:
-            self.startLine.fromJson(trackJson.get('sf', None))
-            sectorCount = CONFIG_SECTOR_COUNT_CIRCUIT
-        else:
-            self.startLine.fromJson(trackJson.get('st', self.startLine))
-            self.finishLine.fromJson(trackJson.get('fin', self.finishLine))
-            sectorCount = CONFIG_SECTOR_COUNT_STAGE
-
-        returnedSectorCount = len(sectorsJson)
-        if sectorsJson:
-            for i in range(sectorCount):
-                sector = GeoPoint()
-                if i < returnedSectorCount:
-                    sectorJson = sectorsJson[i]
-                    sector.fromJson(sectorJson)
-                self.sectors.append(sector)
-        self.sectorCount = sectorCount
+        if trackJson:
+            self.trackType = trackJson.get('type', self.trackType)
+            sectorsJson = trackJson.get('sec', None)
+            del self.sectors[:]
+            
+            if self.trackType == TRACK_TYPE_CIRCUIT:
+                self.startLine.fromJson(trackJson.get('sf', None))
+                sectorCount = CONFIG_SECTOR_COUNT_CIRCUIT
+            else:
+                self.startLine.fromJson(trackJson.get('st', self.startLine))
+                self.finishLine.fromJson(trackJson.get('fin', self.finishLine))
+                sectorCount = CONFIG_SECTOR_COUNT_STAGE
+    
+            returnedSectorCount = len(sectorsJson)
+            if sectorsJson:
+                for i in range(sectorCount):
+                    sector = GeoPoint()
+                    if i < returnedSectorCount:
+                        sectorJson = sectorsJson[i]
+                        sector.fromJson(sectorJson)
+                    self.sectors.append(sector)
+            self.sectorCount = sectorCount
+            self.stale = False
         
     @classmethod
     def fromTrackMap(cls, trackMap):
@@ -444,18 +459,21 @@ class Track:
         
 class TrackConfig:
     def __init__(self, **kwargs):
+        self.stale=False
         self.track = None
         self.radius = 0
         self.autoDetect = 0
         
-    def fromJson(self, json):
-        self.radius = json.get('rad', self.radius)
-        self.autoDetect = json.get('autoDetect', self.autoDetect)
-        
-        trackJson = json.get('track', None)
-        if trackJson:
-            self.track = Track()
-            self.track.fromJson(trackJson)
+    def fromJson(self, trackConfigJson):
+        if trackConfigJson:
+            self.radius = trackConfigJson.get('rad', self.radius)
+            self.autoDetect = trackConfigJson.get('autoDetect', self.autoDetect)
+            
+            trackJson = trackConfigJson.get('track', None)
+            if trackJson:
+                self.track = Track()
+                self.track.fromJson(trackJson)
+            self.stale = False
             
                     
     def toJson(self):
@@ -469,23 +487,45 @@ class TrackConfig:
 class TracksDb:
     tracks = None
     def __init__(self, **kwargs):
+        self.stale = False
         self.tracks = []
         
+    def fromJson(self, tracksDbJson):
+        if tracksDbJson:
+            del self.tracks[:]
+            tracksNode = tracksDbJson.get('tracks')
+            if tracksNode:
+                for trackNode in tracksNode:
+                    track = Track()
+                    track.fromJson(trackNode)
+                    self.tracks.append(track)
+            self.stale = False
+
     def toJson(self):
         tracksJson = []
         tracks = self.tracks
         for track in tracks:
             tracksJson.append(track.toJson())
         return {"trackDb":{'size':len(tracks),'tracks': tracksJson}}
+  
+class CanConfig:
+
+    def __init__(self, **kwargs):
+        self.stale = False
+        self.enabled = False
+        self.baudRate = 0
     
-    def fromJson(self, tracksDbJson):
-        del self.tracks[:]
-        tracksNode = tracksDbJson.get('tracks')
-        if tracksNode:
-            for trackNode in tracksNode:
-                track = Track()
-                track.fromJson(trackNode)
-                self.tracks.append(track)
+    def fromJson(self, canCfgJson):
+        self.enabled = True if canCfgJson.get('en', self.enabled) == 1 else False 
+        self.baudRate = canCfgJson.get('baud', self.baudRate)
+        self.stale = False
+        
+    def toJson(self):
+        canCfgJson = {}
+        canCfgJson['en'] = 1 if self.enabled else 0
+        canCfgJson['baud'] = self.baudRate
+        return {'canCfg':canCfgJson}        
+    
         
 class PidConfig:
     def __init__(self, **kwargs):
@@ -505,32 +545,14 @@ class PidConfig:
         pidJson['pid'] = self.pidId
         return pidJson
 
-class CanConfig:
-    enabled = False
-    baudRate = 0
-
-    def __init__(self, **kwargs):
-        pass
-    
-    def fromJson(self, canCfgJson):
-        self.enabled = True if canCfgJson.get('en', self.enabled) == 1 else False 
-        self.baudRate = canCfgJson.get('baud', self.baudRate)
-        
-    def toJson(self):
-        canCfgJson = {}
-        canCfgJson['en'] = 1 if self.enabled else 0
-        canCfgJson['baud'] = self.baudRate
-        return {'canCfg':canCfgJson}        
-        
-        
-            
 OBD2_CONFIG_MAX_PIDS = 20
 
 class Obd2Config:
     pids = []
     enabled = False
     def __init__(self, **kwargs):
-        pass
+        self.stale = False
+        self.enabled = False
     
     def fromJson(self, obd2CfgJson):
         self.enabled = obd2CfgJson.get('en', self.enabled) 
@@ -556,10 +578,12 @@ class Obd2Config:
 class LuaScript:
     script = ""
     def __init__(self, **kwargs):
+        self.stale = False
         pass
             
     def fromJson(self, jsonScript):
         self.script = jsonScript['data']
+        self.stale = False
         
     def toJson(self):
         scriptJson = {"scriptCfg":{'data':self.script,'page':None}}
@@ -621,6 +645,7 @@ class TelemetryConfig:
         return telCfgJson
     
 class ConnectivityConfig:
+    stale = False
     bluetoothConfig = BluetoothConfig()
     cellConfig = CellConfig()
     telemetryConfig = TelemetryConfig()
@@ -637,7 +662,8 @@ class ConnectivityConfig:
         telCfgJson = connCfgJson.get('telCfg')
         if telCfgJson:
             self.telemetryConfig.fromJson(telCfgJson)
-            
+        self.stale = False
+        
     def toJson(self):
         connCfgJson = {'btCfg' : self.bluetoothConfig.toJson(),
                        'cellCfg' : self.cellConfig.toJson(),

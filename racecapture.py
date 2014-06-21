@@ -131,10 +131,8 @@ class RaceCaptureApp(App):
     #Write Configuration        
     def on_write_config(self, instance, *args):
         rcpConfig = self.rcpConfig
-        rcpJson = rcpConfig.toJson()
-
         try:
-            self.rcpComms.writeRcpCfg(rcpJson, self.on_write_config_complete, self.on_write_config_error)
+            self.rcpComms.writeRcpCfg(rcpConfig, self.on_write_config_complete, self.on_write_config_error)
         except:
             logging.exception('')
             self._serial_warning()
