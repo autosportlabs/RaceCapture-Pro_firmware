@@ -139,6 +139,7 @@ class RaceCaptureApp(App):
             
     def on_write_config_complete(self, result):
         print('Write config complete: ' + str(result))
+        self.rcpConfig.stale = False
         
     def on_write_config_error(self, detail):
         alertPopup('Error Writing', 'Could not write configuration:\n\n' + str(detail))

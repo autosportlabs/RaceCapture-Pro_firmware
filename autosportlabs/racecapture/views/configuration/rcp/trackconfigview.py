@@ -26,10 +26,14 @@ class SectorPointView(BoxLayout):
     lonView = None
     def __init__(self, **kwargs):
         super(SectorPointView, self).__init__(**kwargs)
+        self.register_event_type('on_config_changed')
         title = kwargs.get('title', None)
         if title:
             self.setTitle(title)
 
+    def on_config_changed(self):
+        pass
+    
     def setNext(self, widget):
         self.lonView.set_next(widget)
         
@@ -50,11 +54,13 @@ class SectorPointView(BoxLayout):
     def on_lat(self, instance, value):
         if self.geoPoint:
             self.geoPoint.latitude = float(value)
+            self.dispatch('on_config_changed')
     
     def on_lon(self, instance, value):
         if self.geoPoint:
             self.geoPoint.longitude = float(value)
-        
+            self.dispatch('on_config_changed')
+            
 class EmptyTrackDbView(BoxLayout):
     def __init__(self, **kwargs):
         super(EmptyTrackDbView, self).__init__(**kwargs)
@@ -133,6 +139,7 @@ class AutomaticTrackConfigScreen(Screen):
                 alertPopup('Cannot Add Tracks', 'One or more tracks could not be added due to missing start/finish points.\n\nPlease check for track map updates and try again.')            
             self.init_tracks_list()
             self.trackSelectionPopup.dismiss()
+            self.trackDb.stale = True
         
     def on_add_track_db(self):
         trackSelectionPopup = TrackSelectionPopup(trackManager=self.trackManager)
@@ -174,6 +181,7 @@ class AutomaticTrackConfigScreen(Screen):
             try:
                 del self.trackDb.tracks[index]
                 self.init_tracks_list()
+                self.trackDb.stale = True
             except Exception as detail:
                 print('Error removing track from list ' + str(detail))
                     
@@ -205,8 +213,10 @@ class ManualTrackConfigScreen(Screen):
     def on_separate_start_finish(self, instance, value):        
         if self.trackCfg:
             self.trackCfg.track.trackType = 1 if value else 0
-        self.separateStartFinish = value
-        self.updateTrackViewState()
+            self.trackCfg.stale = True
+            
+            self.separateStartFinish = value
+            self.updateTrackViewState()
               
     def initSectorViews(self):
         
@@ -214,10 +224,15 @@ class ManualTrackConfigScreen(Screen):
         sectorsContainer.clear_widgets()
         
         self.startLineView = kvFind(self, 'rcid', 'startLine')
+        self.startLineView.bind(on_config_changed=self.on_config_changed)
         self.finishLineView = kvFind(self, 'rcid', 'finishLine')
+        self.finishLineView.bind(on_config_changed=self.on_config_changed)
                                 
         self.updateTrackViewState()
             
+    def on_config_changed(self, *args):
+        self.trackCfg.stale = True
+        
     def updateTrackViewState(self):
         if not self.separateStartFinish:
             self.startLineView.setTitle('Start / Finish')
@@ -247,6 +262,7 @@ class ManualTrackConfigScreen(Screen):
         sectorsContainer.clear_widgets()
         for i in range(1, trackCfg.track.sectorCount):
             sectorView = SectorPointView(title = 'Sector ' + str(i))
+            sectorView.bind(on_config_changed=self.on_config_changed)
             sectorsContainer.add_widget(sectorView)
             sectorView.setPoint(trackCfg.track.sectors[i])
             self.sectorViews.append(sectorView)
@@ -304,4 +320,5 @@ class TrackConfigView(BaseConfigView):
 
         if self.trackCfg:
             self.trackCfg.autoDetect = value
+            self.trackCfg.stale = True
         

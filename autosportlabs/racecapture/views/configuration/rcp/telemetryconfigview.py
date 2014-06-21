@@ -29,10 +29,12 @@ class TelemetryConfigView(BaseConfigView):
     def on_device_id(self, instance, value):
         if self.connectivityConfig:
             self.connectivityConfig.telemetryConfig.deviceId = value
+            self.connectivityConfig.stale = True
     
     def on_bg_stream(self, instance, value):
         if self.connectivityConfig:
             self.connectivityConfig.connectionModes.backgroundStreaming = value
+            self.connectivityConfig.stale = True
     
     def on_config_updated(self, rcpCfg):
         connectivityConfig = rcpCfg.connectivityConfig

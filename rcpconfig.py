@@ -6,7 +6,7 @@ from autosportlabs.racecapture.geo.geopoint import GeoPoint
 MAX_ANALOG_RAW_VALUE = 1023
 MIN_ANALOG_RAW_VALUE = 0
 
-class ScalingMap:
+class ScalingMap(object):
     def __init__(self, **kwargs):
         points = 5
         raw = []
@@ -83,7 +83,7 @@ ANALOG_SCALING_MODE_RAW     = 0
 ANALOG_SCALING_MODE_LINEAR  = 1
 ANALOG_SCALING_MODE_MAP     = 2
 
-class AnalogChannel:
+class AnalogChannel(object):
     def __init__(self, **kwargs):
         self.stale = False
         self.channelId = 0
@@ -119,7 +119,7 @@ class AnalogChannel:
     
 ANALOG_CHANNEL_COUNT = 8
 
-class AnalogConfig:
+class AnalogConfig(object):
     def __init__(self, **kwargs):
         self.channelCount = ANALOG_CHANNEL_COUNT
         self.channels = []
@@ -140,8 +140,19 @@ class AnalogConfig:
             analogCfgJson[str(i)] = analogChannel.toJson()
         return {'analogCfg':analogCfgJson}
             
-        
-class ImuChannel:
+    @property
+    def stale(self):
+        for channel in self.channels:
+            if channel.stale:
+                return True
+        return False
+    
+    @stale.setter
+    def stale(self, value):
+        for channel in self.channels:
+            channel.stale = value    
+    
+class ImuChannel(object):
     def __init__(self, **kwargs):
         self.stale = False
         self.sampleRate = 0
@@ -174,7 +185,7 @@ IMU_MODE_DISABLED       = 0
 IMU_MODE_NORMAL         = 1
 IMU_MODE_INVERTED       = 2
 
-class ImuConfig:
+class ImuConfig(object):
     def __init__(self, **kwargs):
         self.channelCount = IMU_CHANNEL_COUNT
         self.channels = []
@@ -197,8 +208,19 @@ class ImuConfig:
         return {'imuCfg':imuCfgJson}
         
             
-                  
-class GpsConfig:
+    @property
+    def stale(self):
+        for channel in self.channels:
+            if channel.stale:
+                return True
+        return False
+    
+    @stale.setter
+    def stale(self, value):
+        for channel in self.channels:
+            channel.stale = value
+            
+class GpsConfig(object):
     def __init__(self, **kwargs):
         self.stale = False
         self.sampleRate = 0
@@ -234,7 +256,7 @@ class GpsConfig:
     
 TIMER_CHANNEL_COUNT = 3
 
-class TimerChannel:
+class TimerChannel(object):
     def __init__(self, **kwargs):
         self.stale = False
         self.channelId = 0
@@ -264,7 +286,7 @@ class TimerChannel:
         timerJson['st'] = self.slowTimer
         return timerJson
 
-class TimerConfig:
+class TimerConfig(object):
     def __init__(self, **kwargs):
         self.channelCount = TIMER_CHANNEL_COUNT
         self.channels = []
@@ -285,7 +307,19 @@ class TimerConfig:
             timerCfgJson[str(i)] = timerChannel.toJson()
         return {'timerCfg':timerCfgJson}
         
-class GpioChannel:
+    @property
+    def stale(self):
+        for channel in self.channels:
+            if channel.stale:
+                return True
+        return False
+    
+    @stale.setter
+    def stale(self, value):
+        for channel in self.channels:
+            channel.stale = value
+        
+class GpioChannel(object):
     def __init__(self, **kwargs):
         self.stale = False
         self.channelId = 0
@@ -308,7 +342,7 @@ class GpioChannel:
          
 GPIO_CHANNEL_COUNT = 3
 
-class GpioConfig:
+class GpioConfig(object):
     def __init__(self, **kwargs):
         self.channelCount = GPIO_CHANNEL_COUNT
         self.channels = []
@@ -329,8 +363,19 @@ class GpioConfig:
             gpioCfgJson[str(i)] = gpioChannel.toJson()
         return {'gpioCfg':gpioCfgJson}
         
+    @property
+    def stale(self):
+        for channel in self.channels:
+            if channel.stale:
+                return True
+        return False
     
-class PwmChannel:
+    @stale.setter
+    def stale(self, value):
+        for channel in self.channels:
+            channel.stale = value
+    
+class PwmChannel(object):
     def __init__(self, **kwargs):
         self.stale = False
         self.channelId = 0
@@ -362,7 +407,7 @@ class PwmChannel:
 
 PWM_CHANNEL_COUNT = 4   
 
-class PwmConfig:
+class PwmConfig(object):
     def __init__(self, **kwargs):
         self.channelCount = PWM_CHANNEL_COUNT
         self.channels = []
@@ -383,6 +428,17 @@ class PwmConfig:
             pwmCfgJson[str(i)] = pwmChannel.toJson()
         return {'pwmCfg':pwmCfgJson}
         
+    @property
+    def stale(self):
+        for channel in self.channels:
+            if channel.stale:
+                return True
+        return False
+    
+    @stale.setter
+    def stale(self, value):
+        for channel in self.channels:
+            channel.stale = value
         
 CONFIG_SECTOR_COUNT = 20
         
@@ -392,7 +448,7 @@ TRACK_TYPE_STAGE    = 1
 CONFIG_SECTOR_COUNT_CIRCUIT = 19
 CONFIG_SECTOR_COUNT_STAGE = 18
 
-class Track:
+class Track(object):
     def __init__(self, **kwargs):
         self.stale = False
         self.trackType = TRACK_TYPE_CIRCUIT
@@ -440,7 +496,6 @@ class Track:
             if sectorCount > maxSectorCount: break
             t.sectors.append(copy(point))
         return t
-
         
     def toJson(self):
         sectors = []
@@ -457,7 +512,7 @@ class Track:
             trackJson['sf'] = self.startLine.toJson()
         return trackJson
         
-class TrackConfig:
+class TrackConfig(object):
     def __init__(self, **kwargs):
         self.stale=False
         self.track = None
@@ -474,7 +529,6 @@ class TrackConfig:
                 self.track = Track()
                 self.track.fromJson(trackJson)
             self.stale = False
-            
                     
     def toJson(self):
         trackCfgJson = {}
@@ -484,7 +538,7 @@ class TrackConfig:
 
         return {'trackCfg':trackCfgJson}
 
-class TracksDb:
+class TracksDb(object):
     tracks = None
     def __init__(self, **kwargs):
         self.stale = False
@@ -508,8 +562,7 @@ class TracksDb:
             tracksJson.append(track.toJson())
         return {"trackDb":{'size':len(tracks),'tracks': tracksJson}}
   
-class CanConfig:
-
+class CanConfig(object):
     def __init__(self, **kwargs):
         self.stale = False
         self.enabled = False
@@ -527,7 +580,7 @@ class CanConfig:
         return {'canCfg':canCfgJson}        
     
         
-class PidConfig:
+class PidConfig(object):
     def __init__(self, **kwargs):
         self.channelId = 0
         self.sampleRate = 0
@@ -547,7 +600,7 @@ class PidConfig:
 
 OBD2_CONFIG_MAX_PIDS = 20
 
-class Obd2Config:
+class Obd2Config(object):
     pids = []
     enabled = False
     def __init__(self, **kwargs):
@@ -575,7 +628,7 @@ class Obd2Config:
         obd2Json =  {'obd2Cfg':{'en': 1 if self.enabled else 0, 'pids':pidsJson }}
         return obd2Json
         
-class LuaScript:
+class LuaScript(object):
     script = ""
     def __init__(self, **kwargs):
         self.stale = False
@@ -589,7 +642,7 @@ class LuaScript:
         scriptJson = {"scriptCfg":{'data':self.script,'page':None}}
         return scriptJson
         
-class BluetoothConfig:
+class BluetoothConfig(object):
     name = ""
     passKey = ""
     btEnabled = False
@@ -608,7 +661,7 @@ class BluetoothConfig:
         btCfgJson['passKey'] = self.passKey
         return btCfgJson 
 
-class CellConfig:
+class CellConfig(object):
     cellEnabled = False
     apnHost = ""
     apnUser = ""
@@ -630,7 +683,7 @@ class CellConfig:
         cellConfigJson['apnPass'] = self.apnPass
         return cellConfigJson        
     
-class TelemetryConfig:
+class TelemetryConfig(object):
     deviceId = ""
     backgroundStreaming = 0
     
@@ -644,7 +697,7 @@ class TelemetryConfig:
         telCfgJson['bgStream'] = 1 if self.backgroundStreaming else 0
         return telCfgJson
     
-class ConnectivityConfig:
+class ConnectivityConfig(object):
     stale = False
     bluetoothConfig = BluetoothConfig()
     cellConfig = CellConfig()
@@ -672,7 +725,7 @@ class ConnectivityConfig:
         return {'connCfg':connCfgJson}
 
 
-class VersionConfig:
+class VersionConfig(object):
     major = 0
     minor = 0
     bugfix = 0
@@ -691,9 +744,10 @@ class VersionConfig:
         versionJson = {'major': self.major, 'minor': self.minor, 'bugfix': self.bugfix}
         return {'ver': versionJson}
         
-class RcpConfig:
+class RcpConfig(object):
     loaded = False
     def __init__(self, **kwargs):
+        
         self.versionConfig = VersionConfig()
         self.analogConfig = AnalogConfig()
         self.imuConfig = ImuConfig()
@@ -707,7 +761,37 @@ class RcpConfig:
         self.obd2Config = Obd2Config()
         self.scriptConfig = LuaScript()
         self.trackDb = TracksDb()
+
+    @property
+    def stale(self):
+        return  (self.analogConfig.stale or
+                self.imuConfig.stale or
+                self.gpsConfig.stale or
+                self.timerConfig.stale or
+                self.gpioConfig.stale or
+                self.pwmConfig.stale or
+                self.trackConfig.stale or
+                self.connectivityConfig.stale or
+                self.canConfig.stale or
+                self.obd2Config.stale or
+                self.scriptConfig.stale or
+                self.trackDb.stale)
     
+    @stale.setter
+    def stale(self, value):
+        self.analogConfig.stale = value
+        self.imuConfig.stale = value
+        self.gpsConfig.stale = value
+        self.timerConfig.stale = value
+        self.gpioConfig.stale = value
+        self.pwmConfig.stale = value
+        self.trackConfig.stale = value
+        self.connectivityConfig.stale = value
+        self.canConfig.stale = value
+        self.obd2Config.stale = value
+        self.scriptConfig.stale = value
+        self.trackDb.stale = value
+        
     def fromJson(self, rcpJson):
         if rcpJson:
             rcpJson = rcpJson.get('rcpCfg', None)

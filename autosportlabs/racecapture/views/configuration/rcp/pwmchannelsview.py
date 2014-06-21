@@ -35,31 +35,38 @@ class AnalogPulseOutputChannel(BoxLayout):
     def on_channel(self, instance, value):
         if self.channelConfig:
             self.channelConfig.channelId = self.channels.getIdForName(value)
-
+            self.channelConfig.stale = True
+            
     def on_sample_rate(self, instance, value):
         if self.channelConfig:
             self.channelConfig.sampleRate = value
-
+            self.channelConfig.stale = True
+            
     def on_output_mode(self, instance, value):
         if self.channelConfig:
             self.channelConfig.outputMode = instance.getValueFromKey(value)
-
+            self.channelConfig.stale = True
+            
     def on_logging_mode(self, instance, value):
         if self.channelConfig:
             self.channelConfig.loggingMode = instance.getValueFromKey(value)
-    
+            self.channelConfig.stale = True
+                
     def on_startup_duty_cycle(self, instance, value):
         if self.channelConfig:
             self.channelConfig.startupDutyCycle = int(value)
-    
+            self.channelConfig.stale = True
+                
     def on_startup_period(self, instance, value):
         if self.channelConfig:
             self.channelConfig.startupPeriod = int(value)
-    
+            self.channelConfig.stale = True
+                
     def on_voltage_scaling(self, instance, value):
         if self.channelConfig:
             self.channelConfig.voltageScaling = float(value)
-    
+            self.channelConfig.stale = True
+            
     def on_config_updated(self, channelConfig, channels ):
         channelSpinner = kvFind(self, 'rcid', 'chanId')
         channelSpinner.setValue(channels.getNameForId(channelConfig.channelId))

@@ -51,16 +51,19 @@ class ImuChannel(BoxLayout):
     def on_zero_value(self, instance, value):
         if self.channelConfig:
             self.channelConfig.zeroValue = int(value)
+            self.channelConfig.stale = True
     
     def on_orientation(self, instance, value):
         if self.channelConfig and value:
             mode = int(instance.getValueFromKey(value))
             if mode:
                 self.channelConfig.mode = mode
+                self.channelConfig.stale = True
     
     def on_mapping(self, instance, value):
         if self.channelConfig:
             self.channelConfig.chan = int(instance.getValueFromKey(value))
+            self.channelConfig.stale = True
                 
     def on_enabled(self, instance, value):
         self.enable_view(value)
@@ -71,6 +74,7 @@ class ImuChannel(BoxLayout):
                 mode = IMU_MODE_DISABLED
             orientation.setFromValue(mode)
             self.channelConfig.mode = mode
+            self.channelConfig.stale = True
 
     def on_config_updated(self, channelIndex, channelConfig, channelLabels):
         label = kvFind(self, 'rcid', 'label')
@@ -91,6 +95,7 @@ class ImuChannel(BoxLayout):
             mapping.setImuType('gyro')
 
         mapping.setFromValue(channelConfig.chan)
+        
             
         zeroValue = kvFind(self, 'rcid', 'zeroValue')
         zeroValue.text = str(channelConfig.zeroValue)

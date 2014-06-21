@@ -62,26 +62,32 @@ class AnalogChannel(BoxLayout):
     def on_channel(self, instance, value):
         if self.channelConfig:
             self.channelConfig.channelId = self.channels.getIdForName(value)
+            self.channelConfig.stale = True
 
     def on_linear_map_value(self, instance, value):
         if self.channelConfig:
             self.channelConfig.linearScaling = float(value)
+            self.channelConfig.stale = True
 
     def on_sample_rate(self, instance, value):
         if self.channelConfig:
             self.channelConfig.sampleRate = value
+            self.channelConfig.stale = True
         
     def on_scaling_type_raw(self, instance, value):
         if self.channelConfig and value:
             self.channelConfig.scalingMode = ANALOG_SCALING_MODE_RAW
+            self.channelConfig.stale = True
             
     def on_scaling_type_linear(self, instance, value):
         if self.channelConfig and value:
             self.channelConfig.scalingMode = ANALOG_SCALING_MODE_LINEAR
+            self.channelConfig.stale = True
             
     def on_scaling_type_map(self, instance, value):
         if self.channelConfig and value:
             self.channelConfig.scalingMode = ANALOG_SCALING_MODE_MAP
+            self.channelConfig.stale = True
         
     def on_config_updated(self, channelConfig, channels):
         channelSpinner = kvFind(self, 'rcid', 'chanId')
@@ -111,10 +117,13 @@ class AnalogChannel(BoxLayout):
         kvFind(self, 'rcid', 'linearscaling').text = str(channelConfig.linearScaling)
         mapEditor = kvFind(self, 'rcid', 'mapEditor')
         mapEditor.on_config_changed(channelConfig.scalingMap)
+        mapEditor.bind(on_map_updated=self.on_map_updated)
         
         self.channelConfig = channelConfig
         self.channels = channels
         
+    def on_map_updated(self, *args):
+        self.channelConfig.stale = True
         
 class AnalogScaler(Graph):
     def __init__(self, **kwargs):
@@ -126,6 +135,7 @@ class AnalogScalingMapEditor(BoxLayout):
     scalingMap = None
     def __init__(self, **kwargs):
         super(AnalogScalingMapEditor, self).__init__(**kwargs)
+        self.register_event_type('on_map_updated')
 
     def setTabStops(self, mapSize):
         voltsCellFirst = kvFind(self, 'rcid', 'v_0')
@@ -172,13 +182,18 @@ class AnalogScalingMapEditor(BoxLayout):
         graph.add_plot(plot)
         self.scalingMap = scalingMap
 
+    def on_map_updated(self):
+        pass
+    
     def on_volts(self, mapBin, instance, value):
         if self.scalingMap:
             self.scalingMap.setVolts(mapBin, value)
+            self.dispatch('on_map_updated')
         
     def on_scaled(self, mapBin, instance, value):
         if self.scalingMap:
             self.scalingMap.setScaled(mapBin, value)
+            self.dispatch('on_map_updated')
             
         
 

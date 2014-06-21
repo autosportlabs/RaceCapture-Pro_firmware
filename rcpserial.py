@@ -312,25 +312,25 @@ class RcpSerial:
                 
         analogCfg = cfg.analogConfig
         for i in range(ANALOG_CHANNEL_COUNT):
-            analogChannel = analogCfg[i]
+            analogChannel = analogCfg.channels[i]
             if analogChannel.stale:
                 cmdSequence.append(RcpCmd('setAnalogCfg', self.setAnalogCfg, analogChannel.toJson(), i))
         
         timerCfg = cfg.timerConfig
         for i in range(TIMER_CHANNEL_COUNT):
-            timerChannel = timerCfg[i]
+            timerChannel = timerCfg.channels[i]
             if timerChannel.stale:
                 cmdSequence.append(RcpCmd('setTimerCfg', self.setTimerCfg, timerChannel.toJson(), i))
         
         gpioCfg = cfg.gpioConfig
         for i in range(GPIO_CHANNEL_COUNT):
-            gpioChannel = gpioCfg[i]
+            gpioChannel = gpioCfg.channels[i]
             if gpioChannel.stale:
                 cmdSequence.append(RcpCmd('setGpioCfg', self.setGpioCfg, gpioChannel.toJson(), i))
                  
         pwmCfg = cfg.pwmConfig
         for i in range(PWM_CHANNEL_COUNT):
-            pwmChannel = pwmCfg[i]
+            pwmChannel = pwmCfg.channels[i]
             if pwmChannel.stale:
                 cmdSequence.append(RcpCmd('setPwmCfg', self.setPwmCfg, pwmChannel.toJson(), i))
 
@@ -347,7 +347,7 @@ class RcpSerial:
             cmdSequence.append(RcpCmd('setTrackCfg', self.setTrackCfg, trackCfg.toJson()))
             
         scriptCfg = cfg.scriptConfig
-        if scriptCfg:
+        if scriptCfg.stale:
             self.sequenceWriteScript(scriptCfg.toJson(), cmdSequence)
             
         trackDb = cfg.trackDb
@@ -429,7 +429,8 @@ class RcpSerial:
         
     def sequenceWriteScript(self, scriptCfg, cmdSequence):
         i = 0
-        script = scriptCfg['data']
+        print(str(scriptCfg))
+        script = scriptCfg['scriptCfg']['data']
         while True:
             if len(script) >= 256:
                 scr = script[:256]

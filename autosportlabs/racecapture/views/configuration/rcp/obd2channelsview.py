@@ -41,6 +41,7 @@ class OBD2Channel(BoxLayout):
         channelSpinner = kvFind(self, 'rcid', 'chanId')
         channelSpinner.on_channels_updated(channels)
         channelSpinner.text = channels.getNameForId(channel.channelId)
+        self.obd2Channel.stale = True
     
 class OBD2ChannelsView(BaseConfigView):
     obd2Cfg = None

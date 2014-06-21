@@ -42,22 +42,27 @@ class PulseChannel(BoxLayout):
     def on_channel(self, instance, value):
         if self.channelConfig:
             self.channelConfig.channelId = self.channels.getIdForName(value)
-
+            self.channelConfig.stale = True
+                        
     def on_sample_rate(self, instance, value):
         if self.channelConfig:
             self.channelConfig.sampleRate = value
+            self.channelConfig.stale = True
 
     def on_pulse_per_rev(self, instance, value):
         if self.channelConfig:
             self.channelConfig.pulsePerRev = int(value)
+            self.channelConfig.stale = True
             
     def on_mode(self, instance, value):
         if self.channelConfig:
             self.channelConfig.mode = int(instance.getValueFromKey(value))
+            self.channelConfig.stale = True
             
     def on_divider(self, instance, value):
         if self.channelConfig:
             self.channelConfig.divider = int(value)
+            self.channelConfig.stale = True
                 
     def on_config_updated(self, channelConfig, channels):
         sampleRateSpinner = kvFind(self, 'rcid', 'sr')
