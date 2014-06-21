@@ -152,13 +152,12 @@ class RaceCaptureApp(App):
         try:
             if not self.channels.isLoaded():
                 self.on_read_channels()
-            self.rcpComms.getRcpCfg(self.on_read_config_complete, self.on_read_channels_error)
+            self.rcpComms.getRcpCfg(self.rcpConfig, self.on_read_config_complete, self.on_read_channels_error)
         except:
             logging.exception('')
             self._serial_warning()
 
-    def on_read_config_complete(self, rcpConfigJson):
-        self.rcpConfig.fromJson(rcpConfigJson)
+    def on_read_config_complete(self, rcpCfg):
         Clock.schedule_once(lambda dt: self.notifyReadComplete())
         
     def on_read_config_error(self, detail):

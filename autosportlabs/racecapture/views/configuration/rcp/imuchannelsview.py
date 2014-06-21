@@ -129,6 +129,7 @@ class ImuChannelsView(BaseConfigView):
         if self.imuCfg:
             for imuChannel in self.imuCfg.channels:
                 imuChannel.sampleRate = value
+                imuChannel.stale = True
             
     def on_config_updated(self, rcpCfg):
         imuCfg = rcpCfg.imuConfig

@@ -273,7 +273,11 @@ class RcpSerial:
         line = line.replace('\n', '')
         return line
         
-    def getRcpCfg(self, winCallback, failCallback):
+    def getRcpCfgCallback(self, cfg, rcpCfgJson, winCallback):
+        cfg.fromJson(rcpCfgJson)
+        winCallback(cfg)
+        
+    def getRcpCfg(self, cfg, winCallback, failCallback):
         cmdSequence = [       RcpCmd('ver',         self.getVersion),
                               RcpCmd('analogCfg',   self.getAnalogCfg),
                               RcpCmd('imuCfg',      self.getImuCfg),
@@ -289,10 +293,11 @@ class RcpSerial:
                               RcpCmd('trackDb',    self.getTrackDb)
                            ]
                 
-        t = Thread(target=self.executeSequence, args=(cmdSequence, 'rcpCfg', winCallback, failCallback))
+        t = Thread(target=self.executeSequence, args=(cmdSequence, 'rcpCfg', lambda rcpJson: self.getRcpCfgCallback(cfg, rcpJson, winCallback), failCallback))
         t.daemon = True
         t.start()
             
+        
     def writeRcpCfg(self, cfg, winCallback = None, failCallback = None):
         cmdSequence = []
         
