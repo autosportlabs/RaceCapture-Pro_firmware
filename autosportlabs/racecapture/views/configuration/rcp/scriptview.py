@@ -37,7 +37,9 @@ class LuaScriptingView(BaseConfigView):
     def on_script_changed(self, instance, value):
         if self.scriptCfg:
             self.scriptCfg.script = value
-
+            self.scriptCfg.stale = True
+            self.dispatch('on_modified')
+            
     def on_run_script(self):
         pass
     

@@ -18,10 +18,12 @@
 	        IconButton:
 	        	id: 'open'
 	        	text: '\357\204\225'
+	        	rcid: 'openconfig'
 	        	on_release: root.openConfig()
 	        IconButton:
 	        	id: 'save'
 	        	text: '\357\203\207'
+	        	rcid: 'saveconfig'
 	        	on_release: root.saveConfig()
 		BoxLayout:
 			size_hint_y: 0.1
@@ -29,11 +31,14 @@
 	        IconButton:
 	            id: 'read'
 	            text: '\357\202\223'
+	            rcid: 'readconfig'
 	            on_release: root.readConfig()
 	        IconButton:
 	            id: 'write'
 	            text: '\357\200\231'
+	            rcid: 'writeconfig'
 	            on_release: root.writeConfig()
+	            disabled: True
 			
 	BoxLayout:
 		size_hint_x: 0.8

@@ -41,6 +41,10 @@ class ImuChannel(BoxLayout):
     def __init__(self, **kwargs):
         super(ImuChannel, self).__init__(**kwargs)
         self.imu_id = kwargs.get('imu_id', None)
+        self.register_event_type('on_modified')
+    
+    def on_modified(self):
+        pass
     
     def enable_view(self, enabled):
         disabled = not enabled
@@ -51,17 +55,23 @@ class ImuChannel(BoxLayout):
     def on_zero_value(self, instance, value):
         if self.channelConfig:
             self.channelConfig.zeroValue = int(value)
-    
+            self.channelConfig.stale = True
+            self.dispatch('on_modified')
+                
     def on_orientation(self, instance, value):
         if self.channelConfig and value:
             mode = int(instance.getValueFromKey(value))
             if mode:
                 self.channelConfig.mode = mode
-    
+                self.channelConfig.stale = True
+                self.dispatch('on_modified')
+                
     def on_mapping(self, instance, value):
         if self.channelConfig:
             self.channelConfig.chan = int(instance.getValueFromKey(value))
-                
+            self.channelConfig.stale = True
+            self.dispatch('on_modified')
+                            
     def on_enabled(self, instance, value):
         self.enable_view(value)
         if self.channelConfig:
@@ -71,7 +81,9 @@ class ImuChannel(BoxLayout):
                 mode = IMU_MODE_DISABLED
             orientation.setFromValue(mode)
             self.channelConfig.mode = mode
-
+            self.channelConfig.stale = True
+            self.dispatch('on_modified')
+            
     def on_config_updated(self, channelIndex, channelConfig, channelLabels):
         label = kvFind(self, 'rcid', 'label')
         label.text = channelLabels[channelIndex]
@@ -91,6 +103,7 @@ class ImuChannel(BoxLayout):
             mapping.setImuType('gyro')
 
         mapping.setFromValue(channelConfig.chan)
+        
             
         zeroValue = kvFind(self, 'rcid', 'zeroValue')
         zeroValue.text = str(channelConfig.zeroValue)
@@ -111,20 +124,22 @@ class ImuChannelsView(BaseConfigView):
         gyroContainer = kvFind(self, 'rcid', 'gc')
         self.appendImuChannels(gyroContainer, self.editors, IMU_GYRO_CHANNEL_IDS)
         
-        kvFind(self, 'rcid', 'sr').bind(on_sample_rate = self.on_sample_rate)        
-        
+        kvFind(self, 'rcid', 'sr').bind(on_sample_rate = self.on_sample_rate)                
         
     def appendImuChannels(self, container, editors, ids):
         for i in ids:
             editor = ImuChannel(rcid='imu_chan_' + str(i))
             container.add_widget(editor)
+            editor.bind(on_modified=self.on_modified)            
             editors.append(editor)
         
     def on_sample_rate(self, instance, value):
         if self.imuCfg:
             for imuChannel in self.imuCfg.channels:
                 imuChannel.sampleRate = value
-            
+                imuChannel.stale = True
+                self.dispatch('on_modified')
+                
     def on_config_updated(self, rcpCfg):
         imuCfg = rcpCfg.imuConfig
         channelCount = imuCfg.channelCount
