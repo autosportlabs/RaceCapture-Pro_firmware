@@ -31,6 +31,8 @@ from channels import *
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/configview.kv')
 
+RCP_CONFIG_FILE_EXTENSION = '.rcp'
+
 class LinkedTreeViewLabel(TreeViewLabel):
     view = None
 
@@ -40,6 +42,7 @@ class ConfigView(BoxLayout):
     savefile = ObjectProperty(None)
     text_input = ObjectProperty(None)
         
+            
     #List of config views
     configViews = []
     content = None
@@ -195,13 +198,13 @@ class ConfigView(BoxLayout):
             self.doOpenConfig()
         
     def doOpenConfig(self):
-        content = LoadDialog(ok=self.load, cancel=self.dismiss_popup)
+        content = LoadDialog(ok=self.load, cancel=self.dismiss_popup, filters=['*' + RCP_CONFIG_FILE_EXTENSION])
         self._popup = Popup(title="Load file", content=content, size_hint=(0.9, 0.9))
         self._popup.open()        
     
     def saveConfig(self):
         if self.rcpConfig.loaded:
-            content = SaveDialog(save=self.save, cancel=self.dismiss_popup)
+            content = SaveDialog(ok=self.save, cancel=self.dismiss_popup,filters=['*' + RCP_CONFIG_FILE_EXTENSION])
             self._popup = Popup(title="Save file", content=content, size_hint=(0.9, 0.9))
             self._popup.open()
         else:
@@ -222,12 +225,16 @@ class ConfigView(BoxLayout):
         except Exception as detail:
             alertPopup('Error Loading', 'Failed to Load Configuration:\n\n' + str(detail))
             
-    def save(self, path, filename):
+    def save(self, instance):
         self.dismiss_popup()
         try:        
-            with open(os.path.join(path, filename), 'w') as stream:
-                configJson = self.rcpConfig.toJsonString()
-                stream.write(configJson)
+            filename = instance.filename
+            if len(filename):
+                filename = os.path.join(instance.path, filename)
+                if not filename.endswith(RCP_CONFIG_FILE_EXTENSION): filename += RCP_CONFIG_FILE_EXTENSION
+                with open(filename, 'w') as stream:
+                    configJson = self.rcpConfig.toJsonString()
+                    stream.write(configJson)
         except Exception as detail:
             alertPopup('Error Saving', 'Failed to save:\n\n' + str(detail))
 
