@@ -173,7 +173,7 @@ class ConfigView(BoxLayout):
                 if answer:
                     self.dispatch('on_read_config', None)
                 popup.dismiss()
-            popup = confirmPopup('Modified', 'Configuration Modified  - Continue Loading?', _on_answer)
+            popup = confirmPopup('Confirm', 'Configuration Modified  - Continue Loading?', _on_answer)
         else:
             self.dispatch('on_read_config', None)
 
@@ -190,7 +190,7 @@ class ConfigView(BoxLayout):
                 if answer:
                     self.doOpenConfig()
                 popup.dismiss()
-            popup = confirmPopup('Modified', 'Configuration Modified  - Continue Loading?', _on_answer)
+            popup = confirmPopup('Confirm', 'Configuration Modified  - Open Configuration?', _on_answer)
         else:
             self.doOpenConfig()
         
