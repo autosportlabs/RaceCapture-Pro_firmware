@@ -184,6 +184,17 @@ class ConfigView(BoxLayout):
             alertPopup('Warning', 'Please load or read a configuration before writing')
 
     def openConfig(self):
+        if self.writeStale:
+            popup = None 
+            def _on_answer(instance, answer):
+                if answer:
+                    self.doOpenConfig()
+                popup.dismiss()
+            popup = confirmPopup('Modified', 'Configuration Modified  - Continue Loading?', _on_answer)
+        else:
+            self.doOpenConfig()
+        
+    def doOpenConfig(self):
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
         self._popup = Popup(title="Load file", content=content, size_hint=(0.9, 0.9))
         self._popup.open()        
