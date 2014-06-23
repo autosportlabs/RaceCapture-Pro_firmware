@@ -37,11 +37,13 @@ class AnalogChannelsView(BaseConfigView):
             editors.append(editor)
             
         self.editors = editors
-    
+        accordion.select(accordion.children[-1])
+        
         #create a scroll view, with a size < size of the grid
         sv = ScrollView(size_hint=(1.0,1.0), do_scroll_x=False)
         sv.add_widget(accordion)
         self.add_widget(sv)
+        
     
     def on_config_updated(self, rcpCfg):
         analogCfg = rcpCfg.analogConfig

@@ -30,12 +30,14 @@ class TelemetryConfigView(BaseConfigView):
         if self.connectivityConfig:
             self.connectivityConfig.telemetryConfig.deviceId = value
             self.connectivityConfig.stale = True
-    
+            self.dispatch('on_modified')
+                
     def on_bg_stream(self, instance, value):
         if self.connectivityConfig:
-            self.connectivityConfig.connectionModes.backgroundStreaming = value
+            self.connectivityConfig.telemetryConfig.backgroundStreaming = value
             self.connectivityConfig.stale = True
-    
+            self.dispatch('on_modified')
+                
     def on_config_updated(self, rcpCfg):
         connectivityConfig = rcpCfg.connectivityConfig
         kvFind(self, 'rcid', 'bgStream').setValue(connectivityConfig.telemetryConfig.backgroundStreaming)

@@ -9,9 +9,12 @@ class BaseConfigView(BoxLayout):
         super(BaseConfigView, self).__init__(**kwargs)
         self.register_event_type('on_tracks_updated')
         self.register_event_type('on_modified')
-        
+        self.register_event_type('on_config_modified')
         
     def on_modified(self, *args):
+        self.dispatch('on_config_modified', *args)
+    
+    def on_config_modified(self, *args):
         pass
     
     def on_tracks_updated(self, trackManager):

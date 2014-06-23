@@ -38,32 +38,42 @@ class PulseChannel(BoxLayout):
         super(PulseChannel, self).__init__(**kwargs)
         kvFind(self, 'rcid', 'sr').bind(on_sample_rate = self.on_sample_rate)
         kvFind(self, 'rcid', 'chanId').bind(on_channel = self.on_channel)
+        self.register_event_type('on_modified')
+        self.register_event_type('on_modified')
+    
+    def on_modified(self):
+        pass
 
     def on_channel(self, instance, value):
         if self.channelConfig:
             self.channelConfig.channelId = self.channels.getIdForName(value)
             self.channelConfig.stale = True
-                        
+            self.dispatch('on_modified')
+                                    
     def on_sample_rate(self, instance, value):
         if self.channelConfig:
             self.channelConfig.sampleRate = value
             self.channelConfig.stale = True
-
+            self.dispatch('on_modified')
+            
     def on_pulse_per_rev(self, instance, value):
         if self.channelConfig:
             self.channelConfig.pulsePerRev = int(value)
             self.channelConfig.stale = True
-            
+            self.dispatch('on_modified')
+                        
     def on_mode(self, instance, value):
         if self.channelConfig:
             self.channelConfig.mode = int(instance.getValueFromKey(value))
             self.channelConfig.stale = True
-            
+            self.dispatch('on_modified')
+                        
     def on_divider(self, instance, value):
         if self.channelConfig:
             self.channelConfig.divider = int(value)
             self.channelConfig.stale = True
-                
+            self.dispatch('on_modified')
+                            
     def on_config_updated(self, channelConfig, channels):
         sampleRateSpinner = kvFind(self, 'rcid', 'sr')
         sampleRateSpinner.setValue(channelConfig.sampleRate)
@@ -103,6 +113,8 @@ class PulseChannelsView(BaseConfigView):
             accordion.add_widget(channel)
             editors.append(editor)
     
+        accordion.select(accordion.children[-1])
+    
         self.editors = editors
         #create a scroll view, with a size < size of the grid
         sv = ScrollView(size_hint=(1.0,1.0), do_scroll_x=False)
@@ -117,4 +129,4 @@ class PulseChannelsView(BaseConfigView):
             timerChannel = timerCfg.channels[i]
             editor = self.editors[i]
             editor.on_config_updated(timerChannel, self.channels)
-        
+            editor.bind(on_modified=self.on_modified)          

@@ -140,7 +140,8 @@ class AutomaticTrackConfigScreen(Screen):
             self.init_tracks_list()
             self.trackSelectionPopup.dismiss()
             self.trackDb.stale = True
-        
+            self.dispatch('on_modified')
+                    
     def on_add_track_db(self):
         trackSelectionPopup = TrackSelectionPopup(trackManager=self.trackManager)
         popup = Popup(title = 'Add Race Tracks', content = trackSelectionPopup, size_hint=(0.9, 0.9))
@@ -182,6 +183,8 @@ class AutomaticTrackConfigScreen(Screen):
                 del self.trackDb.tracks[index]
                 self.init_tracks_list()
                 self.trackDb.stale = True
+                self.dispatch('on_modified')
+                            
             except Exception as detail:
                 print('Error removing track from list ' + str(detail))
                     
@@ -214,7 +217,7 @@ class ManualTrackConfigScreen(Screen):
         if self.trackCfg:
             self.trackCfg.track.trackType = 1 if value else 0
             self.trackCfg.stale = True
-            
+            self.dispatch('on_modified')            
             self.separateStartFinish = value
             self.updateTrackViewState()
               
@@ -232,7 +235,8 @@ class ManualTrackConfigScreen(Screen):
             
     def on_config_changed(self, *args):
         self.trackCfg.stale = True
-        
+        self.dispatch('on_modified')
+                    
     def updateTrackViewState(self):
         if not self.separateStartFinish:
             self.startLineView.setTitle('Start / Finish')
@@ -321,4 +325,4 @@ class TrackConfigView(BaseConfigView):
         if self.trackCfg:
             self.trackCfg.autoDetect = value
             self.trackCfg.stale = True
-        
+            self.dispatch('on_modified')

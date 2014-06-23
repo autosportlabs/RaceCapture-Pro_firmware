@@ -31,42 +31,53 @@ class AnalogPulseOutputChannel(BoxLayout):
         super(AnalogPulseOutputChannel, self).__init__(**kwargs)
         kvFind(self, 'rcid', 'sr').bind(on_sample_rate = self.on_sample_rate)
         kvFind(self, 'rcid', 'chanId').bind(on_channel = self.on_channel)
+        self.register_event_type('on_modified')
+    
+    def on_modified(self):
+        pass
 
     def on_channel(self, instance, value):
         if self.channelConfig:
             self.channelConfig.channelId = self.channels.getIdForName(value)
             self.channelConfig.stale = True
-            
+            self.dispatch('on_modified')
+                        
     def on_sample_rate(self, instance, value):
         if self.channelConfig:
             self.channelConfig.sampleRate = value
             self.channelConfig.stale = True
-            
+            self.dispatch('on_modified')
+                        
     def on_output_mode(self, instance, value):
         if self.channelConfig:
             self.channelConfig.outputMode = instance.getValueFromKey(value)
             self.channelConfig.stale = True
-            
+            self.dispatch('on_modified')
+                        
     def on_logging_mode(self, instance, value):
         if self.channelConfig:
             self.channelConfig.loggingMode = instance.getValueFromKey(value)
             self.channelConfig.stale = True
-                
+            self.dispatch('on_modified')
+                            
     def on_startup_duty_cycle(self, instance, value):
         if self.channelConfig:
             self.channelConfig.startupDutyCycle = int(value)
             self.channelConfig.stale = True
-                
+            self.dispatch('on_modified')
+                            
     def on_startup_period(self, instance, value):
         if self.channelConfig:
             self.channelConfig.startupPeriod = int(value)
             self.channelConfig.stale = True
-                
+            self.dispatch('on_modified')
+                            
     def on_voltage_scaling(self, instance, value):
         if self.channelConfig:
             self.channelConfig.voltageScaling = float(value)
             self.channelConfig.stale = True
-            
+            self.dispatch('on_modified')
+                        
     def on_config_updated(self, channelConfig, channels ):
         channelSpinner = kvFind(self, 'rcid', 'chanId')
         channelSpinner.setValue(channels.getNameForId(channelConfig.channelId))
@@ -107,6 +118,8 @@ class AnalogPulseOutputChannelsView(BaseConfigView):
             accordion.add_widget(channel)
             self.editors.append(editor)
     
+        accordion.select(accordion.children[-1])
+    
         #create a scroll view, with a size < size of the grid
         sv = ScrollView(size_hint=(1.0,1.0), do_scroll_x=False)
         sv.add_widget(accordion)
@@ -120,3 +133,5 @@ class AnalogPulseOutputChannelsView(BaseConfigView):
             editor = self.editors[i]
             pwmChannel = pwmCfg.channels[i]
             editor.on_config_updated(pwmChannel, self.channels)
+            editor.bind(on_modified=self.on_modified)              
+            

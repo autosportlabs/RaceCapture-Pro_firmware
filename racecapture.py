@@ -140,12 +140,11 @@ class RaceCaptureApp(App):
     def on_write_config_complete(self, result):
         print('Write config complete: ' + str(result))
         self.rcpConfig.stale = False
+        Clock.schedule_once(lambda dt: self.configView.dispatch('on_config_written'))
         
     def on_write_config_error(self, detail):
         alertPopup('Error Writing', 'Could not write configuration:\n\n' + str(detail))
 
-    
-    
     
     #Read Configuration        
     def on_read_config(self, instance, *args):
@@ -158,13 +157,10 @@ class RaceCaptureApp(App):
             self._serial_warning()
 
     def on_read_config_complete(self, rcpCfg):
-        Clock.schedule_once(lambda dt: self.notifyReadComplete())
+        Clock.schedule_once(lambda dt: self.configView.dispatch('on_config_updated', self.rcpConfig))
         
     def on_read_config_error(self, detail):
         alertPopup('Error Reading', 'Could not read configuration:\n\n' + str(detail))
-
-    def notifyReadComplete(self):
-        self.configView.dispatch('on_config_updated', self.rcpConfig)
 
 
 

@@ -24,7 +24,7 @@ from autosportlabs.racecapture.views.configuration.rcp.wirelessconfigview import
 from autosportlabs.racecapture.views.configuration.rcp.scriptview import *
 from autosportlabs.racecapture.views.file.loaddialogview import LoadDialog
 from autosportlabs.racecapture.views.file.savedialogview import SaveDialog
-from autosportlabs.racecapture.views.util.alertview import alertPopup
+from autosportlabs.racecapture.views.util.alertview import alertPopup, confirmPopup
 
 from rcpconfig import *
 from channels import *
@@ -47,6 +47,7 @@ class ConfigView(BoxLayout):
     channels = None
     rcpConfig = None
     scriptView = None
+    writeStale = False
     def __init__(self, **kwargs):
         self.channels = kwargs.get('channels', None)
         self.rcpConfig = kwargs.get('rcpConfig', None)
@@ -54,7 +55,9 @@ class ConfigView(BoxLayout):
         super(ConfigView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
         self.register_event_type('on_channels_updated')
+        self.register_event_type('on_config_written')
         self.register_event_type('on_tracks_updated')
+        self.register_event_type('on_config_modified')
         self.content = kvFind(self, 'rcid', 'content')
         self.menu = kvFind(self, 'rcid', 'menu')
         self.createConfigViews(self.menu)
@@ -64,8 +67,17 @@ class ConfigView(BoxLayout):
         self.register_event_type('on_poll_logfile')
         
 
-    def on_modified(self, *args):
-        print('on modified')
+    def on_config_written(self, *args):
+        self.writeStale = False
+        self.updateControls()
+        
+    def on_config_modified(self, *args):
+        self.writeStale = True
+        self.updateControls()
+        
+    def updateControls(self):
+        kvFind(self, 'rcid', 'writeconfig').disabled = not self.writeStale
+        
             
     def createConfigViews(self, tree):
         
@@ -88,7 +100,7 @@ class ConfigView(BoxLayout):
             label.color_selected =   [1.0,0,0,0.6]
             tree.add_node(label, n)
             self.configViews.append(view)
-            view.bind(on_modified=self.on_modified)
+            view.bind(on_config_modified=self.on_config_modified)
         
         #n = create_tree('Track')
         attach_node('Race Track / Sectors', None, TrackConfigView())
@@ -123,6 +135,8 @@ class ConfigView(BoxLayout):
     def on_config_updated(self, config):
         for view in self.configViews:
             view.dispatch('on_config_updated', config)
+        self.writeStale = False
+        self.updateControls()
         
     def on_tracks_updated(self, trackManager):
         for view in self.configViews:
@@ -153,7 +167,15 @@ class ConfigView(BoxLayout):
         self.dispatch('on_poll_logfile')
                 
     def readConfig(self):
-        self.dispatch('on_read_config', None)
+        if self.writeStale:
+            popup = None 
+            def _on_answer(instance, answer):
+                if answer:
+                    self.dispatch('on_read_config', None)
+                popup.dismiss()
+            popup = confirmPopup('Modified', 'Configuration Modified  - Continue Loading?', _on_answer)
+        else:
+            self.dispatch('on_read_config', None)
 
     def writeConfig(self):
         if self.rcpConfig.loaded:
