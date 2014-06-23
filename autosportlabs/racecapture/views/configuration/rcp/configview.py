@@ -195,7 +195,7 @@ class ConfigView(BoxLayout):
             self.doOpenConfig()
         
     def doOpenConfig(self):
-        content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
+        content = LoadDialog(ok=self.load, cancel=self.dismiss_popup)
         self._popup = Popup(title="Load file", content=content, size_hint=(0.9, 0.9))
         self._popup.open()        
     
@@ -207,13 +207,18 @@ class ConfigView(BoxLayout):
         else:
             alertPopup('Warning', 'Please load or read a configuration before saving')
         
-    def load(self, path, filename):
+    def load(self, instance):
         self.dismiss_popup()
         try:
-            with open(os.path.join(path, filename[0])) as stream:
-                rcpConfigJsonString = stream.read()
-                self.rcpConfig.fromJsonString(rcpConfigJsonString)
-                self.dispatch('on_config_updated', self.rcpConfig)                
+            selection = instance.selection
+            filename = selection[0] if len(selection) else None
+            if filename:
+                with open(filename) as stream:
+                    rcpConfigJsonString = stream.read()
+                    self.rcpConfig.fromJsonString(rcpConfigJsonString)
+                    self.dispatch('on_config_updated', self.rcpConfig)
+            else:
+                alertPopup('Error Loading', 'No config file selected')
         except Exception as detail:
             alertPopup('Error Loading', 'Failed to Load Configuration:\n\n' + str(detail))
             
@@ -226,6 +231,6 @@ class ConfigView(BoxLayout):
         except Exception as detail:
             alertPopup('Error Saving', 'Failed to save:\n\n' + str(detail))
 
-    def dismiss_popup(self):
+    def dismiss_popup(self, *args):
         self._popup.dismiss()
                 

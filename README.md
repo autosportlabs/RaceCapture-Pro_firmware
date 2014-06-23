@@ -9,6 +9,8 @@ Dependencies:
 * Pyserial 2.6.x
 * Pygame
 * Graph (via kivy-garden via python-pip)
+* FileBrowser (via kivy-garden)
+* NavigationDrawer (via kivy-garden)
 
 to run:
 

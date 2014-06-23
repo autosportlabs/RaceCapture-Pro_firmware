@@ -71,10 +71,10 @@ class RaceCaptureApp(App):
     mainViews = {}
     
     def __init__(self, **kwargs):
+        super(RaceCaptureApp, self).__init__(**kwargs)
         self.register_event_type('on_channels_updated')
         self.register_event_type('on_tracks_updated')
         self.register_event_type('on_read_channels')
-        super(RaceCaptureApp, self).__init__(**kwargs)
         self.processArgs()
         self.rcpComms.initSerial()
         self.appConfig.setUserDir(self.user_data_dir)
