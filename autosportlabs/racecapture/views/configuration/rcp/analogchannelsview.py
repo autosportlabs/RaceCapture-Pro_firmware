@@ -14,6 +14,7 @@ from channels import *
 from channelnameselectorview import ChannelNameSelectorView
 from channelnamespinner import ChannelNameSpinner
 from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
+from math import sin
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/analogchannelsview.kv')
 
@@ -140,10 +141,6 @@ class AnalogChannel(BoxLayout):
         self.channelConfig.stale = True
         self.dispatch('on_modified')        
         
-class AnalogScaler(Graph):
-    def __init__(self, **kwargs):
-        super(AnalogScaler, self).__init__(**kwargs)
-
 
 class AnalogScalingMapEditor(BoxLayout):
     mapSize = 5
@@ -189,8 +186,6 @@ class AnalogScalingMapEditor(BoxLayout):
             plot = MeshLinePlot(color=rgb('FF0000'))
             graph.add_plot(plot)
             self.plot = plot
-            
-        
                 
         points = []
         mapSize = self.mapSize
@@ -199,14 +194,17 @@ class AnalogScalingMapEditor(BoxLayout):
         for i in range(mapSize):
             volts = scalingMap.getVolts(i)
             scaled = scalingMap.getScaled(i)
-            points.append([volts, scaled])
+            points.append((volts, scaled))
             if maxScaled == None or scaled > maxScaled:
                 maxScaled = scaled
             if minScaled == None or scaled < minScaled:
                 minScaled = scaled
             
+        plot.points = []
         graph.ymin = minScaled
         graph.ymax = maxScaled
+        graph.xmin = 0
+        graph.xmax = 5
         plot.points = points
             
     def on_map_updated(self):
