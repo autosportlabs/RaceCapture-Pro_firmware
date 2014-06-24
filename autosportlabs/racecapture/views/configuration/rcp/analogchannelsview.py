@@ -142,6 +142,10 @@ class AnalogChannel(BoxLayout):
         self.dispatch('on_modified')        
         
 
+class AnalogScaler(Graph):
+    def __init__(self, **kwargs):
+        super(AnalogScaler, self).__init__(**kwargs)
+    
 class AnalogScalingMapEditor(BoxLayout):
     mapSize = 5
     scalingMap = None
@@ -177,7 +181,41 @@ class AnalogScalingMapEditor(BoxLayout):
         self.scalingMap = scalingMap
         self.regen_plot()
 
+    #TODO make regen_plot2 the actual routine; we should'nt have to delete and re-add the plot to change the points
     def regen_plot(self):
+        scalingMap = self.scalingMap
+        
+        graphContainer = kvFind(self, 'rcid', 'graphcontainer')
+        graphContainer.clear_widgets()
+        
+        graph = AnalogScaler()
+        graphContainer.add_widget(graph)
+        
+        plot = MeshLinePlot(color=rgb('FF0000'))
+        graph.add_plot(plot)
+        self.plot = plot
+                
+        points = []
+        mapSize = self.mapSize
+        maxScaled = None
+        minScaled = None
+        for i in range(mapSize):
+            volts = scalingMap.getVolts(i)
+            scaled = scalingMap.getScaled(i)
+            points.append((volts, scaled))
+            if maxScaled == None or scaled > maxScaled:
+                maxScaled = scaled
+            if minScaled == None or scaled < minScaled:
+                minScaled = scaled
+            
+        graph.ymin = minScaled
+        graph.ymax = maxScaled
+        graph.xmin = 0
+        graph.xmax = 5
+        plot.points = points
+        
+        
+    def regen_plot2(self):
         scalingMap = self.scalingMap
         graph = kvFind(self, 'rcid', 'scalingGraph')
         
@@ -200,7 +238,6 @@ class AnalogScalingMapEditor(BoxLayout):
             if minScaled == None or scaled < minScaled:
                 minScaled = scaled
             
-        plot.points = []
         graph.ymin = minScaled
         graph.ymax = maxScaled
         graph.xmin = 0

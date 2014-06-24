@@ -55,19 +55,26 @@
         AnalogScalingMapEditor:
             rcid: 'mapEditor'
  
+<AnalogScaler>:
+    id: graph
+    xlabel: 'Volts'
+    ylabel: 'Scaled'
+    x_ticks_minor: 1
+    x_ticks_major: 1
+    y_grid_label: True
+    x_grid_label: True
+    padding: 5
+    x_grid: True
+    y_grid: True
+    xmin: 0
+    xmax: 5
 
 <AnalogScalingMapEditor>:
     orientation: 'vertical'
-    Graph:
+    BoxLayout:
         size_hint: (1.0, 0.6)
-        rcid: 'scalingGraph'
-        xlabel: 'Volts'
-        ylabel: 'Scaled'
-        x_ticks_minor: 1
-        y_grid_label: True
-        x_grid_label: True
-        x_grid: True
-        y_grid: True
+		rcid: 'graphcontainer'    	
+    	orientation: 'vertical'
     GridLayout:
         cols: 6
         size_hint: (1.0, 0.4)
