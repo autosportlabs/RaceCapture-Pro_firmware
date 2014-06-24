@@ -17,6 +17,10 @@ class OBD2Channel(BoxLayout):
     def __init__(self, **kwargs):
         super(OBD2Channel, self).__init__(**kwargs)
         self.register_event_type('on_delete_pid')
+        self.register_event_type('on_modified')
+    
+    def on_modified(self):
+        pass
 
     def on_channel(self, instance, value):
         if self.obd2Channel:
@@ -41,7 +45,9 @@ class OBD2Channel(BoxLayout):
         channelSpinner = kvFind(self, 'rcid', 'chanId')
         channelSpinner.on_channels_updated(channels)
         channelSpinner.text = channels.getNameForId(channel.channelId)
-    
+        self.obd2Channel.stale = True
+        self.dispatch('on_modified')
+                
 class OBD2ChannelsView(BaseConfigView):
     obd2Cfg = None
     obd2Grid = None
@@ -59,7 +65,9 @@ class OBD2ChannelsView(BaseConfigView):
     def on_obd2_enabled(self, instance, value):
         if self.obd2Cfg:
             self.obd2Cfg.enabled = value
-        
+            self.obd2Cfg.stale = True
+            self.dispatch('on_modified')
+                    
     def on_config_updated(self, rcpCfg):
         obd2Cfg = rcpCfg.obd2Config
         
@@ -90,10 +98,13 @@ class OBD2ChannelsView(BaseConfigView):
     def on_delete_pid(self, instance, pidId):
         del self.obd2Cfg.pids[pidId]
         self.reload_obd2_channel_grid()
-        
+        self.obd2Cfg.stale = True
+        self.dispatch('on_modified')
+                    
     def add_obd2_channel(self, index, pidConfig):
         obd2Channel = OBD2Channel()
         obd2Channel.bind(on_delete_pid=self.on_delete_pid)
+        obd2Channel.bind(on_modified=self.on_modified)
         obd2Channel.set_channel(index, pidConfig, self.channels)
         self.obd2Grid.add_widget(obd2Channel)
         
@@ -103,4 +114,5 @@ class OBD2ChannelsView(BaseConfigView):
             self.obd2Cfg.pids.append(pidConfig)
             self.add_obd2_channel(len(self.obd2Cfg.pids) - 1, pidConfig)
             self.update_view_enabled()
-        
+            self.obd2Cfg.stale = True
+            self.dispatch('on_modified')        

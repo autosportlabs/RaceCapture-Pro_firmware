@@ -71,10 +71,10 @@ class RaceCaptureApp(App):
     mainViews = {}
     
     def __init__(self, **kwargs):
+        super(RaceCaptureApp, self).__init__(**kwargs)
         self.register_event_type('on_channels_updated')
         self.register_event_type('on_tracks_updated')
         self.register_event_type('on_read_channels')
-        super(RaceCaptureApp, self).__init__(**kwargs)
         self.processArgs()
         self.rcpComms.initSerial()
         self.appConfig.setUserDir(self.user_data_dir)
@@ -131,42 +131,36 @@ class RaceCaptureApp(App):
     #Write Configuration        
     def on_write_config(self, instance, *args):
         rcpConfig = self.rcpConfig
-        rcpJson = rcpConfig.toJson()
-
         try:
-            self.rcpComms.writeRcpCfg(rcpJson, self.on_write_config_complete, self.on_write_config_error)
+            self.rcpComms.writeRcpCfg(rcpConfig, self.on_write_config_complete, self.on_write_config_error)
         except:
             logging.exception('')
             self._serial_warning()
             
     def on_write_config_complete(self, result):
         print('Write config complete: ' + str(result))
+        self.rcpConfig.stale = False
+        Clock.schedule_once(lambda dt: self.configView.dispatch('on_config_written'))
         
     def on_write_config_error(self, detail):
         alertPopup('Error Writing', 'Could not write configuration:\n\n' + str(detail))
 
-    
-    
     
     #Read Configuration        
     def on_read_config(self, instance, *args):
         try:
             if not self.channels.isLoaded():
                 self.on_read_channels()
-            self.rcpComms.getRcpCfg(self.on_read_config_complete, self.on_read_channels_error)
+            self.rcpComms.getRcpCfg(self.rcpConfig, self.on_read_config_complete, self.on_read_channels_error)
         except:
             logging.exception('')
             self._serial_warning()
 
-    def on_read_config_complete(self, rcpConfigJson):
-        self.rcpConfig.fromJson(rcpConfigJson)
-        Clock.schedule_once(lambda dt: self.notifyReadComplete())
+    def on_read_config_complete(self, rcpCfg):
+        Clock.schedule_once(lambda dt: self.configView.dispatch('on_config_updated', self.rcpConfig))
         
     def on_read_config_error(self, detail):
         alertPopup('Error Reading', 'Could not read configuration:\n\n' + str(detail))
-
-    def notifyReadComplete(self):
-        self.configView.dispatch('on_config_updated', self.rcpConfig)
 
 
 

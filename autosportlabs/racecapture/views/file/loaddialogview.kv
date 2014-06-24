@@ -3,17 +3,7 @@
         size: root.size
         pos: root.pos
         orientation: "vertical"
-        FileChooserListView:
-            id: filechooser
-            filters: ['*.rcap']
+		FileBrowser:
+			rcid: 'browser'
+			select_string: 'Open'
 
-        BoxLayout:
-            size_hint_y: None
-            height: 30
-            Button:
-                text: "Cancel"
-                on_release: root.cancel()
-
-            Button:
-                text: "Open"
-                on_release: root.load(filechooser.path, filechooser.selection)

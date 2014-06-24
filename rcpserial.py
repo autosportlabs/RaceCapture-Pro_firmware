@@ -273,7 +273,11 @@ class RcpSerial:
         line = line.replace('\n', '')
         return line
         
-    def getRcpCfg(self, winCallback, failCallback):
+    def getRcpCfgCallback(self, cfg, rcpCfgJson, winCallback):
+        cfg.fromJson(rcpCfgJson)
+        winCallback(cfg)
+        
+    def getRcpCfg(self, cfg, winCallback, failCallback):
         cmdSequence = [       RcpCmd('ver',         self.getVersion),
                               RcpCmd('analogCfg',   self.getAnalogCfg),
                               RcpCmd('imuCfg',      self.getImuCfg),
@@ -289,77 +293,73 @@ class RcpSerial:
                               RcpCmd('trackDb',    self.getTrackDb)
                            ]
                 
-        t = Thread(target=self.executeSequence, args=(cmdSequence, 'rcpCfg', winCallback, failCallback))
+        t = Thread(target=self.executeSequence, args=(cmdSequence, 'rcpCfg', lambda rcpJson: self.getRcpCfgCallback(cfg, rcpJson, winCallback), failCallback))
         t.daemon = True
         t.start()
             
+        
     def writeRcpCfg(self, cfg, winCallback = None, failCallback = None):
         cmdSequence = []
-        rcpCfg = cfg.get('rcpCfg', None)
-        if rcpCfg:
-            gpsCfg = rcpCfg.get('gpsCfg', None)
-            if gpsCfg:
-                cmdSequence.append(RcpCmd('setGpsCfg', self.setGpsCfg, gpsCfg))
-                imuCfg = rcpCfg.get('imuCfg', None)
-            if imuCfg:
-                for i in range(IMU_CHANNEL_COUNT):
-                    imuChannel = imuCfg.get(str(i))
-                    if imuChannel:
-                        cmdSequence.append(RcpCmd('setImuCfg', self.setImuCfg, imuChannel, i))
+        
+        connCfg = cfg.connectivityConfig
+        if connCfg.stale:
+            cmdSequence.append(RcpCmd('setConnCfg', self.setConnectivityCfg, connCfg.toJson()))
+
+        gpsCfg = cfg.gpsConfig
+        if gpsCfg.stale:
+            cmdSequence.append(RcpCmd('setGpsCfg', self.setGpsCfg, gpsCfg.toJson()))
+        
+        imuCfg = cfg.imuConfig
+        for i in range(IMU_CHANNEL_COUNT):
+            imuChannel = imuCfg.channels[i]
+            if imuChannel.stale:
+                cmdSequence.append(RcpCmd('setImuCfg', self.setImuCfg, imuChannel.toJson(), i))
                 
-            analogCfg = rcpCfg.get('analogCfg', None)
-            if analogCfg:
-                for i in range(ANALOG_CHANNEL_COUNT):
-                    analogChannel = analogCfg.get(str(i))
-                    if analogChannel:
-                        cmdSequence.append(RcpCmd('setAnalogCfg', self.setAnalogCfg, analogChannel, i))
+        analogCfg = cfg.analogConfig
+        for i in range(ANALOG_CHANNEL_COUNT):
+            analogChannel = analogCfg.channels[i]
+            if analogChannel.stale:
+                cmdSequence.append(RcpCmd('setAnalogCfg', self.setAnalogCfg, analogChannel.toJson(), i))
+        
+        timerCfg = cfg.timerConfig
+        for i in range(TIMER_CHANNEL_COUNT):
+            timerChannel = timerCfg.channels[i]
+            if timerChannel.stale:
+                cmdSequence.append(RcpCmd('setTimerCfg', self.setTimerCfg, timerChannel.toJson(), i))
+        
+        gpioCfg = cfg.gpioConfig
+        for i in range(GPIO_CHANNEL_COUNT):
+            gpioChannel = gpioCfg.channels[i]
+            if gpioChannel.stale:
+                cmdSequence.append(RcpCmd('setGpioCfg', self.setGpioCfg, gpioChannel.toJson(), i))
+                 
+        pwmCfg = cfg.pwmConfig
+        for i in range(PWM_CHANNEL_COUNT):
+            pwmChannel = pwmCfg.channels[i]
+            if pwmChannel.stale:
+                cmdSequence.append(RcpCmd('setPwmCfg', self.setPwmCfg, pwmChannel.toJson(), i))
+
+        canCfg = cfg.canConfig
+        if canCfg.stale:
+            cmdSequence.append(RcpCmd('setCanCfg', self.setCanCfg, canCfg.toJson()))
+
+        obd2Cfg = cfg.obd2Config
+        if obd2Cfg.stale:
+            cmdSequence.append(RcpCmd('setObd2Cfg', self.setObd2Cfg, obd2Cfg.toJson()))
             
-            timerCfg = rcpCfg.get('timerCfg', None)
-            if timerCfg:
-                for i in range(TIMER_CHANNEL_COUNT):
-                    timerChannel = timerCfg.get(str(i))
-                    if timerChannel:
-                        cmdSequence.append(RcpCmd('setTimerCfg', self.setTimerCfg, timerChannel, i))
-                            
-            gpioCfg = rcpCfg.get('gpioCfg', None)
-            if gpioCfg:
-                for i in range(GPIO_CHANNEL_COUNT):
-                    gpioChannel = gpioCfg.get(str(i))
-                    if gpioChannel:
-                        cmdSequence.append(RcpCmd('setGpioCfg', self.setGpioCfg, gpioChannel, i))
-    
-            pwmCfg = rcpCfg.get('pwmCfg', None)
-            if pwmCfg:
-                for i in range(PWM_CHANNEL_COUNT):
-                    pwmChannel = pwmCfg.get(str(i))
-                    if pwmChannel:
-                        cmdSequence.append(RcpCmd('setPwmCfg', self.setPwmCfg, pwmChannel, i))
-    
-            connCfg = rcpCfg.get('connCfg', None)
-            if connCfg:
-                cmdSequence.append(RcpCmd('setConnCfg', self.setConnectivityCfg, connCfg))
-
-            canCfg = rcpCfg.get('canCfg', None)
-            if canCfg:
-                cmdSequence.append(RcpCmd('setCanCfg', self.setCanCfg, canCfg))
+        trackCfg = cfg.trackConfig
+        if trackCfg.stale:
+            cmdSequence.append(RcpCmd('setTrackCfg', self.setTrackCfg, trackCfg.toJson()))
             
-            obd2Cfg = rcpCfg.get('obd2Cfg', None)
-            if obd2Cfg:
-                cmdSequence.append(RcpCmd('setObd2Cfg', self.setObd2Cfg, obd2Cfg))
-
-            trackCfg = rcpCfg.get('trackCfg', None)
-            if trackCfg:
-                cmdSequence.append(RcpCmd('setTrackCfg', self.setTrackCfg, trackCfg))
-                
-            scriptCfg = rcpCfg.get('scriptCfg', None)
-            if scriptCfg:
-                self.sequenceWriteScript(scriptCfg, cmdSequence)
-
-            trackDb = rcpCfg.get('trackDb', None)
-            if trackDb:
-                self.sequenceWriteTrackDb(trackDb, cmdSequence)
-                
-            cmdSequence.append(RcpCmd('flashCfg', self.sendFlashConfig))
+        scriptCfg = cfg.scriptConfig
+        if scriptCfg.stale:
+            self.sequenceWriteScript(scriptCfg.toJson(), cmdSequence)
+            
+        trackDb = cfg.trackDb
+        if trackDb:
+            self.sequenceWriteTrackDb(trackDb.toJson(), cmdSequence)
+        
+        cmdSequence.append(RcpCmd('flashCfg', self.sendFlashConfig))
                 
         t = Thread(target=self.executeSequence, args=(cmdSequence, 'setRcpCfg', winCallback, failCallback,))
         t.daemon = True
@@ -434,7 +434,8 @@ class RcpSerial:
         
     def sequenceWriteScript(self, scriptCfg, cmdSequence):
         i = 0
-        script = scriptCfg['data']
+        print(str(scriptCfg))
+        script = scriptCfg['scriptCfg']['data']
         while True:
             if len(script) >= 256:
                 scr = script[:256]

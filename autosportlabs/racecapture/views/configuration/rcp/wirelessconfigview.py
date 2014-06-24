@@ -70,26 +70,36 @@ class WirelessConfigView(BaseConfigView):
     def on_cell_enable(self, instance, value):
         if self.connectivityConfig:
             self.connectivityConfig.cellConfig.cellEnabled = value
-    
+            self.connectivityConfig.stale = True
+            self.dispatch('on_modified')
+                
     def on_bt_configure(self, instance, value):
         pass
     
     def on_bt_enable(self, instance, value):
         if self.connectivityConfig:
             self.connectivityConfig.bluetoothConfig.btEnabled = value
-    
+            self.connectivityConfig.stale = True
+            self.dispatch('on_modified')
+                        
     def on_apn_host(self, instance, value):
         if self.connectivityConfig:
             self.connectivityConfig.cellConfig.apnHost = value
-            
+            self.connectivityConfig.stale = True
+            self.dispatch('on_modified')
+                        
     def on_apn_user(self, instance, value):
         if self.connectivityConfig:
             self.connectivityConfig.cellConfig.apnUser = value
-        
+            self.connectivityConfig.stale = True
+            self.dispatch('on_modified')
+                        
     def on_apn_pass(self, instance, value):
         if self.connectivityConfig:
             self.connectivityConfig.cellConfig.apnPass = value
-        
+            self.connectivityConfig.stale = True
+            self.dispatch('on_modified')
+                        
     def getApnSettingByName(self, name):
         providers = self.cellProviderInfo['cellProviders']
         for apnName in providers:

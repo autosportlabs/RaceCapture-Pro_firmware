@@ -24,12 +24,14 @@ from autosportlabs.racecapture.views.configuration.rcp.wirelessconfigview import
 from autosportlabs.racecapture.views.configuration.rcp.scriptview import *
 from autosportlabs.racecapture.views.file.loaddialogview import LoadDialog
 from autosportlabs.racecapture.views.file.savedialogview import SaveDialog
-from autosportlabs.racecapture.views.util.alertview import alertPopup
+from autosportlabs.racecapture.views.util.alertview import alertPopup, confirmPopup
 
 from rcpconfig import *
 from channels import *
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/configview.kv')
+
+RCP_CONFIG_FILE_EXTENSION = '.rcp'
 
 class LinkedTreeViewLabel(TreeViewLabel):
     view = None
@@ -40,6 +42,7 @@ class ConfigView(BoxLayout):
     savefile = ObjectProperty(None)
     text_input = ObjectProperty(None)
         
+            
     #List of config views
     configViews = []
     content = None
@@ -47,6 +50,7 @@ class ConfigView(BoxLayout):
     channels = None
     rcpConfig = None
     scriptView = None
+    writeStale = False
     def __init__(self, **kwargs):
         self.channels = kwargs.get('channels', None)
         self.rcpConfig = kwargs.get('rcpConfig', None)
@@ -54,7 +58,9 @@ class ConfigView(BoxLayout):
         super(ConfigView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
         self.register_event_type('on_channels_updated')
+        self.register_event_type('on_config_written')
         self.register_event_type('on_tracks_updated')
+        self.register_event_type('on_config_modified')
         self.content = kvFind(self, 'rcid', 'content')
         self.menu = kvFind(self, 'rcid', 'menu')
         self.createConfigViews(self.menu)
@@ -62,6 +68,18 @@ class ConfigView(BoxLayout):
         self.register_event_type('on_write_config')
         self.register_event_type('on_run_script')
         self.register_event_type('on_poll_logfile')
+        
+
+    def on_config_written(self, *args):
+        self.writeStale = False
+        self.updateControls()
+        
+    def on_config_modified(self, *args):
+        self.writeStale = True
+        self.updateControls()
+        
+    def updateControls(self):
+        kvFind(self, 'rcid', 'writeconfig').disabled = not self.writeStale
         
             
     def createConfigViews(self, tree):
@@ -78,13 +96,14 @@ class ConfigView(BoxLayout):
                 self.content.add_widget(value.view)
             except Exception, e:
                 print e
-                
+            
         def attach_node(text, n, view):
             label = LinkedTreeViewLabel(text=text)
             label.view = view
             label.color_selected =   [1.0,0,0,0.6]
             tree.add_node(label, n)
             self.configViews.append(view)
+            view.bind(on_config_modified=self.on_config_modified)
         
         #n = create_tree('Track')
         attach_node('Race Track / Sectors', None, TrackConfigView())
@@ -119,6 +138,8 @@ class ConfigView(BoxLayout):
     def on_config_updated(self, config):
         for view in self.configViews:
             view.dispatch('on_config_updated', config)
+        self.writeStale = False
+        self.updateControls()
         
     def on_tracks_updated(self, trackManager):
         for view in self.configViews:
@@ -149,7 +170,15 @@ class ConfigView(BoxLayout):
         self.dispatch('on_poll_logfile')
                 
     def readConfig(self):
-        self.dispatch('on_read_config', None)
+        if self.writeStale:
+            popup = None 
+            def _on_answer(instance, answer):
+                if answer:
+                    self.dispatch('on_read_config', None)
+                popup.dismiss()
+            popup = confirmPopup('Confirm', 'Configuration Modified  - Continue Loading?', _on_answer)
+        else:
+            self.dispatch('on_read_config', None)
 
     def writeConfig(self):
         if self.rcpConfig.loaded:
@@ -158,37 +187,57 @@ class ConfigView(BoxLayout):
             alertPopup('Warning', 'Please load or read a configuration before writing')
 
     def openConfig(self):
-        content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
+        if self.writeStale:
+            popup = None 
+            def _on_answer(instance, answer):
+                if answer:
+                    self.doOpenConfig()
+                popup.dismiss()
+            popup = confirmPopup('Confirm', 'Configuration Modified  - Open Configuration?', _on_answer)
+        else:
+            self.doOpenConfig()
+        
+    def doOpenConfig(self):
+        content = LoadDialog(ok=self.load, cancel=self.dismiss_popup, filters=['*' + RCP_CONFIG_FILE_EXTENSION])
         self._popup = Popup(title="Load file", content=content, size_hint=(0.9, 0.9))
         self._popup.open()        
     
     def saveConfig(self):
         if self.rcpConfig.loaded:
-            content = SaveDialog(save=self.save, cancel=self.dismiss_popup)
+            content = SaveDialog(ok=self.save, cancel=self.dismiss_popup,filters=['*' + RCP_CONFIG_FILE_EXTENSION])
             self._popup = Popup(title="Save file", content=content, size_hint=(0.9, 0.9))
             self._popup.open()
         else:
             alertPopup('Warning', 'Please load or read a configuration before saving')
         
-    def load(self, path, filename):
+    def load(self, instance):
         self.dismiss_popup()
         try:
-            with open(os.path.join(path, filename[0])) as stream:
-                rcpConfigJsonString = stream.read()
-                self.rcpConfig.fromJsonString(rcpConfigJsonString)
-                self.dispatch('on_config_updated', self.rcpConfig)                
+            selection = instance.selection
+            filename = selection[0] if len(selection) else None
+            if filename:
+                with open(filename) as stream:
+                    rcpConfigJsonString = stream.read()
+                    self.rcpConfig.fromJsonString(rcpConfigJsonString)
+                    self.dispatch('on_config_updated', self.rcpConfig)
+            else:
+                alertPopup('Error Loading', 'No config file selected')
         except Exception as detail:
             alertPopup('Error Loading', 'Failed to Load Configuration:\n\n' + str(detail))
             
-    def save(self, path, filename):
+    def save(self, instance):
         self.dismiss_popup()
         try:        
-            with open(os.path.join(path, filename), 'w') as stream:
-                configJson = self.rcpConfig.toJsonString()
-                stream.write(configJson)
+            filename = instance.filename
+            if len(filename):
+                filename = os.path.join(instance.path, filename)
+                if not filename.endswith(RCP_CONFIG_FILE_EXTENSION): filename += RCP_CONFIG_FILE_EXTENSION
+                with open(filename, 'w') as stream:
+                    configJson = self.rcpConfig.toJsonString()
+                    stream.write(configJson)
         except Exception as detail:
             alertPopup('Error Saving', 'Failed to save:\n\n' + str(detail))
 
-    def dismiss_popup(self):
+    def dismiss_popup(self, *args):
         self._popup.dismiss()
                 

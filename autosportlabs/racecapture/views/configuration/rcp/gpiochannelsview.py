@@ -25,19 +25,29 @@ class GPIOChannel(BoxLayout):
         super(GPIOChannel, self).__init__(**kwargs)
         kvFind(self, 'rcid', 'sr').bind(on_sample_rate = self.on_sample_rate)
         kvFind(self, 'rcid', 'chanId').bind(on_channel = self.on_channel)
+        self.register_event_type('on_modified')
+    
+    def on_modified(self):
+        pass
         
     def on_channel(self, instance, value):
         if self.channelConfig:
             self.channelConfig.channelId = self.channels.getIdForName(value)
-
+            self.channelConfig.stale = True
+            self.dispatch('on_modified')
+            
     def on_sample_rate(self, instance, value):
         if self.channelConfig:
             self.channelConfig.sampleRate = value
-        
+            self.channelConfig.stale = True
+            self.dispatch('on_modified')
+                    
     def on_mode(self, instance, value):
         if self.channelConfig:
             self.channelConfig.mode = instance.getValueFromKey(value)
-            
+            self.channelConfig.stale = True
+            self.dispatch('on_modified')
+                        
     def on_config_updated(self, channelConfig, channels):
         sampleRateSpinner = kvFind(self, 'rcid', 'sr')
         sampleRateSpinner.setValue(channelConfig.sampleRate)
@@ -66,14 +76,17 @@ class GPIOChannelsView(BaseConfigView):
             channel = AccordionItem(title='Digital Input/Output ' + str(i + 1))
             editor = GPIOChannel(id='gpio' + str(i))
             editors.append(editor)
+            editor.bind(on_modified=self.on_modified)            
             channel.add_widget(editor)
             accordion.add_widget(channel)
-    
+        
+        accordion.select(accordion.children[-1])
         self.editors = editors
         
         sv = ScrollView(size_hint=(1.0,1.0), do_scroll_x=False)
         sv.add_widget(accordion)
         self.add_widget(sv)
+
 
     def on_config_updated(self, rcpCfg):
         gpioCfg = rcpCfg.gpioConfig

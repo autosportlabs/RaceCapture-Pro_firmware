@@ -33,10 +33,14 @@ class CANConfigView(BaseConfigView):
     def on_can_enabled(self, instance, value):
         if self.canConfig:
             self.canConfig.enabled = value
+            self.canConfig.stale = True
+            self.dispatch('on_modified')            
     
     def on_can_baud(self, instance, value):
         if self.canConfig:
             self.canConfig.baudRate = value
+            self.canConfig.stale = True
+            self.dispatch('on_modified')
     
     def on_config_updated(self, rcpCfg):
         canConfig = rcpCfg.canConfig
