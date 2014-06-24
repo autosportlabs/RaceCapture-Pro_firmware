@@ -91,50 +91,51 @@
 	
 	
 <ChannelsView>:
-	padding: (dp(10),dp(10))
-	spacing: dp(20)
-	orientation: 'vertical'
-    HSeparator:
-    	text: 'System Channels'
-    	size_hint_y: 0.1
 	BoxLayout:
-		padding: (dp(200), dp(10))
+		padding: (dp(10),dp(10))
 		spacing: dp(20)
 		orientation: 'vertical'
-	    ScrollView:
-	        id: scrlChan
-	        size_hint_y: 0.7
-	        do_scroll_x:False
-	        do_scroll_y:True
-	        GridLayout:
-	        	rcid: 'channelsContainer'
-	            padding: [dp(20), dp(20)]
-	            spacing: [dp(10), dp(10)]
-	            size_hint_y: None
-	            height: max(self.minimum_height, scrlChan.height)
-	            cols: 1
-	    	
+	    HSeparator:
+	    	text: 'System Channels'
+	    	size_hint_y: 0.1
+		BoxLayout:
+			padding: (dp(200), dp(10))
+			spacing: dp(20)
+			orientation: 'vertical'
+		    ScrollView:
+		        id: scrlChan
+		        size_hint_y: 0.7
+		        do_scroll_x:False
+		        do_scroll_y:True
+		        GridLayout:
+		        	rcid: 'channelsContainer'
+		            padding: [dp(20), dp(20)]
+		            spacing: [dp(10), dp(10)]
+		            size_hint_y: None
+		            height: max(self.minimum_height, scrlChan.height)
+		            cols: 1
+		    	
+		    BoxLayout:
+		    	size_hint_y: 0.05
+		    	IconButton:
+		    		text: '\357\201\247'
+		    		on_release: root.on_add_channel()
+			    	disabled: True
+			    	rcid: 'addChan'
 	    BoxLayout:
-	    	size_hint_y: 0.05
-	    	IconButton:
-	    		text: '\357\201\247'
-	    		on_release: root.on_add_channel()
-		    	disabled: True
-		    	rcid: 'addChan'
-    BoxLayout:
-        size_hint_y: 0.05	
-        spacing: dp(10)
-        orientation: 'horizontal'
-        IconButton:
-            size_hint_x: 0.1
-            text: "\357\202\223"
-            on_release: root.on_read_all_channels()
-        IconButton:
-            size_hint_x: 0.1
-            text: "\357\200\231"
-            on_release: root.on_write_all_channels()
-        Label:
-        	size_hint_x: 0.8
+	        size_hint_y: 0.05	
+	        spacing: dp(10)
+	        orientation: 'horizontal'
+	        IconButton:
+	            size_hint_x: 0.1
+	            text: "\357\202\223"
+	            on_release: root.on_read_all_channels()
+	        IconButton:
+	            size_hint_x: 0.1
+	            text: "\357\200\231"
+	            on_release: root.on_write_all_channels()
+	        Label:
+	        	size_hint_x: 0.8
     	
     	
     	    	

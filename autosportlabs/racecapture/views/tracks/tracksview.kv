@@ -160,16 +160,17 @@
     		on_press: root.on_update_check()
 							
 <TracksView>:
-    size_hint: (1.0, 1.0)
-    orientation: 'vertical'
-    padding: [dp(5),dp(5)]
-    spacing: dp(5)
-	HSeparator:
-		text: 'Race Tracks'
-		size_hint_y: 0.05
-		halign: 'left'    
 	BoxLayout:
-		size_hint_y: 0.01
-		Label:
-	TracksBrowser:
-		rcid: 'browser'
+	    size_hint: (1.0, 1.0)
+	    orientation: 'vertical'
+	    padding: [dp(5),dp(5)]
+	    spacing: dp(5)
+		HSeparator:
+			text: 'Race Tracks'
+			size_hint_y: 0.05
+			halign: 'left'    
+		BoxLayout:
+			size_hint_y: 0.01
+			Label:
+		TracksBrowser:
+			rcid: 'browser'

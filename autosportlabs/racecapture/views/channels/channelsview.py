@@ -8,6 +8,7 @@ from kivy.uix.stacklayout import StackLayout
 from kivy.app import Builder
 from kivy.uix.label import Label
 from kivy.uix.accordion import Accordion, AccordionItem
+from kivy.uix.screenmanager import Screen
 from autosportlabs.widgets.separator import HSeparator, HSeparatorMinor
 from autosportlabs.racecapture.views.util.alertview import alertPopup
 from utils import *
@@ -96,7 +97,7 @@ class ChannelEditor(BoxLayout):
     def on_max(self, instance, value):
         self.channel.max = float(value)
         
-class ChannelsView(BoxLayout):
+class ChannelsView(Screen):
     channelsContainer = None
     channels = None
     rcpComms = None

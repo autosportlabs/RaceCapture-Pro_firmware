@@ -6,6 +6,7 @@ from kivy.clock import Clock
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.app import Builder
+from kivy.uix.screenmanager import Screen
 from kivy.metrics import dp
 import json
 import sets
@@ -81,7 +82,7 @@ class TracksView(BoxLayout):
     def on_tracks_updated(self, trackManager):
         kvFind(self, 'rcid', 'browser').on_tracks_updated(trackManager)
         
-class TracksBrowser(BoxLayout):
+class TracksBrowser(Screen):
     trackmap = None
     trackHeight = NumericProperty(dp(400))
     trackManager = None

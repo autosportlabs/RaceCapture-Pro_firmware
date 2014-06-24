@@ -8,6 +8,7 @@ from kivy.metrics import dp
 from kivy.uix.treeview import TreeView, TreeViewLabel
 from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
+from kivy.uix.screenmanager import Screen
 import os
 
 from autosportlabs.racecapture.views.configuration.rcp.analogchannelsview import *
@@ -36,7 +37,7 @@ RCP_CONFIG_FILE_EXTENSION = '.rcp'
 class LinkedTreeViewLabel(TreeViewLabel):
     view = None
 
-class ConfigView(BoxLayout):
+class ConfigView(Screen):
     #file save/load
     loadfile = ObjectProperty(None)
     savefile = ObjectProperty(None)

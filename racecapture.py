@@ -16,6 +16,7 @@ from kivy.app import App, Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
+from kivy.uix.screenmanager import ScreenManager, Screen
 
 from installfix_garden_navigationdrawer import NavigationDrawer
 
@@ -64,11 +65,8 @@ class RaceCaptureApp(App):
     #main navigation menu 
     mainNav = None
     
-    #main content view
-    mainView = None
-        
-    #collection of main views to be swapped into mainView 
-    mainViews = {}
+    #Main Screen Manager
+    screenMgr = None
     
     def __init__(self, **kwargs):
         super(RaceCaptureApp, self).__init__(**kwargs)
@@ -208,11 +206,7 @@ class RaceCaptureApp(App):
         self.mainNav.toggle_state()
 
     def switchMainView(self, viewKey):
-        mainView = self.mainViews.get(viewKey)
-        if mainView:
-            self.mainView.clear_widgets()
-            self.mainView.add_widget(mainView)
-
+        self.screenMgr.current = viewKey
         
     def build(self):
         Builder.load_file('racecapture.kv')
@@ -233,7 +227,7 @@ class RaceCaptureApp(App):
         #fade_in
         self.mainNav.anim_type = 'slide_above_anim'
         
-        configView = ConfigView(channels=self.channels, rcpConfig=self.rcpConfig)
+        configView = ConfigView(name='config', channels=self.channels, rcpConfig=self.rcpConfig)
         configView.bind(on_read_config=self.on_read_config)
         configView.bind(on_write_config=self.on_write_config)
         configView.bind(on_run_script=self.on_run_script)
@@ -244,15 +238,19 @@ class RaceCaptureApp(App):
         self.rcpComms.on_rx = lambda value: statusBar.dispatch('on_rc_rx', value)
         self.rcpComms.on_tx = lambda value: statusBar.dispatch('on_rc_tx', value)
         
-        channelsView = ChannelsView(channels=self.channels, rcpComms = self.rcpComms)
+        channelsView = ChannelsView(name='channels', channels=self.channels, rcpComms = self.rcpComms)
         channelsView.bind(on_read_channels=self.on_read_channels)
         channelsView.bind(on_write_channels=self.on_write_channels)
         
-        tracksView = TracksView()
+        tracksView = TracksView(name='tracks')
         
-        self.mainViews = {'config' : configView, 
-                          'channels' : channelsView,
-                          'tracks': tracksView}
+        screenMgr = kvFind(self.root, 'rcid', 'main')
+        
+        screenMgr.add_widget(configView)
+        #screenMgr.add_widget(channelsView)
+        #screenMgr.add_widget(tracksView)
+        
+        self.screenMgr = screenMgr
 
         self.configView = configView
         self.channelsView = channelsView
