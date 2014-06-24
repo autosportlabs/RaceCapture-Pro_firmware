@@ -16,7 +16,7 @@ from kivy.app import App, Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
-from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
 
 from installfix_garden_navigationdrawer import NavigationDrawer
 
@@ -67,6 +67,9 @@ class RaceCaptureApp(App):
     
     #Main Screen Manager
     screenMgr = None
+    
+    #main view references for dispatching notifications
+    mainViews = None
     
     def __init__(self, **kwargs):
         super(RaceCaptureApp, self).__init__(**kwargs)
@@ -200,13 +203,16 @@ class RaceCaptureApp(App):
 
     def on_main_menu_item(self, instance, value):
         self.mainNav.toggle_state()
-        self.switchMainView(value)
+        Clock.schedule_once(lambda dt: self.switchMainView(value),0.25)
         
     def on_main_menu(self, instance, *args):
         self.mainNav.toggle_state()
 
     def switchMainView(self, viewKey):
-        self.screenMgr.current = viewKey
+        try:
+            self.screenMgr.current = viewKey
+        except Exception as detail:
+            print('Failed to load main view ' + str(viewKey))
         
     def build(self):
         Builder.load_file('racecapture.kv')
@@ -245,10 +251,15 @@ class RaceCaptureApp(App):
         tracksView = TracksView(name='tracks')
         
         screenMgr = kvFind(self.root, 'rcid', 'main')
-        
+        screenMgr.transition=FadeTransition()
         screenMgr.add_widget(configView)
-        #screenMgr.add_widget(channelsView)
-        #screenMgr.add_widget(tracksView)
+        screenMgr.add_widget(channelsView)
+        screenMgr.add_widget(tracksView)
+        
+        
+        self.mainViews = {'config' : configView, 
+                          'channels' : channelsView,
+                          'tracks': tracksView}
         
         self.screenMgr = screenMgr
 

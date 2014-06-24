@@ -69,7 +69,7 @@ class TrackInfoView(BoxLayout):
             lengthLabel.text = str(track.length) + ' mi.'
             self.track = track
     
-class TracksView(BoxLayout):
+class TracksView(Screen):
     def __init__(self, **kwargs):
         super(TracksView, self).__init__(**kwargs)
         self.trackManager = kwargs.get('trackManager')
@@ -82,7 +82,7 @@ class TracksView(BoxLayout):
     def on_tracks_updated(self, trackManager):
         kvFind(self, 'rcid', 'browser').on_tracks_updated(trackManager)
         
-class TracksBrowser(Screen):
+class TracksBrowser(BoxLayout):
     trackmap = None
     trackHeight = NumericProperty(dp(400))
     trackManager = None
