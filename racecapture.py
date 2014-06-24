@@ -88,9 +88,6 @@ class RaceCaptureApp(App):
         args = vars(parser.parse_args())
         self.rcpComms.setPort(args['port'])
 
-        if not self.rcpComms.port:
-            self.rcpComms.autoDetect()
-
 
     def loadCurrentTracksSuccess(self):
         print('Curent Tracks Loaded')
@@ -262,6 +259,14 @@ class RaceCaptureApp(App):
         self.statusBar = statusBar
         self.icon = ('resource/race_capture_icon_large.ico' if sys.platform == 'win32' else 'resource/race_capture_icon.png')
         
+        if not self.rcpComms.port:
+            self.rcpComms.autoDetect(self.rcpDetectWin, self.rcpDetectFail)
+
+    def rcpDetectWin(self):
+        pass
+        
+    def rcpDetectFail(self):
+        alertPopup('Could not detect', 'Could not detect RaceCapture/Pro\n\nPlease ensure it is plugged in and appropriate drivers are installed')
 if __name__ == '__main__':
 
     RaceCaptureApp().run()

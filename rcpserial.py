@@ -3,7 +3,7 @@ import io
 import json
 import traceback
 import Queue
-from threading import Thread, Lock
+from threading import Thread, RLock
 from rcpconfig import *
 from serial.tools import list_ports
 from functools import partial
@@ -48,8 +48,8 @@ class RcpSerial:
     msgListeners = {}
     cmdQueue = Queue.Queue()
     cmdSequenceQueue = Queue.Queue()
-    cmdSequenceLock = Lock()
-    sendCommandLock = Lock()
+    cmdSequenceLock = RLock()
+    sendCommandLock = RLock()
     on_progress = lambda self, value: value
     on_tx = lambda self, value: None
     on_rx = lambda self, value: None
@@ -236,7 +236,9 @@ class RcpSerial:
     def open(self):
         print('Opening serial')
         if self.port == None:
-            return None
+            self.autoDetectWorker()
+            if self.port == None:
+                raise Exception('Could not open port: Device not detected')
         else:
             ser = serial.Serial(self.port, timeout=self.timeout, writeTimeout = self.writeTimeout) 
             ser.flushInput()
@@ -527,7 +529,12 @@ class RcpSerial:
         rsp = self.sendCommand({"getVer":None}, sync)
         return rsp
 
-    def autoDetect(self):
+    def autoDetect(self, winCallback, failCallback):
+        t = Thread(target=self.autoDetectWorker, args=(winCallback, failCallback))
+        t.daemon = True
+        t.start()        
+        
+    def autoDetectWorker(self, winCallback = None, failCallback = None):
         ports = [x[0] for x in list_ports.comports()]
 
         self.retryCount = 0
@@ -556,8 +563,8 @@ class RcpSerial:
         if not verJson == None:
             print "Found racecapture version " + testVer.toString() + " on port:", self.port
             self.close()
-        
-
-
-    
+            if winCallback: winCallback()
+        else:
+            self.port = None
+            if failCallback: failCallback()
 
