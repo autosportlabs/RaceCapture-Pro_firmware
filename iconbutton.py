@@ -3,7 +3,8 @@ kivy.require('1.8.0')
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 from kivy.app import Builder
-from kivy.properties import NumericProperty, ListProperty, StringProperty
+from kivy.graphics import Color
+from kivy.properties import NumericProperty, ListProperty, StringProperty, ObjectProperty
 from math import sin, cos, pi
 
 Builder.load_file('iconbutton.kv')
@@ -13,6 +14,9 @@ class IconButton(Button):
     
     
 class TileIconButton(BoxLayout):
+    line_color = ObjectProperty((0.5, 0.5, 0.5, 0.8))
+    icon_color = ObjectProperty((1.0, 1.0, 1.0, 0.8))
+    title_color = ObjectProperty((1.0, 1.0, 1.0, 0.8))
     icon = StringProperty('')
     title = StringProperty('')
     corners = ListProperty([0, 0, 0, 0])

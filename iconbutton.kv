@@ -9,7 +9,7 @@
 	resoultion: dp(100)
     canvas:
         Color: 
-        	rgb: (1.0, 0.0, 0.0, 0.8)
+        	rgb: self.line_color
         Line:
             # we don't care about the arguments, pass them to get
             # binding
@@ -18,11 +18,13 @@
             #loop: True
     IconButton:
     	id: icon
+    	color: root.icon_color
     	size_hint_y: 0.7
     	font_size: dp(120)
     	text: root.icon
     Label:
     	id: label
+    	color: root.title_color
     	size_hint_y: 0.3
     	font_size: dp(30)
     	text: root.title	
