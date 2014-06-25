@@ -293,12 +293,16 @@ class RaceCaptureApp(App):
         self.icon = ('resource/race_capture_icon_large.ico' if sys.platform == 'win32' else 'resource/race_capture_icon.png')
         
         if self.rcpComms.port:
-            self.rcpComms.initSerial()
+            self.initRcpComms()
         else:
             self.rcpComms.autoDetect(self.rcpDetectWin, self.rcpDetectFail)
 
-    def rcpDetectWin(self):
+    def initRcpComms(self):
         self.rcpComms.initSerial()
+        Clock.schedule_once(lambda dt: self.on_read_config(self), 1.0)
+        
+    def rcpDetectWin(self):
+        self.initRcpComms()
 
         
     def rcpDetectFail(self):
