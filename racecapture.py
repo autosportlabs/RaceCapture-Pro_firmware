@@ -263,6 +263,7 @@ class RaceCaptureApp(App):
         tracksView = TracksView(name='tracks')
         
         homepageView = HomePageView(name='home')
+        homepageView.bind(on_select_view = lambda instance, viewKey: self.switchMainView(viewKey))
         
         screenMgr = kvFind(self.root, 'rcid', 'main')
         

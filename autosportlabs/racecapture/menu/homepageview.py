@@ -20,4 +20,11 @@ class FeatureButton(TileIconButton):
 class HomePageView(Screen):
     def __init__(self, **kwargs):
         super(HomePageView, self).__init__(**kwargs)
+        self.register_event_type('on_select_view')
     
+    def on_select_view(self, viewKey):
+        pass
+    
+    def show_view(self, viewKey):
+        self.dispatch('on_select_view', viewKey)
+        

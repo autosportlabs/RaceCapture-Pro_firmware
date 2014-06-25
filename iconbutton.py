@@ -24,6 +24,16 @@ class TileIconButton(BoxLayout):
     resolution = NumericProperty(100)
     points = ListProperty([])
  
+    def __init__(self, **kwargs):
+        super(TileIconButton, self).__init__(**kwargs)
+        self.register_event_type('on_press')
+
+    def on_button_press(self, *args):
+        self.dispatch('on_press')
+        
+    def on_press(self, *args):
+        pass
+    
     def compute_points(self, *args):
         self.points = []
  
