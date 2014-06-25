@@ -4,7 +4,6 @@ kivy.require('1.8.0')
 from installfix_garden_graph import Graph, MeshLinePlot
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.accordion import Accordion, AccordionItem
-from kivy.uix.scrollview import ScrollView
 from kivy.utils import get_color_from_hex as rgb
 from kivy.app import Builder
 from valuefield import *
@@ -14,6 +13,7 @@ from channels import *
 from channelnameselectorview import ChannelNameSelectorView
 from channelnamespinner import ChannelNameSpinner
 from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
+from autosportlabs.widgets.scrollcontainer import ScrollContainer
 from math import sin
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/analogchannelsview.kv')
@@ -42,7 +42,7 @@ class AnalogChannelsView(BaseConfigView):
         accordion.select(accordion.children[-1])
         
         #create a scroll view, with a size < size of the grid
-        sv = ScrollView(size_hint=(1.0,1.0), do_scroll_x=False)
+        sv = ScrollContainer(size_hint=(1.0,1.0), do_scroll_x=False)
         sv.add_widget(accordion)
         self.add_widget(sv)
         

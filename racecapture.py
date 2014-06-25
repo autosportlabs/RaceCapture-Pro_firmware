@@ -5,12 +5,16 @@ import logging
 import sys
 import argparse
 from autosportlabs.racecapture.views.util.alertview import alertPopup
+#sfrom kivy.core.window import Window
 from functools import partial
 from kivy.clock import Clock
 kivy.require('1.8.0')
 from kivy.config import Config
 Config.set('graphics', 'width', '1024')
 Config.set('graphics', 'height', '576')
+Config.set('kivy', 'exit_on_escape', 0)
+
+from kivy.core.window import Window
 
 from kivy.app import App, Builder
 from kivy.uix.boxlayout import BoxLayout
@@ -74,6 +78,10 @@ class RaceCaptureApp(App):
     
     def __init__(self, **kwargs):
         super(RaceCaptureApp, self).__init__(**kwargs)
+        #self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
+        #self._keyboard.bind(on_key_down=self._on_keyboard_down)    
+        
+        Window.bind(on_key_down=self._on_keyboard_down)
         self.register_event_type('on_channels_updated')
         self.register_event_type('on_tracks_updated')
         self.register_event_type('on_read_channels')
@@ -82,6 +90,10 @@ class RaceCaptureApp(App):
         self.trackManager = TrackManager(user_dir=self.user_data_dir)
         self.initData()
 
+    def _on_keyboard_down(self, keyboard, keycode, *args):
+        if keycode == 27:
+            self.switchMainView('home')
+            
         
     def processArgs(self):
         parser = argparse.ArgumentParser(description='Autosport Labs Race Capture App')
@@ -200,19 +212,21 @@ class RaceCaptureApp(App):
     def notifyTracksUpdated(self):
         self.dispatch('on_tracks_updated', self.trackManager)
 
-
     def on_main_menu_item(self, instance, value):
-        self.mainNav.toggle_state()
-        Clock.schedule_once(lambda dt: self.switchMainView(value),0.1)
+        self.switchMainView(value)
         
     def on_main_menu(self, instance, *args):
         self.mainNav.toggle_state()
 
-    def switchMainView(self, viewKey):
+    def showMainView(self, viewKey):
         try:
             self.screenMgr.current = viewKey
         except Exception as detail:
-            print('Failed to load main view ' + str(viewKey))
+            print('Failed to load main view ' + str(viewKey) + ' ' + str(detail))
+        
+    def switchMainView(self, viewKey):
+            self.mainNav.anim_to_state('closed')
+            Clock.schedule_once(lambda dt: self.showMainView(viewKey), 0.25)
         
     def build(self):
         Builder.load_file('racecapture.kv')
