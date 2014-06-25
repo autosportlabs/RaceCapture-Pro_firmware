@@ -292,7 +292,9 @@ class RaceCaptureApp(App):
         self.statusBar = statusBar
         self.icon = ('resource/race_capture_icon_large.ico' if sys.platform == 'win32' else 'resource/race_capture_icon.png')
         
-        if not self.rcpComms.port:
+        if self.rcpComms.port:
+            self.rcpComms.initSerial()
+        else:
             self.rcpComms.autoDetect(self.rcpDetectWin, self.rcpDetectFail)
 
     def rcpDetectWin(self):
