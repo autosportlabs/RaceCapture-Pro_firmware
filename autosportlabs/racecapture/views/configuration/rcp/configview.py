@@ -90,7 +90,10 @@ class ConfigView(Screen):
     
         def on_select_node(instance, value):
             # ensure that any keyboard is released
-            self.content.get_parent_window().release_keyboard()
+            try:
+                self.content.get_parent_window().release_keyboard()
+            except:
+                pass
     
             try:
                 self.content.clear_widgets()
@@ -102,12 +105,13 @@ class ConfigView(Screen):
             label = LinkedTreeViewLabel(text=text)
             label.view = view
             label.color_selected =   [1.0,0,0,0.6]
-            tree.add_node(label, n)
             self.configViews.append(view)
             view.bind(on_config_modified=self.on_config_modified)
+            return tree.add_node(label, n)
+            
         
-        #n = create_tree('Track')
-        attach_node('Race Track / Sectors', None, TrackConfigView())
+        
+        defaultNode = attach_node('Race Track / Sectors', None, TrackConfigView())
         n = create_tree('Channels')
         attach_node('GPS', n, GPSChannelsView())
         attach_node('Analog Inputs', n, AnalogChannelsView(channelCount=8, channels=self.channels))
@@ -129,6 +133,7 @@ class ConfigView(Screen):
         self.scriptView = scriptView
         
         tree.bind(selected_node=on_select_node)
+        tree.select_node(defaultNode)
         
     def on_channels_updated(self, channels):
         for view in self.configViews:
