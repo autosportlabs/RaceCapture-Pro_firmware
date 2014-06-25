@@ -3,6 +3,7 @@ import io
 import json
 import traceback
 import Queue
+from time import sleep
 from threading import Thread, RLock
 from rcpconfig import *
 from serial.tools import list_ports
@@ -87,8 +88,8 @@ class RcpSerial:
     def msgRxWorker(self):
         print('msgRxWorker started')
         while True:
-            serial = self.getSerial()
             try:
+                serial = self.getSerial()
                 msg = self.readLine(serial)
                 print('msgRxWorker Rx: ' + str(msg))
                 msgJson = json.loads(msg, strict = False)
@@ -103,7 +104,11 @@ class RcpSerial:
             except Exception:
                 print('Message Rx Exception: ' + str(Exception))
                 traceback.print_exc()
-        
+                try:
+                    sleep(0.5)
+                    self.close()
+                except:
+                    pass
     def rcpCmdComplete(self, msgReply):
         self.cmdSequenceQueue.put(msgReply)
                 
