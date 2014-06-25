@@ -16,7 +16,7 @@ from kivy.app import App, Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
-from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
+from kivy.uix.screenmanager import *
 
 from installfix_garden_navigationdrawer import NavigationDrawer
 
@@ -28,6 +28,7 @@ from autosportlabs.racecapture.views.channels.channelsview import ChannelsView
 from autosportlabs.racecapture.views.tracks.tracksview import TracksView
 from autosportlabs.racecapture.views.configuration.rcp.configview import ConfigView
 from autosportlabs.racecapture.menu.mainmenu import MainMenu
+from autosportlabs.racecapture.menu.homepageview import HomePageView
 
 from toolbarview import ToolbarView
 
@@ -203,7 +204,7 @@ class RaceCaptureApp(App):
 
     def on_main_menu_item(self, instance, value):
         self.mainNav.toggle_state()
-        Clock.schedule_once(lambda dt: self.switchMainView(value),0.25)
+        Clock.schedule_once(lambda dt: self.switchMainView(value),0.1)
         
     def on_main_menu(self, instance, *args):
         self.mainNav.toggle_state()
@@ -222,8 +223,6 @@ class RaceCaptureApp(App):
         mainMenu = kvFind(self.root, 'rcid', 'mainMenu')
         mainMenu.bind(on_main_menu_item=self.on_main_menu_item)
 
-        self.mainView = kvFind(self.root, 'rcid', 'main')
-        
         self.mainNav = kvFind(self.root, 'rcid', 'mainNav')
         
         #reveal_below_anim
@@ -250,12 +249,23 @@ class RaceCaptureApp(App):
         
         tracksView = TracksView(name='tracks')
         
+        homepageView = HomePageView(name='home')
+        
         screenMgr = kvFind(self.root, 'rcid', 'main')
-        screenMgr.transition=FadeTransition()
+        
+        #NoTransition
+        #SlideTransition
+        #SwapTransition
+        #FadeTransition
+        #WipeTransition
+        #FallOutTransition
+        #RiseInTransition
+        screenMgr.transition=NoTransition()
+        
+        screenMgr.add_widget(homepageView)
         screenMgr.add_widget(configView)
         screenMgr.add_widget(channelsView)
         screenMgr.add_widget(tracksView)
-        
         
         self.mainViews = {'config' : configView, 
                           'channels' : channelsView,

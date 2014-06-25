@@ -1,3 +1,26 @@
+<TileIconButton>:
+	orientation: 'vertical'
+	on_pos: self.compute_points()
+	on_size: self.compute_points()
+	on_corners: self.compute_points()
+	on_resolution: self.compute_points()
+	corners: [dp(40), dp(40), dp(40), dp(40)]
+    canvas:
+        Line:
+            # we don't care about the arguments, pass them to get
+            # binding
+            points: self.points
+            width: self.line_width
+            #loop: True
+    IconButton:
+    	id: icon
+    	text: 'aasdf'
+    Label:
+    	id: label
+    	font_size: dp(30)
+    	text: 'desc'	
+	
+            
 <IconButton>:
     background_color: [0, 0, 0, 0]
     background_down: ''
