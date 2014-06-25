@@ -6,6 +6,7 @@ from kivy.uix.screenmanager import Screen
 from kivy.app import Builder
 from utils import kvFind
 from iconbutton import TileIconButton
+from kivy.properties import StringProperty
 from kivy.metrics import dp
 
 Builder.load_file('autosportlabs/racecapture/menu/homepageview.kv')
@@ -13,6 +14,8 @@ Builder.load_file('autosportlabs/racecapture/menu/homepageview.kv')
 class FeatureButton(TileIconButton):
     def __init__(self, **kwargs):
         super(FeatureButton, self).__init__(**kwargs)
+        
+        
     
 class HomePageView(Screen):
     def __init__(self, **kwargs):

@@ -78,7 +78,6 @@ class RaceCaptureApp(App):
         self.register_event_type('on_tracks_updated')
         self.register_event_type('on_read_channels')
         self.processArgs()
-        self.rcpComms.initSerial()
         self.appConfig.setUserDir(self.user_data_dir)
         self.trackManager = TrackManager(user_dir=self.user_data_dir)
         self.initData()
@@ -282,7 +281,8 @@ class RaceCaptureApp(App):
             self.rcpComms.autoDetect(self.rcpDetectWin, self.rcpDetectFail)
 
     def rcpDetectWin(self):
-        pass
+        self.rcpComms.initSerial()
+
         
     def rcpDetectFail(self):
         alertPopup('Could not detect', 'Could not detect RaceCapture/Pro\n\nPlease ensure it is plugged in and appropriate drivers are installed')

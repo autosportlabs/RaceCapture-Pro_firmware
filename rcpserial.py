@@ -551,11 +551,14 @@ class RcpSerial:
                 testVer.fromJson(verJson.get('ver', None))
                 if testVer.major > 0 or testVer.minor > 0 or testVer.bugfix > 0:
                     break
+                
             except Exception as detail:
-                print('Not found on ' + self.port)
-                #traceback.print_exc()                
-                self.port = None
-                self.close()
+                print('Not found on ' + str(p))
+                try:
+                    self.close()
+                    self.port = None
+                finally:
+                    pass
 
         self.retryCount = DEFAULT_READ_RETRIES
         self.timeout = DEFAULT_SERIAL_READ_TIMEOUT

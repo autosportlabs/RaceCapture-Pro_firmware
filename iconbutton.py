@@ -3,7 +3,7 @@ kivy.require('1.8.0')
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 from kivy.app import Builder
-from kivy.properties import NumericProperty, ListProperty
+from kivy.properties import NumericProperty, ListProperty, StringProperty
 from math import sin, cos, pi
 
 Builder.load_file('iconbutton.kv')
@@ -13,6 +13,8 @@ class IconButton(Button):
     
     
 class TileIconButton(BoxLayout):
+    icon = StringProperty('')
+    title = StringProperty('')
     corners = ListProperty([0, 0, 0, 0])
     line_width = NumericProperty(1)
     resolution = NumericProperty(100)
