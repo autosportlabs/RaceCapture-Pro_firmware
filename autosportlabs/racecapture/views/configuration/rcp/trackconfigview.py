@@ -114,6 +114,10 @@ class AutomaticTrackConfigScreen(Screen):
         super(AutomaticTrackConfigScreen, self).__init__(**kwargs)
         self.tracksGrid = kvFind(self, 'rcid', 'tracksgrid')
         self.register_event_type('on_tracks_selected')
+        self.register_event_type('on_modified')
+                        
+    def on_modified(self, *args):
+        pass
                 
     def on_config_updated(self, rcpCfg):
         self.trackDb = rcpCfg.trackDb
@@ -212,7 +216,12 @@ class ManualTrackConfigScreen(Screen):
             
         sectorsContainer.height = dp(35) * CONFIG_SECTOR_COUNT
         sectorsContainer.size_hint = (1.0, None)
+        
+        self.register_event_type('on_modified')
                         
+    def on_modified(self, *args):
+        pass
+    
     def on_separate_start_finish(self, instance, value):        
         if self.trackCfg:
             self.trackCfg.track.trackType = 1 if value else 0
@@ -291,7 +300,10 @@ class TrackConfigView(BaseConfigView):
         self.register_event_type('on_config_updated')
         
         self.manualTrackConfigView = ManualTrackConfigScreen(name='manual')
+        self.manualTrackConfigView.bind(on_modified=self.on_modified)
+        
         self.autoConfigView = AutomaticTrackConfigScreen(name='auto')
+        self.autoConfigView.bind(on_modified=self.on_modified)
         
         screenMgr = kvFind(self, 'rcid', 'screenmgr')
         screenMgr.add_widget(self.manualTrackConfigView)

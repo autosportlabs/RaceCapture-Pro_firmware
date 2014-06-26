@@ -87,6 +87,8 @@ class RcpSerial:
             
     def msgRxWorker(self):
         print('msgRxWorker started')
+        retryMax = 3
+        retries = 0
         while True:
             try:
                 serial = self.getSerial()
@@ -94,6 +96,7 @@ class RcpSerial:
                 print('msgRxWorker Rx: ' + str(msg))
                 msgJson = json.loads(msg, strict = False)
                 self.on_rx(True)
+                retries = 0
                 for messageName in msgJson.keys():
                     print('processing message ' + messageName)
                     listeners = self.msgListeners.get(messageName, None)
@@ -104,11 +107,14 @@ class RcpSerial:
             except Exception:
                 print('Message Rx Exception: ' + str(Exception))
                 traceback.print_exc()
-                try:
-                    sleep(0.5)
-                    self.close()
-                except:
-                    pass
+                retries += 1
+                if retries > retryMax:
+                    try:
+                        sleep(0.5)
+                        self.close()
+                        retries = 0
+                    except:
+                        pass
     def rcpCmdComplete(self, msgReply):
         self.cmdSequenceQueue.put(msgReply)
                 
@@ -363,7 +369,7 @@ class RcpSerial:
             self.sequenceWriteScript(scriptCfg.toJson(), cmdSequence)
             
         trackDb = cfg.trackDb
-        if trackDb:
+        if trackDb.stale:
             self.sequenceWriteTrackDb(trackDb.toJson(), cmdSequence)
         
         cmdSequence.append(RcpCmd('flashCfg', self.sendFlashConfig))
@@ -509,8 +515,7 @@ class RcpSerial:
                 
     
     def sequenceWriteTrackDb(self, tracksDbJson, cmdSequence):
-        
-        trackDbJson = tracksDbJson.get('tracks')
+        trackDbJson = tracksDbJson.get('trackDb')
         if trackDbJson:
             index = 0
             trackCount = len(trackDbJson)
