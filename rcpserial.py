@@ -518,11 +518,13 @@ class RcpSerial:
         trackDbJson = tracksDbJson.get('trackDb')
         if trackDbJson:
             index = 0
-            trackCount = len(trackDbJson)
-            for trackJson in trackDbJson:
-                mode = TRACK_ADD_MODE_IN_PROGRESS if index < trackCount - 1 else TRACK_ADD_MODE_COMPLETE
-                cmdSequence.append(RcpCmd('addTrackDb', self.addTrackDb, trackJson, index, mode))
-                index += 1
+            tracksJson = trackDbJson.get('tracks')
+            if tracksJson:
+                trackCount = len(tracksJson)
+                for trackJson in tracksJson:
+                    mode = TRACK_ADD_MODE_IN_PROGRESS if index < trackCount - 1 else TRACK_ADD_MODE_COMPLETE
+                    cmdSequence.append(RcpCmd('addTrackDb', self.addTrackDb, trackJson, index, mode))
+                    index += 1
     
     def addTrackDb(self, trackJson, index, mode):
         return self.sendCommand({'addTrackDb':
