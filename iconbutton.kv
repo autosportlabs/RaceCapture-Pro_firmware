@@ -1,5 +1,4 @@
-<TileIconButton>:
-	orientation: 'vertical'
+<RoundedRect>:
 	on_pos: self.compute_points()
 	on_size: self.compute_points()
 	on_corners: self.compute_points()
@@ -9,27 +8,30 @@
 	resoultion: dp(100)
     canvas:
         Color: 
-        	rgb: self.line_color
+        	rgb: self.rect_color
         Line:
-            # we don't care about the arguments, pass them to get
-            # binding
             points: self.points
             width: self.line_width
-            #loop: True
-    IconButton:
-    	id: icon
-    	color: root.icon_color
-    	size_hint_y: 0.7
-    	font_size: dp(120)
-    	text: root.icon
-    	on_press: root.on_button_press()
-    Label:
-    	id: label
-    	color: root.title_color
-    	size_hint_y: 0.3
-    	font_size: dp(30)
-    	text: root.title	
-	
+
+<TileIconButton>:
+	RoundedRect:
+		rect_color: root.tile_color
+	BoxLayout:
+		orientation: 'vertical'
+	    IconButton:
+	    	id: icon
+	    	color: root.icon_color
+	    	size_hint_y: 0.7
+	    	font_size: dp(120)
+	    	text: root.icon
+	    	on_press: root.on_button_press()
+	    Label:
+	    	id: label
+	    	font_name: root.title_font
+	    	font_size: root.title_font_size
+	    	color: root.title_color
+	    	size_hint_y: 0.3
+	    	text: root.title	
             
 <IconButton>:
     background_color: [0, 0, 0, 0]
@@ -37,5 +39,5 @@
     font_size: dp(25)
     
     color: [1.0, 1.0, 1.0, 0.8]
-    font_name: 'fa.ttf'
+    font_name: 'resource/fonts/fa.ttf'
     

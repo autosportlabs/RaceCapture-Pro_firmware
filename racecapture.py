@@ -1,4 +1,5 @@
 #!/usr/bin/python
+TITLE_FONT = 'resource/fonts/Roboto-Thin.ttf'
 
 import kivy
 import logging
@@ -35,6 +36,7 @@ from autosportlabs.racecapture.menu.mainmenu import MainMenu
 from autosportlabs.racecapture.menu.homepageview import HomePageView
 
 from toolbarview import ToolbarView
+
 
 class AppConfig():
     userDir = "."
@@ -227,6 +229,7 @@ class RaceCaptureApp(App):
     def switchMainView(self, viewKey):
             self.mainNav.anim_to_state('closed')
             Clock.schedule_once(lambda dt: self.showMainView(viewKey), 0.25)
+            
         
     def build(self):
         Builder.load_file('racecapture.kv')
@@ -278,8 +281,9 @@ class RaceCaptureApp(App):
         
         screenMgr.add_widget(homepageView)
         screenMgr.add_widget(configView)
-        screenMgr.add_widget(channelsView)
         screenMgr.add_widget(tracksView)
+        #screenMgr.add_widget(dashView)
+        #screenMgr.add_widget(analysisView)
         
         self.mainViews = {'config' : configView, 
                           'channels' : channelsView,

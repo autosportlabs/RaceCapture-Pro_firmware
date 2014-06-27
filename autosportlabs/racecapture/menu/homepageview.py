@@ -10,14 +10,15 @@ from utils import kvFind
 from iconbutton import TileIconButton
 from kivy.properties import StringProperty
 from kivy.metrics import dp
+import mainfonts
+
 from autosportlabs.widgets.separator import HLineSeparator
+
 Builder.load_file('autosportlabs/racecapture/menu/homepageview.kv')
 
 class FeatureButton(TileIconButton):
     def __init__(self, **kwargs):
         super(FeatureButton, self).__init__(**kwargs)
-        
-        
     
 class HomePageView(Screen):
     def __init__(self, **kwargs):

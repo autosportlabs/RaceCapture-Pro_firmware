@@ -1,9 +1,12 @@
 #:kivy 1.8
 <FeatureButton>
-	line_color: (0.5, 0.0, 0.0, 1.0)
-	icon_color: (1.0, 1.0, 1.0, 0.8)
-	title_color: (1.0, 1.0, 1.0, 0.4)
+	tile_color: (1.0, 1.0, 1.0, 1.0)
+	title_font: 'resource/fonts/eurocaps.ttf'
+	title_font_size: dp(25)
+	icon_color: (0.0, 0.0, 0.0, 1.0)
+	title_color: (0.2, 0.2, 0.2, 1.0)
 	line_width: 5
+	
 	
 <HomePageView>:
 	BoxLayout:
@@ -24,11 +27,14 @@
 				size_hint_y: 0.05
 			Label:
 				size_hint_y: 0.80
+				font_size: dp(40)
+				font_name: 'resource/fonts/Roboto-Thin.ttf'
+				text: 'Welcome To RaceCapture'
 		GridLayout:
 			padding: [dp(50), dp(50)]				
 			spacing: dp(60)
 			rows: 2
-			cols: 3
+			cols: 2
 			FeatureButton:
 				icon: '\357\203\244'
 				title: 'Dashboard'
@@ -45,8 +51,4 @@
 				icon: '\357\200\230'
 				title: 'Race Tracks'
 				on_press: root.show_view('tracks')
-			FeatureButton:
-				icon: '\357\201\204'
-				title: 'Channels'
-				on_press: root.show_view('channels')
 			

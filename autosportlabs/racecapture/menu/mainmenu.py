@@ -6,6 +6,7 @@ from kivy.properties import StringProperty, ListProperty
 
 from fieldlabel import FieldLabel
 from utils import kvFind
+import mainfonts
 
 Builder.load_file('autosportlabs/racecapture/menu/mainmenu.kv')
 
