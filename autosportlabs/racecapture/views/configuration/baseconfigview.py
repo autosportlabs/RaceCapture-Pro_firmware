@@ -19,6 +19,12 @@ class BaseConfigView(BoxLayout):
     
     def on_tracks_updated(self, trackManager):
         pass
+
+    def setAccordionItemTitle(self, accordion, channels, channelConfig):
+            i = channels.index(channelConfig)
+            accordionChildren = accordion.children
+            accordionItem = accordionChildren[len(accordionChildren) - i - 1]
+            accordionItem.title = self.createTitleForChannel(self.channels, channelConfig, i)
         
     def createTitleForChannel(self, channels, channel, index):
         try:
