@@ -20,10 +20,10 @@ class BaseConfigView(BoxLayout):
     def on_tracks_updated(self, trackManager):
         pass
         
-    def createTitleForChannel(self, channels, channel):
+    def createTitleForChannel(self, channels, channel, index):
         try:
             sampleRate = channel.sampleRate
             sampleRateInfo = 'Disabled' if sampleRate == 0 else (str(sampleRate) + 'Hz')
-            return self.channels.getNameForId(channel.channelId) + ' ( ' + sampleRateInfo + ' )'
+            return 'Analog ' + str(index + 1) + ' - ' + self.channels.getNameForId(channel.channelId) + ' ( ' + sampleRateInfo + ' )'
         except:
             return 'Unknown Channel'

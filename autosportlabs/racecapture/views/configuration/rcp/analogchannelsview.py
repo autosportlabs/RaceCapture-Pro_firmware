@@ -23,6 +23,8 @@ class AnalogChannelsView(BaseConfigView):
     editors = []    
     channels = None
     accordion = None
+    analogCfg = None
+    accordionMapping = {}    
     def __init__(self, **kwargs):
         super(AnalogChannelsView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
@@ -51,19 +53,26 @@ class AnalogChannelsView(BaseConfigView):
     
     def on_config_updated(self, rcpCfg):
         analogCfg = rcpCfg.analogConfig
+        self.analogCfg = analogCfg
         channelCount = analogCfg.channelCount
         self.channels = rcpCfg.channels
 
         for i in range(channelCount):
             editor = self.editors[i]
             analogChannel = analogCfg.channels[i]
-           # self.setAccordionItemTitle(analogChannel)
+            self.setChannelEditorTitle(analogChannel)
             editor.on_config_updated(analogChannel, self.channels)
 
-    def setAccordionItemTitle(self, channel):
+         
+    def setChannelEditorTitle(self, channel):
             i = self.analogCfg.channels.index(channel)
-            accordionItem = self.accordion.children[i]
-            accordionItem.title = self.createTitleForChannel(self.channels, channel)
+            accordionChildren = self.accordion.children
+            accordionItem = accordionChildren[len(accordionChildren) - i - 1]
+            accordionItem.title = self.createTitleForChannel(self.channels, channel, i)
+    
+    def on_modified(self, instance, channelConfig):
+        self.setChannelEditorTitle(channelConfig)
+        super(AnalogChannelsView, self).on_modified(self, instance, channelConfig)
         
 class AnalogChannel(BoxLayout):
     channelConfig = None
