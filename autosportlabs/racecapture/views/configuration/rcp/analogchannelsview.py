@@ -57,7 +57,7 @@ class AnalogChannelsView(BaseConfigView):
         for i in range(channelCount):
             editor = self.editors[i]
             analogChannel = analogCfg.channels[i]
-            self.setAccordionItemTitle(analogChannel)
+           # self.setAccordionItemTitle(analogChannel)
             editor.on_config_updated(analogChannel, self.channels)
 
     def setAccordionItemTitle(self, channel):
