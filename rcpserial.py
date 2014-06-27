@@ -303,7 +303,8 @@ class RcpSerial:
                               RcpCmd('obd2Cfg',     self.getObd2Cfg),
                               RcpCmd('scriptCfg',   self.getScript),
                               RcpCmd('connCfg',     self.getConnectivityCfg),
-                              RcpCmd('trackDb',    self.getTrackDb)
+                              RcpCmd('trackDb',     self.getTrackDb),
+                              RcpCmd('channels',    self.getChannels)
                            ]
                 
         t = Thread(target=self.executeSequence, args=(cmdSequence, 'rcpCfg', lambda rcpJson: self.getRcpCfgCallback(cfg, rcpJson, winCallback), failCallback))

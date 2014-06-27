@@ -1,5 +1,6 @@
 import json
 from copy import copy
+from channels import *
 
 from autosportlabs.racecapture.geo.geopoint import GeoPoint
 
@@ -761,6 +762,7 @@ class RcpConfig(object):
         self.obd2Config = Obd2Config()
         self.scriptConfig = LuaScript()
         self.trackDb = TracksDb()
+        self.channels = Channels()
 
     @property
     def stale(self):
@@ -848,6 +850,10 @@ class RcpConfig(object):
                 if trackDbJson:
                     self.trackDb.fromJson(trackDbJson)
                     
+                channelsJson = rcpJson.get('channels', None)
+                if channelsJson:
+                    self.channels.fromJson({'channels':channelsJson})
+                    
                 print('RCP config version ' + str(self.versionConfig.major) + '.' + str(self.versionConfig.minor) + '.' + str(self.versionConfig.bugfix) + ' Loaded')
                 self.loaded = True
     
@@ -872,7 +878,8 @@ class RcpConfig(object):
                              'connCfg':self.connectivityConfig.toJson().get('connCfg'),
                              'trackCfg':self.trackConfig.toJson().get('trackCfg'),
                              'scriptCfg':self.scriptConfig.toJson().get('scriptCfg'),
-                             'trackDb': self.trackDb.toJson().get('trackDb')
+                             'trackDb': self.trackDb.toJson().get('trackDb'),
+                             'channels': self.channels.toJson().get('channels')
                              }
                    }
         return rcpJson

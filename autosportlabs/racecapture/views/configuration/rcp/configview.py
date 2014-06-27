@@ -103,6 +103,7 @@ class ConfigView(Screen):
             
         def attach_node(text, n, view):
             label = LinkedTreeViewLabel(text=text)
+            
             label.view = view
             label.color_selected =   [1.0,0,0,0.6]
             self.configViews.append(view)
@@ -111,25 +112,22 @@ class ConfigView(Screen):
             
         
         
-        defaultNode = attach_node('Race Track / Sectors', None, TrackConfigView())
-        n = create_tree('Channels')
-        attach_node('GPS', n, GPSChannelsView())
-        attach_node('Analog Inputs', n, AnalogChannelsView(channelCount=8, channels=self.channels))
-        attach_node('Pulse Inputs', n, PulseChannelsView(channelCount=3, channels=self.channels))
-        attach_node('Digital Input/Outputs', n, GPIOChannelsView(channelCount=3, channels=self.channels))
-        attach_node('Accelerometer / Gyro', n, ImuChannelsView())
-        attach_node('Pulse / Analog Outputs', n, AnalogPulseOutputChannelsView(channelCount=4, channels=self.channels))
-        n = create_tree('CAN bus')
-        attach_node('CAN Settings', n, CANConfigView())
-        attach_node('OBDII Channels', n, OBD2ChannelsView(channels=self.channels))
-        n = create_tree('Connections')
-        attach_node('Wireless', n, WirelessConfigView())
-        attach_node('Telemetry', n, TelemetryConfigView())
-        n = create_tree('Scripting / Logging')
+        defaultNode = attach_node('Race Track/Sectors', None, TrackConfigView())
+        #attach_node('Channels', None, ChannelsView())
+        attach_node('GPS', None, GPSChannelsView())
+        attach_node('Analog Sensors', None, AnalogChannelsView(channelCount=8, channels=self.channels))
+        attach_node('Pulse/RPM Sensors', None, PulseChannelsView(channelCount=3, channels=self.channels))
+        attach_node('Digital Input/Outputs', None, GPIOChannelsView(channelCount=3, channels=self.channels))
+        attach_node('Accelerometer/Gyro', None, ImuChannelsView())
+        attach_node('Pulse/Analog Outputs', None, AnalogPulseOutputChannelsView(channelCount=4, channels=self.channels))
+        attach_node('CAN Bus', None, CANConfigView())
+        attach_node('OBDII', None, OBD2ChannelsView(channels=self.channels))
+        attach_node('Wireless', None, WirelessConfigView())
+        attach_node('Telemetry', None, TelemetryConfigView())
         scriptView = LuaScriptingView()
         scriptView.bind(on_run_script=self.runScript)
         scriptView.bind(on_poll_logfile=self.pollLogfile)
-        attach_node('Lua Script', n, scriptView)
+        attach_node('Scripting', None, scriptView)
         self.scriptView = scriptView
         
         tree.bind(selected_node=on_select_node)
