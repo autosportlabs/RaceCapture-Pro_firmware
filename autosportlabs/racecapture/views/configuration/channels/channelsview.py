@@ -28,8 +28,12 @@ class ChannelView(BoxLayout):
         super(ChannelView, self).__init__(**kwargs)
         self.channel = kwargs.get('channel', self.channel)
         self.register_event_type('on_delete_channel')
+        self.register_event_type('on_modified')
         self.updateView()
         
+    def on_modified(self):
+        pass
+    
     def updateView(self):
         kvFind(self, 'rcid', 'sysChan').text = '\357\200\243' if self.channel.systemChannel else ''
         deleteButton = kvFind(self, 'rcid', 'delete')
@@ -53,6 +57,7 @@ class ChannelView(BoxLayout):
         
     def on_edited(self, *args):
         self.updateView()
+        self.dispatch('on_modified')
 
 class ChannelEditor(BoxLayout):
     channel = None
@@ -114,6 +119,7 @@ class ChannelsView(BaseConfigView):
         for channel in channels.items:
             channelView = ChannelView(channel=channel)
             channelView.bind(on_delete_channel = self.on_delete_channel)
+            channelView.bind(on_modified=self.on_modified)
             self.channelsContainer.add_widget(channelView)
         self.channels = channels
         kvFind(self, 'rcid', 'addChan').disabled = False

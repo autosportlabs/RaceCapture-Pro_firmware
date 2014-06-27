@@ -12,7 +12,6 @@ Builder.load_file('iconbutton.kv')
 
 class IconButton(Button):
     def __init__(self, **kwargs):
-        self.font_name = 'resource/fonts/fa.ttf'
         super(IconButton, self).__init__(**kwargs)
 
 class RoundedRect(BoxLayout):

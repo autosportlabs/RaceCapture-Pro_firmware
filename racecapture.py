@@ -1,6 +1,4 @@
 #!/usr/bin/python
-TITLE_FONT = 'resource/fonts/Roboto-Thin.ttf'
-
 import kivy
 import logging
 import sys

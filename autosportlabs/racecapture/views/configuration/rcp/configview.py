@@ -114,13 +114,12 @@ class ConfigView(Screen):
         
         
         defaultNode = attach_node('Race Track/Sectors', None, TrackConfigView())
-        attach_node('Channels', None, ChannelsView())
         attach_node('GPS', None, GPSChannelsView())
         attach_node('Analog Sensors', None, AnalogChannelsView(channelCount=8, channels=self.channels))
         attach_node('Pulse/RPM Sensors', None, PulseChannelsView(channelCount=3, channels=self.channels))
-        attach_node('Digital Input/Outputs', None, GPIOChannelsView(channelCount=3, channels=self.channels))
+        attach_node('Digital In/Out', None, GPIOChannelsView(channelCount=3, channels=self.channels))
         attach_node('Accelerometer/Gyro', None, ImuChannelsView())
-        attach_node('Pulse/Analog Outputs', None, AnalogPulseOutputChannelsView(channelCount=4, channels=self.channels))
+        attach_node('Pulse/Analog Out', None, AnalogPulseOutputChannelsView(channelCount=4, channels=self.channels))
         attach_node('CAN Bus', None, CANConfigView())
         attach_node('OBDII', None, OBD2ChannelsView(channels=self.channels))
         attach_node('Wireless', None, WirelessConfigView())
@@ -129,6 +128,7 @@ class ConfigView(Screen):
         scriptView.bind(on_run_script=self.runScript)
         scriptView.bind(on_poll_logfile=self.pollLogfile)
         attach_node('Scripting', None, scriptView)
+        attach_node('Channels', None, ChannelsView())
         self.scriptView = scriptView
         
         tree.bind(selected_node=on_select_node)

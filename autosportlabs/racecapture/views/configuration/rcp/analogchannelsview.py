@@ -10,6 +10,7 @@ from valuefield import *
 from utils import *
 from rcpconfig import *
 from channels import *
+from kivy.metrics import dp
 from channelnameselectorview import ChannelNameSelectorView
 from channelnamespinner import ChannelNameSpinner
 from autosportlabs.racecapture.views.configuration.baseconfigview import BaseConfigView
@@ -21,6 +22,7 @@ Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/analogchann
 class AnalogChannelsView(BaseConfigView):
     editors = []    
     channels = None
+    accordion = None
     def __init__(self, **kwargs):
         super(AnalogChannelsView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
@@ -44,8 +46,8 @@ class AnalogChannelsView(BaseConfigView):
         #create a scroll view, with a size < size of the grid
         sv = ScrollContainer(size_hint=(1.0,1.0), do_scroll_x=False)
         sv.add_widget(accordion)
+        self.accordion = accordion
         self.add_widget(sv)
-        
     
     def on_config_updated(self, rcpCfg):
         analogCfg = rcpCfg.analogConfig
@@ -55,8 +57,14 @@ class AnalogChannelsView(BaseConfigView):
         for i in range(channelCount):
             editor = self.editors[i]
             analogChannel = analogCfg.channels[i]
+            self.setAccordionItemTitle(analogChannel)
             editor.on_config_updated(analogChannel, self.channels)
 
+    def setAccordionItemTitle(self, channel):
+            i = self.analogCfg.channels.index(channel)
+            accordionItem = self.accordion.children[i]
+            accordionItem.title = self.createTitleForChannel(self.channels, channel)
+        
 class AnalogChannel(BoxLayout):
     channelConfig = None
     channels = None
@@ -66,44 +74,44 @@ class AnalogChannel(BoxLayout):
         kvFind(self, 'rcid', 'chanId').bind(on_channel = self.on_channel)
         self.register_event_type('on_modified')
     
-    def on_modified(self):
+    def on_modified(self, channelConfig):
         pass
     
     def on_channel(self, instance, value):
         if self.channelConfig:
             self.channelConfig.channelId = self.channels.getIdForName(value)
             self.channelConfig.stale = True
-            self.dispatch('on_modified')
+            self.dispatch('on_modified', self.channelConfig)
 
     def on_linear_map_value(self, instance, value):
         if self.channelConfig:
             self.channelConfig.linearScaling = float(value)
             self.channelConfig.stale = True
-            self.dispatch('on_modified')
+            self.dispatch('on_modified', self.channelConfig)
             
     def on_sample_rate(self, instance, value):
         if self.channelConfig:
             self.channelConfig.sampleRate = value
             self.channelConfig.stale = True
-            self.dispatch('on_modified')
+            self.dispatch('on_modified', self.channelConfig)
                     
     def on_scaling_type_raw(self, instance, value):
         if self.channelConfig and value:
             self.channelConfig.scalingMode = ANALOG_SCALING_MODE_RAW
             self.channelConfig.stale = True
-            self.dispatch('on_modified')
+            self.dispatch('on_modified', self.channelCofig)
                         
     def on_scaling_type_linear(self, instance, value):
         if self.channelConfig and value:
             self.channelConfig.scalingMode = ANALOG_SCALING_MODE_LINEAR
             self.channelConfig.stale = True
-            self.dispatch('on_modified')
+            self.dispatch('on_modified', self.channelConfig)
                         
     def on_scaling_type_map(self, instance, value):
         if self.channelConfig and value:
             self.channelConfig.scalingMode = ANALOG_SCALING_MODE_MAP
             self.channelConfig.stale = True
-            self.dispatch('on_modified')
+            self.dispatch('on_modified', self.channelConfig)
                     
     def on_config_updated(self, channelConfig, channels):
         channelSpinner = kvFind(self, 'rcid', 'chanId')
@@ -140,7 +148,7 @@ class AnalogChannel(BoxLayout):
         
     def on_map_updated(self, *args):
         self.channelConfig.stale = True
-        self.dispatch('on_modified')        
+        self.dispatch('on_modified', self.channelConfig)        
         
 
 class AnalogScaler(Graph):
