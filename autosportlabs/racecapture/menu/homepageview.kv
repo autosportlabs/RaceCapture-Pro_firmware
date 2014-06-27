@@ -25,11 +25,14 @@
 					size_hint_x: None	
 			HLineSeparator:
 				size_hint_y: 0.05
-			Label:
+			FloatLayout:
 				size_hint_y: 0.80
-				font_size: dp(40)
-				font_name: 'resource/fonts/Roboto-Thin.ttf'
-				text: 'Welcome To RaceCapture'
+				Label:
+					size_hint_y: None
+					font_size: dp(40)
+					font_name: 'resource/fonts/Roboto-Thin.ttf'
+					pos_hint: {'center_y':0.57}
+					text: 'Welcome To RaceCapture'
 		GridLayout:
 			padding: [dp(50), dp(50)]				
 			spacing: dp(60)
