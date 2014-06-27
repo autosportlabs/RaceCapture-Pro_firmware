@@ -41,38 +41,38 @@ class PulseChannel(BoxLayout):
         self.register_event_type('on_modified')
         self.register_event_type('on_modified')
     
-    def on_modified(self):
+    def on_modified(self, channelConfig):
         pass
 
     def on_channel(self, instance, value):
         if self.channelConfig:
             self.channelConfig.channelId = self.channels.getIdForName(value)
             self.channelConfig.stale = True
-            self.dispatch('on_modified')
+            self.dispatch('on_modified', self.channelConfig)
                                     
     def on_sample_rate(self, instance, value):
         if self.channelConfig:
             self.channelConfig.sampleRate = value
             self.channelConfig.stale = True
-            self.dispatch('on_modified')
+            self.dispatch('on_modified', self.channelConfig)
             
     def on_pulse_per_rev(self, instance, value):
         if self.channelConfig:
             self.channelConfig.pulsePerRev = int(value)
             self.channelConfig.stale = True
-            self.dispatch('on_modified')
+            self.dispatch('on_modified', self.channelConfig)
                         
     def on_mode(self, instance, value):
         if self.channelConfig:
             self.channelConfig.mode = int(instance.getValueFromKey(value))
             self.channelConfig.stale = True
-            self.dispatch('on_modified')
+            self.dispatch('on_modified', self.channelConfig)
                         
     def on_divider(self, instance, value):
         if self.channelConfig:
             self.channelConfig.divider = int(value)
             self.channelConfig.stale = True
-            self.dispatch('on_modified')
+            self.dispatch('on_modified', self.channelConfig)
                             
     def on_config_updated(self, channelConfig, channels):
         sampleRateSpinner = kvFind(self, 'rcid', 'sr')
@@ -96,20 +96,23 @@ class PulseChannel(BoxLayout):
 class PulseChannelsView(BaseConfigView):
     editors = []
     channels = None
+    accordion = None
+    timerCfg = None
     def __init__(self, **kwargs):
         super(PulseChannelsView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
-        
         self.channelCount = kwargs['channelCount']
         
         accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=110 * 3)
-    
+        self.accordion = accordion
+        
         editors = []
         # add button into that grid
         for i in range(self.channelCount):
             channel = AccordionItem(title='Pulse Input ' + str(i + 1))
             editor = PulseChannel(id='timer' + str(i))
             channel.add_widget(editor)
+            editor.bind(on_modified=self.on_modified)            
             accordion.add_widget(channel)
             editors.append(editor)
     
@@ -121,13 +124,19 @@ class PulseChannelsView(BaseConfigView):
         sv.add_widget(accordion)
         self.add_widget(sv)
 
+    def on_modified(self, instance, channelConfig):
+        self.setAccordionItemTitle(self.accordion, self.timerCfg.channels, channelConfig)
+        super(PulseChannelsView, self).on_modified(self, instance, channelConfig)
+
     def on_config_updated(self, rcpCfg):
         timerCfg = rcpCfg.timerConfig
-        channelCount = timerCfg.channelCount
+        channels = rcpCfg.channels
         self.channels = rcpCfg.channels
+        self.timerCfg = timerCfg
         
+        channelCount = timerCfg.channelCount
         for i in range(channelCount):
-            timerChannel = timerCfg.channels[i]
             editor = self.editors[i]
-            editor.on_config_updated(timerChannel, self.channels)
-            editor.bind(on_modified=self.on_modified)          
+            timerChannel = timerCfg.channels[i]
+            self.setAccordionItemTitle(self.accordion, timerCfg.channels, timerChannel)            
+            editor.on_config_updated(timerChannel, channels)
