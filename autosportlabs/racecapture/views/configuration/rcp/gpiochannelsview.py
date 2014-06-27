@@ -7,7 +7,7 @@ from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.scrollview import ScrollView
 from kivy.app import Builder
 from utils import *
-from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
+from autosportlabs.racecapture.views.configuration.baseconfigview import BaseConfigView
 from rcpconfig import *
 from mappedspinner import MappedSpinner
 
@@ -63,11 +63,11 @@ class GPIOChannel(BoxLayout):
         
 class GPIOChannelsView(BaseConfigView):
     editors = []
+    channels = None
     def __init__(self, **kwargs):
         super(GPIOChannelsView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
         self.channelCount = kwargs['channelCount']
-        self.channels = kwargs['channels']
         
         accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=90 * self.channelCount)
     
@@ -91,6 +91,7 @@ class GPIOChannelsView(BaseConfigView):
     def on_config_updated(self, rcpCfg):
         gpioCfg = rcpCfg.gpioConfig
         channelCount = gpioCfg.channelCount
+        self.channels = rcpCfg.channels 
 
         for i in range(channelCount):
             editor = self.editors[i]

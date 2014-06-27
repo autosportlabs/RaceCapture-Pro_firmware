@@ -11,11 +11,12 @@ from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.screenmanager import Screen
 from autosportlabs.widgets.separator import HSeparator, HSeparatorMinor
 from autosportlabs.racecapture.views.util.alertview import alertPopup
+from autosportlabs.racecapture.views.configuration.baseconfigview import BaseConfigView
 from utils import *
 from rcpconfig import *
 from channels import Channels, Channel
 
-Builder.load_file('autosportlabs/racecapture/views/channels/channelsview.kv')
+Builder.load_file('autosportlabs/racecapture/views/configuration/channels/channelsview.kv')
 
 class ChannelLabel(Label):
     def __init__(self, **kwargs):
@@ -97,20 +98,17 @@ class ChannelEditor(BoxLayout):
     def on_max(self, instance, value):
         self.channel.max = float(value)
         
-class ChannelsView(Screen):
+class ChannelsView(BaseConfigView):
     channelsContainer = None
     channels = None
-    rcpComms = None
     def __init__(self, **kwargs):
         super(ChannelsView, self).__init__(**kwargs)
-        self.channels = kwargs.get('channels', self.channels)
-        self.rcpComms = kwargs.get('rcpComms', self.rcpComms)
-        self.register_event_type('on_channels_updated')
-        self.register_event_type('on_tracks_updated')
-        self.register_event_type('on_read_channels')
-        self.register_event_type('on_write_channels')
+        self.register_event_type('on_config_updated')
         self.channelsContainer = kvFind(self, 'rcid', 'channelsContainer')
-     
+    
+    def on_config_updated(self, rcpCfg):
+        self.on_channels_updated(rcpCfg.channels)
+        
     def on_channels_updated(self, channels):
         self.channelsContainer.clear_widgets()
         for channel in channels.items:
@@ -119,22 +117,7 @@ class ChannelsView(Screen):
             self.channelsContainer.add_widget(channelView)
         self.channels = channels
         kvFind(self, 'rcid', 'addChan').disabled = False
-    
-    def on_tracks_updated(self, trackManager):
-        pass
-    
-    def on_read_all_channels(self):
-        if self.channels:
-            self.dispatch('on_read_channels')
-        else:
-            alertPopup('Warning', 'Please load channels before writing')
-        
-    def on_write_all_channels(self):
-        self.dispatch('on_write_channels')
-        
-    def on_read_channels(self, *args):
-        pass
-    
+            
     def on_delete_channel(self, instance, value):
         channelItems = self.channels.items
         for channel in channelItems:
@@ -142,6 +125,8 @@ class ChannelsView(Screen):
                 channelItems.remove(channel)
                 break
         self.on_channels_updated(self.channels)
+        self.channels.stale = True
+        self.dispatch('on_modified')
         
     def on_add_channel(self):
         newChannel = Channel(name='Channel', units='',precision=0, min=0, max=100)
@@ -150,7 +135,6 @@ class ChannelsView(Screen):
         channelView.bind(on_delete_channel = self.on_delete_channel)
         self.channelsContainer.add_widget(channelView)
         channelView.on_edit()
-                        
-    def on_write_channels(self, *args):
-        pass
-            
+        self.channels.stale = True
+        self.dispatch('on_modified')        
+                                    

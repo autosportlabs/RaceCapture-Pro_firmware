@@ -8,7 +8,7 @@ from mappedspinner import MappedSpinner
 from rcpconfig import *
 from utils import *
 from valuefield import IntegerValueField, FloatValueField
-from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
+from autosportlabs.racecapture.views.configuration.baseconfigview import BaseConfigView
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/imuchannelsview.kv')
 

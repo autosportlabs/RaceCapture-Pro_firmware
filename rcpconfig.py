@@ -777,7 +777,8 @@ class RcpConfig(object):
                 self.canConfig.stale or
                 self.obd2Config.stale or
                 self.scriptConfig.stale or
-                self.trackDb.stale)
+                self.trackDb.stale or
+                self.channels.stale)
     
     @stale.setter
     def stale(self, value):
@@ -793,6 +794,7 @@ class RcpConfig(object):
         self.obd2Config.stale = value
         self.scriptConfig.stale = value
         self.trackDb.stale = value
+        self.channels.stale = value
         
     def fromJson(self, rcpJson):
         if rcpJson:

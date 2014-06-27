@@ -12,7 +12,7 @@ from rcpconfig import *
 from channels import *
 from channelnameselectorview import ChannelNameSelectorView
 from channelnamespinner import ChannelNameSpinner
-from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
+from autosportlabs.racecapture.views.configuration.baseconfigview import BaseConfigView
 from autosportlabs.widgets.scrollcontainer import ScrollContainer
 from math import sin
 
@@ -20,12 +20,12 @@ Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/analogchann
 
 class AnalogChannelsView(BaseConfigView):
     editors = []    
+    channels = None
     def __init__(self, **kwargs):
         super(AnalogChannelsView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
 
         self.channelCount = kwargs['channelCount']
-        self.channels = kwargs['channels']
 
         accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=80 * self.channelCount)
 
@@ -50,6 +50,7 @@ class AnalogChannelsView(BaseConfigView):
     def on_config_updated(self, rcpCfg):
         analogCfg = rcpCfg.analogConfig
         channelCount = analogCfg.channelCount
+        self.channels = rcpCfg.channels
 
         for i in range(channelCount):
             editor = self.editors[i]

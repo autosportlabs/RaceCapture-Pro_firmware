@@ -5,7 +5,7 @@ from kivy.uix.switch import Switch
 from kivy.app import Builder
 from iconbutton import IconButton
 from settingsview import SettingsSwitch
-from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
+from autosportlabs.racecapture.views.configuration.baseconfigview import BaseConfigView
 from utils import *
 from rcpconfig import *
 

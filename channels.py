@@ -48,6 +48,7 @@ class Channel:
         
 class Channels:
     items = []
+    stale = False
     def __init__(self, **kwargs):
         pass
 
@@ -59,7 +60,7 @@ class Channels:
                 channel = Channel()
                 channel.fromJson(channelJson)
                 self.items.append(channel)
-                
+            self.stale = False
         
     def toJson(self):
         channelsListJson = []

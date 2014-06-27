@@ -73,12 +73,8 @@ class TracksView(Screen):
     def __init__(self, **kwargs):
         super(TracksView, self).__init__(**kwargs)
         self.trackManager = kwargs.get('trackManager')
-        self.register_event_type('on_channels_updated')
         self.register_event_type('on_tracks_updated')
-        
-    def on_channels_updated(self, channels):
-        pass
-        
+                
     def on_tracks_updated(self, trackManager):
         kvFind(self, 'rcid', 'browser').on_tracks_updated(trackManager)
         

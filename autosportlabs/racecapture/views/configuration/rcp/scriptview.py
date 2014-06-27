@@ -9,7 +9,7 @@ from kivy.extras.highlight import KivyLexer
 #from pygments.lexers.agile import PythonLexer 
 from pygments import lexers
 from utils import *
-from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
+from autosportlabs.racecapture.views.configuration.baseconfigview import BaseConfigView
 from iconbutton import IconButton
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/scriptview.kv')

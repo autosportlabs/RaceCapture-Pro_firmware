@@ -6,7 +6,7 @@ from kivy.app import Builder
 from rcpconfig import *
 from samplerateview import *
 from utils import *
-from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
+from autosportlabs.racecapture.views.configuration.baseconfigview import BaseConfigView
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/gpschannelsview.kv')            
             

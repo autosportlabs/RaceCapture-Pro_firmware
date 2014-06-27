@@ -16,7 +16,7 @@ from rcpconfig import *
 from valuefield import FloatValueField
 from autosportlabs.racecapture.views.util.alertview import alertPopup
 from autosportlabs.racecapture.views.tracks.tracksview import TrackInfoView, TracksView
-from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
+from autosportlabs.racecapture.views.configuration.baseconfigview import BaseConfigView
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/trackconfigview.kv')
 

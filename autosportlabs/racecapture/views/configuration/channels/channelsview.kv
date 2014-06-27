@@ -99,7 +99,8 @@
 	    	text: 'System Channels'
 	    	size_hint_y: 0.1
 		BoxLayout:
-			padding: (dp(200), dp(10))
+			size_hint_y: 0.9
+			padding: (dp(50), dp(10))
 			spacing: dp(20)
 			orientation: 'vertical'
 		    ScrollView:
@@ -122,20 +123,6 @@
 		    		on_release: root.on_add_channel()
 			    	disabled: True
 			    	rcid: 'addChan'
-	    BoxLayout:
-	        size_hint_y: 0.05	
-	        spacing: dp(10)
-	        orientation: 'horizontal'
-	        IconButton:
-	            size_hint_x: 0.1
-	            text: "\357\202\223"
-	            on_release: root.on_read_all_channels()
-	        IconButton:
-	            size_hint_x: 0.1
-	            text: "\357\200\231"
-	            on_release: root.on_write_all_channels()
-	        Label:
-	        	size_hint_x: 0.8
     	
     	
     	    	

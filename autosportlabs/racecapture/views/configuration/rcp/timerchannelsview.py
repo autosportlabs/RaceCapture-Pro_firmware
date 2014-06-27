@@ -9,7 +9,7 @@ from kivy.app import Builder
 from mappedspinner import MappedSpinner
 from rcpconfig import *
 from utils import *
-from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
+from autosportlabs.racecapture.views.configuration.baseconfigview import BaseConfigView
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/timerchannelsview.kv')
 
@@ -95,12 +95,12 @@ class PulseChannel(BoxLayout):
 
 class PulseChannelsView(BaseConfigView):
     editors = []
+    channels = None
     def __init__(self, **kwargs):
         super(PulseChannelsView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
         
         self.channelCount = kwargs['channelCount']
-        self.channels = kwargs['channels']
         
         accordion = Accordion(orientation='vertical', size_hint=(1.0, None), height=110 * 3)
     
@@ -124,6 +124,7 @@ class PulseChannelsView(BaseConfigView):
     def on_config_updated(self, rcpCfg):
         timerCfg = rcpCfg.timerConfig
         channelCount = timerCfg.channelCount
+        self.channels = rcpCfg.channels
         
         for i in range(channelCount):
             timerChannel = timerCfg.channels[i]

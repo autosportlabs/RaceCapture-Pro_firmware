@@ -6,7 +6,7 @@ from mappedspinner import MappedSpinner
 from kivy.uix.boxlayout import BoxLayout
 from kivy.app import Builder
 from utils import *
-from autosportlabs.racecapture.views.configuration.rcp.baseconfigview import BaseConfigView
+from autosportlabs.racecapture.views.configuration.baseconfigview import BaseConfigView
 
 Builder.load_file('autosportlabs/racecapture/views/configuration/rcp/canconfigview.kv')
 

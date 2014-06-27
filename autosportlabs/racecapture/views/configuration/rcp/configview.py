@@ -11,6 +11,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 import os
 
+from autosportlabs.racecapture.views.configuration.channels.channelsview import *
 from autosportlabs.racecapture.views.configuration.rcp.analogchannelsview import *
 from autosportlabs.racecapture.views.configuration.rcp.imuchannelsview import *
 from autosportlabs.racecapture.views.configuration.rcp.gpschannelsview import *
@@ -113,7 +114,7 @@ class ConfigView(Screen):
         
         
         defaultNode = attach_node('Race Track/Sectors', None, TrackConfigView())
-        #attach_node('Channels', None, ChannelsView())
+        attach_node('Channels', None, ChannelsView())
         attach_node('GPS', None, GPSChannelsView())
         attach_node('Analog Sensors', None, AnalogChannelsView(channelCount=8, channels=self.channels))
         attach_node('Pulse/RPM Sensors', None, PulseChannelsView(channelCount=3, channels=self.channels))
@@ -143,6 +144,7 @@ class ConfigView(Screen):
         for view in self.configViews:
             view.dispatch('on_config_updated', config)
         self.writeStale = False
+        self.dispatch('on_channels_updated', config.channels)
         self.updateControls()
         
     def on_tracks_updated(self, trackManager):

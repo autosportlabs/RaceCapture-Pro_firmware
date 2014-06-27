@@ -26,10 +26,8 @@ from kivy.uix.screenmanager import *
 from installfix_garden_navigationdrawer import NavigationDrawer
 
 from rcpserial import *
-from channels import *
 from utils import *
 from autosportlabs.racecapture.tracks.trackmanager import TrackManager
-from autosportlabs.racecapture.views.channels.channelsview import ChannelsView
 from autosportlabs.racecapture.views.tracks.tracksview import TracksView
 from autosportlabs.racecapture.views.configuration.rcp.configview import ConfigView
 from autosportlabs.racecapture.menu.mainmenu import MainMenu
@@ -53,9 +51,6 @@ class RaceCaptureApp(App):
     #Central RCP configuration object
     rcpConfig  = RcpConfig()
     
-    #List of Channels
-    channels = Channels()
-    
     #RaceCapture serial I/O 
     rcpComms = RcpSerial()
     
@@ -67,7 +62,6 @@ class RaceCaptureApp(App):
     
     #Main Views
     configView = None
-    channelsView = None
     
     #main navigation menu 
     mainNav = None
@@ -84,9 +78,7 @@ class RaceCaptureApp(App):
         #self._keyboard.bind(on_key_down=self._on_keyboard_down)    
         
         Window.bind(on_key_down=self._on_keyboard_down)
-        self.register_event_type('on_channels_updated')
         self.register_event_type('on_tracks_updated')
-        self.register_event_type('on_read_channels')
         self.processArgs()
         self.appConfig.setUserDir(self.user_data_dir)
         self.trackManager = TrackManager(user_dir=self.user_data_dir)
@@ -161,9 +153,7 @@ class RaceCaptureApp(App):
     #Read Configuration        
     def on_read_config(self, instance, *args):
         try:
-            if not self.channels.isLoaded():
-                self.on_read_channels()
-            self.rcpComms.getRcpCfg(self.rcpConfig, self.on_read_config_complete, self.on_read_channels_error)
+            self.rcpComms.getRcpCfg(self.rcpConfig, self.on_read_config_complete, self.on_read_config_error)
         except:
             logging.exception('')
             self._serial_warning()
@@ -175,42 +165,10 @@ class RaceCaptureApp(App):
         alertPopup('Error Reading', 'Could not read configuration:\n\n' + str(detail))
 
 
-
-
-
-    #Read Channels                
-    def on_read_channels(self, *args):
-        self.rcpComms.getChannelList(self.on_read_channels_complete, self.on_read_channels_error)
-        
-    def on_read_channels_complete(self, channelsList):
-        self.channels.fromJson(channelsList)
-        Clock.schedule_once(lambda dt: self.notifyChannelsUpdated())
-    
-    def on_read_channels_error(self, detail):
-        alertPopup('Error Reading', 'Error reading channels:\n\n' + str(detail))
-        
-    def on_channels_updated(self, channels):
-        for view in self.mainViews.itervalues():
-            view.dispatch('on_channels_updated', channels)
-            
     def on_tracks_updated(self, trackManager):
         for view in self.mainViews.itervalues():
             view.dispatch('on_tracks_updated', trackManager)
             
-            
-    #Write Channels
-    def on_write_channels(self, *args):
-        self.rcpComms.setChannelList(self.channels.toJson(), self.on_write_channels_complete, self.on_write_channels_error)
-
-    def on_write_channels_complete(self, response):
-        print('write channels complete')
-        
-    def on_write_channels_error(self, detail):
-        alertPopup('Error Writing', 'Error writing channels:\n\n' + str(detail))
-    
-    def notifyChannelsUpdated(self):
-        self.dispatch('on_channels_updated', self.channels)
-
     def notifyTracksUpdated(self):
         self.dispatch('on_tracks_updated', self.trackManager)
 
@@ -248,7 +206,7 @@ class RaceCaptureApp(App):
         #fade_in
         self.mainNav.anim_type = 'slide_above_anim'
         
-        configView = ConfigView(name='config', channels=self.channels, rcpConfig=self.rcpConfig)
+        configView = ConfigView(name='config', rcpConfig=self.rcpConfig)
         configView.bind(on_read_config=self.on_read_config)
         configView.bind(on_write_config=self.on_write_config)
         configView.bind(on_run_script=self.on_run_script)
@@ -258,11 +216,7 @@ class RaceCaptureApp(App):
         self.rcpComms.on_progress = lambda value: statusBar.dispatch('on_progress', value)
         self.rcpComms.on_rx = lambda value: statusBar.dispatch('on_rc_rx', value)
         self.rcpComms.on_tx = lambda value: statusBar.dispatch('on_rc_tx', value)
-        
-        channelsView = ChannelsView(name='channels', channels=self.channels, rcpComms = self.rcpComms)
-        channelsView.bind(on_read_channels=self.on_read_channels)
-        channelsView.bind(on_write_channels=self.on_write_channels)
-        
+                
         tracksView = TracksView(name='tracks')
         
         homepageView = HomePageView(name='home')
@@ -286,13 +240,11 @@ class RaceCaptureApp(App):
         #screenMgr.add_widget(analysisView)
         
         self.mainViews = {'config' : configView, 
-                          'channels' : channelsView,
                           'tracks': tracksView}
         
         self.screenMgr = screenMgr
 
         self.configView = configView
-        self.channelsView = channelsView
         self.statusBar = statusBar
         self.icon = ('resource/race_capture_icon_large.ico' if sys.platform == 'win32' else 'resource/race_capture_icon.png')
         
