@@ -1,3 +1,4 @@
+#:kivy 1.8
 <FeatureButton>
 	line_color: (0.5, 0.0, 0.0, 1.0)
 	icon_color: (1.0, 1.0, 1.0, 0.8)
@@ -6,9 +7,25 @@
 	
 <HomePageView>:
 	BoxLayout:
-		padding: [dp(50), dp(50)]				
-		orientation: 'vertical'
+		orientation: 'horizontal'
+		BoxLayout:
+			orientation: 'vertical'
+			AnchorLayout:
+				size_hint_y: 0.1
+				size_hint_x: 1.0
+				anchor_x: 'left'
+				anchor_y: 'center'
+
+				Image:
+					source: 'autosportlabs/racecapture/menu/rc_logo.png'
+					height: dp(85)
+					size_hint_x: None	
+			HLineSeparator:
+				size_hint_y: 0.05
+			Label:
+				size_hint_y: 0.80
 		GridLayout:
+			padding: [dp(50), dp(50)]				
 			spacing: dp(60)
 			rows: 2
 			cols: 3

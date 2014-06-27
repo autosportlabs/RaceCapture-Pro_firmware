@@ -1,14 +1,16 @@
 import kivy
 kivy.require('1.8.0')
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.screenmanager import Screen
+from kivy.uix.image import Image
 from kivy.app import Builder
 from utils import kvFind
 from iconbutton import TileIconButton
 from kivy.properties import StringProperty
 from kivy.metrics import dp
-
+from autosportlabs.widgets.separator import HLineSeparator
 Builder.load_file('autosportlabs/racecapture/menu/homepageview.kv')
 
 class FeatureButton(TileIconButton):
