@@ -66,6 +66,7 @@ class GPIOChannelsView(BaseConfigView):
     editors = []
     channels = None
     accordion = None
+    gpioCfg = None
     def __init__(self, **kwargs):
         super(GPIOChannelsView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
