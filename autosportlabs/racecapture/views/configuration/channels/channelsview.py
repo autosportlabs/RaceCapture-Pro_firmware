@@ -111,6 +111,10 @@ class ChannelsView(BaseConfigView):
         self.register_event_type('on_config_updated')
         self.channelsContainer = kvFind(self, 'rcid', 'channelsContainer')
     
+    def on_modified(self, *args):
+        self.channels.stale = True
+        super(ChannelsView, self).on_modified(args)
+        
     def on_config_updated(self, rcpCfg):
         self.on_channels_updated(rcpCfg.channels)
         
@@ -139,6 +143,7 @@ class ChannelsView(BaseConfigView):
         self.channels.items.append(newChannel)
         channelView = ChannelView(channel=newChannel)
         channelView.bind(on_delete_channel = self.on_delete_channel)
+        channelView.bind(on_modified=self.on_modified)
         self.channelsContainer.add_widget(channelView)
         channelView.on_edit()
         self.channels.stale = True
