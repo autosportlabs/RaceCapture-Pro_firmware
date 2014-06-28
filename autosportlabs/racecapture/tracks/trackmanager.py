@@ -34,6 +34,7 @@ class TrackMap:
     startFinishPoint = None
     finishPoint = None
     countryCode = None
+    configuration = None
     def __init__(self, **kwargs):
         self.mapPoints = []
         self.sectorPoints = []
@@ -49,9 +50,10 @@ class TrackMap:
         if (venueNode):
             self.startFinishPoint = GeoPoint.fromPointJson(venueNode.get('start_finish'))
             self.finishPoint = GeoPoint.fromPointJson(venueNode.get('finish'))
-            self.countryCode = venueNode.get('country_code')
+            self.countryCode = venueNode.get('country_code', self.countryCode)
             self.updatedAt = venueNode.get('updated', self.updatedAt)
             self.name = venueNode.get('name', self.name)
+            self.configuration = venueNode.get('configuration', self.configuration)
             self.length = venueNode.get('length', self.length)
             self.trackId = venueNode.get('id', self.trackId)
             mapPointsNode = venueNode.get('track_map_array')
@@ -77,6 +79,7 @@ class TrackMap:
         venueJson['country_code'] = self.countryCode
         venueJson['updated'] = self.updatedAt
         venueJson['name'] = self.name
+        venueJson['configuration'] = self.configuration
         venueJson['length'] = self.length
         venueJson['id'] = self.trackId
 

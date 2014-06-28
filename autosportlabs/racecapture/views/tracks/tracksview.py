@@ -5,6 +5,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
+from kivy.uix.image import Image
 from kivy.app import Builder
 from kivy.uix.screenmanager import Screen
 from kivy.metrics import dp
@@ -63,10 +64,25 @@ class TrackInfoView(BoxLayout):
         if track:
             raceTrackView = kvFind(self, 'rcid', 'track')
             raceTrackView.loadTrack(track)
+            
             trackLabel = kvFind(self, 'rcid', 'name')
             trackLabel.text = track.name
+            
+            trackConfigLabel = kvFind(self, 'rcid', 'configuration')
+            trackConfigLabel.text = 'Default' if not track.configuration else track.configuration 
+            
             lengthLabel = kvFind(self, 'rcid', 'length')
             lengthLabel.text = str(track.length) + ' mi.'
+            
+            flagImage = kvFind(self, 'rcid', 'flag')
+            cc = track.countryCode
+            if cc:
+                cc = cc.lower()
+                try:
+                    flagImagePath = 'resource/flags/' + str(track.countryCode.lower()) + '.png'
+                    flagImage.source = flagImagePath
+                except Exception as detail:
+                    print('Error loading flag for country code: ' + str(detail))  
             self.track = track
     
 class TracksView(Screen):
@@ -80,7 +96,7 @@ class TracksView(Screen):
         
 class TracksBrowser(BoxLayout):
     trackmap = None
-    trackHeight = NumericProperty(dp(400))
+    trackHeight = NumericProperty(dp(200))
     trackManager = None
     tracksUpdatePopup = None
     lastNameSearch = None

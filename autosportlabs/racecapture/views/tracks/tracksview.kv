@@ -31,11 +31,11 @@
 			orientation: 'horizontal'
 			RaceTrackView:
 				rcid: 'track'
-				size_hint_x: 0.65
+				size_hint_x: 0.7
 		    BoxLayout:
             	spacing: dp(10)
 		    	orientation: 'vertical'
-				size_hint_x: 0.35
+				size_hint_x: 0.3
 		    	padding: (dp(10), dp(10))
 				canvas.before:
 			        Color:
@@ -44,54 +44,52 @@
 			            pos: self.pos
 			            size: self.size
 			            
-	            BoxLayout:
-	            	size_hint_y: 0.2
-	            	orientation: 'horizontal'
-	            	spacing: dp(10)	            	
-					Label:
-						rcid: 'country'
-						canvas.before:
-					        Color:
-					            rgba: 0.2, 0.2, 0.2, 1
-					        Rectangle:
-					            pos: self.pos
-					            size: self.size
-						size_hint_x: 1.0
-						font_size: 18
-						text: 'Country'
-						bold: True
+				AnchorLayout:
+					size_hint_y: 0.4
+					anchor_x: 'center'
+					canvas.before:
+				        Color:
+				            rgba: 0.2, 0.2, 0.2, 1
+				        Rectangle:
+				            pos: self.pos
+				            size: self.size
+					size_hint_x: 1.0
+	            	Image:
+	            		rcid: 'flag'
+	            		size_hint_x: None	            	
+						
 
 				BoxLayout:
-					size_hint_y: 0.15
+					size_hint_y: 0.1
 					orientation: 'horizontal'
 	            	spacing: dp(10)					
 					FieldLabel:
 						halign: 'right'
-						size_hint_x: 0.5
+						size_hint_x: 0.6
 						text: 'Configuration'
 						bold: True
 					FieldLabel:
 						halign: 'left'
-						size_hint_x: 0.5
+						size_hint_x: 0.4
 						rcid: 'configuration'
-						text: 'Standard'
+						text: ''
 
 				BoxLayout:
-					size_hint_y: 0.15
+					size_hint_y: 0.1
 					orientation: 'horizontal'
 	            	spacing: dp(10)					
 					FieldLabel:
 						halign: 'right'
-						size_hint_x: 0.5
+						size_hint_x: 0.6
 						halign: 'right'
 						text: 'Length'
 						bold: True
 					FieldLabel:
 						halign: 'left'
-						size_hint_x: 0.5
+						size_hint_x: 0.4
 						rcid: 'length'
 				BoxLayout:
-					size_hint_y: 0.5
+					size_hint_y: 0.4
 		
 <TrackItemView>:
 	BoxLayout:
