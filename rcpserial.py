@@ -373,6 +373,10 @@ class RcpSerial:
         if trackDb.stale:
             self.sequenceWriteTrackDb(trackDb.toJson(), cmdSequence)
         
+        channels = cfg.channels
+        if channels.stale:
+            self.sequenceWriteChannels(channels.toJson(), cmdSequence)
+        
         cmdSequence.append(RcpCmd('flashCfg', self.sendFlashConfig))
                 
         t = Thread(target=self.executeSequence, args=(cmdSequence, 'setRcpCfg', winCallback, failCallback,))
@@ -488,8 +492,7 @@ class RcpSerial:
         t.daemon = True
         t.start()
                 
-    def setChannelList(self, channels, winCallback, failCallback):
-        cmdSequence = []
+    def sequenceWriteChannels(self, channels, cmdSequence):
         
         channels = channels.get('channels', None)
         if channels:
@@ -498,12 +501,7 @@ class RcpSerial:
             for channel in channels:
                 mode = CHANNEL_ADD_MODE_IN_PROGRESS if index < channelCount - 1 else CHANNEL_ADD_MODE_COMPLETE
                 cmdSequence.append(RcpCmd('addChannel', self.addChannel, channel, index, mode))
-                index += 1
-            
-            getRcpCfgThread = Thread(target=self.executeSequence, args=(cmdSequence, None, winCallback, failCallback))
-            getRcpCfgThread.daemon = True
-            getRcpCfgThread.start()
-        
+                index += 1        
                     
     def addChannel(self, channelJson, index, mode):
         return self.sendCommand({'addChannel': 
