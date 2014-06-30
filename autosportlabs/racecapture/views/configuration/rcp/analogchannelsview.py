@@ -104,7 +104,7 @@ class AnalogChannel(BoxLayout):
         if self.channelConfig and value:
             self.channelConfig.scalingMode = ANALOG_SCALING_MODE_RAW
             self.channelConfig.stale = True
-            self.dispatch('on_modified', self.channelCofig)
+            self.dispatch('on_modified', self.channelConfig)
                         
     def on_scaling_type_linear(self, instance, value):
         if self.channelConfig and value:
