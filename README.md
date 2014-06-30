@@ -8,12 +8,9 @@ Dependencies:
 * Kivy 1.8.x
 * Pyserial 2.6.x
 * Pygame
-* Graph (via kivy-garden via python-pip)
-* NavigationDrawer (via kivy-garden)
-
-to run:
-
-    python racecapture.py
+* Included in package right now but ultimately shouldn't be:
+  * Graph (via kivy-garden via python-pip)
+  * NavigationDrawer (via kivy-garden)
 
 ## dev installation (OS X)
 
@@ -24,8 +21,6 @@ to run:
 1. create a virtual environment (perhaps in this directory): `virtualenv _ve`
 1. activate the virtualenv: `. _ve/bin/activate`
 1. install pip requirements: `pip install -r requirements.txt` (you may be required to upgrade your version of setuptools via the provided command)
-1. install graph via garden: `garden install graph`
-1. install navigation drawer via garden: `garden install navigationdrawer`
 
 ## running (OS X)
 
@@ -54,8 +49,6 @@ to run:
 1. create a virtual environment (perhaps in this directory): `virtualenv _ve`
 1. activate the virtualenv: `_ve\Scripts\activate`
 1. install pip requirements: `pip install -r requirements.txt` (if this crashes you installed the py3.3 version of Kivy, doughball)
-1. install graph via garden: `garden install graph`
-1. install navigation drawer via garden: `garden install navigationdrawer`
 
 ## running (Win7)
 
@@ -90,3 +83,18 @@ to run:
 1. `kivy` (to get paths set up)
 1. cd install
 1. `buildwininstall.bat` - deletes old build folders, builds installer and tries to run the package (to run manually use `dist\racecapture\racecapture`)
+
+## dev installation (Linux - Ubuntu)
+
+1. sudo add-apt-repository ppa:kivy-team/kivy
+1. sudo apt-get update
+1. sudo apt-get install python-kivy
+1. install [virtualenv]: `sudo pip install virtualenv`
+1. create a virtual environment (perhaps in this directory): `virtualenv _ve`
+1. activate the virtualenv: `. _ve/bin/activate`
+1. install pip requirements: `sudo pip install -r requirements.txt` (you may be required to upgrade your version of setuptools via the provided command)
+
+## running (Linux - Ubuntu)
+
+    python racecapture.py
+

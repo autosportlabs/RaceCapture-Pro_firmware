@@ -100,7 +100,7 @@ class TracksBrowser(BoxLayout):
     trackManager = None
     tracksUpdatePopup = None
     lastNameSearch = None
-    searchDelay = 1.5
+    searchDelay = 0.5
     initialized = False
     tracksGrid = None
     selectedTrackIds = None
