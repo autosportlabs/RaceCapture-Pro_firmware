@@ -90,3 +90,18 @@ to run:
 1. `kivy` (to get paths set up)
 1. cd install
 1. `buildwininstall.bat` - deletes old build folders, builds installer and tries to run the package (to run manually use `dist\racecapture\racecapture`)
+
+## dev installation (Linux - Ubuntu)
+
+1. sudo add-apt-repository ppa:kivy-team/kivy
+1. sudo apt-get update
+1. sudo apt-get install python-kivy
+1. install [virtualenv]: `pip install virtualenv`
+1. create a virtual environment (perhaps in this directory): `virtualenv _ve`
+1. activate the virtualenv: `. _ve/bin/activate`
+1. install pip requirements: `pip install -r requirements.txt` (you may be required to upgrade your version of setuptools via the provided command)
+
+## running (Linux - Ubuntu)
+
+    python racecapture.py
+
