@@ -26,7 +26,6 @@
 #include "virtual_channel.h"
 
 extern xSemaphoreHandle g_xLoggerStart;
-extern int g_loggingShouldRun;
 
 #define TEMP_BUFFER_LEN 200
 #define DEFAULT_CAN_TIMEOUT 	100
@@ -82,6 +81,7 @@ void registerLuaLoggerBindings(lua_State *L){
 
 	lua_registerlight(L,"startLogging",Lua_StartLogging);
 	lua_registerlight(L,"stopLogging",Lua_StopLogging);
+	lua_registerLight(L,"isLogging" , Lua_IsLogging);
 
 	lua_registerlight(L,"setLed",Lua_SetLED);
 
@@ -542,8 +542,13 @@ int Lua_StartLogging(lua_State *L){
 }
 
 int Lua_StopLogging(lua_State *L){
-	g_loggingShouldRun = 0;
+	stopLogging();
 	return 0;
+}
+
+int Lua_IsLogging(lua_State *L){
+	lua_pushinteger(L, isLogging());
+	return 1;
 }
 
 int Lua_SetLED(lua_State *L){
