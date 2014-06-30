@@ -89,10 +89,10 @@ Dependencies:
 1. sudo add-apt-repository ppa:kivy-team/kivy
 1. sudo apt-get update
 1. sudo apt-get install python-kivy
-1. install [virtualenv]: `pip install virtualenv`
+1. install [virtualenv]: `sudo pip install virtualenv`
 1. create a virtual environment (perhaps in this directory): `virtualenv _ve`
 1. activate the virtualenv: `. _ve/bin/activate`
-1. install pip requirements: `pip install -r requirements.txt` (you may be required to upgrade your version of setuptools via the provided command)
+1. install pip requirements: `sudo pip install -r requirements.txt` (you may be required to upgrade your version of setuptools via the provided command)
 
 ## running (Linux - Ubuntu)
 
