@@ -188,7 +188,7 @@ typedef struct _PWMConfig{
 } PWMConfig;
 
 /// PWM frequency in Hz.
-#define MAX_PWM_CLOCK_FREQUENCY             20000
+#define MAX_PWM_CLOCK_FREQUENCY             200000
 #define MIN_PWM_CLOCK_FREQUENCY				10
 #define DEFAULT_PWM_CLOCK_FREQUENCY			10000
 
