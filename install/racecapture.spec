@@ -6,7 +6,7 @@
 # enumerated in this file. CLR 2014-05-26
 from kivy.tools.packaging.pyinstaller_hooks import install_hooks
 install_hooks(globals(), ['hooks'])
-def addKVs():
+def addDataFiles():
     allFiles = Tree('..//')
     extraDatas = []
     for file in allFiles:
@@ -19,7 +19,7 @@ a = Analysis(['..//racecapture.py'],
              pathex=['..//'],
              hiddenimports=[],
              runtime_hooks=None)
-a.datas += addKVs()
+a.datas += addDataFiles()
 pyz = PYZ(a.pure)
 exe = EXE(pyz,
           a.scripts,
