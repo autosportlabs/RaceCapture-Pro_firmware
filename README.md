@@ -98,3 +98,16 @@ Dependencies:
 
     python racecapture.py
 
+## Preparing to build installers (for Android)
+
+1. Install [VirtualBox] (https://www.virtualbox.org/)
+1. Download and extract the [Kivy Python for Android VM] (http://kivy.org/#download) (while it may be tempting to try and set up your own Ubuntu machine for this, it becomes less appealing after hunting for weird version combos of the Android SDK and NDK that appear to be no longer available for download)
+1. In VirtualBox, click "New" and choose type "Linux" and Version "Ubuntu (32-bit)"
+1. Agree to 512Mb of memory
+1. Select "use an existing virtual hard drive file"
+1. `cd android/python-for-android`
+1. Get the newest version `git pull`
+
+
+
+This is as far as I've got - instructions at http://pythonthusiast.pythonblogs.com/230_pythonthusiast/archive/1346_starting_to_use_kivy__developing_letter_of_heroes_an_android_alphabet_teaching_aid_application_for_kids-part_1_of_2.html
