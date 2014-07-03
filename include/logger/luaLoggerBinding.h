@@ -52,6 +52,7 @@ int Lua_SetAnalogOut(lua_State *L);
 
 int Lua_StartLogging(lua_State *L);
 int Lua_StopLogging(lua_State *L);
+int Lua_IsLogging(lua_State *L);
 
 int Lua_SetLED(lua_State *L);
 

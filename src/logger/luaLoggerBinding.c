@@ -81,7 +81,7 @@ void registerLuaLoggerBindings(lua_State *L){
 
 	lua_registerlight(L,"startLogging",Lua_StartLogging);
 	lua_registerlight(L,"stopLogging",Lua_StopLogging);
-	lua_registerLight(L,"isLogging" , Lua_IsLogging);
+	lua_registerlight(L,"isLogging" , Lua_IsLogging);
 
 	lua_registerlight(L,"setLed",Lua_SetLED);
 
