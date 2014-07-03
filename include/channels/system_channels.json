@@ -407,10 +407,10 @@
         },
         {
             "nm": "Yaw",
-            "ut": "G",
+            "ut": "Deg/Sec",
             "sys": 1,
             "type": 5,
-            "prec": 0,
+            "prec": 1,
             "min": -300,
             "max": 300
         },
@@ -455,7 +455,7 @@
             "ut": "",
             "sys": 1,
             "type": 6,
-            "prec": 3,
+            "prec": 6,
             "min": 0,
             "max": 0
         },
@@ -482,13 +482,13 @@
             "ut": "MPH",
             "sys": 1,
             "type": 6,
-            "prec": 0,
+            "prec": 2,
             "min": 0,
             "max": 150
         },
         {
             "nm": "Distance",
-            "ut": "",
+            "ut": "Miles",
             "sys": 1,
             "type": 6,
             "prec": 3,
@@ -497,7 +497,7 @@
         },
         {
             "nm": "Sector",
-            "ut": "",
+            "ut": "Count",
             "sys": 1,
             "type": 7,
             "prec": 0,
@@ -506,7 +506,7 @@
         },
         {
             "nm": "SectorTime",
-            "ut": "",
+            "ut": "Min",
             "sys": 1,
             "type": 7,
             "prec": 3,
@@ -515,7 +515,7 @@
         },
         {
             "nm": "LapTime",
-            "ut": "",
+            "ut": "Min",
             "sys": 1,
             "type": 7,
             "prec": 3,
@@ -524,7 +524,7 @@
         },
         {
             "nm": "PredTime",
-            "ut": "",
+            "ut": "Min",
             "sys": 1,
             "type": 7,
             "prec": 3,
@@ -533,7 +533,7 @@
         },
         {
             "nm": "LapCount",
-            "ut": "",
+            "ut": "Count",
             "sys": 1,
             "type": 7,
             "prec": 0,

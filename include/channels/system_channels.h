@@ -112,21 +112,21 @@ CHANNEL_LapCount = 59
 {"AccelX", "G", 2, 11, -3, 3} , \
 {"AccelY", "G", 2, 11, -3, 3} , \
 {"AccelZ", "G", 2, 11, -3, 3} , \
-{"Yaw", "G", 0, 11, -300, 300} , \
+{"Yaw", "Deg/Sec", 1, 11, -300, 300} , \
 {"Pitch", "G", 0, 11, -300, 300} , \
 {"Roll", "G", 0, 11, -300, 300} , \
 {"Heading", "Degrees", 0, 11, 1, 360} , \
 {"GPSSats", "", 0, 13, 0, 100} , \
-{"Time", "", 3, 13, 0, 0} , \
+{"Time", "", 6, 13, 0, 0} , \
 {"Latitude", "Degrees", 6, 13, -180, 180} , \
 {"Longitude", "Degrees", 6, 13, -180, 180} , \
-{"Speed", "MPH", 0, 13, 0, 150} , \
-{"Distance", "", 3, 13, 0, 0} , \
-{"Sector", "", 0, 15, 0, 100} , \
-{"SectorTime", "", 3, 15, 0, 0} , \
-{"LapTime", "", 3, 15, 0, 0} , \
-{"PredTime", "", 3, 15, 0, 0} , \
-{"LapCount", "", 0, 15, 0, 1000}  \
+{"Speed", "MPH", 2, 13, 0, 150} , \
+{"Distance", "Miles", 3, 13, 0, 0} , \
+{"Sector", "Count", 0, 15, 0, 100} , \
+{"SectorTime", "Min", 3, 15, 0, 0} , \
+{"LapTime", "Min", 3, 15, 0, 0} , \
+{"PredTime", "Min", 3, 15, 0, 0} , \
+{"LapCount", "Count", 0, 15, 0, 1000}  \
 } \
 }
 #endif
