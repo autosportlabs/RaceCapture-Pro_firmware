@@ -20,6 +20,7 @@
 #define XSTR(s) STR(s)
 #define STR(s) #s
 
+#define DEVICE_NAME    "RCP"
 #define MAJOR_REV_STR  XSTR(MAJOR_REV)
 #define MINOR_REV_STR  XSTR(MINOR_REV)
 #define BUGFIX_REV_STR XSTR(BUGFIX_REV)
