@@ -1,3 +1,6 @@
+===2.0.5===
+If Lua Script crashes firmware and watchdog timer resets, prevent script from running again enabling a recovery mode. When recovery mode is activated, Red LED is activated.
+
 ===2.0.4===
 removed trivial optimization that prevented correct logging at 10Hz and possibly other Hz.
 
