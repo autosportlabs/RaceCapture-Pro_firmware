@@ -182,11 +182,11 @@ static void doScript(void){
 }
 
 static void guardedDoScript(void){
-	if (!watchdog_is_watchdog_reset()){
+	if (watchdog_is_poweron_reset()){
 		doScript();
 	}
 	else{
-		pr_error("watchdog reset detected; bypassing Lua Script\r\n");
+		pr_error("Previous Lua Script crash detected; bypassing for recovery mode\r\n");
 		LED_enable(3);
 	}
 }

@@ -11,3 +11,8 @@ int cpu_device_init(void){
 	AT91F_RSTSetMode( AT91C_BASE_RSTC , AT91C_RSTC_URSTEN );
 	return 1;
 }
+
+void cpu_device_reset(){
+	AT91F_RSTSoftReset(AT91C_BASE_RSTC, AT91C_RSTC_PROCRST|
+					   AT91C_RSTC_PERRST|AT91C_RSTC_EXTRST);
+}

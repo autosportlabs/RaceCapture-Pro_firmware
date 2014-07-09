@@ -81,6 +81,8 @@ int main( void )
 {
 	cpu_init();
 	watchdog_init(WATCHDOG_TIMEOUT_MS);
+	//perform a clean reset if the watchdog fired
+	if (watchdog_is_watchdog_reset()) cpu_reset();
 	initialize_magic_info();
 	initialize_logger_config();
 	if (!initUsart()) fatalError(FATAL_ERROR_HARDWARE);

@@ -9,7 +9,7 @@
 #define CPU_H_
 
 int cpu_init(void);
-
+void cpu_reset(void);
 
 
 

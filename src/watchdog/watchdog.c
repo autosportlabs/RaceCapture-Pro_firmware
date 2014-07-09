@@ -13,3 +13,6 @@ int watchdog_is_watchdog_reset(){
 	return watchdog_device_is_watchdog_reset();
 }
 
+int watchdog_is_poweron_reset(){
+	return watchdog_device_is_poweron_reset();
+}
