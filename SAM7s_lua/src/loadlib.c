@@ -10,7 +10,7 @@
 
 
 #include <stdlib.h>
-#include <string.h>
+#include "mod_string.h"
 
 
 #define loadlib_c

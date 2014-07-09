@@ -5,7 +5,7 @@
 */
 
 
-#include <string.h>
+#include "mod_string.h"
 
 #define lparser_c
 #define LUA_CORE

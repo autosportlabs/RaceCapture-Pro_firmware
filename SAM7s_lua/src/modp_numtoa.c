@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 #include <math.h>
-#include <string.h>
+#include "mod_string.h"
 
 // other interesting references on num to string convesion
 // http://www.jb.man.ac.uk/~slowe/cpp/itoa.html

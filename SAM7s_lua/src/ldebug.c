@@ -7,7 +7,7 @@
 
 #include <stdarg.h>
 #include <stddef.h>
-#include <string.h>
+#include "mod_string.h"
 
 
 #define ldebug_c

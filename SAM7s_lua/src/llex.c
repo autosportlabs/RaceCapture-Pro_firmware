@@ -7,7 +7,7 @@
 
 #include <ctype.h>
 #include <locale.h>
-#include <string.h>
+#include "mod_string.h"
 
 #define llex_c
 #define LUA_CORE

@@ -5,7 +5,7 @@
 */
 
 
-#include <string.h>
+#include "mod_string.h"
 
 #define ltm_c
 #define LUA_CORE

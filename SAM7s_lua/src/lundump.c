@@ -4,7 +4,7 @@
 ** See Copyright Notice in lua.h
 */
 
-#include <string.h>
+#include "mod_string.h"
 
 #define lundump_c
 #define LUA_CORE

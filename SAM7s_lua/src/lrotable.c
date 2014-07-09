@@ -1,6 +1,6 @@
 /* Read-only tables for Lua */
 
-#include <string.h>
+#include "mod_string.h"
 #include "lrotable.h"
 #include "lua.h"
 #include "lauxlib.h"
