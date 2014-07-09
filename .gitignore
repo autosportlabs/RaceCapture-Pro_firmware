@@ -18,3 +18,4 @@ Race*.zip
 .externalToolBuilders
 .project
 .settings
+.pydevproject
