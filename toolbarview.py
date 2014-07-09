@@ -19,6 +19,9 @@ class ToolbarView(BoxLayout):
     txOnColor = [0.0, 1.0, 0.0, 1.0]
     rxOnColor = [0.0, 0.8, 1.0, 1.0]
 
+    normalStatusColor = [0.8, 0.8, 0.8, 1.0]
+    alertStatusColor = [1.0, 0.64, 0.0, 1.0]
+    
     progressBar = None
     teleTxStatus = None
     teleRxStatus = None
@@ -32,7 +35,14 @@ class ToolbarView(BoxLayout):
         self.register_event_type('on_rc_rx')
         self.register_event_type('on_tele_tx')
         self.register_event_type('on_tele_rx')
+        self.register_event_type('on_status')
+                    
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+    def on_status(self, msg, isAlert):
+        statusLabel = kvFind(self, 'rcid', 'status')
+        statusLabel.text = msg
+        statusLabel.color = self.normalStatusColor # if isAlert else self.alertStatusColor
+        
     def on_progress(self, value):
         if not self.progressBar:
             self.progressBar = kvFind(self, 'rcid', 'pbar')

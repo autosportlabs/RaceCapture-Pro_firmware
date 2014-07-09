@@ -185,7 +185,10 @@ class RaceCaptureApp(App):
     def switchMainView(self, viewKey):
             self.mainNav.anim_to_state('closed')
             Clock.schedule_once(lambda dt: self.showMainView(viewKey), 0.25)
-            
+          
+    def showStatus(self, status, isAlert):
+        self.statusBar.dispatch('on_status', status, isAlert)
+          
         
     def build(self):
         Builder.load_file('racecapture.kv')
@@ -254,8 +257,9 @@ class RaceCaptureApp(App):
     def initRcpComms(self):
         self.rcpComms.initSerial()
         Clock.schedule_once(lambda dt: self.on_read_config(self), 1.0)
-        
-    def rcpDetectWin(self):
+    
+    def rcpDetectWin(self, rcpVersion):
+        self.showStatus("RaceCapture/Pro v{0}.{1}.{2}".format(rcpVersion.major, rcpVersion.minor, rcpVersion.bugfix), False)
         self.initRcpComms()
 
         

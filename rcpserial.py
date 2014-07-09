@@ -577,7 +577,7 @@ class RcpSerial:
         if not verJson == None:
             print "Found racecapture version " + testVer.toString() + " on port:", self.port
             self.close()
-            if winCallback: winCallback()
+            if winCallback: winCallback(testVer)
         else:
             self.port = None
             if failCallback: failCallback()
