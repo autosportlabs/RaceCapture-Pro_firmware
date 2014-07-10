@@ -1,5 +1,5 @@
 # The name of our project (and the associated artifacts created)
-TARGET = f4_helloworld
+TARGET = main
 
 # board specific config file
 include board/open407v_d/config.mk
@@ -25,14 +25,14 @@ STM32F4XX_LIBS = 1
 ITM = 1
 
 # The source files of our application
-APP_SRC = main.c 
+APP_SRC = $(APP_PATH)/main.c 
 
 #Macro that expands our source files into their fully qualified paths
 #and adds a macro explaining how to convert them to binary
 APP_OBJS = $(addprefix $(APP_BASE)/, $(APP_SRC:.c=.o))
 
 # Adds this directory to the global application includes
-APP_INCLUDES += -Iapp/f4_helloworld
+APP_INCLUDES += -I.
 
 #Uncomment the following to enable newlib support
 APP_INCLUDES += -Iutil

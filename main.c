@@ -10,29 +10,31 @@
 // Standard includes
 #include "FreeRTOS.h"
 #include "task.h"
-#include "serial.h"
-#include "magic.h"
-#include "usb_comm.h"
-#include "baseCommands.h"
-#include "constants.h"
-#include "USB-CDC.h"
-#include "cpu.h"
-#include "OBD2_task.h"
-#include "watchdog.h"
-#include "LED.h"
-#include "loggerHardware.h"
-#include "gpsTask.h"
-#include "usart.h"
-#include "gpioTasks.h"
-#include "messaging.h"
+//#include "serial.h"
+//#include "magic.h"
+//#include "usb_comm.h"
+//#include "baseCommands.h"
+//#include "constants.h"
+//#include "USB-CDC.h"
+//#include "cpu.h"
+//#include "OBD2_task.h"
+//#include "watchdog.h"
+//#include "LED.h"
+//#include "loggerHardware.h"
+//#include "gpsTask.h"
+//#include "usart.h"
+//#include "gpioTasks.h"
+//#include "messaging.h"
 
 //logging related tasks
-#include "loggerTaskEx.h"
-#include "fileWriter.h"
-#include "connectivityTask.h"
-#include "luaTask.h"
-#include "luaCommands.h"
+//#include "loggerTaskEx.h"
+//#include "fileWriter.h"
+//#include "connectivityTask.h"
+//#include "luaTask.h"
+//#include "luaCommands.h"
 
+
+/*
 #define FATAL_ERROR_SCHEDULER	1
 #define FATAL_ERROR_HARDWARE	2
 
@@ -65,7 +67,7 @@ static void fatalError(int type){
 		for (int i=0;i<pause;i++){}
 	}
 }
-
+*/
 #define OBD2_TASK_PRIORITY					( tskIDLE_PRIORITY + 2 )
 #define GPS_TASK_PRIORITY 					( tskIDLE_PRIORITY + 2 )
 #define CONNECTIVITY_TASK_PRIORITY 			( tskIDLE_PRIORITY + 4 )
@@ -79,27 +81,27 @@ static void fatalError(int type){
 
 int main( void )
 {
-	cpu_init();
-	watchdog_init(WATCHDOG_TIMEOUT_MS);
+//	cpu_init();
+//	watchdog_init(WATCHDOG_TIMEOUT_MS);
 	//perform a clean reset if the watchdog fired
-	if (watchdog_is_watchdog_reset()) cpu_reset();
-	initialize_magic_info();
-	initialize_logger_config();
-	if (!initUsart()) fatalError(FATAL_ERROR_HARDWARE);
-	if (!vInitUSBInterface()) fatalError(FATAL_ERROR_HARDWARE);
-	init_serial();
-	InitLoggerHardware();
-	initMessaging();
+//	if (watchdog_is_watchdog_reset()) cpu_reset();
+//	initialize_magic_info();
+//	initialize_logger_config();
+//	if (!initUsart()) fatalError(FATAL_ERROR_HARDWARE);
+//	if (!vInitUSBInterface()) fatalError(FATAL_ERROR_HARDWARE);
+//	init_serial();
+//	InitLoggerHardware();
+//	initMessaging();
 
-	startGPIOTasks			( GPIO_TASK_PRIORITY );
-	startUSBCDCTask			( USB_CDC_TASK_PRIORITY );
-	startUSBCommTask		( USB_COMM_TASK_PRIORITY );
-	startLuaTask			( LUA_TASK_PRIORITY );
-	startFileWriterTask		( FILE_WRITER_TASK_PRIORITY );
-	startLoggerTaskEx		( LOGGER_TASK_PRIORITY );
-	startConnectivityTask	( CONNECTIVITY_TASK_PRIORITY );
-	startGPSTask			( GPS_TASK_PRIORITY );
-	startOBD2Task			( OBD2_TASK_PRIORITY);
+//	startGPIOTasks			( GPIO_TASK_PRIORITY );
+//	startUSBCDCTask			( USB_CDC_TASK_PRIORITY );
+//	startUSBCommTask		( USB_COMM_TASK_PRIORITY );
+//	startLuaTask			( LUA_TASK_PRIORITY );
+//	startFileWriterTask		( FILE_WRITER_TASK_PRIORITY );
+//	startLoggerTaskEx		( LOGGER_TASK_PRIORITY );
+//	startConnectivityTask	( CONNECTIVITY_TASK_PRIORITY );
+//	startGPSTask			( GPS_TASK_PRIORITY );
+//	startOBD2Task			( OBD2_TASK_PRIORITY);
 
 	/* Start the scheduler.
 
@@ -109,7 +111,17 @@ int main( void )
    to supervisor mode prior to main being called.  If you are not using one of
    these demo application projects then ensure Supervisor mode is used here. */
    vTaskStartScheduler();
-   fatalError(FATAL_ERROR_SCHEDULER);
+   //fatalError(FATAL_ERROR_SCHEDULER);
 
    return 0;
+}
+
+void vApplicationTickHook(void)
+{
+}
+
+void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName)
+{
+	(void)pxTask;
+	(void)pcTaskName;
 }
