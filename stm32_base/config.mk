@@ -25,7 +25,7 @@ STM32F4XX_LIBS = 1
 ITM = 1
 
 # The source files of our application
-APP_SRC = $(APP_PATH)/main.c 
+APP_SRC = $(APP_PATH)/main2.c 
 
 #Macro that expands our source files into their fully qualified paths
 #and adds a macro explaining how to convert them to binary
