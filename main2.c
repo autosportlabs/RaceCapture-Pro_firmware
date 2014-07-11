@@ -19,7 +19,7 @@
 //#include "cpu.h"
 //#include "OBD2_task.h"
 //#include "watchdog.h"
-//#include "LED.h"
+#include "LED.h"
 //#include "loggerHardware.h"
 //#include "gpsTask.h"
 //#include "usart.h"
@@ -90,7 +90,7 @@ int main( void )
 //	if (!initUsart()) fatalError(FATAL_ERROR_HARDWARE);
 //	if (!vInitUSBInterface()) fatalError(FATAL_ERROR_HARDWARE);
 //	init_serial();
-//	InitLoggerHardware();
+	InitLoggerHardware();
 //	initMessaging();
 
 //	startGPIOTasks			( GPIO_TASK_PRIORITY );
