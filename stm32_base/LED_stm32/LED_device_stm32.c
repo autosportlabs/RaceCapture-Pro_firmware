@@ -9,10 +9,10 @@ struct led {
 };
 
 static struct led leds[] = {
-	{ GPIOD, GPIO_Pin_10, 0 },
 	{ GPIOD, GPIO_Pin_11, 0 },
-	{ GPIOC, GPIO_Pin_6, 0 },
 	{ GPIOC, GPIO_Pin_7, 0 },
+	{ GPIOC, GPIO_Pin_6, 0 },
+	{ GPIOD, GPIO_Pin_10, 0 }
 };
 
 
@@ -34,6 +34,7 @@ int LED_device_init(void){
 	for (i = 0; i < 4; ++i){
 		gpio_conf.GPIO_Pin = leds[i].mask;
 		GPIO_Init(leds[i].port, &gpio_conf);
+		LED_device_disable(i);
 	}
 	return 1;
 }
