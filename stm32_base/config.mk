@@ -37,7 +37,9 @@ APP_SRC = 	$(APP_PATH)/main2.c \
 APP_OBJS = $(addprefix $(APP_BASE)/, $(APP_SRC:.c=.o))
 
 # Adds this directory to the global application includes
-APP_INCLUDES += -I$(APP_PATH) \
+APP_INCLUDES += -I. \
+				-I$(APP_PATH) \
+				-Iutil \
 				-I$(INCLUDE_DIR)/jsmn \
 				-I$(INCLUDE_DIR)/api \
 				-I$(INCLUDE_DIR)/logger \
@@ -56,6 +58,7 @@ APP_INCLUDES += -I$(APP_PATH) \
 				-I$(INCLUDE_DIR)/memory \
 				-I$(INCLUDE_DIR)/cpu \
 				-I$(INCLUDE_DIR)/spi \
+				-I$(INCLUDE_DIR)/serial \
 				-I$(INCLUDE_DIR)/magic \
 				-I$(INCLUDE_DIR)/lua \
 				-I$(INCLUDE_DIR)/imu \

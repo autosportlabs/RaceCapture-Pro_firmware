@@ -34,7 +34,7 @@
 //#include "luaCommands.h"
 
 
-/*
+
 #define FATAL_ERROR_SCHEDULER	1
 #define FATAL_ERROR_HARDWARE	2
 
@@ -67,7 +67,7 @@ static void fatalError(int type){
 		for (int i=0;i<pause;i++){}
 	}
 }
-*/
+
 #define OBD2_TASK_PRIORITY					( tskIDLE_PRIORITY + 2 )
 #define GPS_TASK_PRIORITY 					( tskIDLE_PRIORITY + 2 )
 #define CONNECTIVITY_TASK_PRIORITY 			( tskIDLE_PRIORITY + 4 )
@@ -102,6 +102,11 @@ int main( void )
 //	startConnectivityTask	( CONNECTIVITY_TASK_PRIORITY );
 //	startGPSTask			( GPS_TASK_PRIORITY );
 //	startOBD2Task			( OBD2_TASK_PRIORITY);
+
+	LED_enable(0);
+	LED_enable(1);
+	LED_enable(2);
+	LED_enable(3);
 
 	/* Start the scheduler.
 

@@ -39,11 +39,11 @@ int LED_device_init(void){
 }
 
 void LED_device_enable(unsigned int led){
-	GPIO_SetBits(leds[led].port, leds[led].mask);
+	GPIO_ResetBits(leds[led].port, leds[led].mask);
 }
 
 void LED_device_disable(unsigned int led){
-	GPIO_ResetBits(leds[led].port, leds[led].mask);
+	GPIO_SetBits(leds[led].port, leds[led].mask);
 }
 
 void LED_device_toggle(unsigned int led){
