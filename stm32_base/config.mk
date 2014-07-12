@@ -30,6 +30,7 @@ INCLUDE_DIR = $(APP_PATH)/include
 APP_SRC = 	$(APP_PATH)/main2.c \
 			$(APP_PATH)/src/LED/LED.c \
 			$(APP_PATH)/stm32_base/LED_stm32/LED_device_stm32.c \
+			$(APP_PATH)/stm32_base/memory_stm32/memory_device_stm32.c \
 			$(APP_PATH)/src/logger/loggerHardware.c
 
 #Macro that expands our source files into their fully qualified paths
