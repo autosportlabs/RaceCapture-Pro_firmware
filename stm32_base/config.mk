@@ -25,13 +25,16 @@ STM32F4XX_LIBS = 1
 ITM = 1
 
 INCLUDE_DIR = $(APP_PATH)/include
+HAL_SRC = $(APP_PATH)/stm32_base/hal
+RCP_SRC = $(APP_PATH)/src
 
 # The source files of our application
 APP_SRC = 	$(APP_PATH)/main2.c \
-			$(APP_PATH)/src/LED/LED.c \
-			$(APP_PATH)/stm32_base/LED_stm32/LED_device_stm32.c \
-			$(APP_PATH)/stm32_base/memory_stm32/memory_device_stm32.c \
-			$(APP_PATH)/src/logger/loggerHardware.c
+			$(RCP_SRC)/logger/loggerHardware.c \
+			$(RCP_SRC)/LED/LED.c \
+			$(HAL_SRC)/LED_stm32/LED_device_stm32.c \
+			$(HAL_SRC)/memory_stm32/memory_device_stm32.c 
+
 
 #Macro that expands our source files into their fully qualified paths
 #and adds a macro explaining how to convert them to binary
