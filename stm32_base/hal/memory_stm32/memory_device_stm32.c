@@ -46,7 +46,7 @@ int memory_device_flash_region(const void *address, const void *data, unsigned i
 		FLASH_EraseSector(flashSector, VoltageRange_3);
 
 		for (int i = 0; i < length; i++) {
-			if (FLASH_ProgramByte(address + i, (uint8_t)data + i) != FLASH_COMPLETE){
+			if (FLASH_ProgramByte((uint32_t)address[i], (uint8_t)data[i]) != FLASH_COMPLETE){
 				rc = FLASH_WRITE_ERROR;
 				break;
 			}

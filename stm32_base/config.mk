@@ -33,7 +33,11 @@ APP_SRC = 	$(APP_PATH)/main2.c \
 			$(RCP_SRC)/logger/loggerHardware.c \
 			$(RCP_SRC)/LED/LED.c \
 			$(HAL_SRC)/LED_stm32/LED_device_stm32.c \
-			$(HAL_SRC)/memory_stm32/memory_device_stm32.c 
+			$(HAL_SRC)/memory_stm32/memory_device_stm32.c \
+			$(HAL_SRC)/GPIO_stm32/GPIO_device_stm32.c \
+			$(HAL_SRC)/PWM_stm32/PWM_device_stm32.c \
+			$(HAL_SRC)/timer_stm32/timer_device_stm32.c \
+			$(HAL_SRC)/imu_stm32/imu_device_stm32.c
 
 
 #Macro that expands our source files into their fully qualified paths
