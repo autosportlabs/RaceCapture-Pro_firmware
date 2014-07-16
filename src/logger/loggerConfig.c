@@ -1,7 +1,6 @@
 #include "loggerConfig.h"
 #include "mod_string.h"
 #include "memory.h"
-#include "magic.h"
 #include "printk.h"
 #include "virtual_channel.h"
 
@@ -16,6 +15,14 @@ static const LoggerConfig g_defaultLoggerConfig = DEFAULT_LOGGER_CONFIG;
 
 static LoggerConfig g_workingLoggerConfig;
 
+static int firmware_major_version_matches_last(){
+	return g_savedLoggerConfig.VersionInfo.major == MAJOR_REV;
+}
+
+static int firmware_version_matches_last(){
+	const VersionInfo * version = &g_savedLoggerConfig.VersionInfo;
+	return version->major == MAJOR_REV && version->minor == MINOR_REV && version->bugfix == BUGFIX_REV;
+}
 
 int flash_default_logger_config(void){
 	pr_info("flashing default logger config...");
@@ -29,6 +36,14 @@ int flashLoggerConfig(void){
 }
 
 void initialize_logger_config(){
+	if (! firmware_version_matches_last()){
+		pr_info("new firmware detected\r\n");
+	}
+
+	if (! firmware_major_version_matches_last()){
+		pr_info("firmware major version changed\r\n");
+		flash_default_logger_config();
+	}
 	memcpy(&g_workingLoggerConfig,&g_savedLoggerConfig,sizeof(LoggerConfig));
 }
 

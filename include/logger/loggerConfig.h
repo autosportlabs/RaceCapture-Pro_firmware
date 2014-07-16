@@ -46,6 +46,14 @@
 #define HIGHER_SAMPLE_RATE(X,Y)				((X != SAMPLE_DISABLED && Y != SAMPLE_DISABLED && X < Y) || (X != SAMPLE_DISABLED && Y == SAMPLE_DISABLED) ? X : Y)
 #define LOWER_SAMPLE_RATE(X,Y)				(X > Y ? X : Y)
 
+typedef struct _VersionInfo{
+	unsigned int major;
+	unsigned int minor;
+	unsigned int bugfix;
+} VersionInfo;
+
+#define DEFAULT_VERSION_INFO {MAJOR_REV, MINOR_REV, BUGFIX_REV}
+
 typedef struct _ChannelConfig{
 	unsigned short channeId;
 	unsigned short sampleRate;
@@ -486,6 +494,7 @@ typedef struct _LoggerConfig {
 	TrackConfig TrackConfigs;
 	//Connectivity Configuration
 	ConnectivityConfig ConnectivityConfigs;
+	VersionInfo VersionInfo;
 	//Padding data to accommodate flash routine
 	char padding_data[FLASH_PAGE_SIZE];
 } LoggerConfig;
@@ -504,6 +513,7 @@ typedef struct _LoggerConfig {
 	DEFAULT_LAP_CONFIG, \
 	DEFAULT_TRACK_CONFIG, \
 	DEFAULT_CONNECTIVITY_CONFIG, \
+	DEFAULT_VERSION_INFO, \
 	"" \
 	}
 	

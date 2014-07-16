@@ -65,11 +65,13 @@
 }
 
 #define DEFAULT_TRACKS \
-{2, \
 { \
-The_Ridge_Motorsports_Park, \
-Pacific_Raceways \
-} \
+	MAGIC_NUMBER_TRACKS_INIT, \
+	2, \
+	{ \
+		The_Ridge_Motorsports_Park, \
+		Pacific_Raceways \
+	} \
 }
 
 #endif /* DEFAULT_TRACKS_H_ */
