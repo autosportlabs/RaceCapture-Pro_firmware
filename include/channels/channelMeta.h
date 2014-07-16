@@ -1,5 +1,6 @@
 #ifndef CHANNELMETA_H_
 #define CHANNELMETA_H_
+#include <stdint.h>
 #include "stddef.h"
 
 #define CHANNEL_ADD_RESULT_OK  		 	1
@@ -8,9 +9,9 @@
 #define CHANNEL_ADD_MODE_IN_PROGRESS	1
 #define CHANNEL_ADD_MODE_COMPLETE 		2
 
-#define MAX_CHANNEL_COUNT			90
-#define DEFAULT_LABEL_LENGTH		11
-#define DEFAULT_UNITS_LENGTH		11
+#define MAX_CHANNEL_COUNT				90
+#define DEFAULT_LABEL_LENGTH			11
+#define DEFAULT_UNITS_LENGTH			11
 
 
 #define CHANNEL_SYSTEM_CHANNEL_FLAG 	0
@@ -24,6 +25,7 @@
 #define CHANNEL_TYPE_GPS				6
 #define CHANNEL_TYPE_STATISTICS			7
 
+#define MAGIC_NUMBER_CHANNEL_INIT		0xDECAFBAD
 
 typedef struct _ChannelName{
 	char label[DEFAULT_LABEL_LENGTH];
@@ -35,10 +37,12 @@ typedef struct _ChannelName{
 } Channel;
 
 typedef struct _Channels{
+	uint32_t magicInit;
 	size_t count;
 	Channel channels[MAX_CHANNEL_COUNT];
 } Channels;
 
+void initialize_channels();
 int flash_default_channels(void);
 const Channel * get_channel(size_t id);
 const Channels * get_channels();

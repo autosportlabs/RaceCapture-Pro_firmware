@@ -65,6 +65,7 @@ CHANNEL_LapCount = 59
 } ChannelIds;
 
 #define DEFAULT_CHANNEL_META { \
+MAGIC_NUMBER_CHANNEL_INIT, \
 60, \
 { \
 {"Unknown", "", 0, 1, 0, 1024} , \

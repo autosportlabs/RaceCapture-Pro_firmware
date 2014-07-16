@@ -1,6 +1,7 @@
 #ifndef TRACKS_H_
 #define TRACKS_H_
 
+#include <stdint.h>
 #include "stddef.h"
 #include "default_tracks.h"
 #include "geopoint.h"
@@ -20,6 +21,8 @@
 
 #define TRACK_TYPE_CIRCUIT 			0
 #define TRACK_TYPE_SINGLE			1
+
+#define MAGIC_NUMBER_TRACKS_INIT	0xDECAFBAD
 
 typedef struct _Circuit{
 	GeoPoint startFinish;
@@ -44,10 +47,12 @@ typedef struct _Track{
 } Track;
 
 typedef struct _Tracks{
+	uint32_t magicInit;
 	size_t count;
 	Track tracks[MAX_TRACK_COUNT];
 } Tracks;
 
+void initialize_tracks();
 int flash_tracks(const Tracks *source, size_t rawSize);
 int add_track(const Track *track, size_t index, int mode);
 int flash_default_tracks(void);

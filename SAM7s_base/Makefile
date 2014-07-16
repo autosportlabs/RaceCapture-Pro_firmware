@@ -98,7 +98,6 @@ TRACKS_SRC_DIR = $(SRC_DIR)/tracks
 SPI_DIR = $(SRC_DIR)/spi
 CPU_SRC_DIR = $(SRC_DIR)/cpu
 MEMORY_SRC_DIR = $(SRC_DIR)/memory
-MAGIC_SRC_DIR = $(SRC_DIR)/magic
 LUA_SRC_DIR = $(SRC_DIR)/lua
 CMD_SRC_DIR = $(SRC_DIR)/command
 FILTER_DIR = $(SRC_DIR)/filter
@@ -174,7 +173,6 @@ $(LOGGER_SRC_DIR)/luaLoggerBinding.c \
 $(LOGGER_SRC_DIR)/loggerCommands.c \
 $(MEMORY_SRC_DIR)/memory.c \
 $(CPU_SRC_DIR)/cpu.c \
-$(MAGIC_SRC_DIR)/magic.c \
 $(MCP2515_DIR)/CAN_device_MCP2515.c \
 $(KXR94_2353_DIR)/imu_device_KXR94_2353.c \
 $(ADC_AT91_DIR)/ADC_device_at91.c \
@@ -322,7 +320,6 @@ CINCS = \
 -I$(INCLUDE_DIR)/memory \
 -I$(INCLUDE_DIR)/cpu \
 -I$(INCLUDE_DIR)/spi \
--I$(INCLUDE_DIR)/magic \
 -I$(INCLUDE_DIR)/lua \
 -I$(INCLUDE_DIR)/imu \
 -I$(INCLUDE_DIR)/messaging \

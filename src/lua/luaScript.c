@@ -1,30 +1,31 @@
 #include "luaScript.h"
-#include "memory.h"
 #include "mem_mang.h"
 #include "mod_string.h"
-#include "magic.h"
 #include "printk.h"
 
-#define SCRIPT_LENGTH SCRIPT_PAGES * MEMORY_PAGE_SIZE
-
 #ifndef RCP_TESTING
-static const char g_script[SCRIPT_LENGTH] __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".script\n\t#")));
+static const ScriptConfig g_scriptConfig __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".script\n\t#")));
 #else
-static char g_script[SCRIPT_LENGTH] = DEFAULT_SCRIPT;
+static ScriptConfig g_scriptConfig = DEFAULT_SCRIPT_CONFIG;
 #endif
 
+static const DefaultScriptConfig g_defaultScriptConfig = DEFAULT_SCRIPT_CONFIG;
 
-static const char g_defaultScript[] = DEFAULT_SCRIPT;
+void initialize_script(){
+	if (g_scriptConfig.magicInit != MAGIC_NUMBER_SCRIPT_INIT){
+		flash_default_script();
+	}
+}
 
 int flash_default_script(){
 	pr_info("flashing default script...");
-	int result = memory_flash_region(&g_script, &g_defaultScript, sizeof (DEFAULT_SCRIPT));
+	int result = memory_flash_region(&g_scriptConfig, &g_defaultScriptConfig, sizeof (g_defaultScriptConfig));
 	if (result == 0) pr_info("success\r\n"); else pr_info("failed\r\n");
 	return result;
 }
 
 const char * getScript(){
-	return g_script;
+	return g_scriptConfig.script;
 }
 
 //unescapes a string in place
@@ -67,9 +68,8 @@ void unescapeScript(char *data){
 }
 
 int flashScriptPage(unsigned int page, const char *data){
-	
 	int result = -1;
-	char * scriptPageAddress = (char *)g_script;
+	char * scriptPageAddress = (char *)g_scriptConfig.script;
 	scriptPageAddress += (page * MEMORY_PAGE_SIZE);
 	//if less than the page size, copy it into an expanded buffer
 	char * temp = (char *)portMalloc(MEMORY_PAGE_SIZE);
@@ -77,9 +77,9 @@ int flashScriptPage(unsigned int page, const char *data){
 	if (temp){
 		size_t size = strlen(data);
 		if (size > MEMORY_PAGE_SIZE) size = MEMORY_PAGE_SIZE;
-		memset(temp,0,MEMORY_PAGE_SIZE);
-		memcpy(temp,data,size);
-		result = memory_flash_region((void *)scriptPageAddress,(void *)temp, MEMORY_PAGE_SIZE);
+		memset(temp, 0, MEMORY_PAGE_SIZE);
+		memcpy(temp, data, size);
+		result = memory_flash_region((void *)scriptPageAddress, (void *)temp, MEMORY_PAGE_SIZE);
 		portFree(temp);
 	}
 	return result;

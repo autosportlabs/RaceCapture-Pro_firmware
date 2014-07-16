@@ -11,7 +11,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "serial.h"
-#include "magic.h"
 #include "usb_comm.h"
 #include "baseCommands.h"
 #include "constants.h"
@@ -25,6 +24,11 @@
 #include "usart.h"
 #include "gpioTasks.h"
 #include "messaging.h"
+
+#include "loggerConfig.h"
+#include "channelMeta.h"
+#include "tracks.h"
+#include "luaScript.h"
 
 //logging related tasks
 #include "loggerTaskEx.h"
@@ -83,8 +87,10 @@ int main( void )
 	watchdog_init(WATCHDOG_TIMEOUT_MS);
 	//perform a clean reset if the watchdog fired
 	if (watchdog_is_watchdog_reset()) cpu_reset();
-	initialize_magic_info();
+	initialize_tracks();
+	initialize_channels();
 	initialize_logger_config();
+	initialize_script();
 	if (!initUsart()) fatalError(FATAL_ERROR_HARDWARE);
 	if (!vInitUSBInterface()) fatalError(FATAL_ERROR_HARDWARE);
 	init_serial();
