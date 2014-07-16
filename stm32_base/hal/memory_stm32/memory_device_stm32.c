@@ -45,8 +45,11 @@ int memory_device_flash_region(const void *address, const void *data, unsigned i
 		FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR|FLASH_FLAG_PGSERR);
 		FLASH_EraseSector(flashSector, VoltageRange_3);
 
-		for (int i = 0; i < length; i++) {
-			if (FLASH_ProgramByte((uint32_t)address[i], (uint8_t)data[i]) != FLASH_COMPLETE){
+		uint32_t addrTarget = *(uint32_t*)address;
+		uint8_t *dataTarget = (uint8_t*)data;
+
+		for (unsigned int i = 0; i < length; i++) {
+			if (FLASH_ProgramByte(addrTarget + i, *(dataTarget + i)) != FLASH_COMPLETE){
 				rc = FLASH_WRITE_ERROR;
 				break;
 			}
