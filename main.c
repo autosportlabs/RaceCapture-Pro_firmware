@@ -90,7 +90,7 @@ int main( void )
 	initialize_tracks();
 	initialize_channels();
 	initialize_logger_config();
-	//initialize_script();
+	initialize_script();
 	if (!usart_init()) fatalError(FATAL_ERROR_HARDWARE);
 	if (!vInitUSBInterface()) fatalError(FATAL_ERROR_HARDWARE);
 	init_serial();
@@ -100,11 +100,11 @@ int main( void )
 	startGPIOTasks			( GPIO_TASK_PRIORITY );
 	startUSBCDCTask			( USB_CDC_TASK_PRIORITY );
 	startUSBCommTask		( USB_COMM_TASK_PRIORITY );
-	//startLuaTask			( LUA_TASK_PRIORITY );
+	startLuaTask			( LUA_TASK_PRIORITY );
 	startFileWriterTask		( FILE_WRITER_TASK_PRIORITY );
 	startLoggerTaskEx		( LOGGER_TASK_PRIORITY );
 	startConnectivityTask	( CONNECTIVITY_TASK_PRIORITY );
-	//startGPSTask			( GPS_TASK_PRIORITY );
+	startGPSTask			( GPS_TASK_PRIORITY );
 	startOBD2Task			( OBD2_TASK_PRIORITY);
 
 	/* Start the scheduler.
