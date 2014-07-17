@@ -31,7 +31,7 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include "usart.h"
+#include "usart_device.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
@@ -135,18 +135,46 @@ static unsigned int createUartMode(unsigned int bits, unsigned int parity, unsig
 	return AT91C_US_CLKS_CLOCK | bits | parity | stopBits | AT91C_US_CHMODE_NORMAL;
 }
 
-int initUsart()
+int usart_device_init()
 {
 	AT91F_PMC_EnablePeriphClock( AT91C_BASE_PMC,(1 << AT91C_ID_US0) | (1 << AT91C_ID_US1));
 	if (!initQueues()) return 0;
-	initUsart0(8, 0, 1, 115200);
-	initUsart1(8, 0, 1, 115200);
+	usart_device_init_0(8, 0, 1, 115200);
+	usart_device_init_1(8, 0, 1, 115200);
 	return 1;
 }
 
+int usart_device_init_serial(Serial *serial, size_t id){
+	int rc = 1;
+	switch(id){
+		case 0:
+			serial->init = &usart_device_init_0;
+			serial->flush = &usart0_flush;
+			serial->get_c = &usart0_getchar;
+			serial->get_c_wait = &usart0_getcharWait;
+			serial->get_line = &usart0_readLine;
+			serial->get_line_wait = &usart0_readLineWait;
+			serial->put_c = &usart0_putchar;
+			serial->put_s = &usart0_puts;
+			break;
+		case 1:
+			serial->init = &usart_device_init_1;
+			serial->flush = &usart1_flush;
+			serial->get_c = &usart1_getchar;
+			serial->get_c_wait = &usart1_getcharWait;
+			serial->get_line = &usart1_readLine;
+			serial->get_line_wait = &usart1_readLineWait;
+			serial->put_c = &usart1_putchar;
+			serial->put_s = &usart1_puts;
+			break;
+		default:
+			rc = 0;
+			break;
+	}
+	return rc;
+}
 
-
-void initUsart0(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud){
+void usart_device_init_0(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud){
 
 	unsigned int mode = createUartMode(bits, parity, stopBits);
 
@@ -177,7 +205,20 @@ void initUsart0(unsigned int bits, unsigned int parity, unsigned int stopBits, u
 	
 }
 
-void initUsart1(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud){
+void usart_device_config(uint8_t port, uint8_t bits, uint8_t parity, uint8_t stopbits, uint32_t baud){
+	switch(port){
+	case 0:
+		usart_device_init_0(bits, parity, stopbits, baud);
+		break;
+	case 1:
+		usart_device_init_1(bits, parity, stopbits, baud);
+		break;
+	default:
+		break;
+	}
+}
+
+void usart_device_init_1(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud){
 
 	unsigned int mode = createUartMode(bits, parity, stopBits);
 	

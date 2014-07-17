@@ -1,15 +1,15 @@
 #include "usart.h"
 
-int initUsart()
+int usart_device_init()
 {
 
 }
 
-void initUsart0(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud){
+void usart_device_init_0(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud){
 
 }
 
-void initUsart1(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud){
+void usart_device_init_1(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud){
 
 }
 

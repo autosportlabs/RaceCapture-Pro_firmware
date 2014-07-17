@@ -24,20 +24,44 @@ STM32F4XX_LIBS = 1
 #Uncomment the following line to enable ITM support (Trace Usart)
 ITM = 1
 
+include $(APP_PATH)/version.mk
+RCP_RELEASE_DIR ?= .
+RELEASE_NAME = RaceCapturePro-$(MAJOR).$(MINOR).$(BUGFIX)
+RELEASE_NAME_ZIP = $(RELEASE_NAME).zip
+RELEASE_NAME_BIN = $(RELEASE_NAME).bin
+RELEASE_NAME_ELF = $(RELEASE_NAME).elf
+RCP_INSTALL_DIR = RaceCapturePro_Firmware
+
+
+
 INCLUDE_DIR = $(APP_PATH)/include
 HAL_SRC = $(APP_PATH)/stm32_base/hal
 RCP_SRC = $(APP_PATH)/src
 
 # The source files of our application
 APP_SRC = 	$(APP_PATH)/main2.c \
+			$(RCP_SRC)/api/api.c \
+			$(RCP_SRC)/serial/serial.c \
 			$(RCP_SRC)/logger/loggerHardware.c \
+			$(RCP_SRC)/logger/loggerConfig.c \
+			$(RCP_SRC)/logger/loggerTaskEx.c \
+			$(RCP_SRC)/channels/channelMeta.c \
 			$(RCP_SRC)/LED/LED.c \
+			$(RCP_SRC)/logging/printk.c \
+			$(RCP_SRC)/logging/ring_buffer.c \
+			$(RCP_SRC)/virtual_channel/virtual_channel.c \
+			$(RCP_SRC)/memory/memory.c \
+			$(RCP_SRC)/util/linear_interpolate.c \
+			$(RCP_SRC)/util/mod_string.c \
+			$(RCP_SRC)/util/modp_atonum.c \
+			$(RCP_SRC)/util/modp_numtoa.c \
+			$(RCP_SRC)/util/taskUtil.c \
 			$(HAL_SRC)/LED_stm32/LED_device_stm32.c \
 			$(HAL_SRC)/memory_stm32/memory_device_stm32.c \
 			$(HAL_SRC)/GPIO_stm32/GPIO_device_stm32.c \
 			$(HAL_SRC)/PWM_stm32/PWM_device_stm32.c \
 			$(HAL_SRC)/timer_stm32/timer_device_stm32.c \
-			$(HAL_SRC)/imu_stm32/imu_device_stm32.c
+			$(HAL_SRC)/imu_stm32/imu_device_stm32.c 
 
 
 #Macro that expands our source files into their fully qualified paths
@@ -48,6 +72,8 @@ APP_OBJS = $(addprefix $(APP_BASE)/, $(APP_SRC:.c=.o))
 APP_INCLUDES += -I. \
 				-I$(APP_PATH) \
 				-Iutil \
+				-Imem_mang \
+				-Ilibs/FreeRTOSV7.6.0/FreeRTOS/Source/portable/MemMang \
 				-I$(INCLUDE_DIR)/jsmn \
 				-I$(INCLUDE_DIR)/api \
 				-I$(INCLUDE_DIR)/logger \
@@ -88,7 +114,7 @@ NEWLIB_OBJS += $(addprefix util/, $(NEWLIB_SRC:.c=.o))
 APP_OBJS += $(NEWLIB_OBJS)
 
 #Uncomment the following to use the ITM (trace macrocell) for printf
-APP_DEFINES += -DUSE_ITM
+APP_DEFINES += -DUSE_ITM -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
 
 # CPU is generally defined by the Board's config.mk file
 ifeq ($(CPU),)

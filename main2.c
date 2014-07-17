@@ -20,11 +20,16 @@
 //#include "OBD2_task.h"
 //#include "watchdog.h"
 #include "LED.h"
-//#include "loggerHardware.h"
+#include "loggerHardware.h"
 //#include "gpsTask.h"
 //#include "usart.h"
 //#include "gpioTasks.h"
 //#include "messaging.h"
+
+#include "loggerConfig.h"
+#include "channelMeta.h"
+//#include "tracks.h"
+//#include "luaScript.h"
 
 //logging related tasks
 //#include "loggerTaskEx.h"
@@ -85,8 +90,10 @@ int main( void )
 //	watchdog_init(WATCHDOG_TIMEOUT_MS);
 	//perform a clean reset if the watchdog fired
 //	if (watchdog_is_watchdog_reset()) cpu_reset();
-//	initialize_magic_info();
-//	initialize_logger_config();
+//	initialize_tracks();
+	initialize_channels();
+	initialize_logger_config();
+//	initialize_script();
 //	if (!initUsart()) fatalError(FATAL_ERROR_HARDWARE);
 //	if (!vInitUSBInterface()) fatalError(FATAL_ERROR_HARDWARE);
 //	init_serial();

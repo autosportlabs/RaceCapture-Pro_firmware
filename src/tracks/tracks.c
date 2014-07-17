@@ -6,7 +6,7 @@
 
 #ifndef RCP_TESTING
 #include "memory.h"
-static const Tracks g_tracks __attribute__ ((aligned (FLASH_MEMORY_PAGE_SIZE))) __attribute__((section(".tracks\n\t#")));
+static const Tracks g_tracks __attribute__((section(".tracks\n\t#")));
 #else
 static Tracks g_tracks = DEFAULT_TRACKS;
 #endif

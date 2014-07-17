@@ -18,7 +18,7 @@
 #include "luaScript.h"
 #include "luaTask.h"
 #include "mod_string.h"
-#include "usart.h"
+#include "serial.h"
 #include "printk.h"
 #include "modp_numtoa.h"
 #include "loggerTaskEx.h"
@@ -264,10 +264,10 @@ int Lua_WriteSerial(lua_State *L){
 		const char * data= lua_tostring(L,2);
 		switch (uart){
 		case 0:
-			usart0_puts(data);
+			get_serial_usart0()->put_s(data);
 			break;
 		case 1:
-			usart1_puts(data);
+			get_serial_usart1()->put_s(data);
 			break;
 		}
 	}
@@ -280,10 +280,10 @@ int Lua_ReadSerialLine(lua_State *L){
 		int uart = lua_tointeger(L,1);
 		switch (uart){
 		case 0:
-			usart0_readLine(g_tempBuffer, TEMP_BUFFER_LEN);
+			get_serial_usart0()->get_line(g_tempBuffer, TEMP_BUFFER_LEN);
 			break;
 		case 1:
-			usart1_readLine(g_tempBuffer, TEMP_BUFFER_LEN);
+			get_serial_usart1()->get_line(g_tempBuffer, TEMP_BUFFER_LEN);
 			break;
 		default:
 			return 0; //no result, return nil

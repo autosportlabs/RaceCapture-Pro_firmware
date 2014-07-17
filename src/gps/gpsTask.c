@@ -9,7 +9,7 @@
 #include "FreeRTOS.h"
 #include "printk.h"
 #include "task.h"
-#include "usart.h"
+#include "serial.h"
 
 #define GPS_DATA_LINE_BUFFER_LEN 	200
 #define GPS_TASK_STACK_SIZE			130
@@ -32,8 +32,10 @@ static void logGpsInput(const char *buf, int len) {
 }
 
 void GPSTask(void *pvParameters) {
-   for (;;) {
-      int len = usart1_readLine(g_GPSdataLine, GPS_DATA_LINE_BUFFER_LEN - 1);
+	Serial *gpsSerial = get_serial_usart1();
+
+	for (;;) {
+      int len = gpsSerial->get_line(g_GPSdataLine, GPS_DATA_LINE_BUFFER_LEN - 1);
       g_GPSdataLine[len] = '\0';
       logGpsInput(g_GPSdataLine, len);
       processGPSData(g_GPSdataLine, len);
@@ -42,7 +44,7 @@ void GPSTask(void *pvParameters) {
 
 void startGPSTask(int priority){
 	initGPS();
-	initUsart1(8, 0, 1, 38400);
+	configure_serial(1, 8, 0, 1, 38400);
 	xTaskCreate( GPSTask, ( signed portCHAR * )"GPSTask", GPS_TASK_STACK_SIZE, NULL, priority, NULL );
 }
 

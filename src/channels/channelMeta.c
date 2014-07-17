@@ -6,7 +6,7 @@
 
 #ifndef RCP_TESTING
 #include "memory.h"
-static const Channels g_channels __attribute__ ((aligned (FLASH_MEMORY_PAGE_SIZE))) __attribute__((section(".channels\n\t#")));
+static const Channels g_channels  __attribute__((section(".channels\n\t#")));
 #else
 static Channels g_channels = DEFAULT_CHANNEL_META;
 #endif

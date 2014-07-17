@@ -1221,16 +1221,23 @@ int api_setScript(Serial *serial, const jsmntok_t *json){
 
 	const jsmntok_t *dataTok = findNode(json, "data");
 	const jsmntok_t *pageTok = findNode(json, "page");
+	const jsmntok_t *modeTok = findNode(json, "mode");
+
 	if (dataTok != NULL && pageTok != NULL){
 		dataTok++;
 		pageTok++;
+		modeTok++;
+
 		jsmn_trimData(dataTok);
 		jsmn_trimData(pageTok);
+		jsmn_trimData(modeTok);
+
 		size_t page = modp_atoi(pageTok->data);
-		if (page < SCRIPT_PAGES){
+		size_t mode = modp_atoi(modeTok->data);
+		if (page < MAX_SCRIPT_PAGES){
 			char *script = dataTok->data;
 			unescapeScript(script);
-			int flashResult = flashScriptPage(page, script);
+			int flashResult = flashScriptPage(page, script, mode);
 			returnStatus = flashResult == 0 ? API_SUCCESS : API_ERROR_SEVERE;
 		}
 		else{

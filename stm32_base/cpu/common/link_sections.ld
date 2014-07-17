@@ -36,6 +36,30 @@ ENTRY(Reset_Handler)
      . = ALIGN(4);
    } >FLASH
 
+   config :
+   {
+     . = ALIGN(4);
+     KEEP (*(.config))
+   } > CONFIG
+
+   tracks :
+   {
+    . = ALIGN(4);
+    KEEP (*(.tracks))
+   } > TRACKS
+
+  channels :
+  {
+    . = ALIGN(4);
+    KEEP (*(.channels))
+  } > CHANNELS
+    
+  script :
+  {
+    . = ALIGN(4);
+    KEEP (*(.script))
+  } > SCRIPT
+
    /* The program code and other data goes into FLASH */
    .text :
    {

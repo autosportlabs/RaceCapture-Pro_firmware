@@ -9,6 +9,7 @@
 #define SERIAL_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 typedef struct _Serial{
 
@@ -28,6 +29,8 @@ typedef struct _Serial{
 
 
 void init_serial(void);
+
+void configure_serial(uint8_t port, uint8_t bits, uint8_t parity, uint8_t stopBits, uint32_t baud);
 
 Serial * get_serial_usart0();
 

@@ -71,58 +71,6 @@ void ReloadScript(Serial *serial, unsigned int argc, char **argv){
 	put_commandOK(serial);
 }
 
-
-void WriteScriptPage(Serial *serial, unsigned int argc, char **argv){
-	if (argc < 2){
-		put_commandError(serial, ERROR_CODE_INVALID_PARAM);
-		return;
-	}
-
-	unsigned int page = modp_atoi(argv[1]);
-	char *scriptPage = "";
-	if (argc >= 3) scriptPage = argv[2];
-
-	if (page >=0 && page < SCRIPT_PAGES){
-		if (argc >= 2) unescapeScript(scriptPage);
-		lockLua();
-		vPortEnterCritical();
-		int result = flashScriptPage(page, scriptPage);
-		vPortExitCritical();
-		unlockLua();
-		if (result == 0){
-			put_commandOK(serial);
-		}
-		else{
-			put_commandError(serial, result);
-		}
-	}
-	else{
-		put_commandError(serial, ERROR_CODE_INVALID_PARAM);
-	}
-}
-
-void ReadScriptPage(Serial *serial, unsigned int argc, char **argv){
-
-	if (argc < 2){
-		put_commandError(serial, ERROR_CODE_INVALID_PARAM);
-		return;
-	}
-
-	int page = modp_atoi(argv[1]);
-	if (page >=0 && page < SCRIPT_PAGES){
-		const char * script = getScript();
-		//forward to the requested page
-		script += (MEMORY_PAGE_SIZE * page);
-		//check for truncated page
-		size_t scriptLen = strlen(script);
-		if (scriptLen > MEMORY_PAGE_SIZE) scriptLen = MEMORY_PAGE_SIZE;
-		put_nameEscapedString(serial, "script",script,scriptLen);
-	}
-	else{
-		put_commandError(serial, ERROR_CODE_INVALID_PARAM);
-	}
-}
-
 int in_interactive_mode(){
 	return g_interactive_mode;
 }

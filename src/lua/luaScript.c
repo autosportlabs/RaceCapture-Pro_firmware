@@ -3,13 +3,16 @@
 #include "mod_string.h"
 #include "printk.h"
 
+
 #ifndef RCP_TESTING
-static const ScriptConfig g_scriptConfig __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".script\n\t#")));
+static const ScriptConfig g_scriptConfig  __attribute__((section(".script\n\t#")));
 #else
 static ScriptConfig g_scriptConfig = DEFAULT_SCRIPT_CONFIG;
 #endif
 
 static const DefaultScriptConfig g_defaultScriptConfig = DEFAULT_SCRIPT_CONFIG;
+
+static ScriptConfig * g_scriptBuffer = NULL;
 
 void initialize_script(){
 	if (g_scriptConfig.magicInit != MAGIC_NUMBER_SCRIPT_INIT){
@@ -67,28 +70,50 @@ void unescapeScript(char *data){
 	*result='\0';
 }
 
-int flashScriptPage(unsigned int page, const char *data){
-	int result = -1;
-	char * scriptPageAddress = (char *)g_scriptConfig.script;
-	scriptPageAddress += (page * MEMORY_PAGE_SIZE);
-	//if less than the page size, copy it into an expanded buffer
-	char * temp = (char *)portMalloc(MEMORY_PAGE_SIZE);
+int flashScriptPage(unsigned int page, const char *data, int mode){
 
-	if (temp){
-		size_t size = strlen(data);
-		if (size > MEMORY_PAGE_SIZE) size = MEMORY_PAGE_SIZE;
-		memset(temp, 0, MEMORY_PAGE_SIZE);
-		memcpy(temp, data, size);
-		result = memory_flash_region((void *)scriptPageAddress, (void *)temp, MEMORY_PAGE_SIZE);
-		portFree(temp);
+	int result = SCRIPT_ADD_RESULT_OK;
+
+	if (page < MAX_SCRIPT_PAGES){
+		if (mode == SCRIPT_ADD_MODE_IN_PROGRESS || mode == SCRIPT_ADD_MODE_COMPLETE){
+			if (g_scriptBuffer == NULL){
+				pr_info("allocating new script buffer\r\n");
+				g_scriptBuffer = (ScriptConfig *)portMalloc(sizeof(ScriptConfig));
+				memcpy(g_scriptBuffer, &g_scriptConfig, sizeof(ScriptConfig));
+			}
+
+			if (g_scriptBuffer != NULL){
+				char *pageToAdd = g_scriptBuffer->script + page;
+				memcpy(pageToAdd, data, strlen(data));
+
+				if (mode == SCRIPT_ADD_MODE_COMPLETE){
+					pr_info("completed updating script, flashing: ");
+					if (memory_flash_region(&g_scriptConfig, g_scriptBuffer, sizeof(ScriptConfig)) == 0){
+						pr_info("success\r\n");
+					}
+					else{
+						pr_error("error\r\n");
+						result = SCRIPT_ADD_RESULT_FAIL;
+					}
+					portFree(g_scriptBuffer);
+					g_scriptBuffer = NULL;
+				}
+			}
+			else{
+				pr_error("could not allocate buffer for script\r\n");
+				result = SCRIPT_ADD_RESULT_FAIL;
+			}
+		}
+	}
+	else{
+		pr_error("invalid track index\r\n");
+		result = SCRIPT_ADD_RESULT_FAIL;
 	}
 	return result;
 }
 
-unsigned int getPageSize(){
-	return MEMORY_PAGE_SIZE;
-}
 
-unsigned int getScriptPages(){
-	return SCRIPT_PAGES;
-}
+
+
+
+

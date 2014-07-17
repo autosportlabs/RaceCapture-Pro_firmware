@@ -81,11 +81,11 @@ void StartTerminal(Serial *serial, unsigned int argc, char **argv){
 
 	switch(port){
 		case 0:
-			initUsart0(8, 0, 1, baud);
+			configure_serial(0, 8, 0, 1, baud);
 			StartTerminalSession(serial, get_serial_usart0());
 			break;
 		case 1:
-			initUsart1(8, 0, 1, baud);
+			configure_serial(1, 8, 0, 1, baud);
 			StartTerminalSession(serial, get_serial_usart1());
 			break;
 		default:

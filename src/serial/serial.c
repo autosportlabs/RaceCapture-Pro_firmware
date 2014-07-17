@@ -8,23 +8,8 @@ static Serial Usart1;
 static Serial Usb;
 
 void init_serial(void){
-	Usart0.init = &initUsart0;
-	Usart0.flush = &usart0_flush;
-	Usart0.get_c = &usart0_getchar;
-	Usart0.get_c_wait = &usart0_getcharWait;
-	Usart0.get_line = &usart0_readLine;
-	Usart0.get_line_wait = &usart0_readLineWait;
-	Usart0.put_c = &usart0_putchar;
-	Usart0.put_s = &usart0_puts;
-
-	Usart1.init = &initUsart1;
-	Usart1.flush = &usart1_flush;
-	Usart1.get_c = &usart1_getchar;
-	Usart1.get_c_wait = &usart1_getcharWait;
-	Usart1.get_line = &usart1_readLine;
-	Usart1.get_line_wait = &usart1_readLineWait;
-	Usart1.put_c = &usart1_putchar;
-	Usart1.put_s = &usart1_puts;
+	usart_init_serial(&Usart0, 0);
+	usart_init_serial(&Usart1, 1);
 
 	Usb.init = &usb_init;
 	Usb.flush = &usb_flush;
@@ -34,6 +19,10 @@ void init_serial(void){
 	Usb.get_line_wait = &usb_readLineWait;
 	Usb.put_c = &usb_putchar;
 	Usb.put_s = &usb_puts;
+}
+
+void configure_serial(uint8_t port, uint8_t bits, uint8_t parity, uint8_t stopBits, uint32_t baud){
+	usart_config(port, bits, parity, stopBits, baud);
 }
 
 Serial * get_serial_usart0(){

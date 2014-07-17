@@ -273,7 +273,7 @@ ret0:
   return 0;
 }
 
-const char * strchr(const char *s, const int c)
+char * strchr(char *s, const int c)
 {
         do {
                 if (*s == (char)c) {
