@@ -9,17 +9,29 @@ static const ScriptConfig g_scriptConfig __attribute__ ((aligned (MEMORY_PAGE_SI
 static ScriptConfig g_scriptConfig = DEFAULT_SCRIPT_CONFIG;
 #endif
 
-static const DefaultScriptConfig g_defaultScriptConfig = DEFAULT_SCRIPT_CONFIG;
-
 void initialize_script(){
 	if (g_scriptConfig.magicInit != MAGIC_NUMBER_SCRIPT_INIT){
-		flash_default_script();
+		//flash_default_script();
 	}
 }
 
 int flash_default_script(){
+	int result = -1;
 	pr_info("flashing default script...");
-	int result = memory_flash_region(&g_scriptConfig, &g_defaultScriptConfig, sizeof (g_defaultScriptConfig));
+	ScriptConfig *defaultScriptConfig = pvPortMalloc(sizeof(ScriptConfig));
+	if (defaultScriptConfig != NULL){
+		defaultScriptConfig->magicInit = MAGIC_NUMBER_SCRIPT_INIT;
+		strncpy(defaultScriptConfig->script, DEFAULT_SCRIPT, sizeof(DEFAULT_SCRIPT));
+
+		result = memory_flash_region(&g_scriptConfig, &defaultScriptConfig, sizeof (ScriptConfig));
+		pr_info_int(sizeof(ScriptConfig));
+		pr_info(" ");
+		pr_info_int(g_scriptConfig.magicInit);
+		pr_info(" ");
+		pr_info_int(defaultScriptConfig->magicInit);
+		pr_info("\r\n");
+		vPortFree(defaultScriptConfig);
+	}
 	if (result == 0) pr_info("success\r\n"); else pr_info("failed\r\n");
 	return result;
 }
