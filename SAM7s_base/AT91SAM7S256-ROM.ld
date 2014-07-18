@@ -55,12 +55,6 @@ SECTIONS
     KEEP (*(.channels))
   } > CHANNELS
   
-  magic :
-  {
-    . = ALIGN(4);
-    KEEP (*(.magic))
-  } > MAGIC
-
   config :
   {
     . = ALIGN(4);
