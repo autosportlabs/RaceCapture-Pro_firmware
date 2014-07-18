@@ -409,8 +409,8 @@ typedef struct _BluetoothConfig{
 #define CELL_DISABLED				0
 
 #define CELL_APN_HOST_LENGTH 30
-#define CELL_APN_USER_LENGTH 20
-#define CELL_APN_PASS_LENGTH 20
+#define CELL_APN_USER_LENGTH 30
+#define CELL_APN_PASS_LENGTH 30
 #define DEFAULT_APN_HOST "epc.tmobile.com"
 #define DEFAULT_APN_USER ""
 #define DEFAULT_APN_PASS ""
