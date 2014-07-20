@@ -599,7 +599,7 @@ int Lua_GetSplit(lua_State *L){
 }
 
 int Lua_GetAtSplit(lua_State *L){
-	lua_pushinteger(L,getAtSplit());
+	lua_pushinteger(L,getAtSector());
 	return 1;
 }
 
