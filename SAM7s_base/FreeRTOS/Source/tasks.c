@@ -189,6 +189,7 @@ Changes from V4.0.5
 
 #include "FreeRTOS.h"
 #include "task.h"
+#include "rtc.h"
 
 /*
  * Macro to define the amount of stack available to the idle task.
@@ -1283,6 +1284,12 @@ inline void vTaskIncrementTick( void )
 		}
 	}
 	#endif
+
+	if ( xTickCount % configTICK_RATE_HZ == 0)
+	{
+			unsigned int cnt = RTC_GetCounter();
+			RTC_SetCounter(cnt + 1);
+	}
 }
 /*-----------------------------------------------------------*/
 

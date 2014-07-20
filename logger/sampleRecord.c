@@ -62,6 +62,12 @@ void initSampleRecord(LoggerConfig *loggerConfig,SampleRecord *sr){
 		s->intValue = NIL_SAMPLE;
 	}
 	{
+		ChannelSample *s = &(sr->GPS_DateSample);
+		s->precision = DEFAULT_GPS_DATE_LOGGING_PRECISION;
+		s->channelConfig = &(loggerConfig->GPSConfigs.dateCfg);
+		s->intValue = NIL_SAMPLE;
+	}
+	{
 		ChannelSample *s = &(sr->GPS_TimeSample);
 		s->precision = DEFAULT_GPS_TIME_LOGGING_PRECISION;
 		s->channelConfig = &(loggerConfig->GPSConfigs.timeCfg);

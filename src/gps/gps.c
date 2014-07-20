@@ -97,8 +97,10 @@ long getMillisSinceEpoch() {
  */
 void updateFullDateTime(DateTime fixDateTime) {
    g_dtLastFix = fixDateTime;
-   if (!isValid(&g_dtFirstFix))
+   if (!isValid(&g_dtFirstFix)) {
       g_dtFirstFix = fixDateTime;
+      setRtcDateTime(&fixDateTime);
+   }
 }
 
 /**
@@ -393,6 +395,14 @@ int getAtStartFinish() {
 
 int getAtSector(){
    return g_atTarget;
+}
+
+int getDate() {
+   const DateTime dt = getLastFixDateTime();
+   int date = convertToFullYear(dt.partialYear) * 10000;
+   date += dt.month * 100;
+   date += dt.day;
+   return date;
 }
 
 float getUTCTime() {

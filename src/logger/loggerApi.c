@@ -737,6 +737,10 @@ int api_getGpsConfig(Serial *serial, const jsmntok_t *json){
 	json_channelConfig(serial, &gpsCfg->satellitesCfg, 0);
 	json_blockEnd(serial, 1);
 
+	json_blockStart(serial, "date");
+	json_channelConfig(serial, &gpsCfg->dateCfg, 0);
+	json_blockEnd(serial, 0);
+
 	json_blockStart(serial, "time");
 	json_channelConfig(serial, &gpsCfg->timeCfg, 0);
 	json_blockEnd(serial, 0);
@@ -759,6 +763,9 @@ int api_setGpsConfig(Serial *serial, const jsmntok_t *json){
 
 	const jsmntok_t * speedNode = findNode(channelData, "speed");
 	if (speedNode != NULL) setChannelConfig(serial, speedNode + 1, &gpsCfg->speedCfg, NULL, NULL);
+	
+	const jsmntok_t * dateNode = findNode(channelData, "date");
+	if (dateNode != NULL) setChannelConfig(serial, dateNode + 1, &gpsCfg->dateCfg, NULL, NULL);
 
 	const jsmntok_t * timeNode = findNode(channelData, "time");
 	if (timeNode != NULL) setChannelConfig(serial, timeNode + 1, &gpsCfg->timeCfg, NULL, NULL);

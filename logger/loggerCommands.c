@@ -196,6 +196,7 @@ void GetGpsConfig(Serial *serial, unsigned int argc, char **argv){
 	SendChannelConfigSuffix(serial, &(cfg->latitudeCfg),"lat");
 	SendChannelConfigSuffix(serial, &(cfg->longitudeCfg),"long");
 	SendChannelConfigSuffix(serial, &(cfg->speedCfg),"vel");
+	SendChannelConfigSuffix(serial, &(cfg->dateCfg),"date");
 	SendChannelConfigSuffix(serial, &(cfg->timeCfg),"time");
 	SendChannelConfigSuffix(serial, &(cfg->satellitesCfg),"sats");
 }
@@ -206,8 +207,9 @@ void SetGpsConfig(Serial *serial, unsigned int argc, char **argv){
 	if (argc > 2) SetChannelConfig(&(cfg->latitudeCfg),2,argc,argv);
 	if (argc > 5) SetChannelConfig(&(cfg->longitudeCfg),5,argc,argv);
 	if (argc > 8) SetChannelConfig(&(cfg->speedCfg),8,argc,argv);
-	if (argc > 11) SetChannelConfig(&(cfg->timeCfg),11,argc,argv);
-	if (argc > 14) SetChannelConfig(&(cfg->satellitesCfg),14,argc,argv);
+	if (argc > 11) SetChannelConfig(&(cfg->dateCfg),11,argc,argv);
+	if (argc > 14) SetChannelConfig(&(cfg->timeCfg),11,argc,argv);
+	if (argc > 17) SetChannelConfig(&(cfg->satellitesCfg),14,argc,argv);
 	put_commandOK(serial);
 }
 

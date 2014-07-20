@@ -44,6 +44,7 @@ typedef struct _SampleRecord
 		ChannelSample GPS_LatitueSample;
 		ChannelSample GPS_LongitudeSample;
 		ChannelSample GPS_SpeedSample;
+		ChannelSample GPS_DateSample;
 		ChannelSample GPS_TimeSample;
 		ChannelSample GPS_SatellitesSample;
 		ChannelSample Track_LapCountSample;

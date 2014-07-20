@@ -4,6 +4,7 @@
 
 #include "dateTime.h"
 #include <stdbool.h>
+#include "rtc.h"
 
 /**
  * Converts years that end in XX to full XXXX years.  So 70 -> 1970.  01 -> 2001
@@ -97,4 +98,15 @@ long getTimeDeltaInMillis(DateTime a, DateTime b) {
 
 bool isValid(const DateTime *dt) {
 	return dt->month != 0;
+}
+
+void setRtcDateTime(const DateTime *dt) {
+   RTC_t t;
+   t.year = convertToFullYear(dt->partialYear);
+   t.month = dt->month;
+   t.mday = dt->day;
+   t.hour = dt->hour;
+   t.min = dt->minute;
+   t.sec = dt->second;
+   rtc_settime(&t);
 }

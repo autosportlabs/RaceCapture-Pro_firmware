@@ -34,6 +34,8 @@ int getAtStartFinish();
 
 int getAtSector();
 
+int getDate();
+
 void getUTCTimeFormatted(char buf[], size_t len);
 
 float getUTCTime();

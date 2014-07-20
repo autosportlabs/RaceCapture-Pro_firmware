@@ -18,6 +18,7 @@
 #include "constants.h"
 #include "interrupt_utils.h"
 #include "USB-CDC.h"
+#include "rtc.h"
 
 //RaceCapture specific includes
 #include "loggerHardware.h"
@@ -91,6 +92,8 @@ static int setupHardware( void )
 	if (!vInitUSBInterface()) return 0;
 
 	init_serial();
+
+	rtc_init();
 
 	InitLoggerHardware();
 	return 1;

@@ -32,4 +32,6 @@ long getTimeDeltaInMillis(DateTime a, DateTime b);
  */
 bool isValid(const DateTime *dt);
 
+void setRtcDateTime(const DateTime *dt);
+
 #endif //__DATE_TIME_H__
