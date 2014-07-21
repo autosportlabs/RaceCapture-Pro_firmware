@@ -599,7 +599,7 @@ int Lua_GetSplit(lua_State *L){
 }
 
 int Lua_GetAtSplit(lua_State *L){
-	lua_pushinteger(L,getAtSplit());
+	lua_pushinteger(L,getAtSector());
 	return 1;
 }
 
@@ -636,6 +636,18 @@ int Lua_SetGPSLongitudeLabel(lua_State *L){
 
 int Lua_GetGPSLongitudeLabel(lua_State *L){
 	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfigs.longitudeCfg.label);
+	return 1;	
+}
+
+int Lua_SetGPSDateLabel(lua_State *L){
+	if (lua_gettop(L) >= 1){
+		setLabelGeneric(getWorkingLoggerConfig()->GPSConfigs.dateCfg.label,lua_tostring(L,1));
+	}
+	return 0;
+}
+
+int Lua_GetGPSDateLabel(lua_State *L){
+	lua_pushstring(L,getWorkingLoggerConfig()->GPSConfigs.dateCfg.label);
 	return 1;	
 }
 
@@ -686,6 +698,18 @@ int Lua_SetGPSSpeedSampleRate(lua_State *L){
 
 int Lua_GetGPSSpeedSampleRate(lua_State *L){
 	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfigs.speedCfg.sampleRate);
+	return 1;
+}
+
+int Lua_SetGPSDateSampleRate(lua_State *L){
+	if (lua_gettop(L) >= 1 ){
+		getWorkingLoggerConfig()->GPSConfigs.dateCfg.sampleRate = encodeSampleRate(lua_tointeger(L,1));
+	}
+	return 0;
+}
+
+int Lua_GetGPSDateSampleRate(lua_State *L){
+	lua_pushinteger(L,getWorkingLoggerConfig()->GPSConfigs.dateCfg.sampleRate);
 	return 1;
 }
 

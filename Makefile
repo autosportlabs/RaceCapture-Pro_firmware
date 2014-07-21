@@ -139,6 +139,7 @@ $(LOGGER_SRC_DIR)/gpioTasks.c \
 $(LOGGER_SRC_DIR)/loggerTaskEx.c \
 $(LOGGER_SRC_DIR)/connectivityTask.c \
 $(GPS_SRC_DIR)/gps.c \
+$(GPS_SRC_DIR)/dateTime.c \
 $(LOGGER_SRC_DIR)/gpsTask.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
 $(GPS_SRC_DIR)/geometry.c \

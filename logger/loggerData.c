@@ -136,6 +136,15 @@ static int writeADC(SampleRecord *sampleRecord, size_t currentTicks, LoggerConfi
 static int writeGPSChannels(SampleRecord *sampleRecord, size_t currentTicks, GPSConfig *config){
 	int rate = SAMPLE_DISABLED;
 	{
+		size_t sr = config->dateCfg.sampleRate;
+		if (sr != SAMPLE_DISABLED){
+			if ((currentTicks % sr) == 0){
+				rate = HIGHER_SAMPLE_RATE(sr, rate);
+				sampleRecord->GPS_DateSample.intValue = getDate();
+			}
+		}	
+	}
+	{
 		size_t sr = config->timeCfg.sampleRate;
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
@@ -194,7 +203,7 @@ static int writeTrackChannels(SampleRecord *sampleRecord, size_t currentTicks, T
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
 				rate = HIGHER_SAMPLE_RATE(sr, rate);
-				sampleRecord->Track_SplitTimeSample.floatValue = getLastSplitTime();
+				sampleRecord->Track_SplitTimeSample.floatValue = getLastSectorTime(); // getLastSplitTime()->getLastSectorTime() ?-jrwiebe 
 			}
 		}
 	}
@@ -212,7 +221,7 @@ static int writeTrackChannels(SampleRecord *sampleRecord, size_t currentTicks, T
 		if (sr != SAMPLE_DISABLED){
 			if ((currentTicks % sr) == 0){
 				rate = HIGHER_SAMPLE_RATE(sr, rate);
-				sampleRecord->Track_DistanceSample.floatValue = getDistance() * 0.621371192; //convert to miles
+				sampleRecord->Track_DistanceSample.floatValue = getGpsDistance() * 0.621371192; //convert to miles
 			}
 		}
 	}

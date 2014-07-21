@@ -33,7 +33,7 @@
 {"getPwmClockFreq", "Gets the PWM clock frequency for the specified channel.","", GetPwmClockFreq}, \
 \
 {"getGpsCfg", "Gets the configuration for Gps features","",GetGpsConfig}, \
-{"setGpsCfg", "Sets the configuration for Gps features","[installed] [label_lat] [units_lat] [sampleRate_lat] [label_long] [units_long] [sampleRate_long] [label_vel] [units_vel] [sampleRate_vel] [label_time] [units_time] [sampleRate_time] [label_sats] [units_sats] [sampleRate_sats]",SetGpsConfig}, \
+{"setGpsCfg", "Sets the configuration for Gps features","[installed] [label_lat] [units_lat] [sampleRate_lat] [label_long] [units_long] [sampleRate_long] [label_vel] [units_vel] [sampleRate_vel] [label_time] [units_time] [sampleRate_time] [label_date] [units_date] [sampleRate_date] [label_sats] [units_sats] [sampleRate_sats]",SetGpsConfig}, \
 \
 {"getDistCfg", "Gets the configuration for the distance channels", "", GetDistanceConfig}, \
 {"setDistCfg", "Sets the configuration for the distance channels", "[label_lapDist] [units_lapDist] [sampleRate_lapDist] [label_totalDist] [units_totalDist] [sampleRate_totalDist]", SetDistanceConfig}, \

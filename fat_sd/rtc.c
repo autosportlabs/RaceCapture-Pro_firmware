@@ -241,7 +241,7 @@ bool rtc_gettime (RTC_t *rtc)
 
 	while ( ( t = RTC_GetCounter() ) != RTC_GetCounter() ) { ; }
 	counter_to_struct( t, rtc ); // get non DST time
-	adjustDST( rtc );
+	//adjustDST( rtc );
 
 	return true;
 }
@@ -261,9 +261,9 @@ bool rtc_settime (const RTC_t *rtc)
 
 	cnt = struct_to_counter( rtc ); // non-DST counter-value
 	counter_to_struct( cnt, &ts );  // normalize struct (for weekday)
-	if ( isDST( &ts ) ) {
-		cnt -= 60*60; // Subtract one hour
-	}
+	//if ( isDST( &ts ) ) {
+	//	cnt -= 60*60; // Subtract one hour
+	//}
 	RTC_SetCounter( cnt );
 
 	return true;

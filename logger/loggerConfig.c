@@ -350,6 +350,10 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
 			if HIGHER_SAMPLE(sr, s) s = sr;
 		}
 		{
+			int sr = gpsConfig->dateCfg.sampleRate;
+			if HIGHER_SAMPLE(sr, s) s = sr;
+		}
+		{
 			int sr = gpsConfig->timeCfg.sampleRate;
 			if HIGHER_SAMPLE(sr, s) s = sr;
 		}

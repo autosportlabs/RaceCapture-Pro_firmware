@@ -118,7 +118,7 @@ void loggerTaskEx(void *params){
 			currentTicks = 0;
 			updateSampleRates(loggerConfig, &loggingSampleRate, &telemetrySampleRate, &sampleRateTimebase);
 			resetLapCount();
-			resetDistance();
+			resetGpsDistance();
 			g_configChanged = 0;
 		}
 

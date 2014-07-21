@@ -233,6 +233,7 @@ typedef struct _GPSConfig{
 	ChannelConfig satellitesCfg;
 	ChannelConfig latitudeCfg;
 	ChannelConfig longitudeCfg;
+	ChannelConfig dateCfg;
 	ChannelConfig timeCfg;
 	ChannelConfig speedCfg;
 } GPSConfig;
@@ -241,6 +242,7 @@ typedef struct _GPSConfig{
 #define DEFAULT_GPS_POSITION_LOGGING_PRECISION 		6
 #define DEFAULT_GPS_SPEED_LOGGING_PRECISION 		2
 #define DEFAULT_GPS_RADIUS_LOGGING_PRECISION 		5
+#define DEFAULT_GPS_DATE_LOGGING_PRECISION			0
 #define DEFAULT_GPS_TIME_LOGGING_PRECISION 			3
 #define DEFAULT_LAP_COUNT_LOGGING_PRECISION			0
 #define DEFAULT_LAP_TIME_LOGGING_PRECISION			3
@@ -251,6 +253,7 @@ typedef struct _GPSConfig{
 #define DEFAULT_GPS_SATELLITES_CONFIG {"GpsSats", "", SAMPLE_DISABLED}
 #define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "Deg", SAMPLE_10Hz}
 #define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "Deg", SAMPLE_10Hz}
+#define DEFAULT_GPS_DATE_CONFIG {"Date", "Date", SAMPLE_10Hz}
 #define DEFAULT_GPS_TIME_CONFIG {"Time", "Time", SAMPLE_10Hz}
 #define DEFAULT_GPS_SPEED_CONFIG {"Speed", "MPH", SAMPLE_10Hz}
 
@@ -258,6 +261,7 @@ typedef struct _GPSConfig{
 							DEFAULT_GPS_SATELLITES_CONFIG, \
 							DEFAULT_GPS_LATITUDE_CONFIG, \
 							DEFAULT_GPS_LONGITUDE_CONFIG, \
+							DEFAULT_GPS_DATE_CONFIG, \
 							DEFAULT_GPS_TIME_CONFIG, \
 							DEFAULT_GPS_SPEED_CONFIG}
 
