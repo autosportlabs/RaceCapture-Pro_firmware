@@ -1,6 +1,7 @@
 #include "memory_device.h"
 #include "board.h"
 #include "memory_device_page_size.h"
+#include "printk.h"
 
 #ifndef RCP_TESTING /* groan */
     #define RAMFUNC __attribute__ ((long_call, section (".fastrun")))
@@ -57,6 +58,7 @@ int memory_device_flash_region(const void *address, const void *data, unsigned i
 	unsigned int pages = length / AT91C_IFLASH_PAGE_SIZE;
 	for (unsigned int i = 0; i < pages; i++){
 		unsigned int offset = (i * AT91C_IFLASH_PAGE_SIZE);
+		pr_info(".");
 		if (flash_write((void *)((unsigned int)address + offset),(void *)((unsigned int)data + offset)) != 0 ){
 			return -1;
 		}
