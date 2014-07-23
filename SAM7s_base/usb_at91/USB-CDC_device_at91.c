@@ -53,8 +53,34 @@
 #include "queue.h"
 
 /* Demo app includes. */
-#include "USB-CDC.h"
+#include "USB-CDC_device.h"
 #include "descriptors.h"
+#include "usb.h"
+#include "USB-CDC_data.h"
+
+#define USB_CDC_QUEUE_SIZE    100
+
+typedef enum
+{
+	eNOTHING,
+	eJUST_RESET,
+	eJUST_GOT_CONFIG,
+	eJUST_GOT_ADDRESS,
+	eSENDING_EVEN_DESCRIPTOR,
+	eREADY_TO_SEND
+} eDRIVER_STATE;
+
+/* Structure used to control the data being sent to the host. */
+typedef struct
+{
+	unsigned portCHAR ucBuffer[ usbMAX_CONTROL_MESSAGE_SIZE ];
+	unsigned portLONG ulNextCharIndex;
+	unsigned portLONG ulTotalDataLength;
+} xCONTROL_MESSAGE;
+
+/*-----------------------------------------------------------*/
+
+
 
 #define usbNO_BLOCK ( ( portTickType ) 0 )
 
@@ -124,13 +150,12 @@ static unsigned int uiCurrentBank;
 /*------------------------------------------------------------*/
 
 #define USB_CDC_TASK_SIZE					( 100 )
-
-void startUSBCDCTask(int priority){
-	xTaskCreate( vUSBCDCTask, ( signed portCHAR * ) "USBCDC", USB_CDC_TASK_SIZE, NULL, priority, NULL );
-}
+#define USB_CDC_TASK_PRIORITY				( tskIDLE_PRIORITY + 2 )
 
 
-void vUSBCDCTask( void *pvParameters )
+
+
+static void vUSBCDCTask( void *pvParameters )
 {
 xISRStatus *pxMessage;
 unsigned portLONG ulStatus;
@@ -226,31 +251,29 @@ portBASE_TYPE xByte;
 		}
 	}
 }
-/*------------------------------------------------------------*/
 
-int vUSBIsInitialized(){
+void startUSBCDCTask(int priority){
+	xTaskCreate( vUSBCDCTask, ( signed portCHAR * ) "USBCDC", USB_CDC_TASK_SIZE, NULL, priority, NULL );
+}
 
+
+int USB_CDC_is_initialized(){
 	return 	usbIntefacedInitialized;
 }
 
-void vUSBSendByte( portCHAR cByte )
+void USB_CDC_SendByte( portCHAR cByte )
 {
 	/* Queue the byte to be sent.  The USB task will send it. */
 	xQueueSend( xTxCDC, &cByte, portMAX_DELAY);
 }
-/*------------------------------------------------------------*/
 
-unsigned portBASE_TYPE vUSBBytesAvailable(){
-	return uxQueueMessagesWaiting( xTxCDC );
-}
-
-portBASE_TYPE vUSBReceiveByteDelay(portCHAR *data, portTickType delay){
+portBASE_TYPE USB_CDC_ReceiveByteDelay(portCHAR *data, portTickType delay){
 	return xQueueReceive(xRxCDC, data, delay);
 
 }
 
-portBASE_TYPE vUSBReceiveByte(portCHAR *data){
-	return vUSBReceiveByteDelay(data, portMAX_DELAY);
+portBASE_TYPE USB_CDC_ReceiveByte(portCHAR *data){
+	return USB_CDC_ReceiveByteDelay(data, portMAX_DELAY);
 }
     
 static void prvSendZLP( void )
@@ -710,7 +733,7 @@ static void vDetachUSBInterface( void)
 
 extern void ( vUSB_ISR )( void );
 
-int vInitUSBInterface( void )
+int USB_CDC_device_init( void )
 {
 
 	vDetachUSBInterface();
@@ -792,6 +815,8 @@ int vInitUSBInterface( void )
 //*************************************************
 	
 	usbIntefacedInitialized  = 1;
+	startUSBCDCTask(USB_CDC_TASK_PRIORITY);
+
 	return 1; //success
 }
 /*-----------------------------------------------------------*/
@@ -890,11 +915,11 @@ volatile unsigned portLONG ulNextLength, ulStatus, ulLengthLeftToSend;
 	}
 }
 
-void vUSBSendDebug(portCHAR *string){
+void USB_CDC_send_debug(portCHAR *string){
 
 	unsigned int length = strlen(string);	
 	while (length > 0){
-    	vUSBSendByte(*string);
+    	USB_CDC_SendByte(*string);
     	string++;
     	length--;
 	}	

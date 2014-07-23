@@ -44,7 +44,7 @@ These take the form:
 }
 */
 #include "constants.h"
-
+#include "usb.h"
 const portCHAR pxLanguageStringDescriptor[] =
 {
 	4,

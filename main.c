@@ -14,7 +14,6 @@
 #include "usb_comm.h"
 #include "baseCommands.h"
 #include "constants.h"
-#include "USB-CDC.h"
 #include "cpu.h"
 #include "OBD2_task.h"
 #include "watchdog.h"
@@ -77,7 +76,6 @@ static void fatalError(int type){
 #define FILE_WRITER_TASK_PRIORITY			( tskIDLE_PRIORITY + 3 )
 #define LUA_TASK_PRIORITY					( tskIDLE_PRIORITY + 2 )
 #define USB_COMM_TASK_PRIORITY				( tskIDLE_PRIORITY + 2 )
-#define USB_CDC_TASK_PRIORITY				( tskIDLE_PRIORITY + 2 )
 #define GPIO_TASK_PRIORITY 					( tskIDLE_PRIORITY + 4 )
 
 
@@ -91,14 +89,10 @@ int main( void )
 	initialize_channels();
 	initialize_logger_config();
 	initialize_script();
-	if (!usart_init()) fatalError(FATAL_ERROR_HARDWARE);
-	if (!vInitUSBInterface()) fatalError(FATAL_ERROR_HARDWARE);
-	init_serial();
 	InitLoggerHardware();
 	initMessaging();
 
 	startGPIOTasks			( GPIO_TASK_PRIORITY );
-	startUSBCDCTask			( USB_CDC_TASK_PRIORITY );
 	startUSBCommTask		( USB_COMM_TASK_PRIORITY );
 	startLuaTask			( LUA_TASK_PRIORITY );
 	startFileWriterTask		( FILE_WRITER_TASK_PRIORITY );

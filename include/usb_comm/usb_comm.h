@@ -2,6 +2,8 @@
 #define USB_COMM_H_
 #include <stddef.h>
 
+int usb_comm_init();
+
 void startUSBCommTask(int priority);
 
 void onUSBCommTask(void *);

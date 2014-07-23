@@ -2,7 +2,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "mod_string.h"
-#include "USB-CDC.h"
+#include "USB-CDC_device.h"
 #include "board.h"
 #include "modp_numtoa.h"
 #include "modp_atonum.h"
@@ -16,12 +16,16 @@ static char lineBuffer[BUFFER_SIZE];
 
 #define mainUSB_COMM_STACK					( 1000 )
 
+int usb_comm_init(){
+	return USB_CDC_device_init();
+}
+
 void startUSBCommTask(int priority){
 	xTaskCreate( onUSBCommTask,	( signed portCHAR * ) "OnUSBComm", mainUSB_COMM_STACK, NULL, priority, NULL );
 }
 
 void onUSBCommTask(void *pvParameters) {
-	while (!vUSBIsInitialized()){
+	while (!USB_CDC_is_initialized()){
 		vTaskDelay(1);
 	}
 	Serial *serial = get_serial_usb();
@@ -42,7 +46,7 @@ void usb_flush(void)
 
 char usb_getchar_wait(size_t delay){
 	char c = 0;
-	vUSBReceiveByteDelay(&c, delay);
+	USB_CDC_ReceiveByteDelay(&c, delay);
 	return c;
 }
 
@@ -71,10 +75,10 @@ int usb_readLineWait(char *s, int len, size_t delay)
 
 void usb_puts(const char *s){
 	while ( *s ){
-		vUSBSendByte(*s++ );
+		USB_CDC_SendByte(*s++ );
 	}
 }
 
 void usb_putchar(char c){
-	vUSBSendByte(c);
+	USB_CDC_SendByte(c);
 }

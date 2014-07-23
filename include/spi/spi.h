@@ -1,5 +1,5 @@
-#ifndef USART_H
-#define USART_H
+#ifndef SPI_LOCK_H
+#define SPI_LOCK_H
 
 void init_spi_lock();
 

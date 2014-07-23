@@ -48,7 +48,8 @@
 /* Demo application includes. */
 #include "board.h"
 #include "usb.h"
-#include "USB-CDC.h"
+#include "USB-CDC_device.h"
+#include "USB-CDC_data.h"
 
 #define usbINT_CLEAR_MASK	(AT91C_UDP_TXCOMP | AT91C_UDP_STALLSENT | AT91C_UDP_RXSETUP | AT91C_UDP_RX_DATA_BK0 | AT91C_UDP_RX_DATA_BK1 )
 /*-----------------------------------------------------------*/

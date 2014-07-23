@@ -94,7 +94,8 @@ RTOS_SRC_DIR = $(RTOS_DIR)/Source
 RTOS_PORT_DIR = $(RTOS_SRC_DIR)/portable
 RTOS_GCC_DIR = $(RTOS_PORT_DIR)/GCC/ARM7_AT91SAM7S
 RTOS_MEMMANG_DIR = $(RTOS_PORT_DIR)/MemMang
-USB_SRC_DIR = $(SAM7s_BASE_DIR)/usb
+USB_AT91_DIR = $(SAM7s_BASE_DIR)/usb_at91
+USB_COMM_SRC_DIR = $(SRC_DIR)/usb_comm
 SERIAL_SRC_DIR = $(SRC_DIR)/serial
 AUTO_CONFIG_SRC_DIR = $(SRC_DIR)/auto_config
 LOGGER_SRC_DIR = $(SRC_DIR)/logger
@@ -149,8 +150,8 @@ $(UTIL_DIR)/modp_numtoa.c \
 $(UTIL_DIR)/modp_atonum.c \
 $(UTIL_DIR)/taskUtil.c \
 $(SPI_DIR)/spi.c \
-$(USB_SRC_DIR)/source/usb_comm.c \
-$(USB_SRC_DIR)/source/USB-CDC.c \
+$(USB_AT91_DIR)/USB-CDC_device_at91.c \
+$(USB_COMM_SRC_DIR)/usb_comm.c \
 $(USART_DIR)/usart.c \
 $(CMD_SRC_DIR)/command.c \
 $(SERIAL_SRC_DIR)/serial.c \
@@ -221,7 +222,7 @@ $(AUTO_CONFIG_SRC_DIR)/auto_track.c \
 # List C source files here which must be compiled in ARM-Mode.
 # use file-extension c for "c-only"-files
 SRCARM = $(RTOS_GCC_DIR)/portISR.c \
-$(USB_SRC_DIR)/source/USBIsr.c \
+$(USB_AT91_DIR)/USBIsr.c \
 $(GPIO_AT91_DIR)/gpioIsr.c \
 $(USART_AT91_DIR)/serialIsr.c \
 $(TIMER_AT91_DIR)/timerIsr.c \
@@ -303,7 +304,7 @@ CINCS = \
 -I$(UART_SRC_DIR) \
 -I$(IMU_SRC_DIR) \
 -I$(LOGGER_SRC_DIR) \
--I$(USB_SRC_DIR)/include \
+-I$(USB_AT91_DIR) \
 -I$(MEMORY_AT91_DIR) \
 -I$(HW_DIR)/include \
 -I$(RTOS_SRC_DIR)/include \
@@ -333,6 +334,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/lua \
 -I$(INCLUDE_DIR)/imu \
 -I$(INCLUDE_DIR)/usart \
+-I$(INCLUDE_DIR)/usb_comm \
 -I$(INCLUDE_DIR)/messaging \
 -I$(INCLUDE_DIR)/predictive_timer \
 -I$(INCLUDE_DIR)/util \

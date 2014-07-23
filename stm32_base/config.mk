@@ -42,9 +42,11 @@ RCP_SRC = $(APP_PATH)/src
 APP_SRC = 	$(APP_PATH)/main2.c \
 			$(RCP_SRC)/api/api.c \
 			$(RCP_SRC)/serial/serial.c \
+			$(RCP_SRC)/usart/usart.c \
 			$(RCP_SRC)/logger/loggerHardware.c \
 			$(RCP_SRC)/logger/loggerConfig.c \
 			$(RCP_SRC)/logger/loggerTaskEx.c \
+			$(RCP_SRC)/logger/sampleRecord.c \
 			$(RCP_SRC)/channels/channelMeta.c \
 			$(RCP_SRC)/LED/LED.c \
 			$(RCP_SRC)/logging/printk.c \
@@ -61,7 +63,15 @@ APP_SRC = 	$(APP_PATH)/main2.c \
 			$(HAL_SRC)/GPIO_stm32/GPIO_device_stm32.c \
 			$(HAL_SRC)/PWM_stm32/PWM_device_stm32.c \
 			$(HAL_SRC)/timer_stm32/timer_device_stm32.c \
-			$(HAL_SRC)/imu_stm32/imu_device_stm32.c 
+			$(HAL_SRC)/imu_stm32/imu_device_stm32.c \
+			$(HAL_SRC)/usb_stm32/USB-CDC_device_stm32.c \
+			$(HAL_SRC)/fat_sd_stm32/sdcard_device_stm32.c \
+			$(HAL_SRC)/fat_sd_stm32/fatfs/ff.c \
+			$(HAL_SRC)/fat_sd_stm32/fatfs/diskio.c \
+			$(HAL_SRC)/usart_stm32/usart_device_stm32.c \
+			$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_ub_sdcard.c \
+			$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_ub_atadrive.c \
+			$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_ub_usbdisk.c \
 
 
 #Macro that expands our source files into their fully qualified paths
@@ -93,6 +103,8 @@ APP_INCLUDES += -I. \
 				-I$(INCLUDE_DIR)/cpu \
 				-I$(INCLUDE_DIR)/spi \
 				-I$(INCLUDE_DIR)/serial \
+				-I$(INCLUDE_DIR)/usart \
+				-I$(INCLUDE_DIR)/usb_comm \
 				-I$(INCLUDE_DIR)/magic \
 				-I$(INCLUDE_DIR)/lua \
 				-I$(INCLUDE_DIR)/imu \
@@ -105,6 +117,8 @@ APP_INCLUDES += -I. \
 				-I$(INCLUDE_DIR)/command \
 				-I$(INCLUDE_DIR)/virtual_channel \
 				-I$(INCLUDE_DIR)/auto_config \
+				-I$(HAL_SRC)/fat_sd_stm32/fatfs \
+				-I$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub \
 				-I$(JSON_DIR)
 
 #Uncomment the following to enable newlib support
@@ -114,7 +128,7 @@ NEWLIB_OBJS += $(addprefix util/, $(NEWLIB_SRC:.c=.o))
 APP_OBJS += $(NEWLIB_OBJS)
 
 #Uncomment the following to use the ITM (trace macrocell) for printf
-APP_DEFINES += -DUSE_ITM -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
+APP_DEFINES += -DUSE_ITM -DSD_SDIO -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
 
 # CPU is generally defined by the Board's config.mk file
 ifeq ($(CPU),)
