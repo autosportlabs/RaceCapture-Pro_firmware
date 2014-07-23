@@ -3,7 +3,6 @@
 #include "task.h"
 #include "mod_string.h"
 #include "USB-CDC_device.h"
-#include "board.h"
 #include "modp_numtoa.h"
 #include "modp_atonum.h"
 #include "memory.h"

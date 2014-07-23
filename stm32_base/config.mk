@@ -41,12 +41,23 @@ RCP_SRC = $(APP_PATH)/src
 # The source files of our application
 APP_SRC = 	$(APP_PATH)/main2.c \
 			$(RCP_SRC)/api/api.c \
+			$(RCP_SRC)/jsmn/jsmn.c \
 			$(RCP_SRC)/serial/serial.c \
 			$(RCP_SRC)/usart/usart.c \
-			$(RCP_SRC)/logger/loggerHardware.c \
+			$(RCP_SRC)/CAN/CAN.c \
+			$(RCP_SRC)/usb_comm/usb_comm.c \
+			$(RCP_SRC)/logger/loggerApi.c \
+			$(RCP_SRC)/logger/loggerCommands.c \
 			$(RCP_SRC)/logger/loggerConfig.c \
+			$(RCP_SRC)/logger/loggerData.c \
+			$(RCP_SRC)/logger/loggerHardware.c \
+			$(RCP_SRC)/logger/loggerSampleData.c \
 			$(RCP_SRC)/logger/loggerTaskEx.c \
+			$(RCP_SRC)/logger/luaLoggerBinding.c \
+			$(RCP_SRC)/logger/onTickHandler.c \
 			$(RCP_SRC)/logger/sampleRecord.c \
+			$(RCP_SRC)/logger/telemetryTask.c \
+			$(RCP_SRC)/messaging/messaging.c \
 			$(RCP_SRC)/channels/channelMeta.c \
 			$(RCP_SRC)/LED/LED.c \
 			$(RCP_SRC)/logging/printk.c \
@@ -69,6 +80,7 @@ APP_SRC = 	$(APP_PATH)/main2.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/ff.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/diskio.c \
 			$(HAL_SRC)/usart_stm32/usart_device_stm32.c \
+			$(HAL_SRC)/CAN_stm32/CAN_device_stm32.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_ub_sdcard.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_ub_atadrive.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_ub_usbdisk.c \
