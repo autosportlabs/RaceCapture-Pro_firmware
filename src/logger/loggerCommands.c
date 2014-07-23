@@ -20,7 +20,6 @@
 #include "sampleRecord.h"
 #include "loggerSampleData.h"
 #include "usart.h"
-#include "board.h"
 #include "mem_mang.h"
 #include "loggerTaskEx.h"
 #include "GPIO.h"

@@ -265,11 +265,11 @@ DEBUG = -g
 
 # List any extra directories to look for include files here.
 #     Each directory must be seperated by a space.
-EXTRAINCDIRS = SAM7s_lua/src
+EXTRAINCDIRS = lib_lua/src
 
 # List any extra directories to look for library files here.
 #     Each directory must be seperated by a space.
-EXTRA_LIBDIRS = SAM7s_lua/src
+EXTRA_LIBDIRS = lib_lua/src
 
 # Compiler flag to set the C Standard level.
 # c89   - "ANSI" C

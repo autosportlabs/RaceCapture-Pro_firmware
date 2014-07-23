@@ -55,12 +55,15 @@ include libs/stm32_usb.mk
 CFLAGS ?= -Os -g -Wall -Wextra -fno-common -c -mthumb \
 	  -mcpu=$(CPU_TYPE) -MD -std=gnu99
 
-INCLUDES += $(CPU_INCLUDES) $(BOARD_INCLUDES) $(LIB_INCLUDES) $(APP_INCLUDES)
+LUA_INCLUDE=-Ilib_lua/src
+LUA_LIBS=-llib_lua/src
+
+INCLUDES += $(CPU_INCLUDES) $(BOARD_INCLUDES) $(LIB_INCLUDES) $(APP_INCLUDES) $(LUA_INCLUDE)
 CFLAGS += $(INCLUDES) $(CPU_DEFINES) $(BOARD_DEFINES) $(APP_DEFINES) $(CPU_FLAGS)
 ASFLAGS += -mcpu=$(CPU_TYPE) $(FPU) -g -Wa,--warn
 
 LIBS = -lnosys
-LIBS += $(addprefix -l,$(BASE_LIBS))
+LIBS += $(addprefix -l,$(BASE_LIBS)) $(LUA_LIBS)
 
 LDFLAGS ?= --specs=nano.specs -lc -lgcc $(LIBS) -mcpu=$(CPU_TYPE) -g -gdwarf-2 \
 	-L. -Lcpu/common -L$(CPU_BASE) -T$(CPU_LINK_MEM) -Tlink_sections.ld \

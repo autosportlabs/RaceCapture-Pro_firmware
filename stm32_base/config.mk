@@ -25,6 +25,7 @@ STM32F4XX_LIBS = 1
 ITM = 1
 
 include $(APP_PATH)/version.mk
+SCRIPT_MEMORY_LENGTH = 10240
 RCP_RELEASE_DIR ?= .
 RELEASE_NAME = RaceCapturePro-$(MAJOR).$(MINOR).$(BUGFIX)
 RELEASE_NAME_ZIP = $(RELEASE_NAME).zip
@@ -39,12 +40,16 @@ HAL_SRC = $(APP_PATH)/stm32_base/hal
 RCP_SRC = $(APP_PATH)/src
 
 # The source files of our application
-APP_SRC = 	$(APP_PATH)/main2.c \
+APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/api/api.c \
 			$(RCP_SRC)/jsmn/jsmn.c \
 			$(RCP_SRC)/serial/serial.c \
 			$(RCP_SRC)/usart/usart.c \
 			$(RCP_SRC)/CAN/CAN.c \
+			$(RCP_SRC)/lua/luaBaseBinding.c \
+			$(RCP_SRC)/lua/luaCommands.c \
+			$(RCP_SRC)/lua/luaScript.c \
+			$(RCP_SRC)/lua/luaTask.c \
 			$(RCP_SRC)/usb_comm/usb_comm.c \
 			$(RCP_SRC)/logger/loggerApi.c \
 			$(RCP_SRC)/logger/loggerCommands.c \
@@ -140,7 +145,7 @@ NEWLIB_OBJS += $(addprefix util/, $(NEWLIB_SRC:.c=.o))
 APP_OBJS += $(NEWLIB_OBJS)
 
 #Uncomment the following to use the ITM (trace macrocell) for printf
-APP_DEFINES += -DUSE_ITM -DSD_SDIO -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
+APP_DEFINES += -DUSE_ITM -DSD_SDIO -DSCRIPT_MEMORY_LENGTH=$(SCRIPT_MEMORY_LENGTH) -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
 
 # CPU is generally defined by the Board's config.mk file
 ifeq ($(CPU),)

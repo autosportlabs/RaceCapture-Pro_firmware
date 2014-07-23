@@ -7,15 +7,25 @@
 # Your platform. See PLATS for possible values.
 PLAT= none
 
-MCU   = arm7tdmi
-THUMB = -mthumb -mthumb-interwork
+
+ifeq ($(PLAT), sam7s)
+	MCU   = arm7tdmi
+	THUMB = -mthumb -mthumb-interwork
+	CC = arm-elf-gcc
+	CFLAGS= -mcpu=$(MCU) $(THUMB) -Os -Wall $(MYCFLAGS) -DLUA_OPTIMIZE_MEMORY=2
+	AR = arm-elf-ar rcu
+endif
+
+ifeq ($(PLAT), stm32)
+	MCU   = cortex-m4
+	THUMB = -mthumb -mthumb-interwork
+	CC = arm-none-eabi-gcc
+	CFLAGS= -mcpu=$(MCU) $(THUMB) -Os -Wall $(MYCFLAGS) -DLUA_OPTIMIZE_MEMORY=2
+	AR = arm-none-eabi-ar rcu
+endif
 
 
 
-CC = arm-elf-gcc
-CFLAGS= -mcpu=$(MCU) $(THUMB) -Os -Wall $(MYCFLAGS) -DLUA_OPTIMIZE_MEMORY=2
-#AR= ar rcu
-AR = arm-elf-ar rcu
 RANLIB= ranlib
 RM= rm -f
 LIBS= -lm $(MYLIBS)
