@@ -8,6 +8,10 @@
 PLAT= none
 
 
+ifndef $(PLAT)
+$(error please specify platform stm32 or sam7s)
+endif
+
 ifeq ($(PLAT), sam7s)
 	MCU   = arm7tdmi
 	THUMB = -mthumb -mthumb-interwork
@@ -22,7 +26,10 @@ ifeq ($(PLAT), stm32)
 	CC = arm-none-eabi-gcc
 	CFLAGS= -mcpu=$(MCU) $(THUMB) -Os -Wall $(MYCFLAGS) -DLUA_OPTIMIZE_MEMORY=2
 	AR = arm-none-eabi-ar rcu
+
 endif
+
+
 
 
 
