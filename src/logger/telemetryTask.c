@@ -13,9 +13,6 @@
 #include "loggerHardware.h"
 #include "loggerConfig.h"
 #include "usart.h"
-#include "cellTelemetry.h"
-#include "btTelemetry.h"
-#include "consoleConnectivity.h"
 #include "connectivityTask.h"
 
 //devices
