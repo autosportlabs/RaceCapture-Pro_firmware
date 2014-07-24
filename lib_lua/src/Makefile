@@ -9,7 +9,7 @@ PLAT= none
 
 
 ifndef $(PLAT)
-$(error please specify platform stm32 or sam7s)
+$(error please specify PLAT=stm32 or PLAT=sam7s)
 endif
 
 ifeq ($(PLAT), sam7s)
