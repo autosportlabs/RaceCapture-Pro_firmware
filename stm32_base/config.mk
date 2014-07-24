@@ -24,6 +24,9 @@ STM32F4XX_LIBS = 1
 #Uncomment the following line to enable ITM support (Trace Usart)
 ITM = 1
 
+#HEAP selection
+FREERTOS_HEAP=heap_2_combine
+
 include $(APP_PATH)/version.mk
 SCRIPT_MEMORY_LENGTH = 10240
 RCP_RELEASE_DIR ?= .
@@ -119,6 +122,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_ub_sdcard.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_ub_atadrive.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_ub_usbdisk.c \
+			$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_fattime.c
 
 
 #Macro that expands our source files into their fully qualified paths

@@ -8,7 +8,6 @@
 #define MODE_OUTPUT	1
 
 void gpio_irq_handler ( void );
-xSemaphoreHandle xOnPushbutton;
 
 static unsigned int GetGPIOBits(void){
 	return 0;

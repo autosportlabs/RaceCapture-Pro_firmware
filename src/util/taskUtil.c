@@ -19,7 +19,7 @@ inline void delayTicks(size_t ticks){
 	vTaskDelay(ticks);
 }
 
-inline size_t msToTicks(size_t ms){
+size_t msToTicks(size_t ms){
 	return ms / portTICK_RATE_MS;
 }
 

@@ -10,7 +10,6 @@
 #define MODE_OUTPUT	1
 
 void gpio_irq_handler ( void );
-xSemaphoreHandle xOnPushbutton;
 
 static unsigned int GetGPIOBits(void){
 	return AT91F_PIO_GetInput(AT91C_BASE_PIOA);
