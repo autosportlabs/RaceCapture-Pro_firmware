@@ -41,30 +41,56 @@ RCP_SRC = $(APP_PATH)/src
 
 # The source files of our application
 APP_SRC = 	$(APP_PATH)/main.c \
+			$(RCP_SRC)/spi/spi.c \
+			$(RCP_SRC)/command/command.c \
 			$(RCP_SRC)/api/api.c \
+			$(RCP_SRC)/OBD2/OBD2_task.c \
+			$(RCP_SRC)/OBD2/OBD2.c \
 			$(RCP_SRC)/jsmn/jsmn.c \
 			$(RCP_SRC)/serial/serial.c \
 			$(RCP_SRC)/usart/usart.c \
+			$(RCP_SRC)/cpu/cpu.c \
+			$(RCP_SRC)/imu/imu.c \
 			$(RCP_SRC)/CAN/CAN.c \
+			$(RCP_SRC)/timer/timer.c \
+			$(RCP_SRC)/ADC/ADC.c \
+			$(RCP_SRC)/GPIO/GPIO.c \
+			$(RCP_SRC)/GPIO/gpioTasks.c \
+			$(RCP_SRC)/watchdog/watchdog.c \
+			$(RCP_SRC)/gps/gps.c \
+			$(RCP_SRC)/gps/dateTime.c \
+			$(RCP_SRC)/gps/geometry.c \
+			$(RCP_SRC)/gps/geopoint.c \
+			$(RCP_SRC)/gps/gpsTask.c \
+			$(RCP_SRC)/predictive_timer/predictive_timer_2.c \
+			$(RCP_SRC)/filter/filter.c \
 			$(RCP_SRC)/lua/luaBaseBinding.c \
 			$(RCP_SRC)/lua/luaCommands.c \
 			$(RCP_SRC)/lua/luaScript.c \
 			$(RCP_SRC)/lua/luaTask.c \
 			$(RCP_SRC)/usb_comm/usb_comm.c \
 			$(RCP_SRC)/logger/loggerApi.c \
+			$(RCP_SRC)/logger/fileWriter.c \
 			$(RCP_SRC)/logger/loggerCommands.c \
 			$(RCP_SRC)/logger/loggerConfig.c \
 			$(RCP_SRC)/logger/loggerData.c \
 			$(RCP_SRC)/logger/loggerHardware.c \
 			$(RCP_SRC)/logger/loggerSampleData.c \
 			$(RCP_SRC)/logger/loggerTaskEx.c \
+			$(RCP_SRC)/logger/connectivityTask.c \
 			$(RCP_SRC)/logger/luaLoggerBinding.c \
 			$(RCP_SRC)/logger/onTickHandler.c \
 			$(RCP_SRC)/logger/sampleRecord.c \
-			$(RCP_SRC)/logger/telemetryTask.c \
+			$(RCP_SRC)/devices/bluetooth.c \
+			$(RCP_SRC)/devices/cellModem.c \
+			$(RCP_SRC)/devices/null_device.c \
+			$(RCP_SRC)/devices/sim900.c \
+			$(RCP_SRC)/tracks/tracks.c \
+			$(RCP_SRC)/auto_config/auto_track.c \
 			$(RCP_SRC)/messaging/messaging.c \
 			$(RCP_SRC)/channels/channelMeta.c \
 			$(RCP_SRC)/LED/LED.c \
+			$(RCP_SRC)/PWM/PWM.c \
 			$(RCP_SRC)/logging/printk.c \
 			$(RCP_SRC)/logging/ring_buffer.c \
 			$(RCP_SRC)/virtual_channel/virtual_channel.c \
@@ -74,6 +100,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/util/modp_atonum.c \
 			$(RCP_SRC)/util/modp_numtoa.c \
 			$(RCP_SRC)/util/taskUtil.c \
+			$(RCP_SRC)/sdcard/sdcard.c \
 			$(HAL_SRC)/LED_stm32/LED_device_stm32.c \
 			$(HAL_SRC)/memory_stm32/memory_device_stm32.c \
 			$(HAL_SRC)/GPIO_stm32/GPIO_device_stm32.c \
@@ -81,11 +108,14 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(HAL_SRC)/timer_stm32/timer_device_stm32.c \
 			$(HAL_SRC)/imu_stm32/imu_device_stm32.c \
 			$(HAL_SRC)/usb_stm32/USB-CDC_device_stm32.c \
+			$(HAL_SRC)/watchdog_stm32/watchdog_device_stm32.c \
 			$(HAL_SRC)/fat_sd_stm32/sdcard_device_stm32.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/ff.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/diskio.c \
 			$(HAL_SRC)/usart_stm32/usart_device_stm32.c \
+			$(HAL_SRC)/ADC_stm32/ADC_device_stm32.c \
 			$(HAL_SRC)/CAN_stm32/CAN_device_stm32.c \
+			$(HAL_SRC)/cpu_stm32/cpu_device_stm32.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_ub_sdcard.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_ub_atadrive.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_ub_usbdisk.c \

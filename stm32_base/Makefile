@@ -56,17 +56,19 @@ CFLAGS ?= -Os -g -Wall -Wextra -fno-common -c -mthumb \
 	  -mcpu=$(CPU_TYPE) -MD -std=gnu99
 
 LUA_INCLUDE=-I$(APP_PATH)/lib_lua/src
-LUA_LIBS=-l$(APP_PATH)/lib_lua/src
+LUA_LIBS=lua
+LUA_LIB_DIR=$(APP_PATH)/lib_lua/src
 
 INCLUDES += $(CPU_INCLUDES) $(BOARD_INCLUDES) $(LIB_INCLUDES) $(APP_INCLUDES) $(LUA_INCLUDE)
 CFLAGS += $(INCLUDES) $(CPU_DEFINES) $(BOARD_DEFINES) $(APP_DEFINES) $(CPU_FLAGS)
 ASFLAGS += -mcpu=$(CPU_TYPE) $(FPU) -g -Wa,--warn
 
-LIBS = -lnosys
-LIBS += $(addprefix -l,$(BASE_LIBS)) $(LUA_LIBS)
+LIBS = -lnosys 
+LIBS += $(addprefix -l,$(BASE_LIBS)) 
+LIBS += $(addprefix -l,$(LUA_LIBS))
 
 LDFLAGS ?= --specs=nano.specs -lc -lgcc $(LIBS) -mcpu=$(CPU_TYPE) -g -gdwarf-2 \
-	-L. -Lcpu/common -L$(CPU_BASE) -T$(CPU_LINK_MEM) -Tlink_sections.ld \
+	-L. -Lcpu/common -L$(LUA_LIB_DIR) -L$(CPU_BASE) -T$(CPU_LINK_MEM) -Tlink_sections.ld \
 	-nostartfiles -Wl,--gc-sections -mthumb -mcpu=$(CPU_TYPE) \
 	-msoft-float
 
