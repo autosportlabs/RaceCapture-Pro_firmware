@@ -55,8 +55,8 @@ include libs/stm32_usb.mk
 CFLAGS ?= -Os -g -Wall -Wextra -fno-common -c -mthumb \
 	  -mcpu=$(CPU_TYPE) -MD -std=gnu99
 
-LUA_INCLUDE=-Ilib_lua/src
-LUA_LIBS=-llib_lua/src
+LUA_INCLUDE=-I$(APP_PATH)/lib_lua/src
+LUA_LIBS=-l$(APP_PATH)/lib_lua/src
 
 INCLUDES += $(CPU_INCLUDES) $(BOARD_INCLUDES) $(LIB_INCLUDES) $(APP_INCLUDES) $(LUA_INCLUDE)
 CFLAGS += $(INCLUDES) $(CPU_DEFINES) $(BOARD_DEFINES) $(APP_DEFINES) $(CPU_FLAGS)
