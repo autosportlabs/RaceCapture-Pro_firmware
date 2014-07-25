@@ -46,6 +46,7 @@ RCP_SRC = $(APP_PATH)/src
 APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/spi/spi.c \
 			$(RCP_SRC)/command/command.c \
+			$(RCP_SRC)/command/baseCommands.c \
 			$(RCP_SRC)/api/api.c \
 			$(RCP_SRC)/OBD2/OBD2_task.c \
 			$(RCP_SRC)/OBD2/OBD2.c \

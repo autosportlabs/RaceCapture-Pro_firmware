@@ -2789,7 +2789,7 @@ tskTCB *pxNewTCB;
 
 #if ( ( configUSE_TRACE_FACILITY == 1 ) && ( configUSE_STATS_FORMATTING_FUNCTIONS == 1 ) )
 
-	void vTaskList( signed char *pcWriteBuffer )
+	void vTaskList( char *pcWriteBuffer )
 	{
 	xTaskStatusType *pxTaskStatusArray;
 	volatile unsigned portBASE_TYPE uxArraySize, x;

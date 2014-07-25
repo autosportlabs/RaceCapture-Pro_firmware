@@ -52,7 +52,7 @@ include libs/stm32f4_periph.mk
 include libs/freertos.mk
 include libs/stm32_usb.mk
 
-CFLAGS ?= -Os -g -Wall -Wextra -fno-common -c -mthumb \
+CFLAGS ?= -Os -g -Wall -fno-common -c -mthumb \
 	  -mcpu=$(CPU_TYPE) -MD -std=gnu99
 
 LUA_INCLUDE=-I$(APP_PATH)/lib_lua/src

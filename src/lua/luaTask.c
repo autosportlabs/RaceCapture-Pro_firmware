@@ -195,8 +195,8 @@ void luaTask(void *params){
 	initLuaState();
 	guardedDoScript();
 	while(1){
-		portTickType xLastWakeTime, startTickTime;
-		startTickTime = xLastWakeTime = xTaskGetTickCount();
+		portTickType xLastWakeTime;
+		xLastWakeTime = xTaskGetTickCount();
 		if (getShouldReloadScript()){
 			initLuaState();
 			doScript();

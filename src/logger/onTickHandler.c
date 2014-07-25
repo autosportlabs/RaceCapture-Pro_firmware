@@ -8,11 +8,10 @@ extern xSemaphoreHandle onTick;
 static unsigned int tickCount = 0;
 
 void vApplicationTickHook(void){
-	portCHAR xTaskWoken = pdFALSE;
 	tickCount++;
 
 	if (tickCount == 1){
-		xSemaphoreGiveFromISR( onTick, xTaskWoken );
+		xSemaphoreGiveFromISR( onTick, pdFALSE );
 		tickCount = 0;
 	}
 }

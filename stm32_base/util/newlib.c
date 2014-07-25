@@ -20,10 +20,19 @@ char **environ = __env;
 
 int _write(int file, char *ptr, int len);
 
+void _fini()
+{
+}
+
 void _exit(int status)
 {
 	(void)status;
 	while (1);
+}
+
+int _open(const char *filename, int flags, int mode )
+{
+	return -1;
 }
 
 int _close(int file)

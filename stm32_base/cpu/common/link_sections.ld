@@ -112,7 +112,7 @@ ENTRY(Reset_Handler)
    /* used by the startup to initialize data */
    _sidata = .;
 
-   /* Initialized data sections goes into RAM, load LMA copy after code */
+   /* Initialized data sections goes into CCM, load LMA copy after code */
    .data : AT ( _sidata )
    {
      . = ALIGN(4);
@@ -122,7 +122,7 @@ ENTRY(Reset_Handler)
 
      . = ALIGN(4);
      _edata = .;        /* define a global symbol at data end */
-   } >RAM
+   } >CCM
 
    /* Uninitialized data section */
    . = ALIGN(4);
@@ -138,7 +138,7 @@ ENTRY(Reset_Handler)
      . = ALIGN(4);
      _ebss = .;         /* define a global symbol at bss end */
      __bss_end__ = _ebss;
-   } >RAM
+   } >CCM
 
    PROVIDE ( end = _ebss );
    PROVIDE ( _end = _ebss );
@@ -150,7 +150,7 @@ ENTRY(Reset_Handler)
      . = . + _Min_Heap_Size;
      . = . + _Min_Stack_Size;
      . = ALIGN(4);
-   } >RAM
+   } >CCM
 
    /* Remove information from the standard libraries */
    /DISCARD/ :
