@@ -26,32 +26,10 @@ DSTATUS disk_initialize (
 	BYTE pdrv				/* Physical drive nmuber (0..) */
 )
 {
-	DSTATUS stat;
-	int result;
-
-	switch (pdrv) {
-	case ATA :
-		result = ATA_disk_initialize();
-
-		// translate the reslut code here
-
-		return stat;
-
-	case MMC :
-		result = MMC_disk_initialize();
-
-		// translate the reslut code here
-
-		return stat;
-
-	case USB :
-		result = USB_disk_initialize();
-
-		// translate the reslut code here
-
-		return stat;
-	}
-	return STA_NOINIT;
+	DSTATUS stat = 0;
+	int result = MMC_disk_initialize();
+	if (result != 0) stat = STA_NOINIT;
+	return stat;
 }
 
 
@@ -64,32 +42,11 @@ DSTATUS disk_status (
 	BYTE pdrv		/* Physical drive nmuber (0..) */
 )
 {
-	DSTATUS stat;
-	int result;
 
-	switch (pdrv) {
-	case ATA :
-		result = ATA_disk_status();
-
-		// translate the reslut code here
-
-		return stat;
-
-	case MMC :
-		result = MMC_disk_status();
-
-		// translate the reslut code here
-
-		return stat;
-
-	case USB :
-		result = USB_disk_status();
-
-		// translate the reslut code here
-
-		return stat;
-	}
-	return STA_NOINIT;
+	DSTATUS stat = 0;
+	int result = MMC_disk_status();
+	if (result !=0) stat = STA_NOINIT;
+	return stat;
 }
 
 
@@ -105,38 +62,10 @@ DRESULT disk_read (
 	UINT count		/* Number of sectors to read (1..128) */
 )
 {
-	DRESULT res;
-	int result;
-
-	switch (pdrv) {
-	case ATA :
-		// translate the arguments here
-
-		result = ATA_disk_read(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-
-	case MMC :
-		// translate the arguments here
-
-		result = MMC_disk_read(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-
-	case USB :
-		// translate the arguments here
-
-		result = USB_disk_read(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-	}
-	return RES_PARERR;
+	DRESULT res = RES_OK;
+	int result = MMC_disk_read(buff, sector, count);
+	if (result != 0) res = RES_ERROR;
+	return res;
 }
 
 
@@ -153,38 +82,10 @@ DRESULT disk_write (
 	UINT count			/* Number of sectors to write (1..128) */
 )
 {
-	DRESULT res;
-	int result;
-
-	switch (pdrv) {
-	case ATA :
-		// translate the arguments here
-
-		result = ATA_disk_write(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-
-	case MMC :
-		// translate the arguments here
-
-		result = MMC_disk_write(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-
-	case USB :
-		// translate the arguments here
-
-		result = USB_disk_write(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-	}
-	return RES_PARERR;
+	DRESULT res = RES_OK;
+	int result = MMC_disk_write(buff, sector, count);
+	if (result !=0) res = RES_ERROR;
+	return res;
 }
 #endif
 
@@ -200,37 +101,9 @@ DRESULT disk_ioctl (
 	void *buff		/* Buffer to send/receive control data */
 )
 {
-	DRESULT res;
-	int result;
-
-	switch (pdrv) {
-	case ATA :
-		// pre-process here
-
-		result = ATA_disk_ioctl(cmd, buff);
-
-		// post-process here
-
-		return res;
-
-	case MMC :
-		// pre-process here
-
-		result = MMC_disk_ioctl(cmd, buff);
-
-		// post-process here
-
-		return res;
-
-	case USB :
-		// pre-process here
-
-		result = USB_disk_ioctl(cmd, buff);
-
-		// post-process here
-
-		return res;
-	}
-	return RES_PARERR;
+	DRESULT res = RES_OK;
+	int result = MMC_disk_ioctl(cmd, buff);
+	if (result != 0 ) res = RES_ERROR;
+	return res;
 }
 #endif

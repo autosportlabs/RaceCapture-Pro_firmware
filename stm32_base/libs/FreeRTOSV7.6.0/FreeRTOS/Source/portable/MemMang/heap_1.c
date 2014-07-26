@@ -81,6 +81,7 @@ task.h is included from an application file. */
 #include "FreeRTOS.h"
 #include "task.h"
 
+#define configTOTAL_HEAP_SIZE 20000
 #undef MPU_WRAPPERS_INCLUDED_FROM_API_FILE
 
 /* A few bytes might be lost to byte aligning the heap start address. */
@@ -141,6 +142,13 @@ static unsigned char *pucAlignedHeap = NULL;
 	return pvReturn;
 }
 /*-----------------------------------------------------------*/
+
+void * pvPortRealloc( void *pv, size_t xWantedSize){
+
+	if (pv) vPortFree(pv);
+	return pvPortMalloc(xWantedSize);
+}
+
 
 void vPortFree( void *pv )
 {

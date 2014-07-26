@@ -35,6 +35,9 @@
 #include "connectivityTask.h"
 #include "luaTask.h"
 #include "luaCommands.h"
+#include "sdcard.h"
+#include "serial.h"
+
 
 #define FATAL_ERROR_SCHEDULER	1
 #define FATAL_ERROR_HARDWARE	2
@@ -79,27 +82,35 @@ static void fatalError(int type){
 #define GPIO_TASK_PRIORITY 					( tskIDLE_PRIORITY + 4 )
 
 
+void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName)
+{
+	(void)pxTask;
+	(void)pcTaskName;
+}
+
+
 int main( void )
 {
-	cpu_init();
-	watchdog_init(WATCHDOG_TIMEOUT_MS);
+//	watchdog_init(WATCHDOG_TIMEOUT_MS);
 	//perform a clean reset if the watchdog fired
-	if (watchdog_is_watchdog_reset()) cpu_reset();
-	initialize_tracks();
-	initialize_channels();
-	initialize_logger_config();
-	initialize_script();
+//	if (watchdog_is_watchdog_reset()) cpu_reset();
+//	initialize_tracks();
+//	initialize_channels();
+//	initialize_logger_config();
+//	initialize_script();
 	InitLoggerHardware();
-	initMessaging();
+//	initMessaging();
+	cpu_init();
 
-	startGPIOTasks			( GPIO_TASK_PRIORITY );
-	startUSBCommTask		( USB_COMM_TASK_PRIORITY );
-	startLuaTask			( LUA_TASK_PRIORITY );
-	startFileWriterTask		( FILE_WRITER_TASK_PRIORITY );
+//	startGPIOTasks			( GPIO_TASK_PRIORITY );
+//	startUSBCommTask		( USB_COMM_TASK_PRIORITY );
+//	startLuaTask			( LUA_TASK_PRIORITY );
+//	startFileWriterTask		( FILE_WRITER_TASK_PRIORITY );
 	startLoggerTaskEx		( LOGGER_TASK_PRIORITY );
-	startConnectivityTask	( CONNECTIVITY_TASK_PRIORITY );
-	startGPSTask			( GPS_TASK_PRIORITY );
-	startOBD2Task			( OBD2_TASK_PRIORITY);
+//	startConnectivityTask	( CONNECTIVITY_TASK_PRIORITY );
+//	startGPSTask			( GPS_TASK_PRIORITY );
+//	startOBD2Task			( OBD2_TASK_PRIORITY);
+
 
 	/* Start the scheduler.
 
@@ -109,6 +120,8 @@ int main( void )
    called.  The demo applications included in the FreeRTOS.org download switch
    to supervisor mode prior to main being called.  If you are not using one of
    these demo application projects then ensure Supervisor mode is used here. */
+
+   TestSDWrite(NULL, 1, 0, 1, 0);
    vTaskStartScheduler();
    fatalError(FATAL_ERROR_SCHEDULER);
 

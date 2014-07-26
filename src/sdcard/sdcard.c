@@ -37,7 +37,7 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet, int delay)
 
 	fatFile = pvPortMalloc(sizeof(FIL));
 	if (NULL == fatFile){
-		serial->put_s("could not allocate file object\r\n");
+		if (!quiet) serial->put_s("could not allocate file object\r\n");
 		goto exit;
 	}
 
@@ -78,7 +78,7 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet, int delay)
 		if (doFlush) f_sync(fatFile);
 		unlock_spi();
 		if (res == EOF){
-			serial->put_s("failed writing at line ");
+			if (!quiet) serial->put_s("failed writing at line ");
 			put_int(serial, i);
 			serial->put_s("(");
 			put_int(serial, res);
@@ -106,9 +106,7 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet, int delay)
 	}
 	if (res) goto exit;
 
-	if (!quiet){
-		serial->put_s("Unmounting... ");
-	}
+	if (!quiet)		serial->put_s("Unmounting... ");
 	lock_spi();
 	res = UnmountFS();
 	unlock_spi();
@@ -118,12 +116,14 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet, int delay)
 	}
 exit:
 	if(res == 0){
-		serial->put_s("SUCCESS\r\n");
+		if (!quiet) serial->put_s("SUCCESS\r\n");
 	}
 	else{
-		serial->put_s("ERROR ");
-		put_int(serial, res);
-		put_crlf(serial);
+		if (!quiet){
+			serial->put_s("ERROR ");
+			put_int(serial, res);
+			put_crlf(serial);
+		}
 	}
 	if (fatFile != NULL) vPortFree(fatFile);
 }

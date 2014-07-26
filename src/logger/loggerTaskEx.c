@@ -98,6 +98,7 @@ size_t updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate, int
 }
 
 void loggerTaskEx(void *params){
+
 	g_loggingShouldRun = 0;
 	memset(&g_sampleRecordMsgBuffer, 0, sizeof(g_sampleRecordMsgBuffer));
 	vSemaphoreCreateBinary( onTick );
@@ -119,7 +120,9 @@ void loggerTaskEx(void *params){
 	int telemetrySampleRate = SAMPLE_DISABLED;
 
 	while(1){
+
 		xSemaphoreTake(onTick, portMAX_DELAY);
+		LED_toggle(0);
 		watchdog_reset();
 
 		currentTicks++;

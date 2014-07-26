@@ -1,6 +1,5 @@
 #include "imu_device.h"
 #include "loggerConfig.h"
-#include <mod_string.h>
 #include "printk.h"
 #include "modp_numtoa.h"
 

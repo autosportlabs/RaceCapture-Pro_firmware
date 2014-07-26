@@ -18,17 +18,18 @@
 #include "usart.h"
 
 void InitLoggerHardware(){
+
 	init_spi_lock();
-	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
-	usb_comm_init();
-	usart_init();
-	init_serial();
+//	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+//	usb_comm_init();
+//	usart_init();
+//	init_serial();
 	LED_init();
-	imu_init(loggerConfig);
-	ADC_init(loggerConfig);
-	timer_init(loggerConfig);
-	PWM_init(loggerConfig);
-	GPIO_init(loggerConfig);
+//	imu_init(loggerConfig);
+//	ADC_init(loggerConfig);
+//	timer_init(loggerConfig);
+//	PWM_init(loggerConfig);
+//	GPIO_init(loggerConfig);
 	InitFSHardware();
-	CAN_init(CAN_BAUD_500K);
+//	CAN_init(CAN_BAUD_500K);
 }

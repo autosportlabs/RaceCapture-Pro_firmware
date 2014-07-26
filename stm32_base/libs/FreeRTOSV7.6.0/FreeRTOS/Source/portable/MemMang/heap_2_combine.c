@@ -15,7 +15,7 @@ task.h is included from an application file. */
 
 #include "FreeRTOS.h"
 #include "task.h"
-#include "mod_string.h"
+#include <string.h>
 
 /* Setup the correct byte alignment mask for the defined byte alignment. */
 #if portBYTE_ALIGNMENT == 8
