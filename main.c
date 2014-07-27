@@ -42,10 +42,33 @@
 #define FATAL_ERROR_SCHEDULER	1
 #define FATAL_ERROR_HARDWARE	2
 
+#define FLASH_PAUSE_DELAY 	5000000
+#define FLASH_DELAY 		1000000
+
+static void delayStart(int count){
+	while(count-- > 0){
+		for (int c = 0; c < count; c++){
+			LED_enable(0);
+			LED_enable(1);
+			LED_disable(2);
+			LED_disable(3);
+			for (int i=0; i<FLASH_DELAY; i++){}
+			LED_disable(0);
+			LED_disable(1);
+			LED_enable(2);
+			LED_enable(3);
+			for (int i=0; i < FLASH_DELAY; i++){}
+		}
+		for (int i=0; i < FLASH_PAUSE_DELAY; i++){}
+	}
+	LED_disable(0);
+	LED_disable(1);
+	LED_disable(2);
+	LED_disable(3);
+}
+
 static void fatalError(int type){
 	int count;
-	int pause = 5000000;
-	int flash = 1000000;
 
 	switch (type){
 		case FATAL_ERROR_HARDWARE:
@@ -63,12 +86,12 @@ static void fatalError(int type){
 		for (int c = 0; c < count; c++){
 			LED_enable(1);
 			LED_enable(2);
-			for (int i=0;i<flash;i++){}
+			for (int i=0; i<FLASH_DELAY; i++){}
 			LED_disable(1);
 			LED_disable(2);
-			for (int i=0;i<flash;i++){}
+			for (int i=0; i < FLASH_DELAY; i++){}
 		}
-		for (int i=0;i<pause;i++){}
+		for (int i=0; i < FLASH_PAUSE_DELAY; i++){}
 	}
 }
 
@@ -99,8 +122,8 @@ int main( void )
 //	initialize_logger_config();
 //	initialize_script();
 	InitLoggerHardware();
-//	initMessaging();
 	cpu_init();
+//	initMessaging();
 
 //	startGPIOTasks			( GPIO_TASK_PRIORITY );
 //	startUSBCommTask		( USB_COMM_TASK_PRIORITY );
@@ -114,16 +137,19 @@ int main( void )
 
 	/* Start the scheduler.
 
-
    NOTE : Tasks run in system mode and the scheduler runs in Supervisor mode.
    The processor MUST be in supervisor mode when vTaskStartScheduler is
    called.  The demo applications included in the FreeRTOS.org download switch
    to supervisor mode prior to main being called.  If you are not using one of
-   these demo application projects then ensure Supervisor mode is used here. */
+   these demo application projects then ensure Supervisor mode is used here.
+   */
 
-   TestSDWrite(NULL, 1, 0, 1, 0);
+   //this is to let the zylin debugger catch up and halt the processor.
+   //when we figure how to halt it correctly we'll remove this.
+   delayStart(4);
+
+   TestSDWrite(NULL, 100000, 0, 1);
    vTaskStartScheduler();
    fatalError(FATAL_ERROR_SCHEDULER);
-
    return 0;
 }
