@@ -16,11 +16,11 @@ static const LoggerConfig g_defaultLoggerConfig = DEFAULT_LOGGER_CONFIG;
 static LoggerConfig g_workingLoggerConfig;
 
 static int firmware_major_version_matches_last(){
-	return g_savedLoggerConfig.VersionInfo.major == MAJOR_REV;
+	return g_savedLoggerConfig.RcpVersionInfo.major == MAJOR_REV;
 }
 
 static int firmware_version_matches_last(){
-	const VersionInfo * version = &g_savedLoggerConfig.VersionInfo;
+	const VersionInfo * version = &g_savedLoggerConfig.RcpVersionInfo;
 	return version->major == MAJOR_REV && version->minor == MINOR_REV && version->bugfix == BUGFIX_REV;
 }
 

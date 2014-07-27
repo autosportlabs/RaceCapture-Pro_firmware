@@ -494,7 +494,7 @@ typedef struct _LoggerConfig {
 	TrackConfig TrackConfigs;
 	//Connectivity Configuration
 	ConnectivityConfig ConnectivityConfigs;
-	VersionInfo VersionInfo;
+	VersionInfo RcpVersionInfo;
 	//Padding data to accommodate flash routine
 	char padding_data[FLASH_PAGE_SIZE];
 } LoggerConfig;

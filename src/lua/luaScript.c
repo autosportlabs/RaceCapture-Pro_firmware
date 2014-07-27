@@ -1,12 +1,12 @@
 #include "luaScript.h"
 #include "mem_mang.h"
-#include "mod_string.h"
 #include "printk.h"
+#include "mod_string.h"
 
 #ifndef RCP_TESTING
 static const ScriptConfig g_scriptConfig __attribute__ ((aligned (MEMORY_PAGE_SIZE))) __attribute__((section(".script\n\t#")));
 #else
-static ScriptConfig g_scriptConfig = DEFAULT_SCRIPT_CONFIG;
+static ScriptConfig g_scriptConfig = {DEFAULT_SCRIPT, MAGIC_NUMBER_SCRIPT_INIT};
 #endif
 
 void initialize_script(){
@@ -18,7 +18,7 @@ void initialize_script(){
 int flash_default_script(){
 	int result = -1;
 	pr_info("flashing default script...");
-	ScriptConfig *defaultScriptConfig = pvPortMalloc(sizeof(ScriptConfig));
+	ScriptConfig *defaultScriptConfig = (ScriptConfig *)portMalloc(sizeof(ScriptConfig));
 	if (defaultScriptConfig != NULL){
 		defaultScriptConfig->magicInit = MAGIC_NUMBER_SCRIPT_INIT;
 		strncpy(defaultScriptConfig->script, DEFAULT_SCRIPT, sizeof(DEFAULT_SCRIPT));
@@ -30,7 +30,7 @@ int flash_default_script(){
 		pr_info(" ");
 		pr_info_int(defaultScriptConfig->magicInit);
 		pr_info("\r\n");
-		vPortFree(defaultScriptConfig);
+		portFree(defaultScriptConfig);
 	}
 	if (result == 0) pr_info("success\r\n"); else pr_info("failed\r\n");
 	return result;
