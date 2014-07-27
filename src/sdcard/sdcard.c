@@ -9,8 +9,9 @@
 #include "watchdog.h"
 #include "diskio.h"
 #include "sdcard_device.h"
+#include "mem_mang.h"
 
-static FATFS Fatfs[1];
+static FATFS *FatFs;
 
 void InitFSHardware(void){
 	disk_init_hardware();
@@ -18,9 +19,13 @@ void InitFSHardware(void){
 
 int InitFS(){
 	taskENTER_CRITICAL();
-	int res = disk_initialize(0);
-	if (0 == res){
-		res = f_mount(&Fatfs[0], "0", 1);
+	int res = -1;
+	FatFs = pvPortMalloc(sizeof(FATFS));
+	if (FatFs){
+		res = disk_initialize(0);
+		if (0 == res) {
+			res = f_mount(FatFs, "0", 1);
+		}
 	}
 	taskEXIT_CRITICAL();
 	return res;
@@ -30,7 +35,7 @@ int UnmountFS(){
 	return f_mount(NULL, "0", 1);
 }
 
-void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet, int delay)
+void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet)
 {
 	int res = 0;
 	FIL *fatFile = NULL;
@@ -72,7 +77,6 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet, int delay)
 	if (!quiet) serial->put_s("Writing file..");
 	portTickType startTicks = xTaskGetTickCount();
 	for (int i = 1; i <= lines; i++){
-		delayMs(delay);
 		lock_spi();
 		res = f_puts("The quick brown fox jumped over the lazy dog\n",fatFile);
 		if (doFlush) f_sync(fatFile);
