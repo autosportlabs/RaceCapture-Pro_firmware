@@ -29,12 +29,10 @@ void TestSD(Serial *serial, unsigned int argc, char **argv){
 	int lines = 1;
 	int doFlush = 0;
 	int quiet = 0;
-	int delay = 0;
 	if (argc > 1) lines = modp_atoi(argv[1]);
 	if (argc > 2) doFlush = modp_atoi(argv[2]);
 	if (argc > 3) quiet = modp_atoi(argv[3]);
-	if (argc > 4) delay = modp_atoi(argv[4]);
-	TestSDWrite(serial, lines, doFlush, quiet, delay);
+	TestSDWrite(serial, lines, doFlush, quiet);
 }
 
 
