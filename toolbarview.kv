@@ -1,6 +1,7 @@
 <ToolbarView>:
     orientation: 'horizontal'
     BoxLayout:
+		#padding: (dp(5), 0)
     	size_hint_x: 0.2
     	orientation: 'horizontal'
 	    IconButton:
@@ -11,7 +12,7 @@
 	    	size_hint_x: None
 	    	width: dp(50)
 	    	text_size: (dp(50), None)
-	    	halign: 'right'
+	    	halign: 'center'
 	    Button:
 		    background_color: [0.4, 0.05, 0.05, 1]
 		    background_down: ''
@@ -23,47 +24,25 @@
 	    	
 	BoxLayout:
 		orientation: 'horizontal'
-		spacing: dp(5)
-		canvas.before:
-	        Color:
-	            rgba: 0.1, 0.1, 0.1, 1
-	        Rectangle:
-	            pos: self.pos
-	            size: self.size
-	
+		padding: (dp(5), 0)			
 		size_hint_x: 0.3
 		FieldLabel:
 			halign: 'left'
 			text: ''
 			rcid: 'status'
-#			size_hint_x: None
 
 	BoxLayout:
 		orientation: 'horizontal'
-		spacing: dp(5)			
-		canvas.before:
-	        Color:
-	            rgba: 0.2, 0.1, 0.1, 1
-	        Rectangle:
-	            pos: self.pos
-	            size: self.size
-	
+		padding: (dp(5), 0)			
 		size_hint_x: 0.3
 		FieldLabel:
 			halign: 'right'
 			text: ''
 			rcid: 'activity'
-#			size_hint_x: None
 		
 	BoxLayout:
 		orientation: 'horizontal'
 		size_hint_x: 0.2
-		canvas.before:
-	        Color:
-	            rgba: 0.1, 0.1, 0.1, 1
-	        Rectangle:
-	            pos: self.pos
-	            size: self.size
 	    ProgressBar:
 			rcid: 'pbar'
 			width: dp(100)
