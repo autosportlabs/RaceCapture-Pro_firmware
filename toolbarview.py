@@ -41,7 +41,11 @@ class ToolbarView(BoxLayout):
     def on_status(self, msg, isAlert):
         statusLabel = kvFind(self, 'rcid', 'status')
         statusLabel.text = msg
-        statusLabel.color = self.normalStatusColor # if isAlert else self.alertStatusColor
+        if isAlert == True:
+            statusLabel.color = self.alertStatusColor
+        else:
+            statusLabel.color = self.normalStatusColor
+            
         
     def on_progress(self, value):
         if not self.progressBar:

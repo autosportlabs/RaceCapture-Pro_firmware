@@ -1,69 +1,68 @@
 <ToolbarView>:
     orientation: 'horizontal'
-    IconButton:
-	    background_color: [0.4, 0.05, 0.05, 1]
-    	id: 'menu'
-    	text: '\357\203\211'
-    	on_release: root.mainMenu()
-    	size_hint_x: None
-    	width: dp(50)
-    	text_size: (dp(50), None)
-    	halign: 'right'
-    Button:
-	    background_color: [0.4, 0.05, 0.05, 1]
-	    background_down: ''
-    	text: 'Menu'
-    	size_hint_x: 0.0
-    	width: dp(50)
-    	text_size: (dp(50), None)
-    	on_release: root.mainMenu()
-    	
-	AnchorLayout:
-		size_hint_x: None
-		width: dp(100)
-		anchor_x: 'right'
-		BoxLayout:
-			size_hint_x: 0.3
-			canvas.before:
-		        Color:
-		            rgba: 0.1, 0.1, 0.1, 1
-		        Rectangle:
-		            pos: self.pos
-		            size: self.size
-
-
-			Label:
-				text: ''
-				rcid: 'status'
-				size_hint_x: None
-				#width: dp(500)			
-
-		    ProgressBar:
-				rcid: 'pbar'
-				width: dp(50)
-		    IconButton:
-		    	rcid: 'teleTxStatus'
-		    	text: '\357\203\256'
-		    	width: dp(30)
-		    	color: [0.0, 1.0, 0.0, 0.2]    	
-		    	size_hint_x: None
-		    IconButton:
-		    	rcid: 'teleRxStatus'
-		    	text: '\357\203\255'
-		    	width: dp(30)
-		    	color: [0.0, 0.8, 1.0, 0.2]
-		    	size_hint_x: None
-		    IconButton:
-		    	rcid: 'rcTxStatus'
-		    	text: '\357\200\231'
-		    	width: dp(30)
-		    	color: [0.0, 1.0, 0.0, 0.2]    	
-		    	size_hint_x: None
-		    IconButton:
-		    	rcid: 'rcRxStatus'
-		    	text: '\357\202\223'
-		    	width: dp(30)
-		    	color: [0.0, 0.8, 1.0, 0.2]    	
-		    	size_hint_x: None
+    BoxLayout:
+    	orientation: 'horizontal'
+	    IconButton:
+		    background_color: [0.4, 0.05, 0.05, 1]
+	    	id: 'menu'
+	    	text: '\357\203\211'
+	    	on_release: root.mainMenu()
+	    	size_hint_x: None
+	    	width: dp(50)
+	    	text_size: (dp(50), None)
+	    	halign: 'right'
+	    Button:
+		    background_color: [0.4, 0.05, 0.05, 1]
+		    background_down: ''
+	    	text: 'Menu'
+	    	size_hint_x: 0.0
+	    	width: dp(50)
+	    	text_size: (dp(50), None)
+	    	on_release: root.mainMenu()
+	    	
+	BoxLayout:
+		size_hint_x: 0.5
+		orientation: 'horizontal'
+		Label:
+			text: ''
+			rcid: 'status'
+			size_hint_x: None
+		
+	BoxLayout:
+		orientation: 'horizontal'
+		size_hint_x: 0.3
+		canvas.before:
+	        Color:
+	            rgba: 0.1, 0.1, 0.1, 1
+	        Rectangle:
+	            pos: self.pos
+	            size: self.size
+	    ProgressBar:
+			rcid: 'pbar'
+			width: dp(100)
+	    IconButton:
+	    	rcid: 'teleTxStatus'
+	    	text: '\357\203\256'
+	    	width: dp(30)
+	    	color: [0.0, 1.0, 0.0, 0.2]    	
+	    	size_hint_x: None
+	    IconButton:
+	    	rcid: 'teleRxStatus'
+	    	text: '\357\203\255'
+	    	width: dp(30)
+	    	color: [0.0, 0.8, 1.0, 0.2]
+	    	size_hint_x: None
+	    IconButton:
+	    	rcid: 'rcTxStatus'
+	    	text: '\357\200\231'
+	    	width: dp(30)
+	    	color: [0.0, 1.0, 0.0, 0.2]    	
+	    	size_hint_x: None
+	    IconButton:
+	    	rcid: 'rcRxStatus'
+	    	text: '\357\202\223'
+	    	width: dp(30)
+	    	color: [0.0, 0.8, 1.0, 0.2]    	
+	    	size_hint_x: None
 	    	
 	    	
