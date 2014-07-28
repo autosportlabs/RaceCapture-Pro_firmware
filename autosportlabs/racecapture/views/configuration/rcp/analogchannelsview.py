@@ -205,7 +205,7 @@ class AnalogScalingMapEditor(BoxLayout):
         graph = AnalogScaler()
         graphContainer.add_widget(graph)
         
-        plot = MeshLinePlot(color=rgb('FF0000'))
+        plot = MeshLinePlot(color=rgb('00FF00'))
         graph.add_plot(plot)
         self.plot = plot
                 
