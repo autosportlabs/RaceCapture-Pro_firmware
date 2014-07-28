@@ -569,6 +569,7 @@ void initGPS() {
    g_activeTrack = NULL;
    g_secondsSinceMidnight = TIME_NULL;
    g_prevSecondsSinceMidnight = TIME_NULL;
+   g_millisSinceUnixEpoch = 0;
    g_flashCount = 0;
    g_prevLatitude = 0.0;
    g_prevLongitude = 0.0;
