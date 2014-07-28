@@ -264,7 +264,7 @@ class RaceCaptureApp(App):
 
         
     def rcpDetectFail(self):
-        alertPopup('Could not detect', 'Could not detect RaceCapture/Pro\n\nPlease ensure it is plugged in and appropriate drivers are installed')
+        self.showStatus("Could not detect RaceCapture/Pro", True)
 if __name__ == '__main__':
 
     RaceCaptureApp().run()
