@@ -7,7 +7,7 @@
 #define SCRIPT_PAGES 40
 #define SCRIPT_LENGTH SCRIPT_PAGES * MEMORY_PAGE_SIZE
 
-#define MAGIC_NUMBER_SCRIPT_INIT 12345
+#define MAGIC_NUMBER_SCRIPT_INIT 0xDECAFBAD
 
 typedef struct _ScriptConfig{
 	char script[SCRIPT_LENGTH - 4];

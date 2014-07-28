@@ -11,7 +11,7 @@ static ScriptConfig g_scriptConfig = {DEFAULT_SCRIPT, MAGIC_NUMBER_SCRIPT_INIT};
 
 void initialize_script(){
 	if (g_scriptConfig.magicInit != MAGIC_NUMBER_SCRIPT_INIT){
-		//flash_default_script();
+		flash_default_script();
 	}
 }
 
@@ -22,14 +22,7 @@ int flash_default_script(){
 	if (defaultScriptConfig != NULL){
 		defaultScriptConfig->magicInit = MAGIC_NUMBER_SCRIPT_INIT;
 		strncpy(defaultScriptConfig->script, DEFAULT_SCRIPT, sizeof(DEFAULT_SCRIPT));
-
-		result = memory_flash_region(&g_scriptConfig, &defaultScriptConfig, sizeof (ScriptConfig));
-		pr_info_int(sizeof(ScriptConfig));
-		pr_info(" ");
-		pr_info_int(g_scriptConfig.magicInit);
-		pr_info(" ");
-		pr_info_int(defaultScriptConfig->magicInit);
-		pr_info("\r\n");
+		result = memory_flash_region(&g_scriptConfig, defaultScriptConfig, sizeof (ScriptConfig));
 		portFree(defaultScriptConfig);
 	}
 	if (result == 0) pr_info("success\r\n"); else pr_info("failed\r\n");
