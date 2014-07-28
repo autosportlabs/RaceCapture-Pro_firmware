@@ -152,12 +152,14 @@ class RaceCaptureApp(App):
     def on_read_config(self, instance, *args):
         try:
             self.rcpComms.getRcpCfg(self.rcpConfig, self.on_read_config_complete, self.on_read_config_error)
+            self.showActivity("Reading configuration")
         except:
             logging.exception('')
             self._serial_warning()
 
     def on_read_config_complete(self, rcpCfg):
         Clock.schedule_once(lambda dt: self.configView.dispatch('on_config_updated', self.rcpConfig))
+        self.showActivity('')
         
     def on_read_config_error(self, detail):
         alertPopup('Error Reading', 'Could not read configuration:\n\n' + str(detail))
@@ -189,6 +191,8 @@ class RaceCaptureApp(App):
     def showStatus(self, status, isAlert):
         self.statusBar.dispatch('on_status', status, isAlert)
           
+    def showActivity(self, status):
+        self.statusBar.dispatch('on_activity', status)
         
     def build(self):
         Builder.load_file('racecapture.kv')

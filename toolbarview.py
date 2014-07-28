@@ -12,6 +12,7 @@ Builder.load_file('toolbarview.kv')
 
 TOOLBAR_LED_DURATION = 0.1
 PROGRESS_COMPLETE_LINGER_DURATION = 5.0
+ACTIVITY_MESSAGE_LINGER_DURATION = 5.0
 
 class ToolbarView(BoxLayout):
     txOffColor = [0.0, 1.0, 0.0, 0.2]
@@ -36,8 +37,18 @@ class ToolbarView(BoxLayout):
         self.register_event_type('on_tele_tx')
         self.register_event_type('on_tele_rx')
         self.register_event_type('on_status')
+        self.register_event_type('on_activity')        
                     
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+                                    
+
+    def on_activity(self, msg):
+        self.setActivityMessage(msg)
+        Clock.schedule_once(lambda dt: self.setActivityMessage(''), ACTIVITY_MESSAGE_LINGER_DURATION)        
+        
+    def setActivityMessage(self, msg):
+        activityLabel = kvFind(self, 'rcid', 'activity')
+        activityLabel.text = msg
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
     def on_status(self, msg, isAlert):
         statusLabel = kvFind(self, 'rcid', 'status')
         statusLabel.text = msg
