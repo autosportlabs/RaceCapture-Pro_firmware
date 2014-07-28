@@ -30,6 +30,6 @@ class BaseConfigView(BoxLayout):
         try:
             sampleRate = channel.sampleRate
             sampleRateInfo = 'Disabled' if sampleRate == 0 else (str(sampleRate) + 'Hz')
-            return 'Analog ' + str(index + 1) + ' - ' + self.channels.getNameForId(channel.channelId) + ' ( ' + sampleRateInfo + ' )'
+            return self.channels.getNameForId(channel.channelId) + ' ( ' + sampleRateInfo + ' )'
         except:
             return 'Unknown Channel'
