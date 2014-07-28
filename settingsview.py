@@ -69,7 +69,7 @@ class SettingsTextField(ValueField):
         pass
 
     def setValue(self, value):
-        self.active = value
+        self.text = value
     
     def on_text(self, instance, value):
         self.dispatch('on_control', value)

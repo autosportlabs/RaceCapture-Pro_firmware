@@ -18,9 +18,9 @@ class TelemetryConfigView(BaseConfigView):
         super(TelemetryConfigView, self).__init__(**kwargs)
         self.register_event_type('on_config_updated')
     
-        btEnable = kvFind(self, 'rcid', 'deviceId') 
-        btEnable.bind(on_setting=self.on_device_id)
-        btEnable.setControl(SettingsTextField())
+        deviceId = kvFind(self, 'rcid', 'deviceId') 
+        deviceId.bind(on_setting=self.on_device_id)
+        deviceId.setControl(SettingsTextField())
         
         bgStream = kvFind(self, 'rcid', 'bgStream')
         bgStream.bind(on_setting=self.on_bg_stream)
