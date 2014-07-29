@@ -1,6 +1,8 @@
 #:kivy 1.8
+<DisabledFeatureButton>
+	tile_color: (0.3, 0.3, 0.3, 1.0)
+	
 <FeatureButton>
-	tile_color: (1.0, 1.0, 1.0, 1.0)
 	title_font: 'resource/fonts/eurocaps.ttf'
 	title_font_size: dp(25)
 	icon_color: (0.0, 0.0, 0.0, 1.0)
@@ -38,11 +40,11 @@
 			spacing: dp(60)
 			rows: 2
 			cols: 2
-			FeatureButton:
+			DisabledFeatureButton:
 				icon: '\357\203\244'
 				title: 'Dashboard'
 				on_press: root.show_view('dashboard')
-			FeatureButton:
+			DisabledFeatureButton:
 				icon: '\357\202\200'
 				title: 'Analysis'
 				on_press: root.show_view('analysis')				

@@ -23,18 +23,18 @@
 		Rectangle:
 		    pos: self.pos
 		    size: self.size
-	MainMenuItem:
+	DisabledMainMenuItem:
 		rcid: 'dash'
 		size_hint_y: 0.1
 		icon: '\357\203\244'
 		description: 'Dashboard'
 		on_main_menu_item_selected: root.on_main_menu_item_selected(*args)
-	MainMenuItem:
+	DisabledMainMenuItem:
 		rcid: 'analysis'
 		size_hint_y: 0.1
 		icon: '\357\202\200'
 		description: 'Analysis'
-		on_main_menu_item_selected: root.on_main_menu_item_selected(*args)		
+		on_main_menu_item_selected: root.on_main_menu_item_selected(*args)
 	MainMenuItem:
 		rcid: 'config'
 		size_hint_y: 0.1
