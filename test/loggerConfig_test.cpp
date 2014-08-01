@@ -13,49 +13,10 @@ CPPUNIT_TEST_SUITE_REGISTRATION( LoggerConfigTest );
 
 void LoggerConfigTest::setUp()
 {
-	updateActiveLoggerConfig();
+	initialize_logger_config();
 }
 
 
 void LoggerConfigTest::tearDown()
 {
-}
-
-
-void LoggerConfigTest::testSetTextField()
-{
-	{
-		char dest[FIELD_LENGTH];
-		char test[] =  "simple";
-		setTextField(dest,test,FIELD_LENGTH);
-		CPPUNIT_ASSERT_EQUAL(string("simple"), string(dest));
-	}
-
-	{
-		char dest[FIELD_LENGTH];
-		char test[] =  "test._1";
-		setTextField(dest,test,FIELD_LENGTH);
-		CPPUNIT_ASSERT_EQUAL(string("test._1"), string(dest));
-	}
-
-	{
-		char dest[FIELD_LENGTH];
-		char test[] =  "test\n1";
-		setTextField(dest,test,FIELD_LENGTH);
-		CPPUNIT_ASSERT_EQUAL(string("test_1"), string(dest));
-	}
-
-	{
-		char dest[FIELD_LENGTH];
-		char test[] =  "test!1";
-		setTextField(dest,test,FIELD_LENGTH);
-		CPPUNIT_ASSERT_EQUAL(string("test_1"), string(dest));
-	}
-	{
-		char dest[FIELD_LENGTH];
-		const char test[] =  "_.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-		setTextField(dest,test,FIELD_LENGTH);
-		CPPUNIT_ASSERT_EQUAL(string(test), string(dest));
-	}
-
 }

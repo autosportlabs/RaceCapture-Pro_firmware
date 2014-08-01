@@ -1,0 +1,10 @@
+{
+    "setGpsCfg": {
+        "sr": 100,
+        "pos": 1,
+        "speed": 1,
+        "time": 1,
+        "sats": 1,
+        "dist": 1
+    }
+}

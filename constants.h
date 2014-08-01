@@ -14,13 +14,19 @@
 #include "loggerCommands.h"
 #include "loggerApi.h"
 #include "api.h"
-
 #include "command.h"
 
-#define WELCOME_MSG "Welcome to RaceCapture/Pro : Firmware Version " MAJOR_REV "." MINOR_REV "." BUGFIX_REV
-#define COMMAND_PROMPT "RaceCapture/Pro"
 
-#define LUA_ENABLED
+#define XSTR(s) STR(s)
+#define STR(s) #s
+
+#define DEVICE_NAME    "RCP"
+#define MAJOR_REV_STR  XSTR(MAJOR_REV)
+#define MINOR_REV_STR  XSTR(MINOR_REV)
+#define BUGFIX_REV_STR XSTR(BUGFIX_REV)
+
+#define WELCOME_MSG "Welcome to RaceCapture/Pro : Firmware Version " MAJOR_REV_STR "." MINOR_REV_STR "." BUGFIX_REV_STR
+#define COMMAND_PROMPT "RaceCapture/Pro"
 
 #define SYSTEM_COMMANDS {LOGGER_COMMANDS, BASE_COMMANDS, LUA_COMMANDS, NULL_COMMAND}
 
@@ -48,7 +54,7 @@
 		'/', 0x00, 'P', 0x00, 'r', 0x00, 'o', 0x00 \
 	}
 
-#define WATCHDOG_TIMEOUT_MS 3000
+#define WATCHDOG_TIMEOUT_MS 1000
 
 
 #endif /* CONSTANTS_H_ */

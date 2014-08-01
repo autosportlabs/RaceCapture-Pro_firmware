@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include "mod_string.h"
 
 #define ldblib_c
 #define LUA_LIB

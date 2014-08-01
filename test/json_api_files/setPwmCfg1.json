@@ -1,0 +1,13 @@
+{
+    "setPwmCfg": {
+        "0": {        
+            "id": 39,
+            "sr": 100,
+            "logPrec": 2,
+            "outMode": 1,
+            "logMode": 1,
+            "stDutyCyc": 50,
+            "stPeriod" : 110,
+        }
+    }
+}

@@ -1,10 +1,10 @@
 #include "loggerData_test.h"
-#include "loggerData.h"
+#include "loggerSampleData.h"
 #include "loggerApi.h"
 #include "mod_string.h"
 #include "mock_serial.h"
-#include "accelerometer_mock.h"
-#include "accelerometer.h"
+#include "imu_mock.h"
+#include "imu.h"
 #include <stdlib.h>
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( LoggerDataTest );
@@ -14,7 +14,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( LoggerDataTest );
 void LoggerDataTest::setUp()
 {
 	setupMockSerial();
-	updateActiveLoggerConfig();
+	initialize_logger_config();
 }
 
 
@@ -22,25 +22,6 @@ void LoggerDataTest::tearDown()
 {
 }
 
-
-void LoggerDataTest::testAccelChannels()
-{
-//	mock_setAccelValue(0,2048);
-//	mock_setAccelValue(1,2048);
-//	mock_setAccelValue(1,2866);
-
-	float x = ACCEL_RAW_TO_GFORCE(2866,2048);
-
-}
-
-void LoggerDataTest::testAnalogChannels()
-{
-	//todo test reading analog channels and scaling functions etc.
-}
-
-void LoggerDataTest::testGpsChannels()
-{
-}
 
 void LoggerDataTest::testMappedValue()
 {
@@ -58,7 +39,7 @@ void LoggerDataTest::testMappedValue()
 	m.scaledValues[4] = 5.0f;
 
 	for (int i = 0; i < 1024; i++){
-		float scaled = GetMappedValue(i, &m);
+		float scaled = get_mapped_value(i, &m);
 		float expected = (float)i / 100.0f;
 		if (i <= 100) expected = 1.0f;
 		else if (i >= 500) expected = 5.0f;

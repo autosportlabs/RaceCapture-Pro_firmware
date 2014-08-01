@@ -1,5 +1,7 @@
 #include "filter.h"
 
+//Implements a fast Exponential Moving Average IIR filter
+
 //This macros defines an alpha value between 0 and 1
 #define DSP_EMA_I32_ALPHA(x) ( (unsigned short)(x * 65535) )
 

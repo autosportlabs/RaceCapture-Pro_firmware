@@ -13,9 +13,6 @@
 class LoggerDataTest : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE( LoggerDataTest );
-  CPPUNIT_TEST( testAnalogChannels );
-  CPPUNIT_TEST( testGpsChannels );
-  CPPUNIT_TEST( testAccelChannels );
   CPPUNIT_TEST( testMappedValue );
   CPPUNIT_TEST_SUITE_END();
 
@@ -25,7 +22,7 @@ public:
 
   void testAnalogChannels();
   void testGpsChannels();
-  void testAccelChannels();
+  void testImuChannels();
   void testMappedValue();
 };
 

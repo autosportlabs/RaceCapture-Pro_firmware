@@ -5,7 +5,7 @@
 */
 
 
-#include <string.h>
+#include "mod_string.h"
 
 #define lzio_c
 #define LUA_CORE

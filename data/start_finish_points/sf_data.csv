@@ -1,0 +1,629 @@
+type  latitude longitude name
+W     30.246222222       -81.828277778 103rd Street Kart Track
+W     50.136333333       1.840666667   Abbeville - Kart East
+W     50.133583333       1.831388889   Abbeville - Kart South
+W     50.134111111       1.833361111   Abbeville Circuit
+W     39.662555556       -105.186500000          Action Karting - Bandimere
+W     45.683361111       5.074111111             Actua Lyon Karting - East
+W     45.684333333       5.074638889             Actua Lyon Karting - North
+W     45.683388889       5.072916667             Actua Lyon Karting - West
+W     34.008555556       -117.382277778          Adams Motorsports Park
+W     -34.930361111      138.620500000           Adelaide GP Circuit
+W     -34.699250000      138.568472222           Adelaide Intl. Raceway
+W     43.853277778       -75.453194444           Adirondack Intl. Speedway
+W     45.044722222       12.147805556            Adria Intl. Raceway
+W     61.003666667       24.417972222            Ahvenisto Race Circuit
+W     53.475277778       -2.939916667            Aintree Motor Racing Circuit
+W     60.976222222       22.658166667            Alastaro Circuit
+W     39.005138889       -1.795611111            Albacete
+W     43.916027778       2.118805556             Albi
+W     41.619250000       0.402916667             Alcarras - Circuit
+W     41.618805556       0.405111111             Alcarras - Kart Track
+W     37.088611111       -2.269250000            Almeria
+W     27.606027778       -82.541638889           Andersen RacePark
+W     48.290527778       2.007166667             Angerville - East Track
+W     48.289694444       2.003527778             Angerville - Gabriel Thirouin
+W     53.188361111       -4.496388889            Anglesey Club Circuit
+W     53.188361111       -4.496388889            Anglesey Coastal Circuit
+W     53.188361111       -4.496388889            Anglesey GP Circuit
+W     53.190166667       -4.497500000            Anglesey National Circuit
+W     -23.515638889      -46.645055556           Anhembi Parque
+W     41.263666667       1.519944444             Applus IDIADA
+W     66.422416667       14.441722222            Arctic Circle Kart Track
+W     66.423694444       14.446305556            Arctic Circle Raceway
+W     51.493944444       0.282833333             Arena Essex - Oval
+W     33.513722222       -112.390472222          Arizona Motorsports Park
+W     32.236833333       -107.429666667          Arroyo Seco Raceway
+W     36.824861111       -5.083333333            Ascari Race Resort
+W     39.266944444       -106.879250000          Aspen Kart Track
+W     39.266416667       -106.880111111          Aspen Sports Car Club
+W     37.987027778       23.362888889            Athens Circuit
+W     37.986583333       23.363888889            Athens Kart Circuit
+W     33.385722222       -84.316888889           Atlanta Motor Speedway
+W     34.433166667       -84.176222222           Atlanta Motorsports Park
+W     34.436416667       -84.175222222           Atlanta Motorsports Park - Kart
+W     45.145055556       -63.449777778           Atlantic Motorsport Park
+W     58.402277778       24.448138889            Audru Ring
+W     52.218500000       -106.661527778          Auto Clearing Motor Speedway
+W     34.089333333       -117.500194444          Auto Club Speedway - Infield
+W     34.086083333       -117.500555556          Auto Club Speedway - Oval
+W     41.452027778       -88.124416667           Autobahn Country Club - Kart
+W     41.456555556       -88.125888889           Autobahn Country Club - North
+W     41.455194444       -88.126861111           Autobahn Country Club - South
+W     33.037500000       130.975416667           Autopolis
+W     33.035111111       130.976555556           Autopolis - Kart Track
+W     -23.281861111      -51.168805556           Ayrton Senna - Circuit
+W     -23.282277778      -51.161944444           Ayrton Senna - Kart Track
+W     -8.232916667       -35.987111111           Ayrton Senna Caruaru
+W     26.032222222       50.512416667            Bahrain Intl. Circuit
+W     -31.664111111      115.786361111           Barbagallo Raceway
+W     33.532611111       -86.619694444           Barber Motorsports Park
+W     41.570000000       2.261222222             Barcelona
+W     -42.746416667      147.294750000           Baskerville Raceway
+W     13.820722222       121.277138889           Batangas Kart Track
+W     13.820166667       121.277305556           Batangas Racing Circuit
+W     48.035750000       -0.743694444            Beausoleil - Laval
+W     52.234055556       -0.460916667            Bedford - East Circuit
+W     52.235111111       -0.474305556            Bedford - Full GT Circuit
+W     52.237194444       -0.466944444            Bedford - North Circuit
+W     52.232333333       -0.473416667            Bedford - SEN Circuit
+W     52.232333333       -0.473416667            Bedford - South Circuit
+W     52.235111111       -0.474305556            Bedford - SW Circuit
+W     52.235111111       -0.474305556            Bedford - West Circuit
+W     52.234694444       -0.473055556            Bedford Kart Track
+W     -20.248222222      -70.087861111           Benardo O'Higgins
+W     43.702944444       20.714166667            Beranovac
+W     56.965000000       24.229138889            Bikernieki Race Circuit
+W     12.921944444       101.007972222           Bira Go Kart Track
+W     12.920694444       101.008555556           Bira Intl. Circuit
+W     54.303305556       -5.581777778            Bishopscourt
+W     42.488444444       -89.117527778           Blackhawk Farms Raceway
+W     38.575861111       -121.732750000          Blue Max Kart Club
+W     38.764555556       -84.803083333           Bluegrass Motorsports Park
+W     41.173361111       -8.687638889            Boavista
+W     14.590833333       101.426722222           Bonanza Raceway
+W     40.799722222       -113.800000000          Bonneville Salt Flats
+W     14.553666667       120.985944444           Boomland Kart Track
+W     62.624472222       22.015361111            Botniaring Racing Circuit
+W     46.416861111       -94.274805556           Brainerd Competition Course
+W     46.420111111       -94.276222222           Brainerd Donnybrooke Course
+W     46.417722222       -94.278805556           Brainerd Kart Course
+W     51.360305556       0.260333333             Brands Hatch Circuit
+W     47.490166667       -122.753777778          Bremerton Motorsports Park
+W     49.202861111       16.445444444            Brno Circuit
+W     -37.215916667      145.082388889           Broadford Track
+W     28.351611111       77.534472222            Buddh Intl. Circuit
+W     13.139166667       -59.467361111           Bushy Park Circuit
+W     35.492194444       -119.543222222          Buttonwillow Kart Track
+W     35.488750000       -119.544500000          Buttonwillow Raceway
+W     -52.968111111      -70.836555556           Cabo Negro
+W     53.310222222       -0.059444444            Cadwell Park Racing Circuit
+W     45.301777778       -76.671444444           Calabogie Motorsports Park
+W     40.932194444       0.839444444             Calafat
+W     -37.670888889      144.753777778           Calder Park - Combined Track
+W     -37.670888889      144.753777778           Calder Park - National Circuit
+W     -37.673055556      144.760000000           Calder Park - Thunderdome Oval
+W     44.051944444       -78.688305556           Canadian Tire Driver Dev Track
+W     44.054388889       -78.674472222           Canadian Tire GP Circuit
+W     44.051666667       -78.685194444           Canadian Tire Speedway Oval
+W     14.281500000       121.009027778           Carmona Racing Circuit
+W     34.486694444       -80.595722222           Carolina Motorsports Park
+W     37.644444444       -1.035222222            Cartagena
+W     -24.982166667      -53.388694444           Cascavel
+W     51.492750000       -2.216027778            Castle Combe Circuit
+W     41.185638889       13.853416667            Cellole
+W     -39.937833333      175.050000000           Cemetery Circuit
+W     -38.852000000      -68.152777778           Centenario
+W     50.439166667       30.293166667            Chaika Circuit
+W     50.437944444       30.299138889            Chaika Kart Track
+W     50.437861111       30.299916667            Chaika Oval Track
+W     45.740388889       3.026166667             Charade
+W     26.908777778       -82.000388889           Charlotte County Speedway
+W     35.352250000       -80.685583333           Charlotte Motor Speedway
+W     30.587250000       104.119777778           Chengdu Goldenport Circuit
+W     16.777888889       -93.251583333           Chiapas
+W     41.473138889       -88.059833333           Chicagoland Speedway
+W     42.262722222       -84.050138889           Chrysler Proving Grounds
+W     33.753666667       -115.319611111          Chuckwalla Valley Raceway
+W     30.131888889       -97.639861111           Circuit of the Americas
+W     15.207750000       120.538833333           Clark Intl. Speedway
+W     51.441583333       -2.281555556            Colerne Airfield
+W     39.675777778       -104.113916667          Colorado Motorsports Park
+W     40.062388889       -104.973472222          Colorado National Speedway
+W     39.749861111       -105.176111111          Colorado State Patrol Track
+W     41.518944444       -72.359222222           Consumer Reports Test Track
+W     56.274388889       -2.602361111            Crail Kart Track
+W     56.271444444       -2.604666667            Crail Raceway
+W     45.258500000       33.399805556            Crimea GP Kart Track
+W     45.259166667       33.397166667            Crimea Grand Prix
+W     50.378944444       2.296277778             Croix-en-Ternois
+W     52.712555556       -1.807500000            Curborough Sprint Course
+W     -25.448583333      -49.195388889           Curitiba - Circuit
+W     -25.451888889      -49.193111111           Curitiba - Raceland Kartodromo
+W     29.187666667       -81.072777778           Daytona Intl. Speedway
+W     47.363583333       4.898055556             Dijon-Prenois
+W     -36.327472222      -57.696083333           Dolores
+W     52.829805556       -1.379555556            Donington Park Circuit
+W     53.029777778       13.542750000            Driving Center
+W     25.047416667       55.239583333            Dubai Autodrome
+W     -45.885833333      170.496972222           Dunedin Street Circuit
+W     -29.838722222      31.035138889            Durban Street Circuit
+W     33.367611111       -97.429666667           Eagles Canyon Raceway
+W     -33.805361111      150.882611111           Eastern Creek Kart Track
+W     37.641888889       140.371388889           Ebisu - Drift Stadium
+W     37.644305556       140.370750000           Ebisu - Higashi East Course
+W     37.646111111       140.364111111           Ebisu - Kita North Course
+W     37.639055556       140.374111111           Ebisu - Nishi Short Course
+W     37.639694444       140.371055556           Ebisu - Nishi West Course
+W     37.646250000       140.369388889           Ebisu - Togue Course
+W     13.810305556       -89.331388889           El Jabali
+W     14.281361111       121.094027778           Enchanted Kingdom Kart Track
+W     44.344388889       11.714027778            Enzo e Dino Ferrari
+W     53.447805556       9.693277778             Estering
+W     38.749972222       -9.392583333            Estoril
+W     55.445027778       37.661861111            Eurasia Domodedovo
+W     47.146472222       19.458666667            Euro-Ring
+W     51.535083333       13.928222222            EuroSpeedway Lausitz
+W     37.296361111       127.206416667           Everland Speedway
+W     39.102500000       -75.418611111           Fairlane Acres Speedway
+W     56.976250000       12.566444444            Falkenbergs Motorbana
+W     29.846416667       -82.056750000           FIRM - East Loop Circuit
+W     29.843916667       -82.058083333           FIRM - Full Road Course
+W     29.845444444       -82.056611111           FIRM - Kart Track
+W     29.843916667       -82.058083333           FIRM - West Loop Circuit
+W     29.845861111       -82.057305556           Florida Intl. Rally and Motorsports
+W     35.373833333       138.929750000           Fuji Speedway
+W     60.189750000       11.136750000            Gardermoen Raceway
+W     38.650444444       -90.136916667           Gateway Intl. Raceway
+W     45.500055556       -73.522666667           Gilles Villeneuve
+W     50.628750000       -97.050277778           Gimli Motorsports Park
+W     42.408000000       -86.140472222           Gingerman Raceway
+W     -16.719416667      -49.193027778           Goiania - Circuit
+W     -16.720083333      -49.187638889           Goiania - Kart Track
+W     57.953888889       -3.995333333            Golspie
+W     50.857944444       -0.752611111            Goodwood Motorcircuit
+W     57.714305556       11.962083333            Gothenburg City Race
+W     57.838750000       18.839333333            Gotland Ring Altar Track
+W     57.834277778       18.827888889            Gotland Ring Full GP Circuit
+W     57.837638889       18.831472222            Gotland Ring North Circuit
+W     57.834277778       18.827888889            Gotland Ring South Circuit
+W     57.837638889       18.831472222            Gotland Ring Tvelvar Track
+W     -39.076416667      -67.580388889           Gral Roca
+W     39.108694444       -108.491750000          Grand Junction Motor Speedway
+W     43.633944444       -79.412555556           Grand Prix of Toronto
+W     29.324722222       -95.046277778           GrandSport Speedway
+W     34.621972222       -117.169833333          Grange Motor Circuit
+W     43.095916667       -85.385250000           Grattan Raceway
+W     45.382777778       14.509305556            Grobnik
+W     41.410166667       -88.416666667           Grundy County Speedway
+W     9.974416667        -84.248055556           Guacima
+W     37.399694444       -3.073027778            Guadix
+W     23.271277778       112.818138889           Guandong Intl. Circuit
+W     -28.843916667      -51.851583333           Guapore - Circuit
+W     -28.844722222      -51.854111111           Guapore - Kart Track
+W     36.220666667       -96.590388889           Hallett Motor Racing Circuit
+W     -37.782611111      175.269500000           Hamilton Street Circuit
+W     -37.356138889      175.077638889           Hampton Downs Circuit
+W     62.599250000       17.815277778            Harnosands Motorpark
+W     29.918527778       -97.873611111           Harris Hill Road
+W     38.926583333       -95.676666667           Heartland Park
+W     53.452222222       10.363972222            Heidburgring
+W     19.406166667       -99.092805556           Hermanos Rodriguez
+W     -12.448361111      130.907722222           Hidden Valley Raceway
+W     39.735027778       -103.894444444          High Plains Raceway
+W     19.675000000       -155.026722222          Hilo Kart Track
+W     49.327750000       8.565833333             Hockenheimring
+W     42.921611111       140.714500000           Hokkaido Speed Park
+W     25.454527778       -80.415527778           Homestead Kart Track
+W     25.453666667       -80.409694444           Homestead Miami Speedway
+W     35.271138889       -117.957944444          Honda CA Proving Grounds
+W     32.895361111       130.873861111           Honda Kyushu - Kart Track
+W     32.897722222       130.877305556           Honda Kyushu Circuit
+W     47.578888889       19.248388889            Hungaroring
+W     35.054388889       -118.032861111          Hyundai CA Proving Grounds
+W     38.400722222       -104.614250000          I-25 Speedway
+W     40.263083333       -103.840777778          I-76 Speedway
+W     45.681055556       -74.023305556           ICAR - Circuit
+W     45.680361111       -74.025250000           ICAR - Kart Track
+W     63.954972222       -22.445444444           Iceland MotoPark
+W     40.043083333       -104.949694444          IMI Paved Course
+W     32.228166667       -110.009638889          Inde - North Course
+W     32.225444444       -110.005722222          Inde - South Course
+W     32.225444444       -110.005722222          Inde Motorsports Ranch
+W     39.793138889       -86.238861111           Indianapolis Motor Speedway
+W     39.812527778       -86.341833333           Indianapolis Raceway Park
+W     -38.620722222      -72.466972222           Interlomas
+W     41.673750000       -93.014750000           Iowa Speedway
+W     13.000944444       79.989750000            Irungattukottai
+W     41.701416667       13.142916667            ISAM Italy
+W     40.952194444       29.406194444            Istanbul Racing Circuit
+W     -22.974333333      -43.396138889           Jacarepagua
+W     40.617138889       -3.584194444            Jarama
+W     30.574888889       -83.156416667           Jennings GP
+W     36.709694444       -6.032527778            Jerez
+W     1.480138889        103.908361111           Johor Circuit
+W     -23.703750000      -46.699944444           Jose Carlos Pace
+W     -34.694555556      -58.461694444           Juan y Oscar Galvez - Circuit
+W     -34.697555556      -58.467750000           Juan y Oscar Galvez - Kart Track
+W     -29.982388889      -71.221027778           Juvenal Jeraldo
+W     56.176388889       9.660055556             Jyllandsringen
+W     12.944555556       99.706194444            Kaeng Krachan Circuit
+W     -30.697833333      121.469000000           Kalgoorlie Intl. Speedway
+W     39.116583333       -94.833833333           Kansas Speedway
+W     10.900972222       77.051555556            Kari Motor Speedway
+W     59.380888889       14.509722222            Karlskoga Kart Track
+W     59.383527778       14.514444444            Karlskoga Motorstadion
+W     -46.442222222      168.251527778           Kartsport Southland
+W     52.001416667       -8.326388889            KartWorld
+W     55.866555556       49.260388889            Kazanring
+W     63.420250000       23.983194444            Kemora Circuit
+W     50.960888889       20.539722222            Kielce
+W     -33.821972222      18.528444444            Killarney Kart Track
+W     -33.823722222      18.529083333            Killarney Road Course
+W     52.462333333       -7.182277778            Kiltorcan Raceway
+W     58.546944444       13.397722222            Kinnekulle Ring
+W     54.456666667       -5.472166667            Kirkistown
+W     56.130916667       -3.506583333            Knockhill Racing Circuit
+W     55.987250000       13.113583333            Knutstorp
+W     34.730722222       126.418277778           Korean Intl. Circuit
+W     -25.998777778      28.069916667            Kyalami GP Circuit
+W     -25.996583333      28.070500000            Kyalami Kart Track
+W     48.759250000       1.371888889             L'Ouest Parisien
+W     40.129361111       18.349972222            La Conca Kart Track
+W     38.043805556       -103.519361111          La Junta Raceway
+W     -29.957444444      -71.353666667           La Pampilla
+W     36.586472222       -121.756638889          Laguna Seca
+W     51.492666667       0.286222222             Lakeside Karting
+W     -27.228472222      152.964888889           Lakeside Park
+W     -35.338194444      138.581694444           Lanac Park
+W     34.153777778       -83.812277778           Lanier National Speedway
+W     45.469722222       5.296388889             Laquais Circuit
+W     45.466527778       5.297527778             Laquais Kart Track
+W     55.752000000       -3.978444444            Larkhall
+W     18.467944444       -69.749305556           Las Americas
+W     43.005750000       1.882166667             Lavelanet
+W     47.949861111       0.207527778             Le Mans
+W     43.923166667       4.504138889             Ledenon
+W     21.035694444       -101.574861111          Leon
+W     40.995083333       16.743138889            Levante
+W     41.928583333       -73.381000000           Lime Rock Park
+W     48.622972222       2.245833333             Linas-Montlhery
+W     58.393638889       15.718916667            Linkopings Kart Track
+W     58.395777778       15.718833333            Linkopings Road Course
+W     51.432472222       -3.498694444            Llandow Circuit
+W     45.236777778       7.724750000             Lombardore
+W     33.762250000       -118.187222222          Long Beach Grand Prix
+W     25.489083333       51.449694444            Losail Intl. Circuit
+W     36.264000000       -115.019750000          LVMS Bullring
+W     36.285472222       -115.010027778          LVMS Dirt Course
+W     36.281305556       -115.020472222          LVMS Exotic Course
+W     36.272083333       -115.010138889          LVMS Inside Road Course
+W     36.264833333       -115.021722222          LVMS Kart Track
+W     36.266388889       -115.022722222          LVMS Offroad Course
+W     36.268111111       -115.016833333          LVMS Outside Road Course
+W     36.274500000       -115.012583333          LVMS Superspeedway Oval
+W     51.177333333       1.198166667             Lydden Hill
+W     22.132916667       113.560694444           Macau Kart Track
+W     46.864083333       3.163722222             Magny-Cours
+W     -34.415277778      138.505916667           Mallala Motor Racing Circuit
+W     52.598638889       -1.336972222            Mallory Park
+W     -40.235777778      175.558444444           Manfield Autocourse
+W     58.369111111       15.283777778            Mantorp Park
+W     -37.994750000      -57.638722222           Mar del Plata
+W     1.290472222        103.864333333           Marina Bay Street Circuit
+W     36.634222222       -79.852277778           Martinsville Speedway
+W     45.936111111       2.301694444             Mas du Clos
+W     20.814027778       -156.457083333          Maui Puunene Kart Track
+W     37.744916667       138.801722222           Maze Sea Park
+W     -37.832833333      140.649750000           McNamara Park
+W     46.217277778       -74.109000000           Mecaglisse
+W     42.417055556       -122.804472222          Medford Kart Track
+W     -37.850055556      144.969000000           Melbourne GP Circuit
+W     35.282166667       -89.946833333           Memphis Motorsports Park
+W     34.403638889       -82.037000000           Michelin Proving Grounds
+W     41.594277778       -86.410444444           Michiana Raceway Park
+W     41.024555556       -95.821222222           Mid America Motorplex
+W     40.689444444       -82.635277778           Mid-Ohio Sports Car Course
+W     52.711583333       -1.794111111            Midland Karting - Intl. Circuit
+W     52.711250000       -1.795194444            Midland Karting - National Circuit
+W     19.027916667       -97.989750000           Miguel E Abed
+W     40.583138889       -112.376388889          Miller Motorsports - East
+W     40.583138889       -112.376388889          Miller Motorsports - Full
+W     40.583138889       -112.376388889          Miller Motorsports - Outer
+W     40.583083333       -112.382416667          Miller Motorsports - West
+W     40.585083333       -112.377611111          Miller Motorsports Kart Track
+W     43.020444444       -88.012888889           Milwaukee Mile
+W     43.962194444       12.684222222            Misano World Circuit
+W     49.126694444       -122.325583333          Mission Raceway Park
+W     43.735027778       7.421250000             Monaco
+W     53.256972222       -6.745083333            Mondello Park
+W     46.193305556       -74.611500000           Mont-Tremblant
+W     41.846194444       -7.757194444            Montalegre
+W     37.358833333       -6.571472222            Monteblanco
+W     25.860611111       -100.218027778          Monterrey - Circuit
+W     25.857277778       -100.217444444          Monterrey - Kart Track
+W     41.623916667       -74.698444444           Monticello - Full Course
+W     41.619805556       -74.697638889           Monticello - Mushroom Course
+W     41.623916667       -74.698444444           Monticello - North Course
+W     41.623916667       -74.698444444           Monticello - South Course
+W     30.500277778       -83.795055556           Monticello Karting
+W     45.618972222       9.281194444             Monza
+W     40.508277778       8.832083333             Mores
+W     -28.262055556      152.036416667           Morgan Park Raceway
+W     55.564527778       37.991055556            Moscow Autodrom
+W     55.996055556       36.270527778            Moscow Raceway
+W     50.519444444       13.607750000            Most
+W     36.532750000       140.226194444           Motegi Oval
+W     36.533000000       140.226722222           Motegi Road Course
+W     62.057638889       27.559861111            Motopark Raceway
+W     41.078305556       -0.197833333            Motorland Aragon
+W     41.075472222       -0.188638889            Motorland Aragon - Kart
+W     52.027527778       11.278111111            Motorsport Arena Oschersleben
+W     40.580138889       -98.351277778           Motorsports Park Hastings
+W     -33.439388889      149.558250000           Mount Panorama Circuit
+W     32.523111111       -97.615277778           MSR Cresson East Course
+W     32.523111111       -97.615277778           MSR Cresson Full Track
+W     32.523416667       -97.619694444           MSR Cresson West Course
+W     29.279000000       -95.422416667           MSR Houston Full Track
+W     29.277555556       -95.425250000           MSR Houston Kart Track
+W     29.279000000       -95.422416667           MSR Houston LeMons Loop
+W     29.276555556       -95.422888889           MSR Houston Long Outer Loop
+W     29.279000000       -95.422416667           MSR Houston NASCAR Loop
+W     29.276555556       -95.422888889           MSR Houston Short Outer Loop
+W     29.279000000       -95.422416667           MSR Houston Trooper Loop
+W     43.997583333       11.371444444            Mugello Circuit
+W     34.786083333       134.177000000           Nakayama Circuit
+W     34.783527778       134.177777778           Nakayama Kart Track
+W     40.318611111       17.826666667            Nardo Handling Track
+W     40.318416667       17.806000000            Nardo Ring
+W     36.046222222       -86.409666667           Nashville Superspeedway
+W     36.970805556       140.127416667           Nasu Motor Sports Land
+W     44.836611111       19.963055556            Navak Track
+W     42.559222222       -2.168055556            Navarra - Circuit
+W     42.557888889       -2.168000000            Navarro - Kart Track
+W     36.479388889       -77.579833333           NCCAR
+W     37.001583333       -86.368833333           NCM Motorsports Park
+W     41.307083333       -81.014111111           Nelson Ledges Road Course
+W     -15.772833333      -47.900250000           Nelson Piquet - Circuit
+W     -15.778388889      -47.896500000           Nelson Piquet - Kart Track
+W     54.915694444       23.703944444            Nemuno Ziedas
+W     43.363083333       -71.462000000           New Hampshire Intl. Speedway
+W     39.361472222       -75.054111111           NJ Motorsports Park - Lightning
+W     39.360805556       -75.073611111           NJ Motorsports Park - Thunderbolt
+W     30.018333333       -91.080750000           No Problem Raceway Park
+W     29.885388889       -90.199166667           Nola Motorsports Park
+W     49.431138889       11.124666667            Norisring
+W     64.785305556       -147.395000000          North Pole Speedway
+W     61.559055556       -149.274583333          Northstar Speedway
+W     50.335583333       6.947583333             Nurburgring Grand Prix
+W     50.343583333       6.960055556             Nurburgring Nordschleife
+W     54.622861111       -6.144083333            Nutts Corner
+W     29.228472222       -82.189805556           Ocala Gran Prix
+W     34.914277778       134.218944444           Okayama Intl. Circuit
+W     34.914666667       134.217861111           Okayama Kart Track
+W     40.334916667       -74.353555556           Old Bridge Township Raceway
+W     54.259944444       -0.409444444            Oliver's Mount
+W     -34.007861111      150.733027778           Oran Park Raceway
+W     39.623666667       109.869722222           Ordos Intl. Circuit
+W     45.363777778       -120.744527778          Oregon Raceway Park
+W     28.412722222       -81.379666667           Orlando Kart Center
+W     -20.475916667      -54.466027778           Orlando Moura
+W     53.180000000       -2.612833333            Oulton Park Circuit
+W     21.721833333       -102.328555556          Ovalo Aguascalientes Mexico
+W     47.324194444       -122.151777778          Pacific Raceways Grand Prix
+W     47.320916667       -122.147527778          Pacific Raceways Road Course
+W     54.869111111       9.275694444             Padborg Park
+W     -37.379638889      175.669777778           Paeroa Street Circuit
+W     53.133388889       -8.353027778            Pallas Karting - 1500m
+W     53.133777778       -8.354750000            Pallas Karting - 500m
+W     26.920722222       -80.305944444           Palm Beach Intl. Raceway
+W     41.592138889       1.688083333             Parcmotor Castelloli
+W     43.447111111       -0.532500000            Pau Arnos
+W     43.770638889       -0.040555556            Paul Armagnac (Nogaro)
+W     43.251194444       5.793055556             Paul Ricard
+W     26.920555556       -80.307055556           PBIR Kart Track
+W     14.382472222       -90.820666667           Pedro Cofino
+W     51.705861111       -4.323833333            Pembrey Circuit
+W     37.520166667       14.305444444            Pergusa
+W     -27.904694444      26.709527778            Phakisa Oval Track
+W     -27.904777778      26.711166667            Phakisa Road Course
+W     -38.502388889      145.232194444           Phillip Island Circuit
+W     33.375916667       -112.311361111          Phoenix Intl. Raceway
+W     38.901250000       -105.003472222          Pikes Peak Intl. Hill Climb
+W     38.590944444       -104.678305556          Pikes Peak Intl. Raceway
+W     39.891027778       18.133583333            Pista Salentina-Ugento
+W     40.850722222       -80.347750000           Pitt Race - North Course
+W     40.844972222       -80.347333333           Pitt Race - South Course
+W     40.849777778       -80.344555556           Pitt Race - Winslow Kart Track
+W     45.699694444       -73.866833333           PMG Test Track
+W     41.057361111       -75.504916667           Pocono - East Course
+W     41.052638889       -75.511722222           Pocono - Full Track
+W     41.054388889       -75.514750000           Pocono - North Course
+W     41.052472222       -75.506500000           Pocono - South Course
+W     17.971666667       -66.676916667           Ponce Intl. Speedway
+W     51.405527778       12.297500000            Porsche Leipzig
+W     37.229777778       -8.629944444            Portimao Circuit
+W     37.233194444       -8.636361111            Portimao Kart Track
+W     45.595027778       -122.694472222          Portland Intl. Raceway
+W     22.091277778       -100.725638889          Potosino
+W     -33.223916667      -66.238361111           Potrero de los Funes Circuit
+W     -43.530583333      172.480944444           Powerbuilt Raceway
+W     52.420305556       16.806500000            Poznan
+W     51.963305556       -2.023444444            Prescott
+W     -33.049527778      27.870000000            Prince George Circuit
+W     38.299888889       -104.677416667          Pueblo Motorsports Park
+W     -37.215555556      174.915833333           Pukekohe Park Raceway
+W     39.582305556       -86.742305556           Putnam Park Road Course
+W     -27.690638889      152.654611111           Queensland Raceway
+W     20.585583333       -100.328916667          Queretaro
+W     48.553472222       0.274472222             Quest Karting - Essay
+W     50.943944444       -113.933611111          Race City Motorsport Park
+W     51.530055556       -2.140305556            RAF Hullavington
+W     52.647138889       0.558416667             RAF Marham
+W     47.220000000       14.765111111            Red Bull Ring
+W     -26.075083333      28.755166667            Red Star Raceway
+W     24.382722222       45.979222222            Reem Intl. Circuit
+W     24.383222222       45.976500000            Reem Kart Track
+W     41.957638889       3.176166667             Regencos Kart Track
+W     39.539388889       -119.241833333          Reno-Fernley Raceway
+W     44.680666667       10.020916667            Riccardo Paletti
+W     37.591083333       -77.419666667           Richmond Intl. Raceway
+W     56.337194444       10.682388889            Ring Djursland
+W     46.631805556       -71.788305556           Riverside Speedway Ste-Croix
+W     43.797888889       -87.989638889           Road America
+W     34.150361111       -83.814194444           Road Atlanta
+W     52.514722222       -0.662333333            Rockingham Motor Speedway
+W     34.975833333       -79.610888889           Rockingham Raceway Park
+W     32.167055556       -81.322861111           Roebling Road Raceway
+W     -30.547694444      136.886083333           Roxby Downs
+W     59.368111111       11.260722222            Rudskogen Kart Track
+W     59.365722222       11.263194444            Rudskogen Road Course
+W     18.436750000       -66.210111111           Sabana Seca
+W     50.791777778       12.688083333            Sachsenring
+W     45.573472222       -73.965916667           Saint-Eustache
+W     -2.235722222       -80.879222222           Salinas
+W     17.970416667       -66.265666667           Salinas Intl. Speedway
+W     47.823055556       13.169055556            Salzburgring
+W     22.182472222       -100.990722222          San Luis 400
+W     -45.902750000      -67.543777778           San Martin
+W     -45.903666667      -67.543361111           San Martin Kart Track
+W     45.528166667       -72.881916667           Sanair Kart Track
+W     45.532611111       -72.878555556           Sanair Oval Track
+W     45.529638889       -72.882666667           Sanair Road Course
+W     45.531138889       -72.875444444           Sanair Speedway Road Course
+W     45.530972222       -72.876222222           Sanair Super Speedway
+W     45.525583333       -72.887416667           Sanair Winter Course
+W     47.243388889       -123.150805556          Sanderson Field
+W     35.020611111       -106.858861111          Sandia Motor Speedway
+W     -37.949361111      145.164333333           Sandown Motor Racing Circuit
+W     -29.800888889      -52.434166667           Santa Cruz do Sul
+W     40.837638889       14.567638889            Sarno
+W     57.261500000       13.599361111            Scandinavian Raceway
+W     50.560916667       11.821277778            Schleizer Dreieck
+W     27.450222222       -81.353750000           Sebring Intl. Raceway
+W     40.604305556       14.949138889            Sele
+W     38.288361111       140.623527778           Sendai Hi-Land - North Kart Track
+W     38.286472222       140.621972222           Sendai Hi-Land Raceway
+W     -6.536416667       106.856361111           Sentul Intl. Circuit
+W     2.760750000        101.738333333           Sepang Intl. Circuit
+W     2.763638889        101.729166667           Sepang Kart Track
+W     2.760750000        101.738333333           Sepang North Track
+W     2.759638889        101.737416667           Sepang South Track
+W     -18.388250000      -70.334055556           Sergio Santander Benavente
+W     41.073722222       23.519388889            Serres Kart Track
+W     41.073138889       23.517805556            Serres Racing Circuit
+W     31.337277778       121.220583333           Shanghai Intl. Circuit
+W     44.228944444       -77.164916667           Shannonville - Fabi Circuit
+W     44.225027778       -77.159388889           Shannonville - Long Track
+W     44.225027778       -77.159388889           Shannonville - Nelson Circuit
+W     44.225027778       -77.159388889           Shannonville - Pro Track
+W     52.078694444       -1.016972222            Silverstone Circuit
+W     37.067861111       15.252722222            Siracusa
+W     51.879083333       20.928055556            Slomczyn
+W     54.987583333       33.365861111            Smolensk Ring
+W     52.463388889       0.944722222             Snetterton Circuit
+W     47.360916667       2.049222222             Sologne Karting - Salbris
+W     38.161472222       -122.454722222          Sonoma Raceway
+W     51.433944444       -3.496416667            South Wales Karting Centre
+W     42.418222222       -122.793944444          Southern Oregon Speedway
+W     50.444083333       5.968333333             Spa-Francorchamps
+W     47.658083333       -117.591527778          Spokane Kart Track
+W     47.659861111       -117.571750000          Spokane Raceway - Oval Track
+W     47.660583333       -117.574750000          Spokane Raceway - Road Course
+W     38.142277778       140.777694444           Sportsland SUGO
+W     38.141277778       140.772000000           Sportsland SUGO - Kart Track
+W     51.998527778       13.689944444            Spreewaldring Kart Track
+W     51.999555556       13.687722222            Spreewaldring Motodrom
+W     36.172250000       -115.910111111          Spring Mountain
+W     36.169083333       -115.909833333          Spring Mountain - Large
+W     53.736416667       -113.233916667          Stratotech Park
+W     34.874805556       -118.258722222          Streets of Willow
+W     55.531500000       13.357388889            Sturup Raceway
+W     14.798611111       120.267333333           Subic Intl. Raceway
+W     39.235194444       -77.969055556           Summit Point Raceway
+W     -27.986166667      153.427250000           Surfers Paradise Street Circuit
+W     34.842916667       136.540694444           Suzuka Circuit
+W     34.843194444       136.528388889           Suzuka Kart Track
+W     -33.803777778      150.870944444           Sydney Motorsports Park
+W     -41.657583333      147.249972222           Symmons Plains Raceway
+W     37.082694444       129.018388889           Taebaek Racing Park
+W     33.504694444       -86.001444444           Talladega Gran Prix Raceway
+W     33.563277778       -86.069222222           Talladega Super Speedway
+W     -30.050722222      -51.017361111           Taruma - Circuit
+W     -30.050722222      -51.020500000           Taruma - Kart Track
+W     -38.662694444      176.146666667           Taupo Motorsport Park
+W     -46.441000000      168.263111111           Teretonga Park
+W     33.037305556       -97.284250000           Texas Motor Speedway
+W     30.538027778       -96.224416667           Texas World Speedway
+W     13.910861111       100.167361111           Thailand Circuit - Full
+W     13.911944444       100.168000000           Thailand Circuit - North
+W     13.910861111       100.167361111           Thailand Circuit - South
+W     47.254694444       -123.192472222          The Ridge Motorsports Park
+W     39.569833333       -104.831055556          The Track at Centennial
+W     41.981833333       -71.825583333           Thompson Speedway - Oval
+W     41.979805556       -71.827416667           Thompson Speedway - Road Course
+W     53.506138889       -2.632861111            Three Sisters Race Circuit
+W     51.207666667       -1.608972222            Thruxton Circuit
+W     39.538472222       -122.331194444          Thunderhill Raceway
+W     57.074055556       8.690333333             Thy Karting
+W     31.078833333       121.115083333           Tianma Circuit
+W     -44.296527778      171.202777778           Timaru Intl. Motor Raceway
+W     52.467888889       -7.792805556            Tipperary Intl. Raceway
+W     4.961138889        -73.947250000           Tocancipa
+W     51.118666667       -0.536444444            Top Gear UK Track
+W     33.670944444       -117.734277778          Top Gear USA Track
+W     42.903000000       -79.857944444           Toronto Motorsports - Full Track
+W     42.905111111       -79.854833333           Toronto Motorsports - North Course
+W     42.903000000       -79.857944444           Toronto Motorsports - West Course
+W     -19.272055556      146.810944444           Townsville Street Circuit
+W     20.445111111       -103.269027778          Triovalo Bernardo Obregon
+W     36.150138889       139.919527778           Tsukuba Circuit
+W     36.151000000       139.924861111           Tsukuba Circuit 1000
+W     36.152055556       139.921388889           Tsukuba Oval
+W     52.962305556       6.524111111             TT Circuit Assen
+W     10.140194444       -67.508388889           Turagua
+W     43.131250000       12.239111111            Umbria
+W     47.007722222       -0.431472222            Val d'Argenton
+W     46.197583333       0.633805556             Val de Vienne
+W     42.810250000       13.688361111            Val Vibrata Kartodromo
+W     39.483500000       -0.631000000            Valencia
+W     39.457861111       -0.331722222            Valencia Street Circuit
+W     60.702111111       11.813722222            Valerbanen
+W     37.386166667       13.752972222            Valle dei Templi
+W     42.157666667       12.369000000            Vallelunga Circuit
+W     46.322083333       3.359027778             Varennes Karting
+W     41.588222222       -8.443111111            Vasco Sameiro - Circuit
+W     41.587861111       -8.445111111            Vasco Sameiro - Kart Track
+W     -40.257972222      -73.029444444           Vegas Quilaco
+W     36.568583333       -79.207805556           Virginia Intl. Raceway
+W     37.166888889       -77.526000000           Virginia Motorsports Park
+W     26.028638889       50.506472222            VIVA Karting Track (Bahrain)
+W     55.874055556       49.265388889            Vysokaya Gora
+W     -34.840194444      149.685138889           Wakefield Park Raceway
+W     47.243472222       -123.159138889          Washington State Patrol Track
+W     42.708555556       -83.391222222           Waterford Hills Raceway
+W     52.126083333       -7.559694444            Waterford Raceway
+W     42.340972222       -76.928833333           Watkins Glen Intl. Raceway
+W     48.473361111       -123.500333333          Western Speedway
+W     33.264222222       -111.967638889          Wild Horse Pass - Bondurant
+W     33.264111111       -111.959166667          Wild Horse Pass - Dirt
+W     33.273777778       -111.963333333          Wild Horse Pass - East
+W     33.269027778       -111.969333333          Wild Horse Pass - Firebird
+W     33.266222222       -111.971777778          Wild Horse Pass - West
+W     34.878083333       -118.263027778          Willow Horse Thief Mile
+W     34.870888889       -118.266555556          Willow Kart Track
+W     34.871500000       -118.263722222          Willow Springs Raceway
+W     -22.569305556      17.001388889            Windhoek
+W     -36.519750000      146.087888889           Winton Motor Raceway
+W     0.380027778        -78.098583333           Yahuarcocha
+W     24.469944444       54.605222222            Yas Marina Circuit - Full Track
+W     24.469944444       54.605222222            Yas Marina Circuit - North Course
+W     24.464888889       54.605333333            Yas Marina Circuit - South Course
+W     24.477111111       54.607250000            Yas Marina Kartzone
+W     52.388861111       4.540777778             Zandvoort
+W     41.827805556       -0.811777778            Zeura Intl. Circuit
+W     41.829222222       -0.812500000            Zeura Kart Track
+W     22.367111111       113.559888889           Zhuhai Intl. Circuit
+W     50.989027778       5.255722222             Zolder
+W     -25.809888889      28.109833333            Zwartkops Kart Track
+W     -25.809972222      28.112472222            Zwartkops Raceway

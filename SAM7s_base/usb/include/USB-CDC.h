@@ -75,6 +75,8 @@ typedef struct
 } xCONTROL_MESSAGE;
 
 /*-----------------------------------------------------------*/
+
+void startUSBCDCTask(int priority);
 void vUSBCDCTask( void *pvParameters );
 
 int vInitUSBInterface();

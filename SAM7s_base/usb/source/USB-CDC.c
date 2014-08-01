@@ -121,8 +121,13 @@ static const unsigned portCHAR pxLineCoding[] = { 0x00, 0xC2, 0x01, 0x00, 0x00, 
 static unsigned portCHAR ucControlState;
 static unsigned int uiCurrentBank;
 
-
 /*------------------------------------------------------------*/
+
+#define USB_CDC_TASK_SIZE					( 100 )
+
+void startUSBCDCTask(int priority){
+	xTaskCreate( vUSBCDCTask, ( signed portCHAR * ) "USBCDC", USB_CDC_TASK_SIZE, NULL, priority, NULL );
+}
 
 
 void vUSBCDCTask( void *pvParameters )

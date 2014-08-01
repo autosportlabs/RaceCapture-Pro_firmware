@@ -7,7 +7,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include "mod_string.h"
 
 #define luac_c
 #define LUA_CORE

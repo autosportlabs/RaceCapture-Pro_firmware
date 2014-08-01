@@ -8,7 +8,8 @@
 #include <assert.h>
 #include <math.h>
 #include <stdarg.h>
-#include <string.h>
+#include "mod_string.h"
+
 
 #define lapi_c
 #define LUA_CORE

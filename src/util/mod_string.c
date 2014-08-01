@@ -8,8 +8,8 @@
 
 void * memcpy(void * __restrict s1, const void * __restrict s2, size_t n)
 {
-	register char *r1 = s1;
-	register const char *r2 = s2;
+	register char * __restrict r1 = (char *)s1;
+	register const char * __restrict r2 = (const char *)s2;
 
 	while (n) {
 		*r1++ = *r2++;
@@ -60,6 +60,32 @@ size_t strlen(const char *s)
 	return p - s;
 }
 
+
+size_t strlcpy(char * __restrict dst, register const char * __restrict src, size_t siz)
+{
+	register char *d = dst;
+	register const char *s = src;
+	register size_t n = siz;
+
+	/* Copy as many bytes as will fit */
+	if (n != 0 && --n != 0) {
+		do {
+			if ((*d++ = *s++) == 0)
+				break;
+		} while (--n != 0);
+	}
+
+	/* Not enough room in dst, add NUL and traverse rest of src */
+	if (n == 0) {
+		if (siz != 0)
+			*d = '\0';		/* NUL-terminate dst */
+		while (*s++)
+			;
+	}
+
+	return(s - src - 1);	/* count does not include NUL */
+}
+
 char *strncpy(char * __restrict s1, register const char * __restrict s2, size_t n)
 {
 	register char *s = s1;
@@ -77,11 +103,33 @@ int strcmp(const char *s1, const char *s2)
 {
 	int r;
 
-	while (((r = ((int)(*((unsigned char *)s1))) - *((unsigned char *)s2++))
-			== 0) && *s1++);
+	while (((r = ((int)(*((unsigned char *)s1))) - *((unsigned char *)s2++)) == 0) && *s1++);
 
 	return r;
 }
+
+#define TOLOWER(x) ((x) | 0x20)
+
+int strcasecmp(const char *s1, const char *s2)
+{
+	const char * p1 = s1;
+	const char * p2 = s2;
+	char c1, c2;
+
+	if (p1 == p2)
+	return 0;
+
+	do
+	{
+		c1 = TOLOWER(*p1++);
+		c2 = TOLOWER(*p2++);
+		if (c1 == '\0')
+		break;
+	}
+	while (c1 == c2);
+	return (int)(c1 - c2);
+}
+
 
 char *strtok(char * __restrict s1, const char * __restrict s2)
 {
@@ -225,7 +273,7 @@ ret0:
   return 0;
 }
 
-char * strchr(const char *s, const int c)
+const char * strchr(const char *s, const int c)
 {
         do {
                 if (*s == (char)c) {
@@ -235,6 +283,7 @@ char * strchr(const char *s, const int c)
 
         return NULL;
 }
+
 
 
 

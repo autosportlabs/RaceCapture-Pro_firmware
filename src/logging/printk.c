@@ -9,8 +9,7 @@
 #include "modp_numtoa.h"
 #include <stddef.h>
 
-#define LOG_BUFFER_SIZE 512
-#define LOG_DUMP_SIZE 128
+#define LOG_BUFFER_SIZE 1024
 
 static enum log_level curr_level = INFO;
 static char _log_buffer[LOG_BUFFER_SIZE];
@@ -55,7 +54,7 @@ size_t write_to_log_buff(const char *msg) {
         // else if here we need to dump some log data.
         // XXX: Log this?
         int size_diff = msg_size - data_written;
-        dump_data(&log_buff, LOG_DUMP_SIZE);
+        dump_data(&log_buff, size_diff);
         data_written += put_data(lbp, msg + data_written, size_diff);
 
         return data_written;
@@ -81,7 +80,7 @@ int printk_int(enum log_level level, int value) {
 		return writek_int(value);
 }
 
-inline enum log_level get_log_level(){
+enum log_level get_log_level(){
 	return curr_level;
 }
 

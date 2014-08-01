@@ -3,7 +3,6 @@
 #include "semphr.h"
 #include "board.h"
 #include "task.h"
-#include "loggerPinDefs.h"
 
 extern xQueueHandle xUsart0Tx; 
 extern xQueueHandle xUsart0Rx;

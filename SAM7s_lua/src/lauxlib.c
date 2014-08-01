@@ -10,7 +10,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include "mod_string.h"
 
 
 /* This file uses only the official API of Lua.

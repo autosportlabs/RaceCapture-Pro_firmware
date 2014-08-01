@@ -30,9 +30,13 @@ char *strcpy(char * __restrict s1, const char * __restrict s2);
 
 size_t strlen(const char *s);
 
+size_t strlcpy(char * __restrict dst, register const char * __restrict src, size_t siz);
+
 char *strncpy(char * __restrict s1, register const char * __restrict s2, size_t n);
 
 int strcmp(const char *s1, const char *s2);
+
+int strcasecmp(const char *s1, const char *s2);
 
 char *strtok(char * __restrict s1, const char * __restrict s2);
 
