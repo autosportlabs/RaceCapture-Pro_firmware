@@ -417,7 +417,7 @@ typedef struct _BluetoothConfig{
 #define DEFAULT_APN_HOST "epc.tmobile.com"
 #define DEFAULT_APN_USER ""
 #define DEFAULT_APN_PASS ""
-#define DEFAULT_CELL_ENABLED CELL_ENABLED
+#define DEFAULT_CELL_ENABLED CELL_DISABLED
 
 typedef struct _CellularConfig{
 	unsigned char cellEnabled;
@@ -459,10 +459,6 @@ typedef struct _ConnectivityConfig {
 	CellularConfig cellularConfig;
 	TelemetryConfig telemetryConfig;
 } ConnectivityConfig;
-
-#define CONNECTIVITY_MODE_CONSOLE 					0
-#define CONNECTIVITY_MODE_BLUETOOTH					1
-#define CONNECTIVITY_MODE_CELL						2
 
 #define SD_LOGGING_MODE_DISABLED					0
 #define SD_LOGGING_MODE_CSV							1
@@ -534,7 +530,6 @@ int decodeSampleRate(int sampleRateCode);
 
 unsigned char filterAnalogScalingMode(unsigned char mode);
 unsigned char filterSdLoggingMode(unsigned char mode);
-unsigned char filterConnectivityMode(unsigned char mode);
 char filterGpioMode(int config);
 char filterPwmOutputMode(int config);
 char filterPwmLoggingMode(int config);

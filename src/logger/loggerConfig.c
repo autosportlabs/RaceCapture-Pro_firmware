@@ -138,18 +138,6 @@ unsigned char filterSdLoggingMode(unsigned char mode){
 	}
 }
 
-unsigned char filterConnectivityMode(unsigned char mode){
-	switch(mode){
-		case CONNECTIVITY_MODE_CELL:
-			return CONNECTIVITY_MODE_CELL;
-		case CONNECTIVITY_MODE_BLUETOOTH:
-			return CONNECTIVITY_MODE_BLUETOOTH;
-		default:
-		case CONNECTIVITY_MODE_CONSOLE:
-			return CONNECTIVITY_MODE_CONSOLE;
-	}
-}
-
 char filterGpioMode(int value){
 	switch(value){
 		case CONFIG_GPIO_OUT:
