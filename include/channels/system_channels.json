@@ -190,6 +190,15 @@
             "max": 300
         },
         {
+            "nm": "EngineLoad",
+            "ut": "",
+            "sys": 1,
+            "type": 1,
+            "prec": 0,
+            "min": 0,
+            "max": 100
+        },
+        {
             "nm": "FuelLevel",
             "ut": "F",
             "sys": 1,
@@ -244,6 +253,15 @@
             "max": 255
         },
         {
+            "nm": "MAF",
+            "ut": "gm/sec",
+            "sys": 1,
+            "type": 1,
+            "prec": 0,
+            "min": 0,
+            "max": 255
+        },
+        {
             "nm": "Boost",
             "ut": "PSI",
             "sys": 1,
@@ -287,6 +305,15 @@
             "prec": 0,
             "min": 0,
             "max": 150
+        },
+        {
+            "nm": "IgnTiming",
+            "ut": "deg",
+            "sys": 1,
+            "type": 1,
+            "prec": 0,
+            "min": 0,
+            "max": 60
         },
         {
             "nm": "InjectorPW",
@@ -335,6 +362,24 @@
         },
         {
             "nm": "Brake",
+            "ut": "PSI",
+            "sys": 1,
+            "type": 1,
+            "prec": 0,
+            "min": 0,
+            "max": 2000
+        },
+        {
+            "nm": "Brake_F",
+            "ut": "PSI",
+            "sys": 1,
+            "type": 1,
+            "prec": 0,
+            "min": 0,
+            "max": 2000
+        },
+        {
+            "nm": "Brake_R",
             "ut": "PSI",
             "sys": 1,
             "type": 1,

@@ -23,50 +23,55 @@ CHANNEL_PWM3 = 17 ,
 CHANNEL_PWM4 = 18 ,
 CHANNEL_Coolant = 19 ,
 CHANNEL_EngineTemp = 20 ,
-CHANNEL_FuelLevel = 21 ,
-CHANNEL_OilPress = 22 ,
-CHANNEL_OilTemp = 23 ,
-CHANNEL_AFR = 24 ,
-CHANNEL_IAT = 25 ,
-CHANNEL_MAP = 26 ,
-CHANNEL_Boost = 27 ,
-CHANNEL_EGT = 28 ,
-CHANNEL_TPS = 29 ,
-CHANNEL_Battery = 30 ,
-CHANNEL_FuelPress = 31 ,
-CHANNEL_InjectorPW = 32 ,
-CHANNEL_RPM = 33 ,
-CHANNEL_Wheel = 34 ,
-CHANNEL_Gear = 35 ,
-CHANNEL_Steering = 36 ,
-CHANNEL_Brake = 37 ,
-CHANNEL_LF_Height = 38 ,
-CHANNEL_RF_Height = 39 ,
-CHANNEL_LR_Height = 40 ,
-CHANNEL_RR_Height = 41 ,
-CHANNEL_AccelX = 42 ,
-CHANNEL_AccelY = 43 ,
-CHANNEL_AccelZ = 44 ,
-CHANNEL_Yaw = 45 ,
-CHANNEL_Pitch = 46 ,
-CHANNEL_Roll = 47 ,
-CHANNEL_Heading = 48 ,
-CHANNEL_GPSSats = 49 ,
-CHANNEL_Time = 50 ,
-CHANNEL_Latitude = 51 ,
-CHANNEL_Longitude = 52 ,
-CHANNEL_Speed = 53 ,
-CHANNEL_Distance = 54 ,
-CHANNEL_Sector = 55 ,
-CHANNEL_SectorTime = 56 ,
-CHANNEL_LapTime = 57 ,
-CHANNEL_PredTime = 58 ,
-CHANNEL_LapCount = 59 
+CHANNEL_EngineLoad = 21 ,
+CHANNEL_FuelLevel = 22 ,
+CHANNEL_OilPress = 23 ,
+CHANNEL_OilTemp = 24 ,
+CHANNEL_AFR = 25 ,
+CHANNEL_IAT = 26 ,
+CHANNEL_MAP = 27 ,
+CHANNEL_MAF = 28 ,
+CHANNEL_Boost = 29 ,
+CHANNEL_EGT = 30 ,
+CHANNEL_TPS = 31 ,
+CHANNEL_Battery = 32 ,
+CHANNEL_FuelPress = 33 ,
+CHANNEL_IgnTiming = 34 ,
+CHANNEL_InjectorPW = 35 ,
+CHANNEL_RPM = 36 ,
+CHANNEL_Wheel = 37 ,
+CHANNEL_Gear = 38 ,
+CHANNEL_Steering = 39 ,
+CHANNEL_Brake = 40 ,
+CHANNEL_Brake_F = 41 ,
+CHANNEL_Brake_R = 42 ,
+CHANNEL_LF_Height = 43 ,
+CHANNEL_RF_Height = 44 ,
+CHANNEL_LR_Height = 45 ,
+CHANNEL_RR_Height = 46 ,
+CHANNEL_AccelX = 47 ,
+CHANNEL_AccelY = 48 ,
+CHANNEL_AccelZ = 49 ,
+CHANNEL_Yaw = 50 ,
+CHANNEL_Pitch = 51 ,
+CHANNEL_Roll = 52 ,
+CHANNEL_Heading = 53 ,
+CHANNEL_GPSSats = 54 ,
+CHANNEL_Time = 55 ,
+CHANNEL_Latitude = 56 ,
+CHANNEL_Longitude = 57 ,
+CHANNEL_Speed = 58 ,
+CHANNEL_Distance = 59 ,
+CHANNEL_Sector = 60 ,
+CHANNEL_SectorTime = 61 ,
+CHANNEL_LapTime = 62 ,
+CHANNEL_PredTime = 63 ,
+CHANNEL_LapCount = 64 
 } ChannelIds;
 
 #define DEFAULT_CHANNEL_META { \
 MAGIC_NUMBER_CHANNEL_INIT, \
-60, \
+65, \
 { \
 {"Unknown", "", 0, 1, 0, 1024} , \
 {"Analog1", "", 2, 3, 0, 5} , \
@@ -89,23 +94,28 @@ MAGIC_NUMBER_CHANNEL_INIT, \
 {"PWM4", "", 0, 9, 0, 100} , \
 {"Coolant", "F", 0, 3, 0, 300} , \
 {"EngineTemp", "F", 0, 3, 0, 300} , \
+{"EngineLoad", "", 0, 3, 0, 100} , \
 {"FuelLevel", "F", 0, 3, 0, 100} , \
 {"OilPress", "PSI", 0, 3, 0, 150} , \
 {"OilTemp", "F", 0, 3, 0, 300} , \
 {"AFR", "ratio", 2, 3, 0, 20} , \
 {"IAT", "F", 0, 3, 0, 300} , \
 {"MAP", "KPa", 0, 3, 0, 255} , \
+{"MAF", "gm/sec", 0, 3, 0, 255} , \
 {"Boost", "PSI", 0, 3, 0, 50} , \
 {"EGT", "F", 0, 3, 0, 2000} , \
 {"TPS", "%", 0, 3, 0, 100} , \
 {"Battery", "Volts", 2, 3, 0, 20} , \
 {"FuelPress", "PSI", 0, 3, 0, 150} , \
+{"IgnTiming", "deg", 0, 3, 0, 60} , \
 {"InjectorPW", "ms", 2, 5, 0, 100} , \
 {"RPM", "", 0, 5, 0, 10000} , \
 {"Wheel", "RPM", 0, 5, 0, 5000} , \
 {"Gear", "", 0, 3, 0, 10} , \
 {"Steering", "%", 0, 3, -100, 100} , \
 {"Brake", "PSI", 0, 3, 0, 2000} , \
+{"Brake_F", "PSI", 0, 3, 0, 2000} , \
+{"Brake_R", "PSI", 0, 3, 0, 2000} , \
 {"LF_Height", "mm", 0, 3, 0, 255} , \
 {"RF_Height", "mm", 0, 3, 0, 255} , \
 {"LR_Height", "mm", 0, 3, 0, 255} , \
