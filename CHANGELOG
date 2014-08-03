@@ -1,5 +1,6 @@
 ===2.0.8===
 Switched Analog Raw mode to a more meaningful 0-5v mode
+Cellular telemetry mode off with default config
 
 ===2.0.7===
 Updates for UNIX epoch timestamp initialization
