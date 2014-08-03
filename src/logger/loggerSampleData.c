@@ -286,7 +286,7 @@ float get_analog_sample(int channelId){
 	float analogValue = 0;
 	switch(ac->scalingMode){
 		case SCALING_MODE_RAW:
-			analogValue = value;
+			analogValue = value * SCALING_5V;
 			break;
 		case SCALING_MODE_LINEAR:
 			analogValue = (ac->linearScaling * (float)value);
