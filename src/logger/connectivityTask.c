@@ -13,7 +13,6 @@
 #include "usart.h"
 #include "printk.h"
 #include "api.h"
-#include "telemetryTask.h"
 #include "devices_common.h"
 
 //devices
