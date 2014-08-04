@@ -134,9 +134,9 @@ MAGIC_NUMBER_CHANNEL_INIT, \
 {"Speed", "MPH", 2, 13, 0, 150} , \
 {"Distance", "Miles", 3, 13, 0, 0} , \
 {"Sector", "Count", 0, 15, 0, 100} , \
-{"SectorTime", "Min", 3, 15, 0, 0} , \
-{"LapTime", "Min", 3, 15, 0, 0} , \
-{"PredTime", "Min", 3, 15, 0, 0} , \
+{"SectorTime", "Min", 4, 15, 0, 0} , \
+{"LapTime", "Min", 4, 15, 0, 0} , \
+{"PredTime", "Min", 4, 15, 0, 0} , \
 {"LapCount", "Count", 0, 15, 0, 1000}  \
 } \
 }
