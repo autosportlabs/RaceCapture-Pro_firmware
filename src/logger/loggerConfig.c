@@ -16,11 +16,11 @@ static const LoggerConfig g_defaultLoggerConfig = DEFAULT_LOGGER_CONFIG;
 static LoggerConfig g_workingLoggerConfig;
 
 static int firmware_major_version_matches_last(){
-	return g_savedLoggerConfig.VersionInfo.major == MAJOR_REV;
+	return g_savedLoggerConfig.RcpVersionInfo.major == MAJOR_REV;
 }
 
 static int firmware_version_matches_last(){
-	const VersionInfo * version = &g_savedLoggerConfig.VersionInfo;
+	const VersionInfo * version = &g_savedLoggerConfig.RcpVersionInfo;
 	return version->major == MAJOR_REV && version->minor == MINOR_REV && version->bugfix == BUGFIX_REV;
 }
 
@@ -135,18 +135,6 @@ unsigned char filterSdLoggingMode(unsigned char mode){
 		default:
 		case SD_LOGGING_MODE_DISABLED:
 			return SD_LOGGING_MODE_DISABLED;
-	}
-}
-
-unsigned char filterConnectivityMode(unsigned char mode){
-	switch(mode){
-		case CONNECTIVITY_MODE_CELL:
-			return CONNECTIVITY_MODE_CELL;
-		case CONNECTIVITY_MODE_BLUETOOTH:
-			return CONNECTIVITY_MODE_BLUETOOTH;
-		default:
-		case CONNECTIVITY_MODE_CONSOLE:
-			return CONNECTIVITY_MODE_CONSOLE;
 	}
 }
 

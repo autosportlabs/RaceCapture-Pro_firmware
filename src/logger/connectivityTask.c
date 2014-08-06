@@ -13,7 +13,6 @@
 #include "usart.h"
 #include "printk.h"
 #include "api.h"
-#include "telemetryTask.h"
 #include "devices_common.h"
 
 //devices
@@ -35,6 +34,7 @@
 #define SAMPLE_RECORD_QUEUE_SIZE				10
 #define BAD_MESSAGE_THRESHOLD					10
 
+#define METADATA_SAMPLE_INTERVAL				100
 static char g_buffer[BUFFER_SIZE];
 static size_t g_rxCount;
 static xQueueHandle g_sampleQueue;
@@ -107,6 +107,8 @@ void startConnectivityTask(int priority){
 
 void connectivityTask(void *params) {
 
+	ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
+
 	ConnParams *connParams = (ConnParams*)params;
 	LoggerMessage *msg = NULL;
 
@@ -126,6 +128,7 @@ void connectivityTask(void *params) {
 		serial->flush();
 		g_rxCount = 0;
 		size_t badMsgCount = 0;
+		int readOnlyBluetooth = connConfig->bluetoothConfig.btEnabled == BLUETOOTH_ENABLED && connConfig->cellularConfig.cellEnabled == CELL_ENABLED;
 		while (1) {
 			//wait for the next sample record
 			char res = xQueueReceive(g_sampleQueue, &(msg), IDLE_TIMEOUT);
@@ -136,24 +139,33 @@ void connectivityTask(void *params) {
 			if (pdFALSE != res) {
 				switch(msg->messageType){
 					case LOGGER_MSG_START_LOG:
+					{
 						api_sendLogStart(serial);
 						put_crlf(serial);
 						tick = 0;
 						break;
+					}
 					case LOGGER_MSG_END_LOG:
+					{
 						api_sendLogEnd(serial);
 						put_crlf(serial);
 						break;
+					}
 					case LOGGER_MSG_SAMPLE:
-						api_sendSampleRecord(serial, msg->channelSamples, msg->sampleCount, tick, tick == 0);
+					{
+						int sendMeta = (tick == 0 || (readOnlyBluetooth && (tick % METADATA_SAMPLE_INTERVAL == 0)));
+						api_sendSampleRecord(serial, msg->channelSamples, msg->sampleCount, tick, sendMeta);
 						put_crlf(serial);
 						tick++;
 						break;
+					}
 					default:
+					{
 						pr_warning("unknown logger msg type ");
 						pr_warning_int(msg->messageType);
 						pr_warning("\r\n");
 						break;
+					}
 				}
 			}
 

@@ -60,13 +60,20 @@
 	#error "Invalid portBYTE_ALIGNMENT definition"
 #endif
 
-#define configTOTAL_HEAP_SIZE 30000
+
+//the following is defined in the linker script
+extern unsigned int _CONFIG_HEAP_SIZE;
+#define configTOTAL_HEAP_SIZE ((unsigned int)(&_CONFIG_HEAP_SIZE))
+
+//the following is defined in the linker script
+extern unsigned portCHAR  _heap_address[];
+
 /* Allocate the memory for the heap.  The struct is used to force byte
 alignment without using any non-portable code. */
 static struct xRTOS_HEAP
 {
 	unsigned portLONG ulDummy;
-	unsigned portCHAR ucHeap[ configTOTAL_HEAP_SIZE ];
+	unsigned char *ucHeap;
 } xHeap;
 
 /* Define the linked list structure.  This is used to link free blocks in order
@@ -114,7 +121,8 @@ size_t xBlockSize;																	\
 
 #define prvHeapInit()																\
 {																					\
-xBlockLink *pxFirstFreeBlock;														\
+	xHeap.ucHeap =  _heap_address;													\
+	xBlockLink *pxFirstFreeBlock;														\
 																					\
 	/* xStart is used to hold a pointer to the first item in the list of free */	\
 	/* blocks.  The void cast is used to prevent compiler warnings. */				\
@@ -232,6 +240,13 @@ xBlockLink *pxLink;
 		}
 		xTaskResumeAll();
 	}
+}
+
+void * pvPortRealloc( void *pv, size_t xWantedSize){
+	if (pv != NULL) vPortFree(pv);
+	return pvPortMalloc(xWantedSize);
+
+
 }
 /*-----------------------------------------------------------*/
 

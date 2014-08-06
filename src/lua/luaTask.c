@@ -226,4 +226,3 @@ void luaTask(void *params){
 void * getLua(){
 	return g_lua;
 }
-

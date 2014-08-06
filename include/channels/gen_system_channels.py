@@ -33,6 +33,7 @@ print '} ChannelIds;'
 
 print ''
 print '#define DEFAULT_CHANNEL_META { \\'
+print 'MAGIC_NUMBER_CHANNEL_INIT, \\'
 print str(channel_len) + ', \\'
 print '{ \\'
 for i in range(channel_len):

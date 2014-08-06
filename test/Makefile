@@ -36,7 +36,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/predictive_timer \
 		-I$(RCP_INC)/auto_config \
 		-I$(RCP_INC)/util \
-		-I$(SAM7S_SRC)/serial \
+		-I$(RCP_INC)/serial \
 		-I$(SAM7S_SRC)/lua \
 		-I$(SAM7S_SRC)/command \
 		-I$(RCP_INC) \
@@ -52,7 +52,6 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/GPIO \
 		-I$(RCP_INC)/watchdog \
 		-I$(RCP_INC)/memory \
-		-I$(RCP_INC)/magic \
 		-I$(RCP_INC)/sdcard \
 		-I$(SAM7S_SRC)/spi \
 		-I$(MOCK_DIR) \
@@ -101,16 +100,15 @@ SRC = 	mock_uart.c \
 		$(RCP_SRC)/OBD2/OBD2.c \
 		$(RCP_SRC)/logging/printk.c \
 		$(RCP_SRC)/logging/ring_buffer.c \
-		$(SAM7S_SRC)/serial/serial.c \
 		$(RCP_SRC)/logger/loggerApi.c \
 		$(RCP_SRC)/filter/filter.c \
 		$(RCP_SRC)/imu/imu.c \
 		$(RCP_SRC)/ADC/ADC.c \
 		$(RCP_SRC)/memory/memory.c \
-		$(RCP_SRC)/magic/magic.c \
 		$(RCP_SRC)/timer/timer.c \
 		$(RCP_SRC)/PWM/PWM.c \
 		$(RCP_SRC)/LED/LED.c \
+		$(RCP_SRC)/serial/serial.c \
 		$(RCP_SRC)/GPIO/GPIO.c \
 		$(RCP_SRC)/watchdog/watchdog.c \
 		$(RCP_SRC)/CAN/CAN.c \

@@ -73,16 +73,19 @@ typedef struct _ADCConfig{
 	ScalingMap scalingMap;
 } ADCConfig;
 
+#define SCALING_5V 0.0048875f
+#define SCALING_12V 0.0171f
+
 #define DEFAULT_SCALING_MAP {{0,256,512,768,1023},{0,1.25,2.5,3.75,5.0}}
 
-#define DEFAULT_ADC0_CONFIG {{CHANNEL_Analog1, SAMPLE_DISABLED},0.0048875f,0,1.0f,DEFAULT_SCALING_MODE,DEFAULT_SCALING_MAP}
-#define DEFAULT_ADC1_CONFIG {{CHANNEL_Analog2, SAMPLE_DISABLED},0.0048875f,0,1.0f,DEFAULT_SCALING_MODE,DEFAULT_SCALING_MAP}
-#define DEFAULT_ADC2_CONFIG {{CHANNEL_Analog3, SAMPLE_DISABLED},0.0048875f,0,1.0f,DEFAULT_SCALING_MODE,DEFAULT_SCALING_MAP}
-#define DEFAULT_ADC3_CONFIG {{CHANNEL_Analog4, SAMPLE_DISABLED},0.0048875f,0,1.0f,DEFAULT_SCALING_MODE,DEFAULT_SCALING_MAP}
-#define DEFAULT_ADC4_CONFIG {{CHANNEL_Analog5, SAMPLE_DISABLED},0.0048875f,0,1.0f,DEFAULT_SCALING_MODE,DEFAULT_SCALING_MAP}
-#define DEFAULT_ADC5_CONFIG {{CHANNEL_Analog6, SAMPLE_DISABLED},0.0048875f,0,1.0f,DEFAULT_SCALING_MODE,DEFAULT_SCALING_MAP}
-#define DEFAULT_ADC6_CONFIG {{CHANNEL_Analog7, SAMPLE_DISABLED},0.0048875f,0,1.0f,DEFAULT_SCALING_MODE,DEFAULT_SCALING_MAP}
-#define BATTERY_ADC7_CONFIG {{CHANNEL_Battery, SAMPLE_1Hz}, 0.0171f,0,1.0f,DEFAULT_SCALING_MODE,DEFAULT_SCALING_MAP}
+#define DEFAULT_ADC0_CONFIG {{CHANNEL_Analog1, SAMPLE_DISABLED}, SCALING_5V, 	0, 1.0f, DEFAULT_SCALING_MODE, DEFAULT_SCALING_MAP}
+#define DEFAULT_ADC1_CONFIG {{CHANNEL_Analog2, SAMPLE_DISABLED}, SCALING_5V, 	0, 1.0f, DEFAULT_SCALING_MODE, DEFAULT_SCALING_MAP}
+#define DEFAULT_ADC2_CONFIG {{CHANNEL_Analog3, SAMPLE_DISABLED}, SCALING_5V, 	0, 1.0f, DEFAULT_SCALING_MODE, DEFAULT_SCALING_MAP}
+#define DEFAULT_ADC3_CONFIG {{CHANNEL_Analog4, SAMPLE_DISABLED}, SCALING_5V, 	0, 1.0f, DEFAULT_SCALING_MODE, DEFAULT_SCALING_MAP}
+#define DEFAULT_ADC4_CONFIG {{CHANNEL_Analog5, SAMPLE_DISABLED}, SCALING_5V, 	0, 1.0f, DEFAULT_SCALING_MODE, DEFAULT_SCALING_MAP}
+#define DEFAULT_ADC5_CONFIG {{CHANNEL_Analog6, SAMPLE_DISABLED}, SCALING_5V, 	0, 1.0f, DEFAULT_SCALING_MODE, DEFAULT_SCALING_MAP}
+#define DEFAULT_ADC6_CONFIG {{CHANNEL_Analog7, SAMPLE_DISABLED}, SCALING_5V, 	0, 1.0f, DEFAULT_SCALING_MODE, DEFAULT_SCALING_MAP}
+#define BATTERY_ADC7_CONFIG {{CHANNEL_Battery, SAMPLE_1Hz}, 	 SCALING_12V, 	0, 1.0f, DEFAULT_SCALING_MODE, DEFAULT_SCALING_MAP}
 #define DEFAULT_ADC_CONFIGS \
 			{ \
 			DEFAULT_ADC0_CONFIG, \
@@ -414,7 +417,7 @@ typedef struct _BluetoothConfig{
 #define DEFAULT_APN_HOST "epc.tmobile.com"
 #define DEFAULT_APN_USER ""
 #define DEFAULT_APN_PASS ""
-#define DEFAULT_CELL_ENABLED CELL_ENABLED
+#define DEFAULT_CELL_ENABLED CELL_DISABLED
 
 typedef struct _CellularConfig{
 	unsigned char cellEnabled;
@@ -457,10 +460,6 @@ typedef struct _ConnectivityConfig {
 	TelemetryConfig telemetryConfig;
 } ConnectivityConfig;
 
-#define CONNECTIVITY_MODE_CONSOLE 					0
-#define CONNECTIVITY_MODE_BLUETOOTH					1
-#define CONNECTIVITY_MODE_CELL						2
-
 #define SD_LOGGING_MODE_DISABLED					0
 #define SD_LOGGING_MODE_CSV							1
 
@@ -494,7 +493,7 @@ typedef struct _LoggerConfig {
 	TrackConfig TrackConfigs;
 	//Connectivity Configuration
 	ConnectivityConfig ConnectivityConfigs;
-	VersionInfo VersionInfo;
+	VersionInfo RcpVersionInfo;
 	//Padding data to accommodate flash routine
 	char padding_data[FLASH_PAGE_SIZE];
 } LoggerConfig;
@@ -531,7 +530,6 @@ int decodeSampleRate(int sampleRateCode);
 
 unsigned char filterAnalogScalingMode(unsigned char mode);
 unsigned char filterSdLoggingMode(unsigned char mode);
-unsigned char filterConnectivityMode(unsigned char mode);
 char filterGpioMode(int config);
 char filterPwmOutputMode(int config);
 char filterPwmLoggingMode(int config);

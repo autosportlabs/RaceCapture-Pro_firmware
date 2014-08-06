@@ -155,7 +155,7 @@ SECTIONS
    }> STACK 
    
 	__heap_start__ = __bss_end__ ;
-	__heap_end__ = (ORIGIN(STACK) - 0x400);
+	__heap_end__ = (ORIGIN(STACK) - 0x800);
    
 
   /* calculate byte size for heap_2.c memory manager */
