@@ -36,9 +36,9 @@
 #include "connectivityTask.h"
 #include "luaTask.h"
 #include "luaCommands.h"
-#include "sdcard.h"
 #include "serial.h"
 
+#include "ADC.h"
 
 #define FATAL_ERROR_SCHEDULER	1
 #define FATAL_ERROR_HARDWARE	2
@@ -147,9 +147,10 @@ int main( void )
 
    //this is to let the zylin debugger catch up and halt the processor.
    //when we figure how to halt it correctly we'll remove this.
-   delayStart(4);
 
-   TestSDWrite(NULL, 100000, 0, 1);
+   delayStart(4);
+   //do test stuff
+   delayStart(4);
    vTaskStartScheduler();
    fatalError(FATAL_ERROR_SCHEDULER);
    return 0;
