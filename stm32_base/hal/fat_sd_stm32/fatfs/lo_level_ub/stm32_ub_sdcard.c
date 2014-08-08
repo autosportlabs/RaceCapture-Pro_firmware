@@ -9,7 +9,7 @@
 // IDE      : CooCox CoIDE 1.7.4
 // GCC      : 4.7 2012q4
 // Module   : GPIO, MISC, SDIO, DMA
-// Funktion : FATFS-Dateisystem für SD-Medien
+// Funktion : FATFS-Dateisystem fï¿½r SD-Medien
 //            LoLevel-IO-Modul
 //            Quelle = STM-Files
 //            stm324xg_eval_sdio_sd.c [V1.1.1/11-January-2013]
@@ -297,7 +297,7 @@ static void NVIC_Configuration(void)
 {
   NVIC_InitTypeDef NVIC_InitStructure;
 
-  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
+  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 
   NVIC_InitStructure.NVIC_IRQChannel = SDIO_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;

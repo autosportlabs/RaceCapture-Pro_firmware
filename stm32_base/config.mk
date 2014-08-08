@@ -116,6 +116,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/ff.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/diskio.c \
 			$(HAL_SRC)/usart_stm32/usart_device_stm32.c \
+			$(HAL_SRC)/usart_stm32/usart_isr_stm32.c \
 			$(HAL_SRC)/ADC_stm32/ADC_device_stm32.c \
 			$(HAL_SRC)/CAN_stm32/CAN_device_stm32.c \
 			$(HAL_SRC)/cpu_stm32/cpu_device_stm32.c \
