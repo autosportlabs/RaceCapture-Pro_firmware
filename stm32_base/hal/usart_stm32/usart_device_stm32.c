@@ -8,10 +8,10 @@
 #include "stm32f4xx_rcc.h"
 #include "printk.h"
 
-#define USART_QUEUE_LENGTH 		300
+#define UART_QUEUE_LENGTH 		300
 
-#define USART_IRQ_PRIORITY 		5
-#define USART_IRQ_SUB_PRIORITY 	0
+#define UART_IRQ_PRIORITY 		5
+#define UART_IRQ_SUB_PRIORITY 	0
 
 xQueueHandle xUsart0Tx;
 xQueueHandle xUsart0Rx;
@@ -29,24 +29,24 @@ static int initQueues() {
 
 	int success = 1;
 	/* Create the queues used to hold Rx and Tx characters. */
-	xUsart0Rx = xQueueCreate(USART_QUEUE_LENGTH,
+	xUsart0Rx = xQueueCreate(UART_QUEUE_LENGTH,
 			( unsigned portBASE_TYPE ) sizeof( signed portCHAR ));
-	xUsart0Tx = xQueueCreate(USART_QUEUE_LENGTH + 1,
-			( unsigned portBASE_TYPE ) sizeof( signed portCHAR ));
-
-	xUsart1Rx = xQueueCreate(USART_QUEUE_LENGTH,
-			( unsigned portBASE_TYPE ) sizeof( signed portCHAR ));
-	xUsart1Tx = xQueueCreate(USART_QUEUE_LENGTH + 1,
+	xUsart0Tx = xQueueCreate(UART_QUEUE_LENGTH + 1,
 			( unsigned portBASE_TYPE ) sizeof( signed portCHAR ));
 
-	xUsart2Rx = xQueueCreate(USART_QUEUE_LENGTH,
+	xUsart1Rx = xQueueCreate(UART_QUEUE_LENGTH,
 			( unsigned portBASE_TYPE ) sizeof( signed portCHAR ));
-	xUsart2Tx = xQueueCreate(USART_QUEUE_LENGTH + 1,
+	xUsart1Tx = xQueueCreate(UART_QUEUE_LENGTH + 1,
 			( unsigned portBASE_TYPE ) sizeof( signed portCHAR ));
 
-	xUsart3Rx = xQueueCreate(USART_QUEUE_LENGTH,
+	xUsart2Rx = xQueueCreate(UART_QUEUE_LENGTH,
 			( unsigned portBASE_TYPE ) sizeof( signed portCHAR ));
-	xUsart3Tx = xQueueCreate(USART_QUEUE_LENGTH + 1,
+	xUsart2Tx = xQueueCreate(UART_QUEUE_LENGTH + 1,
+			( unsigned portBASE_TYPE ) sizeof( signed portCHAR ));
+
+	xUsart3Rx = xQueueCreate(UART_QUEUE_LENGTH,
+			( unsigned portBASE_TYPE ) sizeof( signed portCHAR ));
+	xUsart3Tx = xQueueCreate(UART_QUEUE_LENGTH + 1,
 			( unsigned portBASE_TYPE ) sizeof( signed portCHAR ));
 
 	if (	xUsart0Rx == NULL || xUsart0Tx == NULL ||
@@ -207,8 +207,8 @@ static void initNVIC(uint8_t usartIrq){
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 	/* Enable the USART Interrupt */
 	NVIC_InitStructure.NVIC_IRQChannel = usartIrq;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = USART_IRQ_PRIORITY;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = USART_IRQ_SUB_PRIORITY;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = UART_IRQ_PRIORITY;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = UART_IRQ_SUB_PRIORITY;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 }
