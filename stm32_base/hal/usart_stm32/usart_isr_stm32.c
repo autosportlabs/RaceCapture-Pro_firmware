@@ -138,7 +138,6 @@ void UART4_IRQHandler( void ){
 			USART_ITConfig(UART4, USART_IT_TXE, DISABLE);
 		}
 	}
-
 	if (USART_GetITStatus(UART4, USART_IT_RXNE) != RESET)
 	{
 		/* The interrupt was caused by a character being received.  Grab the

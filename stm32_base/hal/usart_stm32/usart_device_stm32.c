@@ -61,10 +61,10 @@ static int initQueues() {
 int usart_device_init() {
 	if (!initQueues())
 		return 0;
+	usart_device_init_0(8, 0, 1, 9600);
 	usart_device_init_1(8, 0, 1, 9600);
 	usart_device_init_2(8, 0, 1, 9600);
 	usart_device_init_3(8, 0, 1, 9600);
-	usart_device_init_0(8, 0, 1, 9600);
 	return 1;
 }
 
@@ -231,7 +231,8 @@ void usart_device_init_0(unsigned int bits, unsigned int parity, unsigned int st
 
 	/* USART1 configuration ------------------------------------------------------*/
 	initUsart(USART1, bits, parity, stopBits, baud);
-	USART_ITConfig(USART1, USART_IT_RXNE |USART_IT_TXE, ENABLE);
+	USART_ITConfig(USART1, USART_IT_TXE, ENABLE);
+	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
 }
 
 void usart_device_init_1(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud) {
@@ -254,7 +255,8 @@ void usart_device_init_1(unsigned int bits, unsigned int parity, unsigned int st
 
 	/* USART1 configuration ------------------------------------------------------*/
 	initUsart(USART3, bits, parity, stopBits, baud);
-	USART_ITConfig(USART3, USART_IT_RXNE |USART_IT_TXE, ENABLE);
+	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
+	USART_ITConfig(USART3, USART_IT_TXE, ENABLE);
 
 }
 
@@ -278,7 +280,8 @@ void usart_device_init_2(unsigned int bits, unsigned int parity, unsigned int st
 
 	/* USART2 configuration ------------------------------------------------------*/
 	initUsart(USART2, bits, parity, stopBits, baud);
-	USART_ITConfig(USART2, USART_IT_RXNE |USART_IT_TXE, ENABLE);
+	USART_ITConfig(USART2, USART_IT_TXE, ENABLE);
+	USART_ITConfig(USART2, USART_IT_RXNE , ENABLE);
 }
 
 void usart_device_init_3(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud) {
@@ -301,7 +304,8 @@ void usart_device_init_3(unsigned int bits, unsigned int parity, unsigned int st
 
 	/* USART2 configuration ------------------------------------------------------*/
 	initUsart(UART4, bits, parity, stopBits, baud);
-	USART_ITConfig(UART4, USART_IT_RXNE |USART_IT_TXE, ENABLE);
+	USART_ITConfig(UART4, USART_IT_TXE, ENABLE);
+	USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);
 }
 
 void usart0_flush(void)

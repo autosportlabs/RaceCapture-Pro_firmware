@@ -37,7 +37,7 @@
 #include "luaTask.h"
 #include "luaCommands.h"
 #include "serial.h"
-
+#include "usart_device.h"
 #include "ADC.h"
 
 #define FATAL_ERROR_SCHEDULER	1
@@ -115,6 +115,7 @@ void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName)
 
 int main( void )
 {
+	cpu_init();
 //	watchdog_init(WATCHDOG_TIMEOUT_MS);
 	//perform a clean reset if the watchdog fired
 //	if (watchdog_is_watchdog_reset()) cpu_reset();
@@ -123,7 +124,6 @@ int main( void )
 //	initialize_logger_config();
 //	initialize_script();
 	InitLoggerHardware();
-	cpu_init();
 //	initMessaging();
 
 //	startGPIOTasks			( GPIO_TASK_PRIORITY );
@@ -150,7 +150,6 @@ int main( void )
 
    delayStart(4);
    //do test stuff
-   delayStart(4);
    vTaskStartScheduler();
    fatalError(FATAL_ERROR_SCHEDULER);
    return 0;

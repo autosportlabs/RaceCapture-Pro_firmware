@@ -22,7 +22,7 @@ void InitLoggerHardware(){
 	init_spi_lock();
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 //	usb_comm_init();
-//	usart_init();
+	usart_init();
 //	init_serial();
 	LED_init();
 //	imu_init(loggerConfig);
