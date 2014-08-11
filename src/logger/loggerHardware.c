@@ -23,7 +23,7 @@ void InitLoggerHardware(){
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 //	usb_comm_init();
 	usart_init();
-//	init_serial();
+	init_serial();
 	LED_init();
 //	imu_init(loggerConfig);
 	ADC_init(loggerConfig);

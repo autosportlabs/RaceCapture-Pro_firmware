@@ -59,8 +59,8 @@ static int initQueues() {
 }
 
 int usart_device_init() {
-	if (!initQueues())
-		return 0;
+	if (!initQueues()) return 0;
+
 	usart_device_init_0(8, 0, 1, 9600);
 	usart_device_init_1(8, 0, 1, 9600);
 	usart_device_init_2(8, 0, 1, 9600);

@@ -420,7 +420,7 @@ static void trace_output_msg(CAN_msg *msg){
 	pr_trace("\r\n");
 }
 
-int CAN_device_set_mask(uint8_t id, uint8_t extended, uint32_t filter){
+static int CAN_device_set_mask(uint8_t id, uint8_t extended, uint32_t filter){
 	int result = 1;
 	MCP2515_set_mode(MCP2515_MODE_CONFIG);
 	switch(id){
@@ -432,12 +432,13 @@ int CAN_device_set_mask(uint8_t id, uint8_t extended, uint32_t filter){
 		break;
 	default:
 		result = 0;
+		break;
 	}
 	MCP2515_set_normal_mode();
 	return result;
 }
 
-int CAN_device_set_filter(uint8_t id, uint8_t extended, uint32_t filter){
+static int CAN_device_set_filter_value(uint8_t id, uint8_t extended, uint32_t filter){
 	int result = 1;
 	MCP2515_set_mode(MCP2515_MODE_CONFIG);
 	switch(id){
@@ -461,11 +462,17 @@ int CAN_device_set_filter(uint8_t id, uint8_t extended, uint32_t filter){
 		break;
 	default:
 		result = 0;
+		break;
 	}
 	MCP2515_set_normal_mode();
 	return result;
 }
 
+int CAN_device_set_filter(uint8_t id, uint8_t extended, uint32_t filter, uint32_t mask){
+	int mask_result = CAN_device_set_mask(id, extended, mask);
+	int filterValue_result = CAN_device_set_filter_value(id, extended, filter);
+	return (mask_result || id > 1) && filterValue_result;
+}
 
 int CAN_device_tx_msg(CAN_msg *msg, unsigned int timeoutMs){
 	if (TRACE_LEVEL) trace_output_msg(msg);

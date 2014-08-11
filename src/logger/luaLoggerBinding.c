@@ -76,7 +76,6 @@ void registerLuaLoggerBindings(lua_State *L){
 	lua_registerlight(L, "txCAN", Lua_SendCANMessage);
 	lua_registerlight(L, "rxCAN", Lua_ReceiveCANMessage);
 	lua_registerlight(L, "setCANfilter", Lua_SetCANFilter);
-	lua_registerlight(L, "setCANmask", Lua_SetCANMask);
 	lua_registerlight(L, "readOBD2", Lua_ReadOBD2);
 
 	lua_registerlight(L,"startLogging",Lua_StartLogging);
@@ -453,29 +452,17 @@ int Lua_InitCAN(lua_State *L){
 }
 
 int Lua_SetCANFilter(lua_State *L){
-	if (lua_gettop(L) >= 3){
+	if (lua_gettop(L) >= 4){
 		uint8_t id = lua_tointeger(L, 1);
 		uint8_t extended = lua_tointeger(L, 2);
 		uint32_t filter = lua_tointeger(L, 3);
-		int rc = CAN_set_filter(id, extended, filter);
+		uint32_t mask = lua_tointeger(L, 4);
+		int rc = CAN_set_filter(id, extended, filter, mask);
 		lua_pushinteger(L, rc);
 		return 1;
 	}
 	return 0;
 }
-
-int Lua_SetCANMask(lua_State *L){
-	if (lua_gettop(L) >= 3){
-		uint8_t id = lua_tointeger(L, 1);
-		uint8_t extended = lua_tointeger(L, 2);
-		uint32_t mask = lua_tointeger(L, 3);
-		int rc = CAN_set_mask(id, extended, mask);
-		lua_pushinteger(L, rc);
-		return 1;
-	}
-	return 0;
-}
-
 
 int Lua_SendCANMessage(lua_State *L){
 	size_t timeout = 1000;

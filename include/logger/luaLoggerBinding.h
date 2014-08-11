@@ -60,7 +60,6 @@ int Lua_InitCAN(lua_State *L);
 int Lua_SendCANMessage(lua_State *L);
 int Lua_ReceiveCANMessage(lua_State *L);
 int Lua_SetCANFilter(lua_State *L);
-int Lua_SetCANMask(lua_State *L);
 int Lua_ReadOBD2(lua_State *L);
 
 

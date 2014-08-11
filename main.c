@@ -36,9 +36,8 @@
 #include "connectivityTask.h"
 #include "luaTask.h"
 #include "luaCommands.h"
-#include "serial.h"
-#include "usart_device.h"
-#include "ADC.h"
+#include "CAN.h"
+
 
 #define FATAL_ERROR_SCHEDULER	1
 #define FATAL_ERROR_HARDWARE	2
@@ -148,7 +147,19 @@ int main( void )
    //this is to let the zylin debugger catch up and halt the processor.
    //when we figure how to halt it correctly we'll remove this.
 
-   delayStart(4);
+	delayStart(4);
+	CAN_init(500000);
+/*	CAN_msg rxMsg;
+	CAN_msg msg;
+	msg.addressValue = 0x7df;
+	msg.data[0] = 2;
+	msg.data[1] = 1;
+	msg.data[2] = 12;
+	msg.dataLength = 3;
+	msg.isExtendedAddress = 0;
+	CAN_tx_msg(&msg, 1000);
+	//int rc = CAN_rx_msg(&rxMsg, 4000);
+*/
    //do test stuff
    vTaskStartScheduler();
    fatalError(FATAL_ERROR_SCHEDULER);

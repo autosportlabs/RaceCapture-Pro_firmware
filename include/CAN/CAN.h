@@ -27,8 +27,7 @@ typedef struct _CAN_msg
 
 
 int CAN_init(int baud);
-int CAN_set_mask(uint8_t id, uint8_t extended, uint32_t mask);
-int CAN_set_filter(uint8_t id, uint8_t extended, uint32_t filter);
+int CAN_set_filter(uint8_t id, uint8_t extended, uint32_t filter, uint32_t mask);
 int CAN_tx_msg(CAN_msg *msg, unsigned int timeoutMs);
 int CAN_rx_msg(CAN_msg *msg, unsigned int timeoutMs);
 
