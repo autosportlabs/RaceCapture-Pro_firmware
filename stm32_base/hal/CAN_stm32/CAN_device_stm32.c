@@ -68,7 +68,6 @@ static void initGPIO(GPIO_TypeDef* GPIOx, uint32_t gpioPins){
 static void initCAN(CAN_TypeDef* CANx, int baud){
 
 	CAN_InitTypeDef CAN_InitStructure;
-
 	/* CAN cell init */
 	CAN_InitStructure.CAN_TTCM = DISABLE;
 	CAN_InitStructure.CAN_ABOM = DISABLE;
@@ -135,7 +134,24 @@ static void CAN_device_init_1(int baud) {
 }
 
 static void CAN_device_init_2(int baud) {
+	CAN_DeInit(CAN2);
 
+	/* CAN GPIOs configuration **************************************************/
+	/* Enable GPIO clock */
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+
+	/* Connect CAN pins to Alternate Function */
+	GPIO_PinAFConfig(GPIOB, GPIO_PinSource12, GPIO_AF_CAN2);
+	GPIO_PinAFConfig(GPIOB, GPIO_PinSource13, GPIO_AF_CAN2);
+	initGPIO(GPIOB, GPIO_Pin_12 | GPIO_Pin_13);
+
+	/* CAN configuration ********************************************************/
+	/* Enable CAN clock */
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN2, ENABLE);
+
+	initCAN(CAN2, baud);
+
+	initCANInterrupts(CAN2, CAN2_RX0_IRQn);
 }
 
 int CAN_device_init(int baud) {
@@ -207,5 +223,13 @@ void CAN1_RX0_IRQHandler(void) {
 	CanRxMsg rxMsg;
 	CAN_Receive(CAN1, CAN_FIFO0, &rxMsg);
 	xQueueSendFromISR(xCan1Rx, &rxMsg, &xTaskWokenByRx);
+	portEND_SWITCHING_ISR(xTaskWokenByRx);
+}
+
+void CAN2_RX0_IRQHandler(void) {
+	portBASE_TYPE xTaskWokenByRx = pdFALSE;
+	CanRxMsg rxMsg;
+	CAN_Receive(CAN2, CAN_FIFO0, &rxMsg);
+	xQueueSendFromISR(xCan2Rx, &rxMsg, &xTaskWokenByRx);
 	portEND_SWITCHING_ISR(xTaskWokenByRx);
 }
