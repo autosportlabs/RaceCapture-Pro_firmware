@@ -7,6 +7,7 @@
 
 #ifndef GPIO_DEVICE_H_
 #define GPIO_DEVICE_H_
+#include <stdint.h>
 
 void GPIO_device_init_port(unsigned int port, unsigned int mode);
 void GPIO_device_init_base(void);
