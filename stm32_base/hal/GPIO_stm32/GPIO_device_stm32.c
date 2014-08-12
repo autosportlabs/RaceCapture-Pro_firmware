@@ -3,13 +3,33 @@
 #include "task.h"
 #include "queue.h"
 #include "semphr.h"
-
+#include "loggerConfig.h"
 #include <stm32f4xx_gpio.h>
 #include <stm32f4xx_rcc.h>
 
 
 //#define	MODE_INPUT	0
 //#define MODE_OUTPUT	1
+
+struct gpio {
+	uint32_t rcc_ahb1;
+	GPIO_TypeDef *port;
+	uint16_t mask;
+	GPIOMode_TypeDef mode;
+	uint8_t level;
+
+};
+
+static struct gpio gpios[] = {
+	{ RCC_AHB1Periph_GPIOE, GPIOE, GPIO_Pin_9, GPIO_Mode_IN, 0 },
+	{ RCC_AHB1Periph_GPIOE, GPIOE, GPIO_Pin_8, GPIO_Mode_IN, 0 },
+	{ RCC_AHB1Periph_GPIOE, GPIOE, GPIO_Pin_7, GPIO_Mode_IN, 0 },
+	{ RCC_AHB1Periph_GPIOC, GPIOC, GPIO_Pin_13, GPIO_Mode_OUT, 0 },
+	{ RCC_AHB1Periph_GPIOC, GPIOC, GPIO_Pin_14, GPIO_Mode_OUT, 0 },
+	{ RCC_AHB1Periph_GPIOC, GPIOC, GPIO_Pin_15, GPIO_Mode_OUT, 0 },
+	{ RCC_AHB1Periph_GPIOE, GPIOE, GPIO_Pin_10, GPIO_Mode_OUT, 0 },
+	{ RCC_AHB1Periph_GPIOA, GPIOA, GPIO_Pin_8, 	GPIO_Mode_IN, 0 }
+};
 
 typedef enum{
 	GPI0_ID = 0,
@@ -22,106 +42,64 @@ typedef enum{
 	PUSHBUTTON_ID,
 } GPIO_IDs;
 
-struct gpio {
-	GPIO_TypeDef *port;
-	uint16_t mask;
-	uint8_t level;
-};
-
-static struct gpio gpios[] = {
-	{ GPIOE, GPIO_Pin_40, 0 },
-	{ GPIOE, GPIO_Pin_39, 0 },
-	{ GPIOE, GPIO_Pin_38, 0 },
-	{ GPIOC, GPIO_Pin_13, 0 },
-	{ GPIOC, GPIO_Pin_14, 0 },
-	{ GPIOC, GPIO_Pin_15, 0 },
-	{ GPIOE, GPIO_Pin_10, 0 },
-	{ GPIOA, GPIO_Pin_8, 0 }
-};
+#define GPIO_COUNT 8
 
 
-static void GPIO_port_enable(unsigned int led){
-	GPIO_ResetBits(gpios[led].port, gpios[led].mask);
-}
+void GPIO_device_set(unsigned int port, unsigned int state){
+	int gpioIndex = -1;
+	switch(port){
+	case 0:
+		gpioIndex = GPO0_ID;
+		break;
+	case 1:
+		gpioIndex = GPO1_ID;
+		break;
+	case 2:
+		gpioIndex = GPO1_ID;
+		break;
+	default:
+		break;
+	}
+	if (gpioIndex >=0){
+		if (state){
+			GPIO_SetBits(gpios[gpioIndex].port, gpios[gpioIndex].mask);
+		}
+		else{
+			GPIO_ResetBits(gpios[gpioIndex].port, gpios[gpioIndex].mask);
+		}
+	}
 
-static void GPIO_port_disable(unsigned int led){
-	GPIO_SetBits(gpios[led].port, gpios[led].mask);
-}
-
-void gpio_irq_handler ( void );
-
-static unsigned int GetGPIOBits(void){
-	return 0;
-
-}
-
-static void clear_GPIO_bits(unsigned int portBits){
-
-}
-
-static void set_GPIO_bits(unsigned int portBits){
-
-}
-
-void GPIO_device_init_port(unsigned int port, unsigned int mode){
-
-
-}
-
-void GPIO_device_init_base(void){
-
-}
-
-void GPIO_device_init_SD_card_IO(void){
-}
-
-int GPIO_device_is_SD_card_present(void){
-	return 1;
-}
-
-int GPIO_device_is_SD_card_writable(void){
-	return 1;
 }
 
 int GPIO_device_is_button_pressed(void){
 	return 0;
 }
 
-void GPIO_device_set(unsigned int port, unsigned int state){
-
-}
-
 unsigned int GPIO_device_get(unsigned int port){
 	return 0;
 }
 
-void readGpios(unsigned int *gpio1, unsigned int *gpio2, unsigned int *gpio3){
-}
-
-
-void GPIO_device_init_pushbutton(void){
-}
-
-int LED_device_init(void){
+int GPIO_device_init(LoggerConfig *loggerConfig){
 	int i;
 	GPIO_InitTypeDef gpio_conf;
 
 	/* Clear the GPIO Structure */
 	GPIO_StructInit(&gpio_conf);
-
-	/* turn on debug port and clock */
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
-
 	gpio_conf.GPIO_Speed = GPIO_Speed_50MHz;
-	gpio_conf.GPIO_Mode = GPIO_Mode_OUT;
-	gpio_conf.GPIO_OType = GPIO_OType_PP;
 
-	for (i = 0; i < 4; ++i){
-		gpio_conf.GPIO_Pin = leds[i].mask;
-		GPIO_Init(leds[i].port, &gpio_conf);
-		LED_device_disable(i);
+	for (i = 0; i < GPIO_COUNT; ++i){
+		RCC_AHB1PeriphClockCmd(gpios[i].rcc_ahb1, ENABLE);
+		gpio_conf.GPIO_Pin = gpios[i].mask;
+		GPIO_Init(gpios[i].port, &gpio_conf);
+		if (gpio_conf.GPIO_Mode == GPIO_Mode_OUT){
+			gpio_conf.GPIO_Mode = GPIO_Mode_OUT;
+			gpio_conf.GPIO_OType = GPIO_OType_PP;
+			GPIO_ResetBits(gpios[i].port, gpios[i].mask);
+		}
+		else{
+			gpio_conf.GPIO_Mode = GPIO_Mode_IN;
+		}
+
 	}
 	return 1;
 }
-
