@@ -16,7 +16,7 @@ struct gpio {
 	GPIO_TypeDef *port;
 	uint16_t mask;
 	GPIOMode_TypeDef mode;
-	uint8_t level;
+	uint8_t defaultOutputState;
 
 };
 
@@ -27,7 +27,7 @@ static struct gpio gpios[] = {
 	{ RCC_AHB1Periph_GPIOC, GPIOC, GPIO_Pin_13, GPIO_Mode_OUT, 0 },
 	{ RCC_AHB1Periph_GPIOC, GPIOC, GPIO_Pin_14, GPIO_Mode_OUT, 0 },
 	{ RCC_AHB1Periph_GPIOC, GPIOC, GPIO_Pin_15, GPIO_Mode_OUT, 0 },
-	{ RCC_AHB1Periph_GPIOE, GPIOE, GPIO_Pin_10, GPIO_Mode_OUT, 0 },
+	{ RCC_AHB1Periph_GPIOE, GPIOE, GPIO_Pin_10, GPIO_Mode_OUT, 1 },
 	{ RCC_AHB1Periph_GPIOA, GPIOA, GPIO_Pin_8, 	GPIO_Mode_IN, 0 }
 };
 
@@ -44,6 +44,14 @@ typedef enum{
 
 #define GPIO_COUNT 8
 
+static void GPIO_set_port(size_t port, size_t state){
+	if (state){
+		GPIO_SetBits(gpios[port].port, gpios[port].mask);
+	}
+	else{
+		GPIO_ResetBits(gpios[port].port, gpios[port].mask);
+	}
+}
 
 void GPIO_device_set(unsigned int port, unsigned int state){
 	int gpioIndex = -1;
@@ -61,12 +69,7 @@ void GPIO_device_set(unsigned int port, unsigned int state){
 		break;
 	}
 	if (gpioIndex >=0){
-		if (state){
-			GPIO_SetBits(gpios[gpioIndex].port, gpios[gpioIndex].mask);
-		}
-		else{
-			GPIO_ResetBits(gpios[gpioIndex].port, gpios[gpioIndex].mask);
-		}
+		GPIO_set_port(gpioIndex, state);
 	}
 
 }
@@ -80,26 +83,25 @@ unsigned int GPIO_device_get(unsigned int port){
 }
 
 int GPIO_device_init(LoggerConfig *loggerConfig){
-	int i;
 	GPIO_InitTypeDef gpio_conf;
 
 	/* Clear the GPIO Structure */
 	GPIO_StructInit(&gpio_conf);
 	gpio_conf.GPIO_Speed = GPIO_Speed_50MHz;
 
-	for (i = 0; i < GPIO_COUNT; ++i){
+	for (int i = 0; i < GPIO_COUNT; ++i){
 		RCC_AHB1PeriphClockCmd(gpios[i].rcc_ahb1, ENABLE);
 		gpio_conf.GPIO_Pin = gpios[i].mask;
 		GPIO_Init(gpios[i].port, &gpio_conf);
 		if (gpio_conf.GPIO_Mode == GPIO_Mode_OUT){
 			gpio_conf.GPIO_Mode = GPIO_Mode_OUT;
 			gpio_conf.GPIO_OType = GPIO_OType_PP;
-			GPIO_ResetBits(gpios[i].port, gpios[i].mask);
+			GPIO_set_port(i, gpios[i].defaultOutputState);
 		}
 		else{
 			gpio_conf.GPIO_Mode = GPIO_Mode_IN;
+			gpio_conf.GPIO_PuPd = GPIO_PuPd_UP;
 		}
-
 	}
 	return 1;
 }
