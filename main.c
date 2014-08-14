@@ -115,13 +115,15 @@ void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName)
 int main( void )
 {
 	cpu_init();
-//	watchdog_init(WATCHDOG_TIMEOUT_MS);
+	LED_init();
+	delayStart(4);
+	//	watchdog_init(WATCHDOG_TIMEOUT_MS);
 	//perform a clean reset if the watchdog fired
 //	if (watchdog_is_watchdog_reset()) cpu_reset();
-//	initialize_tracks();
-//	initialize_channels();
-//	initialize_logger_config();
-//	initialize_script();
+	initialize_tracks();
+	initialize_channels();
+	initialize_logger_config();
+	initialize_script();
 	InitLoggerHardware();
 //	initMessaging();
 
@@ -147,9 +149,9 @@ int main( void )
    //this is to let the zylin debugger catch up and halt the processor.
    //when we figure how to halt it correctly we'll remove this.
 
-	delayStart(4);
-	CAN_init(500000);
-/*	CAN_msg rxMsg;
+
+/*	CAN_init(500000);
+	CAN_msg rxMsg;
 	CAN_msg msg;
 	msg.addressValue = 0x7df;
 	msg.data[0] = 2;
