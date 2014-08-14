@@ -29,7 +29,7 @@ void InitLoggerHardware(){
 	ADC_init(loggerConfig);
 //	timer_init(loggerConfig);
 //	PWM_init(loggerConfig);
-//	GPIO_init(loggerConfig);
+	GPIO_init(loggerConfig);
 	InitFSHardware();
 //	CAN_init(CAN_BAUD_500K);
 }
