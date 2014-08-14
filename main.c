@@ -125,7 +125,7 @@ int main( void )
 	initialize_logger_config();
 	initialize_script();
 	InitLoggerHardware();
-//	initMessaging();
+	initMessaging();
 
 //	startGPIOTasks			( GPIO_TASK_PRIORITY );
 //	startUSBCommTask		( USB_COMM_TASK_PRIORITY );
