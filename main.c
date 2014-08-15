@@ -36,8 +36,8 @@
 #include "connectivityTask.h"
 #include "luaTask.h"
 #include "luaCommands.h"
-#include "GPIO.h"
 #include "CAN.h"
+#include "PWM.h"
 
 
 #define FATAL_ERROR_SCHEDULER	1
@@ -163,7 +163,19 @@ int main( void )
 	CAN_tx_msg(&msg, 1000);
 	//int rc = CAN_rx_msg(&rxMsg, 4000);
 */
-   vTaskStartScheduler();
-   fatalError(FATAL_ERROR_SCHEDULER);
-   return 0;
+	/*
+	while(1){
+		PWM_channel_enable_analog(0, 1);
+		PWM_channel_enable_analog(1, 1);
+		PWM_channel_enable_analog(2, 1);
+		PWM_channel_enable_analog(3, 1);
+		PWM_channel_enable_analog(0, 0);
+		PWM_channel_enable_analog(1, 0);
+		PWM_channel_enable_analog(2, 0);
+		PWM_channel_enable_analog(3, 0);
+	}
+	*/
+	vTaskStartScheduler();
+	fatalError(FATAL_ERROR_SCHEDULER);
+	return 0;
 }

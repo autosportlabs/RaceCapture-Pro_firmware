@@ -47,3 +47,7 @@ void PWM_channel_start_all(void){
 void PWM_channel_stop_all(void){
 	PWM_device_channel_stop_all();
 }
+
+void PWM_channel_enable_analog(size_t channel, uint8_t enabled){
+	PWM_device_channel_enable_analog(channel, enabled);
+}
