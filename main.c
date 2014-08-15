@@ -163,19 +163,6 @@ int main( void )
 	CAN_tx_msg(&msg, 1000);
 	//int rc = CAN_rx_msg(&rxMsg, 4000);
 */
-   //do test stuff
-	GPIO_set(0, 0);
-	GPIO_set(1, 0);
-	GPIO_set(2, 0);
-
-	int i0, i1, i2, pb;
-	while(1){
-		i0 = GPIO_get(0);
-		i1 = GPIO_get(1);
-		i2 = GPIO_get(2);
-		pb = GPIO_is_button_pressed();
-	}
-
    vTaskStartScheduler();
    fatalError(FATAL_ERROR_SCHEDULER);
    return 0;
