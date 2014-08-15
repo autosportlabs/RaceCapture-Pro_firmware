@@ -102,8 +102,8 @@ void PWM_device_channel_init(unsigned int channel, unsigned short period, unsign
 	gpioStructure.GPIO_PuPd = GPIO_PuPd_UP ;
 	GPIO_Init(GPIOD, &gpioStructure);
 
-	TIM_OCInitTypeDef outputChannelInit = {0,};
-	//TIM_OCStructInit(&outputChannelInit);
+	TIM_OCInitTypeDef outputChannelInit;
+	TIM_OCStructInit(&outputChannelInit);
 	outputChannelInit.TIM_OCMode = TIM_OCMode_PWM1;
 	outputChannelInit.TIM_Pulse = 400;
 	outputChannelInit.TIM_OutputState = TIM_OutputState_Enable;
