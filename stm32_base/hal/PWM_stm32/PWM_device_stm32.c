@@ -73,7 +73,8 @@ int PWM_device_init(){
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 
-	uint16_t prescaler = (uint16_t) ((SystemCoreClock /2) / 21000000) - 1;
+	uint16_t prescaler = (uint16_t) ((SystemCoreClock) / 210000) - 1;
+	prescaler = 8400 - 1;
 
 	TIM_TimeBaseInitTypeDef timerInitStructure;
 	timerInitStructure.TIM_Prescaler = prescaler;

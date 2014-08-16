@@ -36,9 +36,10 @@
 #include "connectivityTask.h"
 #include "luaTask.h"
 #include "luaCommands.h"
+
 #include "CAN.h"
 #include "PWM.h"
-
+#include "timer.h"
 
 #define FATAL_ERROR_SCHEDULER	1
 #define FATAL_ERROR_HARDWARE	2
@@ -175,6 +176,17 @@ int main( void )
 		PWM_channel_enable_analog(3, 0);
 	}
 	*/
+
+	//Timer test
+	int timer0 = 0;
+	int timer1 = 0;
+	int timer2 = 0;
+	while(1){
+		timer0 = timer_get_period(0);
+		timer1 = timer_get_period(1);
+		timer2 = timer_get_period(2);
+	}
+
 	vTaskStartScheduler();
 	fatalError(FATAL_ERROR_SCHEDULER);
 	return 0;

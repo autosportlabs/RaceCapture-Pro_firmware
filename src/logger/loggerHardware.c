@@ -27,9 +27,9 @@ void InitLoggerHardware(){
 	LED_init();
 //	imu_init(loggerConfig);
 	ADC_init(loggerConfig);
-//	timer_init(loggerConfig);
 	PWM_init(loggerConfig);
 	GPIO_init(loggerConfig);
 	InitFSHardware();
+	timer_init(loggerConfig);
 //	CAN_init(CAN_BAUD_500K);
 }
