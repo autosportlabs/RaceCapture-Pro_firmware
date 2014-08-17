@@ -4,8 +4,6 @@
 #include "stm32f4xx_tim.h"
 #include "stm32f4xx_misc.h"
 
-#include "LED.h"
-
 #define TIMER_CHANNELS 3
 
 unsigned int g_timer0_overflow;
@@ -171,7 +169,7 @@ static void init_timer_2(size_t divider, unsigned int slowTimerMode){
 	uint16_t prescaler = 16800 - 1;
 	TIM_TimeBaseInitStructure.TIM_Prescaler = prescaler;
 	TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
-	TIM_TimeBaseInitStructure.TIM_Period = 0xFFFF;
+	TIM_TimeBaseInitStructure.TIM_Period = 0xFFFFFFFF;
 	TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseInitStructure);
 
@@ -269,7 +267,6 @@ void TIM3_IRQHandler(void)
 	/* Get the Input Capture value */
 	timer0_cc2 = TIM_GetCapture2(TIM3);
 
-	LED_toggle(1);
 	if (timer0_cc2 != 0)
 	{
 		/* Duty cycle computation */
@@ -296,7 +293,6 @@ void TIM1_BRK_TIM9_IRQHandler(void)
 	/* Get the Input Capture value */
 	timer1_cc2 = TIM_GetCapture2(TIM9);
 
-	LED_toggle(2);
 	if (timer1_cc2 != 0)
 	{
 		/* Duty cycle computation */
@@ -315,15 +311,16 @@ void TIM1_BRK_TIM9_IRQHandler(void)
 
 void TIM2_IRQHandler(void)
 {
+	static last = 0;
 	//THIS IS A HORRIBLE HACK.
 	//TIM2 CH4 does not seem to reset the counter upon input capture. this is doing it manually.
 	//need to fix the configuration of this timer, if possible.
-	TIM_SetCounter(TIM2, 0);
-	/* Clear TIM2_CH4 Capture compare interrupt pending bit */
-	TIM_ClearITPendingBit(TIM2, TIM_IT_CC4);
 	uint32_t current = TIM_GetCapture4(TIM2);
-	//current = TIM_GetCounter(TIM2);
-	timer2_frequency = 168000000 / 16800  / current;
-	LED_toggle(3);
+	if (last < current){
+		uint32_t delta = current - last;
+		timer2_frequency = 10000  / delta;
+	}
+	last = current;
+	TIM_ClearITPendingBit(TIM2, TIM_IT_CC4);
 }
 
