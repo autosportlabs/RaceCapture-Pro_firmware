@@ -2,12 +2,14 @@
 #define USART_DEVICE_H
 #include <stddef.h>
 #include "serial.h"
+#include "usart.h"
+
 
 int usart_device_init();
 
 void usart_device_config(uint8_t port, uint8_t bits, uint8_t parity, uint8_t stopbits, uint32_t baud);
 
-int usart_device_init_serial(Serial *serial, size_t id);
+int usart_device_init_serial(Serial *serial, usart_id_t id);
 
 void usart_device_init_0(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud);
 
