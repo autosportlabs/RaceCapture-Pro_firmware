@@ -409,15 +409,10 @@ float getPredictedTime(GeoPoint point, float utcTime) {
 	float newPredictedTime = fastLapTime - timeDelta;
 
 	// Check for a minimum predicted time to deal with start/finish errors.
-	if (newPredictedTime >= MIN_PREDICTED_TIME){
-		lastPredictedTime = newPredictedTime;
-	}
-	else{
-		newPredictedTime = lastPredictedTime;
-	}
+	if (newPredictedTime < MIN_PREDICTED_TIME)
+		return lastPredictedTime;
 
-	//convert to decimal minutes
-	return newPredictedTime / 60000.0f;
+	return lastPredictedTime = newPredictedTime;
 }
 
 /**
