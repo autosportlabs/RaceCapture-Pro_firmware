@@ -232,7 +232,7 @@ bool addGpsSample(GeoPoint point, float utcTime) {
 		return false;
 	}
 
-	DEBUG("Adding sample  %f/%f @ %f\n", point.latitude, point.longitude, utcTime);
+	DEBUG("Added sample  %f/%f @ %f\n", point.latitude, point.longitude, utcTime);
 	return true;
 }
 

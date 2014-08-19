@@ -411,8 +411,9 @@ float get_lap_stat_sample(int channelId){
 		{
 			GeoPoint gp;
 			populateGeoPoint(&gp);
-			float utcTime = getUTCTime();
-			value = getPredictedTime(gp, utcTime);
+			float ssff = getSecondsSinceFirstFix();
+         // pred time is in seconds, value is in minutes.
+			value = getPredictedTime(gp, ssff) / 60;
 			break;
 		}
 		default:
@@ -421,4 +422,3 @@ float get_lap_stat_sample(int channelId){
 	}
 	return value;
 }
-
