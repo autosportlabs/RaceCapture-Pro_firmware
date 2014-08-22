@@ -38,7 +38,8 @@
 #include "printk.h"
 #include "board.h"
 
-
+#define GPS_BAUDRATE 38400
+#define TELEMETRY_BAUDRATE 115200
 
 #define USART_INTERRUPT_LEVEL 5
 #define USART_QUEUE_LENGTH 300
@@ -139,15 +140,15 @@ int usart_device_init()
 {
 	AT91F_PMC_EnablePeriphClock( AT91C_BASE_PMC,(1 << AT91C_ID_US0) | (1 << AT91C_ID_US1));
 	if (!initQueues()) return 0;
-	usart_device_init_0(8, 0, 1, 115200);
-	usart_device_init_1(8, 0, 1, 115200);
+	usart_device_init_0(8, 0, 1, TELEMETRY_BAUDRATE);
+	usart_device_init_1(8, 0, 1, GPS_BAUDRATE);
 	return 1;
 }
 
-int usart_device_init_serial(Serial *serial, size_t id){
+int usart_device_init_serial(Serial *serial, uart_id_t id){
 	int rc = 1;
 	switch(id){
-		case 0:
+		case UART_TELEMETRY:
 			serial->init = &usart_device_init_0;
 			serial->flush = &usart0_flush;
 			serial->get_c = &usart0_getchar;
@@ -157,7 +158,7 @@ int usart_device_init_serial(Serial *serial, size_t id){
 			serial->put_c = &usart0_putchar;
 			serial->put_s = &usart0_puts;
 			break;
-		case 1:
+		case UART_GPS:
 			serial->init = &usart_device_init_1;
 			serial->flush = &usart1_flush;
 			serial->get_c = &usart1_getchar;

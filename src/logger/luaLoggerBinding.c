@@ -257,44 +257,31 @@ int Lua_GetButton(lua_State *L){
 }
 
 int Lua_WriteSerial(lua_State *L){
-
 	if (lua_gettop(L) >= 2){
-		int uart = lua_tointeger(L,1);
-		const char * data= lua_tostring(L,2);
-		switch (uart){
-		case 0:
-			get_serial_usart0()->put_s(data);
-			break;
-		case 1:
-			get_serial_usart1()->put_s(data);
-			break;
+		int serialPort = lua_tointeger(L,1);
+		Serial *serial = get_serial(serialPort);
+		if (serial){
+			const char * data = lua_tostring(L, 2);
+			serial->put_s(data);
 		}
 	}
 	return 0;
 }
 
 int Lua_ReadSerialLine(lua_State *L){
-
 	if (lua_gettop(L) >= 1){
-		int uart = lua_tointeger(L,1);
-		switch (uart){
-		case 0:
-			get_serial_usart0()->get_line(g_tempBuffer, TEMP_BUFFER_LEN);
-			break;
-		case 1:
-			get_serial_usart1()->get_line(g_tempBuffer, TEMP_BUFFER_LEN);
-			break;
-		default:
-			return 0; //no result, return nil
+		int serialPort = lua_tointeger(L,1);
+		Serial *serial = get_serial(serialPort);
+		if (serial){
+			serial->get_line(g_tempBuffer, TEMP_BUFFER_LEN);
+			lua_pushstring(L,g_tempBuffer);
+			return 1;
 		}
-		lua_pushstring(L,g_tempBuffer);
-		return 1;
 	}
-	return 0; //missing parameter
+	return 0; //missing or bad parameter
 }
 
 int Lua_GetGPIO(lua_State *L){
-
 	unsigned int state = 0;
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);

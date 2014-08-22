@@ -76,17 +76,13 @@ void StartTerminal(Serial *serial, unsigned int argc, char **argv){
 	unsigned int port = modp_atoui(argv[1]);
 	unsigned int baud = modp_atoui(argv[2]);
 
-	switch(port){
-		case 0:
-			configure_serial(0, 8, 0, 1, baud);
-			StartTerminalSession(serial, get_serial_usart0());
-			break;
-		case 1:
-			configure_serial(1, 8, 0, 1, baud);
-			StartTerminalSession(serial, get_serial_usart1());
-			break;
-		default:
-			put_commandError(serial, ERROR_CODE_INVALID_PARAM);
+	Serial *targetSerial = get_serial(port);
+	if (targetSerial){
+		configure_serial(port, 8, 0, 1, baud);
+		StartTerminalSession(serial, targetSerial);
+	}
+	else{
+		put_commandError(serial, ERROR_CODE_INVALID_PARAM);
 	}
 }
 

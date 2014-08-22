@@ -112,7 +112,7 @@ void connectivityTask(void *params) {
 	ConnParams *connParams = (ConnParams*)params;
 	LoggerMessage *msg = NULL;
 
-	Serial *serial = get_serial_usart0();
+	Serial *serial = get_serial(SERIAL_TELEMETRY);
 
 	DeviceConfig deviceConfig;
 	deviceConfig.serial = serial;

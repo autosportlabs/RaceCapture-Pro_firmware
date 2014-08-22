@@ -3,38 +3,46 @@
 #include "usb_comm.h"
 #include "modp_numtoa.h"
 
-static Serial Usart0;
-static Serial Usart1;
-static Serial Usb;
+static Serial serial_ports[SERIAL_COUNT];
 
 void init_serial(void){
-	usart_init_serial(&Usart0, 0);
-	usart_init_serial(&Usart1, 1);
-
-	Usb.init = &usb_init;
-	Usb.flush = &usb_flush;
-	Usb.get_c = &usb_getchar;
-	Usb.get_c_wait = &usb_getchar_wait;
-	Usb.get_line = &usb_readLine;
-	Usb.get_line_wait = &usb_readLineWait;
-	Usb.put_c = &usb_putchar;
-	Usb.put_s = &usb_puts;
+	usart_init_serial(&serial_ports[SERIAL_GPS], UART_GPS);
+	usart_init_serial(&serial_ports[SERIAL_TELEMETRY], UART_TELEMETRY);
+	usart_init_serial(&serial_ports[SERIAL_WIRELESS], UART_WIRELESS);
+	usart_init_serial(&serial_ports[SERIAL_AUX], UART_AUX);
+	usb_init_serial(&serial_ports[SERIAL_USB]);
 }
 
-void configure_serial(uint8_t port, uint8_t bits, uint8_t parity, uint8_t stopBits, uint32_t baud){
-	usart_config(port, bits, parity, stopBits, baud);
+void configure_serial(serial_id_t port, uint8_t bits, uint8_t parity, uint8_t stopBits, uint32_t baud){
+	size_t configurablePort = 1;
+	uart_id_t uartPort;
+
+	switch(port){
+	case SERIAL_GPS:
+		uartPort = UART_GPS;
+		break;
+	case SERIAL_TELEMETRY:
+		uartPort = UART_TELEMETRY;
+		break;
+	case SERIAL_WIRELESS:
+		uartPort = UART_WIRELESS;
+		break;
+	case SERIAL_AUX:
+		uartPort = UART_AUX;
+		break;
+	default:
+		configurablePort = 0;
+		break;
+	}
+
+	if (configurablePort){
+		usart_config(uartPort, bits, parity, stopBits, baud);
+	}
+
 }
 
-Serial * get_serial_usart0(){
-	return &Usart0;
-}
-
-Serial * get_serial_usart1(){
-	return &Usart1;
-}
-
-Serial * get_serial_usb(){
-	return &Usb;
+Serial * get_serial(serial_id_t port){
+	return port < SERIAL_COUNT ? &serial_ports[port] : NULL;
 }
 
 void put_int(Serial *serial, int n){

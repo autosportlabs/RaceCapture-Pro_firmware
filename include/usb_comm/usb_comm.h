@@ -1,8 +1,11 @@
 #ifndef USB_COMM_H_
 #define USB_COMM_H_
 #include <stddef.h>
+#include "serial.h"
 
 int usb_comm_init();
+
+void usb_init_serial(Serial *serial);
 
 void startUSBCommTask(int priority);
 

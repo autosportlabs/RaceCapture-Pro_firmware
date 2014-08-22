@@ -68,18 +68,18 @@ int usart_device_init() {
 	return 1;
 }
 
-void usart_device_config(usart_id_t port, uint8_t bits, uint8_t parity,	uint8_t stopbits, uint32_t baud) {
+void usart_device_config(uart_id_t port, uint8_t bits, uint8_t parity,	uint8_t stopbits, uint32_t baud) {
 	switch (port) {
-	case USART_WIRELESS:
+	case UART_WIRELESS:
 		usart_device_init_0(bits, parity, stopbits, baud);
 		break;
-	case USART_AUX:
+	case UART_AUX:
 		usart_device_init_1(bits, parity, stopbits, baud);
 		break;
-	case USART_GPS:
+	case UART_GPS:
 		usart_device_init_2(bits, parity, stopbits, baud);
 		break;
-	case USART_TELEMETRY:
+	case UART_TELEMETRY:
 		usart_device_init_3(bits, parity, stopbits, baud);
 		break;
 	default:
@@ -87,10 +87,10 @@ void usart_device_config(usart_id_t port, uint8_t bits, uint8_t parity,	uint8_t 
 	}
 }
 
-int usart_device_init_serial(Serial *serial, usart_id_t id) {
+int usart_device_init_serial(Serial *serial, uart_id_t id) {
 	int rc = 1;
 	switch (id) {
-	case USART_WIRELESS:
+	case UART_WIRELESS:
 		serial->init = &usart_device_init_0;
 		serial->flush = &usart0_flush;
 		serial->get_c = &usart0_getchar;
@@ -101,7 +101,7 @@ int usart_device_init_serial(Serial *serial, usart_id_t id) {
 		serial->put_s = &usart0_puts;
 		break;
 
-	case USART_AUX:
+	case UART_AUX:
 		serial->init = &usart_device_init_1;
 		serial->flush = &usart1_flush;
 		serial->get_c = &usart1_getchar;
@@ -112,7 +112,7 @@ int usart_device_init_serial(Serial *serial, usart_id_t id) {
 		serial->put_s = &usart1_puts;
 		break;
 
-	case USART_GPS:
+	case UART_GPS:
 		serial->init = &usart_device_init_2;
 		serial->flush = &usart2_flush;
 		serial->get_c = &usart2_getchar;
@@ -123,7 +123,7 @@ int usart_device_init_serial(Serial *serial, usart_id_t id) {
 		serial->put_s = &usart2_puts;
 		break;
 
-	case USART_TELEMETRY:
+	case UART_TELEMETRY:
 		serial->init = &usart_device_init_3;
 		serial->flush = &usart3_flush;
 		serial->get_c = &usart3_getchar;

@@ -19,6 +19,17 @@ int usb_comm_init(){
 	return USB_CDC_device_init();
 }
 
+void usb_init_serial(Serial *serial){
+	serial->init = &usb_init;
+	serial->flush = &usb_flush;
+	serial->get_c = &usb_getchar;
+	serial->get_c_wait = &usb_getchar_wait;
+	serial->get_line = &usb_readLine;
+	serial->get_line_wait = &usb_readLineWait;
+	serial->put_c = &usb_putchar;
+	serial->put_s = &usb_puts;
+}
+
 void startUSBCommTask(int priority){
 	xTaskCreate( onUSBCommTask,	( signed portCHAR * ) "OnUSBComm", mainUSB_COMM_STACK, NULL, priority, NULL );
 }
@@ -27,7 +38,7 @@ void onUSBCommTask(void *pvParameters) {
 	while (!USB_CDC_is_initialized()){
 		vTaskDelay(1);
 	}
-	Serial *serial = get_serial_usb();
+	Serial *serial = get_serial(SERIAL_USB);
 
 	while (1) {
 		process_msg(serial, lineBuffer, BUFFER_SIZE);

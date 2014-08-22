@@ -32,7 +32,7 @@ static void logGpsInput(const char *buf, int len) {
 }
 
 void GPSTask(void *pvParameters) {
-	Serial *gpsSerial = get_serial_usart1();
+	Serial *gpsSerial = get_serial(SERIAL_GPS);
 
 	for (;;) {
       int len = gpsSerial->get_line(g_GPSdataLine, GPS_DATA_LINE_BUFFER_LEN - 1);
@@ -44,7 +44,6 @@ void GPSTask(void *pvParameters) {
 
 void startGPSTask(int priority){
 	initGPS();
-	configure_serial(1, 8, 0, 1, 38400);
 	xTaskCreate( GPSTask, ( signed portCHAR * )"GPSTask", GPS_TASK_STACK_SIZE, NULL, priority, NULL );
 }
 
