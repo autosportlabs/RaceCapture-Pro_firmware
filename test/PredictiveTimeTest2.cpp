@@ -17,6 +17,7 @@
 #include "loggerConfig.h"
 
 #define FILE_PREFIX string("test/")
+#define CPPUNIT_ASSERT_CLOSE_ENOUGH(ACTUAL, EXPECTED) CPPUNIT_ASSERT((abs((ACTUAL - EXPECTED)) < 0.00001))
 
 using std::ifstream;
 using std::ios;
@@ -68,6 +69,16 @@ string PredictiveTimeTest2::readFile(string filename) {
 
 	str.assign((istreambuf_iterator<char>(t)), istreambuf_iterator<char>());
 	return str;
+}
+
+void PredictiveTimeTest2::testProjectedDistance() {
+  GeoPoint s = { .latitude = 2.0, .longitude = 0.0 }; // start
+  GeoPoint m = { .latitude = 2.0, .longitude = 1.0 }; // middle
+  GeoPoint e = { .latitude = 2.0, .longitude = 2.0 }; // end
+  float expected = 0.5;
+
+  float actual = distPctBtwnTwoPoints(&s, &e, &m);
+  CPPUNIT_ASSERT_CLOSE_ENOUGH(expected, actual);
 }
 
 void PredictiveTimeTest2::testPredictedTimeGpsFeed() {

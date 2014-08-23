@@ -248,7 +248,7 @@ bool addGpsSample(GeoPoint point, float time) {
  * @return The percentage that projected point m lies between startPt and endPt if the method
  * requirements were met. < 0 or > 1 otherwise.
  */
-static float distPctBtwnTwoPoints(GeoPoint *s, GeoPoint *e, GeoPoint *m) {
+float distPctBtwnTwoPoints(GeoPoint *s, GeoPoint *e, GeoPoint *m) {
 	float distSM = distPythag(s, m); // A
 	float distME = distPythag(m, e); // B
 	float distSE = distPythag(s, e); // C
