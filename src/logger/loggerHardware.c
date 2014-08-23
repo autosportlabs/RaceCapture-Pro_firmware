@@ -21,11 +21,11 @@ void InitLoggerHardware(){
 
 	init_spi_lock();
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
-//	usb_comm_init();
+	usb_comm_init();
 	usart_init();
 	init_serial();
 	LED_init();
-//	imu_init(loggerConfig);
+	imu_init(loggerConfig);
 	ADC_init(loggerConfig);
 	PWM_init(loggerConfig);
 	GPIO_init(loggerConfig);

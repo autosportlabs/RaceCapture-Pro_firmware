@@ -108,7 +108,7 @@
 
 #include "ff.h"			/* Declarations of FatFs API */
 #include "diskio.h"		/* Declarations of disk I/O functions */
-
+#include "spi.h"
 
 /*--------------------------------------------------------------------------
 
@@ -2303,7 +2303,7 @@ FRESULT validate (	/* FR_OK(0): The object is valid, !=0: Invalid */
 /* Mount/Unmount a Logical Drive                                         */
 /*-----------------------------------------------------------------------*/
 
-FRESULT f_mount (
+static FRESULT f_mount_unprotected (
 	FATFS* fs,			/* Pointer to the file system object (NULL:unmount)*/
 	const TCHAR* path,	/* Logical drive number to be mounted/unmounted */
 	BYTE opt			/* 0:Do not mount (delayed mount), 1:Mount immediately */
@@ -2342,6 +2342,13 @@ FRESULT f_mount (
 	LEAVE_FF(fs, res);
 }
 
+FRESULT f_mount(FATFS* fs, const TCHAR* path, BYTE opt){
+	FRESULT rc;
+	lock_spi();
+	rc = f_mount_unprotected(fs, path, opt);
+	unlock_spi();
+	return rc;
+}
 
 
 
@@ -2349,7 +2356,7 @@ FRESULT f_mount (
 /* Open or Create a File                                                 */
 /*-----------------------------------------------------------------------*/
 
-FRESULT f_open (
+static FRESULT f_open_unprotected (
 	FIL* fp,			/* Pointer to the blank file object */
 	const TCHAR* path,	/* Pointer to the file name */
 	BYTE mode			/* Access mode and file open mode flags */
@@ -2477,14 +2484,20 @@ FRESULT f_open (
 	LEAVE_FF(dj.fs, res);
 }
 
-
-
+FRESULT f_open(FIL* fp, const TCHAR* path,	BYTE mode)
+{
+	FRESULT rc;
+	lock_spi();
+	rc = f_open_unprotected(fp, path, mode);
+	unlock_spi();
+	return rc;
+}
 
 /*-----------------------------------------------------------------------*/
 /* Read File                                                             */
 /*-----------------------------------------------------------------------*/
 
-FRESULT f_read (
+static FRESULT f_read_unprotected (
 	FIL* fp, 		/* Pointer to the file object */
 	void* buff,		/* Pointer to data buffer */
 	UINT btr,		/* Number of bytes to read */
@@ -2577,7 +2590,13 @@ FRESULT f_read (
 	LEAVE_FF(fp->fs, FR_OK);
 }
 
-
+FRESULT f_read (FIL* fp, void* buff, UINT btr, UINT* br){
+	FRESULT rc;
+	lock_spi();
+	rc = f_read_unprotected(fp, buff, btr, br);
+	unlock_spi();
+	return rc;
+}
 
 
 #if !_FS_READONLY
@@ -2706,7 +2725,7 @@ FRESULT f_write (
 /* Synchronize the File                                                  */
 /*-----------------------------------------------------------------------*/
 
-FRESULT f_sync (
+static FRESULT f_sync_unprotected (
 	FIL* fp		/* Pointer to the file object */
 )
 {
@@ -2748,14 +2767,20 @@ FRESULT f_sync (
 
 #endif /* !_FS_READONLY */
 
-
+FRESULT f_sync (FIL* fp){
+	FRESULT rc;
+	lock_spi();
+	rc = f_sync_unprotected(fp);
+	unlock_spi();
+	return rc;
+}
 
 
 /*-----------------------------------------------------------------------*/
 /* Close File                                                            */
 /*-----------------------------------------------------------------------*/
 
-FRESULT f_close (
+static FRESULT f_close_unprotected (
 	FIL *fp		/* Pointer to the file object to be closed */
 )
 {
@@ -2773,7 +2798,7 @@ FRESULT f_close (
 		LEAVE_FF(fs, res);
 	}
 #else
-	res = f_sync(fp);					/* Flush cached data */
+	res = f_sync_unprotected(fp);					/* Flush cached data */
 #if _FS_LOCK
 	if (res == FR_OK) {					/* Decrement open counter */
 #if _FS_REENTRANT
@@ -2792,6 +2817,13 @@ FRESULT f_close (
 #endif
 }
 
+FRESULT f_close (FIL *fp){
+	FRESULT rc;
+	lock_spi();
+	rc = f_close_unprotected(fp);
+	unlock_spi();
+	return rc;
+}
 
 
 
@@ -4388,14 +4420,11 @@ int f_putc (
 	return EOF;
 }
 
-
-
-
 /*-----------------------------------------------------------------------*/
 /* Put a string to the file                                              */
 /*-----------------------------------------------------------------------*/
 
-int f_puts (
+static int f_puts_unprotected (
 	const TCHAR* str,	/* Pointer to the string to be output */
 	FIL* fp				/* Pointer to the file object */
 )
@@ -4416,6 +4445,13 @@ int f_puts (
 	return EOF;
 }
 
+int f_puts(const TCHAR* str, FIL* fp){
+	int rc;
+	lock_spi();
+	rc = f_puts_unprotected(str, fp);
+	unlock_spi();
+	return rc;
+}
 
 
 

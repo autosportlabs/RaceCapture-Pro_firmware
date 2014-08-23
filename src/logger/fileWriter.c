@@ -120,9 +120,7 @@ static int write_channel_samples(FIL *f, ChannelSample * channelSamples, size_t 
 }
 
 static int open_logfile(FIL *f, char *filename){
-	lock_spi();
 	int rc = f_open(f,filename, FA_WRITE);
-	unlock_spi();
 	return rc;
 }
 
@@ -148,26 +146,21 @@ static int open_next_logfile(FIL *f, char *filename){
 
 static void end_logfile(){
 	pr_info("close logfile\r\n");
-	lock_spi();
 	f_close(&g_logfile);
 	UnmountFS();
-	unlock_spi();
 }
 
 static void flush_logfile(FIL *file){
 	pr_debug("flush logfile\r\n");
-	lock_spi();
 	int res = f_sync(file);
 	if (0 != res){
 		pr_debug_int(res);
 		pr_debug("=flush error\r\n");
 	}
-	unlock_spi();
 }
 
 static int open_new_logfile(char *filename){
 	int status = WRITING_INACTIVE;
-	lock_spi();
 	//start of a new logfile
 	int rc = InitFS();
 	if (0 != rc){
@@ -185,7 +178,6 @@ static int open_new_logfile(char *filename){
 			status = WRITING_ACTIVE;
 		}
 	}
-	unlock_spi();
 	return status;
 }
 
@@ -217,20 +209,16 @@ void fileWriterTask(void *params){
 			}
 
 			else if (LOGGER_MSG_SAMPLE == msg->messageType && WRITING_ACTIVE == writingStatus){
-				lock_spi();
 				if (0 == tick){
 					write_headers(&g_logfile, msg->channelSamples, msg->sampleCount);
 				}
 				int rc = write_channel_samples(&g_logfile, msg->channelSamples, msg->sampleCount);
-				unlock_spi();
 
 				if (rc == WRITE_FAIL){
 					LED_enable(3);
 					//try to recover
-					lock_spi();
 					f_close(&g_logfile);
 					UnmountFS();
-					unlock_spi();
 					pr_error("Error writing file, recovering..\r\n");
 					InitFS();
 					rc = open_logfile(&g_logfile, filename);
