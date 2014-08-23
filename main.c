@@ -118,12 +118,6 @@ void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName)
 int main( void )
 {
 	cpu_init();
-	LED_init();
-	LED_enable(0);
-	LED_enable(1);
-	LED_enable(2);
-	LED_enable(3);
-	delayStart(4);
 	//	watchdog_init(WATCHDOG_TIMEOUT_MS);
 	//perform a clean reset if the watchdog fired
 //	if (watchdog_is_watchdog_reset()) cpu_reset();
@@ -142,7 +136,6 @@ int main( void )
 	startConnectivityTask	( CONNECTIVITY_TASK_PRIORITY );
 	startGPSTask			( GPS_TASK_PRIORITY );
 	startOBD2Task			( OBD2_TASK_PRIORITY);
-
 
 	/* Start the scheduler.
 
