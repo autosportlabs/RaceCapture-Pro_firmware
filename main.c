@@ -119,6 +119,10 @@ int main( void )
 {
 	cpu_init();
 	LED_init();
+	LED_enable(0);
+	LED_enable(1);
+	LED_enable(2);
+	LED_enable(3);
 	delayStart(4);
 	//	watchdog_init(WATCHDOG_TIMEOUT_MS);
 	//perform a clean reset if the watchdog fired
@@ -130,14 +134,14 @@ int main( void )
 	InitLoggerHardware();
 	initMessaging();
 
-//	startGPIOTasks			( GPIO_TASK_PRIORITY );
-//	startUSBCommTask		( USB_COMM_TASK_PRIORITY );
-//	startLuaTask			( LUA_TASK_PRIORITY );
-//	startFileWriterTask		( FILE_WRITER_TASK_PRIORITY );
+	startGPIOTasks			( GPIO_TASK_PRIORITY );
+	startUSBCommTask		( USB_COMM_TASK_PRIORITY );
+	startLuaTask			( LUA_TASK_PRIORITY );
+	startFileWriterTask		( FILE_WRITER_TASK_PRIORITY );
 	startLoggerTaskEx		( LOGGER_TASK_PRIORITY );
-//	startConnectivityTask	( CONNECTIVITY_TASK_PRIORITY );
+	startConnectivityTask	( CONNECTIVITY_TASK_PRIORITY );
 	startGPSTask			( GPS_TASK_PRIORITY );
-//	startOBD2Task			( OBD2_TASK_PRIORITY);
+	startOBD2Task			( OBD2_TASK_PRIORITY);
 
 
 	/* Start the scheduler.
@@ -150,44 +154,6 @@ int main( void )
    */
 
    //this is to let the zylin debugger catch up and halt the processor.
-   //when we figure how to halt it correctly we'll remove this.
-
-
-/*	CAN_init(500000);
-	CAN_msg rxMsg;
-	CAN_msg msg;
-	msg.addressValue = 0x7df;
-	msg.data[0] = 2;
-	msg.data[1] = 1;
-	msg.data[2] = 12;
-	msg.dataLength = 3;
-	msg.isExtendedAddress = 0;
-	CAN_tx_msg(&msg, 1000);
-	//int rc = CAN_rx_msg(&rxMsg, 4000);
-*/
-	/*
-	while(1){
-		PWM_channel_enable_analog(0, 1);
-		PWM_channel_enable_analog(1, 1);
-		PWM_channel_enable_analog(2, 1);
-		PWM_channel_enable_analog(3, 1);
-		PWM_channel_enable_analog(0, 0);
-		PWM_channel_enable_analog(1, 0);
-		PWM_channel_enable_analog(2, 0);
-		PWM_channel_enable_analog(3, 0);
-	}
-	*/
-/*
-	//Timer test
-	int timer0 = 0;
-	int timer1 = 0;
-	int timer2 = 0;
-	while(1){
-		timer0 = timer_get_period(0);
-		timer1 = timer_get_period(1);
-		timer2 = timer_get_period(2);
-	}
-*/
 	vTaskStartScheduler();
 	fatalError(FATAL_ERROR_SCHEDULER);
 	return 0;
