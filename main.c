@@ -48,28 +48,6 @@
 #define FLASH_PAUSE_DELAY 	5000000
 #define FLASH_DELAY 		1000000
 
-static void delayStart(int count){
-	while(count-- > 0){
-		for (int c = 0; c < count; c++){
-			LED_enable(0);
-			LED_enable(1);
-			LED_disable(2);
-			LED_disable(3);
-			for (int i=0; i<FLASH_DELAY; i++){}
-			LED_disable(0);
-			LED_disable(1);
-			LED_enable(2);
-			LED_enable(3);
-			for (int i=0; i < FLASH_DELAY; i++){}
-		}
-		for (int i=0; i < FLASH_PAUSE_DELAY; i++){}
-	}
-	LED_disable(0);
-	LED_disable(1);
-	LED_disable(2);
-	LED_disable(3);
-}
-
 static void fatalError(int type){
 	int count;
 
