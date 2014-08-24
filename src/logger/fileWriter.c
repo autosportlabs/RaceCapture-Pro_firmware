@@ -24,7 +24,7 @@ enum writing_status {
 };
 
 #define FILE_WRITER_STACK_SIZE  				200
-#define SAMPLE_RECORD_QUEUE_SIZE				10
+#define SAMPLE_RECORD_QUEUE_SIZE				20
 #define FILE_BUFFER_SIZE						256
 
 #define FILENAME_LEN							13
@@ -233,8 +233,8 @@ void fileWriterTask(void *params){
 			}
 
 			else if (LOGGER_MSG_END_LOG == msg->messageType){
-				pr_debug_int(tick);
-				pr_debug(" logfile lines written\r\n");
+				pr_info_int(tick);
+				pr_info(" logfile lines written\r\n");
 				break;
 			}
 
