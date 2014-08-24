@@ -5,7 +5,6 @@
 #include "task.h"
 #include "taskUtil.h"
 #include "loggerHardware.h"
-#include "spi.h"
 #include "watchdog.h"
 #include "diskio.h"
 #include "sdcard_device.h"
@@ -18,16 +17,16 @@ void InitFSHardware(void){
 }
 
 int InitFS(){
-	taskENTER_CRITICAL();
 	int res = -1;
 	FatFs = pvPortMalloc(sizeof(FATFS));
 	if (FatFs){
+		taskENTER_CRITICAL();
 		res = disk_initialize(0);
+		taskEXIT_CRITICAL();
 		if (0 == res) {
 			res = f_mount(FatFs, "0", 1);
 		}
 	}
-	taskEXIT_CRITICAL();
 	return res;
 }
 
@@ -55,9 +54,7 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet)
 		put_crlf(serial);
 		serial->put_s("Card Init... ");
 	}
-	lock_spi();
 	res = InitFS();
-	unlock_spi();
 	if (res) goto exit;
 
 	if (!quiet){
@@ -65,9 +62,7 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet)
 		put_crlf(serial);
 		serial->put_s("Opening File... ");
 	}
-	lock_spi();
 	res = f_open(fatFile,"test1.txt", FA_WRITE | FA_CREATE_ALWAYS);
-	unlock_spi();
 	if (!quiet){
 		put_int(serial, res);
 		put_crlf(serial);
@@ -77,10 +72,8 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet)
 	if (!quiet) serial->put_s("Writing file..");
 	portTickType startTicks = xTaskGetTickCount();
 	for (int i = 1; i <= lines; i++){
-		lock_spi();
 		res = f_puts("The quick brown fox jumped over the lazy dog\n",fatFile);
 		if (doFlush) f_sync(fatFile);
-		unlock_spi();
 		if (res == EOF){
 			if (!quiet) serial->put_s("failed writing at line ");
 			put_int(serial, i);
@@ -101,9 +94,7 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet)
 		serial->put_s("Closing... ");
 	}
 
-	lock_spi();
 	res = f_close(fatFile);
-	unlock_spi();
 	if (!quiet){
 		put_int(serial, res);
 		put_crlf(serial);
@@ -111,9 +102,7 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet)
 	if (res) goto exit;
 
 	if (!quiet)		serial->put_s("Unmounting... ");
-	lock_spi();
 	res = UnmountFS();
-	unlock_spi();
 	if (!quiet){
 		put_int(serial, res);
 		put_crlf(serial);

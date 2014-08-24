@@ -1,5 +1,6 @@
 #include "cpu_device.h"
 #include "board.h"
+#include "spi.h"
 
 int cpu_device_init(void){
 	// When using the JTAG debugger the hardware is not always initialised to
@@ -9,6 +10,7 @@ int cpu_device_init(void){
 
 	// Enable reset-button
 	AT91F_RSTSetMode( AT91C_BASE_RSTC , AT91C_RSTC_URSTEN );
+	init_spi_lock();
 	return 1;
 }
 

@@ -86,6 +86,7 @@ MCP2515_DIR = $(SAM7s_BASE_DIR)/MCP2515
 KXR94_2353_DIR = $(SAM7s_BASE_DIR)/KXR94_2353
 ADC_AT91_DIR = $(SAM7s_BASE_DIR)/ADC_at91
 PWM_AT91_DIR = $(SAM7s_BASE_DIR)/PWM_at91
+SPI_AT91_DIR = $(SAM7s_BASE_DIR)/SPI_at91
 TIMER_AT91_DIR= $(SAM7s_BASE_DIR)/timer_at91
 LED_AT91_DIR= $(SAM7s_BASE_DIR)/LED_at91
 GPIO_AT91_DIR= $(SAM7s_BASE_DIR)/GPIO_at91
@@ -155,7 +156,6 @@ $(RTOS_GCC_DIR)/port.c \
 $(UTIL_DIR)/modp_numtoa.c \
 $(UTIL_DIR)/modp_atonum.c \
 $(UTIL_DIR)/taskUtil.c \
-$(SPI_DIR)/spi.c \
 $(USB_AT91_DIR)/USB-CDC_device_at91.c \
 $(USB_COMM_SRC_DIR)/usb_comm.c \
 $(USART_DIR)/usart.c \
@@ -186,6 +186,7 @@ $(LOGGER_SRC_DIR)/luaLoggerBinding.c \
 $(LOGGER_SRC_DIR)/loggerCommands.c \
 $(MEMORY_SRC_DIR)/memory.c \
 $(CPU_SRC_DIR)/cpu.c \
+$(SPI_AT91_DIR)/spi.c \
 $(MCP2515_DIR)/CAN_device_MCP2515.c \
 $(KXR94_2353_DIR)/imu_device_KXR94_2353.c \
 $(ADC_AT91_DIR)/ADC_device_at91.c \
@@ -333,6 +334,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/LED \
 -I$(INCLUDE_DIR)/GPIO \
 -I$(GPIO_AT91_DIR) \
+-I$(SPI_AT91_DIR) \
 -I$(INCLUDE_DIR)/watchdog \
 -I$(INCLUDE_DIR)/memory \
 -I$(INCLUDE_DIR)/cpu \
@@ -376,7 +378,7 @@ CFLAGS += -O$(OPT)
 CFLAGS += -Wall
 CFLAGS += -Wsign-compare
 CFLAGS += -Wuninitialized
-CFLAGS += -Werror
+#CFLAGS += -Werror
 CFLAGS += -fomit-frame-pointer
 CFLAGS += -Wcast-align -Wimplicit
 CFLAGS += -Wpointer-arith -Wswitch

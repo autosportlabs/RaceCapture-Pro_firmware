@@ -122,9 +122,8 @@ void loggerTaskEx(void *params){
 	while(1){
 
 		xSemaphoreTake(onTick, portMAX_DELAY);
-		LED_toggle(0);
 		watchdog_reset();
-
+		LED_enable(1);
 		currentTicks++;
 		if (currentTicks % BACKGROUND_SAMPLE_RATE == 0){
 			doBackgroundSampling();

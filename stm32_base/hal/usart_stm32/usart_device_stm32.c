@@ -63,7 +63,7 @@ int usart_device_init() {
 
 	usart_device_init_0(8, 0, 1, 115200); //wireless
 	usart_device_init_1(8, 0, 1, 115200); //auxilary
-	usart_device_init_2(8, 0, 1, 115200); //GPS
+	usart_device_init_2(8, 0, 1, 9600); //GPS
 	usart_device_init_3(8, 0, 1, 115200); //telemetry
 	return 1;
 }

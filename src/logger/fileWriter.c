@@ -14,21 +14,18 @@
 #include "taskUtil.h"
 #include "mod_string.h"
 #include "printk.h"
-#include "spi.h"
 #include "channelMeta.h"
 #include "mem_mang.h"
 #include "LED.h"
 
 enum writing_status {
 	WRITING_INACTIVE = 0,
-	WRITING_ACTIVE = 1
+	WRITING_ACTIVE
 };
-
-static FIL g_logfile;
-static xQueueHandle g_sampleRecordQueue = NULL;
 
 #define FILE_WRITER_STACK_SIZE  				200
 #define SAMPLE_RECORD_QUEUE_SIZE				10
+#define FILE_BUFFER_SIZE						1024
 
 #define FILENAME_LEN							13
 #define MAX_LOG_FILE_INDEX 						99999
@@ -40,7 +37,33 @@ static xQueueHandle g_sampleRecordQueue = NULL;
 
 #define WRITE_SUCCESS  0
 #define WRITE_FAIL     EOF
-#define FILE_WRITE(F,S) f_puts(S, F)
+
+typedef struct _FileBuffer{
+	char buffer[FILE_BUFFER_SIZE];
+	size_t index;
+} FileBuffer;
+
+static FIL g_logfile;
+static xQueueHandle g_sampleRecordQueue = NULL;
+static FileBuffer fileBuffer = {"", 0};
+
+static void appendFileBuffer(const char * data){
+	size_t index = fileBuffer.index;
+	char * buffer = fileBuffer.buffer + index;
+	while(*data){
+		*buffer++ = *data++;
+		index++;
+	}
+	*buffer = '\0';
+	fileBuffer.index = index;
+}
+
+static int writeFileBuffer(){
+	int rc = f_puts(fileBuffer.buffer, &g_logfile);
+	fileBuffer.index = 0;
+	fileBuffer.buffer[0] = '\0';
+	return rc;
+}
 
 portBASE_TYPE queue_logfile_record(LoggerMessage * msg){
 	if (NULL != g_sampleRecordQueue){
@@ -51,82 +74,79 @@ portBASE_TYPE queue_logfile_record(LoggerMessage * msg){
 	}
 }
 
-static int write_quoted_string(FIL *f, const char *s){
-	int rc = FILE_WRITE(f, "\"");
-	rc = FILE_WRITE(f, s);
-	rc = FILE_WRITE(f, "\"");
-	return rc;
+static void appendQuotedString(const char *s){
+	appendFileBuffer("\"");
+	appendFileBuffer(s);
+	appendFileBuffer("\"");
 }
 
-
-static int write_int(FIL *f, int num){
+static void appendInt(int num){
 	char buf[10];
 	modp_itoa10(num,buf);
-	return FILE_WRITE(f, buf);
+	appendFileBuffer(buf);
 }
 
-static int write_float(FIL *f, float num, int precision){
+static void appendFloat(float num, int precision){
 	char buf[20];
 	modp_ftoa(num, buf, precision);
-	return FILE_WRITE(f, buf);
+	appendFileBuffer(buf);
 }
 
-static int write_headers(FIL *f, ChannelSample *channelSamples, size_t sampleCount){
-	int rc = WRITE_SUCCESS;
+static int writeHeaders(ChannelSample *channelSamples, size_t sampleCount){
 	int headerCount = 0;
 	ChannelSample *sample = channelSamples;
 	for (size_t i = 0; i < sampleCount;i++){
 		if (SAMPLE_DISABLED != sample->sampleRate){
-			if (headerCount++ > 0) rc = FILE_WRITE(f, ",");
+			if (headerCount++ > 0) appendFileBuffer(",");
 			const Channel *field = get_channel(sample->channelId);
-			rc = write_quoted_string(f, field->label);
-			rc = FILE_WRITE(f, "|");
-			rc = write_quoted_string(f, field->units);
-			rc = FILE_WRITE(f, "|");
-			rc = write_int(f, decodeSampleRate(sample->sampleRate));
+			appendQuotedString(field->label);
+			appendFileBuffer("|");
+			appendQuotedString(field->units);
+			appendFileBuffer("|");
+			appendInt(decodeSampleRate(sample->sampleRate));
 		}
 		sample++;
 	}
-	rc = FILE_WRITE(f, "\n");
-	return rc;
+	appendFileBuffer("\n");
+	return writeFileBuffer();
 }
 
 
-static int write_channel_samples(FIL *f, ChannelSample * channelSamples, size_t channelCount){
+static int writeChannelSamples(ChannelSample * channelSamples, size_t channelCount){
 	int rc = WRITE_SUCCESS;
 	if (NULL != channelSamples){
 		int fieldCount = 0;
 		for (size_t i = 0; i < channelCount; i++){
 			ChannelSample *sample = (channelSamples + i);
 
-			if (fieldCount++ > 0) rc = FILE_WRITE(f, ",");
+			if (fieldCount++ > 0) appendFileBuffer(",");
 
 			if (sample->intValue == NIL_SAMPLE) continue;
 
 			int precision = get_channel(sample->channelId)->precision;
 			if (precision > 0){
-				rc = write_float(f, sample->floatValue, precision);
+				appendFloat(sample->floatValue, precision);
 			}
 			else{
-				rc = write_int(f, sample->intValue);
+				appendInt(sample->intValue);
 			}
 		}
-		rc = FILE_WRITE(f, "\n");
+		appendFileBuffer("\n");
+		writeFileBuffer();
 	}
 	else{
 		pr_debug("null sample record\r\n");
+		rc = WRITE_FAIL;
 	}
 	return rc;
 }
 
-static int open_logfile(FIL *f, char *filename){
-	lock_spi();
+static int openLogfile(FIL *f, char *filename){
 	int rc = f_open(f,filename, FA_WRITE);
-	unlock_spi();
 	return rc;
 }
 
-static int open_next_logfile(FIL *f, char *filename){
+static int openNextLogfile(FIL *f, char *filename){
 	int i = 0;
 	int rc;
 	for (; i < MAX_LOG_FILE_INDEX; i++){
@@ -146,28 +166,23 @@ static int open_next_logfile(FIL *f, char *filename){
 	return rc;
 }
 
-static void end_logfile(){
+static void endLogfile(){
 	pr_info("close logfile\r\n");
-	lock_spi();
 	f_close(&g_logfile);
 	UnmountFS();
-	unlock_spi();
 }
 
-static void flush_logfile(FIL *file){
+static void flushLogfile(FIL *file){
 	pr_debug("flush logfile\r\n");
-	lock_spi();
 	int res = f_sync(file);
 	if (0 != res){
 		pr_debug_int(res);
 		pr_debug("=flush error\r\n");
 	}
-	unlock_spi();
 }
 
-static int open_new_logfile(char *filename){
+static int openNewLogfile(char *filename){
 	int status = WRITING_INACTIVE;
-	lock_spi();
 	//start of a new logfile
 	int rc = InitFS();
 	if (0 != rc){
@@ -176,7 +191,7 @@ static int open_new_logfile(char *filename){
 	}
 	else{
 		//open next log file
-		rc = open_next_logfile(&g_logfile, filename);
+		rc = openNextLogfile(&g_logfile, filename);
 		if (0 != rc){
 			pr_error("File open error\r\n");
 			LED_enable(3);
@@ -185,7 +200,6 @@ static int open_new_logfile(char *filename){
 			status = WRITING_ACTIVE;
 		}
 	}
-	unlock_spi();
 	return status;
 }
 
@@ -207,7 +221,7 @@ void fileWriterTask(void *params){
 				flushTimeoutInterval = FLUSH_INTERVAL_MS;
 				flushTimeoutStart = xTaskGetTickCount();
 				tick = 0;
-				writingStatus = open_new_logfile(filename);
+				writingStatus = openNewLogfile(filename);
 			}
 
 			else if (LOGGER_MSG_END_LOG == msg->messageType){
@@ -217,23 +231,18 @@ void fileWriterTask(void *params){
 			}
 
 			else if (LOGGER_MSG_SAMPLE == msg->messageType && WRITING_ACTIVE == writingStatus){
-				lock_spi();
 				if (0 == tick){
-					write_headers(&g_logfile, msg->channelSamples, msg->sampleCount);
+					writeHeaders(msg->channelSamples, msg->sampleCount);
 				}
-				int rc = write_channel_samples(&g_logfile, msg->channelSamples, msg->sampleCount);
-				unlock_spi();
-
+				int rc = writeChannelSamples(msg->channelSamples, msg->sampleCount);
 				if (rc == WRITE_FAIL){
 					LED_enable(3);
 					//try to recover
-					lock_spi();
 					f_close(&g_logfile);
 					UnmountFS();
-					unlock_spi();
 					pr_error("Error writing file, recovering..\r\n");
 					InitFS();
-					rc = open_logfile(&g_logfile, filename);
+					rc = openLogfile(&g_logfile, filename);
 					if (0 != rc){
 						pr_error("could not recover file ");
 						pr_error(filename);
@@ -246,13 +255,13 @@ void fileWriterTask(void *params){
 				}
 				LED_disable(3);
 				if (isTimeoutMs(flushTimeoutStart, flushTimeoutInterval)){
-					flush_logfile(&g_logfile);
+					flushLogfile(&g_logfile);
 					flushTimeoutStart = xTaskGetTickCount();
 				}
 				tick++;
 			}
 		}
-		end_logfile();
+		endLogfile();
 		writingStatus = WRITING_INACTIVE;
 		delayMs(ERROR_SLEEP_DELAY_MS);
 	}
