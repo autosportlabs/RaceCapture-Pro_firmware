@@ -43,12 +43,12 @@ typedef struct _FileBuffer{
 	size_t index;
 } FileBuffer;
 
-static FIL g_logfile;
+static FIL *g_logfile;
 static xQueueHandle g_sampleRecordQueue = NULL;
 static FileBuffer fileBuffer = {"", 0};
 
 static int writeFileBuffer(){
-	int rc = f_puts(fileBuffer.buffer, &g_logfile);
+	int rc = f_puts(fileBuffer.buffer, g_logfile);
 	fileBuffer.index = 0;
 	fileBuffer.buffer[0] = '\0';
 	return rc;
@@ -176,7 +176,7 @@ static int openNextLogfile(FIL *f, char *filename){
 
 static void endLogfile(){
 	pr_info("close logfile\r\n");
-	f_close(&g_logfile);
+	f_close(g_logfile);
 	UnmountFS();
 }
 
@@ -199,7 +199,7 @@ static int openNewLogfile(char *filename){
 	}
 	else{
 		//open next log file
-		rc = openNextLogfile(&g_logfile, filename);
+		rc = openNextLogfile(g_logfile, filename);
 		if (0 != rc){
 			pr_error("File open error\r\n");
 			LED_enable(3);
@@ -247,11 +247,11 @@ void fileWriterTask(void *params){
 				if (rc == WRITE_FAIL){
 					LED_enable(3);
 					//try to recover
-					f_close(&g_logfile);
+					f_close(g_logfile);
 					UnmountFS();
 					pr_error("Error writing file, recovering..\r\n");
 					InitFS();
-					rc = openLogfile(&g_logfile, filename);
+					rc = openLogfile(g_logfile, filename);
 					if (0 != rc){
 						pr_error("could not recover file ");
 						pr_error(filename);
@@ -264,7 +264,7 @@ void fileWriterTask(void *params){
 				}
 				LED_disable(3);
 				if (isTimeoutMs(flushTimeoutStart, flushTimeoutInterval)){
-					flushLogfile(&g_logfile);
+					flushLogfile(g_logfile);
 					flushTimeoutStart = xTaskGetTickCount();
 				}
 				tick++;
@@ -281,6 +281,11 @@ void startFileWriterTask( int priority ){
 	g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( ChannelSample *));
 	if (NULL == g_sampleRecordQueue){
 		pr_error("Could not create sample record queue!");
+		return;
+	}
+	g_logfile = pvPortMalloc(sizeof(FIL));
+	if (NULL == g_logfile){
+		pr_error("Could not create logfile structure!");
 		return;
 	}
 	xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter", FILE_WRITER_STACK_SIZE, NULL, priority, NULL );
