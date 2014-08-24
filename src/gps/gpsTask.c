@@ -6,6 +6,7 @@
  */
 #include "gpsTask.h"
 #include "gps.h"
+#include "gps_device.h"
 #include "FreeRTOS.h"
 #include "printk.h"
 #include "task.h"
@@ -33,6 +34,10 @@ static void logGpsInput(const char *buf, int len) {
 
 void GPSTask(void *pvParameters) {
 	Serial *gpsSerial = get_serial(SERIAL_GPS);
+	int rc = GPS_device_provision(gpsSerial);
+	if (!rc){
+		pr_error("Error provisioning GPS module\r\n");
+	}
 
 	for (;;) {
       int len = gpsSerial->get_line(g_GPSdataLine, GPS_DATA_LINE_BUFFER_LEN - 1);

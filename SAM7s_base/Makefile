@@ -82,6 +82,7 @@ INCLUDE_DIR = include
 SRC_DIR = src
 
 SAM7s_BASE_DIR = SAM7s_base
+GPS_MTK_DIR = $(SAM7s_BASE_DIR)/gps_mtk
 MCP2515_DIR = $(SAM7s_BASE_DIR)/MCP2515
 KXR94_2353_DIR = $(SAM7s_BASE_DIR)/KXR94_2353
 ADC_AT91_DIR = $(SAM7s_BASE_DIR)/ADC_at91
@@ -188,6 +189,7 @@ $(MEMORY_SRC_DIR)/memory.c \
 $(CPU_SRC_DIR)/cpu.c \
 $(SPI_AT91_DIR)/spi.c \
 $(MCP2515_DIR)/CAN_device_MCP2515.c \
+$(GPS_MTK_DIR)/gps_device_mtk3339.c \
 $(KXR94_2353_DIR)/imu_device_KXR94_2353.c \
 $(ADC_AT91_DIR)/ADC_device_at91.c \
 $(TIMER_AT91_DIR)/timer_device_at91.c \
