@@ -86,7 +86,6 @@ void vcp_tx(uint8_t *buf, uint32_t len)
 	xSemaphoreTake(_lock, portMAX_DELAY);
 	VCP_DataTx(buf, len);
 	xSemaphoreGive(_lock);
-
 }
 
 uint16_t vcp_rx(uint8_t *buf, uint32_t len, size_t max_delay)
@@ -168,9 +167,27 @@ static uint16_t VCP_Ctrl (uint32_t Cmd, uint8_t* Buf, uint32_t Len)
   * @retval Result of the opeartion: USBD_OK if all operations are OK else VCP_FAIL
   */
 
+static bool check_tx_overrun(void)
+{
+	if (APP_Rx_ptr_in == APP_Rx_ptr_out - 1)
+		return true;
+
+	if ((APP_Rx_ptr_in == APP_RX_DATA_SIZE) && (APP_Rx_ptr_out == 0))
+		return true;
+
+	return false;
+}
+
 static uint16_t VCP_DataTx (uint8_t* Buf, uint32_t Len)
 {
+	bool overrun;
 	while (Len--) {
+		overrun = check_tx_overrun();
+		while(overrun) {
+			vTaskDelay(1);
+			overrun = check_tx_overrun();
+		}
+		
 		APP_Rx_Buffer[APP_Rx_ptr_in++] = *Buf++;
 		
 		/* Avoid running off the end of the buffer */
