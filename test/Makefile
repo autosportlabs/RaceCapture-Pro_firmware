@@ -16,6 +16,7 @@ GPS_DIR=./gps
 UTIL_DIR=./util
 
 INCLUDES = 	-I. \
+		-I./include \
 		-I$(RCP_BASE) \
 		-I$(RCP_BASE)/logger \
 		-I$(SAM7S_SRC)/fat_sd_at91 \
@@ -85,8 +86,8 @@ T_SRC = loggerApi_test.cpp \
 		loggerData_test.cpp \
 		$(GPS_DIR)/gps_test.cpp \
 		$(UTIL_DIR)/numtoa_test.cpp \
-		$(UTIL_DIR)/atonum_test.cpp 
-		
+		$(UTIL_DIR)/atonum_test.cpp
+
 SRC = 	mock_uart.c \
 		mock_usb_comm.c \
 		mock_serial.c \
@@ -153,7 +154,7 @@ test: $(OBJ)
 	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ) -lm -lcppunit
 
 sim: $(OBJSIM)
-	$(CXX) $(CXXFLAGS) -o $(SIMNAME) $(OBJSIM) -lm 
-	
+	$(CXX) $(CXXFLAGS) -o $(SIMNAME) $(OBJSIM) -lm
+
 clean:
 	rm -f $(OBJ) $(NAME) $(OBJSIM)

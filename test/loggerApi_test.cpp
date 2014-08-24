@@ -23,9 +23,7 @@
 #include <streambuf>
 #include "predictive_timer_2.h"
 #include "luaScript.h"
-
-
-#define CPPUNIT_ASSERT_CLOSE_ENOUGH(ACTUAL, EXPECTED) CPPUNIT_ASSERT((abs((ACTUAL - EXPECTED)) < 0.00001))
+#include "rcp_cpp_unit.hh"
 
 #define JSON_TOKENS 10000
 #define FILE_PREFIX string("json_api_files/")

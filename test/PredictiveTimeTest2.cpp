@@ -15,9 +15,10 @@
 #include "modp_atonum.h"
 #include "predictive_timer_2.h"
 #include "loggerConfig.h"
+#include "rcp_cpp_unit.hh"
 
 #define FILE_PREFIX string("test/")
-#define CPPUNIT_ASSERT_CLOSE_ENOUGH(ACTUAL, EXPECTED) CPPUNIT_ASSERT((abs((ACTUAL - EXPECTED)) < 0.00001))
+
 
 using std::ifstream;
 using std::ios;

@@ -6,13 +6,13 @@
 #include <streambuf>
 #include "mod_string.h"
 #include "modp_atonum.h"
+#include "rcp_cpp_unit.hh"
 
 #include <cppunit/extensions/HelperMacros.h>
 using std::ifstream;
 using std::ios;
 using std::istreambuf_iterator;
 
-#define CPPUNIT_ASSERT_CLOSE_ENOUGH(ACTUAL, EXPECTED) CPPUNIT_ASSERT((abs((ACTUAL - EXPECTED)) < 0.00001))
 
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( SectorTest );
