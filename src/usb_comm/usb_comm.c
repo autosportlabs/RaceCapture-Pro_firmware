@@ -13,7 +13,7 @@
 
 static char lineBuffer[BUFFER_SIZE];
 
-#define mainUSB_COMM_STACK					( 1000 )
+#define mainUSB_COMM_STACK	( 1000 )
 
 int usb_comm_init(){
 	return USB_CDC_device_init();
@@ -31,10 +31,12 @@ void usb_init_serial(Serial *serial){
 }
 
 void startUSBCommTask(int priority){
-	xTaskCreate( onUSBCommTask,	( signed portCHAR * ) "OnUSBComm", mainUSB_COMM_STACK, NULL, priority, NULL );
+	xTaskCreate( onUSBCommTask,( signed portCHAR * ) "OnUSBComm",
+		     mainUSB_COMM_STACK, NULL, priority, NULL );
 }
 
 void onUSBCommTask(void *pvParameters) {
+	usb_comm_init();
 	while (!USB_CDC_is_initialized()){
 		vTaskDelay(1);
 	}
@@ -45,7 +47,8 @@ void onUSBCommTask(void *pvParameters) {
 	}
 }
 
-void usb_init(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud){
+void usb_init(unsigned int bits, unsigned int parity,
+	      unsigned int stopBits, unsigned int baud){
 	//null function - does not apply to USB CDC
 }
 

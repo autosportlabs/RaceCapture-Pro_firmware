@@ -28,7 +28,7 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __USB_OTG__
 #define __USB_OTG__
-
+#include <usb_core.h>
 
 /** @addtogroup USB_OTG_DRIVER
   * @{
@@ -45,10 +45,10 @@
   */ 
 
 
-void USB_OTG_InitiateSRP(void);
-void USB_OTG_InitiateHNP(uint8_t state , uint8_t mode);
-void USB_OTG_Switchback (USB_OTG_CORE_DEVICE *pdev);
-uint32_t  USB_OTG_GetCurrentState (USB_OTG_CORE_DEVICE *pdev);
+void USB_OTG_InitiateSRP(USB_OTG_CORE_HANDLE *pdev);
+void USB_OTG_InitiateHNP(USB_OTG_CORE_HANDLE *pdev , uint8_t state, uint8_t mode);
+void USB_OTG_Switchback (USB_OTG_CORE_HANDLE *pdev);
+uint32_t  USB_OTG_GetCurrentState (USB_OTG_CORE_HANDLE *pdev);
 
 /**
   * @}

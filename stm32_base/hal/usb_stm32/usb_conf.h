@@ -30,8 +30,11 @@
 #define __USB_CONF__H__
 
 /* Includes ------------------------------------------------------------------*/
-#include "usb_conf.h"
-
+#include <stdint.h>
+#include <platform_debug.h>
+#include <stm32f4xx_misc.h>
+#include <stm32f4xx_gpio.h>
+#include <stm32f4xx_rcc.h>
 /** @addtogroup USB_OTG_DRIVER
   * @{
   */
@@ -57,7 +60,7 @@
 *  when FS core is used.
 *******************************************************************************/
 #ifndef USE_USB_OTG_FS
- //#define USE_USB_OTG_FS
+  #define USE_USB_OTG_FS
 #endif /* USE_USB_OTG_FS */
 
 #ifdef USE_USB_OTG_FS 
@@ -82,7 +85,7 @@
 *     STM32 device datasheet.
 *******************************************************************************/
 #ifndef USE_USB_OTG_HS
- //#define USE_USB_OTG_HS
+//#define USE_USB_OTG_HS
 #endif /* USE_USB_OTG_HS */
 
 #ifndef USE_ULPI_PHY
@@ -90,7 +93,7 @@
 #endif /* USE_ULPI_PHY */
 
 #ifndef USE_EMBEDDED_PHY
- //#define USE_EMBEDDED_PHY
+ #define USE_EMBEDDED_PHY
 #endif /* USE_EMBEDDED_PHY */
 
 #ifdef USE_USB_OTG_HS 
@@ -196,9 +199,9 @@
 //#define VBUS_SENSING_ENABLED
 
 /****************** USB OTG MODE CONFIGURATION ********************************/
-//#define USE_HOST_MODE
 #define USE_DEVICE_MODE
 //#define USE_OTG_MODE
+//#define USE_HOST_MODE
 
 #ifndef USB_OTG_FS_CORE
  #ifndef USB_OTG_HS_CORE

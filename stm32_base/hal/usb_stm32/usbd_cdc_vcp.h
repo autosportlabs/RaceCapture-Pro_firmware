@@ -1,10 +1,10 @@
 /**
   ******************************************************************************
-  * @file    usbd_cdc_if_template.h
+  * @file    usbd_cdc_vcp.h
   * @author  MCD Application Team
   * @version V1.1.0
   * @date    19-March-2012
-  * @brief   Header for dfu_mal.c file.
+  * @brief   Header for usbd_cdc_vcp.c file.
   ******************************************************************************
   * @attention
   *
@@ -26,21 +26,53 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __USBD_CDC_IF_TEMPLATE_H
-#define __USBD_CDC_IF_TEMPLATE_H
+#ifndef __USBD_CDC_VCP_H
+#define __USBD_CDC_VCP_H
 
 /* Includes ------------------------------------------------------------------*/
-#include "usb_conf.h"
-#include "usbd_conf.h"
+#ifdef STM32F2XX
+ #include "stm32f2xx.h"
+#elif defined(STM32F10X_CL)
+ #include "stm32f10x.h"
+#endif /* STM32F2XX */
+
 #include "usbd_cdc_core.h"
+#include "usbd_conf.h"
+#include <stddef.h>
 
-/* Exported types ------------------------------------------------------------*/
+/* Exported typef ------------------------------------------------------------*/
+/* The following structures groups all needed parameters to be configured for the 
+   ComPort. These parameters can modified on the fly by the host through CDC class
+   command class requests. */
+typedef struct
+{
+  uint32_t bitrate;
+  uint8_t  format;
+  uint8_t  paritytype;
+  uint8_t  datatype;
+}LINE_CODING;
+
 /* Exported constants --------------------------------------------------------*/
+/* The following define is used to route the USART IRQ handler to be used.
+   The IRQ handler function is implemented in the usbd_cdc_vcp.c file. */
+          
+#ifdef USE_STM3210C_EVAL
+ #define EVAL_COM_IRQHandler            USART2_IRQHandler
+#else
+ #define EVAL_COM_IRQHandler            USART3_IRQHandler  
+#endif /* USE_STM322xG_EVAL */
 
-extern CDC_IF_Prop_TypeDef  TEMPLATE_fops;
+
+#define DEFAULT_CONFIG                  0
+#define OTHER_CONFIG                    1
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
-#endif /* __USBD_CDC_IF_TEMPLATE_H */
+void vcp_setup(void);
+void vcp_task(void *params);
+void vcp_tx(uint8_t *buf, uint32_t len);
+uint16_t vcp_rx(uint8_t *buf, uint32_t len, size_t max_delay);
+int vcp_send(uint8_t *buf, uint32_t len);
+#endif /* __USBD_CDC_VCP_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

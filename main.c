@@ -70,14 +70,14 @@ static void fatalError(int type){
 	}
 }
 
-#define OBD2_TASK_PRIORITY					( tskIDLE_PRIORITY + 2 )
-#define GPS_TASK_PRIORITY 					( tskIDLE_PRIORITY + 2 )
-#define CONNECTIVITY_TASK_PRIORITY 			( tskIDLE_PRIORITY + 4 )
-#define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 4 )
-#define FILE_WRITER_TASK_PRIORITY			( tskIDLE_PRIORITY + 3 )
-#define LUA_TASK_PRIORITY					( tskIDLE_PRIORITY + 2 )
-#define USB_COMM_TASK_PRIORITY				( tskIDLE_PRIORITY + 2 )
-#define GPIO_TASK_PRIORITY 					( tskIDLE_PRIORITY + 4 )
+#define OBD2_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
+#define GPS_TASK_PRIORITY 		( tskIDLE_PRIORITY + 2 )
+#define CONNECTIVITY_TASK_PRIORITY 	( tskIDLE_PRIORITY + 4 )
+#define LOGGER_TASK_PRIORITY		( tskIDLE_PRIORITY + 4 )
+#define FILE_WRITER_TASK_PRIORITY	( tskIDLE_PRIORITY + 3 )
+#define LUA_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
+#define USB_COMM_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
+#define GPIO_TASK_PRIORITY 		( tskIDLE_PRIORITY + 4 )
 
 
 void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName)
@@ -111,15 +111,15 @@ int main( void )
 
 	/* Start the scheduler.
 
-   NOTE : Tasks run in system mode and the scheduler runs in Supervisor mode.
-   The processor MUST be in supervisor mode when vTaskStartScheduler is
-   called.  The demo applications included in the FreeRTOS.org download switch
-   to supervisor mode prior to main being called.  If you are not using one of
-   these demo application projects then ensure Supervisor mode is used here.
-   */
+	   NOTE : Tasks run in system mode and the scheduler runs in Supervisor mode.
+	   The processor MUST be in supervisor mode when vTaskStartScheduler is
+	   called.  The demo applications included in the FreeRTOS.org download switch
+	   to supervisor mode prior to main being called.  If you are not using one of
+	   these demo application projects then ensure Supervisor mode is used here.
+	*/
 
-   //this is to let the zylin debugger catch up and halt the processor.
 	vTaskStartScheduler();
 	fatalError(FATAL_ERROR_SCHEDULER);
+
 	return 0;
 }

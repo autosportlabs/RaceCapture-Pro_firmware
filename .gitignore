@@ -21,3 +21,5 @@ Race*.zip
 .project
 .settings
 .pydevproject
+*cscope*
+*#*
