@@ -248,7 +248,7 @@ int MMC_disk_write(const BYTE *buff, DWORD sector, BYTE count)
 
   while(SD_GetStatus() != SD_TRANSFER_OK && timeout > 0){
 	  timeout--;
-	  //taskYIELD();
+	  taskYIELD();
   }
 
   if (status == SD_OK && timeout > 0) {
@@ -1229,7 +1229,7 @@ SD_Error SD_WaitReadOperation(void)
   while ((DMAEndOfTransfer == 0x00) && (TransferEnd == 0) && (TransferError == SD_OK) && (timeout > 0))
   {
     timeout--;
-    //taskYIELD();
+    taskYIELD();
   }
   
   DMAEndOfTransfer = 0x00;
@@ -1239,7 +1239,7 @@ SD_Error SD_WaitReadOperation(void)
   while(((SDIO->STA & SDIO_FLAG_RXACT)) && (timeout > 0))
   {
     timeout--;
-    //taskYIELD();
+    taskYIELD();
   }
 
   if (StopCondition == 1)
@@ -1490,7 +1490,7 @@ SD_Error SD_WaitWriteOperation(void)
   while ((DMAEndOfTransfer == 0x00) && (TransferEnd == 0) && (TransferError == SD_OK) && (timeout > 0))
   {
     timeout--;
-    //taskYIELD();
+    taskYIELD();
   }
   
   DMAEndOfTransfer = 0x00;
@@ -1500,7 +1500,7 @@ SD_Error SD_WaitWriteOperation(void)
   while(((SDIO->STA & SDIO_FLAG_TXACT)) && (timeout > 0))
   {
     timeout--;
-    //taskYIELD();
+    taskYIELD();
   }
 
   if (StopCondition == 1)
