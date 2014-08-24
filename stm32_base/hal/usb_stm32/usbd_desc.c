@@ -32,16 +32,16 @@
 #include "usbd_conf.h"
 #include "usb_regs.h"
 
-#define USBD_VID                     0xD016
-#define USBD_PID                     0xF107
+#define USBD_VID                     0x16D0
+#define USBD_PID                     0x07F1
 
 #define USBD_LANGID_STRING            0x409
 #define USBD_MANUFACTURER_STRING      "AutosportLabs"
 
-#define USBD_PRODUCT_HS_STRING        "RaceCapture Mk2"
+#define USBD_PRODUCT_HS_STRING        "RaceCapture/Pro Mk2"
 #define USBD_SERIALNUMBER_HS_STRING   "00000000011B"
 
-#define USBD_PRODUCT_FS_STRING        "RaceCapture Mk2"
+#define USBD_PRODUCT_FS_STRING        "RaceCapture/Pro Mk2"
 #define USBD_SERIALNUMBER_FS_STRING   "00000000011C"
 
 #define USBD_CONFIGURATION_HS_STRING  "CDC Config"
