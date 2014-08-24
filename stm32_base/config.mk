@@ -44,7 +44,6 @@ RCP_SRC = $(APP_PATH)/src
 
 # The source files of our application
 APP_SRC = 	$(APP_PATH)/main.c \
-			$(RCP_SRC)/spi/spi.c \
 			$(RCP_SRC)/command/command.c \
 			$(RCP_SRC)/command/baseCommands.c \
 			$(RCP_SRC)/api/api.c \

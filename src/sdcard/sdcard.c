@@ -5,7 +5,6 @@
 #include "task.h"
 #include "taskUtil.h"
 #include "loggerHardware.h"
-#include "spi.h"
 #include "watchdog.h"
 #include "diskio.h"
 #include "sdcard_device.h"

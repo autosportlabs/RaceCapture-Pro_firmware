@@ -10,7 +10,6 @@
 #include "watchdog.h"
 #include "sdcard.h"
 #include "memory.h"
-#include "spi.h"
 #include "memory.h"
 #include "constants.h"
 #include "virtual_channel.h"
@@ -19,7 +18,6 @@
 
 void InitLoggerHardware(){
 
-	init_spi_lock();
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 	usb_comm_init();
 	usart_init();
