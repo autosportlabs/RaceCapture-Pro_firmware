@@ -25,7 +25,7 @@ enum writing_status {
 
 #define FILE_WRITER_STACK_SIZE  				200
 #define SAMPLE_RECORD_QUEUE_SIZE				10
-#define FILE_BUFFER_SIZE						1024
+#define FILE_BUFFER_SIZE						256
 
 #define FILENAME_LEN							13
 #define MAX_LOG_FILE_INDEX 						99999
@@ -47,22 +47,30 @@ static FIL g_logfile;
 static xQueueHandle g_sampleRecordQueue = NULL;
 static FileBuffer fileBuffer = {"", 0};
 
-static void appendFileBuffer(const char * data){
-	size_t index = fileBuffer.index;
-	char * buffer = fileBuffer.buffer + index;
-	while(*data){
-		*buffer++ = *data++;
-		index++;
-	}
-	*buffer = '\0';
-	fileBuffer.index = index;
-}
-
 static int writeFileBuffer(){
 	int rc = f_puts(fileBuffer.buffer, &g_logfile);
 	fileBuffer.index = 0;
 	fileBuffer.buffer[0] = '\0';
 	return rc;
+}
+
+static void appendFileBuffer(const char * data){
+	size_t index = fileBuffer.index;
+	char * buffer = fileBuffer.buffer + index;
+
+	while(*data){
+		*buffer++ = *data++;
+		index++;
+		if (index >= FILE_BUFFER_SIZE){
+			pr_info("flush file buffer\r\n");
+			*buffer = '\0';
+			writeFileBuffer();
+			index = fileBuffer.index;
+			buffer = fileBuffer.buffer + index;
+		}
+	}
+	*buffer = '\0';
+	fileBuffer.index = index;
 }
 
 portBASE_TYPE queue_logfile_record(LoggerMessage * msg){
