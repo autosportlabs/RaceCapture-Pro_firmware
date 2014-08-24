@@ -19,6 +19,12 @@ void initMessaging(){
 void process_msg(Serial *serial, char * buffer, size_t bufferSize){
 	if (lockedApiMode){
 		read_line(serial, buffer, bufferSize);
+
+		if (strlen(buffer) == 0) {
+			lockedApiMode = 0;
+			show_welcome(serial);
+			show_command_prompt(serial);
+		}
 		process_api(serial, buffer, bufferSize);
 	}
 	else{
