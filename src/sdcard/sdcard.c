@@ -18,16 +18,16 @@ void InitFSHardware(void){
 }
 
 int InitFS(){
-	taskENTER_CRITICAL();
 	int res = -1;
 	FatFs = pvPortMalloc(sizeof(FATFS));
 	if (FatFs){
+		taskENTER_CRITICAL();
 		res = disk_initialize(0);
+		taskEXIT_CRITICAL();
 		if (0 == res) {
 			res = f_mount(FatFs, "0", 1);
 		}
 	}
-	taskEXIT_CRITICAL();
 	return res;
 }
 
