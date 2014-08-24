@@ -10,7 +10,7 @@ static unsigned int tickCount = 0;
 void vApplicationTickHook(void){
 	tickCount++;
 
-	if (tickCount == 100){
+	if (tickCount == 1){
 		xSemaphoreGiveFromISR( onTick, pdFALSE );
 		tickCount = 0;
 	}

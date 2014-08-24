@@ -5,7 +5,7 @@
 #include "channelMeta.h"
 #include "geopoint.h"
 #include "tracks.h"
-
+#include "FreeRTOSConfig.h"
 
 #define FLASH_PAGE_SIZE						((unsigned int) 256) // Internal FLASH Page Size: 256 bytes
 
@@ -24,13 +24,15 @@
 
 
 //standard sample rates based on OS timer ticks
-#define SAMPLE_200Hz						1
-#define SAMPLE_100Hz 						2
-#define SAMPLE_50Hz 						4
-#define SAMPLE_25Hz 						8
-#define SAMPLE_10Hz 						20
-#define SAMPLE_5Hz 							40
-#define SAMPLE_1Hz 							200
+#define SAMPLE_1000Hz						configTICK_RATE_HZ / 1000
+#define SAMPLE_500Hz						configTICK_RATE_HZ / 500
+#define SAMPLE_200Hz						configTICK_RATE_HZ / 200
+#define SAMPLE_100Hz 						configTICK_RATE_HZ / 100
+#define SAMPLE_50Hz 						configTICK_RATE_HZ / 50
+#define SAMPLE_25Hz 						configTICK_RATE_HZ / 25
+#define SAMPLE_10Hz 						configTICK_RATE_HZ / 10
+#define SAMPLE_5Hz 							configTICK_RATE_HZ / 5
+#define SAMPLE_1Hz 							configTICK_RATE_HZ / 1
 #define SAMPLE_DISABLED 					0
 
 #define ANALOG_SCALING_BINS					5
