@@ -14,13 +14,16 @@ FREERTOS = FreeRTOSV7.6.0
 STM32F4XX_LIBS = 1
 
 #Uncomment the following line to enable stm32 USB libraries
-#STM32_USB_LIBS = 1
+STM32_USB_LIBS = 1
 
 #Uncomment any of the following three to build in support for USB DEV/OTG/Host
-#STM32_USB_DEV = 1
-#STM32_USB_HOST = 1
+STM32_USB_DEV = 1
+STM32_USB_DEV_CDC = 1
 #STM32_USB_OTG = 1
+#STM32_USB_HOST = 1
 
+#Uncomment the following to include any USB device classes you might want
+STM32_USB_DEV_CDC = 1
 #Uncomment the following line to enable ITM support (Trace Usart)
 ITM = 1
 
@@ -109,7 +112,6 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(HAL_SRC)/PWM_stm32/PWM_device_stm32.c \
 			$(HAL_SRC)/timer_stm32/timer_device_stm32.c \
 			$(HAL_SRC)/imu_stm32/imu_device_stm32.c \
-			$(HAL_SRC)/usb_stm32/USB-CDC_device_stm32.c \
 			$(HAL_SRC)/watchdog_stm32/watchdog_device_stm32.c \
 			$(HAL_SRC)/fat_sd_stm32/sdcard_device_stm32.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/ff.c \
@@ -122,7 +124,12 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_ub_sdcard.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_ub_atadrive.c \
 			$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_ub_usbdisk.c \
-			$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_fattime.c
+			$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_fattime.c \
+			$(HAL_SRC)/usb_stm32/USB-CDC_device_stm32.c \
+			$(HAL_SRC)/usb_stm32/usb_bsp.c \
+			$(HAL_SRC)/usb_stm32/usbd_cdc_vcp.c \
+			$(HAL_SRC)/usb_stm32/usbd_desc.c \
+			$(HAL_SRC)/usb_stm32/usbd_usr.c
 
 
 #Macro that expands our source files into their fully qualified paths
@@ -170,6 +177,7 @@ APP_INCLUDES += -I. \
 				-I$(INCLUDE_DIR)/auto_config \
 				-I$(HAL_SRC)/fat_sd_stm32/fatfs \
 				-I$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub \
+				-I$(HAL_SRC)/usb_stm32 \
 				-I$(JSON_DIR)
 
 #Uncomment the following to enable newlib support

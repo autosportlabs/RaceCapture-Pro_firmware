@@ -67,7 +67,7 @@ LIBS = -lnosys
 LIBS += $(addprefix -l,$(BASE_LIBS)) 
 LIBS += $(addprefix -l,$(LUA_LIBS))
 
-LDFLAGS ?= --specs=nano.specs -lc -lgcc $(LIBS) -mcpu=$(CPU_TYPE) -g -gdwarf-2 \
+LDFLAGS ?= --specs=nano.specs -lc -lgcc $(LIBS) -mcpu=$(CPU_TYPE) -g -ggdb \
 	-L. -Lcpu/common -L$(LUA_LIB_DIR) -L$(CPU_BASE) -T$(CPU_LINK_MEM) -Tlink_sections.ld \
 	-nostartfiles -Wl,--gc-sections -mthumb -mcpu=$(CPU_TYPE) \
 	-msoft-float
@@ -117,13 +117,21 @@ $(TARGET).elf: $(OBJS)
 	$(Q)$(CC) $(ASFLAGS) -c -o $@ $<
 
 clean:
-	$(Q)rm -f *.o *.a *.d ../*.o ../*.d $(OBJS) $(LIBS_ALL)\
-	$(STM32F4_PERIPH_OBJS) $(FREERTOS_OBJS)\
-	$(shell find . -name "*.d")\
-	$(TARGET).bin $(TARGET).elf
+	$(Q)rm -f *.o *.a *.d ../*.o ../*.d \
+	$(OBJS) \
+	$(LIBS_ALL)\
+	$(STM32F4_PERIPH_OBJS) \
+	$(FREERTOS_OBJS) \
+	$(STM32_USB_OBJS)\
+	$(shell find . -name "*.d") \
+	$(TARGET).bin \
+	$(TARGET).elf
 
 flash: $(TARGET).bin
 	$(APP_FLASH)
+
+dumpasm: $(TARGET).elf
+	$(PREFIX)-objdump -D $< > $(TARGET).asm
 
 debug: $(TARGET).bin
 	$(OPENOCD) -f $(APP_PATH)/openocd.cfg
@@ -134,4 +142,4 @@ ddd: $(TARGET).elf
 gdb: $(TARGET).elf
 	$(GDB) -ex "target ext localhost:3333" -ex "mon reset halt" -ex "mon arm semihosting enable" $(TARGET).elf
 
-.PHONY: clean flash debug ddd
+.PHONY: clean flash debug ddd dumpasm

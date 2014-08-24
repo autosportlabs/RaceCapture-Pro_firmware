@@ -67,6 +67,7 @@
 #include "usbd_cdc_core.h"
 #include "usbd_desc.h"
 #include "usbd_req.h"
+#include <usbd_conf.h>
 
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
@@ -560,7 +561,7 @@ static uint8_t  usbd_cdc_Setup (void  *pdev,
       if( (req->wValue >> 8) == CDC_DESCRIPTOR_TYPE)
       {
 #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
-        pbuf = usbd_cdc_Desc;   
+        pbuf = usbd_cdc_CfgDesc;   
 #else
         pbuf = usbd_cdc_CfgDesc + 9 + (9 * USBD_ITF_MAX_NUM);
 #endif 
@@ -625,7 +626,6 @@ static uint8_t  usbd_cdc_DataIn (void *pdev, uint8_t epnum)
 {
   uint16_t USB_Tx_ptr;
   uint16_t USB_Tx_length;
-
   if (USB_Tx_State == 1)
   {
     if (APP_Rx_length == 0) 
