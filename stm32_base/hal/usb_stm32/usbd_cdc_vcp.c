@@ -70,7 +70,7 @@ static volatile bool vcp_configured = false;
 /* Locks */
 static xSemaphoreHandle _lock;
 static xQueueHandle rx_queue;
-
+static volatile bool connected = false;
 CDC_IF_Prop_TypeDef VCP_fops =
 {
   VCP_Init,
@@ -83,6 +83,10 @@ CDC_IF_Prop_TypeDef VCP_fops =
 /* Public Functions */
 void vcp_tx(uint8_t *buf, uint32_t len)
 {
+	/* If we aren't connected, just drop the data on the floor */
+	if (!connected)
+		return;
+
 	xSemaphoreTake(_lock, portMAX_DELAY);
 	VCP_DataTx(buf, len);
 	xSemaphoreGive(_lock);
@@ -126,6 +130,7 @@ static uint16_t VCP_Init(void)
 	xSemaphoreGiveFromISR(_lock, &xHigherPriorityTaskWoken);
 
 	portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
+	connected = true;
 	return USBD_OK;
 }
 
@@ -138,6 +143,8 @@ static uint16_t VCP_Init(void)
 static uint16_t VCP_DeInit(void)
 {
 	xSemaphoreTake(_lock, portMAX_DELAY);
+
+	connected = false;
 	return USBD_OK;
 }
 
@@ -178,16 +185,33 @@ static bool check_tx_overrun(void)
 	return false;
 }
 
+static bool check_suspended(void)
+{
+	/* Checks to see if the USB bus is suspended */
+	if (USB_OTG_dev.regs.DREGS->DSTS & 0x1)
+		return true;
+
+	return false;
+}
+
 static uint16_t VCP_DataTx (uint8_t* Buf, uint32_t Len)
 {
 	bool overrun;
+
+	bool susp = check_suspended();
+
+	/* If USB Is disconnected, drop the data on the floor */
+	if (susp)
+		return USBD_FAIL;
+
 	while (Len--) {
 		overrun = check_tx_overrun();
+	   
 		while(overrun) {
 			vTaskDelay(1);
 			overrun = check_tx_overrun();
 		}
-		
+
 		APP_Rx_Buffer[APP_Rx_ptr_in++] = *Buf++;
 		
 		/* Avoid running off the end of the buffer */
@@ -266,9 +290,15 @@ void OTG_HS_IRQHandler(void)
 void OTG_FS_IRQHandler(void)
 #endif
 {
+	bool susp;
 	USBD_OTG_ISR_Handler (&USB_OTG_dev);
-}
 
+	susp = check_suspended();
+
+	/* If we were previous connected, and are now suspended, deinit */
+	if (connected && susp)
+		VCP_DeInit();
+}
 #ifdef USB_OTG_HS_DEDICATED_EP1_ENABLED
 /**
   * @brief  This function handles EP1_IN Handler.
