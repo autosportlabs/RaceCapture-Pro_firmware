@@ -123,7 +123,6 @@ void loggerTaskEx(void *params){
 
 		xSemaphoreTake(onTick, portMAX_DELAY);
 		watchdog_reset();
-		LED_enable(1);
 		currentTicks++;
 		if (currentTicks % BACKGROUND_SAMPLE_RATE == 0){
 			doBackgroundSampling();
@@ -157,8 +156,9 @@ void loggerTaskEx(void *params){
 		msg->sampleCount = channelCount;
 
 		if (g_isLogging && (sampledRate != SAMPLE_DISABLED && sampledRate >= loggingSampleRate)){
-			if (queue_logfile_record(msg) != pdTRUE) LED_enable(3);
-			LED_toggle(2);
+			if (queue_logfile_record(msg) != pdTRUE){
+				LED_enable(3);
+			}
 		}
 
 		if ((sampledRate != SAMPLE_DISABLED && (sampledRate >= telemetrySampleRate || currentTicks % telemetrySampleRate == 0)) && (loggerConfig->ConnectivityConfigs.telemetryConfig.backgroundStreaming|| g_isLogging)){

@@ -6,10 +6,14 @@
 #include "loggerConfig.h"
 #include <stm32f4xx_gpio.h>
 #include <stm32f4xx_rcc.h>
+#include <stm32f4xx_syscfg.h>
+#include <stm32f4xx_exti.h>
+#include <stm32f4xx_misc.h>
 
+#define GPIO_IRQ_PRIORITY 		5
+#define GPIO_IRQ_SUB_PRIORITY 	0
 
-//#define	MODE_INPUT	0
-//#define MODE_OUTPUT	1
+extern xSemaphoreHandle xOnPushbutton;
 
 typedef struct _gpio {
 	uint32_t rcc_ahb1;
@@ -98,6 +102,28 @@ unsigned int GPIO_device_get(unsigned int port){
 	return 0;
 }
 
+void init_pushbutton_irq(void){
+	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOA, EXTI_PinSource8);
+
+	/* Configure EXTI Line0 */
+	EXTI_InitTypeDef   EXTI_InitStructure;
+	EXTI_InitStructure.EXTI_Line = EXTI_Line8;
+	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
+	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
+	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+	EXTI_Init(&EXTI_InitStructure);
+
+
+	/* Enable and set EXTI Line0 Interrupt to the lowest priority */
+	NVIC_InitTypeDef   NVIC_InitStructure;
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = GPIO_IRQ_PRIORITY;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = GPIO_IRQ_SUB_PRIORITY;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+}
+
+
 int GPIO_device_init(LoggerConfig *loggerConfig){
 	GPIO_InitTypeDef gpio_conf;
 
@@ -122,5 +148,17 @@ int GPIO_device_init(LoggerConfig *loggerConfig){
 		}
 		GPIO_Init(gpioCfg->port, &gpio_conf);
 	}
+
+	init_pushbutton_irq();
 	return 1;
+}
+
+void EXTI9_5_IRQHandler(void)
+{
+	portBASE_TYPE xTaskWoken = pdFALSE;
+	if(EXTI_GetITStatus(EXTI_Line8) != RESET){
+		EXTI_ClearITPendingBit(EXTI_Line8);
+		xSemaphoreGiveFromISR( xOnPushbutton, &xTaskWoken );
+		portEND_SWITCHING_ISR( xTaskWoken );
+	}
 }

@@ -242,6 +242,7 @@ void fileWriterTask(void *params){
 				if (0 == tick){
 					writeHeaders(msg->channelSamples, msg->sampleCount);
 				}
+				LED_toggle(2);
 				int rc = writeChannelSamples(msg->channelSamples, msg->sampleCount);
 				if (rc == WRITE_FAIL){
 					LED_enable(3);
