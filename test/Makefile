@@ -11,9 +11,10 @@ RCP_INC=$(RCP_BASE)/include
 SAM7S_SRC=$(RCP_BASE)/SAM7s_base
 MESSAGING_SRC=$(RCP_SRC)/messaging
 COMMAND_SRC=$(RCP_SRC)/command
-MOCK_DIR=./logger_mock
-GPS_DIR=./gps
-UTIL_DIR=./util
+MOCK_DIR=logger_mock
+GPS_DIR=gps
+UTIL_DIR=util
+BUILD_DIR=build
 
 INCLUDES = 	-I. \
 		-I./include \
@@ -68,13 +69,19 @@ CPPFLAGS = -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(
 #-----Suffix Rules---------------------------
 # set up C++ suffixes and relationship between .cc and .o files
 
-.SUFFIXES: .cc
+dir_guard=@mkdir -p $(@D)
 
-.cc.o:
-	$(CXX) $(CXXFLAGS) -c $<
+build/%.o: %.c
+	$(dir_guard)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-.cc :
-	$(CXX) $(CXXFLAGS) $< -o $@ -lm -lcppunit
+build/%.o: %.cpp
+	$(dir_guard)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+build/rcp_base/%.o: ../%.c
+	$(dir_guard)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #-----File Dependencies----------------------
 
@@ -145,16 +152,16 @@ SRC = 	mock_uart.c \
 #		$(RCP_SRC)/logger/loggerTaskEx.c \
 
 
-OBJ = $(addsuffix .o, $(basename $(SRC) $(T_SRC) RCPTest.cpp))
-OBJSIM = $(addsuffix .o, $(basename $(SRC) RCPSim.cpp ))
+OBJ_TEST = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $(basename $(SRC) $(T_SRC) RCPTest.cpp))))
+OBJ_SIM = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $(basename $(SRC) RCPSim.cpp))))
 
 all: test sim
 
-test: $(OBJ)
-	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ) -lm -lcppunit
+test: $(OBJ_TEST)
+	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ_TEST) -lm -lcppunit
 
-sim: $(OBJSIM)
-	$(CXX) $(CXXFLAGS) -o $(SIMNAME) $(OBJSIM) -lm
+sim: $(OBJ_SIM)
+	$(CXX) $(CXXFLAGS) -o $(SIMNAME) $(OBJ_SIM) -lm
 
 clean:
-	rm -f $(OBJ) $(NAME) $(OBJSIM)
+	rm -f $(OBJ_TEST) $(OBJ_SIM) $(NAME) $(SIMNAME)
