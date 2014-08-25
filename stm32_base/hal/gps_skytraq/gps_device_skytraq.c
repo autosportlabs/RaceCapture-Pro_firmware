@@ -1,9 +1,11 @@
 #include "gps_device.h"
 #include <stdint.h>
+#include <stddef.h>
 #include "printk.h"
 #include "mem_mang.h"
 #include "taskUtil.h"
 
+#define MAX_PAYLOAD_LEN			100
 #define GPS_MSG_RX_WAIT_MS		1000
 #define GPS_MESSAGE_BUFFER_LEN	1024
 #define TARGET_UPDATE_RATE 		50
@@ -22,18 +24,29 @@ typedef struct _BaudRateCodes{
 
 typedef struct _GpsMessage{
 	uint16_t payloadLength;
-	uint8_t * payload;
+	uint8_t payload[MAX_PAYLOAD_LEN];
 	uint8_t checksum;
 } GpsMessage;
 
 typedef enum {
 	GPS_MSG_SUCCESS = 0,
-	GPS_MSG_FAIL
+	GPS_MSG_FAIL,
+	GPS_MSG_TIMEOUT
 } gps_msg_result_t;
 
 
-static uint8_t calculateChecksum(uint8_t *msg){
-	return 0;
+static uint8_t calculateChecksum(GpsMessage *msg){
+	uint8_t checksum = 0;
+	if (msg){
+		uint16_t len = msg->payloadLength;
+		if (len <= MAX_PAYLOAD_LEN){
+			uint8_t *payload = msg->payload;
+			for (size_t i = 0; i < len; i++){
+				checksum ^= payload[i];
+			}
+		}
+	}
+	return checksum;
 }
 
 static void sendGpsMessage(GpsMessage *msg, Serial *serial){
@@ -48,22 +61,51 @@ static void sendGpsMessage(GpsMessage *msg, Serial *serial){
 	while(payloadLength--){
 		serial->put_c(*(payload++));
 	}
+
 	serial->put_c(calculateChecksum(msg));
 
 	serial->put_c(0x0D);
 	serial->put_c(0x0A);
 }
 
-static gps_msg_result_t rxGpsMessage(char *line, GpsMessage *msg, Serial *serial){
-	size_t count = serial->get_line_wait(line, GPS_MESSAGE_BUFFER_LEN, msToTicks(GPS_MSG_RX_WAIT_MS));
-	if (count){
+static gps_msg_result_t rxGpsMessage(uint8_t *buffer, GpsMessage *msg, Serial *serial){
 
+	gps_msg_result_t result = GPS_MSG_FAIL;
+	size_t timeoutLen = msToTicks(GPS_MSG_RX_WAIT_MS);
+	size_t messageReceived = 0;
+	size_t isTimeout = 0;
+
+	while (!messageReceived && !isTimeout){
+		uint8_t h1 = serial->get_c_wait(timeoutLen);
+		uint8_t h2 = serial->get_c_wait(timeoutLen);
+
+		if (h1 == 0xA0 && h2 == 0xA1){
+			uint8_t len_h = serial->get_c_wait(timeoutLen);
+			uint8_t len_l = serial->get_c_wait(timeoutLen);
+			uint16_t len = (len_h << 8) + len_l;
+
+			if (len <= MAX_PAYLOAD_LEN){
+				for (size_t i = 0; i < len; i++){
+					uint8_t c = serial->get_c_wait(timeoutLen);
+					msg->payload[i] = c;
+				}
+			}
+			uint8_t checksum = serial->get_c_wait(timeoutLen);
+			uint8_t calculatedChecksum = calculateChecksum(msg);
+
+			if (calculatedChecksum == checksum){
+				uint8_t eos1 = serial->get_c_wait(timeoutLen);
+				uint8_t eos2 = serial->get_c_wait(timeoutLen);
+				if (eos1 == 0x0D && eos2 == 0x0A){
+					result = GPS_MSG_SUCCESS;
+				}
+			}
+		}
 	}
-	else{
-		return GPS_MSG_FAIL;
+	if (isTimeout){
+		result = GPS_MSG_TIMEOUT;
 	}
-
-
+	return result;
 }
 
 
