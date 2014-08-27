@@ -260,34 +260,26 @@ void usart1_flush(void)
 	while(xQueueReceive( xUsart1Rx, &rx, 0 ));
 }
 
+int usart0_getcharWait(char *c, size_t delay){
+	return xQueueReceive( xUsart0Rx, c, delay ) == pdTRUE ? 1 : 0;
+}
 
-char usart0_getcharWait(size_t delay){
-	char rx = 0;
-	
-	/* Get the next character from the buffer.  Return false if no characters
-	are available, or arrive before xBlockTime expires. */
-	xQueueReceive( xUsart0Rx, &rx, delay );
-	return rx;
+int usart1_getcharWait(char *c, size_t delay){
+	return xQueueReceive( xUsart1Rx, c, delay ) == pdTRUE ? 1 : 0;
 }
 
 char usart0_getchar()
 {
-	return usart0_getcharWait(portMAX_DELAY);
-}
-
-char usart1_getcharWait(size_t delay)
-{
-	char rx = 0;
-	
-	/* Get the next character from the buffer.  Return false if no characters
-	are available, or arrive before xBlockTime expires. */
-	xQueueReceive( xUsart1Rx, &rx, delay );
-	return rx;
+	char c;
+	usart0_getcharWait(&c, portMAX_DELAY);
+	return c;
 }
 
 char usart1_getchar()
 {
-	return usart1_getcharWait(portMAX_DELAY);
+	char c;
+	return usart1_getcharWait(&c, portMAX_DELAY);
+	return c;
 }
 
 void usart0_putchar(char c){
@@ -328,8 +320,8 @@ int usart0_readLineWait(char *s, int len, size_t delay)
 {
 	int count = 0;
 	while(count < len - 1){
-		int c = usart0_getcharWait(delay);
-		if (c == 0) break; //timeout
+		char c = 0;
+		if (!usart0_getcharWait(&c, delay)) break;
 		*s++ = c;
 		count++;
 		if (c == '\n') break;
@@ -337,7 +329,6 @@ int usart0_readLineWait(char *s, int len, size_t delay)
 	*s = '\0';
 	return count;
 }
-
 
 int usart0_readLine(char *s, int len)
 {
@@ -348,8 +339,8 @@ int usart1_readLineWait(char *s, int len, size_t delay)
 {
 	int count = 0;
 	while(count < len - 1){
-		int c = usart1_getcharWait(delay);
-		if (c == 0) break; //timeout
+		char c = 0;
+		if (!usart1_getcharWait(&c, delay)) break;
 		*s++ = c;
 		count++;
 		if (c == '\n') break;

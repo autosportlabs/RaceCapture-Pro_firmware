@@ -23,7 +23,7 @@ void usart0_flush(void);
 
 char usart0_getchar();
 
-char usart0_getcharWait(size_t delay);
+int usart0_getcharWait(char *c, size_t delay);
 
 void usart0_putchar(char c);
 
@@ -38,7 +38,7 @@ void usart1_flush(void);
 
 char usart1_getchar();
 
-char usart1_getcharWait(size_t delay);
+int usart1_getcharWait(char *c, size_t delay);
 
 void usart1_putchar(char c);
 
@@ -53,7 +53,7 @@ void usart2_flush(void);
 
 char usart2_getchar();
 
-char usart2_getcharWait(size_t delay);
+int usart2_getcharWait(char *c, size_t delay);
 
 void usart2_putchar(char c);
 
@@ -68,7 +68,7 @@ void usart3_flush(void);
 
 char usart3_getchar();
 
-char usart3_getcharWait(size_t delay);
+int usart3_getcharWait(char *c, size_t delay);
 
 void usart3_putchar(char c);
 

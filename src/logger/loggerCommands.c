@@ -22,6 +22,7 @@
 #include "usart.h"
 #include "mem_mang.h"
 #include "loggerTaskEx.h"
+#include "taskUtil.h"
 #include "GPIO.h"
 
 
@@ -49,16 +50,15 @@ void ResetConfig(Serial *serial, unsigned int argc, char **argv){
 static void StartTerminalSession(Serial *fromSerial, Serial *toSerial){
 
 	while (1){
-		char c = fromSerial->get_c_wait(0);
-		if (c == 27) break;
-		if (c){
+		char c = 0;
+		if (fromSerial->get_c_wait(&c, 0)){
+			if (c == 27) break;
 			fromSerial->put_c(c);
 			if (c == '\r') fromSerial->put_c('\n');
 			toSerial->put_c(c);
 			if (c == '\r') toSerial->put_c('\n');
 		}
-		c = toSerial->get_c_wait(0);
-		if (c){
+		if (toSerial->get_c_wait(&c, 0)){
 			fromSerial->put_c(c);
 			if (c == '\r') fromSerial->put_c('\n');
 		}
@@ -95,7 +95,8 @@ void ViewLog(Serial *serial, unsigned int argc, char **argv)
                 read_log_to_serial(serial, 0);
 
                 // Look for 'q' to exit.
-                char c = serial->get_c_wait(300 / 5); //TODO refactor this when we go to millisecond based delays
+                char c = 0;
+                serial->get_c_wait(&c, msToTicks(5));
                 if (c == 'q') break;
         }
 

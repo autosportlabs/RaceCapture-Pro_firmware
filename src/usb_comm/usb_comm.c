@@ -23,7 +23,7 @@ void usb_init_serial(Serial *serial){
 	serial->init = &usb_init;
 	serial->flush = &usb_flush;
 	serial->get_c = &usb_getchar;
-	serial->get_c_wait = &usb_getchar_wait;
+	serial->get_c_wait = &usb_getcharWait;
 	serial->get_line = &usb_readLine;
 	serial->get_line_wait = &usb_readLineWait;
 	serial->put_c = &usb_putchar;
@@ -54,17 +54,18 @@ void usb_init(unsigned int bits, unsigned int parity,
 
 void usb_flush(void)
 {
-	while(usb_getchar_wait(0));
+	char c;
+	while(usb_getcharWait(&c, 0));
 }
 
-char usb_getchar_wait(size_t delay){
-	char c = 0;
-	USB_CDC_ReceiveByteDelay(&c, delay);
-	return c;
+int usb_getcharWait(char *c, size_t delay){
+	return USB_CDC_ReceiveByteDelay(c, delay);
 }
 
 char usb_getchar(void){
-	return usb_getchar_wait(portMAX_DELAY);
+	char c;
+	return usb_getcharWait(&c, portMAX_DELAY);
+	return c;
 }
 
 int usb_readLine(char *s, int len)
@@ -76,8 +77,8 @@ int usb_readLineWait(char *s, int len, size_t delay)
 {
 	int count = 0;
 	while(count < len - 1){
-		int c = usb_getchar_wait(delay);
-		if (c == 0) break; //timeout
+		char c = 0;
+		if (!usb_getcharWait(&c, delay)) break;
 		*s++ = c;
 		count++;
 		if (c == '\n') break;

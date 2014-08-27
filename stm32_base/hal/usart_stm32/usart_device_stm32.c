@@ -156,24 +156,26 @@ void initUsart(USART_TypeDef* USARTx, unsigned int bits, unsigned int parity, un
 
 	uint16_t stopBitsFlag;
 	switch (stopBits) {
-	case 1:
-		stopBitsFlag = USART_StopBits_1;
-		break;
 	case 2:
 		stopBitsFlag = USART_StopBits_2;
+		break;
+	case 1:
+	default:
+		stopBitsFlag = USART_StopBits_1;
 		break;
 	}
 
 	uint16_t parityFlag;
 	switch (parity) {
-	case 0:
-		parityFlag = USART_Parity_No;
-		break;
 	case 1:
 		parityFlag = USART_Parity_Even;
 		break;
 	case 2:
 		parityFlag = USART_Parity_Odd;
+		break;
+	case 0:
+	default:
+		parityFlag = USART_Parity_No;
 		break;
 	}
 	USART_InitTypeDef usart;
@@ -331,63 +333,49 @@ void usart3_flush(void)
 	while(xQueueReceive( xUsart3Rx, &rx, 0 ));
 }
 
-char usart0_getcharWait(size_t delay){
-	char rx = 0;
-
-	/* Get the next character from the buffer.  Return false if no characters
-	are available, or arrive before xBlockTime expires. */
-	xQueueReceive( xUsart0Rx, &rx, delay );
-	return rx;
+int usart0_getcharWait(char *c, size_t delay){
+	return xQueueReceive( xUsart0Rx, c, delay ) == pdTRUE ? 1 : 0;
 }
 
-char usart1_getcharWait(size_t delay)
-{
-	char rx = 0;
-
-	/* Get the next character from the buffer.  Return false if no characters
-	are available, or arrive before xBlockTime expires. */
-	xQueueReceive( xUsart1Rx, &rx, delay );
-	return rx;
+int usart1_getcharWait(char *c, size_t delay){
+	return xQueueReceive( xUsart1Rx, c, delay ) == pdTRUE ? 1 : 0;
 }
 
-char usart2_getcharWait(size_t delay)
-{
-	char rx = 0;
-
-	/* Get the next character from the buffer.  Return false if no characters
-	are available, or arrive before xBlockTime expires. */
-	xQueueReceive( xUsart2Rx, &rx, delay );
-	return rx;
+int usart2_getcharWait(char *c, size_t delay){
+	return xQueueReceive( xUsart2Rx, c, delay) == pdTRUE ? 1 : 0;
 }
 
-char usart3_getcharWait(size_t delay)
-{
-	char rx = 0;
 
-	/* Get the next character from the buffer.  Return false if no characters
-	are available, or arrive before xBlockTime expires. */
-	xQueueReceive( xUsart3Rx, &rx, delay );
-	return rx;
+int usart3_getcharWait(char *c, size_t delay){
+	return xQueueReceive( xUsart3Rx, c, delay ) == pdTRUE ? 1 : 0;
 }
 
 char usart0_getchar()
 {
-	return usart0_getcharWait(portMAX_DELAY);
+	char c;
+	usart0_getcharWait(&c, portMAX_DELAY);
+	return c;
 }
 
 char usart1_getchar()
 {
-	return usart1_getcharWait(portMAX_DELAY);
+	char c;
+	return usart1_getcharWait(&c, portMAX_DELAY);
+	return c;
 }
 
 char usart2_getchar()
 {
-	return usart2_getcharWait(portMAX_DELAY);
+	char c;
+	return usart2_getcharWait(&c, portMAX_DELAY);
+	return c;
 }
 
 char usart3_getchar()
 {
-	return usart3_getcharWait(portMAX_DELAY);
+	char c;
+	return usart3_getcharWait(&c, portMAX_DELAY);
+	return c;
 }
 
 void usart0_putchar(char c){
@@ -463,8 +451,8 @@ int usart0_readLineWait(char *s, int len, size_t delay)
 {
 	int count = 0;
 	while(count < len - 1){
-		int c = usart0_getcharWait(delay);
-		if (c == 0) break; //timeout
+		char c = 0;
+		if (!usart0_getcharWait(&c, delay)) break;
 		*s++ = c;
 		count++;
 		if (c == '\n') break;
@@ -477,8 +465,8 @@ int usart1_readLineWait(char *s, int len, size_t delay)
 {
 	int count = 0;
 	while(count < len - 1){
-		int c = usart1_getcharWait(delay);
-		if (c == 0) break; //timeout
+		char c = 0;
+		if (!usart1_getcharWait(&c, delay)) break;
 		*s++ = c;
 		count++;
 		if (c == '\n') break;
@@ -491,8 +479,8 @@ int usart2_readLineWait(char *s, int len, size_t delay)
 {
 	int count = 0;
 	while(count < len - 1){
-		int c = usart2_getcharWait(delay);
-		if (c == 0) break; //timeout
+		char c = 0;
+		if (!usart2_getcharWait(&c, delay)) break;
 		*s++ = c;
 		count++;
 		if (c == '\n') break;
@@ -505,8 +493,8 @@ int usart3_readLineWait(char *s, int len, size_t delay)
 {
 	int count = 0;
 	while(count < len - 1){
-		int c = usart3_getcharWait(delay);
-		if (c == 0) break; //timeout
+		char c = 0;
+		if (!usart3_getcharWait(&c, delay)) break;
 		*s++ = c;
 		count++;
 		if (c == '\n') break;

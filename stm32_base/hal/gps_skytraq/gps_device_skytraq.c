@@ -76,26 +76,44 @@ static gps_msg_result_t rxGpsMessage(uint8_t *buffer, GpsMessage *msg, Serial *s
 	size_t isTimeout = 0;
 
 	while (!messageReceived && !isTimeout){
-		uint8_t h1 = serial->get_c_wait(timeoutLen);
-		uint8_t h2 = serial->get_c_wait(timeoutLen);
+		uint8_t h1 = 0, h2 = 0;
+
+		if (!(serial->get_c_wait(&h1, timeoutLen) && serial->get_c_wait(&h2, timeoutLen))){
+			isTimeout = 1;
+			break;
+		}
 
 		if (h1 == 0xA0 && h2 == 0xA1){
-			uint8_t len_h = serial->get_c_wait(timeoutLen);
-			uint8_t len_l = serial->get_c_wait(timeoutLen);
+			uint8_t len_h = 0, len_l = 0;
+			if (!(serial->get_c_wait(&len_h, timeoutLen) && serial->get_c_wait(&len_l, timeoutLen))){
+				isTimeout = 1;
+				break;
+			}
 			uint16_t len = (len_h << 8) + len_l;
 
 			if (len <= MAX_PAYLOAD_LEN){
+				uint8_t c = 0;
 				for (size_t i = 0; i < len; i++){
-					uint8_t c = serial->get_c_wait(timeoutLen);
+					if (!serial->get_c_wait(&c, timeoutLen)){
+						isTimeout = 1;
+						break;
+					}
 					msg->payload[i] = c;
 				}
 			}
-			uint8_t checksum = serial->get_c_wait(timeoutLen);
+			uint8_t checksum = 0;
+			if (!serial->get_c_wait(&checksum, timeoutLen)){
+				isTimeout = 1;
+				break;
+			}
 			uint8_t calculatedChecksum = calculateChecksum(msg);
 
 			if (calculatedChecksum == checksum){
-				uint8_t eos1 = serial->get_c_wait(timeoutLen);
-				uint8_t eos2 = serial->get_c_wait(timeoutLen);
+				uint8_t eos1 = 0, eos2 = 0;
+				if (! (serial->get_c_wait(&eos1, timeoutLen) && serial->get_c_wait(&eos2, timeoutLen))){
+					isTimeout = 1;
+					break;
+				}
 				if (eos1 == 0x0D && eos2 == 0x0A){
 					result = GPS_MSG_SUCCESS;
 				}
