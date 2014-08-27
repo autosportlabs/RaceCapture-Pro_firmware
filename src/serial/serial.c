@@ -45,6 +45,10 @@ Serial * get_serial(serial_id_t port){
 	return port < SERIAL_COUNT ? &serial_ports[port] : NULL;
 }
 
+size_t serial_read_byte(Serial *serial, uint8_t *b, size_t delay){
+	return serial->get_c_wait((char *)b, delay);
+}
+
 void put_int(Serial *serial, int n){
 	char buf[12];
 	modp_itoa10(n,buf);

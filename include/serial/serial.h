@@ -44,6 +44,8 @@ Serial * get_serial(serial_id_t port);
 
 void configure_serial(serial_id_t port, uint8_t bits, uint8_t parity, uint8_t stopBits, uint32_t baud);
 
+size_t serial_read_byte(Serial *serial, uint8_t *b, size_t delay);
+
 void put_int(Serial * serial, int n);
 
 void put_hex(Serial * serial, int n);
