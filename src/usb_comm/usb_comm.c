@@ -41,7 +41,6 @@ void onUSBCommTask(void *pvParameters) {
 		vTaskDelay(1);
 	}
 	Serial *serial = get_serial(SERIAL_USB);
-
 	while (1) {
 		process_msg(serial, lineBuffer, BUFFER_SIZE);
 	}
@@ -64,7 +63,7 @@ int usb_getcharWait(char *c, size_t delay){
 
 char usb_getchar(void){
 	char c;
-	return usb_getcharWait(&c, portMAX_DELAY);
+	usb_getcharWait(&c, portMAX_DELAY);
 	return c;
 }
 

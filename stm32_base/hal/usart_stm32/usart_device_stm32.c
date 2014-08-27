@@ -360,21 +360,21 @@ char usart0_getchar()
 char usart1_getchar()
 {
 	char c;
-	return usart1_getcharWait(&c, portMAX_DELAY);
+	usart1_getcharWait(&c, portMAX_DELAY);
 	return c;
 }
 
 char usart2_getchar()
 {
 	char c;
-	return usart2_getcharWait(&c, portMAX_DELAY);
+	usart2_getcharWait(&c, portMAX_DELAY);
 	return c;
 }
 
 char usart3_getchar()
 {
 	char c;
-	return usart3_getcharWait(&c, portMAX_DELAY);
+	usart3_getcharWait(&c, portMAX_DELAY);
 	return c;
 }
 
@@ -385,7 +385,6 @@ void usart0_putchar(char c){
 		buf[1] = '\0';
 		pr_debug(buf);
 	}
-//	USART_SendData(USART1, '!');
 	xQueueSend( xUsart0Tx, &c, portMAX_DELAY );
 	//Enable transmitter interrupt
 	USART_ITConfig(USART1, USART_IT_TXE, ENABLE);
