@@ -129,7 +129,8 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(HAL_SRC)/usb_stm32/usb_bsp.c \
 			$(HAL_SRC)/usb_stm32/usbd_cdc_vcp.c \
 			$(HAL_SRC)/usb_stm32/usbd_desc.c \
-			$(HAL_SRC)/usb_stm32/usbd_usr.c
+			$(HAL_SRC)/usb_stm32/usbd_usr.c \
+			$(HAL_SRC)/i2c_stm32/i2c_device_stm32.c \
 
 
 #Macro that expands our source files into their fully qualified paths
@@ -178,6 +179,7 @@ APP_INCLUDES += -I. \
 				-I$(HAL_SRC)/fat_sd_stm32/fatfs \
 				-I$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub \
 				-I$(HAL_SRC)/usb_stm32 \
+				-I$(HAL_SRC)/i2c_stm32 \
 				-I$(JSON_DIR)
 
 #Uncomment the following to enable newlib support
