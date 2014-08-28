@@ -314,7 +314,7 @@ typedef struct _GPSConfig{
 	unsigned char satellitesEnabled;
 } GPSConfig;
 
-#define DEFAULT_GPS_CONFIG { SAMPLE_10Hz, 1, 1, 1, 1, 0 }
+#define DEFAULT_GPS_CONFIG { SAMPLE_50Hz , 1, 1, 1, 1, 0 }
 
 enum lap_stat_channels{
 	lap_stat_channel_lapcount,

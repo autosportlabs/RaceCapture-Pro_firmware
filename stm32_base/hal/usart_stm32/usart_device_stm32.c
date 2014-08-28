@@ -8,7 +8,7 @@
 #include "stm32f4xx_rcc.h"
 #include "printk.h"
 
-#define UART_QUEUE_LENGTH 		300
+#define UART_QUEUE_LENGTH 		1000
 
 #define UART_IRQ_PRIORITY 		5
 #define UART_IRQ_SUB_PRIORITY 	0
