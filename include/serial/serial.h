@@ -24,7 +24,7 @@ typedef enum {
 typedef struct _Serial{
 
 	void (*init)(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud);
-	char (*get_c_wait)(size_t delay);
+	int (*get_c_wait)(char *c, size_t delay);
 	char (*get_c)(void);
 
 	int (*get_line)(char *s, int len);
@@ -43,6 +43,8 @@ void init_serial(void);
 Serial * get_serial(serial_id_t port);
 
 void configure_serial(serial_id_t port, uint8_t bits, uint8_t parity, uint8_t stopBits, uint32_t baud);
+
+size_t serial_read_byte(Serial *serial, uint8_t *b, size_t delay);
 
 void put_int(Serial * serial, int n);
 

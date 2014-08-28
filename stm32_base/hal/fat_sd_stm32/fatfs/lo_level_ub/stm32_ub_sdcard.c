@@ -52,7 +52,8 @@
 // Includes
 //--------------------------------------------------------------
 #include "stm32_ub_sdcard.h"
-
+#include "FreeRTOS.h"
+#include "task.h"
 
 //--------------------------------------------------------------
 // Globale Variabeln
@@ -242,9 +243,15 @@ int MMC_disk_write(const BYTE *buff, DWORD sector, BYTE count)
 
   /* Check if the Transfer is finished */
   status = SD_WaitWriteOperation();
-  while(SD_GetStatus() != SD_TRANSFER_OK);     
 
-  if (status == SD_OK) {
+  uint32_t timeout = SD_DATATIMEOUT;
+
+  while(SD_GetStatus() != SD_TRANSFER_OK && timeout > 0){
+	  timeout--;
+	  taskYIELD();
+  }
+
+  if (status == SD_OK && timeout > 0) {
     ret_wert=0;
   }
   else {
@@ -1222,6 +1229,7 @@ SD_Error SD_WaitReadOperation(void)
   while ((DMAEndOfTransfer == 0x00) && (TransferEnd == 0) && (TransferError == SD_OK) && (timeout > 0))
   {
     timeout--;
+    taskYIELD();
   }
   
   DMAEndOfTransfer = 0x00;
@@ -1230,7 +1238,8 @@ SD_Error SD_WaitReadOperation(void)
   
   while(((SDIO->STA & SDIO_FLAG_RXACT)) && (timeout > 0))
   {
-    timeout--;  
+    timeout--;
+    taskYIELD();
   }
 
   if (StopCondition == 1)
@@ -1481,6 +1490,7 @@ SD_Error SD_WaitWriteOperation(void)
   while ((DMAEndOfTransfer == 0x00) && (TransferEnd == 0) && (TransferError == SD_OK) && (timeout > 0))
   {
     timeout--;
+    taskYIELD();
   }
   
   DMAEndOfTransfer = 0x00;
@@ -1489,7 +1499,8 @@ SD_Error SD_WaitWriteOperation(void)
   
   while(((SDIO->STA & SDIO_FLAG_TXACT)) && (timeout > 0))
   {
-    timeout--;  
+    timeout--;
+    taskYIELD();
   }
 
   if (StopCondition == 1)

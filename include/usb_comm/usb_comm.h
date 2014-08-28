@@ -21,7 +21,7 @@ int usb_readLineWait(char *s, int len, size_t delay);
 
 char usb_getchar(void);
 
-char usb_getchar_wait(size_t delay);
+int usb_getcharWait(char *c, size_t delay);
 
 void usb_putchar(char c);
 

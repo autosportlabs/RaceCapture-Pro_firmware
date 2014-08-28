@@ -9,12 +9,12 @@ void usb_init(unsigned int bits, unsigned int parity, unsigned int stopBits, uns
 
 void usb_flush(void){}
 
-char usb_getchar_wait(size_t delay){
+char usb_getcharWait(size_t delay){
 	return 0;
 }
 
 char usb_getchar(void){
-	return usb_getchar_wait(0);
+	return usb_getcharWait(0);
 }
 
 int usb_readLine(char *s, int len)
