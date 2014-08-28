@@ -11,15 +11,18 @@
 #define MSG_ID_QUERY_GPS_SW_VER	0x02
 
 
-#define MAX_PROVISIONING_ATTEMPTS	2
+#define MAX_PROVISIONING_ATTEMPTS	10
 #define MAX_PAYLOAD_LEN				256
-#define GPS_MSG_RX_WAIT_MS			1000
+#define GPS_MSG_RX_WAIT_MS			2000
 #define GPS_MESSAGE_BUFFER_LEN		1024
 #define TARGET_UPDATE_RATE 			50
 #define TARGET_BAUD_RATE 			921600
 
 #define BAUD_RATE_COUNT 			2
-#define BAUD_RATES 					{{9600, 1}, {921600, 8}}
+#define BAUD_RATES 					{ \
+										{921600, 8},  \
+										{9600, 1}   \
+									}
 
 typedef struct _BaudRateCodes{
 	uint32_t baud;
@@ -32,6 +35,7 @@ typedef struct _BaudRateCodes{
 #define MSG_ID_ACK								0x83
 #define MSG_ID_NACK 							0x84
 #define MSG_ID_QUERY_SW_VERSION 				0x02
+#define MSG_ID_SET_FACTORY_DEFAULTS				0x04
 #define MSG_ID_SW_VERSION						0x80
 #define MSG_ID_QUERY_POSITION_UPDATE_RATE		0x10
 #define MSG_ID_CONFIGURE_POSITION_UPDATE_RATE	0x0E
@@ -55,6 +59,11 @@ typedef struct _Nack{
 	uint8_t messageId;
 	uint8_t ackId;
 } Nack;
+
+typedef struct _SetFactoryDefaults{
+	uint8_t messageId;
+	uint8_t type;
+} SetFactoryDefaults;
 
 typedef struct _QuerySwVersion{
 	uint8_t messageId;
@@ -90,6 +99,7 @@ typedef struct _GpsMessage{
 		uint8_t messageId;
 		Ack ackMsg;
 		Nack nackMsg;
+		SetFactoryDefaults setFactoryDefaultsMsg;
 		QuerySwVersion querySoftwareVersionMsg;
 		QueryPositionUpdateRate queryPositionUpdateRate;
 		ConfigurePositionUpdateRate configurePositionUpdateRate;
@@ -137,7 +147,7 @@ static void txGpsMessage(GpsMessage *msg, Serial *serial){
 		serial->put_c(*(payload++));
 	}
 
-	serial->put_c(calculateChecksum(msg));
+	serial->put_c(msg->checksum);
 
 	serial->put_c(0x0D);
 	serial->put_c(0x0A);
@@ -198,6 +208,13 @@ static gps_msg_result_t rxGpsMessage(GpsMessage *msg, Serial *serial, uint8_t ex
 	return result;
 }
 
+static void sendSetFactoryDefaults(GpsMessage *gpsMsg, Serial *serial){
+	gpsMsg->messageId = MSG_ID_SET_FACTORY_DEFAULTS;
+	gpsMsg->setFactoryDefaultsMsg.type = 0x01;
+	gpsMsg->checksum = calculateChecksum(gpsMsg);
+	txGpsMessage(gpsMsg, serial);
+}
+
 static void sendQuerySwVersion(GpsMessage * gpsMsg, Serial * serial){
 	gpsMsg->messageId = MSG_ID_QUERY_SW_VERSION;
 	gpsMsg->querySoftwareVersionMsg.softwareType = 0x00;
@@ -232,11 +249,15 @@ static void sendConfigurePositionUpdateRate(GpsMessage *gpsMsg, Serial *serial, 
 	txGpsMessage(gpsMsg, serial);
 }
 
+
 uint32_t detectGpsBaudRate(GpsMessage *gpsMsg, Serial *serial){
 	BaudRateCodes baud_rates[BAUD_RATE_COUNT] = BAUD_RATES;
 
 	for (size_t i = 0; i < BAUD_RATE_COUNT; i++){
 		uint32_t baudRate = baud_rates[i].baud;
+		pr_info("probing gps baud rate ");
+		pr_info_int(baudRate);
+		pr_info("\r\n");
 		configure_serial(SERIAL_GPS, 8, 0, 1, baudRate);
 		sendQuerySwVersion(gpsMsg, serial);
 		if (rxGpsMessage(gpsMsg, serial, MSG_ID_SW_VERSION) == GPS_MSG_SUCCESS){
@@ -244,6 +265,25 @@ uint32_t detectGpsBaudRate(GpsMessage *gpsMsg, Serial *serial){
 		}
 	}
 	return 0;
+}
+
+static gps_cmd_result_t attemptFactoryDefaults(GpsMessage *gpsMsg, Serial *serial){
+	BaudRateCodes baud_rates[BAUD_RATE_COUNT] = BAUD_RATES;
+
+	for (size_t i = 0; i < BAUD_RATE_COUNT; i++){
+		uint32_t baudRate = baud_rates[i].baud;
+		pr_info("attempting factory defaults at ");
+		pr_info_int(baudRate);
+		pr_info("\r\n");
+		configure_serial(SERIAL_GPS, 8, 0, 1, baudRate);
+		serial->flush();
+		sendSetFactoryDefaults(gpsMsg, serial);
+		if (rxGpsMessage(gpsMsg, serial, MSG_ID_ACK) == GPS_MSG_SUCCESS && gpsMsg->ackMsg.messageId == MSG_ID_SET_FACTORY_DEFAULTS){
+			pr_info("Set Factory Defaults Success\r\n");
+			return GPS_COMMAND_SUCCESS;
+		}
+	}
+	return GPS_COMMAND_FAIL;
 }
 
 static uint8_t getBaudRateCode(uint32_t baudRate){
@@ -260,11 +300,9 @@ gps_cmd_result_t configureBaudRate(GpsMessage *gpsMsg, Serial *serial, uint32_t 
 	pr_info(": ");
 	gps_cmd_result_t result = GPS_COMMAND_FAIL;
 	uint8_t baudRateCode = getBaudRateCode(targetBaudRate);
-	if (baudRateCode){
-		sendConfigureSerialPort(gpsMsg, serial, baudRateCode);
-		if (rxGpsMessage(gpsMsg, serial, MSG_ID_ACK) == GPS_MSG_SUCCESS){
-			result = (gpsMsg->ackMsg.ackId == MSG_ID_CONFIGURE_SERIAL_PORT) ? GPS_COMMAND_SUCCESS : GPS_COMMAND_FAIL;
-		}
+	sendConfigureSerialPort(gpsMsg, serial, baudRateCode);
+	if (rxGpsMessage(gpsMsg, serial, MSG_ID_ACK) == GPS_MSG_SUCCESS){
+		result = (gpsMsg->ackMsg.ackId == MSG_ID_CONFIGURE_SERIAL_PORT) ? GPS_COMMAND_SUCCESS : GPS_COMMAND_FAIL;
 	}
 	pr_info(result == GPS_COMMAND_SUCCESS ? "win\r\n" : "fail\r\n");
 	return result;
@@ -301,32 +339,41 @@ int GPS_device_provision(Serial *serial){
 	size_t attempts = MAX_PROVISIONING_ATTEMPTS;
 	size_t provisioned = 0;
 
+	vTaskDelay(msToTicks(500));
 	while(attempts-- && !provisioned){
-		uint32_t baudRate = detectGpsBaudRate(gpsMsg, serial);
-		if (baudRate){
-			pr_info("GPS module detected at ");
-			pr_info_int(baudRate);
-			pr_info("\r\n");
-			if (baudRate != TARGET_BAUD_RATE && configureBaudRate(gpsMsg, serial, TARGET_BAUD_RATE) == GPS_COMMAND_FAIL){
-				pr_error("Error provisioning: could not configure baud rate\r\n");
+		while(1){
+			pr_info("provisioning attempt\r\n");
+			uint32_t baudRate = detectGpsBaudRate(gpsMsg, serial);
+			if (baudRate){
+				pr_info("GPS module detected at ");
+				pr_info_int(baudRate);
+				pr_info("\r\n");
+				if (baudRate != TARGET_BAUD_RATE && configureBaudRate(gpsMsg, serial, TARGET_BAUD_RATE) == GPS_COMMAND_FAIL){
+					pr_error("Error provisioning: could not configure baud rate\r\n");
+					break;
+				}
+				configure_serial(SERIAL_GPS, 8, 0, 1, TARGET_BAUD_RATE);
+				serial->flush();
+				uint8_t updateRate = queryPositionUpdateRate(gpsMsg, serial);
+				if (!updateRate){
+					pr_error("Error provisioning: could not detect update rate\r\n");
+					updateRate = 0;
+				}
+				if (updateRate != TARGET_UPDATE_RATE && configureUpdateRate(gpsMsg, serial, TARGET_UPDATE_RATE) == GPS_COMMAND_FAIL){
+					pr_error("Error provisioning: could not configure update rate\r\n");
+					break;
+				}
+				pr_info("GPS module provisioned\r\n");
+				provisioned = 1;
 				break;
 			}
-			uint8_t updateRate = queryPositionUpdateRate(gpsMsg, serial);
-			if (!updateRate){
-				pr_error("Error provisioning: could not detect update rate\r\n");
+			else{
+				pr_error("Error provisioning: could not detect GPS module on known baud rates\r\n");
 				break;
 			}
-			if (updateRate != TARGET_UPDATE_RATE && configureUpdateRate(gpsMsg, serial, TARGET_UPDATE_RATE) == GPS_COMMAND_FAIL){
-				pr_error("Error provisioning: could not configure update rate\r\n");
-			}
-			pr_info("GPS module provisioned\r\n");
-			provisioned = 1;
-			break;
 		}
-		else{
-			pr_error("Error provisioning: could not detect GPS module on known baud rates\r\n");
-			configure_serial(SERIAL_GPS, 8, 0, 1, TARGET_BAUD_RATE);
-			break;
+		if (!provisioned && attempts == MAX_PROVISIONING_ATTEMPTS / 2){
+			attemptFactoryDefaults(gpsMsg, serial);
 		}
 	}
 	if (gpsMsg) portFree(gpsMsg);
