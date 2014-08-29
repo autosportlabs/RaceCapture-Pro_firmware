@@ -140,7 +140,7 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
                lat, lon, speed, utcTimeStr, utcTime, millis);
 
          setGPSSpeed(speed);
-         setUTCTime(utcTime);
+         //setUTCTime(utcTime); // No longer any good.
          updatePosition(lat, lon);
          updateSecondsSinceMidnight(secondsSinceMidnight);
          onLocationUpdated();

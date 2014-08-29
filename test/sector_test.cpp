@@ -157,7 +157,8 @@ void SectorTest::testSectorTimes(){
          updateMillisSinceEpoch(dt);
 
 			setGPSSpeed(speed);
-			setUTCTime(utcTime);
+         // This no longer is used, but this test also appears defunct.  So no fix for now.
+			//setUTCTime(utcTime);
 			updatePosition(lat, lon);
 			double secondsSinceMidnight = calculateSecondsSinceMidnight(utcTimeStr);
 			updateSecondsSinceMidnight(secondsSinceMidnight);

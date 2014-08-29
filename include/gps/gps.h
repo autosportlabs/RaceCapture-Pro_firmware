@@ -34,10 +34,6 @@ int getAtStartFinish();
 
 int getAtSector();
 
-void getUTCTimeFormatted(char * buf);
-
-float getUTCTime();
-
 void setUTCTime(float UTCTime);
 
 float getSecondsSinceMidnight();

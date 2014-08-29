@@ -52,7 +52,7 @@ void registerLuaLoggerBindings(lua_State *L){
 	lua_registerlight(L,"getTimerRaw",Lua_GetTimerRaw);
 	lua_registerlight(L,"resetTimerCount",Lua_ResetTimerCount);
 	lua_registerlight(L,"getTimerCount",Lua_GetTimerCount);
-	
+
 	lua_registerlight(L,"getAnalog",Lua_GetAnalog);
 	lua_registerlight(L,"getAnalogRaw",Lua_GetAnalogRaw);
 
@@ -90,7 +90,7 @@ void registerLuaLoggerBindings(lua_State *L){
 
 	//Logger configuration editing
 	lua_registerlight(L,"flashLoggerCfg", Lua_FlashLoggerConfig);
-	
+
 	lua_registerlight(L,"calibrateImuZero",Lua_CalibrateImuZero);
 
 	lua_registerlight(L,"setBgStream", Lua_SetBackgroundStreaming);
@@ -139,7 +139,7 @@ int Lua_SetPWMClockFrequency(lua_State *L){
 
 int Lua_GetPWMClockFrequency(lua_State *L){
 	lua_pushinteger(L,getWorkingLoggerConfig()->PWMClockFrequency);
-	return 1;	
+	return 1;
 }
 
 int Lua_GetAnalog(lua_State *L){
@@ -254,7 +254,7 @@ int Lua_GetTimerCount(lua_State *L){
 int Lua_GetButton(lua_State *L){
 	unsigned int pushbutton = GPIO_is_button_pressed();
 	lua_pushinteger(L,(pushbutton == 0));
-	return 1;	
+	return 1;
 }
 
 int Lua_WriteSerial(lua_State *L){
@@ -331,8 +331,12 @@ int Lua_GetGPSQuality(lua_State *L){
 }
 
 int Lua_GetGPSTime(lua_State *L){
-	lua_pushnumber(L,getUTCTime());
-	return 1;
+   /*
+    * XXX: Kill me b/c this is bad data for users.  Need to remove
+    *      this method in LUA API.
+    */
+   lua_pushnumber(L, 0.0);
+   return 1;
 }
 
 int Lua_GetGPSDistance(lua_State *L){
@@ -422,7 +426,7 @@ int Lua_SetPWMPeriod(lua_State *L){
 		if (channel >= 0 && channel < CONFIG_PWM_CHANNELS){
 			PWM_channel_set_period(channel, (unsigned short)periodRaw);
 		}
-	}	
+	}
 	return 0;
 }
 
@@ -569,7 +573,7 @@ int Lua_SetLED(lua_State *L){
 int Lua_FlashLoggerConfig(lua_State *L){
 	int result = flashLoggerConfig();
 	lua_pushinteger(L,result);
-	return 1;	
+	return 1;
 }
 
 int Lua_AddVirtualChannel(lua_State *L){
@@ -592,4 +596,3 @@ int Lua_SetVirtualChannelValue(lua_State *L){
 	}
 	return 0;
 }
-

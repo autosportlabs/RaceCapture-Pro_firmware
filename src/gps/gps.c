@@ -43,7 +43,6 @@ static float g_prevLongitude;
 static float g_latitude;
 static float g_longitude;
 
-static float g_UTCTime;
 static float g_prevSecondsSinceMidnight;
 static float g_secondsSinceMidnight;
 
@@ -139,10 +138,10 @@ static void parseGGA(char *data) {
       switch (param) {
       case 0: {
          unsigned int len = strlen(data);
-         if (len > 0 && len < UTC_TIME_BUFFER_LEN) {
-            setUTCTime(modp_atof(data));
+
+         if (len > 0 && len < UTC_TIME_BUFFER_LEN)
             secondsSinceMidnight = calculateSecondsSinceMidnight(data);
-         }
+
       }
          break;
       case 1: {
@@ -395,20 +394,8 @@ int getAtSector() {
    return g_atTarget;
 }
 
-float getUTCTime() {
-   return g_UTCTime;
-}
-
-void setUTCTime(float UTCTime) {
-   g_UTCTime = UTCTime;
-}
-
 float getSecondsSinceMidnight() {
    return g_secondsSinceMidnight;
-}
-
-void getUTCTimeFormatted(char * buf) {
-
 }
 
 float getLatitude() {
@@ -575,7 +562,6 @@ void initGPS() {
    g_prevLongitude = 0.0;
    g_latitude = 0.0;
    g_longitude = 0.0;
-   g_UTCTime = 0.0;
    g_gpsQuality = GPS_QUALITY_NO_FIX;
    g_satellitesUsedForPosition = 0;
    g_speed = 0.0;
