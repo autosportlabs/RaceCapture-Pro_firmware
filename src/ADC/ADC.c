@@ -57,3 +57,7 @@ void ADC_read_all(unsigned int *a0,
 unsigned int ADC_read(unsigned int channel){
 	return g_adc_filter[channel].current_value;
 }
+
+float ADC_get_voltage_range(size_t channel){
+	return ADC_device_get_voltage_range(channel);
+}

@@ -19,6 +19,10 @@
 //Analog8 - PC0 - ADC123_IN10
 //Analog9 - PA4 - ADC12_IN4
 
+#define ADC_PORT_VOLTAGE_RANGE 		5.0f
+#define ADC_SYSTEM_VOLTAGE_RANGE	20.0f
+
+
 #define TOTAL_ADC_CHANNELS 9
 static uint16_t * ADCConvertedValues;
 
@@ -156,3 +160,11 @@ unsigned int ADC_device_sample(unsigned int channel) {
 	return ADCConvertedValues[channel];
 }
 
+float ADC_device_get_voltage_range(size_t channel){
+	switch (channel){
+		case 7:
+			return ADC_SYSTEM_VOLTAGE_RANGE;
+		default:
+			return ADC_PORT_VOLTAGE_RANGE;
+		}
+}

@@ -7,6 +7,7 @@
 
 #ifndef ADC_DEVICE_H_
 #define ADC_DEVICE_H_
+#include <stddef.h>
 
 int ADC_device_init(void);
 
@@ -22,5 +23,6 @@ void ADC_device_sample_all(
 
 unsigned int ADC_device_sample(unsigned int channel);
 
+float ADC_device_get_voltage_range(size_t channel);
 
 #endif /* ADC_DEVICE_H_ */

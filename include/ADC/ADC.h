@@ -17,6 +17,6 @@ void ADC_read_all(unsigned int *a0,
 
 unsigned int ADC_read(unsigned int channel);
 
-
+float ADC_get_voltage_range(size_t channel);
 
 #endif /* ADC_H_ */
