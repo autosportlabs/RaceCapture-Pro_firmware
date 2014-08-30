@@ -71,6 +71,8 @@ void registerLuaLoggerBindings(lua_State *L){
 
 	lua_registerlight(L,"getTimeDiff", Lua_GetTimeDiff);
 	lua_registerlight(L,"getTimeSince", Lua_GetTimeSince);
+   lua_registerlight(L, "getTickCount", Lua_GetTickCount);
+   lua_registerlight(L, "getTicksPerSecond", Lua_GetTicksPerSecond);
 
 	lua_registerlight(L, "initCAN", Lua_InitCAN);
 	lua_registerlight(L, "txCAN", Lua_SendCANMessage);
@@ -371,6 +373,18 @@ int Lua_GetTimeSince(lua_State *L){
 		return 1;
 	}
 	return 0;
+}
+
+int Lua_GetTickCount(lua_State *L) {
+   const float f = (float) xTaskGetTickCount();
+   lua_pushnumber(L, f);
+   return 1;
+}
+
+int Lua_GetTicksPerSecond(lua_State *L) {
+   const float f = (float) configTICK_RATE_HZ;
+   lua_pushnumber(L, f);
+   return 1;
 }
 
 int Lua_ReadImu(lua_State *L){

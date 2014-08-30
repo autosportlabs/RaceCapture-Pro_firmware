@@ -38,6 +38,8 @@ int Lua_GetGPSSecondsSinceMidnight(lua_State *L);
 int Lua_GetGPSAtStartFinish(lua_State *L);
 int Lua_GetTimeDiff(lua_State *L);
 int Lua_GetTimeSince(lua_State *L);
+int Lua_GetTickCount(lua_State *L);
+int Lua_GetTicksPerSecond(lua_State *L);
 
 int Lua_ReadImu(lua_State *L);
 int Lua_ReadImuRaw(lua_State *L);
