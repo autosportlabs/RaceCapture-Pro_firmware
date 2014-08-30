@@ -726,15 +726,8 @@ release :
 program: $(PROGRAM_TARGET)
 	openocd -f flash.cfg
 
-cscope.files:
-	@find . -type f -name '*.[hcS]' -print >cscope.files
-
-cscope: cscope.files
-	@rm -f cscope.out
-	@cscope -b -f cscope.out
-
 TAGS: cscope.files
-	@etags `cat cscope.files`
+	@find . -type f -name '*.[hcS]' -print >cscope.files | etags -
 
 clean_build:
 	$(MAKE) clean
@@ -742,5 +735,4 @@ clean_build:
 
 # Listing of phony targets.
 .PHONY : all begin finish end sizebefore sizeafter gccversion \
-build elf hex bin lss sym clean clean_list program cscope.files \
-cscope TAGS clean_build
+build elf hex bin lss sym clean clean_list program TAGS clean_build
