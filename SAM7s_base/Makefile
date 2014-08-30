@@ -509,7 +509,7 @@ CPPOBJARM = $(CPPSRCARM:.cpp=.o)
 
 # Define all listing files.
 LST = $(ASRC:.S=.lst) $(ASRCARM:.S=.lst) $(SRC:.c=.lst) $(SRCARM:.c=.lst)
-LST += $(CPPSRC:.cpp=.lst) $(CPPSRCARM:.cpp=.lst)
+LST += $(CPPSRC:.cpp=.lst) $(CPPSRCARM:.cpp=.lst) $(COBJ:.o=.lst) $(SRC:.c=.lst)
 
 # Compiler flags to generate dependency files.
 ### GENDEPFLAGS = -Wp,-M,-MP,-MT,$(*F).o,-MF,.dep/$(@F).d
@@ -522,7 +522,14 @@ ALL_ASFLAGS = -mcpu=$(MCU) $(THUMB_IW) -I. -x assembler-with-cpp $(ASFLAGS)
 
 
 # Default target.
-all: begin gccversion sizebefore build sizeafter finished end
+all:
+	$(MAKE) begin
+	$(MAKE) gccversion
+	$(MAKE) sizebefore
+	$(MAKE) build
+	$(MAKE) sizeafter
+	$(MAKE) finished
+	$(MAKE) end
 
 ifeq ($(FORMAT),ihex)
 build: elf hex lss sym
@@ -570,8 +577,6 @@ gccversion :
 	@$(CC) --version
 
 
-
-
 # Create final output files (.hex, .eep) from ELF output file.
 # TODO: handle an .eeprom-section but should be redundant
 %.hex: %.elf
@@ -608,7 +613,6 @@ gccversion :
 	@echo
 	@echo $(MSG_LINKING) $@
 	@$(CC) $(THUMB) $(ALL_CFLAGS) $(AOBJARM) $(AOBJ) $(COBJARM) $(COBJ) $(CPPOBJ) $(CPPOBJARM) --output $@ $(LDFLAGS)
-#	$(CPP) $(THUMB) $(ALL_CFLAGS) $(AOBJARM) $(AOBJ) $(COBJARM) $(COBJ) $(CPPOBJ) $(CPPOBJARM) --output $@ $(LDFLAGS)
 
 # Compile: create object files from C source files. ARM/Thumb
 $(COBJ) : %.o : %.c
@@ -656,7 +660,11 @@ $(AOBJARM) : %.o : %.S
 
 
 # Target: clean project.
-clean: begin clean_list finished end
+clean:
+	$(MAKE) begin
+	$(MAKE) clean_list
+	$(MAKE) finished
+	$(MAKE) end
 
 clean_list :
 	@echo
@@ -694,12 +702,9 @@ clean_all: clean
 # Include the dependency files.
 -include $(shell mkdir .dep 2>/dev/null) $(wildcard .dep/*)
 
-
-# Listing of phony targets.
-.PHONY : all begin finish end sizebefore sizeafter gccversion \
-build elf hex bin lss sym clean clean_list program
-
-release : clean all
+release :
+	$(MAKE) clean
+	$(MAKE) all
 	rm -rf $(RELEASE_NAME_ZIP)
 	cp main.elf $(RELEASE_NAME_ELF)
 	cp $(RELEASE_NAME_ELF) $(RCP_RELEASE_DIR)
@@ -730,3 +735,12 @@ cscope: cscope.files
 
 TAGS: cscope.files
 	@etags `cat cscope.files`
+
+clean_build:
+	$(MAKE) clean
+	$(MAKE) all
+
+# Listing of phony targets.
+.PHONY : all begin finish end sizebefore sizeafter gccversion \
+build elf hex bin lss sym clean clean_list program cscope.files \
+cscope TAGS clean_build
