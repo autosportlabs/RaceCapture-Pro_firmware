@@ -62,8 +62,8 @@ void registerLuaLoggerBindings(lua_State *L){
 	lua_registerlight(L,"getGpsPos", Lua_GetGPSPosition);
 	lua_registerlight(L,"getGpsSpeed",Lua_GetGPSSpeed);
 	lua_registerlight(L,"getGpsQuality", Lua_GetGPSQuality);
-	lua_registerlight(L,"getGpsTime", Lua_GetGPSTime);
 	lua_registerlight(L,"getGpsDist", Lua_GetGPSDistance);
+
 	lua_registerlight(L,"getLapCount", Lua_GetLapCount);
 	lua_registerlight(L,"getLapTime", Lua_GetLapTime);
 	lua_registerlight(L,"getGpsSec", Lua_GetGPSSecondsSinceMidnight);
@@ -328,15 +328,6 @@ int Lua_GetGPSSpeed(lua_State *L){
 int Lua_GetGPSQuality(lua_State *L){
 	lua_pushnumber(L,getGPSQuality());
 	return 1;
-}
-
-int Lua_GetGPSTime(lua_State *L){
-   /*
-    * XXX: Kill me b/c this is bad data for users.  Need to remove
-    *      this method in LUA API.
-    */
-   lua_pushnumber(L, 0.0);
-   return 1;
 }
 
 int Lua_GetGPSDistance(lua_State *L){
