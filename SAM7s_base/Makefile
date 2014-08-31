@@ -727,7 +727,7 @@ program: $(PROGRAM_TARGET)
 	openocd -f flash.cfg
 
 TAGS: cscope.files
-	@find . -type f -name '*.[hcS]' -print >cscope.files | etags -
+	@find . -type f -name '*\.[ch]' | etags -
 
 clean_build:
 	$(MAKE) clean
