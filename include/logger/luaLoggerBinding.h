@@ -12,7 +12,6 @@ int Lua_GetBackgroundStreaming(lua_State *L);
 int Lua_SetBackgroundStreaming(lua_State *L);
 
 int Lua_GetAnalog(lua_State *L);
-int Lua_GetAnalogRaw(lua_State *L);
 
 int Lua_GetRPM(lua_State *L);
 int Lua_GetPeriodMs(lua_State *L);

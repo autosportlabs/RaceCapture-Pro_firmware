@@ -54,7 +54,6 @@ void registerLuaLoggerBindings(lua_State *L){
 	lua_registerlight(L,"getTimerCount",Lua_GetTimerCount);
 	
 	lua_registerlight(L,"getAnalog",Lua_GetAnalog);
-	lua_registerlight(L,"getAnalogRaw",Lua_GetAnalogRaw);
 
 	lua_registerlight(L,"getImu",Lua_ReadImu);
 	lua_registerlight(L,"getImuRaw",Lua_ReadImuRaw);
@@ -162,18 +161,6 @@ int Lua_GetAnalog(lua_State *L){
 		}
 	}
 	lua_pushnumber(L, analogValue);
-	return 1;
-}
-
-int Lua_GetAnalogRaw(lua_State *L){
-	int result = -1;
-	if (lua_gettop(L) >= 1){
-		unsigned int channel = (unsigned int)lua_tointeger(L,1);
-		if (channel >= 0 && channel < CONFIG_ADC_CHANNELS){
-			result = (int)ADC_read(channel);
-		}
-	}
-	lua_pushnumber(L,result);
 	return 1;
 }
 
