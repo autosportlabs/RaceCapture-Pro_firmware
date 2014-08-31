@@ -90,6 +90,7 @@ T_SRC = loggerApi_test.cpp \
 		sampleRecord_test.cpp \
 		PredictiveTimeTest2.cpp \
 		sector_test.cpp \
+		track_test.cpp \
 		loggerData_test.cpp \
 		$(GPS_DIR)/gps_test.cpp \
 		$(UTIL_DIR)/numtoa_test.cpp \

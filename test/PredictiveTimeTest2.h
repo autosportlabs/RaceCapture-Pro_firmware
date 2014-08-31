@@ -23,7 +23,7 @@ float distPctBtwnTwoPoints(GeoPoint *s, GeoPoint *e, GeoPoint *m);
 
 class PredictiveTimeTest2 : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( PredictiveTimeTest2 );
-        //g	CPPUNIT_TEST( testPredictedTimeGpsFeed );
+        //	CPPUNIT_TEST( testPredictedTimeGpsFeed );
         CPPUNIT_TEST( testProjectedDistance );
 	CPPUNIT_TEST_SUITE_END();
 
