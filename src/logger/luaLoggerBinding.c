@@ -147,7 +147,7 @@ int Lua_GetAnalog(lua_State *L){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		ADCConfig *ac = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL != ac){
-			unsigned int adcRaw = ADC_read(channel);
+			float adcRaw = ADC_read(channel);
 			switch(ac->scalingMode){
 			case SCALING_MODE_RAW:
 				analogValue = adcRaw;

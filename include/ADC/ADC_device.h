@@ -25,4 +25,6 @@ unsigned int ADC_device_sample(unsigned int channel);
 
 float ADC_device_get_voltage_range(size_t channel);
 
+float ADC_device_get_channel_scaling(size_t channel);
+
 #endif /* ADC_DEVICE_H_ */

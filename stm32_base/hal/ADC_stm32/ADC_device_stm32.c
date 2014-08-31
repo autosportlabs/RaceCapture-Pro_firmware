@@ -22,6 +22,8 @@
 #define ADC_PORT_VOLTAGE_RANGE 		5.0f
 #define ADC_SYSTEM_VOLTAGE_RANGE	20.0f
 
+#define SCALING_5V 					0.00122070312f
+#define SCALING_20V 				0.0048828125f
 
 #define TOTAL_ADC_CHANNELS 9
 static uint16_t * ADCConvertedValues;
@@ -168,3 +170,15 @@ float ADC_device_get_voltage_range(size_t channel){
 			return ADC_PORT_VOLTAGE_RANGE;
 		}
 }
+
+float ADC_device_get_channel_scaling(size_t channel){
+	switch(channel){
+	case 7:
+		return SCALING_20V;
+		break;
+	default:
+		return SCALING_5V;
+		break;
+	}
+}
+
