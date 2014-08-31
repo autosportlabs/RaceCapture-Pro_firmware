@@ -1045,7 +1045,7 @@ static int setGeoPointIfExists(const jsmntok_t *root, const char * name, GeoPoin
 static void setTrack(const jsmntok_t *trackNode, Track *track){
 	unsigned char trackType;
 	if (setUnsignedCharValueIfExists(trackNode, "type", &trackType, NULL)){
-		track->track_type = trackType;
+           track->track_type = (enum TrackType) trackType;
 		GeoPoint *sectorsList = track->circuit.sectors;
 		size_t maxSectors = CIRCUIT_SECTOR_COUNT;
 		if (trackType == TRACK_TYPE_CIRCUIT){
@@ -1247,4 +1247,3 @@ int api_runScript(Serial *serial, const jsmntok_t *json){
 	setShouldReloadScript(1);
 	return API_SUCCESS;
 }
-

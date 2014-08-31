@@ -19,8 +19,10 @@
 
 #define DEFAULT_TRACK_TARGET_RADIUS	0.0001
 
-#define TRACK_TYPE_CIRCUIT 			0
-#define TRACK_TYPE_SINGLE			1
+enum TrackType {
+   TRACK_TYPE_CIRCUIT = 0,
+   TRACK_TYPE_STAGE = 1,
+};
 
 #define MAGIC_NUMBER_TRACKS_INIT	0xDECAFBAD
 
@@ -37,7 +39,7 @@ typedef struct _Stage{
 
 
 typedef struct _Track{
-	unsigned char track_type;
+	enum TrackType track_type;
 	union{
 		GeoPoint allSectors[SECTOR_COUNT];
 		Stage stage;
@@ -58,6 +60,16 @@ int add_track(const Track *track, size_t index, int mode);
 int flash_default_tracks(void);
 const Tracks * get_tracks();
 
+/**
+ * Returns the finish line of the track, regardless if its a stage or a circuit.
+ * @return The GeoPoint representing the finish line.
+ */
+GeoPoint getFinishLine(const Track *t);
 
+/**
+ * Tells the caller if the finish line of the given track is valid.
+ * @return true if its a real value, false otherwise.
+ */
+int isFinishLineValid(const Track *t);
 
 #endif /* TRACKS_H_ */

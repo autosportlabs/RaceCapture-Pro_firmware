@@ -66,7 +66,7 @@ string SectorTest::readFile(string filename){
 }
 
 #define Test_Track { \
-	0, \
+	TRACK_TYPE_CIRCUIT, \
 	{ \
 		{ \
 			{47.806934,-122.341150}, \

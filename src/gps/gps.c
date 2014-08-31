@@ -446,15 +446,6 @@ static int withinGpsTarget(const GeoPoint *point, float radius) {
    return within;
 }
 
-static int isStartFinishEnabled(const Track *track) {
-   int isEnabled = 0;
-   if (track != NULL) {
-      const GeoPoint *p = &track->startLine;
-      isEnabled = p->latitude != 0 && p->longitude != 0;
-   }
-   return isEnabled;
-}
-
 static float toRadians(float degrees) {
    return degrees * PI / 180.0;
 }
@@ -477,7 +468,8 @@ static float calcDistancesSinceLastSample() {
 
 static int processStartFinish(const Track *track, float targetRadius) {
    int lapDetected = 0;
-   g_atStartFinish = withinGpsTarget(&track->startLine, targetRadius);
+   const GeoPoint finishLine = getFinishLine(track);
+   g_atStartFinish = withinGpsTarget(&finishLine, targetRadius);
    if (g_atStartFinish) {
       if (g_prevAtStartFinish == 0) {
          if (g_lastStartFinishTimestamp == 0) {
@@ -603,43 +595,45 @@ void onLocationUpdated() {
    static int sectorEnabled = 0;
    static int startFinishEnabled = 0;
 
-   if (GPS_LOCKED_ON(g_gpsQuality)) {
-      LoggerConfig *config = getWorkingLoggerConfig();
+   // If no GPS lock, no point in doing any of this.
+   if (!GPS_LOCKED_ON(g_gpsQuality))
+      return;
 
-      GeoPoint gp;
-      populateGeoPoint(&gp);
+   LoggerConfig *config = getWorkingLoggerConfig();
 
-      if (!g_configured) {
-    	 TrackConfig *trackConfig = &(config->TrackConfigs);
-    	 Track *defaultTrack = &trackConfig->track;
-         g_activeTrack = trackConfig->auto_detect ? auto_configure_track(defaultTrack, gp) : defaultTrack;
-         startFinishEnabled = isStartFinishEnabled(g_activeTrack);
-         sectorEnabled = config->LapConfigs.sectorTimeCfg.sampleRate !=
+   GeoPoint gp;
+   populateGeoPoint(&gp);
+
+   if (!g_configured) {
+      TrackConfig *trackConfig = &(config->TrackConfigs);
+      Track *defaultTrack = &trackConfig->track;
+      g_activeTrack = trackConfig->auto_detect ? auto_configure_track(defaultTrack, gp) : defaultTrack;
+      startFinishEnabled = isFinishLineValid(g_activeTrack);
+      sectorEnabled = config->LapConfigs.sectorTimeCfg.sampleRate !=
          SAMPLE_DISABLED && startFinishEnabled;
-         g_configured = 1;
-      }
+      g_configured = 1;
+   }
 
-      float dist = calcDistancesSinceLastSample();
-      g_distance += dist;
+   float dist = calcDistancesSinceLastSample();
+   g_distance += dist;
 
-	  float targetRadius = config->TrackConfigs.radius;
-      if (sectorEnabled) {
-         processSector(g_activeTrack, targetRadius);
-      }
+   const float targetRadius = config->TrackConfigs.radius;
 
-      if (startFinishEnabled) {
+   if (sectorEnabled)
+      processSector(g_activeTrack, targetRadius);
 
-         // Seconds since first fix is good until we alter the code to use millis directly
-         float secondsSinceFirstFix = getSecondsSinceFirstFix();
-         int lapDetected = processStartFinish(g_activeTrack, targetRadius);
-         if (lapDetected) {
-            resetGpsDistance();
-            startFinishCrossed(gp, secondsSinceFirstFix);
-         } else {
-            addGpsSample(gp, secondsSinceFirstFix);
-         }
+   if (startFinishEnabled) {
+      // Seconds since first fix is good until we alter the code to use millis directly
+      const float secondsSinceFirstFix = getSecondsSinceFirstFix();
+      const int lapDetected = processStartFinish(g_activeTrack, targetRadius);
+      if (lapDetected) {
+         resetGpsDistance();
+         startFinishCrossed(gp, secondsSinceFirstFix);
+      } else {
+         addGpsSample(gp, secondsSinceFirstFix);
       }
    }
+
 }
 
 int checksumValid(const char *gpsData, size_t len) {
