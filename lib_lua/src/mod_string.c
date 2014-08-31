@@ -317,7 +317,7 @@ char * strerror(int errorno){
 }
 
 
-void * memchr(const void *s, register unsigned char c, register size_t n){
+void * memchr(const void *s, register int c, register size_t n){
 	if (n != 0) {
 		register const unsigned char *p = s;
 
