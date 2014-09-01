@@ -9,6 +9,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 struct i2c_dev {
 	/* This is just a convenient public handle for the opaque
@@ -28,15 +29,23 @@ enum i2c_direction {
 
 struct i2c_dev *i2c_get_device(enum i2c_bus device);
 int i2c_init(struct i2c_dev *dev, uint32_t bus_speed);
-
-int i2c_write(struct i2c_dev *dev, uint8_t addr, uint8_t *buf, int len);
 int i2c_transact(struct i2c_dev *dev, uint8_t addr,
-		 uint8_t *tx_buf, int tx_len,
-		 uint8_t *rx_buf, int rx_len);
-int i2c_read(struct i2c_dev *dev, uint8_t addr, uint8_t *buf, int len);
+		 uint8_t *tx_buf, size_t tx_len,
+		 uint8_t *rx_buf, size_t rx_len);
+int i2c_read_reg8(struct i2c_dev *dev, uint8_t dev_addr,
+		  uint8_t reg_addr, uint8_t *reg_val);
+int i2c_write_reg8(struct i2c_dev *dev, uint8_t dev_addr,
+		   uint8_t reg_addr, uint8_t reg_val);
+int i2c_write_reg_bits(struct i2c_dev *dev, uint8_t dev_addr,
+		       uint8_t reg_addr, size_t bit_pos,
+		       size_t num_bits, uint8_t bit_val);
+int i2c_read_reg_bits(struct i2c_dev *dev, uint8_t dev_addr,
+		      uint8_t reg_addr, size_t bit_pos,
+		      size_t num_bits, uint8_t *bit_val);
 
-void i2c_lock(struct i2c_dev *dev);
-void i2c_unlock (struct i2c_dev *dev);
+/* Deprecated */
+int i2c_write_raw(struct i2c_dev *dev, uint8_t addr, uint8_t *buf, size_t len);
+int i2c_read_raw(struct i2c_dev *dev, uint8_t addr, uint8_t *buf, size_t len);
 
 #endif /* I2C_H */
 

@@ -148,19 +148,6 @@ struct i2c_dev *i2c_get_device(enum i2c_bus device)
 	}
 }
 
-void i2c_lock(struct i2c_dev *dev)
-{
-	struct i2c_priv *p = (struct i2c_priv*)dev->priv;
-	/* Grab the device's transaction lock */
-	xSemaphoreTake(p->transact_lock, portMAX_DELAY);
-}
-
-void i2c_unlock (struct i2c_dev *dev)
-{
-	struct i2c_priv *p = (struct i2c_priv*)dev->priv;
-	xSemaphoreGive(p->transact_lock);
-}
-
 int i2c_deinit(struct i2c_dev *dev)
 {
 	struct i2c_priv *p = (struct i2c_priv*)dev->priv;
@@ -287,7 +274,7 @@ int i2c_init(struct i2c_dev *dev, uint32_t bus_speed)
 	return 0;
 }
 
-static int i2c_start(struct i2c_priv *p)
+static void i2c_start(struct i2c_priv *p)
 {
 	/* No reason to block on a lock here.  This can only happen if
 	 * a device is misbehaving, but still good to check for it */
@@ -308,24 +295,32 @@ static int i2c_start(struct i2c_priv *p)
 	/* Once the start is generated, sending of the slave's
 	 * address is handled by the interrupt handler */
 
-	if (p->error_flag)
-		return -2;
-
 	/* Bus is now live, carry on */
-	return 0;
 }
 
 
 int i2c_transact(struct i2c_dev *dev, uint8_t addr,
-		 uint8_t *tx_buf, int tx_len,
-		 uint8_t *rx_buf, int rx_len)
+		 uint8_t *tx_buf, size_t tx_len,
+		 uint8_t *rx_buf, size_t rx_len)
 {
+	int ret = 0;
 	struct i2c_priv *p = (struct i2c_priv*)dev->priv;
+
+	if (tx_len > 128 || rx_len > 128)
+		return -1;
+
+	/* Lock this transaction window */
+	xSemaphoreTake(p->transact_lock, portMAX_DELAY);
 
 	p->slave_addr = addr;
 	p->tx_len = tx_len;
 	p->rx_len = rx_len;
 
+	/* Clear the transaction queue */
+	xQueueReset(p->transact_q);
+
+	/* Set our transaction direction, if we're a transmitter, put
+	 * all data to be transmitted into the transaction queue */
 	if (tx_len == 0) {
 		p->trans_direction = I2C_Direction_Receiver;
 	} else {
@@ -335,6 +330,7 @@ int i2c_transact(struct i2c_dev *dev, uint8_t addr,
 		p->trans_direction = I2C_Direction_Transmitter;
 	}
 
+	/* Kick off the transaction */
 	i2c_start(p);
 
 	/* Wait until the transmission completes, give it 1 solid
@@ -344,30 +340,123 @@ int i2c_transact(struct i2c_dev *dev, uint8_t addr,
 	/* Make sure that the transfer was successful */
 	if (p->error_flag) {
 		xQueueReset(p->transact_q);
-		return -2;
+		ret = -2;
+		goto unlock_and_return;
 	}
 
 	/* Move any Rx data into the rx buffer */
 	while (rx_len--)
 		xQueueReceive(p->transact_q, rx_buf++, portMAX_DELAY);
 
-	/* Return success */
-	return 0;
+unlock_and_return:
+	xSemaphoreGive(p->transact_lock);
 
+	/* Return success */
+	return ret;
 }
-int i2c_write(struct i2c_dev *dev, uint8_t addr, uint8_t *buf, int len)
+
+int i2c_write_reg8(struct i2c_dev *dev, uint8_t dev_addr,
+		   uint8_t reg_addr, uint8_t reg_val)
 {
-	int res = i2c_transact(dev, addr, buf, len, NULL, 0);
+	int res;
+	uint8_t payload[2];
+	payload[0] = reg_addr;
+	payload[1] = reg_val;
+	res = i2c_transact(dev, dev_addr, payload, 2, NULL, 0);
+	return res;
+}
+
+int i2c_read_reg8(struct i2c_dev *dev, uint8_t dev_addr,
+		  uint8_t reg_addr, uint8_t *reg_val)
+{
+	int res;
+	res = i2c_transact(dev, dev_addr,
+			   &reg_addr, 1,
+			   reg_val, 1);
+	return res;
+}
+
+int i2c_read_reg_bits(struct i2c_dev *dev, uint8_t dev_addr,
+		      uint8_t reg_addr, size_t bit_pos,
+		      size_t num_bits, uint8_t *bit_val)
+{
+	int res;
+	uint8_t reg_val;
+	uint8_t reg_mask = 0x00;
+
+	/* We need to make sure that the mask won't run off the edge
+	 * of the register */
+	if (bit_pos + num_bits > 8)
+		return -1;
+
+	res = i2c_read_reg8(dev, dev_addr, reg_addr, &reg_val);
+	if (res)
+		return res;
+
+	/* Build the register mask */
+	for (int i = 0; i < num_bits; i++)
+		reg_mask |= 1 << (i + bit_pos);
+
+	/* Mask off just the part we care about */
+	reg_val &= reg_mask;
+
+	/* Return the newly masked value shifted back to 0 */
+	*bit_val = reg_val >> bit_pos;
+
+	return 0;
+}
+
+int i2c_write_reg_bits(struct i2c_dev *dev, uint8_t dev_addr,
+		       uint8_t reg_addr, size_t bit_pos,
+		       size_t num_bits, uint8_t bit_val)
+{
+	int res;
+	uint8_t reg_val;
+	uint8_t reg_mask = 0x00;
+
+	/* We need to make sure that the mask won't run off the edge
+	 * of the register */
+	if (bit_pos + num_bits > 8)
+		return -1;
+
+	res = i2c_read_reg8(dev, dev_addr, reg_addr, &reg_val);
+	if (res)
+		return res;
+
+	/* Build the register mask */
+	for (int i = 0; i < num_bits; i++)
+		reg_mask |= 1 << (i + bit_pos);
+
+	/* Clear the bits we're going to be writing */
+	reg_val &= ~(reg_mask);
+
+	/* now, write the new bit values into their appropriate place
+	 * in the register */
+	reg_val |= (bit_val << bit_pos) & reg_mask;
+
+	/* Write the register back to the device */
+	res = i2c_write_reg8(dev, dev_addr, reg_addr, reg_val);
+	if (res)
+		return res;
+
+	return 0;
+}
+
+int i2c_write_raw(struct i2c_dev *dev, uint8_t dev_addr, uint8_t *buf, size_t len)
+{
+	int res = i2c_transact(dev, dev_addr, buf, len, NULL, 0);
 
 	return res;
 }
 
-int i2c_read(struct i2c_dev *dev, uint8_t addr, uint8_t *buf, int len)
+int i2c_read_raw(struct i2c_dev *dev, uint8_t dev_addr, uint8_t *buf, size_t len)
 {
-	int res = i2c_transact(dev, addr, NULL, 0, buf, len);
+	int res = i2c_transact(dev, dev_addr, NULL, 0, buf, len);
 
 	return res;	
 }
+
+/*** Interrupt handlers and helper functions ***/
 
 static void i2c_stage_tx_byte(struct i2c_priv *p)
 {
