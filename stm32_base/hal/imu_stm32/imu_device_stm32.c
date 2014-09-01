@@ -12,7 +12,7 @@
 #include <invensense_9150.h>
 
 #define IMU_DEVICE_COUNTS_PER_G 		8192
-#define IMU_DEVICE_COUNTS_PER_DEGREE_PER_SEC	32.8
+#define IMU_DEVICE_COUNTS_PER_DEGREE_PER_SEC	16.4
 
 #define ACCEL_MAX_RANGE 	ACCEL_COUNTS_PER_G * 4
 #define IMU_TASK_PRIORITY	(tskIDLE_PRIORITY + 2)
@@ -54,7 +54,6 @@ static void imu_update_task(void *params)
 			imu_update_buf_ptrs();
 		vTaskDelay(1);
 	}
-
 }
 
 void imu_device_init()
@@ -87,7 +86,7 @@ unsigned int imu_device_read(unsigned int channel)
 		ret = read_buf->accel.accel_z;
 		break;
 	case IMU_CHANNEL_YAW:
-		ret = read_buf->gyro.gyro_x;
+		ret = read_buf->gyro.gyro_z;
 		break;
 	default:
 		break;
