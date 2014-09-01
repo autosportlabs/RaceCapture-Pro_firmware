@@ -241,5 +241,5 @@ unsigned short PWM_device_get_duty_cycle(unsigned int channel){
 }
 
 void PWM_device_channel_enable_analog(size_t channel, uint8_t enabled){
-
+	//NOOP, DIP switch on board
 }

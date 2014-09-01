@@ -1068,11 +1068,11 @@ void LoggerApiTest::testGetObd2ConfigFile(string filename){
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)json["obd2Cfg"]["en"]);
 	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_AFR, (int)(Number)pid1["id"]);
-	CPPUNIT_ASSERT_EQUAL(SAMPLE_1Hz, (int)(Number)pid1["sr"]);
+	CPPUNIT_ASSERT_EQUAL(decodeSampleRate(SAMPLE_1Hz), (int)(Number)pid1["sr"]);
 	CPPUNIT_ASSERT_EQUAL(0x05, (int)(Number)pid1["pid"]);
 
 	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Boost, (int)(Number)pid2["id"]);
-	CPPUNIT_ASSERT_EQUAL(SAMPLE_50Hz, (int)(Number)pid2["sr"]);
+	CPPUNIT_ASSERT_EQUAL(decodeSampleRate(SAMPLE_50Hz), (int)(Number)pid2["sr"]);
 	CPPUNIT_ASSERT_EQUAL(0x06, (int)(Number)pid2["pid"]);
 }
 
@@ -1090,11 +1090,11 @@ void LoggerApiTest::testSetObd2ConfigFile(string filename){
 	PidConfig *pidCfg2 = &obd2Config->pids[1];
 
 	CPPUNIT_ASSERT_EQUAL(19, (int)pidCfg1->cfg.channeId);
-	CPPUNIT_ASSERT_EQUAL((int)SAMPLE_1Hz, (int)pidCfg1->cfg.sampleRate);
+	CPPUNIT_ASSERT_EQUAL((int)SAMPLE_10Hz, (int)pidCfg1->cfg.sampleRate);
 	CPPUNIT_ASSERT_EQUAL(5, (int)pidCfg1->pid);
 
 	CPPUNIT_ASSERT_EQUAL(26, (int)pidCfg2->cfg.channeId);
-	CPPUNIT_ASSERT_EQUAL((int)SAMPLE_50Hz, (int)pidCfg2->cfg.sampleRate);
+	CPPUNIT_ASSERT_EQUAL((int)SAMPLE_5Hz, (int)pidCfg2->cfg.sampleRate);
 	CPPUNIT_ASSERT_EQUAL(6, (int)pidCfg2->pid);
 }
 

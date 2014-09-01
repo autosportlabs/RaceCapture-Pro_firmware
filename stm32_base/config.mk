@@ -31,7 +31,6 @@ ITM = 1
 FREERTOS_HEAP=heap_2_combine
 
 include $(APP_PATH)/version.mk
-SCRIPT_MEMORY_LENGTH = 10240
 RCP_RELEASE_DIR ?= .
 RELEASE_NAME = RaceCapturePro-$(MAJOR).$(MINOR).$(BUGFIX)
 RELEASE_NAME_ZIP = $(RELEASE_NAME).zip
@@ -191,7 +190,7 @@ NEWLIB_OBJS += $(addprefix util/, $(NEWLIB_SRC:.c=.o))
 APP_OBJS += $(NEWLIB_OBJS)
 
 #Uncomment the following to use the ITM (trace macrocell) for printf
-APP_DEFINES += -DUSE_ITM -DSD_SDIO -DSCRIPT_MEMORY_LENGTH=$(SCRIPT_MEMORY_LENGTH) -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
+APP_DEFINES += -DUSE_ITM -DSD_SDIO -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
 
 # CPU is generally defined by the Board's config.mk file
 ifeq ($(CPU),)

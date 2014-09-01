@@ -88,8 +88,9 @@ int flashScriptPage(unsigned int page, const char *data, int mode){
 			}
 
 			if (g_scriptBuffer != NULL){
+				page = page * SCRIPT_PAGE_SIZE;
 				char *pageToAdd = g_scriptBuffer->script + page;
-				memcpy(pageToAdd, data, strlen(data));
+				strncpy(pageToAdd, data, SCRIPT_PAGE_SIZE);
 
 				if (mode == SCRIPT_ADD_MODE_COMPLETE){
 					pr_info("completed updating script, flashing: ");

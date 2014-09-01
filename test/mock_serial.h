@@ -6,7 +6,7 @@
 
 void mock_flush(void);
 
-char mock_get_c_wait(size_t delay);
+int mock_get_c_wait(char *c, size_t delay);
 
 char mock_get_c();
 

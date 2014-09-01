@@ -1,12 +1,16 @@
 #ifndef CAPABILITIES_H_
 #define CAPABILITIES_H_
 #include "serial.h"
+#include "FreeRTOSConfig.h"
 
-//Hardware capabilities for RCP MK1
+//Hardware capabilities for RCP MK2
+
+#define TICK_RATE_HZ			configTICK_RATE_HZ
 
 //configuration
 #define MAX_CHANNELS			200
 #define MAX_TRACKS				240
+#define SCRIPT_MEMORY_LENGTH	10240
 
 //Input / output Channels
 #define ANALOG_CHANNELS 		8

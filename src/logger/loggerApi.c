@@ -924,7 +924,7 @@ int api_getObd2Config(Serial *serial, const jsmntok_t *json){
 		PidConfig *pidCfg = &obd2Cfg->pids[i];
 		json_objStart(serial);
 		json_int(serial,"id",pidCfg->cfg.channeId, 1);
-		json_int(serial,"sr",pidCfg->cfg.sampleRate, 1);
+		json_int(serial,"sr",decodeSampleRate(pidCfg->cfg.sampleRate), 1);
 		json_int(serial,"pid",pidCfg->pid, 0);
 		json_objEnd(serial, i < enabledPids - 1);
 	}
@@ -945,7 +945,10 @@ int api_setObd2Config(Serial *serial, const jsmntok_t *json){
 		while (pids != NULL && pids->type == JSMN_OBJECT && pidIndex < OBD2_CHANNELS){
 			PidConfig *pidConfig = (obd2Cfg->pids + pidIndex);
 			setUnsignedShortValueIfExists( pids, "id", &pidConfig->cfg.channeId);
-			setUnsignedShortValueIfExists( pids, "sr", &pidConfig->cfg.sampleRate);
+			uint16_t sampleRate;
+			if (setUnsignedShortValueIfExists( pids, "sr", &sampleRate)){
+				pidConfig->cfg.sampleRate = encodeSampleRate(sampleRate);
+			}
 			setUnsignedShortValueIfExists( pids, "pid", &pidConfig->pid);
 			pids+=7;
 			pidIndex++;
@@ -1251,7 +1254,7 @@ int api_setScript(Serial *serial, const jsmntok_t *json){
 	const jsmntok_t *pageTok = findNode(json, "page");
 	const jsmntok_t *modeTok = findNode(json, "mode");
 
-	if (dataTok != NULL && pageTok != NULL){
+	if (dataTok != NULL && pageTok != NULL && modeTok !=NULL){
 		dataTok++;
 		pageTok++;
 		modeTok++;
@@ -1266,7 +1269,7 @@ int api_setScript(Serial *serial, const jsmntok_t *json){
 			char *script = dataTok->data;
 			unescapeScript(script);
 			int flashResult = flashScriptPage(page, script, mode);
-			returnStatus = flashResult == 0 ? API_SUCCESS : API_ERROR_SEVERE;
+			returnStatus = flashResult == 1 ? API_SUCCESS : API_ERROR_SEVERE;
 		}
 		else{
 			returnStatus = API_ERROR_PARAMETER;

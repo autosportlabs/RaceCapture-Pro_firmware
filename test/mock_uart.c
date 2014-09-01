@@ -2,6 +2,14 @@
 
 int usart_device_init()
 {
+	return 1;
+}
+
+int usart_device_init_serial(Serial *serial, uart_id_t id) {
+	return 1;
+}
+
+void usart_device_config(uint8_t port, uint8_t bits, uint8_t parity, uint8_t stopbits, uint32_t baud){
 
 }
 

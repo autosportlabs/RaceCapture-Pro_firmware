@@ -44,7 +44,7 @@ void SampleRecordTest::testPopulateSampleRecord(){
 	populate_sample_buffer(samples, channelCount, 0);
 
 	//analog channel
-	CPPUNIT_ASSERT_EQUAL(123 * 0.0048875f, samples->floatValue);
+	CPPUNIT_ASSERT_EQUAL(123 * 0.0048828125f, samples->floatValue);
 
 	//accelerometer channels
 	samples++;

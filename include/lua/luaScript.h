@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "memory.h"
+#include "capabilities.h"
 
 #define SCRIPT_ADD_RESULT_OK  		1
 #define SCRIPT_ADD_RESULT_FAIL  	0

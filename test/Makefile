@@ -34,7 +34,6 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/messaging \
 		-I$(RCP_INC)/lua \
 		-I$(RCP_INC)/command \
-		-I$(RCP_INC)/spi \
 		-I$(RCP_INC)/predictive_timer \
 		-I$(RCP_INC)/auto_config \
 		-I$(RCP_INC)/util \
@@ -42,8 +41,8 @@ INCLUDES = 	-I. \
 		-I$(SAM7S_SRC)/lua \
 		-I$(SAM7S_SRC)/command \
 		-I$(RCP_INC) \
-		-I$(SAM7S_SRC)/uart \
-		-I$(SAM7S_SRC)/usb/include \
+		-I$(RCP_INC)/usart \
+		-I$(RCP_INC)/usb_comm \
 		-I$(RCP_INC)/imu \
 		-I$(RCP_INC)/ADC \
 		-I$(RCP_INC)/timer \
@@ -55,7 +54,6 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/watchdog \
 		-I$(RCP_INC)/memory \
 		-I$(RCP_INC)/sdcard \
-		-I$(SAM7S_SRC)/spi \
 		-I$(MOCK_DIR) \
 		-I$(GPS_DIR) \
 		-I$(UTIL_DIR)
@@ -117,6 +115,7 @@ SRC = 	mock_uart.c \
 		$(RCP_SRC)/timer/timer.c \
 		$(RCP_SRC)/PWM/PWM.c \
 		$(RCP_SRC)/LED/LED.c \
+		$(RCP_SRC)/usart/usart.c \
 		$(RCP_SRC)/serial/serial.c \
 		$(RCP_SRC)/GPIO/GPIO.c \
 		$(RCP_SRC)/watchdog/watchdog.c \
@@ -131,7 +130,6 @@ SRC = 	mock_uart.c \
 		$(MOCK_DIR)/memory_device_mock.c \
 		$(MOCK_DIR)/loggerNotifications_mock.c \
 		$(MOCK_DIR)/sdcard_mock.c \
-		$(MOCK_DIR)/spi_mock.c \
 		$(MOCK_DIR)/watchdog_device_mock.c \
 		$(MOCK_DIR)/CAN_device_mock.c \
 		$(RCP_SRC)/predictive_timer/predictive_timer_2.c \

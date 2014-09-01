@@ -158,6 +158,7 @@ void PWM_device_set_duty_cycle(unsigned int channel, unsigned short duty){
 unsigned short PWM_device_get_duty_cycle(unsigned int channel){
 	return 0;
 }
+
 void PWM_device_channel_enable_analog(size_t channel, uint8_t enabled){
 	setAnalogControlGpio(channel, enabled);
 }
