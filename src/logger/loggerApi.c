@@ -1,4 +1,5 @@
 #include "constants.h"
+#include "capabilities.h"
 #include "loggerApi.h"
 #include "loggerConfig.h"
 #include "channelMeta.h"
@@ -139,6 +140,33 @@ int api_getVersion(Serial *serial, const jsmntok_t *json){
 	json_int(serial, "minor", MINOR_REV, 1);
 	json_int(serial, "bugfix", BUGFIX_REV, 0);
 	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
+	return API_SUCCESS_NO_RETURN;
+}
+
+int api_getCapabilities(Serial *serial, const jsmntok_t *json){
+	json_objStart(serial);
+	json_objStartString(serial,"capabilities");
+
+	json_objStartString(serial,"channels");
+	json_int(serial, "analog", ANALOG_CHANNELS, 1);
+	json_int(serial, "imu", IMU_CHANNELS, 1);
+	json_int(serial, "gpio", GPIO_CHANNELS, 1);
+	json_int(serial, "timer", TIMER_CHANNELS, 1);
+	json_int(serial, "pwm", PWM_CHANNELS, 1);
+	json_int(serial, "can", CAN_CHANNELS, 0);
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial,"sampleRates");
+	json_int(serial, "sensor", MAX_SENSOR_SAMPLE_RATE, 1);
+	json_int(serial, "gps", MAX_GPS_SAMPLE_RATE, 0);
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial,"db");
+	json_int(serial, "tracks", MAX_TRACKS, 1);
+	json_int(serial, "channels", MAX_CHANNELS, 0);
+	json_objEnd(serial, 0);
+
 	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
 }

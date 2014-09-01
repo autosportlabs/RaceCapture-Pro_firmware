@@ -54,11 +54,13 @@
 {"getTrackDb", api_getTrackDb}, \
 {"addChannel", api_addChannel}, \
 {"getChannels", api_getChannels}, \
-{"getVer", api_getVersion}
+{"getVer", api_getVersion}, \
+{"getCapabilities", api_getCapabilities}
 
 
 //commands
 int api_getVersion(Serial *serial, const jsmntok_t *json);
+int api_getCapabilities(Serial *serial, const jsmntok_t *json);
 int api_sampleData(Serial *serial, const jsmntok_t *json);
 int api_log(Serial *serial, const jsmntok_t *json);
 int api_getMeta(Serial *serial, const jsmntok_t *json);
