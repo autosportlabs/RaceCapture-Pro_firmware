@@ -172,13 +172,15 @@ float ADC_device_get_voltage_range(size_t channel){
 }
 
 float ADC_device_get_channel_scaling(size_t channel){
+	float scaling = 0;
 	switch(channel){
 	case 7:
-		return SCALING_20V;
+		scaling = SCALING_20V;
 		break;
 	default:
-		return SCALING_5V;
+		scaling = SCALING_5V;
 		break;
 	}
+	return scaling;
 }
 
