@@ -42,6 +42,9 @@ int i2c_write_reg_bits(struct i2c_dev *dev, uint8_t dev_addr,
 int i2c_read_reg_bits(struct i2c_dev *dev, uint8_t dev_addr,
 		      uint8_t reg_addr, size_t bit_pos,
 		      size_t num_bits, uint8_t *bit_val);
+int i2c_read_mem_block(struct i2c_dev *dev, uint8_t dev_addr,
+		       uint8_t mem_addr, uint8_t *mem_buf,
+		       size_t mem_len);
 
 /* Deprecated */
 int i2c_write_raw(struct i2c_dev *dev, uint8_t addr, uint8_t *buf, size_t len);

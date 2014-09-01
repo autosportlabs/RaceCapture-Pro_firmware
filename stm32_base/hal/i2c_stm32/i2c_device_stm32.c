@@ -376,6 +376,17 @@ int i2c_read_reg8(struct i2c_dev *dev, uint8_t dev_addr,
 	return res;
 }
 
+int i2c_read_mem_block(struct i2c_dev *dev, uint8_t dev_addr,
+		       uint8_t mem_addr, uint8_t *mem_buf,
+		       size_t mem_len)
+{
+	int res;
+	res = i2c_transact(dev, dev_addr,
+			   &mem_addr, 1,
+			   mem_buf, mem_len);
+	return res;
+}
+
 int i2c_read_reg_bits(struct i2c_dev *dev, uint8_t dev_addr,
 		      uint8_t reg_addr, size_t bit_pos,
 		      size_t num_bits, uint8_t *bit_val)
