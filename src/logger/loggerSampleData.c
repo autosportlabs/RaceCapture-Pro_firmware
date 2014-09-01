@@ -1,3 +1,4 @@
+#include "dateTime.h"
 #include "loggerSampleData.h"
 #include "loggerHardware.h"
 #include "loggerConfig.h"
@@ -377,8 +378,19 @@ float get_gps_sample(int channelId){
 			value = getGPSSpeed() *  0.621371192; //convert to MPH
 			break;
 		case gps_channel_time:
-			value = getUTCTime();
-			break;
+         {
+            /*
+             * XXX: Hack.  Doing this until backend can take uint64_t and we
+             *      can give time since epoch.  getUTCTime returned time as
+             *      HHMMSS.MMM
+             */
+            const DateTime dt = getLastFixDateTime();
+            value = ((float) dt.millisecond) / 1000;
+            value += (float) dt.second;
+            value += ((float) dt.minute) * 100;
+            value += ((float) dt.hour) * 10000;
+            break;
+         }
 		case gps_channel_distance:
 			value = getGpsDistance();
 			break;
@@ -411,8 +423,9 @@ float get_lap_stat_sample(int channelId){
 		{
 			GeoPoint gp;
 			populateGeoPoint(&gp);
-			float utcTime = getUTCTime();
-			value = getPredictedTime(gp, utcTime);
+			float ssff = getSecondsSinceFirstFix();
+         // pred time is in seconds, value is in minutes.
+			value = getPredictedTime(gp, ssff) / 60;
 			break;
 		}
 		default:
@@ -421,4 +434,3 @@ float get_lap_stat_sample(int channelId){
 	}
 	return value;
 }
-

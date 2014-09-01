@@ -14,26 +14,29 @@
 /**
  * Method invoked whenever we detect that we have crossed the start finish line
  * @param point The location of the start/finish line.
- * @param startFinishTime The current UTC time when we crossed.
+ * @param time The time which the sample was taken.  Ensure the input values units are
+ * consistent across the predictive methods.  Else you will get undefined behavior.
  */
-void startFinishCrossed(GeoPoint point, float utcTime);
+void startFinishCrossed(GeoPoint point, float time);
 
 /**
  * Adds a new GPS sample to our record if the algorithm determines its time for one.
  * @param point The point to add.
- * @param utcTime The time which the sample was taken.
+ * @param time The time which the sample was taken.  Ensure the input values units are
+ * consistent across the predictive methods.  Else you will get undefined behavior.
  * @return TRUE if it was added, FALSE otherwise.
  */
-bool addGpsSample(GeoPoint point, float utcTime);
+bool addGpsSample(GeoPoint point, float time);
 
 /**
  * Calculates the split of your current time against the fast lap time at the position given.
  * @param point The position you are currently at.
- * @param currentTime The current UTC wall time.
+ * @param time The time which the sample was taken.  Ensure the input values units are
+ * consistent across the predictive methods.  Else you will get undefined behavior.
  * @return The split between your current time and the fast lap time.  Positive indicates you are
  * going faster than your fast lap, negative indicates slower.
  */
-float getSplitAgainstFastLap(GeoPoint point, float currentTime);
+float getSplitAgainstFastLap(GeoPoint point, float time);
 
 /**
  * Figures out the predicted lap time.  Call as much as you like... it will only do
@@ -41,10 +44,11 @@ float getSplitAgainstFastLap(GeoPoint point, float currentTime);
  * allows for drivers to better see how their most recent driving affected their predicted
  * lap time.
  * @param point The current location of the car.
- * @param utcTime The current time of the most recent GPS fix.
+ * @param time The time which the sample was taken.  Ensure the input values units are
+ * consistent across the predictive methods.  Else you will get undefined behavior.
  * @return The predicted lap time.
  */
-float getPredictedTime(GeoPoint point, float utcTime);
+float getPredictedTime(GeoPoint point, float time);
 
 /**
  * Tells the caller if a predictive time is ready to be had.

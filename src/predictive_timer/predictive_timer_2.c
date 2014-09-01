@@ -79,21 +79,21 @@ static enum Status {
  * @param currentTime The current UTC time.
  * @return The current time of this lap in seconds.
  */
-static float getCurrentLapTime(float utcTime) {
-	return utcTime - currLapStartTime;
+static float getCurrentLapTime(float time) {
+	return time - currLapStartTime;
 }
 
 /**
  * Creates a timeLoc sample and places it in the currBuff.  Increments counter as needed.
  * @return true if the insert succeeded, false otherwise.
  */
-static bool insertTimeLocSample(GeoPoint point, float utcTime) {
+static bool insertTimeLocSample(GeoPoint point, float time) {
 	if (buffIndex >= MAX_TIMELOC_SAMPLES)
 		return false;
 
 	TimeLoc *timeLoc = currLap + buffIndex;
 	timeLoc->point = point;
-	timeLoc->time = getCurrentLapTime(utcTime);
+	timeLoc->time = getCurrentLapTime(time);
 
 	if (++buffIndex >= MAX_TIMELOC_SAMPLES)
 		DEBUG("Buffer now Full!\n");
@@ -149,51 +149,51 @@ static float adjustPollInterval(float lapTime) {
  * Handles adding a sample at the end of the lap.  This is needed so we always get an accurate
  * reading, even if we run out of buffer space.
  * @param point The point we are at when we cross the start finish line.
- * @param utcTime Duh!
+ * @param time Duh!
  */
-static void finishLap(GeoPoint point, float utcTime) {
+static void finishLap(GeoPoint point, float time) {
 	// Drop last entry if necessary to record end of lap.
 	if (buffIndex >= MAX_TIMELOC_SAMPLES)
 		buffIndex = MAX_TIMELOC_SAMPLES - 1;
 
-	insertTimeLocSample(point, utcTime);
+	insertTimeLocSample(point, time);
 }
 
 /**
  * Resets the state in preparation for the next lap.
  */
-static void startNewLap(GeoPoint point, float utcTime) {
-	currLapStartTime = utcTime;
+static void startNewLap(GeoPoint point, float time) {
+	currLapStartTime = time;
 	lastPredictedDelta = 0.0;
 	lastPredictedTime = 0.0;
 	buffIndex = 0;
 	status = RECORDING;
 
 	DEBUG("Starting new lap.  Status %d, buffIndex = %d, startTime = %f\n",
-			status, buffIndex, utcTime);
-	insertTimeLocSample(point, utcTime);
+			status, buffIndex, time);
+	insertTimeLocSample(point, time);
 }
 
 /**
- * @param utcTime The time the sample was taken
+ * @param time The time the sample was taken
  * @return The difference in seconds between our most recent sample a this new one.
  */
-static float getTimeSinceLastSample(float utcTime) {
-	return utcTime - currLapStartTime - currLap[buffIndex - 1].time;
+static float getTimeSinceLastSample(float time) {
+	return time - currLapStartTime - currLap[buffIndex - 1].time;
 }
 
 /**
  * Method invoked whenever we detect that we have crossed the start finish line.  Invoke this method
  * instead of invoking the addGpsSample method.  This has special state to handle corner cases.
  * @param point The location of the start/finish line.
- * @param utcTime The current UTC time when we crossed.
+ * @param time The current UTC time when we crossed.
  */
-void startFinishCrossed(GeoPoint point, float utcTime) {
+void startFinishCrossed(GeoPoint point, float time) {
 	INFO("Start/Finish Crossed.\n");
-	finishLap(point, utcTime);
+	finishLap(point, time);
 
 	if (status != DISABLED) {
-		float lapTime = getCurrentLapTime(utcTime);
+		float lapTime = getCurrentLapTime(time);
 		INFO("Last lap time was %f seconds\n", lapTime);
 
 		if (fastLapTime <= 0.0 || lapTime <= fastLapTime)
@@ -202,17 +202,17 @@ void startFinishCrossed(GeoPoint point, float utcTime) {
 		adjustPollInterval(lapTime);
 	}
 
-	startNewLap(point, utcTime);
+	startNewLap(point, time);
 }
 
 /**
  * Adds a new GPS sample to our record if the algorithm determines its time for one.  Use this when
  * we are not crossing the start/finish line.
  * @param point The point to add.
- * @param utcTime The time which the sample was taken.
+ * @param time The time which the sample was taken.
  * @return true if it was added, false otherwise.
  */
-bool addGpsSample(GeoPoint point, float utcTime) {
+bool addGpsSample(GeoPoint point, float time) {
 	DEVEL("Add GPS Sample called\n");
 
 	if (status != RECORDING) {
@@ -221,18 +221,18 @@ bool addGpsSample(GeoPoint point, float utcTime) {
 	}
 
 	// Check if enough time has elapsed between sample periods.
-	if (getTimeSinceLastSample(utcTime) < pollInterval) {
+	if (getTimeSinceLastSample(time) < pollInterval) {
 		DEVEL("DROPPING - elapsed < pollInterval\n");
 		return false;
 	}
 
-	if (!insertTimeLocSample(point, utcTime)) {
+	if (!insertTimeLocSample(point, time)) {
 		status = FULL;
 		DEVEL("DROPPING - Buffer full\n");
 		return false;
 	}
 
-	DEBUG("Adding sample  %f/%f @ %f\n", point.latitude, point.longitude, utcTime);
+	DEBUG("Added sample  %f/%f @ %f\n", point.latitude, point.longitude, time);
 	return true;
 }
 
@@ -248,7 +248,7 @@ bool addGpsSample(GeoPoint point, float utcTime) {
  * @return The percentage that projected point m lies between startPt and endPt if the method
  * requirements were met. < 0 or > 1 otherwise.
  */
-static float distPctBtwnTwoPoints(GeoPoint *s, GeoPoint *e, GeoPoint *m) {
+float distPctBtwnTwoPoints(GeoPoint *s, GeoPoint *e, GeoPoint *m) {
 	float distSM = distPythag(s, m); // A
 	float distME = distPythag(m, e); // B
 	float distSE = distPythag(s, e); // C
@@ -400,24 +400,19 @@ float getSplitAgainstFastLap(GeoPoint point, float currentTime) {
  * allows for drivers to better see how their most recent driving affected their predicted
  * lap time.
  * @param point The current location of the car.
- * @param utcTime The current time of the most recent GPS fix.
+ * @param time The current time of the most recent GPS fix.
  * @return The predicted lap time.
  */
-float getPredictedTime(GeoPoint point, float utcTime) {
+float getPredictedTime(GeoPoint point, float time) {
 
-	float timeDelta = getSplitAgainstFastLap(point, utcTime);
+	float timeDelta = getSplitAgainstFastLap(point, time);
 	float newPredictedTime = fastLapTime - timeDelta;
 
 	// Check for a minimum predicted time to deal with start/finish errors.
-	if (newPredictedTime >= MIN_PREDICTED_TIME){
-		lastPredictedTime = newPredictedTime;
-	}
-	else{
-		newPredictedTime = lastPredictedTime;
-	}
+	if (newPredictedTime < MIN_PREDICTED_TIME)
+		return lastPredictedTime;
 
-	//convert to decimal minutes
-	return newPredictedTime / 60000.0f;
+	return lastPredictedTime = newPredictedTime;
 }
 
 /**

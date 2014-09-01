@@ -6,13 +6,13 @@
 #include <streambuf>
 #include "mod_string.h"
 #include "modp_atonum.h"
+#include "rcp_cpp_unit.hh"
 
 #include <cppunit/extensions/HelperMacros.h>
 using std::ifstream;
 using std::ios;
 using std::istreambuf_iterator;
 
-#define CPPUNIT_ASSERT_CLOSE_ENOUGH(ACTUAL, EXPECTED) CPPUNIT_ASSERT((abs((ACTUAL - EXPECTED)) < 0.00001))
 
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( SectorTest );
@@ -66,7 +66,7 @@ string SectorTest::readFile(string filename){
 }
 
 #define Test_Track { \
-	0, \
+	TRACK_TYPE_CIRCUIT, \
 	{ \
 		{ \
 			{47.806934,-122.341150}, \
@@ -157,7 +157,8 @@ void SectorTest::testSectorTimes(){
          updateMillisSinceEpoch(dt);
 
 			setGPSSpeed(speed);
-			setUTCTime(utcTime);
+         // This no longer is used, but this test also appears defunct.  So no fix for now.
+			//setUTCTime(utcTime);
 			updatePosition(lat, lon);
 			double secondsSinceMidnight = calculateSecondsSinceMidnight(utcTimeStr);
 			updateSecondsSinceMidnight(secondsSinceMidnight);

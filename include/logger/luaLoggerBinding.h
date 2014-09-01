@@ -30,7 +30,6 @@ int Lua_WriteSerial(lua_State *L);
 int Lua_GetGPSPosition(lua_State *L);
 int Lua_GetGPSSpeed(lua_State *L);
 int Lua_GetGPSQuality(lua_State *L);
-int Lua_GetGPSTime(lua_State *L);
 int Lua_GetLapTime(lua_State *L);
 int Lua_GetGPSDistance(lua_State *L);
 int Lua_GetLapCount(lua_State *L);
@@ -38,6 +37,8 @@ int Lua_GetGPSSecondsSinceMidnight(lua_State *L);
 int Lua_GetGPSAtStartFinish(lua_State *L);
 int Lua_GetTimeDiff(lua_State *L);
 int Lua_GetTimeSince(lua_State *L);
+int Lua_GetTickCount(lua_State *L);
+int Lua_GetTicksPerSecond(lua_State *L);
 
 int Lua_ReadImu(lua_State *L);
 int Lua_ReadImuRaw(lua_State *L);

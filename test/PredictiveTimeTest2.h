@@ -12,12 +12,19 @@
 #include <string>
 #include <stdlib.h>
 
+#include "geopoint.h"
+#include "predictive_timer/predictive_timer_2.h"
+
 using std::string;
 using std::vector;
 
+// HACK.  Exposing the testing methods here
+float distPctBtwnTwoPoints(GeoPoint *s, GeoPoint *e, GeoPoint *m);
+
 class PredictiveTimeTest2 : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( PredictiveTimeTest2 );
-	CPPUNIT_TEST( testPredictedTimeGpsFeed );
+        //	CPPUNIT_TEST( testPredictedTimeGpsFeed );
+        CPPUNIT_TEST( testProjectedDistance );
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -25,6 +32,7 @@ public:
 	void setUp();
 	void tearDown();
 	void testPredictedTimeGpsFeed();
+        void testProjectedDistance();
 
 private:
 	string readFile(string filename);

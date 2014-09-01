@@ -78,3 +78,16 @@ int add_track(const Track *track, size_t index, int mode){
 	}
 	return result;
 }
+
+GeoPoint getFinishLine(const Track *t) {
+   const int isSingle = t->track_type == TRACK_TYPE_STAGE;
+   return isSingle ? t->stage.finish : t->circuit.startFinish;
+}
+
+int isFinishLineValid(const Track *t) {
+   if (NULL == t)
+      return 0;
+
+   const GeoPoint p = getFinishLine(t);
+   return p.latitude && p.longitude;
+}

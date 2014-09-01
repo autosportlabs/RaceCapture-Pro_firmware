@@ -15,8 +15,10 @@
 #include "modp_atonum.h"
 #include "predictive_timer_2.h"
 #include "loggerConfig.h"
+#include "rcp_cpp_unit.hh"
 
 #define FILE_PREFIX string("test/")
+
 
 using std::ifstream;
 using std::ios;
@@ -68,6 +70,16 @@ string PredictiveTimeTest2::readFile(string filename) {
 
 	str.assign((istreambuf_iterator<char>(t)), istreambuf_iterator<char>());
 	return str;
+}
+
+void PredictiveTimeTest2::testProjectedDistance() {
+  GeoPoint s = { .latitude = 2.0, .longitude = 0.0 }; // start
+  GeoPoint m = { .latitude = 2.0, .longitude = 1.0 }; // middle
+  GeoPoint e = { .latitude = 2.0, .longitude = 2.0 }; // end
+  float expected = 0.5;
+
+  float actual = distPctBtwnTwoPoints(&s, &e, &m);
+  CPPUNIT_ASSERT_CLOSE_ENOUGH(expected, actual);
 }
 
 void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
@@ -128,7 +140,7 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
                lat, lon, speed, utcTimeStr, utcTime, millis);
 
          setGPSSpeed(speed);
-         setUTCTime(utcTime);
+         //setUTCTime(utcTime); // No longer any good.
          updatePosition(lat, lon);
          updateSecondsSinceMidnight(secondsSinceMidnight);
          onLocationUpdated();
