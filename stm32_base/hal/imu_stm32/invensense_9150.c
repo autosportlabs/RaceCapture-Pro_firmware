@@ -78,7 +78,7 @@ int is9150_init(struct i2c_dev *dev, uint8_t addr)
 
 	/* Set the Gyro range to 1000* per second */
 	res = is9150_write_reg_bits(IS_REG_GYRO_CONFIG, IS_GYRO_SCALE_POS,
-				    IS_GYRO_NUM_BITS, IS_GYRO_SCALE_1000);
+				    IS_GYRO_NUM_BITS, IS_GYRO_SCALE_2000);
 	if (res)
 		return IS_9150_ERR_INIT;
 
