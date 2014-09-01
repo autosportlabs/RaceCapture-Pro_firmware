@@ -25,8 +25,6 @@
 #include "loggerSampleData.h"
 #include "virtual_channel.h"
 
-extern xSemaphoreHandle g_xLoggerStart;
-
 #define TEMP_BUFFER_LEN 200
 #define DEFAULT_CAN_TIMEOUT 	100
 
