@@ -96,16 +96,16 @@ void TrackTest::testGetFinish() {
    const Track vStage = VALID_STAGE_TRACK;
    const Track ivStage = INVALID_STAGE_TRACK;
 
-   CPPUNIT_ASSERT(isFinishLineValid(&vCircuit));
-   CPPUNIT_ASSERT(isFinishLineValid(&vStage));
-   CPPUNIT_ASSERT(!isFinishLineValid(&ivCircuit));
-   CPPUNIT_ASSERT(!isFinishLineValid(&ivStage));
+   CPPUNIT_ASSERT(isFinishPointValid(&vCircuit));
+   CPPUNIT_ASSERT(isFinishPointValid(&vStage));
+   CPPUNIT_ASSERT(!isFinishPointValid(&ivCircuit));
+   CPPUNIT_ASSERT(!isFinishPointValid(&ivStage));
 
-   const GeoPoint cfl = getFinishLine(&vCircuit);
+   const GeoPoint cfl = getFinishPoint(&vCircuit);
    CPPUNIT_ASSERT_EQUAL(cfl.latitude, vCircuit.circuit.startFinish.latitude);
    CPPUNIT_ASSERT_EQUAL(cfl.longitude, vCircuit.circuit.startFinish.longitude);
 
-   const GeoPoint sfl = getFinishLine(&vStage);
+   const GeoPoint sfl = getFinishPoint(&vStage);
    CPPUNIT_ASSERT_EQUAL(sfl.latitude, vStage.stage.finish.latitude);
    CPPUNIT_ASSERT_EQUAL(sfl.longitude, vStage.stage.finish.longitude);
 }

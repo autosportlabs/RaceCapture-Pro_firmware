@@ -79,15 +79,30 @@ int add_track(const Track *track, size_t index, int mode){
 	return result;
 }
 
-GeoPoint getFinishLine(const Track *t) {
-   const int isSingle = t->track_type == TRACK_TYPE_STAGE;
-   return isSingle ? t->stage.finish : t->circuit.startFinish;
+static int isStage(const Track *t) {
+   return t->track_type == TRACK_TYPE_STAGE;
 }
 
-int isFinishLineValid(const Track *t) {
+GeoPoint getFinishPoint(const Track *t) {
+   return isStage(t) ? t->stage.finish : t->circuit.startFinish;
+}
+
+int isFinishPointValid(const Track *t) {
    if (NULL == t)
       return 0;
 
-   const GeoPoint p = getFinishLine(t);
+   const GeoPoint p = getFinishPoint(t);
+   return p.latitude && p.longitude;
+}
+
+GeoPoint getStartPoint(const Track *t) {
+   return t->startLine;
+}
+
+int isStartPointValid(const Track *t) {
+   if (NULL == t)
+      return 0;
+
+   const GeoPoint p = getStartPoint(t);
    return p.latitude && p.longitude;
 }

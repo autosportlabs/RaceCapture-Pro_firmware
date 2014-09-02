@@ -13,6 +13,7 @@
 #include "printk.h"
 #include <math.h>
 #include <stdint.h>
+#include "tracks.h"
 
 //kilometers
 #define DISTANCE_SCALING 6371
@@ -468,7 +469,7 @@ static float calcDistancesSinceLastSample() {
 
 static int processStartFinish(const Track *track, float targetRadius) {
    int lapDetected = 0;
-   const GeoPoint finishLine = getFinishLine(track);
+   const GeoPoint finishLine = getFinishPoint(track);
    g_atStartFinish = withinGpsTarget(&finishLine, targetRadius);
    if (g_atStartFinish) {
       if (g_prevAtStartFinish == 0) {
@@ -608,7 +609,7 @@ void onLocationUpdated() {
       TrackConfig *trackConfig = &(config->TrackConfigs);
       Track *defaultTrack = &trackConfig->track;
       g_activeTrack = trackConfig->auto_detect ? auto_configure_track(defaultTrack, gp) : defaultTrack;
-      startFinishEnabled = isFinishLineValid(g_activeTrack);
+      startFinishEnabled = isFinishPointValid(g_activeTrack) && isStartPointValid(g_activeTrack);
       sectorEnabled = config->LapConfigs.sectorTimeCfg.sampleRate !=
          SAMPLE_DISABLED && startFinishEnabled;
       g_configured = 1;
