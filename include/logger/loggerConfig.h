@@ -24,15 +24,15 @@
 
 
 //standard sample rates based on OS timer ticks
-#define SAMPLE_1000Hz						TICK_RATE_HZ / 1000
-#define SAMPLE_500Hz						TICK_RATE_HZ / 500
-#define SAMPLE_200Hz						TICK_RATE_HZ / 200
-#define SAMPLE_100Hz 						TICK_RATE_HZ / 100
-#define SAMPLE_50Hz 						TICK_RATE_HZ / 50
-#define SAMPLE_25Hz 						TICK_RATE_HZ / 25
-#define SAMPLE_10Hz 						TICK_RATE_HZ / 10
-#define SAMPLE_5Hz 							TICK_RATE_HZ / 5
-#define SAMPLE_1Hz 							TICK_RATE_HZ / 1
+#define SAMPLE_1000Hz						(TICK_RATE_HZ / 1000)
+#define SAMPLE_500Hz						(TICK_RATE_HZ / 500)
+#define SAMPLE_200Hz						(TICK_RATE_HZ / 200)
+#define SAMPLE_100Hz 						(TICK_RATE_HZ / 100)
+#define SAMPLE_50Hz 						(TICK_RATE_HZ / 50)
+#define SAMPLE_25Hz 						(TICK_RATE_HZ / 25)
+#define SAMPLE_10Hz 						(TICK_RATE_HZ / 10)
+#define SAMPLE_5Hz 							(TICK_RATE_HZ / 5)
+#define SAMPLE_1Hz 							(TICK_RATE_HZ / 1)
 #define SAMPLE_DISABLED 					0
 
 #define ANALOG_SCALING_BINS					5
