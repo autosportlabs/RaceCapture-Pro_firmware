@@ -869,7 +869,8 @@ void LoggerApiTest::testGetTrackCfgCircuit(){
 }
 
 void LoggerApiTest::testAddTrackDb(){
-	testAddTrackDbFile("addTrackDb1.json");
+	testAddTrackDbFile("addTrackDb_circuit.json");
+	testAddTrackDbFile("addTrackDb_stage.json");
 }
 
 void LoggerApiTest::testAddTrackDbFile(string filename){
@@ -886,8 +887,17 @@ void LoggerApiTest::testAddTrackDbFile(string filename){
 
 	int trackType = (int)(Number)jsonCompare["addTrackDb"]["track"]["type"];
 	CPPUNIT_ASSERT_EQUAL(trackType, (int)track->track_type);
-	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][0], (float)track->startLine.latitude);
-	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][1], (float)track->startLine.longitude);
+
+	if (trackType == TRACK_TYPE_CIRCUIT){
+		CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][0], (float)track->circuit.startFinish.latitude);
+		CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][1], (float)track->circuit.startFinish.longitude);
+	}
+	else{
+		CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["st"][0], (float)track->stage.start.latitude);
+		CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["st"][1], (float)track->stage.start.longitude);
+		CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["fin"][0], (float)track->stage.finish.latitude);
+		CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["fin"][1], (float)track->stage.finish.longitude);
+	}
 
 	Array secNode = (Array)jsonCompare["addTrackDb"]["track"]["sec"];
 	for (int i = 0; i < secNode.Size(); i++){
@@ -896,14 +906,14 @@ void LoggerApiTest::testAddTrackDbFile(string filename){
 			CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sec"][i][1], (float)track->circuit.sectors[i].longitude);
 		}
 		else{
-			CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sec"][0], (float)track->stage.sectors[i].latitude);
-			CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sec"][1], (float)track->stage.sectors[i].longitude);
+			CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sec"][i][0], (float)track->stage.sectors[i].latitude);
+			CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sec"][i][1], (float)track->stage.sectors[i].longitude);
 		}
 	}
 }
 
 void LoggerApiTest::testGetTrackDb(){
-	testGetTrackDbFile("getTrackDb1.json", "addTrackDb1.json");
+	testGetTrackDbFile("getTrackDb1.json", "addTrackDb_circuit.json");
 }
 
 void LoggerApiTest::testGetTrackDbFile(string filename, string addedFilename){
