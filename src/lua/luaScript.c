@@ -5,7 +5,7 @@
 
 
 #ifndef RCP_TESTING
-static const ScriptConfig g_scriptConfig  __attribute__((section(".script\n\t#")));
+static const volatile ScriptConfig g_scriptConfig  __attribute__((section(".script\n\t#")));
 #else
 static ScriptConfig g_scriptConfig = {DEFAULT_SCRIPT, MAGIC_NUMBER_SCRIPT_INIT};
 #endif
@@ -25,7 +25,7 @@ int flash_default_script(){
 	if (defaultScriptConfig != NULL){
 		defaultScriptConfig->magicInit = MAGIC_NUMBER_SCRIPT_INIT;
 		strncpy(defaultScriptConfig->script, DEFAULT_SCRIPT, sizeof(DEFAULT_SCRIPT));
-		result = memory_flash_region(&g_scriptConfig, defaultScriptConfig, sizeof (ScriptConfig));
+		result = memory_flash_region((void *)&g_scriptConfig, (void *)defaultScriptConfig, sizeof (ScriptConfig));
 		portFree(defaultScriptConfig);
 	}
 	if (result == 0) pr_info("success\r\n"); else pr_info("failed\r\n");
@@ -33,7 +33,7 @@ int flash_default_script(){
 }
 
 const char * getScript(){
-	return g_scriptConfig.script;
+	return (const char *)g_scriptConfig.script;
 }
 
 //unescapes a string in place
@@ -84,7 +84,7 @@ int flashScriptPage(unsigned int page, const char *data, int mode){
 			if (g_scriptBuffer == NULL){
 				pr_info("allocating new script buffer\r\n");
 				g_scriptBuffer = (ScriptConfig *)portMalloc(sizeof(ScriptConfig));
-				memcpy(g_scriptBuffer, &g_scriptConfig, sizeof(ScriptConfig));
+				memcpy((void *)g_scriptBuffer, (void *)&g_scriptConfig, sizeof(ScriptConfig));
 			}
 
 			if (g_scriptBuffer != NULL){
@@ -94,7 +94,7 @@ int flashScriptPage(unsigned int page, const char *data, int mode){
 
 				if (mode == SCRIPT_ADD_MODE_COMPLETE){
 					pr_info("completed updating script, flashing: ");
-					if (memory_flash_region(&g_scriptConfig, g_scriptBuffer, sizeof(ScriptConfig)) == 0){
+					if (memory_flash_region((void *)&g_scriptConfig, (void *)g_scriptBuffer, sizeof(ScriptConfig)) == 0){
 						pr_info("success\r\n");
 					}
 					else{

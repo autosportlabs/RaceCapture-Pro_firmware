@@ -6,7 +6,7 @@
 
 #ifndef RCP_TESTING
 #include "memory.h"
-static const Channels g_channels  __attribute__((section(".channels\n\t#")));
+static const volatile Channels g_channels  __attribute__((section(".channels\n\t#")));
 #else
 static Channels g_channels = DEFAULT_CHANNEL_META;
 #endif
@@ -35,12 +35,12 @@ int is_system_channel(const Channel *channel){
 }
 
 const Channels * get_channels(){
-	return &g_channels;
+	return (Channels *)&g_channels;
 }
 
 const Channel * get_channel(size_t id){
 	if (id >= MAX_CHANNEL_COUNT) id = 0;
-	return &g_channels.channels[id];
+	return (Channel *)&g_channels.channels[id];
 }
 
 size_t filter_channel_id(size_t id){
@@ -50,7 +50,7 @@ size_t filter_channel_id(size_t id){
 
 size_t find_channel_id(const char * name){
 	for (size_t i = 0; i < MAX_CHANNEL_COUNT; i++){
-		if (strcasecmp(name, g_channels.channels[i].label) == 0) return i;
+		if (strcasecmp(name, (char *)g_channels.channels[i].label) == 0) return i;
 	}
 	return 0;
 }
@@ -68,7 +68,7 @@ int flash_default_channels(void){
 }
 
 int flash_channels(const Channels *source, size_t rawSize){
-	int result = memory_flash_region(&g_channels, source, rawSize);
+	int result = memory_flash_region((void *)&g_channels, (void *)source, rawSize);
 	if (result == 0) pr_info("success\r\n"); else pr_info("failed\r\n");
 	return result;
 }
@@ -81,7 +81,7 @@ int add_channel(const Channel *channel, int mode,  size_t index){
 			if (g_channelsMetaBuffer == NULL){
 				pr_info("allocating new channels buffer\r\n");
 				g_channelsMetaBuffer = (Channels *)portMalloc(sizeof(Channels));
-				memcpy(g_channelsMetaBuffer, &g_channels, sizeof(Channels));
+				memcpy((void *)g_channelsMetaBuffer, (void *)&g_channels, sizeof(Channels));
 			}
 
 			if (g_channelsMetaBuffer != NULL){
