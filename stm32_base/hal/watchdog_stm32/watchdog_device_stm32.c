@@ -1,5 +1,7 @@
 #include "watchdog_device.h"
 #include "LED.h"
+#include <stm32f4xx_iwdg.h>
+
 
 inline void watchdog_device_reset(){
 }
