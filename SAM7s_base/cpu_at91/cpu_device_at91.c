@@ -18,3 +18,7 @@ void cpu_device_reset(){
 	AT91F_RSTSoftReset(AT91C_BASE_RSTC, AT91C_RSTC_PROCRST|
 					   AT91C_RSTC_PERRST|AT91C_RSTC_EXTRST);
 }
+
+const char * cpu_device_get_serialnumber(void){
+	return "";
+}

@@ -20,9 +20,9 @@
 #include "timer.h"
 #include "ADC.h"
 #include "imu.h"
+#include "cpu.h"
 #include "luaScript.h"
 #include "luaTask.h"
-
 
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
@@ -138,7 +138,8 @@ int api_getVersion(Serial *serial, const jsmntok_t *json){
 	json_string(serial, "name", DEVICE_NAME, 1);
 	json_int(serial, "major", MAJOR_REV, 1);
 	json_int(serial, "minor", MINOR_REV, 1);
-	json_int(serial, "bugfix", BUGFIX_REV, 0);
+	json_int(serial, "bugfix", BUGFIX_REV, 1);
+	json_string(serial, "serial", cpu_device_get_serialnumber(), 0);
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
