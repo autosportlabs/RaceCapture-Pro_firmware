@@ -2,12 +2,15 @@
 #include <stm32f4xx_misc.h>
 #include <stdint.h>
 
-extern uint32_t _flash_start;
-static char cpu_id[25];
+#define CPU_ID_REGISTER_START 	0x1FFF7A10
+#define CPU_ID_REGISTER_END   	0x1FFF7A1C
+#define 						ASCII(x) (((x)&0xF) < 10) ? (((x)&0xF)+'0') : (((x)&0xF)-10+'A')
+#define SERIAL_ID_BITS			96
+#define SERIAL_ID_BUFFER_LEN	(((SERIAL_ID_BITS / 8) * 2) + 1)
 
-#define CPU_ID_REGISTER_START 0x1FFF7A10
-#define CPU_ID_REGISTER_END   0x1FFF7A1C
-#define ASCII(x) (((x)&0xF) < 10) ? (((x)&0xF)+'0') : (((x)&0xF)-10+'A')
+extern uint32_t _flash_start;
+static char cpu_id[SERIAL_ID_BUFFER_LEN];
+
 
 static void init_cpu_id(){
     uint32_t *p = (uint32_t *) CPU_ID_REGISTER_START;
@@ -18,7 +21,7 @@ static void init_cpu_id(){
         p++;
         j += 8;
     }
-    cpu_id[24] = 0;
+    cpu_id[SERIAL_ID_BUFFER_LEN - 1] = 0;
 }
 
 int cpu_device_init(void){
