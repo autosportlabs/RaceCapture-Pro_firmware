@@ -45,12 +45,16 @@ These take the form:
 */
 #include "constants.h"
 #include "usb.h"
+#include "system_info.h"
+
 const portCHAR pxLanguageStringDescriptor[] =
 {
 	4,
 	usbDESCRIPTOR_TYPE_STRING,
 	0x09, 0x04
 };
+
+
 
 const portCHAR pxManufacturerStringDescriptor[] = USB_MFG_STRING_DESCRIPTOR;
 
