@@ -132,6 +132,11 @@ static int setStringValueIfExists(const jsmntok_t *root, const char * fieldName,
 	return (valueNode != NULL);
 }
 
+int api_systemReset(Serial *serial, const jsmntok_t *json){
+	cpu_reset();
+	return API_SUCCESS_NO_RETURN;
+}
+
 int api_getVersion(Serial *serial, const jsmntok_t *json){
 	json_objStart(serial);
 	json_objStartString(serial,"ver");
@@ -139,7 +144,7 @@ int api_getVersion(Serial *serial, const jsmntok_t *json){
 	json_int(serial, "major", MAJOR_REV, 1);
 	json_int(serial, "minor", MINOR_REV, 1);
 	json_int(serial, "bugfix", BUGFIX_REV, 1);
-	json_string(serial, "serial", cpu_device_get_serialnumber(), 0);
+	json_string(serial, "serial", cpu_get_serialnumber(), 0);
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;

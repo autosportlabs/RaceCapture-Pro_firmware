@@ -13,6 +13,7 @@
 #include "luaTask.h"
 #include "memory.h"
 #include "loggerConfig.h"
+#include "cpu.h"
 
 //Stuff to provide memory statistics
 extern unsigned int _CONFIG_HEAP_SIZE;
@@ -74,4 +75,10 @@ void GetVersion(Serial *serial, unsigned int argc, char **argv){
 	put_nameString(serial, "major", MAJOR_REV_STR);
 	put_nameString(serial, "minor", MINOR_REV_STR);
 	put_nameString(serial, "bugfix", BUGFIX_REV_STR);
+	put_nameString(serial, "serial", cpu_get_serialnumber());
 }
+
+void ResetSystem(Serial *serial, unsigned int argc, char **argv){
+	cpu_reset();
+}
+

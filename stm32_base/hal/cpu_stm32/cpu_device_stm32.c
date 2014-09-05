@@ -1,5 +1,6 @@
 #include "cpu_device.h"
 #include <stm32f4xx_misc.h>
+#include <core_cm4.h>
 #include <stdint.h>
 
 #define CPU_ID_REGISTER_START 	0x1FFF7A10
@@ -32,7 +33,7 @@ int cpu_device_init(void){
 }
 
 void cpu_device_reset(){
-
+	NVIC_SystemReset();
 }
 
 const char * cpu_device_get_serialnumber(void){
