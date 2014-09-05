@@ -287,6 +287,9 @@ static void i2c_start(struct i2c_priv *p)
 	/* Clear out the data register */
 	I2C_ReceiveData(p->ll_dev);
 
+	/* Clear the device error flag */
+	p->error_flag = false;
+
 	/* Clear the stop bit */
 	I2C_GenerateSTOP(p->ll_dev, DISABLE);
 
@@ -594,12 +597,10 @@ static void i2c_common_event_handler(struct i2c_priv *p)
 	if (I2C_GetFlagStatus(p->ll_dev, I2C_FLAG_TXE)) {
 			i2c_stage_tx_byte(p);
 	}
-	if (I2C_GetFlagStatus(p->ll_dev, I2C_FLAG_SB)) {
-		I2C_GetLastEvent(p->ll_dev);
-		I2C_Send7bitAddress(p->ll_dev,
-				    p->slave_addr,
-				    p->trans_direction);
-	}
+
+	/* Generate a stop if there is an error detected */
+	if (p->error_flag)
+		I2C_GenerateSTOP(p->ll_dev, ENABLE);
 }
 
 static void i2c_common_error_handler(struct i2c_priv *p)
