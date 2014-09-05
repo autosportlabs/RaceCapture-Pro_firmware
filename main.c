@@ -86,10 +86,10 @@ void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName)
 	(void)pcTaskName;
 }
 
-
-int main( void )
+void setupTask(void *params)
 {
-	cpu_init();
+	(void)params;
+
 	watchdog_init(WATCHDOG_TIMEOUT_MS);
 	//perform a clean reset if the watchdog fired
 	if (watchdog_is_watchdog_reset()) cpu_reset();
@@ -109,6 +109,15 @@ int main( void )
 	startGPSTask			( GPS_TASK_PRIORITY );
 	startOBD2Task			( OBD2_TASK_PRIORITY);
 
+	/* Removes this setup task from the scheduler */
+	vTaskDelete(NULL);
+}
+
+
+int main( void )
+{
+
+	cpu_init();
 	/* Start the scheduler.
 
 	   NOTE : Tasks run in system mode and the scheduler runs in Supervisor mode.
@@ -117,6 +126,13 @@ int main( void )
 	   to supervisor mode prior to main being called.  If you are not using one of
 	   these demo application projects then ensure Supervisor mode is used here.
 	*/
+
+	xTaskCreate(setupTask,
+		    (signed portCHAR*)"Hardware Init",
+		    configMINIMAL_STACK_SIZE + 100,
+		    NULL,
+		    tskIDLE_PRIORITY + 4,
+		    NULL);
 
 	vTaskStartScheduler();
 	fatalError(FATAL_ERROR_SCHEDULER);
