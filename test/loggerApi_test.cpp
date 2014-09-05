@@ -11,6 +11,7 @@
 #include "loggerApi.h"
 #include "mock_serial.h"
 #include "imu.h"
+#include "cpu.h"
 #include "loggerConfig.h"
 #include "channelMeta.h"
 #include "jsmn.h"
@@ -1151,6 +1152,26 @@ void LoggerApiTest::testRunScriptFile(string filename){
 	assertGenericResponse(txBuffer, "runScript", API_SUCCESS);
 }
 
+void LoggerApiTest::testGetCapabilities(){
+	char * response = processApiGeneric("getCapabilities.json");
+
+	Object json;
+	stringToJson(response, json);
+
+	CPPUNIT_ASSERT_EQUAL(ANALOG_CHANNELS, (int)(Number)json["capabilities"]["channels"]["analog"]);
+	CPPUNIT_ASSERT_EQUAL(IMU_CHANNELS, (int)(Number)json["capabilities"]["channels"]["imu"]);
+	CPPUNIT_ASSERT_EQUAL(GPIO_CHANNELS, (int)(Number)json["capabilities"]["channels"]["gpio"]);
+	CPPUNIT_ASSERT_EQUAL(TIMER_CHANNELS, (int)(Number)json["capabilities"]["channels"]["timer"]);
+	CPPUNIT_ASSERT_EQUAL(PWM_CHANNELS, (int)(Number)json["capabilities"]["channels"]["pwm"]);
+	CPPUNIT_ASSERT_EQUAL(CAN_CHANNELS, (int)(Number)json["capabilities"]["channels"]["can"]);
+
+	CPPUNIT_ASSERT_EQUAL(MAX_SENSOR_SAMPLE_RATE, (int)(Number)json["capabilities"]["sampleRates"]["sensor"]);
+	CPPUNIT_ASSERT_EQUAL(MAX_GPS_SAMPLE_RATE, (int)(Number)json["capabilities"]["sampleRates"]["gps"]);
+
+	CPPUNIT_ASSERT_EQUAL(MAX_TRACKS, (int)(Number)json["capabilities"]["db"]["tracks"]);
+	CPPUNIT_ASSERT_EQUAL(MAX_CHANNELS, (int)(Number)json["capabilities"]["db"]["channels"]);
+}
+
 void LoggerApiTest::testGetVersion(){
 	char * response = processApiGeneric("getVersion1.json");
 
@@ -1161,4 +1182,5 @@ void LoggerApiTest::testGetVersion(){
 	CPPUNIT_ASSERT_EQUAL(MAJOR_REV, (int)(Number)json["ver"]["major"]);
 	CPPUNIT_ASSERT_EQUAL(MINOR_REV, (int)(Number)json["ver"]["minor"]);
 	CPPUNIT_ASSERT_EQUAL(BUGFIX_REV, (int)(Number)json["ver"]["bugfix"]);
+	CPPUNIT_ASSERT_EQUAL(string(cpu_get_serialnumber()), (string)(String)json["ver"]["serial"]);
 }

@@ -48,6 +48,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/timer \
 		-I$(RCP_INC)/PWM \
 		-I$(RCP_INC)/LED \
+		-I$(RCP_INC)/cpu \
 		-I$(RCP_INC)/CAN \
 		-I$(RCP_INC)/OBD2 \
 		-I$(RCP_INC)/GPIO \
@@ -115,6 +116,7 @@ SRC = 	mock_uart.c \
 		$(RCP_SRC)/timer/timer.c \
 		$(RCP_SRC)/PWM/PWM.c \
 		$(RCP_SRC)/LED/LED.c \
+		$(RCP_SRC)/cpu/cpu.c \
 		$(RCP_SRC)/usart/usart.c \
 		$(RCP_SRC)/serial/serial.c \
 		$(RCP_SRC)/GPIO/GPIO.c \
@@ -123,6 +125,7 @@ SRC = 	mock_uart.c \
 		$(MOCK_DIR)/imu_device_mock.c \
 		$(MOCK_DIR)/timer_device_mock.c \
 		$(MOCK_DIR)/ADC_device_mock.c \
+		$(MOCK_DIR)/cpu_device_mock.c \
 		$(MOCK_DIR)/PWM_device_mock.c \
 		$(MOCK_DIR)/LED_device_mock.c \
 		$(MOCK_DIR)/luaTask_mock.c \
