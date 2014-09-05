@@ -90,9 +90,6 @@ void setupTask(void *params)
 {
 	(void)params;
 
-	watchdog_init(WATCHDOG_TIMEOUT_MS);
-	//perform a clean reset if the watchdog fired
-	if (watchdog_is_watchdog_reset()) cpu_reset();
 	initialize_tracks();
 	initialize_channels();
 	initialize_logger_config();
@@ -118,6 +115,10 @@ int main( void )
 {
 
 	cpu_init();
+	watchdog_init(WATCHDOG_TIMEOUT_MS);
+	//perform a clean reset if the watchdog fired
+	//if (watchdog_is_watchdog_reset()) cpu_reset();
+
 	/* Start the scheduler.
 
 	   NOTE : Tasks run in system mode and the scheduler runs in Supervisor mode.
@@ -129,7 +130,7 @@ int main( void )
 
 	xTaskCreate(setupTask,
 		    (signed portCHAR*)"Hardware Init",
-		    configMINIMAL_STACK_SIZE + 100,
+		    configMINIMAL_STACK_SIZE + 500,
 		    NULL,
 		    tskIDLE_PRIORITY + 4,
 		    NULL);

@@ -182,7 +182,7 @@ static void doScript(void){
 }
 
 static void guardedDoScript(void){
-	if (watchdog_is_poweron_reset()){
+	if (!watchdog_is_watchdog_reset()){
 		doScript();
 	}
 	else{
