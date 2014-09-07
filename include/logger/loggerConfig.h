@@ -153,7 +153,7 @@ typedef struct _GPIOConfig{
 			DEFAULT_GPIO2_CONFIG, \
 			DEFAULT_GPIO3_CONFIG \
 			}
-			
+
 typedef struct _ImuConfig{
 	ChannelConfig cfg;
 	unsigned char mode;
@@ -189,7 +189,7 @@ typedef struct _ImuConfig{
 				DEFAULT_ACCEL_Z_AXIS_CONFIG, \
 				DEFAULT_GYRO_YAW_AXIS_CONFIG \
 			}
-	
+
 typedef struct _PWMConfig{
 	ChannelConfig cfg;
 	unsigned char outputMode;
@@ -515,7 +515,7 @@ typedef struct _LoggerConfig {
 	DEFAULT_VERSION_INFO, \
 	"" \
 	}
-	
+
 
 void initialize_logger_config();
 

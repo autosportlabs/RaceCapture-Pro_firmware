@@ -886,8 +886,9 @@ void LoggerApiTest::testAddTrackDbFile(string filename){
 
 	int trackType = (int)(Number)jsonCompare["addTrackDb"]["track"]["type"];
 	CPPUNIT_ASSERT_EQUAL(trackType, (int)track->track_type);
-	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][0], (float)track->startLine.latitude);
-	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][1], (float)track->startLine.longitude);
+   GeoPoint s = getStartPoint(track);
+	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][0], s.latitude);
+	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][1], s.longitude);
 
 	Array secNode = (Array)jsonCompare["addTrackDb"]["track"]["sec"];
 	for (int i = 0; i < secNode.Size(); i++){

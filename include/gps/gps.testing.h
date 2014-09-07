@@ -31,4 +31,5 @@ int atoiOffsetLenSafe(const char *str, size_t offset, size_t len);
  * @param fixDateTime The Full Time and Date as provided by the GPS unit.
  */
 void updateMillisSinceEpoch(DateTime fixDateTime);
+
 #endif /* GPS_TESTING_H_ */

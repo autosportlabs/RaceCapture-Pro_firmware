@@ -60,6 +60,13 @@ void SampleRecordTest::testPopulateSampleRecord(){
 	CPPUNIT_ASSERT_EQUAL(imu_read_value(3, &lc->ImuConfigs[3]), samples->floatValue);
 
 	//GPS / Track channels
+        /*
+         * !!! BE WARNED!!!  It seems some of these samples should be intValues instead of
+         * floatValue.  If you are going to change it to a non-zero value, you will
+         * need to double check this.  GDB was the quickest way I found to debug this.
+         * Else you will enter a world of pain as I did trying to figure out why you
+         * get NaN or something else weird that you didn't expect.
+         */
 	samples++;
 	CPPUNIT_ASSERT_EQUAL((float)0, samples->floatValue);
 
@@ -81,9 +88,8 @@ void SampleRecordTest::testPopulateSampleRecord(){
 	samples++;
 	CPPUNIT_ASSERT_EQUAL((float)0, samples->floatValue);
 
-	samples++;
-	CPPUNIT_ASSERT_EQUAL((float)0, samples->floatValue);
-
+        samples++;
+        CPPUNIT_ASSERT_EQUAL(-1, samples->intValue);
 }
 
 void SampleRecordTest::testInitSampleRecord()

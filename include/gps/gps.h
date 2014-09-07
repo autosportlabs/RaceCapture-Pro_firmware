@@ -28,6 +28,8 @@ float getLastLapTime();
 
 float getLastSectorTime();
 
+int getSector();
+
 int getLastSector();
 
 int getAtStartFinish();

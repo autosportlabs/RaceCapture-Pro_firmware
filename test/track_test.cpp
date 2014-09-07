@@ -43,37 +43,19 @@
       }                                         \
   }
 
-/*
- * Hoy this is a dirty hack.
- */
-
+// Start, Finish, Sectors[]
 #define VALID_STAGE_TRACK {                     \
     TRACK_TYPE_STAGE,                           \
-    {                                           \
-		{                                         \
-        {48.806934,-120.341150},                                        \
-           {48.806875,-120.335818},                                     \
-              {48.79974,-120.335704},                                   \
-                 {48.799719,-120.346416},                               \
-                    {0.0, 0.0 },                                        \
-                       {0.0, 0.0 },                                     \
-                          {0.0, 0.0 },                                  \
-                             {0.0, 0.0 },                               \
-                                {0.0, 0.0 },                            \
-                                   {0.0, 0.0 },                         \
-                                      {0.0, 0.0 },                      \
-                                         {0.0, 0.0 },                   \
-                                            {0.0, 0.0 },                \
-                                               {0.0, 0.0 },             \
-                                                  {0.0, 0.0 },          \
-                                                     {0.0, 0.0 },       \
-                                                        {0.0, 0.0 },    \
-                                                           {0.0, 0.0 }, \
-                                                              {0.0, 0.0 }, \
-                                                                 {48.806886,-120.346494}, \
-                                                                    }   \
-    }                                                                   \
-   }
+      {                                         \
+        {                                       \
+          {48.806934,-120.341150},              \
+            {48.806886,-120.346494},            \
+              {48.806875,-120.335818},          \
+                {48.79974,-120.335704},         \
+                  {48.799719,-120.346416},      \
+                    }                           \
+      }                                         \
+  }
 
 #define INVALID_STAGE_TRACK {                   \
     TRACK_TYPE_STAGE,                           \
@@ -102,10 +84,12 @@ void TrackTest::testGetFinish() {
    CPPUNIT_ASSERT(!isFinishPointValid(&ivStage));
 
    const GeoPoint cfl = getFinishPoint(&vCircuit);
-   CPPUNIT_ASSERT_EQUAL(cfl.latitude, vCircuit.circuit.startFinish.latitude);
-   CPPUNIT_ASSERT_EQUAL(cfl.longitude, vCircuit.circuit.startFinish.longitude);
+   const GeoPoint expCfl = vCircuit.circuit.startFinish;
+   CPPUNIT_ASSERT_EQUAL(cfl.latitude, expCfl.latitude);
+   CPPUNIT_ASSERT_EQUAL(cfl.longitude, expCfl.longitude);
 
    const GeoPoint sfl = getFinishPoint(&vStage);
-   CPPUNIT_ASSERT_EQUAL(sfl.latitude, vStage.stage.finish.latitude);
-   CPPUNIT_ASSERT_EQUAL(sfl.longitude, vStage.stage.finish.longitude);
+   const GeoPoint expSfl = vStage.stage.finish;
+   CPPUNIT_ASSERT_EQUAL(sfl.latitude, expSfl.latitude);
+   CPPUNIT_ASSERT_EQUAL(sfl.longitude, expSfl.longitude);
 }

@@ -405,32 +405,32 @@ float get_gps_sample(int channelId){
 }
 
 float get_lap_stat_sample(int channelId){
-	float value = 0;
-	switch(channelId){
-		case lap_stat_channel_lapcount:
-			value = getLapCount();
-			break;
-		case lap_stat_channel_laptime:
-			value = getLastLapTime();
-			break;
-		case lap_stat_channel_sector:
-			value = getLastSector();
-			break;
-		case lap_stat_channel_sectortime:
-			value = getLastSectorTime();
-			break;
-		case lap_stat_channel_predtime:
-		{
-			GeoPoint gp;
-			populateGeoPoint(&gp);
-			float ssff = getSecondsSinceFirstFix();
+   float value = 0;
+   switch(channelId){
+   case lap_stat_channel_lapcount:
+      value = (float) getLapCount();
+      break;
+   case lap_stat_channel_laptime:
+      value = getLastLapTime();
+      break;
+   case lap_stat_channel_sector:
+      value = (float) getLastSector();
+      break;
+   case lap_stat_channel_sectortime:
+      value = getLastSectorTime();
+      break;
+   case lap_stat_channel_predtime:
+      {
+         GeoPoint gp;
+         populateGeoPoint(&gp);
+         float ssff = getSecondsSinceFirstFix();
          // pred time is in seconds, value is in minutes.
-			value = getPredictedTime(gp, ssff) / 60;
-			break;
-		}
-		default:
-			value = -1;
-			break;
-	}
-	return value;
+         value = getPredictedTime(gp, ssff) / 60;
+         break;
+      }
+   default:
+      value = -1;
+      break;
+   }
+   return value;
 }

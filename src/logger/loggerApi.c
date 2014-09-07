@@ -2,7 +2,6 @@
 #include "loggerApi.h"
 #include "loggerConfig.h"
 #include "channelMeta.h"
-#include "tracks.h"
 #include "modp_atonum.h"
 #include "mod_string.h"
 #include "sampleRecord.h"
@@ -998,8 +997,10 @@ static void json_track(Serial *serial, const Track *track){
 		json_arrayEnd(serial, 0);
 	}
 	else{
-		json_geoPointArray(serial, "st", &track->stage.start, 1);
-		json_geoPointArray(serial, "fin", &track->stage.finish, 1);
+      GeoPoint start = getStartPoint(track);
+      GeoPoint finish = getFinishPoint(track);
+		json_geoPointArray(serial, "st", &start, 1);
+		json_geoPointArray(serial, "fin", &finish, 1);
 		json_arrayStart(serial, "sec");
 		for (size_t i = 0; i < STAGE_SECTOR_COUNT; i++){
 			json_geoPointArray(serial, NULL, &track->stage.sectors[i], i < STAGE_SECTOR_COUNT - 1);
@@ -1052,8 +1053,10 @@ static void setTrack(const jsmntok_t *trackNode, Track *track){
 			setGeoPointIfExists(trackNode, "sf", &track->circuit.startFinish);
 		}
 		else{
-			setGeoPointIfExists(trackNode, "st", &track->stage.start);
-			setGeoPointIfExists(trackNode, "fin", &track->stage.finish);
+         GeoPoint start = getStartPoint(track);
+         GeoPoint finish = getFinishPoint(track);
+			setGeoPointIfExists(trackNode, "st", &start);
+			setGeoPointIfExists(trackNode, "fin", &finish);
 			sectorsList = track->stage.sectors;
 			maxSectors = STAGE_SECTOR_COUNT;
 		}

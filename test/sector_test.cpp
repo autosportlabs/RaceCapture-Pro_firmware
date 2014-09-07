@@ -113,7 +113,7 @@ void SectorTest::testSectorTimes(){
 
 	std::istringstream iss(log);
 
-	Track *trackCfg  = 	&(getWorkingLoggerConfig()->TrackConfigs.track);
+	Track *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs.track);
 
 	Track testTrack = Test_Track;
 	memcpy(trackCfg, &testTrack, sizeof(Track));
@@ -125,66 +125,70 @@ void SectorTest::testSectorTimes(){
 	int currentLap = 0;
 	int lineNo = 0;
 	string line;
-	while (std::getline(iss, line)){
-		lineNo++;
-		vector<string> values = split(line, ',');
 
-		string latitudeRaw = values[5];
-		string longitudeRaw = values[6];
-		string speedRaw = values[7];
-		string timeRaw = values[8];
+	while (std::getline(iss, line)) {
+           lineNo++;
+           vector<string> values = split(line, ',');
 
-		timeRaw = "0" + timeRaw;
+           string latitudeRaw = values[5];
+           string longitudeRaw = values[6];
+           string speedRaw = values[7];
+           string timeRaw = values[8];
 
-		if (values[0][0] != '#' && latitudeRaw.size() > 0 && longitudeRaw.size() > 0 && speedRaw.size() > 0 && timeRaw.size() > 0){
-			//printf("%s", line.c_str());
-			float lat = modp_atof(latitudeRaw.c_str());
-			float lon = modp_atof(longitudeRaw.c_str());
-			float speed = modp_atof(speedRaw.c_str());
+           timeRaw = "0" + timeRaw;
 
-         const char *utcTimeStr = timeRaw.c_str();
-         float utcTime = modp_atof(utcTimeStr);
+           if (values[0][0] != '#' && latitudeRaw.size() > 0 &&
+               longitudeRaw.size() > 0 && speedRaw.size() > 0 && timeRaw.size() > 0) {
 
-         DateTime dt;
-         dt.partialYear = 14;
-         dt.month = 5;
-         dt.day = 3;
-         dt.hour = (int8_t) atoiOffsetLenSafe(utcTimeStr, 0, 2);
-         dt.minute = (int8_t) atoiOffsetLenSafe(utcTimeStr, 2, 2);
-         dt.second = (int8_t) atoiOffsetLenSafe(utcTimeStr, 4, 2);
-         dt.millisecond = (int16_t) atoiOffsetLenSafe(utcTimeStr, 7, 3);
-         updateFullDateTime(dt);
-         updateMillisSinceEpoch(dt);
+              //printf("%s", line.c_str());
 
-			setGPSSpeed(speed);
-         // This no longer is used, but this test also appears defunct.  So no fix for now.
-			//setUTCTime(utcTime);
-			updatePosition(lat, lon);
-			double secondsSinceMidnight = calculateSecondsSinceMidnight(utcTimeStr);
-			updateSecondsSinceMidnight(secondsSinceMidnight);
-			onLocationUpdated();
+              float lat = modp_atof(latitudeRaw.c_str());
+              float lon = modp_atof(longitudeRaw.c_str());
+              float speed = modp_atof(speedRaw.c_str());
+              const char *utcTimeStr = timeRaw.c_str();
+              float utcTime = modp_atof(utcTimeStr);
 
-			int sector = getLastSector();
-			if (sector != currentSector){
-				if (sector < currentSector) {
-					sectorTimes.clear();
-				}
-				currentSector = sector;
-				sectorTimes.push_back(getLastSectorTime());
-			}
-			int lap = getLapCount();
-			size_t sectorCounts = sectorTimes.size();
-			if (lap > currentLap ){
-				float lastLapTime = getLastLapTime();
-				float sum = sumSectorTimes(sectorTimes);
-				printf("\rlap %d time: %f | sum of sector times: %f\r", lap, lastLapTime, sum);
-				outputSectorTimes(sectorTimes, lap);
-				CPPUNIT_ASSERT_EQUAL(5, (int)sectorCounts);
-				CPPUNIT_ASSERT_CLOSE_ENOUGH(sum, lastLapTime);
+              DateTime dt;
+              dt.partialYear = 14;
+              dt.month = 5;
+              dt.day = 3;
+              dt.hour = (int8_t) atoiOffsetLenSafe(utcTimeStr, 0, 2);
+              dt.minute = (int8_t) atoiOffsetLenSafe(utcTimeStr, 2, 2);
+              dt.second = (int8_t) atoiOffsetLenSafe(utcTimeStr, 4, 2);
+              dt.millisecond = (int16_t) atoiOffsetLenSafe(utcTimeStr, 7, 3);
+              updateFullDateTime(dt);
+              updateMillisSinceEpoch(dt);
 
-				currentLap = lap;
-			}
-			//printf("%.7f,%.7f | lapTime (%d) %f | sectorTime: (%d) %f\r\n", lat, lon, getLapCount(), getLastLapTime(), getLastSector(), getLastSectorTime());
-		}
+              setGPSSpeed(speed);
+              updatePosition(lat, lon);
+
+              double secondsSinceMidnight = calculateSecondsSinceMidnight(utcTimeStr);
+              updateSecondsSinceMidnight(secondsSinceMidnight);
+
+              onLocationUpdated();
+
+              int sector = getSector();
+              if (sector != currentSector){
+                 currentSector = sector;
+                 sectorTimes.push_back(getLastSectorTime());
+              }
+
+              int lap = getLapCount();
+              if (lap > currentLap){
+                 float lastLapTime = getLastLapTime();
+                 float sum = sumSectorTimes(sectorTimes);
+                 printf("\rlap %d time: %f | sum of sector times: %f\r", lap, lastLapTime, sum);
+                 outputSectorTimes(sectorTimes, lap);
+                 CPPUNIT_ASSERT_EQUAL(5, (int) sectorTimes.size());
+
+                 // Don't check the first lap time as we don't know where we started.
+                 if (currentLap > 0)
+                    CPPUNIT_ASSERT_CLOSE_ENOUGH(sum, lastLapTime);
+
+                 sectorTimes.clear();
+                 currentLap = lap;
+              }
+              //printf("%.7f,%.7f | lapTime (%d) %f | sectorTime: (%d) %f\r\n", lat, lon, getLapCount(), getLastLapTime(), getLastSector(), getLastSectorTime());
+           }
 	}
 }
