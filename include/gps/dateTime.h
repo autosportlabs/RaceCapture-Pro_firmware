@@ -14,13 +14,13 @@
 #define SECONDS_PER_DAY (SECONDS_PER_HOUR * 24)
 
 typedef struct _DateTime {
-int16_t millisecond;
-int8_t second;
-int8_t minute;
-int8_t hour;
-int8_t day;
-int8_t month;
-int8_t partialYear;
+   int16_t millisecond;
+   int8_t second;
+   int8_t minute;
+   int8_t hour;
+   int8_t day;
+   int8_t month;
+   int8_t partialYear;
 } DateTime;
 
 unsigned long getMillisecondsSinceUnixEpoch(DateTime dt);

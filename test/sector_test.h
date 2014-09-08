@@ -10,6 +10,7 @@ class SectorTest : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE( SectorTest );
   CPPUNIT_TEST( testSectorTimes );
+  CPPUNIT_TEST( testStageSectorTimes );
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -23,6 +24,7 @@ public:
   float sumSectorTimes(vector<float> & sectorTimes);
   void outputSectorTimes(vector<float> & sectorTimes, int lap);
   void testSectorTimes();
+  void testStageSectorTimes();
 };
 
 

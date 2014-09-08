@@ -177,3 +177,94 @@ void SectorTest::testSectorTimes(){
            }
 	}
 }
+
+void SectorTest::testStageSectorTimes() {
+  const Track track = {
+    TRACK_TYPE_STAGE,
+    {
+      {
+        {47.806934,-122.341150}, // Start
+        {47.806875,-122.335818}, // Finish
+        {47.79974,-122.335704},  // Sectors from here down
+        {47.799719,-122.346416},
+        {47.806886,-122.346494},
+      }
+    }
+  };
+
+  const GeoPoint fakePoint = {1.0, 2.0};
+
+  const GeoPoint points[] = {
+    fakePoint,
+    {47.79974,-122.335704}, // Sector Time = 1
+    fakePoint,
+    fakePoint,
+    {47.799719,-122.346416}, // Sector Time = 3
+    fakePoint,
+    fakePoint,
+    fakePoint,
+    fakePoint,
+    {47.806886,-122.346494}, // Sector Time = 5
+    fakePoint,
+    fakePoint,
+    fakePoint,
+    fakePoint,
+    fakePoint,
+    fakePoint,
+    {47.806875,-122.335818}, // Sector Time = 7
+    {0,0},
+  };
+
+  // Setup the track.
+  LoggerConfig *lc = getWorkingLoggerConfig();
+  Track *trackCfg = &(lc->TrackConfigs.track);
+  memcpy(trackCfg, &track, sizeof(Track));
+
+  DateTime dt = {
+    187, // milis
+    0, // sec
+    3, // min
+    15, // hr
+    3, // day
+    5, // mon
+    14, // yr
+  };
+
+  const GeoPoint *gp = points;
+  int seconds = 0;
+  while(isValidPoint(gp)) {
+
+    // Fake the GPS info.
+    setGPSQuality(GPS_QUALITY_DIFFERENTIAL);
+    setGPSSpeed(15.7);
+
+    dt.second = seconds++;
+    updateFullDateTime(dt);
+    updateMillisSinceEpoch(dt);
+    updatePosition(gp->latitude, gp->longitude);
+    double secondsSinceMidnight = dt.hour * 3600 + dt.minute * 60 + dt.second;
+    updateSecondsSinceMidnight(secondsSinceMidnight);
+
+    onLocationUpdated();
+
+    /*
+    printf("second: %d, atSector = %d, sectorCount = %d, lastSector = %d\n",
+           dt.second, getAtSector(), getSector(), getLastSector());
+    */
+
+    if (areGeoPointsEqual(*gp, fakePoint)) {
+      // Then we should not be at a sector.
+      CPPUNIT_ASSERT(!getAtSector());
+    } else {
+      CPPUNIT_ASSERT(getAtSector());
+
+      // Skip the first sector time as we have no last sector time to check against.
+      if (getLastSector() > 0) {
+        const float expSectorTime = ((float) (getLastSector() * 2 + 1)) / 60.0; // In minutes apparently.
+        CPPUNIT_ASSERT_EQUAL(expSectorTime, getLastSectorTime());
+      }
+    }
+
+    ++gp;
+  }
+}

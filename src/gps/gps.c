@@ -514,22 +514,19 @@ static void processSector(const Track *track, float targetRadius) {
       return;
    }
 
-   // Latch here to prevent duplicate entries.
-   if (g_prevAtTarget != 0)
-      return;
-
    g_prevAtTarget = 1;
 
-
    /*
-    * Past here we are sure we are at a sector boundary and haven't counted twice.
+    * Past here we are sure we are at a sector boundary.
     */
 
    float currentTimestamp = getSecondsSinceMidnight();
    float elapsed = getTimeDiff(g_lastSectorTimestamp, currentTimestamp);
 
    g_lastSectorTimestamp = currentTimestamp;
-   g_lastSectorTime = elapsed / 60.0;
+
+   // If we have no lastSector, the time is invalid.  Skip it.
+   g_lastSectorTime = g_lastSector == -1 ? 0.0 : elapsed / 60.0;
    g_lastSector = g_sector;
    ++g_sector;
 
