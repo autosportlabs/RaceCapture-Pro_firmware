@@ -456,6 +456,13 @@ static float toRadians(float degrees) {
    return degrees * PI / 180.0;
 }
 
+/**
+ * @return True if we have crossed the start line at least once, false otherwise.
+ */
+static int isStartCrossedYet() {
+   return g_lastStartFinishTimestamp != 0;
+}
+
 static float calcDistancesSinceLastSample() {
    float d = 0;
    if (0 != g_prevLatitude && 0 != g_prevLongitude) {
@@ -473,60 +480,67 @@ static float calcDistancesSinceLastSample() {
 }
 
 static int processStartFinish(const Track *track, float targetRadius) {
-   int lapDetected = 0;
-   const GeoPoint finishLine = getFinishPoint(track);
-   g_atStartFinish = withinGpsTarget(&finishLine, targetRadius);
-   if (g_atStartFinish) {
-      if (g_prevAtStartFinish == 0) {
-         if (g_lastStartFinishTimestamp == 0) {
-            //loading of lap zero timestamp; e.g. first time crossing line
-            g_lastStartFinishTimestamp = getSecondsSinceMidnight();
-         } else {
-            //guard against false triggering.
-            //We have to be out of the start/finish target for some amount of time
-            float currentTimestamp = getSecondsSinceMidnight();
-            float elapsed = getTimeDiff(g_lastStartFinishTimestamp,
-                  currentTimestamp);
-            if (elapsed > START_FINISH_TIME_THRESHOLD) {
-               //NOW we can record an new lap
-               float lapTime = elapsed / 60.0;
-               g_lapCount++;
-               g_lastLapTime = lapTime;
-               g_lastStartFinishTimestamp = currentTimestamp;
-               lapDetected = 1;
-               g_sector = 0; // Should not be needed
-            }
-         }
-      }
-      g_prevAtStartFinish = 1;
-   } else {
+   const GeoPoint sfPoint = isStartCrossedYet() ?
+      getFinishPoint(track) : getStartPoint(track);
+
+   g_atStartFinish = withinGpsTarget(&sfPoint, targetRadius);
+   if (!g_atStartFinish || g_prevAtStartFinish != 0) {
       g_prevAtStartFinish = 0;
+      return false;
    }
-   return lapDetected;
+
+   /*
+    * Beyond this point we think we are at start/finish.
+    */
+   g_prevAtStartFinish = 1;
+
+   // First time crossing start finish.
+   if (!isStartCrossedYet()) {
+      //loading of lap zero timestamp; e.g. first time crossing line
+      g_lastStartFinishTimestamp = getSecondsSinceMidnight();
+      g_lastSectorTimestamp = g_lastStartFinishTimestamp;
+      return true;
+   }
+
+   /*
+    * Guard against false triggering. We have to be out of the start/finish
+    * target for some amount of time.
+    */
+   const float currentTimestamp = getSecondsSinceMidnight();
+   const float elapsed = getTimeDiff(g_lastStartFinishTimestamp,
+                                     currentTimestamp);
+   if (elapsed <= START_FINISH_TIME_THRESHOLD)
+      return false;
+
+   // If here, NOW we are sure we are at Start/Finish
+   g_lapCount++;
+   g_lastLapTime = elapsed / 60.0;
+   g_lastStartFinishTimestamp = currentTimestamp;
+
+   return true;
 }
 
 static void processSector(const Track *track, float targetRadius) {
-   GeoPoint point = getSectorGeoPointAtIndex(track, g_sector);
+   // We don't process sectors until we cross Start
+   if (!isStartCrossedYet())
+      return;
 
+   const GeoPoint point = getSectorGeoPointAtIndex(track, g_sector);
    g_atTarget = withinGpsTarget(&point, targetRadius);
    if (!g_atTarget) {
       g_prevAtTarget = 0;
       return;
    }
 
-   g_prevAtTarget = 1;
-
    /*
     * Past here we are sure we are at a sector boundary.
     */
-
    float currentTimestamp = getSecondsSinceMidnight();
    float elapsed = getTimeDiff(g_lastSectorTimestamp, currentTimestamp);
 
+   g_prevAtTarget = 1;
    g_lastSectorTimestamp = currentTimestamp;
-
-   // If we have no lastSector, the time is invalid.  Skip it.
-   g_lastSectorTime = g_lastSector == -1 ? 0.0 : elapsed / 60.0;
+   g_lastSectorTime = elapsed / 60.0;
    g_lastSector = g_sector;
    ++g_sector;
 
@@ -614,21 +628,23 @@ void onLocationUpdated() {
    float dist = calcDistancesSinceLastSample();
    g_distance += dist;
 
-   const float targetRadius = config->TrackConfigs.radius;
-
-   if (sectorEnabled)
-      processSector(g_activeTrack, targetRadius);
 
    if (startFinishEnabled) {
+      const float targetRadius = config->TrackConfigs.radius;
+
       // Seconds since first fix is good until we alter the code to use millis directly
       const float secondsSinceFirstFix = getSecondsSinceFirstFix();
       const int lapDetected = processStartFinish(g_activeTrack, targetRadius);
+
       if (lapDetected) {
          resetGpsDistance();
          startFinishCrossed(gp, secondsSinceFirstFix);
       } else {
          addGpsSample(gp, secondsSinceFirstFix);
       }
+
+      if (sectorEnabled)
+         processSector(g_activeTrack, targetRadius);
    }
 
 }

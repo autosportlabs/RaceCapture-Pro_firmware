@@ -196,6 +196,7 @@ void SectorTest::testStageSectorTimes() {
 
   const GeoPoint points[] = {
     fakePoint,
+    {47.806934,-122.341150},
     {47.79974,-122.335704}, // Sector Time = 1
     fakePoint,
     fakePoint,
@@ -255,14 +256,10 @@ void SectorTest::testStageSectorTimes() {
     if (areGeoPointsEqual(*gp, fakePoint)) {
       // Then we should not be at a sector.
       CPPUNIT_ASSERT(!getAtSector());
-    } else {
+    } else if (getLastSector() > 0) {
       CPPUNIT_ASSERT(getAtSector());
-
-      // Skip the first sector time as we have no last sector time to check against.
-      if (getLastSector() > 0) {
-        const float expSectorTime = ((float) (getLastSector() * 2 + 1)) / 60.0; // In minutes apparently.
-        CPPUNIT_ASSERT_EQUAL(expSectorTime, getLastSectorTime());
-      }
+      const float expSectorTime = ((float) (getLastSector() * 2 + 1)) / 60.0; // In minutes apparently.
+      CPPUNIT_ASSERT_EQUAL(expSectorTime, getLastSectorTime());
     }
 
     ++gp;
