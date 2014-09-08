@@ -84,7 +84,7 @@ static int isStage(const Track *t) {
 }
 
 int isValidPoint(const GeoPoint *p) {
-   return p->latitude && p->longitude;
+   return p->latitude != 0.0 || p->longitude != 0.0;
 }
 
 GeoPoint getFinishPoint(const Track *t) {
