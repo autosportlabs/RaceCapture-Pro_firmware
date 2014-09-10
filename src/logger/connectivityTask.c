@@ -23,18 +23,17 @@
 #include "sim900.h"
 
 
-#if (TELEMETRY_PORT == WIRELESS_PORT)
-#define CONNECTIVITY_TASK_COUNT 1
+#if (CONNECTIVITY_CHANNELS == 1)
 #define CONNECTIVITY_TASK_INIT {NULL}
-#else
-#define CONNECTIVITY_TASK_COUNT 2
+#elif (CONNECTIVITY_CHANNELS == 2)
 #define CONNECTIVITY_TASK_INIT {NULL, NULL}
+#else
+#error "invalid connectivity task count"
 #endif
 
 //wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all
 #define TELEMETRY_QUEUE_WAIT_TIME					0
 //#define TELEMETRY_QUEUE_WAIT_TIME					portMAX_DELAY
-
 
 #define IDLE_TIMEOUT							configTICK_RATE_HZ / 10
 #define INIT_DELAY	 							600
@@ -46,7 +45,7 @@
 
 #define METADATA_SAMPLE_INTERVAL				100
 
-static xQueueHandle g_sampleQueue[CONNECTIVITY_TASK_COUNT] = CONNECTIVITY_TASK_INIT;
+static xQueueHandle g_sampleQueue[CONNECTIVITY_CHANNELS] = CONNECTIVITY_TASK_INIT;
 
 
 static size_t trimBuffer(char *buffer, size_t count){
@@ -81,7 +80,7 @@ static int processRxBuffer(Serial *serial, char *g_buffer, size_t *g_rxCount){
 }
 
 void queueTelemetryRecord(LoggerMessage *msg){
-	for (size_t i = 0; i < CONNECTIVITY_TASK_COUNT; i++){
+	for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++){
 		xQueueHandle queue = g_sampleQueue[i];
 		if (NULL != queue) xQueueSend(queue, &msg, TELEMETRY_QUEUE_WAIT_TIME);
 	}
@@ -89,7 +88,7 @@ void queueTelemetryRecord(LoggerMessage *msg){
 
 //combined telemetry - for when there's only one telemetry / wireless port available on system
 //e.g. "Y-adapter" scenario
-static void createConnectionParamsForCombinedTelemetry(int16_t priority){
+static void createCombinedTelemetryTask(int16_t priority){
 	ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
 	size_t btEnabled = connConfig->bluetoothConfig.btEnabled;
 	size_t cellEnabled = connConfig->cellularConfig.cellEnabled;
@@ -102,7 +101,7 @@ static void createConnectionParamsForCombinedTelemetry(int16_t priority){
 		//defaults
 		params->check_connection_status = &null_device_check_connection_status;
 		params->init_connection = &null_device_init_connection;
-		params->serial = TELEMETRY_PORT;
+		params->serial = SERIAL_TELEMETRY;
 
 		if (btEnabled){
 			params->check_connection_status = &bt_check_connection_status;
@@ -117,32 +116,32 @@ static void createConnectionParamsForCombinedTelemetry(int16_t priority){
 	}
 }
 
-static void createConnectionParamsForBluetooth(int16_t priority){
+static void createWirelessConnectionTask(int16_t priority){
 	ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
 	if (connConfig->bluetoothConfig.btEnabled){
 		ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
 		params->periodicMeta = 0;
 		params->check_connection_status = &bt_check_connection_status;
 		params->init_connection = &bt_init_connection;
-		params->serial = WIRELESS_PORT;
+		params->serial = SERIAL_WIRELESS;
 		xTaskCreate(connectivityTask, (signed portCHAR *) "connWireless", TELEMETRY_STACK_SIZE, params, priority, NULL );
 	}
 }
 
-static void createConnectionParamsForCellularTelemetry(int16_t priority){
+static void createTelemetryConnectionTask(int16_t priority){
 	ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
 	if (connConfig->cellularConfig.cellEnabled){
 		ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
 		params->periodicMeta = 0;
 		params->check_connection_status = &sim900_check_connection_status;
 		params->init_connection = &sim900_init_connection;
-		params->serial = TELEMETRY_PORT;
+		params->serial = SERIAL_TELEMETRY;
 		xTaskCreate(connectivityTask, (signed portCHAR *) "connTelemetry", TELEMETRY_STACK_SIZE, params, priority, NULL );
 	}
 }
 
 void startConnectivityTask(int16_t priority){
-	for (size_t i = 0; i < CONNECTIVITY_TASK_COUNT; i++){
+	for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++){
 		g_sampleQueue[i] = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( LoggerMessage *));
 		if (NULL == g_sampleQueue[i]){
 			pr_error("fatal: could not create sample queue\r\n");
@@ -150,13 +149,13 @@ void startConnectivityTask(int16_t priority){
 		}
 	}
 
-	switch (CONNECTIVITY_TASK_COUNT){
+	switch (CONNECTIVITY_CHANNELS){
 	case 1:
-		createConnectionParamsForCombinedTelemetry(priority);
+		createCombinedTelemetryTask(priority);
 		break;
 	case 2:
-		createConnectionParamsForBluetooth(priority);
-		createConnectionParamsForCellularTelemetry(priority);
+		createWirelessConnectionTask(priority);
+		createTelemetryConnectionTask(priority);
 		break;
 	default:
 		pr_error("invalid connectivity task count!");
@@ -166,7 +165,7 @@ void startConnectivityTask(int16_t priority){
 
 void connectivityTask(void *params) {
 
-	char * g_buffer = (char *)portMalloc(BUFFER_SIZE);
+	char * buffer = (char *)portMalloc(BUFFER_SIZE);
 	size_t rxCount = 0;
 
 	ConnParams *connParams = (ConnParams*)params;
@@ -177,7 +176,7 @@ void connectivityTask(void *params) {
 
 	DeviceConfig deviceConfig;
 	deviceConfig.serial = serial;
-	deviceConfig.buffer = g_buffer;
+	deviceConfig.buffer = buffer;
 	deviceConfig.length = BUFFER_SIZE;
 
 	size_t tick = 0;
@@ -234,7 +233,7 @@ void connectivityTask(void *params) {
 			////////////////////////////////////////////////////////////
 			//read in available characters, process message as necessary
 			rxCount = 0;
-			int msgReceived = processRxBuffer(serial, g_buffer, &rxCount);
+			int msgReceived = processRxBuffer(serial, buffer, &rxCount);
 			//check the latest contents of the buffer for something that might indicate an error condition
 			if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR){
 				pr_info("device disconnected\n");
@@ -245,10 +244,10 @@ void connectivityTask(void *params) {
 			if (msgReceived){
 				if (DEBUG_LEVEL){
 					pr_debug("msg rx: '");
-					pr_debug(g_buffer);
+					pr_debug(buffer);
 					pr_debug("'\r\n");
 				}
-				int msgRes = process_api(serial, g_buffer, BUFFER_SIZE);
+				int msgRes = process_api(serial, buffer, BUFFER_SIZE);
 				if (! API_MSG_SUCCESS(msgRes)) badMsgCount++;
 				if (badMsgCount >= BAD_MESSAGE_THRESHOLD){
 					pr_warning_int(badMsgCount);
