@@ -88,7 +88,7 @@ void queueTelemetryRecord(LoggerMessage *msg){
 
 //combined telemetry - for when there's only one telemetry / wireless port available on system
 //e.g. "Y-adapter" scenario
-static void createCombinedTelemetryTask(int16_t priority){
+static void createCombinedTelemetryTask(int16_t priority, xQueueHandle sampleQueue){
 	ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
 	size_t btEnabled = connConfig->bluetoothConfig.btEnabled;
 	size_t cellEnabled = connConfig->cellularConfig.cellEnabled;
@@ -102,6 +102,7 @@ static void createCombinedTelemetryTask(int16_t priority){
 		params->check_connection_status = &null_device_check_connection_status;
 		params->init_connection = &null_device_init_connection;
 		params->serial = SERIAL_TELEMETRY;
+		params->sampleQueue = sampleQueue;
 
 		if (btEnabled){
 			params->check_connection_status = &bt_check_connection_status;
@@ -116,7 +117,7 @@ static void createCombinedTelemetryTask(int16_t priority){
 	}
 }
 
-static void createWirelessConnectionTask(int16_t priority){
+static void createWirelessConnectionTask(int16_t priority, xQueueHandle sampleQueue){
 	ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
 	if (connConfig->bluetoothConfig.btEnabled){
 		ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
@@ -124,11 +125,12 @@ static void createWirelessConnectionTask(int16_t priority){
 		params->check_connection_status = &bt_check_connection_status;
 		params->init_connection = &bt_init_connection;
 		params->serial = SERIAL_WIRELESS;
+		params->sampleQueue = sampleQueue;
 		xTaskCreate(connectivityTask, (signed portCHAR *) "connWireless", TELEMETRY_STACK_SIZE, params, priority, NULL );
 	}
 }
 
-static void createTelemetryConnectionTask(int16_t priority){
+static void createTelemetryConnectionTask(int16_t priority, xQueueHandle sampleQueue){
 	ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
 	if (connConfig->cellularConfig.cellEnabled){
 		ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
@@ -136,6 +138,7 @@ static void createTelemetryConnectionTask(int16_t priority){
 		params->check_connection_status = &sim900_check_connection_status;
 		params->init_connection = &sim900_init_connection;
 		params->serial = SERIAL_TELEMETRY;
+		params->sampleQueue = sampleQueue;
 		xTaskCreate(connectivityTask, (signed portCHAR *) "connTelemetry", TELEMETRY_STACK_SIZE, params, priority, NULL );
 	}
 }
@@ -151,11 +154,11 @@ void startConnectivityTask(int16_t priority){
 
 	switch (CONNECTIVITY_CHANNELS){
 	case 1:
-		createCombinedTelemetryTask(priority);
+		createCombinedTelemetryTask(priority, g_sampleQueue[0]);
 		break;
 	case 2:
-		createWirelessConnectionTask(priority);
-		createTelemetryConnectionTask(priority);
+		createWirelessConnectionTask(priority, g_sampleQueue[0]);
+		createTelemetryConnectionTask(priority, g_sampleQueue[1]);
 		break;
 	default:
 		pr_error("invalid connectivity task count!");
@@ -173,6 +176,7 @@ void connectivityTask(void *params) {
 
 	Serial *serial = get_serial(connParams->serial);
 	size_t periodicMeta = connParams->periodicMeta;
+	xQueueHandle sampleQueue = connParams->sampleQueue;
 
 	DeviceConfig deviceConfig;
 	deviceConfig.serial = serial;
@@ -190,7 +194,7 @@ void connectivityTask(void *params) {
 		size_t badMsgCount = 0;
 		while (1) {
 			//wait for the next sample record
-			char res = xQueueReceive(g_sampleQueue, &(msg), IDLE_TIMEOUT);
+			char res = xQueueReceive(sampleQueue, &(msg), IDLE_TIMEOUT);
 
 			////////////////////////////////////////////////////////////
 			// Process a pending message from logger task, if exists

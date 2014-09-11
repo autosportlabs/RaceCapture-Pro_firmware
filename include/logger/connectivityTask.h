@@ -14,6 +14,7 @@ typedef struct _ConnParams{
 	int (*check_connection_status)(DeviceConfig *config);
 	serial_id_t serial;
 	size_t periodicMeta;
+	xQueueHandle sampleQueue;
 } ConnParams;
 
 void queueTelemetryRecord(LoggerMessage * sr);
