@@ -24,6 +24,6 @@ unsigned int timer_get_count(unsigned int channel){
 }
 
 void timer_reset_count(unsigned int channel){
-	return timer_device_reset_count(channel);
+	timer_device_reset_count(channel);
 }
 
