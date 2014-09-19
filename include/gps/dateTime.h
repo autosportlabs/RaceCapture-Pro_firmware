@@ -10,8 +10,8 @@
 
 #define MILLIS_PER_SECOND (1000)
 #define SECONDS_PER_MINUTE (60)
-#define SECONDS_PER_HOUR (SECONDS_PER_MINUTE * 60)
-#define SECONDS_PER_DAY (SECONDS_PER_HOUR * 24)
+#define SECONDS_PER_HOUR (3600)
+#define SECONDS_PER_DAY (86400)
 
 typedef struct _DateTime {
    int16_t millisecond;
@@ -23,6 +23,9 @@ typedef struct _DateTime {
    int8_t partialYear;
 } DateTime;
 
-unsigned long getMillisecondsSinceUnixEpoch(DateTime dt);
-long getTimeDeltaInMillis(DateTime a, DateTime b);
+bool isLeapYear(const unsigned int year);
+unsigned int getDaysInMonth(const unsigned int month, bool leapYear);
+unsigned long long getMillisecondsSinceUnixEpoch(DateTime dt);
+long long getTimeDeltaInMillis(DateTime a, DateTime b);
+bool isValidDateTime(const DateTime dt);
 #endif //__DATE_TIME_H__

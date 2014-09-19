@@ -86,6 +86,7 @@ build/rcp_base/%.o: ../%.c
 #-----File Dependencies----------------------
 
 T_SRC = loggerApi_test.cpp \
+		date_time_test.cpp \
 		loggerConfig_test.cpp \
 		sampleRecord_test.cpp \
 		PredictiveTimeTest2.cpp \

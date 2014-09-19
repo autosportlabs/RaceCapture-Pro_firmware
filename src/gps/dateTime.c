@@ -14,14 +14,14 @@ unsigned int convertToFullYear(int partialYear) {
    return  partialYear + (partialYear >= 70 ? 1900 : 2000);
 }
 
-bool isLeapYear(unsigned int year) {
+bool isLeapYear(const unsigned int year) {
    /*
     * Credit to http://www.dispersiondesign.com/articles/time/determining_leap_years
     */
-   return (year % 4) || ((year % 100 == 0) && (year % 400));
+   return (year % 4) || ((year % 100 == 0) && (year % 400)) ? false : true;
 }
 
-bool isLeapPartialYear(unsigned int partialYear) {
+bool isLeapPartialYear(const unsigned int partialYear) {
    return isLeapYear(convertToFullYear(partialYear));
 }
 
@@ -41,12 +41,13 @@ unsigned int getDaysInYear(const bool leapYear) {
    return leapYear ? 366 : 365;
 }
 
-unsigned int getDayCountUpToMonthWithYear(unsigned int month, unsigned int year) {
+unsigned int getDayCountUpToMonthWithYear(int month, unsigned int year) {
    const bool ly = isLeapYear(year);
-   int days = 0;
+   unsigned int days = 0;
+   int m = (int) month;
 
-   while (month-- > 0)
-      days += getDaysInMonth(month, ly);
+   while (--m > 0)
+      days += getDaysInMonth(m, ly);
 
    return days;
 }
@@ -73,14 +74,19 @@ unsigned int getDayCountUpToPartialYearSinceUnixEpoch(const unsigned int partial
    return getDayCountUpToYearSinceUnixEpoch(convertToFullYear(partialYear));
 }
 
-unsigned long getMillisecondsSinceUnixEpoch(DateTime dt) {
-   unsigned long seconds = 0;
+unsigned long long getMillisecondsSinceUnixEpoch(DateTime dt) {
+   if (!isValidDateTime(dt))
+      return 0ll;
 
-   // Get everything as seconds first
+   unsigned long long seconds = 0;
+
+   // Get everything as seconds first.  No changes since 0 based.
    seconds += dt.second;
    seconds += dt.minute * SECONDS_PER_MINUTE;
    seconds += dt.hour * SECONDS_PER_HOUR;
-   seconds += dt.day * SECONDS_PER_DAY;
+
+   // Subtract 1 from day since they start at 1 instead of 0.
+   seconds += (dt.day - 1) * SECONDS_PER_DAY;
 
    const unsigned int year = convertToFullYear(dt.partialYear);
    seconds += getDayCountUpToMonthWithYear(dt.month, year) * SECONDS_PER_DAY;
@@ -90,8 +96,24 @@ unsigned long getMillisecondsSinceUnixEpoch(DateTime dt) {
    return seconds * MILLIS_PER_SECOND + dt.millisecond;
 }
 
-long getTimeDeltaInMillis(DateTime a, DateTime b) {
+long long getTimeDeltaInMillis(DateTime a, DateTime b) {
+   if (!isValidDateTime(a) || !isValidDateTime(b))
+      return 0ll;
+
    // HACK: I'm sure there is a better way to do this.  This way just works for me.
    return getMillisecondsSinceUnixEpoch(a) - getMillisecondsSinceUnixEpoch(b);
 }
 
+static bool inRange(const int val, const int min, const int max) {
+   return val >= min && val <= max;
+}
+
+bool isValidDateTime(const DateTime dt) {
+   return inRange(dt.millisecond, 0, 999) &&
+      inRange(dt.second, 0, 59) &&
+      inRange(dt.minute, 0, 59) &&
+      inRange(dt.hour, 0, 23) &&
+      inRange(dt.day, 1, 31) &&
+      inRange(dt.month, 1, 12) &&
+      inRange(dt.partialYear, 0, 99); // We only support 1970 - 2069.
+}
