@@ -108,7 +108,7 @@ class FwImage(object):
         self._pre_info = self._bin[:info_offset]
         self._info = self._bin[info_offset:info_offset + INFO_SIZE]
         self._post_info = self._bin[info_offset + INFO_SIZE:]
-        
+
 if __name__ == '__main__':
     parser = optparse.OptionParser()
     parser.add_option('-f', '--filename',
@@ -144,4 +144,3 @@ if __name__ == '__main__':
 
     if options.ihex_filename:
         img.save_upgrade_img(options.ihex_filename)
-    
