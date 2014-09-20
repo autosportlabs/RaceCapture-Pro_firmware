@@ -44,32 +44,37 @@ class FwImage(object):
         """
         self._bin = self._pre_info + self._info + self._post_info
         print "Application length: {}".format(len(self._bin))
-        
+
+    def _crc_block(self, block):
+        """
+        CRC's a block of 32 bit words
+
+        This is necessary as the STM32F4's CRC engine operates 32 bits at a time
+        """
+        crc32 = crcmod.Crc(0x104c11db7, initCrc=0xffffffff, rev=False)
+        for idx in range(0, len(block), 4):
+            tmp = struct.unpack("<I", block[idx:idx+4])[0]
+            crc32.update(struct.pack(">I", tmp))
+
+        return crc32.crcValue
+
     def _gen_crcs(self):
         """
         Generates the CRCs for the image and info block
         """
-        crc32 = crcmod.Crc(0x104c11db7, initCrc=0, xorOut=0xFFFFFFFF)
-
-        crc32.update(self._pre_info)
-        crc32.update(self._post_info)
-        app_crc = crc32.crcValue
+        app_crc = self._crc_block(self._pre_info+self._post_info)
 
         #Create the app info struct (sans info CRC)
         tmp_info = struct.pack("<IIII", INFO_MAGIC, self._base_offset,
                                self._app_len, app_crc)
 
-        #Reset the crc32 function
-        crc32 = crc32.new()
-
-        #Now CRC the app info block
-        crc32.update(tmp_info)
-        info_crc = crc32.crcValue
+        #Generate the info block crc
+        info_crc = self._crc_block(tmp_info)
 
         #Now create the final info block
         self._info = struct.pack("<IIIII", INFO_MAGIC, self._base_offset,
                                  self._app_len, app_crc, info_crc)
-        
+
         print "Application CRC: {}".format(hex(app_crc))
         print "Info CRC: {}".format(hex(info_crc))
 
