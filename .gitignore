@@ -26,3 +26,5 @@ Race*.zip
 *#*
 TAGS
 
+*.pyc
+*.ihex

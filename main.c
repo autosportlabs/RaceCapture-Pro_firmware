@@ -36,11 +36,19 @@
 #include "luaTask.h"
 #include "luaCommands.h"
 
+#include <app_info.h>
+
 #define FATAL_ERROR_SCHEDULER	1
 #define FATAL_ERROR_HARDWARE	2
 
 #define FLASH_PAUSE_DELAY 	5000000
 #define FLASH_DELAY 		1000000
+
+__attribute__((aligned (8)))
+static const struct app_info_block info_block = {
+	.magic_number = APP_INFO_MAGIC_NUMBER,
+	.info_crc = 0xDEADBEEF,
+};
 
 static void fatalError(int type){
 	int count;
@@ -113,7 +121,7 @@ void setupTask(void *params)
 
 int main( void )
 {
-
+	ALWAYS_KEEP(info_block);
 	cpu_init();
 	watchdog_init(WATCHDOG_TIMEOUT_MS);
 	//perform a clean reset if the watchdog fired
