@@ -17,6 +17,7 @@
 //kilometers
 #define DISTANCE_SCALING 6371
 #define PI 3.1415
+#define KNOTS_TO_KPH_SCALING 1.852
 
 #define GPS_LOCK_FLASH_COUNT 2
 #define GPS_NOFIX_FLASH_COUNT 10
@@ -119,16 +120,41 @@ int atoiOffsetLenSafe(const char *str, size_t offset, size_t len) {
    return modp_atoi(buff);
 }
 
+static double parseLatitude(char *data){
+	double latitude = 0;
+    unsigned int len = strlen(data);
+    if (len > 0 && len <= LATITUDE_DATA_LEN) {
+       //Raw GPS Format is ddmm.mmmmmm
+       char degreesStr[3] = { 0 };
+       memcpy(degreesStr, data, 2);
+       degreesStr[2] = 0;
+       float minutes = modp_atof(data + 2);
+       minutes = minutes / 60.0;
+       latitude = modp_atoi(degreesStr) + minutes;
+    }
+    return latitude;
+}
+
+static double parseLongitude(char *data){
+	double longitude = 0;
+    unsigned int len = strlen(data);
+    if (len > 0 && len <= LONGITUDE_DATA_LEN) {
+       //Raw GPS Format is dddmm.mmmmmm
+       char degreesStr[4] = { 0 };
+       memcpy(degreesStr, data, 3);
+       degreesStr[3] = 0;
+       float minutes = modp_atof(data + 3);
+       minutes = minutes / 60.0;
+       longitude = modp_atoi(degreesStr) + minutes;
+    }
+    return longitude;
+}
+
 //Parse Global Positioning System Fix Data.
 static void parseGGA(char *data) {
-
-   //SendString(data);
-
    char * delim = strchr(data, ',');
    int param = 0;
 
-   double latitude = 0.0;
-   double longitude = 0.0;
    double secondsSinceMidnight = 0.0;
 
    int keepParsing = 1;
@@ -136,72 +162,27 @@ static void parseGGA(char *data) {
    while (delim != NULL && keepParsing) {
       *delim = '\0';
       switch (param) {
-      case 0: {
-         unsigned int len = strlen(data);
+		  case 0:
+			{
+				unsigned int len = strlen(data);
+				if (len > 0 && len < UTC_TIME_BUFFER_LEN) secondsSinceMidnight = calculateSecondsSinceMidnight(data);
+				break;
+			}
 
-         if (len > 0 && len < UTC_TIME_BUFFER_LEN)
-            secondsSinceMidnight = calculateSecondsSinceMidnight(data);
+		  case 5:
+			 g_gpsQuality = modp_atoi(data) > 0 ? GPS_QUALITY_FIX : GPS_QUALITY_NO_FIX;
+			 break;
 
-      }
-         break;
-      case 1: {
-         unsigned int len = strlen(data);
-         if (len > 0 && len <= LATITUDE_DATA_LEN) {
-            //Raw GPS Format is ddmm.mmmmmm
-            char degreesStr[3] = { 0 };
-            memcpy(degreesStr, data, 2);
-            degreesStr[2] = 0;
-            float minutes = modp_atof(data + 2);
-            minutes = minutes / 60.0;
-            latitude = modp_atoi(degreesStr) + minutes;
-         } else {
-            latitude = 0;
-            //TODO log error
-         }
-      }
-         break;
-      case 2: {
-         if (data[0] == 'S') {
-            latitude = -latitude;
-         }
-      }
-         break;
-      case 3: {
-         unsigned int len = strlen(data);
-         if (len > 0 && len <= LONGITUDE_DATA_LEN) {
-            //Raw GPS Format is dddmm.mmmmmm
-            char degreesStr[4] = { 0 };
-            memcpy(degreesStr, data, 3);
-            degreesStr[3] = 0;
-            float minutes = modp_atof(data + 3);
-            minutes = minutes / 60.0;
-            longitude = modp_atoi(degreesStr) + minutes;
-         } else {
-            longitude = 0;
-            //TODO log error
-         }
-      }
-         break;
-      case 4: {
-         if (data[0] == 'W') {
-            longitude = -longitude;
-         }
-      }
-         break;
-      case 5:
-         g_gpsQuality = modp_atoi(data);
-         break;
-      case 6:
-         g_satellitesUsedForPosition = modp_atoi(data);
-         keepParsing = 0;
-         break;
+		  case 6:
+			 g_satellitesUsedForPosition = modp_atoi(data);
+			 keepParsing = 0;
+			 break;
       }
       param++;
       data = delim + 1;
       delim = strchr(data, ',');
    }
    updateSecondsSinceMidnight(secondsSinceMidnight);
-   updatePosition(latitude, longitude);
 }
 
 double calculateSecondsSinceMidnight(const char * rawTime) {
@@ -236,7 +217,6 @@ void updatePosition(float latitude, float longitude) {
 
 //Parse GNSS DOP and Active Satellites
 static void parseGSA(char *data) {
-
 }
 
 //Parse Course Over Ground and Ground Speed
@@ -266,7 +246,7 @@ static void parseVTG(char *data) {
    }
 }
 
-//Parse Geographic Position � Latitude / Longitude
+//Parse Geographic Position - Latitude / Longitude
 static void parseGLL(char *data) {
 
 }
@@ -318,9 +298,12 @@ static void parseRMC(char *data) {
     * Checksum *53
     * <CR> <LF> End of message termination
     */
+
    char *delim = strchr(data, ',');
    int param = 0;
    DateTime dt = { 0 };
+   double latitude = 0.0;
+   double longitude = 0.0;
 
    while (delim) {
       *delim = '\0';
@@ -331,6 +314,27 @@ static void parseRMC(char *data) {
          dt.second = (int8_t) atoiOffsetLenSafe(data, 4, 2);
          dt.millisecond = (int16_t) atoiOffsetLenSafe(data, 7, 3);
          break;
+
+      case 2:
+    	 latitude = parseLatitude(data);
+         break;
+
+      case 3:
+         if (data[0] == 'S') latitude = -latitude;
+         break;
+
+      case 4:
+    	 longitude = parseLongitude(data);
+         break;
+
+      case 5:
+         if (data[0] == 'W') longitude = -longitude;
+         break;
+
+      case 6: //Speed over ground
+         if (strlen(data) >= 1) setGPSSpeed(modp_atof(data) * KNOTS_TO_KPH_SCALING);
+         break;
+
       case 8: //Date (DDMMYY)
          dt.day = (int8_t) atoiOffsetLenSafe(data, 0, 2);
          dt.month = (int8_t) atoiOffsetLenSafe(data, 2, 2);
@@ -345,6 +349,7 @@ static void parseRMC(char *data) {
 
    updateFullDateTime(dt);
    updateMillisSinceEpoch(dt);
+   updatePosition(latitude, longitude);
 }
 
 void resetGpsDistance() {
@@ -659,35 +664,57 @@ int checksumValid(const char *gpsData, size_t len) {
 
 void processGPSData(char *gpsData, size_t len) {
    if (len <= 4 || !checksumValid(gpsData, len) || strstr(gpsData, "$GP") != gpsData) {
-      pr_warning("GPS: corrupt frame\r\n");
+      pr_warning("GPS: corrupt frame ");
+      pr_debug(gpsData);
+      pr_warning("\r\n");
       return;
    }
+   size_t positionUpdated = 0;
 
    // Advance the pointer 3 spaces since we know it begins with "$GP"
    gpsData += 3;
    if (strstr(gpsData, "GGA,")) {
-      /*
-       * GGA is always the first sentence in a new NMEA paragraph from the GPS Mouse.  So if we see
-       * it, call onLocationUpdated if we have parsed GPS data before.  This methodology ensures
-       * that we parse all sentences before processing the GPS data.
-       */
-      if (!isGpsDataCold()) {
-         onLocationUpdated();
-         flashGpsStatusLed();
-      }
-
+      pr_debug("GGA ");
       parseGGA(gpsData + 4);
    } else if (strstr(gpsData, "VTG,")) { //Course Over Ground and Ground Speed
+	  pr_debug("VTG ");
       parseVTG(gpsData + 4);
    } else if (strstr(gpsData, "GSA,")) { //GPS Fix gpsData
+	  pr_debug("GSA ");
       parseGSA(gpsData + 4);
    } else if (strstr(gpsData, "GSV,")) { //Satellites in view
+	  pr_debug("GSV ");
       parseGSV(gpsData + 4);
    } else if (strstr(gpsData, "RMC,")) { //Recommended Minimum Specific GNSS Data
+	  pr_debug("RMC ");
       parseRMC(gpsData + 4);
+      positionUpdated = 1;
    } else if (strstr(gpsData, "GLL,")) { //Geographic Position - Latitude/Longitude
+	  pr_debug("GLL ");
       parseGLL(gpsData + 4);
    } else if (strstr(gpsData, "ZDA,")) { //Time & Date
+	  pr_debug("ZDA ");
       parseZDA(gpsData + 4);
+   }
+
+   if (DEBUG_LEVEL){
+	   char output[30];
+	   modp_ultoa10(g_millisSinceUnixEpoch, output);
+	   pr_debug(output);
+	   pr_debug(" ");
+	   modp_ftoa(g_latitude, output, 10);
+	   pr_debug(output)
+	   pr_debug(" ");
+	   modp_ftoa(g_longitude, output, 10);
+	   pr_debug(output);
+	   pr_debug(": ");
+	   modp_ftoa(g_speed, output, 10);
+	   pr_debug(output);
+	   pr_debug("\r\n");
+   }
+
+   if (positionUpdated && !isGpsDataCold()) {
+      onLocationUpdated();
+      flashGpsStatusLed();
    }
 }
