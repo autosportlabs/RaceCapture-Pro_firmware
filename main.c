@@ -124,8 +124,10 @@ int main( void )
 	ALWAYS_KEEP(info_block);
 	cpu_init();
 	watchdog_init(WATCHDOG_TIMEOUT_MS);
+
 	//perform a clean reset if the watchdog fired
-	//if (watchdog_is_watchdog_reset()) cpu_reset();
+	if (watchdog_is_watchdog_reset())
+		cpu_reset();
 
 	/* Start the scheduler.
 

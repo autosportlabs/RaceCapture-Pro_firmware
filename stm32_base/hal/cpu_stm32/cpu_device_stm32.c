@@ -1,5 +1,6 @@
 #include "cpu_device.h"
 #include <stm32f4xx_misc.h>
+#include <stm32f4xx_rcc.h>
 #include <core_cm4.h>
 #include <stdint.h>
 
@@ -33,6 +34,8 @@ int cpu_device_init(void){
 }
 
 void cpu_device_reset(){
+	/* Clear any reset flags that might be present (i.e. watchdog) */
+	RCC_ClearFlag();
 	NVIC_SystemReset();
 }
 
