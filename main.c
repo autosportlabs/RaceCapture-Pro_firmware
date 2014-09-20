@@ -70,14 +70,14 @@ static void fatalError(int type){
 	}
 }
 
-#define OBD2_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
-#define GPS_TASK_PRIORITY 		( tskIDLE_PRIORITY + 2 )
+#define OBD2_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
+#define GPS_TASK_PRIORITY 			( tskIDLE_PRIORITY + 5 )
 #define CONNECTIVITY_TASK_PRIORITY 	( tskIDLE_PRIORITY + 4 )
-#define LOGGER_TASK_PRIORITY		( tskIDLE_PRIORITY + 4 )
-#define FILE_WRITER_TASK_PRIORITY	( tskIDLE_PRIORITY + 3 )
-#define LUA_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
+#define LOGGER_TASK_PRIORITY		( tskIDLE_PRIORITY + 6 )
+#define FILE_WRITER_TASK_PRIORITY	( tskIDLE_PRIORITY + 4 )
+#define LUA_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
 #define USB_COMM_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
-#define GPIO_TASK_PRIORITY 		( tskIDLE_PRIORITY + 4 )
+#define GPIO_TASK_PRIORITY 			( tskIDLE_PRIORITY + 4 )
 
 
 void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName)
