@@ -377,10 +377,8 @@ float getLastLapTime() {
    return g_lastLapTime;
 }
 
-float getLastSectorTime() {
-   // XXX: Fix me.  Used to return in minutes.  Change to millis and adapt.
-   //return g_lastSectorTime;
-   return 0.0;
+unsigned long long getLastSectorTime() {
+   return g_lastSectorTime;
 }
 
 float getTimeSince(float t1) {
@@ -570,13 +568,13 @@ void initGPS() {
    g_satellitesUsedForPosition = 0;
    g_speed = 0.0;
    g_lastLapTime = 0;
-   g_lastSectorTime = 0.0;
+   g_lastSectorTime = 0;
    g_atStartFinish = 0;
    g_prevAtStartFinish = 0;
    g_lastStartFinishTimestamp = 0;
    g_atTarget = 0;
    g_prevAtTarget = 0;
-   g_lastSectorTimestamp = 0.0;
+   g_lastSectorTimestamp = 0;
    g_lapCount = 0;
    g_distance = 0;
    g_sector = 0;

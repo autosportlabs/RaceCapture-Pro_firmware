@@ -30,6 +30,8 @@ class DateTimeTest : public CppUnit::TestFixture
    CPPUNIT_TEST( testDaysInMonth );
    CPPUNIT_TEST( testIsValidDateTime );
    CPPUNIT_TEST( testGetMillisSinceEpoch );
+   CPPUNIT_TEST( testMillisToMinutes );
+   CPPUNIT_TEST( testGetDeltaInMillis );
    CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -40,6 +42,7 @@ class DateTimeTest : public CppUnit::TestFixture
    void testIsValidDateTime();
    void testGetMillisSinceEpoch();
    void testGetDeltaInMillis();
+   void testMillisToMinutes();
 };
 
 

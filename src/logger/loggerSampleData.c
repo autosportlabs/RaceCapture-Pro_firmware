@@ -417,7 +417,8 @@ float get_lap_stat_sample(int channelId){
       value = (float) getLastSector();
       break;
    case lap_stat_channel_sectortime:
-      value = getLastSectorTime();
+      // XXX: TIME_HACK.  Should send Millis only in future.
+      value = millisToMinutes(getLastSectorTime());
       break;
    case lap_stat_channel_predtime:
       {

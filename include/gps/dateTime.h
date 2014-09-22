@@ -28,4 +28,12 @@ unsigned int getDaysInMonth(const unsigned int month, bool leapYear);
 unsigned long long getMillisecondsSinceUnixEpoch(DateTime dt);
 long long getTimeDeltaInMillis(DateTime a, DateTime b);
 bool isValidDateTime(const DateTime dt);
+
+/**
+ * Converts Millisecond values to legacy minutes float.  Used as
+ * a compatibility layer until we move to milliseconds only and
+ * remote the use of floats as they are inaccurate.
+ */
+float millisToMinutes(const unsigned long long millis);
+
 #endif //__DATE_TIME_H__

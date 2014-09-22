@@ -26,7 +26,7 @@ int getLapCount();
 
 float getLastLapTime();
 
-float getLastSectorTime();
+unsigned long long getLastSectorTime();
 
 int getSector();
 

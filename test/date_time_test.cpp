@@ -152,4 +152,18 @@ void DateTimeTest::testGetMillisSinceEpoch() {
 
 }
 
-void DateTimeTest::testGetDeltaInMillis() {}
+void DateTimeTest::testGetDeltaInMillis() {
+  const DateTime epoch = {0, 0, 0, 0, 1, 1, 70};
+  const DateTime d1000000 = {0, 40, 16, 0, 1, 1, 70};
+  CPPUNIT_ASSERT_EQUAL(0ll, getTimeDeltaInMillis(epoch, epoch));
+  CPPUNIT_ASSERT_EQUAL(1000000ll, getTimeDeltaInMillis(d1000000, epoch));
+  CPPUNIT_ASSERT_EQUAL(-1000000ll, getTimeDeltaInMillis(epoch, d1000000));
+}
+
+void DateTimeTest::testMillisToMinutes() {
+  CPPUNIT_ASSERT_EQUAL(0.1f, millisToMinutes(6000));
+  CPPUNIT_ASSERT_EQUAL(1.0f, millisToMinutes(60000));
+  CPPUNIT_ASSERT_EQUAL(10.0001f, millisToMinutes(600006));
+  CPPUNIT_ASSERT_EQUAL(10.000016667f, millisToMinutes(600001));
+  CPPUNIT_ASSERT_EQUAL(100.000016667f, millisToMinutes(6000001));
+}

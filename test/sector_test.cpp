@@ -258,7 +258,7 @@ void SectorTest::testStageSectorTimes() {
       CPPUNIT_ASSERT(!getAtSector());
     } else if (getLastSector() > 0) {
       CPPUNIT_ASSERT(getAtSector());
-      const float expSectorTime = ((float) (getLastSector() * 2 + 1)) / 60.0; // In minutes apparently.
+      const unsigned long long expSectorTime = getLastSector() * 2000 + 1000;
       CPPUNIT_ASSERT_EQUAL(expSectorTime, getLastSectorTime());
     }
 
