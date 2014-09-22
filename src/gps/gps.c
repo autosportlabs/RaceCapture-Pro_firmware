@@ -55,17 +55,17 @@ static int g_satellitesUsedForPosition;
 
 static int g_atStartFinish;
 static int g_prevAtStartFinish;
-static float g_lastStartFinishTimestamp;
+static unsigned long long g_lastStartFinishTimestamp;
 
 static int g_atTarget;
 static int g_prevAtTarget;
-static float g_lastSectorTimestamp;
+static unsigned long long g_lastSectorTimestamp;
 
 static int g_sector;
 static int g_lastSector;
 
 static float g_lastLapTime;
-static float g_lastSectorTime;
+static unsigned long long g_lastSectorTime;
 
 static int g_lapCount;
 static float g_distance;
@@ -378,7 +378,9 @@ float getLastLapTime() {
 }
 
 float getLastSectorTime() {
-   return g_lastSectorTime;
+   // XXX: Fix me.  Used to return in minutes.  Change to millis and adapt.
+   //return g_lastSectorTime;
+   return 0.0;
 }
 
 float getTimeSince(float t1) {
@@ -459,8 +461,8 @@ static float toRadians(float degrees) {
 /**
  * @return True if we have crossed the start line at least once, false otherwise.
  */
-static int isStartCrossedYet() {
-   return g_lastStartFinishTimestamp != 0;
+static bool isStartCrossedYet() {
+   return g_lastStartFinishTimestamp != 0ull;
 }
 
 static float calcDistancesSinceLastSample() {
@@ -497,7 +499,7 @@ static int processStartFinish(const Track *track, float targetRadius) {
    // First time crossing start finish.
    if (!isStartCrossedYet()) {
       //loading of lap zero timestamp; e.g. first time crossing line
-      g_lastStartFinishTimestamp = getSecondsSinceMidnight();
+      g_lastStartFinishTimestamp = getMillisSinceEpoch();
       g_lastSectorTimestamp = g_lastStartFinishTimestamp;
       return true;
    }
@@ -535,12 +537,11 @@ static void processSector(const Track *track, float targetRadius) {
    /*
     * Past here we are sure we are at a sector boundary.
     */
-   float currentTimestamp = getSecondsSinceMidnight();
-   float elapsed = getTimeDiff(g_lastSectorTimestamp, currentTimestamp);
+   const unsigned long long timestamp = getMillisSinceEpoch();
 
    g_prevAtTarget = 1;
-   g_lastSectorTimestamp = currentTimestamp;
-   g_lastSectorTime = elapsed / 60.0;
+   g_lastSectorTime = timestamp - g_lastSectorTimestamp;
+   g_lastSectorTimestamp = timestamp;
    g_lastSector = g_sector;
    ++g_sector;
 
