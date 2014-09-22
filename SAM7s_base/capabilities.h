@@ -29,5 +29,7 @@
 #define DEVICE_NAME    "RCP"
 #define FRIENDLY_DEVICE_NAME "RaceCapture/Pro"
 #define COMMAND_PROMPT "RaceCapture/Pro"
+#define WELCOME_MSG "Welcome to RaceCapture/Pro : Firmware Version " MAJOR_REV_STR "." MINOR_REV_STR "." BUGFIX_REV_STR
+
 
 #endif /* CAPABILITIES_H_ */
