@@ -25,4 +25,8 @@
 #define MAX_SENSOR_SAMPLE_RATE	1000
 #define MAX_GPS_SAMPLE_RATE		50
 
+//system info
+#define DEVICE_NAME    "RCP_MK2"
+#define FRIENDLY_DEVICE_NAME "RaceCapture/Pro MK2"
+
 #endif /* CAPABILITIES_H_ */

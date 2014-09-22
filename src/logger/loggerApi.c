@@ -141,6 +141,7 @@ int api_getVersion(Serial *serial, const jsmntok_t *json){
 	json_objStart(serial);
 	json_objStartString(serial,"ver");
 	json_string(serial, "name", DEVICE_NAME, 1);
+	json_string(serial, "fname", FRIENDLY_DEVICE_NAME, 1);
 	json_int(serial, "major", MAJOR_REV, 1);
 	json_int(serial, "minor", MINOR_REV, 1);
 	json_int(serial, "bugfix", BUGFIX_REV, 1);

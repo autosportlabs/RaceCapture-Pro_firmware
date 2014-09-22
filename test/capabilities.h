@@ -25,4 +25,8 @@
 #define MAX_SENSOR_SAMPLE_RATE	1000
 #define MAX_GPS_SAMPLE_RATE		50
 
+//system info
+#define DEVICE_NAME    "RCP_SIM"
+#define FRIENDLY_DEVICE_NAME "RaceCapture/Pro Sim"
+
 #endif /* CAPABILITIES_H_ */
