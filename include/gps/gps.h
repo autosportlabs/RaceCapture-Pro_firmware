@@ -74,7 +74,7 @@ DateTime getLastFixDateTime();
 /**
  * @return Milliseconds since Unix Epoch.
  */
-long getMillisSinceEpoch();
+unsigned long long getMillisSinceEpoch();
 
 /**
  * This exists for backwards compatibility and will be deprecated in the future.  Use

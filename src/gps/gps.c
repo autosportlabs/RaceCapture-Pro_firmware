@@ -32,7 +32,7 @@
 
 #define TIME_NULL -1
 
-#define GPS_LOCKED_ON(QUALITY) QUALITY != GPS_QUALITY_NO_FIX
+#define GPS_LOCKED_ON(QUALITY) (QUALITY != GPS_QUALITY_NO_FIX)
 
 static const Track * g_activeTrack;
 
@@ -75,7 +75,7 @@ static float g_distance;
  */
 static DateTime g_dtFirstFix;
 static DateTime g_dtLastFix;
-static unsigned long g_millisSinceUnixEpoch;
+static unsigned long long g_millisSinceUnixEpoch;
 
 /**
  * @return true if we haven't parsed any data yet, false otherwise.
@@ -88,7 +88,7 @@ void updateMillisSinceEpoch(DateTime fixDateTime) {
    g_millisSinceUnixEpoch = getMillisecondsSinceUnixEpoch(fixDateTime);
 }
 
-long getMillisSinceEpoch() {
+unsigned long long getMillisSinceEpoch() {
    return g_millisSinceUnixEpoch;
 }
 
