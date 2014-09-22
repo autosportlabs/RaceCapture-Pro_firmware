@@ -28,5 +28,7 @@
 //system info
 #define DEVICE_NAME    "RCP_SIM"
 #define FRIENDLY_DEVICE_NAME "RaceCapture/Pro Sim"
+#define COMMAND_PROMPT "RaceCapture/Pro Sim"
+
 
 #endif /* CAPABILITIES_H_ */

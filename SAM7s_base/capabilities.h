@@ -28,5 +28,6 @@
 //system info
 #define DEVICE_NAME    "RCP"
 #define FRIENDLY_DEVICE_NAME "RaceCapture/Pro"
+#define COMMAND_PROMPT "RaceCapture/Pro"
 
 #endif /* CAPABILITIES_H_ */
