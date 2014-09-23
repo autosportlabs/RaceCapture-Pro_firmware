@@ -28,7 +28,8 @@
 #define UTC_TIME_BUFFER_LEN 11
 #define UTC_SPEED_BUFFER_LEN 10
 
-#define START_FINISH_TIME_THRESHOLD 10
+// In Millis now.
+#define START_FINISH_TIME_THRESHOLD 10000
 
 #define TIME_NULL -1
 
@@ -64,7 +65,7 @@ static unsigned long long g_lastSectorTimestamp;
 static int g_sector;
 static int g_lastSector;
 
-static float g_lastLapTime;
+static unsigned long long g_lastLapTime;
 static unsigned long long g_lastSectorTime;
 
 static int g_lapCount;
@@ -373,7 +374,7 @@ int getLastSector() {
    return g_lastSector;
 }
 
-float getLastLapTime() {
+unsigned long long getLastLapTime() {
    return g_lastLapTime;
 }
 
@@ -506,16 +507,16 @@ static int processStartFinish(const Track *track, float targetRadius) {
     * Guard against false triggering. We have to be out of the start/finish
     * target for some amount of time.
     */
-   const float currentTimestamp = getSecondsSinceMidnight();
-   const float elapsed = getTimeDiff(g_lastStartFinishTimestamp,
-                                     currentTimestamp);
+   const unsigned long long timestamp = getMillisSinceEpoch();
+   const unsigned long long elapsed = timestamp - g_lastStartFinishTimestamp;
+
    if (elapsed <= START_FINISH_TIME_THRESHOLD)
       return false;
 
    // If here, NOW we are sure we are at Start/Finish
    g_lapCount++;
-   g_lastLapTime = elapsed / 60.0;
-   g_lastStartFinishTimestamp = currentTimestamp;
+   g_lastLapTime = elapsed;
+   g_lastStartFinishTimestamp = timestamp;
 
    return true;
 }

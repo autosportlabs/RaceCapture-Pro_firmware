@@ -24,7 +24,7 @@ void resetLapCount();
 
 int getLapCount();
 
-float getLastLapTime();
+unsigned long long getLastLapTime();
 
 unsigned long long getLastSectorTime();
 

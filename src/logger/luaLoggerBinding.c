@@ -338,7 +338,8 @@ int Lua_GetGPSDistance(lua_State *L){
 }
 
 int Lua_GetLapTime(lua_State *L){
-	lua_pushnumber(L,getLastLapTime());
+   // XXX: TIME_HACK.  Convert to millis.
+	lua_pushnumber(L, millisToMinutes(getLastLapTime()));
 	return 1;
 }
 
