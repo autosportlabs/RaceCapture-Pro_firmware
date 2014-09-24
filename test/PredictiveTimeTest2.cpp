@@ -147,9 +147,9 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
 
          GeoPoint gp;
          populateGeoPoint(&gp);
-         const float secondsSinceFirstFix = getSecondsSinceFirstFix();
-         float predTime = getPredictedTime(gp, secondsSinceFirstFix);
-         printf("Lap #%d - Predicted Time: %f\n", getLapCount(), predTime);
+         const unsigned long long epochMillis = getMillisSinceEpoch();
+         const unsigned long long predTime = getPredictedTime(gp, epochMillis);
+         printf("Lap #%d - Predicted Time: %ull\n", getLapCount(), predTime);
 		}
 	}
 }

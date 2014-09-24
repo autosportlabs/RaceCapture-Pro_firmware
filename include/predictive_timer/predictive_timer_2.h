@@ -14,29 +14,26 @@
 /**
  * Method invoked whenever we detect that we have crossed the start finish line
  * @param point The location of the start/finish line.
- * @param time The time which the sample was taken.  Ensure the input values units are
- * consistent across the predictive methods.  Else you will get undefined behavior.
+ * @param time The time (millis since epoch) which the sample was taken.
  */
-void startFinishCrossed(GeoPoint point, float time);
+void startFinishCrossed(GeoPoint point, unsigned long long time);
 
 /**
  * Adds a new GPS sample to our record if the algorithm determines its time for one.
  * @param point The point to add.
- * @param time The time which the sample was taken.  Ensure the input values units are
- * consistent across the predictive methods.  Else you will get undefined behavior.
+ * @param time The time (millis since epoch) which the sample was taken.
  * @return TRUE if it was added, FALSE otherwise.
  */
-bool addGpsSample(GeoPoint point, float time);
+bool addGpsSample(GeoPoint point, unsigned long long time);
 
 /**
  * Calculates the split of your current time against the fast lap time at the position given.
  * @param point The position you are currently at.
- * @param time The time which the sample was taken.  Ensure the input values units are
- * consistent across the predictive methods.  Else you will get undefined behavior.
+ * @param time The time (millis since epoch) which the sample was taken.
  * @return The split between your current time and the fast lap time.  Positive indicates you are
  * going faster than your fast lap, negative indicates slower.
  */
-float getSplitAgainstFastLap(GeoPoint point, float time);
+unsigned long long getSplitAgainstFastLap(GeoPoint point, unsigned long long time);
 
 /**
  * Figures out the predicted lap time.  Call as much as you like... it will only do
@@ -44,11 +41,10 @@ float getSplitAgainstFastLap(GeoPoint point, float time);
  * allows for drivers to better see how their most recent driving affected their predicted
  * lap time.
  * @param point The current location of the car.
- * @param time The time which the sample was taken.  Ensure the input values units are
- * consistent across the predictive methods.  Else you will get undefined behavior.
+ * @param time The time (millis since epoch) which the sample was taken.
  * @return The predicted lap time.
  */
-float getPredictedTime(GeoPoint point, float time);
+unsigned long long getPredictedTime(GeoPoint point, unsigned long long time);
 
 /**
  * Tells the caller if a predictive time is ready to be had.

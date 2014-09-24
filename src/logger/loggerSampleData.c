@@ -425,9 +425,8 @@ float get_lap_stat_sample(int channelId){
       {
          GeoPoint gp;
          populateGeoPoint(&gp);
-         float ssff = getSecondsSinceFirstFix();
-         // pred time is in seconds, value is in minutes.
-         value = getPredictedTime(gp, ssff) / 60;
+         const unsigned long long epochMillis = getMillisSinceEpoch();
+         value = millisToMinutes(getPredictedTime(gp, epochMillis));
          break;
       }
    default:

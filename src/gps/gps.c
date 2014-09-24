@@ -597,9 +597,8 @@ static void flashGpsStatusLed() {
    }
 }
 
-float getSecondsSinceFirstFix() {
-   long diffInMillis = getTimeDeltaInMillis(g_dtLastFix, g_dtFirstFix);
-   return ((float) diffInMillis) / 1000;
+long long getMillisSinceFirstFix() {
+   return getTimeDeltaInMillis(g_dtLastFix, g_dtFirstFix);
 }
 
 void onLocationUpdated() {
@@ -633,14 +632,14 @@ void onLocationUpdated() {
       const float targetRadius = config->TrackConfigs.radius;
 
       // Seconds since first fix is good until we alter the code to use millis directly
-      const float secondsSinceFirstFix = getSecondsSinceFirstFix();
+      const unsigned long long millisSinceEpoch = getMillisSinceEpoch();
       const int lapDetected = processStartFinish(g_activeTrack, targetRadius);
 
       if (lapDetected) {
          resetGpsDistance();
-         startFinishCrossed(gp, secondsSinceFirstFix);
+         startFinishCrossed(gp, millisSinceEpoch);
       } else {
-         addGpsSample(gp, secondsSinceFirstFix);
+         addGpsSample(gp, millisSinceEpoch);
       }
 
       if (sectorEnabled)
