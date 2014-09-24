@@ -147,9 +147,6 @@ void SectorTest::testSectorTimes(){
               setGPSSpeed(speed);
               updatePosition(lat, lon);
 
-              double secondsSinceMidnight = calculateSecondsSinceMidnight(utcTimeStr);
-              updateSecondsSinceMidnight(secondsSinceMidnight);
-
               onLocationUpdated();
 
               int sector = getSector();
@@ -243,8 +240,6 @@ void SectorTest::testStageSectorTimes() {
     updateFullDateTime(dt);
     updateMillisSinceEpoch(dt);
     updatePosition(gp->latitude, gp->longitude);
-    double secondsSinceMidnight = dt.hour * 3600 + dt.minute * 60 + dt.second;
-    updateSecondsSinceMidnight(secondsSinceMidnight);
 
     onLocationUpdated();
 

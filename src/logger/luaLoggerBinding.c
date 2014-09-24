@@ -64,13 +64,11 @@ void registerLuaLoggerBindings(lua_State *L){
 	lua_registerlight(L,"getGpsQuality", Lua_GetGPSQuality);
 	lua_registerlight(L,"getGpsDist", Lua_GetGPSDistance);
 
-	lua_registerlight(L,"getLapCount", Lua_GetLapCount);
-	lua_registerlight(L,"getLapTime", Lua_GetLapTime);
-	lua_registerlight(L,"getGpsSec", Lua_GetGPSSecondsSinceMidnight);
-	lua_registerlight(L,"getAtStartFinish",Lua_GetGPSAtStartFinish);
+	lua_registerlight(L, "getLapCount", Lua_GetLapCount);
+	lua_registerlight(L, "getLapTime", Lua_GetLapTime);
+	lua_registerlight(L, "getGpsSec", Lua_GetGpsSecondsSinceJan1);
+	lua_registerlight(L, "getAtStartFinish",Lua_GetGPSAtStartFinish);
 
-	lua_registerlight(L,"getTimeDiff", Lua_GetTimeDiff);
-	lua_registerlight(L,"getTimeSince", Lua_GetTimeSince);
    lua_registerlight(L, "getTickCount", Lua_GetTickCount);
    lua_registerlight(L, "getTicksPerSecond", Lua_GetTicksPerSecond);
 
@@ -348,32 +346,14 @@ int Lua_GetLapCount(lua_State *L){
 	return 1;
 }
 
-int Lua_GetGPSSecondsSinceMidnight(lua_State *L){
-	float s = getSecondsSinceMidnight();
-	lua_pushnumber(L,s);
-	return 1;
-}
+int Lua_GetGpsSecondsSinceJan1(lua_State *L) {
+   // HACK: TIME_HACK To replace getSecondsSinceMidnight.  KILL ME?
+   const DateTime now = getLastFixDateTime();
+   const DateTime jan1 = {0, 0, 0, 0, 1, 1, now.partialYear};
+   const unsigned long long diff = getTimeDeltaInMillis(now, jan1);
 
-
-int Lua_GetTimeDiff(lua_State *L){
-
-	if (lua_gettop(L) >= 2){
-		float t1 = (float)lua_tonumber(L,1);
-		float t2 = (float)lua_tonumber(L,2);
-		lua_pushnumber(L,getTimeDiff(t1,t2));
-		return 1;
-	}
-	return 0;
-}
-
-int Lua_GetTimeSince(lua_State *L){
-
-	if (lua_gettop(L) >= 1){
-		float t1 = (float)lua_tonumber(L,1);
-		lua_pushnumber(L,getTimeSince(t1));
-		return 1;
-	}
-	return 0;
+   lua_pushnumber(L, millisToSeconds(diff));
+   return 1;
 }
 
 int Lua_GetTickCount(lua_State *L) {

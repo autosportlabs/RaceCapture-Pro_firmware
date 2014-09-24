@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define MILLIS_PER_MINUTE (60000)
 #define MILLIS_PER_SECOND (1000)
 #define SECONDS_PER_MINUTE (60)
 #define SECONDS_PER_HOUR (3600)
@@ -32,8 +33,15 @@ bool isValidDateTime(const DateTime dt);
 /**
  * Converts Millisecond values to legacy minutes float.  Used as
  * a compatibility layer until we move to milliseconds only and
- * remote the use of floats as they are inaccurate.
+ * remove the use of floats as they are inaccurate.
  */
 float millisToMinutes(const unsigned long long millis);
+
+/**
+ * Converts Millisecond values to legacy seconds float.  Used as
+ * a compatibility layer until we move to milliseconds only and
+ * remove the use of floats as they are inaccurate.
+ */
+float millisToSeconds(const unsigned long long millis);
 
 #endif //__DATE_TIME_H__

@@ -167,3 +167,16 @@ void DateTimeTest::testMillisToMinutes() {
   CPPUNIT_ASSERT_EQUAL(10.000016667f, millisToMinutes(600001));
   CPPUNIT_ASSERT_EQUAL(100.000016667f, millisToMinutes(6000001));
 }
+
+void DateTimeTest::testMillisToSeconds() {
+  CPPUNIT_ASSERT_EQUAL(0.001f, millisToSeconds(1));
+  CPPUNIT_ASSERT_EQUAL(0.01f, millisToSeconds(10));
+  CPPUNIT_ASSERT_EQUAL(0.1f, millisToSeconds(100));
+  CPPUNIT_ASSERT_EQUAL(1.0f, millisToSeconds(1000));
+  CPPUNIT_ASSERT_EQUAL(10.0f, millisToSeconds(10000));
+  CPPUNIT_ASSERT_EQUAL(10.001f, millisToSeconds(10001));
+  CPPUNIT_ASSERT_EQUAL(100.001f, millisToSeconds(100001));
+
+  // Test something really large.  Doubles or longs would be nice :).
+  CPPUNIT_ASSERT_EQUAL(31557600.001f, millisToSeconds(31557600001));
+}

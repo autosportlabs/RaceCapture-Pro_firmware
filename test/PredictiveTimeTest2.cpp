@@ -119,7 +119,6 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
 
          const char *utcTimeStr = timeRaw.c_str();
          float utcTime = modp_atof(utcTimeStr);
-         double secondsSinceMidnight = calculateSecondsSinceMidnight(utcTimeStr);
 
          DateTime dt;
          dt.partialYear = 14;
@@ -142,7 +141,6 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
          setGPSSpeed(speed);
          //setUTCTime(utcTime); // No longer any good.
          updatePosition(lat, lon);
-         updateSecondsSinceMidnight(secondsSinceMidnight);
          onLocationUpdated();
 
          GeoPoint gp;

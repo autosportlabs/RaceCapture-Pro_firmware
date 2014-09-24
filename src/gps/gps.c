@@ -45,9 +45,6 @@ static float g_prevLongitude;
 static float g_latitude;
 static float g_longitude;
 
-static float g_prevSecondsSinceMidnight;
-static float g_secondsSinceMidnight;
-
 static float g_speed;
 
 static int g_gpsQuality;
@@ -132,21 +129,12 @@ static void parseGGA(char *data) {
 
    double latitude = 0.0;
    double longitude = 0.0;
-   double secondsSinceMidnight = 0.0;
 
    int keepParsing = 1;
 
    while (delim != NULL && keepParsing) {
       *delim = '\0';
       switch (param) {
-      case 0: {
-         unsigned int len = strlen(data);
-
-         if (len > 0 && len < UTC_TIME_BUFFER_LEN)
-            secondsSinceMidnight = calculateSecondsSinceMidnight(data);
-
-      }
-         break;
       case 1: {
          unsigned int len = strlen(data);
          if (len > 0 && len <= LATITUDE_DATA_LEN) {
@@ -203,31 +191,8 @@ static void parseGGA(char *data) {
       data = delim + 1;
       delim = strchr(data, ',');
    }
-   updateSecondsSinceMidnight(secondsSinceMidnight);
+
    updatePosition(latitude, longitude);
-}
-
-double calculateSecondsSinceMidnight(const char * rawTime) {
-   char hh[3];
-   char mm[3];
-   char ss[7];
-
-   memcpy(hh, rawTime, 2);
-   hh[2] = '\0';
-   memcpy(mm, rawTime + 2, 2);
-   mm[2] = '\0';
-   memcpy(ss, rawTime + 4, 6);
-   ss[6] = '\0';
-   int hour = modp_atoi(hh);
-   int minutes = modp_atoi(mm);
-   float seconds = modp_atof(ss);
-
-   return (hour * 60.0 * 60.0) + (minutes * 60.0) + seconds;
-}
-
-void updateSecondsSinceMidnight(float secondsSinceMidnight) {
-   g_prevSecondsSinceMidnight = g_secondsSinceMidnight;
-   g_secondsSinceMidnight = secondsSinceMidnight;
 }
 
 void updatePosition(float latitude, float longitude) {
@@ -382,27 +347,12 @@ unsigned long long getLastSectorTime() {
    return g_lastSectorTime;
 }
 
-float getTimeSince(float t1) {
-   return getTimeDiff(t1, getSecondsSinceMidnight());
-}
-
-float getTimeDiff(float from, float to) {
-   if (to < from) {
-      to += 86400;
-   }
-   return to - from;
-}
-
 int getAtStartFinish() {
    return g_atStartFinish;
 }
 
 int getAtSector() {
    return g_atTarget;
-}
-
-float getSecondsSinceMidnight() {
-   return g_secondsSinceMidnight;
 }
 
 float getLatitude() {
@@ -557,8 +507,6 @@ void gpsConfigChanged(void) {
 void initGPS() {
    g_configured = 0;
    g_activeTrack = NULL;
-   g_secondsSinceMidnight = TIME_NULL;
-   g_prevSecondsSinceMidnight = TIME_NULL;
    g_millisSinceUnixEpoch = 0;
    g_flashCount = 0;
    g_prevLatitude = 0.0;

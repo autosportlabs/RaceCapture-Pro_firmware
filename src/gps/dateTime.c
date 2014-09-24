@@ -5,8 +5,6 @@
 #include "dateTime.h"
 #include <stdbool.h>
 
-#define MILLIS_PER_MINUTE 60000
-
 /**
  * Converts years that end in XX to full XXXX years.  So 70 -> 1970.  01 -> 2001
  * @param partialYear The partial year as stored in DateTime
@@ -123,4 +121,9 @@ bool isValidDateTime(const DateTime dt) {
 float millisToMinutes(const unsigned long long millis) {
    return ((float) (millis / MILLIS_PER_MINUTE)) +
       (((float) (millis % MILLIS_PER_MINUTE)) / MILLIS_PER_MINUTE);
+}
+
+float millisToSeconds(const unsigned long long millis) {
+   return ((float) (millis / MILLIS_PER_SECOND)) +
+      (((float) (millis % MILLIS_PER_SECOND)) / MILLIS_PER_SECOND);
 }
