@@ -414,6 +414,11 @@ static bool isStartCrossedYet() {
    return g_lastStartFinishTimestamp != 0ull;
 }
 
+static void setStartTime(unsigned long long millis) {
+   g_lastStartFinishTimestamp = millis;
+   g_lastSectorTimestamp = g_lastStartFinishTimestamp;
+}
+
 static float calcDistancesSinceLastSample() {
    float d = 0;
    if (0 != g_prevLatitude && 0 != g_prevLongitude) {
@@ -447,9 +452,7 @@ static int processStartFinish(const Track *track, float targetRadius) {
 
    // First time crossing start finish.
    if (!isStartCrossedYet()) {
-      //loading of lap zero timestamp; e.g. first time crossing line
-      g_lastStartFinishTimestamp = getMillisSinceEpoch();
-      g_lastSectorTimestamp = g_lastStartFinishTimestamp;
+      setStartTime(getMillisSinceEpoch());
       return true;
    }
 

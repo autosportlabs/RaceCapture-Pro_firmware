@@ -726,7 +726,7 @@ release :
 program: $(PROGRAM_TARGET)
 	openocd -f flash.cfg
 
-TAGS: cscope.files
+TAGS:
 	@find . -type f -name '*\.[ch]' | etags -
 
 clean_build:
