@@ -10,6 +10,8 @@
 #ifndef GEOPOINT_H_
 #define GEOPOINT_H_
 
+#include <stdbool.h>
+
 typedef struct _GeoPoint {
 	float latitude;
 	float longitude;
@@ -56,5 +58,16 @@ float distSLCos(GeoPoint *a, GeoPoint *b);
  * @return The distance between the two points in Meters
  */
 float distHaversine(GeoPoint *a, GeoPoint *b);
+
+/**
+ * Tells us if the given point is within the bound of a given GeoCircle.  Note
+ * that this is a circle only and not a sphere.  In otherwords elevation has
+ * no effect on this calculation.
+ * @param point The point in quesiton
+ * @param center The center of the GeoCircle
+ * @param radius The radius of the circle.
+ */
+bool isPointInGeoCircle(const GeoPoint point, const GeoPoint center,
+                        const float radius);
 
 #endif /* GEOPOINT_H_ */

@@ -1,0 +1,57 @@
+/**
+ * Race Capture Pro Firmware
+ *
+ * Copyright (C) 2014 Autosport Labs
+ *
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should have received a copy of the GNU
+ * General Public License along with this code. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authors: Stieg
+ */
+
+#ifndef _LAUNCH_CONTROL_H_
+#define _LAUNCH_CONTROL_H_
+
+#include "gps.h"
+#include "tracks.h"
+
+#include <stdbool.h>
+
+/**
+ * Resets internal state.
+ */
+void lc_reset();
+
+/**
+ * Sets up the needed information to allow launch control to work.
+ * @param track Pointer to the track
+ * @param targetRadius The radius of the target circle.
+ */
+void lc_setup(const Track *track, const float targetRadius);
+
+/**
+ * Called when a new sample is available.
+ * @param sample The GpsSample.
+ */
+void lc_supplyGpsSample(const struct GpsSample sample);
+
+/**
+ * @return true if the driver has launched (started racing).  False otherwise.
+ */
+bool lc_hasLaunched();
+
+/**
+ * @return The time when the driver started racing.
+ */
+unsigned long long lc_getLaunchTime();
+
+#endif /* _LAUNCH_CONTROL_H_ */

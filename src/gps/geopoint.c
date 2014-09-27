@@ -9,6 +9,8 @@
 #include "math.h"
 #include "gps/gps.h"
 
+#include <stdbool.h>
+
 /**
  * Converts a given value to radians.
  * @param val The provided value in non-radian form.
@@ -58,3 +60,7 @@ float distHaversine(GeoPoint *a, GeoPoint *b) {
 	return 2 * atan2f(sqrtf(tmp), sqrtf(1 - tmp)) * GP_EARTH_RADIUS_M;
 }
 
+bool isPointInGeoCircle(const GeoPoint point, const GeoPoint center,
+                        const float radius) {
+   return distPythag(&point, &center) <= radius;
+}

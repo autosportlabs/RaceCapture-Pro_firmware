@@ -9,6 +9,7 @@
 
 #include "debug.h"
 #include "geopoint.h"
+#include "gps.h"
 #include "util/mod_string.h"
 
 /**
@@ -34,13 +35,6 @@
  */
 #define MIN_PREDICTED_TIME 10000
 
-/**
- * A simple Time and Location sample.
- */
-typedef struct _TimeLoc {
-	GeoPoint point;
-	unsigned long long time;
-} TimeLoc;
 
 static TimeLoc buff1[MAX_TIMELOC_SAMPLES];
 static TimeLoc buff2[MAX_TIMELOC_SAMPLES];

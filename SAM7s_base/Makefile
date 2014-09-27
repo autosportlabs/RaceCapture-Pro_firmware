@@ -216,6 +216,7 @@ $(DEVICES_SRC_DIR)/bluetooth.c \
 $(DEVICES_SRC_DIR)/sim900.c \
 $(VIRTUAL_CHANNEL_SRC_DIR)/virtual_channel.c \
 $(AUTO_CONFIG_SRC_DIR)/auto_track.c \
+$(SRC_DIR)/launch_control.c \
 
 # List C source files here which must be compiled in ARM-Mode.
 # use file-extension c for "c-only"-files

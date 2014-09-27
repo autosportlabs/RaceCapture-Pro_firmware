@@ -2,11 +2,27 @@
 #define GPS_H_
 
 #include "dateTime.h"
+#include "geopoint.h"
+
 #include <stddef.h>
 
 #define GPS_QUALITY_NO_FIX 0
 #define GPS_QUALITY_SPS 1
 #define GPS_QUALITY_DIFFERENTIAL 2
+
+struct GpsSample {
+   GeoPoint point;
+   unsigned long long time;
+   float speed;
+};
+
+/**
+ * A simple Time and Location sample.
+ */
+typedef struct _TimeLoc {
+	GeoPoint point;
+	unsigned long long time;
+} TimeLoc;
 
 void gpsConfigChanged(void);
 
