@@ -21,7 +21,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_BASE) \
 		-I$(RCP_BASE)/logger \
 		-I$(SAM7S_SRC)/fat_sd_at91 \
-		-I$(RCP_INC)\
+		-I$(RCP_INC) \
 		-I$(RCP_INC)/logging \
 		-I$(RCP_INC)/gps \
 		-I$(RCP_INC)/jsmn \
@@ -41,7 +41,6 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/serial \
 		-I$(SAM7S_SRC)/lua \
 		-I$(SAM7S_SRC)/command \
-		-I$(RCP_INC) \
 		-I$(SAM7S_SRC)/uart \
 		-I$(SAM7S_SRC)/usb/include \
 		-I$(RCP_INC)/imu \
@@ -87,6 +86,7 @@ build/rcp_base/%.o: ../%.c
 
 T_SRC = loggerApi_test.cpp \
 		date_time_test.cpp \
+		launch_control_test.cpp \
 		loggerConfig_test.cpp \
 		sampleRecord_test.cpp \
 		PredictiveTimeTest2.cpp \
@@ -101,6 +101,7 @@ SRC = 	mock_uart.c \
 		mock_usb_comm.c \
 		mock_serial.c \
 		$(MOCK_DIR)/util/taskUtil_mock.c \
+		$(RCP_SRC)/launch_control.c \
 		$(RCP_SRC)/lua/luaScript.c \
 		$(RCP_SRC)/util/modp_numtoa.c \
 		$(RCP_SRC)/util/modp_atonum.c \

@@ -57,7 +57,7 @@ bool lc_hasLaunched() {
 }
 
 unsigned long long lc_getLaunchTime() {
-   return g_startTime;
+   return lc_hasLaunched() ? g_startTime : 0ull;
 }
 
 void lc_reset() {
