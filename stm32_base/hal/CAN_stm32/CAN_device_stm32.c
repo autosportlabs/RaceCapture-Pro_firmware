@@ -9,6 +9,7 @@
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_misc.h"
 #include "taskUtil.h"
+#include "printk.h"
 
 static xQueueHandle xCan1Tx;
 static xQueueHandle xCan1Rx;
@@ -214,6 +215,7 @@ int CAN_device_rx_msg(CAN_msg *msg, unsigned int timeoutMs) {
 		msg->dataLength = rxMsg.DLC;
 		return 1;
 	} else {
+		pr_debug("timeout rx CAN msg\r\n");
 		return 0;
 	}
 }
