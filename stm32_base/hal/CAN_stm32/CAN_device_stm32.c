@@ -9,6 +9,7 @@
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_misc.h"
 #include "taskUtil.h"
+#include "printk.h"
 
 static xQueueHandle xCan1Tx;
 static xQueueHandle xCan1Rx;
@@ -155,10 +156,15 @@ static void CAN_device_init_2(int baud) {
 }
 
 int CAN_device_init(int baud) {
-	if (!initQueues())
-		return 0;
-	CAN_device_init_1(baud);
-	CAN_device_init_2(baud);
+
+	if (initQueues()){
+		CAN_device_init_1(baud);
+		CAN_device_init_2(baud);
+		pr_info("CAN init win\r\n");
+	}
+	else{
+		pr_info("CAN init fail\r\n");
+	}
 	return 1;
 }
 
