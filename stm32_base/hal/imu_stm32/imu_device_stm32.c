@@ -21,16 +21,12 @@
 static struct is9150_all_sensor_data sensor_data[2];
 static struct is9150_all_sensor_data *read_buf = &sensor_data[0];
 static struct is9150_all_sensor_data *fill_buf = &sensor_data[1];
-static xSemaphoreHandle buf_lock;
-
 static void imu_update_buf_ptrs(void)
 {
 	static struct is9150_all_sensor_data *tmp;
-	xSemaphoreTake(buf_lock, portMAX_DELAY);
 	tmp = read_buf;
 	read_buf = fill_buf;
 	fill_buf = tmp;
-	xSemaphoreGive(buf_lock);
 }
 
 static void imu_update_task(void *params)
@@ -59,7 +55,6 @@ static void imu_update_task(void *params)
 void imu_device_init()
 {
 	/* Create a lock around the sensor buffers */
-	vSemaphoreCreateBinary(buf_lock);
 
 	xTaskCreate(imu_update_task,
 		    (signed portCHAR*)"IMU update",
@@ -74,7 +69,6 @@ unsigned int imu_device_read(unsigned int channel)
 {
 	unsigned int ret = 0;
 
-	xSemaphoreTake(buf_lock, portMAX_DELAY);
 	switch(channel) {
 	case IMU_CHANNEL_X:
 		ret = read_buf->accel.accel_x;
@@ -92,7 +86,6 @@ unsigned int imu_device_read(unsigned int channel)
 		break;
 
 	}
-	xSemaphoreGive(buf_lock);
 
 	return ret;
 }
