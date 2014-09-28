@@ -137,7 +137,7 @@ debug: $(TARGET).bin
 	$(OPENOCD) -f $(APP_PATH)/openocd.cfg
 
 ddd: $(TARGET).elf
-	$(DDD) --eval-command="target remote localhost:3333" --debugger $(GDB) $(TARGET).elf
+	$(DDD) --eval-command="target remote localhost:3333" --eval-command="set env LD_LIBRARY_PATH ../lib_lua/src" --debugger $(GDB) $(TARGET).elf
 
 gdb: $(TARGET).elf
 	$(GDB) -ex "target ext localhost:3333" -ex "mon reset halt" -ex "mon arm semihosting enable" $(TARGET).elf
