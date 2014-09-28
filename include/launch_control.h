@@ -34,7 +34,7 @@ void lc_reset();
 /**
  * Sets up the needed information to allow launch control to work.
  * @param track Pointer to the track
- * @param targetRadius The radius of the target circle.
+ * @param targetRadius The radius of the target circle in Meters
  */
 void lc_setup(const Track *track, const float targetRadius);
 

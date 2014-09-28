@@ -2,6 +2,7 @@
 #include "dateTime.h"
 #include "gps.h"
 #include "geopoint.h"
+#include "launch_control.h"
 #include "loggerHardware.h"
 #include "LED.h"
 #include "loggerConfig.h"
@@ -387,6 +388,16 @@ DateTime getLastFixDateTime() {
    return g_dtLastFix;
 }
 
+static struct GpsSample getGpsSample() {
+   struct GpsSample s;
+   s.point.latitude = getLatitude();
+   s.point.longitude = getLongitude();
+   s.time = getMillisSinceEpoch();
+   s.speed = getGPSSpeed();
+
+   return s;
+}
+
 static int withinGpsTarget(const GeoPoint *point, float radius) {
 
    struct circ_area area;
@@ -414,62 +425,59 @@ static bool isStartCrossedYet() {
    return g_lastStartFinishTimestamp != 0ull;
 }
 
-static void setStartTime(unsigned long long millis) {
-   g_lastStartFinishTimestamp = millis;
-   g_lastSectorTimestamp = g_lastStartFinishTimestamp;
-}
-
 static float calcDistancesSinceLastSample() {
-   float d = 0;
-   if (0 != g_prevLatitude && 0 != g_prevLongitude) {
-      float lat1 = toRadians(g_prevLatitude);
-      float lon1 = toRadians(g_prevLongitude);
+   const GeoPoint prev = {g_prevLatitude, g_prevLongitude};
+   const GeoPoint curr = {g_latitude, g_longitude};
 
-      float lat2 = toRadians(g_latitude);
-      float lon2 = toRadians(g_longitude);
+   if (!isValidPoint(&prev) || !isValidPoint(&curr))
+      return 0.0;
 
-      float x = (lon2 - lon1) * cos((lat1 + lat2) / 2);
-      float y = (lat2 - lat1);
-      d = sqrtf(x * x + y * y) * DISTANCE_SCALING;
-   }
-   return d;
+   // Return distance in KM
+   return distPythag(&prev, &curr) / 1000;
 }
 
 static int processStartFinish(const Track *track, float targetRadius) {
    const GeoPoint sfPoint = isStartCrossedYet() ?
       getFinishPoint(track) : getStartPoint(track);
 
+   // First time crossing start finish.  Handle this in a special way.
+   if (!isStartCrossedYet()) {
+      lc_supplyGpsSample(getGpsSample());
+
+      if (lc_hasLaunched()) {
+         g_lastStartFinishTimestamp = lc_getLaunchTime();
+         g_lastSectorTimestamp = lc_getLaunchTime();
+         g_prevAtStartFinish = 1;
+         return true;
+      }
+
+      return false;
+   }
+
+
+   const unsigned long long timestamp = getMillisSinceEpoch();
+   const unsigned long long elapsed = timestamp - g_lastStartFinishTimestamp;
+
+   /*
+    * Guard against false triggering. We have to be out of the start/finish
+    * target for some amount of time and couldn't have been in there during our
+    * last time in this method.
+    *
+    * FIXME: Should have logic that checks that we left the start/finish circle
+    * for some time.
+    */
    g_atStartFinish = withinGpsTarget(&sfPoint, targetRadius);
-   if (!g_atStartFinish || g_prevAtStartFinish != 0) {
+   if (!g_atStartFinish || g_prevAtStartFinish != 0 ||
+       elapsed <= START_FINISH_TIME_THRESHOLD) {
       g_prevAtStartFinish = 0;
       return false;
    }
 
-   /*
-    * Beyond this point we think we are at start/finish.
-    */
-   g_prevAtStartFinish = 1;
-
-   // First time crossing start finish.
-   if (!isStartCrossedYet()) {
-      setStartTime(getMillisSinceEpoch());
-      return true;
-   }
-
-   /*
-    * Guard against false triggering. We have to be out of the start/finish
-    * target for some amount of time.
-    */
-   const unsigned long long timestamp = getMillisSinceEpoch();
-   const unsigned long long elapsed = timestamp - g_lastStartFinishTimestamp;
-
-   if (elapsed <= START_FINISH_TIME_THRESHOLD)
-      return false;
-
-   // If here, NOW we are sure we are at Start/Finish
+   // If here, we are at Start/Finish and have de-bounced duplicate entries.
    g_lapCount++;
    g_lastLapTime = elapsed;
    g_lastStartFinishTimestamp = timestamp;
+   g_prevAtStartFinish = 1;
 
    return true;
 }
@@ -572,6 +580,7 @@ void onLocationUpdated() {
       startFinishEnabled = isFinishPointValid(g_activeTrack) && isStartPointValid(g_activeTrack);
       sectorEnabled = config->LapConfigs.sectorTimeCfg.sampleRate !=
          SAMPLE_DISABLED && startFinishEnabled;
+      lc_setup(g_activeTrack, config->TrackConfigs.radius * 1000);
       g_configured = 1;
    }
 
@@ -588,7 +597,21 @@ void onLocationUpdated() {
 
       if (lapDetected) {
          resetGpsDistance();
-         startFinishCrossed(gp, millisSinceEpoch);
+
+         /*
+          * FIXME: Special handling of fisrt start/finish crossing.  Needed
+          * b/c launch control will delay the first launch notification
+          */
+         if (getLapCount() == 0) {
+            const GeoPoint sp = getStartPoint(g_activeTrack);
+            // Distance is in KM
+            g_distance = distPythag(&sp, &gp) / 1000;
+
+            startFinishCrossed(sp, g_lastStartFinishTimestamp);
+            addGpsSample(gp, millisSinceEpoch);
+         } else {
+            startFinishCrossed(gp, millisSinceEpoch);
+         }
       } else {
          addGpsSample(gp, millisSinceEpoch);
       }

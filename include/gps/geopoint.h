@@ -65,7 +65,7 @@ float distHaversine(GeoPoint *a, GeoPoint *b);
  * no effect on this calculation.
  * @param point The point in quesiton
  * @param center The center of the GeoCircle
- * @param radius The radius of the circle.
+ * @param radius The radius of the circle in Meters.
  */
 bool isPointInGeoCircle(const GeoPoint point, const GeoPoint center,
                         const float radius);
