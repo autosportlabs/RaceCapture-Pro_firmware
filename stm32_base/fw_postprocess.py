@@ -7,7 +7,7 @@ import crcmod
 import struct
 import optparse
 import subprocess
-import ihex
+from ihex import ihex
 
 #Size of the info block in bytes
 INFO_SIZE = 20
