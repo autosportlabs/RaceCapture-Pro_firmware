@@ -11,11 +11,11 @@
 #include "taskUtil.h"
 #include "printk.h"
 
-static xQueueHandle xCan1Tx;
-static xQueueHandle xCan1Rx;
+static xQueueHandle xCan1Tx = NULL;
+static xQueueHandle xCan1Rx = NULL;
 
-static xQueueHandle xCan2Tx;
-static xQueueHandle xCan2Rx;
+static xQueueHandle xCan2Tx = NULL;
+static xQueueHandle xCan2Rx = NULL;
 
 #define CAN_QUEUE_LENGTH 10
 
@@ -39,15 +39,18 @@ static const u32 can_baud_rate[] = { 100000, 125000, 250000, 500000, 1000000 };
 
 static int initQueues() {
 	int success = 1;
-	xCan1Rx = xQueueCreate(CAN_QUEUE_LENGTH,
-			( unsigned portBASE_TYPE ) sizeof( CanRxMsg ));
-	xCan1Tx = xQueueCreate(CAN_QUEUE_LENGTH + 1,
-			( unsigned portBASE_TYPE ) sizeof( CanRxMsg ));
 
-	xCan2Rx = xQueueCreate(CAN_QUEUE_LENGTH,
-			( unsigned portBASE_TYPE ) sizeof( CanRxMsg ));
-	xCan2Tx = xQueueCreate(CAN_QUEUE_LENGTH + 1,
-			( unsigned portBASE_TYPE ) sizeof( CanRxMsg ));
+	if (! (xCan1Rx && xCan1Tx && xCan2Rx && xCan2Tx)){
+		xCan1Rx = xQueueCreate(CAN_QUEUE_LENGTH,
+				( unsigned portBASE_TYPE ) sizeof( CanRxMsg ));
+		xCan1Tx = xQueueCreate(CAN_QUEUE_LENGTH + 1,
+				( unsigned portBASE_TYPE ) sizeof( CanRxMsg ));
+
+		xCan2Rx = xQueueCreate(CAN_QUEUE_LENGTH,
+				( unsigned portBASE_TYPE ) sizeof( CanRxMsg ));
+		xCan2Tx = xQueueCreate(CAN_QUEUE_LENGTH + 1,
+				( unsigned portBASE_TYPE ) sizeof( CanRxMsg ));
+	}
 
 	if (xCan1Rx == NULL || xCan1Rx == NULL || xCan2Rx == NULL || xCan2Rx == NULL) {
 		success = 0;
@@ -155,17 +158,24 @@ static void CAN_device_init_2(int baud) {
 	initCANInterrupts(CAN2, CAN2_RX0_IRQn);
 }
 
-int CAN_device_init(int baud) {
+int CAN_device_init(size_t channel, uint32_t baud){
 
 	if (initQueues()){
-		CAN_device_init_1(baud);
-		CAN_device_init_2(baud);
+		switch(channel){
+		case 0:
+			CAN_device_init_1(baud);
+			break;
+		case 1:
+			CAN_device_init_2(baud);
+			break;
+		}
 		pr_info("CAN init win\r\n");
+		return 1;
 	}
 	else{
 		pr_info("CAN init fail\r\n");
+		return 0;
 	}
-	return 1;
 }
 
 int CAN_device_set_filter(uint8_t id, uint8_t extended, uint32_t filter, uint32_t mask) {

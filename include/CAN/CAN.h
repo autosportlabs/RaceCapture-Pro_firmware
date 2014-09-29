@@ -1,13 +1,7 @@
-/*
- * CAN.h
- *
- *  Created on: Jan 26, 2014
- *      Author: brent
- */
-
-#include <stdint.h>
 #ifndef CAN_H_
 #define CAN_H_
+#include <stdint.h>
+#include "loggerConfig.h"
 
 #define CAN_BAUD_50K			50000
 #define CAN_BAUD_100K 			100000
@@ -26,7 +20,8 @@ typedef struct _CAN_msg
 }  CAN_msg;
 
 
-int CAN_init(int baud);
+int CAN_init(LoggerConfig *loggerConfig);
+int CAN_init_port(size_t port, uint32_t baud);
 int CAN_set_filter(uint8_t id, uint8_t extended, uint32_t filter, uint32_t mask);
 int CAN_tx_msg(CAN_msg *msg, unsigned int timeoutMs);
 int CAN_rx_msg(CAN_msg *msg, unsigned int timeoutMs);
