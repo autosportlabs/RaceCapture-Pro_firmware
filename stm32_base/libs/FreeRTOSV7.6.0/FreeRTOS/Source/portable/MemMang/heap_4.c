@@ -80,7 +80,7 @@ task.h is included from an application file. */
 
 #include "FreeRTOS.h"
 #include "task.h"
-
+#include "mod_string.h"
 #undef MPU_WRAPPERS_INCLUDED_FROM_API_FILE
 
 /* Block sizes must not get too small. */
@@ -89,11 +89,16 @@ task.h is included from an application file. */
 /* Assumes 8bit bytes! */
 #define heapBITS_PER_BYTE		( ( size_t ) 8 )
 
+//the following is defined in the linker script
+extern const unsigned int _CONFIG_HEAP_SIZE;
+#define configTOTAL_HEAP_SIZE ((const unsigned int)(&_CONFIG_HEAP_SIZE))
 /* A few bytes might be lost to byte aligning the heap start address. */
 #define heapADJUSTED_HEAP_SIZE	( configTOTAL_HEAP_SIZE - portBYTE_ALIGNMENT )
+//the following is defined in the linker script
+extern unsigned portCHAR  _heap_address[];
 
 /* Allocate the memory for the heap. */
-static unsigned char ucHeap[ configTOTAL_HEAP_SIZE ];
+//static unsigned char ucHeap[ configTOTAL_HEAP_SIZE ];
 
 /* Define the linked list structure.  This is used to link free blocks in order
 of their memory address. */
@@ -126,14 +131,14 @@ block must by correctly byte aligned. */
 static const unsigned short heapSTRUCT_SIZE	= ( ( sizeof ( xBlockLink ) + ( portBYTE_ALIGNMENT - 1 ) ) & ~portBYTE_ALIGNMENT_MASK );
 
 /* Ensure the pxEnd pointer will end up on the correct byte alignment. */
-static const size_t xTotalHeapSize = ( ( size_t ) heapADJUSTED_HEAP_SIZE ) & ( ( size_t ) ~portBYTE_ALIGNMENT_MASK );
+static size_t xTotalHeapSize = 0;
 
 /* Create a couple of list links to mark the start and end of the list. */
 static xBlockLink xStart, *pxEnd = NULL;
 
 /* Keeps track of the number of free bytes remaining, but says nothing about
 fragmentation. */
-static size_t xFreeBytesRemaining = ( ( size_t ) heapADJUSTED_HEAP_SIZE ) & ( ( size_t ) ~portBYTE_ALIGNMENT_MASK );
+static size_t xFreeBytesRemaining = 0;
 
 /* Gets set to the top bit of an size_t type.  When this bit in the xBlockSize 
 member of an xBlockLink structure is set then the block belongs to the 
@@ -249,6 +254,30 @@ void *pvReturn = NULL;
 }
 /*-----------------------------------------------------------*/
 
+
+void * pvPortRealloc( void *pv, size_t xWantedSize){
+
+	if (! pv){
+		return pvPortMalloc(xWantedSize);
+	}else{
+		unsigned portCHAR *puc = ( unsigned portCHAR * ) pv;
+		xBlockLink *pxLink;
+		puc -= heapSTRUCT_SIZE;
+
+		pxLink = (void *)puc;
+		size_t origSize = pxLink->xBlockSize;
+		if (origSize == xWantedSize){
+			return pv;
+		}
+		else{
+			void *newPv = pvPortMalloc(xWantedSize);
+			memcpy(newPv, pv, xWantedSize < origSize ? xWantedSize : origSize);
+			vPortFree(pv);
+			return newPv;
+		}
+	}
+}
+
 void vPortFree( void *pv )
 {
 unsigned char *puc = ( unsigned char * ) pv;
@@ -306,8 +335,11 @@ static void prvHeapInit( void )
 xBlockLink *pxFirstFreeBlock;
 unsigned char *pucHeapEnd, *pucAlignedHeap;
 
+	xTotalHeapSize = 		( ( size_t ) heapADJUSTED_HEAP_SIZE ) & ( ( size_t ) ~portBYTE_ALIGNMENT_MASK );
+	xFreeBytesRemaining	= 	xTotalHeapSize;
+
 	/* Ensure the heap starts on a correctly aligned boundary. */
-	pucAlignedHeap = ( unsigned char * ) ( ( ( portPOINTER_SIZE_TYPE ) &ucHeap[ portBYTE_ALIGNMENT ] ) & ( ( portPOINTER_SIZE_TYPE ) ~portBYTE_ALIGNMENT_MASK ) );
+	pucAlignedHeap = ( unsigned char * ) ( ( ( portPOINTER_SIZE_TYPE ) &_heap_address[ portBYTE_ALIGNMENT ] ) & ( ( portPOINTER_SIZE_TYPE ) ~portBYTE_ALIGNMENT_MASK ) );
 
 	/* xStart is used to hold a pointer to the first item in the list of free
 	blocks.  The void cast is used to prevent compiler warnings. */
