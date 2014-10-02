@@ -414,10 +414,6 @@ static int withinGpsTarget(const GeoPoint *point, float radius) {
    return within;
 }
 
-static float toRadians(float degrees) {
-   return degrees * PI / 180.0;
-}
-
 /**
  * @return True if we have crossed the start line at least once, false otherwise.
  */
