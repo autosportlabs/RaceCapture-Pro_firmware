@@ -86,68 +86,68 @@ void DateTimeTest::testDaysInMonth()
 void DateTimeTest::testGetMillisSinceEpoch() {
    // Invalid date.  Should be 0.
    const DateTime invalid = {};
-   CPPUNIT_ASSERT_EQUAL(0ull,
+   CPPUNIT_ASSERT_EQUAL(0ll,
                         getMillisecondsSinceUnixEpoch(invalid));
 
 
    // 1970, Jan 1 @ 00:00:00.000 == 0
    const DateTime epoch = {0, 0, 0, 0, 1, 1, 70};
-   CPPUNIT_ASSERT_EQUAL(0ull,
+   CPPUNIT_ASSERT_EQUAL(0ll,
                         getMillisecondsSinceUnixEpoch(epoch));
 
    // 1970, Jan 1 @ 00:16:40.000 == 1000000
    const DateTime d1000000 = {0, 40, 16, 0, 1, 1, 70};
-   CPPUNIT_ASSERT_EQUAL(1000000ull,
+   CPPUNIT_ASSERT_EQUAL(1000000ll,
                         getMillisecondsSinceUnixEpoch(d1000000));
 
    // 1970, Jan 1 @ 12:00:00.000 == 43200000
    const DateTime d43200000 = {0, 0, 0, 12, 1, 1, 70};
-   CPPUNIT_ASSERT_EQUAL(43200000ull,
+   CPPUNIT_ASSERT_EQUAL(43200000ll,
                         getMillisecondsSinceUnixEpoch(d43200000));
 
    // 1970, Jan 2 @ 12:00:00.000 == 129600000
    const DateTime d129600000 = {0, 0, 0, 12, 2, 1, 70};
-   CPPUNIT_ASSERT_EQUAL(129600000ull,
+   CPPUNIT_ASSERT_EQUAL(129600000ll,
                         getMillisecondsSinceUnixEpoch(d129600000));
 
    // 1970, Jan 31 @ 12:00:00.000 == 2635200000
    const DateTime d2635200000 = {0, 0, 0, 12, 31, 1, 70};
-   CPPUNIT_ASSERT_EQUAL(2635200000ull,
+   CPPUNIT_ASSERT_EQUAL(2635200000ll,
                         getMillisecondsSinceUnixEpoch(d2635200000));
 
    // 1970, Feb 1 @ 12:00:00.000 == 2721600000
    const DateTime d2721600000 = {0, 0, 0, 12, 1, 2, 70};
-   CPPUNIT_ASSERT_EQUAL(2721600000ull,
+   CPPUNIT_ASSERT_EQUAL(2721600000ll,
                         getMillisecondsSinceUnixEpoch(d2721600000));
 
    // 1970, Feb 28 @ 12:00:00.000 == 5054400000
    const DateTime d5054400000 = {0, 0, 0, 12, 28, 2, 70};
-   CPPUNIT_ASSERT_EQUAL(5054400000ull,
+   CPPUNIT_ASSERT_EQUAL(5054400000ll,
                         getMillisecondsSinceUnixEpoch(d5054400000));
 
    // 1970, Mar 1 @ 12:00:00.000 == 5140800000
    const DateTime d5140800000 = {0, 0, 0, 12, 1, 3, 70};
-   CPPUNIT_ASSERT_EQUAL(5140800000ull,
+   CPPUNIT_ASSERT_EQUAL(5140800000ll,
                         getMillisecondsSinceUnixEpoch(d5140800000));
 
    // 1970, Apr 1 @ 12:00:00.000 == 7819200000
    const DateTime d7819200000 = {0, 0, 0, 12, 1, 4, 70};
-   CPPUNIT_ASSERT_EQUAL(7819200000ull,
+   CPPUNIT_ASSERT_EQUAL(7819200000ll,
                         getMillisecondsSinceUnixEpoch(d7819200000));
 
    // 1971, Jan 1 @ 12:00:00.000 == 31579200000
    const DateTime d31579200000 = {0, 0, 0, 12, 1, 1, 71};
-   CPPUNIT_ASSERT_EQUAL(31579200000ull,
+   CPPUNIT_ASSERT_EQUAL(31579200000ll,
                         getMillisecondsSinceUnixEpoch(d31579200000));
 
    // 1984, Mar 17 @ 10:08:00.000 == 448366080000.  My birth timestamp.
    const DateTime d448366080000 = {0, 0, 8, 10, 17, 3, 84};
-   CPPUNIT_ASSERT_EQUAL(448366080000ull,
+   CPPUNIT_ASSERT_EQUAL(448366080000ll,
                         getMillisecondsSinceUnixEpoch(d448366080000));
 
    // 2013, January 1 @ 00:00:00.000 == 1356998400000 milliseconds since epoch.
    const DateTime jan_1_2013 = {0, 0, 0, 0, 1, 1, 13};
-   CPPUNIT_ASSERT_EQUAL(1356998400000ull,
+   CPPUNIT_ASSERT_EQUAL(1356998400000ll,
                         getMillisecondsSinceUnixEpoch(jan_1_2013));
 
 }

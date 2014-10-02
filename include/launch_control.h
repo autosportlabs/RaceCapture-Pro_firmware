@@ -52,6 +52,6 @@ bool lc_hasLaunched();
 /**
  * @return The time when the driver started racing.
  */
-unsigned long long lc_getLaunchTime();
+millis_t lc_getLaunchTime();
 
 #endif /* _LAUNCH_CONTROL_H_ */

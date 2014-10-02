@@ -145,8 +145,8 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
 
          GeoPoint gp;
          populateGeoPoint(&gp);
-         const unsigned long long epochMillis = getMillisSinceEpoch();
-         const unsigned long long predTime = getPredictedTime(gp, epochMillis);
+         const millis_t epochMillis = getMillisSinceEpoch();
+         const millis_t predTime = getPredictedTime(gp, epochMillis);
          printf("Lap #%d - Predicted Time: %ull\n", getLapCount(), predTime);
 		}
 	}

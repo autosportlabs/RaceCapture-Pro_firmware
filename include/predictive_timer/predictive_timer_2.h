@@ -8,15 +8,17 @@
 #ifndef PREDICTIVE_TIMER_2_H_
 #define PREDICTIVE_TIMER_2_H_
 
-#include <stdbool.h>
+#include "dateTime.h"
 #include "geopoint.h"
+
+#include <stdbool.h>
 
 /**
  * Method invoked whenever we detect that we have crossed the start finish line
  * @param point The location of the start/finish line.
  * @param time The time (millis since epoch) which the sample was taken.
  */
-void startFinishCrossed(GeoPoint point, unsigned long long time);
+void startFinishCrossed(GeoPoint point, millis_t time);
 
 /**
  * Adds a new GPS sample to our record if the algorithm determines its time for one.
@@ -24,7 +26,7 @@ void startFinishCrossed(GeoPoint point, unsigned long long time);
  * @param time The time (millis since epoch) which the sample was taken.
  * @return TRUE if it was added, FALSE otherwise.
  */
-bool addGpsSample(GeoPoint point, unsigned long long time);
+bool addGpsSample(GeoPoint point, millis_t time);
 
 /**
  * Calculates the split of your current time against the fast lap time at the position given.
@@ -33,7 +35,7 @@ bool addGpsSample(GeoPoint point, unsigned long long time);
  * @return The split between your current time and the fast lap time.  Positive indicates you are
  * going faster than your fast lap, negative indicates slower.
  */
-unsigned long long getSplitAgainstFastLap(GeoPoint point, unsigned long long time);
+millis_t getSplitAgainstFastLap(GeoPoint point, millis_t time);
 
 /**
  * Figures out the predicted lap time.  Call as much as you like... it will only do
@@ -44,7 +46,7 @@ unsigned long long getSplitAgainstFastLap(GeoPoint point, unsigned long long tim
  * @param time The time (millis since epoch) which the sample was taken.
  * @return The predicted lap time.
  */
-unsigned long long getPredictedTime(GeoPoint point, unsigned long long time);
+millis_t getPredictedTime(GeoPoint point, millis_t time);
 
 /**
  * Tells the caller if a predictive time is ready to be had.

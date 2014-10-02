@@ -425,7 +425,7 @@ float get_lap_stat_sample(int channelId){
       {
          GeoPoint gp;
          populateGeoPoint(&gp);
-         const unsigned long long epochMillis = getMillisSinceEpoch();
+         const millis_t epochMillis = getMillisSinceEpoch();
          value = millisToMinutes(getPredictedTime(gp, epochMillis));
          break;
       }

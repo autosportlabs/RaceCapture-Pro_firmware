@@ -12,7 +12,7 @@
 
 struct GpsSample {
    GeoPoint point;
-   unsigned long long time;
+   millis_t time;
    float speed;
 };
 
@@ -21,7 +21,7 @@ struct GpsSample {
  */
 typedef struct _TimeLoc {
 	GeoPoint point;
-	unsigned long long time;
+	millis_t time;
 } TimeLoc;
 
 void gpsConfigChanged(void);
@@ -40,9 +40,9 @@ void resetLapCount();
 
 int getLapCount();
 
-unsigned long long getLastLapTime();
+millis_t getLastLapTime();
 
-unsigned long long getLastSectorTime();
+millis_t getLastSectorTime();
 
 int getSector();
 
@@ -90,7 +90,7 @@ DateTime getLastFixDateTime();
 /**
  * @return Milliseconds since Unix Epoch.
  */
-unsigned long long getMillisSinceEpoch();
+millis_t getMillisSinceEpoch();
 
 /**
  * This exists for backwards compatibility and will be deprecated in the future.  Use

@@ -14,6 +14,8 @@
 #define SECONDS_PER_HOUR (3600)
 #define SECONDS_PER_DAY (86400)
 
+typedef int64_t millis_t;
+
 typedef struct _DateTime {
    int16_t millisecond;
    int8_t second;
@@ -26,8 +28,8 @@ typedef struct _DateTime {
 
 bool isLeapYear(const unsigned int year);
 unsigned int getDaysInMonth(const unsigned int month, bool leapYear);
-unsigned long long getMillisecondsSinceUnixEpoch(DateTime dt);
-long long getTimeDeltaInMillis(DateTime a, DateTime b);
+millis_t getMillisecondsSinceUnixEpoch(DateTime dt);
+millis_t getTimeDeltaInMillis(DateTime a, DateTime b);
 bool isValidDateTime(const DateTime dt);
 
 /**
@@ -35,13 +37,13 @@ bool isValidDateTime(const DateTime dt);
  * a compatibility layer until we move to milliseconds only and
  * remove the use of floats as they are inaccurate.
  */
-float millisToMinutes(const unsigned long long millis);
+float millisToMinutes(const millis_t millis);
 
 /**
  * Converts Millisecond values to legacy seconds float.  Used as
  * a compatibility layer until we move to milliseconds only and
  * remove the use of floats as they are inaccurate.
  */
-float millisToSeconds(const unsigned long long millis);
+float millisToSeconds(const millis_t millis);
 
 #endif //__DATE_TIME_H__

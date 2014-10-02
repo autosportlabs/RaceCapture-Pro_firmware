@@ -350,7 +350,7 @@ int Lua_GetGpsSecondsSinceJan1(lua_State *L) {
    // HACK: TIME_HACK To replace getSecondsSinceMidnight.  KILL ME?
    const DateTime now = getLastFixDateTime();
    const DateTime jan1 = {0, 0, 0, 0, 1, 1, now.partialYear};
-   const unsigned long long diff = getTimeDeltaInMillis(now, jan1);
+   const millis_t diff = getTimeDeltaInMillis(now, jan1);
 
    lua_pushnumber(L, millisToSeconds(diff));
    return 1;

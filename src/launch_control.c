@@ -31,13 +31,13 @@
  */
 #define LC_SPEED_THRESHOLD 3.0
 
-unsigned long long g_startTime;
+millis_t g_startTime;
 GeoPoint g_startPoint;
 float g_targetRadius;
 bool g_hasLaunched;
 
 static bool isValidStartTime() {
-   return g_startTime != 0ull;
+   return g_startTime != 0;
 }
 
 static bool isConfigured() {
@@ -56,12 +56,12 @@ bool lc_hasLaunched() {
    return g_hasLaunched;
 }
 
-unsigned long long lc_getLaunchTime() {
-   return lc_hasLaunched() ? g_startTime : 0ull;
+millis_t lc_getLaunchTime() {
+   return lc_hasLaunched() ? g_startTime : 0;
 }
 
 void lc_reset() {
-   g_startTime = 0ull;
+   g_startTime = 0;
    g_targetRadius = 0.0;
    g_hasLaunched = false;
 }

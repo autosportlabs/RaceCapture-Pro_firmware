@@ -74,11 +74,11 @@ unsigned int getDayCountUpToPartialYearSinceUnixEpoch(const unsigned int partial
    return getDayCountUpToYearSinceUnixEpoch(convertToFullYear(partialYear));
 }
 
-unsigned long long getMillisecondsSinceUnixEpoch(DateTime dt) {
+millis_t getMillisecondsSinceUnixEpoch(DateTime dt) {
    if (!isValidDateTime(dt))
       return 0ll;
 
-   unsigned long long seconds = 0;
+   millis_t seconds = 0;
 
    // Get everything as seconds first.  No changes since 0 based.
    seconds += dt.second;
@@ -96,7 +96,7 @@ unsigned long long getMillisecondsSinceUnixEpoch(DateTime dt) {
    return seconds * MILLIS_PER_SECOND + dt.millisecond;
 }
 
-long long getTimeDeltaInMillis(DateTime a, DateTime b) {
+millis_t getTimeDeltaInMillis(DateTime a, DateTime b) {
    if (!isValidDateTime(a) || !isValidDateTime(b))
       return 0ll;
 
@@ -118,12 +118,12 @@ bool isValidDateTime(const DateTime dt) {
       inRange(dt.partialYear, 0, 99); // We only support 1970 - 2069.
 }
 
-float millisToMinutes(const unsigned long long millis) {
+float millisToMinutes(const millis_t millis) {
    return ((float) (millis / MILLIS_PER_MINUTE)) +
       (((float) (millis % MILLIS_PER_MINUTE)) / MILLIS_PER_MINUTE);
 }
 
-float millisToSeconds(const unsigned long long millis) {
+float millisToSeconds(const millis_t millis) {
    return ((float) (millis / MILLIS_PER_SECOND)) +
       (((float) (millis % MILLIS_PER_SECOND)) / MILLIS_PER_SECOND);
 }

@@ -54,17 +54,17 @@ static int g_satellitesUsedForPosition;
 
 static int g_atStartFinish;
 static int g_prevAtStartFinish;
-static unsigned long long g_lastStartFinishTimestamp;
+static millis_t g_lastStartFinishTimestamp;
 
 static int g_atTarget;
 static int g_prevAtTarget;
-static unsigned long long g_lastSectorTimestamp;
+static millis_t g_lastSectorTimestamp;
 
 static int g_sector;
 static int g_lastSector;
 
-static unsigned long long g_lastLapTime;
-static unsigned long long g_lastSectorTime;
+static millis_t g_lastLapTime;
+static millis_t g_lastSectorTime;
 
 static int g_lapCount;
 static float g_distance;
@@ -74,7 +74,7 @@ static float g_distance;
  */
 static DateTime g_dtFirstFix;
 static DateTime g_dtLastFix;
-static unsigned long long g_millisSinceUnixEpoch;
+static millis_t g_millisSinceUnixEpoch;
 
 /**
  * @return true if we haven't parsed any data yet, false otherwise.
@@ -87,7 +87,7 @@ void updateMillisSinceEpoch(DateTime fixDateTime) {
    g_millisSinceUnixEpoch = getMillisecondsSinceUnixEpoch(fixDateTime);
 }
 
-unsigned long long getMillisSinceEpoch() {
+millis_t getMillisSinceEpoch() {
    return g_millisSinceUnixEpoch;
 }
 
@@ -340,11 +340,11 @@ int getLastSector() {
    return g_lastSector;
 }
 
-unsigned long long getLastLapTime() {
+millis_t getLastLapTime() {
    return g_lastLapTime;
 }
 
-unsigned long long getLastSectorTime() {
+millis_t getLastSectorTime() {
    return g_lastSectorTime;
 }
 
@@ -418,7 +418,7 @@ static int withinGpsTarget(const GeoPoint *point, float radius) {
  * @return True if we have crossed the start line at least once, false otherwise.
  */
 static bool isStartCrossedYet() {
-   return g_lastStartFinishTimestamp != 0ull;
+   return g_lastStartFinishTimestamp != 0;
 }
 
 static float calcDistancesSinceLastSample() {
@@ -451,8 +451,8 @@ static int processStartFinish(const Track *track, float targetRadius) {
    }
 
 
-   const unsigned long long timestamp = getMillisSinceEpoch();
-   const unsigned long long elapsed = timestamp - g_lastStartFinishTimestamp;
+   const millis_t timestamp = getMillisSinceEpoch();
+   const millis_t elapsed = timestamp - g_lastStartFinishTimestamp;
 
    /*
     * Guard against false triggering. We have to be out of the start/finish
@@ -493,7 +493,7 @@ static void processSector(const Track *track, float targetRadius) {
    /*
     * Past here we are sure we are at a sector boundary.
     */
-   const unsigned long long timestamp = getMillisSinceEpoch();
+   const millis_t timestamp = getMillisSinceEpoch();
 
    g_prevAtTarget = 1;
    g_lastSectorTime = timestamp - g_lastSectorTimestamp;
@@ -552,7 +552,7 @@ static void flashGpsStatusLed() {
    }
 }
 
-long long getMillisSinceFirstFix() {
+millis_t getMillisSinceFirstFix() {
    return getTimeDeltaInMillis(g_dtLastFix, g_dtFirstFix);
 }
 
@@ -588,7 +588,7 @@ void onLocationUpdated() {
       const float targetRadius = config->TrackConfigs.radius;
 
       // Seconds since first fix is good until we alter the code to use millis directly
-      const unsigned long long millisSinceEpoch = getMillisSinceEpoch();
+      const millis_t millisSinceEpoch = getMillisSinceEpoch();
       const int lapDetected = processStartFinish(g_activeTrack, targetRadius);
 
       if (lapDetected) {

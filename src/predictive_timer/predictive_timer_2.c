@@ -15,7 +15,7 @@
 /**
  * These settings control critical values that will affect performance.  Understand these values
  * before altering them.  All time values are in milliseconds since epoch.  All time deltas are
- * in milliseconds.  Do not use unsigned long longs.
+ * in milliseconds.
  */
 /**
  * # of slots per buffer.  Each slot is 16 bytes.  I want 1K RAM usage in per buffer.
@@ -50,19 +50,19 @@ static int buffIndex;
 static int fastLapIndex;
 
 // Time of the fast lap.
-static unsigned long long fastLapTime;
+static millis_t fastLapTime;
 
 // Time current lap started.
-static unsigned long long currLapStartTime;
+static millis_t currLapStartTime;
 
 // Holds the lastPredictedTime.  Used for when we don't have good data to give yet.
-static unsigned long long lastPredictedTime;
+static millis_t lastPredictedTime;
 
 // Holds the last predicted Delta.  Used like lastPredictedTime.
-static unsigned long long lastPredictedDelta;
+static millis_t lastPredictedDelta;
 
 // Interval between polls in milliseconds.
-static unsigned long long pollInterval = INITIAL_POLL_INTERVAL;
+static millis_t pollInterval = INITIAL_POLL_INTERVAL;
 
 // Indicates the current status of the recording code.  DISABLED until we start the first lap.
 static enum Status {
@@ -74,7 +74,7 @@ static enum Status {
  * @param currentTime The current time in milliseconds since epoch.
  * @return The current time of this lap in milliseconds.
  */
-static unsigned long long getCurrentLapTime(unsigned long long time) {
+static millis_t getCurrentLapTime(millis_t time) {
 	return time - currLapStartTime;
 }
 
@@ -82,7 +82,7 @@ static unsigned long long getCurrentLapTime(unsigned long long time) {
  * Creates a timeLoc sample and places it in the currBuff.  Increments counter as needed.
  * @return true if the insert succeeded, false otherwise.
  */
-static bool insertTimeLocSample(GeoPoint point, unsigned long long time) {
+static bool insertTimeLocSample(GeoPoint point, millis_t time) {
 	if (buffIndex >= MAX_TIMELOC_SAMPLES)
 		return false;
 
@@ -100,7 +100,7 @@ static bool insertTimeLocSample(GeoPoint point, unsigned long long time) {
  * Handles all the work done if a new hot Lap is set.
  * @param lapTime The time it took to complete the lap.
  */
-static void setNewFastLap(unsigned long long lapTime) {
+static void setNewFastLap(millis_t lapTime) {
 	DEBUG("Setting new fast lap time to %f\n", lapTime);
 	fastLapTime = lapTime;
 
@@ -118,7 +118,7 @@ bool isPredictiveTimeAvailable() {
  * Adjusts the poll interval so that we can effectively use our buffer.  The more full it
  * gets the better timing accuracy we can give.
  */
-static unsigned long long adjustPollInterval(unsigned long long lapTime) {
+static millis_t adjustPollInterval(millis_t lapTime) {
 	// If no hotLap is set there no data to work with.
 	if (!isPredictiveTimeAvailable())
 		return pollInterval;
@@ -133,8 +133,7 @@ static unsigned long long adjustPollInterval(unsigned long long lapTime) {
 		return pollInterval;
 	}
 
-
-   // Careful here of gotchas with long longs and floats.
+   // Careful here of gotchas with millis_t and floats.
 	pollInterval = lapTime / (slots / 0.9);
 	DEBUG("Setting poll interval to %ull\n", pollInterval);
 
@@ -147,7 +146,7 @@ static unsigned long long adjustPollInterval(unsigned long long lapTime) {
  * @param point The point we are at when we cross the start finish line.
  * @param time Duh!
  */
-static void finishLap(GeoPoint point, unsigned long long time) {
+static void finishLap(GeoPoint point, millis_t time) {
 	// Drop last entry if necessary to record end of lap.
 	if (buffIndex >= MAX_TIMELOC_SAMPLES)
 		buffIndex = MAX_TIMELOC_SAMPLES - 1;
@@ -158,7 +157,7 @@ static void finishLap(GeoPoint point, unsigned long long time) {
 /**
  * Resets the state in preparation for the next lap.
  */
-static void startNewLap(GeoPoint point, unsigned long long time) {
+static void startNewLap(GeoPoint point, millis_t time) {
 	currLapStartTime = time;
 	lastPredictedDelta = 0;
 	lastPredictedTime = 0;
@@ -174,7 +173,7 @@ static void startNewLap(GeoPoint point, unsigned long long time) {
  * @param time The time the sample was taken
  * @return The difference in seconds between our most recent sample a this new one.
  */
-static unsigned long long getTimeSinceLastSample(unsigned long long time) {
+static millis_t getTimeSinceLastSample(millis_t time) {
 	return time - currLapStartTime - currLap[buffIndex - 1].time;
 }
 
@@ -184,12 +183,12 @@ static unsigned long long getTimeSinceLastSample(unsigned long long time) {
  * @param point The location of the start/finish line.
  * @param time The current UTC time when we crossed.
  */
-void startFinishCrossed(GeoPoint point, unsigned long long time) {
+void startFinishCrossed(GeoPoint point, millis_t time) {
 	INFO("Start/Finish Crossed.\n");
 	finishLap(point, time);
 
 	if (status != DISABLED) {
-		unsigned long long lapTime = getCurrentLapTime(time);
+		millis_t lapTime = getCurrentLapTime(time);
 		INFO("Last lap time was %f seconds\n", lapTime);
 
 		if (fastLapTime <= 0.0 || lapTime <= fastLapTime)
@@ -208,7 +207,7 @@ void startFinishCrossed(GeoPoint point, unsigned long long time) {
  * @param time The time which the sample was taken.
  * @return true if it was added, false otherwise.
  */
-bool addGpsSample(GeoPoint point, unsigned long long time) {
+bool addGpsSample(GeoPoint point, millis_t time) {
 	DEVEL("Add GPS Sample called\n");
 
 	if (status != RECORDING) {
@@ -356,7 +355,7 @@ static bool findTwoClosestPts(GeoPoint *currPoint, TimeLoc *tlPts[]) {
  * @return The split between your current time and the fast lap time.  Positive indicates you are
  * going faster than your fast lap, negative indicates slower.
  */
-unsigned long long getSplitAgainstFastLap(GeoPoint point, unsigned long long currentTime) {
+millis_t getSplitAgainstFastLap(GeoPoint point, millis_t currentTime) {
 	if (!isPredictiveTimeAvailable()) {
 		DEBUG("No predicted time - No fast lap Set\n");
 		return lastPredictedDelta;
@@ -381,8 +380,8 @@ unsigned long long getSplitAgainstFastLap(GeoPoint point, unsigned long long cur
 		return lastPredictedDelta;
 	}
 
-	const unsigned long long timeDeltaBtwnPoints = closestPts[1]->time - closestPts[0]->time;
-	const unsigned long long estFastTime = closestPts[0]->time + timeDeltaBtwnPoints  * percentage;
+	const millis_t timeDeltaBtwnPoints = closestPts[1]->time - closestPts[0]->time;
+	const millis_t estFastTime = closestPts[0]->time + timeDeltaBtwnPoints  * percentage;
 	DEBUG("Estimated fast lap time at this point is %f\n", estFastTime);
 
 	lastPredictedDelta = estFastTime - getCurrentLapTime(currentTime);
@@ -399,10 +398,10 @@ unsigned long long getSplitAgainstFastLap(GeoPoint point, unsigned long long cur
  * @param time The current time of the most recent GPS fix.
  * @return The predicted lap time.
  */
-unsigned long long getPredictedTime(GeoPoint point, unsigned long long time) {
+millis_t getPredictedTime(GeoPoint point, millis_t time) {
 
-	unsigned long long timeDelta = getSplitAgainstFastLap(point, time);
-	unsigned long long newPredictedTime = fastLapTime - timeDelta;
+	millis_t timeDelta = getSplitAgainstFastLap(point, time);
+	millis_t newPredictedTime = fastLapTime - timeDelta;
 
 	// Check for a minimum predicted time to deal with start/finish errors.
 	if (newPredictedTime < MIN_PREDICTED_TIME)

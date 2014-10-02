@@ -253,7 +253,7 @@ void SectorTest::testStageSectorTimes() {
       CPPUNIT_ASSERT(!getAtSector());
     } else if (getLastSector() > 0) {
       CPPUNIT_ASSERT(getAtSector());
-      const unsigned long long expSectorTime = getLastSector() * 2000 + 1000;
+      const millis_t expSectorTime = getLastSector() * 2000 + 1000;
       CPPUNIT_ASSERT_EQUAL(expSectorTime, getLastSectorTime());
     }
 
