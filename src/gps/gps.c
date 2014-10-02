@@ -83,6 +83,14 @@ static bool isGpsDataCold() {
    return g_millisSinceUnixEpoch == 0;
 }
 
+static GeoPoint getGeoPoint() {
+   GeoPoint gp;
+   gp.latitude = getLatitude();
+   gp.longitude = getLongitude();
+
+   return gp;
+}
+
 void updateMillisSinceEpoch(DateTime fixDateTime) {
    g_millisSinceUnixEpoch = getMillisecondsSinceUnixEpoch(fixDateTime);
 }
@@ -398,22 +406,6 @@ static struct GpsSample getGpsSample() {
    return s;
 }
 
-static int withinGpsTarget(const GeoPoint *point, float radius) {
-
-   struct circ_area area;
-   struct point p;
-   p.x = point->longitude;
-   p.y = point->latitude;
-
-   struct point currentP;
-   currentP.x = getLongitude();
-   currentP.y = getLatitude();
-
-   create_circ(&area, &p, radius);
-   int within = within_circ(&area, &currentP);
-   return within;
-}
-
 /**
  * @return True if we have crossed the start line at least once, false otherwise.
  */
@@ -462,7 +454,8 @@ static int processStartFinish(const Track *track, float targetRadius) {
     * FIXME: Should have logic that checks that we left the start/finish circle
     * for some time.
     */
-   g_atStartFinish = withinGpsTarget(&sfPoint, targetRadius);
+   g_atStartFinish = isPointInGeoCircle(getGeoPoint(), sfPoint,
+                                        targetRadius * 1000);
    if (!g_atStartFinish || g_prevAtStartFinish != 0 ||
        elapsed <= START_FINISH_TIME_THRESHOLD) {
       g_prevAtStartFinish = 0;
@@ -484,7 +477,7 @@ static void processSector(const Track *track, float targetRadius) {
       return;
 
    const GeoPoint point = getSectorGeoPointAtIndex(track, g_sector);
-   g_atTarget = withinGpsTarget(&point, targetRadius);
+   g_atTarget = isPointInGeoCircle(getGeoPoint(), point, targetRadius * 1000);
    if (!g_atTarget) {
       g_prevAtTarget = 0;
       return;

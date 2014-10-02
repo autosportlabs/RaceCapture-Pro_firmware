@@ -173,7 +173,6 @@ $(GPS_SRC_DIR)/dateTime.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
 $(CHANNELS_SRC_DIR)/channelMeta.c \
 $(TRACKS_SRC_DIR)/tracks.c \
-$(GPS_SRC_DIR)/geometry.c \
 $(GPS_SRC_DIR)/geopoint.c \
 $(LOGGER_SRC_DIR)/luaLoggerBinding.c \
 $(LOGGER_SRC_DIR)/loggerCommands.c \
@@ -217,6 +216,8 @@ $(DEVICES_SRC_DIR)/sim900.c \
 $(VIRTUAL_CHANNEL_SRC_DIR)/virtual_channel.c \
 $(AUTO_CONFIG_SRC_DIR)/auto_track.c \
 $(SRC_DIR)/launch_control.c \
+
+# $(GPS_SRC_DIR)/geometry.c \
 
 # List C source files here which must be compiled in ARM-Mode.
 # use file-extension c for "c-only"-files
