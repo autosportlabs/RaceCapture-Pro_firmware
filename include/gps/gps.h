@@ -6,9 +6,11 @@
 
 #include <stddef.h>
 
-#define GPS_QUALITY_NO_FIX 0
-#define GPS_QUALITY_SPS 1
-#define GPS_QUALITY_DIFFERENTIAL 2
+enum GpsSignalQuality {
+   GPS_QUALITY_NO_FIX = 0,
+   GPS_QUALITY_SPS = 1,
+   GPS_QUALITY_DIFFERENTIAL = 2,
+};
 
 struct GpsSample {
    GeoPoint point;
@@ -72,7 +74,7 @@ void updatePosition(float latitude, float longitude);
 
 void onLocationUpdated();
 
-int getGPSQuality();
+enum GpsSignalQuality getGPSQuality();
 
 void setGPSQuality(int quality);
 

@@ -37,7 +37,7 @@ static size_t onTickSleepInterval;
 static int g_allocDebug = 0;
 #endif
 void * myAlloc (void *ud, void *ptr, size_t osize,size_t nsize) {
-	
+
 #ifdef ALLOC_DEBUG
 	if (g_allocDebug){
 		SendString("myAlloc- ptr:");
@@ -119,11 +119,11 @@ size_t get_ontick_freq(){
 	return 1000 / ticksToMs(onTickSleepInterval);
 }
 
-inline int getShouldReloadScript(void){
+int getShouldReloadScript(void){
 	return g_shouldReloadScript;
 }
 
-inline void setShouldReloadScript(int reload){
+void setShouldReloadScript(int reload){
 	g_shouldReloadScript = reload;
 }
 

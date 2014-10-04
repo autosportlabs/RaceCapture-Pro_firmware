@@ -8,17 +8,12 @@
 #include "loggerConfig.h"
 #include "modp_numtoa.h"
 #include "modp_atonum.h"
-#include "geometry.h"
 #include "mod_string.h"
 #include "predictive_timer_2.h"
 #include "printk.h"
 #include <math.h>
 #include <stdint.h>
 #include "tracks.h"
-
-//kilometers
-#define DISTANCE_SCALING 6371
-#define PI 3.1415
 
 #define GPS_LOCK_FLASH_COUNT 2
 #define GPS_NOFIX_FLASH_COUNT 10
@@ -34,8 +29,6 @@
 
 #define TIME_NULL -1
 
-#define GPS_LOCKED_ON(QUALITY) (QUALITY != GPS_QUALITY_NO_FIX)
-
 static const Track * g_activeTrack;
 
 static int g_configured;
@@ -48,7 +41,7 @@ static float g_longitude;
 
 static float g_speed;
 
-static int g_gpsQuality;
+static enum GpsSignalQuality g_gpsQuality;
 
 static int g_satellitesUsedForPosition;
 
@@ -75,6 +68,10 @@ static float g_distance;
 static DateTime g_dtFirstFix;
 static DateTime g_dtLastFix;
 static millis_t g_millisSinceUnixEpoch;
+
+static bool isGpsSignalUsable(enum GpsSignalQuality q) {
+   return q != GPS_QUALITY_NO_FIX;
+}
 
 /**
  * @return true if we haven't parsed any data yet, false otherwise.
@@ -189,7 +186,7 @@ static void parseGGA(char *data) {
       }
          break;
       case 5:
-         g_gpsQuality = modp_atoi(data);
+         g_gpsQuality = (enum GpsSignalQuality) modp_atoi(data);
          break;
       case 6:
          g_satellitesUsedForPosition = modp_atoi(data);
@@ -372,7 +369,7 @@ float getLongitude() {
    return g_longitude;
 }
 
-int getGPSQuality() {
+enum GpsSignalQuality getGPSQuality() {
    return g_gpsQuality;
 }
 
@@ -536,9 +533,10 @@ static void flashGpsStatusLed() {
    if (g_flashCount == 0)
       LED_disable(1);
    g_flashCount++;
-   int targetFlashCount = (
-         GPS_LOCKED_ON(g_gpsQuality) ?
-               GPS_LOCK_FLASH_COUNT : GPS_NOFIX_FLASH_COUNT);
+
+   int targetFlashCount = isGpsSignalUsable(g_gpsQuality) ?
+      GPS_LOCK_FLASH_COUNT : GPS_NOFIX_FLASH_COUNT;
+
    if (g_flashCount >= targetFlashCount) {
       LED_enable(1);
       g_flashCount = 0;
@@ -554,13 +552,11 @@ void onLocationUpdated() {
    static int startFinishEnabled = 0;
 
    // If no GPS lock, no point in doing any of this.
-   if (!GPS_LOCKED_ON(g_gpsQuality))
+   if (!isGpsSignalUsable(g_gpsQuality))
       return;
 
    LoggerConfig *config = getWorkingLoggerConfig();
-
-   GeoPoint gp;
-   populateGeoPoint(&gp);
+   const GeoPoint gp = getGeoPoint();
 
    if (!g_configured) {
       TrackConfig *trackConfig = &(config->TrackConfigs);
