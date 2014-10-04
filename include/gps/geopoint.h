@@ -33,26 +33,6 @@ typedef struct _GeoPoint {
 float distPythag(const GeoPoint *a, const GeoPoint *b);
 
 /**
- * Finds the distance between two points using the spherical law of cosines.
- * This method, while more accurate than distPythag is still not quite as accurate
- * as distHaversine but is less computationally expensive.
- * @param a Point a
- * @param b Point b
- * @return The distance between the two points in Meters
- */
-float distSLCos(GeoPoint *a, GeoPoint *b);
-
-/**
- * Finds the distance between two points using the Hasversine method.  This is one of
- * the more accurate methods of finding direct distance over long ranges.  Unfortunately
- * it is also the most computationally expensive.
- * @param a Point a
- * @param b Point b
- * @return The distance between the two points in Meters
- */
-float distHaversine(GeoPoint *a, GeoPoint *b);
-
-/**
  * Tells us if the given point is within the bound of a given GeoCircle.  Note
  * that this is a circle only and not a sphere.  In otherwords elevation has
  * no effect on this calculation.
