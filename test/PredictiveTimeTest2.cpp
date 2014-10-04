@@ -11,6 +11,7 @@
 
 #include "dateTime.h"
 #include "geopoint.h"
+#include "gps.h"
 #include "gps.testing.h"
 #include "modp_atonum.h"
 #include "predictive_timer_2.h"
@@ -143,8 +144,7 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
          updatePosition(lat, lon);
          onLocationUpdated();
 
-         GeoPoint gp;
-         populateGeoPoint(&gp);
+         const GeoPoint gp = getGeoPoint();
          const millis_t epochMillis = getMillisSinceEpoch();
          const millis_t predTime = getPredictedTime(gp, epochMillis);
          printf("Lap #%d - Predicted Time: %ull\n", getLapCount(), predTime);

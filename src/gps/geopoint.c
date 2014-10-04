@@ -20,12 +20,6 @@ static float toRad(float val) {
 	return val * M_PI / 180.0;
 }
 
-GeoPoint* populateGeoPoint(GeoPoint *gp) {
-	gp->latitude = getLatitude();
-	gp->longitude = getLongitude();
-	return gp;
-}
-
 float distPythag(const GeoPoint *a, const GeoPoint *b) {
 	float dLatRad = toRad(b->latitude - a->latitude);
 	float dLonRad = toRad(b->longitude - a->longitude);

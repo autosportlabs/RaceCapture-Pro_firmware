@@ -22,13 +22,6 @@ typedef struct _GeoPoint {
 #define GP_EARTH_RADIUS_M	6371000
 
 /**
- * Populates a given GeoPoint structure with the current Latitude and Longitude data.
- * @param gp Pointer to the GeoPoint structure to populate
- * @return The pointer value passed in.
- */
-GeoPoint* populateGeoPoint(GeoPoint *gp);
-
-/**
  * Finds the distance between the two geopoints using the
  * basic Pythagoras' Theorem.  This is only useful for small distances as
  * the inaccuracies will increase as the distance does.  However this is
