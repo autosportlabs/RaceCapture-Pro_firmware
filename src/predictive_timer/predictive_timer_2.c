@@ -35,13 +35,18 @@
  */
 #define MIN_PREDICTED_TIME 10000
 
+// A smaller TimeLoc value for space savings
+struct PtTimeLoc {
+   GeoPoint point;
+   tiny_millis_t time;
+};
 
-static TimeLoc buff1[MAX_TIMELOC_SAMPLES];
-static TimeLoc buff2[MAX_TIMELOC_SAMPLES];
+static struct PtTimeLoc buff1[MAX_TIMELOC_SAMPLES];
+static struct PtTimeLoc buff2[MAX_TIMELOC_SAMPLES];
 
 // Our pointers that maintain the fast lap and current lap buffers.
-static TimeLoc *currLap = buff1;
-static TimeLoc *fastLap = buff2;
+static struct PtTimeLoc *currLap = buff1;
+static struct PtTimeLoc *fastLap = buff2;
 
 // Index to track current slot in buffer
 static int buffIndex;
@@ -50,19 +55,19 @@ static int buffIndex;
 static int fastLapIndex;
 
 // Time of the fast lap.
-static millis_t fastLapTime;
+static tiny_millis_t fastLapTime;
 
 // Time current lap started.
-static millis_t currLapStartTime;
+static tiny_millis_t currLapStartTime;
 
 // Holds the lastPredictedTime.  Used for when we don't have good data to give yet.
-static millis_t lastPredictedTime;
+static tiny_millis_t lastPredictedTime;
 
 // Holds the last predicted Delta.  Used like lastPredictedTime.
-static millis_t lastPredictedDelta;
+static tiny_millis_t lastPredictedDelta;
 
 // Interval between polls in milliseconds.
-static millis_t pollInterval = INITIAL_POLL_INTERVAL;
+static tiny_millis_t pollInterval = INITIAL_POLL_INTERVAL;
 
 // Indicates the current status of the recording code.  DISABLED until we start the first lap.
 static enum Status {
@@ -71,10 +76,10 @@ static enum Status {
 
 /**
  * Gets the current lap time in seconds.
- * @param currentTime The current time in milliseconds since epoch.
+ * @param currentTime The current time in millis.
  * @return The current time of this lap in milliseconds.
  */
-static millis_t getCurrentLapTime(millis_t time) {
+static tiny_millis_t getCurrentLapTime(tiny_millis_t time) {
 	return time - currLapStartTime;
 }
 
@@ -82,11 +87,11 @@ static millis_t getCurrentLapTime(millis_t time) {
  * Creates a timeLoc sample and places it in the currBuff.  Increments counter as needed.
  * @return true if the insert succeeded, false otherwise.
  */
-static bool insertTimeLocSample(GeoPoint point, millis_t time) {
+static bool insertTimeLocSample(GeoPoint point, tiny_millis_t time) {
 	if (buffIndex >= MAX_TIMELOC_SAMPLES)
 		return false;
 
-	TimeLoc *timeLoc = currLap + buffIndex;
+	struct PtTimeLoc *timeLoc = currLap + buffIndex;
 	timeLoc->point = point;
 	timeLoc->time = getCurrentLapTime(time);
 
@@ -100,7 +105,7 @@ static bool insertTimeLocSample(GeoPoint point, millis_t time) {
  * Handles all the work done if a new hot Lap is set.
  * @param lapTime The time it took to complete the lap.
  */
-static void setNewFastLap(millis_t lapTime) {
+static void setNewFastLap(tiny_millis_t lapTime) {
 	DEBUG("Setting new fast lap time to %f\n", lapTime);
 	fastLapTime = lapTime;
 
@@ -118,7 +123,7 @@ bool isPredictiveTimeAvailable() {
  * Adjusts the poll interval so that we can effectively use our buffer.  The more full it
  * gets the better timing accuracy we can give.
  */
-static millis_t adjustPollInterval(millis_t lapTime) {
+static tiny_millis_t adjustPollInterval(tiny_millis_t lapTime) {
 	// If no hotLap is set there no data to work with.
 	if (!isPredictiveTimeAvailable())
 		return pollInterval;
@@ -133,7 +138,7 @@ static millis_t adjustPollInterval(millis_t lapTime) {
 		return pollInterval;
 	}
 
-   // Careful here of gotchas with millis_t and floats.
+   // Careful here of gotchas with tiny_millis_t and floats.
 	pollInterval = lapTime / (slots / 0.9);
 	DEBUG("Setting poll interval to %ull\n", pollInterval);
 
@@ -146,7 +151,7 @@ static millis_t adjustPollInterval(millis_t lapTime) {
  * @param point The point we are at when we cross the start finish line.
  * @param time Duh!
  */
-static void finishLap(GeoPoint point, millis_t time) {
+static void finishLap(GeoPoint point, tiny_millis_t time) {
 	// Drop last entry if necessary to record end of lap.
 	if (buffIndex >= MAX_TIMELOC_SAMPLES)
 		buffIndex = MAX_TIMELOC_SAMPLES - 1;
@@ -157,7 +162,7 @@ static void finishLap(GeoPoint point, millis_t time) {
 /**
  * Resets the state in preparation for the next lap.
  */
-static void startNewLap(GeoPoint point, millis_t time) {
+static void startNewLap(GeoPoint point, tiny_millis_t time) {
 	currLapStartTime = time;
 	lastPredictedDelta = 0;
 	lastPredictedTime = 0;
@@ -173,7 +178,7 @@ static void startNewLap(GeoPoint point, millis_t time) {
  * @param time The time the sample was taken
  * @return The difference in seconds between our most recent sample a this new one.
  */
-static millis_t getTimeSinceLastSample(millis_t time) {
+static tiny_millis_t getTimeSinceLastSample(tiny_millis_t time) {
 	return time - currLapStartTime - currLap[buffIndex - 1].time;
 }
 
@@ -183,12 +188,12 @@ static millis_t getTimeSinceLastSample(millis_t time) {
  * @param point The location of the start/finish line.
  * @param time The current UTC time when we crossed.
  */
-void startFinishCrossed(GeoPoint point, millis_t time) {
+void startFinishCrossed(GeoPoint point, tiny_millis_t time) {
 	INFO("Start/Finish Crossed.\n");
 	finishLap(point, time);
 
 	if (status != DISABLED) {
-		millis_t lapTime = getCurrentLapTime(time);
+		tiny_millis_t lapTime = getCurrentLapTime(time);
 		INFO("Last lap time was %f seconds\n", lapTime);
 
 		if (fastLapTime <= 0.0 || lapTime <= fastLapTime)
@@ -207,7 +212,7 @@ void startFinishCrossed(GeoPoint point, millis_t time) {
  * @param time The time which the sample was taken.
  * @return true if it was added, false otherwise.
  */
-bool addGpsSample(GeoPoint point, millis_t time) {
+bool addGpsSample(GeoPoint point, tiny_millis_t time) {
 	DEVEL("Add GPS Sample called\n");
 
 	if (status != RECORDING) {
@@ -301,7 +306,7 @@ static int findClosestPt(GeoPoint *currPoint) {
  * @return true if a fast lap is set and the points are next to each other in the fastLap buffer
  * and the given point is between the two points, false otherwise.
  */
-static bool findTwoClosestPts(GeoPoint *currPoint, TimeLoc *tlPts[]) {
+static bool findTwoClosestPts(GeoPoint *currPoint, struct PtTimeLoc *tlPts[]) {
 	if (!isPredictiveTimeAvailable())
 		return false;
 
@@ -340,7 +345,7 @@ static bool findTwoClosestPts(GeoPoint *currPoint, TimeLoc *tlPts[]) {
 	// Swap the buffers so the lower time is always first.  Just use
 	if (tlPts[1]->time < tlPts[0]->time) {
 		DEVEL("Swapping buffers: %f < %f\n", tlPts[1]->time, tlPts[0]->time);
-		TimeLoc *tmp = tlPts[0];
+		struct PtTimeLoc *tmp = tlPts[0];
 		tlPts[0] = tlPts[1];
 		tlPts[1] = tmp;
 	}
@@ -355,7 +360,7 @@ static bool findTwoClosestPts(GeoPoint *currPoint, TimeLoc *tlPts[]) {
  * @return The split between your current time and the fast lap time.  Positive indicates you are
  * going faster than your fast lap, negative indicates slower.
  */
-millis_t getSplitAgainstFastLap(GeoPoint point, millis_t currentTime) {
+tiny_millis_t getSplitAgainstFastLap(GeoPoint point, tiny_millis_t currentTime) {
 	if (!isPredictiveTimeAvailable()) {
 		DEBUG("No predicted time - No fast lap Set\n");
 		return lastPredictedDelta;
@@ -365,7 +370,7 @@ millis_t getSplitAgainstFastLap(GeoPoint point, millis_t currentTime) {
 	 * Figure out the two closest points.  Order of closestPts is with lower time first.  If this
 	 * fails then we can't continue.
 	 */
-	TimeLoc *closestPts[2];
+	struct PtTimeLoc *closestPts[2];
 	if (!findTwoClosestPts(&point, closestPts))
 		// TODO: Perhaps return false here?  Make this better for the caller.
 		return lastPredictedDelta;
@@ -380,8 +385,8 @@ millis_t getSplitAgainstFastLap(GeoPoint point, millis_t currentTime) {
 		return lastPredictedDelta;
 	}
 
-	const millis_t timeDeltaBtwnPoints = closestPts[1]->time - closestPts[0]->time;
-	const millis_t estFastTime = closestPts[0]->time + timeDeltaBtwnPoints  * percentage;
+	const tiny_millis_t timeDeltaBtwnPoints = closestPts[1]->time - closestPts[0]->time;
+	const tiny_millis_t estFastTime = closestPts[0]->time + timeDeltaBtwnPoints  * percentage;
 	DEBUG("Estimated fast lap time at this point is %f\n", estFastTime);
 
 	lastPredictedDelta = estFastTime - getCurrentLapTime(currentTime);
@@ -398,10 +403,10 @@ millis_t getSplitAgainstFastLap(GeoPoint point, millis_t currentTime) {
  * @param time The current time of the most recent GPS fix.
  * @return The predicted lap time.
  */
-millis_t getPredictedTime(GeoPoint point, millis_t time) {
+tiny_millis_t getPredictedTime(GeoPoint point, tiny_millis_t time) {
 
-	millis_t timeDelta = getSplitAgainstFastLap(point, time);
-	millis_t newPredictedTime = fastLapTime - timeDelta;
+	tiny_millis_t timeDelta = getSplitAgainstFastLap(point, time);
+	tiny_millis_t newPredictedTime = fastLapTime - timeDelta;
 
 	// Check for a minimum predicted time to deal with start/finish errors.
 	if (newPredictedTime < MIN_PREDICTED_TIME)

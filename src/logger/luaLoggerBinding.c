@@ -1,5 +1,5 @@
 #include "luaLoggerBinding.h"
-
+#include "dateTime.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
@@ -66,7 +66,7 @@ void registerLuaLoggerBindings(lua_State *L){
 
 	lua_registerlight(L, "getLapCount", Lua_GetLapCount);
 	lua_registerlight(L, "getLapTime", Lua_GetLapTime);
-	lua_registerlight(L, "getGpsSec", Lua_GetGpsSecondsSinceJan1);
+	lua_registerlight(L, "getGpsSec", Lua_GetGpsSecondsSinceFirstFix);
 	lua_registerlight(L, "getAtStartFinish",Lua_GetGPSAtStartFinish);
 
    lua_registerlight(L, "getTickCount", Lua_GetTickCount);
@@ -337,7 +337,7 @@ int Lua_GetGPSDistance(lua_State *L){
 
 int Lua_GetLapTime(lua_State *L){
    // XXX: TIME_HACK.  Convert to millis.
-	lua_pushnumber(L, millisToMinutes(getLastLapTime()));
+	lua_pushnumber(L, tinyMillisToMinutes(getLastLapTime()));
 	return 1;
 }
 
@@ -346,13 +346,10 @@ int Lua_GetLapCount(lua_State *L){
 	return 1;
 }
 
-int Lua_GetGpsSecondsSinceJan1(lua_State *L) {
-   // HACK: TIME_HACK To replace getSecondsSinceMidnight.  KILL ME?
-   const DateTime now = getLastFixDateTime();
-   const DateTime jan1 = {0, 0, 0, 0, 1, 1, now.partialYear};
-   const millis_t diff = getTimeDeltaInMillis(now, jan1);
-
-   lua_pushnumber(L, millisToSeconds(diff));
+int Lua_GetGpsSecondsSinceFirstFix(lua_State *L) {
+   const tiny_millis_t millis = getMillisSinceFirstFix();
+   // XXX: TIME_HACK.  Convert to millis.
+   lua_pushnumber(L, tinyMillisToSeconds(millis));
    return 1;
 }
 

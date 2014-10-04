@@ -145,7 +145,6 @@ SRC = 	mock_uart.c \
 		$(RCP_SRC)/gps/gps.c \
 		$(RCP_SRC)/gps/dateTime.c \
 		$(RCP_SRC)/gps/geopoint.c \
-		$(RCP_SRC)/gps/geometry.c \
 		$(RCP_SRC)/logger/sampleRecord.c \
 		$(RCP_SRC)/logger/loggerSampleData.c \
 		$(RCP_SRC)/logger/loggerData.c \

@@ -103,7 +103,7 @@ void SectorTest::testSectorTimes(){
 	Track testTrack = Test_Track;
 	memcpy(trackCfg, &testTrack, sizeof(Track));
 
-	setGPSQuality(GPS_QUALITY_DIFFERENTIAL);
+	setGPSQuality((enum GpsSignalQuality) GPS_QUALITY_DIFFERENTIAL);
 
 	vector<float> sectorTimes;
 	int currentSector = 0;
@@ -233,7 +233,7 @@ void SectorTest::testStageSectorTimes() {
   while(isValidPoint(gp)) {
 
     // Fake the GPS info.
-    setGPSQuality(GPS_QUALITY_DIFFERENTIAL);
+    setGPSQuality((enum GpsSignalQuality) GPS_QUALITY_DIFFERENTIAL);
     setGPSSpeed(15.7);
 
     dt.second = seconds++;
@@ -253,7 +253,7 @@ void SectorTest::testStageSectorTimes() {
       CPPUNIT_ASSERT(!getAtSector());
     } else if (getLastSector() > 0) {
       CPPUNIT_ASSERT(getAtSector());
-      const millis_t expSectorTime = getLastSector() * 2000 + 1000;
+      const tiny_millis_t expSectorTime = getLastSector() * 2000 + 1000;
       CPPUNIT_ASSERT_EQUAL(expSectorTime, getLastSectorTime());
     }
 

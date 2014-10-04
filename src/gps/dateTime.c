@@ -98,12 +98,15 @@ millis_t getMillisecondsSinceUnixEpoch(DateTime dt) {
 
 millis_t getTimeDeltaInMillis(DateTime a, DateTime b) {
    if (!isValidDateTime(a) || !isValidDateTime(b))
-      return 0ll;
+      return 0;
 
    // HACK: I'm sure there is a better way to do this.  This way just works for me.
    return getMillisecondsSinceUnixEpoch(a) - getMillisecondsSinceUnixEpoch(b);
 }
 
+tiny_millis_t getTimeDeltaInTinyMillis(DateTime a, DateTime b) {
+   return (tiny_millis_t) getTimeDeltaInMillis(a, b);
+}
 static bool inRange(const int val, const int min, const int max) {
    return val >= min && val <= max;
 }
@@ -124,6 +127,16 @@ float millisToMinutes(const millis_t millis) {
 }
 
 float millisToSeconds(const millis_t millis) {
+   return ((float) (millis / MILLIS_PER_SECOND)) +
+      (((float) (millis % MILLIS_PER_SECOND)) / MILLIS_PER_SECOND);
+}
+
+float tinyMillisToMinutes(const tiny_millis_t millis) {
+   return ((float) (millis / MILLIS_PER_MINUTE)) +
+      (((float) (millis % MILLIS_PER_MINUTE)) / MILLIS_PER_MINUTE);
+}
+
+float tinyMillisToSeconds(const tiny_millis_t millis) {
    return ((float) (millis / MILLIS_PER_SECOND)) +
       (((float) (millis % MILLIS_PER_SECOND)) / MILLIS_PER_SECOND);
 }

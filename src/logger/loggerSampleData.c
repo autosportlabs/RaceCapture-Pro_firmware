@@ -412,21 +412,20 @@ float get_lap_stat_sample(int channelId){
       break;
    case lap_stat_channel_laptime:
       // XXX: TIME_HACK.  Should send Millis only in future.
-      value = millisToMinutes(getLastLapTime());
+      value = tinyMillisToMinutes(getLastLapTime());
       break;
    case lap_stat_channel_sector:
       value = (float) getLastSector();
       break;
    case lap_stat_channel_sectortime:
       // XXX: TIME_HACK.  Should send Millis only in future.
-      value = millisToMinutes(getLastSectorTime());
+      value = tinyMillisToMinutes(getLastSectorTime());
       break;
    case lap_stat_channel_predtime:
       {
-         GeoPoint gp;
-         populateGeoPoint(&gp);
-         const millis_t epochMillis = getMillisSinceEpoch();
-         value = millisToMinutes(getPredictedTime(gp, epochMillis));
+         const GeoPoint gp = getGeoPoint();
+         const tiny_millis_t millis = getMillisSinceFirstFix();
+         value = tinyMillisToMinutes(getPredictedTime(gp, millis));
          break;
       }
    default:

@@ -42,9 +42,9 @@ void resetLapCount();
 
 int getLapCount();
 
-millis_t getLastLapTime();
+tiny_millis_t getLastLapTime();
 
-millis_t getLastSectorTime();
+tiny_millis_t getLastSectorTime();
 
 int getSector();
 
@@ -76,7 +76,7 @@ void onLocationUpdated();
 
 enum GpsSignalQuality getGPSQuality();
 
-void setGPSQuality(int quality);
+void setGPSQuality(enum GpsSignalQuality quality);
 
 int getSatellitesUsedForPosition();
 
@@ -100,5 +100,15 @@ millis_t getMillisSinceEpoch();
  * @return the seconds since the first GPS fix.
  */
 float getSecondsSinceFirstFix();
+
+/**
+ * @return The last current known location.
+ */
+GeoPoint getGeoPoint();
+
+/**
+ * @return Milliseconds since our first fix.
+ */
+tiny_millis_t getMillisSinceFirstFix();
 
 #endif /*GPS_H_*/

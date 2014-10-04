@@ -47,17 +47,17 @@ static int g_satellitesUsedForPosition;
 
 static int g_atStartFinish;
 static int g_prevAtStartFinish;
-static millis_t g_lastStartFinishTimestamp;
+static tiny_millis_t g_lastStartFinishTimestamp;
 
 static int g_atTarget;
 static int g_prevAtTarget;
-static millis_t g_lastSectorTimestamp;
+static tiny_millis_t g_lastSectorTimestamp;
 
 static int g_sector;
 static int g_lastSector;
 
-static millis_t g_lastLapTime;
-static millis_t g_lastSectorTime;
+static tiny_millis_t g_lastLapTime;
+static tiny_millis_t g_lastSectorTime;
 
 static int g_lapCount;
 static float g_distance;
@@ -80,8 +80,9 @@ static bool isGpsDataCold() {
    return g_millisSinceUnixEpoch == 0;
 }
 
-static GeoPoint getGeoPoint() {
+GeoPoint getGeoPoint() {
    GeoPoint gp;
+
    gp.latitude = getLatitude();
    gp.longitude = getLongitude();
 
@@ -345,11 +346,11 @@ int getLastSector() {
    return g_lastSector;
 }
 
-millis_t getLastLapTime() {
+tiny_millis_t getLastLapTime() {
    return g_lastLapTime;
 }
 
-millis_t getLastSectorTime() {
+tiny_millis_t getLastSectorTime() {
    return g_lastSectorTime;
 }
 
@@ -373,7 +374,7 @@ enum GpsSignalQuality getGPSQuality() {
    return g_gpsQuality;
 }
 
-void setGPSQuality(int quality) {
+void setGPSQuality(enum GpsSignalQuality quality) {
    g_gpsQuality = quality;
 }
 
@@ -440,8 +441,8 @@ static int processStartFinish(const Track *track, float targetRadius) {
    }
 
 
-   const millis_t timestamp = getMillisSinceEpoch();
-   const millis_t elapsed = timestamp - g_lastStartFinishTimestamp;
+   const tiny_millis_t timestamp = getMillisSinceFirstFix();
+   const tiny_millis_t elapsed = timestamp - g_lastStartFinishTimestamp;
 
    /*
     * Guard against false triggering. We have to be out of the start/finish
@@ -483,11 +484,11 @@ static void processSector(const Track *track, float targetRadius) {
    /*
     * Past here we are sure we are at a sector boundary.
     */
-   const millis_t timestamp = getMillisSinceEpoch();
+   const tiny_millis_t millis = getMillisSinceFirstFix();
 
    g_prevAtTarget = 1;
-   g_lastSectorTime = timestamp - g_lastSectorTimestamp;
-   g_lastSectorTimestamp = timestamp;
+   g_lastSectorTime = millis - g_lastSectorTimestamp;
+   g_lastSectorTimestamp = millis;
    g_lastSector = g_sector;
    ++g_sector;
 
@@ -543,8 +544,8 @@ static void flashGpsStatusLed() {
    }
 }
 
-millis_t getMillisSinceFirstFix() {
-   return getTimeDeltaInMillis(g_dtLastFix, g_dtFirstFix);
+tiny_millis_t getMillisSinceFirstFix() {
+   return getTimeDeltaInTinyMillis(g_dtLastFix, g_dtFirstFix);
 }
 
 void onLocationUpdated() {
@@ -577,7 +578,7 @@ void onLocationUpdated() {
       const float targetRadius = config->TrackConfigs.radius;
 
       // Seconds since first fix is good until we alter the code to use millis directly
-      const millis_t millisSinceEpoch = getMillisSinceEpoch();
+      const tiny_millis_t millisSinceFirstFix = getMillisSinceFirstFix();
       const int lapDetected = processStartFinish(g_activeTrack, targetRadius);
 
       if (lapDetected) {
@@ -593,12 +594,12 @@ void onLocationUpdated() {
             g_distance = distPythag(&sp, &gp) / 1000;
 
             startFinishCrossed(sp, g_lastStartFinishTimestamp);
-            addGpsSample(gp, millisSinceEpoch);
+            addGpsSample(gp, millisSinceFirstFix);
          } else {
-            startFinishCrossed(gp, millisSinceEpoch);
+            startFinishCrossed(gp, millisSinceFirstFix);
          }
       } else {
-         addGpsSample(gp, millisSinceEpoch);
+         addGpsSample(gp, millisSinceFirstFix);
       }
 
       if (sectorEnabled)

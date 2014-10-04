@@ -14,7 +14,11 @@
 #define SECONDS_PER_HOUR (3600)
 #define SECONDS_PER_DAY (86400)
 
+// Time type used for expressing time in millis since epoch
 typedef int64_t millis_t;
+
+// Time type used to save space on chip.
+typedef int32_t tiny_millis_t;
 
 typedef struct _DateTime {
    int16_t millisecond;
@@ -30,6 +34,7 @@ bool isLeapYear(const unsigned int year);
 unsigned int getDaysInMonth(const unsigned int month, bool leapYear);
 millis_t getMillisecondsSinceUnixEpoch(DateTime dt);
 millis_t getTimeDeltaInMillis(DateTime a, DateTime b);
+tiny_millis_t getTimeDeltaInTinyMillis(DateTime a, DateTime b);
 bool isValidDateTime(const DateTime dt);
 
 /**
@@ -45,5 +50,19 @@ float millisToMinutes(const millis_t millis);
  * remove the use of floats as they are inaccurate.
  */
 float millisToSeconds(const millis_t millis);
+
+/**
+ * Converts Millisecond values to legacy minutes float.  Used as
+ * a compatibility layer until we move to milliseconds only and
+ * remove the use of floats as they are inaccurate.
+ */
+float tinyMillisToMinutes(const tiny_millis_t millis);
+
+/**
+ * Converts Millisecond values to legacy seconds float.  Used as
+ * a compatibility layer until we move to milliseconds only and
+ * remove the use of floats as they are inaccurate.
+ */
+float tinyMillisToSeconds(const tiny_millis_t millis);
 
 #endif //__DATE_TIME_H__
