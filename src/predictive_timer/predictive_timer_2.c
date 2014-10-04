@@ -18,10 +18,9 @@
  * in milliseconds.
  */
 /**
- * # of slots per buffer.  Each slot is 16 bytes.  I want 1K RAM usage in per buffer.
- * So 1024/16 = 64 slots.  Wheee math!
+ * # of slots per buffer.  Each slot is 12 bytes.
  */
-#define MAX_TIMELOC_SAMPLES 64
+#define MAX_TIMELOC_SAMPLES 96
 
 /**
  * How frequently to initially take in GPS data.  To small and we overflow.  To large and we don't
