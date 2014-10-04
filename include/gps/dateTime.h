@@ -27,11 +27,11 @@ typedef struct _DateTime {
    int8_t hour;
    int8_t day;
    int8_t month;
-   int8_t partialYear;
+   int16_t year;
 } DateTime;
 
-bool isLeapYear(const unsigned int year);
-unsigned int getDaysInMonth(const unsigned int month, bool leapYear);
+bool isLeapYear(const int year);
+unsigned int getDaysInMonth(const int month, bool leapYear);
 millis_t getMillisecondsSinceUnixEpoch(DateTime dt);
 millis_t getTimeDeltaInMillis(DateTime a, DateTime b);
 tiny_millis_t getTimeDeltaInTinyMillis(DateTime a, DateTime b);

@@ -5,30 +5,17 @@
 #include "dateTime.h"
 #include <stdbool.h>
 
-/**
- * Converts years that end in XX to full XXXX years.  So 70 -> 1970.  01 -> 2001
- * @param partialYear The partial year as stored in DateTime
- * @return The full year.
- */
-unsigned int convertToFullYear(int partialYear) {
-   return  partialYear + (partialYear >= 70 ? 1900 : 2000);
-}
-
-bool isLeapYear(const unsigned int year) {
+bool isLeapYear(const int year) {
    /*
     * Credit to http://www.dispersiondesign.com/articles/time/determining_leap_years
     */
    return (year % 4) || ((year % 100 == 0) && (year % 400)) ? false : true;
 }
 
-bool isLeapPartialYear(const unsigned int partialYear) {
-   return isLeapYear(convertToFullYear(partialYear));
-}
-
 /**
  * Returns the days in the month.  1 = Jan.
  */
-unsigned int getDaysInMonth(const unsigned int month, bool leapYear) {
+unsigned int getDaysInMonth(const int month, bool leapYear) {
    /*
     * Credit to http://www.dispersiondesign.com/articles/time/number_of_days_in_a_month
     * with a minor modification
@@ -41,23 +28,22 @@ unsigned int getDaysInYear(const bool leapYear) {
    return leapYear ? 366 : 365;
 }
 
-unsigned int getDayCountUpToMonthWithYear(int month, unsigned int year) {
+unsigned int getDayCountUpToMonthWithYear(int month, const int year) {
    const bool ly = isLeapYear(year);
    unsigned int days = 0;
-   int m = (int) month;
 
-   while (--m > 0)
-      days += getDaysInMonth(m, ly);
+   while (--month > 0)
+      days += getDaysInMonth(month, ly);
 
    return days;
 }
 
-unsigned int getDaysCountUpToMonthWithPartialYear(unsigned int month,
-      unsigned int partialYear) {
-   return getDayCountUpToMonthWithYear(month, convertToFullYear(partialYear));
+unsigned int getDaysCountUpToMonthWithPartialYear(const int month,
+                                                  const int year) {
+   return getDayCountUpToMonthWithYear(month, year);
 }
 
-unsigned int getDayCountUpToYearSinceYear(unsigned int year, const unsigned int beforeYear) {
+unsigned int getDayCountUpToYearSinceYear(int year, const int beforeYear) {
    unsigned int days = 0;
 
    while (--year >= beforeYear)
@@ -66,12 +52,8 @@ unsigned int getDayCountUpToYearSinceYear(unsigned int year, const unsigned int 
    return days;
 }
 
-unsigned int getDayCountUpToYearSinceUnixEpoch(const unsigned int year) {
+unsigned int getDayCountUpToYearSinceUnixEpoch(const int year) {
    return getDayCountUpToYearSinceYear(year, 1970);
-}
-
-unsigned int getDayCountUpToPartialYearSinceUnixEpoch(const unsigned int partialYear) {
-   return getDayCountUpToYearSinceUnixEpoch(convertToFullYear(partialYear));
 }
 
 millis_t getMillisecondsSinceUnixEpoch(DateTime dt) {
@@ -88,9 +70,8 @@ millis_t getMillisecondsSinceUnixEpoch(DateTime dt) {
    // Subtract 1 from day since they start at 1 instead of 0.
    seconds += (dt.day - 1) * SECONDS_PER_DAY;
 
-   const unsigned int year = convertToFullYear(dt.partialYear);
-   seconds += getDayCountUpToMonthWithYear(dt.month, year) * SECONDS_PER_DAY;
-   seconds += getDayCountUpToYearSinceUnixEpoch(year) * SECONDS_PER_DAY;
+   seconds += getDayCountUpToMonthWithYear(dt.month, dt.year) * SECONDS_PER_DAY;
+   seconds += getDayCountUpToYearSinceUnixEpoch(dt.year) * SECONDS_PER_DAY;
 
    // And then convert seconds to millis and add in the remaining millis
    return seconds * MILLIS_PER_SECOND + dt.millisecond;
@@ -118,7 +99,7 @@ bool isValidDateTime(const DateTime dt) {
       inRange(dt.hour, 0, 23) &&
       inRange(dt.day, 1, 31) &&
       inRange(dt.month, 1, 12) &&
-      inRange(dt.partialYear, 0, 99); // We only support 1970 - 2069.
+      inRange(dt.year, 1900, 2099);
 }
 
 float millisToMinutes(const millis_t millis) {

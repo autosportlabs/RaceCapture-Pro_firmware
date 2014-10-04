@@ -104,7 +104,7 @@ millis_t getMillisSinceEpoch() {
  */
 void updateFullDateTime(DateTime fixDateTime) {
    g_dtLastFix = fixDateTime;
-   if (g_dtFirstFix.partialYear == 0)
+   if (g_dtFirstFix.year == 0)
       g_dtFirstFix = fixDateTime;
 }
 
@@ -309,7 +309,7 @@ static void parseRMC(char *data) {
       case 8: //Date (DDMMYY)
          dt.day = (int8_t) atoiOffsetLenSafe(data, 0, 2);
          dt.month = (int8_t) atoiOffsetLenSafe(data, 2, 2);
-         dt.partialYear = (int8_t) atoiOffsetLenSafe(data, 4, 2);
+         dt.year = (int16_t) atoiOffsetLenSafe(data, 4, 2) + 2000;
          break;
       }
 

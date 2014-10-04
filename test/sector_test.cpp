@@ -134,7 +134,7 @@ void SectorTest::testSectorTimes(){
               float utcTime = modp_atof(utcTimeStr);
 
               DateTime dt;
-              dt.partialYear = 14;
+              dt.year = 2014;
               dt.month = 5;
               dt.day = 3;
               dt.hour = (int8_t) atoiOffsetLenSafe(utcTimeStr, 0, 2);

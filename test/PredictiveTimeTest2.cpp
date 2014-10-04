@@ -122,7 +122,7 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
          float utcTime = modp_atof(utcTimeStr);
 
          DateTime dt;
-         dt.partialYear = 14;
+         dt.year = 2014;
          dt.month = 5;
          dt.day = 3;
          dt.hour = (int8_t) atoiOffsetLenSafe(utcTimeStr, 0, 2);
@@ -134,7 +134,7 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
 
          const unsigned long millis = getMillisSinceEpoch();
          printf("---\n");
-         printf("DateTime - YY MM DD HH MM SS.mmm : %02d %02d %02d %02d %02d %02d.%03d\n", dt.partialYear,
+         printf("DateTime - YY MM DD HH MM SS.mmm : %02d %02d %02d %02d %02d %02d.%03d\n", dt.year,
                dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.millisecond);
          printf("lat = %f : lon = %f : speed = %f : UTC_Str = \"%s\" : time = %f : millis = %lu\n",
                lat, lon, speed, utcTimeStr, utcTime, millis);
