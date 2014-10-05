@@ -29,3 +29,7 @@ float distPythag(const GeoPoint *a, const GeoPoint *b) {
 	float tmp = dLonRad * cosf((latARad + latBRad) / 2);
 	return sqrtf(tmp * tmp + dLatRad * dLatRad) * GP_EARTH_RADIUS_M;
 }
+
+int isValidPoint(const GeoPoint *p) {
+   return p->latitude != 0.0 || p->longitude != 0.0;
+}

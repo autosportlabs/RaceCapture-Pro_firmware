@@ -59,11 +59,6 @@ int flash_default_tracks(void);
 const Tracks * get_tracks();
 
 /**
- * @return true if the given point is valid, false otherwise.
- */
-int isValidPoint(const GeoPoint *p);
-
-/**
  * Returns the finish point of the track, regardless if its a stage or a circuit.
  * @return The GeoPoint representing the finish line.
  */

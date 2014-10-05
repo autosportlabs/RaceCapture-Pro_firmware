@@ -83,10 +83,6 @@ static int isStage(const Track *t) {
    return t->track_type == TRACK_TYPE_STAGE;
 }
 
-int isValidPoint(const GeoPoint *p) {
-   return p->latitude != 0.0 || p->longitude != 0.0;
-}
-
 GeoPoint getFinishPoint(const Track *t) {
    return isStage(t) ? t->stage.finish : t->circuit.startFinish;
 }

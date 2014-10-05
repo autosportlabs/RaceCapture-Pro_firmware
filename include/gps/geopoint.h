@@ -43,4 +43,9 @@ typedef struct _GeoPoint {
  */
 float distPythag(const GeoPoint *a, const GeoPoint *b);
 
+/**
+ * @return true if the given point is valid, false otherwise.
+ */
+int isValidPoint(const GeoPoint *p);
+
 #endif /* GEOPOINT_H_ */
