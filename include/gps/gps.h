@@ -16,6 +16,8 @@ struct GpsSample {
    GeoPoint point;
    millis_t time;
    float speed;
+   enum GpsSignalQuality quality;
+   tiny_millis_t firstFixMillis;
 };
 
 /**

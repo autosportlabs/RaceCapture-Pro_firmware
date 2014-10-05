@@ -19,6 +19,7 @@
  */
 
 #include "launch_control.h"
+#include "geoCircle.h"
 #include "geopoint.h"
 #include "gps.h"
 #include "tracks.h"
@@ -31,21 +32,20 @@
  */
 #define LC_SPEED_THRESHOLD 3.0
 
-millis_t g_startTime;
-GeoPoint g_startPoint;
-float g_targetRadius;
-bool g_hasLaunched;
+static tiny_millis_t g_startTime;
+static struct GeoCircle g_geoCircle;
+static bool g_hasLaunched;
 
 static bool isValidStartTime() {
    return g_startTime != 0;
 }
 
 static bool isConfigured() {
-   return isValidPoint(&g_startPoint) && g_targetRadius > 0;
+   return gc_isValidGeoCircle(g_geoCircle);
 }
 
 static bool isGeoPointInStartArea(const GeoPoint p) {
-   return isPointInGeoCircle(p, g_startPoint, g_targetRadius);
+   return gc_isPointInGeoCircle(p, g_geoCircle);
 }
 
 static bool isSpeedBelowThreshold(const float speed) {
@@ -56,20 +56,19 @@ bool lc_hasLaunched() {
    return g_hasLaunched;
 }
 
-millis_t lc_getLaunchTime() {
+tiny_millis_t lc_getLaunchTime() {
    return lc_hasLaunched() ? g_startTime : 0;
 }
 
 void lc_reset() {
    g_startTime = 0;
-   g_targetRadius = 0.0;
+   g_geoCircle = (struct GeoCircle) {{0}};  // GCC Bug 53119.
    g_hasLaunched = false;
 }
 
 void lc_setup(const Track *track, const float targetRadius) {
    lc_reset();
-   g_startPoint = getStartPoint(track);
-   g_targetRadius = targetRadius;
+   g_geoCircle = gc_createGeoCircle(getStartPoint(track), targetRadius);
 }
 
 void lc_supplyGpsSample(const struct GpsSample sample) {
@@ -78,7 +77,7 @@ void lc_supplyGpsSample(const struct GpsSample sample) {
 
    if (isGeoPointInStartArea(sample.point)) {
       if (!isValidStartTime() || isSpeedBelowThreshold(sample.speed))
-         g_startTime = sample.time;
+         g_startTime = sample.firstFixMillis;
    } else {
       g_hasLaunched = isValidStartTime();
    }

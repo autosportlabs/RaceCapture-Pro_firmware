@@ -29,8 +29,3 @@ float distPythag(const GeoPoint *a, const GeoPoint *b) {
 	float tmp = dLonRad * cosf((latARad + latBRad) / 2);
 	return sqrtf(tmp * tmp + dLatRad * dLatRad) * GP_EARTH_RADIUS_M;
 }
-
-bool isPointInGeoCircle(const GeoPoint point, const GeoPoint center,
-                        const float radius) {
-   return distPythag(&point, &center) <= radius;
-}

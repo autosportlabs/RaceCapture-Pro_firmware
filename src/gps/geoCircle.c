@@ -18,40 +18,23 @@
  * Authors: Stieg
  */
 
-#ifndef _LAUNCH_CONTROL_H_
-#define _LAUNCH_CONTROL_H_
-
-#include "gps.h"
+#include "geoCircle.h"
+#include "geopoint.h"
 #include "tracks.h"
 
-#include <stdbool.h>
+struct GeoCircle gc_createGeoCircle(const GeoPoint gp, const float r) {
+   struct GeoCircle gc;
 
-/**
- * Resets internal state.
- */
-void lc_reset();
+   gc.point = gp;
+   gc.radius = r;
 
-/**
- * Sets up the needed information to allow launch control to work.
- * @param track Pointer to the track
- * @param targetRadius The radius of the target circle in Meters
- */
-void lc_setup(const Track *track, const float targetRadius);
+   return gc;
+}
 
-/**
- * Called when a new sample is available.
- * @param sample The GpsSample.
- */
-void lc_supplyGpsSample(const struct GpsSample sample);
+bool gc_isPointInGeoCircle(const GeoPoint point, const struct GeoCircle gc) {
+   return distPythag(&point, &(gc.point)) <= gc.radius;
+}
 
-/**
- * @return true if the driver has launched (started racing).  False otherwise.
- */
-bool lc_hasLaunched();
-
-/**
- * @return The time when the driver started racing.
- */
-tiny_millis_t lc_getLaunchTime();
-
-#endif /* _LAUNCH_CONTROL_H_ */
+bool gc_isValidGeoCircle(const struct GeoCircle gc) {
+   return isValidPoint(&(gc.point)) && gc.radius > 0.0;
+}

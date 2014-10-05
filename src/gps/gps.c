@@ -2,6 +2,7 @@
 #include "dateTime.h"
 #include "gps.h"
 #include "geopoint.h"
+#include "geoCircle.h"
 #include "launch_control.h"
 #include "loggerHardware.h"
 #include "LED.h"
@@ -396,9 +397,12 @@ DateTime getLastFixDateTime() {
 
 static struct GpsSample getGpsSample() {
    struct GpsSample s;
+
+   s.quality = getGPSQuality();
    s.point.latitude = getLatitude();
    s.point.longitude = getLongitude();
    s.time = getMillisSinceEpoch();
+   s.firstFixMillis = getMillisSinceFirstFix();
    s.speed = getGPSSpeed();
 
    return s;
@@ -422,13 +426,12 @@ static float calcDistancesSinceLastSample() {
    return distPythag(&prev, &curr) / 1000;
 }
 
-static int processStartFinish(const Track *track, float targetRadius) {
-   const GeoPoint sfPoint = isStartCrossedYet() ?
-      getFinishPoint(track) : getStartPoint(track);
+static int processStartFinish(const Track *track, const float targetRadius) {
+   const struct GpsSample gpss = getGpsSample();
 
    // First time crossing start finish.  Handle this in a special way.
    if (!isStartCrossedYet()) {
-      lc_supplyGpsSample(getGpsSample());
+      lc_supplyGpsSample(gpss);
 
       if (lc_hasLaunched()) {
          g_lastStartFinishTimestamp = lc_getLaunchTime();
@@ -443,6 +446,8 @@ static int processStartFinish(const Track *track, float targetRadius) {
 
    const tiny_millis_t timestamp = getMillisSinceFirstFix();
    const tiny_millis_t elapsed = timestamp - g_lastStartFinishTimestamp;
+   const struct GeoCircle sfCircle = gc_createGeoCircle(getFinishPoint(track),
+                                                        targetRadius * 1000);
 
    /*
     * Guard against false triggering. We have to be out of the start/finish
@@ -452,8 +457,8 @@ static int processStartFinish(const Track *track, float targetRadius) {
     * FIXME: Should have logic that checks that we left the start/finish circle
     * for some time.
     */
-   g_atStartFinish = isPointInGeoCircle(getGeoPoint(), sfPoint,
-                                        targetRadius * 1000);
+   g_atStartFinish = gc_isPointInGeoCircle(gpss.point, sfCircle);
+
    if (!g_atStartFinish || g_prevAtStartFinish != 0 ||
        elapsed <= START_FINISH_TIME_THRESHOLD) {
       g_prevAtStartFinish = 0;
@@ -475,7 +480,10 @@ static void processSector(const Track *track, float targetRadius) {
       return;
 
    const GeoPoint point = getSectorGeoPointAtIndex(track, g_sector);
-   g_atTarget = isPointInGeoCircle(getGeoPoint(), point, targetRadius * 1000);
+   const struct GeoCircle sbCircle = gc_createGeoCircle(point,
+                                                        targetRadius * 1000);
+
+   g_atTarget = gc_isPointInGeoCircle(getGeoPoint(), sbCircle);
    if (!g_atTarget) {
       g_prevAtTarget = 0;
       return;

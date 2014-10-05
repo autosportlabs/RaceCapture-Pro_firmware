@@ -36,12 +36,12 @@ void LaunchControlTest::tearDown() {}
 
 void LaunchControlTest::testHasLaunchedReset() {
    CPPUNIT_ASSERT_EQUAL(false, lc_hasLaunched());
-   CPPUNIT_ASSERT_EQUAL(0ll, lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL(0, lc_getLaunchTime());
 
    lc_reset();
 
    CPPUNIT_ASSERT_EQUAL(false, lc_hasLaunched());
-   CPPUNIT_ASSERT_EQUAL(0ll, lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL(0, lc_getLaunchTime());
 }
 
 void LaunchControlTest::testCircuitLaunch() {
@@ -62,20 +62,20 @@ void LaunchControlTest::testCircuitLaunch() {
 
    lc_setup(&t, 1.0);
    CPPUNIT_ASSERT_EQUAL(false, lc_hasLaunched());
-   CPPUNIT_ASSERT_EQUAL(0ll, lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL(0, lc_getLaunchTime());
 
    struct GpsSample sample = { 0 };
    const GeoPoint *pt = pts;
    for (; isValidPoint(pt); ++pt) {
       sample.point = *pt;
       // Use the address of the point as the sample time.
-      sample.time = (millis_t) pt;
+      sample.firstFixMillis = (tiny_millis_t) pt;
       sample.speed = 40; // Speed well above the threshold.
       lc_supplyGpsSample(sample);
    }
 
    CPPUNIT_ASSERT_EQUAL(true, lc_hasLaunched());
-   CPPUNIT_ASSERT_EQUAL((millis_t) (pts + 1), lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL((tiny_millis_t) (pts + 1), lc_getLaunchTime());
 }
 
 void LaunchControlTest::testStageSimpleLaunch() {
@@ -101,13 +101,13 @@ void LaunchControlTest::testStageSimpleLaunch() {
 
    lc_setup(&t, 1.0);
    CPPUNIT_ASSERT_EQUAL(false, lc_hasLaunched());
-   CPPUNIT_ASSERT_EQUAL(0ll, lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL(0, lc_getLaunchTime());
 
    struct GpsSample sample = { 0 };
    const GeoPoint *pt = pts;
    for (unsigned indx = 0; isValidPoint(pt); ++pt, ++indx) {
       // Use the address of the point as the sample time.
-      sample.time = (millis_t) pt;
+      sample.firstFixMillis = (tiny_millis_t) pt;
 
       sample.point = *pt;
       sample.speed = pt < (pts + 7) ? 0: 10;
@@ -120,7 +120,7 @@ void LaunchControlTest::testStageSimpleLaunch() {
    }
 
    CPPUNIT_ASSERT_EQUAL(true, lc_hasLaunched());
-   CPPUNIT_ASSERT_EQUAL((millis_t) (pts + 6), lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL((tiny_millis_t) (pts + 6), lc_getLaunchTime());
 }
 
 
@@ -152,14 +152,14 @@ void LaunchControlTest::testStageTrickyLaunch() {
 
    lc_setup(&t, 1.0);
    CPPUNIT_ASSERT_EQUAL(false, lc_hasLaunched());
-   CPPUNIT_ASSERT_EQUAL(0ll, lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL(0, lc_getLaunchTime());
 
    struct GpsSample sample = { 0 };
    const GeoPoint *pt = pts;
    for (; isValidPoint(pt); ++pt) {
       sample.point = *pt;
       // Use the address of the point as the sample time.
-      sample.time = (millis_t) pt;
+      sample.firstFixMillis = (tiny_millis_t) pt;
 
       // Set speed to 0 at 5th reading.  This triggers launch time set.
       sample.speed = pt == (pts + 4)? 0 : 5;
@@ -170,5 +170,5 @@ void LaunchControlTest::testStageTrickyLaunch() {
    }
 
    CPPUNIT_ASSERT_EQUAL(true, lc_hasLaunched());
-   CPPUNIT_ASSERT_EQUAL((millis_t) (pts + 4), lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL((tiny_millis_t) (pts + 4), lc_getLaunchTime());
 }

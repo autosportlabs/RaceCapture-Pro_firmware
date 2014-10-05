@@ -1,10 +1,21 @@
-/*
- * geopoint.h
+/**
+ * Race Capture Pro Firmware
  *
- * A simpler encapsulation of GPS data.
+ * Copyright (C) 2014 Autosport Labs
  *
- *  Created on: Jan 20, 2014
- *      Author: stieg
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should have received a copy of the GNU
+ * General Public License along with this code. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authors: Stieg
  */
 
 #ifndef GEOPOINT_H_
@@ -31,16 +42,5 @@ typedef struct _GeoPoint {
  * @return The distance between the two points in Meters
  */
 float distPythag(const GeoPoint *a, const GeoPoint *b);
-
-/**
- * Tells us if the given point is within the bound of a given GeoCircle.  Note
- * that this is a circle only and not a sphere.  In otherwords elevation has
- * no effect on this calculation.
- * @param point The point in quesiton
- * @param center The center of the GeoCircle
- * @param radius The radius of the circle in Meters.
- */
-bool isPointInGeoCircle(const GeoPoint point, const GeoPoint center,
-                        const float radius);
 
 #endif /* GEOPOINT_H_ */

@@ -18,40 +18,37 @@
  * Authors: Stieg
  */
 
-#ifndef _LAUNCH_CONTROL_H_
-#define _LAUNCH_CONTROL_H_
+#ifndef _GEOCIRCLE_H_
+#define _GEOCIRCLE_H_
 
-#include "gps.h"
-#include "tracks.h"
+#include "geopoint.h"
 
 #include <stdbool.h>
 
-/**
- * Resets internal state.
- */
-void lc_reset();
+struct GeoCircle {
+   GeoPoint point;
+   float radius;
+};
 
 /**
- * Sets up the needed information to allow launch control to work.
- * @param track Pointer to the track
- * @param targetRadius The radius of the target circle in Meters
+ * Creates a new GeoCircle from a point and a radius value.
+ * @return A new GeoCircle.
  */
-void lc_setup(const Track *track, const float targetRadius);
+struct GeoCircle gc_createGeoCircle(const GeoPoint gp, const float radius);
 
 /**
- * Called when a new sample is available.
- * @param sample The GpsSample.
+ * Tells us if the given point is within the bound of a given GeoCircle.  Note
+ * that this is a circle only and not a sphere.  In otherwords elevation has
+ * no effect on this calculation.
+ * @param point The point in quesiton
+ * @param gc The GeoCircle object
+ * @return true if it is in side the bounds, false otherwise.
  */
-void lc_supplyGpsSample(const struct GpsSample sample);
+bool gc_isPointInGeoCircle(const GeoPoint point, const struct GeoCircle gc);
 
 /**
- * @return true if the driver has launched (started racing).  False otherwise.
+ * @return true if its a valid geoCircle, false otherwise.
  */
-bool lc_hasLaunched();
+bool gc_isValidGeoCircle(const struct GeoCircle gc);
 
-/**
- * @return The time when the driver started racing.
- */
-tiny_millis_t lc_getLaunchTime();
-
-#endif /* _LAUNCH_CONTROL_H_ */
+#endif /* _GEOCIRCLE_H_ */
