@@ -133,7 +133,11 @@ static int setStringValueIfExists(const jsmntok_t *root, const char * fieldName,
 }
 
 int api_systemReset(Serial *serial, const jsmntok_t *json){
-	cpu_reset();
+	int loader = 0;
+
+	setIntValueIfExists(json, "loader", &loader);
+
+	cpu_reset(loader);
 	return API_SUCCESS_NO_RETURN;
 }
 
@@ -1121,6 +1125,10 @@ static void setTrack(const jsmntok_t *trackNode, Track *track){
 			}
 		}
 	}
+}
+
+int api_resetMCU(Serial *serial, const jsmntok_t *json){
+	return API_SUCCESS;
 }
 
 int api_setTrackConfig(Serial *serial, const jsmntok_t *json){

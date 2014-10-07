@@ -79,6 +79,6 @@ void GetVersion(Serial *serial, unsigned int argc, char **argv){
 }
 
 void ResetSystem(Serial *serial, unsigned int argc, char **argv){
-	cpu_reset();
+	cpu_reset(0);
 }
 

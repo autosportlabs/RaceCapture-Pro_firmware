@@ -10,7 +10,7 @@
 #include <stdint.h>
 
 int cpu_init(void);
-void cpu_reset(void);
+void cpu_reset(int bootloader);
 const char * cpu_get_serialnumber(void);
 
 

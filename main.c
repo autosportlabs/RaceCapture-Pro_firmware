@@ -127,7 +127,7 @@ int main( void )
 
 	//perform a clean reset if the watchdog fired
 	if (watchdog_is_watchdog_reset())
-		cpu_reset();
+		cpu_reset(0);
 
 	/* Start the scheduler.
 
