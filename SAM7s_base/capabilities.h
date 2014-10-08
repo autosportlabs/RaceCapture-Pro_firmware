@@ -19,12 +19,17 @@
 #define TIMER_CHANNELS			3
 #define PWM_CHANNELS			4
 #define CAN_CHANNELS			1
+#define CONNECTIVITY_CHANNELS	2
 
 //sample rates
 #define MAX_SENSOR_SAMPLE_RATE	100
 #define MAX_GPS_SAMPLE_RATE		10
 
-#define TELEMETRY_PORT			SERIAL_TELEMETRY
-#define WIRELESS_PORT			SERIAL_TELEMETRY
+//system info
+#define DEVICE_NAME    "RCP"
+#define FRIENDLY_DEVICE_NAME "RaceCapture/Pro"
+#define COMMAND_PROMPT "RaceCapture/Pro"
+#define WELCOME_MSG "Welcome to RaceCapture/Pro : Firmware Version " MAJOR_REV_STR "." MINOR_REV_STR "." BUGFIX_REV_STR
+
 
 #endif /* CAPABILITIES_H_ */

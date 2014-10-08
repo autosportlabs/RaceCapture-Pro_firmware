@@ -4,9 +4,8 @@
 #include "dateTime.h"
 #include <stddef.h>
 
-#define GPS_QUALITY_NO_FIX 0
-#define GPS_QUALITY_SPS 1
-#define GPS_QUALITY_DIFFERENTIAL 2
+#define GPS_QUALITY_NO_FIX 	0
+#define GPS_QUALITY_FIX 	1
 
 void gpsConfigChanged(void);
 

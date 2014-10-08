@@ -1,6 +1,6 @@
 #include "CAN_device.h"
 
-int CAN_device_init(int baud){
+int CAN_device_init(size_t channel, uint32_t baud){
 
 }
 

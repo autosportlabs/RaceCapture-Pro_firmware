@@ -41,7 +41,15 @@ typedef struct _BaudRateCodes{
 #define MSG_ID_CONFIGURE_POSITION_UPDATE_RATE	0x0E
 #define MSG_ID_POSITION_UPDATE_RATE 			0x86
 #define MSG_ID_CONFIGURE_SERIAL_PORT			0x05
+#define MSG_ID_CONFIGURE_NMEA_MESSAGE			0x08
 
+#define GGA_INTERVAL							100
+#define GSA_INTERVAL							0
+#define GSV_INTERVAL							0
+#define GLL_INTERVAL							0
+#define RMC_INTERVAL							1
+#define VTG_INTERVAL							0
+#define ZDA_INTERVAL							0
 
 typedef enum{
 	ATTRIBUTE_UPDATE_TO_SRAM = 0,
@@ -92,6 +100,18 @@ typedef struct _ConfigureSerialPort{
 	uint8_t attributes;
 } ConfigureSerialPort;
 
+typedef struct _ConfigureNmeaMessage{
+	uint8_t messageId;
+	uint8_t GGA_interval;
+	uint8_t GSA_interval;
+	uint8_t GSV_interval;
+	uint8_t GLL_interval;
+	uint8_t RMC_interval;
+	uint8_t VTG_interval;
+	uint8_t ZDA_interval;
+	uint8_t attributes;
+} ConfigureNmeaMessage;
+
 typedef struct _GpsMessage{
 	uint16_t payloadLength;
 	union{
@@ -105,6 +125,7 @@ typedef struct _GpsMessage{
 		ConfigurePositionUpdateRate configurePositionUpdateRate;
 		ConfigureSerialPort configureSerialPort;
 		PositionUpdateRate positionUpdateRate;
+		ConfigureNmeaMessage configureNmeaMessage;
 	};
 	uint8_t checksum;
 } GpsMessage;
@@ -240,6 +261,21 @@ static void sendConfigureSerialPort(GpsMessage *gpsMsg, Serial *serial, uint8_t 
 	txGpsMessage(gpsMsg, serial);
 }
 
+static void sendConfigureNmea(GpsMessage *gpsMsg, Serial *serial){
+	gpsMsg->messageId = MSG_ID_CONFIGURE_NMEA_MESSAGE;
+	gpsMsg->configureNmeaMessage.GGA_interval = GGA_INTERVAL;
+	gpsMsg->configureNmeaMessage.GSA_interval = GSA_INTERVAL;
+	gpsMsg->configureNmeaMessage.GSV_interval = GSV_INTERVAL;
+	gpsMsg->configureNmeaMessage.GLL_interval = GLL_INTERVAL;
+	gpsMsg->configureNmeaMessage.RMC_interval = RMC_INTERVAL;
+	gpsMsg->configureNmeaMessage.VTG_interval = VTG_INTERVAL;
+	gpsMsg->configureNmeaMessage.ZDA_interval = ZDA_INTERVAL;
+	gpsMsg->configureSerialPort.attributes = ATTRIBUTE_UPDATE_TO_SRAM;
+	gpsMsg->payloadLength = sizeof(ConfigureNmeaMessage);
+	gpsMsg->checksum = calculateChecksum(gpsMsg);
+	txGpsMessage(gpsMsg, serial);
+}
+
 static void sendConfigurePositionUpdateRate(GpsMessage *gpsMsg, Serial *serial, uint8_t updateRate){
 	gpsMsg->messageId = MSG_ID_CONFIGURE_POSITION_UPDATE_RATE;
 	gpsMsg->configurePositionUpdateRate.rate = updateRate;
@@ -255,7 +291,7 @@ uint32_t detectGpsBaudRate(GpsMessage *gpsMsg, Serial *serial){
 
 	for (size_t i = 0; i < BAUD_RATE_COUNT; i++){
 		uint32_t baudRate = baud_rates[i].baud;
-		pr_info("probing gps baud rate ");
+		pr_info("GPS: probing baud rate ");
 		pr_info_int(baudRate);
 		pr_info("\r\n");
 		configure_serial(SERIAL_GPS, 8, 0, 1, baudRate);
@@ -294,7 +330,7 @@ static uint8_t getBaudRateCode(uint32_t baudRate){
 	return 0;
 }
 
-gps_cmd_result_t configureBaudRate(GpsMessage *gpsMsg, Serial *serial, uint32_t targetBaudRate){
+static gps_cmd_result_t configureBaudRate(GpsMessage *gpsMsg, Serial *serial, uint32_t targetBaudRate){
 	pr_info("Configuring GPS baud rate to ");
 	pr_info_int(targetBaudRate);
 	pr_info(": ");
@@ -308,7 +344,19 @@ gps_cmd_result_t configureBaudRate(GpsMessage *gpsMsg, Serial *serial, uint32_t 
 	return result;
 }
 
-uint8_t queryPositionUpdateRate(GpsMessage *gpsMsg, Serial *serial){
+static gps_cmd_result_t configureNmeaMessages(GpsMessage *gpsMsg, Serial *serial){
+	pr_info("GPS: Configuring NMEA messages: ");
+
+	gps_cmd_result_t result = GPS_COMMAND_FAIL;
+	sendConfigureNmea(gpsMsg, serial);
+	if (rxGpsMessage(gpsMsg, serial, MSG_ID_ACK) == GPS_MSG_SUCCESS){
+		result = (gpsMsg->ackMsg.ackId == MSG_ID_CONFIGURE_NMEA_MESSAGE) ? GPS_COMMAND_SUCCESS : GPS_COMMAND_FAIL;
+	}
+	pr_info(result == GPS_COMMAND_SUCCESS ? "win\r\n" : "fail\r\n");
+	return result;
+}
+
+static uint8_t queryPositionUpdateRate(GpsMessage *gpsMsg, Serial *serial){
 	uint8_t updateRate = 0;
 	sendQueryPositionUpdateRate(gpsMsg, serial);
 	if (rxGpsMessage(gpsMsg, serial, MSG_ID_POSITION_UPDATE_RATE) == GPS_MSG_SUCCESS){
@@ -317,7 +365,7 @@ uint8_t queryPositionUpdateRate(GpsMessage *gpsMsg, Serial *serial){
 	return updateRate;
 }
 
-gps_cmd_result_t configureUpdateRate(GpsMessage *gpsMsg, Serial *serial, uint8_t targetUpdateRate){
+static gps_cmd_result_t configureUpdateRate(GpsMessage *gpsMsg, Serial *serial, uint8_t targetUpdateRate){
 	pr_info("Configuring GPS update rate to ");
 	pr_info_int(targetUpdateRate);
 	pr_info(": ");
@@ -342,33 +390,39 @@ int GPS_device_provision(Serial *serial){
 	vTaskDelay(msToTicks(500));
 	while(attempts-- && !provisioned){
 		while(1){
-			pr_info("provisioning attempt\r\n");
+			pr_info("GPS: provisioning attempt\r\n");
 			uint32_t baudRate = detectGpsBaudRate(gpsMsg, serial);
 			if (baudRate){
-				pr_info("GPS module detected at ");
+				pr_info("GPS: module detected at ");
 				pr_info_int(baudRate);
 				pr_info("\r\n");
 				if (baudRate != TARGET_BAUD_RATE && configureBaudRate(gpsMsg, serial, TARGET_BAUD_RATE) == GPS_COMMAND_FAIL){
-					pr_error("Error provisioning: could not configure baud rate\r\n");
+					pr_error("GPS: Error provisioning - could not configure baud rate\r\n");
 					break;
 				}
 				configure_serial(SERIAL_GPS, 8, 0, 1, TARGET_BAUD_RATE);
 				serial->flush();
 				uint8_t updateRate = queryPositionUpdateRate(gpsMsg, serial);
 				if (!updateRate){
-					pr_error("Error provisioning: could not detect update rate\r\n");
+					pr_error("GPS: Error provisioning - could not detect update rate\r\n");
 					updateRate = 0;
 				}
 				if (updateRate != TARGET_UPDATE_RATE && configureUpdateRate(gpsMsg, serial, TARGET_UPDATE_RATE) == GPS_COMMAND_FAIL){
-					pr_error("Error provisioning: could not configure update rate\r\n");
+					pr_error("GPS: Error provisioning - could not configure update rate\r\n");
 					break;
 				}
-				pr_info("GPS module provisioned\r\n");
+
+				if (configureNmeaMessages(gpsMsg, serial) == GPS_COMMAND_FAIL){
+					pr_error("GPS: Error provisioning - could not configure NMEA messages\r\n");
+					break;
+				}
+
+				pr_info("GPS: provisioned\r\n");
 				provisioned = 1;
 				break;
 			}
 			else{
-				pr_error("Error provisioning: could not detect GPS module on known baud rates\r\n");
+				pr_error("GPS: Error provisioning - could not detect GPS module on known baud rates\r\n");
 				break;
 			}
 		}

@@ -108,4 +108,8 @@
 	#error Missing definition:  configUSE_16_BIT_TICKS should be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
 #endif
 
+#ifndef portPOINTER_SIZE_TYPE
+	#define portPOINTER_SIZE_TYPE unsigned long
+#endif
+
 #endif

@@ -395,7 +395,8 @@ static void MCP2515_write_id(uint8_t reg, int extended, uint32_t id){
 	MCP2515_write_reg_values(reg, id_buf, buf_len);
 }
 
-int CAN_device_init(int baud){
+int CAN_device_init(size_t channel, uint32_t baud){
+
 	AT91_CAN_SPI_init();
 	int initSuccess = MCP2515_setup() &&
 			MCP2515_set_baud(baud) &&

@@ -28,7 +28,7 @@ STM32_USB_DEV_CDC = 1
 ITM = 1
 
 #HEAP selection
-FREERTOS_HEAP=heap_2_combine
+FREERTOS_HEAP=heap_4
 
 include $(APP_PATH)/version.mk
 RCP_RELEASE_DIR ?= .

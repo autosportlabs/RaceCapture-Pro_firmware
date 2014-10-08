@@ -78,14 +78,14 @@ static void fatalError(int type){
 	}
 }
 
-#define OBD2_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
-#define GPS_TASK_PRIORITY 		( tskIDLE_PRIORITY + 2 )
+#define OBD2_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
+#define GPS_TASK_PRIORITY 			( tskIDLE_PRIORITY + 5 )
 #define CONNECTIVITY_TASK_PRIORITY 	( tskIDLE_PRIORITY + 4 )
-#define LOGGER_TASK_PRIORITY		( tskIDLE_PRIORITY + 4 )
-#define FILE_WRITER_TASK_PRIORITY	( tskIDLE_PRIORITY + 3 )
-#define LUA_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
+#define LOGGER_TASK_PRIORITY		( tskIDLE_PRIORITY + 6 )
+#define FILE_WRITER_TASK_PRIORITY	( tskIDLE_PRIORITY + 4 )
+#define LUA_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
 #define USB_COMM_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
-#define GPIO_TASK_PRIORITY 		( tskIDLE_PRIORITY + 4 )
+#define GPIO_TASK_PRIORITY 			( tskIDLE_PRIORITY + 4 )
 
 
 void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName)
@@ -109,10 +109,10 @@ void setupTask(void *params)
 	startUSBCommTask		( USB_COMM_TASK_PRIORITY );
 	startLuaTask			( LUA_TASK_PRIORITY );
 	startFileWriterTask		( FILE_WRITER_TASK_PRIORITY );
-	startLoggerTaskEx		( LOGGER_TASK_PRIORITY );
 	startConnectivityTask	( CONNECTIVITY_TASK_PRIORITY );
 	startGPSTask			( GPS_TASK_PRIORITY );
 	startOBD2Task			( OBD2_TASK_PRIORITY);
+	startLoggerTaskEx		( LOGGER_TASK_PRIORITY );
 
 	/* Removes this setup task from the scheduler */
 	vTaskDelete(NULL);

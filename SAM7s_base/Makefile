@@ -204,7 +204,7 @@ $(LUA_SRC_DIR)/luaTask.c \
 $(LUA_SRC_DIR)/luaScript.c \
 $(LUA_SRC_DIR)/luaBaseBinding.c \
 $(LUA_SRC_DIR)/luaCommands.c \
-$(RTOS_PORT_DIR)/MemMang/heap_2_combine.c \
+$(RTOS_PORT_DIR)/MemMang/heap_4.c \
 $(LOGGING_DIR)/printk.c \
 $(FILTER_DIR)/filter.c \
 $(CAN_DIR)/CAN.c \

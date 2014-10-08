@@ -50,6 +50,13 @@ void modp_itoa10(int32_t value, char* buf);
  */
 void modp_uitoa10(uint32_t value, char* buf);
 
+/** \brief convert an unsigned long to char buffer
+ *
+ * \param[in] value
+ * \param[out] buf The output buffer, should be 16 chars or more.
+ */
+void modp_ultoa10(uint64_t value, char* buf);
+
 /** \brief convert a floating point number to char buffer with fixed-precision format
  *
  * If the input value is greater than 1<<31, then the output format

@@ -422,8 +422,11 @@ int Lua_SetAnalogOut(lua_State *L){
 
 int Lua_InitCAN(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		int baud = lua_tointeger(L, 1);
-		int rc = CAN_init(baud);
+		size_t port = 0;
+		if (lua_gettop(L) >= 2) port = (size_t)lua_tointeger(L, 2);
+
+		uint32_t baud = lua_tointeger(L, 1);
+		int rc = CAN_init_port(port, baud);
 		lua_pushinteger(L, rc);
 		return 1;
 	}

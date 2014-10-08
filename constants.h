@@ -20,13 +20,9 @@
 #define XSTR(s) STR(s)
 #define STR(s) #s
 
-#define DEVICE_NAME    "RCP"
 #define MAJOR_REV_STR  XSTR(MAJOR_REV)
 #define MINOR_REV_STR  XSTR(MINOR_REV)
 #define BUGFIX_REV_STR XSTR(BUGFIX_REV)
-
-#define WELCOME_MSG "Welcome to RaceCapture/Pro : Firmware Version " MAJOR_REV_STR "." MINOR_REV_STR "." BUGFIX_REV_STR
-#define COMMAND_PROMPT "RaceCapture/Pro"
 
 #define SYSTEM_COMMANDS {LOGGER_COMMANDS, BASE_COMMANDS, LUA_COMMANDS, NULL_COMMAND}
 
