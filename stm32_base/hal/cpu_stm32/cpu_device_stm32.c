@@ -1,7 +1,9 @@
 #include "cpu_device.h"
 #include <stm32f4xx_misc.h>
+#include <stm32f4xx_rcc.h>
 #include <core_cm4.h>
 #include <stdint.h>
+#include <app_info.h>
 
 #define CPU_ID_REGISTER_START 	0x1FFF7A10
 #define CPU_ID_REGISTER_END   	0x1FFF7A1C
@@ -11,6 +13,7 @@
 
 extern uint32_t _flash_start;
 static char cpu_id[SERIAL_ID_BUFFER_LEN];
+
 
 
 static void init_cpu_id(){
@@ -32,7 +35,18 @@ int cpu_device_init(void){
 	return 1;
 }
 
-void cpu_device_reset(){
+void cpu_device_reset(int bootloader){
+	struct app_handshake_block *handshake = (struct app_handshake_block*)HANDSHAKE_ADDR;
+
+	/* Clear any reset flags that might be present (i.e. watchdog) */
+	RCC_ClearFlag();
+
+	/* If bootloader mode is requested, Set the flag in the
+	 * handshake area */
+	if (bootloader == 1) {
+		handshake->loader_magic = LOADER_KEY;
+	}
+
 	NVIC_SystemReset();
 }
 

@@ -5,8 +5,8 @@ int cpu_init(void){
 	return cpu_device_init();
 }
 
-void cpu_reset(void){
-	cpu_device_reset();
+void cpu_reset(int bootloader){
+	cpu_device_reset(bootloader);
 }
 
 const char * cpu_get_serialnumber(void){
