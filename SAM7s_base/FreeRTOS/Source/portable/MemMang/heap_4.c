@@ -236,7 +236,7 @@ void *pvReturn = NULL;
 			}
 		}
 
-		traceMALLOC( pvReturn, xWantedSize );
+		//traceMALLOC( pvReturn, xWantedSize );
 	}
 	xTaskResumeAll();
 
@@ -293,8 +293,8 @@ xBlockLink *pxLink;
 		pxLink = ( void * ) puc;
 
 		/* Check the block is actually allocated. */
-		configASSERT( ( pxLink->xBlockSize & xBlockAllocatedBit ) != 0 );
-		configASSERT( pxLink->pxNextFreeBlock == NULL );
+//		configASSERT( ( pxLink->xBlockSize & xBlockAllocatedBit ) != 0 );
+//		configASSERT( pxLink->pxNextFreeBlock == NULL );
 		
 		if( ( pxLink->xBlockSize & xBlockAllocatedBit ) != 0 )
 		{
@@ -309,7 +309,7 @@ xBlockLink *pxLink;
 					/* Add this block to the list of free blocks. */
 					xFreeBytesRemaining += pxLink->xBlockSize;
 					prvInsertBlockIntoFreeList( ( ( xBlockLink * ) pxLink ) );
-					traceFREE( pv, pxLink->xBlockSize );
+//					traceFREE( pv, pxLink->xBlockSize );
 				}
 				xTaskResumeAll();
 			}
@@ -351,7 +351,7 @@ unsigned char *pucHeapEnd, *pucAlignedHeap;
 	pucHeapEnd = pucAlignedHeap + xTotalHeapSize;
 	pucHeapEnd -= heapSTRUCT_SIZE;
 	pxEnd = ( void * ) pucHeapEnd;
-	configASSERT( ( ( ( unsigned long ) pxEnd ) & ( ( unsigned long ) portBYTE_ALIGNMENT_MASK ) ) == 0UL );
+	//configASSERT( ( ( ( unsigned long ) pxEnd ) & ( ( unsigned long ) portBYTE_ALIGNMENT_MASK ) ) == 0UL );
 	pxEnd->xBlockSize = 0;
 	pxEnd->pxNextFreeBlock = NULL;
 

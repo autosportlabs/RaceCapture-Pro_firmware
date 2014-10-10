@@ -10,31 +10,25 @@
 // Standard includes
 #include "FreeRTOS.h"
 #include "task.h"
-#include "heap.h"
-#include "serial.h"
-#include "usb_comm.h"
-#include "baseCommands.h"
-#include "constants.h"
-#include "cpu.h"
-#include "OBD2_task.h"
-#include "watchdog.h"
-#include "LED.h"
-#include "loggerHardware.h"
-#include "gpsTask.h"
-#include "gpioTasks.h"
-#include "messaging.h"
 
-#include "loggerConfig.h"
-#include "channelMeta.h"
-#include "tracks.h"
+#include "capabilities.h"
+#include "constants.h"
+#include "LED.h"
+#include "cpu.h"
+#include "watchdog.h"
+#include "loggerHardware.h"
+#include "messaging.h"
 #include "luaScript.h"
 
-//logging related tasks
+//tasks
 #include "loggerTaskEx.h"
 #include "fileWriter.h"
 #include "connectivityTask.h"
 #include "luaTask.h"
-#include "luaCommands.h"
+#include "OBD2_task.h"
+#include "gpsTask.h"
+#include "gpioTasks.h"
+#include "usb_comm.h"
 
 #define FATAL_ERROR_SCHEDULER	1
 #define FATAL_ERROR_HARDWARE	2
@@ -117,7 +111,7 @@ int main( void )
 	cpu_init();
 	watchdog_init(WATCHDOG_TIMEOUT_MS);
 	//perform a clean reset if the watchdog fired
-	//if (watchdog_is_watchdog_reset()) cpu_reset();
+	if (watchdog_is_watchdog_reset()) cpu_reset();
 
 	/* Start the scheduler.
 
@@ -128,12 +122,17 @@ int main( void )
 	   these demo application projects then ensure Supervisor mode is used here.
 	*/
 
-	xTaskCreate(setupTask,
-		    (signed portCHAR*)"Hardware Init",
-		    configMINIMAL_STACK_SIZE + 500,
-		    NULL,
-		    tskIDLE_PRIORITY + 4,
-		    NULL);
+	if (TASK_TASK_INIT){
+		xTaskCreate(setupTask,
+				(signed portCHAR*)"Hardware Init",
+				configMINIMAL_STACK_SIZE + 500,
+				NULL,
+				tskIDLE_PRIORITY + 4,
+				NULL);
+	}
+	else{
+		setupTask(NULL);
+	}
 
 	vTaskStartScheduler();
 	fatalError(FATAL_ERROR_SCHEDULER);

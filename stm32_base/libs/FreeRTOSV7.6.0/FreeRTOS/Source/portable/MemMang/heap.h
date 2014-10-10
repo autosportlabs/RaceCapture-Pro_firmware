@@ -5,5 +5,6 @@
 void *pvPortMalloc( size_t xWantedSize );
 void vPortFree( void *pv );
 void * pvPortRealloc( void *pv, size_t xWantedSize );
+size_t xPortGetFreeHeapSize( void );
 
 #endif

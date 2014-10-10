@@ -31,5 +31,6 @@
 #define COMMAND_PROMPT "RaceCapture/Pro"
 #define WELCOME_MSG "Welcome to RaceCapture/Pro : Firmware Version " MAJOR_REV_STR "." MINOR_REV_STR "." BUGFIX_REV_STR
 
-
+//initialize main tasks in temporary FreeRTOS task
+#define TASK_TASK_INIT 0
 #endif /* CAPABILITIES_H_ */
