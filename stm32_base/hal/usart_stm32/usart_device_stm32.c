@@ -12,7 +12,7 @@
 #include "LED.h"
 
 #define UART_QUEUE_LENGTH 					1024
-#define GPS_BUFFER_SIZE						128
+#define GPS_BUFFER_SIZE						32
 
 #define UART_WIRELESS_IRQ_PRIORITY 			7
 #define UART_AUX_IRQ_PRIORITY 				8
