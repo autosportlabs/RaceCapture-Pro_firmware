@@ -44,7 +44,7 @@
 #define FLASH_PAUSE_DELAY 	5000000
 #define FLASH_DELAY 		1000000
 
-__attribute__((aligned (8)))
+__attribute__((aligned (4)))
 static const struct app_info_block info_block = {
 	.magic_number = APP_INFO_MAGIC_NUMBER,
 	.info_crc = 0xDEADBEEF,
