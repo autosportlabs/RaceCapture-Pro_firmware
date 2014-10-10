@@ -102,7 +102,7 @@ libstm32_usb.a: $(STM32_USB_OBJS)
 
 $(TARGET).ihex: $(TARGET).bin
 	@printf "  Creating upgrade images\n"
-	./fw_postprocess.py -f $(TARGET).bin -o 0x08020000 -b $(TARGET).bin -i $(TARGET).ihex
+	asl_f4_fw_postprocess -f $(TARGET).bin -o 0x08020000 -b $(TARGET).bin -i $(TARGET).ihex
 
 $(TARGET).bin: $(TARGET).elf
 	@printf "  OBJCOPY $(subst $(shell pwd)/,,$(@))\n"
