@@ -248,6 +248,10 @@ static void writeSampleMeta(Serial *serial, ChannelSample *channelSamples, size_
 		const Channel *field = get_channel(sample->channelId);
 		json_string(serial, "nm", field->label, 1);
 		json_string(serial, "ut", field->units, 1);
+		int precision = field->precision;
+		json_float(serial, "min", field->min, precision, 1);
+		json_float(serial, "max", field->max, precision, 1);
+		json_int(serial, "prec", field->precision, 1);
 		json_int(serial, "sr", decodeSampleRate(LOWER_SAMPLE_RATE(sample->sampleRate, sampleRateLimit)), 0);
 		serial->put_c('}');
 		sample++;
