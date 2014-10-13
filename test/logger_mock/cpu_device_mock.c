@@ -12,6 +12,9 @@ const char * cpu_device_get_serialnumber(void){
 	return "AAABBBCCCDDDEEEFFF000111";
 }
 
+void cpu_device_reset(int bootloader){
+}
+
 
 
 
