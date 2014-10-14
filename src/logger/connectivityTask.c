@@ -17,6 +17,7 @@
 #include "capabilities.h"
 #include "mem_mang.h"
 #include "taskUtil.h"
+#include "LED.h"
 //devices
 #include "null_device.h"
 #include "bluetooth.h"
@@ -175,6 +176,7 @@ void connectivityTask(void *params) {
 	LoggerMessage *msg = NULL;
 
 	Serial *serial = get_serial(connParams->serial);
+
 	size_t periodicMeta = connParams->periodicMeta;
 	xQueueHandle sampleQueue = connParams->sampleQueue;
 
@@ -218,6 +220,7 @@ void connectivityTask(void *params) {
 					{
 						int sendMeta = (tick == 0 || (periodicMeta && (tick % METADATA_SAMPLE_INTERVAL == 0)));
 						api_sendSampleRecord(serial, msg->channelSamples, msg->sampleCount, tick, sendMeta);
+						LED_toggle(0);
 						put_crlf(serial);
 						tick++;
 						break;

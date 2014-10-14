@@ -105,6 +105,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/util/modp_numtoa.c \
 			$(RCP_SRC)/util/taskUtil.c \
 			$(RCP_SRC)/sdcard/sdcard.c \
+			$(HAL_SRC)/sim900_stm32/sim900_device_stm32.c \
 			$(HAL_SRC)/gps_skytraq/gps_device_skytraq.c \
 			$(HAL_SRC)/LED_stm32/LED_device_stm32.c \
 			$(HAL_SRC)/memory_stm32/memory_device_stm32.c \

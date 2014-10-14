@@ -674,30 +674,30 @@ void processGPSData(char *gpsData, size_t len) {
    // Advance the pointer 3 spaces since we know it begins with "$GP"
    gpsData += 3;
    if (strstr(gpsData, "GGA,")) {
-      pr_debug("GGA ");
+      pr_trace("GGA ");
       parseGGA(gpsData + 4);
    } else if (strstr(gpsData, "VTG,")) { //Course Over Ground and Ground Speed
-	  pr_debug("VTG ");
+	  pr_trace("VTG ");
       parseVTG(gpsData + 4);
    } else if (strstr(gpsData, "GSA,")) { //GPS Fix gpsData
-	  pr_debug("GSA ");
+	  pr_trace("GSA ");
       parseGSA(gpsData + 4);
    } else if (strstr(gpsData, "GSV,")) { //Satellites in view
-	  pr_debug("GSV ");
+	  pr_trace("GSV ");
       parseGSV(gpsData + 4);
    } else if (strstr(gpsData, "RMC,")) { //Recommended Minimum Specific GNSS Data
-	  pr_debug("RMC ");
+	  pr_trace("RMC ");
       parseRMC(gpsData + 4);
       positionUpdated = 1;
    } else if (strstr(gpsData, "GLL,")) { //Geographic Position - Latitude/Longitude
-	  pr_debug("GLL ");
+	  pr_trace("GLL ");
       parseGLL(gpsData + 4);
    } else if (strstr(gpsData, "ZDA,")) { //Time & Date
-	  pr_debug("ZDA ");
+	  pr_trace("ZDA ");
       parseZDA(gpsData + 4);
    }
 
-   if (DEBUG_LEVEL){
+   if (TRACE_LEVEL){
 	   char output[30];
 	   modp_ultoa10(g_millisSinceUnixEpoch, output);
 	   pr_debug(output);
