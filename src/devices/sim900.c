@@ -3,6 +3,7 @@
 #include "loggerConfig.h"
 #include "mod_string.h"
 #include "printk.h"
+#include "LED.h"
 
 #define TELEMETRY_SERVER_PORT "8080"
 

@@ -6,7 +6,7 @@
 
 #ifndef RCP_TESTING
 #include "memory.h"
-static const Tracks g_tracks __attribute__ ((aligned (FLASH_MEMORY_PAGE_SIZE))) __attribute__((section(".tracks\n\t#")));
+static const volatile Tracks g_tracks __attribute__((section(".tracks\n\t#")));
 #else
 static Tracks g_tracks = DEFAULT_TRACKS;
 #endif
@@ -27,13 +27,13 @@ int flash_default_tracks(void){
 }
 
 int flash_tracks(const Tracks *source, size_t rawSize){
-	int result = memory_flash_region(&g_tracks, source, rawSize);
+	int result = memory_flash_region((void *)&g_tracks, (void *)source, rawSize);
 	if (result == 0) pr_info("success\r\n"); else pr_info("failed\r\n");
 	return result;
 }
 
 const Tracks * get_tracks(){
-	return &g_tracks;
+	return (Tracks *)&g_tracks;
 }
 
 
@@ -45,7 +45,7 @@ int add_track(const Track *track, size_t index, int mode){
 			if (g_tracksBuffer == NULL){
 				pr_info("allocating new tracks buffer\r\n");
 				g_tracksBuffer = (Tracks *)portMalloc(sizeof(Tracks));
-				memcpy(g_tracksBuffer, &g_tracks, sizeof(Tracks));
+				memcpy((void *)g_tracksBuffer, (void *)&g_tracks, sizeof(Tracks));
 			}
 
 			if (g_tracksBuffer != NULL){

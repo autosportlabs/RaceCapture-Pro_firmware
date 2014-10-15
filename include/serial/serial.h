@@ -9,11 +9,22 @@
 #define SERIAL_H_
 
 #include <stddef.h>
+#include <stdint.h>
+
+typedef enum {
+	SERIAL_USB = 0,
+	SERIAL_GPS,
+	SERIAL_TELEMETRY,
+	SERIAL_WIRELESS,
+	SERIAL_AUX
+} serial_id_t;
+
+#define SERIAL_COUNT 5
 
 typedef struct _Serial{
 
 	void (*init)(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud);
-	char (*get_c_wait)(size_t delay);
+	int (*get_c_wait)(char *c, size_t delay);
 	char (*get_c)(void);
 
 	int (*get_line)(char *s, int len);
@@ -29,12 +40,11 @@ typedef struct _Serial{
 
 void init_serial(void);
 
-Serial * get_serial_usart0();
+Serial * get_serial(serial_id_t port);
 
-Serial * get_serial_usart1();
+void configure_serial(serial_id_t port, uint8_t bits, uint8_t parity, uint8_t stopBits, uint32_t baud);
 
-Serial * get_serial_usb();
-
+size_t serial_read_byte(Serial *serial, uint8_t *b, size_t delay);
 
 void put_int(Serial * serial, int n);
 

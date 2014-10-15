@@ -8,8 +8,9 @@
 
 enum GpsSignalQuality {
    GPS_QUALITY_NO_FIX = 0,
-   GPS_QUALITY_SPS = 1,
-   GPS_QUALITY_DIFFERENTIAL = 2,
+   GPS_QUALITY_FIX = 1,
+   GPS_QUALITY_SPS = 2,
+   GPS_QUALITY_DIFFERENTIAL = 3,
 };
 
 struct GpsSample {

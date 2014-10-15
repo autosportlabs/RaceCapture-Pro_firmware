@@ -53,7 +53,7 @@
 #define configUSE_TICK_HOOK			1
 #define configCPU_CLOCK_TRIM_HZ		-149096
 #define configCPU_CLOCK_HZ			( ( unsigned portLONG ) 48054840 + configCPU_CLOCK_TRIM_HZ )
-#define configTICK_RATE_HZ			( ( portTickType ) 200 )
+#define configTICK_RATE_HZ			200
 #define configMAX_PRIORITIES		( ( unsigned portBASE_TYPE ) 5 )
 #define configMINIMAL_STACK_SIZE	( ( unsigned portSHORT ) 100 )
 //#define configTOTAL_HEAP_SIZE		( ( size_t ) 10000 ) //14200

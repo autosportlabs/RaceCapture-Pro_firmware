@@ -31,6 +31,10 @@
 #
 
 include version.mk
+TRACKS_MEMORY_LENGTH = 10240
+CHANNELS_MEMORY_LENGTH = 3584
+CONFIG_MEMORY_LENGTH = 4096
+
 RCP_RELEASE_DIR ?= .
 ifdef BUILD_NUMBER
 	BUILD_NUMBER_SUFFIX = _$(BUILD_NUMBER)
@@ -77,16 +81,20 @@ INCLUDE_DIR = include
 SRC_DIR = src
 
 SAM7s_BASE_DIR = SAM7s_base
+GPS_MTK_DIR = $(SAM7s_BASE_DIR)/gps_mtk
 MCP2515_DIR = $(SAM7s_BASE_DIR)/MCP2515
 KXR94_2353_DIR = $(SAM7s_BASE_DIR)/KXR94_2353
+SIM900_AT91_DIR = $(SAM7s_BASE_DIR)/sim900_at91
 ADC_AT91_DIR = $(SAM7s_BASE_DIR)/ADC_at91
 PWM_AT91_DIR = $(SAM7s_BASE_DIR)/PWM_at91
+SPI_AT91_DIR = $(SAM7s_BASE_DIR)/SPI_at91
 TIMER_AT91_DIR= $(SAM7s_BASE_DIR)/timer_at91
 LED_AT91_DIR= $(SAM7s_BASE_DIR)/LED_at91
 GPIO_AT91_DIR= $(SAM7s_BASE_DIR)/GPIO_at91
 WATCHDOG_AT91_DIR= $(SAM7s_BASE_DIR)/watchdog_at91
 MEMORY_AT91_DIR= $(SAM7s_BASE_DIR)/memory_at91
 CPU_AT91_DIR= $(SAM7s_BASE_DIR)/cpu_at91
+USART_AT91_DIR= $(SAM7s_BASE_DIR)/usart_at91
 MEM_MANG_DIR = $(SAM7s_BASE_DIR)/mem_mang
 HW_DIR = $(SAM7s_BASE_DIR)/hardware
 RTOS_DIR = $(SAM7s_BASE_DIR)/FreeRTOS
@@ -94,9 +102,9 @@ RTOS_SRC_DIR = $(RTOS_DIR)/Source
 RTOS_PORT_DIR = $(RTOS_SRC_DIR)/portable
 RTOS_GCC_DIR = $(RTOS_PORT_DIR)/GCC/ARM7_AT91SAM7S
 RTOS_MEMMANG_DIR = $(RTOS_PORT_DIR)/MemMang
-USB_SRC_DIR = $(SAM7s_BASE_DIR)/usb
+USB_AT91_DIR = $(SAM7s_BASE_DIR)/usb_at91
+USB_COMM_SRC_DIR = $(SRC_DIR)/usb_comm
 SERIAL_SRC_DIR = $(SRC_DIR)/serial
-UART_SRC_DIR = $(SAM7s_BASE_DIR)/uart
 AUTO_CONFIG_SRC_DIR = $(SRC_DIR)/auto_config
 LOGGER_SRC_DIR = $(SRC_DIR)/logger
 CHANNELS_SRC_DIR = $(SRC_DIR)/channels
@@ -110,6 +118,7 @@ FILTER_DIR = $(SRC_DIR)/filter
 CAN_DIR = $(SRC_DIR)/CAN
 OBD2_DIR =$(SRC_DIR)/OBD2
 ADC_DIR = $(SRC_DIR)/ADC
+USART_DIR = $(SRC_DIR)/usart
 TIMER_DIR = $(SRC_DIR)/timer
 PWM_DIR = $(SRC_DIR)/PWM
 LED_DIR = $(SRC_DIR)/LED
@@ -148,10 +157,9 @@ $(RTOS_GCC_DIR)/port.c \
 $(UTIL_DIR)/modp_numtoa.c \
 $(UTIL_DIR)/modp_atonum.c \
 $(UTIL_DIR)/taskUtil.c \
-$(SPI_DIR)/spi.c \
-$(USB_SRC_DIR)/source/usb_comm.c \
-$(USB_SRC_DIR)/source/USB-CDC.c \
-$(UART_SRC_DIR)/usart.c \
+$(USB_AT91_DIR)/USB-CDC_device_at91.c \
+$(USB_COMM_SRC_DIR)/usb_comm.c \
+$(USART_DIR)/usart.c \
 $(CMD_SRC_DIR)/command.c \
 $(SERIAL_SRC_DIR)/serial.c \
 $(FAT_SD_SRC_DIR)/fattime.c \
@@ -179,13 +187,17 @@ $(LOGGER_SRC_DIR)/luaLoggerBinding.c \
 $(LOGGER_SRC_DIR)/loggerCommands.c \
 $(MEMORY_SRC_DIR)/memory.c \
 $(CPU_SRC_DIR)/cpu.c \
+$(SPI_AT91_DIR)/spi.c \
 $(MCP2515_DIR)/CAN_device_MCP2515.c \
+$(GPS_MTK_DIR)/gps_device_mtk3339.c \
 $(KXR94_2353_DIR)/imu_device_KXR94_2353.c \
 $(ADC_AT91_DIR)/ADC_device_at91.c \
+$(SIM900_AT91_DIR)/sim900_device_at91.c \
 $(TIMER_AT91_DIR)/timer_device_at91.c \
 $(PWM_AT91_DIR)/PWM_device_at91.c \
 $(LED_AT91_DIR)/LED_device_at91.c \
 $(GPIO_AT91_DIR)/GPIO_device_at91.c \
+$(USART_AT91_DIR)/usart_device_at91.c \
 $(WATCHDOG_AT91_DIR)/watchdog_device_at91.c \
 $(MEMORY_AT91_DIR)/memory_device_at91.c \
 $(CPU_AT91_DIR)/cpu_device_at91.c \
@@ -194,7 +206,7 @@ $(LUA_SRC_DIR)/luaTask.c \
 $(LUA_SRC_DIR)/luaScript.c \
 $(LUA_SRC_DIR)/luaBaseBinding.c \
 $(LUA_SRC_DIR)/luaCommands.c \
-$(RTOS_PORT_DIR)/MemMang/heap_2_combine.c \
+$(RTOS_PORT_DIR)/MemMang/heap_4.c \
 $(LOGGING_DIR)/printk.c \
 $(FILTER_DIR)/filter.c \
 $(CAN_DIR)/CAN.c \
@@ -222,9 +234,9 @@ $(SRC_DIR)/launch_control.c \
 # List C source files here which must be compiled in ARM-Mode.
 # use file-extension c for "c-only"-files
 SRCARM = $(RTOS_GCC_DIR)/portISR.c \
-$(USB_SRC_DIR)/source/USBIsr.c \
+$(USB_AT91_DIR)/USBIsr.c \
 $(GPIO_AT91_DIR)/gpioIsr.c \
-$(UART_SRC_DIR)/serialIsr.c \
+$(USART_AT91_DIR)/serialIsr.c \
 $(TIMER_AT91_DIR)/timerIsr.c \
 $(LOGGER_SRC_DIR)/onTickHandler.c
 
@@ -265,11 +277,11 @@ DEBUG = -g
 
 # List any extra directories to look for include files here.
 #     Each directory must be seperated by a space.
-EXTRAINCDIRS = SAM7s_lua/src
+EXTRAINCDIRS = lib_lua/src
 
 # List any extra directories to look for library files here.
 #     Each directory must be seperated by a space.
-EXTRA_LIBDIRS = SAM7s_lua/src
+EXTRA_LIBDIRS = lib_lua/src
 
 # Compiler flag to set the C Standard level.
 # c89   - "ANSI" C
@@ -279,7 +291,10 @@ EXTRA_LIBDIRS = SAM7s_lua/src
 CSTANDARD = -std=gnu99
 
 # Place -D or -U options for C here
-CDEFS  = -D$(RUN_MODE) -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
+CDEFS  = -D$(RUN_MODE) -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX) -DTRACKS_MEMORY_LENGTH=$(TRACKS_MEMORY_LENGTH) -DCHANNELS_MEMORY_LENGTH=$(CHANNELS_MEMORY_LENGTH) -DCONFIG_MEMORY_LENGTH=$(CONFIG_MEMORY_LENGTH)
+
+
+
 
 # Compile for SAM7 using GCC
 CDEFS += -DSAM7_GCC
@@ -301,7 +316,7 @@ CINCS = \
 -I$(UART_SRC_DIR) \
 -I$(IMU_SRC_DIR) \
 -I$(LOGGER_SRC_DIR) \
--I$(USB_SRC_DIR)/include \
+-I$(USB_AT91_DIR) \
 -I$(MEMORY_AT91_DIR) \
 -I$(HW_DIR)/include \
 -I$(RTOS_SRC_DIR)/include \
@@ -324,12 +339,15 @@ CINCS = \
 -I$(INCLUDE_DIR)/LED \
 -I$(INCLUDE_DIR)/GPIO \
 -I$(GPIO_AT91_DIR) \
+-I$(SPI_AT91_DIR) \
 -I$(INCLUDE_DIR)/watchdog \
 -I$(INCLUDE_DIR)/memory \
 -I$(INCLUDE_DIR)/cpu \
 -I$(INCLUDE_DIR)/spi \
 -I$(INCLUDE_DIR)/lua \
 -I$(INCLUDE_DIR)/imu \
+-I$(INCLUDE_DIR)/usart \
+-I$(INCLUDE_DIR)/usb_comm \
 -I$(INCLUDE_DIR)/messaging \
 -I$(INCLUDE_DIR)/predictive_timer \
 -I$(INCLUDE_DIR)/util \
@@ -365,7 +383,7 @@ CFLAGS += -O$(OPT)
 CFLAGS += -Wall
 CFLAGS += -Wsign-compare
 CFLAGS += -Wuninitialized
-CFLAGS += -Werror
+#CFLAGS += -Werror
 CFLAGS += -fomit-frame-pointer
 CFLAGS += -Wcast-align -Wimplicit
 CFLAGS += -Wpointer-arith -Wswitch

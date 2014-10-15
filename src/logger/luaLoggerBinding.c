@@ -18,14 +18,12 @@
 #include "luaScript.h"
 #include "luaTask.h"
 #include "mod_string.h"
-#include "usart.h"
+#include "serial.h"
 #include "printk.h"
 #include "modp_numtoa.h"
 #include "loggerTaskEx.h"
 #include "loggerSampleData.h"
 #include "virtual_channel.h"
-
-extern xSemaphoreHandle g_xLoggerStart;
 
 #define TEMP_BUFFER_LEN 200
 #define DEFAULT_CAN_TIMEOUT 	100
@@ -54,7 +52,6 @@ void registerLuaLoggerBindings(lua_State *L){
 	lua_registerlight(L,"getTimerCount",Lua_GetTimerCount);
 
 	lua_registerlight(L,"getAnalog",Lua_GetAnalog);
-	lua_registerlight(L,"getAnalogRaw",Lua_GetAnalogRaw);
 
 	lua_registerlight(L,"getImu",Lua_ReadImu);
 	lua_registerlight(L,"getImuRaw",Lua_ReadImuRaw);
@@ -76,7 +73,6 @@ void registerLuaLoggerBindings(lua_State *L){
 	lua_registerlight(L, "txCAN", Lua_SendCANMessage);
 	lua_registerlight(L, "rxCAN", Lua_ReceiveCANMessage);
 	lua_registerlight(L, "setCANfilter", Lua_SetCANFilter);
-	lua_registerlight(L, "setCANmask", Lua_SetCANMask);
 	lua_registerlight(L, "readOBD2", Lua_ReadOBD2);
 
 	lua_registerlight(L,"startLogging",Lua_StartLogging);
@@ -148,7 +144,7 @@ int Lua_GetAnalog(lua_State *L){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
 		ADCConfig *ac = getADCConfigChannel(lua_tointeger(L,1));
 		if (NULL != ac){
-			unsigned int adcRaw = ADC_read(channel);
+			float adcRaw = ADC_read(channel);
 			switch(ac->scalingMode){
 			case SCALING_MODE_RAW:
 				analogValue = adcRaw;
@@ -163,18 +159,6 @@ int Lua_GetAnalog(lua_State *L){
 		}
 	}
 	lua_pushnumber(L, analogValue);
-	return 1;
-}
-
-int Lua_GetAnalogRaw(lua_State *L){
-	int result = -1;
-	if (lua_gettop(L) >= 1){
-		unsigned int channel = (unsigned int)lua_tointeger(L,1);
-		if (channel >= 0 && channel < CONFIG_ADC_CHANNELS){
-			result = (int)ADC_read(channel);
-		}
-	}
-	lua_pushnumber(L,result);
 	return 1;
 }
 
@@ -258,44 +242,31 @@ int Lua_GetButton(lua_State *L){
 }
 
 int Lua_WriteSerial(lua_State *L){
-
 	if (lua_gettop(L) >= 2){
-		int uart = lua_tointeger(L,1);
-		const char * data= lua_tostring(L,2);
-		switch (uart){
-		case 0:
-			usart0_puts(data);
-			break;
-		case 1:
-			usart1_puts(data);
-			break;
+		int serialPort = lua_tointeger(L,1);
+		Serial *serial = get_serial(serialPort);
+		if (serial){
+			const char * data = lua_tostring(L, 2);
+			serial->put_s(data);
 		}
 	}
 	return 0;
 }
 
 int Lua_ReadSerialLine(lua_State *L){
-
 	if (lua_gettop(L) >= 1){
-		int uart = lua_tointeger(L,1);
-		switch (uart){
-		case 0:
-			usart0_readLine(g_tempBuffer, TEMP_BUFFER_LEN);
-			break;
-		case 1:
-			usart1_readLine(g_tempBuffer, TEMP_BUFFER_LEN);
-			break;
-		default:
-			return 0; //no result, return nil
+		int serialPort = lua_tointeger(L,1);
+		Serial *serial = get_serial(serialPort);
+		if (serial){
+			serial->get_line(g_tempBuffer, TEMP_BUFFER_LEN);
+			lua_pushstring(L,g_tempBuffer);
+			return 1;
 		}
-		lua_pushstring(L,g_tempBuffer);
-		return 1;
 	}
-	return 0; //missing parameter
+	return 0; //missing or bad parameter
 }
 
 int Lua_GetGPIO(lua_State *L){
-
 	unsigned int state = 0;
 	if (lua_gettop(L) >= 1){
 		unsigned int channel = (unsigned int)lua_tointeger(L,1);
@@ -429,8 +400,11 @@ int Lua_SetAnalogOut(lua_State *L){
 
 int Lua_InitCAN(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		int baud = lua_tointeger(L, 1);
-		int rc = CAN_init(baud);
+		size_t port = 0;
+		if (lua_gettop(L) >= 2) port = (size_t)lua_tointeger(L, 2);
+
+		uint32_t baud = lua_tointeger(L, 1);
+		int rc = CAN_init_port(port, baud);
 		lua_pushinteger(L, rc);
 		return 1;
 	}
@@ -440,29 +414,17 @@ int Lua_InitCAN(lua_State *L){
 }
 
 int Lua_SetCANFilter(lua_State *L){
-	if (lua_gettop(L) >= 3){
+	if (lua_gettop(L) >= 4){
 		uint8_t id = lua_tointeger(L, 1);
 		uint8_t extended = lua_tointeger(L, 2);
 		uint32_t filter = lua_tointeger(L, 3);
-		int rc = CAN_set_filter(id, extended, filter);
+		uint32_t mask = lua_tointeger(L, 4);
+		int rc = CAN_set_filter(id, extended, filter, mask);
 		lua_pushinteger(L, rc);
 		return 1;
 	}
 	return 0;
 }
-
-int Lua_SetCANMask(lua_State *L){
-	if (lua_gettop(L) >= 3){
-		uint8_t id = lua_tointeger(L, 1);
-		uint8_t extended = lua_tointeger(L, 2);
-		uint32_t mask = lua_tointeger(L, 3);
-		int rc = CAN_set_mask(id, extended, mask);
-		lua_pushinteger(L, rc);
-		return 1;
-	}
-	return 0;
-}
-
 
 int Lua_SendCANMessage(lua_State *L){
 	size_t timeout = 1000;

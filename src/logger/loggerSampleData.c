@@ -283,11 +283,11 @@ float get_mapped_value(float value, ScalingMap *scalingMap){
 float get_analog_sample(int channelId){
 	LoggerConfig * loggerConfig = getWorkingLoggerConfig();
 	ADCConfig *ac = &(loggerConfig->ADCConfigs[channelId]);
-	unsigned int value = ADC_read(channelId);
+	float value = ADC_read(channelId);
 	float analogValue = 0;
 	switch(ac->scalingMode){
 		case SCALING_MODE_RAW:
-			analogValue = value * SCALING_5V;
+			analogValue = value;
 			break;
 		case SCALING_MODE_LINEAR:
 			analogValue = (ac->linearScaling * (float)value);

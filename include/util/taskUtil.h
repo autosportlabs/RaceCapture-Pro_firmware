@@ -14,7 +14,7 @@ unsigned int getCurrentTicks();
 int isTimeoutMs(unsigned int startTicks, unsigned int timeoutMs);
 void delayMs(unsigned int delay);
 void delayTicks(size_t ticks);
-inline size_t msToTicks(size_t ms);
+size_t msToTicks(size_t ms);
 size_t ticksToMs(size_t ticks);
 
 #endif /* TASKUTIL_H_ */

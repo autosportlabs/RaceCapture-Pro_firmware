@@ -21,5 +21,9 @@ Race*.zip
 .project
 .settings
 .pydevproject
+*cscope*
+*#*
 TAGS
 *.core
+*.pyc
+*.ihex

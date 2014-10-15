@@ -36,7 +36,27 @@
 
 #ifndef PORTABLE_H
 #define PORTABLE_H
+#include "portmacro.h"
 
+#if portBYTE_ALIGNMENT == 8
+	#define portBYTE_ALIGNMENT_MASK ( 0x0007 )
+#endif
+
+#if portBYTE_ALIGNMENT == 4
+	#define portBYTE_ALIGNMENT_MASK	( 0x0003 )
+#endif
+
+#if portBYTE_ALIGNMENT == 2
+	#define portBYTE_ALIGNMENT_MASK	( 0x0001 )
+#endif
+
+#if portBYTE_ALIGNMENT == 1
+	#define portBYTE_ALIGNMENT_MASK	( 0x0000 )
+#endif
+
+#ifndef portBYTE_ALIGNMENT_MASK
+	#error "Invalid portBYTE_ALIGNMENT definition"
+#endif
 
 /* Include the macro file relevant to the port being used. */
 

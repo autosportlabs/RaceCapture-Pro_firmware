@@ -5,23 +5,28 @@
 #include "task.h"
 #include "taskUtil.h"
 #include "loggerHardware.h"
-#include "spi.h"
 #include "watchdog.h"
 #include "diskio.h"
+#include "sdcard_device.h"
+#include "mem_mang.h"
 
-static FATFS Fatfs[1];
+static FATFS *FatFs;
 
 void InitFSHardware(void){
 	disk_init_hardware();
 }
 
 int InitFS(){
-	taskENTER_CRITICAL();
-	int res = disk_initialize(0);
-	if (0 == res){
-		res = f_mount(&Fatfs[0], "0", 1);
+	int res = -1;
+	FatFs = pvPortMalloc(sizeof(FATFS));
+	if (FatFs){
+		taskENTER_CRITICAL();
+		res = disk_initialize(0);
+		taskEXIT_CRITICAL();
+		if (0 == res) {
+			res = f_mount(FatFs, "0", 1);
+		}
 	}
-	taskEXIT_CRITICAL();
 	return res;
 }
 
@@ -29,14 +34,14 @@ int UnmountFS(){
 	return f_mount(NULL, "0", 1);
 }
 
-void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet, int delay)
+void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet)
 {
 	int res = 0;
 	FIL *fatFile = NULL;
 
 	fatFile = pvPortMalloc(sizeof(FIL));
 	if (NULL == fatFile){
-		serial->put_s("could not allocate file object\r\n");
+		if (!quiet) serial->put_s("could not allocate file object\r\n");
 		goto exit;
 	}
 
@@ -49,9 +54,7 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet, int delay)
 		put_crlf(serial);
 		serial->put_s("Card Init... ");
 	}
-	lock_spi();
 	res = InitFS();
-	unlock_spi();
 	if (res) goto exit;
 
 	if (!quiet){
@@ -59,9 +62,7 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet, int delay)
 		put_crlf(serial);
 		serial->put_s("Opening File... ");
 	}
-	lock_spi();
 	res = f_open(fatFile,"test1.txt", FA_WRITE | FA_CREATE_ALWAYS);
-	unlock_spi();
 	if (!quiet){
 		put_int(serial, res);
 		put_crlf(serial);
@@ -71,13 +72,10 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet, int delay)
 	if (!quiet) serial->put_s("Writing file..");
 	portTickType startTicks = xTaskGetTickCount();
 	for (int i = 1; i <= lines; i++){
-		delayMs(delay);
-		lock_spi();
 		res = f_puts("The quick brown fox jumped over the lazy dog\n",fatFile);
 		if (doFlush) f_sync(fatFile);
-		unlock_spi();
 		if (res == EOF){
-			serial->put_s("failed writing at line ");
+			if (!quiet) serial->put_s("failed writing at line ");
 			put_int(serial, i);
 			serial->put_s("(");
 			put_int(serial, res);
@@ -96,33 +94,29 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet, int delay)
 		serial->put_s("Closing... ");
 	}
 
-	lock_spi();
 	res = f_close(fatFile);
-	unlock_spi();
 	if (!quiet){
 		put_int(serial, res);
 		put_crlf(serial);
 	}
 	if (res) goto exit;
 
-	if (!quiet){
-		serial->put_s("Unmounting... ");
-	}
-	lock_spi();
+	if (!quiet)		serial->put_s("Unmounting... ");
 	res = UnmountFS();
-	unlock_spi();
 	if (!quiet){
 		put_int(serial, res);
 		put_crlf(serial);
 	}
 exit:
 	if(res == 0){
-		serial->put_s("SUCCESS\r\n");
+		if (!quiet) serial->put_s("SUCCESS\r\n");
 	}
 	else{
-		serial->put_s("ERROR ");
-		put_int(serial, res);
-		put_crlf(serial);
+		if (!quiet){
+			serial->put_s("ERROR ");
+			put_int(serial, res);
+			put_crlf(serial);
+		}
 	}
 	if (fatFile != NULL) vPortFree(fatFile);
 }

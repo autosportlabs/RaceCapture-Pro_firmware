@@ -22,6 +22,12 @@
 #define   CHANNEL  (0)      // Write the targeted channel (Notation: the first channel is 0
                             // and the last is 7)
 
+#define ADC_PORT_VOLTAGE_RANGE 		5.0f
+#define ADC_SYSTEM_VOLTAGE_RANGE	20.0f
+
+#define SCALING_5V 					0.0048875f
+#define SCALING_20V 				0.0171f
+
 int ADC_device_init(void){
 	/* Clear all previous setting and result */
 	AT91F_ADC_SoftReset (AT91C_BASE_ADC);
@@ -114,20 +120,27 @@ unsigned int ADC_device_sample(unsigned int channel){
 	return result;
 }
 
-/* TODO delete me if not needed
-unsigned int ReadADCx(unsigned int channel){
 
-    unsigned int result ;
-
-    AT91F_ADC_EnableChannel (AT91C_BASE_ADC, (1<<channel));
-    AT91F_ADC_StartConversion (AT91C_BASE_ADC);
-
-    //Poll for result
-    while (!((AT91F_ADC_GetStatus (AT91C_BASE_ADC)) & (1<<channel)));
-
-   	result = AT91F_ADC_GetLastConvertedData(AT91C_BASE_ADC);
-   	AT91F_ADC_DisableChannel(AT91C_BASE_ADC, (1<<channel));
-
-	return result;
+float ADC_device_get_voltage_range(size_t channel){
+	switch (channel){
+		case 7:
+			return ADC_SYSTEM_VOLTAGE_RANGE;
+		default:
+			return ADC_PORT_VOLTAGE_RANGE;
+		}
 }
-*/
+
+float ADC_device_get_channel_scaling(size_t channel){
+	float scaling = 0;
+	switch(channel){
+	case 7:
+		scaling = SCALING_20V;
+		break;
+	default:
+		scaling = SCALING_5V;
+		break;
+	}
+	return scaling;
+}
+
+

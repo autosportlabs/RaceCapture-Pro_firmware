@@ -59,6 +59,7 @@
 #include <at91sam7se512/AT91SAM7S256.h>
 #endif /* USE_BOARD_H */
 
+#include "sdcard_device.h"
 #include "diskio.h"
 #include "taskUtil.h"
 

@@ -1,9 +1,12 @@
 #include "cellModem.h"
+#include "sim900_device.h"
 #include "serial.h"
 #include "modp_numtoa.h"
 #include "mod_string.h"
 #include "printk.h"
 #include "devices_common.h"
+#include "taskUtil.h"
+#include "LED.h"
 
 #define min(a,b) ((a)<(b)?(a):(b))
 
@@ -13,12 +16,14 @@
 static char *g_cellBuffer;
 static size_t g_bufferLen;
 
-#define PAUSE_DELAY 167
+#define PAUSE_DELAY 500
 
 #define READ_TIMEOUT 334
 #define SHORT_TIMEOUT 1500
 #define MEDIUM_TIMEOUT 5000
 #define CONNECT_TIMEOUT 10000
+
+#define NO_CELL_RESPONSE -99
 
 void setCellBuffer(char *buffer, size_t len){
 	g_cellBuffer = buffer;
@@ -55,37 +60,49 @@ static void stripTrailingWhitespace(char *data){
 	*ch = 0;
 }
 
-static int waitCommandResponse(Serial *serial, portTickType wait){
+static int waitCommandResponse(Serial *serial, const char *expectedRsp, portTickType wait){
 	readModemWait(serial, wait);
 	readModemWait(serial, READ_TIMEOUT);
-	vTaskDelay(PAUSE_DELAY); //maybe take this out later - debugging SIM900
-	return strncmp(g_cellBuffer,"OK",2) == 0;
+	delayMs(PAUSE_DELAY); //maybe take this out later - debugging SIM900
+	if (strlen(g_cellBuffer) == 0) return NO_CELL_RESPONSE;
+	return strncmp(g_cellBuffer, expectedRsp , strlen(expectedRsp)) == 0;
 }
 
-static int sendCommandWait(Serial *serial, const char *cmd, portTickType wait){
+static int sendCommandWait(Serial *serial, const char *cmd, const char *expectedRsp, portTickType wait){
 	flushModem(serial);
 	putsCell(serial, cmd);
-	return waitCommandResponse(serial, wait);
-	readModemWait(serial, wait);
+	return waitCommandResponse(serial, expectedRsp, wait);
 }
 
-static int sendCommand(Serial *serial, const char * cmd){
-	return sendCommandWait(serial, cmd, READ_TIMEOUT);
+static int sendCommand(Serial *serial, const char * cmd, const char *expectedRsp){
+	return sendCommandWait(serial, cmd, expectedRsp, READ_TIMEOUT);
 }
 
-static int isNetworkConnected(Serial *serial){
+static int sendCommandOK(Serial *serial, const char * cmd){
+	return sendCommand(serial, cmd, "OK");
+}
 
+static int sendCommandRetry(Serial *serial, const char * cmd, const char * expectedRsp, size_t maxAttempts, size_t maxNoResponseAttempts){
+	int result = 0;
+	size_t attempts = 0;
+
+	while (attempts++ < maxAttempts){
+		result = sendCommand(serial, cmd, expectedRsp);
+		if (result == 1) break;
+		if (result == NO_CELL_RESPONSE && attempts > maxNoResponseAttempts) break;
+		delayMs(1000);
+	}
+	return result;
+}
+
+static int isNetworkConnected(Serial *serial, size_t maxRetries, size_t maxNoResponseRetries){
 	flushModem(serial);
-	sendCommand(serial, "AT+CREG?\r");
-	int connected = (0 == strncmp(g_cellBuffer,"+CREG: 0,1",10));
-	return connected;
+	return sendCommandRetry(serial, "AT+CREG?\r", "+CREG: 0,1", maxRetries, maxNoResponseRetries);
 }
 
-static int isDataReady(Serial *serial){
+static int isDataReady(Serial *serial, size_t maxRetries, size_t maxNoResponseRetries){
 	flushModem(serial);
-	sendCommand(serial, "AT+CGATT?\r");
-	int dataReady = (0 == strncmp(g_cellBuffer,"+CGATT: 1",9));
-	return dataReady;
+	return sendCommandRetry(serial, "AT+CGATT?\r", "+CGATT: 1", maxRetries, maxNoResponseRetries);
 }
 
 static int getIpAddress(Serial *serial){
@@ -94,11 +111,12 @@ static int getIpAddress(Serial *serial){
 	readModemWait(serial, READ_TIMEOUT);
 	if (strlen(g_cellBuffer) == 0) return -1;
 	if (strncmp(g_cellBuffer, "ERROR", 5) == 0) return -2;
-	vTaskDelay(PAUSE_DELAY);
+	delayMs(PAUSE_DELAY);
 	return 0;
 }
 
 void putsCell(Serial *serial, const char *data){
+	LED_toggle(0);
 	serial->put_s(data);
 	pr_debug("cellWrite: ");
 	pr_debug(data);
@@ -130,8 +148,8 @@ void putQuotedStringCell(Serial *serial, char *s){
 }
 
 int configureNet(Serial *serial, const char *apnHost, const char *apnUser, const char *apnPass){
-	if (!sendCommand(serial, "AT+CIPMUX=0\r")) return -1;  //TODO enable for SIM900
-	if (!sendCommand(serial, "AT+CIPMODE=1\r")) return -1;
+	if (!sendCommandOK(serial, "AT+CIPMUX=0\r")) return -1;  //TODO enable for SIM900
+	if (!sendCommandOK(serial, "AT+CIPMODE=1\r")) return -1;
 
 	//if (!sendCommand("AT+CIPCCFG=3,2,256,1\r")) return -1;
 
@@ -143,11 +161,11 @@ int configureNet(Serial *serial, const char *apnHost, const char *apnUser, const
 	putsCell(serial, "\",\"");
 	putsCell(serial, apnPass);
 	putsCell(serial, "\"\r");
-	if (!waitCommandResponse(serial, READ_TIMEOUT)) return -2;
+	if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)) return -2;
 
 //	if (!sendCommand("AT+CIPHEAD=1\r")) return -2;
 
-	if (!sendCommandWait(serial, "AT+CIICR\r", CONNECT_TIMEOUT)) return -4;
+	if (!sendCommandWait(serial, "AT+CIICR\r", "OK", CONNECT_TIMEOUT)) return -4;
 
 	if (getIpAddress(serial) !=0 ) return -5;
 	return 0;
@@ -176,11 +194,10 @@ int connectNet(Serial *serial, const char *host, const char *port, int udpMode){
 }
 
 int closeNet(Serial *serial){
-	vTaskDelay(335); //~1000ms
+	delayMs(1100);
 	putsCell(serial, "+++");
-	vTaskDelay(168); //~500ms
-	if (!sendCommandWait(serial, "AT+CIPCLOSE\r", SHORT_TIMEOUT)) return -1;
-	return 0;
+	delayMs(1100);
+	return sendCommandWait(serial, "AT+CIPCLOSE\r", "OK", SHORT_TIMEOUT);
 }
 
 int startNetData(Serial *serial){
@@ -217,62 +234,70 @@ int isNetConnectionErrorOrClosed(Serial *serial){
 
 int configureTexting(Serial *serial){
 	//Setup for Texting
-	if (!sendCommand(serial, "AT+CMGF=1\r")) return -2;
-	vTaskDelay(100);
-	if (!sendCommand(serial, "AT+CSCS=\"GSM\"\r")) return -3;
-	vTaskDelay(100);
-	if (!sendCommand(serial, "AT+CSCA=\"+12063130004\"\r")) return -4;
-	vTaskDelay(100);
-	if (!sendCommand(serial, "AT+CSMP=17,167,0,240\r")) return -5;
-	vTaskDelay(100);
-	if (!sendCommand(serial, "AT+CNMI=0,0\r")) return -6;
-	vTaskDelay(100);
+	if (!sendCommandOK(serial, "AT+CMGF=1\r")) return -2;
+	delayMs(100);
+	if (!sendCommandOK(serial, "AT+CSCS=\"GSM\"\r")) return -3;
+	delayMs(100);
+	if (!sendCommandOK(serial, "AT+CSCA=\"+12063130004\"\r")) return -4;
+	delayMs(100);
+	if (!sendCommandOK(serial, "AT+CSMP=17,167,0,240\r")) return -5;
+	delayMs(100);
+	if (!sendCommandOK(serial, "AT+CNMI=0,0\r")) return -6;
+	delayMs(100);
 	return 0;
 }
 
-int loadDefaultCellConfig(Serial *serial){
-	if (!sendCommand(serial, "ATZ\r")) return -1;
-	return 0;
+
+static void powerDownCellModem(Serial *serial){
+	sim900_device_power_button(1);
+	delayMs(2000);
+	sim900_device_power_button(0);
+	delayMs(3000);
 }
 
-void powerDownCellModem(Serial *serial){
-	sendCommand(serial, "\rAT+CPOWD=1\r");
+static void powerOnCellModem(void){
+
+	sim900_device_power_button(1);
+	delayMs(2000);
+	sim900_device_power_button(0);
+	delayMs(3000);
 }
 
 int initCellModem(Serial *serial){
 
-	serial->init(8, 0, 1, 115200);
+	size_t attempts = 3;
+	while (--attempts){
+		if (closeNet(serial) == 0) break;
+		delayMs(1000);
+	}
 
+	if (sendCommandOK(serial, "AT\r") == 1){
+		pr_debug("SIM900: powering down\r\n");
+		powerDownCellModem(serial);
+	}
 
-	while (1){
-		closeNet(serial);
-		if (loadDefaultCellConfig(serial) == 0) break;
-		vTaskDelay(900);
-	}
-	if (!sendCommand(serial, "ATE0\r")) return -1;
-	sendCommand(serial, "AT+CIPSHUT\r");
-	//wait until network is connected
-	while (1){
-		if (isNetworkConnected(serial)) break;
-		vTaskDelay(900);
-	}
-	while (1){
-		if (isDataReady(serial)) break;
-		vTaskDelay(900);
-	}
+	powerOnCellModem();
+
+	if (sendCommandRetry(serial, "ATZ\r", "OK", 5, 5) != 1) return -1;
+	if (sendCommandRetry(serial, "ATE0\r", "OK", 2, 2) != 1) return -1;
+	sendCommand(serial, "AT+CIPSHUT\r", "OK");
+
+	if (isNetworkConnected(serial, 60, 3) != 1) return -1;
+	if (isDataReady(serial, 30, 2) != 1) return -1;
+
 	return 0;
 }
 
 void deleteAllTexts(Serial *serial){
-	sendCommand(serial, "AT+CMGDA=\"DEL ALL\"\r");
+	sendCommandOK(serial, "AT+CMGDA=\"DEL ALL\"\r");
 }
 
 void deleteInbox(Serial *serial){
-	sendCommand(serial, "AT+CMGDA=\"DEL INBOX\"\r");
+	sendCommandOK(serial, "AT+CMGDA=\"DEL INBOX\"\r");
 }
 
 void deleteSent(Serial *serial){
-	sendCommand(serial, "AT+CMGDA=\"DEL SENT\"\r");
+	sendCommandOK(serial, "AT+CMGDA=\"DEL SENT\"\r");
 }
 
 void receiveText(Serial *serial, int txtNumber, char * txtMsgBuffer, size_t txtMsgBufferLen){

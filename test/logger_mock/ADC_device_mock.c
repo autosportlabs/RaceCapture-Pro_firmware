@@ -1,7 +1,20 @@
 #include "ADC_device.h"
 #include "loggerConfig.h"
 
+#define ADC_PORT_VOLTAGE_RANGE 		5.0f
+#define ADC_SYSTEM_VOLTAGE_RANGE	20.0f
+
+#define SCALING_5V 					0.00122070312f
+#define SCALING_20V 				0.0048828125f
+
 static unsigned int g_adc[CONFIG_ADC_CHANNELS] = {0,0,0,0,0,0};
+
+int ADC_device_init(void){}
+
+//Read specified ADC channel
+unsigned int ADC_device_sample(unsigned int channel){
+	return g_adc[channel];
+}
 
 void ADC_device_sample_all(unsigned int *a0,
 						unsigned int *a1,
@@ -21,14 +34,29 @@ void ADC_device_sample_all(unsigned int *a0,
 	*a7 = g_adc[7];
 }
 
-int ADC_device_init(void){}
-
-//Read specified ADC channel
-unsigned int ADC_device_sample(unsigned int channel){
-	return g_adc[channel];
-}
 
 void ADC_mock_set_value(unsigned int channel, unsigned int value){
 	g_adc[channel] = value;
 }
 
+float ADC_device_get_voltage_range(size_t channel){
+	switch (channel){
+		case 7:
+			return ADC_SYSTEM_VOLTAGE_RANGE;
+		default:
+			return ADC_PORT_VOLTAGE_RANGE;
+		}
+}
+
+float ADC_device_get_channel_scaling(size_t channel){
+	float scaling = 0;
+	switch(channel){
+	case 7:
+		scaling = SCALING_20V;
+		break;
+	default:
+		scaling = SCALING_5V;
+		break;
+	}
+	return scaling;
+}

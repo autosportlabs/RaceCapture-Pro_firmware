@@ -98,6 +98,7 @@ size_t updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate, int
 }
 
 void loggerTaskEx(void *params){
+
 	g_loggingShouldRun = 0;
 	memset(&g_sampleRecordMsgBuffer, 0, sizeof(g_sampleRecordMsgBuffer));
 	vSemaphoreCreateBinary( onTick );
@@ -119,9 +120,9 @@ void loggerTaskEx(void *params){
 	int telemetrySampleRate = SAMPLE_DISABLED;
 
 	while(1){
+
 		xSemaphoreTake(onTick, portMAX_DELAY);
 		watchdog_reset();
-
 		currentTicks++;
 		if (currentTicks % BACKGROUND_SAMPLE_RATE == 0){
 			doBackgroundSampling();
@@ -155,8 +156,9 @@ void loggerTaskEx(void *params){
 		msg->sampleCount = channelCount;
 
 		if (g_isLogging && (sampledRate != SAMPLE_DISABLED && sampledRate >= loggingSampleRate)){
-			if (queue_logfile_record(msg) != pdTRUE) LED_enable(3);
-			LED_toggle(2);
+			if (queue_logfile_record(msg) != pdTRUE){
+				LED_enable(3);
+			}
 		}
 
 		if ((sampledRate != SAMPLE_DISABLED && (sampledRate >= telemetrySampleRate || currentTicks % telemetrySampleRate == 0)) && (loggerConfig->ConnectivityConfigs.telemetryConfig.backgroundStreaming|| g_isLogging)){

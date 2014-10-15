@@ -48,10 +48,11 @@ void mock_flush(void)
 	char rx;
 }
 
-char mock_get_c_wait(size_t delay){
+int mock_get_c_wait(char *c, size_t delay){
 
 	if (bufIndex < strlen(rxBuffer)){
-		return rxBuffer[bufIndex++];
+		*c = rxBuffer[bufIndex++];
+		return 1;
 	}
 	else{
 		return 0;
@@ -60,7 +61,9 @@ char mock_get_c_wait(size_t delay){
 
 char mock_get_c()
 {
-	return mock_get_c_wait(0);
+	char c = 0;
+	mock_get_c_wait(&c, 0);
+	return c;
 }
 
 void mock_put_c(char c){
@@ -79,7 +82,8 @@ int mock_get_line_wait(char *s, int len, size_t delay)
 {
 	int count = 0;
 	while(count < len - 1){
-		int c = mock_get_c_wait(delay);
+		char c;
+		if (! mock_get_c_wait(&c, delay)) break;
 		if (c == 0) break; //timeout
 		*s++ = c;
 		count++;

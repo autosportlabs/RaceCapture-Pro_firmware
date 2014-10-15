@@ -12,5 +12,6 @@
 #define portMalloc pvPortMalloc
 #define portFree vPortFree
 #define portRealloc pvPortRealloc
+#define portGetFreeHeapSize xPortGetFreeHeapSize
 
 #endif /* MEM_MANG_H_ */

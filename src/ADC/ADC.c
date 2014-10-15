@@ -36,24 +36,10 @@ void ADC_sample_all(void){
 	update_filter(&g_adc_filter[7], a7);
 }
 
-void ADC_read_all(unsigned int *a0,
-						unsigned int *a1,
-						unsigned int *a2,
-						unsigned int *a3,
-						unsigned int *a4,
-						unsigned int *a5,
-						unsigned int *a6,
-						unsigned int *a7 ){
-	*a0 = g_adc_filter[0].current_value;
-	*a1 = g_adc_filter[1].current_value;
-	*a2 = g_adc_filter[2].current_value;
-	*a3 = g_adc_filter[3].current_value;
-	*a4 = g_adc_filter[4].current_value;
-	*a5 = g_adc_filter[5].current_value;
-	*a6 = g_adc_filter[6].current_value;
-	*a7 = g_adc_filter[07].current_value;
+float ADC_read(unsigned int channel){
+	return g_adc_filter[channel].current_value * ADC_device_get_channel_scaling(channel);
 }
 
-unsigned int ADC_read(unsigned int channel){
-	return g_adc_filter[channel].current_value;
+float ADC_get_voltage_range(size_t channel){
+	return ADC_device_get_voltage_range(channel);
 }

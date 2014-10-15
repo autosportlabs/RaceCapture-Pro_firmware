@@ -103,7 +103,7 @@ void SectorTest::testSectorTimes(){
 	Track testTrack = Test_Track;
 	memcpy(trackCfg, &testTrack, sizeof(Track));
 
-	setGPSQuality((enum GpsSignalQuality) GPS_QUALITY_DIFFERENTIAL);
+	setGPSQuality((enum GpsSignalQuality) GPS_QUALITY_FIX);
 
 	vector<float> sectorTimes;
 	int currentSector = 0;

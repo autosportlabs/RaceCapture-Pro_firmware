@@ -9,7 +9,6 @@
 void setCellBuffer(char *buffer, size_t len);
 int loadDefaultCellConfig(Serial *serial);
 int initCellModem(Serial *serial);
-void powerDownCellModem(Serial *serial);
 int configureTexting(Serial *serial);
 int configureNet(Serial *serial, const char *apnHost, const char *apnUser, const char *apnPass);
 int connectNet(Serial *serial, const char *host, const char *port, int udpMode);

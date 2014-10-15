@@ -5,12 +5,12 @@
  *      Author: stieg
  */
 
-#include "predictive_timer/predictive_timer_2.h"
+#include "predictive_timer_2.h"
 
 #include "debug.h"
 #include "geopoint.h"
 #include "gps.h"
-#include "util/mod_string.h"
+#include "mod_string.h"
 
 /**
  * These settings control critical values that will affect performance.  Understand these values

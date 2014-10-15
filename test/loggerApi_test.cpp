@@ -11,6 +11,7 @@
 #include "loggerApi.h"
 #include "mock_serial.h"
 #include "imu.h"
+#include "cpu.h"
 #include "loggerConfig.h"
 #include "channelMeta.h"
 #include "jsmn.h"
@@ -869,7 +870,8 @@ void LoggerApiTest::testGetTrackCfgCircuit(){
 }
 
 void LoggerApiTest::testAddTrackDb(){
-	testAddTrackDbFile("addTrackDb1.json");
+	testAddTrackDbFile("addTrackDb_circuit.json");
+	testAddTrackDbFile("addTrackDb_stage.json");
 }
 
 void LoggerApiTest::testAddTrackDbFile(string filename){
@@ -886,9 +888,17 @@ void LoggerApiTest::testAddTrackDbFile(string filename){
 
 	int trackType = (int)(Number)jsonCompare["addTrackDb"]["track"]["type"];
 	CPPUNIT_ASSERT_EQUAL(trackType, (int)track->track_type);
-   GeoPoint s = getStartPoint(track);
-	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][0], s.latitude);
-	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][1], s.longitude);
+
+	if (trackType == TRACK_TYPE_CIRCUIT){
+          CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][0], (float)track->circuit.startFinish.latitude);
+          CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][1], (float)track->circuit.startFinish.longitude);
+	}
+	else{
+          CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["st"][0], (float)track->stage.start.latitude);
+          CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["st"][1], (float)track->stage.start.longitude);
+          CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["fin"][0], (float)track->stage.finish.latitude);
+          CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["fin"][1], (float)track->stage.finish.longitude);
+	}
 
 	Array secNode = (Array)jsonCompare["addTrackDb"]["track"]["sec"];
 	for (int i = 0; i < secNode.Size(); i++){
@@ -897,14 +907,14 @@ void LoggerApiTest::testAddTrackDbFile(string filename){
 			CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sec"][i][1], (float)track->circuit.sectors[i].longitude);
 		}
 		else{
-			CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sec"][0], (float)track->stage.sectors[i].latitude);
-			CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sec"][1], (float)track->stage.sectors[i].longitude);
+			CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sec"][i][0], (float)track->stage.sectors[i].latitude);
+			CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sec"][i][1], (float)track->stage.sectors[i].longitude);
 		}
 	}
 }
 
 void LoggerApiTest::testGetTrackDb(){
-	testGetTrackDbFile("getTrackDb1.json", "addTrackDb1.json");
+	testGetTrackDbFile("getTrackDb1.json", "addTrackDb_circuit.json");
 }
 
 void LoggerApiTest::testGetTrackDbFile(string filename, string addedFilename){
@@ -1069,11 +1079,11 @@ void LoggerApiTest::testGetObd2ConfigFile(string filename){
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)json["obd2Cfg"]["en"]);
 	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_AFR, (int)(Number)pid1["id"]);
-	CPPUNIT_ASSERT_EQUAL(SAMPLE_1Hz, (int)(Number)pid1["sr"]);
+	CPPUNIT_ASSERT_EQUAL(decodeSampleRate(SAMPLE_1Hz), (int)(Number)pid1["sr"]);
 	CPPUNIT_ASSERT_EQUAL(0x05, (int)(Number)pid1["pid"]);
 
 	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Boost, (int)(Number)pid2["id"]);
-	CPPUNIT_ASSERT_EQUAL(SAMPLE_50Hz, (int)(Number)pid2["sr"]);
+	CPPUNIT_ASSERT_EQUAL(decodeSampleRate(SAMPLE_50Hz), (int)(Number)pid2["sr"]);
 	CPPUNIT_ASSERT_EQUAL(0x06, (int)(Number)pid2["pid"]);
 }
 
@@ -1091,11 +1101,11 @@ void LoggerApiTest::testSetObd2ConfigFile(string filename){
 	PidConfig *pidCfg2 = &obd2Config->pids[1];
 
 	CPPUNIT_ASSERT_EQUAL(19, (int)pidCfg1->cfg.channeId);
-	CPPUNIT_ASSERT_EQUAL((int)SAMPLE_1Hz, (int)pidCfg1->cfg.sampleRate);
+	CPPUNIT_ASSERT_EQUAL((int)SAMPLE_10Hz, (int)pidCfg1->cfg.sampleRate);
 	CPPUNIT_ASSERT_EQUAL(5, (int)pidCfg1->pid);
 
 	CPPUNIT_ASSERT_EQUAL(26, (int)pidCfg2->cfg.channeId);
-	CPPUNIT_ASSERT_EQUAL((int)SAMPLE_50Hz, (int)pidCfg2->cfg.sampleRate);
+	CPPUNIT_ASSERT_EQUAL((int)SAMPLE_5Hz, (int)pidCfg2->cfg.sampleRate);
 	CPPUNIT_ASSERT_EQUAL(6, (int)pidCfg2->pid);
 }
 
@@ -1142,6 +1152,26 @@ void LoggerApiTest::testRunScriptFile(string filename){
 	assertGenericResponse(txBuffer, "runScript", API_SUCCESS);
 }
 
+void LoggerApiTest::testGetCapabilities(){
+	char * response = processApiGeneric("getCapabilities.json");
+
+	Object json;
+	stringToJson(response, json);
+
+	CPPUNIT_ASSERT_EQUAL(ANALOG_CHANNELS, (int)(Number)json["capabilities"]["channels"]["analog"]);
+	CPPUNIT_ASSERT_EQUAL(IMU_CHANNELS, (int)(Number)json["capabilities"]["channels"]["imu"]);
+	CPPUNIT_ASSERT_EQUAL(GPIO_CHANNELS, (int)(Number)json["capabilities"]["channels"]["gpio"]);
+	CPPUNIT_ASSERT_EQUAL(TIMER_CHANNELS, (int)(Number)json["capabilities"]["channels"]["timer"]);
+	CPPUNIT_ASSERT_EQUAL(PWM_CHANNELS, (int)(Number)json["capabilities"]["channels"]["pwm"]);
+	CPPUNIT_ASSERT_EQUAL(CAN_CHANNELS, (int)(Number)json["capabilities"]["channels"]["can"]);
+
+	CPPUNIT_ASSERT_EQUAL(MAX_SENSOR_SAMPLE_RATE, (int)(Number)json["capabilities"]["sampleRates"]["sensor"]);
+	CPPUNIT_ASSERT_EQUAL(MAX_GPS_SAMPLE_RATE, (int)(Number)json["capabilities"]["sampleRates"]["gps"]);
+
+	CPPUNIT_ASSERT_EQUAL(MAX_TRACKS, (int)(Number)json["capabilities"]["db"]["tracks"]);
+	CPPUNIT_ASSERT_EQUAL(MAX_CHANNELS, (int)(Number)json["capabilities"]["db"]["channels"]);
+}
+
 void LoggerApiTest::testGetVersion(){
 	char * response = processApiGeneric("getVersion1.json");
 
@@ -1152,4 +1182,5 @@ void LoggerApiTest::testGetVersion(){
 	CPPUNIT_ASSERT_EQUAL(MAJOR_REV, (int)(Number)json["ver"]["major"]);
 	CPPUNIT_ASSERT_EQUAL(MINOR_REV, (int)(Number)json["ver"]["minor"]);
 	CPPUNIT_ASSERT_EQUAL(BUGFIX_REV, (int)(Number)json["ver"]["bugfix"]);
+	CPPUNIT_ASSERT_EQUAL(string(cpu_get_serialnumber()), (string)(String)json["ver"]["serial"]);
 }

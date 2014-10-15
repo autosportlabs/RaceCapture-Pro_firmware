@@ -7,7 +7,7 @@
 
 #include "geopoint.h"
 #include "math.h"
-#include "gps/gps.h"
+#include "gps.h"
 
 #include <stdbool.h>
 

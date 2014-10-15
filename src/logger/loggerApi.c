@@ -1,4 +1,5 @@
 #include "constants.h"
+#include "capabilities.h"
 #include "loggerApi.h"
 #include "loggerConfig.h"
 #include "channelMeta.h"
@@ -18,9 +19,9 @@
 #include "timer.h"
 #include "ADC.h"
 #include "imu.h"
+#include "cpu.h"
 #include "luaScript.h"
 #include "luaTask.h"
-
 
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
@@ -130,13 +131,52 @@ static int setStringValueIfExists(const jsmntok_t *root, const char * fieldName,
 	return (valueNode != NULL);
 }
 
+int api_systemReset(Serial *serial, const jsmntok_t *json){
+	int loader = 0;
+
+	setIntValueIfExists(json, "loader", &loader);
+
+	cpu_reset(loader);
+	return API_SUCCESS_NO_RETURN;
+}
+
 int api_getVersion(Serial *serial, const jsmntok_t *json){
 	json_objStart(serial);
 	json_objStartString(serial,"ver");
 	json_string(serial, "name", DEVICE_NAME, 1);
+	json_string(serial, "fname", FRIENDLY_DEVICE_NAME, 1);
 	json_int(serial, "major", MAJOR_REV, 1);
 	json_int(serial, "minor", MINOR_REV, 1);
-	json_int(serial, "bugfix", BUGFIX_REV, 0);
+	json_int(serial, "bugfix", BUGFIX_REV, 1);
+	json_string(serial, "serial", cpu_get_serialnumber(), 0);
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
+	return API_SUCCESS_NO_RETURN;
+}
+
+int api_getCapabilities(Serial *serial, const jsmntok_t *json){
+	json_objStart(serial);
+	json_objStartString(serial,"capabilities");
+
+	json_objStartString(serial,"channels");
+	json_int(serial, "analog", ANALOG_CHANNELS, 1);
+	json_int(serial, "imu", IMU_CHANNELS, 1);
+	json_int(serial, "gpio", GPIO_CHANNELS, 1);
+	json_int(serial, "timer", TIMER_CHANNELS, 1);
+	json_int(serial, "pwm", PWM_CHANNELS, 1);
+	json_int(serial, "can", CAN_CHANNELS, 0);
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial,"sampleRates");
+	json_int(serial, "sensor", MAX_SENSOR_SAMPLE_RATE, 1);
+	json_int(serial, "gps", MAX_GPS_SAMPLE_RATE, 0);
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial,"db");
+	json_int(serial, "tracks", MAX_TRACKS, 1);
+	json_int(serial, "channels", MAX_CHANNELS, 0);
+	json_objEnd(serial, 0);
+
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
@@ -205,8 +245,13 @@ static void writeSampleMeta(Serial *serial, ChannelSample *channelSamples, size_
 		if (sampleCount++ > 0) serial->put_c(',');
 		serial->put_c('{');
 		const Channel *field = get_channel(sample->channelId);
+		json_int(serial, "type", get_channel_type(field),1);
 		json_string(serial, "nm", field->label, 1);
 		json_string(serial, "ut", field->units, 1);
+		int precision = field->precision;
+		json_float(serial, "min", field->min, precision, 1);
+		json_float(serial, "max", field->max, precision, 1);
+		json_int(serial, "prec", field->precision, 1);
 		json_int(serial, "sr", decodeSampleRate(LOWER_SAMPLE_RATE(sample->sampleRate, sampleRateLimit)), 0);
 		serial->put_c('}');
 		sample++;
@@ -895,7 +940,7 @@ int api_getObd2Config(Serial *serial, const jsmntok_t *json){
 		PidConfig *pidCfg = &obd2Cfg->pids[i];
 		json_objStart(serial);
 		json_int(serial,"id",pidCfg->cfg.channeId, 1);
-		json_int(serial,"sr",pidCfg->cfg.sampleRate, 1);
+		json_int(serial,"sr",decodeSampleRate(pidCfg->cfg.sampleRate), 1);
 		json_int(serial,"pid",pidCfg->pid, 0);
 		json_objEnd(serial, i < enabledPids - 1);
 	}
@@ -916,7 +961,10 @@ int api_setObd2Config(Serial *serial, const jsmntok_t *json){
 		while (pids != NULL && pids->type == JSMN_OBJECT && pidIndex < OBD2_CHANNELS){
 			PidConfig *pidConfig = (obd2Cfg->pids + pidIndex);
 			setUnsignedShortValueIfExists( pids, "id", &pidConfig->cfg.channeId);
-			setUnsignedShortValueIfExists( pids, "sr", &pidConfig->cfg.sampleRate);
+			uint16_t sampleRate;
+			if (setUnsignedShortValueIfExists( pids, "sr", &sampleRate)){
+				pidConfig->cfg.sampleRate = encodeSampleRate(sampleRate);
+			}
 			setUnsignedShortValueIfExists( pids, "pid", &pidConfig->pid);
 			pids+=7;
 			pidIndex++;
@@ -1088,6 +1136,10 @@ static void setTrack(const jsmntok_t *trackNode, Track *track){
 	}
 }
 
+int api_resetMCU(Serial *serial, const jsmntok_t *json){
+	return API_SUCCESS;
+}
+
 int api_setTrackConfig(Serial *serial, const jsmntok_t *json){
 
 	TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs);
@@ -1224,17 +1276,24 @@ int api_setScript(Serial *serial, const jsmntok_t *json){
 
 	const jsmntok_t *dataTok = findNode(json, "data");
 	const jsmntok_t *pageTok = findNode(json, "page");
-	if (dataTok != NULL && pageTok != NULL){
+	const jsmntok_t *modeTok = findNode(json, "mode");
+
+	if (dataTok != NULL && pageTok != NULL && modeTok !=NULL){
 		dataTok++;
 		pageTok++;
+		modeTok++;
+
 		jsmn_trimData(dataTok);
 		jsmn_trimData(pageTok);
+		jsmn_trimData(modeTok);
+
 		size_t page = modp_atoi(pageTok->data);
-		if (page < SCRIPT_PAGES){
+		size_t mode = modp_atoi(modeTok->data);
+		if (page < MAX_SCRIPT_PAGES){
 			char *script = dataTok->data;
 			unescapeScript(script);
-			int flashResult = flashScriptPage(page, script);
-			returnStatus = flashResult == 0 ? API_SUCCESS : API_ERROR_SEVERE;
+			int flashResult = flashScriptPage(page, script, mode);
+			returnStatus = flashResult == 1 ? API_SUCCESS : API_ERROR_SEVERE;
 		}
 		else{
 			returnStatus = API_ERROR_PARAMETER;

@@ -53,6 +53,15 @@ void modp_uitoa10(uint32_t value, char* str)
     strreverse(str, wstr-1);
 }
 
+void modp_ultoa10(uint64_t value, char* str)
+{
+    char* wstr=str;
+    // Conversion. Number is reversed.
+    do *wstr++ = 48 + (value % 10); while (value /= 10);
+    *wstr='\0';
+    // Reverse string
+    strreverse(str, wstr-1);
+}
 
 void modp_ftoa(float value, char* str, int prec)
 {

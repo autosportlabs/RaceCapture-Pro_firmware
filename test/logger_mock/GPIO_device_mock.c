@@ -8,9 +8,10 @@ static int g_isButtonPressed = 0;
 static int g_gpio[GPIO_CHANNELS] = {0,0,0};
 
 
-void GPIO_device_init_base(void){
-
+int GPIO_device_init(LoggerConfig *loggerConifg){
+	return 1;
 }
+
 void GPIO_device_init_port(unsigned int port, unsigned int mode){
 
 }

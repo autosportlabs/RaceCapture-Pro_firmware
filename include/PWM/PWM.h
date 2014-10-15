@@ -9,6 +9,8 @@
 #define PWM_H_
 
 #include "loggerConfig.h"
+#include <stdint.h>
+#include <stddef.h>
 
 int PWM_init(LoggerConfig *loggerConfig);
 
@@ -24,5 +26,6 @@ void PWM_channel_stop(unsigned int channel);
 void PWM_channel_start_all(void);
 void PWM_channel_stop_all(void);
 
+void PWM_channel_enable_analog(size_t channel, uint8_t enabled);
 
 #endif /* PWM_H_ */

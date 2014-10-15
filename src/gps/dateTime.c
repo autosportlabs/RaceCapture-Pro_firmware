@@ -32,7 +32,7 @@ unsigned int getDayCountUpToMonthWithYear(int month, const int year) {
    const bool ly = isLeapYear(year);
    unsigned int days = 0;
 
-   while (--month > 0)
+   while (month-- > 0)
       days += getDaysInMonth(month, ly);
 
    return days;

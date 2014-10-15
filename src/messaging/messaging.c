@@ -23,15 +23,13 @@ void process_msg(Serial *serial, char * buffer, size_t bufferSize){
 	}
 	else{
 		interactive_read_line(serial, buffer, bufferSize);
-
-		if (strlen(buffer) == 0){
-			show_welcome(serial);
-			show_command_prompt(serial);
+		if (buffer[0] == '{'){
+			lockedApiMode = 1;
+			process_api(serial, buffer, bufferSize);
 		}
 		else{
-			if (buffer[0] == '{'){
-				lockedApiMode = 1;
-				process_api(serial, buffer, bufferSize);
+			if (strlen(buffer) == 0){
+				show_welcome(serial);
 			}
 			else{
 				int res = process_command(serial, buffer, bufferSize);
@@ -39,8 +37,8 @@ void process_msg(Serial *serial, char * buffer, size_t bufferSize){
 					serial->put_s("Unknown Command- Press Enter for Help.");
 					put_crlf(serial);
 				}
-				show_command_prompt(serial);
 			}
+			show_command_prompt(serial);
 		}
 	}
 }
