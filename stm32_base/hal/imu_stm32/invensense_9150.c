@@ -67,6 +67,13 @@ int is9150_init(struct i2c_dev *dev, uint8_t addr)
 		return IS_9150_ERR_INIT;
 	else if (reg != IS_WHOAMI_DEFAULT)
 		return IS_9150_ERR_INIT;
+
+	/* Set the sleep bit in the power management register, this
+	 * puts the device down for configuration */
+	res = is9150_write_reg_bits(IS_REG_PWR_MGMT_1, IS_POWER_SLEEP_POS,
+				    1, 1);
+	if (res)
+		return IS_9150_ERR_INIT;
 	
 	/* Set the device clock source to internal PLL + GYRO_X sync */
 	/* NOTE: This has shown to be more accurate than the PLL
