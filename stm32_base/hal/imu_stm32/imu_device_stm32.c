@@ -65,7 +65,7 @@ void imu_device_init()
 
 }
 
-unsigned int imu_device_read(unsigned int channel)
+int imu_device_read(unsigned int channel)
 {
 	unsigned int ret = 0;
 

@@ -515,7 +515,7 @@ static void sendImuConfig(Serial *serial, size_t startIndex, size_t endIndex){
 		json_channelConfig(serial, &(cfg->cfg), 1);
 		json_uint(serial, "mode", cfg->mode, 1);
 		json_uint(serial, "chan", cfg->physicalChannel, 1);
-		json_uint(serial, "zeroVal", cfg->zeroValue, 1);
+		json_int(serial, "zeroVal", cfg->zeroValue, 1);
 		json_float(serial, "alpha", cfg->filterAlpha, FILTER_ALPHA_PRECISION, 0 );
 		json_objEnd(serial, i != endIndex); //index
 	}

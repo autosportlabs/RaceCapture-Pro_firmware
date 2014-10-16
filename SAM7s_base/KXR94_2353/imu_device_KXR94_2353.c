@@ -141,7 +141,7 @@ void imu_device_init(){
 	accel_setup();
 }
 
-unsigned int imu_device_read(unsigned int channel){
+int imu_device_read(unsigned int channel){
 	lock_spi();
 	//aux input (i.e. Yaw input) is mapped to 0x07 on the
 	//kionix KXR94

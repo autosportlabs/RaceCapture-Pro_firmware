@@ -3,6 +3,7 @@
 #include "loggerConfig.h"
 #include "filter.h"
 #include "stddef.h"
+#include "printk.h"
 
 //Channel Filters
 static Filter g_imu_filter[CONFIG_IMU_CHANNELS];
@@ -23,9 +24,10 @@ void imu_sample_all(){
 
 float imu_read_value(unsigned char imuChannel, ImuConfig *ac){
 	size_t physicalChannel = ac->physicalChannel;
-	unsigned int raw = g_imu_filter[physicalChannel].current_value;
+	int raw = g_imu_filter[physicalChannel].current_value;
+	int zeroValue = ac->zeroValue;
 	float countsPerUnit = imu_device_counts_per_unit(imuChannel);
-	float scaledValue = ((float)((int)raw - (int)ac->zeroValue) / countsPerUnit);
+	float scaledValue = ((float)(raw - zeroValue) / countsPerUnit);
 
 	//invert physical channel to match industry-standard accelerometer mappings
 	switch(physicalChannel){
@@ -34,7 +36,6 @@ float imu_read_value(unsigned char imuChannel, ImuConfig *ac){
 		case IMU_CHANNEL_YAW:
 			scaledValue = -scaledValue;
 			break;
-
 		default:
 			break;
 	}
@@ -65,7 +66,7 @@ void imu_calibrate_zero(){
 		ImuConfig * c = getImuConfigChannel(i);
 		size_t physicalChannel = c->physicalChannel;
 		imu_flush_filter(physicalChannel);
-		unsigned int zeroValue = g_imu_filter[physicalChannel].current_value;
+		int zeroValue = g_imu_filter[physicalChannel].current_value;
 		//adjust for gravity
 		float countsPerUnit = imu_device_counts_per_unit(physicalChannel);
 		if (c->physicalChannel == IMU_CHANNEL_Z) zeroValue-= (countsPerUnit * (c->mode != MODE_IMU_INVERTED ? 1 : -1));
@@ -78,7 +79,13 @@ void imu_init(LoggerConfig *loggerConfig){
 	init_filters(loggerConfig);
 }
 
-unsigned int imu_read(unsigned int channel){
-	return imu_device_read(channel);
+int imu_read(unsigned int channel){
+	int read = imu_device_read(channel);
+	pr_debug("channel ");
+	pr_debug_int(channel);
+	pr_debug(" " );
+	pr_debug_int(read);
+	pr_debug("\r\n");
+	return read;
 }
 

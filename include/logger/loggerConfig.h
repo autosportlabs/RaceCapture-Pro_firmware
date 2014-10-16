@@ -159,7 +159,7 @@ typedef struct _ImuConfig{
 	ChannelConfig cfg;
 	unsigned char mode;
 	unsigned char physicalChannel;
-	unsigned short zeroValue;
+	signed short zeroValue;
 	float filterAlpha;
 } ImuConfig;
 
