@@ -81,11 +81,6 @@ void imu_init(LoggerConfig *loggerConfig){
 
 int imu_read(unsigned int channel){
 	int read = imu_device_read(channel);
-	pr_debug("channel ");
-	pr_debug_int(channel);
-	pr_debug(" " );
-	pr_debug_int(read);
-	pr_debug("\r\n");
 	return read;
 }
 
