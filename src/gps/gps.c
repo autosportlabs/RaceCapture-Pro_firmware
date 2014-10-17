@@ -130,34 +130,30 @@ int atoiOffsetLenSafe(const char *str, size_t offset, size_t len) {
    return modp_atoi(buff);
 }
 
-static double parseLatitude(char *data){
-	double latitude = 0;
-    unsigned int len = strlen(data);
-    if (len > 0 && len <= LATITUDE_DATA_LEN) {
-       //Raw GPS Format is ddmm.mmmmmm
-       char degreesStr[3] = { 0 };
-       memcpy(degreesStr, data, 2);
-       degreesStr[2] = 0;
-       float minutes = modp_atof(data + 2);
-       minutes = minutes / 60.0;
-       latitude = modp_atoi(degreesStr) + minutes;
-    }
-    return latitude;
+static float parseLatitude(char *data){
+   unsigned int len = strlen(data);
+
+   if (len <= 0 && len > LATITUDE_DATA_LEN)
+      return 0.0;
+
+   //Raw GPS Format is ddmm.mmmmmm
+   int degrees = atoiOffsetLenSafe(data, 0, 2);
+   float minutes = modp_atof(data + 2);
+
+   return degrees + (minutes / 60);
 }
 
-static double parseLongitude(char *data){
-	double longitude = 0;
-    unsigned int len = strlen(data);
-    if (len > 0 && len <= LONGITUDE_DATA_LEN) {
-       //Raw GPS Format is dddmm.mmmmmm
-       char degreesStr[4] = { 0 };
-       memcpy(degreesStr, data, 3);
-       degreesStr[3] = 0;
-       float minutes = modp_atof(data + 3);
-       minutes = minutes / 60.0;
-       longitude = modp_atoi(degreesStr) + minutes;
-    }
-    return longitude;
+static float parseLongitude(char *data){
+   unsigned int len = strlen(data);
+
+   if (len <= 0 && len > LONGITUDE_DATA_LEN)
+      return 0.0;
+
+   //Raw GPS Format is dddmm.mmmmmm
+   int degrees = atoiOffsetLenSafe(data, 0, 3);
+   float minutes = modp_atof(data + 3);
+
+   return degrees + (minutes / 60);
 }
 
 //Parse Global Positioning System Fix Data.
@@ -334,8 +330,8 @@ static void parseRMC(char *data) {
    char *delim = strchr(data, ',');
    int param = 0;
    DateTime dt = { 0 };
-   double latitude = 0.0;
-   double longitude = 0.0;
+   float latitude = 0.0;
+   float longitude = 0.0;
 
    while (delim) {
       *delim = '\0';
