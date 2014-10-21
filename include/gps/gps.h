@@ -63,8 +63,6 @@ float getSecondsSinceMidnight();
 
 void updateSecondsSinceMidnight(float secondsSinceMidnight);
 
-double calculateSecondsSinceMidnight(const char * rawTime);
-
 float getTimeDiff(float from, float to);
 
 float getTimeSince(float t1);
