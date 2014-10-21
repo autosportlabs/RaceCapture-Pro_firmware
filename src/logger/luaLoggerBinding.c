@@ -436,12 +436,13 @@ int Lua_InitCAN(lua_State *L){
 }
 
 int Lua_SetCANFilter(lua_State *L){
-	if (lua_gettop(L) >= 4){
-		uint8_t id = lua_tointeger(L, 1);
-		uint8_t extended = lua_tointeger(L, 2);
-		uint32_t filter = lua_tointeger(L, 3);
-		uint32_t mask = lua_tointeger(L, 4);
-		int rc = CAN_set_filter(id, extended, filter, mask);
+	if (lua_gettop(L) >= 5){
+		uint8_t channel = lua_tointeger(L, 1);
+		uint8_t id = lua_tointeger(L, 2);
+		uint8_t extended = lua_tointeger(L, 3);
+		uint32_t filter = lua_tointeger(L, 4);
+		uint32_t mask = lua_tointeger(L, 5);
+		int rc = CAN_set_filter(channel, id, extended, filter, mask);
 		lua_pushinteger(L, rc);
 		return 1;
 	}

@@ -100,14 +100,9 @@ static void initCAN(CAN_TypeDef* CANx, int baud){
 
 	CAN_Init(CANx, &CAN_InitStructure);
 
-	//set default filter
-	CAN_device_set_filter(0, 0, 0, 0);
 }
 
 static void initCANInterrupts(CAN_TypeDef* CANx, uint8_t irqNumber){
-
-	/* Enable FIFO 0 message pending Interrupt */
-	CAN_ITConfig(CANx, CAN_IT_FMP0, ENABLE);
 
 	NVIC_InitTypeDef  NVIC_InitStructure;
 	NVIC_InitStructure.NVIC_IRQChannel = irqNumber;
@@ -115,6 +110,26 @@ static void initCANInterrupts(CAN_TypeDef* CANx, uint8_t irqNumber){
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = CAN_IRQ_SUB_PRIORITY;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
+}
+
+static void can_test_set_filter(){
+	/* CAN1 filter init */
+	CAN_FilterInitTypeDef CAN_FilterInitStructure;
+	CAN_FilterInitStructure.CAN_FilterNumber = 0;
+	CAN_FilterInitStructure.CAN_FilterMode = CAN_FilterMode_IdMask;
+	CAN_FilterInitStructure.CAN_FilterScale = CAN_FilterScale_32bit;
+	CAN_FilterInitStructure.CAN_FilterIdHigh = 0x0000;
+	CAN_FilterInitStructure.CAN_FilterIdLow = 0x0000;
+	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = 0x0000;
+	CAN_FilterInitStructure.CAN_FilterMaskIdLow = 0x0000;
+	CAN_FilterInitStructure.CAN_FilterFIFOAssignment = CAN_FIFO0;
+	CAN_FilterInitStructure.CAN_FilterActivation = ENABLE;
+	CAN_FilterInit(&CAN_FilterInitStructure);
+
+	/* CAN2 filter init */
+	CAN_FilterInitStructure.CAN_FilterNumber = 14;
+	CAN_FilterInitStructure.CAN_FilterFIFOAssignment = CAN_FIFO1;
+	CAN_FilterInit(&CAN_FilterInitStructure);
 }
 
 static void CAN_device_init_1(int baud) {
@@ -134,6 +149,12 @@ static void CAN_device_init_1(int baud) {
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN1, ENABLE);
 
 	initCAN(CAN1, baud);
+
+	//set default filter
+	CAN_device_set_filter(0, 0, 0, 0, 0);
+
+	/* Enable FIFO 0 message pending Interrupt */
+	CAN_ITConfig(CAN1, CAN_IT_FMP0, ENABLE);
 
 	initCANInterrupts(CAN1, CAN1_RX0_IRQn);
 }
@@ -156,10 +177,16 @@ static void CAN_device_init_2(int baud) {
 
 	initCAN(CAN2, baud);
 
-	initCANInterrupts(CAN2, CAN2_RX0_IRQn);
+	//set default filter
+	CAN_device_set_filter(1, 0, 0, 0, 0);
+
+	/* Enable FIFO 0 message pending Interrupt */
+	CAN_ITConfig(CAN2, CAN_IT_FMP1, ENABLE);
+
+	initCANInterrupts(CAN2, CAN2_RX1_IRQn);
 }
 
-int CAN_device_init(size_t channel, uint32_t baud){
+int CAN_device_init(uint8_t channel, uint32_t baud){
 
 	pr_info("CAN");
 	pr_info_int(channel);
@@ -183,13 +210,9 @@ int CAN_device_init(size_t channel, uint32_t baud){
 	}
 }
 
-int CAN_device_set_filter(uint8_t id, uint8_t extended, uint32_t filter, uint32_t mask) {
-
-	uint8_t channel = 0;
+int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended, uint32_t filter, uint32_t mask) {
 
 	if (channel > 1) return 0;
-
-	//some filtering
 	if (id > 13) return 0;
 
 	if (channel == 1) id += 14; //CAN2 filters start at 14 by default
@@ -202,7 +225,7 @@ int CAN_device_set_filter(uint8_t id, uint8_t extended, uint32_t filter, uint32_
 	CAN_FilterInitStructure.CAN_FilterIdLow = filter & 0xFFFF;
 	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = mask >> 16;
 	CAN_FilterInitStructure.CAN_FilterMaskIdLow = mask & 0xFFFF;
-	CAN_FilterInitStructure.CAN_FilterFIFOAssignment = 0;
+	CAN_FilterInitStructure.CAN_FilterFIFOAssignment = channel == 0 ? CAN_FIFO0 : CAN_FIFO1;
 	CAN_FilterInitStructure.CAN_FilterActivation = ENABLE;
 	CAN_FilterInit(&CAN_FilterInitStructure);
 	return 1;
@@ -245,15 +268,13 @@ void CAN1_RX0_IRQHandler(void) {
 	CanRxMsg rxMsg;
 	CAN_Receive(CAN1, CAN_FIFO0, &rxMsg);
 	xQueueSendFromISR(xCan1Rx, &rxMsg, &xTaskWokenByRx);
-	LED_toggle(3);
 	portEND_SWITCHING_ISR(xTaskWokenByRx);
 }
 
-void CAN2_RX0_IRQHandler(void) {
+void CAN2_RX1_IRQHandler(void) {
 	portBASE_TYPE xTaskWokenByRx = pdFALSE;
 	CanRxMsg rxMsg;
-	CAN_Receive(CAN2, CAN_FIFO0, &rxMsg);
+	CAN_Receive(CAN2, CAN_FIFO1, &rxMsg);
 	xQueueSendFromISR(xCan2Rx, &rxMsg, &xTaskWokenByRx);
-	LED_toggle(3);
 	portEND_SWITCHING_ISR(xTaskWokenByRx);
 }
