@@ -89,7 +89,7 @@ tiny_millis_t getTimeDeltaInTinyMillis(DateTime a, DateTime b) {
    return (tiny_millis_t) getTimeDeltaInMillis(a, b);
 }
 static bool inRange(const int val, const int min, const int max) {
-   return val >= min && val <= max;
+   return min <= val && val <= max;
 }
 
 bool isValidDateTime(const DateTime dt) {
