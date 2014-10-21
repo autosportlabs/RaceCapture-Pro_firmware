@@ -1,23 +1,20 @@
 /* Martin Thomas 4/2009 */
 
-#include "integer.h"
+#include "dateTime.h"
 #include "fattime.h"
-#include "rtc.h"
+#include "gps.h"
 
 DWORD get_fattime (void)
 {
-	DWORD res;
-	RTC_t rtc;
+   const DateTime dt = getLastFixDateTime();
 
-	rtc_gettime( &rtc );
-	
-	res =  (((DWORD)rtc.year - 1980) << 25)
-			| ((DWORD)rtc.month << 21)
-			| ((DWORD)rtc.mday << 16)
-			| (WORD)(rtc.hour << 11)
-			| (WORD)(rtc.min << 5)
-			| (WORD)(rtc.sec >> 1);
+   if (!isValidDateTime(dt))
+      return (DWORD) 0;
 
-	return res;
+   return (((DWORD)dt.year - 1980) << 25)
+      | ((DWORD)dt.month << 21)
+      | ((DWORD)dt.day << 16)
+      | (WORD)(dt.hour << 11)
+      | (WORD)(dt.minute << 5)
+      | (WORD)(dt.second >> 1);
 }
-
