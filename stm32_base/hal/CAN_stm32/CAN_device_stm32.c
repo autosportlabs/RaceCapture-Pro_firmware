@@ -10,6 +10,7 @@
 #include "stm32f4xx_misc.h"
 #include "taskUtil.h"
 #include "printk.h"
+#include "LED.h"
 
 static xQueueHandle xCan1Tx = NULL;
 static xQueueHandle xCan1Rx = NULL;
@@ -160,6 +161,10 @@ static void CAN_device_init_2(int baud) {
 
 int CAN_device_init(size_t channel, uint32_t baud){
 
+	pr_info("CAN");
+	pr_info_int(channel);
+	pr_info(" init @ ");
+	pr_info_int(baud);
 	if (initQueues()){
 		switch(channel){
 		case 0:
@@ -169,11 +174,11 @@ int CAN_device_init(size_t channel, uint32_t baud){
 			CAN_device_init_2(baud);
 			break;
 		}
-		pr_info("CAN init win\r\n");
+		pr_info(" win\r\n");
 		return 1;
 	}
 	else{
-		pr_info("CAN init fail\r\n");
+		pr_info(" fail\r\n");
 		return 0;
 	}
 }
@@ -203,7 +208,7 @@ int CAN_device_set_filter(uint8_t id, uint8_t extended, uint32_t filter, uint32_
 	return 1;
 }
 
-int CAN_device_tx_msg(CAN_msg *msg, unsigned int timeoutMs) {
+int CAN_device_tx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs) {
 	CanTxMsg TxMessage;
 	/* Transmit Structure preparation */
 	TxMessage.StdId = msg->addressValue;
@@ -213,13 +218,13 @@ int CAN_device_tx_msg(CAN_msg *msg, unsigned int timeoutMs) {
 	TxMessage.DLC = msg->dataLength;
 
 	memcpy(TxMessage.Data, msg->data, msg->dataLength);
-	CAN_Transmit(CAN1, &TxMessage);
+	CAN_Transmit(channel == 0 ? CAN1 : CAN2, &TxMessage);
 	return 1;
 }
 
-int CAN_device_rx_msg(CAN_msg *msg, unsigned int timeoutMs) {
+int CAN_device_rx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs) {
 	CanRxMsg rxMsg;
-	if (xQueueReceive( xCan1Rx, &rxMsg, msToTicks(timeoutMs)) == pdTRUE) {
+	if (xQueueReceive(channel == 0 ? xCan1Rx : xCan2Rx, &rxMsg, msToTicks(timeoutMs)) == pdTRUE) {
 		msg->isExtendedAddress = rxMsg.IDE == CAN_ID_EXT ? 1 : 0;
 		uint32_t address = rxMsg.StdId;
 		if (msg->isExtendedAddress) {
@@ -240,6 +245,7 @@ void CAN1_RX0_IRQHandler(void) {
 	CanRxMsg rxMsg;
 	CAN_Receive(CAN1, CAN_FIFO0, &rxMsg);
 	xQueueSendFromISR(xCan1Rx, &rxMsg, &xTaskWokenByRx);
+	LED_toggle(3);
 	portEND_SWITCHING_ISR(xTaskWokenByRx);
 }
 
@@ -248,5 +254,6 @@ void CAN2_RX0_IRQHandler(void) {
 	CanRxMsg rxMsg;
 	CAN_Receive(CAN2, CAN_FIFO0, &rxMsg);
 	xQueueSendFromISR(xCan2Rx, &rxMsg, &xTaskWokenByRx);
+	LED_toggle(3);
 	portEND_SWITCHING_ISR(xTaskWokenByRx);
 }

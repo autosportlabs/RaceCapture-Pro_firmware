@@ -451,23 +451,24 @@ int Lua_SetCANFilter(lua_State *L){
 int Lua_SendCANMessage(lua_State *L){
 	size_t timeout = 1000;
 	int rc = -1;
-	if (lua_gettop(L) >= 3){
+	if (lua_gettop(L) >= 4){
 		CAN_msg msg;
-		msg.addressValue = (unsigned int)lua_tointeger(L, 1);
-		msg.isExtendedAddress = lua_tointeger(L, 2);
+		uint8_t channel = (uint8_t)lua_tointeger(L, 1);
+		msg.addressValue = (unsigned int)lua_tointeger(L, 2);
+		msg.isExtendedAddress = lua_tointeger(L, 3);
 
-		int size = luaL_getn(L, 3);
+		int size = luaL_getn(L, 4);
 		if (size <= CAN_MSG_SIZE){
 			for (int i = 1; i <= size; i++){
 				lua_pushnumber(L,i);
-				lua_gettable(L, 3);
+				lua_gettable(L, 4);
 				int val = lua_tonumber(L, -1);
 				msg.data[i - 1] = val;
 				lua_pop(L, 1);
 			}
 		}
 		msg.dataLength = size;
-		rc = CAN_tx_msg(&msg, timeout);
+		rc = CAN_tx_msg(channel, &msg, timeout);
 	}
 	lua_pushinteger(L, rc);
 	return rc;
@@ -475,24 +476,27 @@ int Lua_SendCANMessage(lua_State *L){
 
 int Lua_ReceiveCANMessage(lua_State *L){
 	size_t timeout = DEFAULT_CAN_TIMEOUT;
-	if (lua_gettop(L) >= 1) timeout = lua_tointeger(L, 1);
+	if (lua_gettop(L) >= 1){
+		uint8_t channel = (uint8_t)lua_tointeger(L, 1);
+		if (lua_gettop(L) >= 2) timeout = lua_tointeger(L, 2);
 
-	CAN_msg msg;
-	int rc = CAN_rx_msg(&msg,timeout);
-	if (rc == 1){
-		lua_pushinteger(L, msg.addressValue);
-		lua_pushinteger(L, msg.isExtendedAddress);
-		lua_newtable(L);
-		for (int i = 1; i <= msg.dataLength; i++){
-			lua_pushnumber(L, i);
-			lua_pushnumber(L, msg.data[i - 1]);
-			lua_rawset(L, -3);
+		CAN_msg msg;
+		int rc = CAN_rx_msg(channel, &msg, timeout);
+		if (rc == 1){
+			lua_pushinteger(L, msg.addressValue);
+			lua_pushinteger(L, msg.isExtendedAddress);
+			lua_newtable(L);
+			for (int i = 1; i <= msg.dataLength; i++){
+				lua_pushnumber(L, i);
+				lua_pushnumber(L, msg.data[i - 1]);
+				lua_rawset(L, -3);
+			}
+			return 3;
 		}
-		return 3;
-	}
-	else{
 		return 0;
 	}
+	lua_pushnumber(L, -1);
+	return 1;
 }
 
 int Lua_ReadOBD2(lua_State *L){

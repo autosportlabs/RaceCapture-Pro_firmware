@@ -96,9 +96,9 @@ int OBD2_request_PID(unsigned char pid, int *value, size_t timeout){
 	msg.dataLength = 3;
 	msg.isExtendedAddress = 0;
 
-	int result = CAN_tx_msg(&msg, timeout);
+	int result = CAN_tx_msg(0, &msg, timeout);
 	delayMs(5);
-	if (result) result = CAN_rx_msg(&msg, timeout);
+	if (result) result = CAN_rx_msg(0, &msg, timeout);
 	if (result) result = decode_pid(pid, &msg, value);
 	return result;
 }
