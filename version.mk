@@ -1,4 +1,4 @@
 MAJOR	= 2
 MINOR	= 1
-BUGFIX	= 0
+BUGFIX	= 2
 

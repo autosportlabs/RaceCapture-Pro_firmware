@@ -63,10 +63,7 @@ void calculateTimerScaling(unsigned int clockHz, TimerConfig *timerConfig){
 
 int getConnectivitySampleRateLimit(){
 	ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
-	int sampleRateLimit = SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE;
-	if (connConfig->bluetoothConfig.btEnabled && ! connConfig->cellularConfig.cellEnabled){
-		sampleRateLimit = FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE;
-	}
+	int sampleRateLimit = connConfig->cellularConfig.cellEnabled ? SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE : FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE;
 	return sampleRateLimit;
 }
 

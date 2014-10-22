@@ -243,14 +243,14 @@ void connectivityTask(void *params) {
 			int msgReceived = processRxBuffer(serial, buffer, &rxCount);
 			//check the latest contents of the buffer for something that might indicate an error condition
 			if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR){
-				pr_info("device disconnected\n");
+				pr_info("device disconnected\r\n");
 				break;
 			}
 
 			//now process a complete message if available
 			if (msgReceived){
 				if (DEBUG_LEVEL){
-					pr_debug("msg rx: '");
+					pr_debug("server msg rx: '");
 					pr_debug(buffer);
 					pr_debug("'\r\n");
 				}

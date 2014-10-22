@@ -13,7 +13,7 @@ int configureTexting(Serial *serial);
 int configureNet(Serial *serial, const char *apnHost, const char *apnUser, const char *apnPass);
 int connectNet(Serial *serial, const char *host, const char *port, int udpMode);
 int closeNet(Serial *serial);
-int isNetConnectionErrorOrClosed(Serial *serial);
+int isNetConnectionErrorOrClosed();
 int startNetData(Serial *serial);
 int endNetData(Serial *serial);
 const char * readsCell(Serial *serial, portTickType timeout);
