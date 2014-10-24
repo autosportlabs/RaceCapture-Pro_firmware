@@ -156,6 +156,7 @@ static struct i2c_priv priv_drivers[] = {
 			.rx = {
 				.channel = DMA_Channel_7,
 				.stream = DMA1_Stream2,
+				.irq_channel = DMA1_Stream2_IRQn,
 				.all_flag_mask = DMA_FLAG_FEIF2 | DMA_FLAG_DMEIF2 | DMA_FLAG_TEIF2 |
 				DMA_FLAG_HTIF2 | DMA_FLAG_TCIF2,
 				.tc_flag = DMA_IT_TCIF2,
@@ -164,6 +165,7 @@ static struct i2c_priv priv_drivers[] = {
 			.tx = {
 				.channel = DMA_Channel_7,
 				.stream = DMA1_Stream7,
+				.irq_channel = DMA1_Stream7_IRQn,
 				.all_flag_mask = DMA_FLAG_FEIF7 | DMA_FLAG_DMEIF7 | DMA_FLAG_TEIF7 |
 				DMA_FLAG_HTIF7 | DMA_FLAG_TCIF7,
 				.tc_flag = DMA_IT_TCIF7,
