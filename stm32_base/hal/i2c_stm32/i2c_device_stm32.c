@@ -17,12 +17,22 @@
 #include <stm32f4xx_gpio.h>
 #include <stm32f4xx_rcc.h>
 #include <stm32f4xx_misc.h>
+#include <stm32f4xx_dma.h>
 
 #include <i2c_device_stm32.h>
 
+#define USE_DMA1
 struct rcc_params {
 void (*clock_cmd)(uint32_t, FunctionalState);
 uint32_t periph;
+};
+
+struct i2c_dma_stream {
+	uint32_t channel;
+	uint32_t irq_channel;
+	DMA_Stream_TypeDef *stream;
+	uint32_t all_flag_mask; /* required for clearing flags */
+	uint32_t tc_flag;
 };
 
 struct i2c_pin {
@@ -43,6 +53,12 @@ struct i2c_priv {
 		struct i2c_pin sda;
 		struct i2c_pin scl;
 	} pins;
+	struct {
+		struct i2c_dma_stream rx;
+		struct i2c_dma_stream tx;
+		uint8_t *tx_buf;
+		uint8_t *rx_buf;
+	}dma;
 	struct rcc_params rcc;
 	uint8_t ev_irqn;
 	uint8_t er_irqn;
@@ -50,11 +66,12 @@ struct i2c_priv {
 	uint8_t slave_addr;
 	uint8_t tx_len;
 	uint8_t rx_len;
-	bool gen_stop;
+	bool short_rx;
 	bool error_flag;
 };
 
 static struct i2c_priv priv_drivers[] = {
+#ifdef USE_DMA1
 	{
 		.initialized = false,
 		.ll_dev = I2C1,
@@ -80,6 +97,24 @@ static struct i2c_priv priv_drivers[] = {
 				},
 			}
 		},
+		.dma = {
+			.rx = {
+				.channel = DMA_Channel_1,
+				.stream = DMA1_Stream0,
+				.irq_channel = DMA1_Stream0_IRQn,
+				.all_flag_mask = DMA_FLAG_FEIF0 | DMA_FLAG_DMEIF0 | DMA_FLAG_TEIF0 |
+				DMA_FLAG_HTIF0 | DMA_FLAG_TCIF0,
+				.tc_flag = DMA_IT_TCIF0,
+ 			},
+			.tx = {
+				.channel = DMA_Channel_1,
+				.stream = DMA1_Stream6,
+				.irq_channel = DMA1_Stream6_IRQn,
+				.all_flag_mask = DMA_FLAG_FEIF6 | DMA_FLAG_DMEIF6 | DMA_FLAG_TEIF6 |
+				DMA_FLAG_HTIF6 | DMA_FLAG_TCIF6,
+				.tc_flag = DMA_IT_TCIF6,
+			},
+		},
 		.rcc = {
 			.clock_cmd = RCC_APB1PeriphClockCmd,
 			.periph = RCC_APB1Periph_I2C1,
@@ -90,6 +125,8 @@ static struct i2c_priv priv_drivers[] = {
 		.rx_len = 0,
 		.error_flag = false,
 	},
+#endif	/* USE_DMA1 */
+#ifdef USE_I2C2
 	{
 		.initialized = false,
 		.ll_dev = I2C2,
@@ -113,7 +150,24 @@ static struct i2c_priv priv_drivers[] = {
 					.clock_cmd = RCC_AHB1PeriphClockCmd,
 					.periph = RCC_AHB1Periph_GPIOB,
 				},
-			}
+			},
+		},
+		.dma = {
+			.rx = {
+				.channel = DMA_Channel_7,
+				.stream = DMA1_Stream2,
+				.all_flag_mask = DMA_FLAG_FEIF2 | DMA_FLAG_DMEIF2 | DMA_FLAG_TEIF2 |
+				DMA_FLAG_HTIF2 | DMA_FLAG_TCIF2,
+				.tc_flag = DMA_IT_TCIF2,
+
+			},
+			.tx = {
+				.channel = DMA_Channel_7,
+				.stream = DMA1_Stream7,
+				.all_flag_mask = DMA_FLAG_FEIF7 | DMA_FLAG_DMEIF7 | DMA_FLAG_TEIF7 |
+				DMA_FLAG_HTIF7 | DMA_FLAG_TCIF7,
+				.tc_flag = DMA_IT_TCIF7,
+			},
 		},
 		.rcc = {
 			.clock_cmd = RCC_APB1PeriphClockCmd,
@@ -125,24 +179,33 @@ static struct i2c_priv priv_drivers[] = {
 		.rx_len = 0,
 		.error_flag = false,
 	}
+#endif	/* USE_DMA2 */
 };
 
 static struct i2c_dev pub_drivers[] = {
+#ifdef USE_DMA1
 	{
 		.priv = &priv_drivers[0],
 	},
+#endif	/* USE_DMA1 */
+#ifdef USE_DMA2
 	{
 		.priv = &priv_drivers[1],
 	}
+#endif	/* USE_DMA2 */
 };
 
 struct i2c_dev *i2c_get_device(enum i2c_bus device)
 {
 	switch (device) {
+#ifdef USE_DMA1
 	case I2C_1:
 		return &pub_drivers[0];
+#endif	/* USE_DMA1 */
+#ifdef USE_DMA2
 	case I2C_2:
 		return &pub_drivers[1];
+#endif	/* USE_DMA2 */
 	default:
 		return NULL;
 	}
@@ -163,6 +226,99 @@ int i2c_deinit(struct i2c_dev *dev)
 	I2C_ITConfig(p->ll_dev, I2C_IT_ERR, DISABLE);
 
 	return 0;
+}
+
+static void i2c_dma_enable(struct i2c_priv *p)
+{
+	struct i2c_dma_stream *st;
+
+	/* Get a pointer to the stream we'll be using */
+	if (p->trans_direction == I2C_Direction_Receiver)
+		st = &p->dma.rx;
+	else
+		st = &p->dma.tx;
+
+	I2C_DMALastTransferCmd(p->ll_dev, ENABLE);
+
+	/* Enable the DMA request */
+	I2C_DMACmd(p->ll_dev, ENABLE);
+
+	/* Enable the DMA RX Stream */
+	DMA_Cmd(st->stream, ENABLE);
+}
+
+static void i2c_dma_disable(struct i2c_priv *p, struct i2c_dma_stream *st)
+{
+	/* DIsable dma transfers (and the last transfer bit) */
+	I2C_DMALastTransferCmd(p->ll_dev, DISABLE);
+	I2C_DMACmd(p->ll_dev, DISABLE);
+
+	DMA_Cmd(st->stream, DISABLE);
+
+	/* Clear any pending flags in the DMA controller, might be
+	 * redundant, but better than a lingering interrupt... */
+	DMA_ClearFlag(st->stream, st->all_flag_mask);
+}
+
+static void i2c_dma_init(struct i2c_priv *p)
+{
+	DMA_InitTypeDef DMA_InitStructure;
+	NVIC_InitTypeDef NVIC_InitStructure;
+	struct i2c_dma_stream *st;
+
+	/* Configure the Priority Group to 2 bits */
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+
+	/* Get a pointer to the stream we'll be using */
+	if (p->trans_direction == I2C_Direction_Receiver)
+		st = &p->dma.rx;
+	else
+		st = &p->dma.tx;
+
+	/* Clear any pending DMA Flags */
+	DMA_ClearFlag(st->stream, st->all_flag_mask);
+
+	/* Enable the I2Cx Tx DMA Interrupt */
+	NVIC_InitStructure.NVIC_IRQChannel = st->irq_channel;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 4;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE);
+
+	/* Reset the DMA stream */
+	DMA_DeInit(st->stream);
+	DMA_InitStructure.DMA_Channel = st->channel;
+
+	/* DMA Direction, length, and buffer depend on whether we're receiving or transmitting */
+	if (p->trans_direction == I2C_Direction_Receiver) {
+		DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;
+		DMA_InitStructure.DMA_BufferSize = p->rx_len;
+		DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)p->dma.rx_buf;
+	} else {
+		DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
+		DMA_InitStructure.DMA_BufferSize = p->tx_len;
+		DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)p->dma.tx_buf;
+	}
+
+	/* The rest of the DMA Hardware is set up the same way every time */
+	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) &p->ll_dev->DR;
+	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+	DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
+	DMA_InitStructure.DMA_Priority = DMA_Priority_High;
+	DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;
+	DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
+	DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
+	DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+	DMA_Init(st->stream, &DMA_InitStructure);
+
+	/* Enable DMA Stream Transfer Complete interrupt */
+	DMA_ITConfig(st->stream, DMA_IT_TC, ENABLE);
+
 }
 
 static void i2c_nvic_setup(struct i2c_priv *p)
@@ -240,7 +396,7 @@ int i2c_init(struct i2c_dev *dev, uint32_t bus_speed)
 	I2C_InitStruct.I2C_Mode = I2C_Mode_I2C;
 	I2C_InitStruct.I2C_DutyCycle = I2C_DutyCycle_2;
 	I2C_InitStruct.I2C_OwnAddress1 = 0x00;
-	I2C_InitStruct.I2C_Ack = I2C_Ack_Disable;
+	I2C_InitStruct.I2C_Ack = I2C_Ack_Enable;
 	I2C_InitStruct.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
 	I2C_Init(p->ll_dev, &I2C_InitStruct);
 
@@ -254,7 +410,8 @@ int i2c_init(struct i2c_dev *dev, uint32_t bus_speed)
 	vSemaphoreCreateBinary(p->event_lock);
 	xSemaphoreTake(p->event_lock, portMAX_DELAY);
 
-	p->transact_q = xQueueCreate(128, sizeof(uint8_t));
+	/* We need a very small queue for reception <= 2 bytes */
+	p->transact_q = xQueueCreate(2, sizeof(uint8_t));
 	if (!p->transact_q)
 		return -3;
 
@@ -266,20 +423,29 @@ int i2c_init(struct i2c_dev *dev, uint32_t bus_speed)
 	/* Set up NVIC parameters for this device (to enable interrupts)*/
 	i2c_nvic_setup(p);
 
-	/* Enable the event and buffer interrupts */
+	/* Enable event and buffer interrupts */
 	I2C_ITConfig(p->ll_dev, I2C_IT_EVT, ENABLE);
 	I2C_ITConfig(p->ll_dev, I2C_IT_BUF, ENABLE);
+
+	/* Enable the error interrupts */
 	I2C_ITConfig(p->ll_dev, I2C_IT_ERR, ENABLE);
+
+	/* Reset the bus */
+	I2C_GenerateSTOP(p->ll_dev, ENABLE);
 
 	return 0;
 }
 
 static void i2c_start(struct i2c_priv *p)
 {
+
 	/* No reason to block on a lock here.  This can only happen if
 	 * a device is misbehaving, but still good to check for it */
 	while(I2C_GetFlagStatus(p->ll_dev, I2C_FLAG_BUSY))
 		vTaskDelay(1);
+
+	/* Make sure we'll ack the bytes we receive */
+	I2C_AcknowledgeConfig(p->ll_dev, ENABLE);
 
 	/* Clear the last event */
 	I2C_GetLastEvent(p->ll_dev);
@@ -319,17 +485,22 @@ int i2c_transact(struct i2c_dev *dev, uint8_t addr,
 	p->tx_len = tx_len;
 	p->rx_len = rx_len;
 
-	/* Clear the transaction queue */
-	xQueueReset(p->transact_q);
+	p->dma.tx_buf = tx_buf;
+	p->dma.rx_buf = rx_buf;
+
+	/* For DMA Reception <= 2 bytes, we have to use interrupts
+	 * because of ST's poor I2C Hardware design, everything else
+	 * uses DMA */
+	if (p->rx_len <= 2)
+		p->short_rx = true;
+	else
+		p->short_rx = false;
 
 	/* Set our transaction direction, if we're a transmitter, put
 	 * all data to be transmitted into the transaction queue */
 	if (tx_len == 0) {
 		p->trans_direction = I2C_Direction_Receiver;
 	} else {
-		/* Move all of the tx data into the device's queue */
-		for (int i = 0; i < tx_len; i++)
-			xQueueSend(p->transact_q, tx_buf++, portMAX_DELAY);
 		p->trans_direction = I2C_Direction_Transmitter;
 	}
 
@@ -338,18 +509,22 @@ int i2c_transact(struct i2c_dev *dev, uint8_t addr,
 
 	/* Wait until the transmission completes, give it 1 solid
 	 * second and then bail */
-	xSemaphoreTake(p->event_lock, 1000);
-
-	/* Make sure that the transfer was successful */
-	if (p->error_flag) {
-		xQueueReset(p->transact_q);
+	if (xSemaphoreTake(p->event_lock, 1000) == pdFALSE) {
 		ret = -2;
+		I2C_GenerateSTOP(p->ll_dev, ENABLE);
 		goto unlock_and_return;
 	}
 
-	/* Move any Rx data into the rx buffer */
-	while (rx_len--)
-		xQueueReceive(p->transact_q, rx_buf++, portMAX_DELAY);
+	/* Make sure that the transfer was successful */
+	if (p->error_flag) {
+		ret = -2;
+	}
+
+	/* Move any Rx data into the rx buffer (Only for transactions
+	 * <= 2 bytes) */
+	if (p->rx_len <= 2)
+		while (rx_len--)
+			xQueueReceive(p->transact_q, rx_buf++, portMAX_DELAY);
 
 unlock_and_return:
 	xSemaphoreGive(p->transact_lock);
@@ -467,64 +642,18 @@ int i2c_read_raw(struct i2c_dev *dev, uint8_t dev_addr, uint8_t *buf, size_t len
 {
 	int res = i2c_transact(dev, dev_addr, NULL, 0, buf, len);
 
-	return res;	
+	return res;
 }
 
 /*** Interrupt handlers and helper functions ***/
 
-static void i2c_stage_tx_byte(struct i2c_priv *p)
-{
-	portBASE_TYPE q_ret, task_woken;
-
-	/* If we have data remaining and are supposed to be
-	 * here, transmit the next byte */
-	if (p->tx_len && !p->error_flag) {
-		uint8_t tx_byte;
-
-		/* Grab the next item out of the transaction queue */
-		q_ret = xQueueReceiveFromISR(p->transact_q, &tx_byte, &task_woken);
-
-		/* If there was nothing there, something went
-		 * horribly wrong */
-		if (q_ret != pdTRUE) {
-			p->error_flag = true;
-			return;
-		}
-
-
-		/* Send the next byte */
-		I2C_SendData(p->ll_dev, tx_byte);
-
-		/* Decrement the amount of data we have left
-		 * to transmit */
-		p->tx_len--;
-
-		/* Don't give up our lock until all data has
-		 * been transmitted */
-		return;
-	}
-
-	/* If there is nothing to receive, generate a stop,
-	 * otherwise, generate another start and move along */
-	if (!p->rx_len) {
-		I2C_GenerateSTOP(p->ll_dev, ENABLE);
-		xSemaphoreGiveFromISR(p->event_lock, &task_woken);
-		portEND_SWITCHING_ISR(task_woken);
-	} else {
-		p->trans_direction = I2C_Direction_Receiver;
-		I2C_AcknowledgeConfig(p->ll_dev, ENABLE);
-		I2C_GenerateSTART(p->ll_dev, ENABLE);
-	}
-
-
-}
-
 static void i2c_rx_data(struct i2c_priv *p)
 {
+	/* This function is ONLY used if the I2C Device is receiving
+	 * <= 2 bytes. */
 	portBASE_TYPE q_ret, task_woken;
 	if (p->rx_len && !p->error_flag) {
 		uint8_t rx_byte;
-
 	
 		/* Grab the byte out of the buffer and place
 		 * it in the transaction queue */
@@ -562,8 +691,26 @@ static void i2c_rx_data(struct i2c_priv *p)
 
 }
 
+static void i2c_initiate_transfer(struct i2c_priv *p)
+{
+	/* Clear out any pending I2C Flags */
+	I2C_GetLastEvent(p->ll_dev);
+
+	/* If this is a RX <= 2 bytes, we will use interrupts.
+	 * Otherwise, we'll need to initialize the DMA Controller */
+	if (!(p->trans_direction == I2C_Direction_Receiver && p->rx_len <=2))
+		i2c_dma_init(p);
+
+	/* Send the slave address to initialize the transaction */
+	I2C_Send7bitAddress(p->ll_dev,
+			    p->slave_addr,
+			    p->trans_direction);
+}
+
 static void i2c_clear_addr(struct i2c_priv *p)
 {
+	/* Another workaround for ST's wonky hardware.  We need to
+	 * explicitely set up the NACK if this is a single byte reception */
 	if (p->rx_len == 1 && p->trans_direction == I2C_Direction_Receiver) {
 		I2C_AcknowledgeConfig(p->ll_dev, DISABLE);
 		I2C_NACKPositionConfig(p->ll_dev, I2C_NACKPosition_Current);
@@ -572,32 +719,57 @@ static void i2c_clear_addr(struct i2c_priv *p)
 	/* This clears the ADDR Bit */
 	I2C_GetLastEvent(p->ll_dev);
 
-	if (p->rx_len == 1 && p->trans_direction == I2C_Direction_Receiver) {
+	/* Yet ANOTHER workaround.  We have to attempt to generate
+	 * the stop bit early for 1 byte reception... If this is a RX
+	 * > 2 bytes OR a transmission, enable DMA */
+	if (p->rx_len == 1 && p->trans_direction == I2C_Direction_Receiver)
 		I2C_GenerateSTOP(p->ll_dev, ENABLE);
-	} else if (p->trans_direction == I2C_Direction_Transmitter) {
-		i2c_stage_tx_byte(p);
-	}
+	else if (p->trans_direction == I2C_Direction_Transmitter || p->rx_len > 2)
+		i2c_dma_enable(p);
+}
+
+static void i2c_setup_rx(struct i2c_priv *p)
+{
+	/* Disable TX DMA stream, change our direction, and generate
+	 * a start condition */
+	i2c_dma_disable(p, &p->dma.tx);
+	p->trans_direction = I2C_Direction_Receiver;
+	I2C_GenerateSTART(p->ll_dev, ENABLE);
 }
 
 static void i2c_common_event_handler(struct i2c_priv *p)
 {
+	portBASE_TYPE task_woken = pdFALSE;
+
+	/* We successfully sent a start bit */
 	if (I2C_GetFlagStatus(p->ll_dev, I2C_FLAG_SB)) {
-		I2C_GetLastEvent(p->ll_dev);
-		I2C_Send7bitAddress(p->ll_dev,
-				    p->slave_addr,
-				    p->trans_direction);
+		i2c_initiate_transfer(p);
 	}
 
+	/* We sent a slave address and were approved for the transmission */
 	if (I2C_GetFlagStatus(p->ll_dev, I2C_FLAG_ADDR)) {
 		i2c_clear_addr(p);
 	}
-	if (I2C_GetFlagStatus(p->ll_dev, I2C_FLAG_RXNE)) {
+
+	/* For RX <= 2 bytes, we need to manually pull the data out
+	 * of the controller */
+	if (I2C_GetFlagStatus(p->ll_dev, I2C_FLAG_RXNE) && p->short_rx) {
 		i2c_rx_data(p);
 	}
-	if (I2C_GetFlagStatus(p->ll_dev, I2C_FLAG_TXE)) {
-			i2c_stage_tx_byte(p);
-	}
 
+	/* This is a TX Complete event, meaning the DMA Controller
+	 * has finished it's work.  If there is nothing to receive,
+	 * clear the event lock, otherwise, set up the RX Transaction */
+	if (I2C_GetFlagStatus(p->ll_dev, I2C_FLAG_BTF)) {
+		if (p->rx_len == 0) {
+			I2C_GenerateSTOP(p->ll_dev, ENABLE);
+			xSemaphoreGiveFromISR(p->event_lock, &task_woken);
+			portEND_SWITCHING_ISR(task_woken);
+		} else {
+			i2c_setup_rx(p);
+		}
+	}
+	
 	/* Generate a stop if there is an error detected */
 	if (p->error_flag)
 		I2C_GenerateSTOP(p->ll_dev, ENABLE);
@@ -616,29 +788,87 @@ static void i2c_common_error_handler(struct i2c_priv *p)
 	/* Send stop */
 	I2C_GenerateSTOP(p->ll_dev, ENABLE);
 
+	/* Kill both RX and TX DMA Streams */
+	i2c_dma_disable(p, &p->dma.rx);
+	i2c_dma_disable(p, &p->dma.tx);
+
 	p->error_flag = true;
 
 	xSemaphoreGiveFromISR(p->event_lock, &task_woken);
 	portEND_SWITCHING_ISR(task_woken);
 }
 
-/* TODO: error Interrupt handlers */
+static void i2c_common_dma_handler(struct i2c_priv *p, struct i2c_dma_stream *st)
+{
+	portBASE_TYPE task_woken = pdFALSE;
+
+	/* If the DMA Stream has finished it's work, we're in the
+	 * clear and can clear the interrupt flag */
+	if (DMA_GetITStatus(st->stream, st->tc_flag)) {
+		DMA_ClearITPendingBit(st->stream, st->tc_flag);
+
+		/* For reception > 2 bytes, we need to generate a
+		 * stop and clear the event lock (Meaning that the
+		 * transaction is complete) */
+		if (p->trans_direction == I2C_Direction_Receiver) {
+			I2C_GenerateSTOP(p->ll_dev, ENABLE);
+			xSemaphoreGiveFromISR(p->event_lock, &task_woken);
+			portEND_SWITCHING_ISR(task_woken);
+		}
+		/* Turn off this DMA stream */
+		i2c_dma_disable(p, st);
+	}
+}
+
+/* EVENT/ERROR HANDLERS */
+#ifdef USE_DMA1
 void I2C1_EV_IRQHandler(void)
 {
 	i2c_common_event_handler(&priv_drivers[0]);
-}
-
-void I2C2_EV_IRQHandler(void)
-{
-	i2c_common_event_handler(&priv_drivers[1]);
 }
 
 void I2C1_ER_IRQHandler(void)
 {
 	i2c_common_error_handler(&priv_drivers[0]);
 }
+#endif	/* USE_DMA1 */
+#ifdef USE_DMA2
+void I2C2_EV_IRQHandler(void)
+{
+	i2c_common_event_handler(&priv_drivers[1]);
+}
+
 
 void I2C2_ER_IRQHandler(void)
 {
 	i2c_common_error_handler(&priv_drivers[1]);
 }
+#endif	/* USE_DMA2 */
+
+/* DMA HANDLERS */
+#ifdef USE_DMA1
+/* I2C1 TX DMA TC Interrupt */
+void DMA1_Stream6_IRQHandler(void)
+{
+	i2c_common_dma_handler(&priv_drivers[0], &priv_drivers[0].dma.tx);
+}
+
+/* I2C1 RX DMA TC Interrupt */
+void DMA1_Stream0_IRQHandler(void)
+{
+	i2c_common_dma_handler(&priv_drivers[0], &priv_drivers[0].dma.rx);
+}
+#endif	/* USE_DMA1 */
+#ifdef USE_DMA2
+void DMA1_Stream2_IRQHandler(void)
+{
+	i2c_common_dma_handler(&priv_drivers[1], &priv_drivers[1].dma.tx);
+}
+
+void DMA1_Stream7IRQHandler(void)
+{
+	i2c_common_dma_handler(&priv_drivers[1], &priv_drivers[1].dma.tx);
+}
+#endif	/* USE_DMA2 */
+
+/* TODO: I2C2 dma interrupts */
