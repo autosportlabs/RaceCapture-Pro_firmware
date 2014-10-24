@@ -1,5 +1,5 @@
 /* 12c.c
- * A simple interrupt driven I2C driver for the stm32f4
+ * Optimized DMA+Interrupt I2C Driver for the STM32F4
  * (c) 2014 AutosportLabs
  * Jeff Ciesielski <jeff@autosportlabs.com>
  */
