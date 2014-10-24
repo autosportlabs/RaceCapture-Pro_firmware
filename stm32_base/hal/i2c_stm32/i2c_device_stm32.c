@@ -871,5 +871,3 @@ void DMA1_Stream7IRQHandler(void)
 	i2c_common_dma_handler(&priv_drivers[1], &priv_drivers[1].dma.tx);
 }
 #endif	/* USE_DMA2 */
-
-/* TODO: I2C2 dma interrupts */
