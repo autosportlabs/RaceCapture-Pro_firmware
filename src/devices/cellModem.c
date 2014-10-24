@@ -219,7 +219,7 @@ int endNetData(Serial *serial){
 	putcModem(serial, 26);
 	while (1){
 		readModemWait(serial, READ_TIMEOUT);
-		if (strncmp(g_cellBuffer,"DATA ACCEPT",7) == 0) return 0;
+		if (strncmp(g_cellBuffer,"DATA ACCEPT",11) == 0) return 0;
 		if (strncmp(g_cellBuffer,"SEND OK",7) == 0) return 0;
 		if (strncmp(g_cellBuffer,"ERROR",5) == 0) return -1;
 	}
