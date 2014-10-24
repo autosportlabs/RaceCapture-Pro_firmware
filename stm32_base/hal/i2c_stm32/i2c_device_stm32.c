@@ -21,7 +21,6 @@
 
 #include <i2c_device_stm32.h>
 
-#define USE_DMA1
 struct rcc_params {
 void (*clock_cmd)(uint32_t, FunctionalState);
 uint32_t periph;
@@ -656,7 +655,7 @@ static void i2c_rx_data(struct i2c_priv *p)
 	portBASE_TYPE q_ret, task_woken;
 	if (p->rx_len && !p->error_flag) {
 		uint8_t rx_byte;
-	
+
 		/* Grab the byte out of the buffer and place
 		 * it in the transaction queue */
 		rx_byte = I2C_ReceiveData(p->ll_dev);
@@ -771,7 +770,7 @@ static void i2c_common_event_handler(struct i2c_priv *p)
 			i2c_setup_rx(p);
 		}
 	}
-	
+
 	/* Generate a stop if there is an error detected */
 	if (p->error_flag)
 		I2C_GenerateSTOP(p->ll_dev, ENABLE);

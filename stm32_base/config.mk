@@ -193,7 +193,7 @@ NEWLIB_OBJS += $(addprefix util/, $(NEWLIB_SRC:.c=.o))
 APP_OBJS += $(NEWLIB_OBJS)
 
 #Uncomment the following to use the ITM (trace macrocell) for printf
-APP_DEFINES += -DUSE_ITM -DSD_SDIO -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
+APP_DEFINES += -DUSE_ITM -DSD_SDIO -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX) -DUSE_DMA1=1
 
 # CPU is generally defined by the Board's config.mk file
 ifeq ($(CPU),)
