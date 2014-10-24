@@ -18,10 +18,10 @@ static size_t g_bufferLen;
 
 #define PAUSE_DELAY 500
 
-#define READ_TIMEOUT 334
-#define SHORT_TIMEOUT 1500
-#define MEDIUM_TIMEOUT 5000
-#define CONNECT_TIMEOUT 10000
+#define READ_TIMEOUT 	1000
+#define SHORT_TIMEOUT 	4500
+#define MEDIUM_TIMEOUT 	15000
+#define CONNECT_TIMEOUT 30000
 
 #define NO_CELL_RESPONSE -99
 
@@ -31,7 +31,7 @@ void setCellBuffer(char *buffer, size_t len){
 }
 
 static int readModemWait(Serial *serial, portTickType delay){
-	int c = serial->get_line_wait(g_cellBuffer, g_bufferLen, delay);
+	int c = serial->get_line_wait(g_cellBuffer, g_bufferLen, msToTicks(delay));
 	if (DEBUG_LEVEL && c > 0){
 		printk(DEBUG, "cellRead: ");
 		printk(DEBUG, g_cellBuffer);
@@ -230,10 +230,9 @@ const char * readsCell(Serial *serial, portTickType timeout){
 	return g_cellBuffer;
 }
 
-int isNetConnectionErrorOrClosed(Serial *serial){
-	const char * readData = readsCell(serial, 0);
-	if (strncmp(readData,"CLOSED",6) == 0) return 1;
-	if (strncmp(readData,"ERROR", 5) == 0) return 1;
+int isNetConnectionErrorOrClosed(){
+	if (strncmp(g_cellBuffer,"CLOSED",6) == 0) return 1;
+	if (strncmp(g_cellBuffer,"ERROR", 5) == 0) return 1;
 	return 0;
 }
 
@@ -253,14 +252,7 @@ int configureTexting(Serial *serial){
 }
 
 
-static void powerDownCellModem(Serial *serial){
-	sim900_device_power_button(1);
-	delayMs(2000);
-	sim900_device_power_button(0);
-	delayMs(3000);
-}
-
-static void powerOnCellModem(void){
+static void powerCycleCellModem(void){
 
 	sim900_device_power_button(1);
 	delayMs(2000);
@@ -270,27 +262,29 @@ static void powerOnCellModem(void){
 
 int initCellModem(Serial *serial){
 
-	size_t attempts = 3;
-	while (--attempts){
-		if (closeNet(serial) == 0) break;
-		delayMs(1000);
+	size_t success = 0;
+	size_t attempts = 0;
+
+	while (!success && attempts++ < 3){
+		closeNet(serial);
+
+		if (attempts > 1){
+			pr_debug("SIM900: power cycling\r\n");
+			if (sendCommandOK(serial, "AT\r") == 1 && attempts > 1){
+				pr_debug("SIM900: powering down\r\n");
+				powerCycleCellModem();
+			}
+			powerCycleCellModem();
+		}
+
+		if (sendCommandRetry(serial, "ATZ\r", "OK", 2, 2) != 1) continue;
+		if (sendCommandRetry(serial, "ATE0\r", "OK", 2, 2) != 1) continue;
+		sendCommand(serial, "AT+CIPSHUT\r", "OK");
+		if (isNetworkConnected(serial, 60, 3) != 1) continue;
+		if (isDataReady(serial, 30, 2) != 1) continue;
+		success = 1;
 	}
-
-	if (sendCommandOK(serial, "AT\r") == 1){
-		pr_debug("SIM900: powering down\r\n");
-		powerDownCellModem(serial);
-	}
-
-	powerOnCellModem();
-
-	if (sendCommandRetry(serial, "ATZ\r", "OK", 5, 5) != 1) return -1;
-	if (sendCommandRetry(serial, "ATE0\r", "OK", 2, 2) != 1) return -1;
-	sendCommand(serial, "AT+CIPSHUT\r", "OK");
-
-	if (isNetworkConnected(serial, 60, 3) != 1) return -1;
-	if (isDataReady(serial, 30, 2) != 1) return -1;
-
-	return 0;
+	return success ? 0 : -1;
 }
 
 void deleteAllTexts(Serial *serial){

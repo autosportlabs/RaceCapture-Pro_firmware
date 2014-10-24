@@ -13,7 +13,7 @@ void imu_mock_set_value(unsigned int channel, unsigned int value){
 
 void imu_device_init(){ }
 
-unsigned int imu_device_read(unsigned int channel){
+int imu_device_read(unsigned int channel){
 	return g_imuDevice[channel];
 }
 

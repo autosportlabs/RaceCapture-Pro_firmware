@@ -11,8 +11,8 @@
 #include <i2c_device_stm32.h>
 #include <invensense_9150.h>
 
-#define IMU_DEVICE_COUNTS_PER_G 		8192
-#define IMU_DEVICE_COUNTS_PER_DEGREE_PER_SEC	16.4
+#define IMU_DEVICE_COUNTS_PER_G 		16384
+#define IMU_DEVICE_COUNTS_PER_DEGREE_PER_SEC	32.8
 
 #define ACCEL_MAX_RANGE 	ACCEL_COUNTS_PER_G * 4
 #define IMU_TASK_PRIORITY	(tskIDLE_PRIORITY + 2)
@@ -39,6 +39,9 @@ static void imu_update_task(void *params)
 	i2c_init(i2c1, 400000);
 
 	res = is9150_init(i2c1, IS_9150_ADDR << 1);
+	pr_info("IMU init result=");
+	pr_info_int(res);
+	pr_info("\r\n");
 	(void)res;
 
 	/* Clear the sensor data structures */
@@ -65,7 +68,7 @@ void imu_device_init()
 
 }
 
-unsigned int imu_device_read(unsigned int channel)
+int imu_device_read(unsigned int channel)
 {
 	unsigned int ret = 0;
 

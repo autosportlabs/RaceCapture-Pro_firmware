@@ -11,7 +11,7 @@ void imu_init(LoggerConfig *loggerConfig);
 
 void imu_calibrate_zero();
 
-unsigned int imu_read(unsigned int channel);
+int imu_read(unsigned int channel);
 
 
 #endif /* IMU_H_ */

@@ -395,7 +395,7 @@ static void MCP2515_write_id(uint8_t reg, int extended, uint32_t id){
 	MCP2515_write_reg_values(reg, id_buf, buf_len);
 }
 
-int CAN_device_init(size_t channel, uint32_t baud){
+int CAN_device_init(uint8_t channel, uint32_t baud){
 
 	AT91_CAN_SPI_init();
 	int initSuccess = MCP2515_setup() &&
@@ -469,13 +469,13 @@ static int CAN_device_set_filter_value(uint8_t id, uint8_t extended, uint32_t fi
 	return result;
 }
 
-int CAN_device_set_filter(uint8_t id, uint8_t extended, uint32_t filter, uint32_t mask){
+int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended, uint32_t filter, uint32_t mask){
 	int mask_result = CAN_device_set_mask(id, extended, mask);
 	int filterValue_result = CAN_device_set_filter_value(id, extended, filter);
 	return (mask_result || id > 1) && filterValue_result;
 }
 
-int CAN_device_tx_msg(CAN_msg *msg, unsigned int timeoutMs){
+int CAN_device_tx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs){
 	if (TRACE_LEVEL) trace_output_msg(msg);
 	unsigned int startTicks = getCurrentTicks();
 
@@ -525,7 +525,7 @@ int CAN_device_tx_msg(CAN_msg *msg, unsigned int timeoutMs){
 	return sentMessage;
 }
 
-int CAN_device_rx_msg(CAN_msg *msg, unsigned int timeoutMs){
+int CAN_device_rx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs){
 	unsigned int startTicks = getCurrentTicks();
 	unsigned short standardID = 0;
 	int gotMessage = 0;
