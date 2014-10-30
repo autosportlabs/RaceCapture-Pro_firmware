@@ -65,4 +65,18 @@ float tinyMillisToMinutes(const tiny_millis_t millis);
  */
 float tinyMillisToSeconds(const tiny_millis_t millis);
 
+/**
+ * Hacky method that gets us a rough idea of the amount of time the
+ * system has been up.
+ * <br>
+ * IMPORTANT: This is currently based on the ticks and is
+ * thus only as accurate as the tick rate.  Its subject to sku and
+ * honestly should not be counted on being very accurate.  However since
+ * this is primarily needed by the log file (which takes sampes no faster than
+ * our tick rate), this will be sufficent for now.  Will fix this in
+ * MK3 with a real time clock on chip.
+ * @return The uptime of the sytem in milliseconds.
+ */
+tiny_millis_t getUptime();
+
 #endif //__DATE_TIME_H__

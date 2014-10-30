@@ -6,6 +6,7 @@
 //Hardware capabilities for RCP MK1
 
 #define TICK_RATE_HZ			configTICK_RATE_HZ
+#define MS_PER_TICK 5
 
 //configuration
 #define MAX_CHANNELS			90

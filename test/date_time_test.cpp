@@ -18,15 +18,21 @@
  * Authors: Stieg
  */
 
+#include "capabilities.h"
 #include "dateTime.h"
 #include "date_time_test.h"
-
+#include "gps.h"
+#include "gps.testing.h"
+#include "task.h"
 #include <cppunit/extensions/HelperMacros.h>
 
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( DateTimeTest );
 
-void DateTimeTest::setUp() {}
+void DateTimeTest::setUp() {
+  resetTicks();
+  initGPS();
+}
 
 void DateTimeTest::tearDown() {}
 
@@ -197,4 +203,37 @@ void DateTimeTest::testTinyMillisToSeconds() {
   CPPUNIT_ASSERT_EQUAL(10.0f, tinyMillisToSeconds(10000));
   CPPUNIT_ASSERT_EQUAL(10.001f, tinyMillisToSeconds(10001));
   CPPUNIT_ASSERT_EQUAL(100.001f, tinyMillisToSeconds(100001));
+}
+
+void DateTimeTest::testUptime() {
+  CPPUNIT_ASSERT_EQUAL(0, (int) xTaskGetTickCount());
+  CPPUNIT_ASSERT_EQUAL(0 * MS_PER_TICK, (int) getUptime());
+
+  incrementTick();
+  CPPUNIT_ASSERT_EQUAL(1, (int) xTaskGetTickCount());
+  CPPUNIT_ASSERT_EQUAL(1 * MS_PER_TICK, (int) getUptime());
+
+  incrementTick();
+  CPPUNIT_ASSERT_EQUAL(2, (int) xTaskGetTickCount());
+  CPPUNIT_ASSERT_EQUAL(2 * MS_PER_TICK, (int) getUptime());
+}
+
+void DateTimeTest::testMillisSinceEpoch() {
+  CPPUNIT_ASSERT_EQUAL(0, (int) xTaskGetTickCount());
+  CPPUNIT_ASSERT_EQUAL(0ll, (long long) getMillisSinceEpoch());
+
+  incrementTick();
+  CPPUNIT_ASSERT_EQUAL(1, (int) xTaskGetTickCount());
+  CPPUNIT_ASSERT_EQUAL(0ll, (long long) getMillisSinceEpoch());
+
+  incrementTick();
+  const DateTime d448366080000 = {0, 0, 8, 10, 17, 3, 1984};
+  updateFullDateTime(d448366080000);
+
+  CPPUNIT_ASSERT_EQUAL(2, (int) xTaskGetTickCount());
+  CPPUNIT_ASSERT_EQUAL(448366080000ll + 0 * MS_PER_TICK, (long long) getMillisSinceEpoch());
+
+  incrementTick();
+  CPPUNIT_ASSERT_EQUAL(3, (int) xTaskGetTickCount());
+  CPPUNIT_ASSERT_EQUAL(448366080000ll + 1 * MS_PER_TICK, (long long) getMillisSinceEpoch());
 }

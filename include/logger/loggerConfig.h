@@ -13,6 +13,7 @@
 #define CONFIG_FEATURE_NOT_INSTALLED		0
 
 //Number of channels per feature
+#define CONFIG_TIME_CHANNELS 2
 #define CONFIG_ADC_CHANNELS					8
 #define CONFIG_IMU_CHANNELS					4
 #define CONFIG_GPIO_CHANNELS				3
@@ -65,6 +66,24 @@ typedef struct _ScalingMap{
 	unsigned short rawValues[ANALOG_SCALING_BINS];
 	float scaledValues[ANALOG_SCALING_BINS];
 } ScalingMap;
+
+enum TimeType {
+   TimeType_Uptime,
+   TimeType_UtcMillis,
+};
+
+struct TimeConfig {
+   ChannelConfig cfg;
+   enum TimeType tt;
+};
+
+#define DEFAULT_UPTIME_CONFIG {{CHANNEL_Interval, SAMPLE_DISABLED}, TimeType_Uptime}
+#define DEFAULT_UTC_MILLIS_CONFIG {{CHANNEL_Utc, SAMPLE_DISABLED}, TimeType_UtcMillis}
+#define DEFAULT_TIME_CONFIGS                    \
+   {                                            \
+      DEFAULT_UPTIME_CONFIG,                    \
+      DEFAULT_UTC_MILLIS_CONFIG                 \
+   }
 
 typedef struct _ADCConfig{
 	ChannelConfig cfg;
@@ -471,6 +490,9 @@ typedef struct _ConnectivityConfig {
 										}
 
 typedef struct _LoggerConfig {
+   // Time Config
+   struct TimeConfig TimeConfigs[CONFIG_TIME_CHANNELS];
+
 	//ADC Calibrations
 	ADCConfig ADCConfigs[CONFIG_ADC_CHANNELS];
 	//PWM/Analog out configurations
@@ -501,6 +523,7 @@ typedef struct _LoggerConfig {
 
 #define DEFAULT_LOGGER_CONFIG \
 	{ \
+        DEFAULT_TIME_CONFIGS, \
 	DEFAULT_ADC_CONFIGS, \
 	DEFAULT_PWM_CLOCK_FREQUENCY, \
 	DEFAULT_PWM_CONFIGS, \

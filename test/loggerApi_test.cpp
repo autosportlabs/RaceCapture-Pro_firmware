@@ -621,7 +621,7 @@ void LoggerApiTest::testGetMeta(){
 	string expectedResponseJson = readFile("getMeta_response.json");
 
 	CPPUNIT_ASSERT_EQUAL(expectedResponseJson,
-                             getSampleResponse(requestJson));
+                        getSampleResponse(requestJson));
 }
 
 void LoggerApiTest::testSampleData(){
@@ -629,13 +629,13 @@ void LoggerApiTest::testSampleData(){
 	string expectedResponseJson1 = readFile("sampleData_response1.json");
 
 	CPPUNIT_ASSERT_EQUAL(expectedResponseJson1,
-                             getSampleResponse(requestJson1));
+                        getSampleResponse(requestJson1));
 
 	string requestJson2 = readFile("sampleData2.json");
 	string expectedResponseJson2 = readFile("sampleData_response2.json");
 
 	CPPUNIT_ASSERT_EQUAL(expectedResponseJson2,
-                             getSampleResponse(requestJson2));
+                        getSampleResponse(requestJson2));
 }
 
 void LoggerApiTest::testLogStartStopFile(string filename){

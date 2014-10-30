@@ -130,7 +130,6 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
          dt.second = (int8_t) atoiOffsetLenSafe(utcTimeStr, 4, 2);
          dt.millisecond = (int16_t) atoiOffsetLenSafe(utcTimeStr, 7, 3);
          updateFullDateTime(dt);
-         updateMillisSinceEpoch(dt);
 
          const unsigned long millis = getMillisSinceEpoch();
          printf("---\n");

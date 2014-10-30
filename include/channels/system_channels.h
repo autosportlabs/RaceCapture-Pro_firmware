@@ -66,12 +66,14 @@ CHANNEL_Sector = 60 ,
 CHANNEL_SectorTime = 61 ,
 CHANNEL_LapTime = 62 ,
 CHANNEL_PredTime = 63 ,
-CHANNEL_LapCount = 64 
+CHANNEL_LapCount = 64 ,
+CHANNEL_Interval = 65 ,
+CHANNEL_Utc = 66 
 } ChannelIds;
 
 #define DEFAULT_CHANNEL_META { \
 MAGIC_NUMBER_CHANNEL_INIT, \
-65, \
+67, \
 { \
 {"Unknown", "", 0, 1, 0, 1024} , \
 {"Analog1", "", 2, 3, 0, 5} , \
@@ -137,7 +139,9 @@ MAGIC_NUMBER_CHANNEL_INIT, \
 {"SectorTime", "Min", 4, 15, 0, 0} , \
 {"LapTime", "Min", 4, 15, 0, 0} , \
 {"PredTime", "Min", 4, 15, 0, 0} , \
-{"LapCount", "Count", 0, 15, 0, 1000}  \
+{"LapCount", "Count", 0, 15, 0, 1000} , \
+{"Interval", "ms", 0, 15, 0, 2000000000} , \
+{"Utc", "ms", 0, 15, 0, 2000000000}  \
 } \
 }
 #endif

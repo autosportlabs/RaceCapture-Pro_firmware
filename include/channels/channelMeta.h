@@ -25,7 +25,7 @@
 #define CHANNEL_TYPE_GPS				6
 #define CHANNEL_TYPE_STATISTICS			7
 
-#define MAGIC_NUMBER_CHANNEL_INIT		0xDECAFBAD
+#define MAGIC_NUMBER_CHANNEL_INIT		0xDEADBEE7
 
 typedef struct _ChannelName{
 	char label[DEFAULT_LABEL_LENGTH];

@@ -2,8 +2,12 @@
  * Racecapture
  */
 
-#include "dateTime.h"
 #include <stdbool.h>
+
+#include "capabilities.h"
+#include "dateTime.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 bool isLeapYear(const int year) {
    /*
@@ -120,4 +124,8 @@ float tinyMillisToMinutes(const tiny_millis_t millis) {
 float tinyMillisToSeconds(const tiny_millis_t millis) {
    return ((float) (millis / MILLIS_PER_SECOND)) +
       (((float) (millis % MILLIS_PER_SECOND)) / MILLIS_PER_SECOND);
+}
+
+tiny_millis_t getUptime() {
+   return (tiny_millis_t) (MS_PER_TICK * xTaskGetTickCount());
 }

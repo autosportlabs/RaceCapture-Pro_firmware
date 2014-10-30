@@ -48,7 +48,7 @@ void initialize_logger_config(){
 }
 
 const LoggerConfig * getSavedLoggerConfig(){
-	return &g_savedLoggerConfig;	
+	return &g_savedLoggerConfig;
 }
 
 LoggerConfig * getWorkingLoggerConfig(){
@@ -141,8 +141,8 @@ char filterGpioMode(int value){
 			return CONFIG_GPIO_OUT;
 		case CONFIG_GPIO_IN:
 		default:
-			return CONFIG_GPIO_IN;	
-	}	
+			return CONFIG_GPIO_IN;
+	}
 }
 
 char filterPwmOutputMode(int value){
@@ -213,7 +213,7 @@ int filterImuChannel(int config){
 		case IMU_CHANNEL_X:
 			return IMU_CHANNEL_X;
 	}
-}	
+}
 
 int filterImuRawValue(int imuRawValue){
 	if (imuRawValue > MAX_IMU_RAW){
@@ -249,9 +249,9 @@ unsigned short filterPwmPeriod(int period){
 	if (period > MAX_PWM_PERIOD){
 		period = MAX_PWM_PERIOD;
 	} else if (period < MIN_PWM_PERIOD){
-		period = MIN_PWM_PERIOD;		
+		period = MIN_PWM_PERIOD;
 	}
-	return period;		
+	return period;
 }
 
 int filterPwmClockFrequency(int freq){
@@ -266,7 +266,7 @@ int filterPwmClockFrequency(int freq){
 PWMConfig * getPwmConfigChannel(int channel){
 	PWMConfig * c = NULL;
 	if (channel >= 0 && channel < CONFIG_PWM_CHANNELS){
-		c = &(getWorkingLoggerConfig()->PWMConfigs[channel]);	
+		c = &(getWorkingLoggerConfig()->PWMConfigs[channel]);
 	}
 	return c;
 }
@@ -282,7 +282,7 @@ TimerConfig * getTimerConfigChannel(int channel){
 ADCConfig * getADCConfigChannel(int channel){
 	ADCConfig *c = NULL;
 	if (channel >=0 && channel < CONFIG_ADC_CHANNELS){
-		c = &(getWorkingLoggerConfig()->ADCConfigs[channel]);		
+		c = &(getWorkingLoggerConfig()->ADCConfigs[channel]);
 	}
 	return c;
 }
@@ -290,9 +290,9 @@ ADCConfig * getADCConfigChannel(int channel){
 GPIOConfig * getGPIOConfigChannel(int channel){
 	GPIOConfig *c = NULL;
 	if (channel >=0 && channel < CONFIG_GPIO_CHANNELS){
-		c = &(getWorkingLoggerConfig()->GPIOConfigs[channel]);	
+		c = &(getWorkingLoggerConfig()->GPIOConfigs[channel]);
 	}
-	return c;	
+	return c;
 }
 
 ImuConfig * getImuConfigChannel(int channel){
@@ -300,13 +300,18 @@ ImuConfig * getImuConfigChannel(int channel){
 	if (channel >= 0 && channel < CONFIG_IMU_CHANNELS){
 		c = &(getWorkingLoggerConfig()->ImuConfigs[channel]);
 	}
-	return c;		
+	return c;
 }
 
 unsigned int getHighestSampleRate(LoggerConfig *config){
+   /*
+    * Bypass Interval and Utc here since they will always be logging
+    * at the highest rate based on the results of this very method
+    */
 
 	//start with the slowest sample rate
 	int s = SAMPLE_1Hz;
+
 	//find the fastest sample rate
 	for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
 		int sr = config->ADCConfigs[i].cfg.sampleRate;
@@ -360,7 +365,8 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
 }
 
 size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
-	size_t channels = 0;
+	size_t channels = 2; // Always have Interval (Uptime) and Utc
+
 	for (int i=0; i < CONFIG_IMU_CHANNELS; i++){
 		if (loggerConfig->ImuConfigs[i].cfg.sampleRate != SAMPLE_DISABLED) channels++;
 	}
@@ -402,5 +408,3 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
 	channels += get_virtual_channel_count();
 	return channels;
 }
-
-

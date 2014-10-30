@@ -35,6 +35,8 @@ class DateTimeTest : public CppUnit::TestFixture
    CPPUNIT_TEST( testTinyMillisToMinutes );
    CPPUNIT_TEST( testTinyMillisToSeconds );
    CPPUNIT_TEST( testGetDeltaInMillis );
+   CPPUNIT_TEST( testUptime );
+   CPPUNIT_TEST( testMillisSinceEpoch );
    CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -49,6 +51,8 @@ class DateTimeTest : public CppUnit::TestFixture
    void testMillisToSeconds();
    void testTinyMillisToMinutes();
    void testTinyMillisToSeconds();
+   void testUptime();
+   void testMillisSinceEpoch();
 };
 
 

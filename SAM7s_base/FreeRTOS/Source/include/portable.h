@@ -36,27 +36,6 @@
 
 #ifndef PORTABLE_H
 #define PORTABLE_H
-#include "portmacro.h"
-
-#if portBYTE_ALIGNMENT == 8
-	#define portBYTE_ALIGNMENT_MASK ( 0x0007 )
-#endif
-
-#if portBYTE_ALIGNMENT == 4
-	#define portBYTE_ALIGNMENT_MASK	( 0x0003 )
-#endif
-
-#if portBYTE_ALIGNMENT == 2
-	#define portBYTE_ALIGNMENT_MASK	( 0x0001 )
-#endif
-
-#if portBYTE_ALIGNMENT == 1
-	#define portBYTE_ALIGNMENT_MASK	( 0x0000 )
-#endif
-
-#ifndef portBYTE_ALIGNMENT_MASK
-	#error "Invalid portBYTE_ALIGNMENT definition"
-#endif
 
 /* Include the macro file relevant to the port being used. */
 
@@ -125,7 +104,7 @@
 #ifdef STR91X_IAR
 	#include "..\..\Source\portable\IAR\STR91x\portmacro.h"
 #endif
-	
+
 #ifdef GCC_H8S
 	#include "../../Source/portable/GCC/H8S2329/portmacro.h"
 #endif
@@ -145,10 +124,10 @@
 #ifdef IAR_ARMCM3_LM
 	#include "../../Source/portable/IAR/ARM_CM3/portmacro.h"
 #endif
-	
+
 #ifdef HCS12_CODE_WARRIOR
 	#include "../../Source/portable/CodeWarrior/HCS12/portmacro.h"
-#endif	
+#endif
 
 #ifdef MICROBLAZE_GCC
 	#include "../../Source/portable/GCC/MicroBlaze/portmacro.h"
@@ -179,10 +158,32 @@
     typedef void ( __interrupt __far *pxISR )();
 #endif
 
+#if portBYTE_ALIGNMENT == 8
+	#define portBYTE_ALIGNMENT_MASK ( 0x0007 )
+#endif
+
+#if portBYTE_ALIGNMENT == 4
+	#define portBYTE_ALIGNMENT_MASK	( 0x0003 )
+#endif
+
+#if portBYTE_ALIGNMENT == 2
+	#define portBYTE_ALIGNMENT_MASK	( 0x0001 )
+#endif
+
+#if portBYTE_ALIGNMENT == 1
+	#define portBYTE_ALIGNMENT_MASK	( 0x0000 )
+#endif
+
+#ifndef portBYTE_ALIGNMENT_MASK
+	#error "Invalid portBYTE_ALIGNMENT definition"
+#endif
+
+
 /*
  * Map to the memory management routines required for the port.
  */
 #include "heap.h"
+// #include "projdefs.h" // If you get errors related to this, include FreeRTOS.h first.
 
 /*
  * Setup the stack of a new task so it is ready to be placed under the
@@ -210,4 +211,3 @@ void vPortEndScheduler( void );
 
 
 #endif /* PORTABLE_H */
-

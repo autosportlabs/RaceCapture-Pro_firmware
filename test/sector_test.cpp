@@ -142,7 +142,6 @@ void SectorTest::testSectorTimes(){
               dt.second = (int8_t) atoiOffsetLenSafe(utcTimeStr, 4, 2);
               dt.millisecond = (int16_t) atoiOffsetLenSafe(utcTimeStr, 7, 3);
               updateFullDateTime(dt);
-              updateMillisSinceEpoch(dt);
 
               setGPSSpeed(speed);
               updatePosition(lat, lon);
@@ -238,7 +237,6 @@ void SectorTest::testStageSectorTimes() {
 
     dt.second = seconds++;
     updateFullDateTime(dt);
-    updateMillisSinceEpoch(dt);
     updatePosition(gp->latitude, gp->longitude);
 
     onLocationUpdated();

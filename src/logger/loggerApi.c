@@ -285,21 +285,37 @@ void api_sendSampleRecord(Serial *serial, ChannelSample *channelSamples, size_t 
 	unsigned int channelsBitmask = 0;
 	json_arrayStart(serial, "d");
 	ChannelSample *sample = channelSamples;
-	for (size_t i = 0; i < channelCount; i++){
-		const Channel *channel = get_channel(sample->channelId);
-		if (NIL_SAMPLE != sample->intValue){
-			channelsBitmask = channelsBitmask | (1 << i);
-			int precision = channel->precision;
-			if (precision > 0){
-				put_float(serial, sample->floatValue, precision);
-			}
-			else{
-				put_int(serial, sample->intValue);
-			}
-			serial->put_c(',');
-		}
-		sample++;
+	for (size_t i = 0; i < channelCount; i++, sample++) {
+           const Channel *channel = get_channel(sample->channelId);
+
+           // XXX: This may cause issues since we now do longs.  Probably should fix it.
+           if (NIL_SAMPLE != sample->valueInt) {
+              channelsBitmask = channelsBitmask | (1 << i);
+              const int precision = channel->precision;
+
+              enum SampleData sData = sample->sampleData;
+              // XXX: Hack to deal with precision == 0 fix.
+              if (precision == 0)
+                 sData = SampleData_Int;
+
+              switch(sData) {
+              case SampleData_Float:
+                 put_float(serial, sample->valueFloat, precision);
+                 break;
+              case SampleData_Int:
+                 put_int(serial, sample->valueInt);
+                 break;
+              case SampleData_LongLong:
+                 put_ll(serial, sample->valueLongLong);
+                 break;
+              default:
+                 pr_warning("Got to unexpected location in sendSampleRecord\n");
+              }
+
+              serial->put_c(',');
+           }
 	}
+
 	put_uint(serial, channelsBitmask);
 	json_arrayEnd(serial, 0);
 

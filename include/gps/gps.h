@@ -1,3 +1,23 @@
+/**
+ * Race Capture Pro Firmware
+ *
+ * Copyright (C) 2014 Autosport Labs
+ *
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should have received a copy of the GNU
+ * General Public License along with this code. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authors: Stieg
+ */
+
 #ifndef GPS_H_
 #define GPS_H_
 
@@ -91,7 +111,7 @@ void setGPSSpeed(float speed);
 DateTime getLastFixDateTime();
 
 /**
- * @return Milliseconds since Unix Epoch.
+ * @return Milliseconds since Unix Epoch.  0 indicates not available.
  */
 millis_t getMillisSinceEpoch();
 
@@ -111,5 +131,10 @@ GeoPoint getGeoPoint();
  * @return Milliseconds since our first fix.
  */
 tiny_millis_t getMillisSinceFirstFix();
+
+/**
+ * @return The uptime when our most recent GPS sample was taken.  0 indicates no sample.
+ */
+tiny_millis_t getUptimeAtSample();
 
 #endif /*GPS_H_*/
