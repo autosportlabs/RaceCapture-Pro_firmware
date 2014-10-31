@@ -1099,12 +1099,9 @@ static void setTrack(const jsmntok_t *trackNode, Track *track){
 		size_t maxSectors = CIRCUIT_SECTOR_COUNT;
 		if (trackType == TRACK_TYPE_CIRCUIT){
 			setGeoPointIfExists(trackNode, "sf", &track->circuit.startFinish);
-		}
-		else{
-         GeoPoint start = getStartPoint(track);
-         GeoPoint finish = getFinishPoint(track);
-			setGeoPointIfExists(trackNode, "st", &start);
-			setGeoPointIfExists(trackNode, "fin", &finish);
+		} else {
+			setGeoPointIfExists(trackNode, "st", &(track->stage.start));
+			setGeoPointIfExists(trackNode, "fin", &(track->stage.finish));
 			sectorsList = track->stage.sectors;
 			maxSectors = STAGE_SECTOR_COUNT;
 		}
