@@ -94,7 +94,6 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/tracks/tracks.c \
 			$(RCP_SRC)/auto_config/auto_track.c \
 			$(RCP_SRC)/messaging/messaging.c \
-			$(RCP_SRC)/channels/channelMeta.c \
 			$(RCP_SRC)/LED/LED.c \
 			$(RCP_SRC)/PWM/PWM.c \
 			$(RCP_SRC)/logging/printk.c \

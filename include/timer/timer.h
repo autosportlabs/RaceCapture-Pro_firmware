@@ -2,6 +2,7 @@
 #define TIMER_H_
 #include "loggerConfig.h"
 
+// STIEG: Change these to functions to save space.
 #define TIMER_PERIOD_TO_USEC(TICKS, SCALING) (unsigned int)((TICKS * 100000) / (SCALING / 10))
 #define TIMER_PERIOD_TO_MS(TICKS, SCALING) (unsigned int)(TICKS * 1000) / SCALING
 #define TIMER_PERIOD_TO_HZ(TICKS, SCALING) 1000000 / TIMER_PERIOD_TO_USEC(TICKS, SCALING)

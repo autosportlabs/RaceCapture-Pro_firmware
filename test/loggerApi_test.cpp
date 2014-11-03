@@ -13,7 +13,6 @@
 #include "imu.h"
 #include "cpu.h"
 #include "loggerConfig.h"
-#include "channelMeta.h"
 #include "jsmn.h"
 #include "mod_string.h"
 #include "modp_atonum.h"
@@ -175,64 +174,91 @@ void LoggerApiTest::testUnescapeTextField(){
 
 }
 
+void LoggerApiTest::populateChannelConfig(ChannelConfig *cfg, const int i, const int splRt) {
+   sprintf(cfg->label, "testName_%d", i);
+   sprintf(cfg->units, "unit_%d", i);
+   cfg->min = 0.1 + i;
+   cfg->max = 100.1 + i;
+   cfg->sampleRate = encodeSampleRate(splRt);
+   cfg->precision = (unsigned char) i + 1;
+}
+
+void LoggerApiTest::checkChannelConfig(Object &json, const int i, string &iString, const int splRt) {
+   string expNmStr = string("testName_") + iString;
+   CPPUNIT_ASSERT_EQUAL(expNmStr, string((String)json["nm"]));
+
+   string expUtStr = string("unit_") + iString;
+   CPPUNIT_ASSERT_EQUAL(expUtStr, string((String)json["ut"]));
+
+   CPPUNIT_ASSERT_EQUAL(0.1f + i, (float)(Number)json["min"]);
+   CPPUNIT_ASSERT_EQUAL(100.1f + i, (float)(Number)json["max"]);
+
+   CPPUNIT_ASSERT_EQUAL(i + 1, (int)(Number)json["prec"]);
+   CPPUNIT_ASSERT_EQUAL(splRt, (int)(Number)json["sr"]);
+}
+
 void LoggerApiTest::testGetMultipleAnalogCfg(){
+   LoggerConfig *c = getWorkingLoggerConfig();
 
-	LoggerConfig *c = getWorkingLoggerConfig();
-	for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
+   for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
+      ADCConfig *analogCfg = &c->ADCConfigs[i];
 
-		ADCConfig *analogCfg = &c->ADCConfigs[i];
+      populateChannelConfig(&(analogCfg->cfg), i, 100);
 
-		analogCfg->cfg.channeId = CHANNEL_Analog1 + i;
-		analogCfg->cfg.sampleRate = encodeSampleRate(100);
-		analogCfg->linearScaling = 3.21 + i;
-		analogCfg->linearOffset = 9.0 + i;
-		analogCfg->scalingMode = i;
+      analogCfg->linearScaling = 3.21 + i;
+      analogCfg->linearOffset = 9.0 + i;
+      analogCfg->scalingMode = i;
 
-		for (int x = 0; x < ANALOG_SCALING_BINS; x++){
-			analogCfg->scalingMap.rawValues[x] = i * x;
-		}
+      for (int x = 0; x < ANALOG_SCALING_BINS; x++){
+         analogCfg->scalingMap.rawValues[x] = i * x;
+      }
 
-		for (int x = 0; x < ANALOG_SCALING_BINS; x++){
-			analogCfg->scalingMap.scaledValues[x] = float(i * x) + 0.1F;
-		}
-	}
+      for (int x = 0; x < ANALOG_SCALING_BINS; x++){
+         analogCfg->scalingMap.scaledValues[x] = float(i * x) + 0.1F;
+      }
+   }
 
-	char * response = processApiGeneric("getAnalogCfg3.json");
+   char * response = processApiGeneric("getAnalogCfg3.json");
 
-	Object json;
-	stringToJson(response, json);
+   Object json;
+   stringToJson(response, json);
 
-	for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
-		std::ostringstream stringStream;
-		stringStream << i;
-		Object &analogJson = json["analogCfg"][stringStream.str().c_str()];
+   for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
+      std::ostringstream stringStream;
+      stringStream << i;
+      string iString = stringStream.str();
 
-		CPPUNIT_ASSERT_EQUAL(1 + i, (int)(Number)analogJson["id"]);
-		CPPUNIT_ASSERT_EQUAL(100, (int)(Number)analogJson["sr"]);
-		CPPUNIT_ASSERT_EQUAL(3.21F + i, (float)(Number)analogJson["scaling"]);
-		CPPUNIT_ASSERT_EQUAL(9.0F + i, (float)(Number)analogJson["offset"]);
-		CPPUNIT_ASSERT_EQUAL(i, (int)(Number)analogJson["scalMod"]);
+      Object &analogJson = json["analogCfg"][iString];
 
-		Object scalMap = (Object)analogJson["map"];
-		Array raw = (Array)scalMap["raw"];
-		Array scal = (Array)scalMap["scal"];
+      checkChannelConfig(analogJson, i, iString, 100);
 
-		for (int x = 0; x < ANALOG_SCALING_BINS; x++){
-			CPPUNIT_ASSERT_EQUAL(i * x, (int)(Number)raw[x]);
-		}
-		for (int x = 0; x < ANALOG_SCALING_BINS; x++){
-			CPPUNIT_ASSERT_EQUAL((float)(i * x) + 0.1F, (float)(Number)scal[x]);
-		}
-	}
+      CPPUNIT_ASSERT_EQUAL(3.21F + i, (float)(Number)analogJson["scaling"]);
+      CPPUNIT_ASSERT_EQUAL(9.0F + i, (float)(Number)analogJson["offset"]);
+      CPPUNIT_ASSERT_EQUAL(i, (int)(Number)analogJson["scalMod"]);
+
+      Object scalMap = (Object)analogJson["map"];
+      Array raw = (Array)scalMap["raw"];
+      Array scal = (Array)scalMap["scal"];
+
+      for (int x = 0; x < ANALOG_SCALING_BINS; x++){
+         CPPUNIT_ASSERT_EQUAL(i * x, (int)(Number)raw[x]);
+      }
+      for (int x = 0; x < ANALOG_SCALING_BINS; x++){
+         CPPUNIT_ASSERT_EQUAL((float)(i * x) + 0.1F, (float)(Number)scal[x]);
+      }
+   }
 }
 
 void LoggerApiTest::testGetAnalogConfigFile(string filename, int index){
+	std::ostringstream stringStream;
+	stringStream << index;
+        string iStr = stringStream.str();
 
 	LoggerConfig *c = getWorkingLoggerConfig();
 	ADCConfig *analogCfg = &c->ADCConfigs[index];
 
-	analogCfg->cfg.channeId = 1;
-	analogCfg->cfg.sampleRate = encodeSampleRate(50);
+        populateChannelConfig(&(analogCfg->cfg), index, 50);
+
 	analogCfg->linearScaling = 1.234F;
 	analogCfg->linearOffset = 9.9F;
 	analogCfg->scalingMode = 2;
@@ -252,12 +278,10 @@ void LoggerApiTest::testGetAnalogConfigFile(string filename, int index){
 	Object json;
 	stringToJson(response, json);
 
-	std::ostringstream stringStream;
-	stringStream << index;
-	Object &analogJson = json["analogCfg"][stringStream.str()];
+	Object &analogJson = json["analogCfg"][iStr];
 
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["id"]);
-	CPPUNIT_ASSERT_EQUAL(50, (int)(Number)analogJson["sr"]);
+        checkChannelConfig(analogJson, index, iStr, 50);
+
 	CPPUNIT_ASSERT_EQUAL(1.234F, (float)(Number)analogJson["scaling"]);
 	CPPUNIT_ASSERT_EQUAL(9.9F, (float)(Number)analogJson["offset"]);
 	CPPUNIT_ASSERT_EQUAL(0.6F, (float)(Number)analogJson["alpha"]);
@@ -294,9 +318,13 @@ void LoggerApiTest::testSetAnalogConfigFile(string filename){
 
 	ADCConfig *adcCfg = &c->ADCConfigs[0];
 
-
-	CPPUNIT_ASSERT_EQUAL(1, (int)adcCfg->cfg.channeId);
-	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(adcCfg->cfg.sampleRate));
+        ChannelConfig *cfg = &adcCfg->cfg;
+        CPPUNIT_ASSERT_EQUAL(string("I <3 Racing"), string(cfg->label));
+        CPPUNIT_ASSERT_EQUAL(string("Wheels"), string(cfg->units));
+        CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
+        CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
+	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(cfg->sampleRate));
+	CPPUNIT_ASSERT_EQUAL(1, (int)cfg->precision);
 
 	CPPUNIT_ASSERT_EQUAL(2, (int)adcCfg->scalingMode);
 	CPPUNIT_ASSERT_EQUAL(1.234F, adcCfg->linearScaling);
@@ -331,8 +359,8 @@ void LoggerApiTest::testGetImuConfigFile(string filename, int index){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	ImuConfig *imuCfg = &c->ImuConfigs[index];
 
-	imuCfg->cfg.channeId = 1;
-	imuCfg->cfg.sampleRate = encodeSampleRate(100);
+        populateChannelConfig(&imuCfg->cfg, index, 100);
+
 	imuCfg->mode = 1;
 	imuCfg->physicalChannel = 3;
 	imuCfg->zeroValue = 1234;
@@ -345,10 +373,11 @@ void LoggerApiTest::testGetImuConfigFile(string filename, int index){
 
 	std::ostringstream stringStream;
 	stringStream << index;
-	Object &imuJson = json["imuCfg"][stringStream.str()];
+        string iStr = stringStream.str();
 
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)imuJson["id"]);
-	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)imuJson["sr"]);
+	Object &imuJson = json["imuCfg"][iStr];
+
+        checkChannelConfig(imuJson, index, iStr, 100);
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)imuJson["mode"]);
 	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)imuJson["chan"]);
@@ -370,8 +399,14 @@ void LoggerApiTest::testSetImuConfigFile(string filename){
 
 	ImuConfig *imuCfg = &c->ImuConfigs[0];
 
-	CPPUNIT_ASSERT_EQUAL(33, (int)imuCfg->cfg.channeId);
-	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(imuCfg->cfg.sampleRate));
+        ChannelConfig *cfg = &imuCfg->cfg;
+        CPPUNIT_ASSERT_EQUAL(string("I <3 Inerta"), string(cfg->label));
+        CPPUNIT_ASSERT_EQUAL(string("Forces"), string(cfg->units));
+        CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
+        CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
+	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(cfg->sampleRate));
+	CPPUNIT_ASSERT_EQUAL(1, (int)cfg->precision);
+
 	CPPUNIT_ASSERT_EQUAL(1, (int)imuCfg->mode);
 	CPPUNIT_ASSERT_EQUAL(2, (int)imuCfg->physicalChannel);
 	CPPUNIT_ASSERT_EQUAL(1234, (int)imuCfg->zeroValue);
@@ -446,8 +481,8 @@ void LoggerApiTest::testGetPwmConfigFile(string filename, int index){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	PWMConfig *pwmCfg = &c->PWMConfigs[index];
 
-	pwmCfg->cfg.channeId = 1;
-	pwmCfg->cfg.sampleRate = encodeSampleRate(100);
+        populateChannelConfig(&pwmCfg->cfg, index, 100);
+
 	pwmCfg->outputMode = 3;
 	pwmCfg->loggingMode = 1;
 	pwmCfg->startupDutyCycle = 55;
@@ -460,10 +495,12 @@ void LoggerApiTest::testGetPwmConfigFile(string filename, int index){
 
 	std::ostringstream stringStream;
 	stringStream << index;
-	Object &analogJson = json["pwmCfg"][stringStream.str()];
+        string iStr = stringStream.str();
 
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["id"]);
-	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)analogJson["sr"]);
+	Object &analogJson = json["pwmCfg"][iStr];
+
+        checkChannelConfig(analogJson, index, iStr, 100);
+
 	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)analogJson["outMode"]);
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["logMode"]);
 	CPPUNIT_ASSERT_EQUAL(55, (int)(Number)analogJson["stDutyCyc"]);
@@ -483,8 +520,15 @@ void LoggerApiTest::testSetPwmConfigFile(string filename){
 
 	LoggerConfig *c = getWorkingLoggerConfig();
 	PWMConfig *pwmCfg = &c->PWMConfigs[0];
-	CPPUNIT_ASSERT_EQUAL(100, decodeSampleRate(pwmCfg->cfg.sampleRate));
-	CPPUNIT_ASSERT_EQUAL(39, (int)pwmCfg->cfg.channeId);
+
+        ChannelConfig *cfg = &pwmCfg->cfg;
+        CPPUNIT_ASSERT_EQUAL(string("I <3 Pulses"), string(cfg->label));
+        CPPUNIT_ASSERT_EQUAL(string("Hertz"), string(cfg->units));
+        CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
+        CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
+	CPPUNIT_ASSERT_EQUAL(100, decodeSampleRate(cfg->sampleRate));
+	CPPUNIT_ASSERT_EQUAL(1, (int)cfg->precision);
+
 	CPPUNIT_ASSERT_EQUAL(1, (int)pwmCfg->outputMode);
 	CPPUNIT_ASSERT_EQUAL(1, (int)pwmCfg->loggingMode);
 	CPPUNIT_ASSERT_EQUAL(50, (int)pwmCfg->startupDutyCycle);
@@ -503,8 +547,7 @@ void LoggerApiTest::testGetGpioConfigFile(string filename, int index){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	GPIOConfig *gpioCfg = &c->GPIOConfigs[index];
 
-	gpioCfg->cfg.channeId = 1;
-	gpioCfg->cfg.sampleRate = encodeSampleRate(100);
+        populateChannelConfig(&gpioCfg->cfg, index, 100);
 	gpioCfg->mode = 1;
 
 	char * response = processApiGeneric(filename);
@@ -514,10 +557,11 @@ void LoggerApiTest::testGetGpioConfigFile(string filename, int index){
 
 	std::ostringstream stringStream;
 	stringStream << index;
-	Object &analogJson = json["gpioCfg"][stringStream.str()];
+        string iStr = stringStream.str();
 
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["id"]);
-	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)analogJson["sr"]);
+	Object &analogJson = json["gpioCfg"][iStr];
+
+        checkChannelConfig(analogJson, index, iStr, 100);
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["mode"]);
 }
 
@@ -534,8 +578,14 @@ void LoggerApiTest::testSetGpioConfigFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	GPIOConfig *gpioCfg = &c->GPIOConfigs[0];
 
-	CPPUNIT_ASSERT_EQUAL(55, (int)gpioCfg->cfg.channeId);
-	CPPUNIT_ASSERT_EQUAL(100, decodeSampleRate(gpioCfg->cfg.sampleRate));
+        ChannelConfig *cfg = &gpioCfg->cfg;
+        CPPUNIT_ASSERT_EQUAL(string("I <3 GenIO"), string(cfg->label));
+        CPPUNIT_ASSERT_EQUAL(string("Sexynss"), string(cfg->units));
+        CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
+        CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
+	CPPUNIT_ASSERT_EQUAL(100, decodeSampleRate(cfg->sampleRate));
+	CPPUNIT_ASSERT_EQUAL(1, (int)cfg->precision);
+
 	CPPUNIT_ASSERT_EQUAL(1, (int)gpioCfg->mode);
 
 	char *txBuffer = mock_getTxBuffer();
@@ -551,8 +601,8 @@ void LoggerApiTest::testGetTimerConfigFile(string filename, int index){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	TimerConfig *timerCfg = &c->TimerConfigs[index];
 
-	timerCfg->cfg.channeId = 1;
-	timerCfg->cfg.sampleRate = encodeSampleRate(100);
+        populateChannelConfig(&timerCfg->cfg, index, 100);
+
 	timerCfg->slowTimerEnabled = 1;
 	timerCfg->mode = 2;
 	timerCfg->filterAlpha = 0.5F;
@@ -566,10 +616,11 @@ void LoggerApiTest::testGetTimerConfigFile(string filename, int index){
 
 	std::ostringstream stringStream;
 	stringStream << index;
-	Object &timerJson = json["timerCfg"][stringStream.str()];
+        string iStr = stringStream.str();
 
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)timerJson["id"]);
-	CPPUNIT_ASSERT_EQUAL(100, (int)(Number)timerJson["sr"]);
+	Object &timerJson = json["timerCfg"][iStr];
+
+        checkChannelConfig(timerJson, index, iStr, 100);
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)timerJson["st"]);
 	CPPUNIT_ASSERT_EQUAL(2, (int)(Number)timerJson["mode"]);
 	CPPUNIT_ASSERT_EQUAL(0.5F, (float)(Number)timerJson["alpha"]);
@@ -590,8 +641,14 @@ void LoggerApiTest::testSetTimerConfigFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	TimerConfig *timerCfg = &c->TimerConfigs[0];
 
-	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(timerCfg->cfg.sampleRate));
-	CPPUNIT_ASSERT_EQUAL(22, (int)timerCfg->cfg.channeId);
+        ChannelConfig *cfg = &timerCfg->cfg;
+        CPPUNIT_ASSERT_EQUAL(string("I <3 Timing"), string(cfg->label));
+        CPPUNIT_ASSERT_EQUAL(string("seconds"), string(cfg->units));
+        CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
+        CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
+	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(cfg->sampleRate));
+	CPPUNIT_ASSERT_EQUAL(1, (int)cfg->precision);
+
 	CPPUNIT_ASSERT_EQUAL(1, (int)timerCfg->slowTimerEnabled);
 	CPPUNIT_ASSERT_EQUAL(1, (int)timerCfg->mode);
 	CPPUNIT_ASSERT_EQUAL(0.5F, timerCfg->filterAlpha);
@@ -680,6 +737,12 @@ void LoggerApiTest::testFlashConfig(){
 	testFlashConfigFile("flashCfg.json");
 }
 
+void LoggerApiTest::testChannelConfig(ChannelConfig *cfg, string expNm, string expUt, unsigned short sr) {
+        CPPUNIT_ASSERT_EQUAL(expNm, string(cfg->label));
+        CPPUNIT_ASSERT_EQUAL(expUt, string(cfg->units));
+	CPPUNIT_ASSERT_EQUAL((int) sr, decodeSampleRate(cfg->sampleRate));
+}
+
 void LoggerApiTest::testSetGpsConfigFile(string filename, unsigned char channelsEnabled, unsigned short sampleRate){
 	processApiGeneric(filename);
 	char *txBuffer = mock_getTxBuffer();
@@ -687,15 +750,16 @@ void LoggerApiTest::testSetGpsConfigFile(string filename, unsigned char channels
 	LoggerConfig *c = getWorkingLoggerConfig();
 	GPSConfig *gpsCfg = &c->GPSConfigs;
 
+        if (channelsEnabled == 0)
+           sampleRate = 0;
+
+        testChannelConfig(&gpsCfg->latitude, string("Latitude"), string("Degrees"), sampleRate);
+        testChannelConfig(&gpsCfg->longitude, string("Longitude"), string("Degrees"), sampleRate);
+        testChannelConfig(&gpsCfg->speed, string("Speed"), string("MPH"), sampleRate);
+        testChannelConfig(&gpsCfg->distance, string("Distance"), string("Miles"), sampleRate);
+        testChannelConfig(&gpsCfg->satellites, string("GPSSats"), string(""), sampleRate);
+
 	assertGenericResponse(txBuffer, "setGpsCfg", API_SUCCESS);
-
-	CPPUNIT_ASSERT_EQUAL((unsigned short)sampleRate, (unsigned short)decodeSampleRate(gpsCfg->sampleRate));
-
-	CPPUNIT_ASSERT_EQUAL(channelsEnabled, gpsCfg->distanceEnabled);
-	CPPUNIT_ASSERT_EQUAL(channelsEnabled, gpsCfg->positionEnabled);
-	CPPUNIT_ASSERT_EQUAL(channelsEnabled, gpsCfg->satellitesEnabled);
-	CPPUNIT_ASSERT_EQUAL(channelsEnabled, gpsCfg->speedEnabled);
-	CPPUNIT_ASSERT_EQUAL(channelsEnabled, gpsCfg->timeEnabled);
 }
 
 void LoggerApiTest::testSetGpsCfg(){
@@ -707,13 +771,11 @@ void LoggerApiTest::testGetGpsConfigFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	GPSConfig *gpsCfg = &c->GPSConfigs;
 
-	gpsCfg->sampleRate = encodeSampleRate(100);
-
-	gpsCfg->distanceEnabled = 1;
-	gpsCfg->positionEnabled = 1;
-	gpsCfg->satellitesEnabled = 1;
-	gpsCfg->speedEnabled = 1;
-	gpsCfg->timeEnabled = 1;
+        populateChannelConfig(&gpsCfg->latitude, 0, 100);
+        populateChannelConfig(&gpsCfg->longitude, 0, 100);
+        populateChannelConfig(&gpsCfg->speed, 0, 100);
+        populateChannelConfig(&gpsCfg->distance, 0, 100);
+        populateChannelConfig(&gpsCfg->satellites, 0, 100);
 
 	char * response = processApiGeneric(filename);
 
@@ -728,7 +790,6 @@ void LoggerApiTest::testGetGpsConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["pos"]);
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["sats"]);
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["speed"]);
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["time"]);
 }
 
 void LoggerApiTest::testGetGpsCfg(){
@@ -748,63 +809,46 @@ void LoggerApiTest::testSetLapConfigFile(string filename){
 
 	assertGenericResponse(txBuffer, "setLapCfg", API_SUCCESS);
 
-	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_LapCount, (int) cfg->lapCountCfg.channeId);
-	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(cfg->lapCountCfg.sampleRate));
-
-	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_LapTime, (int)cfg->lapTimeCfg.channeId);
-	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(cfg->lapTimeCfg.sampleRate));
-
-	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_PredTime, (int)cfg->predTimeCfg.channeId);
-	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(cfg->predTimeCfg.sampleRate));
-
-	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Sector, (int)cfg->sectorCfg.channeId);
-	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(cfg->predTimeCfg.sampleRate));
-
-	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_SectorTime, (int)cfg->sectorTimeCfg.channeId);
-	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(cfg->predTimeCfg.sampleRate));
-
+        testChannelConfig(&cfg->lapCountCfg, string("LapCount"), string(""), 50);
+        testChannelConfig(&cfg->lapTimeCfg, string("LapTime"), string("Min"), 50);
+        testChannelConfig(&cfg->sectorCfg, string("Sector"), string(""), 50);
+        testChannelConfig(&cfg->sectorTimeCfg, string("SectorTime"), string("Min"), 50);
+        testChannelConfig(&cfg->predTimeCfg, string("PredTime"), string("Min"), 50);
 }
 
 void LoggerApiTest::testGetLapConfigFile(string filename){
 
 	LoggerConfig *c = getWorkingLoggerConfig();
 	LapConfig *cfg = &c->LapConfigs;
-	cfg->lapCountCfg.sampleRate = encodeSampleRate(50);
-	cfg->lapTimeCfg.sampleRate = encodeSampleRate(50);
-	cfg->predTimeCfg.sampleRate = encodeSampleRate(50);
-	cfg->sectorCfg.sampleRate = encodeSampleRate(50);
-	cfg->sectorTimeCfg.sampleRate = encodeSampleRate(50);
+
+        populateChannelConfig(&cfg->lapCountCfg, 1, 50);
+        populateChannelConfig(&cfg->lapTimeCfg, 2, 50);
+        populateChannelConfig(&cfg->sectorCfg, 3, 50);
+        populateChannelConfig(&cfg->sectorTimeCfg, 4, 50);
+        populateChannelConfig(&cfg->predTimeCfg, 5, 50);
 
 	char * response = processApiGeneric(filename);
 
 	Object json;
 	stringToJson(response, json);
-	{
-		Object &channel = json["lapCfg"]["lapCount"];
-		CPPUNIT_ASSERT_EQUAL((int)CHANNEL_LapCount, (int)(Number)channel["id"]);
-		CPPUNIT_ASSERT_EQUAL(50, (int)(Number)channel["sr"]);
-	}
-	{
-		Object &channel = json["lapCfg"]["lapTime"];
-		CPPUNIT_ASSERT_EQUAL((int)CHANNEL_LapTime, (int)(Number)channel["id"]);
-		CPPUNIT_ASSERT_EQUAL(50, (int)(Number)channel["sr"]);
-	}
-	{
-		Object &channel = json["lapCfg"]["predTime"];
-		CPPUNIT_ASSERT_EQUAL((int)CHANNEL_PredTime, (int)(Number)channel["id"]);
-		CPPUNIT_ASSERT_EQUAL(50, (int)(Number)channel["sr"]);
-	}
-	{
-		Object &channel = json["lapCfg"]["sector"];
-		CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Sector, (int)(Number)channel["id"]);
-		CPPUNIT_ASSERT_EQUAL(50, (int)(Number)channel["sr"]);
-	}
-	{
-		Object &channel = json["lapCfg"]["sectorTime"];
-		CPPUNIT_ASSERT_EQUAL((int)CHANNEL_SectorTime, (int)(Number)channel["id"]);
-		CPPUNIT_ASSERT_EQUAL(50, (int)(Number)channel["sr"]);
-	}
 
+        Object &lapCount = json["lapCfg"]["lapCount"];
+        Object &lapTime = json["lapCfg"]["lapTime"];
+        Object &lapSector = json["lapCfg"]["sector"];
+        Object &lapSectorTime = json["lapCfg"]["sectorTime"];
+        Object &lapPredTime = json["lapCfg"]["predTime"];
+
+        string str1 = string("1");
+        string str2 = string("2");
+        string str3 = string("3");
+        string str4 = string("4");
+        string str5 = string("5");
+
+        checkChannelConfig(lapCount, 1, str1, 50);
+        checkChannelConfig(lapTime, 2, str2, 50);
+        checkChannelConfig(lapSector, 3, str3, 50);
+        checkChannelConfig(lapSectorTime, 4, str4, 50);
+        checkChannelConfig(lapPredTime, 5, str5, 50);
 }
 
 void LoggerApiTest::testGetLapCfg(){
@@ -966,59 +1010,6 @@ void LoggerApiTest::testGetTrackDbFile(string filename, string addedFilename){
 	}
 }
 
-
-
-void LoggerApiTest::testAddChannel(){
-	testAddChannelFile("addChannel1.json");
-}
-
-void LoggerApiTest::testAddChannelFile(string filename){
-	processApiGeneric(filename);
-	char *txBuffer = mock_getTxBuffer();
-	const Channels *channels = get_channels();
-
-	Object jsonCompare;
-	string compare = readFile(filename);
-	stringToJson(compare, jsonCompare);
-
-	int index = (int)(Number)jsonCompare["addChannel"]["index"];
-	const Channel *channel = channels->channels + index;
-	CPPUNIT_ASSERT_EQUAL(string((String)jsonCompare["addChannel"]["channel"]["nm"]), string(channel->label));
-	CPPUNIT_ASSERT_EQUAL(string((String)jsonCompare["addChannel"]["channel"]["ut"]), string(channel->units));
-	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonCompare["addChannel"]["channel"]["prec"], (int)channel->precision);
-	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonCompare["addChannel"]["channel"]["type"], (int)get_channel_type(channel));
-	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonCompare["addChannel"]["channel"]["sys"], (int)is_system_channel(channel));
-	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addChannel"]["channel"]["min"], channel->min);
-	CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addChannel"]["channel"]["max"], channel->max);
-}
-
-void LoggerApiTest::testGetChannels(){
-	testGetChannelsFile("getChannels1.json");
-}
-
-void LoggerApiTest::testGetChannelsFile(string filename){
-
-	char * response = processApiGeneric(filename);
-
-	Object json;
-	stringToJson(response, json);
-
-	Object jsonCompare;
-	string compare= readFile("../include/channels/system_channels.json");
-	stringToJson(compare, jsonCompare);
-
-	Array channelsCompare = jsonCompare["channels"];
-	Array channelsResponse = json["channels"];
-
-	CPPUNIT_ASSERT_EQUAL(channelsCompare.Size(), channelsResponse.Size());
-	CPPUNIT_ASSERT_EQUAL(MAX_CHANNEL_COUNT, (int)(Number)json["max"]);
-	for (int i = 0; i < channelsCompare.Size(); i++){
-		Object channelCompare = channelsCompare[i];
-		Object channel = channelsResponse[i];
-		CPPUNIT_ASSERT_EQUAL((string)(String)channelCompare["nm"], (string)(String)channel["nm"]);
-	}
-}
-
 void LoggerApiTest::testSetLogLevelFile(string filename, int expectedResponse){
 	processApiGeneric(filename);
 
@@ -1078,15 +1069,16 @@ void LoggerApiTest::testGetObd2ConfigFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	OBD2Config *obd2Config = &c->OBD2Configs;
 
+	obd2Config->enabled = 1;
 	obd2Config->enabledPids = 2;
-	obd2Config->pids[0].cfg.channeId = CHANNEL_AFR;
-	obd2Config->pids[0].cfg.sampleRate = SAMPLE_1Hz;
+
+        ChannelConfig *cfg1 = &obd2Config->pids[0].cfg;
+        populateChannelConfig(cfg1, 1, 1);
 	obd2Config->pids[0].pid = 0x05;
 
-	obd2Config->pids[1].cfg.channeId = CHANNEL_Boost;
-	obd2Config->pids[1].cfg.sampleRate = SAMPLE_50Hz;
+        ChannelConfig *cfg2 = &obd2Config->pids[1].cfg;
+        populateChannelConfig(cfg2, 2, 50);
 	obd2Config->pids[1].pid = 0x06;
-	obd2Config->enabled = 1;
 
 	char * response = processApiGeneric(filename);
 
@@ -1096,14 +1088,16 @@ void LoggerApiTest::testGetObd2ConfigFile(string filename){
 	Object pid1 = (Object)json["obd2Cfg"]["pids"][0];
 	Object pid2 = (Object)json["obd2Cfg"]["pids"][1];
 
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)json["obd2Cfg"]["en"]);
-	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_AFR, (int)(Number)pid1["id"]);
-	CPPUNIT_ASSERT_EQUAL(decodeSampleRate(SAMPLE_1Hz), (int)(Number)pid1["sr"]);
+        string str1 = string("1");
+        string str2 = string("2");
+
+        checkChannelConfig(pid1, 1, str1, 1);
 	CPPUNIT_ASSERT_EQUAL(0x05, (int)(Number)pid1["pid"]);
 
-	CPPUNIT_ASSERT_EQUAL((int)CHANNEL_Boost, (int)(Number)pid2["id"]);
-	CPPUNIT_ASSERT_EQUAL(decodeSampleRate(SAMPLE_50Hz), (int)(Number)pid2["sr"]);
+        checkChannelConfig(pid2, 2, str2, 50);
 	CPPUNIT_ASSERT_EQUAL(0x06, (int)(Number)pid2["pid"]);
+
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)json["obd2Cfg"]["en"]);
 }
 
 void LoggerApiTest::testSetObd2ConfigFile(string filename){
@@ -1119,12 +1113,22 @@ void LoggerApiTest::testSetObd2ConfigFile(string filename){
 	PidConfig *pidCfg1 = &obd2Config->pids[0];
 	PidConfig *pidCfg2 = &obd2Config->pids[1];
 
-	CPPUNIT_ASSERT_EQUAL(19, (int)pidCfg1->cfg.channeId);
-	CPPUNIT_ASSERT_EQUAL((int)SAMPLE_10Hz, (int)pidCfg1->cfg.sampleRate);
+        ChannelConfig *cfg = &pidCfg1->cfg;
+        CPPUNIT_ASSERT_EQUAL(string("I <3 OBD2"), string(cfg->label));
+        CPPUNIT_ASSERT_EQUAL(string("?????"), string(cfg->units));
+        CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
+        CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
+	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(cfg->sampleRate));
+	CPPUNIT_ASSERT_EQUAL(1, (int)cfg->precision);
 	CPPUNIT_ASSERT_EQUAL(5, (int)pidCfg1->pid);
 
-	CPPUNIT_ASSERT_EQUAL(26, (int)pidCfg2->cfg.channeId);
-	CPPUNIT_ASSERT_EQUAL((int)SAMPLE_5Hz, (int)pidCfg2->cfg.sampleRate);
+        cfg = &pidCfg2->cfg;
+        CPPUNIT_ASSERT_EQUAL(string("I <3 OBD2"), string(cfg->label));
+        CPPUNIT_ASSERT_EQUAL(string("?????"), string(cfg->units));
+        CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
+        CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
+	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(cfg->sampleRate));
+	CPPUNIT_ASSERT_EQUAL(1, (int)cfg->precision);
 	CPPUNIT_ASSERT_EQUAL(6, (int)pidCfg2->pid);
 }
 

@@ -107,6 +107,10 @@ millis_t getMillisSinceEpoch() {
    return g_utcMillisAtSample + deltaSinceSample;
 }
 
+long long getMillisSinceEpochAsLongLong() {
+   return (long long) getMillisSinceEpoch();
+}
+
 static void updateUptimeAtSample() {
    g_uptimeAtSample = getUptime();
 }
@@ -425,8 +429,16 @@ tiny_millis_t getLastLapTime() {
    return g_lastLapTime;
 }
 
+float getLastLapTimeInMinutes() {
+   return tinyMillisToMinutes(getLastLapTime());
+}
+
 tiny_millis_t getLastSectorTime() {
    return g_lastSectorTime;
+}
+
+float getLastSectorTimeInMinutes() {
+   return tinyMillisToMinutes(getLastSectorTime());
 }
 
 int getAtStartFinish() {
@@ -459,6 +471,10 @@ int getSatellitesUsedForPosition() {
 
 float getGPSSpeed() {
    return g_speed;
+}
+
+float getGpsSpeedInMph() {
+   return getGPSSpeed() * 0.621371192; //convert to MPH
 }
 
 void setGPSSpeed(float speed) {

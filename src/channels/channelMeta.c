@@ -1,4 +1,3 @@
-#include "channelMeta.h"
 #include "mod_string.h"
 #include "printk.h"
 #include "memory.h"
@@ -14,7 +13,10 @@ static Channels g_channels = DEFAULT_CHANNEL_META;
 static const Channels g_defaultChannelMeta = DEFAULT_CHANNEL_META;
 static Channels * g_channelsMetaBuffer = NULL;
 
+// STIEG: Clean this up.  May need to keep the Channel bits.
+
 unsigned char get_channel_type(const Channel *channel){
+   // STIEG: Clean this up.
 	unsigned char channelType = CHANNEL_TYPE_UNKNOWN;
 	if (channel){
 		channelType = channel->flags >> 1;
@@ -55,12 +57,14 @@ size_t find_channel_id(const char * name){
 	return 0;
 }
 
+// XXX_CHANNELID_TAG
 void initialize_channels(){
 	if (g_channels.magicInit != MAGIC_NUMBER_CHANNEL_INIT){
 		flash_default_channels();
 	}
 }
 
+// XXX_CHANNELID_TAG
 int flash_default_channels(void){
 	pr_info("flashing default channels...");
 	int result = flash_channels(&g_defaultChannelMeta, sizeof (g_defaultChannelMeta));

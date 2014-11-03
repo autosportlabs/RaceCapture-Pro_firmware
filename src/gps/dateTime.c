@@ -129,3 +129,7 @@ float tinyMillisToSeconds(const tiny_millis_t millis) {
 tiny_millis_t getUptime() {
    return (tiny_millis_t) (MS_PER_TICK * xTaskGetTickCount());
 }
+
+int getUptimeAsInt() {
+   return (int) getUptime();
+}

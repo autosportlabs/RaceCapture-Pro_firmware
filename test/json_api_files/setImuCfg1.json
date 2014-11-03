@@ -1,8 +1,12 @@
 {
     "setImuCfg": {
-        "0": {        
-        	"id":33,
+        "0": {
+            "nm": "I <3 Inerta",
+            "ut": "Forces",
+            "min": -1,
+            "max": 1,
             "sr": 50,
+            "prec": 1,
             "mode": 1,
             "chan": 2,
             "zeroVal", 1234,

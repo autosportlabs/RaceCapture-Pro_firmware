@@ -1,23 +1,18 @@
 {
     "setLapCfg": {
         "lapCount": {
-            "id": 64,
             "sr": 50
         },
         "lapTime": {
-            "id": 62,
             "sr": 50
         },
         "predTime": {
-            "id": 63,
             "sr": 50
         }
         "sector": {
-            "id": 60,
             "sr": 50
         }
         "sectorTime": {
-            "id": 61,
             "sr": 50
         }
     }

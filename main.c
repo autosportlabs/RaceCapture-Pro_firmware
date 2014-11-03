@@ -93,7 +93,6 @@ void setupTask(void *params)
 	(void)params;
 
 	initialize_tracks();
-	initialize_channels();
 	initialize_logger_config();
 	initialize_script();
 	InitLoggerHardware();

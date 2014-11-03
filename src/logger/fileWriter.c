@@ -14,7 +14,6 @@
 #include "taskUtil.h"
 #include "mod_string.h"
 #include "printk.h"
-#include "channelMeta.h"
 #include "mem_mang.h"
 #include "LED.h"
 
@@ -100,76 +99,80 @@ static void appendLongLong(long long num) {
 	appendFileBuffer(buf);
 }
 
+static void appendDouble(double num, int precision) {
+	char buf[30];
+	modp_dtoa(num, buf, precision);
+	appendFileBuffer(buf);
+}
+
 static void appendFloat(float num, int precision){
-	char buf[20];
+	char buf[11];
 	modp_ftoa(num, buf, precision);
 	appendFileBuffer(buf);
 }
 
-static int writeHeaders(ChannelSample *channelSamples, size_t sampleCount){
-	int headerCount = 0;
-	ChannelSample *sample = channelSamples;
-	for (size_t i = 0; i < sampleCount;i++){
-		if (SAMPLE_DISABLED != sample->sampleRate){
-			if (headerCount++ > 0) appendFileBuffer(",");
-			const Channel *field = get_channel(sample->channelId);
-			appendQuotedString(field->label);
-			appendFileBuffer("|");
-			appendQuotedString(field->units);
-			appendFileBuffer("|");
-			appendInt(decodeSampleRate(sample->sampleRate));
-		}
-		sample++;
+static int writeHeaders(ChannelSample *sample, size_t sampleCount){
+	char *separator = "";
+
+	for (; 0 < sampleCount; sampleCount--, sample++) {
+      appendFileBuffer(separator);
+      separator = ",";
+
+      appendQuotedString(sample->cfg->label);
+      appendFileBuffer("|");
+      appendQuotedString(sample->cfg->units);
+      appendFileBuffer("|");
+      appendInt(decodeSampleRate(sample->cfg->sampleRate));
 	}
+
 	appendFileBuffer("\n");
 	return writeFileBuffer();
 }
 
 
-static int writeChannelSamples(ChannelSample * channelSamples, size_t channelCount){
-	if (NULL == channelSamples) {
-           pr_debug("null sample record\r\n");
-           return WRITE_FAIL;
+static int writeChannelSamples(ChannelSample *sample, size_t channelCount){
+	if (NULL == sample) {
+      pr_debug("null sample record\r\n");
+      return WRITE_FAIL;
 	}
 
-        int fieldCount = 0;
+	char *separator = "";
+   for (; 0 < channelCount; sample++) {
+      appendFileBuffer(separator);
+      separator = ",";
 
-        for (size_t i = 0; i < channelCount; i++) {
-           ChannelSample *sample = (channelSamples + i);
+      // STIEG: Fix NIL_SAMPLE, use long long.
+      if (sample->valueInt == NIL_SAMPLE)
+         continue;
 
-           if (fieldCount++ > 0)
-              appendFileBuffer(",");
+      const int precision = sample->cfg->precision;
 
-           // XXX: This may cause issues since we now do longs.  Probably should fix it.
-           if (sample->valueInt == NIL_SAMPLE)
-              continue;
+      switch(sample->sampleData) {
+      case SampleData_Float:
+      case SampleData_Float_Noarg:
+         appendFloat(sample->valueFloat, precision);
+         break;
+      case SampleData_Int:
+      case SampleData_Int_Noarg:
+         appendInt(sample->valueInt);
+         break;
+      case SampleData_LongLong:
+      case SampleData_LongLong_Noarg:
+         appendLongLong(sample->valueLongLong);
+         break;
+      case SampleData_Double:
+      case SampleData_Double_Noarg:
+         appendDouble(sample->valueDouble, precision);
+         break;
+      default:
+         pr_warning("Got to unexpected location in writeChannelSamples\n");
+      }
+   }
 
-           const int precision = get_channel(sample->channelId)->precision;
-           enum SampleData sData = sample->sampleData;
+   appendFileBuffer("\n");
+   writeFileBuffer();
 
-           // XXX: Hack to deal with precision == 0 fix.
-           if (precision == 0)
-              sData = SampleData_Int;
-
-           switch(sData) {
-           case SampleData_Float:
-              appendFloat(sample->valueFloat, precision);
-              break;
-           case SampleData_Int:
-              appendInt(sample->valueInt);
-              break;
-           case SampleData_LongLong:
-              appendLongLong(sample->valueLongLong);
-              break;
-           default:
-              pr_warning("Got to unexpected location in writeChannelSamples\n");
-           }
-        }
-
-        appendFileBuffer("\n");
-        writeFileBuffer();
-
-        return WRITE_SUCCESS;
+   return WRITE_SUCCESS;
 }
 
 static int openLogfile(FIL *f, char *filename){

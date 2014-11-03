@@ -155,7 +155,6 @@ SRC = 	mock_uart.c \
 		$(RCP_SRC)/logger/loggerSampleData.c \
 		$(RCP_SRC)/logger/loggerData.c \
 		$(RCP_SRC)/logger/loggerHardware.c \
-		$(RCP_SRC)/channels/channelMeta.c \
 
 #		$(RCP_SRC)/logger/loggerTaskEx.c \
 

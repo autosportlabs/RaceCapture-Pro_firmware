@@ -6,12 +6,16 @@
 
 #ifndef RCP_TESTING
 #include "memory.h"
+// STIEG: RESTORE DEFAULT_LOGGER_CONFIG
 static const LoggerConfig g_savedLoggerConfig  __attribute__((section(".config\n\t#"))) = DEFAULT_LOGGER_CONFIG;
+//static const LoggerConfig g_savedLoggerConfig  __attribute__((section(".config\n\t#")));
 #else
 static LoggerConfig g_savedLoggerConfig = DEFAULT_LOGGER_CONFIG;
+//static LoggerConfig g_savedLoggerConfig;
 #endif
 
 static const LoggerConfig g_defaultLoggerConfig = DEFAULT_LOGGER_CONFIG;
+//static const LoggerConfig g_defaultLoggerConfig;
 
 static LoggerConfig g_workingLoggerConfig;
 
@@ -23,9 +27,27 @@ static int firmware_version_matches_last(){
 	const VersionInfo * version = &g_savedLoggerConfig.RcpVersionInfo;
 	return version->major == MAJOR_REV && version->minor == MINOR_REV && version->bugfix == BUGFIX_REV;
 }
+/*
+static resetVersionAndPwmClkFreq(VersionInfo *vi, unsigned short *pwmClkFreq) {
+   vi->major = MAJOR_REV;
+   vi->minor = MINOR_REV;
+   vi->bugfix = BUGFIX_REV;
+   *pwmClkFreq = DEFAULT_PWM_CLOCK_FREQUENCY;
+}
 
+static resetAdcConfig(ADCConfig adcCfgArr[], size_t arrSize) {
+   // All but the last one are zeroed out.
+   size_t battIndex = arrSize - 1;
+
+   for (int i = 0; i < battIndex; ++i)
+      memcpy(adcCfgArr + i, 0, sizeof(ADCConfig));
+
+   adcCfgArr[battIndex] = BATTERY_ADC7_CONFIG;
+}
+*/
 int flash_default_logger_config(void){
 	pr_info("flashing default logger config...");
+
 	int result = memory_flash_region(&g_savedLoggerConfig, &g_defaultLoggerConfig, sizeof (LoggerConfig));
 	if (result == 0) pr_info("success\r\n"); else pr_info("failed\r\n");
 	return result;
@@ -44,6 +66,7 @@ void initialize_logger_config(){
 		pr_info("firmware major version changed\r\n");
 		flash_default_logger_config();
 	}
+
 	memcpy(&g_workingLoggerConfig,&g_savedLoggerConfig,sizeof(LoggerConfig));
 }
 
@@ -67,6 +90,7 @@ int getConnectivitySampleRateLimit(){
 	return sampleRateLimit;
 }
 
+// STIEG: FIX ME! This can be done with math
 int encodeSampleRate(int sampleRate){
 
 	switch(sampleRate){
@@ -90,6 +114,7 @@ int encodeSampleRate(int sampleRate){
 	}
 }
 
+// STIEG: FIX ME!  This can be done with math.
 int decodeSampleRate(int sampleRateCode){
 
 	switch(sampleRateCode){
@@ -333,11 +358,21 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
 		int sr = config->ImuConfigs[i].cfg.sampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr;
 	}
+
 	GPSConfig *gpsConfig = &(config->GPSConfigs);
 	{
 		//TODO this represents "Position sample rate".
-		int sr = gpsConfig->sampleRate;
+		int sr = gpsConfig->latitude.sampleRate;
 		if HIGHER_SAMPLE(sr, s) s = sr;
+		sr = gpsConfig->longitude.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
+		sr = gpsConfig->speed.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
+		sr = gpsConfig->distance.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
+		sr = gpsConfig->satellites.sampleRate;
+		if HIGHER_SAMPLE(sr, s) s = sr;
+
 	}
 	LapConfig *trackCfg = &(config->LapConfigs);
 	{
@@ -365,46 +400,49 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
 }
 
 size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
-	size_t channels = 2; // Always have Interval (Uptime) and Utc
+   size_t channels = 0;
 
-	for (int i=0; i < CONFIG_IMU_CHANNELS; i++){
-		if (loggerConfig->ImuConfigs[i].cfg.sampleRate != SAMPLE_DISABLED) channels++;
-	}
+   for (int i=0; i < CONFIG_TIME_CHANNELS; i++)
+      if (loggerConfig->TimeConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
+         ++channels;
 
-	for (int i=0; i < CONFIG_ADC_CHANNELS; i++){
-		if (loggerConfig->ADCConfigs[i].cfg.sampleRate != SAMPLE_DISABLED) channels++;
-	}
+   for (int i=0; i < CONFIG_IMU_CHANNELS; i++)
+      if (loggerConfig->ImuConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
+         ++channels;
 
-	for (int i=0; i < CONFIG_TIMER_CHANNELS; i++){
-		if (loggerConfig->TimerConfigs[i].cfg.sampleRate != SAMPLE_DISABLED) channels++;
-	}
+   for (int i=0; i < CONFIG_ADC_CHANNELS; i++)
+      if (loggerConfig->ADCConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
+         ++channels;
 
-	for (int i=0; i < CONFIG_GPIO_CHANNELS; i++){
-		if (loggerConfig->GPIOConfigs[i].cfg.sampleRate != SAMPLE_DISABLED) channels++;
-	}
+   for (int i=0; i < CONFIG_TIMER_CHANNELS; i++)
+      if (loggerConfig->TimerConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
+         ++channels;
 
-	for (int i=0; i < CONFIG_PWM_CHANNELS; i++){
-		if (loggerConfig->PWMConfigs[i].cfg.sampleRate != SAMPLE_DISABLED) channels++;
-	}
+   for (int i=0; i < CONFIG_GPIO_CHANNELS; i++)
+      if (loggerConfig->GPIOConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
+         ++channels;
 
-	channels+=loggerConfig->OBD2Configs.enabledPids;
+   for (int i=0; i < CONFIG_PWM_CHANNELS; i++)
+      if (loggerConfig->PWMConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
+         ++channels;
 
-	GPSConfig *gpsConfigs = &loggerConfig->GPSConfigs;
-	if (gpsConfigs->sampleRate != SAMPLE_DISABLED){
-		if (gpsConfigs->positionEnabled) channels+=2;
-		if (gpsConfigs->speedEnabled) channels++;
-		if (gpsConfigs->timeEnabled != SAMPLE_DISABLED) channels++;
-		if (gpsConfigs->satellitesEnabled != SAMPLE_DISABLED) channels++;
-		if (gpsConfigs->distanceEnabled != SAMPLE_DISABLED) channels++;
-	}
+   channels+=loggerConfig->OBD2Configs.enabledPids;
 
-	LapConfig *lapConfig = &loggerConfig->LapConfigs;
-	if (lapConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED) channels++;
-	if (lapConfig->lapTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
-	if (lapConfig->sectorCfg.sampleRate != SAMPLE_DISABLED) channels++;
-	if (lapConfig->sectorTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
-	if (lapConfig->predTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
+   GPSConfig *gpsConfigs = &loggerConfig->GPSConfigs;
+   if (gpsConfigs->latitude.sampleRate != SAMPLE_DISABLED) channels++;
+   if (gpsConfigs->longitude.sampleRate != SAMPLE_DISABLED) channels++;
+   if (gpsConfigs->speed.sampleRate != SAMPLE_DISABLED) channels++;
+   if (gpsConfigs->distance.sampleRate != SAMPLE_DISABLED) channels++;
+   if (gpsConfigs->satellites.sampleRate != SAMPLE_DISABLED) channels++;
 
-	channels += get_virtual_channel_count();
-	return channels;
+
+   LapConfig *lapConfig = &loggerConfig->LapConfigs;
+   if (lapConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED) channels++;
+   if (lapConfig->lapTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
+   if (lapConfig->sectorCfg.sampleRate != SAMPLE_DISABLED) channels++;
+   if (lapConfig->sectorTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
+   if (lapConfig->predTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
+
+   channels += get_virtual_channel_count();
+   return channels;
 }

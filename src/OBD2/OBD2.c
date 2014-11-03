@@ -16,7 +16,7 @@ void OBD2_set_current_PID_value(size_t index, int value){
 	}
 }
 
-int OBD2_get_current_PID_value(size_t index){
+int OBD2_get_current_PID_value(int index){
 	return OBD2_current_values[index];
 }
 

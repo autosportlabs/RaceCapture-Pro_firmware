@@ -79,4 +79,6 @@ float tinyMillisToSeconds(const tiny_millis_t millis);
  */
 tiny_millis_t getUptime();
 
+int getUptimeAsInt();
+
 #endif //__DATE_TIME_H__

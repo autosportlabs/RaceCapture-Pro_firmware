@@ -12,6 +12,7 @@
 #include "json/reader.h"
 #include "json/writer.h"
 #include "json/elements.h"
+#include "loggerConfig.h"
 
 using namespace json;
 using std::string;
@@ -42,8 +43,6 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST( testGetLapCfg );
   CPPUNIT_TEST( testSetTrackCfgCircuit );
   CPPUNIT_TEST( testGetTrackCfgCircuit );
-  CPPUNIT_TEST( testGetChannels );
-  CPPUNIT_TEST( testAddChannel );
   CPPUNIT_TEST( testAddTrackDb );
   CPPUNIT_TEST( testGetTrackDb );
   CPPUNIT_TEST( testSampleData );
@@ -95,8 +94,6 @@ public:
   void testGetLapCfg();
   void testSetTrackCfgCircuit();
   void testGetTrackCfgCircuit();
-  void testGetChannels();
-  void testAddChannel();
   void testAddTrackDb();
   void testGetTrackDb();
   void testCalibrateImu();
@@ -131,8 +128,6 @@ private:
   void testSetTimerConfigFile(string filename);
   void testGetGpsConfigFile(string filename);
   void testSetGpsConfigFile(string filename, unsigned char channelsEnabled, unsigned short sampleRate);
-  void testAddChannelFile(string filename);
-  void testGetChannelsFile(string filename);
   void testAddTrackDbFile(string filename);
   void testGetTrackDbFile(string filename, string addedFilename);
   void testSetLapConfigFile(string filename);
@@ -144,7 +139,9 @@ private:
   void testSetCanCfgFile(string filename);
   void testGetObd2ConfigFile(string filename);
   void testSetObd2ConfigFile(string filename);
-
+  void populateChannelConfig(ChannelConfig *cfg, const int id, const int splRt);
+  void checkChannelConfig(Object &json, const int i, string &iString, const int splRt);
+  void testChannelConfig(ChannelConfig *chCfg, string expNm, string expUt, unsigned short sr);
 };
 
 

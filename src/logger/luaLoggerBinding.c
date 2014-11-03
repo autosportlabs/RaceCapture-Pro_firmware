@@ -527,15 +527,21 @@ int Lua_FlashLoggerConfig(lua_State *L){
 }
 
 int Lua_AddVirtualChannel(lua_State *L){
-	if (lua_gettop(L) >= 2){
-		const char *name = lua_tostring(L, 1);
-		unsigned short sampleRate = encodeSampleRate(lua_tonumber(L, 2));
-		int result = create_virtual_channel(name, sampleRate);
-		lua_pushinteger(L, result);
-		return 1;
-	}
-	return 0;
+	if (lua_gettop(L) != 6)
+      return 0;
 
+   ChannelConfig chCfg;
+
+   strncpy(chCfg.label, lua_tostring(L, 1), DEFAULT_LABEL_LENGTH);
+   strncpy(chCfg.units, lua_tostring(L, 2), DEFAULT_UNITS_LENGTH);
+   chCfg.min = lua_tonumber(L, 3);
+   chCfg.max = lua_tonumber(L, 4);
+   chCfg.precision = (unsigned char) lua_tointeger(L, 5);
+   chCfg.sampleRate = (unsigned short) lua_tointeger(L, 6);
+
+   lua_pushinteger(L, create_virtual_channel(chCfg));
+
+   return 1;
 }
 
 int Lua_SetVirtualChannelValue(lua_State *L){

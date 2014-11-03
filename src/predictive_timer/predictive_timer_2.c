@@ -5,12 +5,12 @@
  *      Author: stieg
  */
 
-#include "predictive_timer_2.h"
-
+#include "dateTime.h"
 #include "debug.h"
 #include "geopoint.h"
 #include "gps.h"
 #include "mod_string.h"
+#include "predictive_timer_2.h"
 
 /**
  * These settings control critical values that will affect performance.  Understand these values
@@ -427,4 +427,10 @@ void resetPredictiveTimer() {
 	lastPredictedDelta = 0;
 	currLapStartTime = 0;
 	pollInterval = INITIAL_POLL_INTERVAL;
+}
+
+float getPredictedTimeInMinutes() {
+   const GeoPoint gp = getGeoPoint();
+   const tiny_millis_t millis = getMillisSinceFirstFix();
+   return tinyMillisToMinutes(getPredictedTime(gp, millis));
 }

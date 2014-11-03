@@ -49,6 +49,11 @@ tiny_millis_t getSplitAgainstFastLap(GeoPoint point, tiny_millis_t time);
 tiny_millis_t getPredictedTime(GeoPoint point, tiny_millis_t time);
 
 /**
+ * Like #getPredictedTime but returns the value in minutes.  Useful for logging compatibility.
+ */
+float getPredictedTimeInMinutes();
+
+/**
  * Tells the caller if a predictive time is ready to be had.
  * @return True if it is, false otherwise.
  */

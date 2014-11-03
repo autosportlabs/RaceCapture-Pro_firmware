@@ -67,7 +67,11 @@ int getLapCount();
 
 tiny_millis_t getLastLapTime();
 
+float getLastLapTimeInMinutes();
+
 tiny_millis_t getLastSectorTime();
+
+float getLastSectorTimeInMinutes();
 
 int getSector();
 
@@ -115,6 +119,8 @@ DateTime getLastFixDateTime();
  */
 millis_t getMillisSinceEpoch();
 
+long long getMillisSinceEpochAsLongLong();
+
 /**
  * This exists for backwards compatibility and will be deprecated in the future.  Use
  * #getLastFixDateTime() or #getMillisSinceEpoch() instead if possible.
@@ -136,5 +142,7 @@ tiny_millis_t getMillisSinceFirstFix();
  * @return The uptime when our most recent GPS sample was taken.  0 indicates no sample.
  */
 tiny_millis_t getUptimeAtSample();
+
+float getGpsSpeedInMph();
 
 #endif /*GPS_H_*/

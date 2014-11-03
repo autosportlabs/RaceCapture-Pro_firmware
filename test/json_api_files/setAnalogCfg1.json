@@ -16,9 +16,13 @@
                     1.4,
                     1.5
                 ]
-            },        
-            "id": 1,
+            },
+            "nm": "I <3 Racing",
+            "ut": "Wheels",
+            "min": -1,
+            "max": 1,
             "sr": 50,
+            "prec": 1,
             "scalMod": 2,
             "scaling": 1.234,
             "offset": 9.9,

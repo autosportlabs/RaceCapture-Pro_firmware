@@ -1,4 +1,5 @@
 #include "dateTime.h"
+#include "GPIO.h"
 #include "loggerSampleData.h"
 #include "loggerHardware.h"
 #include "loggerConfig.h"
@@ -17,290 +18,78 @@
 #include "linear_interpolate.h"
 #include "printk.h"
 
+static ChannelSample* processChannelSampleWithFloatGetter(ChannelSample *s,
+                                                ChannelConfig *cfg,
+                                                const size_t index,
+                                                float (*getter)(int)) {
+   if (cfg->sampleRate == SAMPLE_DISABLED)
+      return s;
 
-int get_uptime_sample(int i);
-long long get_utc_sample(int i);
-
-
-int populate_sample_buffer(ChannelSample * samples,  size_t count, size_t currentTicks) {
-   unsigned short highestRate = SAMPLE_DISABLED;
-
-   for (size_t i = 0; i < count; i++, samples++) {
-      const unsigned short sampleRate = samples->sampleRate;
-
-      // Zero out the sample for sanity
-      samples->valueLongLong = 0ll;
-
-      if (currentTicks % sampleRate != 0)
-         continue;
-
-      highestRate = HIGHER_SAMPLE_RATE(sampleRate, highestRate);
-      size_t channelIndex = samples->channelIndex;
-
-      switch(samples->sampleData) {
-      case SampleData_Int:
-         samples->valueInt = samples->get_int_sample(channelIndex);
-         break;
-      case SampleData_Float:
-         samples->valueFloat = samples->get_float_sample(channelIndex);
-
-         // XXX: Kept for legacy purposes.  Should remove in the future.
-         if (get_channel(samples->channelId)->precision == 0)
-            samples->valueInt = (int) samples->valueFloat;
-
-         break;
-      case SampleData_LongLong:
-         samples->valueLongLong = samples->get_ll_sample(channelIndex);
-         break;
-      default:
-         pr_warning("Got into supposedly unreachable area in populate_sample_buffer");
-      }
-   }
-
-   return highestRate;
-}
-
-static void setFloatGetter(ChannelSample *s, float (*float_getter)(int)) {
+   s->cfg = cfg;
+   s->channelIndex = index;
    s->sampleData = SampleData_Float;
-   s->get_float_sample = float_getter;
+   s->get_float_sample = getter;
+
+   return ++s;
 }
 
+static ChannelSample* processChannelSampleWithIntGetter(ChannelSample *s,
+                                              ChannelConfig *cfg,
+                                              const size_t index,
+                                              int (*getter)(int)) {
+   if (cfg->sampleRate == SAMPLE_DISABLED)
+      return s;
 
-void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samples, size_t channelCount){
-   ChannelSample *sample = samples;
-   const unsigned int highSampleRate = getHighestSampleRate(loggerConfig);
+   s->cfg = cfg;
+   s->channelIndex = index;
+   s->sampleData = SampleData_Int;
+   s->get_int_sample = getter;
 
-   /*
-    * This sets up immutable channels.  These channels are channels that are always
-    * present.  They are always the first 2 channels, with the most reliable (Interval)
-    * being the first channel.  Utc only works when we get synchronization from an external
-    * clock.
-    */
-   struct TimeConfig *tc = &(loggerConfig->TimeConfigs[0]);
-   ChannelConfig *cc = &(tc->cfg);
-   sample->channelId = cc->channeId;
-   sample->channelIndex = 0;
-   sample->get_int_sample = get_uptime_sample;
-   sample->sampleData = SampleData_Int;
-   //Always use the highestSampleRate for our Time values.
-   sample->sampleRate = highSampleRate;
-   ++sample;
-
-   tc = &(loggerConfig->TimeConfigs[1]);
-   cc = &(tc->cfg);
-   sample->channelId = cc->channeId;
-   sample->channelIndex = 1;
-   sample->sampleData = SampleData_LongLong;
-   sample->get_ll_sample = get_utc_sample;
-   //Always use the highestSampleRate for our Time values.
-   sample->sampleRate = highSampleRate;
-   ++sample;
-
-	for (int i=0; i < CONFIG_ADC_CHANNELS; i++){
-		ADCConfig *config = &(loggerConfig->ADCConfigs[i]);
-		if (config->cfg.sampleRate != SAMPLE_DISABLED){
-			cc = &(config->cfg);
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->valueInt = NIL_SAMPLE;
-			sample->channelIndex = i;
-                        setFloatGetter(sample, get_analog_sample);
-			sample++;
-		}
-	}
-
-	for (int i = 0; i < CONFIG_IMU_CHANNELS; i++){
-		ImuConfig *config = &(loggerConfig->ImuConfigs[i]);
-		if (config->cfg.sampleRate != SAMPLE_DISABLED){
-			cc = &(config->cfg);
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->valueInt = NIL_SAMPLE;
-			sample->channelIndex = i;
-                        setFloatGetter(sample, get_imu_sample);
-			sample++;
-		}
-	}
-
-	for (int i=0; i < CONFIG_TIMER_CHANNELS; i++){
-		TimerConfig *config = &(loggerConfig->TimerConfigs[i]);
-		if (config->cfg.sampleRate != SAMPLE_DISABLED){
-			cc = &(config->cfg);
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->valueInt = NIL_SAMPLE;
-			sample->channelIndex = i;
-                        setFloatGetter(sample, get_timer_sample); // here
-			sample++;
-		}
-	}
-
-	for (int i=0; i < CONFIG_GPIO_CHANNELS; i++){
-		GPIOConfig *config = &(loggerConfig->GPIOConfigs[i]);
-		if (config->cfg.sampleRate != SAMPLE_DISABLED){
-			cc = &(config->cfg);
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->valueInt = NIL_SAMPLE;
-			sample->channelIndex = i;
-                        setFloatGetter(sample, get_gpio_sample);
-			sample++;
-		}
-	}
-
-	for (int i=0; i < CONFIG_PWM_CHANNELS; i++){
-		PWMConfig *config = &(loggerConfig->PWMConfigs[i]);
-		if (config->cfg.sampleRate != SAMPLE_DISABLED){
-			cc = &(config->cfg);
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->valueInt = NIL_SAMPLE;
-			sample->channelIndex = i;
-                        setFloatGetter(sample, get_pwm_sample);
-			sample++;
-		}
-	}
-
-	{
-		OBD2Config *obd2Config = &(loggerConfig->OBD2Configs);
-		size_t enabledPids = obd2Config->enabledPids;
-		for (size_t i = 0; i < enabledPids; i++){
-			cc = &obd2Config->pids[i].cfg;
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->valueInt = NIL_SAMPLE;
-			sample->channelIndex = i;
-                        setFloatGetter(sample, get_obd2_sample);
-			sample++;
-		}
-	}
-	{
-		size_t virtualChannelCount = get_virtual_channel_count();
-		for (size_t i = 0; i < virtualChannelCount; i++){
-			VirtualChannel *vc = get_virtual_channel(i);
-			cc = &vc->config;
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->valueInt = NIL_SAMPLE;
-			sample->channelIndex = i;
-                        setFloatGetter(sample, get_virtual_channel_value);
-			sample++;
-		}
-	}
-	{
-		GPSConfig *gpsConfig = &(loggerConfig->GPSConfigs);
-		unsigned short gpsSampleRate = gpsConfig->sampleRate;
-		if (gpsSampleRate != SAMPLE_DISABLED){
-			if (gpsConfig->positionEnabled){
-				sample->channelId = CHANNEL_Latitude;
-				sample->sampleRate = gpsSampleRate;
-				sample->valueInt = NIL_SAMPLE;
-				sample->channelIndex = gps_channel_latitude;
-                                setFloatGetter(sample, get_gps_sample);
-				sample++;
-
-				sample->channelId = CHANNEL_Longitude;
-				sample->sampleRate = gpsSampleRate;
-				sample->valueInt = NIL_SAMPLE;
-				sample->channelIndex = gps_channel_longitude;
-                                setFloatGetter(sample, get_gps_sample);
-				sample++;
-			}
-
-			if (gpsConfig->speedEnabled){
-				sample->channelId = CHANNEL_Speed;
-				sample->sampleRate = gpsSampleRate;
-				sample->valueInt = NIL_SAMPLE;
-				sample->channelIndex = gps_channel_speed;
-                                setFloatGetter(sample, get_gps_sample);
-				sample++;
-			}
-
-			if (gpsConfig->timeEnabled){
-				sample->channelId = CHANNEL_Time;
-				sample->sampleRate = gpsSampleRate;
-				sample->valueInt = NIL_SAMPLE;
-				sample->channelIndex = gps_channel_time;
-                                setFloatGetter(sample, get_gps_sample);
-				sample++;
-			}
-
-			if (gpsConfig->satellitesEnabled){
-				sample->channelId = CHANNEL_GPSSats;
-				sample->sampleRate = gpsSampleRate;
-				sample->valueInt = NIL_SAMPLE;
-				sample->channelIndex = gps_channel_satellites;
-                                setFloatGetter(sample, get_gps_sample);
-				sample++;
-			}
-
-			if (gpsConfig->distanceEnabled){
-				sample->channelId = CHANNEL_Distance;
-				sample->sampleRate = gpsSampleRate;
-				sample->valueInt = NIL_SAMPLE;
-				sample->channelIndex = gps_channel_distance;
-                                setFloatGetter(sample, get_gps_sample);
-				sample++;
-			}
-		}
-	}
-
-	{
-		LapConfig *trackConfig = &(loggerConfig->LapConfigs);
-		if (trackConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED){
-			cc = &(trackConfig->lapCountCfg);
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->valueInt = NIL_SAMPLE;
-			sample->channelIndex = lap_stat_channel_lapcount;
-                        setFloatGetter(sample, get_lap_stat_sample);
-			sample++;
-		}
-
-		if (trackConfig->lapTimeCfg.sampleRate != SAMPLE_DISABLED){
-			cc = &(trackConfig->lapTimeCfg);
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->valueInt = NIL_SAMPLE;
-			sample->channelIndex = lap_stat_channel_laptime;
-                        setFloatGetter(sample, get_lap_stat_sample);
-			sample++;
-		}
-
-		if (trackConfig->sectorCfg.sampleRate != SAMPLE_DISABLED){
-			cc = &(trackConfig->sectorCfg);
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->valueInt = NIL_SAMPLE;
-			sample->channelIndex = lap_stat_channel_sector;
-                        setFloatGetter(sample, get_lap_stat_sample);
-			sample++;
-		}
-
-		if (trackConfig->sectorTimeCfg.sampleRate != SAMPLE_DISABLED){
-			cc = &(trackConfig->sectorTimeCfg);
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->valueInt = NIL_SAMPLE;
-			sample->channelIndex = lap_stat_channel_sectortime;
-                        setFloatGetter(sample, get_lap_stat_sample);
-			sample++;
-		}
-
-		if (trackConfig->predTimeCfg.sampleRate != SAMPLE_DISABLED){
-			cc = &(trackConfig->predTimeCfg);
-			sample->channelId = cc->channeId;
-			sample->sampleRate = cc->sampleRate;
-			sample->valueInt = NIL_SAMPLE;
-			sample->channelIndex = lap_stat_channel_predtime;
-                        setFloatGetter(sample, get_lap_stat_sample);
-			sample++;
-		}
-	}
+   return ++s;
 }
 
+static ChannelSample* processChannelSampleWithFloatGetterNoarg(ChannelSample *s,
+                                                               ChannelConfig *cfg,
+                                                               float (*getter)()) {
+   if (cfg->sampleRate == SAMPLE_DISABLED )
+      return s;
 
-float get_mapped_value(float value, ScalingMap *scalingMap){
+   s->cfg = cfg;
+   s->sampleData = SampleData_Float_Noarg;
+   s->get_float_sample_noarg = getter;
+
+   return ++s;
+}
+
+static ChannelSample* processChannelSampleWithIntGetterNoarg(ChannelSample *s,
+                                                   ChannelConfig *cfg,
+                                                   int (*getter)()) {
+   if (cfg->sampleRate == SAMPLE_DISABLED )
+      return s;
+
+   s->cfg = cfg;
+   s->sampleData = SampleData_Int_Noarg;
+   s->get_int_sample_noarg = getter;
+
+   return ++s;
+}
+
+static ChannelSample* processChannelSampleWithLongLongGetterNoarg(ChannelSample *s,
+                                                        ChannelConfig *cfg,
+                                                        long long (*getter)()) {
+   if (cfg->sampleRate == SAMPLE_DISABLED )
+      return s;
+
+   s->cfg = cfg;
+   s->sampleData = SampleData_LongLong_Noarg;
+   s->get_longlong_sample_noarg = getter;
+
+   return ++s;
+}
+
+/* XXX Implement custom data getters here XXX */
+
+float get_mapped_value(float value, ScalingMap *scalingMap) {
 	unsigned short *bins;
 	unsigned int bin, nextBin;
 
@@ -329,24 +118,6 @@ float get_mapped_value(float value, ScalingMap *scalingMap){
 	float y2 = scalingMap->scaledValues[nextBin];
 	float scaled = LinearInterpolate(value,x1,y1,x2,y2);
 	return scaled;
-}
-
-float get_time_sample(int index) {
-   const LoggerConfig * loggerConfig = getWorkingLoggerConfig();
-   const struct TimeConfig *tc = &(loggerConfig->TimeConfigs[index]);
-   enum TimeType tt = tc->tt;
-
-   switch(tt) {
-   case TimeType_Uptime:
-      // XXX: This won't work.  Temporary only.
-      return (float) getUptime();
-   case TimeType_UtcMillis:
-      // XXX: This won't work.  Temporary only.
-      return (float) getMillisSinceEpoch();
-   }
-
-   // Should never get here.
-   return -1.0;
 }
 
 float get_analog_sample(int channelId){
@@ -418,15 +189,6 @@ float get_pwm_sample(int channelId){
 	return pwmValue;
 }
 
-float get_obd2_sample(int channelId){
-	return (float)OBD2_get_current_PID_value(channelId);
-}
-
-float get_gpio_sample(int channelId){
-	int gpioValue = GPIO_get(channelId);
-	return (float)gpioValue;
-}
-
 float get_imu_sample(int channelId){
 	LoggerConfig *config = getWorkingLoggerConfig();
 	ImuConfig *c = &(config->ImuConfigs[channelId]);
@@ -434,80 +196,146 @@ float get_imu_sample(int channelId){
 	return value;
 }
 
-float get_gps_sample(int channelId){
-	float value = 0;
-	switch(channelId){
-		case gps_channel_latitude:
-			value = getLatitude();
-			break;
-		case gps_channel_longitude:
-			value = getLongitude();
-			break;
-		case gps_channel_speed:
-			value = getGPSSpeed() *  0.621371192; //convert to MPH
-			break;
-		case gps_channel_time:
-         {
-            /*
-             * XXX: Hack.  Doing this until backend can take uint64_t and we
-             *      can give time since epoch.  getUTCTime returned time as
-             *      HHMMSS.MMM
-             */
-            const DateTime dt = getLastFixDateTime();
-            value = ((float) dt.millisecond) / 1000;
-            value += (float) dt.second;
-            value += ((float) dt.minute) * 100;
-            value += ((float) dt.hour) * 10000;
-            break;
-         }
-		case gps_channel_distance:
-			value = getGpsDistance();
-			break;
-		case gps_channel_satellites:
-			value = getSatellitesUsedForPosition();
-			break;
-		default:
-			value = -1;
-			break;
-	}
-	return value;
-}
+/* XXX Now we setup how we initialize the sample buffer XXX */
 
-float get_lap_stat_sample(int channelId){
-   float value = 0;
-   switch(channelId){
-   case lap_stat_channel_lapcount:
-      value = (float) getLapCount();
-      break;
-   case lap_stat_channel_laptime:
-      // XXX: TIME_HACK.  Should send Millis only in future.
-      value = tinyMillisToMinutes(getLastLapTime());
-      break;
-   case lap_stat_channel_sector:
-      value = (float) getLastSector();
-      break;
-   case lap_stat_channel_sectortime:
-      // XXX: TIME_HACK.  Should send Millis only in future.
-      value = tinyMillisToMinutes(getLastSectorTime());
-      break;
-   case lap_stat_channel_predtime:
-      {
-         const GeoPoint gp = getGeoPoint();
-         const tiny_millis_t millis = getMillisSinceFirstFix();
-         value = tinyMillisToMinutes(getPredictedTime(gp, millis));
-         break;
-      }
-   default:
-      value = -1;
-      break;
+void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samples, size_t channelCount){
+   ChannelSample *sample = samples;
+   const unsigned int highSampleRate = getHighestSampleRate(loggerConfig);
+   ChannelConfig *chanCfg;
+
+   /*
+    * This sets up immutable channels.  These channels are channels that are always
+    * present.  They are always the first 2 channels, with the most reliable (Interval)
+    * being the first channel.  Utc only works when we get synchronization from an external
+    * clock.
+    */
+   struct TimeConfig *tc = &(loggerConfig->TimeConfigs[0]);
+   chanCfg = &(tc->cfg);
+   // XXX: Special Trick -- Set highest sample rate here.
+   tc->cfg.sampleRate = highSampleRate;
+   sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getUptimeAsInt);
+
+   tc = &(loggerConfig->TimeConfigs[1]);
+   chanCfg = &(tc->cfg);
+   // XXX: Special Trick -- Set highest sample rate here.
+   tc->cfg.sampleRate = highSampleRate; // Set highest sample rate here.
+   sample = processChannelSampleWithLongLongGetterNoarg(sample, chanCfg, getMillisSinceEpochAsLongLong);
+
+
+   for (int i=0; i < CONFIG_ADC_CHANNELS; i++) {
+      ADCConfig *config = &(loggerConfig->ADCConfigs[i]);
+      chanCfg = &(config->cfg);
+      sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_analog_sample);
    }
-   return value;
+
+   for (int i = 0; i < CONFIG_IMU_CHANNELS; i++) {
+      ImuConfig *config = &(loggerConfig->ImuConfigs[i]);
+      chanCfg = &(config->cfg);
+      sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_imu_sample);
+   }
+
+   for (int i=0; i < CONFIG_TIMER_CHANNELS; i++) {
+      TimerConfig *config = &(loggerConfig->TimerConfigs[i]);
+      chanCfg = &(config->cfg);
+      sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_timer_sample);
+   }
+
+   for (int i=0; i < CONFIG_GPIO_CHANNELS; i++) {
+      GPIOConfig *config = &(loggerConfig->GPIOConfigs[i]);
+      chanCfg = &(config->cfg);
+      sample = processChannelSampleWithIntGetter(sample, chanCfg, i, GPIO_get);
+   }
+
+   for (int i=0; i < CONFIG_PWM_CHANNELS; i++) {
+      PWMConfig *config = &(loggerConfig->PWMConfigs[i]);
+      chanCfg = &(config->cfg);
+      sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_pwm_sample);
+   }
+
+   OBD2Config *obd2Config = &(loggerConfig->OBD2Configs);
+   for (size_t i = 0; i < obd2Config->enabledPids; i++) {
+      chanCfg = &(obd2Config->pids[i].cfg);
+      sample = processChannelSampleWithIntGetter(sample, chanCfg, i, OBD2_get_current_PID_value);
+   }
+
+   const size_t virtualChannelCount = get_virtual_channel_count();
+   for (size_t i = 0; i < virtualChannelCount; i++) {
+      VirtualChannel *vc = get_virtual_channel(i);
+      chanCfg = &(vc->config);
+      sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_virtual_channel_value);
+	}
+
+   GPSConfig *gpsConfig = &(loggerConfig->GPSConfigs);
+   chanCfg = &(gpsConfig->latitude);
+   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getLatitude);
+   chanCfg = &(gpsConfig->longitude);
+   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getLongitude);
+   chanCfg = &(gpsConfig->speed);
+   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getGpsSpeedInMph);
+   chanCfg = &(gpsConfig->distance);
+   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getGpsDistance);
+   chanCfg = &(gpsConfig->satellites);
+   sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getSatellitesUsedForPosition);
+
+
+   LapConfig *trackConfig = &(loggerConfig->LapConfigs);
+   chanCfg = &(trackConfig->lapCountCfg);
+   sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getLapCount);
+   chanCfg = &(trackConfig->lapTimeCfg);
+   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getLastLapTimeInMinutes);
+   chanCfg = &(trackConfig->sectorCfg);
+   sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getLastSector);
+   chanCfg = &(trackConfig->sectorTimeCfg);
+   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getLastSectorTimeInMinutes);
+   chanCfg = &(trackConfig->predTimeCfg);
+   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getPredictedTimeInMinutes);
 }
 
-int get_uptime_sample(int i) {
-   return (int) getUptime();
-}
+int populate_sample_buffer(ChannelSample * samples,  size_t count, size_t currentTicks) {
+   unsigned short highestRate = SAMPLE_DISABLED;
 
-long long get_utc_sample(int i) {
-   return (long long) getMillisSinceEpoch();
+   for (size_t i = 0; i < count; i++, samples++) {
+      const unsigned short sampleRate = samples->cfg->sampleRate;
+
+      // NIL_SAMPLE the sample for sanity
+      samples->valueInt = NIL_SAMPLE;
+
+      if (currentTicks % sampleRate != 0)
+         continue;
+
+      highestRate = HIGHER_SAMPLE_RATE(sampleRate, highestRate);
+      size_t channelIndex = samples->channelIndex;
+
+      switch(samples->sampleData) {
+      case SampleData_Int_Noarg:
+         samples->valueInt = samples->get_int_sample_noarg();
+         break;
+      case SampleData_Int:
+         samples->valueInt = samples->get_int_sample(channelIndex);
+         break;
+      case SampleData_LongLong_Noarg:
+         samples->valueLongLong = samples->get_longlong_sample_noarg();
+         break;
+      case SampleData_LongLong:
+         samples->valueLongLong = samples->get_longlong_sample(channelIndex);
+         break;
+      case SampleData_Float_Noarg:
+         samples->valueFloat = samples->get_float_sample_noarg();
+         break;
+      case SampleData_Float:
+         samples->valueFloat = samples->get_float_sample(channelIndex);
+         break;
+      case SampleData_Double_Noarg:
+         samples->valueDouble = samples->get_double_sample_noarg();
+         break;
+      case SampleData_Double:
+         samples->valueDouble = samples->get_double_sample(channelIndex);
+         break;
+      default:
+         pr_warning("Got into supposedly unreachable area in populate_sample_buffer");
+         samples->valueLongLong = -1;
+      }
+   }
+
+   return highestRate;
 }
