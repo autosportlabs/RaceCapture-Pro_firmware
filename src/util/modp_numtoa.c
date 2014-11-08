@@ -53,6 +53,27 @@ void modp_uitoa10(uint32_t value, char* str)
     strreverse(str, wstr-1);
 }
 
+void modp_ltoa10(int64_t value, char* str) {
+    char* wstr=str;
+    int neg = value < 0;
+
+    // Don't know why this is needed, but following suit b/c tired/lazy.
+    if (neg)
+        value = -value;
+
+    // Conversion. Number is reversed.
+    do *wstr++ = 48 + (value % 10); while (value /= 10);
+
+    if (neg)
+        *wstr++ = '-';
+
+    *wstr='\0';
+
+    // Reverse string
+    strreverse(str, wstr-1);
+}
+
+
 void modp_ultoa10(uint64_t value, char* str)
 {
     char* wstr=str;
@@ -264,5 +285,3 @@ char* modp_itoaX(int value, char* result, int base) {
 		}
 		return result;
 	}
-
-

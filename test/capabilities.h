@@ -6,7 +6,7 @@
 //Hardware capabilities for mocked logger
 
 #define TICK_RATE_HZ			1000
-
+#define MS_PER_TICK 5
 //configuration
 #define MAX_CHANNELS			200
 #define MAX_TRACKS				240

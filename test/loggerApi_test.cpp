@@ -32,6 +32,7 @@
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( LoggerApiTest );
 
+
 char * LoggerApiTest::processApiGeneric(string filename){
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);
@@ -605,27 +606,36 @@ void LoggerApiTest::testSetTimerCfg(){
 	testSetTimerConfigFile("setTimerCfg1.json");
 }
 
-void LoggerApiTest::testGetMeta(){
-	testSampleDataFile("getMeta.json", "getMeta_response.json");
-}
-
-void LoggerApiTest::testSampleData(){
-	testSampleDataFile("sampleData1.json", "sampleData_response1.json");
-	testSampleDataFile("sampleData2.json", "sampleData_response2.json");
-}
-
-void LoggerApiTest::testSampleDataFile(string requestFilename, string responseFilename){
-
-	string requestJson = readFile(requestFilename);
-	string expectedResponseJson = readFile(responseFilename);
-
+string LoggerApiTest::getSampleResponse(string requestJson) {
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)requestJson.c_str(), requestJson.size());
 
 	LoggerConfig *c = getWorkingLoggerConfig();
 	char *txBuffer = mock_getTxBuffer();
 	string txString(txBuffer);
-	CPPUNIT_ASSERT_EQUAL(expectedResponseJson, txString );
+        return txString;
+}
+
+void LoggerApiTest::testGetMeta(){
+	string requestJson = readFile("getMeta.json");
+	string expectedResponseJson = readFile("getMeta_response.json");
+
+	CPPUNIT_ASSERT_EQUAL(expectedResponseJson,
+                        getSampleResponse(requestJson));
+}
+
+void LoggerApiTest::testSampleData(){
+	string requestJson1 = readFile("sampleData1.json");
+	string expectedResponseJson1 = readFile("sampleData_response1.json");
+
+	CPPUNIT_ASSERT_EQUAL(expectedResponseJson1,
+                        getSampleResponse(requestJson1));
+
+	string requestJson2 = readFile("sampleData2.json");
+	string expectedResponseJson2 = readFile("sampleData_response2.json");
+
+	CPPUNIT_ASSERT_EQUAL(expectedResponseJson2,
+                        getSampleResponse(requestJson2));
 }
 
 void LoggerApiTest::testLogStartStopFile(string filename){
@@ -890,14 +900,23 @@ void LoggerApiTest::testAddTrackDbFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(trackType, (int)track->track_type);
 
 	if (trackType == TRACK_TYPE_CIRCUIT){
-          CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][0], (float)track->circuit.startFinish.latitude);
-          CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][1], (float)track->circuit.startFinish.longitude);
-	}
-	else{
-          CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["st"][0], (float)track->stage.start.latitude);
-          CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["st"][1], (float)track->stage.start.longitude);
-          CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["fin"][0], (float)track->stage.finish.latitude);
-          CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["fin"][1], (float)track->stage.finish.longitude);
+          CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][0],
+                               (float)track->circuit.startFinish.latitude);
+
+          CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["sf"][1],
+                               (float)track->circuit.startFinish.longitude);
+	} else {
+          CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["st"][0],
+                               (float)track->stage.start.latitude);
+
+          CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["st"][1],
+                               (float)track->stage.start.longitude);
+
+          CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["fin"][0],
+                               (float)track->stage.finish.latitude);
+
+          CPPUNIT_ASSERT_EQUAL((float)(Number)jsonCompare["addTrackDb"]["track"]["fin"][1],
+                               (float)track->stage.finish.longitude);
 	}
 
 	Array secNode = (Array)jsonCompare["addTrackDb"]["track"]["sec"];

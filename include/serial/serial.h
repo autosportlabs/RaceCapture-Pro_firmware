@@ -48,6 +48,8 @@ size_t serial_read_byte(Serial *serial, uint8_t *b, size_t delay);
 
 void put_int(Serial * serial, int n);
 
+void put_ll(Serial *serial, long long l);
+
 void put_hex(Serial * serial, int n);
 
 void put_float(Serial * serial, float f, int precision);

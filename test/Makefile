@@ -102,6 +102,7 @@ T_SRC = loggerApi_test.cpp \
 SRC = 	mock_uart.c \
 		mock_usb_comm.c \
 		mock_serial.c \
+		src/system/task.cpp \
 		$(MOCK_DIR)/util/taskUtil_mock.c \
 		$(RCP_SRC)/launch_control.c \
 		$(RCP_SRC)/lua/luaScript.c \

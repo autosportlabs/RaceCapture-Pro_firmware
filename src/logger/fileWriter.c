@@ -89,8 +89,14 @@ static void appendQuotedString(const char *s){
 }
 
 static void appendInt(int num){
-	char buf[10];
+	char buf[12];
 	modp_itoa10(num,buf);
+	appendFileBuffer(buf);
+}
+
+static void appendLongLong(long long num) {
+	char buf[21];
+	modp_ltoa10(num, buf);
 	appendFileBuffer(buf);
 }
 
@@ -121,32 +127,49 @@ static int writeHeaders(ChannelSample *channelSamples, size_t sampleCount){
 
 
 static int writeChannelSamples(ChannelSample * channelSamples, size_t channelCount){
-	int rc = WRITE_SUCCESS;
-	if (NULL != channelSamples){
-		int fieldCount = 0;
-		for (size_t i = 0; i < channelCount; i++){
-			ChannelSample *sample = (channelSamples + i);
-
-			if (fieldCount++ > 0) appendFileBuffer(",");
-
-			if (sample->intValue == NIL_SAMPLE) continue;
-
-			int precision = get_channel(sample->channelId)->precision;
-			if (precision > 0){
-				appendFloat(sample->floatValue, precision);
-			}
-			else{
-				appendInt(sample->intValue);
-			}
-		}
-		appendFileBuffer("\n");
-		writeFileBuffer();
+	if (NULL == channelSamples) {
+           pr_debug("null sample record\r\n");
+           return WRITE_FAIL;
 	}
-	else{
-		pr_debug("null sample record\r\n");
-		rc = WRITE_FAIL;
-	}
-	return rc;
+
+        int fieldCount = 0;
+
+        for (size_t i = 0; i < channelCount; i++) {
+           ChannelSample *sample = (channelSamples + i);
+
+           if (fieldCount++ > 0)
+              appendFileBuffer(",");
+
+           // XXX: This may cause issues since we now do longs.  Probably should fix it.
+           if (sample->valueInt == NIL_SAMPLE)
+              continue;
+
+           const int precision = get_channel(sample->channelId)->precision;
+           enum SampleData sData = sample->sampleData;
+
+           // XXX: Hack to deal with precision == 0 fix.
+           if (precision == 0)
+              sData = SampleData_Int;
+
+           switch(sData) {
+           case SampleData_Float:
+              appendFloat(sample->valueFloat, precision);
+              break;
+           case SampleData_Int:
+              appendInt(sample->valueInt);
+              break;
+           case SampleData_LongLong:
+              appendLongLong(sample->valueLongLong);
+              break;
+           default:
+              pr_warning("Got to unexpected location in writeChannelSamples\n");
+           }
+        }
+
+        appendFileBuffer("\n");
+        writeFileBuffer();
+
+        return WRITE_SUCCESS;
 }
 
 static int openLogfile(FIL *f, char *filename){

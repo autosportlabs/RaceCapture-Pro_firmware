@@ -55,6 +55,12 @@ void put_int(Serial *serial, int n){
 	serial->put_s(buf);
 }
 
+void put_ll(Serial *serial, long long l) {
+   char buf[21];
+   modp_ltoa10(l, buf);
+   serial->put_s(buf);
+}
+
 void put_float(Serial *serial, float f,int precision){
 	char buf[20];
 	modp_ftoa(f,buf,precision);

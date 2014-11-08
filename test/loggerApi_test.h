@@ -117,7 +117,7 @@ private:
   void testGetScriptFile(string filename);
   void testRunScriptFile(string filename);
   void testLogStartStopFile(string filename);
-  void testSampleDataFile(string requestFilename, string responseFilename);
+  string getSampleResponse(string requestJson);
   void testGetAnalogConfigFile(string filename, int index);
   void testSetAnalogConfigFile(string filename);
   void testSetImuConfigFile(string filename);

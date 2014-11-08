@@ -584,6 +584,24 @@
             "prec": 0,
             "min": 0,
             "max": 1000
+        },
+        {
+            "nm": "Interval",
+            "ut": "ms",
+            "sys": 1,
+            "type": 7,
+            "prec": 0,
+            "min": 0,
+            "max": 2000000000
+        },
+        {
+            "nm": "Utc",
+            "ut": "ms",
+            "sys": 1,
+            "type": 7,
+            "prec": 0,
+            "min": 0,
+            "max": 2000000000
         }
     ]
 }

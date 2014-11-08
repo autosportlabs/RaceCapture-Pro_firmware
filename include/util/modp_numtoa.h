@@ -50,6 +50,13 @@ void modp_itoa10(int32_t value, char* buf);
  */
 void modp_uitoa10(uint32_t value, char* buf);
 
+/** \brief convert a long to char buffer
+ *
+ * \param[in] value
+ * \param[out] buf The output buffer, should be 21 chars or more.
+ */
+void modp_ltoa10(int64_t value, char* str);
+
 /** \brief convert an unsigned long to char buffer
  *
  * \param[in] value
