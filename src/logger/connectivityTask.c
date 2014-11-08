@@ -62,6 +62,7 @@ static size_t trimBuffer(char *buffer, size_t count){
 
 static int processRxBuffer(Serial *serial, char *g_buffer, size_t *g_rxCount){
 	size_t count = serial->get_line_wait(g_buffer + *g_rxCount, BUFFER_SIZE - *g_rxCount, 0);
+
 	*g_rxCount += count;
 	int processMsg = 0;
 
@@ -73,7 +74,10 @@ static int processRxBuffer(Serial *serial, char *g_buffer, size_t *g_rxCount){
 		pr_error(g_buffer);
 		pr_error("\r\n");
 	}
-	if ('\n' == g_buffer[*g_rxCount - 1]){
+	if ('\r' == g_buffer[*g_rxCount - 1]){
+		pr_info("rxbuffer=");
+		pr_info(g_buffer);
+		pr_info("\r\n");
 		*g_rxCount = trimBuffer(g_buffer, *g_rxCount);
 		processMsg = 1;
 	}

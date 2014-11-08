@@ -47,3 +47,5 @@ Mk2 Building Requirements
 	* Build it using the instructions provided
 	* Install the asl_f4_loader_x_x_x.tgz package with pip
 	
+
+* To flash, enter the stm32_base directory and create a symlink (or copy) the openocd config file matching the adpater you are using. if you have an unsupported adapter, consult the openocd documentation for an appropriate configuration script.
