@@ -47,22 +47,22 @@ static int sendCommand(DeviceConfig *config, const char * cmd) {
 
 static char * baudConfigCmdForRate(unsigned int baudRate){
 	switch (baudRate){
-			case 9600:
-				return "AT+BAUD4";
-				break;
-			case 115200:
-				return "AT+BAUD8";
-				break;
-			case 230400:
-				return "AT+BAUD9";
-				break;
-			default:
-				pr_error("invalid BT baud");
-				pr_error_int(baudRate);
-				pr_error("\r\n");
-				return "";
-				break;
+		case 9600:
+			return "AT+BAUD4";
+			break;
+		case 115200:
+			return "AT+BAUD8";
+			break;
+		case 230400:
+			return "AT+BAUD9";
+			break;
+		default:
+			break;
 	}
+	pr_error("invalid BT baud");
+	pr_error_int(baudRate);
+	pr_error("\r\n");
+	return "";
 }
 
 
@@ -92,7 +92,7 @@ static int configureBt(DeviceConfig *config, unsigned int targetBaud, const char
 static int bt_probe_config(unsigned int probeBaud, unsigned int targetBaud, const char * deviceName, DeviceConfig *config){
 	if (DEBUG_LEVEL){
 		pr_info("Probing BT baud ");
-		pr_info(probeBaud);
+		pr_info_int(probeBaud);
 		pr_info(": ");
 	}
 	config->serial->init(8, 0, 1, probeBaud);
