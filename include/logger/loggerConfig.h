@@ -75,7 +75,7 @@ typedef struct _ChannelConfig{
 } ChannelConfig;
 
 typedef struct _ScalingMap{
-	unsigned short rawValues[ANALOG_SCALING_BINS];
+	float rawValues[ANALOG_SCALING_BINS];
 	float scaledValues[ANALOG_SCALING_BINS];
 } ScalingMap;
 
@@ -114,7 +114,7 @@ typedef struct _ADCConfig{
 
 #define DEFAULT_SCALING 1
 
-#define DEFAULT_SCALING_MAP {{0,256,512,768,1023},{0,1.25,2.5,3.75,5.0}}
+#define DEFAULT_SCALING_MAP {{0,1.25,2.5,3.75,5.0},{0,1.25,2.5,3.75,5.0}}
 
 // Define channel config for battery
 #define DEFAULT_BATTERY_CONFIG {"Battery", "Volts", 0, 20, SAMPLE_1Hz, 2}
@@ -131,7 +131,7 @@ typedef struct _ADCConfig{
 
 #define ANALOG1_ADC_CONFIG                      \
    {                                            \
-		{"Analog1", "Volts", 0, 20, SAMPLE_1Hz, 2},\
+		{"Analog1", "Volts", 0, 5, SAMPLE_DISABLED, 2},\
          DEFAULT_SCALING,                       \
          0,                                     \
          1.0f,                                  \
@@ -141,7 +141,7 @@ typedef struct _ADCConfig{
 
 #define ANALOG2_ADC_CONFIG                      \
    {                                            \
-		{"Analog2", "Volts", 0, 20, SAMPLE_1Hz, 2},\
+		{"Analog2", "Volts", 0, 5, SAMPLE_DISABLED, 2},\
          DEFAULT_SCALING,                       \
          0,                                     \
          1.0f,                                  \
@@ -151,7 +151,7 @@ typedef struct _ADCConfig{
 
 #define ANALOG3_ADC_CONFIG                      \
    {                                            \
-		{"Analog3", "Volts", 0, 20, SAMPLE_1Hz, 2},\
+		{"Analog3", "Volts", 0, 5, SAMPLE_DISABLED, 2},\
          DEFAULT_SCALING,                       \
          0,                                     \
          1.0f,                                  \
@@ -161,7 +161,7 @@ typedef struct _ADCConfig{
 
 #define ANALOG4_ADC_CONFIG                      \
    {                                            \
-		{"Analog4", "Volts", 0, 20, SAMPLE_1Hz, 2},\
+		{"Analog4", "Volts", 0, 5, SAMPLE_DISABLED, 2},\
          DEFAULT_SCALING,                       \
          0,                                     \
          1.0f,                                  \
@@ -171,7 +171,7 @@ typedef struct _ADCConfig{
 
 #define ANALOG5_ADC_CONFIG                      \
    {                                            \
-		{"Analog5", "Volts", 0, 20, SAMPLE_1Hz, 2},\
+		{"Analog5", "Volts", 0, 5, SAMPLE_DISABLED, 2},\
          DEFAULT_SCALING,                       \
          0,                                     \
          1.0f,                                  \
@@ -181,7 +181,7 @@ typedef struct _ADCConfig{
 
 #define ANALOG6_ADC_CONFIG                      \
    {                                            \
-		{"Analog6", "Volts", 0, 20, SAMPLE_1Hz, 2},\
+		{"Analog6", "Volts", 0, 5, SAMPLE_DISABLED, 2},\
          DEFAULT_SCALING,                       \
          0,                                     \
          1.0f,                                  \
@@ -191,7 +191,7 @@ typedef struct _ADCConfig{
 
 #define ANALOG7_ADC_CONFIG                      \
    {                                            \
-		{"Analog7", "Volts", 0, 20, SAMPLE_1Hz, 2},\
+		{"Analog7", "Volts", 0, 5, SAMPLE_DISABLED, 2},\
          DEFAULT_SCALING,                       \
          0,                                     \
          1.0f,                                  \
@@ -201,7 +201,7 @@ typedef struct _ADCConfig{
 
 #define ANALOG8_ADC_CONFIG                      \
    {                                            \
-		{"Analog8", "Volts", 0, 20, SAMPLE_1Hz, 2},\
+		{"Analog8", "Volts", 0, 5, SAMPLE_DISABLED, 2},\
          DEFAULT_SCALING,                       \
          0,                                     \
          1.0f,                                  \

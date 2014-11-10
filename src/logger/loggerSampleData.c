@@ -90,7 +90,7 @@ static ChannelSample* processChannelSampleWithLongLongGetterNoarg(ChannelSample 
 /* XXX Implement custom data getters here XXX */
 
 float get_mapped_value(float value, ScalingMap *scalingMap) {
-	unsigned short *bins;
+	float *bins;
 	unsigned int bin, nextBin;
 
 	bins = scalingMap->rawValues + ANALOG_SCALING_BINS - 1;
@@ -112,9 +112,9 @@ float get_mapped_value(float value, ScalingMap *scalingMap) {
 			return scalingMap->scaledValues[ANALOG_SCALING_BINS - 1];
 		}
 	}
-	float x1 = (float)scalingMap->rawValues[bin];
+	float x1 = scalingMap->rawValues[bin];
 	float y1 = scalingMap->scaledValues[bin];
-	float x2 = (float)scalingMap->rawValues[nextBin];
+	float x2 = scalingMap->rawValues[nextBin];
 	float y2 = scalingMap->scaledValues[nextBin];
 	float scaled = LinearInterpolate(value,x1,y1,x2,y2);
 	return scaled;
@@ -334,6 +334,7 @@ int populate_sample_buffer(ChannelSample * samples,  size_t count, size_t curren
       default:
          pr_warning("Got into supposedly unreachable area in populate_sample_buffer");
          samples->valueLongLong = -1;
+         break;
       }
    }
 
