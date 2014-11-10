@@ -6,12 +6,9 @@
 
 #ifndef RCP_TESTING
 #include "memory.h"
-// STIEG: RESTORE DEFAULT_LOGGER_CONFIG
-static const LoggerConfig g_savedLoggerConfig  __attribute__((section(".config\n\t#"))) = DEFAULT_LOGGER_CONFIG;
-//static const LoggerConfig g_savedLoggerConfig  __attribute__((section(".config\n\t#")));
+static const volatile LoggerConfig g_savedLoggerConfig  __attribute__((section(".config\n\t#")));
 #else
 static LoggerConfig g_savedLoggerConfig = DEFAULT_LOGGER_CONFIG;
-//static LoggerConfig g_savedLoggerConfig;
 #endif
 
 static const LoggerConfig g_defaultLoggerConfig = DEFAULT_LOGGER_CONFIG;
@@ -19,14 +16,6 @@ static const LoggerConfig g_defaultLoggerConfig = DEFAULT_LOGGER_CONFIG;
 
 static LoggerConfig g_workingLoggerConfig;
 
-static int firmware_major_version_matches_last(){
-	return g_savedLoggerConfig.RcpVersionInfo.major == MAJOR_REV;
-}
-
-static int firmware_version_matches_last(){
-	const VersionInfo * version = &g_savedLoggerConfig.RcpVersionInfo;
-	return version->major == MAJOR_REV && version->minor == MINOR_REV && version->bugfix == BUGFIX_REV;
-}
 /*
 static resetVersionAndPwmClkFreq(VersionInfo *vi, unsigned short *pwmClkFreq) {
    vi->major = MAJOR_REV;
@@ -48,30 +37,35 @@ static resetAdcConfig(ADCConfig adcCfgArr[], size_t arrSize) {
 int flash_default_logger_config(void){
 	pr_info("flashing default logger config...");
 
-	int result = memory_flash_region(&g_savedLoggerConfig, &g_defaultLoggerConfig, sizeof (LoggerConfig));
+	int result = memory_flash_region((void *)&g_savedLoggerConfig, (void *)&g_defaultLoggerConfig, sizeof (LoggerConfig));
 	if (result == 0) pr_info("success\r\n"); else pr_info("failed\r\n");
 	return result;
 }
 
 int flashLoggerConfig(void){
-	return memory_flash_region(&g_savedLoggerConfig, &g_workingLoggerConfig, sizeof (LoggerConfig));
+	return memory_flash_region((void *)&g_savedLoggerConfig, (void *)&g_workingLoggerConfig, sizeof (LoggerConfig));
 }
 
-void initialize_logger_config(){
-	if (! firmware_version_matches_last()){
-		pr_info("new firmware detected\r\n");
-	}
+static void checkFlashDefaultConfig(void){
+	size_t major_version_changed = g_savedLoggerConfig.RcpVersionInfo.major != MAJOR_REV;
+	size_t minor_version_changed = g_savedLoggerConfig.RcpVersionInfo.minor != MINOR_REV;
 
-	if (! firmware_major_version_matches_last()){
-		pr_info("firmware major version changed\r\n");
+	if (minor_version_changed || major_version_changed){
+		pr_info("Major or minor firmware version changed\r\n");
 		flash_default_logger_config();
 	}
+}
 
-	memcpy(&g_workingLoggerConfig,&g_savedLoggerConfig,sizeof(LoggerConfig));
+static void loadWorkingLoggerConfig(void){
+	memcpy((void *)&g_workingLoggerConfig,(void *)&g_savedLoggerConfig,sizeof(LoggerConfig));
+}
+void initialize_logger_config(){
+	checkFlashDefaultConfig();
+	loadWorkingLoggerConfig();
 }
 
 const LoggerConfig * getSavedLoggerConfig(){
-	return &g_savedLoggerConfig;
+	return (LoggerConfig *)&g_savedLoggerConfig;
 }
 
 LoggerConfig * getWorkingLoggerConfig(){
