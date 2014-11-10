@@ -331,11 +331,11 @@ void LoggerApiTest::testSetAnalogConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(9.9F, adcCfg->linearOffset);
 	CPPUNIT_ASSERT_EQUAL(0.6F, adcCfg->filterAlpha);
 
-	CPPUNIT_ASSERT_EQUAL(1, (int)adcCfg->scalingMap.rawValues[0]);
-	CPPUNIT_ASSERT_EQUAL(2, (int)adcCfg->scalingMap.rawValues[1]);
-	CPPUNIT_ASSERT_EQUAL(3, (int)adcCfg->scalingMap.rawValues[2]);
-	CPPUNIT_ASSERT_EQUAL(4, (int)adcCfg->scalingMap.rawValues[3]);
-	CPPUNIT_ASSERT_EQUAL(5, (int)adcCfg->scalingMap.rawValues[4]);
+	CPPUNIT_ASSERT_EQUAL(0.0F, adcCfg->scalingMap.rawValues[0]);
+	CPPUNIT_ASSERT_EQUAL(1.25F, adcCfg->scalingMap.rawValues[1]);
+	CPPUNIT_ASSERT_EQUAL(2.5F, adcCfg->scalingMap.rawValues[2]);
+	CPPUNIT_ASSERT_EQUAL(3.75F, adcCfg->scalingMap.rawValues[3]);
+	CPPUNIT_ASSERT_EQUAL(5.0F, adcCfg->scalingMap.rawValues[4]);
 
 	CPPUNIT_ASSERT_EQUAL(1.1F, adcCfg->scalingMap.scaledValues[0]);
 	CPPUNIT_ASSERT_EQUAL(1.2F, adcCfg->scalingMap.scaledValues[1]);

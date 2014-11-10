@@ -395,7 +395,7 @@ static const jsmntok_t * setScalingMapRaw(ADCConfig *adcCfg, const jsmntok_t *ma
 			if (mapArrayTok->type == JSMN_PRIMITIVE){
 				jsmn_trimData(mapArrayTok);
 				if (i < ANALOG_SCALING_BINS){
-					adcCfg->scalingMap.rawValues[i] = modp_atoi(mapArrayTok->data);
+					adcCfg->scalingMap.rawValues[i] = modp_atof(mapArrayTok->data);
 				}
 			}
 		}
@@ -479,7 +479,7 @@ static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
 		json_arrayStart(serial, "raw");
 
 		for (size_t b = 0; b < ANALOG_SCALING_BINS; b++){
-			put_int(serial,  adcCfg->scalingMap.rawValues[b]);
+			put_float(serial,  adcCfg->scalingMap.rawValues[b], SCALING_MAP_BIN_PRECISION);
 			if (b < ANALOG_SCALING_BINS - 1) serial->put_c(',');
 		}
 
