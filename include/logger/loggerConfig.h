@@ -79,8 +79,6 @@ typedef struct _ScalingMap{
 	float scaledValues[ANALOG_SCALING_BINS];
 } ScalingMap;
 
-#define EMPTY_CHANNEL_CONFIG {"","", 0.0f, 0.0f, SAMPLE_DISABLED, 0}
-
 enum TimeType {
    TimeType_Uptime,
    TimeType_UtcMillis,
@@ -90,6 +88,8 @@ struct TimeConfig {
    ChannelConfig cfg;
    enum TimeType tt;
 };
+
+#define EMPTY_CHANNEL_CONFIG {"","", 0.0f, 0.0f, SAMPLE_DISABLED, 0}
 
 // Default to lowest active sample rate.  This will change in code later.
 #define DEFAULT_UPTIME_CONFIG {"Interval", "ms", 0, 0, SAMPLE_1Hz, 0}
@@ -119,16 +119,6 @@ typedef struct _ADCConfig{
 // Define channel config for battery
 #define DEFAULT_BATTERY_CONFIG {"Battery", "Volts", 0, 20, SAMPLE_1Hz, 2}
 
-#define DEFAULT_ADC_CONFIG                      \
-   {                                            \
-      EMPTY_CHANNEL_CONFIG,                     \
-         DEFAULT_SCALING,                       \
-         0,                                     \
-         1.0f,                                  \
-         DEFAULT_SCALING_MODE,                  \
-         DEFAULT_SCALING_MAP                    \
-         }
-
 #define BATTERY_ADC_CONFIG                      \
    {                                            \
       DEFAULT_BATTERY_CONFIG,                   \
@@ -139,16 +129,97 @@ typedef struct _ADCConfig{
          DEFAULT_SCALING_MAP                    \
          }
 
-#define DEFAULT_ADC_CONFIGS                     \
+#define ANALOG1_ADC_CONFIG                      \
    {                                            \
-      DEFAULT_ADC_CONFIG,                       \
-         DEFAULT_ADC_CONFIG,                    \
-         DEFAULT_ADC_CONFIG,                    \
-         DEFAULT_ADC_CONFIG,                    \
-         DEFAULT_ADC_CONFIG,                    \
-         DEFAULT_ADC_CONFIG,                    \
-         DEFAULT_ADC_CONFIG,                    \
-         BATTERY_ADC_CONFIG                     \
+		{"Analog1", "Volts", 0, 20, SAMPLE_1Hz, 2},\
+         DEFAULT_SCALING,                       \
+         0,                                     \
+         1.0f,                                  \
+         DEFAULT_SCALING_MODE,                  \
+         DEFAULT_SCALING_MAP                    \
+         }
+
+#define ANALOG2_ADC_CONFIG                      \
+   {                                            \
+		{"Analog2", "Volts", 0, 20, SAMPLE_1Hz, 2},\
+         DEFAULT_SCALING,                       \
+         0,                                     \
+         1.0f,                                  \
+         DEFAULT_SCALING_MODE,                  \
+         DEFAULT_SCALING_MAP                    \
+         }
+
+#define ANALOG3_ADC_CONFIG                      \
+   {                                            \
+		{"Analog3", "Volts", 0, 20, SAMPLE_1Hz, 2},\
+         DEFAULT_SCALING,                       \
+         0,                                     \
+         1.0f,                                  \
+         DEFAULT_SCALING_MODE,                  \
+         DEFAULT_SCALING_MAP                    \
+         }
+
+#define ANALOG4_ADC_CONFIG                      \
+   {                                            \
+		{"Analog4", "Volts", 0, 20, SAMPLE_1Hz, 2},\
+         DEFAULT_SCALING,                       \
+         0,                                     \
+         1.0f,                                  \
+         DEFAULT_SCALING_MODE,                  \
+         DEFAULT_SCALING_MAP                    \
+         }
+
+#define ANALOG5_ADC_CONFIG                      \
+   {                                            \
+		{"Analog5", "Volts", 0, 20, SAMPLE_1Hz, 2},\
+         DEFAULT_SCALING,                       \
+         0,                                     \
+         1.0f,                                  \
+         DEFAULT_SCALING_MODE,                  \
+         DEFAULT_SCALING_MAP                    \
+         }
+
+#define ANALOG6_ADC_CONFIG                      \
+   {                                            \
+		{"Analog6", "Volts", 0, 20, SAMPLE_1Hz, 2},\
+         DEFAULT_SCALING,                       \
+         0,                                     \
+         1.0f,                                  \
+         DEFAULT_SCALING_MODE,                  \
+         DEFAULT_SCALING_MAP                    \
+         }
+
+#define ANALOG7_ADC_CONFIG                      \
+   {                                            \
+		{"Analog7", "Volts", 0, 20, SAMPLE_1Hz, 2},\
+         DEFAULT_SCALING,                       \
+         0,                                     \
+         1.0f,                                  \
+         DEFAULT_SCALING_MODE,                  \
+         DEFAULT_SCALING_MAP                    \
+         }
+
+#define ANALOG8_ADC_CONFIG                      \
+   {                                            \
+		{"Analog8", "Volts", 0, 20, SAMPLE_1Hz, 2},\
+         DEFAULT_SCALING,                       \
+         0,                                     \
+         1.0f,                                  \
+         DEFAULT_SCALING_MODE,                  \
+         DEFAULT_SCALING_MAP                    \
+         }
+
+
+#define DEFAULT_ADC_CONFIGS                    \
+   {                                           \
+		ANALOG1_ADC_CONFIG,                    \
+		ANALOG2_ADC_CONFIG,                    \
+		ANALOG3_ADC_CONFIG,                    \
+		ANALOG4_ADC_CONFIG,                    \
+		ANALOG5_ADC_CONFIG,                    \
+		ANALOG6_ADC_CONFIG,                    \
+		ANALOG7_ADC_CONFIG,                    \
+        BATTERY_ADC_CONFIG                     \
          }
 
 typedef struct _TimerConfig{
@@ -179,16 +250,38 @@ typedef struct _TimerConfig{
 #define TIMER_MCK_128 		128
 #define TIMER_MCK_1024 		1024
 
-#define DEFAULT_RPM_TIMER_CONFIG  {EMPTY_CHANNEL_CONFIG, 0, \
-         MODE_LOGGING_TIMER_RPM, 1.0F, 1, TIMER_MCK_128, 375428}
-#define DEFAULT_FREQUENCY_CONFIG {EMPTY_CHANNEL_CONFIG, 0, \
-         MODE_LOGGING_TIMER_FREQUENCY, 1.0F, 1, TIMER_MCK_128, 375428}
+#define DEFAULT_RPM_TIMER_CONFIG  					{ 	\
+		{"RPM", "", 0, 10000, SAMPLE_DISABLED, 0}, 		\
+		0, 												\
+        MODE_LOGGING_TIMER_RPM, 						\
+        1.0F, 											\
+		1, 												\
+		TIMER_MCK_128, 									\
+		375428}
+
+#define DEFAULT_FREQ1_TIMER_CONFIG  				{ 	\
+		{"RPM", "", 0, 10000, SAMPLE_DISABLED, 0}, 		\
+		0, 												\
+        MODE_LOGGING_TIMER_RPM, 						\
+        1.0F, 											\
+		1, 												\
+		TIMER_MCK_128, 									\
+		375428}
+
+#define DEFAULT_FREQ2_TIMER_CONFIG  				{ 	\
+		{"RPM", "", 0, 10000, SAMPLE_DISABLED, 0}, 		\
+		0, 												\
+        MODE_LOGGING_TIMER_RPM, 						\
+        1.0F, 											\
+		1, 												\
+		TIMER_MCK_128, 									\
+		375428}
 
 #define DEFAULT_TIMER_CONFIGS \
 			{ \
-			DEFAULT_RPM_TIMER_CONFIG,  \
-			DEFAULT_FREQUENCY_CONFIG, \
-			DEFAULT_FREQUENCY_CONFIG  \
+			DEFAULT_RPM_TIMER_CONFIG,   \
+			DEFAULT_FREQ1_TIMER_CONFIG, \
+			DEFAULT_FREQ2_TIMER_CONFIG  \
 			}
 
 typedef struct _GPIOConfig{
@@ -199,13 +292,15 @@ typedef struct _GPIOConfig{
 #define	CONFIG_GPIO_IN  					0
 #define CONFIG_GPIO_OUT  					1
 
-#define DEFAULT_GPIO_CONFIG {EMPTY_CHANNEL_CONFIG, CONFIG_GPIO_IN}
+#define DEFAULT_GPIO1_CONFIG {{"GPIO1", "", 0, 1, SAMPLE_DISABLED, 0}, CONFIG_GPIO_IN}
+#define DEFAULT_GPIO2_CONFIG {{"GPIO2", "", 0, 1, SAMPLE_DISABLED, 0}, CONFIG_GPIO_IN}
+#define DEFAULT_GPIO3_CONFIG {{"GPIO3", "", 0, 1, SAMPLE_DISABLED, 0}, CONFIG_GPIO_IN}
 
 #define DEFAULT_GPIO_CONFIGS \
 			{ \
-			DEFAULT_GPIO_CONFIG, \
-			DEFAULT_GPIO_CONFIG, \
-			DEFAULT_GPIO_CONFIG  \
+			DEFAULT_GPIO1_CONFIG, \
+			DEFAULT_GPIO2_CONFIG, \
+			DEFAULT_GPIO3_CONFIG  \
 			}
 
 typedef struct _ImuConfig{
@@ -279,14 +374,17 @@ typedef struct _PWMConfig{
 
 #define PWM_VOLTAGE_SCALING			0.05
 
-#define DEFAULT_PWM_CONFIG {EMPTY_CHANNEL_CONFIG, MODE_PWM_FREQUENCY,MODE_LOGGING_PWM_DUTY,50,100}
+#define DEFAULT_PWM1_CONFIG {{"PWM1", "", 0, 100, SAMPLE_DISABLED, 0}, MODE_PWM_FREQUENCY,MODE_LOGGING_PWM_DUTY,50,100}
+#define DEFAULT_PWM2_CONFIG {{"PWM2", "", 0, 100, SAMPLE_DISABLED, 0}, MODE_PWM_FREQUENCY,MODE_LOGGING_PWM_DUTY,50,100}
+#define DEFAULT_PWM3_CONFIG {{"PWM3", "", 0, 100, SAMPLE_DISABLED, 0}, MODE_PWM_FREQUENCY,MODE_LOGGING_PWM_DUTY,50,100}
+#define DEFAULT_PWM4_CONFIG {{"PWM4", "", 0, 100, SAMPLE_DISABLED, 0}, MODE_PWM_FREQUENCY,MODE_LOGGING_PWM_DUTY,50,100}
 
-#define DEFAULT_PWM_CONFIGS                     \
-   {                                            \
-      DEFAULT_PWM_CONFIG,                       \
-         DEFAULT_PWM_CONFIG,                    \
-         DEFAULT_PWM_CONFIG,                    \
-         DEFAULT_PWM_CONFIG                     \
+#define DEFAULT_PWM_CONFIGS                      \
+   {                                             \
+      DEFAULT_PWM1_CONFIG,                       \
+         DEFAULT_PWM2_CONFIG,                    \
+         DEFAULT_PWM3_CONFIG,                    \
+         DEFAULT_PWM4_CONFIG                     \
          }
 
 #define OBD2_CHANNELS 20
