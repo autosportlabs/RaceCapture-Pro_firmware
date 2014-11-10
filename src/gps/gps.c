@@ -730,9 +730,9 @@ int checksumValid(const char *gpsData, size_t len) {
 
 void processGPSData(char *gpsData, size_t len) {
    if (len <= 4 || !checksumValid(gpsData, len) || strstr(gpsData, "$GP") != gpsData) {
-      pr_warning("GPS: corrupt frame ");
-      pr_debug(gpsData);
-      pr_warning("\r\n");
+      pr_debug("GPS: corrupt frame ");
+      pr_trace(gpsData);
+      pr_debug("\r\n");
       return;
    }
    size_t positionUpdated = 0;
