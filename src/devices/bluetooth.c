@@ -92,7 +92,7 @@ static int configureBt(DeviceConfig *config, unsigned int targetBaud, const char
 static int bt_probe_config(unsigned int probeBaud, unsigned int targetBaud, const char * deviceName, DeviceConfig *config){
 	if (DEBUG_LEVEL){
 		pr_info("Probing BT baud ");
-		pr_info(probeBaud);
+		pr_info_int(probeBaud);
 		pr_info(": ");
 	}
 	config->serial->init(8, 0, 1, probeBaud);
