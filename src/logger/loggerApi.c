@@ -286,8 +286,6 @@ void api_sendSampleRecord(Serial *serial, ChannelSample *channelSamples,
    ChannelSample *sample = channelSamples;
 
    for (size_t i = 0; i < channelCount; i++, sample++) {
-      if (0 < i)
-         serial->put_c(',');
 
       // STIEG: Fix NIL_SAMPLE, use long long.
       if (sample->valueInt == NIL_SAMPLE)
@@ -315,10 +313,10 @@ void api_sendSampleRecord(Serial *serial, ChannelSample *channelSamples,
          break;
       default:
          pr_warning("Got to unexpected location in sendSampleRecord\n");
+         break;
       }
+      serial->put_c(',');
    }
-
-   serial->put_c(',');
    put_uint(serial, channelsBitmask);
    json_arrayEnd(serial, 0);
 
