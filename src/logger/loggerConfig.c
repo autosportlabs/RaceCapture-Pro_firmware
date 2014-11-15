@@ -49,6 +49,7 @@ static void resetAdcConfig(ADCConfig cfg[]) {
       ADCConfig *c = cfg + i;
       *c = (ADCConfig) DEFAULT_ADC_CONFIG;
       sPrintStrInt(c->cfg.label, "Analog", i + 1);
+      strcpy(c->cfg.units, "Volts");
    }
 
    // Now update the battery config
@@ -58,12 +59,8 @@ static void resetAdcConfig(ADCConfig cfg[]) {
 static void resetPwmConfig(PWMConfig cfg[]) {
    for (size_t i = 0; i < CONFIG_PWM_CHANNELS; ++i) {
       PWMConfig *c = cfg + i;
-      memset(c, 0, sizeof(PWMConfig));
+      *c = (PWMConfig) DEFAULT_PWM_CONFIG;
       sPrintStrInt(c->cfg.label, "PWM", i + 1);
-      c->outputMode = MODE_PWM_FREQUENCY;
-      c->loggingMode = MODE_LOGGING_PWM_DUTY;
-      c->startupDutyCycle = DEFAULT_PWM_DUTY_CYCLE;
-      c->startupPeriod = DEFAULT_PWM_PERIOD;
    }
 }
 
@@ -79,15 +76,15 @@ static void resetTimerConfig(TimerConfig cfg[]) {
    for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; ++i) {
       TimerConfig *c = cfg + i;
       *c = (TimerConfig) DEFAULT_FREQUENCY_CONFIG;
-      sPrintStrInt(c->cfg.label, "Freq", i + 1);
+      sPrintStrInt(c->cfg.label, "RPM", i + 1);
    }
 
-   // First channel is RPM, it has a special ChannelConfig
+   // Make Channel 1 the default RPM config.
    cfg[0].cfg = (ChannelConfig) DEFAULT_RPM_CHANNEL_CONFIG;
 }
 
 static void resetImuConfig(ImuConfig cfg[]) {
-   char *names[] = {"AccelX", "AccelY", "AccelZ"};
+   const char *names[] = {"AccelX", "AccelY", "AccelZ"};
 
    for (size_t i = 0; i < 3; ++i) {
       ImuConfig *c = cfg + i;

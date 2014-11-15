@@ -14,8 +14,6 @@ int configureNet(Serial *serial, const char *apnHost, const char *apnUser, const
 int connectNet(Serial *serial, const char *host, const char *port, int udpMode);
 int closeNet(Serial *serial);
 int isNetConnectionErrorOrClosed();
-int startNetData(Serial *serial);
-int endNetData(Serial *serial);
 const char * readsCell(Serial *serial, portTickType timeout);
 void putsCell(Serial *serial, const char *data);
 void putQuotedStringCell(Serial *serial, char *s);

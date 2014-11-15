@@ -47,22 +47,22 @@ static int sendCommand(DeviceConfig *config, const char * cmd) {
 
 static char * baudConfigCmdForRate(unsigned int baudRate){
 	switch (baudRate){
-			case 9600:
-				return "AT+BAUD4";
-				break;
-			case 115200:
-				return "AT+BAUD8";
-				break;
-			case 230400:
-				return "AT+BAUD9";
-				break;
-			default:
-				pr_error("invalid BT baud");
-				pr_error_int(baudRate);
-				pr_error("\r\n");
-				return "";
-				break;
+		case 9600:
+			return "AT+BAUD4";
+			break;
+		case 115200:
+			return "AT+BAUD8";
+			break;
+		case 230400:
+			return "AT+BAUD9";
+			break;
+		default:
+			break;
 	}
+	pr_error("invalid BT baud");
+	pr_error_int(baudRate);
+	pr_error("\r\n");
+	return "";
 }
 
 

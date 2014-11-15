@@ -286,8 +286,6 @@ void api_sendSampleRecord(Serial *serial, ChannelSample *channelSamples,
    ChannelSample *sample = channelSamples;
 
    for (size_t i = 0; i < channelCount; i++, sample++) {
-      if (0 < i)
-         serial->put_c(',');
 
       // STIEG: Fix NIL_SAMPLE, use long long.
       if (sample->valueInt == NIL_SAMPLE)
@@ -315,10 +313,10 @@ void api_sendSampleRecord(Serial *serial, ChannelSample *channelSamples,
          break;
       default:
          pr_warning("Got to unexpected location in sendSampleRecord\n");
+         break;
       }
+      serial->put_c(',');
    }
-
-   serial->put_c(',');
    put_uint(serial, channelsBitmask);
    json_arrayEnd(serial, 0);
 
@@ -395,7 +393,7 @@ static const jsmntok_t * setScalingMapRaw(ADCConfig *adcCfg, const jsmntok_t *ma
 			if (mapArrayTok->type == JSMN_PRIMITIVE){
 				jsmn_trimData(mapArrayTok);
 				if (i < ANALOG_SCALING_BINS){
-					adcCfg->scalingMap.rawValues[i] = modp_atoi(mapArrayTok->data);
+					adcCfg->scalingMap.rawValues[i] = modp_atof(mapArrayTok->data);
 				}
 			}
 		}
@@ -479,7 +477,7 @@ static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
 		json_arrayStart(serial, "raw");
 
 		for (size_t b = 0; b < ANALOG_SCALING_BINS; b++){
-			put_int(serial,  adcCfg->scalingMap.rawValues[b]);
+			put_float(serial,  adcCfg->scalingMap.rawValues[b], SCALING_MAP_BIN_PRECISION);
 			if (b < ANALOG_SCALING_BINS - 1) serial->put_c(',');
 		}
 

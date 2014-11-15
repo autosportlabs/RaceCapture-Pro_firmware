@@ -43,6 +43,7 @@
 #define DEFAULT_SCALING_MODE				SCALING_MODE_LINEAR
 #define LINEAR_SCALING_PRECISION			7
 #define FILTER_ALPHA_PRECISION				2
+#define SCALING_MAP_BIN_PRECISION			2
 
 #define DEFAULT_GPS_POSITION_PRECISION 		6
 #define DEFAULT_GPS_RADIUS_PRECISION 		5
@@ -75,11 +76,9 @@ typedef struct _ChannelConfig{
 } ChannelConfig;
 
 typedef struct _ScalingMap{
-	unsigned short rawValues[ANALOG_SCALING_BINS];
+	float rawValues[ANALOG_SCALING_BINS];
 	float scaledValues[ANALOG_SCALING_BINS];
 } ScalingMap;
-
-#define EMPTY_CHANNEL_CONFIG {"","", 0.0f, 0.0f, SAMPLE_DISABLED, 0}
 
 enum TimeType {
    TimeType_Uptime,
@@ -90,6 +89,8 @@ struct TimeConfig {
    ChannelConfig cfg;
    enum TimeType tt;
 };
+
+#define EMPTY_CHANNEL_CONFIG {"","", 0.0f, 0.0f, SAMPLE_DISABLED, 0}
 
 // Default to lowest active sample rate.  This will change in code later.
 #define DEFAULT_UPTIME_CONFIG {"Interval", "ms", 0, 0, SAMPLE_1Hz, 0}
@@ -110,21 +111,11 @@ typedef struct _ADCConfig{
 
 #define DEFAULT_SCALING (1)
 #define DEFAULT_FILTER_ALPHA (1.0f)
-#define DEFAULT_SCALING_MAP {{0,256,512,768,1023},{0,1.25,2.5,3.75,5.0}}
+#define DEFAULT_SCALING_MAP {{0,1.25,2.5,3.75,5.0},{0,1.25,2.5,3.75,5.0}}
 
-#define DEFAULT_ADC_CHANNEL_CONFIG {"", "", 0, 5, SAMPLE_DISABLED, 2}
+#define DEFAULT_ADC_CHANNEL_CONFIG {"", "Volts", 0, 5, SAMPLE_DISABLED, 2}
 // Define channel config for battery
 #define DEFAULT_ADC_BATTERY_CONFIG {"Battery", "Volts", 0, 20, SAMPLE_1Hz, 2}
-
-#define DEFAULT_ADC_CONFIG                      \
-   {                                            \
-      DEFAULT_ADC_CHANNEL_CONFIG,               \
-         DEFAULT_SCALING,                       \
-         0,                                     \
-         1.0f,                                  \
-         DEFAULT_SCALING_MODE,                  \
-         DEFAULT_SCALING_MAP                    \
-         }
 
 #define BATTERY_ADC_CONFIG                      \
    {                                            \
@@ -136,6 +127,15 @@ typedef struct _ADCConfig{
          DEFAULT_SCALING_MAP                    \
          }
 
+#define DEFAULT_ADC_CONFIG                      \
+   {                                            \
+      DEFAULT_ADC_CHANNEL_CONFIG,               \
+         DEFAULT_SCALING,                       \
+         0,                                     \
+         DEFAULT_FILTER_ALPHA,                  \
+         DEFAULT_SCALING_MODE,                  \
+         DEFAULT_SCALING_MAP                    \
+         }
 
 typedef struct _TimerConfig{
 	ChannelConfig cfg;
@@ -176,13 +176,12 @@ typedef struct _TimerConfig{
 #define DEFAULT_FREQUENCY_CONFIG {              \
       DEFAULT_FREQUENCY_CHANNEL_CONFIG,         \
          0,                                     \
-         MODE_LOGGING_TIMER_FREQUENCY,          \
+         MODE_LOGGING_TIMER_RPM,                \
          1.0F,                                  \
          1,                                     \
          TIMER_MCK_128,                         \
          375428                                 \
          }
-
 
 typedef struct _GPIOConfig{
 	ChannelConfig cfg;
@@ -191,16 +190,11 @@ typedef struct _GPIOConfig{
 
 #define CONFIG_GPIO_IN  					0
 #define CONFIG_GPIO_OUT  					1
+
 #define DEFAULT_GPIO_MODE CONFIG_GPIO_IN
 #define DEFAULT_GPIO_CHANNEL_CONFIG {"", "", 0, 1, SAMPLE_DISABLED, 1}
 #define DEFAULT_GPIO_CONFIG {DEFAULT_GPIO_CHANNEL_CONFIG, CONFIG_GPIO_IN}
 
-#define DEFAULT_GPIO_CONFIGS \
-			{ \
-			DEFAULT_GPIO_CONFIG, \
-			DEFAULT_GPIO_CONFIG, \
-			DEFAULT_GPIO_CONFIG  \
-			}
 
 typedef struct _ImuConfig{
 	ChannelConfig cfg;
@@ -225,8 +219,6 @@ typedef struct _ImuConfig{
 #define DEFAULT_ACCEL_ZERO					2048
 #define DEFAULT_GYRO_ZERO					1862 //LY330ALH zero state voltage output is 1.5v
 
-
-// STIEG Do ChannelConfig for Accel{X,Y,Z} and Yaw.  Sampe at 25Hz
 #define DEFAULT_ACCEL_X_CONFIG {"AccelX", "G", -3, 3, SAMPLE_25Hz, 2}
 #define DEFAULT_ACCEL_Y_CONFIG {"AccelY", "G", -3, 3, SAMPLE_25Hz, 2}
 #define DEFAULT_ACCEL_Z_CONFIG {"AccelZ", "G", -3, 3, SAMPLE_25Hz, 2}
@@ -283,15 +275,8 @@ typedef struct _PWMConfig{
 #define DEFAULT_PWM_DUTY_CYCLE (50)
 #define DEFAULT_PWM_PERIOD (100)
 
-#define DEFAULT_PWM_CONFIG {EMPTY_CHANNEL_CONFIG, MODE_PWM_FREQUENCY,MODE_LOGGING_PWM_DUTY,50,100}
-
-#define DEFAULT_PWM_CONFIGS                     \
-   {                                            \
-      DEFAULT_PWM_CONFIG,                       \
-         DEFAULT_PWM_CONFIG,                    \
-         DEFAULT_PWM_CONFIG,                    \
-         DEFAULT_PWM_CONFIG                     \
-         }
+#define DEFAULT_PWM_CHANNEL_CONFIG {"PWM1", "", 0, 100, SAMPLE_DISABLED, 0}
+#define DEFAULT_PWM_CONFIG {DEFAULT_PWM_CHANNEL_CONFIG, MODE_PWM_FREQUENCY, MODE_LOGGING_PWM_DUTY, DEFAULT_PWM_DUTY_CYCLE, DEFAULT_PWM_PERIOD}
 
 #define OBD2_CHANNELS 20
 
