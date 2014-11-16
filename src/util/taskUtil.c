@@ -3,7 +3,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-unsigned int getCurrentTicks(){
+size_t getCurrentTicks(){
 	return xTaskGetTickCount();
 }
 

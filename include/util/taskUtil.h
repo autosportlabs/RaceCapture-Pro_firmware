@@ -10,7 +10,7 @@
 
 #include <stddef.h>
 
-unsigned int getCurrentTicks();
+size_t getCurrentTicks();
 int isTimeoutMs(unsigned int startTicks, unsigned int timeoutMs);
 void delayMs(unsigned int delay);
 void delayTicks(size_t ticks);
