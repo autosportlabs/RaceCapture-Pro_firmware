@@ -22,8 +22,8 @@
 #define ADC_PORT_VOLTAGE_RANGE 		5.0f
 #define ADC_SYSTEM_VOLTAGE_RANGE	20.0f
 
-#define SCALING_5V 					0.00122070312f
-#define SCALING_20V 				0.0048828125f
+#define SCALING_5V 					0.00125691302f
+#define SCALING_BATTERYV			0.00427028384f
 
 #define TOTAL_ADC_CHANNELS 9
 static uint16_t * ADCConvertedValues;
@@ -175,7 +175,7 @@ float ADC_device_get_channel_scaling(size_t channel){
 	float scaling = 0;
 	switch(channel){
 	case 7:
-		scaling = SCALING_20V;
+		scaling = SCALING_BATTERYV;
 		break;
 	default:
 		scaling = SCALING_5V;

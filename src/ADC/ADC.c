@@ -10,12 +10,19 @@
 #include "loggerConfig.h"
 
 static Filter g_adc_filter[CONFIG_ADC_CHANNELS];
+static float g_adc_calibrations[CONFIG_ADC_CHANNELS];
 
 int ADC_init(LoggerConfig *loggerConfig){
 	ADCConfig *config = loggerConfig->ADCConfigs;
+
 	for (size_t i = 0; i < CONFIG_ADC_CHANNELS; i++){
 		float alpha = (config + i)->filterAlpha;
 		init_filter(&g_adc_filter[i], alpha);
+	}
+
+	for (size_t i = 0; i < CONFIG_ADC_CHANNELS; i++){
+		float calibration = (config + i)->calibration;
+		g_adc_calibrations[i] = calibration;
 	}
 	return ADC_device_init();
 }
@@ -37,7 +44,7 @@ void ADC_sample_all(void){
 }
 
 float ADC_read(unsigned int channel){
-	return g_adc_filter[channel].current_value * ADC_device_get_channel_scaling(channel);
+	return (g_adc_filter[channel].current_value * ADC_device_get_channel_scaling(channel)) * g_adc_calibrations[channel];
 }
 
 float ADC_get_voltage_range(size_t channel){
