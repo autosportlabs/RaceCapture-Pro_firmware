@@ -96,9 +96,27 @@ int OBD2_request_PID(unsigned char pid, int *value, size_t timeout){
 	msg.dataLength = 3;
 	msg.isExtendedAddress = 0;
 
-	int result = CAN_tx_msg(0, &msg, timeout);
-	delayMs(5);
-	if (result) result = CAN_rx_msg(0, &msg, timeout);
-	if (result) result = decode_pid(pid, &msg, value);
-	return result;
+	int pid_request_success = 0;
+
+	if (CAN_tx_msg(0, &msg, timeout)){
+		size_t start_time = getCurrentTicks();
+		while (!isTimeoutMs(start_time, OBD2_PID_DEFAULT_TIMEOUT_MS)){
+			int result = CAN_rx_msg(0, &msg, OBD2_PID_DEFAULT_TIMEOUT_MS);
+			if (result){
+				result = decode_pid(pid, &msg, value);
+				if (result){
+					pid_request_success = 1;
+					if (DEBUG_LEVEL){
+						pr_debug("read OBD2 PID ");
+						pr_debug_int(pid);
+						pr_debug("=")
+						pr_debug_int(*value);
+						pr_debug("\r\n");
+					}
+					break;
+				}
+			}
+		}
+	}
+	return pid_request_success;
 }
