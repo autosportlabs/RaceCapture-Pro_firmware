@@ -119,9 +119,14 @@ static int writeHeaders(ChannelSample *sample, size_t channelCount){
       appendFileBuffer(separator);
       separator = ",";
 
+      uint8_t precision = sample->cfg->precision;
       appendQuotedString(sample->cfg->label);
       appendFileBuffer("|");
       appendQuotedString(sample->cfg->units);
+      appendFileBuffer("|");
+      appendFloat(decodeSampleRate(sample->cfg->min), precision);
+      appendFileBuffer("|");
+      appendFloat(decodeSampleRate(sample->cfg->max), precision);
       appendFileBuffer("|");
       appendInt(decodeSampleRate(sample->cfg->sampleRate));
 	}
