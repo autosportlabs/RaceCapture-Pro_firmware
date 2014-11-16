@@ -16,29 +16,12 @@ static int is9150_readreg(uint8_t reg_addr, uint8_t *reg_val)
 	return res;
 }
 
-static int is9150_writereg(uint8_t reg_addr, uint8_t reg_val)
-{
-	int res = 0;
-	res = i2c_write_reg8(is9150_dev.i2c, is9150_dev.addr,
-			     reg_addr, reg_val);
-	return res;
-}
-
 static int is9150_write_reg_bits(uint8_t reg_addr, size_t bit_pos,
 			   size_t num_bits, uint8_t bit_val)
 {
 	int res = 0;
 	res = i2c_write_reg_bits(is9150_dev.i2c, is9150_dev.addr,
 				 reg_addr, bit_pos, num_bits, bit_val);
-	return res;
-}
-
-static int is9150_read_reg_bits(uint8_t reg_addr, size_t bit_pos,
-				size_t num_bits, uint8_t *bit_val)
-{
-	int res = 0;
-	res = i2c_read_reg_bits(is9150_dev.i2c, is9150_dev.addr,
-				reg_addr, bit_pos, num_bits, bit_val);
 	return res;
 }
 
