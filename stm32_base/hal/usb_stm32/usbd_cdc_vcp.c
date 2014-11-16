@@ -94,7 +94,7 @@ void vcp_tx(uint8_t *buf, uint32_t len)
 
 uint16_t vcp_rx(uint8_t *buf, uint32_t len, size_t max_delay)
 {
-	int i = 0;
+	uint32_t i = 0;
 	for (i = 0; i < len; i++)
 		if (!xQueueReceive(rx_queue, &buf[i], max_delay))
 			break;

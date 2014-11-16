@@ -70,7 +70,7 @@ static void initGPIO(GPIO_TypeDef* GPIOx, uint32_t gpioPins){
 	GPIO_Init(GPIOx, &GPIO_InitStructure);
 }
 
-static void initCAN(CAN_TypeDef* CANx, int baud){
+static void initCAN(CAN_TypeDef* CANx, uint32_t baud){
 
 	CAN_InitTypeDef CAN_InitStructure;
 	/* CAN cell init */

@@ -584,7 +584,7 @@ int i2c_read_reg_bits(struct i2c_dev *dev, uint8_t dev_addr,
 		return res;
 
 	/* Build the register mask */
-	for (int i = 0; i < num_bits; i++)
+	for (size_t i = 0; i < num_bits; i++)
 		reg_mask |= 1 << (i + bit_pos);
 
 	/* Mask off just the part we care about */
@@ -614,7 +614,7 @@ int i2c_write_reg_bits(struct i2c_dev *dev, uint8_t dev_addr,
 		return res;
 
 	/* Build the register mask */
-	for (int i = 0; i < num_bits; i++)
+	for (size_t i = 0; i < num_bits; i++)
 		reg_mask |= 1 << (i + bit_pos);
 
 	/* Clear the bits we're going to be writing */
