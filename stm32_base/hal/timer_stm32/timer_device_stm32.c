@@ -311,7 +311,7 @@ void TIM1_BRK_TIM9_IRQHandler(void)
 
 void TIM2_IRQHandler(void)
 {
-	static last = 0;
+	static uint32_t last = 0;
 	//THIS IS A HORRIBLE HACK.
 	//TIM2 CH4 does not seem to reset the counter upon input capture. this is doing it manually.
 	//need to fix the configuration of this timer, if possible.
