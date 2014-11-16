@@ -537,31 +537,35 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
 size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
    size_t channels = 0;
 
-   for (int i=0; i < CONFIG_TIME_CHANNELS; i++)
+   for (size_t i=0; i < CONFIG_TIME_CHANNELS; i++)
       if (loggerConfig->TimeConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
          ++channels;
 
-   for (int i=0; i < CONFIG_IMU_CHANNELS; i++)
+   for (size_t i=0; i < CONFIG_IMU_CHANNELS; i++)
       if (loggerConfig->ImuConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
          ++channels;
 
-   for (int i=0; i < CONFIG_ADC_CHANNELS; i++)
+   for (size_t i=0; i < CONFIG_ADC_CHANNELS; i++)
       if (loggerConfig->ADCConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
          ++channels;
 
-   for (int i=0; i < CONFIG_TIMER_CHANNELS; i++)
+   for (size_t i=0; i < CONFIG_TIMER_CHANNELS; i++)
       if (loggerConfig->TimerConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
          ++channels;
 
-   for (int i=0; i < CONFIG_GPIO_CHANNELS; i++)
+   for (size_t i=0; i < CONFIG_GPIO_CHANNELS; i++)
       if (loggerConfig->GPIOConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
          ++channels;
 
-   for (int i=0; i < CONFIG_PWM_CHANNELS; i++)
+   for (size_t i=0; i < CONFIG_PWM_CHANNELS; i++)
       if (loggerConfig->PWMConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
          ++channels;
 
-   channels+=loggerConfig->OBD2Configs.enabledPids;
+   size_t enabled_obd2_pids = loggerConfig->OBD2Configs.enabledPids;
+   for (size_t i=0; i < enabled_obd2_pids; i++){
+	   if (loggerConfig->OBD2Configs.pids[i].cfg.sampleRate != SAMPLE_DISABLED)
+		   ++channels;
+   }
 
    GPSConfig *gpsConfigs = &loggerConfig->GPSConfigs;
    if (gpsConfigs->latitude.sampleRate != SAMPLE_DISABLED) channels++;
