@@ -16,6 +16,7 @@
 #include "printk.h"
 #include "mem_mang.h"
 #include "LED.h"
+#include "taskUtil.h"
 
 enum writing_status {
 	WRITING_INACTIVE = 0,
@@ -111,10 +112,10 @@ static void appendFloat(float num, int precision){
 	appendFileBuffer(buf);
 }
 
-static int writeHeaders(ChannelSample *sample, size_t sampleCount){
+static int writeHeaders(ChannelSample *sample, size_t channelCount){
 	char *separator = "";
 
-	for (; 0 < sampleCount; sampleCount--, sample++) {
+	for (; 0 < channelCount; channelCount--, sample++) {
       appendFileBuffer(separator);
       separator = ",";
 
@@ -137,7 +138,7 @@ static int writeChannelSamples(ChannelSample *sample, size_t channelCount){
 	}
 
 	char *separator = "";
-   for (; 0 < channelCount; sample++) {
+   for (; 0 < channelCount; channelCount--, sample++) {
       appendFileBuffer(separator);
       separator = ",";
 
