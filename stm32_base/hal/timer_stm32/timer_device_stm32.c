@@ -24,9 +24,10 @@ static uint16_t timer1_cc2 = 0;
 static uint16_t timer1_duty_cycle = 0;
 static uint32_t timer1_frequency = 0;
 
-static uint16_t timer2_cc2 = 0;
-static uint16_t timer2_duty_cycle = 0;
-static uint32_t timer2_frequency = 0;
+//BAP TODO re-enable when TIMER2 works correctly
+//static uint16_t timer2_cc2 = 0;
+//static uint16_t timer2_duty_cycle = 0;
+//static uint32_t timer2_frequency = 0;
 
 //////////////////////////////////////////////////////////////////////
 //logical to hardware mappings for RCP MK2
