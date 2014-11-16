@@ -150,7 +150,7 @@ void SampleRecordTest::testInitSampleRecord()
    for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
       ADCConfig *ac = &lc->ADCConfigs[i];
       if (ac->cfg.sampleRate != SAMPLE_DISABLED){
-         CPPUNIT_ASSERT_EQUAL((size_t)i, ts->channelIndex);
+         CPPUNIT_ASSERT_EQUAL((size_t) i, ts->channelIndex);
          CPPUNIT_ASSERT_EQUAL((void *) &ac->cfg, (void *) ts->cfg);
          CPPUNIT_ASSERT_EQUAL((void *) get_analog_sample, (void *)ts->get_float_sample);
          CPPUNIT_ASSERT_EQUAL(SampleData_Float, ts->sampleData);

@@ -1,71 +1,212 @@
 #include "loggerConfig.h"
+#include "modp_numtoa.h"
 #include "mod_string.h"
 #include "memory.h"
 #include "printk.h"
 #include "virtual_channel.h"
 
+#include <stdbool.h>
+
 #ifndef RCP_TESTING
 #include "memory.h"
 static const volatile LoggerConfig g_savedLoggerConfig  __attribute__((section(".config\n\t#")));
 #else
-static LoggerConfig g_savedLoggerConfig = DEFAULT_LOGGER_CONFIG;
+static LoggerConfig g_savedLoggerConfig;
 #endif
-
-static const LoggerConfig g_defaultLoggerConfig = DEFAULT_LOGGER_CONFIG;
-//static const LoggerConfig g_defaultLoggerConfig;
 
 static LoggerConfig g_workingLoggerConfig;
 
-/*
-static resetVersionAndPwmClkFreq(VersionInfo *vi, unsigned short *pwmClkFreq) {
+static void resetVersionInfo(VersionInfo *vi) {
    vi->major = MAJOR_REV;
    vi->minor = MINOR_REV;
    vi->bugfix = BUGFIX_REV;
+}
+
+static void resetPwmClkFrequency(unsigned short *pwmClkFreq) {
    *pwmClkFreq = DEFAULT_PWM_CLOCK_FREQUENCY;
 }
 
-static resetAdcConfig(ADCConfig adcCfgArr[], size_t arrSize) {
-   // All but the last one are zeroed out.
-   size_t battIndex = arrSize - 1;
+/**
+ * Prints a string prefix and add an int suffix to dest buffer.
+ */
+static void sPrintStrInt(char *dest, const char *str, const unsigned int i) {
+   char iStr[3];
+   const int idx = strlen(str);
 
-   for (int i = 0; i < battIndex; ++i)
-      memcpy(adcCfgArr + i, 0, sizeof(ADCConfig));
-
-   adcCfgArr[battIndex] = BATTERY_ADC7_CONFIG;
+   modp_itoa10(i, iStr);
+   strcpy(dest, str);
+   strcpy(dest + idx, iStr);
 }
-*/
+
+static void resetTimeConfig(struct TimeConfig *tc) {
+   tc[0] = (struct TimeConfig) DEFAULT_UPTIME_TIME_CONFIG;
+   tc[1] = (struct TimeConfig) DEFAULT_UTC_MILLIS_TIME_CONFIG;
+}
+
+static void resetAdcConfig(ADCConfig cfg[]) {
+   // All but the last one are zeroed out.
+   for (size_t i = 0; i < CONFIG_ADC_CHANNELS; ++i) {
+      ADCConfig *c = cfg + i;
+      *c = (ADCConfig) DEFAULT_ADC_CONFIG;
+      sPrintStrInt(c->cfg.label, "Analog", i + 1);
+      strcpy(c->cfg.units, "Volts");
+   }
+
+   // Now update the battery config
+   cfg[7] = (ADCConfig) BATTERY_ADC_CONFIG;
+}
+
+static void resetPwmConfig(PWMConfig cfg[]) {
+   for (size_t i = 0; i < CONFIG_PWM_CHANNELS; ++i) {
+      PWMConfig *c = cfg + i;
+      *c = (PWMConfig) DEFAULT_PWM_CONFIG;
+      sPrintStrInt(c->cfg.label, "PWM", i + 1);
+   }
+}
+
+static void resetGpioConfig(GPIOConfig cfg[]) {
+   for (size_t i = 0; i < CONFIG_GPIO_CHANNELS; ++i) {
+      GPIOConfig *c = cfg + i;
+      *c = (GPIOConfig) DEFAULT_GPIO_CONFIG;
+      sPrintStrInt(c->cfg.label, "GPIO", i + 1);
+   }
+}
+
+static void resetTimerConfig(TimerConfig cfg[]) {
+   for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; ++i) {
+      TimerConfig *c = cfg + i;
+      *c = (TimerConfig) DEFAULT_FREQUENCY_CONFIG;
+      sPrintStrInt(c->cfg.label, "RPM", i + 1);
+   }
+
+   // Make Channel 1 the default RPM config.
+   cfg[0].cfg = (ChannelConfig) DEFAULT_RPM_CHANNEL_CONFIG;
+}
+
+static void resetImuConfig(ImuConfig cfg[]) {
+   const char *names[] = {"AccelX", "AccelY", "AccelZ"};
+
+   for (size_t i = 0; i < 3; ++i) {
+      ImuConfig *c = cfg + i;
+      *c = (ImuConfig) DEFAULT_IMU_CONFIG;
+      strcpy(c->cfg.label, names[i]);
+
+      // Channels go X, Y, Z.  Works perfectly with our counter.
+      c->physicalChannel = i;
+   }
+
+   cfg[3] = (ImuConfig) DEFAULT_GYRO_YAW_AXIS_CONFIG;
+}
+
+static void resetCanConfig(CANConfig *cfg) {
+   *cfg = (CANConfig) DEFAULT_CAN_CONFIG;
+}
+
+static void resetOBD2Config(OBD2Config *cfg) {
+   memset(cfg, 0, sizeof(OBD2Config));
+   cfg->obd2SampleRate = SAMPLE_10Hz;
+
+   for (int i = 0; i < OBD2_CHANNELS; ++i) {
+      PidConfig *c = &cfg->pids[i];
+      memset(c, 0, sizeof(PidConfig));
+      sPrintStrInt(c->cfg.label, "OBD2 Pid ", i + 1);
+   }
+}
+
+static void resetGPSConfig(GPSConfig *cfg) {
+   *cfg = (GPSConfig) DEFAULT_GPS_CONFIG;
+}
+
+static void resetLapConfig(LapConfig *cfg) {
+   *cfg = (LapConfig) DEFAULT_LAP_CONFIG;
+}
+
+static void resetTrackConfig(TrackConfig *cfg) {
+   memset(cfg, 0, sizeof(TrackConfig));
+   cfg->radius = DEFAULT_TRACK_TARGET_RADIUS;
+   cfg->auto_detect = DEFAULT_TRACK_AUTO_DETECT;
+}
+
+static void resetBluetoothConfig(BluetoothConfig *cfg) {
+   *cfg = (BluetoothConfig) DEFAULT_BT_CONFIG;
+}
+
+static void resetCellularConfig(CellularConfig *cfg) {
+   memset(cfg, 0, sizeof(CellularConfig));
+   cfg->cellEnabled = CELL_ENABLED;
+   strcpy(cfg->apnHost, DEFAULT_APN_HOST);
+}
+
+static void resetTelemetryConfig(TelemetryConfig *cfg) {
+   memset(cfg, 0, sizeof(TelemetryConfig));
+   cfg->backgroundStreaming = BACKGROUND_STREAMING_ENABLED;
+   strcpy(cfg->telemetryServerHost, DEFAULT_TELEMETRY_SERVER_HOST);
+}
+
+static void resetConnectivityConfig(ConnectivityConfig *cfg) {
+   resetBluetoothConfig(&cfg->bluetoothConfig);
+   resetCellularConfig(&cfg->cellularConfig);
+   resetTelemetryConfig(&cfg->telemetryConfig);
+}
+
 int flash_default_logger_config(void){
 	pr_info("flashing default logger config...");
 
-	int result = memory_flash_region((void *)&g_savedLoggerConfig, (void *)&g_defaultLoggerConfig, sizeof (LoggerConfig));
-	if (result == 0) pr_info("success\r\n"); else pr_info("failed\r\n");
+   LoggerConfig *lc = &g_workingLoggerConfig;
+
+   resetVersionInfo(&lc->RcpVersionInfo);
+   resetPwmClkFrequency(&lc->PWMClockFrequency);
+   resetTimeConfig(lc->TimeConfigs);
+   resetAdcConfig(lc->ADCConfigs);
+   resetPwmConfig(lc->PWMConfigs);
+   resetGpioConfig(lc->GPIOConfigs);
+   resetTimerConfig(lc->TimerConfigs);
+   resetImuConfig(lc->ImuConfigs);
+   resetCanConfig(&lc->CanConfig);
+   resetOBD2Config(&lc->OBD2Configs);
+   resetGPSConfig(&lc->GPSConfigs);
+   resetLapConfig(&lc->LapConfigs);
+   resetTrackConfig(&lc->TrackConfigs);
+   resetConnectivityConfig(&lc->ConnectivityConfigs);
+   strcpy(lc->padding_data, "");
+
+	int result = flashLoggerConfig();
+
+	pr_info(result == 0 ? "success\r\n" : "failed\r\n");
+
 	return result;
 }
 
 int flashLoggerConfig(void){
-	return memory_flash_region((void *)&g_savedLoggerConfig, (void *)&g_workingLoggerConfig, sizeof (LoggerConfig));
+	return memory_flash_region((void *) &g_savedLoggerConfig,
+                              (void *) &g_workingLoggerConfig,
+                              sizeof (LoggerConfig));
 }
 
-static void checkFlashDefaultConfig(void){
+static bool checkFlashDefaultConfig(void){
 	size_t major_version_changed = g_savedLoggerConfig.RcpVersionInfo.major != MAJOR_REV;
 	size_t minor_version_changed = g_savedLoggerConfig.RcpVersionInfo.minor != MINOR_REV;
 
-	if (minor_version_changed || major_version_changed){
-		pr_info("Major or minor firmware version changed\r\n");
-		flash_default_logger_config();
-	}
+	if (!major_version_changed && !minor_version_changed)
+      return false;
+
+   pr_info("Major or minor firmware version changed\r\n");
+   flash_default_logger_config();
+   return true;
 }
 
 static void loadWorkingLoggerConfig(void){
-	memcpy((void *)&g_workingLoggerConfig,(void *)&g_savedLoggerConfig,sizeof(LoggerConfig));
+	memcpy((void *) &g_workingLoggerConfig,
+          (void *) &g_savedLoggerConfig, sizeof(LoggerConfig));
 }
+
 void initialize_logger_config(){
 	checkFlashDefaultConfig();
 	loadWorkingLoggerConfig();
 }
 
 const LoggerConfig * getSavedLoggerConfig(){
-	return (LoggerConfig *)&g_savedLoggerConfig;
+	return (LoggerConfig *) &g_savedLoggerConfig;
 }
 
 LoggerConfig * getWorkingLoggerConfig(){
