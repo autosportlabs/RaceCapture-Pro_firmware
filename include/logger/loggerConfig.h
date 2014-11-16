@@ -105,12 +105,14 @@ typedef struct _ADCConfig{
 	float linearScaling;
 	float linearOffset;
 	float filterAlpha;
+	float calibration;
 	unsigned char scalingMode;
 	ScalingMap scalingMap;
 } ADCConfig;
 
 #define DEFAULT_SCALING (1)
 #define DEFAULT_FILTER_ALPHA (1.0f)
+#define DEFAULT_CALIBRATION (1.0f)
 #define DEFAULT_SCALING_MAP {{0,1.25,2.5,3.75,5.0},{0,1.25,2.5,3.75,5.0}}
 
 #define DEFAULT_ADC_CHANNEL_CONFIG {"", "Volts", 0, 5, SAMPLE_DISABLED, 2}
@@ -122,7 +124,8 @@ typedef struct _ADCConfig{
       DEFAULT_ADC_BATTERY_CONFIG,               \
          DEFAULT_SCALING,                       \
          0,                                     \
-         1.0f,                                  \
+         DEFAULT_FILTER_ALPHA,                  \
+         DEFAULT_CALIBRATION,					\
          DEFAULT_SCALING_MODE,                  \
          DEFAULT_SCALING_MAP                    \
          }
@@ -133,6 +136,7 @@ typedef struct _ADCConfig{
          DEFAULT_SCALING,                       \
          0,                                     \
          DEFAULT_FILTER_ALPHA,                  \
+         DEFAULT_CALIBRATION,					\
          DEFAULT_SCALING_MODE,                  \
          DEFAULT_SCALING_MAP                    \
          }

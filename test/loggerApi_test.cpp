@@ -205,9 +205,10 @@ void LoggerApiTest::testGetMultipleAnalogCfg(){
 
       populateChannelConfig(&(analogCfg->cfg), i, 100);
 
-      analogCfg->linearScaling = 3.21 + i;
-      analogCfg->linearOffset = 9.0 + i;
+      analogCfg->linearScaling = 3.21F + i;
+      analogCfg->linearOffset = 9.0F + i;
       analogCfg->scalingMode = i;
+      analogCfg->calibration = 1.0F + i;
 
       for (int x = 0; x < ANALOG_SCALING_BINS; x++){
          analogCfg->scalingMap.rawValues[x] = i * x;
@@ -235,6 +236,7 @@ void LoggerApiTest::testGetMultipleAnalogCfg(){
       CPPUNIT_ASSERT_EQUAL(3.21F + i, (float)(Number)analogJson["scaling"]);
       CPPUNIT_ASSERT_EQUAL(9.0F + i, (float)(Number)analogJson["offset"]);
       CPPUNIT_ASSERT_EQUAL(i, (int)(Number)analogJson["scalMod"]);
+      CPPUNIT_ASSERT_EQUAL(1.0F + i, (float)(Number)analogJson["cal"] );
 
       Object scalMap = (Object)analogJson["map"];
       Array raw = (Array)scalMap["raw"];
@@ -263,7 +265,7 @@ void LoggerApiTest::testGetAnalogConfigFile(string filename, int index){
 	analogCfg->linearOffset = 9.9F;
 	analogCfg->scalingMode = 2;
 	analogCfg->filterAlpha = 0.6F;
-
+	analogCfg->calibration = 1.01F;
 
 	int i = 0;
 	for (int x = 0; x < ANALOG_SCALING_BINS; i+=10,x++){
@@ -286,6 +288,7 @@ void LoggerApiTest::testGetAnalogConfigFile(string filename, int index){
 	CPPUNIT_ASSERT_EQUAL(9.9F, (float)(Number)analogJson["offset"]);
 	CPPUNIT_ASSERT_EQUAL(0.6F, (float)(Number)analogJson["alpha"]);
 	CPPUNIT_ASSERT_EQUAL(2, (int)(Number)analogJson["scalMod"]);
+	CPPUNIT_ASSERT_EQUAL(1.01F, (float)(Number)analogJson["cal"]);
 
 	Object scalMap = (Object)analogJson["map"];
 	Array raw = (Array)scalMap["raw"];
@@ -318,11 +321,11 @@ void LoggerApiTest::testSetAnalogConfigFile(string filename){
 
 	ADCConfig *adcCfg = &c->ADCConfigs[0];
 
-        ChannelConfig *cfg = &adcCfg->cfg;
-        CPPUNIT_ASSERT_EQUAL(string("I <3 Racing"), string(cfg->label));
-        CPPUNIT_ASSERT_EQUAL(string("Wheels"), string(cfg->units));
-        CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
-        CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
+	ChannelConfig *cfg = &adcCfg->cfg;
+	CPPUNIT_ASSERT_EQUAL(string("I <3 Racing"), string(cfg->label));
+	CPPUNIT_ASSERT_EQUAL(string("Wheels"), string(cfg->units));
+	CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
+	CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
 	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(cfg->sampleRate));
 	CPPUNIT_ASSERT_EQUAL(1, (int)cfg->precision);
 
@@ -330,6 +333,7 @@ void LoggerApiTest::testSetAnalogConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(1.234F, adcCfg->linearScaling);
 	CPPUNIT_ASSERT_EQUAL(9.9F, adcCfg->linearOffset);
 	CPPUNIT_ASSERT_EQUAL(0.6F, adcCfg->filterAlpha);
+	CPPUNIT_ASSERT_EQUAL(1.01F, adcCfg->calibration);
 
 	CPPUNIT_ASSERT_EQUAL(0.0F, adcCfg->scalingMap.rawValues[0]);
 	CPPUNIT_ASSERT_EQUAL(1.25F, adcCfg->scalingMap.rawValues[1]);

@@ -11,6 +11,7 @@
             "scaling": 1.234,
             "offset": 9.9,
             "alpha": 0.6,
+            "cal": 1.01,
             "map": {
                 "raw": [
                     0,

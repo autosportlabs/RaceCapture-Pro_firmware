@@ -435,6 +435,7 @@ static const jsmntok_t * setAnalogExtendedField(const jsmntok_t *valueTok, const
 	else if (NAME_EQU("scaling", name)) adcCfg->linearScaling = modp_atof(value);
 	else if (NAME_EQU("offset", name)) adcCfg->linearOffset = modp_atof(value);
 	else if (NAME_EQU("alpha", name))adcCfg->filterAlpha = modp_atof(value);
+	else if (NAME_EQU("cal", name))adcCfg->calibration = modp_atof(value);
 	else if (NAME_EQU("map", name)){
 		if (valueTok->type == JSMN_OBJECT) {
 			valueTok++;
@@ -472,6 +473,7 @@ static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
 		json_float(serial, "scaling", adcCfg->linearScaling, LINEAR_SCALING_PRECISION, 1);
 		json_float(serial, "offset", adcCfg->linearOffset, LINEAR_SCALING_PRECISION, 1);
 		json_float(serial, "alpha", adcCfg->filterAlpha, FILTER_ALPHA_PRECISION, 1);
+		json_float(serial, "cal", adcCfg->calibration, LINEAR_SCALING_PRECISION, 1);
 
 		json_objStartString(serial, "map");
 		json_arrayStart(serial, "raw");
