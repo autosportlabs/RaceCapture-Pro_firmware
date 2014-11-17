@@ -85,6 +85,14 @@ void modp_dtoa(double value, char* buf, int precision);
  */
 char* modp_itoaX(int value, char* result, int base);
 
+/**
+ * Trims leading zeros on a number.  Works with strrev by replacing zeros
+ * with '/0' characters
+ * @param ptr The array to trim the leading zeros on.
+ * @return The new start of the string pointer to use.
+ */
+char* trimLeadingZeros(char *ptr);
+
 END_C
 
 #endif

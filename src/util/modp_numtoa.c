@@ -84,6 +84,21 @@ void modp_ultoa10(uint64_t value, char* str)
     strreverse(str, wstr-1);
 }
 
+char* trimLeadingZeros(char *ptr) {
+   for(; *ptr == '0'; ++ptr) {
+      switch(*(ptr + 1)) {
+      case '.':
+      case '\0':
+         // Return here b/c we don't want to increment the ptr.
+         return ptr;
+      default:
+         *ptr = '\0';
+      }
+   }
+
+   return ptr;
+}
+
 void modp_ftoa(float value, char* str, int prec)
 {
     /* if input is larger than thres_max, revert to exponential */
@@ -170,6 +185,8 @@ void modp_ftoa(float value, char* str, int prec)
         *wstr++ = '-';
     }
     *wstr='\0';
+
+    trimLeadingZeros(str);
     strreverse(str, wstr-1);
 }
 
@@ -259,6 +276,8 @@ void modp_dtoa(double value, char* str, int prec)
         *wstr++ = '-';
     }
     *wstr='\0';
+
+    trimLeadingZeros(str);
     strreverse(str, wstr-1);
 }
 
