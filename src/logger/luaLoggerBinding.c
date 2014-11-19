@@ -527,21 +527,18 @@ int Lua_FlashLoggerConfig(lua_State *L){
 }
 
 int Lua_AddVirtualChannel(lua_State *L){
-	if (lua_gettop(L) != 6)
-      return 0;
-
-   ChannelConfig chCfg;
-
-   strncpy(chCfg.label, lua_tostring(L, 1), DEFAULT_LABEL_LENGTH);
-   strncpy(chCfg.units, lua_tostring(L, 2), DEFAULT_UNITS_LENGTH);
-   chCfg.min = lua_tonumber(L, 3);
-   chCfg.max = lua_tonumber(L, 4);
-   chCfg.precision = (unsigned char) lua_tointeger(L, 5);
-   chCfg.sampleRate = (unsigned short) lua_tointeger(L, 6);
-
-   lua_pushinteger(L, create_virtual_channel(chCfg));
-
-   return 1;
+	size_t args = lua_gettop(L);
+	if (args >= 2){
+		ChannelConfig chCfg;
+		strncpy(chCfg.label, lua_tostring(L, 1), DEFAULT_LABEL_LENGTH);
+		chCfg.sampleRate = (unsigned short) lua_tointeger(L, 2);
+		chCfg.precision = args >= 3 ? lua_tointeger(L, 3) : DEFAULT_CHANNEL_LOGGING_PRECISION;
+		chCfg.min = args >= 4 ? lua_tointeger(L, 4) : DEFAULT_CHANNEL_MIN;
+		chCfg.max = args >= 5 ? lua_tointeger(L, 5) : DEFAULT_CHANNEL_MAX;
+		strncpy(chCfg.units, args >=6 ? lua_tostring(L, 6) : DEFAULT_CHANNEL_UNITS, DEFAULT_UNITS_LENGTH);
+		lua_pushinteger(L, create_virtual_channel(chCfg));
+	}
+	return 0;
 }
 
 int Lua_SetVirtualChannelValue(lua_State *L){

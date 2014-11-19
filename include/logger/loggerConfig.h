@@ -63,8 +63,13 @@ typedef struct _VersionInfo{
 
 #define DEFAULT_VERSION_INFO {MAJOR_REV, MINOR_REV, BUGFIX_REV}
 
-#define DEFAULT_LABEL_LENGTH			12
-#define DEFAULT_UNITS_LENGTH			8
+#define DEFAULT_LABEL_LENGTH					12
+#define DEFAULT_UNITS_LENGTH					8
+
+#define DEFAULT_CHANNEL_LOGGING_PRECISION		2
+#define DEFAULT_CHANNEL_UNITS					""
+#define DEFAULT_CHANNEL_MIN						0
+#define DEFAULT_CHANNEL_MAX						1000
 
 typedef struct _ChannelConfig{
 	char label[DEFAULT_LABEL_LENGTH];
