@@ -289,8 +289,7 @@ void api_sendSampleRecord(Serial *serial, ChannelSample *channelSamples,
 
    for (size_t i = 0; i < channelCount; i++, sample++) {
 
-      // STIEG: Fix NIL_SAMPLE, use long long.
-      if (sample->valueInt == NIL_SAMPLE)
+      if (!sample->populated)
          continue;
 
       channelsBitmask = channelsBitmask | (1 << i);

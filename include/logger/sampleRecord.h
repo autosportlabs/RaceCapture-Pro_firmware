@@ -11,9 +11,6 @@
 #include <limits.h>
 #include "loggerConfig.h"
 
-// STIEG: FIX ME.  Use LongLong here.
-#define NIL_SAMPLE INT_MIN + 1
-
 #define LOGGER_MSG_SAMPLE    0
 #define LOGGER_MSG_START_LOG 1
 #define LOGGER_MSG_END_LOG   2
@@ -34,6 +31,7 @@ typedef struct _ChannelSample {
    // STIEG: Can we use const here?
    ChannelConfig *cfg;
    size_t channelIndex;
+   bool populated;
 
    enum SampleData sampleData;
    union {
