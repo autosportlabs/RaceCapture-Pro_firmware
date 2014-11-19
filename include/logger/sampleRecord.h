@@ -15,7 +15,12 @@
 #define LOGGER_MSG_START_LOG 1
 #define LOGGER_MSG_END_LOG   2
 
-// STIEG: Convert Ints to Int32 and Int64 types instead.
+/*
+ * Important note here.  Use of Int and LongLong work on 32 bit ARM
+ * architectures only in terms of their desired consistency of supplying
+ * 32 and 64 bit values respectively.  We should change them to int32_t
+ * and int64_t if we want to gaurantee this going forward.
+ */
 enum SampleData {
    SampleData_Int_Noarg,
    SampleData_Int,
@@ -28,7 +33,6 @@ enum SampleData {
 };
 
 typedef struct _ChannelSample {
-   // STIEG: Can we use const here?
    ChannelConfig *cfg;
    size_t channelIndex;
    bool populated;
@@ -57,7 +61,6 @@ typedef struct _LoggerMessage
 {
 	int messageType;
 	size_t sampleCount;
-   // STIEG: Make this empty array pointer?
 	ChannelSample *channelSamples;
 } LoggerMessage;
 
