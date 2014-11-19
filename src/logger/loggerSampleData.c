@@ -303,7 +303,7 @@ int populate_sample_buffer(ChannelSample * samples,  size_t count, size_t curren
       }
 
       samples->populated = true;
-      highestRate = HIGHER_SAMPLE_RATE(sampleRate, highestRate);
+      highestRate = getHigherSampleRate(sampleRate, highestRate);
       size_t channelIndex = samples->channelIndex;
 
       switch(samples->sampleData) {

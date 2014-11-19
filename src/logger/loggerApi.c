@@ -914,11 +914,11 @@ int api_setTimerConfig(Serial *serial, const jsmntok_t *json){
 static unsigned short getGpsConfigHighSampleRate(GPSConfig *cfg) {
    unsigned short rate = SAMPLE_DISABLED;
 
-   rate = HIGHER_SAMPLE_RATE(rate, cfg->latitude.sampleRate);
-   rate = HIGHER_SAMPLE_RATE(rate, cfg->longitude.sampleRate);
-   rate = HIGHER_SAMPLE_RATE(rate, cfg->speed.sampleRate);
-   rate = HIGHER_SAMPLE_RATE(rate, cfg->distance.sampleRate);
-   rate = HIGHER_SAMPLE_RATE(rate, cfg->satellites.sampleRate);
+   rate = getHigherSampleRate(rate, cfg->latitude.sampleRate);
+   rate = getHigherSampleRate(rate, cfg->longitude.sampleRate);
+   rate = getHigherSampleRate(rate, cfg->speed.sampleRate);
+   rate = getHigherSampleRate(rate, cfg->distance.sampleRate);
+   rate = getHigherSampleRate(rate, cfg->satellites.sampleRate);
 
    return rate;
 }

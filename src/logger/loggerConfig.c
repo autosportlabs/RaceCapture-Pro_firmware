@@ -149,6 +149,22 @@ static void resetConnectivityConfig(ConnectivityConfig *cfg) {
    resetTelemetryConfig(&cfg->telemetryConfig);
 }
 
+bool isHigherSampleRate(const int contender, const int champ) {
+   // Contender can't win here.  Ever.
+   if (contender == SAMPLE_DISABLED)
+      return false;
+
+   // Champ defaults in this case.  Contender need only show up.
+   if (champ == SAMPLE_DISABLED)
+      return contender != SAMPLE_DISABLED;
+
+   return contender < champ;
+}
+
+int getHigherSampleRate(const int a, const int b) {
+   return isHigherSampleRate(a, b) ? a : b;
+}
+
 int flash_default_logger_config(void){
 	pr_info("flashing default logger config...");
 
@@ -468,74 +484,75 @@ ImuConfig * getImuConfigChannel(int channel){
 }
 
 unsigned int getHighestSampleRate(LoggerConfig *config){
+   int s = SAMPLE_DISABLED;
+   int sr;
+
    /*
     * Bypass Interval and Utc here since they will always be logging
     * at the highest rate based on the results of this very method
     */
 
-	//start with the slowest sample rate
-	int s = SAMPLE_1Hz;
+   for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
+      sr = config->ADCConfigs[i].cfg.sampleRate;
+      s = getHigherSampleRate(sr, s);
+   }
 
-	//find the fastest sample rate
-	for (int i = 0; i < CONFIG_ADC_CHANNELS; i++){
-		int sr = config->ADCConfigs[i].cfg.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;
-	}
-	for (int i = 0; i < CONFIG_PWM_CHANNELS; i++){
-		int sr = config->PWMConfigs[i].cfg.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;
-	}
-	for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
-		int sr = config->GPIOConfigs[i].cfg.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;
-	}
-	for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++){
-		int sr = config->TimerConfigs[i].cfg.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;
-	}
-	for (int i = 0; i < CONFIG_IMU_CHANNELS; i++){
-		int sr = config->ImuConfigs[i].cfg.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;
-	}
+   for (int i = 0; i < CONFIG_PWM_CHANNELS; i++){
+      sr = config->PWMConfigs[i].cfg.sampleRate;
+      s = getHigherSampleRate(sr, s);
+   }
 
-	GPSConfig *gpsConfig = &(config->GPSConfigs);
-	{
-		//TODO this represents "Position sample rate".
-		int sr = gpsConfig->latitude.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;
-		sr = gpsConfig->longitude.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;
-		sr = gpsConfig->speed.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;
-		sr = gpsConfig->distance.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;
-		sr = gpsConfig->satellites.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;
+   for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
+      sr = config->GPIOConfigs[i].cfg.sampleRate;
+      s = getHigherSampleRate(sr, s);
+   }
 
-	}
-	LapConfig *trackCfg = &(config->LapConfigs);
-	{
-		int sr = trackCfg->lapCountCfg.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;
-	}
-	{
-		int sr = trackCfg->lapTimeCfg.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;
-	}
-	{
-		int sr = trackCfg->sectorCfg.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;
-	}
-	{
-		int sr = trackCfg->sectorTimeCfg.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;
-	}
-	{
-		int sr = trackCfg->predTimeCfg.sampleRate;
-		if HIGHER_SAMPLE(sr, s) s = sr;
-	}
+   for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++){
+      sr = config->TimerConfigs[i].cfg.sampleRate;
+      s = getHigherSampleRate(sr, s);
+   }
 
-	return s;
+   for (int i = 0; i < CONFIG_IMU_CHANNELS; i++){
+      sr = config->ImuConfigs[i].cfg.sampleRate;
+      s = getHigherSampleRate(sr, s);
+   }
+
+
+   GPSConfig *gpsConfig = &(config->GPSConfigs);
+   sr = gpsConfig->latitude.sampleRate;
+   s = getHigherSampleRate(sr, s);
+
+   sr = gpsConfig->longitude.sampleRate;
+   s = getHigherSampleRate(sr, s);
+
+   sr = gpsConfig->speed.sampleRate;
+   s = getHigherSampleRate(sr, s);
+
+   sr = gpsConfig->distance.sampleRate;
+   s = getHigherSampleRate(sr, s);
+
+   sr = gpsConfig->satellites.sampleRate;
+   s = getHigherSampleRate(sr, s);
+
+
+   LapConfig *trackCfg = &(config->LapConfigs);
+   sr = trackCfg->lapCountCfg.sampleRate;
+   s = getHigherSampleRate(sr, s);
+
+   sr = trackCfg->lapTimeCfg.sampleRate;
+   s = getHigherSampleRate(sr, s);
+
+   sr = trackCfg->sectorCfg.sampleRate;
+   s = getHigherSampleRate(sr, s);
+
+   sr = trackCfg->sectorTimeCfg.sampleRate;
+   s = getHigherSampleRate(sr, s);
+
+   sr = trackCfg->predTimeCfg.sampleRate;
+   s = getHigherSampleRate(sr, s);
+
+
+   return s;
 }
 
 size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
