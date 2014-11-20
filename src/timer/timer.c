@@ -27,3 +27,18 @@ void timer_reset_count(unsigned int channel){
 	timer_device_reset_count(channel);
 }
 
+unsigned int timerPeriodToUs(unsigned int ticks, unsigned int scaling) {
+   return (ticks * 100000) / (scaling / 10);
+}
+
+unsigned int timerPeriodToMs(unsigned int ticks, unsigned int scaling) {
+   return (ticks * 1000) / scaling;
+}
+
+unsigned int timerPeriodToHz(unsigned int ticks, unsigned int scaling) {
+   return 1000000 / timerPeriodToUs(ticks, scaling);
+}
+
+unsigned int timerPeriodToRpm(unsigned int ticks, unsigned int scaling) {
+   return 60000000 / timerPeriodToUs(ticks, scaling);
+}

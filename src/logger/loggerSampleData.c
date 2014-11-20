@@ -150,16 +150,16 @@ float get_timer_sample(int channelId){
 	unsigned int scaling = c->calculatedScaling;
 	switch (c->mode){
 		case MODE_LOGGING_TIMER_RPM:
-			timerValue = TIMER_PERIOD_TO_RPM(value, scaling);
+			timerValue = timerPeriodToRpm(value, scaling);
 			break;
 		case MODE_LOGGING_TIMER_FREQUENCY:
-			timerValue = TIMER_PERIOD_TO_HZ(value, scaling);
+			timerValue = timerPeriodToHz(value, scaling);
 			break;
 		case MODE_LOGGING_TIMER_PERIOD_MS:
-			timerValue = TIMER_PERIOD_TO_MS(value, scaling);
+			timerValue = timerPeriodToMs(value, scaling);
 			break;
 		case MODE_LOGGING_TIMER_PERIOD_USEC:
-			timerValue = TIMER_PERIOD_TO_USEC(value, scaling);
+			timerValue = timerPeriodToUs(value, scaling);
 			break;
 		default:
 			timerValue = -1;

@@ -180,7 +180,7 @@ int Lua_GetRPM(lua_State *L){
 	unsigned int timerPeriod, scaling;
 	int result = 0;
 	if (luaToTimerValues(L, &timerPeriod, &scaling)){
-		int rpm = TIMER_PERIOD_TO_RPM(timerPeriod, scaling);
+		int rpm = timerPeriodToRpm(timerPeriod, scaling);
 		lua_pushinteger(L, rpm);
 		result = 1;
 	}
@@ -191,7 +191,7 @@ int Lua_GetPeriodMs(lua_State *L){
 	unsigned int timerPeriod, scaling;
 	int result = 0;
 	if (luaToTimerValues(L, &timerPeriod, &scaling)){
-		lua_pushinteger(L, TIMER_PERIOD_TO_MS(timerPeriod, scaling));
+		lua_pushinteger(L, timerPeriodToMs(timerPeriod, scaling));
 		result = 1;
 	}
 	return result;
@@ -201,7 +201,7 @@ int Lua_GetFrequency(lua_State *L){
 	unsigned int timerPeriod, scaling;
 	int result = 0;
 	if (luaToTimerValues(L, &timerPeriod, &scaling)){
-		lua_pushinteger(L, TIMER_PERIOD_TO_HZ(timerPeriod, scaling));
+		lua_pushinteger(L, timerPeriodToHz(timerPeriod, scaling));
 		result = 1;
 	}
 	return result;
