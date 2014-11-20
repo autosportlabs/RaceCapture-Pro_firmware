@@ -126,11 +126,13 @@ static int setStringValueIfExists(const jsmntok_t *root, const char * fieldName,
 
 int api_systemReset(Serial *serial, const jsmntok_t *json){
 	int loader = 0;
-
 	setIntValueIfExists(json, "loader", &loader);
-
 	cpu_reset(loader);
 	return API_SUCCESS_NO_RETURN;
+}
+
+int api_factoryReset(Serial *serial, const jsmntok_t *json){
+	return (flash_default_logger_config() == 0 && flash_default_script() == 0 && flash_default_tracks() == 0) ? API_SUCCESS : API_ERROR_SEVERE;
 }
 
 int api_getVersion(Serial *serial, const jsmntok_t *json){
