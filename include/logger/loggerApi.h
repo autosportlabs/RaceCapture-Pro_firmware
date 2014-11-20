@@ -56,13 +56,15 @@
 {"getChannels", api_getChannels}, \
 {"getVer", api_getVersion}, \
 {"getCapabilities", api_getCapabilities}, \
-{"sysReset", api_systemReset}
+{"sysReset", api_systemReset}, \
+{"facReset", api_factoryReset}
 
 
 //commands
 int api_getVersion(Serial *serial, const jsmntok_t *json);
 int api_getCapabilities(Serial *serial, const jsmntok_t *json);
 int api_systemReset(Serial *serial, const jsmntok_t *json);
+int api_factoryReset(Serial *serial, const jsmntok_t *json);
 int api_sampleData(Serial *serial, const jsmntok_t *json);
 int api_log(Serial *serial, const jsmntok_t *json);
 int api_getMeta(Serial *serial, const jsmntok_t *json);
