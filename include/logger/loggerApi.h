@@ -52,8 +52,6 @@
 {"runScript", api_runScript}, \
 {"addTrackDb", api_addTrackDb}, \
 {"getTrackDb", api_getTrackDb}, \
-{"addChannel", api_addChannel}, \
-{"getChannels", api_getChannels}, \
 {"getVer", api_getVersion}, \
 {"getCapabilities", api_getCapabilities}, \
 {"sysReset", api_systemReset}, \
@@ -92,8 +90,6 @@ int api_setLogfileLevel(Serial *serial, const jsmntok_t *json);
 int api_getLogfile(Serial *serial, const jsmntok_t *json);
 int api_getTrackDb(Serial *serial, const jsmntok_t *json);
 int api_addTrackDb(Serial *serial, const jsmntok_t *json);
-int api_getChannels(Serial *serial, const jsmntok_t *json);
-int api_addChannel(Serial *serial, const jsmntok_t *json);
 int api_getObd2Config(Serial *serial, const jsmntok_t *json);
 int api_setObd2Config(Serial *serial, const jsmntok_t *json);
 int api_getCanConfig(Serial *serial, const jsmntok_t *json);

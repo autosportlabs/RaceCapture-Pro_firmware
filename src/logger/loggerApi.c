@@ -923,7 +923,6 @@ static unsigned short getGpsConfigHighSampleRate(GPSConfig *cfg) {
    return rate;
 }
 
-// STIEG: Change this or no?
 int api_getGpsConfig(Serial *serial, const jsmntok_t *json){
 
    GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
@@ -1270,16 +1269,6 @@ int api_getTrackDb(Serial *serial, const jsmntok_t *json){
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
-}
-
-int api_addChannel(Serial *serial, const jsmntok_t *json) {
-   // STIEG: Kill me
-	return API_ERROR_MALFORMED;
-}
-
-int api_getChannels(Serial *serial, const jsmntok_t *json) {
-   // STIEG: Kill me
-	return API_ERROR_MALFORMED;
 }
 
 int api_getScript(Serial *serial, const jsmntok_t *json){
