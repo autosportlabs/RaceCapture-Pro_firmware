@@ -21,7 +21,7 @@
 #include "cpu.h"
 #include "luaScript.h"
 #include "luaTask.h"
-
+#include "loggerTaskEx.h"
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
 typedef void (*getConfigs_func)(size_t channeId, void ** baseCfg, ChannelConfig ** channelCfg);
@@ -221,12 +221,15 @@ int api_log(Serial *serial, const jsmntok_t *json){
 	if (json->type == JSMN_PRIMITIVE && json->size == 0){
 		jsmn_trimData(json);
 		doLogging = modp_atoi(json->data);
+//TODO when RCP simulator is fully working, enable this.
+#ifndef RCP_TESTING
 		if (doLogging){
-			//startLogging();
+			startLogging();
 		}
 		else{
-			//stopLogging();
+			stopLogging();
 		}
+#endif
 	}
 	return API_SUCCESS;
 }
