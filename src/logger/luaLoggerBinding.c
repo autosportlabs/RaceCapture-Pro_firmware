@@ -25,7 +25,7 @@
 #include "loggerSampleData.h"
 #include "virtual_channel.h"
 
-#define TEMP_BUFFER_LEN 200
+#define TEMP_BUFFER_LEN 		200
 #define DEFAULT_CAN_TIMEOUT 	100
 
 
@@ -428,15 +428,14 @@ int Lua_SetCANFilter(lua_State *L){
 }
 
 int Lua_SendCANMessage(lua_State *L){
-	size_t timeout = 1000;
 	int rc = -1;
 	if (lua_gettop(L) >= 4){
 		CAN_msg msg;
 		uint8_t channel = (uint8_t)lua_tointeger(L, 1);
 		msg.addressValue = (unsigned int)lua_tointeger(L, 2);
 		msg.isExtendedAddress = lua_tointeger(L, 3);
-
 		int size = luaL_getn(L, 4);
+		size_t timeout = args >= 5 ? lua_tointeger(L, 5) : DEFAULT_CAN_TIMEOUT;
 		if (size <= CAN_MSG_SIZE){
 			for (int i = 1; i <= size; i++){
 				lua_pushnumber(L,i);
