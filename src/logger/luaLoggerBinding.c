@@ -258,7 +258,7 @@ int Lua_ReadSerialLine(lua_State *L){
 		int serialPort = lua_tointeger(L,1);
 		Serial *serial = get_serial(serialPort);
 		if (serial){
-			serial->get_line(g_tempBuffer, TEMP_BUFFER_LEN);
+			serial->get_line_wait(g_tempBuffer, TEMP_BUFFER_LEN, 100);
 			lua_pushstring(L,g_tempBuffer);
 			return 1;
 		}
