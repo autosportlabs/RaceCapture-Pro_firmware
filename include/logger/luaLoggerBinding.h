@@ -25,7 +25,7 @@ int Lua_GetGPIO(lua_State *L);
 int Lua_SetGPIO(lua_State *L);
 
 int Lua_ReadSerialLine(lua_State *L);
-int Lua_WriteSerial(lua_State *L);
+int Lua_WriteSerialLine(lua_State *L);
 
 int Lua_GetGPSPosition(lua_State *L);
 int Lua_GetGPSSpeed(lua_State *L);

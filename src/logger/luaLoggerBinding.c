@@ -81,8 +81,8 @@ void registerLuaLoggerBindings(lua_State *L){
 
 	lua_registerlight(L,"setLed",Lua_SetLED);
 
-	lua_registerlight(L,"readSerial", Lua_ReadSerialLine);
-	lua_registerlight(L,"writeSerial", Lua_WriteSerial);
+	lua_registerlight(L,"readSer", Lua_ReadSerialLine);
+	lua_registerlight(L,"writeSer", Lua_WriteSerialLine);
 
 	//Logger configuration editing
 	lua_registerlight(L,"flashLoggerCfg", Lua_FlashLoggerConfig);
@@ -241,13 +241,14 @@ int Lua_GetButton(lua_State *L){
 	return 1;
 }
 
-int Lua_WriteSerial(lua_State *L){
+int Lua_WriteSerialLine(lua_State *L){
 	if (lua_gettop(L) >= 2){
 		int serialPort = lua_tointeger(L,1);
 		Serial *serial = get_serial(serialPort);
 		if (serial){
 			const char * data = lua_tostring(L, 2);
 			serial->put_s(data);
+			serial->put_s("\r");
 		}
 	}
 	return 0;
@@ -255,7 +256,6 @@ int Lua_WriteSerial(lua_State *L){
 
 int Lua_ReadSerialLine(lua_State *L){
 	if (lua_gettop(L) >= 1){
-
 		size_t args = lua_gettop(L);
 		int serialPort = lua_tointeger(L,1);
 		size_t timeout = args >= 2 ? lua_tointeger(L, 2) : DEFAULT_SERIAL_TIMEOUT;
@@ -266,7 +266,7 @@ int Lua_ReadSerialLine(lua_State *L){
 			return 1;
 		}
 	}
-	return 0; //missing or bad parameter
+	return 0;
 }
 
 int Lua_GetGPIO(lua_State *L){
