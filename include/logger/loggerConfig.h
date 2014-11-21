@@ -533,6 +533,7 @@ int encodeSampleRate(int sampleRate);
 int decodeSampleRate(int sampleRateCode);
 
 unsigned char filterAnalogScalingMode(unsigned char mode);
+unsigned char filterBgStreamingMode(unsigned char mode);
 unsigned char filterSdLoggingMode(unsigned char mode);
 char filterGpioMode(int config);
 char filterPwmOutputMode(int config);

@@ -285,6 +285,10 @@ unsigned char filterAnalogScalingMode(unsigned char mode){
 	}
 }
 
+unsigned char filterBgStreamingMode(unsigned char mode){
+	return mode == 0 ? 0 : 1;
+}
+
 unsigned char filterSdLoggingMode(unsigned char mode){
 	switch (mode){
 		case SD_LOGGING_MODE_CSV:

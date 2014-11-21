@@ -683,6 +683,7 @@ static void setTelemetryConfig(const jsmntok_t *root){
 		TelemetryConfig *telemetryCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.telemetryConfig);
 		setStringValueIfExists(telemetryCfgNode, "deviceId", telemetryCfg->telemetryDeviceId, DEVICE_ID_LENGTH);
 		setStringValueIfExists(telemetryCfgNode, "host", telemetryCfg->telemetryServerHost, TELEMETRY_SERVER_HOST_LENGTH);
+		setUnsignedCharValueIfExists(telemetryCfgNode, "bgStream", filterBgStreamingMode(telemetryCfg->backgroundStreaming));
 	}
 }
 
