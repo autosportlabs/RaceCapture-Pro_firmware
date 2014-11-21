@@ -27,7 +27,7 @@
 
 #define TEMP_BUFFER_LEN 		200
 #define DEFAULT_CAN_TIMEOUT 	100
-
+#define DEFAULT_SERIAL_TIMEOUT	100
 
 char g_tempBuffer[TEMP_BUFFER_LEN];
 
@@ -255,10 +255,13 @@ int Lua_WriteSerial(lua_State *L){
 
 int Lua_ReadSerialLine(lua_State *L){
 	if (lua_gettop(L) >= 1){
+
+		size_t args = lua_gettop(L);
 		int serialPort = lua_tointeger(L,1);
+		size_t timeout = args >= 2 ? lua_tointeger(L, 2) : DEFAULT_SERIAL_TIMEOUT;
 		Serial *serial = get_serial(serialPort);
 		if (serial){
-			serial->get_line_wait(g_tempBuffer, TEMP_BUFFER_LEN, 100);
+			serial->get_line_wait(g_tempBuffer, TEMP_BUFFER_LEN, timeout);
 			lua_pushstring(L,g_tempBuffer);
 			return 1;
 		}
@@ -429,7 +432,8 @@ int Lua_SetCANFilter(lua_State *L){
 
 int Lua_SendCANMessage(lua_State *L){
 	int rc = -1;
-	if (lua_gettop(L) >= 4){
+	size_t args = lua_gettop(L);
+	if (args >= 4){
 		CAN_msg msg;
 		uint8_t channel = (uint8_t)lua_tointeger(L, 1);
 		msg.addressValue = (unsigned int)lua_tointeger(L, 2);
