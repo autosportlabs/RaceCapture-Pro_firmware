@@ -1,5 +1,5 @@
 #include "loggerData_test.h"
-#include "loggerSampleData.h"
+#include "loggerSampleData.test.h"
 #include "loggerApi.h"
 #include "mod_string.h"
 #include "mock_serial.h"

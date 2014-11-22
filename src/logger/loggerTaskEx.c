@@ -76,16 +76,18 @@ static size_t initSampleRecords(LoggerConfig *loggerConfig){
 	return channelSampleCount;
 }
 
-static size_t calcTelemetrySampleRate(LoggerConfig *config, size_t desiredSampleRate){
-	size_t maxRate = getConnectivitySampleRateLimit();
-	if HIGHER_SAMPLE(desiredSampleRate, maxRate) desiredSampleRate = maxRate;
-	return desiredSampleRate;
+static int calcTelemetrySampleRate(LoggerConfig *config, int desiredSampleRate){
+	int maxRate = getConnectivitySampleRateLimit();
+	return isHigherSampleRate(desiredSampleRate, maxRate) ? maxRate : desiredSampleRate;
 }
 
-size_t updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate, int *telemetrySampleRate, int *sampleRateTimebase){
+size_t updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate,
+                         int *telemetrySampleRate, int *sampleRateTimebase) {
 	*loggingSampleRate = getHighestSampleRate(loggerConfig);
 	*sampleRateTimebase = *loggingSampleRate;
-	if HIGHER_SAMPLE(BACKGROUND_SAMPLE_RATE, *sampleRateTimebase) *sampleRateTimebase = BACKGROUND_SAMPLE_RATE;
+   *sampleRateTimebase = getHigherSampleRate(BACKGROUND_SAMPLE_RATE,
+                                             *sampleRateTimebase);
+
 	*telemetrySampleRate = calcTelemetrySampleRate(loggerConfig, *loggingSampleRate);
 	size_t channelCount = initSampleRecords(loggerConfig);
 	pr_info_int(*telemetrySampleRate);
@@ -171,4 +173,3 @@ void loggerTaskEx(void *params){
 		}
 	}
 }
-

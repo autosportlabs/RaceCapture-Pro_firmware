@@ -147,8 +147,7 @@ static int writeChannelSamples(ChannelSample *sample, size_t channelCount){
       appendFileBuffer(separator);
       separator = ",";
 
-      // STIEG: Fix NIL_SAMPLE, use long long.
-      if (sample->valueInt == NIL_SAMPLE)
+      if (!sample->populated)
          continue;
 
       const int precision = sample->cfg->precision;

@@ -3,7 +3,7 @@
 #include "loggerConfig.h"
 #include "predictive_timer_2.h"
 #include "sampleRecord.h"
-#include "loggerSampleData.h"
+#include "loggerSampleData.test.h"
 #include "sampleRecord_test.h"
 #include "loggerHardware.h"
 #include "ADC_mock.h"
