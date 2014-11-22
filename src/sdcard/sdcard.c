@@ -108,12 +108,15 @@ void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet)
 		put_crlf(serial);
 	}
 exit:
-	if(res == 0){
-		if (!quiet) serial->put_s("SUCCESS\r\n");
+	if (quiet){
+		put_int(serial, res == 0 ? 1 : 0);
 	}
 	else{
-		if (!quiet){
-			serial->put_s("ERROR ");
+		if(res == 0){
+			serial->put_s("SUCCESS");
+		}
+		else{
+			serial->put_s("ERROR");
 			put_int(serial, res);
 			put_crlf(serial);
 		}
