@@ -276,6 +276,9 @@ int api_getMeta(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS_NO_RETURN;
 }
 
+
+#define MAX_BITMAPS 10
+
 void api_sendSampleRecord(Serial *serial, ChannelSample *channelSamples,
                           size_t channelCount, unsigned int tick, int sendMeta) {
    json_objStart(serial);
@@ -286,45 +289,57 @@ void api_sendSampleRecord(Serial *serial, ChannelSample *channelSamples,
       writeSampleMeta(serial, channelSamples, channelCount,
                       getConnectivitySampleRateLimit(), 1);
 
-   unsigned int channelsBitmask = 0;
+   size_t channelBitmaskIndex = 0;
+   unsigned int channelBitmask[MAX_BITMAPS];
+   memset(channelBitmask, 0, sizeof(channelBitmask));
+
    json_arrayStart(serial, "d");
    ChannelSample *sample = channelSamples;
 
-   for (size_t i = 0; i < channelCount; i++, sample++) {
+   size_t channelBitPosition = 0;
+   for (size_t i = 0; i < channelCount; i++, channelBitPosition++, sample++) {
+       if (channelBitPosition > 31){
+     	  channelBitmaskIndex++;
+     	  channelBitPosition=0;
+          if (channelBitmaskIndex > MAX_BITMAPS) break;
+       }
 
-      // STIEG: Fix NIL_SAMPLE, use long long.
-      if (sample->valueInt == NIL_SAMPLE)
-         continue;
+       // STIEG: Fix NIL_SAMPLE, use long long.
+	   if (sample->valueInt != NIL_SAMPLE){
+		  channelBitmask[channelBitmaskIndex] = channelBitmask[channelBitmaskIndex] | (1 << channelBitPosition);
 
-      channelsBitmask = channelsBitmask | (1 << i);
-
-      const int precision = sample->cfg->precision;
-      switch(sample->sampleData) {
-      case SampleData_Float:
-      case SampleData_Float_Noarg:
-         put_float(serial, sample->valueFloat, precision);
-         break;
-      case SampleData_Int:
-      case SampleData_Int_Noarg:
-         put_int(serial, sample->valueInt);
-         break;
-      case SampleData_LongLong:
-      case SampleData_LongLong_Noarg:
-         put_ll(serial, sample->valueLongLong);
-         break;
-      case SampleData_Double:
-      case SampleData_Double_Noarg:
-         put_double(serial, sample->valueDouble, precision);
-         break;
-      default:
-         pr_warning("Got to unexpected location in sendSampleRecord\n");
-         break;
+		  const int precision = sample->cfg->precision;
+		  switch(sample->sampleData) {
+		  case SampleData_Float:
+		  case SampleData_Float_Noarg:
+			 put_float(serial, sample->valueFloat, precision);
+			 break;
+		  case SampleData_Int:
+		  case SampleData_Int_Noarg:
+			 put_int(serial, sample->valueInt);
+			 break;
+		  case SampleData_LongLong:
+		  case SampleData_LongLong_Noarg:
+			 put_ll(serial, sample->valueLongLong);
+			 break;
+		  case SampleData_Double:
+		  case SampleData_Double_Noarg:
+			 put_double(serial, sample->valueDouble, precision);
+			 break;
+		  default:
+			 pr_warning("Got to unexpected location in sendSampleRecord\n");
+			 break;
+		  }
+		  serial->put_c(',');
       }
-      serial->put_c(',');
    }
-   put_uint(serial, channelsBitmask);
-   json_arrayEnd(serial, 0);
 
+   size_t channelBitmaskCount = channelBitmaskIndex + 1;
+   for (size_t i = 0; i < channelBitmaskCount; i++){
+	   put_uint(serial, channelBitmask[i]);
+	   if (i < channelBitmaskCount - 1) serial->put_c(',');
+   }
+   json_arrayEnd(serial, 0);
    json_objEnd(serial, 0);
    json_objEnd(serial, 0);
 }
