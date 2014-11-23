@@ -875,7 +875,7 @@ static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok, const 
 	if (NAME_EQU("mode", name)) timerCfg->mode = filterTimerMode(iValue);
 	if (NAME_EQU("alpha", name)) timerCfg->filterAlpha = modp_atof(value);
 	if (NAME_EQU("ppr", name)) timerCfg->pulsePerRevolution = filterPulsePerRevolution(iValue);
-	if (NAME_EQU("div", name)) timerCfg->timerDivider = filterTimerDivider(iValue);
+	if (NAME_EQU("speed", name)) timerCfg->timerSpeed = filterTimerDivider(iValue);
 
 	return valueTok + 1;
 }
@@ -891,7 +891,7 @@ static void sendTimerConfig(Serial *serial, size_t startIndex, size_t endIndex){
 		json_uint(serial, "mode", cfg->mode, 1);
 		json_float(serial, "alpha", cfg->filterAlpha, FILTER_ALPHA_PRECISION, 1);
 		json_uint(serial, "ppr", cfg->pulsePerRevolution, 1);
-		json_uint(serial, "div", cfg->timerDivider, 0);
+		json_uint(serial, "speed", cfg->timerSpeed, 0);
 		json_objEnd(serial, i != endIndex);
 	}
 	json_objEnd(serial, 0);

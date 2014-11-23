@@ -611,7 +611,7 @@ void LoggerApiTest::testGetTimerConfigFile(string filename, int index){
 	timerCfg->mode = 2;
 	timerCfg->filterAlpha = 0.5F;
 	timerCfg->pulsePerRevolution = 3;
-	timerCfg->timerDivider = 30000;
+	timerCfg->timerSpeed = 2;
 
 	char * response = processApiGeneric(filename);
 
@@ -629,7 +629,7 @@ void LoggerApiTest::testGetTimerConfigFile(string filename, int index){
 	CPPUNIT_ASSERT_EQUAL(2, (int)(Number)timerJson["mode"]);
 	CPPUNIT_ASSERT_EQUAL(0.5F, (float)(Number)timerJson["alpha"]);
 	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)timerJson["ppr"]);
-	CPPUNIT_ASSERT_EQUAL(30000, (int)(Number)timerJson["div"]);
+	CPPUNIT_ASSERT_EQUAL(2, (int)(Number)timerJson["speed"]);
 }
 
 void LoggerApiTest::testGetTimerCfg(){
@@ -657,7 +657,7 @@ void LoggerApiTest::testSetTimerConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(1, (int)timerCfg->mode);
 	CPPUNIT_ASSERT_EQUAL(0.5F, timerCfg->filterAlpha);
 	CPPUNIT_ASSERT_EQUAL(4, (int)timerCfg->pulsePerRevolution);
-	CPPUNIT_ASSERT_EQUAL(2, (int)timerCfg->timerDivider);
+	CPPUNIT_ASSERT_EQUAL(2, (int)timerCfg->timerSpeed);
 
 	char *txBuffer = mock_getTxBuffer();
 	assertGenericResponse(txBuffer, "setTimerCfg", API_SUCCESS);
