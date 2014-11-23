@@ -1,5 +1,18 @@
 #include "timer_device.h"
 #include "board.h"
+#include "loggerConfig.h"
+
+// MCK: 48054840 Hz
+// /2 = 24027420
+// /8 = 6006855
+// /32 = 1501713.75
+// /128 = 375428.4375
+// /1024 = 46928.5546875
+#define TIMER_MCK_2 		2
+#define TIMER_MCK_8 		8
+#define TIMER_MCK_32 		32
+#define TIMER_MCK_128 		128
+#define TIMER_MCK_1024 		1024
 
 //Timer/Counter declarations
 #define TIMER0_INTERRUPT_LEVEL 	5
@@ -8,6 +21,7 @@
 
 #define MAX_TIMER_VALUE			0xFFFF
 #define TIMER_CHANNELS			3
+#define DEFAULT_CLOCK_DIVIDERS  {0,0,0}
 
 extern void ( timer0_irq_handler )( void );
 extern void ( timer1_irq_handler )( void );
@@ -20,6 +34,8 @@ unsigned int g_timer0_overflow;
 unsigned int g_timer1_overflow;
 unsigned int g_timer2_overflow;
 unsigned int g_timer_counts[TIMER_CHANNELS];
+
+static uint32_t g_clock_dividers[TIMER_CHANNELS] = DEFAULT_CLOCK_DIVIDERS;
 
 static unsigned int timer_clock_from_divider(unsigned short divider){
 	switch (divider){
@@ -164,7 +180,21 @@ static unsigned int getTimer2Period(){
 	return g_timer2_overflow ? 0 : AT91C_BASE_TC2->TC_RB;
 }
 
-int timer_device_init(size_t channel, unsigned int divider, unsigned int slowTimerMode){
+static uint32_t timer_speed_to_divider(int speed){
+	switch(speed){
+	case TIMER_FAST:
+		return TIMER_MCK_32;
+	case TIMER_SLOW:
+		return TIMER_MCK_1024;
+	default:
+	case TIMER_MEDIUM:
+		return TIMER_MCK_128;
+	}
+}
+
+int32_t timer_device_init(size_t channel, uint32_t speed, uint32_t slowTimerMode){
+	uint32_t divider = timer_speed_to_divider(speed);
+	g_clock_dividers[channel] = divider;
 	switch(channel){
 		case 0:
 			init_timer_0(divider, slowTimerMode);
@@ -180,19 +210,13 @@ int timer_device_init(size_t channel, unsigned int divider, unsigned int slowTim
 	}
 }
 
-void timer_device_get_all_periods(unsigned int *t0, unsigned int *t1, unsigned int *t2){
-	*t0 = getTimer0Period();
-	*t1 = getTimer1Period();
-	*t2 = getTimer2Period();
-}
-
-void timer_device_reset_count(unsigned int channel){
+void timer_device_reset_count(size_t channel){
 	if (channel >= 0 && channel < TIMER_CHANNELS){
 		g_timer_counts[channel] = 0;
 	}
 }
 
-unsigned int timer_device_get_count(unsigned int channel){
+uint32_t timer_device_get_count(size_t channel){
 	if (channel >= 0 && channel < TIMER_CHANNELS){
 		return g_timer_counts[channel];
 	}
@@ -201,7 +225,7 @@ unsigned int timer_device_get_count(unsigned int channel){
 	}
 }
 
-unsigned int timer_device_get_period(unsigned int channel){
+uint32_t timer_device_get_period(size_t channel){
 	switch (channel){
 		case 0:
 			return getTimer0Period();
@@ -212,5 +236,18 @@ unsigned int timer_device_get_period(unsigned int channel){
 	}
 	return 0;
 }
+
+#ifndef BOARD_MCK
+#define BOARD_MCK 48054840
+#endif
+
+
+uint32_t timer_device_get_usec(size_t channel){
+	unsigned int scaling = BOARD_MCK / g_clock_dividers[channel];
+	uint32_t period = timer_device_get_period(channel);
+	return (unsigned int)((period * 100000) / (scaling / 10));
+}
+
+
 
 

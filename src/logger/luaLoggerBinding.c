@@ -162,14 +162,14 @@ int Lua_GetAnalog(lua_State *L){
 	return 1;
 }
 
-static int luaToTimerValues(lua_State *L, unsigned int *timerPeriod, unsigned int *scaling){
+static int luaToTimerValues(lua_State *L, uint8_t *pulsePerRevolution, size_t *channel){
 	int result = 0;
 	if (lua_gettop(L) >=  1){
-		int channel = lua_tointeger(L,1);
-		TimerConfig *c = getTimerConfigChannel(channel);
+		size_t requestedChannel = lua_tointeger(L,1);
+		TimerConfig *c = getTimerConfigChannel(requestedChannel);
 		if (NULL != c){
-			*timerPeriod = timer_get_period(channel);
-			*scaling = c->calculatedScaling;
+			*pulsePerRevolution = c->pulsePerRevolution;
+			*channel = requestedChannel;
 			result = 1;
 		}
 	}
@@ -177,31 +177,37 @@ static int luaToTimerValues(lua_State *L, unsigned int *timerPeriod, unsigned in
 }
 
 int Lua_GetRPM(lua_State *L){
-	unsigned int timerPeriod, scaling;
+	uint8_t pulsePerRevolution;
+	size_t channel;
 	int result = 0;
-	if (luaToTimerValues(L, &timerPeriod, &scaling)){
-		int rpm = timerPeriodToRpm(timerPeriod, scaling);
+	if (luaToTimerValues(L, &pulsePerRevolution, &channel)){
+		int rpm = timer_get_rpm(channel) / pulsePerRevolution;
 		lua_pushinteger(L, rpm);
 		result = 1;
 	}
 	return result;
 }
 
+
 int Lua_GetPeriodMs(lua_State *L){
-	unsigned int timerPeriod, scaling;
+	uint8_t pulsePerRevolution;
+	size_t channel;
 	int result = 0;
-	if (luaToTimerValues(L, &timerPeriod, &scaling)){
-		lua_pushinteger(L, timerPeriodToMs(timerPeriod, scaling));
+	if (luaToTimerValues(L, &pulsePerRevolution, &channel)){
+		int period = timer_get_ms(channel) * pulsePerRevolution;
+		lua_pushinteger(L, period);
 		result = 1;
 	}
 	return result;
 }
 
 int Lua_GetFrequency(lua_State *L){
-	unsigned int timerPeriod, scaling;
+	uint8_t pulsePerRevolution;
+	size_t channel;
 	int result = 0;
-	if (luaToTimerValues(L, &timerPeriod, &scaling)){
-		lua_pushinteger(L, timerPeriodToHz(timerPeriod, scaling));
+	if (luaToTimerValues(L, &pulsePerRevolution, &channel)){
+		int hz = timer_get_hz(channel) / pulsePerRevolution;
+		lua_pushinteger(L, hz);
 		result = 1;
 	}
 	return result;
@@ -211,7 +217,7 @@ int Lua_GetTimerRaw(lua_State *L){
 	int result = -1;
 	if (lua_gettop(L) >= 1){
 		int channel = lua_tointeger(L,1);
-		result = timer_get_period(channel);
+		result = timer_get_raw(channel);
 	}
 	lua_pushinteger(L,result);
 	return 1;

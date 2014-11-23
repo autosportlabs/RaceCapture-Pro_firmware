@@ -229,12 +229,6 @@ LoggerConfig * getWorkingLoggerConfig(){
 	return &g_workingLoggerConfig;
 }
 
-void calculateTimerScaling(unsigned int clockHz, TimerConfig *timerConfig){
-	unsigned int clock = clockHz / timerConfig->timerDivider;
-	clock = clock / timerConfig->pulsePerRevolution;
-	timerConfig->calculatedScaling = clock;
-}
-
 int getConnectivitySampleRateLimit(){
 	ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
 	int sampleRateLimit = connConfig->cellularConfig.cellEnabled ? SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE : FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE;
@@ -351,20 +345,16 @@ unsigned char filterPulsePerRevolution(unsigned char pulsePerRev){
 	return pulsePerRev == 0 ? 1 : pulsePerRev;
 }
 
-unsigned short filterTimerDivider(unsigned short divider){
-	switch(divider){
-	case TIMER_MCK_2:
-		return TIMER_MCK_2;
-	case TIMER_MCK_8:
-		return TIMER_MCK_8;
-	case TIMER_MCK_32:
-		return TIMER_MCK_32;
-	case TIMER_MCK_128:
-		return TIMER_MCK_128;
-	case TIMER_MCK_1024:
-		return TIMER_MCK_1024;
-	default:
-		return TIMER_MCK_128;
+unsigned short filterTimerDivider(unsigned short speed){
+	switch(speed){
+		case TIMER_SLOW:
+			return TIMER_SLOW;
+		case TIMER_MEDIUM:
+			return TIMER_MEDIUM;
+		case TIMER_FAST:
+			return TIMER_FAST;
+		default:
+			return TIMER_FAST;
 	}
 }
 char filterTimerMode(int mode){

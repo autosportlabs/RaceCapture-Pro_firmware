@@ -13,10 +13,6 @@
 #include "api.h"
 #include "sampleRecord.h"
 
-#ifndef BOARD_MCK
-#define BOARD_MCK 48054840
-#endif
-
 #define LOGGER_API \
 {"s", api_sampleData}, \
 {"log", api_log}, \

@@ -7,13 +7,14 @@
 
 #ifndef TIMER_DEVICE_H_
 #define TIMER_DEVICE_H_
+#include <stdint.h>
 #include <stddef.h>
 
-int timer_device_init(size_t channel, unsigned int divider, unsigned int slowChannelMode);
+int32_t timer_device_init(size_t channel, uint32_t speed, uint32_t slowChannelMode);
 
-unsigned int timer_device_get_period(unsigned int channel);
-unsigned int timer_device_get_count(unsigned int channel);
-void timer_device_reset_count(unsigned int channel);
-void timer_device_get_all_periods(unsigned int *t0, unsigned int *t1, unsigned int *t2);
+uint32_t timer_device_get_period(size_t channel);
+uint32_t timer_device_get_usec(size_t channel);
+uint32_t timer_device_get_count(size_t channel);
+void timer_device_reset_count(size_t channel);
 
 #endif /* TIMER_DEVICE_H_ */
