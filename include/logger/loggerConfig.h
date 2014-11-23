@@ -147,7 +147,7 @@ typedef struct _TimerConfig{
 	unsigned char mode;
 	float filterAlpha;
 	unsigned char pulsePerRevolution;
-	unsigned short timerDivider;
+	unsigned short timerSpeed;
 } TimerConfig;
 
 

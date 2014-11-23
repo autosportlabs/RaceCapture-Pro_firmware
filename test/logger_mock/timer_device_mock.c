@@ -28,3 +28,7 @@ void timer_device_get_all_periods(unsigned int *t0, unsigned int *t1, unsigned i
 	*t1 = g_timer[1];
 	*t2 = g_timer[2];
 }
+
+uint32_t timer_device_get_usec(size_t channel){
+	return 0;
+}

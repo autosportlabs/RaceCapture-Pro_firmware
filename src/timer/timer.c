@@ -7,7 +7,7 @@ static Filter g_timer_filter[CONFIG_TIMER_CHANNELS];
 int timer_init(LoggerConfig *loggerConfig){
 	for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; i++){
 		TimerConfig *tc = &loggerConfig->TimerConfigs[i];
-		timer_device_init(i, tc->timerDivider, tc->mode);
+		timer_device_init(i, tc->timerSpeed, tc->mode);
 		init_filter(&g_timer_filter[i], tc->filterAlpha);
 	}
 	return 1;

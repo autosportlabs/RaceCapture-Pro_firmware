@@ -93,6 +93,7 @@ char* trimLeadingZeros(char *ptr) {
          return ptr;
       default:
          *ptr = '\0';
+         break;
       }
    }
 
@@ -186,7 +187,7 @@ void modp_ftoa(float value, char* str, int prec)
     }
     *wstr='\0';
 
-    trimLeadingZeros(str);
+    if (prec > 0) trimLeadingZeros(str);
     strreverse(str, wstr-1);
 }
 
@@ -277,7 +278,7 @@ void modp_dtoa(double value, char* str, int prec)
     }
     *wstr='\0';
 
-    trimLeadingZeros(str);
+    if (prec > 0) trimLeadingZeros(str);
     strreverse(str, wstr-1);
 }
 

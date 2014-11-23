@@ -11,7 +11,7 @@
             "mode": 1,
             "alpha": 0.5,
             "ppr": 4,
-            "div": 2
+            "speed": 2
         }
     }
 }
