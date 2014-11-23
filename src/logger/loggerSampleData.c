@@ -145,21 +145,20 @@ float get_analog_sample(int channelId){
 float get_timer_sample(int channelId){
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 	TimerConfig *c = &(loggerConfig->TimerConfigs[channelId]);
-	unsigned int value = timer_get_period(channelId);
 	float timerValue = 0;
-	unsigned int scaling = c->calculatedScaling;
+	uint8_t pulsePerRevolution = c->pulsePerRevolution;
 	switch (c->mode){
 		case MODE_LOGGING_TIMER_RPM:
-			timerValue = TIMER_PERIOD_TO_RPM(value, scaling);
+			timerValue = timer_get_rpm(channelId) / pulsePerRevolution;
 			break;
 		case MODE_LOGGING_TIMER_FREQUENCY:
-			timerValue = TIMER_PERIOD_TO_HZ(value, scaling);
+			timerValue = timer_get_hz(channelId) / pulsePerRevolution;
 			break;
 		case MODE_LOGGING_TIMER_PERIOD_MS:
-			timerValue = TIMER_PERIOD_TO_MS(value, scaling);
+			timerValue = timer_get_ms(channelId) * pulsePerRevolution;
 			break;
 		case MODE_LOGGING_TIMER_PERIOD_USEC:
-			timerValue = TIMER_PERIOD_TO_USEC(value, scaling);
+			timerValue = timer_get_usec(channelId) * pulsePerRevolution;
 			break;
 		default:
 			timerValue = -1;

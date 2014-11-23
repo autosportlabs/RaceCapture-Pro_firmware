@@ -1,5 +1,18 @@
 #include "timer_device.h"
 #include "board.h"
+#include "loggerConfig.h"
+
+// MCK: 48054840 Hz
+// /2 = 24027420
+// /8 = 6006855
+// /32 = 1501713.75
+// /128 = 375428.4375
+// /1024 = 46928.5546875
+#define TIMER_MCK_2 		2
+#define TIMER_MCK_8 		8
+#define TIMER_MCK_32 		32
+#define TIMER_MCK_128 		128
+#define TIMER_MCK_1024 		1024
 
 //Timer/Counter declarations
 #define TIMER0_INTERRUPT_LEVEL 	5
@@ -164,7 +177,20 @@ static unsigned int getTimer2Period(){
 	return g_timer2_overflow ? 0 : AT91C_BASE_TC2->TC_RB;
 }
 
-int timer_device_init(size_t channel, unsigned int divider, unsigned int slowTimerMode){
+static int timer_speed_to_divider(int speed){
+	switch(speed){
+	case TIMER_FAST:
+		return TIMER_MCK_32;
+	case TIMER_SLOW:
+		return TIMER_MCK_1024;
+	default:
+	case TIMER_MEDIUM:
+		return TIMER_MCK_128;
+	}
+}
+
+int32_t timer_device_init(size_t channel, uint32_t speed, uint32_t slowTimerMode){
+	int divider = timer_speed_to_divider(speed);
 	switch(channel){
 		case 0:
 			init_timer_0(divider, slowTimerMode);
@@ -180,19 +206,13 @@ int timer_device_init(size_t channel, unsigned int divider, unsigned int slowTim
 	}
 }
 
-void timer_device_get_all_periods(unsigned int *t0, unsigned int *t1, unsigned int *t2){
-	*t0 = getTimer0Period();
-	*t1 = getTimer1Period();
-	*t2 = getTimer2Period();
-}
-
-void timer_device_reset_count(unsigned int channel){
+void timer_device_reset_count(size_t channel){
 	if (channel >= 0 && channel < TIMER_CHANNELS){
 		g_timer_counts[channel] = 0;
 	}
 }
 
-unsigned int timer_device_get_count(unsigned int channel){
+uint32_t timer_device_get_count(size_t channel){
 	if (channel >= 0 && channel < TIMER_CHANNELS){
 		return g_timer_counts[channel];
 	}
@@ -201,7 +221,7 @@ unsigned int timer_device_get_count(unsigned int channel){
 	}
 }
 
-unsigned int timer_device_get_period(unsigned int channel){
+uint32_t timer_device_get_period(size_t channel){
 	switch (channel){
 		case 0:
 			return getTimer0Period();
@@ -212,5 +232,12 @@ unsigned int timer_device_get_period(unsigned int channel){
 	}
 	return 0;
 }
+
+uint32_t timer_device_get_usec(size_t channel){
+	return timer_device_get_period(channel);
+
+}
+
+
 
 

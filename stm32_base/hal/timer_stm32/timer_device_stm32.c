@@ -1,9 +1,10 @@
+#include "loggerConfig.h"
 #include "timer_device.h"
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_gpio.h"
 #include "stm32f4xx_tim.h"
 #include "stm32f4xx_misc.h"
-
+#include "printk.h"
 #define TIMER_CHANNELS 3
 
 unsigned int g_timer0_overflow;
@@ -14,20 +15,25 @@ unsigned int g_timer_counts[TIMER_CHANNELS];
 #define TIMER_IRQ_PRIORITY 		4
 #define TIMER_IRQ_SUB_PRIORITY 	0
 
+#define PRESCALER_SLOW 1680
+#define PRESCALER_MEDIUM 168
+#define PRESCALER_FAST 84
+
 #define INPUT_CAPTURE_FILTER 	0X0
 
 static uint16_t timer0_cc2 = 0;
 static uint16_t timer0_duty_cycle = 0;
-static uint32_t timer0_frequency = 0;
+static uint32_t timer0_period = 0;
 
 static uint16_t timer1_cc2 = 0;
 static uint16_t timer1_duty_cycle = 0;
-static uint32_t timer1_frequency = 0;
+static uint32_t timer1_period = 0;
+
 
 //BAP TODO re-enable when TIMER2 works correctly
 //static uint16_t timer2_cc2 = 0;
 //static uint16_t timer2_duty_cycle = 0;
-static uint32_t timer2_frequency = 0;
+static uint32_t timer2_period = 0;
 
 //////////////////////////////////////////////////////////////////////
 //logical to hardware mappings for RCP MK2
@@ -37,7 +43,7 @@ static uint32_t timer2_frequency = 0;
 //TIMER 3 = PA7 / TIM8_CH1N / **TIM14_CH1** / TIM3_CH2 / TIM1_CH1N
 //////////////////////////////////////////////////////////////////////
 
-static void init_timer_0(size_t divider, unsigned int slowTimerMode){
+static void init_timer_0(size_t prescaler, unsigned int slowTimerMode){
 	//enable and configure GPIO for alternate function
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -56,8 +62,7 @@ static void init_timer_0(size_t divider, unsigned int slowTimerMode){
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
 
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
-	uint16_t prescaler = 8400 - 1;
-	TIM_TimeBaseInitStructure.TIM_Prescaler = prescaler;
+	TIM_TimeBaseInitStructure.TIM_Prescaler = prescaler - 1;
 	TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
 	TIM_TimeBaseInitStructure.TIM_Period = 0xFFFF;
 	TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
@@ -90,9 +95,10 @@ static void init_timer_0(size_t divider, unsigned int slowTimerMode){
 
 	// Enable the CC2 Interrupt Request
 	TIM_ITConfig(TIM3, TIM_IT_CC2, ENABLE);
+	TIM_ITConfig(TIM3, TIM_IT_Update , ENABLE);
 }
 
-static void init_timer_1(size_t divider, unsigned int slowTimerMode){
+static void init_timer_1(size_t prescaler, unsigned int slowTimerMode){
 	//enable and configure GPIO for alternate function
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -111,13 +117,11 @@ static void init_timer_1(size_t divider, unsigned int slowTimerMode){
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM9, ENABLE);
 
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
-	uint16_t prescaler = 16800 - 1;
-	TIM_TimeBaseInitStructure.TIM_Prescaler = prescaler;
+	TIM_TimeBaseInitStructure.TIM_Prescaler = prescaler - 1;
 	TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
 	TIM_TimeBaseInitStructure.TIM_Period = 0xFFFF;
 	TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIM_TimeBaseInit(TIM9, &TIM_TimeBaseInitStructure);
-
 
 	TIM_ICInitTypeDef  TIM_ICInitStructure;
 	TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
@@ -144,10 +148,10 @@ static void init_timer_1(size_t divider, unsigned int slowTimerMode){
 
 	// Enable the CC2 Interrupt Request
 	TIM_ITConfig(TIM9, TIM_IT_CC2, ENABLE);
-
+	TIM_ITConfig(TIM9, TIM_IT_Update , ENABLE);
 }
 
-static void init_timer_2(size_t divider, unsigned int slowTimerMode){
+static void init_timer_2(size_t prescaler, unsigned int slowTimerMode){
 	//enable and configure GPIO for alternate function
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -167,8 +171,7 @@ static void init_timer_2(size_t divider, unsigned int slowTimerMode){
 
 	TIM_DeInit(TIM2);
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
-	uint16_t prescaler = 16800 - 1;
-	TIM_TimeBaseInitStructure.TIM_Prescaler = prescaler;
+	TIM_TimeBaseInitStructure.TIM_Prescaler = prescaler - 1;
 	TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
 	TIM_TimeBaseInitStructure.TIM_Period = 0xFFFFFFFF;
 	TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
@@ -193,49 +196,46 @@ static void init_timer_2(size_t divider, unsigned int slowTimerMode){
 
 	// Enable the CC2 Interrupt Request
 	TIM_ITConfig(TIM2, TIM_IT_CC4 , ENABLE);
+	//TIM_ITConfig(TIM2, TIM_IT_Update , ENABLE);  //TODO add this later
 }
 
-static unsigned int getTimer0Period(){
-	return timer0_frequency;
+static size_t speed_to_prescaler(size_t speed){
+	switch(speed){
+		case TIMER_SLOW:
+			return PRESCALER_SLOW;
+		case TIMER_FAST:
+			return PRESCALER_FAST;
+		case TIMER_MEDIUM:
+		default:
+			return PRESCALER_MEDIUM;
+	}
 }
 
-static unsigned int getTimer1Period(){
-	return timer1_frequency;
-}
+int32_t timer_device_init(size_t channel, uint32_t speed, uint32_t slowTimerMode){
 
-static unsigned int getTimer2Period(){
-	return timer2_frequency;
-}
-
-int timer_device_init(size_t channel, unsigned int divider, unsigned int slowTimerMode){
+	size_t prescaler = speed_to_prescaler(speed);
 	switch(channel){
 		case 0:
-			init_timer_0(divider, slowTimerMode);
+			init_timer_0(prescaler, slowTimerMode);
 			return 1;
 		case 1:
-			init_timer_1(divider, slowTimerMode);
+			init_timer_1(prescaler, slowTimerMode);
 			return 1;
 		case 2:
-			init_timer_2(divider, slowTimerMode);
+			init_timer_2(prescaler, slowTimerMode);
 			return 1;
 		default:
 			return 0;
 	}
 }
 
-void timer_device_get_all_periods(unsigned int *t0, unsigned int *t1, unsigned int *t2){
-	*t0 = getTimer0Period();
-	*t1 = getTimer1Period();
-	*t2 = getTimer2Period();
-}
-
-void timer_device_reset_count(unsigned int channel){
+void timer_device_reset_count(size_t channel){
 	if (channel >= 0 && channel < TIMER_CHANNELS){
 		g_timer_counts[channel] = 0;
 	}
 }
 
-unsigned int timer_device_get_count(unsigned int channel){
+uint32_t timer_device_get_count(size_t channel){
 	if (channel >= 0 && channel < TIMER_CHANNELS){
 		return g_timer_counts[channel];
 	}
@@ -244,67 +244,85 @@ unsigned int timer_device_get_count(unsigned int channel){
 	}
 }
 
-unsigned int timer_device_get_period(unsigned int channel){
+uint32_t timer_device_get_usec(size_t channel){
+	return timer_device_get_period(channel) * 10000 / 5000;
+}
+
+uint32_t timer_device_get_period(size_t channel){
+	size_t period = 0;
 	switch (channel){
 		case 0:
-			return getTimer0Period();
+			period = timer0_period;
+			break;
 		case 1:
-			return getTimer1Period();
+			period = timer1_period;
+			break;
 		case 2:
-			return getTimer2Period();
+			period = timer2_period;
+			break;
+		default:
+			break;
 	}
-	return 0;
+	return period;
 }
 
 //logical timer 0
 void TIM3_IRQHandler(void)
 {
-	RCC_ClocksTypeDef RCC_Clocks;
-	RCC_GetClocksFreq(&RCC_Clocks);
 
-	/* Clear Capture compare interrupt pending bit */
-	TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
-
-	/* Get the Input Capture value */
-	timer0_cc2 = TIM_GetCapture2(TIM3);
-
-	if (timer0_cc2 != 0)
-	{
-		/* Duty cycle computation */
-		uint16_t IC1Value = TIM_GetCapture1(TIM3);
-		timer0_duty_cycle = (IC1Value * 100) / timer0_cc2;
-		timer0_frequency = (RCC_Clocks.HCLK_Frequency) / 16800  / IC1Value;
+	if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) {           // Overflow interrupt
+		TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
+		timer0_period = 0;
 	}
-	else
-	{
-		timer0_duty_cycle = 0;
-		timer0_frequency = 0;
+
+	if (TIM_GetITStatus(TIM3, TIM_IT_CC2) != RESET) {
+		/* Clear Capture compare interrupt pending bit */
+		TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
+
+		/* Get the Input Capture value */
+		timer0_cc2 = TIM_GetCapture2(TIM3);
+
+		if (timer0_cc2 != 0)
+		{
+			/* Duty cycle computation */
+			uint16_t IC1Value = TIM_GetCapture1(TIM3);
+			timer0_duty_cycle = (IC1Value * 100) / timer0_cc2;
+			timer0_period = IC1Value;
+		}
+		else
+		{
+			timer0_duty_cycle = 0;
+			timer0_period = 0;
+		}
 	}
 }
 
 //logical timer 1
 void TIM1_BRK_TIM9_IRQHandler(void)
 {
-	RCC_ClocksTypeDef RCC_Clocks;
-	RCC_GetClocksFreq(&RCC_Clocks);
-
-	/* Clear Capture compare interrupt pending bit */
-	TIM_ClearITPendingBit(TIM9, TIM_IT_CC2);
-
-	/* Get the Input Capture value */
-	timer1_cc2 = TIM_GetCapture2(TIM9);
-
-	if (timer1_cc2 != 0)
-	{
-		/* Duty cycle computation */
-		uint16_t IC1Value = TIM_GetCapture1(TIM9);
-		timer1_duty_cycle = (IC1Value * 100) / timer1_cc2;
-		timer1_frequency = (RCC_Clocks.HCLK_Frequency) / 16800  / IC1Value;
+	if (TIM_GetITStatus(TIM9, TIM_IT_Update) != RESET) {           // Overflow interrupt
+		TIM_ClearITPendingBit(TIM9, TIM_IT_Update);
+		timer1_period = 0;
 	}
-	else
-	{
-		timer1_duty_cycle = 0;
-		timer1_frequency = 0;
+	if (TIM_GetITStatus(TIM9, TIM_IT_CC2) != RESET) {
+		/* Clear Capture compare interrupt pending bit */
+		TIM_ClearITPendingBit(TIM9, TIM_IT_CC2);
+
+		/* Get the Input Capture value */
+		timer1_cc2 = TIM_GetCapture2(TIM9);
+
+		if (timer1_cc2 != 0)
+		{
+			/* Duty cycle computation */
+			uint16_t IC1Value = TIM_GetCapture1(TIM9);
+			timer1_duty_cycle = (IC1Value * 100) / timer1_cc2;
+			timer1_period = IC1Value / 2; //is this on a different
+		}
+		else
+		{
+			timer1_duty_cycle = 0;
+			timer1_period = 0;
+		}
 	}
 }
 
@@ -313,15 +331,24 @@ void TIM1_BRK_TIM9_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {
 	static uint32_t last = 0;
-	//THIS IS A HORRIBLE HACK.
-	//TIM2 CH4 does not seem to reset the counter upon input capture. this is doing it manually.
-	//need to fix the configuration of this timer, if possible.
-	uint32_t current = TIM_GetCapture4(TIM2);
-	if (last < current){
-		uint32_t delta = current - last;
-		timer2_frequency = 10000  / delta;
+
+//TODO add later when this can work
+//	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {           // Overflow interrupt
+//		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+//		timer2_period = 0;
+//	}
+
+	if (TIM_GetITStatus(TIM2, TIM_IT_CC4) != RESET) {
+		//THIS IS A HORRIBLE HACK.
+		//TIM2 CH4 does not seem to reset the counter upon input capture. this is doing it manually.
+		//need to fix the configuration of this timer, if possible.
+		uint32_t current = TIM_GetCapture4(TIM2);
+		if (last < current){
+			uint32_t delta = current - last;
+			timer2_period = delta;
+		}
+		last = current;
+		TIM_ClearITPendingBit(TIM2, TIM_IT_CC4);
 	}
-	last = current;
-	TIM_ClearITPendingBit(TIM2, TIM_IT_CC4);
 }
 

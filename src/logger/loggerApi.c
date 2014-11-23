@@ -874,10 +874,7 @@ static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok, const 
 	if (NAME_EQU("st", name)) timerCfg->slowTimerEnabled = (iValue != 0);
 	if (NAME_EQU("mode", name)) timerCfg->mode = filterTimerMode(iValue);
 	if (NAME_EQU("alpha", name)) timerCfg->filterAlpha = modp_atof(value);
-	if (NAME_EQU("ppr", name)) {
-		timerCfg->pulsePerRevolution = filterPulsePerRevolution(iValue);
-		calculateTimerScaling(BOARD_MCK, timerCfg);
-	}
+	if (NAME_EQU("ppr", name)) timerCfg->pulsePerRevolution = filterPulsePerRevolution(iValue);
 	if (NAME_EQU("div", name)) timerCfg->timerDivider = filterTimerDivider(iValue);
 
 	return valueTok + 1;

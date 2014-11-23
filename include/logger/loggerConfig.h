@@ -153,7 +153,6 @@ typedef struct _TimerConfig{
 	float filterAlpha;
 	unsigned char pulsePerRevolution;
 	unsigned short timerDivider;
-	unsigned int calculatedScaling;
 } TimerConfig;
 
 
@@ -162,21 +161,14 @@ typedef struct _TimerConfig{
 #define MODE_LOGGING_TIMER_PERIOD_MS		2
 #define MODE_LOGGING_TIMER_PERIOD_USEC		3
 
-// MCK: 48054840 Hz
-// /2 = 24027420
-// /8 = 6006855
-// /32 = 1501713.75
-// /128 = 375428.4375
-// /1024 = 46928.5546875
-#define TIMER_MCK_2 		2
-#define TIMER_MCK_8 		8
-#define TIMER_MCK_32 		32
-#define TIMER_MCK_128 		128
-#define TIMER_MCK_1024 		1024
+
+#define TIMER_SLOW			0
+#define TIMER_MEDIUM		1
+#define TIMER_FAST			2
 
 #define DEFAULT_TIMER_FILTER_ALPHA (1.0f)
 #define DEFAULT_TIMER_PPR 1
-#define DEFAULT_TIMER_DIVIDER TIMER_MCK_128
+#define DEFAULT_TIMER_DIVIDER TIMER_MEDIUM
 #define DEFAULT_TIMER_SCALING 375428
 
 #define DEFAULT_RPM_CHANNEL_CONFIG {"RPM", "", 0, 10000, SAMPLE_DISABLED, 0}
@@ -188,8 +180,7 @@ typedef struct _TimerConfig{
          MODE_LOGGING_TIMER_RPM,                \
          1.0F,                                  \
          1,                                     \
-         TIMER_MCK_128,                         \
-         375428                                 \
+         TIMER_MEDIUM                           \
          }
 
 typedef struct _GPIOConfig{
@@ -525,8 +516,6 @@ void initialize_logger_config();
 
 const LoggerConfig * getSavedLoggerConfig();
 LoggerConfig * getWorkingLoggerConfig();
-
-void calculateTimerScaling(unsigned int clockHz, TimerConfig *timerConfig);
 
 int getConnectivitySampleRateLimit();
 int encodeSampleRate(int sampleRate);
