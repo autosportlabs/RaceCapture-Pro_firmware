@@ -272,7 +272,7 @@ void TIM3_IRQHandler(void)
 
 	if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) {           // Overflow interrupt
 		TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
-		timer0_period = 0;
+		//timer0_period = 0; //TODO this interrupt is getting triggered when it's not overflowing. need to research and fix
 	}
 
 	if (TIM_GetITStatus(TIM3, TIM_IT_CC2) != RESET) {
@@ -302,7 +302,7 @@ void TIM1_BRK_TIM9_IRQHandler(void)
 {
 	if (TIM_GetITStatus(TIM9, TIM_IT_Update) != RESET) {           // Overflow interrupt
 		TIM_ClearITPendingBit(TIM9, TIM_IT_Update);
-		timer1_period = 0;
+		//timer1_period = 0; //TODO this interrupt is getting triggered when it's not overflowing. need to research and fix
 	}
 	if (TIM_GetITStatus(TIM9, TIM_IT_CC2) != RESET) {
 		/* Clear Capture compare interrupt pending bit */

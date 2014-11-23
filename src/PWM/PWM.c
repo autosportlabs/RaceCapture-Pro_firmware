@@ -10,9 +10,16 @@ int PWM_init(LoggerConfig *loggerConfig){
 	PWM_device_configure_clock(loggerConfig->PWMClockFrequency);
 	for (size_t i = 0; i < CONFIG_PWM_CHANNELS; i++)
 	{
-		init_pwm_channel(i,&(loggerConfig->PWMConfigs[i]));
+		PWMConfig *pwmConfig = &(loggerConfig->PWMConfigs[i]);
+		init_pwm_channel(i,pwmConfig);
+		PWM_channel_enable_analog(i, pwmConfig->outputMode == MODE_PWM_ANALOG);
 	}
 	PWM_device_channel_start_all();
+
+	for (size_t i = 0; i < CONFIG_PWM_CHANNELS; i++){
+		PWMConfig *pwmConfig = &(loggerConfig->PWMConfigs[i]);
+		PWM_device_set_duty_cycle(i, pwmConfig->startupDutyCycle);
+	}
 	return 1;
 }
 
