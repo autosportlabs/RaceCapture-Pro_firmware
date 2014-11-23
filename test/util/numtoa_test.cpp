@@ -59,6 +59,12 @@ void NumtoaTest::testDoubleConversion() {
   strcpy(expStr, "5.0");
   modp_dtoa(num, str, 5);
   CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
+
+  num = 3000;
+  strcpy(expStr, "3000");
+  modp_dtoa(num, str, 0);
+  CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
+
 }
 
 void NumtoaTest::testModpFToA() {
@@ -86,4 +92,10 @@ void NumtoaTest::testModpFToA() {
   strcpy(expStr, "5.0");
   modp_ftoa(num, str, 5);
   CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
+
+  num = 3000;
+  strcpy(expStr, "3000");
+  modp_ftoa(num, str, 0);
+  CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
+
 }
