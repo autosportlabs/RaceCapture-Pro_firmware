@@ -21,6 +21,7 @@
 
 #define MAX_TIMER_VALUE			0xFFFF
 #define TIMER_CHANNELS			3
+#define DEFAULT_CLOCK_DIVIDERS  {0,0,0}
 
 extern void ( timer0_irq_handler )( void );
 extern void ( timer1_irq_handler )( void );
@@ -33,6 +34,8 @@ unsigned int g_timer0_overflow;
 unsigned int g_timer1_overflow;
 unsigned int g_timer2_overflow;
 unsigned int g_timer_counts[TIMER_CHANNELS];
+
+static uint32_t g_clock_dividers[TIMER_CHANNELS] = DEFAULT_CLOCK_DIVIDERS;
 
 static unsigned int timer_clock_from_divider(unsigned short divider){
 	switch (divider){
@@ -177,7 +180,7 @@ static unsigned int getTimer2Period(){
 	return g_timer2_overflow ? 0 : AT91C_BASE_TC2->TC_RB;
 }
 
-static int timer_speed_to_divider(int speed){
+static uint32_t timer_speed_to_divider(int speed){
 	switch(speed){
 	case TIMER_FAST:
 		return TIMER_MCK_32;
@@ -190,7 +193,8 @@ static int timer_speed_to_divider(int speed){
 }
 
 int32_t timer_device_init(size_t channel, uint32_t speed, uint32_t slowTimerMode){
-	int divider = timer_speed_to_divider(speed);
+	uint32_t divider = timer_speed_to_divider(speed);
+	g_clock_dividers[channel] = divider;
 	switch(channel){
 		case 0:
 			init_timer_0(divider, slowTimerMode);
@@ -233,9 +237,15 @@ uint32_t timer_device_get_period(size_t channel){
 	return 0;
 }
 
-uint32_t timer_device_get_usec(size_t channel){
-	return timer_device_get_period(channel);
+#ifndef BOARD_MCK
+#define BOARD_MCK 48054840
+#endif
 
+
+uint32_t timer_device_get_usec(size_t channel){
+	unsigned int scaling = BOARD_MCK / g_clock_dividers[channel];
+	uint32_t period = timer_device_get_period(channel);
+	return (unsigned int)((period * 100000) / (scaling / 10));
 }
 
 
