@@ -10,6 +10,8 @@
 #define MAX_DUTY_CYCLE 100
 #define PWM_CHANNEL_COUNT 4
 
+#define DEFAULT_PERIOD 1000
+
 typedef struct _pwm {
 	uint32_t pin;
 	uint16_t pinSource;
@@ -68,13 +70,13 @@ int PWM_device_init(){
 
 	initAnalogControlGpios();
 
-	uint32_t period = 500;
+	uint32_t period = DEFAULT_PERIOD;
 
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 
 	uint16_t prescaler = (uint16_t) ((SystemCoreClock) / 210000) - 1;
-	prescaler = 8400 - 1;
+	prescaler = 4 - 1;
 
 	TIM_TimeBaseInitTypeDef timerInitStructure;
 	timerInitStructure.TIM_Prescaler = prescaler;
@@ -106,9 +108,10 @@ void PWM_device_channel_init(unsigned int channel, unsigned short period, unsign
 	TIM_OCInitTypeDef outputChannelInit;
 	TIM_OCStructInit(&outputChannelInit);
 	outputChannelInit.TIM_OCMode = TIM_OCMode_PWM1;
-	outputChannelInit.TIM_Pulse = 400;
+	outputChannelInit.TIM_Pulse = 0;
 	outputChannelInit.TIM_OutputState = TIM_OutputState_Enable;
 	outputChannelInit.TIM_OCPolarity = TIM_OCPolarity_High;
+
 	switch(channel){
 		case 0:
 			TIM_OC1Init(TIM4, &outputChannelInit);
@@ -153,6 +156,23 @@ unsigned short PWM_device_channel_get_period(unsigned int channel){
 }
 
 void PWM_device_set_duty_cycle(unsigned int channel, unsigned short duty){
+	uint32_t CCR_period = (duty * (DEFAULT_PERIOD * 10)) / DEFAULT_PERIOD;
+	switch(channel){
+		case 0:
+			TIM4->CCR4 = CCR_period;
+			break;
+		case 1:
+			TIM4->CCR3 = CCR_period;
+			break;
+		case 2:
+			TIM4->CCR2 = CCR_period;
+			break;
+		case 3:
+			TIM4->CCR1 = CCR_period;
+			break;
+		default:
+			break;
+	}
 }
 
 unsigned short PWM_device_get_duty_cycle(unsigned int channel){

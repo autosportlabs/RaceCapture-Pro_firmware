@@ -18,6 +18,7 @@
 #include "timer.h"
 #include "ADC.h"
 #include "imu.h"
+#include "PWM.h"
 #include "cpu.h"
 #include "luaScript.h"
 #include "luaTask.h"
@@ -802,6 +803,7 @@ static const jsmntok_t * setPwmExtendedField(const jsmntok_t *valueTok, const ch
 int api_setPwmConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getPwmConfigs, setPwmExtendedField);
 	configChanged();
+	PWM_init(getWorkingLoggerConfig());
 	return API_SUCCESS;
 }
 
