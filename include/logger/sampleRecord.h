@@ -11,9 +11,11 @@
 #include <limits.h>
 #include "loggerConfig.h"
 
-#define LOGGER_MSG_SAMPLE    0
-#define LOGGER_MSG_START_LOG 1
-#define LOGGER_MSG_END_LOG   2
+enum LoggerMessageType {
+   LoggerMessageType_Sample,
+   LoggerMessageType_Start,
+   LoggerMessageType_Stop,
+};
 
 /*
  * Important note here.  Use of Int and LongLong work on 32 bit ARM
@@ -59,7 +61,7 @@ typedef struct _ChannelSample {
 
 typedef struct _LoggerMessage
 {
-	int messageType;
+	enum LoggerMessageType type;
 	size_t sampleCount;
 	ChannelSample *channelSamples;
 } LoggerMessage;

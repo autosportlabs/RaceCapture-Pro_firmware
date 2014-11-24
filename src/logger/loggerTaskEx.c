@@ -33,12 +33,24 @@ int g_isLogging;
 int g_configChanged;
 int g_telemetryBackgroundStreaming;
 
+xSemaphoreHandle onTick;
+
 #define LOGGER_MESSAGE_BUFFER_SIZE 10
 static LoggerMessage g_sampleRecordMsgBuffer[LOGGER_MESSAGE_BUFFER_SIZE];
-static LoggerMessage g_startLogMessage;
-static LoggerMessage g_endLogMessage;
 
-xSemaphoreHandle onTick;
+static LoggerMessage getEmptyLoggerMessage(const enum LoggerMessageType t) {
+   LoggerMessage msg;
+   msg.type = t;
+   return msg;
+}
+
+static LoggerMessage getLogStartMessage() {
+   return getEmptyLoggerMessage(LoggerMessageType_Start);
+}
+
+static LoggerMessage getLogStopMessage() {
+   return getEmptyLoggerMessage(LoggerMessageType_Stop);
+}
 
 void configChanged(){
 	g_configChanged = 1;
@@ -65,7 +77,7 @@ static size_t initSampleRecords(LoggerConfig *loggerConfig){
 
 	for (size_t i=0; i < LOGGER_MESSAGE_BUFFER_SIZE; i++){
 		LoggerMessage *msg = (g_sampleRecordMsgBuffer + i);
-		msg->messageType = LOGGER_MSG_SAMPLE;
+		msg->type = LoggerMessageType_Sample;
 		if (msg->channelSamples != NULL){
 			vPortFree(msg->channelSamples);
 		}
@@ -100,15 +112,14 @@ size_t updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate,
 }
 
 void loggerTaskEx(void *params){
+   LoggerMessage logStartMsg = getLogStartMessage();
+   LoggerMessage logStopMsg = getLogStopMessage();
 
 	g_loggingShouldRun = 0;
 	memset(&g_sampleRecordMsgBuffer, 0, sizeof(g_sampleRecordMsgBuffer));
 	vSemaphoreCreateBinary( onTick );
 
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
-
-	g_startLogMessage.messageType = LOGGER_MSG_START_LOG;
-	g_endLogMessage.messageType = LOGGER_MSG_END_LOG;
 
 	g_loggingShouldRun = 0;
 	g_isLogging = 0;
@@ -122,9 +133,9 @@ void loggerTaskEx(void *params){
 	int telemetrySampleRate = SAMPLE_DISABLED;
 
 	while(1){
-
 		xSemaphoreTake(onTick, portMAX_DELAY);
 		watchdog_reset();
+
 		currentTicks++;
 		if (currentTicks % BACKGROUND_SAMPLE_RATE == 0){
 			doBackgroundSampling();
@@ -139,18 +150,20 @@ void loggerTaskEx(void *params){
 		}
 
 
-		if (g_loggingShouldRun && ! g_isLogging){
-			pr_info("start logging\r\n");
+		if (g_loggingShouldRun && !g_isLogging){
+			pr_info("Logging started\r\n");
 			g_isLogging = 1;
-			queue_logfile_record(&g_startLogMessage);
-			queueTelemetryRecord(&g_startLogMessage);
 			LED_disable(3);
-		}
-		else if (! g_loggingShouldRun && g_isLogging){
+
+			queue_logfile_record(&logStartMsg);
+			queueTelemetryRecord(&logStartMsg);
+		} else if (!g_loggingShouldRun && g_isLogging){
+			pr_info("Logging stopped\r\n");
 			g_isLogging = 0;
-			queue_logfile_record(&g_endLogMessage);
-			queueTelemetryRecord(&g_endLogMessage);
 			LED_disable(2);
+
+			queue_logfile_record(&logStopMsg);
+			queueTelemetryRecord(&logStopMsg);
 		}
 
 		LoggerMessage *msg = &g_sampleRecordMsgBuffer[bufferIndex];
