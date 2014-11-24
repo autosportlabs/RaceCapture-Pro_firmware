@@ -18,6 +18,7 @@
 #define CONFIG_GPIO_CHANNELS				GPIO_CHANNELS
 #define CONFIG_PWM_CHANNELS					PWM_CHANNELS
 #define CONFIG_TIMER_CHANNELS				TIMER_CHANNELS
+#define CONFIG_CAN_CHANNELS                 CAN_CHANNELS
 
 #define SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_10Hz
 #define FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_10Hz
@@ -334,16 +335,10 @@ typedef struct _OBD2Config{
 
 typedef struct _CANConfig{
 	unsigned char enabled;
-	int baudRate;
+	int baud[CONFIG_CAN_CHANNELS];
 } CANConfig;
 
 #define DEFAULT_CAN_BAUD_RATE 500000
-
-#define DEFAULT_CAN_CONFIG \
-{ \
-	CONFIG_FEATURE_INSTALLED, \
-	DEFAULT_CAN_BAUD_RATE \
-}
 
 typedef struct _GPSConfig{
    ChannelConfig latitude;

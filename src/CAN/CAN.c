@@ -7,7 +7,7 @@ int CAN_init(LoggerConfig *loggerConfig){
 	CANConfig *canConfig = &loggerConfig->CanConfig;
 	int success = 1;
 	for (size_t i = 0; i < CAN_CHANNELS; i++){
-		if (!CAN_init_port(i, canConfig->baudRate)) success = 0;
+		if (!CAN_init_port(i, canConfig->baud[i])) success = 0;
 	}
 	return success;
 }

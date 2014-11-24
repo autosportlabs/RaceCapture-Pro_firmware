@@ -102,7 +102,10 @@ static void resetImuConfig(ImuConfig cfg[]) {
 }
 
 static void resetCanConfig(CANConfig *cfg) {
-   *cfg = (CANConfig) DEFAULT_CAN_CONFIG;
+   cfg->enabled = CONFIG_FEATURE_INSTALLED;
+   for (size_t i = 0; i < CONFIG_CAN_CHANNELS; i++){
+	   cfg->baud[i] = DEFAULT_CAN_BAUD_RATE;
+   }
 }
 
 static void resetOBD2Config(OBD2Config *cfg) {

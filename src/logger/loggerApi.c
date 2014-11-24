@@ -996,7 +996,11 @@ int api_getCanConfig(Serial *serial, const jsmntok_t *json){
 	json_objStart(serial);
 	json_objStartString(serial, "canCfg");
 	json_int(serial, "en", canCfg->enabled, 1);
-	json_int(serial, "baud", canCfg->baudRate, 0);
+	json_arrayStart(serial, "baud");
+	for (size_t i = 0; i < CONFIG_CAN_CHANNELS; i++){
+		json_int(serial, "baud", canCfg->baud[i], i < CONFIG_CAN_CHANNELS - 1);
+	}
+	json_arrayEnd(serial, 0);
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
 
@@ -1007,7 +1011,16 @@ int api_setCanConfig(Serial *serial, const jsmntok_t *json){
 
 	CANConfig *canCfg = &getWorkingLoggerConfig()->CanConfig;
 	setUnsignedCharValueIfExists( json, "en", &canCfg->enabled, NULL);
-	setIntValueIfExists( json, "baud", &canCfg->baudRate);
+
+	const jsmntok_t *baudTok = findNode(json, "baud");
+	if (baudTok != NULL && (++baudTok)->type == JSMN_ARRAY){
+		size_t arrSize = json->size;
+		if (arrSize > CONFIG_CAN_CHANNELS) arrSize = CONFIG_CAN_CHANNELS;
+		size_t can_index = 0;
+		for (baudTok++; can_index < arrSize; can_index++) {
+			canCfg->baud[can_index] = modp_atoi(baudTok->data);
+		}
+	}
 	return API_SUCCESS;
 }
 
