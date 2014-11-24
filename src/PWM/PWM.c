@@ -12,7 +12,6 @@ int PWM_init(LoggerConfig *loggerConfig){
 	{
 		PWMConfig *pwmConfig = &(loggerConfig->PWMConfigs[i]);
 		init_pwm_channel(i,pwmConfig);
-		PWM_channel_enable_analog(i, pwmConfig->outputMode == MODE_PWM_ANALOG);
 	}
 	PWM_device_channel_start_all();
 
@@ -20,7 +19,15 @@ int PWM_init(LoggerConfig *loggerConfig){
 		PWMConfig *pwmConfig = &(loggerConfig->PWMConfigs[i]);
 		PWM_device_set_duty_cycle(i, pwmConfig->startupDutyCycle);
 	}
+	PWM_update_config(loggerConfig);
 	return 1;
+}
+
+void PWM_update_config(LoggerConfig *loggerConfig){
+	for (size_t i = 0; i < CONFIG_PWM_CHANNELS; i++){
+		PWMConfig *pwmConfig = &(loggerConfig->PWMConfigs[i]);
+		PWM_channel_enable_analog(i, pwmConfig->outputMode == MODE_PWM_ANALOG);
+	}
 }
 
 void PWM_set_duty_cycle(unsigned int channel, unsigned short duty){
@@ -58,3 +65,4 @@ void PWM_channel_stop_all(void){
 void PWM_channel_enable_analog(size_t channel, uint8_t enabled){
 	PWM_device_channel_enable_analog(channel, enabled);
 }
+

@@ -803,7 +803,7 @@ static const jsmntok_t * setPwmExtendedField(const jsmntok_t *valueTok, const ch
 int api_setPwmConfig(Serial *serial, const jsmntok_t *json){
 	setMultiChannelConfigGeneric(serial, json, getPwmConfigs, setPwmExtendedField);
 	configChanged();
-	PWM_init(getWorkingLoggerConfig());
+	PWM_update_config(getWorkingLoggerConfig());
 	return API_SUCCESS;
 }
 
