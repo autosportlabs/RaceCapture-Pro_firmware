@@ -23,7 +23,7 @@
 #define ADC_SYSTEM_VOLTAGE_RANGE	20.0f
 
 #define SCALING_5V 					0.00125691302f
-#define SCALING_BATTERYV			0.00394752983f
+#define SCALING_BATTERYV			0.00465f
 
 #define TOTAL_ADC_CHANNELS 9
 static uint16_t * ADCConvertedValues;
