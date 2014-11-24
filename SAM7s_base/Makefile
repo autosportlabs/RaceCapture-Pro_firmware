@@ -237,7 +237,7 @@ $(USB_AT91_DIR)/USBIsr.c \
 $(GPIO_AT91_DIR)/gpioIsr.c \
 $(USART_AT91_DIR)/serialIsr.c \
 $(TIMER_AT91_DIR)/timerIsr.c \
-$(LOGGER_SRC_DIR)/onTickHandler.c
+
 
 # List C++ source files here.
 # use file-extension cpp for C++-files (use extension .cpp)

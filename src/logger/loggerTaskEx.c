@@ -52,6 +52,13 @@ static LoggerMessage getLogStopMessage() {
    return getEmptyLoggerMessage(LoggerMessageType_Stop);
 }
 
+/**
+ * Called into by FreeRTOS during the ISR that handles the tick timer.
+ */
+void vApplicationTickHook(void){
+   xSemaphoreGiveFromISR(onTick, pdFALSE);
+}
+
 void configChanged(){
 	g_configChanged = 1;
 }
