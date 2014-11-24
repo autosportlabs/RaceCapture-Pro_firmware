@@ -85,6 +85,12 @@ int imu_device_read(unsigned int channel)
 	case IMU_CHANNEL_YAW:
 		ret = read_buf->gyro.gyro_z;
 		break;
+	case IMU_CHANNEL_PITCH:
+		ret = read_buf->gyro.gyro_x;
+		break;
+	case IMU_CHANNEL_ROLL:
+		ret = read_buf->gyro.gyro_y;
+		break;
 	default:
 		break;
 
@@ -98,6 +104,8 @@ float imu_device_counts_per_unit(unsigned int channel)
 	float ret;
 	switch(channel) {
 	case IMU_CHANNEL_YAW:
+	case IMU_CHANNEL_PITCH:
+	case IMU_CHANNEL_ROLL:
 		ret = IMU_DEVICE_COUNTS_PER_DEGREE_PER_SEC;
 		break;
 	case IMU_CHANNEL_X:
@@ -107,6 +115,7 @@ float imu_device_counts_per_unit(unsigned int channel)
 		break;
 	default:
 		ret = 0.0;
+		break;
 	}
 	return ret;
 }

@@ -12,12 +12,12 @@
 #define CONFIG_FEATURE_NOT_INSTALLED		0
 
 //Number of channels per feature
-#define CONFIG_TIME_CHANNELS 2
-#define CONFIG_ADC_CHANNELS					8
-#define CONFIG_IMU_CHANNELS					4
-#define CONFIG_GPIO_CHANNELS				3
-#define CONFIG_PWM_CHANNELS					4
-#define CONFIG_TIMER_CHANNELS				3
+#define CONFIG_TIME_CHANNELS                2
+#define CONFIG_ADC_CHANNELS					ANALOG_CHANNELS
+#define CONFIG_IMU_CHANNELS					IMU_CHANNELS
+#define CONFIG_GPIO_CHANNELS				GPIO_CHANNELS
+#define CONFIG_PWM_CHANNELS					PWM_CHANNELS
+#define CONFIG_TIMER_CHANNELS				TIMER_CHANNELS
 
 #define SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_10Hz
 #define FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_10Hz
@@ -215,16 +215,22 @@ typedef struct _ImuConfig{
 #define IMU_CHANNEL_Y						1
 #define IMU_CHANNEL_Z						2
 #define IMU_CHANNEL_YAW						3
+#define IMU_CHANNEL_PITCH					4
+#define IMU_CHANNEL_ROLL					5
 
 #define DEFAULT_ACCEL_ZERO					2048
 #define DEFAULT_GYRO_ZERO					1862 //LY330ALH zero state voltage output is 1.5v
 
-#define DEFAULT_ACCEL_X_CONFIG {"AccelX", "G", -3, 3, SAMPLE_25Hz, 2}
-#define DEFAULT_ACCEL_Y_CONFIG {"AccelY", "G", -3, 3, SAMPLE_25Hz, 2}
-#define DEFAULT_ACCEL_Z_CONFIG {"AccelZ", "G", -3, 3, SAMPLE_25Hz, 2}
-#define DEFAULT_YAW_CONFIG {"Yaw", "Deg/Sec", -300, 300, SAMPLE_25Hz, 1}
+#define DEFAULT_ACCEL_X_CONFIG    {"AccelX",   "G", -3, 3, SAMPLE_25Hz, 2}
+#define DEFAULT_ACCEL_Y_CONFIG    {"AccelY",   "G", -3, 3, SAMPLE_25Hz, 2}
+#define DEFAULT_ACCEL_Z_CONFIG    {"AccelZ",   "G", -3, 3, SAMPLE_25Hz, 2}
+#define DEFAULT_GYRO_YAW_CONFIG   {"Yaw",      "Deg/Sec", -300, 300, SAMPLE_25Hz, 1}
+#define DEFAULT_GYRO_PITCH_CONFIG {"Pitch",    "Deg/Sec", -300, 300, SAMPLE_25Hz, 1}
+#define DEFAULT_GYRO_ROLL_CONFIG  {"Roll",     "Deg/Sec", -300, 300, SAMPLE_25Hz, 1}
 
-#define DEFAULT_IMU_CHANNEL_CONFIG {"", "G", -3, 3, SAMPLE_25Hz, 2}
+#define DEFAULT_IMU_CHANNEL_CONFIG  {"", "G", -3, 3, SAMPLE_25Hz, 2}
+#define DEFAULT_GYRO_CHANNEL_CONFIG {"", "Deg/Sec", -300, 300, SAMPLE_25Hz, 1}
+
 #define DEFAULT_IMU_CONFIG                      \
    {                                            \
       DEFAULT_IMU_CHANNEL_CONFIG,               \
@@ -233,13 +239,14 @@ typedef struct _ImuConfig{
          DEFAULT_ACCEL_ZERO,                    \
          0.1F}
 
-#define DEFAULT_GYRO_YAW_AXIS_CONFIG {          \
-      DEFAULT_YAW_CONFIG,                       \
+#define DEFAULT_GYRO_CONFIG {                   \
+      DEFAULT_GYRO_CHANNEL_CONFIG,              \
          MODE_IMU_NORMAL,                       \
          IMU_CHANNEL_YAW,                       \
          DEFAULT_GYRO_ZERO,                     \
          0.1F                                   \
          }
+
 
 
 typedef struct _PWMConfig{
