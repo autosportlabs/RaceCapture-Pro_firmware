@@ -222,25 +222,30 @@ static void flushLogfile(FIL *file){
 }
 
 static int openNewLogfile(char *filename){
-	int status = WRITING_INACTIVE;
-	//start of a new logfile
-	int rc = InitFS();
-	if (0 != rc){
-		pr_error("FS init error\r\n");
-		LED_enable(3);
-	}
-	else{
-		//open next log file
-		rc = openNextLogfile(g_logfile, filename);
-		if (0 != rc){
-			pr_error("File open error\r\n");
-			LED_enable(3);
-		}
-		else{
-			status = WRITING_ACTIVE;
-		}
-	}
-	return status;
+   int rc;
+
+   rc = InitFS();
+   if (0 != rc){
+      pr_error("FS init error.  Code: ");
+      pr_error_int(rc);
+      pr_error("\r\n");
+
+      LED_enable(3);
+      return WRITING_INACTIVE;
+   }
+
+   //open next log file
+   rc = openNextLogfile(g_logfile, filename);
+   if (0 != rc){
+      pr_error("File open error.  Code: ");
+      pr_error_int(rc);
+      pr_error("\r\n");
+
+      LED_enable(3);
+      return WRITING_INACTIVE;
+   }
+
+   return WRITING_ACTIVE;
 }
 
 void fileWriterTask(void *params){
@@ -255,22 +260,22 @@ void fileWriterTask(void *params){
 		while(1){
 			//wait for the next sample record
 			xQueueReceive(g_sampleRecordQueue, &(msg), portMAX_DELAY);
-			if ((LOGGER_MSG_START_LOG == msg->messageType || LOGGER_MSG_SAMPLE == msg->messageType) && WRITING_INACTIVE == writingStatus){
+
+			if ((LOGGER_MSG_START_LOG == msg->messageType || LOGGER_MSG_SAMPLE == msg->messageType)
+                            && WRITING_INACTIVE == writingStatus){
 				pr_debug("start logging\r\n");
 				LED_disable(3);
 				flushTimeoutInterval = FLUSH_INTERVAL_MS;
 				flushTimeoutStart = xTaskGetTickCount();
 				tick = 0;
 				writingStatus = openNewLogfile(filename);
-			}
-
-			else if (LOGGER_MSG_END_LOG == msg->messageType){
+			} else if (LOGGER_MSG_END_LOG == msg->messageType){
 				pr_info_int(tick);
 				pr_info(" logfile lines written\r\n");
 				break;
 			}
 
-			else if (LOGGER_MSG_SAMPLE == msg->messageType && WRITING_ACTIVE == writingStatus){
+                        if (LOGGER_MSG_SAMPLE == msg->messageType && WRITING_ACTIVE == writingStatus){
 				if (0 == tick){
 					writeHeaders(msg->channelSamples, msg->sampleCount);
 				}
@@ -302,7 +307,10 @@ void fileWriterTask(void *params){
 				tick++;
 			}
 		}
-		endLogfile();
+
+                if (writingStatus != WRITING_INACTIVE)
+                   endLogfile();
+
 		writingStatus = WRITING_INACTIVE;
 		delayMs(ERROR_SLEEP_DELAY_MS);
 	}

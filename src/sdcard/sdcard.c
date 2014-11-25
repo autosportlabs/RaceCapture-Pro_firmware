@@ -1,3 +1,4 @@
+#include "printk.h"
 #include "sdcard.h"
 #include "mod_string.h"
 #include "modp_numtoa.h"
@@ -10,24 +11,31 @@
 #include "sdcard_device.h"
 #include "mem_mang.h"
 
-static FATFS *FatFs;
+static FATFS *FatFs = NULL;
 
 void InitFSHardware(void){
 	disk_init_hardware();
 }
 
 int InitFS(){
-	int res = -1;
+   if (FatFs == NULL)
 	FatFs = pvPortMalloc(sizeof(FATFS));
-	if (FatFs){
-		taskENTER_CRITICAL();
-		res = disk_initialize(0);
-		taskEXIT_CRITICAL();
-		if (0 == res) {
-			res = f_mount(FatFs, "0", 1);
-		}
-	}
-	return res;
+
+   if (FatFs == NULL) {
+      pr_error("Failed to Malloc in InitFS\r\n");
+      return -1;
+   }
+
+   taskENTER_CRITICAL();
+   const int res = disk_initialize(0);
+   taskEXIT_CRITICAL();
+
+   if (0 != res) {
+      pr_error("Failed to init Disk\r\n");
+      return res;
+   }
+
+   return f_mount(FatFs, "0", 1);
 }
 
 int UnmountFS(){
