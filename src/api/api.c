@@ -120,6 +120,11 @@ void json_arrayElementString(Serial *serial, const char *value, int more){
 	if (more) serial->put_c(',');
 }
 
+void json_arrayElementInt(Serial *serial, int value, int more){
+	put_int(serial, value);
+	if (more) serial->put_c(',');
+}
+
 void json_arrayElementFloat(Serial *serial, float value, int precision, int more){
 	put_float(serial, value, precision);
 	if (more) serial->put_c(',');

@@ -83,6 +83,12 @@ void SampleRecordTest::testPopulateSampleRecord(){
 	samples++;
 	CPPUNIT_ASSERT_EQUAL(imu_read_value(3, &lc->ImuConfigs[3]), samples->valueFloat);
 
+	samples++;
+	CPPUNIT_ASSERT_EQUAL(imu_read_value(4, &lc->ImuConfigs[4]), samples->valueFloat);
+
+	samples++;
+	CPPUNIT_ASSERT_EQUAL(imu_read_value(5, &lc->ImuConfigs[4]), samples->valueFloat);
+
 	//GPS / Track channels
         /*
          * !!! BE WARNED!!!  It seems some of these samples should be valueInts instead of
@@ -120,7 +126,7 @@ void SampleRecordTest::testInitSampleRecord()
 {
    LoggerConfig *lc = getWorkingLoggerConfig();
 
-   size_t expectedEnabledChannels = 17;
+   size_t expectedEnabledChannels = 19;
 
    size_t channelCount = get_enabled_channel_count(lc);
    CPPUNIT_ASSERT_EQUAL(expectedEnabledChannels, channelCount);

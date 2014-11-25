@@ -1036,13 +1036,15 @@ void LoggerApiTest::testGetCanCfgFile(string filename){
 	CANConfig *canConfig= &c->CanConfig;
 
 	canConfig->enabled = 1;
-	canConfig->baudRate = 1000000;
+	canConfig->baud[0] = 1000000;
+	canConfig->baud[1] = 125000;
 	char * response = processApiGeneric(filename);
 
 	Object json;
 	stringToJson(response, json);
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)json["canCfg"]["en"]);
-	CPPUNIT_ASSERT_EQUAL(1000000, (int)(Number)json["canCfg"]["baud"]);
+	CPPUNIT_ASSERT_EQUAL(1000000, (int)(Number)json["canCfg"]["baud"][0]);
+	CPPUNIT_ASSERT_EQUAL(125000, (int)(Number)json["canCfg"]["baud"][1]);
 }
 
 void LoggerApiTest::testSetCanCfg(){
@@ -1057,7 +1059,8 @@ void LoggerApiTest::testSetCanCfgFile(string filename){
 	CANConfig *canCfg = &c->CanConfig;
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)canCfg->enabled );
-	CPPUNIT_ASSERT_EQUAL(50000, (int)canCfg->baudRate);
+	CPPUNIT_ASSERT_EQUAL(125000, (int)canCfg->baud[0]);
+	CPPUNIT_ASSERT_EQUAL(500000, (int)canCfg->baud[1]);
 }
 
 void LoggerApiTest::testSetObd2Cfg(){

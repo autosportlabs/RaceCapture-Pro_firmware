@@ -221,25 +221,30 @@ static void flushLogfile(FIL *file){
 }
 
 static int openNewLogfile(char *filename){
-	int status = WRITING_INACTIVE;
-	//start of a new logfile
-	int rc = InitFS();
-	if (0 != rc){
-		pr_error("FS init error\r\n");
-		LED_enable(3);
-	}
-	else{
-		//open next log file
-		rc = openNextLogfile(g_logfile, filename);
-		if (0 != rc){
-			pr_error("File open error\r\n");
-			LED_enable(3);
-		}
-		else{
-			status = WRITING_ACTIVE;
-		}
-	}
-	return status;
+   int rc;
+
+   rc = InitFS();
+   if (0 != rc){
+      pr_error("FS init error.  Code: ");
+      pr_error_int(rc);
+      pr_error("\r\n");
+
+      LED_enable(3);
+      return WRITING_INACTIVE;
+   }
+
+   //open next log file
+   rc = openNextLogfile(g_logfile, filename);
+   if (0 != rc){
+      pr_error("File open error.  Code: ");
+      pr_error_int(rc);
+      pr_error("\r\n");
+
+      LED_enable(3);
+      return WRITING_INACTIVE;
+   }
+
+   return WRITING_ACTIVE;
 }
 
 void fileWriterTask(void *params){
@@ -254,6 +259,7 @@ void fileWriterTask(void *params){
 		while(1){
 			//wait for the next sample record
 			xQueueReceive(g_sampleRecordQueue, &(msg), portMAX_DELAY);
+
 			if ((LoggerMessageType_Start == msg->type || LoggerMessageType_Sample == msg->type) &&
                             WRITING_INACTIVE == writingStatus){
 				pr_debug("Starting File Logging\r\n");
@@ -262,15 +268,13 @@ void fileWriterTask(void *params){
 				flushTimeoutStart = xTaskGetTickCount();
 				tick = 0;
 				writingStatus = openNewLogfile(filename);
-			}
-
-			else if (LoggerMessageType_Stop == msg->type){
+			} else if (LoggerMessageType_Stop == msg->type){
 				pr_info_int(tick);
 				pr_info(" logfile lines written\r\n");
-				break;
+                                break;
 			}
 
-			else if (LoggerMessageType_Sample == msg->type && WRITING_ACTIVE == writingStatus){
+			if (LoggerMessageType_Sample == msg->type && WRITING_ACTIVE == writingStatus) {
 				if (0 == tick){
 					writeHeaders(msg->channelSamples, msg->sampleCount);
 				}
@@ -302,7 +306,10 @@ void fileWriterTask(void *params){
 				tick++;
 			}
 		}
-		endLogfile();
+
+                if (writingStatus != WRITING_INACTIVE)
+                   endLogfile();
+
 		writingStatus = WRITING_INACTIVE;
 		delayMs(ERROR_SLEEP_DELAY_MS);
 	}

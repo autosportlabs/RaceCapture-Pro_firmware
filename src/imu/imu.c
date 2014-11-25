@@ -34,6 +34,8 @@ float imu_read_value(unsigned char imuChannel, ImuConfig *ac){
 		case IMU_CHANNEL_X:
 		case IMU_CHANNEL_Y:
 		case IMU_CHANNEL_YAW:
+		case IMU_CHANNEL_PITCH:
+		case IMU_CHANNEL_ROLL:
 			scaledValue = -scaledValue;
 			break;
 		default:

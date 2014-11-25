@@ -84,22 +84,28 @@ static void resetTimerConfig(TimerConfig cfg[]) {
 }
 
 static void resetImuConfig(ImuConfig cfg[]) {
-   const char *names[] = {"AccelX", "AccelY", "AccelZ"};
+   const char *imu_names[] = {"AccelX", "AccelY", "AccelZ", "Yaw", "Pitch", "Roll"};
 
-   for (size_t i = 0; i < 3; ++i) {
+   for (size_t i = 0; i < 6; ++i) {
       ImuConfig *c = cfg + i;
-      *c = (ImuConfig) DEFAULT_IMU_CONFIG;
-      strcpy(c->cfg.label, names[i]);
+      if (i < IMU_CHANNEL_YAW){
+    	  *c = (ImuConfig)DEFAULT_IMU_CONFIG;
+      }
+      else{
+    	  *c = (ImuConfig)DEFAULT_GYRO_CONFIG;
+      }
+      strcpy(c->cfg.label, imu_names[i]);
 
       // Channels go X, Y, Z.  Works perfectly with our counter.
       c->physicalChannel = i;
    }
-
-   cfg[3] = (ImuConfig) DEFAULT_GYRO_YAW_AXIS_CONFIG;
 }
 
 static void resetCanConfig(CANConfig *cfg) {
-   *cfg = (CANConfig) DEFAULT_CAN_CONFIG;
+   cfg->enabled = CONFIG_FEATURE_INSTALLED;
+   for (size_t i = 0; i < CONFIG_CAN_CHANNELS; i++){
+	   cfg->baud[i] = DEFAULT_CAN_BAUD_RATE;
+   }
 }
 
 static void resetOBD2Config(OBD2Config *cfg) {
