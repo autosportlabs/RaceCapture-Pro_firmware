@@ -740,26 +740,19 @@ void processGPSData(char *gpsData, size_t len) {
    // Advance the pointer 3 spaces since we know it begins with "$GP"
    gpsData += 3;
    if (strstr(gpsData, "GGA,")) {
-      pr_trace("GGA ");
       parseGGA(gpsData + 4);
    } else if (strstr(gpsData, "VTG,")) { //Course Over Ground and Ground Speed
-	  pr_trace("VTG ");
       parseVTG(gpsData + 4);
    } else if (strstr(gpsData, "GSA,")) { //GPS Fix gpsData
-	  pr_trace("GSA ");
       parseGSA(gpsData + 4);
    } else if (strstr(gpsData, "GSV,")) { //Satellites in view
-	  pr_trace("GSV ");
       parseGSV(gpsData + 4);
    } else if (strstr(gpsData, "RMC,")) { //Recommended Minimum Specific GNSS Data
-	  pr_trace("RMC ");
       parseRMC(gpsData + 4);
       positionUpdated = 1;
    } else if (strstr(gpsData, "GLL,")) { //Geographic Position - Latitude/Longitude
-	  pr_trace("GLL ");
       parseGLL(gpsData + 4);
    } else if (strstr(gpsData, "ZDA,")) { //Time & Date
-	  pr_trace("ZDA ");
       parseZDA(gpsData + 4);
    }
 
