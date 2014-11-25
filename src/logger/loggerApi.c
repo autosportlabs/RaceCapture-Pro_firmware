@@ -998,7 +998,7 @@ int api_getCanConfig(Serial *serial, const jsmntok_t *json){
 	json_int(serial, "en", canCfg->enabled, 1);
 	json_arrayStart(serial, "baud");
 	for (size_t i = 0; i < CONFIG_CAN_CHANNELS; i++){
-		json_int(serial, "baud", canCfg->baud[i], i < CONFIG_CAN_CHANNELS - 1);
+		json_arrayElementInt(serial, canCfg->baud[i], i < CONFIG_CAN_CHANNELS - 1);
 	}
 	json_arrayEnd(serial, 0);
 	json_objEnd(serial, 0);

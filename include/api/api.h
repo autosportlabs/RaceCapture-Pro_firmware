@@ -53,6 +53,7 @@ void json_objStart(Serial *serial);
 void json_objEnd(Serial *serial, int more);
 void json_arrayStart(Serial *serial, const char * name);
 void json_arrayElementString(Serial *serial, const char *value, int more);
+void json_arrayElementInt(Serial *serial, int value, int more);
 void json_arrayElementFloat(Serial *serial, float value, int precision, int more);
 void json_arrayEnd(Serial *serial, int more);
 void json_sendResult(Serial *serial, const char *messageName, int resultCode);
