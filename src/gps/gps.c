@@ -756,22 +756,6 @@ void processGPSData(char *gpsData, size_t len) {
       parseZDA(gpsData + 4);
    }
 
-   if (TRACE_LEVEL){
-	   char output[30];
-	   modp_ultoa10(g_utcMillisAtSample, output);
-	   pr_debug(output);
-	   pr_debug(" ");
-	   modp_ftoa(g_latitude, output, 10);
-	   pr_debug(output)
-	   pr_debug(" ");
-	   modp_ftoa(g_longitude, output, 10);
-	   pr_debug(output);
-	   pr_debug(": ");
-	   modp_ftoa(g_speed, output, 10);
-	   pr_debug(output);
-	   pr_debug("\r\n");
-   }
-
    if (positionUpdated && !isGpsDataCold()) {
       onLocationUpdated();
       flashGpsStatusLed();
