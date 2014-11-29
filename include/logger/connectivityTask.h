@@ -1,8 +1,8 @@
 #ifndef CONNECTIVITY_TASK_H_
 #define CONNECTIVITY_TASK_H_
 
+#include <stdint.h>
 #include "sampleRecord.h"
-#include "stddef.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
@@ -10,6 +10,8 @@
 #include "serial.h"
 
 typedef struct _ConnParams{
+	uint8_t isPrimary;
+	char * connectionName;
 	int (*init_connection)(DeviceConfig *config);
 	int (*check_connection_status)(DeviceConfig *config);
 	serial_id_t serial;

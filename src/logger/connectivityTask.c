@@ -60,26 +60,26 @@ static size_t trimBuffer(char *buffer, size_t count){
 	return count;
 }
 
-static int processRxBuffer(Serial *serial, char *g_buffer, size_t *g_rxCount){
-	size_t count = serial->get_line_wait(g_buffer + *g_rxCount, BUFFER_SIZE - *g_rxCount, 0);
+static int processRxBuffer(Serial *serial, char *buffer, size_t *rxCount){
+	size_t count = serial->get_line_wait(buffer + *rxCount, BUFFER_SIZE - *rxCount, 0);
 
-	*g_rxCount += count;
+	*rxCount += count;
 	int processMsg = 0;
 
-	if (*g_rxCount >= BUFFER_SIZE - 1){
-		g_buffer[BUFFER_SIZE - 1] = '\0';
-		*g_rxCount = BUFFER_SIZE - 1;
+	if (*rxCount >= BUFFER_SIZE - 1){
+		buffer[BUFFER_SIZE - 1] = '\0';
+		*rxCount = BUFFER_SIZE - 1;
 		processMsg = 1;
 		pr_error("Rx Buffer overflow:");
-		pr_error(g_buffer);
+		pr_error(buffer);
 		pr_error("\r\n");
 	}
-	if ('\r' == g_buffer[*g_rxCount - 1]){
-		pr_info("rxbuffer=");
-		pr_info(g_buffer);
-		pr_info("\r\n");
-		*g_rxCount = trimBuffer(g_buffer, *g_rxCount);
-		processMsg = 1;
+	if (*rxCount > 0){
+		char lastChar = buffer[*rxCount - 1];
+		if ('\r' == lastChar || '\n' == lastChar){
+			*rxCount = trimBuffer(buffer, *rxCount);
+			processMsg = 1;
+		}
 	}
 	return processMsg;
 }
@@ -122,30 +122,28 @@ static void createCombinedTelemetryTask(int16_t priority, xQueueHandle sampleQue
 	}
 }
 
-static void createWirelessConnectionTask(int16_t priority, xQueueHandle sampleQueue){
-	ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
-	if (connConfig->bluetoothConfig.btEnabled){
-		ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
-		params->periodicMeta = 0;
-		params->check_connection_status = &bt_check_connection_status;
-		params->init_connection = &bt_init_connection;
-		params->serial = SERIAL_WIRELESS;
-		params->sampleQueue = sampleQueue;
-		xTaskCreate(connectivityTask, (signed portCHAR *) "connWireless", TELEMETRY_STACK_SIZE, params, priority, NULL );
-	}
+static void createWirelessConnectionTask(int16_t priority, xQueueHandle sampleQueue, uint8_t isPrimary){
+	ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
+	params->isPrimary = isPrimary;
+	params->connectionName = "Wireless";
+	params->periodicMeta = 0;
+	params->check_connection_status = &bt_check_connection_status;
+	params->init_connection = &bt_init_connection;
+	params->serial = SERIAL_WIRELESS;
+	params->sampleQueue = sampleQueue;
+	xTaskCreate(connectivityTask, (signed portCHAR *) "connWireless", TELEMETRY_STACK_SIZE, params, priority, NULL );
 }
 
-static void createTelemetryConnectionTask(int16_t priority, xQueueHandle sampleQueue){
-	ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
-	if (connConfig->cellularConfig.cellEnabled){
-		ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
-		params->periodicMeta = 0;
-		params->check_connection_status = &sim900_check_connection_status;
-		params->init_connection = &sim900_init_connection;
-		params->serial = SERIAL_TELEMETRY;
-		params->sampleQueue = sampleQueue;
-		xTaskCreate(connectivityTask, (signed portCHAR *) "connTelemetry", TELEMETRY_STACK_SIZE, params, priority, NULL );
-	}
+static void createTelemetryConnectionTask(int16_t priority, xQueueHandle sampleQueue, uint8_t isPrimary){
+	ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
+	params->isPrimary = isPrimary;
+	params->connectionName = "Telemetry";
+	params->periodicMeta = 0;
+	params->check_connection_status = &sim900_check_connection_status;
+	params->init_connection = &sim900_init_connection;
+	params->serial = SERIAL_TELEMETRY;
+	params->sampleQueue = sampleQueue;
+	xTaskCreate(connectivityTask, (signed portCHAR *) "connTelemetry", TELEMETRY_STACK_SIZE, params, priority, NULL );
 }
 
 void startConnectivityTask(int16_t priority){
@@ -162,8 +160,14 @@ void startConnectivityTask(int16_t priority){
 		createCombinedTelemetryTask(priority, g_sampleQueue[0]);
 		break;
 	case 2:
-		createWirelessConnectionTask(priority, g_sampleQueue[0]);
-		createTelemetryConnectionTask(priority, g_sampleQueue[1]);
+		{
+			ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
+			//logic to control which connection is considered 'primary', which is used later to determine which task has control over LED flashing
+			uint8_t cellEnabled = connConfig->cellularConfig.cellEnabled;
+			uint8_t btEnabled = connConfig->bluetoothConfig.btEnabled;
+			if (cellEnabled) createTelemetryConnectionTask(priority, g_sampleQueue[1], 1);
+			if (btEnabled) createWirelessConnectionTask(priority, g_sampleQueue[0], !cellEnabled);
+		}
 		break;
 	default:
 		pr_error("invalid connectivity task count!");
@@ -181,6 +185,7 @@ void connectivityTask(void *params) {
 
 	Serial *serial = get_serial(connParams->serial);
 
+	uint8_t isPrimary = connParams->isPrimary;
 	size_t periodicMeta = connParams->periodicMeta;
 	xQueueHandle sampleQueue = connParams->sampleQueue;
 
@@ -224,7 +229,7 @@ void connectivityTask(void *params) {
 					{
 						int sendMeta = (tick == 0 || (periodicMeta && (tick % METADATA_SAMPLE_INTERVAL == 0)));
 						api_sendSampleRecord(serial, msg->channelSamples, msg->sampleCount, tick, sendMeta);
-						LED_toggle(0);
+						if (isPrimary) LED_toggle(0);
 						put_crlf(serial);
 						tick++;
 						break;
@@ -243,28 +248,35 @@ void connectivityTask(void *params) {
 			// Process incoming message, if available
 			////////////////////////////////////////////////////////////
 			//read in available characters, process message as necessary
-			rxCount = 0;
 			int msgReceived = processRxBuffer(serial, buffer, &rxCount);
 			//check the latest contents of the buffer for something that might indicate an error condition
 			if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR){
 				pr_info("device disconnected\r\n");
 				break;
 			}
-
 			//now process a complete message if available
 			if (msgReceived){
 				if (DEBUG_LEVEL){
-					pr_debug("server msg rx: '");
+					pr_debug(connParams->connectionName);
+					pr_debug(": msg rx: '");
 					pr_debug(buffer);
-					pr_debug("'\r\n");
+					pr_debug("'");
 				}
 				int msgRes = process_api(serial, buffer, BUFFER_SIZE);
-				if (! API_MSG_SUCCESS(msgRes)) badMsgCount++;
+				int msgSuccess = API_MSG_SUCCESS(msgRes);
+				if (DEBUG_LEVEL){
+					if (!msgSuccess){
+						pr_debug(" (failed) ");
+					}
+				}
+				pr_debug("\r\n");
+				if (! msgSuccess) badMsgCount++;
 				if (badMsgCount >= BAD_MESSAGE_THRESHOLD){
 					pr_warning_int(badMsgCount);
 					pr_warning(" empty/bad msgs - re-connecting...\r\n");
 					break;
 				}
+				rxCount = 0;
 			}
 		}
 	}
