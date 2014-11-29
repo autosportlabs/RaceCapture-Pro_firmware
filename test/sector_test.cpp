@@ -169,9 +169,11 @@ void SectorTest::testSectorTimes(){
                  sectorTimes.clear();
                  currentLap = lap;
               }
-              printf("%.7f,%.7f | lapTime (%d) %f | sectorTime: (%d) %f\r\n", lat, lon, getLapCount(), getLastLapTime(), getLastSector(), getLastSectorTime());
+              printf("%.7f,%.7f | lapTime (%d) %f | sectorTime: (%d) %f\r\n", lat, lon, getLapCount(), getLastLapTimeInMinutes(), getLastSector(), getLastSectorTimeInMinutes());
            }
 	}
+
+   CPPUNIT_ASSERT_EQUAL(4, currentLap);
 }
 
 void SectorTest::testStageSectorTimes() {

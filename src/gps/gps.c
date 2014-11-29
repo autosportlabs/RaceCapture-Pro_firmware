@@ -662,6 +662,9 @@ void onLocationUpdated() {
    LoggerConfig *config = getWorkingLoggerConfig();
    const GeoPoint gp = getGeoPoint();
 
+   // FIXME: Improve on this.  Doesn't need calculation every time.
+   const float targetRadius = degreesToMeters(config->TrackConfigs.radius);
+
    if (!g_configured) {
       TrackConfig *trackConfig = &(config->TrackConfigs);
       Track *defaultTrack = &trackConfig->track;
@@ -669,7 +672,7 @@ void onLocationUpdated() {
       startFinishEnabled = isFinishPointValid(g_activeTrack) && isStartPointValid(g_activeTrack);
       sectorEnabled = config->LapConfigs.sectorTimeCfg.sampleRate !=
          SAMPLE_DISABLED && startFinishEnabled;
-      lc_setup(g_activeTrack, config->TrackConfigs.radius * 1000);
+      lc_setup(g_activeTrack, targetRadius);
       g_configured = 1;
    }
 
@@ -678,9 +681,6 @@ void onLocationUpdated() {
 
 
    if (startFinishEnabled) {
-      // FIXME: Improve on this.  Doesn't need calculation every time.
-      const float targetRadius = degreesToMeters(config->TrackConfigs.radius);
-
       // Seconds since first fix is good until we alter the code to use millis directly
       const tiny_millis_t millisSinceFirstFix = getMillisSinceFirstFix();
       const int lapDetected = processStartFinish(g_activeTrack, targetRadius);
