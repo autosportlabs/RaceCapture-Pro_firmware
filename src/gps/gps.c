@@ -19,8 +19,8 @@
 
 #define KNOTS_TO_KPH (1.852)
 
-#define GPS_LOCK_FLASH_COUNT 2
-#define GPS_NOFIX_FLASH_COUNT 10
+#define GPS_LOCK_FLASH_COUNT 5
+#define GPS_NOFIX_FLASH_COUNT 50
 
 #define LATITUDE_DATA_LEN 12
 #define LONGITUDE_DATA_LEN 13
@@ -740,43 +740,20 @@ void processGPSData(char *gpsData, size_t len) {
    // Advance the pointer 3 spaces since we know it begins with "$GP"
    gpsData += 3;
    if (strstr(gpsData, "GGA,")) {
-      pr_trace("GGA ");
       parseGGA(gpsData + 4);
    } else if (strstr(gpsData, "VTG,")) { //Course Over Ground and Ground Speed
-	  pr_trace("VTG ");
       parseVTG(gpsData + 4);
    } else if (strstr(gpsData, "GSA,")) { //GPS Fix gpsData
-	  pr_trace("GSA ");
       parseGSA(gpsData + 4);
    } else if (strstr(gpsData, "GSV,")) { //Satellites in view
-	  pr_trace("GSV ");
       parseGSV(gpsData + 4);
    } else if (strstr(gpsData, "RMC,")) { //Recommended Minimum Specific GNSS Data
-	  pr_trace("RMC ");
       parseRMC(gpsData + 4);
       positionUpdated = 1;
    } else if (strstr(gpsData, "GLL,")) { //Geographic Position - Latitude/Longitude
-	  pr_trace("GLL ");
       parseGLL(gpsData + 4);
    } else if (strstr(gpsData, "ZDA,")) { //Time & Date
-	  pr_trace("ZDA ");
       parseZDA(gpsData + 4);
-   }
-
-   if (TRACE_LEVEL){
-	   char output[30];
-	   modp_ultoa10(g_utcMillisAtSample, output);
-	   pr_debug(output);
-	   pr_debug(" ");
-	   modp_ftoa(g_latitude, output, 10);
-	   pr_debug(output)
-	   pr_debug(" ");
-	   modp_ftoa(g_longitude, output, 10);
-	   pr_debug(output);
-	   pr_debug(": ");
-	   modp_ftoa(g_speed, output, 10);
-	   pr_debug(output);
-	   pr_debug("\r\n");
    }
 
    if (positionUpdated && !isGpsDataCold()) {
