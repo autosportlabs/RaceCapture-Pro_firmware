@@ -74,6 +74,11 @@ static DateTime g_dtLastFix;
 static millis_t g_utcMillisAtSample;
 static tiny_millis_t g_uptimeAtSample;
 
+static float degreesToMeters(float degrees) {
+   // There are 110574.27 meters per degree of latitude at the equator.
+   return degrees * 110574.27;
+}
+
 static bool isGpsSignalUsable(enum GpsSignalQuality q) {
    return q != GPS_QUALITY_NO_FIX;
 }
@@ -537,7 +542,7 @@ static int processStartFinish(const Track *track, const float targetRadius) {
    const tiny_millis_t timestamp = getMillisSinceFirstFix();
    const tiny_millis_t elapsed = timestamp - g_lastStartFinishTimestamp;
    const struct GeoCircle sfCircle = gc_createGeoCircle(getFinishPoint(track),
-                                                        targetRadius * 1000);
+                                                        targetRadius);
 
    /*
     * Guard against false triggering. We have to be out of the start/finish
@@ -570,8 +575,7 @@ static void processSector(const Track *track, float targetRadius) {
       return;
 
    const GeoPoint point = getSectorGeoPointAtIndex(track, g_sector);
-   const struct GeoCircle sbCircle = gc_createGeoCircle(point,
-                                                        targetRadius * 1000);
+   const struct GeoCircle sbCircle = gc_createGeoCircle(point, targetRadius);
 
    g_atTarget = gc_isPointInGeoCircle(getGeoPoint(), sbCircle);
    if (!g_atTarget) {
@@ -674,7 +678,8 @@ void onLocationUpdated() {
 
 
    if (startFinishEnabled) {
-      const float targetRadius = config->TrackConfigs.radius;
+      // FIXME: Improve on this.  Doesn't need calculation every time.
+      const float targetRadius = degreesToMeters(config->TrackConfigs.radius);
 
       // Seconds since first fix is good until we alter the code to use millis directly
       const tiny_millis_t millisSinceFirstFix = getMillisSinceFirstFix();
