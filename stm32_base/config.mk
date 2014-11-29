@@ -85,7 +85,6 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/logger/loggerTaskEx.c \
 			$(RCP_SRC)/logger/connectivityTask.c \
 			$(RCP_SRC)/logger/luaLoggerBinding.c \
-			$(RCP_SRC)/logger/onTickHandler.c \
 			$(RCP_SRC)/logger/sampleRecord.c \
 			$(RCP_SRC)/devices/bluetooth.c \
 			$(RCP_SRC)/devices/cellModem.c \

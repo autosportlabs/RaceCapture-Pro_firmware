@@ -305,8 +305,7 @@ void api_sendSampleRecord(Serial *serial, ChannelSample *channelSamples,
           if (channelBitmaskIndex > MAX_BITMAPS) break;
        }
 
-       // STIEG: Fix NIL_SAMPLE, use long long.
-	   if (sample->valueInt != NIL_SAMPLE){
+	   if (sample->populated){
 		  channelBitmask[channelBitmaskIndex] = channelBitmask[channelBitmaskIndex] | (1 << channelBitPosition);
 
 		  const int precision = sample->cfg->precision;
@@ -932,16 +931,15 @@ int api_setTimerConfig(Serial *serial, const jsmntok_t *json){
 static unsigned short getGpsConfigHighSampleRate(GPSConfig *cfg) {
    unsigned short rate = SAMPLE_DISABLED;
 
-   rate = HIGHER_SAMPLE_RATE(rate, cfg->latitude.sampleRate);
-   rate = HIGHER_SAMPLE_RATE(rate, cfg->longitude.sampleRate);
-   rate = HIGHER_SAMPLE_RATE(rate, cfg->speed.sampleRate);
-   rate = HIGHER_SAMPLE_RATE(rate, cfg->distance.sampleRate);
-   rate = HIGHER_SAMPLE_RATE(rate, cfg->satellites.sampleRate);
+   rate = getHigherSampleRate(rate, cfg->latitude.sampleRate);
+   rate = getHigherSampleRate(rate, cfg->longitude.sampleRate);
+   rate = getHigherSampleRate(rate, cfg->speed.sampleRate);
+   rate = getHigherSampleRate(rate, cfg->distance.sampleRate);
+   rate = getHigherSampleRate(rate, cfg->satellites.sampleRate);
 
    return rate;
 }
 
-// STIEG: Change this or no?
 int api_getGpsConfig(Serial *serial, const jsmntok_t *json){
 
    GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
@@ -1301,16 +1299,6 @@ int api_getTrackDb(Serial *serial, const jsmntok_t *json){
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
 	return API_SUCCESS_NO_RETURN;
-}
-
-int api_addChannel(Serial *serial, const jsmntok_t *json) {
-   // STIEG: Kill me
-	return API_ERROR_MALFORMED;
-}
-
-int api_getChannels(Serial *serial, const jsmntok_t *json) {
-   // STIEG: Kill me
-	return API_ERROR_MALFORMED;
 }
 
 int api_getScript(Serial *serial, const jsmntok_t *json){

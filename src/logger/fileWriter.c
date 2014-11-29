@@ -147,8 +147,7 @@ static int writeChannelSamples(ChannelSample *sample, size_t channelCount){
       appendFileBuffer(separator);
       separator = ",";
 
-      // STIEG: Fix NIL_SAMPLE, use long long.
-      if (sample->valueInt == NIL_SAMPLE)
+      if (!sample->populated)
          continue;
 
       const int precision = sample->cfg->precision;
@@ -261,21 +260,21 @@ void fileWriterTask(void *params){
 			//wait for the next sample record
 			xQueueReceive(g_sampleRecordQueue, &(msg), portMAX_DELAY);
 
-			if ((LOGGER_MSG_START_LOG == msg->messageType || LOGGER_MSG_SAMPLE == msg->messageType)
-                            && WRITING_INACTIVE == writingStatus){
-				pr_debug("start logging\r\n");
+			if ((LoggerMessageType_Start == msg->type || LoggerMessageType_Sample == msg->type) &&
+                            WRITING_INACTIVE == writingStatus){
+				pr_debug("Starting File Logging\r\n");
 				LED_disable(3);
 				flushTimeoutInterval = FLUSH_INTERVAL_MS;
 				flushTimeoutStart = xTaskGetTickCount();
 				tick = 0;
 				writingStatus = openNewLogfile(filename);
-			} else if (LOGGER_MSG_END_LOG == msg->messageType){
+			} else if (LoggerMessageType_Stop == msg->type){
 				pr_info_int(tick);
 				pr_info(" logfile lines written\r\n");
-				break;
+                                break;
 			}
 
-                        if (LOGGER_MSG_SAMPLE == msg->messageType && WRITING_ACTIVE == writingStatus){
+			if (LoggerMessageType_Sample == msg->type && WRITING_ACTIVE == writingStatus) {
 				if (0 == tick){
 					writeHeaders(msg->channelSamples, msg->sampleCount);
 				}

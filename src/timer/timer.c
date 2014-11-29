@@ -44,4 +44,3 @@ uint32_t timer_get_count(size_t channel){
 void timer_reset_count(size_t channel){
 	timer_device_reset_count(channel);
 }
-

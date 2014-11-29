@@ -296,13 +296,13 @@ int populate_sample_buffer(ChannelSample * samples,  size_t count, size_t curren
    for (size_t i = 0; i < count; i++, samples++) {
       const unsigned short sampleRate = samples->cfg->sampleRate;
 
-      // NIL_SAMPLE the sample for sanity
-      samples->valueInt = NIL_SAMPLE;
-
-      if (currentTicks % sampleRate != 0)
+      if (currentTicks % sampleRate != 0) {
+         samples->populated = false;
          continue;
+      }
 
-      highestRate = HIGHER_SAMPLE_RATE(sampleRate, highestRate);
+      samples->populated = true;
+      highestRate = getHigherSampleRate(sampleRate, highestRate);
       size_t channelIndex = samples->channelIndex;
 
       switch(samples->sampleData) {

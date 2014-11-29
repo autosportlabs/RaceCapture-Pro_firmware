@@ -772,28 +772,28 @@ void LoggerApiTest::testSetGpsCfg(){
 }
 
 void LoggerApiTest::testGetGpsConfigFile(string filename){
-	LoggerConfig *c = getWorkingLoggerConfig();
-	GPSConfig *gpsCfg = &c->GPSConfigs;
+   LoggerConfig *c = getWorkingLoggerConfig();
+   GPSConfig *gpsCfg = &c->GPSConfigs;
 
-        populateChannelConfig(&gpsCfg->latitude, 0, 100);
-        populateChannelConfig(&gpsCfg->longitude, 0, 100);
-        populateChannelConfig(&gpsCfg->speed, 0, 100);
-        populateChannelConfig(&gpsCfg->distance, 0, 100);
-        populateChannelConfig(&gpsCfg->satellites, 0, 100);
+   populateChannelConfig(&gpsCfg->latitude, 0, 100);
+   populateChannelConfig(&gpsCfg->longitude, 0, 100);
+   populateChannelConfig(&gpsCfg->speed, 0, 100);
+   populateChannelConfig(&gpsCfg->distance, 0, 100);
+   populateChannelConfig(&gpsCfg->satellites, 0, 100);
 
-	char * response = processApiGeneric(filename);
+   char * response = processApiGeneric(filename);
 
-	Object json;
-	stringToJson(response, json);
+   Object json;
+   stringToJson(response, json);
 
-	Object &gpsCfgJson = json["gpsCfg"];
+   Object &gpsCfgJson = json["gpsCfg"];
 
-	CPPUNIT_ASSERT_EQUAL((int)100, (int)(Number)gpsCfgJson["sr"]);
+   CPPUNIT_ASSERT_EQUAL((int)100, (int)(Number)gpsCfgJson["sr"]);
 
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["dist"]);
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["pos"]);
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["sats"]);
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["speed"]);
+   CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["dist"]);
+   CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["pos"]);
+   CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["sats"]);
+   CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["speed"]);
 }
 
 void LoggerApiTest::testGetGpsCfg(){

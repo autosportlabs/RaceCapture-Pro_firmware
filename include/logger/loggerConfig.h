@@ -51,11 +51,6 @@
 #define DEFAULT_VOLTAGE_SCALING_PRECISION	2
 #define DEFAULT_ANALOG_SCALING_PRECISION	2
 
-// STIEG: Eliminate these Macros
-#define HIGHER_SAMPLE(X,Y) 					((X != SAMPLE_DISABLED && X < Y))
-#define HIGHER_SAMPLE_RATE(X,Y)				((X != SAMPLE_DISABLED && Y != SAMPLE_DISABLED && X < Y) || (X != SAMPLE_DISABLED && Y == SAMPLE_DISABLED) ? X : Y)
-#define LOWER_SAMPLE_RATE(X,Y)				(X > Y ? X : Y)
-
 typedef struct _VersionInfo{
 	unsigned int major;
 	unsigned int minor;
@@ -550,5 +545,8 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig);
 
 int flashLoggerConfig(void);
 int flash_default_logger_config(void);
+
+bool isHigherSampleRate(const int contender, const int champ);
+int getHigherSampleRate(const int a, const int b);
 
 #endif /*LOGGERCONFIG_H_*/

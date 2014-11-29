@@ -211,21 +211,21 @@ void connectivityTask(void *params) {
 			// Process a pending message from logger task, if exists
 			////////////////////////////////////////////////////////////
 			if (pdFALSE != res) {
-				switch(msg->messageType){
-					case LOGGER_MSG_START_LOG:
+				switch(msg->type){
+					case LoggerMessageType_Start:
 					{
 						api_sendLogStart(serial);
 						put_crlf(serial);
 						tick = 0;
 						break;
 					}
-					case LOGGER_MSG_END_LOG:
+					case LoggerMessageType_Stop:
 					{
 						api_sendLogEnd(serial);
 						put_crlf(serial);
 						break;
 					}
-					case LOGGER_MSG_SAMPLE:
+					case LoggerMessageType_Sample:
 					{
 						int sendMeta = (tick == 0 || (periodicMeta && (tick % METADATA_SAMPLE_INTERVAL == 0)));
 						api_sendSampleRecord(serial, msg->channelSamples, msg->sampleCount, tick, sendMeta);
@@ -237,7 +237,7 @@ void connectivityTask(void *params) {
 					default:
 					{
 						pr_warning("unknown logger msg type ");
-						pr_warning_int(msg->messageType);
+						pr_warning_int(msg->type);
 						pr_warning("\r\n");
 						break;
 					}
