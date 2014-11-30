@@ -80,7 +80,7 @@ string SectorTest::readFile(string filename){
 
 void SectorTest::outputSectorTimes(vector<float> & sectorTimes, int lap){
 	for (size_t i = 0; i < sectorTimes.size(); i++){
-		printf("lap %d | sector %d | %f\r", lap, i + 1, sectorTimes[i]);
+		//printf("lap %d | sector %d | %f\r", lap, i + 1, sectorTimes[i]);
 	}
 }
 
@@ -93,7 +93,7 @@ float SectorTest::sumSectorTimes(vector<float> & sectorTimes){
 }
 
 void SectorTest::testSectorTimes(){
-	printf("\rSector Times:\r");
+	//printf("\rSector Times:\r");
 	string log = readFile("predictive_time_test_lap.log");
 
 	std::istringstream iss(log);
@@ -158,8 +158,8 @@ void SectorTest::testSectorTimes(){
               if (lap > currentLap){
                  float lastLapTime = getLastLapTime();
                  float sum = sumSectorTimes(sectorTimes);
-                 printf("\rlap %d time: %f | sum of sector times: %f\r", lap, lastLapTime, sum);
-                 outputSectorTimes(sectorTimes, lap);
+                 //printf("\rlap %d time: %f | sum of sector times: %f\r", lap, lastLapTime, sum);
+                 //outputSectorTimes(sectorTimes, lap);
                  CPPUNIT_ASSERT_EQUAL(5, (int) sectorTimes.size());
 
                  // Don't check the first lap time as we don't know where we started.
@@ -169,7 +169,10 @@ void SectorTest::testSectorTimes(){
                  sectorTimes.clear();
                  currentLap = lap;
               }
-              printf("%.7f,%.7f | lapTime (%d) %f | sectorTime: (%d) %f\r\n", lat, lon, getLapCount(), getLastLapTimeInMinutes(), getLastSector(), getLastSectorTimeInMinutes());
+
+              // printf("%.7f,%.7f | lapTime (%d) %f | sectorTime: (%d) %f\r\n", lat, lon,
+              //        getLapCount(), getLastLapTimeInMinutes(),
+              //        getLastSector(), getLastSectorTimeInMinutes());
            }
 	}
 

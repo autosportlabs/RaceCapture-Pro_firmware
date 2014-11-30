@@ -132,11 +132,11 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
          updateFullDateTime(dt);
 
          const unsigned long millis = getMillisSinceEpoch();
-         printf("---\n");
-         printf("DateTime - YY MM DD HH MM SS.mmm : %02d %02d %02d %02d %02d %02d.%03d\n", dt.year,
-               dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.millisecond);
-         printf("lat = %f : lon = %f : speed = %f : UTC_Str = \"%s\" : time = %f : millis = %lu\n",
-               lat, lon, speed, utcTimeStr, utcTime, millis);
+         //printf("---\n");
+         //printf("DateTime - YY MM DD HH MM SS.mmm : %02d %02d %02d %02d %02d %02d.%03d\n", dt.year,
+         //        dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.millisecond);
+         //printf("lat = %f : lon = %f : speed = %f : UTC_Str = \"%s\" : time = %f : millis = %lu\n",
+         //      lat, lon, speed, utcTimeStr, utcTime, millis);
 
          setGPSSpeed(speed);
          //setUTCTime(utcTime); // No longer any good.
@@ -146,7 +146,7 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
          const GeoPoint gp = getGeoPoint();
          const millis_t epochMillis = getMillisSinceEpoch();
          const millis_t predTime = getPredictedTime(gp, epochMillis);
-         printf("Lap #%d - Predicted Time: %ull\n", getLapCount(), predTime);
+         //printf("Lap #%d - Predicted Time: %ull\n", getLapCount(), predTime);
 		}
 	}
 }
