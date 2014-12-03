@@ -263,14 +263,15 @@ void connectivityTask(void *params) {
 					pr_debug("'");
 				}
 				int msgRes = process_api(serial, buffer, BUFFER_SIZE);
-				int msgSuccess = API_MSG_SUCCESS(msgRes);
+
+				int msgError = (msgRes == API_ERROR_MALFORMED);
 				if (DEBUG_LEVEL){
-					if (!msgSuccess){
+					if (msgError){
 						pr_debug(" (failed) ");
 					}
 				}
 				pr_debug("\r\n");
-				if (! msgSuccess) badMsgCount++;
+				if (msgError) badMsgCount++;
 				if (badMsgCount >= BAD_MESSAGE_THRESHOLD){
 					pr_warning_int(badMsgCount);
 					pr_warning(" empty/bad msgs - re-connecting...\r\n");
