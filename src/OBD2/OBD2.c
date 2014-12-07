@@ -93,7 +93,12 @@ int OBD2_request_PID(unsigned char pid, int *value, size_t timeout){
 	msg.data[0] = 2;
 	msg.data[1] = 1;
 	msg.data[2] = pid;
-	msg.dataLength = 3;
+	msg.data[3] = 0x55;
+	msg.data[4] = 0x55;
+	msg.data[5] = 0x55;
+	msg.data[6] = 0x55;
+	msg.data[7] = 0x55;
+	msg.dataLength = 8;
 	msg.isExtendedAddress = 0;
 
 	int pid_request_success = 0;

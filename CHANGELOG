@@ -1,3 +1,14 @@
+===2.7.3===
+Padded all OBDII PID requests with 0x55 to the full 8 byte message for maximum ECU compatibility.
+
+===2.7.2===
+Only disconnect telemetry upon sustained (10) malformed API message. Resend metadata if telemetry connection is restarted.
+
+===2.7.1===
+Initial release of MK2 firmware
+
+=======MK2 Release=======
+
 ===2.0.8===
 Switched Analog Raw mode to a more meaningful 0-5v mode
 Cellular telemetry mode off with default config

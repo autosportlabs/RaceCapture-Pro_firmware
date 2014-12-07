@@ -194,7 +194,6 @@ void connectivityTask(void *params) {
 	deviceConfig.buffer = buffer;
 	deviceConfig.length = BUFFER_SIZE;
 
-	size_t tick = 0;
 	while (1) {
 		while (connParams->init_connection(&deviceConfig) != DEVICE_INIT_SUCCESS) {
 			pr_info("device not connected. retrying..\r\n");
@@ -203,6 +202,7 @@ void connectivityTask(void *params) {
 		serial->flush();
 		rxCount = 0;
 		size_t badMsgCount = 0;
+		size_t tick = 0;
 		while (1) {
 			//wait for the next sample record
 			char res = xQueueReceive(sampleQueue, &(msg), IDLE_TIMEOUT);
@@ -263,18 +263,22 @@ void connectivityTask(void *params) {
 					pr_debug("'");
 				}
 				int msgRes = process_api(serial, buffer, BUFFER_SIZE);
-				int msgSuccess = API_MSG_SUCCESS(msgRes);
+
+				int msgError = (msgRes == API_ERROR_MALFORMED);
 				if (DEBUG_LEVEL){
-					if (!msgSuccess){
+					if (msgError){
 						pr_debug(" (failed) ");
 					}
 				}
 				pr_debug("\r\n");
-				if (! msgSuccess) badMsgCount++;
+				if (msgError) badMsgCount++;
 				if (badMsgCount >= BAD_MESSAGE_THRESHOLD){
 					pr_warning_int(badMsgCount);
 					pr_warning(" empty/bad msgs - re-connecting...\r\n");
 					break;
+				}
+				else{
+					badMsgCount = 0;
 				}
 				rxCount = 0;
 			}
