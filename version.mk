@@ -1,3 +1,3 @@
 MAJOR	= 2
 MINOR	= 7
-BUGFIX	= 2
+BUGFIX	= 3
