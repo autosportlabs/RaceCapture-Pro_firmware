@@ -408,11 +408,9 @@ int Lua_SetAnalogOut(lua_State *L){
 }
 
 int Lua_InitCAN(lua_State *L){
-	if (lua_gettop(L) >= 1){
-		size_t port = 0;
-		if (lua_gettop(L) >= 2) port = (size_t)lua_tointeger(L, 2);
-
-		uint32_t baud = lua_tointeger(L, 1);
+	if (lua_gettop(L) >= 2){
+		size_t port = (size_t)lua_tointeger(L, 1);
+		uint32_t baud = lua_tointeger(L, 2);
 		int rc = CAN_init_port(port, baud);
 		lua_pushinteger(L, rc);
 		return 1;
@@ -437,7 +435,6 @@ int Lua_SetCANFilter(lua_State *L){
 }
 
 int Lua_SendCANMessage(lua_State *L){
-	int rc = -1;
 	size_t args = lua_gettop(L);
 	if (args >= 4){
 		CAN_msg msg;
@@ -456,10 +453,11 @@ int Lua_SendCANMessage(lua_State *L){
 			}
 		}
 		msg.dataLength = size;
-		rc = CAN_tx_msg(channel, &msg, timeout);
+		int rc = CAN_tx_msg(channel, &msg, timeout);
+		lua_pushinteger(L, rc);
+		return 1;
 	}
-	lua_pushinteger(L, rc);
-	return rc;
+	return 0;
 }
 
 int Lua_ReceiveCANMessage(lua_State *L){
