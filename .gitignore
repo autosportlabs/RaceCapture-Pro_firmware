@@ -10,7 +10,7 @@ main.map
 main.sym
 .dep/
 test/rcptest
-RaceCapturePro_Firmware
+firmware_release
 test/rcptest
 test/rcpsim
 *.bin
