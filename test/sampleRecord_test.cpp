@@ -234,7 +234,7 @@ void SampleRecordTest::testInitSampleRecord()
 
    if (gpsConfig->distance.sampleRate != SAMPLE_DISABLED){
       CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->distance, (void *) ts->cfg);
-      CPPUNIT_ASSERT_EQUAL((void *) getGpsDistance, (void *) ts->get_float_sample);
+      CPPUNIT_ASSERT_EQUAL((void *) getGpsDistanceMiles, (void *) ts->get_float_sample);
       CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
       ts++;
    }

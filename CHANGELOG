@@ -1,6 +1,7 @@
 ===2.7.3===
-Padded all OBDII PID requests with 0x55 to the full 8 byte message for maximum ECU compatibility.
-corrected Lua initCAN() api call to match documentation 
+* Padded all OBDII PID requests with 0x55 to the full 8 byte message for maximum ECU compatibility.
+* Corrected Lua initCAN() api call to match documentation
+* Fixed GPS Distance bug.  Now provided in Miles instead of Km (Because I get 40 rods to the Hogs head and that's the way I likes it...)
 
 ===2.7.2===
 Only disconnect telemetry upon sustained (10) malformed API message. Resend metadata if telemetry connection is restarted.
@@ -8,8 +9,11 @@ Only disconnect telemetry upon sustained (10) malformed API message. Resend meta
 ===2.7.1===
 Initial release of MK2 firmware
 
+<<<<<<< HEAD
 =======MK2 Release=======
 
+=======
+>>>>>>> Add Unit test for Km to Miles patch on RCP.  Fix test compile issue.
 ===2.0.8===
 Switched Analog Raw mode to a more meaningful 0-5v mode
 Cellular telemetry mode off with default config

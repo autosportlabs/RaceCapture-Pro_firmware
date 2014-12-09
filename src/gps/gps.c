@@ -17,16 +17,10 @@
 #include <math.h>
 #include <stdint.h>
 
-#define KMS_TO_MILES_CONSTANT (.621371)
-
-#define KNOTS_TO_KPH (1.852)
-
 #define GPS_LOCK_FLASH_COUNT 5
 #define GPS_NOFIX_FLASH_COUNT 50
-
 #define LATITUDE_DATA_LEN 12
 #define LONGITUDE_DATA_LEN 13
-
 #define UTC_TIME_BUFFER_LEN 11
 #define UTC_SPEED_BUFFER_LEN 10
 
@@ -410,6 +404,10 @@ static void parseRMC(char *data) {
 
 void resetGpsDistance() {
    g_distance = 0;
+}
+
+void setGpsDistanceKms(float dist) {
+	g_distance = dist;
 }
 
 float getGpsDistanceKms() {

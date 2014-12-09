@@ -26,6 +26,9 @@
 
 #include <stddef.h>
 
+#define KMS_TO_MILES_CONSTANT (.621371)
+#define KNOTS_TO_KPH (1.852)
+
 enum GpsSignalQuality {
    GPS_QUALITY_NO_FIX = 0,
    GPS_QUALITY_FIX = 1,
@@ -58,6 +61,8 @@ int checksumValid(const char *gpsData, size_t len);
 void processGPSData(char *gpsData, size_t len);
 
 void resetGpsDistance();
+
+void setGpsDistanceKms(float dist);
 
 float getGpsDistanceKms();
 
