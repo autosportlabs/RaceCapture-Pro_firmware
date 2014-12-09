@@ -17,6 +17,8 @@
 #include <math.h>
 #include <stdint.h>
 
+#define KMS_TO_MILES_CONSTANT (.621371)
+
 #define KNOTS_TO_KPH (1.852)
 
 #define GPS_LOCK_FLASH_COUNT 5
@@ -410,8 +412,12 @@ void resetGpsDistance() {
    g_distance = 0;
 }
 
-float getGpsDistance() {
+float getGpsDistanceKms() {
    return g_distance;
+}
+
+float getGpsDistanceMiles() {
+	return KMS_TO_MILES_CONSTANT * g_distance;
 }
 
 void resetLapCount() {

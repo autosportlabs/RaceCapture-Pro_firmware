@@ -59,7 +59,9 @@ void processGPSData(char *gpsData, size_t len);
 
 void resetGpsDistance();
 
-float getGpsDistance();
+float getGpsDistanceKms();
+
+float getGpsDistanceMiles();
 
 void resetLapCount();
 
