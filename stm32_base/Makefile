@@ -87,6 +87,13 @@ ifeq ($(TARGET),)
 $(error TARGET is not defined, please define it in your applications config.mk)
 endif
 
+ASL_FW_POSTPROCESS=asl_f4_fw_postprocess
+ifeq ($(PYTHON),python2.7)
+ASL_FW_POSTPROCESS=/usr/local/bin/asl_f4_fw_postprocess
+else
+PYTHON=python
+endif
+
 LIBS_ALL = $(addprefix lib,$(BASE_LIBS:=.a))
 
 all: $(LIBS_ALL) $(TARGET).ihex
@@ -102,7 +109,7 @@ libstm32_usb.a: $(STM32_USB_OBJS)
 
 $(TARGET).ihex: $(TARGET).bin
 	@printf "  Creating upgrade images\n"
-	asl_f4_fw_postprocess -f $(TARGET).bin -o 0x08020000 -b $(TARGET).bin -i $(TARGET).ihex
+	$(PYTHON) $(ASL_FW_POSTPROCESS) -f $(TARGET).bin -o 0x08020000 -b $(TARGET).bin -i $(TARGET).ihex
 
 $(TARGET).bin: $(TARGET).elf
 	@printf "  OBJCOPY $(subst $(shell pwd)/,,$(@))\n"
