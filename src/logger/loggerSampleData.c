@@ -273,7 +273,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
    chanCfg = &(gpsConfig->speed);
    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getGpsSpeedInMph);
    chanCfg = &(gpsConfig->distance);
-   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getGpsDistance);
+   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getGpsDistanceMiles);
    chanCfg = &(gpsConfig->satellites);
    sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getSatellitesUsedForPosition);
 
