@@ -311,7 +311,7 @@ int Lua_GetGPSQuality(lua_State *L){
 }
 
 int Lua_GetGPSDistance(lua_State *L){
-	lua_pushnumber(L, getGpsDistance());
+	lua_pushnumber(L, getGpsDistanceMiles());
 	return 1;
 }
 
