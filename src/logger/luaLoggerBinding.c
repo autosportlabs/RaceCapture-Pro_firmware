@@ -544,6 +544,7 @@ int Lua_AddVirtualChannel(lua_State *L){
 		chCfg.max = args >= 5 ? lua_tointeger(L, 5) : DEFAULT_CHANNEL_MAX;
 		strncpy(chCfg.units, args >=6 ? lua_tostring(L, 6) : DEFAULT_CHANNEL_UNITS, DEFAULT_UNITS_LENGTH);
 		lua_pushinteger(L, create_virtual_channel(chCfg));
+		return 1;
 	}
 	return 0;
 }

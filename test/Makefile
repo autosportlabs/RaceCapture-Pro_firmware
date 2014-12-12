@@ -95,6 +95,7 @@ T_SRC = loggerApi_test.cpp \
 		sector_test.cpp \
 		track_test.cpp \
 		loggerData_test.cpp \
+		virtualChannel_test.cpp \
 		$(GPS_DIR)/gps_test.cpp \
 		$(UTIL_DIR)/numtoa_test.cpp \
 		$(UTIL_DIR)/atonum_test.cpp

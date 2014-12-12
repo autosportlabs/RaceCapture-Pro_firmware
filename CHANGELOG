@@ -1,3 +1,6 @@
+===2.7.4===
+* Fixed addChannel() return value upon successful creation of channel
+
 ===2.7.3===
 * Padded all OBDII PID requests with 0x55 to the full 8 byte message for maximum ECU compatibility.
 * Corrected Lua initCAN() api call to match documentation

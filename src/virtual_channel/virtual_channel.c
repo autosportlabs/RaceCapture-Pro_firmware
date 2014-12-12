@@ -13,20 +13,29 @@ VirtualChannel * get_virtual_channel(size_t id){
 	return NULL;
 }
 
-int create_virtual_channel(const ChannelConfig chCfg) {
-	int newVirtualChannelId = -1;
-
-	if (g_virtualChannelCount < MAX_VIRTUAL_CHANNELS){
-		newVirtualChannelId = g_virtualChannelCount;
-		VirtualChannel * newChannel = g_virtualChannels + newVirtualChannelId;
-		newChannel->config = chCfg;
-		newChannel->currentValue = 0;
-		g_virtualChannelCount++;
-	} else{
-		pr_error("could not create virtual channel; limit reached\r\n");
+int find_virtual_channel(const char * channel_name){
+	for (size_t i = 0; i < g_virtualChannelCount; i++){
+		if (strcmp(channel_name, g_virtualChannels[i].config.label) == 0) return i;
 	}
+	return INVALID_VIRTUAL_CHANNEL;
+}
 
-	configChanged();
+int create_virtual_channel(const ChannelConfig chCfg) {
+
+	int newVirtualChannelId = find_virtual_channel(chCfg.label);
+
+	if (newVirtualChannelId == INVALID_VIRTUAL_CHANNEL){
+		if (g_virtualChannelCount < MAX_VIRTUAL_CHANNELS){
+			newVirtualChannelId = g_virtualChannelCount;
+			VirtualChannel * newChannel = g_virtualChannels + newVirtualChannelId;
+			newChannel->config = chCfg;
+			newChannel->currentValue = 0;
+			g_virtualChannelCount++;
+			configChanged();
+		} else{
+			pr_error("could not create virtual channel; limit reached\r\n");
+		}
+	}
 	return newVirtualChannelId;
 }
 
@@ -39,6 +48,10 @@ float get_virtual_channel_value(int id){
 	return g_virtualChannels[id].currentValue;
 }
 
-size_t get_virtual_channel_count(){
+size_t get_virtual_channel_count(void){
 	return g_virtualChannelCount;
+}
+
+void reset_virtual_channels(void){
+	g_virtualChannelCount = 0;
 }
