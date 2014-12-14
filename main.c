@@ -118,10 +118,6 @@ int main( void )
 	cpu_init();
 	watchdog_init(WATCHDOG_TIMEOUT_MS);
 
-	//perform a clean reset if the watchdog fired
-	if (watchdog_is_watchdog_reset())
-		cpu_reset(0);
-
 	/* Start the scheduler.
 
 	   NOTE : Tasks run in system mode and the scheduler runs in Supervisor mode.

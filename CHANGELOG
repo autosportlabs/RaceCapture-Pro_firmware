@@ -1,3 +1,6 @@
+===2.7.5===
+* Allow watchdog reset to prevent Lua from running script in case lua script was responsible for watchdog
+
 ===2.7.4===
 * Fixed addChannel() return value upon successful creation of channel
 
