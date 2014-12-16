@@ -281,7 +281,7 @@ static void i2c_dma_init(struct i2c_priv *p)
 
 	/* Enable the I2Cx Tx DMA Interrupt */
 	NVIC_InitStructure.NVIC_IRQChannel = st->irq_channel;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 4;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 5;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
