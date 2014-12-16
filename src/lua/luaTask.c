@@ -186,7 +186,7 @@ static void guardedDoScript(void){
 		doScript();
 	}
 	else{
-		pr_error("Previous Lua Script crash detected; bypassing for recovery mode\r\n");
+		pr_error("Crash detected; bypassing Lua script for recovery mode\r\n");
 		LED_enable(3);
 	}
 }
