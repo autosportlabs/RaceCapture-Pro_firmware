@@ -2,6 +2,7 @@
 #include "mem_mang.h"
 #include "mod_string.h"
 #include "printk.h"
+#include "loggerTaskEx.h"
 
 static size_t g_virtualChannelCount = 0;
 static VirtualChannel g_virtualChannels[MAX_VIRTUAL_CHANNELS];
@@ -22,21 +23,23 @@ int find_virtual_channel(const char * channel_name){
 
 int create_virtual_channel(const ChannelConfig chCfg) {
 
-	int newVirtualChannelId = find_virtual_channel(chCfg.label);
+	int virtualChannelId = find_virtual_channel(chCfg.label);
 
-	if (newVirtualChannelId == INVALID_VIRTUAL_CHANNEL){
+	if (virtualChannelId == INVALID_VIRTUAL_CHANNEL){
 		if (g_virtualChannelCount < MAX_VIRTUAL_CHANNELS){
-			newVirtualChannelId = g_virtualChannelCount;
-			VirtualChannel * newChannel = g_virtualChannels + newVirtualChannelId;
-			newChannel->config = chCfg;
-			newChannel->currentValue = 0;
+			virtualChannelId = g_virtualChannelCount;
 			g_virtualChannelCount++;
-			configChanged();
-		} else{
-			pr_error("could not create virtual channel; limit reached\r\n");
 		}
 	}
-	return newVirtualChannelId;
+	if (virtualChannelId != INVALID_VIRTUAL_CHANNEL){
+		VirtualChannel * channel = g_virtualChannels + virtualChannelId;
+		channel->config = chCfg;
+		channel->currentValue = 0;
+		configChanged();
+	} else{
+		pr_error("could not create virtual channel; limit reached\r\n");
+	}
+	return virtualChannelId;
 }
 
 void set_virtual_channel_value(size_t id, float value){
