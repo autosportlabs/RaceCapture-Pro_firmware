@@ -538,7 +538,7 @@ int Lua_AddVirtualChannel(lua_State *L){
 	if (args >= 2){
 		ChannelConfig chCfg;
 		strncpy(chCfg.label, lua_tostring(L, 1), DEFAULT_LABEL_LENGTH);
-		chCfg.sampleRate = (unsigned short) lua_tointeger(L, 2);
+		chCfg.sampleRate = encodeSampleRate((unsigned short) lua_tointeger(L, 2));
 		chCfg.precision = args >= 3 ? lua_tointeger(L, 3) : DEFAULT_CHANNEL_LOGGING_PRECISION;
 		chCfg.min = args >= 4 ? lua_tointeger(L, 4) : DEFAULT_CHANNEL_MIN;
 		chCfg.max = args >= 5 ? lua_tointeger(L, 5) : DEFAULT_CHANNEL_MAX;
