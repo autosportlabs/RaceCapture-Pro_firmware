@@ -18,11 +18,8 @@ Only disconnect telemetry upon sustained (10) malformed API message. Resend meta
 ===2.7.1===
 Initial release of MK2 firmware
 
-<<<<<<< HEAD
 =======MK2 Release=======
 
-=======
->>>>>>> Add Unit test for Km to Miles patch on RCP.  Fix test compile issue.
 ===2.0.8===
 Switched Analog Raw mode to a more meaningful 0-5v mode
 Cellular telemetry mode off with default config
