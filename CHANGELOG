@@ -1,6 +1,8 @@
 ===2.7.5===
 * Allow watchdog reset to prevent Lua from running script in case lua script was responsible for watchdog
 * Adjusted USB and I2C interrupt priority to reduce the chance of hard faults
+* Virtual Channel: encoding of sample rate incorrect, preventing SD logging in many cases
+* Virtual Channel: if re-adding a virtual channel with the same name, update the standing channel with updated settings
 
 ===2.7.4===
 * Fixed addChannel() return value upon successful creation of channel
