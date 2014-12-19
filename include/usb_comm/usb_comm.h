@@ -3,8 +3,6 @@
 #include <stddef.h>
 #include "serial.h"
 
-int usb_comm_init();
-
 void usb_init_serial(Serial *serial);
 
 void startUSBCommTask(int priority);
