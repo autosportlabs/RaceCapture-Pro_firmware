@@ -78,7 +78,7 @@ static void fatalError(int type){
 #define LOGGER_TASK_PRIORITY		( tskIDLE_PRIORITY + 6 )
 #define FILE_WRITER_TASK_PRIORITY	( tskIDLE_PRIORITY + 4 )
 #define LUA_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
-#define USB_COMM_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
+#define USB_COMM_TASK_PRIORITY		( tskIDLE_PRIORITY + 6 )
 #define GPIO_TASK_PRIORITY 			( tskIDLE_PRIORITY + 4 )
 
 
