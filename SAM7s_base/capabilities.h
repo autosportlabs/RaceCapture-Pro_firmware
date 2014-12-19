@@ -20,7 +20,7 @@
 #define TIMER_CHANNELS			3
 #define PWM_CHANNELS			4
 #define CAN_CHANNELS			1
-#define CONNECTIVITY_CHANNELS	2
+#define CONNECTIVITY_CHANNELS	1
 
 //sample rates
 #define MAX_SENSOR_SAMPLE_RATE	100
