@@ -15,7 +15,7 @@ static char lineBuffer[BUFFER_SIZE];
 
 #define mainUSB_COMM_STACK	( 1000 )
 
-int usb_comm_init(){
+static int usb_comm_init(){
 	return USB_CDC_device_init();
 }
 
