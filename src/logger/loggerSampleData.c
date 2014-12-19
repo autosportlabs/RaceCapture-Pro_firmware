@@ -18,6 +18,8 @@
 #include "linear_interpolate.h"
 #include "printk.h"
 
+#include <stdbool.h>
+
 static ChannelSample* processChannelSampleWithFloatGetter(ChannelSample *s,
                                                 ChannelConfig *cfg,
                                                 const size_t index,
@@ -290,13 +292,21 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getPredictedTimeInMinutes);
 }
 
-int populate_sample_buffer(ChannelSample * samples,  size_t count, size_t currentTicks) {
+int is_sample_needed(ChannelSample *samples, size_t count, size_t logTick) {
+    for (size_t i = 0; i < count; i++, samples++)
+       if (logTick % samples->cfg->sampleRate == 0)
+           return 1;
+
+    return 0;
+}
+
+int populate_sample_buffer(ChannelSample * samples,  size_t count, size_t logTick) {
    unsigned short highestRate = SAMPLE_DISABLED;
 
    for (size_t i = 0; i < count; i++, samples++) {
       const unsigned short sampleRate = samples->cfg->sampleRate;
 
-      if (currentTicks % sampleRate != 0) {
+      if (logTick % sampleRate != 0) {
          samples->populated = false;
          continue;
       }

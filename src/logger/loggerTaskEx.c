@@ -118,78 +118,84 @@ size_t updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate,
 	return channelCount;
 }
 
-void loggerTaskEx(void *params){
-   LoggerMessage logStartMsg = getLogStartMessage();
-   LoggerMessage logStopMsg = getLogStopMessage();
+void loggerTaskEx(void *params) {
+LoggerMessage logStartMsg = getLogStartMessage();
+LoggerMessage logStopMsg = getLogStopMessage();
 
-	g_loggingShouldRun = 0;
-	memset(&g_sampleRecordMsgBuffer, 0, sizeof(g_sampleRecordMsgBuffer));
-	vSemaphoreCreateBinary( onTick );
+g_loggingShouldRun = 0;
+memset(&g_sampleRecordMsgBuffer, 0, sizeof(g_sampleRecordMsgBuffer));
+vSemaphoreCreateBinary(onTick);
 
-	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 
-	g_loggingShouldRun = 0;
-	g_isLogging = 0;
-	size_t bufferIndex = 0;
-	size_t currentTicks = 0;
-	g_configChanged = 1;
-	size_t channelCount = 0;
+g_loggingShouldRun = 0;
+g_isLogging = 0;
+size_t bufferIndex = 0;
+size_t currentTicks = 0;
+g_configChanged = 1;
+size_t channelCount = 0;
 
-	int loggingSampleRate = SAMPLE_DISABLED;
-	int sampleRateTimebase = SAMPLE_DISABLED;
-	int telemetrySampleRate = SAMPLE_DISABLED;
+int loggingSampleRate = SAMPLE_DISABLED;
+int sampleRateTimebase = SAMPLE_DISABLED;
+int telemetrySampleRate = SAMPLE_DISABLED;
 
-	while(1){
-		xSemaphoreTake(onTick, portMAX_DELAY);
-		watchdog_reset();
+while (1) {
+    xSemaphoreTake(onTick, portMAX_DELAY);
+    watchdog_reset();
+    ++currentTicks;
 
-		currentTicks++;
-		if (currentTicks % BACKGROUND_SAMPLE_RATE == 0){
-			doBackgroundSampling();
-		}
+    // XXX STIEG: Should this be higher for MK2?  Seems like it should be.
+    if (currentTicks % BACKGROUND_SAMPLE_RATE == 0) doBackgroundSampling();
 
-		if (g_configChanged){
-			currentTicks = 0;
-			channelCount = updateSampleRates(loggerConfig, &loggingSampleRate, &telemetrySampleRate, &sampleRateTimebase);
-			resetLapCount();
-			resetGpsDistance();
-			g_configChanged = 0;
-		}
+    if (g_configChanged) {
+        currentTicks = 0;
+        channelCount = updateSampleRates(loggerConfig, &loggingSampleRate,
+                &telemetrySampleRate, &sampleRateTimebase);
+        resetLapCount();
+        resetGpsDistance();
+        g_configChanged = 0;
+    }
 
+    if (g_loggingShouldRun && !g_isLogging) {
+        pr_info("Logging started\r\n");
+        g_isLogging = 1;
+        LED_disable(3);
 
-		if (g_loggingShouldRun && !g_isLogging){
-			pr_info("Logging started\r\n");
-			g_isLogging = 1;
-			LED_disable(3);
+        queue_logfile_record(&logStartMsg);
+        queueTelemetryRecord(&logStartMsg);
+    }
 
-			queue_logfile_record(&logStartMsg);
-			queueTelemetryRecord(&logStartMsg);
-		} else if (!g_loggingShouldRun && g_isLogging){
-			pr_info("Logging stopped\r\n");
-			g_isLogging = 0;
-			LED_disable(2);
+    if (!g_loggingShouldRun && g_isLogging) {
+        pr_info("Logging stopped\r\n");
+        g_isLogging = 0;
+        LED_disable(2);
 
-			queue_logfile_record(&logStopMsg);
-			queueTelemetryRecord(&logStopMsg);
-		}
+        queue_logfile_record(&logStopMsg);
+        queueTelemetryRecord(&logStopMsg);
+    }
 
-		LoggerMessage *msg = &g_sampleRecordMsgBuffer[bufferIndex];
-		int sampledRate = populate_sample_buffer(msg->channelSamples, channelCount, currentTicks);
-		msg->sampleCount = channelCount;
+    // Check if we need to actually populate the buffer.
+    LoggerMessage *msg = &g_sampleRecordMsgBuffer[bufferIndex];
+    if (!g_isLogging) continue;
 
-		if (g_isLogging && (sampledRate != SAMPLE_DISABLED && sampledRate >= loggingSampleRate)){
-			if (queue_logfile_record(msg) != pdTRUE){
-				LED_enable(3);
-			}
-		}
+    int sampledRate = populate_sample_buffer(msg->channelSamples, channelCount,
+            currentTicks);
+    msg->sampleCount = channelCount;
 
-		if ((sampledRate != SAMPLE_DISABLED && (sampledRate >= telemetrySampleRate || currentTicks % telemetrySampleRate == 0)) && (loggerConfig->ConnectivityConfigs.telemetryConfig.backgroundStreaming|| g_isLogging)){
-			queueTelemetryRecord(msg);
-		}
+    if (sampledRate == SAMPLE_DISABLED)
+    // If here, not time for a sample.  Move along.
+        continue;
 
-		if (sampledRate != SAMPLE_DISABLED){
-			bufferIndex++;
-			if (bufferIndex >= LOGGER_MESSAGE_BUFFER_SIZE ) bufferIndex = 0;
-		}
-	}
+    if (sampledRate >= loggingSampleRate && queue_logfile_record(msg) != pdTRUE)
+        LED_enable(3);
+
+    if ((sampledRate >= telemetrySampleRate
+            || currentTicks % telemetrySampleRate == 0)
+            && loggerConfig->ConnectivityConfigs.telemetryConfig.backgroundStreaming) {
+        queueTelemetryRecord(msg);
+    }
+
+    ++bufferIndex;
+    bufferIndex %= LOGGER_MESSAGE_BUFFER_SIZE;
+}
 }
