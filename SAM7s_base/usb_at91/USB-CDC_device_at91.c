@@ -58,7 +58,7 @@
 #include "usb.h"
 #include "USB-CDC_data.h"
 
-#define USB_CDC_QUEUE_SIZE    100
+#define USB_CDC_QUEUE_SIZE    65
 
 typedef enum
 {
@@ -150,7 +150,7 @@ static unsigned int uiCurrentBank;
 /*------------------------------------------------------------*/
 
 #define USB_CDC_TASK_SIZE					( 100 )
-#define USB_CDC_TASK_PRIORITY				( tskIDLE_PRIORITY + 2 )
+#define USB_CDC_TASK_PRIORITY				( tskIDLE_PRIORITY + 4 )
 
 
 
