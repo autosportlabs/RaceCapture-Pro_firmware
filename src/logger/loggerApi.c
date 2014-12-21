@@ -1,3 +1,5 @@
+#include "FreeRTOS.h"
+#include "task.h"
 #include "constants.h"
 #include "capabilities.h"
 #include "loggerApi.h"
@@ -127,7 +129,13 @@ static int setStringValueIfExists(const jsmntok_t *root, const char * fieldName,
 
 int api_systemReset(Serial *serial, const jsmntok_t *json){
 	int loader = 0;
+	int reset_delay_ms = 0;
 	setIntValueIfExists(json, "loader", &loader);
+	setIntValueIfExists(json, "reset_delay_ms", &reset_delay_ms);
+
+	if (reset_delay_ms > 0) {
+		vTaskDelay(reset_delay_ms / portTICK_RATE_MS);
+	}
 	cpu_reset(loader);
 	return API_SUCCESS_NO_RETURN;
 }
