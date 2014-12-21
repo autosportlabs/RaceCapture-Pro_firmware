@@ -1,9 +1,22 @@
+#include <stdarg.h>
 #include "serial.h"
 #include "usart.h"
 #include "usb_comm.h"
 #include "modp_numtoa.h"
 
+#define PRINTF_LONG_SUPPORT 1
+
 static Serial serial_ports[SERIAL_COUNT];
+
+static void serial_ui2a(unsigned int num, unsigned int base, int uc,char * bf);
+static void serial_i2a (int num, char * bf);
+static void serial_putchw(void (* putf)(char),int n, char z, char* bf);
+static int serial_a2d(char ch);
+static char serial_a2i(char ch, char** src,int base,int* nump);
+#ifdef PRINTF_LONG_SUPPORT
+static void serial_li2a(long num, char * bf);
+static void serial_uli2a(unsigned long int num, unsigned int base, int uc,char * bf);
+#endif
 
 void init_serial(void){
 	usart_init_serial(&serial_ports[SERIAL_GPS], UART_GPS);
@@ -312,3 +325,205 @@ void interactive_read_line(Serial *serial, char * buffer, size_t bufferSize){
 	serial->put_s("\r\n");
 	buffer[bufIndex]='\0';
 }
+
+
+void serial_format(void(* putf)(char) ,char *fmt, va_list va) {
+   char bf[12];
+   char ch;
+   while ((ch=*(fmt++))) {
+     if (ch!='%') 
+         putf(ch);
+     else {
+         char lz=0;
+#ifdef  PRINTF_LONG_SUPPORT
+         char lng=0;
+#endif
+         int w=0;
+         ch=*(fmt++);
+         if (ch=='0') {
+             ch=*(fmt++);
+             lz=1;
+             }
+         if (ch>='0' && ch<='9') {
+             ch=serial_a2i(ch,&fmt,10,&w);
+             }
+#ifdef  PRINTF_LONG_SUPPORT
+         if (ch=='l') {
+             ch=*(fmt++);
+             lng=1;
+         }
+#endif
+         switch (ch) {
+             case 0: 
+                 goto abort;
+             case 'u' : {
+#ifdef  PRINTF_LONG_SUPPORT
+                 if (lng)
+                     serial_uli2a(va_arg(va, unsigned long int),10,0,bf);
+                 else
+#endif
+                 serial_ui2a(va_arg(va, unsigned int),10,0,bf);
+                 serial_putchw(putf,w,lz,bf);
+                 break;
+                 }
+             case 'd' :  {
+#ifdef  PRINTF_LONG_SUPPORT
+                 if (lng)
+                     serial_li2a(va_arg(va, unsigned long int),bf);
+                 else
+#endif
+                 serial_i2a(va_arg(va, int),bf);
+                 serial_putchw(putf,w,lz,bf);
+                 break;
+                 }
+             case 'x': case 'X' : 
+#ifdef  PRINTF_LONG_SUPPORT
+                 if (lng)
+                     serial_uli2a(va_arg(va, unsigned long int),16,(ch=='X'),bf);
+                 else
+#endif
+                 serial_ui2a(va_arg(va, unsigned int),16,(ch=='X'),bf);
+                 serial_putchw(putf,w,lz,bf);
+                 break;
+             case 'c' : 
+                 putf((char)(va_arg(va, int)));
+                 break;
+             case 's' : 
+                 serial_putchw(putf,w,0,va_arg(va, char*));
+                 break;
+             case '%' :
+                 putf(ch);
+             default:
+                 break;
+             }
+         }
+     }
+ abort:;
+ }
+    
+void serial_printf(Serial * p_Serial, char *fmt, ...)
+{
+   va_list va;
+   va_start(va,fmt);
+   serial_format(p_Serial->put_c,fmt,va);
+   va_end(va);
+}
+
+#ifdef PRINTF_LONG_SUPPORT
+
+void serial_uli2a(unsigned long int num, unsigned int base, int uc,char * bf) {
+   int n=0;
+   unsigned int d=1;
+   while (num/d >= base)
+     d*=base;         
+   while (d!=0) {
+     int dgt = num / d;
+     num%=d;
+     d/=base;
+     if (n || dgt>0|| d==0) {
+         *bf++ = dgt+(dgt<10 ? '0' : (uc ? 'A' : 'a')-10);
+         ++n;
+         }
+     }
+   *bf=0;
+}
+
+void serial_li2a (long num, char * bf)
+{
+   if (num<0) {
+     num=-num;
+     *bf++ = '-';
+     }
+   serial_uli2a(num,10,0,bf);
+}
+
+#endif
+
+void serial_i2a (int num, char * bf)
+{
+   if (num<0) {
+      num=-num;
+      *bf++ = '-';
+   }
+   serial_ui2a(num,10,0,bf);
+}
+
+void serial_putchw(void (* putf)(char),int n, char z, char* bf)
+{
+   char fc=z? '0' : ' ';
+   char ch;
+   char* p=bf;
+   
+   while (*p++ && n > 0)
+      n--;
+
+   while (n-- > 0) 
+      putf(fc);
+
+   while ((ch= *bf++))
+      putf(ch);
+}
+    
+void serial_ui2a(unsigned int num, unsigned int base, int uc,char * bf)
+{
+   int n=0;
+   unsigned int d=1;
+
+   while (num/d >= base)
+      d*=base;        
+
+   while (d!=0) {
+      int dgt = num / d;
+      num%= d;
+      d/=base;
+         
+         if (n || dgt>0 || d==0) {
+            *bf++ = dgt+(dgt<10 ? '0' : (uc ? 'A' : 'a')-10);
+            ++n;
+         }
+   }
+
+   *bf=0;
+}
+
+int serial_a2d(char ch)
+{
+   if (ch>='0' && ch<='9') 
+      return ch-'0';
+   else if (ch>='a' && ch<='f')
+      return ch-'a'+10;
+   else if (ch>='A' && ch<='F')
+      return ch-'A'+10;
+   else return -1;
+}
+
+char serial_a2i(char ch, char** src,int base,int* nump)
+{
+   char* p= *src;
+   int num=0;
+   int digit;
+   while ((digit=serial_a2d(ch))>=0) {
+      if (digit>base) break;
+         num=num*base+digit;
+         ch=*p++;
+   }
+   *src=p;
+   *nump=num;
+   return ch;
+}
+
+/*void tfp_sprintf(char* s,char *fmt, ...)
+{
+   va_list va;
+   va_start(va,fmt);
+   serial_format(&s,putcp,fmt,va);
+   putcp(&s,0);
+   va_end(va);
+}*/
+
+
+// TO REMOVE
+// put_crlf
+// put_s
+// put_uint
+// put_int
