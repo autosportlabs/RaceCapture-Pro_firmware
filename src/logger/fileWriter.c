@@ -260,6 +260,11 @@ void fileWriterTask(void *params){
 			//wait for the next sample record
 			xQueueReceive(g_sampleRecordQueue, &(msg), portMAX_DELAY);
 
+            if (!isValidLoggerMessageAge(msg)) {
+                pr_warning("File writer Logger message too old.  Ignoring it.\r\n");
+                continue;
+            }
+
 			if ((LoggerMessageType_Start == msg->type || LoggerMessageType_Sample == msg->type) &&
                             WRITING_INACTIVE == writingStatus){
 				pr_debug("Starting File Logging\r\n");

@@ -88,8 +88,6 @@ int getAtStartFinish();
 
 int getAtSector();
 
-void setUTCTime(float UTCTime);
-
 float getSecondsSinceMidnight();
 
 void updateSecondsSinceMidnight(float secondsSinceMidnight);

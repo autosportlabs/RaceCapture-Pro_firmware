@@ -207,6 +207,11 @@ void connectivityTask(void *params) {
 			//wait for the next sample record
 			char res = xQueueReceive(sampleQueue, &(msg), IDLE_TIMEOUT);
 
+            if (!isValidLoggerMessageAge(msg)) {
+                pr_warning("Comm Task Logger message too old.  Ignoring it.\r\n");
+                continue;
+            }
+
 			////////////////////////////////////////////////////////////
 			// Process a pending message from logger task, if exists
 			////////////////////////////////////////////////////////////

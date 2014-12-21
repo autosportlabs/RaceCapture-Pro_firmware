@@ -12,8 +12,8 @@
 #include "gps.h"
 #include "task.h"
 #include "capabilities.h"
-
 #include <string>
+#include "include/taskUtil_mock.h"
 
 using std::string;
 
@@ -25,6 +25,7 @@ void SampleRecordTest::setUp()
 	InitLoggerHardware();
 	initGPS();
 	initialize_logger_config();
+	resetCurrentTicks();
 }
 
 
@@ -46,22 +47,25 @@ void SampleRecordTest::testPopulateSampleRecord(){
 	ChannelSample * samples = create_channel_sample_buffer(lc, channelCount);
 	init_channel_sample_buffer(lc, samples, channelCount);
 
+	LoggerMessage lm;
+	lm.channelSamples = samples;
+	lm.sampleCount = channelCount;
+	lm.type = LoggerMessageType_Sample;
+
    // Set it so we have 1 tick.
    resetTicks();
    incrementTick();
    CPPUNIT_ASSERT_EQUAL(1, (int) (xTaskGetTickCount()));
 
 	const unsigned short highSampleRate =
-     (unsigned short) populate_sample_buffer(samples, channelCount, 0);
+    (unsigned short) populate_sample_buffer(&lm, channelCount, 0);
 
    // Interval Channel
-   CPPUNIT_ASSERT_EQUAL(highSampleRate, samples->cfg->sampleRate);
    CPPUNIT_ASSERT_EQUAL((int) (xTaskGetTickCount() * MS_PER_TICK), samples->valueInt);
 
 
    // UtC Channel.  Just test that its 0 for now
    samples++;
-   CPPUNIT_ASSERT_EQUAL(highSampleRate, samples->cfg->sampleRate);
    CPPUNIT_ASSERT_EQUAL(0ll, (long long) getMillisSinceEpoch());
    CPPUNIT_ASSERT_EQUAL(0ll, samples->valueLongLong);
 
@@ -285,4 +289,51 @@ void SampleRecordTest::testInitSampleRecord()
    //amount shoud match
    unsigned int size = (unsigned int)ts - (unsigned int)samples;
    CPPUNIT_ASSERT_EQUAL(expectedEnabledChannels * sizeof(ChannelSample), size);
+}
+
+
+void SampleRecordTest::testIsValidLoggerMessageAge() {
+    LoggerMessage lm;
+    lm.ticks = 0;
+
+    setCurrentTicks(0);
+    CPPUNIT_ASSERT_EQUAL(1, isValidLoggerMessageAge(&lm));
+
+    setCurrentTicks(9);
+    CPPUNIT_ASSERT_EQUAL(1, isValidLoggerMessageAge(&lm));
+
+    setCurrentTicks(10);
+    CPPUNIT_ASSERT_EQUAL(0, isValidLoggerMessageAge(&lm));
+}
+
+void SampleRecordTest::testLoggerMessageAlwaysHasTime() {
+    LoggerConfig *lc = getWorkingLoggerConfig();
+
+    size_t channelCount = get_enabled_channel_count(lc);
+    ChannelSample * samples = create_channel_sample_buffer(lc, channelCount);
+    init_channel_sample_buffer(lc, samples, channelCount);
+
+    LoggerMessage lm;
+    lm.channelSamples = samples;
+    lm.sampleCount = channelCount;
+    lm.type = LoggerMessageType_Sample;
+
+    /**
+     * Check that we always populate the Interval time, regardless of what the sample rate is that
+     * is set for that channel.
+     */
+    int var = 0;
+    int tick = 0;
+    while (var < 5 && tick <= 1000) {
+        int sr = populate_sample_buffer(&lm, channelCount, tick++);
+
+        // No sample, no check.
+        if (sr == 0)
+            continue;
+
+        ++var;
+        CPPUNIT_ASSERT_EQUAL(true, lm.channelSamples->populated);
+    }
+
+    CPPUNIT_ASSERT_EQUAL(true, tick < 1000);
 }

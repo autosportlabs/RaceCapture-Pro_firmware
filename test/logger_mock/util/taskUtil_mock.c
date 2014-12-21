@@ -1,7 +1,17 @@
 #include "taskUtil.h"
 
+size_t ticks;
+
+void setCurrentTicks(size_t t) {
+    ticks = t;
+}
+
+void resetCurrentTicks() {
+    setCurrentTicks(0);
+}
+
 size_t getCurrentTicks(){
-	return 0;  //TODO return current system ticks, whatever that means
+	return ticks;
 }
 
 int isTimeoutMs(unsigned int startTicks, unsigned int timeoutMs){

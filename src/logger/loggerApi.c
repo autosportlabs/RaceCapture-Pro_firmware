@@ -25,6 +25,9 @@
 #include "luaScript.h"
 #include "luaTask.h"
 #include "loggerTaskEx.h"
+#include "FreeRTOS.h"
+#include "taskUtil.h"
+
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
 typedef void (*getConfigs_func)(size_t channeId, void ** baseCfg, ChannelConfig ** channelCfg);
@@ -205,9 +208,14 @@ int api_sampleData(Serial *serial, const jsmntok_t *json){
 	ChannelSample *samples = create_channel_sample_buffer(config, channelCount);
 
 	if (samples == 0) return API_ERROR_SEVERE;
+	LoggerMessage lm;
+	lm.channelSamples = samples;
+	lm.type = LoggerMessageType_Sample;
+	lm.ticks = getCurrentTicks();
+	lm.sampleCount = channelCount;
 
 	init_channel_sample_buffer(config, samples, channelCount);
-	populate_sample_buffer(samples, channelCount, 0);
+	populate_sample_buffer(&lm, channelCount, 0);
 	api_sendSampleRecord(serial, samples, channelCount, 0, sendMeta);
 	portFree(samples);
 	return API_SUCCESS_NO_RETURN;

@@ -178,12 +178,11 @@ while (1) {
     LoggerMessage *msg = &g_sampleRecordMsgBuffer[bufferIndex];
     if (!g_isLogging) continue;
 
-    int sampledRate = populate_sample_buffer(msg->channelSamples, channelCount,
-            currentTicks);
+    int sampledRate = populate_sample_buffer(msg, channelCount, currentTicks);
     msg->sampleCount = channelCount;
 
-    if (sampledRate == SAMPLE_DISABLED)
     // If here, not time for a sample.  Move along.
+    if (sampledRate == SAMPLE_DISABLED)
         continue;
 
     if (sampledRate >= loggingSampleRate && queue_logfile_record(msg) != pdTRUE)

@@ -8,7 +8,10 @@
 #ifndef SAMPLERECORD_H_
 #define SAMPLERECORD_H_
 
-#include <limits.h>
+#include <stdbool.h>
+#include <stddef.h>
+
+#include "dateTime.h"
 #include "loggerConfig.h"
 
 enum LoggerMessageType {
@@ -63,9 +66,18 @@ typedef struct _LoggerMessage
 {
 	enum LoggerMessageType type;
 	size_t sampleCount;
+    size_t ticks;
 	ChannelSample *channelSamples;
 } LoggerMessage;
 
 ChannelSample* create_channel_sample_buffer(LoggerConfig *loggerConfig, size_t channelCount);
+
+/**
+ * Checks to ensure that the LoggerMessage object is not older than 10 milliseconds.  If it is then
+ * we may read an old buffer and send bad data.
+ * @param lm The LoggerMessage object.
+ * @return True if its not older than 10ms, false otherwise.
+ */
+int isValidLoggerMessageAge(LoggerMessage *lm);
 
 #endif /* SAMPLERECORD_H_ */

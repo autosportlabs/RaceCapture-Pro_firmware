@@ -165,7 +165,6 @@ $(SERIAL_SRC_DIR)/serial.c \
 $(FAT_SD_SRC_DIR)/fattime.c \
 $(FAT_SD_SRC_DIR)/ff.c \
 $(FAT_SD_SRC_DIR)/sd_spi_at91.c \
-$(FAT_SD_SRC_DIR)/rtc.c \
 $(SDCARD_SRC_DIR)/sdcard.c \
 $(IMU_SRC_DIR)/imu.c \
 $(LOGGER_SRC_DIR)/sampleRecord.c \

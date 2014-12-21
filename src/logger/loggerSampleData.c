@@ -17,6 +17,8 @@
 #include "predictive_timer_2.h"
 #include "linear_interpolate.h"
 #include "printk.h"
+#include "FreeRTOS.h"
+#include "taskUtil.h"
 
 #include <stdbool.h>
 
@@ -201,7 +203,6 @@ float get_imu_sample(int channelId){
 
 void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samples, size_t channelCount){
    ChannelSample *sample = samples;
-   const unsigned int highSampleRate = getHighestSampleRate(loggerConfig);
    ChannelConfig *chanCfg;
 
    /*
@@ -212,14 +213,12 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
     */
    struct TimeConfig *tc = &(loggerConfig->TimeConfigs[0]);
    chanCfg = &(tc->cfg);
-   // XXX: Special Trick -- Set highest sample rate here.
-   tc->cfg.sampleRate = highSampleRate;
+   chanCfg->flags = ALWAYS_SAMPLED; // Set always sampled flag here so we always take samples
    sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getUptimeAsInt);
 
    tc = &(loggerConfig->TimeConfigs[1]);
    chanCfg = &(tc->cfg);
-   // XXX: Special Trick -- Set highest sample rate here.
-   tc->cfg.sampleRate = highSampleRate; // Set highest sample rate here.
+   chanCfg->flags = ALWAYS_SAMPLED; // Set always sampled flag here so we always take samples
    sample = processChannelSampleWithLongLongGetterNoarg(sample, chanCfg, getMillisSinceEpochAsLongLong);
 
 
@@ -292,16 +291,44 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getPredictedTimeInMinutes);
 }
 
-int is_sample_needed(ChannelSample *samples, size_t count, size_t logTick) {
-    for (size_t i = 0; i < count; i++, samples++)
-       if (logTick % samples->cfg->sampleRate == 0)
-           return 1;
+static void populate_channel_sample(ChannelSample *sample) {
+    size_t channelIndex = sample->channelIndex;
 
-    return 0;
+    switch(sample->sampleData) {
+    case SampleData_Int_Noarg:
+       sample->valueInt = sample->get_int_sample_noarg();
+       break;
+    case SampleData_Int:
+       sample->valueInt = sample->get_int_sample(channelIndex);
+       break;
+    case SampleData_LongLong_Noarg:
+       sample->valueLongLong = sample->get_longlong_sample_noarg();
+       break;
+    case SampleData_LongLong:
+       sample->valueLongLong = sample->get_longlong_sample(channelIndex);
+       break;
+    case SampleData_Float_Noarg:
+       sample->valueFloat = sample->get_float_sample_noarg();
+       break;
+    case SampleData_Float:
+       sample->valueFloat = sample->get_float_sample(channelIndex);
+       break;
+    case SampleData_Double_Noarg:
+       sample->valueDouble = sample->get_double_sample_noarg();
+       break;
+    case SampleData_Double:
+       sample->valueDouble = sample->get_double_sample(channelIndex);
+       break;
+    default:
+       pr_warning("Got into supposedly unreachable area in populate_sample_buffer");
+       sample->valueLongLong = -1;
+       break;
+    }
 }
 
-int populate_sample_buffer(ChannelSample * samples,  size_t count, size_t logTick) {
+int populate_sample_buffer(LoggerMessage *lm,  size_t count, size_t logTick) {
    unsigned short highestRate = SAMPLE_DISABLED;
+   ChannelSample *samples = lm->channelSamples;
 
    for (size_t i = 0; i < count; i++, samples++) {
       const unsigned short sampleRate = samples->cfg->sampleRate;
@@ -311,41 +338,28 @@ int populate_sample_buffer(ChannelSample * samples,  size_t count, size_t logTic
          continue;
       }
 
-      samples->populated = true;
       highestRate = getHigherSampleRate(sampleRate, highestRate);
-      size_t channelIndex = samples->channelIndex;
-
-      switch(samples->sampleData) {
-      case SampleData_Int_Noarg:
-         samples->valueInt = samples->get_int_sample_noarg();
-         break;
-      case SampleData_Int:
-         samples->valueInt = samples->get_int_sample(channelIndex);
-         break;
-      case SampleData_LongLong_Noarg:
-         samples->valueLongLong = samples->get_longlong_sample_noarg();
-         break;
-      case SampleData_LongLong:
-         samples->valueLongLong = samples->get_longlong_sample(channelIndex);
-         break;
-      case SampleData_Float_Noarg:
-         samples->valueFloat = samples->get_float_sample_noarg();
-         break;
-      case SampleData_Float:
-         samples->valueFloat = samples->get_float_sample(channelIndex);
-         break;
-      case SampleData_Double_Noarg:
-         samples->valueDouble = samples->get_double_sample_noarg();
-         break;
-      case SampleData_Double:
-         samples->valueDouble = samples->get_double_sample(channelIndex);
-         break;
-      default:
-         pr_warning("Got into supposedly unreachable area in populate_sample_buffer");
-         samples->valueLongLong = -1;
-         break;
-      }
+      samples->populated = true;
+      populate_channel_sample(samples);
    }
+
+   // Check if we got a sample.  If not, then bypass the rest as we are done.
+   if (highestRate == SAMPLE_DISABLED)
+       return SAMPLE_DISABLED;
+
+   // If there was a sample taken, now we fill in the always sampled fields.
+   samples = lm->channelSamples;
+   for (size_t i = 0; i < count; i++, samples++) {
+       const int isAlwaysSampled = samples->cfg->flags & ALWAYS_SAMPLED;
+       if (!isAlwaysSampled)
+           continue;
+
+       samples->populated = true;
+       populate_channel_sample(samples);
+   }
+
+   lm->ticks = getCurrentTicks();
+   lm->sampleCount = count;
 
    return highestRate;
 }

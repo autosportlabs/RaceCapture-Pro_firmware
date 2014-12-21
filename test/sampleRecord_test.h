@@ -9,6 +9,8 @@ class SampleRecordTest : public CppUnit::TestFixture
   CPPUNIT_TEST_SUITE( SampleRecordTest );
   CPPUNIT_TEST( testInitSampleRecord );
   CPPUNIT_TEST( testPopulateSampleRecord );
+  CPPUNIT_TEST( testIsValidLoggerMessageAge );
+  CPPUNIT_TEST( testLoggerMessageAlwaysHasTime );
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -17,6 +19,8 @@ public:
   void tearDown();
   void testInitSampleRecord();
   void testPopulateSampleRecord();
+  void testIsValidLoggerMessageAge();
+  void testLoggerMessageAlwaysHasTime();
 
 private:
 
