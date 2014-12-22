@@ -29,3 +29,4 @@ TAGS
 *.pyc
 *.ihex
 src/serial/serial.c.bak
+stm32_base/printf_size.txt
