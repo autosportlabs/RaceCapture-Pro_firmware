@@ -19,6 +19,7 @@
  */
 
 #include "task.h"
+#include <unistd.h>
 
 static portTickType ticks;
 
@@ -32,4 +33,8 @@ void resetTicks() {
 
 void incrementTick() {
   ticks++;
+}
+
+void vTaskDelay(portTickType xTicksToDelay) {
+  usleep((useconds_t)xTicksToDelay * 1000);
 }

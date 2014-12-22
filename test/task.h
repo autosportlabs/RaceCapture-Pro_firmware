@@ -22,11 +22,14 @@
 #define _TASK_H_
 
 typedef unsigned int portTickType;
+#define portTICK_RATE_MS 1
 
 portTickType xTaskGetTickCount( void );
 
 void resetTicks( void );
 
 void incrementTick( void );
+
+void vTaskDelay(portTickType xTicksToDelay);
 
 #endif /* _TASK_H_ */
