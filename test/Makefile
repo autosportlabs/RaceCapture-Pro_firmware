@@ -64,8 +64,8 @@ INCLUDES = 	-I. \
 # set up compiler and options
 CXX = g++
 CC = g++
-CXXFLAGS = -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
-CPPFLAGS = -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
+CXXFLAGS = -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX) -DM_PI=3.14
+CPPFLAGS = -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX) -DM_PI=3.14
 
 #-----Suffix Rules---------------------------
 # set up C++ suffixes and relationship between .cc and .o files
@@ -98,7 +98,8 @@ T_SRC = loggerApi_test.cpp \
 		virtualChannel_test.cpp \
 		$(GPS_DIR)/gps_test.cpp \
 		$(UTIL_DIR)/numtoa_test.cpp \
-		$(UTIL_DIR)/atonum_test.cpp
+		$(UTIL_DIR)/atonum_test.cpp \
+      serial_test.cpp
 
 SRC = 	mock_uart.c \
 		mock_usb_comm.c \
