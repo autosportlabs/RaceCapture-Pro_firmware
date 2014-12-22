@@ -319,7 +319,7 @@ void interactive_read_line(Serial *serial, char * buffer, size_t bufferSize){
 	buffer[bufIndex]='\0';
 }
 
-void serial_printf(Serial * p_Serial, char *fmt, ...)
+void serial_printf(Serial * p_Serial, char * const fmt, ...)
 {
    va_list va;
    va_start(va,fmt);

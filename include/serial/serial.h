@@ -34,8 +34,6 @@ typedef struct _Serial{
 	void (*put_s)(const char *);
 
 	void (*flush)(void);
-   void (*pf_printf)(char *fmt, ...); /* TODO: not used for now, might need removing*/
-
 } Serial;
 
 
@@ -101,6 +99,6 @@ void read_line(Serial *serial, char *buffer, size_t bufferSize);
 
 void interactive_read_line(Serial *serial, char * buffer, size_t bufferSize);
 
-void serial_printf(Serial * p_Serial, char *fmt, ...);
+void serial_printf(Serial * p_Serial, char * const fmt, ...);
 
 #endif /* SERIAL_H_ */
