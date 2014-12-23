@@ -1,15 +1,9 @@
-#include <stdarg.h>
 #include "serial.h"
 #include "usart.h"
 #include "usb_comm.h"
 #include "modp_numtoa.h"
 
-#define PRINTF_LONG_SUPPORT 1
-
 static Serial serial_ports[SERIAL_COUNT];
-
-static void serial_format(void(* putf)(char) ,char *fmt, va_list va);
-static void serial_putchw(void (* putf)(char),int n, char z, char* bf);
 
 void init_serial(void){
 	usart_init_serial(&serial_ports[SERIAL_GPS], UART_GPS);
@@ -317,130 +311,4 @@ void interactive_read_line(Serial *serial, char * buffer, size_t bufferSize){
 	}
 	serial->put_s("\r\n");
 	buffer[bufIndex]='\0';
-}
-
-void serial_printf(Serial * p_Serial, char * const fmt, ...)
-{
-   va_list va;
-   va_start(va,fmt);
-   serial_format(p_Serial->put_c,fmt,va);
-   va_end(va);
-}
-
-void serial_format(void(* putf)(char) ,char *fmt, va_list va) {
-   char     bf[12]         = "";
-   char     ch             = 0;
-   unsigned char precision = 10;
-   
-   while ((ch = *(fmt++)))
-   {
-     if (ch!='%') 
-         putf(ch);
-     else {
-         char lz=0;
-#ifdef  PRINTF_LONG_SUPPORT
-         char lng=0;
-#endif
-         int w=0;
-         ch=*(fmt++);
-         if (ch=='0') {
-             ch=*(fmt++);
-             lz=1; /* Left zero padding detected */
-             }
-             /* not sure this works
-         if (ch>='0' && ch<='9') {
-             ch=*(fmt++);
-             ch=serial_a2i(ch,&fmt,10,&w);
-             }*/
-#ifdef  PRINTF_LONG_SUPPORT
-         if (ch=='l') {
-             ch=*(fmt++);
-             lng=1;
-         }
-#endif
-         if (ch=='.') {
-             /* float precision*/
-             ch=*(fmt++); /* TODO: this is prone to buffer overruns */
-             //precision=serial_a2d(ch);
-             precision=ch - '0';
-             ch=*(fmt++); /* TODO: this is prone to buffer overruns */
-         }
-         switch (ch) {
-             case 0: 
-                 goto abort;
-             case 'f':
-#ifdef  PRINTF_LONG_SUPPORT
-                if(lng)
-                {
-                   modp_ftoa(va_arg(va, double), bf, precision);
-                }
-                else
-                {
-#endif
-                   modp_dtoa(va_arg(va, double), bf, precision);
-#ifdef  PRINTF_LONG_SUPPORT
-                }
-#endif                
-                serial_putchw(putf,w,lz,bf);
-                break;
-             case 'u' : {
-#ifdef  PRINTF_LONG_SUPPORT
-                 if (lng)
-                     modp_ultoa10(va_arg(va, unsigned long int),bf);
-                 else
-#endif
-                 modp_uitoa10(va_arg(va, unsigned int),bf);
-                 serial_putchw(putf,w,lz,bf);
-                 break;
-                 }
-             case 'd' :  {
-#ifdef  PRINTF_LONG_SUPPORT
-                 if (lng)
-                     modp_ltoa10(va_arg(va, unsigned long int),bf);
-                 else
-#endif
-                 modp_itoa10(va_arg(va, int),bf);
-                 serial_putchw(putf,w,lz,bf);
-                 break;
-                 }
-             case 'x': case 'X' : 
-             /*
-#ifdef  PRINTF_LONG_SUPPORT
-                 if (lng)
-                     serial_uli2a(va_arg(va, unsigned long int),16,(ch=='X'),bf);
-                 else
-#endif
-                 serial_ui2a(va_arg(va, unsigned int),16,(ch=='X'),bf);
-                 serial_putchw(putf,w,lz,bf);
-                 break;*/
-             case 'c' : 
-                 putf((char)(va_arg(va, int)));
-                 break;
-             case 's' : 
-                 serial_putchw(putf,w,0,va_arg(va, char*));
-                 break;
-             case '%' :
-                 putf(ch);
-             default:
-                 break;
-             }
-         }
-     }
- abort:;
- }
- 
- void serial_putchw(void (* putf)(char),int n, char z, char* bf)
-{
-   char fc=z? '0' : ' ';
-   char ch;
-   char* p=bf;
-   
-   while (*p++ && n > 0)
-      n--;
-
-   while (n-- > 0) 
-      putf(fc);
-
-   while ((ch= *bf++))
-      putf(ch);
 }

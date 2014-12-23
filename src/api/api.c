@@ -15,34 +15,63 @@ void initApi(){
 }
 
 void json_valueStart(Serial *serial, const char *name){
-	serial_printf(serial, "\"%s\":", name);
+	serial->put_c('"');
+	serial->put_s(name);
+	serial->put_c('"');
+	serial->put_c(':');
 }
 
 void json_null(Serial *serial, const char *name, int more){
-	serial_printf(serial, "\"%s\":null", name);
-   if (more) serial_printf(serial, ",");
+	serial->put_c('"');
+	serial->put_s(name);
+	serial->put_c('"');
+	serial->put_s(":null");
+	if (more) serial->put_c(',');
 }
 
 void json_int(Serial *serial, const char *name, int value, int more){
-	serial_printf(serial, "\"%s\":%d", name, value);
-	if (more) serial_printf(serial, ",");
+	serial->put_c('"');
+	serial->put_s(name);
+	serial->put_c('"');
+	serial->put_c(':');
+	put_int(serial, value);
+	if (more) serial->put_c(',');
 }
 
 void json_uint(Serial *serial, const char *name, unsigned int value, int more){
-	serial_printf(serial, "\"%s\":%u", name, value);
-	if (more) serial_printf(serial, ",");
+	serial->put_c('"');
+	serial->put_s(name);
+	serial->put_c('"');
+	serial->put_c(':');
+	put_uint(serial, value);
+	if (more) serial->put_c(',');
 }
 
 void json_escapedString(Serial *serial, const char *name, const char *value, int more){
-	serial_printf(serial, "\"%s\":\"", name);
+	serial->put_c('"');
+	serial->put_s(name);
+	serial->put_c('"');
+	serial->put_c(':');
+	serial->put_c('"');
 	put_escapedString(serial, value, strlen(value));
-	serial_printf(serial, "\"");
-	if (more) serial_printf(serial, ",");
+	serial->put_c('"');
+	if (more) serial->put_c(',');
 }
 
 void json_string(Serial *serial, const char *name, const char *value, int more){
-	serial_printf(serial, "\"%s\":\"%s\"", name, (0 == value)?"null":value);
-	if (more) serial_printf(serial, ",");
+	serial->put_c('"');
+	serial->put_s(name);
+	serial->put_c('"');
+	serial->put_c(':');
+	if (value){
+		serial->put_c('"');
+		serial->put_s(value);
+		serial->put_c('"');
+	}
+	else{
+		serial->put_s("null");
+	}
+	if (more) serial->put_c(',');
 }
 
 void json_float(Serial *serial, const char *name, float value, int precision, int more){

@@ -98,8 +98,7 @@ T_SRC = loggerApi_test.cpp \
 		virtualChannel_test.cpp \
 		$(GPS_DIR)/gps_test.cpp \
 		$(UTIL_DIR)/numtoa_test.cpp \
-		$(UTIL_DIR)/atonum_test.cpp \
-      serial_test.cpp
+		$(UTIL_DIR)/atonum_test.cpp
 
 SRC = 	mock_uart.c \
 		mock_usb_comm.c \
