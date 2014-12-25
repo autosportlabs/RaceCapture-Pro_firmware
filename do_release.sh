@@ -5,7 +5,7 @@ source version.mk
 SAM7S_BASE_DIR=SAM7s_base
 RCP_DIST_DIR=firmware_release
 
-MAX_MK1_ELF_SIZE=228900
+MAX_MK1_ELF_SIZE=22890
 
 if [ "$BUILD_NUMBER" ]
 then
