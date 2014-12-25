@@ -741,7 +741,7 @@ release :
 
 # Checks that the size of the ELF is less than a maximum safe value
 check_size: $(TARGET).elf
-	../check_elf_size.sh $(TARGET).elf $(SIZE) $(MAX_ELF_SIZE)
+	./check_elf_size.sh $(TARGET).elf $(SIZE) $(MAX_ELF_SIZE)
    
 # **********************************************************************************************
 #                            FLASH PROGRAMMING      (using OpenOCD 0.5.0 and Olimex ARM-USB-OCD)
