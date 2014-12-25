@@ -16,4 +16,5 @@ if [ "$actual_size" -gt "$max_size" ]; then
   echo "*** ERROR: ELF size too big"
   echo " Expected no more than: "$max_size" bytes"
   echo " Got: "$actual_size" bytes"
+  exit 1
 fi
