@@ -5,6 +5,8 @@ source version.mk
 SAM7S_BASE_DIR=SAM7s_base
 RCP_DIST_DIR=firmware_release
 
+MAX_MK1_ELF_SIZE=228900
+
 if [ "$BUILD_NUMBER" ]
 then
 BUILD_NUMBER_SUFFIX=.$BUILD_NUMBER
@@ -25,6 +27,7 @@ make PLAT=sam7s generic
 popd
 make PLAT=sam7s clean
 make PLAT=sam7s all
+sh ./check_elf_size.sh arm_elf_size MAX_MK1_ELF_SIZE
 
 MK1_RELEASE_DIR=$RCP_DIST_DIR/RaceCapturePro_MK1
 MK1_RELEASE_NAME=RaceCapturePro_MK1_$RELEASE_NAME_SUFFIX
