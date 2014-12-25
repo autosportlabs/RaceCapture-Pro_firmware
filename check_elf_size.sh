@@ -1,4 +1,4 @@
-# Argument validation
+#!/bin/bash
 if [ "$#" -lt 2 ]; then
   echo ""
   echo "*** ERROR: invalid number of arguments ($#)"
