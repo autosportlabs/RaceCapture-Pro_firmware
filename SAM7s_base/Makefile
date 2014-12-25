@@ -47,6 +47,8 @@ RELEASE_NAME_ZIP = $(RELEASE_NAME).zip
 RELEASE_NAME_BIN = $(RELEASE_NAME).bin
 RELEASE_NAME_ELF = $(RELEASE_NAME).elf
 RCP_INSTALL_DIR = RaceCapturePro_Firmware
+# Maximum safe size (in bytes) that an ELF can have
+MAX_ELF_SIZE = 228900
 
 # MCU name and submodel
 MCU      = arm7tdmi
@@ -548,6 +550,7 @@ all:
 	$(MAKE) build
 	$(MAKE) sizeafter
 	$(MAKE) finished
+	$(MAKE) check_size
 	$(MAKE) end
 
 ifeq ($(FORMAT),ihex)
@@ -736,6 +739,10 @@ release :
 	zip -r $(RELEASE_NAME_ZIP) $(RCP_INSTALL_DIR)
 	cp $(RELEASE_NAME_ZIP) $(RCP_RELEASE_DIR)
 
+# Checks that the size of the ELF is less than a maximum safe value
+check_size: $(TARGET).elf
+	../check_elf_size.sh $(TARGET).elf $(SIZE) $(MAX_ELF_SIZE)
+   
 # **********************************************************************************************
 #                            FLASH PROGRAMMING      (using OpenOCD 0.5.0 and Olimex ARM-USB-OCD)
 # **********************************************************************************************
