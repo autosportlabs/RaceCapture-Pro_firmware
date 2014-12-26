@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cdtprojectproperties>
+<section name="org.eclipse.cdt.internal.ui.wizards.settingswizards.IncludePaths">
+<language name="C Source File">
+<includepath>/usr/include</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/SAM7s_base</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/SAM7s_base/FreeRTOS/Source/portable/MemMang</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/src/util</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/src/lua</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/SAM7s_base/mem_mang</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/SAM7s_base/fat_sd_at91</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/src/spi</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/src/imu</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/src/logger</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/SAM7s_base/usb_at91</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/SAM7s_base/memory_at91</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/SAM7s_base/hardware/include</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/SAM7s_base/FreeRTOS/Source/include</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/SAM7s_base/FreeRTOS/Source/portable/GCC/ARM7_AT91SAM7S</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/src/command</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/jsmn</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/api</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/logger</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/channels</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/tracks</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/logging</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/filter</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/CAN</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/OBD2</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/ADC</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/serial</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/timer</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/PWM</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/LED</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/GPIO</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/SAM7s_base/GPIO_at91</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/SAM7s_base/SPI_at91</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/watchdog</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/memory</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/cpu</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/spi</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/lua</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/imu</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/usart</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/usb_comm</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/messaging</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/predictive_timer</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/util</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/devices</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/gps</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/sdcard</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/command</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/virtual_channel</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/include/auto_config</includepath>
+<includepath workspace_path="true">/RaceCapture_Firmware/json</includepath>
+
+</language>
+<language name="Object File">
+
+</language>
+<language name="Assembly Source File">
+
+</language>
+</section>
+<section name="org.eclipse.cdt.internal.ui.wizards.settingswizards.Macros">
+<language name="C Source File">
+<macro>
+<name>MAJOR_REV</name><value>2</value>
+</macro>
+<macro>
+<name>MINOR_REV</name><value>0</value>
+</macro>
+
+</language>
+<language name="Object File">
+
+</language>
+<language name="Assembly Source File">
+
+</language>
+</section>
+</cdtprojectproperties>
