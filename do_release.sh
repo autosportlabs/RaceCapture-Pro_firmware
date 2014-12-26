@@ -5,7 +5,7 @@ source version.mk
 SAM7S_BASE_DIR=SAM7s_base
 RCP_DIST_DIR=firmware_release
 
-MAX_MK1_ELF_SIZE=22890
+MAX_MK1_ELF_SIZE=229376
 
 if [ "$BUILD_NUMBER" ]
 then
@@ -59,11 +59,3 @@ cp CHANGELOG $MK2_RELEASE_DIR
 cp stm32_base/HOW_TO_FLASH.txt $MK2_RELEASE_DIR
 cp stm32_base/main.ihex $MK2_RELEASE_DIR/$MK2_RELEASE_NAME.ihex
 zip -FSr $MK2_RELEASE_NAME.zip $MK2_RELEASE_DIR
-
-
-
- 
-
-
-
-
