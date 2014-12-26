@@ -14,7 +14,7 @@
 #include "printk.h"
 #include "tracks.h"
 
-#include <math.h>
+
 #include <stdint.h>
 
 #define GPS_LOCK_FLASH_COUNT 5
