@@ -267,7 +267,7 @@ void put_bytes(Serial *serial, char *data, unsigned int length){
 	}
 }
 
-void put_crlf(Serial *serial){
+void put_crlf(const Serial *serial){
 	serial->put_s("\r\n");
 }
 

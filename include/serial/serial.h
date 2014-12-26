@@ -94,7 +94,7 @@ void put_nameEscapedString(Serial * serial, const char *s, const char *v, int le
 
 void put_bytes(Serial *serial, char *data, unsigned int length);
 
-void put_crlf(Serial * serial);
+void put_crlf(const Serial * serial);
 
 void read_line(Serial *serial, char *buffer, size_t bufferSize);
 
