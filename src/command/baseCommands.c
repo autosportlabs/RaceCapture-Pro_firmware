@@ -30,16 +30,16 @@
 extern unsigned int _CONFIG_HEAP_SIZE;
 
 static void putHeader(const Serial *serial, const char *str) {
-    serial->put_s("== ");
+    put_crlf(serial);
+    serial->put_s("- - - ");
     serial->put_s(str);
-    serial->put_s(" ==");
+    serial->put_s(" - - -");
     put_crlf(serial);
 }
 
 static void putDataRowHeader(const Serial *serial, const char *str) {
-    serial->put_c('\t');
     serial->put_s(str);
-    serial->put_s("\t:\t");
+    serial->put_s(" : ");
 }
 
 void ShowStats(Serial *serial, unsigned int argc, char **argv) {
@@ -105,6 +105,7 @@ void GetVersion(Serial *serial, unsigned int argc, char **argv) {
     put_nameString(serial, "minor", MINOR_REV_STR);
     put_nameString(serial, "bugfix", BUGFIX_REV_STR);
     put_nameString(serial, "serial", cpu_get_serialnumber());
+    put_crlf(serial);
 }
 
 void ResetSystem(Serial *serial, unsigned int argc, char **argv) {
