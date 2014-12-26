@@ -125,7 +125,7 @@ void SectorTest::testSectorTimes(){
            if (values[0][0] != '#' && latitudeRaw.size() > 0 &&
                longitudeRaw.size() > 0 && speedRaw.size() > 0 && timeRaw.size() > 0) {
 
-        	  printf("distance= %f\n", getGpsDistanceMiles());
+        	  printf("%d,%f\n", getLapCount(), getGpsDistanceMiles());
               //printf("%s", line.c_str());
 
               float lat = modp_atof(latitudeRaw.c_str());
