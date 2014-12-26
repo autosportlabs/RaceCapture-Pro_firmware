@@ -387,7 +387,7 @@ CFLAGS += -Wcast-align -Wimplicit
 CFLAGS += -Wpointer-arith -Wswitch
 CFLAGS += -Wredundant-decls -Wreturn-type -Wshadow -Wunused
 CFLAGS += -ffunction-sections -fdata-sections
-#CFLAGS += -Wno-strict-aliasing -Wextra
+CFLAGS += -Wno-strict-aliasing 
 CFLAGS += -Wa,-adhlns=$(subst $(suffix $<),.lst,$<)
 CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
 #AT91-lib warnings with:
