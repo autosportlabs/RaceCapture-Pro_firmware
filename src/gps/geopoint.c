@@ -24,8 +24,8 @@ static float fast_square_root(float number) {
 
 	x = number * 0.5F;
 	y  = number;
-	i  = * ( long * ) &y;
-	i  = 0x5f3759df - ( i >> 1 );
+	i  = * ( long * ) &y; // evil floating point bit level hacking
+	i  = 0x5f3759df - ( i >> 1 ); // what the fuck?
 	y  = * ( float * ) &i;
 	y  = y * ( f - ( x * y * y ) );
 	y  = y * ( f - ( x * y * y ) );
