@@ -38,18 +38,19 @@ xSemaphoreHandle onTick;
 #define LOGGER_MESSAGE_BUFFER_SIZE 10
 static LoggerMessage g_sampleRecordMsgBuffer[LOGGER_MESSAGE_BUFFER_SIZE];
 
-static LoggerMessage getEmptyLoggerMessage(const enum LoggerMessageType t) {
+static LoggerMessage getTimeInsensativeLoggerMessage(const enum LoggerMessageType t) {
    LoggerMessage msg;
    msg.type = t;
+   msg.ticks = 0; // Time insensitive.
    return msg;
 }
 
 static LoggerMessage getLogStartMessage() {
-   return getEmptyLoggerMessage(LoggerMessageType_Start);
+   return getTimeInsensativeLoggerMessage(LoggerMessageType_Start);
 }
 
 static LoggerMessage getLogStopMessage() {
-   return getEmptyLoggerMessage(LoggerMessageType_Stop);
+   return getTimeInsensativeLoggerMessage(LoggerMessageType_Stop);
 }
 
 /**
@@ -119,9 +120,6 @@ size_t updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate,
 }
 
 void loggerTaskEx(void *params) {
-LoggerMessage logStartMsg = getLogStartMessage();
-LoggerMessage logStopMsg = getLogStopMessage();
-
 g_loggingShouldRun = 0;
 memset(&g_sampleRecordMsgBuffer, 0, sizeof(g_sampleRecordMsgBuffer));
 vSemaphoreCreateBinary(onTick);
@@ -161,6 +159,7 @@ while (1) {
         g_isLogging = 1;
         LED_disable(3);
 
+        LoggerMessage logStartMsg = getLogStartMessage();
         queue_logfile_record(&logStartMsg);
         queueTelemetryRecord(&logStartMsg);
     }
@@ -170,6 +169,7 @@ while (1) {
         g_isLogging = 0;
         LED_disable(2);
 
+        LoggerMessage logStopMsg = getLogStopMessage();
         queue_logfile_record(&logStopMsg);
         queueTelemetryRecord(&logStopMsg);
     }

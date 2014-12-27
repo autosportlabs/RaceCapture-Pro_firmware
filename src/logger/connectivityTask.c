@@ -85,6 +85,7 @@ static int processRxBuffer(Serial *serial, char *buffer, size_t *rxCount){
 }
 
 void queueTelemetryRecord(LoggerMessage *msg){
+    msg->ticks = getUptime();
 	for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++){
 		xQueueHandle queue = g_sampleQueue[i];
 		if (NULL != queue) xQueueSend(queue, &msg, TELEMETRY_QUEUE_WAIT_TIME);
@@ -207,10 +208,10 @@ void connectivityTask(void *params) {
 			//wait for the next sample record
 			char res = xQueueReceive(sampleQueue, &(msg), IDLE_TIMEOUT);
 
-            if (!isValidLoggerMessageAge(msg)) {
-                pr_debug("Comm Task Logger message too old.  Ignoring it.\r\n");
-                continue;
-            }
+//            if (!isValidLoggerMessageAge(msg)) {
+//                pr_debug("Comm Task Logger message too old.  Ignoring it.\r\n");
+//                continue;
+//            }
 
 			////////////////////////////////////////////////////////////
 			// Process a pending message from logger task, if exists

@@ -74,7 +74,8 @@ ChannelSample* create_channel_sample_buffer(LoggerConfig *loggerConfig, size_t c
 
 /**
  * Checks to ensure that the LoggerMessage object is not older than 10 milliseconds.  If it is then
- * we may read an old buffer and send bad data.
+ * we may read an old buffer and send bad data.  There is a special case where if ticks are zero
+ * we consider that to be a time insensitive message.
  * @param lm The LoggerMessage object.
  * @return True if its not older than 10ms, false otherwise.
  */
