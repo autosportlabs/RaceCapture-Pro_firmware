@@ -1,9 +1,21 @@
-/*
- * loggerTaskEx.c
+/**
+ * AutoSport Labs - Race Capture Pro Firmware
  *
- *  Created on: Mar 3, 2012
- *      Author: brent
+ * Copyright (C) 2014 AutoSport Labs
+ *
+ * This file is part of the Race Capture Pro firmware suite
+ *
+ * This is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should have received a copy of the GNU
+ * General Public License along with this code. If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
@@ -126,7 +138,6 @@ vSemaphoreCreateBinary(onTick);
 
 LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 
-g_loggingShouldRun = 0;
 g_isLogging = 0;
 size_t bufferIndex = 0;
 size_t currentTicks = 0;
@@ -136,6 +147,7 @@ size_t channelCount = 0;
 int loggingSampleRate = SAMPLE_DISABLED;
 int sampleRateTimebase = SAMPLE_DISABLED;
 int telemetrySampleRate = SAMPLE_DISABLED;
+int backgroundStreaming = 0;
 
 while (1) {
     xSemaphoreTake(onTick, portMAX_DELAY);
@@ -143,12 +155,14 @@ while (1) {
     ++currentTicks;
 
     // XXX STIEG: Should this be higher for MK2?  Seems like it should be.
-    if (currentTicks % BACKGROUND_SAMPLE_RATE == 0) doBackgroundSampling();
+    if (currentTicks % BACKGROUND_SAMPLE_RATE == 0)
+        doBackgroundSampling();
 
     if (g_configChanged) {
         currentTicks = 0;
-        channelCount = updateSampleRates(loggerConfig, &loggingSampleRate,
-                &telemetrySampleRate, &sampleRateTimebase);
+        channelCount = updateSampleRates(loggerConfig, &loggingSampleRate, &telemetrySampleRate,
+                &sampleRateTimebase);
+        backgroundStreaming = loggerConfig->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
         resetLapCount();
         resetGpsDistance();
         g_configChanged = 0;
@@ -176,21 +190,25 @@ while (1) {
 
     // Check if we need to actually populate the buffer.
     LoggerMessage *msg = &g_sampleRecordMsgBuffer[bufferIndex];
-    if (!g_isLogging) continue;
-
     int sampledRate = populate_sample_buffer(msg, channelCount, currentTicks);
     msg->sampleCount = channelCount;
 
-    // If here, not time for a sample.  Move along.
+    // If here, no sample to give.
     if (sampledRate == SAMPLE_DISABLED)
         continue;
 
-    if (sampledRate >= loggingSampleRate && queue_logfile_record(msg) != pdTRUE)
-        LED_enable(3);
+    // We only log to file if the user has manually pushed the logging button.
+    if (g_isLogging && sampledRate >= loggingSampleRate) {
+        pr_trace("Queueing a file LM record\r\n");
+        const portBASE_TYPE res = queue_logfile_record(msg);
+        if (res != pdTRUE)
+            LED_enable(3);
+    }
 
-    if ((sampledRate >= telemetrySampleRate
-            || currentTicks % telemetrySampleRate == 0)
-            && loggerConfig->ConnectivityConfigs.telemetryConfig.backgroundStreaming) {
+    // Log if the user has manually pushed the logging button or if background is enabled.
+    if ((g_isLogging || backgroundStreaming) &&
+            (sampledRate >= telemetrySampleRate || currentTicks % telemetrySampleRate == 0)) {
+        pr_trace("Queueing a telemetry LM record\r\n");
         queueTelemetryRecord(msg);
     }
 
