@@ -17,5 +17,5 @@ ChannelSample * create_channel_sample_buffer(LoggerConfig *loggerConfig, size_t 
 }
 
 int isValidLoggerMessageAge(LoggerMessage *lm) {
-    return lm->ticks == 0 || (getCurrentTicks() - lm->ticks) < 10;
+    return (getCurrentTicks() - lm->ticks) < 10;
 }
