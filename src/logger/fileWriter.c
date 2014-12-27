@@ -261,7 +261,7 @@ void fileWriterTask(void *params){
 			xQueueReceive(g_sampleRecordQueue, &(msg), portMAX_DELAY);
 
             if (!isValidLoggerMessageAge(msg)) {
-                pr_warning("File writer Logger message too old.  Ignoring it.\r\n");
+                pr_debug("File writer Logger message too old.  Ignoring it.\r\n");
                 continue;
             }
 
