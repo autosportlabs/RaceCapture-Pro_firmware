@@ -114,20 +114,20 @@ static int calcTelemetrySampleRate(LoggerConfig *config, int desiredSampleRate){
 }
 
 size_t updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate,
-                         int *telemetrySampleRate, int *sampleRateTimebase) {
+                         int *telemetrySampleRate, int *timebaseSampleRate) {
 	*loggingSampleRate = getHighestSampleRate(loggerConfig);
-	*sampleRateTimebase = *loggingSampleRate;
-   *sampleRateTimebase = getHigherSampleRate(BACKGROUND_SAMPLE_RATE,
-                                             *sampleRateTimebase);
+	*timebaseSampleRate = *loggingSampleRate;
+    *timebaseSampleRate = getHigherSampleRate(BACKGROUND_SAMPLE_RATE, *timebaseSampleRate);
 
 	*telemetrySampleRate = calcTelemetrySampleRate(loggerConfig, *loggingSampleRate);
 	size_t channelCount = initSampleRecords(loggerConfig);
-	pr_info_int(*telemetrySampleRate);
-	pr_info("=telemetry sample rate\r\n");
+	pr_info("timebase/logging/telemetry sample rate: ");
+	pr_info_int(decodeSampleRate(*timebaseSampleRate));
+	pr_info("/");
 	pr_info_int(decodeSampleRate(*loggingSampleRate));
-	pr_info("=loging sample rate\r\n");
-	pr_info_int(decodeSampleRate(*sampleRateTimebase));
-	pr_info("=timebase sr\r\n");
+	pr_info("/");
+	pr_info_int(decodeSampleRate(*telemetrySampleRate));
+	pr_info("\r\n");
 	return channelCount;
 }
 

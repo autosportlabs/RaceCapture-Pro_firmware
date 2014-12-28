@@ -45,7 +45,7 @@ static int sendBtCommandWaitResponse(DeviceConfig *config, const char *cmd, cons
     vTaskDelay(COMMAND_WAIT);
     putsBt(config, cmd);
     readBtWait(config, wait);
-    pr_debug("btrsp: ");
+    pr_debug("BT: cmd rsp: ");
     pr_debug(config->buffer);
     pr_debug("\n");
     int res = strncmp(config->buffer, rsp, strlen(rsp));
@@ -58,7 +58,7 @@ static int sendBtCommandWait(DeviceConfig *config, const char *cmd, size_t wait)
 }
 
 static int sendCommand(DeviceConfig *config, const char * cmd) {
-    pr_debug("btcmd: ");
+    pr_debug("BT: cmd: ");
     pr_debug(cmd);
     pr_debug("\r\n");
     return sendBtCommandWait(config, cmd, COMMAND_WAIT);
@@ -86,7 +86,7 @@ static char * baudConfigCmdForRate(unsigned int baudRate) {
 
 static int configureBt(DeviceConfig *config, unsigned int targetBaud, const char * deviceName) {
     if (DEBUG_LEVEL) {
-        pr_info("Configuring BT baud Rate");
+        pr_info("BT: Configuring baud Rate");
         pr_info_int(targetBaud);
         pr_info("\r\n");
     }
@@ -100,7 +100,7 @@ static int configureBt(DeviceConfig *config, unsigned int targetBaud, const char
     strcpy(btName, "AT+NAME");
     strcat(btName, deviceName);
     if (DEBUG_LEVEL) {
-        pr_info("Configuring BT device name");
+        pr_info("BT: Configuring name");
         pr_info(btName);
         pr_info("\r\n");
     }
@@ -112,17 +112,18 @@ static int configureBt(DeviceConfig *config, unsigned int targetBaud, const char
 static int bt_probe_config(unsigned int probeBaud, unsigned int targetBaud, const char * deviceName,
         DeviceConfig *config) {
     if (DEBUG_LEVEL) {
-        pr_info("Probing BT baud ");
+        pr_info("BT: Probing baud ");
         pr_info_int(probeBaud);
         pr_info(": ");
     }
     config->serial->init(8, 0, 1, probeBaud);
+    pr_info("BT: Provision ");
     if (sendCommand(config, "AT")
             && (targetBaud == probeBaud || configureBt(config, targetBaud, deviceName) == 0)) {
-        pr_info("BT provision success\r\n");
+        pr_info("success\r\n");
         return DEVICE_INIT_SUCCESS;
     } else {
-        pr_info("BT provision fail\r\n");
+        pr_info("fail\r\n");
         return DEVICE_INIT_FAIL;
     }
 }
@@ -142,10 +143,10 @@ int bt_init_connection(DeviceConfig *config) {
     }
 
     if (*rate == 0)
-        pr_info("Failed to provision BT module. Assuming already connected.\r\n");
+        pr_info("BT: Failed to provision module. Assuming already connected.\r\n");
 
     config->serial->init(8, 0, 1, targetBaud);
-    pr_info("BT device initialized\r\n");
+    pr_info("BT: Init complete\r\n");
 
     return DEVICE_INIT_SUCCESS;
 }
