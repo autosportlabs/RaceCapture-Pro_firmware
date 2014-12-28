@@ -76,9 +76,10 @@ void imu_calibrate_zero(){
 	}
 }
 
-void imu_init(LoggerConfig *loggerConfig){
+int imu_init(LoggerConfig *loggerConfig){
 	imu_device_init();
 	init_filters(loggerConfig);
+	return 1;
 }
 
 int imu_read(unsigned int channel){

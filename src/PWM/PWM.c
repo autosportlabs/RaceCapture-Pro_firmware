@@ -23,11 +23,12 @@ int PWM_init(LoggerConfig *loggerConfig){
 	return 1;
 }
 
-void PWM_update_config(LoggerConfig *loggerConfig){
+int PWM_update_config(LoggerConfig *loggerConfig){
 	for (size_t i = 0; i < CONFIG_PWM_CHANNELS; i++){
 		PWMConfig *pwmConfig = &(loggerConfig->PWMConfigs[i]);
 		PWM_channel_enable_analog(i, pwmConfig->outputMode == MODE_PWM_ANALOG);
 	}
+	return 1;
 }
 
 void PWM_set_duty_cycle(unsigned int channel, unsigned short duty){

@@ -7,7 +7,7 @@ void imu_sample_all();
 
 float imu_read_value(unsigned char imuChannel, ImuConfig *ac);
 
-void imu_init(LoggerConfig *loggerConfig);
+int imu_init(LoggerConfig *loggerConfig);
 
 void imu_calibrate_zero();
 

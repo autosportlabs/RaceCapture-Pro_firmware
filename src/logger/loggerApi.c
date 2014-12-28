@@ -27,12 +27,13 @@
 #include "loggerTaskEx.h"
 #include "FreeRTOS.h"
 #include "taskUtil.h"
+#include "GPIO.h"
 
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
 typedef void (*getConfigs_func)(size_t channeId, void ** baseCfg, ChannelConfig ** channelCfg);
 typedef const jsmntok_t * (*setExtField_func)(const jsmntok_t *json, const char *name, const char *value, void *cfg);
-
+typedef int (*reInitConfig_func)(LoggerConfig *config);
 
 
 void unescapeTextField(char *data){
@@ -405,20 +406,30 @@ static const jsmntok_t * setChannelConfig(Serial *serial, const jsmntok_t *cfg,
    return cfg;
 }
 
-static void setMultiChannelConfigGeneric(Serial *serial, const jsmntok_t * json,
-                                         getConfigs_func getConfigs, setExtField_func setExtFieldFunc) {
+static int setMultiChannelConfigGeneric(Serial *serial, const jsmntok_t * json,
+                                         getConfigs_func getConfigsFunc,
+                                         setExtField_func setExtFieldFunc,
+                                         reInitConfig_func reInitConfigFunc) {
 	if (json->type == JSMN_OBJECT && json->size % 2 == 0){
 		for (int i = 1; i <= json->size; i += 2){
 			const jsmntok_t *idTok = json + i;
 			const jsmntok_t *cfgTok = json + i + 1;
 			jsmn_trimData(idTok);
 			size_t id = modp_atoi(idTok->data);
-			void *baseCfg;
-			ChannelConfig *channelCfg;
-			getConfigs(id, &baseCfg, &channelCfg);
-			setChannelConfig(serial, cfgTok, channelCfg, setExtFieldFunc, baseCfg);
+			void *baseCfg = NULL;
+			ChannelConfig *channelCfg = NULL;
+			getConfigsFunc(id, &baseCfg, &channelCfg);
+			if (channelCfg != NULL){
+				setChannelConfig(serial, cfgTok, channelCfg, setExtFieldFunc, baseCfg);
+			}
+			else{
+				return API_ERROR_PARAMETER;
+			}
 		}
 	}
+	configChanged();
+	int initRes = reInitConfigFunc(getWorkingLoggerConfig());
+	return (initRes ? API_SUCCESS : API_ERROR_SEVERE);
 }
 
 static const jsmntok_t * setScalingMapRaw(ADCConfig *adcCfg, const jsmntok_t *mapArrayTok){
@@ -484,16 +495,16 @@ static const jsmntok_t * setAnalogExtendedField(const jsmntok_t *valueTok, const
 }
 
 static void getAnalogConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
-	ADCConfig *c =&(getWorkingLoggerConfig()->ADCConfigs[channelId]);
-	*baseCfg = c;
-	*channelCfg = &c->cfg;
+	if (channelId < ANALOG_CHANNELS){
+		ADCConfig *c =&(getWorkingLoggerConfig()->ADCConfigs[channelId]);
+		*baseCfg = c;
+		*channelCfg = &c->cfg;
+	}
 }
 
 int api_setAnalogConfig(Serial *serial, const jsmntok_t * json){
-	setMultiChannelConfigGeneric(serial, json, getAnalogConfigs, setAnalogExtendedField);
-	configChanged();
-	ADC_init(getWorkingLoggerConfig());
-	return API_SUCCESS;
+	int res = setMultiChannelConfigGeneric(serial, json, getAnalogConfigs, setAnalogExtendedField, ADC_init);
+	return res;
 }
 
 static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex){
@@ -568,16 +579,16 @@ static const jsmntok_t * setImuExtendedField(const jsmntok_t *valueTok, const ch
 }
 
 static void getImuConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
-	ImuConfig *c = &(getWorkingLoggerConfig()->ImuConfigs[channelId]);
-	*baseCfg = c;
-	*channelCfg = &c->cfg;
+	if (channelId < IMU_CHANNELS){
+		ImuConfig *c = &(getWorkingLoggerConfig()->ImuConfigs[channelId]);
+		*baseCfg = c;
+		*channelCfg = &c->cfg;
+	}
 }
 
 int api_setImuConfig(Serial *serial, const jsmntok_t *json){
-	setMultiChannelConfigGeneric(serial, json, getImuConfigs, setImuExtendedField);
-	configChanged();
-	imu_init(getWorkingLoggerConfig());
-	return API_SUCCESS;
+	int res = setMultiChannelConfigGeneric(serial, json, getImuConfigs, setImuExtendedField, imu_init);
+	return res;
 }
 
 static void sendImuConfig(Serial *serial, size_t startIndex, size_t endIndex){
@@ -800,9 +811,11 @@ int api_getPwmConfig(Serial *serial, const jsmntok_t *json){
 }
 
 static void getPwmConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
-	PWMConfig *c =&(getWorkingLoggerConfig()->PWMConfigs[channelId]);
-	*baseCfg = c;
-	*channelCfg = &c->cfg;
+	if (channelId < PWM_CHANNELS){
+		PWMConfig *c =&(getWorkingLoggerConfig()->PWMConfigs[channelId]);
+		*baseCfg = c;
+		*channelCfg = &c->cfg;
+	}
 }
 
 static const jsmntok_t * setPwmExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
@@ -816,16 +829,16 @@ static const jsmntok_t * setPwmExtendedField(const jsmntok_t *valueTok, const ch
 }
 
 int api_setPwmConfig(Serial *serial, const jsmntok_t *json){
-	setMultiChannelConfigGeneric(serial, json, getPwmConfigs, setPwmExtendedField);
-	configChanged();
-	PWM_update_config(getWorkingLoggerConfig());
-	return API_SUCCESS;
+	int res = setMultiChannelConfigGeneric(serial, json, getPwmConfigs, setPwmExtendedField, PWM_update_config);
+	return res;
 }
 
 static void getGpioConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
-	GPIOConfig *c =&(getWorkingLoggerConfig()->GPIOConfigs[channelId]);
-	*baseCfg = c;
-	*channelCfg = &c->cfg;
+	if (channelId < GPIO_CHANNELS){
+		GPIOConfig *c =&(getWorkingLoggerConfig()->GPIOConfigs[channelId]);
+		*baseCfg = c;
+		*channelCfg = &c->cfg;
+	}
 }
 
 static const jsmntok_t * setGpioExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
@@ -873,15 +886,16 @@ int api_getGpioConfig(Serial *serial, const jsmntok_t *json){
 }
 
 int api_setGpioConfig(Serial *serial, const jsmntok_t *json){
-	setMultiChannelConfigGeneric(serial, json, getGpioConfigs, setGpioExtendedField);
-	configChanged();
-	return API_SUCCESS;
+	int res = setMultiChannelConfigGeneric(serial, json, getGpioConfigs, setGpioExtendedField, GPIO_init);
+	return res;
 }
 
 static void getTimerConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg){
-	TimerConfig *c =&(getWorkingLoggerConfig()->TimerConfigs[channelId]);
-	*baseCfg = c;
-	*channelCfg = &c->cfg;
+	if (channelId < TIMER_CHANNELS){
+		TimerConfig *c =&(getWorkingLoggerConfig()->TimerConfigs[channelId]);
+		*baseCfg = c;
+		*channelCfg = &c->cfg;
+	}
 }
 
 static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg){
@@ -938,10 +952,8 @@ int api_getTimerConfig(Serial *serial, const jsmntok_t *json){
 }
 
 int api_setTimerConfig(Serial *serial, const jsmntok_t *json){
-	setMultiChannelConfigGeneric(serial, json, getTimerConfigs, setTimerExtendedField);
-	configChanged();
-	timer_init(getWorkingLoggerConfig());
-	return API_SUCCESS;
+	int res = setMultiChannelConfigGeneric(serial, json, getTimerConfigs, setTimerExtendedField, timer_init);
+	return res;
 }
 
 static unsigned short getGpsConfigHighSampleRate(GPSConfig *cfg) {
