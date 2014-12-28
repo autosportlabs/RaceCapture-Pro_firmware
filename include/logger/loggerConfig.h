@@ -400,15 +400,12 @@ typedef struct _TrackConfig{
 
 #define DEFAULT_TRACK_AUTO_DETECT 1
 
-#define BLUETOOTH_ENABLED				1
-#define BLUETOOTH_DISABLED				0
-
 #define BT_DEVICE_NAME_LENGTH 21
 #define BT_PASSCODE_LENGTH 5
 #define DEFAULT_BT_DEVICE_NAME "RaceCapturePro"
 #define DEFAULT_BT_PASSCODE "1010"
 #define DEFAULT_BT_BAUD 115200
-#define DEFAULT_BT_ENABLED BLUETOOTH_ENABLED
+#define DEFAULT_BT_ENABLED 1
 
 typedef struct _BluetoothConfig{
 	unsigned char btEnabled;
@@ -424,16 +421,13 @@ typedef struct _BluetoothConfig{
 	DEFAULT_BT_BAUD \
 }
 
-#define CELL_ENABLED				1
-#define CELL_DISABLED				0
-
 #define CELL_APN_HOST_LENGTH 30
 #define CELL_APN_USER_LENGTH 30
 #define CELL_APN_PASS_LENGTH 30
 #define DEFAULT_APN_HOST "epc.tmobile.com"
 #define DEFAULT_APN_USER ""
 #define DEFAULT_APN_PASS ""
-#define DEFAULT_CELL_ENABLED CELL_DISABLED
+#define DEFAULT_CELL_ENABLED 1
 
 typedef struct _CellularConfig{
 	unsigned char cellEnabled;

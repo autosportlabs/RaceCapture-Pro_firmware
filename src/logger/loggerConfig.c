@@ -139,7 +139,7 @@ static void resetBluetoothConfig(BluetoothConfig *cfg) {
 
 static void resetCellularConfig(CellularConfig *cfg) {
    memset(cfg, 0, sizeof(CellularConfig));
-   cfg->cellEnabled = CELL_ENABLED;
+   cfg->cellEnabled = DEFAULT_CELL_ENABLED;
    strcpy(cfg->apnHost, DEFAULT_APN_HOST);
 }
 
