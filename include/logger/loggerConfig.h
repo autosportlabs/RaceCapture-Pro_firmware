@@ -427,7 +427,7 @@ typedef struct _BluetoothConfig{
 #define DEFAULT_APN_HOST "epc.tmobile.com"
 #define DEFAULT_APN_USER ""
 #define DEFAULT_APN_PASS ""
-#define DEFAULT_CELL_ENABLED 1
+#define DEFAULT_CELL_ENABLED 0
 
 typedef struct _CellularConfig{
 	unsigned char cellEnabled;
