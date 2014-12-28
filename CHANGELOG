@@ -1,3 +1,7 @@
+===2.7.6===
+* Ensure timestamps show on every sample, regardless of sample rate combinations
+* Fixes / updates for MK1 release
+
 ===2.7.5===
 * Allow watchdog reset to prevent Lua from running script in case lua script was responsible for watchdog
 * Adjusted USB and I2C interrupt priority to reduce the chance of hard faults
