@@ -205,9 +205,10 @@ void LoggerConfigTest::testLoggerInitConnectivityConfig() {
    BluetoothConfig *btc = &lc->ConnectivityConfigs.bluetoothConfig;
    CPPUNIT_ASSERT_EQUAL(string(DEFAULT_BT_DEVICE_NAME), string(btc->deviceName));
    CPPUNIT_ASSERT_EQUAL(string(DEFAULT_BT_PASSCODE), string(btc->passcode));
+   CPPUNIT_ASSERT_EQUAL(DEFAULT_BT_ENABLED, (int) btc->btEnabled);
 
    CellularConfig *cc = &lc->ConnectivityConfigs.cellularConfig;
-   CPPUNIT_ASSERT_EQUAL(true, (bool) cc->cellEnabled);
+   CPPUNIT_ASSERT_EQUAL(DEFAULT_CELL_ENABLED, (int) cc->cellEnabled);
    CPPUNIT_ASSERT_EQUAL(string(DEFAULT_APN_HOST), string(cc->apnHost));
    CPPUNIT_ASSERT_EQUAL(string(DEFAULT_APN_USER), string(cc->apnUser));
    CPPUNIT_ASSERT_EQUAL(string(DEFAULT_APN_PASS), string(cc->apnPass));
