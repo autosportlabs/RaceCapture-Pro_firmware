@@ -542,7 +542,6 @@ static int processStartFinish(const Track *track, const float targetRadius) {
       return false;
    }
 
-
    const tiny_millis_t timestamp = getMillisSinceFirstFix();
    const tiny_millis_t elapsed = timestamp - g_lastStartFinishTimestamp;
    const struct GeoCircle sfCircle = gc_createGeoCircle(getFinishPoint(track),
@@ -565,6 +564,8 @@ static int processStartFinish(const Track *track, const float targetRadius) {
    }
 
    // If here, we are at Start/Finish and have de-bounced duplicate entries.
+   pr_debug_int(g_lapCount);
+   pr_debug(" Lap Detected\r\n");
    g_lapCount++;
    g_lastLapTime = elapsed;
    g_lastStartFinishTimestamp = timestamp;
@@ -591,6 +592,8 @@ static void processSector(const Track *track, float targetRadius) {
     * Past here we are sure we are at a sector boundary.
     */
    const tiny_millis_t millis = getMillisSinceFirstFix();
+   pr_debug_int(g_sector);
+   pr_debug(" Sector Boundary Detected\r\n");
 
    g_prevAtTarget = 1;
    g_lastSectorTime = millis - g_lastSectorTimestamp;
@@ -655,6 +658,20 @@ tiny_millis_t getMillisSinceFirstFix() {
    return getTimeDeltaInTinyMillis(g_dtLastFix, g_dtFirstFix);
 }
 
+static int isStartFinishEnabled(const Track *track) {
+    LoggerConfig *config = getWorkingLoggerConfig();
+    return isFinishPointValid(track) && isStartPointValid(track);
+}
+
+static int isSectorTrackingEnabled(const Track *track) {
+    LoggerConfig *config = getWorkingLoggerConfig();
+
+    // We must have at least one valid sector, which must start at position 0.  Else errors.
+    GeoPoint p0 = getSectorGeoPointAtIndex(track, 0);
+    return config->LapConfigs.sectorTimeCfg.sampleRate != SAMPLE_DISABLED &&
+            isValidPoint(&p0) && isStartFinishEnabled(track);
+}
+
 void onLocationUpdated() {
    static int sectorEnabled = 0;
    static int startFinishEnabled = 0;
@@ -673,9 +690,8 @@ void onLocationUpdated() {
       TrackConfig *trackConfig = &(config->TrackConfigs);
       Track *defaultTrack = &trackConfig->track;
       g_activeTrack = trackConfig->auto_detect ? auto_configure_track(defaultTrack, gp) : defaultTrack;
-      startFinishEnabled = isFinishPointValid(g_activeTrack) && isStartPointValid(g_activeTrack);
-      sectorEnabled = config->LapConfigs.sectorTimeCfg.sampleRate !=
-         SAMPLE_DISABLED && startFinishEnabled;
+      startFinishEnabled = isStartFinishEnabled(g_activeTrack);
+      sectorEnabled = isSectorTrackingEnabled(g_activeTrack);
       lc_setup(g_activeTrack, targetRadius);
       g_configured = 1;
    }
