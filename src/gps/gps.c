@@ -659,7 +659,6 @@ tiny_millis_t getMillisSinceFirstFix() {
 }
 
 static int isStartFinishEnabled(const Track *track) {
-    LoggerConfig *config = getWorkingLoggerConfig();
     return isFinishPointValid(track) && isStartPointValid(track);
 }
 
