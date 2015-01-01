@@ -34,25 +34,11 @@ void USB_CDC_SendByte( portCHAR cByte ){
 }
 
 portBASE_TYPE USB_CDC_ReceiveByte(portCHAR *data){
-	uint16_t ret = 0;
-
-	ret = vcp_rx((uint8_t*)data, 1, 0);
-
-	if (!ret)
-		return 1;
-
-	return 0;
+	return vcp_rx((uint8_t*)data, 1, 0);
 }
 
 portBASE_TYPE USB_CDC_ReceiveByteDelay(portCHAR *data, portTickType delay ){
-	uint16_t ret = 0;
-
-	ret = vcp_rx((uint8_t*)data, 1, delay);
-
-	if (!ret)
-		return 1;
-
-	return 0;
+	return vcp_rx((uint8_t*)data, 1, delay);
 }
 
 int USB_CDC_is_initialized(){
