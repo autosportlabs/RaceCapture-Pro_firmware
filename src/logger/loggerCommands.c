@@ -47,20 +47,20 @@ void ResetConfig(Serial *serial, unsigned int argc, char **argv){
 	}
 }
 
-static void StartTerminalSession(Serial *fromSerial, Serial *toSerial){
+static void StartTerminalSession(Serial *fromSerial, Serial *toSerial, uint8_t localEcho){
 
 	while (1){
 		char c = 0;
 		if (fromSerial->get_c_wait(&c, 0)){
 			if (c == 27) break;
-			fromSerial->put_c(c);
-			if (c == '\r') fromSerial->put_c('\n');
+			if (localEcho) fromSerial->put_c(c);
+			if (c == '\r' && localEcho) fromSerial->put_c('\n');
 			toSerial->put_c(c);
 			if (c == '\r') toSerial->put_c('\n');
 		}
 		if (toSerial->get_c_wait(&c, 0)){
 			fromSerial->put_c(c);
-			if (c == '\r') fromSerial->put_c('\n');
+			if (c == '\r' && localEcho) fromSerial->put_c('\n');
 		}
 	}
 }
@@ -73,13 +73,15 @@ void StartTerminal(Serial *serial, unsigned int argc, char **argv){
 
 	serial->put_s("Entering Terminal. Press ESC to exit\r\n");
 
-	unsigned int port = modp_atoui(argv[1]);
-	unsigned int baud = modp_atoui(argv[2]);
+	uint32_t port = modp_atoui(argv[1]);
+	uint32_t baud = modp_atoui(argv[2]);
+	uint8_t localEcho = (argc > 3 ? modp_atoui(argv[3]) : 1);
+
 
 	Serial *targetSerial = get_serial(port);
 	if (targetSerial){
 		configure_serial(port, 8, 0, 1, baud);
-		StartTerminalSession(serial, targetSerial);
+		StartTerminalSession(serial, targetSerial, localEcho);
 	}
 	else{
 		put_commandError(serial, ERROR_CODE_INVALID_PARAM);

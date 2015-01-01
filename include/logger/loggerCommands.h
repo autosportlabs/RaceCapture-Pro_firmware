@@ -14,7 +14,7 @@
 {"resetConfig", "Resets All configuration Data to factory default", "", ResetConfig}, \
 {"testSD", "Test Write to SD card.","<lineWrites> <periodicFlush> <quietMode>", TestSD}, \
 \
-{"startTerminal", "Starts a debugging terminal session on the specified port.","<port> <baud>", StartTerminal },\
+{"startTerminal", "Starts a debugging terminal session on the specified port.","<port> <baud> [echo 1|0]", StartTerminal },\
 {"viewLog", "Prints out logging messages to the terminal as they happen", "", ViewLog },\
 {"setLogLevel", "Sets the log level", "<level>", SetLogLevel },\
 {"logGpsData", "Enables logging of raw GPS data from the GPS Mouse", "<1|0>", LogGpsData }
