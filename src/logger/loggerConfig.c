@@ -377,18 +377,8 @@ char filterTimerMode(int mode){
 	}
 }
 
-int filterImuChannel(int config){
-	switch(config){
-		case IMU_CHANNEL_Y:
-			return IMU_CHANNEL_Y;
-		case IMU_CHANNEL_Z:
-			return IMU_CHANNEL_Z;
-		case IMU_CHANNEL_YAW:
-			return IMU_CHANNEL_YAW;
-		default:
-		case IMU_CHANNEL_X:
-			return IMU_CHANNEL_X;
-	}
+int filterImuChannel(int channel){
+	return (channel < CONFIG_IMU_CHANNELS ? channel : CONFIG_IMU_CHANNELS - 1);
 }
 
 int filterImuRawValue(int imuRawValue){
