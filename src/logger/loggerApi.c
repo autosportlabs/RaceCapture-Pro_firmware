@@ -182,7 +182,7 @@ int api_getCapabilities(Serial *serial, const jsmntok_t *json){
 
 	json_objStartString(serial,"db");
 	json_int(serial, "tracks", MAX_TRACKS, 1);
-	json_int(serial, "channels", MAX_CHANNELS, 0);
+	json_int(serial, "script", SCRIPT_MEMORY_LENGTH, 0);
 	json_objEnd(serial, 0);
 
 	json_objEnd(serial, 0);

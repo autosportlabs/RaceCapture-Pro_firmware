@@ -9,7 +9,6 @@
 #define MS_PER_TICK 5
 
 //configuration
-#define MAX_CHANNELS			90
 #define MAX_TRACKS				40
 #define SCRIPT_MEMORY_LENGTH	10240
 

@@ -15,7 +15,7 @@
 
 //Input / output Channels
 #define ANALOG_CHANNELS 		8
-#define IMU_CHANNELS			7
+#define IMU_CHANNELS			6
 #define	GPIO_CHANNELS			3
 #define TIMER_CHANNELS			3
 #define PWM_CHANNELS			4
