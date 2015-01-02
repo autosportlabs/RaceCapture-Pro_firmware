@@ -1060,7 +1060,7 @@ void LoggerApiTest::testSetCanCfgFile(string filename){
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)canCfg->enabled );
 	CPPUNIT_ASSERT_EQUAL(125000, (int)canCfg->baud[0]);
-	CPPUNIT_ASSERT_EQUAL(500000, (int)canCfg->baud[1]);
+	CPPUNIT_ASSERT_EQUAL(1000000, (int)canCfg->baud[1]);
 }
 
 void LoggerApiTest::testSetObd2Cfg(){

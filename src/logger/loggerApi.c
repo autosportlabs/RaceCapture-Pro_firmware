@@ -1043,7 +1043,7 @@ int api_setCanConfig(Serial *serial, const jsmntok_t *json){
 		size_t arrSize = json->size;
 		if (arrSize > CONFIG_CAN_CHANNELS) arrSize = CONFIG_CAN_CHANNELS;
 		size_t can_index = 0;
-		for (baudTok++; can_index < arrSize; can_index++) {
+		for (baudTok++; can_index < arrSize; can_index++, baudTok++) {
 			canCfg->baud[can_index] = modp_atoi(baudTok->data);
 		}
 	}

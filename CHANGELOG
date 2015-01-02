@@ -1,6 +1,7 @@
 ===2.7.6===
 * Ensure timestamps show on every sample, regardless of sample rate combinations
 * Fixes / updates for MK1 release
+* 2nd CAN channel not set correctly via API
 
 ===2.7.5===
 * Allow watchdog reset to prevent Lua from running script in case lua script was responsible for watchdog
