@@ -1199,6 +1199,7 @@ void LoggerApiTest::testGetCapabilities(){
 	CPPUNIT_ASSERT_EQUAL(MAX_GPS_SAMPLE_RATE, (int)(Number)json["capabilities"]["sampleRates"]["gps"]);
 
 	CPPUNIT_ASSERT_EQUAL(MAX_TRACKS, (int)(Number)json["capabilities"]["db"]["tracks"]);
+	CPPUNIT_ASSERT_EQUAL(MAX_SECTORS, (int)(Number)json["capabilities"]["db"]["sectors"]);
 	CPPUNIT_ASSERT_EQUAL(SCRIPT_MEMORY_LENGTH, (int)(Number)json["capabilities"]["db"]["script"]);
 }
 

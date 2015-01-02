@@ -5,6 +5,7 @@
 #include "stddef.h"
 #include "default_tracks.h"
 #include "geopoint.h"
+#include "capabilities.h"
 
 #define TRACK_ADD_RESULT_OK  		1
 #define TRACK_ADD_RESULT_FAIL  		0
@@ -13,7 +14,7 @@
 #define TRACK_ADD_MODE_COMPLETE 	2
 
 #define MAX_TRACK_COUNT				40
-#define SECTOR_COUNT				20
+#define SECTOR_COUNT				MAX_SECTORS
 #define CIRCUIT_SECTOR_COUNT		SECTOR_COUNT - 1
 #define STAGE_SECTOR_COUNT			SECTOR_COUNT - 2
 

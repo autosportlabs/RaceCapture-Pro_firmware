@@ -9,8 +9,8 @@
 #define MS_PER_TICK 1
 
 //configuration
-#define MAX_CHANNELS			200
 #define MAX_TRACKS				240
+#define MAX_SECTORS				20
 #define SCRIPT_MEMORY_LENGTH	10240
 
 //Input / output Channels
