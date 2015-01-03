@@ -69,7 +69,9 @@ static LoggerMessage getLogStopMessage() {
  * Called into by FreeRTOS during the ISR that handles the tick timer.
  */
 void vApplicationTickHook(void){
-   xSemaphoreGiveFromISR(onTick, pdFALSE);
+   static signed portBASE_TYPE pxHigherPriorityTaskWoken = 0;
+   xSemaphoreGiveFromISR(onTick, &pxHigherPriorityTaskWoken);
+   //xSemaphoreGive(onTick);
 }
 
 void configChanged(){

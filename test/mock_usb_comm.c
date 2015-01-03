@@ -1,4 +1,5 @@
 #include "usb_comm.h"
+#include <stdio.h>
 
 #define BUFFER_SIZE 256 * 2
 
@@ -21,7 +22,9 @@ void usb_init_serial(Serial *serial){
 
 void usb_init(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud){}
 
-void usb_flush(void){}
+void usb_flush(void){
+	printf("usb_flush\r\n");
+	}
 
 int usb_getcharWait(char *c, size_t delay){
 	return 0;

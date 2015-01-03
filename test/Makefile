@@ -15,6 +15,7 @@ MOCK_DIR=logger_mock
 GPS_DIR=gps
 UTIL_DIR=util
 BUILD_DIR=build
+FREERTOS_DIR=FreeRTOS_Kernel
 
 INCLUDES = 	-I. \
 		-I./include \
@@ -57,15 +58,19 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/watchdog \
 		-I$(RCP_INC)/memory \
 		-I$(RCP_INC)/sdcard \
+		-I$(RCP_INC)/devices \
 		-I$(MOCK_DIR) \
 		-I$(GPS_DIR) \
-		-I$(UTIL_DIR)
+		-I$(UTIL_DIR) \
+		-I$(FREERTOS_DIR)/include \
+		-I$(FREERTOS_DIR)/portable/GCC/Posix \
+		-I$(FREERTOS_DIR)/AsyncIO/
 
 # set up compiler and options
 CXX = g++
 CC = g++
-CXXFLAGS = -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
-CPPFLAGS = -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
+CXXFLAGS = -fpermissive -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX) -fpermissive
+CPPFLAGS = -fpermissive -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX) -fpermissive
 
 #-----Suffix Rules---------------------------
 # set up C++ suffixes and relationship between .cc and .o files
@@ -103,8 +108,7 @@ T_SRC = loggerApi_test.cpp \
 SRC = 	mock_uart.c \
 		mock_usb_comm.c \
 		mock_serial.c \
-		src/system/task.cpp \
-		$(MOCK_DIR)/util/taskUtil_mock.c \
+		$(RCP_SRC)/devices/null_device.c \
 		$(RCP_SRC)/launch_control.c \
 		$(RCP_SRC)/lua/luaScript.c \
 		$(RCP_SRC)/util/modp_numtoa.c \
@@ -113,13 +117,11 @@ SRC = 	mock_uart.c \
 		$(RCP_SRC)/jsmn/jsmn.c \
 		$(RCP_SRC)/api/api.c \
 		$(RCP_SRC)/OBD2/OBD2.c \
-		$(RCP_SRC)/logging/printk.c \
 		$(RCP_SRC)/logging/ring_buffer.c \
 		$(RCP_SRC)/logger/loggerApi.c \
 		$(RCP_SRC)/filter/filter.c \
 		$(RCP_SRC)/imu/imu.c \
 		$(RCP_SRC)/ADC/ADC.c \
-		$(RCP_SRC)/memory/memory.c \
 		$(RCP_SRC)/timer/timer.c \
 		$(RCP_SRC)/PWM/PWM.c \
 		$(RCP_SRC)/LED/LED.c \
@@ -129,6 +131,11 @@ SRC = 	mock_uart.c \
 		$(RCP_SRC)/GPIO/GPIO.c \
 		$(RCP_SRC)/watchdog/watchdog.c \
 		$(RCP_SRC)/CAN/CAN.c \
+		$(MOCK_DIR)/util/taskUtil_mock.c \
+		$(MOCK_DIR)/bluetooth_mock.c \
+		$(MOCK_DIR)/sim900_mock.c \
+		$(MOCK_DIR)/printk_mock.c \
+		$(MOCK_DIR)/memory_mock.c \
 		$(MOCK_DIR)/imu_device_mock.c \
 		$(MOCK_DIR)/timer_device_mock.c \
 		$(MOCK_DIR)/ADC_device_mock.c \
@@ -138,14 +145,15 @@ SRC = 	mock_uart.c \
 		$(MOCK_DIR)/luaTask_mock.c \
 		$(MOCK_DIR)/GPIO_device_mock.c \
 		$(MOCK_DIR)/memory_device_mock.c \
-		$(MOCK_DIR)/loggerNotifications_mock.c \
 		$(MOCK_DIR)/sdcard_mock.c \
 		$(MOCK_DIR)/watchdog_device_mock.c \
 		$(MOCK_DIR)/CAN_device_mock.c \
+		$(MOCK_DIR)/ff_mock.c \
 		$(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 		$(RCP_SRC)/auto_config/auto_track.c \
 		$(RCP_SRC)/util/linear_interpolate.c \
 		$(RCP_SRC)/logger/loggerConfig.c \
+		$(RCP_SRC)/logger/connectivityTask.c \
 		$(RCP_SRC)/virtual_channel/virtual_channel.c \
 		$(RCP_SRC)/tracks/tracks.c \
 		$(RCP_SRC)/gps/gps.c \
@@ -156,6 +164,16 @@ SRC = 	mock_uart.c \
 		$(RCP_SRC)/logger/loggerSampleData.c \
 		$(RCP_SRC)/logger/loggerData.c \
 		$(RCP_SRC)/logger/loggerHardware.c \
+		$(RCP_SRC)/logger/fileWriter.c \
+		$(RCP_SRC)/logger/loggerTaskEx.c \
+		$(FREERTOS_DIR)/tasks.c \
+		$(FREERTOS_DIR)/queue.c \
+		$(FREERTOS_DIR)/list.c \
+		$(FREERTOS_DIR)/croutine.c \
+		$(FREERTOS_DIR)/portable/MemMang/heap_3.c \
+		$(FREERTOS_DIR)/portable/GCC/Posix/port.c \
+		$(FREERTOS_DIR)/AsyncIO/AsyncIO.c \
+		$(FREERTOS_DIR)/AsyncIO/AsyncIOPtmx.c
 
 #		$(RCP_SRC)/logger/loggerTaskEx.c \
 
@@ -166,10 +184,10 @@ OBJ_SIM = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $
 all: test sim
 
 test: $(OBJ_TEST)
-	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ_TEST) -lm -lcppunit
+	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ_TEST) -lm -lcppunit -lrt -pthread
 
 sim: $(OBJ_SIM)
-	$(CXX) $(CXXFLAGS) -o $(SIMNAME) $(OBJ_SIM) -lm
+	$(CXX) $(CXXFLAGS) -o $(SIMNAME) $(OBJ_SIM) -lm -lrt -pthread
 
 clean:
 	rm -f $(OBJ_TEST) $(OBJ_SIM) $(NAME) $(SIMNAME)

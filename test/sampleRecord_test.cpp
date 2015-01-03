@@ -10,12 +10,16 @@
 #include "ADC.h"
 #include "imu.h"
 #include "gps.h"
+#include "FreeRTOS.h"
 #include "task.h"
 #include "capabilities.h"
 #include <string>
 #include "include/taskUtil_mock.h"
 
 using std::string;
+
+extern void resetTicks(void);
+extern void incrementTick(void);
 
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( SampleRecordTest );

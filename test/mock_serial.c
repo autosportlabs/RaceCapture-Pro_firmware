@@ -7,6 +7,8 @@
 #include "mock_serial.h"
 #include "mod_string.h"
 #include <stddef.h>
+#include <stdio.h>
+
 static Serial mockSerial;
 static char rxBuffer[20000];
 static char txBuffer[20000];
@@ -45,7 +47,7 @@ Serial * getMockSerial(){
 
 void mock_flush(void)
 {
-	char rx;
+	printf("mock_flush\r\n");
 }
 
 int mock_get_c_wait(char *c, size_t delay){

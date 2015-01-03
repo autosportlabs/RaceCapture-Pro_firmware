@@ -218,8 +218,8 @@ static bool checkFlashDefaultConfig(void){
 }
 
 static void loadWorkingLoggerConfig(void){
-	memcpy((void *) &g_workingLoggerConfig,
-          (void *) &g_savedLoggerConfig, sizeof(LoggerConfig));
+	memory_read_region((void *)&g_savedLoggerConfig, (void *) &g_workingLoggerConfig,
+          sizeof(LoggerConfig));
 }
 
 void initialize_logger_config(){
