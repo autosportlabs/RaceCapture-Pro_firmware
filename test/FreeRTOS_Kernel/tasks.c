@@ -1389,7 +1389,7 @@ void vTaskIncrementTick( void )
 		scheduler is locked. */
 		#if ( configUSE_TICK_HOOK == 1 )
 		{
-			extern void vApplicationTickHook( void );
+			extern "C" void vApplicationTickHook( void );
 
 			vApplicationTickHook();
 		}
@@ -1398,7 +1398,7 @@ void vTaskIncrementTick( void )
 
 	#if ( configUSE_TICK_HOOK == 1 )
 	{
-		extern void vApplicationTickHook( void );
+		extern "C" void vApplicationTickHook( void );
 
 		/* Guard against the tick hook being called when the missed tick
 		count is being unwound (when the scheduler is being unlocked. */
