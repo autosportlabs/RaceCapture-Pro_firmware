@@ -38,8 +38,6 @@ void usart_device_init_0(unsigned int bits, unsigned int parity, unsigned int st
 	{
 		 printf("failed to initialize serial port\r\n");
 		 fflush(stdout);
-		 while(1)
-		 {}
 	}
 	
 	//xTaskCreate( Usart0Task, "Uasrt0Task", 10*configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES -1, NULL );
@@ -96,8 +94,11 @@ char usart1_getchar()
 }
 
 void usart0_putchar(char c){
-   printf("usart0_putchar=%c\r\n", c);
-   write(iSerialReceive, c, 1);
+   printf("%c", c);
+   grantpt(iSerialReceive);
+	unlockpt(iSerialReceive);
+   if(1 != write(iSerialReceive, &c, 1))
+      printf("\r\nFailed to write to %d\r\n", iSerialReceive);
 }
 
 void usart1_putchar(char c){
@@ -106,8 +107,13 @@ void usart1_putchar(char c){
 
 void usart0_puts (const char* s )
 {
-   printf("usart0_puts=%s\r\n", s);
-   write(iSerialReceive, s, strlen(s));
+   printf("%s", s);
+   grantpt(iSerialReceive);
+	unlockpt(iSerialReceive);
+   if(strlen(s) != write(iSerialReceive, s, strlen(s)))
+   {
+      printf("\r\nFailed to write to %d\r\n", iSerialReceive);
+  }
 }
 
 void usart1_puts (const char* s )
@@ -118,7 +124,6 @@ void usart1_puts (const char* s )
 int usart0_readLineWait(char *s, int len, size_t delay) {
 	int count = 0;
 	char c = 0;
-	printf("usart0_readLineWait\r\n");
 	if(len <= 1)
 	{
 		   printf("\r\nInvalid read length requested");
@@ -130,8 +135,11 @@ int usart0_readLineWait(char *s, int len, size_t delay) {
 			break;
 		*s++ = c;
 		count++;
-		if (c == '\n')
+		if (c == '\r')
+		{
+			*(s-1)='\n';
 			break;
+		}
 	}
 	*s = '\0';
 	return count;
@@ -159,7 +167,7 @@ int usart_device_init_serial(Serial *serial, uart_id_t id) {
 	
 	switch(id)
 	{
-		case SERIAL_WIRELESS:
+		case UART_WIRELESS:
 		   serial->init = &usart_device_init_0;
 			serial->flush = &usart0_flush;
 			serial->get_c = &usart0_getchar;

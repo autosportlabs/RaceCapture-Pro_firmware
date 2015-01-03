@@ -12,7 +12,7 @@
 
 #define LOG_BUFFER_SIZE 1024
 
-static enum log_level curr_level = TRACE;
+static enum log_level curr_level = ERR;
 static char _log_buffer[LOG_BUFFER_SIZE];
 
 static struct ring_buff log_buff = {
