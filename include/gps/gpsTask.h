@@ -11,7 +11,7 @@
 
 void GPSTask( void *pvParameters );
 
-void startGPSTask();
+void startGPSTask(int priority);
 void setGpsDataLogging(bool);
 
 #endif /* GPSTASK_H_ */
