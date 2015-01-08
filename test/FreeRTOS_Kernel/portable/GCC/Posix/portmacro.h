@@ -159,6 +159,8 @@ extern void vPortFindTicksPerSecond( void );
 extern unsigned long ulPortGetTimerValue( void );
 #define portGET_RUN_TIME_COUNTER_VALUE()			ulPortGetTimerValue()			/* Query the System time stats for this process. */
 
+#define portRealloc pvPortRealloc
+
 #ifdef __cplusplus
 }
 #endif
