@@ -21,8 +21,8 @@
 
 long lAsyncIOPtmxOpen( const char *pcDevice, int *piDeviceDescriptor )
 {
-   int               iSerialDevice = 0;
-   struct termios    orig_termios;
+   long lReturn = pdFALSE;
+   int iSerialDevice = 0;
 
    iSerialDevice = open("/dev/ptmx", O_RDWR | O_NOCTTY | O_NONBLOCK);
 	if (iSerialDevice < 0)
@@ -33,18 +33,6 @@ long lAsyncIOPtmxOpen( const char *pcDevice, int *piDeviceDescriptor )
 
 	grantpt(iSerialDevice);
 	unlockpt(iSerialDevice);
-   
-   // Disable echo on the terminal, when sending data
-   if (tcgetattr (iSerialDevice, &orig_termios) < 0) {
-      printf("ERROR getting current terminal's attributes\r\n");
-      return pdFALSE;
-   }
-   orig_termios.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
-   orig_termios.c_oflag &= ~(ONLCR);
-   if (tcsetattr (iSerialDevice, TCSANOW, &orig_termios) < 0) {
-      printf ("ERROR setting current terminal's attributes\r\n");
-      return pdFALSE;
-   }
 
 	printf("RaceCapture/Pro simulator %s interface on: %s local fd %d\n", pcDevice, ptsname(iSerialDevice), iSerialDevice);
 	
