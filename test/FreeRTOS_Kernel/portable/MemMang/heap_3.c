@@ -113,8 +113,5 @@ void vPortFree( void *pv )
 	}
 }
 
-void * pvPortRealloc( void *pv, size_t xWantedSize){
-	if (pv != NULL) vPortFree(pv);
-	return pvPortMalloc(xWantedSize);
-}
+
 
