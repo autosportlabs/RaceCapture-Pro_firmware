@@ -9,52 +9,57 @@
 #include "loggerConfig.h"
 #include "mod_string.h"
 #include "printk.h"
-#include "FreeRTOS.h"
-#include "FreeRTOSConfig.h"
-#include "task.h"
-#include "fileWriter.h"
-#include "connectivityTask.h"
-#include "loggerTaskEx.h"
 
 #define LINE_BUFFER_SIZE 2049
-
-#define OBD2_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
-#define GPS_TASK_PRIORITY 			( tskIDLE_PRIORITY + 5 )
-#define CONNECTIVITY_TASK_PRIORITY 	( tskIDLE_PRIORITY + 4 )
-#define LOGGER_TASK_PRIORITY		( tskIDLE_PRIORITY + 6 )
-#define FILE_WRITER_TASK_PRIORITY	( tskIDLE_PRIORITY + 4 )
-#define LUA_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
-#define USB_COMM_TASK_PRIORITY		( tskIDLE_PRIORITY + 6 )
-#define GPIO_TASK_PRIORITY 			( tskIDLE_PRIORITY + 4 )
-
-/* Create the "Print" task as described at the top of the file. */
-static void TestTask( void *pvParameters )
-{
-	while(1)
-	{
-       vTaskDelay(1000);
-       printf("\r\nTest");
-   }
-}
-
-
-	
 int main(int argc, char* argv[])
 {
 
 	LoggerConfig *config = getWorkingLoggerConfig();
 	initApi();
 	initialize_logger_config();
-	init_serial();
-	//	setupMockSerial();
+	setupMockSerial();
 	imu_init(config);
 	resetPredictiveTimer();
-   startFileWriterTask		( FILE_WRITER_TASK_PRIORITY );
-   startLoggerTaskEx		( LOGGER_TASK_PRIORITY );
-   startConnectivityTask	( CONNECTIVITY_TASK_PRIORITY );
-   
-   /* Set the scheduler running.  This function will not return unless a task calls vTaskEndScheduler(). */
-   vTaskStartScheduler();
 
+	int pt;
+
+	pt = open("/dev/ptmx", O_RDWR | O_NOCTTY);
+	if (pt < 0)
+	{
+		perror("open /dev/ptmx");
+		return 1;
+	}
+
+	grantpt(pt);
+	unlockpt(pt);
+
+	fprintf(stderr, "RaceCapture/Pro simulator on: %s\n", ptsname(pt));
+
+	char line[LINE_BUFFER_SIZE];
+	memset(line, 0, LINE_BUFFER_SIZE);
+	int messageCount = 0;
+	while(1){
+		size_t count = 0;
+		line[0] = '\0';
+		while (count < LINE_BUFFER_SIZE){
+			char c;
+			read(pt, &c, 1);
+			line[count] = c;
+			count++;
+			if (c == '\r'){
+				line[count] = '\0';
+				break;
+			}
+		}
+
+		printf("rx: (%d): %s\r\n",strlen(line), line);
+		mock_resetTxBuffer();
+		process_api(getMockSerial(), line, strlen(line));
+		char *txBuffer = mock_getTxBuffer();
+		printf("tx: (%d) %s\r\n", strlen(txBuffer), txBuffer);
+		write(pt, txBuffer, strlen(txBuffer));
+		pr_info_int(++messageCount);
+		pr_info(" messages\r\n");
+	}
 	return 0;
 }

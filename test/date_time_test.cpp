@@ -23,12 +23,8 @@
 #include "date_time_test.h"
 #include "gps.h"
 #include "gps.testing.h"
-#include "FreeRTOS.h"
 #include "task.h"
 #include <cppunit/extensions/HelperMacros.h>
-
-extern void resetTicks(void);
-extern void incrementTick(void);
 
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( DateTimeTest );
