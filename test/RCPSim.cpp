@@ -14,7 +14,7 @@
 #include "task.h"
 #include "fileWriter.h"
 #include "connectivityTask.h"
-#include "loggerTaskEx.h"0
+#include "loggerTaskEx.h"
 
 #define LINE_BUFFER_SIZE 2049
 
@@ -27,6 +27,18 @@
 #define USB_COMM_TASK_PRIORITY		( tskIDLE_PRIORITY + 6 )
 #define GPIO_TASK_PRIORITY 			( tskIDLE_PRIORITY + 4 )
 
+/* Create the "Print" task as described at the top of the file. */
+static void TestTask( void *pvParameters )
+{
+	while(1)
+	{
+       vTaskDelay(1000);
+       printf("\r\nTest");
+   }
+}
+
+
+	
 int main(int argc, char* argv[])
 {
 
