@@ -1,8 +1,8 @@
 /*
  * AsyncIOPtmx.c
  *
- *  Created on: January 7, 2015
- *      Author: JS Stoezel
+ *  Created on: 9 Apr 2010
+ *      Author: William Davy
  */
 
 #include <termios.h>
@@ -27,7 +27,7 @@ long lAsyncIOPtmxOpen( const char *pcDevice, int *piDeviceDescriptor )
    iSerialDevice = open("/dev/ptmx", O_RDWR | O_NOCTTY | O_NONBLOCK);
 	if (iSerialDevice < 0)
 	{
-		printf("failed to open /dev/ptmx\r\n");
+		printf("failed to open /dev/ptmx");
 		return pdFALSE;
 	}
 
@@ -58,27 +58,33 @@ long lAsyncIOPtmxOpen( const char *pcDevice, int *piDeviceDescriptor )
 /* Define a callback function which is called when data is available. */
 void vAsyncPtmxIODataAvailableISR( int iFileDescriptor, void *pContext )
 {
-	portBASE_TYPE 	xHigherPriorityTaskWoken = pdFALSE;
-	portBASE_TYPE 	doEet = pdFALSE;
-	ssize_t 		iReadResult = -1;
-	unsigned char 	ucRx		= 0;
-	unsigned int 	i 			= 0;
-   
-	do
-	{
-		/* This handler only processes a single byte/character at a time. */
-		iReadResult = read( iFileDescriptor, &ucRx, 1 );
-		if ( 1 == iReadResult )
+portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+ssize_t iReadResult = -1;
+unsigned char ucRx[64];
+//unsigned char ucRx;
+unsigned int i = 0;
+
+    memset(ucRx, 0, sizeof(ucRx));
+	/* This handler only processes a single byte/character at a time. */
+	iReadResult = read( iFileDescriptor, &ucRx, 64 );
+	//iReadResult = read( iFileDescriptor, &ucRx, 1 );
+	//if ( 1 == iReadResult )
+	//{
+		
+	
+		if ( NULL != pContext )
 		{
-			if ( NULL != pContext )
+			/* Send the received byte to the queue. */
+			if(iReadResult > 0)
 			{
-				/* Send the received byte to the queue. */
-				if ( pdTRUE == xQueueSendFromISR( (xQueueHandle)pContext, &ucRx, &xHigherPriorityTaskWoken ) )
+				// 150102 jstoezel: need to read in chunks otherwise the interface is too slow.
+				for(i = 0; i < iReadResult; i++)
+				if ( pdTRUE == xQueueSendFromISR( (xQueueHandle)pContext, &ucRx[i], &xHigherPriorityTaskWoken ) )
+				//if ( pdTRUE == xQueueSendFromISR( (xQueueHandle)pContext, &ucRx, &xHigherPriorityTaskWoken ) )
+				//if ( pdTRUE == xQueueSend( (xQueueHandle)pContext, ucRx,0 ) )
 				{
-				   if(xHigherPriorityTaskWoken)
-				   {
-					  doEet = 1;
-				   }	
+					//printf("\r\n0x%08X>%s", pContext, ucRx);
+					/* the queue is full. */
 				}
 				else
 				{
@@ -87,11 +93,14 @@ void vAsyncPtmxIODataAvailableISR( int iFileDescriptor, void *pContext )
 			}
 			else
 			{
-				printf("pContext is null\r\n");
+			   printf("result is 0\r\n");
 			}
 		}
-	} while(1 == iReadResult);
-	
-	portEND_SWITCHING_ISR( doEet );
+		else
+		{
+			printf("pContext is null\r\n");
+		}
+	//}
+	portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
 }
 /*---------------------------------------------------------------------------*/
