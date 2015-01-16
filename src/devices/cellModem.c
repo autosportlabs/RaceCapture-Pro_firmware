@@ -65,7 +65,7 @@ static int waitCommandResponse(Serial *serial, const char *expectedRsp, portTick
 	readModemWait(serial, READ_TIMEOUT);
 	delayMs(PAUSE_DELAY); //maybe take this out later - debugging SIM900
 	if (strlen(g_cellBuffer) == 0) return NO_CELL_RESPONSE;
-	return strncmp(g_cellBuffer, expectedRsp , strlen(expectedRsp)) == 0;
+	return strstr(expectedRsp, g_cellBuffer) != NULL;
 }
 
 static int sendCommandWait(Serial *serial, const char *cmd, const char *expectedRsp, portTickType wait){
@@ -97,7 +97,7 @@ static int sendCommandRetry(Serial *serial, const char * cmd, const char * expec
 
 static int isNetworkConnected(Serial *serial, size_t maxRetries, size_t maxNoResponseRetries){
 	flushModem(serial);
-	return sendCommandRetry(serial, "AT+CREG?\r", "+CREG: 0,1", maxRetries, maxNoResponseRetries);
+	return sendCommandRetry(serial, "AT+CREG?\r", "+CREG: 0,1|+CREG: 0,5", maxRetries, maxNoResponseRetries);
 }
 
 static int isDataReady(Serial *serial, size_t maxRetries, size_t maxNoResponseRetries){
