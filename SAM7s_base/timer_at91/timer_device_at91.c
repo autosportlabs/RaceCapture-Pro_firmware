@@ -56,7 +56,7 @@ static unsigned int timer_clock_from_divider(unsigned short divider){
 
 static void init_timer_0(size_t divider, unsigned int slowTimerMode){
 
-	g_timer0_overflow = 1;
+	g_timer0_overflow = 0;
 	g_timer_counts[0] = 0;
 
 	// Set PIO pins for Timer Counter 0
@@ -95,7 +95,7 @@ static void init_timer_0(size_t divider, unsigned int slowTimerMode){
 
 static void init_timer_1(size_t divider, unsigned int slowTimerMode){
 
-	g_timer1_overflow = 1;
+	g_timer1_overflow = 0;
 	g_timer_counts[1] = 0;
 
 	// Set PIO pins for Timer Counter 1
@@ -133,7 +133,7 @@ static void init_timer_1(size_t divider, unsigned int slowTimerMode){
 
 static void init_timer_2(size_t divider, unsigned int slowTimerMode){
 
-	g_timer2_overflow = 1;
+	g_timer2_overflow = 0;
 	g_timer_counts[2] = 0;
 	// Set PIO pins for Timer Counter 2
 	// TIOA2 mapped to PA26
