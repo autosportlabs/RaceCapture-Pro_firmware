@@ -199,7 +199,6 @@ while (1) {
 
     // We only log to file if the user has manually pushed the logging button.
     if (g_isLogging && sampledRate >= loggingSampleRate) {
-        pr_trace("Queueing a file LM record\r\n");
         const portBASE_TYPE res = queue_logfile_record(msg);
         if (res != pdTRUE)
             LED_enable(3);
@@ -208,7 +207,6 @@ while (1) {
     // Log if the user has manually pushed the logging button or if background is enabled.
     if ((g_isLogging || backgroundStreaming) &&
             (sampledRate >= telemetrySampleRate || currentTicks % telemetrySampleRate == 0)) {
-        pr_trace("Queueing a telemetry LM record\r\n");
         queueTelemetryRecord(msg);
     }
 
