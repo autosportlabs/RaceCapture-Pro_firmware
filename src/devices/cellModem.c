@@ -63,7 +63,8 @@ static void stripTrailingWhitespace(char *data){
 static int waitCommandResponse(Serial *serial, const char *expectedRsp, portTickType wait){
 	readModemWait(serial, wait);
 	readModemWait(serial, READ_TIMEOUT);
-	delayMs(PAUSE_DELAY); //maybe take this out later - debugging SIM900
+	delayMs(PAUSE_DELAY); //this is a magic delay that is needed for proper communications
+	stripTrailingWhitespace(g_cellBuffer);
 	if (strlen(g_cellBuffer) == 0) return NO_CELL_RESPONSE;
 	return strstr(expectedRsp, g_cellBuffer) != NULL;
 }
