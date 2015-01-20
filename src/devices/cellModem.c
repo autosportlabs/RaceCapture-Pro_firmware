@@ -21,7 +21,7 @@ static size_t g_bufferLen;
 #define READ_TIMEOUT 	1000
 #define SHORT_TIMEOUT 	4500
 #define MEDIUM_TIMEOUT 	15000
-#define CONNECT_TIMEOUT 30000
+#define CONNECT_TIMEOUT 60000
 
 #define NO_CELL_RESPONSE -99
 
@@ -61,18 +61,24 @@ static void stripTrailingWhitespace(char *data){
 }
 
 static int waitCommandResponse(Serial *serial, const char *expectedRsp, portTickType wait){
+	int res = NO_CELL_RESPONSE;
 	readModemWait(serial, wait);
-	readModemWait(serial, READ_TIMEOUT);
-	delayMs(PAUSE_DELAY); //this is a magic delay that is needed for proper communications
-	stripTrailingWhitespace(g_cellBuffer);
-	if (strlen(g_cellBuffer) == 0) return NO_CELL_RESPONSE;
-	return strstr(expectedRsp, g_cellBuffer) != NULL;
+	int len = readModemWait(serial, READ_TIMEOUT);
+	delayMs(PAUSE_DELAY); //this is a magic delay that sim900 needs for proper communications
+	if  (len){
+		stripTrailingWhitespace(g_cellBuffer);
+		if (strlen(g_cellBuffer) > 0){
+			res = (strstr(expectedRsp, g_cellBuffer) != NULL);
+		}
+	}
+	return res;
 }
 
 static int sendCommandWait(Serial *serial, const char *cmd, const char *expectedRsp, portTickType wait){
 	flushModem(serial);
 	putsCell(serial, cmd);
-	return waitCommandResponse(serial, expectedRsp, wait);
+	int res = waitCommandResponse(serial, expectedRsp, wait);
+	return res;
 }
 
 static int sendCommand(Serial *serial, const char * cmd, const char *expectedRsp){
@@ -94,6 +100,19 @@ static int sendCommandRetry(Serial *serial, const char * cmd, const char * expec
 		delayMs(1000);
 	}
 	return result;
+}
+
+static int getSignalStrength(Serial *serial){
+	flushModem(serial);
+	putsCell(serial, "AT+CSQ\r");
+	readModemWait(serial, MEDIUM_TIMEOUT);
+	readModemWait(serial, READ_TIMEOUT);
+	if (strlen(g_cellBuffer) == 0) return -1;
+	if (strncmp(g_cellBuffer, "ERROR", 5) == 0) return -2;
+	pr_info("cell signal strength: ");
+	pr_info(g_cellBuffer);
+	pr_info("\r\n");
+	return 0;
 }
 
 static int isNetworkConnected(Serial *serial, size_t maxRetries, size_t maxNoResponseRetries){
@@ -162,18 +181,25 @@ int configureNet(Serial *serial, const char *apnHost, const char *apnUser, const
 	putsCell(serial, "\",\"");
 	putsCell(serial, apnPass);
 	putsCell(serial, "\"\r");
-	if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)) return -2;
+	if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)){
+		return -2;
+	}
 
 //	if (!sendCommand("AT+CIPHEAD=1\r")) return -2;
 
-	if (!sendCommandWait(serial, "AT+CIICR\r", "OK", CONNECT_TIMEOUT)) return -3;
+	if (sendCommandWait(serial, "AT+CIICR\r", "OK", CONNECT_TIMEOUT) != 1){
+		return -3;
+	}
 
-	if (getIpAddress(serial) !=0 ) return -4;
+	if (getIpAddress(serial) !=0 ){
+		return -4;
+	}
 
 	// Configure DNS to use Google DNS
 	const char dnsCmd[] = "AT+CDNSCFG=\"8.8.8.8\",\"8.8.4.4\"\r";
-	if (!sendCommandWait(serial, dnsCmd, "OK", READ_TIMEOUT))
-	  return -5;
+	if (sendCommandWait(serial, dnsCmd, "OK", READ_TIMEOUT) != 1){
+		return -5;
+	}
 
 	return 0;
 }
@@ -263,6 +289,7 @@ int initCellModem(Serial *serial){
 		if (sendCommandRetry(serial, "ATE0\r", "OK", 2, 2) != 1) continue;
 		sendCommand(serial, "AT+CIPSHUT\r", "OK");
 		if (isNetworkConnected(serial, 60, 3) != 1) continue;
+		getSignalStrength(serial);
 		if (isDataReady(serial, 30, 2) != 1) continue;
 		success = 1;
 	}
