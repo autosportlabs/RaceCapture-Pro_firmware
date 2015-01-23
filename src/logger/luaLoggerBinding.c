@@ -128,7 +128,11 @@ int Lua_GetAtSplit(lua_State *L){
 
 int Lua_SetPWMClockFrequency(lua_State *L){
 	if (lua_gettop(L) >= 1){
-		getWorkingLoggerConfig()->PWMClockFrequency = filterPwmClockFrequency(lua_tointeger(L,1));
+		LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+
+		uint16_t clock_frequency = filterPwmClockFrequency(lua_tointeger(L,1));
+		loggerConfig->PWMClockFrequency = clock_frequency;
+		PWM_set_clock_frequency(clock_frequency);
 	}
 	return 0;
 }

@@ -14,6 +14,7 @@
 
 int PWM_init(LoggerConfig *loggerConfig);
 
+void PWM_set_clock_frequency(uint16_t clockFrequency);
 void PWM_set_duty_cycle(unsigned int channel, unsigned short duty);
 unsigned short PWM_get_duty_cycle(unsigned short channel);
 
