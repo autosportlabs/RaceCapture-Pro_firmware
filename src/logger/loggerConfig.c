@@ -420,7 +420,7 @@ unsigned short filterPwmPeriod(int period){
 	return period;
 }
 
-int filterPwmClockFrequency(int freq){
+uint16_t filterPwmClockFrequency(uint16_t freq){
 	if (freq > MAX_PWM_CLOCK_FREQUENCY){
 		freq = MAX_PWM_CLOCK_FREQUENCY;
 	} else if (freq < MIN_PWM_CLOCK_FREQUENCY){

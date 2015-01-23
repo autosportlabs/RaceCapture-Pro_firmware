@@ -260,9 +260,9 @@ typedef struct _PWMConfig{
 } PWMConfig;
 
 /// PWM frequency in Hz.
-#define MAX_PWM_CLOCK_FREQUENCY             200000
-#define MIN_PWM_CLOCK_FREQUENCY	 	10
-#define DEFAULT_PWM_CLOCK_FREQUENCY			10000
+#define MAX_PWM_CLOCK_FREQUENCY             65000
+#define MIN_PWM_CLOCK_FREQUENCY	 			10
+#define DEFAULT_PWM_CLOCK_FREQUENCY			20000
 
 /// Maximum duty cycle value.
 #define MAX_PWM_DUTY_CYCLE              	100
@@ -527,7 +527,7 @@ char filterPwmLoggingMode(int config);
 unsigned short filterPwmDutyCycle(int dutyCycle);
 unsigned short filterPwmPeriod(int period);
 int filterImuRawValue(int accelRawValue);
-int filterPwmClockFrequency(int frequency);
+uint16_t filterPwmClockFrequency(uint16_t frequency);
 char filterTimerMode(int config);
 unsigned char filterPulsePerRevolution(unsigned char pulsePerRev);
 unsigned short filterTimerDivider(unsigned short divider);
