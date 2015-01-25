@@ -10,7 +10,11 @@
 #define MAX_DUTY_CYCLE 100
 #define PWM_CHANNEL_COUNT 4
 
-#define DEFAULT_PERIOD 1000
+#define CLOCK_FREQUENCY_PRESCALER_SCALING 42000000
+
+//magic number 20970 = trimmmed value.
+//adjust to calibrate further (if using a more accurate scope)
+#define CLOCK_FREQUENCY_PERIOD_SCALING 20970
 
 typedef struct _pwm {
 	uint32_t pin;
@@ -36,6 +40,8 @@ static gpio analogCtrlGpios[] = {
 	{ RCC_AHB1Periph_GPIOE, GPIOE, GPIO_Pin_0},
 	{ RCC_AHB1Periph_GPIOE, GPIOE, GPIO_Pin_1}
 };
+
+static uint16_t g_currentClockPeriod = 0;
 
 static void setAnalogControlGpio(size_t port, uint8_t state){
 	if (port < PWM_CHANNEL_COUNT){
@@ -69,14 +75,16 @@ static void initAnalogControlGpios(){
 int PWM_device_init(){
 
 	initAnalogControlGpios();
-
-	uint32_t period = DEFAULT_PERIOD;
-
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 
-	uint16_t prescaler = (uint16_t) ((SystemCoreClock) / 210000) - 1;
-	prescaler = 4 - 1;
+	return 1;
+}
+
+void PWM_device_set_clock_frequency(uint16_t clockFrequency){
+
+	const uint32_t period = (1000 * ((CLOCK_FREQUENCY_PERIOD_SCALING * 10000)/clockFrequency)) / 10000;
+	const uint16_t prescaler = (uint16_t) ((SystemCoreClock) / CLOCK_FREQUENCY_PRESCALER_SCALING) - 1;
 
 	TIM_TimeBaseInitTypeDef timerInitStructure;
 	timerInitStructure.TIM_Prescaler = prescaler;
@@ -87,13 +95,8 @@ int PWM_device_init(){
 	TIM_TimeBaseInit(TIM4, &timerInitStructure);
 	TIM_ARRPreloadConfig(TIM4, ENABLE);
 	TIM_Cmd(TIM4, ENABLE);
-	return 1;
+	g_currentClockPeriod = period;
 }
-
-void PWM_device_configure_clock(unsigned short clockFrequency){
-
-}
-
 
 void PWM_device_channel_init(unsigned int channel, unsigned short period, unsigned short dutyCycle){
 
@@ -156,7 +159,8 @@ unsigned short PWM_device_channel_get_period(unsigned int channel){
 }
 
 void PWM_device_set_duty_cycle(unsigned int channel, unsigned short duty){
-	uint32_t CCR_period = (duty * (DEFAULT_PERIOD * 10)) / DEFAULT_PERIOD;
+	duty = duty > MAX_DUTY_CYCLE ? MAX_DUTY_CYCLE : duty;
+	uint32_t CCR_period = (g_currentClockPeriod * 100) / (1000 / duty) / 10;
 	switch(channel){
 		case 0:
 			TIM4->CCR4 = CCR_period;

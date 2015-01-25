@@ -148,7 +148,7 @@ static void PWM_configure_ports(){
 			AT91C_PIO_PA7); // mux funtion B
 }
 
-void PWM_device_configure_clock(unsigned short clockFrequency){
+void PWM_device_set_clock_frequency(unsigned short clockFrequency){
 	PWM_ConfigureClocks(clockFrequency * MAX_DUTY_CYCLE, 0, BOARD_MCK);
 }
 

@@ -12,7 +12,7 @@
 
 int PWM_device_init(void);
 void PWM_device_channel_init(unsigned int channel, unsigned short period, unsigned short dutyCycle);
-void PWM_device_configure_clock(unsigned short clockFrequency);
+void PWM_device_set_clock_frequency(uint16_t clockFrequency);
 
 void PWM_device_set_duty_cycle(unsigned int channel, unsigned short duty);
 unsigned short PWM_device_get_duty_cycle(unsigned int channel);

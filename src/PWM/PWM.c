@@ -7,7 +7,8 @@ static void init_pwm_channel(size_t channelId, PWMConfig *pc){
 
 int PWM_init(LoggerConfig *loggerConfig){
 	PWM_device_init();
-	PWM_device_configure_clock(loggerConfig->PWMClockFrequency);
+	PWM_set_clock_frequency(loggerConfig->PWMClockFrequency);
+
 	for (size_t i = 0; i < CONFIG_PWM_CHANNELS; i++)
 	{
 		PWMConfig *pwmConfig = &(loggerConfig->PWMConfigs[i]);
@@ -21,6 +22,10 @@ int PWM_init(LoggerConfig *loggerConfig){
 	}
 	PWM_update_config(loggerConfig);
 	return 1;
+}
+
+void PWM_set_clock_frequency(uint16_t clockFrequency){
+	PWM_device_set_clock_frequency(clockFrequency);
 }
 
 int PWM_update_config(LoggerConfig *loggerConfig){
