@@ -155,7 +155,8 @@ unsigned short PWM_device_channel_get_period(unsigned int channel){
 }
 
 void PWM_device_set_duty_cycle(unsigned int channel, unsigned short duty){
-	uint32_t CCR_period = (g_currentClockPeriod * 100) / (1000/duty) / 10;
+	duty = duty > MAX_DUTY_CYCLE ? MAX_DUTY_CYCLE : duty;
+	uint32_t CCR_period = (g_currentClockPeriod * 100) / (1000 / duty) / 10;
 	switch(channel){
 		case 0:
 			TIM4->CCR4 = CCR_period;
