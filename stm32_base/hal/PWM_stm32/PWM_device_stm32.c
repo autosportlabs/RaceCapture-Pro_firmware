@@ -10,6 +10,12 @@
 #define MAX_DUTY_CYCLE 100
 #define PWM_CHANNEL_COUNT 4
 
+#define CLOCK_FREQUENCY_PRESCALER_SCALING 42000000
+
+//magic number 20970 = trimmmed value.
+//adjust to calibrate further (if using a more accurate scope)
+#define CLOCK_FREQUENCY_PERIOD_SCALING 20970
+
 typedef struct _pwm {
 	uint32_t pin;
 	uint16_t pinSource;
@@ -77,10 +83,8 @@ int PWM_device_init(){
 
 void PWM_device_set_clock_frequency(unsigned short clockFrequency){
 
-	//magic numbers follow 20970 = trimmmed value.
-	//adjust to calibrate further.
-	uint32_t period = (1000 * ((20970 * 10000)/clockFrequency)) / 10000;
-	uint16_t prescaler = (uint16_t) ((SystemCoreClock) / 42000000) - 1;
+	uint32_t period = (1000 * ((CLOCK_FREQUENCY_PERIOD_SCALING * 10000)/clockFrequency)) / 10000;
+	uint16_t prescaler = (uint16_t) ((SystemCoreClock) / CLOCK_FREQUENCY_PRESCALER_SCALING) - 1;
 
 	TIM_TimeBaseInitTypeDef timerInitStructure;
 	timerInitStructure.TIM_Prescaler = prescaler;
