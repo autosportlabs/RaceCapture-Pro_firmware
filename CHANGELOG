@@ -1,6 +1,7 @@
 ===2.7.7===
 * Allow cell module to connect to roaming network (roaming charges may apply)
 * MK1: fix RPM stuck at zero if RPM signal is applied before RCP unit is powered up
+* PWM clock frequency now settable via Lua script, was fixed at 20KHz before.
  
 ===2.7.6===
 * Ensure timestamps show on every sample, regardless of sample rate combinations
