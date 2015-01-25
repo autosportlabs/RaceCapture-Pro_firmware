@@ -83,8 +83,8 @@ int PWM_device_init(){
 
 void PWM_device_set_clock_frequency(uint16_t clockFrequency){
 
-	uint32_t period = (1000 * ((CLOCK_FREQUENCY_PERIOD_SCALING * 10000)/clockFrequency)) / 10000;
-	uint16_t prescaler = (uint16_t) ((SystemCoreClock) / CLOCK_FREQUENCY_PRESCALER_SCALING) - 1;
+	const uint32_t period = (1000 * ((CLOCK_FREQUENCY_PERIOD_SCALING * 10000)/clockFrequency)) / 10000;
+	const uint16_t prescaler = (uint16_t) ((SystemCoreClock) / CLOCK_FREQUENCY_PRESCALER_SCALING) - 1;
 
 	TIM_TimeBaseInitTypeDef timerInitStructure;
 	timerInitStructure.TIM_Prescaler = prescaler;
