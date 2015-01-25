@@ -13,7 +13,7 @@ void PWM_device_channel_init(unsigned int channel, unsigned short period, unsign
 
 }
 
-void PWM_device_set_clock_frequency(unsigned short clockFrequency){
+void PWM_device_set_clock_frequency(uint16_t clockFrequency){
 
 }
 
