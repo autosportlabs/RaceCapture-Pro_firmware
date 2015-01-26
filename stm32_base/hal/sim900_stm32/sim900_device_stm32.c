@@ -5,10 +5,10 @@
 #define EXT_POWER_CONTROL_PIN GPIO_Pin_10
 #define EXT_POWER_CONTROL_PORT GPIOE
 
-
 static uint32_t gpio_is_init = 0;
 
-static void sim900_gpio_init(void){
+static void sim900_gpio_init(void)
+{
 
 	GPIO_InitTypeDef gpio_conf;
 
@@ -27,13 +27,13 @@ static void sim900_gpio_init(void){
 	gpio_is_init = 1;
 }
 
-void sim900_device_power_button(uint32_t pressed){
+void sim900_device_power_button(uint32_t pressed)
+{
 	sim900_gpio_init();
 
-	if (pressed){
+	if (pressed) {
 		GPIO_ResetBits(EXT_POWER_CONTROL_PORT, EXT_POWER_CONTROL_PIN);
-	}
-	else{
+	} else {
 		GPIO_SetBits(EXT_POWER_CONTROL_PORT, EXT_POWER_CONTROL_PIN);
 	}
 }
