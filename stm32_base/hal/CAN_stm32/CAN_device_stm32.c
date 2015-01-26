@@ -18,9 +18,9 @@ static xQueueHandle xCan1Rx = NULL;
 static xQueueHandle xCan2Tx = NULL;
 static xQueueHandle xCan2Rx = NULL;
 
-#define CAN_QUEUE_LENGTH 10
+#define CAN_QUEUE_LENGTH	10
 
-#define CAN_IRQ_PRIORITY 		5
+#define CAN_IRQ_PRIORITY 	5
 #define CAN_IRQ_SUB_PRIORITY 	0
 
 //For 168MHz clock
@@ -32,34 +32,50 @@ static xQueueHandle xCan2Rx = NULL;
  100k:    12  8   1   20 */
 
 #define CAN_BAUD_COUNT 5
-static const u8 can_baud_bs1[] = { CAN_BS1_12tq, CAN_BS1_12tq, CAN_BS1_8tq,	CAN_BS1_8tq, CAN_BS1_12tq };
-static const u8 can_baud_bs2[] = { CAN_BS1_8tq, CAN_BS1_8tq, CAN_BS1_5tq, CAN_BS1_5tq, CAN_BS1_8tq };
-static const u8 can_baud_sjw[] = { CAN_SJW_1tq, CAN_SJW_1tq, CAN_SJW_1tq, CAN_SJW_1tq, CAN_SJW_1tq };
+static const u8 can_baud_bs1[] =
+    { CAN_BS1_12tq, CAN_BS1_12tq, CAN_BS1_8tq, CAN_BS1_8tq, CAN_BS1_12tq };
+
+static const u8 can_baud_bs2[] =
+    { CAN_BS1_8tq, CAN_BS1_8tq, CAN_BS1_5tq, CAN_BS1_5tq, CAN_BS1_8tq };
+
+static const u8 can_baud_sjw[] =
+    { CAN_SJW_1tq, CAN_SJW_1tq, CAN_SJW_1tq, CAN_SJW_1tq, CAN_SJW_1tq };
+
 static const u8 can_baud_pre[] = { 20, 16, 12, 6, 2 };
 static const u32 can_baud_rate[] = { 100000, 125000, 250000, 500000, 1000000 };
 
-static int initQueues() {
+static int initQueues()
+{
 	int success = 1;
 
-	if (! (xCan1Rx && xCan1Tx && xCan2Rx && xCan2Tx)){
+	if (!(xCan1Rx && xCan1Tx && xCan2Rx && xCan2Tx)) {
 		xCan1Rx = xQueueCreate(CAN_QUEUE_LENGTH,
-				( unsigned portBASE_TYPE ) sizeof( CanRxMsg ));
+				       (unsigned portBASE_TYPE)
+				       sizeof(CanRxMsg));
 		xCan1Tx = xQueueCreate(CAN_QUEUE_LENGTH + 1,
-				( unsigned portBASE_TYPE ) sizeof( CanRxMsg ));
+				       (unsigned portBASE_TYPE)sizeof(CanRxMsg));
+		if (xCan1Rx == NULL || xCan1Rx == NULL) {
+			success = 0;
+			goto cleanup_and_return;
+		}
 
 		xCan2Rx = xQueueCreate(CAN_QUEUE_LENGTH,
-				( unsigned portBASE_TYPE ) sizeof( CanRxMsg ));
+				       (unsigned portBASE_TYPE)
+				       sizeof(CanRxMsg));
 		xCan2Tx = xQueueCreate(CAN_QUEUE_LENGTH + 1,
-				( unsigned portBASE_TYPE ) sizeof( CanRxMsg ));
+				       (unsigned portBASE_TYPE)sizeof(CanRxMsg));
+		if (xCan2Rx == NULL || xCan2Rx == NULL) {
+			success = 0;
+			goto cleanup_and_return;
+		}
 	}
 
-	if (xCan1Rx == NULL || xCan1Rx == NULL || xCan2Rx == NULL || xCan2Rx == NULL) {
-		success = 0;
-	}
+cleanup_and_return:
 	return success;
 }
 
-static void initGPIO(GPIO_TypeDef* GPIOx, uint32_t gpioPins){
+static void initGPIO(GPIO_TypeDef * GPIOx, uint32_t gpioPins)
+{
 	/* Configure CAN RX and TX pins */
 	GPIO_InitTypeDef GPIO_InitStructure;
 	GPIO_InitStructure.GPIO_Pin = gpioPins;
@@ -70,7 +86,8 @@ static void initGPIO(GPIO_TypeDef* GPIOx, uint32_t gpioPins){
 	GPIO_Init(GPIOx, &GPIO_InitStructure);
 }
 
-static void initCAN(CAN_TypeDef* CANx, uint32_t baud){
+static void initCAN(CAN_TypeDef * CANx, uint32_t baud)
+{
 
 	CAN_InitTypeDef CAN_InitStructure;
 	/* CAN cell init */
@@ -83,13 +100,17 @@ static void initCAN(CAN_TypeDef* CANx, uint32_t baud){
 	CAN_InitStructure.CAN_Mode = CAN_Mode_Normal;
 
 	int baudIndex = -1;
-	// Select baud rate up to requested rate, except for below min, where min is selected
-	if (baud >= can_baud_rate[ CAN_BAUD_COUNT - 1]) // round down to peak rate if >= peak rate
+
+	/* Select baud rate up to requested rate, except for below min, where min is selected */
+	if (baud >= can_baud_rate[CAN_BAUD_COUNT - 1]) {
+		/* round down to peak rate if >= peak rate */
 		baudIndex = CAN_BAUD_COUNT - 1;
-	else {
+	} else {
 		for (baudIndex = 0; baudIndex < CAN_BAUD_COUNT - 1; baudIndex++) {
-			if (baud < can_baud_rate[baudIndex + 1]) // take current idx if next is too large
+			if (baud < can_baud_rate[baudIndex + 1]) {
+				/* take current idx if next is too large */
 				break;
+			}
 		}
 	}
 
@@ -102,9 +123,10 @@ static void initCAN(CAN_TypeDef* CANx, uint32_t baud){
 
 }
 
-static void initCANInterrupts(CAN_TypeDef* CANx, uint8_t irqNumber){
+static void initCANInterrupts(CAN_TypeDef * CANx, uint8_t irqNumber)
+{
 
-	NVIC_InitTypeDef  NVIC_InitStructure;
+	NVIC_InitTypeDef NVIC_InitStructure;
 	NVIC_InitStructure.NVIC_IRQChannel = irqNumber;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = CAN_IRQ_PRIORITY;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = CAN_IRQ_SUB_PRIORITY;
@@ -112,10 +134,11 @@ static void initCANInterrupts(CAN_TypeDef* CANx, uint8_t irqNumber){
 	NVIC_Init(&NVIC_InitStructure);
 }
 
-static void CAN_device_init_1(int baud) {
+static void CAN_device_init_1(int baud)
+{
 	CAN_DeInit(CAN1);
 
-	/* CAN GPIOs configuration **************************************************/
+	/* CAN GPIOs configuration ************************************************* */
 	/* Enable GPIO clock */
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 
@@ -124,7 +147,7 @@ static void CAN_device_init_1(int baud) {
 	GPIO_PinAFConfig(GPIOD, GPIO_PinSource1, GPIO_AF_CAN1);
 	initGPIO(GPIOD, GPIO_Pin_0 | GPIO_Pin_1);
 
-	/* CAN configuration ********************************************************/
+	/* CAN configuration ******************************************************* */
 	/* Enable CAN clock */
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN1, ENABLE);
 
@@ -139,10 +162,11 @@ static void CAN_device_init_1(int baud) {
 	initCANInterrupts(CAN1, CAN1_RX0_IRQn);
 }
 
-static void CAN_device_init_2(int baud) {
+static void CAN_device_init_2(int baud)
+{
 	CAN_DeInit(CAN2);
 
-	/* CAN GPIOs configuration **************************************************/
+	/* CAN GPIOs configuration ************************************************* */
 	/* Enable GPIO clock */
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
 
@@ -151,13 +175,13 @@ static void CAN_device_init_2(int baud) {
 	GPIO_PinAFConfig(GPIOB, GPIO_PinSource13, GPIO_AF_CAN2);
 	initGPIO(GPIOB, GPIO_Pin_12 | GPIO_Pin_13);
 
-	/* CAN configuration ********************************************************/
+	/* CAN configuration ******************************************************* */
 	/* Enable CAN clock */
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN2, ENABLE);
 
 	initCAN(CAN2, baud);
 
-	//set default filter
+	/* set default filter */
 	CAN_device_set_filter(1, 0, 0, 0, 0);
 
 	/* Enable FIFO 0 message pending Interrupt */
@@ -166,14 +190,16 @@ static void CAN_device_init_2(int baud) {
 	initCANInterrupts(CAN2, CAN2_RX1_IRQn);
 }
 
-int CAN_device_init(uint8_t channel, uint32_t baud){
+int CAN_device_init(uint8_t channel, uint32_t baud)
+{
 
 	pr_info("CAN");
 	pr_info_int(channel);
 	pr_info(" init @ ");
 	pr_info_int(baud);
-	if (initQueues()){
-		switch(channel){
+
+	if (initQueues()) {
+		switch (channel) {
 		case 0:
 			CAN_device_init_1(baud);
 			break;
@@ -183,19 +209,27 @@ int CAN_device_init(uint8_t channel, uint32_t baud){
 		}
 		pr_info(" win\r\n");
 		return 1;
-	}
-	else{
+	} else {
 		pr_info(" fail\r\n");
 		return 0;
 	}
 }
 
-int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended, uint32_t filter, uint32_t mask) {
+int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
+			  uint32_t filter, uint32_t mask)
+{
+	if (channel > 1) {
+		return 0;
+	}
 
-	if (channel > 1) return 0;
-	if (id > 13) return 0;
+	if (id > 13) {
+		return 0;
+	}
 
-	if (channel == 1) id += 14; //CAN2 filters start at 14 by default
+	if (channel == 1) {
+		/* CAN2 filters start at 14 by default */
+		id += 14;
+	}
 
 	CAN_FilterInitTypeDef CAN_FilterInitStructure;
 	CAN_FilterInitStructure.CAN_FilterNumber = id;
@@ -205,14 +239,16 @@ int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended, uint32_
 	CAN_FilterInitStructure.CAN_FilterIdLow = filter & 0xFFFF;
 	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = mask >> 16;
 	CAN_FilterInitStructure.CAN_FilterMaskIdLow = mask & 0xFFFF;
-	CAN_FilterInitStructure.CAN_FilterFIFOAssignment = channel == 0 ? CAN_FIFO0 : CAN_FIFO1;
+	CAN_FilterInitStructure.CAN_FilterFIFOAssignment = (channel == 0 ? CAN_FIFO0 : CAN_FIFO1);
 	CAN_FilterInitStructure.CAN_FilterActivation = ENABLE;
 	CAN_FilterInit(&CAN_FilterInitStructure);
 	return 1;
 }
 
-int CAN_device_tx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs) {
+int CAN_device_tx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
+{
 	CanTxMsg TxMessage;
+
 	/* Transmit Structure preparation */
 	TxMessage.StdId = msg->addressValue;
 	TxMessage.ExtId = 0x00;
@@ -225,15 +261,19 @@ int CAN_device_tx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs) {
 	return 1;
 }
 
-int CAN_device_rx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs) {
+int CAN_device_rx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
+{
 	CanRxMsg rxMsg;
 	if (xQueueReceive(channel == 0 ? xCan1Rx : xCan2Rx, &rxMsg, msToTicks(timeoutMs)) == pdTRUE) {
+
 		msg->isExtendedAddress = rxMsg.IDE == CAN_ID_EXT ? 1 : 0;
 		uint32_t address = rxMsg.StdId;
+
 		if (msg->isExtendedAddress) {
 			address = (address << 18) | rxMsg.ExtId;
 		}
-		msg->addressValue = 0x1FFFFFFF & address; // mask out extra bits
+
+		msg->addressValue = 0x1FFFFFFF & address;	// mask out extra bits
 		memcpy(msg->data, rxMsg.Data, rxMsg.DLC);
 		msg->dataLength = rxMsg.DLC;
 		return 1;
@@ -243,7 +283,8 @@ int CAN_device_rx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs) {
 	}
 }
 
-void CAN1_RX0_IRQHandler(void) {
+void CAN1_RX0_IRQHandler(void)
+{
 	portBASE_TYPE xTaskWokenByRx = pdFALSE;
 	CanRxMsg rxMsg;
 	CAN_Receive(CAN1, CAN_FIFO0, &rxMsg);
@@ -251,7 +292,8 @@ void CAN1_RX0_IRQHandler(void) {
 	portEND_SWITCHING_ISR(xTaskWokenByRx);
 }
 
-void CAN2_RX1_IRQHandler(void) {
+void CAN2_RX1_IRQHandler(void)
+{
 	portBASE_TYPE xTaskWokenByRx = pdFALSE;
 	CanRxMsg rxMsg;
 	CAN_Receive(CAN2, CAN_FIFO1, &rxMsg);

@@ -46,44 +46,50 @@ int is9150_init(struct i2c_dev *dev, uint8_t addr)
 	/* Read the 'who am I' register to make sure that the device
 	 * is out there and alive */
 	res = is9150_readreg(IS_REG_WHOAMI, &reg);
-	if (res)
+	if (res) {
 		return IS_9150_ERR_INIT;
-	else if (reg != IS_WHOAMI_DEFAULT)
+	} else if (reg != IS_WHOAMI_DEFAULT) {
 		return IS_9150_ERR_INIT;
+	}
 
 	/* Set the sleep bit in the power management register, this
 	 * puts the device down for configuration */
 	res = is9150_write_reg_bits(IS_REG_PWR_MGMT_1, IS_POWER_SLEEP_POS,
 				    1, 1);
-	if (res)
+	if (res) {
 		return IS_9150_ERR_INIT;
+	}
 	
 	/* Set the device clock source to internal PLL + GYRO_X sync */
 	/* NOTE: This has shown to be more accurate than the PLL
 	 * alone according to datasheet */
 	res = is9150_write_reg_bits(IS_REG_PWR_MGMT_1, IS_CLOCK_POS,
 				    IS_CLOCK_NUM_BITS, IS_CLOCK_GYRO_X);
-	if (res)
+	if (res) {
 		return IS_9150_ERR_INIT;
+	}
 
 	/* Set the Gyro range to 1000* per second */
 	res = is9150_write_reg_bits(IS_REG_GYRO_CONFIG, IS_GYRO_SCALE_POS,
 				    IS_GYRO_NUM_BITS, IS_GYRO_SCALE_2000);
-	if (res)
+	if (res) {
 		return IS_9150_ERR_INIT;
+	}
 
 	/* Set the accelerometer range to 4G per second */
 	res = is9150_write_reg_bits(IS_REG_ACCEL_CONFIG, IS_ACCEL_SCALE_POS,
 				    IS_ACCEL_NUM_BITS, IS_ACCEL_SCALE_4G);
-	if (res)
+	if (res) {
 		return IS_9150_ERR_INIT;
+	}
 
 	/* Clear the sleep bit in the power management register, this
 	 * beings sampling of the internal devices */
 	res = is9150_write_reg_bits(IS_REG_PWR_MGMT_1, IS_POWER_SLEEP_POS,
 				    1, 0);
-	if (res)
+	if (res) {
 		return IS_9150_ERR_INIT;
+	}
 
 	return 0;
 }

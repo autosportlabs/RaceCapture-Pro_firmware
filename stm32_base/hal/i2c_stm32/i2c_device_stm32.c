@@ -22,8 +22,8 @@
 #include <i2c_device_stm32.h>
 
 struct rcc_params {
-void (*clock_cmd)(uint32_t, FunctionalState);
-uint32_t periph;
+	void (*clock_cmd)(uint32_t, FunctionalState);
+	uint32_t periph;
 };
 
 struct i2c_dma_stream {
@@ -234,10 +234,11 @@ static void i2c_dma_enable(struct i2c_priv *p)
 	struct i2c_dma_stream *st;
 
 	/* Get a pointer to the stream we'll be using */
-	if (p->trans_direction == I2C_Direction_Receiver)
+	if (p->trans_direction == I2C_Direction_Receiver) {
 		st = &p->dma.rx;
-	else
+	} else {
 		st = &p->dma.tx;
+	}
 
 	I2C_DMALastTransferCmd(p->ll_dev, ENABLE);
 
@@ -271,10 +272,11 @@ static void i2c_dma_init(struct i2c_priv *p)
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 
 	/* Get a pointer to the stream we'll be using */
-	if (p->trans_direction == I2C_Direction_Receiver)
+	if (p->trans_direction == I2C_Direction_Receiver) {
 		st = &p->dma.rx;
-	else
+	} else {
 		st = &p->dma.tx;
+	}
 
 	/* Clear any pending DMA Flags */
 	DMA_ClearFlag(st->stream, st->all_flag_mask);
@@ -349,12 +351,14 @@ int i2c_init(struct i2c_dev *dev, uint32_t bus_speed)
 	GPIO_InitTypeDef GPIO_InitStruct;
 	I2C_InitTypeDef I2C_InitStruct;
 
-	if (p->initialized)
+	if (p->initialized) {
 		return -1;
+	}
 
 	/* First things first, make sure we're handed a sane bus speed */
-	if (bus_speed < 100000 || bus_speed > 400000)
+	if (bus_speed < 100000 || bus_speed > 400000) {
 		return -2;
+	}
 
 	/* initialize the gpio clocks */
 	p->pins.sda.rcc.clock_cmd(p->pins.sda.rcc.periph, ENABLE);
@@ -413,8 +417,9 @@ int i2c_init(struct i2c_dev *dev, uint32_t bus_speed)
 
 	/* We need a very small queue for reception <= 2 bytes */
 	p->transact_q = xQueueCreate(2, sizeof(uint8_t));
-	if (!p->transact_q)
+	if (!p->transact_q) {
 		return -3;
+	}
 
 	p->initialized = true;
 
@@ -442,8 +447,9 @@ static void i2c_start(struct i2c_priv *p)
 
 	/* No reason to block on a lock here.  This can only happen if
 	 * a device is misbehaving, but still good to check for it */
-	while(I2C_GetFlagStatus(p->ll_dev, I2C_FLAG_BUSY))
+	while(I2C_GetFlagStatus(p->ll_dev, I2C_FLAG_BUSY)) {
 		vTaskDelay(1);
+	}
 
 	/* Make sure we'll ack the bytes we receive */
 	I2C_AcknowledgeConfig(p->ll_dev, ENABLE);
@@ -476,8 +482,9 @@ int i2c_transact(struct i2c_dev *dev, uint8_t addr,
 	int ret = 0;
 	struct i2c_priv *p = (struct i2c_priv*)dev->priv;
 
-	if (tx_len > 128 || rx_len > 128)
+	if (tx_len > 128 || rx_len > 128) {
 		return -1;
+	}
 
 	/* Lock this transaction window */
 	xSemaphoreTake(p->transact_lock, portMAX_DELAY);
@@ -492,10 +499,11 @@ int i2c_transact(struct i2c_dev *dev, uint8_t addr,
 	/* For DMA Reception <= 2 bytes, we have to use interrupts
 	 * because of ST's poor I2C Hardware design, everything else
 	 * uses DMA */
-	if (p->rx_len <= 2)
+	if (p->rx_len <= 2) {
 		p->short_rx = true;
-	else
+	} else {
 		p->short_rx = false;
+	}
 
 	/* Set our transaction direction, if we're a transmitter, put
 	 * all data to be transmitted into the transaction queue */
@@ -523,9 +531,10 @@ int i2c_transact(struct i2c_dev *dev, uint8_t addr,
 
 	/* Move any Rx data into the rx buffer (Only for transactions
 	 * <= 2 bytes) */
-	if (p->rx_len <= 2)
+	if (p->rx_len <= 2) {
 		while (rx_len--)
 			xQueueReceive(p->transact_q, rx_buf++, portMAX_DELAY);
+	}
 
 unlock_and_return:
 	xSemaphoreGive(p->transact_lock);
@@ -576,12 +585,14 @@ int i2c_read_reg_bits(struct i2c_dev *dev, uint8_t dev_addr,
 
 	/* We need to make sure that the mask won't run off the edge
 	 * of the register */
-	if (bit_pos + num_bits > 8)
+	if (bit_pos + num_bits > 8) {
 		return -1;
+	}
 
 	res = i2c_read_reg8(dev, dev_addr, reg_addr, &reg_val);
-	if (res)
+	if (res) {
 		return res;
+	}
 
 	/* Build the register mask */
 	for (size_t i = 0; i < num_bits; i++)
@@ -606,12 +617,14 @@ int i2c_write_reg_bits(struct i2c_dev *dev, uint8_t dev_addr,
 
 	/* We need to make sure that the mask won't run off the edge
 	 * of the register */
-	if (bit_pos + num_bits > 8)
+	if (bit_pos + num_bits > 8) {
 		return -1;
+	}
 
 	res = i2c_read_reg8(dev, dev_addr, reg_addr, &reg_val);
-	if (res)
+	if (res) {
 		return res;
+	}
 
 	/* Build the register mask */
 	for (size_t i = 0; i < num_bits; i++)
@@ -626,8 +639,9 @@ int i2c_write_reg_bits(struct i2c_dev *dev, uint8_t dev_addr,
 
 	/* Write the register back to the device */
 	res = i2c_write_reg8(dev, dev_addr, reg_addr, reg_val);
-	if (res)
+	if (res) {
 		return res;
+	}
 
 	return 0;
 }
@@ -683,8 +697,9 @@ static void i2c_rx_data(struct i2c_priv *p)
 
 		/* Don't give up our lock until all data has
 		 * been received */
-		if (p->rx_len)
+		if (p->rx_len) {
 			return;
+		}
 	}
 
 	xSemaphoreGiveFromISR(p->event_lock, &task_woken);
@@ -723,10 +738,11 @@ static void i2c_clear_addr(struct i2c_priv *p)
 	/* Yet ANOTHER workaround.  We have to attempt to generate
 	 * the stop bit early for 1 byte reception... If this is a RX
 	 * > 2 bytes OR a transmission, enable DMA */
-	if (p->rx_len == 1 && p->trans_direction == I2C_Direction_Receiver)
+	if (p->rx_len == 1 && p->trans_direction == I2C_Direction_Receiver) {
 		I2C_GenerateSTOP(p->ll_dev, ENABLE);
-	else if (p->trans_direction == I2C_Direction_Transmitter || p->rx_len > 2)
+	} else if (p->trans_direction == I2C_Direction_Transmitter || p->rx_len > 2) {
 		i2c_dma_enable(p);
+	}
 }
 
 static void i2c_setup_rx(struct i2c_priv *p)
@@ -772,8 +788,9 @@ static void i2c_common_event_handler(struct i2c_priv *p)
 	}
 
 	/* Generate a stop if there is an error detected */
-	if (p->error_flag)
+	if (p->error_flag) {
 		I2C_GenerateSTOP(p->ll_dev, ENABLE);
+	}
 }
 
 static void i2c_common_error_handler(struct i2c_priv *p)
