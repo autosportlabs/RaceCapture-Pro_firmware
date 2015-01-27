@@ -12,6 +12,7 @@
 #define MAX_TRACKS				40
 #define MAX_SECTORS				20
 #define SCRIPT_MEMORY_LENGTH	10240
+#define MAX_VIRTUAL_CHANNELS	10
 
 //Input / output Channels
 #define ANALOG_CHANNELS 		8

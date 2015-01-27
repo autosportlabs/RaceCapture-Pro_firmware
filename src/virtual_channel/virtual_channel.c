@@ -3,6 +3,7 @@
 #include "mod_string.h"
 #include "printk.h"
 #include "loggerTaskEx.h"
+#include "capabilities.h"
 
 static size_t g_virtualChannelCount = 0;
 static VirtualChannel g_virtualChannels[MAX_VIRTUAL_CHANNELS];
