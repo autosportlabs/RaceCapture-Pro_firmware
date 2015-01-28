@@ -17,7 +17,6 @@ typedef struct _VirtualChannel{
 	float currentValue;
 } VirtualChannel;
 
-#define MAX_VIRTUAL_CHANNELS 10
 #define INVALID_VIRTUAL_CHANNEL -1
 
 int find_virtual_channel(const char * channel_name);
