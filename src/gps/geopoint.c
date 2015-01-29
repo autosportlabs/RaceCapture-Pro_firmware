@@ -17,16 +17,16 @@
  * https://github.com/bnoordhuis/bspc/blob/master/deps/qcommon/cm_trace.c
  * http://h14s.p5r.org/2012/09/0x5f3759df.html
  */
-static double fast_square_root(double number) {
-	long i;
-	double x, y;
-	const double f = 1.5F;
+static float fast_square_root(float number) {
+	int64_t i;
+	float x, y;
+	const float f = 1.5F;
 
 	x = number * 0.5F;
 	y  = number;
-	i  = * ( uint64_t * ) &y; // evil floating point bit level hacking
+	i  = * ( int32_t * ) &y; // evil floating point bit level hacking
 	i  = 0x5f3759df - ( i >> 1 ); // what the fuck?
-	y  = * ( double * ) &i;
+	y  = * ( float * ) &i;
 	y  = y * ( f - ( x * y * y ) );
 	y  = y * ( f - ( x * y * y ) );
 	return number * y;
@@ -76,7 +76,7 @@ float distPythag(const GeoPoint *a, const GeoPoint *b) {
 	double latBRad = toRad(b->latitude);
 
 	double  tmp = dLonRad * cosine((latARad + latBRad) / 2);
-	return (float)fast_square_root(tmp * tmp + dLatRad * dLatRad) * GP_EARTH_RADIUS_M;
+	return fast_square_root(tmp * tmp + dLatRad * dLatRad) * GP_EARTH_RADIUS_M;
 }
 
 int isValidPoint(const GeoPoint *p) {
