@@ -17,16 +17,16 @@
  * https://github.com/bnoordhuis/bspc/blob/master/deps/qcommon/cm_trace.c
  * http://h14s.p5r.org/2012/09/0x5f3759df.html
  */
-static float fast_square_root(float number) {
+static double fast_square_root(double number) {
 	long i;
-	float x, y;
-	const float f = 1.5F;
+	double x, y;
+	const double f = 1.5F;
 
 	x = number * 0.5F;
 	y  = number;
 	i  = * ( long * ) &y; // evil floating point bit level hacking
 	i  = 0x5f3759df - ( i >> 1 ); // what the fuck?
-	y  = * ( float * ) &i;
+	y  = * ( double * ) &i;
 	y  = y * ( f - ( x * y * y ) );
 	y  = y * ( f - ( x * y * y ) );
 	return number * y;
@@ -35,9 +35,9 @@ static float fast_square_root(float number) {
 /*
  * source: http://www.ganssle.com/articles/atrig.htm
  */
-float cosine(float x)
+double cosine(double x)
 {
-	float p0,p1,p2,p3,p4,p5,y,t,absx,frac,quad,pi2;
+	double p0,p1,p2,p3,p4,p5,y,t,absx,frac,quad,pi2;
 	t= 0.0;
 	p0= 0.999999999781;
 	p1=-0.499999993585;
@@ -65,18 +65,18 @@ float cosine(float x)
  * @param val The provided value in non-radian form.
  * @return The radian value.
  */
-static float toRad(float val) {
-	return val * M_PI / 180.0;
+static double toRad(double val) {
+	return val * (M_PI / 180.0);
 }
 
 float distPythag(const GeoPoint *a, const GeoPoint *b) {
-	float dLatRad = toRad(b->latitude - a->latitude);
-	float dLonRad = toRad(b->longitude - a->longitude);
-	float latARad = toRad(a->latitude);
-	float latBRad = toRad(b->latitude);
+	double dLatRad = toRad(b->latitude - a->latitude);
+	double dLonRad = toRad(b->longitude - a->longitude);
+	double latARad = toRad(a->latitude);
+	double latBRad = toRad(b->latitude);
 
-	float tmp = dLonRad * cosine((latARad + latBRad) / 2);
-	return fast_square_root(tmp * tmp + dLatRad * dLatRad) * GP_EARTH_RADIUS_M;
+	double  tmp = dLonRad * cosine((latARad + latBRad) / 2);
+	return (float)fast_square_root(tmp * tmp + dLatRad * dLatRad) * GP_EARTH_RADIUS_M;
 }
 
 int isValidPoint(const GeoPoint *p) {
