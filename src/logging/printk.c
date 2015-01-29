@@ -70,6 +70,12 @@ int writek_int(int value){
 	return write_to_log_buff(buf);
 }
 
+int writek_float(float value){
+	char buf[20];
+	modp_ftoa(value, buf, 6);
+	return write_to_log_buff(buf);
+}
+
 int printk(enum log_level level, const char *msg) {
         if (level > curr_level) return 0;
         return write_to_log_buff(msg);
@@ -78,6 +84,11 @@ int printk(enum log_level level, const char *msg) {
 int printk_int(enum log_level level, int value) {
 		if (level > curr_level) return 0;
 		return writek_int(value);
+}
+
+int printk_float(enum log_level level, float value) {
+		if (level > curr_level) return 0;
+		return writek_float(value);
 }
 
 enum log_level get_log_level(){
