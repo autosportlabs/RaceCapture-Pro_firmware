@@ -7,7 +7,7 @@
 
 #include "geopoint.h"
 #include "gps.h"
-
+#include <stdint.h>
 #define M_PI 3.14159265358979323846
 
 /*
@@ -24,7 +24,7 @@ static double fast_square_root(double number) {
 
 	x = number * 0.5F;
 	y  = number;
-	i  = * ( long * ) &y; // evil floating point bit level hacking
+	i  = * ( uint64_t * ) &y; // evil floating point bit level hacking
 	i  = 0x5f3759df - ( i >> 1 ); // what the fuck?
 	y  = * ( double * ) &i;
 	y  = y * ( f - ( x * y * y ) );
@@ -48,7 +48,7 @@ double cosine(double x)
 	pi2=1.570796326794896; 		/* pi/2 */
 	absx=x;
 	if (x<0) absx=-absx; 	     /* absolute value of input */
-	quad=(int) (absx/pi2);       	/* quadrant (0 to 3) */
+	quad=(uint64_t) (absx/pi2);       	/* quadrant (0 to 3) */
 	frac= (absx/pi2) - quad;     	/* fractional part of input */
 	if(quad==0) t=frac * pi2;
 	if(quad==1) t=(1-frac) * pi2;
