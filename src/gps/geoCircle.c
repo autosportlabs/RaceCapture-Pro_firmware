@@ -21,7 +21,7 @@
 #include "geoCircle.h"
 #include "geopoint.h"
 #include "tracks.h"
-
+#include "printk.h"
 struct GeoCircle gc_createGeoCircle(const GeoPoint gp, const float r) {
    struct GeoCircle gc;
 
@@ -32,7 +32,22 @@ struct GeoCircle gc_createGeoCircle(const GeoPoint gp, const float r) {
 }
 
 bool gc_isPointInGeoCircle(const GeoPoint point, const struct GeoCircle gc) {
-   return distPythag(&point, &(gc.point)) <= gc.radius;
+	float dist = distPythag(&point, &(gc.point));
+	pr_info("curr=");
+	pr_info_float(point.latitude);
+	pr_info(",");
+	pr_info_float(point.longitude);
+	pr_info("/target=");
+	pr_info_float(gc.point.latitude);
+	pr_info(",");
+	pr_info_float(gc.point.longitude);
+	pr_info("/rad=");
+	pr_info_float(gc.radius);
+	pr_info("; dist= ");
+	pr_info_float(dist);
+	pr_info("\r\n");
+
+   return  dist <= gc.radius;
 }
 
 bool gc_isValidGeoCircle(const struct GeoCircle gc) {
