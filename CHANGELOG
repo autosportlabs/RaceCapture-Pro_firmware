@@ -1,5 +1,8 @@
 ===2.7.8===
+* Fixed start/finish line detection for MK1
+* Added getGpsSats as a Lua function
 * Make max virtual channels configurable betwen MK1 (10 max) and MK2 (30 max)
+
 ===2.7.7===
 * Allow cell module to connect to roaming network (roaming charges may apply)
 * MK1: fix RPM stuck at zero if RPM signal is applied before RCP unit is powered up
