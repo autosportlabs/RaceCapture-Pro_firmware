@@ -1,10 +1,14 @@
 ===2.7.8===
+* Fixed start/finish line detection for MK1
+* Added getGpsSats as a Lua function
 * Make max virtual channels configurable betwen MK1 (10 max) and MK2 (30 max)
+* Fix sector bug so sector now goes to 0 when start/finish is crossed the first time.
+
 ===2.7.7===
 * Allow cell module to connect to roaming network (roaming charges may apply)
 * MK1: fix RPM stuck at zero if RPM signal is applied before RCP unit is powered up
 * PWM clock frequency now settable via Lua script, was fixed at 20KHz before.
- 
+
 ===2.7.6===
 * Ensure timestamps show on every sample, regardless of sample rate combinations
 * Fixes / updates for MK1 release

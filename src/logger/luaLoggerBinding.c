@@ -56,6 +56,7 @@ void registerLuaLoggerBindings(lua_State *L){
 	lua_registerlight(L,"getImu",Lua_ReadImu);
 	lua_registerlight(L,"getImuRaw",Lua_ReadImuRaw);
 
+	lua_registerlight(L, "getGpsSats", Lua_GetGPSSatellites);
 	lua_registerlight(L,"getGpsPos", Lua_GetGPSPosition);
 	lua_registerlight(L,"getGpsSpeed",Lua_GetGPSSpeed);
 	lua_registerlight(L,"getGpsQuality", Lua_GetGPSQuality);
@@ -296,6 +297,11 @@ int Lua_SetGPIO(lua_State *L){
 		GPIO_set(channel, state);
 	}
 	return 0;
+}
+
+int Lua_GetGPSSatellites(lua_State *L){
+	lua_pushnumber(L, getSatellitesUsedForPosition());
+	return 1;
 }
 
 int Lua_GetGPSPosition(lua_State *L){
