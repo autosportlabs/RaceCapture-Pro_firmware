@@ -536,6 +536,7 @@ static int processStartFinish(const Track *track, const float targetRadius) {
          g_lastStartFinishTimestamp = lc_getLaunchTime();
          g_lastSectorTimestamp = lc_getLaunchTime();
          g_prevAtStartFinish = 1;
+         g_sector = 0;
          return true;
       }
 
@@ -633,7 +634,7 @@ void initGPS() {
    g_lastSectorTimestamp = 0;
    g_lapCount = 0;
    g_distance = 0;
-   g_sector = 0;
+   g_sector = -1;
    g_lastSector = -1; // Indicates no previous sector.
    resetPredictiveTimer();
    g_dtFirstFix = g_dtLastFix = (DateTime) { 0 };

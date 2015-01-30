@@ -107,7 +107,8 @@ int isStartPointValid(const Track *t) {
    return isValidPoint(&p);
 }
 
-GeoPoint getSectorGeoPointAtIndex(const Track *t, const int index) {
+GeoPoint getSectorGeoPointAtIndex(const Track *t, int index) {
+   if (index < 0) index = 0;
    const int max = isStage(t) ? STAGE_SECTOR_COUNT : CIRCUIT_SECTOR_COUNT;
    const GeoPoint *sectors = isStage(t) ? t->stage.sectors : t->circuit.sectors;
 
