@@ -284,7 +284,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
    chanCfg = &(trackConfig->lapTimeCfg);
    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getLastLapTimeInMinutes);
    chanCfg = &(trackConfig->sectorCfg);
-   sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getLastSector);
+   sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getSector);
    chanCfg = &(trackConfig->sectorTimeCfg);
    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getLastSectorTimeInMinutes);
    chanCfg = &(trackConfig->predTimeCfg);
