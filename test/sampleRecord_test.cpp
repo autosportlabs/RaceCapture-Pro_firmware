@@ -268,7 +268,7 @@ void SampleRecordTest::testInitSampleRecord()
    if (lapConfig->sectorCfg.sampleRate != SAMPLE_DISABLED){
       CPPUNIT_ASSERT_EQUAL((void *) &lapConfig->sectorCfg, (void *) ts->cfg);
       CPPUNIT_ASSERT_EQUAL(SampleData_Int_Noarg, ts->sampleData);
-      CPPUNIT_ASSERT_EQUAL((void *) getLastSector, (void *) ts->get_int_sample);
+      CPPUNIT_ASSERT_EQUAL((void *) getSector, (void *) ts->get_int_sample);
       ts++;
    }
 
