@@ -1,3 +1,7 @@
+==2.7.9===
+* Bumped fast-link telemetry (i.e. Bluetooth link) to 50Hz. 
+* Reduced delay between PID querying for MK2
+
 ===2.7.8===
 * Fixed start/finish line detection for MK1
 * Added getGpsSats as a Lua function

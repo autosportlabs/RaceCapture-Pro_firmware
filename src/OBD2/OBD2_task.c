@@ -9,8 +9,8 @@
 #include "task.h"
 #include "queue.h"
 #include "semphr.h"
-
-
+#include "taskUtil.h"
+#include "capabilities.h"
 
 #define OBD2_TASK_STACK 	100
 
@@ -21,22 +21,23 @@ void startOBD2Task(int priority){
 
 void OBD2Task(void *pvParameters){
 	pr_info("Start OBD2 task\r\n");
+	size_t max_obd2_samplerate = msToTicks((TICK_RATE_HZ / MAX_OBD2_SAMPLE_RATE));
 	LoggerConfig *config = getWorkingLoggerConfig();
 	OBD2Config *oc = &config->OBD2Configs;
 	while(1){
-		while(oc->enabled){
+		while(oc->enabled && oc->enabledPids > 0){
 			for (size_t i = 0; i < oc->enabledPids; i++){
 				PidConfig *pidCfg = &oc->pids[i];
 				int value;
 				unsigned char pid = pidCfg->pid;
 				if (OBD2_request_PID(pid, &value, OBD2_PID_DEFAULT_TIMEOUT_MS)){
 					OBD2_set_current_PID_value(i, value);
-					if (DEBUG_LEVEL){
-						pr_debug("read OBD2 PID ");
-						pr_debug_int(pid);
-						pr_debug("=")
-						pr_debug_int(value);
-						pr_debug("\r\n");
+					if (TRACE_LEVEL){
+						pr_trace("read OBD2 PID ");
+						pr_trace_int(pid);
+						pr_trace("=")
+						pr_trace_int(value);
+						pr_trace("\r\n");
 					}
 				}
 				else{
@@ -44,9 +45,8 @@ void OBD2Task(void *pvParameters){
 					pr_warning_int(pid);
 					pr_warning("\r\n");
 				}
-				delayTicks(oc->obd2SampleRate);
+				delayTicks(max_obd2_samplerate);
 			}
-			delayTicks(oc->obd2SampleRate);
 		}
 		delayMs(OBD2_FEATURE_DISABLED_DELAY_MS);
 	}

@@ -26,6 +26,7 @@
 //sample rates
 #define MAX_SENSOR_SAMPLE_RATE	100
 #define MAX_GPS_SAMPLE_RATE		10
+#define MAX_OBD2_SAMPLE_RATE	10
 
 //system info
 #define DEVICE_NAME    "RCP"
