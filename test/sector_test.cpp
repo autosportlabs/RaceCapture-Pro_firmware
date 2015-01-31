@@ -150,22 +150,25 @@ void SectorTest::testSectorTimes(){
               onLocationUpdated();
 
               int sector = getSector();
+
+              // Ignore data until we cross start/finish.
+              if (sector < 0) continue;
+
               if (sector != currentSector){
-                 currentSector = sector;
                  sectorTimes.push_back(getLastSectorTime());
+                 currentSector = sector;
               }
 
               int lap = getLapCount();
               if (lap > currentLap){
-                 float lastLapTime = getLastLapTime();
-                 float sum = sumSectorTimes(sectorTimes);
+                 const float lastLapTime = getLastLapTime();
+                 const float sum = sumSectorTimes(sectorTimes);
+
                  //printf("\rlap %d time: %f | sum of sector times: %f\r", lap, lastLapTime, sum);
                  //outputSectorTimes(sectorTimes, lap);
-                 CPPUNIT_ASSERT_EQUAL(5, (int) sectorTimes.size());
 
-                 // Don't check the first lap time as we don't know where we started.
-                 if (currentLap > 0)
-                    CPPUNIT_ASSERT_CLOSE_ENOUGH(sum, lastLapTime);
+                 CPPUNIT_ASSERT_EQUAL(5, (int) sectorTimes.size());
+                 CPPUNIT_ASSERT_CLOSE_ENOUGH(sum, lastLapTime);
 
                  sectorTimes.clear();
                  currentLap = lap;
