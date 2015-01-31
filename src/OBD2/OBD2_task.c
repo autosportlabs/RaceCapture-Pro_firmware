@@ -21,7 +21,7 @@ void startOBD2Task(int priority){
 
 void OBD2Task(void *pvParameters){
 	pr_info("Start OBD2 task\r\n");
-	size_t max_obd2_samplerate = msToTicks((TICK_RATE_HZ / MAX_OBD2_SAMPE_RATE));
+	size_t max_obd2_samplerate = msToTicks((TICK_RATE_HZ / MAX_OBD2_SAMPLE_RATE));
 	LoggerConfig *config = getWorkingLoggerConfig();
 	OBD2Config *oc = &config->OBD2Configs;
 	while(1){
