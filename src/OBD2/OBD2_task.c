@@ -32,12 +32,12 @@ void OBD2Task(void *pvParameters){
 				unsigned char pid = pidCfg->pid;
 				if (OBD2_request_PID(pid, &value, OBD2_PID_DEFAULT_TIMEOUT_MS)){
 					OBD2_set_current_PID_value(i, value);
-					if (DEBUG_LEVEL){
-						pr_debug("read OBD2 PID ");
-						pr_debug_int(pid);
-						pr_debug("=")
-						pr_debug_int(value);
-						pr_debug("\r\n");
+					if (TRACE_LEVEL){
+						pr_trace("read OBD2 PID ");
+						pr_trace_int(pid);
+						pr_trace("=")
+						pr_trace_int(value);
+						pr_trace("\r\n");
 					}
 				}
 				else{
