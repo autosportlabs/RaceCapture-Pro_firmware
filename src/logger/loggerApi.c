@@ -1100,7 +1100,7 @@ int api_setObd2Config(Serial *serial, const jsmntok_t *json){
 
 	const jsmntok_t *pidsTok = findNode(json, "pids");
 	if (pidsTok != NULL && (++pidsTok)->type == JSMN_ARRAY) {
-		size_t pidMax = pidsTok->size;
+		int pidMax = pidsTok->size;
 		if (pidMax > MAX_OBD2_MESSAGE_PIDS){
 			return API_ERROR_PARAMETER;
 		}
