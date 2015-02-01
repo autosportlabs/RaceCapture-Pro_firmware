@@ -21,7 +21,7 @@
 #include "printk.h"
 #include "mod_string.h"
 
-#define JSON_TOKENS 100
+#define JSON_TOKENS 200
 
 static jsmn_parser g_jsonParser;
 static jsmntok_t g_json_tok[JSON_TOKENS];
@@ -201,7 +201,9 @@ int process_api(Serial *serial, char *buffer, size_t bufferSize) {
     if (r == JSMN_SUCCESS) {
         return execute_api(serial, g_json_tok);
     } else {
-        pr_warning("API Error \r\n");
+        pr_warning("API Error ");
+        pr_warning_int(r);
+        pr_warning("\r\n");
         return API_ERROR_MALFORMED;
     }
 }

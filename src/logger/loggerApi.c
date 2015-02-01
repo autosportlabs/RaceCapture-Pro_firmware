@@ -29,6 +29,9 @@
 #include "taskUtil.h"
 #include "GPIO.h"
 
+/* Max number of PIDs that can be specified in the setOBD2Cfg message */
+#define MAX_OBD2_MESSAGE_PIDS 10
+
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
 typedef void (*getConfigs_func)(size_t channeId, void ** baseCfg, ChannelConfig ** channelCfg);
@@ -1088,22 +1091,35 @@ static const jsmntok_t * setPidExtendedField(const jsmntok_t *valueTok, const ch
 int api_setObd2Config(Serial *serial, const jsmntok_t *json){
 	OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
 
-	setUnsignedCharValueIfExists(json, "en", &obd2Cfg->enabled, NULL);
-	size_t pidIndex = 0;
+	int pidIndex = 0;
+	setIntValueIfExists(json, "index", &pidIndex);
+
+	if (pidIndex >= OBD2_CHANNELS){
+		return API_ERROR_PARAMETER;
+	}
+
 	const jsmntok_t *pidsTok = findNode(json, "pids");
-
 	if (pidsTok != NULL && (++pidsTok)->type == JSMN_ARRAY) {
-		size_t arrSize = pidsTok->size;
+		size_t pidMax = pidsTok->size;
+		if (pidMax > MAX_OBD2_MESSAGE_PIDS){
+			return API_ERROR_PARAMETER;
+		}
+		pidMax += pidIndex;
+		if (pidMax > OBD2_CHANNELS){
+			return API_ERROR_PARAMETER;
+		}
 
-      for (pidsTok++; pidIndex < arrSize; pidIndex++) {
-         PidConfig *pidCfg = obd2Cfg->pids + pidIndex;
-         ChannelConfig *chCfg = &(pidCfg->cfg);
-         pidsTok = setChannelConfig(serial, pidsTok, chCfg, setPidExtendedField, pidCfg);
-      }
-   }
-
+		for (pidsTok++; pidIndex < pidMax; pidIndex++){
+			PidConfig *pidCfg = obd2Cfg->pids + pidIndex;
+			ChannelConfig *chCfg = &(pidCfg->cfg);
+			pidsTok = setChannelConfig(serial, pidsTok, chCfg, setPidExtendedField, pidCfg);
+		}
+	}
 	obd2Cfg->enabledPids = pidIndex;
-   configChanged();
+
+	setUnsignedCharValueIfExists(json, "en", &obd2Cfg->enabled, NULL);
+
+	configChanged();
 	return API_SUCCESS;
 }
 
