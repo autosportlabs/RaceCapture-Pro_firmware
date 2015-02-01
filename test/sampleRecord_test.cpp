@@ -23,7 +23,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( SampleRecordTest );
 void SampleRecordTest::setUp()
 {
 	InitLoggerHardware();
-	initGPS();
+	GPS_init();
 	initialize_logger_config();
 	resetCurrentTicks();
 }
@@ -36,7 +36,7 @@ void SampleRecordTest::tearDown()
 
 void SampleRecordTest::testPopulateSampleRecord(){
 	LoggerConfig *lc = getWorkingLoggerConfig();
-   initGPS();
+   GPS_init();
 
 	//mock up some values to test later
 	lc->ADCConfigs[7].scalingMode = SCALING_MODE_RAW;

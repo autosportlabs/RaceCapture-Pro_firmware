@@ -1,15 +1,33 @@
 #include "gps_device.h"
 
+#define LATITUDE_DATA_LEN 12
+#define LONGITUDE_DATA_LEN 13
+#define UTC_TIME_BUFFER_LEN 11
+#define UTC_SPEED_BUFFER_LEN 10
+
 #define GPS_DATA_LINE_BUFFER_LEN 	200
 static char g_GPSdataLine[GPS_DATA_LINE_BUFFER_LEN];
 
-/**
- * Date and time this GPS fix was taken.
- */
-static DateTime g_dtFirstFix;
-static DateTime g_dtLastFix;
-static millis_t g_utcMillisAtSample;
-static tiny_millis_t g_uptimeAtSample;
+int checksumValid(const char *gpsData, size_t len) {
+   int valid = 0;
+   unsigned char checksum = 0;
+   size_t i = 0;
+   for (; i < len - 1; i++) {
+      char c = *(gpsData + i);
+      if (c == '*' || c == '\0')
+         break;
+      else if (c == '$')
+         continue;
+      else
+         checksum ^= c;
+   }
+   if (len > i + 2) {
+      unsigned char dataChecksum = modp_xtoc(gpsData + i + 1);
+      if (checksum == dataChecksum)
+         valid = 1;
+   }
+   return valid;
+}
 
 /**
  * Performs a full update of the g_dtLastFix value.  Also update the g_dtFirstFix value if it hasn't

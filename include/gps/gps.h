@@ -21,13 +21,7 @@
 #ifndef GPS_H_
 #define GPS_H_
 
-#include "dateTime.h"
-#include "geopoint.h"
-
-#include <stddef.h>
-
-#define KMS_TO_MILES_CONSTANT (.621371)
-#define KNOTS_TO_KPH (1.852)
+#include "LED.h"
 
 enum GpsSignalQuality {
    GPS_QUALITY_NO_FIX = 0,
@@ -40,25 +34,11 @@ typedef struct _GpsSample {
    GeoPoint point;
    millis_t time;
    float speed;
+   float distance;
+   float satellites;
    enum GpsSignalQuality quality;
    tiny_millis_t firstFixMillis;
 } GpsSamp;
-
-/**
- * A simple Time and Location sample.
- */
-typedef struct _TimeLoc {
-	GeoPoint point;
-	millis_t time;
-} TimeLoc;
-
-void gpsConfigChanged(void);
-
-void initGPS();
-
-int checksumValid(const char *gpsData, size_t len);
-
-void processGPSUpdate(GpsSamp *gpsSample);
 
 void resetGpsDistance();
 
@@ -67,26 +47,6 @@ void setGpsDistanceKms(float dist);
 float getGpsDistanceKms();
 
 float getGpsDistanceMiles();
-
-void resetLapCount();
-
-int getLapCount();
-
-tiny_millis_t getLastLapTime();
-
-float getLastLapTimeInMinutes();
-
-tiny_millis_t getLastSectorTime();
-
-float getLastSectorTimeInMinutes();
-
-int getSector();
-
-int getLastSector();
-
-int getAtStartFinish();
-
-int getAtSector();
 
 float getSecondsSinceMidnight();
 
@@ -146,4 +106,7 @@ tiny_millis_t getUptimeAtSample();
 
 float getGpsSpeedInMph();
 
+void GPS_init();
+
+int GPS_process_update(Serial *serial);
 #endif /*GPS_H_*/

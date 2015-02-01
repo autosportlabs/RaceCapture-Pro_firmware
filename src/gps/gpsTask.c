@@ -6,6 +6,7 @@
  */
 #include "gpsTask.h"
 #include "gps.h"
+#include "lap_stats.h"
 #include "gps_device.h"
 #include "FreeRTOS.h"
 #include "printk.h"
@@ -32,17 +33,16 @@ static bool g_enableGpsDataLogging = false;
 //}
 
 void GPSTask(void *pvParameters) {
-	GpsSamp gpsSample;
-	Serial *gpsSerial = get_serial(SERIAL_GPS);
-	int rc = GPS_device_provision(gpsSerial);
+	Serial *serial = get_serial(SERIAL_GPS);
+	int rc = GPS_device_provision(serial);
 	if (!rc){
 		pr_error("Error provisioning GPS module\r\n");
 	}
 
 	for (;;) {
-		gps_msg_result_t result = GPS_device_get_update(&gpsSample, sample);
+		gps_msg_result_t result = GPS_process_update(serial);
 		if (result == GPS_MSG_SUCCESS){
-			processGPSUpdate(&gpsSample);
+			lapStats_processUpdate(getGpsSample());
 		}
 		else{
 			pr_warning("timeout getting GPS update\r\n");
@@ -52,6 +52,7 @@ void GPSTask(void *pvParameters) {
 
 void startGPSTask(int priority){
 	initGPS();
+	lapStats_init();
 	xTaskCreate( GPSTask, ( signed portCHAR * )"GPSTask", GPS_TASK_STACK_SIZE, NULL, priority, NULL );
 }
 

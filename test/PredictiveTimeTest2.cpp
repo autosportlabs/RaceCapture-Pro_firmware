@@ -31,7 +31,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( PredictiveTimeTest2 );
 PredictiveTimeTest2::PredictiveTimeTest2() {}
 
 void PredictiveTimeTest2::setUp() {
-	initGPS();
+	GPS_init();
 	resetPredictiveTimer();
 }
 

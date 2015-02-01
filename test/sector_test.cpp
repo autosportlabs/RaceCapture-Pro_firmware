@@ -21,7 +21,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( SectorTest );
 
 void SectorTest::setUp()
 {
-	initGPS();
+	GPS_init();
 }
 
 

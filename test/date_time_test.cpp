@@ -31,7 +31,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( DateTimeTest );
 
 void DateTimeTest::setUp() {
   resetTicks();
-  initGPS();
+  GPS_init();
 }
 
 void DateTimeTest::tearDown() {}
