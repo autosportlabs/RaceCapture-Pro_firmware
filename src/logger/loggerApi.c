@@ -29,6 +29,9 @@
 #include "taskUtil.h"
 #include "GPIO.h"
 
+/* Max number of PIDs that can be specified in the setOBD2Cfg message */
+#define MAX_OBD2_MESSAGE_PIDS 10
+
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
 typedef void (*getConfigs_func)(size_t channeId, void ** baseCfg, ChannelConfig ** channelCfg);
@@ -1084,9 +1087,6 @@ static const jsmntok_t * setPidExtendedField(const jsmntok_t *valueTok, const ch
 
 	return valueTok + 1;
 }
-
-/* Max number of PIDs that can be written in the setOBD2Config message */
-#define MAX_OBD2_MESSAGE_PIDS 10
 
 int api_setObd2Config(Serial *serial, const jsmntok_t *json){
 	OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
