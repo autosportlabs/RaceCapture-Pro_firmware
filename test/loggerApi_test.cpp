@@ -1071,7 +1071,6 @@ void LoggerApiTest::testGetObd2Cfg(){
 	testGetObd2ConfigFile("getObd2Cfg1.json");
 }
 
-
 void LoggerApiTest::testGetObd2ConfigFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	OBD2Config *obd2Config = &c->OBD2Configs;
@@ -1137,6 +1136,50 @@ void LoggerApiTest::testSetObd2ConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(cfg->sampleRate));
 	CPPUNIT_ASSERT_EQUAL(1, (int)cfg->precision);
 	CPPUNIT_ASSERT_EQUAL(6, (int)pidCfg2->pid);
+}
+
+void LoggerApiTest::testSetObd2ConfigFile_fromIndex(){
+	processApiGeneric("setObd2Cfg_fromIndex.json");
+	char *txBuffer = mock_getTxBuffer();
+
+	LoggerConfig *c = getWorkingLoggerConfig();
+	OBD2Config *obd2Config = &c->OBD2Configs;
+
+	CPPUNIT_ASSERT_EQUAL(1, (int)obd2Config->enabled);
+
+	//when setting PIDs from an index, index + length of PID array becomes the total number of enabled PIDs
+	CPPUNIT_ASSERT_EQUAL(4, (int)obd2Config->enabledPids);
+
+	PidConfig *pidCfg1 = &obd2Config->pids[2];
+	PidConfig *pidCfg2 = &obd2Config->pids[3];
+
+        ChannelConfig *cfg = &pidCfg1->cfg;
+        CPPUNIT_ASSERT_EQUAL(string("I <3 OBD2"), string(cfg->label));
+        CPPUNIT_ASSERT_EQUAL(string("?????"), string(cfg->units));
+        CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
+        CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
+	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(cfg->sampleRate));
+	CPPUNIT_ASSERT_EQUAL(1, (int)cfg->precision);
+	CPPUNIT_ASSERT_EQUAL(5, (int)pidCfg1->pid);
+
+        cfg = &pidCfg2->cfg;
+        CPPUNIT_ASSERT_EQUAL(string("I <3 OBD2"), string(cfg->label));
+        CPPUNIT_ASSERT_EQUAL(string("?????"), string(cfg->units));
+        CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
+        CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
+	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(cfg->sampleRate));
+	CPPUNIT_ASSERT_EQUAL(1, (int)cfg->precision);
+	CPPUNIT_ASSERT_EQUAL(6, (int)pidCfg2->pid);
+}
+
+void LoggerApiTest::testSetObd2ConfigFile_invalid(){
+	char *response = NULL;
+
+	response = processApiGeneric("setObd2Cfg_too_many_pids_from_index.json");
+	assertGenericResponse(response, "setObd2Cfg", API_ERROR_PARAMETER);
+
+	response = processApiGeneric("setObd2Cfg_too_many_pids.json");
+	assertGenericResponse(response, "setObd2Cfg", API_ERROR_PARAMETER);
 }
 
 void LoggerApiTest::testSetScript(){
