@@ -86,12 +86,12 @@ static tiny_millis_t getCurrentLapTime(tiny_millis_t time) {
  * Creates a timeLoc sample and places it in the currBuff.  Increments counter as needed.
  * @return true if the insert succeeded, false otherwise.
  */
-static bool insertTimeLocSample(GeoPoint point, tiny_millis_t time) {
+static bool insertTimeLocSample(GeoPoint * point, tiny_millis_t time) {
 	if (buffIndex >= MAX_TIMELOC_SAMPLES)
 		return false;
 
 	struct PtTimeLoc *timeLoc = currLap + buffIndex;
-	timeLoc->point = point;
+	timeLoc->point = *point;
 	timeLoc->time = getCurrentLapTime(time);
 
 	if (++buffIndex >= MAX_TIMELOC_SAMPLES)
@@ -150,7 +150,7 @@ static tiny_millis_t adjustPollInterval(tiny_millis_t lapTime) {
  * @param point The point we are at when we cross the start finish line.
  * @param time Duh!
  */
-static void finishLap(GeoPoint point, tiny_millis_t time) {
+static void finishLap(GeoPoint * point, tiny_millis_t time) {
 	// Drop last entry if necessary to record end of lap.
 	if (buffIndex >= MAX_TIMELOC_SAMPLES)
 		buffIndex = MAX_TIMELOC_SAMPLES - 1;
@@ -161,7 +161,7 @@ static void finishLap(GeoPoint point, tiny_millis_t time) {
 /**
  * Resets the state in preparation for the next lap.
  */
-static void startNewLap(GeoPoint point, tiny_millis_t time) {
+static void startNewLap(GeoPoint * point, tiny_millis_t time) {
 	currLapStartTime = time;
 	lastPredictedDelta = 0;
 	lastPredictedTime = 0;
@@ -187,7 +187,7 @@ static tiny_millis_t getTimeSinceLastSample(tiny_millis_t time) {
  * @param point The location of the start/finish line.
  * @param time The current UTC time when we crossed.
  */
-void startFinishCrossed(GeoPoint point, tiny_millis_t time) {
+void startFinishCrossed(GeoPoint * point, tiny_millis_t time) {
 	INFO("Start/Finish Crossed.\n");
 	finishLap(point, time);
 
@@ -211,7 +211,7 @@ void startFinishCrossed(GeoPoint point, tiny_millis_t time) {
  * @param time The time which the sample was taken.
  * @return true if it was added, false otherwise.
  */
-bool addGpsSample(GeoPoint point, tiny_millis_t time) {
+bool addGpsSample(GeoPoint * point, tiny_millis_t time) {
 	DEVEL("Add GPS Sample called\n");
 
 	if (status != RECORDING) {

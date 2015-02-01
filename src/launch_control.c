@@ -71,13 +71,13 @@ void lc_setup(const Track *track, const float targetRadius) {
    g_geoCircle = gc_createGeoCircle(getStartPoint(track), targetRadius);
 }
 
-void lc_supplyGpsSample(const struct GpsSample sample) {
+void lc_supplyGpsSample(const GpsSamp * sample) {
    if (!isConfigured() || lc_hasLaunched())
       return;
 
-   if (isGeoPointInStartArea(sample.point)) {
-      if (!isValidStartTime() || isSpeedBelowThreshold(sample.speed))
-         g_startTime = sample.firstFixMillis;
+   if (isGeoPointInStartArea(sample->point)) {
+      if (!isValidStartTime() || isSpeedBelowThreshold(sample->speed))
+         g_startTime = sample->firstFixMillis;
    } else {
       g_hasLaunched = isValidStartTime();
    }

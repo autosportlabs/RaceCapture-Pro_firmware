@@ -13,27 +13,26 @@
 #include "serial.h"
 #include "taskUtil.h"
 
-#define GPS_DATA_LINE_BUFFER_LEN 	200
 #define GPS_TASK_STACK_SIZE			200
 
-static char g_GPSdataLine[GPS_DATA_LINE_BUFFER_LEN];
 static bool g_enableGpsDataLogging = false;
 
-void setGpsDataLogging(bool enable) {
-   g_enableGpsDataLogging = enable;
-}
+//void setGpsDataLogging(bool enable) {
+//   g_enableGpsDataLogging = enable;
+//}
 
 /**
  * Prints the output to the serial port if it is set.
  * @param buf The buffer containing the read in line.
  * @param len The length of the string in the buffer.
  */
-static void logGpsInput(const char *buf, int len) {
-   if (!g_enableGpsDataLogging) return;
-   pr_info(buf);
-}
+//static void logGpsInput(const char *buf, int len) {
+//   if (!g_enableGpsDataLogging) return;
+//   pr_info(buf);
+//}
 
 void GPSTask(void *pvParameters) {
+	GpsSamp gpsSample;
 	Serial *gpsSerial = get_serial(SERIAL_GPS);
 	int rc = GPS_device_provision(gpsSerial);
 	if (!rc){
@@ -41,10 +40,13 @@ void GPSTask(void *pvParameters) {
 	}
 
 	for (;;) {
-      int len = gpsSerial->get_line(g_GPSdataLine, GPS_DATA_LINE_BUFFER_LEN - 1);
-      g_GPSdataLine[len] = '\0';
-      logGpsInput(g_GPSdataLine, len);
-      processGPSData(g_GPSdataLine, len);
+		gps_msg_result_t result = GPS_device_get_update(&gpsSample, sample);
+		if (result == GPS_MSG_SUCCESS){
+			processGPSUpdate(&gpsSample);
+		}
+		else{
+			pr_warning("timeout getting GPS update\r\n");
+		}
    }
 }
 

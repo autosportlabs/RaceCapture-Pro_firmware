@@ -36,13 +36,13 @@ enum GpsSignalQuality {
    GPS_QUALITY_DIFFERENTIAL = 3,
 };
 
-struct GpsSample {
+typedef struct _GpsSample {
    GeoPoint point;
    millis_t time;
    float speed;
    enum GpsSignalQuality quality;
    tiny_millis_t firstFixMillis;
-};
+} GpsSamp;
 
 /**
  * A simple Time and Location sample.
@@ -58,7 +58,7 @@ void initGPS();
 
 int checksumValid(const char *gpsData, size_t len);
 
-void processGPSData(char *gpsData, size_t len);
+void processGPSUpdate(GpsSamp *gpsSample);
 
 void resetGpsDistance();
 
@@ -99,10 +99,6 @@ float getTimeSince(float t1);
 float getLatitude();
 
 float getLongitude();
-
-void updatePosition(float latitude, float longitude);
-
-void onLocationUpdated();
 
 enum GpsSignalQuality getGPSQuality();
 

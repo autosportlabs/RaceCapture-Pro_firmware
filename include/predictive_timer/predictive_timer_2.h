@@ -26,7 +26,7 @@ void startFinishCrossed(GeoPoint point, tiny_millis_t time);
  * @param time The time (millis) which the sample was taken.
  * @return TRUE if it was added, FALSE otherwise.
  */
-bool addGpsSample(GeoPoint point, tiny_millis_t time);
+bool addGpsSample(GeoPoint *point, tiny_millis_t time);
 
 /**
  * Calculates the split of your current time against the fast lap time at the position given.

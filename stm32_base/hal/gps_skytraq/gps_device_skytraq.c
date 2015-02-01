@@ -17,6 +17,8 @@
 #define GPS_MESSAGE_BUFFER_LEN		1024
 #define TARGET_UPDATE_RATE 			50
 #define TARGET_BAUD_RATE 			921600
+#define MESSAGE_TYPE_NMEA			1
+#define MESSAGE_TYPE_BINARY			2
 
 #define BAUD_RATE_COUNT 			2
 #define BAUD_RATES 					{ \
@@ -43,7 +45,7 @@ typedef struct _BaudRateCodes{
 #define MSG_ID_CONFIGURE_SERIAL_PORT						0x05
 #define MSG_ID_CONFIGURE_NMEA_MESSAGE						0x08
 #define MSG_ID_CONFIGURE_MESSAGE_TYPE						0x09
-#define MSG_ID_CONFIGURE_NAVIGATION_DATA_MESSAGE INTERVAL	0x11
+#define MSG_ID_CONFIGURE_NAVIGATION_DATA_MESSAGE_INTERVAL	0x11
 #define MSG_ID_NAVIGATION_DATA_MESSAGE						0xA8
 
 #define GGA_INTERVAL							100
@@ -53,6 +55,7 @@ typedef struct _BaudRateCodes{
 #define RMC_INTERVAL							1
 #define VTG_INTERVAL							0
 #define ZDA_INTERVAL							0
+#define NAVIGATION_DATA_MESSAGE_INTERVAL		1
 
 typedef enum{
 	ATTRIBUTE_UPDATE_TO_SRAM = 0,
@@ -165,17 +168,12 @@ typedef struct _GpsMessage{
 		PositionUpdateRate positionUpdateRate;
 		ConfigureNmeaMessage configureNmeaMessage;
 		ConfigureMessageType configureMessageType;
+		ConfigureNavigationDataMessageInterval configureNavigationDataMessageInterval;
 		NavigationDataMessage navigationDataMessage;
 
 	};
 	uint8_t checksum;
 } GpsMessage;
-
-typedef enum {
-	GPS_MSG_SUCCESS = 0,
-	GPS_MSG_TIMEOUT,
-	GPS_MSG_NONE
-} gps_msg_result_t;
 
 typedef enum{
 	GPS_COMMAND_FAIL = 0,
@@ -317,6 +315,24 @@ static void sendConfigureNmea(GpsMessage *gpsMsg, Serial *serial){
 	txGpsMessage(gpsMsg, serial);
 }
 
+static void sendConfigureMessageType(GpsMessage *gpsMsg, Serial *serial, uint8_t messageType){
+	gpsMsg->messageId = MSG_ID_CONFIGURE_MESSAGE_TYPE;
+	gpsMsg->configureMessageType.type = messageType;
+	gpsMsg->configureMessageType.attributes = ATTRIBUTE_UPDATE_TO_SRAM;
+	gpsMsg->payloadLength = sizeof(ConfigureMessageType);
+	gpsMsg->checksum = calculateChecksum(gpsMsg);
+	txGpsMessage(gpsMsg, serial);
+}
+
+static void sendConfigureNavigationDataMessageInterval(GpsMessage *gpsMsg, Serial *serial, uint8_t interval){
+	gpsMsg->messageId = MSG_ID_CONFIGURE_NAVIGATION_DATA_MESSAGE_INTERVAL;
+	gpsMsg->configureNavigationDataMessageInterval.navigationMessageInterval = interval;
+	gpsMsg->configureNavigationDataMessageInterval.attributes = ATTRIBUTE_UPDATE_TO_SRAM;
+	gpsMsg->payloadLength = sizeof(ConfigureNavigationDataMessageInterval);
+	gpsMsg->checksum = calculateChecksum(gpsMsg);
+	txGpsMessage(gpsMsg, serial);
+}
+
 static void sendConfigurePositionUpdateRate(GpsMessage *gpsMsg, Serial *serial, uint8_t updateRate){
 	gpsMsg->messageId = MSG_ID_CONFIGURE_POSITION_UPDATE_RATE;
 	gpsMsg->configurePositionUpdateRate.rate = updateRate;
@@ -325,7 +341,6 @@ static void sendConfigurePositionUpdateRate(GpsMessage *gpsMsg, Serial *serial, 
 	gpsMsg->checksum = calculateChecksum(gpsMsg);
 	txGpsMessage(gpsMsg, serial);
 }
-
 
 uint32_t detectGpsBaudRate(GpsMessage *gpsMsg, Serial *serial){
 	BaudRateCodes baud_rates[BAUD_RATE_COUNT] = BAUD_RATES;
@@ -397,6 +412,28 @@ static gps_cmd_result_t configureNmeaMessages(GpsMessage *gpsMsg, Serial *serial
 	return result;
 }
 
+static gps_cmd_result_t configureMessageType(GpsMessage *gpsMsg, Serial *serial){
+	pr_info("GPS: configure message type: ");
+	gps_cmd_result_t result = GPS_COMMAND_FAIL;
+	sendConfigureMessageType(gpsMsg, serial, MESSAGE_TYPE_BINARY);
+	if (rxGpsMessage(gpsMsg, serial, MSG_ID_ACK) == GPS_MSG_SUCCESS){
+		result = (gpsMsg->ackMsg.ackId == MSG_ID_CONFIGURE_MESSAGE_TYPE) ? GPS_COMMAND_SUCCESS : GPS_COMMAND_FAIL;
+	}
+	pr_info(result == GPS_COMMAND_SUCCESS ? "win\r\n" : "fail\r\n");
+	return result;
+}
+
+static gps_cmd_result_t configureNavigationDataMessageInterval(GpsMessage *gpsMsg, Serial *serial){
+	pr_info("GPS: configure navigation data message interval: ");
+	gps_cmd_result_t result = GPS_COMMAND_FAIL;
+	sendConfigureNavigationDataMessageInterval(gpsMsg, serial, NAVIGATION_DATA_MESSAGE_INTERVAL);
+	if (rxGpsMessage(gpsMsg, serial, MSG_ID_ACK) == GPS_MSG_SUCCESS){
+		result = (gpsMsg->ackMsg.ackId == MSG_ID_CONFIGURE_NAVIGATION_DATA_MESSAGE_INTERVAL) ? GPS_COMMAND_SUCCESS : GPS_COMMAND_FAIL;
+	}
+	pr_info(result == GPS_COMMAND_SUCCESS ? "win\r\n" : "fail\r\n");
+	return result;
+}
+
 static uint8_t queryPositionUpdateRate(GpsMessage *gpsMsg, Serial *serial){
 	uint8_t updateRate = 0;
 	sendQueryPositionUpdateRate(gpsMsg, serial);
@@ -458,6 +495,16 @@ int GPS_device_provision(Serial *serial){
 					break;
 				}
 
+				if (configureMessageType(gpsMsg, serial) == GPS_COMMAND_FAIL){
+					pr_error("GPS: Error provisioning - could not set binary message mode\r\n");
+					break;
+				}
+
+				if (configureNavigationDataMessageInterval(gpsMsg, serial) == GPS_COMMAND_FAIL){
+					pr_error("GPS: Error provisioning - could not set navigation data message interval\r\n");
+					break;
+				}
+
 				pr_info("GPS: provisioned\r\n");
 				provisioned = 1;
 				break;
@@ -473,4 +520,9 @@ int GPS_device_provision(Serial *serial){
 	}
 	if (gpsMsg) portFree(gpsMsg);
 	return provisioned;
+}
+
+int GPS_device_get_update(GpsSamp *gpsSample, Serial *serial){
+	gps_msg_result_t result = rxGpsMessage(gpsMsg, serial, MSG_ID_NAVIGATION_DATA_MESSAGE);
+	return result;
 }
