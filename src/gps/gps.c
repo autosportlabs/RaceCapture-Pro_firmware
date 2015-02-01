@@ -12,21 +12,13 @@ GpsSamp g_gpsSample;
 
 static int g_flashCount;
 
-/**
- * Date and time this GPS fix was taken.
- */
-static DateTime g_dtFirstFix;
-static DateTime g_dtLastFix;
-static millis_t g_utcMillisAtSample;
-static tiny_millis_t g_uptimeAtSample;
-
 static float g_prevLatitude;
 static float g_prevLongitude;
 
-
 static void flashGpsStatusLed(enum GpsSignalQuality gpsQuality) {
-   if (g_flashCount == 0)
+   if (g_flashCount == 0){
       LED_disable(1);
+   }
    g_flashCount++;
 
    int targetFlashCount = isGpsSignalUsable(gpsQuality) ?
@@ -49,10 +41,6 @@ static bool isGpsDataCold() {
    return g_utcMillisAtSample == 0;
 }
 
-static void updateMillisSinceEpoch(DateTime fixDateTime) {
-   g_utcMillisAtSample = getMillisecondsSinceUnixEpoch(fixDateTime);
-}
-
 millis_t getMillisSinceEpoch() {
    // If we have no GPS data, return 0 to indicate that.
    if (isGpsDataCold()){
@@ -65,10 +53,6 @@ millis_t getMillisSinceEpoch() {
 
 long long getMillisSinceEpochAsLongLong() {
    return (long long) getMillisSinceEpoch();
-}
-
-static void updateUptimeAtSample() {
-   g_uptimeAtSample = getUptime();
 }
 
 tiny_millis_t getUptimeAtSample() {
@@ -145,7 +129,15 @@ static float calcDistancesSinceLastSample(GpsSamp *gpsSample) {
    return distPythag(&prev, &gpsSample->point) / 1000;
 }
 
+tiny_millis_t getMillisSinceFirstFix() {
+   return getTimeDeltaInTinyMillis(g_gpsSample.lastFix, g_gpsSample.firstFix);
+}
+
 static void GPS_sample_update(GpsSamp * gpsSample){
+	if (!isGpsSignalUsable(gpsSample->quality)){
+		return;
+	}
+
 	float dist = calcDistancesSinceLastSample(gpsSample);
 	gpsSample->distance += dist;
 
@@ -166,7 +158,7 @@ void initGPS(){
 
 }
 
-int GPS_process_update(Serial *serial){
+int GPS_processUpdate(Serial *serial){
 	gps_msg_result_t result = GPS_device_get_update(&g_gpsSample, serial);
 	flashGpsStatusLed(g_gpsSample.quality);
 	if (result == GPS_MSG_SUCCESS){

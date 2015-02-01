@@ -198,10 +198,6 @@ void lapStats_init() {
    resetPredictiveTimer();
 }
 
-tiny_millis_t getMillisSinceFirstFix() {
-   return getTimeDeltaInTinyMillis(g_dtLastFix, g_dtFirstFix);
-}
-
 static int isStartFinishEnabled(const Track *track) {
     return isFinishPointValid(track) && isStartPointValid(track);
 }
@@ -254,7 +250,7 @@ static void onLocationUpdated(GpsSamp *gpsSample) {
          if (getLapCount() == 0) {
             const GeoPoint sp = getStartPoint(g_activeTrack);
             // Distance is in KM
-            g_distance = distPythag(&sp, gp) / 1000;
+            setGpsDistanceKms(distPythag(&sp, gp) / 1000);
 
             startFinishCrossed(sp, g_lastStartFinishTimestamp);
             addGpsSample(gp, millisSinceFirstFix);

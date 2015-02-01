@@ -32,12 +32,16 @@ enum GpsSignalQuality {
 
 typedef struct _GpsSample {
    GeoPoint point;
+   DateTime firstFix;
+   DateTime lastFix;
    millis_t time;
    float speed;
    float distance;
    float satellites;
    enum GpsSignalQuality quality;
    tiny_millis_t firstFixMillis;
+   millis_t g_utcMillisAtSample;
+   tiny_millis_t g_uptimeAtSample;
 } GpsSamp;
 
 void resetGpsDistance();
@@ -108,5 +112,5 @@ float getGpsSpeedInMph();
 
 void GPS_init();
 
-int GPS_process_update(Serial *serial);
+int GPS_processUpdate(Serial *serial);
 #endif /*GPS_H_*/
