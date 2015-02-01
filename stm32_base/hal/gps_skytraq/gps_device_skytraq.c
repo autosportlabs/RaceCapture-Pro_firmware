@@ -32,16 +32,19 @@ typedef struct _BaudRateCodes{
 #define UPDATE_RATE_COUNT 		10
 #define UPDATE_RATES 			{1, 2, 4, 5, 8, 10, 20, 25, 40, 50}
 
-#define MSG_ID_ACK								0x83
-#define MSG_ID_NACK 							0x84
-#define MSG_ID_QUERY_SW_VERSION 				0x02
-#define MSG_ID_SET_FACTORY_DEFAULTS				0x04
-#define MSG_ID_SW_VERSION						0x80
-#define MSG_ID_QUERY_POSITION_UPDATE_RATE		0x10
-#define MSG_ID_CONFIGURE_POSITION_UPDATE_RATE	0x0E
-#define MSG_ID_POSITION_UPDATE_RATE 			0x86
-#define MSG_ID_CONFIGURE_SERIAL_PORT			0x05
-#define MSG_ID_CONFIGURE_NMEA_MESSAGE			0x08
+#define MSG_ID_ACK											0x83
+#define MSG_ID_NACK 										0x84
+#define MSG_ID_QUERY_SW_VERSION 							0x02
+#define MSG_ID_SET_FACTORY_DEFAULTS							0x04
+#define MSG_ID_SW_VERSION									0x80
+#define MSG_ID_QUERY_POSITION_UPDATE_RATE					0x10
+#define MSG_ID_CONFIGURE_POSITION_UPDATE_RATE				0x0E
+#define MSG_ID_POSITION_UPDATE_RATE 						0x86
+#define MSG_ID_CONFIGURE_SERIAL_PORT						0x05
+#define MSG_ID_CONFIGURE_NMEA_MESSAGE						0x08
+#define MSG_ID_CONFIGURE_MESSAGE_TYPE						0x09
+#define MSG_ID_CONFIGURE_NAVIGATION_DATA_MESSAGE INTERVAL	0x11
+#define MSG_ID_NAVIGATION_DATA_MESSAGE						0xA8
 
 #define GGA_INTERVAL							100
 #define GSA_INTERVAL							0
@@ -112,6 +115,41 @@ typedef struct _ConfigureNmeaMessage{
 	uint8_t attributes;
 } ConfigureNmeaMessage;
 
+typedef struct _ConfigureMessageType{
+	uint8_t messageId;
+	uint8_t type;
+	uint8_t attributes;
+} ConfigureMessageType;
+
+typedef struct _ConfigureNavigationDataMessageInterval{
+	uint8_t messageId;
+	uint8_t navigationMessageInterval;
+	uint8_t attributes;
+} ConfigureNavigationDataMessageInterval;
+
+typedef struct _NavigationDataMessage{
+	uint8_t messageId;
+	uint8_t fixMode;
+	uint8_t satellitesInFix;
+	uint16_t GNSS_week;
+	uint32_t GNSS_timeOfWeek;
+	int32_t latitude;
+	int32_t longitude;
+	uint32_t ellipsoid_altitidue;
+	uint32_t mean_sea_level_altitude;
+	uint16_t GDOP;
+	uint16_t PDOP;
+	uint16_t HDOP;
+	uint16_t VDOP;
+	uint16_t TDOP;
+	int32_t ECEF_x;
+	int32_t ECEF_y;
+	int32_t ECEF_z;
+	int32_t ECEF_vx;
+	int32_t ECEF_vy;
+	int32_t ECEF_vz;
+} NavigationDataMessage;
+
 typedef struct _GpsMessage{
 	uint16_t payloadLength;
 	union{
@@ -126,6 +164,9 @@ typedef struct _GpsMessage{
 		ConfigureSerialPort configureSerialPort;
 		PositionUpdateRate positionUpdateRate;
 		ConfigureNmeaMessage configureNmeaMessage;
+		ConfigureMessageType configureMessageType;
+		NavigationDataMessage navigationDataMessage;
+
 	};
 	uint8_t checksum;
 } GpsMessage;
