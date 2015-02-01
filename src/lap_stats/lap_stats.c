@@ -25,8 +25,6 @@
 static const Track * g_activeTrack;
 
 static int g_configured;
-static float g_prevLatitude;
-static float g_prevLongitude;
 
 static int g_atStartFinish;
 static int g_prevAtStartFinish;
@@ -95,16 +93,6 @@ int getAtSector() {
  */
 static bool isStartCrossedYet() {
    return g_lastStartFinishTimestamp != 0;
-}
-
-static float calcDistancesSinceLastSample(GpsSamp *gpsSample) {
-   const GeoPoint prev = {g_prevLatitude, g_prevLongitude};
-
-   if (!isValidPoint(&prev) || !isValidPoint(&gpsSample->point)){
-      return 0.0;
-   }
-   // Return distance in KM
-   return distPythag(&prev, &gpsSample->point) / 1000;
 }
 
 static int processStartFinish(const GpsSamp *gpsSample, const Track *track, const float targetRadius) {
@@ -196,8 +184,6 @@ void gpsConfigChanged(void) {
 void lapStats_init() {
    g_configured = 0;
    g_activeTrack = NULL;
-   g_prevLatitude = 0.0;
-   g_prevLongitude = 0.0;
    g_lastLapTime = 0;
    g_lastSectorTime = 0;
    g_atStartFinish = 0;
@@ -253,9 +239,6 @@ static void onLocationUpdated(GpsSamp *gpsSample) {
       g_configured = 1;
    }
 
-   float dist = calcDistancesSinceLastSample(gpsSample);
-   g_distance += dist;
-
    if (startFinishEnabled) {
       // Seconds since first fix is good until we alter the code to use millis directly
       const tiny_millis_t millisSinceFirstFix = getMillisSinceFirstFix();
@@ -285,9 +268,6 @@ static void onLocationUpdated(GpsSamp *gpsSample) {
       if (sectorEnabled)
          processSector(g_activeTrack, targetRadius);
    }
-
-   g_prevLatitude = gpsSample->point.latitude;
-   g_prevLongitude = gpsSample->point.longitude;
 }
 
 void lapStats_processUpdate(GpsSamp *gpsSample){

@@ -20,6 +20,10 @@ static DateTime g_dtLastFix;
 static millis_t g_utcMillisAtSample;
 static tiny_millis_t g_uptimeAtSample;
 
+static float g_prevLatitude;
+static float g_prevLongitude;
+
+
 static void flashGpsStatusLed(enum GpsSignalQuality gpsQuality) {
    if (g_flashCount == 0)
       LED_disable(1);
@@ -131,6 +135,23 @@ GpsSamp * getGpsSample(){
 	return &g_gpsSample;
 }
 
+static float calcDistancesSinceLastSample(GpsSamp *gpsSample) {
+   const GeoPoint prev = {g_prevLatitude, g_prevLongitude};
+
+   if (!isValidPoint(&prev) || !isValidPoint(&gpsSample->point)){
+      return 0.0;
+   }
+   // Return distance in KM
+   return distPythag(&prev, &gpsSample->point) / 1000;
+}
+
+static void GPS_sample_update(GpsSamp * gpsSample){
+	float dist = calcDistancesSinceLastSample(gpsSample);
+	gpsSample->distance += dist;
+
+	g_prevLatitude = gpsSample->point.latitude;
+	g_prevLongitude = gpsSample->point.longitude;
+}
 
 void initGPS(){
 	memset(&g_gpsSample, 0, sizeof(GpsSamp));
@@ -140,13 +161,16 @@ void initGPS(){
 	g_distance = 0;
 	g_uptimeAtSample = 0;
 	g_speed = 0;
+	g_prevLatitude = 0.0;
+	g_prevLongitude = 0.0;
+
 }
 
 int GPS_process_update(Serial *serial){
 	gps_msg_result_t result = GPS_device_get_update(&g_gpsSample, serial);
 	flashGpsStatusLed(g_gpsSample.quality);
 	if (result == GPS_MSG_SUCCESS){
-
+		GPS_sample_update(&g_gpsSample);
 	}
 	return result;
 }
