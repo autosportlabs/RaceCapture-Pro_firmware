@@ -21,7 +21,7 @@
 #include "printk.h"
 #include "mod_string.h"
 
-#define JSON_TOKENS 350
+#define JSON_TOKENS 200
 
 static jsmn_parser g_jsonParser;
 static jsmntok_t g_json_tok[JSON_TOKENS];
