@@ -7,6 +7,7 @@
 #include "printk.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include <math.h>
 
 #define MSG_ID_QUERY_GPS_SW_VER	0x02
 
@@ -173,7 +174,7 @@ typedef struct _GpsMessage{
 
 	};
 	uint8_t checksum;
-} GpsMessage;
+} __attribute__((__packed__)) GpsMessage;
 
 typedef enum{
 	GPS_COMMAND_FAIL = 0,
@@ -456,12 +457,9 @@ static gps_cmd_result_t configureUpdateRate(GpsMessage *gpsMsg, Serial *serial, 
 	return result;
 }
 
+GpsMessage gpsMsg;
+
 int GPS_device_provision(Serial *serial){
-	GpsMessage *gpsMsg = portMalloc(sizeof(GpsMessage));
-	if (gpsMsg == NULL){
-		pr_error("Could not create buffer for GPS message");
-		return 0;
-	}
 	size_t attempts = MAX_PROVISIONING_ATTEMPTS;
 	size_t provisioned = 0;
 
@@ -469,38 +467,38 @@ int GPS_device_provision(Serial *serial){
 	while(attempts-- && !provisioned){
 		while(1){
 			pr_info("GPS: provisioning attempt\r\n");
-			uint32_t baudRate = detectGpsBaudRate(gpsMsg, serial);
+			uint32_t baudRate = detectGpsBaudRate(&gpsMsg, serial);
 			if (baudRate){
 				pr_info("GPS: module detected at ");
 				pr_info_int(baudRate);
 				pr_info("\r\n");
-				if (baudRate != TARGET_BAUD_RATE && configureBaudRate(gpsMsg, serial, TARGET_BAUD_RATE) == GPS_COMMAND_FAIL){
+				if (baudRate != TARGET_BAUD_RATE && configureBaudRate(&gpsMsg, serial, TARGET_BAUD_RATE) == GPS_COMMAND_FAIL){
 					pr_error("GPS: Error provisioning - could not configure baud rate\r\n");
 					break;
 				}
 				configure_serial(SERIAL_GPS, 8, 0, 1, TARGET_BAUD_RATE);
 				serial->flush();
-				uint8_t updateRate = queryPositionUpdateRate(gpsMsg, serial);
+				uint8_t updateRate = queryPositionUpdateRate(&gpsMsg, serial);
 				if (!updateRate){
 					pr_error("GPS: Error provisioning - could not detect update rate\r\n");
 					updateRate = 0;
 				}
-				if (updateRate != TARGET_UPDATE_RATE && configureUpdateRate(gpsMsg, serial, TARGET_UPDATE_RATE) == GPS_COMMAND_FAIL){
+				if (updateRate != TARGET_UPDATE_RATE && configureUpdateRate(&gpsMsg, serial, TARGET_UPDATE_RATE) == GPS_COMMAND_FAIL){
 					pr_error("GPS: Error provisioning - could not configure update rate\r\n");
 					break;
 				}
 
-				if (configureNmeaMessages(gpsMsg, serial) == GPS_COMMAND_FAIL){
+				if (configureNmeaMessages(&gpsMsg, serial) == GPS_COMMAND_FAIL){
 					pr_error("GPS: Error provisioning - could not configure NMEA messages\r\n");
 					break;
 				}
 
-				if (configureMessageType(gpsMsg, serial) == GPS_COMMAND_FAIL){
+				if (configureMessageType(&gpsMsg, serial) == GPS_COMMAND_FAIL){
 					pr_error("GPS: Error provisioning - could not set binary message mode\r\n");
 					break;
 				}
 
-				if (configureNavigationDataMessageInterval(gpsMsg, serial) == GPS_COMMAND_FAIL){
+				if (configureNavigationDataMessageInterval(&gpsMsg, serial) == GPS_COMMAND_FAIL){
 					pr_error("GPS: Error provisioning - could not set navigation data message interval\r\n");
 					break;
 				}
@@ -515,14 +513,47 @@ int GPS_device_provision(Serial *serial){
 			}
 		}
 		if (!provisioned && attempts == MAX_PROVISIONING_ATTEMPTS / 2){
-			attemptFactoryDefaults(gpsMsg, serial);
+			attemptFactoryDefaults(&gpsMsg, serial);
 		}
 	}
-	if (gpsMsg) portFree(gpsMsg);
 	return provisioned;
 }
 
+/**
+ * Performs a full update of the lastFix value.  Also update the firstFix value if it hasn't
+ * already been set along with updating the Milliseconds as well
+ * @param fixDateTime The DateTime of the GPS fix.
+ */
+static void updateFullDateTime(GpsSamp * gpsSample, DateTime fixDateTime) {
+	gpsSample->g_uptimeAtSample = getUptime();
+	gpsSample->g_utcMillisAtSample = getMillisecondsSinceUnixEpoch(fixDateTime);
+	gpsSample->lastFix = fixDateTime;
+	if (gpsSample->firstFix.year == 0){
+		gpsSample->firstFix = fixDateTime;
+	}
+}
 int GPS_device_get_update(GpsSamp *gpsSample, Serial *serial){
-	gps_msg_result_t result = rxGpsMessage(gpsMsg, serial, MSG_ID_NAVIGATION_DATA_MESSAGE);
+	gps_msg_result_t result = rxGpsMessage(&gpsMsg, serial, MSG_ID_NAVIGATION_DATA_MESSAGE);
+
+	if (result == GPS_MSG_SUCCESS){
+		gpsSample->quality = gpsMsg.navigationDataMessage.fixMode;
+		gpsSample->satellites = gpsMsg.navigationDataMessage.satellitesInFix;
+
+		gpsSample->point.latitude = ((float)gpsMsg.navigationDataMessage.latitude) * 0.0000001f;
+		gpsSample->point.longitude = ((float)gpsMsg.navigationDataMessage.longitude) * 0.0000001f;
+//		gpsSample->altitude =((float)gpsMsg.navigationDataMessage.ellipsoid_altitidue) * 0.01;
+
+		float ecef_x_velocity = ((float)gpsMsg.navigationDataMessage.ECEF_vx) * 0.01;
+		float ecef_y_velocity = ((float)gpsMsg.navigationDataMessage.ECEF_vy) * 0.01;
+		float velocity = sqrt((ecef_x_velocity * ecef_x_velocity) + (ecef_y_velocity * ecef_y_velocity));
+		gpsSample->speed = velocity / 1000.0f;
+
+		size_t gnss_week = gpsMsg.navigationDataMessage.GNSS_week;
+		size_t gnss_timeOfWeek = gpsMsg.navigationDataMessage.GNSS_timeOfWeek;
+
+		DateTime dt = { 0 };
+		//TODO convert week and time of week to fix time info
+
+	}
 	return result;
 }
