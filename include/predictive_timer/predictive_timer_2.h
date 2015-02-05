@@ -18,7 +18,7 @@
  * @param point The location of the start/finish line.
  * @param time The time (millis) which the sample was taken.
  */
-void startFinishCrossed(GeoPoint point, tiny_millis_t time);
+void startFinishCrossed(const GeoPoint * point, tiny_millis_t time);
 
 /**
  * Adds a new GPS sample to our record if the algorithm determines its time for one.
@@ -26,7 +26,7 @@ void startFinishCrossed(GeoPoint point, tiny_millis_t time);
  * @param time The time (millis) which the sample was taken.
  * @return TRUE if it was added, FALSE otherwise.
  */
-bool addGpsSample(GeoPoint *point, tiny_millis_t time);
+bool addGpsSample(const GeoPoint *point, tiny_millis_t time);
 
 /**
  * Calculates the split of your current time against the fast lap time at the position given.
@@ -35,7 +35,7 @@ bool addGpsSample(GeoPoint *point, tiny_millis_t time);
  * @return The split between your current time and the fast lap time.  Positive indicates you are
  * going faster than your fast lap, negative indicates slower.
  */
-tiny_millis_t getSplitAgainstFastLap(GeoPoint point, tiny_millis_t time);
+tiny_millis_t getSplitAgainstFastLap(const GeoPoint *  point, tiny_millis_t time);
 
 /**
  * Figures out the predicted lap time.  Call as much as you like... it will only do
@@ -46,7 +46,7 @@ tiny_millis_t getSplitAgainstFastLap(GeoPoint point, tiny_millis_t time);
  * @param time The time (millis) which the sample was taken.
  * @return The predicted lap time.
  */
-tiny_millis_t getPredictedTime(GeoPoint point, tiny_millis_t time);
+tiny_millis_t getPredictedTime(const GeoPoint * point, tiny_millis_t time);
 
 /**
  * Like #getPredictedTime but returns the value in minutes.  Useful for logging compatibility.

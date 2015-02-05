@@ -18,9 +18,9 @@
 
 static bool g_enableGpsDataLogging = false;
 
-//void setGpsDataLogging(bool enable) {
-//   g_enableGpsDataLogging = enable;
-//}
+void setGpsDataLogging(bool enable) {
+   g_enableGpsDataLogging = enable;
+}
 
 /**
  * Prints the output to the serial port if it is set.

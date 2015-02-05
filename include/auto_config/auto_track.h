@@ -36,6 +36,6 @@
  * @param gp The GeoPoint that we got when we picked up our first good fix.
  * @return A status indicator that tells the caller the result of the call.
  */
-const Track* auto_configure_track(Track *defaultCfg, GeoPoint *gp);
+const Track* auto_configure_track(Track *defaultCfg, const GeoPoint *gp);
 
 #endif // __AUTO_TRACK_H__

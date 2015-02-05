@@ -13,6 +13,7 @@
 #include "OBD2.h"
 #include "sampleRecord.h"
 #include "gps.h"
+#include "lap_stats.h"
 #include "geopoint.h"
 #include "predictive_timer_2.h"
 #include "linear_interpolate.h"

@@ -32,6 +32,7 @@
 #include "loggerConfig.h"
 #include "imu.h"
 #include "gps.h"
+#include "lap_stats.h"
 #include "printk.h"
 
 #define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 4 )

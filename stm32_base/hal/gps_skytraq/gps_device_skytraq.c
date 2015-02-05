@@ -152,7 +152,7 @@ typedef struct _NavigationDataMessage{
 	int32_t ECEF_vx;
 	int32_t ECEF_vy;
 	int32_t ECEF_vz;
-} NavigationDataMessage;
+} __attribute__((__packed__)) NavigationDataMessage;
 
 typedef struct _GpsMessage{
 	uint16_t payloadLength;
@@ -174,7 +174,7 @@ typedef struct _GpsMessage{
 
 	};
 	uint8_t checksum;
-} __attribute__((__packed__)) GpsMessage;
+}  __attribute__((__packed__)) GpsMessage;
 
 typedef enum{
 	GPS_COMMAND_FAIL = 0,
@@ -259,6 +259,10 @@ static gps_msg_result_t rxGpsMessage(GpsMessage *msg, Serial *serial, uint8_t ex
 					if (eos1 == 0x0D && eos2 == 0x0A && msg->messageId == expectedMessageId){
 						result = GPS_MSG_SUCCESS;
 					}
+					else{
+						pr_info_int(msg->messageId);
+						pr_info("unexpected id\r\n");
+					}
 				}
 			}
 		}
@@ -297,6 +301,21 @@ static void sendConfigureSerialPort(GpsMessage *gpsMsg, Serial *serial, uint8_t 
 	gpsMsg->configureSerialPort.comPort = 0;
 	gpsMsg->configureSerialPort.attributes = ATTRIBUTE_UPDATE_TO_SRAM;
 	gpsMsg->payloadLength = sizeof(ConfigureSerialPort);
+	gpsMsg->checksum = calculateChecksum(gpsMsg);
+	txGpsMessage(gpsMsg, serial);
+}
+
+static void sendDisableNmea(GpsMessage *gpsMsg, Serial *serial){
+	gpsMsg->messageId = MSG_ID_CONFIGURE_NMEA_MESSAGE;
+	gpsMsg->configureNmeaMessage.GGA_interval = 0;
+	gpsMsg->configureNmeaMessage.GSA_interval = 0;
+	gpsMsg->configureNmeaMessage.GSV_interval = 0;
+	gpsMsg->configureNmeaMessage.GLL_interval = 0;
+	gpsMsg->configureNmeaMessage.RMC_interval = 0;
+	gpsMsg->configureNmeaMessage.VTG_interval = 0;
+	gpsMsg->configureNmeaMessage.ZDA_interval = 0;
+	gpsMsg->configureSerialPort.attributes = ATTRIBUTE_UPDATE_TO_SRAM;
+	gpsMsg->payloadLength = sizeof(ConfigureNmeaMessage);
 	gpsMsg->checksum = calculateChecksum(gpsMsg);
 	txGpsMessage(gpsMsg, serial);
 }
@@ -413,6 +432,18 @@ static gps_cmd_result_t configureNmeaMessages(GpsMessage *gpsMsg, Serial *serial
 	return result;
 }
 
+static gps_cmd_result_t disableNmeaMessages(GpsMessage *gpsMsg, Serial *serial){
+	pr_info("GPS: Disable NMEA messages: ");
+
+	gps_cmd_result_t result = GPS_COMMAND_FAIL;
+	sendDisableNmea(gpsMsg, serial);
+	if (rxGpsMessage(gpsMsg, serial, MSG_ID_ACK) == GPS_MSG_SUCCESS){
+		result = (gpsMsg->ackMsg.ackId == MSG_ID_CONFIGURE_NMEA_MESSAGE) ? GPS_COMMAND_SUCCESS : GPS_COMMAND_FAIL;
+	}
+	pr_info(result == GPS_COMMAND_SUCCESS ? "win\r\n" : "fail\r\n");
+	return result;
+}
+
 static gps_cmd_result_t configureMessageType(GpsMessage *gpsMsg, Serial *serial){
 	pr_info("GPS: configure message type: ");
 	gps_cmd_result_t result = GPS_COMMAND_FAIL;
@@ -503,6 +534,11 @@ int GPS_device_provision(Serial *serial){
 					break;
 				}
 
+				if (disableNmeaMessages(&gpsMsg, serial) == GPS_COMMAND_FAIL){
+					pr_error("GPS: Error provisioning - could not disable NMEA messages\r\n");
+					break;
+				}
+
 				pr_info("GPS: provisioned\r\n");
 				provisioned = 1;
 				break;
@@ -548,10 +584,10 @@ int GPS_device_get_update(GpsSamp *gpsSample, Serial *serial){
 		float velocity = sqrt((ecef_x_velocity * ecef_x_velocity) + (ecef_y_velocity * ecef_y_velocity));
 		gpsSample->speed = velocity / 1000.0f;
 
-		size_t gnss_week = gpsMsg.navigationDataMessage.GNSS_week;
-		size_t gnss_timeOfWeek = gpsMsg.navigationDataMessage.GNSS_timeOfWeek;
+		//size_t gnss_week = gpsMsg.navigationDataMessage.GNSS_week;
+		//size_t gnss_timeOfWeek = gpsMsg.navigationDataMessage.GNSS_timeOfWeek;
 
-		DateTime dt = { 0 };
+		//DateTime dt = { 0 };
 		//TODO convert week and time of week to fix time info
 
 	}

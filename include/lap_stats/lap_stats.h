@@ -4,6 +4,7 @@
 #include "dateTime.h"
 #include "geopoint.h"
 #include <stddef.h>
+#include "gps.h"
 
 /**
  * A simple Time and Location sample.

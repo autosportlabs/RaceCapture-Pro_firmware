@@ -7,6 +7,7 @@
 #include "loggerConfig.h"
 #include "loggerData.h"
 #include "gps.h"
+#include "lap_stats.h"
 #include "imu.h"
 #include "ADC.h"
 #include "timer.h"

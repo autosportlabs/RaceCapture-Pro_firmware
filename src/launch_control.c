@@ -45,7 +45,7 @@ static bool isConfigured() {
 }
 
 static bool isGeoPointInStartArea(const GeoPoint p) {
-   return gc_isPointInGeoCircle(p, g_geoCircle);
+   return gc_isPointInGeoCircle(&p, g_geoCircle);
 }
 
 static bool isSpeedBelowThreshold(const float speed) {

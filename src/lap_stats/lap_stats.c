@@ -216,11 +216,12 @@ static void onLocationUpdated(GpsSamp *gpsSample) {
    static int startFinishEnabled = 0;
 
    // If no GPS lock, no point in doing any of this.
-   if (!isGpsSignalUsable(gpsSample->quality))
+   if (!isGpsSignalUsable(gpsSample->quality)){
       return;
+   }
 
    LoggerConfig *config = getWorkingLoggerConfig();
-   const GeoPoint *gp = gpsSample->point;
+   const GeoPoint *gp = &gpsSample->point;
 
    // FIXME: Improve on this.  Doesn't need calculation every time.
    const float targetRadius = degreesToMeters(config->TrackConfigs.radius);
@@ -238,7 +239,7 @@ static void onLocationUpdated(GpsSamp *gpsSample) {
    if (startFinishEnabled) {
       // Seconds since first fix is good until we alter the code to use millis directly
       const tiny_millis_t millisSinceFirstFix = getMillisSinceFirstFix();
-      const int lapDetected = processStartFinish(g_activeTrack, targetRadius);
+      const int lapDetected = processStartFinish(gpsSample, g_activeTrack, targetRadius);
 
       if (lapDetected) {
          resetGpsDistance();
@@ -252,7 +253,7 @@ static void onLocationUpdated(GpsSamp *gpsSample) {
             // Distance is in KM
             setGpsDistanceKms(distPythag(&sp, gp) / 1000);
 
-            startFinishCrossed(sp, g_lastStartFinishTimestamp);
+            startFinishCrossed(&sp, g_lastStartFinishTimestamp);
             addGpsSample(gp, millisSinceFirstFix);
          } else {
             startFinishCrossed(gp, millisSinceFirstFix);

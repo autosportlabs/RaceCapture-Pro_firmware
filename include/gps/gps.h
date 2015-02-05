@@ -22,6 +22,9 @@
 #define GPS_H_
 
 #include "LED.h"
+#include "geopoint.h"
+#include "dateTime.h"
+#include "serial.h"
 
 enum GpsSignalQuality {
    GPS_QUALITY_NO_FIX = 0,
@@ -64,6 +67,10 @@ float getLatitude();
 
 float getLongitude();
 
+bool isGpsDataCold();
+
+bool isGpsSignalUsable(enum GpsSignalQuality q);
+
 enum GpsSignalQuality getGPSQuality();
 
 void setGPSQuality(enum GpsSignalQuality quality);
@@ -96,7 +103,12 @@ float getSecondsSinceFirstFix();
 /**
  * @return The last current known location.
  */
-GeoPoint getGeoPoint();
+GeoPoint * getGeoPoint();
+
+/**
+ * @return the current GPS Sample
+ */
+GpsSamp * getGpsSample();
 
 /**
  * @return Milliseconds since our first fix.

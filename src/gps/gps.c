@@ -15,6 +15,10 @@ static int g_flashCount;
 static float g_prevLatitude;
 static float g_prevLongitude;
 
+bool isGpsSignalUsable(enum GpsSignalQuality q) {
+   return q != GPS_QUALITY_NO_FIX;
+}
+
 static void flashGpsStatusLed(enum GpsSignalQuality gpsQuality) {
    if (g_flashCount == 0){
       LED_disable(1);
@@ -30,15 +34,12 @@ static void flashGpsStatusLed(enum GpsSignalQuality gpsQuality) {
    }
 }
 
-static bool isGpsSignalUsable(enum GpsSignalQuality q) {
-   return q != GPS_QUALITY_NO_FIX;
-}
-
 /**
  * @return true if we haven't parsed any data yet, false otherwise.
  */
-static bool isGpsDataCold() {
-   return g_utcMillisAtSample == 0;
+bool isGpsDataCold() {
+
+   return g_gpsSample.g_utcMillisAtSample == 0;
 }
 
 millis_t getMillisSinceEpoch() {
@@ -46,9 +47,8 @@ millis_t getMillisSinceEpoch() {
    if (isGpsDataCold()){
       return 0;
    }
-
-   const tiny_millis_t deltaSinceSample = getUptime() - g_uptimeAtSample;
-   return g_utcMillisAtSample + deltaSinceSample;
+   const tiny_millis_t deltaSinceSample = getUptime() - g_gpsSample.g_uptimeAtSample;
+   return g_gpsSample.g_utcMillisAtSample + deltaSinceSample;
 }
 
 long long getMillisSinceEpochAsLongLong() {
@@ -56,7 +56,7 @@ long long getMillisSinceEpochAsLongLong() {
 }
 
 tiny_millis_t getUptimeAtSample() {
-   return g_uptimeAtSample;
+   return g_gpsSample.g_uptimeAtSample;
 }
 
 void resetGpsDistance() {
@@ -108,11 +108,11 @@ void setGPSSpeed(float speed) {
 }
 
 DateTime getLastFixDateTime() {
-   return g_dtLastFix;
+   return g_gpsSample.lastFix;
 }
 
-GeoPoint getGeoPoint(){
-	return g_gpsSample.point;
+GeoPoint * getGeoPoint(){
+	return &g_gpsSample.point;
 }
 
 GpsSamp * getGpsSample(){
@@ -145,14 +145,14 @@ static void GPS_sample_update(GpsSamp * gpsSample){
 	g_prevLongitude = gpsSample->point.longitude;
 }
 
-void initGPS(){
+void GPS_init(){
 	memset(&g_gpsSample, 0, sizeof(GpsSamp));
-	g_dtFirstFix = g_dtLastFix = (DateTime) { 0 };
-	g_utcMillisAtSample = 0;
+	g_gpsSample.firstFix = g_gpsSample.lastFix = (DateTime) { 0 };
+	g_gpsSample.g_utcMillisAtSample = 0;
 	g_flashCount = 0;
-	g_distance = 0;
-	g_uptimeAtSample = 0;
-	g_speed = 0;
+	g_gpsSample.distance = 0;
+	g_gpsSample.g_uptimeAtSample = 0;
+	g_gpsSample.speed = 0;
 	g_prevLatitude = 0.0;
 	g_prevLongitude = 0.0;
 
