@@ -587,6 +587,9 @@ int GPS_device_get_update(GpsSamp *gpsSample, Serial *serial){
 		float velocity = sqrt((ecef_x_velocity * ecef_x_velocity) + (ecef_y_velocity * ecef_y_velocity));
 		gpsSample->speed = velocity / 1000.0f;
 
+		//TODO: convert GNSS day of week to our internal date time formats
+		//Hints: http://gnsstk.sourceforge.net/time__conversion_8c-source.html#l00190
+
 		//size_t gnss_week = gpsMsg.navigationDataMessage.GNSS_week;
 		//size_t gnss_timeOfWeek = gpsMsg.navigationDataMessage.GNSS_timeOfWeek;
 
