@@ -1,4 +1,5 @@
 #include "gps_device.h"
+#include "byteswap.h"
 #include <stdint.h>
 #include <stddef.h>
 #include "printk.h"
@@ -575,8 +576,10 @@ int GPS_device_get_update(GpsSamp *gpsSample, Serial *serial){
 		gpsSample->quality = gpsMsg.navigationDataMessage.fixMode;
 		gpsSample->satellites = gpsMsg.navigationDataMessage.satellitesInFix;
 
-		gpsSample->point.latitude = ((float)gpsMsg.navigationDataMessage.latitude) * 0.0000001f;
-		gpsSample->point.longitude = ((float)gpsMsg.navigationDataMessage.longitude) * 0.0000001f;
+		int32_t latitude_raw = swap_int32(gpsMsg.navigationDataMessage.latitude);
+		int32_t longitude_raw = swap_int32(gpsMsg.navigationDataMessage.longitude);
+		gpsSample->point.latitude = ((float)latitude_raw) * 0.0000001f;
+		gpsSample->point.longitude = ((float)longitude_raw) * 0.0000001f;
 //		gpsSample->altitude =((float)gpsMsg.navigationDataMessage.ellipsoid_altitidue) * 0.01;
 
 		float ecef_x_velocity = ((float)gpsMsg.navigationDataMessage.ECEF_vx) * 0.01;

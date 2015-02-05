@@ -103,6 +103,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/util/linear_interpolate.c \
 			$(RCP_SRC)/util/modp_atonum.c \
 			$(RCP_SRC)/util/modp_numtoa.c \
+			$(RCP_SRC)/util/byteswap.c \
 			$(RCP_SRC)/util/taskUtil.c \
 			$(RCP_SRC)/sdcard/sdcard.c \
 			$(HAL_SRC)/sim900_stm32/sim900_device_stm32.c \
