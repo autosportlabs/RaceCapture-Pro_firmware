@@ -46,11 +46,6 @@ Serial * get_serial(serial_id_t port){
 }
 
 size_t serial_read_byte(Serial *serial, uint8_t *b, size_t delay){
-	char x[2];
-	x[0] = *b;
-	x[1] = 0;
-	pr_debug(x);
-	pr_debug("\r\n");
 	size_t result = serial->get_c_wait((char *)b, delay);
 	return result;
 }
