@@ -6,7 +6,9 @@
 
 DWORD get_fattime (void)
 {
-   const DateTime dt = getLastFixDateTime();
+   const millis_t lastFix = getLastFix();
+   DateTime dt = {0};
+
 
    if (!isValidDateTime(dt))
       return (DWORD) 0;

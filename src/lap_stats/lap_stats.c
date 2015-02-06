@@ -112,7 +112,7 @@ static int processStartFinish(const GpsSamp *gpsSample, const Track *track, cons
       return false;
    }
 
-   const tiny_millis_t timestamp = getMillisSinceFirstFix();
+   const tiny_millis_t timestamp = gpsSample->firstFixMillis;
    const tiny_millis_t elapsed = timestamp - g_lastStartFinishTimestamp;
    const struct GeoCircle sfCircle = gc_createGeoCircle(getFinishPoint(track),
                                                         targetRadius);
@@ -144,7 +144,7 @@ static int processStartFinish(const GpsSamp *gpsSample, const Track *track, cons
    return true;
 }
 
-static void processSector(const Track *track, float targetRadius) {
+static void processSector(GpsSamp * gpsSample, const Track *track, float targetRadius) {
    // We don't process sectors until we cross Start
    if (!isStartCrossedYet())
       return;
@@ -161,7 +161,7 @@ static void processSector(const Track *track, float targetRadius) {
    /*
     * Past here we are sure we are at a sector boundary.
     */
-   const tiny_millis_t millis = getMillisSinceFirstFix();
+   const tiny_millis_t millis = gpsSample->firstFixMillis;
    pr_debug_int(g_sector);
    pr_debug(" Sector Boundary Detected\r\n");
 
@@ -238,7 +238,7 @@ static void onLocationUpdated(GpsSamp *gpsSample) {
 
    if (startFinishEnabled) {
       // Seconds since first fix is good until we alter the code to use millis directly
-      const tiny_millis_t millisSinceFirstFix = getMillisSinceFirstFix();
+      const tiny_millis_t millisSinceFirstFix = gpsSample->firstFixMillis;
       const int lapDetected = processStartFinish(gpsSample, g_activeTrack, targetRadius);
 
       if (lapDetected) {
@@ -263,7 +263,7 @@ static void onLocationUpdated(GpsSamp *gpsSample) {
       }
 
       if (sectorEnabled)
-         processSector(g_activeTrack, targetRadius);
+         processSector(gpsSample, g_activeTrack, targetRadius);
    }
 }
 

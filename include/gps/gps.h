@@ -35,16 +35,12 @@ enum GpsSignalQuality {
 
 typedef struct _GpsSample {
    GeoPoint point;
-   DateTime firstFix;
-   DateTime lastFix;
-   millis_t time;
    float speed;
    float distance;
    float satellites;
    enum GpsSignalQuality quality;
+   millis_t time;
    tiny_millis_t firstFixMillis;
-   millis_t g_utcMillisAtSample;
-   tiny_millis_t g_uptimeAtSample;
 } GpsSamp;
 
 void resetGpsDistance();
@@ -84,7 +80,7 @@ void setGPSSpeed(float speed);
 /**
  * Returns Date time information as provided by the GPS system.
  */
-DateTime getLastFixDateTime();
+millis_t getLastFix();
 
 /**
  * @return Milliseconds since Unix Epoch.  0 indicates not available.

@@ -556,19 +556,6 @@ int GPS_device_provision(Serial *serial){
 	return provisioned;
 }
 
-/**
- * Performs a full update of the lastFix value.  Also update the firstFix value if it hasn't
- * already been set along with updating the Milliseconds as well
- * @param fixDateTime The DateTime of the GPS fix.
- */
-static void updateFullDateTime(GpsSamp * gpsSample, DateTime fixDateTime) {
-	gpsSample->g_uptimeAtSample = getUptime();
-	gpsSample->g_utcMillisAtSample = getMillisecondsSinceUnixEpoch(fixDateTime);
-	gpsSample->lastFix = fixDateTime;
-	if (gpsSample->firstFix.year == 0){
-		gpsSample->firstFix = fixDateTime;
-	}
-}
 int GPS_device_get_update(GpsSamp *gpsSample, Serial *serial){
 	gps_msg_result_t result = rxGpsMessage(&gpsMsg, serial, MSG_ID_NAVIGATION_DATA_MESSAGE);
 
@@ -582,20 +569,25 @@ int GPS_device_get_update(GpsSamp *gpsSample, Serial *serial){
 		gpsSample->point.longitude = ((float)longitude_raw) * 0.0000001f;
 //		gpsSample->altitude =((float)gpsMsg.navigationDataMessage.ellipsoid_altitidue) * 0.01;
 
-		float ecef_x_velocity = ((float)gpsMsg.navigationDataMessage.ECEF_vx) * 0.01;
-		float ecef_y_velocity = ((float)gpsMsg.navigationDataMessage.ECEF_vy) * 0.01;
+		float ecef_x_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vx)) * 0.01;
+		float ecef_y_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vy)) * 0.01;
 		float velocity = sqrt((ecef_x_velocity * ecef_x_velocity) + (ecef_y_velocity * ecef_y_velocity));
 		gpsSample->speed = velocity / 1000.0f;
 
-		//TODO: convert GNSS day of week to our internal date time formats
-		//Hints: http://gnsstk.sourceforge.net/time__conversion_8c-source.html#l00190
+		uint16_t GNSS_week = swap_uint16(gpsMsg.navigationDataMessage.GNSS_week);
+		uint32_t timeOfWeek = swap_uint32(gpsMsg.navigationDataMessage.GNSS_timeOfWeek);
 
-		//size_t gnss_week = gpsMsg.navigationDataMessage.GNSS_week;
-		//size_t gnss_timeOfWeek = gpsMsg.navigationDataMessage.GNSS_timeOfWeek;
+		//current time example 1830 45912409
+		//http://www.labsat.co.uk/index.php/en/gps-time-calculator
+		//convert GNSS_week to milliseconds and add time of week converted to milliseconds
+		millis_t time = (GNSS_week * 604800000) + (timeOfWeek * 10);
 
-		//DateTime dt = { 0 };
-		//TODO convert week and time of week to fix time info
-
+		pr_info_int(GNSS_week);
+		pr_info(" ");
+		pr_info_int(timeOfWeek);
+		pr_info("\r\n");
+		//TODO - adjust for Jan 6 1980 GNSS epoch
+		gpsSample->time = time;
 	}
 	return result;
 }
