@@ -10,8 +10,10 @@
 #include "task.h"
 #include <math.h>
 
-#define MSG_ID_QUERY_GPS_SW_VER	0x02
+/* UNIX time (epoch 1/1/1970) at the start of GNSS epoch (1/6/1980) */
+#define GNSS_EPOCH_IN_UNIX_EPOCH 315964800
 
+#define MSG_ID_QUERY_GPS_SW_VER	0x02
 
 #define MAX_PROVISIONING_ATTEMPTS	10
 #define MAX_PAYLOAD_LEN				256
@@ -577,15 +579,12 @@ int GPS_device_get_update(GpsSamp *gpsSample, Serial *serial){
 		uint16_t GNSS_week = swap_uint16(gpsMsg.navigationDataMessage.GNSS_week);
 		uint32_t timeOfWeek = swap_uint32(gpsMsg.navigationDataMessage.GNSS_timeOfWeek);
 
-		//current time example 1830 45912409
-		//http://www.labsat.co.uk/index.php/en/gps-time-calculator
 		//convert GNSS_week to milliseconds and add time of week converted to milliseconds
-		millis_t time = (GNSS_week * 604800000) + (timeOfWeek * 10);
+		//adjust for GNSS epoch
+		millis_t time = (GNSS_week * 60 * 60 * 24 * 7) * 1000;
+		time += timeOfWeek * 10;
+		time += GNSS_EPOCH_IN_UNIX_EPOCH * 1000;
 
-		pr_info_int(GNSS_week);
-		pr_info(" ");
-		pr_info_int(timeOfWeek);
-		pr_info("\r\n");
 		//TODO - adjust for Jan 6 1980 GNSS epoch
 		gpsSample->time = time;
 	}

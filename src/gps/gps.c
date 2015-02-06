@@ -51,6 +51,7 @@ millis_t getMillisSinceEpoch() {
    if (isGpsDataCold()){
       return 0;
    }
+   //interpolate milliseconds from system clock
    const tiny_millis_t deltaSinceSample = getUptime() - g_uptimeAtSample;
    return g_gpsSample.time + deltaSinceSample;
 }
