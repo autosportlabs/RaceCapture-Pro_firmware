@@ -133,3 +133,8 @@ tiny_millis_t getUptime() {
 int getUptimeAsInt() {
    return (int) getUptime();
 }
+
+DateTime getDateTimeFromEpochMillis(millis_t millis) {
+   // FINISH_ME!
+   return (DateTime) { 0 };
+}

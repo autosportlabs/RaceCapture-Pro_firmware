@@ -165,7 +165,7 @@ while (1) {
                 &sampleRateTimebase);
         backgroundStreaming = loggerConfig->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
         resetLapCount();
-        resetGpsDistance();
+        resetLapDistance();
         g_configChanged = 0;
     }
 

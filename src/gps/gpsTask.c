@@ -42,7 +42,8 @@ void GPSTask(void *pvParameters) {
 	for (;;) {
 		gps_msg_result_t result = GPS_processUpdate(serial);
 		if (result == GPS_MSG_SUCCESS){
-			lapStats_processUpdate(getGpsSample());
+                   const GpsSample sample = getGpsSample();
+			lapStats_processUpdate(&sample);
 		}
 		else{
 			pr_warning("timeout processing GPS update\r\n");
@@ -55,4 +56,3 @@ void startGPSTask(int priority){
 	lapStats_init();
 	xTaskCreate( GPSTask, ( signed portCHAR * )"GPSTask", GPS_TASK_STACK_SIZE, NULL, priority, NULL );
 }
-

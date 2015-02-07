@@ -25,6 +25,7 @@
 #include "loggerTaskEx.h"
 #include "loggerSampleData.h"
 #include "virtual_channel.h"
+#include "lap_stats.h"
 
 #define TEMP_BUFFER_LEN 		200
 #define DEFAULT_CAN_TIMEOUT 	100
@@ -322,7 +323,7 @@ int Lua_GetGPSQuality(lua_State *L){
 }
 
 int Lua_GetGPSDistance(lua_State *L){
-	lua_pushnumber(L, getGpsDistanceMiles());
+	lua_pushnumber(L, getLapDistanceInMiles());
 	return 1;
 }
 

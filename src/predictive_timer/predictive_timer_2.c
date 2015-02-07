@@ -430,7 +430,7 @@ void resetPredictiveTimer() {
 }
 
 float getPredictedTimeInMinutes() {
-   const GeoPoint * gp = getGeoPoint();
+   const GeoPoint gp = getGeoPoint();
    const tiny_millis_t millis = getMillisSinceFirstFix();
-   return tinyMillisToMinutes(getPredictedTime(gp, millis));
+   return tinyMillisToMinutes(getPredictedTime(&gp, millis));
 }
