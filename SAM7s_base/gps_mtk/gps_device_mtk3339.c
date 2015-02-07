@@ -1,11 +1,15 @@
+#include "modp_atonum.h"
+#include "mod_string.h"
 #include "gps_device.h"
 #include "gps.h"
 #include "dateTime.h"
+#include "printk.h"
 
 #define LATITUDE_DATA_LEN 12
 #define LONGITUDE_DATA_LEN 13
 #define UTC_TIME_BUFFER_LEN 11
 #define UTC_SPEED_BUFFER_LEN 10
+#define KNOTS_TO_KPH (1.852)
 
 #define GPS_DATA_LINE_BUFFER_LEN 	200
 static char g_GPSdataLine[GPS_DATA_LINE_BUFFER_LEN];
@@ -29,20 +33,6 @@ int checksumValid(const char *gpsData, size_t len) {
          valid = 1;
    }
    return valid;
-}
-
-/**
- * Performs a full update of the lastFix value.  Also update the firstFix value if it hasn't
- * already been set along with updating the Milliseconds as well
- * @param fixDateTime The DateTime of the GPS fix.
- */
-static void updateFullDateTime(GpsSamp * gpsSample, DateTime fixDateTime) {
-	gpsSample->g_uptimeAtSample = getUptime();
-	gpsSample->g_utcMillisAtSample = getMillisecondsSinceUnixEpoch(fixDateTime);
-	gpsSample->lastFix = fixDateTime;
-	if (gpsSample->firstFix.year == 0){
-		gpsSample->firstFix = fixDateTime;
-	}
 }
 
 /**
@@ -90,23 +80,21 @@ static float parseLongitude(char *data){
 }
 
 //Parse Global Positioning System Fix Data.
-static void parseGGA(GpsSamp * gpsSample, char *data) {
+static void parseGGA(GpsSample * gpsSample, char *data) {
    char * delim = strchr(data, ',');
    int param = 0;
-   int keepParsing = 1;
 
-   while (delim != NULL && keepParsing) {
+   while (delim != NULL) {
       *delim = '\0';
       switch (param) {
       case 5:
          // FIXME: Better suport fo GPS quality here?
-    	 gpsSample->quality = modp_atoi(data) > 0 ? GPS_QUALITY_FIX : GPS_QUALITY_NO_FIX;
+         gpsSample->quality = modp_atoi(data) > 0 ? GPS_QUALITY_FIX : GPS_QUALITY_NO_FIX;
          break;
 
       case 6:
-    	  gpsSample->satellites = modp_atoi(data);
-    	  keepParsing = 0;
-    	  break;
+         gpsSample->satellites = (uint8_t) modp_atoi(data);
+         break;
       }
 
       param++;
@@ -116,44 +104,22 @@ static void parseGGA(GpsSamp * gpsSample, char *data) {
 }
 
 //Parse GNSS DOP and Active Satellites
-static void parseGSA(GpsSamp * gpsSample, char *data) {
+static void parseGSA(GpsSample * gpsSample, char *data) {
 
 }
 
 //Parse Course Over Ground and Ground Speed
-static void parseVTG(GpsSamp * gpsSample, char *data) {
+static void parseVTG(GpsSample * gpsSample, char *data) {
 
-   char * delim = strchr(data, ',');
-   int param = 0;
-
-   int keepParsing = 1;
-   while (delim != NULL && keepParsing) {
-      *delim = '\0';
-      switch (param) {
-      case 6: //Speed over ground
-      {
-         if (strlen(data) >= 1) {
-        	gpsSample->speed = modp_atof(data);
-         }
-         keepParsing = 0;
-      }
-         break;
-      default:
-         break;
-      }
-      param++;
-      data = delim + 1;
-      delim = strchr(data, ',');
-   }
 }
 
 //Parse Geographic Position - Latitude / Longitude
-static void parseGLL(GpsSamp * gpsSample, char *data) {
+static void parseGLL(GpsSample * gpsSample, char *data) {
 
 }
 
 //Parse Time & Date
-static void parseZDA(GpsSamp * gpsSample, char *data) {
+static void parseZDA(GpsSample * gpsSample, char *data) {
    /*
     $GPZDA
 
@@ -173,12 +139,12 @@ static void parseZDA(GpsSamp * gpsSample, char *data) {
 }
 
 //Parse GNSS Satellites in View
-static void parseGSV(GpsSamp * gpsSample, char *data) {
+static void parseGSV(GpsSample * gpsSample, char *data) {
 
 }
 
 //Parse Recommended Minimum Navigation Information
-static void parseRMC(GpsSamp * gpsSample, char *data) {
+static void parseRMC(GpsSample * gpsSample, char *data) {
    /*
     * $GPRMC,053740.000,A,2503.6319,N,12136.0099,E,2.69,79.65,100106,,,A*53
     * Message ID $GPRMC RMC protocol header
@@ -233,7 +199,7 @@ static void parseRMC(GpsSamp * gpsSample, char *data) {
          break;
 
       case 6: //Speed over ground
-         if (strlen(data) >= 1) setGPSSpeed(modp_atof(data) * KNOTS_TO_KPH);
+         gpsSample->speed = modp_atof(data) * KNOTS_TO_KPH;
          break;
 
       case 8: //Date (DDMMYY)
@@ -249,15 +215,15 @@ static void parseRMC(GpsSamp * gpsSample, char *data) {
 
    gpsSample->point.latitude = latitude;
    gpsSample->point.longitude = longitude;
-   updateFullDateTime(gpsSample, dt);
+   gpsSample->time = getMillisecondsSinceUnixEpoch(dt);
 }
 
-static void processGPSData(GpsSamp *gpsSample, char *gpsData, size_t len) {
+static bool processGPSData(GpsSample *gpsSample, char *gpsData, size_t len) {
    if (len <= 4 || !checksumValid(gpsData, len) || strstr(gpsData, "$GP") != gpsData) {
       pr_trace("GPS: corrupt frame ");
       pr_trace(gpsData);
       pr_trace("\r\n");
-      return;
+      return false;
    }
 
    // Advance the pointer 3 spaces since we know it begins with "$GP"
@@ -266,6 +232,7 @@ static void processGPSData(GpsSamp *gpsSample, char *gpsData, size_t len) {
       parseGGA(gpsSample, gpsData + 4);
    } else if (strstr(gpsData, "VTG,")) { //Course Over Ground and Ground Speed
       parseVTG(gpsSample, gpsData + 4);
+      return true;
    } else if (strstr(gpsData, "GSA,")) { //GPS Fix gpsData
       parseGSA(gpsSample, gpsData + 4);
    } else if (strstr(gpsData, "GSV,")) { //Satellites in view
@@ -277,6 +244,8 @@ static void processGPSData(GpsSamp *gpsSample, char *gpsData, size_t len) {
    } else if (strstr(gpsData, "ZDA,")) { //Time & Date
       parseZDA(gpsSample, gpsData + 4);
    }
+
+   return false;
 }
 
 int GPS_device_provision(Serial *serial){
@@ -284,9 +253,30 @@ int GPS_device_provision(Serial *serial){
 	return 1;
 }
 
-int GPS_device_get_update(GpsSamp *gpsSample, Serial *serial){
-	int len = serial->get_line(g_GPSdataLine, GPS_DATA_LINE_BUFFER_LEN - 1);
-	g_GPSdataLine[len] = '\0';
-	processGPSData(gpsSample, g_GPSdataLine, len);
+
+/*
+ * Order of GPS sentences from our GPS mouse is as follows:
+ *
+ * $GPGGA,034722.200,3745.1353,N,12224.6551,W,1,6,1.42,0.4,M,-25.3,M,,*61
+ * $GPGSA,A,3,04,24,02,17,25,12,,,,,,,1.72,1.42,0.98*02
+ * $GPRMC,034722.200,A,3745.1353,N,12224.6551,W,0.03,281.72,280414,,,A*79
+ * $GPVTG,281.72,T,,M,0.03,N,0.06,K,A*36
+ *
+ * We know that the VTG sentence is always the last one sent of the 4
+ * we get.  Hence we consider our reading complete when we read the VTG
+ * sentence.
+ */
+
+gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, Serial *serial) {
+   bool wasVtg = false;
+
+   while(!wasVtg) {
+      const int len = serial->get_line(g_GPSdataLine, GPS_DATA_LINE_BUFFER_LEN - 1);
+      g_GPSdataLine[len] = '\0';
+
+      wasVtg = processGPSData(gpsSample, g_GPSdataLine, len);
+   }
+
+
 	return GPS_MSG_SUCCESS;
 }

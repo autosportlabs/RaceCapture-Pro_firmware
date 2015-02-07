@@ -42,7 +42,7 @@ void lc_setup(const Track *track, const float targetRadius);
  * Called when a new sample is available.
  * @param sample The GpsSample.
  */
-void lc_supplyGpsSample(const GpsSamp * sample);
+void lc_supplyGpsSample(const GpsSample * sample);
 
 /**
  * @return true if the driver has launched (started racing).  False otherwise.

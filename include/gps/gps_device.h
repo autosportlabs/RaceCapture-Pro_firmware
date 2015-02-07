@@ -17,6 +17,6 @@ typedef enum {
 } gps_msg_result_t;
 
 int GPS_device_provision(Serial *serial);
-int GPS_device_get_update(GpsSamp *gpsSample, Serial *serial);
+gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, Serial *serial);
 
 #endif /* GPS_DEVICE_H_ */

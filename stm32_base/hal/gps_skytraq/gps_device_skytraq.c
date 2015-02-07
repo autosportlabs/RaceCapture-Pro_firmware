@@ -494,16 +494,16 @@ static gps_cmd_result_t configureUpdateRate(GpsMessage *gpsMsg, Serial *serial, 
 GpsMessage gpsMsg;
 
 int GPS_device_provision(Serial *serial){
-	size_t attempts = MAX_PROVISIONING_ATTEMPTS;
+    size_t attempts = MAX_PROVISIONING_ATTEMPTS;
 	size_t provisioned = 0;
 
 	vTaskDelay(msToTicks(500));
 	while(attempts-- && !provisioned){
-		while(1){
-			pr_info("GPS: provisioning attempt\r\n");
+	    while(1){
+	        pr_info("GPS: provisioning attempt\r\n");
 			uint32_t baudRate = detectGpsBaudRate(&gpsMsg, serial);
 			if (baudRate){
-				pr_info("GPS: module detected at ");
+			    pr_info("GPS: module detected at ");
 				pr_info_int(baudRate);
 				pr_info("\r\n");
 				if (baudRate != TARGET_BAUD_RATE && configureBaudRate(&gpsMsg, serial, TARGET_BAUD_RATE) == GPS_COMMAND_FAIL){
@@ -558,32 +558,33 @@ int GPS_device_provision(Serial *serial){
 	return provisioned;
 }
 
-int GPS_device_get_update(GpsSamp *gpsSample, Serial *serial){
-	gps_msg_result_t result = rxGpsMessage(&gpsMsg, serial, MSG_ID_NAVIGATION_DATA_MESSAGE);
+gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, Serial *serial){
+   gps_msg_result_t result = rxGpsMessage(&gpsMsg, serial, MSG_ID_NAVIGATION_DATA_MESSAGE);
 
-	if (result == GPS_MSG_SUCCESS){
-		gpsSample->quality = gpsMsg.navigationDataMessage.fixMode;
-		gpsSample->satellites = gpsMsg.navigationDataMessage.satellitesInFix;
+   if (result != GPS_MSG_SUCCESS) return result;
 
-		int32_t latitude_raw = swap_int32(gpsMsg.navigationDataMessage.latitude);
-		int32_t longitude_raw = swap_int32(gpsMsg.navigationDataMessage.longitude);
-		gpsSample->point.latitude = ((float)latitude_raw) * 0.0000001f;
-		gpsSample->point.longitude = ((float)longitude_raw) * 0.0000001f;
-//		gpsSample->altitude =((float)gpsMsg.navigationDataMessage.ellipsoid_altitidue) * 0.01;
+   gpsSample->quality = gpsMsg.navigationDataMessage.fixMode;
+   gpsSample->satellites = gpsMsg.navigationDataMessage.satellitesInFix;
 
-		float ecef_x_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vx)) * 0.01;
-		float ecef_y_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vy)) * 0.01;
-		float velocity = sqrt((ecef_x_velocity * ecef_x_velocity) + (ecef_y_velocity * ecef_y_velocity));
-		gpsSample->speed = velocity / 1000.0f;
+   int32_t latitude_raw = swap_int32(gpsMsg.navigationDataMessage.latitude);
+   int32_t longitude_raw = swap_int32(gpsMsg.navigationDataMessage.longitude);
+   gpsSample->point.latitude = ((float)latitude_raw) * 0.0000001f;
+   gpsSample->point.longitude = ((float)longitude_raw) * 0.0000001f;
+   //gpsSample->altitude =((float)gpsMsg.navigationDataMessage.ellipsoid_altitidue) * 0.01;
 
-		//convert GNSS_week to milliseconds and add time of week converted to milliseconds
-		uint16_t GNSS_week = swap_uint16(gpsMsg.navigationDataMessage.GNSS_week);
-		uint32_t timeOfWeekMillis = swap_uint32(gpsMsg.navigationDataMessage.GNSS_timeOfWeek) * 10;
-		millis_t time = (((uint64_t)GNSS_week * 60 * 60 * 24 * 7) * 1000) + timeOfWeekMillis;
-		//adjust for Jan 6 1980 GNSS epoch
-		time += (uint64_t)GNSS_EPOCH_IN_UNIX_EPOCH * 1000;
+   float ecef_x_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vx)) * 0.01;
+   float ecef_y_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vy)) * 0.01;
+   float velocity = sqrt((ecef_x_velocity * ecef_x_velocity)
+                         + (ecef_y_velocity * ecef_y_velocity));
+   gpsSample->speed = velocity / 1000.0f;
 
-		gpsSample->time = time;
-	}
-	return result;
+   //convert GNSS_week to milliseconds and add time of week converted to milliseconds
+   uint16_t GNSS_week = swap_uint16(gpsMsg.navigationDataMessage.GNSS_week);
+   uint32_t timeOfWeekMillis = swap_uint32(gpsMsg.navigationDataMessage.GNSS_timeOfWeek) * 10;
+   millis_t time = (((uint64_t)GNSS_week * 60 * 60 * 24 * 7) * 1000) + timeOfWeekMillis;
+   //adjust for Jan 6 1980 GNSS epoch
+   time += (uint64_t)GNSS_EPOCH_IN_UNIX_EPOCH * 1000;
+   gpsSample->time = time;
+
+   return GPS_MSG_SUCCESS;
 }

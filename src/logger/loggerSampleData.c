@@ -1,5 +1,6 @@
 #include "dateTime.h"
 #include "GPIO.h"
+#include "lap_stats.h"
 #include "loggerSampleData.h"
 #include "loggerHardware.h"
 #include "loggerConfig.h"
@@ -274,7 +275,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
    chanCfg = &(gpsConfig->speed);
    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getGpsSpeedInMph);
    chanCfg = &(gpsConfig->distance);
-   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getGpsDistanceMiles);
+   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getLapDistanceInMiles);
    chanCfg = &(gpsConfig->satellites);
    sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getSatellitesUsedForPosition);
 

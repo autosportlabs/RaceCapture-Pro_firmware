@@ -17,6 +17,8 @@
 #include "auto_track.h"
 #include "launch_control.h"
 
+#define KMS_TO_MILES_CONSTANT (.621371)
+
 // In Millis now.
 #define START_FINISH_TIME_THRESHOLD 10000
 
@@ -41,11 +43,35 @@ static tiny_millis_t g_lastLapTime;
 static tiny_millis_t g_lastSectorTime;
 
 static int g_lapCount;
+static float g_distance;
 
+static float calcDistancesSinceLastSample(const GpsSample *gpsSample) {
+   const GeoPoint prev = getPreviousGeoPoint();
+   const GeoPoint curr = gpsSample->point;
+
+   if (!isValidPoint(&prev) || !isValidPoint(&curr)) {
+      return 0.0;
+   }
+
+   // Return distance in KM
+   return distPythag(&prev, &curr) / 1000;
+}
 
 static float degreesToMeters(float degrees) {
    // There are 110574.27 meters per degree of latitude at the equator.
    return degrees * 110574.27;
+}
+
+void resetLapDistance() {
+   g_distance = 0.0;
+}
+
+float getLapDistance() {
+   return g_distance;
+}
+
+float getLapDistanceInMiles() {
+   return KMS_TO_MILES_CONSTANT * g_distance;
 }
 
 void resetLapCount() {
@@ -95,7 +121,8 @@ static bool isStartCrossedYet() {
    return g_lastStartFinishTimestamp != 0;
 }
 
-static int processStartFinish(const GpsSamp *gpsSample, const Track *track, const float targetRadius) {
+static int processStartFinish(const GpsSample *gpsSample, const Track *track,
+                              const float targetRadius) {
 
    // First time crossing start finish.  Handle this in a special way.
    if (!isStartCrossedYet()) {
@@ -112,7 +139,7 @@ static int processStartFinish(const GpsSamp *gpsSample, const Track *track, cons
       return false;
    }
 
-   const tiny_millis_t timestamp = gpsSample->firstFixMillis;
+   const tiny_millis_t timestamp = getMillisSinceFirstFix();
    const tiny_millis_t elapsed = timestamp - g_lastStartFinishTimestamp;
    const struct GeoCircle sfCircle = gc_createGeoCircle(getFinishPoint(track),
                                                         targetRadius);
@@ -144,15 +171,16 @@ static int processStartFinish(const GpsSamp *gpsSample, const Track *track, cons
    return true;
 }
 
-static void processSector(GpsSamp * gpsSample, const Track *track, float targetRadius) {
+static void processSector(const GpsSample *gpsSample, const Track *track, float targetRadius) {
    // We don't process sectors until we cross Start
    if (!isStartCrossedYet())
       return;
 
    const GeoPoint point = getSectorGeoPointAtIndex(track, g_sector);
    const struct GeoCircle sbCircle = gc_createGeoCircle(point, targetRadius);
+   const GeoPoint curr = getGeoPoint();
 
-   g_atTarget = gc_isPointInGeoCircle(getGeoPoint(), sbCircle);
+   g_atTarget = gc_isPointInGeoCircle(&curr, sbCircle);
    if (!g_atTarget) {
       g_prevAtTarget = 0;
       return;
@@ -161,7 +189,7 @@ static void processSector(GpsSamp * gpsSample, const Track *track, float targetR
    /*
     * Past here we are sure we are at a sector boundary.
     */
-   const tiny_millis_t millis = gpsSample->firstFixMillis;
+   const tiny_millis_t millis = getMillisSinceFirstFix();
    pr_debug_int(g_sector);
    pr_debug(" Sector Boundary Detected\r\n");
 
@@ -182,6 +210,7 @@ void gpsConfigChanged(void) {
 }
 
 void lapStats_init() {
+   resetLapDistance();
    g_configured = 0;
    g_activeTrack = NULL;
    g_lastLapTime = 0;
@@ -211,14 +240,11 @@ static int isSectorTrackingEnabled(const Track *track) {
             isValidPoint(&p0) && isStartFinishEnabled(track);
 }
 
-static void onLocationUpdated(GpsSamp *gpsSample) {
+static void onLocationUpdated(const GpsSample *gpsSample) {
    static int sectorEnabled = 0;
    static int startFinishEnabled = 0;
 
-   // If no GPS lock, no point in doing any of this.
-   if (!isGpsSignalUsable(gpsSample->quality)){
-      return;
-   }
+   g_distance += calcDistancesSinceLastSample(gpsSample);
 
    LoggerConfig *config = getWorkingLoggerConfig();
    const GeoPoint *gp = &gpsSample->point;
@@ -229,7 +255,9 @@ static void onLocationUpdated(GpsSamp *gpsSample) {
    if (!g_configured) {
       TrackConfig *trackConfig = &(config->TrackConfigs);
       Track *defaultTrack = &trackConfig->track;
-      g_activeTrack = trackConfig->auto_detect ? auto_configure_track(defaultTrack, gp) : defaultTrack;
+      g_activeTrack = trackConfig->auto_detect ?
+         auto_configure_track(defaultTrack, gp) : defaultTrack;
+
       startFinishEnabled = isStartFinishEnabled(g_activeTrack);
       sectorEnabled = isSectorTrackingEnabled(g_activeTrack);
       lc_setup(g_activeTrack, targetRadius);
@@ -238,11 +266,11 @@ static void onLocationUpdated(GpsSamp *gpsSample) {
 
    if (startFinishEnabled) {
       // Seconds since first fix is good until we alter the code to use millis directly
-      const tiny_millis_t millisSinceFirstFix = gpsSample->firstFixMillis;
       const int lapDetected = processStartFinish(gpsSample, g_activeTrack, targetRadius);
+      const tiny_millis_t millisSinceFirstFix = getMillisSinceFirstFix();
 
       if (lapDetected) {
-         resetGpsDistance();
+         resetLapDistance();
 
          /*
           * FIXME: Special handling of first start/finish crossing.  Needed
@@ -251,7 +279,7 @@ static void onLocationUpdated(GpsSamp *gpsSample) {
          if (getLapCount() == 0) {
             const GeoPoint sp = getStartPoint(g_activeTrack);
             // Distance is in KM
-            setGpsDistanceKms(distPythag(&sp, gp) / 1000);
+            g_distance = distPythag(&sp, gp) / 1000;
 
             startFinishCrossed(&sp, g_lastStartFinishTimestamp);
             addGpsSample(gp, millisSinceFirstFix);
@@ -267,9 +295,8 @@ static void onLocationUpdated(GpsSamp *gpsSample) {
    }
 }
 
-void lapStats_processUpdate(GpsSamp *gpsSample){
+void lapStats_processUpdate(const GpsSample *gpsSample){
 	if (!isGpsDataCold()){
-		  onLocationUpdated(gpsSample);
+           onLocationUpdated(gpsSample);
 	}
 }
-

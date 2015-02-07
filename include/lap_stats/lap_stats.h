@@ -18,7 +18,7 @@ void gpsConfigChanged(void);
 
 void lapStats_init();
 
-void lapStats_processUpdate(GpsSamp *gpsSample);
+void lapStats_processUpdate(const GpsSample *gpsSample);
 
 void resetLapCount();
 
@@ -39,5 +39,11 @@ int getLastSector();
 int getAtStartFinish();
 
 int getAtSector();
+
+void resetLapDistance();
+
+float getLapDistance();
+
+float getLapDistanceInMiles();
 
 #endif /* LAP_STATS_H_ */

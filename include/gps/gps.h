@@ -34,22 +34,12 @@ enum GpsSignalQuality {
 };
 
 typedef struct _GpsSample {
-   GeoPoint point;
-   float speed;
-   float distance;
-   float satellites;
    enum GpsSignalQuality quality;
+   GeoPoint point;
    millis_t time;
-   tiny_millis_t firstFixMillis;
-} GpsSamp;
-
-void resetGpsDistance();
-
-void setGpsDistanceKms(float dist);
-
-float getGpsDistanceKms();
-
-float getGpsDistanceMiles();
+   float speed;
+   uint8_t satellites;
+} GpsSample;
 
 float getSecondsSinceMidnight();
 
@@ -97,14 +87,19 @@ long long getMillisSinceEpochAsLongLong();
 float getSecondsSinceFirstFix();
 
 /**
- * @return The last current known location.
+ * @return The current known location.
  */
-GeoPoint * getGeoPoint();
+GeoPoint getGeoPoint();
+
+/**
+ * @return The previous known location.
+ */
+GeoPoint getPreviousGeoPoint();
 
 /**
  * @return the current GPS Sample
  */
-GpsSamp * getGpsSample();
+GpsSample getGpsSample();
 
 /**
  * @return Milliseconds since our first fix.

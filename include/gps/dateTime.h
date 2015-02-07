@@ -15,10 +15,10 @@
 #define SECONDS_PER_DAY (86400)
 
 // Time type used for expressing time in millis since epoch
-typedef int64_t millis_t;
+typedef uint64_t millis_t;
 
 // Time type used to save space on chip.
-typedef int32_t tiny_millis_t;
+typedef uint32_t tiny_millis_t;
 
 typedef struct _DateTime {
    int16_t millisecond;
@@ -80,5 +80,11 @@ float tinyMillisToSeconds(const tiny_millis_t millis);
 tiny_millis_t getUptime();
 
 int getUptimeAsInt();
+
+/**
+ * @param The milliseconds since unix epoch value that you want converted to a DateTime.
+ * @return A DateTime representation based on the utcMillis value provided.
+ */
+DateTime getDateTimeFromEpochMillis(millis_t millis);
 
 #endif //__DATE_TIME_H__
