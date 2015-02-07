@@ -71,18 +71,17 @@ void lc_setup(const Track *track, const float targetRadius) {
    g_geoCircle = gc_createGeoCircle(getStartPoint(track), targetRadius);
 }
 
-void lc_supplyGpsSample(const GpsSample *sample) {
+void lc_supplyGpsSnapshot(const GpsSnapshot *snap) {
    if (!isConfigured() || lc_hasLaunched())
       return;
 
-   if (isGeoPointInStartArea(sample->point)) {
-      if (!isValidStartTime() || isSpeedBelowThreshold(sample->speed)) {
-         /*
-          * Use getMillisSinceFirstFix since this method accounts for
-          * time drift between when the sample was taken and what the
-          * actual time is when we get to this point.
-          */
-         g_startTime = getMillisSinceFirstFix();
+   const GeoPoint point = snap->sample.point;
+   const float speed = snap->sample.speed;
+   const tiny_millis_t startTime = snap->deltaFirstFix;
+
+   if (isGeoPointInStartArea(point)) {
+      if (!isValidStartTime() || isSpeedBelowThreshold(speed)) {
+         g_startTime = startTime;
       }
    } else {
       g_hasLaunched = isValidStartTime();

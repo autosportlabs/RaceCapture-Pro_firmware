@@ -42,8 +42,8 @@ void GPSTask(void *pvParameters) {
 	for (;;) {
 		gps_msg_result_t result = GPS_processUpdate(serial);
 		if (result == GPS_MSG_SUCCESS){
-                   const GpsSample sample = getGpsSample();
-			lapStats_processUpdate(&sample);
+                   const GpsSnapshot snap = getGpsSnapshot();
+			lapStats_processUpdate(&snap);
 		}
 		else{
 			pr_warning("timeout processing GPS update\r\n");

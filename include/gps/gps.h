@@ -41,6 +41,12 @@ typedef struct _GpsSample {
    uint8_t satellites;
 } GpsSample;
 
+typedef struct _GpsSnapshot {
+   GpsSample sample;
+   tiny_millis_t deltaFirstFix;
+   GeoPoint previousPoint;
+} GpsSnapshot;
+
 float getSecondsSinceMidnight();
 
 void updateSecondsSinceMidnight(float secondsSinceMidnight);
@@ -59,13 +65,13 @@ bool isGpsSignalUsable(enum GpsSignalQuality q);
 
 enum GpsSignalQuality getGPSQuality();
 
-void setGPSQuality(enum GpsSignalQuality quality);
+//void setGPSQuality(enum GpsSignalQuality quality);
 
 int getSatellitesUsedForPosition();
 
 float getGPSSpeed();
 
-void setGPSSpeed(float speed);
+//void setGPSSpeed(float speed);
 
 /**
  * Returns Date time information as provided by the GPS system.
@@ -100,6 +106,11 @@ GeoPoint getPreviousGeoPoint();
  * @return the current GPS Sample
  */
 GpsSample getGpsSample();
+
+/**
+ * @return the current GPS Snapshot
+ */
+GpsSnapshot getGpsSnapshot();
 
 /**
  * @return Milliseconds since our first fix.

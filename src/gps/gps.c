@@ -5,15 +5,13 @@
 #define GPS_LOCK_FLASH_COUNT 5
 #define GPS_NOFIX_FLASH_COUNT 50
 
-static GpsSample g_gpsSample;
+static GpsSnapshot g_gpsSnapshot;
 
 static int g_flashCount;
 
 static millis_t g_timeFirstFix;
 static tiny_millis_t g_uptimeAtSample;
 
-static float g_prevLatitude;
-static float g_prevLongitude;
 
 bool isGpsSignalUsable(enum GpsSignalQuality q) {
    return q != GPS_QUALITY_NO_FIX;
@@ -38,21 +36,27 @@ static void flashGpsStatusLed(enum GpsSignalQuality gpsQuality) {
  * @return true if we haven't parsed any data yet, false otherwise.
  */
 bool isGpsDataCold() {
-   return g_gpsSample.time == 0;
+   return g_timeFirstFix == 0;
 }
 
 static tiny_millis_t getDeltaSinceSample() {
    return getUptime() - g_uptimeAtSample;
 }
 
+/**
+ * Use this method add hoc when you don't have access to GpsSnapshot
+ */
 millis_t getMillisSinceEpoch() {
    // If we have no GPS data, return 0 to indicate that.
    if (isGpsDataCold()) return 0;
 
    //interpolate milliseconds from system clock
-   return g_gpsSample.time + getDeltaSinceSample();
+   return g_gpsSnapshot.sample.time + getDeltaSinceSample();
 }
 
+/**
+ * Use this method add hoc when you don't have access to GpsSnapshot
+ */
 tiny_millis_t getMillisSinceFirstFix() {
    // If we have no GPS data, return 0 to indicate that.
    if (isGpsDataCold()) return 0;
@@ -69,51 +73,47 @@ tiny_millis_t getUptimeAtSample() {
 }
 
 float getLatitude() {
-   return g_gpsSample.point.latitude;
+   return g_gpsSnapshot.sample.point.latitude;
 }
 
 float getLongitude() {
-   return g_gpsSample.point.longitude;
+   return g_gpsSnapshot.sample.point.longitude;
 }
 
 enum GpsSignalQuality getGPSQuality() {
-   return g_gpsSample.quality;
-}
-
-void setGPSQuality(enum GpsSignalQuality quality) {
-   g_gpsSample.quality = quality;
+   return g_gpsSnapshot.sample.quality;
 }
 
 int getSatellitesUsedForPosition() {
-   return g_gpsSample.satellites;
+   return g_gpsSnapshot.sample.satellites;
 }
 
 float getGPSSpeed() {
-   return g_gpsSample.speed;
+   return g_gpsSnapshot.sample.speed;
 }
 
 float getGpsSpeedInMph() {
    return getGPSSpeed() * 0.621371192; //convert to MPH
 }
 
-void setGPSSpeed(float speed) {
-   g_gpsSample.speed = speed;
-}
-
 millis_t getLastFix() {
-   return g_gpsSample.time;
+   return g_gpsSnapshot.sample.time;
 }
 
 GeoPoint getGeoPoint() {
-   return g_gpsSample.point;
+   return g_gpsSnapshot.sample.point;
 }
 
 GeoPoint getPreviousGeoPoint() {
-   return (GeoPoint) {g_prevLatitude, g_prevLongitude};
+   return g_gpsSnapshot.previousPoint;
 }
 
 GpsSample getGpsSample() {
-   return g_gpsSample;
+   return g_gpsSnapshot.sample;
+}
+
+GpsSnapshot getGpsSnapshot() {
+   return g_gpsSnapshot;
 }
 
 static void updateFullDateTime(GpsSample *gpsSample) {
@@ -122,34 +122,31 @@ static void updateFullDateTime(GpsSample *gpsSample) {
 	if (g_timeFirstFix == 0) g_timeFirstFix = gpsSample->time;
 }
 
-static void GPS_sample_update(GpsSample *gpsSample){
-   if (!isGpsSignalUsable(gpsSample->quality)) return;
+static void GPS_sample_update(GpsSample *newSample){
+   if (!isGpsSignalUsable(newSample->quality)) return;
 
-   // Deep copy intentional
-   g_gpsSample = *gpsSample;
-   updateFullDateTime(gpsSample);
+   const GeoPoint prevPoint = g_gpsSnapshot.sample.point;
 
-   g_prevLatitude = gpsSample->point.latitude;
-   g_prevLongitude = gpsSample->point.longitude;
+   // Deep copy stuff.
+   g_gpsSnapshot.sample = *newSample;
+   updateFullDateTime(newSample);
+   g_gpsSnapshot.deltaFirstFix = newSample->time - g_timeFirstFix;
+   g_gpsSnapshot.previousPoint = prevPoint;
 }
 
 
-void GPS_init(){
-   g_gpsSample = (GpsSample) { 0 };
+void GPS_init() {
+	memset(&g_gpsSnapshot, 0, sizeof(GpsSnapshot));
 	g_timeFirstFix = 0;
 	g_flashCount = 0;
 	g_uptimeAtSample = 0;
-	g_gpsSample.speed = 0;
-	g_prevLatitude = 0.0;
-	g_prevLongitude = 0.0;
-
 }
 
 int GPS_processUpdate(Serial *serial){
-   GpsSample s = { 0 };
+	GpsSample s = { 0 };
 	const gps_msg_result_t result = GPS_device_get_update(&s, serial);
 
-	flashGpsStatusLed(g_gpsSample.quality);
+	flashGpsStatusLed(s.quality);
 
 	if (result == GPS_MSG_SUCCESS){
 		GPS_sample_update(&s);

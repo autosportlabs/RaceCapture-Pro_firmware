@@ -45,9 +45,9 @@ static tiny_millis_t g_lastSectorTime;
 static int g_lapCount;
 static float g_distance;
 
-static float calcDistancesSinceLastSample(const GpsSample *gpsSample) {
-   const GeoPoint prev = getPreviousGeoPoint();
-   const GeoPoint curr = gpsSample->point;
+static float calcDistancesSinceLastSample(const GpsSnapshot *gpsSnapshot) {
+   const GeoPoint prev = gpsSnapshot->previousPoint;
+   const GeoPoint curr = gpsSnapshot->sample.point;
 
    if (!isValidPoint(&prev) || !isValidPoint(&curr)) {
       return 0.0;
@@ -121,12 +121,12 @@ static bool isStartCrossedYet() {
    return g_lastStartFinishTimestamp != 0;
 }
 
-static int processStartFinish(const GpsSample *gpsSample, const Track *track,
+static int processStartFinish(const GpsSnapshot *gpsSnapshot, const Track *track,
                               const float targetRadius) {
 
    // First time crossing start finish.  Handle this in a special way.
    if (!isStartCrossedYet()) {
-      lc_supplyGpsSample(gpsSample);
+      lc_supplyGpsSnapshot(gpsSnapshot);
 
       if (lc_hasLaunched()) {
          g_lastStartFinishTimestamp = lc_getLaunchTime();
@@ -139,7 +139,7 @@ static int processStartFinish(const GpsSample *gpsSample, const Track *track,
       return false;
    }
 
-   const tiny_millis_t timestamp = getMillisSinceFirstFix();
+   const tiny_millis_t timestamp = gpsSnapshot->deltaFirstFix;
    const tiny_millis_t elapsed = timestamp - g_lastStartFinishTimestamp;
    const struct GeoCircle sfCircle = gc_createGeoCircle(getFinishPoint(track),
                                                         targetRadius);
@@ -152,7 +152,8 @@ static int processStartFinish(const GpsSample *gpsSample, const Track *track,
     * FIXME: Should have logic that checks that we left the start/finish circle
     * for some time.
     */
-   g_atStartFinish = gc_isPointInGeoCircle(&(gpsSample->point), sfCircle);
+   const GeoPoint point = gpsSnapshot->sample.point;
+   g_atStartFinish = gc_isPointInGeoCircle(&point, sfCircle);
 
    if (!g_atStartFinish || g_prevAtStartFinish != 0 ||
        elapsed <= START_FINISH_TIME_THRESHOLD) {
@@ -171,14 +172,15 @@ static int processStartFinish(const GpsSample *gpsSample, const Track *track,
    return true;
 }
 
-static void processSector(const GpsSample *gpsSample, const Track *track, float targetRadius) {
+static void processSector(const GpsSnapshot *gpsSnapshot, const Track *track,
+                          float targetRadius) {
    // We don't process sectors until we cross Start
    if (!isStartCrossedYet())
       return;
 
    const GeoPoint point = getSectorGeoPointAtIndex(track, g_sector);
    const struct GeoCircle sbCircle = gc_createGeoCircle(point, targetRadius);
-   const GeoPoint curr = getGeoPoint();
+   const GeoPoint curr = gpsSnapshot->sample.point;
 
    g_atTarget = gc_isPointInGeoCircle(&curr, sbCircle);
    if (!g_atTarget) {
@@ -189,7 +191,7 @@ static void processSector(const GpsSample *gpsSample, const Track *track, float 
    /*
     * Past here we are sure we are at a sector boundary.
     */
-   const tiny_millis_t millis = getMillisSinceFirstFix();
+   const tiny_millis_t millis = gpsSnapshot->deltaFirstFix;
    pr_debug_int(g_sector);
    pr_debug(" Sector Boundary Detected\r\n");
 
@@ -240,17 +242,16 @@ static int isSectorTrackingEnabled(const Track *track) {
             isValidPoint(&p0) && isStartFinishEnabled(track);
 }
 
-static void onLocationUpdated(const GpsSample *gpsSample) {
+static void onLocationUpdated(const GpsSnapshot *gpsSnapshot) {
+   // FIXME.  These suck.  Kill them somehow.
    static int sectorEnabled = 0;
    static int startFinishEnabled = 0;
+   static float targetRadius = 0.0;
 
-   g_distance += calcDistancesSinceLastSample(gpsSample);
+   g_distance += calcDistancesSinceLastSample(gpsSnapshot);
 
    LoggerConfig *config = getWorkingLoggerConfig();
-   const GeoPoint *gp = &gpsSample->point;
-
-   // FIXME: Improve on this.  Doesn't need calculation every time.
-   const float targetRadius = degreesToMeters(config->TrackConfigs.radius);
+   const GeoPoint *gp = &gpsSnapshot->sample.point;
 
    if (!g_configured) {
       TrackConfig *trackConfig = &(config->TrackConfigs);
@@ -261,13 +262,14 @@ static void onLocationUpdated(const GpsSample *gpsSample) {
       startFinishEnabled = isStartFinishEnabled(g_activeTrack);
       sectorEnabled = isSectorTrackingEnabled(g_activeTrack);
       lc_setup(g_activeTrack, targetRadius);
+      targetRadius = degreesToMeters(config->TrackConfigs.radius);
       g_configured = 1;
    }
 
    if (startFinishEnabled) {
       // Seconds since first fix is good until we alter the code to use millis directly
-      const int lapDetected = processStartFinish(gpsSample, g_activeTrack, targetRadius);
-      const tiny_millis_t millisSinceFirstFix = getMillisSinceFirstFix();
+      const int lapDetected = processStartFinish(gpsSnapshot, g_activeTrack, targetRadius);
+      const tiny_millis_t millisSinceFirstFix = gpsSnapshot->deltaFirstFix;
 
       if (lapDetected) {
          resetLapDistance();
@@ -291,12 +293,12 @@ static void onLocationUpdated(const GpsSample *gpsSample) {
       }
 
       if (sectorEnabled)
-         processSector(gpsSample, g_activeTrack, targetRadius);
+         processSector(gpsSnapshot, g_activeTrack, targetRadius);
    }
 }
 
-void lapStats_processUpdate(const GpsSample *gpsSample){
+void lapStats_processUpdate(const GpsSnapshot *gpsSnapshot) {
 	if (!isGpsDataCold()){
-           onLocationUpdated(gpsSample);
+           onLocationUpdated(gpsSnapshot);
 	}
 }

@@ -18,7 +18,7 @@ void gpsConfigChanged(void);
 
 void lapStats_init();
 
-void lapStats_processUpdate(const GpsSample *gpsSample);
+void lapStats_processUpdate(const GpsSnapshot *gpsSnapshot);
 
 void resetLapCount();
 
