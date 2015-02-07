@@ -576,16 +576,13 @@ int GPS_device_get_update(GpsSamp *gpsSample, Serial *serial){
 		float velocity = sqrt((ecef_x_velocity * ecef_x_velocity) + (ecef_y_velocity * ecef_y_velocity));
 		gpsSample->speed = velocity / 1000.0f;
 
-		uint16_t GNSS_week = swap_uint16(gpsMsg.navigationDataMessage.GNSS_week);
-		uint32_t timeOfWeek = swap_uint32(gpsMsg.navigationDataMessage.GNSS_timeOfWeek);
-
 		//convert GNSS_week to milliseconds and add time of week converted to milliseconds
-		//adjust for GNSS epoch
-		millis_t time = (GNSS_week * 60 * 60 * 24 * 7) * 1000;
-		time += timeOfWeek * 10;
-		time += GNSS_EPOCH_IN_UNIX_EPOCH * 1000;
+		uint16_t GNSS_week = swap_uint16(gpsMsg.navigationDataMessage.GNSS_week);
+		uint32_t timeOfWeekMillis = swap_uint32(gpsMsg.navigationDataMessage.GNSS_timeOfWeek) * 10;
+		millis_t time = (((uint64_t)GNSS_week * 60 * 60 * 24 * 7) * 1000) + timeOfWeekMillis;
+		//adjust for Jan 6 1980 GNSS epoch
+		time += (uint64_t)GNSS_EPOCH_IN_UNIX_EPOCH * 1000;
 
-		//TODO - adjust for Jan 6 1980 GNSS epoch
 		gpsSample->time = time;
 	}
 	return result;
