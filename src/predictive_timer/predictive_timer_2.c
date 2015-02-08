@@ -235,25 +235,13 @@ bool addGpsSample(const GeoPoint * point, tiny_millis_t time) {
 	return true;
 }
 
-/**
- * Finds the percentage that currPt is between startPt and endPt.as a projection of point c onto the
- * vector formed between points s and e.  This method requires that point m be between the points s
- * and e on the earth's surface.  If that requirement is met this method should return a value
- * between 0 and 1.  Otherwise the value will be undefined.
- * those bounds then
- * @param s The start point.
- * @param e The end point.
- * @param m The middle point.
- * @return The percentage that projected point m lies between startPt and endPt if the method
- * requirements were met. < 0 or > 1 otherwise.
- */
-static float distPctBtwnTwoPoints(const GeoPoint *s, const GeoPoint *e, const GeoPoint *m) {
-	float distSM = distPythag(s, m); // A
-	float distME = distPythag(m, e); // B
-	float distSE = distPythag(s, e); // C
+float distPctBtwnTwoPoints(const GeoPoint *s, const GeoPoint *e, const GeoPoint *m) {
+	const float distSM = distPythag(s, m); // A
+	const float distME = distPythag(m, e); // B
+	const float distSE = distPythag(s, e); // C
 
 	// projDist = (A^2 + C^2 - B^2) / 2 * C
-	float projDistFromS = ((distSM * distSM) + (distSE * distSE)
+	const float projDistFromS = ((distSM * distSM) + (distSE * distSE)
 			- (distME * distME)) / (2 * distSE);
 
 	DEVEL("distSE = %f, distSM = %f, distME = %f, projDist = %f\n", distSE,

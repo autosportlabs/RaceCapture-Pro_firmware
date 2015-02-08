@@ -1,6 +1,7 @@
 #include "gps.h"
 #include "gps_device.h"
 #include "mod_string.h"
+#include "modp_atonum.h"
 
 #define GPS_LOCK_FLASH_COUNT 5
 #define GPS_NOFIX_FLASH_COUNT 50
@@ -122,7 +123,7 @@ static void updateFullDateTime(GpsSample *gpsSample) {
 	if (g_timeFirstFix == 0) g_timeFirstFix = gpsSample->time;
 }
 
-static void GPS_sample_update(GpsSample *newSample){
+void GPS_sample_update(GpsSample *newSample){
    if (!isGpsSignalUsable(newSample->quality)) return;
 
    const GeoPoint prevPoint = g_gpsSnapshot.sample.point;
@@ -143,7 +144,7 @@ void GPS_init() {
 }
 
 int GPS_processUpdate(Serial *serial){
-	GpsSample s = { 0 };
+   GpsSample s;
 	const gps_msg_result_t result = GPS_device_get_update(&s, serial);
 
 	flashGpsStatusLed(s.quality);
@@ -153,4 +154,25 @@ int GPS_processUpdate(Serial *serial){
 	}
 
 	return result;
+}
+
+int checksumValid(const char *gpsData, size_t len) {
+   int valid = 0;
+   unsigned char checksum = 0;
+   size_t i = 0;
+   for (; i < len - 1; i++) {
+      char c = *(gpsData + i);
+      if (c == '*' || c == '\0')
+         break;
+      else if (c == '$')
+         continue;
+      else
+         checksum ^= c;
+   }
+   if (len > i + 2) {
+      unsigned char dataChecksum = modp_xtoc(gpsData + i + 1);
+      if (checksum == dataChecksum)
+         valid = 1;
+   }
+   return valid;
 }

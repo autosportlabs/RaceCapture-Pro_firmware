@@ -15,10 +15,10 @@
 #define SECONDS_PER_DAY (86400)
 
 // Time type used for expressing time in millis since epoch
-typedef uint64_t millis_t;
+typedef int64_t millis_t;
 
 // Time type used to save space on chip.
-typedef uint32_t tiny_millis_t;
+typedef int32_t tiny_millis_t;
 
 typedef struct _DateTime {
    int16_t millisecond;

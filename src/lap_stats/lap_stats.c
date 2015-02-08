@@ -246,12 +246,12 @@ static void onLocationUpdated(const GpsSnapshot *gpsSnapshot) {
    // FIXME.  These suck.  Kill them somehow.
    static int sectorEnabled = 0;
    static int startFinishEnabled = 0;
-   static float targetRadius = 0.0;
 
    g_distance += calcDistancesSinceLastSample(gpsSnapshot);
 
    LoggerConfig *config = getWorkingLoggerConfig();
    const GeoPoint *gp = &gpsSnapshot->sample.point;
+   const float targetRadius = degreesToMeters(config->TrackConfigs.radius);
 
    if (!g_configured) {
       TrackConfig *trackConfig = &(config->TrackConfigs);
@@ -262,7 +262,7 @@ static void onLocationUpdated(const GpsSnapshot *gpsSnapshot) {
       startFinishEnabled = isStartFinishEnabled(g_activeTrack);
       sectorEnabled = isSectorTrackingEnabled(g_activeTrack);
       lc_setup(g_activeTrack, targetRadius);
-      targetRadius = degreesToMeters(config->TrackConfigs.radius);
+
       g_configured = 1;
    }
 

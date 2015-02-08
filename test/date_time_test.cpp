@@ -228,7 +228,11 @@ void DateTimeTest::testMillisSinceEpoch() {
 
   incrementTick();
   const DateTime d448366080000 = {0, 0, 8, 10, 17, 3, 1984};
-  updateFullDateTime(d448366080000);
+
+  GpsSample sample;
+  sample.quality = GPS_QUALITY_FIX;
+  sample.time = getMillisecondsSinceUnixEpoch(d448366080000);
+  GPS_sample_update(&sample);
 
   CPPUNIT_ASSERT_EQUAL(2, (int) xTaskGetTickCount());
   CPPUNIT_ASSERT_EQUAL(448366080000ll + 0 * MS_PER_TICK, (long long) getMillisSinceEpoch());

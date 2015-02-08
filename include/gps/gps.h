@@ -127,4 +127,7 @@ float getGpsSpeedInMph();
 void GPS_init();
 
 int GPS_processUpdate(Serial *serial);
+
+int checksumValid(const char *gpsData, size_t len);
+
 #endif /*GPS_H_*/

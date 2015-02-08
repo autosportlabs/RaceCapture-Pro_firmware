@@ -14,27 +14,6 @@
 #define GPS_DATA_LINE_BUFFER_LEN 	200
 static char g_GPSdataLine[GPS_DATA_LINE_BUFFER_LEN];
 
-int checksumValid(const char *gpsData, size_t len) {
-   int valid = 0;
-   unsigned char checksum = 0;
-   size_t i = 0;
-   for (; i < len - 1; i++) {
-      char c = *(gpsData + i);
-      if (c == '*' || c == '\0')
-         break;
-      else if (c == '$')
-         continue;
-      else
-         checksum ^= c;
-   }
-   if (len > i + 2) {
-      unsigned char dataChecksum = modp_xtoc(gpsData + i + 1);
-      if (checksum == dataChecksum)
-         valid = 1;
-   }
-   return valid;
-}
-
 /**
  * Like atoi, but is non-destructive to the string passed in and provides an offset and length
  * functionality.  Max Len is 3.

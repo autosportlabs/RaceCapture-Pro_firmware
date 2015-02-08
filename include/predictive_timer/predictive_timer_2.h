@@ -8,6 +8,10 @@
 #ifndef PREDICTIVE_TIMER_2_H_
 #define PREDICTIVE_TIMER_2_H_
 
+/* #ifdef __cplusplus */
+/* extern "C" { */
+/* #endif */
+
 #include "dateTime.h"
 #include "geopoint.h"
 
@@ -63,5 +67,26 @@ bool isPredictiveTimeAvailable();
  * Resets the predictive timer logic to the initial state.
  */
 void resetPredictiveTimer();
+
+/**
+ * Finds the percentage that currPt is between startPt and endPt.as a
+ * projection of point c onto the vector formed between points s and e.
+ * This method requires that point m be between the points s and e on
+ * the earth's surface.  If that requirement is met this method should
+ * return a value between 0 and 1.  Otherwise the value will be undefined.
+ * those bounds then
+ * @param s The start point.
+ * @param e The end point.
+ * @param m The middle point.
+ * @return The percentage that projected point m lies between startPt
+ * and endPt if the method
+ * requirements were met. < 0 or > 1 otherwise.
+ */
+float distPctBtwnTwoPoints(const GeoPoint *s, const GeoPoint *e, const GeoPoint *m);
+
+
+/* #ifdef __cplusplus */
+/* } */
+/* #endif */
 
 #endif /* PREDICTIVE_TIMER_2_H_ */
