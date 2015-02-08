@@ -574,8 +574,11 @@ gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, Serial *serial){
 
    float ecef_x_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vx)) * 0.01;
    float ecef_y_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vy)) * 0.01;
+   float ecef_z_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vz)) * 0.01;
+
    float velocity = sqrt((ecef_x_velocity * ecef_x_velocity)
-                         + (ecef_y_velocity * ecef_y_velocity));
+                         + (ecef_y_velocity * ecef_y_velocity)
+                         + (ecef_z_velocity * ecef_z_velocity));
    //convert m/sec to km/hour
    gpsSample->speed = velocity * 3.6;
 
