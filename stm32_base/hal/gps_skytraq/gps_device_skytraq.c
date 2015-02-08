@@ -576,7 +576,8 @@ gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, Serial *serial){
    float ecef_y_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vy)) * 0.01;
    float velocity = sqrt((ecef_x_velocity * ecef_x_velocity)
                          + (ecef_y_velocity * ecef_y_velocity));
-   gpsSample->speed = velocity / 1000.0f;
+   //convert m/sec to km/hour
+   gpsSample->speed = velocity * 3.6;
 
    //convert GNSS_week to milliseconds and add time of week converted to milliseconds
    uint16_t GNSS_week = swap_uint16(gpsMsg.navigationDataMessage.GNSS_week);
