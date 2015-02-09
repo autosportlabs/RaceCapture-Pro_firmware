@@ -23,6 +23,7 @@
 #define TARGET_BAUD_RATE 			921600
 #define MESSAGE_TYPE_NMEA			1
 #define MESSAGE_TYPE_BINARY			2
+#define GNSS_NAVIGATION_MODE        2
 
 #define BAUD_RATE_COUNT 			2
 #define BAUD_RATES 					{ \
@@ -47,6 +48,8 @@ typedef struct _BaudRateCodes{
 #define MSG_ID_CONFIGURE_POSITION_UPDATE_RATE				0x0E
 #define MSG_ID_POSITION_UPDATE_RATE 						0x86
 #define MSG_ID_CONFIGURE_SERIAL_PORT						0x05
+#define MSG_ID_CONFIGURE_GNSS_NAVIGATION_MODE               0x64
+#define MSG_SUBID_CONFIGURE_GNSS_NAVIGATION_MODE            0x17
 #define MSG_ID_CONFIGURE_NMEA_MESSAGE						0x08
 #define MSG_ID_CONFIGURE_MESSAGE_TYPE						0x09
 #define MSG_ID_CONFIGURE_NAVIGATION_DATA_MESSAGE_INTERVAL	0x11
@@ -122,6 +125,13 @@ typedef struct _ConfigureNmeaMessage{
 	uint8_t attributes;
 } ConfigureNmeaMessage;
 
+typedef struct _ConfigureGNSSNavigationMode{
+    uint8_t messageId;
+    uint8_t messageSubId;
+    uint8_t navigationMode;
+    uint8_t attributes;
+} ConfigureGNSSNavigationMode;
+
 typedef struct _ConfigureMessageType{
 	uint8_t messageId;
 	uint8_t type;
@@ -171,6 +181,7 @@ typedef struct _GpsMessage{
 		ConfigureSerialPort configureSerialPort;
 		PositionUpdateRate positionUpdateRate;
 		ConfigureNmeaMessage configureNmeaMessage;
+		ConfigureGNSSNavigationMode configureGnssNavigationMode;
 		ConfigureMessageType configureMessageType;
 		ConfigureNavigationDataMessageInterval configureNavigationDataMessageInterval;
 		NavigationDataMessage navigationDataMessage;
@@ -338,6 +349,16 @@ static void sendConfigureNmea(GpsMessage *gpsMsg, Serial *serial){
 	txGpsMessage(gpsMsg, serial);
 }
 
+static void sendConfigureGnssNavigationMode(GpsMessage *gpsMsg, Serial *serial, uint8_t navigationMode){
+    gpsMsg->messageId = MSG_ID_CONFIGURE_GNSS_NAVIGATION_MODE;
+    gpsMsg->configureGnssNavigationMode.messageSubId = MSG_SUBID_CONFIGURE_GNSS_NAVIGATION_MODE;
+    gpsMsg->configureGnssNavigationMode.navigationMode = navigationMode;
+    gpsMsg->configureGnssNavigationMode.attributes = ATTRIBUTE_UPDATE_TO_SRAM;
+    gpsMsg->payloadLength = sizeof(ConfigureGNSSNavigationMode);
+    gpsMsg->checksum = calculateChecksum(gpsMsg);
+    txGpsMessage(gpsMsg, serial);
+}
+
 static void sendConfigureMessageType(GpsMessage *gpsMsg, Serial *serial, uint8_t messageType){
 	gpsMsg->messageId = MSG_ID_CONFIGURE_MESSAGE_TYPE;
 	gpsMsg->configureMessageType.type = messageType;
@@ -433,6 +454,18 @@ static gps_cmd_result_t configureNmeaMessages(GpsMessage *gpsMsg, Serial *serial
 	}
 	pr_info(result == GPS_COMMAND_SUCCESS ? "win\r\n" : "fail\r\n");
 	return result;
+}
+
+static gps_cmd_result_t configureGnssNavigationMode(GpsMessage *gpsMsg, Serial *serial){
+    pr_info("GPS: Configuring Gnss Navigation Mode: ");
+
+    gps_cmd_result_t result = GPS_COMMAND_FAIL;
+    sendConfigureGnssNavigationMode(gpsMsg, serial, GNSS_NAVIGATION_MODE);
+    if (rxGpsMessage(gpsMsg, serial, MSG_ID_ACK) == GPS_MSG_SUCCESS){
+        result = (gpsMsg->ackMsg.ackId == MSG_ID_CONFIGURE_GNSS_NAVIGATION_MODE) ? GPS_COMMAND_SUCCESS : GPS_COMMAND_FAIL;
+    }
+    pr_info(result == GPS_COMMAND_SUCCESS ? "win\r\n" : "fail\r\n");
+    return result;
 }
 
 static gps_cmd_result_t disableNmeaMessages(GpsMessage *gpsMsg, Serial *serial){
@@ -536,6 +569,11 @@ int GPS_device_provision(Serial *serial){
 					pr_error("GPS: Error provisioning - could not set navigation data message interval\r\n");
 					break;
 				}
+
+                if (configureGnssNavigationMode(&gpsMsg, serial) == GPS_COMMAND_FAIL){
+                    pr_error("GPS: Error provisioning - could not set navigation mode\r\n");
+                    break;
+                }
 
 				if (disableNmeaMessages(&gpsMsg, serial) == GPS_COMMAND_FAIL){
 					pr_error("GPS: Error provisioning - could not disable NMEA messages\r\n");
