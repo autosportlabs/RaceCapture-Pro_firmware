@@ -15,22 +15,22 @@ static tiny_millis_t g_uptimeAtSample;
 
 
 bool isGpsSignalUsable(enum GpsSignalQuality q) {
-   return q != GPS_QUALITY_NO_FIX;
+        return q != GPS_QUALITY_NO_FIX;
 }
 
 static void flashGpsStatusLed(enum GpsSignalQuality gpsQuality) {
-   if (g_flashCount == 0){
-      LED_disable(1);
-   }
-   g_flashCount++;
+        if (g_flashCount == 0){
+                LED_disable(1);
+        }
+        g_flashCount++;
 
-   int targetFlashCount = isGpsSignalUsable(gpsQuality) ?
-      GPS_LOCK_FLASH_COUNT : GPS_NOFIX_FLASH_COUNT;
+        int targetFlashCount = isGpsSignalUsable(gpsQuality) ?
+                GPS_LOCK_FLASH_COUNT : GPS_NOFIX_FLASH_COUNT;
 
-   if (g_flashCount >= targetFlashCount) {
-      LED_enable(1);
-      g_flashCount = 0;
-   }
+        if (g_flashCount >= targetFlashCount) {
+                LED_enable(1);
+                g_flashCount = 0;
+        }
 }
 
 /**
@@ -135,7 +135,6 @@ void GPS_sample_update(GpsSample *newSample){
    g_gpsSnapshot.previousPoint = prevPoint;
 }
 
-
 void GPS_init() {
 	memset(&g_gpsSnapshot, 0, sizeof(GpsSnapshot));
 	g_timeFirstFix = 0;
@@ -143,8 +142,8 @@ void GPS_init() {
 	g_uptimeAtSample = 0;
 }
 
-int GPS_processUpdate(Serial *serial){
-   GpsSample s;
+int GPS_processUpdate(Serial *serial) {
+        GpsSample s;
 	const gps_msg_result_t result = GPS_device_get_update(&s, serial);
 
 	flashGpsStatusLed(s.quality);
@@ -157,22 +156,22 @@ int GPS_processUpdate(Serial *serial){
 }
 
 int checksumValid(const char *gpsData, size_t len) {
-   int valid = 0;
-   unsigned char checksum = 0;
-   size_t i = 0;
-   for (; i < len - 1; i++) {
-      char c = *(gpsData + i);
-      if (c == '*' || c == '\0')
-         break;
-      else if (c == '$')
-         continue;
-      else
-         checksum ^= c;
-   }
-   if (len > i + 2) {
-      unsigned char dataChecksum = modp_xtoc(gpsData + i + 1);
-      if (checksum == dataChecksum)
-         valid = 1;
-   }
-   return valid;
+        int valid = 0;
+        unsigned char checksum = 0;
+        size_t i = 0;
+
+        for (; i < len - 1; i++) {
+                char c = *(gpsData + i);
+                if (c == '*' || c == '\0') break;
+                else if (c == '$') continue;
+                else checksum ^= c;
+        }
+
+        if (len > i + 2) {
+                unsigned char dataChecksum = modp_xtoc(gpsData + i + 1);
+                if (checksum == dataChecksum)
+                        valid = 1;
+        }
+
+        return valid;
 }
