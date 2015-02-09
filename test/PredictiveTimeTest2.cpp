@@ -98,10 +98,9 @@ void PredictiveTimeTest2::testProjectedDistance() {
   GeoPoint m = { .latitude = 2.0, .longitude = 1.0 }; // middle
   GeoPoint e = { .latitude = 2.0, .longitude = 2.0 }; // end
 
-  // BRENT_LOOK  Broken for some reason?!?
-  // const float expected = 0.5;
-  // const float actual = distPctBtwnTwoPoints(&s, &e, &m);
-  // CPPUNIT_ASSERT_CLOSE_ENOUGH(expected, actual);
+  const float expected = 0.5;
+  const float actual = distPctBtwnTwoPoints(&s, &e, &m);
+  CPPUNIT_ASSERT_CLOSE_ENOUGH(expected, actual);
 }
 
 void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
