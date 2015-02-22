@@ -13,15 +13,15 @@ int timer_device_init(size_t channel, unsigned int divider, unsigned int slowCha
 	return 1;
 }
 
-unsigned int timer_device_get_period(unsigned int channel){
+unsigned int timer_device_get_period(size_t channel){
 	return g_timer[channel];
 }
 
-unsigned int timer_device_get_count(unsigned int channel){
+unsigned int timer_device_get_count(size_t channel){
 	return 0;
 }
 
-void timer_device_reset_count(unsigned int channel){}
+void timer_device_reset_count(size_t channel){}
 
 void timer_device_get_all_periods(unsigned int *t0, unsigned int *t1, unsigned int *t2){
 	*t0 = g_timer[0];
