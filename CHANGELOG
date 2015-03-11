@@ -1,4 +1,5 @@
 ==2.7.9===
+* Improved GPS processing performance, reduced chances of dropped packets from module.
 * Bumped fast-link telemetry (i.e. Bluetooth link) to 50Hz. 
 * Reduced delay between PID querying for MK2
 * Fixed OBD-II PID configuration message handling for PID counts > 8. PIDs limited to 10 until app supports sending PID configuration in batches
