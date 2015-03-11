@@ -1,6 +1,6 @@
 #include "modp_atonum.h"
 
-#define MAX_DOUBLE_DECIMAL_PLACES 20
+#define MAX_DOUBLE_DECIMAL_PLACES 10
 #define MAX_FLOAT_DECIMAL_PLACES 10
 
 unsigned int modp_atoui(const char *str){
