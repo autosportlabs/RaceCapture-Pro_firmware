@@ -1,5 +1,8 @@
 #include "modp_atonum.h"
 
+#define MAX_DOUBLE_DECIMAL_PLACES 20
+#define MAX_FLOAT_DECIMAL_PLACES 10
+
 unsigned int modp_atoui(const char *str){
 	unsigned int curval, newval;
 
@@ -64,24 +67,25 @@ int modp_atoi(const char *str){
 double modp_atod(const char *str){
 	
 	int negative = 0;
-	int fractionMode = 0;
+	int decimalPlaces = 0;
 	double doubleValue = 0.0;
 	unsigned int wholeValue = 0;
 	unsigned int fractionalValue = 0;
 	int div = 1;
-	while (*str){
+	while (*str && decimalPlaces < MAX_DOUBLE_DECIMAL_PLACES){
 		if (*str == '-'){
 			negative = 1;
 		} else if (*str == '.'){
-			fractionMode = 1;		
+			decimalPlaces = 1;
 		}else if (*str >= '0' && *str <= '9'){
-			if (! fractionMode){
+			if (decimalPlaces == 0){
 				wholeValue = wholeValue * 10;
 				wholeValue = wholeValue + (*str - '0');
 			} else{
 				fractionalValue = fractionalValue * 10;
 				fractionalValue = fractionalValue + (*str - '0');
 				div = div * 10;
+				decimalPlaces++;
 			}
 		}
 		str++;
@@ -96,24 +100,25 @@ double modp_atod(const char *str){
 float modp_atof(const char *str){
 	
 	int negative = 0;
-	int fractionMode = 0;
+	int decimalPlaces = 0;
 	float floatValue = 0.0;
 	unsigned int wholeValue = 0;
 	unsigned int fractionalValue = 0;
 	int div = 1;
-	while (*str){
+	while (*str && decimalPlaces < MAX_FLOAT_DECIMAL_PLACES){
 		if (*str == '-'){
 			negative = 1;
 		} else if (*str == '.'){
-			fractionMode = 1;		
+			decimalPlaces = 1;
 		}else if (*str >= '0' && *str <= '9'){
-			if (! fractionMode){
+			if (decimalPlaces == 0){
 				wholeValue = wholeValue * 10;
 				wholeValue = wholeValue + (*str - '0');
 			} else{
 				fractionalValue = fractionalValue * 10;
 				fractionalValue = fractionalValue + (*str - '0');
 				div = div * 10;
+				decimalPlaces++;
 			}
 		}
 		str++;
