@@ -591,7 +591,7 @@ static void getImuConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** ch
 }
 
 int api_setImuConfig(Serial *serial, const jsmntok_t *json){
-	int res = setMultiChannelConfigGeneric(serial, json, getImuConfigs, setImuExtendedField, imu_init);
+	int res = setMultiChannelConfigGeneric(serial, json, getImuConfigs, setImuExtendedField, imu_soft_init);
 	return res;
 }
 

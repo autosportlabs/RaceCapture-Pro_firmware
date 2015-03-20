@@ -29,19 +29,6 @@ float imu_read_value(unsigned char imuChannel, ImuConfig *ac){
 	float countsPerUnit = imu_device_counts_per_unit(imuChannel);
 	float scaledValue = ((float)(raw - zeroValue) / countsPerUnit);
 
-	//invert physical channel to match industry-standard accelerometer mappings
-	switch(physicalChannel){
-		case IMU_CHANNEL_X:
-		case IMU_CHANNEL_Y:
-		case IMU_CHANNEL_YAW:
-		case IMU_CHANNEL_PITCH:
-		case IMU_CHANNEL_ROLL:
-			scaledValue = -scaledValue;
-			break;
-		default:
-			break;
-	}
-
 	//now invert based on configuration
 	switch (ac->mode){
 	case MODE_IMU_NORMAL:
@@ -71,16 +58,23 @@ void imu_calibrate_zero(){
 		int zeroValue = g_imu_filter[physicalChannel].current_value;
 		//adjust for gravity
 		float countsPerUnit = imu_device_counts_per_unit(physicalChannel);
-		if (i == IMU_CHANNEL_Z) zeroValue-= (countsPerUnit * (c->mode != MODE_IMU_INVERTED ? 1 : -1));
+		if (i == IMU_CHANNEL_Z) zeroValue -= (countsPerUnit * (c->mode != MODE_IMU_INVERTED ? 1 : -1));
 		c->zeroValue = zeroValue;
 	}
 }
 
 int imu_init(LoggerConfig *loggerConfig){
 	imu_device_init();
-	init_filters(loggerConfig);
+    init_filters(loggerConfig);
 	return 1;
 }
+
+int imu_soft_init(LoggerConfig *loggerConfig){
+    init_filters(loggerConfig);
+    return 1;
+}
+
+
 
 int imu_read(unsigned int channel){
 	int read = imu_device_read(channel);
