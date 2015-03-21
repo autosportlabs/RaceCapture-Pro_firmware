@@ -116,7 +116,7 @@ int main( void )
 {
 	ALWAYS_KEEP(info_block);
 	cpu_init();
-	//watchdog_init(WATCHDOG_TIMEOUT_MS);
+	watchdog_init(WATCHDOG_TIMEOUT_MS);
 
 	/* Start the scheduler.
 
