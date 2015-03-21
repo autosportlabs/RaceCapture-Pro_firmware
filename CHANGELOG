@@ -3,6 +3,8 @@
 * Reduced delay between PID querying for MK2
 * Fixed OBD-II PID configuration message handling for PID counts > 8. PIDs limited to 10 until app supports sending PID configuration in batches
 * Guard against floating point overflow for setting configuration options
+* IMU calibration correctly accounts for physical channel re-mapping; 
+* Fixed issue where writing IMU config caused subsequent errors in IMU output
 
 ===2.7.8===
 * Fixed start/finish line detection for MK1
