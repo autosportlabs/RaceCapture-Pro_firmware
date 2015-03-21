@@ -134,6 +134,10 @@ int getUptimeAsInt() {
    return (int) getUptime();
 }
 
+/**
+ * Credit to:
+ *  http://stackoverflow.com/questions/11188621/how-can-i-convert-seconds-since-the-epoch-to-hours-minutes-seconds-in-java
+ */
 void getDateTimeFromEpochMillis(DateTime *dateTime, millis_t millis) {
 
    uint64_t secondsSinceEpoch = millis / 1000;
@@ -220,7 +224,8 @@ void getDateTimeFromEpochMillis(DateTime *dateTime, millis_t millis) {
 
    // Calculate the year and find out if it's leap
    year = 1601 + quadricentennials * 400 + centennials * 100 + quadrennials * 4 + annuals;
-   leap = !(year % 4) && (year % 100 || !(year % 400));
+
+   leap = isLeapYear(year);
 
    // Calculate the day of the year and the time
    yday = sec / 86400;
