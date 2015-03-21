@@ -19,8 +19,8 @@
  */
 
 
-#ifndef NUMTOATEST_H
-#define NUMTOATEST_H
+#ifndef GPSTEST_H
+#define GPSTEST_H
 
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -37,4 +37,4 @@ public:
   void testChecksum();
 };
 
-#endif  // NUMTOATEST_H
+#endif  // GPSTEST_H

@@ -241,3 +241,91 @@ void DateTimeTest::testMillisSinceEpoch() {
   CPPUNIT_ASSERT_EQUAL(3, (int) xTaskGetTickCount());
   CPPUNIT_ASSERT_EQUAL(448366080000ll + 1 * MS_PER_TICK, (long long) getMillisSinceEpoch());
 }
+
+void DateTimeTest::testDateTimeFromEpochMillis(){
+    DateTime dt;
+
+    getDateTimeFromEpochMillis(&dt, -1000);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.millisecond);
+    CPPUNIT_ASSERT_EQUAL(59, (int)dt.second);
+    CPPUNIT_ASSERT_EQUAL(59, (int)dt.minute);
+    CPPUNIT_ASSERT_EQUAL(23, (int)dt.hour);
+    CPPUNIT_ASSERT_EQUAL(31, (int)dt.day);
+    CPPUNIT_ASSERT_EQUAL(12, (int)dt.month);
+    CPPUNIT_ASSERT_EQUAL(1969, (int)dt.year);
+
+    getDateTimeFromEpochMillis(&dt, 0);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.millisecond);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.second);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.minute);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.hour);
+    CPPUNIT_ASSERT_EQUAL(1, (int)dt.day);
+    CPPUNIT_ASSERT_EQUAL(1, (int)dt.month);
+    CPPUNIT_ASSERT_EQUAL(1970, (int)dt.year);
+
+    getDateTimeFromEpochMillis(&dt, 1000);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.millisecond);
+    CPPUNIT_ASSERT_EQUAL(1, (int)dt.second);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.minute);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.hour);
+    CPPUNIT_ASSERT_EQUAL(1, (int)dt.day);
+    CPPUNIT_ASSERT_EQUAL(1, (int)dt.month);
+    CPPUNIT_ASSERT_EQUAL(1970, (int)dt.year);
+
+    getDateTimeFromEpochMillis(&dt, 946684799000); //party time
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.millisecond);
+    CPPUNIT_ASSERT_EQUAL(59, (int)dt.second);
+    CPPUNIT_ASSERT_EQUAL(59, (int)dt.minute);
+    CPPUNIT_ASSERT_EQUAL(23, (int)dt.hour);
+    CPPUNIT_ASSERT_EQUAL(31, (int)dt.day);
+    CPPUNIT_ASSERT_EQUAL(12, (int)dt.month);
+    CPPUNIT_ASSERT_EQUAL(1999, (int)dt.year);
+
+    getDateTimeFromEpochMillis(&dt, 946684799000 + 999);
+    CPPUNIT_ASSERT_EQUAL(999, (int)dt.millisecond);
+    CPPUNIT_ASSERT_EQUAL(59, (int)dt.second);
+    CPPUNIT_ASSERT_EQUAL(59, (int)dt.minute);
+    CPPUNIT_ASSERT_EQUAL(23, (int)dt.hour);
+    CPPUNIT_ASSERT_EQUAL(31, (int)dt.day);
+    CPPUNIT_ASSERT_EQUAL(12, (int)dt.month);
+    CPPUNIT_ASSERT_EQUAL(1999, (int)dt.year);
+
+    getDateTimeFromEpochMillis(&dt, 946684799000 + 1000);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.millisecond);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.second);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.minute);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.hour);
+    CPPUNIT_ASSERT_EQUAL(1, (int)dt.day);
+    CPPUNIT_ASSERT_EQUAL(1, (int)dt.month);
+    CPPUNIT_ASSERT_EQUAL(2000, (int)dt.year);
+
+    getDateTimeFromEpochMillis(&dt, 1426905472000);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.millisecond);
+    CPPUNIT_ASSERT_EQUAL(52, (int)dt.second);
+    CPPUNIT_ASSERT_EQUAL(37, (int)dt.minute);
+    CPPUNIT_ASSERT_EQUAL(2, (int)dt.hour);
+    CPPUNIT_ASSERT_EQUAL(21, (int)dt.day);
+    CPPUNIT_ASSERT_EQUAL(3, (int)dt.month);
+    CPPUNIT_ASSERT_EQUAL(2015, (int)dt.year);
+
+
+    /*
+      printf("%s",   asctime(SecondsSinceEpochToDateTime(&t, -1)));
+      printf("%s",   asctime(gmtime((tt = 0, &tt))));
+      printf("%s",   asctime(SecondsSinceEpochToDateTime(&t, 0)));
+      printf("%s\n", asctime(SecondsSinceEpochToDateTime(&t, 1)));
+
+      printf("%s",   asctime(SecondsSinceEpochToDateTime(&t, 946684799)));
+      printf("%s",   asctime(SecondsSinceEpochToDateTime(&t, 946684799+1)));
+      printf("%s\n", asctime(SecondsSinceEpochToDateTime(&t, 946684799+2)));
+
+      printf("%s",   asctime(SecondsSinceEpochToDateTime(&t, 978307199)));
+      printf("%s",   asctime(SecondsSinceEpochToDateTime(&t, 978307199+1)));
+      printf("%s\n", asctime(SecondsSinceEpochToDateTime(&t, 978307199+2)));
+
+      printf("%s",   asctime(SecondsSinceEpochToDateTime(&t, tt = time(0))));
+      printf("%s",   asctime(gmtime(&tt)));
+      */
+
+}
+

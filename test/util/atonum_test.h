@@ -1,5 +1,5 @@
-#ifndef NUMTOATEST_H
-#define NUMTOATEST_H
+#ifndef ATONUMTEST_H
+#define ATONUMTEST_H
 
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -20,4 +20,4 @@ public:
   void testFloatConversion(void);
 };
 
-#endif  // NUMTOATEST_H
+#endif  // ATONUMTEST_H
