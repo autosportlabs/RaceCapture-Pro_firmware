@@ -136,7 +136,7 @@ int getUptimeAsInt() {
 
 void getDateTimeFromEpochMillis(DateTime *dateTime, millis_t millis) {
 
-   uint64_t SecondsSinceEpoch = millis / 1000;
+   uint64_t secondsSinceEpoch = millis / 1000;
 
    uint64_t sec;
    uint32_t quadricentennials, centennials, quadrennials, annuals/*1-ennial?*/;
@@ -183,7 +183,7 @@ void getDateTimeFromEpochMillis(DateTime *dateTime, millis_t millis) {
    // Re-bias from 1970 to 1601:
    // 1970 - 1601 = 369 = 3*100 + 17*4 + 1 years (incl. 89 leap days) =
    // (3*100*(365+24/100) + 17*4*(365+1/4) + 1*365)*24*3600 seconds
-   sec = SecondsSinceEpoch + 11644473600;
+   sec = secondsSinceEpoch + 11644473600;
 
    wday = (uint32_t)((sec / 86400 + 1) % 7); // day of week
 
