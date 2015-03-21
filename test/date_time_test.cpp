@@ -307,25 +307,5 @@ void DateTimeTest::testDateTimeFromEpochMillis(){
     CPPUNIT_ASSERT_EQUAL(21, (int)dt.day);
     CPPUNIT_ASSERT_EQUAL(3, (int)dt.month);
     CPPUNIT_ASSERT_EQUAL(2015, (int)dt.year);
-
-
-    /*
-      printf("%s",   asctime(SecondsSinceEpochToDateTime(&t, -1)));
-      printf("%s",   asctime(gmtime((tt = 0, &tt))));
-      printf("%s",   asctime(SecondsSinceEpochToDateTime(&t, 0)));
-      printf("%s\n", asctime(SecondsSinceEpochToDateTime(&t, 1)));
-
-      printf("%s",   asctime(SecondsSinceEpochToDateTime(&t, 946684799)));
-      printf("%s",   asctime(SecondsSinceEpochToDateTime(&t, 946684799+1)));
-      printf("%s\n", asctime(SecondsSinceEpochToDateTime(&t, 946684799+2)));
-
-      printf("%s",   asctime(SecondsSinceEpochToDateTime(&t, 978307199)));
-      printf("%s",   asctime(SecondsSinceEpochToDateTime(&t, 978307199+1)));
-      printf("%s\n", asctime(SecondsSinceEpochToDateTime(&t, 978307199+2)));
-
-      printf("%s",   asctime(SecondsSinceEpochToDateTime(&t, tt = time(0))));
-      printf("%s",   asctime(gmtime(&tt)));
-      */
-
 }
 
