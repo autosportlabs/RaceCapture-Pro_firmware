@@ -85,6 +85,6 @@ int getUptimeAsInt();
  * @param The milliseconds since unix epoch value that you want converted to a DateTime.
  * @return A DateTime representation based on the utcMillis value provided.
  */
-DateTime getDateTimeFromEpochMillis(millis_t millis);
+void getDateTimeFromEpochMillis(DateTime *dateTime, millis_t millis);
 
 #endif //__DATE_TIME_H__

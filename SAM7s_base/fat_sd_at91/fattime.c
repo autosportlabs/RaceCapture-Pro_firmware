@@ -6,7 +6,8 @@
 
 DWORD get_fattime (void)
 {
-   const DateTime dt = getDateTimeFromEpochMillis(getLastFix());
+   DateTime dt;
+   getDateTimeFromEpochMillis(&dt, getLastFix());
 
    if (!isValidDateTime(dt))
       return (DWORD) 0;
