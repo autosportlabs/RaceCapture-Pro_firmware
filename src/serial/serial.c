@@ -2,7 +2,7 @@
 #include "usart.h"
 #include "usb_comm.h"
 #include "modp_numtoa.h"
-
+#include "printk.h"
 static Serial serial_ports[SERIAL_COUNT];
 
 void init_serial(void){
@@ -46,7 +46,8 @@ Serial * get_serial(serial_id_t port){
 }
 
 size_t serial_read_byte(Serial *serial, uint8_t *b, size_t delay){
-	return serial->get_c_wait((char *)b, delay);
+	size_t result = serial->get_c_wait((char *)b, delay);
+	return result;
 }
 
 void put_int(Serial *serial, int n){

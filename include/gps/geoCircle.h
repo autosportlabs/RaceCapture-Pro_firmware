@@ -40,11 +40,11 @@ struct GeoCircle gc_createGeoCircle(const GeoPoint gp, const float radius);
  * Tells us if the given point is within the bound of a given GeoCircle.  Note
  * that this is a circle only and not a sphere.  In otherwords elevation has
  * no effect on this calculation.
- * @param point The point in quesiton
+ * @param point The point in question
  * @param gc The GeoCircle object
  * @return true if it is in side the bounds, false otherwise.
  */
-bool gc_isPointInGeoCircle(const GeoPoint point, const struct GeoCircle gc);
+bool gc_isPointInGeoCircle(const GeoPoint * point, const struct GeoCircle gc);
 
 /**
  * @return true if its a valid geoCircle, false otherwise.

@@ -6,6 +6,7 @@
  */
 #include "gpsTask.h"
 #include "gps.h"
+#include "lap_stats.h"
 #include "gps_device.h"
 #include "FreeRTOS.h"
 #include "printk.h"
@@ -13,10 +14,8 @@
 #include "serial.h"
 #include "taskUtil.h"
 
-#define GPS_DATA_LINE_BUFFER_LEN 	200
 #define GPS_TASK_STACK_SIZE			200
 
-static char g_GPSdataLine[GPS_DATA_LINE_BUFFER_LEN];
 static bool g_enableGpsDataLogging = false;
 
 void setGpsDataLogging(bool enable) {
@@ -28,28 +27,32 @@ void setGpsDataLogging(bool enable) {
  * @param buf The buffer containing the read in line.
  * @param len The length of the string in the buffer.
  */
-static void logGpsInput(const char *buf, int len) {
-   if (!g_enableGpsDataLogging) return;
-   pr_info(buf);
-}
+//static void logGpsInput(const char *buf, int len) {
+//   if (!g_enableGpsDataLogging) return;
+//   pr_info(buf);
+//}
 
 void GPSTask(void *pvParameters) {
-	Serial *gpsSerial = get_serial(SERIAL_GPS);
-	int rc = GPS_device_provision(gpsSerial);
+	Serial *serial = get_serial(SERIAL_GPS);
+	int rc = GPS_device_provision(serial);
 	if (!rc){
 		pr_error("Error provisioning GPS module\r\n");
 	}
 
 	for (;;) {
-      int len = gpsSerial->get_line(g_GPSdataLine, GPS_DATA_LINE_BUFFER_LEN - 1);
-      g_GPSdataLine[len] = '\0';
-      logGpsInput(g_GPSdataLine, len);
-      processGPSData(g_GPSdataLine, len);
+		gps_msg_result_t result = GPS_processUpdate(serial);
+		if (result == GPS_MSG_SUCCESS){
+                   const GpsSnapshot snap = getGpsSnapshot();
+			lapStats_processUpdate(&snap);
+		}
+		else{
+			pr_warning("timeout processing GPS update\r\n");
+		}
    }
 }
 
 void startGPSTask(int priority){
-	initGPS();
+	GPS_init();
+	lapStats_init();
 	xTaskCreate( GPSTask, ( signed portCHAR * )"GPSTask", GPS_TASK_STACK_SIZE, NULL, priority, NULL );
 }
-

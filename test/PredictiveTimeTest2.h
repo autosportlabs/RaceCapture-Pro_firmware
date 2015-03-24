@@ -18,8 +18,8 @@
 using std::string;
 using std::vector;
 
-// HACK.  Exposing the testing methods here
-float distPctBtwnTwoPoints(GeoPoint *s, GeoPoint *e, GeoPoint *m);
+//// HACK.  Exposing the testing methods here
+//float distPctBtwnTwoPoints(GeoPoint *s, GeoPoint *e, GeoPoint *m);
 
 class PredictiveTimeTest2 : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( PredictiveTimeTest2 );

@@ -13,9 +13,11 @@
 #include "geopoint.h"
 #include "gps.h"
 #include "gps.testing.h"
-#include "modp_atonum.h"
-#include "predictive_timer_2.h"
+#include "lap_stats.h"
 #include "loggerConfig.h"
+#include "modp_atonum.h"
+#include "mod_string.h"
+#include "predictive_timer_2.h"
 #include "rcp_cpp_unit.hh"
 
 #define FILE_PREFIX string("test/")
@@ -30,8 +32,26 @@ CPPUNIT_TEST_SUITE_REGISTRATION( PredictiveTimeTest2 );
 
 PredictiveTimeTest2::PredictiveTimeTest2() {}
 
+/**
+ * Like atoi, but is non-destructive to the string passed in and provides an offset and length
+ * functionality.  Max Len is 3.
+ * @param str The start of the String to parse.
+ * @param offset How far in to start reading the string.
+ * @param len The number of characters to read.
+ */
+static int atoiOffsetLenSafe(const char *str, size_t offset, size_t len) {
+   char buff[4] = { 0 };
+
+   // Bounds check.  Don't want any bleeding hearts in here...
+   if (len > (sizeof(buff) - 1))
+         len = sizeof(buff) - 1;
+
+   memcpy(buff, str + offset, len);
+   return modp_atoi(buff);
+}
+
 void PredictiveTimeTest2::setUp() {
-	initGPS();
+	GPS_init();
 	resetPredictiveTimer();
 }
 
@@ -77,9 +97,9 @@ void PredictiveTimeTest2::testProjectedDistance() {
   GeoPoint s = { .latitude = 2.0, .longitude = 0.0 }; // start
   GeoPoint m = { .latitude = 2.0, .longitude = 1.0 }; // middle
   GeoPoint e = { .latitude = 2.0, .longitude = 2.0 }; // end
-  float expected = 0.5;
 
-  float actual = distPctBtwnTwoPoints(&s, &e, &m);
+  const float expected = 0.5;
+  const float actual = distPctBtwnTwoPoints(&s, &e, &m);
   CPPUNIT_ASSERT_CLOSE_ENOUGH(expected, actual);
 }
 
@@ -89,64 +109,66 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
 	std::istringstream iss(log);
 
 
-	TrackConfig *trackCfg  = 	&(getWorkingLoggerConfig()->TrackConfigs);
+	TrackConfig *trackCfg  = &(getWorkingLoggerConfig()->TrackConfigs);
 	trackCfg->track.circuit.startFinish.latitude = 47.806934;
 	trackCfg->track.circuit.startFinish.longitude = -122.341150;
 	trackCfg->radius = 0.0004;
-	setGPSQuality (GPS_QUALITY_FIX);
 
 	int lineNo = 0;
 	string line;
-    int lapCount = getLapCount();
 
 	while (std::getline(iss, line)) {
-		lineNo++;
-		vector <string> values = split(line, ',');
+          lineNo++;
+          vector <string> values = split(line, ',');
 
-		string latitudeRaw = values[5];
-		string longitudeRaw = values[6];
-		string speedRaw = values[7];
-		string timeRaw = values[8];
+          string latitudeRaw = values[5];
+          string longitudeRaw = values[6];
+          string speedRaw = values[7];
+          string timeRaw = values[8];
+          timeRaw = "0" + timeRaw;
 
-		timeRaw = "0" + timeRaw;
+          if (values[0][0] == '#' || latitudeRaw.size() <= 0
+              || longitudeRaw.size() <= 0 || speedRaw.size() <= 0
+              || timeRaw.size() <= 0) continue;
 
-		if (values[0][0] != '#' && latitudeRaw.size() > 0
-				&& longitudeRaw.size() > 0 && speedRaw.size() > 0
-				&& timeRaw.size() > 0) {
-			//printf("%s", line.c_str());
-			float lat = modp_atof(latitudeRaw.c_str());
-			float lon = modp_atof(longitudeRaw.c_str());
-			float speed = modp_atof(speedRaw.c_str());
+          //printf("%s", line.c_str());
+          float lat = modp_atof(latitudeRaw.c_str());
+          float lon = modp_atof(longitudeRaw.c_str());
+          float speed = modp_atof(speedRaw.c_str());
 
-         const char *utcTimeStr = timeRaw.c_str();
-         float utcTime = modp_atof(utcTimeStr);
+          const char *utcTimeStr = timeRaw.c_str();
+          DateTime dt;
+          dt.year = 2014;
+          dt.month = 5;
+          dt.day = 3;
+          dt.hour = (int8_t) atoiOffsetLenSafe(utcTimeStr, 0, 2);
+          dt.minute = (int8_t) atoiOffsetLenSafe(utcTimeStr, 2, 2);
+          dt.second = (int8_t) atoiOffsetLenSafe(utcTimeStr, 4, 2);
+          dt.millisecond = (int16_t) atoiOffsetLenSafe(utcTimeStr, 7, 3);
 
-         DateTime dt;
-         dt.year = 2014;
-         dt.month = 5;
-         dt.day = 3;
-         dt.hour = (int8_t) atoiOffsetLenSafe(utcTimeStr, 0, 2);
-         dt.minute = (int8_t) atoiOffsetLenSafe(utcTimeStr, 2, 2);
-         dt.second = (int8_t) atoiOffsetLenSafe(utcTimeStr, 4, 2);
-         dt.millisecond = (int16_t) atoiOffsetLenSafe(utcTimeStr, 7, 3);
-         updateFullDateTime(dt);
+          GpsSample sample;
+          sample.quality = GPS_QUALITY_FIX;
+          sample.point.latitude = lat;
+          sample.point.longitude = lon;
+          sample.time = getMillisecondsSinceUnixEpoch(dt);
+          sample.speed = speed;
+          sample.satellites = 8; //Totally fake.  Shouldn't matter.
 
-         const unsigned long millis = getMillisSinceEpoch();
-         //printf("---\n");
-         //printf("DateTime - YY MM DD HH MM SS.mmm : %02d %02d %02d %02d %02d %02d.%03d\n", dt.year,
-         //        dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.millisecond);
-         //printf("lat = %f : lon = %f : speed = %f : UTC_Str = \"%s\" : time = %f : millis = %lu\n",
-         //      lat, lon, speed, utcTimeStr, utcTime, millis);
+          GPS_sample_update(&sample);
+          GpsSnapshot snap = getGpsSnapshot();
+          lapStats_processUpdate(&snap);
 
-         setGPSSpeed(speed);
-         //setUTCTime(utcTime); // No longer any good.
-         updatePosition(lat, lon);
-         onLocationUpdated();
+          const unsigned long millis = getMillisSinceEpoch();
+          //printf("---\n");
+          //printf("DateTime - YY MM DD HH MM SS.mmm : %02d %02d %02d %02d %02d %02d.%03d\n", dt.year,
+          //        dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.millisecond);
+          //printf("lat = %f : lon = %f : speed = %f : UTC_Str = \"%s\" : time = %f : millis = %lu\n",
+          //      lat, lon, speed, utcTimeStr, utcTime, millis);
 
-         const GeoPoint gp = getGeoPoint();
-         const millis_t epochMillis = getMillisSinceEpoch();
-         const millis_t predTime = getPredictedTime(gp, epochMillis);
-         //printf("Lap #%d - Predicted Time: %ull\n", getLapCount(), predTime);
-		}
+          const GeoPoint gp = getGeoPoint();
+          const millis_t epochMillis = getMillisSinceEpoch();
+          const millis_t predTime = getPredictedTime(&gp, epochMillis);
+          //printf("Lap #%d - Predicted Time: %ull\n", getLapCount(), predTime);
+
 	}
 }

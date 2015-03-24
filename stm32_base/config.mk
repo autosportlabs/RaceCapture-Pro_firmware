@@ -63,6 +63,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/GPIO/gpioTasks.c \
 			$(RCP_SRC)/watchdog/watchdog.c \
 			$(RCP_SRC)/launch_control.c \
+			$(RCP_SRC)/lap_stats/lap_stats.c \
 			$(RCP_SRC)/gps/gps.c \
 			$(RCP_SRC)/gps/dateTime.c \
 			$(RCP_SRC)/gps/geopoint.c \
@@ -102,6 +103,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/util/linear_interpolate.c \
 			$(RCP_SRC)/util/modp_atonum.c \
 			$(RCP_SRC)/util/modp_numtoa.c \
+			$(RCP_SRC)/util/byteswap.c \
 			$(RCP_SRC)/util/taskUtil.c \
 			$(RCP_SRC)/sdcard/sdcard.c \
 			$(HAL_SRC)/sim900_stm32/sim900_device_stm32.c \
@@ -172,6 +174,7 @@ APP_INCLUDES += -I. \
 				-I$(INCLUDE_DIR)/util \
 				-I$(INCLUDE_DIR)/devices \
 				-I$(INCLUDE_DIR)/gps \
+				-I$(INCLUDE_DIR)/lap_stats \
 				-I$(INCLUDE_DIR) \
 				-I$(INCLUDE_DIR)/sdcard \
 				-I$(INCLUDE_DIR)/command \

@@ -64,14 +64,14 @@ void LaunchControlTest::testCircuitLaunch() {
    CPPUNIT_ASSERT_EQUAL(false, lc_hasLaunched());
    CPPUNIT_ASSERT_EQUAL(0, lc_getLaunchTime());
 
-   struct GpsSample sample = { 0 };
+   GpsSnapshot snap;
    const GeoPoint *pt = pts;
    for (; isValidPoint(pt); ++pt) {
-      sample.point = *pt;
+      snap.sample.point = *pt;
       // Use the address of the point as the sample time.
-      sample.firstFixMillis = (tiny_millis_t) pt;
-      sample.speed = 40; // Speed well above the threshold.
-      lc_supplyGpsSample(sample);
+      snap.deltaFirstFix = (tiny_millis_t) pt;
+      snap.sample.speed = 40; // Speed well above the threshold.
+      lc_supplyGpsSnapshot(&snap);
    }
 
    CPPUNIT_ASSERT_EQUAL(true, lc_hasLaunched());
@@ -103,15 +103,15 @@ void LaunchControlTest::testStageSimpleLaunch() {
    CPPUNIT_ASSERT_EQUAL(false, lc_hasLaunched());
    CPPUNIT_ASSERT_EQUAL(0, lc_getLaunchTime());
 
-   struct GpsSample sample = { 0 };
+   GpsSnapshot snap;
    const GeoPoint *pt = pts;
    for (unsigned indx = 0; isValidPoint(pt); ++pt, ++indx) {
       // Use the address of the point as the sample time.
-      sample.firstFixMillis = (tiny_millis_t) pt;
+      snap.deltaFirstFix = (tiny_millis_t) pt;
 
-      sample.point = *pt;
-      sample.speed = pt < (pts + 7) ? 0: 10;
-      lc_supplyGpsSample(sample);
+      snap.sample.point = *pt;
+      snap.sample.speed = pt < (pts + 7) ? 0: 10;
+      lc_supplyGpsSnapshot(&snap);
 
       bool launched = pt >= (pts + 7);
       char msg[64];
@@ -154,16 +154,16 @@ void LaunchControlTest::testStageTrickyLaunch() {
    CPPUNIT_ASSERT_EQUAL(false, lc_hasLaunched());
    CPPUNIT_ASSERT_EQUAL(0, lc_getLaunchTime());
 
-   struct GpsSample sample = { 0 };
+   GpsSnapshot snap;
    const GeoPoint *pt = pts;
    for (; isValidPoint(pt); ++pt) {
-      sample.point = *pt;
+      snap.sample.point = *pt;
       // Use the address of the point as the sample time.
-      sample.firstFixMillis = (tiny_millis_t) pt;
+      snap.deltaFirstFix = (tiny_millis_t) pt;
 
       // Set speed to 0 at 5th reading.  This triggers launch time set.
-      sample.speed = pt == (pts + 4)? 0 : 5;
-      lc_supplyGpsSample(sample);
+      snap.sample.speed = pt == (pts + 4)? 0 : 5;
+      lc_supplyGpsSnapshot(&snap);
 
       bool launched = pt >= (pts + 7);
       CPPUNIT_ASSERT_EQUAL(launched, lc_hasLaunched());

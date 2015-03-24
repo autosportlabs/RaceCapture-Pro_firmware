@@ -86,12 +86,12 @@ static tiny_millis_t getCurrentLapTime(tiny_millis_t time) {
  * Creates a timeLoc sample and places it in the currBuff.  Increments counter as needed.
  * @return true if the insert succeeded, false otherwise.
  */
-static bool insertTimeLocSample(GeoPoint point, tiny_millis_t time) {
+static bool insertTimeLocSample(const GeoPoint * point, tiny_millis_t time) {
 	if (buffIndex >= MAX_TIMELOC_SAMPLES)
 		return false;
 
 	struct PtTimeLoc *timeLoc = currLap + buffIndex;
-	timeLoc->point = point;
+	timeLoc->point = *point;
 	timeLoc->time = getCurrentLapTime(time);
 
 	if (++buffIndex >= MAX_TIMELOC_SAMPLES)
@@ -150,7 +150,7 @@ static tiny_millis_t adjustPollInterval(tiny_millis_t lapTime) {
  * @param point The point we are at when we cross the start finish line.
  * @param time Duh!
  */
-static void finishLap(GeoPoint point, tiny_millis_t time) {
+static void finishLap(const GeoPoint * point, tiny_millis_t time) {
 	// Drop last entry if necessary to record end of lap.
 	if (buffIndex >= MAX_TIMELOC_SAMPLES)
 		buffIndex = MAX_TIMELOC_SAMPLES - 1;
@@ -161,7 +161,7 @@ static void finishLap(GeoPoint point, tiny_millis_t time) {
 /**
  * Resets the state in preparation for the next lap.
  */
-static void startNewLap(GeoPoint point, tiny_millis_t time) {
+static void startNewLap(const GeoPoint * point, tiny_millis_t time) {
 	currLapStartTime = time;
 	lastPredictedDelta = 0;
 	lastPredictedTime = 0;
@@ -187,7 +187,7 @@ static tiny_millis_t getTimeSinceLastSample(tiny_millis_t time) {
  * @param point The location of the start/finish line.
  * @param time The current UTC time when we crossed.
  */
-void startFinishCrossed(GeoPoint point, tiny_millis_t time) {
+void startFinishCrossed(const GeoPoint * point, tiny_millis_t time) {
 	INFO("Start/Finish Crossed.\n");
 	finishLap(point, time);
 
@@ -211,7 +211,7 @@ void startFinishCrossed(GeoPoint point, tiny_millis_t time) {
  * @param time The time which the sample was taken.
  * @return true if it was added, false otherwise.
  */
-bool addGpsSample(GeoPoint point, tiny_millis_t time) {
+bool addGpsSample(const GeoPoint * point, tiny_millis_t time) {
 	DEVEL("Add GPS Sample called\n");
 
 	if (status != RECORDING) {
@@ -235,25 +235,13 @@ bool addGpsSample(GeoPoint point, tiny_millis_t time) {
 	return true;
 }
 
-/**
- * Finds the percentage that currPt is between startPt and endPt.as a projection of point c onto the
- * vector formed between points s and e.  This method requires that point m be between the points s
- * and e on the earth's surface.  If that requirement is met this method should return a value
- * between 0 and 1.  Otherwise the value will be undefined.
- * those bounds then
- * @param s The start point.
- * @param e The end point.
- * @param m The middle point.
- * @return The percentage that projected point m lies between startPt and endPt if the method
- * requirements were met. < 0 or > 1 otherwise.
- */
-float distPctBtwnTwoPoints(GeoPoint *s, GeoPoint *e, GeoPoint *m) {
-	float distSM = distPythag(s, m); // A
-	float distME = distPythag(m, e); // B
-	float distSE = distPythag(s, e); // C
+float distPctBtwnTwoPoints(const GeoPoint *s, const GeoPoint *e, const GeoPoint *m) {
+	const float distSM = distPythag(s, m); // A
+	const float distME = distPythag(m, e); // B
+	const float distSE = distPythag(s, e); // C
 
 	// projDist = (A^2 + C^2 - B^2) / 2 * C
-	float projDistFromS = ((distSM * distSM) + (distSE * distSE)
+	const float projDistFromS = ((distSM * distSM) + (distSE * distSE)
 			- (distME * distME)) / (2 * distSE);
 
 	DEVEL("distSE = %f, distSM = %f, distME = %f, projDist = %f\n", distSE,
@@ -273,7 +261,7 @@ static bool inBounds(float v) {
  * @return The index of the closest point in the fastLap buffer to the current point, or -1 if
  * no closest point is available.
  */
-static int findClosestPt(GeoPoint *currPoint) {
+static int findClosestPt(const GeoPoint *currPoint) {
 	if (!isPredictiveTimeAvailable())
 		return -1;
 
@@ -305,7 +293,7 @@ static int findClosestPt(GeoPoint *currPoint) {
  * @return true if a fast lap is set and the points are next to each other in the fastLap buffer
  * and the given point is between the two points, false otherwise.
  */
-static bool findTwoClosestPts(GeoPoint *currPoint, struct PtTimeLoc *tlPts[]) {
+static bool findTwoClosestPts(const GeoPoint *currPoint, struct PtTimeLoc *tlPts[]) {
 	if (!isPredictiveTimeAvailable())
 		return false;
 
@@ -359,7 +347,7 @@ static bool findTwoClosestPts(GeoPoint *currPoint, struct PtTimeLoc *tlPts[]) {
  * @return The split between your current time and the fast lap time.  Positive indicates you are
  * going faster than your fast lap, negative indicates slower.
  */
-tiny_millis_t getSplitAgainstFastLap(GeoPoint point, tiny_millis_t currentTime) {
+tiny_millis_t getSplitAgainstFastLap(const GeoPoint * point, tiny_millis_t currentTime) {
 	if (!isPredictiveTimeAvailable()) {
 		DEBUG("No predicted time - No fast lap Set\n");
 		return lastPredictedDelta;
@@ -370,13 +358,13 @@ tiny_millis_t getSplitAgainstFastLap(GeoPoint point, tiny_millis_t currentTime) 
 	 * fails then we can't continue.
 	 */
 	struct PtTimeLoc *closestPts[2];
-	if (!findTwoClosestPts(&point, closestPts))
+	if (!findTwoClosestPts(point, closestPts))
 		// TODO: Perhaps return false here?  Make this better for the caller.
 		return lastPredictedDelta;
 
-	GeoPoint *pointA = &(closestPts[0]->point);
-	GeoPoint *pointB = &(closestPts[1]->point);
-	float percentage = distPctBtwnTwoPoints(pointA, pointB, &point);
+	const GeoPoint *pointA = &(closestPts[0]->point);
+	const GeoPoint *pointB = &(closestPts[1]->point);
+	float percentage = distPctBtwnTwoPoints(pointA, pointB, point);
 	DEVEL("Percentage value is 0 < %f < 1\n", percentage);
 
 	if (!inBounds(percentage)) {
@@ -402,7 +390,7 @@ tiny_millis_t getSplitAgainstFastLap(GeoPoint point, tiny_millis_t currentTime) 
  * @param time The current time of the most recent GPS fix.
  * @return The predicted lap time.
  */
-tiny_millis_t getPredictedTime(GeoPoint point, tiny_millis_t time) {
+tiny_millis_t getPredictedTime(const GeoPoint * point, tiny_millis_t time) {
 
 	tiny_millis_t timeDelta = getSplitAgainstFastLap(point, time);
 	tiny_millis_t newPredictedTime = fastLapTime - timeDelta;
@@ -432,5 +420,5 @@ void resetPredictiveTimer() {
 float getPredictedTimeInMinutes() {
    const GeoPoint gp = getGeoPoint();
    const tiny_millis_t millis = getMillisSinceFirstFix();
-   return tinyMillisToMinutes(getPredictedTime(gp, millis));
+   return tinyMillisToMinutes(getPredictedTime(&gp, millis));
 }

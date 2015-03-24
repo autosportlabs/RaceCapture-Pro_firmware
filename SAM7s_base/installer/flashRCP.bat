@@ -12,6 +12,11 @@ echo (configuration + Lua script) is backed up.
 echo.
 echo ************************************************************************
 echo ************************************************************************
+echo While pressing the button on RaceCapture/Pro, plug the unit into USB.
+echo Once you see 3 green LEDs illuminated, release the button and...
+echo.
+pause
+echo.
 echo.
 echo If this is the first time installing firmware, bootloader drivers will
 echo need to be installed.
@@ -47,8 +52,7 @@ echo ************************************************************************
 echo Ready to flash firmware!
 echo ************************************************************************
 echo.
-echo While pressing the button on RaceCapture/Pro, plug the unit into USB.
-echo Once you see 3 green LEDs illuminated, release the button and...
+echo Ensure 3 green LEDs are illuminated and...
 echo.
 pause
 for /f "delims=" %%a in ('dir /b *.elf') do @set firmware=%%a

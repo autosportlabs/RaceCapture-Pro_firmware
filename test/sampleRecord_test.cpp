@@ -10,6 +10,7 @@
 #include "ADC.h"
 #include "imu.h"
 #include "gps.h"
+#include "lap_stats.h"
 #include "task.h"
 #include "capabilities.h"
 #include <string>
@@ -23,7 +24,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( SampleRecordTest );
 void SampleRecordTest::setUp()
 {
 	InitLoggerHardware();
-	initGPS();
+	GPS_init();
 	initialize_logger_config();
 	resetCurrentTicks();
 }
@@ -36,7 +37,8 @@ void SampleRecordTest::tearDown()
 
 void SampleRecordTest::testPopulateSampleRecord(){
 	LoggerConfig *lc = getWorkingLoggerConfig();
-   initGPS();
+   GPS_init();
+   lapStats_init();
 
 	//mock up some values to test later
 	lc->ADCConfigs[7].scalingMode = SCALING_MODE_RAW;
@@ -238,7 +240,7 @@ void SampleRecordTest::testInitSampleRecord()
 
    if (gpsConfig->distance.sampleRate != SAMPLE_DISABLED){
       CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->distance, (void *) ts->cfg);
-      CPPUNIT_ASSERT_EQUAL((void *) getGpsDistanceMiles, (void *) ts->get_float_sample);
+      CPPUNIT_ASSERT_EQUAL((void *) getLapDistanceInMiles, (void *) ts->get_float_sample);
       CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
       ts++;
    }

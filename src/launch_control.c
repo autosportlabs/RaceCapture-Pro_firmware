@@ -45,7 +45,7 @@ static bool isConfigured() {
 }
 
 static bool isGeoPointInStartArea(const GeoPoint p) {
-   return gc_isPointInGeoCircle(p, g_geoCircle);
+   return gc_isPointInGeoCircle(&p, g_geoCircle);
 }
 
 static bool isSpeedBelowThreshold(const float speed) {
@@ -71,13 +71,18 @@ void lc_setup(const Track *track, const float targetRadius) {
    g_geoCircle = gc_createGeoCircle(getStartPoint(track), targetRadius);
 }
 
-void lc_supplyGpsSample(const struct GpsSample sample) {
+void lc_supplyGpsSnapshot(const GpsSnapshot *snap) {
    if (!isConfigured() || lc_hasLaunched())
       return;
 
-   if (isGeoPointInStartArea(sample.point)) {
-      if (!isValidStartTime() || isSpeedBelowThreshold(sample.speed))
-         g_startTime = sample.firstFixMillis;
+   const GeoPoint point = snap->sample.point;
+   const float speed = snap->sample.speed;
+   const tiny_millis_t startTime = snap->deltaFirstFix;
+
+   if (isGeoPointInStartArea(point)) {
+      if (!isValidStartTime() || isSpeedBelowThreshold(speed)) {
+         g_startTime = startTime;
+      }
    } else {
       g_hasLaunched = isValidStartTime();
    }

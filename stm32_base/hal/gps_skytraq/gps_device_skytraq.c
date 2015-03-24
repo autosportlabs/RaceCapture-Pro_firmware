@@ -1,4 +1,5 @@
 #include "gps_device.h"
+#include "byteswap.h"
 #include <stdint.h>
 #include <stddef.h>
 #include "printk.h"
@@ -7,9 +8,12 @@
 #include "printk.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include <math.h>
+
+/* UNIX time (epoch 1/1/1970) at the start of GNSS epoch (1/6/1980) */
+#define GNSS_EPOCH_IN_UNIX_EPOCH 315964800
 
 #define MSG_ID_QUERY_GPS_SW_VER	0x02
-
 
 #define MAX_PROVISIONING_ATTEMPTS	10
 #define MAX_PAYLOAD_LEN				256
@@ -17,6 +21,9 @@
 #define GPS_MESSAGE_BUFFER_LEN		1024
 #define TARGET_UPDATE_RATE 			50
 #define TARGET_BAUD_RATE 			921600
+#define MESSAGE_TYPE_NMEA			1
+#define MESSAGE_TYPE_BINARY			2
+#define GNSS_NAVIGATION_MODE        2
 
 #define BAUD_RATE_COUNT 			2
 #define BAUD_RATES 					{ \
@@ -32,16 +39,21 @@ typedef struct _BaudRateCodes{
 #define UPDATE_RATE_COUNT 		10
 #define UPDATE_RATES 			{1, 2, 4, 5, 8, 10, 20, 25, 40, 50}
 
-#define MSG_ID_ACK								0x83
-#define MSG_ID_NACK 							0x84
-#define MSG_ID_QUERY_SW_VERSION 				0x02
-#define MSG_ID_SET_FACTORY_DEFAULTS				0x04
-#define MSG_ID_SW_VERSION						0x80
-#define MSG_ID_QUERY_POSITION_UPDATE_RATE		0x10
-#define MSG_ID_CONFIGURE_POSITION_UPDATE_RATE	0x0E
-#define MSG_ID_POSITION_UPDATE_RATE 			0x86
-#define MSG_ID_CONFIGURE_SERIAL_PORT			0x05
-#define MSG_ID_CONFIGURE_NMEA_MESSAGE			0x08
+#define MSG_ID_ACK											0x83
+#define MSG_ID_NACK 										0x84
+#define MSG_ID_QUERY_SW_VERSION 							0x02
+#define MSG_ID_SET_FACTORY_DEFAULTS							0x04
+#define MSG_ID_SW_VERSION									0x80
+#define MSG_ID_QUERY_POSITION_UPDATE_RATE					0x10
+#define MSG_ID_CONFIGURE_POSITION_UPDATE_RATE				0x0E
+#define MSG_ID_POSITION_UPDATE_RATE 						0x86
+#define MSG_ID_CONFIGURE_SERIAL_PORT						0x05
+#define MSG_ID_CONFIGURE_GNSS_NAVIGATION_MODE               0x64
+#define MSG_SUBID_CONFIGURE_GNSS_NAVIGATION_MODE            0x17
+#define MSG_ID_CONFIGURE_NMEA_MESSAGE						0x08
+#define MSG_ID_CONFIGURE_MESSAGE_TYPE						0x09
+#define MSG_ID_CONFIGURE_NAVIGATION_DATA_MESSAGE_INTERVAL	0x11
+#define MSG_ID_NAVIGATION_DATA_MESSAGE						0xA8
 
 #define GGA_INTERVAL							100
 #define GSA_INTERVAL							0
@@ -50,6 +62,7 @@ typedef struct _BaudRateCodes{
 #define RMC_INTERVAL							1
 #define VTG_INTERVAL							0
 #define ZDA_INTERVAL							0
+#define NAVIGATION_DATA_MESSAGE_INTERVAL		1
 
 typedef enum{
 	ATTRIBUTE_UPDATE_TO_SRAM = 0,
@@ -112,6 +125,48 @@ typedef struct _ConfigureNmeaMessage{
 	uint8_t attributes;
 } ConfigureNmeaMessage;
 
+typedef struct _ConfigureGNSSNavigationMode{
+    uint8_t messageId;
+    uint8_t messageSubId;
+    uint8_t navigationMode;
+    uint8_t attributes;
+} ConfigureGNSSNavigationMode;
+
+typedef struct _ConfigureMessageType{
+	uint8_t messageId;
+	uint8_t type;
+	uint8_t attributes;
+} ConfigureMessageType;
+
+typedef struct _ConfigureNavigationDataMessageInterval{
+	uint8_t messageId;
+	uint8_t navigationMessageInterval;
+	uint8_t attributes;
+} ConfigureNavigationDataMessageInterval;
+
+typedef struct _NavigationDataMessage{
+	uint8_t messageId;
+	uint8_t fixMode;
+	uint8_t satellitesInFix;
+	uint16_t GNSS_week;
+	uint32_t GNSS_timeOfWeek;
+	int32_t latitude;
+	int32_t longitude;
+	uint32_t ellipsoid_altitidue;
+	uint32_t mean_sea_level_altitude;
+	uint16_t GDOP;
+	uint16_t PDOP;
+	uint16_t HDOP;
+	uint16_t VDOP;
+	uint16_t TDOP;
+	int32_t ECEF_x;
+	int32_t ECEF_y;
+	int32_t ECEF_z;
+	int32_t ECEF_vx;
+	int32_t ECEF_vy;
+	int32_t ECEF_vz;
+} __attribute__((__packed__)) NavigationDataMessage;
+
 typedef struct _GpsMessage{
 	uint16_t payloadLength;
 	union{
@@ -126,15 +181,14 @@ typedef struct _GpsMessage{
 		ConfigureSerialPort configureSerialPort;
 		PositionUpdateRate positionUpdateRate;
 		ConfigureNmeaMessage configureNmeaMessage;
+		ConfigureGNSSNavigationMode configureGnssNavigationMode;
+		ConfigureMessageType configureMessageType;
+		ConfigureNavigationDataMessageInterval configureNavigationDataMessageInterval;
+		NavigationDataMessage navigationDataMessage;
+
 	};
 	uint8_t checksum;
-} GpsMessage;
-
-typedef enum {
-	GPS_MSG_SUCCESS = 0,
-	GPS_MSG_TIMEOUT,
-	GPS_MSG_NONE
-} gps_msg_result_t;
+}  __attribute__((__packed__)) GpsMessage;
 
 typedef enum{
 	GPS_COMMAND_FAIL = 0,
@@ -219,6 +273,10 @@ static gps_msg_result_t rxGpsMessage(GpsMessage *msg, Serial *serial, uint8_t ex
 					if (eos1 == 0x0D && eos2 == 0x0A && msg->messageId == expectedMessageId){
 						result = GPS_MSG_SUCCESS;
 					}
+					else{
+						pr_info_int(msg->messageId);
+						pr_info("unexpected id\r\n");
+					}
 				}
 			}
 		}
@@ -261,6 +319,21 @@ static void sendConfigureSerialPort(GpsMessage *gpsMsg, Serial *serial, uint8_t 
 	txGpsMessage(gpsMsg, serial);
 }
 
+static void sendDisableNmea(GpsMessage *gpsMsg, Serial *serial){
+	gpsMsg->messageId = MSG_ID_CONFIGURE_NMEA_MESSAGE;
+	gpsMsg->configureNmeaMessage.GGA_interval = 0;
+	gpsMsg->configureNmeaMessage.GSA_interval = 0;
+	gpsMsg->configureNmeaMessage.GSV_interval = 0;
+	gpsMsg->configureNmeaMessage.GLL_interval = 0;
+	gpsMsg->configureNmeaMessage.RMC_interval = 0;
+	gpsMsg->configureNmeaMessage.VTG_interval = 0;
+	gpsMsg->configureNmeaMessage.ZDA_interval = 0;
+	gpsMsg->configureSerialPort.attributes = ATTRIBUTE_UPDATE_TO_SRAM;
+	gpsMsg->payloadLength = sizeof(ConfigureNmeaMessage);
+	gpsMsg->checksum = calculateChecksum(gpsMsg);
+	txGpsMessage(gpsMsg, serial);
+}
+
 static void sendConfigureNmea(GpsMessage *gpsMsg, Serial *serial){
 	gpsMsg->messageId = MSG_ID_CONFIGURE_NMEA_MESSAGE;
 	gpsMsg->configureNmeaMessage.GGA_interval = GGA_INTERVAL;
@@ -276,6 +349,34 @@ static void sendConfigureNmea(GpsMessage *gpsMsg, Serial *serial){
 	txGpsMessage(gpsMsg, serial);
 }
 
+static void sendConfigureGnssNavigationMode(GpsMessage *gpsMsg, Serial *serial, uint8_t navigationMode){
+    gpsMsg->messageId = MSG_ID_CONFIGURE_GNSS_NAVIGATION_MODE;
+    gpsMsg->configureGnssNavigationMode.messageSubId = MSG_SUBID_CONFIGURE_GNSS_NAVIGATION_MODE;
+    gpsMsg->configureGnssNavigationMode.navigationMode = navigationMode;
+    gpsMsg->configureGnssNavigationMode.attributes = ATTRIBUTE_UPDATE_TO_SRAM;
+    gpsMsg->payloadLength = sizeof(ConfigureGNSSNavigationMode);
+    gpsMsg->checksum = calculateChecksum(gpsMsg);
+    txGpsMessage(gpsMsg, serial);
+}
+
+static void sendConfigureMessageType(GpsMessage *gpsMsg, Serial *serial, uint8_t messageType){
+	gpsMsg->messageId = MSG_ID_CONFIGURE_MESSAGE_TYPE;
+	gpsMsg->configureMessageType.type = messageType;
+	gpsMsg->configureMessageType.attributes = ATTRIBUTE_UPDATE_TO_SRAM;
+	gpsMsg->payloadLength = sizeof(ConfigureMessageType);
+	gpsMsg->checksum = calculateChecksum(gpsMsg);
+	txGpsMessage(gpsMsg, serial);
+}
+
+static void sendConfigureNavigationDataMessageInterval(GpsMessage *gpsMsg, Serial *serial, uint8_t interval){
+	gpsMsg->messageId = MSG_ID_CONFIGURE_NAVIGATION_DATA_MESSAGE_INTERVAL;
+	gpsMsg->configureNavigationDataMessageInterval.navigationMessageInterval = interval;
+	gpsMsg->configureNavigationDataMessageInterval.attributes = ATTRIBUTE_UPDATE_TO_SRAM;
+	gpsMsg->payloadLength = sizeof(ConfigureNavigationDataMessageInterval);
+	gpsMsg->checksum = calculateChecksum(gpsMsg);
+	txGpsMessage(gpsMsg, serial);
+}
+
 static void sendConfigurePositionUpdateRate(GpsMessage *gpsMsg, Serial *serial, uint8_t updateRate){
 	gpsMsg->messageId = MSG_ID_CONFIGURE_POSITION_UPDATE_RATE;
 	gpsMsg->configurePositionUpdateRate.rate = updateRate;
@@ -284,7 +385,6 @@ static void sendConfigurePositionUpdateRate(GpsMessage *gpsMsg, Serial *serial, 
 	gpsMsg->checksum = calculateChecksum(gpsMsg);
 	txGpsMessage(gpsMsg, serial);
 }
-
 
 uint32_t detectGpsBaudRate(GpsMessage *gpsMsg, Serial *serial){
 	BaudRateCodes baud_rates[BAUD_RATE_COUNT] = BAUD_RATES;
@@ -356,6 +456,52 @@ static gps_cmd_result_t configureNmeaMessages(GpsMessage *gpsMsg, Serial *serial
 	return result;
 }
 
+static gps_cmd_result_t configureGnssNavigationMode(GpsMessage *gpsMsg, Serial *serial){
+    pr_info("GPS: Configuring Gnss Navigation Mode: ");
+
+    gps_cmd_result_t result = GPS_COMMAND_FAIL;
+    sendConfigureGnssNavigationMode(gpsMsg, serial, GNSS_NAVIGATION_MODE);
+    if (rxGpsMessage(gpsMsg, serial, MSG_ID_ACK) == GPS_MSG_SUCCESS){
+        result = (gpsMsg->ackMsg.ackId == MSG_ID_CONFIGURE_GNSS_NAVIGATION_MODE) ? GPS_COMMAND_SUCCESS : GPS_COMMAND_FAIL;
+    }
+    pr_info(result == GPS_COMMAND_SUCCESS ? "win\r\n" : "fail\r\n");
+    return result;
+}
+
+static gps_cmd_result_t disableNmeaMessages(GpsMessage *gpsMsg, Serial *serial){
+	pr_info("GPS: Disable NMEA messages: ");
+
+	gps_cmd_result_t result = GPS_COMMAND_FAIL;
+	sendDisableNmea(gpsMsg, serial);
+	if (rxGpsMessage(gpsMsg, serial, MSG_ID_ACK) == GPS_MSG_SUCCESS){
+		result = (gpsMsg->ackMsg.ackId == MSG_ID_CONFIGURE_NMEA_MESSAGE) ? GPS_COMMAND_SUCCESS : GPS_COMMAND_FAIL;
+	}
+	pr_info(result == GPS_COMMAND_SUCCESS ? "win\r\n" : "fail\r\n");
+	return result;
+}
+
+static gps_cmd_result_t configureMessageType(GpsMessage *gpsMsg, Serial *serial){
+	pr_info("GPS: configure message type: ");
+	gps_cmd_result_t result = GPS_COMMAND_FAIL;
+	sendConfigureMessageType(gpsMsg, serial, MESSAGE_TYPE_BINARY);
+	if (rxGpsMessage(gpsMsg, serial, MSG_ID_ACK) == GPS_MSG_SUCCESS){
+		result = (gpsMsg->ackMsg.ackId == MSG_ID_CONFIGURE_MESSAGE_TYPE) ? GPS_COMMAND_SUCCESS : GPS_COMMAND_FAIL;
+	}
+	pr_info(result == GPS_COMMAND_SUCCESS ? "win\r\n" : "fail\r\n");
+	return result;
+}
+
+static gps_cmd_result_t configureNavigationDataMessageInterval(GpsMessage *gpsMsg, Serial *serial){
+	pr_info("GPS: configure navigation data message interval: ");
+	gps_cmd_result_t result = GPS_COMMAND_FAIL;
+	sendConfigureNavigationDataMessageInterval(gpsMsg, serial, NAVIGATION_DATA_MESSAGE_INTERVAL);
+	if (rxGpsMessage(gpsMsg, serial, MSG_ID_ACK) == GPS_MSG_SUCCESS){
+		result = (gpsMsg->ackMsg.ackId == MSG_ID_CONFIGURE_NAVIGATION_DATA_MESSAGE_INTERVAL) ? GPS_COMMAND_SUCCESS : GPS_COMMAND_FAIL;
+	}
+	pr_info(result == GPS_COMMAND_SUCCESS ? "win\r\n" : "fail\r\n");
+	return result;
+}
+
 static uint8_t queryPositionUpdateRate(GpsMessage *gpsMsg, Serial *serial){
 	uint8_t updateRate = 0;
 	sendQueryPositionUpdateRate(gpsMsg, serial);
@@ -378,42 +524,59 @@ static gps_cmd_result_t configureUpdateRate(GpsMessage *gpsMsg, Serial *serial, 
 	return result;
 }
 
+GpsMessage gpsMsg;
+
 int GPS_device_provision(Serial *serial){
-	GpsMessage *gpsMsg = portMalloc(sizeof(GpsMessage));
-	if (gpsMsg == NULL){
-		pr_error("Could not create buffer for GPS message");
-		return 0;
-	}
-	size_t attempts = MAX_PROVISIONING_ATTEMPTS;
+    size_t attempts = MAX_PROVISIONING_ATTEMPTS;
 	size_t provisioned = 0;
 
 	vTaskDelay(msToTicks(500));
 	while(attempts-- && !provisioned){
-		while(1){
-			pr_info("GPS: provisioning attempt\r\n");
-			uint32_t baudRate = detectGpsBaudRate(gpsMsg, serial);
+	    while(1){
+	        pr_info("GPS: provisioning attempt\r\n");
+			uint32_t baudRate = detectGpsBaudRate(&gpsMsg, serial);
 			if (baudRate){
-				pr_info("GPS: module detected at ");
+			    pr_info("GPS: module detected at ");
 				pr_info_int(baudRate);
 				pr_info("\r\n");
-				if (baudRate != TARGET_BAUD_RATE && configureBaudRate(gpsMsg, serial, TARGET_BAUD_RATE) == GPS_COMMAND_FAIL){
+				if (baudRate != TARGET_BAUD_RATE && configureBaudRate(&gpsMsg, serial, TARGET_BAUD_RATE) == GPS_COMMAND_FAIL){
 					pr_error("GPS: Error provisioning - could not configure baud rate\r\n");
 					break;
 				}
 				configure_serial(SERIAL_GPS, 8, 0, 1, TARGET_BAUD_RATE);
 				serial->flush();
-				uint8_t updateRate = queryPositionUpdateRate(gpsMsg, serial);
+				uint8_t updateRate = queryPositionUpdateRate(&gpsMsg, serial);
 				if (!updateRate){
 					pr_error("GPS: Error provisioning - could not detect update rate\r\n");
 					updateRate = 0;
 				}
-				if (updateRate != TARGET_UPDATE_RATE && configureUpdateRate(gpsMsg, serial, TARGET_UPDATE_RATE) == GPS_COMMAND_FAIL){
+				if (updateRate != TARGET_UPDATE_RATE && configureUpdateRate(&gpsMsg, serial, TARGET_UPDATE_RATE) == GPS_COMMAND_FAIL){
 					pr_error("GPS: Error provisioning - could not configure update rate\r\n");
 					break;
 				}
 
-				if (configureNmeaMessages(gpsMsg, serial) == GPS_COMMAND_FAIL){
+				if (configureNmeaMessages(&gpsMsg, serial) == GPS_COMMAND_FAIL){
 					pr_error("GPS: Error provisioning - could not configure NMEA messages\r\n");
+					break;
+				}
+
+				if (configureMessageType(&gpsMsg, serial) == GPS_COMMAND_FAIL){
+					pr_error("GPS: Error provisioning - could not set binary message mode\r\n");
+					break;
+				}
+
+				if (configureNavigationDataMessageInterval(&gpsMsg, serial) == GPS_COMMAND_FAIL){
+					pr_error("GPS: Error provisioning - could not set navigation data message interval\r\n");
+					break;
+				}
+
+                if (configureGnssNavigationMode(&gpsMsg, serial) == GPS_COMMAND_FAIL){
+                    pr_error("GPS: Error provisioning - could not set navigation mode\r\n");
+                    break;
+                }
+
+				if (disableNmeaMessages(&gpsMsg, serial) == GPS_COMMAND_FAIL){
+					pr_error("GPS: Error provisioning - could not disable NMEA messages\r\n");
 					break;
 				}
 
@@ -427,9 +590,43 @@ int GPS_device_provision(Serial *serial){
 			}
 		}
 		if (!provisioned && attempts == MAX_PROVISIONING_ATTEMPTS / 2){
-			attemptFactoryDefaults(gpsMsg, serial);
+			attemptFactoryDefaults(&gpsMsg, serial);
 		}
 	}
-	if (gpsMsg) portFree(gpsMsg);
 	return provisioned;
+}
+
+gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, Serial *serial){
+   gps_msg_result_t result = rxGpsMessage(&gpsMsg, serial, MSG_ID_NAVIGATION_DATA_MESSAGE);
+
+   if (result != GPS_MSG_SUCCESS) return result;
+
+   gpsSample->quality = gpsMsg.navigationDataMessage.fixMode;
+   gpsSample->satellites = gpsMsg.navigationDataMessage.satellitesInFix;
+
+   int32_t latitude_raw = swap_int32(gpsMsg.navigationDataMessage.latitude);
+   int32_t longitude_raw = swap_int32(gpsMsg.navigationDataMessage.longitude);
+   gpsSample->point.latitude = ((float)latitude_raw) * 0.0000001f;
+   gpsSample->point.longitude = ((float)longitude_raw) * 0.0000001f;
+   //gpsSample->altitude =((float)gpsMsg.navigationDataMessage.ellipsoid_altitidue) * 0.01;
+
+   float ecef_x_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vx)) * 0.01;
+   float ecef_y_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vy)) * 0.01;
+   float ecef_z_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vz)) * 0.01;
+
+   float velocity = sqrt((ecef_x_velocity * ecef_x_velocity)
+                         + (ecef_y_velocity * ecef_y_velocity)
+                         + (ecef_z_velocity * ecef_z_velocity));
+   //convert m/sec to km/hour
+   gpsSample->speed = velocity * 3.6;
+
+   //convert GNSS_week to milliseconds and add time of week converted to milliseconds
+   uint16_t GNSS_week = swap_uint16(gpsMsg.navigationDataMessage.GNSS_week);
+   uint32_t timeOfWeekMillis = swap_uint32(gpsMsg.navigationDataMessage.GNSS_timeOfWeek) * 10;
+   millis_t time = (((uint64_t)GNSS_week * 60 * 60 * 24 * 7) * 1000) + timeOfWeekMillis;
+   //adjust for Jan 6 1980 GNSS epoch
+   time += (uint64_t)GNSS_EPOCH_IN_UNIX_EPOCH * 1000;
+   gpsSample->time = time;
+
+   return GPS_MSG_SUCCESS;
 }
