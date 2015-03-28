@@ -45,7 +45,7 @@ static const Track* findClosestTrack(const Tracks *tracks, const GeoPoint *locat
 }
 
 const Track* auto_configure_track(Track *defaultCfg, const GeoPoint *gp) {
-    pr_info("Configuring start/finish...\r\n");
+    pr_info("Configuring start/finish...");
 
     if (isStartPointValid(defaultCfg) && isFinishPointValid(defaultCfg)) {
         pr_info("using fixed config\r\n");
@@ -56,7 +56,7 @@ const Track* auto_configure_track(Track *defaultCfg, const GeoPoint *gp) {
     const Tracks *tracks = get_tracks();
     if (!tracks || tracks->count <= 0) {
         // Well shit!
-        pr_info("error!\r\n");
+        pr_info("No tracks\r\n");
         return defaultCfg;
     }
 

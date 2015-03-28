@@ -181,6 +181,7 @@ $(GPS_SRC_DIR)/geoCircle.c \
 $(GPS_SRC_DIR)/gpsTask.c \
 $(GPS_SRC_DIR)/dateTime.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
+$(LOGGER_SRC_DIR)/versionInfo.c \
 $(TRACKS_SRC_DIR)/tracks.c \
 $(GPS_SRC_DIR)/geopoint.c \
 $(LOGGER_SRC_DIR)/luaLoggerBinding.c \

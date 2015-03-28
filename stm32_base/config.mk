@@ -80,6 +80,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/logger/fileWriter.c \
 			$(RCP_SRC)/logger/loggerCommands.c \
 			$(RCP_SRC)/logger/loggerConfig.c \
+			$(RCP_SRC)/logger/versionInfo.c \
 			$(RCP_SRC)/logger/loggerData.c \
 			$(RCP_SRC)/logger/loggerHardware.c \
 			$(RCP_SRC)/logger/loggerSampleData.c \

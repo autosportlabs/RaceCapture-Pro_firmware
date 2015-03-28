@@ -5,6 +5,7 @@
 #include "geopoint.h"
 #include "tracks.h"
 #include "capabilities.h"
+#include "versionInfo.h"
 
 #define FLASH_PAGE_SIZE						((unsigned int) 256) // Internal FLASH Page Size: 256 bytes
 
@@ -50,14 +51,6 @@
 #define DEFAULT_GPS_RADIUS_PRECISION 		5
 #define DEFAULT_VOLTAGE_SCALING_PRECISION	2
 #define DEFAULT_ANALOG_SCALING_PRECISION	2
-
-typedef struct _VersionInfo{
-	unsigned int major;
-	unsigned int minor;
-	unsigned int bugfix;
-} VersionInfo;
-
-#define DEFAULT_VERSION_INFO {MAJOR_REV, MINOR_REV, BUGFIX_REV}
 
 #define DEFAULT_LABEL_LENGTH					12
 #define DEFAULT_UNITS_LENGTH					8
