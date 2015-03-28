@@ -146,7 +146,7 @@ void getDateTimeFromEpochMillis(DateTime *dateTime, millis_t millis) {
    uint32_t quadricentennials, centennials, quadrennials, annuals/*1-ennial?*/;
    uint32_t year, leap;
    uint32_t yday, hour, min;
-   uint32_t month, mday, wday;
+   uint32_t month, mday;
    static const uint32_t daysSinceJan1st[2][13]=
    {
      {0,31,59,90,120,151,181,212,243,273,304,334,365}, // 365 days, non-leap
@@ -188,8 +188,6 @@ void getDateTimeFromEpochMillis(DateTime *dateTime, millis_t millis) {
    // 1970 - 1601 = 369 = 3*100 + 17*4 + 1 years (incl. 89 leap days) =
    // (3*100*(365+24/100) + 17*4*(365+1/4) + 1*365)*24*3600 seconds
    sec = secondsSinceEpoch + 11644473600;
-
-   wday = (uint32_t)((sec / 86400 + 1) % 7); // day of week
 
    // Remove multiples of 400 years (incl. 97 leap days)
    quadricentennials = (uint32_t)(sec / 12622780800ULL); // 400*365.2425*24*3600
