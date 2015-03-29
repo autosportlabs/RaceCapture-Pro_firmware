@@ -7,6 +7,7 @@
         "sats": 0,
         "dist": 0,
         "alt": 0,
-        "qual": 0
+        "qual": 0,
+        "dop": 0
     }
 }

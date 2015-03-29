@@ -7,6 +7,7 @@
         "sats": 1,
         "dist": 1,
         "alt": 1,
-        "qual": 1
+        "qual": 1,
+        "dop", 1
     }
 }

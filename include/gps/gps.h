@@ -41,6 +41,7 @@ typedef struct _GpsSample {
    float altitude;
    uint8_t satellites;
    uint8_t fixMode;
+   float DOP;
 } GpsSample;
 
 typedef struct _GpsSnapshot {
@@ -69,13 +70,11 @@ bool isGpsSignalUsable(enum GpsSignalQuality q);
 
 int getGPSQuality();
 
-//void setGPSQuality(enum GpsSignalQuality quality);
+float getGpsDOP();
 
 int getSatellitesUsedForPosition();
 
 float getGPSSpeed();
-
-//void setGPSSpeed(float speed);
 
 /**
  * Returns Date time information as provided by the GPS system.
