@@ -13,7 +13,12 @@
 /* UNIX time (epoch 1/1/1970) at the start of GNSS epoch (1/6/1980) */
 #define GNSS_EPOCH_IN_UNIX_EPOCH 315964800
 
-#define MSG_ID_QUERY_GPS_SW_VER	0x02
+#define GNSS_NAVIGATION_MODE_AUTOMATIC  0
+#define GNSS_NAVIGATION_MODE_PEDESTRIAN 1
+#define GNSS_NAVIGATION_MODE_AUTO       2
+#define GNSS_NAVIGATION_MODE_MARINE     3
+#define GNSS_NAVIGATION_MODE_BALLOON    4
+#define GNSS_NAVIGATION_MODE_AIRBORNE   5
 
 #define MAX_PROVISIONING_ATTEMPTS	10
 #define MAX_PAYLOAD_LEN				256
@@ -39,6 +44,7 @@ typedef struct _BaudRateCodes{
 #define UPDATE_RATE_COUNT 		10
 #define UPDATE_RATES 			{1, 2, 4, 5, 8, 10, 20, 25, 40, 50}
 
+#define MSG_ID_QUERY_GPS_SW_VER                             0x02
 #define MSG_ID_ACK											0x83
 #define MSG_ID_NACK 										0x84
 #define MSG_ID_QUERY_SW_VERSION 							0x02
@@ -284,6 +290,8 @@ static gps_msg_result_t rxGpsMessage(GpsMessage *msg, Serial *serial, uint8_t ex
 			result = GPS_MSG_TIMEOUT;
 		}
 	}
+	pr_info_int(msg->messageId);
+	pr_info(" message id received\r\n");
 	return result;
 }
 
@@ -526,7 +534,23 @@ static gps_cmd_result_t configureUpdateRate(GpsMessage *gpsMsg, Serial *serial, 
 
 GpsMessage gpsMsg;
 
-int GPS_device_provision(Serial *serial){
+static uint8_t getTargetUpdateRate(uint8_t sampleRate){
+    if (sampleRate > 25){
+        return 50;
+    }
+    else if (sampleRate > 10){
+        return 25;
+    }
+    else if (sampleRate > 5){
+        return 10;
+    }
+    else if (sampleRate > 1){
+        return 5;
+    }
+    return 1;
+}
+
+int GPS_device_provision(uint8_t sampleRate, Serial *serial){
     size_t attempts = MAX_PROVISIONING_ATTEMPTS;
 	size_t provisioned = 0;
 
@@ -545,12 +569,14 @@ int GPS_device_provision(Serial *serial){
 				}
 				configure_serial(SERIAL_GPS, 8, 0, 1, TARGET_BAUD_RATE);
 				serial->flush();
-				uint8_t updateRate = queryPositionUpdateRate(&gpsMsg, serial);
-				if (!updateRate){
+
+				uint8_t targetUpdateRate = getTargetUpdateRate(sampleRate);
+				uint8_t currentUpdateRate = queryPositionUpdateRate(&gpsMsg, serial);
+				if (!currentUpdateRate){
 					pr_error("GPS: Error provisioning - could not detect update rate\r\n");
-					updateRate = 0;
+					currentUpdateRate = 0;
 				}
-				if (updateRate != TARGET_UPDATE_RATE && configureUpdateRate(&gpsMsg, serial, TARGET_UPDATE_RATE) == GPS_COMMAND_FAIL){
+				if (currentUpdateRate != targetUpdateRate && configureUpdateRate(&gpsMsg, serial, targetUpdateRate) == GPS_COMMAND_FAIL){
 					pr_error("GPS: Error provisioning - could not configure update rate\r\n");
 					break;
 				}
@@ -619,6 +645,7 @@ gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, Serial *serial){
                          + (ecef_z_velocity * ecef_z_velocity));
    //convert m/sec to km/hour
    gpsSample->speed = velocity * 3.6;
+   gpsSample->altitude = (float)gpsMsg.navigationDataMessage.ellipsoid_altitidue * 0.01;
 
    //convert GNSS_week to milliseconds and add time of week converted to milliseconds
    uint16_t GNSS_week = swap_uint16(gpsMsg.navigationDataMessage.GNSS_week);
