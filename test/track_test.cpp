@@ -22,6 +22,7 @@
 #include "track_test.h"
 
 #define TEST_TRACK_VALID_CIRCUIT_TRACK {                \
+      1234,                                             \
       TRACK_TYPE_CIRCUIT,                               \
          {                                              \
             {                                           \
@@ -36,6 +37,7 @@
 
 // Start, Finish, Sectors[]
 #define TEST_TRACK_VALID_STAGE_TRACK {                  \
+      4567,                                             \
       TRACK_TYPE_STAGE,                                 \
          {                                              \
             {                                           \
@@ -49,6 +51,7 @@
    }
 
 #define TEST_TRACK_INVALID_CIRCUIT_TRACK {      \
+      1111,                                     \
       TRACK_TYPE_CIRCUIT,                       \
          {                                      \
             {                                   \
@@ -59,6 +62,7 @@
 
 
 #define TEST_TRACK_INVALID_STAGE_TRACK {        \
+      2222,                                     \
       TRACK_TYPE_STAGE,                         \
          {                                      \
             {                                   \

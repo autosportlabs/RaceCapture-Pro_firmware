@@ -878,6 +878,7 @@ void LoggerApiTest::testSetTrackCfgCircuit(){
 	assertGenericResponse(txBuffer, "setTrackCfg", API_SUCCESS);
 
 	CPPUNIT_ASSERT_EQUAL(0, (int)cfg->track.track_type);
+    CPPUNIT_ASSERT_EQUAL(6674, cfg->track.trackId);
 	CPPUNIT_ASSERT_CLOSE_ENOUGH(0.0001F, cfg->radius);
 	CPPUNIT_ASSERT_EQUAL(0, (int)cfg->auto_detect);
 	CPPUNIT_ASSERT_CLOSE_ENOUGH(1.0F, cfg->track.circuit.startFinish.latitude);
@@ -910,6 +911,7 @@ void LoggerApiTest::testGetTrackCfgCircuit(){
 	cfg->radius = 0.009;
 	cfg->auto_detect = 0;
 	cfg->track.track_type = TRACK_TYPE_CIRCUIT;
+	cfg->track.trackId = 1345;
 
 	char * response = processApiGeneric("getTrackCfg1.json");
 
@@ -919,6 +921,7 @@ void LoggerApiTest::testGetTrackCfgCircuit(){
 	CPPUNIT_ASSERT_EQUAL(0.009F, (float)(Number)json["trackCfg"]["rad"]);
 	CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["trackCfg"]["autoDetect"]);
 	CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["trackCfg"]["track"]["type"]);
+	CPPUNIT_ASSERT_EQUAL(1345, (int)(Number)json["trackCfg"]["track"]["id"]);
 
 	CPPUNIT_ASSERT_EQUAL(1.0F, (float)(Number)json["trackCfg"]["track"]["sf"][0]);
 	CPPUNIT_ASSERT_EQUAL(2.0F, (float)(Number)json["trackCfg"]["track"]["sf"][1]);

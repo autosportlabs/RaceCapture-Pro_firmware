@@ -16,9 +16,9 @@ static const Tracks g_defaultTracks = DEFAULT_TRACKS;
 static Tracks *g_tracksBuffer = NULL;
 
 void initialize_tracks(){
-	if (g_tracks.magicInit != MAGIC_NUMBER_TRACKS_INIT){
-		flash_default_tracks();
-	}
+    if (versionChanged(&g_tracks.versionInfo)){
+        flash_default_tracks();
+    }
 }
 
 int flash_default_tracks(void){

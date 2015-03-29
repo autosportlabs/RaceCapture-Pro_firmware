@@ -3,9 +3,9 @@
 
 #include <stdint.h>
 #include "stddef.h"
-#include "default_tracks.h"
 #include "geopoint.h"
 #include "capabilities.h"
+#include "versionInfo.h"
 
 #define TRACK_ADD_RESULT_OK  		1
 #define TRACK_ADD_RESULT_FAIL  		0
@@ -20,12 +20,17 @@
 
 #define DEFAULT_TRACK_TARGET_RADIUS	0.0001
 
+#define DEFAULT_TRACKS \
+{ \
+    DEFAULT_VERSION_INFO, \
+    0, \
+    {} \
+}
+
 enum TrackType {
    TRACK_TYPE_CIRCUIT = 0,
    TRACK_TYPE_STAGE = 1,
 };
-
-#define MAGIC_NUMBER_TRACKS_INIT	0xDECAFBAD
 
 typedef struct _Circuit{
    GeoPoint startFinish;
@@ -39,6 +44,7 @@ typedef struct _Stage{
 } Stage;
 
 typedef struct _Track{
+   int32_t trackId;
    enum TrackType track_type;
    union{
       GeoPoint allSectors[SECTOR_COUNT]; // Needed for Loading in data.
@@ -48,7 +54,7 @@ typedef struct _Track{
 } Track;
 
 typedef struct _Tracks{
-	uint32_t magicInit;
+    VersionInfo versionInfo;
 	size_t count;
 	Track tracks[MAX_TRACK_COUNT];
 } Tracks;

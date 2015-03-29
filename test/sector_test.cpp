@@ -86,6 +86,7 @@ string SectorTest::readFile(string filename){
 }
 
 #define Test_Track { \
+    5555,               \
 	TRACK_TYPE_CIRCUIT, \
 	{ \
 		{ \
@@ -209,6 +210,7 @@ void SectorTest::testSectorTimes(){
 
 void SectorTest::testStageSectorTimes() {
   const Track track = {
+    3333,
     TRACK_TYPE_STAGE,
     {
       {

@@ -148,6 +148,7 @@ SRC =		mock_uart.c \
 		$(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 		$(RCP_SRC)/auto_config/auto_track.c \
 		$(RCP_SRC)/util/linear_interpolate.c \
+		$(RCP_SRC)/logger/versionInfo.c \
 		$(RCP_SRC)/logger/loggerConfig.c \
 		$(RCP_SRC)/virtual_channel/virtual_channel.c \
 		$(RCP_SRC)/tracks/tracks.c \

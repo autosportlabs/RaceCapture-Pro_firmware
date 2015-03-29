@@ -3,6 +3,7 @@
         "rad": 0.0001,
         "autoDetect" : 0,
         "track": {
+            "id":6674,
             "type": 0,
             "sf":[1.0,2.0],
             "sec": [

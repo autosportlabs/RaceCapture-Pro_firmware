@@ -1189,6 +1189,7 @@ static void json_geoPointArray(Serial *serial, const char *name, const GeoPoint 
 }
 
 static void json_track(Serial *serial, const Track *track){
+    json_int(serial, "id", track->trackId, 1);
 	json_int(serial, "type", track->track_type, 1);
 	if (track->track_type == TRACK_TYPE_CIRCUIT){
 		json_geoPointArray(serial, "sf", &track->circuit.startFinish, 1);
@@ -1246,6 +1247,7 @@ static int setGeoPointIfExists(const jsmntok_t *root, const char * name, GeoPoin
 }
 
 static void setTrack(const jsmntok_t *trackNode, Track *track){
+    setIntValueIfExists(trackNode, "id", (int*)&(track->trackId));
 	unsigned char trackType;
 	if (setUnsignedCharValueIfExists(trackNode, "type", &trackType, NULL)){
            track->track_type = (enum TrackType) trackType;

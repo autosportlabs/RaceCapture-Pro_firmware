@@ -4,7 +4,6 @@
 #include "memory.h"
 #include "printk.h"
 #include "virtual_channel.h"
-
 #include <stdbool.h>
 
 #ifndef RCP_TESTING
@@ -206,15 +205,15 @@ int flashLoggerConfig(void){
 }
 
 static bool checkFlashDefaultConfig(void){
-	size_t major_version_changed = g_savedLoggerConfig.RcpVersionInfo.major != MAJOR_REV;
-	size_t minor_version_changed = g_savedLoggerConfig.RcpVersionInfo.minor != MINOR_REV;
-
-	if (!major_version_changed && !minor_version_changed)
-      return false;
-
-   pr_info("Major or minor firmware version changed\r\n");
-   flash_default_logger_config();
-   return true;
+   bool changed = versionChanged(&g_savedLoggerConfig.RcpVersionInfo);
+   if (changed){
+       pr_info("major/minor version changed\r\n");
+       flash_default_logger_config();
+       return true;
+   }
+   else{
+       return false;
+   }
 }
 
 static void loadWorkingLoggerConfig(void){
