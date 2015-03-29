@@ -67,13 +67,28 @@ static void parseGGA(GpsSample * gpsSample, char *data) {
       *delim = '\0';
       switch (param) {
       case 5:
-         // FIXME: Better suport fo GPS quality here?
-         gpsSample->quality = modp_atoi(data) > 0 ? GPS_QUALITY_FIX : GPS_QUALITY_NO_FIX;
+      {
+         int fixIndicator = modp_atoi(data);
+         enum GpsSignalQuality fixQuality = GPS_QUALITY_NO_FIX;
+         switch (fixIndicator){
+         case 1:
+             fixQuality = GPS_QUALITY_2D;
+             break;
+         case 2:
+             fixQuality = GPS_QUALITY_3D;
+             break;
+         default:
+             break;
+         }
+         gpsSample->quality = fixQuality;
          break;
-
+      }
       case 6:
          gpsSample->satellites = (uint8_t) modp_atoi(data);
          break;
+      case 8:
+          gpsSample->altitude = modp_atof(data);
+          break;
       }
 
       param++;
@@ -227,7 +242,7 @@ static bool processGPSData(GpsSample *gpsSample, char *gpsData, size_t len) {
    return false;
 }
 
-int GPS_device_provision(Serial *serial){
+int GPS_device_provision(uint8_t targetSampleRate, Serial *serial){
 	//nothing to provision, factory defaults are good
 	return 1;
 }

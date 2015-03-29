@@ -230,7 +230,7 @@ void DateTimeTest::testMillisSinceEpoch() {
   const DateTime d448366080000 = {0, 0, 8, 10, 17, 3, 1984};
 
   GpsSample sample;
-  sample.quality = GPS_QUALITY_FIX;
+  sample.quality = GPS_QUALITY_3D;
   sample.time = getMillisecondsSinceUnixEpoch(d448366080000);
   GPS_sample_update(&sample);
 

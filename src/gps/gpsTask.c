@@ -13,6 +13,7 @@
 #include "task.h"
 #include "serial.h"
 #include "taskUtil.h"
+#include "loggerConfig.h"
 
 #define GPS_TASK_STACK_SIZE			200
 
@@ -34,7 +35,8 @@ void setGpsDataLogging(bool enable) {
 
 void GPSTask(void *pvParameters) {
 	Serial *serial = get_serial(SERIAL_GPS);
-	int rc = GPS_device_provision(serial);
+	uint8_t targetSampleRate = decodeSampleRate(getWorkingLoggerConfig()->GPSConfigs.speed.sampleRate);
+	int rc = GPS_device_provision(targetSampleRate, serial);
 	if (!rc){
 		pr_error("Error provisioning GPS module\r\n");
 	}

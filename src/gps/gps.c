@@ -81,8 +81,12 @@ float getLongitude() {
    return g_gpsSnapshot.sample.point.longitude;
 }
 
-enum GpsSignalQuality getGPSQuality() {
-   return g_gpsSnapshot.sample.quality;
+float getAltitude(){
+    return g_gpsSnapshot.sample.altitude;
+}
+
+int getGPSQuality() {
+   return (int)g_gpsSnapshot.sample.quality;
 }
 
 int getSatellitesUsedForPosition() {

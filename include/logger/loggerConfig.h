@@ -346,7 +346,9 @@ typedef struct _GPSConfig{
    ChannelConfig longitude;
    ChannelConfig speed;
    ChannelConfig distance;
+   ChannelConfig altitude;
    ChannelConfig satellites;
+   ChannelConfig quality;
 } GPSConfig;
 
 //HACK: FIX ME for MARK3
@@ -360,14 +362,18 @@ typedef struct _GPSConfig{
 #define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "Degrees", -180, 180, MAX_GPS_SAMPLE_HZ, 6, 0}
 #define DEFAULT_GPS_SPEED_CONFIG {"Speed", "MPH", 0, 150, MAX_GPS_SAMPLE_HZ, 2, 0}
 #define DEFAULT_GPS_DISTANCE_CONFIG {"Distance", "Miles", 0, 0, MAX_GPS_SAMPLE_HZ, 3, 0}
-#define DEFAULT_GPS_SATELLITE_CONFIG {"GPSSats", "", 0, 100, MAX_GPS_SAMPLE_HZ, 0, 0}
+#define DEFAULT_GPS_ALTITUDE_CONFIG {"Altitude", "M", 0, 4000, MAX_GPS_SAMPLE_HZ, 1, 0}
+#define DEFAULT_GPS_SATELLITE_CONFIG {"GPSSats", "", 0, 20, MAX_GPS_SAMPLE_HZ, 0, 0}
+#define DEFAULT_GPS_QUALITY_CONFIG {"GPSQual", "", 0, 5, MAX_GPS_SAMPLE_HZ, 0, 0}
 
 #define DEFAULT_GPS_CONFIG {                    \
       DEFAULT_GPS_LATITUDE_CONFIG,              \
          DEFAULT_GPS_LONGITUDE_CONFIG,          \
          DEFAULT_GPS_SPEED_CONFIG,              \
          DEFAULT_GPS_DISTANCE_CONFIG,           \
-         DEFAULT_GPS_SATELLITE_CONFIG           \
+         DEFAULT_GPS_ALTITUDE_CONFIG,           \
+         DEFAULT_GPS_SATELLITE_CONFIG,           \
+         DEFAULT_GPS_QUALITY_CONFIG            \
          }
 
 typedef struct _LapConfig{

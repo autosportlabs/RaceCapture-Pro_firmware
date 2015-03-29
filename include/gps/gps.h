@@ -28,9 +28,9 @@
 
 enum GpsSignalQuality {
    GPS_QUALITY_NO_FIX = 0,
-   GPS_QUALITY_FIX = 1,
-   GPS_QUALITY_SPS = 2,
-   GPS_QUALITY_DIFFERENTIAL = 3,
+   GPS_QUALITY_2D = 1,
+   GPS_QUALITY_3D = 2,
+   GPS_QUALITY_3D_DGNSS = 3
 };
 
 typedef struct _GpsSample {
@@ -38,7 +38,9 @@ typedef struct _GpsSample {
    GeoPoint point;
    millis_t time;
    float speed;
+   float altitude;
    uint8_t satellites;
+   uint8_t fixMode;
 } GpsSample;
 
 typedef struct _GpsSnapshot {
@@ -59,11 +61,13 @@ float getLatitude();
 
 float getLongitude();
 
+float getAltitude();
+
 bool isGpsDataCold();
 
 bool isGpsSignalUsable(enum GpsSignalQuality q);
 
-enum GpsSignalQuality getGPSQuality();
+int getGPSQuality();
 
 //void setGPSQuality(enum GpsSignalQuality quality);
 

@@ -121,7 +121,13 @@ void SampleRecordTest::testPopulateSampleRecord(){
 	samples++;
 	CPPUNIT_ASSERT_EQUAL((float)0, samples->valueFloat);
 
-	samples++;
+    samples++;
+    CPPUNIT_ASSERT_EQUAL((float)0, samples->valueFloat);
+
+    samples++;
+    CPPUNIT_ASSERT_EQUAL((float)0, samples->valueFloat);
+
+    samples++;
 	CPPUNIT_ASSERT_EQUAL((float)0, samples->valueFloat);
 
         samples++;
@@ -132,7 +138,7 @@ void SampleRecordTest::testInitSampleRecord()
 {
    LoggerConfig *lc = getWorkingLoggerConfig();
 
-   size_t expectedEnabledChannels = 19;
+   size_t expectedEnabledChannels = 21;
 
    size_t channelCount = get_enabled_channel_count(lc);
    CPPUNIT_ASSERT_EQUAL(expectedEnabledChannels, channelCount);
@@ -245,9 +251,23 @@ void SampleRecordTest::testInitSampleRecord()
       ts++;
    }
 
+   if (gpsConfig->altitude.sampleRate != SAMPLE_DISABLED){
+      CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->altitude, (void *) ts->cfg);
+      CPPUNIT_ASSERT_EQUAL((void *) getAltitude, (void *) ts->get_float_sample);
+      CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
+      ts++;
+   }
+
    if (gpsConfig->satellites.sampleRate != SAMPLE_DISABLED){
       CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->satellites, (void *) ts->cfg);
       CPPUNIT_ASSERT_EQUAL((void *) getSatellitesUsedForPosition, (void *) ts->get_int_sample);
+      CPPUNIT_ASSERT_EQUAL(SampleData_Int_Noarg, ts->sampleData);
+      ts++;
+   }
+
+   if (gpsConfig->quality.sampleRate != SAMPLE_DISABLED){
+      CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->quality, (void *) ts->cfg);
+      CPPUNIT_ASSERT_EQUAL((void *) getGPSQuality, (void *) ts->get_int_sample);
       CPPUNIT_ASSERT_EQUAL(SampleData_Int_Noarg, ts->sampleData);
       ts++;
    }

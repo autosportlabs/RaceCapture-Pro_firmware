@@ -147,7 +147,7 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
           dt.millisecond = (int16_t) atoiOffsetLenSafe(utcTimeStr, 7, 3);
 
           GpsSample sample;
-          sample.quality = GPS_QUALITY_FIX;
+          sample.quality = GPS_QUALITY_3D;
           sample.point.latitude = lat;
           sample.point.longitude = lon;
           sample.time = getMillisecondsSinceUnixEpoch(dt);
