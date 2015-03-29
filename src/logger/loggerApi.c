@@ -970,6 +970,7 @@ static unsigned short getGpsConfigHighSampleRate(GPSConfig *cfg) {
    rate = getHigherSampleRate(rate, cfg->altitude.sampleRate);
    rate = getHigherSampleRate(rate, cfg->satellites.sampleRate);
    rate = getHigherSampleRate(rate, cfg->quality.sampleRate);
+   rate = getHigherSampleRate(rate, cfg->DOP.sampleRate);
    return rate;
 }
 
@@ -990,7 +991,8 @@ int api_getGpsConfig(Serial *serial, const jsmntok_t *json){
    json_int(serial, "dist", gpsCfg->distance.sampleRate != SAMPLE_DISABLED, 1);
    json_int(serial, "alt", gpsCfg->altitude.sampleRate != SAMPLE_DISABLED, 1);
    json_int(serial, "sats", gpsCfg->satellites.sampleRate != SAMPLE_DISABLED, 1);
-   json_int(serial, "qual", gpsCfg->quality.sampleRate != SAMPLE_DISABLED, 0);
+   json_int(serial, "qual", gpsCfg->quality.sampleRate != SAMPLE_DISABLED, 1);
+   json_int(serial, "dop", gpsCfg->DOP.sampleRate != SAMPLE_DISABLED, 0);
 
    json_objEnd(serial, 0);
    json_objEnd(serial, 0);
@@ -1020,6 +1022,7 @@ int api_setGpsConfig(Serial *serial, const jsmntok_t *json){
    gpsConfigTestAndSet(json, &(gpsCfg->altitude), "alt", sr);
    gpsConfigTestAndSet(json, &(gpsCfg->satellites), "sats", sr);
    gpsConfigTestAndSet(json, &(gpsCfg->quality), "qual", sr);
+   gpsConfigTestAndSet(json, &(gpsCfg->DOP), "dop", sr);
 
 	configChanged();
 	return API_SUCCESS;

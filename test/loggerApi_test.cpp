@@ -742,9 +742,9 @@ void LoggerApiTest::testFlashConfig(){
 }
 
 void LoggerApiTest::testChannelConfig(ChannelConfig *cfg, string expNm, string expUt, unsigned short sr) {
-        CPPUNIT_ASSERT_EQUAL(expNm, string(cfg->label));
-        CPPUNIT_ASSERT_EQUAL(expUt, string(cfg->units));
-	CPPUNIT_ASSERT_EQUAL((int) sr, decodeSampleRate(cfg->sampleRate));
+    CPPUNIT_ASSERT_EQUAL(expNm, string(cfg->label));
+    CPPUNIT_ASSERT_EQUAL(expUt, string(cfg->units));
+    CPPUNIT_ASSERT_EQUAL((int) sr, decodeSampleRate(cfg->sampleRate));
 }
 
 void LoggerApiTest::testSetGpsConfigFile(string filename, unsigned char channelsEnabled, unsigned short sampleRate){
@@ -764,6 +764,7 @@ void LoggerApiTest::testSetGpsConfigFile(string filename, unsigned char channels
         testChannelConfig(&gpsCfg->altitude, string("Altitude"), string("M"), sampleRate);
         testChannelConfig(&gpsCfg->satellites, string("GPSSats"), string(""), sampleRate);
         testChannelConfig(&gpsCfg->quality, string("GPSQual"), string(""), sampleRate);
+        testChannelConfig(&gpsCfg->DOP, string("GPSDOP"), string(""), sampleRate);
 
 	assertGenericResponse(txBuffer, "setGpsCfg", API_SUCCESS);
 }
@@ -784,7 +785,7 @@ void LoggerApiTest::testGetGpsConfigFile(string filename){
    populateChannelConfig(&gpsCfg->altitude, 0, 100);
    populateChannelConfig(&gpsCfg->satellites, 0, 100);
    populateChannelConfig(&gpsCfg->quality, 0, 100);
-
+   populateChannelConfig(&gpsCfg->DOP, 0, 100);
 
    char * response = processApiGeneric(filename);
 
@@ -801,6 +802,7 @@ void LoggerApiTest::testGetGpsConfigFile(string filename){
    CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["alt"]);
    CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["sats"]);
    CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["qual"]);
+   CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["dop"]);
 }
 
 void LoggerApiTest::testGetGpsCfg(){

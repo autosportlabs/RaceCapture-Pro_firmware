@@ -89,6 +89,10 @@ int getGPSQuality() {
    return (int)g_gpsSnapshot.sample.quality;
 }
 
+float getGpsDOP(){
+    return g_gpsSnapshot.sample.DOP;
+}
+
 int getSatellitesUsedForPosition() {
    return g_gpsSnapshot.sample.satellites;
 }

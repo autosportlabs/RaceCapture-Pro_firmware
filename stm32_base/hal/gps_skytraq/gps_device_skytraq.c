@@ -628,7 +628,7 @@ gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, Serial *serial){
 
    gpsSample->quality = gpsMsg.navigationDataMessage.fixMode;
    gpsSample->satellites = gpsMsg.navigationDataMessage.satellitesInFix;
-
+   gpsSample->DOP = ((float)swap_uint16(gpsMsg.navigationDataMessage.PDOP)) * 0.01;
    int32_t latitude_raw = swap_int32(gpsMsg.navigationDataMessage.latitude);
    int32_t longitude_raw = swap_int32(gpsMsg.navigationDataMessage.longitude);
    gpsSample->point.latitude = ((float)latitude_raw) * 0.0000001f;

@@ -163,8 +163,23 @@ void LoggerConfigTest::testLoggerInitGpsConfig() {
    CPPUNIT_ASSERT_EQUAL(string("Miles"), string(cc->units));
    CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
 
+   cc = &lc->GPSConfigs.altitude;
+   CPPUNIT_ASSERT_EQUAL(string("Altitude"), string(cc->label));
+   CPPUNIT_ASSERT_EQUAL(string("M"), string(cc->units));
+   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+
    cc = &lc->GPSConfigs.satellites;
    CPPUNIT_ASSERT_EQUAL(string("GPSSats"), string(cc->label));
+   CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
+   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+
+   cc = &lc->GPSConfigs.quality;
+   CPPUNIT_ASSERT_EQUAL(string("GPSQual"), string(cc->label));
+   CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
+   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+
+   cc = &lc->GPSConfigs.DOP;
+   CPPUNIT_ASSERT_EQUAL(string("GPSDOP"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
    CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
 }

@@ -282,6 +282,8 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
    sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getSatellitesUsedForPosition);
    chanCfg = &(gpsConfig->quality);
    sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getGPSQuality);
+   chanCfg = &(gpsConfig->DOP);
+   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getGpsDOP);
 
 
 

@@ -86,6 +86,9 @@ static void parseGGA(GpsSample * gpsSample, char *data) {
       case 6:
          gpsSample->satellites = (uint8_t) modp_atoi(data);
          break;
+      case 7:
+         gpsSample->DOP = modp_atof(data);
+         break;
       case 8:
           gpsSample->altitude = modp_atof(data);
           break;
