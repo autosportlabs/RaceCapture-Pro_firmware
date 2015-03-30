@@ -289,7 +289,6 @@ static gps_msg_result_t rxGpsMessage(GpsMessage *msg, Serial *serial, uint8_t ex
 			result = GPS_MSG_TIMEOUT;
 		}
 	}
-	pr_info_int(msg->messageId);
 	return result;
 }
 
