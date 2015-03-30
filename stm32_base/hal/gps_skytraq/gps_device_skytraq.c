@@ -290,7 +290,6 @@ static gps_msg_result_t rxGpsMessage(GpsMessage *msg, Serial *serial, uint8_t ex
 		}
 	}
 	pr_info_int(msg->messageId);
-	pr_info(" message id received\r\n");
 	return result;
 }
 
