@@ -230,16 +230,17 @@ void lapStats_init() {
 }
 
 static int isStartFinishEnabled(const Track *track) {
-    return isFinishPointValid(track) && isStartPointValid(track);
+        return isFinishPointValid(track) && isStartPointValid(track);
 }
 
 static int isSectorTrackingEnabled(const Track *track) {
-    LoggerConfig *config = getWorkingLoggerConfig();
+        if (!isStartFinishEnabled(track)) return 0;
 
-    // We must have at least one valid sector, which must start at position 0.  Else errors.
-    GeoPoint p0 = getSectorGeoPointAtIndex(track, 0);
-    return config->LapConfigs.sectorTimeCfg.sampleRate != SAMPLE_DISABLED &&
-            isValidPoint(&p0) && isStartFinishEnabled(track);
+        // Must have >=  one valid sector; must start at position 0.
+        const LoggerConfig *config = getWorkingLoggerConfig();
+        const GeoPoint p0 = getSectorGeoPointAtIndex(track, 0);
+        return config->LapConfigs.sectorTimeCfg.sampleRate != SAMPLE_DISABLED &&
+                isValidPoint(&p0);
 }
 
 static void onLocationUpdated(const GpsSnapshot *gpsSnapshot) {
@@ -247,15 +248,13 @@ static void onLocationUpdated(const GpsSnapshot *gpsSnapshot) {
    static int sectorEnabled = 0;
    static int startFinishEnabled = 0;
 
-   g_distance += calcDistancesSinceLastSample(gpsSnapshot);
-
-   LoggerConfig *config = getWorkingLoggerConfig();
+   const LoggerConfig *config = getWorkingLoggerConfig();
    const GeoPoint *gp = &gpsSnapshot->sample.point;
    const float targetRadius = degreesToMeters(config->TrackConfigs.radius);
 
    if (!g_configured) {
-      TrackConfig *trackConfig = &(config->TrackConfigs);
-      Track *defaultTrack = &trackConfig->track;
+      const TrackConfig *trackConfig = &(config->TrackConfigs);
+      const Track *defaultTrack = &trackConfig->track;
       g_activeTrack = trackConfig->auto_detect ?
          auto_configure_track(defaultTrack, gp) : defaultTrack;
 
@@ -266,35 +265,36 @@ static void onLocationUpdated(const GpsSnapshot *gpsSnapshot) {
       g_configured = 1;
    }
 
-   if (startFinishEnabled) {
-      // Seconds since first fix is good until we alter the code to use millis directly
-      const int lapDetected = processStartFinish(gpsSnapshot, g_activeTrack, targetRadius);
-      const tiny_millis_t millisSinceFirstFix = gpsSnapshot->deltaFirstFix;
+   if (!startFinishEnabled) return;
 
-      if (lapDetected) {
-         resetLapDistance();
+   g_distance += calcDistancesSinceLastSample(gpsSnapshot);
+   // Seconds since first fix is good until we alter the code to use millis directly
+   const int lapDetected = processStartFinish(gpsSnapshot, g_activeTrack, targetRadius);
+   const tiny_millis_t millisSinceFirstFix = gpsSnapshot->deltaFirstFix;
 
-         /*
-          * FIXME: Special handling of first start/finish crossing.  Needed
-          * b/c launch control will delay the first launch notification
-          */
-         if (getLapCount() == 0) {
-            const GeoPoint sp = getStartPoint(g_activeTrack);
-            // Distance is in KM
-            g_distance = distPythag(&sp, gp) / 1000;
+   if (lapDetected) {
+           resetLapDistance();
 
-            startFinishCrossed(&sp, g_lastStartFinishTimestamp);
-            addGpsSample(gp, millisSinceFirstFix);
-         } else {
-            startFinishCrossed(gp, millisSinceFirstFix);
-         }
-      } else {
-         addGpsSample(gp, millisSinceFirstFix);
-      }
+           /*
+            * FIXME: Special handling of first start/finish crossing.  Needed
+            * b/c launch control will delay the first launch notification
+            */
+           if (getLapCount() == 0) {
+                   const GeoPoint sp = getStartPoint(g_activeTrack);
+                   // Distance is in KM
+                   g_distance = distPythag(&sp, gp) / 1000;
 
-      if (sectorEnabled)
-         processSector(gpsSnapshot, g_activeTrack, targetRadius);
+                   startFinishCrossed(&sp, g_lastStartFinishTimestamp);
+                   addGpsSample(gp, millisSinceFirstFix);
+           } else {
+                   startFinishCrossed(gp, millisSinceFirstFix);
+           }
+   } else {
+           addGpsSample(gp, millisSinceFirstFix);
    }
+
+   if (sectorEnabled)
+           processSector(gpsSnapshot, g_activeTrack, targetRadius);
 }
 
 void lapStats_processUpdate(const GpsSnapshot *gpsSnapshot) {

@@ -44,7 +44,7 @@ static const Track* findClosestTrack(const Tracks *tracks, const GeoPoint *locat
     return best;
 }
 
-const Track* auto_configure_track(Track *defaultCfg, const GeoPoint *gp) {
+const Track* auto_configure_track(const Track *defaultCfg, const GeoPoint *gp) {
     pr_info("Configuring start/finish...");
 
     if (isStartPointValid(defaultCfg) && isFinishPointValid(defaultCfg)) {
