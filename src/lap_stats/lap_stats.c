@@ -117,7 +117,7 @@ int getAtSector() {
  * @return True if we are in the middle of a lap.  False otherwise.
  */
 static bool isLapTimingInProgress() {
-   return g_lapStartTimestamp != 0;
+   return g_lapStartTimestamp >= 0;
 }
 
 /**
@@ -132,7 +132,7 @@ static void startLapTiming(const tiny_millis_t startTime) {
  */
 static void endLapTiming(const GpsSnapshot *gpsSnapshot) {
         g_lastLapTime = gpsSnapshot->deltaFirstFix - g_lapStartTimestamp;
-        g_lapStartTimestamp = 0;
+        g_lapStartTimestamp = -1;
 }
 
 /**
@@ -176,28 +176,27 @@ static void lapFinishedEvent(const GpsSnapshot *gpsSnapshot) {
 }
 
 
-/**
- * Called whenever we start a new lap.
- */
-static void lapStartedEvent(const GpsSnapshot *gpsSnapshot) {
+static void _lapStartedEvent(const tiny_millis_t time,
+                             const GeoPoint *sp,
+                             const float distance,
+                             const GpsSnapshot *gpsSnapshot) {
         // Increment and log that we started a lap.
+        ++g_lapCount;
         pr_debug("Started Lap ");
-        pr_debug_int(++g_lapCount);
-        pr_debug("\r\n");
+        pr_debug_int(g_lapCount);
+        pr_debug(" with launch control.\r\n");
 
-        const tiny_millis_t launchTime = lc_getLaunchTime();
-        const GeoPoint sp = getStartPoint(g_activeTrack);
-        const GeoPoint gp = gpsSnapshot->sample.point;
-
-        startLapTiming(launchTime);
-        startLap(&sp, launchTime);
+        // Timing and predictive timing
+        startLapTiming(time);
+        startLap(sp, time);
 
         // Reset the sector logic
-        g_lastSectorTimestamp = launchTime;
+        g_lastSectorTimestamp = time;
         g_sector = 0;
 
+        // Reset distance logic
         resetLapDistance();
-        g_distance = distPythag(&sp, &gp) / 1000;
+        g_distance = distance;
 
         /*
          * Set this value so we don't accidentally trigger a finish
@@ -205,6 +204,30 @@ static void lapStartedEvent(const GpsSnapshot *gpsSnapshot) {
          * start & finish area.
          */
         setCooloffWindow(gpsSnapshot, START_FINISH_TIME_THRESHOLD);
+
+}
+
+/**
+ * Called whenever we start a new lap the normal way (ie no launch control).
+ */
+static void lapStartedNormalEvent(const GpsSnapshot *gpsSnapshot) {
+        const tiny_millis_t time = gpsSnapshot->deltaFirstFix;
+        const GeoPoint gp = gpsSnapshot->sample.point;
+
+        _lapStartedEvent(time, &gp, 0, gpsSnapshot);
+}
+
+/**
+ * Called whenever we start a new lap using Launch Control.  Has to be specially
+ * handled due to the delayed timing information.
+ */
+static void lapStartedLaunchControlEvent(const GpsSnapshot *gpsSnapshot) {
+        const tiny_millis_t time = lc_getLaunchTime();
+        const GeoPoint sp = getStartPoint(g_activeTrack);
+        const GeoPoint gp = gpsSnapshot->sample.point;
+        const float distance = distPythag(&sp, &gp) / 1000;
+
+        _lapStartedEvent(time, &sp, distance, gpsSnapshot);
 }
 
 /**
@@ -218,7 +241,8 @@ static void sectorBoundaryEvent(const GpsSnapshot *gpsSnapshot) {
 
         g_lastSectorTime = millis - g_lastSectorTimestamp;
         g_lastSectorTimestamp = millis;
-        g_lastSector = g_sector++;
+        g_lastSector = g_sector;
+        ++g_sector;
 }
 
 /**
@@ -250,9 +274,19 @@ static void processStartLogic(const GpsSnapshot *gpsSnapshot,
         if (isCoolOffInEffect(gpsSnapshot)) return;
 
         /*
-         * This check goes here (before we supply launch control with GPS
-         * data) to allow us to know if launch control needs a reset.  If
-         * so then reset it, then start feeding it data.
+         * If we have crossed start finish at least once and we are a circuit
+         * track, then we need to disable launch control to prevent hiccups
+         * in reporting.
+         */
+        if (g_lapCount > 0 && track->track_type == TRACK_TYPE_CIRCUIT) {
+                lapStartedNormalEvent(gpsSnapshot);
+                return;
+        }
+
+        /*
+         * If in Stage mode or not launched, we need to do launch control
+         * on this lap start.  This way we can support multiple stage style
+         * laps.  This also buys us predictive timing.
          */
         if (lc_hasLaunched()) {
                 lc_reset();
@@ -263,7 +297,7 @@ static void processStartLogic(const GpsSnapshot *gpsSnapshot,
         if (!lc_hasLaunched()) return;
 
         // If here, then the lap has started
-        lapStartedEvent(gpsSnapshot);
+        lapStartedLaunchControlEvent(gpsSnapshot);
 }
 
 static void processSectorLogic(const GpsSnapshot *gpsSnapshot,
@@ -295,7 +329,7 @@ void lapStats_init() {
    g_lastSectorTime = 0;
    g_atStartFinish = 0;
    g_prevAtStartFinish = 0;
-   g_lapStartTimestamp = 0;
+   g_lapStartTimestamp = -1;
    g_atTarget = 0;
    g_lastSectorTimestamp = 0;
    g_lapCount = 0;
@@ -336,6 +370,8 @@ static void onLocationUpdated(const GpsSnapshot *gpsSnapshot) {
 
       startFinishEnabled = isStartFinishEnabled(g_activeTrack);
       sectorEnabled = isSectorTrackingEnabled(g_activeTrack);
+
+      lc_reset();
       lc_setup(g_activeTrack, targetRadius);
 
       g_configured = 1;

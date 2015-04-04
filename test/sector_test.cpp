@@ -125,10 +125,13 @@ void SectorTest::testSectorTimes(){
 	memcpy(trackCfg, &testTrack, sizeof(Track));
 
 	vector<float> sectorTimes;
-	int currentSector = 0;
+	int currentSector = -1;
 	int currentLap = 0;
 	int lineNo = 0;
 	string line;
+
+        const bool debug = getenv("DEBUG") != NULL;
+        if (debug) printf("\r\n");
 
 	while (std::getline(iss, line)) {
            lineNo++;
@@ -175,37 +178,43 @@ void SectorTest::testSectorTimes(){
 
            // Start Work!
            const int sector = getSector();
-
-           // Ignore data until we cross start/finish.
-           if (sector < 0) continue;
+           const int lap = getLapCount();
 
            if (sector != currentSector){
-             sectorTimes.push_back(getLastSectorTime());
-             currentSector = sector;
+                   if (debug) printf("Sector boundary crossed ( %d -> %d )\r\n",
+                                     currentSector, sector);
+                   sectorTimes.push_back(getLastSectorTime());
+                   currentSector = sector;
            }
 
-           int lap = getLapCount();
-           if (lap > currentLap){
-             const float lastLapTime = getLastLapTime();
-             const float sum = sumSectorTimes(sectorTimes);
+           if (lap != currentLap) {
+                   const float lastLapTime = getLastLapTime();
+                   const float sum = sumSectorTimes(sectorTimes);
 
-             //printf("\rlap %d time: %f | sum of sector times: %f\r", lap, lastLapTime, sum);
-             //outputSectorTimes(sectorTimes, lap);
+                   if (debug) printf("Lap boundary crossed ( %d -> %d ) | "
+                                     "Lap time: %f | Sum of sector times: %f"
+                                     "\r\n", currentLap, lap, lastLapTime, sum);
+                   outputSectorTimes(sectorTimes, lap);
 
-             CPPUNIT_ASSERT_EQUAL(5, (int) sectorTimes.size());
-             CPPUNIT_ASSERT_CLOSE_ENOUGH(sum, lastLapTime);
+                   if (currentLap > 0) {
+                           CPPUNIT_ASSERT_EQUAL(5, (int) sectorTimes.size());
+                           CPPUNIT_ASSERT_CLOSE_ENOUGH(sum, lastLapTime);
+                   }
 
-             sectorTimes.clear();
-             currentLap = lap;
+                   sectorTimes.clear();
+                   currentLap = lap;
            }
 
-           //printf("%.7f,%.7f | lapTime (%d) %f | sectorTime: (%d) %f\r\n", lat, lon,
-           //        getLapCount(), getLastLapTimeInMinutes(),
-           //        getLastSector(), getLastSectorTimeInMinutes());
+
+           if (debug) printf("%.7f, %.7f, %f | Currently Lap %d, Sector %d | "
+                             "Last Lap Time %f, Last Sector Time: (%d) %f\r\n",
+                             lat, lon, speed, lap, sector,
+                             getLastLapTimeInMinutes(), getLastSector(),
+                             getLastSectorTimeInMinutes());
 
 	}
 
-   CPPUNIT_ASSERT_EQUAL(4, currentLap);
+   CPPUNIT_ASSERT_EQUAL(5, currentLap);
 }
 
 void SectorTest::testStageSectorTimes() {

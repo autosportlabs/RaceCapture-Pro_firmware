@@ -14,6 +14,7 @@
 
 #include "dateTime.h"
 #include "geopoint.h"
+#include "gps.h"
 
 #include <stdbool.h>
 
