@@ -18,19 +18,29 @@
 #include <stdbool.h>
 
 /**
- * Method invoked whenever we detect that we have crossed the start finish line
- * @param point The location of the start/finish line.
- * @param time The time (millis) which the sample was taken.
+ * Called when we finish a lap.  Adds the final sample and adjusts sample rates
+ * in preperation for the next lap.  Must be called after #startLap is called.
+ * @param gpsSnapshot The GPS state when the lap was completed.
  */
-void startFinishCrossed(const GeoPoint * point, tiny_millis_t time);
+void finishLap(const GpsSnapshot *gpsSnapshot);
+
+/**
+ * Called when we start a lap.  This sets the appropriate timers and starts recording
+ * of the times.  This must be called before either #addGpsSample or #finishLap are
+ * called.
+ * @param point The position when the lap started.
+ * @param time The time (millis) when the lap started.
+ */
+void startLap(const GeoPoint *point, const tiny_millis_t time);
 
 /**
  * Adds a new GPS sample to our record if the algorithm determines its time for one.
- * @param point The point to add.
- * @param time The time (millis) which the sample was taken.
+ * Must be invoked after the invocation of #startLap but before the invocation of
+ * #finishLap
+ * @param gpsSnapshot The GPS state when the lap was started.
  * @return TRUE if it was added, FALSE otherwise.
  */
-bool addGpsSample(const GeoPoint *point, tiny_millis_t time);
+bool addGpsSample(const GpsSnapshot *gpsSnapshot);
 
 /**
  * Calculates the split of your current time against the fast lap time at the position given.

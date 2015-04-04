@@ -27,13 +27,12 @@
 static const Track * g_activeTrack;
 
 static int g_configured;
-
+static tiny_millis_t g_cooloffTime;
 static int g_atStartFinish;
 static int g_prevAtStartFinish;
-static tiny_millis_t g_lastStartFinishTimestamp;
+static tiny_millis_t g_lapStartTimestamp;
 
 static int g_atTarget;
-static int g_prevAtTarget;
 static tiny_millis_t g_lastSectorTimestamp;
 
 static int g_sector;
@@ -115,96 +114,172 @@ int getAtSector() {
 }
 
 /**
- * @return True if we have crossed the start line at least once, false otherwise.
+ * @return True if we are in the middle of a lap.  False otherwise.
  */
-static bool isStartCrossedYet() {
-   return g_lastStartFinishTimestamp != 0;
+static bool isLapTimingInProgress() {
+   return g_lapStartTimestamp != 0;
 }
 
-static int processStartFinish(const GpsSnapshot *gpsSnapshot, const Track *track,
+/**
+ * Called when we start a lap.  Handles timing information.
+ */
+static void startLapTiming(const tiny_millis_t startTime) {
+        g_lapStartTimestamp = startTime;
+}
+
+/**
+ * Called when we finish a lap.  Handles timing information.
+ */
+static void endLapTiming(const GpsSnapshot *gpsSnapshot) {
+        g_lastLapTime = gpsSnapshot->deltaFirstFix - g_lapStartTimestamp;
+        g_lapStartTimestamp = 0;
+}
+
+/**
+ * True if we are in the cool off period for start/finish.  False otherwise.
+ */
+static bool isCoolOffInEffect(const GpsSnapshot *gpsSnapshot) {
+        return gpsSnapshot->deltaFirstFix < g_cooloffTime;
+}
+
+/**
+ * Sets the cooloff Window to be now plus X milliseconds.  When cooloff
+ * is active we will not trigger start or finish events.  This is used
+ * to prevent false triggering.
+ * @param time The amount of time (in ms) that we need to cooloff
+ */
+static void setCooloffWindow(const GpsSnapshot *gpsSnapshot,
+                             const tiny_millis_t time) {
+        g_cooloffTime = gpsSnapshot->deltaFirstFix + time;
+}
+
+/**
+ * Called whenever we finish a lap.
+ */
+static void lapFinishedEvent(const GpsSnapshot *gpsSnapshot) {
+        pr_debug("Finished Lap ");
+        pr_debug_int(g_lapCount);
+        pr_debug("\r\n");
+
+        endLapTiming(gpsSnapshot);
+        finishLap(gpsSnapshot);
+
+        // If in Circuit Mode, don't set cool off after finish.
+        if (g_activeTrack->track_type == TRACK_TYPE_CIRCUIT) return;
+
+        /*
+         * Set cool off window in stage mode to give driver time to get
+         * away from start circle in case start and finish lines are
+         * close to one another.
+         */
+        setCooloffWindow(gpsSnapshot, START_FINISH_TIME_THRESHOLD);
+}
+
+
+/**
+ * Called whenever we start a new lap.
+ */
+static void lapStartedEvent(const GpsSnapshot *gpsSnapshot) {
+        // Increment and log that we started a lap.
+        pr_debug("Started Lap ");
+        pr_debug_int(++g_lapCount);
+        pr_debug("\r\n");
+
+        const tiny_millis_t launchTime = lc_getLaunchTime();
+        const GeoPoint sp = getStartPoint(g_activeTrack);
+        const GeoPoint gp = gpsSnapshot->sample.point;
+
+        startLapTiming(launchTime);
+        startLap(&sp, launchTime);
+
+        // Reset the sector logic
+        g_lastSectorTimestamp = launchTime;
+        g_sector = 0;
+
+        resetLapDistance();
+        g_distance = distPythag(&sp, &gp) / 1000;
+
+        /*
+         * Set this value so we don't accidentally trigger a finish
+         * event in a circuit track (since circuit track has same
+         * start & finish area.
+         */
+        setCooloffWindow(gpsSnapshot, START_FINISH_TIME_THRESHOLD);
+}
+
+/**
+ * Called whenever we have hit a sector boundary.
+ */
+static void sectorBoundaryEvent(const GpsSnapshot *gpsSnapshot) {
+        const tiny_millis_t millis = gpsSnapshot->deltaFirstFix;
+
+        pr_debug_int(g_sector);
+        pr_debug(" Sector Boundary Detected\r\n");
+
+        g_lastSectorTime = millis - g_lastSectorTimestamp;
+        g_lastSectorTimestamp = millis;
+        g_lastSector = g_sector++;
+}
+
+/**
+ * All logic associated with determining if we are at the finish line.
+ */
+static void processFinishLogic(const GpsSnapshot *gpsSnapshot,
+                               const Track *track,
+                               const float targetRadius) {
+        if (!isLapTimingInProgress()) return;
+        if (isCoolOffInEffect(gpsSnapshot)) return;
+
+        const GeoPoint point = gpsSnapshot->sample.point;
+        const GeoPoint finishPoint = getFinishPoint(track);
+        const struct GeoCircle finishCircle = gc_createGeoCircle(finishPoint,
+                                                                 targetRadius);
+        if(!gc_isPointInGeoCircle(&point, finishCircle)) return;
+
+        // If we get here, then we have completed a lap.
+        lapFinishedEvent(gpsSnapshot);
+}
+
+/**
+ * All logic associated with determining if we are at the start line.
+ */
+static void processStartLogic(const GpsSnapshot *gpsSnapshot,
+                              const Track *track,
                               const float targetRadius) {
+        if (isLapTimingInProgress()) return;
+        if (isCoolOffInEffect(gpsSnapshot)) return;
 
-   // First time crossing start finish.  Handle this in a special way.
-   if (!isStartCrossedYet()) {
-      lc_supplyGpsSnapshot(gpsSnapshot);
+        /*
+         * This check goes here (before we supply launch control with GPS
+         * data) to allow us to know if launch control needs a reset.  If
+         * so then reset it, then start feeding it data.
+         */
+        if (lc_hasLaunched()) {
+                lc_reset();
+                lc_setup(track, targetRadius);
+        }
 
-      if (lc_hasLaunched()) {
-         g_lastStartFinishTimestamp = lc_getLaunchTime();
-         g_lastSectorTimestamp = lc_getLaunchTime();
-         g_prevAtStartFinish = 1;
-         g_sector = 0;
-         return true;
-      }
+        lc_supplyGpsSnapshot(gpsSnapshot);
+        if (!lc_hasLaunched()) return;
 
-      return false;
-   }
-
-   const tiny_millis_t timestamp = gpsSnapshot->deltaFirstFix;
-   const tiny_millis_t elapsed = timestamp - g_lastStartFinishTimestamp;
-   const struct GeoCircle sfCircle = gc_createGeoCircle(getFinishPoint(track),
-                                                        targetRadius);
-
-   /*
-    * Guard against false triggering. We have to be out of the start/finish
-    * target for some amount of time and couldn't have been in there during our
-    * last time in this method.
-    *
-    * FIXME: Should have logic that checks that we left the start/finish circle
-    * for some time.
-    */
-   const GeoPoint point = gpsSnapshot->sample.point;
-   g_atStartFinish = gc_isPointInGeoCircle(&point, sfCircle);
-
-   if (!g_atStartFinish || g_prevAtStartFinish != 0 ||
-       elapsed <= START_FINISH_TIME_THRESHOLD) {
-      g_prevAtStartFinish = 0;
-      return false;
-   }
-
-   // If here, we are at Start/Finish and have de-bounced duplicate entries.
-   pr_debug_int(g_lapCount);
-   pr_debug(" Lap Detected\r\n");
-   g_lapCount++;
-   g_lastLapTime = elapsed;
-   g_lastStartFinishTimestamp = timestamp;
-   g_prevAtStartFinish = 1;
-
-   return true;
+        // If here, then the lap has started
+        lapStartedEvent(gpsSnapshot);
 }
 
-static void processSector(const GpsSnapshot *gpsSnapshot, const Track *track,
-                          float targetRadius) {
-   // We don't process sectors until we cross Start
-   if (!isStartCrossedYet())
-      return;
+static void processSectorLogic(const GpsSnapshot *gpsSnapshot,
+                               const Track *track,
+                               const float radius) {
+        if (!isLapTimingInProgress()) return;
 
-   const GeoPoint point = getSectorGeoPointAtIndex(track, g_sector);
-   const struct GeoCircle sbCircle = gc_createGeoCircle(point, targetRadius);
-   const GeoPoint curr = gpsSnapshot->sample.point;
+        const GeoPoint point = getSectorGeoPointAtIndex(track, g_sector);
+        const struct GeoCircle circle = gc_createGeoCircle(point, radius);
+        const GeoPoint curr = gpsSnapshot->sample.point;
 
-   g_atTarget = gc_isPointInGeoCircle(&curr, sbCircle);
-   if (!g_atTarget) {
-      g_prevAtTarget = 0;
-      return;
-   }
+        g_atTarget = gc_isPointInGeoCircle(&curr, circle);
+        if (!g_atTarget) return;
 
-   /*
-    * Past here we are sure we are at a sector boundary.
-    */
-   const tiny_millis_t millis = gpsSnapshot->deltaFirstFix;
-   pr_debug_int(g_sector);
-   pr_debug(" Sector Boundary Detected\r\n");
-
-   g_prevAtTarget = 1;
-   g_lastSectorTime = millis - g_lastSectorTimestamp;
-   g_lastSectorTimestamp = millis;
-   g_lastSector = g_sector;
-   ++g_sector;
-
-   // Check if we need to wrap the sectors.
-   GeoPoint next = getSectorGeoPointAtIndex(track, g_sector);
-   if (areGeoPointsEqual(point, next))
-      g_sector = 0;
+        // If we are here, then we are at a Sector boundary.
+        sectorBoundaryEvent(gpsSnapshot);
 }
 
 void gpsConfigChanged(void) {
@@ -214,17 +289,17 @@ void gpsConfigChanged(void) {
 void lapStats_init() {
    resetLapDistance();
    g_configured = 0;
+   g_cooloffTime = -1000000; // Because we don't want to start in cooloff
    g_activeTrack = NULL;
    g_lastLapTime = 0;
    g_lastSectorTime = 0;
    g_atStartFinish = 0;
    g_prevAtStartFinish = 0;
-   g_lastStartFinishTimestamp = 0;
+   g_lapStartTimestamp = 0;
    g_atTarget = 0;
-   g_prevAtTarget = 0;
    g_lastSectorTimestamp = 0;
    g_lapCount = 0;
-   g_sector = -1;
+   g_sector = -1;     // Indicates we haven't crossed start/finish yet.
    g_lastSector = -1; // Indicates no previous sector.
    resetPredictiveTimer();
 }
@@ -252,6 +327,7 @@ static void onLocationUpdated(const GpsSnapshot *gpsSnapshot) {
    const GeoPoint *gp = &gpsSnapshot->sample.point;
    const float targetRadius = degreesToMeters(config->TrackConfigs.radius);
 
+   // FIXME.  This active track configuration here is le no good.
    if (!g_configured) {
       const TrackConfig *trackConfig = &(config->TrackConfigs);
       const Track *defaultTrack = &trackConfig->track;
@@ -267,34 +343,17 @@ static void onLocationUpdated(const GpsSnapshot *gpsSnapshot) {
 
    if (!startFinishEnabled) return;
 
+   // Skip processing sectors bits if we haven't defined any... duh!
+   if (sectorEnabled) processSectorLogic(gpsSnapshot, g_activeTrack,
+                                         targetRadius);
+   processFinishLogic(gpsSnapshot, g_activeTrack, targetRadius);
+   processStartLogic(gpsSnapshot, g_activeTrack, targetRadius);
+
+   // At this point if no lap is in progress... nothing else to do.
+   if (!isLapTimingInProgress()) return;
+
    g_distance += calcDistancesSinceLastSample(gpsSnapshot);
-   // Seconds since first fix is good until we alter the code to use millis directly
-   const int lapDetected = processStartFinish(gpsSnapshot, g_activeTrack, targetRadius);
-   const tiny_millis_t millisSinceFirstFix = gpsSnapshot->deltaFirstFix;
-
-   if (lapDetected) {
-           resetLapDistance();
-
-           /*
-            * FIXME: Special handling of first start/finish crossing.  Needed
-            * b/c launch control will delay the first launch notification
-            */
-           if (getLapCount() == 0) {
-                   const GeoPoint sp = getStartPoint(g_activeTrack);
-                   // Distance is in KM
-                   g_distance = distPythag(&sp, gp) / 1000;
-
-                   startFinishCrossed(&sp, g_lastStartFinishTimestamp);
-                   addGpsSample(gp, millisSinceFirstFix);
-           } else {
-                   startFinishCrossed(gp, millisSinceFirstFix);
-           }
-   } else {
-           addGpsSample(gp, millisSinceFirstFix);
-   }
-
-   if (sectorEnabled)
-           processSector(gpsSnapshot, g_activeTrack, targetRadius);
+   addGpsSample(gpsSnapshot);
 }
 
 void lapStats_processUpdate(const GpsSnapshot *gpsSnapshot) {
