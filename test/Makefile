@@ -13,6 +13,7 @@ MESSAGING_SRC=$(RCP_SRC)/messaging
 COMMAND_SRC=$(RCP_SRC)/command
 MOCK_DIR=logger_mock
 GPS_DIR=gps
+LAP_STATS_DIR=lap_stats
 UTIL_DIR=util
 BUILD_DIR=build
 
@@ -60,6 +61,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/lap_stats \
 		-I$(MOCK_DIR) \
 		-I$(GPS_DIR) \
+		-I$(LAP_STATS_DIR) \
 		-I$(UTIL_DIR)
 
 # set up compiler and options
@@ -99,6 +101,7 @@ T_SRC = loggerApi_test.cpp \
 		virtualChannel_test.cpp \
 		$(GPS_DIR)/gps_test.cpp \
 		$(GPS_DIR)/geoTriggerTest.cpp \
+		$(LAP_STATS_DIR)/elapsedLapTimeTest.cpp \
 		$(UTIL_DIR)/numtoa_test.cpp \
 		$(UTIL_DIR)/atonum_test.cpp
 

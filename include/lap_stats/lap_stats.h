@@ -28,6 +28,10 @@ tiny_millis_t getLastLapTime();
 
 float getLastLapTimeInMinutes();
 
+tiny_millis_t getElapsedLapTime();
+
+float getElapsedLapTimeInMinutes();
+
 tiny_millis_t getLastSectorTime();
 
 float getLastSectorTimeInMinutes();

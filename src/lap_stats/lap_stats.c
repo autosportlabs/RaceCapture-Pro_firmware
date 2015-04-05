@@ -31,6 +31,7 @@ static int g_configured;
 static int g_atStartFinish;
 static int g_prevAtStartFinish;
 static tiny_millis_t g_lapStartTimestamp;
+static tiny_millis_t g_elapsedLapTime;
 
 static int g_atTarget;
 static tiny_millis_t g_lastSectorTimestamp;
@@ -63,6 +64,32 @@ static float calcDistancesSinceLastSample(const GpsSnapshot *gpsSnapshot) {
 static float degreesToMeters(float degrees) {
    // There are 110574.27 meters per degree of latitude at the equator.
    return degrees * 110574.27;
+}
+
+void setActiveTrack(const Track *defaultTrack) {
+        g_activeTrack = defaultTrack;
+}
+
+/**
+ * @return True if we are in the middle of a lap.  False otherwise.
+ */
+static bool isLapTimingInProgress() {
+   return g_lapStartTimestamp >= 0;
+}
+
+/**
+ * Called when we start a lap.  Handles timing information.
+ */
+static void startLapTiming(const tiny_millis_t startTime) {
+        g_lapStartTimestamp = startTime;
+}
+
+/**
+ * Called when we finish a lap.  Handles timing information.
+ */
+static void endLapTiming(const GpsSnapshot *gpsSnapshot) {
+        g_lastLapTime = gpsSnapshot->deltaFirstFix - g_lapStartTimestamp;
+        g_lapStartTimestamp = -1;
 }
 
 void resetLapDistance() {
@@ -101,6 +128,23 @@ float getLastLapTimeInMinutes() {
    return tinyMillisToMinutes(getLastLapTime());
 }
 
+void resetElapsedLapTime() {
+        g_elapsedLapTime = 0;
+}
+
+void updateElapsedLapTime(const GpsSnapshot *snap) {
+        if(!isLapTimingInProgress()) return;
+        g_elapsedLapTime = snap->deltaFirstFix - g_lapStartTimestamp;
+}
+
+tiny_millis_t getElapsedLapTime() {
+        return g_elapsedLapTime;
+}
+
+float getElapsedLapTimeInMinutes() {
+        return tinyMillisToMinutes(getElapsedLapTime());
+}
+
 tiny_millis_t getLastSectorTime() {
    return g_lastSectorTime;
 }
@@ -118,31 +162,9 @@ int getAtSector() {
 }
 
 /**
- * @return True if we are in the middle of a lap.  False otherwise.
- */
-static bool isLapTimingInProgress() {
-   return g_lapStartTimestamp >= 0;
-}
-
-/**
- * Called when we start a lap.  Handles timing information.
- */
-static void startLapTiming(const tiny_millis_t startTime) {
-        g_lapStartTimestamp = startTime;
-}
-
-/**
- * Called when we finish a lap.  Handles timing information.
- */
-static void endLapTiming(const GpsSnapshot *gpsSnapshot) {
-        g_lastLapTime = gpsSnapshot->deltaFirstFix - g_lapStartTimestamp;
-        g_lapStartTimestamp = -1;
-}
-
-/**
  * Called whenever we finish a lap.
  */
-static void lapFinishedEvent(const GpsSnapshot *gpsSnapshot) {
+void lapFinishedEvent(const GpsSnapshot *gpsSnapshot) {
         pr_debug("Finished Lap ");
         pr_debug_int(g_lapCount);
         pr_debug("\r\n");
@@ -170,6 +192,7 @@ static void _lapStartedEvent(const tiny_millis_t time,
         // Timing and predictive timing
         startLapTiming(time);
         startLap(sp, time);
+        resetElapsedLapTime();
 
         // Reset the sector logic
         g_lastSectorTimestamp = time;
@@ -189,7 +212,7 @@ static void _lapStartedEvent(const tiny_millis_t time,
 /**
  * Called whenever we start a new lap the normal way (ie no launch control).
  */
-static void lapStartedNormalEvent(const GpsSnapshot *gpsSnapshot) {
+void lapStartedNormalEvent(const GpsSnapshot *gpsSnapshot) {
         const tiny_millis_t time = gpsSnapshot->deltaFirstFix;
         const GeoPoint gp = gpsSnapshot->sample.point;
 
@@ -308,20 +331,21 @@ void gpsConfigChanged(void) {
 }
 
 void lapStats_init() {
-   resetLapDistance();
-   g_configured = 0;
-   g_activeTrack = NULL;
-   g_lastLapTime = 0;
-   g_lastSectorTime = 0;
-   g_atStartFinish = 0;
-   g_prevAtStartFinish = 0;
-   g_lapStartTimestamp = -1;
-   g_atTarget = 0;
-   g_lastSectorTimestamp = 0;
-   g_lapCount = 0;
-   g_sector = -1;     // Indicates we haven't crossed start/finish yet.
-   g_lastSector = -1; // Indicates no previous sector.
-   resetPredictiveTimer();
+        resetLapDistance();
+        resetPredictiveTimer();
+        resetElapsedLapTime();
+        setActiveTrack(NULL);
+        g_configured = 0;
+        g_lastLapTime = 0;
+        g_lastSectorTime = 0;
+        g_atStartFinish = 0;
+        g_prevAtStartFinish = 0;
+        g_lapStartTimestamp = -1;
+        g_atTarget = 0;
+        g_lastSectorTimestamp = 0;
+        g_lapCount = 0;
+        g_sector = -1;     // Indicates we haven't crossed start/finish yet.
+        g_lastSector = -1; // Indicates no previous sector.
 }
 
 static int isStartFinishEnabled(const Track *track) {
@@ -365,9 +389,9 @@ static void onLocationUpdated(const GpsSnapshot *gpsSnapshot) {
    // FIXME.  This active track configuration here is le no good.
    if (!g_configured) {
       const TrackConfig *trackConfig = &(config->TrackConfigs);
-      const Track *defaultTrack = &trackConfig->track;
-      g_activeTrack = trackConfig->auto_detect ?
-         auto_configure_track(defaultTrack, gp) : defaultTrack;
+      const Track *track = &trackConfig->track;
+      if (trackConfig->auto_detect) track = auto_configure_track(track, gp);
+      setActiveTrack(track);
 
       startFinishEnabled = isStartFinishEnabled(g_activeTrack);
       sectorEnabled = isSectorTrackingEnabled(g_activeTrack);
@@ -382,9 +406,10 @@ static void onLocationUpdated(const GpsSnapshot *gpsSnapshot) {
 
    if (!startFinishEnabled) return;
 
-   // Update our GeoTriggers first
+   // Process data fields first.
    updateGeoTrigger(&startGeoTrigger, gp);
    updateGeoTrigger(&finishGeoTrigger, gp);
+   updateElapsedLapTime(gpsSnapshot);
 
    /*
     * Now process the sector, finish and start logic in that order.
