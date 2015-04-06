@@ -214,7 +214,7 @@ void SectorTest::testSectorTimes(){
 
 	}
 
-   CPPUNIT_ASSERT_EQUAL(5, currentLap);
+   CPPUNIT_ASSERT_EQUAL(4, currentLap);
 }
 
 void SectorTest::testStageSectorTimes() {

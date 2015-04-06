@@ -161,6 +161,7 @@ static void lapFinishedEvent(const GpsSnapshot *gpsSnapshot) {
         pr_debug_int(g_lapCount);
         pr_debug("\r\n");
 
+        ++g_lapCount;
         endLapTiming(gpsSnapshot);
         finishLap(gpsSnapshot);
 
@@ -180,12 +181,6 @@ static void _lapStartedEvent(const tiny_millis_t time,
                              const GeoPoint *sp,
                              const float distance,
                              const GpsSnapshot *gpsSnapshot) {
-        // Increment and log that we started a lap.
-        ++g_lapCount;
-        pr_debug("Started Lap ");
-        pr_debug_int(g_lapCount);
-        pr_debug(" with launch control.\r\n");
-
         // Timing and predictive timing
         startLapTiming(time);
         startLap(sp, time);
@@ -214,6 +209,10 @@ static void lapStartedNormalEvent(const GpsSnapshot *gpsSnapshot) {
         const tiny_millis_t time = gpsSnapshot->deltaFirstFix;
         const GeoPoint gp = gpsSnapshot->sample.point;
 
+        pr_debug("Starting lap ");
+        pr_debug_int(g_lapCount);
+        pr_debug("\r\n");
+
         _lapStartedEvent(time, &gp, 0, gpsSnapshot);
 }
 
@@ -226,6 +225,10 @@ static void lapStartedLaunchControlEvent(const GpsSnapshot *gpsSnapshot) {
         const GeoPoint sp = getStartPoint(g_activeTrack);
         const GeoPoint gp = gpsSnapshot->sample.point;
         const float distance = distPythag(&sp, &gp) / 1000;
+
+        pr_debug("Starting lap ");
+        pr_debug_int(g_lapCount);
+        pr_debug(" with launch control.\r\n");
 
         _lapStartedEvent(time, &sp, distance, gpsSnapshot);
 }
