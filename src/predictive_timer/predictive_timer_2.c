@@ -145,35 +145,6 @@ static tiny_millis_t adjustPollInterval(tiny_millis_t lapTime) {
 }
 
 /**
- * Handles adding a sample at the end of the lap.  This is needed so we always get an accurate
- * reading, even if we run out of buffer space.
- * @param point The point we are at when we cross the start finish line.
- * @param time Duh!
- */
-static void finishLap(const GeoPoint * point, tiny_millis_t time) {
-	// Drop last entry if necessary to record end of lap.
-	if (buffIndex >= MAX_TIMELOC_SAMPLES)
-		buffIndex = MAX_TIMELOC_SAMPLES - 1;
-
-	insertTimeLocSample(point, time);
-}
-
-/**
- * Resets the state in preparation for the next lap.
- */
-static void startNewLap(const GeoPoint * point, tiny_millis_t time) {
-	currLapStartTime = time;
-	lastPredictedDelta = 0;
-	lastPredictedTime = 0;
-	buffIndex = 0;
-	status = RECORDING;
-
-	DEBUG("Starting new lap.  Status %d, buffIndex = %d, startTime = %ull\n",
-			status, buffIndex, time);
-	insertTimeLocSample(point, time);
-}
-
-/**
  * @param time The time the sample was taken
  * @return The difference in seconds between our most recent sample a this new one.
  */
@@ -182,36 +153,59 @@ static tiny_millis_t getTimeSinceLastSample(tiny_millis_t time) {
 }
 
 /**
- * Method invoked whenever we detect that we have crossed the start finish line.  Invoke this method
- * instead of invoking the addGpsSample method.  This has special state to handle corner cases.
- * @param point The location of the start/finish line.
- * @param time The current UTC time when we crossed.
+ * Handles adding a sample at the end of the lap.  This is needed so we always
+ * get an accurate reading, even if we run out of buffer space.
  */
-void startFinishCrossed(const GeoPoint * point, tiny_millis_t time) {
-	INFO("Start/Finish Crossed.\n");
-	finishLap(point, time);
+void finishLap(const GpsSnapshot *gpsSnapshot) {
+        if (status == DISABLED) return;
 
-	if (status != DISABLED) {
-		tiny_millis_t lapTime = getCurrentLapTime(time);
-		INFO("Last lap time was %f seconds\n", lapTime);
+        const tiny_millis_t time = gpsSnapshot->deltaFirstFix;
+        const GeoPoint *point = &gpsSnapshot->sample.point;
 
-		if (fastLapTime <= 0.0 || lapTime <= fastLapTime)
-			setNewFastLap(lapTime);
+	// Drop last entry if necessary to record end of lap.
+	if (buffIndex >= MAX_TIMELOC_SAMPLES)
+		buffIndex = MAX_TIMELOC_SAMPLES - 1;
 
-		adjustPollInterval(lapTime);
-	}
+	insertTimeLocSample(point, time);
 
-	startNewLap(point, time);
+        tiny_millis_t lapTime = getCurrentLapTime(time);
+        INFO("Last lap time was %f seconds\n", lapTime);
+
+        if (fastLapTime <= 0.0 || lapTime <= fastLapTime) {
+                setNewFastLap(lapTime);
+        }
+
+        adjustPollInterval(lapTime);
+        status = DISABLED;
 }
 
 /**
- * Adds a new GPS sample to our record if the algorithm determines its time for one.  Use this when
- * we are not crossing the start/finish line.
- * @param point The point to add.
- * @param time The time which the sample was taken.
+ * Resets the state in preparation for the next lap.  Inserts first sample
+ */
+void startLap(const GeoPoint *point, const tiny_millis_t time) {
+        if (status != DISABLED) return;
+
+        status = RECORDING;
+	currLapStartTime = time;
+	lastPredictedDelta = 0;
+	lastPredictedTime = 0;
+	buffIndex = 0;
+
+	DEBUG("Starting new lap.  Status %d, buffIndex = %d, startTime = %ull\n",
+			status, buffIndex, time);
+
+	insertTimeLocSample(point, time);
+}
+
+/**
+ * Adds a new GPS sample to our record if the algorithm determines its time
+ * for one.  Use this when we are not crossing the start or finish line.
  * @return true if it was added, false otherwise.
  */
-bool addGpsSample(const GeoPoint * point, tiny_millis_t time) {
+bool addGpsSample(const GpsSnapshot *gpsSnapshot) {
+        const tiny_millis_t time = gpsSnapshot->deltaFirstFix;
+        const GeoPoint *point = &gpsSnapshot->sample.point;
+
 	DEVEL("Add GPS Sample called\n");
 
 	if (status != RECORDING) {
