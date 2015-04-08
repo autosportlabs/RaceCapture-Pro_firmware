@@ -52,6 +52,8 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST( testFlashConfig);
   CPPUNIT_TEST( testSetLogLevel);
   CPPUNIT_TEST( testSetObd2Cfg);
+  CPPUNIT_TEST( testSetObd2ConfigFile_fromIndex);
+  CPPUNIT_TEST( testSetObd2ConfigFile_invalid);
   CPPUNIT_TEST( testGetObd2Cfg);
   CPPUNIT_TEST( testGetScript);
   CPPUNIT_TEST( testSetScript);
@@ -102,6 +104,8 @@ public:
   void testGetCanCfg();
   void testSetCanCfg();
   void testSetObd2Cfg();
+  void testSetObd2ConfigFile_fromIndex();
+  void testSetObd2ConfigFile_invalid();
   void testGetObd2Cfg();
   void testSetScript();
   void testGetScript();

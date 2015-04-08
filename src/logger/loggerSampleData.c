@@ -1,5 +1,6 @@
 #include "dateTime.h"
 #include "GPIO.h"
+#include "lap_stats.h"
 #include "loggerSampleData.h"
 #include "loggerHardware.h"
 #include "loggerConfig.h"
@@ -13,6 +14,7 @@
 #include "OBD2.h"
 #include "sampleRecord.h"
 #include "gps.h"
+#include "lap_stats.h"
 #include "geopoint.h"
 #include "predictive_timer_2.h"
 #include "linear_interpolate.h"
@@ -273,9 +275,16 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
    chanCfg = &(gpsConfig->speed);
    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getGpsSpeedInMph);
    chanCfg = &(gpsConfig->distance);
-   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getGpsDistanceMiles);
+   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getLapDistanceInMiles);
+   chanCfg = &(gpsConfig->altitude);
+   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getAltitude);
    chanCfg = &(gpsConfig->satellites);
    sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getSatellitesUsedForPosition);
+   chanCfg = &(gpsConfig->quality);
+   sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getGPSQuality);
+   chanCfg = &(gpsConfig->DOP);
+   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getGpsDOP);
+
 
 
    LapConfig *trackConfig = &(loggerConfig->LapConfigs);
@@ -284,7 +293,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
    chanCfg = &(trackConfig->lapTimeCfg);
    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getLastLapTimeInMinutes);
    chanCfg = &(trackConfig->sectorCfg);
-   sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getLastSector);
+   sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getSector);
    chanCfg = &(trackConfig->sectorTimeCfg);
    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getLastSectorTimeInMinutes);
    chanCfg = &(trackConfig->predTimeCfg);

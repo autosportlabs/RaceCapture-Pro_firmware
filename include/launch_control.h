@@ -39,10 +39,10 @@ void lc_reset();
 void lc_setup(const Track *track, const float targetRadius);
 
 /**
- * Called when a new sample is available.
- * @param sample The GpsSample.
+ * Called when a new GpsSnapshot is available.
+ * @param snap The GpsSnapshot.
  */
-void lc_supplyGpsSample(const struct GpsSample sample);
+void lc_supplyGpsSnapshot(const GpsSnapshot *snap);
 
 /**
  * @return true if the driver has launched (started racing).  False otherwise.

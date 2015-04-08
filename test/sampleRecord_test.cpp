@@ -10,6 +10,7 @@
 #include "ADC.h"
 #include "imu.h"
 #include "gps.h"
+#include "lap_stats.h"
 #include "task.h"
 #include "capabilities.h"
 #include <string>
@@ -23,7 +24,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( SampleRecordTest );
 void SampleRecordTest::setUp()
 {
 	InitLoggerHardware();
-	initGPS();
+	GPS_init();
 	initialize_logger_config();
 	resetCurrentTicks();
 }
@@ -36,7 +37,8 @@ void SampleRecordTest::tearDown()
 
 void SampleRecordTest::testPopulateSampleRecord(){
 	LoggerConfig *lc = getWorkingLoggerConfig();
-   initGPS();
+   GPS_init();
+   lapStats_init();
 
 	//mock up some values to test later
 	lc->ADCConfigs[7].scalingMode = SCALING_MODE_RAW;
@@ -119,7 +121,16 @@ void SampleRecordTest::testPopulateSampleRecord(){
 	samples++;
 	CPPUNIT_ASSERT_EQUAL((float)0, samples->valueFloat);
 
-	samples++;
+    samples++;
+    CPPUNIT_ASSERT_EQUAL((float)0, samples->valueFloat);
+
+    samples++;
+    CPPUNIT_ASSERT_EQUAL((float)0, samples->valueFloat);
+
+    samples++;
+    CPPUNIT_ASSERT_EQUAL((float)0, samples->valueFloat);
+
+    samples++;
 	CPPUNIT_ASSERT_EQUAL((float)0, samples->valueFloat);
 
         samples++;
@@ -130,7 +141,7 @@ void SampleRecordTest::testInitSampleRecord()
 {
    LoggerConfig *lc = getWorkingLoggerConfig();
 
-   size_t expectedEnabledChannels = 19;
+   size_t expectedEnabledChannels = 22;
 
    size_t channelCount = get_enabled_channel_count(lc);
    CPPUNIT_ASSERT_EQUAL(expectedEnabledChannels, channelCount);
@@ -238,7 +249,14 @@ void SampleRecordTest::testInitSampleRecord()
 
    if (gpsConfig->distance.sampleRate != SAMPLE_DISABLED){
       CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->distance, (void *) ts->cfg);
-      CPPUNIT_ASSERT_EQUAL((void *) getGpsDistanceMiles, (void *) ts->get_float_sample);
+      CPPUNIT_ASSERT_EQUAL((void *) getLapDistanceInMiles, (void *) ts->get_float_sample);
+      CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
+      ts++;
+   }
+
+   if (gpsConfig->altitude.sampleRate != SAMPLE_DISABLED){
+      CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->altitude, (void *) ts->cfg);
+      CPPUNIT_ASSERT_EQUAL((void *) getAltitude, (void *) ts->get_float_sample);
       CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
       ts++;
    }
@@ -247,6 +265,20 @@ void SampleRecordTest::testInitSampleRecord()
       CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->satellites, (void *) ts->cfg);
       CPPUNIT_ASSERT_EQUAL((void *) getSatellitesUsedForPosition, (void *) ts->get_int_sample);
       CPPUNIT_ASSERT_EQUAL(SampleData_Int_Noarg, ts->sampleData);
+      ts++;
+   }
+
+   if (gpsConfig->quality.sampleRate != SAMPLE_DISABLED){
+      CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->quality, (void *) ts->cfg);
+      CPPUNIT_ASSERT_EQUAL((void *) getGPSQuality, (void *) ts->get_int_sample);
+      CPPUNIT_ASSERT_EQUAL(SampleData_Int_Noarg, ts->sampleData);
+      ts++;
+   }
+
+   if (gpsConfig->DOP.sampleRate != SAMPLE_DISABLED){
+      CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->DOP, (void *) ts->cfg);
+      CPPUNIT_ASSERT_EQUAL((void *) getGpsDOP, (void *) ts->get_float_sample);
+      CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
       ts++;
    }
 
@@ -268,7 +300,7 @@ void SampleRecordTest::testInitSampleRecord()
    if (lapConfig->sectorCfg.sampleRate != SAMPLE_DISABLED){
       CPPUNIT_ASSERT_EQUAL((void *) &lapConfig->sectorCfg, (void *) ts->cfg);
       CPPUNIT_ASSERT_EQUAL(SampleData_Int_Noarg, ts->sampleData);
-      CPPUNIT_ASSERT_EQUAL((void *) getLastSector, (void *) ts->get_int_sample);
+      CPPUNIT_ASSERT_EQUAL((void *) getSector, (void *) ts->get_int_sample);
       ts++;
    }
 

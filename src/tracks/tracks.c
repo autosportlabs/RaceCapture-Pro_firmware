@@ -16,9 +16,9 @@ static const Tracks g_defaultTracks = DEFAULT_TRACKS;
 static Tracks *g_tracksBuffer = NULL;
 
 void initialize_tracks(){
-	if (g_tracks.magicInit != MAGIC_NUMBER_TRACKS_INIT){
-		flash_default_tracks();
-	}
+    if (versionChanged(&g_tracks.versionInfo)){
+        flash_default_tracks();
+    }
 }
 
 int flash_default_tracks(void){
@@ -107,7 +107,8 @@ int isStartPointValid(const Track *t) {
    return isValidPoint(&p);
 }
 
-GeoPoint getSectorGeoPointAtIndex(const Track *t, const int index) {
+GeoPoint getSectorGeoPointAtIndex(const Track *t, int index) {
+   if (index < 0) index = 0;
    const int max = isStage(t) ? STAGE_SECTOR_COUNT : CIRCUIT_SECTOR_COUNT;
    const GeoPoint *sectors = isStage(t) ? t->stage.sectors : t->circuit.sectors;
 

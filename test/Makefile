@@ -57,6 +57,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/watchdog \
 		-I$(RCP_INC)/memory \
 		-I$(RCP_INC)/sdcard \
+		-I$(RCP_INC)/lap_stats \
 		-I$(MOCK_DIR) \
 		-I$(GPS_DIR) \
 		-I$(UTIL_DIR)
@@ -100,7 +101,9 @@ T_SRC = loggerApi_test.cpp \
 		$(UTIL_DIR)/numtoa_test.cpp \
 		$(UTIL_DIR)/atonum_test.cpp
 
-SRC = 	mock_uart.c \
+
+SRC =		mock_uart.c \
+		mock_gps_device.c \
 		mock_usb_comm.c \
 		mock_serial.c \
 		src/system/task.cpp \
@@ -145,6 +148,7 @@ SRC = 	mock_uart.c \
 		$(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 		$(RCP_SRC)/auto_config/auto_track.c \
 		$(RCP_SRC)/util/linear_interpolate.c \
+		$(RCP_SRC)/logger/versionInfo.c \
 		$(RCP_SRC)/logger/loggerConfig.c \
 		$(RCP_SRC)/virtual_channel/virtual_channel.c \
 		$(RCP_SRC)/tracks/tracks.c \
@@ -152,6 +156,7 @@ SRC = 	mock_uart.c \
 		$(RCP_SRC)/gps/dateTime.c \
 		$(RCP_SRC)/gps/geopoint.c \
 		$(RCP_SRC)/gps/geoCircle.c \
+		$(RCP_SRC)/lap_stats/lap_stats.c \
 		$(RCP_SRC)/logger/sampleRecord.c \
 		$(RCP_SRC)/logger/loggerSampleData.c \
 		$(RCP_SRC)/logger/loggerData.c \

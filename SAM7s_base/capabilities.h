@@ -12,6 +12,7 @@
 #define MAX_TRACKS				40
 #define MAX_SECTORS				20
 #define SCRIPT_MEMORY_LENGTH	10240
+#define MAX_VIRTUAL_CHANNELS	10
 
 //Input / output Channels
 #define ANALOG_CHANNELS 		8
@@ -25,6 +26,7 @@
 //sample rates
 #define MAX_SENSOR_SAMPLE_RATE	100
 #define MAX_GPS_SAMPLE_RATE		10
+#define MAX_OBD2_SAMPLE_RATE	10
 
 //system info
 #define DEVICE_NAME    "RCP"

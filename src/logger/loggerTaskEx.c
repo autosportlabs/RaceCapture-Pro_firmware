@@ -32,6 +32,7 @@
 #include "loggerConfig.h"
 #include "imu.h"
 #include "gps.h"
+#include "lap_stats.h"
 #include "printk.h"
 
 #define LOGGER_TASK_PRIORITY				( tskIDLE_PRIORITY + 4 )
@@ -164,7 +165,7 @@ while (1) {
                 &sampleRateTimebase);
         backgroundStreaming = loggerConfig->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
         resetLapCount();
-        resetGpsDistance();
+        resetLapDistance();
         g_configChanged = 0;
     }
 

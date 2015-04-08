@@ -5,6 +5,7 @@
 #include "geopoint.h"
 #include "tracks.h"
 #include "capabilities.h"
+#include "versionInfo.h"
 
 #define FLASH_PAGE_SIZE						((unsigned int) 256) // Internal FLASH Page Size: 256 bytes
 
@@ -21,7 +22,7 @@
 #define CONFIG_CAN_CHANNELS                 CAN_CHANNELS
 
 #define SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_10Hz
-#define FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_10Hz
+#define FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_50Hz
 
 
 //standard sample rates based on OS timer ticks
@@ -50,14 +51,6 @@
 #define DEFAULT_GPS_RADIUS_PRECISION 		5
 #define DEFAULT_VOLTAGE_SCALING_PRECISION	2
 #define DEFAULT_ANALOG_SCALING_PRECISION	2
-
-typedef struct _VersionInfo{
-	unsigned int major;
-	unsigned int minor;
-	unsigned int bugfix;
-} VersionInfo;
-
-#define DEFAULT_VERSION_INFO {MAJOR_REV, MINOR_REV, BUGFIX_REV}
 
 #define DEFAULT_LABEL_LENGTH					12
 #define DEFAULT_UNITS_LENGTH					8
@@ -346,7 +339,10 @@ typedef struct _GPSConfig{
    ChannelConfig longitude;
    ChannelConfig speed;
    ChannelConfig distance;
+   ChannelConfig altitude;
    ChannelConfig satellites;
+   ChannelConfig quality;
+   ChannelConfig DOP;
 } GPSConfig;
 
 //HACK: FIX ME for MARK3
@@ -360,14 +356,20 @@ typedef struct _GPSConfig{
 #define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "Degrees", -180, 180, MAX_GPS_SAMPLE_HZ, 6, 0}
 #define DEFAULT_GPS_SPEED_CONFIG {"Speed", "MPH", 0, 150, MAX_GPS_SAMPLE_HZ, 2, 0}
 #define DEFAULT_GPS_DISTANCE_CONFIG {"Distance", "Miles", 0, 0, MAX_GPS_SAMPLE_HZ, 3, 0}
-#define DEFAULT_GPS_SATELLITE_CONFIG {"GPSSats", "", 0, 100, MAX_GPS_SAMPLE_HZ, 0, 0}
+#define DEFAULT_GPS_ALTITUDE_CONFIG {"Altitude", "M", 0, 4000, MAX_GPS_SAMPLE_HZ, 1, 0}
+#define DEFAULT_GPS_SATELLITE_CONFIG {"GPSSats", "", 0, 20, MAX_GPS_SAMPLE_HZ, 0, 0}
+#define DEFAULT_GPS_QUALITY_CONFIG {"GPSQual", "", 0, 5, MAX_GPS_SAMPLE_HZ, 0, 0}
+#define DEFAULT_GPS_DOP_CONFIG {"GPSDOP", "", 0, 20, MAX_GPS_SAMPLE_HZ, 1, 0}
 
 #define DEFAULT_GPS_CONFIG {                    \
       DEFAULT_GPS_LATITUDE_CONFIG,              \
          DEFAULT_GPS_LONGITUDE_CONFIG,          \
          DEFAULT_GPS_SPEED_CONFIG,              \
          DEFAULT_GPS_DISTANCE_CONFIG,           \
-         DEFAULT_GPS_SATELLITE_CONFIG           \
+         DEFAULT_GPS_ALTITUDE_CONFIG,           \
+         DEFAULT_GPS_SATELLITE_CONFIG,          \
+         DEFAULT_GPS_QUALITY_CONFIG,            \
+         DEFAULT_GPS_DOP_CONFIG                \
          }
 
 typedef struct _LapConfig{

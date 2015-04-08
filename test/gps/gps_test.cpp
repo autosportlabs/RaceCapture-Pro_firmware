@@ -27,16 +27,14 @@ CPPUNIT_TEST_SUITE_REGISTRATION( GpsTest );
 
 
 void GpsTest::setUp() {
-	initGPS();
 }
-
 
 void GpsTest::tearDown() {}
 
 
 void GpsTest::testChecksum() {
 	const char *goodGpsData = "$GPGLL,5300.97914,N,00259.98174,E,125926,A*28";
-	const char *goodGpsData2 = "$GPGLL,5300.97914,N,00259.98174,E,125926,A*28                  ";
+	const char *goodGpsData2 = "$GPGLL,5300.97914,N,00259.98174,E,125926,A*28";
 	const char *goodGpsData3 = "$GPGSA,M,3,12,17,04,25,29,10,,,,,,,2.45,1.89,1.56*03";
 	const char *badGpsData = "$GPGLL,5300.97914,N,00259.98174,E,125926,A*29"; //bad checksum
 
@@ -44,11 +42,4 @@ void GpsTest::testChecksum() {
 	CPPUNIT_ASSERT(checksumValid(goodGpsData2, strlen(goodGpsData2)) == 1);
 	CPPUNIT_ASSERT(checksumValid(goodGpsData3, strlen(goodGpsData3)) == 1);
 	CPPUNIT_ASSERT(checksumValid(badGpsData, strlen(badGpsData)) == 0);
-}
-
-void GpsTest::testGpsDistance() {
-    setGpsDistanceKms(1.0);
-
-    CPPUNIT_ASSERT_EQUAL((float) 1.0, getGpsDistanceKms());
-    CPPUNIT_ASSERT_EQUAL((float) (1.0f * KMS_TO_MILES_CONSTANT), getGpsDistanceMiles());
 }

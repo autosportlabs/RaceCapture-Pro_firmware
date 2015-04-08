@@ -19,8 +19,8 @@
  */
 
 
-#ifndef NUMTOATEST_H
-#define NUMTOATEST_H
+#ifndef GPSTEST_H
+#define GPSTEST_H
 
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -28,7 +28,6 @@ class GpsTest : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE( GpsTest );
   CPPUNIT_TEST( testChecksum );
-  CPPUNIT_TEST( testGpsDistance );
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -36,7 +35,6 @@ public:
   void tearDown();
 
   void testChecksum();
-  void testGpsDistance();
 };
 
-#endif  // NUMTOATEST_H
+#endif  // GPSTEST_H

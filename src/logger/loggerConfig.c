@@ -4,7 +4,6 @@
 #include "memory.h"
 #include "printk.h"
 #include "virtual_channel.h"
-
 #include <stdbool.h>
 
 #ifndef RCP_TESTING
@@ -206,15 +205,15 @@ int flashLoggerConfig(void){
 }
 
 static bool checkFlashDefaultConfig(void){
-	size_t major_version_changed = g_savedLoggerConfig.RcpVersionInfo.major != MAJOR_REV;
-	size_t minor_version_changed = g_savedLoggerConfig.RcpVersionInfo.minor != MINOR_REV;
-
-	if (!major_version_changed && !minor_version_changed)
-      return false;
-
-   pr_info("Major or minor firmware version changed\r\n");
-   flash_default_logger_config();
-   return true;
+   bool changed = versionChanged(&g_savedLoggerConfig.RcpVersionInfo);
+   if (changed){
+       pr_info("major/minor version changed\r\n");
+       flash_default_logger_config();
+       return true;
+   }
+   else{
+       return false;
+   }
 }
 
 static void loadWorkingLoggerConfig(void){
@@ -517,9 +516,17 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
    sr = gpsConfig->distance.sampleRate;
    s = getHigherSampleRate(sr, s);
 
+   sr = gpsConfig->altitude.sampleRate;
+   s = getHigherSampleRate(sr, s);
+
    sr = gpsConfig->satellites.sampleRate;
    s = getHigherSampleRate(sr, s);
 
+   sr = gpsConfig->quality.sampleRate;
+   s = getHigherSampleRate(sr, s);
+
+   sr = gpsConfig->DOP.sampleRate;
+   s = getHigherSampleRate(sr, s);
 
    LapConfig *trackCfg = &(config->LapConfigs);
    sr = trackCfg->lapCountCfg.sampleRate;
@@ -579,8 +586,10 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
    if (gpsConfigs->longitude.sampleRate != SAMPLE_DISABLED) channels++;
    if (gpsConfigs->speed.sampleRate != SAMPLE_DISABLED) channels++;
    if (gpsConfigs->distance.sampleRate != SAMPLE_DISABLED) channels++;
+   if (gpsConfigs->altitude.sampleRate != SAMPLE_DISABLED) channels++;
    if (gpsConfigs->satellites.sampleRate != SAMPLE_DISABLED) channels++;
-
+   if (gpsConfigs->quality.sampleRate != SAMPLE_DISABLED) channels++;
+   if (gpsConfigs->DOP.sampleRate != SAMPLE_DISABLED) channels++;
 
    LapConfig *lapConfig = &loggerConfig->LapConfigs;
    if (lapConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED) channels++;

@@ -12,7 +12,7 @@
 #include "LED.h"
 
 #define UART_QUEUE_LENGTH 	1024
-#define GPS_BUFFER_SIZE		128
+#define GPS_BUFFER_SIZE		132
 
 #define UART_WIRELESS_IRQ_PRIORITY 	7
 #define UART_AUX_IRQ_PRIORITY 		8
@@ -361,7 +361,6 @@ void usart_device_init_2(unsigned int bits, unsigned int parity,
 	GPIO_PinAFConfig(GPIOD, GPIO_PinSource6, GPIO_AF_USART2);
 
 	initUsart(USART2, bits, parity, stopBits, baud);
-
 	enableRxTxIrq(USART2, USART2_IRQn, UART_GPS_IRQ_PRIORITY, UART_TX_IRQ);
 	enableRxDMA(RCC_AHB1Periph_DMA1, DMA1_Stream5, DMA_Channel_4,
 		    gpsRxBuffer, GPS_BUFFER_SIZE, USART2, DMA1_Stream5_IRQn,
@@ -724,11 +723,12 @@ void USART2_IRQHandler(void)
 
 	if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET) {
 		/* The interrupt was caused by a character being received.  Grab the
-		   character from the rx and place it in the queue or received
-		   characters. */
-		cChar = USART_ReceiveData(USART2);
-		xQueueSendFromISR(xUsart2Rx, &cChar, &xTaskWokenByPost);
+		character from the rx and place it in the queue or received
+		characters. */
+//		cChar = USART_ReceiveData(USART2);
+//		xQueueSendFromISR( xUsart2Rx, &cChar, &xTaskWokenByPost );
 	}
+
 
 	/* If a task was woken by either a character being received or a character
 	   being transmitted then we may need to switch to another task. */

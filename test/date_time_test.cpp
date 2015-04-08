@@ -31,7 +31,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( DateTimeTest );
 
 void DateTimeTest::setUp() {
   resetTicks();
-  initGPS();
+  GPS_init();
 }
 
 void DateTimeTest::tearDown() {}
@@ -228,7 +228,11 @@ void DateTimeTest::testMillisSinceEpoch() {
 
   incrementTick();
   const DateTime d448366080000 = {0, 0, 8, 10, 17, 3, 1984};
-  updateFullDateTime(d448366080000);
+
+  GpsSample sample;
+  sample.quality = GPS_QUALITY_3D;
+  sample.time = getMillisecondsSinceUnixEpoch(d448366080000);
+  GPS_sample_update(&sample);
 
   CPPUNIT_ASSERT_EQUAL(2, (int) xTaskGetTickCount());
   CPPUNIT_ASSERT_EQUAL(448366080000ll + 0 * MS_PER_TICK, (long long) getMillisSinceEpoch());
@@ -237,3 +241,71 @@ void DateTimeTest::testMillisSinceEpoch() {
   CPPUNIT_ASSERT_EQUAL(3, (int) xTaskGetTickCount());
   CPPUNIT_ASSERT_EQUAL(448366080000ll + 1 * MS_PER_TICK, (long long) getMillisSinceEpoch());
 }
+
+void DateTimeTest::testDateTimeFromEpochMillis(){
+    DateTime dt;
+
+    getDateTimeFromEpochMillis(&dt, -1000);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.millisecond);
+    CPPUNIT_ASSERT_EQUAL(59, (int)dt.second);
+    CPPUNIT_ASSERT_EQUAL(59, (int)dt.minute);
+    CPPUNIT_ASSERT_EQUAL(23, (int)dt.hour);
+    CPPUNIT_ASSERT_EQUAL(31, (int)dt.day);
+    CPPUNIT_ASSERT_EQUAL(12, (int)dt.month);
+    CPPUNIT_ASSERT_EQUAL(1969, (int)dt.year);
+
+    getDateTimeFromEpochMillis(&dt, 0);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.millisecond);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.second);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.minute);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.hour);
+    CPPUNIT_ASSERT_EQUAL(1, (int)dt.day);
+    CPPUNIT_ASSERT_EQUAL(1, (int)dt.month);
+    CPPUNIT_ASSERT_EQUAL(1970, (int)dt.year);
+
+    getDateTimeFromEpochMillis(&dt, 1000);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.millisecond);
+    CPPUNIT_ASSERT_EQUAL(1, (int)dt.second);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.minute);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.hour);
+    CPPUNIT_ASSERT_EQUAL(1, (int)dt.day);
+    CPPUNIT_ASSERT_EQUAL(1, (int)dt.month);
+    CPPUNIT_ASSERT_EQUAL(1970, (int)dt.year);
+
+    getDateTimeFromEpochMillis(&dt, 946684799000); //party time
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.millisecond);
+    CPPUNIT_ASSERT_EQUAL(59, (int)dt.second);
+    CPPUNIT_ASSERT_EQUAL(59, (int)dt.minute);
+    CPPUNIT_ASSERT_EQUAL(23, (int)dt.hour);
+    CPPUNIT_ASSERT_EQUAL(31, (int)dt.day);
+    CPPUNIT_ASSERT_EQUAL(12, (int)dt.month);
+    CPPUNIT_ASSERT_EQUAL(1999, (int)dt.year);
+
+    getDateTimeFromEpochMillis(&dt, 946684799000 + 999);
+    CPPUNIT_ASSERT_EQUAL(999, (int)dt.millisecond);
+    CPPUNIT_ASSERT_EQUAL(59, (int)dt.second);
+    CPPUNIT_ASSERT_EQUAL(59, (int)dt.minute);
+    CPPUNIT_ASSERT_EQUAL(23, (int)dt.hour);
+    CPPUNIT_ASSERT_EQUAL(31, (int)dt.day);
+    CPPUNIT_ASSERT_EQUAL(12, (int)dt.month);
+    CPPUNIT_ASSERT_EQUAL(1999, (int)dt.year);
+
+    getDateTimeFromEpochMillis(&dt, 946684799000 + 1000);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.millisecond);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.second);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.minute);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.hour);
+    CPPUNIT_ASSERT_EQUAL(1, (int)dt.day);
+    CPPUNIT_ASSERT_EQUAL(1, (int)dt.month);
+    CPPUNIT_ASSERT_EQUAL(2000, (int)dt.year);
+
+    getDateTimeFromEpochMillis(&dt, 1426905472000);
+    CPPUNIT_ASSERT_EQUAL(0, (int)dt.millisecond);
+    CPPUNIT_ASSERT_EQUAL(52, (int)dt.second);
+    CPPUNIT_ASSERT_EQUAL(37, (int)dt.minute);
+    CPPUNIT_ASSERT_EQUAL(2, (int)dt.hour);
+    CPPUNIT_ASSERT_EQUAL(21, (int)dt.day);
+    CPPUNIT_ASSERT_EQUAL(3, (int)dt.month);
+    CPPUNIT_ASSERT_EQUAL(2015, (int)dt.year);
+}
+

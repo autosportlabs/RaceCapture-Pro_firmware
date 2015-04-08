@@ -136,6 +136,7 @@ VIRTUAL_CHANNEL_SRC_DIR = $(SRC_DIR)/virtual_channel
 UTIL_DIR = $(SRC_DIR)/util
 JSON_DIR = ./json
 GPS_SRC_DIR = $(SRC_DIR)/gps
+LAP_STATS_SRC_DIR = $(SRC_DIR)/lap_stats
 
 #App specific dirs
 FAT_SD_SRC_DIR = $(SAM7s_BASE_DIR)/fat_sd_at91
@@ -167,6 +168,7 @@ $(FAT_SD_SRC_DIR)/ff.c \
 $(FAT_SD_SRC_DIR)/sd_spi_at91.c \
 $(SDCARD_SRC_DIR)/sdcard.c \
 $(IMU_SRC_DIR)/imu.c \
+$(LAP_STATS_SRC_DIR)/lap_stats.c \
 $(LOGGER_SRC_DIR)/sampleRecord.c \
 $(LOGGER_SRC_DIR)/fileWriter.c \
 $(LOGGER_SRC_DIR)/loggerHardware.c \
@@ -179,6 +181,7 @@ $(GPS_SRC_DIR)/geoCircle.c \
 $(GPS_SRC_DIR)/gpsTask.c \
 $(GPS_SRC_DIR)/dateTime.c \
 $(LOGGER_SRC_DIR)/loggerConfig.c \
+$(LOGGER_SRC_DIR)/versionInfo.c \
 $(TRACKS_SRC_DIR)/tracks.c \
 $(GPS_SRC_DIR)/geopoint.c \
 $(LOGGER_SRC_DIR)/luaLoggerBinding.c \
@@ -351,6 +354,7 @@ CINCS = \
 -I$(INCLUDE_DIR)/util \
 -I$(INCLUDE_DIR)/devices \
 -I$(INCLUDE_DIR)/gps \
+-I$(INCLUDE_DIR)/lap_stats \
 -I$(INCLUDE_DIR)/sdcard \
 -I$(INCLUDE_DIR)/command \
 -I$(INCLUDE_DIR)/virtual_channel \
@@ -387,7 +391,7 @@ CFLAGS += -Wcast-align -Wimplicit
 CFLAGS += -Wpointer-arith -Wswitch
 CFLAGS += -Wredundant-decls -Wreturn-type -Wshadow -Wunused
 CFLAGS += -ffunction-sections -fdata-sections
-CFLAGS += -Wno-strict-aliasing 
+CFLAGS += -Wno-strict-aliasing
 CFLAGS += -Wa,-adhlns=$(subst $(suffix $<),.lst,$<)
 CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
 #AT91-lib warnings with:
@@ -734,7 +738,7 @@ release :
 	cp $(SAM7s_BASE_DIR)/HOW_TO_FLASH.txt $(RCP_INSTALL_DIR)
 	zip -r $(RELEASE_NAME_ZIP) $(RCP_INSTALL_DIR)
 	cp $(RELEASE_NAME_ZIP) $(RCP_RELEASE_DIR)
-   
+
 # **********************************************************************************************
 #                            FLASH PROGRAMMING      (using OpenOCD 0.5.0 and Olimex ARM-USB-OCD)
 # **********************************************************************************************

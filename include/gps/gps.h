@@ -21,72 +21,34 @@
 #ifndef GPS_H_
 #define GPS_H_
 
-#include "dateTime.h"
+#include "LED.h"
 #include "geopoint.h"
-
-#include <stddef.h>
-
-#define KMS_TO_MILES_CONSTANT (.621371)
-#define KNOTS_TO_KPH (1.852)
+#include "dateTime.h"
+#include "serial.h"
 
 enum GpsSignalQuality {
    GPS_QUALITY_NO_FIX = 0,
-   GPS_QUALITY_FIX = 1,
-   GPS_QUALITY_SPS = 2,
-   GPS_QUALITY_DIFFERENTIAL = 3,
+   GPS_QUALITY_2D = 1,
+   GPS_QUALITY_3D = 2,
+   GPS_QUALITY_3D_DGNSS = 3
 };
 
-struct GpsSample {
+typedef struct _GpsSample {
+   enum GpsSignalQuality quality;
    GeoPoint point;
    millis_t time;
    float speed;
-   enum GpsSignalQuality quality;
-   tiny_millis_t firstFixMillis;
-};
+   float altitude;
+   uint8_t satellites;
+   uint8_t fixMode;
+   float DOP;
+} GpsSample;
 
-/**
- * A simple Time and Location sample.
- */
-typedef struct _TimeLoc {
-	GeoPoint point;
-	millis_t time;
-} TimeLoc;
-
-void gpsConfigChanged(void);
-
-void initGPS();
-
-int checksumValid(const char *gpsData, size_t len);
-
-void processGPSData(char *gpsData, size_t len);
-
-void resetGpsDistance();
-
-void setGpsDistanceKms(float dist);
-
-float getGpsDistanceKms();
-
-float getGpsDistanceMiles();
-
-void resetLapCount();
-
-int getLapCount();
-
-tiny_millis_t getLastLapTime();
-
-float getLastLapTimeInMinutes();
-
-tiny_millis_t getLastSectorTime();
-
-float getLastSectorTimeInMinutes();
-
-int getSector();
-
-int getLastSector();
-
-int getAtStartFinish();
-
-int getAtSector();
+typedef struct _GpsSnapshot {
+   GpsSample sample;
+   tiny_millis_t deltaFirstFix;
+   GeoPoint previousPoint;
+} GpsSnapshot;
 
 float getSecondsSinceMidnight();
 
@@ -100,24 +62,24 @@ float getLatitude();
 
 float getLongitude();
 
-void updatePosition(float latitude, float longitude);
+float getAltitude();
 
-void onLocationUpdated();
+bool isGpsDataCold();
 
-enum GpsSignalQuality getGPSQuality();
+bool isGpsSignalUsable(enum GpsSignalQuality q);
 
-void setGPSQuality(enum GpsSignalQuality quality);
+int getGPSQuality();
+
+float getGpsDOP();
 
 int getSatellitesUsedForPosition();
 
 float getGPSSpeed();
 
-void setGPSSpeed(float speed);
-
 /**
  * Returns Date time information as provided by the GPS system.
  */
-DateTime getLastFixDateTime();
+millis_t getLastFix();
 
 /**
  * @return Milliseconds since Unix Epoch.  0 indicates not available.
@@ -134,9 +96,24 @@ long long getMillisSinceEpochAsLongLong();
 float getSecondsSinceFirstFix();
 
 /**
- * @return The last current known location.
+ * @return The current known location.
  */
 GeoPoint getGeoPoint();
+
+/**
+ * @return The previous known location.
+ */
+GeoPoint getPreviousGeoPoint();
+
+/**
+ * @return the current GPS Sample
+ */
+GpsSample getGpsSample();
+
+/**
+ * @return the current GPS Snapshot
+ */
+GpsSnapshot getGpsSnapshot();
 
 /**
  * @return Milliseconds since our first fix.
@@ -149,5 +126,11 @@ tiny_millis_t getMillisSinceFirstFix();
 tiny_millis_t getUptimeAtSample();
 
 float getGpsSpeedInMph();
+
+void GPS_init();
+
+int GPS_processUpdate(Serial *serial);
+
+int checksumValid(const char *gpsData, size_t len);
 
 #endif /*GPS_H_*/

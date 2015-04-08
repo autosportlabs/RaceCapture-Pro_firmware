@@ -29,6 +29,9 @@
 #include "taskUtil.h"
 #include "GPIO.h"
 
+/* Max number of PIDs that can be specified in the setOBD2Cfg message */
+#define MAX_OBD2_MESSAGE_PIDS 10
+
 #define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
 typedef void (*getConfigs_func)(size_t channeId, void ** baseCfg, ChannelConfig ** channelCfg);
@@ -588,7 +591,7 @@ static void getImuConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** ch
 }
 
 int api_setImuConfig(Serial *serial, const jsmntok_t *json){
-	int res = setMultiChannelConfigGeneric(serial, json, getImuConfigs, setImuExtendedField, imu_init);
+	int res = setMultiChannelConfigGeneric(serial, json, getImuConfigs, setImuExtendedField, imu_soft_init);
 	return res;
 }
 
@@ -964,8 +967,10 @@ static unsigned short getGpsConfigHighSampleRate(GPSConfig *cfg) {
    rate = getHigherSampleRate(rate, cfg->longitude.sampleRate);
    rate = getHigherSampleRate(rate, cfg->speed.sampleRate);
    rate = getHigherSampleRate(rate, cfg->distance.sampleRate);
+   rate = getHigherSampleRate(rate, cfg->altitude.sampleRate);
    rate = getHigherSampleRate(rate, cfg->satellites.sampleRate);
-
+   rate = getHigherSampleRate(rate, cfg->quality.sampleRate);
+   rate = getHigherSampleRate(rate, cfg->DOP.sampleRate);
    return rate;
 }
 
@@ -984,7 +989,10 @@ int api_getGpsConfig(Serial *serial, const jsmntok_t *json){
    json_int(serial, "pos",  posEnabled, 1);
    json_int(serial, "speed", gpsCfg->speed.sampleRate != SAMPLE_DISABLED, 1);
    json_int(serial, "dist", gpsCfg->distance.sampleRate != SAMPLE_DISABLED, 1);
-   json_int(serial, "sats", gpsCfg->satellites.sampleRate != SAMPLE_DISABLED, 0);
+   json_int(serial, "alt", gpsCfg->altitude.sampleRate != SAMPLE_DISABLED, 1);
+   json_int(serial, "sats", gpsCfg->satellites.sampleRate != SAMPLE_DISABLED, 1);
+   json_int(serial, "qual", gpsCfg->quality.sampleRate != SAMPLE_DISABLED, 1);
+   json_int(serial, "dop", gpsCfg->DOP.sampleRate != SAMPLE_DISABLED, 0);
 
    json_objEnd(serial, 0);
    json_objEnd(serial, 0);
@@ -1011,7 +1019,10 @@ int api_setGpsConfig(Serial *serial, const jsmntok_t *json){
    gpsConfigTestAndSet(json, &(gpsCfg->longitude), "pos", sr);
    gpsConfigTestAndSet(json, &(gpsCfg->speed), "speed", sr);
    gpsConfigTestAndSet(json, &(gpsCfg->distance), "dist", sr);
+   gpsConfigTestAndSet(json, &(gpsCfg->altitude), "alt", sr);
    gpsConfigTestAndSet(json, &(gpsCfg->satellites), "sats", sr);
+   gpsConfigTestAndSet(json, &(gpsCfg->quality), "qual", sr);
+   gpsConfigTestAndSet(json, &(gpsCfg->DOP), "dop", sr);
 
 	configChanged();
 	return API_SUCCESS;
@@ -1088,22 +1099,35 @@ static const jsmntok_t * setPidExtendedField(const jsmntok_t *valueTok, const ch
 int api_setObd2Config(Serial *serial, const jsmntok_t *json){
 	OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
 
-	setUnsignedCharValueIfExists(json, "en", &obd2Cfg->enabled, NULL);
-	size_t pidIndex = 0;
+	int pidIndex = 0;
+	setIntValueIfExists(json, "index", &pidIndex);
+
+	if (pidIndex >= OBD2_CHANNELS){
+		return API_ERROR_PARAMETER;
+	}
+
 	const jsmntok_t *pidsTok = findNode(json, "pids");
-
 	if (pidsTok != NULL && (++pidsTok)->type == JSMN_ARRAY) {
-		size_t arrSize = pidsTok->size;
+		int pidMax = pidsTok->size;
+		if (pidMax > MAX_OBD2_MESSAGE_PIDS){
+			return API_ERROR_PARAMETER;
+		}
+		pidMax += pidIndex;
+		if (pidMax > OBD2_CHANNELS){
+			return API_ERROR_PARAMETER;
+		}
 
-      for (pidsTok++; pidIndex < arrSize; pidIndex++) {
-         PidConfig *pidCfg = obd2Cfg->pids + pidIndex;
-         ChannelConfig *chCfg = &(pidCfg->cfg);
-         pidsTok = setChannelConfig(serial, pidsTok, chCfg, setPidExtendedField, pidCfg);
-      }
-   }
-
+		for (pidsTok++; pidIndex < pidMax; pidIndex++){
+			PidConfig *pidCfg = obd2Cfg->pids + pidIndex;
+			ChannelConfig *chCfg = &(pidCfg->cfg);
+			pidsTok = setChannelConfig(serial, pidsTok, chCfg, setPidExtendedField, pidCfg);
+		}
+	}
 	obd2Cfg->enabledPids = pidIndex;
-   configChanged();
+
+	setUnsignedCharValueIfExists(json, "en", &obd2Cfg->enabled, NULL);
+
+	configChanged();
 	return API_SUCCESS;
 }
 
@@ -1168,6 +1192,7 @@ static void json_geoPointArray(Serial *serial, const char *name, const GeoPoint 
 }
 
 static void json_track(Serial *serial, const Track *track){
+    json_int(serial, "id", track->trackId, 1);
 	json_int(serial, "type", track->track_type, 1);
 	if (track->track_type == TRACK_TYPE_CIRCUIT){
 		json_geoPointArray(serial, "sf", &track->circuit.startFinish, 1);
@@ -1225,6 +1250,7 @@ static int setGeoPointIfExists(const jsmntok_t *root, const char * name, GeoPoin
 }
 
 static void setTrack(const jsmntok_t *trackNode, Track *track){
+    setIntValueIfExists(trackNode, "id", (int*)&(track->trackId));
 	unsigned char trackType;
 	if (setUnsignedCharValueIfExists(trackNode, "type", &trackType, NULL)){
            track->track_type = (enum TrackType) trackType;
