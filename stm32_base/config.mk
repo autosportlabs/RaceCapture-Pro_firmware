@@ -68,6 +68,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/gps/dateTime.c \
 			$(RCP_SRC)/gps/geopoint.c \
 			$(RCP_SRC)/gps/geoCircle.c \
+			$(RCP_SRC)/gps/geoTrigger.c \
 			$(RCP_SRC)/gps/gpsTask.c \
 			$(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 			$(RCP_SRC)/filter/filter.c \

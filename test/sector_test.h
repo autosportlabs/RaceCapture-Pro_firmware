@@ -1,7 +1,7 @@
 #ifndef PREDICTIVE_TIME_TEST_H_
 #define PREDICTIVE_TIME_TEST_H_
 
-#include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/HelperMacros.h>w
 #include <string>
 using std::string;
 using std::vector;

@@ -3,6 +3,7 @@
 #include "gps.h"
 #include "geopoint.h"
 #include "geoCircle.h"
+#include "geoTrigger.h"
 #include "loggerHardware.h"
 #include "loggerConfig.h"
 #include "modp_numtoa.h"
@@ -43,6 +44,10 @@ static tiny_millis_t g_lastSectorTime;
 
 static int g_lapCount;
 static float g_distance;
+
+// Our GeoTriggers so we don't unintentionally trigger on start/finish
+static struct GeoTrigger startGeoTrigger;
+static struct GeoTrigger finishGeoTrigger;
 
 static float calcDistancesSinceLastSample(const GpsSnapshot *gpsSnapshot) {
    const GeoPoint prev = gpsSnapshot->previousPoint;
@@ -169,6 +174,13 @@ static void lapFinishedEvent(const GpsSnapshot *gpsSnapshot) {
         if (g_activeTrack->track_type == TRACK_TYPE_CIRCUIT) return;
 
         /*
+         * Reset our startGeoTrigger so that we get away from start
+         * finish before we re-arm the system.  This is mainly used
+         * in stage situations.
+         */
+        resetGeoTrigger(&startGeoTrigger);
+
+        /*
          * Set cool off window in stage mode to give driver time to get
          * away from start circle in case start and finish lines are
          * close to one another.
@@ -192,6 +204,12 @@ static void _lapStartedEvent(const tiny_millis_t time,
         // Reset distance logic
         resetLapDistance();
         g_distance = distance;
+
+        /*
+         * Reset our finishGeoTrigger so that we get away from
+         * finish before we re-arm the system.
+         */
+        resetGeoTrigger(&finishGeoTrigger);
 
         /*
          * Set this value so we don't accidentally trigger a finish
@@ -256,6 +274,7 @@ static void processFinishLogic(const GpsSnapshot *gpsSnapshot,
                                const float targetRadius) {
         if (!isLapTimingInProgress()) return;
         if (isCoolOffInEffect(gpsSnapshot)) return;
+        if (!isGeoTriggerTripped(&finishGeoTrigger)) return;
 
         const GeoPoint point = gpsSnapshot->sample.point;
         const GeoPoint finishPoint = getFinishPoint(track);
@@ -275,6 +294,7 @@ static void processStartLogic(const GpsSnapshot *gpsSnapshot,
                               const float targetRadius) {
         if (isLapTimingInProgress()) return;
         if (isCoolOffInEffect(gpsSnapshot)) return;
+        if (!isGeoTriggerTripped(&startGeoTrigger)) return;
 
         /*
          * If we have crossed start finish at least once and we are a circuit
@@ -355,6 +375,21 @@ static int isSectorTrackingEnabled(const Track *track) {
                 isValidPoint(&p0);
 }
 
+static void setupGeoTriggers(const TrackConfig *tc, const Track *track) {
+        // Make the radius 3x the size of start/finish radius.  Seems safe.
+        const float gtRadius = degreesToMeters(tc->radius) * 3;
+        GeoPoint gp;
+        struct GeoCircle gc;
+
+        gp = getStartPoint(track);
+        gc = gc_createGeoCircle(gp, gtRadius);
+        startGeoTrigger = createGeoTrigger(&gc);
+
+        gp = getFinishPoint(track);
+        gc = gc_createGeoCircle(gp, gtRadius);
+        finishGeoTrigger = createGeoTrigger(&gc);
+}
+
 static void onLocationUpdated(const GpsSnapshot *gpsSnapshot) {
    // FIXME.  These suck.  Kill them somehow.
    static int sectorEnabled = 0;
@@ -377,14 +412,26 @@ static void onLocationUpdated(const GpsSnapshot *gpsSnapshot) {
       lc_reset();
       lc_setup(g_activeTrack, targetRadius);
 
+      setupGeoTriggers(trackConfig, g_activeTrack);
+
       g_configured = 1;
    }
 
    if (!startFinishEnabled) return;
 
-   // Skip processing sectors bits if we haven't defined any... duh!
-   if (sectorEnabled) processSectorLogic(gpsSnapshot, g_activeTrack,
-                                         targetRadius);
+   // Update our GeoTriggers first
+   updateGeoTrigger(&startGeoTrigger, gp);
+   updateGeoTrigger(&finishGeoTrigger, gp);
+
+   /*
+    * Now process the sector, finish and start logic in that order.
+    * Each processing can invoke their respective event if the logic
+    * agrees its time.
+    */
+   //Skip processing sectors bits if we haven't defined any... duh!
+   if (sectorEnabled) {
+           processSectorLogic(gpsSnapshot, g_activeTrack, targetRadius);
+   }
    processFinishLogic(gpsSnapshot, g_activeTrack, targetRadius);
    processStartLogic(gpsSnapshot, g_activeTrack, targetRadius);
 
@@ -393,6 +440,7 @@ static void onLocationUpdated(const GpsSnapshot *gpsSnapshot) {
 
    g_distance += calcDistancesSinceLastSample(gpsSnapshot);
    addGpsSample(gpsSnapshot);
+
 }
 
 void lapStats_processUpdate(const GpsSnapshot *gpsSnapshot) {
