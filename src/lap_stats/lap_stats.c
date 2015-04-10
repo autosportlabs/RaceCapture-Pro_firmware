@@ -28,7 +28,6 @@
 static const Track * g_activeTrack;
 
 static int g_configured;
-static tiny_millis_t g_cooloffTime;
 static int g_atStartFinish;
 static int g_prevAtStartFinish;
 static tiny_millis_t g_lapStartTimestamp;
@@ -141,24 +140,6 @@ static void endLapTiming(const GpsSnapshot *gpsSnapshot) {
 }
 
 /**
- * True if we are in the cool off period for start/finish.  False otherwise.
- */
-static bool isCoolOffInEffect(const GpsSnapshot *gpsSnapshot) {
-        return gpsSnapshot->deltaFirstFix < g_cooloffTime;
-}
-
-/**
- * Sets the cooloff Window to be now plus X milliseconds.  When cooloff
- * is active we will not trigger start or finish events.  This is used
- * to prevent false triggering.
- * @param time The amount of time (in ms) that we need to cooloff
- */
-static void setCooloffWindow(const GpsSnapshot *gpsSnapshot,
-                             const tiny_millis_t time) {
-        g_cooloffTime = gpsSnapshot->deltaFirstFix + time;
-}
-
-/**
  * Called whenever we finish a lap.
  */
 static void lapFinishedEvent(const GpsSnapshot *gpsSnapshot) {
@@ -179,13 +160,6 @@ static void lapFinishedEvent(const GpsSnapshot *gpsSnapshot) {
          * in stage situations.
          */
         resetGeoTrigger(&startGeoTrigger);
-
-        /*
-         * Set cool off window in stage mode to give driver time to get
-         * away from start circle in case start and finish lines are
-         * close to one another.
-         */
-        setCooloffWindow(gpsSnapshot, START_FINISH_TIME_THRESHOLD);
 }
 
 
@@ -210,14 +184,6 @@ static void _lapStartedEvent(const tiny_millis_t time,
          * finish before we re-arm the system.
          */
         resetGeoTrigger(&finishGeoTrigger);
-
-        /*
-         * Set this value so we don't accidentally trigger a finish
-         * event in a circuit track (since circuit track has same
-         * start & finish area.
-         */
-        setCooloffWindow(gpsSnapshot, START_FINISH_TIME_THRESHOLD);
-
 }
 
 /**
@@ -273,7 +239,6 @@ static void processFinishLogic(const GpsSnapshot *gpsSnapshot,
                                const Track *track,
                                const float targetRadius) {
         if (!isLapTimingInProgress()) return;
-        if (isCoolOffInEffect(gpsSnapshot)) return;
         if (!isGeoTriggerTripped(&finishGeoTrigger)) return;
 
         const GeoPoint point = gpsSnapshot->sample.point;
@@ -293,7 +258,6 @@ static void processStartLogic(const GpsSnapshot *gpsSnapshot,
                               const Track *track,
                               const float targetRadius) {
         if (isLapTimingInProgress()) return;
-        if (isCoolOffInEffect(gpsSnapshot)) return;
         if (!isGeoTriggerTripped(&startGeoTrigger)) return;
 
         /*
@@ -346,7 +310,6 @@ void gpsConfigChanged(void) {
 void lapStats_init() {
    resetLapDistance();
    g_configured = 0;
-   g_cooloffTime = -1000000; // Because we don't want to start in cooloff
    g_activeTrack = NULL;
    g_lastLapTime = 0;
    g_lastSectorTime = 0;
