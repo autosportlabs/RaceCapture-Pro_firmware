@@ -98,6 +98,7 @@ T_SRC = loggerApi_test.cpp \
 		loggerData_test.cpp \
 		virtualChannel_test.cpp \
 		$(GPS_DIR)/gps_test.cpp \
+		$(GPS_DIR)/geoTriggerTest.cpp \
 		$(UTIL_DIR)/numtoa_test.cpp \
 		$(UTIL_DIR)/atonum_test.cpp
 
@@ -156,6 +157,7 @@ SRC =		mock_uart.c \
 		$(RCP_SRC)/gps/dateTime.c \
 		$(RCP_SRC)/gps/geopoint.c \
 		$(RCP_SRC)/gps/geoCircle.c \
+		$(RCP_SRC)/gps/geoTrigger.c \
 		$(RCP_SRC)/lap_stats/lap_stats.c \
 		$(RCP_SRC)/logger/sampleRecord.c \
 		$(RCP_SRC)/logger/loggerSampleData.c \
