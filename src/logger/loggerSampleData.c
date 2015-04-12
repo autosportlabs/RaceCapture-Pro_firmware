@@ -269,9 +269,9 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
 
    GPSConfig *gpsConfig = &(loggerConfig->GPSConfigs);
    chanCfg = &(gpsConfig->latitude);
-   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getLatitude);
+   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getLatitude);
    chanCfg = &(gpsConfig->longitude);
-   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getLongitude);
+   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getLongitude);
    chanCfg = &(gpsConfig->speed);
    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getGpsSpeedInMph);
    chanCfg = &(gpsConfig->distance);
@@ -279,11 +279,11 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
    chanCfg = &(gpsConfig->altitude);
    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getAltitude);
    chanCfg = &(gpsConfig->satellites);
-   sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getSatellitesUsedForPosition);
+   sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, GPS_getSatellitesUsedForPosition);
    chanCfg = &(gpsConfig->quality);
-   sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getGPSQuality);
+   sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, GPS_getQuality);
    chanCfg = &(gpsConfig->DOP);
-   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getGpsDOP);
+   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getDOP);
 
 
 

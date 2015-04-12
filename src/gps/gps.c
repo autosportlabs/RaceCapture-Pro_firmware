@@ -7,15 +7,26 @@
 #define GPS_NOFIX_FLASH_COUNT 50
 
 static GpsSnapshot g_gpsSnapshot;
-
+gps_status_t gps_status = GPS_STATUS_NOT_INIT;
 static int g_flashCount;
-
 static millis_t g_timeFirstFix;
 static tiny_millis_t g_uptimeAtSample;
 
-
 bool isGpsSignalUsable(enum GpsSignalQuality q) {
         return q != GPS_QUALITY_NO_FIX;
+}
+
+gps_status_t GPS_init(uint8_t targetSampleRate, Serial *serial){
+	memset(&g_gpsSnapshot, 0, sizeof(GpsSnapshot));
+	g_timeFirstFix = 0;
+	g_flashCount = 0;
+	g_uptimeAtSample = 0;
+	gps_status = GPS_device_init(targetSampleRate, serial);
+	return gps_status;
+}
+
+gps_status_t GPS_getStatus(){
+	return gps_status;
 }
 
 static void flashGpsStatusLed(enum GpsSignalQuality gpsQuality) {
@@ -73,11 +84,11 @@ tiny_millis_t getUptimeAtSample() {
    return g_uptimeAtSample;
 }
 
-float getLatitude() {
+float GPS_getLatitude() {
    return g_gpsSnapshot.sample.point.latitude;
 }
 
-float getLongitude() {
+float GPS_getLongitude() {
    return g_gpsSnapshot.sample.point.longitude;
 }
 
@@ -85,15 +96,15 @@ float getAltitude(){
     return g_gpsSnapshot.sample.altitude;
 }
 
-int getGPSQuality() {
+int GPS_getQuality() {
    return (int)g_gpsSnapshot.sample.quality;
 }
 
-float getGpsDOP(){
+float GPS_getDOP(){
     return g_gpsSnapshot.sample.DOP;
 }
 
-int getSatellitesUsedForPosition() {
+int GPS_getSatellitesUsedForPosition() {
    return g_gpsSnapshot.sample.satellites;
 }
 
@@ -141,13 +152,6 @@ void GPS_sample_update(GpsSample *newSample){
    updateFullDateTime(newSample);
    g_gpsSnapshot.deltaFirstFix = newSample->time - g_timeFirstFix;
    g_gpsSnapshot.previousPoint = prevPoint;
-}
-
-void GPS_init() {
-	memset(&g_gpsSnapshot, 0, sizeof(GpsSnapshot));
-	g_timeFirstFix = 0;
-	g_flashCount = 0;
-	g_uptimeAtSample = 0;
 }
 
 int GPS_processUpdate(Serial *serial) {

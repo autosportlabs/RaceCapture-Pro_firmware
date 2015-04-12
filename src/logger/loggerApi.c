@@ -28,6 +28,8 @@
 #include "FreeRTOS.h"
 #include "taskUtil.h"
 #include "GPIO.h"
+#include "gps.h"
+#include "dateTime.h"
 
 /* Max number of PIDs that can be specified in the setOBD2Cfg message */
 #define MAX_OBD2_MESSAGE_PIDS 10
@@ -187,6 +189,60 @@ int api_getCapabilities(Serial *serial, const jsmntok_t *json){
 	json_int(serial, "tracks", MAX_TRACKS, 1);
 	json_int(serial, "sectors", MAX_SECTORS, 1);
 	json_int(serial, "script", SCRIPT_MEMORY_LENGTH, 0);
+	json_objEnd(serial, 0);
+
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
+	return API_SUCCESS_NO_RETURN;
+}
+
+int api_getStatus(Serial *serial, const jsmntok_t *json){
+	json_objStart(serial);
+	json_objStartString(serial, "status");
+
+	json_objStartString(serial, "system");
+	json_string(serial, "model", FRIENDLY_DEVICE_NAME, 1);
+	json_int(serial, "ver_major", MAJOR_REV, 1);
+	json_int(serial, "ver_minor", MINOR_REV, 1);
+	json_int(serial, "ver_bugfix", BUGFIX_REV, 1);
+	json_string(serial, "serial", cpu_get_serialnumber(), 1);
+	json_uint(serial, "uptime", getUptimeAsInt(), 0);
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial, "gps");
+	json_int(serial, "status", (int)GPS_getStatus(), 1);
+	json_int(serial, "qual", GPS_getQuality(), 1);
+	json_float(serial, "lat", GPS_getLatitude(), DEFAULT_GPS_POSITION_PRECISION, 1);
+	json_float(serial, "lon", GPS_getLongitude(), DEFAULT_GPS_POSITION_PRECISION, 1);
+	json_int(serial, "sats", GPS_getSatellitesUsedForPosition(), 1);
+	json_int(serial, "DOP", GPS_getDOP(), 0);
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial, "cell");
+	json_int(serial, "status", 0, 1); //todo implement status
+	json_string(serial, "IMEI", 0, 1); //todo implement IMEI
+	json_int(serial, "RSSI", 0, 1); //todo implement RSSI
+	json_string(serial, "phone", 0, 0); //todo implement phone number
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial, "bt");
+	json_int(serial, "status", 0, 0); //todo implement status
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial, "logging");
+	json_int(serial, "status", 0, 1); //todo implement status
+	json_int(serial, "activeSince", 0, 1); //todo implement logging since
+	json_int(serial, "logging", 0, 0); //todo implement logging active
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial, "track");
+	json_int(serial, "status", 0, 1); //todo implement status
+	json_int(serial, "detectedId", 0, 0); //todo implement detected id
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial, "telemetry");
+	json_int(serial, "status", 0, 1); //todo implement status
+	json_int(serial, "activeSince", 0, 0); //todo implement
 	json_objEnd(serial, 0);
 
 	json_objEnd(serial, 0);

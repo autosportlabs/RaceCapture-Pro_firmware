@@ -6,7 +6,7 @@
 #include "gps_device.h"
 #include "serial.h"
 
-int GPS_device_provision(Serial *serial) {
+int GPS_device_init(Serial *serial) {
    return 1;
 }
 

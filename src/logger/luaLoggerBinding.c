@@ -302,13 +302,13 @@ int Lua_SetGPIO(lua_State *L){
 }
 
 int Lua_GetGPSSatellites(lua_State *L){
-	lua_pushnumber(L, getSatellitesUsedForPosition());
+	lua_pushnumber(L, GPS_getSatellitesUsedForPosition());
 	return 1;
 }
 
 int Lua_GetGPSPosition(lua_State *L){
-	lua_pushnumber(L, getLatitude());
-	lua_pushnumber(L, getLongitude());
+	lua_pushnumber(L, GPS_getLatitude());
+	lua_pushnumber(L, GPS_getLongitude());
 	return 2;
 }
 
@@ -318,7 +318,7 @@ int Lua_GetGPSSpeed(lua_State *L){
 }
 
 int Lua_GetGPSQuality(lua_State *L){
-	lua_pushnumber(L,getGPSQuality());
+	lua_pushnumber(L,GPS_getQuality());
 	return 1;
 }
 
