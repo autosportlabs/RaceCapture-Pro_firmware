@@ -1,6 +1,9 @@
 ===2.8.0===
-* Refactor stage logic to support multiple stage runs without restarting Race Capture
-* Add support for predictive timing in stage runs (same restrictions & rules apply as in circuit racing).
+* Refactor stage logic to support multiple stage runs without restarting unit.
+* Add support for predictive timing in stage runs (same restrictions & rules
+  apply as in circuit racing).
+* Replace start/finish cool off timer with geoTrigger to prevent false start/finish
+  events when driver is stuck at start/finish for whatever reason.
 
 ===2.7.9===
 * Improved GPS processing performance, reduced chances of dropped packets from module.
