@@ -50,4 +50,9 @@ float getLapDistance();
 
 float getLapDistanceInMiles();
 
+/**
+ * @return True if we are in the middle of a lap.  False otherwise.
+ */
+bool isLapTimingInProgress();
+
 #endif /* LAP_STATS_H_ */

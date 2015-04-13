@@ -49,18 +49,6 @@ static float g_distance;
 static struct GeoTrigger startGeoTrigger;
 static struct GeoTrigger finishGeoTrigger;
 
-static float calcDistancesSinceLastSample(const GpsSnapshot *gpsSnapshot) {
-   const GeoPoint prev = gpsSnapshot->previousPoint;
-   const GeoPoint curr = gpsSnapshot->sample.point;
-
-   if (!isValidPoint(&prev) || !isValidPoint(&curr)) {
-      return 0.0;
-   }
-
-   // Return distance in KM
-   return distPythag(&prev, &curr) / 1000;
-}
-
 static float degreesToMeters(float degrees) {
    // There are 110574.27 meters per degree of latitude at the equator.
    return degrees * 110574.27;
@@ -70,10 +58,7 @@ void setActiveTrack(const Track *defaultTrack) {
         g_activeTrack = defaultTrack;
 }
 
-/**
- * @return True if we are in the middle of a lap.  False otherwise.
- */
-static bool isLapTimingInProgress() {
+bool isLapTimingInProgress() {
    return g_lapStartTimestamp >= 0;
 }
 
@@ -91,6 +76,18 @@ static void endLapTiming(const GpsSnapshot *gpsSnapshot) {
         g_lastLapTime = gpsSnapshot->deltaFirstFix - g_lapStartTimestamp;
         g_lapStartTimestamp = -1;
 }
+
+static void updateDistance(const GpsSnapshot *gpsSnapshot) {
+   const GeoPoint prev = gpsSnapshot->previousPoint;
+   const GeoPoint curr = gpsSnapshot->sample.point;
+
+   if (!isLapTimingInProgress()) return; // Don't update if we aren't racing.
+   if (!isValidPoint(&prev) || !isValidPoint(&curr)) return;
+
+
+   g_distance += distPythag(&prev, &curr) / 1000;
+}
+
 
 void resetLapDistance() {
    g_distance = 0.0;
@@ -410,6 +407,8 @@ static void onLocationUpdated(const GpsSnapshot *gpsSnapshot) {
    updateGeoTrigger(&startGeoTrigger, gp);
    updateGeoTrigger(&finishGeoTrigger, gp);
    updateElapsedLapTime(gpsSnapshot);
+   updateDistance(gpsSnapshot);
+   addGpsSample(gpsSnapshot);
 
    /*
     * Now process the sector, finish and start logic in that order.
@@ -422,13 +421,6 @@ static void onLocationUpdated(const GpsSnapshot *gpsSnapshot) {
    }
    processFinishLogic(gpsSnapshot, g_activeTrack, targetRadius);
    processStartLogic(gpsSnapshot, g_activeTrack, targetRadius);
-
-   // At this point if no lap is in progress... nothing else to do.
-   if (!isLapTimingInProgress()) return;
-
-   g_distance += calcDistancesSinceLastSample(gpsSnapshot);
-   addGpsSample(gpsSnapshot);
-
 }
 
 void lapStats_processUpdate(const GpsSnapshot *gpsSnapshot) {
