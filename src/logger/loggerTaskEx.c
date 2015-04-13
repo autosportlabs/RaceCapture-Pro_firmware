@@ -42,6 +42,7 @@
 #define BACKGROUND_SAMPLE_RATE				SAMPLE_50Hz
 
 int g_loggingShouldRun;
+logging_status_t g_logging_status;
 int g_logging_since;
 int g_configChanged;
 int g_telemetryBackgroundStreaming;
@@ -79,6 +80,10 @@ void configChanged(){
 
 bool isLogging(){
 	return g_logging_since > 0;
+}
+
+logging_status_t get_logging_status(){
+	return g_logging_status;
 }
 
 int32_t logging_since(){
@@ -155,6 +160,7 @@ void loggerTaskEx(void *params) {
 
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 
+	g_logging_status = LOGGING_STATUS_OK;
 	g_logging_since = 0;
 	size_t bufferIndex = 0;
 	size_t currentTicks = 0;
@@ -215,8 +221,13 @@ void loggerTaskEx(void *params) {
 		// We only log to file if the user has manually pushed the logging button.
 		if (is_logging && sampledRate >= loggingSampleRate) {
 			const portBASE_TYPE res = queue_logfile_record(msg);
-			if (res != pdTRUE)
+			if (res == pdTRUE){
+				g_logging_status = LOGGING_STATUS_OK;
+			}
+			else{
+				g_logging_status = LOGGING_STATUS_ERROR_WRITING;
 				LED_enable(3); //error LED
+			}
 		}
 
 		// Log if the user has manually pushed the logging button or if background is enabled.

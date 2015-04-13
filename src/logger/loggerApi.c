@@ -231,7 +231,7 @@ int api_getStatus(Serial *serial, const jsmntok_t *json){
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "logging");
-	json_int(serial, "status", 0, 1); //todo implement status
+	json_int(serial, "status", get_logging_status(), 1);
 	json_int(serial, "activeSince", logging_since(), 1);
 	json_int(serial, "logging", isLogging(), 0);
 	json_objEnd(serial, 1);

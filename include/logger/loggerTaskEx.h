@@ -11,7 +11,13 @@
 #include "loggerNotifications.h"
 #include <stdbool.h>
 
+typedef enum {
+	LOGGING_STATUS_OK = 0,
+	LOGGING_STATUS_ERROR_WRITING
+} logging_status_t;
+
 bool isLogging();
+logging_status_t get_logging_status();
 int32_t logging_since();
 void startLogging();
 void stopLogging();
