@@ -9,8 +9,10 @@
 #define LOGGERTASKEX_H_
 
 #include "loggerNotifications.h"
+#include <stdbool.h>
 
-int isLogging();
+bool isLogging();
+int32_t logging_since();
 void startLogging();
 void stopLogging();
 

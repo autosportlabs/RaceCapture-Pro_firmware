@@ -2,6 +2,7 @@
 #include "sim900_device.h"
 #include "serial.h"
 #include "modp_numtoa.h"
+#include "modp_atonum.h"
 #include "mod_string.h"
 #include "printk.h"
 #include "devices_common.h"
@@ -12,9 +13,14 @@
 
 #define NETWORK_CONNECT_MAX_TRIES 10
 
+#define MAX_SUBSCRIBER_NUMBER_LENGTH 15
+#define IMEI_NUMBER_LENGTH 16
+static char g_subscriber_number[MAX_SUBSCRIBER_NUMBER_LENGTH] = {0};
+static char g_IMEI_number[IMEI_NUMBER_LENGTH] = {0};
 
 static char *g_cellBuffer;
 static size_t g_bufferLen;
+static uint8_t g_cell_signal_strength;
 
 #define PAUSE_DELAY 500
 
@@ -25,6 +31,18 @@ static size_t g_bufferLen;
 
 #define NO_CELL_RESPONSE -99
 
+int cell_get_signal_strength(){
+	return g_cell_signal_strength;
+}
+
+char * cell_get_subscriber_number(){
+	return g_subscriber_number;
+}
+
+char * cell_get_IMEI(){
+	return g_IMEI_number;
+}
+
 void setCellBuffer(char *buffer, size_t len){
 	g_cellBuffer = buffer;
 	g_bufferLen = len;
@@ -33,20 +51,11 @@ void setCellBuffer(char *buffer, size_t len){
 static int readModemWait(Serial *serial, portTickType delay){
 	int c = serial->get_line_wait(g_cellBuffer, g_bufferLen, msToTicks(delay));
 	if (DEBUG_LEVEL && c > 0){
-		printk(DEBUG, "cellRead: ");
-		printk(DEBUG, g_cellBuffer);
-		printk(DEBUG, "\r\n");
+		pr_debug("cellRead: ");
+		pr_debug(g_cellBuffer);
+		pr_debug("\r\n");
 	}
 	return c;
-}
-
-static int readModem(Serial *serial){
-	return readModemWait(serial, portMAX_DELAY);
-}
-
-static int putcModem(Serial *serial, char c){
-	serial->put_c(c);
-	return 0;
 }
 
 static void flushModem(Serial *serial){
@@ -102,17 +111,49 @@ static int sendCommandRetry(Serial *serial, const char * cmd, const char * expec
 	return result;
 }
 
+static int read_subscriber_number(Serial *serial){
+	int res = sendCommand(serial, "AT+CNUM\r", "+CNUM:");
+	if (res != NO_CELL_RESPONSE){
+		char *num_start = strstr(g_cellBuffer, ",\"");
+		if (num_start){
+			num_start += 2;
+			char *num_end = strstr(num_start, "\"");
+			if (num_end){
+				*num_end = '\0';
+				strncpy(g_subscriber_number, num_start, MAX_SUBSCRIBER_NUMBER_LENGTH);
+				pr_debug("Cell: phone number: ");
+				pr_debug(num_start);
+				pr_debug("\r\n");
+			}
+		}
+	}
+	return res;
+}
+
 static int getSignalStrength(Serial *serial){
-	flushModem(serial);
-	putsCell(serial, "AT+CSQ\r");
-	readModemWait(serial, MEDIUM_TIMEOUT);
-	readModemWait(serial, READ_TIMEOUT);
-	if (strlen(g_cellBuffer) == 0) return -1;
-	if (strncmp(g_cellBuffer, "ERROR", 5) == 0) return -2;
-	pr_info("cell signal strength: ");
-	pr_info(g_cellBuffer);
-	pr_info("\r\n");
-	return 0;
+	int res = sendCommand(serial, "AT+CSQ\r", "+CSQ:");
+	if (res != NO_CELL_RESPONSE && strlen(g_cellBuffer) > 6){
+		char *next_start = NULL;
+		char *rssi_string = strtok_r(g_cellBuffer + 6, ",", &next_start);
+		if (rssi_string != NULL){
+			g_cell_signal_strength = modp_atoi(rssi_string);
+			pr_debug("Cell: signal strength: ");
+			pr_debug_int(g_cell_signal_strength);
+			pr_debug("\r\n");
+		}
+	}
+	return res;
+}
+
+static int read_IMEI(Serial *serial){
+	int res = sendCommand(serial, "AT+GSN\r", "");
+	if (res != NO_CELL_RESPONSE && strlen(g_cellBuffer) == 15){
+		strncpy(g_IMEI_number, g_cellBuffer, IMEI_NUMBER_LENGTH);
+		pr_debug("Cell: IMEI: ");
+		pr_debug(g_IMEI_number);
+		pr_debug("\r\n");
+	}
+	return res;
 }
 
 static int isNetworkConnected(Serial *serial, size_t maxRetries, size_t maxNoResponseRetries){
@@ -244,21 +285,6 @@ int isNetConnectionErrorOrClosed(){
 	return 0;
 }
 
-int configureTexting(Serial *serial){
-	//Setup for Texting
-	if (!sendCommandOK(serial, "AT+CMGF=1\r")) return -2;
-	delayMs(100);
-	if (!sendCommandOK(serial, "AT+CSCS=\"GSM\"\r")) return -3;
-	delayMs(100);
-	if (!sendCommandOK(serial, "AT+CSCA=\"+12063130004\"\r")) return -4;
-	delayMs(100);
-	if (!sendCommandOK(serial, "AT+CSMP=17,167,0,240\r")) return -5;
-	delayMs(100);
-	if (!sendCommandOK(serial, "AT+CNMI=0,0\r")) return -6;
-	delayMs(100);
-	return 0;
-}
-
 
 static void powerCycleCellModem(void){
 
@@ -290,64 +316,10 @@ int initCellModem(Serial *serial){
 		sendCommand(serial, "AT+CIPSHUT\r", "OK");
 		if (isNetworkConnected(serial, 60, 3) != 1) continue;
 		getSignalStrength(serial);
+		read_subscriber_number(serial);
+		read_IMEI(serial);
 		if (isDataReady(serial, 30, 2) != 1) continue;
 		success = 1;
 	}
 	return success ? 0 : -1;
-}
-
-void deleteAllTexts(Serial *serial){
-	sendCommandOK(serial, "AT+CMGDA=\"DEL ALL\"\r");
-}
-
-void deleteInbox(Serial *serial){
-	sendCommandOK(serial, "AT+CMGDA=\"DEL INBOX\"\r");
-}
-
-void deleteSent(Serial *serial){
-	sendCommandOK(serial, "AT+CMGDA=\"DEL SENT\"\r");
-}
-
-void receiveText(Serial *serial, int txtNumber, char * txtMsgBuffer, size_t txtMsgBufferLen){
-
-	flushModem(serial);
-	putsCell(serial, "AT+CMGR=");
-	char txtNumberBuffer[10];
-	modp_itoa10(txtNumber,txtNumberBuffer);
-	putsCell(serial, txtNumberBuffer);
-	putsCell(serial, "\r");
-
-	readModem(serial);
-	readModem(serial);
-	if (0 != strncmp(g_cellBuffer, "+CMGR",5)) return;
-
-
-	size_t pos = 0;
-	while(1){
-		readModem(serial);
-		if (0 == strncmp(g_cellBuffer,"OK",2)) break;
-		size_t len = strlen(g_cellBuffer);
-		if (len == 0) continue;
-		len = min(len, txtMsgBufferLen - pos - 1);
-		memcpy(txtMsgBuffer + pos,g_cellBuffer,len);
-		pos += len;
-	}
-	txtMsgBuffer[pos] = '\0';
-	stripTrailingWhitespace(txtMsgBuffer);
-}
-
-int sendText(Serial *serial, const char * number, const char * msg){
-
-	putsCell(serial, "AT+CMGS=\"");
-	putsCell(serial, number);
-	putsCell(serial, "\"\r");
-	putsCell(serial, msg);
-	putcModem(serial, 26);
-	readModem(serial);
-	readModem(serial);
-	readModem(serial);
-	readModem(serial);
-	readModem(serial);
-
-	return 0;
 }

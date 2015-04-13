@@ -6,6 +6,10 @@
 #include "task.h"
 #include "serial.h"
 
+int cell_get_signal_strength();
+char * cell_get_subscriber_number();
+char * cell_get_IMEI();
+
 void setCellBuffer(char *buffer, size_t len);
 int loadDefaultCellConfig(Serial *serial);
 int initCellModem(Serial *serial);

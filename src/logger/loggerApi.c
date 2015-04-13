@@ -30,6 +30,7 @@
 #include "GPIO.h"
 #include "gps.h"
 #include "dateTime.h"
+#include "cellModem.h"
 
 /* Max number of PIDs that can be specified in the setOBD2Cfg message */
 #define MAX_OBD2_MESSAGE_PIDS 10
@@ -209,7 +210,7 @@ int api_getStatus(Serial *serial, const jsmntok_t *json){
 	json_uint(serial, "uptime", getUptimeAsInt(), 0);
 	json_objEnd(serial, 1);
 
-	json_objStartString(serial, "gps");
+	json_objStartString(serial, "GPS");
 	json_int(serial, "status", (int)GPS_getStatus(), 1);
 	json_int(serial, "qual", GPS_getQuality(), 1);
 	json_float(serial, "lat", GPS_getLatitude(), DEFAULT_GPS_POSITION_PRECISION, 1);
@@ -219,10 +220,10 @@ int api_getStatus(Serial *serial, const jsmntok_t *json){
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "cell");
-	json_int(serial, "status", 0, 1); //todo implement status
-	json_string(serial, "IMEI", 0, 1); //todo implement IMEI
-	json_int(serial, "RSSI", 0, 1); //todo implement RSSI
-	json_string(serial, "phone", 0, 0); //todo implement phone number
+	json_int(serial, "status", 0, 1);
+	json_string(serial, "IMEI", cell_get_IMEI(), 1);
+	json_int(serial, "sig_str", cell_get_signal_strength(), 1);
+	json_string(serial, "number", cell_get_subscriber_number(), 0);
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "bt");
@@ -231,8 +232,8 @@ int api_getStatus(Serial *serial, const jsmntok_t *json){
 
 	json_objStartString(serial, "logging");
 	json_int(serial, "status", 0, 1); //todo implement status
-	json_int(serial, "activeSince", 0, 1); //todo implement logging since
-	json_int(serial, "logging", 0, 0); //todo implement logging active
+	json_int(serial, "activeSince", logging_since(), 1);
+	json_int(serial, "logging", isLogging(), 0);
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "track");
