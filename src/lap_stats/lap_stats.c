@@ -59,7 +59,7 @@ void setActiveTrack(const Track *defaultTrack) {
 }
 
 bool isLapTimingInProgress() {
-   return g_lapStartTimestamp >= 0;
+        return g_lapStartTimestamp >= 0;
 }
 
 /**
@@ -78,19 +78,19 @@ static void endLapTiming(const GpsSnapshot *gpsSnapshot) {
 }
 
 static void updateDistance(const GpsSnapshot *gpsSnapshot) {
-   const GeoPoint prev = gpsSnapshot->previousPoint;
-   const GeoPoint curr = gpsSnapshot->sample.point;
+        const GeoPoint prev = gpsSnapshot->previousPoint;
+        const GeoPoint curr = gpsSnapshot->sample.point;
 
-   if (!isLapTimingInProgress()) return; // Don't update if we aren't racing.
-   if (!isValidPoint(&prev) || !isValidPoint(&curr)) return;
+        if (!isLapTimingInProgress()) return; // Don't update if we aren't racing.
+        if (!isValidPoint(&prev) || !isValidPoint(&curr)) return;
 
 
-   g_distance += distPythag(&prev, &curr) / 1000;
+        g_distance += distPythag(&prev, &curr) / 1000;
 }
 
 
-void resetLapDistance() {
-   g_distance = 0.0;
+static void resetLapDistance(const float distance) {
+        g_distance = distance;
 }
 
 float getLapDistance() {
@@ -196,8 +196,7 @@ static void _lapStartedEvent(const tiny_millis_t time,
         g_sector = 0;
 
         // Reset distance logic
-        resetLapDistance();
-        g_distance = distance;
+        resetLapDistance(distance);
 
         /*
          * Reset our finishGeoTrigger so that we get away from
@@ -328,7 +327,7 @@ void gpsConfigChanged(void) {
 }
 
 void lapStats_init() {
-        resetLapDistance();
+        resetLapDistance(0);
         resetPredictiveTimer();
         resetElapsedLapTime();
         setActiveTrack(NULL);
