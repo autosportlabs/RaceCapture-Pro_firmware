@@ -31,6 +31,7 @@
 #include "gps.h"
 #include "dateTime.h"
 #include "cellModem.h"
+#include "bluetooth.h"
 
 /* Max number of PIDs that can be specified in the setOBD2Cfg message */
 #define MAX_OBD2_MESSAGE_PIDS 10
@@ -227,7 +228,7 @@ int api_getStatus(Serial *serial, const jsmntok_t *json){
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "bt");
-	json_int(serial, "status", 0, 0); //todo implement status
+	json_int(serial, "status", bt_get_status(), 0);
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "logging");
