@@ -55,7 +55,7 @@ static float degrees_to_meters(float degrees) {
    return degrees * 110574.27;
 }
 
-TEST_STATIC void set_active_track(const Track *defaultTrack) {
+TESTABLE_STATIC void set_active_track(const Track *defaultTrack) {
         g_activeTrack = defaultTrack;
 }
 
@@ -129,11 +129,11 @@ float getLastLapTimeInMinutes() {
    return tinyMillisToMinutes(getLastLapTime());
 }
 
-TEST_STATIC void reset_elapsed_time() {
+TESTABLE_STATIC void reset_elapsed_time() {
         g_elapsed_lap_time = 0;
 }
 
-TEST_STATIC void update_elapsed_time(const GpsSnapshot *snap) {
+TESTABLE_STATIC void update_elapsed_time(const GpsSnapshot *snap) {
         if(!lapstats_lap_in_progress()) return;
         g_elapsed_lap_time = snap->deltaFirstFix - g_lapStartTimestamp;
 }
@@ -165,7 +165,7 @@ int getAtSector() {
 /**
  * Called whenever we finish a lap.
  */
-TEST_STATIC void lap_finished_event(const GpsSnapshot *gpsSnapshot) {
+TESTABLE_STATIC void lap_finished_event(const GpsSnapshot *gpsSnapshot) {
         pr_debug("Finished Lap ");
         pr_debug_int(g_lapCount);
         pr_debug("\r\n");
@@ -212,7 +212,7 @@ static void _lap_started_event(const tiny_millis_t time,
 /**
  * Called whenever we start a new lap the normal way (ie no launch control).
  */
-TEST_STATIC void lap_started_normal_event(const GpsSnapshot *gpsSnapshot) {
+TESTABLE_STATIC void lap_started_normal_event(const GpsSnapshot *gpsSnapshot) {
         const tiny_millis_t time = gpsSnapshot->deltaFirstFix;
         const GeoPoint gp = gpsSnapshot->sample.point;
 
