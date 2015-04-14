@@ -32,6 +32,7 @@
 #include "dateTime.h"
 #include "cellModem.h"
 #include "bluetooth.h"
+#include "sim900.h"
 
 /* Max number of PIDs that can be specified in the setOBD2Cfg message */
 #define MAX_OBD2_MESSAGE_PIDS 10
@@ -243,7 +244,7 @@ int api_getStatus(Serial *serial, const jsmntok_t *json){
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "telemetry");
-	json_int(serial, "status", 0, 1); //todo implement status
+	json_int(serial, "status", (int)sim900_get_connection_status(), 1); //todo implement status
 	json_int(serial, "activeSince", 0, 0); //todo implement
 	json_objEnd(serial, 0);
 

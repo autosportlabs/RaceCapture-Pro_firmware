@@ -22,6 +22,7 @@ typedef enum {
 	TELEMETRY_STATUS_CELL_REGISTRATION_FAILED
 } telemetry_status_t;
 
+telemetry_status_t sim900_get_connection_status();
 int sim900_init_connection(DeviceConfig *config);
 int sim900_check_connection_status(DeviceConfig *config);
 
