@@ -18,21 +18,20 @@
  * Authors: Stieg
  */
 
-#ifndef _LAP_STATS_TESTING_H_
-#define _LAP_STATS_TESTING_H_
+#ifndef _TEST_H_
+#define _TEST_H_
 
-#include "lap_stats.h"
-#include "tracks.h"
-
-/*
- * Since these are methods that are not meant to be exposed outside the
- * normal runtime, they have been prefixed with "lapstats".
+/**
+ * This helpful definition causes static definitions to disappear when we are
+ * testing our code but re-appear when we are compiling for firmware.  This
+ * better isolates the scope of the code in the firmware and may help the
+ * compiler do a better job of optimizing the code.
  */
 
-void set_active_track(const Track *defaultTrack);
-void lap_started_normal_event(const GpsSnapshot *gpsSnapshot);
-void lap_finished_event(const GpsSnapshot *gpsSnapshot);
-void update_elapsed_time(const GpsSnapshot *snap);
-void reset_elapsed_time();
+#ifndef RCP_TESTING
+  #define TEST_STATIC static
+#else
+  #define TEST_STATIC
+#endif /* RCP_TESTING */
 
-#endif /* _LAP_STATS_TESTING_H_ */
+#endif /* _TEST_H_ */

@@ -28,9 +28,15 @@ tiny_millis_t getLastLapTime();
 
 float getLastLapTimeInMinutes();
 
-tiny_millis_t getElapsedLapTime();
+/**
+ * @return The elapsed lap time in milliseconds.
+ */
+tiny_millis_t lapstats_elapsed_time();
 
-float getElapsedLapTimeInMinutes();
+/**
+ * @return The elapsed lap time in minutes.
+ */
+float lapstats_elapsed_time_minutes();
 
 tiny_millis_t getLastSectorTime();
 
@@ -44,7 +50,7 @@ int getAtStartFinish();
 
 int getAtSector();
 
-void resetLapDistance();
+void lapstats_reset_distance();
 
 float getLapDistance();
 
@@ -53,6 +59,6 @@ float getLapDistanceInMiles();
 /**
  * @return True if we are in the middle of a lap.  False otherwise.
  */
-bool isLapTimingInProgress();
+bool lapstats_lap_in_progress();
 
 #endif /* LAP_STATS_H_ */

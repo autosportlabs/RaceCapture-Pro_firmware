@@ -31,7 +31,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ElapsedLapTimeTest );
 
 void ElapsedLapTimeTest::setUp() {
         lapStats_init();
-        setActiveTrack(&track);
+        set_active_track(&track);
         memset(&gpsSnap, 0, sizeof(GpsSnapshot));
 }
 
@@ -39,45 +39,45 @@ void ElapsedLapTimeTest::tearDown() {}
 
 void ElapsedLapTimeTest::testSamples() {
         gpsSnap.deltaFirstFix = 3;
-        updateElapsedLapTime(&gpsSnap);
-        CPPUNIT_ASSERT_EQUAL(0, getElapsedLapTime());
+        update_elapsed_time(&gpsSnap);
+        CPPUNIT_ASSERT_EQUAL(0, lapstats_elapsed_time());
 
-        lapStartedNormalEvent(&gpsSnap);
-        CPPUNIT_ASSERT_EQUAL(0, getElapsedLapTime());
+        lap_started_normal_event(&gpsSnap);
+        CPPUNIT_ASSERT_EQUAL(0, lapstats_elapsed_time());
 
         gpsSnap.deltaFirstFix = 15;
-        updateElapsedLapTime(&gpsSnap);
-        CPPUNIT_ASSERT_EQUAL(12, getElapsedLapTime());
+        update_elapsed_time(&gpsSnap);
+        CPPUNIT_ASSERT_EQUAL(12, lapstats_elapsed_time());
 
         gpsSnap.deltaFirstFix = 150;
-        updateElapsedLapTime(&gpsSnap);
-        CPPUNIT_ASSERT_EQUAL(147, getElapsedLapTime());
+        update_elapsed_time(&gpsSnap);
+        CPPUNIT_ASSERT_EQUAL(147, lapstats_elapsed_time());
 }
 
 void ElapsedLapTimeTest::testStopRecording() {
         gpsSnap.deltaFirstFix = 3;
-        lapStartedNormalEvent(&gpsSnap);
-        CPPUNIT_ASSERT_EQUAL(0, getElapsedLapTime());
+        lap_started_normal_event(&gpsSnap);
+        CPPUNIT_ASSERT_EQUAL(0, lapstats_elapsed_time());
 
         gpsSnap.deltaFirstFix = 15;
-        updateElapsedLapTime(&gpsSnap);
-        CPPUNIT_ASSERT_EQUAL(12, getElapsedLapTime());
+        update_elapsed_time(&gpsSnap);
+        CPPUNIT_ASSERT_EQUAL(12, lapstats_elapsed_time());
 
         gpsSnap.deltaFirstFix = 122;
-        lapFinishedEvent(&gpsSnap);
-        updateElapsedLapTime(&gpsSnap);
-        CPPUNIT_ASSERT_EQUAL(12, getElapsedLapTime());
+        lap_finished_event(&gpsSnap);
+        update_elapsed_time(&gpsSnap);
+        CPPUNIT_ASSERT_EQUAL(12, lapstats_elapsed_time());
 }
 
 void ElapsedLapTimeTest::testReset() {
         gpsSnap.deltaFirstFix = 3;
-        lapStartedNormalEvent(&gpsSnap);
-        CPPUNIT_ASSERT_EQUAL(0, getElapsedLapTime());
+        lap_started_normal_event(&gpsSnap);
+        CPPUNIT_ASSERT_EQUAL(0, lapstats_elapsed_time());
 
         gpsSnap.deltaFirstFix = 15;
-        updateElapsedLapTime(&gpsSnap);
-        CPPUNIT_ASSERT_EQUAL(12, getElapsedLapTime());
+        update_elapsed_time(&gpsSnap);
+        CPPUNIT_ASSERT_EQUAL(12, lapstats_elapsed_time());
 
-        resetElapsedLapTime();
-        CPPUNIT_ASSERT_EQUAL(0, getElapsedLapTime());
+        reset_elapsed_time();
+        CPPUNIT_ASSERT_EQUAL(0, lapstats_elapsed_time());
 }

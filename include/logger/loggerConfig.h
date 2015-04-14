@@ -378,7 +378,7 @@ typedef struct _LapConfig{
 	ChannelConfig sectorCfg;
 	ChannelConfig sectorTimeCfg;
 	ChannelConfig predTimeCfg;
-        ChannelConfig elapsedLapTimeCfg;
+        ChannelConfig elapsed_time_cfg;
 } LapConfig;
 
 #define DEFAULT_LAP_COUNT_CONFIG {"LapCount", "", 0, 0, SAMPLE_1Hz, 0, 0}
@@ -386,7 +386,7 @@ typedef struct _LapConfig{
 #define DEFAULT_SECTOR_CONFIG {"Sector", "", 0, 0, SAMPLE_1Hz, 4, 0}
 #define DEFAULT_SECTOR_TIME_CONFIG {"SectorTime", "Min", 0, 0, SAMPLE_1Hz, 4, 0}
 #define DEFAULT_PRED_TIME_CONFIG {"PredTime", "Min", 0, 0, SAMPLE_1Hz, 4, 0}
-#define DEFAULT_ELAPSED_LAP_TIME_CONFIG {"Elapsed", "Min", 0, 0, SAMPLE_25Hz, 4, 0}
+#define DEFAULT_ELAPSED_LAP_TIME_CONFIG {"ElapsedTime", "Min", 0, 0, SAMPLE_25Hz, 4, 0}
 
 #define DEFAULT_LAP_CONFIG {                            \
                 DEFAULT_LAP_COUNT_CONFIG,               \
