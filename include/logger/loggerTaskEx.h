@@ -10,6 +10,7 @@
 
 #include "loggerNotifications.h"
 #include <stdbool.h>
+#include <stdint.h>
 
 typedef enum {
 	LOGGING_STATUS_OK = 0,
