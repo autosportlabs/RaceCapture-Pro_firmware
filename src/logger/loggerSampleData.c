@@ -297,7 +297,11 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
    chanCfg = &(trackConfig->sectorTimeCfg);
    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getLastSectorTimeInMinutes);
    chanCfg = &(trackConfig->predTimeCfg);
-   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getPredictedTimeInMinutes);
+   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
+                                                     getPredictedTimeInMinutes);
+   chanCfg = &(trackConfig->elapsed_time_cfg);
+   sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
+                                                     lapstats_elapsed_time_minutes);
 }
 
 static void populate_channel_sample(ChannelSample *sample) {
