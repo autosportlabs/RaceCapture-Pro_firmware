@@ -186,7 +186,7 @@ void loggerTaskEx(void *params) {
 					&sampleRateTimebase);
 			backgroundStreaming = loggerConfig->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
 			resetLapCount();
-			resetLapDistance();
+			lapstats_reset_distance();
 			g_configChanged = 0;
 		}
 

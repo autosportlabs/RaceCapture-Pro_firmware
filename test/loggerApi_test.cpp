@@ -685,13 +685,15 @@ void LoggerApiTest::testGetMeta(){
                         getSampleResponse(requestJson));
 }
 
-void LoggerApiTest::testSampleData(){
+void LoggerApiTest::testSampleData1() {
 	string requestJson1 = readFile("sampleData1.json");
 	string expectedResponseJson1 = readFile("sampleData_response1.json");
 
 	CPPUNIT_ASSERT_EQUAL(expectedResponseJson1,
                         getSampleResponse(requestJson1));
+}
 
+void LoggerApiTest::testSampleData2() {
 	string requestJson2 = readFile("sampleData2.json");
 	string expectedResponseJson2 = readFile("sampleData_response2.json");
 

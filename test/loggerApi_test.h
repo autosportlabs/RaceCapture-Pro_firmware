@@ -45,7 +45,8 @@ class LoggerApiTest : public CppUnit::TestFixture
   CPPUNIT_TEST( testGetTrackCfgCircuit );
   CPPUNIT_TEST( testAddTrackDb );
   CPPUNIT_TEST( testGetTrackDb );
-  CPPUNIT_TEST( testSampleData );
+  CPPUNIT_TEST( testSampleData1 );
+  CPPUNIT_TEST( testSampleData2 );
   CPPUNIT_TEST( testGetMeta );
   CPPUNIT_TEST( testLogStartStop );
   CPPUNIT_TEST( testCalibrateImu);
@@ -74,7 +75,8 @@ public:
 
   void assertGenericResponse(char *buffer, const char *messageName, int responseCode);
   void testUnescapeTextField();
-  void testSampleData();
+  void testSampleData1();
+  void testSampleData2();
   void testGetMeta();
   void testLogStartStop();
   void testSetConnectivityCfg();

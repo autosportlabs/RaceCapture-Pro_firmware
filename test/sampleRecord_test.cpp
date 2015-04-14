@@ -141,7 +141,7 @@ void SampleRecordTest::testInitSampleRecord()
 {
    LoggerConfig *lc = getWorkingLoggerConfig();
 
-   size_t expectedEnabledChannels = 22;
+   size_t expectedEnabledChannels = 23;
 
    size_t channelCount = get_enabled_channel_count(lc);
    CPPUNIT_ASSERT_EQUAL(expectedEnabledChannels, channelCount);
@@ -317,6 +317,16 @@ void SampleRecordTest::testInitSampleRecord()
       CPPUNIT_ASSERT_EQUAL((void *) getPredictedTimeInMinutes, (void *) ts->get_float_sample);
       ts++;
    }
+
+   if (lapConfig->elapsed_time_cfg.sampleRate != SAMPLE_DISABLED){
+           CPPUNIT_ASSERT_EQUAL((void *) &lapConfig->elapsed_time_cfg,
+                                (void *) ts->cfg);
+           CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
+           CPPUNIT_ASSERT_EQUAL((void *) lapstats_elapsed_time_minutes,
+                                (void *) ts->get_float_sample);
+           ts++;
+   }
+
 
    //amount shoud match
    unsigned int size = (unsigned int)ts - (unsigned int)samples;
