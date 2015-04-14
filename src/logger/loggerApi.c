@@ -228,11 +228,11 @@ int api_getStatus(Serial *serial, const jsmntok_t *json){
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "bt");
-	json_int(serial, "status", bt_get_status(), 0);
+	json_int(serial, "status", (int)bt_get_status(), 0);
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "logging");
-	json_int(serial, "status", get_logging_status(), 1);
+	json_int(serial, "status", (int)get_logging_status(), 1);
 	json_int(serial, "activeSince", logging_since(), 1);
 	json_int(serial, "logging", isLogging(), 0);
 	json_objEnd(serial, 1);
