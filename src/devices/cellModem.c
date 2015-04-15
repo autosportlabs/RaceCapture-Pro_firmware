@@ -48,7 +48,7 @@ void setCellBuffer(char *buffer, size_t len){
 	g_bufferLen = len;
 }
 
-static int readModemWait(Serial *serial, portTickType delay){
+static int readModemWait(Serial *serial, size_t delay){
 	int c = serial->get_line_wait(g_cellBuffer, g_bufferLen, msToTicks(delay));
 	if (DEBUG_LEVEL && c > 0){
 		pr_debug("cellRead: ");
@@ -69,7 +69,7 @@ static void stripTrailingWhitespace(char *data){
 	*ch = 0;
 }
 
-static int waitCommandResponse(Serial *serial, const char *expectedRsp, portTickType wait){
+static int waitCommandResponse(Serial *serial, const char *expectedRsp, size_t wait){
 	int res = NO_CELL_RESPONSE;
 	readModemWait(serial, wait);
 	int len = readModemWait(serial, READ_TIMEOUT);
@@ -83,7 +83,7 @@ static int waitCommandResponse(Serial *serial, const char *expectedRsp, portTick
 	return res;
 }
 
-static int sendCommandWait(Serial *serial, const char *cmd, const char *expectedRsp, portTickType wait){
+static int sendCommandWait(Serial *serial, const char *cmd, const char *expectedRsp, size_t wait){
 	flushModem(serial);
 	putsCell(serial, cmd);
 	int res = waitCommandResponse(serial, expectedRsp, wait);
@@ -274,7 +274,7 @@ int closeNet(Serial *serial){
 	return sendCommandWait(serial, "AT+CIPCLOSE\r", "OK", SHORT_TIMEOUT);
 }
 
-const char * readsCell(Serial *serial, portTickType timeout){
+const char * readsCell(Serial *serial, size_t timeout){
 	readModemWait(serial, timeout);
 	return g_cellBuffer;
 }

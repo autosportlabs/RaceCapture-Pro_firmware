@@ -1,9 +1,6 @@
 #ifndef CELLMODEM_H_
 #define CELLMODEM_H_
-#include "stdint.h"
-#include "FreeRTOS.h"
-#include "queue.h"
-#include "task.h"
+#include <stdint.h>
 #include "serial.h"
 
 int cell_get_signal_strength();
@@ -18,7 +15,7 @@ int configureNet(Serial *serial, const char *apnHost, const char *apnUser, const
 int connectNet(Serial *serial, const char *host, const char *port, int udpMode);
 int closeNet(Serial *serial);
 int isNetConnectionErrorOrClosed();
-const char * readsCell(Serial *serial, portTickType timeout);
+const char * readsCell(Serial *serial, size_t timeout);
 void putsCell(Serial *serial, const char *data);
 void putQuotedStringCell(Serial *serial, char *s);
 void putUintCell(Serial *serial, uint32_t num);

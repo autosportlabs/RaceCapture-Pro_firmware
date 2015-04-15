@@ -24,6 +24,8 @@
 #include "gps.h"
 #include "gps.testing.h"
 #include "task.h"
+#include "serial.h"
+
 #include <cppunit/extensions/HelperMacros.h>
 
 // Registers the fixture into the 'registry'
@@ -31,7 +33,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( DateTimeTest );
 
 void DateTimeTest::setUp() {
   resetTicks();
-  GPS_init();
+  GPS_init(10, get_serial(SERIAL_GPS));
 }
 
 void DateTimeTest::tearDown() {}

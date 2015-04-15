@@ -5,6 +5,7 @@
 #include "printk.h"
 #include "LED.h"
 #include "dateTime.h"
+#include "taskUtil.h"
 
 #define TELEMETRY_SERVER_PORT "8080"
 
@@ -23,7 +24,7 @@ static int writeAuthJSON(Serial *serial, const char *deviceId){
 	//send linefeed at slow intervals until we have the auth packet ack from server
 	for (int i = 0; i < 5; i++){
 		serial->put_s(" ");
-		vTaskDelay(84); //250ms pause
+		delayMs(250);
 	}
 	serial->put_s("{\"cmd\":{\"schemaVer\":2,\"auth\":{\"deviceId\":\"");
 	serial->put_s(deviceId);
