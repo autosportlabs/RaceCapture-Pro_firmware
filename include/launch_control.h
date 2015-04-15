@@ -50,6 +50,12 @@ void lc_supplyGpsSnapshot(const GpsSnapshot *snap);
 bool lc_hasLaunched();
 
 /**
+ * @return true if launch control is armed but the racer hasn't launched yet,
+ *         false otherwise.
+ */
+bool lc_is_armed();
+
+/**
  * @return The time when the driver started racing.
  */
 tiny_millis_t lc_getLaunchTime();
