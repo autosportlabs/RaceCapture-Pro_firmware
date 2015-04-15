@@ -4,13 +4,19 @@
 #include "mod_string.h"
 #include "printk.h"
 #include "LED.h"
+#include "dateTime.h"
 
 #define TELEMETRY_SERVER_PORT "8080"
 
 static telemetry_status_t g_connection_status = TELEMETRY_STATUS_IDLE;
+static int32_t g_active_since = 0;
 
 telemetry_status_t sim900_get_connection_status(){
 	return g_connection_status;
+}
+
+int32_t sim900_active_since(){
+	return g_active_since;
 }
 
 static int writeAuthJSON(Serial *serial, const char *deviceId){
@@ -44,6 +50,7 @@ int sim900_init_connection(DeviceConfig *config){
 
 	pr_debug("init cell connection\r\n");
 	int initResult = DEVICE_INIT_FAIL;
+	g_active_since = 0;
 	if (0 == initCellModem(serial)){
 		CellularConfig *cellCfg = &(loggerConfig->ConnectivityConfigs.cellularConfig);
 		TelemetryConfig *telemetryConfig = &(loggerConfig->ConnectivityConfigs.telemetryConfig);
@@ -55,6 +62,7 @@ int sim900_init_connection(DeviceConfig *config){
 					pr_info("server authenticated\r\n");
 					initResult = DEVICE_INIT_SUCCESS;
 					g_connection_status = TELEMETRY_STATUS_CONNECTED;
+					g_active_since = getUptimeAsInt();
 				}
 				else{
 					g_connection_status = TELEMETRY_STATUS_REJECTED_DEVICE_ID;
