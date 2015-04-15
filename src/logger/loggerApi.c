@@ -34,6 +34,7 @@
 #include "bluetooth.h"
 #include "sim900.h"
 #include "launch_control.h"
+#include "lap_stats.h"
 
 /* Max number of PIDs that can be specified in the setOBD2Cfg message */
 #define MAX_OBD2_MESSAGE_PIDS 10
@@ -240,8 +241,8 @@ int api_getStatus(Serial *serial, const jsmntok_t *json){
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "track");
-	json_int(serial, "status", 0, 1); //todo implement status
-	json_int(serial, "detectedId", 0, 1); //todo implement detected id
+	json_int(serial, "status", lapstats_get_track_status(), 1);
+	json_int(serial, "trackId", lapstats_get_selected_track_id(), 1);
 	json_int(serial, "armed", lc_is_armed(), 0);
 	json_objEnd(serial, 1);
 

@@ -50,13 +50,34 @@ static float g_distance;
 static struct GeoTrigger startGeoTrigger;
 static struct GeoTrigger finishGeoTrigger;
 
+static void set_active_track(const Track* defaultTrack) {
+	g_activeTrack = defaultTrack;
+}
+
 static float degrees_to_meters(float degrees) {
    // There are 110574.27 meters per degree of latitude at the equator.
    return degrees * 110574.27;
 }
 
-TESTABLE_STATIC void set_active_track(const Track *defaultTrack) {
-        g_activeTrack = defaultTrack;
+track_status_t lapstats_get_track_status( void ) {
+	if (g_activeTrack == NULL){
+		return TRACK_STATUS_WAITING_TO_CONFIG;
+	}
+	else if (g_activeTrack->trackId > 0) {
+		return TRACK_STATUS_AUTO_DETECTED;
+	}
+	else {
+		return TRACK_STATUS_FIXED_CONFIG;
+	}
+}
+
+int32_t lapstats_get_selected_track_id( void ) {
+	if (g_activeTrack == NULL) {
+		return 0;
+	}
+	else {
+		return g_activeTrack->trackId;
+	}
 }
 
 bool lapstats_lap_in_progress() {
@@ -398,14 +419,12 @@ static void onLocationUpdated(const GpsSnapshot *gpsSnapshot) {
       }
       set_active_track(track);
 
-      startFinishEnabled = isStartFinishEnabled(g_activeTrack);
-      sectorEnabled = isSectorTrackingEnabled(g_activeTrack);
+      startFinishEnabled = isStartFinishEnabled(track);
+      sectorEnabled = isSectorTrackingEnabled(track);
 
       lc_reset();
-      lc_setup(g_activeTrack, targetRadius);
-
-      setupGeoTriggers(trackConfig, g_activeTrack);
-
+      lc_setup(track, targetRadius);
+      setupGeoTriggers(trackConfig, track);
       g_configured = 1;
    }
 
