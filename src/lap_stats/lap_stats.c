@@ -390,7 +390,12 @@ static void onLocationUpdated(const GpsSnapshot *gpsSnapshot) {
    if (!g_configured) {
       const TrackConfig *trackConfig = &(config->TrackConfigs);
       const Track *track = &trackConfig->track;
-      if (trackConfig->auto_detect) track = auto_configure_track(track, gp);
+      if (trackConfig->auto_detect){
+    	  track = auto_configure_track(track, gp);
+      }
+      else{
+    	  pr_info("track: using fixed config");
+      }
       set_active_track(track);
 
       startFinishEnabled = isStartFinishEnabled(g_activeTrack);
