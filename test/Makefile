@@ -13,6 +13,7 @@ MESSAGING_SRC=$(RCP_SRC)/messaging
 COMMAND_SRC=$(RCP_SRC)/command
 MOCK_DIR=logger_mock
 GPS_DIR=gps
+FREE_RTOS_KERNEL_DIR=FreeRTOS_Kernel
 LAP_STATS_DIR=lap_stats
 UTIL_DIR=util
 BUILD_DIR=build
@@ -39,6 +40,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/auto_config \
 		-I$(RCP_INC)/util \
 		-I$(RCP_INC)/serial \
+		-I$(RCP_INC)/devices \
 		-I$(SAM7S_SRC)/lua \
 		-I$(SAM7S_SRC)/command \
 		-I$(SAM7S_SRC)/uart \
@@ -62,6 +64,7 @@ INCLUDES = 	-I. \
 		-I$(MOCK_DIR) \
 		-I$(GPS_DIR) \
 		-I$(LAP_STATS_DIR) \
+		-I$(FREE_RTOS_KERNEL_DIR)/include \
 		-I$(UTIL_DIR)
 
 # set up compiler and options
