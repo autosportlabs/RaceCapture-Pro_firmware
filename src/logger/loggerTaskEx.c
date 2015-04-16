@@ -147,7 +147,7 @@ void loggerTaskEx(void *params) {
 
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 
-	logging_set_status(LOGGING_STATUS_OK);
+	logging_set_status(LOGGING_STATUS_IDLE);
 	logging_set_logging_start(0);
 	size_t bufferIndex = 0;
 	size_t currentTicks = 0;
@@ -191,6 +191,7 @@ void loggerTaskEx(void *params) {
 				LoggerMessage logStopMsg = getLogStopMessage();
 				queue_logfile_record(&logStopMsg);
 				queueTelemetryRecord(&logStopMsg);
+				logging_set_status(LOGGING_STATUS_IDLE);
 			}
 		}
 
@@ -209,7 +210,7 @@ void loggerTaskEx(void *params) {
 		if (is_logging && sampledRate >= loggingSampleRate) {
 			const portBASE_TYPE res = queue_logfile_record(msg);
 			if (res == pdTRUE){
-			    logging_set_status(LOGGING_STATUS_OK);
+			    logging_set_status(LOGGING_STATUS_WRITING);
 			}
 			else{
 			    logging_set_status(LOGGING_STATUS_ERROR_WRITING);

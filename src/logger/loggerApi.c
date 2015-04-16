@@ -216,7 +216,7 @@ int api_getStatus(Serial *serial, const jsmntok_t *json){
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "GPS");
-	json_int(serial, "status", (int)GPS_getStatus(), 1);
+	json_int(serial, "init", (int)GPS_getStatus(), 1);
 	json_int(serial, "qual", GPS_getQuality(), 1);
 	json_float(serial, "lat", GPS_getLatitude(), DEFAULT_GPS_POSITION_PRECISION, 1);
 	json_float(serial, "lon", GPS_getLongitude(), DEFAULT_GPS_POSITION_PRECISION, 1);
@@ -225,20 +225,19 @@ int api_getStatus(Serial *serial, const jsmntok_t *json){
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "cell");
-	json_int(serial, "status", 0, 1);
+	json_int(serial, "init", cellmodem_get_status(), 1);
 	json_string(serial, "IMEI", cell_get_IMEI(), 1);
 	json_int(serial, "sig_str", cell_get_signal_strength(), 1);
 	json_string(serial, "number", cell_get_subscriber_number(), 0);
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "bt");
-	json_int(serial, "status", (int)bt_get_status(), 0);
+	json_int(serial, "init", (int)bt_get_status(), 0);
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "logging");
 	json_int(serial, "status", (int)logging_get_status(), 1);
-	json_int(serial, "activeSince", logging_get_logging_start(), 1);
-	json_int(serial, "logging", logging_is_active(), 0);
+	json_int(serial, "started", logging_get_logging_start(), 0);
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "track");
@@ -249,7 +248,7 @@ int api_getStatus(Serial *serial, const jsmntok_t *json){
 
 	json_objStartString(serial, "telemetry");
 	json_int(serial, "status", (int)sim900_get_connection_status(), 1);
-	json_int(serial, "activeSince", sim900_active_since(), 0);
+	json_int(serial, "started", sim900_active_since(), 0);
 	json_objEnd(serial, 0);
 
 	json_objEnd(serial, 0);

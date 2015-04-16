@@ -21,7 +21,8 @@
 #include <stdint.h>
 
 typedef enum {
-    LOGGING_STATUS_OK = 0,
+    LOGGING_STATUS_IDLE = 0,
+    LOGGING_STATUS_WRITING,
     LOGGING_STATUS_ERROR_WRITING
 } logging_status_t;
 

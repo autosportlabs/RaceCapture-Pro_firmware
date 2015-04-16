@@ -3,14 +3,20 @@
 #include <stdint.h>
 #include "serial.h"
 
+typedef enum {
+    CELLMODEM_STATUS_NOT_INIT = 0,
+    CELLMODEM_STATUS_PROVISIONED,
+    CELLMODEM_STATUS_NO_NETWORK
+} cellmodem_status_t;
+
+cellmodem_status_t cellmodem_get_status( void );
+
 int cell_get_signal_strength();
 char * cell_get_subscriber_number();
 char * cell_get_IMEI();
-
 void setCellBuffer(char *buffer, size_t len);
 int loadDefaultCellConfig(Serial *serial);
 int initCellModem(Serial *serial);
-int configureTexting(Serial *serial);
 int configureNet(Serial *serial, const char *apnHost, const char *apnUser, const char *apnPass);
 int connectNet(Serial *serial, const char *host, const char *port, int udpMode);
 int closeNet(Serial *serial);
@@ -21,10 +27,5 @@ void putQuotedStringCell(Serial *serial, char *s);
 void putUintCell(Serial *serial, uint32_t num);
 void putIntCell(Serial *serial, int num);
 void putFloatCell(Serial *serial, float num, int precision);
-int sendText(Serial *serial, const char * number, const char *msg);
-void receiveText(Serial *serial, int txtNumber, char *textMsgBuffer, size_t textMsgBufferLen);
-void deleteAllTexts(Serial *serial);
-void deleteInbox(Serial *serial);
-void deleteSent(Serial *serial);
 #endif
 

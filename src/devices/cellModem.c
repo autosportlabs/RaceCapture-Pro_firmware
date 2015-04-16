@@ -10,11 +10,11 @@
 #include "LED.h"
 
 #define min(a,b) ((a)<(b)?(a):(b))
-
 #define NETWORK_CONNECT_MAX_TRIES 10
-
 #define MAX_SUBSCRIBER_NUMBER_LENGTH 15
 #define IMEI_NUMBER_LENGTH 16
+
+static cellmodem_status_t g_cellmodem_status = CELLMODEM_STATUS_NOT_INIT;
 static char g_subscriber_number[MAX_SUBSCRIBER_NUMBER_LENGTH] = {0};
 static char g_IMEI_number[IMEI_NUMBER_LENGTH] = {0};
 
@@ -30,6 +30,10 @@ static uint8_t g_cell_signal_strength;
 #define CONNECT_TIMEOUT 60000
 
 #define NO_CELL_RESPONSE -99
+
+cellmodem_status_t cellmodem_get_status( void ){
+    return g_cellmodem_status;
+}
 
 int cell_get_signal_strength(){
 	return g_cell_signal_strength;
@@ -298,6 +302,7 @@ int initCellModem(Serial *serial){
 
 	size_t success = 0;
 	size_t attempts = 0;
+	g_cellmodem_status = CELLMODEM_STATUS_NOT_INIT;
 
 	while (!success && attempts++ < 3){
 		closeNet(serial);
@@ -321,5 +326,12 @@ int initCellModem(Serial *serial){
 		if (isDataReady(serial, 30, 2) != 1) continue;
 		success = 1;
 	}
-	return success ? 0 : -1;
+	if ( success ){
+        g_cellmodem_status = CELLMODEM_STATUS_PROVISIONED;
+        return 0;
+	}
+	else{
+        g_cellmodem_status = CELLMODEM_STATUS_NO_NETWORK;
+        return -1;
+	}
 }

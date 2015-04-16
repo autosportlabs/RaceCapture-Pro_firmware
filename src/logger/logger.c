@@ -17,7 +17,7 @@
  */
 #include "logger.h"
 
-static logging_status_t g_logging_status = LOGGING_STATUS_OK;
+static logging_status_t g_logging_status = LOGGING_STATUS_IDLE;
 static int g_logging_start = 0;
 
 void logging_set_status(logging_status_t status) {
