@@ -22,6 +22,9 @@ enum log_level {
 
 #define pr_trace(arg1) printk(TRACE, arg1);
 #define pr_trace_int(arg1) printk_int(TRACE, arg1);
+#define pr_trace_str_msg(arg1, arg2) printk_str_msg(TRACE, arg1, arg2);
+#define pr_trace_int_msg(arg1, arg2) printk_int_msg(TRACE, arg1, arg2);
+#define pr_trace_float_msg(arg1, arg2) printk_float_msg(TRACE, arg1, arg2);
 
 #define pr_debug(arg1) printk(DEBUG, arg1);
 #define pr_debug_int(arg1) printk_int(DEBUG, arg1);

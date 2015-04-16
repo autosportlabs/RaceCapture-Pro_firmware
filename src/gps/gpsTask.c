@@ -49,7 +49,7 @@ void GPSTask(void *pvParameters) {
 			lapStats_processUpdate(&snap);
 		}
 		else{
-			pr_warning("timeout processing GPS update\r\n");
+			pr_warning("GPS: timeout\r\n");
 		}
    }
 }

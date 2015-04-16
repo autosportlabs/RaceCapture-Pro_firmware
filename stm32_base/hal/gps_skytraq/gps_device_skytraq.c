@@ -298,8 +298,7 @@ static gps_msg_result_t rxGpsMessage(GpsMessage * msg, Serial * serial,
 						result = GPS_MSG_SUCCESS;
 					}
 					else{
-						pr_trace_int(msg->messageId);
-						pr_trace(" unexpected id\r\n");
+						pr_trace_int_msg("Unexpected Id: ", msg->messageId);
 					}
 				}
 			}

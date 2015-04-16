@@ -239,12 +239,7 @@ void connectivityTask(void *params) {
 						break;
 					}
 					default:
-					{
-						pr_warning("unknown logger msg type ");
-						pr_warning_int(msg->type);
-						pr_warning("\r\n");
 						break;
-					}
 				}
 			}
 

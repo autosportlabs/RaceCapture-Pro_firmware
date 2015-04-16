@@ -333,7 +333,7 @@ static void populate_channel_sample(ChannelSample *sample) {
        sample->valueDouble = sample->get_double_sample(channelIndex);
        break;
     default:
-       pr_warning("Got into supposedly unreachable area in populate_sample_buffer");
+       pr_warning("populate channel sample: unknown sample type");
        sample->valueLongLong = -1;
        break;
     }

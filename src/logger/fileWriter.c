@@ -170,7 +170,7 @@ static int writeChannelSamples(ChannelSample *sample, size_t channelCount){
          appendDouble(sample->valueDouble, precision);
          break;
       default:
-         pr_warning("Got to unexpected location in writeChannelSamples\n");
+         pr_warning("fileWriter: Unknown channel sample type\n");
       }
    }
 
