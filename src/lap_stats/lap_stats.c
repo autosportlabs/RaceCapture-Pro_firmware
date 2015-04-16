@@ -187,9 +187,7 @@ int getAtSector() {
  * Called whenever we finish a lap.
  */
 TESTABLE_STATIC void lap_finished_event(const GpsSnapshot *gpsSnapshot) {
-        pr_debug("Finished Lap ");
-        pr_debug_int(g_lapCount);
-        pr_debug("\r\n");
+		pr_debug_int_msg("Finished Lap ", g_lapCount);
 
         ++g_lapCount;
         end_lap_timing(gpsSnapshot);
@@ -236,11 +234,7 @@ static void _lap_started_event(const tiny_millis_t time,
 TESTABLE_STATIC void lap_started_normal_event(const GpsSnapshot *gpsSnapshot) {
         const tiny_millis_t time = gpsSnapshot->deltaFirstFix;
         const GeoPoint gp = gpsSnapshot->sample.point;
-
-        pr_debug("Starting lap ");
-        pr_debug_int(g_lapCount);
-        pr_debug("\r\n");
-
+        pr_debug_int_msg("Start Lap ", g_lapCount);
         _lap_started_event(time, &gp, 0, gpsSnapshot);
 }
 
@@ -253,11 +247,7 @@ static void lap_started_launched_event(const GpsSnapshot *gpsSnapshot) {
         const GeoPoint sp = getStartPoint(g_activeTrack);
         const GeoPoint gp = gpsSnapshot->sample.point;
         const float distance = distPythag(&sp, &gp) / 1000;
-
-        pr_debug("Starting lap ");
-        pr_debug_int(g_lapCount);
-        pr_debug(" with launch control.\r\n");
-
+        pr_debug_int_msg("Start lap w/launch ", g_lapCount);
         _lap_started_event(time, &sp, distance, gpsSnapshot);
 }
 
@@ -267,8 +257,7 @@ static void lap_started_launched_event(const GpsSnapshot *gpsSnapshot) {
 static void sectorBoundaryEvent(const GpsSnapshot *gpsSnapshot) {
         const tiny_millis_t millis = gpsSnapshot->deltaFirstFix;
 
-        pr_debug_int(g_sector);
-        pr_debug(" Sector Boundary Detected\r\n");
+        pr_debug_int_msg("Sector boundary ", g_sector);
 
         g_lastSectorTime = millis - g_lastSectorTimestamp;
         g_lastSectorTimestamp = millis;

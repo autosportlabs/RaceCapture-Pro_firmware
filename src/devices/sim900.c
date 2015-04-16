@@ -30,11 +30,7 @@ static int writeAuthJSON(Serial *serial, const char *deviceId){
 	serial->put_s(deviceId);
 	serial->put_s("\"}}}\n");
 
-	if (DEBUG_LEVEL){
-		pr_debug("sending auth- deviceId: ");
-		pr_debug(deviceId);
-		pr_debug("\r\n");
-	}
+	pr_debug_str_msg("sending auth- deviceId: ", deviceId);
 
 	int attempts = 20;
 	while (attempts-- > 0){
@@ -67,16 +63,12 @@ int sim900_init_connection(DeviceConfig *config){
 				}
 				else{
 					g_connection_status = TELEMETRY_STATUS_REJECTED_DEVICE_ID;
-					pr_error("err: auth- token: ");
-					pr_error(telemetryConfig->telemetryDeviceId);
-					pr_error("\r\n");
+					pr_error_str_msg("err: auth- token: ", telemetryConfig->telemetryDeviceId);
 				}
 			}
 			else{
 				g_connection_status = TELEMETRY_STATUS_SERVER_CONNECTION_FAILED;
-				pr_error("err: server connect: ");
-				pr_error(telemetryConfig->telemetryServerHost);
-				pr_error("\r\n");
+				pr_error_str_msg("err: server connect ", telemetryConfig->telemetryServerHost);
 			}
 		}
 		else{

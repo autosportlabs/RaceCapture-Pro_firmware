@@ -51,11 +51,9 @@ static int sendBtCommandWaitResponse(DeviceConfig *config, const char *cmd, cons
     vTaskDelay(COMMAND_WAIT);
     putsBt(config, cmd);
     readBtWait(config, wait);
-    pr_debug("BT: cmd rsp: ");
-    pr_debug(config->buffer);
-    pr_debug("\n");
+    pr_debug_str_msg("BT: cmd rsp: ", config->buffer);
     int res = strncmp(config->buffer, rsp, strlen(rsp));
-    pr_debug(res == 0 ? "btMatch\r\n" : "btnomatch\r\n");
+    pr_debug_str_msg("BT: ", res == 0 ? "match" : "nomatch");
     return res == 0;
 }
 
@@ -64,9 +62,7 @@ static int sendBtCommandWait(DeviceConfig *config, const char *cmd, size_t wait)
 }
 
 static int sendCommand(DeviceConfig *config, const char * cmd) {
-    pr_debug("BT: cmd: ");
-    pr_debug(cmd);
-    pr_debug("\r\n");
+	pr_debug_str_msg("BT: cmd: ", cmd);
     return sendBtCommandWait(config, cmd, COMMAND_WAIT);
 }
 
@@ -84,18 +80,12 @@ static char * baudConfigCmdForRate(unsigned int baudRate) {
         default:
             break;
     }
-    pr_error("invalid BT baud");
-    pr_error_int(baudRate);
-    pr_error("\r\n");
+    pr_error_int_msg("invalid BT baud", baudRate);
     return "";
 }
 
 static int configureBt(DeviceConfig *config, unsigned int targetBaud, const char * deviceName) {
-    if (DEBUG_LEVEL) {
-        pr_info("BT: Configuring baud Rate");
-        pr_info_int(targetBaud);
-        pr_info("\r\n");
-    }
+	pr_debug_int_msg("BT: Configuring baud Rate", targetBaud);
     //set baud rate
     if (!sendCommand(config, baudConfigCmdForRate(targetBaud)))
         return -1;
@@ -105,33 +95,25 @@ static int configureBt(DeviceConfig *config, unsigned int targetBaud, const char
     char btName[30];
     strcpy(btName, "AT+NAME");
     strcat(btName, deviceName);
-    if (DEBUG_LEVEL) {
-        pr_info("BT: Configuring name");
-        pr_info(btName);
-        pr_info("\r\n");
-    }
+    pr_debug_str_msg("BT: Configuring name", btName);
     if (!sendBtCommandWaitResponse(config, btName, "OK", COMMAND_WAIT))
         return -2;
     return 0;
 }
 
 static int bt_probe_config(unsigned int probeBaud, unsigned int targetBaud, const char * deviceName,
-        DeviceConfig *config) {
-    if (DEBUG_LEVEL) {
-        pr_info("BT: Probing baud ");
-        pr_info_int(probeBaud);
-        pr_info(": ");
-    }
+    DeviceConfig *config) {
+	pr_debug_int_msg("BT: Probing baud", probeBaud);
     config->serial->init(8, 0, 1, probeBaud);
-    pr_info("BT: Provision ");
+    int rc;
     if (sendCommand(config, "AT")
-            && (targetBaud == probeBaud || configureBt(config, targetBaud, deviceName) == 0)) {
-        pr_info("success\r\n");
-        return DEVICE_INIT_SUCCESS;
+    		&& (targetBaud == probeBaud || configureBt(config, targetBaud, deviceName) == 0)) {
+        rc = DEVICE_INIT_SUCCESS;
     } else {
-        pr_info("fail\r\n");
-        return DEVICE_INIT_FAIL;
+        rc = DEVICE_INIT_FAIL;
     }
+    pr_info_str_msg("BT: Provision", rc == DEVICE_INIT_SUCCESS ? "win" : "fail");
+    return rc;
 }
 
 int bt_init_connection(DeviceConfig *config) {

@@ -290,8 +290,7 @@ static int MCP2515_setup(){
 		rc = 1;
 	}
 	else{
-		pr_error_int(mode);
-		pr_error("=mode; Failed to reset CAN controller\r\n");
+		pr_error_int_msg("CAN controller reset fail. mode=", mode);
 	}
 	return rc;
 }
@@ -341,15 +340,10 @@ static int MCP2515_set_mode(uint8_t mode){
 	MCP2515_write_reg(MCP2515_REG_CANCTRL, mode);
 	uint8_t regValue = MCP2515_read_reg(MCP2515_REG_CANCTRL);
 	if (regValue == mode){
-		pr_debug_int(mode);
-		pr_debug("=set MCP2515 mode\r\n");
+		pr_debug_int_msg("MCP2515: set mode", mode);
 	}
 	else{
-		pr_error("CAN set mode ");
-		pr_error_int(mode);
-		pr_error(" failed; ")
-		pr_error_int(regValue);
-		pr_error(" returned\r\n");
+		pr_error_int_msg("MCP2515: failed: ", regValue);
 	}
 	return regValue == mode;
 }
@@ -402,7 +396,7 @@ int CAN_device_init(uint8_t channel, uint32_t baud){
 			MCP2515_set_baud(baud) &&
 			MCP2515_set_normal_mode();
 
-	pr_info(initSuccess ? "CAN init win\r\n" : "CAN init fail\r\n");
+	pr_info_str_msg("CAN init ", initSuccess ? "win" : "fail");
 	return initSuccess;
 }
 
