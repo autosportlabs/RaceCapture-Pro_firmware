@@ -28,7 +28,7 @@ int flash_default_tracks(void){
 
 int flash_tracks(const Tracks *source, size_t rawSize){
 	int result = memory_flash_region((void *)&g_tracks, (void *)source, rawSize);
-	if (result == 0) pr_info("success\r\n"); else pr_info("failed\r\n");
+	if (result == 0) pr_info("win\r\n"); else pr_info("fail\r\n");
 	return result;
 }
 
@@ -56,10 +56,10 @@ int add_track(const Track *track, size_t index, int mode){
 				if (mode == TRACK_ADD_MODE_COMPLETE){
 					pr_info("completed updating tracks, flashing: ");
 					if (flash_tracks(g_tracksBuffer, sizeof(Tracks)) == 0){
-						pr_info("success\r\n");
+						pr_info("win\r\n");
 					}
 					else{
-						pr_error("error\r\n");
+						pr_error("fail\r\n");
 						result = TRACK_ADD_RESULT_FAIL;
 					}
 					portFree(g_tracksBuffer);

@@ -52,11 +52,11 @@ int sim900_init_connection(DeviceConfig *config){
 		CellularConfig *cellCfg = &(loggerConfig->ConnectivityConfigs.cellularConfig);
 		TelemetryConfig *telemetryConfig = &(loggerConfig->ConnectivityConfigs.telemetryConfig);
 		if (0 == configureNet(serial, cellCfg->apnHost, cellCfg->apnUser, cellCfg->apnPass)){
-			pr_info("cell network configured\r\n");
+			pr_info("cell: network configured\r\n");
 			if( 0 == connectNet(serial, telemetryConfig->telemetryServerHost, TELEMETRY_SERVER_PORT, 0)){
-				pr_info("server connected\r\n");
+				pr_info("cell: server connected\r\n");
 				if (0 == writeAuthJSON(serial, telemetryConfig->telemetryDeviceId)){
-					pr_info("server authenticated\r\n");
+					pr_info("cell: server authenticated\r\n");
 					initResult = DEVICE_INIT_SUCCESS;
 					g_connection_status = TELEMETRY_STATUS_CONNECTED;
 					g_active_since = getUptimeAsInt();

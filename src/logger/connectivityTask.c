@@ -149,7 +149,7 @@ void startConnectivityTask(int16_t priority){
 	for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++){
 		g_sampleQueue[i] = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( LoggerMessage *));
 		if (NULL == g_sampleQueue[i]){
-			pr_error("Failed creating sample queue\r\n");
+			pr_error("conn: err sample queue\r\n");
 			return;
 		}
 	}
@@ -169,7 +169,7 @@ void startConnectivityTask(int16_t priority){
 		}
 		break;
 	default:
-		pr_error("bad connectivity tasks!\r\n");
+		pr_error("conn: err init\r\n");
 		break;
 	}
 }
@@ -195,7 +195,7 @@ void connectivityTask(void *params) {
 
 	while (1) {
 		while (connParams->init_connection(&deviceConfig) != DEVICE_INIT_SUCCESS) {
-			pr_info("device not connected. retrying..\r\n");
+			pr_info("conn: not connected. retrying\r\n");
 			vTaskDelay(INIT_DELAY);
 		}
 		serial->flush();
@@ -250,7 +250,7 @@ void connectivityTask(void *params) {
 			int msgReceived = processRxBuffer(serial, buffer, &rxCount);
 			//check the latest contents of the buffer for something that might indicate an error condition
 			if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR){
-				pr_info("device disconnected\r\n");
+				pr_info("conn: disconnected\r\n");
 				break;
 			}
 			//now process a complete message if available

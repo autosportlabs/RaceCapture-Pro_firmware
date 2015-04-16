@@ -22,7 +22,7 @@ int InitFS(){
 	FatFs = pvPortMalloc(sizeof(FATFS));
 
    if (FatFs == NULL) {
-      pr_error("Failed to Malloc in InitFS\r\n");
+      pr_error("sdcard: FatFS init fail\r\n");
       return -1;
    }
 
@@ -31,7 +31,7 @@ int InitFS(){
    taskEXIT_CRITICAL();
 
    if (0 != res) {
-      pr_error("Failed to init Disk\r\n");
+      pr_error("sdcard: Disk init fail\r\n");
       return res;
    }
 

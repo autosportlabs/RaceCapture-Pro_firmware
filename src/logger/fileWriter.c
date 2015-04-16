@@ -62,7 +62,6 @@ static void appendFileBuffer(const char * data){
 		*buffer++ = *data++;
 		index++;
 		if (index >= FILE_BUFFER_SIZE){
-			pr_info("flush file buffer\r\n");
 			*buffer = '\0';
 			writeFileBuffer();
 			index = fileBuffer.index;
@@ -138,7 +137,7 @@ static int writeHeaders(ChannelSample *sample, size_t channelCount){
 
 static int writeChannelSamples(ChannelSample *sample, size_t channelCount){
 	if (NULL == sample) {
-      pr_debug("null sample record\r\n");
+      pr_debug("file: null sample record\r\n");
       return WRITE_FAIL;
 	}
 
@@ -170,7 +169,7 @@ static int writeChannelSamples(ChannelSample *sample, size_t channelCount){
          appendDouble(sample->valueDouble, precision);
          break;
       default:
-         pr_warning("fileWriter: Unknown channel sample type\n");
+         pr_warning("file: Unknown channel sample type\n");
       }
    }
 
@@ -204,13 +203,13 @@ static int openNextLogfile(FIL *f, char *filename){
 }
 
 static void endLogfile(){
-	pr_info("close logfile\r\n");
+	pr_info("file: close\r\n");
 	f_close(g_logfile);
 	UnmountFS();
 }
 
 static void flushLogfile(FIL *file){
-	pr_debug("flush logfile\r\n");
+	pr_debug("file: flush\r\n");
 	int res = f_sync(file);
 	if (0 != res){
 		pr_debug_int_msg("flush err:", res);
@@ -276,11 +275,11 @@ void fileWriterTask(void *params){
 					//try to recover
 					f_close(g_logfile);
 					UnmountFS();
-					pr_error("Error writing file, recovering..\r\n");
+					pr_error("file: Error writing, recovering..\r\n");
 					InitFS();
 					rc = openLogfile(g_logfile, filename);
 					if (0 != rc){
-						pr_error_str_msg("could not recover file ", filename);
+						pr_error_str_msg("file: error recovering ", filename);
 						break;
 					}
 					else{
@@ -312,12 +311,12 @@ void startFileWriterTask( int priority ){
 
 	g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( ChannelSample *));
 	if (NULL == g_sampleRecordQueue){
-		pr_error("sampleRecordQueue err\r\n");
+		pr_error("file: sampleRecordQueue err\r\n");
 		return;
 	}
 	g_logfile = pvPortMalloc(sizeof(FIL));
 	if (NULL == g_logfile){
-		pr_error("logfile sruct err\r\n");
+		pr_error("file: logfile sruct err\r\n");
 		return;
 	}
 	xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter", FILE_WRITER_STACK_SIZE, NULL, priority, NULL );

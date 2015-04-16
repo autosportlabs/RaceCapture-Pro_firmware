@@ -168,14 +168,14 @@ static void doScript(void){
 
     int result = (luaL_loadbuffer(g_lua, script, len, "startup") || lua_pcall(g_lua, 0, LUA_MULTRET, 0));
     if (0 != result){
-        pr_error("startup script error: (");
+        pr_error("lua: startup script error: (");
         pr_error(lua_tostring(g_lua,-1));
         pr_error(")\r\n");
         lua_pop(g_lua,1);
     }
     pr_info("done\r\n");
     lua_gc(g_lua, LUA_GCCOLLECT,0);
-    pr_info("lua memory usage: ");
+    pr_info("lua: memory usage: ");
     pr_info_int(lua_gc(g_lua, LUA_GCCOUNT,0));
     pr_info("Kb\r\n");
     unlockLua();
@@ -186,7 +186,7 @@ static void guardedDoScript(void){
 		doScript();
 	}
 	else{
-		pr_error("Crash detected; bypassing Lua script for recovery mode\r\n");
+		pr_error("lua: Crash detected- bypassing Lua script for recovery mode\r\n");
 		LED_enable(3);
 	}
 }
