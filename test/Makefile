@@ -152,6 +152,7 @@ SRC =		mock_uart.c \
 		$(MOCK_DIR)/sdcard_mock.c \
 		$(MOCK_DIR)/watchdog_device_mock.c \
 		$(MOCK_DIR)/CAN_device_mock.c \
+		$(MOCK_DIR)/sim900_device_mock.c \
 		$(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 		$(RCP_SRC)/auto_config/auto_track.c \
 		$(RCP_SRC)/util/linear_interpolate.c \
@@ -171,6 +172,7 @@ SRC =		mock_uart.c \
 		$(RCP_SRC)/logger/loggerHardware.c \
 		$(RCP_SRC)/devices/cellModem.c \
 		$(RCP_SRC)/devices/bluetooth.c \
+		$(RCP_SRC)/devices/sim900.c \
 
 #		$(RCP_SRC)/logger/loggerTaskEx.c \
 
