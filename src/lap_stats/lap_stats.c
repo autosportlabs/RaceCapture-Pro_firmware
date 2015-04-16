@@ -50,7 +50,7 @@ static float g_distance;
 static struct GeoTrigger startGeoTrigger;
 static struct GeoTrigger finishGeoTrigger;
 
-static void set_active_track(const Track* defaultTrack) {
+TESTABLE_STATIC void set_active_track(const Track* defaultTrack) {
 	g_activeTrack = defaultTrack;
 }
 
