@@ -65,7 +65,7 @@ void LaunchControlTest::testCircuitLaunch() {
    lc_setup(&t, 1.0);
    CPPUNIT_ASSERT_EQUAL(false, lc_hasLaunched());
    CPPUNIT_ASSERT_EQUAL(false, lc_is_armed());
-   CPPUNIT_ASSERT_EQUAL(0, lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL(-1, lc_getLaunchTime());
 
    GpsSnapshot snap;
    const GeoPoint *pt = pts;
@@ -110,7 +110,7 @@ void LaunchControlTest::testStageSimpleLaunch() {
    lc_setup(&t, 1.0);
    CPPUNIT_ASSERT_EQUAL(false, lc_hasLaunched());
    CPPUNIT_ASSERT_EQUAL(false, lc_is_armed());
-   CPPUNIT_ASSERT_EQUAL(0, lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL(-1, lc_getLaunchTime());
 
    GpsSnapshot snap;
    const GeoPoint *pt = pts;
@@ -166,7 +166,7 @@ void LaunchControlTest::testStageTrickyLaunch() {
 
    lc_setup(&t, 1.0);
    CPPUNIT_ASSERT_EQUAL(false, lc_hasLaunched());
-   CPPUNIT_ASSERT_EQUAL(0, lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL(-1, lc_getLaunchTime());
 
    GpsSnapshot snap;
    const GeoPoint *pt = pts;

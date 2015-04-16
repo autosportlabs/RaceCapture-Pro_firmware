@@ -61,7 +61,7 @@ bool lc_is_armed() {
 }
 
 tiny_millis_t lc_getLaunchTime() {
-        return lc_hasLaunched() ? g_startTime : 0;
+        return lc_hasLaunched() ? g_startTime : -1;
 }
 
 void lc_reset() {
