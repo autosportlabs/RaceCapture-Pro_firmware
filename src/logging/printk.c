@@ -8,8 +8,7 @@
 #include "serial.h"
 #include "modp_numtoa.h"
 #include <stddef.h>
-
-#define LOG_BUFFER_SIZE 1024
+#include "capabilities.h"
 
 static enum log_level curr_level = INFO;
 static char _log_buffer[LOG_BUFFER_SIZE];

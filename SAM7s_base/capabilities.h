@@ -28,6 +28,9 @@
 #define MAX_GPS_SAMPLE_RATE		10
 #define MAX_OBD2_SAMPLE_RATE	10
 
+//logging
+#define LOG_BUFFER_SIZE			1024
+
 //system info
 #define DEVICE_NAME    "RCP"
 #define FRIENDLY_DEVICE_NAME "RaceCapture/Pro"
