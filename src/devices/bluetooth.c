@@ -148,20 +148,17 @@ int bt_init_connection(DeviceConfig *config) {
             break;
     }
 
-    int rc;
     if (*rate > 0){
         config->serial->init(8, 0, 1, targetBaud);
         pr_info("BT: Init complete\r\n");
         g_bluetooth_status = BT_STATUS_PROVISIONED;
-        rc = DEVICE_INIT_SUCCESS;
     }
     else{
         pr_info("BT: Failed to provision module. Assuming already connected.\r\n");
         g_bluetooth_status = BT_STATUS_ERROR;
-        rc = DEVICE_INIT_FAIL;
     }
 
-    return rc;
+    return DEVICE_INIT_SUCCESS;
 }
 
 int bt_check_connection_status(DeviceConfig *config) {
