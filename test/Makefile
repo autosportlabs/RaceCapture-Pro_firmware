@@ -173,8 +173,7 @@ SRC =		mock_uart.c \
 		$(RCP_SRC)/devices/cellModem.c \
 		$(RCP_SRC)/devices/bluetooth.c \
 		$(RCP_SRC)/devices/sim900.c \
-
-#		$(RCP_SRC)/logger/loggerTaskEx.c \
+		$(RCP_SRC)/logger/logger.c \
 
 
 OBJ_TEST = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $(basename $(SRC) $(T_SRC) RCPTest.cpp))))

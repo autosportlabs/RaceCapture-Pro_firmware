@@ -4,6 +4,7 @@
 #include "queue.h"
 #include "semphr.h"
 #include "loggerTaskEx.h"
+#include "logger.h"
 #include "taskUtil.h"
 #include "printk.h"
 #include "GPIO.h"
@@ -26,7 +27,7 @@ void onPushbuttonTask(void *pvParameters){
 			delayMs(DEBOUNCE_DELAY_PERIOD);
 
 			if (GPIO_is_button_pressed()){
-				if (isLogging()){
+				if (logging_is_active()){
 					stopLogging();
 				}
 				else{

@@ -24,6 +24,7 @@
 #include "cpu.h"
 #include "luaScript.h"
 #include "luaTask.h"
+#include "logger.h"
 #include "loggerTaskEx.h"
 #include "FreeRTOS.h"
 #include "taskUtil.h"
@@ -235,9 +236,9 @@ int api_getStatus(Serial *serial, const jsmntok_t *json){
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "logging");
-	json_int(serial, "status", (int)get_logging_status(), 1);
-	json_int(serial, "activeSince", logging_since(), 1);
-	json_int(serial, "logging", isLogging(), 0);
+	json_int(serial, "status", (int)logging_get_status(), 1);
+	json_int(serial, "activeSince", logging_get_logging_start(), 1);
+	json_int(serial, "logging", logging_is_active(), 0);
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "track");

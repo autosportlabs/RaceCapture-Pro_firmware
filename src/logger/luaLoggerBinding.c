@@ -23,6 +23,7 @@
 #include "printk.h"
 #include "modp_numtoa.h"
 #include "loggerTaskEx.h"
+#include "logger.h"
 #include "loggerSampleData.h"
 #include "virtual_channel.h"
 #include "lap_stats.h"
@@ -520,7 +521,7 @@ int Lua_StopLogging(lua_State *L){
 }
 
 int Lua_IsLogging(lua_State *L){
-	lua_pushinteger(L, isLogging());
+	lua_pushinteger(L, logging_is_active());
 	return 1;
 }
 

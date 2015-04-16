@@ -175,6 +175,7 @@ $(LOGGER_SRC_DIR)/loggerHardware.c \
 $(LOGGER_SRC_DIR)/loggerData.c \
 $(LOGGER_SRC_DIR)/loggerSampleData.c \
 $(LOGGER_SRC_DIR)/loggerTaskEx.c \
+$(LOGGER_SRC_DIR)/logger.c \
 $(LOGGER_SRC_DIR)/connectivityTask.c \
 $(GPS_SRC_DIR)/gps.c \
 $(GPS_SRC_DIR)/geoCircle.c \

@@ -19,6 +19,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
+#include "logger.h"
 #include "mod_string.h"
 #include "watchdog.h"
 #include "LED.h"
@@ -42,8 +43,6 @@
 #define BACKGROUND_SAMPLE_RATE				SAMPLE_50Hz
 
 int g_loggingShouldRun;
-logging_status_t g_logging_status;
-int g_logging_since;
 int g_configChanged;
 int g_telemetryBackgroundStreaming;
 
@@ -78,18 +77,6 @@ void configChanged(){
 	g_configChanged = 1;
 }
 
-bool isLogging(){
-	return g_logging_since > 0;
-}
-
-logging_status_t get_logging_status(){
-	return g_logging_status;
-}
-
-int32_t logging_since(){
-	return g_logging_since;
-}
-
 void startLogging(){
 	g_loggingShouldRun = 1;
 }
@@ -99,13 +86,13 @@ void stopLogging(){
 }
 
 static void logging_started(){
-	g_logging_since = getUptimeAsInt();
+    logging_set_logging_start(getUptimeAsInt());
 	LED_disable(3);
 	pr_info("Logging started\r\n");
 }
 
 static void logging_stopped(){
-	g_logging_since = 0;
+    logging_set_logging_start(0);
 	LED_disable(2);
 	pr_info("Logging stopped\r\n");
 }
@@ -160,8 +147,8 @@ void loggerTaskEx(void *params) {
 
 	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 
-	g_logging_status = LOGGING_STATUS_OK;
-	g_logging_since = 0;
+	logging_set_status(LOGGING_STATUS_OK);
+	logging_set_logging_start(0);
 	size_t bufferIndex = 0;
 	size_t currentTicks = 0;
 	g_configChanged = 1;
@@ -191,7 +178,7 @@ void loggerTaskEx(void *params) {
 		}
 
 		{
-			bool is_logging = isLogging();
+			bool is_logging = logging_is_active();
 			if (g_loggingShouldRun && !is_logging) {
 				logging_started();
 				LoggerMessage logStartMsg = getLogStartMessage();
@@ -217,15 +204,15 @@ void loggerTaskEx(void *params) {
 			continue;
 		}
 
-		bool is_logging = isLogging();
+		bool is_logging = logging_is_active();
 		// We only log to file if the user has manually pushed the logging button.
 		if (is_logging && sampledRate >= loggingSampleRate) {
 			const portBASE_TYPE res = queue_logfile_record(msg);
 			if (res == pdTRUE){
-				g_logging_status = LOGGING_STATUS_OK;
+			    logging_set_status(LOGGING_STATUS_OK);
 			}
 			else{
-				g_logging_status = LOGGING_STATUS_ERROR_WRITING;
+			    logging_set_status(LOGGING_STATUS_ERROR_WRITING);
 				LED_enable(3); //error LED
 			}
 		}
