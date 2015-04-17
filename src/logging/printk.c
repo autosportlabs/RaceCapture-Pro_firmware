@@ -85,9 +85,25 @@ int printk_int(enum log_level level, int value) {
 		return writek_int(value);
 }
 
+int printk_int_msg(enum log_level level, const char *msg, int value){
+	if (level > curr_level) return 0;
+	return write_to_log_buff(msg) + writek_int(value) + write_to_log_buff("\r\n");
+}
+
+
 int printk_float(enum log_level level, float value) {
 		if (level > curr_level) return 0;
 		return writek_float(value);
+}
+
+int printk_float_msg(enum log_level level, const char *msg, float value){
+	if (level > curr_level) return 0;
+	return write_to_log_buff(msg) + writek_float(value) + write_to_log_buff("\r\n");
+}
+
+int printk_str_msg(enum log_level level, const char *msg, const char *value){
+	if (level > curr_level) return 0;
+	return write_to_log_buff(msg) + write_to_log_buff(value) + write_to_log_buff("\r\n");
 }
 
 enum log_level get_log_level(){

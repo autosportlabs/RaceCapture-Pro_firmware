@@ -38,7 +38,7 @@ int create_virtual_channel(const ChannelConfig chCfg) {
 		channel->currentValue = 0;
 		configChanged();
 	} else{
-		pr_error("could not create virtual channel; limit reached\r\n");
+		pr_error("vchan: limit exceeded\r\n");
 	}
 	return virtualChannelId;
 }

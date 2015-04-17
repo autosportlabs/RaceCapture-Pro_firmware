@@ -201,9 +201,7 @@ int process_api(Serial *serial, char *buffer, size_t bufferSize) {
     if (r == JSMN_SUCCESS) {
         return execute_api(serial, g_json_tok);
     } else {
-        pr_warning("API Error ");
-        pr_warning_int(r);
-        pr_warning("\r\n");
+    	pr_warning_int_msg("API Error: ", r);
         return API_ERROR_MALFORMED;
     }
 }

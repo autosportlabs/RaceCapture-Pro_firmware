@@ -70,9 +70,7 @@ static int processRxBuffer(Serial *serial, char *buffer, size_t *rxCount){
 		buffer[BUFFER_SIZE - 1] = '\0';
 		*rxCount = BUFFER_SIZE - 1;
 		processMsg = 1;
-		pr_error("Rx Buffer overflow:");
-		pr_error(buffer);
-		pr_error("\r\n");
+		pr_error_str_msg("Rx Buffer overflow:", buffer);
 	}
 	if (*rxCount > 0){
 		char lastChar = buffer[*rxCount - 1];
@@ -151,7 +149,7 @@ void startConnectivityTask(int16_t priority){
 	for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++){
 		g_sampleQueue[i] = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( LoggerMessage *));
 		if (NULL == g_sampleQueue[i]){
-			pr_error("fatal: could not create sample queue\r\n");
+			pr_error("conn: err sample queue\r\n");
 			return;
 		}
 	}
@@ -171,7 +169,7 @@ void startConnectivityTask(int16_t priority){
 		}
 		break;
 	default:
-		pr_error("invalid connectivity task count!");
+		pr_error("conn: err init\r\n");
 		break;
 	}
 }
@@ -197,7 +195,7 @@ void connectivityTask(void *params) {
 
 	while (1) {
 		while (connParams->init_connection(&deviceConfig) != DEVICE_INIT_SUCCESS) {
-			pr_info("device not connected. retrying..\r\n");
+			pr_info("conn: not connected. retrying\r\n");
 			vTaskDelay(INIT_DELAY);
 		}
 		serial->flush();
@@ -241,12 +239,7 @@ void connectivityTask(void *params) {
 						break;
 					}
 					default:
-					{
-						pr_warning("unknown logger msg type ");
-						pr_warning_int(msg->type);
-						pr_warning("\r\n");
 						break;
-					}
 				}
 			}
 
@@ -257,30 +250,22 @@ void connectivityTask(void *params) {
 			int msgReceived = processRxBuffer(serial, buffer, &rxCount);
 			//check the latest contents of the buffer for something that might indicate an error condition
 			if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR){
-				pr_info("device disconnected\r\n");
+				pr_info("conn: disconnected\r\n");
 				break;
 			}
 			//now process a complete message if available
 			if (msgReceived){
-				if (DEBUG_LEVEL){
-					pr_debug(connParams->connectionName);
-					pr_debug(": msg rx: '");
-					pr_debug(buffer);
-					pr_debug("'");
-				}
+				pr_debug(connParams->connectionName);
+				pr_debug_str_msg(": rx: ", buffer);
 				int msgRes = process_api(serial, buffer, BUFFER_SIZE);
 
 				int msgError = (msgRes == API_ERROR_MALFORMED);
-				if (DEBUG_LEVEL){
-					if (msgError){
-						pr_debug(" (failed) ");
-					}
+				if (msgError){
+					pr_debug("(failed)\r\n");
 				}
-				pr_debug("\r\n");
 				if (msgError) badMsgCount++;
 				if (badMsgCount >= BAD_MESSAGE_THRESHOLD){
-					pr_warning_int(badMsgCount);
-					pr_warning(" empty/bad msgs - re-connecting...\r\n");
+					pr_warning_int_msg("re-connecting- empty/bad msgs :", badMsgCount );
 					break;
 				}
 				else{

@@ -216,9 +216,7 @@ static void parseRMC(GpsSample * gpsSample, char *data) {
 
 static bool processGPSData(GpsSample *gpsSample, char *gpsData, size_t len) {
    if (len <= 4 || !checksumValid(gpsData, len) || strstr(gpsData, "$GP") != gpsData) {
-      pr_trace("GPS: corrupt frame ");
-      pr_trace(gpsData);
-      pr_trace("\r\n");
+	  pr_trace_str_msg("GPS: corrupt frame: ", gpsData);
       return false;
    }
 

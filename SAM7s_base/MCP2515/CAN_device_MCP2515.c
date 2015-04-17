@@ -290,8 +290,7 @@ static int MCP2515_setup(){
 		rc = 1;
 	}
 	else{
-		pr_error_int(mode);
-		pr_error("=mode; Failed to reset CAN controller\r\n");
+		pr_error_int_msg("CAN controller reset fail. mode=", mode);
 	}
 	return rc;
 }
@@ -309,8 +308,7 @@ static int MCP2515_set_baud(int baud){
 	case CAN_BAUD_250K: brp = 1; break;
 	case CAN_BAUD_500K: brp = 0; break;
 	default:
-		pr_warning_int(baud);
-		pr_warning(" = unknown CAN baud rate. defaulting to 500K\r\n");
+		pr_warning_int_msg("CAN: unknown baud. defaulting to 500K: ", baud);
 		brp = 0;
 		break;
 	}
@@ -341,15 +339,10 @@ static int MCP2515_set_mode(uint8_t mode){
 	MCP2515_write_reg(MCP2515_REG_CANCTRL, mode);
 	uint8_t regValue = MCP2515_read_reg(MCP2515_REG_CANCTRL);
 	if (regValue == mode){
-		pr_debug_int(mode);
-		pr_debug("=set MCP2515 mode\r\n");
+		pr_debug_int_msg("CAN: set mode", mode);
 	}
 	else{
-		pr_error("CAN set mode ");
-		pr_error_int(mode);
-		pr_error(" failed; ")
-		pr_error_int(regValue);
-		pr_error(" returned\r\n");
+		pr_error_int_msg("CAN: mode failed: ", regValue);
 	}
 	return regValue == mode;
 }
@@ -402,7 +395,7 @@ int CAN_device_init(uint8_t channel, uint32_t baud){
 			MCP2515_set_baud(baud) &&
 			MCP2515_set_normal_mode();
 
-	pr_info(initSuccess ? "CAN init win\r\n" : "CAN init fail\r\n");
+	pr_info_str_msg("CAN init ", initSuccess ? "win" : "fail");
 	return initSuccess;
 }
 
@@ -495,26 +488,20 @@ int CAN_device_tx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs){
 		unsigned char regVal = MCP2515_read_reg(MCP2515_REG_CANINTF);
 		if(regVal & (1 << MCP2515_BIT_TX0IF))
 		{
-			pr_trace("CAN sent\r\n");
+			pr_trace("CAN: TX\r\n");
 			sentMessage = 1;
 			break;
 		}
 	}
 
 	unsigned char errFlags = MCP2515_read_reg(MCP2515_REG_EFLG);
-	if(TRACE_LEVEL){
-		pr_trace_int(errFlags);
-		pr_trace("=error flags\r\n");
-	}
+	pr_trace_int_msg("Err flags: ", errFlags);
 
 	unsigned char regFlags = MCP2515_read_reg(MCP2515_REG_TXB0CTRL);
-	if (TRACE_LEVEL){
-		pr_trace_int(regFlags);
-		pr_trace("=reg flags\r\n");
-	}
+	pr_trace_int_msg("Reg flags: ", regFlags);
 
 	if(!sentMessage){
-		pr_warning("CAN msg TX timeout\r\n");
+		pr_warning("CAN: TX timeout\r\n");
 	}
 
 	//Abort the send if failed
@@ -543,7 +530,7 @@ int CAN_device_rx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs){
 
 	if(gotMessage)
 	{
-	  pr_trace("rx CAN msg\r\n");
+	  pr_trace("CAN: RX\r\n");
 	  unsigned char val = MCP2515_read_reg(MCP2515_REG_RXB0CTRL);
 
 	  //Address received from
@@ -571,9 +558,6 @@ int CAN_device_rx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs){
 	  //And clear read interrupt
 	  MCP2515_write_reg_bit(MCP2515_REG_CANINTF, MCP2515_BIT_RX0IF, 0);
 	  if (TRACE_LEVEL) trace_output_msg(msg);
-	}
-	else{
-		  pr_trace("no rx CAN msg\r\n");
 	}
 
 	return gotMessage;

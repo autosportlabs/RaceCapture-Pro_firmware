@@ -171,8 +171,6 @@ int getHigherSampleRate(const int a, const int b) {
 }
 
 int flash_default_logger_config(void){
-	pr_info("flashing default logger config...");
-
    LoggerConfig *lc = &g_workingLoggerConfig;
 
    resetVersionInfo(&lc->RcpVersionInfo);
@@ -193,8 +191,7 @@ int flash_default_logger_config(void){
 
 	int result = flashLoggerConfig();
 
-	pr_info(result == 0 ? "success\r\n" : "failed\r\n");
-
+	pr_info_str_msg("flashing default config: ", result == 0 ? "win" : "fail");
 	return result;
 }
 

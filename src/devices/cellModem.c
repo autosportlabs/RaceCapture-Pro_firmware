@@ -54,10 +54,8 @@ void setCellBuffer(char *buffer, size_t len){
 
 static int readModemWait(Serial *serial, size_t delay){
 	int c = serial->get_line_wait(g_cellBuffer, g_bufferLen, msToTicks(delay));
-	if (DEBUG_LEVEL && c > 0){
-		pr_debug("cellRead: ");
-		pr_debug(g_cellBuffer);
-		pr_debug("\r\n");
+	if (c > 0){
+		pr_debug_str_msg("Cell: read ", g_cellBuffer);
 	}
 	return c;
 }
@@ -125,9 +123,7 @@ static int read_subscriber_number(Serial *serial){
 			if (num_end){
 				*num_end = '\0';
 				strncpy(g_subscriber_number, num_start, MAX_SUBSCRIBER_NUMBER_LENGTH);
-				pr_debug("Cell: phone number: ");
-				pr_debug(num_start);
-				pr_debug("\r\n");
+				pr_debug_str_msg("Cell: phone number: ", num_start);
 			}
 		}
 	}
@@ -141,9 +137,7 @@ static int getSignalStrength(Serial *serial){
 		char *rssi_string = strtok_r(g_cellBuffer + 6, ",", &next_start);
 		if (rssi_string != NULL){
 			g_cell_signal_strength = modp_atoi(rssi_string);
-			pr_debug("Cell: signal strength: ");
-			pr_debug_int(g_cell_signal_strength);
-			pr_debug("\r\n");
+			pr_debug_int_msg("Cell: signal strength: ", g_cell_signal_strength);
 		}
 	}
 	return res;
@@ -153,9 +147,7 @@ static int read_IMEI(Serial *serial){
 	int res = sendCommand(serial, "AT+GSN\r", "");
 	if (res != NO_CELL_RESPONSE && strlen(g_cellBuffer) == 15){
 		strncpy(g_IMEI_number, g_cellBuffer, IMEI_NUMBER_LENGTH);
-		pr_debug("Cell: IMEI: ");
-		pr_debug(g_IMEI_number);
-		pr_debug("\r\n");
+		pr_debug_str_msg("Cell: IMEI: ", g_IMEI_number);
 	}
 	return res;
 }
@@ -183,9 +175,7 @@ static int getIpAddress(Serial *serial){
 void putsCell(Serial *serial, const char *data){
 	LED_toggle(0);
 	serial->put_s(data);
-	pr_debug("cellWrite: ");
-	pr_debug(data);
-	pr_debug("\r\n");
+	pr_debug_str_msg("cellWrite: ", data);
 }
 
 void putUintCell(Serial *serial, uint32_t num){

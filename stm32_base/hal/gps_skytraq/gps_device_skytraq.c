@@ -298,8 +298,7 @@ static gps_msg_result_t rxGpsMessage(GpsMessage * msg, Serial * serial,
 						result = GPS_MSG_SUCCESS;
 					}
 					else{
-						pr_trace_int(msg->messageId);
-						pr_trace(" unexpected id\r\n");
+						pr_trace_int_msg("Unexpected Id: ", msg->messageId);
 					}
 				}
 			}
@@ -628,7 +627,7 @@ gps_status_t GPS_device_init(uint8_t sampleRate, Serial *serial)
 				pr_info_int(baudRate);
 				pr_info("\r\n");
 				if (baudRate != TARGET_BAUD_RATE && configureBaudRate(&gpsMsg, serial, TARGET_BAUD_RATE) == GPS_COMMAND_FAIL){
-					pr_error("GPS: Error provisioning - could not configure baud rate\r\n");
+					pr_error("GPS: Error: could not configure baud rate\r\n");
 					break;
 				}
 
@@ -640,36 +639,36 @@ gps_status_t GPS_device_init(uint8_t sampleRate, Serial *serial)
 				uint8_t targetUpdateRate = getTargetUpdateRate(sampleRate);
 				uint8_t currentUpdateRate = queryPositionUpdateRate(&gpsMsg, serial);
 				if (!currentUpdateRate){
-					pr_error("GPS: Error provisioning - could not detect update rate\r\n");
+					pr_error("GPS: Error: could not detect update rate\r\n");
 					currentUpdateRate = 0;
 				}
 				if (currentUpdateRate != targetUpdateRate && configureUpdateRate(&gpsMsg, serial, targetUpdateRate) == GPS_COMMAND_FAIL){
-					pr_error("GPS: Error provisioning - could not configure update rate\r\n");
+					pr_error("GPS: Error: could not configure update rate\r\n");
 					break;
 				}
 
 				if (configureNmeaMessages(&gpsMsg, serial) == GPS_COMMAND_FAIL){
-					pr_error("GPS: Error provisioning - could not configure NMEA messages\r\n");
+					pr_error("GPS: Error: could not configure NMEA messages\r\n");
 					break;
 				}
 
 				if (configureMessageType(&gpsMsg, serial) == GPS_COMMAND_FAIL){
-					pr_error("GPS: Error provisioning - could not set binary message mode\r\n");
+					pr_error("GPS: Error: could not set binary message mode\r\n");
 					break;
 				}
 
 				if (configureNavigationDataMessageInterval(&gpsMsg, serial) == GPS_COMMAND_FAIL){
-					pr_error("GPS: Error provisioning - could not set navigation data message interval\r\n");
+					pr_error("GPS: Error: could not set navigation data message interval\r\n");
 					break;
 				}
 
                 if (configureGnssNavigationMode(&gpsMsg, serial) == GPS_COMMAND_FAIL){
-                    pr_error("GPS: Error provisioning - could not set navigation mode\r\n");
+                    pr_error("GPS: Error: could not set navigation mode\r\n");
                     break;
                 }
 
 				if (disableNmeaMessages(&gpsMsg, serial) == GPS_COMMAND_FAIL){
-					pr_error("GPS: Error provisioning - could not disable NMEA messages\r\n");
+					pr_error("GPS: Error: could not disable NMEA messages\r\n");
 					break;
 				}
 
@@ -677,7 +676,7 @@ gps_status_t GPS_device_init(uint8_t sampleRate, Serial *serial)
 				gps_init_status = GPS_STATUS_PROVISIONED;
 				break;
 			} else {
-				pr_error("GPS: Error provisioning - "
+				pr_error("GPS: Error: "
 					 "could not detect GPS module on known baud rates\r\n");
 				gps_init_status = GPS_STATUS_ERROR;
 				break;

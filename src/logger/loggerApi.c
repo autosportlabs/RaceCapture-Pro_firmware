@@ -427,7 +427,7 @@ void api_sendSampleRecord(Serial *serial, ChannelSample *channelSamples,
 			 put_double(serial, sample->valueDouble, precision);
 			 break;
 		  default:
-			 pr_warning("Got to unexpected location in sendSampleRecord\n");
+			 pr_warning("sendSampleRec: unknown sample data type\n");
 			 break;
 		  }
 		  serial->put_c(',');

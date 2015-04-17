@@ -23,23 +23,13 @@ void setGpsDataLogging(bool enable) {
    g_enableGpsDataLogging = enable;
 }
 
-/**
- * Prints the output to the serial port if it is set.
- * @param buf The buffer containing the read in line.
- * @param len The length of the string in the buffer.
- */
-//static void logGpsInput(const char *buf, int len) {
-//   if (!g_enableGpsDataLogging) return;
-//   pr_info(buf);
-//}
-
 void GPSTask(void *pvParameters) {
 	Serial *serial = get_serial(SERIAL_GPS);
 	uint8_t targetSampleRate = decodeSampleRate(getWorkingLoggerConfig()->GPSConfigs.speed.sampleRate);
 	lapStats_init();
 	gps_status_t gps_status = GPS_init(targetSampleRate, serial);
 	if (!gps_status){
-		pr_error("Error provisioning GPS module\r\n");
+		pr_error("GPS: Error provisioning\r\n");
 	}
 
 	for (;;) {
@@ -49,7 +39,7 @@ void GPSTask(void *pvParameters) {
 			lapStats_processUpdate(&snap);
 		}
 		else{
-			pr_warning("timeout processing GPS update\r\n");
+			pr_warning("GPS: timeout\r\n");
 		}
    }
 }

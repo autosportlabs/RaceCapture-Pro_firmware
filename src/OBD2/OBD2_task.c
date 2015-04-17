@@ -41,9 +41,7 @@ void OBD2Task(void *pvParameters){
 					}
 				}
 				else{
-					pr_warning("read OBD2 PID fail: ");
-					pr_warning_int(pid);
-					pr_warning("\r\n");
+					pr_warning_int_msg("OBD2: PID read fail: ", pid);
 				}
 				delayTicks(max_obd2_samplerate);
 			}
