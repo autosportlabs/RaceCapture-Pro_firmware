@@ -1280,6 +1280,7 @@ void LoggerApiTest::testGetVersion(){
 
 void LoggerApiTest::testGetStatus(){
     lc_reset();
+    lapStats_init();
     char * response = processApiGeneric("getStatus1.json");
 
     Object json;
@@ -1312,6 +1313,7 @@ void LoggerApiTest::testGetStatus(){
     CPPUNIT_ASSERT_EQUAL((int)TRACK_STATUS_WAITING_TO_CONFIG, (int)(Number)json["status"]["track"]["status"]);
     CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["track"]["trackId"]);
     CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["track"]["armed"]);
+    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["track"]["inLap"]);
 
     CPPUNIT_ASSERT_EQUAL((int)TELEMETRY_STATUS_IDLE, (int)(Number)json["status"]["telemetry"]["status"]);
     CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["telemetry"]["started"]);
