@@ -50,6 +50,16 @@ typedef struct _GpsSnapshot {
    GeoPoint previousPoint;
 } GpsSnapshot;
 
+typedef enum {
+	GPS_STATUS_NOT_INIT = 0,
+	GPS_STATUS_PROVISIONED,
+	GPS_STATUS_ERROR
+} gps_status_t;
+
+gps_status_t GPS_getStatus();
+
+gps_status_t GPS_init(uint8_t targetSampleRate, Serial *serial);
+
 float getSecondsSinceMidnight();
 
 void updateSecondsSinceMidnight(float secondsSinceMidnight);
@@ -58,9 +68,9 @@ float getTimeDiff(float from, float to);
 
 float getTimeSince(float t1);
 
-float getLatitude();
+float GPS_getLatitude();
 
-float getLongitude();
+float GPS_getLongitude();
 
 float getAltitude();
 
@@ -68,11 +78,11 @@ bool isGpsDataCold();
 
 bool isGpsSignalUsable(enum GpsSignalQuality q);
 
-int getGPSQuality();
+int GPS_getQuality();
 
-float getGpsDOP();
+float GPS_getDOP();
 
-int getSatellitesUsedForPosition();
+int GPS_getSatellitesUsedForPosition();
 
 float getGPSSpeed();
 
@@ -126,8 +136,6 @@ tiny_millis_t getMillisSinceFirstFix();
 tiny_millis_t getUptimeAtSample();
 
 float getGpsSpeedInMph();
-
-void GPS_init();
 
 int GPS_processUpdate(Serial *serial);
 

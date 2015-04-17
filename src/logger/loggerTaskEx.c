@@ -19,6 +19,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
+#include "logger.h"
 #include "mod_string.h"
 #include "watchdog.h"
 #include "LED.h"
@@ -42,7 +43,6 @@
 #define BACKGROUND_SAMPLE_RATE				SAMPLE_50Hz
 
 int g_loggingShouldRun;
-int g_isLogging;
 int g_configChanged;
 int g_telemetryBackgroundStreaming;
 
@@ -77,16 +77,24 @@ void configChanged(){
 	g_configChanged = 1;
 }
 
-int isLogging(){
-	return g_isLogging;
-}
-
 void startLogging(){
 	g_loggingShouldRun = 1;
 }
 
 void stopLogging(){
 	g_loggingShouldRun = 0;
+}
+
+static void logging_started(){
+    logging_set_logging_start(getUptimeAsInt());
+	LED_disable(3);
+	pr_info("Logging started\r\n");
+}
+
+static void logging_stopped(){
+    logging_set_logging_start(0);
+	LED_disable(2);
+	pr_info("Logging stopped\r\n");
 }
 
 void startLoggerTaskEx(int priority){
@@ -133,85 +141,89 @@ size_t updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate,
 }
 
 void loggerTaskEx(void *params) {
-g_loggingShouldRun = 0;
-memset(&g_sampleRecordMsgBuffer, 0, sizeof(g_sampleRecordMsgBuffer));
-vSemaphoreCreateBinary(onTick);
+	g_loggingShouldRun = 0;
+	memset(&g_sampleRecordMsgBuffer, 0, sizeof(g_sampleRecordMsgBuffer));
+	vSemaphoreCreateBinary(onTick);
 
-LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 
-g_isLogging = 0;
-size_t bufferIndex = 0;
-size_t currentTicks = 0;
-g_configChanged = 1;
-size_t channelCount = 0;
+	logging_set_status(LOGGING_STATUS_IDLE);
+	logging_set_logging_start(0);
+	size_t bufferIndex = 0;
+	size_t currentTicks = 0;
+	g_configChanged = 1;
+	size_t channelCount = 0;
 
-int loggingSampleRate = SAMPLE_DISABLED;
-int sampleRateTimebase = SAMPLE_DISABLED;
-int telemetrySampleRate = SAMPLE_DISABLED;
-int backgroundStreaming = 0;
+	int loggingSampleRate = SAMPLE_DISABLED;
+	int sampleRateTimebase = SAMPLE_DISABLED;
+	int telemetrySampleRate = SAMPLE_DISABLED;
+	int backgroundStreaming = 0;
 
-while (1) {
-    xSemaphoreTake(onTick, portMAX_DELAY);
-    watchdog_reset();
-    ++currentTicks;
+	while (1) {
+		xSemaphoreTake(onTick, portMAX_DELAY);
+		watchdog_reset();
+		++currentTicks;
 
-    // XXX STIEG: Should this be higher for MK2?  Seems like it should be.
-    if (currentTicks % BACKGROUND_SAMPLE_RATE == 0)
-        doBackgroundSampling();
+		if (currentTicks % BACKGROUND_SAMPLE_RATE == 0)
+			doBackgroundSampling();
 
-    if (g_configChanged) {
-        currentTicks = 0;
-        channelCount = updateSampleRates(loggerConfig, &loggingSampleRate, &telemetrySampleRate,
-                &sampleRateTimebase);
-        backgroundStreaming = loggerConfig->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
-        resetLapCount();
-        lapstats_reset_distance();
-        g_configChanged = 0;
-    }
+		if (g_configChanged) {
+			currentTicks = 0;
+			channelCount = updateSampleRates(loggerConfig, &loggingSampleRate, &telemetrySampleRate,
+					&sampleRateTimebase);
+			backgroundStreaming = loggerConfig->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
+			resetLapCount();
+			lapstats_reset_distance();
+			g_configChanged = 0;
+		}
 
-    if (g_loggingShouldRun && !g_isLogging) {
-        pr_info("Logging started\r\n");
-        g_isLogging = 1;
-        LED_disable(3);
+		{
+			bool is_logging = logging_is_active();
+			if (g_loggingShouldRun && !is_logging) {
+				logging_started();
+				LoggerMessage logStartMsg = getLogStartMessage();
+				queue_logfile_record(&logStartMsg);
+				queueTelemetryRecord(&logStartMsg);
+			}
 
-        LoggerMessage logStartMsg = getLogStartMessage();
-        queue_logfile_record(&logStartMsg);
-        queueTelemetryRecord(&logStartMsg);
-    }
+			if (!g_loggingShouldRun && is_logging) {
+				logging_stopped();
+				LoggerMessage logStopMsg = getLogStopMessage();
+				queue_logfile_record(&logStopMsg);
+				queueTelemetryRecord(&logStopMsg);
+				logging_set_status(LOGGING_STATUS_IDLE);
+			}
+		}
 
-    if (!g_loggingShouldRun && g_isLogging) {
-        pr_info("Logging stopped\r\n");
-        g_isLogging = 0;
-        LED_disable(2);
+		// Check if we need to actually populate the buffer.
+		LoggerMessage *msg = &g_sampleRecordMsgBuffer[bufferIndex];
+		int sampledRate = populate_sample_buffer(msg, channelCount, currentTicks);
+		msg->sampleCount = channelCount;
 
-        LoggerMessage logStopMsg = getLogStopMessage();
-        queue_logfile_record(&logStopMsg);
-        queueTelemetryRecord(&logStopMsg);
-    }
+		// If here, no sample to give.
+		if (sampledRate == SAMPLE_DISABLED) {
+			continue;
+		}
 
-    // Check if we need to actually populate the buffer.
-    LoggerMessage *msg = &g_sampleRecordMsgBuffer[bufferIndex];
-    int sampledRate = populate_sample_buffer(msg, channelCount, currentTicks);
-    msg->sampleCount = channelCount;
+		bool is_logging = logging_is_active();
+		// We only log to file if the user has manually pushed the logging button.
+		if (is_logging && sampledRate >= loggingSampleRate) {
+			const portBASE_TYPE res = queue_logfile_record(msg);
+			if (res == pdTRUE){
+			    logging_set_status(LOGGING_STATUS_WRITING);
+			}
+			else{
+			    logging_set_status(LOGGING_STATUS_ERROR_WRITING);
+				LED_enable(3); //error LED
+			}
+		}
 
-    // If here, no sample to give.
-    if (sampledRate == SAMPLE_DISABLED)
-        continue;
-
-    // We only log to file if the user has manually pushed the logging button.
-    if (g_isLogging && sampledRate >= loggingSampleRate) {
-        const portBASE_TYPE res = queue_logfile_record(msg);
-        if (res != pdTRUE)
-            LED_enable(3);
-    }
-
-    // Log if the user has manually pushed the logging button or if background is enabled.
-    if ((g_isLogging || backgroundStreaming) &&
-            (sampledRate >= telemetrySampleRate || currentTicks % telemetrySampleRate == 0)) {
-        queueTelemetryRecord(msg);
-    }
-
-    ++bufferIndex;
-    bufferIndex %= LOGGER_MESSAGE_BUFFER_SIZE;
-}
+		// Log if the user has manually pushed the logging button or if background is enabled.
+		if ((is_logging || backgroundStreaming) &&
+				(sampledRate >= telemetrySampleRate || currentTicks % telemetrySampleRate == 0)) {
+			queueTelemetryRecord(msg);
+		}
+		++bufferIndex;
+		bufferIndex %= LOGGER_MESSAGE_BUFFER_SIZE;
+	}
 }

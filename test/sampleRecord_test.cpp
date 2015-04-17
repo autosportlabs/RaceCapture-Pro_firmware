@@ -24,7 +24,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( SampleRecordTest );
 void SampleRecordTest::setUp()
 {
 	InitLoggerHardware();
-	GPS_init();
+	GPS_init(10, get_serial(SERIAL_GPS));
 	initialize_logger_config();
 	resetCurrentTicks();
 }
@@ -37,7 +37,7 @@ void SampleRecordTest::tearDown()
 
 void SampleRecordTest::testPopulateSampleRecord(){
 	LoggerConfig *lc = getWorkingLoggerConfig();
-   GPS_init();
+   GPS_init(10, get_serial(SERIAL_GPS));
    lapStats_init();
 
 	//mock up some values to test later
@@ -228,14 +228,14 @@ void SampleRecordTest::testInitSampleRecord()
 
    if (gpsConfig->latitude.sampleRate != SAMPLE_DISABLED){
       CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->latitude, (void *) ts->cfg);
-      CPPUNIT_ASSERT_EQUAL((void *) getLatitude, (void *) ts->get_float_sample);
+      CPPUNIT_ASSERT_EQUAL((void *) GPS_getLatitude, (void *) ts->get_float_sample);
       CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
       ts++;
    }
 
    if (gpsConfig->longitude.sampleRate != SAMPLE_DISABLED){
       CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->longitude, (void *) ts->cfg);
-      CPPUNIT_ASSERT_EQUAL((void *) getLongitude, (void *) ts->get_float_sample);
+      CPPUNIT_ASSERT_EQUAL((void *) GPS_getLongitude, (void *) ts->get_float_sample);
       CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
       ts++;
    }
@@ -263,21 +263,21 @@ void SampleRecordTest::testInitSampleRecord()
 
    if (gpsConfig->satellites.sampleRate != SAMPLE_DISABLED){
       CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->satellites, (void *) ts->cfg);
-      CPPUNIT_ASSERT_EQUAL((void *) getSatellitesUsedForPosition, (void *) ts->get_int_sample);
+      CPPUNIT_ASSERT_EQUAL((void *) GPS_getSatellitesUsedForPosition, (void *) ts->get_int_sample);
       CPPUNIT_ASSERT_EQUAL(SampleData_Int_Noarg, ts->sampleData);
       ts++;
    }
 
    if (gpsConfig->quality.sampleRate != SAMPLE_DISABLED){
       CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->quality, (void *) ts->cfg);
-      CPPUNIT_ASSERT_EQUAL((void *) getGPSQuality, (void *) ts->get_int_sample);
+      CPPUNIT_ASSERT_EQUAL((void *) GPS_getQuality, (void *) ts->get_int_sample);
       CPPUNIT_ASSERT_EQUAL(SampleData_Int_Noarg, ts->sampleData);
       ts++;
    }
 
    if (gpsConfig->DOP.sampleRate != SAMPLE_DISABLED){
       CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->DOP, (void *) ts->cfg);
-      CPPUNIT_ASSERT_EQUAL((void *) getGpsDOP, (void *) ts->get_float_sample);
+      CPPUNIT_ASSERT_EQUAL((void *) GPS_getDOP, (void *) ts->get_float_sample);
       CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
       ts++;
    }

@@ -36,8 +36,9 @@ void setGpsDataLogging(bool enable) {
 void GPSTask(void *pvParameters) {
 	Serial *serial = get_serial(SERIAL_GPS);
 	uint8_t targetSampleRate = decodeSampleRate(getWorkingLoggerConfig()->GPSConfigs.speed.sampleRate);
-	int rc = GPS_device_provision(targetSampleRate, serial);
-	if (!rc){
+	lapStats_init();
+	gps_status_t gps_status = GPS_init(targetSampleRate, serial);
+	if (!gps_status){
 		pr_error("Error provisioning GPS module\r\n");
 	}
 
@@ -54,7 +55,5 @@ void GPSTask(void *pvParameters) {
 }
 
 void startGPSTask(int priority){
-	GPS_init();
-	lapStats_init();
 	xTaskCreate( GPSTask, ( signed portCHAR * )"GPSTask", GPS_TASK_STACK_SIZE, NULL, priority, NULL );
 }

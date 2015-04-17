@@ -30,7 +30,7 @@ enum writing_status {
 #define FILENAME_LEN							13
 #define MAX_LOG_FILE_INDEX 						99999
 #define FLUSH_INTERVAL_MS						5000
-#define ERROR_SLEEP_DELAY_MS					1000
+#define ERROR_SLEEP_DELAY_MS					500
 
 //wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all
 #define SAMPLE_QUEUE_WAIT_TIME					0
@@ -271,15 +271,10 @@ void fileWriterTask(void *params){
 			} else if (LoggerMessageType_Stop == msg->type){
 				pr_info_int(tick);
 				pr_info(" logfile lines written\r\n");
-                                break;
+                break;
 			}
 
 			if (LoggerMessageType_Sample == msg->type && WRITING_ACTIVE == writingStatus) {
-
-//                if (!isValidLoggerMessageAge(msg)) {
-//                    pr_debug("File writer Logger message too old.  Ignoring it.\r\n");
-//                    continue;
-//                }
 
 			    if (0 == tick){
 					writeHeaders(msg->channelSamples, msg->sampleCount);
@@ -311,10 +306,14 @@ void fileWriterTask(void *params){
 				}
 				tick++;
 			}
+			else{
+			    break;
+			}
 		}
 
-                if (writingStatus != WRITING_INACTIVE)
-                   endLogfile();
+        if (writingStatus != WRITING_INACTIVE){
+           endLogfile();
+        }
 
 		writingStatus = WRITING_INACTIVE;
 		delayMs(ERROR_SLEEP_DELAY_MS);

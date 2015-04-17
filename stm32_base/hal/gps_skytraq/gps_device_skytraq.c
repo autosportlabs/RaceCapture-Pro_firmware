@@ -613,13 +613,13 @@ static uint8_t getTargetUpdateRate(uint8_t sampleRate)
     return 1;
 }
 
-int GPS_device_provision(uint8_t sampleRate, Serial *serial)
+gps_status_t GPS_device_init(uint8_t sampleRate, Serial *serial)
 {
     size_t attempts = MAX_PROVISIONING_ATTEMPTS;
-	size_t provisioned = 0;
+	size_t gps_init_status = GPS_STATUS_NOT_INIT;
 
 	vTaskDelay(msToTicks(500));
-	while(attempts-- && !provisioned){
+	while(attempts-- && gps_init_status == GPS_STATUS_NOT_INIT){
 	    while(1){
 	        pr_info("GPS: provisioning attempt\r\n");
 			uint32_t baudRate = detectGpsBaudRate(&gpsMsg, serial);
@@ -674,19 +674,20 @@ int GPS_device_provision(uint8_t sampleRate, Serial *serial)
 				}
 
 				pr_info("GPS: provisioned\r\n");
-				provisioned = 1;
+				gps_init_status = GPS_STATUS_PROVISIONED;
 				break;
 			} else {
 				pr_error("GPS: Error provisioning - "
 					 "could not detect GPS module on known baud rates\r\n");
+				gps_init_status = GPS_STATUS_ERROR;
 				break;
 			}
 		}
-		if (!provisioned && attempts == MAX_PROVISIONING_ATTEMPTS / 2){
+		if (!gps_init_status && attempts == MAX_PROVISIONING_ATTEMPTS / 2){
 			attemptFactoryDefaults(&gpsMsg, serial);
 		}
 	}
-	return provisioned;
+	return gps_init_status;
 }
 
 gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, Serial *serial)

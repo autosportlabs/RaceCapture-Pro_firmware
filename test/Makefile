@@ -13,6 +13,7 @@ MESSAGING_SRC=$(RCP_SRC)/messaging
 COMMAND_SRC=$(RCP_SRC)/command
 MOCK_DIR=logger_mock
 GPS_DIR=gps
+FREE_RTOS_KERNEL_DIR=FreeRTOS_Kernel
 LAP_STATS_DIR=lap_stats
 UTIL_DIR=util
 BUILD_DIR=build
@@ -39,6 +40,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/auto_config \
 		-I$(RCP_INC)/util \
 		-I$(RCP_INC)/serial \
+		-I$(RCP_INC)/devices \
 		-I$(SAM7S_SRC)/lua \
 		-I$(SAM7S_SRC)/command \
 		-I$(SAM7S_SRC)/uart \
@@ -62,6 +64,7 @@ INCLUDES = 	-I. \
 		-I$(MOCK_DIR) \
 		-I$(GPS_DIR) \
 		-I$(LAP_STATS_DIR) \
+		-I$(FREE_RTOS_KERNEL_DIR)/include \
 		-I$(UTIL_DIR)
 
 # set up compiler and options
@@ -149,6 +152,7 @@ SRC =		mock_uart.c \
 		$(MOCK_DIR)/sdcard_mock.c \
 		$(MOCK_DIR)/watchdog_device_mock.c \
 		$(MOCK_DIR)/CAN_device_mock.c \
+		$(MOCK_DIR)/sim900_device_mock.c \
 		$(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 		$(RCP_SRC)/auto_config/auto_track.c \
 		$(RCP_SRC)/util/linear_interpolate.c \
@@ -166,8 +170,10 @@ SRC =		mock_uart.c \
 		$(RCP_SRC)/logger/loggerSampleData.c \
 		$(RCP_SRC)/logger/loggerData.c \
 		$(RCP_SRC)/logger/loggerHardware.c \
-
-#		$(RCP_SRC)/logger/loggerTaskEx.c \
+		$(RCP_SRC)/devices/cellModem.c \
+		$(RCP_SRC)/devices/bluetooth.c \
+		$(RCP_SRC)/devices/sim900.c \
+		$(RCP_SRC)/logger/logger.c \
 
 
 OBJ_TEST = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $(basename $(SRC) $(T_SRC) RCPTest.cpp))))

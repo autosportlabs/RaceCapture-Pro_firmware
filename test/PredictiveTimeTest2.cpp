@@ -51,7 +51,7 @@ static int atoiOffsetLenSafe(const char *str, size_t offset, size_t len) {
 }
 
 void PredictiveTimeTest2::setUp() {
-	GPS_init();
+	GPS_init(10, get_serial(SERIAL_GPS));
 	resetPredictiveTimer();
 }
 

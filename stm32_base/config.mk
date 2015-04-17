@@ -86,6 +86,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/logger/loggerHardware.c \
 			$(RCP_SRC)/logger/loggerSampleData.c \
 			$(RCP_SRC)/logger/loggerTaskEx.c \
+			$(RCP_SRC)/logger/logger.c \
 			$(RCP_SRC)/logger/connectivityTask.c \
 			$(RCP_SRC)/logger/luaLoggerBinding.c \
 			$(RCP_SRC)/logger/sampleRecord.c \

@@ -25,6 +25,12 @@
 
 #define COMMAND_WAIT 	600
 
+static bluetooth_status_t g_bluetooth_status = BT_STATUS_NOT_INIT;
+
+bluetooth_status_t bt_get_status(){
+	return g_bluetooth_status;
+}
+
 static int readBtWait(DeviceConfig *config, size_t delay) {
     int c = config->serial->get_line_wait(config->buffer, config->length, delay);
     return c;
@@ -142,11 +148,15 @@ int bt_init_connection(DeviceConfig *config) {
             break;
     }
 
-    if (*rate == 0)
+    if (*rate > 0){
+        config->serial->init(8, 0, 1, targetBaud);
+        pr_info("BT: Init complete\r\n");
+        g_bluetooth_status = BT_STATUS_PROVISIONED;
+    }
+    else{
         pr_info("BT: Failed to provision module. Assuming already connected.\r\n");
-
-    config->serial->init(8, 0, 1, targetBaud);
-    pr_info("BT: Init complete\r\n");
+        g_bluetooth_status = BT_STATUS_ERROR;
+    }
 
     return DEVICE_INIT_SUCCESS;
 }

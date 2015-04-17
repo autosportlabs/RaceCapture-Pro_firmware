@@ -1,3 +1,20 @@
+/**
+ * AutoSport Labs - Race Capture Pro Firmware
+ *
+ * Copyright (C) 2014 AutoSport Labs
+ *
+ * This file is part of the Race Capture Pro firmware suite
+ *
+ * This is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should have received a copy of the GNU
+ * General Public License along with this code. If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "FreeRTOS.h"
 #include "task.h"
 #include "constants.h"
@@ -24,10 +41,18 @@
 #include "cpu.h"
 #include "luaScript.h"
 #include "luaTask.h"
+#include "logger.h"
 #include "loggerTaskEx.h"
 #include "FreeRTOS.h"
 #include "taskUtil.h"
 #include "GPIO.h"
+#include "gps.h"
+#include "dateTime.h"
+#include "cellModem.h"
+#include "bluetooth.h"
+#include "sim900.h"
+#include "launch_control.h"
+#include "lap_stats.h"
 
 /* Max number of PIDs that can be specified in the setOBD2Cfg message */
 #define MAX_OBD2_MESSAGE_PIDS 10
@@ -187,6 +212,60 @@ int api_getCapabilities(Serial *serial, const jsmntok_t *json){
 	json_int(serial, "tracks", MAX_TRACKS, 1);
 	json_int(serial, "sectors", MAX_SECTORS, 1);
 	json_int(serial, "script", SCRIPT_MEMORY_LENGTH, 0);
+	json_objEnd(serial, 0);
+
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
+	return API_SUCCESS_NO_RETURN;
+}
+
+int api_getStatus(Serial *serial, const jsmntok_t *json){
+	json_objStart(serial);
+	json_objStartString(serial, "status");
+
+	json_objStartString(serial, "system");
+	json_string(serial, "model", FRIENDLY_DEVICE_NAME, 1);
+	json_int(serial, "ver_major", MAJOR_REV, 1);
+	json_int(serial, "ver_minor", MINOR_REV, 1);
+	json_int(serial, "ver_bugfix", BUGFIX_REV, 1);
+	json_string(serial, "serial", cpu_get_serialnumber(), 1);
+	json_uint(serial, "uptime", getUptimeAsInt(), 0);
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial, "GPS");
+	json_int(serial, "init", (int)GPS_getStatus(), 1);
+	json_int(serial, "qual", GPS_getQuality(), 1);
+	json_float(serial, "lat", GPS_getLatitude(), DEFAULT_GPS_POSITION_PRECISION, 1);
+	json_float(serial, "lon", GPS_getLongitude(), DEFAULT_GPS_POSITION_PRECISION, 1);
+	json_int(serial, "sats", GPS_getSatellitesUsedForPosition(), 1);
+	json_int(serial, "DOP", GPS_getDOP(), 0);
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial, "cell");
+	json_int(serial, "init", cellmodem_get_status(), 1);
+	json_string(serial, "IMEI", cell_get_IMEI(), 1);
+	json_int(serial, "sig_str", cell_get_signal_strength(), 1);
+	json_string(serial, "number", cell_get_subscriber_number(), 0);
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial, "bt");
+	json_int(serial, "init", (int)bt_get_status(), 0);
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial, "logging");
+	json_int(serial, "status", (int)logging_get_status(), 1);
+	json_int(serial, "started", logging_get_logging_start(), 0);
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial, "track");
+	json_int(serial, "status", lapstats_get_track_status(), 1);
+	json_int(serial, "trackId", lapstats_get_selected_track_id(), 1);
+	json_int(serial, "armed", lc_is_armed(), 0);
+	json_objEnd(serial, 1);
+
+	json_objStartString(serial, "telemetry");
+	json_int(serial, "status", (int)sim900_get_connection_status(), 1);
+	json_int(serial, "started", sim900_active_since(), 0);
 	json_objEnd(serial, 0);
 
 	json_objEnd(serial, 0);

@@ -13,7 +13,6 @@
 
 #define GPS_DATA_LINE_BUFFER_LEN 	200
 static char g_GPSdataLine[GPS_DATA_LINE_BUFFER_LEN];
-
 /**
  * Like atoi, but is non-destructive to the string passed in and provides an offset and length
  * functionality.  Max Len is 3.
@@ -245,11 +244,10 @@ static bool processGPSData(GpsSample *gpsSample, char *gpsData, size_t len) {
    return false;
 }
 
-int GPS_device_provision(uint8_t targetSampleRate, Serial *serial){
-	//nothing to provision, factory defaults are good
-	return 1;
+gps_status_t GPS_device_init(uint8_t targetSampleRate, Serial *serial){
+	//nothing to init, factory defaults are good
+	return GPS_STATUS_PROVISIONED;
 }
-
 
 /*
  * Order of GPS sentences from our GPS mouse is as follows:

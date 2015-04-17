@@ -15,21 +15,22 @@
  * See the GNU General Public License for more details. You should have received a copy of the GNU
  * General Public License along with this code. If not, see <http://www.gnu.org/licenses/>.
  */
-
-#ifndef BLUETOOTH_H_
-#define BLUETOOTH_H_
-
-#include "devices_common.h"
-#include "stddef.h"
+#ifndef LOGGER_H_
+#define LOGGER_H_
+#include <stdbool.h>
+#include <stdint.h>
 
 typedef enum {
-	BT_STATUS_NOT_INIT = 0,
-	BT_STATUS_PROVISIONED,
-	BT_STATUS_ERROR
-} bluetooth_status_t;
+    LOGGING_STATUS_IDLE = 0,
+    LOGGING_STATUS_WRITING,
+    LOGGING_STATUS_ERROR_WRITING
+} logging_status_t;
 
-bluetooth_status_t bt_get_status();
-int bt_init_connection(DeviceConfig *config);
-int bt_check_connection_status(DeviceConfig *config);
+bool logging_is_active();
+logging_status_t logging_get_status( void );
+void logging_set_status( logging_status_t status );
 
-#endif /* BLUETOOTH_H_ */
+int32_t logging_get_logging_start( void );
+void logging_set_logging_start( int32_t start );
+
+#endif /* LOGGER_H_ */

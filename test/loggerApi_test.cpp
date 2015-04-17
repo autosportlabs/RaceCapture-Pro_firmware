@@ -24,7 +24,12 @@
 #include "predictive_timer_2.h"
 #include "luaScript.h"
 #include "rcp_cpp_unit.hh"
-
+#include "cellModem.h"
+#include "sim900.h"
+#include "bluetooth.h"
+#include "logger.h"
+#include "lap_stats.h"
+#include "launch_control.h"
 #define JSON_TOKENS 10000
 #define FILE_PREFIX string("json_api_files/")
 
@@ -1271,4 +1276,43 @@ void LoggerApiTest::testGetVersion(){
 	CPPUNIT_ASSERT_EQUAL(MINOR_REV, (int)(Number)json["ver"]["minor"]);
 	CPPUNIT_ASSERT_EQUAL(BUGFIX_REV, (int)(Number)json["ver"]["bugfix"]);
 	CPPUNIT_ASSERT_EQUAL(string(cpu_get_serialnumber()), (string)(String)json["ver"]["serial"]);
+}
+
+void LoggerApiTest::testGetStatus(){
+    lc_reset();
+    char * response = processApiGeneric("getStatus1.json");
+
+    Object json;
+    stringToJson(response, json);
+
+    CPPUNIT_ASSERT_EQUAL(string(FRIENDLY_DEVICE_NAME), (string)(String)json["status"]["system"]["model"]);
+    CPPUNIT_ASSERT_EQUAL(MAJOR_REV, (int)(Number)json["status"]["system"]["ver_major"]);
+    CPPUNIT_ASSERT_EQUAL(MINOR_REV, (int)(Number)json["status"]["system"]["ver_minor"]);
+    CPPUNIT_ASSERT_EQUAL(BUGFIX_REV, (int)(Number)json["status"]["system"]["ver_bugfix"]);
+    CPPUNIT_ASSERT_EQUAL(string(cpu_get_serialnumber()), (string)(String)json["status"]["system"]["serial"]);
+    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["system"]["uptime"]);
+
+    CPPUNIT_ASSERT_EQUAL((int)GPS_STATUS_NOT_INIT, (int)(Number)json["status"]["GPS"]["init"]);
+    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["GPS"]["qual"]);
+    CPPUNIT_ASSERT_EQUAL(0.0f, (float)(Number)json["status"]["GPS"]["lat"]);
+    CPPUNIT_ASSERT_EQUAL(0.0f, (float)(Number)json["status"]["GPS"]["lon"]);
+    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["GPS"]["sats"]);
+    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["GPS"]["DOP"]);
+
+    CPPUNIT_ASSERT_EQUAL((int)CELLMODEM_STATUS_NOT_INIT, (int)(Number)json["status"]["cell"]["init"]);
+    CPPUNIT_ASSERT_EQUAL(string(""), (string)(String)json["status"]["cell"]["IMEI"]);
+    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["cell"]["sig_str"]);
+    CPPUNIT_ASSERT_EQUAL(string(""), (string)(String)json["status"]["cell"]["number"]);
+
+    CPPUNIT_ASSERT_EQUAL((int)BT_STATUS_NOT_INIT, (int)(Number)json["status"]["bt"]["init"]);
+
+    CPPUNIT_ASSERT_EQUAL((int)LOGGING_STATUS_IDLE, (int)(Number)json["status"]["logging"]["status"]);
+    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["logging"]["started"]);
+
+    CPPUNIT_ASSERT_EQUAL((int)TRACK_STATUS_WAITING_TO_CONFIG, (int)(Number)json["status"]["track"]["status"]);
+    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["track"]["trackId"]);
+    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["track"]["armed"]);
+
+    CPPUNIT_ASSERT_EQUAL((int)TELEMETRY_STATUS_IDLE, (int)(Number)json["status"]["telemetry"]["status"]);
+    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["telemetry"]["started"]);
 }

@@ -4,7 +4,14 @@
 #include "dateTime.h"
 #include "geopoint.h"
 #include <stddef.h>
+#include <stdint.h>
 #include "gps.h"
+
+typedef enum {
+	TRACK_STATUS_WAITING_TO_CONFIG = 0,
+	TRACK_STATUS_FIXED_CONFIG,
+	TRACK_STATUS_AUTO_DETECTED
+} track_status_t;
 
 /**
  * A simple Time and Location sample.
@@ -19,6 +26,10 @@ void gpsConfigChanged(void);
 void lapStats_init();
 
 void lapStats_processUpdate(const GpsSnapshot *gpsSnapshot);
+
+track_status_t lapstats_get_track_status( void );
+
+int32_t lapstats_get_selected_track_id( void );
 
 void resetLapCount();
 

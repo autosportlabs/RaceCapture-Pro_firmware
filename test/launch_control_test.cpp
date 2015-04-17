@@ -36,12 +36,14 @@ void LaunchControlTest::tearDown() {}
 
 void LaunchControlTest::testHasLaunchedReset() {
    CPPUNIT_ASSERT_EQUAL(false, lc_hasLaunched());
-   CPPUNIT_ASSERT_EQUAL(0, lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL(false, lc_is_armed());
+   CPPUNIT_ASSERT_EQUAL(-1, lc_getLaunchTime());
 
    lc_reset();
 
    CPPUNIT_ASSERT_EQUAL(false, lc_hasLaunched());
-   CPPUNIT_ASSERT_EQUAL(0, lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL(false, lc_is_armed());
+   CPPUNIT_ASSERT_EQUAL(-1, lc_getLaunchTime());
 }
 
 void LaunchControlTest::testCircuitLaunch() {
@@ -62,7 +64,8 @@ void LaunchControlTest::testCircuitLaunch() {
 
    lc_setup(&t, 1.0);
    CPPUNIT_ASSERT_EQUAL(false, lc_hasLaunched());
-   CPPUNIT_ASSERT_EQUAL(0, lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL(false, lc_is_armed());
+   CPPUNIT_ASSERT_EQUAL(-1, lc_getLaunchTime());
 
    GpsSnapshot snap;
    const GeoPoint *pt = pts;
@@ -71,10 +74,15 @@ void LaunchControlTest::testCircuitLaunch() {
       // Use the address of the point as the sample time.
       snap.deltaFirstFix = (tiny_millis_t) pt;
       snap.sample.speed = 40; // Speed well above the threshold.
+
       lc_supplyGpsSnapshot(&snap);
+
+      const bool armed = pt == &pts[1];
+      CPPUNIT_ASSERT_EQUAL(armed, lc_is_armed());
    }
 
    CPPUNIT_ASSERT_EQUAL(true, lc_hasLaunched());
+   CPPUNIT_ASSERT_EQUAL(false, lc_is_armed());
    CPPUNIT_ASSERT_EQUAL((tiny_millis_t) (pts + 1), lc_getLaunchTime());
 }
 
@@ -89,7 +97,7 @@ void LaunchControlTest::testStageSimpleLaunch() {
 
    const GeoPoint pts[] = {
       {0.9, 0.9},
-      {1.0, 1.0},
+      {1.0, 1.0}, // <-- This is the arming point
       {1.0, 1.0},
       {1.0, 1.0},
       {1.0, 1.0},
@@ -101,7 +109,8 @@ void LaunchControlTest::testStageSimpleLaunch() {
 
    lc_setup(&t, 1.0);
    CPPUNIT_ASSERT_EQUAL(false, lc_hasLaunched());
-   CPPUNIT_ASSERT_EQUAL(0, lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL(false, lc_is_armed());
+   CPPUNIT_ASSERT_EQUAL(-1, lc_getLaunchTime());
 
    GpsSnapshot snap;
    const GeoPoint *pt = pts;
@@ -116,10 +125,15 @@ void LaunchControlTest::testStageSimpleLaunch() {
       bool launched = pt >= (pts + 7);
       char msg[64];
       sprintf(msg, "At Index point %d\n", indx);
+
       CPPUNIT_ASSERT_EQUAL_MESSAGE(msg, launched, lc_hasLaunched());
+
+      const bool armed = &pts[1] <= pt && pt <= &pts[6];
+      CPPUNIT_ASSERT_EQUAL_MESSAGE(msg, armed, lc_is_armed());
    }
 
    CPPUNIT_ASSERT_EQUAL(true, lc_hasLaunched());
+   CPPUNIT_ASSERT_EQUAL(false, lc_is_armed());
    CPPUNIT_ASSERT_EQUAL((tiny_millis_t) (pts + 6), lc_getLaunchTime());
 }
 
@@ -152,7 +166,7 @@ void LaunchControlTest::testStageTrickyLaunch() {
 
    lc_setup(&t, 1.0);
    CPPUNIT_ASSERT_EQUAL(false, lc_hasLaunched());
-   CPPUNIT_ASSERT_EQUAL(0, lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL(-1, lc_getLaunchTime());
 
    GpsSnapshot snap;
    const GeoPoint *pt = pts;

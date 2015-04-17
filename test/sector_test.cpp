@@ -40,8 +40,8 @@ static int atoiOffsetLenSafe(const char *str, size_t offset, size_t len) {
 
 void SectorTest::setUp()
 {
-	GPS_init();
-        lapStats_init();
+	GPS_init(10, get_serial(SERIAL_GPS));
+	lapStats_init();
 }
 
 

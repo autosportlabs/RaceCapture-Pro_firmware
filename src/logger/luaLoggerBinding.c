@@ -23,6 +23,7 @@
 #include "printk.h"
 #include "modp_numtoa.h"
 #include "loggerTaskEx.h"
+#include "logger.h"
 #include "loggerSampleData.h"
 #include "virtual_channel.h"
 #include "lap_stats.h"
@@ -302,13 +303,13 @@ int Lua_SetGPIO(lua_State *L){
 }
 
 int Lua_GetGPSSatellites(lua_State *L){
-	lua_pushnumber(L, getSatellitesUsedForPosition());
+	lua_pushnumber(L, GPS_getSatellitesUsedForPosition());
 	return 1;
 }
 
 int Lua_GetGPSPosition(lua_State *L){
-	lua_pushnumber(L, getLatitude());
-	lua_pushnumber(L, getLongitude());
+	lua_pushnumber(L, GPS_getLatitude());
+	lua_pushnumber(L, GPS_getLongitude());
 	return 2;
 }
 
@@ -318,7 +319,7 @@ int Lua_GetGPSSpeed(lua_State *L){
 }
 
 int Lua_GetGPSQuality(lua_State *L){
-	lua_pushnumber(L,getGPSQuality());
+	lua_pushnumber(L,GPS_getQuality());
 	return 1;
 }
 
@@ -520,7 +521,7 @@ int Lua_StopLogging(lua_State *L){
 }
 
 int Lua_IsLogging(lua_State *L){
-	lua_pushinteger(L, isLogging());
+	lua_pushinteger(L, logging_is_active());
 	return 1;
 }
 
