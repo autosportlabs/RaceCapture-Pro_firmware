@@ -302,6 +302,9 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samp
    chanCfg = &(trackConfig->elapsed_time_cfg);
    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
                                                      lapstats_elapsed_time_minutes);
+   chanCfg = &(trackConfig->current_lap_cfg);
+   sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg,
+                                                   lapstats_current_lap);
 }
 
 static void populate_channel_sample(ChannelSample *sample) {

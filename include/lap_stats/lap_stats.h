@@ -36,7 +36,7 @@ void resetLapCount();
 /**
  * @return The lap you are currently on.
  */
-int lapstats_get_lap();
+int lapstats_current_lap();
 
 int getLapCount();
 

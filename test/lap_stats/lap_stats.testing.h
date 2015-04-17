@@ -34,6 +34,6 @@ void lap_started_normal_event(const GpsSnapshot *gpsSnapshot);
 void lap_finished_event(const GpsSnapshot *gpsSnapshot);
 void update_elapsed_time(const GpsSnapshot *snap);
 void reset_elapsed_time();
-void reset_lap();
+void reset_current_lap();
 
 #endif /* _LAP_STATS_TESTING_H_ */

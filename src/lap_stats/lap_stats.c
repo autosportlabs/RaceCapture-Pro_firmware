@@ -127,11 +127,11 @@ float getLapDistanceInMiles() {
    return KMS_TO_MILES_CONSTANT * g_distance;
 }
 
-TESTABLE_STATIC void reset_lap() {
+TESTABLE_STATIC void reset_current_lap() {
         g_lap = 0;
 }
 
-int lapstats_get_lap() {
+int lapstats_current_lap() {
         return g_lap;
 }
 
@@ -355,7 +355,7 @@ void lapStats_init() {
         reset_elapsed_time();
         set_active_track(NULL);
         resetPredictiveTimer();
-        reset_lap();
+        reset_current_lap();
         g_configured = 0;
         g_lastLapTime = 0;
         g_lastSectorTime = 0;

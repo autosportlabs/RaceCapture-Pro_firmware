@@ -1234,6 +1234,11 @@ int api_setLapConfig(Serial *serial, const jsmntok_t *json){
                                               &lapCfg->elapsed_time_cfg,
                                               NULL, NULL);
 
+        const jsmntok_t *current_lap = findNode(json, "currentLap");
+	if (current_lap != NULL) setChannelConfig(serial, current_lap + 1,
+                                                  &lapCfg->current_lap_cfg,
+                                                  NULL, NULL);
+
 	configChanged();
 	return API_SUCCESS;
 }
@@ -1266,6 +1271,10 @@ int api_getLapConfig(Serial *serial, const jsmntok_t *json){
 
         json_objStartString(serial, "elapsed");
 	json_channelConfig(serial, &lapCfg->elapsed_time_cfg, 0);
+	json_objEnd(serial, 1);
+
+        json_objStartString(serial, "currentLap");
+	json_channelConfig(serial, &lapCfg->current_lap_cfg, 0);
 	json_objEnd(serial, 0);
 
 	json_objEnd(serial, 0);

@@ -544,6 +544,9 @@ unsigned int getHighestSampleRate(LoggerConfig *config){
    sr = trackCfg->elapsed_time_cfg.sampleRate;
    s = getHigherSampleRate(sr, s);
 
+   sr = trackCfg->current_lap_cfg.sampleRate;
+   s = getHigherSampleRate(sr, s);
+
    return s;
 }
 
@@ -597,6 +600,7 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig){
    if (lapConfig->sectorTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
    if (lapConfig->predTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
    if (lapConfig->elapsed_time_cfg.sampleRate != SAMPLE_DISABLED) channels++;
+   if (lapConfig->current_lap_cfg.sampleRate != SAMPLE_DISABLED) channels++;
 
    channels += get_virtual_channel_count();
    return channels;

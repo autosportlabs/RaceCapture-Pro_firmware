@@ -36,25 +36,25 @@ void Current_Lap_Test::setUp() {
 }
 
 void Current_Lap_Test::test_lap_increment() {
-        CPPUNIT_ASSERT_EQUAL(0, lapstats_get_lap());
+        CPPUNIT_ASSERT_EQUAL(0, lapstats_current_lap());
 
         lap_started_normal_event(&gpsSnap);
 
-        CPPUNIT_ASSERT_EQUAL(1, lapstats_get_lap());
+        CPPUNIT_ASSERT_EQUAL(1, lapstats_current_lap());
 }
 
 void Current_Lap_Test::test_no_increment() {
-        CPPUNIT_ASSERT_EQUAL(0, lapstats_get_lap());
+        CPPUNIT_ASSERT_EQUAL(0, lapstats_current_lap());
 
         lap_finished_event(&gpsSnap);
 
-        CPPUNIT_ASSERT_EQUAL(0, lapstats_get_lap());
+        CPPUNIT_ASSERT_EQUAL(0, lapstats_current_lap());
 }
 
 void Current_Lap_Test::test_reset() {
         lap_started_normal_event(&gpsSnap);
-        CPPUNIT_ASSERT_EQUAL(1, lapstats_get_lap());
+        CPPUNIT_ASSERT_EQUAL(1, lapstats_current_lap());
 
-        reset_lap();
-        CPPUNIT_ASSERT_EQUAL(0, lapstats_get_lap());
+        reset_current_lap();
+        CPPUNIT_ASSERT_EQUAL(0, lapstats_current_lap());
 }

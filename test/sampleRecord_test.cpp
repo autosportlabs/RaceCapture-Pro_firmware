@@ -141,7 +141,7 @@ void SampleRecordTest::testInitSampleRecord()
 {
    LoggerConfig *lc = getWorkingLoggerConfig();
 
-   size_t expectedEnabledChannels = 23;
+   size_t expectedEnabledChannels = 24;
 
    size_t channelCount = get_enabled_channel_count(lc);
    CPPUNIT_ASSERT_EQUAL(expectedEnabledChannels, channelCount);
@@ -327,10 +327,18 @@ void SampleRecordTest::testInitSampleRecord()
            ts++;
    }
 
+   if (lapConfig->current_lap_cfg.sampleRate != SAMPLE_DISABLED){
+           CPPUNIT_ASSERT_EQUAL((void *) &lapConfig->current_lap_cfg,
+                                (void *) ts->cfg);
+           CPPUNIT_ASSERT_EQUAL(SampleData_Int_Noarg, ts->sampleData);
+           CPPUNIT_ASSERT_EQUAL((void *) lapstats_current_lap,
+                                (void *) ts->get_int_sample);
+           ts++;
+   }
 
    //amount shoud match
-   unsigned int size = (unsigned int)ts - (unsigned int)samples;
-   CPPUNIT_ASSERT_EQUAL(expectedEnabledChannels * sizeof(ChannelSample), size);
+   const size_t size = ts - samples;
+   CPPUNIT_ASSERT_EQUAL(expectedEnabledChannels, size);
 }
 
 
