@@ -62,7 +62,6 @@ static void appendFileBuffer(const char * data){
 		*buffer++ = *data++;
 		index++;
 		if (index >= FILE_BUFFER_SIZE){
-			pr_info("flush file buffer\r\n");
 			*buffer = '\0';
 			writeFileBuffer();
 			index = fileBuffer.index;
@@ -138,7 +137,7 @@ static int writeHeaders(ChannelSample *sample, size_t channelCount){
 
 static int writeChannelSamples(ChannelSample *sample, size_t channelCount){
 	if (NULL == sample) {
-      pr_debug("null sample record\r\n");
+      pr_debug("file: null sample record\r\n");
       return WRITE_FAIL;
 	}
 
@@ -170,7 +169,7 @@ static int writeChannelSamples(ChannelSample *sample, size_t channelCount){
          appendDouble(sample->valueDouble, precision);
          break;
       default:
-         pr_warning("Got to unexpected location in writeChannelSamples\n");
+         pr_warning("file: Unknown channel sample type\n");
       }
    }
 
@@ -199,24 +198,21 @@ static int openNextLogfile(FIL *f, char *filename){
 		f_close(f);
 	}
 	if (i >= MAX_LOG_FILE_INDEX) return -2;
-	pr_info("open ");
-	pr_info(filename);
-	pr_info("\r\n");
+	pr_info_str_msg("Open: " , filename);
 	return rc;
 }
 
 static void endLogfile(){
-	pr_info("close logfile\r\n");
+	pr_info("file: close\r\n");
 	f_close(g_logfile);
 	UnmountFS();
 }
 
 static void flushLogfile(FIL *file){
-	pr_debug("flush logfile\r\n");
+	pr_debug("file: flush\r\n");
 	int res = f_sync(file);
 	if (0 != res){
-		pr_debug_int(res);
-		pr_debug("=flush error\r\n");
+		pr_debug_int_msg("flush err:", res);
 	}
 }
 
@@ -225,10 +221,7 @@ static int openNewLogfile(char *filename){
 
    rc = InitFS();
    if (0 != rc){
-      pr_error("FS init error.  Code: ");
-      pr_error_int(rc);
-      pr_error("\r\n");
-
+	  pr_error_int_msg("FS init error: ", rc);
       LED_enable(3);
       return WRITING_INACTIVE;
    }
@@ -236,10 +229,7 @@ static int openNewLogfile(char *filename){
    //open next log file
    rc = openNextLogfile(g_logfile, filename);
    if (0 != rc){
-      pr_error("File open error.  Code: ");
-      pr_error_int(rc);
-      pr_error("\r\n");
-
+	  pr_error_int_msg("File open err: ", rc);
       LED_enable(3);
       return WRITING_INACTIVE;
    }
@@ -262,15 +252,14 @@ void fileWriterTask(void *params){
 
 			if ((LoggerMessageType_Start == msg->type || LoggerMessageType_Sample == msg->type) &&
                             WRITING_INACTIVE == writingStatus){
-				pr_debug("Starting File Logging\r\n");
+				pr_debug("Logging: Start\r\n");
 				LED_disable(3);
 				flushTimeoutInterval = FLUSH_INTERVAL_MS;
 				flushTimeoutStart = xTaskGetTickCount();
 				tick = 0;
 				writingStatus = openNewLogfile(filename);
 			} else if (LoggerMessageType_Stop == msg->type){
-				pr_info_int(tick);
-				pr_info(" logfile lines written\r\n");
+				pr_info_int_msg("Logging: wrote ", tick);
                 break;
 			}
 
@@ -286,13 +275,11 @@ void fileWriterTask(void *params){
 					//try to recover
 					f_close(g_logfile);
 					UnmountFS();
-					pr_error("Error writing file, recovering..\r\n");
+					pr_error("file: Error writing, recovering..\r\n");
 					InitFS();
 					rc = openLogfile(g_logfile, filename);
 					if (0 != rc){
-						pr_error("could not recover file ");
-						pr_error(filename);
-						pr_error("\r\n");
+						pr_error_str_msg("file: error recovering ", filename);
 						break;
 					}
 					else{
@@ -324,12 +311,12 @@ void startFileWriterTask( int priority ){
 
 	g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( ChannelSample *));
 	if (NULL == g_sampleRecordQueue){
-		pr_error("Could not create sample record queue!");
+		pr_error("file: sampleRecordQueue err\r\n");
 		return;
 	}
 	g_logfile = pvPortMalloc(sizeof(FIL));
 	if (NULL == g_logfile){
-		pr_error("Could not create logfile structure!");
+		pr_error("file: logfile sruct err\r\n");
 		return;
 	}
 	xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter", FILE_WRITER_STACK_SIZE, NULL, priority, NULL );

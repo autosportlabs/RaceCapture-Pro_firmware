@@ -28,7 +28,7 @@ int flash_default_script(){
 		result = memory_flash_region((void *)&g_scriptConfig, (void *)defaultScriptConfig, sizeof (ScriptConfig));
 		portFree(defaultScriptConfig);
 	}
-	if (result == 0) pr_info("success\r\n"); else pr_info("failed\r\n");
+	if (result == 0) pr_info("win\r\n"); else pr_info("fail\r\n");
 	return result;
 }
 
@@ -82,7 +82,6 @@ int flashScriptPage(unsigned int page, const char *data, int mode){
 	if (page < MAX_SCRIPT_PAGES){
 		if (mode == SCRIPT_ADD_MODE_IN_PROGRESS || mode == SCRIPT_ADD_MODE_COMPLETE){
 			if (g_scriptBuffer == NULL){
-				pr_info("allocating new script buffer\r\n");
 				g_scriptBuffer = (ScriptConfig *)portMalloc(sizeof(ScriptConfig));
 				memcpy((void *)g_scriptBuffer, (void *)&g_scriptConfig, sizeof(ScriptConfig));
 			}
@@ -93,12 +92,12 @@ int flashScriptPage(unsigned int page, const char *data, int mode){
 				strncpy(pageToAdd, data, SCRIPT_PAGE_SIZE);
 
 				if (mode == SCRIPT_ADD_MODE_COMPLETE){
-					pr_info("completed updating script, flashing: ");
+					pr_info("lua: update complete, flashing: ");
 					if (memory_flash_region((void *)&g_scriptConfig, (void *)g_scriptBuffer, sizeof(ScriptConfig)) == 0){
-						pr_info("success\r\n");
+						pr_info("win\r\n");
 					}
 					else{
-						pr_error("error\r\n");
+						pr_error("fail\r\n");
 						result = SCRIPT_ADD_RESULT_FAIL;
 					}
 					portFree(g_scriptBuffer);
@@ -106,13 +105,13 @@ int flashScriptPage(unsigned int page, const char *data, int mode){
 				}
 			}
 			else{
-				pr_error("could not allocate buffer for script\r\n");
+				pr_error("lua: script buffer alloc fail\r\n");
 				result = SCRIPT_ADD_RESULT_FAIL;
 			}
 		}
 	}
 	else{
-		pr_error("invalid track index\r\n");
+		pr_error("lua: invalid script index\r\n");
 		result = SCRIPT_ADD_RESULT_FAIL;
 	}
 	return result;
