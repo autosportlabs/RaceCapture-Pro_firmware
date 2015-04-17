@@ -33,6 +33,11 @@ int32_t lapstats_get_selected_track_id( void );
 
 void resetLapCount();
 
+/**
+ * @return The lap you are currently on.
+ */
+int lapstats_get_lap();
+
 int getLapCount();
 
 tiny_millis_t getLastLapTime();

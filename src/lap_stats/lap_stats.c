@@ -43,6 +43,7 @@ static int g_lastSector;
 static tiny_millis_t g_lastLapTime;
 static tiny_millis_t g_lastSectorTime;
 
+static int g_lap;
 static int g_lapCount;
 static float g_distance;
 
@@ -124,6 +125,14 @@ float getLapDistance() {
 
 float getLapDistanceInMiles() {
    return KMS_TO_MILES_CONSTANT * g_distance;
+}
+
+TESTABLE_STATIC void reset_lap() {
+        g_lap = 0;
+}
+
+int lapstats_get_lap() {
+        return g_lap;
 }
 
 void resetLapCount() {
@@ -210,6 +219,7 @@ static void _lap_started_event(const tiny_millis_t time,
                              const float distance,
                              const GpsSnapshot *gpsSnapshot) {
         // Timing and predictive timing
+        ++g_lap;
         start_lap_timing(time);
         startLap(sp, time);
         reset_elapsed_time();
@@ -345,6 +355,7 @@ void lapStats_init() {
         reset_elapsed_time();
         set_active_track(NULL);
         resetPredictiveTimer();
+        reset_lap();
         g_configured = 0;
         g_lastLapTime = 0;
         g_lastSectorTime = 0;

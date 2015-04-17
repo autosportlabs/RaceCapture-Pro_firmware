@@ -105,6 +105,7 @@ T_SRC = loggerApi_test.cpp \
 		$(GPS_DIR)/gps_test.cpp \
 		$(GPS_DIR)/geoTriggerTest.cpp \
 		$(LAP_STATS_DIR)/elapsedLapTimeTest.cpp \
+		$(LAP_STATS_DIR)/current_lap_test.cpp \
 		$(UTIL_DIR)/numtoa_test.cpp \
 		$(UTIL_DIR)/atonum_test.cpp
 

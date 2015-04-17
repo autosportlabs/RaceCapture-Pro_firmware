@@ -18,22 +18,24 @@
  * Authors: Stieg
  */
 
-#ifndef _LAP_STATS_TESTING_H_
-#define _LAP_STATS_TESTING_H_
+#ifndef _CURRENT_LAP_TEST_H_
+#define _CURRENT_LAP_TEST_H_
 
-#include "lap_stats.h"
-#include "tracks.h"
+#include <cppunit/extensions/HelperMacros.h>
 
-/*
- * Since these are methods that are not meant to be exposed outside the
- * normal runtime, they have been prefixed with "lapstats".
- */
+class Current_Lap_Test : public CppUnit::TestFixture {
+  CPPUNIT_TEST_SUITE( Current_Lap_Test );
+  CPPUNIT_TEST( test_lap_increment );
+  CPPUNIT_TEST( test_no_increment );
+  CPPUNIT_TEST( test_reset);
+  CPPUNIT_TEST_SUITE_END();
 
-void set_active_track(const Track *defaultTrack);
-void lap_started_normal_event(const GpsSnapshot *gpsSnapshot);
-void lap_finished_event(const GpsSnapshot *gpsSnapshot);
-void update_elapsed_time(const GpsSnapshot *snap);
-void reset_elapsed_time();
-void reset_lap();
+public:
+  void setUp();
+  void test_lap_increment();
+  void test_no_increment();
+  void test_reset();
+};
 
-#endif /* _LAP_STATS_TESTING_H_ */
+
+#endif /* _CURRENT_LAP_TEST_H_ */
