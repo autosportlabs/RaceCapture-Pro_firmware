@@ -29,7 +29,7 @@
 #define MAX_OBD2_SAMPLE_RATE	1000
 
 //logging
-#define LOG_BUFFER_SIZE			10240
+#define LOG_BUFFER_SIZE			8192
 
 //system info
 #define DEVICE_NAME    "RCP_MK2"
