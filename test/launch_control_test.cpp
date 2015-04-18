@@ -69,10 +69,10 @@ void LaunchControlTest::testCircuitLaunch() {
 
    GpsSnapshot snap;
    const GeoPoint *pt = pts;
-   for (; isValidPoint(pt); ++pt) {
+   for (tiny_millis_t i = 0; isValidPoint(pt); ++pt, ++i) {
       snap.sample.point = *pt;
       // Use the address of the point as the sample time.
-      snap.deltaFirstFix = (tiny_millis_t) pt;
+      snap.deltaFirstFix = i * 100;
       snap.sample.speed = 40; // Speed well above the threshold.
 
       lc_supplyGpsSnapshot(&snap);
@@ -83,7 +83,7 @@ void LaunchControlTest::testCircuitLaunch() {
 
    CPPUNIT_ASSERT_EQUAL(true, lc_hasLaunched());
    CPPUNIT_ASSERT_EQUAL(false, lc_is_armed());
-   CPPUNIT_ASSERT_EQUAL((tiny_millis_t) (pts + 1), lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL(100, lc_getLaunchTime()); // Should be point 1.
 }
 
 void LaunchControlTest::testStageSimpleLaunch() {
@@ -115,8 +115,8 @@ void LaunchControlTest::testStageSimpleLaunch() {
    GpsSnapshot snap;
    const GeoPoint *pt = pts;
    for (unsigned indx = 0; isValidPoint(pt); ++pt, ++indx) {
-      // Use the address of the point as the sample time.
-      snap.deltaFirstFix = (tiny_millis_t) pt;
+      // Generate a fake time
+      snap.deltaFirstFix = (tiny_millis_t) indx * 100;
 
       snap.sample.point = *pt;
       snap.sample.speed = pt < (pts + 7) ? 0: 10;
@@ -134,7 +134,7 @@ void LaunchControlTest::testStageSimpleLaunch() {
 
    CPPUNIT_ASSERT_EQUAL(true, lc_hasLaunched());
    CPPUNIT_ASSERT_EQUAL(false, lc_is_armed());
-   CPPUNIT_ASSERT_EQUAL((tiny_millis_t) (pts + 6), lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL(600, lc_getLaunchTime());
 }
 
 
@@ -170,10 +170,10 @@ void LaunchControlTest::testStageTrickyLaunch() {
 
    GpsSnapshot snap;
    const GeoPoint *pt = pts;
-   for (; isValidPoint(pt); ++pt) {
+   for (tiny_millis_t i = 0; isValidPoint(pt); ++pt, i += 100) {
       snap.sample.point = *pt;
-      // Use the address of the point as the sample time.
-      snap.deltaFirstFix = (tiny_millis_t) pt;
+      // Fake time
+      snap.deltaFirstFix = i;
 
       // Set speed to 0 at 5th reading.  This triggers launch time set.
       snap.sample.speed = pt == (pts + 4)? 0 : 5;
@@ -184,5 +184,5 @@ void LaunchControlTest::testStageTrickyLaunch() {
    }
 
    CPPUNIT_ASSERT_EQUAL(true, lc_hasLaunched());
-   CPPUNIT_ASSERT_EQUAL((tiny_millis_t) (pts + 4), lc_getLaunchTime());
+   CPPUNIT_ASSERT_EQUAL(400, lc_getLaunchTime());
 }

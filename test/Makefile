@@ -70,8 +70,8 @@ INCLUDES = 	-I. \
 # set up compiler and options
 CXX = g++
 CC = g++
-CXXFLAGS = -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
-CPPFLAGS = -m32 -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
+CXXFLAGS = -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
+CPPFLAGS = -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
 
 #-----Suffix Rules---------------------------
 # set up C++ suffixes and relationship between .cc and .o files

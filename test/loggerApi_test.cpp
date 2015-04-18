@@ -887,7 +887,7 @@ void LoggerApiTest::testSetTrackCfgCircuit(){
 	assertGenericResponse(txBuffer, "setTrackCfg", API_SUCCESS);
 
 	CPPUNIT_ASSERT_EQUAL(0, (int)cfg->track.track_type);
-    CPPUNIT_ASSERT_EQUAL(6674, cfg->track.trackId);
+        CPPUNIT_ASSERT_EQUAL(6674, cfg->track.trackId);
 	CPPUNIT_ASSERT_CLOSE_ENOUGH(0.0001F, cfg->radius);
 	CPPUNIT_ASSERT_EQUAL(0, (int)cfg->auto_detect);
 	CPPUNIT_ASSERT_CLOSE_ENOUGH(1.0F, cfg->track.circuit.startFinish.latitude);

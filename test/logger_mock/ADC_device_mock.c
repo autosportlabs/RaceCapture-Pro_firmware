@@ -9,7 +9,9 @@
 
 static unsigned int g_adc[CONFIG_ADC_CHANNELS] = {0,0,0,0,0,0};
 
-int ADC_device_init(void){}
+int ADC_device_init(void) {
+        return 1;
+}
 
 //Read specified ADC channel
 unsigned int ADC_device_sample(unsigned int channel){

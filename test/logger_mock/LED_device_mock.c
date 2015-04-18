@@ -3,7 +3,7 @@
 static int g_leds[3] = {0,0,0};
 
 int LED_device_init(void){
-
+        return 1;
 }
 
 void LED_device_enable(unsigned int Led){

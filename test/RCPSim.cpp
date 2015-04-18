@@ -52,11 +52,11 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		printf("rx: (%d): %s\r\n",strlen(line), line);
+		printf("rx: (%zu): %s\r\n", strlen(line), line);
 		mock_resetTxBuffer();
 		process_api(getMockSerial(), line, strlen(line));
 		char *txBuffer = mock_getTxBuffer();
-		printf("tx: (%d) %s\r\n", strlen(txBuffer), txBuffer);
+		printf("tx:(%zu) %s\r\n", strlen(txBuffer), txBuffer);
 		write(pt, txBuffer, strlen(txBuffer));
 		pr_info_int(++messageCount);
 		pr_info(" messages\r\n");

@@ -3,6 +3,7 @@
 #include "loggerApi.h"
 #include "mod_string.h"
 #include "mock_serial.h"
+#include "rcp_cpp_unit.hh"
 #include "imu_mock.h"
 #include "imu.h"
 #include <stdlib.h>
@@ -43,6 +44,6 @@ void LoggerDataTest::testMappedValue()
 		float expected = (float)i / 100.0f;
 		if (i <= 100) expected = 1.0f;
 		else if (i >= 500) expected = 5.0f;
-		CPPUNIT_ASSERT(( abs((scaled - expected)) < 0.00001));
+		CPPUNIT_ASSERT_CLOSE_ENOUGH(scaled, expected);
 	}
 }

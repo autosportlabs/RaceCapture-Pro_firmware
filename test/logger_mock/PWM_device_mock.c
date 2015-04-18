@@ -6,7 +6,7 @@ static int g_pwmPeriod[PWM_CHANNELS] = {0,0,0,0};
 static int g_pwmDuty[PWM_CHANNELS] = {0,0,0,0};
 
 int PWM_device_init(void){
-
+        return 1;
 }
 
 void PWM_device_channel_init(unsigned int channel, unsigned short period, unsigned short dutyCycle){
@@ -52,4 +52,3 @@ void PWM_device_channel_stop_all(){
 void PWM_device_channel_enable_analog(size_t channel, uint8_t enabled){
 
 }
-
