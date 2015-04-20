@@ -24,8 +24,7 @@
 #define _RCP_CPP_UNIT_H_
 
 #include <cppunit/extensions/HelperMacros.h>
-#include <stdlib.h>
 
-#define CPPUNIT_ASSERT_CLOSE_ENOUGH(ACTUAL, EXPECTED) CPPUNIT_ASSERT((abs((ACTUAL - EXPECTED)) < 0.00001))
+#define CPPUNIT_ASSERT_CLOSE_ENOUGH(ACTUAL, EXPECTED) CPPUNIT_ASSERT((ACTUAL - EXPECTED) < 0.00001 && (ACTUAL - EXPECTED) > -0.00001)
 
 #endif /* _RCP_CPP_UNIT_H_ */

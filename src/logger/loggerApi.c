@@ -643,7 +643,7 @@ int api_getAnalogConfig(Serial *serial, const jsmntok_t * json){
 			startIndex = endIndex = modp_atoi(json->data);
 		}
 	}
-	if (startIndex >= 0 && startIndex <= CONFIG_ADC_CHANNELS){
+	if (startIndex <= CONFIG_ADC_CHANNELS){
 		sendAnalogConfig(serial, startIndex, endIndex);
 		return API_SUCCESS_NO_RETURN;
 	}
@@ -705,7 +705,7 @@ int api_getImuConfig(Serial *serial, const jsmntok_t *json){
 			startIndex = endIndex = modp_atoi(json->data);
 		}
 	}
-	if (startIndex >= 0 && startIndex <= CONFIG_IMU_CHANNELS){
+	if (startIndex <= CONFIG_IMU_CHANNELS){
 		sendImuConfig(serial, startIndex, endIndex);
 		return API_SUCCESS_NO_RETURN;
 	}
@@ -885,7 +885,7 @@ int api_getPwmConfig(Serial *serial, const jsmntok_t *json){
 			startIndex = endIndex = modp_atoi(json->data);
 		}
 	}
-	if (startIndex >= 0 && startIndex <= CONFIG_PWM_CHANNELS){
+	if (startIndex <= CONFIG_PWM_CHANNELS){
 		sendPwmConfig(serial, startIndex, endIndex);
 		return API_SUCCESS_NO_RETURN;
 	}
@@ -960,7 +960,7 @@ int api_getGpioConfig(Serial *serial, const jsmntok_t *json){
 			startIndex = endIndex = modp_atoi(json->data);
 		}
 	}
-	if (startIndex >= 0 && startIndex <= CONFIG_GPIO_CHANNELS){
+	if (startIndex <= CONFIG_GPIO_CHANNELS){
 		sendGpioConfig(serial, startIndex, endIndex);
 		return API_SUCCESS_NO_RETURN;
 	}
@@ -1026,7 +1026,7 @@ int api_getTimerConfig(Serial *serial, const jsmntok_t *json){
 			startIndex = endIndex = modp_atoi(json->data);
 		}
 	}
-	if (startIndex >= 0 && startIndex <= CONFIG_TIMER_CHANNELS){
+	if (startIndex <= CONFIG_TIMER_CHANNELS){
 		sendTimerConfig(serial, startIndex, endIndex);
 		return API_SUCCESS_NO_RETURN;
 	}

@@ -66,7 +66,7 @@ static int sendCommand(DeviceConfig *config, const char * cmd) {
     return sendBtCommandWait(config, cmd, COMMAND_WAIT);
 }
 
-static char * baudConfigCmdForRate(unsigned int baudRate) {
+static const char * baudConfigCmdForRate(unsigned int baudRate) {
     switch (baudRate) {
         case 9600:
             return "AT+BAUD4";

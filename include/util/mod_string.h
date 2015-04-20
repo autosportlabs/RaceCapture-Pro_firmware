@@ -50,7 +50,7 @@ char *strcat(char * s1, const char * s2);
 
 char *strstr (const char *phaystack, const char *pneedle);
 
-char * strchr(char *s, const int c);
+//char * strchr(const char *s, const int c);
 
 END_C
 

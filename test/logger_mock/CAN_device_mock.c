@@ -1,7 +1,7 @@
 #include "CAN_device.h"
 
 int CAN_device_init(uint8_t channel, uint32_t baud){
-
+        return 1;
 }
 
 int CAN_device_tx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs){

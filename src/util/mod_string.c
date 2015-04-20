@@ -273,17 +273,15 @@ ret0:
   return 0;
 }
 
-char * strchr(char *s, const int c)
+/*
+char * strchr(const char *s, int c)
 {
         do {
                 if (*s == (char)c) {
-                        return s;     /* silence the warning */
+                        return s;     // silence the warning
                 }
         } while (*s++);
 
         return NULL;
 }
-
-
-
-
+*/
