@@ -146,42 +146,42 @@ void LoggerConfigTest::testLoggerInitGpsConfig() {
    cc = &lc->GPSConfigs.latitude;
    CPPUNIT_ASSERT_EQUAL(string("Latitude"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string("Degrees"), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+   CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.longitude;
    CPPUNIT_ASSERT_EQUAL(string("Longitude"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string("Degrees"), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+   CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.speed;
    CPPUNIT_ASSERT_EQUAL(string("Speed"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string("MPH"), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+   CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.distance;
    CPPUNIT_ASSERT_EQUAL(string("Distance"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string("Miles"), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+   CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.altitude;
    CPPUNIT_ASSERT_EQUAL(string("Altitude"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string("M"), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+   CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.satellites;
    CPPUNIT_ASSERT_EQUAL(string("GPSSats"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+   CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.quality;
    CPPUNIT_ASSERT_EQUAL(string("GPSQual"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+   CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.DOP;
    CPPUNIT_ASSERT_EQUAL(string("GPSDOP"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+   CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 }
 
 void LoggerConfigTest::testLoggerInitLapConfig() {
