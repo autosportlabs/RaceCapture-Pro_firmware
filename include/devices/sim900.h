@@ -23,7 +23,7 @@ typedef enum {
 } telemetry_status_t;
 
 telemetry_status_t sim900_get_connection_status();
-int32_t sim900_active_since();
+int32_t sim900_active_time();
 int sim900_init_connection(DeviceConfig *config);
 int sim900_check_connection_status(DeviceConfig *config);
 
