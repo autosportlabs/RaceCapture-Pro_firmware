@@ -32,7 +32,7 @@
  */
 #define LC_SPEED_THRESHOLD 3.0
 
-static tiny_millis_t g_startTime;
+static tiny_millis_t g_startTime = -1;
 static struct GeoCircle g_geoCircle;
 static bool g_hasLaunched;
 

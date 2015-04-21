@@ -254,7 +254,7 @@ int api_getStatus(Serial *serial, const jsmntok_t *json){
 
 	json_objStartString(serial, "logging");
 	json_int(serial, "status", (int)logging_get_status(), 1);
-	json_int(serial, "started", logging_get_logging_start(), 0);
+	json_int(serial, "dur", logging_active_time(), 0);
 	json_objEnd(serial, 1);
 
 	json_objStartString(serial, "track");
@@ -266,7 +266,7 @@ int api_getStatus(Serial *serial, const jsmntok_t *json){
 
 	json_objStartString(serial, "telemetry");
 	json_int(serial, "status", (int)sim900_get_connection_status(), 1);
-	json_int(serial, "started", sim900_active_since(), 0);
+	json_int(serial, "dur", sim900_active_time(), 0);
 	json_objEnd(serial, 0);
 
 	json_objEnd(serial, 0);

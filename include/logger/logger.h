@@ -30,7 +30,7 @@ bool logging_is_active();
 logging_status_t logging_get_status( void );
 void logging_set_status( logging_status_t status );
 
-int32_t logging_get_logging_start( void );
+int32_t logging_active_time( void );
 void logging_set_logging_start( int32_t start );
 
 #endif /* LOGGER_H_ */

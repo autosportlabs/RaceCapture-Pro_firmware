@@ -16,8 +16,13 @@ telemetry_status_t sim900_get_connection_status(){
 	return g_connection_status;
 }
 
-int32_t sim900_active_since(){
-	return g_active_since;
+int32_t sim900_active_time(){
+    if (g_active_since) {
+        int uptime = getUptimeAsInt();
+        int duration = uptime - g_active_since;
+        return duration;
+    }
+    return 0;
 }
 
 static int writeAuthJSON(Serial *serial, const char *deviceId){
