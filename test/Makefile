@@ -68,8 +68,8 @@ INCLUDES = 	-I. \
 		-I$(UTIL_DIR)
 
 # set up compiler and options
-CXX = g++
-CC = g++
+CXX = clang++
+CC = clang++
 CXXFLAGS = -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
 CPPFLAGS = -g $(INCLUDES) -DRCP_TESTING -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
 
