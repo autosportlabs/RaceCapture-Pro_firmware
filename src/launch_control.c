@@ -34,7 +34,7 @@
 
 static tiny_millis_t g_startTime = -1;
 static struct GeoCircle g_geoCircle;
-static bool g_hasLaunched = false;
+static bool g_hasLaunched;
 
 static bool isValidStartTime() {
         return g_startTime != -1;
