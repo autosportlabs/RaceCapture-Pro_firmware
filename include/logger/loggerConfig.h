@@ -345,21 +345,18 @@ typedef struct _GPSConfig{
    ChannelConfig DOP;
 } GPSConfig;
 
-//HACK: FIX ME for MARK3
-#if (MAX_GPS_SAMPLE_RATE == 10)
-#define MAX_GPS_SAMPLE_HZ SAMPLE_10Hz
-#else
-#define MAX_GPS_SAMPLE_HZ SAMPLE_50Hz
-#endif
 
-#define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "Degrees", -180, 180, MAX_GPS_SAMPLE_HZ, 6, 0}
-#define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "Degrees", -180, 180, MAX_GPS_SAMPLE_HZ, 6, 0}
-#define DEFAULT_GPS_SPEED_CONFIG {"Speed", "MPH", 0, 150, MAX_GPS_SAMPLE_HZ, 2, 0}
-#define DEFAULT_GPS_DISTANCE_CONFIG {"Distance", "Miles", 0, 0, MAX_GPS_SAMPLE_HZ, 3, 0}
-#define DEFAULT_GPS_ALTITUDE_CONFIG {"Altitude", "M", 0, 4000, MAX_GPS_SAMPLE_HZ, 1, 0}
-#define DEFAULT_GPS_SATELLITE_CONFIG {"GPSSats", "", 0, 20, MAX_GPS_SAMPLE_HZ, 0, 0}
-#define DEFAULT_GPS_QUALITY_CONFIG {"GPSQual", "", 0, 5, MAX_GPS_SAMPLE_HZ, 0, 0}
-#define DEFAULT_GPS_DOP_CONFIG {"GPSDOP", "", 0, 20, MAX_GPS_SAMPLE_HZ, 1, 0}
+
+#define DEFAULT_GPS_SAMPLE_RATE SAMPLE_10Hz
+
+#define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "Degrees", -180, 180, DEFAULT_GPS_SAMPLE_RATE, 6, 0}
+#define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "Degrees", -180, 180, DEFAULT_GPS_SAMPLE_RATE, 6, 0}
+#define DEFAULT_GPS_SPEED_CONFIG {"Speed", "MPH", 0, 150, DEFAULT_GPS_SAMPLE_RATE, 2, 0}
+#define DEFAULT_GPS_DISTANCE_CONFIG {"Distance", "Miles", 0, 0, DEFAULT_GPS_SAMPLE_RATE, 3, 0}
+#define DEFAULT_GPS_ALTITUDE_CONFIG {"Altitude", "M", 0, 4000, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
+#define DEFAULT_GPS_SATELLITE_CONFIG {"GPSSats", "", 0, 20, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
+#define DEFAULT_GPS_QUALITY_CONFIG {"GPSQual", "", 0, 5, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
+#define DEFAULT_GPS_DOP_CONFIG {"GPSDOP", "", 0, 20, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
 
 #define DEFAULT_GPS_CONFIG {                    \
       DEFAULT_GPS_LATITUDE_CONFIG,              \
@@ -378,17 +375,19 @@ typedef struct _LapConfig{
 	ChannelConfig sectorCfg;
 	ChannelConfig sectorTimeCfg;
 	ChannelConfig predTimeCfg;
-        ChannelConfig elapsed_time_cfg;
-        ChannelConfig current_lap_cfg;
+    ChannelConfig elapsed_time_cfg;
+    ChannelConfig current_lap_cfg;
 } LapConfig;
 
-#define DEFAULT_LAP_COUNT_CONFIG {"LapCount", "", 0, 0, SAMPLE_1Hz, 0, 0}
-#define DEFAULT_LAP_TIME_CONFIG {"LapTime", "Min", 0, 0, SAMPLE_1Hz, 4, 0}
-#define DEFAULT_SECTOR_CONFIG {"Sector", "", 0, 0, SAMPLE_1Hz, 4, 0}
-#define DEFAULT_SECTOR_TIME_CONFIG {"SectorTime", "Min", 0, 0, SAMPLE_1Hz, 4, 0}
-#define DEFAULT_PRED_TIME_CONFIG {"PredTime", "Min", 0, 0, SAMPLE_1Hz, 4, 0}
-#define DEFAULT_ELAPSED_LAP_TIME_CONFIG {"ElapsedTime", "Min", 0, 0, SAMPLE_25Hz, 4, 0}
-#define DEFAULT_CURRENT_LAP_CONFIG {"CurrentLap", "", 0, 0, SAMPLE_1Hz, 0, 0}
+#define DEFAULT_LAPSTATS_SAMPLE_RATE SAMPLE_10Hz
+
+#define DEFAULT_LAP_COUNT_CONFIG {"LapCount", "", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 0, 0}
+#define DEFAULT_LAP_TIME_CONFIG {"LapTime", "Min", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 4, 0}
+#define DEFAULT_SECTOR_CONFIG {"Sector", "", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 4, 0}
+#define DEFAULT_SECTOR_TIME_CONFIG {"SectorTime", "Min", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 4, 0}
+#define DEFAULT_PRED_TIME_CONFIG {"PredTime", "Min", 0, 0, SAMPLE_5Hz, 4, 0}
+#define DEFAULT_ELAPSED_LAP_TIME_CONFIG {"ElapsedTime", "Min", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 4, 0}
+#define DEFAULT_CURRENT_LAP_CONFIG {"CurrentLap", "", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 0, 0}
 
 #define DEFAULT_LAP_CONFIG {                                    \
                 DEFAULT_LAP_COUNT_CONFIG,                       \

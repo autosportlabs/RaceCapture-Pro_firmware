@@ -146,42 +146,42 @@ void LoggerConfigTest::testLoggerInitGpsConfig() {
    cc = &lc->GPSConfigs.latitude;
    CPPUNIT_ASSERT_EQUAL(string("Latitude"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string("Degrees"), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+   CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.longitude;
    CPPUNIT_ASSERT_EQUAL(string("Longitude"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string("Degrees"), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+   CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.speed;
    CPPUNIT_ASSERT_EQUAL(string("Speed"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string("MPH"), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+   CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.distance;
    CPPUNIT_ASSERT_EQUAL(string("Distance"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string("Miles"), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+   CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.altitude;
    CPPUNIT_ASSERT_EQUAL(string("Altitude"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string("M"), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+   CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.satellites;
    CPPUNIT_ASSERT_EQUAL(string("GPSSats"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+   CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.quality;
    CPPUNIT_ASSERT_EQUAL(string("GPSQual"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+   CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.DOP;
    CPPUNIT_ASSERT_EQUAL(string("GPSDOP"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == MAX_GPS_SAMPLE_HZ);
+   CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 }
 
 void LoggerConfigTest::testLoggerInitLapConfig() {
@@ -191,28 +191,40 @@ void LoggerConfigTest::testLoggerInitLapConfig() {
    cc = &lc->LapConfigs.lapCountCfg;
    CPPUNIT_ASSERT_EQUAL(string("LapCount"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_1Hz);
+   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
+
+   cc = &lc->LapConfigs.current_lap_cfg;
+   CPPUNIT_ASSERT_EQUAL(string("CurrentLap"), string(cc->label));
+   CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
+   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
 
    cc = &lc->LapConfigs.lapTimeCfg;
    CPPUNIT_ASSERT_EQUAL(string("LapTime"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string("Min"), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_1Hz);
+   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
 
    cc = &lc->LapConfigs.sectorCfg;
    CPPUNIT_ASSERT_EQUAL(string("Sector"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_1Hz);
+   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
 
    cc = &lc->LapConfigs.sectorTimeCfg;
    CPPUNIT_ASSERT_EQUAL(string("SectorTime"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string("Min"), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_1Hz);
+   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
 
    cc = &lc->LapConfigs.predTimeCfg;
    CPPUNIT_ASSERT_EQUAL(string("PredTime"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string("Min"), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_1Hz);
+   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_5Hz);
+
+   cc = &lc->LapConfigs.elapsed_time_cfg;
+   CPPUNIT_ASSERT_EQUAL(string("ElapsedTime"), string(cc->label));
+   CPPUNIT_ASSERT_EQUAL(string("Min"), string(cc->units));
+   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
+
 }
+
 
 void LoggerConfigTest::testLoggerInitConnectivityConfig() {
    LoggerConfig *lc = getWorkingLoggerConfig();
