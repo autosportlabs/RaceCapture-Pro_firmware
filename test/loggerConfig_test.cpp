@@ -191,28 +191,40 @@ void LoggerConfigTest::testLoggerInitLapConfig() {
    cc = &lc->LapConfigs.lapCountCfg;
    CPPUNIT_ASSERT_EQUAL(string("LapCount"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_1Hz);
+   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
+
+   cc = &lc->LapConfigs.current_lap_cfg;
+   CPPUNIT_ASSERT_EQUAL(string("CurrentLap"), string(cc->label));
+   CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
+   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
 
    cc = &lc->LapConfigs.lapTimeCfg;
    CPPUNIT_ASSERT_EQUAL(string("LapTime"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string("Min"), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_1Hz);
+   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
 
    cc = &lc->LapConfigs.sectorCfg;
    CPPUNIT_ASSERT_EQUAL(string("Sector"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_1Hz);
+   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
 
    cc = &lc->LapConfigs.sectorTimeCfg;
    CPPUNIT_ASSERT_EQUAL(string("SectorTime"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string("Min"), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_1Hz);
+   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
 
    cc = &lc->LapConfigs.predTimeCfg;
    CPPUNIT_ASSERT_EQUAL(string("PredTime"), string(cc->label));
    CPPUNIT_ASSERT_EQUAL(string("Min"), string(cc->units));
-   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_1Hz);
+   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_5Hz);
+
+   cc = &lc->LapConfigs.elapsed_time_cfg;
+   CPPUNIT_ASSERT_EQUAL(string("ElapsedTime"), string(cc->label));
+   CPPUNIT_ASSERT_EQUAL(string("Min"), string(cc->units));
+   CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
+
 }
+
 
 void LoggerConfigTest::testLoggerInitConnectivityConfig() {
    LoggerConfig *lc = getWorkingLoggerConfig();
