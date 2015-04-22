@@ -713,7 +713,7 @@ gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, Serial *serial)
                          + (ecef_z_velocity * ecef_z_velocity));
    //convert m/sec to km/hour
    gpsSample->speed = velocity * 3.6;
-   gpsSample->altitude = ((float)swap_uint32(gpsMsg.navigationDataMessage.mean_sea_level_altitude)) * 0.01;
+   gpsSample->altitude = (((float)swap_uint32(gpsMsg.navigationDataMessage.mean_sea_level_altitude)) * 0.01) * 3.28084;
 
    //convert GNSS_week to milliseconds and add time of week converted to milliseconds
    uint16_t GNSS_week = swap_uint16(gpsMsg.navigationDataMessage.GNSS_week);
