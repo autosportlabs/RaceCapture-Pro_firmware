@@ -6,6 +6,7 @@
   events when driver is stuck at start/finish for whatever reason.
 * Add the elapsed channel.  This channel provieds the time elapsed since the lap
   first began in minutes.  Useful for seeing current lap time of the driver.
+* Configure GPS moudule to select native upate rate to match selected sample rate
 
 ===2.7.9===
 * Improved GPS processing performance, reduced chances of dropped packets from module.
