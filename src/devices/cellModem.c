@@ -163,13 +163,23 @@ static int isDataReady(Serial *serial, size_t maxRetries, size_t maxNoResponseRe
 }
 
 static int getIpAddress(Serial *serial){
-	putsCell(serial, "AT+CIFSR\r");
+	putsCell(serial, "AT+UPSND=0,0\r");
 	readModemWait(serial, MEDIUM_TIMEOUT);
 	readModemWait(serial, READ_TIMEOUT);
 	if (strlen(g_cellBuffer) == 0) return -1;
 	if (strncmp(g_cellBuffer, "ERROR", 5) == 0) return -2;
 	delayMs(PAUSE_DELAY);
 	return 0;
+}
+
+static int getDNSServer(Serial *serial){
+    putsCell(serial, "AT+UPSND=0,1\r");
+    readModemWait(serial, MEDIUM_TIMEOUT);
+    readModemWait(serial, READ_TIMEOUT);
+    if (strlen(g_cellBuffer) == 0) return -1;
+    if (strncmp(g_cellBuffer, "ERROR", 5) == 0) return -2;
+    delayMs(PAUSE_DELAY);
+    return 0;
 }
 
 void putsCell(Serial *serial, const char *data){
@@ -203,26 +213,39 @@ void putQuotedStringCell(Serial *serial, char *s){
 }
 
 int configureNet(Serial *serial, const char *apnHost, const char *apnUser, const char *apnPass){
-	if (!sendCommandOK(serial, "AT+CIPMUX=0\r")) return -1;  //TODO enable for SIM900
-	if (!sendCommandOK(serial, "AT+CIPMODE=1\r")) return -1;
 
-	//if (!sendCommand("AT+CIPCCFG=3,2,256,1\r")) return -1;
+    putsCell(serial, "AT+UPSD=0,1,\"");
+    putsCell(serial, apnHost);
+    putsCell(serial, "\"\r");
+    if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)){
+        return -2;
+    }
 
-	flushModem(serial);
-	putsCell(serial, "AT+CSTT=\"");
-	putsCell(serial, apnHost);
-	putsCell(serial, "\",\"");
-	putsCell(serial, apnUser);
-	putsCell(serial, "\",\"");
-	putsCell(serial, apnPass);
-	putsCell(serial, "\"\r");
-	if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)){
-		return -2;
-	}
+    putsCell(serial, "AT+UPSD=0,2,\"");
+    putsCell(serial, apnUser);
+    putsCell(serial, "\"\r");
+    if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)){
+        return -2;
+    }
 
-//	if (!sendCommand("AT+CIPHEAD=1\r")) return -2;
+    putsCell(serial, "AT+UPSD=0,3,\"");
+    putsCell(serial, apnPass);
+    putsCell(serial, "\"\r");
+    if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)){
+        return -2;
+    }
 
-	if (sendCommandWait(serial, "AT+CIICR\r", "OK", CONNECT_TIMEOUT) != 1){
+    putsCell(serial, "AT+UPSD=0,4,\"8.8.8.8\"\r");
+    if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)){
+        return -2;
+    }
+
+    putsCell(serial, "AT+UPSD=0,5,\"8.8.4.4\"\r");
+    if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)){
+        return -2;
+    }
+
+	if (sendCommandWait(serial, "AT+UPSDA=0,3\r", "OK", CONNECT_TIMEOUT) != 1){
 		return -3;
 	}
 
@@ -230,11 +253,9 @@ int configureNet(Serial *serial, const char *apnHost, const char *apnUser, const
 		return -4;
 	}
 
-	// Configure DNS to use Google DNS
-	const char dnsCmd[] = "AT+CDNSCFG=\"8.8.8.8\",\"8.8.4.4\"\r";
-	if (sendCommandWait(serial, dnsCmd, "OK", READ_TIMEOUT) != 1){
-		return -5;
-	}
+    if (getDNSServer(serial) !=0 ){
+        return -5;
+    }
 
 	return 0;
 }
@@ -242,14 +263,23 @@ int configureNet(Serial *serial, const char *apnHost, const char *apnUser, const
 
 int connectNet(Serial *serial, const char *host, const char *port, int udpMode){
 	flushModem(serial);
-	strcpy(g_cellBuffer, "AT+CIPSTART=\"");
-	strcat(g_cellBuffer, udpMode ? "UDP" : "TCP");
-	strcat(g_cellBuffer, "\",\"");
+
+	//create TCP socket
+    if (sendCommandWait(serial, "AT+USOCR=6\r", "+USOCR: 0", CONNECT_TIMEOUT) != 1){
+        return -1;
+    }
+
+	strcpy(g_cellBuffer, "AT+USOCO=0,\"");
 	strcat(g_cellBuffer, host);
-	strcat(g_cellBuffer, "\",\"");
+	strcat(g_cellBuffer, "\",");
 	strcat(g_cellBuffer, port);
-	strcat(g_cellBuffer, "\"\r");
-	putsCell(serial, g_cellBuffer);
+	strcat(g_cellBuffer, "\r");
+    if (sendCommandWait(serial, "AT+USOCO=0,\"race-capture.com\",8080\r", "OK", CONNECT_TIMEOUT) != 1){
+//    if (sendCommandWait(serial, g_cellBuffer, "OK", CONNECT_TIMEOUT) != 1){
+        return -2;
+    }
+
+    putsCell(serial, "AT+USODL=0\r");
 	int attempt = 0;
 	while (attempt++ < 5){
 		readModemWait(serial, SHORT_TIMEOUT);
@@ -258,14 +288,14 @@ int connectNet(Serial *serial, const char *host, const char *port, int udpMode){
 		if (strncmp(g_cellBuffer,"FAIL",4) == 0) return -1;
 		if (strncmp(g_cellBuffer,"CLOSED",6) == 0) return -1;
 	}
-	return -1;
+	return -3;
 }
 
 int closeNet(Serial *serial){
 	delayMs(1100);
 	putsCell(serial, "+++");
 	delayMs(1100);
-	return sendCommandWait(serial, "AT+CIPCLOSE\r", "OK", SHORT_TIMEOUT);
+	return sendCommandWait(serial, "AT+USOCL=0\r", "OK", SHORT_TIMEOUT);
 }
 
 const char * readsCell(Serial *serial, size_t timeout){
@@ -276,6 +306,8 @@ const char * readsCell(Serial *serial, size_t timeout){
 int isNetConnectionErrorOrClosed(){
 	if (strncmp(g_cellBuffer,"CLOSED",6) == 0) return 1;
 	if (strncmp(g_cellBuffer,"ERROR", 5) == 0) return 1;
+	if (strncmp(g_cellBuffer,"DISCONNECT", 10) == 0) return 1;
+	if (strncmp(g_cellBuffer,"+UUSOCL: 0", 10) == 0) return 1;
 	return 0;
 }
 
