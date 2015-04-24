@@ -20,8 +20,8 @@ static void sim900_gpio_init(void)
 
 	gpio_conf.GPIO_Speed = GPIO_Speed_50MHz;
 	gpio_conf.GPIO_Mode = GPIO_Mode_OUT;
-	gpio_conf.GPIO_OType = GPIO_OType_PP;
-	gpio_conf.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	gpio_conf.GPIO_OType = GPIO_OType_OD;
+	gpio_conf.GPIO_PuPd = GPIO_PuPd_UP;
 	gpio_conf.GPIO_Pin = EXT_POWER_CONTROL_PIN;
 	GPIO_Init(EXT_POWER_CONTROL_PORT, &gpio_conf);
 	gpio_is_init = 1;
