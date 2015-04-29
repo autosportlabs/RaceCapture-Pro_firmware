@@ -53,6 +53,7 @@
 #include "sim900.h"
 #include "launch_control.h"
 #include "lap_stats.h"
+#include <stdbool.h>
 
 /* Max number of PIDs that can be specified in the setOBD2Cfg message */
 #define MAX_OBD2_MESSAGE_PIDS 10
@@ -1470,7 +1471,7 @@ int api_getScript(Serial *serial, const jsmntok_t *json){
 int api_setScript(Serial *serial, const jsmntok_t *json){
 
 	int returnStatus = API_ERROR_UNSPECIFIED;
-
+	bool should_reload_script = false;
 	const jsmntok_t *dataTok = findNode(json, "data");
 	const jsmntok_t *pageTok = findNode(json, "page");
 	const jsmntok_t *modeTok = findNode(json, "mode");
@@ -1491,6 +1492,7 @@ int api_setScript(Serial *serial, const jsmntok_t *json){
 			unescapeScript(script);
 			int flashResult = flashScriptPage(page, script, mode);
 			returnStatus = flashResult == 1 ? API_SUCCESS : API_ERROR_SEVERE;
+			should_reload_script = ( returnStatus == API_SUCCESS && mode == SCRIPT_ADD_MODE_COMPLETE );
 		}
 		else{
 			returnStatus = API_ERROR_PARAMETER;
@@ -1498,6 +1500,9 @@ int api_setScript(Serial *serial, const jsmntok_t *json){
 	}
 	else{
 		returnStatus = API_ERROR_PARAMETER;
+	}
+	if (should_reload_script == true) {
+		setShouldReloadScript(1);
 	}
 	return returnStatus;
 }

@@ -542,9 +542,6 @@ int Lua_SetLED(lua_State *L){
 
 int Lua_FlashLoggerConfig(lua_State *L){
 	memory_flash_result_t result = flashLoggerConfig();
-	if (result == MEMORY_FLASH_SUCCESS){
-		setShouldReloadScript(1);
-	}
 	lua_pushinteger(L,result);
 	return 1;
 }
