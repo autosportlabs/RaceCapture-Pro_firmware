@@ -1470,8 +1470,8 @@ int api_getScript(Serial *serial, const jsmntok_t *json){
 
 int api_setScript(Serial *serial, const jsmntok_t *json){
 
-	int returnStatus = API_ERROR_UNSPECIFIED;
-	bool should_reload_script = false;
+	int rc = API_ERROR_UNSPECIFIED;
+	bool reload_script = false;
 	const jsmntok_t *dataTok = findNode(json, "data");
 	const jsmntok_t *pageTok = findNode(json, "page");
 	const jsmntok_t *modeTok = findNode(json, "mode");
@@ -1491,20 +1491,18 @@ int api_setScript(Serial *serial, const jsmntok_t *json){
 			char *script = dataTok->data;
 			unescapeScript(script);
 			int flashResult = flashScriptPage(page, script, mode);
-			returnStatus = flashResult == 1 ? API_SUCCESS : API_ERROR_SEVERE;
-			should_reload_script = ( returnStatus == API_SUCCESS && mode == SCRIPT_ADD_MODE_COMPLETE );
+			rc = flashResult == 1 ? API_SUCCESS : API_ERROR_SEVERE;
+			reload_script = rc == API_SUCCESS && mode == SCRIPT_ADD_MODE_COMPLETE;
 		}
 		else{
-			returnStatus = API_ERROR_PARAMETER;
+			rc = API_ERROR_PARAMETER;
 		}
 	}
 	else{
-		returnStatus = API_ERROR_PARAMETER;
+		rc = API_ERROR_PARAMETER;
 	}
-	if (should_reload_script == true) {
-		setShouldReloadScript(1);
-	}
-	return returnStatus;
+	setShouldReloadScript(reload_script);
+	return rc;
 }
 
 int api_runScript(Serial *serial, const jsmntok_t *json){
