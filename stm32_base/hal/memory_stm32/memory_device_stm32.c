@@ -2,8 +2,6 @@
 #include "stm32f4xx_flash.h"
 
 #define MEMORY_PAGE_SIZE	2048
-#define FLASH_SUCCESS		0
-#define FLASH_WRITE_ERROR	-1
 
 /* Base @ of Sector 0, 16 Kbytes */
 #define ADDR_FLASH_SECTOR_0 ((uint32_t)0x08000000)
@@ -34,11 +32,11 @@ static uint32_t selectFlashSector(const void *address)
 	}
 }
 
-int memory_device_flash_region(const void *address, const void *data,
+enum memory_flash_result_t memory_device_flash_region(const void *address, const void *data,
 			       unsigned int length)
 {
 
-	int rc = FLASH_SUCCESS;
+	enum memory_flash_result_t rc = MEMORY_FLASH_SUCCESS;
 	/* Erase the entire page before you can write.  This filters
 	 * the incoming addresses to available flash pages for the STM32F4 */
 	uint32_t flashSector = selectFlashSector(address);
@@ -54,13 +52,13 @@ int memory_device_flash_region(const void *address, const void *data,
 
 		for (unsigned int i = 0; i < length; i++) {
 			if (FLASH_ProgramByte(addrTarget + i, *(dataTarget + i)) != FLASH_COMPLETE) {
-				rc = FLASH_WRITE_ERROR;
+				rc = MEMORY_FLASH_WRITE_ERROR;
 				break;
 			}
 		}
 		FLASH_Lock();
 	} else {
-		rc = FLASH_WRITE_ERROR;
+		rc = MEMORY_FLASH_WRITE_ERROR;
 	}
 	return rc;
 }

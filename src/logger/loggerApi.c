@@ -53,6 +53,7 @@
 #include "sim900.h"
 #include "launch_control.h"
 #include "lap_stats.h"
+#include <stdbool.h>
 
 /* Max number of PIDs that can be specified in the setOBD2Cfg message */
 #define MAX_OBD2_MESSAGE_PIDS 10
@@ -1469,8 +1470,8 @@ int api_getScript(Serial *serial, const jsmntok_t *json){
 
 int api_setScript(Serial *serial, const jsmntok_t *json){
 
-	int returnStatus = API_ERROR_UNSPECIFIED;
-
+	int rc = API_ERROR_UNSPECIFIED;
+	bool reload_script = false;
 	const jsmntok_t *dataTok = findNode(json, "data");
 	const jsmntok_t *pageTok = findNode(json, "page");
 	const jsmntok_t *modeTok = findNode(json, "mode");
@@ -1490,16 +1491,18 @@ int api_setScript(Serial *serial, const jsmntok_t *json){
 			char *script = dataTok->data;
 			unescapeScript(script);
 			int flashResult = flashScriptPage(page, script, mode);
-			returnStatus = flashResult == 1 ? API_SUCCESS : API_ERROR_SEVERE;
+			rc = flashResult == 1 ? API_SUCCESS : API_ERROR_SEVERE;
+			reload_script = rc == API_SUCCESS && mode == SCRIPT_ADD_MODE_COMPLETE;
 		}
 		else{
-			returnStatus = API_ERROR_PARAMETER;
+			rc = API_ERROR_PARAMETER;
 		}
 	}
 	else{
-		returnStatus = API_ERROR_PARAMETER;
+		rc = API_ERROR_PARAMETER;
 	}
-	return returnStatus;
+	setShouldReloadScript(reload_script);
+	return rc;
 }
 
 int api_runScript(Serial *serial, const jsmntok_t *json){

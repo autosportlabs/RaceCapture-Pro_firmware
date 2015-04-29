@@ -541,27 +541,27 @@ int Lua_SetLED(lua_State *L){
 
 
 int Lua_FlashLoggerConfig(lua_State *L){
-	int result = flashLoggerConfig();
+	enum memory_flash_result_t result = flashLoggerConfig();
 	lua_pushinteger(L,result);
 	return 1;
 }
 
 int Lua_AddVirtualChannel(lua_State *L){
-        size_t args = lua_gettop(L);
-        if (args < 2) return 0;
+	size_t args = lua_gettop(L);
+	if (args < 2) return 0;
 
-        ChannelConfig cc;
-        strlcpy(cc.label, lua_tostring(L, 1), DEFAULT_LABEL_LENGTH);
-        cc.sampleRate = encodeSampleRate((unsigned short) lua_tointeger(L, 2));
-        cc.precision = args >= 3 ? lua_tointeger(L, 3) :
-                DEFAULT_CHANNEL_LOGGING_PRECISION;
-        cc.min = args >= 4 ? lua_tointeger(L, 4) : DEFAULT_CHANNEL_MIN;
-        cc.max = args >= 5 ? lua_tointeger(L, 5) : DEFAULT_CHANNEL_MAX;
-        strlcpy(cc.units, args >=6 ? lua_tostring(L, 6) : DEFAULT_CHANNEL_UNITS,
-                DEFAULT_UNITS_LENGTH);
-        lua_pushinteger(L, create_virtual_channel(cc));
+	ChannelConfig cc;
+	strlcpy(cc.label, lua_tostring(L, 1), DEFAULT_LABEL_LENGTH);
+	cc.sampleRate = encodeSampleRate((unsigned short) lua_tointeger(L, 2));
+	cc.precision = args >= 3 ? lua_tointeger(L, 3) :
+			DEFAULT_CHANNEL_LOGGING_PRECISION;
+	cc.min = args >= 4 ? lua_tointeger(L, 4) : DEFAULT_CHANNEL_MIN;
+	cc.max = args >= 5 ? lua_tointeger(L, 5) : DEFAULT_CHANNEL_MAX;
+	strlcpy(cc.units, args >=6 ? lua_tostring(L, 6) : DEFAULT_CHANNEL_UNITS,
+			DEFAULT_UNITS_LENGTH);
+	lua_pushinteger(L, create_virtual_channel(cc));
 
-        return 1;
+	return 1;
 }
 
 int Lua_SetVirtualChannelValue(lua_State *L){
