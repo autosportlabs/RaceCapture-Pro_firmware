@@ -51,14 +51,14 @@ int RAMFUNC flash_write(void * vAddress, void * vData){
   }
 }
 
-int memory_device_flash_region(const void *address, const void *data, unsigned int length){
+memory_flash_result_t memory_device_flash_region(const void *address, const void *data, unsigned int length){
 	if (length < MEMORY_PAGE_SIZE) length = length + (MEMORY_PAGE_SIZE - length);
 
 	unsigned int pages = length / AT91C_IFLASH_PAGE_SIZE;
 	for (unsigned int i = 0; i < pages; i++){
 		unsigned int offset = (i * AT91C_IFLASH_PAGE_SIZE);
 		if (flash_write((void *)((unsigned int)address + offset),(void *)((unsigned int)data + offset)) != 0 ){
-			return -1;
+			return MEMORY_FLASH_WRITE_ERROR;
 		}
 	}
 	return 0;

@@ -32,11 +32,11 @@ static uint32_t selectFlashSector(const void *address)
 	}
 }
 
-int memory_device_flash_region(const void *address, const void *data,
+memory_flash_result_t memory_device_flash_region(const void *address, const void *data,
 			       unsigned int length)
 {
 
-	int rc = FLASH_SUCCESS;
+	memory_flash_result_t rc = MEMORY_FLASH_SUCCESS;
 	/* Erase the entire page before you can write.  This filters
 	 * the incoming addresses to available flash pages for the STM32F4 */
 	uint32_t flashSector = selectFlashSector(address);
@@ -52,13 +52,13 @@ int memory_device_flash_region(const void *address, const void *data,
 
 		for (unsigned int i = 0; i < length; i++) {
 			if (FLASH_ProgramByte(addrTarget + i, *(dataTarget + i)) != FLASH_COMPLETE) {
-				rc = FLASH_WRITE_ERROR;
+				rc = MEMORY_FLASH_WRITE_ERROR;
 				break;
 			}
 		}
 		FLASH_Lock();
 	} else {
-		rc = FLASH_WRITE_ERROR;
+		rc = MEMORY_FLASH_WRITE_ERROR;
 	}
 	return rc;
 }
