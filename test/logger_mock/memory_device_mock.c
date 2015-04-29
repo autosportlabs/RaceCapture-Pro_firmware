@@ -5,7 +5,7 @@
 
 static int g_isFlashed = 0;
 
-memory_flash_result_t memory_device_flash_region(const void *vAddress, const void *vData, unsigned int length){
+enum memory_flash_result_t memory_device_flash_region(const void *vAddress, const void *vData, unsigned int length){
 	g_isFlashed = 1;
 	void * addr = (void *)vAddress;
 	memcpy(addr, vData, length);
