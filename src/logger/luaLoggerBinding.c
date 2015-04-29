@@ -542,6 +542,9 @@ int Lua_SetLED(lua_State *L){
 
 int Lua_FlashLoggerConfig(lua_State *L){
 	int result = flashLoggerConfig();
+	if (result == FLASH_SUCCESS){
+		setShouldReloadScript(1);
+	}
 	lua_pushinteger(L,result);
 	return 1;
 }
@@ -550,12 +553,12 @@ int Lua_AddVirtualChannel(lua_State *L){
 	size_t args = lua_gettop(L);
 	if (args >= 2){
 		ChannelConfig chCfg;
-		strncpy(chCfg.label, lua_tostring(L, 1), DEFAULT_LABEL_LENGTH);
+		strncpy(chCfg.label, lua_tostring(L, 1), DEFAULT_LABEL_LENGTH - 1);
 		chCfg.sampleRate = encodeSampleRate((unsigned short) lua_tointeger(L, 2));
 		chCfg.precision = args >= 3 ? lua_tointeger(L, 3) : DEFAULT_CHANNEL_LOGGING_PRECISION;
 		chCfg.min = args >= 4 ? lua_tointeger(L, 4) : DEFAULT_CHANNEL_MIN;
 		chCfg.max = args >= 5 ? lua_tointeger(L, 5) : DEFAULT_CHANNEL_MAX;
-		strncpy(chCfg.units, args >=6 ? lua_tostring(L, 6) : DEFAULT_CHANNEL_UNITS, DEFAULT_UNITS_LENGTH);
+		strncpy(chCfg.units, args >=6 ? lua_tostring(L, 6) : DEFAULT_CHANNEL_UNITS, DEFAULT_UNITS_LENGTH - 1);
 		lua_pushinteger(L, create_virtual_channel(chCfg));
 		return 1;
 	}

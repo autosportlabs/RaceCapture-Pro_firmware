@@ -2,8 +2,6 @@
 #include "stm32f4xx_flash.h"
 
 #define MEMORY_PAGE_SIZE	2048
-#define FLASH_SUCCESS		0
-#define FLASH_WRITE_ERROR	-1
 
 /* Base @ of Sector 0, 16 Kbytes */
 #define ADDR_FLASH_SECTOR_0 ((uint32_t)0x08000000)
