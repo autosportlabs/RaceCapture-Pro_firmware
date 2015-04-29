@@ -541,7 +541,7 @@ int Lua_SetLED(lua_State *L){
 
 
 int Lua_FlashLoggerConfig(lua_State *L){
-	memory_flash_result_t result = flashLoggerConfig();
+	enum memory_flash_result_t result = flashLoggerConfig();
 	lua_pushinteger(L,result);
 	return 1;
 }

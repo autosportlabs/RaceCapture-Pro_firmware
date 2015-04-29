@@ -8,7 +8,7 @@
 #define MEMORY_DEVICE_H_
 #include "memory.h"
 
-memory_flash_result_t memory_device_flash_region(const void *vAddress, const void *vData, unsigned int length);
+enum memory_flash_result_t memory_device_flash_region(const void *vAddress, const void *vData, unsigned int length);
 
 
 #endif /* MEMORY_DEVICE_H_ */
