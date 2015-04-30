@@ -272,7 +272,7 @@ void connectivityTask(void *params) {
 			}
 
 			//disconnect if we haven't heard from the other side for a while
-			size_t timeout = getUptimeAsInt() - last_message_time;
+			const size_t timeout = getUptimeAsInt() - last_message_time;
 			if ( timeout > DISCONNECT_TIMEOUT ){
 			    pr_info_str_msg(connParams->connectionName, ": timeout");
 			    break;
