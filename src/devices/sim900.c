@@ -53,10 +53,10 @@ int sim900_init_connection(DeviceConfig *config){
 	pr_debug("init cell connection\r\n");
 	int initResult = DEVICE_INIT_FAIL;
 	g_active_since = 0;
-	if (0 == initCellModem(serial)){
-		CellularConfig *cellCfg = &(loggerConfig->ConnectivityConfigs.cellularConfig);
-		TelemetryConfig *telemetryConfig = &(loggerConfig->ConnectivityConfigs.telemetryConfig);
-		if (0 == configureNet(serial, cellCfg->apnHost, cellCfg->apnUser, cellCfg->apnPass)){
+    CellularConfig *cellCfg = &(loggerConfig->ConnectivityConfigs.cellularConfig);
+    TelemetryConfig *telemetryConfig = &(loggerConfig->ConnectivityConfigs.telemetryConfig);
+	if (0 == initCellModem(serial, cellCfg)){
+		if (0 == configureNet(serial)){
 			pr_info("cell: network configured\r\n");
 			if( 0 == connectNet(serial, telemetryConfig->telemetryServerHost, TELEMETRY_SERVER_PORT, 0)){
 				pr_info("cell: server connected\r\n");

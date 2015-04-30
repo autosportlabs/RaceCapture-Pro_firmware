@@ -22,7 +22,7 @@ static char *g_cellBuffer;
 static size_t g_bufferLen;
 static uint8_t g_cell_signal_strength;
 
-#define PAUSE_DELAY 500
+#define PAUSE_DELAY 100
 
 #define READ_TIMEOUT 	1000
 #define SHORT_TIMEOUT 	4500
@@ -212,49 +212,19 @@ void putQuotedStringCell(Serial *serial, char *s){
 	putsCell(serial, "\"");
 }
 
-int configureNet(Serial *serial, const char *apnHost, const char *apnUser, const char *apnPass){
 
-    putsCell(serial, "AT+UPSD=0,1,\"");
-    putsCell(serial, apnHost);
-    putsCell(serial, "\"\r");
-    if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)){
-        return -2;
-    }
-
-    putsCell(serial, "AT+UPSD=0,2,\"");
-    putsCell(serial, apnUser);
-    putsCell(serial, "\"\r");
-    if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)){
-        return -2;
-    }
-
-    putsCell(serial, "AT+UPSD=0,3,\"");
-    putsCell(serial, apnPass);
-    putsCell(serial, "\"\r");
-    if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)){
-        return -2;
-    }
-
-    putsCell(serial, "AT+UPSD=0,4,\"8.8.8.8\"\r");
-    if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)){
-        return -2;
-    }
-
-    putsCell(serial, "AT+UPSD=0,5,\"8.8.4.4\"\r");
-    if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)){
-        return -2;
-    }
+int configureNet(Serial *serial){
 
 	if (sendCommandWait(serial, "AT+UPSDA=0,3\r", "OK", CONNECT_TIMEOUT) != 1){
-		return -3;
+		return -1;
 	}
 
 	if (getIpAddress(serial) !=0 ){
-		return -4;
+		return -2;
 	}
 
     if (getDNSServer(serial) !=0 ){
-        return -5;
+        return -3;
     }
 
 	return 0;
@@ -295,7 +265,9 @@ int closeNet(Serial *serial){
 	delayMs(1100);
 	putsCell(serial, "+++");
 	delayMs(1100);
-	return sendCommandWait(serial, "AT+USOCL=0\r", "OK", SHORT_TIMEOUT);
+	sendCommandWait(serial, "AT+USOCL=0\r", "OK", SHORT_TIMEOUT);
+	sendCommandWait(serial, "AT+UPSDA=0,4\r", "OK", SHORT_TIMEOUT);
+	return 0;
 }
 
 const char * readsCell(Serial *serial, size_t timeout){
@@ -304,10 +276,10 @@ const char * readsCell(Serial *serial, size_t timeout){
 }
 
 int isNetConnectionErrorOrClosed(){
-	if (strncmp(g_cellBuffer,"CLOSED",6) == 0) return 1;
-	if (strncmp(g_cellBuffer,"ERROR", 5) == 0) return 1;
-	if (strncmp(g_cellBuffer,"DISCONNECT", 10) == 0) return 1;
-	if (strncmp(g_cellBuffer,"+UUSOCL: 0", 10) == 0) return 1;
+	if (strncmp(g_cellBuffer,"DISCONNECT", 10) == 0){
+	    pr_info("ublox: socket disconnect\r\n");
+	    return 1;
+	}
 	return 0;
 }
 
@@ -320,7 +292,41 @@ static void powerCycleCellModem(void){
 	delayMs(3000);
 }
 
-int initCellModem(Serial *serial){
+static int initAPN(Serial *serial, CellularConfig *cellCfg){
+    putsCell(serial, "AT+UPSD=0,1,\"");
+    putsCell(serial, cellCfg->apnHost);
+    putsCell(serial, "\"\r");
+    if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)){
+        return -1;
+    }
+
+    putsCell(serial, "AT+UPSD=0,2,\"");
+    putsCell(serial, cellCfg->apnUser);
+    putsCell(serial, "\"\r");
+    if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)){
+        return -2;
+    }
+
+    putsCell(serial, "AT+UPSD=0,3,\"");
+    putsCell(serial, cellCfg->apnPass);
+    putsCell(serial, "\"\r");
+    if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)){
+        return -3;
+    }
+
+    putsCell(serial, "AT+UPSD=0,4,\"8.8.8.8\"\r");
+    if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)){
+        return -4;
+    }
+
+    putsCell(serial, "AT+UPSD=0,5,\"8.8.4.4\"\r");
+    if (!waitCommandResponse(serial, "OK", READ_TIMEOUT)){
+        return -5;
+    }
+    return 0;
+}
+
+int initCellModem(Serial *serial, CellularConfig *cellCfg){
 
 	size_t success = 0;
 	size_t attempts = 0;
@@ -330,9 +336,9 @@ int initCellModem(Serial *serial){
 		closeNet(serial);
 
 		if (attempts > 1){
-			pr_debug("SIM900: power cycling\r\n");
+			pr_debug("ublox: power cycling\r\n");
 			if (sendCommandOK(serial, "AT\r") == 1 && attempts > 1){
-				pr_debug("SIM900: powering down\r\n");
+				pr_debug("ublox: powering down\r\n");
 				powerCycleCellModem();
 			}
 			powerCycleCellModem();
@@ -340,8 +346,8 @@ int initCellModem(Serial *serial){
 
 		if (sendCommandRetry(serial, "ATZ\r", "OK", 2, 2) != 1) continue;
 		if (sendCommandRetry(serial, "ATE0\r", "OK", 2, 2) != 1) continue;
-		sendCommand(serial, "AT+CIPSHUT\r", "OK");
 		if (isNetworkConnected(serial, 60, 3) != 1) continue;
+		if (initAPN(serial, cellCfg) != 0) continue;
 		getSignalStrength(serial);
 		read_subscriber_number(serial);
 		read_IMEI(serial);
