@@ -165,7 +165,7 @@ void LoggerConfigTest::testLoggerInitGpsConfig() {
 
    cc = &lc->GPSConfigs.altitude;
    CPPUNIT_ASSERT_EQUAL(string("Altitude"), string(cc->label));
-   CPPUNIT_ASSERT_EQUAL(string("M"), string(cc->units));
+   CPPUNIT_ASSERT_EQUAL(string("Feet"), string(cc->units));
    CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.satellites;
