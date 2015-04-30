@@ -36,10 +36,8 @@ static int writeAuthJSON(Serial *serial, const char *deviceId){
 		delayMs(250);
 	}
 	json_objStart(serial);
-	json_objStartString(serial, "cmd");
 	json_objStartString(serial, "auth");
-	json_string(serial, "deviceId", deviceId, 0);
-	json_objEnd(serial, 1);
+	json_string(serial, "deviceId", deviceId, 1);
 	json_int(serial, "apiVer", API_REV, 1);
 	json_string(serial, "device", DEVICE_NAME, 1);
 	json_string(serial, "ver", VERSION_STR, 1);
