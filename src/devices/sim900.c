@@ -9,6 +9,7 @@
 #include "api.h"
 #include "capabilities.h"
 #include "constants.h"
+#include "cpu.h"
 
 #define TELEMETRY_SERVER_PORT "8080"
 
@@ -41,7 +42,8 @@ static int writeAuthJSON(Serial *serial, const char *deviceId){
 	json_objEnd(serial, 1);
 	json_int(serial, "apiVer", API_REV, 1);
 	json_string(serial, "device", DEVICE_NAME, 1);
-	json_string(serial, "ver", VERSION_STR, 0);
+	json_string(serial, "ver", VERSION_STR, 1);
+	json_string(serial, "sn", cpu_get_serialnumber(), 0);
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
 	serial->put_c('\n');
