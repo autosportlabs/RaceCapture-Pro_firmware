@@ -34,11 +34,11 @@
 
 //wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all
 #define TELEMETRY_QUEUE_WAIT_TIME					0
-//#define TELEMETRY_QUEUE_WAIT_TIME					portMAX_DELAY
 
 #define IDLE_TIMEOUT							configTICK_RATE_HZ / 10
 #define INIT_DELAY	 							600
 #define BUFFER_SIZE 							1025
+#define DISCONNECT_TIMEOUT                      5000
 
 #define TELEMETRY_STACK_SIZE  					1000
 #define SAMPLE_RECORD_QUEUE_SIZE				10
@@ -202,14 +202,10 @@ void connectivityTask(void *params) {
 		rxCount = 0;
 		size_t badMsgCount = 0;
 		size_t tick = 0;
-		while (1) {
-			//wait for the next sample record
-			char res = xQueueReceive(sampleQueue, &(msg), IDLE_TIMEOUT);
+		size_t last_message_time = getUptimeAsInt();
 
-//            if (!isValidLoggerMessageAge(msg)) {
-//                pr_debug("Comm Task Logger message too old.  Ignoring it.\r\n");
-//                continue;
-//            }
+		while (1) {
+			char res = xQueueReceive(sampleQueue, &(msg), IDLE_TIMEOUT);
 
 			////////////////////////////////////////////////////////////
 			// Process a pending message from logger task, if exists
@@ -255,6 +251,7 @@ void connectivityTask(void *params) {
 			}
 			//now process a complete message if available
 			if (msgReceived){
+			    last_message_time = getUptimeAsInt();
 				pr_debug(connParams->connectionName);
 				pr_debug_str_msg(": rx: ", buffer);
 				int msgRes = process_api(serial, buffer, BUFFER_SIZE);
@@ -272,6 +269,13 @@ void connectivityTask(void *params) {
 					badMsgCount = 0;
 				}
 				rxCount = 0;
+			}
+
+			//disconnect if we haven't heard from the other side for a while
+			size_t timeout = getUptimeAsInt() - last_message_time;
+			if ( timeout > DISCONNECT_TIMEOUT ){
+			    pr_info("conn: timeout\r\n");
+			    break;
 			}
 		}
 	}

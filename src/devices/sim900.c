@@ -9,6 +9,7 @@
 #include "api.h"
 
 #define TELEMETRY_SERVER_PORT "8080"
+#define SCHEMA_VERSION 2
 
 static telemetry_status_t g_connection_status = TELEMETRY_STATUS_IDLE;
 static int32_t g_active_since = 0;
@@ -34,19 +35,20 @@ static int writeAuthJSON(Serial *serial, const char *deviceId){
 	}
 	json_objStart(serial);
 	json_objStartString(serial, "cmd");
-	json_int(serial, "schemaVer", 2, 1);
+	json_int(serial, "schemaVer", SCHEMA_VERSION, 1);
 	json_objStartString(serial, "auth");
 	json_string(serial, "deviceId", deviceId, 0);
 	json_objEnd(serial, 1);
 	json_int(serial, "apiVer", API_REV, 0);
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
+	serial->put_c('\n');
 
 	pr_debug_str_msg("sending auth- deviceId: ", deviceId);
 
 	int attempts = 20;
 	while (attempts-- > 0){
-		const char * data = readsCell(serial, 334); //~1000ms
+		const char * data = readsCell(serial, 1000);
 		if (strncmp(data, "{\"status\":\"ok\"}",15) == 0) return 0;
 	}
 	return -1;
