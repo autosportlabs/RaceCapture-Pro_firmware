@@ -768,7 +768,7 @@ void LoggerApiTest::testSetGpsConfigFile(string filename, unsigned char channels
         testChannelConfig(&gpsCfg->longitude, string("Longitude"), string("Degrees"), sampleRate);
         testChannelConfig(&gpsCfg->speed, string("Speed"), string("MPH"), sampleRate);
         testChannelConfig(&gpsCfg->distance, string("Distance"), string("Miles"), sampleRate);
-        testChannelConfig(&gpsCfg->altitude, string("Altitude"), string("M"), sampleRate);
+        testChannelConfig(&gpsCfg->altitude, string("Altitude"), string("Feet"), sampleRate);
         testChannelConfig(&gpsCfg->satellites, string("GPSSats"), string(""), sampleRate);
         testChannelConfig(&gpsCfg->quality, string("GPSQual"), string(""), sampleRate);
         testChannelConfig(&gpsCfg->DOP, string("GPSDOP"), string(""), sampleRate);
