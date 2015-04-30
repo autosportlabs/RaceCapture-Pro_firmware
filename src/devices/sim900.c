@@ -7,9 +7,10 @@
 #include "dateTime.h"
 #include "taskUtil.h"
 #include "api.h"
+#include "capabilities.h"
+#include "constants.h"
 
 #define TELEMETRY_SERVER_PORT "8080"
-#define SCHEMA_VERSION 2
 
 static telemetry_status_t g_connection_status = TELEMETRY_STATUS_IDLE;
 static int32_t g_active_since = 0;
@@ -35,11 +36,12 @@ static int writeAuthJSON(Serial *serial, const char *deviceId){
 	}
 	json_objStart(serial);
 	json_objStartString(serial, "cmd");
-	json_int(serial, "schemaVer", SCHEMA_VERSION, 1);
 	json_objStartString(serial, "auth");
 	json_string(serial, "deviceId", deviceId, 0);
 	json_objEnd(serial, 1);
-	json_int(serial, "apiVer", API_REV, 0);
+	json_int(serial, "apiVer", API_REV, 1);
+	json_string(serial, "device", DEVICE_NAME, 1);
+	json_string(serial, "ver", VERSION_STR, 0);
 	json_objEnd(serial, 0);
 	json_objEnd(serial, 0);
 	serial->put_c('\n');
