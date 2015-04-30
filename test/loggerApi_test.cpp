@@ -30,6 +30,7 @@
 #include "logger.h"
 #include "lap_stats.h"
 #include "launch_control.h"
+#include "task.h"
 #define JSON_TOKENS 10000
 #define FILE_PREFIX string("json_api_files/")
 
@@ -704,6 +705,19 @@ void LoggerApiTest::testSampleData2() {
 
 	CPPUNIT_ASSERT_EQUAL(expectedResponseJson2,
                         getSampleResponse(requestJson2));
+}
+
+void LoggerApiTest::testHeartBeat(){
+    resetTicks();
+    incrementTick();
+    incrementTick();
+    incrementTick();
+    string requestJson = readFile("heartBeat_request.json");
+    string expectedResponseJson = readFile("heartBeat_response.json");
+
+    getUptimeAsInt();
+    CPPUNIT_ASSERT_EQUAL(expectedResponseJson,
+                        getSampleResponse(requestJson));
 }
 
 void LoggerApiTest::testLogStartStopFile(string filename){

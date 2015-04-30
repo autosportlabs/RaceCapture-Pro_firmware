@@ -38,7 +38,7 @@
 #define IDLE_TIMEOUT							configTICK_RATE_HZ / 10
 #define INIT_DELAY	 							600
 #define BUFFER_SIZE 							1025
-#define DISCONNECT_TIMEOUT                      5000
+#define DISCONNECT_TIMEOUT                      7500
 
 #define TELEMETRY_STACK_SIZE  					1000
 #define SAMPLE_RECORD_QUEUE_SIZE				10
@@ -274,7 +274,7 @@ void connectivityTask(void *params) {
 			//disconnect if we haven't heard from the other side for a while
 			size_t timeout = getUptimeAsInt() - last_message_time;
 			if ( timeout > DISCONNECT_TIMEOUT ){
-			    pr_info("conn: timeout\r\n");
+			    pr_info_str_msg(connParams->connectionName, ": timeout");
 			    break;
 			}
 		}

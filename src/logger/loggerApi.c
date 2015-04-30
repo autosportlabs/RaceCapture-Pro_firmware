@@ -307,6 +307,13 @@ int api_sampleData(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS_NO_RETURN;
 }
 
+int api_heartBeat(Serial *serial, const jsmntok_t *json){
+    json_objStart(serial);
+    json_int(serial, "hb", getUptimeAsInt(), 0);
+    json_objEnd(serial, 0);
+    return API_SUCCESS_NO_RETURN;
+}
+
 void api_sendLogStart(Serial *serial){
 	json_objStart(serial);
 	json_int(serial, "logStart", 1, 0);
