@@ -307,7 +307,7 @@ int api_sampleData(Serial *serial, const jsmntok_t *json){
 	return API_SUCCESS_NO_RETURN;
 }
 
-int api_heartBeat(Serial *serial, const jsmntok_t *json){
+int api_heart_beat(Serial *serial, const jsmntok_t *json){
     json_objStart(serial);
     json_int(serial, "hb", getUptimeAsInt(), 0);
     json_objEnd(serial, 0);

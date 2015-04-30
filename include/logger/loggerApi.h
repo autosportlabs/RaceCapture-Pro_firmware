@@ -25,7 +25,7 @@
 
 #define LOGGER_API \
 {"s", api_sampleData}, \
-{"hb", api_heartBeat}, \
+{"hb", api_heart_beat}, \
 {"getVer", api_getVersion}, \
 {"getStatus", api_getStatus}, \
 {"getMeta", api_getMeta}, \
@@ -73,7 +73,7 @@ int api_getStatus(Serial *serial, const jsmntok_t *json);
 int api_systemReset(Serial *serial, const jsmntok_t *json);
 int api_factoryReset(Serial *serial, const jsmntok_t *json);
 int api_sampleData(Serial *serial, const jsmntok_t *json);
-int api_heartBeat(Serial *serial, const jsmntok_t *json);
+int api_heart_beat(Serial *serial, const jsmntok_t *json);
 int api_log(Serial *serial, const jsmntok_t *json);
 int api_getMeta(Serial *serial, const jsmntok_t *json);
 int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json);
