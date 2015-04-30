@@ -1293,6 +1293,10 @@ void LoggerApiTest::testGetVersion(){
 }
 
 void LoggerApiTest::testGetStatus(){
+    resetTicks();
+    incrementTick();
+    incrementTick();
+    incrementTick();
     lc_reset();
     lapStats_init();
     char * response = processApiGeneric("getStatus1.json");
@@ -1305,7 +1309,7 @@ void LoggerApiTest::testGetStatus(){
     CPPUNIT_ASSERT_EQUAL(MINOR_REV, (int)(Number)json["status"]["system"]["ver_minor"]);
     CPPUNIT_ASSERT_EQUAL(BUGFIX_REV, (int)(Number)json["status"]["system"]["ver_bugfix"]);
     CPPUNIT_ASSERT_EQUAL(string(cpu_get_serialnumber()), (string)(String)json["status"]["system"]["serial"]);
-    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["system"]["uptime"]);
+    CPPUNIT_ASSERT_EQUAL(15, (int)(Number)json["status"]["system"]["uptime"]);
 
     CPPUNIT_ASSERT_EQUAL((int)GPS_STATUS_NOT_INIT, (int)(Number)json["status"]["GPS"]["init"]);
     CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["GPS"]["qual"]);
