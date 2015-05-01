@@ -27,6 +27,10 @@ portTickType xTaskGetTickCount( void ) {
   return ticks;
 }
 
+void set_ticks(portTickType new_ticks){
+	ticks = new_ticks;
+}
+
 void resetTicks() {
   ticks = 0;
 }

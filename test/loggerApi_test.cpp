@@ -708,10 +708,7 @@ void LoggerApiTest::testSampleData2() {
 }
 
 void LoggerApiTest::testHeartBeat(){
-    resetTicks();
-    incrementTick();
-    incrementTick();
-    incrementTick();
+	set_ticks(3);
     string requestJson = readFile("heartBeat_request.json");
     string expectedResponseJson = readFile("heartBeat_response.json");
 
@@ -1293,10 +1290,7 @@ void LoggerApiTest::testGetVersion(){
 }
 
 void LoggerApiTest::testGetStatus(){
-    resetTicks();
-    incrementTick();
-    incrementTick();
-    incrementTick();
+	set_ticks(3);
     lc_reset();
     lapStats_init();
     char * response = processApiGeneric("getStatus1.json");
