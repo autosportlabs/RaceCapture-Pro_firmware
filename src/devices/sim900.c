@@ -6,6 +6,10 @@
 #include "LED.h"
 #include "dateTime.h"
 #include "taskUtil.h"
+#include "api.h"
+#include "capabilities.h"
+#include "constants.h"
+#include "cpu.h"
 
 #define TELEMETRY_SERVER_PORT "8080"
 
@@ -31,15 +35,22 @@ static int writeAuthJSON(Serial *serial, const char *deviceId){
 		serial->put_s(" ");
 		delayMs(250);
 	}
-	serial->put_s("{\"cmd\":{\"schemaVer\":2,\"auth\":{\"deviceId\":\"");
-	serial->put_s(deviceId);
-	serial->put_s("\"}}}\n");
+	json_objStart(serial);
+	json_objStartString(serial, "auth");
+	json_string(serial, "deviceId", deviceId, 1);
+	json_int(serial, "apiVer", API_REV, 1);
+	json_string(serial, "device", DEVICE_NAME, 1);
+	json_string(serial, "ver", VERSION_STR, 1);
+	json_string(serial, "sn", cpu_get_serialnumber(), 0);
+	json_objEnd(serial, 0);
+	json_objEnd(serial, 0);
+	serial->put_c('\n');
 
 	pr_debug_str_msg("sending auth- deviceId: ", deviceId);
 
 	int attempts = 20;
 	while (attempts-- > 0){
-		const char * data = readsCell(serial, 334); //~1000ms
+		const char * data = readsCell(serial, 1000);
 		if (strncmp(data, "{\"status\":\"ok\"}",15) == 0) return 0;
 	}
 	return -1;

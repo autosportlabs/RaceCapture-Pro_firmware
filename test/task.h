@@ -26,6 +26,8 @@ typedef unsigned int portTickType;
 
 portTickType xTaskGetTickCount( void );
 
+void set_ticks(portTickType ticks);
+
 void resetTicks( void );
 
 void incrementTick( void );
