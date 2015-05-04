@@ -38,7 +38,7 @@
 #define IDLE_TIMEOUT							configTICK_RATE_HZ / 10
 #define INIT_DELAY	 							600
 #define BUFFER_SIZE 							1025
-#define DISCONNECT_TIMEOUT                      10000
+#define TELEMETRY_DISCONNECT_TIMEOUT            10000
 
 #define TELEMETRY_STACK_SIZE  					1000
 #define SAMPLE_RECORD_QUEUE_SIZE				10
@@ -107,6 +107,7 @@ static void createCombinedTelemetryTask(int16_t priority, xQueueHandle sampleQue
 		params->init_connection = &null_device_init_connection;
 		params->serial = SERIAL_TELEMETRY;
 		params->sampleQueue = sampleQueue;
+		params->connection_timeout = 0;
 
 		if (btEnabled){
 			params->check_connection_status = &bt_check_connection_status;
@@ -126,6 +127,7 @@ static void createWirelessConnectionTask(int16_t priority, xQueueHandle sampleQu
 	params->isPrimary = isPrimary;
 	params->connectionName = "Wireless";
 	params->periodicMeta = 0;
+	params->connection_timeout = 0;
 	params->check_connection_status = &bt_check_connection_status;
 	params->init_connection = &bt_init_connection;
 	params->serial = SERIAL_WIRELESS;
@@ -138,6 +140,7 @@ static void createTelemetryConnectionTask(int16_t priority, xQueueHandle sampleQ
 	params->isPrimary = isPrimary;
 	params->connectionName = "Telemetry";
 	params->periodicMeta = 0;
+	params->connection_timeout = TELEMETRY_DISCONNECT_TIMEOUT;
 	params->check_connection_status = &sim900_check_connection_status;
 	params->init_connection = &sim900_init_connection;
 	params->serial = SERIAL_TELEMETRY;
@@ -187,6 +190,7 @@ void connectivityTask(void *params) {
 	uint8_t isPrimary = connParams->isPrimary;
 	size_t periodicMeta = connParams->periodicMeta;
 	xQueueHandle sampleQueue = connParams->sampleQueue;
+	uint32_t connection_timeout = connParams->connection_timeout;
 
 	DeviceConfig deviceConfig;
 	deviceConfig.serial = serial;
@@ -273,7 +277,7 @@ void connectivityTask(void *params) {
 
 			//disconnect if we haven't heard from the other side for a while
 			const size_t timeout = getUptimeAsInt() - last_message_time;
-			if ( timeout > DISCONNECT_TIMEOUT ){
+			if (connection_timeout && timeout > connection_timeout ){
 			    pr_info_str_msg(connParams->connectionName, ": timeout");
 			    break;
 			}
