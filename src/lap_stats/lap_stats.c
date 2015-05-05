@@ -346,7 +346,7 @@ static void processSectorLogic(const GpsSnapshot *gpsSnapshot,
         sectorBoundaryEvent(gpsSnapshot);
 }
 
-void gpsConfigChanged(void) {
+void lapstats_config_changed(void) {
    g_configured = 0;
 }
 

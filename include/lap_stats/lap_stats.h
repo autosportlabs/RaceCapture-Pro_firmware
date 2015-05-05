@@ -21,7 +21,7 @@ typedef struct _TimeLoc {
 	millis_t time;
 } TimeLoc;
 
-void gpsConfigChanged(void);
+void lapstats_config_changed(void);
 
 void lapStats_init();
 

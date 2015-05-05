@@ -1435,8 +1435,16 @@ int api_addTrackDb(Serial *serial, const jsmntok_t *json){
 		Track track;
 		const jsmntok_t *trackNode = findNode(json, "track");
 		if (trackNode != NULL) setTrack(trackNode + 1, &track);
-		add_track(&track, index, mode);
-		return API_SUCCESS;
+		int result = add_track(&track, index, mode);
+		if (result == TRACK_ADD_RESULT_OK){
+            if (mode == TRACK_ADD_MODE_COMPLETE){
+                lapstats_config_changed();
+            }
+            return API_SUCCESS;
+		}
+		else{
+		    return API_ERROR_SEVERE;
+		}
 	}
 	return API_ERROR_MALFORMED;
 }
