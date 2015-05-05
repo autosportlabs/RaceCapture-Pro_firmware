@@ -4,7 +4,7 @@
   apply as in circuit racing).
 * Replace start/finish cool off timer with geoTrigger to prevent false start/finish
   events when driver is stuck at start/finish for whatever reason.
-* Add the elapsed channel.  This channel provieds the time elapsed since the lap
+* Add the elapsed channel.  This channel provides the time elapsed since the lap
   first began in minutes.  Useful for seeing current lap time of the driver.
 * Add the CurrentLap channel. increments when lap timing starts; as opposed to
   LapCount which increments when the lap completes.
