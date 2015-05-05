@@ -16,6 +16,7 @@ typedef struct _ConnParams{
 	int (*check_connection_status)(DeviceConfig *config);
 	serial_id_t serial;
 	size_t periodicMeta;
+	uint32_t connection_timeout;
 	xQueueHandle sampleQueue;
 } ConnParams;
 
