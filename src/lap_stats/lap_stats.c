@@ -483,27 +483,25 @@ static void lapstats_setup(const GpsSnapshot *gps_snapshot)
 
     const Track *track = NULL;
     const TrackConfig *trackConfig = &(config->TrackConfigs);
-    if (trackConfig->auto_detect)
-    {
+    if (trackConfig->auto_detect) {
         track = auto_configure_track(NULL, gp);
     }
-    else
-    {
+    else {
         track = &trackConfig->track;
         g_track_status = TRACK_STATUS_FIXED_CONFIG;
         pr_info("track: using fixed config");
     }
     set_active_track(track);
-    if (track)
-    {
-        g_track_status = TRACK_STATUS_AUTO_DETECTED;
-        g_start_finish_enabled = isStartFinishEnabled(track);
-        g_sector_enabled = isSectorTrackingEnabled(track);
-        lc_reset();
-        lc_setup(track, target_radius);
-        setupGeoTriggers(trackConfig, track);
-        g_configured = 1;
-    }
+
+    if (!track) return;
+
+	g_track_status = TRACK_STATUS_AUTO_DETECTED;
+	g_start_finish_enabled = isStartFinishEnabled(track);
+	g_sector_enabled = isSectorTrackingEnabled(track);
+	lc_reset();
+	lc_setup(track, target_radius);
+	setupGeoTriggers(trackConfig, track);
+	g_configured = 1;
 }
 
 void lapstats_processUpdate(const GpsSnapshot *gps_snapshot)
