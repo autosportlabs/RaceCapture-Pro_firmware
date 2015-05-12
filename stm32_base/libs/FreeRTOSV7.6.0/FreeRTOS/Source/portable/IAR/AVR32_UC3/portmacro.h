@@ -13,7 +13,7 @@
  *****************************************************************************/
 
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -116,11 +116,11 @@ extern "C" {
 #define configTICK_TC_IRQ             ATPASTE2(AVR32_TC_IRQ, configTICK_TC_CHANNEL)
 
 #if( configUSE_16_BIT_TICKS == 1 )
-  typedef unsigned portSHORT portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffff
+typedef unsigned portSHORT portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffff
 #else
-  typedef unsigned portLONG portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffffffff
+typedef unsigned portLONG portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffffffff
 #endif
 /*-----------------------------------------------------------*/
 
@@ -159,14 +159,14 @@ extern "C" {
  * which is interrupt-unsafe with the current __malloc_lock and __malloc_unlock.
  */
 #if configDBG
-	#define portDBG_TRACE(...)												\
+#define portDBG_TRACE(...)												\
 	{																		\
 	  fputs(__FILE__ ":" ASTRINGZ(__LINE__) ": ", stdout);					\
 	  printf(__VA_ARGS__);													\
 	  fputs("\r\n", stdout);												\
 	}
 #else
-	#define portDBG_TRACE(...)
+#define portDBG_TRACE(...)
 #endif
 
 
@@ -241,23 +241,23 @@ extern void *pvPortRealloc( void *pv, size_t xSize );
  */
 
 // Task context stack layout:
-  // R8  (*)
-  // R9  (*)
-  // R10 (*)
-  // R11 (*)
-  // R12 (*)
-  // R14/LR (*)
-  // R15/PC (*)
-  // SR (*)
-  // R0
-  // R1
-  // R2
-  // R3
-  // R4
-  // R5
-  // R6
-  // R7
-  // ulCriticalNesting
+// R8  (*)
+// R9  (*)
+// R10 (*)
+// R11 (*)
+// R12 (*)
+// R14/LR (*)
+// R15/PC (*)
+// SR (*)
+// R0
+// R1
+// R2
+// R3
+// R4
+// R5
+// R6
+// R7
+// ulCriticalNesting
 // (*) automatically done for INT0..INT3, but not for SCALL
 
 /*

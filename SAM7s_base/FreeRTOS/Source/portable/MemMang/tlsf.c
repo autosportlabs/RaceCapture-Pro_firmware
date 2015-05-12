@@ -1,4 +1,4 @@
-/* 
+/*
  * Two Levels Segregate Fit memory allocator (TLSF)
  * Version 2.4.6
  *
@@ -23,27 +23,27 @@
  *
  * - Add 64 bit support. It now runs on x86_64 and solaris64.
  * - I also tested this on vxworks/32and solaris/32 and i386/32 processors.
- * - Remove assembly code. I could not measure any performance difference 
+ * - Remove assembly code. I could not measure any performance difference
  *   on my core2 processor. This also makes the code more portable.
  * - Moved defines/typedefs from tlsf.h to tlsf.c
- * - Changed MIN_BLOCK_SIZE to sizeof (free_ptr_t) and BHDR_OVERHEAD to 
- *   (sizeof (bhdr_t) - MIN_BLOCK_SIZE). This does not change the fact 
- *    that the minumum size is still sizeof 
+ * - Changed MIN_BLOCK_SIZE to sizeof (free_ptr_t) and BHDR_OVERHEAD to
+ *   (sizeof (bhdr_t) - MIN_BLOCK_SIZE). This does not change the fact
+ *    that the minumum size is still sizeof
  *   (bhdr_t).
  * - Changed all C++ comment style to C style. (// -> /.* ... *./)
- * - Used ls_bit instead of ffs and ms_bit instead of fls. I did this to 
- *   avoid confusion with the standard ffs function which returns 
+ * - Used ls_bit instead of ffs and ms_bit instead of fls. I did this to
+ *   avoid confusion with the standard ffs function which returns
  *   different values.
- * - Created set_bit/clear_bit fuctions because they are not present 
+ * - Created set_bit/clear_bit fuctions because they are not present
  *   on x86_64.
  * - Added locking support + extra file target.h to show how to use it.
  * - Added get_used_size function (REMOVED in 2.4)
  * - Added rtl_realloc and rtl_calloc function
  * - Implemented realloc clever support.
  * - Added some test code in the example directory.
- * - Bug fixed (discovered by the rockbox project: www.rockbox.org).       
+ * - Bug fixed (discovered by the rockbox project: www.rockbox.org).
  *
- * (Oct 23 2006) Adam Scislowicz: 
+ * (Oct 23 2006) Adam Scislowicz:
  *
  * - Support for ARMv5 implemented
  *
@@ -79,7 +79,7 @@
 #include "target.h"
 #else
 #define TLSF_CREATE_LOCK(_unused_)   do{}while(0)
-#define TLSF_DESTROY_LOCK(_unused_)  do{}while(0) 
+#define TLSF_DESTROY_LOCK(_unused_)  do{}while(0)
 #define TLSF_ACQUIRE_LOCK(_unused_)  do{}while(0)
 #define TLSF_RELEASE_LOCK(_unused_)  do{}while(0)
 #endif
@@ -401,7 +401,7 @@ static __inline__ bhdr_t *FIND_SUITABLE_BLOCK(tlsf_t * _tlsf, int *_fl, int *_sl
 	} while(0)
 
 #if USE_SBRK || USE_MMAP
-static __inline__ void *get_new_area(size_t * size) 
+static __inline__ void *get_new_area(size_t * size)
 {
     void *area;
 
@@ -412,7 +412,7 @@ static __inline__ void *get_new_area(size_t * size)
 #endif
 
 #ifndef MAP_ANONYMOUS
-/* https://dev.openwrt.org/ticket/322 */
+    /* https://dev.openwrt.org/ticket/322 */
 # define MAP_ANONYMOUS MAP_ANON
 #endif
 
@@ -456,7 +456,7 @@ static char *mp = NULL;         /* Default memory pool. */
 /******************************************************************/
 size_t init_memory_pool(size_t mem_pool_size, void *mem_pool)
 {
-/******************************************************************/
+    /******************************************************************/
     tlsf_t *tlsf;
     bhdr_t *b, *ib;
 
@@ -503,7 +503,7 @@ size_t init_memory_pool(size_t mem_pool_size, void *mem_pool)
 /******************************************************************/
 size_t add_new_area(void *area, size_t area_size, void *mem_pool)
 {
-/******************************************************************/
+    /******************************************************************/
     tlsf_t *tlsf = (tlsf_t *) mem_pool;
     area_info_t *ptr, *ptr_prev, *ai;
     bhdr_t *ib0, *b0, *lb0, *ib1, *b1, *lb1, *next_b;
@@ -582,7 +582,7 @@ size_t add_new_area(void *area, size_t area_size, void *mem_pool)
 /******************************************************************/
 size_t get_used_size(void *mem_pool)
 {
-/******************************************************************/
+    /******************************************************************/
 #if TLSF_STATISTIC
     return ((tlsf_t *) mem_pool)->used_size;
 #else
@@ -593,7 +593,7 @@ size_t get_used_size(void *mem_pool)
 /******************************************************************/
 size_t get_max_size(void *mem_pool)
 {
-/******************************************************************/
+    /******************************************************************/
 #if TLSF_STATISTIC
     return ((tlsf_t *) mem_pool)->max_size;
 #else
@@ -604,7 +604,7 @@ size_t get_max_size(void *mem_pool)
 /******************************************************************/
 void destroy_memory_pool(void *mem_pool)
 {
-/******************************************************************/
+    /******************************************************************/
     tlsf_t *tlsf = (tlsf_t *) mem_pool;
 
     tlsf->tlsf_signature = 0;
@@ -617,7 +617,7 @@ void destroy_memory_pool(void *mem_pool)
 /******************************************************************/
 void *tlsf_malloc(size_t size)
 {
-/******************************************************************/
+    /******************************************************************/
     void *ret;
 
 #if USE_MMAP || USE_SBRK
@@ -646,7 +646,7 @@ void *tlsf_malloc(size_t size)
 /******************************************************************/
 void tlsf_free(void *ptr)
 {
-/******************************************************************/
+    /******************************************************************/
 
     TLSF_ACQUIRE_LOCK(&((tlsf_t *)mp)->lock);
 
@@ -659,13 +659,13 @@ void tlsf_free(void *ptr)
 /******************************************************************/
 void *tlsf_realloc(void *ptr, size_t size)
 {
-/******************************************************************/
+    /******************************************************************/
     void *ret;
 
 #if USE_MMAP || USE_SBRK
-	if (!mp) {
-		return tlsf_malloc(size);
-	}
+    if (!mp) {
+        return tlsf_malloc(size);
+    }
 #endif
 
     TLSF_ACQUIRE_LOCK(&((tlsf_t *)mp)->lock);
@@ -680,7 +680,7 @@ void *tlsf_realloc(void *ptr, size_t size)
 /******************************************************************/
 void *tlsf_calloc(size_t nelem, size_t elem_size)
 {
-/******************************************************************/
+    /******************************************************************/
     void *ret;
 
     TLSF_ACQUIRE_LOCK(&((tlsf_t *)mp)->lock);
@@ -695,7 +695,7 @@ void *tlsf_calloc(size_t nelem, size_t elem_size)
 /******************************************************************/
 void *malloc_ex(size_t size, void *mem_pool)
 {
-/******************************************************************/
+    /******************************************************************/
     tlsf_t *tlsf = (tlsf_t *) mem_pool;
     bhdr_t *b, *b2, *next_b;
     int fl, sl;
@@ -757,7 +757,7 @@ void *malloc_ex(size_t size, void *mem_pool)
 /******************************************************************/
 void free_ex(void *ptr, void *mem_pool)
 {
-/******************************************************************/
+    /******************************************************************/
     tlsf_t *tlsf = (tlsf_t *) mem_pool;
     bhdr_t *b, *tmp_b;
     int fl = 0, sl = 0;
@@ -796,7 +796,7 @@ void free_ex(void *ptr, void *mem_pool)
 /******************************************************************/
 void *realloc_ex(void *ptr, size_t new_size, void *mem_pool)
 {
-/******************************************************************/
+    /******************************************************************/
     tlsf_t *tlsf = (tlsf_t *) mem_pool;
     void *ptr_aux;
     unsigned int cpsize;
@@ -819,7 +819,7 @@ void *realloc_ex(void *ptr, size_t new_size, void *mem_pool)
     new_size = (new_size < MIN_BLOCK_SIZE) ? MIN_BLOCK_SIZE : ROUNDUP_SIZE(new_size);
     tmp_size = (b->size & BLOCK_SIZE);
     if (new_size <= tmp_size) {
-	TLSF_REMOVE_SIZE(tlsf, b);
+        TLSF_REMOVE_SIZE(tlsf, b);
         if (next_b->size & FREE_BLOCK) {
             MAPPING_INSERT(next_b->size & BLOCK_SIZE, &fl, &sl);
             EXTRACT_BLOCK(next_b, tlsf, fl, sl);
@@ -839,12 +839,12 @@ void *realloc_ex(void *ptr, size_t new_size, void *mem_pool)
             INSERT_BLOCK(tmp_b, tlsf, fl, sl);
             b->size = new_size | (b->size & PREV_STATE);
         }
-	TLSF_ADD_SIZE(tlsf, b);
+        TLSF_ADD_SIZE(tlsf, b);
         return (void *) b->ptr.buffer;
     }
     if ((next_b->size & FREE_BLOCK)) {
         if (new_size <= (tmp_size + (next_b->size & BLOCK_SIZE))) {
-			TLSF_REMOVE_SIZE(tlsf, b);
+            TLSF_REMOVE_SIZE(tlsf, b);
             MAPPING_INSERT(next_b->size & BLOCK_SIZE, &fl, &sl);
             EXTRACT_BLOCK(next_b, tlsf, fl, sl);
             b->size += (next_b->size & BLOCK_SIZE) + BHDR_OVERHEAD;
@@ -862,15 +862,15 @@ void *realloc_ex(void *ptr, size_t new_size, void *mem_pool)
                 INSERT_BLOCK(tmp_b, tlsf, fl, sl);
                 b->size = new_size | (b->size & PREV_STATE);
             }
-			TLSF_ADD_SIZE(tlsf, b);
+            TLSF_ADD_SIZE(tlsf, b);
             return (void *) b->ptr.buffer;
         }
     }
 
-    if (!(ptr_aux = malloc_ex(new_size, mem_pool))){
+    if (!(ptr_aux = malloc_ex(new_size, mem_pool))) {
         return NULL;
-    }      
-    
+    }
+
     cpsize = ((b->size & BLOCK_SIZE) > new_size) ? new_size : (b->size & BLOCK_SIZE);
 
     memcpy(ptr_aux, ptr, cpsize);
@@ -883,7 +883,7 @@ void *realloc_ex(void *ptr, size_t new_size, void *mem_pool)
 /******************************************************************/
 void *calloc_ex(size_t nelem, size_t elem_size, void *mem_pool)
 {
-/******************************************************************/
+    /******************************************************************/
     void *ptr;
 
     if (nelem <= 0 || elem_size <= 0)

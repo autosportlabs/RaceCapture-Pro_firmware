@@ -8,9 +8,10 @@
 #ifndef GPSLOGREADER_H_
 #define GPSLOGREADER_H_
 
-class GpsLogReader {
+class GpsLogReader
+{
 public:
-	GpsLogReader(string fName);
+    GpsLogReader(string fName);
 
 };
 

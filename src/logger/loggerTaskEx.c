@@ -51,179 +51,192 @@ xSemaphoreHandle onTick;
 #define LOGGER_MESSAGE_BUFFER_SIZE 10
 static LoggerMessage g_sampleRecordMsgBuffer[LOGGER_MESSAGE_BUFFER_SIZE];
 
-static LoggerMessage getTimeInsensativeLoggerMessage(const enum LoggerMessageType t) {
-   LoggerMessage msg;
-   msg.type = t;
-   msg.ticks = 0; // Time insensitive.
-   return msg;
+static LoggerMessage getTimeInsensativeLoggerMessage(const enum LoggerMessageType t)
+{
+    LoggerMessage msg;
+    msg.type = t;
+    msg.ticks = 0; // Time insensitive.
+    return msg;
 }
 
-static LoggerMessage getLogStartMessage() {
-   return getTimeInsensativeLoggerMessage(LoggerMessageType_Start);
+static LoggerMessage getLogStartMessage()
+{
+    return getTimeInsensativeLoggerMessage(LoggerMessageType_Start);
 }
 
-static LoggerMessage getLogStopMessage() {
-   return getTimeInsensativeLoggerMessage(LoggerMessageType_Stop);
+static LoggerMessage getLogStopMessage()
+{
+    return getTimeInsensativeLoggerMessage(LoggerMessageType_Stop);
 }
 
 /**
  * Called into by FreeRTOS during the ISR that handles the tick timer.
  */
-void vApplicationTickHook(void){
-   xSemaphoreGiveFromISR(onTick, pdFALSE);
+void vApplicationTickHook(void)
+{
+    xSemaphoreGiveFromISR(onTick, pdFALSE);
 }
 
-void configChanged(){
-	g_configChanged = 1;
+void configChanged()
+{
+    g_configChanged = 1;
 }
 
-void startLogging(){
-	g_loggingShouldRun = 1;
+void startLogging()
+{
+    g_loggingShouldRun = 1;
 }
 
-void stopLogging(){
-	g_loggingShouldRun = 0;
+void stopLogging()
+{
+    g_loggingShouldRun = 0;
 }
 
-static void logging_started(){
+static void logging_started()
+{
     logging_set_logging_start(getUptimeAsInt());
-	LED_disable(3);
-	pr_info("Logging started\r\n");
+    LED_disable(3);
+    pr_info("Logging started\r\n");
 }
 
-static void logging_stopped(){
+static void logging_stopped()
+{
     logging_set_logging_start(0);
-	LED_disable(2);
-	pr_info("Logging stopped\r\n");
+    LED_disable(2);
+    pr_info("Logging stopped\r\n");
 }
 
-void startLoggerTaskEx(int priority){
-	xTaskCreate( loggerTaskEx,( signed portCHAR * ) "logger",	LOGGER_STACK_SIZE, NULL, priority, NULL );
+void startLoggerTaskEx(int priority)
+{
+    xTaskCreate( loggerTaskEx,( signed portCHAR * ) "logger",	LOGGER_STACK_SIZE, NULL, priority, NULL );
 }
 
-static size_t initSampleRecords(LoggerConfig *loggerConfig){
-	size_t channelSampleCount = get_enabled_channel_count(loggerConfig);
+static size_t initSampleRecords(LoggerConfig *loggerConfig)
+{
+    size_t channelSampleCount = get_enabled_channel_count(loggerConfig);
 
-	for (size_t i=0; i < LOGGER_MESSAGE_BUFFER_SIZE; i++){
-		LoggerMessage *msg = (g_sampleRecordMsgBuffer + i);
-		msg->type = LoggerMessageType_Sample;
-		if (msg->channelSamples != NULL){
-			vPortFree(msg->channelSamples);
-		}
-		ChannelSample *channelSamples = create_channel_sample_buffer(loggerConfig, channelSampleCount);
-		init_channel_sample_buffer(loggerConfig, channelSamples, channelSampleCount);
-		msg->channelSamples = channelSamples;
-	}
-	return channelSampleCount;
+    for (size_t i=0; i < LOGGER_MESSAGE_BUFFER_SIZE; i++) {
+        LoggerMessage *msg = (g_sampleRecordMsgBuffer + i);
+        msg->type = LoggerMessageType_Sample;
+        if (msg->channelSamples != NULL) {
+            vPortFree(msg->channelSamples);
+        }
+        ChannelSample *channelSamples = create_channel_sample_buffer(loggerConfig, channelSampleCount);
+        init_channel_sample_buffer(loggerConfig, channelSamples, channelSampleCount);
+        msg->channelSamples = channelSamples;
+    }
+    return channelSampleCount;
 }
 
-static int calcTelemetrySampleRate(LoggerConfig *config, int desiredSampleRate){
-	int maxRate = getConnectivitySampleRateLimit();
-	return isHigherSampleRate(desiredSampleRate, maxRate) ? maxRate : desiredSampleRate;
+static int calcTelemetrySampleRate(LoggerConfig *config, int desiredSampleRate)
+{
+    int maxRate = getConnectivitySampleRateLimit();
+    return isHigherSampleRate(desiredSampleRate, maxRate) ? maxRate : desiredSampleRate;
 }
 
 size_t updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate,
-                         int *telemetrySampleRate, int *timebaseSampleRate) {
-	*loggingSampleRate = getHighestSampleRate(loggerConfig);
-	*timebaseSampleRate = *loggingSampleRate;
+                         int *telemetrySampleRate, int *timebaseSampleRate)
+{
+    *loggingSampleRate = getHighestSampleRate(loggerConfig);
+    *timebaseSampleRate = *loggingSampleRate;
     *timebaseSampleRate = getHigherSampleRate(BACKGROUND_SAMPLE_RATE, *timebaseSampleRate);
 
-	*telemetrySampleRate = calcTelemetrySampleRate(loggerConfig, *loggingSampleRate);
-	size_t channelCount = initSampleRecords(loggerConfig);
-	pr_info("timebase/logging/telemetry sample rate: ");
-	pr_info_int(decodeSampleRate(*timebaseSampleRate));
-	pr_info("/");
-	pr_info_int(decodeSampleRate(*loggingSampleRate));
-	pr_info("/");
-	pr_info_int(decodeSampleRate(*telemetrySampleRate));
-	pr_info("\r\n");
-	return channelCount;
+    *telemetrySampleRate = calcTelemetrySampleRate(loggerConfig, *loggingSampleRate);
+    size_t channelCount = initSampleRecords(loggerConfig);
+    pr_info("timebase/logging/telemetry sample rate: ");
+    pr_info_int(decodeSampleRate(*timebaseSampleRate));
+    pr_info("/");
+    pr_info_int(decodeSampleRate(*loggingSampleRate));
+    pr_info("/");
+    pr_info_int(decodeSampleRate(*telemetrySampleRate));
+    pr_info("\r\n");
+    return channelCount;
 }
 
-void loggerTaskEx(void *params) {
-	g_loggingShouldRun = 0;
-	memset(&g_sampleRecordMsgBuffer, 0, sizeof(g_sampleRecordMsgBuffer));
-	vSemaphoreCreateBinary(onTick);
+void loggerTaskEx(void *params)
+{
+    g_loggingShouldRun = 0;
+    memset(&g_sampleRecordMsgBuffer, 0, sizeof(g_sampleRecordMsgBuffer));
+    vSemaphoreCreateBinary(onTick);
 
-	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+    LoggerConfig *loggerConfig = getWorkingLoggerConfig();
 
-	logging_set_status(LOGGING_STATUS_IDLE);
-	logging_set_logging_start(0);
-	size_t bufferIndex = 0;
-	size_t currentTicks = 0;
-	g_configChanged = 1;
-	size_t channelCount = 0;
+    logging_set_status(LOGGING_STATUS_IDLE);
+    logging_set_logging_start(0);
+    size_t bufferIndex = 0;
+    size_t currentTicks = 0;
+    g_configChanged = 1;
+    size_t channelCount = 0;
 
-	int loggingSampleRate = SAMPLE_DISABLED;
-	int sampleRateTimebase = SAMPLE_DISABLED;
-	int telemetrySampleRate = SAMPLE_DISABLED;
-	int backgroundStreaming = 0;
+    int loggingSampleRate = SAMPLE_DISABLED;
+    int sampleRateTimebase = SAMPLE_DISABLED;
+    int telemetrySampleRate = SAMPLE_DISABLED;
+    int backgroundStreaming = 0;
 
-	while (1) {
-		xSemaphoreTake(onTick, portMAX_DELAY);
-		watchdog_reset();
-		++currentTicks;
+    while (1) {
+        xSemaphoreTake(onTick, portMAX_DELAY);
+        watchdog_reset();
+        ++currentTicks;
 
-		if (currentTicks % BACKGROUND_SAMPLE_RATE == 0)
-			doBackgroundSampling();
+        if (currentTicks % BACKGROUND_SAMPLE_RATE == 0)
+            doBackgroundSampling();
 
-		if (g_configChanged) {
-			currentTicks = 0;
-			channelCount = updateSampleRates(loggerConfig, &loggingSampleRate, &telemetrySampleRate,
-					&sampleRateTimebase);
-			backgroundStreaming = loggerConfig->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
-			resetLapCount();
-			lapstats_reset_distance();
-			g_configChanged = 0;
-		}
+        if (g_configChanged) {
+            currentTicks = 0;
+            channelCount = updateSampleRates(loggerConfig, &loggingSampleRate, &telemetrySampleRate,
+                                             &sampleRateTimebase);
+            backgroundStreaming = loggerConfig->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
+            resetLapCount();
+            lapstats_reset_distance();
+            g_configChanged = 0;
+        }
 
-		{
-			bool is_logging = logging_is_active();
-			if (g_loggingShouldRun && !is_logging) {
-				logging_started();
-				LoggerMessage logStartMsg = getLogStartMessage();
-				queue_logfile_record(&logStartMsg);
-				queueTelemetryRecord(&logStartMsg);
-			}
+        {
+            bool is_logging = logging_is_active();
+            if (g_loggingShouldRun && !is_logging) {
+                logging_started();
+                LoggerMessage logStartMsg = getLogStartMessage();
+                queue_logfile_record(&logStartMsg);
+                queueTelemetryRecord(&logStartMsg);
+            }
 
-			if (!g_loggingShouldRun && is_logging) {
-				logging_stopped();
-				LoggerMessage logStopMsg = getLogStopMessage();
-				queue_logfile_record(&logStopMsg);
-				queueTelemetryRecord(&logStopMsg);
-				logging_set_status(LOGGING_STATUS_IDLE);
-			}
-		}
+            if (!g_loggingShouldRun && is_logging) {
+                logging_stopped();
+                LoggerMessage logStopMsg = getLogStopMessage();
+                queue_logfile_record(&logStopMsg);
+                queueTelemetryRecord(&logStopMsg);
+                logging_set_status(LOGGING_STATUS_IDLE);
+            }
+        }
 
-		// Check if we need to actually populate the buffer.
-		LoggerMessage *msg = &g_sampleRecordMsgBuffer[bufferIndex];
-		int sampledRate = populate_sample_buffer(msg, channelCount, currentTicks);
-		msg->sampleCount = channelCount;
+        // Check if we need to actually populate the buffer.
+        LoggerMessage *msg = &g_sampleRecordMsgBuffer[bufferIndex];
+        int sampledRate = populate_sample_buffer(msg, channelCount, currentTicks);
+        msg->sampleCount = channelCount;
 
-		// If here, no sample to give.
-		if (sampledRate == SAMPLE_DISABLED) {
-			continue;
-		}
+        // If here, no sample to give.
+        if (sampledRate == SAMPLE_DISABLED) {
+            continue;
+        }
 
-		bool is_logging = logging_is_active();
-		// We only log to file if the user has manually pushed the logging button.
-		if (is_logging && sampledRate >= loggingSampleRate) {
-			const portBASE_TYPE res = queue_logfile_record(msg);
-			if (res == pdTRUE){
-			    logging_set_status(LOGGING_STATUS_WRITING);
-			}
-			else{
-			    logging_set_status(LOGGING_STATUS_ERROR_WRITING);
-				LED_enable(3); //error LED
-			}
-		}
+        bool is_logging = logging_is_active();
+        // We only log to file if the user has manually pushed the logging button.
+        if (is_logging && sampledRate >= loggingSampleRate) {
+            const portBASE_TYPE res = queue_logfile_record(msg);
+            if (res == pdTRUE) {
+                logging_set_status(LOGGING_STATUS_WRITING);
+            } else {
+                logging_set_status(LOGGING_STATUS_ERROR_WRITING);
+                LED_enable(3); //error LED
+            }
+        }
 
-		// Log if the user has manually pushed the logging button or if background is enabled.
-		if ((is_logging || backgroundStreaming) &&
-				(sampledRate >= telemetrySampleRate || currentTicks % telemetrySampleRate == 0)) {
-			queueTelemetryRecord(msg);
-		}
-		++bufferIndex;
-		bufferIndex %= LOGGER_MESSAGE_BUFFER_SIZE;
-	}
+        // Log if the user has manually pushed the logging button or if background is enabled.
+        if ((is_logging || backgroundStreaming) &&
+            (sampledRate >= telemetrySampleRate || currentTicks % telemetrySampleRate == 0)) {
+            queueTelemetryRecord(msg);
+        }
+        ++bufferIndex;
+        bufferIndex %= LOGGER_MESSAGE_BUFFER_SIZE;
+    }
 }

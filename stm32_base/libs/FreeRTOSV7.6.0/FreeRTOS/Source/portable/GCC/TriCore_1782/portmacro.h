@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -94,11 +94,11 @@ extern "C" {
 #define portBASE_TYPE	long
 
 #if( configUSE_16_BIT_TICKS == 1 )
-	typedef unsigned portSHORT portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffff
+typedef unsigned portSHORT portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffff
 #else
-	typedef unsigned portLONG portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffffffff
+typedef unsigned portLONG portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffffffff
 #endif
 /*---------------------------------------------------------------------------*/
 
@@ -113,7 +113,9 @@ extern "C" {
 
 /*---------------------------------------------------------------------------*/
 
-typedef struct MPU_SETTINGS { unsigned long ulNotUsed; } xMPU_SETTINGS;
+typedef struct MPU_SETTINGS {
+    unsigned long ulNotUsed;
+} xMPU_SETTINGS;
 
 /* Define away the instruction from the Restore Context Macro. */
 #define portPRIVILEGE_BIT							0x0UL

@@ -71,21 +71,21 @@
 #define IS_WHOAMI_DEFAULT	0x68
 
 struct is9150_gyro_data {
-	int16_t gyro_x;
-	int16_t gyro_y;
-	int16_t gyro_z;
+    int16_t gyro_x;
+    int16_t gyro_y;
+    int16_t gyro_z;
 };
 
 struct is9150_accel_data {
-	int16_t accel_x;
-	int16_t accel_y;
-	int16_t accel_z;
+    int16_t accel_x;
+    int16_t accel_y;
+    int16_t accel_z;
 };
 
 struct is9150_all_sensor_data {
-	struct is9150_gyro_data gyro;
-	struct is9150_accel_data accel;
-	int16_t temp;
+    struct is9150_gyro_data gyro;
+    struct is9150_accel_data accel;
+    int16_t temp;
 };
 
 

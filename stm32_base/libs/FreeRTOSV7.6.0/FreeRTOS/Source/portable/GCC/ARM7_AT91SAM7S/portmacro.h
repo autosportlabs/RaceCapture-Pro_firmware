@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -65,12 +65,12 @@
 
 /*
 	Changes from V3.2.3
-	
+
 	+ Modified portENTER_SWITCHING_ISR() to allow use with GCC V4.0.1.
 
 	Changes from V3.2.4
 
-	+ Removed the use of the %0 parameter within the assembler macros and 
+	+ Removed the use of the %0 parameter within the assembler macros and
 	  replaced them with hard coded registers.  This will ensure the
 	  assembler does not select the link register as the temp register as
 	  was occasionally happening previously.
@@ -81,7 +81,7 @@
 	Changes from V4.5.0
 
 	+ Removed the portENTER_SWITCHING_ISR() and portEXIT_SWITCHING_ISR() macros
-	  and replaced them with portYIELD_FROM_ISR() macro.  Application code 
+	  and replaced them with portYIELD_FROM_ISR() macro.  Application code
 	  should now make use of the portSAVE_CONTEXT() and portRESTORE_CONTEXT()
 	  macros as per the V4.5.1 demo code.
 */
@@ -94,7 +94,7 @@ extern "C" {
 #endif
 
 /*-----------------------------------------------------------
- * Port specific definitions.  
+ * Port specific definitions.
  *
  * The settings in this file configure FreeRTOS correctly for the
  * given hardware and compiler.
@@ -113,20 +113,20 @@ extern "C" {
 #define portBASE_TYPE	portLONG
 
 #if( configUSE_16_BIT_TICKS == 1 )
-	typedef unsigned portSHORT portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffff
+typedef unsigned portSHORT portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffff
 #else
-	typedef unsigned portLONG portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffffffff
+typedef unsigned portLONG portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffffffff
 #endif
-/*-----------------------------------------------------------*/	
+/*-----------------------------------------------------------*/
 
 /* Architecture specifics. */
 #define portSTACK_GROWTH			( -1 )
-#define portTICK_RATE_MS			( ( portTickType ) 1000 / configTICK_RATE_HZ )		
+#define portTICK_RATE_MS			( ( portTickType ) 1000 / configTICK_RATE_HZ )
 #define portBYTE_ALIGNMENT			8
 #define portNOP()					asm volatile ( "NOP" );
-/*-----------------------------------------------------------*/	
+/*-----------------------------------------------------------*/
 
 
 /* Scheduler utilities. */
@@ -231,30 +231,30 @@ extern volatile unsigned portLONG ulCriticalNesting;					\
 
 /*
  * The interrupt management utilities can only be called from ARM mode.  When
- * THUMB_INTERWORK is defined the utilities are defined as functions in 
- * portISR.c to ensure a switch to ARM mode.  When THUMB_INTERWORK is not 
+ * THUMB_INTERWORK is defined the utilities are defined as functions in
+ * portISR.c to ensure a switch to ARM mode.  When THUMB_INTERWORK is not
  * defined then the utilities are defined as macros here - as per other ports.
  */
 
 #ifdef THUMB_INTERWORK
 
-	extern void vPortDisableInterruptsFromThumb( void ) __attribute__ ((naked));
-	extern void vPortEnableInterruptsFromThumb( void ) __attribute__ ((naked));
+extern void vPortDisableInterruptsFromThumb( void ) __attribute__ ((naked));
+extern void vPortEnableInterruptsFromThumb( void ) __attribute__ ((naked));
 
-	#define portDISABLE_INTERRUPTS()	vPortDisableInterruptsFromThumb()
-	#define portENABLE_INTERRUPTS()		vPortEnableInterruptsFromThumb()
-	
+#define portDISABLE_INTERRUPTS()	vPortDisableInterruptsFromThumb()
+#define portENABLE_INTERRUPTS()		vPortEnableInterruptsFromThumb()
+
 #else
 
-	#define portDISABLE_INTERRUPTS()											\
+#define portDISABLE_INTERRUPTS()											\
 		asm volatile (															\
 			"STMDB	SP!, {R0}		\n\t"	/* Push R0.						*/	\
 			"MRS	R0, CPSR		\n\t"	/* Get CPSR.					*/	\
 			"ORR	R0, R0, #0xC0	\n\t"	/* Disable IRQ, FIQ.			*/	\
 			"MSR	CPSR, R0		\n\t"	/* Write back modified value.	*/	\
 			"LDMIA	SP!, {R0}			" )	/* Pop R0.						*/
-			
-	#define portENABLE_INTERRUPTS()												\
+
+#define portENABLE_INTERRUPTS()												\
 		asm volatile (															\
 			"STMDB	SP!, {R0}		\n\t"	/* Push R0.						*/	\
 			"MRS	R0, CPSR		\n\t"	/* Get CPSR.					*/	\

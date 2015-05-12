@@ -23,9 +23,8 @@
 /**
  * This is an example of Message object that is used for IPC.
  */
-typedef struct MESSAGE_OBJECT
-{
-	portCHAR cMesssageBytes[ 512 ];
+typedef struct MESSAGE_OBJECT {
+    portCHAR cMesssageBytes[ 512 ];
 } xMessageObject;
 
 /**

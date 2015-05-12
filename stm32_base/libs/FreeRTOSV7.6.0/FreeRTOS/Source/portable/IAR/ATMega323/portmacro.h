@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -98,11 +98,11 @@ extern "C" {
 #define portPOINTER_SIZE_TYPE unsigned short
 
 #if( configUSE_16_BIT_TICKS == 1 )
-	typedef unsigned portSHORT portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffff
+typedef unsigned portSHORT portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffff
 #else
-	typedef unsigned portLONG portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffffffff
+typedef unsigned portLONG portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffffffff
 #endif
 
 /*-----------------------------------------------------------*/
@@ -129,7 +129,7 @@ void vPortYield( void );
 #define portYIELD()	vPortYield()
 
 #ifdef IAR_MEGA_AVR
-	#define outb( PORT, VALUE ) PORT = VALUE
+#define outb( PORT, VALUE ) PORT = VALUE
 #endif
 /*-----------------------------------------------------------*/
 

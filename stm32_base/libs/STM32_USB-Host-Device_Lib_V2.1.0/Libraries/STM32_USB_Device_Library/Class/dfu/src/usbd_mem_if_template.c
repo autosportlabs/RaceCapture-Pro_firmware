@@ -4,7 +4,7 @@
   * @author  MCD Application Team
   * @version V1.1.0
   * @date    19-March-2012
-  * @brief   Specific media access Layer for a template memory. This file is 
+  * @brief   Specific media access Layer for a template memory. This file is
              provided as template example showing how to implement a new memory
              interface based on pre-defined API.
   ******************************************************************************
@@ -18,14 +18,14 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
   *
   ******************************************************************************
-  */ 
+  */
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_mem_if_template.h"
@@ -45,8 +45,7 @@ uint16_t MEM_If_CheckAdd(uint32_t Add);
 
 
 /* Private variables ---------------------------------------------------------*/
-DFU_MAL_Prop_TypeDef DFU_Mem_cb =
-  {
+DFU_MAL_Prop_TypeDef DFU_Mem_cb = {
     MEM_IF_STRING,
     MEM_If_Init,
     MEM_If_DeInit,
@@ -56,8 +55,8 @@ DFU_MAL_Prop_TypeDef DFU_Mem_cb =
     MEM_If_CheckAdd,
     10, /* Erase Time in ms */
     10  /* Programming Time in ms */
-  };
-  
+};
+
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -67,8 +66,8 @@ DFU_MAL_Prop_TypeDef DFU_Mem_cb =
   * @retval MAL_OK if operation is successeful, MAL_FAIL else.
   */
 uint16_t MEM_If_Init(void)
-{ 
-  return MAL_OK;
+{
+    return MAL_OK;
 }
 
 /**
@@ -78,8 +77,8 @@ uint16_t MEM_If_Init(void)
   * @retval MAL_OK if operation is successeful, MAL_FAIL else.
   */
 uint16_t MEM_If_DeInit(void)
-{ 
-  return MAL_OK;
+{
+    return MAL_OK;
 }
 
 /**
@@ -90,7 +89,7 @@ uint16_t MEM_If_DeInit(void)
   */
 uint16_t MEM_If_Erase(uint32_t Add)
 {
-  return MAL_OK;
+    return MAL_OK;
 }
 
 /**
@@ -102,7 +101,7 @@ uint16_t MEM_If_Erase(uint32_t Add)
   */
 uint16_t MEM_If_Write(uint32_t Add, uint32_t Len)
 {
-  return MAL_OK;
+    return MAL_OK;
 }
 
 /**
@@ -114,8 +113,8 @@ uint16_t MEM_If_Write(uint32_t Add, uint32_t Len)
   */
 uint8_t *MEM_If_Read (uint32_t Add, uint32_t Len)
 {
-  /* Return a valid address to avoid HardFault */
-  return  (uint8_t*)(MAL_Buffer); 
+    /* Return a valid address to avoid HardFault */
+    return  (uint8_t*)(MAL_Buffer);
 }
 
 /**
@@ -127,13 +126,10 @@ uint8_t *MEM_If_Read (uint32_t Add, uint32_t Len)
   */
 uint16_t MEM_If_CheckAdd(uint32_t Add)
 {
-  if ((Add >= MEM_START_ADD) && (Add < MEM_END_ADD))
-  {
-    return MAL_OK;
-  }
-  else
-  {
-    return MAL_FAIL;
-  }
+    if ((Add >= MEM_START_ADD) && (Add < MEM_END_ADD)) {
+        return MAL_OK;
+    } else {
+        return MAL_FAIL;
+    }
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

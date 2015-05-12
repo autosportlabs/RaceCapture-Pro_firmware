@@ -72,12 +72,9 @@ track_status_t lapstats_get_track_status(void)
 
 int32_t lapstats_get_selected_track_id(void)
 {
-    if (g_activeTrack == NULL)
-    {
+    if (g_activeTrack == NULL) {
         return 0;
-    }
-    else
-    {
+    } else {
         return g_activeTrack->trackId;
     }
 }
@@ -319,7 +316,7 @@ static void processFinishLogic(const GpsSnapshot *gpsSnapshot,
     const GeoPoint point = gpsSnapshot->sample.point;
     const GeoPoint finishPoint = getFinishPoint(track);
     const struct GeoCircle finishCircle = gc_createGeoCircle(finishPoint,
-                                                      targetRadius);
+                                          targetRadius);
     if (!gc_isPointInGeoCircle(&point, finishCircle))
         return;
 
@@ -343,8 +340,7 @@ static void processStartLogic(const GpsSnapshot *gpsSnapshot,
      * track, then we need to disable launch control to prevent hiccups
      * in reporting.
      */
-    if (g_lapCount > 0 && track->track_type == TRACK_TYPE_CIRCUIT)
-    {
+    if (g_lapCount > 0 && track->track_type == TRACK_TYPE_CIRCUIT) {
         lap_started_normal_event(gpsSnapshot);
         return;
     }
@@ -354,8 +350,7 @@ static void processStartLogic(const GpsSnapshot *gpsSnapshot,
      * on this lap start.  This way we can support multiple stage style
      * laps.  This also buys us predictive timing.
      */
-    if (lc_hasLaunched())
-    {
+    if (lc_hasLaunched()) {
         lc_reset();
         lc_setup(track, targetRadius);
     }
@@ -467,8 +462,7 @@ static void lapstats_location_updated(const GpsSnapshot *gps_snapshot)
      * agrees its time.
      */
     //Skip processing sectors bits if we haven't defined any... duh!
-    if (g_sector_enabled)
-    {
+    if (g_sector_enabled) {
         processSectorLogic(gps_snapshot, g_activeTrack, target_radius);
     }
     processFinishLogic(gps_snapshot, g_activeTrack, target_radius);
@@ -485,8 +479,7 @@ static void lapstats_setup(const GpsSnapshot *gps_snapshot)
     const TrackConfig *trackConfig = &(config->TrackConfigs);
     if (trackConfig->auto_detect) {
         track = auto_configure_track(NULL, gp);
-    }
-    else {
+    } else {
         track = &trackConfig->track;
         g_track_status = TRACK_STATUS_FIXED_CONFIG;
         pr_info("track: using fixed config");
@@ -495,25 +488,21 @@ static void lapstats_setup(const GpsSnapshot *gps_snapshot)
 
     if (!track) return;
 
-	g_track_status = TRACK_STATUS_AUTO_DETECTED;
-	g_start_finish_enabled = isStartFinishEnabled(track);
-	g_sector_enabled = isSectorTrackingEnabled(track);
-	lc_reset();
-	lc_setup(track, target_radius);
-	setupGeoTriggers(trackConfig, track);
-	g_configured = 1;
+    g_track_status = TRACK_STATUS_AUTO_DETECTED;
+    g_start_finish_enabled = isStartFinishEnabled(track);
+    g_sector_enabled = isSectorTrackingEnabled(track);
+    lc_reset();
+    lc_setup(track, target_radius);
+    setupGeoTriggers(trackConfig, track);
+    g_configured = 1;
 }
 
 void lapstats_processUpdate(const GpsSnapshot *gps_snapshot)
 {
-    if (!isGpsDataCold())
-    {
-        if (!g_configured)
-        {
+    if (!isGpsDataCold()) {
+        if (!g_configured) {
             lapstats_setup(gps_snapshot);
-        }
-        else
-        {
+        } else {
             lapstats_location_updated(gps_snapshot);
         }
     }

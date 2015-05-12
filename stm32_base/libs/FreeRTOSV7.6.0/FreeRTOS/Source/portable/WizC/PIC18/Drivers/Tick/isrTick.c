@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -63,7 +63,7 @@
     1 tab == 4 spaces!
 */
 
-/* 
+/*
 Changes from V3.0.0
 	+ ISRcode pulled inline to reduce stack-usage.
 
@@ -78,37 +78,35 @@ Changes from V3.0.1
 
 /*
  * ISR for the tick.
- * This increments the tick count and, if using the preemptive scheduler, 
- * performs a context switch.  This must be identical to the manual 
- * context switch in how it stores the context of a task. 
+ * This increments the tick count and, if using the preemptive scheduler,
+ * performs a context switch.  This must be identical to the manual
+ * context switch in how it stores the context of a task.
  */
 
 #ifndef _FREERTOS_DRIVERS_TICK_ISRTICK_C
 #define _FREERTOS_DRIVERS_TICK_ISRTICK_C
 
 {
-	/*
-	 * Was the interrupt the SystemClock?
-	 */
-	if( bCCP1IF && bCCP1IE )
-	{
-		/*
-		 * Reset the interrupt flag
-		 */
-		bCCP1IF = 0;
-	
-		/*
-	 	 * Maintain the tick count.
-	 	 */
-		if( xTaskIncrementTick() != pdFALSE )
-		{
-			/*
-		 	 * Ask for a switch to the highest priority task
-		 	 * that is ready to run.
-		 	 */
-			uxSwitchRequested = pdTRUE;
-		}
-	}
+    /*
+     * Was the interrupt the SystemClock?
+     */
+    if( bCCP1IF && bCCP1IE ) {
+        /*
+         * Reset the interrupt flag
+         */
+        bCCP1IF = 0;
+
+        /*
+         * Maintain the tick count.
+         */
+        if( xTaskIncrementTick() != pdFALSE ) {
+            /*
+             * Ask for a switch to the highest priority task
+             * that is ready to run.
+             */
+            uxSwitchRequested = pdTRUE;
+        }
+    }
 }
 
 #pragma wizcpp uselib     "$__PATHNAME__/Tick.c"

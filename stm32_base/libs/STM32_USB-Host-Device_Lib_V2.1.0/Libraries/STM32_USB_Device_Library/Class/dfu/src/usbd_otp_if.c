@@ -16,14 +16,14 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
   *
   ******************************************************************************
-  */ 
+  */
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_otp_if.h"
@@ -41,8 +41,7 @@ uint16_t OTP_If_CheckAdd(uint32_t Add);
 
 
 /* Private variables ---------------------------------------------------------*/
-DFU_MAL_Prop_TypeDef DFU_Otp_cb =
-  {
+DFU_MAL_Prop_TypeDef DFU_Otp_cb = {
     OTP_IF_STRING,
     NULL, /* Init not supported*/
     NULL, /* DeInit not supported */
@@ -52,8 +51,8 @@ DFU_MAL_Prop_TypeDef DFU_Otp_cb =
     OTP_If_CheckAdd,
     1,  /* Erase Time in ms */
     10  /* Programming Time in ms */
-  };
-  
+};
+
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -65,23 +64,20 @@ DFU_MAL_Prop_TypeDef DFU_Otp_cb =
   */
 uint16_t OTP_If_Write(uint32_t Add, uint32_t Len)
 {
-  uint32_t idx = 0;
-  
-  if  (Len & 0x3) /* Not an aligned data */
-  {
-    for (idx = Len; idx < ((Len & 0xFFFC) + 4); idx++)
-    {
-      MAL_Buffer[idx] = 0xFF;
+    uint32_t idx = 0;
+
+    if  (Len & 0x3) { /* Not an aligned data */
+        for (idx = Len; idx < ((Len & 0xFFFC) + 4); idx++) {
+            MAL_Buffer[idx] = 0xFF;
+        }
     }
-  }
-  
-  /* Data received are Word multiple */
-  for (idx = 0; idx <  Len; idx = idx + 4)
-  {
-    FLASH_ProgramWord(Add, *(uint32_t *)(MAL_Buffer + idx));
-    Add += 4;
-  }
-  return MAL_OK;
+
+    /* Data received are Word multiple */
+    for (idx = 0; idx <  Len; idx = idx + 4) {
+        FLASH_ProgramWord(Add, *(uint32_t *)(MAL_Buffer + idx));
+        Add += 4;
+    }
+    return MAL_OK;
 }
 
 /**
@@ -94,14 +90,13 @@ uint16_t OTP_If_Write(uint32_t Add, uint32_t Len)
 uint8_t *OTP_If_Read (uint32_t Add, uint32_t Len)
 {
 #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
-  uint32_t idx = 0;
-  for (idx = 0; idx < Len; idx += 4)
-  {
-    *(uint32_t*)(MAL_Buffer + idx) = *(uint32_t *)(Add + idx);
-  }
-  return (uint8_t*)(MAL_Buffer);
+    uint32_t idx = 0;
+    for (idx = 0; idx < Len; idx += 4) {
+        *(uint32_t*)(MAL_Buffer + idx) = *(uint32_t *)(Add + idx);
+    }
+    return (uint8_t*)(MAL_Buffer);
 #else
-  return  (uint8_t*)(Add);
+    return  (uint8_t*)(Add);
 #endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
 }
 
@@ -114,13 +109,10 @@ uint8_t *OTP_If_Read (uint32_t Add, uint32_t Len)
   */
 uint16_t OTP_If_CheckAdd(uint32_t Add)
 {
-  if ((Add >= OTP_START_ADD) && (Add < OTP_END_ADD))
-  {
-    return MAL_OK;
-  }
-  else
-  {
-    return MAL_FAIL;
-  }
+    if ((Add >= OTP_START_ADD) && (Add < OTP_END_ADD)) {
+        return MAL_OK;
+    } else {
+        return MAL_FAIL;
+    }
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

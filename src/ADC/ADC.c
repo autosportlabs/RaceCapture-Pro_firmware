@@ -24,7 +24,8 @@
 static Filter g_adc_filter[CONFIG_ADC_CHANNELS];
 static float g_adc_calibrations[CONFIG_ADC_CHANNELS];
 
-int ADC_init(LoggerConfig *loggerConfig) {
+int ADC_init(LoggerConfig *loggerConfig)
+{
     ADCConfig *config = loggerConfig->ADCConfigs;
 
     for (size_t i = 0; i < CONFIG_ADC_CHANNELS; i++) {
@@ -39,7 +40,8 @@ int ADC_init(LoggerConfig *loggerConfig) {
     return ADC_device_init();
 }
 
-void ADC_sample_all(void) {
+void ADC_sample_all(void)
+{
 
     unsigned int a0, a1, a2, a3, a4, a5, a6, a7;
 
@@ -55,7 +57,8 @@ void ADC_sample_all(void) {
     update_filter(&g_adc_filter[7], a7);
 }
 
-float ADC_read(unsigned int channel) {
+float ADC_read(unsigned int channel)
+{
     return (g_adc_filter[channel].current_value * ADC_device_get_channel_scaling(channel))
-            * g_adc_calibrations[channel];
+           * g_adc_calibrations[channel];
 }

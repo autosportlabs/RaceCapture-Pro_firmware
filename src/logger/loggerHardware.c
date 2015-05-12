@@ -16,17 +16,18 @@
 #include "usb_comm.h"
 #include "usart.h"
 
-void InitLoggerHardware(){
+void InitLoggerHardware()
+{
 
-	LoggerConfig *loggerConfig = getWorkingLoggerConfig();
-	usart_init();
-	init_serial();
-	LED_init();
-	imu_init(loggerConfig);
-	ADC_init(loggerConfig);
-	PWM_init(loggerConfig);
-	GPIO_init(loggerConfig);
-	InitFSHardware();
-	timer_init(loggerConfig);
-	CAN_init(loggerConfig);
+    LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+    usart_init();
+    init_serial();
+    LED_init();
+    imu_init(loggerConfig);
+    ADC_init(loggerConfig);
+    PWM_init(loggerConfig);
+    GPIO_init(loggerConfig);
+    InitFSHardware();
+    timer_init(loggerConfig);
+    CAN_init(loggerConfig);
 }

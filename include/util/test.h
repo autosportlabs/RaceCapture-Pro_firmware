@@ -29,9 +29,9 @@
  */
 
 #ifndef RCP_TESTING
-  #define TESTABLE_STATIC static
+#define TESTABLE_STATIC static
 #else
-  #define TESTABLE_STATIC
+#define TESTABLE_STATIC
 #endif /* RCP_TESTING */
 
 #endif /* _TEST_H_ */

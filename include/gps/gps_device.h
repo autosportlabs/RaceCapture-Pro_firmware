@@ -11,9 +11,9 @@
 #include "gps.h"
 
 typedef enum {
-	GPS_MSG_SUCCESS = 0,
-	GPS_MSG_TIMEOUT,
-	GPS_MSG_NONE
+    GPS_MSG_SUCCESS = 0,
+    GPS_MSG_TIMEOUT,
+    GPS_MSG_NONE
 } gps_msg_result_t;
 
 gps_status_t GPS_device_init(uint8_t targetSampleRate, Serial *serial);

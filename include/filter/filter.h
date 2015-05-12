@@ -1,7 +1,7 @@
 
-typedef struct _Filter{
-	float alpha;
-	int current_value;
+typedef struct _Filter {
+    float alpha;
+    int current_value;
 } Filter;
 
 void init_filter(Filter *filter, float alpha);

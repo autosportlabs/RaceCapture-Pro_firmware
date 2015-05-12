@@ -29,7 +29,8 @@
 
 extern unsigned int _CONFIG_HEAP_SIZE;
 
-static void putHeader(const Serial *serial, const char *str) {
+static void putHeader(const Serial *serial, const char *str)
+{
     put_crlf(serial);
     serial->put_s("- - - ");
     serial->put_s(str);
@@ -37,12 +38,14 @@ static void putHeader(const Serial *serial, const char *str) {
     put_crlf(serial);
 }
 
-static void putDataRowHeader(const Serial *serial, const char *str) {
+static void putDataRowHeader(const Serial *serial, const char *str)
+{
     serial->put_s(str);
     serial->put_s(" : ");
 }
 
-void ShowStats(Serial *serial, unsigned int argc, char **argv) {
+void ShowStats(Serial *serial, unsigned int argc, char **argv)
+{
     // Memory Info
     putHeader(serial, "Memory Info");
 
@@ -81,7 +84,8 @@ void ShowStats(Serial *serial, unsigned int argc, char **argv) {
     put_crlf(serial);
 }
 
-void ShowTaskInfo(Serial *serial, unsigned int argc, char **argv) {
+void ShowTaskInfo(Serial *serial, unsigned int argc, char **argv)
+{
     putHeader(serial, "Task Info");
 
     serial->put_s("Status\tPri\tStack\tTask#\tName");
@@ -99,7 +103,8 @@ void ShowTaskInfo(Serial *serial, unsigned int argc, char **argv) {
     put_crlf(serial);
 }
 
-void GetVersion(Serial *serial, unsigned int argc, char **argv) {
+void GetVersion(Serial *serial, unsigned int argc, char **argv)
+{
     putHeader(serial, "Version Info");
     put_nameString(serial, "major", MAJOR_REV_STR);
     put_nameString(serial, "minor", MINOR_REV_STR);
@@ -108,7 +113,8 @@ void GetVersion(Serial *serial, unsigned int argc, char **argv) {
     put_crlf(serial);
 }
 
-void ResetSystem(Serial *serial, unsigned int argc, char **argv) {
+void ResetSystem(Serial *serial, unsigned int argc, char **argv)
+{
     cpu_reset(0);
 }
 

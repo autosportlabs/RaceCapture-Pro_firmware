@@ -30,21 +30,16 @@ void GPSTask(void *pvParameters)
     uint8_t targetSampleRate = decodeSampleRate(getWorkingLoggerConfig()->GPSConfigs.speed.sampleRate);
     lapStats_init();
     gps_status_t gps_status = GPS_init(targetSampleRate, serial);
-    if (!gps_status)
-    {
+    if (!gps_status) {
         pr_error("GPS: Error provisioning\r\n");
     }
 
-    for (;;)
-    {
+    for (;;) {
         gps_msg_result_t result = GPS_processUpdate(serial);
-        if (result == GPS_MSG_SUCCESS)
-        {
+        if (result == GPS_MSG_SUCCESS) {
             const GpsSnapshot snap = getGpsSnapshot();
             lapstats_processUpdate(&snap);
-        }
-        else
-        {
+        } else {
             pr_warning("GPS: timeout\r\n");
         }
     }

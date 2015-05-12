@@ -25,16 +25,16 @@
 
 class NumtoaTest : public CppUnit::TestFixture
 {
-  CPPUNIT_TEST_SUITE( NumtoaTest );
-  CPPUNIT_TEST( testDoubleConversion );
-  CPPUNIT_TEST( testModpFToA );
-  CPPUNIT_TEST_SUITE_END();
+    CPPUNIT_TEST_SUITE( NumtoaTest );
+    CPPUNIT_TEST( testDoubleConversion );
+    CPPUNIT_TEST( testModpFToA );
+    CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp();
-  void tearDown();
-  void testModpFToA();
-  void testDoubleConversion();
+    void setUp();
+    void tearDown();
+    void testModpFToA();
+    void testDoubleConversion();
 };
 
 #endif  // NUMTOATEST_H

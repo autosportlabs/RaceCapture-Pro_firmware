@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -75,7 +75,7 @@ extern "C" {
 #include <xparameters.h>
 
 /*-----------------------------------------------------------
- * Port specific definitions.  
+ * Port specific definitions.
  *
  * The settings in this file configure FreeRTOS correctly for the
  * given hardware and compiler.
@@ -94,13 +94,13 @@ extern "C" {
 #define portBASE_TYPE	long
 
 #if( configUSE_16_BIT_TICKS == 1 )
-	typedef unsigned portSHORT portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffff
+typedef unsigned portSHORT portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffff
 #else
-	typedef unsigned portLONG portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffffffff
+typedef unsigned portLONG portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffffffff
 #endif
-/*-----------------------------------------------------------*/	
+/*-----------------------------------------------------------*/
 
 /* Interrupt control macros and functions. */
 void microblaze_disable_interrupts( void );
@@ -163,75 +163,74 @@ extern volatile unsigned long ulTaskSwitchRequested;
 /* The following structure is used by the FreeRTOS exception handler.  It is
 filled with the MicroBlaze context as it was at the time the exception occurred.
 This is done as an aid to debugging exception occurrences. */
-typedef struct PORT_REGISTER_DUMP
-{
-	/* The following structure members hold the values of the MicroBlaze
-	registers at the time the exception was raised. */
-	unsigned long ulR1_SP;
-	unsigned long ulR2_small_data_area;
-	unsigned long ulR3;
-	unsigned long ulR4;
-	unsigned long ulR5;
-	unsigned long ulR6;
-	unsigned long ulR7;
-	unsigned long ulR8;
-	unsigned long ulR9;
-	unsigned long ulR10;
-	unsigned long ulR11;
-	unsigned long ulR12;
-	unsigned long ulR13_read_write_small_data_area;
-	unsigned long ulR14_return_address_from_interrupt;
-	unsigned long ulR15_return_address_from_subroutine;
-	unsigned long ulR16_return_address_from_trap;
-	unsigned long ulR17_return_address_from_exceptions; /* The exception entry code will copy the BTR into R17 if the exception occurred in the delay slot of a branch instruction. */
-	unsigned long ulR18;
-	unsigned long ulR19;
-	unsigned long ulR20;
-	unsigned long ulR21;
-	unsigned long ulR22;
-	unsigned long ulR23;
-	unsigned long ulR24;
-	unsigned long ulR25;
-	unsigned long ulR26;
-	unsigned long ulR27;
-	unsigned long ulR28;
-	unsigned long ulR29;
-	unsigned long ulR30;
-	unsigned long ulR31;
-	unsigned long ulPC;
-	unsigned long ulESR;
-	unsigned long ulMSR;
-	unsigned long ulEAR;
-	unsigned long ulFSR;
-	unsigned long ulEDR;
+typedef struct PORT_REGISTER_DUMP {
+    /* The following structure members hold the values of the MicroBlaze
+    registers at the time the exception was raised. */
+    unsigned long ulR1_SP;
+    unsigned long ulR2_small_data_area;
+    unsigned long ulR3;
+    unsigned long ulR4;
+    unsigned long ulR5;
+    unsigned long ulR6;
+    unsigned long ulR7;
+    unsigned long ulR8;
+    unsigned long ulR9;
+    unsigned long ulR10;
+    unsigned long ulR11;
+    unsigned long ulR12;
+    unsigned long ulR13_read_write_small_data_area;
+    unsigned long ulR14_return_address_from_interrupt;
+    unsigned long ulR15_return_address_from_subroutine;
+    unsigned long ulR16_return_address_from_trap;
+    unsigned long ulR17_return_address_from_exceptions; /* The exception entry code will copy the BTR into R17 if the exception occurred in the delay slot of a branch instruction. */
+    unsigned long ulR18;
+    unsigned long ulR19;
+    unsigned long ulR20;
+    unsigned long ulR21;
+    unsigned long ulR22;
+    unsigned long ulR23;
+    unsigned long ulR24;
+    unsigned long ulR25;
+    unsigned long ulR26;
+    unsigned long ulR27;
+    unsigned long ulR28;
+    unsigned long ulR29;
+    unsigned long ulR30;
+    unsigned long ulR31;
+    unsigned long ulPC;
+    unsigned long ulESR;
+    unsigned long ulMSR;
+    unsigned long ulEAR;
+    unsigned long ulFSR;
+    unsigned long ulEDR;
 
-	/* A human readable description of the exception cause.  The strings used
-	are the same as the #define constant names found in the
-	microblaze_exceptions_i.h header file */
-	signed char *pcExceptionCause;
+    /* A human readable description of the exception cause.  The strings used
+    are the same as the #define constant names found in the
+    microblaze_exceptions_i.h header file */
+    signed char *pcExceptionCause;
 
-	/* The human readable name of the task that was running at the time the
-	exception occurred.  This is the name that was given to the task when the
-	task was created using the FreeRTOS xTaskCreate() API function. */
-	signed char *pcCurrentTaskName;
+    /* The human readable name of the task that was running at the time the
+    exception occurred.  This is the name that was given to the task when the
+    task was created using the FreeRTOS xTaskCreate() API function. */
+    signed char *pcCurrentTaskName;
 
-	/* The handle of the task that was running a the time the exception
-	occurred. */
-	void * xCurrentTaskHandle;
+    /* The handle of the task that was running a the time the exception
+    occurred. */
+    void * xCurrentTaskHandle;
 
 } xPortRegisterDump;
 
 
 /*
- * Installs pxHandler as the interrupt handler for the peripheral specified by 
+ * Installs pxHandler as the interrupt handler for the peripheral specified by
  * the ucInterruptID parameter.
  *
  * ucInterruptID:
- * 
+ *
  * The ID of the peripheral that will have pxHandler assigned as its interrupt
- * handler.  Peripheral IDs are defined in the xparameters.h header file, which 
- * is itself part of the BSP project.  For example, in the official demo 
- * application for this port, xparameters.h defines the following IDs for the 
+ * handler.  Peripheral IDs are defined in the xparameters.h header file, which
+ * is itself part of the BSP project.  For example, in the official demo
+ * application for this port, xparameters.h defines the following IDs for the
  * four possible interrupt sources:
  *
  * XPAR_INTC_0_UARTLITE_1_VEC_ID  -  for the UARTlite peripheral.
@@ -241,7 +240,7 @@ typedef struct PORT_REGISTER_DUMP
  *
  *
  * pxHandler:
- * 
+ *
  * A pointer to the interrupt handler function itself.  This must be a void
  * function that takes a (void *) parameter.
  *
@@ -253,7 +252,7 @@ typedef struct PORT_REGISTER_DUMP
  * the peripheral instance variable, so it can be accessed from inside the
  * handler function.
  *
- * 
+ *
  * pdPASS is returned if the function executes successfully.  Any other value
  * being returned indicates that the function did not execute correctly.
  */
@@ -261,15 +260,15 @@ portBASE_TYPE xPortInstallInterruptHandler( unsigned char ucInterruptID, XInterr
 
 
 /*
- * Enables the interrupt, within the interrupt controller, for the peripheral 
+ * Enables the interrupt, within the interrupt controller, for the peripheral
  * specified by the ucInterruptID parameter.
  *
  * ucInterruptID:
- * 
+ *
  * The ID of the peripheral that will have its interrupt enabled in the
- * interrupt controller.  Peripheral IDs are defined in the xparameters.h header 
- * file, which is itself part of the BSP project.  For example, in the official 
- * demo application for this port, xparameters.h defines the following IDs for 
+ * interrupt controller.  Peripheral IDs are defined in the xparameters.h header
+ * file, which is itself part of the BSP project.  For example, in the official
+ * demo application for this port, xparameters.h defines the following IDs for
  * the four possible interrupt sources:
  *
  * XPAR_INTC_0_UARTLITE_1_VEC_ID  -  for the UARTlite peripheral.
@@ -281,15 +280,15 @@ portBASE_TYPE xPortInstallInterruptHandler( unsigned char ucInterruptID, XInterr
 void vPortEnableInterrupt( unsigned char ucInterruptID );
 
 /*
- * Disables the interrupt, within the interrupt controller, for the peripheral 
+ * Disables the interrupt, within the interrupt controller, for the peripheral
  * specified by the ucInterruptID parameter.
  *
  * ucInterruptID:
- * 
+ *
  * The ID of the peripheral that will have its interrupt disabled in the
- * interrupt controller.  Peripheral IDs are defined in the xparameters.h header 
- * file, which is itself part of the BSP project.  For example, in the official 
- * demo application for this port, xparameters.h defines the following IDs for 
+ * interrupt controller.  Peripheral IDs are defined in the xparameters.h header
+ * file, which is itself part of the BSP project.  For example, in the official
+ * demo application for this port, xparameters.h defines the following IDs for
  * the four possible interrupt sources:
  *
  * XPAR_INTC_0_UARTLITE_1_VEC_ID  -  for the UARTlite peripheral.
@@ -302,45 +301,45 @@ void vPortDisableInterrupt( unsigned char ucInterruptID );
 
 /*
  * This is an application defined callback function used to install the tick
- * interrupt handler.  It is provided as an application callback because the 
- * kernel will run on lots of different MicroBlaze and FPGA configurations - not 
- * all of which will have the same timer peripherals defined or available.  This 
- * example uses the AXI Timer 0.  If that is available on your hardware platform 
- * then this example callback implementation should not require modification.  
- * The name of the interrupt handler that should be installed is vPortTickISR(), 
+ * interrupt handler.  It is provided as an application callback because the
+ * kernel will run on lots of different MicroBlaze and FPGA configurations - not
+ * all of which will have the same timer peripherals defined or available.  This
+ * example uses the AXI Timer 0.  If that is available on your hardware platform
+ * then this example callback implementation should not require modification.
+ * The name of the interrupt handler that should be installed is vPortTickISR(),
  * which the function below declares as an extern.
- */ 
+ */
 void vApplicationSetupTimerInterrupt( void );
 
-/* 
+/*
  * This is an application defined callback function used to clear whichever
  * interrupt was installed by the the vApplicationSetupTimerInterrupt() callback
- * function - in this case the interrupt generated by the AXI timer.  It is 
- * provided as an application callback because the kernel will run on lots of 
- * different MicroBlaze and FPGA configurations - not all of which will have the 
- * same timer peripherals defined or available.  This example uses the AXI Timer 0.  
- * If that is available on your hardware platform then this example callback 
+ * function - in this case the interrupt generated by the AXI timer.  It is
+ * provided as an application callback because the kernel will run on lots of
+ * different MicroBlaze and FPGA configurations - not all of which will have the
+ * same timer peripherals defined or available.  This example uses the AXI Timer 0.
+ * If that is available on your hardware platform then this example callback
  * implementation should not require modification provided the example definition
- * of vApplicationSetupTimerInterrupt() is also not modified. 
+ * of vApplicationSetupTimerInterrupt() is also not modified.
  */
 void vApplicationClearTimerInterrupt( void );
 
 /*
  * vPortExceptionsInstallHandlers() is only available when the MicroBlaze
- * is configured to include exception functionality, and 
+ * is configured to include exception functionality, and
  * configINSTALL_EXCEPTION_HANDLERS is set to 1 in FreeRTOSConfig.h.
  *
  * vPortExceptionsInstallHandlers() installs the FreeRTOS exception handler
- * for every possible exception cause.  
+ * for every possible exception cause.
  *
  * vPortExceptionsInstallHandlers() can be called explicitly from application
  * code.  After that is done, the default FreeRTOS exception handler that will
- * have been installed can be replaced for any specific exception cause by using 
+ * have been installed can be replaced for any specific exception cause by using
  * the standard Xilinx library function microblaze_register_exception_handler().
  *
- * If vPortExceptionsInstallHandlers() is not called explicitly by the 
+ * If vPortExceptionsInstallHandlers() is not called explicitly by the
  * application, it will be called automatically by the kernel the first time
- * xPortInstallInterruptHandler() is called.  At that time, any exception 
+ * xPortInstallInterruptHandler() is called.  At that time, any exception
  * handlers that may have already been installed will be replaced.
  *
  * See the description of vApplicationExceptionRegisterDump() for information
@@ -349,16 +348,16 @@ void vApplicationClearTimerInterrupt( void );
 void vPortExceptionsInstallHandlers( void );
 
 /*
- * The FreeRTOS exception handler fills an xPortRegisterDump structure (defined 
- * in portmacro.h) with the MicroBlaze context, as it was at the time the 
+ * The FreeRTOS exception handler fills an xPortRegisterDump structure (defined
+ * in portmacro.h) with the MicroBlaze context, as it was at the time the
  * exception occurred.  The exception handler then calls
  * vApplicationExceptionRegisterDump(), passing in the completed
  * xPortRegisterDump structure as its parameter.
  *
  * The FreeRTOS kernel provides its own implementation of
- * vApplicationExceptionRegisterDump(), but the kernel provided implementation 
- * is declared as being 'weak'.  The weak definition allows the application 
- * writer to provide their own implementation, should they wish to use the 
+ * vApplicationExceptionRegisterDump(), but the kernel provided implementation
+ * is declared as being 'weak'.  The weak definition allows the application
+ * writer to provide their own implementation, should they wish to use the
  * register dump information.  For example, an implementation could be provided
  * that wrote the register dump data to a display, or a UART port.
  */

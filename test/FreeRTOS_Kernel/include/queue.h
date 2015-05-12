@@ -52,7 +52,7 @@
 */
 
 #ifndef INC_FREERTOS_H
-	#error "#include FreeRTOS.h" must appear in source files before "#include queue.h"
+#error "#include FreeRTOS.h" must appear in source files before "#include queue.h"
 #endif
 
 
@@ -1247,7 +1247,7 @@ portBASE_TYPE xQueueGiveMutexRecursive( xQueueHandle xMutex );
  * name that the kernel aware debugger will display.
  */
 #if configQUEUE_REGISTRY_SIZE > 0
-	void vQueueAddToRegistry( xQueueHandle xQueue, signed char *pcName );
+void vQueueAddToRegistry( xQueueHandle xQueue, signed char *pcName );
 #endif
 
 

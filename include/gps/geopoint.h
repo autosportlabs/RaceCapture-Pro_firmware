@@ -24,8 +24,8 @@
 #include <stdbool.h>
 
 typedef struct _GeoPoint {
-	float latitude;
-	float longitude;
+    float latitude;
+    float longitude;
 } GeoPoint;
 
 // Make into Enum?

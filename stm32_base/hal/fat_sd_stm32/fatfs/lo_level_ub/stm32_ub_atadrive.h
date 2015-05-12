@@ -27,7 +27,7 @@ int ATA_disk_initialize(void);
 int ATA_disk_status(void);
 int ATA_disk_read(BYTE *buff, DWORD sector, BYTE count);
 int ATA_disk_write(const BYTE *buff, DWORD sector, BYTE count);
-int ATA_disk_ioctl(BYTE cmd, void *buff); 
+int ATA_disk_ioctl(BYTE cmd, void *buff);
 
 
 //--------------------------------------------------------------

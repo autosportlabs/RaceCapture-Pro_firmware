@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -94,11 +94,11 @@ portSTACK_TYPE and portBASE_TYPE. */
 #define portBASE_TYPE	long
 
 #if( configUSE_16_BIT_TICKS == 1 )
-	typedef unsigned portSHORT portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffff
+typedef unsigned portSHORT portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffff
 #else
-	typedef unsigned portLONG portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffffffff
+typedef unsigned portLONG portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffffffff
 #endif
 /*-----------------------------------------------------------*/
 
@@ -124,21 +124,21 @@ save and restore clobbered registers manually. */
 
 #define portYIELD_FROM_ISR( x )	if( ( x ) != pdFALSE ) portYIELD()
 
-/* These macros should not be called directly, but through the 
-taskENTER_CRITICAL() and taskEXIT_CRITICAL() macros.  An extra check is 
-performed if configASSERT() is defined to ensure an assertion handler does not 
-inadvertently attempt to lower the IPL when the call to assert was triggered 
-because the IPL value was found to be above	configMAX_SYSCALL_INTERRUPT_PRIORITY 
-when an ISR safe FreeRTOS API function was executed.  ISR safe FreeRTOS API 
-functions are those that end in FromISR.  FreeRTOS maintains a separate 
-interrupt API to ensure API function and interrupt entry is as fast and as 
+/* These macros should not be called directly, but through the
+taskENTER_CRITICAL() and taskEXIT_CRITICAL() macros.  An extra check is
+performed if configASSERT() is defined to ensure an assertion handler does not
+inadvertently attempt to lower the IPL when the call to assert was triggered
+because the IPL value was found to be above	configMAX_SYSCALL_INTERRUPT_PRIORITY
+when an ISR safe FreeRTOS API function was executed.  ISR safe FreeRTOS API
+functions are those that end in FromISR.  FreeRTOS maintains a separate
+interrupt API to ensure API function and interrupt entry is as fast and as
 simple as possible. */
 #define portENABLE_INTERRUPTS() 	__set_interrupt_level( ( unsigned char ) 0 )
 #ifdef configASSERT
-	#define portASSERT_IF_INTERRUPT_PRIORITY_INVALID() configASSERT( ( __get_interrupt_level() <= configMAX_SYSCALL_INTERRUPT_PRIORITY ) )
-	#define portDISABLE_INTERRUPTS() 	if( __get_interrupt_level() < configMAX_SYSCALL_INTERRUPT_PRIORITY ) __set_interrupt_level( ( unsigned char ) configMAX_SYSCALL_INTERRUPT_PRIORITY )
+#define portASSERT_IF_INTERRUPT_PRIORITY_INVALID() configASSERT( ( __get_interrupt_level() <= configMAX_SYSCALL_INTERRUPT_PRIORITY ) )
+#define portDISABLE_INTERRUPTS() 	if( __get_interrupt_level() < configMAX_SYSCALL_INTERRUPT_PRIORITY ) __set_interrupt_level( ( unsigned char ) configMAX_SYSCALL_INTERRUPT_PRIORITY )
 #else
-	#define portDISABLE_INTERRUPTS() 	__set_interrupt_level( ( unsigned char ) configMAX_SYSCALL_INTERRUPT_PRIORITY )
+#define portDISABLE_INTERRUPTS() 	__set_interrupt_level( ( unsigned char ) configMAX_SYSCALL_INTERRUPT_PRIORITY )
 #endif
 
 /* Critical nesting counts are stored in the TCB. */

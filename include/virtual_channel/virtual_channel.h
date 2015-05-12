@@ -12,9 +12,9 @@
 #include "loggerConfig.h"
 #include "loggerNotifications.h"
 
-typedef struct _VirtualChannel{
-	ChannelConfig config;
-	float currentValue;
+typedef struct _VirtualChannel {
+    ChannelConfig config;
+    float currentValue;
 } VirtualChannel;
 
 #define INVALID_VIRTUAL_CHANNEL -1

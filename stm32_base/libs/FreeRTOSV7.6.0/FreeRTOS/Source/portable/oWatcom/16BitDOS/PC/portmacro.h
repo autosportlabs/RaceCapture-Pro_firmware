@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -71,7 +71,7 @@ extern "C" {
 #endif
 
 /*-----------------------------------------------------------
- * Port specific definitions.  
+ * Port specific definitions.
  *
  * The settings in this file configure FreeRTOS correctly for the
  * given hardware and compiler.
@@ -90,11 +90,11 @@ extern "C" {
 #define portBASE_TYPE	portSHORT
 
 #if( configUSE_16_BIT_TICKS == 1 )
-	typedef unsigned portSHORT portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffff
+typedef unsigned portSHORT portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffff
 #else
-	typedef unsigned portLONG portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffffffff
+typedef unsigned portLONG portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffffffff
 #endif
 /*-----------------------------------------------------------*/
 
@@ -104,7 +104,7 @@ void portLOCAL_ENTER_CRITICAL( void );
 #pragma aux portLOCAL_ENTER_CRITICAL = 	"pushf" \
 										"cli";
 #define portENTER_CRITICAL() portLOCAL_ENTER_CRITICAL()
-										
+
 void portEXIT_CRITICAL( void );
 #pragma aux portEXIT_CRITICAL	=		"popf";
 
@@ -118,7 +118,7 @@ void portENABLE_INTERRUPTS( void );
 /* Architecture specifics. */
 #define portSTACK_GROWTH		( -1 )
 #define portSWITCH_INT_NUMBER 	0x80
-#define portYIELD()				__asm{ int portSWITCH_INT_NUMBER } 
+#define portYIELD()				__asm{ int portSWITCH_INT_NUMBER }
 #define portDOS_TICK_RATE		( 18.20648 )
 #define portTICK_RATE_MS        ( ( portTickType ) 1000 / configTICK_RATE_HZ )
 #define portTICKS_PER_DOS_TICK	( ( unsigned portSHORT ) ( ( ( portDOUBLE ) configTICK_RATE_HZ / portDOS_TICK_RATE ) + 0.5 ) )

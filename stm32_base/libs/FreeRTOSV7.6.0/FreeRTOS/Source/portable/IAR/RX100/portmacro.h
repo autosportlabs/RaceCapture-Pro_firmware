@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -97,11 +97,11 @@ portSTACK_TYPE and portBASE_TYPE. */
 #define portBASE_TYPE	long
 
 #if( configUSE_16_BIT_TICKS == 1 )
-	typedef unsigned portSHORT portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffff
+typedef unsigned portSHORT portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffff
 #else
-	typedef unsigned portLONG portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffffffff
+typedef unsigned portLONG portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffffffff
 #endif
 /*-----------------------------------------------------------*/
 
@@ -133,10 +133,10 @@ interrupt API to ensure API function and interrupt entry is as fast and as
 simple as possible. */
 #define portENABLE_INTERRUPTS() 	__set_interrupt_level( ( unsigned char ) 0 )
 #ifdef configASSERT
-	#define portASSERT_IF_INTERRUPT_PRIORITY_INVALID() configASSERT( ( __get_interrupt_level() <= configMAX_SYSCALL_INTERRUPT_PRIORITY ) )
-	#define portDISABLE_INTERRUPTS() 	if( __get_interrupt_level() < configMAX_SYSCALL_INTERRUPT_PRIORITY ) __set_interrupt_level( ( unsigned char ) configMAX_SYSCALL_INTERRUPT_PRIORITY )
+#define portASSERT_IF_INTERRUPT_PRIORITY_INVALID() configASSERT( ( __get_interrupt_level() <= configMAX_SYSCALL_INTERRUPT_PRIORITY ) )
+#define portDISABLE_INTERRUPTS() 	if( __get_interrupt_level() < configMAX_SYSCALL_INTERRUPT_PRIORITY ) __set_interrupt_level( ( unsigned char ) configMAX_SYSCALL_INTERRUPT_PRIORITY )
 #else
-	#define portDISABLE_INTERRUPTS() 	__set_interrupt_level( ( unsigned char ) configMAX_SYSCALL_INTERRUPT_PRIORITY )
+#define portDISABLE_INTERRUPTS() 	__set_interrupt_level( ( unsigned char ) configMAX_SYSCALL_INTERRUPT_PRIORITY )
 #endif
 
 /* Critical nesting counts are stored in the TCB. */
@@ -154,10 +154,10 @@ extern void vTaskExitCritical( void );
 
 /* Tickless idle/low power functionality. */
 #if configUSE_TICKLESS_IDLE == 1
-	#ifndef portSUPPRESS_TICKS_AND_SLEEP
-		extern void vPortSuppressTicksAndSleep( portTickType xExpectedIdleTime );
-		#define portSUPPRESS_TICKS_AND_SLEEP( xExpectedIdleTime ) vPortSuppressTicksAndSleep( xExpectedIdleTime )
-	#endif
+#ifndef portSUPPRESS_TICKS_AND_SLEEP
+extern void vPortSuppressTicksAndSleep( portTickType xExpectedIdleTime );
+#define portSUPPRESS_TICKS_AND_SLEEP( xExpectedIdleTime ) vPortSuppressTicksAndSleep( xExpectedIdleTime )
+#endif
 #endif
 
 /*-----------------------------------------------------------*/

@@ -12,18 +12,18 @@
 
 class LoggerDataTest : public CppUnit::TestFixture
 {
-  CPPUNIT_TEST_SUITE( LoggerDataTest );
-  CPPUNIT_TEST( testMappedValue );
-  CPPUNIT_TEST_SUITE_END();
+    CPPUNIT_TEST_SUITE( LoggerDataTest );
+    CPPUNIT_TEST( testMappedValue );
+    CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp();
-  void tearDown();
+    void setUp();
+    void tearDown();
 
-  void testAnalogChannels();
-  void testGpsChannels();
-  void testImuChannels();
-  void testMappedValue();
+    void testAnalogChannels();
+    void testGpsChannels();
+    void testImuChannels();
+    void testMappedValue();
 };
 
 #endif /* LOGGERDATA_TEST_H_ */

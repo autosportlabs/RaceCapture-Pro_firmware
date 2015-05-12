@@ -12,28 +12,28 @@
 #include <stdint.h>
 
 typedef enum {
-	SERIAL_USB = 0,
-	SERIAL_GPS,
-	SERIAL_TELEMETRY,
-	SERIAL_WIRELESS,
-	SERIAL_AUX
+    SERIAL_USB = 0,
+    SERIAL_GPS,
+    SERIAL_TELEMETRY,
+    SERIAL_WIRELESS,
+    SERIAL_AUX
 } serial_id_t;
 
 #define SERIAL_COUNT 5
 
-typedef struct _Serial{
+typedef struct _Serial {
 
-	void (*init)(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud);
-	int (*get_c_wait)(char *c, size_t delay);
-	char (*get_c)(void);
+    void (*init)(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud);
+    int (*get_c_wait)(char *c, size_t delay);
+    char (*get_c)(void);
 
-	int (*get_line)(char *s, int len);
-	int (*get_line_wait)(char *s, int len, size_t delay);
+    int (*get_line)(char *s, int len);
+    int (*get_line_wait)(char *s, int len, size_t delay);
 
-	void (*put_c)(char c);
-	void (*put_s)(const char *);
+    void (*put_c)(char c);
+    void (*put_s)(const char *);
 
-	void (*flush)(void);
+    void (*flush)(void);
 
 } Serial;
 

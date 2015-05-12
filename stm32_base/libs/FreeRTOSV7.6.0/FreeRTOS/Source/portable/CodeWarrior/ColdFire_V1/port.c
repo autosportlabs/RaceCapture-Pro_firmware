@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -91,131 +91,126 @@ static unsigned long ulCriticalNesting = 0x9999UL;
 portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE * pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
 {
 
-unsigned long ulOriginalA5;
+    unsigned long ulOriginalA5;
 
-	__asm{ MOVE.L A5, ulOriginalA5 };
+    __asm { MOVE.L A5, ulOriginalA5 };
 
 
-	*pxTopOfStack = (portSTACK_TYPE) 0xDEADBEEF;
-	pxTopOfStack--;
+    *pxTopOfStack = (portSTACK_TYPE) 0xDEADBEEF;
+    pxTopOfStack--;
 
-	/* Exception stack frame starts with the return address. */
-	*pxTopOfStack = ( portSTACK_TYPE ) pxCode;
-	pxTopOfStack--;
+    /* Exception stack frame starts with the return address. */
+    *pxTopOfStack = ( portSTACK_TYPE ) pxCode;
+    pxTopOfStack--;
 
-	*pxTopOfStack = ( portINITIAL_FORMAT_VECTOR << 16UL ) | ( portINITIAL_STATUS_REGISTER );
-	pxTopOfStack--;
+    *pxTopOfStack = ( portINITIAL_FORMAT_VECTOR << 16UL ) | ( portINITIAL_STATUS_REGISTER );
+    pxTopOfStack--;
 
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x0; /*FP*/
-	pxTopOfStack -= 14; /* A5 to D0. */
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x0; /*FP*/
+    pxTopOfStack -= 14; /* A5 to D0. */
 
-	/* Parameter in A0. */
-	*( pxTopOfStack + 8 ) = ( portSTACK_TYPE ) pvParameters;
+    /* Parameter in A0. */
+    *( pxTopOfStack + 8 ) = ( portSTACK_TYPE ) pvParameters;
 
-	/* A5 must be maintained as it is resurved by the compiler. */
-	*( pxTopOfStack + 13 ) = ulOriginalA5;
+    /* A5 must be maintained as it is resurved by the compiler. */
+    *( pxTopOfStack + 13 ) = ulOriginalA5;
 
-	return pxTopOfStack;  
+    return pxTopOfStack;
 }
 /*-----------------------------------------------------------*/
 
 portBASE_TYPE xPortStartScheduler( void )
 {
-extern void vPortStartFirstTask( void );
+    extern void vPortStartFirstTask( void );
 
-	ulCriticalNesting = 0UL;
+    ulCriticalNesting = 0UL;
 
-	/* Configure a timer to generate the tick interrupt. */
-	prvSetupTimerInterrupt();
+    /* Configure a timer to generate the tick interrupt. */
+    prvSetupTimerInterrupt();
 
-	/* Start the first task executing. */
-	vPortStartFirstTask();
+    /* Start the first task executing. */
+    vPortStartFirstTask();
 
-	return pdFALSE;
+    return pdFALSE;
 }
 /*-----------------------------------------------------------*/
 
 static void prvSetupTimerInterrupt( void )
-{				
-	/* Prescale by 1 - ie no prescale. */
-	RTCSC |= 8;
-	
-	/* Compare match value. */
-	RTCMOD = portRTC_CLOCK_HZ / configTICK_RATE_HZ;
-	
-	/* Enable the RTC to generate interrupts - interrupts are already disabled
-	when this code executes. */
-	RTCSC_RTIE = 1;
+{
+    /* Prescale by 1 - ie no prescale. */
+    RTCSC |= 8;
+
+    /* Compare match value. */
+    RTCMOD = portRTC_CLOCK_HZ / configTICK_RATE_HZ;
+
+    /* Enable the RTC to generate interrupts - interrupts are already disabled
+    when this code executes. */
+    RTCSC_RTIE = 1;
 }
 /*-----------------------------------------------------------*/
 
 void vPortEndScheduler( void )
 {
-	/* Not implemented as there is nothing to return to. */
+    /* Not implemented as there is nothing to return to. */
 }
 /*-----------------------------------------------------------*/
 
 void vPortEnterCritical( void )
 {
-	if( ulCriticalNesting == 0UL )
-	{
-		/* Guard against context switches being pended simultaneously with a
-		critical section being entered. */
-		do
-		{
-			portDISABLE_INTERRUPTS();
-			if( INTC_FRC == 0UL )
-			{
-				break;
-			}
+    if( ulCriticalNesting == 0UL ) {
+        /* Guard against context switches being pended simultaneously with a
+        critical section being entered. */
+        do {
+            portDISABLE_INTERRUPTS();
+            if( INTC_FRC == 0UL ) {
+                break;
+            }
 
-			portENABLE_INTERRUPTS();
+            portENABLE_INTERRUPTS();
 
-		} while( 1 );
-	}
-	ulCriticalNesting++;
+        } while( 1 );
+    }
+    ulCriticalNesting++;
 }
 /*-----------------------------------------------------------*/
 
 void vPortExitCritical( void )
 {
-	ulCriticalNesting--;
-	if( ulCriticalNesting == 0 )
-	{
-		portENABLE_INTERRUPTS();
-	}
+    ulCriticalNesting--;
+    if( ulCriticalNesting == 0 ) {
+        portENABLE_INTERRUPTS();
+    }
 }
 /*-----------------------------------------------------------*/
 
 void vPortYieldHandler( void )
 {
-unsigned long ulSavedInterruptMask;
+    unsigned long ulSavedInterruptMask;
 
-	ulSavedInterruptMask = portSET_INTERRUPT_MASK_FROM_ISR();
-	{
-		/* Note this will clear all forced interrupts - this is done for speed. */
-		INTC_CFRC = 0x3E;
-		vTaskSwitchContext();
-	}
-	portCLEAR_INTERRUPT_MASK_FROM_ISR( ulSavedInterruptMask );
+    ulSavedInterruptMask = portSET_INTERRUPT_MASK_FROM_ISR();
+    {
+        /* Note this will clear all forced interrupts - this is done for speed. */
+        INTC_CFRC = 0x3E;
+        vTaskSwitchContext();
+    }
+    portCLEAR_INTERRUPT_MASK_FROM_ISR( ulSavedInterruptMask );
 }
 /*-----------------------------------------------------------*/
 
 void interrupt VectorNumber_Vrtc vPortTickISR( void )
 {
-unsigned long ulSavedInterruptMask;
+    unsigned long ulSavedInterruptMask;
 
-	/* Clear the interrupt. */
-	RTCSC |= RTCSC_RTIF_MASK;
+    /* Clear the interrupt. */
+    RTCSC |= RTCSC_RTIF_MASK;
 
-	/* Increment the RTOS tick. */
-	ulSavedInterruptMask = portSET_INTERRUPT_MASK_FROM_ISR();
-	{
-		if( xTaskIncrementTick() != pdFALSE )
-		{
-			taskYIELD();
-		}
-	}
-	portCLEAR_INTERRUPT_MASK_FROM_ISR( ulSavedInterruptMask );
+    /* Increment the RTOS tick. */
+    ulSavedInterruptMask = portSET_INTERRUPT_MASK_FROM_ISR();
+    {
+        if( xTaskIncrementTick() != pdFALSE ) {
+            taskYIELD();
+        }
+    }
+    portCLEAR_INTERRUPT_MASK_FROM_ISR( ulSavedInterruptMask );
 }
 
