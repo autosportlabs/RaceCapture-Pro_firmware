@@ -1,3 +1,3 @@
-find -name '*.c' | xargs astyle --style=linux
-find -name '*.h' | xargs astyle --style=linux
+find -name '*.c' | xargs astyle -n --style=linux
+find -name '*.h' | xargs astyle -n --style=linux
 
