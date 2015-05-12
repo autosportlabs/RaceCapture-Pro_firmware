@@ -21,11 +21,11 @@ typedef struct _TimeLoc {
 	millis_t time;
 } TimeLoc;
 
-void gpsConfigChanged(void);
+void lapstats_config_changed(void);
 
 void lapStats_init();
 
-void lapStats_processUpdate(const GpsSnapshot *gpsSnapshot);
+void lapstats_processUpdate(const GpsSnapshot *gpsSnapshot);
 
 track_status_t lapstats_get_track_status( void );
 
