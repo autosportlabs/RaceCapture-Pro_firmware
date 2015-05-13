@@ -49,3 +49,11 @@ Mk2 Building Requirements
 	
 
 * To flash, enter the stm32_base directory and create a symlink (or copy) the openocd config file matching the adpater you are using. if you have an unsupported adapter, consult the openocd documentation for an appropriate configuration script.
+
+===============================
+Steps before submitting a pull request
+===============================
+* Ensure any 3rd party code you are adding is compatible with our license
+* Add appropriate unit tests as needed. Compile and run the tests, ensuring they pass (no regressions)
+* run the ./do_style.sh script on the entire source tree to ensure source files are correctly formatted
+* submit PR and do a barrel roll!
