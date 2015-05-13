@@ -15,9 +15,9 @@
 #include "loggerConfig.h"
 
 enum LoggerMessageType {
-   LoggerMessageType_Sample,
-   LoggerMessageType_Start,
-   LoggerMessageType_Stop,
+    LoggerMessageType_Sample,
+    LoggerMessageType_Start,
+    LoggerMessageType_Stop,
 };
 
 /*
@@ -27,47 +27,46 @@ enum LoggerMessageType {
  * and int64_t if we want to gaurantee this going forward.
  */
 enum SampleData {
-   SampleData_Int_Noarg,
-   SampleData_Int,
-   SampleData_LongLong_Noarg,
-   SampleData_LongLong,
-   SampleData_Float_Noarg,
-   SampleData_Float,
-   SampleData_Double_Noarg,
-   SampleData_Double,
+    SampleData_Int_Noarg,
+    SampleData_Int,
+    SampleData_LongLong_Noarg,
+    SampleData_LongLong,
+    SampleData_Float_Noarg,
+    SampleData_Float,
+    SampleData_Double_Noarg,
+    SampleData_Double,
 };
 
 typedef struct _ChannelSample {
-   ChannelConfig *cfg;
-   size_t channelIndex;
-   bool populated;
+    ChannelConfig *cfg;
+    size_t channelIndex;
+    bool populated;
 
-   enum SampleData sampleData;
-   union {
-      int (*get_int_sample)(int);
-      long long (*get_longlong_sample)(int);
-      float (*get_float_sample)(int);
-      double (*get_double_sample)(int);
-      int (*get_int_sample_noarg)();
-      long long (*get_longlong_sample_noarg)();
-      float (*get_float_sample_noarg)();
-      double (*get_double_sample_noarg)();
-   };
+    enum SampleData sampleData;
+    union {
+        int (*get_int_sample)(int);
+        long long (*get_longlong_sample)(int);
+        float (*get_float_sample)(int);
+        double (*get_double_sample)(int);
+        int (*get_int_sample_noarg)();
+        long long (*get_longlong_sample_noarg)();
+        float (*get_float_sample_noarg)();
+        double (*get_double_sample_noarg)();
+    };
 
-   union {
-      int valueInt;
-      long long valueLongLong;
-      float valueFloat;
-      double valueDouble;
-   };
+    union {
+        int valueInt;
+        long long valueLongLong;
+        float valueFloat;
+        double valueDouble;
+    };
 } ChannelSample;
 
-typedef struct _LoggerMessage
-{
-	enum LoggerMessageType type;
-	size_t sampleCount;
+typedef struct _LoggerMessage {
+    enum LoggerMessageType type;
+    size_t sampleCount;
     size_t ticks;
-	ChannelSample *channelSamples;
+    ChannelSample *channelSamples;
 } LoggerMessage;
 
 ChannelSample* create_channel_sample_buffer(LoggerConfig *loggerConfig, size_t channelCount);

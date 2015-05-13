@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -109,72 +109,72 @@ void vPortSetupTimerInterrupt( void );
  */
 portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
 {
-	/*
-		Place a few bytes of known values on the bottom of the stack.
-		This is just useful for debugging and can be included if required.
+    /*
+    	Place a few bytes of known values on the bottom of the stack.
+    	This is just useful for debugging and can be included if required.
 
-		*pxTopOfStack = ( portSTACK_TYPE ) 0x1111;
-		pxTopOfStack--;
-		*pxTopOfStack = ( portSTACK_TYPE ) 0x2222;
-		pxTopOfStack--;
-		*pxTopOfStack = ( portSTACK_TYPE ) 0x3333;
-		pxTopOfStack--;
-	*/
+    	*pxTopOfStack = ( portSTACK_TYPE ) 0x1111;
+    	pxTopOfStack--;
+    	*pxTopOfStack = ( portSTACK_TYPE ) 0x2222;
+    	pxTopOfStack--;
+    	*pxTopOfStack = ( portSTACK_TYPE ) 0x3333;
+    	pxTopOfStack--;
+    */
 
-	/* The msp430 automatically pushes the PC then SR onto the stack before
-	executing an ISR.  We want the stack to look just as if this has happened
-	so place a pointer to the start of the task on the stack first - followed
-	by the flags we want the task to use when it starts up. */
-	*pxTopOfStack = ( portSTACK_TYPE ) pxCode;
-	pxTopOfStack--;
-	*pxTopOfStack = portFLAGS_INT_ENABLED;
-	pxTopOfStack--;
+    /* The msp430 automatically pushes the PC then SR onto the stack before
+    executing an ISR.  We want the stack to look just as if this has happened
+    so place a pointer to the start of the task on the stack first - followed
+    by the flags we want the task to use when it starts up. */
+    *pxTopOfStack = ( portSTACK_TYPE ) pxCode;
+    pxTopOfStack--;
+    *pxTopOfStack = portFLAGS_INT_ENABLED;
+    pxTopOfStack--;
 
-	/* Next the general purpose registers. */
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x4444;
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x5555;
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x6666;
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x7777;
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x8888;
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x9999;
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xaaaa;
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xbbbb;
-	pxTopOfStack--;	
-	
-	/* When the task starts is will expect to find the function parameter in
-	R15. */
-	*pxTopOfStack = ( portSTACK_TYPE ) pvParameters;
-	pxTopOfStack--;
-	
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xdddd;
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xeeee;
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xffff;
-	pxTopOfStack--;
+    /* Next the general purpose registers. */
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x4444;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x5555;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x6666;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x7777;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x8888;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x9999;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0xaaaa;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0xbbbb;
+    pxTopOfStack--;
 
-	/* A variable is used to keep track of the critical section nesting.
-	This variable has to be stored as part of the task context and is
-	initially set to zero. */
-	*pxTopOfStack = ( portSTACK_TYPE ) portNO_CRITICAL_SECTION_NESTING;	
+    /* When the task starts is will expect to find the function parameter in
+    R15. */
+    *pxTopOfStack = ( portSTACK_TYPE ) pvParameters;
+    pxTopOfStack--;
 
-	/* Return a pointer to the top of the stack we have generated so this can
-	be stored in the task control block for the task. */
-	return pxTopOfStack;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0xdddd;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0xeeee;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0xffff;
+    pxTopOfStack--;
+
+    /* A variable is used to keep track of the critical section nesting.
+    This variable has to be stored as part of the task context and is
+    initially set to zero. */
+    *pxTopOfStack = ( portSTACK_TYPE ) portNO_CRITICAL_SECTION_NESTING;
+
+    /* Return a pointer to the top of the stack we have generated so this can
+    be stored in the task control block for the task. */
+    return pxTopOfStack;
 }
 /*-----------------------------------------------------------*/
 
 void vPortEndScheduler( void )
 {
-	/* It is unlikely that the MSP430 port will get stopped.  If required simply
-	disable the tick interrupt here. */
+    /* It is unlikely that the MSP430 port will get stopped.  If required simply
+    disable the tick interrupt here. */
 }
 /*-----------------------------------------------------------*/
 
@@ -184,28 +184,28 @@ void vPortEndScheduler( void )
  */
 void vPortSetupTimerInterrupt( void )
 {
-	/* Ensure the timer is stopped. */
-	TACTL = 0;
+    /* Ensure the timer is stopped. */
+    TACTL = 0;
 
-	/* Run the timer of the ACLK. */
-	TACTL = TASSEL_1;
+    /* Run the timer of the ACLK. */
+    TACTL = TASSEL_1;
 
-	/* Clear everything to start with. */
-	TACTL |= TACLR;
+    /* Clear everything to start with. */
+    TACTL |= TACLR;
 
-	/* Set the compare match value according to the tick rate we want. */
-	TACCR0 = portACLK_FREQUENCY_HZ / configTICK_RATE_HZ;
+    /* Set the compare match value according to the tick rate we want. */
+    TACCR0 = portACLK_FREQUENCY_HZ / configTICK_RATE_HZ;
 
-	/* Enable the interrupts. */
-	TACCTL0 = CCIE;
+    /* Enable the interrupts. */
+    TACCTL0 = CCIE;
 
-	/* Start up clean. */
-	TACTL |= TACLR;
+    /* Start up clean. */
+    TACTL |= TACLR;
 
-	/* Up mode. */
-	TACTL |= MC_1;
+    /* Up mode. */
+    TACTL |= MC_1;
 }
 /*-----------------------------------------------------------*/
 
 
-	
+

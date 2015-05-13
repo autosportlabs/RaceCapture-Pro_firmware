@@ -33,9 +33,9 @@
     FreeRTOS is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-    more details. You should have received a copy of the GNU General Public 
-    License and the FreeRTOS license exception along with FreeRTOS; if not it 
-    can be viewed here: http://www.freertos.org/a00114.html and also obtained 
+    more details. You should have received a copy of the GNU General Public
+    License and the FreeRTOS license exception along with FreeRTOS; if not it
+    can be viewed here: http://www.freertos.org/a00114.html and also obtained
     by writing to Richard Barry, contact details for whom are available on the
     FreeRTOS WEB site.
 
@@ -79,38 +79,36 @@ task.h is included from an application file. */
 
 void *pvPortMalloc( size_t xWantedSize )
 {
-void *pvReturn = NULL;
+    void *pvReturn = NULL;
 
-	vTaskSuspendAll();
-	{
-		pvReturn = malloc( xWantedSize );
-	}
-	xTaskResumeAll();
+    vTaskSuspendAll();
+    {
+        pvReturn = malloc( xWantedSize );
+    }
+    xTaskResumeAll();
 
-	#if( configUSE_MALLOC_FAILED_HOOK == 1 )
-	{
-		if( pvReturn == NULL )
-		{
-			extern void vApplicationMallocFailedHook( void );
-			vApplicationMallocFailedHook();
-		}
-	}
-	#endif
-	
-	return pvReturn;
+#if( configUSE_MALLOC_FAILED_HOOK == 1 )
+    {
+        if( pvReturn == NULL ) {
+            extern void vApplicationMallocFailedHook( void );
+            vApplicationMallocFailedHook();
+        }
+    }
+#endif
+
+    return pvReturn;
 }
 /*-----------------------------------------------------------*/
 
 void vPortFree( void *pv )
 {
-	if( pv )
-	{
-		vTaskSuspendAll();
-		{
-			free( pv );
-		}
-		xTaskResumeAll();
-	}
+    if( pv ) {
+        vTaskSuspendAll();
+        {
+            free( pv );
+        }
+        xTaskResumeAll();
+    }
 }
 
 

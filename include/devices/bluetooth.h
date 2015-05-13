@@ -23,9 +23,9 @@
 #include "stddef.h"
 
 typedef enum {
-	BT_STATUS_NOT_INIT = 0,
-	BT_STATUS_PROVISIONED,
-	BT_STATUS_ERROR
+    BT_STATUS_NOT_INIT = 0,
+    BT_STATUS_PROVISIONED,
+    BT_STATUS_ERROR
 } bluetooth_status_t;
 
 bluetooth_status_t bt_get_status();

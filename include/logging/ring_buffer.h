@@ -9,10 +9,10 @@
 #include <stddef.h>
 
 struct ring_buff {
-        char *buf;
-        size_t size;
-        char *head;
-        char *tail;
+    char *buf;
+    size_t size;
+    char *head;
+    char *tail;
 };
 
 /**

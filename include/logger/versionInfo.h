@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef struct _VersionInfo{
+typedef struct _VersionInfo {
     uint32_t major;
     uint32_t minor;
     uint32_t bugfix;

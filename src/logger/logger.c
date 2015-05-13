@@ -21,19 +21,23 @@
 static logging_status_t g_logging_status = LOGGING_STATUS_IDLE;
 static int g_logging_since = 0;
 
-void logging_set_status(logging_status_t status) {
+void logging_set_status(logging_status_t status)
+{
     g_logging_status = status;
 }
 
-logging_status_t logging_get_status( void ) {
+logging_status_t logging_get_status( void )
+{
     return g_logging_status;
 }
 
-void logging_set_logging_start( int32_t start ) {
+void logging_set_logging_start( int32_t start )
+{
     g_logging_since = start;
 }
 
-int32_t logging_active_time( void ) {
+int32_t logging_active_time( void )
+{
     if (g_logging_since) {
         int uptime = getUptimeAsInt();
         int duration = uptime - g_logging_since;
@@ -42,7 +46,8 @@ int32_t logging_active_time( void ) {
     return 0;
 }
 
-bool logging_is_active() {
+bool logging_is_active()
+{
     return g_logging_since > 0;
 }
 

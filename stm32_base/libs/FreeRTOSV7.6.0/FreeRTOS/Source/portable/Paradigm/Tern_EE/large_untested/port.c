@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -94,13 +94,13 @@ static void prvSetupTimerInterrupt( void );
 /* The ISR used depends on whether the preemptive or cooperative scheduler
 is being used. */
 #if( configUSE_PREEMPTION == 1 )
-	/* Tick service routine used by the scheduler when preemptive scheduling is
-	being used. */
-	static void __interrupt __far prvPreemptiveTick( void );
+/* Tick service routine used by the scheduler when preemptive scheduling is
+being used. */
+static void __interrupt __far prvPreemptiveTick( void );
 #else
-	/* Tick service routine used by the scheduler when cooperative scheduling is
-	being used. */
-	static void __interrupt __far prvNonPreemptiveTick( void );
+/* Tick service routine used by the scheduler when cooperative scheduling is
+being used. */
+static void __interrupt __far prvNonPreemptiveTick( void );
 #endif
 
 /* Trap routine used by taskYIELD() to manually cause a context switch. */
@@ -115,158 +115,157 @@ static void __interrupt __far prvDummyISR( void );
 /* See header file for description. */
 portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
 {
-portSTACK_TYPE DS_Reg = 0;
+    portSTACK_TYPE DS_Reg = 0;
 
-	/* Place a few bytes of known values on the bottom of the stack.
-	This is just useful for debugging. */
+    /* Place a few bytes of known values on the bottom of the stack.
+    This is just useful for debugging. */
 
-	*pxTopOfStack = 0x1111;
-	pxTopOfStack--;
-	*pxTopOfStack = 0x2222;
-	pxTopOfStack--;
-	*pxTopOfStack = 0x3333;
-	pxTopOfStack--;
+    *pxTopOfStack = 0x1111;
+    pxTopOfStack--;
+    *pxTopOfStack = 0x2222;
+    pxTopOfStack--;
+    *pxTopOfStack = 0x3333;
+    pxTopOfStack--;
 
-	/* We are going to start the scheduler using a return from interrupt
-	instruction to load the program counter, so first there would be the
-	function call with parameters preamble. */
-	
-	*pxTopOfStack = FP_SEG( pvParameters );
-	pxTopOfStack--;
-	*pxTopOfStack = FP_OFF( pvParameters );
-	pxTopOfStack--;
-	*pxTopOfStack = FP_SEG( pxCode );
-	pxTopOfStack--;
-	*pxTopOfStack = FP_OFF( pxCode );
-	pxTopOfStack--;
+    /* We are going to start the scheduler using a return from interrupt
+    instruction to load the program counter, so first there would be the
+    function call with parameters preamble. */
 
-	/* Next the status register and interrupt return address. */
-	*pxTopOfStack = portINITIAL_SW;
-	pxTopOfStack--;
-	*pxTopOfStack = FP_SEG( pxCode );
-	pxTopOfStack--;
-	*pxTopOfStack = FP_OFF( pxCode );
-	pxTopOfStack--;
+    *pxTopOfStack = FP_SEG( pvParameters );
+    pxTopOfStack--;
+    *pxTopOfStack = FP_OFF( pvParameters );
+    pxTopOfStack--;
+    *pxTopOfStack = FP_SEG( pxCode );
+    pxTopOfStack--;
+    *pxTopOfStack = FP_OFF( pxCode );
+    pxTopOfStack--;
 
-	/* The remaining registers would be pushed on the stack by our context
-	switch function.  These are loaded with values simply to make debugging
-	easier. */
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xAAAA;	/* AX */
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xBBBB;	/* BX */
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xCCCC;	/* CX */
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xDDDD;	/* DX */
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xEEEE;	/* ES */
-	pxTopOfStack--;
+    /* Next the status register and interrupt return address. */
+    *pxTopOfStack = portINITIAL_SW;
+    pxTopOfStack--;
+    *pxTopOfStack = FP_SEG( pxCode );
+    pxTopOfStack--;
+    *pxTopOfStack = FP_OFF( pxCode );
+    pxTopOfStack--;
 
-	/* We need the true data segment. */
-	__asm{	MOV DS_Reg, DS };
+    /* The remaining registers would be pushed on the stack by our context
+    switch function.  These are loaded with values simply to make debugging
+    easier. */
+    *pxTopOfStack = ( portSTACK_TYPE ) 0xAAAA;	/* AX */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0xBBBB;	/* BX */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0xCCCC;	/* CX */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0xDDDD;	/* DX */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0xEEEE;	/* ES */
+    pxTopOfStack--;
 
-	*pxTopOfStack = DS_Reg;						/* DS */
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x0123;	/* SI */
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xDDDD;	/* DI */
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xBBBB;	/* BP */
+    /* We need the true data segment. */
+    __asm {	MOV DS_Reg, DS };
 
-	return pxTopOfStack;
+    *pxTopOfStack = DS_Reg;						/* DS */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x0123;	/* SI */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0xDDDD;	/* DI */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0xBBBB;	/* BP */
+
+    return pxTopOfStack;
 }
 /*-----------------------------------------------------------*/
 
 portBASE_TYPE xPortStartScheduler( void )
 {
-	/* This is called with interrupts already disabled. */
+    /* This is called with interrupts already disabled. */
 
-	/* Put our manual switch (yield) function on a known
-	vector. */
-	setvect( portSWITCH_INT_NUMBER, prvYieldProcessor );
+    /* Put our manual switch (yield) function on a known
+    vector. */
+    setvect( portSWITCH_INT_NUMBER, prvYieldProcessor );
 
-	/* Setup the tick interrupt. */
-	prvSetupTimerInterrupt();
+    /* Setup the tick interrupt. */
+    prvSetupTimerInterrupt();
 
-	/* Kick off the scheduler by setting up the context of the first task. */
-	portFIRST_CONTEXT();
+    /* Kick off the scheduler by setting up the context of the first task. */
+    portFIRST_CONTEXT();
 
-	/* Should not get here! */
-	return pdFALSE;
+    /* Should not get here! */
+    return pdFALSE;
 }
 /*-----------------------------------------------------------*/
 
 static void __interrupt __far prvDummyISR( void )
 {
-	/* The timer initialisation functions leave interrupts enabled,
-	which is not what we want.  This ISR is installed temporarily in case
-	the timer fires before we get a change to disable interrupts again. */
-	outport( portEIO_REGISTER, portCLEAR_INTERRUPT );
+    /* The timer initialisation functions leave interrupts enabled,
+    which is not what we want.  This ISR is installed temporarily in case
+    the timer fires before we get a change to disable interrupts again. */
+    outport( portEIO_REGISTER, portCLEAR_INTERRUPT );
 }
 /*-----------------------------------------------------------*/
 
 /* The ISR used depends on whether the preemptive or cooperative scheduler
 is being used. */
 #if( configUSE_PREEMPTION == 1 )
-	static void __interrupt __far prvPreemptiveTick( void )
-	{
-		/* Get the scheduler to update the task states following the tick. */
-		if( xTaskIncrementTick() != pdFALSE )
-		{
-			/* Switch in the context of the next task to be run. */
-			portSWITCH_CONTEXT();
-		}
+static void __interrupt __far prvPreemptiveTick( void )
+{
+    /* Get the scheduler to update the task states following the tick. */
+    if( xTaskIncrementTick() != pdFALSE ) {
+        /* Switch in the context of the next task to be run. */
+        portSWITCH_CONTEXT();
+    }
 
-		/* Reset interrupt. */
-		outport( portEIO_REGISTER, portCLEAR_INTERRUPT );
-	}
+    /* Reset interrupt. */
+    outport( portEIO_REGISTER, portCLEAR_INTERRUPT );
+}
 #else
-	static void __interrupt __far prvNonPreemptiveTick( void )
-	{
-		/* Same as preemptive tick, but the cooperative scheduler is being used
-		so we don't have to switch in the context of the next task. */
-		xTaskIncrementTick();
-		
-		/* Reset interrupt. */
-		outport( portEIO_REGISTER, portCLEAR_INTERRUPT );
-	}
+static void __interrupt __far prvNonPreemptiveTick( void )
+{
+    /* Same as preemptive tick, but the cooperative scheduler is being used
+    so we don't have to switch in the context of the next task. */
+    xTaskIncrementTick();
+
+    /* Reset interrupt. */
+    outport( portEIO_REGISTER, portCLEAR_INTERRUPT );
+}
 #endif
 /*-----------------------------------------------------------*/
 
 static void __interrupt __far prvYieldProcessor( void )
 {
-	/* Switch in the context of the next task to be run. */
-	portSWITCH_CONTEXT();
+    /* Switch in the context of the next task to be run. */
+    portSWITCH_CONTEXT();
 }
 /*-----------------------------------------------------------*/
 
 void vPortEndScheduler( void )
 {
-	/* Not implemented. */
+    /* Not implemented. */
 }
 /*-----------------------------------------------------------*/
 
 static void prvSetupTimerInterrupt( void )
 {
-const unsigned short usTimerACompare = portTIMER_COMPARE, usTimerAMode = portENABLE_TIMER_AND_INTERRUPT;
-const unsigned short usT2_IRQ = 0x13;
+    const unsigned short usTimerACompare = portTIMER_COMPARE, usTimerAMode = portENABLE_TIMER_AND_INTERRUPT;
+    const unsigned short usT2_IRQ = 0x13;
 
-	/* Configure the timer, the dummy handler is used here as the init
-	function leaves interrupts enabled. */
-	t2_init( usTimerAMode, usTimerACompare, prvDummyISR );
+    /* Configure the timer, the dummy handler is used here as the init
+    function leaves interrupts enabled. */
+    t2_init( usTimerAMode, usTimerACompare, prvDummyISR );
 
-	/* Disable interrupts again before installing the real handlers. */
-	portDISABLE_INTERRUPTS();
+    /* Disable interrupts again before installing the real handlers. */
+    portDISABLE_INTERRUPTS();
 
-	#if( configUSE_PREEMPTION == 1 )
-		/* Tick service routine used by the scheduler when preemptive scheduling is
-		being used. */
-		setvect( usT2_IRQ, prvPreemptiveTick );
-	#else
-		/* Tick service routine used by the scheduler when cooperative scheduling is
-		being used. */
-		setvect( usT2_IRQ, prvNonPreemptiveTick );
-	#endif
+#if( configUSE_PREEMPTION == 1 )
+    /* Tick service routine used by the scheduler when preemptive scheduling is
+    being used. */
+    setvect( usT2_IRQ, prvPreemptiveTick );
+#else
+    /* Tick service routine used by the scheduler when cooperative scheduling is
+    being used. */
+    setvect( usT2_IRQ, prvNonPreemptiveTick );
+#endif
 }
 
 

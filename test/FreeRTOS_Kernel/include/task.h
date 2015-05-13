@@ -33,9 +33,9 @@
     FreeRTOS is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-    more details. You should have received a copy of the GNU General Public 
-    License and the FreeRTOS license exception along with FreeRTOS; if not it 
-    can be viewed here: http://www.freertos.org/a00114.html and also obtained 
+    more details. You should have received a copy of the GNU General Public
+    License and the FreeRTOS license exception along with FreeRTOS; if not it
+    can be viewed here: http://www.freertos.org/a00114.html and also obtained
     by writing to Richard Barry, contact details for whom are available on the
     FreeRTOS WEB site.
 
@@ -53,7 +53,7 @@
 
 
 #ifndef INC_FREERTOS_H
-	#error "#include FreeRTOS.h" must appear in source files before "#include task.h"
+#error "#include FreeRTOS.h" must appear in source files before "#include task.h"
 #endif
 
 
@@ -89,34 +89,31 @@ typedef void * xTaskHandle;
 /*
  * Used internally only.
  */
-typedef struct xTIME_OUT
-{
-	portBASE_TYPE xOverflowCount;
-	portTickType  xTimeOnEntering;
+typedef struct xTIME_OUT {
+    portBASE_TYPE xOverflowCount;
+    portTickType  xTimeOnEntering;
 } xTimeOutType;
 
 /*
  * Defines the memory ranges allocated to the task when an MPU is used.
  */
-typedef struct xMEMORY_REGION
-{
-	void *pvBaseAddress;
-	unsigned long ulLengthInBytes;
-	unsigned long ulParameters;
+typedef struct xMEMORY_REGION {
+    void *pvBaseAddress;
+    unsigned long ulLengthInBytes;
+    unsigned long ulParameters;
 } xMemoryRegion;
 
 /*
  * Parameters required to create an MPU protected task.
  */
-typedef struct xTASK_PARAMTERS
-{
-	pdTASK_CODE pvTaskCode;
-	const signed char * const pcName;
-	unsigned short usStackDepth;
-	void *pvParameters;
-	unsigned portBASE_TYPE uxPriority;
-	portSTACK_TYPE *puxStackBuffer;
-	xMemoryRegion xRegions[ portNUM_CONFIGURABLE_REGIONS ];
+typedef struct xTASK_PARAMTERS {
+    pdTASK_CODE pvTaskCode;
+    const signed char * const pcName;
+    unsigned short usStackDepth;
+    void *pvParameters;
+    unsigned portBASE_TYPE uxPriority;
+    portSTACK_TYPE *puxStackBuffer;
+    xMemoryRegion xRegions[ portNUM_CONFIGURABLE_REGIONS ];
 } xTaskParameters;
 
 /*
@@ -206,10 +203,10 @@ typedef struct xTASK_PARAMTERS
 						  );</pre>
  *
  * Create a new task and add it to the list of tasks that are ready to run.
- * 
+ *
  * xTaskCreate() can only be used to create a task that has unrestricted
  * access to the entire microcontroller memory map.  Systems that include MPU
- * support can alternatively create an MPU constrained task using 
+ * support can alternatively create an MPU constrained task using
  * xTaskCreateRestricted().
  *
  * @param pvTaskCode Pointer to the task entry function.  Tasks
@@ -285,7 +282,7 @@ typedef struct xTASK_PARAMTERS
  *
  * @param pxTaskDefinition Pointer to a structure that contains a member
  * for each of the normal xTaskCreate() parameters (see the xTaskCreate() API
- * documentation) plus an optional stack buffer and the memory region 
+ * documentation) plus an optional stack buffer and the memory region
  * definitions.
  *
  * @param pxCreatedTask Used to pass back a handle by which the created task
@@ -310,7 +307,7 @@ static const xTaskParameters xCheckTaskParameters =
 	// the task, with appropriate access permissions.  Different processors have
 	// different memory alignment requirements - refer to the FreeRTOS documentation
 	// for full information.
-	{											
+	{
 		// Base address					Length	Parameters
         { cReadWriteArray,				32,		portMPU_REGION_READ_WRITE },
         { cReadOnlyArray,				32,		portMPU_REGION_READ_ONLY },
@@ -348,7 +345,7 @@ xTaskHandle xHandle;
  * Memory regions are assigned to a restricted task when the task is created by
  * a call to xTaskCreateRestricted().  These regions can be redefined using
  * vTaskAllocateMPURegions().
- * 
+ *
  * @param xTask The handle of the task being updated.
  *
  * @param xRegions A pointer to an xMemoryRegion structure that contains the
@@ -361,7 +358,7 @@ xTaskHandle xHandle;
 // ucOneKByte array.  The other two of the maximum 3 definable regions are
 // unused so set to zero.
 static const xMemoryRegion xAltRegions[ portNUM_CONFIGURABLE_REGIONS ] =
-{											
+{
 	// Base address		Length		Parameters
 	{ ucOneKByte,		1024,		portMPU_REGION_READ_WRITE },
 	{ 0,				0,			0 },
@@ -371,13 +368,13 @@ static const xMemoryRegion xAltRegions[ portNUM_CONFIGURABLE_REGIONS ] =
 void vATask( void *pvParameters )
 {
 	// This task was created such that it has access to certain regions of
-	// memory as defined by the MPU configuration.  At some point it is 
+	// memory as defined by the MPU configuration.  At some point it is
 	// desired that these MPU regions are replaced with that defined in the
 	// xAltRegions const struct above.  Use a call to vTaskAllocateMPURegions()
 	// for this purpose.  NULL is used as the task handle to indicate that this
 	// function should modify the MPU regions of the calling task.
 	vTaskAllocateMPURegions( NULL, xAltRegions );
-	
+
 	// Now the task can continue its function, but from this point on can only
 	// access its stack and the ucOneKByte array (unless any other statically
 	// defined or shared regions have been declared elsewhere).

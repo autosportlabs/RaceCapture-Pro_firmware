@@ -23,19 +23,20 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-class ElapsedLapTimeTest : public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE( ElapsedLapTimeTest );
-  CPPUNIT_TEST( testSamples );
-  CPPUNIT_TEST( testStopRecording );
-  CPPUNIT_TEST( testReset);
-  CPPUNIT_TEST_SUITE_END();
+class ElapsedLapTimeTest : public CppUnit::TestFixture
+{
+    CPPUNIT_TEST_SUITE( ElapsedLapTimeTest );
+    CPPUNIT_TEST( testSamples );
+    CPPUNIT_TEST( testStopRecording );
+    CPPUNIT_TEST( testReset);
+    CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp();
-  void tearDown();
-  void testSamples();
-  void testStopRecording();
-  void testReset();
+    void setUp();
+    void tearDown();
+    void testSamples();
+    void testStopRecording();
+    void testReset();
 };
 
 

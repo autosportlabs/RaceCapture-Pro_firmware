@@ -71,49 +71,47 @@ static volatile bool vcp_configured = false;
 static xSemaphoreHandle _lock;
 static xQueueHandle rx_queue;
 static volatile bool connected = false;
-CDC_IF_Prop_TypeDef VCP_fops =
-{
-  VCP_Init,
-  VCP_DeInit,
-  VCP_Ctrl,
-  VCP_DataTx,
-  VCP_DataRx
+CDC_IF_Prop_TypeDef VCP_fops = {
+    VCP_Init,
+    VCP_DeInit,
+    VCP_Ctrl,
+    VCP_DataTx,
+    VCP_DataRx
 };
 
 /* Public Functions */
 void vcp_tx(uint8_t *buf, uint32_t len)
 {
-	/* If we aren't connected, just drop the data on the floor */
-	if (!connected)
-		return;
+    /* If we aren't connected, just drop the data on the floor */
+    if (!connected)
+        return;
 
-	xSemaphoreTake(_lock, portMAX_DELAY);
-	VCP_DataTx(buf, len);
-	xSemaphoreGive(_lock);
+    xSemaphoreTake(_lock, portMAX_DELAY);
+    VCP_DataTx(buf, len);
+    xSemaphoreGive(_lock);
 }
 
 uint16_t vcp_rx(uint8_t *buf, uint32_t len, size_t max_delay)
 {
-	uint32_t i = 0;
-	for (i = 0; i < len; i++)
-		if (!xQueueReceive(rx_queue, &buf[i], max_delay))
-			break;
-		
-	return i;
+    uint32_t i = 0;
+    for (i = 0; i < len; i++)
+        if (!xQueueReceive(rx_queue, &buf[i], max_delay))
+            break;
+
+    return i;
 }
 
 
 void vcp_setup(void)
 {
-	vSemaphoreCreateBinary(_lock);
-	xSemaphoreTake(_lock, portMAX_DELAY);
+    vSemaphoreCreateBinary(_lock);
+    xSemaphoreTake(_lock, portMAX_DELAY);
 
-	rx_queue = xQueueCreate(512, sizeof(uint8_t));
+    rx_queue = xQueueCreate(512, sizeof(uint8_t));
 
-	if (rx_queue == 0)
-	{
-		while(1);
-	}
+    if (rx_queue == 0) {
+        while(1);
+    }
 }
 
 /* Private functions ---------------------------------------------------------*/
@@ -125,13 +123,13 @@ void vcp_setup(void)
   */
 static uint16_t VCP_Init(void)
 {
-	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+    portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
-	xSemaphoreGiveFromISR(_lock, &xHigherPriorityTaskWoken);
+    xSemaphoreGiveFromISR(_lock, &xHigherPriorityTaskWoken);
 
-	portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
-	connected = true;
-	return USBD_OK;
+    portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
+    connected = true;
+    return USBD_OK;
 }
 
 /**
@@ -142,10 +140,10 @@ static uint16_t VCP_Init(void)
   */
 static uint16_t VCP_DeInit(void)
 {
-	xSemaphoreTake(_lock, portMAX_DELAY);
+    xSemaphoreTake(_lock, portMAX_DELAY);
 
-	connected = false;
-	return USBD_OK;
+    connected = false;
+    return USBD_OK;
 }
 
 
@@ -159,10 +157,10 @@ static uint16_t VCP_DeInit(void)
   */
 static uint16_t VCP_Ctrl (uint32_t Cmd, uint8_t* Buf, uint32_t Len)
 {
-	/* This is a NOP since we aren't tying it in with a physical
-	 * serial port. Just return OK */
+    /* This is a NOP since we aren't tying it in with a physical
+     * serial port. Just return OK */
 
-	return USBD_OK;
+    return USBD_OK;
 }
 
 /**
@@ -176,52 +174,51 @@ static uint16_t VCP_Ctrl (uint32_t Cmd, uint8_t* Buf, uint32_t Len)
 
 static bool check_tx_overrun(void)
 {
-	if (APP_Rx_ptr_in == APP_Rx_ptr_out - 1)
-		return true;
+    if (APP_Rx_ptr_in == APP_Rx_ptr_out - 1)
+        return true;
 
-	if ((APP_Rx_ptr_in == APP_RX_DATA_SIZE) && (APP_Rx_ptr_out == 0))
-		return true;
+    if ((APP_Rx_ptr_in == APP_RX_DATA_SIZE) && (APP_Rx_ptr_out == 0))
+        return true;
 
-	return false;
+    return false;
 }
 
 static bool check_suspended(void)
 {
-	/* Checks to see if the USB bus is suspended */
-	if (USB_OTG_dev.regs.DREGS->DSTS & 0x1)
-		return true;
+    /* Checks to see if the USB bus is suspended */
+    if (USB_OTG_dev.regs.DREGS->DSTS & 0x1)
+        return true;
 
-	return false;
+    return false;
 }
 
 static uint16_t VCP_DataTx (uint8_t* Buf, uint32_t Len)
 {
-	bool overrun;
+    bool overrun;
 
-	bool susp = check_suspended();
+    bool susp = check_suspended();
 
-	/* If USB Is disconnected, drop the data on the floor */
-	if (susp)
-		return USBD_FAIL;
+    /* If USB Is disconnected, drop the data on the floor */
+    if (susp)
+        return USBD_FAIL;
 
-	while (Len--) {
-		overrun = check_tx_overrun();
-	   
-		while(overrun) {
-			vTaskDelay(1);
-			overrun = check_tx_overrun();
-		}
+    while (Len--) {
+        overrun = check_tx_overrun();
 
-		APP_Rx_Buffer[APP_Rx_ptr_in++] = *Buf++;
-		
-		/* Avoid running off the end of the buffer */
-		if(APP_Rx_ptr_in >= APP_RX_DATA_SIZE)
-		{
-			APP_Rx_ptr_in = 0;
-		}
-	}
+        while(overrun) {
+            vTaskDelay(1);
+            overrun = check_tx_overrun();
+        }
 
-	return USBD_OK;
+        APP_Rx_Buffer[APP_Rx_ptr_in++] = *Buf++;
+
+        /* Avoid running off the end of the buffer */
+        if(APP_Rx_ptr_in >= APP_RX_DATA_SIZE) {
+            APP_Rx_ptr_in = 0;
+        }
+    }
+
+    return USBD_OK;
 }
 
 /**
@@ -241,23 +238,22 @@ static uint16_t VCP_DataTx (uint8_t* Buf, uint32_t Len)
   */
 static uint16_t VCP_DataRx (uint8_t* Buf, uint32_t Len)
 {
-	portBASE_TYPE xHigherPriorityTaskWoken;
-	while(Len--)
-		xQueueSendFromISR(rx_queue, Buf++, &xHigherPriorityTaskWoken);
-	
-	return USBD_OK;
+    portBASE_TYPE xHigherPriorityTaskWoken;
+    while(Len--)
+        xQueueSendFromISR(rx_queue, Buf++, &xHigherPriorityTaskWoken);
+
+    return USBD_OK;
 }
 
 #ifdef USE_USB_OTG_FS
 void OTG_FS_WKUP_IRQHandler(void)
 {
-  if(USB_OTG_dev.cfg.low_power)
-  {
-    *(uint32_t *)(0xE000ED10) &= 0xFFFFFFF9 ;
-    SystemInit();
-    USB_OTG_UngateClock(&USB_OTG_dev);
-  }
-  EXTI_ClearITPendingBit(EXTI_Line18);
+    if(USB_OTG_dev.cfg.low_power) {
+        *(uint32_t *)(0xE000ED10) &= 0xFFFFFFF9 ;
+        SystemInit();
+        USB_OTG_UngateClock(&USB_OTG_dev);
+    }
+    EXTI_ClearITPendingBit(EXTI_Line18);
 }
 #endif
 
@@ -269,13 +265,12 @@ void OTG_FS_WKUP_IRQHandler(void)
 #ifdef USE_USB_OTG_HS
 void OTG_HS_WKUP_IRQHandler(void)
 {
-  if(USB_OTG_dev.cfg.low_power)
-  {
-    *(uint32_t *)(0xE000ED10) &= 0xFFFFFFF9 ;
-    SystemInit();
-    USB_OTG_UngateClock(&USB_OTG_dev);
-  }
-  EXTI_ClearITPendingBit(EXTI_Line20);
+    if(USB_OTG_dev.cfg.low_power) {
+        *(uint32_t *)(0xE000ED10) &= 0xFFFFFFF9 ;
+        SystemInit();
+        USB_OTG_UngateClock(&USB_OTG_dev);
+    }
+    EXTI_ClearITPendingBit(EXTI_Line20);
 }
 #endif
 
@@ -290,14 +285,14 @@ void OTG_HS_IRQHandler(void)
 void OTG_FS_IRQHandler(void)
 #endif
 {
-	bool susp;
-	USBD_OTG_ISR_Handler (&USB_OTG_dev);
+    bool susp;
+    USBD_OTG_ISR_Handler (&USB_OTG_dev);
 
-	susp = check_suspended();
+    susp = check_suspended();
 
-	/* If we were previous connected, and are now suspended, deinit */
-	if (connected && susp)
-		VCP_DeInit();
+    /* If we were previous connected, and are now suspended, deinit */
+    if (connected && susp)
+        VCP_DeInit();
 }
 #ifdef USB_OTG_HS_DEDICATED_EP1_ENABLED
 /**
@@ -307,7 +302,7 @@ void OTG_FS_IRQHandler(void)
   */
 void OTG_HS_EP1_IN_IRQHandler(void)
 {
-  USBD_OTG_EP1IN_ISR_Handler (&USB_OTG_dev);
+    USBD_OTG_EP1IN_ISR_Handler (&USB_OTG_dev);
 }
 
 /**
@@ -317,7 +312,7 @@ void OTG_HS_EP1_IN_IRQHandler(void)
   */
 void OTG_HS_EP1_OUT_IRQHandler(void)
 {
-  USBD_OTG_EP1OUT_ISR_Handler (&USB_OTG_dev);
+    USBD_OTG_EP1OUT_ISR_Handler (&USB_OTG_dev);
 }
 #endif
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -28,35 +28,35 @@
 }
 
 enum TrackType {
-   TRACK_TYPE_CIRCUIT = 0,
-   TRACK_TYPE_STAGE = 1,
+    TRACK_TYPE_CIRCUIT = 0,
+    TRACK_TYPE_STAGE = 1,
 };
 
-typedef struct _Circuit{
-   GeoPoint startFinish;
-   GeoPoint sectors[CIRCUIT_SECTOR_COUNT];
+typedef struct _Circuit {
+    GeoPoint startFinish;
+    GeoPoint sectors[CIRCUIT_SECTOR_COUNT];
 } Circuit;
 
-typedef struct _Stage{
-   GeoPoint start;
-   GeoPoint finish;
-   GeoPoint sectors[STAGE_SECTOR_COUNT];
+typedef struct _Stage {
+    GeoPoint start;
+    GeoPoint finish;
+    GeoPoint sectors[STAGE_SECTOR_COUNT];
 } Stage;
 
-typedef struct _Track{
-   int32_t trackId;
-   enum TrackType track_type;
-   union{
-      GeoPoint allSectors[SECTOR_COUNT]; // Needed for Loading in data.
-      Stage stage;
-      Circuit circuit;
-   };
+typedef struct _Track {
+    int32_t trackId;
+    enum TrackType track_type;
+    union {
+        GeoPoint allSectors[SECTOR_COUNT]; // Needed for Loading in data.
+        Stage stage;
+        Circuit circuit;
+    };
 } Track;
 
-typedef struct _Tracks{
+typedef struct _Tracks {
     VersionInfo versionInfo;
-	size_t count;
-	Track tracks[MAX_TRACK_COUNT];
+    size_t count;
+    Track tracks[MAX_TRACK_COUNT];
 } Tracks;
 
 void initialize_tracks();

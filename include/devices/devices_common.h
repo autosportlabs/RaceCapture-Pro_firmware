@@ -10,10 +10,10 @@
 
 #include "serial.h"
 
-typedef struct _DeviceConfig{
-	Serial *serial;
-	char * buffer;
-	size_t length;
+typedef struct _DeviceConfig {
+    Serial *serial;
+    char * buffer;
+    size_t length;
 } DeviceConfig;
 
 

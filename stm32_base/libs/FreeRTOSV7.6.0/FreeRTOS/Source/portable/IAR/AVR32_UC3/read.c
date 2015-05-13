@@ -67,26 +67,24 @@ extern volatile avr32_usart_t *volatile stdio_usart_base;
  */
 size_t __read(int handle, unsigned char *buffer, size_t size)
 {
-  int nChars = 0;
+    int nChars = 0;
 
-  // This implementation only reads from stdin.
-  // For all other file handles, it returns failure.
-  if (handle != _LLIO_STDIN)
-  {
-    return _LLIO_ERROR;
-  }
+    // This implementation only reads from stdin.
+    // For all other file handles, it returns failure.
+    if (handle != _LLIO_STDIN) {
+        return _LLIO_ERROR;
+    }
 
-  for (; size > 0; --size)
-  {
-    int c = usart_getchar(stdio_usart_base);
-    if (c < 0)
-      break;
+    for (; size > 0; --size) {
+        int c = usart_getchar(stdio_usart_base);
+        if (c < 0)
+            break;
 
-    *buffer++ = c;
-    ++nChars;
-  }
+        *buffer++ = c;
+        ++nChars;
+    }
 
-  return nChars;
+    return nChars;
 }
 
 

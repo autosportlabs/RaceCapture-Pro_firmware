@@ -17,7 +17,7 @@
 //              the first parameter to the macro is non-0
 //
 // ----------------------------------------------------------------------------
-// 
+//
 // The following #define should be set up before this file is included so
 // that we can be sure that the correct macros are defined.
 //

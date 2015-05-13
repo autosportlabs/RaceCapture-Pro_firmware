@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -67,10 +67,10 @@ typedef void tskTCB;
 extern volatile tskTCB * volatile pxCurrentTCB;
 extern void vTaskSwitchContext( void );
 
-/* 
- * Saves the stack pointer for one task into its TCB, calls 
- * vTaskSwitchContext() to update the TCB being used, then restores the stack 
- * from the new TCB read to run the task. 
+/*
+ * Saves the stack pointer for one task into its TCB, calls
+ * vTaskSwitchContext() to update the TCB being used, then restores the stack
+ * from the new TCB read to run the task.
  */
 void portSWITCH_CONTEXT( void );
 
@@ -89,7 +89,7 @@ debugger).  The true stack pointer is then stored in the bp register.  We add
 
 #ifdef DEBUG_BUILD
 
-	#pragma aux portSWITCH_CONTEXT =	"mov	ax, seg pxCurrentTCB"														\
+#pragma aux portSWITCH_CONTEXT =	"mov	ax, seg pxCurrentTCB"														\
 										"mov	ds, ax"																		\
 										"les	bx, pxCurrentTCB"			/* Save the stack pointer into the TCB. */		\
 										"mov	es:0x2[ bx ], ss"															\
@@ -103,9 +103,9 @@ debugger).  The true stack pointer is then stored in the bp register.  We add
 										"mov	bp, sp"						/* Prepair the bp register for the restoration of the SP in the compiler generated portion of the ISR */	\
 										"add	bp, 0x0002"
 
-										
 
-	#pragma aux portFIRST_CONTEXT =		"mov	ax, seg pxCurrentTCB"			\
+
+#pragma aux portFIRST_CONTEXT =		"mov	ax, seg pxCurrentTCB"			\
 										"mov	ds, ax"							\
 										"les	bx, dword ptr pxCurrentTCB"		\
 										"mov	ss, es:[ bx + 2 ]"				\
@@ -116,10 +116,10 @@ debugger).  The true stack pointer is then stored in the bp register.  We add
 										"pop	es"								\
 										"pop	ds"								\
 										"popa"									\
-										"iret"									
+										"iret"
 #else
 
-	#pragma aux portSWITCH_CONTEXT =	"mov	ax, seg pxCurrentTCB"														\
+#pragma aux portSWITCH_CONTEXT =	"mov	ax, seg pxCurrentTCB"														\
 										"mov	ds, ax"																		\
 										"les	bx, pxCurrentTCB"			/* Save the stack pointer into the TCB. */		\
 										"mov	es:0x2[ bx ], ss"															\
@@ -130,9 +130,9 @@ debugger).  The true stack pointer is then stored in the bp register.  We add
 										"les	bx, dword ptr pxCurrentTCB"													\
 										"mov	ss, es:[ bx + 2 ]"															\
 										"mov	sp, es:[ bx ]"
-										
 
-	#pragma aux portFIRST_CONTEXT =		"mov	ax, seg pxCurrentTCB"			\
+
+#pragma aux portFIRST_CONTEXT =		"mov	ax, seg pxCurrentTCB"			\
 										"mov	ds, ax"							\
 										"les	bx, dword ptr pxCurrentTCB"		\
 										"mov	ss, es:[ bx + 2 ]"				\
@@ -142,7 +142,7 @@ debugger).  The true stack pointer is then stored in the bp register.  We add
 										"pop	es"								\
 										"pop	ds"								\
 										"popa"									\
-										"iret"									
+										"iret"
 #endif
 
 

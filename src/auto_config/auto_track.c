@@ -22,7 +22,8 @@
 #include "printk.h"
 #include "tracks.h"
 
-static const Track* findClosestTrack(const Tracks *tracks, const GeoPoint *location) {
+static const Track* findClosestTrack(const Tracks *tracks, const GeoPoint *location)
+{
     float dist = MAX_DIST_FROM_SF;
     const Track *best = NULL;
 
@@ -44,7 +45,8 @@ static const Track* findClosestTrack(const Tracks *tracks, const GeoPoint *locat
     return best;
 }
 
-const Track* auto_configure_track(const Track *defaultCfg, const GeoPoint *gp) {
+const Track* auto_configure_track(const Track *defaultCfg, const GeoPoint *gp)
+{
     pr_info("tracks: detecting...");
 
     const Tracks *tracks = get_tracks();

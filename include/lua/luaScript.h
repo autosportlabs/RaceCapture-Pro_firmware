@@ -16,9 +16,9 @@
 #define SCRIPT_PAGE_SIZE 256
 #define MAX_SCRIPT_PAGES SCRIPT_MEMORY_LENGTH / SCRIPT_PAGE_SIZE
 
-typedef struct _ScriptConfig{
-	char script[SCRIPT_MEMORY_LENGTH - 4];
-	uint32_t magicInit;
+typedef struct _ScriptConfig {
+    char script[SCRIPT_MEMORY_LENGTH - 4];
+    uint32_t magicInit;
 } ScriptConfig;
 
 void initialize_script();
@@ -32,5 +32,5 @@ int flashScriptPage(unsigned int page, const char *data, int mode);
 void unescapeScript(char *data);
 
 #define DEFAULT_SCRIPT "function onTick() end"
-	
+
 #endif /*LUASCRIPT_H_*/

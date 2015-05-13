@@ -41,13 +41,13 @@
 	Please ensure to read the configuration and relevant port sections of the
 	online documentation.
 
-	http://www.FreeRTOS.org - Documentation, latest information, license and 
+	http://www.FreeRTOS.org - Documentation, latest information, license and
 	contact details.
 
-	http://www.SafeRTOS.com - A version that is certified for use in safety 
+	http://www.SafeRTOS.com - A version that is certified for use in safety
 	critical systems.
 
-	http://www.OpenRTOS.com - Commercial support, development, porting, 
+	http://www.OpenRTOS.com - Commercial support, development, porting,
 	licensing and training services.
 */
 
@@ -172,7 +172,7 @@ prvPortYield( void )
 #if _GCC_USES_FP == 1
     asm volatile ( "unlk %fp\n\t" );
 #endif
-     /* Perform the context switch.  First save the context of the current task. */
+    /* Perform the context switch.  First save the context of the current task. */
     portSAVE_CONTEXT(  );
 
     /* Find the highest priority task that is ready to run. */
@@ -209,10 +209,9 @@ prvPortPreemptiveTick( void )
 #endif
     portSAVE_CONTEXT(  );
     MCF_PIT_PCSR0 |= MCF_PIT_PCSR_PIF;
-    if( xTaskIncrementTick() != pdFALSE )
-	{
-		vTaskSwitchContext(  );
-	}
+    if( xTaskIncrementTick() != pdFALSE ) {
+        vTaskSwitchContext(  );
+    }
     portRESTORE_CONTEXT(  );
 }
 #endif
@@ -234,15 +233,13 @@ vPortEnterCritical()
 void
 vPortExitCritical()
 {
-    if( ulCriticalNesting > portNO_CRITICAL_NESTING )
-    {
+    if( ulCriticalNesting > portNO_CRITICAL_NESTING ) {
         /* Decrement the nesting count as we are leaving a critical section. */
         ulCriticalNesting--;
 
         /* If the nesting level has reached zero then interrupts should be
         re-enabled. */
-        if( ulCriticalNesting == portNO_CRITICAL_NESTING )
-        {
+        if( ulCriticalNesting == portNO_CRITICAL_NESTING ) {
             ( void )portSET_IPL( 0 );
         }
     }
@@ -259,8 +256,7 @@ xPortStartScheduler( void )
     portVECTOR_TABLE[ portVECTOR_TIMER ] = prvPortPreemptiveTick;
 
     /* Configure the timer for the system clock. */
-    if ( configTICK_RATE_HZ > 0)
-    {
+    if ( configTICK_RATE_HZ > 0) {
         /* Configure prescaler */
         MCF_PIT_PCSR0 = MCF_PIT_PCSR_PRE( 0x9 ) | MCF_PIT_PCSR_RLD | MCF_PIT_PCSR_OVW;
         /* Initialize the periodic timer interrupt. */

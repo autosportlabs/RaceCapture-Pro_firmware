@@ -26,8 +26,8 @@
 #include <stdbool.h>
 
 struct GeoCircle {
-   GeoPoint point;
-   float radius;
+    GeoPoint point;
+    float radius;
 };
 
 /**

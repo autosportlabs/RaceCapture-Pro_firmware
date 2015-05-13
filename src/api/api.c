@@ -28,53 +28,63 @@ static jsmntok_t g_json_tok[JSON_TOKENS];
 
 const api_t apis[] = SYSTEM_APIS;
 
-void initApi() {
+void initApi()
+{
     jsmn_init(&g_jsonParser);
 }
 
-static void putQuotedStr(const Serial *serial, const char *str) {
+static void putQuotedStr(const Serial *serial, const char *str)
+{
     serial->put_c('"');
     serial->put_s(str);
     serial->put_c('"');
 }
 
-static void putKeyAndColon(const Serial *serial, const char *key) {
+static void putKeyAndColon(const Serial *serial, const char *key)
+{
     putQuotedStr(serial, key);
     serial->put_c(':');
 }
 
-static void putNull(Serial *serial) {
+static void putNull(Serial *serial)
+{
     serial->put_s("null");
 }
 
-static void putCommaIfNecessary(const Serial *serial, int necessary) {
+static void putCommaIfNecessary(const Serial *serial, int necessary)
+{
     if (necessary)
         serial->put_c(',');
 }
 
-void json_valueStart(Serial *serial, const char *name) {
+void json_valueStart(Serial *serial, const char *name)
+{
     putKeyAndColon(serial, name);
 }
 
-void json_null(Serial *serial, const char *name, int more) {
+void json_null(Serial *serial, const char *name, int more)
+{
     putKeyAndColon(serial, name);
     putNull(serial);
     putCommaIfNecessary(serial, more);
 }
 
-void json_int(Serial *serial, const char *name, int value, int more) {
+void json_int(Serial *serial, const char *name, int value, int more)
+{
     putKeyAndColon(serial, name);
     put_int(serial, value);
     putCommaIfNecessary(serial, more);
 }
 
-void json_uint(Serial *serial, const char *name, unsigned int value, int more) {
+void json_uint(Serial *serial, const char *name, unsigned int value, int more)
+{
     putKeyAndColon(serial, name);
     put_uint(serial, value);
     putCommaIfNecessary(serial, more);
 }
 
-void json_escapedString(Serial *serial, const char *name, const char *value, int more) {
+void json_escapedString(Serial *serial, const char *name, const char *value, int more)
+{
     putKeyAndColon(serial, name);
     serial->put_c('"');
     put_escapedString(serial, value, strlen(value));
@@ -82,7 +92,8 @@ void json_escapedString(Serial *serial, const char *name, const char *value, int
     putCommaIfNecessary(serial, more);
 }
 
-void json_string(Serial *serial, const char *name, const char *value, int more) {
+void json_string(Serial *serial, const char *name, const char *value, int more)
+{
     putKeyAndColon(serial, name);
 
     if (value) {
@@ -94,61 +105,72 @@ void json_string(Serial *serial, const char *name, const char *value, int more) 
     putCommaIfNecessary(serial, more);
 }
 
-void json_float(Serial *serial, const char *name, float value, int precision, int more) {
+void json_float(Serial *serial, const char *name, float value, int precision, int more)
+{
     putKeyAndColon(serial, name);
     put_float(serial, value, precision);
     putCommaIfNecessary(serial, more);
 }
 
-void json_objStartString(Serial *serial, const char *label) {
+void json_objStartString(Serial *serial, const char *label)
+{
     putKeyAndColon(serial, label);
     serial->put_c('{');
 }
 
 // Call itoa here and use above?
-void json_objStartInt(Serial *serial, int label) {
+void json_objStartInt(Serial *serial, int label)
+{
     serial->put_c('"');
     put_int(serial, label);
     serial->put_s("\":{");
 }
 
-void json_objStart(Serial *serial) {
+void json_objStart(Serial *serial)
+{
     serial->put_c('{');
 }
 
-void json_objEnd(Serial *serial, int more) {
+void json_objEnd(Serial *serial, int more)
+{
     serial->put_c('}');
     putCommaIfNecessary(serial, more);
 }
 
-void json_arrayStart(Serial *serial, const char * name) {
+void json_arrayStart(Serial *serial, const char * name)
+{
     if (name != NULL)
         putKeyAndColon(serial, name);
 
     serial->put_c('[');
 }
 
-void json_arrayElementString(Serial *serial, const char *value, int more) {
+void json_arrayElementString(Serial *serial, const char *value, int more)
+{
     putQuotedStr(serial, value);
     putCommaIfNecessary(serial, more);
 }
 
-void json_arrayElementInt(Serial *serial, int value, int more) {
+void json_arrayElementInt(Serial *serial, int value, int more)
+{
     put_int(serial, value);
     putCommaIfNecessary(serial, more);
 }
 
-void json_arrayElementFloat(Serial *serial, float value, int precision, int more) {
+void json_arrayElementFloat(Serial *serial, float value, int precision, int more)
+{
     put_float(serial, value, precision);
     putCommaIfNecessary(serial, more);
 }
 
-void json_arrayEnd(Serial *serial, int more) {
+void json_arrayEnd(Serial *serial, int more)
+{
     serial->put_c(']');
     putCommaIfNecessary(serial, more);
 }
 
-void json_sendResult(Serial *serial, const char *messageName, int resultCode) {
+void json_sendResult(Serial *serial, const char *messageName, int resultCode)
+{
     json_objStart(serial);
     json_objStartString(serial, messageName);
     json_int(serial, "rc", resultCode, 0);
@@ -156,7 +178,8 @@ void json_sendResult(Serial *serial, const char *messageName, int resultCode) {
     json_objEnd(serial, 0);
 }
 
-static int dispatch_api(Serial *serial, const char * apiMsgName, const jsmntok_t *apiPayload) {
+static int dispatch_api(Serial *serial, const char * apiMsgName, const jsmntok_t *apiPayload)
+{
 
     const api_t * api = apis;
     int res = API_ERROR_UNSPECIFIED;
@@ -177,7 +200,8 @@ static int dispatch_api(Serial *serial, const char * apiMsgName, const jsmntok_t
     return res;
 }
 
-static int execute_api(Serial * serial, const jsmntok_t *json) {
+static int execute_api(Serial * serial, const jsmntok_t *json)
+{
     const jsmntok_t *root = &json[0];
     if (root->type == JSMN_OBJECT && root->size == 2) {
         const jsmntok_t *apiMsgName = &json[1];
@@ -193,7 +217,8 @@ static int execute_api(Serial * serial, const jsmntok_t *json) {
     }
 }
 
-int process_api(Serial *serial, char *buffer, size_t bufferSize) {
+int process_api(Serial *serial, char *buffer, size_t bufferSize)
+{
     jsmn_init(&g_jsonParser);
     memset(g_json_tok, 0, sizeof(g_json_tok));
 
@@ -201,7 +226,7 @@ int process_api(Serial *serial, char *buffer, size_t bufferSize) {
     if (r == JSMN_SUCCESS) {
         return execute_api(serial, g_json_tok);
     } else {
-    	pr_warning_int_msg("API Error: ", r);
+        pr_warning_int_msg("API Error: ", r);
         return API_ERROR_MALFORMED;
     }
 }

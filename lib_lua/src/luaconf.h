@@ -524,7 +524,7 @@
 @@ lua_str2number converts a string to a number.
 */
 
-#if defined(LUA_NUMBER_INTEGER) 
+#if defined(LUA_NUMBER_INTEGER)
 #define lua_number2str(s,n)     modp_itoa10((n),s)
 #else
 #define lua_number2str(s,n)     modp_ftoa((n),s, LUA_NUMBER_PRECISION)
@@ -581,7 +581,10 @@
    with a DirectX idiosyncrasy */
 #else
 
-union luai_Cast { double l_d; long l_l; };
+union luai_Cast {
+    double l_d;
+    long l_l;
+};
 #define lua_number2int(i,d) \
   { volatile union luai_Cast u; u.l_d = (d) + 6755399441055744.0; (i) = u.l_l; }
 #define lua_number2integer(i,n)		lua_number2int(i, n)

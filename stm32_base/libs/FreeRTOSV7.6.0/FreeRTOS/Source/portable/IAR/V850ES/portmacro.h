@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -91,13 +91,13 @@ extern "C" {
 
 
 #if (configUSE_16_BIT_TICKS==1)
-	typedef unsigned portSHORT portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffff
+typedef unsigned portSHORT portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffff
 #else
-	typedef unsigned portLONG portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffffffff
+typedef unsigned portLONG portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffffffff
 #endif
-/*-----------------------------------------------------------*/	
+/*-----------------------------------------------------------*/
 
 /* Interrupt control macros. */
 #define portDISABLE_INTERRUPTS() __asm ( "DI" )
@@ -153,7 +153,7 @@ extern void vTaskSwitchContext( void );
 /* Hardwware specifics. */
 #define portBYTE_ALIGNMENT	4
 #define portSTACK_GROWTH	( -1 )
-#define portTICK_RATE_MS	( ( portTickType ) 1000 / configTICK_RATE_HZ )		
+#define portTICK_RATE_MS	( ( portTickType ) 1000 / configTICK_RATE_HZ )
 /*-----------------------------------------------------------*/
 
 /* Task function macros as described on the FreeRTOS.org WEB site. */

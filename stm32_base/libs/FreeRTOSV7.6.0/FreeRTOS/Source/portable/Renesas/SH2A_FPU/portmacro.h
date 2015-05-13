@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -74,7 +74,7 @@ extern "C" {
 #endif
 
 /*-----------------------------------------------------------
- * Port specific definitions.  
+ * Port specific definitions.
  *
  * The settings in this file configure FreeRTOS correctly for the
  * given hardware and compiler.
@@ -94,18 +94,18 @@ portSTACK_TYPE and portBASE_TYPE. */
 #define portBASE_TYPE	long
 
 #if( configUSE_16_BIT_TICKS == 1 )
-	typedef unsigned portSHORT portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffff
+typedef unsigned portSHORT portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffff
 #else
-	typedef unsigned portLONG portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffffffff
+typedef unsigned portLONG portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffffffff
 #endif
 /*-----------------------------------------------------------*/
 
 /* Hardware specifics. */
 #define portBYTE_ALIGNMENT				8
 #define portSTACK_GROWTH				-1
-#define portTICK_RATE_MS				( ( portTickType ) 1000 / configTICK_RATE_HZ )		
+#define portTICK_RATE_MS				( ( portTickType ) 1000 / configTICK_RATE_HZ )
 #define portNOP()						nop()
 #define portSTART_SCHEDULER_TRAP_NO		( 32 )
 #define portYIELD_TRAP_NO				( 33 )
@@ -117,22 +117,22 @@ void vPortYield( void );
 extern void vTaskSwitchContext( void );
 #define portYIELD_FROM_ISR( x )			if( x != pdFALSE ) vTaskSwitchContext()
 
-/* 
- * This function tells the kernel that the task referenced by xTask is going to 
- * use the floating point registers and therefore requires the floating point 
- * registers saved as part of its context. 
+/*
+ * This function tells the kernel that the task referenced by xTask is going to
+ * use the floating point registers and therefore requires the floating point
+ * registers saved as part of its context.
  */
 portBASE_TYPE xPortUsesFloatingPoint( void* xTask );
 
 /*
  * The flop save and restore functions are defined in portasm.src and called by
- * the trace "task switched in" and "trace task switched out" macros. 
+ * the trace "task switched in" and "trace task switched out" macros.
  */
 void vPortSaveFlopRegisters( void *pulBuffer );
 void vPortRestoreFlopRegisters( void *pulBuffer );
 
 /*
- * pxTaskTag is used to point to the buffer into which the floating point 
+ * pxTaskTag is used to point to the buffer into which the floating point
  * context should be saved.  If pxTaskTag is NULL then the task does not use
  * a floating point context.
  */

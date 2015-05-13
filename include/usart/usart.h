@@ -4,10 +4,10 @@
 #include <stdint.h>
 
 typedef enum {
-	UART_GPS = 0,
-	UART_TELEMETRY,
-	UART_WIRELESS,
-	UART_AUX
+    UART_GPS = 0,
+    UART_TELEMETRY,
+    UART_WIRELESS,
+    UART_AUX
 } uart_id_t;
 
 #define SERIAL_COUNT 5

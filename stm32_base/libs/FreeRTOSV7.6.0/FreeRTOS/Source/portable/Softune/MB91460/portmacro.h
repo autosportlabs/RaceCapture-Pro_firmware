@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -73,7 +73,7 @@
 #include <stddef.h>
 
 /*-----------------------------------------------------------
- * Port specific definitions.  
+ * Port specific definitions.
  *
  * The settings in this file configure FreeRTOS correctly for the
  * given hardware and compiler.
@@ -92,17 +92,17 @@
 #define portBASE_TYPE	long
 
 #if( configUSE_16_BIT_TICKS == 1 )
-	typedef unsigned portSHORT portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffff
+typedef unsigned portSHORT portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffff
 #else
-	typedef unsigned portLONG portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffffffff
+typedef unsigned portLONG portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffffffff
 #endif
-/*-----------------------------------------------------------*/	
+/*-----------------------------------------------------------*/
 
 /* Critical section management. */
 #if configKERNEL_INTERRUPT_PRIORITY != 30
-	#error configKERNEL_INTERRUPT_PRIORITY (set in FreeRTOSConfig.h) must match the ILM value set in the following line - 30 (1Eh) being the default.
+#error configKERNEL_INTERRUPT_PRIORITY (set in FreeRTOSConfig.h) must match the ILM value set in the following line - 30 (1Eh) being the default.
 #endif
 #define portDISABLE_INTERRUPTS() __asm(" STILM #1Eh ")
 #define portENABLE_INTERRUPTS() __asm(" STILM #1Fh ")
@@ -110,16 +110,16 @@
 #define portENTER_CRITICAL()	\
 	__asm(" ST PS,@-R15 ");		\
 	__asm(" ANDCCR #0xef ");	\
-
+ 
 
 #define portEXIT_CRITICAL()		\
 	__asm(" LD @R15+,PS ");		\
-
+ 
 /*-----------------------------------------------------------*/
 
 /* Architecture specifics. */
 #define portSTACK_GROWTH			( -1 )
-#define portTICK_RATE_MS			( ( portTickType ) 1000 / configTICK_RATE_HZ )		
+#define portTICK_RATE_MS			( ( portTickType ) 1000 / configTICK_RATE_HZ )
 #define portBYTE_ALIGNMENT			4
 #define portNOP()					__asm( " nop " );
 /*-----------------------------------------------------------*/

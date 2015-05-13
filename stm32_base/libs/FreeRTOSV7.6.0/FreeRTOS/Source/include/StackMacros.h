@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -84,26 +84,26 @@
 
 #if( configCHECK_FOR_STACK_OVERFLOW == 0 )
 
-	/* FreeRTOSConfig.h is not set to check for stack overflows. */
-	#define taskFIRST_CHECK_FOR_STACK_OVERFLOW()
-	#define taskSECOND_CHECK_FOR_STACK_OVERFLOW()
+/* FreeRTOSConfig.h is not set to check for stack overflows. */
+#define taskFIRST_CHECK_FOR_STACK_OVERFLOW()
+#define taskSECOND_CHECK_FOR_STACK_OVERFLOW()
 
 #endif /* configCHECK_FOR_STACK_OVERFLOW == 0 */
 /*-----------------------------------------------------------*/
 
 #if( configCHECK_FOR_STACK_OVERFLOW == 1 )
 
-	/* FreeRTOSConfig.h is only set to use the first method of
-	overflow checking. */
-	#define taskSECOND_CHECK_FOR_STACK_OVERFLOW()
+/* FreeRTOSConfig.h is only set to use the first method of
+overflow checking. */
+#define taskSECOND_CHECK_FOR_STACK_OVERFLOW()
 
 #endif
 /*-----------------------------------------------------------*/
 
 #if( ( configCHECK_FOR_STACK_OVERFLOW > 0 ) && ( portSTACK_GROWTH < 0 ) )
 
-	/* Only the current stack state is to be checked. */
-	#define taskFIRST_CHECK_FOR_STACK_OVERFLOW()														\
+/* Only the current stack state is to be checked. */
+#define taskFIRST_CHECK_FOR_STACK_OVERFLOW()														\
 	{																									\
 		/* Is the currently saved stack pointer within the stack limit? */								\
 		if( pxCurrentTCB->pxTopOfStack <= pxCurrentTCB->pxStack )										\
@@ -117,8 +117,8 @@
 
 #if( ( configCHECK_FOR_STACK_OVERFLOW > 0 ) && ( portSTACK_GROWTH > 0 ) )
 
-	/* Only the current stack state is to be checked. */
-	#define taskFIRST_CHECK_FOR_STACK_OVERFLOW()														\
+/* Only the current stack state is to be checked. */
+#define taskFIRST_CHECK_FOR_STACK_OVERFLOW()														\
 	{																									\
 																										\
 		/* Is the currently saved stack pointer within the stack limit? */								\
@@ -133,7 +133,7 @@
 
 #if( ( configCHECK_FOR_STACK_OVERFLOW > 1 ) && ( portSTACK_GROWTH < 0 ) )
 
-	#define taskSECOND_CHECK_FOR_STACK_OVERFLOW()																								\
+#define taskSECOND_CHECK_FOR_STACK_OVERFLOW()																								\
 	{																																			\
 	static const unsigned char ucExpectedStackBytes[] = {	tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE,		\
 															tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE,		\
@@ -154,7 +154,7 @@
 
 #if( ( configCHECK_FOR_STACK_OVERFLOW > 1 ) && ( portSTACK_GROWTH > 0 ) )
 
-	#define taskSECOND_CHECK_FOR_STACK_OVERFLOW()																								\
+#define taskSECOND_CHECK_FOR_STACK_OVERFLOW()																								\
 	{																																			\
 	char *pcEndOfStack = ( char * ) pxCurrentTCB->pxEndOfStack;																					\
 	static const unsigned char ucExpectedStackBytes[] = {	tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE,		\

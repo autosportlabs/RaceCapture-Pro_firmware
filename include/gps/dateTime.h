@@ -21,13 +21,13 @@ typedef int64_t millis_t;
 typedef int32_t tiny_millis_t;
 
 typedef struct _DateTime {
-   int16_t millisecond;
-   int8_t second;
-   int8_t minute;
-   int8_t hour;
-   int8_t day;
-   int8_t month;
-   int16_t year;
+    int16_t millisecond;
+    int8_t second;
+    int8_t minute;
+    int8_t hour;
+    int8_t day;
+    int8_t month;
+    int16_t year;
 } DateTime;
 
 bool isLeapYear(const int year);

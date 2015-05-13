@@ -12,21 +12,21 @@ extern xSemaphoreHandle xOnPushbutton;
 void gpio_irq_handler( void ) __attribute__ ((naked));
 void gpio_irq_handler( void )
 {
-    	
-	portENTER_SWITCHING_ISR();
+
+    portENTER_SWITCHING_ISR();
 
 //* enable the next PIO IRQ
     int dummy = AT91C_BASE_PIOA->PIO_ISR;
     //* suppress the compilation warning
     dummy =dummy;
-	portCHAR xTaskWoken = pdFALSE;
-	
-	unsigned int pio_input = AT91C_BASE_PIOA->PIO_PDSR;  
-	if( (pio_input & PIO_PUSHBUTTON_SWITCH) == 0){
-		xTaskWoken = xSemaphoreGiveFromISR( xOnPushbutton, xTaskWoken );
-	}
-	/* Clear AIC to complete ISR processing */
-	AT91C_BASE_AIC->AIC_EOICR = 0;
-	portEXIT_SWITCHING_ISR( xTaskWoken );
+    portCHAR xTaskWoken = pdFALSE;
+
+    unsigned int pio_input = AT91C_BASE_PIOA->PIO_PDSR;
+    if( (pio_input & PIO_PUSHBUTTON_SWITCH) == 0) {
+        xTaskWoken = xSemaphoreGiveFromISR( xOnPushbutton, xTaskWoken );
+    }
+    /* Clear AIC to complete ISR processing */
+    AT91C_BASE_AIC->AIC_EOICR = 0;
+    portEXIT_SWITCHING_ISR( xTaskWoken );
 }
 
