@@ -47,21 +47,18 @@ static const Track* findClosestTrack(const Tracks *tracks, const GeoPoint *locat
 
 const Track* auto_configure_track(const Track *defaultCfg, const GeoPoint *gp)
 {
-    pr_info("tracks: detecting...");
-
     const Tracks *tracks = get_tracks();
     if (!tracks || tracks->count <= 0) {
         // Well shit!
-        pr_info("No tracks\r\n");
         return defaultCfg;
     }
 
     const Track *foundTrack = findClosestTrack(tracks, gp);
     if (!foundTrack) {
-        pr_info("no ");
         foundTrack = defaultCfg;
     }
-
-    pr_info("track found\r\n");
+    else{
+        pr_info_int_msg("tracks: found ", foundTrack->trackId);
+    }
     return foundTrack;
 }
