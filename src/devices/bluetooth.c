@@ -25,6 +25,7 @@
 #include "taskUtil.h"
 
 #define COMMAND_WAIT 	600
+#define BT_INIT_DELAY   100
 
 static bluetooth_status_t g_bluetooth_status = BT_STATUS_NOT_INIT;
 
@@ -134,7 +135,7 @@ int bt_init_connection(DeviceConfig *config)
     const char *deviceName = btConfig->deviceName;
 
     //give a chance for BT module to init
-    delayMs(500);
+    delayMs(BT_INIT_DELAY);
 
     // Zero terminated
     const int rates[] = { 115200, 9600, 230400, 0 };
