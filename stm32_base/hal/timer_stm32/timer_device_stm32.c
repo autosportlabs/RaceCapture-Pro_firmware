@@ -20,7 +20,7 @@ unsigned int g_timer_counts[TIMER_CHANNELS];
 #define PRESCALER_MEDIUM	168
 #define PRESCALER_FAST		84
 
-#define INPUT_CAPTURE_FILTER 	0X0
+#define INPUT_CAPTURE_FILTER 	0X6
 
 static uint16_t timer0_cc2 = 0;
 static uint16_t timer0_duty_cycle = 0;
@@ -297,10 +297,13 @@ void TIM3_IRQHandler(void)
             /* Duty cycle computation */
             uint16_t IC1Value = TIM_GetCapture1(TIM3);
             timer0_duty_cycle = (IC1Value * 100) / timer0_cc2;
-            timer0_period = IC1Value;
+            if (IC1Value > timer0_period / 2){
+                timer0_period = IC1Value;
+            }
+
         } else {
             timer0_duty_cycle = 0;
-            timer0_period = 0;
+            //timer0_period = 0;
         }
     }
 }
