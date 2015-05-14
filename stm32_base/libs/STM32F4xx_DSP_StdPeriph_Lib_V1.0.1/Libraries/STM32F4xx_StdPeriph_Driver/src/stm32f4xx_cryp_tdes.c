@@ -118,7 +118,8 @@ ErrorStatus CRYP_TDES_ECB(uint8_t Mode, uint8_t Key[24], uint8_t *Input,
     /* Crypto Init for Encryption process */
     if(Mode == MODE_ENCRYPT) { /* TDES encryption */
         TDES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_AlgoDir_Encrypt;
-    } else /*if(Mode == MODE_DECRYPT)*/ { /* TDES decryption */
+    } else { /*if(Mode == MODE_DECRYPT)*/
+        /* TDES decryption */
         TDES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_AlgoDir_Decrypt;
     }
 

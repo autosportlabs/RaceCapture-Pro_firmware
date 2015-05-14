@@ -22,8 +22,10 @@
 #include "mod_string.h"
 #include "printk.h"
 #include "task.h"
+#include "taskUtil.h"
 
 #define COMMAND_WAIT 	600
+#define BT_INIT_DELAY   100
 
 static bluetooth_status_t g_bluetooth_status = BT_STATUS_NOT_INIT;
 
@@ -94,7 +96,7 @@ static const char * baudConfigCmdForRate(unsigned int baudRate)
 
 static int configureBt(DeviceConfig *config, unsigned int targetBaud, const char * deviceName)
 {
-    pr_debug_int_msg("BT: Configuring baud Rate", targetBaud);
+    pr_info_int_msg("BT: Configuring baud Rate", targetBaud);
     //set baud rate
     if (!sendCommand(config, baudConfigCmdForRate(targetBaud)))
         return -1;
@@ -104,7 +106,7 @@ static int configureBt(DeviceConfig *config, unsigned int targetBaud, const char
     char btName[30];
     strcpy(btName, "AT+NAME");
     strcat(btName, deviceName);
-    pr_debug_str_msg("BT: Configuring name", btName);
+    pr_info_str_msg("BT: Configuring name", btName);
     if (!sendBtCommandWaitResponse(config, btName, "OK", COMMAND_WAIT))
         return -2;
     return 0;
@@ -113,7 +115,7 @@ static int configureBt(DeviceConfig *config, unsigned int targetBaud, const char
 static int bt_probe_config(unsigned int probeBaud, unsigned int targetBaud, const char * deviceName,
                            DeviceConfig *config)
 {
-    pr_debug_int_msg("BT: Probing baud", probeBaud);
+    pr_info_int_msg("BT: Probing baud ", probeBaud);
     config->serial->init(8, 0, 1, probeBaud);
     int rc;
     if (sendCommand(config, "AT")
@@ -122,7 +124,7 @@ static int bt_probe_config(unsigned int probeBaud, unsigned int targetBaud, cons
     } else {
         rc = DEVICE_INIT_FAIL;
     }
-    pr_info_str_msg("BT: Provision", rc == DEVICE_INIT_SUCCESS ? "win" : "fail");
+    pr_info_str_msg("BT: Provision ", rc == DEVICE_INIT_SUCCESS ? "win" : "fail");
     return rc;
 }
 
@@ -131,6 +133,9 @@ int bt_init_connection(DeviceConfig *config)
     BluetoothConfig *btConfig = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
     unsigned int targetBaud = btConfig->baudRate;
     const char *deviceName = btConfig->deviceName;
+
+    //give a chance for BT module to init
+    delayMs(BT_INIT_DELAY);
 
     // Zero terminated
     const int rates[] = { 115200, 9600, 230400, 0 };
@@ -142,13 +147,13 @@ int bt_init_connection(DeviceConfig *config)
     }
 
     if (*rate > 0) {
-        config->serial->init(8, 0, 1, targetBaud);
         pr_info("BT: Init complete\r\n");
         g_bluetooth_status = BT_STATUS_PROVISIONED;
     } else {
         pr_info("BT: Failed to provision module. Assuming already connected.\r\n");
         g_bluetooth_status = BT_STATUS_ERROR;
     }
+    config->serial->init(8, 0, 1, targetBaud);
 
     return DEVICE_INIT_SUCCESS;
 }
