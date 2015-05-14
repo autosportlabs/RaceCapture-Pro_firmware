@@ -116,7 +116,8 @@ ErrorStatus CRYP_DES_ECB(uint8_t Mode, uint8_t Key[8], uint8_t *Input,
     /* Crypto Init for Encryption process */
     if( Mode == MODE_ENCRYPT ) { /* DES encryption */
         DES_CRYP_InitStructure.CRYP_AlgoDir  = CRYP_AlgoDir_Encrypt;
-    } else/* if( Mode == MODE_DECRYPT )*/ { /* DES decryption */
+    } else { /* if( Mode == MODE_DECRYPT )*/
+        /* DES decryption */
         DES_CRYP_InitStructure.CRYP_AlgoDir  = CRYP_AlgoDir_Decrypt;
     }
 
@@ -205,7 +206,8 @@ ErrorStatus CRYP_DES_CBC(uint8_t Mode, uint8_t Key[8], uint8_t InitVectors[8],
     /* Crypto Init for Encryption process */
     if(Mode == MODE_ENCRYPT) { /* DES encryption */
         DES_CRYP_InitStructure.CRYP_AlgoDir  = CRYP_AlgoDir_Encrypt;
-    } else /*if(Mode == MODE_DECRYPT)*/ { /* DES decryption */
+    } else { /*if(Mode == MODE_DECRYPT)*/
+        /* DES decryption */
         DES_CRYP_InitStructure.CRYP_AlgoDir  = CRYP_AlgoDir_Decrypt;
     }
 

@@ -56,8 +56,7 @@ const Track* auto_configure_track(const Track *defaultCfg, const GeoPoint *gp)
     const Track *foundTrack = findClosestTrack(tracks, gp);
     if (!foundTrack) {
         foundTrack = defaultCfg;
-    }
-    else{
+    } else {
         pr_info_int_msg("tracks: found ", foundTrack->trackId);
     }
     return foundTrack;
