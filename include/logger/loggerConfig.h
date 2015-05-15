@@ -173,7 +173,7 @@ typedef struct _TimerConfig {
       DEFAULT_FREQUENCY_CHANNEL_CONFIG,         \
          0,                                     \
          MODE_LOGGING_TIMER_RPM,                \
-         0.2F,                                  \
+         1.0F,                                  \
          1,                                     \
          TIMER_MEDIUM                           \
          }
