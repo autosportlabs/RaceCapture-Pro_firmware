@@ -5,7 +5,6 @@
 #include "stm32f4xx_tim.h"
 #include "stm32f4xx_misc.h"
 #include "printk.h"
-#include "LED.h"
 
 unsigned int g_timer0_overflow;
 unsigned int g_timer1_overflow;
