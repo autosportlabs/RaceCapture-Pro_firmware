@@ -1,3 +1,6 @@
+=== 2.8.2 ===
+* Improved reliability of GPS initialization
+
 === 2.8.1 ===
 * Improved reliability of BT initialization process
 
