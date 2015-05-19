@@ -29,19 +29,22 @@ void GPSTask(void *pvParameters)
     Serial *serial = get_serial(SERIAL_GPS);
     uint8_t targetSampleRate = decodeSampleRate(getWorkingLoggerConfig()->GPSConfigs.speed.sampleRate);
     lapStats_init();
-    gps_status_t gps_status = GPS_init(targetSampleRate, serial);
-    if (!gps_status) {
-        pr_error("GPS: Error provisioning\r\n");
-    }
+    while(1){
+		gps_status_t gps_status = GPS_init(targetSampleRate, serial);
+		if (!gps_status) {
+			pr_error("GPS: Error provisioning\r\n");
+		}
 
-    for (;;) {
-        gps_msg_result_t result = GPS_processUpdate(serial);
-        if (result == GPS_MSG_SUCCESS) {
-            const GpsSnapshot snap = getGpsSnapshot();
-            lapstats_processUpdate(&snap);
-        } else {
-            pr_warning("GPS: timeout\r\n");
-        }
+		for (;;) {
+			gps_msg_result_t result = GPS_processUpdate(serial);
+			if (result == GPS_MSG_SUCCESS) {
+				const GpsSnapshot snap = getGpsSnapshot();
+				lapstats_processUpdate(&snap);
+			} else {
+				pr_warning("GPS: timeout\r\n");
+				break;
+			}
+		}
     }
 }
 
