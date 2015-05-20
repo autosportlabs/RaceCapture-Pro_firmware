@@ -30,7 +30,7 @@ void GPSTask(void *pvParameters)
     uint8_t targetSampleRate = decodeSampleRate(getWorkingLoggerConfig()->GPSConfigs.speed.sampleRate);
     lapStats_init();
     while(1) {
-        gps_status_t gps_status = GPS_init(targetSampleRate, serial);
+        const gps_status_t gps_status = GPS_init(targetSampleRate, serial);
         if (!gps_status) {
             pr_error("GPS: Error provisioning\r\n");
         }
