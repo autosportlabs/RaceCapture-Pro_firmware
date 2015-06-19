@@ -1,3 +1,8 @@
+=== 2.8.3 ===
+* Read cell module stats before checking if on network
+* Extend heartbeat timeout to 60 seconds to allow more margin
+* Correctly handle threshold for bad telemetry messsages, preventing unnecessary re-connects
+
 === 2.8.2 ===
 * Improved reliability of GPS initialization
 

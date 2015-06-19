@@ -342,10 +342,10 @@ int initCellModem(Serial *serial)
         if (sendCommandRetry(serial, "ATZ\r", "OK", 2, 2) != 1) continue;
         if (sendCommandRetry(serial, "ATE0\r", "OK", 2, 2) != 1) continue;
         sendCommand(serial, "AT+CIPSHUT\r", "OK");
-        if (isNetworkConnected(serial, 60, 3) != 1) continue;
+        read_IMEI(serial);
         getSignalStrength(serial);
         read_subscriber_number(serial);
-        read_IMEI(serial);
+        if (isNetworkConnected(serial, 60, 3) != 1) continue;
         if (isDataReady(serial, 30, 2) != 1) continue;
         success = 1;
     }
