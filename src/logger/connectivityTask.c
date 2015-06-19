@@ -38,7 +38,7 @@
 #define IDLE_TIMEOUT							configTICK_RATE_HZ / 10
 #define INIT_DELAY	 							600
 #define BUFFER_SIZE 							1025
-#define TELEMETRY_DISCONNECT_TIMEOUT            60000
+#define TELEMETRY_DISCONNECT_TIMEOUT            30000
 
 #define TELEMETRY_STACK_SIZE  					1000
 #define SAMPLE_RECORD_QUEUE_SIZE				10
@@ -268,12 +268,15 @@ void connectivityTask(void *params)
                 if (msgError) {
                     pr_debug("(failed)\r\n");
                 }
-                if (msgError) badMsgCount++;
+                if (msgError) {
+                    badMsgCount++;
+                }
+                else {
+                    badMsgCount = 0;
+                }
                 if (badMsgCount >= BAD_MESSAGE_THRESHOLD) {
                     pr_warning_int_msg("re-connecting- empty/bad msgs :", badMsgCount );
                     break;
-                } else {
-                    badMsgCount = 0;
                 }
                 rxCount = 0;
             }
