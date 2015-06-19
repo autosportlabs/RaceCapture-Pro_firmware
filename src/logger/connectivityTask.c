@@ -270,8 +270,7 @@ void connectivityTask(void *params)
                 }
                 if (msgError) {
                     badMsgCount++;
-                }
-                else {
+                } else {
                     badMsgCount = 0;
                 }
                 if (badMsgCount >= BAD_MESSAGE_THRESHOLD) {
