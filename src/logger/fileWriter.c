@@ -18,6 +18,8 @@
 #include "LED.h"
 #include "taskUtil.h"
 
+#include <stdbool.h>
+
 enum writing_status {
     WRITING_INACTIVE = 0,
     WRITING_ACTIVE
@@ -188,7 +190,7 @@ static int writeChannelSamples(ChannelSample *sample, size_t channelCount)
     return WRITE_SUCCESS;
 }
 
-static int openLogfile(FIL *f, char *filename)
+static int openLogfile(FIL *f, const char *filename)
 {
     int rc = f_open(f,filename, FA_WRITE);
     return rc;
@@ -229,14 +231,28 @@ static void flushLogfile(FIL *file)
     }
 }
 
-static int openNewLogfile(char *filename)
-{
-    int rc;
+static void file_led_set(bool on) {
+        if (on) {
+                LED_enable(3);
+        } else {
+                LED_disable(3);
+        }
+}
 
-    rc = InitFS();
+static void logging_led_toggle() {
+        LED_toggle(2);
+}
+
+static void logging_led_off() {
+        LED_disable(2);
+}
+
+static enum writing_status openNewLogfile(char *filename)
+{
+    int rc = InitFS();
+
     if (0 != rc) {
         pr_error_int_msg("FS init error: ", rc);
-        LED_enable(3);
         return WRITING_INACTIVE;
     }
 
@@ -244,94 +260,152 @@ static int openNewLogfile(char *filename)
     rc = openNextLogfile(g_logfile, filename);
     if (0 != rc) {
         pr_error_int_msg("File open err: ", rc);
-        LED_enable(3);
         return WRITING_INACTIVE;
     }
 
     return WRITING_ACTIVE;
 }
 
+struct file_status
+{
+        portTickType flush_tick;
+        portTickType write_tick;
+        bool logging;
+        enum writing_status writing_status;
+        char name[FILENAME_LEN];
+};
+
+static int logging_start(struct file_status *fs)
+{
+        if (fs->writing_status != WRITING_INACTIVE)
+                return 2;
+
+        pr_debug("Logging: Start\r\n");
+
+        fs->flush_tick = xTaskGetTickCount();
+        fs->write_tick = 0;
+        fs->writing_status = openNewLogfile(fs->name);
+        fs->logging = true;
+
+        return fs->writing_status == WRITING_ACTIVE ? 0 : 1;
+}
+
+static int logging_stop(struct file_status *fs)
+{
+        endLogfile();
+        fs->writing_status = WRITING_INACTIVE;
+        fs->logging = false;
+
+        logging_led_off();
+        return 0;
+}
+
+static bool remount_log_file(const struct file_status *fs)
+{
+        pr_error("Remounting FS due to write error.\r\n");
+        // XXX: Do we need to worry about rolling over to new files?
+
+        f_close(g_logfile);
+        UnmountFS();
+        InitFS();
+
+        return openLogfile(g_logfile, fs->name) == 0;
+}
+
+static int logging_sample(struct file_status *fs, LoggerMessage *msg)
+{
+        /* If we haven't starting logging yet, then no op */
+        if (!fs->logging)
+                return 0;
+
+        if (fs->writing_status != WRITING_ACTIVE)
+                return 1;
+
+        if (0 == fs->write_tick)
+                writeHeaders(msg->channelSamples, msg->sampleCount);
+
+        fs->write_tick++;
+        int attempts = 2;
+        int rc;
+        while (attempts--) {
+                rc = writeChannelSamples(msg->channelSamples,
+                                         msg->sampleCount);
+                if (rc == WRITE_SUCCESS)
+                        break;
+
+                if (attempts)
+                        remount_log_file(fs);
+        }
+
+        logging_led_toggle();
+        return rc == WRITE_SUCCESS ? 0 : 2;
+}
+
+static void flush_logfile(struct file_status *fs)
+{
+        if (fs->writing_status != WRITING_ACTIVE)
+                return;
+
+        if (!isTimeoutMs(fs->flush_tick, FLUSH_INTERVAL_MS))
+                return;
+
+        flushLogfile(g_logfile);
+        fs->flush_tick = xTaskGetTickCount();
+}
+
 void fileWriterTask(void *params)
 {
-    LoggerMessage *msg = NULL;
-    unsigned int flushTimeoutInterval = 0;
-    portTickType flushTimeoutStart = 0;
-    size_t tick = 0;
-    enum writing_status writingStatus = WRITING_INACTIVE;
-    char filename[FILENAME_LEN];
+        LoggerMessage *msg = NULL;
+        struct file_status fs = { 0 };
 
-    while(1) {
         while(1) {
-            //wait for the next sample record
-            xQueueReceive(g_sampleRecordQueue, &(msg), portMAX_DELAY);
+                int ok = 0;
 
-            if ((LoggerMessageType_Start == msg->type || LoggerMessageType_Sample == msg->type) &&
-                WRITING_INACTIVE == writingStatus) {
-                pr_debug("Logging: Start\r\n");
-                LED_disable(3);
-                flushTimeoutInterval = FLUSH_INTERVAL_MS;
-                flushTimeoutStart = xTaskGetTickCount();
-                tick = 0;
-                writingStatus = openNewLogfile(filename);
-            } else if (LoggerMessageType_Stop == msg->type) {
-                pr_info_int_msg("Logging: wrote ", tick);
-                break;
-            }
+                // Get a sample.
+                xQueueReceive(g_sampleRecordQueue, &(msg), portMAX_DELAY);
 
-            if (LoggerMessageType_Sample == msg->type && WRITING_ACTIVE == writingStatus) {
-
-                if (0 == tick) {
-                    writeHeaders(msg->channelSamples, msg->sampleCount);
-                }
-                LED_toggle(2);
-                int rc = writeChannelSamples(msg->channelSamples, msg->sampleCount);
-                if (rc == WRITE_FAIL) {
-                    LED_enable(3);
-                    //try to recover
-                    f_close(g_logfile);
-                    UnmountFS();
-                    pr_error("file: Error writing, recovering..\r\n");
-                    InitFS();
-                    rc = openLogfile(g_logfile, filename);
-                    if (0 != rc) {
-                        pr_error_str_msg("file: error recovering ", filename);
+                switch (msg->type) {
+                case LoggerMessageType_Sample:
+                        ok = logging_sample(&fs, msg);
                         break;
-                    } else {
-                        LED_disable(3);
-                    }
+                case LoggerMessageType_Start:
+                        ok = logging_start(&fs);
+                        break;
+                case LoggerMessageType_Stop:
+                        ok = logging_stop(&fs);
+                        break;
+                default:
+                        pr_warning("Unsupported message type\r\n");
+                        ok = false;
                 }
-                LED_disable(3);
-                if (isTimeoutMs(flushTimeoutStart, flushTimeoutInterval)) {
-                    flushLogfile(g_logfile);
-                    flushTimeoutStart = xTaskGetTickCount();
+
+                /* Turns the LED on if things are bad, off otherwise. */
+                file_led_set(ok != 0);
+                if (ok != 0) {
+                        pr_debug("Msg type ");
+                        pr_debug_int(msg->type);
+                        pr_debug_int_msg(" failed with code ", ok);
                 }
-                tick++;
-            } else {
-                break;
-            }
-        }
 
-        if (writingStatus != WRITING_INACTIVE) {
-            endLogfile();
+                flush_logfile(&fs);
         }
-
-        writingStatus = WRITING_INACTIVE;
-        delayMs(ERROR_SLEEP_DELAY_MS);
-    }
 }
 
 void startFileWriterTask( int priority )
 {
+        g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,
+                                           sizeof( ChannelSample *));
 
-    g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( ChannelSample *));
-    if (NULL == g_sampleRecordQueue) {
-        pr_error("file: sampleRecordQueue err\r\n");
-        return;
-    }
-    g_logfile = pvPortMalloc(sizeof(FIL));
-    if (NULL == g_logfile) {
-        pr_error("file: logfile sruct err\r\n");
-        return;
-    }
-    xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter", FILE_WRITER_STACK_SIZE, NULL, priority, NULL );
+        if (NULL == g_sampleRecordQueue) {
+                pr_error("file: sampleRecordQueue err\r\n");
+                return;
+        }
+
+        g_logfile = pvPortMalloc(sizeof(FIL));
+        if (NULL == g_logfile) {
+                pr_error("file: logfile sruct err\r\n");
+                return;
+        }
+        xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter",
+                     FILE_WRITER_STACK_SIZE, NULL, priority, NULL );
 }
