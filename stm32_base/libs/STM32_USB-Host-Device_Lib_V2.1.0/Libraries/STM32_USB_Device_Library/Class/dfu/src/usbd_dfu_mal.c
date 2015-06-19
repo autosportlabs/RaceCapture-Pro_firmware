@@ -16,14 +16,14 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
   *
   ******************************************************************************
-  */ 
+  */
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_dfu_mal.h"
@@ -31,11 +31,11 @@
 #include "usbd_flash_if.h"
 
 #ifdef DFU_MAL_SUPPORT_OTP
- #include "usbd_otp_if.h"
+#include "usbd_otp_if.h"
 #endif
 
 #ifdef DFU_MAL_SUPPORT_MEM
- #include "usbd_mem_if_template.h"
+#include "usbd_mem_if_template.h"
 #endif
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,36 +51,36 @@
 DFU_MAL_Prop_TypeDef* tMALTab[MAX_USED_MEDIA] = {
     &DFU_Flash_cb
 #ifdef DFU_MAL_SUPPORT_OTP
-  , &DFU_Otp_cb
+    , &DFU_Otp_cb
 #endif
 #ifdef DFU_MAL_SUPPORT_MEM
-  , &DFU_Mem_cb
+    , &DFU_Mem_cb
 #endif
 };
 
 #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
-  #if defined ( __ICCARM__ ) /*!< IAR Compiler */
-    #pragma data_alignment=4   
-  #endif
+#if defined ( __ICCARM__ ) /*!< IAR Compiler */
+#pragma data_alignment=4
+#endif
 #endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
 
 __ALIGN_BEGIN const uint8_t* usbd_dfu_StringDesc[MAX_USED_MEDIA] __ALIGN_END  = {
     FLASH_IF_STRING
 #ifdef DFU_MAL_SUPPORT_OTP
-  , OTP_IF_STRING
+    , OTP_IF_STRING
 #endif
 #ifdef DFU_MAL_SUPPORT_MEM
-  , MEM_IF_STRING
+    , MEM_IF_STRING
 #endif
 };
 
 #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
-  #if defined ( __ICCARM__ ) /*!< IAR Compiler */
-    #pragma data_alignment=4   
-  #endif
+#if defined ( __ICCARM__ ) /*!< IAR Compiler */
+#pragma data_alignment=4
+#endif
 #endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
 /* RAM Buffer for Downloaded Data */
-__ALIGN_BEGIN uint8_t  MAL_Buffer[XFERSIZE] __ALIGN_END ; 
+__ALIGN_BEGIN uint8_t  MAL_Buffer[XFERSIZE] __ALIGN_END ;
 
 /* Private function prototypes -----------------------------------------------*/
 static uint8_t  MAL_CheckAdd  (uint32_t Add);
@@ -94,19 +94,17 @@ static uint8_t  MAL_CheckAdd  (uint32_t Add);
   */
 uint16_t MAL_Init(void)
 {
-  uint32_t memIdx = 0;
-  
-  /* Init all supported memories */
-  for(memIdx = 0; memIdx < MAX_USED_MEDIA; memIdx++)
-  {
-    /* If the check addres is positive, exit with the memory index */
-    if (tMALTab[memIdx]->pMAL_Init != NULL)
-    {
-      tMALTab[memIdx]->pMAL_Init();
-    }
-  }
+    uint32_t memIdx = 0;
 
-  return MAL_OK;
+    /* Init all supported memories */
+    for(memIdx = 0; memIdx < MAX_USED_MEDIA; memIdx++) {
+        /* If the check addres is positive, exit with the memory index */
+        if (tMALTab[memIdx]->pMAL_Init != NULL) {
+            tMALTab[memIdx]->pMAL_Init();
+        }
+    }
+
+    return MAL_OK;
 }
 
 /**
@@ -117,19 +115,17 @@ uint16_t MAL_Init(void)
   */
 uint16_t MAL_DeInit(void)
 {
-  uint32_t memIdx = 0;
-  
-  /* Init all supported memories */
-  for(memIdx = 0; memIdx < MAX_USED_MEDIA; memIdx++)
-  {
-    /* Check if the command is supported */
-    if (tMALTab[memIdx]->pMAL_DeInit != NULL)
-    {
-      tMALTab[memIdx]->pMAL_DeInit();
-    }
-  }
+    uint32_t memIdx = 0;
 
-  return MAL_OK;
+    /* Init all supported memories */
+    for(memIdx = 0; memIdx < MAX_USED_MEDIA; memIdx++) {
+        /* Check if the command is supported */
+        if (tMALTab[memIdx]->pMAL_DeInit != NULL) {
+            tMALTab[memIdx]->pMAL_DeInit();
+        }
+    }
+
+    return MAL_OK;
 }
 
 /**
@@ -140,30 +136,23 @@ uint16_t MAL_DeInit(void)
   */
 uint16_t MAL_Erase(uint32_t Add)
 {
-  uint32_t memIdx = MAL_CheckAdd(Add);
- 
-  /* Check if the area is protected */
-  if (DFU_MAL_IS_PROTECTED_AREA(Add))
-  {
-    return MAL_FAIL;
-  }    
-  
-  if (memIdx < MAX_USED_MEDIA)
-  {
-    /* Check if the command is supported */
-    if (tMALTab[memIdx]->pMAL_Erase != NULL)
-    {
-      return tMALTab[memIdx]->pMAL_Erase(Add);
+    uint32_t memIdx = MAL_CheckAdd(Add);
+
+    /* Check if the area is protected */
+    if (DFU_MAL_IS_PROTECTED_AREA(Add)) {
+        return MAL_FAIL;
     }
-    else
-    {
-      return MAL_FAIL;
+
+    if (memIdx < MAX_USED_MEDIA) {
+        /* Check if the command is supported */
+        if (tMALTab[memIdx]->pMAL_Erase != NULL) {
+            return tMALTab[memIdx]->pMAL_Erase(Add);
+        } else {
+            return MAL_FAIL;
+        }
+    } else {
+        return MAL_FAIL;
     }
-  }
-  else
-  {
-    return MAL_FAIL;
-  }
 }
 
 /**
@@ -175,30 +164,23 @@ uint16_t MAL_Erase(uint32_t Add)
   */
 uint16_t MAL_Write (uint32_t Add, uint32_t Len)
 {
-  uint32_t memIdx = MAL_CheckAdd(Add);
- 
-  /* Check if the area is protected */
-  if (DFU_MAL_IS_PROTECTED_AREA(Add))
-  {
-    return MAL_FAIL;
-  }   
-  
-  if (memIdx < MAX_USED_MEDIA)
-  {
-    /* Check if the command is supported */
-    if (tMALTab[memIdx]->pMAL_Write != NULL)
-    {
-      return tMALTab[memIdx]->pMAL_Write(Add, Len);
+    uint32_t memIdx = MAL_CheckAdd(Add);
+
+    /* Check if the area is protected */
+    if (DFU_MAL_IS_PROTECTED_AREA(Add)) {
+        return MAL_FAIL;
     }
-    else
-    {
-      return MAL_FAIL;
-    }    
-  }
-  else
-  {
-    return MAL_FAIL;
-  }
+
+    if (memIdx < MAX_USED_MEDIA) {
+        /* Check if the command is supported */
+        if (tMALTab[memIdx]->pMAL_Write != NULL) {
+            return tMALTab[memIdx]->pMAL_Write(Add, Len);
+        } else {
+            return MAL_FAIL;
+        }
+    } else {
+        return MAL_FAIL;
+    }
 }
 
 /**
@@ -210,24 +192,18 @@ uint16_t MAL_Write (uint32_t Add, uint32_t Len)
   */
 uint8_t *MAL_Read (uint32_t Add, uint32_t Len)
 {
-  uint32_t memIdx = MAL_CheckAdd(Add);
-  
-  if (memIdx < MAX_USED_MEDIA)
-  {
-    /* Check if the command is supported */
-    if (tMALTab[memIdx]->pMAL_Read != NULL)
-    {
-      return tMALTab[memIdx]->pMAL_Read(Add, Len);
+    uint32_t memIdx = MAL_CheckAdd(Add);
+
+    if (memIdx < MAX_USED_MEDIA) {
+        /* Check if the command is supported */
+        if (tMALTab[memIdx]->pMAL_Read != NULL) {
+            return tMALTab[memIdx]->pMAL_Read(Add, Len);
+        } else {
+            return MAL_Buffer;
+        }
+    } else {
+        return MAL_Buffer;
     }
-    else
-    {
-      return MAL_Buffer;
-    }     
-  }
-  else
-  {
-    return MAL_Buffer;
-  }
 }
 
 /**
@@ -240,25 +216,19 @@ uint8_t *MAL_Read (uint32_t Add, uint32_t Len)
   */
 uint16_t MAL_GetStatus(uint32_t Add , uint8_t Cmd, uint8_t *buffer)
 {
-  uint32_t memIdx = MAL_CheckAdd(Add);
-  
-  if (memIdx < MAX_USED_MEDIA)
-  {
-    if (Cmd & 0x01)
-    {
-      SET_POLLING_TIMING(tMALTab[memIdx]->EraseTiming);
+    uint32_t memIdx = MAL_CheckAdd(Add);
+
+    if (memIdx < MAX_USED_MEDIA) {
+        if (Cmd & 0x01) {
+            SET_POLLING_TIMING(tMALTab[memIdx]->EraseTiming);
+        } else {
+            SET_POLLING_TIMING(tMALTab[memIdx]->WriteTiming);
+        }
+
+        return MAL_OK;
+    } else {
+        return MAL_FAIL;
     }
-    else
-    {
-      SET_POLLING_TIMING(tMALTab[memIdx]->WriteTiming);
-    }
-    
-    return MAL_OK;
-  }
-  else
-  {
-    return MAL_FAIL;
-  }
 }
 
 /**
@@ -269,19 +239,17 @@ uint16_t MAL_GetStatus(uint32_t Add , uint8_t Cmd, uint8_t *buffer)
   */
 static uint8_t  MAL_CheckAdd(uint32_t Add)
 {
-  uint32_t memIdx = 0;
-  
-  /* Check with all supported memories */
-  for(memIdx = 0; memIdx < MAX_USED_MEDIA; memIdx++)
-  {
-    /* If the check addres is positive, exit with the memory index */
-    if (tMALTab[memIdx]->pMAL_CheckAdd(Add) == MAL_OK)
-    {
-      return memIdx;
+    uint32_t memIdx = 0;
+
+    /* Check with all supported memories */
+    for(memIdx = 0; memIdx < MAX_USED_MEDIA; memIdx++) {
+        /* If the check addres is positive, exit with the memory index */
+        if (tMALTab[memIdx]->pMAL_CheckAdd(Add) == MAL_OK) {
+            return memIdx;
+        }
     }
-  }
-  /* If no memory found, return MAX_USED_MEDIA */
-  return (MAX_USED_MEDIA);
+    /* If no memory found, return MAX_USED_MEDIA */
+    return (MAX_USED_MEDIA);
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

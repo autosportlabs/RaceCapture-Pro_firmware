@@ -25,8 +25,12 @@
 
 #define LOGGER_API \
 {"s", api_sampleData}, \
-{"log", api_log}, \
+{"hb", api_heart_beat}, \
+{"getVer", api_getVersion}, \
+{"getStatus", api_getStatus}, \
 {"getMeta", api_getMeta}, \
+{"log", api_log}, \
+{"getCapabilities", api_getCapabilities}, \
 {"flashCfg", api_flashConfig}, \
 {"setAnalogCfg", api_setAnalogConfig}, \
 {"getAnalogCfg", api_getAnalogConfig}, \
@@ -58,9 +62,6 @@
 {"runScript", api_runScript}, \
 {"addTrackDb", api_addTrackDb}, \
 {"getTrackDb", api_getTrackDb}, \
-{"getVer", api_getVersion}, \
-{"getCapabilities", api_getCapabilities}, \
-{"getStatus", api_getStatus}, \
 {"sysReset", api_systemReset}, \
 {"facReset", api_factoryReset}
 
@@ -72,6 +73,7 @@ int api_getStatus(Serial *serial, const jsmntok_t *json);
 int api_systemReset(Serial *serial, const jsmntok_t *json);
 int api_factoryReset(Serial *serial, const jsmntok_t *json);
 int api_sampleData(Serial *serial, const jsmntok_t *json);
+int api_heart_beat(Serial *serial, const jsmntok_t *json);
 int api_log(Serial *serial, const jsmntok_t *json);
 int api_getMeta(Serial *serial, const jsmntok_t *json);
 int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json);

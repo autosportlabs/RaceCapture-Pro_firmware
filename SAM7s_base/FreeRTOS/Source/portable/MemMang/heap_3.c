@@ -19,13 +19,13 @@
 
 	A special exception to the GPL can be applied should you wish to distribute
 	a combined work that includes FreeRTOS.org, without being obliged to provide
-	the source code for any proprietary components.  See the licensing section 
+	the source code for any proprietary components.  See the licensing section
 	of http://www.FreeRTOS.org for full details of how and when the exception
 	can be applied.
 
 	***************************************************************************
-	See http://www.FreeRTOS.org for documentation, latest information, license 
-	and contact details.  Please ensure to read the configuration and relevant 
+	See http://www.FreeRTOS.org for documentation, latest information, license
+	and contact details.  Please ensure to read the configuration and relevant
 	port sections of the online documentation.
 	***************************************************************************
 */
@@ -51,38 +51,37 @@
 
 void *pvPortMalloc( size_t xWantedSize )
 {
-void *pvReturn;
+    void *pvReturn;
 
-	vTaskSuspendAll();
-	{
-		pvReturn = malloc( xWantedSize );
-	}
-	xTaskResumeAll();
+    vTaskSuspendAll();
+    {
+        pvReturn = malloc( xWantedSize );
+    }
+    xTaskResumeAll();
 
-	return pvReturn;
+    return pvReturn;
 }
 /*-----------------------------------------------------------*/
 
 void vPortFree( void *pv )
 {
-	if( pv )
-	{
-		vTaskSuspendAll();
-		{
-			free( pv );
-		}
-		xTaskResumeAll();
-	}
+    if( pv ) {
+        vTaskSuspendAll();
+        {
+            free( pv );
+        }
+        xTaskResumeAll();
+    }
 }
 
 void * pvPortRealloc( void *pv, size_t xWantedSize )
 {
-	void * pvReturn;
-	
-	vTaskSuspendAll();
-	{
-		pvReturn = realloc( pv, xWantedSize);
-	}
-	xTaskResumeAll();
-	return pvReturn;
+    void * pvReturn;
+
+    vTaskSuspendAll();
+    {
+        pvReturn = realloc( pv, xWantedSize);
+    }
+    xTaskResumeAll();
+    return pvReturn;
 }

@@ -23,18 +23,19 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-class Current_Lap_Test : public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE( Current_Lap_Test );
-  CPPUNIT_TEST( test_lap_increment );
-  CPPUNIT_TEST( test_no_increment );
-  CPPUNIT_TEST( test_reset);
-  CPPUNIT_TEST_SUITE_END();
+class Current_Lap_Test : public CppUnit::TestFixture
+{
+    CPPUNIT_TEST_SUITE( Current_Lap_Test );
+    CPPUNIT_TEST( test_lap_increment );
+    CPPUNIT_TEST( test_no_increment );
+    CPPUNIT_TEST( test_reset);
+    CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp();
-  void test_lap_increment();
-  void test_no_increment();
-  void test_reset();
+    void setUp();
+    void test_lap_increment();
+    void test_no_increment();
+    void test_reset();
 };
 
 

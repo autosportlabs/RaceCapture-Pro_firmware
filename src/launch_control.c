@@ -36,58 +36,72 @@ static tiny_millis_t g_startTime = -1;
 static struct GeoCircle g_geoCircle;
 static bool g_hasLaunched;
 
-static bool isValidStartTime() {
-        return g_startTime != -1;
+static bool isValidStartTime()
+{
+    return g_startTime != -1;
 }
 
-static bool isConfigured() {
-        return gc_isValidGeoCircle(g_geoCircle);
+static bool isConfigured()
+{
+    return gc_isValidGeoCircle(g_geoCircle);
 }
 
-static bool isGeoPointInStartArea(const GeoPoint p) {
-        return gc_isPointInGeoCircle(&p, g_geoCircle);
+static bool isGeoPointInStartArea(const GeoPoint p)
+{
+    return gc_isPointInGeoCircle(&p, g_geoCircle);
 }
 
-static bool isSpeedBelowThreshold(const float speed) {
-        return speed < LC_SPEED_THRESHOLD;
+static bool isSpeedBelowThreshold(const float speed)
+{
+    return speed < LC_SPEED_THRESHOLD;
 }
 
-bool lc_hasLaunched() {
-        return g_hasLaunched;
+bool lc_hasLaunched()
+{
+    return g_hasLaunched;
 }
 
-bool lc_is_armed() {
-        return isValidStartTime() && !g_hasLaunched;
+bool lc_is_armed()
+{
+    return isValidStartTime() && !g_hasLaunched;
 }
 
-tiny_millis_t lc_getLaunchTime() {
-        return lc_hasLaunched() ? g_startTime : -1;
+tiny_millis_t lc_getLaunchTime()
+{
+    return lc_hasLaunched() ? g_startTime : -1;
 }
 
-void lc_reset() {
-        g_startTime = -1;
-        g_geoCircle = (struct GeoCircle) {{0}};  // GCC Bug 53119.
-        g_hasLaunched = false;
-}
-
-void lc_setup(const Track *track, const float targetRadius) {
-        lc_reset();
-        g_geoCircle = gc_createGeoCircle(getStartPoint(track), targetRadius);
-}
-
-void lc_supplyGpsSnapshot(const GpsSnapshot *snap) {
-        if (!isConfigured() || lc_hasLaunched())
-                return;
-
-        const GeoPoint point = snap->sample.point;
-        const float speed = snap->sample.speed;
-        const tiny_millis_t startTime = snap->deltaFirstFix;
-
-        if (isGeoPointInStartArea(point)) {
-                if (!isValidStartTime() || isSpeedBelowThreshold(speed)) {
-                        g_startTime = startTime;
-                }
-        } else {
-                g_hasLaunched = isValidStartTime();
+void lc_reset()
+{
+    g_startTime = -1;
+    g_geoCircle = (struct GeoCircle) {
+        {
+            0
         }
+    };  // GCC Bug 53119.
+    g_hasLaunched = false;
+}
+
+void lc_setup(const Track *track, const float targetRadius)
+{
+    lc_reset();
+    g_geoCircle = gc_createGeoCircle(getStartPoint(track), targetRadius);
+}
+
+void lc_supplyGpsSnapshot(const GpsSnapshot *snap)
+{
+    if (!isConfigured() || lc_hasLaunched())
+        return;
+
+    const GeoPoint point = snap->sample.point;
+    const float speed = snap->sample.speed;
+    const tiny_millis_t startTime = snap->deltaFirstFix;
+
+    if (isGeoPointInStartArea(point)) {
+        if (!isValidStartTime() || isSpeedBelowThreshold(speed)) {
+            g_startTime = startTime;
+        }
+    } else {
+        g_hasLaunched = isValidStartTime();
+    }
 }

@@ -16,10 +16,12 @@
 
 
 
-void init_logger_data(){
+void init_logger_data()
+{
 }
 
-void doBackgroundSampling(){
-	imu_sample_all();
-	ADC_sample_all();
+void doBackgroundSampling()
+{
+    imu_sample_all();
+    ADC_sample_all();
 }

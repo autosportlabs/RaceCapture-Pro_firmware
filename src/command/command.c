@@ -29,19 +29,22 @@ static int menuPadding = 0;
 
 cmd_context commandContext;
 
-static void set_command_context(Serial *serial, char *buffer, size_t bufferSize) {
+static void set_command_context(Serial *serial, char *buffer, size_t bufferSize)
+{
     commandContext.lineBuffer = buffer;
     commandContext.serial = serial;
     commandContext.lineBufferSize = bufferSize;
 }
 
-static void clear_command_context() {
+static void clear_command_context()
+{
     commandContext.lineBuffer = NULL;
     commandContext.serial = NULL;
     commandContext.lineBufferSize = 0;
 }
 
-static void show_help(Serial *serial) {
+static void show_help(Serial *serial)
+{
     serial->put_s("Available Commands:");
     put_crlf(serial);
     put_crlf(serial);
@@ -67,7 +70,8 @@ static void show_help(Serial *serial) {
     }
 }
 
-static void calculateMenuPadding() {
+static void calculateMenuPadding()
+{
     const cmd_t * cmd = commands;
 
     while (cmd->cmd != NULL) {
@@ -80,14 +84,16 @@ static void calculateMenuPadding() {
     menuPadding++;
 }
 
-static void send_header(Serial *serial, unsigned int len) {
+static void send_header(Serial *serial, unsigned int len)
+{
     while (len-- > 0) {
         serial->put_c('=');
     }
     put_crlf(serial);
 }
 
-void show_welcome(Serial *serial) {
+void show_welcome(Serial *serial)
+{
     put_crlf(serial);
     size_t len = strlen(welcomeMsg);
     send_header(serial, len);
@@ -98,12 +104,14 @@ void show_welcome(Serial *serial) {
     show_help(serial);
 }
 
-void show_command_prompt(Serial *serial) {
+void show_command_prompt(Serial *serial)
+{
     serial->put_s(cmdPrompt);
     serial->put_s(" > ");
 }
 
-static int execute_command(Serial *serial, char *buffer) {
+static int execute_command(Serial *serial, char *buffer)
+{
     unsigned char argc = 0;
     char *argv[30];
 
@@ -127,7 +135,8 @@ static int execute_command(Serial *serial, char *buffer) {
     return (NULL != cmd->cmd);
 }
 
-int process_command(Serial *serial, char * buffer, size_t bufferSize) {
+int process_command(Serial *serial, char * buffer, size_t bufferSize)
+{
     //this is not thread safe. need to throw a mutex around here
     set_command_context(serial, buffer, bufferSize);
 
@@ -136,29 +145,34 @@ int process_command(Serial *serial, char * buffer, size_t bufferSize) {
     return res;
 }
 
-void put_commandOK(Serial *serial) {
+void put_commandOK(Serial *serial)
+{
     serial->put_s(COMMAND_OK_MSG);
 }
 
-void put_commandParamError(Serial *serial, char *msg) {
+void put_commandParamError(Serial *serial, char *msg)
+{
     serial->put_s(COMMAND_ERROR_MSG);
     serial->put_s("extended=\"");
     serial->put_s(msg);
     serial->put_s("\";");
 }
 
-void put_commandError(Serial *serial, int result) {
+void put_commandError(Serial *serial, int result)
+{
     serial->put_s(COMMAND_ERROR_MSG);
     serial->put_s("code=");
     put_int(serial, result);
     serial->put_s(";");
 }
 
-void init_command(void) {
+void init_command(void)
+{
     calculateMenuPadding();
 }
 
-cmd_context * get_command_context() {
+cmd_context * get_command_context()
+{
     return &commandContext;
 }
 

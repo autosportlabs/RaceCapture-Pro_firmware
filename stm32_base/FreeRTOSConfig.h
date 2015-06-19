@@ -82,9 +82,9 @@ to exclude the API function. */
 
 /* Use the system definition, if there is one */
 #ifdef __NVIC_PRIO_BITS
-	#define configPRIO_BITS       __NVIC_PRIO_BITS
+#define configPRIO_BITS       __NVIC_PRIO_BITS
 #else
-	#define configPRIO_BITS       4        /* 15 priority levels */
+#define configPRIO_BITS       4        /* 15 priority levels */
 #endif
 
 #define configLIBRARY_LOWEST_INTERRUPT_PRIORITY		15

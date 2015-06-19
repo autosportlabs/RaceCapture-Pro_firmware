@@ -10,10 +10,9 @@
 
 #define UDP_PACKET_SIZE		( 1023UL )
 
-typedef struct UDP_PACKET
-{
-	unsigned portCHAR ucPacket[ UDP_PACKET_SIZE ];
-	unsigned portCHAR ucNull;
+typedef struct UDP_PACKET {
+    unsigned portCHAR ucPacket[ UDP_PACKET_SIZE ];
+    unsigned portCHAR ucNull;
 } xUDPPacket;
 
 /**

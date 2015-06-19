@@ -14,26 +14,27 @@
 
 xSemaphoreHandle xOnPushbutton;
 
-void startGPIOTasks(int priority){
-	vSemaphoreCreateBinary( xOnPushbutton );
-	xTaskCreate( onPushbuttonTask, 	( signed portCHAR * ) "PushbuttonTask", 	GPIO_TASK_STACK_SIZE, 	NULL, 	priority, 	NULL );
+void startGPIOTasks(int priority)
+{
+    vSemaphoreCreateBinary( xOnPushbutton );
+    xTaskCreate( onPushbuttonTask, 	( signed portCHAR * ) "PushbuttonTask", 	GPIO_TASK_STACK_SIZE, 	NULL, 	priority, 	NULL );
 }
 
 
-void onPushbuttonTask(void *pvParameters){
-	
-	while(1){
-		if ( xSemaphoreTake(xOnPushbutton, portMAX_DELAY) == pdTRUE){
-			delayMs(DEBOUNCE_DELAY_PERIOD);
+void onPushbuttonTask(void *pvParameters)
+{
 
-			if (GPIO_is_button_pressed()){
-				if (logging_is_active()){
-					stopLogging();
-				}
-				else{
-					startLogging();
-				}
-			}
-		}
-	}
+    while(1) {
+        if ( xSemaphoreTake(xOnPushbutton, portMAX_DELAY) == pdTRUE) {
+            delayMs(DEBOUNCE_DELAY_PERIOD);
+
+            if (GPIO_is_button_pressed()) {
+                if (logging_is_active()) {
+                    stopLogging();
+                } else {
+                    startLogging();
+                }
+            }
+        }
+    }
 }

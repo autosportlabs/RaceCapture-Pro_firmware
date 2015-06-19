@@ -25,22 +25,22 @@
 
 class TrackTest : public CppUnit::TestFixture
 {
-  CPPUNIT_TEST_SUITE( TrackTest );
-  CPPUNIT_TEST( testGetFinish );
-  CPPUNIT_TEST( testGetStart );
-  CPPUNIT_TEST( testGetSector );
-  CPPUNIT_TEST( testGeoPointsEqual );
-  CPPUNIT_TEST( testGeoPointsValid );
-  CPPUNIT_TEST_SUITE_END();
+    CPPUNIT_TEST_SUITE( TrackTest );
+    CPPUNIT_TEST( testGetFinish );
+    CPPUNIT_TEST( testGetStart );
+    CPPUNIT_TEST( testGetSector );
+    CPPUNIT_TEST( testGeoPointsEqual );
+    CPPUNIT_TEST( testGeoPointsValid );
+    CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp();
-  void tearDown();
-  void testGetFinish();
-  void testGetStart();
-  void testGetSector();
-  void testGeoPointsEqual();
-  void testGeoPointsValid();
+    void setUp();
+    void tearDown();
+    void testGetFinish();
+    void testGetStart();
+    void testGetSector();
+    void testGeoPointsEqual();
+    void testGeoPointsValid();
 
 };
 

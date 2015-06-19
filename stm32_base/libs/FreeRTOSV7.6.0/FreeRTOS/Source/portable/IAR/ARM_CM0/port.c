@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -92,7 +92,7 @@
 defined.  The value 255 should also ensure backward compatibility.
 FreeRTOS.org versions prior to V4.3.0 did not include this definition. */
 #ifndef configKERNEL_INTERRUPT_PRIORITY
-	#define configKERNEL_INTERRUPT_PRIORITY 0
+#define configKERNEL_INTERRUPT_PRIORITY 0
 #endif
 
 /* Each task maintains its own interrupt status in the critical nesting
@@ -126,33 +126,33 @@ static void prvTaskExitError( void );
  */
 portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
 {
-	/* Simulate the stack frame as it would be created by a context switch
-	interrupt. */
-	pxTopOfStack--; /* Offset added to account for the way the MCU uses the stack on entry/exit of interrupts. */
-	*pxTopOfStack = portINITIAL_XPSR;	/* xPSR */
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) pxCode;	/* PC */
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) prvTaskExitError;	/* LR */
-	pxTopOfStack -= 5;	/* R12, R3, R2 and R1. */
-	*pxTopOfStack = ( portSTACK_TYPE ) pvParameters;	/* R0 */
-	pxTopOfStack -= 8; /* R11..R4. */
+    /* Simulate the stack frame as it would be created by a context switch
+    interrupt. */
+    pxTopOfStack--; /* Offset added to account for the way the MCU uses the stack on entry/exit of interrupts. */
+    *pxTopOfStack = portINITIAL_XPSR;	/* xPSR */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) pxCode;	/* PC */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) prvTaskExitError;	/* LR */
+    pxTopOfStack -= 5;	/* R12, R3, R2 and R1. */
+    *pxTopOfStack = ( portSTACK_TYPE ) pvParameters;	/* R0 */
+    pxTopOfStack -= 8; /* R11..R4. */
 
-	return pxTopOfStack;
+    return pxTopOfStack;
 }
 /*-----------------------------------------------------------*/
 
 static void prvTaskExitError( void )
 {
-	/* A function that implements a task must not exit or attempt to return to
-	its caller as there is nothing to return to.  If a task wants to exit it 
-	should instead call vTaskDelete( NULL ).
-	
-	Artificially force an assert() to be triggered if configASSERT() is 
-	defined, then stop here so application writers can catch the error. */
-	configASSERT( uxCriticalNesting == ~0UL );
-	portDISABLE_INTERRUPTS();	
-	for( ;; );
+    /* A function that implements a task must not exit or attempt to return to
+    its caller as there is nothing to return to.  If a task wants to exit it
+    should instead call vTaskDelete( NULL ).
+
+    Artificially force an assert() to be triggered if configASSERT() is
+    defined, then stop here so application writers can catch the error. */
+    configASSERT( uxCriticalNesting == ~0UL );
+    portDISABLE_INTERRUPTS();
+    for( ;; );
 }
 /*-----------------------------------------------------------*/
 
@@ -161,77 +161,75 @@ static void prvTaskExitError( void )
  */
 portBASE_TYPE xPortStartScheduler( void )
 {
-	/* Make PendSV and SysTick the lowest priority interrupts. */
-	*(portNVIC_SYSPRI2) |= portNVIC_PENDSV_PRI;
-	*(portNVIC_SYSPRI2) |= portNVIC_SYSTICK_PRI;
+    /* Make PendSV and SysTick the lowest priority interrupts. */
+    *(portNVIC_SYSPRI2) |= portNVIC_PENDSV_PRI;
+    *(portNVIC_SYSPRI2) |= portNVIC_SYSTICK_PRI;
 
-	/* Start the timer that generates the tick ISR.  Interrupts are disabled
-	here already. */
-	prvSetupTimerInterrupt();
+    /* Start the timer that generates the tick ISR.  Interrupts are disabled
+    here already. */
+    prvSetupTimerInterrupt();
 
-	/* Initialise the critical nesting count ready for the first task. */
-	uxCriticalNesting = 0;
+    /* Initialise the critical nesting count ready for the first task. */
+    uxCriticalNesting = 0;
 
-	/* Start the first task. */
-	vPortStartFirstTask();
+    /* Start the first task. */
+    vPortStartFirstTask();
 
-	/* Should not get here! */
-	return 0;
+    /* Should not get here! */
+    return 0;
 }
 /*-----------------------------------------------------------*/
 
 void vPortEndScheduler( void )
 {
-	/* It is unlikely that the CM0 port will require this function as there
-	is nothing to return to.  */
+    /* It is unlikely that the CM0 port will require this function as there
+    is nothing to return to.  */
 }
 /*-----------------------------------------------------------*/
 
 void vPortYield( void )
 {
-	/* Set a PendSV to request a context switch. */
-	*(portNVIC_INT_CTRL) = portNVIC_PENDSVSET;
+    /* Set a PendSV to request a context switch. */
+    *(portNVIC_INT_CTRL) = portNVIC_PENDSVSET;
 
-	/* Barriers are normally not required but do ensure the code is completely
-	within the specified behaviour for the architecture. */
-	__DSB();
-	__ISB();
+    /* Barriers are normally not required but do ensure the code is completely
+    within the specified behaviour for the architecture. */
+    __DSB();
+    __ISB();
 }
 /*-----------------------------------------------------------*/
 
 void vPortEnterCritical( void )
 {
-	portDISABLE_INTERRUPTS();
-	uxCriticalNesting++;
-	__DSB();
-	__ISB();
+    portDISABLE_INTERRUPTS();
+    uxCriticalNesting++;
+    __DSB();
+    __ISB();
 }
 /*-----------------------------------------------------------*/
 
 void vPortExitCritical( void )
 {
-	uxCriticalNesting--;
-	if( uxCriticalNesting == 0 )
-	{
-		portENABLE_INTERRUPTS();
-	}
+    uxCriticalNesting--;
+    if( uxCriticalNesting == 0 ) {
+        portENABLE_INTERRUPTS();
+    }
 }
 /*-----------------------------------------------------------*/
 
 void xPortSysTickHandler( void )
 {
-unsigned long ulPreviousMask;
+    unsigned long ulPreviousMask;
 
-	ulPreviousMask = portSET_INTERRUPT_MASK_FROM_ISR();
-	{
-		/* Increment the RTOS tick. */
-		if( xTaskIncrementTick() != pdFALSE )
-		{
-			/* Pend a context switch. */
-			*(portNVIC_INT_CTRL) = portNVIC_PENDSVSET;
-		}
-	}
-	portCLEAR_INTERRUPT_MASK_FROM_ISR( ulPreviousMask );
+    ulPreviousMask = portSET_INTERRUPT_MASK_FROM_ISR();
+    {
+        /* Increment the RTOS tick. */
+        if( xTaskIncrementTick() != pdFALSE ) {
+            /* Pend a context switch. */
+            *(portNVIC_INT_CTRL) = portNVIC_PENDSVSET;
+        }
+    }
+    portCLEAR_INTERRUPT_MASK_FROM_ISR( ulPreviousMask );
 }
 /*-----------------------------------------------------------*/
 
@@ -241,9 +239,9 @@ unsigned long ulPreviousMask;
  */
 static void prvSetupTimerInterrupt( void )
 {
-	/* Configure SysTick to interrupt at the requested rate. */
-	*(portNVIC_SYSTICK_LOAD) = ( configCPU_CLOCK_HZ / configTICK_RATE_HZ ) - 1UL;
-	*(portNVIC_SYSTICK_CTRL) = portNVIC_SYSTICK_CLK | portNVIC_SYSTICK_INT | portNVIC_SYSTICK_ENABLE;
+    /* Configure SysTick to interrupt at the requested rate. */
+    *(portNVIC_SYSTICK_LOAD) = ( configCPU_CLOCK_HZ / configTICK_RATE_HZ ) - 1UL;
+    *(portNVIC_SYSTICK_CTRL) = portNVIC_SYSTICK_CLK | portNVIC_SYSTICK_INT | portNVIC_SYSTICK_ENABLE;
 }
 /*-----------------------------------------------------------*/
 

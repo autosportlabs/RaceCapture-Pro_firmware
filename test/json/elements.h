@@ -5,23 +5,23 @@ All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright 
+    * Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in the
       documentation and/or other materials provided with the distribution.
-    * Neither the name of the projecct nor the names of its contributors 
-      may be used to endorse or promote products derived from this software 
+    * Neither the name of the projecct nor the names of its contributors
+      may be used to endorse or promote products derived from this software
       without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <stdexcept>
 
-/*  
+/*
 
 TODO:
 * better documentation (doxygen?)
@@ -48,9 +48,9 @@ namespace json
 
 namespace Version
 {
-   enum { MAJOR = 2 };
-   enum { MINOR = 0 };
-   enum {ENGINEERING = 2 };
+enum { MAJOR = 2 };
+enum { MINOR = 0 };
+enum {ENGINEERING = 2 };
 }
 
 /////////////////////////////////////////////////
@@ -79,7 +79,7 @@ class Null;
 class Exception : public std::runtime_error
 {
 public:
-   Exception(const std::string& sMessage);
+    Exception(const std::string& sMessage);
 };
 
 
@@ -91,7 +91,7 @@ public:
 //  class to effectively contain a heterogeneous set of child elements.
 // The cast operators provide convenient implicit downcasting, while
 //  preserving dynamic type safety by throwing an exception during a
-//  a bad cast. 
+//  a bad cast.
 // The object & array element index operators (operators [std::string]
 //  and [size_t]) provide convenient, quick access to child elements.
 //  They are a logical extension of the cast operators. These child
@@ -103,156 +103,156 @@ public:
 class UnknownElement
 {
 public:
-   UnknownElement();
-   UnknownElement(const UnknownElement& unknown);
-   UnknownElement(const Object& object);
-   UnknownElement(const Array& array);
-   UnknownElement(const Number& number);
-   UnknownElement(const Boolean& boolean);
-   UnknownElement(const String& string);
-   UnknownElement(const Null& null);
+    UnknownElement();
+    UnknownElement(const UnknownElement& unknown);
+    UnknownElement(const Object& object);
+    UnknownElement(const Array& array);
+    UnknownElement(const Number& number);
+    UnknownElement(const Boolean& boolean);
+    UnknownElement(const String& string);
+    UnknownElement(const Null& null);
 
-   ~UnknownElement();
+    ~UnknownElement();
 
-   UnknownElement& operator = (const UnknownElement& unknown);
+    UnknownElement& operator = (const UnknownElement& unknown);
 
-   // implicit cast to actual element type. throws on failure
-   operator const Object& () const;
-   operator const Array& () const;
-   operator const Number& () const;
-   operator const Boolean& () const;
-   operator const String& () const;
-   operator const Null& () const;
+    // implicit cast to actual element type. throws on failure
+    operator const Object& () const;
+    operator const Array& () const;
+    operator const Number& () const;
+    operator const Boolean& () const;
+    operator const String& () const;
+    operator const Null& () const;
 
-   // implicit cast to actual element type. *converts* on failure, and always returns success
-   operator Object& ();
-   operator Array& ();
-   operator Number& ();
-   operator Boolean& ();
-   operator String& ();
-   operator Null& ();
+    // implicit cast to actual element type. *converts* on failure, and always returns success
+    operator Object& ();
+    operator Array& ();
+    operator Number& ();
+    operator Boolean& ();
+    operator String& ();
+    operator Null& ();
 
-   // provides quick access to children when real element type is object
-   UnknownElement& operator[] (const std::string& key);
-   const UnknownElement& operator[] (const std::string& key) const;
+    // provides quick access to children when real element type is object
+    UnknownElement& operator[] (const std::string& key);
+    const UnknownElement& operator[] (const std::string& key) const;
 
-   // provides quick access to children when real element type is array
-   UnknownElement& operator[] (size_t index);
-   const UnknownElement& operator[] (size_t index) const;
+    // provides quick access to children when real element type is array
+    UnknownElement& operator[] (size_t index);
+    const UnknownElement& operator[] (size_t index) const;
 
-   // implements visitor pattern
-   void Accept(ConstVisitor& visitor) const;
-   void Accept(Visitor& visitor);
+    // implements visitor pattern
+    void Accept(ConstVisitor& visitor) const;
+    void Accept(Visitor& visitor);
 
-   // tests equality. first checks type, then value if possible
-   bool operator == (const UnknownElement& element) const;
+    // tests equality. first checks type, then value if possible
+    bool operator == (const UnknownElement& element) const;
 
 private:
-   class Imp;
+    class Imp;
 
-   template <typename ElementTypeT>
-   class Imp_T;
+    template <typename ElementTypeT>
+    class Imp_T;
 
-   class CastVisitor;
-   class ConstCastVisitor;
-   
-   template <typename ElementTypeT>
-   class CastVisitor_T;
+    class CastVisitor;
+    class ConstCastVisitor;
 
-   template <typename ElementTypeT>
-   class ConstCastVisitor_T;
+    template <typename ElementTypeT>
+    class CastVisitor_T;
 
-   template <typename ElementTypeT>
-   const ElementTypeT& CastTo() const;
+    template <typename ElementTypeT>
+    class ConstCastVisitor_T;
 
-   template <typename ElementTypeT>
-   ElementTypeT& ConvertTo();
+    template <typename ElementTypeT>
+    const ElementTypeT& CastTo() const;
 
-   Imp* m_pImp;
+    template <typename ElementTypeT>
+    ElementTypeT& ConvertTo();
+
+    Imp* m_pImp;
 };
 
 
 /////////////////////////////////////////////////////////////////////////////////
-// Array - mimics std::deque<UnknownElement>. The array contents are effectively 
-//  heterogeneous thanks to the ElementUnknown class. push_back has been replaced 
+// Array - mimics std::deque<UnknownElement>. The array contents are effectively
+//  heterogeneous thanks to the ElementUnknown class. push_back has been replaced
 //  by more generic insert functions.
 
 class Array
 {
 public:
-   typedef std::deque<UnknownElement> Elements;
-   typedef Elements::iterator iterator;
-   typedef Elements::const_iterator const_iterator;
+    typedef std::deque<UnknownElement> Elements;
+    typedef Elements::iterator iterator;
+    typedef Elements::const_iterator const_iterator;
 
-   iterator Begin();
-   iterator End();
-   const_iterator Begin() const;
-   const_iterator End() const;
-   
-   iterator Insert(const UnknownElement& element, iterator itWhere);
-   iterator Insert(const UnknownElement& element);
-   iterator Erase(iterator itWhere);
-   void Resize(size_t newSize);
-   void Clear();
+    iterator Begin();
+    iterator End();
+    const_iterator Begin() const;
+    const_iterator End() const;
 
-   size_t Size() const;
-   bool Empty() const;
+    iterator Insert(const UnknownElement& element, iterator itWhere);
+    iterator Insert(const UnknownElement& element);
+    iterator Erase(iterator itWhere);
+    void Resize(size_t newSize);
+    void Clear();
 
-   UnknownElement& operator[] (size_t index);
-   const UnknownElement& operator[] (size_t index) const;
+    size_t Size() const;
+    bool Empty() const;
 
-   bool operator == (const Array& array) const;
+    UnknownElement& operator[] (size_t index);
+    const UnknownElement& operator[] (size_t index) const;
+
+    bool operator == (const Array& array) const;
 
 private:
-   Elements m_Elements;
+    Elements m_Elements;
 };
 
 
 /////////////////////////////////////////////////////////////////////////////////
-// Object - mimics std::map<std::string, UnknownElement>. The member value 
+// Object - mimics std::map<std::string, UnknownElement>. The member value
 //  contents are effectively heterogeneous thanks to the UnknownElement class
 
 class Object
 {
 public:
-   struct Member {
-      Member(const std::string& nameIn = std::string(), const UnknownElement& elementIn = UnknownElement());
+    struct Member {
+        Member(const std::string& nameIn = std::string(), const UnknownElement& elementIn = UnknownElement());
 
-      bool operator == (const Member& member) const;
+        bool operator == (const Member& member) const;
 
-      std::string name;
-      UnknownElement element;
-   };
+        std::string name;
+        UnknownElement element;
+    };
 
-   typedef std::list<Member> Members; // map faster, but does not preserve order
-   typedef Members::iterator iterator;
-   typedef Members::const_iterator const_iterator;
+    typedef std::list<Member> Members; // map faster, but does not preserve order
+    typedef Members::iterator iterator;
+    typedef Members::const_iterator const_iterator;
 
-   bool operator == (const Object& object) const;
+    bool operator == (const Object& object) const;
 
-   iterator Begin();
-   iterator End();
-   const_iterator Begin() const;
-   const_iterator End() const;
+    iterator Begin();
+    iterator End();
+    const_iterator Begin() const;
+    const_iterator End() const;
 
-   size_t Size() const;
-   bool Empty() const;
+    size_t Size() const;
+    bool Empty() const;
 
-   iterator Find(const std::string& name);
-   const_iterator Find(const std::string& name) const;
+    iterator Find(const std::string& name);
+    const_iterator Find(const std::string& name) const;
 
-   iterator Insert(const Member& member);
-   iterator Insert(const Member& member, iterator itWhere);
-   iterator Erase(iterator itWhere);
-   void Clear();
+    iterator Insert(const Member& member);
+    iterator Insert(const Member& member, iterator itWhere);
+    iterator Erase(iterator itWhere);
+    void Clear();
 
-   UnknownElement& operator [](const std::string& name);
-   const UnknownElement& operator [](const std::string& name) const;
+    UnknownElement& operator [](const std::string& name);
+    const UnknownElement& operator [](const std::string& name) const;
 
 private:
-   class Finder;
+    class Finder;
 
-   Members m_Members;
+    Members m_Members;
 };
 
 
@@ -266,18 +266,18 @@ template <typename DataTypeT>
 class TrivialType_T
 {
 public:
-   TrivialType_T(const DataTypeT& t = DataTypeT());
+    TrivialType_T(const DataTypeT& t = DataTypeT());
 
-   operator DataTypeT&();
-   operator const DataTypeT&() const;
+    operator DataTypeT&();
+    operator const DataTypeT&() const;
 
-   DataTypeT& Value();
-   const DataTypeT& Value() const;
+    DataTypeT& Value();
+    const DataTypeT& Value() const;
 
-   bool operator == (const TrivialType_T<DataTypeT>& trivial) const;
+    bool operator == (const TrivialType_T<DataTypeT>& trivial) const;
 
 private:
-   DataTypeT m_tValue;
+    DataTypeT m_tValue;
 };
 
 
@@ -289,7 +289,7 @@ private:
 class Null
 {
 public:
-   bool operator == (const Null& trivial) const;
+    bool operator == (const Null& trivial) const;
 };
 
 

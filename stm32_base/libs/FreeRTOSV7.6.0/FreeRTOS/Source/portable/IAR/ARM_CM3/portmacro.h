@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -91,11 +91,11 @@ extern "C" {
 #define portBASE_TYPE	long
 
 #if( configUSE_16_BIT_TICKS == 1 )
-	typedef unsigned portSHORT portTickType;
-	#define portMAX_DELAY 0xffff
+typedef unsigned portSHORT portTickType;
+#define portMAX_DELAY 0xffff
 #else
-	typedef unsigned portLONG portTickType;
-	#define portMAX_DELAY 0xffffffffUL
+typedef unsigned portLONG portTickType;
+#define portMAX_DELAY 0xffffffffUL
 #endif
 /*-----------------------------------------------------------*/
 
@@ -117,19 +117,19 @@ extern void vPortYield( void );
 /* Architecture specific optimisations. */
 #if configUSE_PORT_OPTIMISED_TASK_SELECTION == 1
 
-	/* Check the configuration. */
-	#if( configMAX_PRIORITIES > 32 )
-		#error configUSE_PORT_OPTIMISED_TASK_SELECTION can only be set to 1 when configMAX_PRIORITIES is less than or equal to 32.  It is very rare that a system requires more than 10 to 15 difference priorities as tasks that share a priority will time slice.
-	#endif
+/* Check the configuration. */
+#if( configMAX_PRIORITIES > 32 )
+#error configUSE_PORT_OPTIMISED_TASK_SELECTION can only be set to 1 when configMAX_PRIORITIES is less than or equal to 32.  It is very rare that a system requires more than 10 to 15 difference priorities as tasks that share a priority will time slice.
+#endif
 
-	/* Store/clear the ready priorities in a bit map. */
-	#define portRECORD_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( ( uxReadyPriorities ) |= ( 1UL << ( uxPriority ) ) )
-	#define portRESET_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( ( uxReadyPriorities ) &= ~( 1UL << ( uxPriority ) ) )
+/* Store/clear the ready priorities in a bit map. */
+#define portRECORD_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( ( uxReadyPriorities ) |= ( 1UL << ( uxPriority ) ) )
+#define portRESET_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( ( uxReadyPriorities ) &= ~( 1UL << ( uxPriority ) ) )
 
-	/*-----------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 
-	#include <intrinsics.h>
-	#define portGET_HIGHEST_PRIORITY( uxTopPriority, uxReadyPriorities ) uxTopPriority = ( 31 - __CLZ( ( uxReadyPriorities ) ) )
+#include <intrinsics.h>
+#define portGET_HIGHEST_PRIORITY( uxTopPriority, uxReadyPriorities ) uxTopPriority = ( 31 - __CLZ( ( uxReadyPriorities ) ) )
 
 #endif /* configUSE_PORT_OPTIMISED_TASK_SELECTION */
 /*-----------------------------------------------------------*/
@@ -150,8 +150,8 @@ extern void vPortClearInterruptMask( unsigned long ulNewMask );
 
 /* Tickless idle/low power functionality. */
 #ifndef portSUPPRESS_TICKS_AND_SLEEP
-	extern void vPortSuppressTicksAndSleep( portTickType xExpectedIdleTime );
-	#define portSUPPRESS_TICKS_AND_SLEEP( xExpectedIdleTime ) vPortSuppressTicksAndSleep( xExpectedIdleTime )
+extern void vPortSuppressTicksAndSleep( portTickType xExpectedIdleTime );
+#define portSUPPRESS_TICKS_AND_SLEEP( xExpectedIdleTime ) vPortSuppressTicksAndSleep( xExpectedIdleTime )
 #endif
 /*-----------------------------------------------------------*/
 
@@ -163,8 +163,8 @@ not necessary for to use this port.  They are defined so the common demo files
 /*-----------------------------------------------------------*/
 
 #ifdef configASSERT
-	void vPortValidateInterruptPriority( void );
-	#define portASSERT_IF_INTERRUPT_PRIORITY_INVALID() 	vPortValidateInterruptPriority()
+void vPortValidateInterruptPriority( void );
+#define portASSERT_IF_INTERRUPT_PRIORITY_INVALID() 	vPortValidateInterruptPriority()
 #endif
 
 /* portNOP() is not required by this port. */

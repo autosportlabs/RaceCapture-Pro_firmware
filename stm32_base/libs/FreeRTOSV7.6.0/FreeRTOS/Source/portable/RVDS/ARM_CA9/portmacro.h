@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -90,11 +90,11 @@ extern "C" {
 #define portBASE_TYPE	portLONG
 
 #if( configUSE_16_BIT_TICKS == 1 )
-	typedef unsigned short portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffff
+typedef unsigned short portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffff
 #else
-	typedef unsigned long portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffffffff
+typedef unsigned long portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffffffff
 #endif
 /*-----------------------------------------------------------*/
 
@@ -163,19 +163,19 @@ void vPortTaskUsesFPU( void );
 /* Architecture specific optimisations. */
 #if configUSE_PORT_OPTIMISED_TASK_SELECTION == 1
 
-	/* Store/clear the ready priorities in a bit map. */
-	#define portRECORD_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) |= ( 1UL << ( uxPriority ) )
-	#define portRESET_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) &= ~( 1UL << ( uxPriority ) )
+/* Store/clear the ready priorities in a bit map. */
+#define portRECORD_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) |= ( 1UL << ( uxPriority ) )
+#define portRESET_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) &= ~( 1UL << ( uxPriority ) )
 
-	/*-----------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 
-	#define portGET_HIGHEST_PRIORITY( uxTopPriority, uxReadyPriorities ) uxTopPriority = ( 31 - __clz( uxReadyPriorities ) )
+#define portGET_HIGHEST_PRIORITY( uxTopPriority, uxReadyPriorities ) uxTopPriority = ( 31 - __clz( uxReadyPriorities ) )
 
 #endif /* configUSE_PORT_OPTIMISED_TASK_SELECTION */
 
 #ifdef configASSERT
-	void vPortValidateInterruptPriority( void );
-	#define portASSERT_IF_INTERRUPT_PRIORITY_INVALID() 	vPortValidateInterruptPriority()
+void vPortValidateInterruptPriority( void );
+#define portASSERT_IF_INTERRUPT_PRIORITY_INVALID() 	vPortValidateInterruptPriority()
 #endif
 
 #define portNOP() __nop()

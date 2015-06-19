@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -81,16 +81,16 @@
 #define portBASE_TYPE	portLONG
 
 #if( configUSE_16_BIT_TICKS == 1 )
-    typedef unsigned portSHORT portTickType;
-    #define portMAX_DELAY ( portTickType ) 0xffff
+typedef unsigned portSHORT portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffff
 #else
-    typedef unsigned portLONG portTickType;
-    #define portMAX_DELAY ( portTickType ) 0xffffffff
+typedef unsigned portLONG portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffffffff
 #endif
 
 /* Hardware specifics. */
 #define portSTACK_GROWTH			( -1 )
-#define portTICK_RATE_MS			( ( portTickType ) 1000 / configTICK_RATE_HZ )	
+#define portTICK_RATE_MS			( ( portTickType ) 1000 / configTICK_RATE_HZ )
 #define portBYTE_ALIGNMENT			4
 
 #define portYIELD()					vPortGenerateSimulatedInterrupt( portINTERRUPT_YIELD )
@@ -108,25 +108,25 @@ void vPortExitCritical( void );
 #define portEXIT_CRITICAL()			vPortExitCritical()
 
 #ifndef __GNUC__
-	#if configUSE_PORT_OPTIMISED_TASK_SELECTION == 1
+#if configUSE_PORT_OPTIMISED_TASK_SELECTION == 1
 
-	/* Check the configuration. */
-	#if( configMAX_PRIORITIES > 32 )
-		#error configUSE_PORT_OPTIMISED_TASK_SELECTION can only be set to 1 when configMAX_PRIORITIES is less than or equal to 32.  It is very rare that a system requires more than 10 to 15 difference priorities as tasks that share a priority will time slice.
-	#endif
+/* Check the configuration. */
+#if( configMAX_PRIORITIES > 32 )
+#error configUSE_PORT_OPTIMISED_TASK_SELECTION can only be set to 1 when configMAX_PRIORITIES is less than or equal to 32.  It is very rare that a system requires more than 10 to 15 difference priorities as tasks that share a priority will time slice.
+#endif
 
-		/* Store/clear the ready priorities in a bit map. */
-		#define portRECORD_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) |= ( 1UL << ( uxPriority ) )
-		#define portRESET_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) &= ~( 1UL << ( uxPriority ) )
+/* Store/clear the ready priorities in a bit map. */
+#define portRECORD_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) |= ( 1UL << ( uxPriority ) )
+#define portRESET_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) &= ~( 1UL << ( uxPriority ) )
 
 
-		/*-----------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 
-		/* BitScanReverse returns the bit position of the most significant '1'
-		in the word. */
-		#define portGET_HIGHEST_PRIORITY( uxTopPriority, uxReadyPriorities ) _BitScanReverse( ( DWORD * ) &( uxTopPriority ), ( uxReadyPriorities ) )
+/* BitScanReverse returns the bit position of the most significant '1'
+in the word. */
+#define portGET_HIGHEST_PRIORITY( uxTopPriority, uxReadyPriorities ) _BitScanReverse( ( DWORD * ) &( uxTopPriority ), ( uxReadyPriorities ) )
 
-	#endif /* taskRECORD_READY_PRIORITY */
+#endif /* taskRECORD_READY_PRIORITY */
 #endif /* __GNUC__ */
 
 
@@ -139,7 +139,7 @@ void vPortExitCritical( void );
 #define portINTERRUPT_YIELD				( 0UL )
 #define portINTERRUPT_TICK				( 1UL )
 
-/* 
+/*
  * Raise a simulated interrupt represented by the bit mask in ulInterruptMask.
  * Each bit can be used to represent an individual interrupt - with the first
  * two bits being used for the Yield and Tick interrupts respectively.
@@ -147,13 +147,13 @@ void vPortExitCritical( void );
 void vPortGenerateSimulatedInterrupt( unsigned long ulInterruptNumber );
 
 /*
- * Install an interrupt handler to be called by the simulated interrupt handler 
+ * Install an interrupt handler to be called by the simulated interrupt handler
  * thread.  The interrupt number must be above any used by the kernel itself
  * (at the time of writing the kernel was using interrupt numbers 0, 1, and 2
- * as defined above).  The number must also be lower than 32. 
+ * as defined above).  The number must also be lower than 32.
  *
  * Interrupt handler functions must return a non-zero value if executing the
- * handler resulted in a task switch being required. 
+ * handler resulted in a task switch being required.
  */
 void vPortSetInterruptHandler( unsigned long ulInterruptNumber, unsigned long (*pvHandler)( void ) );
 

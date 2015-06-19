@@ -40,7 +40,7 @@
  * back-porting their fix to our code.
  */
 #ifndef INC_FREERTOS_H
-	#error "include FreeRTOS.h must appear in source files before include task.h"
+#error "include FreeRTOS.h must appear in source files before include task.h"
 #endif
 
 #include "list.h"
@@ -66,8 +66,7 @@ typedef void * xTaskHandle;
 /*
  * Used internally only.
  */
-typedef struct xTIME_OUT
-{
+typedef struct xTIME_OUT {
     portBASE_TYPE xOverflowCount;
     portTickType  xTimeOnEntering;
 } xTimeOutType;
@@ -76,16 +75,15 @@ typedef struct xTIME_OUT
  * Task control block.  A task control block (TCB) is allocated to each task,
  * and stores the context of the task.
  */
-typedef struct tskTaskControlBlock
-{
-	volatile portSTACK_TYPE	*pxTopOfStack;		/*< Points to the location of the last item placed on the tasks stack.  THIS MUST BE THE FIRST MEMBER OF THE STRUCT. */
-	xListItem				xGenericListItem;	/*< List item used to place the TCB in ready and blocked queues. */
-	xListItem				xEventListItem;		/*< List item used to place the TCB in event lists. */
-	unsigned portBASE_TYPE	uxPriority;			/*< The priority of the task where 0 is the lowest priority. */
-	portSTACK_TYPE			*pxStack;			/*< Points to the start of the stack. */
-	unsigned portBASE_TYPE	uxTCBNumber;		/*< This is used for tracing the scheduler and making debugging easier only. */
-	signed portCHAR			pcTaskName[ configMAX_TASK_NAME_LEN ];/*< Descriptive name given to the task when created.  Facilitates debugging only. */
-	unsigned portSHORT		usStackDepth;		/*< Total depth of the stack (when empty).  This is defined as the number of variables the stack can hold, not the number of bytes. */
+typedef struct tskTaskControlBlock {
+    volatile portSTACK_TYPE	*pxTopOfStack;		/*< Points to the location of the last item placed on the tasks stack.  THIS MUST BE THE FIRST MEMBER OF THE STRUCT. */
+    xListItem				xGenericListItem;	/*< List item used to place the TCB in ready and blocked queues. */
+    xListItem				xEventListItem;		/*< List item used to place the TCB in event lists. */
+    unsigned portBASE_TYPE	uxPriority;			/*< The priority of the task where 0 is the lowest priority. */
+    portSTACK_TYPE			*pxStack;			/*< Points to the start of the stack. */
+    unsigned portBASE_TYPE	uxTCBNumber;		/*< This is used for tracing the scheduler and making debugging easier only. */
+    signed portCHAR			pcTaskName[ configMAX_TASK_NAME_LEN ];/*< Descriptive name given to the task when created.  Facilitates debugging only. */
+    unsigned portSHORT		usStackDepth;		/*< Total depth of the stack (when empty).  This is defined as the number of variables the stack can hold, not the number of bytes. */
 } tskTCB;
 
 /*
@@ -102,7 +100,7 @@ typedef struct tskTaskControlBlock
  * determining how much of the stack remains at the original preset value.
  */
 
-	unsigned portSHORT usTaskCheckFreeStackSpace( const unsigned portCHAR *pucStackByte );
+unsigned portSHORT usTaskCheckFreeStackSpace( const unsigned portCHAR *pucStackByte );
 
 
 /*

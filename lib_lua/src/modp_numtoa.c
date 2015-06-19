@@ -20,7 +20,8 @@
  * 10^0 to 10^9
  */
 static const float pow10[] = {1, 10, 100, 1000, 10000, 100000, 1000000,
-                               10000000, 100000000, 1000000000};
+                              10000000, 100000000, 1000000000
+                             };
 
 static void strreverse(char* begin, char* end)
 {
@@ -36,7 +37,8 @@ void modp_itoa10(int32_t value, char* str)
     // Take care of sign
     if ((sign=value) < 0) value = -value;
     // Conversion. Number is reversed.
-    do *wstr++ = (48 + (value % 10)); while( value /= 10);
+    do *wstr++ = (48 + (value % 10));
+    while( value /= 10);
     if (sign < 0) *wstr++ = '-';
     *wstr='\0';
 
@@ -48,7 +50,8 @@ void modp_uitoa10(uint32_t value, char* str)
 {
     char* wstr=str;
     // Conversion. Number is reversed.
-    do *wstr++ = 48 + (value % 10); while (value /= 10);
+    do *wstr++ = 48 + (value % 10);
+    while (value /= 10);
     *wstr='\0';
     // Reverse string
     strreverse(str, wstr-1);
@@ -105,7 +108,7 @@ void modp_ftoa(float value, char* str, int prec)
        which can be 100s of characters overflowing your buffers == bad
     */
     if (value > thres_max) {
-    	strcpy(str,"EEE"); //overflow - avoid sprintf for now
+        strcpy(str,"EEE"); //overflow - avoid sprintf for now
         //sprintf(str, "%e", neg ? -value : value);
         return;
     }
@@ -136,7 +139,8 @@ void modp_ftoa(float value, char* str, int prec)
     // do whole part
     // Take care of sign
     // Conversion. Number is reversed.
-    do *wstr++ = 48 + (whole % 10); while (whole /= 10);
+    do *wstr++ = 48 + (whole % 10);
+    while (whole /= 10);
     if (neg) {
         *wstr++ = '-';
     }
@@ -194,7 +198,7 @@ void modp_dtoa(double value, char* str, int prec)
        which can be 100s of characters overflowing your buffers == bad
     */
     if (value > thres_max) {
-    	strcpy(str,"EEE"); //overflow - avoid sprintf for now
+        strcpy(str,"EEE"); //overflow - avoid sprintf for now
         //sprintf(str, "%e", neg ? -value : value);
         return;
     }
@@ -225,7 +229,8 @@ void modp_dtoa(double value, char* str, int prec)
     // do whole part
     // Take care of sign
     // Conversion. Number is reversed.
-    do *wstr++ = 48 + (whole % 10); while (whole /= 10);
+    do *wstr++ = 48 + (whole % 10);
+    while (whole /= 10);
     if (neg) {
         *wstr++ = '-';
     }

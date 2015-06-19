@@ -8,24 +8,24 @@
 #include "gps.h"
 
 typedef enum {
-	TRACK_STATUS_WAITING_TO_CONFIG = 0,
-	TRACK_STATUS_FIXED_CONFIG,
-	TRACK_STATUS_AUTO_DETECTED
+    TRACK_STATUS_WAITING_TO_CONFIG = 0,
+    TRACK_STATUS_FIXED_CONFIG,
+    TRACK_STATUS_AUTO_DETECTED
 } track_status_t;
 
 /**
  * A simple Time and Location sample.
  */
 typedef struct _TimeLoc {
-	GeoPoint point;
-	millis_t time;
+    GeoPoint point;
+    millis_t time;
 } TimeLoc;
 
-void gpsConfigChanged(void);
+void lapstats_config_changed(void);
 
 void lapStats_init();
 
-void lapStats_processUpdate(const GpsSnapshot *gpsSnapshot);
+void lapstats_processUpdate(const GpsSnapshot *gpsSnapshot);
 
 track_status_t lapstats_get_track_status( void );
 

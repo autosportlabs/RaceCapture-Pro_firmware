@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -81,11 +81,11 @@ extern "C" {
  */
 
 #if __DATA_MODEL__ == __DATA_MODEL_FAR__ && __CODE_MODEL__ == __CODE_MODEL_NEAR__
-	#warning This port has not been tested with your selected memory model combination. If a far data model is required it is recommended to also use a far code model.
+#warning This port has not been tested with your selected memory model combination. If a far data model is required it is recommended to also use a far code model.
 #endif
 
 #if __DATA_MODEL__ == __DATA_MODEL_NEAR__ && __CODE_MODEL__ == __CODE_MODEL_FAR__
-	#warning This port has not been tested with your selected memory model combination. If a far code model is required it is recommended to also use a far data model.
+#warning This port has not been tested with your selected memory model combination. If a far code model is required it is recommended to also use a far data model.
 #endif
 
 /* Type definitions. */
@@ -99,18 +99,18 @@ extern "C" {
 #define portBASE_TYPE   short
 
 #if __DATA_MODEL__ == __DATA_MODEL_FAR__
-	#define portPOINTER_SIZE_TYPE unsigned long
+#define portPOINTER_SIZE_TYPE unsigned long
 #else
-	#define portPOINTER_SIZE_TYPE unsigned short
+#define portPOINTER_SIZE_TYPE unsigned short
 #endif
 
 
 #if ( configUSE_16_BIT_TICKS == 1 )
-	typedef unsigned int portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffff
+typedef unsigned int portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffff
 #else
-	typedef unsigned long portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffffffff
+typedef unsigned long portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffffffff
 #endif
 /*-----------------------------------------------------------*/
 

@@ -21,40 +21,40 @@
 // Medien-Typen (in dieser LIB nur MMC)
 //--------------------------------------------------------------
 typedef enum {
-  MMC_0 = 0       // in dieser LIB wird nur "MMC" unterstuetzt
-}MEDIA_t;
+    MMC_0 = 0       // in dieser LIB wird nur "MMC" unterstuetzt
+} MEDIA_t;
 
 
 //--------------------------------------------------------------
 // Fehlercodes
 //--------------------------------------------------------------
 typedef enum {
-  FATFS_OK =0,
-  FATFS_NO_MEDIA,
-  FATFS_MOUNT_ERR,
-  FATFS_GETFREE_ERR,
-  FATFS_UNLINK_ERR,
-  FATFS_OPEN_ERR,
-  FATFS_CLOSE_ERR,
-  FATFS_PUTS_ERR,
-  FATFS_SEEK_ERR,
-  FATFS_RD_STRING_ERR,
-  FATFS_RD_BLOCK_ERR,
-  FATFS_WR_BLOCK_ERR,
-  FATFS_EOF,
-  FATFS_DISK_FULL
-}FATFS_t;
+    FATFS_OK =0,
+    FATFS_NO_MEDIA,
+    FATFS_MOUNT_ERR,
+    FATFS_GETFREE_ERR,
+    FATFS_UNLINK_ERR,
+    FATFS_OPEN_ERR,
+    FATFS_CLOSE_ERR,
+    FATFS_PUTS_ERR,
+    FATFS_SEEK_ERR,
+    FATFS_RD_STRING_ERR,
+    FATFS_RD_BLOCK_ERR,
+    FATFS_WR_BLOCK_ERR,
+    FATFS_EOF,
+    FATFS_DISK_FULL
+} FATFS_t;
 
 
 //--------------------------------------------------------------
 // Modes für OpenFile
 //--------------------------------------------------------------
 typedef enum {
-  F_RD =0,    // zum lesen oeffnen (nur falls File existiert)
-  F_WR,       // zum schreiben oeffnen (nur falls File existiert) und Daten anhängen
-  F_WR_NEW,   // zum schreiben oeffnen (und event. neu anlegen) und Daten anhängen
-  F_WR_CLEAR  // zum schreiben oeffnen (alte Daten loeschen)
-}FMODE_t;
+    F_RD =0,    // zum lesen oeffnen (nur falls File existiert)
+    F_WR,       // zum schreiben oeffnen (nur falls File existiert) und Daten anhängen
+    F_WR_NEW,   // zum schreiben oeffnen (und event. neu anlegen) und Daten anhängen
+    F_WR_CLEAR  // zum schreiben oeffnen (alte Daten loeschen)
+} FMODE_t;
 
 
 //--------------------------------------------------------------

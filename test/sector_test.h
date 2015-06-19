@@ -8,23 +8,23 @@ using std::vector;
 
 class SectorTest : public CppUnit::TestFixture
 {
-  CPPUNIT_TEST_SUITE( SectorTest );
-  CPPUNIT_TEST( testSectorTimes );
-  CPPUNIT_TEST( testStageSectorTimes );
-  CPPUNIT_TEST_SUITE_END();
+    CPPUNIT_TEST_SUITE( SectorTest );
+    CPPUNIT_TEST( testSectorTimes );
+    CPPUNIT_TEST( testStageSectorTimes );
+    CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp();
-  void tearDown();
+    void setUp();
+    void tearDown();
 
-  string readFile(string filename);
-  vector<string> split(string &s, char delim);
-  vector<string> &split(string &s, char delim, vector<string> &elems);
+    string readFile(string filename);
+    vector<string> split(string &s, char delim);
+    vector<string> &split(string &s, char delim, vector<string> &elems);
 
-  float sumSectorTimes(vector<float> & sectorTimes);
-  void outputSectorTimes(vector<float> & sectorTimes, int lap);
-  void testSectorTimes();
-  void testStageSectorTimes();
+    float sumSectorTimes(vector<float> & sectorTimes);
+    void outputSectorTimes(vector<float> & sectorTimes, int lap);
+    void testSectorTimes();
+    void testStageSectorTimes();
 };
 
 

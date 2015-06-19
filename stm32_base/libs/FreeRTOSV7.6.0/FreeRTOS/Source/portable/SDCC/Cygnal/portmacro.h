@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -67,16 +67,16 @@
 #define PORTMACRO_H
 
 #if configUSE_PREEMPTION == 0
-	void vTimer2ISR( void ) interrupt 5;
+void vTimer2ISR( void ) interrupt 5;
 #else
-	void vTimer2ISR( void ) interrupt 5 _naked;
+void vTimer2ISR( void ) interrupt 5 _naked;
 #endif
 
 void vSerialISR( void ) interrupt 4;
 
 
 /*-----------------------------------------------------------
- * Port specific definitions.  
+ * Port specific definitions.
  *
  * The settings in this file configure FreeRTOS correctly for the
  * given hardware and compiler.
@@ -95,13 +95,13 @@ void vSerialISR( void ) interrupt 4;
 #define portBASE_TYPE	char
 
 #if( configUSE_16_BIT_TICKS == 1 )
-	typedef unsigned portSHORT portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffff
+typedef unsigned portSHORT portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffff
 #else
-	typedef unsigned portLONG portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffffffff
+typedef unsigned portLONG portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffffffff
 #endif
-/*-----------------------------------------------------------*/	
+/*-----------------------------------------------------------*/
 
 /* Critical section management. */
 #define portENTER_CRITICAL()		_asm		\
@@ -121,24 +121,24 @@ void vSerialISR( void ) interrupt 4;
 
 #define portDISABLE_INTERRUPTS()	EA = 0;
 #define portENABLE_INTERRUPTS()		EA = 1;
-/*-----------------------------------------------------------*/	
+/*-----------------------------------------------------------*/
 
 /* Hardware specifics. */
 #define portBYTE_ALIGNMENT			1
 #define portSTACK_GROWTH			( 1 )
-#define portTICK_RATE_MS			( ( unsigned portLONG ) 1000 / configTICK_RATE_HZ )		
-/*-----------------------------------------------------------*/	
+#define portTICK_RATE_MS			( ( unsigned portLONG ) 1000 / configTICK_RATE_HZ )
+/*-----------------------------------------------------------*/
 
 /* Task utilities. */
 void vPortYield( void ) _naked;
 #define portYIELD()	vPortYield();
-/*-----------------------------------------------------------*/	
+/*-----------------------------------------------------------*/
 
 #define portNOP()				_asm	\
 									nop \
 								_endasm;
 
-/*-----------------------------------------------------------*/	
+/*-----------------------------------------------------------*/
 
 /* Task function macros as described on the FreeRTOS.org WEB site. */
 #define portTASK_FUNCTION_PROTO( vFunction, pvParameters ) void vFunction( void *pvParameters )

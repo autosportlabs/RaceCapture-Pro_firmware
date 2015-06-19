@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -91,11 +91,11 @@ extern "C" {
 #define portBASE_TYPE	long
 
 #if( configUSE_16_BIT_TICKS == 1 )
-	typedef unsigned portSHORT portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffff
+typedef unsigned portSHORT portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffff
 #else
-	typedef unsigned portLONG portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffffffff
+typedef unsigned portLONG portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffffffff
 #endif
 /*-----------------------------------------------------------*/
 
@@ -122,16 +122,14 @@ extern "C" {
 
 #define portSWITCH_TO_USER_MODE() __asm volatile ( " mrs r0, control \n orr r0, #1 \n msr control, r0 " :::"r0" )
 
-typedef struct MPU_REGION_REGISTERS
-{
-	unsigned portLONG ulRegionBaseAddress;
-	unsigned portLONG ulRegionAttribute;
+typedef struct MPU_REGION_REGISTERS {
+    unsigned portLONG ulRegionBaseAddress;
+    unsigned portLONG ulRegionAttribute;
 } xMPU_REGION_REGISTERS;
 
 /* Plus 1 to create space for the stack region. */
-typedef struct MPU_SETTINGS
-{
-	xMPU_REGION_REGISTERS xRegion[ portTOTAL_NUM_REGIONS ];
+typedef struct MPU_SETTINGS {
+    xMPU_REGION_REGISTERS xRegion[ portTOTAL_NUM_REGIONS ];
 } xMPU_SETTINGS;
 
 /* Architecture specifics. */

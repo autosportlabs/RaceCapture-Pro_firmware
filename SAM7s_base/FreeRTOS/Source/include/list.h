@@ -65,32 +65,29 @@
 /*
  * Definition of the only type of object that a list can contain.
  */
-struct xLIST_ITEM
-{
-	portTickType xItemValue;				/*< The value being listed.  In most cases this is used to sort the list in descending order. */
-	volatile struct xLIST_ITEM * pxNext;	/*< Pointer to the next xListItem in the list. */
-	volatile struct xLIST_ITEM * pxPrevious;/*< Pointer to the previous xListItem in the list. */
-	void * pvOwner;							/*< Pointer to the object (normally a TCB) that contains the list item.  There is therefore a two way link between the object containing the list item and the list item itself. */
-	void * pvContainer;						/*< Pointer to the list in which this list item is placed (if any). */
+struct xLIST_ITEM {
+    portTickType xItemValue;				/*< The value being listed.  In most cases this is used to sort the list in descending order. */
+    volatile struct xLIST_ITEM * pxNext;	/*< Pointer to the next xListItem in the list. */
+    volatile struct xLIST_ITEM * pxPrevious;/*< Pointer to the previous xListItem in the list. */
+    void * pvOwner;							/*< Pointer to the object (normally a TCB) that contains the list item.  There is therefore a two way link between the object containing the list item and the list item itself. */
+    void * pvContainer;						/*< Pointer to the list in which this list item is placed (if any). */
 };
 typedef struct xLIST_ITEM xListItem;		/* For some reason lint wants this as two separate definitions. */
 
-struct xMINI_LIST_ITEM
-{
-	portTickType xItemValue;
-	volatile struct xLIST_ITEM *pxNext;
-	volatile struct xLIST_ITEM *pxPrevious;
+struct xMINI_LIST_ITEM {
+    portTickType xItemValue;
+    volatile struct xLIST_ITEM *pxNext;
+    volatile struct xLIST_ITEM *pxPrevious;
 };
 typedef struct xMINI_LIST_ITEM xMiniListItem;
 
 /*
  * Definition of the type of queue used by the scheduler.
  */
-typedef struct xLIST
-{
-	volatile unsigned portBASE_TYPE uxNumberOfItems;
-	volatile xListItem * pxIndex;			/*< Used to walk through the list.  Points to the last item returned by a call to pvListGetOwnerOfNextEntry (). */
-	volatile xMiniListItem xListEnd;		/*< List item that contains the maximum possible item value meaning it is always at the end of the list and is therefore used as a marker. */
+typedef struct xLIST {
+    volatile unsigned portBASE_TYPE uxNumberOfItems;
+    volatile xListItem * pxIndex;			/*< Used to walk through the list.  Points to the last item returned by a call to pvListGetOwnerOfNextEntry (). */
+    volatile xMiniListItem xListEnd;		/*< List item that contains the maximum possible item value meaning it is always at the end of the list and is therefore used as a marker. */
 } xList;
 
 /*

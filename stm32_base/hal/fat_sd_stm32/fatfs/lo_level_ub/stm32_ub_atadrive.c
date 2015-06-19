@@ -36,9 +36,9 @@ void UB_ATADrive_Init(void)
 //--------------------------------------------------------------
 uint8_t UB_ATADrive_CheckMedia(void)
 {
-  uint8_t ret_wert=0;
+    uint8_t ret_wert=0;
 
-  return(ret_wert);
+    return(ret_wert);
 }
 
 //--------------------------------------------------------------
@@ -49,9 +49,9 @@ uint8_t UB_ATADrive_CheckMedia(void)
 //--------------------------------------------------------------
 int ATA_disk_initialize(void)
 {
-  int ret_wert=-1;
+    int ret_wert=-1;
 
-  return(ret_wert);
+    return(ret_wert);
 }
 
 
@@ -63,9 +63,9 @@ int ATA_disk_initialize(void)
 //--------------------------------------------------------------
 int ATA_disk_status(void)
 {
-  int ret_wert=-1;
+    int ret_wert=-1;
 
-  return(ret_wert);
+    return(ret_wert);
 }
 
 
@@ -77,9 +77,9 @@ int ATA_disk_status(void)
 //--------------------------------------------------------------
 int ATA_disk_read(BYTE *buff, DWORD sector, BYTE count)
 {
-  int ret_wert=-1;
+    int ret_wert=-1;
 
-  return(ret_wert);
+    return(ret_wert);
 }
 
 
@@ -91,9 +91,9 @@ int ATA_disk_read(BYTE *buff, DWORD sector, BYTE count)
 //--------------------------------------------------------------
 int ATA_disk_write(const BYTE *buff, DWORD sector, BYTE count)
 {
-  int ret_wert=-1;
+    int ret_wert=-1;
 
-  return(ret_wert);
+    return(ret_wert);
 }
 
 
@@ -105,9 +105,9 @@ int ATA_disk_write(const BYTE *buff, DWORD sector, BYTE count)
 //--------------------------------------------------------------
 int ATA_disk_ioctl(BYTE cmd, void *buff)
 {
-  int ret_wert=-1;
+    int ret_wert=-1;
 
-  return(ret_wert);
+    return(ret_wert);
 }
 
 

@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -109,92 +109,89 @@ void vPortSetupTimerInterrupt( void );
  */
 portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
 {
-unsigned short *pusTopOfStack;
-unsigned long *pulTopOfStack, ulTemp;
+    unsigned short *pusTopOfStack;
+    unsigned long *pulTopOfStack, ulTemp;
 
-	/*
-		Place a few bytes of known values on the bottom of the stack.
-		This is just useful for debugging and can be included if required.
+    /*
+    	Place a few bytes of known values on the bottom of the stack.
+    	This is just useful for debugging and can be included if required.
 
-		*pxTopOfStack = ( portSTACK_TYPE ) 0x1111;
-		pxTopOfStack--;
-		*pxTopOfStack = ( portSTACK_TYPE ) 0x2222;
-		pxTopOfStack--;
-		*pxTopOfStack = ( portSTACK_TYPE ) 0x3333;
-		pxTopOfStack--;
-	*/
+    	*pxTopOfStack = ( portSTACK_TYPE ) 0x1111;
+    	pxTopOfStack--;
+    	*pxTopOfStack = ( portSTACK_TYPE ) 0x2222;
+    	pxTopOfStack--;
+    	*pxTopOfStack = ( portSTACK_TYPE ) 0x3333;
+    	pxTopOfStack--;
+    */
 
-	/* Data types are need either 16 bits or 32 bits depending on the data 
-	and code model used. */
-	if( sizeof( pxCode ) == sizeof( unsigned short ) )
-	{
-		pusTopOfStack = ( unsigned short * ) pxTopOfStack;
-		ulTemp = ( unsigned long ) pxCode;
-		*pusTopOfStack = ( unsigned short ) ulTemp;
-	}
-	else
-	{
-		/* Make room for a 20 bit value stored as a 32 bit value. */
-		pusTopOfStack = ( unsigned short * ) pxTopOfStack;		
-		pusTopOfStack--;
-		pulTopOfStack = ( unsigned long * ) pusTopOfStack;
-		*pulTopOfStack = ( unsigned long ) pxCode;
-	}
+    /* Data types are need either 16 bits or 32 bits depending on the data
+    and code model used. */
+    if( sizeof( pxCode ) == sizeof( unsigned short ) ) {
+        pusTopOfStack = ( unsigned short * ) pxTopOfStack;
+        ulTemp = ( unsigned long ) pxCode;
+        *pusTopOfStack = ( unsigned short ) ulTemp;
+    } else {
+        /* Make room for a 20 bit value stored as a 32 bit value. */
+        pusTopOfStack = ( unsigned short * ) pxTopOfStack;
+        pusTopOfStack--;
+        pulTopOfStack = ( unsigned long * ) pusTopOfStack;
+        *pulTopOfStack = ( unsigned long ) pxCode;
+    }
 
-	pusTopOfStack--;
-	*pusTopOfStack = portFLAGS_INT_ENABLED;
-	pusTopOfStack -= ( sizeof( portSTACK_TYPE ) / 2 );
-	
-	/* From here on the size of stacked items depends on the memory model. */
-	pxTopOfStack = ( portSTACK_TYPE * ) pusTopOfStack;
+    pusTopOfStack--;
+    *pusTopOfStack = portFLAGS_INT_ENABLED;
+    pusTopOfStack -= ( sizeof( portSTACK_TYPE ) / 2 );
 
-	/* Next the general purpose registers. */
-	#ifdef PRELOAD_REGISTER_VALUES
-		*pxTopOfStack = ( portSTACK_TYPE ) 0xffff;
-		pxTopOfStack--;
-		*pxTopOfStack = ( portSTACK_TYPE ) 0xeeee;
-		pxTopOfStack--;
-		*pxTopOfStack = ( portSTACK_TYPE ) 0xdddd;
-		pxTopOfStack--;
-		*pxTopOfStack = ( portSTACK_TYPE ) pvParameters;
-		pxTopOfStack--;
-		*pxTopOfStack = ( portSTACK_TYPE ) 0xbbbb;
-		pxTopOfStack--;
-		*pxTopOfStack = ( portSTACK_TYPE ) 0xaaaa;
-		pxTopOfStack--;
-		*pxTopOfStack = ( portSTACK_TYPE ) 0x9999;
-		pxTopOfStack--;
-		*pxTopOfStack = ( portSTACK_TYPE ) 0x8888;
-		pxTopOfStack--;	
-		*pxTopOfStack = ( portSTACK_TYPE ) 0x5555;
-		pxTopOfStack--;
-		*pxTopOfStack = ( portSTACK_TYPE ) 0x6666;
-		pxTopOfStack--;
-		*pxTopOfStack = ( portSTACK_TYPE ) 0x5555;
-		pxTopOfStack--;
-		*pxTopOfStack = ( portSTACK_TYPE ) 0x4444;
-		pxTopOfStack--;
-	#else
-		pxTopOfStack -= 3;
-		*pxTopOfStack = ( portSTACK_TYPE ) pvParameters;
-		pxTopOfStack -= 9;
-	#endif
+    /* From here on the size of stacked items depends on the memory model. */
+    pxTopOfStack = ( portSTACK_TYPE * ) pusTopOfStack;
 
-	/* A variable is used to keep track of the critical section nesting.
-	This variable has to be stored as part of the task context and is
-	initially set to zero. */
-	*pxTopOfStack = ( portSTACK_TYPE ) portNO_CRITICAL_SECTION_NESTING;	
+    /* Next the general purpose registers. */
+#ifdef PRELOAD_REGISTER_VALUES
+    *pxTopOfStack = ( portSTACK_TYPE ) 0xffff;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0xeeee;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0xdddd;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) pvParameters;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0xbbbb;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0xaaaa;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x9999;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x8888;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x5555;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x6666;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x5555;
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x4444;
+    pxTopOfStack--;
+#else
+    pxTopOfStack -= 3;
+    *pxTopOfStack = ( portSTACK_TYPE ) pvParameters;
+    pxTopOfStack -= 9;
+#endif
 
-	/* Return a pointer to the top of the stack we have generated so this can
-	be stored in the task control block for the task. */
-	return pxTopOfStack;
+    /* A variable is used to keep track of the critical section nesting.
+    This variable has to be stored as part of the task context and is
+    initially set to zero. */
+    *pxTopOfStack = ( portSTACK_TYPE ) portNO_CRITICAL_SECTION_NESTING;
+
+    /* Return a pointer to the top of the stack we have generated so this can
+    be stored in the task control block for the task. */
+    return pxTopOfStack;
 }
 /*-----------------------------------------------------------*/
 
 void vPortEndScheduler( void )
 {
-	/* It is unlikely that the MSP430 port will get stopped.  If required simply
-	disable the tick interrupt here. */
+    /* It is unlikely that the MSP430 port will get stopped.  If required simply
+    disable the tick interrupt here. */
 }
 /*-----------------------------------------------------------*/
 
@@ -203,23 +200,23 @@ void vPortEndScheduler( void )
  */
 void vPortSetupTimerInterrupt( void )
 {
-	vApplicationSetupTimerInterrupt();
+    vApplicationSetupTimerInterrupt();
 }
 /*-----------------------------------------------------------*/
 
 #pragma vector=configTICK_VECTOR
 interrupt void vTickISREntry( void )
 {
-extern void vPortTickISR( void );
+    extern void vPortTickISR( void );
 
-	__bic_SR_register_on_exit( SCG1 + SCG0 + OSCOFF + CPUOFF );
-	#if configUSE_PREEMPTION == 1
-		extern void vPortPreemptiveTickISR( void );
-		vPortPreemptiveTickISR();
-	#else
-		extern void vPortCooperativeTickISR( void );
-		vPortCooperativeTickISR();
-	#endif
+    __bic_SR_register_on_exit( SCG1 + SCG0 + OSCOFF + CPUOFF );
+#if configUSE_PREEMPTION == 1
+    extern void vPortPreemptiveTickISR( void );
+    vPortPreemptiveTickISR();
+#else
+    extern void vPortCooperativeTickISR( void );
+    vPortCooperativeTickISR();
+#endif
 }
 
-	
+

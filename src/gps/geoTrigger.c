@@ -25,25 +25,29 @@
 
 #include <stdbool.h>
 
-struct GeoTrigger createGeoTrigger(const struct GeoCircle *gc) {
-        struct GeoTrigger gt;
+struct GeoTrigger createGeoTrigger(const struct GeoCircle *gc)
+{
+    struct GeoTrigger gt;
 
-        memcpy(&gt.gc, gc, sizeof(struct GeoCircle));
-        resetGeoTrigger(&gt);
+    memcpy(&gt.gc, gc, sizeof(struct GeoCircle));
+    resetGeoTrigger(&gt);
 
-        return gt;
+    return gt;
 }
 
-bool updateGeoTrigger(struct GeoTrigger *gt, const GeoPoint *gp) {
-        if (gt->tripped) return true;
-        if (gc_isPointInGeoCircle(gp, gt->gc)) return false;
-        return gt->tripped = true;
+bool updateGeoTrigger(struct GeoTrigger *gt, const GeoPoint *gp)
+{
+    if (gt->tripped) return true;
+    if (gc_isPointInGeoCircle(gp, gt->gc)) return false;
+    return gt->tripped = true;
 }
 
-void resetGeoTrigger(struct GeoTrigger *gt) {
-        gt->tripped = false;
+void resetGeoTrigger(struct GeoTrigger *gt)
+{
+    gt->tripped = false;
 }
 
-bool isGeoTriggerTripped(const struct GeoTrigger *gt) {
-        return gt->tripped;
+bool isGeoTriggerTripped(const struct GeoTrigger *gt)
+{
+    return gt->tripped;
 }

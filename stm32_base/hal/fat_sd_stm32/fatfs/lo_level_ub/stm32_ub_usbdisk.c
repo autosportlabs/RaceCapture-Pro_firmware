@@ -38,9 +38,9 @@ void UB_USBDisk_Init(void)
 //--------------------------------------------------------------
 uint8_t UB_USBDrive_CheckMedia(void)
 {
-  uint8_t ret_wert=0;
+    uint8_t ret_wert=0;
 
-  return(ret_wert);
+    return(ret_wert);
 }
 
 //--------------------------------------------------------------
@@ -51,9 +51,9 @@ uint8_t UB_USBDrive_CheckMedia(void)
 //--------------------------------------------------------------
 int USB_disk_initialize(void)
 {
-  int ret_wert=-1;
+    int ret_wert=-1;
 
-  return(ret_wert);
+    return(ret_wert);
 }
 
 
@@ -65,9 +65,9 @@ int USB_disk_initialize(void)
 //--------------------------------------------------------------
 int USB_disk_status(void)
 {
-  int ret_wert=-1;
+    int ret_wert=-1;
 
-  return(ret_wert);
+    return(ret_wert);
 }
 
 
@@ -79,9 +79,9 @@ int USB_disk_status(void)
 //--------------------------------------------------------------
 int USB_disk_read(BYTE *buff, DWORD sector, BYTE count)
 {
-  int ret_wert=-1;
+    int ret_wert=-1;
 
-  return(ret_wert);
+    return(ret_wert);
 }
 
 
@@ -93,9 +93,9 @@ int USB_disk_read(BYTE *buff, DWORD sector, BYTE count)
 //--------------------------------------------------------------
 int USB_disk_write(const BYTE *buff, DWORD sector, BYTE count)
 {
-  int ret_wert=-1;
+    int ret_wert=-1;
 
-  return(ret_wert);
+    return(ret_wert);
 }
 
 
@@ -107,9 +107,9 @@ int USB_disk_write(const BYTE *buff, DWORD sector, BYTE count)
 //--------------------------------------------------------------
 int USB_disk_ioctl(BYTE cmd, void *buff)
 {
-  int ret_wert=-1;
+    int ret_wert=-1;
 
-  return(ret_wert);
+    return(ret_wert);
 }
 
 

@@ -65,29 +65,29 @@
  */
 #define ALWAYS_SAMPLED 1 << 0
 
-typedef struct _ChannelConfig{
-	char label[DEFAULT_LABEL_LENGTH];
-	char units[DEFAULT_UNITS_LENGTH];
-	float min;
-	float max;
-	unsigned short sampleRate;
-	unsigned char precision;
-	unsigned char flags;
+typedef struct _ChannelConfig {
+    char label[DEFAULT_LABEL_LENGTH];
+    char units[DEFAULT_UNITS_LENGTH];
+    float min;
+    float max;
+    unsigned short sampleRate;
+    unsigned char precision;
+    unsigned char flags;
 } ChannelConfig;
 
-typedef struct _ScalingMap{
-	float rawValues[ANALOG_SCALING_BINS];
-	float scaledValues[ANALOG_SCALING_BINS];
+typedef struct _ScalingMap {
+    float rawValues[ANALOG_SCALING_BINS];
+    float scaledValues[ANALOG_SCALING_BINS];
 } ScalingMap;
 
 enum TimeType {
-   TimeType_Uptime,
-   TimeType_UtcMillis,
+    TimeType_Uptime,
+    TimeType_UtcMillis,
 };
 
 struct TimeConfig {
-   ChannelConfig cfg;
-   enum TimeType tt;
+    ChannelConfig cfg;
+    enum TimeType tt;
 };
 
 #define EMPTY_CHANNEL_CONFIG {"","", 0.0f, 0.0f, SAMPLE_DISABLED, 0}
@@ -100,14 +100,14 @@ struct TimeConfig {
 #define DEFAULT_UTC_MILLIS_TIME_CONFIG {DEFAULT_UTC_MILLIS_CONFIG, TimeType_UtcMillis}
 
 
-typedef struct _ADCConfig{
-	ChannelConfig cfg;
-	float linearScaling;
-	float linearOffset;
-	float filterAlpha;
-	float calibration;
-	unsigned char scalingMode;
-	ScalingMap scalingMap;
+typedef struct _ADCConfig {
+    ChannelConfig cfg;
+    float linearScaling;
+    float linearOffset;
+    float filterAlpha;
+    float calibration;
+    unsigned char scalingMode;
+    ScalingMap scalingMap;
 } ADCConfig;
 
 #define DEFAULT_SCALING (1)
@@ -141,13 +141,13 @@ typedef struct _ADCConfig{
          DEFAULT_SCALING_MAP                    \
          }
 
-typedef struct _TimerConfig{
-	ChannelConfig cfg;
-	char slowTimerEnabled;
-	unsigned char mode;
-	float filterAlpha;
-	unsigned char pulsePerRevolution;
-	unsigned short timerSpeed;
+typedef struct _TimerConfig {
+    ChannelConfig cfg;
+    char slowTimerEnabled;
+    unsigned char mode;
+    float filterAlpha;
+    unsigned char pulsePerRevolution;
+    unsigned short timerSpeed;
 } TimerConfig;
 
 
@@ -178,9 +178,9 @@ typedef struct _TimerConfig{
          TIMER_MEDIUM                           \
          }
 
-typedef struct _GPIOConfig{
-	ChannelConfig cfg;
-	unsigned char mode;
+typedef struct _GPIOConfig {
+    ChannelConfig cfg;
+    unsigned char mode;
 } GPIOConfig;
 
 #define CONFIG_GPIO_IN  					0
@@ -191,12 +191,12 @@ typedef struct _GPIOConfig{
 #define DEFAULT_GPIO_CONFIG {DEFAULT_GPIO_CHANNEL_CONFIG, CONFIG_GPIO_IN}
 
 
-typedef struct _ImuConfig{
-	ChannelConfig cfg;
-	unsigned char mode;
-	unsigned char physicalChannel;
-	signed short zeroValue;
-	float filterAlpha;
+typedef struct _ImuConfig {
+    ChannelConfig cfg;
+    unsigned char mode;
+    unsigned char physicalChannel;
+    signed short zeroValue;
+    float filterAlpha;
 } ImuConfig;
 
 #define MIN_IMU_RAW							0
@@ -244,12 +244,12 @@ typedef struct _ImuConfig{
 
 
 
-typedef struct _PWMConfig{
-	ChannelConfig cfg;
-	unsigned char outputMode;
-	unsigned char loggingMode;
-	unsigned char startupDutyCycle;
-	unsigned short startupPeriod;
+typedef struct _PWMConfig {
+    ChannelConfig cfg;
+    unsigned char outputMode;
+    unsigned char loggingMode;
+    unsigned char startupDutyCycle;
+    unsigned short startupPeriod;
 } PWMConfig;
 
 /// PWM frequency in Hz.
@@ -282,17 +282,17 @@ typedef struct _PWMConfig{
 
 #define OBD2_CHANNELS 20
 
-typedef struct _PidConfig{
-	ChannelConfig cfg;
-	unsigned short pid;
+typedef struct _PidConfig {
+    ChannelConfig cfg;
+    unsigned short pid;
 } PidConfig;
 
 
-typedef struct _OBD2Config{
-	unsigned char enabled;
-	unsigned char obd2SampleRate;
-	unsigned short enabledPids;
-	PidConfig pids[OBD2_CHANNELS];
+typedef struct _OBD2Config {
+    unsigned char enabled;
+    unsigned char obd2SampleRate;
+    unsigned short enabledPids;
+    PidConfig pids[OBD2_CHANNELS];
 } OBD2Config;
 
 #define DEFAULT_ENABLED_PIDS 1
@@ -327,22 +327,22 @@ typedef struct _OBD2Config{
 	} \
 }
 
-typedef struct _CANConfig{
-	unsigned char enabled;
-	int baud[CONFIG_CAN_CHANNELS];
+typedef struct _CANConfig {
+    unsigned char enabled;
+    int baud[CONFIG_CAN_CHANNELS];
 } CANConfig;
 
 #define DEFAULT_CAN_BAUD_RATE 500000
 
-typedef struct _GPSConfig{
-   ChannelConfig latitude;
-   ChannelConfig longitude;
-   ChannelConfig speed;
-   ChannelConfig distance;
-   ChannelConfig altitude;
-   ChannelConfig satellites;
-   ChannelConfig quality;
-   ChannelConfig DOP;
+typedef struct _GPSConfig {
+    ChannelConfig latitude;
+    ChannelConfig longitude;
+    ChannelConfig speed;
+    ChannelConfig distance;
+    ChannelConfig altitude;
+    ChannelConfig satellites;
+    ChannelConfig quality;
+    ChannelConfig DOP;
 } GPSConfig;
 
 
@@ -353,28 +353,28 @@ typedef struct _GPSConfig{
 #define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "Degrees", -180, 180, DEFAULT_GPS_SAMPLE_RATE, 6, 0}
 #define DEFAULT_GPS_SPEED_CONFIG {"Speed", "MPH", 0, 150, DEFAULT_GPS_SAMPLE_RATE, 2, 0}
 #define DEFAULT_GPS_DISTANCE_CONFIG {"Distance", "Miles", 0, 0, DEFAULT_GPS_SAMPLE_RATE, 3, 0}
-#define DEFAULT_GPS_ALTITUDE_CONFIG {"Altitude", "M", 0, 4000, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
+#define DEFAULT_GPS_ALTITUDE_CONFIG {"Altitude", "Feet", 0, 4000, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
 #define DEFAULT_GPS_SATELLITE_CONFIG {"GPSSats", "", 0, 20, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
 #define DEFAULT_GPS_QUALITY_CONFIG {"GPSQual", "", 0, 5, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
 #define DEFAULT_GPS_DOP_CONFIG {"GPSDOP", "", 0, 20, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
 
-#define DEFAULT_GPS_CONFIG {                    \
-      DEFAULT_GPS_LATITUDE_CONFIG,              \
-         DEFAULT_GPS_LONGITUDE_CONFIG,          \
-         DEFAULT_GPS_SPEED_CONFIG,              \
-         DEFAULT_GPS_DISTANCE_CONFIG,           \
-         DEFAULT_GPS_ALTITUDE_CONFIG,           \
-         DEFAULT_GPS_SATELLITE_CONFIG,          \
-         DEFAULT_GPS_QUALITY_CONFIG,            \
-         DEFAULT_GPS_DOP_CONFIG                \
+#define DEFAULT_GPS_CONFIG {                   \
+		DEFAULT_GPS_LATITUDE_CONFIG,           \
+		DEFAULT_GPS_LONGITUDE_CONFIG,          \
+		DEFAULT_GPS_SPEED_CONFIG,              \
+		DEFAULT_GPS_DISTANCE_CONFIG,           \
+		DEFAULT_GPS_ALTITUDE_CONFIG,           \
+		DEFAULT_GPS_SATELLITE_CONFIG,          \
+		DEFAULT_GPS_QUALITY_CONFIG,            \
+		DEFAULT_GPS_DOP_CONFIG                 \
          }
 
-typedef struct _LapConfig{
-	ChannelConfig lapCountCfg;
-	ChannelConfig lapTimeCfg;
-	ChannelConfig sectorCfg;
-	ChannelConfig sectorTimeCfg;
-	ChannelConfig predTimeCfg;
+typedef struct _LapConfig {
+    ChannelConfig lapCountCfg;
+    ChannelConfig lapTimeCfg;
+    ChannelConfig sectorCfg;
+    ChannelConfig sectorTimeCfg;
+    ChannelConfig predTimeCfg;
     ChannelConfig elapsed_time_cfg;
     ChannelConfig current_lap_cfg;
 } LapConfig;
@@ -399,10 +399,10 @@ typedef struct _LapConfig{
                         DEFAULT_CURRENT_LAP_CONFIG              \
                         }
 
-typedef struct _TrackConfig{
-	float radius;
-	unsigned char auto_detect;
-	Track track;
+typedef struct _TrackConfig {
+    float radius;
+    unsigned char auto_detect;
+    Track track;
 } TrackConfig;
 
 #define DEFAULT_TRACK_AUTO_DETECT 1
@@ -414,11 +414,11 @@ typedef struct _TrackConfig{
 #define DEFAULT_BT_BAUD 115200
 #define DEFAULT_BT_ENABLED 1
 
-typedef struct _BluetoothConfig{
-	unsigned char btEnabled;
-	char deviceName [BT_DEVICE_NAME_LENGTH];
-	char passcode [BT_PASSCODE_LENGTH];
-	unsigned int baudRate;
+typedef struct _BluetoothConfig {
+    unsigned char btEnabled;
+    char deviceName [BT_DEVICE_NAME_LENGTH];
+    char passcode [BT_PASSCODE_LENGTH];
+    unsigned int baudRate;
 } BluetoothConfig;
 
 #define DEFAULT_BT_CONFIG { \
@@ -436,11 +436,11 @@ typedef struct _BluetoothConfig{
 #define DEFAULT_APN_PASS ""
 #define DEFAULT_CELL_ENABLED 0
 
-typedef struct _CellularConfig{
-	unsigned char cellEnabled;
-	char apnHost [CELL_APN_HOST_LENGTH + 1];
-	char apnUser [CELL_APN_USER_LENGTH + 1];
-	char apnPass [CELL_APN_PASS_LENGTH + 1];
+typedef struct _CellularConfig {
+    unsigned char cellEnabled;
+    char apnHost [CELL_APN_HOST_LENGTH + 1];
+    char apnUser [CELL_APN_USER_LENGTH + 1];
+    char apnPass [CELL_APN_PASS_LENGTH + 1];
 } CellularConfig;
 
 
@@ -454,16 +454,16 @@ typedef struct _CellularConfig{
 #define BACKGROUND_STREAMING_DISABLED				0
 
 typedef struct _TelemetryConfig {
-	unsigned char backgroundStreaming;
-	char telemetryDeviceId[DEVICE_ID_LENGTH + 1];
-	char telemetryServerHost[TELEMETRY_SERVER_HOST_LENGTH + 1];
+    unsigned char backgroundStreaming;
+    char telemetryDeviceId[DEVICE_ID_LENGTH + 1];
+    char telemetryServerHost[TELEMETRY_SERVER_HOST_LENGTH + 1];
 } TelemetryConfig;
 
 
 typedef struct _ConnectivityConfig {
-	BluetoothConfig bluetoothConfig;
-	CellularConfig cellularConfig;
-	TelemetryConfig telemetryConfig;
+    BluetoothConfig bluetoothConfig;
+    CellularConfig cellularConfig;
+    TelemetryConfig telemetryConfig;
 } ConnectivityConfig;
 
 #define SD_LOGGING_MODE_DISABLED					0
@@ -471,48 +471,48 @@ typedef struct _ConnectivityConfig {
 
 
 typedef struct _LoggerConfig {
-   VersionInfo RcpVersionInfo;
+    VersionInfo RcpVersionInfo;
 
-   //PWM/Analog out configurations
-   unsigned short PWMClockFrequency;
+    //PWM/Analog out configurations
+    unsigned short PWMClockFrequency;
 
-   // Time Config
-   struct TimeConfig TimeConfigs[CONFIG_TIME_CHANNELS];
+    // Time Config
+    struct TimeConfig TimeConfigs[CONFIG_TIME_CHANNELS];
 
-   //ADC Calibrations
-   ADCConfig ADCConfigs[CONFIG_ADC_CHANNELS];
+    //ADC Calibrations
+    ADCConfig ADCConfigs[CONFIG_ADC_CHANNELS];
 
-   PWMConfig PWMConfigs[CONFIG_PWM_CHANNELS];
+    PWMConfig PWMConfigs[CONFIG_PWM_CHANNELS];
 
-   //GPIO configurations
-   GPIOConfig GPIOConfigs[CONFIG_GPIO_CHANNELS];
+    //GPIO configurations
+    GPIOConfig GPIOConfigs[CONFIG_GPIO_CHANNELS];
 
-   //Timer Configurations
-   TimerConfig TimerConfigs[CONFIG_TIMER_CHANNELS];
+    //Timer Configurations
+    TimerConfig TimerConfigs[CONFIG_TIMER_CHANNELS];
 
-   //IMU Configurations
-   ImuConfig ImuConfigs[CONFIG_IMU_CHANNELS];
+    //IMU Configurations
+    ImuConfig ImuConfigs[CONFIG_IMU_CHANNELS];
 
-   //CAN Configuration
-   CANConfig CanConfig;
+    //CAN Configuration
+    CANConfig CanConfig;
 
-   //OBD2 Config
-   OBD2Config OBD2Configs;
+    //OBD2 Config
+    OBD2Config OBD2Configs;
 
-   //GPS Configuration
-   GPSConfig GPSConfigs;
+    //GPS Configuration
+    GPSConfig GPSConfigs;
 
-   //Lap Configuration
-   LapConfig LapConfigs;
+    //Lap Configuration
+    LapConfig LapConfigs;
 
-   //Track configuration
-   TrackConfig TrackConfigs;
+    //Track configuration
+    TrackConfig TrackConfigs;
 
-   //Connectivity Configuration
-   ConnectivityConfig ConnectivityConfigs;
+    //Connectivity Configuration
+    ConnectivityConfig ConnectivityConfigs;
 
-   //Padding data to accommodate flash routine
-   char padding_data[FLASH_PAGE_SIZE];
+    //Padding data to accommodate flash routine
+    char padding_data[FLASH_PAGE_SIZE];
 } LoggerConfig;
 
 

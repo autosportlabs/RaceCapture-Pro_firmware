@@ -30,6 +30,7 @@
 #include "logger.h"
 #include "lap_stats.h"
 #include "launch_control.h"
+#include "task.h"
 #define JSON_TOKENS 10000
 #define FILE_PREFIX string("json_api_files/")
 
@@ -706,6 +707,16 @@ void LoggerApiTest::testSampleData2() {
                         getSampleResponse(requestJson2));
 }
 
+void LoggerApiTest::testHeartBeat(){
+	set_ticks(3);
+    string requestJson = readFile("heartBeat_request.json");
+    string expectedResponseJson = readFile("heartBeat_response.json");
+
+    getUptimeAsInt();
+    CPPUNIT_ASSERT_EQUAL(expectedResponseJson,
+                        getSampleResponse(requestJson));
+}
+
 void LoggerApiTest::testLogStartStopFile(string filename){
 
 	string json = readFile(filename);
@@ -768,7 +779,7 @@ void LoggerApiTest::testSetGpsConfigFile(string filename, unsigned char channels
         testChannelConfig(&gpsCfg->longitude, string("Longitude"), string("Degrees"), sampleRate);
         testChannelConfig(&gpsCfg->speed, string("Speed"), string("MPH"), sampleRate);
         testChannelConfig(&gpsCfg->distance, string("Distance"), string("Miles"), sampleRate);
-        testChannelConfig(&gpsCfg->altitude, string("Altitude"), string("M"), sampleRate);
+        testChannelConfig(&gpsCfg->altitude, string("Altitude"), string("Feet"), sampleRate);
         testChannelConfig(&gpsCfg->satellites, string("GPSSats"), string(""), sampleRate);
         testChannelConfig(&gpsCfg->quality, string("GPSQual"), string(""), sampleRate);
         testChannelConfig(&gpsCfg->DOP, string("GPSDOP"), string(""), sampleRate);
@@ -1279,6 +1290,7 @@ void LoggerApiTest::testGetVersion(){
 }
 
 void LoggerApiTest::testGetStatus(){
+	set_ticks(3);
     lc_reset();
     lapStats_init();
     char * response = processApiGeneric("getStatus1.json");
@@ -1291,7 +1303,7 @@ void LoggerApiTest::testGetStatus(){
     CPPUNIT_ASSERT_EQUAL(MINOR_REV, (int)(Number)json["status"]["system"]["ver_minor"]);
     CPPUNIT_ASSERT_EQUAL(BUGFIX_REV, (int)(Number)json["status"]["system"]["ver_bugfix"]);
     CPPUNIT_ASSERT_EQUAL(string(cpu_get_serialnumber()), (string)(String)json["status"]["system"]["serial"]);
-    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["system"]["uptime"]);
+    CPPUNIT_ASSERT_EQUAL(15, (int)(Number)json["status"]["system"]["uptime"]);
 
     CPPUNIT_ASSERT_EQUAL((int)GPS_STATUS_NOT_INIT, (int)(Number)json["status"]["GPS"]["init"]);
     CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["GPS"]["qual"]);

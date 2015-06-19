@@ -12,22 +12,23 @@
 
 
 ///////////////////PWM Functions
-static unsigned int MapPwmHardwareChannel(unsigned int softwareChannel){
-	switch(softwareChannel){
-	case 0:
-		return 3;
-		break;
-	case 1:
-		return 0;
-		break;
-	case 2:
-		return 1;
-		break;
-	case 3:
-	default:
-		return 2;
-		break;
-	}
+static unsigned int MapPwmHardwareChannel(unsigned int softwareChannel)
+{
+    switch(softwareChannel) {
+    case 0:
+        return 3;
+        break;
+    case 1:
+        return 0;
+        break;
+    case 2:
+        return 1;
+        break;
+    case 3:
+    default:
+        return 2;
+        break;
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -57,8 +58,7 @@ static unsigned short PWM_GetClockConfiguration(
     // Return result
     if (divisor < 11) {
         return prescaler | (divisor << 8);
-    }
-    else {
+    } else {
         return 0;
     }
 }
@@ -70,7 +70,8 @@ static unsigned short PWM_GetClockConfiguration(
 /// \param clkb  Desired clock B frequency (0 if not used).
 /// \param mck  Master clock frequency.
 //------------------------------------------------------------------------------
-static void PWM_ConfigureClocks(unsigned int clka, unsigned int clkb, unsigned int mck){
+static void PWM_ConfigureClocks(unsigned int clka, unsigned int clkb, unsigned int mck)
+{
 
     unsigned int mode = 0;
     unsigned int result;
@@ -106,53 +107,56 @@ static void PWM_ConfigureChannel(
     unsigned int alignment,
     unsigned int polarity)
 {
-	unsigned int hardwareChannel = MapPwmHardwareChannel(channel);
+    unsigned int hardwareChannel = MapPwmHardwareChannel(channel);
     // Disable channel
     AT91C_BASE_PWMC->PWMC_DIS = 1 << hardwareChannel;
     // Configure channel
     AT91C_BASE_PWMC->PWMC_CH[hardwareChannel].PWMC_CMR = prescaler | alignment | polarity;
 }
 
-static void PWM_configure_ports(){
-	//Configure PWM ports
-	/////////////////////////////////////////
-	//PWM0
-	/////////////////////////////////////////
- 	//Configure Peripherials for PWM outputs
-	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,
-			0, 				// mux function A
-			AT91C_PIO_PA23); // mux funtion B
+static void PWM_configure_ports()
+{
+    //Configure PWM ports
+    /////////////////////////////////////////
+    //PWM0
+    /////////////////////////////////////////
+    //Configure Peripherials for PWM outputs
+    AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,
+                        0, 				// mux function A
+                        AT91C_PIO_PA23); // mux funtion B
 
-	/////////////////////////////////////////
-	//PWM1
-	/////////////////////////////////////////
- 	//Configure Peripherials for PWM outputs
-	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,
-			0, 				// mux function A
-			AT91C_PIO_PA24); // mux funtion B
+    /////////////////////////////////////////
+    //PWM1
+    /////////////////////////////////////////
+    //Configure Peripherials for PWM outputs
+    AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,
+                        0, 				// mux function A
+                        AT91C_PIO_PA24); // mux funtion B
 
-	/////////////////////////////////////////
-	//PWM2
-	/////////////////////////////////////////
- 	//Configure Peripherials for PWM outputs
-	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,
-			0, 				// mux function A
-			AT91C_PIO_PA25); // mux funtion B
+    /////////////////////////////////////////
+    //PWM2
+    /////////////////////////////////////////
+    //Configure Peripherials for PWM outputs
+    AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,
+                        0, 				// mux function A
+                        AT91C_PIO_PA25); // mux funtion B
 
-	/////////////////////////////////////////
-	//PWM3
-	/////////////////////////////////////////
- 	//Configure Peripherials for PWM outputs
-	AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,
-			0, 				// mux function A
-			AT91C_PIO_PA7); // mux funtion B
+    /////////////////////////////////////////
+    //PWM3
+    /////////////////////////////////////////
+    //Configure Peripherials for PWM outputs
+    AT91F_PIO_CfgPeriph(AT91C_BASE_PIOA,
+                        0, 				// mux function A
+                        AT91C_PIO_PA7); // mux funtion B
 }
 
-void PWM_device_set_clock_frequency(unsigned short clockFrequency){
-	PWM_ConfigureClocks(clockFrequency * MAX_DUTY_CYCLE, 0, BOARD_MCK);
+void PWM_device_set_clock_frequency(unsigned short clockFrequency)
+{
+    PWM_ConfigureClocks(clockFrequency * MAX_DUTY_CYCLE, 0, BOARD_MCK);
 }
 
-void PWM_device_channel_init(unsigned int channel, unsigned short period, unsigned short dutyCycle){
+void PWM_device_channel_init(unsigned int channel, unsigned short period, unsigned short dutyCycle)
+{
     // Configure PWMC channel (left-aligned)
     PWM_ConfigureChannel(channel, AT91C_PWMC_CPRE_MCKA, 0, AT91C_PWMC_CPOL);
     PWM_device_channel_set_period(channel, period);
@@ -160,26 +164,31 @@ void PWM_device_channel_init(unsigned int channel, unsigned short period, unsign
     PWM_device_channel_start(channel);
 }
 
-int PWM_device_init(){
-	AT91F_PMC_EnablePeriphClock( AT91C_BASE_PMC,(1 << AT91C_ID_PWMC));
-	PWM_configure_ports();
-	return 1;
+int PWM_device_init()
+{
+    AT91F_PMC_EnablePeriphClock( AT91C_BASE_PMC,(1 << AT91C_ID_PWMC));
+    PWM_configure_ports();
+    return 1;
 }
 
-void PWM_device_channel_start_all(){
-	AT91F_PWMC_StartChannel(AT91C_BASE_PWMC,(1 << 0) | (1 << 1) | (1 << 2) | (1 << 3));
+void PWM_device_channel_start_all()
+{
+    AT91F_PWMC_StartChannel(AT91C_BASE_PWMC,(1 << 0) | (1 << 1) | (1 << 2) | (1 << 3));
 }
 
-void PWM_device_channel_stop_all(){
-	AT91F_PWMC_StopChannel(AT91C_BASE_PWMC,(1 << 0) | (1 << 1) | (1 << 2) | (1 << 3));
+void PWM_device_channel_stop_all()
+{
+    AT91F_PWMC_StopChannel(AT91C_BASE_PWMC,(1 << 0) | (1 << 1) | (1 << 2) | (1 << 3));
 }
 
-void PWM_device_channel_start(unsigned int channel){
-	AT91F_PWMC_StartChannel(AT91C_BASE_PWMC,1 << channel);
+void PWM_device_channel_start(unsigned int channel)
+{
+    AT91F_PWMC_StartChannel(AT91C_BASE_PWMC,1 << channel);
 }
 
-void PWM_device_channel_stop(unsigned int channel){
-	AT91F_PWMC_StopChannel(AT91C_BASE_PWMC,1 << channel);
+void PWM_device_channel_stop(unsigned int channel)
+{
+    AT91F_PWMC_StopChannel(AT91C_BASE_PWMC,1 << channel);
 }
 
 //------------------------------------------------------------------------------
@@ -191,7 +200,7 @@ void PWM_device_channel_stop(unsigned int channel){
 //------------------------------------------------------------------------------
 void PWM_device_channel_set_period(unsigned int channel, unsigned short period)
 {
-	unsigned int hardwareChannel = MapPwmHardwareChannel(channel);
+    unsigned int hardwareChannel = MapPwmHardwareChannel(channel);
     // If channel is disabled, write to CPRD
     if ((AT91C_BASE_PWMC->PWMC_SR & (1 << hardwareChannel)) == 0) {
         AT91C_BASE_PWMC->PWMC_CH[hardwareChannel].PWMC_CPRDR = period;
@@ -203,9 +212,10 @@ void PWM_device_channel_set_period(unsigned int channel, unsigned short period)
     }
 }
 
-unsigned short PWM_device_channel_get_period(unsigned int channel){
-	unsigned int hardwareChannel = MapPwmHardwareChannel(channel);
-	return AT91C_BASE_PWMC->PWMC_CH[hardwareChannel].PWMC_CPRDR;
+unsigned short PWM_device_channel_get_period(unsigned int channel)
+{
+    unsigned int hardwareChannel = MapPwmHardwareChannel(channel);
+    return AT91C_BASE_PWMC->PWMC_CH[hardwareChannel].PWMC_CPRDR;
 }
 
 //------------------------------------------------------------------------------
@@ -217,12 +227,13 @@ unsigned short PWM_device_channel_get_period(unsigned int channel){
 /// \param channel  Channel number.
 /// \param duty  Duty cycle value.
 //------------------------------------------------------------------------------
-void PWM_device_set_duty_cycle(unsigned int channel, unsigned short duty){
-	unsigned int hardwareChannel = MapPwmHardwareChannel(channel);
-	//duty cycle of zero freaks out the PWM controller
-	//seems to invert the polarity. fix this up until we understand better.
-	if (duty < 1 ) duty = 1;
-	if (duty > 100) duty = 100;
+void PWM_device_set_duty_cycle(unsigned int channel, unsigned short duty)
+{
+    unsigned int hardwareChannel = MapPwmHardwareChannel(channel);
+    //duty cycle of zero freaks out the PWM controller
+    //seems to invert the polarity. fix this up until we understand better.
+    if (duty < 1 ) duty = 1;
+    if (duty > 100) duty = 100;
 
     // If channel is disabled, write to CDTY
     if ((AT91C_BASE_PWMC->PWMC_SR & (1 << hardwareChannel)) == 0) {
@@ -235,11 +246,13 @@ void PWM_device_set_duty_cycle(unsigned int channel, unsigned short duty){
     }
 }
 
-unsigned short PWM_device_get_duty_cycle(unsigned int channel){
-	unsigned int hardwareChannel = MapPwmHardwareChannel(channel);
-	return AT91C_BASE_PWMC->PWMC_CH[hardwareChannel].PWMC_CDTYR;
+unsigned short PWM_device_get_duty_cycle(unsigned int channel)
+{
+    unsigned int hardwareChannel = MapPwmHardwareChannel(channel);
+    return AT91C_BASE_PWMC->PWMC_CH[hardwareChannel].PWMC_CDTYR;
 }
 
-void PWM_device_channel_enable_analog(size_t channel, uint8_t enabled){
-	//NOOP, DIP switch on board
+void PWM_device_channel_enable_analog(size_t channel, uint8_t enabled)
+{
+    //NOOP, DIP switch on board
 }

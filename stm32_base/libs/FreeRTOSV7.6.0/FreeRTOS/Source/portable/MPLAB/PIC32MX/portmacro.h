@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -93,11 +93,11 @@ extern "C" {
 #define portBASE_TYPE	long
 
 #if( configUSE_16_BIT_TICKS == 1 )
-	typedef unsigned portSHORT portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffff
+typedef unsigned portSHORT portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffff
 #else
-	typedef unsigned long portTickType;
-	#define portMAX_DELAY ( portTickType ) 0xffffffff
+typedef unsigned long portTickType;
+#define portMAX_DELAY ( portTickType ) 0xffffffff
 #endif
 /*-----------------------------------------------------------*/
 
@@ -121,7 +121,7 @@ safe FreeRTOS API function was executed.  ISR safe FreeRTOS API functions are
 those that end in FromISR.  FreeRTOS maintains a separate interrupt API to
 ensure API function and interrupt entry is as fast and as simple as possible. */
 #ifdef configASSERT
-	#define portDISABLE_INTERRUPTS()											\
+#define portDISABLE_INTERRUPTS()											\
 	{																			\
 	unsigned long ulStatus;														\
 																				\
@@ -136,7 +136,7 @@ ensure API function and interrupt entry is as fast and as simple as possible. */
 		}																		\
 	}
 #else /* configASSERT */
-	#define portDISABLE_INTERRUPTS()										\
+#define portDISABLE_INTERRUPTS()										\
 	{																		\
 	unsigned long ulStatus;													\
 																			\
@@ -171,18 +171,18 @@ extern void vPortClearInterruptMaskFromISR( unsigned portBASE_TYPE );
 
 #if configUSE_PORT_OPTIMISED_TASK_SELECTION == 1
 
-	/* Check the configuration. */
-	#if( configMAX_PRIORITIES > 32 )
-		#error configUSE_PORT_OPTIMISED_TASK_SELECTION can only be set to 1 when configMAX_PRIORITIES is less than or equal to 32.  It is very rare that a system requires more than 10 to 15 difference priorities as tasks that share a priority will time slice.
-	#endif
+/* Check the configuration. */
+#if( configMAX_PRIORITIES > 32 )
+#error configUSE_PORT_OPTIMISED_TASK_SELECTION can only be set to 1 when configMAX_PRIORITIES is less than or equal to 32.  It is very rare that a system requires more than 10 to 15 difference priorities as tasks that share a priority will time slice.
+#endif
 
-	/* Store/clear the ready priorities in a bit map. */
-	#define portRECORD_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) |= ( 1UL << ( uxPriority ) )
-	#define portRESET_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) &= ~( 1UL << ( uxPriority ) )
+/* Store/clear the ready priorities in a bit map. */
+#define portRECORD_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) |= ( 1UL << ( uxPriority ) )
+#define portRESET_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) &= ~( 1UL << ( uxPriority ) )
 
-	/*-----------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 
-	#define portGET_HIGHEST_PRIORITY( uxTopPriority, uxReadyPriorities ) uxTopPriority = ( 31 - _clz( ( uxReadyPriorities ) ) )
+#define portGET_HIGHEST_PRIORITY( uxTopPriority, uxReadyPriorities ) uxTopPriority = ( 31 - _clz( ( uxReadyPriorities ) ) )
 
 #endif /* taskRECORD_READY_PRIORITY */
 
@@ -219,7 +219,7 @@ unsigned long ulCause;							\
 
 /* Required by the kernel aware debugger. */
 #ifdef __DEBUG
-	#define portREMOVE_STATIC_QUALIFIER
+#define portREMOVE_STATIC_QUALIFIER
 #endif
 
 #ifdef __cplusplus

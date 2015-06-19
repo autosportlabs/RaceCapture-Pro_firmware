@@ -25,20 +25,20 @@
 
 class LaunchControlTest : public CppUnit::TestFixture
 {
-   CPPUNIT_TEST_SUITE( LaunchControlTest );
-   CPPUNIT_TEST( testHasLaunchedReset );
-   CPPUNIT_TEST( testCircuitLaunch );
-   CPPUNIT_TEST( testStageSimpleLaunch );
-   CPPUNIT_TEST( testStageTrickyLaunch );
-   CPPUNIT_TEST_SUITE_END();
+    CPPUNIT_TEST_SUITE( LaunchControlTest );
+    CPPUNIT_TEST( testHasLaunchedReset );
+    CPPUNIT_TEST( testCircuitLaunch );
+    CPPUNIT_TEST( testStageSimpleLaunch );
+    CPPUNIT_TEST( testStageTrickyLaunch );
+    CPPUNIT_TEST_SUITE_END();
 
- public:
-   void setUp();
-   void tearDown();
-   void testHasLaunchedReset();
-   void testCircuitLaunch();
-   void testStageSimpleLaunch();
-   void testStageTrickyLaunch();
+public:
+    void setUp();
+    void tearDown();
+    void testHasLaunchedReset();
+    void testCircuitLaunch();
+    void testStageSimpleLaunch();
+    void testStageTrickyLaunch();
 };
 
 
