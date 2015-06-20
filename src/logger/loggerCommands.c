@@ -24,7 +24,8 @@
 #include "loggerTaskEx.h"
 #include "taskUtil.h"
 #include "GPIO.h"
-
+#include "cpu.h"
+#include "taskUtil.h"
 
 void TestSD(Serial *serial, unsigned int argc, char **argv)
 {
@@ -42,7 +43,8 @@ void ResetConfig(Serial *serial, unsigned int argc, char **argv)
 {
     if (flash_default_logger_config() == 0 && flash_default_script() == 0 && flash_default_tracks() == 0) {
         put_commandOK(serial);
-        configChanged();
+        delayMs(500);
+        cpu_reset(0);
     } else {
         put_commandError(serial, ERROR_CODE_CRITICAL_ERROR);
     }

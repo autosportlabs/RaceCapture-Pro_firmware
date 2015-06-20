@@ -188,7 +188,14 @@ int api_systemReset(Serial *serial, const jsmntok_t *json)
 
 int api_factoryReset(Serial *serial, const jsmntok_t *json)
 {
-    return (flash_default_logger_config() == 0 && flash_default_script() == 0 && flash_default_tracks() == 0) ? API_SUCCESS : API_ERROR_SEVERE;
+    int rc = (flash_default_logger_config() == 0 && flash_default_script() == 0 && flash_default_tracks() == 0) ? API_SUCCESS : API_ERROR_SEVERE;
+    if (rc == API_SUCCESS) {
+        cpu_reset(0);
+        return API_SUCCESS_NO_RETURN;
+    }
+    else{
+        return API_ERROR_SEVERE;
+    }
 }
 
 int api_getVersion(Serial *serial, const jsmntok_t *json)
