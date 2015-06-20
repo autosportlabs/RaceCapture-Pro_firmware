@@ -322,7 +322,7 @@ static int logging_sample(struct file_status *fs, LoggerMessage *msg)
 
         fs->write_tick++;
         int attempts = 2;
-        int rc;
+        int rc = WRITE_FAIL;
         while (attempts--) {
                 rc = writeChannelSamples(msg->channelSamples,
                                          msg->sampleCount);
