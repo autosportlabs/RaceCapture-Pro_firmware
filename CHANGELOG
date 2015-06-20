@@ -1,6 +1,7 @@
 === 2.8.4 ===
 * Background streaming switch only affects telemetry link; Wireless (Bluetooth) link always streams
 * Fixed duplicate log file issue
+* Reset CPU after we load factory defaults
 
 === 2.8.3 ===
 * Read cell module stats before checking if on network
