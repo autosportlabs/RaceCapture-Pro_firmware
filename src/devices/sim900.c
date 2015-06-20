@@ -63,6 +63,7 @@ int sim900_disconnect(DeviceConfig *config)
 {
     setCellBuffer(config->buffer, config->length);
     g_connection_status = TELEMETRY_STATUS_IDLE;
+    pr_info("cell: disconnected\r\n");
     return closeNet(config->serial);
 }
 
