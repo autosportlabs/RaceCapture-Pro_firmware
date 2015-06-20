@@ -1,6 +1,7 @@
 === 2.8.4 ===
 * Background streaming switch only affects telemetry link; Wireless (Bluetooth) link always streams
 * Fixed duplicate log file issue
+* Fixed filtering of 500 and 1000 Hz sample rates when config is applied
 
 === 2.8.3 ===
 * Read cell module stats before checking if on network

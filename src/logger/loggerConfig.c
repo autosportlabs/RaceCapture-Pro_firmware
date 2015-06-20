@@ -268,6 +268,10 @@ int encodeSampleRate(int sampleRate)
 {
 
     switch(sampleRate) {
+    case 1000:
+        return SAMPLE_1000Hz;
+    case 500:
+        return SAMPLE_500Hz;
     case 200:
         return SAMPLE_200Hz;
     case 100:
@@ -293,6 +297,10 @@ int decodeSampleRate(int sampleRateCode)
 {
 
     switch(sampleRateCode) {
+    case SAMPLE_1000Hz:
+        return 1000;
+    case SAMPLE_500Hz:
+        return 500;
     case SAMPLE_200Hz:
         return 200;
     case SAMPLE_100Hz:
