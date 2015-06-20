@@ -1,3 +1,6 @@
+=== 2.8.4 ===
+* Fixed duplicate log file issue
+
 === 2.8.3 ===
 * Read cell module stats before checking if on network
 * Extend heartbeat timeout to 60 seconds to allow more margin
