@@ -231,16 +231,19 @@ static void flushLogfile(FIL *file)
     }
 }
 
-static void error_led(bool on) {
-        on ? LED_enable(3) : LED_disable(3);
+static void error_led(bool on)
+{
+    on ? LED_enable(3) : LED_disable(3);
 }
 
-static void logging_led_toggle() {
-        LED_toggle(2);
+static void logging_led_toggle()
+{
+    LED_toggle(2);
 }
 
-static void logging_led_off() {
-        LED_disable(2);
+static void logging_led_off()
+{
+    LED_disable(2);
 }
 
 static enum writing_status openNewLogfile(char *filename)
@@ -262,147 +265,146 @@ static enum writing_status openNewLogfile(char *filename)
     return WRITING_ACTIVE;
 }
 
-struct file_status
-{
-        portTickType flush_tick;
-        portTickType write_tick;
-        bool logging;
-        enum writing_status writing_status;
-        char name[FILENAME_LEN];
+struct file_status {
+    portTickType flush_tick;
+    portTickType write_tick;
+    bool logging;
+    enum writing_status writing_status;
+    char name[FILENAME_LEN];
 };
 
 static int logging_start(struct file_status *fs)
 {
-        if (fs->writing_status != WRITING_INACTIVE)
-                return 2;
+    if (fs->writing_status != WRITING_INACTIVE)
+        return 2;
 
-        pr_debug("fileWriter: start\r\n");
+    pr_debug("fileWriter: start\r\n");
 
-        fs->flush_tick = xTaskGetTickCount();
-        fs->write_tick = 0;
-        fs->writing_status = openNewLogfile(fs->name);
-        fs->logging = true;
+    fs->flush_tick = xTaskGetTickCount();
+    fs->write_tick = 0;
+    fs->writing_status = openNewLogfile(fs->name);
+    fs->logging = true;
 
-        return fs->writing_status == WRITING_ACTIVE ? 0 : 1;
+    return fs->writing_status == WRITING_ACTIVE ? 0 : 1;
 }
 
 static int logging_stop(struct file_status *fs)
 {
-        endLogfile();
-        fs->writing_status = WRITING_INACTIVE;
-        fs->logging = false;
+    endLogfile();
+    fs->writing_status = WRITING_INACTIVE;
+    fs->logging = false;
 
-        logging_led_off();
-        return 0;
+    logging_led_off();
+    return 0;
 }
 
 static bool remount_log_file(const struct file_status *fs)
 {
-        pr_error("Remounting FS due to write error.\r\n");
-        // XXX: Do we need to worry about rolling over to new files?
+    pr_error("Remounting FS due to write error.\r\n");
+    // XXX: Do we need to worry about rolling over to new files?
 
-        f_close(g_logfile);
-        UnmountFS();
-        InitFS();
+    f_close(g_logfile);
+    UnmountFS();
+    InitFS();
 
-        return openLogfile(g_logfile, fs->name) == 0;
+    return openLogfile(g_logfile, fs->name) == 0;
 }
 
 static int logging_sample(struct file_status *fs, LoggerMessage *msg)
 {
-        /* If we haven't starting logging yet, then no op */
-        if (!fs->logging)
-                return 0;
+    /* If we haven't starting logging yet, then no op */
+    if (!fs->logging)
+        return 0;
 
-        if (fs->writing_status != WRITING_ACTIVE)
-                return 1;
+    if (fs->writing_status != WRITING_ACTIVE)
+        return 1;
 
-        if (0 == fs->write_tick)
-                writeHeaders(msg->channelSamples, msg->sampleCount);
+    if (0 == fs->write_tick)
+        writeHeaders(msg->channelSamples, msg->sampleCount);
 
-        fs->write_tick++;
-        int attempts = 2;
-        int rc = WRITE_FAIL;
-        while (attempts--) {
-                rc = writeChannelSamples(msg->channelSamples,
-                                         msg->sampleCount);
-                if (rc == WRITE_SUCCESS)
-                        break;
+    fs->write_tick++;
+    int attempts = 2;
+    int rc = WRITE_FAIL;
+    while (attempts--) {
+        rc = writeChannelSamples(msg->channelSamples,
+                                 msg->sampleCount);
+        if (rc == WRITE_SUCCESS)
+            break;
 
-                if (attempts)
-                        remount_log_file(fs);
-        }
+        if (attempts)
+            remount_log_file(fs);
+    }
 
-        logging_led_toggle();
-        return rc == WRITE_SUCCESS ? 0 : 2;
+    logging_led_toggle();
+    return rc == WRITE_SUCCESS ? 0 : 2;
 }
 
 static void flush_logfile(struct file_status *fs)
 {
-        if (fs->writing_status != WRITING_ACTIVE)
-                return;
+    if (fs->writing_status != WRITING_ACTIVE)
+        return;
 
-        if (!isTimeoutMs(fs->flush_tick, FLUSH_INTERVAL_MS))
-                return;
+    if (!isTimeoutMs(fs->flush_tick, FLUSH_INTERVAL_MS))
+        return;
 
-        flushLogfile(g_logfile);
-        fs->flush_tick = xTaskGetTickCount();
+    flushLogfile(g_logfile);
+    fs->flush_tick = xTaskGetTickCount();
 }
 
 void fileWriterTask(void *params)
 {
-        LoggerMessage *msg = NULL;
-        struct file_status fs = { 0 };
+    LoggerMessage *msg = NULL;
+    struct file_status fs = { 0 };
 
-        while(1) {
-                int rc;
+    while(1) {
+        int rc;
 
-                // Get a sample.
-                xQueueReceive(g_sampleRecordQueue, &(msg), portMAX_DELAY);
+        // Get a sample.
+        xQueueReceive(g_sampleRecordQueue, &(msg), portMAX_DELAY);
 
-                switch (msg->type) {
-                case LoggerMessageType_Sample:
-                        rc = logging_sample(&fs, msg);
-                        break;
-                case LoggerMessageType_Start:
-                        rc = logging_start(&fs);
-                        break;
-                case LoggerMessageType_Stop:
-                        rc = logging_stop(&fs);
-                        break;
-                default:
-                        pr_warning("Unsupported message type\r\n");
-                        rc = 1;
-                        break;
-                }
-
-                /* Turns the LED on if things are bad, off otherwise. */
-                error_led(rc);
-                if (rc) {
-                        pr_debug("fileWriter: Msg type ");
-                        pr_debug_int(msg->type);
-                        pr_debug_int_msg(" failed with code ", rc);
-                }
-
-                flush_logfile(&fs);
+        switch (msg->type) {
+        case LoggerMessageType_Sample:
+            rc = logging_sample(&fs, msg);
+            break;
+        case LoggerMessageType_Start:
+            rc = logging_start(&fs);
+            break;
+        case LoggerMessageType_Stop:
+            rc = logging_stop(&fs);
+            break;
+        default:
+            pr_warning("Unsupported message type\r\n");
+            rc = 1;
+            break;
         }
+
+        /* Turns the LED on if things are bad, off otherwise. */
+        error_led(rc);
+        if (rc) {
+            pr_debug("fileWriter: Msg type ");
+            pr_debug_int(msg->type);
+            pr_debug_int_msg(" failed with code ", rc);
+        }
+
+        flush_logfile(&fs);
+    }
 }
 
 void startFileWriterTask( int priority )
 {
-        g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,
-                                           sizeof( ChannelSample *));
+    g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,
+                                       sizeof( ChannelSample *));
 
-        if (NULL == g_sampleRecordQueue) {
-                pr_error("file: sampleRecordQueue err\r\n");
-                return;
-        }
+    if (NULL == g_sampleRecordQueue) {
+        pr_error("file: sampleRecordQueue err\r\n");
+        return;
+    }
 
-        g_logfile = pvPortMalloc(sizeof(FIL));
-        if (NULL == g_logfile) {
-                pr_error("file: logfile sruct err\r\n");
-                return;
-        }
-        xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter",
-                     FILE_WRITER_STACK_SIZE, NULL, priority, NULL );
+    g_logfile = pvPortMalloc(sizeof(FIL));
+    if (NULL == g_logfile) {
+        pr_error("file: logfile sruct err\r\n");
+        return;
+    }
+    xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter",
+                 FILE_WRITER_STACK_SIZE, NULL, priority, NULL );
 }

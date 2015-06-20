@@ -192,8 +192,7 @@ int api_factoryReset(Serial *serial, const jsmntok_t *json)
     if (rc == API_SUCCESS) {
         cpu_reset(0);
         return API_SUCCESS_NO_RETURN;
-    }
-    else{
+    } else {
         return API_ERROR_SEVERE;
     }
 }
