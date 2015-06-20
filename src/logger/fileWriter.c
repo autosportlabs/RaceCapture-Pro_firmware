@@ -231,12 +231,8 @@ static void flushLogfile(FIL *file)
     }
 }
 
-static void file_led_set(bool on) {
-        if (on) {
-                LED_enable(3);
-        } else {
-                LED_disable(3);
-        }
+static void error_led(bool on) {
+        on ? LED_enable(3) : LED_disable(3);
 }
 
 static void logging_led_toggle() {
@@ -359,32 +355,32 @@ void fileWriterTask(void *params)
         struct file_status fs = { 0 };
 
         while(1) {
-                int ok = 0;
+                int rc;
 
                 // Get a sample.
                 xQueueReceive(g_sampleRecordQueue, &(msg), portMAX_DELAY);
 
                 switch (msg->type) {
                 case LoggerMessageType_Sample:
-                        ok = logging_sample(&fs, msg);
+                        rc = logging_sample(&fs, msg);
                         break;
                 case LoggerMessageType_Start:
-                        ok = logging_start(&fs);
+                        rc = logging_start(&fs);
                         break;
                 case LoggerMessageType_Stop:
-                        ok = logging_stop(&fs);
+                        rc = logging_stop(&fs);
                         break;
                 default:
                         pr_warning("Unsupported message type\r\n");
-                        ok = false;
+                        rc = 1;
                 }
 
                 /* Turns the LED on if things are bad, off otherwise. */
-                file_led_set(ok != 0);
-                if (ok != 0) {
+                error_led(rc);
+                if (rc) {
                         pr_debug("Msg type ");
                         pr_debug_int(msg->type);
-                        pr_debug_int_msg(" failed with code ", ok);
+                        pr_debug_int_msg(" failed with code ", rc);
                 }
 
                 flush_logfile(&fs);
