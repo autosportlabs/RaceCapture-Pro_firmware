@@ -59,6 +59,14 @@ static int writeAuthJSON(Serial *serial, const char *deviceId)
     return -1;
 }
 
+int sim900_disconnect(DeviceConfig *config)
+{
+    setCellBuffer(config->buffer, config->length);
+    g_connection_status = TELEMETRY_STATUS_IDLE;
+    pr_info("cell: disconnected\r\n");
+    return closeNet(config->serial);
+}
+
 int sim900_init_connection(DeviceConfig *config)
 {
     LoggerConfig *loggerConfig = getWorkingLoggerConfig();

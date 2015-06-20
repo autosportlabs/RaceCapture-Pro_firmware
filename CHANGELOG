@@ -1,4 +1,5 @@
 === 2.8.4 ===
+* Background streaming switch only affects telemetry link; Wireless (Bluetooth) link always streams
 * Fixed duplicate log file issue
 
 === 2.8.3 ===
