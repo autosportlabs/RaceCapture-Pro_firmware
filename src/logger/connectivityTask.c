@@ -18,7 +18,6 @@
 #include "mem_mang.h"
 #include "taskUtil.h"
 #include "LED.h"
-//devices
 #include "null_device.h"
 #include "bluetooth.h"
 #include "sim900.h"
@@ -32,7 +31,7 @@
 #error "invalid connectivity task count"
 #endif
 
-//wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all
+/*wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all */
 #define TELEMETRY_QUEUE_WAIT_TIME					0
 
 #define IDLE_TIMEOUT							configTICK_RATE_HZ / 10
@@ -93,8 +92,8 @@ void queueTelemetryRecord(LoggerMessage *msg)
     }
 }
 
-//combined telemetry - for when there's only one telemetry / wireless port available on system
-//e.g. "Y-adapter" scenario
+/*combined telemetry - for when there's only one telemetry / wireless port available on system
+//e.g. "Y-adapter" scenario */
 static void createCombinedTelemetryTask(int16_t priority, xQueueHandle sampleQueue)
 {
     ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
@@ -106,7 +105,7 @@ static void createCombinedTelemetryTask(int16_t priority, xQueueHandle sampleQue
 
         params->periodicMeta = btEnabled && cellEnabled;
 
-        //defaults
+        /*defaults*/
         params->check_connection_status = &null_device_check_connection_status;
         params->init_connection = &null_device_init_connection;
         params->serial = SERIAL_TELEMETRY;
@@ -121,7 +120,7 @@ static void createCombinedTelemetryTask(int16_t priority, xQueueHandle sampleQue
             params->always_streaming = true;
         }
 
-        //cell overrides wireless
+        /*cell overrides wireless*/
         if (cellEnabled) {
             params->check_connection_status = &sim900_check_connection_status;
             params->init_connection = &sim900_init_connection;
@@ -180,7 +179,7 @@ void startConnectivityTask(int16_t priority)
         break;
     case 2: {
         ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
-        //logic to control which connection is considered 'primary', which is used later to determine which task has control over LED flashing
+        /*logic to control which connection is considered 'primary', which is used later to determine which task has control over LED flashing */
         uint8_t cellEnabled = connConfig->cellularConfig.cellEnabled;
         uint8_t btEnabled = connConfig->bluetoothConfig.btEnabled;
         if (cellEnabled) createTelemetryConnectionTask(priority, g_sampleQueue[1], 1);
@@ -191,6 +190,14 @@ void startConnectivityTask(int16_t priority)
         pr_error("conn: err init\r\n");
         break;
     }
+}
+
+static void toggle_connectivity_indicator(){
+    LED_toggle(0);
+}
+
+static void clear_connectivity_indicator(){
+    LED_disable(0);
 }
 
 void connectivityTask(void *params)
@@ -212,7 +219,7 @@ void connectivityTask(void *params)
     deviceConfig.buffer = buffer;
     deviceConfig.length = BUFFER_SIZE;
 
-    const LoggerConfig * logger_config = getWorkingLoggerConfig();
+    const LoggerConfig *logger_config = getWorkingLoggerConfig();
 
     bool logging_enabled = false;
 
@@ -235,7 +242,7 @@ void connectivityTask(void *params)
 
         while (1) {
             if ( should_reconnect )
-                break; //break out and trigger the re-connection if needed
+                break; /*break out and trigger the re-connection if needed */
 
             should_stream = logging_enabled ||
                             logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
@@ -243,9 +250,9 @@ void connectivityTask(void *params)
 
             char res = xQueueReceive(sampleQueue, &(msg), IDLE_TIMEOUT);
 
-            ////////////////////////////////////////////////////////////
+            /*///////////////////////////////////////////////////////////
             // Process a pending message from logger task, if exists
-            ////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////*/
             if (pdFALSE != res) {
                 switch(msg->type) {
                 case LoggerMessageType_Start: {
@@ -253,7 +260,7 @@ void connectivityTask(void *params)
                     put_crlf(serial);
                     tick = 0;
                     logging_enabled = true;
-                    if (!should_stream) //if we're not already streaming trigger a re-connect
+                    if (!should_stream) /*if we're not already streaming trigger a re-connect */
                         should_reconnect = true;
                     break;
                 }
@@ -269,7 +276,8 @@ void connectivityTask(void *params)
                     if (should_stream) {
                         int sendMeta = (tick == 0 || (connParams->periodicMeta && (tick % METADATA_SAMPLE_INTERVAL == 0)));
                         api_sendSampleRecord(serial, msg->channelSamples, msg->sampleCount, tick, sendMeta);
-                        if (connParams->isPrimary) LED_toggle(0);
+                        if (connParams->isPrimary)
+                            toggle_connectivity_indicator();
                         put_crlf(serial);
                         tick++;
                     }
@@ -280,17 +288,17 @@ void connectivityTask(void *params)
                 }
             }
 
-            ////////////////////////////////////////////////////////////
+            /*//////////////////////////////////////////////////////////
             // Process incoming message, if available
             ////////////////////////////////////////////////////////////
-            //read in available characters, process message as necessary
+            //read in available characters, process message as necessary*/
             int msgReceived = processRxBuffer(serial, buffer, &rxCount);
-            //check the latest contents of the buffer for something that might indicate an error condition
+            /*check the latest contents of the buffer for something that might indicate an error condition*/
             if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR) {
                 pr_info("conn: disconnected\r\n");
                 break;
             }
-            //now process a complete message if available
+            /*now process a complete message if available*/
             if (msgReceived) {
                 last_message_time = getUptimeAsInt();
                 pr_debug(connParams->connectionName);
@@ -313,15 +321,15 @@ void connectivityTask(void *params)
                 rxCount = 0;
             }
 
-            //disconnect if a timeout is configured and
-            // we haven't heard from the other side for a while
+            /*disconnect if a timeout is configured and
+            // we haven't heard from the other side for a while */
             const size_t timeout = getUptimeAsInt() - last_message_time;
             if (connection_timeout && timeout > connection_timeout ) {
                 pr_info_str_msg(connParams->connectionName, ": timeout");
                 should_reconnect = true;
             }
         }
-        LED_disable(0);
+        clear_connectivity_indicator();
         connParams->disconnect(&deviceConfig);
     }
 }

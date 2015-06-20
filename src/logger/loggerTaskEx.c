@@ -207,17 +207,17 @@ void loggerTaskEx(void *params)
             }
         }
 
-        // Check if we need to actually populate the buffer.
+        /* Check if we need to actually populate the buffer. */
         LoggerMessage *msg = &g_sampleRecordMsgBuffer[bufferIndex];
         int sampledRate = populate_sample_buffer(msg, channelCount, currentTicks);
         msg->sampleCount = channelCount;
 
         if (sampledRate == SAMPLE_DISABLED) {
-            continue; // If here, no sample to give.
+            continue; /* If here, no sample to give. */
         }
 
         bool is_logging = logging_is_active();
-        // We only log to file if the user has manually pushed the logging button.
+        /* We only log to file if the user has manually pushed the logging button. */
         if (is_logging && sampledRate >= loggingSampleRate) {
             const portBASE_TYPE res = queue_logfile_record(msg);
             if (res == pdTRUE) {
@@ -228,7 +228,7 @@ void loggerTaskEx(void *params)
             }
         }
 
-        //send the sample on to the telemetry task(s)
+        /* send the sample on to the telemetry task(s) */
         if (sampledRate >= telemetrySampleRate || currentTicks % telemetrySampleRate == 0) {
             queueTelemetryRecord(msg);
         }
