@@ -112,15 +112,21 @@ static void createCombinedTelemetryTask(int16_t priority, xQueueHandle sampleQue
         params->serial = SERIAL_TELEMETRY;
         params->sampleQueue = sampleQueue;
         params->connection_timeout = 0;
+        params->always_streaming = false;
 
         if (btEnabled) {
             params->check_connection_status = &bt_check_connection_status;
             params->init_connection = &bt_init_connection;
+            params->disconnect = &bt_disconnect;
+            params->always_streaming = true;
         }
+
         //cell overrides wireless
         if (cellEnabled) {
             params->check_connection_status = &sim900_check_connection_status;
             params->init_connection = &sim900_init_connection;
+            params->disconnect = &sim900_disconnect;
+            params->always_streaming = false;
         }
         xTaskCreate(connectivityTask, (signed portCHAR *) "connTask", TELEMETRY_STACK_SIZE, params, priority, NULL );
     }
@@ -134,9 +140,11 @@ static void createWirelessConnectionTask(int16_t priority, xQueueHandle sampleQu
     params->periodicMeta = 0;
     params->connection_timeout = 0;
     params->check_connection_status = &bt_check_connection_status;
+    params->disconnect = &bt_disconnect;
     params->init_connection = &bt_init_connection;
     params->serial = SERIAL_WIRELESS;
     params->sampleQueue = sampleQueue;
+    params->always_streaming = true;
     xTaskCreate(connectivityTask, (signed portCHAR *) "connWireless", TELEMETRY_STACK_SIZE, params, priority, NULL );
 }
 
@@ -147,10 +155,12 @@ static void createTelemetryConnectionTask(int16_t priority, xQueueHandle sampleQ
     params->connectionName = "Telemetry";
     params->periodicMeta = 0;
     params->connection_timeout = TELEMETRY_DISCONNECT_TIMEOUT;
+    params->disconnect = &sim900_disconnect;
     params->check_connection_status = &sim900_check_connection_status;
     params->init_connection = &sim900_init_connection;
     params->serial = SERIAL_TELEMETRY;
     params->sampleQueue = sampleQueue;
+    params->always_streaming = false;
     xTaskCreate(connectivityTask, (signed portCHAR *) "connTelemetry", TELEMETRY_STACK_SIZE, params, priority, NULL );
 }
 
@@ -194,8 +204,6 @@ void connectivityTask(void *params)
 
     Serial *serial = get_serial(connParams->serial);
 
-    uint8_t isPrimary = connParams->isPrimary;
-    size_t periodicMeta = connParams->periodicMeta;
     xQueueHandle sampleQueue = connParams->sampleQueue;
     uint32_t connection_timeout = connParams->connection_timeout;
 
@@ -204,18 +212,35 @@ void connectivityTask(void *params)
     deviceConfig.buffer = buffer;
     deviceConfig.length = BUFFER_SIZE;
 
+    LoggerConfig * logger_config = getWorkingLoggerConfig();
+
+    bool logging_enabled = false;
+
     while (1) {
-        while (connParams->init_connection(&deviceConfig) != DEVICE_INIT_SUCCESS) {
+        bool should_stream = logging_enabled ||
+                             logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
+                             connParams->always_streaming;
+
+        while (should_stream && connParams->init_connection(&deviceConfig) != DEVICE_INIT_SUCCESS) {
             pr_info("conn: not connected. retrying\r\n");
             vTaskDelay(INIT_DELAY);
         }
+
         serial->flush();
         rxCount = 0;
         size_t badMsgCount = 0;
         size_t tick = 0;
         size_t last_message_time = getUptimeAsInt();
+        bool should_reconnect = false;
 
         while (1) {
+            if ( should_reconnect )
+                break; //break out and trigger the re-connection if needed
+
+            should_stream = logging_enabled ||
+                            logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
+                            connParams->always_streaming;
+
             char res = xQueueReceive(sampleQueue, &(msg), IDLE_TIMEOUT);
 
             ////////////////////////////////////////////////////////////
@@ -227,19 +252,27 @@ void connectivityTask(void *params)
                     api_sendLogStart(serial);
                     put_crlf(serial);
                     tick = 0;
+                    logging_enabled = true;
+                    if (!should_stream) //if we're not already streaming trigger a re-connect
+                        should_reconnect = true;
                     break;
                 }
                 case LoggerMessageType_Stop: {
                     api_sendLogEnd(serial);
                     put_crlf(serial);
+                    if (! logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming || connParams->always_streaming)
+                        should_reconnect = true;
+                    logging_enabled = false;
                     break;
                 }
                 case LoggerMessageType_Sample: {
-                    int sendMeta = (tick == 0 || (periodicMeta && (tick % METADATA_SAMPLE_INTERVAL == 0)));
-                    api_sendSampleRecord(serial, msg->channelSamples, msg->sampleCount, tick, sendMeta);
-                    if (isPrimary) LED_toggle(0);
-                    put_crlf(serial);
-                    tick++;
+                    if (should_stream) {
+                        int sendMeta = (tick == 0 || (connParams->periodicMeta && (tick % METADATA_SAMPLE_INTERVAL == 0)));
+                        api_sendSampleRecord(serial, msg->channelSamples, msg->sampleCount, tick, sendMeta);
+                        if (connParams->isPrimary) LED_toggle(0);
+                        put_crlf(serial);
+                        tick++;
+                    }
                     break;
                 }
                 default:
@@ -280,12 +313,15 @@ void connectivityTask(void *params)
                 rxCount = 0;
             }
 
-            //disconnect if we haven't heard from the other side for a while
+            //disconnect if a timeout is configured and
+            // we haven't heard from the other side for a while
             const size_t timeout = getUptimeAsInt() - last_message_time;
             if (connection_timeout && timeout > connection_timeout ) {
                 pr_info_str_msg(connParams->connectionName, ": timeout");
-                break;
+                should_reconnect = true;
             }
         }
+        LED_disable(0);
+        connParams->disconnect(&deviceConfig);
     }
 }

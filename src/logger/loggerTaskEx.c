@@ -171,7 +171,6 @@ void loggerTaskEx(void *params)
     int loggingSampleRate = SAMPLE_DISABLED;
     int sampleRateTimebase = SAMPLE_DISABLED;
     int telemetrySampleRate = SAMPLE_DISABLED;
-    int backgroundStreaming = 0;
 
     while (1) {
         xSemaphoreTake(onTick, portMAX_DELAY);
@@ -185,7 +184,6 @@ void loggerTaskEx(void *params)
             currentTicks = 0;
             channelCount = updateSampleRates(loggerConfig, &loggingSampleRate, &telemetrySampleRate,
                                              &sampleRateTimebase);
-            backgroundStreaming = loggerConfig->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
             resetLapCount();
             lapstats_reset_distance();
             g_configChanged = 0;
@@ -201,6 +199,9 @@ void loggerTaskEx(void *params)
             }
 
             if (!g_loggingShouldRun && is_logging) {
+                pr_info_int_msg("loggingShouldRun ", g_loggingShouldRun);
+                pr_info_int_msg("is_logging ", is_logging);
+
                 logging_stopped();
                 LoggerMessage logStopMsg = getLogStopMessage();
                 queue_logfile_record(&logStopMsg);
@@ -214,9 +215,8 @@ void loggerTaskEx(void *params)
         int sampledRate = populate_sample_buffer(msg, channelCount, currentTicks);
         msg->sampleCount = channelCount;
 
-        // If here, no sample to give.
         if (sampledRate == SAMPLE_DISABLED) {
-            continue;
+            continue; // If here, no sample to give.
         }
 
         bool is_logging = logging_is_active();
@@ -231,9 +231,8 @@ void loggerTaskEx(void *params)
             }
         }
 
-        // Log if the user has manually pushed the logging button or if background is enabled.
-        if ((is_logging || backgroundStreaming) &&
-            (sampledRate >= telemetrySampleRate || currentTicks % telemetrySampleRate == 0)) {
+        //send the sample on to the telemetry task(s)
+        if (sampledRate >= telemetrySampleRate || currentTicks % telemetrySampleRate == 0) {
             queueTelemetryRecord(msg);
         }
         ++bufferIndex;

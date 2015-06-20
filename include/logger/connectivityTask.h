@@ -2,6 +2,7 @@
 #define CONNECTIVITY_TASK_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "sampleRecord.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -10,8 +11,10 @@
 #include "serial.h"
 
 typedef struct _ConnParams {
+    bool always_streaming;
     uint8_t isPrimary;
     char * connectionName;
+    int (*disconnect)(DeviceConfig *config);
     int (*init_connection)(DeviceConfig *config);
     int (*check_connection_status)(DeviceConfig *config);
     serial_id_t serial;
