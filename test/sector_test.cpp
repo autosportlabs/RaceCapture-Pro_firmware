@@ -124,6 +124,8 @@ void SectorTest::testSectorTimes(){
 	Track testTrack = Test_Track;
 	memcpy(trackCfg, &testTrack, sizeof(Track));
 
+	getWorkingLoggerConfig()->TrackConfigs.auto_detect = 0;
+
 	vector<float> sectorTimes;
 	int currentSector = -1;
 	int currentLap = 0;
