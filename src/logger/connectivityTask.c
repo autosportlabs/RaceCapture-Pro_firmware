@@ -267,7 +267,7 @@ void connectivityTask(void *params)
                 case LoggerMessageType_Stop: {
                     api_sendLogEnd(serial);
                     put_crlf(serial);
-                    if (! logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming || connParams->always_streaming)
+                    if (! (logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming || connParams->always_streaming))
                         should_reconnect = true;
                     logging_enabled = false;
                     break;
