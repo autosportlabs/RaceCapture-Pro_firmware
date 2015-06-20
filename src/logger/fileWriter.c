@@ -148,7 +148,7 @@ static int writeHeaders(ChannelSample *sample, size_t channelCount)
 static int writeChannelSamples(ChannelSample *sample, size_t channelCount)
 {
     if (NULL == sample) {
-        pr_debug("file: null sample record\r\n");
+        pr_debug("fileWriter: null sample record\r\n");
         return WRITE_FAIL;
     }
 
@@ -217,14 +217,14 @@ static int openNextLogfile(FIL *f, char *filename)
 
 static void endLogfile()
 {
-    pr_info("file: close\r\n");
+    pr_info("fileWriter: close\r\n");
     f_close(g_logfile);
     UnmountFS();
 }
 
 static void flushLogfile(FIL *file)
 {
-    pr_debug("file: flush\r\n");
+    pr_debug("fileWriter: flush\r\n");
     int res = f_sync(file);
     if (0 != res) {
         pr_debug_int_msg("flush err:", res);
@@ -276,7 +276,7 @@ static int logging_start(struct file_status *fs)
         if (fs->writing_status != WRITING_INACTIVE)
                 return 2;
 
-        pr_debug("Logging: Start\r\n");
+        pr_debug("fileWriter: start\r\n");
 
         fs->flush_tick = xTaskGetTickCount();
         fs->write_tick = 0;
@@ -373,12 +373,13 @@ void fileWriterTask(void *params)
                 default:
                         pr_warning("Unsupported message type\r\n");
                         rc = 1;
+                        break;
                 }
 
                 /* Turns the LED on if things are bad, off otherwise. */
                 error_led(rc);
                 if (rc) {
-                        pr_debug("Msg type ");
+                        pr_debug("fileWriter: Msg type ");
                         pr_debug_int(msg->type);
                         pr_debug_int_msg(" failed with code ", rc);
                 }
