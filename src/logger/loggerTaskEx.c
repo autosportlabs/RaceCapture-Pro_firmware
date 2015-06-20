@@ -199,9 +199,6 @@ void loggerTaskEx(void *params)
             }
 
             if (!g_loggingShouldRun && is_logging) {
-                pr_info_int_msg("loggingShouldRun ", g_loggingShouldRun);
-                pr_info_int_msg("is_logging ", is_logging);
-
                 logging_stopped();
                 LoggerMessage logStopMsg = getLogStopMessage();
                 queue_logfile_record(&logStopMsg);
