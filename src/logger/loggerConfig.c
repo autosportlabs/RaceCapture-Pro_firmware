@@ -268,12 +268,14 @@ int encodeSampleRate(int sampleRate)
 {
 
     switch(sampleRate) {
+#if MAX_SENSOR_SAMPLE_RATE > 100
     case 1000:
         return SAMPLE_1000Hz;
     case 500:
         return SAMPLE_500Hz;
     case 200:
         return SAMPLE_200Hz;
+#endif
     case 100:
         return SAMPLE_100Hz;
     case 50:
@@ -297,12 +299,14 @@ int decodeSampleRate(int sampleRateCode)
 {
 
     switch(sampleRateCode) {
+#if MAX_SENSOR_SAMPLE_RATE > 100
     case SAMPLE_1000Hz:
         return 1000;
     case SAMPLE_500Hz:
         return 500;
     case SAMPLE_200Hz:
         return 200;
+#endif
     case SAMPLE_100Hz:
         return 100;
     case SAMPLE_50Hz:
