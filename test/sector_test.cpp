@@ -174,7 +174,7 @@ void SectorTest::testSectorTimes(){
 
            GPS_sample_update(&sample);
            GpsSnapshot snap = getGpsSnapshot();
-           lapStats_processUpdate(&snap);
+           lapstats_processUpdate(&snap);
 
            // Start Work!
            const int sector = getSector();
@@ -287,7 +287,7 @@ void SectorTest::testStageSectorTimes() {
 
     GPS_sample_update(&sample);
     GpsSnapshot snap = getGpsSnapshot();
-    lapStats_processUpdate(&snap);
+    lapstats_processUpdate(&snap);
 
     /*
     printf("second: %d, atSector = %d, sectorCount = %d, lastSector = %d\n",
