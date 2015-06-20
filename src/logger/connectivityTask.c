@@ -212,7 +212,7 @@ void connectivityTask(void *params)
     deviceConfig.buffer = buffer;
     deviceConfig.length = BUFFER_SIZE;
 
-    LoggerConfig * logger_config = getWorkingLoggerConfig();
+    const LoggerConfig * logger_config = getWorkingLoggerConfig();
 
     bool logging_enabled = false;
 
