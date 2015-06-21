@@ -4,6 +4,7 @@
  *  Created on: Feb 29, 2012
  *      Author: brent
  */
+
 #include "fileWriter.h"
 #include "task.h"
 #include "semphr.h"
@@ -16,20 +17,13 @@
 #include "printk.h"
 #include "mem_mang.h"
 #include "LED.h"
-#include "taskUtil.h"
 
 #include <stdbool.h>
-
-enum writing_status {
-    WRITING_INACTIVE = 0,
-    WRITING_ACTIVE
-};
 
 #define FILE_WRITER_STACK_SIZE  				200
 #define SAMPLE_RECORD_QUEUE_SIZE				20
 #define FILE_BUFFER_SIZE						256
 
-#define FILENAME_LEN							13
 #define MAX_LOG_FILE_INDEX 						99999
 #define FLUSH_INTERVAL_MS						5000
 #define ERROR_SLEEP_DELAY_MS					500
@@ -45,7 +39,9 @@ typedef struct _FileBuffer {
     size_t index;
 } FileBuffer;
 
-static FIL *g_logfile;
+static FIL _g_logfile;
+static FIL *g_logfile = &_g_logfile;
+
 static xQueueHandle g_sampleRecordQueue = NULL;
 static FileBuffer fileBuffer = {"", 0};
 
@@ -262,15 +258,6 @@ static enum writing_status openNewLogfile(char *filename)
     return WRITING_ACTIVE;
 }
 
-struct file_status
-{
-        portTickType flush_tick;
-        portTickType write_tick;
-        bool logging;
-        enum writing_status writing_status;
-        char name[FILENAME_LEN];
-};
-
 static int logging_start(struct file_status *fs)
 {
         if (fs->writing_status != WRITING_INACTIVE)
@@ -337,16 +324,17 @@ static int logging_sample(struct file_status *fs, LoggerMessage *msg)
         return rc == WRITE_SUCCESS ? 0 : 2;
 }
 
-static void flush_logfile(struct file_status *fs)
+static int flush_logfile(struct file_status *fs)
 {
         if (fs->writing_status != WRITING_ACTIVE)
-                return;
+                return 1;
 
         if (!isTimeoutMs(fs->flush_tick, FLUSH_INTERVAL_MS))
-                return;
+                return 2;
 
         flushLogfile(g_logfile);
         fs->flush_tick = xTaskGetTickCount();
+        return 0;
 }
 
 void fileWriterTask(void *params)
@@ -397,11 +385,15 @@ void startFileWriterTask( int priority )
                 return;
         }
 
-        g_logfile = pvPortMalloc(sizeof(FIL));
+        /*
+        g_logfile = (FIL *) pvPortMalloc(sizeof(FIL));
         if (NULL == g_logfile) {
                 pr_error("file: logfile sruct err\r\n");
                 return;
         }
+        */
+        _g_logfile = (FIL) { 0 };
+
         xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter",
                      FILE_WRITER_STACK_SIZE, NULL, priority, NULL );
 }

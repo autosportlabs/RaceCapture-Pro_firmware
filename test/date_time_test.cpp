@@ -18,12 +18,14 @@
  * Authors: Stieg
  */
 
+#include "FreeRTOS.h"
 #include "capabilities.h"
 #include "dateTime.h"
 #include "date_time_test.h"
 #include "gps.h"
 #include "gps.testing.h"
 #include "task.h"
+#include "task_testing.h"
 #include "serial.h"
 
 #include <cppunit/extensions/HelperMacros.h>

@@ -5,6 +5,22 @@
 #include "ff.h"
 #include "sampleRecord.h"
 
+#define FILENAME_LEN 13
+
+enum writing_status {
+    WRITING_INACTIVE = 0,
+    WRITING_ACTIVE
+};
+
+struct file_status
+{
+        portTickType flush_tick;
+        portTickType write_tick;
+        bool logging;
+        enum writing_status writing_status;
+        char name[FILENAME_LEN];
+};
+
 
 void startFileWriterTask( int priority );
 void fileWriterTask(void *params);

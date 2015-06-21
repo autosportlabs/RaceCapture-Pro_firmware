@@ -18,20 +18,9 @@
  * Authors: Stieg
  */
 
-#ifndef _TASK_H_
-#define _TASK_H_
+#include <stdlib.h>
 
-typedef unsigned int portTickType;
-#define portTICK_RATE_MS 1
-
-portTickType xTaskGetTickCount( void );
-
-void set_ticks(portTickType ticks);
-
-void resetTicks( void );
-
-void incrementTick( void );
-
-void vTaskDelay(portTickType xTicksToDelay);
-
-#endif /* _TASK_H_ */
+void *pvPortMalloc( size_t xWantedSize )
+{
+        return malloc(xWantedSize);
+}
