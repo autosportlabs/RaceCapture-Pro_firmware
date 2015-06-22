@@ -30,6 +30,7 @@ typedef enum {
 
 bluetooth_status_t bt_get_status();
 int bt_init_connection(DeviceConfig *config);
+int bt_disconnect(DeviceConfig *config);
 int bt_check_connection_status(DeviceConfig *config);
 
 #endif /* BLUETOOTH_H_ */

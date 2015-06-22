@@ -128,6 +128,11 @@ static int bt_probe_config(unsigned int probeBaud, unsigned int targetBaud, cons
     return rc;
 }
 
+int bt_disconnect(DeviceConfig *config)
+{
+    return 0; //NOOP
+}
+
 int bt_init_connection(DeviceConfig *config)
 {
     BluetoothConfig *btConfig = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);

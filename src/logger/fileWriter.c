@@ -143,7 +143,7 @@ static int writeHeaders(ChannelSample *sample, size_t channelCount)
 static int write_samples(ChannelSample *sample, size_t channelCount)
 {
         if (NULL == sample) {
-                pr_debug("file: null sample record\r\n");
+                pr_debug("Logger: null sample record\r\n");
                 return WRITE_FAIL;
         }
 
@@ -186,8 +186,8 @@ static int write_samples(ChannelSample *sample, size_t channelCount)
 
 static enum writing_status open_existing_log_file(struct logging_status *ls)
 {
-    const int rc = f_open(g_logfile, ls->name, FA_WRITE);
-    return rc == FR_OK ? WRITING_ACTIVE : WRITING_INACTIVE;
+        const int rc = f_open(g_logfile, ls->name, FA_WRITE);
+        return rc == FR_OK ? WRITING_ACTIVE : WRITING_INACTIVE;
 }
 
 static enum writing_status open_new_log_file(struct logging_status *ls)
@@ -203,7 +203,7 @@ static enum writing_status open_new_log_file(struct logging_status *ls)
                 strcat(ls->name, ".log");
 
                 const FRESULT res = f_open(g_logfile, ls->name,
-                                      FA_WRITE | FA_CREATE_NEW);
+                                           FA_WRITE | FA_CREATE_NEW);
                 if ( FR_OK == res )
                         return WRITING_ACTIVE;
 
@@ -222,15 +222,18 @@ static void close_log_file(struct logging_status *ls)
         UnmountFS();
 }
 
-static void error_led(bool on) {
+static void error_led(bool on)
+{
         on ? LED_enable(3) : LED_disable(3);
 }
 
-static void logging_led_toggle() {
+static void logging_led_toggle()
+{
         LED_toggle(2);
 }
 
-static void logging_led_off() {
+static void logging_led_off()
+{
         LED_disable(2);
 }
 
@@ -387,8 +390,11 @@ void startFileWriterTask( int priority )
                 return;
         }
 
-        _g_logfile = (FIL) { 0 };
-
+        g_logfile = (FIL *) pvPortMalloc(sizeof(FIL));
+        if (NULL == g_logfile) {
+                pr_error("file: logfile sruct err\r\n");
+                return;
+        }
         xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter",
                      FILE_WRITER_STACK_SIZE, NULL, priority, NULL );
 }

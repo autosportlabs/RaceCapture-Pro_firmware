@@ -18,9 +18,17 @@
  * Authors: Stieg
  */
 
+#include "FreeRTOS.h"
+
 #include <stdlib.h>
 
-void *pvPortMalloc( size_t xWantedSize )
+void *pvPortMalloc( size_t xSize )
 {
-        return malloc(xWantedSize);
+        void *addr = malloc(xSize);
+        return addr;
+}
+
+void vPortFree( void *pv )
+{
+        free(pv);
 }
