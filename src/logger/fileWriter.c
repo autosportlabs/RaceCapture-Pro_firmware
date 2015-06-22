@@ -39,8 +39,7 @@ typedef struct _FileBuffer {
     size_t index;
 } FileBuffer;
 
-static FIL _g_logfile;
-static FIL *g_logfile = &_g_logfile;
+static FIL *g_logfile;
 
 static xQueueHandle g_sampleRecordQueue = NULL;
 static FileBuffer fileBuffer = {"", 0};
