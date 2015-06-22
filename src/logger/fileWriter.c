@@ -44,12 +44,19 @@ static FIL *g_logfile;
 static xQueueHandle g_sampleRecordQueue = NULL;
 static FileBuffer fileBuffer = {"", 0};
 
+static int clear_file_buffer() {
+        fileBuffer.index = 0;
+        fileBuffer.buffer[0] = '\0';
+}
+
 static int writeFileBuffer()
 {
-    int rc = f_puts(fileBuffer.buffer, g_logfile);
-    fileBuffer.index = 0;
-    fileBuffer.buffer[0] = '\0';
-    return rc;
+        //int rc = f_puts(fileBuffer.buffer, g_logfile);
+        unsigned int bw;
+        const int rc = f_write(g_logfile, fileBuffer.buffer,
+                               fileBuffer.index, &bw);
+        clear_file_buffer();
+        return rc;
 }
 
 static void appendFileBuffer(const char * data)
@@ -178,9 +185,7 @@ static int write_samples(ChannelSample *sample, size_t channelCount)
         }
 
         appendFileBuffer("\n");
-        writeFileBuffer();
-
-        return WRITE_SUCCESS;
+        return writeFileBuffer();
 }
 
 static enum writing_status open_existing_log_file(struct logging_status *ls)
@@ -302,33 +307,30 @@ TESTABLE_STATIC int logging_sample(struct logging_status *ls,
                 if (WRITING_ACTIVE != ls->writing_status)
                         open_log_file(ls);
 
-
-                /*
-                 * XXX: Fix me
-                 * This tiny block is here because it would seem that our
-                 * write_samples method does not take the output of writeFileBuffer
-                 * into account.  Fix that in a later ticket.  Then move this back
-                 * down below the write where it belongs.
-                 */
+                /* Don't try to write if file isn't open */
                 if (WRITING_ACTIVE != ls->writing_status) {
-                        pr_error("Remounting FS due to write error.\r\n");
-                        close_log_file(ls);
-                        continue;
+                        if (0 == ls->write_tick)
+                                writeHeaders(msg->channelSamples,
+                                             msg->sampleCount);
+
+                        rc = write_samples(msg->channelSamples,
+                                           msg->sampleCount);
+                        if (0 == rc) {
+                                /*
+                                 * Here b/c we want headers if the initial
+                                 * writing of the log file fails.
+                                 */
+                                ls->write_tick++;
+                                break;
+                        }
                 }
 
-                if (0 == ls->write_tick)
-                        writeHeaders(msg->channelSamples, msg->sampleCount);
-
-                /* If the write was successful, increment our tick and done */
-                rc = write_samples(msg->channelSamples, msg->sampleCount);
-                if (WRITE_SUCCESS == rc) {
-                        ls->write_tick++;
-                        break;
-                }
+                pr_error("Remounting FS due to write error.\r\n");
+                close_log_file(ls);
         }
 
         logging_led_toggle();
-        return WRITE_SUCCESS == rc ? 0 : 2;
+        return 0 == rc ? 0 : rc + 1;
 }
 
 TESTABLE_STATIC int flush_logfile(struct logging_status *ls)
