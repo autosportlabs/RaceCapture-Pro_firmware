@@ -103,6 +103,7 @@ T_SRC = loggerApi_test.cpp \
 		sector_test.cpp \
 		track_test.cpp \
 		loggerData_test.cpp \
+		loggerFileWriterTest.cpp \
 		virtualChannel_test.cpp \
 		$(GPS_DIR)/gps_test.cpp \
 		$(GPS_DIR)/geoTriggerTest.cpp \

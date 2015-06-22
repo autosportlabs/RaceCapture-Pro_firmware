@@ -18,15 +18,29 @@
  * Authors: Stieg
  */
 
-#ifndef _TASK_TESTING_H_
-#define _TASK_TESTING_H_
+#ifndef _LOGGERFILEWRITER_TEST_H_
+#define _LOGGERFILEWRITER_TEST_H_
 
-#include "FreeRTOS.h"
+#include <cppunit/extensions/HelperMacros.h>
 
-void set_ticks(portTickType ticks);
+class LoggerFileWriterTest : public CppUnit::TestFixture
+{
+        CPPUNIT_TEST_SUITE( LoggerFileWriterTest );
+        CPPUNIT_TEST( testFlushLogfile );
+        CPPUNIT_TEST( testLoggingStart );
+        CPPUNIT_TEST( testLoggingStop );
+        CPPUNIT_TEST( testLoggingSample );
+        CPPUNIT_TEST_SUITE_END();
 
-void resetTicks( void );
+public:
 
-void incrementTick( void );
+        void setUp();
+        void tearDown();
 
-#endif /* _TASK_TESTING_H_ */
+        void testFlushLogfile();
+        void testLoggingStart();
+        void testLoggingStop();
+        void testLoggingSample();
+};
+
+#endif /* _LOGGERFILEWRITER_TEST_H_ */

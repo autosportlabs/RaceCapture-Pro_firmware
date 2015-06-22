@@ -5,18 +5,19 @@
  *      Author: brent
  */
 
-#include "fileWriter.h"
-#include "task.h"
-#include "semphr.h"
-#include "modp_numtoa.h"
-#include "sdcard.h"
-#include "sampleRecord.h"
-#include "loggerHardware.h"
-#include "taskUtil.h"
-#include "mod_string.h"
-#include "printk.h"
-#include "mem_mang.h"
 #include "LED.h"
+#include "fileWriter.h"
+#include "loggerHardware.h"
+#include "mem_mang.h"
+#include "mod_string.h"
+#include "modp_numtoa.h"
+#include "printk.h"
+#include "sampleRecord.h"
+#include "sdcard.h"
+#include "semphr.h"
+#include "task.h"
+#include "taskUtil.h"
+#include "test.h"
 
 #include <stdbool.h>
 
@@ -25,7 +26,6 @@
 #define FILE_BUFFER_SIZE						256
 
 #define MAX_LOG_FILE_INDEX 						99999
-#define FLUSH_INTERVAL_MS						5000
 #define ERROR_SLEEP_DELAY_MS					500
 
 //wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all
@@ -261,7 +261,7 @@ static void open_log_file(struct logging_status *ls)
         ls->write_tick = 0;
 }
 
-static int logging_start(struct logging_status *ls)
+TESTABLE_STATIC int logging_start(struct logging_status *ls)
 {
         pr_info("Logging: Start\r\n");
         ls->logging = true;
@@ -270,7 +270,7 @@ static int logging_start(struct logging_status *ls)
         return 0;
 }
 
-static int logging_stop(struct logging_status *ls)
+TESTABLE_STATIC int logging_stop(struct logging_status *ls)
 {
         pr_debug("Logging: End\r\n");
         ls->logging = false;
@@ -284,7 +284,8 @@ static int logging_stop(struct logging_status *ls)
         return 0;
 }
 
-static int logging_sample(struct logging_status *ls, LoggerMessage *msg)
+TESTABLE_STATIC int logging_sample(struct logging_status *ls,
+                                   LoggerMessage *msg)
 {
         /* If we haven't starting logging yet, then don't log (duh!) */
         if (!ls->logging)
@@ -301,6 +302,20 @@ static int logging_sample(struct logging_status *ls, LoggerMessage *msg)
                 if (WRITING_ACTIVE != ls->writing_status)
                         open_log_file(ls);
 
+
+                /*
+                 * XXX: Fix me
+                 * This tiny block is here because it would seem that our
+                 * write_samples method does not take the output of writeFileBuffer
+                 * into account.  Fix that in a later ticket.  Then move this back
+                 * down below the write where it belongs.
+                 */
+                if (WRITING_ACTIVE != ls->writing_status) {
+                        pr_error("Remounting FS due to write error.\r\n");
+                        close_log_file(ls);
+                        continue;
+                }
+
                 if (0 == ls->write_tick)
                         writeHeaders(msg->channelSamples, msg->sampleCount);
 
@@ -310,16 +325,13 @@ static int logging_sample(struct logging_status *ls, LoggerMessage *msg)
                         ls->write_tick++;
                         break;
                 }
-
-                pr_error("Remounting FS due to write error.\r\n");
-                close_log_file(ls);
         }
 
         logging_led_toggle();
         return WRITE_SUCCESS == rc ? 0 : 2;
 }
 
-static int flush_logfile(struct logging_status *ls)
+TESTABLE_STATIC int flush_logfile(struct logging_status *ls)
 {
         if (ls->writing_status != WRITING_ACTIVE)
                 return 1;

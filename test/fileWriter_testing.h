@@ -18,15 +18,14 @@
  * Authors: Stieg
  */
 
-#ifndef _TASK_TESTING_H_
-#define _TASK_TESTING_H_
+#ifndef _FILEWRITER_TESTING_H_
+#define _FILEWRITER_TESTING_H_
 
-#include "FreeRTOS.h"
+#include "fileWriter.h"
 
-void set_ticks(portTickType ticks);
+int flush_logfile(struct logging_status *ls);
+int logging_stop(struct logging_status *ls);
+int logging_start(struct logging_status *ls);
+int logging_sample(struct logging_status *ls, LoggerMessage *msg);
 
-void resetTicks( void );
-
-void incrementTick( void );
-
-#endif /* _TASK_TESTING_H_ */
+#endif /* _FILEWRITER.TESTING_H_ */

@@ -6,6 +6,7 @@
 #include "sampleRecord.h"
 
 #define FILENAME_LEN 13
+#define FLUSH_INTERVAL_MS 5000
 
 enum writing_status {
     WRITING_INACTIVE = 0,

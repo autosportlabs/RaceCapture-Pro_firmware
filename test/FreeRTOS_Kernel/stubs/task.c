@@ -19,13 +19,14 @@
  */
 
 #include "FreeRTOS.h"
+#include "task.h"
 #include "task_testing.h"
 #include <unistd.h>
 
 static portTickType ticks;
 
-portTickType xTaskGetTickCount( void ) {
-  return ticks;
+portTickType xTaskGetTickCount() {
+        return ticks;
 }
 
 void set_ticks(portTickType new_ticks){
@@ -33,15 +34,15 @@ void set_ticks(portTickType new_ticks){
 }
 
 void resetTicks() {
-  ticks = 0;
+        ticks = 0;
 }
 
 void incrementTick() {
-  ticks++;
+        ticks++;
 }
 
 void vTaskDelay(portTickType xTicksToDelay) {
-  usleep((useconds_t)xTicksToDelay * 1000);
+        usleep((useconds_t)xTicksToDelay * 1000);
 }
 
 
