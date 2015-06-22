@@ -118,113 +118,108 @@ static void appendFloat(float num, int precision)
 
 static int writeHeaders(ChannelSample *sample, size_t channelCount)
 {
-    char *separator = "";
+        int i;
 
-    for (; 0 < channelCount; channelCount--, sample++) {
-        appendFileBuffer(separator);
-        separator = ",";
+        for (i = 0; 0 < channelCount; channelCount--, sample++, i++) {
+                appendFileBuffer(0 == i ? "" : ",");
 
-        uint8_t precision = sample->cfg->precision;
-        appendQuotedString(sample->cfg->label);
-        appendFileBuffer("|");
-        appendQuotedString(sample->cfg->units);
-        appendFileBuffer("|");
-        appendFloat(decodeSampleRate(sample->cfg->min), precision);
-        appendFileBuffer("|");
-        appendFloat(decodeSampleRate(sample->cfg->max), precision);
-        appendFileBuffer("|");
-        appendInt(decodeSampleRate(sample->cfg->sampleRate));
-    }
-
-    appendFileBuffer("\n");
-    return writeFileBuffer();
-}
-
-
-static int writeChannelSamples(ChannelSample *sample, size_t channelCount)
-{
-    if (NULL == sample) {
-        pr_debug("file: null sample record\r\n");
-        return WRITE_FAIL;
-    }
-
-    char *separator = "";
-    for (; 0 < channelCount; channelCount--, sample++) {
-        appendFileBuffer(separator);
-        separator = ",";
-
-        if (!sample->populated)
-            continue;
-
-        const int precision = sample->cfg->precision;
-
-        switch(sample->sampleData) {
-        case SampleData_Float:
-        case SampleData_Float_Noarg:
-            appendFloat(sample->valueFloat, precision);
-            break;
-        case SampleData_Int:
-        case SampleData_Int_Noarg:
-            appendInt(sample->valueInt);
-            break;
-        case SampleData_LongLong:
-        case SampleData_LongLong_Noarg:
-            appendLongLong(sample->valueLongLong);
-            break;
-        case SampleData_Double:
-        case SampleData_Double_Noarg:
-            appendDouble(sample->valueDouble, precision);
-            break;
-        default:
-            pr_warning("file: Unknown channel sample type\n");
+                uint8_t precision = sample->cfg->precision;
+                appendQuotedString(sample->cfg->label);
+                appendFileBuffer("|");
+                appendQuotedString(sample->cfg->units);
+                appendFileBuffer("|");
+                appendFloat(decodeSampleRate(sample->cfg->min), precision);
+                appendFileBuffer("|");
+                appendFloat(decodeSampleRate(sample->cfg->max), precision);
+                appendFileBuffer("|");
+                appendInt(decodeSampleRate(sample->cfg->sampleRate));
         }
-    }
 
-    appendFileBuffer("\n");
-    writeFileBuffer();
-
-    return WRITE_SUCCESS;
+        appendFileBuffer("\n");
+        return writeFileBuffer();
 }
 
-static int openLogfile(FIL *f, const char *filename)
+
+static int write_samples(ChannelSample *sample, size_t channelCount)
 {
-    int rc = f_open(f,filename, FA_WRITE);
-    return rc;
+        if (NULL == sample) {
+                pr_debug("file: null sample record\r\n");
+                return WRITE_FAIL;
+        }
+
+        int i;
+        for (i = 0; 0 < channelCount; channelCount--, sample++, i++) {
+                appendFileBuffer(0 == i ? "" : ",");
+
+                if (!sample->populated)
+                        continue;
+
+                const int precision = sample->cfg->precision;
+
+                switch(sample->sampleData) {
+                case SampleData_Float:
+                case SampleData_Float_Noarg:
+                        appendFloat(sample->valueFloat, precision);
+                        break;
+                case SampleData_Int:
+                case SampleData_Int_Noarg:
+                        appendInt(sample->valueInt);
+                        break;
+                case SampleData_LongLong:
+                case SampleData_LongLong_Noarg:
+                        appendLongLong(sample->valueLongLong);
+                        break;
+                case SampleData_Double:
+                case SampleData_Double_Noarg:
+                        appendDouble(sample->valueDouble, precision);
+                        break;
+                default:
+                        pr_warning("file: Unknown channel sample type\n");
+                }
+        }
+
+        appendFileBuffer("\n");
+        writeFileBuffer();
+
+        return WRITE_SUCCESS;
 }
 
-static int openNextLogfile(FIL *f, char *filename)
+static enum writing_status open_existing_log_file(struct logging_status *ls)
 {
-    int i = 0;
-    int rc;
-    for (; i < MAX_LOG_FILE_INDEX; i++) {
-        strcpy(filename,"rc_");
-        char numBuf[12];
-        modp_itoa10(i,numBuf);
-        strcat(filename, numBuf);
-        strcat(filename, ".log");
-        rc = f_open(f,filename, FA_WRITE | FA_CREATE_NEW);
-        if ( rc == 0 ) break;
-        f_close(f);
-    }
-    if (i >= MAX_LOG_FILE_INDEX) return -2;
-    pr_info_str_msg("Open: " , filename);
-    return rc;
+    const int rc = f_open(g_logfile, ls->name, FA_WRITE);
+    return rc == FR_OK ? WRITING_ACTIVE : WRITING_INACTIVE;
 }
 
-static void endLogfile()
+static enum writing_status open_new_log_file(struct logging_status *ls)
 {
-    pr_info("file: close\r\n");
-    f_close(g_logfile);
-    UnmountFS();
+        int i;
+
+        for (i = 0; i < MAX_LOG_FILE_INDEX; i++) {
+                char buf[12];
+                modp_itoa10(i, buf);
+
+                strcpy(ls->name, "rc_");
+                strcat(ls->name, buf);
+                strcat(ls->name, ".log");
+
+                const FRESULT res = f_open(g_logfile, ls->name,
+                                      FA_WRITE | FA_CREATE_NEW);
+                if ( FR_OK == res )
+                        return WRITING_ACTIVE;
+
+                f_close(g_logfile);
+        }
+
+        /* We fail if here. Be sure to clean up name buffer.*/
+        ls->name[0] = '\0';
+        return WRITING_INACTIVE;
 }
 
-static void flushLogfile(FIL *file)
+static void close_log_file(struct logging_status *ls)
 {
-    pr_debug("file: flush\r\n");
-    int res = f_sync(file);
-    if (0 != res) {
-        pr_debug_int_msg("flush err:", res);
-    }
+        ls->writing_status = WRITING_INACTIVE;
+        f_close(g_logfile);
+        UnmountFS();
 }
 
 static void error_led(bool on) {
@@ -239,108 +234,110 @@ static void logging_led_off() {
         LED_disable(2);
 }
 
-static enum writing_status openNewLogfile(char *filename)
+static void open_log_file(struct logging_status *ls)
 {
-    int rc = InitFS();
+        pr_info("Logging: Opening log file\r\n");
+        ls->writing_status = WRITING_INACTIVE;
 
-    if (0 != rc) {
-        pr_error_int_msg("FS init error: ", rc);
-        return WRITING_INACTIVE;
-    }
+        const int rc = InitFS();
+        if (0 != rc) {
+                pr_error_int_msg("Logging: FS init error: ", rc);
+                return;
+        }
 
-    //open next log file
-    rc = openNextLogfile(g_logfile, filename);
-    if (0 != rc) {
-        pr_error_int_msg("File open err: ", rc);
-        return WRITING_INACTIVE;
-    }
+        // Open a file if one is set, else create a new one.
+        ls->writing_status = ls->name[0] ? open_existing_log_file(ls) :
+                open_new_log_file(ls);
 
-    return WRITING_ACTIVE;
+        if (WRITING_INACTIVE == ls->writing_status) {
+                pr_warning_str_msg("Logging: Failed to open: ", ls->name);
+                return;
+        }
+
+        pr_info_str_msg("Logging: Opened " , ls->name);
+        ls->flush_tick = xTaskGetTickCount();
+        ls->write_tick = 0;
 }
 
-static int logging_start(struct file_status *fs)
+static int logging_start(struct logging_status *ls)
 {
-        if (fs->writing_status != WRITING_INACTIVE)
-                return 2;
+        pr_info("Logging: Start\r\n");
+        ls->logging = true;
 
-        pr_debug("Logging: Start\r\n");
-
-        fs->flush_tick = xTaskGetTickCount();
-        fs->write_tick = 0;
-        fs->writing_status = openNewLogfile(fs->name);
-        fs->logging = true;
-
-        return fs->writing_status == WRITING_ACTIVE ? 0 : 1;
+        logging_led_toggle();
+        return 0;
 }
 
-static int logging_stop(struct file_status *fs)
+static int logging_stop(struct logging_status *ls)
 {
-        endLogfile();
-        fs->writing_status = WRITING_INACTIVE;
-        fs->logging = false;
+        pr_debug("Logging: End\r\n");
+        ls->logging = false;
+
+        close_log_file(ls);
+
+        /* Prevent log file from being re-opened */
+        ls->name[0] = '\0';
 
         logging_led_off();
         return 0;
 }
 
-static bool remount_log_file(const struct file_status *fs)
+static int logging_sample(struct logging_status *ls, LoggerMessage *msg)
 {
-        pr_error("Remounting FS due to write error.\r\n");
-        // XXX: Do we need to worry about rolling over to new files?
-
-        f_close(g_logfile);
-        UnmountFS();
-        InitFS();
-
-        return openLogfile(g_logfile, fs->name) == 0;
-}
-
-static int logging_sample(struct file_status *fs, LoggerMessage *msg)
-{
-        /* If we haven't starting logging yet, then no op */
-        if (!fs->logging)
-                return 0;
-
-        if (fs->writing_status != WRITING_ACTIVE)
+        /* If we haven't starting logging yet, then don't log (duh!) */
+        if (!ls->logging)
                 return 1;
 
-        if (0 == fs->write_tick)
-                writeHeaders(msg->channelSamples, msg->sampleCount);
-
-        fs->write_tick++;
         int attempts = 2;
-        int rc;
+        int rc = WRITE_FAIL;
         while (attempts--) {
-                rc = writeChannelSamples(msg->channelSamples,
-                                         msg->sampleCount);
-                if (rc == WRITE_SUCCESS)
-                        break;
+                /*
+                 * Open the log file if not yet done.  This is good for
+                 * both lazy opening and easy recovering of failure as
+                 * this method will init the FS.
+                 */
+                if (WRITING_ACTIVE != ls->writing_status)
+                        open_log_file(ls);
 
-                if (attempts)
-                        remount_log_file(fs);
+                if (0 == ls->write_tick)
+                        writeHeaders(msg->channelSamples, msg->sampleCount);
+
+                /* If the write was successful, increment our tick and done */
+                rc = write_samples(msg->channelSamples, msg->sampleCount);
+                if (WRITE_SUCCESS == rc) {
+                        ls->write_tick++;
+                        break;
+                }
+
+                pr_error("Remounting FS due to write error.\r\n");
+                close_log_file(ls);
         }
 
         logging_led_toggle();
-        return rc == WRITE_SUCCESS ? 0 : 2;
+        return WRITE_SUCCESS == rc ? 0 : 2;
 }
 
-static int flush_logfile(struct file_status *fs)
+static int flush_logfile(struct logging_status *ls)
 {
-        if (fs->writing_status != WRITING_ACTIVE)
+        if (ls->writing_status != WRITING_ACTIVE)
                 return 1;
 
-        if (!isTimeoutMs(fs->flush_tick, FLUSH_INTERVAL_MS))
+        if (!isTimeoutMs(ls->flush_tick, FLUSH_INTERVAL_MS))
                 return 2;
 
-        flushLogfile(g_logfile);
-        fs->flush_tick = xTaskGetTickCount();
-        return 0;
+        pr_debug("Logging: flush\r\n");
+        const int res = f_sync(g_logfile);
+        if (0 != res)
+                pr_debug_int_msg("Logging: flush err", res);
+
+        ls->flush_tick = xTaskGetTickCount();
+        return res + 2;
 }
 
 void fileWriterTask(void *params)
 {
         LoggerMessage *msg = NULL;
-        struct file_status fs = { 0 };
+        struct logging_status ls = { 0 };
 
         while(1) {
                 int rc;
@@ -350,13 +347,18 @@ void fileWriterTask(void *params)
 
                 switch (msg->type) {
                 case LoggerMessageType_Sample:
-                        rc = logging_sample(&fs, msg);
+                        rc = logging_sample(&ls, msg);
+
+                        /* Ignore failure if not logging */
+                        if (1 == rc)
+                                rc = 0;
+
                         break;
                 case LoggerMessageType_Start:
-                        rc = logging_start(&fs);
+                        rc = logging_start(&ls);
                         break;
                 case LoggerMessageType_Stop:
-                        rc = logging_stop(&fs);
+                        rc = logging_stop(&ls);
                         break;
                 default:
                         pr_warning("Unsupported message type\r\n");
@@ -371,7 +373,7 @@ void fileWriterTask(void *params)
                         pr_debug_int_msg(" failed with code ", rc);
                 }
 
-                flush_logfile(&fs);
+                flush_logfile(&ls);
         }
 }
 
@@ -385,13 +387,6 @@ void startFileWriterTask( int priority )
                 return;
         }
 
-        /*
-        g_logfile = (FIL *) pvPortMalloc(sizeof(FIL));
-        if (NULL == g_logfile) {
-                pr_error("file: logfile sruct err\r\n");
-                return;
-        }
-        */
         _g_logfile = (FIL) { 0 };
 
         xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter",
