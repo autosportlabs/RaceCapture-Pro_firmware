@@ -29,7 +29,7 @@ class LoggerFileWriterTest : public CppUnit::TestFixture
         CPPUNIT_TEST( testFlushLogfile );
         CPPUNIT_TEST( testLoggingStart );
         CPPUNIT_TEST( testLoggingStop );
-        CPPUNIT_TEST( testLoggingSample );
+        CPPUNIT_TEST( testLoggingSampleSkip );
         CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -40,7 +40,7 @@ public:
         void testFlushLogfile();
         void testLoggingStart();
         void testLoggingStop();
-        void testLoggingSample();
+        void testLoggingSampleSkip();
 };
 
 #endif /* _LOGGERFILEWRITER_TEST_H_ */

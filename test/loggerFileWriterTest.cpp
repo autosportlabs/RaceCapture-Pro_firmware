@@ -24,7 +24,9 @@
 #include "fileWriter_testing.h"
 #include "mod_string.h"
 #include "task.h"
+#include "task_testing.h"
 
+#include <stdio.h>
 #include <string>
 
 // Registers the fixture into the 'registry'
@@ -47,24 +49,31 @@ void LoggerFileWriterTest::testFlushLogfile()
 
         ls->writing_status = WRITING_INACTIVE;
         rc = flush_logfile(ls);
-        CPPUNIT_ASSERT_EQUAL(1, rc);
+        CPPUNIT_ASSERT_EQUAL(-1, rc);
+
+
+        const portTickType flushTicks =
+                (FLUSH_INTERVAL_MS / portTICK_RATE_MS);
 
         ls->writing_status = WRITING_ACTIVE;
-        ls->flush_tick = FLUSH_INTERVAL_MS - 1;
+        ls->flush_tick = 0;
+        set_ticks(flushTicks - 1);
         rc = flush_logfile(ls);
-        CPPUNIT_ASSERT_EQUAL(2, rc);
+        CPPUNIT_ASSERT_EQUAL(-2, rc);
 
-        ls->flush_tick = FLUSH_INTERVAL_MS;
+        set_ticks(flushTicks);
         rc = flush_logfile(ls);
-        CPPUNIT_ASSERT_EQUAL(2, rc);
+        CPPUNIT_ASSERT_EQUAL(0, rc);
         CPPUNIT_ASSERT_EQUAL(xTaskGetTickCount(), ls->flush_tick);
 }
 
 void LoggerFileWriterTest::testLoggingStart()
 {
         ls->logging = false;
+        ls->rows_written = 1;
         logging_start(ls);
         CPPUNIT_ASSERT_EQUAL(true, ls->logging);
+        CPPUNIT_ASSERT_EQUAL((unsigned int) 0, ls->rows_written);
 }
 
 void LoggerFileWriterTest::testLoggingStop()
@@ -76,11 +85,11 @@ void LoggerFileWriterTest::testLoggingStop()
         CPPUNIT_ASSERT_EQUAL(std::string(""), std::string(ls->name));
 }
 
-void LoggerFileWriterTest::testLoggingSample()
+void LoggerFileWriterTest::testLoggingSampleSkip()
 {
         ls->logging = false;
         const int rc = logging_sample(ls, NULL);
-        CPPUNIT_ASSERT_EQUAL(1, rc);
+        CPPUNIT_ASSERT_EQUAL(0, rc);
 }
 
 /*

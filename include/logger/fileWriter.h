@@ -16,9 +16,9 @@ enum writing_status {
 struct logging_status
 {
         bool logging;
+        unsigned int rows_written;
         enum writing_status writing_status;
         portTickType flush_tick;
-        portTickType write_tick;
         char name[FILENAME_LEN];
 };
 

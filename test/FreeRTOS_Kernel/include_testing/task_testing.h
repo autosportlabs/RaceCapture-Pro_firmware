@@ -25,8 +25,8 @@
 
 void set_ticks(portTickType ticks);
 
-void resetTicks( void );
+void reset_ticks( void );
 
-void incrementTick( void );
+void increment_tick( void );
 
 #endif /* _TASK_TESTING_H_ */

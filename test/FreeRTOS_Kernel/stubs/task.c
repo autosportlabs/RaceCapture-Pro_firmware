@@ -33,18 +33,17 @@ void set_ticks(portTickType new_ticks){
 	ticks = new_ticks;
 }
 
-void resetTicks() {
+void reset_ticks() {
         ticks = 0;
 }
 
-void incrementTick() {
+void increment_tick() {
         ticks++;
 }
 
 void vTaskDelay(portTickType xTicksToDelay) {
         usleep((useconds_t)xTicksToDelay * 1000);
 }
-
 
 signed portBASE_TYPE xTaskGenericCreate(
         pdTASK_CODE pvTaskCode,

@@ -43,3 +43,21 @@ int f_puts(const TCHAR* str,
 {
         return 0;
 }
+
+FRESULT f_write (
+    FIL* fp,			/* Pointer to the file object */
+    const void *buff,	/* Pointer to the data to be written */
+    UINT btw,			/* Number of bytes to write */
+    UINT* bw			/* Pointer to number of bytes written */
+)
+{
+        return FR_OK;
+}
+
+FRESULT f_lseek (
+    FIL* fp,		/* Pointer to the file object */
+    DWORD ofs		/* File pointer from top of file */
+)
+{
+        return FR_OK;
+}

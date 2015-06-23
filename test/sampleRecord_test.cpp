@@ -5,7 +5,6 @@
 #include "capabilities.h"
 #include "gps.h"
 #include "imu.h"
-#include "include/taskUtil_mock.h"
 #include "lap_stats.h"
 #include "loggerConfig.h"
 #include "loggerHardware.h"
@@ -28,7 +27,7 @@ void SampleRecordTest::setUp()
 	InitLoggerHardware();
 	GPS_init(10, get_serial(SERIAL_GPS));
 	initialize_logger_config();
-	resetCurrentTicks();
+	reset_ticks();
 }
 
 
@@ -57,8 +56,8 @@ void SampleRecordTest::testPopulateSampleRecord(){
 	lm.type = LoggerMessageType_Sample;
 
    // Set it so we have 1 tick.
-   resetTicks();
-   incrementTick();
+   reset_ticks();
+   increment_tick();
    CPPUNIT_ASSERT_EQUAL(1, (int) (xTaskGetTickCount()));
 
 	const unsigned short highSampleRate =
@@ -348,13 +347,13 @@ void SampleRecordTest::testIsValidLoggerMessageAge() {
     LoggerMessage lm;
     lm.ticks = 0;
 
-    setCurrentTicks(0);
+    set_ticks(0);
     CPPUNIT_ASSERT_EQUAL(1, isValidLoggerMessageAge(&lm));
 
-    setCurrentTicks(9);
+    set_ticks(9);
     CPPUNIT_ASSERT_EQUAL(1, isValidLoggerMessageAge(&lm));
 
-    setCurrentTicks(10);
+    set_ticks(10);
     CPPUNIT_ASSERT_EQUAL(0, isValidLoggerMessageAge(&lm));
 }
 

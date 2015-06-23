@@ -120,12 +120,12 @@ SRC =		mock_uart.c \
 		$(FREE_RTOS_KERNEL_DIR)/stubs/heap.c \
 		$(FREE_RTOS_KERNEL_DIR)/stubs/queue.c \
 		$(FREE_RTOS_KERNEL_DIR)/stubs/task.c \
-		$(MOCK_DIR)/util/taskUtil_mock.c \
 		$(RCP_SRC)/launch_control.c \
 		$(RCP_SRC)/lua/luaScript.c \
 		$(RCP_SRC)/util/modp_numtoa.c \
 		$(RCP_SRC)/util/modp_atonum.c \
 		$(RCP_SRC)/util/mod_string.c \
+		$(RCP_SRC)/util/taskUtil.c \
 		$(RCP_SRC)/jsmn/jsmn.c \
 		$(RCP_SRC)/api/api.c \
 		$(RCP_SRC)/OBD2/OBD2.c \

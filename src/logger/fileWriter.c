@@ -44,7 +44,7 @@ static FIL *g_logfile;
 static xQueueHandle g_sampleRecordQueue = NULL;
 static FileBuffer fileBuffer = {"", 0};
 
-static int clear_file_buffer() {
+static void clear_file_buffer() {
         fileBuffer.index = 0;
         fileBuffer.buffer[0] = '\0';
 }
@@ -122,9 +122,11 @@ static void appendFloat(float num, int precision)
     appendFileBuffer(buf);
 }
 
-static int writeHeaders(ChannelSample *sample, size_t channelCount)
+static int write_samples_header(const LoggerMessage *msg)
 {
         int i;
+        ChannelSample *sample = msg->channelSamples;
+        size_t channelCount = msg->sampleCount;
 
         for (i = 0; 0 < channelCount; channelCount--, sample++, i++) {
                 appendFileBuffer(0 == i ? "" : ",");
@@ -146,10 +148,13 @@ static int writeHeaders(ChannelSample *sample, size_t channelCount)
 }
 
 
-static int write_samples(ChannelSample *sample, size_t channelCount)
+static int write_samples_data(const LoggerMessage *msg)
 {
+        ChannelSample *sample = msg->channelSamples;
+        size_t channelCount = msg->sampleCount;
+
         if (NULL == sample) {
-                pr_debug("Logger: null sample record\r\n");
+                pr_warning("Logger: null sample record\r\n");
                 return WRITE_FAIL;
         }
 
@@ -190,7 +195,14 @@ static int write_samples(ChannelSample *sample, size_t channelCount)
 
 static enum writing_status open_existing_log_file(struct logging_status *ls)
 {
-        const int rc = f_open(g_logfile, ls->name, FA_WRITE);
+        int rc = f_open(g_logfile, ls->name, FA_WRITE);
+
+        if (FR_OK != rc)
+                return WRITING_INACTIVE;
+
+        // Seek to the end so we append instead of overwriting
+        rc = f_lseek(g_logfile, f_size(g_logfile));
+
         return rc == FR_OK ? WRITING_ACTIVE : WRITING_INACTIVE;
 }
 
@@ -263,13 +275,15 @@ static void open_log_file(struct logging_status *ls)
 
         pr_info_str_msg("Logging: Opened " , ls->name);
         ls->flush_tick = xTaskGetTickCount();
-        ls->write_tick = 0;
 }
 
 TESTABLE_STATIC int logging_start(struct logging_status *ls)
 {
         pr_info("Logging: Start\r\n");
         ls->logging = true;
+
+        /* Set this here because this is the start of the log stream */
+        ls->rows_written = 0;
 
         logging_led_toggle();
         return 0;
@@ -289,12 +303,37 @@ TESTABLE_STATIC int logging_stop(struct logging_status *ls)
         return 0;
 }
 
+static int write_samples(struct logging_status *ls, const LoggerMessage *msg)
+{
+        int rc = 0;
+
+        /* If we haven't written to this file yet, start with the headers */
+        if (0 == ls->rows_written) {
+                rc = write_samples_header(msg);
+
+                /* If headers written, then don't write them again */
+                if (0 == rc)
+                        ls->rows_written++;
+        }
+
+        /* If the above write failed, then don't bother with the next */
+        if (0 != rc)
+                return rc;
+
+        rc = write_samples_data(msg);
+
+        if (0 == rc)
+                ls->rows_written++;
+
+        return rc;
+}
+
 TESTABLE_STATIC int logging_sample(struct logging_status *ls,
                                    LoggerMessage *msg)
 {
         /* If we haven't starting logging yet, then don't log (duh!) */
         if (!ls->logging)
-                return 1;
+                return 0;
 
         int attempts = 2;
         int rc = WRITE_FAIL;
@@ -308,38 +347,28 @@ TESTABLE_STATIC int logging_sample(struct logging_status *ls,
                         open_log_file(ls);
 
                 /* Don't try to write if file isn't open */
-                if (WRITING_ACTIVE != ls->writing_status) {
-                        if (0 == ls->write_tick)
-                                writeHeaders(msg->channelSamples,
-                                             msg->sampleCount);
-
-                        rc = write_samples(msg->channelSamples,
-                                           msg->sampleCount);
-                        if (0 == rc) {
-                                /*
-                                 * Here b/c we want headers if the initial
-                                 * writing of the log file fails.
-                                 */
-                                ls->write_tick++;
+                if (WRITING_ACTIVE == ls->writing_status) {
+                        rc = write_samples(ls, msg);
+                        if (0 == rc)
                                 break;
-                        }
                 }
 
+                /* If here, then unmount and try attempts more time */
                 pr_error("Remounting FS due to write error.\r\n");
                 close_log_file(ls);
         }
 
         logging_led_toggle();
-        return 0 == rc ? 0 : rc + 1;
+        return rc;
 }
 
 TESTABLE_STATIC int flush_logfile(struct logging_status *ls)
 {
         if (ls->writing_status != WRITING_ACTIVE)
-                return 1;
+                return -1;
 
         if (!isTimeoutMs(ls->flush_tick, FLUSH_INTERVAL_MS))
-                return 2;
+                return -2;
 
         pr_debug("Logging: flush\r\n");
         const int res = f_sync(g_logfile);
@@ -347,7 +376,7 @@ TESTABLE_STATIC int flush_logfile(struct logging_status *ls)
                 pr_debug_int_msg("Logging: flush err", res);
 
         ls->flush_tick = xTaskGetTickCount();
-        return res + 2;
+        return res;
 }
 
 void fileWriterTask(void *params)
@@ -364,11 +393,6 @@ void fileWriterTask(void *params)
                 switch (msg->type) {
                 case LoggerMessageType_Sample:
                         rc = logging_sample(&ls, msg);
-
-                        /* Ignore failure if not logging */
-                        if (1 == rc)
-                                rc = 0;
-
                         break;
                 case LoggerMessageType_Start:
                         rc = logging_start(&ls);
