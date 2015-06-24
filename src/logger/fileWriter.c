@@ -195,6 +195,8 @@ static int write_samples_data(const LoggerMessage *msg)
 
 static enum writing_status open_existing_log_file(struct logging_status *ls)
 {
+        pr_debug("Logging: Opening new log file\r\n");
+
         int rc = f_open(g_logfile, ls->name, FA_WRITE);
 
         if (FR_OK != rc)
@@ -208,6 +210,8 @@ static enum writing_status open_existing_log_file(struct logging_status *ls)
 
 static enum writing_status open_new_log_file(struct logging_status *ls)
 {
+        pr_debug("Logging: Opening new log file\r\n");
+
         int i;
 
         for (i = 0; i < MAX_LOG_FILE_INDEX; i++) {
@@ -429,6 +433,8 @@ void startFileWriterTask( int priority )
         }
 
         g_logfile = (FIL *) pvPortMalloc(sizeof(FIL));
+        *g_logfile = (FIL) { 0 };
+
         if (NULL == g_logfile) {
                 pr_error("file: logfile sruct err\r\n");
                 return;
