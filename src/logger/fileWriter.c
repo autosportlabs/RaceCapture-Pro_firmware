@@ -264,6 +264,7 @@ static void open_log_file(struct logging_status *ls)
                 return;
         }
 
+        pr_debug("Logging: FS init success.  Opening file...\r\n");
         // Open a file if one is set, else create a new one.
         ls->writing_status = ls->name[0] ? open_existing_log_file(ls) :
                 open_new_log_file(ls);
@@ -432,6 +433,7 @@ void startFileWriterTask( int priority )
                 pr_error("file: logfile sruct err\r\n");
                 return;
         }
+
         xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter",
                      FILE_WRITER_STACK_SIZE, NULL, priority, NULL );
 }
