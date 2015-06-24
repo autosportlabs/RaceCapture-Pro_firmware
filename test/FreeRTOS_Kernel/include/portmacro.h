@@ -208,7 +208,9 @@ extern volatile unsigned portLONG ulCriticalNesting;
 	/* priority that is ready to run. */								\
 	portRESTORE_CONTEXT();
 
-#define portYIELD()					asm volatile ( "SWI" );
+//#define portYIELD()					asm volatile ( "SWI" );
+// Make Yield a no-op on our testing platform.  --Stieg
+#define portYIELD()					asm volatile ( "NOP" );
 /*-----------------------------------------------------------*/
 
 

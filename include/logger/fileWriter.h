@@ -1,5 +1,6 @@
 #ifndef FILEWRITER_H_
 #define FILEWRITER_H_
+
 #include "loggerConfig.h"
 #include "FreeRTOS.h"
 #include "ff.h"

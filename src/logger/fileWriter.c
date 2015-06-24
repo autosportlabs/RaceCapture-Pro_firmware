@@ -361,6 +361,14 @@ TESTABLE_STATIC int logging_sample(struct logging_status *ls,
                 /* If here, then unmount and try attempts more time */
                 pr_error("Remounting FS due to write error.\r\n");
                 close_log_file(ls);
+
+                /*
+                 * We yield here because init/f_open/f_close all involve
+                 * locks and can eat up significant resournce.  This ensures
+                 * we don't hog resources beyond reason.  Or, you know, you
+                 * could keep your damn SD card plugged in.  --Stieg
+                 */
+                taskYIELD();
         }
 
         logging_led_toggle();
