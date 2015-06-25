@@ -51,7 +51,6 @@ static void clear_file_buffer() {
 
 static int writeFileBuffer()
 {
-        //int rc = f_puts(fileBuffer.buffer, g_logfile);
         unsigned int bw;
         const int rc = f_write(g_logfile, fileBuffer.buffer,
                                fileBuffer.index, &bw);
@@ -195,7 +194,7 @@ static int write_samples_data(const LoggerMessage *msg)
 
 static enum writing_status open_existing_log_file(struct logging_status *ls)
 {
-        pr_debug("Logging: Opening new log file\r\n");
+        pr_debug_str_msg("Logging: Opening log file ", ls->name);
 
         int rc = f_open(g_logfile, ls->name, FA_WRITE);
 
@@ -386,7 +385,7 @@ TESTABLE_STATIC int flush_logfile(struct logging_status *ls)
         pr_debug("Logging: flush\r\n");
         const int res = f_sync(g_logfile);
         if (0 != res)
-                pr_debug_int_msg("Logging: flush err", res);
+                pr_debug_int_msg("Logging: flush err ", res);
 
         ls->flush_tick = xTaskGetTickCount();
         return res;
