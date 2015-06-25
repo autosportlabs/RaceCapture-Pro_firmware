@@ -439,6 +439,11 @@ void startFileWriterTask( int priority )
         }
 
         g_logfile = (FIL *) pvPortMalloc(sizeof(FIL));
+        if (NULL == g_logfile) {
+                pr_error("file: logfile sruct alloc err\r\n");
+                return;
+        }
+
         *g_logfile = (FIL) { 0 };
 
         if (NULL == g_logfile) {
