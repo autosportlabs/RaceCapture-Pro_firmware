@@ -1,7 +1,9 @@
-#include "OBD2.h"
 #include "CAN.h"
+#include "FreeRTOS.h"
+#include "OBD2.h"
 #include "loggerConfig.h"
 #include "printk.h"
+#include "task.h"
 #include "taskUtil.h"
 
 
@@ -108,7 +110,7 @@ int OBD2_request_PID(unsigned char pid, int *value, size_t timeout)
     int pid_request_success = 0;
 
     if (CAN_tx_msg(0, &msg, timeout)) {
-        size_t start_time = getCurrentTicks();
+        size_t start_time = xTaskGetTickCount();
         while (!isTimeoutMs(start_time, OBD2_PID_DEFAULT_TIMEOUT_MS)) {
             int result = CAN_rx_msg(0, &msg, OBD2_PID_DEFAULT_TIMEOUT_MS);
             if (result) {

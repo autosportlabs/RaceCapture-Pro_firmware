@@ -18,20 +18,15 @@
  * Authors: Stieg
  */
 
-#ifndef _TASK_H_
-#define _TASK_H_
+#ifndef _TASK_TESTING_H_
+#define _TASK_TESTING_H_
 
-typedef unsigned int portTickType;
-#define portTICK_RATE_MS 1
-
-portTickType xTaskGetTickCount( void );
+#include "FreeRTOS.h"
 
 void set_ticks(portTickType ticks);
 
-void resetTicks( void );
+void reset_ticks( void );
 
-void incrementTick( void );
+void increment_tick( void );
 
-void vTaskDelay(portTickType xTicksToDelay);
-
-#endif /* _TASK_H_ */
+#endif /* _TASK_TESTING_H_ */
