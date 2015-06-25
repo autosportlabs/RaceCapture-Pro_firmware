@@ -40,8 +40,7 @@ typedef struct _FileBuffer {
 } FileBuffer;
 
 static FIL *g_logfile;
-
-static xQueueHandle g_sampleRecordQueue = NULL;
+static xQueueHandle g_sampleRecordQueue;
 static FileBuffer fileBuffer = {"", 0};
 
 static void clear_file_buffer() {
