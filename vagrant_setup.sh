@@ -49,15 +49,22 @@ for f in gcc-arm-none-eabi-4_7-2013q1.tgz gnuarm-4.0.2.tgz; do
     asl_bin_join=':'
 done
 
-# Install the ASL bootloader needed for MK2
-get_vagrant_file 'asl_f4_loader-0.0.6.tgz' | tar xz
-sudo pip install -e asl_f4_loader-0.0.6
-
 # Install ihexpy.
 cd
 git clone https://github.com/Jeff-Ciesielski/ihexpy.git ihexpy
 cd ihexpy
 sudo python setup.py install
+
+# Install the ASL bootloader needed for MK2
+cd
+get_vagrant_file 'asl_f4_loader-0.0.6.tgz' | tar xz
+cd asl_f4_loader-0.0.6
+sudo python setup.py install
+
+# pip install of asl-f4-loader failed.  Need to better understand
+# why.  Use of the loader
+#sudo pip install -e asl_f4_loader-0.0.6
+#
 
 # Setup our path in system profile
 tmp_file="$(mktemp)"
@@ -71,4 +78,3 @@ sudo chmod 755 "$ASL_PROFILE"
 
 # Do this to avoid redundant work
 touch "$VAGRANT_SETUP_FILE"
-
