@@ -28,3 +28,4 @@ TAGS
 *.core
 *.pyc
 *.ihex
+.vagrant
