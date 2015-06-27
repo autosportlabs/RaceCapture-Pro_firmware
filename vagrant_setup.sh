@@ -50,7 +50,7 @@ for f in gcc-arm-none-eabi-4_7-2013q1.tgz gnuarm-4.0.2.tgz; do
     asl_bin_join=':'
 done
 
-# Install ihexpy.
+# Install ihexpy first as asl-f4-loader
 cd
 git clone https://github.com/Jeff-Ciesielski/ihexpy.git ihexpy
 cd ihexpy
@@ -61,11 +61,6 @@ cd
 get_vagrant_file 'asl_f4_loader-0.0.6.tgz' | tar xz
 cd asl_f4_loader-0.0.6
 sudo python setup.py install
-
-# pip install of asl-f4-loader failed.  Need to better understand
-# why.  Use of the loader
-#sudo pip install -e asl_f4_loader-0.0.6
-#
 
 # Setup our path in system profile
 tmp_file="$(mktemp)"
