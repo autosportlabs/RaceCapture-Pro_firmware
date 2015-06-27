@@ -38,6 +38,7 @@ sudo apt-get -y install \
 	git \
 	gcc-arm-none-eabi \
 	python-crcmod \
+	minicom \
 
 # Install Toolchains for MK1 and MK2
 unset asl_bins
