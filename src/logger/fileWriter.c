@@ -43,6 +43,7 @@ static FIL *g_logfile;
 static xQueueHandle g_sampleRecordQueue;
 static FileBuffer fileBuffer = {"", 0};
 
+
 static void clear_file_buffer() {
         fileBuffer.index = 0;
         fileBuffer.buffer[0] = '\0';
@@ -78,11 +79,10 @@ static void appendFileBuffer(const char * data)
 
 portBASE_TYPE queue_logfile_record(LoggerMessage * msg)
 {
-    if (NULL != g_sampleRecordQueue) {
-        return xQueueSend(g_sampleRecordQueue, &msg, SAMPLE_QUEUE_WAIT_TIME);
-    } else {
+    if (NULL == g_sampleRecordQueue)
         return errQUEUE_EMPTY;
-    }
+
+    return xQueueSend(g_sampleRecordQueue, &msg, SAMPLE_QUEUE_WAIT_TIME);
 }
 
 static void appendQuotedString(const char *s)
@@ -390,15 +390,16 @@ TESTABLE_STATIC int flush_logfile(struct logging_status *ls)
         return res;
 }
 
-void fileWriterTask(void *params)
+static void fileWriterTask(void *params)
 {
         LoggerMessage *msg = NULL;
-        struct logging_status ls = { 0 };
+        struct logging_status ls;
+        memset(&ls, 0, sizeof(struct logging_status));
 
         while(1) {
-                int rc;
+                int rc = -1;
 
-                // Get a sample.
+                /* Get a sample. */
                 xQueueReceive(g_sampleRecordQueue, &(msg), portMAX_DELAY);
 
                 switch (msg->type) {
@@ -413,7 +414,6 @@ void fileWriterTask(void *params)
                         break;
                 default:
                         pr_warning("Unsupported message type\r\n");
-                        rc = 1;
                 }
 
                 /* Turns the LED on if things are bad, off otherwise. */
@@ -432,7 +432,6 @@ void startFileWriterTask( int priority )
 {
         g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,
                                            sizeof( ChannelSample *));
-
         if (NULL == g_sampleRecordQueue) {
                 pr_error("file: sampleRecordQueue err\r\n");
                 return;
@@ -443,13 +442,7 @@ void startFileWriterTask( int priority )
                 pr_error("file: logfile sruct alloc err\r\n");
                 return;
         }
-
-        *g_logfile = (FIL) { 0 };
-
-        if (NULL == g_logfile) {
-                pr_error("file: logfile sruct err\r\n");
-                return;
-        }
+        memset(g_logfile, 0, sizeof(FIL));
 
         xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter",
                      FILE_WRITER_STACK_SIZE, NULL, priority, NULL );
