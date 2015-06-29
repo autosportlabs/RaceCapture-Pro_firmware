@@ -106,8 +106,6 @@ static void update_distance(const GpsSnapshot *gpsSnapshot)
     const GeoPoint prev = gpsSnapshot->previousPoint;
     const GeoPoint curr = gpsSnapshot->sample.point;
 
-    if (!lapstats_lap_in_progress())
-        return; // Don't update if we aren't racing.
     if (!isValidPoint(&prev) || !isValidPoint(&curr))
         return;
 
@@ -446,6 +444,8 @@ static void lapstats_location_updated(const GpsSnapshot *gps_snapshot)
     const GeoPoint *gp = &gps_snapshot->sample.point;
     const float target_radius = degrees_to_meters(config->TrackConfigs.radius);
 
+    update_distance(gps_snapshot);
+
     if (!g_start_finish_enabled)
         return;
 
@@ -453,7 +453,6 @@ static void lapstats_location_updated(const GpsSnapshot *gps_snapshot)
     updateGeoTrigger(&g_start_geo_trigger, gp);
     updateGeoTrigger(&g_finish_geo_trigger, gp);
     update_elapsed_time(gps_snapshot);
-    update_distance(gps_snapshot);
     addGpsSample(gps_snapshot);
 
     /*
