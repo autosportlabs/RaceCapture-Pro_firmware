@@ -64,14 +64,16 @@ INCLUDES = 	-I. \
 		-I$(MOCK_DIR) \
 		-I$(GPS_DIR) \
 		-I$(LAP_STATS_DIR) \
+		-I$(FREE_RTOS_KERNEL_DIR)/ \
 		-I$(FREE_RTOS_KERNEL_DIR)/include \
+		-I$(FREE_RTOS_KERNEL_DIR)/include_testing \
 		-I$(UTIL_DIR)
 
 # set up compiler and options
-CXX = clang++
+CPP = clang++
 CC = clang++
-CXXFLAGS = -g $(INCLUDES) -DRCP_TESTING -DAPI_REV=$(API) -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
 CPPFLAGS = -g $(INCLUDES) -DRCP_TESTING -DAPI_REV=$(API) -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
+CFLAGS = -g $(INCLUDES) -DRCP_TESTING -DAPI_REV=$(API) -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
 
 #-----Suffix Rules---------------------------
 # set up C++ suffixes and relationship between .cc and .o files
@@ -80,15 +82,15 @@ dir_guard=@mkdir -p $(@D)
 
 build/%.o: %.c
 	$(dir_guard)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 build/%.o: %.cpp
 	$(dir_guard)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CPP) $(CPPFLAGS) -c $< -o $@
 
 build/rcp_base/%.o: ../%.c
 	$(dir_guard)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 #-----File Dependencies----------------------
 
@@ -101,32 +103,36 @@ T_SRC = loggerApi_test.cpp \
 		sector_test.cpp \
 		track_test.cpp \
 		loggerData_test.cpp \
+		loggerFileWriterTest.cpp \
 		virtualChannel_test.cpp \
 		$(GPS_DIR)/gps_test.cpp \
 		$(GPS_DIR)/geoTriggerTest.cpp \
 		$(LAP_STATS_DIR)/elapsedLapTimeTest.cpp \
 		$(LAP_STATS_DIR)/current_lap_test.cpp \
 		$(UTIL_DIR)/numtoa_test.cpp \
-		$(UTIL_DIR)/atonum_test.cpp
-
+		$(UTIL_DIR)/atonum_test.cpp \
 
 SRC =		mock_uart.c \
 		mock_gps_device.c \
 		mock_usb_comm.c \
 		mock_serial.c \
-		src/system/task.cpp \
-		$(MOCK_DIR)/util/taskUtil_mock.c \
+		$(FREE_RTOS_KERNEL_DIR)/stubs/ff.c \
+		$(FREE_RTOS_KERNEL_DIR)/stubs/heap.c \
+		$(FREE_RTOS_KERNEL_DIR)/stubs/queue.c \
+		$(FREE_RTOS_KERNEL_DIR)/stubs/task.c \
 		$(RCP_SRC)/launch_control.c \
 		$(RCP_SRC)/lua/luaScript.c \
 		$(RCP_SRC)/util/modp_numtoa.c \
 		$(RCP_SRC)/util/modp_atonum.c \
 		$(RCP_SRC)/util/mod_string.c \
+		$(RCP_SRC)/util/taskUtil.c \
 		$(RCP_SRC)/jsmn/jsmn.c \
 		$(RCP_SRC)/api/api.c \
 		$(RCP_SRC)/OBD2/OBD2.c \
 		$(RCP_SRC)/logging/printk.c \
 		$(RCP_SRC)/logging/ring_buffer.c \
 		$(RCP_SRC)/logger/loggerApi.c \
+		$(RCP_SRC)/logger/fileWriter.c \
 		$(RCP_SRC)/filter/filter.c \
 		$(RCP_SRC)/imu/imu.c \
 		$(RCP_SRC)/ADC/ADC.c \

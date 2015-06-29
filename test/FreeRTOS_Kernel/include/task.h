@@ -1255,6 +1255,3 @@ signed portBASE_TYPE xTaskGenericCreate( pdTASK_CODE pvTaskCode, const signed ch
 }
 #endif
 #endif /* TASK_H */
-
-
-

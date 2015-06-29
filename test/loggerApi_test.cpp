@@ -5,7 +5,7 @@
  *      Author: brent
  */
 #include "loggerApi_test.h"
-
+#include "FreeRTOS.h"
 #include "constants.h"
 #include "api.h"
 #include "loggerApi.h"
@@ -31,6 +31,7 @@
 #include "lap_stats.h"
 #include "launch_control.h"
 #include "task.h"
+#include "task_testing.h"
 #define JSON_TOKENS 10000
 #define FILE_PREFIX string("json_api_files/")
 

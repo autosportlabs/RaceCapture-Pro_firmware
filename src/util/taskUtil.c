@@ -10,7 +10,7 @@ size_t getCurrentTicks()
 
 int isTimeoutMs(unsigned int startTicks, unsigned int timeoutMs)
 {
-    return ((xTaskGetTickCount() - startTicks) * portTICK_RATE_MS >= timeoutMs);
+    return ((xTaskGetTickCount() - startTicks) * portTICK_RATE_MS) >= timeoutMs;
 }
 
 void delayMs(unsigned int delay)
