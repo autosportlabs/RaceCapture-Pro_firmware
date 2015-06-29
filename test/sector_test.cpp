@@ -195,7 +195,7 @@ void SectorTest::testSectorTimes(){
 
            if (currentlap != last_currentlap){
                if (last_currentlap == 0) {
-                   //we are calculating distance in advance of the
+                   //we are calculating distance in advance of the first lap starting
                    CPPUNIT_ASSERT(getLapDistance() > 0);
                }
                last_currentlap = currentlap;
