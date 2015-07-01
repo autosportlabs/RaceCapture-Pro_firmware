@@ -263,19 +263,19 @@ int getConnectivitySampleRateLimit()
     return sampleRateLimit;
 }
 
-// STIEG: FIX ME! This can be done with math
+/* Filter sample rates to only allow rates we support */
 int encodeSampleRate(int sampleRate)
 {
-
+    if (sampleRate > MAX_SENSOR_SAMPLE_RATE){
+        return SAMPLE_DISABLED;
+    }
     switch(sampleRate) {
-#if MAX_SENSOR_SAMPLE_RATE > 100
     case 1000:
         return SAMPLE_1000Hz;
     case 500:
         return SAMPLE_500Hz;
     case 200:
         return SAMPLE_200Hz;
-#endif
     case 100:
         return SAMPLE_100Hz;
     case 50:
@@ -288,40 +288,19 @@ int encodeSampleRate(int sampleRate)
         return SAMPLE_5Hz;
     case 1:
         return SAMPLE_1Hz;
-    default:
     case 0:
+    default:
         return SAMPLE_DISABLED;
     }
 }
 
-// STIEG: FIX ME!  This can be done with math.
-int decodeSampleRate(int sampleRateCode)
+int decodeSampleRate(int rate_code)
 {
-
-    switch(sampleRateCode) {
-#if MAX_SENSOR_SAMPLE_RATE > 100
-    case SAMPLE_1000Hz:
-        return 1000;
-    case SAMPLE_500Hz:
-        return 500;
-    case SAMPLE_200Hz:
-        return 200;
-#endif
-    case SAMPLE_100Hz:
-        return 100;
-    case SAMPLE_50Hz:
-        return 50;
-    case SAMPLE_25Hz:
-        return 25;
-    case SAMPLE_10Hz:
-        return 10;
-    case SAMPLE_5Hz:
-        return 5;
-    case SAMPLE_1Hz:
-        return 1;
-    default:
-    case SAMPLE_DISABLED:
-        return 0;
+    if (rate_code == 0) {
+        return SAMPLE_DISABLED;
+    }
+    else {
+        return TICK_RATE_HZ / rate_code;
     }
 }
 
