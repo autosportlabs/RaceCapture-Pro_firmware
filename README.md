@@ -1,12 +1,13 @@
-RaceCapturePro Firmware
+RaceCapture/Pro Firmware
 =====
 The premier open source telemetry system for your race vehicle.
-RaceCapturePro is a device that gets installed into your race vehicle
-and beams telemetry about your vehicle and driving habits in real
-time.  Combined with [RaceCapture
+RaceCapture/Pro is a hardware device that is installed in your vehicle
+that beams driving and vehicle telemetry to the cloud in real
+time. Combined with [RaceCapture
 App](https://github.com/autosportlabs/RaceCapture_App) and
-[RaceCapture Live](https://race-capture.com/) a driver and their pit
-crew can get the information and extra edge needed to win.
+[RaceCapture Live](https://race-capture.com/), teams and drivers can
+use the platform to learn how to drive faster an drive better, giving
+them the edge to win.
 
 
 # Contributing
@@ -37,22 +38,26 @@ using the Race Analyzer software.  We will do what we can to help
 but do understand that this is unreleased code, and sometimes it has
 bugs.
 
-
 # Platforms
 The project is designed with multiple platforms in mind.  Most
 platforms are hardware based but the testing platform is a pseudo
 platform that we use for mock operations to test our firmware.  Info
 on each platform and how to use/compile for it can be found below.
 
+## Simple Build All Tool
+To make things super simple there is a script called do_release.sh
+that will build all platforms and test.  To invoke it simply run
+`./do_release.sh` from the root directory of the project.
+
 ## MK1
-MK1 was the original RaceCapturePro unit.  Based on the AT91SAM7s
+MK1 is the original RaceCapture/Pro unit.  Based on the AT91SAM7s
 chipset, it provided a solid platform for our initial release.  It
-allowd for up to a 100Hz channel sampling rate and up to 10Hz GPS.  It
-also supported CAN & OBD2, various I/O, an SD card, and a remote GPS
-mouse for high quality GPS reception.  It came with a separate
-telemetry unit that would handle passing the data over the Cellular
-network.  It however has now been succedded by the next generation of
-RaceCapturePro
+allows for up to a 100Hz channel sampling rate and up to 10Hz GPS
+sampling.  It also supports CAN & OBD-II via the extrernal CANx
+module, various I/O, an SD card, and a remote GPS mouse for high
+quality GPS reception.  It optionally comes with a separate telemetry
+unit that can handle passing the data over the cellular network.  It,
+has now been succedded by the next generation of RaceCapture/Pro, MK2.
 
 ### Toolchain Setup
 Do the following to setup the MK1 toolchain
@@ -91,10 +96,10 @@ Perform the following steps from the root level of the project:
 
 
 ## MK2
-MK2 is the second generation RaceCapturePro unit.  Like its successor
+MK2 is the second generation RaceCapture/Pro unit.  Like its successor
 it has many of the same features that were originally loved, all of
 which have been improved upon.  It also has some new features that
-were unavialable in the original MK1.  MK2 supports sampling rates of
+were unavailable in the original MK1.  MK2 supports sampling rates of
 up to 1 Kilo Hertz per channel (a 10x improvement from MK1) and a GPS unit
 that can sample up to 50Hz (a 5x improvement from MK1).  It also
 includes a betteriInertial unit, an upgraded processor (STM32 base),
