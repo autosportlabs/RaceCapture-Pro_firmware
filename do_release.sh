@@ -43,6 +43,7 @@ make PLAT=sam7s generic -j $NUM_PROC
 popd
 make PLAT=sam7s clean
 make PLAT=sam7s all -j $NUM_PROC
+
 sh ./check_elf_size.sh main.elf arm-elf-size $MAX_MK1_ELF_SIZE
 
 MK1_RELEASE_DIR=$RCP_DIST_DIR/RaceCapturePro_MK1
