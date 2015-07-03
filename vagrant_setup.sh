@@ -73,7 +73,7 @@ sudo python setup.py install
 tmp_file="$(mktemp)"
 cat >"$tmp_file" <<EOF
 # ASL script to setup our bin path.
-export PATH="\$PATH:${asl_bins}"
+export PATH="${asl_bins}:\$PATH"
 
 EOF
 sudo mv "$tmp_file" "$ASL_PROFILE"
