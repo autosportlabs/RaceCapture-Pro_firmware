@@ -156,7 +156,7 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
 
           GPS_sample_update(&sample);
           GpsSnapshot snap = getGpsSnapshot();
-          lapStats_processUpdate(&snap);
+          lapstats_processUpdate(&snap);
 
           const unsigned long millis = getMillisSinceEpoch();
           //printf("---\n");

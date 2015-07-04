@@ -1,20 +1,21 @@
-#include "sampleRecord_test.h"
+#include "ADC.h"
+#include "ADC_mock.h"
+#include "FreeRTOS.h"
 #include "GPIO.h"
+#include "capabilities.h"
+#include "gps.h"
+#include "imu.h"
+#include "lap_stats.h"
 #include "loggerConfig.h"
+#include "loggerHardware.h"
+#include "loggerSampleData.test.h"
 #include "predictive_timer_2.h"
 #include "sampleRecord.h"
-#include "loggerSampleData.test.h"
 #include "sampleRecord_test.h"
-#include "loggerHardware.h"
-#include "ADC_mock.h"
-#include "ADC.h"
-#include "imu.h"
-#include "gps.h"
-#include "lap_stats.h"
+#include "sampleRecord_test.h"
 #include "task.h"
-#include "capabilities.h"
+#include "task_testing.h"
 #include <string>
-#include "include/taskUtil_mock.h"
 
 using std::string;
 
@@ -26,7 +27,7 @@ void SampleRecordTest::setUp()
 	InitLoggerHardware();
 	GPS_init(10, get_serial(SERIAL_GPS));
 	initialize_logger_config();
-	resetCurrentTicks();
+	reset_ticks();
 }
 
 
@@ -55,8 +56,8 @@ void SampleRecordTest::testPopulateSampleRecord(){
 	lm.type = LoggerMessageType_Sample;
 
    // Set it so we have 1 tick.
-   resetTicks();
-   incrementTick();
+   reset_ticks();
+   increment_tick();
    CPPUNIT_ASSERT_EQUAL(1, (int) (xTaskGetTickCount()));
 
 	const unsigned short highSampleRate =
@@ -346,13 +347,13 @@ void SampleRecordTest::testIsValidLoggerMessageAge() {
     LoggerMessage lm;
     lm.ticks = 0;
 
-    setCurrentTicks(0);
+    set_ticks(0);
     CPPUNIT_ASSERT_EQUAL(1, isValidLoggerMessageAge(&lm));
 
-    setCurrentTicks(9);
+    set_ticks(9);
     CPPUNIT_ASSERT_EQUAL(1, isValidLoggerMessageAge(&lm));
 
-    setCurrentTicks(10);
+    set_ticks(10);
     CPPUNIT_ASSERT_EQUAL(0, isValidLoggerMessageAge(&lm));
 }
 

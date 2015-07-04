@@ -1,9 +1,9 @@
 /**
- * AutoSport Labs - Race Capture Pro Firmware
+ * Race Capture Pro Firmware
  *
- * Copyright (C) 2014 AutoSport Labs
+ * Copyright (C) 2014 Autosport Labs
  *
- * This file is part of the Race Capture Pro firmware suite
+ * This file is part of the Race Capture Pro fimrware suite
  *
  * This is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -14,23 +14,18 @@
  *
  * See the GNU General Public License for more details. You should have received a copy of the GNU
  * General Public License along with this code. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authors: Stieg
  */
 
-#ifndef BLUETOOTH_H_
-#define BLUETOOTH_H_
+#ifndef _FILEWRITER_TESTING_H_
+#define _FILEWRITER_TESTING_H_
 
-#include "devices_common.h"
-#include "stddef.h"
+#include "fileWriter.h"
 
-typedef enum {
-    BT_STATUS_NOT_INIT = 0,
-    BT_STATUS_PROVISIONED,
-    BT_STATUS_ERROR
-} bluetooth_status_t;
+int flush_logfile(struct logging_status *ls);
+int logging_stop(struct logging_status *ls);
+int logging_start(struct logging_status *ls);
+int logging_sample(struct logging_status *ls, LoggerMessage *msg);
 
-bluetooth_status_t bt_get_status();
-int bt_init_connection(DeviceConfig *config);
-int bt_disconnect(DeviceConfig *config);
-int bt_check_connection_status(DeviceConfig *config);
-
-#endif /* BLUETOOTH_H_ */
+#endif /* _FILEWRITER.TESTING_H_ */

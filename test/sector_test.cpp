@@ -124,9 +124,12 @@ void SectorTest::testSectorTimes(){
 	Track testTrack = Test_Track;
 	memcpy(trackCfg, &testTrack, sizeof(Track));
 
+	getWorkingLoggerConfig()->TrackConfigs.auto_detect = 0;
+
 	vector<float> sectorTimes;
 	int currentSector = -1;
-	int currentLap = 0;
+	int last_lapcount = 0;
+	int last_currentlap = 0;
 	int lineNo = 0;
 	string line;
 
@@ -147,8 +150,9 @@ void SectorTest::testSectorTimes(){
                || longitudeRaw.size() == 0 || speedRaw.size() == 0
                || timeRaw.size() == 0) continue;
 
-           //printf("%d,%d,%f\n", getLapCount(), getSector(), getLapDistanceInMiles());
-           //printf("%s", line.c_str());
+           if (debug) {
+               printf("%d,%d,%d,%f\n",lapstats_current_lap(), getLapCount(), getSector(), getLapDistanceInMiles());
+           }
 
            float lat = modp_atof(latitudeRaw.c_str());
            float lon = modp_atof(longitudeRaw.c_str());
@@ -174,11 +178,13 @@ void SectorTest::testSectorTimes(){
 
            GPS_sample_update(&sample);
            GpsSnapshot snap = getGpsSnapshot();
-           lapStats_processUpdate(&snap);
+           lapstats_processUpdate(&snap);
 
            // Start Work!
            const int sector = getSector();
            const int lap = getLapCount();
+           const int currentlap = lapstats_current_lap();
+
 
            if (sector != currentSector){
                    if (debug) printf("Sector boundary crossed ( %d -> %d )\r\n",
@@ -187,22 +193,30 @@ void SectorTest::testSectorTimes(){
                    currentSector = sector;
            }
 
-           if (lap != currentLap) {
+           if (currentlap != last_currentlap){
+               if (last_currentlap == 0) {
+                   //we are calculating distance in advance of the first lap starting
+                   CPPUNIT_ASSERT(getLapDistance() > 0);
+               }
+               last_currentlap = currentlap;
+           }
+
+           if (lap != last_lapcount) {
                    const float lastLapTime = getLastLapTime();
                    const float sum = sumSectorTimes(sectorTimes);
 
                    if (debug) printf("Lap boundary crossed ( %d -> %d ) | "
                                      "Lap time: %f | Sum of sector times: %f"
-                                     "\r\n", currentLap, lap, lastLapTime, sum);
+                                     "\r\n", last_lapcount, lap, lastLapTime, sum);
                    outputSectorTimes(sectorTimes, lap);
 
-                   if (currentLap > 0) {
+                   if (last_lapcount > 0) {
                            CPPUNIT_ASSERT_EQUAL(5, (int) sectorTimes.size());
                            CPPUNIT_ASSERT_CLOSE_ENOUGH(sum, lastLapTime);
                    }
 
                    sectorTimes.clear();
-                   currentLap = lap;
+                   last_lapcount = lap;
            }
 
 
@@ -214,7 +228,7 @@ void SectorTest::testSectorTimes(){
 
 	}
 
-   CPPUNIT_ASSERT_EQUAL(4, currentLap);
+   CPPUNIT_ASSERT_EQUAL(4, last_lapcount);
 }
 
 void SectorTest::testStageSectorTimes() {
@@ -287,7 +301,7 @@ void SectorTest::testStageSectorTimes() {
 
     GPS_sample_update(&sample);
     GpsSnapshot snap = getGpsSnapshot();
-    lapStats_processUpdate(&snap);
+    lapstats_processUpdate(&snap);
 
     /*
     printf("second: %d, atSector = %d, sectorCount = %d, lastSector = %d\n",

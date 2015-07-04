@@ -15,8 +15,8 @@
 #define IMEI_NUMBER_LENGTH 16
 
 static cellmodem_status_t g_cellmodem_status = CELLMODEM_STATUS_NOT_INIT;
-static char g_subscriber_number[MAX_SUBSCRIBER_NUMBER_LENGTH] = {0};
-static char g_IMEI_number[IMEI_NUMBER_LENGTH] = {0};
+static char g_subscriber_number[MAX_SUBSCRIBER_NUMBER_LENGTH];
+static char g_IMEI_number[IMEI_NUMBER_LENGTH];
 
 static char *g_cellBuffer;
 static size_t g_bufferLen;
