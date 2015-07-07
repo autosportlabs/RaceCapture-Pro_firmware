@@ -300,7 +300,6 @@ int api_getStatus(Serial *serial, const jsmntok_t *json)
 
 int api_sampleData(Serial *serial, const jsmntok_t *json)
 {
-
     int sendMeta = 0;
     if (json->type == JSMN_OBJECT && json->size == 2) {
         const jsmntok_t * meta = json + 1;
@@ -322,7 +321,9 @@ int api_sampleData(Serial *serial, const jsmntok_t *json)
 
     struct sample s;
     memset(&s, 0, sizeof(struct sample));
-    init_sample_buffer(&s, channelCount);
+    const size_t size = init_sample_buffer(&s, channelCount);
+    if (!size)
+       return API_ERROR_SEVERE;
 
     populate_sample_buffer(&s, 0);
     api_send_sample_record(serial, &s, 0, sendMeta);
@@ -411,13 +412,15 @@ int api_getMeta(Serial *serial, const jsmntok_t *json)
     if (0 == channelCount)
         return API_ERROR_SEVERE;
 
-    struct sample sample;
-    memset(&sample, 0, sizeof(struct sample));
-    init_sample_buffer(&sample, channelCount);
+    struct sample s;
+    memset(&s, 0, sizeof(struct sample));
+    const size_t size = init_sample_buffer(&s, channelCount);
+    if (!size)
+       return API_ERROR_SEVERE;
 
-    write_sample_meta(serial, &sample, getConnectivitySampleRateLimit(), 0);
+    write_sample_meta(serial, &s, getConnectivitySampleRateLimit(), 0);
 
-    free_sample_buffer(&sample);
+    free_sample_buffer(&s);
     json_objEnd(serial, 0);
     return API_SUCCESS_NO_RETURN;
 }

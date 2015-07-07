@@ -19,10 +19,13 @@ size_t init_sample_buffer(struct sample *s, const size_t count)
                 free_sample_buffer(s);
 
         const size_t size = sizeof(ChannelSample[count]);
-        s->ticks = 0;
-        s->channel_count = count;
         s->channel_samples = (ChannelSample *) portMalloc(size);
 
+        if (NULL == s->channel_samples)
+                return 0;
+
+        s->ticks = 0;
+        s->channel_count = count;
         init_channel_sample_buffer(getWorkingLoggerConfig(), s);
 
         return size;

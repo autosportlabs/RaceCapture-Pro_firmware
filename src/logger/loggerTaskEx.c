@@ -105,16 +105,23 @@ void startLoggerTaskEx(int priority)
                  LOGGER_STACK_SIZE, NULL, priority, NULL );
 }
 
-static size_t init_samples(LoggerConfig *loggerConfig)
+static int init_sample_ring_buffer(LoggerConfig *loggerConfig)
 {
         const size_t channel_count = get_enabled_channel_count(loggerConfig);
         struct sample *s = g_sample_buffer;
         const struct sample * const end = s + LOGGER_MESSAGE_BUFFER_SIZE;
 
-        for (; s < end; ++s)
-                init_sample_buffer(s, channel_count);
+        for (int i = 0; s < end; ++s; ++i) {
+                const size_t bytes = init_sample_buffer(s, channel_count);
+                if (bytes) {
+                        /* If here, then can't alloc memory for buffers */
+                        pr_error("Failed to allocate memory for sample buffers\r\n");
+                        break;
+                }
+        }
 
-        return channel_count;
+        pr_info_int("Sample buffers allocated: ", i);
+        return i;
 }
 
 static int calcTelemetrySampleRate(LoggerConfig *config, int desiredSampleRate)
@@ -123,8 +130,8 @@ static int calcTelemetrySampleRate(LoggerConfig *config, int desiredSampleRate)
     return isHigherSampleRate(desiredSampleRate, maxRate) ? maxRate : desiredSampleRate;
 }
 
-size_t updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate,
-                         int *telemetrySampleRate, int *timebaseSampleRate)
+void updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate,
+                       int *telemetrySampleRate, int *timebaseSampleRate)
 {
     *loggingSampleRate = getHighestSampleRate(loggerConfig);
     *timebaseSampleRate = *loggingSampleRate;
@@ -138,8 +145,6 @@ size_t updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate,
     pr_info("/");
     pr_info_int(decodeSampleRate(*telemetrySampleRate));
     pr_info("\r\n");
-
-    return init_samples(loggerConfig);
 }
 
 void loggerTaskEx(void *params)
@@ -147,7 +152,7 @@ void loggerTaskEx(void *params)
         LoggerConfig *loggerConfig = getWorkingLoggerConfig();
         size_t bufferIndex = 0;
         size_t currentTicks = 0;
-        size_t channelCount = 0;
+        int buffer_size = 0;
         int loggingSampleRate = SAMPLE_DISABLED;
         int sampleRateTimebase = SAMPLE_DISABLED;
         int telemetrySampleRate = SAMPLE_DISABLED;
@@ -169,9 +174,10 @@ void loggerTaskEx(void *params)
                 if (g_configChanged) {
                         g_configChanged = 0;
                         currentTicks = 0;
-                        channelCount = updateSampleRates(
-                                loggerConfig, &loggingSampleRate,
-                                &telemetrySampleRate, &sampleRateTimebase);
+                        updateSampleRates(loggerConfig, &loggingSampleRate,
+                                          &telemetrySampleRate,
+                                          &sampleRateTimebase);
+                        buffer_size = init_sample_ring_buffer(loggerConfig);
                         resetLapCount();
                         lapstats_reset_distance();
                 }
@@ -194,7 +200,6 @@ void loggerTaskEx(void *params)
 
                 /* Prepare a LoggerMessage */
                 struct sample *sample = &g_sample_buffer[bufferIndex];
-                sample->channel_count = channelCount;
                 LoggerMessage msg = create_logger_message(
                         LoggerMessageType_Sample, sample);
 
@@ -223,6 +228,6 @@ void loggerTaskEx(void *params)
                         queueTelemetryRecord(&msg);
 
                 ++bufferIndex;
-                bufferIndex %= LOGGER_MESSAGE_BUFFER_SIZE;
+                bufferIndex %= buffer_size;
         }
 }
