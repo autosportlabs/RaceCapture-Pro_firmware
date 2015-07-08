@@ -18,6 +18,7 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
+#include "taskUtil.h"
 #include "semphr.h"
 #include "logger.h"
 #include "mod_string.h"
@@ -110,8 +111,9 @@ static int init_sample_ring_buffer(LoggerConfig *loggerConfig)
         const size_t channel_count = get_enabled_channel_count(loggerConfig);
         struct sample *s = g_sample_buffer;
         const struct sample * const end = s + LOGGER_MESSAGE_BUFFER_SIZE;
+        int i;
 
-        for (int i = 0; s < end; ++s; ++i) {
+        for (i = 0; s < end; ++s, ++i) {
                 const size_t bytes = init_sample_buffer(s, channel_count);
                 if (bytes) {
                         /* If here, then can't alloc memory for buffers */
@@ -120,7 +122,7 @@ static int init_sample_ring_buffer(LoggerConfig *loggerConfig)
                 }
         }
 
-        pr_info_int("Sample buffers allocated: ", i);
+        pr_info_int_msg("Sample buffers allocated: ", i);
         return i;
 }
 
@@ -165,22 +167,38 @@ void loggerTaskEx(void *params)
 
         while (1) {
                 xSemaphoreTake(onTick, portMAX_DELAY);
-                watchdog_reset();
                 ++currentTicks;
 
-                if (currentTicks % BACKGROUND_SAMPLE_RATE == 0)
-                        doBackgroundSampling();
-
                 if (g_configChanged) {
-                        g_configChanged = 0;
-                        currentTicks = 0;
+                        buffer_size = init_sample_ring_buffer(loggerConfig);
+                        if (!buffer_size) {
+                                pr_error("Failed to allocate any buffers!\r\n");
+                                LED_enable(3);
+
+                                /*
+                                 * Do this to ensure the log message gets out
+                                 * and we give system time to recover.
+                                 */
+                                delayMs(10);
+                                continue;
+                        }
+
+                        LED_disable(3);
+
                         updateSampleRates(loggerConfig, &loggingSampleRate,
                                           &telemetrySampleRate,
                                           &sampleRateTimebase);
-                        buffer_size = init_sample_ring_buffer(loggerConfig);
                         resetLapCount();
                         lapstats_reset_distance();
+                        currentTicks = 0;
+                        g_configChanged = 0;
                 }
+
+                /* Only reset the watchdog when we are configured and ready to rock */
+                watchdog_reset();
+
+                if (currentTicks % BACKGROUND_SAMPLE_RATE == 0)
+                        doBackgroundSampling();
 
                 const bool is_logging = logging_is_active();
                 if (g_loggingShouldRun && !is_logging) {
