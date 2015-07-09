@@ -270,7 +270,7 @@ int CAN_device_rx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
         uint32_t address = rxMsg.StdId;
 
         if (msg->isExtendedAddress) {
-            address = (address << 18) | rxMsg.ExtId;
+            address = rxMsg.ExtId;
         }
 
         msg->addressValue = 0x1FFFFFFF & address;	// mask out extra bits
