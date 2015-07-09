@@ -269,7 +269,7 @@ int CAN_device_rx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
     CanRxMsg rxMsg;
     if (xQueueReceive(channel == 0 ? xCan1Rx : xCan2Rx, &rxMsg, msToTicks(timeoutMs)) == pdTRUE) {
         msg->isExtendedAddress = rxMsg.IDE == CAN_ID_EXT ? 1 : 0;
-        uint32_t address = msg->isExtendedAddress ? rxMsg.ExtId : rxMsg.StdId;
+        msg->addressValue = msg->isExtendedAddress ? rxMsg.ExtId : rxMsg.StdId;
         memcpy(msg->data, rxMsg.Data, rxMsg.DLC);
         msg->dataLength = rxMsg.DLC;
         return 1;
