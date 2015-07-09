@@ -5,6 +5,7 @@
 * Improved tolerance and recovery to SD card write/eject/reinsertion
 * Reset CPU after we load factory defaults
 * Reduce MK1 firmware size by over 15K by removing unneeded symbols in LUA lib.
+* Fixed handling of extended CAN IDs
 
 === 2.8.3 ===
 * Read cell module stats before checking if on network
