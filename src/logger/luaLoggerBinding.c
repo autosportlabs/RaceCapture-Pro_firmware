@@ -296,7 +296,7 @@ int Lua_GetButton(lua_State *L)
  */
 int Lua_InitSerial(lua_State *L)
 {
-    int lua_top =lua_gettop(L);
+    int lua_top = lua_gettop(L);
     serial_id_t port = lua_top >= 1 ? lua_tointeger(L,1) : LUA_DEFAULT_SERIAL_PORT;
     uint32_t baud = lua_top >= 2 ? lua_tointeger(L, 2) : LUA_DEFAULT_SERIAL_BAUD;
     uint8_t bits = lua_top >= 3 ? lua_tointeger(L, 3) : LUA_DEFAULT_SERIAL_BITS;
