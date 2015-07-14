@@ -40,6 +40,36 @@
 
 char g_tempBuffer[TEMP_BUFFER_LEN];
 
+static int lua_get_uptime(lua_State *L)
+{
+        lua_pushinteger(L, (int) getUptime());
+        return 1;
+}
+
+static int lua_get_date_time(lua_State *L)
+{
+        const GpsSample sample = getGpsSample();
+
+        /*
+         * Have to use DateTime because LUA only uses floats and ints.
+         * Time is a uint64t value so can't just use it directly.  Hence
+         * this.  If folks want a monotonically increasing value, they
+         * need to use getUptime call.
+         */
+        DateTime dt;
+        getDateTimeFromEpochMillis(&dt, sample.time);
+
+        lua_pushinteger(L, (int) dt.year);
+        lua_pushinteger(L, (int) dt.month);
+        lua_pushinteger(L, (int) dt.day);
+        lua_pushinteger(L, (int) dt.hour);
+        lua_pushinteger(L, (int) dt.minute);
+        lua_pushinteger(L, (int) dt.second);
+        lua_pushinteger(L, (int) dt.millisecond);
+
+        return 7;
+}
+
 void registerLuaLoggerBindings(lua_State *L)
 {
 
@@ -109,6 +139,10 @@ void registerLuaLoggerBindings(lua_State *L)
 
     lua_registerlight(L, "addChannel", Lua_AddVirtualChannel);
     lua_registerlight(L, "setChannel", Lua_SetVirtualChannelValue);
+
+    /* Timing info */
+    lua_registerlight(L, "getUptime", lua_get_uptime);
+    lua_registerlight(L, "getDateTime", lua_get_date_time);
 }
 
 ////////////////////////////////////////////////////
