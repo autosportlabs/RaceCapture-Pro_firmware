@@ -34,7 +34,7 @@ Vagrant.configure(2) do |config|
     # Attempt to auto attach RCP USB devices to VM
     vb.customize ["usbfilter", "add", "0", "--target", :id,
                   "--name", "Capture ASL Devices", "--action", "hold",
-                  "--active", "yes", "--vendorid", "16d0"]
+                  "--active", "no", "--vendorid", "16d0"]
   end
 
   # Enable provisioning with a shell script. Additional provisioners such as
