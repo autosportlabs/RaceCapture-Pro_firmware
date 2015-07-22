@@ -73,42 +73,38 @@ int sim900_init_connection(DeviceConfig *config)
     setCellBuffer(config->buffer, config->length);
     Serial *serial = config->serial;
 
-	pr_debug("init cell connection\r\n");
-	int initResult = DEVICE_INIT_FAIL;
-	g_active_since = 0;
-    CellularConfig *cellCfg = &(loggerConfig->ConnectivityConfigs.cellularConfig);
-    TelemetryConfig *telemetryConfig = &(loggerConfig->ConnectivityConfigs.telemetryConfig);
-	if (0 == initCellModem(serial, cellCfg)){
-		if (0 == configureNet(serial)){
-			pr_info("cell: network configured\r\n");
-			if( 0 == connectNet(serial, telemetryConfig->telemetryServerHost, TELEMETRY_SERVER_PORT, 0)){
-				pr_info("cell: server connected\r\n");
-				if (0 == writeAuthJSON(serial, telemetryConfig->telemetryDeviceId)){
-					pr_info("cell: server authenticated\r\n");
-					initResult = DEVICE_INIT_SUCCESS;
-					g_connection_status = TELEMETRY_STATUS_CONNECTED;
-					g_active_since = getUptimeAsInt();
-				}
-				else{
-					g_connection_status = TELEMETRY_STATUS_REJECTED_DEVICE_ID;
-					pr_error_str_msg("err: auth- token: ", telemetryConfig->telemetryDeviceId);
-				}
-			}
-			else{
-				g_connection_status = TELEMETRY_STATUS_SERVER_CONNECTION_FAILED;
-				pr_error_str_msg("err: server connect ", telemetryConfig->telemetryServerHost);
-			}
-		}
-		else{
-			g_connection_status = TELEMETRY_STATUS_INTERNET_CONFIG_FAILED;
-			pr_error("Failed to configure network\r\n");
-		}
-	}
-	else{
-		g_connection_status = TELEMETRY_STATUS_CELL_REGISTRATION_FAILED;
-		pr_warning("Failed to init cell connection\r\n");
-	}
-	return initResult;
+    pr_debug("init cell connection\r\n");
+    int initResult = DEVICE_INIT_FAIL;
+    g_active_since = 0;
+    if (0 == initCellModem(serial)) {
+        CellularConfig *cellCfg = &(loggerConfig->ConnectivityConfigs.cellularConfig);
+        TelemetryConfig *telemetryConfig = &(loggerConfig->ConnectivityConfigs.telemetryConfig);
+        if (0 == configureNet(serial, cellCfg->apnHost, cellCfg->apnUser, cellCfg->apnPass)) {
+            pr_info("cell: network configured\r\n");
+            if( 0 == connectNet(serial, telemetryConfig->telemetryServerHost, TELEMETRY_SERVER_PORT, 0)) {
+                pr_info("cell: server connected\r\n");
+                if (0 == writeAuthJSON(serial, telemetryConfig->telemetryDeviceId)) {
+                    pr_info("cell: server authenticated\r\n");
+                    initResult = DEVICE_INIT_SUCCESS;
+                    g_connection_status = TELEMETRY_STATUS_CONNECTED;
+                    g_active_since = getUptimeAsInt();
+                } else {
+                    g_connection_status = TELEMETRY_STATUS_REJECTED_DEVICE_ID;
+                    pr_error_str_msg("err: auth- token: ", telemetryConfig->telemetryDeviceId);
+                }
+            } else {
+                g_connection_status = TELEMETRY_STATUS_SERVER_CONNECTION_FAILED;
+                pr_error_str_msg("err: server connect ", telemetryConfig->telemetryServerHost);
+            }
+        } else {
+            g_connection_status = TELEMETRY_STATUS_INTERNET_CONFIG_FAILED;
+            pr_error("Failed to configure network\r\n");
+        }
+    } else {
+        g_connection_status = TELEMETRY_STATUS_CELL_REGISTRATION_FAILED;
+        pr_warning("Failed to init cell connection\r\n");
+    }
+    return initResult;
 }
 
 int sim900_check_connection_status(DeviceConfig *config)
