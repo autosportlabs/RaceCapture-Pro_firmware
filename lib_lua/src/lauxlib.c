@@ -710,9 +710,8 @@ static void *l_alloc (void *ud, void *ptr, size_t osize, size_t nsize)
 static int panic (lua_State *L)
 {
     (void)L;  /* to avoid warnings */
-    /* XXX STIEG: Removed for space reasons... printf */
-    /* fprintf(stderr, "PANIC: unprotected error in call to Lua API (%s)\n", */
-    /*         lua_tostring(L, -1)); */
+    fprintf(stderr, "PANIC: unprotected error in call to Lua API (%s)\n",
+            lua_tostring(L, -1));
     return 0;
 }
 
@@ -723,3 +722,4 @@ LUALIB_API lua_State *luaL_newstate (void)
     if (L) lua_atpanic(L, &panic);
     return L;
 }
+

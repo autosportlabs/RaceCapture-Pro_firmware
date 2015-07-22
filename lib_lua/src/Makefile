@@ -12,17 +12,19 @@ ifeq ($(PLAT), sam7s)
 	MCU   = arm7tdmi
 	THUMB = -mthumb -mthumb-interwork
 	CC = arm-elf-gcc
-	CFLAGS= -mcpu=$(MCU) $(THUMB) -ggdb -Os -Wall $(MYCFLAGS) -DLUA_OPTIMIZE_MEMORY=2 -DLUA_USE_MKSTEMP=1
+	CFLAGS= -mcpu=$(MCU) $(THUMB) -ggdb -Os -Wall $(MYCFLAGS) -DLUA_OPTIMIZE_MEMORY=2
 	AR = arm-elf-ar rcu
 	RANLIB= arm-elf-ranlib
 else
+
 ifeq ($(PLAT), stm32)
 	MCU   = cortex-m4
-	THUMB = -mthumb
+	THUMB = -mthumb 
 	CC = arm-none-eabi-gcc
-	CFLAGS= -mcpu=$(MCU) $(THUMB) -ggdb -Os -Wall $(MYCFLAGS) -DLUA_OPTIMIZE_MEMORY=2 -DLUA_USE_MKSTEMP=1
+	CFLAGS= -mcpu=$(MCU) $(THUMB) -ggdb -Os -Wall $(MYCFLAGS) -DLUA_OPTIMIZE_MEMORY=2
 	AR = arm-none-eabi-ar rcu
 	RANLIB= arm-none-eabi-ranlib
+	
 else
 $(error please specify PLAT=stm32 or PLAT=sam7s)
 endif

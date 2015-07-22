@@ -60,13 +60,8 @@ void setCellBuffer(char *buffer, size_t len)
 static int readModemWait(Serial *serial, size_t delay)
 {
     int c = serial->get_line_wait(g_cellBuffer, g_bufferLen, msToTicks(delay));
-    if (c > 2) {
-            /*
-             * Cell messages always end with a newline.  This also ignores
-             * the messages that are simply stupid short.
-             */
-            pr_debug("Cell: read ");
-            pr_debug(g_cellBuffer);
+    if (c > 0) {
+        pr_debug_str_msg("Cell: read ", g_cellBuffer);
     }
     return c;
 }

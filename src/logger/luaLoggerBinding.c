@@ -31,44 +31,8 @@
 #define TEMP_BUFFER_LEN 		200
 #define DEFAULT_CAN_TIMEOUT 	100
 #define DEFAULT_SERIAL_TIMEOUT	100
-#define LUA_DEFAULT_SERIAL_PORT SERIAL_AUX
-#define LUA_DEFAULT_SERIAL_BAUD 115200
-#define LUA_DEFAULT_SERIAL_BITS 8
-#define LUA_DEFAULT_SERIAL_PARITY 0
-#define LUA_DEFAULT_SERIAL_STOP_BITS 1
-
 
 char g_tempBuffer[TEMP_BUFFER_LEN];
-
-static int lua_get_uptime(lua_State *L)
-{
-        lua_pushinteger(L, (int) getUptime());
-        return 1;
-}
-
-static int lua_get_date_time(lua_State *L)
-{
-        const GpsSample sample = getGpsSample();
-
-        /*
-         * Have to use DateTime because LUA only uses floats and ints.
-         * Time is a uint64t value so can't just use it directly.  Hence
-         * this.  If folks want a monotonically increasing value, they
-         * need to use getUptime call.
-         */
-        DateTime dt;
-        getDateTimeFromEpochMillis(&dt, sample.time);
-
-        lua_pushinteger(L, (int) dt.year);
-        lua_pushinteger(L, (int) dt.month);
-        lua_pushinteger(L, (int) dt.day);
-        lua_pushinteger(L, (int) dt.hour);
-        lua_pushinteger(L, (int) dt.minute);
-        lua_pushinteger(L, (int) dt.second);
-        lua_pushinteger(L, (int) dt.millisecond);
-
-        return 7;
-}
 
 void registerLuaLoggerBindings(lua_State *L)
 {
@@ -122,11 +86,7 @@ void registerLuaLoggerBindings(lua_State *L)
 
     lua_registerlight(L,"setLed",Lua_SetLED);
 
-    //Serial API
-    lua_registerlight(L,"initSer", Lua_InitSerial);
-    lua_registerlight(L,"readCSer", Lua_ReadSerialChar);
     lua_registerlight(L,"readSer", Lua_ReadSerialLine);
-    lua_registerlight(L,"writeCSer", Lua_WriteSerialChar);
     lua_registerlight(L,"writeSer", Lua_WriteSerialLine);
 
     //Logger configuration editing
@@ -139,10 +99,6 @@ void registerLuaLoggerBindings(lua_State *L)
 
     lua_registerlight(L, "addChannel", Lua_AddVirtualChannel);
     lua_registerlight(L, "setChannel", Lua_SetVirtualChannelValue);
-
-    /* Timing info */
-    lua_registerlight(L, "getUptime", lua_get_uptime);
-    lua_registerlight(L, "getDateTime", lua_get_date_time);
 }
 
 ////////////////////////////////////////////////////
@@ -297,6 +253,7 @@ int Lua_ResetTimerCount(lua_State *L)
     return 0;
 }
 
+
 int Lua_GetTimerCount(lua_State *L)
 {
     int result = -1;
@@ -315,122 +272,6 @@ int Lua_GetButton(lua_State *L)
     return 1;
 }
 
-/**
- * Initializes the specified serial port
- * Lua Params:
- * port - the serial port to initialize
- *        (SERIAL_USB, SERIAL_GPS, SERIAL_TELEMETRY, SERIAL_WIRELESS, SERIAL_AUX) (defaults to SERIAL_AUX)
- * baud - Baud Rate (defaults to 115200)
- * bits - Number of bit in the message (8 or 7) (defaults to 8)
- * parity - (1 = Even Parity, 2 = Odd Parity, 0 = No Parity) (defaults to No Parity)
- * stopBits - number of stop bits (1 or 2) (defaults to 1)
- *
- * Lua Returns:
- * 1 if successful; -1 if parameter error
- */
-int Lua_InitSerial(lua_State *L)
-{
-    int params = lua_gettop(L);
-
-    serial_id_t port = LUA_DEFAULT_SERIAL_PORT;
-    uint32_t baud = LUA_DEFAULT_SERIAL_BAUD;
-    uint8_t bits  = LUA_DEFAULT_SERIAL_BITS;
-    uint8_t parity = LUA_DEFAULT_SERIAL_PARITY;
-    uint8_t stop_bits = LUA_DEFAULT_SERIAL_STOP_BITS;
-
-    switch(params) {
-    case 5:
-        stop_bits = lua_tointeger(L, 5);
-    case 4:
-        parity = lua_tointeger(L, 4);
-    case 3:
-        bits = lua_tointeger(L, 3);
-    case 2:
-        baud = lua_tointeger(L, 2);
-    case 1:
-        port = lua_tointeger(L, 1);
-    case 0:
-        configure_serial(port, bits, parity, stop_bits, baud);
-        lua_pushnumber(L, 1);
-        break;
-    default:
-        lua_pushnumber(L, -1);
-        break;
-    }
-    return 1;
-}
-
-/**
- * Read a character from the specified serial port
- * Lua Params:
- * port - the serial port to initialize
- *        (SERIAL_USB, SERIAL_GPS, SERIAL_TELEMETRY, SERIAL_WIRELESS, SERIAL_AUX)
- * timeout - the read timeout, in ms.
- *
- * Lua Returns:
- * the character read, or nil if no characters received (receive timeout)
- *
- */
-int Lua_ReadSerialChar(lua_State *L)
-{
-    int params = lua_gettop(L);
-    if (!params)
-        return 0;
-
-    serial_id_t port = lua_tointeger(L,1);
-    size_t timeout = params >= 2 ? lua_tointeger(L, 2) : DEFAULT_SERIAL_TIMEOUT;
-    Serial *serial = get_serial(port);
-    if (serial) {
-        char c;
-        if (serial->get_c_wait(&c, timeout)) {
-            lua_pushnumber(L, c);
-            return 1;
-        }
-    }
-    return 0;
-}
-
-/**
- * Read a single newline terminated line from the specified serial port
- * Lua Params:
- * port - the serial port to initialize
- *        (SERIAL_USB, SERIAL_GPS, SERIAL_TELEMETRY, SERIAL_WIRELESS, SERIAL_AUX)
- * timeout - the read timeout, in ms.
- *
- * Lua Returns:
- * the character read, or nil if no characters received (receive timeout)
- *
- */
-int Lua_ReadSerialLine(lua_State *L)
-{
-    size_t params = lua_gettop(L);
-    if (!params)
-        return 0;
-
-    int serialPort = lua_tointeger(L,1);
-    size_t timeout = params >= 2 ? lua_tointeger(L, 2) : DEFAULT_SERIAL_TIMEOUT;
-    Serial *serial = get_serial(serialPort);
-    if (serial) {
-        serial->get_line_wait(g_tempBuffer, TEMP_BUFFER_LEN, timeout);
-        lua_pushstring(L,g_tempBuffer);
-        return 1;
-    }
-    return 0;
-}
-
-/**
- * Writes the specified line to the serial port.
- * The call will block until all characters are written.
- *
- * Lua Params:
- * port - the serial port to write
- *        (SERIAL_USB, SERIAL_GPS, SERIAL_TELEMETRY, SERIAL_WIRELESS, SERIAL_AUX)
- * line - the string to write. A newline will automatically be added at the end.
- *
- * Lua Returns:
- * no return values (nil)
- *
- */
 int Lua_WriteSerialLine(lua_State *L)
 {
     if (lua_gettop(L) >= 2) {
@@ -439,33 +280,23 @@ int Lua_WriteSerialLine(lua_State *L)
         if (serial) {
             const char * data = lua_tostring(L, 2);
             serial->put_s(data);
-            serial->put_s("\n");
+            serial->put_s("\r");
         }
     }
     return 0;
 }
 
-/**
- * Writes the specified character to the serial port.
- * The call will block until the character is written.
- *
- * Lua Params:
- * port - the serial port to write
- *        (SERIAL_USB, SERIAL_GPS, SERIAL_TELEMETRY, SERIAL_WIRELESS, SERIAL_AUX)
- * char - the character to write.
- *
- * Lua Returns:
- * no return values (nil)
- *
- */
-int Lua_WriteSerialChar(lua_State *L)
+int Lua_ReadSerialLine(lua_State *L)
 {
-    if (lua_gettop(L) >= 2) {
+    if (lua_gettop(L) >= 1) {
+        size_t args = lua_gettop(L);
         int serialPort = lua_tointeger(L,1);
+        size_t timeout = args >= 2 ? lua_tointeger(L, 2) : DEFAULT_SERIAL_TIMEOUT;
         Serial *serial = get_serial(serialPort);
         if (serial) {
-            char c = (char)lua_tonumber(L, 2);
-            serial->put_c((char)c);
+            serial->get_line_wait(g_tempBuffer, TEMP_BUFFER_LEN, timeout);
+            lua_pushstring(L,g_tempBuffer);
+            return 1;
         }
     }
     return 0;
