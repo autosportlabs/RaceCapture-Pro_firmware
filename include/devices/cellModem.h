@@ -24,6 +24,7 @@
 
 #include "cpp_guard.h"
 #include "serial.h"
+#include "loggerConfig.h"
 
 #include <stdint.h>
 
@@ -42,8 +43,8 @@ char * cell_get_subscriber_number();
 char * cell_get_IMEI();
 void setCellBuffer(char *buffer, size_t len);
 int loadDefaultCellConfig(Serial *serial);
-int initCellModem(Serial *serial);
-int configureNet(Serial *serial, const char *apnHost, const char *apnUser, const char *apnPass);
+int initCellModem(Serial *serial, CellularConfig *cellCfg);
+int configureNet(Serial *serial);
 int connectNet(Serial *serial, const char *host, const char *port, int udpMode);
 int closeNet(Serial *serial);
 int isNetConnectionErrorOrClosed();
