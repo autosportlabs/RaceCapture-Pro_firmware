@@ -250,12 +250,15 @@ int CAN_device_tx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
     CanTxMsg TxMessage;
 
     /* Transmit Structure preparation */
-    TxMessage.StdId = msg->addressValue;
-    TxMessage.ExtId = 0x00;
+    if (msg->isExtendedAddress) {
+        TxMessage.ExtId = msg->addressValue;
+        TxMessage.IDE = CAN_ID_EXT;
+    } else {
+        TxMessage.StdId = msg->addressValue;
+        TxMessage.IDE = CAN_ID_STD;
+    }
     TxMessage.RTR = CAN_RTR_DATA;
-    TxMessage.IDE = (msg->isExtendedAddress ? CAN_ID_EXT : CAN_ID_STD);
     TxMessage.DLC = msg->dataLength;
-
     memcpy(TxMessage.Data, msg->data, msg->dataLength);
     CAN_Transmit(channel == 0 ? CAN1 : CAN2, &TxMessage);
     return 1;
@@ -265,15 +268,8 @@ int CAN_device_rx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
 {
     CanRxMsg rxMsg;
     if (xQueueReceive(channel == 0 ? xCan1Rx : xCan2Rx, &rxMsg, msToTicks(timeoutMs)) == pdTRUE) {
-
         msg->isExtendedAddress = rxMsg.IDE == CAN_ID_EXT ? 1 : 0;
-        uint32_t address = rxMsg.StdId;
-
-        if (msg->isExtendedAddress) {
-            address = (address << 18) | rxMsg.ExtId;
-        }
-
-        msg->addressValue = 0x1FFFFFFF & address;	// mask out extra bits
+        msg->addressValue = msg->isExtendedAddress ? rxMsg.ExtId : rxMsg.StdId;
         memcpy(msg->data, rxMsg.Data, rxMsg.DLC);
         msg->dataLength = rxMsg.DLC;
         return 1;
