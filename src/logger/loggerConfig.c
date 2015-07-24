@@ -98,12 +98,12 @@ static void resetImuConfig(ImuConfig cfg[])
         ImuConfig *c = cfg + i;
         if (i < IMU_CHANNEL_YAW) {
             *c = (ImuConfig)DEFAULT_IMU_CONFIG;
-        } else if (i < IMU_CHANNEL_COMPASS){
+        } else if (i < IMU_CHANNEL_COMPASS) {
             *c = (ImuConfig)DEFAULT_GYRO_CONFIG;
         } else {
-        	*c = (ImuConfig)DEFAULT_COMPASS_CONFIG;
+            *c = (ImuConfig)DEFAULT_COMPASS_CONFIG;
         }
-		strcpy(c->cfg.label, imu_names[i]);
+        strcpy(c->cfg.label, imu_names[i]);
 
         // Channels go X, Y, Z.  Works perfectly with our counter.
         c->physicalChannel = i;
@@ -268,7 +268,7 @@ int getConnectivitySampleRateLimit()
 /* Filter sample rates to only allow rates we support */
 int encodeSampleRate(int sampleRate)
 {
-    if (sampleRate > MAX_SENSOR_SAMPLE_RATE){
+    if (sampleRate > MAX_SENSOR_SAMPLE_RATE) {
         return SAMPLE_DISABLED;
     }
     switch(sampleRate) {
@@ -300,8 +300,7 @@ int decodeSampleRate(int rate_code)
 {
     if (rate_code == 0) {
         return SAMPLE_DISABLED;
-    }
-    else {
+    } else {
         return TICK_RATE_HZ / rate_code;
     }
 }

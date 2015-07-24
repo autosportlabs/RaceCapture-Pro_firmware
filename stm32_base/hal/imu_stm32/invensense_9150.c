@@ -97,7 +97,6 @@ int is9150_init_compass()
     if (res) {
         return IS_9150_ERR_INIT;
     }
-    pr_info("bypass on\r\n");
 
     /* read magnetometer factory calibration */
     /* first, power down */
@@ -105,14 +104,12 @@ int is9150_init_compass()
     if (res) {
         return IS_9150_ERR_INIT;
     }
-    pr_info("power down\r\n");
 
     /* set magnetometer to read control bits */
     res = is9150_write_mag_reg_bits(IS_REG_MAG_CONTROL, 0, 8, IS_MAG_CTRL_FUSE_ACCESS);
     if (res) {
         return IS_9150_ERR_INIT;
     }
-    pr_info("fuse access\r\n");
 
     /* read the sensitivity data */
     uint8_t sens_data_raw[3];
@@ -121,7 +118,6 @@ int is9150_init_compass()
     if (res) {
         return IS_9150_ERR_INIT;
     }
-    pr_info("read fuse rom\r\n");
 
     /*set compass factory calibration values */
     mag_sens_adj[0] = ((float)sens_data_raw[0] - 128.0) / 256.0 + 1.0f;
@@ -133,86 +129,72 @@ int is9150_init_compass()
     if (res) {
         return IS_9150_ERR_INIT;
     }
-    pr_info("bypass off\r\n");
 
     res = is9150_write_reg(IS_RA_MASTER_CTRL, 0x40);
     if (res) {
         return IS_9150_ERR_INIT;
     }
-    pr_info("set I2C master mode");
 
     res = is9150_write_reg(IS_REG_SLV0_ADDR, 0x80 | 0x0C);
     if (res) {
         return IS_9150_ERR_INIT;
     }
-    pr_info("set slave 0 address");
 
     res = is9150_write_reg(IS_REG_SLV0_REG, 0x02);
     if (res) {
         return IS_9150_ERR_INIT;
     }
-    pr_info("set slave 0 reg");
 
     res = is9150_write_reg(IS_REG_SLV0_CTRL, 0x88);
     if (res) {
         return IS_9150_ERR_INIT;
     }
-    pr_info("set slave 0 ctrl");
 
     res = is9150_write_reg(IS_REG_SLV1_ADDR, 0x0C);
     if (res) {
         return IS_9150_ERR_INIT;
     }
-    pr_info("set slave 1 address");
 
     res = is9150_write_reg(IS_REG_SLV1_REG, 0x0a);
     if (res) {
         return IS_9150_ERR_INIT;
     }
-    pr_info("set slave 1 reg");
 
     res = is9150_write_reg(IS_REG_SLV1_CTRL, 0x81);
     if (res) {
         return IS_9150_ERR_INIT;
     }
-    pr_info("set slave 1 ctrl");
 
     res = is9150_write_reg(IS_REG_SLV1_DO, 0x01);
     if (res) {
         return IS_9150_ERR_INIT;
     }
-    pr_info("set slave 1 DO");
 
     res = is9150_write_reg(IS_REG_SLV1_DO, 0x01);
     if (res) {
         return IS_9150_ERR_INIT;
     }
-    pr_info("set slave 1 DO");
 
     res = is9150_write_reg(IS_REG_MST_DELAY_CTRL, 0x03);
     if (res) {
         return IS_9150_ERR_INIT;
     }
-    pr_info("set mst delay");
 
     res = is9150_write_reg(IS_REG_YG_OFFS_TC, 0x80);
     if (res) {
         return IS_9150_ERR_INIT;
     }
-    pr_info("set yg offs tc");
 
     /* set slowest slave sample rate */
-    res = is9150_write_reg_bits(IS_REG_SLV4_CONTROL, IS_REG_SLV4_RATE_POS, IS_REG_SLV4_RATE_BITS, 20);
+    res = is9150_write_reg_bits(IS_REG_SLV4_CONTROL, IS_REG_SLV4_RATE_POS, IS_REG_SLV4_RATE_BITS, 31);
     if (res) {
         return IS_9150_ERR_INIT;
     }
-    pr_info("set slave rate\r\n");
 
     res = is9150_write_reg(IS_REG_YG_OFFS_TC, 0x80);
     if (res) {
         return IS_9150_ERR_INIT;
     }
-    pr_info("set yg offs tc");
 
     return 0;
 }
@@ -279,18 +261,6 @@ int is9150_init(struct i2c_dev *dev)
         return IS_9150_ERR_INIT;
     }
 
-    res = is9150_write_reg(IS_REG_PWR_MGMT_1, 1);
-    if (res) {
-        return IS_9150_ERR_INIT;
-    }
-    pr_info("set power mgmt 1");
-
-    res = is9150_write_reg(IS_REG_PWR_MGMT_2, 0);
-    if (res) {
-        return IS_9150_ERR_INIT;
-    }
-    pr_info("set power mgmt 2");
-
     return 0;
 }
 
@@ -322,7 +292,6 @@ int is9150_read_accel(struct is9150_accel_data *data)
 
 int is9150_read_mag(struct is9150_mag_data *data)
 {
-
     uint8_t reg_res[6] = {0};
     int res = is9150_read_reg_block(IS_REG_EXT_SENS_DATA_00, IS_MAG_MEAS_COUNT,
                                     reg_res);
@@ -330,32 +299,33 @@ int is9150_read_mag(struct is9150_mag_data *data)
     data->mag_x = (((int16_t)reg_res[1]) << 8) | reg_res[0];
     data->mag_y = (((int16_t)reg_res[3]) << 8) | reg_res[2];
     data->mag_z = (((int16_t)reg_res[5]) << 8) | reg_res[4];
-    /*    pr_info("mag raw: ");
-        pr_info_int(data->mag_x);
-        pr_info(" ");
-        pr_info_int(data->mag_y);
-        pr_info(" ");
-        pr_info_int(data->mag_z);
-        pr_info(" ");
-        pr_info("\r\n");
-    */
+    if (TRACE_LEVEL) {
+        pr_trace("mag raw: ");
+        pr_trace_int(data->mag_x);
+        pr_trace(" ");
+        pr_trace_int(data->mag_y);
+        pr_trace(" ");
+        pr_trace_int(data->mag_z);
+        pr_trace(" ");
+        pr_trace("\r\n");
+    }
     data->mag_x = ((int32_t)data->mag_x * mag_sens_adj[0]);
     data->mag_y = ((int32_t)data->mag_y * mag_sens_adj[1]);
     data->mag_z = ((int32_t)data->mag_z * mag_sens_adj[2]);
-    /*
-    pr_info("mag raw adj: ");
-    pr_info_int(data->mag_x);
-    pr_info(" ");
-    pr_info_int(data->mag_y);
-    pr_info(" ");
-    pr_info_int(data->mag_z);
-    pr_info(" ");
-    pr_info("\r\n");
-    */
+    if (TRACE_LEVEL) {
+        pr_trace("mag raw adj: ");
+        pr_trace_int(data->mag_x);
+        pr_trace(" ");
+        pr_trace_int(data->mag_y);
+        pr_trace(" ");
+        pr_trace_int(data->mag_z);
+        pr_trace(" ");
+        pr_trace("\r\n");
+    }
     float heading = atan2((double)data->mag_y, (double)data->mag_x) * 180.0/3.14159265 + 180;
     while (heading < 0) heading += 360;
     while (heading > 360) heading -= 360;
-    pr_info_int_msg("heading: ", heading);
+    pr_trace_int_msg("heading: ", heading);
     data->compass = heading;
     return res;
 }

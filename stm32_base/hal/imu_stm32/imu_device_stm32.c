@@ -91,8 +91,8 @@ int imu_device_read(unsigned int channel)
         ret = read_buf->gyro.gyro_y;
         break;
     case IMU_CHANNEL_COMPASS:
-    	ret = read_buf->mag.compass;
-    	break;
+        ret = read_buf->mag.compass;
+        break;
     default:
         break;
     }
@@ -115,8 +115,8 @@ float imu_device_counts_per_unit(unsigned int channel)
         ret = IMU_DEVICE_COUNTS_PER_G;
         break;
     case IMU_CHANNEL_COMPASS:
-    	ret = IMU_DEVICE_COUNTS_PER_DEGREE;
-    	break;
+        ret = IMU_DEVICE_COUNTS_PER_DEGREE;
+        break;
     default:
         ret = 0.0;
         break;
