@@ -147,6 +147,7 @@ struct is9150_mag_data {
     int16_t mag_x;
     int16_t mag_y;
     int16_t mag_z;
+    int16_t compass;
 };
 
 struct is9150_all_sensor_data {
