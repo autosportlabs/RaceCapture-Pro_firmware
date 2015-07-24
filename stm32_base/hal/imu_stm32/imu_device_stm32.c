@@ -16,7 +16,6 @@
 
 #define ACCEL_MAX_RANGE 	ACCEL_COUNTS_PER_G * 4
 #define IMU_TASK_PRIORITY	(tskIDLE_PRIORITY + 2)
-#define IS_9150_ADDR            0x68
 
 static struct is9150_all_sensor_data sensor_data[2];
 static struct is9150_all_sensor_data *read_buf = &sensor_data[0];
@@ -38,7 +37,7 @@ static void imu_update_task(void *params)
 
     i2c_init(i2c1, 400000);
 
-    res = is9150_init(i2c1, IS_9150_ADDR << 1);
+    res = is9150_init(i2c1);
     pr_info("IMU: init res=");
     pr_info_int(res);
     pr_info("\r\n");
