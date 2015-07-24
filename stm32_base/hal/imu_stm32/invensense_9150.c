@@ -356,6 +356,7 @@ int is9150_read_mag(struct is9150_mag_data *data)
     while (heading < 0) heading += 360;
     while (heading > 360) heading -= 360;
     pr_info_int_msg("heading: ", heading);
+    data->compass = heading;
     return res;
 }
 
