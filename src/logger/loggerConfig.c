@@ -92,16 +92,18 @@ static void resetTimerConfig(TimerConfig cfg[])
 
 static void resetImuConfig(ImuConfig cfg[])
 {
-    const char *imu_names[] = {"AccelX", "AccelY", "AccelZ", "Yaw", "Pitch", "Roll"};
+    const char *imu_names[] = {"AccelX", "AccelY", "AccelZ", "Yaw", "Pitch", "Roll", "Compass"};
 
-    for (size_t i = 0; i < 6; ++i) {
+    for (size_t i = 0; i < IMU_CHANNELS; ++i) {
         ImuConfig *c = cfg + i;
         if (i < IMU_CHANNEL_YAW) {
             *c = (ImuConfig)DEFAULT_IMU_CONFIG;
-        } else {
+        } else if (i < IMU_CHANNEL_COMPASS){
             *c = (ImuConfig)DEFAULT_GYRO_CONFIG;
+        } else {
+        	*c = (ImuConfig)DEFAULT_COMPASS_CONFIG;
         }
-        strcpy(c->cfg.label, imu_names[i]);
+		strcpy(c->cfg.label, imu_names[i]);
 
         // Channels go X, Y, Z.  Works perfectly with our counter.
         c->physicalChannel = i;
