@@ -60,8 +60,13 @@ void setCellBuffer(char *buffer, size_t len)
 static int readModemWait(Serial *serial, size_t delay)
 {
     int c = serial->get_line_wait(g_cellBuffer, g_bufferLen, msToTicks(delay));
-    if (c > 0) {
-        pr_debug_str_msg("Cell: read ", g_cellBuffer);
+    if (c > 2) {
+            /*
+             * Cell messages always end with a newline.  This also ignores
+             * the messages that are simply stupid short.
+             */
+            pr_debug("Cell: read ");
+            pr_debug(g_cellBuffer);
     }
     return c;
 }
@@ -342,10 +347,10 @@ int initCellModem(Serial *serial)
         if (sendCommandRetry(serial, "ATZ\r", "OK", 2, 2) != 1) continue;
         if (sendCommandRetry(serial, "ATE0\r", "OK", 2, 2) != 1) continue;
         sendCommand(serial, "AT+CIPSHUT\r", "OK");
-        read_IMEI(serial);
+        if (isNetworkConnected(serial, 60, 3) != 1) continue;
         getSignalStrength(serial);
         read_subscriber_number(serial);
-        if (isNetworkConnected(serial, 60, 3) != 1) continue;
+        read_IMEI(serial);
         if (isDataReady(serial, 30, 2) != 1) continue;
         success = 1;
     }

@@ -24,7 +24,10 @@ int Lua_GetButton(lua_State *L);
 int Lua_GetGPIO(lua_State *L);
 int Lua_SetGPIO(lua_State *L);
 
+int Lua_InitSerial(lua_State *L);
+int Lua_ReadSerialChar(lua_State *L);
 int Lua_ReadSerialLine(lua_State *L);
+int Lua_WriteSerialChar(lua_State *L);
 int Lua_WriteSerialLine(lua_State *L);
 
 int Lua_GetGPSSatellites(lua_State *L);

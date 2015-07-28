@@ -424,32 +424,18 @@ ASFLAGS = $(ADEFS) -Wa,-adhlns=$(<:.S=.lst), $(DEBUG)
 
 # Extra libraries
 #    Each library-name must be seperated by a space.
-EXTRA_LIBS = lua m
-
-#Support for newlibc-lpc (file: libnewlibc-lpc.a)
-#NEWLIBLPC = -lnewlib-lpc
-
-MATH_LIB = -lm
-
-# CPLUSPLUS_LIB = -lstdc++
+EXTRA_LIBS = lua m c gcc
 
 # Linker flags.
 #  -Wl,...:     tell GCC to pass this to linker.
 #    -Map:      create map file
 #    --cref:    add cross reference to  map file
 LDFLAGS = -nostartfiles -Wl,-Map=$(TARGET).map,--cref,--gc-sections
-LDFLAGS += -lc
-LDFLAGS += $(NEWLIBLPC) $(MATH_LIB)
-LDFLAGS += -lc -lgcc
-LDFLAGS += $(CPLUSPLUS_LIB)
 LDFLAGS += $(patsubst %,-L%,$(EXTRA_LIBDIRS))
 LDFLAGS += $(patsubst %,-l%,$(EXTRA_LIBS))
 
-
 # Set Linker-Script Depending On Selected Memory and Controller
 LDFLAGS +=-T$(SAM7s_BASE_DIR)/$(SUBMDL)-ROM.ld
-
-
 
 
 # ---------------------------------------------------------------------------
