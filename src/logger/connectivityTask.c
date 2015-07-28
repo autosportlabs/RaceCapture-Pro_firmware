@@ -209,7 +209,7 @@ void connectivityTask(void *params)
     size_t rxCount = 0;
 
     ConnParams *connParams = (ConnParams*)params;
-    LoggerMessage msg;
+    LoggerMessage *msg = NULL;
 
     Serial *serial = get_serial(connParams->serial);
 
@@ -246,53 +246,44 @@ void connectivityTask(void *params)
             if ( should_reconnect )
                 break; /*break out and trigger the re-connection if needed */
 
-            should_stream =
-                    logging_enabled ||
-                    connParams->always_streaming ||
-                    logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
+            should_stream = logging_enabled ||
+                            logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
+                            connParams->always_streaming;
 
-            const char res = receive_logger_message(sampleQueue, &msg,
-                                                    IDLE_TIMEOUT);
+            char res = xQueueReceive(sampleQueue, &(msg), IDLE_TIMEOUT);
 
             /*///////////////////////////////////////////////////////////
             // Process a pending message from logger task, if exists
             ////////////////////////////////////////////////////////////*/
             if (pdFALSE != res) {
-                switch(msg.type) {
+                switch(msg->type) {
                 case LoggerMessageType_Start: {
                     api_sendLogStart(serial);
                     put_crlf(serial);
                     tick = 0;
                     logging_enabled = true;
-                    /* If we're not already streaming trigger a re-connect */
-                    if (!should_stream)
+                    if (!should_stream) /*if we're not already streaming trigger a re-connect */
                         should_reconnect = true;
                     break;
                 }
                 case LoggerMessageType_Stop: {
                     api_sendLogEnd(serial);
                     put_crlf(serial);
-                    if (! (logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
-                           connParams->always_streaming))
+                    if (! (logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming || connParams->always_streaming))
                         should_reconnect = true;
                     logging_enabled = false;
                     break;
                 }
                 case LoggerMessageType_Sample: {
-                        if (!should_stream)
-                                break;
-
-                        const int send_meta = tick == 0 ||
-                                (connParams->periodicMeta &&
-                                 (tick % METADATA_SAMPLE_INTERVAL == 0));
-                        api_send_sample_record(serial, msg.sample, tick, send_meta);
-
+                    if (should_stream) {
+                        int sendMeta = (tick == 0 || (connParams->periodicMeta && (tick % METADATA_SAMPLE_INTERVAL == 0)));
+                        api_sendSampleRecord(serial, msg->channelSamples, msg->sampleCount, tick, sendMeta);
                         if (connParams->isPrimary)
-                                toggle_connectivity_indicator();
-
+                            toggle_connectivity_indicator();
                         put_crlf(serial);
                         tick++;
-                        break;
+                    }
+                    break;
                 }
                 default:
                     break;

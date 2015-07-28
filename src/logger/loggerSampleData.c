@@ -209,11 +209,12 @@ float get_imu_sample(int channelId)
     return value;
 }
 
-void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
+/* XXX Now we setup how we initialize the sample buffer XXX */
+
+void init_channel_sample_buffer(LoggerConfig *loggerConfig, ChannelSample * samples, size_t channelCount)
 {
-        buff->ticks = 0;
-        ChannelSample *sample = buff->channel_samples;
-        ChannelConfig *chanCfg;
+    ChannelSample *sample = samples;
+    ChannelConfig *chanCfg;
 
     /*
      * This sets up immutable channels.  These channels are channels that are always
@@ -294,6 +295,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getDOP);
 
 
+
     LapConfig *trackConfig = &(loggerConfig->LapConfigs);
     chanCfg = &(trackConfig->lapCountCfg);
     sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getLapCount);
@@ -350,11 +352,10 @@ static void populate_channel_sample(ChannelSample *sample)
     }
 }
 
-int populate_sample_buffer(struct sample *s, size_t logTick)
+int populate_sample_buffer(LoggerMessage *lm,  size_t count, size_t logTick)
 {
     unsigned short highestRate = SAMPLE_DISABLED;
-    ChannelSample *samples = s->channel_samples;
-    const size_t count = s->channel_count;
+    ChannelSample *samples = lm->channelSamples;
 
     for (size_t i = 0; i < count; i++, samples++) {
         const unsigned short sampleRate = samples->cfg->sampleRate;
@@ -374,7 +375,7 @@ int populate_sample_buffer(struct sample *s, size_t logTick)
         return SAMPLE_DISABLED;
 
     // If there was a sample taken, now we fill in the always sampled fields.
-    samples = s->channel_samples;
+    samples = lm->channelSamples;
     for (size_t i = 0; i < count; i++, samples++) {
         const int isAlwaysSampled = samples->cfg->flags & ALWAYS_SAMPLED;
         if (!isAlwaysSampled)
@@ -383,6 +384,9 @@ int populate_sample_buffer(struct sample *s, size_t logTick)
         samples->populated = true;
         populate_channel_sample(samples);
     }
+
+    lm->ticks = getCurrentTicks();
+    lm->sampleCount = count;
 
     return highestRate;
 }

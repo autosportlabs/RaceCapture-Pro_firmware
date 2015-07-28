@@ -50,3 +50,4 @@ bool logging_is_active()
 {
     return g_logging_since > 0;
 }
+

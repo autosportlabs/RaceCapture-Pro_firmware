@@ -123,10 +123,10 @@ static void appendFloat(float num, int precision)
 static int write_samples_header(const LoggerMessage *msg)
 {
         int i;
-        const ChannelSample *sample = msg->sample->channel_samples;
-        size_t count = msg->sample->channel_count;
+        ChannelSample *sample = msg->channelSamples;
+        size_t channelCount = msg->sampleCount;
 
-        for (i = 0; 0 < count; count--, sample++, i++) {
+        for (i = 0; 0 < channelCount; channelCount--, sample++, i++) {
                 appendFileBuffer(0 == i ? "" : ",");
 
                 uint8_t precision = sample->cfg->precision;
@@ -148,8 +148,8 @@ static int write_samples_header(const LoggerMessage *msg)
 
 static int write_samples_data(const LoggerMessage *msg)
 {
-        const ChannelSample *sample = msg->sample->channel_samples;
-        size_t count = msg->sample->channel_count;
+        ChannelSample *sample = msg->channelSamples;
+        size_t channelCount = msg->sampleCount;
 
         if (NULL == sample) {
                 pr_warning("Logger: null sample record\r\n");
@@ -157,7 +157,7 @@ static int write_samples_data(const LoggerMessage *msg)
         }
 
         int i;
-        for (i = 0; 0 < count; count--, sample++, i++) {
+        for (i = 0; 0 < channelCount; channelCount--, sample++, i++) {
                 appendFileBuffer(0 == i ? "" : ",");
 
                 if (!sample->populated)
@@ -392,7 +392,7 @@ TESTABLE_STATIC int flush_logfile(struct logging_status *ls)
 
 static void fileWriterTask(void *params)
 {
-        LoggerMessage msg;
+        LoggerMessage *msg = NULL;
         struct logging_status ls;
         memset(&ls, 0, sizeof(struct logging_status));
 
@@ -400,16 +400,11 @@ static void fileWriterTask(void *params)
                 int rc = -1;
 
                 /* Get a sample. */
-                const char status = receive_logger_message(g_sampleRecordQueue,
-                                                           &msg, portMAX_DELAY);
+                xQueueReceive(g_sampleRecordQueue, &(msg), portMAX_DELAY);
 
-                /* If we fail to receive for any reason, keep trying */
-                if (pdPASS != status)
-                   continue;
-
-                switch (msg.type) {
+                switch (msg->type) {
                 case LoggerMessageType_Sample:
-                        rc = logging_sample(&ls, &msg);
+                        rc = logging_sample(&ls, msg);
                         break;
                 case LoggerMessageType_Start:
                         rc = logging_start(&ls);
@@ -425,7 +420,7 @@ static void fileWriterTask(void *params)
                 error_led(rc);
                 if (rc) {
                         pr_debug("Msg type ");
-                        pr_debug_int(msg.type);
+                        pr_debug_int(msg->type);
                         pr_debug_int_msg(" failed with code ", rc);
                 }
 
