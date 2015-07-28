@@ -221,7 +221,7 @@ typedef struct _ImuConfig {
 
 #define DEFAULT_IMU_CHANNEL_CONFIG  {"", "G", -3, 3, SAMPLE_25Hz, 2, 0}
 #define DEFAULT_GYRO_CHANNEL_CONFIG {"", "Deg/Sec", -300, 300, SAMPLE_25Hz, 1, 0}
-#define DEFAULT_COMPASS_CHANNEL_CONFIG {"", "Deg", 0, 360, SAMPLE_25Hz, 1, 0}
+#define DEFAULT_COMPASS_CHANNEL_CONFIG {"", "Deg", 0, 360, SAMPLE_DISABLED, 1, 0}
 
 #define DEFAULT_IMU_CONFIG                      \
    {                                            \
