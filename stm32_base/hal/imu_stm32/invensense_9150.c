@@ -15,7 +15,7 @@ static float mag_sens_adj[3];
 
 static int is9150_readreg(uint8_t reg_addr, uint8_t *reg_val)
 {
-    int res = 0;
+    int res;
     res = i2c_read_reg8(is9150_dev.i2c, is9150_dev.addr,
                         reg_addr, reg_val);
     return res;
@@ -23,7 +23,7 @@ static int is9150_readreg(uint8_t reg_addr, uint8_t *reg_val)
 
 static int is9150_write_reg(uint8_t reg_addr, uint8_t reg_val)
 {
-    int res = 0;
+    int res;
     res = i2c_write_reg8(is9150_dev.i2c, is9150_dev.addr,
                          reg_addr, reg_val);
     return res;
@@ -32,7 +32,7 @@ static int is9150_write_reg(uint8_t reg_addr, uint8_t reg_val)
 static int is9150_write_reg_bits(uint8_t reg_addr, size_t bit_pos,
                                  size_t num_bits, uint8_t bit_val)
 {
-    int res = 0;
+    int res;
     res = i2c_write_reg_bits(is9150_dev.i2c, is9150_dev.addr,
                              reg_addr, bit_pos, num_bits, bit_val);
     return res;
@@ -42,7 +42,7 @@ static int is9150_write_reg_bits(uint8_t reg_addr, size_t bit_pos,
 static int is9150_write_mag_reg_bits(uint8_t reg_addr, size_t bit_pos,
                                      size_t num_bits, uint8_t bit_val)
 {
-    int res = 0;
+    int res;
     res = i2c_write_reg_bits(is9150_dev.i2c, is9150_dev.mag_addr,
                              reg_addr, bit_pos, num_bits, bit_val);
     return res;
@@ -51,7 +51,7 @@ static int is9150_write_mag_reg_bits(uint8_t reg_addr, size_t bit_pos,
 static int is9150_read_reg_block(uint8_t start_addr, size_t len,
                                  uint8_t *rx_buf)
 {
-    int res = 0;
+    int res;
     res = i2c_read_mem_block(is9150_dev.i2c, is9150_dev.addr,
                              start_addr, rx_buf,
                              len);
@@ -62,7 +62,7 @@ static int is9150_read_reg_block(uint8_t start_addr, size_t len,
 static int is9150_read_mag_reg_block(uint8_t start_addr, size_t len,
                                      uint8_t *rx_buf)
 {
-    int res = 0;
+    int res;
     res = i2c_read_mem_block(is9150_dev.i2c, is9150_dev.mag_addr,
                              start_addr, rx_buf,
                              len);
@@ -266,7 +266,7 @@ int is9150_init(struct i2c_dev *dev)
 
 int is9150_read_gyro(struct is9150_gyro_data *data)
 {
-    int res = 0;
+    int res;
     uint8_t reg_res[6] = {0};
     res = is9150_read_reg_block(IS_GYRO_MEAS_START, IS_GYRO_MEAS_COUNT,
                                 reg_res);
@@ -279,7 +279,7 @@ int is9150_read_gyro(struct is9150_gyro_data *data)
 
 int is9150_read_accel(struct is9150_accel_data *data)
 {
-    int res = 0;
+    int res;
     uint8_t reg_res[6] = {0};
     res = is9150_read_reg_block(IS_ACCEL_MEAS_START, IS_ACCEL_MEAS_COUNT,
                                 reg_res);
@@ -332,7 +332,7 @@ int is9150_read_mag(struct is9150_mag_data *data)
 
 int is9150_read_temp(uint16_t *temp)
 {
-    int res = 0;
+    int res;
     uint8_t reg_res[2] = {0};
     res = is9150_read_reg_block(IS_TEMP_MEAS_START, IS_TEMP_MEAS_COUNT,
                                 reg_res);
@@ -343,7 +343,7 @@ int is9150_read_temp(uint16_t *temp)
 
 int is9150_read_all_sensors(struct is9150_all_sensor_data *data)
 {
-    int res = 0;
+    int res;
     uint8_t reg_res[14] = {0};
     res = is9150_read_reg_block(IS_ACCEL_MEAS_START,
                                 IS_ACCEL_MEAS_COUNT + IS_GYRO_MEAS_COUNT + IS_TEMP_MEAS_COUNT,
