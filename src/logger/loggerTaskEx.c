@@ -122,7 +122,7 @@ static int init_sample_ring_buffer(LoggerConfig *loggerConfig)
                 }
         }
 
-        pr_info_int_msg("Sample buffers allocated: ", i);
+        pr_debug_int_msg("Sample buffers allocated: ", i);
         return i;
 }
 
