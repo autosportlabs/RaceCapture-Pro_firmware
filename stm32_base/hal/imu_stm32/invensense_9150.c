@@ -69,6 +69,7 @@ static int is9150_read_mag_reg_block(uint8_t start_addr, size_t len,
     return res;
 }
 
+/* Bypass IMU to talk to magnetometer directly */
 static int bypass_on()
 {
     int res = is9150_write_reg_bits(IS_RA_USER_CTRL, IS_MST_EN_POS, 1, 0);
@@ -80,6 +81,7 @@ static int bypass_on()
     return res;
 }
 
+/* Disable IMU bypass */
 static int bypass_off()
 {
     int res = is9150_write_reg_bits(IS_RA_USER_CTRL, IS_MST_EN_POS, 1, 1);
@@ -91,6 +93,7 @@ static int bypass_off()
     return res;
 }
 
+/* Initialize the compass so the IMU reads it automatically on our behalf */
 int is9150_init_compass()
 {
     int res = bypass_on();
@@ -130,56 +133,61 @@ int is9150_init_compass()
         return IS_9150_ERR_INIT;
     }
 
+    /* Set I2C master mode */
     res = is9150_write_reg(IS_RA_MASTER_CTRL, 0x40);
     if (res) {
         return IS_9150_ERR_INIT;
     }
 
+    /* Set Slave 0 address */
     res = is9150_write_reg(IS_REG_SLV0_ADDR, 0x80 | 0x0C);
     if (res) {
         return IS_9150_ERR_INIT;
     }
 
+    /* Set Slave 0 register */
     res = is9150_write_reg(IS_REG_SLV0_REG, 0x02);
     if (res) {
         return IS_9150_ERR_INIT;
     }
 
+    /* Set Slave 0 control */
     res = is9150_write_reg(IS_REG_SLV0_CTRL, 0x88);
     if (res) {
         return IS_9150_ERR_INIT;
     }
 
+    /* Set Slave 1 address */
     res = is9150_write_reg(IS_REG_SLV1_ADDR, 0x0C);
     if (res) {
         return IS_9150_ERR_INIT;
     }
 
+    /* Set Slave 1 register */
     res = is9150_write_reg(IS_REG_SLV1_REG, 0x0a);
     if (res) {
         return IS_9150_ERR_INIT;
     }
 
+    /* Set Slave 1 control */
     res = is9150_write_reg(IS_REG_SLV1_CTRL, 0x81);
     if (res) {
         return IS_9150_ERR_INIT;
     }
 
+    /* Set Slave 1 DO */
     res = is9150_write_reg(IS_REG_SLV1_DO, 0x01);
     if (res) {
         return IS_9150_ERR_INIT;
     }
 
-    res = is9150_write_reg(IS_REG_SLV1_DO, 0x01);
-    if (res) {
-        return IS_9150_ERR_INIT;
-    }
-
+    /* Set Mst delay */
     res = is9150_write_reg(IS_REG_MST_DELAY_CTRL, 0x03);
     if (res) {
         return IS_9150_ERR_INIT;
     }
 
+    /* Set yg offs TC */
     res = is9150_write_reg(IS_REG_YG_OFFS_TC, 0x80);
     if (res) {
         return IS_9150_ERR_INIT;
@@ -187,11 +195,6 @@ int is9150_init_compass()
 
     /* set slowest slave sample rate */
     res = is9150_write_reg_bits(IS_REG_SLV4_CONTROL, IS_REG_SLV4_RATE_POS, IS_REG_SLV4_RATE_BITS, 31);
-    if (res) {
-        return IS_9150_ERR_INIT;
-    }
-
-    res = is9150_write_reg(IS_REG_YG_OFFS_TC, 0x80);
     if (res) {
         return IS_9150_ERR_INIT;
     }
