@@ -58,7 +58,8 @@ void imu_calibrate_zero()
 {
     for (size_t logicalChannel = 0; logicalChannel < CONFIG_IMU_CHANNELS; logicalChannel++) {
 
-    	if (logicalChannel == IMU_CHANNEL_COMPASS) /* compass can't be calibrated in the conventional sense. disable for now */
+        /* compass can't be calibrated in the conventional sense*/
+    	if (logicalChannel == IMU_CHANNEL_COMPASS)
     		continue;
 
         ImuConfig * c = getImuConfigChannel(logicalChannel);
