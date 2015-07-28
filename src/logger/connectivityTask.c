@@ -279,17 +279,20 @@ void connectivityTask(void *params)
                     break;
                 }
                 case LoggerMessageType_Sample: {
-                    if (should_stream) {
-                        int sendMeta = (tick == 0 ||
-                                        (connParams->periodicMeta &&
-                                         (tick % METADATA_SAMPLE_INTERVAL == 0)));
-                        api_send_sample_record(serial, msg.sample, tick, sendMeta);
+                        if (!should_stream)
+                                break;
+
+                        const int send_meta = tick == 0 ||
+                                (connParams->periodicMeta &&
+                                 (tick % METADATA_SAMPLE_INTERVAL == 0));
+                        api_send_sample_record(serial, msg.sample, tick, send_meta);
+
                         if (connParams->isPrimary)
-                            toggle_connectivity_indicator();
+                                toggle_connectivity_indicator();
+
                         put_crlf(serial);
                         tick++;
-                    }
-                    break;
+                        break;
                 }
                 default:
                     break;

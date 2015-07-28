@@ -115,7 +115,7 @@ static int init_sample_ring_buffer(LoggerConfig *loggerConfig)
 
         for (i = 0; s < end; ++s, ++i) {
                 const size_t bytes = init_sample_buffer(s, channel_count);
-                if (bytes) {
+                if (0 == bytes) {
                         /* If here, then can't alloc memory for buffers */
                         pr_error("Failed to allocate memory for sample buffers\r\n");
                         break;
