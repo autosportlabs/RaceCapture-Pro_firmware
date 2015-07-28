@@ -70,7 +70,7 @@ static int is9150_read_mag_reg_block(uint8_t start_addr, size_t len,
 }
 
 /* Bypass IMU to talk to magnetometer directly */
-static int bypass_on()
+static int bypass_on(void)
 {
     int res = is9150_write_reg_bits(IS_RA_USER_CTRL, IS_MST_EN_POS, 1, 0);
     if (res) {
@@ -82,7 +82,7 @@ static int bypass_on()
 }
 
 /* Disable IMU bypass */
-static int bypass_off()
+static int bypass_off(void)
 {
     int res = is9150_write_reg_bits(IS_RA_USER_CTRL, IS_MST_EN_POS, 1, 1);
     if (res) {
@@ -94,7 +94,7 @@ static int bypass_off()
 }
 
 /* Initialize the compass so the IMU reads it automatically on our behalf */
-int is9150_init_compass()
+static int is9150_init_compass(void)
 {
     int res = bypass_on();
     if (res) {
