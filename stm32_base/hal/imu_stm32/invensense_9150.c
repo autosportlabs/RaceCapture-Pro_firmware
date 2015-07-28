@@ -302,33 +302,14 @@ int is9150_read_mag(struct is9150_mag_data *data)
     data->mag_x = (((int16_t)reg_res[1]) << 8) | reg_res[0];
     data->mag_y = (((int16_t)reg_res[3]) << 8) | reg_res[2];
     data->mag_z = (((int16_t)reg_res[5]) << 8) | reg_res[4];
-    if (TRACE_LEVEL) {
-        pr_trace("mag raw: ");
-        pr_trace_int(data->mag_x);
-        pr_trace(" ");
-        pr_trace_int(data->mag_y);
-        pr_trace(" ");
-        pr_trace_int(data->mag_z);
-        pr_trace(" ");
-        pr_trace("\r\n");
-    }
+
+    /* apply factory calibration */
     data->mag_x = ((int32_t)data->mag_x * mag_sens_adj[0]);
     data->mag_y = ((int32_t)data->mag_y * mag_sens_adj[1]);
     data->mag_z = ((int32_t)data->mag_z * mag_sens_adj[2]);
-    if (TRACE_LEVEL) {
-        pr_trace("mag raw adj: ");
-        pr_trace_int(data->mag_x);
-        pr_trace(" ");
-        pr_trace_int(data->mag_y);
-        pr_trace(" ");
-        pr_trace_int(data->mag_z);
-        pr_trace(" ");
-        pr_trace("\r\n");
-    }
-    float heading = atan2((double)data->mag_y, (double)data->mag_x) * 180.0/3.14159265 + 180;
-    while (heading < 0) heading += 360;
-    while (heading > 360) heading -= 360;
-    pr_trace_int_msg("heading: ", heading);
+
+    float heading = atan2((double)data->mag_y, (double)data->mag_x) * 180.0 / 3.14159265 + 180.0;
+    heading = heading < 0 ? heading + 360 : heading;
     data->compass = heading;
     return res;
 }
