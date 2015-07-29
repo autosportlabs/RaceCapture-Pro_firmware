@@ -178,7 +178,7 @@ GpsSnapshot getGpsSnapshot()
     return g_gpsSnapshot;
 }
 
-float get_gps_bearing()
+float get_gps_bearing(void)
 {
         return g_gpsSnapshot.bearing;
 }
