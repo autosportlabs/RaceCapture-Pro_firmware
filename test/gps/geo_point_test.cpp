@@ -28,7 +28,7 @@ void GeoPointTest::setUp() {}
 
 void GeoPointTest::tearDown() {}
 
-void GeoPointTest::test_gps_bearing() {
+void GeoPointTest::test_gps_heading() {
         /*
          * All points relative to Madworks.  Madworks is the center.
          */
@@ -40,19 +40,19 @@ void GeoPointTest::test_gps_bearing() {
 
         const float tolerance = 3; /* 3 degrees of tolerance */
 
-        const float north_heading = gps_bearing(&gp_madworks, &gp_north);
+        const float north_heading = gps_heading(&gp_madworks, &gp_north);
         RCPUNIT_DEBUG("North heading is %f\n", north_heading);
         RCPUNIT_ASSERT_CLOSE((float) 0,   tolerance, north_heading);
 
-        const float south_heading = gps_bearing(&gp_madworks, &gp_south);
+        const float south_heading = gps_heading(&gp_madworks, &gp_south);
         RCPUNIT_DEBUG("South heading is %f\n", south_heading);
         RCPUNIT_ASSERT_CLOSE((float) 180,   tolerance, south_heading);
 
-        const float east_heading = gps_bearing(&gp_madworks, &gp_east);
+        const float east_heading = gps_heading(&gp_madworks, &gp_east);
         RCPUNIT_DEBUG("East heading is %f\n", east_heading);
         RCPUNIT_ASSERT_CLOSE((float) 90,   tolerance, east_heading);
 
-        const float west_heading = gps_bearing(&gp_madworks, &gp_west);
+        const float west_heading = gps_heading(&gp_madworks, &gp_west);
         RCPUNIT_DEBUG("West heading is %f\n", west_heading);
         RCPUNIT_ASSERT_CLOSE((float) 270,   tolerance, west_heading);
 }

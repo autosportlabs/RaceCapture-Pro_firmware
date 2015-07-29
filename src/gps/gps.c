@@ -178,9 +178,9 @@ GpsSnapshot getGpsSnapshot()
     return g_gpsSnapshot;
 }
 
-float get_gps_bearing(void)
+float get_gps_heading(void)
 {
-        return g_gpsSnapshot.bearing;
+        return g_gpsSnapshot.heading;
 }
 
 static void updateFullDateTime(GpsSample *gpsSample)
@@ -201,7 +201,7 @@ void GPS_sample_update(GpsSample *newSample)
     updateFullDateTime(newSample);
     g_gpsSnapshot.deltaFirstFix = newSample->time - g_timeFirstFix;
     g_gpsSnapshot.previousPoint = prevPoint;
-    g_gpsSnapshot.bearing = gps_bearing(&prevPoint, &(newSample->point));
+    g_gpsSnapshot.heading = gps_heading(&prevPoint, &(newSample->point));
 }
 
 int GPS_processUpdate(Serial *serial)

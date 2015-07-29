@@ -265,7 +265,7 @@ int api_getStatus(Serial *serial, const jsmntok_t *json)
     json_float(serial, "lon", GPS_getLongitude(), DEFAULT_GPS_POSITION_PRECISION, 1);
     json_int(serial, "sats", GPS_getSatellitesUsedForPosition(), 1);
     json_int(serial, "DOP", GPS_getDOP(), 1);
-    json_float(serial, "bearing", get_gps_bearing(), 1, 0);
+    json_float(serial, "heading", get_gps_heading(), 0, 0);
     json_objEnd(serial, 1);
 
     json_objStartString(serial, "cell");
@@ -1151,7 +1151,7 @@ static unsigned short getGpsConfigHighSampleRate(GPSConfig *cfg)
     rate = getHigherSampleRate(rate, cfg->satellites.sampleRate);
     rate = getHigherSampleRate(rate, cfg->quality.sampleRate);
     rate = getHigherSampleRate(rate, cfg->DOP.sampleRate);
-    rate = getHigherSampleRate(rate, cfg->bearing.sampleRate);
+    rate = getHigherSampleRate(rate, cfg->heading.sampleRate);
     return rate;
 }
 
@@ -1175,7 +1175,7 @@ int api_getGpsConfig(Serial *serial, const jsmntok_t *json)
     json_int(serial, "sats", gpsCfg->satellites.sampleRate != SAMPLE_DISABLED, 1);
     json_int(serial, "qual", gpsCfg->quality.sampleRate != SAMPLE_DISABLED, 1);
     json_int(serial, "dop", gpsCfg->DOP.sampleRate != SAMPLE_DISABLED, 1);
-    json_int(serial, "bearing", gpsCfg->bearing.sampleRate != SAMPLE_DISABLED, 0);
+    json_int(serial, "heading", gpsCfg->heading.sampleRate != SAMPLE_DISABLED, 0);
 
     json_objEnd(serial, 0);
     json_objEnd(serial, 0);
@@ -1208,7 +1208,7 @@ int api_setGpsConfig(Serial *serial, const jsmntok_t *json)
     gpsConfigTestAndSet(json, &(gpsCfg->satellites), "sats", sr);
     gpsConfigTestAndSet(json, &(gpsCfg->quality), "qual", sr);
     gpsConfigTestAndSet(json, &(gpsCfg->DOP), "dop", sr);
-    gpsConfigTestAndSet(json, &(gpsCfg->bearing), "bearing", sr);
+    gpsConfigTestAndSet(json, &(gpsCfg->heading), "heading", sr);
 
     configChanged();
     return API_SUCCESS;

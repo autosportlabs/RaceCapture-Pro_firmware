@@ -44,15 +44,13 @@ typedef struct _GeoPoint {
 float distPythag(const GeoPoint *a, const GeoPoint *b);
 
 /**
- * Returns the bearing/heading as calculated between the last GPS
- * point and the current GPS point.  Technically this is called
- * the "track" in navigational terms.  However I don't want to
- * reuse that word for obvious reasons.
+ * Returns the heading as calculated between the last GPS
+ * point and the current GPS point.
  * @param last The last GPS point.
  * @param curr The current GPS point.
- * @return The bearing in degrees.
+ * @return The heading in degrees.
  */
-float gps_bearing(const GeoPoint *last, const GeoPoint *curr);
+float gps_heading(const GeoPoint *last, const GeoPoint *curr);
 
 /**
  * @return true if the given point is valid, false otherwise.

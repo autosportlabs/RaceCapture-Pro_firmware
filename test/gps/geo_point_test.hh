@@ -24,13 +24,13 @@
 class GeoPointTest : public CppUnit::TestFixture
 {
     CPPUNIT_TEST_SUITE( GeoPointTest );
-    CPPUNIT_TEST( test_gps_bearing );
+    CPPUNIT_TEST( test_gps_heading );
     CPPUNIT_TEST_SUITE_END();
 
 public:
     void setUp();
     void tearDown();
-    void test_gps_bearing();
+    void test_gps_heading();
 };
 
 

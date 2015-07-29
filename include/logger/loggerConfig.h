@@ -343,7 +343,7 @@ typedef struct _GPSConfig {
         ChannelConfig satellites;
         ChannelConfig quality;
         ChannelConfig DOP;
-        ChannelConfig bearing;
+        ChannelConfig heading;
 } GPSConfig;
 
 
@@ -358,7 +358,7 @@ typedef struct _GPSConfig {
 #define DEFAULT_GPS_SATELLITE_CONFIG {"GPSSats", "", 0, 20, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
 #define DEFAULT_GPS_QUALITY_CONFIG {"GPSQual", "", 0, 5, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
 #define DEFAULT_GPS_DOP_CONFIG {"GPSDOP", "", 0, 20, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
-#define DEFAULT_GPS_BEARING_CONFIG {"Bearing", "Degrees", 0, 360, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
+#define DEFAULT_GPS_BEARING_CONFIG {"GPSHeading", "Degrees", 0, 360, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
 
 #define DEFAULT_GPS_CONFIG {                            \
 		DEFAULT_GPS_LATITUDE_CONFIG,            \

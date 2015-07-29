@@ -49,7 +49,7 @@ typedef struct _GpsSnapshot {
         GpsSample sample;
         tiny_millis_t deltaFirstFix;
         GeoPoint previousPoint;
-        float bearing;
+        float heading;
 } GpsSnapshot;
 
 typedef enum {
@@ -140,10 +140,11 @@ tiny_millis_t getUptimeAtSample();
 float getGpsSpeedInMph();
 
 /**
- * @return The bearing of the GPS path.  Otherwise known as the track.
- * Relative to previous point.
+ * @return The heading of the GPS unit.  Can be used to find the track
+ * of the vehicle.  This is calculated using location relative to a
+ * previous point that is a minimum pre-defined distance away.
  */
-float get_gps_bearing(void);
+float get_gps_heading(void);
 
 int GPS_processUpdate(Serial *serial);
 

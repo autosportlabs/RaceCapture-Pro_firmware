@@ -45,12 +45,12 @@ float distPythag(const GeoPoint *a, const GeoPoint *b)
     return sqrt(tmp * tmp + dLatRad * dLatRad) * GP_EARTH_RADIUS_M;
 }
 
-float gps_bearing(const GeoPoint *last, const GeoPoint *curr)
+float gps_heading(const GeoPoint *last, const GeoPoint *curr)
 {
         /*
          * Algorithm adapted from
          * http://www.movable-type.co.uk/scripts/latlong.html
-         * Had to use this one as bearing is a relative calculation.
+         * Had to use this one as heading is a relative calculation.
          * Hopefully this doesn't overflow the float values.
          */
 
