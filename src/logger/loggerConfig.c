@@ -92,14 +92,16 @@ static void resetTimerConfig(TimerConfig cfg[])
 
 static void resetImuConfig(ImuConfig cfg[])
 {
-    const char *imu_names[] = {"AccelX", "AccelY", "AccelZ", "Yaw", "Pitch", "Roll"};
+    const char *imu_names[] = {"AccelX", "AccelY", "AccelZ", "Yaw", "Pitch", "Roll", "Compass"};
 
-    for (size_t i = 0; i < 6; ++i) {
+    for (size_t i = 0; i < IMU_CHANNELS; ++i) {
         ImuConfig *c = cfg + i;
         if (i < IMU_CHANNEL_YAW) {
             *c = (ImuConfig)DEFAULT_IMU_CONFIG;
-        } else {
+        } else if (i < IMU_CHANNEL_COMPASS) {
             *c = (ImuConfig)DEFAULT_GYRO_CONFIG;
+        } else {
+            *c = (ImuConfig)DEFAULT_COMPASS_CONFIG;
         }
         strcpy(c->cfg.label, imu_names[i]);
 
@@ -266,7 +268,7 @@ int getConnectivitySampleRateLimit()
 /* Filter sample rates to only allow rates we support */
 int encodeSampleRate(int sampleRate)
 {
-    if (sampleRate > MAX_SENSOR_SAMPLE_RATE){
+    if (sampleRate > MAX_SENSOR_SAMPLE_RATE) {
         return SAMPLE_DISABLED;
     }
     switch(sampleRate) {
@@ -298,8 +300,7 @@ int decodeSampleRate(int rate_code)
 {
     if (rate_code == 0) {
         return SAMPLE_DISABLED;
-    }
-    else {
+    } else {
         return TICK_RATE_HZ / rate_code;
     }
 }
