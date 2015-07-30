@@ -39,12 +39,16 @@ void free_sample_buffer(struct sample *s)
 
 bool is_sample_data_valid(const LoggerMessage *lm)
 {
-        /* Only LoggerMessageType_Sample will have sample data to validate */
-        if (lm->type != LoggerMessageType_Sample)
-                return true;
-
-        return lm->ticks == lm->sample->ticks;
+        /* Only validate messages with non-null samples */
+        return NULL == lm->sample ? true : lm->ticks == lm->sample->ticks;
 }
+
+portBASE_TYPE send_logger_message(const xQueueHandle queue,
+                                  const LoggerMessage * const msg)
+{
+        return NULL == queue ? errQUEUE_EMPTY : xQueueSend(queue, msg, 0);
+}
+
 
 char receive_logger_message(xQueueHandle queue, LoggerMessage *lm,
                             portTickType timeout)
@@ -53,9 +57,14 @@ char receive_logger_message(xQueueHandle queue, LoggerMessage *lm,
 
         do {
                 res = xQueueReceive(queue, lm, timeout);
-        } while (pdPASS == res && !is_sample_data_valid(lm));
+        } while (pdTRUE == res && !is_sample_data_valid(lm));
 
         return res;
+}
+
+xQueueHandle create_logger_message_queue(const size_t len)
+{
+        return xQueueCreate(len, sizeof(LoggerMessage));
 }
 
 LoggerMessage create_logger_message(const enum LoggerMessageType t,

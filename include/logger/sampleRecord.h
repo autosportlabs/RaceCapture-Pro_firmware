@@ -132,4 +132,22 @@ char receive_logger_message(xQueueHandle queue, LoggerMessage *lm,
  */
 bool is_data_sample_valid(const LoggerMessage *lm);
 
+/**
+ * Creates a brand new LoggerMessage queue.  This is useful for sending
+ * LoggerMessage objects to all the little subscribers that need to get
+ * them.
+ * @return A newly allocated queue.
+ */
+xQueueHandle create_logger_message_queue(const size_t len);
+
+/**
+ * Enqueues a LoggerMessage onto a provided queue.
+ * @param queue The queue to append the message to.
+ * @param msg The message to put into the queue.
+ * @return pdTRUE if successful, or an error code otherwise.
+ */
+portBASE_TYPE send_logger_message(const xQueueHandle queue,
+                                  const LoggerMessage * const msg);
+
+
 #endif /* SAMPLERECORD_H_ */

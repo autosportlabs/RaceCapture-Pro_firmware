@@ -380,14 +380,14 @@ void SampleRecordTest::testIsValidLoggerMessage() {
         struct sample s;
 
         /* Test the non sample case.  This always passes */
-        lm = create_logger_message(LoggerMessageType_Start, &s);
+        lm = create_logger_message(LoggerMessageType_Start, NULL);
         lm.ticks = 42;
         s.ticks = 42;
         CPPUNIT_ASSERT_EQUAL(true, is_sample_data_valid(&lm));
         lm.ticks = 41;
         CPPUNIT_ASSERT_EQUAL(true,  is_sample_data_valid(&lm));
 
-        /* Test the sample case.  This always passes */
+        /* Test the sample case. */
         lm = create_logger_message(LoggerMessageType_Sample, &s);
         lm.ticks = 42;
         s.ticks = 42;

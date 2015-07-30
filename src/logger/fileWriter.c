@@ -40,7 +40,7 @@ typedef struct _FileBuffer {
 } FileBuffer;
 
 static FIL *g_logfile;
-static xQueueHandle g_sampleRecordQueue;
+static xQueueHandle g_LoggerMessage_queue;
 static FileBuffer fileBuffer = {"", 0};
 
 
@@ -77,12 +77,9 @@ static void appendFileBuffer(const char * data)
     fileBuffer.index = index;
 }
 
-portBASE_TYPE queue_logfile_record(LoggerMessage * msg)
+portBASE_TYPE queue_logfile_record(const LoggerMessage * const msg)
 {
-    if (NULL == g_sampleRecordQueue)
-        return errQUEUE_EMPTY;
-
-    return xQueueSend(g_sampleRecordQueue, &msg, SAMPLE_QUEUE_WAIT_TIME);
+        return send_logger_message(g_LoggerMessage_queue, msg);
 }
 
 static void appendQuotedString(const char *s)
@@ -400,7 +397,7 @@ static void fileWriterTask(void *params)
                 int rc = -1;
 
                 /* Get a sample. */
-                const char status = receive_logger_message(g_sampleRecordQueue,
+                const char status = receive_logger_message(g_LoggerMessage_queue,
                                                            &msg, portMAX_DELAY);
 
                 /* If we fail to receive for any reason, keep trying */
@@ -435,10 +432,11 @@ static void fileWriterTask(void *params)
 
 void startFileWriterTask( int priority )
 {
-        g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,
-                                           sizeof( ChannelSample *));
-        if (NULL == g_sampleRecordQueue) {
-                pr_error("file: sampleRecordQueue err\r\n");
+        g_LoggerMessage_queue = create_logger_message_queue(
+                SAMPLE_RECORD_QUEUE_SIZE);
+
+        if (NULL == g_LoggerMessage_queue) {
+                pr_error("LoggerMessage Queue is null!\r\n");
                 return;
         }
 
@@ -447,6 +445,7 @@ void startFileWriterTask( int priority )
                 pr_error("file: logfile sruct alloc err\r\n");
                 return;
         }
+
         memset(g_logfile, 0, sizeof(FIL));
 
         xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter",

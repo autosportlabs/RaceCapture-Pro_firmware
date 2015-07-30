@@ -203,29 +203,31 @@ void loggerTaskEx(void *params)
                 const bool is_logging = logging_is_active();
                 if (g_loggingShouldRun && !is_logging) {
                         logging_started();
-                        LoggerMessage logStartMsg = getLogStartMessage();
+                        const LoggerMessage logStartMsg = getLogStartMessage();
                         queue_logfile_record(&logStartMsg);
                         queueTelemetryRecord(&logStartMsg);
                 }
 
                 if (!g_loggingShouldRun && is_logging) {
                         logging_stopped();
-                        LoggerMessage logStopMsg = getLogStopMessage();
+                        const LoggerMessage logStopMsg = getLogStopMessage();
                         queue_logfile_record(&logStopMsg);
                         queueTelemetryRecord(&logStopMsg);
                         logging_set_status(LOGGING_STATUS_IDLE);
                 }
 
-                /* Prepare a LoggerMessage */
+                /* Prepare a Sample */
                 struct sample *sample = &g_sample_buffer[bufferIndex];
-                LoggerMessage msg = create_logger_message(
-                        LoggerMessageType_Sample, sample);
 
                 /* Check if we need to actually populate the buffer. */
                 const int sampledRate = populate_sample_buffer(sample,
                                                                currentTicks);
                 if (sampledRate == SAMPLE_DISABLED)
                         continue;
+
+                /* If here, create the LoggerMessage to send with the sample */
+                const LoggerMessage msg = create_logger_message(
+                        LoggerMessageType_Sample, sample);
 
                 /*
                  * We only log to file if the user has manually pushed the

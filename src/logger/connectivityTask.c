@@ -83,13 +83,10 @@ static int processRxBuffer(Serial *serial, char *buffer, size_t *rxCount)
     return processMsg;
 }
 
-void queueTelemetryRecord(LoggerMessage *msg)
+void queueTelemetryRecord(const LoggerMessage *msg)
 {
-    msg->ticks = getUptime();
-    for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++) {
-        xQueueHandle queue = g_sampleQueue[i];
-        if (NULL != queue) xQueueSend(queue, &msg, TELEMETRY_QUEUE_WAIT_TIME);
-    }
+    for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++)
+            send_logger_message(g_sampleQueue[i], msg);
 }
 
 /*combined telemetry - for when there's only one telemetry / wireless port available on system
@@ -165,31 +162,45 @@ static void createTelemetryConnectionTask(int16_t priority, xQueueHandle sampleQ
 
 void startConnectivityTask(int16_t priority)
 {
-    for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++) {
-        g_sampleQueue[i] = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( LoggerMessage *));
-        if (NULL == g_sampleQueue[i]) {
-            pr_error("conn: err sample queue\r\n");
-            return;
-        }
-    }
+        for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++) {
+                g_sampleQueue[i] = create_logger_message_queue(
+                        SAMPLE_RECORD_QUEUE_SIZE);
 
-    switch (CONNECTIVITY_CHANNELS) {
-    case 1:
-        createCombinedTelemetryTask(priority, g_sampleQueue[0]);
-        break;
-    case 2: {
-        ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
-        /*logic to control which connection is considered 'primary', which is used later to determine which task has control over LED flashing */
-        uint8_t cellEnabled = connConfig->cellularConfig.cellEnabled;
-        uint8_t btEnabled = connConfig->bluetoothConfig.btEnabled;
-        if (cellEnabled) createTelemetryConnectionTask(priority, g_sampleQueue[1], 1);
-        if (btEnabled) createWirelessConnectionTask(priority, g_sampleQueue[0], !cellEnabled);
-    }
-    break;
-    default:
-        pr_error("conn: err init\r\n");
-        break;
-    }
+                if (NULL == g_sampleQueue[i]) {
+                        pr_error("conn: err sample queue\r\n");
+                        return;
+                }
+        }
+
+        switch (CONNECTIVITY_CHANNELS) {
+        case 1:
+                createCombinedTelemetryTask(priority, g_sampleQueue[0]);
+                break;
+        case 2: {
+                ConnectivityConfig *connConfig =
+                        &getWorkingLoggerConfig()->ConnectivityConfigs;
+                /*
+                 * Logic to control which connection is considered 'primary',
+                 * which is used later to determine which task has control
+                 * over LED flashing
+                 */
+                const uint8_t cellEnabled =
+                        connConfig->cellularConfig.cellEnabled;
+
+                if (cellEnabled)
+                        createTelemetryConnectionTask(priority,
+                                                      g_sampleQueue[1], 1);
+
+                if (connConfig->bluetoothConfig.btEnabled)
+                        createWirelessConnectionTask(priority,
+                                                     g_sampleQueue[0],
+                                                     !cellEnabled);
+        }
+                break;
+        default:
+                pr_error("conn: err init\r\n");
+                break;
+        }
 }
 
 static void toggle_connectivity_indicator()
