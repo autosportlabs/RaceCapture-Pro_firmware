@@ -100,7 +100,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/LED/LED.c \
 			$(RCP_SRC)/PWM/PWM.c \
 			$(RCP_SRC)/logging/printk.c \
-			$(RCP_SRC)/logging/ring_buffer.c \
+			$(RCP_SRC)/ring_buffer.c \
 			$(RCP_SRC)/virtual_channel/virtual_channel.c \
 			$(RCP_SRC)/memory/memory.c \
 			$(RCP_SRC)/util/linear_interpolate.c \
