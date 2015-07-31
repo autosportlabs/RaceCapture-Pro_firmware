@@ -23,7 +23,7 @@ typedef struct _ConnParams {
     xQueueHandle sampleQueue;
 } ConnParams;
 
-void queueTelemetryRecord(LoggerMessage * sr);
+void queueTelemetryRecord(const LoggerMessage *msg);
 
 void startConnectivityTask(int16_t priority);
 

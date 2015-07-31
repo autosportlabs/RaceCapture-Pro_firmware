@@ -8,11 +8,13 @@
 #ifndef SAMPLERECORD_H_
 #define SAMPLERECORD_H_
 
+#include "dateTime.h"
+#include "FreeRTOS.h"
+#include "loggerConfig.h"
+#include "queue.h"
+
 #include <stdbool.h>
 #include <stddef.h>
-
-#include "dateTime.h"
-#include "loggerConfig.h"
 
 enum LoggerMessageType {
     LoggerMessageType_Sample,
@@ -62,22 +64,90 @@ typedef struct _ChannelSample {
     };
 } ChannelSample;
 
+struct sample {
+   size_t ticks;
+   size_t channel_count;
+   ChannelSample *channel_samples;
+};
+
 typedef struct _LoggerMessage {
     enum LoggerMessageType type;
-    size_t sampleCount;
     size_t ticks;
-    ChannelSample *channelSamples;
+    struct sample *sample;
 } LoggerMessage;
 
-ChannelSample* create_channel_sample_buffer(LoggerConfig *loggerConfig, size_t channelCount);
+/**
+ * Initializes the struct sample channel_sample buffer for use.  May be called
+ * again to re-initialize the space.
+ * @param s Pointer to the struct sample to initialize.
+ * @param count Number of channels that we are logging.
+ * @return The amount of space allocated.
+ */
+size_t init_sample_buffer(struct sample *s, const size_t count);
 
 /**
- * Checks to ensure that the LoggerMessage object is not older than 10 milliseconds.  If it is then
- * we may read an old buffer and send bad data.  There is a special case where if ticks are zero
- * we consider that to be a time insensitive message.
- * @param lm The LoggerMessage object.
- * @return True if its not older than 10ms, false otherwise.
+ * Frees the channel_sample buffer assocaited with the struct sample.  Also
+ * clears out the struct sample buffer values to indicated that the buffer has
+ * been released.  Call this like you would use a free method.
+ * @param s Pointer to the struct sample to reap.
  */
-int isValidLoggerMessageAge(LoggerMessage *lm);
+void free_sample_buffer(struct sample *s);
+
+/**
+ * Creates a LoggerMessage for use in the messaging between threads.
+ * @param t The messaget type.
+ * @param s The associated sample object (if any).
+ */
+LoggerMessage create_logger_message(const enum LoggerMessageType t,
+                                    struct sample *s);
+
+/**
+ * Tests if the given LoggerMessage points to valid data by comparing
+ * timestamps.
+ * @param lm The LoggerMessage to validate
+ * @return true if valid, false otherwise
+ */
+bool is_sample_data_valid(const LoggerMessage *lm);
+
+/**
+ * Receives and validates a LoggerMessage from the provided queue.  If the
+ * LoggerMessage is invalid, then it is ignored.
+ * @param queue The Queue containing the message
+ * @param lm The LoggerMessage structure to populate.
+ * @param timeout The amount of time to wait before timing out.
+ * @return The return value of xQueueReceive.  This must be checked before
+ * the LoggerMessage can be considered valid.
+ */
+char receive_logger_message(xQueueHandle queue, LoggerMessage *lm,
+                            portTickType timeout);
+
+/**
+ * Checks to ensure that the LoggerMessage object is pointing to a usable
+ * data_sample structure.  This is needed because while the LoggerMessages are
+ * deeply copied to their respective queues, the data_sample structures are not
+ * (they are a part of a ring buffer).  So we must validate that the timestamp
+ * on the LoggerMessage matches that of the data_sample object.
+ * @param lm The LoggerMessage object.
+ * @return True if the data_sample is usable, false otherwise.
+ */
+bool is_data_sample_valid(const LoggerMessage *lm);
+
+/**
+ * Creates a brand new LoggerMessage queue.  This is useful for sending
+ * LoggerMessage objects to all the little subscribers that need to get
+ * them.
+ * @return A newly allocated queue.
+ */
+xQueueHandle create_logger_message_queue(const size_t len);
+
+/**
+ * Enqueues a LoggerMessage onto a provided queue.
+ * @param queue The queue to append the message to.
+ * @param msg The message to put into the queue.
+ * @return pdTRUE if successful, or an error code otherwise.
+ */
+portBASE_TYPE send_logger_message(const xQueueHandle queue,
+                                  const LoggerMessage * const msg);
+
 
 #endif /* SAMPLERECORD_H_ */

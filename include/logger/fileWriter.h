@@ -25,6 +25,6 @@ struct logging_status
 
 
 void startFileWriterTask( int priority );
-portBASE_TYPE queue_logfile_record(LoggerMessage * sr);
+portBASE_TYPE queue_logfile_record(const LoggerMessage *msg);
 
 #endif /* FILEWRITER_H_ */

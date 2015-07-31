@@ -40,7 +40,7 @@ typedef struct _FileBuffer {
 } FileBuffer;
 
 static FIL *g_logfile;
-static xQueueHandle g_sampleRecordQueue;
+static xQueueHandle g_LoggerMessage_queue;
 static FileBuffer fileBuffer = {"", 0};
 
 
@@ -77,12 +77,9 @@ static void appendFileBuffer(const char * data)
     fileBuffer.index = index;
 }
 
-portBASE_TYPE queue_logfile_record(LoggerMessage * msg)
+portBASE_TYPE queue_logfile_record(const LoggerMessage * const msg)
 {
-    if (NULL == g_sampleRecordQueue)
-        return errQUEUE_EMPTY;
-
-    return xQueueSend(g_sampleRecordQueue, &msg, SAMPLE_QUEUE_WAIT_TIME);
+        return send_logger_message(g_LoggerMessage_queue, msg);
 }
 
 static void appendQuotedString(const char *s)
@@ -123,10 +120,10 @@ static void appendFloat(float num, int precision)
 static int write_samples_header(const LoggerMessage *msg)
 {
         int i;
-        ChannelSample *sample = msg->channelSamples;
-        size_t channelCount = msg->sampleCount;
+        const ChannelSample *sample = msg->sample->channel_samples;
+        size_t count = msg->sample->channel_count;
 
-        for (i = 0; 0 < channelCount; channelCount--, sample++, i++) {
+        for (i = 0; 0 < count; count--, sample++, i++) {
                 appendFileBuffer(0 == i ? "" : ",");
 
                 uint8_t precision = sample->cfg->precision;
@@ -148,8 +145,8 @@ static int write_samples_header(const LoggerMessage *msg)
 
 static int write_samples_data(const LoggerMessage *msg)
 {
-        ChannelSample *sample = msg->channelSamples;
-        size_t channelCount = msg->sampleCount;
+        const ChannelSample *sample = msg->sample->channel_samples;
+        size_t count = msg->sample->channel_count;
 
         if (NULL == sample) {
                 pr_warning("Logger: null sample record\r\n");
@@ -157,7 +154,7 @@ static int write_samples_data(const LoggerMessage *msg)
         }
 
         int i;
-        for (i = 0; 0 < channelCount; channelCount--, sample++, i++) {
+        for (i = 0; 0 < count; count--, sample++, i++) {
                 appendFileBuffer(0 == i ? "" : ",");
 
                 if (!sample->populated)
@@ -392,7 +389,7 @@ TESTABLE_STATIC int flush_logfile(struct logging_status *ls)
 
 static void fileWriterTask(void *params)
 {
-        LoggerMessage *msg = NULL;
+        LoggerMessage msg;
         struct logging_status ls;
         memset(&ls, 0, sizeof(struct logging_status));
 
@@ -400,11 +397,16 @@ static void fileWriterTask(void *params)
                 int rc = -1;
 
                 /* Get a sample. */
-                xQueueReceive(g_sampleRecordQueue, &(msg), portMAX_DELAY);
+                const char status = receive_logger_message(g_LoggerMessage_queue,
+                                                           &msg, portMAX_DELAY);
 
-                switch (msg->type) {
+                /* If we fail to receive for any reason, keep trying */
+                if (pdPASS != status)
+                   continue;
+
+                switch (msg.type) {
                 case LoggerMessageType_Sample:
-                        rc = logging_sample(&ls, msg);
+                        rc = logging_sample(&ls, &msg);
                         break;
                 case LoggerMessageType_Start:
                         rc = logging_start(&ls);
@@ -420,7 +422,7 @@ static void fileWriterTask(void *params)
                 error_led(rc);
                 if (rc) {
                         pr_debug("Msg type ");
-                        pr_debug_int(msg->type);
+                        pr_debug_int(msg.type);
                         pr_debug_int_msg(" failed with code ", rc);
                 }
 
@@ -430,10 +432,11 @@ static void fileWriterTask(void *params)
 
 void startFileWriterTask( int priority )
 {
-        g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,
-                                           sizeof( ChannelSample *));
-        if (NULL == g_sampleRecordQueue) {
-                pr_error("file: sampleRecordQueue err\r\n");
+        g_LoggerMessage_queue = create_logger_message_queue(
+                SAMPLE_RECORD_QUEUE_SIZE);
+
+        if (NULL == g_LoggerMessage_queue) {
+                pr_error("LoggerMessage Queue is null!\r\n");
                 return;
         }
 
@@ -442,6 +445,7 @@ void startFileWriterTask( int priority )
                 pr_error("file: logfile sruct alloc err\r\n");
                 return;
         }
+
         memset(g_logfile, 0, sizeof(FIL));
 
         xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter",

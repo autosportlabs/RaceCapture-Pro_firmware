@@ -83,13 +83,10 @@ static int processRxBuffer(Serial *serial, char *buffer, size_t *rxCount)
     return processMsg;
 }
 
-void queueTelemetryRecord(LoggerMessage *msg)
+void queueTelemetryRecord(const LoggerMessage *msg)
 {
-    msg->ticks = getUptime();
-    for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++) {
-        xQueueHandle queue = g_sampleQueue[i];
-        if (NULL != queue) xQueueSend(queue, &msg, TELEMETRY_QUEUE_WAIT_TIME);
-    }
+    for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++)
+            send_logger_message(g_sampleQueue[i], msg);
 }
 
 /*combined telemetry - for when there's only one telemetry / wireless port available on system
@@ -165,31 +162,45 @@ static void createTelemetryConnectionTask(int16_t priority, xQueueHandle sampleQ
 
 void startConnectivityTask(int16_t priority)
 {
-    for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++) {
-        g_sampleQueue[i] = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,sizeof( LoggerMessage *));
-        if (NULL == g_sampleQueue[i]) {
-            pr_error("conn: err sample queue\r\n");
-            return;
-        }
-    }
+        for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++) {
+                g_sampleQueue[i] = create_logger_message_queue(
+                        SAMPLE_RECORD_QUEUE_SIZE);
 
-    switch (CONNECTIVITY_CHANNELS) {
-    case 1:
-        createCombinedTelemetryTask(priority, g_sampleQueue[0]);
-        break;
-    case 2: {
-        ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
-        /*logic to control which connection is considered 'primary', which is used later to determine which task has control over LED flashing */
-        uint8_t cellEnabled = connConfig->cellularConfig.cellEnabled;
-        uint8_t btEnabled = connConfig->bluetoothConfig.btEnabled;
-        if (cellEnabled) createTelemetryConnectionTask(priority, g_sampleQueue[1], 1);
-        if (btEnabled) createWirelessConnectionTask(priority, g_sampleQueue[0], !cellEnabled);
-    }
-    break;
-    default:
-        pr_error("conn: err init\r\n");
-        break;
-    }
+                if (NULL == g_sampleQueue[i]) {
+                        pr_error("conn: err sample queue\r\n");
+                        return;
+                }
+        }
+
+        switch (CONNECTIVITY_CHANNELS) {
+        case 1:
+                createCombinedTelemetryTask(priority, g_sampleQueue[0]);
+                break;
+        case 2: {
+                ConnectivityConfig *connConfig =
+                        &getWorkingLoggerConfig()->ConnectivityConfigs;
+                /*
+                 * Logic to control which connection is considered 'primary',
+                 * which is used later to determine which task has control
+                 * over LED flashing
+                 */
+                const uint8_t cellEnabled =
+                        connConfig->cellularConfig.cellEnabled;
+
+                if (cellEnabled)
+                        createTelemetryConnectionTask(priority,
+                                                      g_sampleQueue[1], 1);
+
+                if (connConfig->bluetoothConfig.btEnabled)
+                        createWirelessConnectionTask(priority,
+                                                     g_sampleQueue[0],
+                                                     !cellEnabled);
+        }
+                break;
+        default:
+                pr_error("conn: err init\r\n");
+                break;
+        }
 }
 
 static void toggle_connectivity_indicator()
@@ -209,7 +220,7 @@ void connectivityTask(void *params)
     size_t rxCount = 0;
 
     ConnParams *connParams = (ConnParams*)params;
-    LoggerMessage *msg = NULL;
+    LoggerMessage msg;
 
     Serial *serial = get_serial(connParams->serial);
 
@@ -246,44 +257,53 @@ void connectivityTask(void *params)
             if ( should_reconnect )
                 break; /*break out and trigger the re-connection if needed */
 
-            should_stream = logging_enabled ||
-                            logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
-                            connParams->always_streaming;
+            should_stream =
+                    logging_enabled ||
+                    connParams->always_streaming ||
+                    logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
 
-            char res = xQueueReceive(sampleQueue, &(msg), IDLE_TIMEOUT);
+            const char res = receive_logger_message(sampleQueue, &msg,
+                                                    IDLE_TIMEOUT);
 
             /*///////////////////////////////////////////////////////////
             // Process a pending message from logger task, if exists
             ////////////////////////////////////////////////////////////*/
             if (pdFALSE != res) {
-                switch(msg->type) {
+                switch(msg.type) {
                 case LoggerMessageType_Start: {
                     api_sendLogStart(serial);
                     put_crlf(serial);
                     tick = 0;
                     logging_enabled = true;
-                    if (!should_stream) /*if we're not already streaming trigger a re-connect */
+                    /* If we're not already streaming trigger a re-connect */
+                    if (!should_stream)
                         should_reconnect = true;
                     break;
                 }
                 case LoggerMessageType_Stop: {
                     api_sendLogEnd(serial);
                     put_crlf(serial);
-                    if (! (logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming || connParams->always_streaming))
+                    if (! (logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
+                           connParams->always_streaming))
                         should_reconnect = true;
                     logging_enabled = false;
                     break;
                 }
                 case LoggerMessageType_Sample: {
-                    if (should_stream) {
-                        int sendMeta = (tick == 0 || (connParams->periodicMeta && (tick % METADATA_SAMPLE_INTERVAL == 0)));
-                        api_sendSampleRecord(serial, msg->channelSamples, msg->sampleCount, tick, sendMeta);
+                        if (!should_stream)
+                                break;
+
+                        const int send_meta = tick == 0 ||
+                                (connParams->periodicMeta &&
+                                 (tick % METADATA_SAMPLE_INTERVAL == 0));
+                        api_send_sample_record(serial, msg.sample, tick, send_meta);
+
                         if (connParams->isPrimary)
-                            toggle_connectivity_indicator();
+                                toggle_connectivity_indicator();
+
                         put_crlf(serial);
                         tick++;
-                    }
-                    break;
+                        break;
                 }
                 default:
                     break;
