@@ -35,8 +35,8 @@
 #define WRITE_FAIL     EOF
 
 typedef struct _FileBuffer {
-    char buffer[FILE_BUFFER_SIZE];
-    size_t index;
+        char buffer[FILE_BUFFER_SIZE];
+        size_t index;
 } FileBuffer;
 
 static FIL *g_logfile;
@@ -44,37 +44,37 @@ static xQueueHandle g_LoggerMessage_queue;
 static FileBuffer fileBuffer = {"", 0};
 
 
-static void clear_file_buffer() {
+static void clear_file_buffer()
+{
         fileBuffer.index = 0;
         fileBuffer.buffer[0] = '\0';
 }
 
 static int writeFileBuffer()
 {
-        unsigned int bw;
-        const int rc = f_write(g_logfile, fileBuffer.buffer,
-                               fileBuffer.index, &bw);
+        int nchar = f_puts(fileBuffer.buffer, g_logfile);
+        int rc = fileBuffer.index == nchar ? 0 : -1;
         clear_file_buffer();
         return rc;
 }
 
 static void appendFileBuffer(const char * data)
 {
-    size_t index = fileBuffer.index;
-    char * buffer = fileBuffer.buffer + index;
+        size_t index = fileBuffer.index;
+        char * buffer = fileBuffer.buffer + index;
 
-    while(*data) {
-        *buffer++ = *data++;
-        index++;
-        if (index >= FILE_BUFFER_SIZE) {
-            *buffer = '\0';
-            writeFileBuffer();
-            index = fileBuffer.index;
-            buffer = fileBuffer.buffer + index;
+        while(*data) {
+                *buffer++ = *data++;
+                index++;
+                if (index >= FILE_BUFFER_SIZE) {
+                        *buffer = '\0';
+                        writeFileBuffer();
+                        index = fileBuffer.index;
+                        buffer = fileBuffer.buffer + index;
+                }
         }
-    }
-    *buffer = '\0';
-    fileBuffer.index = index;
+        *buffer = '\0';
+        fileBuffer.index = index;
 }
 
 portBASE_TYPE queue_logfile_record(const LoggerMessage * const msg)
@@ -84,37 +84,37 @@ portBASE_TYPE queue_logfile_record(const LoggerMessage * const msg)
 
 static void appendQuotedString(const char *s)
 {
-    appendFileBuffer("\"");
-    appendFileBuffer(s);
-    appendFileBuffer("\"");
+        appendFileBuffer("\"");
+        appendFileBuffer(s);
+        appendFileBuffer("\"");
 }
 
 static void appendInt(int num)
 {
-    char buf[12];
-    modp_itoa10(num,buf);
-    appendFileBuffer(buf);
+        char buf[12];
+        modp_itoa10(num,buf);
+        appendFileBuffer(buf);
 }
 
 static void appendLongLong(long long num)
 {
-    char buf[21];
-    modp_ltoa10(num, buf);
-    appendFileBuffer(buf);
+        char buf[21];
+        modp_ltoa10(num, buf);
+        appendFileBuffer(buf);
 }
 
 static void appendDouble(double num, int precision)
 {
-    char buf[30];
-    modp_dtoa(num, buf, precision);
-    appendFileBuffer(buf);
+        char buf[30];
+        modp_dtoa(num, buf, precision);
+        appendFileBuffer(buf);
 }
 
 static void appendFloat(float num, int precision)
 {
-    char buf[11];
-    modp_ftoa(num, buf, precision);
-    appendFileBuffer(buf);
+        char buf[11];
+        modp_ftoa(num, buf, precision);
+        appendFileBuffer(buf);
 }
 
 static int write_samples_header(const LoggerMessage *msg)
@@ -266,7 +266,7 @@ static void open_log_file(struct logging_status *ls)
         pr_debug("Logging: FS init success.  Opening file...\r\n");
         // Open a file if one is set, else create a new one.
         ls->writing_status = ls->name[0] ? open_existing_log_file(ls) :
-                open_new_log_file(ls);
+                             open_new_log_file(ls);
 
         if (WRITING_INACTIVE == ls->writing_status) {
                 pr_warning_str_msg("Logging: Failed to open: ", ls->name);
@@ -398,11 +398,11 @@ static void fileWriterTask(void *params)
 
                 /* Get a sample. */
                 const char status = receive_logger_message(g_LoggerMessage_queue,
-                                                           &msg, portMAX_DELAY);
+                                    &msg, portMAX_DELAY);
 
                 /* If we fail to receive for any reason, keep trying */
                 if (pdPASS != status)
-                   continue;
+                        continue;
 
                 switch (msg.type) {
                 case LoggerMessageType_Sample:
@@ -433,7 +433,7 @@ static void fileWriterTask(void *params)
 void startFileWriterTask( int priority )
 {
         g_LoggerMessage_queue = create_logger_message_queue(
-                SAMPLE_RECORD_QUEUE_SIZE);
+                                        SAMPLE_RECORD_QUEUE_SIZE);
 
         if (NULL == g_LoggerMessage_queue) {
                 pr_error("LoggerMessage Queue is null!\r\n");
