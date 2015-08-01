@@ -13,10 +13,10 @@
 
 #define IMU_DEVICE_COUNTS_PER_G 		16384
 #define IMU_DEVICE_COUNTS_PER_DEGREE_PER_SEC	32.8
+#define IMU_DEVICE_COUNTS_PER_DEGREE			1
 
 #define ACCEL_MAX_RANGE 	ACCEL_COUNTS_PER_G * 4
 #define IMU_TASK_PRIORITY	(tskIDLE_PRIORITY + 2)
-#define IS_9150_ADDR            0x68
 
 static struct is9150_all_sensor_data sensor_data[2];
 static struct is9150_all_sensor_data *read_buf = &sensor_data[0];
@@ -38,10 +38,9 @@ static void imu_update_task(void *params)
 
     i2c_init(i2c1, 400000);
 
-    res = is9150_init(i2c1, IS_9150_ADDR << 1);
-    pr_info("IMU: init res=");
-    pr_info_int(res);
-    pr_info("\r\n");
+    res = is9150_init(i2c1);
+    pr_info_int_msg("IMU: init res=", res);
+
     (void)res;
 
     /* Clear the sensor data structures */
@@ -91,9 +90,11 @@ int imu_device_read(unsigned int channel)
     case IMU_CHANNEL_ROLL:
         ret = read_buf->gyro.gyro_y;
         break;
+    case IMU_CHANNEL_COMPASS:
+        ret = read_buf->mag.compass;
+        break;
     default:
         break;
-
     }
 
     return ret;
@@ -112,6 +113,9 @@ float imu_device_counts_per_unit(unsigned int channel)
     case IMU_CHANNEL_Y:
     case IMU_CHANNEL_Z:
         ret = IMU_DEVICE_COUNTS_PER_G;
+        break;
+    case IMU_CHANNEL_COMPASS:
+        ret = IMU_DEVICE_COUNTS_PER_DEGREE;
         break;
     default:
         ret = 0.0;

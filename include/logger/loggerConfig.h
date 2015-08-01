@@ -212,19 +212,16 @@ typedef struct _ImuConfig {
 #define IMU_CHANNEL_YAW						3
 #define IMU_CHANNEL_PITCH					4
 #define IMU_CHANNEL_ROLL					5
+#define IMU_CHANNEL_COMPASS					6
 
 #define DEFAULT_ACCEL_ZERO					2048
 #define DEFAULT_GYRO_ZERO					1862 //LY330ALH zero state voltage output is 1.5v
+#define DEFAULT_COMPASS_ZERO                0
 
-#define DEFAULT_ACCEL_X_CONFIG    {"AccelX",   "G", -3, 3, SAMPLE_25Hz, 2, 0}
-#define DEFAULT_ACCEL_Y_CONFIG    {"AccelY",   "G", -3, 3, SAMPLE_25Hz, 2, 0}
-#define DEFAULT_ACCEL_Z_CONFIG    {"AccelZ",   "G", -3, 3, SAMPLE_25Hz, 2, 0}
-#define DEFAULT_GYRO_YAW_CONFIG   {"Yaw",      "Deg/Sec", -300, 300, SAMPLE_25Hz, 1, 0}
-#define DEFAULT_GYRO_PITCH_CONFIG {"Pitch",    "Deg/Sec", -300, 300, SAMPLE_25Hz, 1, 0}
-#define DEFAULT_GYRO_ROLL_CONFIG  {"Roll",     "Deg/Sec", -300, 300, SAMPLE_25Hz, 1, 0}
 
 #define DEFAULT_IMU_CHANNEL_CONFIG  {"", "G", -3, 3, SAMPLE_25Hz, 2, 0}
 #define DEFAULT_GYRO_CHANNEL_CONFIG {"", "Deg/Sec", -300, 300, SAMPLE_25Hz, 1, 0}
+#define DEFAULT_COMPASS_CHANNEL_CONFIG {"", "Deg", 0, 360, SAMPLE_DISABLED, 0, 0}
 
 #define DEFAULT_IMU_CONFIG                      \
    {                                            \
@@ -242,6 +239,13 @@ typedef struct _ImuConfig {
          0.1F                                   \
          }
 
+#define DEFAULT_COMPASS_CONFIG {                \
+      DEFAULT_COMPASS_CHANNEL_CONFIG,           \
+         MODE_IMU_NORMAL,                       \
+         IMU_CHANNEL_COMPASS,                   \
+         DEFAULT_COMPASS_ZERO,                  \
+         0.1F                                   \
+         }
 
 
 typedef struct _PWMConfig {
