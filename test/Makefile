@@ -130,7 +130,7 @@ SRC =		mock_uart.c \
 		$(RCP_SRC)/api/api.c \
 		$(RCP_SRC)/OBD2/OBD2.c \
 		$(RCP_SRC)/logging/printk.c \
-		$(RCP_SRC)/logging/ring_buffer.c \
+		$(RCP_SRC)/ring_buffer.c \
 		$(RCP_SRC)/logger/loggerApi.c \
 		$(RCP_SRC)/logger/fileWriter.c \
 		$(RCP_SRC)/filter/filter.c \

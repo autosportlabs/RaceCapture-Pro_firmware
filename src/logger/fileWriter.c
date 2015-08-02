@@ -12,6 +12,7 @@
 #include "mod_string.h"
 #include "modp_numtoa.h"
 #include "printk.h"
+#include "ring_buffer.h"
 #include "sampleRecord.h"
 #include "sdcard.h"
 #include "semphr.h"
@@ -34,122 +35,127 @@
 #define WRITE_SUCCESS  0
 #define WRITE_FAIL     EOF
 
-typedef struct _FileBuffer {
-    char buffer[FILE_BUFFER_SIZE];
-    size_t index;
-} FileBuffer;
-
 static FIL *g_logfile;
-static xQueueHandle g_sampleRecordQueue;
-static FileBuffer fileBuffer = {"", 0};
+static xQueueHandle g_LoggerMessage_queue;
+static struct ring_buff file_buff;
 
-
-static void clear_file_buffer() {
-        fileBuffer.index = 0;
-        fileBuffer.buffer[0] = '\0';
+static void error_led(bool on)
+{
+        on ? LED_enable(3) : LED_disable(3);
 }
 
-static int writeFileBuffer()
+static FRESULT flush_file_buffer()
 {
-        unsigned int bw;
-        const int rc = f_write(g_logfile, fileBuffer.buffer,
-                               fileBuffer.index, &bw);
-        clear_file_buffer();
-        return rc;
-}
+        FRESULT res = FR_OK;
+        char tmp[32];
 
-static void appendFileBuffer(const char * data)
-{
-    size_t index = fileBuffer.index;
-    char * buffer = fileBuffer.buffer + index;
+        pr_info("Flushing file buffer\r\n");
+        size_t chars = get_used(&file_buff);
+        while(0 < chars) {
+                if (chars > sizeof(tmp))
+                        chars = sizeof(tmp);
 
-    while(*data) {
-        *buffer++ = *data++;
-        index++;
-        if (index >= FILE_BUFFER_SIZE) {
-            *buffer = '\0';
-            writeFileBuffer();
-            index = fileBuffer.index;
-            buffer = fileBuffer.buffer + index;
+                pr_info_int_msg("Chars is ", chars);
+                get_data(&file_buff, &tmp, chars);
+                if (g_logfile->fs) {
+                        unsigned int bw;
+                        res = f_write(g_logfile, &tmp, chars, &bw);
+                        error_led(FR_OK != res);
+                }
+
+                chars = get_used(&file_buff);
         }
-    }
-    *buffer = '\0';
-    fileBuffer.index = index;
+
+        pr_info("Flushing file buffer DONE\r\n");
+        return res;
 }
 
-portBASE_TYPE queue_logfile_record(LoggerMessage * msg)
+static FRESULT append_file_buffer(const char *data)
 {
-    if (NULL == g_sampleRecordQueue)
-        return errQUEUE_EMPTY;
+        FRESULT res = FR_OK;
 
-    return xQueueSend(g_sampleRecordQueue, &msg, SAMPLE_QUEUE_WAIT_TIME);
+        const size_t size = strlen(data);
+        size_t remaining = size;
+        while(remaining) {
+                remaining -= put_data(&file_buff, data + size - remaining,
+                                      remaining);
+                if (0 < remaining)
+                        res = flush_file_buffer();
+        }
+
+        return res;
+}
+
+portBASE_TYPE queue_logfile_record(const LoggerMessage * const msg)
+{
+        return send_logger_message(g_LoggerMessage_queue, msg);
 }
 
 static void appendQuotedString(const char *s)
 {
-    appendFileBuffer("\"");
-    appendFileBuffer(s);
-    appendFileBuffer("\"");
+        append_file_buffer("\"");
+        append_file_buffer(s);
+        append_file_buffer("\"");
 }
 
 static void appendInt(int num)
 {
-    char buf[12];
-    modp_itoa10(num,buf);
-    appendFileBuffer(buf);
+        char buf[12];
+        modp_itoa10(num, buf);
+        append_file_buffer(buf);
 }
 
 static void appendLongLong(long long num)
 {
-    char buf[21];
-    modp_ltoa10(num, buf);
-    appendFileBuffer(buf);
+        char buf[21];
+        modp_ltoa10(num, buf);
+        append_file_buffer(buf);
 }
 
 static void appendDouble(double num, int precision)
 {
-    char buf[30];
-    modp_dtoa(num, buf, precision);
-    appendFileBuffer(buf);
+        char buf[30];
+        modp_dtoa(num, buf, precision);
+        append_file_buffer(buf);
 }
 
 static void appendFloat(float num, int precision)
 {
-    char buf[11];
-    modp_ftoa(num, buf, precision);
-    appendFileBuffer(buf);
+        char buf[11];
+        modp_ftoa(num, buf, precision);
+        append_file_buffer(buf);
 }
 
 static int write_samples_header(const LoggerMessage *msg)
 {
         int i;
-        ChannelSample *sample = msg->channelSamples;
-        size_t channelCount = msg->sampleCount;
+        const ChannelSample *sample = msg->sample->channel_samples;
+        size_t count = msg->sample->channel_count;
 
-        for (i = 0; 0 < channelCount; channelCount--, sample++, i++) {
-                appendFileBuffer(0 == i ? "" : ",");
+        for (i = 0; 0 < count; count--, sample++, i++) {
+                append_file_buffer(0 == i ? "" : ",");
 
                 uint8_t precision = sample->cfg->precision;
                 appendQuotedString(sample->cfg->label);
-                appendFileBuffer("|");
+                append_file_buffer("|");
                 appendQuotedString(sample->cfg->units);
-                appendFileBuffer("|");
+                append_file_buffer("|");
                 appendFloat(decodeSampleRate(sample->cfg->min), precision);
-                appendFileBuffer("|");
+                append_file_buffer("|");
                 appendFloat(decodeSampleRate(sample->cfg->max), precision);
-                appendFileBuffer("|");
+                append_file_buffer("|");
                 appendInt(decodeSampleRate(sample->cfg->sampleRate));
         }
 
-        appendFileBuffer("\n");
-        return writeFileBuffer();
+        append_file_buffer("\n");
+        return flush_file_buffer();
 }
 
 
 static int write_samples_data(const LoggerMessage *msg)
 {
-        ChannelSample *sample = msg->channelSamples;
-        size_t channelCount = msg->sampleCount;
+        const ChannelSample *sample = msg->sample->channel_samples;
+        size_t count = msg->sample->channel_count;
 
         if (NULL == sample) {
                 pr_warning("Logger: null sample record\r\n");
@@ -157,8 +163,8 @@ static int write_samples_data(const LoggerMessage *msg)
         }
 
         int i;
-        for (i = 0; 0 < channelCount; channelCount--, sample++, i++) {
-                appendFileBuffer(0 == i ? "" : ",");
+        for (i = 0; 0 < count; count--, sample++, i++) {
+                append_file_buffer(0 == i ? "" : ",");
 
                 if (!sample->populated)
                         continue;
@@ -187,8 +193,8 @@ static int write_samples_data(const LoggerMessage *msg)
                 }
         }
 
-        appendFileBuffer("\n");
-        return writeFileBuffer();
+        append_file_buffer("\n");
+        return flush_file_buffer();
 }
 
 static enum writing_status open_existing_log_file(struct logging_status *ls)
@@ -238,11 +244,6 @@ static void close_log_file(struct logging_status *ls)
         ls->writing_status = WRITING_INACTIVE;
         f_close(g_logfile);
         UnmountFS();
-}
-
-static void error_led(bool on)
-{
-        on ? LED_enable(3) : LED_disable(3);
 }
 
 static void logging_led_toggle()
@@ -392,7 +393,7 @@ TESTABLE_STATIC int flush_logfile(struct logging_status *ls)
 
 static void fileWriterTask(void *params)
 {
-        LoggerMessage *msg = NULL;
+        LoggerMessage msg;
         struct logging_status ls;
         memset(&ls, 0, sizeof(struct logging_status));
 
@@ -400,11 +401,16 @@ static void fileWriterTask(void *params)
                 int rc = -1;
 
                 /* Get a sample. */
-                xQueueReceive(g_sampleRecordQueue, &(msg), portMAX_DELAY);
+                const char status = receive_logger_message(g_LoggerMessage_queue,
+                                                           &msg, portMAX_DELAY);
 
-                switch (msg->type) {
+                /* If we fail to receive for any reason, keep trying */
+                if (pdPASS != status)
+                   continue;
+
+                switch (msg.type) {
                 case LoggerMessageType_Sample:
-                        rc = logging_sample(&ls, msg);
+                        rc = logging_sample(&ls, &msg);
                         break;
                 case LoggerMessageType_Start:
                         rc = logging_start(&ls);
@@ -420,7 +426,7 @@ static void fileWriterTask(void *params)
                 error_led(rc);
                 if (rc) {
                         pr_debug("Msg type ");
-                        pr_debug_int(msg->type);
+                        pr_debug_int(msg.type);
                         pr_debug_int_msg(" failed with code ", rc);
                 }
 
@@ -430,10 +436,10 @@ static void fileWriterTask(void *params)
 
 void startFileWriterTask( int priority )
 {
-        g_sampleRecordQueue = xQueueCreate(SAMPLE_RECORD_QUEUE_SIZE,
-                                           sizeof( ChannelSample *));
-        if (NULL == g_sampleRecordQueue) {
-                pr_error("file: sampleRecordQueue err\r\n");
+        g_LoggerMessage_queue = create_logger_message_queue(
+                SAMPLE_RECORD_QUEUE_SIZE);
+        if (NULL == g_LoggerMessage_queue) {
+                pr_error("LoggerMessage Queue is null!\r\n");
                 return;
         }
 
@@ -443,6 +449,12 @@ void startFileWriterTask( int priority )
                 return;
         }
         memset(g_logfile, 0, sizeof(FIL));
+
+        size_t size = create_ring_buffer(&file_buff, FILE_BUFFER_SIZE);
+        if (FILE_BUFFER_SIZE != size) {
+                pr_error("fileWriter.c: Failed to alloc ring buffer.\r\n");
+                return;
+        }
 
         xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter",
                      FILE_WRITER_STACK_SIZE, NULL, priority, NULL );

@@ -111,7 +111,8 @@ int api_runScript(Serial *serial, const jsmntok_t *json);
 //messages
 void api_sendLogStart(Serial *serial);
 void api_sendLogEnd(Serial *serial);
-void api_sendSampleRecord(Serial *serial, ChannelSample *sr, size_t channelCount, unsigned int tick, int sendMeta);
+void api_send_sample_record(Serial *serial, struct sample *sample,
+                            unsigned int tick, int sendMeta);
 
 //Utility functions
 void unescapeTextField(char *data);

@@ -300,7 +300,6 @@ int api_getStatus(Serial *serial, const jsmntok_t *json)
 
 int api_sampleData(Serial *serial, const jsmntok_t *json)
 {
-
     int sendMeta = 0;
     if (json->type == JSMN_OBJECT && json->size == 2) {
         const jsmntok_t * meta = json + 1;
@@ -313,22 +312,23 @@ int api_sampleData(Serial *serial, const jsmntok_t *json)
             sendMeta = modp_atoi(value->data);
         }
     }
-    LoggerConfig * config = getWorkingLoggerConfig();
+
+    LoggerConfig *config = getWorkingLoggerConfig();
     size_t channelCount = get_enabled_channel_count(config);
-    ChannelSample *samples = create_channel_sample_buffer(config, channelCount);
 
-    if (samples == 0)
+    if (0 == channelCount)
         return API_ERROR_SEVERE;
-    LoggerMessage lm;
-    lm.channelSamples = samples;
-    lm.type = LoggerMessageType_Sample;
-    lm.ticks = getCurrentTicks();
-    lm.sampleCount = channelCount;
 
-    init_channel_sample_buffer(config, samples, channelCount);
-    populate_sample_buffer(&lm, channelCount, 0);
-    api_sendSampleRecord(serial, samples, channelCount, 0, sendMeta);
-    portFree(samples);
+    struct sample s;
+    memset(&s, 0, sizeof(struct sample));
+    const size_t size = init_sample_buffer(&s, channelCount);
+    if (!size)
+       return API_ERROR_SEVERE;
+
+    populate_sample_buffer(&s, 0);
+    api_send_sample_record(serial, &s, 0, sendMeta);
+
+    free_sample_buffer(&s);
     return API_SUCCESS_NO_RETURN;
 }
 
@@ -384,38 +384,43 @@ static void json_channelConfig(Serial *serial, ChannelConfig *cfg, int more)
     json_int(serial, "sr", decodeSampleRate(cfg->sampleRate), more);
 }
 
-static void writeSampleMeta(Serial *serial, ChannelSample *sample,
-                            size_t channelCount, int sampleRateLimit, int more)
+static void write_sample_meta(Serial *serial, const struct sample *sample,
+                              int sampleRateLimit, int more)
 {
-    json_arrayStart(serial, "meta");
+        json_arrayStart(serial, "meta");
+        ChannelSample *channel_sample = sample->channel_samples;
 
-    for (size_t i = 0; i < channelCount; i++, sample++) {
+        for (size_t i = 0; i < sample->channel_count; ++i, ++channel_sample) {
+                if (0 < i)
+                        serial->put_c(',');
 
-        if (0 < i)
-            serial->put_c(',');
+                serial->put_c('{');
+                json_channelConfig(serial, channel_sample->cfg, 0);
+                serial->put_c('}');
+        }
 
-        serial->put_c('{');
-        json_channelConfig(serial, sample->cfg, 0);
-        serial->put_c('}');
-    }
-
-    json_arrayEnd(serial, more);
+        json_arrayEnd(serial, more);
 }
 
 int api_getMeta(Serial *serial, const jsmntok_t *json)
 {
     json_objStart(serial);
 
-    LoggerConfig *loggerConfig = getWorkingLoggerConfig();
-    size_t channelCount = get_enabled_channel_count(loggerConfig);
-    ChannelSample *channelSamples = create_channel_sample_buffer(loggerConfig, channelCount);
-    if (channelSamples == 0)
+    LoggerConfig * config = getWorkingLoggerConfig();
+    const size_t channelCount = get_enabled_channel_count(config);
+
+    if (0 == channelCount)
         return API_ERROR_SEVERE;
 
-    init_channel_sample_buffer(loggerConfig, channelSamples, channelCount);
-    writeSampleMeta(serial, channelSamples, channelCount, getConnectivitySampleRateLimit(), 0);
+    struct sample s;
+    memset(&s, 0, sizeof(struct sample));
+    const size_t size = init_sample_buffer(&s, channelCount);
+    if (!size)
+       return API_ERROR_SEVERE;
 
-    portFree(channelSamples);
+    write_sample_meta(serial, &s, getConnectivitySampleRateLimit(), 0);
+
+    free_sample_buffer(&s);
     json_objEnd(serial, 0);
     return API_SUCCESS_NO_RETURN;
 }
@@ -423,71 +428,77 @@ int api_getMeta(Serial *serial, const jsmntok_t *json)
 
 #define MAX_BITMAPS 10
 
-void api_sendSampleRecord(Serial *serial, ChannelSample *channelSamples,
-                          size_t channelCount, unsigned int tick, int sendMeta)
+void api_send_sample_record(Serial *serial, struct sample *sample,
+                            unsigned int tick, int sendMeta)
 {
-    json_objStart(serial);
-    json_objStartString(serial, "s");
-    json_uint(serial,"t", tick, 1);
+        json_objStart(serial);
+        json_objStartString(serial, "s");
+        json_uint(serial,"t", tick, 1);
 
-    if (sendMeta)
-        writeSampleMeta(serial, channelSamples, channelCount,
-                        getConnectivitySampleRateLimit(), 1);
+        if (sendMeta)
+                write_sample_meta(serial, sample,
+                                  getConnectivitySampleRateLimit(), 1);
 
-    size_t channelBitmaskIndex = 0;
-    unsigned int channelBitmask[MAX_BITMAPS];
-    memset(channelBitmask, 0, sizeof(channelBitmask));
+        size_t channelBitmaskIndex = 0;
+        unsigned int channelBitmask[MAX_BITMAPS];
+        memset(channelBitmask, 0, sizeof(channelBitmask));
 
-    json_arrayStart(serial, "d");
-    ChannelSample *sample = channelSamples;
+        json_arrayStart(serial, "d");
+        ChannelSample *cs = sample->channel_samples;
 
-    size_t channelBitPosition = 0;
-    for (size_t i = 0; i < channelCount; i++, channelBitPosition++, sample++) {
-        if (channelBitPosition > 31) {
-            channelBitmaskIndex++;
-            channelBitPosition=0;
-            if (channelBitmaskIndex > MAX_BITMAPS)
-                break;
+        size_t channelBitPosition = 0;
+        for (size_t i = 0; i < sample->channel_count;
+             i++, channelBitPosition++, cs++) {
+
+                if (channelBitPosition > 31) {
+                        channelBitmaskIndex++;
+                        channelBitPosition=0;
+                        if (channelBitmaskIndex > MAX_BITMAPS)
+                                break;
+                }
+
+                if (cs->populated) {
+                        channelBitmask[channelBitmaskIndex] =
+                                channelBitmask[channelBitmaskIndex] |
+                                (1 << channelBitPosition);
+
+                        const int precision = cs->cfg->precision;
+                        switch(cs->sampleData) {
+                        case SampleData_Float:
+                        case SampleData_Float_Noarg:
+                                put_float(serial, cs->valueFloat, precision);
+                                break;
+                        case SampleData_Int:
+                        case SampleData_Int_Noarg:
+                                put_int(serial, cs->valueInt);
+                                break;
+                        case SampleData_LongLong:
+                        case SampleData_LongLong_Noarg:
+                                put_ll(serial, cs->valueLongLong);
+                                break;
+                        case SampleData_Double:
+                        case SampleData_Double_Noarg:
+                                put_double(serial, cs->valueDouble, precision);
+                                break;
+                        default:
+                                pr_warning("sendSampleRec: unknown sample "
+                                           "data type\r\n");
+                                break;
+                        }
+                        serial->put_c(',');
+                }
         }
 
-        if (sample->populated) {
-            channelBitmask[channelBitmaskIndex] = channelBitmask[channelBitmaskIndex] | (1 << channelBitPosition);
-
-            const int precision = sample->cfg->precision;
-            switch(sample->sampleData) {
-            case SampleData_Float:
-            case SampleData_Float_Noarg:
-                put_float(serial, sample->valueFloat, precision);
-                break;
-            case SampleData_Int:
-            case SampleData_Int_Noarg:
-                put_int(serial, sample->valueInt);
-                break;
-            case SampleData_LongLong:
-            case SampleData_LongLong_Noarg:
-                put_ll(serial, sample->valueLongLong);
-                break;
-            case SampleData_Double:
-            case SampleData_Double_Noarg:
-                put_double(serial, sample->valueDouble, precision);
-                break;
-            default:
-                pr_warning("sendSampleRec: unknown sample data type\n");
-                break;
-            }
-            serial->put_c(',');
+        size_t channelBitmaskCount = channelBitmaskIndex + 1;
+        for (size_t i = 0; i < channelBitmaskCount; i++) {
+                put_uint(serial, channelBitmask[i]);
+                if (i < channelBitmaskCount - 1)
+                        serial->put_c(',');
         }
-    }
 
-    size_t channelBitmaskCount = channelBitmaskIndex + 1;
-    for (size_t i = 0; i < channelBitmaskCount; i++) {
-        put_uint(serial, channelBitmask[i]);
-        if (i < channelBitmaskCount - 1)
-            serial->put_c(',');
-    }
-    json_arrayEnd(serial, 0);
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
+        json_arrayEnd(serial, 0);
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
 }
 
 static const jsmntok_t * setChannelConfig(Serial *serial, const jsmntok_t *cfg,
