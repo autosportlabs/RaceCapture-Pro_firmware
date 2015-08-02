@@ -74,10 +74,12 @@ static FRESULT append_file_buffer(const char *data)
 {
         FRESULT res = FR_OK;
 
-        size_t size = strlen(data);
-        while(size) {
-                size -= put_data(&file_buff, data, size);
-                if (0 < size)
+        const size_t size = strlen(data);
+        size_t remaining = size;
+        while(remaining) {
+                remaining -= put_data(&file_buff, data + size - remaining,
+                                      remaining);
+                if (0 < remaining)
                         res = flush_file_buffer();
         }
 
