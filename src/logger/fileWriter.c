@@ -12,6 +12,7 @@
 #include "mod_string.h"
 #include "modp_numtoa.h"
 #include "printk.h"
+#include "ring_buffer.h"
 #include "sampleRecord.h"
 #include "sdcard.h"
 #include "semphr.h"
@@ -34,47 +35,53 @@
 #define WRITE_SUCCESS  0
 #define WRITE_FAIL     EOF
 
-typedef struct _FileBuffer {
-    char buffer[FILE_BUFFER_SIZE];
-    size_t index;
-} FileBuffer;
-
 static FIL *g_logfile;
 static xQueueHandle g_LoggerMessage_queue;
-static FileBuffer fileBuffer = {"", 0};
+static struct ring_buff file_buff;
 
-
-static void clear_file_buffer() {
-        fileBuffer.index = 0;
-        fileBuffer.buffer[0] = '\0';
+static void error_led(bool on)
+{
+        on ? LED_enable(3) : LED_disable(3);
 }
 
-static int writeFileBuffer()
+static FRESULT flush_file_buffer()
 {
-        unsigned int bw;
-        const int rc = f_write(g_logfile, fileBuffer.buffer,
-                               fileBuffer.index, &bw);
-        clear_file_buffer();
-        return rc;
-}
+        FRESULT res = FR_OK;
+        char tmp[32];
 
-static void appendFileBuffer(const char * data)
-{
-    size_t index = fileBuffer.index;
-    char * buffer = fileBuffer.buffer + index;
+        pr_info("Flushing file buffer\r\n");
+        size_t chars = get_used(&file_buff);
+        while(0 < chars) {
+                if (chars > sizeof(tmp))
+                        chars = sizeof(tmp);
 
-    while(*data) {
-        *buffer++ = *data++;
-        index++;
-        if (index >= FILE_BUFFER_SIZE) {
-            *buffer = '\0';
-            writeFileBuffer();
-            index = fileBuffer.index;
-            buffer = fileBuffer.buffer + index;
+                pr_info_int_msg("Chars is ", chars);
+                get_data(&file_buff, &tmp, chars);
+                if (g_logfile->fs) {
+                        unsigned int bw;
+                        res = f_write(g_logfile, &tmp, chars, &bw);
+                        error_led(FR_OK != res);
+                }
+
+                chars = get_used(&file_buff);
         }
-    }
-    *buffer = '\0';
-    fileBuffer.index = index;
+
+        pr_info("Flushing file buffer DONE\r\n");
+        return res;
+}
+
+static FRESULT append_file_buffer(const char *data)
+{
+        FRESULT res = FR_OK;
+
+        size_t size = strlen(data);
+        while(size) {
+                size -= put_data(&file_buff, data, size);
+                if (0 < size)
+                        res = flush_file_buffer();
+        }
+
+        return res;
 }
 
 portBASE_TYPE queue_logfile_record(const LoggerMessage * const msg)
@@ -84,37 +91,37 @@ portBASE_TYPE queue_logfile_record(const LoggerMessage * const msg)
 
 static void appendQuotedString(const char *s)
 {
-    appendFileBuffer("\"");
-    appendFileBuffer(s);
-    appendFileBuffer("\"");
+        append_file_buffer("\"");
+        append_file_buffer(s);
+        append_file_buffer("\"");
 }
 
 static void appendInt(int num)
 {
-    char buf[12];
-    modp_itoa10(num,buf);
-    appendFileBuffer(buf);
+        char buf[12];
+        modp_itoa10(num, buf);
+        append_file_buffer(buf);
 }
 
 static void appendLongLong(long long num)
 {
-    char buf[21];
-    modp_ltoa10(num, buf);
-    appendFileBuffer(buf);
+        char buf[21];
+        modp_ltoa10(num, buf);
+        append_file_buffer(buf);
 }
 
 static void appendDouble(double num, int precision)
 {
-    char buf[30];
-    modp_dtoa(num, buf, precision);
-    appendFileBuffer(buf);
+        char buf[30];
+        modp_dtoa(num, buf, precision);
+        append_file_buffer(buf);
 }
 
 static void appendFloat(float num, int precision)
 {
-    char buf[11];
-    modp_ftoa(num, buf, precision);
-    appendFileBuffer(buf);
+        char buf[11];
+        modp_ftoa(num, buf, precision);
+        append_file_buffer(buf);
 }
 
 static int write_samples_header(const LoggerMessage *msg)
@@ -124,22 +131,22 @@ static int write_samples_header(const LoggerMessage *msg)
         size_t count = msg->sample->channel_count;
 
         for (i = 0; 0 < count; count--, sample++, i++) {
-                appendFileBuffer(0 == i ? "" : ",");
+                append_file_buffer(0 == i ? "" : ",");
 
                 uint8_t precision = sample->cfg->precision;
                 appendQuotedString(sample->cfg->label);
-                appendFileBuffer("|");
+                append_file_buffer("|");
                 appendQuotedString(sample->cfg->units);
-                appendFileBuffer("|");
+                append_file_buffer("|");
                 appendFloat(decodeSampleRate(sample->cfg->min), precision);
-                appendFileBuffer("|");
+                append_file_buffer("|");
                 appendFloat(decodeSampleRate(sample->cfg->max), precision);
-                appendFileBuffer("|");
+                append_file_buffer("|");
                 appendInt(decodeSampleRate(sample->cfg->sampleRate));
         }
 
-        appendFileBuffer("\n");
-        return writeFileBuffer();
+        append_file_buffer("\n");
+        return flush_file_buffer();
 }
 
 
@@ -155,7 +162,7 @@ static int write_samples_data(const LoggerMessage *msg)
 
         int i;
         for (i = 0; 0 < count; count--, sample++, i++) {
-                appendFileBuffer(0 == i ? "" : ",");
+                append_file_buffer(0 == i ? "" : ",");
 
                 if (!sample->populated)
                         continue;
@@ -184,8 +191,8 @@ static int write_samples_data(const LoggerMessage *msg)
                 }
         }
 
-        appendFileBuffer("\n");
-        return writeFileBuffer();
+        append_file_buffer("\n");
+        return flush_file_buffer();
 }
 
 static enum writing_status open_existing_log_file(struct logging_status *ls)
@@ -235,11 +242,6 @@ static void close_log_file(struct logging_status *ls)
         ls->writing_status = WRITING_INACTIVE;
         f_close(g_logfile);
         UnmountFS();
-}
-
-static void error_led(bool on)
-{
-        on ? LED_enable(3) : LED_disable(3);
 }
 
 static void logging_led_toggle()
@@ -434,7 +436,6 @@ void startFileWriterTask( int priority )
 {
         g_LoggerMessage_queue = create_logger_message_queue(
                 SAMPLE_RECORD_QUEUE_SIZE);
-
         if (NULL == g_LoggerMessage_queue) {
                 pr_error("LoggerMessage Queue is null!\r\n");
                 return;
@@ -445,8 +446,13 @@ void startFileWriterTask( int priority )
                 pr_error("file: logfile sruct alloc err\r\n");
                 return;
         }
-
         memset(g_logfile, 0, sizeof(FIL));
+
+        size_t size = create_ring_buffer(&file_buff, FILE_BUFFER_SIZE);
+        if (FILE_BUFFER_SIZE != size) {
+                pr_error("fileWriter.c: Failed to alloc ring buffer.\r\n");
+                return;
+        }
 
         xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter",
                      FILE_WRITER_STACK_SIZE, NULL, priority, NULL );
