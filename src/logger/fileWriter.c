@@ -22,34 +22,28 @@
 
 #include <stdbool.h>
 
-#define FILE_WRITER_STACK_SIZE  				200
-#define SAMPLE_RECORD_QUEUE_SIZE				20
-#define FILE_BUFFER_SIZE						256
-
-#define MAX_LOG_FILE_INDEX 						99999
-#define ERROR_SLEEP_DELAY_MS					500
-
-//wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all
-#define SAMPLE_QUEUE_WAIT_TIME					0
-
-#define WRITE_SUCCESS  0
-#define WRITE_FAIL     EOF
+#define ERROR_SLEEP_DELAY_MS	500
+#define FILE_BUFFER_SIZE	256
+#define FILE_WRITER_STACK_SIZE	200
+#define MAX_LOG_FILE_INDEX	99999
+#define SAMPLE_RECORD_QUEUE_SIZE	20
+#define WRITE_FAIL	EOF
 
 static FIL *g_logfile;
 static xQueueHandle g_LoggerMessage_queue;
 static struct ring_buff file_buff;
 
-static void error_led(bool on)
+static void error_led(const bool on)
 {
         on ? LED_enable(3) : LED_disable(3);
 }
 
-static FRESULT flush_file_buffer()
+static FRESULT flush_file_buffer(void)
 {
         FRESULT res = FR_OK;
         char tmp[32];
 
-        pr_info("Flushing file buffer\r\n");
+        pr_debug("_RCP_BASE_FILE_: Flushing file buffer\r\n");
         size_t chars = get_used(&file_buff);
         while(0 < chars) {
                 if (chars > sizeof(tmp))
@@ -66,7 +60,7 @@ static FRESULT flush_file_buffer()
                 chars = get_used(&file_buff);
         }
 
-        pr_info("Flushing file buffer DONE\r\n");
+        pr_debug("_RCP_BASE_FILE_: Flushing file buffer DONE\r\n");
         return res;
 }
 
@@ -158,7 +152,7 @@ static int write_samples_data(const LoggerMessage *msg)
         size_t count = msg->sample->channel_count;
 
         if (NULL == sample) {
-                pr_warning("Logger: null sample record\r\n");
+                pr_warning("_RCP_BASE_FILE_: null sample record\r\n");
                 return WRITE_FAIL;
         }
 
@@ -189,7 +183,8 @@ static int write_samples_data(const LoggerMessage *msg)
                         appendDouble(sample->valueDouble, precision);
                         break;
                 default:
-                        pr_warning("file: Unknown channel sample type\n");
+                        pr_warning("_RCP_BASE_FILE_: Unknown channel "
+                                   "sample type\n");
                 }
         }
 
@@ -199,7 +194,7 @@ static int write_samples_data(const LoggerMessage *msg)
 
 static enum writing_status open_existing_log_file(struct logging_status *ls)
 {
-        pr_debug_str_msg("Logging: Opening log file ", ls->name);
+        pr_debug_str_msg("_RCP_BASE_FILE_: Opening log file ", ls->name);
 
         int rc = f_open(g_logfile, ls->name, FA_WRITE);
 
@@ -214,7 +209,7 @@ static enum writing_status open_existing_log_file(struct logging_status *ls)
 
 static enum writing_status open_new_log_file(struct logging_status *ls)
 {
-        pr_debug("Logging: Opening new log file\r\n");
+        pr_debug("_RCP_BASE_FILE_: Opening new log file\r\n");
 
         int i;
 
@@ -246,44 +241,44 @@ static void close_log_file(struct logging_status *ls)
         UnmountFS();
 }
 
-static void logging_led_toggle()
+static void logging_led_toggle(void)
 {
         LED_toggle(2);
 }
 
-static void logging_led_off()
+static void logging_led_off(void)
 {
         LED_disable(2);
 }
 
 static void open_log_file(struct logging_status *ls)
 {
-        pr_info("Logging: Opening log file\r\n");
+        pr_info("_RCP_BASE_FILE_: Opening log file\r\n");
         ls->writing_status = WRITING_INACTIVE;
 
         const int rc = InitFS();
         if (0 != rc) {
-                pr_error_int_msg("Logging: FS init error: ", rc);
+                pr_error_int_msg("_RCP_BASE_FILE_: FS init error: ", rc);
                 return;
         }
 
-        pr_debug("Logging: FS init success.  Opening file...\r\n");
+        pr_debug("_RCP_BASE_FILE_: FS init success.  Opening file...\r\n");
         // Open a file if one is set, else create a new one.
         ls->writing_status = ls->name[0] ? open_existing_log_file(ls) :
                 open_new_log_file(ls);
 
         if (WRITING_INACTIVE == ls->writing_status) {
-                pr_warning_str_msg("Logging: Failed to open: ", ls->name);
+                pr_warning_str_msg("_RCP_BASE_FILE_: Failed to open: ", ls->name);
                 return;
         }
 
-        pr_info_str_msg("Logging: Opened " , ls->name);
+        pr_info_str_msg("_RCP_BASE_FILE_: Opened " , ls->name);
         ls->flush_tick = xTaskGetTickCount();
 }
 
 TESTABLE_STATIC int logging_start(struct logging_status *ls)
 {
-        pr_info("Logging: Start\r\n");
+        pr_info("_RCP_BASE_FILE_: Start\r\n");
         ls->logging = true;
 
         /* Set this here because this is the start of the log stream */
@@ -295,7 +290,7 @@ TESTABLE_STATIC int logging_start(struct logging_status *ls)
 
 TESTABLE_STATIC int logging_stop(struct logging_status *ls)
 {
-        pr_debug("Logging: End\r\n");
+        pr_debug("_RCP_BASE_FILE_: End\r\n");
         ls->logging = false;
 
         close_log_file(ls);
@@ -358,7 +353,8 @@ TESTABLE_STATIC int logging_sample(struct logging_status *ls,
                 }
 
                 /* If here, then unmount and try attempts more time */
-                pr_error("Remounting FS due to write error.\r\n");
+                pr_error("_RCP_BASE_FILE_: Remounting FS due to write "
+                         "error.\r\n");
                 close_log_file(ls);
 
                 /*
@@ -382,10 +378,10 @@ TESTABLE_STATIC int flush_logfile(struct logging_status *ls)
         if (!isTimeoutMs(ls->flush_tick, FLUSH_INTERVAL_MS))
                 return -2;
 
-        pr_debug("Logging: flush\r\n");
+        pr_debug("_RCP_BASE_FILE_: flush\r\n");
         const int res = f_sync(g_logfile);
         if (0 != res)
-                pr_debug_int_msg("Logging: flush err ", res);
+                pr_debug_int_msg("_RCP_BASE_FILE_: flush err ", res);
 
         ls->flush_tick = xTaskGetTickCount();
         return res;
@@ -419,13 +415,14 @@ static void fileWriterTask(void *params)
                         rc = logging_stop(&ls);
                         break;
                 default:
-                        pr_warning("Unsupported message type\r\n");
+                        pr_warning("_RCP_BASE_FILE_: Unsupported message "
+                                   "type\r\n");
                 }
 
                 /* Turns the LED on if things are bad, off otherwise. */
                 error_led(rc);
                 if (rc) {
-                        pr_debug("Msg type ");
+                        pr_debug("_RCP_BASE_FILE_: Msg type ");
                         pr_debug_int(msg.type);
                         pr_debug_int_msg(" failed with code ", rc);
                 }
@@ -434,25 +431,25 @@ static void fileWriterTask(void *params)
         }
 }
 
-void startFileWriterTask( int priority )
+void startFileWriterTask(int priority)
 {
         g_LoggerMessage_queue = create_logger_message_queue(
                 SAMPLE_RECORD_QUEUE_SIZE);
         if (NULL == g_LoggerMessage_queue) {
-                pr_error("LoggerMessage Queue is null!\r\n");
+                pr_error("_RCP_BASE_FILE_: LoggerMessage Queue is null!\r\n");
                 return;
         }
 
         g_logfile = (FIL *) pvPortMalloc(sizeof(FIL));
         if (NULL == g_logfile) {
-                pr_error("file: logfile sruct alloc err\r\n");
+                pr_error("_RCP_BASE_FILE_: logfile sruct alloc err\r\n");
                 return;
         }
         memset(g_logfile, 0, sizeof(FIL));
 
-        size_t size = create_ring_buffer(&file_buff, FILE_BUFFER_SIZE);
+        const size_t size = create_ring_buffer(&file_buff, FILE_BUFFER_SIZE);
         if (FILE_BUFFER_SIZE != size) {
-                pr_error("fileWriter.c: Failed to alloc ring buffer.\r\n");
+                pr_error("_RCP_BASE_FILE_: Failed to alloc ring buffer.\r\n");
                 return;
         }
 
