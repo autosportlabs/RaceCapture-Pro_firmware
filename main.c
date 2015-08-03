@@ -1,34 +1,54 @@
+/**
+ * Race Capture Pro Firmware
+ *
+ * Copyright (C) 2015 Autosport Labs
+ *
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
 /*
  * RaceCapture Pro main
-	NOTE : Tasks run in system mode and the scheduler runs in Supervisor mode.
-	The processor MUST be in supervisor mode when vTaskStartScheduler is
-	called.  The demo applications included in the FreeRTOS.org download switch
-	to supervisor mode prior to main being called.  If you are not using one of
-	these demo application projects then ensure Supervisor mode is used.
-*/
+ *	NOTE : Tasks run in system mode and the scheduler runs in Supervisor mode.
+ *	The processor MUST be in supervisor mode when vTaskStartScheduler is
+ *	called.  The demo applications included in the FreeRTOS.org download switch
+ *	to supervisor mode prior to main being called.  If you are not using one of
+ *	these demo application projects then ensure Supervisor mode is used.
+ */
 
-// Standard includes
+
 #include "FreeRTOS.h"
-#include "task.h"
-
-#include "capabilities.h"
-#include "constants.h"
 #include "LED.h"
-#include "cpu.h"
-#include "watchdog.h"
-#include "loggerHardware.h"
-#include "messaging.h"
-#include "luaScript.h"
-
-//tasks
-#include "loggerTaskEx.h"
-#include "fileWriter.h"
-#include "connectivityTask.h"
-#include "luaTask.h"
 #include "OBD2_task.h"
-#include "gpsTask.h"
+#include "capabilities.h"
+#include "connectivityTask.h"
+#include "constants.h"
+#include "cpu.h"
+#include "fileWriter.h"
 #include "gpioTasks.h"
+#include "gpsTask.h"
+#include "loggerHardware.h"
+#include "loggerTaskEx.h"
+#include "luaScript.h"
+#include "luaTask.h"
+#include "messaging.h"
+#include "printk.h"
+#include "task.h"
 #include "usb_comm.h"
+#include "watchdog.h"
 
 #include <app_info.h>
 
@@ -117,6 +137,7 @@ int main( void )
 {
     ALWAYS_KEEP(info_block);
     cpu_init();
+    pr_info("*** Start! ***\r\n");
     watchdog_init(WATCHDOG_TIMEOUT_MS);
 
     /* Start the scheduler.

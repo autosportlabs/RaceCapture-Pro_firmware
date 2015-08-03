@@ -111,6 +111,7 @@ T_SRC = loggerApi_test.cpp \
 		$(LAP_STATS_DIR)/current_lap_test.cpp \
 		$(UTIL_DIR)/numtoa_test.cpp \
 		$(UTIL_DIR)/atonum_test.cpp \
+		ring_buffer_test.cpp \
 
 SRC =		mock_uart.c \
 		mock_gps_device.c \
@@ -130,7 +131,7 @@ SRC =		mock_uart.c \
 		$(RCP_SRC)/api/api.c \
 		$(RCP_SRC)/OBD2/OBD2.c \
 		$(RCP_SRC)/logging/printk.c \
-		$(RCP_SRC)/logging/ring_buffer.c \
+		$(RCP_SRC)/ring_buffer.c \
 		$(RCP_SRC)/logger/loggerApi.c \
 		$(RCP_SRC)/logger/fileWriter.c \
 		$(RCP_SRC)/filter/filter.c \

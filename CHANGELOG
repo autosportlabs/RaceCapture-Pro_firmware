@@ -10,6 +10,9 @@
 * Added getUptime LUA method to get system uptime
 * Added getDateTime LUA method to get date and time info.  Returns in format
   year, month, day, hour, minute, second, millisecond.
+* Fixed invalid data print out bug during slow SD Card init
+* Fixed meta fields in log file being corrupted during printout.
+* Fixed no SPI lock issue on MK1 hardware for f_write call.
 
 === 2.8.3 ===
 * Read cell module stats before checking if on network
