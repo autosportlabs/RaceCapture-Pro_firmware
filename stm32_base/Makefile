@@ -52,8 +52,9 @@ include libs/stm32f4_periph.mk
 include libs/freertos.mk
 include libs/stm32_usb.mk
 
-CFLAGS ?= -Os -g -Wall -fno-common -c -mthumb -fno-strict-aliasing -Wuninitialized -Wsign-compare\
-	  -mcpu=$(CPU_TYPE) -MD -std=gnu99
+CFLAGS ?= -Os -g -Wall -fno-common -c -mthumb -fno-strict-aliasing \
+		-Wuninitialized -Wsign-compare -mcpu=$(CPU_TYPE) -MD \
+		-std=gnu99
 
 LUA_INCLUDE=-I$(APP_PATH)/lib_lua/src
 LUA_LIBS=lua
@@ -63,8 +64,8 @@ INCLUDES += $(CPU_INCLUDES) $(BOARD_INCLUDES) $(LIB_INCLUDES) $(APP_INCLUDES) $(
 CFLAGS += $(INCLUDES) $(CPU_DEFINES) $(BOARD_DEFINES) $(APP_DEFINES) $(CPU_FLAGS)
 ASFLAGS += -mcpu=$(CPU_TYPE) $(FPU) -g -Wa,--warn
 
-LIBS = -lnosys 
-LIBS += $(addprefix -l,$(BASE_LIBS)) 
+LIBS = -lnosys
+LIBS += $(addprefix -l,$(BASE_LIBS))
 LIBS += $(addprefix -l,$(LUA_LIBS))
 
 LDFLAGS ?= --specs=nano.specs -lc -lgcc $(LIBS) -mcpu=$(CPU_TYPE) -g -ggdb \
@@ -117,15 +118,15 @@ $(TARGET).bin: $(TARGET).elf
 
 $(TARGET).elf: $(OBJS)
 	@printf "  LD      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CC) -o $@ $(OBJS) $(LDFLAGS)
+	$(Q)$(CC) $(OBJS) $(LDFLAGS) -o $@
 
 .c.o:
 	@printf "  CC      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
+	$(Q)$(CC) $(CFLAGS) -DRCP_BASE_FILE=$(notdir $<) $< -o $@
 
 .s.o:
 	@printf "  AS      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CC) $(ASFLAGS) -c -o $@ $<
+	$(Q)$(CC) $(ASFLAGS) -c $< -o $@
 
 clean:
 	$(Q)rm -f *.o *.a *.d ../*.o ../*.d \
