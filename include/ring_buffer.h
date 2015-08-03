@@ -1,5 +1,22 @@
-/*
- * Race Capture
+/**
+ * Race Capture Pro Firmware
+ *
+ * Copyright (C) 2015 Autosport Labs
+ *
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef __RING_BUFFER_H__
@@ -35,6 +52,17 @@ size_t dump_data(struct ring_buff *rb, size_t size);
 size_t clear_data(struct ring_buff *rb);
 
 bool has_data(struct ring_buff *rb);
+
+/**
+ * Initializes a ring_buff structure with the data given.  Sets all
+ * other appropriate variables as needed.
+ * @param rb The ring_buff structure to setup.
+ * @param buff Pointer to the buffer to use.
+ * @param size Size of the buffer
+ * @return The size of the buffer.
+ */
+size_t init_ring_buffer(struct ring_buff *rb, char *buff,
+                        const size_t size);
 
 /**
  * Allocates a Ring Buffer and assigns relevant data to the ring_buff
