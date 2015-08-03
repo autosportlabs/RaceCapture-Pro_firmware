@@ -135,7 +135,8 @@ size_t init_ring_buffer(struct ring_buff *rb, char *buff,
                         const size_t size)
 {
         rb->head = rb->tail = rb->buf = buff;
-        return rb->size = size;
+        rb->size = size;
+        return size - 1;
 }
 
 size_t create_ring_buffer(struct ring_buff *rb, size_t size)
