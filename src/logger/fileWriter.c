@@ -49,7 +49,7 @@ static FRESULT flush_file_buffer(void)
                 if (chars > sizeof(tmp))
                         chars = sizeof(tmp);
 
-                pr_info_int_msg("Chars is ", chars);
+                pr_trace_int_msg("_RCP_BASE_FILE_: Chars is ", chars);
                 get_data(&file_buff, &tmp, chars);
                 if (g_logfile->fs) {
                         unsigned int bw;
