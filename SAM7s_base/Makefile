@@ -629,14 +629,14 @@ $(COBJ) : %.o : %.c
 	@echo
 	@echo $(MSG_COMPILING) $<
 	$(CC) -c $(THUMB) $(ALL_CFLAGS) $(CONLYFLAGS) \
-		-DRCP_BASE_FILE=$(notdir $<) $< -o $@
+		-D_RCP_BASE_FILE_="\"$(notdir $<): \"" $< -o $@
 
 # Compile: create object files from C source files. ARM-only
 $(COBJARM) : %.o : %.c
 	@echo
 	@echo $(MSG_COMPILING_ARM) $<
-	$(CC) -c $(ALL_CFLAGS) $(CONLYFLAGS) -DRCP_BASE_FILE=$(notdir $<) \
-		$< -o $@
+	$(CC) -c $(ALL_CFLAGS) $(CONLYFLAGS) \
+		-D_RCP_BASE_FILE_="\"$(notdir $<): \"" $< -o $@
 
 # Compile: create object files from C++ source files. ARM/Thumb
 $(CPPOBJ) : %.o : %.cpp

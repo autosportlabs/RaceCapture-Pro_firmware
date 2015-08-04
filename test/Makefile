@@ -82,15 +82,15 @@ dir_guard=@mkdir -p $(@D)
 
 build/%.o: %.c
 	$(dir_guard)
-	$(CC) $(CFLAGS) -c -DRCP_BASE_FILE=$(notdir $<) $< -o $@
+	$(CC) $(CFLAGS) -c -D_RCP_BASE_FILE_="\"$(notdir $<): \"" $< -o $@
 
 build/%.o: %.cpp
 	$(dir_guard)
-	$(CPP) $(CPPFLAGS) -c -DRCP_BASE_FILE=$(notdir $<) $< -o $@
+	$(CPP) $(CPPFLAGS) -c -D_RCP_BASE_FILE_="\"$(notdir $<): \"" $< -o $@
 
 build/rcp_base/%.o: ../%.c
 	$(dir_guard)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -D_RCP_BASE_FILE_="\"$(notdir $<): \"" -c $< -o $@
 
 #-----File Dependencies----------------------
 

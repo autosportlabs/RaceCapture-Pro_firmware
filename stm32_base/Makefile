@@ -122,7 +122,7 @@ $(TARGET).elf: $(OBJS)
 
 .c.o:
 	@printf "  CC      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CC) $(CFLAGS) -DRCP_BASE_FILE=$(notdir $<) $< -o $@
+	$(Q)$(CC) $(CFLAGS) -D_RCP_BASE_FILE_="\"$(notdir $<): \"" $< -o $@
 
 .s.o:
 	@printf "  AS      $(subst $(shell pwd)/,,$(@))\n"
