@@ -23,6 +23,7 @@
 #include "ring_buffer_test.hh"
 
 #include <string.h>
+#include <stdio.h>
 
 CPPUNIT_TEST_SUITE_REGISTRATION( RingBufferTest );
 
@@ -71,19 +72,26 @@ void RingBufferTest::putGetTest()
 
 void RingBufferTest::putStringTest()
 {
-        const char str[] = "FooBar";
+        const char str[] = "FooBarBazBizFizzBah";
+        const char *ptr = str;
 
-        /* First addition should result in success */
-        CPPUNIT_ASSERT_EQUAL((const char *) NULL, put_string(&rb, str));
+        /* First addition should result in failure */
+        ptr = put_string(&rb, ptr);
+        CPPUNIT_ASSERT_EQUAL(str + 7, ptr);
 
-        /* The next addition should result in space running out. */
-        CPPUNIT_ASSERT_EQUAL(str + 1, put_string(&rb, str));
+        /* Now dump 7 bytes and try to add more */
+        CPPUNIT_ASSERT_EQUAL((size_t) 7, dump_data(&rb, 7));
 
-        /* Now Dump 3 bytes and try to add more */
-        CPPUNIT_ASSERT_EQUAL((size_t) 3, dump_data(&rb, 3));
+        /* Second addition should result in failure as well. */
+        ptr = put_string(&rb, ptr);
+        CPPUNIT_ASSERT_EQUAL(str + 14, ptr);
 
-        /* The next addition should result in space running out. */
-        CPPUNIT_ASSERT_EQUAL(str + 4, put_string(&rb, str));
+        /* Now dump 7 bytes again and try to add more */
+        CPPUNIT_ASSERT_EQUAL((size_t) 7, dump_data(&rb, 7));
+
+        /* The final addition should result in success. */
+        ptr = put_string(&rb, ptr);
+        CPPUNIT_ASSERT_EQUAL((const char *) NULL, ptr);
 }
 
 void RingBufferTest::putFailTest()

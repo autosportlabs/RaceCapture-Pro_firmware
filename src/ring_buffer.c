@@ -71,7 +71,9 @@ const char * put_string(struct ring_buff *rb, const char *str)
         while (0 < get_space(rb) && *str) {
                 *rb->head = *str;
 
-                rb->head = get_end_dist(rb, rb->head) ? rb->head + 1 : rb->buf;
+                rb->head += 1;
+                if (0 == get_end_dist(rb, rb->head))
+                        rb->head = rb->buf;
                 ++str;
         }
 
