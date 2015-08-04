@@ -50,4 +50,13 @@ size_t create_ring_buffer(struct ring_buff *rb, size_t size);
  */
 void free_ring_buffer(struct ring_buff *rb);
 
+/**
+ * Puts a string onto the ring_buffer.  This method is a bit more
+ * optimized than put_data as it avoids an extra iteration over the string
+ * @param rb The ring buffer structure we are adding to.
+ * @param str The string to append.
+ * @return The pointer where we are in the string when the buffer became
+ * full, otherwise NULL if successful.
+ */
+char * put_string(struct ring_buff *rb, char *str);
 #endif /* __RING_BUFFER_H__ */

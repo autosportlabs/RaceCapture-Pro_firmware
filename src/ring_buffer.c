@@ -66,6 +66,19 @@ size_t put_data(struct ring_buff *rb, const void *data, size_t size)
         return size;
 }
 
+char * put_string(struct ring_buff *rb, char *str)
+{
+        while (0 < get_space(rb) && *str) {
+                *rb->head = *str;
+
+                rb->head = get_end_dist(rb, rb->head) ? rb->head + 1 : rb->buf;
+                ++str;
+        }
+
+        return *str ? NULL : str;
+}
+
+
 size_t get_used(struct ring_buff *rb)
 {
         return rb->size - get_space(rb) - 1;
