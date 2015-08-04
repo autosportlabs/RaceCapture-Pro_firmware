@@ -75,7 +75,7 @@ char * put_string(struct ring_buff *rb, char *str)
                 ++str;
         }
 
-        return *str ? NULL : str;
+        return *str ? str : NULL;
 }
 
 

@@ -28,6 +28,7 @@ class RingBufferTest : public CppUnit::TestFixture
 {
         CPPUNIT_TEST_SUITE( RingBufferTest );
         CPPUNIT_TEST( putGetTest );
+        CPPUNIT_TEST( putStringTest );
         CPPUNIT_TEST( putFailTest );
         CPPUNIT_TEST( getFailTest );
         CPPUNIT_TEST( dumpTest );
@@ -39,6 +40,7 @@ public:
         void setUp();
         void tearDown();
         void putGetTest();
+        void putStringTest();
         void putFailTest();
         void getFailTest();
         void dumpTest();

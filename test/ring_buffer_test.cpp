@@ -1,4 +1,4 @@
-/**
+/*
  * Race Capture Pro Firmware
  *
  * Copyright (C) 2015 Autosport Labs
@@ -63,6 +63,17 @@ void RingBufferTest::putGetTest()
 
         /* Check data in == data out */
         CPPUNIT_ASSERT(0 == strcmp(data_in, data_out));
+}
+
+void RingBufferTest::putStringTest()
+{
+        char str[] = "FooBar";
+
+        /* First addition should result in success */
+        CPPUNIT_ASSERT_EQUAL((char *) NULL, put_string(&rb, str));
+
+        /* The next addition should result in space running out. */
+        CPPUNIT_ASSERT_EQUAL(str + 1, put_string(&rb, str));
 }
 
 void RingBufferTest::putFailTest()
