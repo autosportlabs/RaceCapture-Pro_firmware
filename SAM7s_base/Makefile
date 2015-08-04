@@ -221,7 +221,7 @@ $(PWM_DIR)/PWM.c \
 $(LED_DIR)/LED.c \
 $(GPIO_DIR)/GPIO.c \
 $(WATCHDOG_DIR)/watchdog.c \
-$(SRC_DIR)/ring_buffer.c \
+$(UTIL_DIR)/ring_buffer.c \
 $(MESSAGING_SRC_DIR)/messaging.c \
 $(PRED_TIMER_DIR)/predictive_timer_2.c \
 $(UTIL_DIR)/linear_interpolate.c \
