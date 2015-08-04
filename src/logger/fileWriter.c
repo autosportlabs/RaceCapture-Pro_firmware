@@ -1,8 +1,22 @@
 /*
- * fileWriter.c
+ * Race Capture Pro Firmware
  *
- *  Created on: Feb 29, 2012
- *      Author: brent
+ * Copyright (C) 2015 Autosport Labs
+ *
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "LED.h"
@@ -64,16 +78,13 @@ static FRESULT flush_file_buffer(void)
         return res;
 }
 
-static FRESULT append_file_buffer(const char *data)
+static FRESULT append_file_buffer(char *str)
 {
         FRESULT res = FR_OK;
 
-        const size_t size = strlen(data);
-        size_t remaining = size;
-        while(remaining) {
-                remaining -= put_data(&file_buff, data + size - remaining,
-                                      remaining);
-                if (0 < remaining)
+        while(*str) {
+                str = put_string(&file_buff, str)
+                if (str)
                         res = flush_file_buffer();
         }
 
