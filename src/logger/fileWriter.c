@@ -78,12 +78,12 @@ static FRESULT flush_file_buffer(void)
         return res;
 }
 
-static FRESULT append_file_buffer(char *str)
+static FRESULT append_file_buffer(const char *str)
 {
         FRESULT res = FR_OK;
 
         while(*str) {
-                str = put_string(&file_buff, str)
+                str = put_string(&file_buff, str);
                 if (str)
                         res = flush_file_buffer();
         }

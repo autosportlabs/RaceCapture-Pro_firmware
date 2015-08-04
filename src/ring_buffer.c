@@ -66,7 +66,7 @@ size_t put_data(struct ring_buff *rb, const void *data, size_t size)
         return size;
 }
 
-char * put_string(struct ring_buff *rb, char *str)
+const char * put_string(struct ring_buff *rb, const char *str)
 {
         while (0 < get_space(rb) && *str) {
                 *rb->head = *str;
@@ -106,12 +106,11 @@ size_t get_data(struct ring_buff *rb, void *data, size_t size)
 
 size_t dump_data(struct ring_buff *rb, size_t size)
 {
+        const size_t used = get_used(rb);
+        if (size > used)
+                size = used;
 
-        size_t dist = get_used(rb);
-        if (size > dist)
-                size = dist;
-
-        dist = get_end_dist(rb, rb->tail);
+        const size_t dist = get_end_dist(rb, rb->tail);
         if (size < dist) {
                 rb->tail += size;
         } else {

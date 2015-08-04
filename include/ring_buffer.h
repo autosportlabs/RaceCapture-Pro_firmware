@@ -86,5 +86,6 @@ void free_ring_buffer(struct ring_buff *rb);
  * @return The pointer where we are in the string when the buffer became
  * full, otherwise NULL if successful.
  */
-char * put_string(struct ring_buff *rb, char *str);
+const char * put_string(struct ring_buff *rb, const char *str);
+
 #endif /* __RING_BUFFER_H__ */

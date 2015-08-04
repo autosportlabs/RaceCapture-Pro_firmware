@@ -33,6 +33,10 @@ static struct ring_buff rb;
 void RingBufferTest::setUp()
 {
         init_ring_buffer(&rb, buff, buff_size);
+
+        /* To better test wrapping, move head and tail forward */
+        rb.head++;
+        rb.tail++;
 }
 
 void RingBufferTest::tearDown() {}
@@ -67,13 +71,19 @@ void RingBufferTest::putGetTest()
 
 void RingBufferTest::putStringTest()
 {
-        char str[] = "FooBar";
+        const char str[] = "FooBar";
 
         /* First addition should result in success */
-        CPPUNIT_ASSERT_EQUAL((char *) NULL, put_string(&rb, str));
+        CPPUNIT_ASSERT_EQUAL((const char *) NULL, put_string(&rb, str));
 
         /* The next addition should result in space running out. */
         CPPUNIT_ASSERT_EQUAL(str + 1, put_string(&rb, str));
+
+        /* Now Dump 3 bytes and try to add more */
+        CPPUNIT_ASSERT_EQUAL((size_t) 3, dump_data(&rb, 3));
+
+        /* The next addition should result in space running out. */
+        CPPUNIT_ASSERT_EQUAL(str + 4, put_string(&rb, str));
 }
 
 void RingBufferTest::putFailTest()
