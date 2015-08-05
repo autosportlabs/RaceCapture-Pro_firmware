@@ -94,6 +94,13 @@ void RingBufferTest::putStringTest()
         CPPUNIT_ASSERT_EQUAL((const char *) NULL, ptr);
 }
 
+void RingBufferTest::putNullStringTest()
+{
+        /* Put a NULL string.  Ensure it returns null without segfaulting */
+        CPPUNIT_ASSERT_EQUAL((const char *) NULL, put_string(&rb, NULL));
+}
+
+
 void RingBufferTest::putFailTest()
 {
         /* Fill up the buffer */

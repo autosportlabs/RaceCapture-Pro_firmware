@@ -68,6 +68,9 @@ size_t put_data(struct ring_buff *rb, const void *data, size_t size)
 
 const char * put_string(struct ring_buff *rb, const char *str)
 {
+        if (!str)
+                return NULL;
+
         while (0 < get_space(rb) && *str) {
                 *rb->head = *str;
 
