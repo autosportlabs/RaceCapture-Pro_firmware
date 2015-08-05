@@ -3033,7 +3033,7 @@ FRESULT f_getcwd (
 /* Seek File R/W Pointer                                                 */
 /*-----------------------------------------------------------------------*/
 
-FRESULT f_lseek (
+static FRESULT f_lseek_unprotected (
     FIL* fp,		/* Pointer to the file object */
     DWORD ofs		/* File pointer from top of file */
 )
@@ -3190,6 +3190,16 @@ FRESULT f_lseek (
     LEAVE_FF(fp->fs, res);
 }
 
+FRESULT f_lseek (
+    FIL* fp,		/* Pointer to the file object */
+    DWORD ofs		/* File pointer from top of file */
+)
+{
+        lock_spi();
+        const FRESULT rc = f_lseek_unprotected(fp, ofs);
+        unlock_spi();
+        return rc;
+}
 
 
 #if _FS_MINIMIZE <= 1
