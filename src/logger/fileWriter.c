@@ -38,7 +38,7 @@
 
 #define ERROR_SLEEP_DELAY_MS	500
 #define FILE_BUFFER_SIZE	256
-#define FILE_WRITER_STACK_SIZE	200
+#define FILE_WRITER_STACK_SIZE	256
 #define MAX_LOG_FILE_INDEX	99999
 #define SAMPLE_RECORD_QUEUE_SIZE	20
 #define WRITE_FAIL	EOF
@@ -82,7 +82,7 @@ static FRESULT append_file_buffer(const char *str)
 {
         FRESULT res = FR_OK;
 
-        while(*str) {
+        while(str && *str) {
                 str = put_string(&file_buff, str);
                 if (str)
                         res = flush_file_buffer();
