@@ -115,7 +115,10 @@ Do the following to setup the MK2 toolchain:
 * Extract the tarball to a directory of your choice
 * Add the 'bin' directory from within the newly extracted directory to
   your system PATH.
-* _TODO_ Finish up the bits about asl-f4-loader here.
+* Install pip (the Python package manager)
+* Run `sudo pip install crcmod https://s3-us-west-2.amazonaws.com/asl-firmware/vagrant_setup/asl_f4_loader-0.0.6.tgz`
+to install the asl_f4_loader package.  This does post-processing on MK2 firmware and provides a firmware loading
+utility.
 
 ### Compiling LUA library for MK2
 Before compiling the firmware you must compile the LUA library for MK2.  Do the following from the root of the project
