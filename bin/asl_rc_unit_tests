@@ -1,0 +1,8 @@
+#!/bin/bash
+
+NUM_CPU=$(grep -c proc /proc/cpuinfo)
+echo "Using $NUM_CPU cores for this build"
+
+cd test
+make -j$(NUM_CPU)
+./rcptest
