@@ -12,12 +12,12 @@
 #include <queue.h>
 #include <semphr.h>
 
-#include <stm32f4xx.h>
-#include <stm32f4xx_i2c.h>
-#include <stm32f4xx_gpio.h>
-#include <stm32f4xx_rcc.h>
-#include <stm32f4xx_misc.h>
-#include <stm32f4xx_dma.h>
+#include <stm32f30x.h>
+#include <stm32f30x_i2c.h>
+#include <stm32f30x_gpio.h>
+#include <stm32f30x_rcc.h>
+#include <stm32f30x_misc.h>
+#include <stm32f30x_dma.h>
 
 #include <i2c_device_stm32.h>
 
@@ -292,32 +292,28 @@ static void i2c_dma_init(struct i2c_priv *p)
 
     /* Reset the DMA stream */
     DMA_DeInit(st->stream);
-    DMA_InitStructure.DMA_Channel = st->channel;
 
     /* DMA Direction, length, and buffer depend on whether we're receiving or transmitting */
     if (p->trans_direction == I2C_Direction_Receiver) {
         DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;
         DMA_InitStructure.DMA_BufferSize = p->rx_len;
-        DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)p->dma.rx_buf;
+        DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)p->dma.rx_buf;
+        DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) &p->ll_dev->RXDR;
     } else {
         DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
         DMA_InitStructure.DMA_BufferSize = p->tx_len;
-        DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)p->dma.tx_buf;
+        DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)p->dma.tx_buf;
+        DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) &p->ll_dev->TXDR;
     }
 
     /* The rest of the DMA Hardware is set up the same way every time */
-    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) &p->ll_dev->DR;
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
     DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
     DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
     DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
     DMA_InitStructure.DMA_Priority = DMA_Priority_High;
-    DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;
-    DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
-    DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
-    DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
-    DMA_Init(st->stream, &DMA_InitStructure);
+    DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
 
     /* Enable DMA Stream Transfer Complete interrupt */
     DMA_ITConfig(st->stream, DMA_IT_TC, ENABLE);
@@ -398,9 +394,7 @@ int i2c_init(struct i2c_dev *dev, uint32_t bus_speed)
     I2C_DeInit(p->ll_dev);
     I2C_StructInit(&I2C_InitStruct);
 
-    I2C_InitStruct.I2C_ClockSpeed = bus_speed;
     I2C_InitStruct.I2C_Mode = I2C_Mode_I2C;
-    I2C_InitStruct.I2C_DutyCycle = I2C_DutyCycle_2;
     I2C_InitStruct.I2C_OwnAddress1 = 0x00;
     I2C_InitStruct.I2C_Ack = I2C_Ack_Enable;
     I2C_InitStruct.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
@@ -802,7 +796,7 @@ static void i2c_common_error_handler(struct i2c_priv *p)
     I2C_GetLastEvent(p->ll_dev);
 
     /* Make sure that the SR1 register is clear */
-    p->ll_dev->SR1 = 0;
+    //p->ll_dev->ICR = 0; /* todo double check if this is the correct address to clear */
 
     /* Send stop */
     I2C_GenerateSTOP(p->ll_dev, ENABLE);
