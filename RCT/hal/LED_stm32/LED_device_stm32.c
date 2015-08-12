@@ -1,6 +1,6 @@
 #include "LED_device.h"
-#include <stm32f4xx_gpio.h>
-#include <stm32f4xx_rcc.h>
+#include <stm32f30x_gpio.h>
+#include <stm32f30x_rcc.h>
 
 struct led {
     GPIO_TypeDef *port;

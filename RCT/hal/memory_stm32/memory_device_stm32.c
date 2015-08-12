@@ -1,5 +1,5 @@
 #include "memory_device.h"
-#include "stm32f4xx_flash.h"
+#include "stm32f30x_flash.h"
 
 #define MEMORY_PAGE_SIZE	2048
 

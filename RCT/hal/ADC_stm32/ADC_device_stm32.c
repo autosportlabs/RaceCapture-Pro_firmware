@@ -8,7 +8,7 @@
 #include "stm32f30x_dma.h"
 #include "mem_mang.h"
 
-//on RCP MK2
+//on RC/T
 //Analog1 - PC4 - ADC12_IN14
 //Analog2 - PC5 - ADC12_IN15
 //Analog3 - PB0 - ADC12_IN8

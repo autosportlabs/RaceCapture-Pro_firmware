@@ -1,7 +1,7 @@
 #include "watchdog_device.h"
 #include "LED.h"
-#include <stm32f4xx_iwdg.h>
-#include <stm32f4xx_rcc.h>
+#include <stm32f30x_iwdg.h>
+#include <stm32f30x_rcc.h>
 
 #define LSI_FREQUENCY 32000
 

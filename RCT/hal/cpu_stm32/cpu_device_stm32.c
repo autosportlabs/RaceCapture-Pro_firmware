@@ -1,6 +1,6 @@
 #include "cpu_device.h"
-#include <stm32f4xx_misc.h>
-#include <stm32f4xx_rcc.h>
+#include <stm32f30x_misc.h>
+#include <stm32f30x_rcc.h>
 #include <core_cm4.h>
 #include <stdint.h>
 #include <app_info.h>
