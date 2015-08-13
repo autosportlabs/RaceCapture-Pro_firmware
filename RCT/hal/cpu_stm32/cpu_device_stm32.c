@@ -5,8 +5,8 @@
 #include <stdint.h>
 #include <app_info.h>
 
-#define CPU_ID_REGISTER_START 	0x1FFF7A10
-#define CPU_ID_REGISTER_END   	0x1FFF7A1C
+#define CPU_ID_REGISTER_START 	0x1FFFF7E8
+#define CPU_ID_REGISTER_END   	0x1FFFF7F4 /*TODO BAP verify serial number */
 #define ASCII(x)		(((x)&0xF) < 10) ? (((x)&0xF)+'0') : (((x)&0xF)-10+'A')
 #define SERIAL_ID_BITS		96
 #define SERIAL_ID_BUFFER_LEN	(((SERIAL_ID_BITS / 8) * 2) + 1)
@@ -45,11 +45,12 @@ void cpu_device_reset(int bootloader)
     /* Clear any reset flags that might be present (i.e. watchdog) */
     RCC_ClearFlag();
 
+    /*TODO BAP enable bootloader */
     /* If bootloader mode is requested, Set the flag in the
      * handshake area */
-    if (bootloader == 1) {
+/*    if (bootloader == 1) {
         handshake->loader_magic = LOADER_KEY;
-    }
+    } */
 
     NVIC_SystemReset();
 }
