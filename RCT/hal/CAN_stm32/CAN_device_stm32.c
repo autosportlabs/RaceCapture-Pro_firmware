@@ -126,16 +126,16 @@ static void CAN_device_init_1(int baud)
 
     /* CAN GPIOs configuration ************************************************* */
     /* Enable GPIO clock */
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
 
     /* Connect CAN pins to Alternate Function */
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource11, CAN);
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource12, CAN);
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource11, GPIO_AF_9);
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource12, GPIO_AF_9);
     initGPIO(GPIOA, GPIO_Pin_11 | GPIO_Pin_12);
 
     /* CAN configuration ******************************************************* */
     /* Enable CAN clock */
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN1, ENABLE);
+    RCC_AHBPeriphClockCmd(RCC_APB1Periph_CAN1, ENABLE);
 
     initCAN(CAN1, baud);
 

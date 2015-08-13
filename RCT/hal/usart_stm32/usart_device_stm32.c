@@ -215,7 +215,7 @@ static void initGPIO(GPIO_TypeDef * GPIOx, uint32_t gpioPins)
     GPIO_Init(GPIOx, &GPIO_InitStructure);
 }
 
-static void enableRxDMA(uint32_t RCC_AHB1Periph,
+static void enableRxDMA(uint32_t RCC_AHBPeriph,
                         DMA_Stream_TypeDef * DMA_stream, uint32_t DMA_channel,
                         uint8_t * rxBuffer, uint32_t rxBufferSize,
                         USART_TypeDef * USARTx, uint8_t NVIC_IRQ_channel,
@@ -238,7 +238,7 @@ static void enableRxDMA(uint32_t RCC_AHB1Periph,
     DMA_DeInit(DMA_stream);
     DMA_InitStructure.DMA_Channel = DMA_channel;
     DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;	// Receive
-    DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t) rxBuffer;
+    DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t) rxBuffer;
     DMA_InitStructure.DMA_BufferSize = rxBufferSize;
     DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) & USARTx->DR;
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
@@ -290,12 +290,12 @@ static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
 void usart_device_init_0(unsigned int bits, unsigned int parity,
                          unsigned int stopBits, unsigned int baud)
 {
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+    RCC_APBPeriphClockCmd(RCC_APBPeriph_USART1, ENABLE);
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
 
     initGPIO(GPIOA, (GPIO_Pin_9 | GPIO_Pin_10));
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_USART1);
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_USART1);
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_7);
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_7);
 
     enableRxTxIrq(USART1, USART1_IRQn, UART_WIRELESS_IRQ_PRIORITY,
                   (UART_RX_IRQ | UART_TX_IRQ));
@@ -307,16 +307,16 @@ void usart_device_init_0(unsigned int bits, unsigned int parity,
 void usart_device_init_2(unsigned int bits, unsigned int parity,
                          unsigned int stopBits, unsigned int baud)
 {
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
+	RCC_AHBPeriphClockCmd(RCC_APBPeriph_USART2, ENABLE);
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
 
-    initGPIO(GPIOD, (GPIO_Pin_5 | GPIO_Pin_6));
-    GPIO_PinAFConfig(GPIOD, GPIO_PinSource5, GPIO_AF_USART2);
-    GPIO_PinAFConfig(GPIOD, GPIO_PinSource6, GPIO_AF_USART2);
+    initGPIO(GPIOB, (GPIO_Pin_4 | GPIO_Pin_3));
+    GPIO_PinAFConfig(GPIOB, GPIO_PinSource4, GPIO_AF_7);
+    GPIO_PinAFConfig(GPIOB, GPIO_PinSource3, GPIO_AF_7);
 
     initUsart(USART2, bits, parity, stopBits, baud);
     enableRxTxIrq(USART2, USART2_IRQn, UART_GPS_IRQ_PRIORITY, UART_TX_IRQ);
-    enableRxDMA(RCC_AHB1Periph_DMA1, DMA1_Stream5, DMA_Channel_4,
+    enableRxDMA(RCC_AHBPeriph_DMA1, DMA1_Stream5, DMA_Channel_4,
                 gpsRxBuffer, GPS_BUFFER_SIZE, USART2, DMA1_Stream5_IRQn,
                 UART_GPS_IRQ_PRIORITY);
 }
@@ -325,14 +325,14 @@ void usart_device_init_2(unsigned int bits, unsigned int parity,
 void usart_device_init_3(unsigned int bits, unsigned int parity,
                          unsigned int stopBits, unsigned int baud)
 {
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+    RCC_APBPeriphClockCmd(RCC_APBPeriph_UART3, ENABLE);
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
 
-    initGPIO(GPIOA, (GPIO_Pin_0 | GPIO_Pin_1));
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource0, GPIO_AF_UART4);
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_UART4);
+    initGPIO(GPIOB, (GPIO_Pin_10 | GPIO_Pin_11));
+    GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_7);
+    GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_7);
 
-    enableRxTxIrq(UART4, UART4_IRQn, UART_TELEMETRY_IRQ_PRIORITY,
+    enableRxTxIrq(UARTB, UART4_IRQn, UART_TELEMETRY_IRQ_PRIORITY,
                   (UART_RX_IRQ | UART_TX_IRQ));
 
     initUsart(UART4, bits, parity, stopBits, baud);
