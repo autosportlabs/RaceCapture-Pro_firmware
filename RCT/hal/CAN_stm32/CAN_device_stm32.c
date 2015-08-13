@@ -8,6 +8,7 @@
 #include "stm32f30x_gpio.h"
 #include "stm32f30x_rcc.h"
 #include "stm32f30x_misc.h"
+#include "stm32f30x.h"
 #include "taskUtil.h"
 #include "printk.h"
 #include "LED.h"
@@ -125,12 +126,12 @@ static void CAN_device_init_1(int baud)
 
     /* CAN GPIOs configuration ************************************************* */
     /* Enable GPIO clock */
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 
     /* Connect CAN pins to Alternate Function */
-    GPIO_PinAFConfig(GPIOD, GPIO_PinSource0, GPIO_AF_CAN1);
-    GPIO_PinAFConfig(GPIOD, GPIO_PinSource1, GPIO_AF_CAN1);
-    initGPIO(GPIOD, GPIO_Pin_0 | GPIO_Pin_1);
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource11, CAN);
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource12, CAN);
+    initGPIO(GPIOA, GPIO_Pin_11 | GPIO_Pin_12);
 
     /* CAN configuration ******************************************************* */
     /* Enable CAN clock */
