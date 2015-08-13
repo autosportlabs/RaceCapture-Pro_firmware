@@ -15,12 +15,10 @@
 #define GPS_BUFFER_SIZE		132
 
 #define UART_WIRELESS_IRQ_PRIORITY 	7
-#define UART_AUX_IRQ_PRIORITY 		8
 #define UART_GPS_IRQ_PRIORITY 		5
 #define UART_TELEMETRY_IRQ_PRIORITY 	6
 
 #define DEFAULT_WIRELESS_BAUD_RATE	115200
-#define DEFAULT_AUX_BAUD_RATE		115200
 #define DEFAULT_TELEMETRY_BAUD_RATE	115200
 #define DEFAULT_GPS_BAUD_RATE		921600
 
@@ -31,9 +29,6 @@ typedef enum {
 
 xQueueHandle xUsart0Tx;
 xQueueHandle xUsart0Rx;
-
-xQueueHandle xUsart1Tx;
-xQueueHandle xUsart1Rx;
 
 xQueueHandle xUsart2Tx;
 xQueueHandle xUsart2Rx;
@@ -55,16 +50,6 @@ static int initQueues()
     xUsart0Tx = xQueueCreate(UART_QUEUE_LENGTH + 1,
                              (unsigned portBASE_TYPE)sizeof(signed portCHAR));
     if (xUsart0Rx == NULL || xUsart0Tx == NULL) {
-        success = 0;
-        goto cleanup_and_return;
-    }
-
-
-    xUsart1Rx = xQueueCreate(UART_QUEUE_LENGTH,
-                             (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    xUsart1Tx = xQueueCreate(UART_QUEUE_LENGTH + 1,
-                             (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    if (xUsart1Rx == NULL || xUsart1Tx == NULL) {
         success = 0;
         goto cleanup_and_return;
     }
@@ -163,9 +148,6 @@ void usart_device_config(uart_id_t port, uint8_t bits, uint8_t parity,
     case UART_WIRELESS:
         initUsart(USART1, bits, parity, stopbits, baud);
         break;
-    case UART_AUX:
-        initUsart(USART3, bits, parity, stopbits, baud);
-        break;
     case UART_GPS:
         initUsart(USART2, bits, parity, stopbits, baud);
         break;
@@ -191,17 +173,6 @@ int usart_device_init_serial(Serial * serial, uart_id_t id)
         serial->get_line_wait = &usart0_readLineWait;
         serial->put_c = &usart0_putchar;
         serial->put_s = &usart0_puts;
-        break;
-
-    case UART_AUX:
-        serial->init = &usart_device_init_1;
-        serial->flush = &usart1_flush;
-        serial->get_c = &usart1_getchar;
-        serial->get_c_wait = &usart1_getcharWait;
-        serial->get_line = &usart1_readLine;
-        serial->get_line_wait = &usart1_readLineWait;
-        serial->put_c = &usart1_putchar;
-        serial->put_s = &usart1_puts;
         break;
 
     case UART_GPS:
@@ -332,23 +303,6 @@ void usart_device_init_0(unsigned int bits, unsigned int parity,
     initUsart(USART1, bits, parity, stopBits, baud);
 }
 
-//Auxilary port
-void usart_device_init_1(unsigned int bits, unsigned int parity,
-                         unsigned int stopBits, unsigned int baud)
-{
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
-
-    initGPIO(GPIOD, (GPIO_Pin_8 | GPIO_Pin_9));
-    GPIO_PinAFConfig(GPIOD, GPIO_PinSource8, GPIO_AF_USART3);
-    GPIO_PinAFConfig(GPIOD, GPIO_PinSource9, GPIO_AF_USART3);
-
-    enableRxTxIrq(USART3, USART3_IRQn, UART_AUX_IRQ_PRIORITY,
-                  (UART_RX_IRQ | UART_TX_IRQ));
-
-    initUsart(USART3, bits, parity, stopBits, baud);
-}
-
 //GPS port
 void usart_device_init_2(unsigned int bits, unsigned int parity,
                          unsigned int stopBits, unsigned int baud)
@@ -395,13 +349,6 @@ void usart0_flush(void)
         ;
 }
 
-void usart1_flush(void)
-{
-    char rx;
-    while (xQueueReceive(xUsart1Rx, &rx, 0))
-        ;
-}
-
 void usart2_flush(void)
 {
     char rx;
@@ -421,11 +368,6 @@ int usart0_getcharWait(char *c, size_t delay)
     return xQueueReceive(xUsart0Rx, c, delay) == pdTRUE ? 1 : 0;
 }
 
-int usart1_getcharWait(char *c, size_t delay)
-{
-    return xQueueReceive(xUsart1Rx, c, delay) == pdTRUE ? 1 : 0;
-}
-
 int usart2_getcharWait(char *c, size_t delay)
 {
     return xQueueReceive(xUsart2Rx, c, delay) == pdTRUE ? 1 : 0;
@@ -440,13 +382,6 @@ char usart0_getchar()
 {
     char c;
     usart0_getcharWait(&c, portMAX_DELAY);
-    return c;
-}
-
-char usart1_getchar()
-{
-    char c;
-    usart1_getcharWait(&c, portMAX_DELAY);
     return c;
 }
 
@@ -477,21 +412,6 @@ void usart0_putchar(char c)
 
     //Enable transmitter interrupt
     USART_ITConfig(USART1, USART_IT_TXE, ENABLE);
-}
-
-void usart1_putchar(char c)
-{
-    if (TRACE_LEVEL) {
-        char buf[2];
-        buf[0] = c;
-        buf[1] = '\0';
-        pr_debug(buf);
-    }
-
-    xQueueSend(xUsart1Tx, &c, portMAX_DELAY);
-
-    //Enable transmitter interrupt
-    USART_ITConfig(USART3, USART_IT_TXE, ENABLE);
 }
 
 void usart2_putchar(char c)
@@ -530,12 +450,6 @@ void usart0_puts(const char *s)
         usart0_putchar(*s++);
 }
 
-void usart1_puts(const char *s)
-{
-    while (*s)
-        usart1_putchar(*s++);
-}
-
 void usart2_puts(const char *s)
 {
     while (*s)
@@ -555,25 +469,6 @@ int usart0_readLineWait(char *s, int len, size_t delay)
         char c = 0;
 
         if (!usart0_getcharWait(&c, delay)) {
-            break;
-        }
-
-        *s++ = c;
-        count++;
-        if (c == '\n')
-            break;
-    }
-    *s = '\0';
-    return count;
-}
-
-int usart1_readLineWait(char *s, int len, size_t delay)
-{
-    int count = 0;
-    while (count < len - 1) {
-        char c = 0;
-
-        if (!usart1_getcharWait(&c, delay)) {
             break;
         }
 
@@ -627,11 +522,6 @@ int usart3_readLineWait(char *s, int len, size_t delay)
 int usart0_readLine(char *s, int len)
 {
     return usart0_readLineWait(s, len, portMAX_DELAY);
-}
-
-int usart1_readLine(char *s, int len)
-{
-    return usart1_readLineWait(s, len, portMAX_DELAY);
 }
 
 int usart2_readLine(char *s, int len)
