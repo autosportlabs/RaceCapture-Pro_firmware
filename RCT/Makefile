@@ -31,17 +31,20 @@ inc-y := \
 src-y += $(wildcard Libraries/STM32F30x_StdPeriph_Driver/src/*.c)
 inc-y += Libraries/STM32F30x_StdPeriph_Driver/inc
 
-# USB
-src-y += $(wildcard Libraries/STM32_USB-FS-Device_Driver/src/*.c)
-inc-y += Libraries/STM32_USB-FS-Device_Driver/inc
-
 # Utilities
-src-y += $(wildcard Utilities/STM32F3_Discovery/*.c)
-inc-y += Utilities/STM32F3_Discovery
+#src-y += $(wildcard Utilities/STM32F3_Discovery/*.c)
+#inc-y += Utilities/STM32F3_Discovery
+
+src-y += $(wildcard ../src/util/mod_string.c)
+inc-y += ../include/util
 
 # Project
 src-y += $(wildcard Project/*.c)
 inc-y += Project
+
+# ADC
+src-y += $(wildcard hal/ADC_stm32/*.c)
+inc-y += ../include/ADC
 
 # FreeRTOS
 src-y += $(wildcard FreeRTOS/Source/*.c) \

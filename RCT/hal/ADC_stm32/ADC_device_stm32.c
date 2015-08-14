@@ -6,7 +6,6 @@
 #include "stm32f30x_rcc.h"
 #include "stm32f30x_gpio.h"
 #include "stm32f30x_dma.h"
-#include "mem_mang.h"
 
 //on RC/T
 //Battery voltage ADC3_IN1
@@ -30,7 +29,6 @@ int ADC_device_init(void)
 
 	  /* DMA configuration */
 	  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
-	  DMA_InitTypeDef         DMA_InitStructure;
 
 	    DMA_InitTypeDef DMA_InitStructure;
 	    DMA_InitStructure.DMA_BufferSize = 1;
@@ -56,8 +54,6 @@ int ADC_device_init(void)
       GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
       GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
       GPIO_Init(GPIOB, &GPIO_InitStructure);
-
-	  ADC_StructInit(&ADC_InitStructure);
 
 	  /* Calibration procedure
 	   *  TODO see if this is necessary
@@ -128,7 +124,7 @@ void ADC_device_sample_all(unsigned int *a0, unsigned int *a1, unsigned int *a2,
 
 unsigned int ADC_device_sample(unsigned int channel)
 {
-    return ADCConvertedValues[channel];
+    return ADC_Val[channel];
 }
 
 float ADC_device_get_voltage_range(size_t channel)
