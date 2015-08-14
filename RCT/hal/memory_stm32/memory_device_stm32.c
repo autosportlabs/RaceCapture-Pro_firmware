@@ -1,57 +1,39 @@
 #include "memory_device.h"
 #include "stm32f30x_flash.h"
+#include <stddef.h>
 
 #define MEMORY_PAGE_SIZE	2048
 
-/* Base @ of Sector 0, 16 Kbytes */
-#define ADDR_FLASH_SECTOR_0 ((uint32_t)0x08000000)
-/* Base @ of Sector 1, 16 Kbytes */
-#define ADDR_FLASH_SECTOR_1 ((uint32_t)0x08004000)
-/* Base @ of Sector 2, 16 Kbytes */
-#define ADDR_FLASH_SECTOR_2 ((uint32_t)0x08008000)
-/* Base @ of Sector 3, 16 Kbytes */
-#define ADDR_FLASH_SECTOR_3 ((uint32_t)0x0800C000)
-/* Base @ of Sector 4, 64 Kbytes */
-#define ADDR_FLASH_SECTOR_4 ((uint32_t)0x08010000)
-
+/* STM32F3 is on 2K page sizes */
 static uint32_t selectFlashSector(const void *address)
 {
     uint32_t addr = (uint32_t) address;
-    //we don't support writing flash sector 0 since that's where the bootloader lives.
-    switch (addr) {
-    case ADDR_FLASH_SECTOR_1:
-        return FLASH_Sector_1;
-    case ADDR_FLASH_SECTOR_2:
-        return FLASH_Sector_2;
-    case ADDR_FLASH_SECTOR_3:
-        return FLASH_Sector_3;
-    case ADDR_FLASH_SECTOR_4:
-        return FLASH_Sector_4;
-    default:
-        return 0;
-    }
+    return addr % MEMORY_PAGE_SIZE == 0 ? addr : 0;
 }
 
 enum memory_flash_result_t memory_device_flash_region(const void *address, const void *data,
         unsigned int length)
 {
-
     enum memory_flash_result_t rc = MEMORY_FLASH_SUCCESS;
-    /* Erase the entire page before you can write.  This filters
-     * the incoming addresses to available flash pages for the STM32F4 */
-    uint32_t flashSector = selectFlashSector(address);
-    if (flashSector) {
+
+    /* adjust length to word boundary */
+	length += (length % sizeof(uint32_t) == 0) ? 0 : sizeof(uint32_t) - length % sizeof(uint32_t);
+
+    uint32_t flash_page = selectFlashSector(address);
+    if (flash_page) {
         FLASH_Unlock();
-        FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_OPERR |
-                        FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR |
-                        FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
-        FLASH_EraseSector(flashSector, VoltageRange_3);
+        FLASH_ClearFlag(FLASH_FLAG_PGERR | FLASH_FLAG_WRPERR | FLASH_FLAG_EOP);
+
+        /*flash all sectors in range */
+        for (size_t i = flash_page; i < flash_page + length; i += MEMORY_PAGE_SIZE) {
+        	FLASH_ErasePage(i);
+        }
 
         uint32_t addrTarget = (uint32_t) address;
         uint8_t *dataTarget = (uint8_t *) data;
 
-        for (unsigned int i = 0; i < length; i++) {
-            if (FLASH_ProgramByte(addrTarget + i, *(dataTarget + i)) != FLASH_COMPLETE) {
+        for (size_t i = 0; i < length; i+=sizeof(uint32_t)) {
+            if (FLASH_ProgramWord(addrTarget + i, *(dataTarget + i)) != FLASH_COMPLETE) {
                 rc = MEMORY_FLASH_WRITE_ERROR;
                 break;
             }
