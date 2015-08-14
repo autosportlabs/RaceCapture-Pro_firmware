@@ -37,18 +37,26 @@
 #include "connectivityTask.h"
 #include "constants.h"
 #include "cpu.h"
-#include "fileWriter.h"
-#include "gpioTasks.h"
 #include "gpsTask.h"
 #include "loggerHardware.h"
 #include "loggerTaskEx.h"
-#include "luaScript.h"
-#include "luaTask.h"
 #include "messaging.h"
 #include "printk.h"
 #include "task.h"
-#include "usb_comm.h"
 #include "watchdog.h"
+
+#if GPIO_CHANNELS > 0
+#include "gpioTasks.h"
+#endif
+
+#if LUA_SUPPORT == 1
+#include "luaScript.h"
+#include "luaTask.h"
+#endif
+
+#if USB_SERIAL_SUPPORT == 1
+#include "usb_comm.h"
+#endif
 
 #include <app_info.h>
 
@@ -97,6 +105,7 @@ static void fatalError(int type)
 #define GPS_TASK_PRIORITY 			( tskIDLE_PRIORITY + 5 )
 #define CONNECTIVITY_TASK_PRIORITY 	( tskIDLE_PRIORITY + 4 )
 #define LOGGER_TASK_PRIORITY		( tskIDLE_PRIORITY + 6 )
+
 #define FILE_WRITER_TASK_PRIORITY	( tskIDLE_PRIORITY + 4 )
 #define LUA_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
 #define USB_COMM_TASK_PRIORITY		( tskIDLE_PRIORITY + 6 )
@@ -115,14 +124,26 @@ void setupTask(void *params)
 
     initialize_tracks();
     initialize_logger_config();
+#if LUA_SUPPORT == 1
     initialize_script();
+#endif
     InitLoggerHardware();
     initMessaging();
 
+#if GPIO_CHANNELS > 0
     startGPIOTasks			( GPIO_TASK_PRIORITY );
+#endif
+#if USB_SERIAL_SUPPORT == 1
     startUSBCommTask		( USB_COMM_TASK_PRIORITY );
+#endif
+
+#if LUA_SUPPORT == 1
     startLuaTask			( LUA_TASK_PRIORITY );
+#endif
+
+#if SDCARD_SUPPORT == 1
     startFileWriterTask		( FILE_WRITER_TASK_PRIORITY );
+#endif
     startConnectivityTask	( CONNECTIVITY_TASK_PRIORITY );
     startGPSTask			( GPS_TASK_PRIORITY );
     startOBD2Task			( OBD2_TASK_PRIORITY);

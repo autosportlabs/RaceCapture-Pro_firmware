@@ -19,6 +19,7 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if SDCARD_SUPPORT == 1
 #include "LED.h"
 #include "fileWriter.h"
 #include "loggerHardware.h"
@@ -467,3 +468,4 @@ void startFileWriterTask(int priority)
         xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter",
                      FILE_WRITER_STACK_SIZE, NULL, priority, NULL );
 }
+#endif

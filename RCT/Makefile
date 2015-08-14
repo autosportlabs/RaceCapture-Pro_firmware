@@ -17,6 +17,8 @@ MAKEFLAGS += -j16
 ################################################################################
 # Project definition
 ################################################################################
+include ../version.mk
+
 OUTDIR := .build/
 
 # CMSIS
@@ -36,10 +38,8 @@ inc-y += mem_mang
 inc-y += FreeRTOS/Source/portable/MemMang
 
 # Logger
-inc-y += ../include/logger
 inc-y += ../include/gps
 inc-y += ../include/tracks
-inc-y += ../include/serial
 inc-y += .
 
 # Logging
@@ -67,10 +67,12 @@ src-y += $(wildcard hal/ADC_stm32/*.c)
 inc-y += ../include/ADC
 
 # CAN
+src-y += $(wildcard ../src/CAN/*.c)
 src-y += $(wildcard hal/CAN_stm32/*.c)
 inc-y += ../include/CAN
 
 # CPU
+src-y += $(wildcard ../src/cpu/*.c)
 src-y += $(wildcard hal/cpu_stm32/*.c)
 inc-y += ../include/cpu
 
@@ -78,13 +80,27 @@ inc-y += ../include/cpu
 src-y += $(wildcard hal/gps_skytraq/*.c)
 inc-y += ../include/gps
 
+#filter
+src-y += $(wildcard ../src/filter/*.c)
+inc-y += ../include/filter
+
+#virtual channel
+src-y += $(wildcard ../src/virtual_channel/*.c)
+inc-y += ../include/virtual_channel
+
+#predictive timer
+src-y += $(wildcard ../src/predictive_timer/*.c)
+inc-y += ../include/predictive_timer
+
 # I2C
-#src-y += $(wildcard hal/i2c_stm32/*.c)
-#inc-y += hal/i2c_stm32
+src-y += $(wildcard hal/i2c_stm32/*.c)
+inc-y += hal/i2c_stm32
 
 # IMU
-#src-y += $(wildcard hal/imu_stm32/*.c)
-#inc-y += hal/imu_stm32
+src-y += $(wildcard ../src/imu/*.c)
+src-y += $(wildcard hal/imu_stm32/*.c)
+inc-y += hal/imu_stm32
+inc-y += ../include/imu
 
 # LED
 src-y += $(wildcard hal/LED_stm32/*.c)
@@ -101,20 +117,54 @@ src-y += $(wildcard hal/usart_stm32/*.c)
 inc-y += ../include/usart
 
 # Watchdog
+src-y += $(wildcard ../src/watchdog/*.c)
 src-y += $(wildcard hal/watchdog_stm32/*.c)
 inc-y += ../include/watchdog
+
+# OBD
+src-y += $(wildcard ../src/OBD2/*.c)
+inc-y += ../include/OBD2
+
+#devices
+src-y += $(wildcard ../src/devices/*.c)
+inc-y += ../include/devices
+
+#devices
+src-y += $(wildcard ../src/api/*.c)
+inc-y += ../include/api
+
+#command
+src-y += $(wildcard ../src/command/*.c)
+inc-y += ../include/command
+
+#command
+src-y += $(wildcard ../src/jsmn/*.c)
+inc-y += ../include/jsmn
+
+#logger
+src-y += $(wildcard ../src/logger/*.c)
+inc-y += ../include/logger
+
+#messaging
+src-y += $(wildcard ../src/messaging/*.c)
+inc-y += ../include/messaging
 
 # FreeRTOS
 src-y += $(wildcard FreeRTOS/Source/*.c) \
          FreeRTOS/Source/portable/GCC/ARM_CM3/port.c \
-         FreeRTOS/Source/portable/MemMang/heap_1.c
+         FreeRTOS/Source/portable/MemMang/heap_1.c \
+         
 inc-y += FreeRTOS/Source/include \
          FreeRTOS/Source/portable/GCC/ARM_CM3
 
+src-y += Project/system_stm32f30x.c 
+
 # base
 inc-y += ..
+
 # Project
-src-y += $(wildcard Project/*.c)
+src-y += $(wildcard ../*.c)
+src-y += $(wildcard ../*.c)
 inc-y += Project
 
 ################################################################################
@@ -124,6 +174,7 @@ obj-y := $(addprefix $(OUTDIR),$(patsubst %.s,%.o,$(patsubst %.c,%.o,$(src-y))))
 
 CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -DUSE_STM32303C_EVAL -MD -std=c99
 CFLAGS += -mcpu=cortex-m3 -mthumb
+CFLAGS += -DAPI_REV=$(API) -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
 CFLAGS += $(addprefix -I,$(inc-y))
 LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld -Wl,-cref,-u,Reset_Handler,-Map=$(OUTDIR)main.map,--gc-sections
 AFLAGS := $(CFLAGS)

@@ -3,13 +3,15 @@
 #include "serial.h"
 #include "FreeRTOSConfig.h"
 
-//Hardware capabilities for RCP MK2
+//Hardware capabilities for RC/T
 
 #define TICK_RATE_HZ			configTICK_RATE_HZ
 #define MS_PER_TICK 1
 
 //USB support
-//#define USB_SERIAL_SUPPORT      1
+#define USB_SERIAL_SUPPORT      0
+#define LUA_SUPPORT             0
+#define SDCARD_SUPPORT          0
 
 //configuration
 #define MAX_TRACKS				240

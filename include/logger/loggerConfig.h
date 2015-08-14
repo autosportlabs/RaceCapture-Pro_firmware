@@ -482,6 +482,7 @@ typedef struct _LoggerConfig {
     //ADC Calibrations
     ADCConfig ADCConfigs[CONFIG_ADC_CHANNELS];
 
+    //PWM configuration
     PWMConfig PWMConfigs[CONFIG_PWM_CHANNELS];
 
     //GPIO configurations

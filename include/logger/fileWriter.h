@@ -1,10 +1,11 @@
 #ifndef FILEWRITER_H_
 #define FILEWRITER_H_
 
+#if SDCARD_SUPPORT == 1
 #include "loggerConfig.h"
 #include "FreeRTOS.h"
-#include "ff.h"
 #include "sampleRecord.h"
+#include "ff.h"
 
 #define FILENAME_LEN 13
 #define FLUSH_INTERVAL_MS 1000
@@ -27,4 +28,5 @@ struct logging_status
 void startFileWriterTask( int priority );
 portBASE_TYPE queue_logfile_record(const LoggerMessage *msg);
 
+#endif
 #endif /* FILEWRITER_H_ */

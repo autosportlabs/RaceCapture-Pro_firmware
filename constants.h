@@ -10,12 +10,13 @@
 
 //Include all of the command definitions here
 #include "baseCommands.h"
-#include "luaCommands.h"
 #include "loggerCommands.h"
 #include "loggerApi.h"
 #include "api.h"
 #include "command.h"
-
+#if LUA_SUPPORT==1
+#include "luaCommands.h"
+#endif
 
 #define XSTR(s) STR(s)
 #define STR(s) #s
@@ -24,7 +25,11 @@
 #define MINOR_REV_STR  XSTR(MINOR_REV)
 #define BUGFIX_REV_STR XSTR(BUGFIX_REV)
 
+#if LUA_SUPPORT==1
 #define SYSTEM_COMMANDS {LOGGER_COMMANDS, BASE_COMMANDS, LUA_COMMANDS, NULL_COMMAND}
+#else
+#define SYSTEM_COMMANDS {LOGGER_COMMANDS, BASE_COMMANDS, NULL_COMMAND}
+#endif
 
 #define SYSTEM_APIS {LOGGER_API, NULL_API }
 
