@@ -145,7 +145,7 @@ static void CAN_device_init_1(int baud)
     /* Enable FIFO 0 message pending Interrupt */
     CAN_ITConfig(CAN1, CAN_IT_FMP0, ENABLE);
 
-    initCANInterrupts(CAN1, CAN1_RX0_IRQn);
+    initCANInterrupts(CAN1, USB_LP_CAN1_RX0_IRQn);
 }
 
 
@@ -238,7 +238,7 @@ int CAN_device_rx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
     }
 }
 
-void CAN1_RX0_IRQHandler(void)
+void CAN1_RX1_IRQHandler(void)
 {
     portBASE_TYPE xTaskWokenByRx = pdFALSE;
     CanRxMsg rxMsg;

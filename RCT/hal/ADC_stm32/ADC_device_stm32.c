@@ -26,7 +26,7 @@ int ADC_device_init(void)
 	  RCC_ADCCLKConfig(RCC_ADC12PLLCLK_Div2);
 
 	  /* Enable ADC3 clock */
-	  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_ADC3, ENABLE);
+	  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_ADC34, ENABLE);
 
 	  /* DMA configuration */
 	  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);

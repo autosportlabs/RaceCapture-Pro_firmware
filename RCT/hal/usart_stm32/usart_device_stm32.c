@@ -215,54 +215,49 @@ static void initGPIO(GPIO_TypeDef * GPIOx, uint32_t gpioPins)
     GPIO_Init(GPIOx, &GPIO_InitStructure);
 }
 
+
 static void enableRxDMA(uint32_t RCC_AHBPeriph,
-                        DMA_Stream_TypeDef * DMA_stream, uint32_t DMA_channel,
+                        DMA_Channel_TypeDef* DMA_channel,
                         uint8_t * rxBuffer, uint32_t rxBufferSize,
                         USART_TypeDef * USARTx, uint8_t NVIC_IRQ_channel,
                         uint8_t IRQ_priority)
 {
-    /* Configure the Priority Group to 2 bits */
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+    // Enable DMA1 Controller.
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph, ENABLE);
 
-    NVIC_InitTypeDef NVIC_InitStructure;
-    /* Enable the USARTx RX DMA Interrupt */
-    NVIC_InitStructure.NVIC_IRQChannel = NVIC_IRQ_channel;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = IRQ_priority;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+    // Clear USART1 RX DMA Channel config.
+    DMA_DeInit(DMA_channel);
 
-    /* DMA configuration ------------------------------------------------------ */
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph, ENABLE);
-    DMA_InitTypeDef DMA_InitStructure;
-    DMA_DeInit(DMA_stream);
-    DMA_InitStructure.DMA_Channel = DMA_channel;
-    DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;	// Receive
-    DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t) rxBuffer;
-    DMA_InitStructure.DMA_BufferSize = rxBufferSize;
-    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) & USARTx->DR;
-    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
-    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
-    DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
-    DMA_InitStructure.DMA_Priority = DMA_Priority_High;
-    DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;
-    DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
-    DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
-    DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+    // Initialize USART2 RX DMA Channel:
+    DMA_InitTypeDef DMA_InitStruct;
+    DMA_InitStruct.DMA_PeripheralBaseAddr = (uint32_t)(uint32_t) & USARTx->RDR;         // USART2 RX Data Register.
+    DMA_InitStruct.DMA_MemoryBaseAddr = (uint32_t)rxBuffer;                 // Copy data to RxBuffer.
+    DMA_InitStruct.DMA_DIR = DMA_DIR_PeripheralSRC;                         // Peripheral as source, memory as destination.
+    DMA_InitStruct.DMA_BufferSize = rxBufferSize;                           // Defined above.
+    DMA_InitStruct.DMA_PeripheralInc = DMA_PeripheralInc_Disable;           // No increment on RDR address.
+    DMA_InitStruct.DMA_MemoryInc = DMA_MemoryInc_Enable;                    // Increment memory address.
+    DMA_InitStruct.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;    // Byte-wise copy.
+    DMA_InitStruct.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;            // Byte-wise copy.
+    DMA_InitStruct.DMA_Mode = DMA_Mode_Circular;                            // Ring buffer - don't interrupt when at end of memory region.
+    DMA_InitStruct.DMA_Priority = DMA_Priority_High;                        // High priority.
+    DMA_InitStruct.DMA_M2M = DMA_M2M_Disable;                               // Peripheral to memory, not M2M.
 
-    DMA_Init(DMA_stream, &DMA_InitStructure);
+    // Initialize USART2 RX DMA Channel.
+    DMA_Init(DMA_channel, &DMA_InitStruct);
 
-    /* Enable the USART Rx DMA request */
-    USART_DMACmd(USARTx, USART_DMAReq_Rx, ENABLE);
+    // Enable Transfer Complete, Half Transfer and Transfer Error interrupts.
+    DMA_ITConfig(DMA1_Channel5, DMA_IT_TC | DMA_IT_HT, ENABLE);
 
-    /* Enable DMA Stream Half Transfer and Transfer Complete interrupt */
-    DMA_ITConfig(DMA_stream, DMA_IT_TC, ENABLE);
-    DMA_ITConfig(DMA_stream, DMA_IT_HT, ENABLE);
+    // Enable USART2 RX DMA Channel.
+    DMA_Cmd(DMA_channel, ENABLE);
 
-    /* Enable the DMA RX Stream */
-    DMA_Cmd(DMA_stream, ENABLE);
+     // Configure USART1 RX DMA Channel Interrupts.
+     NVIC_InitTypeDef NVIC_InitStruct;
+     NVIC_InitStruct.NVIC_IRQChannel = NVIC_IRQ_channel;
+     NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
+     NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = IRQ_priority;
+     NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0;
+     NVIC_Init(&NVIC_InitStruct);
 }
 
 static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
@@ -316,8 +311,9 @@ void usart_device_init_2(unsigned int bits, unsigned int parity,
 
     initUsart(USART2, bits, parity, stopBits, baud);
     enableRxTxIrq(USART2, USART2_IRQn, UART_GPS_IRQ_PRIORITY, UART_TX_IRQ);
-    enableRxDMA(RCC_AHBPeriph_DMA1, DMA1_Stream5, DMA_Channel_4,
-                gpsRxBuffer, GPS_BUFFER_SIZE, USART2, DMA1_Stream5_IRQn,
+
+    enableRxDMA(RCC_AHBPeriph_DMA1, DMA1_Channel5,
+                gpsRxBuffer, GPS_BUFFER_SIZE, USART2, DMA1_Channel5_IRQn,
                 UART_GPS_IRQ_PRIORITY);
 }
 
@@ -538,14 +534,14 @@ int usart3_readLine(char *s, int len)
 // Interrupt Handlers
 ////////////////////////////////////////////////////////////////////////////
 
-void DMA1_Stream5_IRQHandler(void)
+void DMA1_Channel5_IRQHandler(void)
 {
     portBASE_TYPE xTaskWokenByPost = pdFALSE;
     signed portCHAR cChar;
     /* Test on DMA Stream Transfer Complete interrupt */
-    if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_TCIF5)) {
+    if (DMA_GetITStatus(DMA1_IT_TC5)) {
         /* Clear DMA Stream Transfer Complete interrupt pending bit */
-        DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5);
+        DMA_ClearITPendingBit(DMA1_IT_TC5);
         for (size_t i = GPS_BUFFER_SIZE / 2; i < GPS_BUFFER_SIZE; i++) {
             cChar = gpsRxBuffer[i];
             xQueueSendFromISR(xUsart2Rx, &cChar, &xTaskWokenByPost);
@@ -553,9 +549,9 @@ void DMA1_Stream5_IRQHandler(void)
     }
 
     /* Test on DMA Stream Half Transfer interrupt */
-    if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_HTIF5)) {
+    if (DMA_GetITStatus(DMA1_IT_HT5)) {
         /* Clear DMA Stream Half Transfer interrupt pending bit */
-        DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_HTIF5);
+        DMA_ClearITPendingBit(DMA1_IT_HT5);
         for (size_t i = 0; i < GPS_BUFFER_SIZE / 2; i++) {
             cChar = gpsRxBuffer[i];
             xQueueSendFromISR(xUsart2Rx, &cChar, &xTaskWokenByPost);
@@ -648,35 +644,6 @@ void USART3_IRQHandler(void)
            characters. */
         cChar = USART_ReceiveData(USART3);
         xQueueSendFromISR(xUsart1Rx, &cChar, &xTaskWokenByPost);
-    }
-
-    /* If a task was woken by either a character being received or a character
-       being transmitted then we may need to switch to another task. */
-    portEND_SWITCHING_ISR(xTaskWokenByPost || xTaskWokenByTx);
-}
-
-void UART4_IRQHandler(void)
-{
-    portBASE_TYPE xTaskWokenByTx = pdFALSE, xTaskWokenByPost = pdFALSE;
-    signed portCHAR cChar;
-
-    if (USART_GetITStatus(UART4, USART_IT_TXE) != RESET) {
-        /* The interrupt was caused by the TX becoming empty.  Are there any more characters to transmit? */
-        if (xQueueReceiveFromISR(xUsart3Tx, &cChar, &xTaskWokenByTx) ==
-            pdTRUE) {
-            // A character was retrieved from the queue so can be sent to the USART
-            USART_SendData(UART4, cChar);
-        } else {
-            /* Queue empty, nothing to send so turn off the Tx interrupt. */
-            USART_ITConfig(UART4, USART_IT_TXE, DISABLE);
-        }
-    }
-    if (USART_GetITStatus(UART4, USART_IT_RXNE) != RESET) {
-        /* The interrupt was caused by a character being received.  Grab the
-           character from the rx and place it in the queue or received
-           characters. */
-        cChar = USART_ReceiveData(UART4);
-        xQueueSendFromISR(xUsart3Rx, &cChar, &xTaskWokenByPost);
     }
 
     /* If a task was woken by either a character being received or a character

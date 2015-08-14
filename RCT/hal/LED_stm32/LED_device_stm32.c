@@ -9,10 +9,9 @@ struct led {
 };
 
 static struct led leds[] = {
-    {GPIOD, GPIO_Pin_11, 0},
-    {GPIOC, GPIO_Pin_7, 0},
-    {GPIOC, GPIO_Pin_6, 0},
-    {GPIOD, GPIO_Pin_10, 0}
+    {GPIOA, GPIO_Pin_0, 0},
+    {GPIOA, GPIO_Pin_1, 0},
+    {GPIOA, GPIO_Pin_2, 0}
 };
 
 int LED_device_init(void)
@@ -24,8 +23,7 @@ int LED_device_init(void)
     GPIO_StructInit(&gpio_conf);
 
     /* turn on debug port and clock */
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
 
     gpio_conf.GPIO_Speed = GPIO_Speed_50MHz;
     gpio_conf.GPIO_Mode = GPIO_Mode_OUT;
