@@ -92,8 +92,8 @@ src-y += $(wildcard ../src/LED/*.c)
 inc-y += ../include/LED
 
 # memory
-#src-y += $(wildcard hal/memory_stm32/*.c)
-#inc-y += ../include/memory
+src-y += $(wildcard hal/memory_stm32/*.c)
+inc-y += ../include/memory
 
 # USART
 src-y += $(wildcard ../src/usart/*.c)
