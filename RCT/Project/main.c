@@ -52,7 +52,7 @@ static void blinky_task( void *pvParameter )
         LED_toggle(0);
         //LED_toggle(1);
         //LED_toggle(2);
-        vTaskDelay(10);
+        vTaskDelay(20);
     }
 }
 
@@ -88,6 +88,25 @@ static void init_esp(void)
     GPIO_SetBits(GPIOC, GPIO_Pin_14);
 
 }
+
+static void init_gps(void)
+{
+    GPIO_InitTypeDef  GPIO_InitStructure;
+
+    /* Enable the GPIO_LED Clock */
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
+
+    /* Configure the GPIO_LED pin */
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    GPIO_SetBits(GPIOC, GPIO_Pin_2);
+}
+
 
 static void init_rgb(void)
 {
@@ -140,6 +159,7 @@ int main(void)
     LED_init();
     usart_init();
     init_esp();
+    init_gps();
 
     xTaskCreate(blinky_task, (signed char *) "Blinky", configMINIMAL_STACK_SIZE * 2, NULL, (tskIDLE_PRIORITY + 1), NULL);
     vTaskStartScheduler();

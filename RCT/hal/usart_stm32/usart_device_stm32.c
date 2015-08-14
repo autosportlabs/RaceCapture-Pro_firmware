@@ -20,7 +20,7 @@
 
 #define DEFAULT_WIRELESS_BAUD_RATE	9600
 #define DEFAULT_TELEMETRY_BAUD_RATE	115200
-#define DEFAULT_GPS_BAUD_RATE		921600
+#define DEFAULT_GPS_BAUD_RATE		9600
 
 typedef enum {
     UART_RX_IRQ = 1,
@@ -36,11 +36,11 @@ xQueueHandle xUsart2Rx;
 xQueueHandle xUsart3Tx;
 xQueueHandle xUsart3Rx;
 
-static uint8_t *gpsRxBuffer;
+static uint8_t gpsRxBuffer[GPS_BUFFER_SIZE];
 
 static int initQueues()
 {
-    gpsRxBuffer = (uint8_t *) portMalloc(sizeof(uint8_t) * GPS_BUFFER_SIZE);
+    //gpsRxBuffer = (uint8_t *) portMalloc(sizeof(uint8_t) * GPS_BUFFER_SIZE);
 
     int success = 1;
 
@@ -135,7 +135,7 @@ int usart_device_init()
     }
 
     usart_device_init_0(8, 0, 1, DEFAULT_WIRELESS_BAUD_RATE);	//wireless
-    //usart_device_init_2(8, 0, 1, DEFAULT_GPS_BAUD_RATE);	//GPS
+    usart_device_init_2(8, 0, 1, DEFAULT_GPS_BAUD_RATE);	//GPS
     usart_device_init_3(8, 0, 1, DEFAULT_TELEMETRY_BAUD_RATE);	//telemetry
     return 1;
 }
@@ -221,15 +221,19 @@ static void enableRxDMA(uint32_t RCC_AHBPeriph,
                         USART_TypeDef * USARTx, uint8_t NVIC_IRQ_channel,
                         uint8_t IRQ_priority)
 {
-    // Enable DMA1 Controller.
+
+    // Enable RX DMA Transfers from USARTx.
+    USART_DMACmd(USARTx, USART_DMAReq_Rx, ENABLE);
+
+    // Enable DMAx Controller.
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph, ENABLE);
 
-    // Clear USART1 RX DMA Channel config.
+    // Clear USARTx RX DMA Channel config.
     DMA_DeInit(DMA_channel);
 
     // Initialize USART2 RX DMA Channel:
     DMA_InitTypeDef DMA_InitStruct;
-    DMA_InitStruct.DMA_PeripheralBaseAddr = (uint32_t)(uint32_t) & USARTx->RDR;         // USART2 RX Data Register.
+    DMA_InitStruct.DMA_PeripheralBaseAddr = (uint32_t) & USARTx->RDR;         // USART2 RX Data Register.
     DMA_InitStruct.DMA_MemoryBaseAddr = (uint32_t)rxBuffer;                 // Copy data to RxBuffer.
     DMA_InitStruct.DMA_DIR = DMA_DIR_PeripheralSRC;                         // Peripheral as source, memory as destination.
     DMA_InitStruct.DMA_BufferSize = rxBufferSize;                           // Defined above.
@@ -245,18 +249,23 @@ static void enableRxDMA(uint32_t RCC_AHBPeriph,
     DMA_Init(DMA_channel, &DMA_InitStruct);
 
     // Enable Transfer Complete, Half Transfer and Transfer Error interrupts.
-    DMA_ITConfig(DMA1_Channel5, DMA_IT_TC | DMA_IT_HT, ENABLE);
+    DMA_ITConfig(DMA_channel, DMA_IT_TC | DMA_IT_HT, ENABLE);
 
     // Enable USART2 RX DMA Channel.
     DMA_Cmd(DMA_channel, ENABLE);
 
-     // Configure USART1 RX DMA Channel Interrupts.
+
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+
+     // Configure USART2 RX DMA Channel Interrupts.
      NVIC_InitTypeDef NVIC_InitStruct;
      NVIC_InitStruct.NVIC_IRQChannel = NVIC_IRQ_channel;
      NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
-     NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = IRQ_priority;
+     NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 1; //IRQ_priority;
      NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0;
+
      NVIC_Init(&NVIC_InitStruct);
+
 }
 
 static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
@@ -310,10 +319,11 @@ void usart_device_init_2(unsigned int bits, unsigned int parity,
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
     initUsart(USART2, bits, parity, stopBits, baud);
 
-    enableRxTxIrq(USART2, USART2_IRQn, UART_GPS_IRQ_PRIORITY, UART_TX_IRQ);
+    /* Note, only transmit interrupt is enabled */
+    enableRxTxIrq(USART2, USART2_IRQn, UART_GPS_IRQ_PRIORITY, (UART_TX_IRQ));
 
-    enableRxDMA(RCC_AHBPeriph_DMA1, DMA1_Channel5,
-                gpsRxBuffer, GPS_BUFFER_SIZE, USART2, DMA1_Channel5_IRQn,
+    enableRxDMA(RCC_AHBPeriph_DMA1, DMA1_Channel6,
+                gpsRxBuffer, GPS_BUFFER_SIZE, USART2, DMA1_Channel6_IRQn,
                 UART_GPS_IRQ_PRIORITY);
 }
 
@@ -534,14 +544,14 @@ int usart3_readLine(char *s, int len)
 // Interrupt Handlers
 ////////////////////////////////////////////////////////////////////////////
 
-void DMA1_Channel5_IRQHandler(void)
+void DMA1_Channel6_IRQHandler(void)
 {
     portBASE_TYPE xTaskWokenByPost = pdFALSE;
     signed portCHAR cChar;
     /* Test on DMA Stream Transfer Complete interrupt */
-    if (DMA_GetITStatus(DMA1_IT_TC5)) {
+    if (DMA_GetITStatus(DMA1_IT_TC6)) {
         /* Clear DMA Stream Transfer Complete interrupt pending bit */
-        DMA_ClearITPendingBit(DMA1_IT_TC5);
+        DMA_ClearITPendingBit(DMA1_IT_TC6);
         for (size_t i = GPS_BUFFER_SIZE / 2; i < GPS_BUFFER_SIZE; i++) {
             cChar = gpsRxBuffer[i];
             xQueueSendFromISR(xUsart2Rx, &cChar, &xTaskWokenByPost);
@@ -549,9 +559,9 @@ void DMA1_Channel5_IRQHandler(void)
     }
 
     /* Test on DMA Stream Half Transfer interrupt */
-    if (DMA_GetITStatus(DMA1_IT_HT5)) {
+    if (DMA_GetITStatus(DMA1_IT_HT6)) {
         /* Clear DMA Stream Half Transfer interrupt pending bit */
-        DMA_ClearITPendingBit(DMA1_IT_HT5);
+        DMA_ClearITPendingBit(DMA1_IT_HT6);
         for (size_t i = 0; i < GPS_BUFFER_SIZE / 2; i++) {
             cChar = gpsRxBuffer[i];
             xQueueSendFromISR(xUsart2Rx, &cChar, &xTaskWokenByPost);
@@ -612,8 +622,8 @@ void USART2_IRQHandler(void)
         /* The interrupt was caused by a character being received.  Grab the
         character from the rx and place it in the queue or received
         characters. */
-//		cChar = USART_ReceiveData(USART2);
-//		xQueueSendFromISR( xUsart2Rx, &cChar, &xTaskWokenByPost );
+		cChar = USART_ReceiveData(USART2);
+		xQueueSendFromISR( xUsart2Rx, &cChar, &xTaskWokenByPost );
     }
 
 
