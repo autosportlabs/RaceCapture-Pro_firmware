@@ -32,7 +32,8 @@
 #include "task.h"
 #include "timers.h"
 #include "semphr.h"
-
+#include "LED.h"
+#include "usart.h"
 
 #define mainDONT_BLOCK (0UL)
 #define mainCHECK_TIMER_PERIOD_MS (1000UL / portTICK_RATE_MS)
@@ -48,18 +49,45 @@ static void blinky_task( void *pvParameter )
 {
     while(1) {
 
-        GPIO_ResetBits(GPIOA, GPIO_Pin_0);
-        GPIO_ResetBits(GPIOA, GPIO_Pin_1);
-        GPIO_ResetBits(GPIOA, GPIO_Pin_2);
-
-        vTaskDelay(10);
-        GPIO_SetBits(GPIOA, GPIO_Pin_0);
-//        GPIO_SetBits(GPIOA, GPIO_Pin_1);
-  //      GPIO_SetBits(GPIOA, GPIO_Pin_2);
+        LED_toggle(0);
+        //LED_toggle(1);
+        //LED_toggle(2);
         vTaskDelay(10);
     }
 }
 
+static void init_esp(void)
+{
+    GPIO_InitTypeDef  GPIO_InitStructure;
+
+    /* Enable the GPIO_LED Clock */
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
+
+    /* Configure the GPIO_LED pin */
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+    GPIO_SetBits(GPIOA, GPIO_Pin_3);
+    GPIO_SetBits(GPIOA, GPIO_Pin_4);
+    GPIO_SetBits(GPIOA, GPIO_Pin_5);
+
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14;
+    GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+    GPIO_SetBits(GPIOC, GPIO_Pin_14);
+
+}
 
 static void init_rgb(void)
 {
@@ -67,6 +95,7 @@ static void init_rgb(void)
 
     /* Enable the GPIO_LED Clock */
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
+
 
     /* Configure the GPIO_LED pin */
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
@@ -108,7 +137,9 @@ int main(void)
     /* Ensure all priority bits are assigned as preemption priority bits. */
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 
-    init_rgb();
+    LED_init();
+    usart_init();
+    init_esp();
 
     xTaskCreate(blinky_task, (signed char *) "Blinky", configMINIMAL_STACK_SIZE * 2, NULL, (tskIDLE_PRIORITY + 1), NULL);
     vTaskStartScheduler();

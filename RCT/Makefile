@@ -79,15 +79,16 @@ src-y += $(wildcard hal/gps_skytraq/*.c)
 inc-y += ../include/gps
 
 # I2C
-src-y += $(wildcard hal/i2c_stm32/*.c)
-inc-y += hal/i2c_stm32
+#src-y += $(wildcard hal/i2c_stm32/*.c)
+#inc-y += hal/i2c_stm32
 
 # IMU
-src-y += $(wildcard hal/imu_stm32/*.c)
-inc-y += hal/imu_stm32
+#src-y += $(wildcard hal/imu_stm32/*.c)
+#inc-y += hal/imu_stm32
 
 # LED
 src-y += $(wildcard hal/LED_stm32/*.c)
+src-y += $(wildcard ../src/LED/*.c)
 inc-y += ../include/LED
 
 # memory
@@ -95,6 +96,7 @@ inc-y += ../include/LED
 #inc-y += ../include/memory
 
 # USART
+src-y += $(wildcard ../src/usart/*.c)
 src-y += $(wildcard hal/usart_stm32/*.c)
 inc-y += ../include/usart
 

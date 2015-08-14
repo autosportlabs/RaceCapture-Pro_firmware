@@ -18,7 +18,7 @@
 #define UART_GPS_IRQ_PRIORITY 		5
 #define UART_TELEMETRY_IRQ_PRIORITY 	6
 
-#define DEFAULT_WIRELESS_BAUD_RATE	115200
+#define DEFAULT_WIRELESS_BAUD_RATE	9600
 #define DEFAULT_TELEMETRY_BAUD_RATE	115200
 #define DEFAULT_GPS_BAUD_RATE		921600
 
@@ -135,7 +135,7 @@ int usart_device_init()
     }
 
     usart_device_init_0(8, 0, 1, DEFAULT_WIRELESS_BAUD_RATE);	//wireless
-    usart_device_init_2(8, 0, 1, DEFAULT_GPS_BAUD_RATE);	//GPS
+    //usart_device_init_2(8, 0, 1, DEFAULT_GPS_BAUD_RATE);	//GPS
     usart_device_init_3(8, 0, 1, DEFAULT_TELEMETRY_BAUD_RATE);	//telemetry
     return 1;
 }
@@ -291,7 +291,7 @@ void usart_device_init_0(unsigned int bits, unsigned int parity,
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_7);
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_7);
 
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
     initUsart(USART1, bits, parity, stopBits, baud);
 
     enableRxTxIrq(USART1, USART1_IRQn, UART_WIRELESS_IRQ_PRIORITY,
@@ -562,6 +562,7 @@ void DMA1_Channel5_IRQHandler(void)
 
 void USART1_IRQHandler(void)
 {
+
     portBASE_TYPE xTaskWokenByTx = pdFALSE, xTaskWokenByPost = pdFALSE;
     signed portCHAR cChar;
 

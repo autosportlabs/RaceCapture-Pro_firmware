@@ -8,6 +8,7 @@ struct led {
     uint8_t level;
 };
 
+#define LED_COUNT 3
 static struct led leds[] = {
     {GPIOA, GPIO_Pin_0, 0},
     {GPIOA, GPIO_Pin_1, 0},
@@ -29,7 +30,7 @@ int LED_device_init(void)
     gpio_conf.GPIO_Mode = GPIO_Mode_OUT;
     gpio_conf.GPIO_OType = GPIO_OType_PP;
 
-    for (i = 0; i < 4; ++i) {
+    for (i = 0; i < LED_COUNT; ++i) {
         gpio_conf.GPIO_Pin = leds[i].mask;
         GPIO_Init(leds[i].port, &gpio_conf);
         LED_device_disable(i);
@@ -39,21 +40,24 @@ int LED_device_init(void)
 
 void LED_device_enable(unsigned int led)
 {
-    GPIO_ResetBits(leds[led].port, leds[led].mask);
+    GPIO_SetBits(leds[led].port, leds[led].mask);
 }
 
 void LED_device_disable(unsigned int led)
 {
-    GPIO_SetBits(leds[led].port, leds[led].mask);
+    GPIO_ResetBits(leds[led].port, leds[led].mask);
 }
 
 void LED_device_toggle(unsigned int led)
 {
+    if (led >= LED_COUNT)
+        return;
+
     if (leds[led].level == 0) {
         leds[led].level = 1;
-        GPIO_SetBits(leds[led].port, leds[led].mask);
+        GPIO_ResetBits(leds[led].port, leds[led].mask);
     } else {
         leds[led].level = 0;
-        GPIO_ResetBits(leds[led].port, leds[led].mask);
+        GPIO_SetBits(leds[led].port, leds[led].mask);
     }
 }
