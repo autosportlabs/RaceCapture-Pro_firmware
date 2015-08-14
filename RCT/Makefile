@@ -31,20 +31,76 @@ inc-y := \
 src-y += $(wildcard Libraries/STM32F30x_StdPeriph_Driver/src/*.c)
 inc-y += Libraries/STM32F30x_StdPeriph_Driver/inc
 
+# Memory Management
+inc-y += mem_mang
+inc-y += FreeRTOS/Source/portable/MemMang
+
+# Logger
+inc-y += ../include/logger
+inc-y += ../include/gps
+inc-y += ../include/tracks
+inc-y += ../include/serial
+inc-y += .
+
+# Logging
+src-y += $(wildcard ../src/logging/*.c)
+inc-y += ../include/logging
+
 # Utilities
 #src-y += $(wildcard Utilities/STM32F3_Discovery/*.c)
 #inc-y += Utilities/STM32F3_Discovery
 
-src-y += $(wildcard ../src/util/mod_string.c)
+src-y += $(wildcard ../src/util/*.c)
 inc-y += ../include/util
 
-# Project
-src-y += $(wildcard Project/*.c)
-inc-y += Project
+# serial API
+src-y += $(wildcard ../src/serial/*.c)
+inc-y += ../include/serial
+src-y += $(wildcard ../src/usart/*.c)
+inc-y += ../include/usart
+
+
+#################HARDWARE ABSTRACTION LAYER#####################
 
 # ADC
 src-y += $(wildcard hal/ADC_stm32/*.c)
 inc-y += ../include/ADC
+
+# CAN
+src-y += $(wildcard hal/CAN_stm32/*.c)
+inc-y += ../include/CAN
+
+# CPU
+src-y += $(wildcard hal/cpu_stm32/*.c)
+inc-y += ../include/cpu
+
+# GPS skytraq
+src-y += $(wildcard hal/gps_skytraq/*.c)
+inc-y += ../include/gps
+
+# I2C
+src-y += $(wildcard hal/i2c_stm32/*.c)
+inc-y += hal/i2c_stm32
+
+# IMU
+src-y += $(wildcard hal/imu_stm32/*.c)
+inc-y += hal/imu_stm32
+
+# LED
+src-y += $(wildcard hal/LED_stm32/*.c)
+inc-y += ../include/LED
+
+# memory
+#src-y += $(wildcard hal/memory_stm32/*.c)
+#inc-y += ../include/memory
+
+# USART
+src-y += $(wildcard hal/usart_stm32/*.c)
+inc-y += ../include/usart
+
+# Watchdog
+src-y += $(wildcard hal/watchdog_stm32/*.c)
+inc-y += ../include/watchdog
 
 # FreeRTOS
 src-y += $(wildcard FreeRTOS/Source/*.c) \
@@ -53,12 +109,18 @@ src-y += $(wildcard FreeRTOS/Source/*.c) \
 inc-y += FreeRTOS/Source/include \
          FreeRTOS/Source/portable/GCC/ARM_CM3
 
+# base
+inc-y += ..
+# Project
+src-y += $(wildcard Project/*.c)
+inc-y += Project
+
 ################################################################################
 # Compilation flags
 ################################################################################
 obj-y := $(addprefix $(OUTDIR),$(patsubst %.s,%.o,$(patsubst %.c,%.o,$(src-y))))
 
-CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -DUSE_STM32303C_EVAL -MD
+CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -DUSE_STM32303C_EVAL -MD -std=c99
 CFLAGS += -mcpu=cortex-m3 -mthumb
 CFLAGS += $(addprefix -I,$(inc-y))
 LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld -Wl,-cref,-u,Reset_Handler,-Map=$(OUTDIR)main.map,--gc-sections

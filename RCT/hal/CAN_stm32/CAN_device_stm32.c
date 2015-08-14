@@ -226,7 +226,7 @@ int CAN_device_rx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
 	}
 
     CanRxMsg rxMsg;
-    if (xQueueReceive(Can1Rx, &rxMsg, msToTicks(timeoutMs)) == pdTRUE) {
+    if (xQueueReceive(xCan1Rx, &rxMsg, msToTicks(timeoutMs)) == pdTRUE) {
         msg->isExtendedAddress = rxMsg.IDE == CAN_ID_EXT ? 1 : 0;
         msg->addressValue = msg->isExtendedAddress ? rxMsg.ExtId : rxMsg.StdId;
         memcpy(msg->data, rxMsg.Data, rxMsg.DLC);

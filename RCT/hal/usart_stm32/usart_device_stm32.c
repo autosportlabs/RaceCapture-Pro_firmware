@@ -135,7 +135,6 @@ int usart_device_init()
     }
 
     usart_device_init_0(8, 0, 1, DEFAULT_WIRELESS_BAUD_RATE);	//wireless
-    usart_device_init_1(8, 0, 1, DEFAULT_AUX_BAUD_RATE);	//auxilary
     usart_device_init_2(8, 0, 1, DEFAULT_GPS_BAUD_RATE);	//GPS
     usart_device_init_3(8, 0, 1, DEFAULT_TELEMETRY_BAUD_RATE);	//telemetry
     return 1;
@@ -285,31 +284,32 @@ static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
 void usart_device_init_0(unsigned int bits, unsigned int parity,
                          unsigned int stopBits, unsigned int baud)
 {
-    RCC_APBPeriphClockCmd(RCC_APBPeriph_USART1, ENABLE);
+
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
 
     initGPIO(GPIOA, (GPIO_Pin_9 | GPIO_Pin_10));
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_7);
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_7);
 
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+    initUsart(USART1, bits, parity, stopBits, baud);
+
     enableRxTxIrq(USART1, USART1_IRQn, UART_WIRELESS_IRQ_PRIORITY,
                   (UART_RX_IRQ | UART_TX_IRQ));
-
-    initUsart(USART1, bits, parity, stopBits, baud);
 }
 
 //GPS port
 void usart_device_init_2(unsigned int bits, unsigned int parity,
                          unsigned int stopBits, unsigned int baud)
 {
-	RCC_AHBPeriphClockCmd(RCC_APBPeriph_USART2, ENABLE);
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
-
     initGPIO(GPIOB, (GPIO_Pin_4 | GPIO_Pin_3));
     GPIO_PinAFConfig(GPIOB, GPIO_PinSource4, GPIO_AF_7);
     GPIO_PinAFConfig(GPIOB, GPIO_PinSource3, GPIO_AF_7);
 
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
     initUsart(USART2, bits, parity, stopBits, baud);
+
     enableRxTxIrq(USART2, USART2_IRQn, UART_GPS_IRQ_PRIORITY, UART_TX_IRQ);
 
     enableRxDMA(RCC_AHBPeriph_DMA1, DMA1_Channel5,
@@ -321,17 +321,17 @@ void usart_device_init_2(unsigned int bits, unsigned int parity,
 void usart_device_init_3(unsigned int bits, unsigned int parity,
                          unsigned int stopBits, unsigned int baud)
 {
-    RCC_APBPeriphClockCmd(RCC_APBPeriph_UART3, ENABLE);
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
-
     initGPIO(GPIOB, (GPIO_Pin_10 | GPIO_Pin_11));
     GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_7);
     GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_7);
 
-    enableRxTxIrq(UARTB, UART4_IRQn, UART_TELEMETRY_IRQ_PRIORITY,
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
+    initUsart(UART4, bits, parity, stopBits, baud);
+
+    enableRxTxIrq(USART3, UART4_IRQn, UART_TELEMETRY_IRQ_PRIORITY,
                   (UART_RX_IRQ | UART_TX_IRQ));
 
-    initUsart(UART4, bits, parity, stopBits, baud);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -628,7 +628,7 @@ void USART3_IRQHandler(void)
 
     if (USART_GetITStatus(USART3, USART_IT_TXE) != RESET) {
         /* The interrupt was caused by the TX becoming empty.  Are there any more characters to transmit? */
-        if (xQueueReceiveFromISR(xUsart1Tx, &cChar, &xTaskWokenByTx) ==
+        if (xQueueReceiveFromISR(xUsart3Tx, &cChar, &xTaskWokenByTx) ==
             pdTRUE) {
             // A character was retrieved from the queue so can be sent to the USART
             USART_SendData(USART3, cChar);
@@ -643,7 +643,7 @@ void USART3_IRQHandler(void)
            character from the rx and place it in the queue or received
            characters. */
         cChar = USART_ReceiveData(USART3);
-        xQueueSendFromISR(xUsart1Rx, &cChar, &xTaskWokenByPost);
+        xQueueSendFromISR(xUsart3Rx, &cChar, &xTaskWokenByPost);
     }
 
     /* If a task was woken by either a character being received or a character

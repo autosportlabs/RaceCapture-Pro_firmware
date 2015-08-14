@@ -1,6 +1,8 @@
 #include "serial.h"
 #include "usart.h"
+#ifdef USB_SERIAL_SUPPORT
 #include "usb_comm.h"
+#endif
 #include "modp_numtoa.h"
 #include "printk.h"
 static Serial serial_ports[SERIAL_COUNT];
@@ -11,7 +13,9 @@ void init_serial(void)
     usart_init_serial(&serial_ports[SERIAL_TELEMETRY], UART_TELEMETRY);
     usart_init_serial(&serial_ports[SERIAL_WIRELESS], UART_WIRELESS);
     usart_init_serial(&serial_ports[SERIAL_AUX], UART_AUX);
+    #ifdef USB_SERIAL_SUPPORT
     usb_init_serial(&serial_ports[SERIAL_USB]);
+    #endif
 }
 
 void configure_serial(serial_id_t port, uint8_t bits, uint8_t parity, uint8_t stopBits, uint32_t baud)

@@ -429,7 +429,7 @@ int i2c_init(struct i2c_dev *dev, uint32_t bus_speed)
     I2C_ITConfig(p->ll_dev, I2C_IT_BUF, ENABLE);
 
     /* Enable the error interrupts */
-    I2C_ITConfig(p->ll_dev, I2C_IT_ERR, ENABLE);
+    I2C_ITConfig(p->ll_dev, I2C_IT_ERRI, ENABLE);
 
     /* Reset the bus */
     I2C_GenerateSTOP(p->ll_dev, ENABLE);
