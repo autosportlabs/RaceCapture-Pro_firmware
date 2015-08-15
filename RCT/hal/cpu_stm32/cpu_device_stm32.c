@@ -31,7 +31,8 @@ static void init_cpu_id()
 
 int cpu_device_init(void)
 {
-    NVIC_SetVectorTable(NVIC_VectTab_FLASH, _flash_start);
+    /*TODO BAP fix this so we jump to the correct location */
+    //NVIC_SetVectorTable(NVIC_VectTab_FLASH, _flash_start);
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
     init_cpu_id();
     return 1;

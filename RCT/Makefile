@@ -206,6 +206,7 @@ CFLAGS += -DAPI_REV=$(API) -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_RE
 CFLAGS += $(BOARD_DEFINES)
 CFLAGS += -fno-builtin-sprintf 
 CFLAGS += $(addprefix -I,$(inc-y))
+CFLAGS += -O0 -g
 LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld -Wl,-cref,-u,Reset_Handler,-Map=$(OUTDIR)main.map,--gc-sections
 AFLAGS := $(CFLAGS)
 

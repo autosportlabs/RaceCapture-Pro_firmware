@@ -46,10 +46,10 @@ void InitLoggerHardware()
     LED_init();
 
 #if IMU_CHANNELS > 0
-    imu_init(loggerConfig);
+    //imu_init(loggerConfig);
 #endif
 #if ANALOG_CHANNELS > 0
-    ADC_init(loggerConfig);
+ //   ADC_init(loggerConfig);
 #endif
 #if PWM_CHANNELS > 0
     PWM_init(loggerConfig);
@@ -60,8 +60,8 @@ void InitLoggerHardware()
 #if TIMER_CHANNELS > 0
     timer_init(loggerConfig);
 #endif
-#if CAN_CHANNELS > 1
-    CAN_init(loggerConfig);
+#if CAN_CHANNELS > 0
+    //CAN_init(loggerConfig);
 #endif
 #if SD_CARD_SUPPORT == 1
     InitFSHardware();
