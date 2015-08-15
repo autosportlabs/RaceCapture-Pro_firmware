@@ -121,8 +121,8 @@ void setupTask(void *params)
 #if LUA_SUPPORT == 1
     initialize_script();
 #endif
-   InitLoggerHardware();
-    //initMessaging();
+    InitLoggerHardware();
+    initMessaging();
 
 #if GPIO_CHANNELS > 0
     startGPIOTasks			( GPIO_TASK_PRIORITY );
@@ -257,17 +257,6 @@ int main( void )
 {
     ALWAYS_KEEP(info_block);
     cpu_init();
-
-    /*TODO BAP move this into CPU init setup */
-    /* SysTick end of count event each 1ms */
-    RCC_ClocksTypeDef RCC_Clocks;
-        RCC_GetClocksFreq(&RCC_Clocks);
-        SysTick_Config(RCC_Clocks.HCLK_Frequency / configTICK_RATE_HZ);
-
-        /* Ensure all priority bits are assigned as preemption priority bits. */
-        NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
-
-//        init_rgb();
 
     init_gps();
     init_esp();

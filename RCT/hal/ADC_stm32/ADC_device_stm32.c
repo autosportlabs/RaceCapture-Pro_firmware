@@ -22,13 +22,13 @@ volatile unsigned short ADC_Val[1];
 int ADC_device_init(void)
 {
 	   /* Configure the ADC clock */
-	  RCC_ADCCLKConfig(RCC_ADC12PLLCLK_Div2);
+	  RCC_ADCCLKConfig(RCC_ADC34PLLCLK_Div2);
 
 	  /* Enable ADC3 clock */
 	  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_ADC34, ENABLE);
 
 	  /* DMA configuration */
-	  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
+	  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA2, ENABLE);
 
 	    DMA_InitTypeDef DMA_InitStructure;
 	    DMA_InitStructure.DMA_BufferSize = 1;
@@ -37,12 +37,12 @@ int ADC_device_init(void)
 	    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
 	    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
 	    DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
-	    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&ADC1->DR;
+	    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&ADC3->DR;
 	    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
 	    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
 	    DMA_InitStructure.DMA_Priority = DMA_Priority_High;
 
-	    DMA_Init(DMA1_Channel1, &DMA_InitStructure);
+	    DMA_Init(DMA2_Channel5, &DMA_InitStructure);
 
 	  /* ADC Channel configuration */
 	  /* GPIOB Periph clock enable */
@@ -91,7 +91,7 @@ int ADC_device_init(void)
 	  ADC_RegularChannelConfig(ADC3, ADC_Channel_1, 1, ADC_SampleTime_19Cycles5); //PB1
 
 	  /* Enables DMA channel */
-	  DMA_Cmd(DMA1_Channel1, ENABLE);
+	  DMA_Cmd(DMA2_Channel5, ENABLE);
 
 	 /* Enable ADC3 DMA */
 	 ADC_DMACmd(ADC3, ENABLE);

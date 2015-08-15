@@ -49,7 +49,7 @@ void InitLoggerHardware()
     //imu_init(loggerConfig);
 #endif
 #if ANALOG_CHANNELS > 0
- //   ADC_init(loggerConfig);
+    ADC_init(loggerConfig);
 #endif
 #if PWM_CHANNELS > 0
     PWM_init(loggerConfig);
