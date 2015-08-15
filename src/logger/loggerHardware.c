@@ -61,7 +61,7 @@ void InitLoggerHardware()
     timer_init(loggerConfig);
 #endif
 #if CAN_CHANNELS > 0
-    //CAN_init(loggerConfig);
+    CAN_init(loggerConfig);
 #endif
 #if SD_CARD_SUPPORT == 1
     InitFSHardware();
