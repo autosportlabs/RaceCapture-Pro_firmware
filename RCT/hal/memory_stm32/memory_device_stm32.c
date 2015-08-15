@@ -30,10 +30,11 @@ enum memory_flash_result_t memory_device_flash_region(const void *address, const
         }
 
         uint32_t addrTarget = (uint32_t) address;
-        uint8_t *dataTarget = (uint8_t *) data;
+        uint32_t *dataTarget = (uint32_t *) data;
 
+        size_t data_index = 0;
         for (size_t i = 0; i < length; i+=sizeof(uint32_t)) {
-            if (FLASH_ProgramWord(addrTarget + i, *(dataTarget + i)) != FLASH_COMPLETE) {
+            if (FLASH_ProgramWord(addrTarget + i, dataTarget[data_index++]) != FLASH_COMPLETE) {
                 rc = MEMORY_FLASH_WRITE_ERROR;
                 break;
             }
