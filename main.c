@@ -140,7 +140,7 @@ void setupTask(void *params)
 #endif
     //startConnectivityTask	( CONNECTIVITY_TASK_PRIORITY );
     startGPSTask			( GPS_TASK_PRIORITY );
-    //startOBD2Task			( OBD2_TASK_PRIORITY);
+    startOBD2Task			( OBD2_TASK_PRIORITY);
     //startLoggerTaskEx		( LOGGER_TASK_PRIORITY );
 
     /* Removes this setup task from the scheduler */
