@@ -12,6 +12,7 @@
 #define USB_SERIAL_SUPPORT      0
 #define LUA_SUPPORT             0
 #define SDCARD_SUPPORT          0
+#define CELLULAR_SUPPORT        0
 
 //configuration
 #define MAX_TRACKS				240
@@ -21,7 +22,7 @@
 
 //Input / output Channels
 #define ANALOG_CHANNELS 		1
-#define IMU_CHANNELS			0
+#define IMU_CHANNELS			7
 #define	GPIO_CHANNELS			0
 #define TIMER_CHANNELS			0
 #define PWM_CHANNELS			0

@@ -37,11 +37,6 @@ inc-y += Libraries/STM32F30x_StdPeriph_Driver/inc
 inc-y += mem_mang
 inc-y += FreeRTOS/Source/portable/MemMang
 
-# Logger
-inc-y += ../include/gps
-inc-y += ../include/tracks
-inc-y += .
-
 # Logging
 src-y += $(wildcard ../src/logging/*.c)
 inc-y += ../include/logging
@@ -63,6 +58,7 @@ inc-y += ../include/usart
 #################HARDWARE ABSTRACTION LAYER#####################
 
 # ADC
+src-y += $(wildcard ../src/ADC/*.c)
 src-y += $(wildcard hal/ADC_stm32/*.c)
 inc-y += ../include/ADC
 
@@ -70,6 +66,10 @@ inc-y += ../include/ADC
 src-y += $(wildcard ../src/CAN/*.c)
 src-y += $(wildcard hal/CAN_stm32/*.c)
 inc-y += ../include/CAN
+
+# GPS
+src-y += $(wildcard ../src/gps/*.c)
+inc-y += ../include/gps
 
 # CPU
 src-y += $(wildcard ../src/cpu/*.c)
@@ -92,6 +92,18 @@ inc-y += ../include/virtual_channel
 src-y += $(wildcard ../src/predictive_timer/*.c)
 inc-y += ../include/predictive_timer
 
+#lap stats
+src-y += $(wildcard ../src/lap_stats/*.c)
+inc-y += ../include/lap_stats
+
+#auto lap config
+src-y += $(wildcard ../src/auto_config/*.c)
+inc-y += ../include/auto_config
+
+#tracks
+src-y += $(wildcard ../src/tracks/*.c)
+inc-y += ../include/tracks
+
 # I2C
 src-y += $(wildcard hal/i2c_stm32/*.c)
 inc-y += hal/i2c_stm32
@@ -102,6 +114,10 @@ src-y += $(wildcard hal/imu_stm32/*.c)
 inc-y += hal/imu_stm32
 inc-y += ../include/imu
 
+#launch control
+src-y += $(wildcard ../src/launch_control.c)
+inc-y += ../include
+
 # LED
 src-y += $(wildcard hal/LED_stm32/*.c)
 src-y += $(wildcard ../src/LED/*.c)
@@ -109,6 +125,7 @@ inc-y += ../include/LED
 
 # memory
 src-y += $(wildcard hal/memory_stm32/*.c)
+src-y += $(wildcard ../src/memory/*.c)
 inc-y += ../include/memory
 
 # USART
@@ -126,7 +143,8 @@ src-y += $(wildcard ../src/OBD2/*.c)
 inc-y += ../include/OBD2
 
 #devices
-src-y += $(wildcard ../src/devices/*.c)
+src-y += ../src/devices/bluetooth.c \
+		 ../src/devices/null_device.c 
 inc-y += ../include/devices
 
 #devices
@@ -152,12 +170,14 @@ inc-y += ../include/messaging
 # FreeRTOS
 src-y += $(wildcard FreeRTOS/Source/*.c) \
          FreeRTOS/Source/portable/GCC/ARM_CM3/port.c \
-         FreeRTOS/Source/portable/MemMang/heap_1.c \
+         FreeRTOS/Source/portable/MemMang/heap_4.c \
          
 inc-y += FreeRTOS/Source/include \
          FreeRTOS/Source/portable/GCC/ARM_CM3
 
 src-y += Project/system_stm32f30x.c 
+
+inc-y += .
 
 # base
 inc-y += ..

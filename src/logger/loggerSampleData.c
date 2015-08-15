@@ -1,16 +1,10 @@
 #include "dateTime.h"
-#include "GPIO.h"
 #include "lap_stats.h"
 #include "loggerSampleData.h"
 #include "loggerHardware.h"
 #include "loggerConfig.h"
 #include "loggerData.h"
 #include "virtual_channel.h"
-#include "imu.h"
-#include "ADC.h"
-#include "timer.h"
-#include "PWM.h"
-#include "GPIO.h"
 #include "OBD2.h"
 #include "sampleRecord.h"
 #include "gps.h"
@@ -21,6 +15,23 @@
 #include "printk.h"
 #include "FreeRTOS.h"
 #include "taskUtil.h"
+
+/* sensor support */
+#if GPIO_CHANNELS > 0
+#include "GPIO.h"
+#endif
+#if PWM_CHANNELS > 0
+#include "PWM.h"
+#endif
+#if TIMER_CHANNELS > 0
+#include "timer.h"
+#endif
+#if ANALOG_CHANNELS > 0
+#include "ADC.h"
+#endif
+#if IMU_CHANNELS > 0
+#include "imu.h"
+#endif
 
 #include <stdbool.h>
 
@@ -130,7 +141,8 @@ float get_mapped_value(float value, ScalingMap *scalingMap)
     return scaled;
 }
 
-float get_analog_sample(int channelId)
+#if ANALOG_CHANNELS > 0
+static float get_analog_sample(int channelId)
 {
     LoggerConfig * loggerConfig = getWorkingLoggerConfig();
     ADCConfig *ac = &(loggerConfig->ADCConfigs[channelId]);
@@ -152,7 +164,9 @@ float get_analog_sample(int channelId)
     }
     return analogValue;
 }
+#endif
 
+#if TIMER_CHANNELS > 0
 float get_timer_sample(int channelId)
 {
     LoggerConfig *loggerConfig = getWorkingLoggerConfig();
@@ -178,7 +192,9 @@ float get_timer_sample(int channelId)
     }
     return timerValue;
 }
+#endif
 
+#if PWM_CHANNELS > 0
 float get_pwm_sample(int channelId)
 {
     LoggerConfig *loggerConfig = getWorkingLoggerConfig();
@@ -200,7 +216,9 @@ float get_pwm_sample(int channelId)
     }
     return pwmValue;
 }
+#endif
 
+#if IMU_CHANNELS > 0
 float get_imu_sample(int channelId)
 {
     LoggerConfig *config = getWorkingLoggerConfig();
@@ -208,6 +226,7 @@ float get_imu_sample(int channelId)
     float value = imu_read_value(channelId, c);
     return value;
 }
+#endif
 
 void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
 {
@@ -231,36 +250,45 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     chanCfg->flags = ALWAYS_SAMPLED; // Set always sampled flag here so we always take samples
     sample = processChannelSampleWithLongLongGetterNoarg(sample, chanCfg, getMillisSinceEpochAsLongLong);
 
-
+#if ANALOG_CHANNELS > 0
     for (int i=0; i < CONFIG_ADC_CHANNELS; i++) {
         ADCConfig *config = &(loggerConfig->ADCConfigs[i]);
         chanCfg = &(config->cfg);
         sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_analog_sample);
     }
+#endif
 
+#if IMU_CHANNELS > 0
     for (int i = 0; i < CONFIG_IMU_CHANNELS; i++) {
         ImuConfig *config = &(loggerConfig->ImuConfigs[i]);
         chanCfg = &(config->cfg);
         sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_imu_sample);
     }
+#endif
 
+#if TIMER_CHANNELS > 0
     for (int i=0; i < CONFIG_TIMER_CHANNELS; i++) {
         TimerConfig *config = &(loggerConfig->TimerConfigs[i]);
         chanCfg = &(config->cfg);
         sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_timer_sample);
     }
+#endif
 
+#if GPIO_CHANNELS > 0
     for (int i=0; i < CONFIG_GPIO_CHANNELS; i++) {
         GPIOConfig *config = &(loggerConfig->GPIOConfigs[i]);
         chanCfg = &(config->cfg);
         sample = processChannelSampleWithIntGetter(sample, chanCfg, i, GPIO_get);
     }
+#endif
 
+#if PWM_CHANNELS > 0
     for (int i=0; i < CONFIG_PWM_CHANNELS; i++) {
         PWMConfig *config = &(loggerConfig->PWMConfigs[i]);
         chanCfg = &(config->cfg);
         sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_pwm_sample);
     }
+#endif
 
     OBD2Config *obd2Config = &(loggerConfig->OBD2Configs);
     for (size_t i = 0; i < obd2Config->enabledPids; i++) {

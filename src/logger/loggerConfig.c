@@ -22,11 +22,6 @@ static void resetVersionInfo(VersionInfo *vi)
     vi->bugfix = BUGFIX_REV;
 }
 
-static void resetPwmClkFrequency(unsigned short *pwmClkFreq)
-{
-    *pwmClkFreq = DEFAULT_PWM_CLOCK_FREQUENCY;
-}
-
 /**
  * Prints a string prefix and add an int suffix to dest buffer.
  */
@@ -46,18 +41,50 @@ static void resetTimeConfig(struct TimeConfig *tc)
     tc[1] = (struct TimeConfig) DEFAULT_UTC_MILLIS_TIME_CONFIG;
 }
 
-static void resetAdcConfig(ADCConfig cfg[])
-{
-    // All but the last one are zeroed out.
-    for (size_t i = 0; i < CONFIG_ADC_CHANNELS; ++i) {
-        ADCConfig *c = cfg + i;
-        *c = (ADCConfig) DEFAULT_ADC_CONFIG;
-        sPrintStrInt(c->cfg.label, "Analog", i + 1);
-        strcpy(c->cfg.units, "Volts");
-    }
 
-    // Now update the battery config
-    cfg[7] = (ADCConfig) BATTERY_ADC_CONFIG;
+#if PWM_CHANNELS > 0
+PWMConfig * getPwmConfigChannel(int channel)
+{
+    PWMConfig * c = NULL;
+    if (channel >= 0 && channel < CONFIG_PWM_CHANNELS) {
+        c = &(getWorkingLoggerConfig()->PWMConfigs[channel]);
+    }
+    return c;
+}
+
+unsigned short filterPwmDutyCycle(int dutyCycle)
+{
+    if (dutyCycle > MAX_PWM_DUTY_CYCLE) {
+        dutyCycle = MAX_PWM_DUTY_CYCLE;
+    } else if (dutyCycle < MIN_PWM_DUTY_CYCLE) {
+        dutyCycle = MIN_PWM_DUTY_CYCLE;
+    }
+    return dutyCycle;
+}
+
+unsigned short filterPwmPeriod(int period)
+{
+    if (period > MAX_PWM_PERIOD) {
+        period = MAX_PWM_PERIOD;
+    } else if (period < MIN_PWM_PERIOD) {
+        period = MIN_PWM_PERIOD;
+    }
+    return period;
+}
+
+uint16_t filterPwmClockFrequency(uint16_t freq)
+{
+    if (freq > MAX_PWM_CLOCK_FREQUENCY) {
+        freq = MAX_PWM_CLOCK_FREQUENCY;
+    } else if (freq < MIN_PWM_CLOCK_FREQUENCY) {
+        freq = MIN_PWM_CLOCK_FREQUENCY;
+    }
+    return freq;
+}
+
+static void resetPwmClkFrequency(unsigned short *pwmClkFreq)
+{
+    *pwmClkFreq = DEFAULT_PWM_CLOCK_FREQUENCY;
 }
 
 static void resetPwmConfig(PWMConfig cfg[])
@@ -69,6 +96,52 @@ static void resetPwmConfig(PWMConfig cfg[])
     }
 }
 
+char filterPwmOutputMode(int value)
+{
+    switch(value) {
+    case MODE_PWM_ANALOG:
+        return MODE_PWM_ANALOG;
+    case MODE_PWM_FREQUENCY:
+    default:
+        return MODE_PWM_FREQUENCY;
+    }
+}
+
+char filterPwmLoggingMode(int config)
+{
+    switch (config) {
+    case MODE_LOGGING_PWM_PERIOD:
+        return MODE_LOGGING_PWM_PERIOD;
+    case MODE_LOGGING_PWM_DUTY:
+        return MODE_LOGGING_PWM_DUTY;
+    case MODE_LOGGING_PWM_VOLTS:
+    default:
+        return MODE_LOGGING_PWM_VOLTS;
+    }
+}
+#endif
+
+#if GPIO_CHANNELS > 0
+GPIOConfig * getGPIOConfigChannel(int channel)
+{
+    GPIOConfig *c = NULL;
+    if (channel >=0 && channel < CONFIG_GPIO_CHANNELS) {
+        c = &(getWorkingLoggerConfig()->GPIOConfigs[channel]);
+    }
+    return c;
+}
+
+char filterGpioMode(int value)
+{
+    switch(value) {
+    case CONFIG_GPIO_OUT:
+        return CONFIG_GPIO_OUT;
+    case CONFIG_GPIO_IN:
+    default:
+        return CONFIG_GPIO_IN;
+    }
+}
+
 static void resetGpioConfig(GPIOConfig cfg[])
 {
     for (size_t i = 0; i < CONFIG_GPIO_CHANNELS; ++i) {
@@ -76,6 +149,17 @@ static void resetGpioConfig(GPIOConfig cfg[])
         *c = (GPIOConfig) DEFAULT_GPIO_CONFIG;
         sPrintStrInt(c->cfg.label, "GPIO", i + 1);
     }
+}
+#endif
+
+#if TIMER_CHANNELS > 0
+TimerConfig * getTimerConfigChannel(int channel)
+{
+    TimerConfig * c = NULL;
+    if (channel >=0 && channel < CONFIG_TIMER_CHANNELS) {
+        c = &(getWorkingLoggerConfig()->TimerConfigs[channel]);
+    }
+    return c;
 }
 
 static void resetTimerConfig(TimerConfig cfg[])
@@ -89,7 +173,9 @@ static void resetTimerConfig(TimerConfig cfg[])
     // Make Channel 1 the default RPM config.
     cfg[0].cfg = (ChannelConfig) DEFAULT_RPM_CHANNEL_CONFIG;
 }
+#endif
 
+#if IMU_CHANNELS > 0
 static void resetImuConfig(ImuConfig cfg[])
 {
     const char *imu_names[] = {"AccelX", "AccelY", "AccelZ", "Yaw", "Pitch", "Roll"};
@@ -107,6 +193,7 @@ static void resetImuConfig(ImuConfig cfg[])
         c->physicalChannel = i;
     }
 }
+#endif
 
 static void resetCanConfig(CANConfig *cfg)
 {
@@ -189,73 +276,6 @@ int getHigherSampleRate(const int a, const int b)
     return isHigherSampleRate(a, b) ? a : b;
 }
 
-int flash_default_logger_config(void)
-{
-    LoggerConfig *lc = &g_workingLoggerConfig;
-
-    resetVersionInfo(&lc->RcpVersionInfo);
-    resetPwmClkFrequency(&lc->PWMClockFrequency);
-    resetTimeConfig(lc->TimeConfigs);
-    resetAdcConfig(lc->ADCConfigs);
-    resetPwmConfig(lc->PWMConfigs);
-    resetGpioConfig(lc->GPIOConfigs);
-    resetTimerConfig(lc->TimerConfigs);
-    resetImuConfig(lc->ImuConfigs);
-    resetCanConfig(&lc->CanConfig);
-    resetOBD2Config(&lc->OBD2Configs);
-    resetGPSConfig(&lc->GPSConfigs);
-    resetLapConfig(&lc->LapConfigs);
-    resetTrackConfig(&lc->TrackConfigs);
-    resetConnectivityConfig(&lc->ConnectivityConfigs);
-    strcpy(lc->padding_data, "");
-
-    int result = flashLoggerConfig();
-
-    pr_info_str_msg("flashing default config: ", result == 0 ? "win" : "fail");
-    return result;
-}
-
-int flashLoggerConfig(void)
-{
-    return memory_flash_region((void *) &g_savedLoggerConfig,
-                               (void *) &g_workingLoggerConfig,
-                               sizeof (LoggerConfig));
-}
-
-static bool checkFlashDefaultConfig(void)
-{
-    bool changed = versionChanged(&g_savedLoggerConfig.RcpVersionInfo);
-    if (changed) {
-        pr_info("major/minor version changed\r\n");
-        flash_default_logger_config();
-        return true;
-    } else {
-        return false;
-    }
-}
-
-static void loadWorkingLoggerConfig(void)
-{
-    memcpy((void *) &g_workingLoggerConfig,
-           (void *) &g_savedLoggerConfig, sizeof(LoggerConfig));
-}
-
-void initialize_logger_config()
-{
-    checkFlashDefaultConfig();
-    loadWorkingLoggerConfig();
-}
-
-const LoggerConfig * getSavedLoggerConfig()
-{
-    return (LoggerConfig *) &g_savedLoggerConfig;
-}
-
-LoggerConfig * getWorkingLoggerConfig()
-{
-    return &g_workingLoggerConfig;
-}
-
 int getConnectivitySampleRateLimit()
 {
     ConnectivityConfig *connConfig = &getWorkingLoggerConfig()->ConnectivityConfigs;
@@ -304,19 +324,6 @@ int decodeSampleRate(int rate_code)
     }
 }
 
-unsigned char filterAnalogScalingMode(unsigned char mode)
-{
-    switch(mode) {
-    case SCALING_MODE_LINEAR:
-        return SCALING_MODE_LINEAR;
-    case SCALING_MODE_MAP:
-        return SCALING_MODE_MAP;
-    default:
-    case SCALING_MODE_RAW:
-        return SCALING_MODE_RAW;
-    }
-}
-
 unsigned char filterBgStreamingMode(unsigned char mode)
 {
     return mode == 0 ? 0 : 1;
@@ -333,41 +340,8 @@ unsigned char filterSdLoggingMode(unsigned char mode)
     }
 }
 
-char filterGpioMode(int value)
-{
-    switch(value) {
-    case CONFIG_GPIO_OUT:
-        return CONFIG_GPIO_OUT;
-    case CONFIG_GPIO_IN:
-    default:
-        return CONFIG_GPIO_IN;
-    }
-}
 
-char filterPwmOutputMode(int value)
-{
-    switch(value) {
-    case MODE_PWM_ANALOG:
-        return MODE_PWM_ANALOG;
-    case MODE_PWM_FREQUENCY:
-    default:
-        return MODE_PWM_FREQUENCY;
-    }
-}
-
-char filterPwmLoggingMode(int config)
-{
-    switch (config) {
-    case MODE_LOGGING_PWM_PERIOD:
-        return MODE_LOGGING_PWM_PERIOD;
-    case MODE_LOGGING_PWM_DUTY:
-        return MODE_LOGGING_PWM_DUTY;
-    case MODE_LOGGING_PWM_VOLTS:
-    default:
-        return MODE_LOGGING_PWM_VOLTS;
-    }
-}
-
+#if TIMER_CHANNELS > 0
 unsigned char filterPulsePerRevolution(unsigned char pulsePerRev)
 {
     return pulsePerRev == 0 ? 1 : pulsePerRev;
@@ -400,6 +374,18 @@ char filterTimerMode(int mode)
         return MODE_LOGGING_TIMER_FREQUENCY;
     }
 }
+#endif
+
+#if IMU_CHANNELS > 0
+
+ImuConfig * getImuConfigChannel(int channel)
+{
+    ImuConfig * c = NULL;
+    if (channel >= 0 && channel < CONFIG_IMU_CHANNELS) {
+        c = &(getWorkingLoggerConfig()->ImuConfigs[channel]);
+    }
+    return c;
+}
 
 int filterImuChannel(int channel)
 {
@@ -428,53 +414,22 @@ int filterImuMode(int mode)
         return MODE_IMU_NORMAL;
     }
 }
+#endif
 
-unsigned short filterPwmDutyCycle(int dutyCycle)
-{
-    if (dutyCycle > MAX_PWM_DUTY_CYCLE) {
-        dutyCycle = MAX_PWM_DUTY_CYCLE;
-    } else if (dutyCycle < MIN_PWM_DUTY_CYCLE) {
-        dutyCycle = MIN_PWM_DUTY_CYCLE;
-    }
-    return dutyCycle;
-}
 
-unsigned short filterPwmPeriod(int period)
+#if ANALOG_CHANNELS > 0
+static void resetAdcConfig(ADCConfig cfg[])
 {
-    if (period > MAX_PWM_PERIOD) {
-        period = MAX_PWM_PERIOD;
-    } else if (period < MIN_PWM_PERIOD) {
-        period = MIN_PWM_PERIOD;
+    // All but the last one are zeroed out.
+    for (size_t i = 0; i < CONFIG_ADC_CHANNELS; ++i) {
+        ADCConfig *c = cfg + i;
+        *c = (ADCConfig) DEFAULT_ADC_CONFIG;
+        sPrintStrInt(c->cfg.label, "Analog", i + 1);
+        strcpy(c->cfg.units, "Volts");
     }
-    return period;
-}
 
-uint16_t filterPwmClockFrequency(uint16_t freq)
-{
-    if (freq > MAX_PWM_CLOCK_FREQUENCY) {
-        freq = MAX_PWM_CLOCK_FREQUENCY;
-    } else if (freq < MIN_PWM_CLOCK_FREQUENCY) {
-        freq = MIN_PWM_CLOCK_FREQUENCY;
-    }
-    return freq;
-}
-
-PWMConfig * getPwmConfigChannel(int channel)
-{
-    PWMConfig * c = NULL;
-    if (channel >= 0 && channel < CONFIG_PWM_CHANNELS) {
-        c = &(getWorkingLoggerConfig()->PWMConfigs[channel]);
-    }
-    return c;
-}
-
-TimerConfig * getTimerConfigChannel(int channel)
-{
-    TimerConfig * c = NULL;
-    if (channel >=0 && channel < CONFIG_TIMER_CHANNELS) {
-        c = &(getWorkingLoggerConfig()->TimerConfigs[channel]);
-    }
-    return c;
+    // Now update the battery config
+    cfg[7] = (ADCConfig) BATTERY_ADC_CONFIG;
 }
 
 ADCConfig * getADCConfigChannel(int channel)
@@ -486,23 +441,19 @@ ADCConfig * getADCConfigChannel(int channel)
     return c;
 }
 
-GPIOConfig * getGPIOConfigChannel(int channel)
+unsigned char filterAnalogScalingMode(unsigned char mode)
 {
-    GPIOConfig *c = NULL;
-    if (channel >=0 && channel < CONFIG_GPIO_CHANNELS) {
-        c = &(getWorkingLoggerConfig()->GPIOConfigs[channel]);
+    switch(mode) {
+    case SCALING_MODE_LINEAR:
+        return SCALING_MODE_LINEAR;
+    case SCALING_MODE_MAP:
+        return SCALING_MODE_MAP;
+    default:
+    case SCALING_MODE_RAW:
+        return SCALING_MODE_RAW;
     }
-    return c;
 }
-
-ImuConfig * getImuConfigChannel(int channel)
-{
-    ImuConfig * c = NULL;
-    if (channel >= 0 && channel < CONFIG_IMU_CHANNELS) {
-        c = &(getWorkingLoggerConfig()->ImuConfigs[channel]);
-    }
-    return c;
-}
+#endif
 
 unsigned int getHighestSampleRate(LoggerConfig *config)
 {
@@ -513,32 +464,40 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
      * Bypass Interval and Utc here since they will always be logging
      * at the highest rate based on the results of this very method
      */
-
+#if ANALOG_CHANNELS > 0
     for (int i = 0; i < CONFIG_ADC_CHANNELS; i++) {
         sr = config->ADCConfigs[i].cfg.sampleRate;
         s = getHigherSampleRate(sr, s);
     }
+#endif
 
+#if PWM_CHANNELS > 0
     for (int i = 0; i < CONFIG_PWM_CHANNELS; i++) {
         sr = config->PWMConfigs[i].cfg.sampleRate;
         s = getHigherSampleRate(sr, s);
     }
+#endif
 
+#if GPIO_CHANNELS > 0
     for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++) {
         sr = config->GPIOConfigs[i].cfg.sampleRate;
         s = getHigherSampleRate(sr, s);
     }
+#endif
 
+#if TIMER_CHANNELS > 0
     for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++) {
         sr = config->TimerConfigs[i].cfg.sampleRate;
         s = getHigherSampleRate(sr, s);
     }
+#endif
 
+#if IMU_CHANNELS > 0
     for (int i = 0; i < CONFIG_IMU_CHANNELS; i++) {
         sr = config->ImuConfigs[i].cfg.sampleRate;
         s = getHigherSampleRate(sr, s);
     }
-
+#endif
 
     GPSConfig *gpsConfig = &(config->GPSConfigs);
     sr = gpsConfig->latitude.sampleRate;
@@ -597,26 +556,35 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
     for (size_t i=0; i < CONFIG_TIME_CHANNELS; i++)
         if (loggerConfig->TimeConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
             ++channels;
-
+#if IMU_CHANNELS > 0
     for (size_t i=0; i < CONFIG_IMU_CHANNELS; i++)
         if (loggerConfig->ImuConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
             ++channels;
+#endif
 
+#if ANALOG_CHANNELS > 0
     for (size_t i=0; i < CONFIG_ADC_CHANNELS; i++)
         if (loggerConfig->ADCConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
             ++channels;
+#endif
 
+#if TIMER_CHANNELS > 0
     for (size_t i=0; i < CONFIG_TIMER_CHANNELS; i++)
         if (loggerConfig->TimerConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
             ++channels;
+#endif
 
+#if GPIO_CHANNELS > 0
     for (size_t i=0; i < CONFIG_GPIO_CHANNELS; i++)
         if (loggerConfig->GPIOConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
             ++channels;
+#endif
 
+#if PWM_CHANNELS > 0
     for (size_t i=0; i < CONFIG_PWM_CHANNELS; i++)
         if (loggerConfig->PWMConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
             ++channels;
+#endif
 
     size_t enabled_obd2_pids = loggerConfig->OBD2Configs.enabledPids;
     for (size_t i=0; i < enabled_obd2_pids; i++) {
@@ -645,4 +613,91 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
 
     channels += get_virtual_channel_count();
     return channels;
+}
+
+
+int flash_default_logger_config(void)
+{
+    LoggerConfig *lc = &g_workingLoggerConfig;
+
+    resetVersionInfo(&lc->RcpVersionInfo);
+    resetTimeConfig(lc->TimeConfigs);
+
+#if PWM_CHANNELS > 0
+    resetPwmClkFrequency(&lc->PWMClockFrequency);
+#endif
+
+#if ANALOG_CHANNELS > 0
+    resetAdcConfig(lc->ADCConfigs);
+#endif
+
+#if PWM_CHANNELS > 0
+    resetPwmConfig(lc->PWMConfigs);
+#endif
+
+#if GPIO_CHANNELS > 0
+    resetGpioConfig(lc->GPIOConfigs);
+#endif
+
+#if TIMER_CHANNELS > 0
+    resetTimerConfig(lc->TimerConfigs);
+#endif
+
+#if IMU_CHANNELS > 0
+    resetImuConfig(lc->ImuConfigs);
+#endif
+
+    resetCanConfig(&lc->CanConfig);
+    resetOBD2Config(&lc->OBD2Configs);
+    resetGPSConfig(&lc->GPSConfigs);
+    resetLapConfig(&lc->LapConfigs);
+    resetTrackConfig(&lc->TrackConfigs);
+    resetConnectivityConfig(&lc->ConnectivityConfigs);
+    strcpy(lc->padding_data, "");
+
+    int result = flashLoggerConfig();
+
+    pr_info_str_msg("flashing default config: ", result == 0 ? "win" : "fail");
+    return result;
+}
+
+int flashLoggerConfig(void)
+{
+    return memory_flash_region((void *) &g_savedLoggerConfig,
+                               (void *) &g_workingLoggerConfig,
+                               sizeof (LoggerConfig));
+}
+
+static bool checkFlashDefaultConfig(void)
+{
+    bool changed = versionChanged(&g_savedLoggerConfig.RcpVersionInfo);
+    if (changed) {
+        pr_info("major/minor version changed\r\n");
+        flash_default_logger_config();
+        return true;
+    } else {
+        return false;
+    }
+}
+
+static void loadWorkingLoggerConfig(void)
+{
+    memcpy((void *) &g_workingLoggerConfig,
+           (void *) &g_savedLoggerConfig, sizeof(LoggerConfig));
+}
+
+void initialize_logger_config()
+{
+    checkFlashDefaultConfig();
+    loadWorkingLoggerConfig();
+}
+
+const LoggerConfig * getSavedLoggerConfig()
+{
+    return (LoggerConfig *) &g_savedLoggerConfig;
+}
+
+LoggerConfig * getWorkingLoggerConfig()
+{
+    return &g_workingLoggerConfig;
 }

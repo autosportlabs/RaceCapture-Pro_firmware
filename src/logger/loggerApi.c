@@ -15,44 +15,70 @@
  * See the GNU General Public License for more details. You should have received a copy of the GNU
  * General Public License along with this code. If not, see <http://www.gnu.org/licenses/>.
  */
+#include "loggerApi.h"
+
 #include "FreeRTOS.h"
 #include "task.h"
+#include "taskUtil.h"
+
+/* Core hardware support */
+#include "loggerHardware.h"
+#include "mem_mang.h"
+#include "cpu.h"
+#include "serial.h"
+
+#include "printk.h"
+#include "mod_string.h"
+#include "modp_atonum.h"
 #include "constants.h"
 #include "capabilities.h"
-#include "loggerApi.h"
 #include "loggerConfig.h"
-#include "modp_atonum.h"
-#include "mod_string.h"
 #include "sampleRecord.h"
 #include "loggerSampleData.h"
+#include "logger.h"
 #include "loggerData.h"
 #include "loggerNotifications.h"
-#include "imu.h"
-#include "tracks.h"
-#include "loggerHardware.h"
-#include "serial.h"
-#include "mem_mang.h"
-#include "printk.h"
-#include "geopoint.h"
-#include "timer.h"
-#include "ADC.h"
-#include "imu.h"
-#include "PWM.h"
-#include "cpu.h"
-#include "luaScript.h"
-#include "luaTask.h"
-#include "logger.h"
 #include "loggerTaskEx.h"
-#include "FreeRTOS.h"
-#include "taskUtil.h"
-#include "GPIO.h"
+
+/*GPS / race timing stats */
 #include "gps.h"
+#include "geopoint.h"
 #include "dateTime.h"
+#include "launch_control.h"
+#include "tracks.h"
+#include "lap_stats.h"
+
+/* Connectivity */
 #include "cellModem.h"
 #include "bluetooth.h"
+
+#if CELLULAR_SUPPORT == 1
 #include "sim900.h"
-#include "launch_control.h"
-#include "lap_stats.h"
+#endif
+
+#if LUA_SUPPORT == 1
+#include "luaTask.h"
+#include "luaScript.h"
+#endif
+
+
+/* SENSOR SUPPORT */
+#if IMU_CHANNELS > 0
+#include "imu.h"
+#endif
+#if TIMER_CHANNELS > 0
+#include "timer.h"
+#endif
+#if ANALOG_CHANNELS > 0
+#include "ADC.h"
+#endif
+#if PWM_CHANNELS > 0
+#include "PWM.h"
+#endif
+#if GPIO_CHANNELS > 0
+#include "GPIO.h"
+#endif
+
 #include <stdbool.h>
 
 /* Max number of PIDs that can be specified in the setOBD2Cfg message */
@@ -188,7 +214,15 @@ int api_systemReset(Serial *serial, const jsmntok_t *json)
 
 int api_factoryReset(Serial *serial, const jsmntok_t *json)
 {
-    int rc = (flash_default_logger_config() == 0 && flash_default_script() == 0 && flash_default_tracks() == 0) ? API_SUCCESS : API_ERROR_SEVERE;
+    int lc_rc = flash_default_logger_config();
+/* TODO BAP holee f fix this */
+#if LUA_SUPPORT == 1
+    int script_rc = flash_default_script();
+#else
+    int script_rc = 0;
+#endif
+    int tracks_rc = flash_default_tracks();
+    int rc = (lc_rc == 0 && script_rc == 0 && tracks_rc == 0) ? API_SUCCESS : API_ERROR_SEVERE;
     if (rc == API_SUCCESS) {
         cpu_reset(0);
         return API_SUCCESS_NO_RETURN;
@@ -265,12 +299,19 @@ int api_getStatus(Serial *serial, const jsmntok_t *json)
     json_int(serial, "DOP", GPS_getDOP(), 0);
     json_objEnd(serial, 1);
 
+#if CELLULAR_SUPPORT == 1
     json_objStartString(serial, "cell");
     json_int(serial, "init", cellmodem_get_status(), 1);
     json_string(serial, "IMEI", cell_get_IMEI(), 1);
     json_int(serial, "sig_str", cell_get_signal_strength(), 1);
     json_string(serial, "number", cell_get_subscriber_number(), 0);
     json_objEnd(serial, 1);
+
+    json_objStartString(serial, "telemetry");
+    json_int(serial, "status", (int)sim900_get_connection_status(), 1);
+    json_int(serial, "dur", sim900_active_time(), 0);
+    json_objEnd(serial, 0);
+#endif
 
     json_objStartString(serial, "bt");
     json_int(serial, "init", (int)bt_get_status(), 0);
@@ -287,11 +328,6 @@ int api_getStatus(Serial *serial, const jsmntok_t *json)
     json_int(serial, "inLap", (int)lapstats_lap_in_progress(), 1);
     json_int(serial, "armed", lc_is_armed(), 0);
     json_objEnd(serial, 1);
-
-    json_objStartString(serial, "telemetry");
-    json_int(serial, "status", (int)sim900_get_connection_status(), 1);
-    json_int(serial, "dur", sim900_active_time(), 0);
-    json_objEnd(serial, 0);
 
     json_objEnd(serial, 0);
     json_objEnd(serial, 0);
@@ -941,6 +977,7 @@ int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
+#if PWM_CHANNELS > 0
 static void sendPwmConfig(Serial *serial, size_t startIndex, size_t endIndex)
 {
 
@@ -1011,7 +1048,9 @@ int api_setPwmConfig(Serial *serial, const jsmntok_t *json)
     int res = setMultiChannelConfigGeneric(serial, json, getPwmConfigs, setPwmExtendedField, PWM_update_config);
     return res;
 }
+#endif
 
+#if GPIO_CHANNELS > 0
 static void getGpioConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg)
 {
     if (channelId < GPIO_CHANNELS) {
@@ -1072,7 +1111,9 @@ int api_setGpioConfig(Serial *serial, const jsmntok_t *json)
     int res = setMultiChannelConfigGeneric(serial, json, getGpioConfigs, setGpioExtendedField, GPIO_init);
     return res;
 }
+#endif
 
+#if TIMER_CHANNELS > 0
 static void getTimerConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg)
 {
     if (channelId < TIMER_CHANNELS) {
@@ -1146,6 +1187,7 @@ int api_setTimerConfig(Serial *serial, const jsmntok_t *json)
     int res = setMultiChannelConfigGeneric(serial, json, getTimerConfigs, setTimerExtendedField, timer_init);
     return res;
 }
+#endif
 
 static unsigned short getGpsConfigHighSampleRate(GPSConfig *cfg)
 {
@@ -1599,6 +1641,8 @@ int api_getTrackDb(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
+#if LUA_SUPPORT == 1
+
 int api_getScript(Serial *serial, const jsmntok_t *json)
 {
     const char *script = getScript();
@@ -1654,3 +1698,4 @@ int api_runScript(Serial *serial, const jsmntok_t *json)
     setShouldReloadScript(1);
     return API_SUCCESS;
 }
+#endif

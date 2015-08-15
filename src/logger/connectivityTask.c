@@ -20,7 +20,10 @@
 #include "LED.h"
 #include "null_device.h"
 #include "bluetooth.h"
+
+#if CELLULAR_SUPPORT == 1
 #include "sim900.h"
+#endif
 
 
 #if (CONNECTIVITY_CHANNELS == 1)
@@ -117,6 +120,7 @@ static void createCombinedTelemetryTask(int16_t priority, xQueueHandle sampleQue
             params->always_streaming = true;
         }
 
+#if CELLULAR_SUPPORT
         /*cell overrides wireless*/
         if (cellEnabled) {
             params->check_connection_status = &sim900_check_connection_status;
@@ -124,6 +128,7 @@ static void createCombinedTelemetryTask(int16_t priority, xQueueHandle sampleQue
             params->disconnect = &sim900_disconnect;
             params->always_streaming = false;
         }
+#endif
         xTaskCreate(connectivityTask, (signed portCHAR *) "connTask", TELEMETRY_STACK_SIZE, params, priority, NULL );
     }
 }
@@ -146,6 +151,7 @@ static void createWirelessConnectionTask(int16_t priority, xQueueHandle sampleQu
 
 static void createTelemetryConnectionTask(int16_t priority, xQueueHandle sampleQueue, uint8_t isPrimary)
 {
+#if CELLULAR_SUPPORT == 1
     ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
     params->isPrimary = isPrimary;
     params->connectionName = "Telemetry";
@@ -158,6 +164,7 @@ static void createTelemetryConnectionTask(int16_t priority, xQueueHandle sampleQ
     params->sampleQueue = sampleQueue;
     params->always_streaming = false;
     xTaskCreate(connectivityTask, (signed portCHAR *) "connTelemetry", TELEMETRY_STACK_SIZE, params, priority, NULL );
+#endif
 }
 
 void startConnectivityTask(int16_t priority)

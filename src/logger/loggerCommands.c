@@ -12,10 +12,11 @@
 #include "modp_atonum.h"
 #include "loggerConfig.h"
 #include "tracks.h"
-#include "luaScript.h"
 #include "loggerHardware.h"
 #include "printk.h"
+#if SDCARD_SUPPORT == 1
 #include "sdcard.h"
+#endif
 #include "loggerData.h"
 #include "sampleRecord.h"
 #include "loggerSampleData.h"
@@ -23,12 +24,17 @@
 #include "mem_mang.h"
 #include "loggerTaskEx.h"
 #include "taskUtil.h"
-#include "GPIO.h"
 #include "cpu.h"
 #include "taskUtil.h"
 
+#if LUA_SUPPORT == 1
+#include "luaScript.h"
+#endif
+
 void TestSD(Serial *serial, unsigned int argc, char **argv)
 {
+    /* TODO BAP - could not remove TestSD from command list b/c statically defined array, fix somehow */
+#if SDCARD_SUPPORT == 1
     int lines = 1;
     int doFlush = 0;
     int quiet = 0;
@@ -36,12 +42,23 @@ void TestSD(Serial *serial, unsigned int argc, char **argv)
     if (argc > 2) doFlush = modp_atoi(argv[2]);
     if (argc > 3) quiet = modp_atoi(argv[3]);
     TestSDWrite(serial, lines, doFlush, quiet);
+#endif
+
 }
 
 
 void ResetConfig(Serial *serial, unsigned int argc, char **argv)
 {
-    if (flash_default_logger_config() == 0 && flash_default_script() == 0 && flash_default_tracks() == 0) {
+    int lc_rc = flash_default_logger_config();
+/* TODO BAP holee f fix this */
+#if LUA_SUPPORT == 1
+    int script_rc = flash_default_script();
+#else
+    int script_rc = 0;
+#endif
+
+    int tracks_rc = flash_default_tracks();
+    if ( lc_rc == 0 &&  script_rc == 0 &&  tracks_rc == 0) {
         put_commandOK(serial);
         delayMs(500);
         cpu_reset(0);

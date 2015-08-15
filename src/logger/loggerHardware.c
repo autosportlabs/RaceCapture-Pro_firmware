@@ -1,21 +1,42 @@
 #include "loggerHardware.h"
 #include "loggerConfig.h"
-#include "imu.h"
-#include "ADC.h"
-#include "timer.h"
-#include "CAN.h"
-#include "PWM.h"
+
 #include "LED.h"
-#include "GPIO.h"
 #include "watchdog.h"
-#include "sdcard.h"
-#include "memory.h"
 #include "memory.h"
 #include "constants.h"
 #include "virtual_channel.h"
-#include "usb_comm.h"
 #include "usart.h"
 
+/* SD card support */
+#if SDCARD_SUPPORT
+#include "sdcard.h"
+#endif
+
+
+#if USB_SERIAL_SUPPORT
+#include "usb_comm.h"
+#endif
+
+/* Sensor support */
+#if IMU_CHANNELS > 0
+#include "imu.h"
+#endif
+#if ANALOG_CHANNELS > 0
+#include "ADC.h"
+#endif
+#if TIMER_CHANNELS > 0
+#include "timer.h"
+#endif
+#if GPIO_CHANNELS > 0
+#include "GPIO.h"
+#endif
+#if PWM_CHANNELS > 0
+#include "PWM.h"
+#endif
+#if CAN_CHANNELS > 0
+#include "CAN.h"
+#endif
 void InitLoggerHardware()
 {
 
@@ -23,11 +44,27 @@ void InitLoggerHardware()
     usart_init();
     init_serial();
     LED_init();
+
+#if IMU_CHANNELS > 0
     imu_init(loggerConfig);
+#endif
+#if ANALOG_CHANNELS > 0
     ADC_init(loggerConfig);
+#endif
+#if PWM_CHANNELS > 0
     PWM_init(loggerConfig);
+#endif
+#if GPIO_CHANNELS > 0
     GPIO_init(loggerConfig);
-    InitFSHardware();
+#endif
+#if TIMER_CHANNELS > 0
     timer_init(loggerConfig);
+#endif
+#if CAN_CHANNELS > 1
     CAN_init(loggerConfig);
+#endif
+#if SD_CARD_SUPPORT == 1
+    InitFSHardware();
+#endif
+
 }
