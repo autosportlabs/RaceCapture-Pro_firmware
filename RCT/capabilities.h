@@ -15,7 +15,7 @@
 #define CELLULAR_SUPPORT        0
 
 //configuration
-#define MAX_TRACKS				240
+#define MAX_TRACKS				20
 #define MAX_SECTORS				20
 #define MAX_VIRTUAL_CHANNELS	30
 #define SCRIPT_MEMORY_LENGTH	10240
