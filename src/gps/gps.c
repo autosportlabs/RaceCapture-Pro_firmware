@@ -4,7 +4,7 @@
 #include "modp_atonum.h"
 
 #define GPS_LOCK_FLASH_COUNT 5
-#define GPS_NOFIX_FLASH_COUNT 50
+#define GPS_NOFIX_FLASH_COUNT 25
 
 static GpsSnapshot g_gpsSnapshot;
 gps_status_t gps_status = GPS_STATUS_NOT_INIT;
