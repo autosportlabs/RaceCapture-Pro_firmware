@@ -14,6 +14,9 @@ OBJCOPY := $(CROSS_COMPILE)objcopy
 
 MAKEFLAGS += -j16
 
+#specify the use of the external crystal
+BOARD_DEFINES = -DPLL_SOURCE_HSE
+
 ################################################################################
 # Project definition
 ################################################################################
@@ -177,6 +180,11 @@ inc-y += FreeRTOS/Source/include \
 
 src-y += Project/system_stm32f30x.c 
 
+#newlib
+src-y += $(wildcard util/*.c)
+inc-y += util
+
+
 inc-y += .
 
 # base
@@ -195,6 +203,8 @@ obj-y := $(addprefix $(OUTDIR),$(patsubst %.s,%.o,$(patsubst %.c,%.o,$(src-y))))
 CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -DUSE_STM32303C_EVAL -MD -std=c99
 CFLAGS += -mcpu=cortex-m3 -mthumb
 CFLAGS += -DAPI_REV=$(API) -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
+CFLAGS += $(BOARD_DEFINES)
+CFLAGS += -fno-builtin-sprintf 
 CFLAGS += $(addprefix -I,$(inc-y))
 LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld -Wl,-cref,-u,Reset_Handler,-Map=$(OUTDIR)main.map,--gc-sections
 AFLAGS := $(CFLAGS)

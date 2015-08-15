@@ -47,6 +47,9 @@ MEMORY
   MEMORY_B1 (rx)  : ORIGIN = 0x60000000, LENGTH = 0K
 }
 
+_flash_start = ORIGIN(FLASH);
+_CONFIG_HEAP_SIZE = 15K;
+
 /* Define output sections */
 SECTIONS
 {
