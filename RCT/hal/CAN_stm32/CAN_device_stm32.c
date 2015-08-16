@@ -21,29 +21,32 @@ static xQueueHandle xCan1Rx = NULL;
 #define CAN_IRQ_PRIORITY 	5
 #define CAN_IRQ_SUB_PRIORITY 	0
 
-//For 168MHz clock
+//For 36MHz clock
 /*       BS1 BS2 SJW Pre
- 1M:      12  8   1   2
- 500k:    8   5   1   6
- 250k:    8   5   1   12
- 125k:    12  8   1   16
- 100k:    12  8   1   20 */
+ 1M:      15  2   1   2
+ 500k:    6   1   1   9
+ 250k:    13  2   1   9
+ 125k:    13  2   1   18
+ 100k:    15  2   1   20 */
 
 #define CAN_BAUD_COUNT 5
 static const u8 can_baud_bs1[] =
-{ CAN_BS1_12tq, CAN_BS1_12tq, CAN_BS1_8tq, CAN_BS1_8tq, CAN_BS1_12tq };
+{ CAN_BS1_15tq, CAN_BS1_13tq, CAN_BS1_13tq, CAN_BS1_6tq, CAN_BS1_15tq };
 
 static const u8 can_baud_bs2[] =
-{ CAN_BS1_8tq, CAN_BS1_8tq, CAN_BS1_5tq, CAN_BS1_5tq, CAN_BS1_8tq };
+{ CAN_BS1_2tq, CAN_BS1_2tq, CAN_BS1_2tq, CAN_BS1_1tq, CAN_BS1_2tq };
 
 static const u8 can_baud_sjw[] =
 { CAN_SJW_1tq, CAN_SJW_1tq, CAN_SJW_1tq, CAN_SJW_1tq, CAN_SJW_1tq };
 
-static const u8 can_baud_pre[] = { 20, 16, 12, 6, 2 };
+static const u8 can_baud_pre[] = { 20, 18, 9, 9, 2 };
 static const u32 can_baud_rate[] = { 100000, 125000, 250000, 500000, 1000000 };
 
 static int initQueues()
 {
+    RCC_ClocksTypeDef clocks;
+    RCC_GetClocksFreq(&clocks);
+
     int success = 1;
 
     if (!(xCan1Rx && xCan1Tx)) {
@@ -135,7 +138,7 @@ static void CAN_device_init_1(int baud)
 
     /* CAN configuration ******************************************************* */
     /* Enable CAN clock */
-    RCC_AHBPeriphClockCmd(RCC_APB1Periph_CAN1, ENABLE);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN1, ENABLE);
 
     initCAN(CAN1, baud);
 
@@ -238,7 +241,8 @@ int CAN_device_rx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
     }
 }
 
-void CAN1_RX1_IRQHandler(void)
+void USB_LP_CAN1_RX0_IRQHandler(void)
+//void CAN1_RX1_IRQHandler(void)
 {
     portBASE_TYPE xTaskWokenByRx = pdFALSE;
     CanRxMsg rxMsg;
