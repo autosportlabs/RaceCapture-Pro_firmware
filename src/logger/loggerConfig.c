@@ -217,6 +217,16 @@ static void resetOBD2Config(OBD2Config *cfg)
         memset(c, 0, sizeof(PidConfig));
         sPrintStrInt(c->cfg.label, "OBD2 Pid ", i + 1);
     }
+
+    /* TODO BAP - hacked in some defaults */
+    cfg->enabled = 1;
+    cfg->enabledPids = 1;
+    cfg->pids[0].pid = 12;
+    strcpy(cfg->pids[0].cfg.label, "RPM");
+    cfg->pids[0].cfg.sampleRate = encodeSampleRate(10);
+    cfg->pids[0].cfg.min = 0;
+    cfg->pids[0].cfg.max = 10000;
+    cfg->pids[0].cfg.precision = 0;
 }
 
 static void resetGPSConfig(GPSConfig *cfg)
