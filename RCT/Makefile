@@ -1,4 +1,6 @@
+ifeq ($(V),)
 .SILENT:
+endif
 
 ################################################################################
 # Toolchain environment
@@ -147,7 +149,7 @@ inc-y += ../include/OBD2
 
 #devices
 src-y += ../src/devices/bluetooth.c \
-		 ../src/devices/null_device.c 
+		 ../src/devices/null_device.c
 inc-y += ../include/devices
 
 #devices
@@ -174,11 +176,11 @@ inc-y += ../include/messaging
 src-y += $(wildcard FreeRTOS/Source/*.c) \
          FreeRTOS/Source/portable/GCC/ARM_CM3/port.c \
          FreeRTOS/Source/portable/MemMang/heap_4.c \
-         
+
 inc-y += FreeRTOS/Source/include \
          FreeRTOS/Source/portable/GCC/ARM_CM3
 
-src-y += Project/system_stm32f30x.c 
+src-y += Project/system_stm32f30x.c
 
 #newlib
 src-y += $(wildcard util/*.c)
@@ -191,8 +193,7 @@ inc-y += .
 inc-y += ..
 
 # Project
-src-y += $(wildcard ../*.c)
-src-y += $(wildcard ../*.c)
+src-y += $(wildcard ../rct_*.c)
 inc-y += Project
 
 ################################################################################
@@ -204,7 +205,7 @@ CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -DUSE_STM32303C_EVAL -MD -std=c99
 CFLAGS += -mcpu=cortex-m3 -mthumb
 CFLAGS += -DAPI_REV=$(API) -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
 CFLAGS += $(BOARD_DEFINES)
-CFLAGS += -fno-builtin-sprintf 
+CFLAGS += -fno-builtin-sprintf
 CFLAGS += $(addprefix -I,$(inc-y))
 CFLAGS += -O0 -g
 LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld -Wl,-cref,-u,Reset_Handler,-Map=$(OUTDIR)main.map,--gc-sections
