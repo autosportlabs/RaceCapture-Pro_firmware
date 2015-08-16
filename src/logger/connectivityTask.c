@@ -212,12 +212,12 @@ void startConnectivityTask(int16_t priority)
 
 static void toggle_connectivity_indicator()
 {
-    LED_toggle(0);
+    LED_toggle(1);
 }
 
 static void clear_connectivity_indicator()
 {
-    LED_disable(0);
+    LED_disable(1);
 }
 
 void connectivityTask(void *params)

@@ -141,7 +141,7 @@ void setupTask(void *params)
     startConnectivityTask	( CONNECTIVITY_TASK_PRIORITY );
     startGPSTask			( GPS_TASK_PRIORITY );
     startOBD2Task			( OBD2_TASK_PRIORITY);
-    //startLoggerTaskEx		( LOGGER_TASK_PRIORITY );
+    startLoggerTaskEx		( LOGGER_TASK_PRIORITY );
 
     /* Removes this setup task from the scheduler */
     vTaskDelete(NULL);
@@ -259,10 +259,10 @@ int main( void )
     cpu_init();
 
     init_gps();
-    init_esp();
+    //init_esp();
 
     pr_info("*** Start! ***\r\n");
-    //watchdog_init(WATCHDOG_TIMEOUT_MS);
+  //  watchdog_init(WATCHDOG_TIMEOUT_MS);
 
     /* Start the scheduler.
 

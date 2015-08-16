@@ -4,7 +4,6 @@
 #include "loggerHardware.h"
 #include "loggerConfig.h"
 #include "loggerData.h"
-#include "virtual_channel.h"
 #include "OBD2.h"
 #include "sampleRecord.h"
 #include "gps.h"
@@ -15,6 +14,9 @@
 #include "printk.h"
 #include "FreeRTOS.h"
 #include "taskUtil.h"
+#if VIRTUAL_CHANNEL_SUPPORT == 1
+#include "virtual_channel.h"
+#endif
 
 /* sensor support */
 #if GPIO_CHANNELS > 0
@@ -296,12 +298,14 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
         sample = processChannelSampleWithIntGetter(sample, chanCfg, i, OBD2_get_current_PID_value);
     }
 
+#if VIRTUAL_CHANNEL_SUPPORT == 1
     const size_t virtualChannelCount = get_virtual_channel_count();
     for (size_t i = 0; i < virtualChannelCount; i++) {
         VirtualChannel *vc = get_virtual_channel(i);
         chanCfg = &(vc->config);
         sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_virtual_channel_value);
     }
+#endif
 
     GPSConfig *gpsConfig = &(loggerConfig->GPSConfigs);
     chanCfg = &(gpsConfig->latitude);

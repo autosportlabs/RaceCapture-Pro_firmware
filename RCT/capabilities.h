@@ -11,6 +11,7 @@
 //USB support
 #define USB_SERIAL_SUPPORT      0
 #define LUA_SUPPORT             0
+#define VIRTUAL_CHANNEL_SUPPORT 0
 #define SDCARD_SUPPORT          0
 #define CELLULAR_SUPPORT        0
 
@@ -27,12 +28,15 @@
 #define TIMER_CHANNELS			0
 #define PWM_CHANNELS			0
 #define CAN_CHANNELS			1
-#define CONNECTIVITY_CHANNELS	1
+#define CONNECTIVITY_CHANNELS	2
 
 //sample rates
 #define MAX_SENSOR_SAMPLE_RATE	100
 #define MAX_GPS_SAMPLE_RATE		50
 #define MAX_OBD2_SAMPLE_RATE	100
+
+//logger message buffering
+#define LOGGER_MESSAGE_BUFFER_SIZE  5
 
 //logging
 #define LOG_BUFFER_SIZE			1024

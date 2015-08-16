@@ -40,11 +40,15 @@ int LED_device_init(void)
 
 void LED_device_enable(unsigned int led)
 {
+    if (led >= LED_COUNT)
+        return;
     GPIO_SetBits(leds[led].port, leds[led].mask);
 }
 
 void LED_device_disable(unsigned int led)
 {
+    if (led >= LED_COUNT)
+        return;
     GPIO_ResetBits(leds[led].port, leds[led].mask);
 }
 

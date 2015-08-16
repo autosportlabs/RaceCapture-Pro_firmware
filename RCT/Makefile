@@ -87,10 +87,6 @@ inc-y += ../include/gps
 src-y += $(wildcard ../src/filter/*.c)
 inc-y += ../include/filter
 
-#virtual channel
-src-y += $(wildcard ../src/virtual_channel/*.c)
-inc-y += ../include/virtual_channel
-
 #predictive timer
 src-y += $(wildcard ../src/predictive_timer/*.c)
 inc-y += ../include/predictive_timer

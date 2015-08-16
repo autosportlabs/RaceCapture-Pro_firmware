@@ -3,7 +3,11 @@
 #include "mod_string.h"
 #include "memory.h"
 #include "printk.h"
+
+#if VIRTUAL_CHANNEL_SUPPORT == 1
 #include "virtual_channel.h"
+#endif
+
 #include <stdbool.h>
 
 #ifndef RCP_TESTING
@@ -611,7 +615,10 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
     if (lapConfig->elapsed_time_cfg.sampleRate != SAMPLE_DISABLED) channels++;
     if (lapConfig->current_lap_cfg.sampleRate != SAMPLE_DISABLED) channels++;
 
+#if VIRTUAL_CHANNEL_SUPPORT == 1
     channels += get_virtual_channel_count();
+#endif
+
     return channels;
 }
 

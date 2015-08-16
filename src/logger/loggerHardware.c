@@ -5,16 +5,19 @@
 #include "watchdog.h"
 #include "memory.h"
 #include "constants.h"
-#include "virtual_channel.h"
 #include "usart.h"
 
+#if VIRTUAL_CHANNEL_SUPPORT == 1
+#include "virtual_channel.h"
+#endif
+
 /* SD card support */
-#if SDCARD_SUPPORT
+#if SDCARD_SUPPORT == 1
 #include "sdcard.h"
 #endif
 
 
-#if USB_SERIAL_SUPPORT
+#if USB_SERIAL_SUPPORT == 1
 #include "usb_comm.h"
 #endif
 

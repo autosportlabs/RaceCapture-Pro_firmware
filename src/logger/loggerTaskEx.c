@@ -16,6 +16,7 @@
  * General Public License along with this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "capabilities.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "taskUtil.h"
@@ -49,7 +50,6 @@ int g_telemetryBackgroundStreaming;
 
 xSemaphoreHandle onTick;
 
-#define LOGGER_MESSAGE_BUFFER_SIZE	10
 /* This should be 0'd out accroding to C standards */
 static struct sample g_sample_buffer[LOGGER_MESSAGE_BUFFER_SIZE];
 
@@ -68,7 +68,8 @@ static LoggerMessage getLogStopMessage()
  */
 void vApplicationTickHook(void)
 {
-    xSemaphoreGiveFromISR(onTick, pdFALSE);
+    if (onTick)
+        xSemaphoreGiveFromISR(onTick, pdFALSE);
 }
 
 void configChanged()
