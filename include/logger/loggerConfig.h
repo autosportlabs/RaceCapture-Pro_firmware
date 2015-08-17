@@ -182,8 +182,6 @@ typedef struct _TimerConfig {
          }
 #endif
 
-#if GPIO_CHANNELS > 0
-
 typedef struct _GPIOConfig {
     ChannelConfig cfg;
     unsigned char mode;
@@ -195,8 +193,6 @@ typedef struct _GPIOConfig {
 #define DEFAULT_GPIO_MODE CONFIG_GPIO_IN
 #define DEFAULT_GPIO_CHANNEL_CONFIG {"", "", 0, 1, SAMPLE_DISABLED, 1, 0}
 #define DEFAULT_GPIO_CONFIG {DEFAULT_GPIO_CHANNEL_CONFIG, CONFIG_GPIO_IN}
-
-#endif
 
 #if IMU_CHANNELS > 0
 typedef struct _ImuConfig {
@@ -501,10 +497,8 @@ typedef struct _LoggerConfig {
     PWMConfig PWMConfigs[CONFIG_PWM_CHANNELS];
 #endif
 
-#if GPIO_CHANNELS > 0
     //GPIO configurations
     GPIOConfig GPIOConfigs[CONFIG_GPIO_CHANNELS];
-#endif
 
 #if TIMER_CHANNELS > 0
     //Timer Configurations
@@ -572,10 +566,8 @@ ADCConfig * getADCConfigChannel(int channel);
 unsigned char filterAnalogScalingMode(unsigned char mode);
 #endif
 
-#if GPIO_CHANNELS > 0
 GPIOConfig * getGPIOConfigChannel(int channel);
 char filterGpioMode(int config);
-#endif
 
 #if IMU_CHANNELS > 0
 ImuConfig * getImuConfigChannel(int channel);

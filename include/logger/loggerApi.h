@@ -156,20 +156,16 @@ int api_calibrateImu(Serial *serial, const jsmntok_t *json);
 int api_getPwmConfig(Serial *serial, const jsmntok_t *json);
 int api_setPwmConfig(Serial *serial, const jsmntok_t *json);
 #endif
-#if GPIO_CHANNELS > 0
 int api_getGpioConfig(Serial *serial, const jsmntok_t *json);
 int api_setGpioConfig(Serial *serial, const jsmntok_t *json);
-#endif
 #if TIMER_CHANNELS > 0
 int api_getTimerConfig(Serial *serial, const jsmntok_t *json);
 int api_setTimerConfig(Serial *serial, const jsmntok_t *json);
 #endif
 
-#if LUA_SUPPORT == 1
 int api_getScript(Serial *serial, const jsmntok_t *json);
 int api_setScript(Serial *serial, const jsmntok_t *json);
 int api_runScript(Serial *serial, const jsmntok_t *json);
-#endif
 
 //messages
 void api_sendLogStart(Serial *serial);

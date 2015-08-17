@@ -12,14 +12,8 @@
 #endif
 
 /* SD card support */
-#if SDCARD_SUPPORT == 1
 #include "sdcard.h"
-#endif
-
-
-#if USB_SERIAL_SUPPORT == 1
 #include "usb_comm.h"
-#endif
 
 /* Sensor support */
 #if IMU_CHANNELS > 0
@@ -31,9 +25,7 @@
 #if TIMER_CHANNELS > 0
 #include "timer.h"
 #endif
-#if GPIO_CHANNELS > 0
 #include "GPIO.h"
-#endif
 #if PWM_CHANNELS > 0
 #include "PWM.h"
 #endif

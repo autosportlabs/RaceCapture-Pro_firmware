@@ -19,9 +19,7 @@
 #endif
 
 /* sensor support */
-#if GPIO_CHANNELS > 0
 #include "GPIO.h"
-#endif
 #if PWM_CHANNELS > 0
 #include "PWM.h"
 #endif

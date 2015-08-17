@@ -14,9 +14,7 @@
 #include "loggerApi.h"
 #include "api.h"
 #include "command.h"
-#if LUA_SUPPORT==1
 #include "luaCommands.h"
-#endif
 
 #define XSTR(s) STR(s)
 #define STR(s) #s

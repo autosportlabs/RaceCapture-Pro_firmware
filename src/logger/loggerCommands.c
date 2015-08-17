@@ -14,9 +14,7 @@
 #include "tracks.h"
 #include "loggerHardware.h"
 #include "printk.h"
-#if SDCARD_SUPPORT == 1
 #include "sdcard.h"
-#endif
 #include "loggerData.h"
 #include "sampleRecord.h"
 #include "loggerSampleData.h"
@@ -26,10 +24,7 @@
 #include "taskUtil.h"
 #include "cpu.h"
 #include "taskUtil.h"
-
-#if LUA_SUPPORT == 1
 #include "luaScript.h"
-#endif
 
 void TestSD(Serial *serial, unsigned int argc, char **argv)
 {

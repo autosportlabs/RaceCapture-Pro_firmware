@@ -56,11 +56,8 @@
 #include "sim900.h"
 #endif
 
-#if LUA_SUPPORT == 1
 #include "luaTask.h"
 #include "luaScript.h"
-#endif
-
 
 /* SENSOR SUPPORT */
 #if IMU_CHANNELS > 0
@@ -75,9 +72,7 @@
 #if PWM_CHANNELS > 0
 #include "PWM.h"
 #endif
-#if GPIO_CHANNELS > 0
 #include "GPIO.h"
-#endif
 
 #include <stdbool.h>
 

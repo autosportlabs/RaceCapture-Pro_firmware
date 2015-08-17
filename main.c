@@ -29,8 +29,6 @@
  *	these demo application projects then ensure Supervisor mode is used.
  */
 
-#include "stm32f30x_rcc.h"
-
 #include "FreeRTOS.h"
 #include "LED.h"
 #include "OBD2_task.h"
@@ -38,26 +36,18 @@
 #include "connectivityTask.h"
 #include "constants.h"
 #include "cpu.h"
+#include "gpioTasks.h"
 #include "gpsTask.h"
 #include "loggerHardware.h"
 #include "loggerTaskEx.h"
-#include "messaging.h"
-#include "printk.h"
-#include "task.h"
-#include "watchdog.h"
-
-#if GPIO_CHANNELS > 0
-#include "gpioTasks.h"
-#endif
-
-#if LUA_SUPPORT == 1
 #include "luaScript.h"
 #include "luaTask.h"
-#endif
-
-#if USB_SERIAL_SUPPORT == 1
+#include "messaging.h"
+#include "printk.h"
+#include "stm32f30x_rcc.h"
+#include "task.h"
 #include "usb_comm.h"
-#endif
+#include "watchdog.h"
 
 #include <app_info.h>
 
