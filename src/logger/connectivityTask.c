@@ -20,10 +20,7 @@
 #include "LED.h"
 #include "null_device.h"
 #include "bluetooth.h"
-
-#if CELLULAR_SUPPORT == 1
 #include "sim900.h"
-#endif
 
 
 #if (CONNECTIVITY_CHANNELS == 1)

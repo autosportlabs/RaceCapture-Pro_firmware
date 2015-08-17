@@ -1,37 +1,41 @@
-#include "loggerHardware.h"
-#include "loggerConfig.h"
+/*
+ * Race Capture Pro Firmware
+ *
+ * Copyright (C) 2015 Autosport Labs
+ *
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
 
-#include "LED.h"
-#include "watchdog.h"
-#include "memory.h"
-#include "constants.h"
-#include "usart.h"
-
-#if VIRTUAL_CHANNEL_SUPPORT == 1
-#include "virtual_channel.h"
-#endif
-
-/* SD card support */
-#include "sdcard.h"
-#include "usb_comm.h"
-
-/* Sensor support */
-#if IMU_CHANNELS > 0
-#include "imu.h"
-#endif
-#if ANALOG_CHANNELS > 0
 #include "ADC.h"
-#endif
-#if TIMER_CHANNELS > 0
-#include "timer.h"
-#endif
-#include "GPIO.h"
-#if PWM_CHANNELS > 0
-#include "PWM.h"
-#endif
-#if CAN_CHANNELS > 0
 #include "CAN.h"
-#endif
+#include "GPIO.h"
+#include "LED.h"
+#include "PWM.h"
+#include "constants.h"
+#include "imu.h"
+#include "loggerConfig.h"
+#include "loggerHardware.h"
+#include "memory.h"
+#include "sdcard.h"
+#include "timer.h"
+#include "usart.h"
+#include "usb_comm.h"
+#include "virtual_channel.h"
+#include "watchdog.h"
+
 void InitLoggerHardware()
 {
 
@@ -41,7 +45,7 @@ void InitLoggerHardware()
     LED_init();
 
 #if IMU_CHANNELS > 0
-    //imu_init(loggerConfig);
+    imu_init(loggerConfig);
 #endif
 #if ANALOG_CHANNELS > 0
     ADC_init(loggerConfig);

@@ -1,12 +1,31 @@
-#include "loggerConfig.h"
-#include "modp_numtoa.h"
-#include "mod_string.h"
-#include "memory.h"
-#include "printk.h"
+/*
+ * Race Capture Pro Firmware
+ *
+ * Copyright (C) 2015 Autosport Labs
+ *
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
 
-#if VIRTUAL_CHANNEL_SUPPORT == 1
+#include "capabilities.h"
+#include "loggerConfig.h"
+#include "memory.h"
+#include "mod_string.h"
+#include "modp_numtoa.h"
+#include "printk.h"
 #include "virtual_channel.h"
-#endif
 
 #include <stdbool.h>
 
@@ -219,6 +238,11 @@ static void resetOBD2Config(OBD2Config *cfg)
     }
 
     /* TODO BAP - hacked in some defaults */
+    /* STIEG: This somehow fucks up the unit tests.
+              How/why it does this... I have no freaking clue.
+              Is it perhaps the label because "RPM" is the default label
+              for the 0 timer pid.  Signs point to yes but I don't
+              understand (yet) how this could possibly do this.
     cfg->enabled = 1;
     cfg->enabledPids = 1;
     cfg->pids[0].pid = 12;
@@ -227,6 +251,7 @@ static void resetOBD2Config(OBD2Config *cfg)
     cfg->pids[0].cfg.min = 0;
     cfg->pids[0].cfg.max = 10000;
     cfg->pids[0].cfg.precision = 0;
+    */
 }
 
 static void resetGPSConfig(GPSConfig *cfg)
@@ -391,7 +416,6 @@ char filterTimerMode(int mode)
 #endif
 
 #if IMU_CHANNELS > 0
-
 ImuConfig * getImuConfigChannel(int channel)
 {
     ImuConfig * c = NULL;
@@ -443,7 +467,7 @@ static void resetAdcConfig(ADCConfig cfg[])
     }
 
     // Now update the battery config
-    cfg[7] = (ADCConfig) BATTERY_ADC_CONFIG;
+    cfg[CONFIG_ADC_CHANNELS - 1] = (ADCConfig) BATTERY_ADC_CONFIG;
 }
 
 ADCConfig * getADCConfigChannel(int channel)

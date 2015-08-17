@@ -198,9 +198,12 @@ inc-y += Project
 # Includes for Headers we need for compilation, but don't use their methods
 ################################################################################
 inc-y += ../include/GPIO
+inc-y += ../include/PWM
 inc-y += ../include/lua
 inc-y += ../include/sdcard
+inc-y += ../include/timer
 inc-y += ../include/usb_comm
+inc-y += ../include/virtual_channel
 inc-y += ../lib_lua/src
 inc-y += ../stm32_base/hal/fat_sd_stm32/fatfs
 

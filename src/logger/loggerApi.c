@@ -51,27 +51,15 @@
 /* Connectivity */
 #include "cellModem.h"
 #include "bluetooth.h"
-
-#if CELLULAR_SUPPORT == 1
 #include "sim900.h"
-#endif
-
 #include "luaTask.h"
 #include "luaScript.h"
 
 /* SENSOR SUPPORT */
-#if IMU_CHANNELS > 0
 #include "imu.h"
-#endif
-#if TIMER_CHANNELS > 0
 #include "timer.h"
-#endif
-#if ANALOG_CHANNELS > 0
 #include "ADC.h"
-#endif
-#if PWM_CHANNELS > 0
 #include "PWM.h"
-#endif
 #include "GPIO.h"
 
 #include <stdbool.h>
@@ -305,7 +293,7 @@ int api_getStatus(Serial *serial, const jsmntok_t *json)
     json_objStartString(serial, "telemetry");
     json_int(serial, "status", (int)sim900_get_connection_status(), 1);
     json_int(serial, "dur", sim900_active_time(), 0);
-    json_objEnd(serial, 0);
+    json_objEnd(serial, 1);
 #endif
 
     json_objStartString(serial, "bt");
@@ -322,7 +310,7 @@ int api_getStatus(Serial *serial, const jsmntok_t *json)
     json_int(serial, "trackId", lapstats_get_selected_track_id(), 1);
     json_int(serial, "inLap", (int)lapstats_lap_in_progress(), 1);
     json_int(serial, "armed", lc_is_armed(), 0);
-    json_objEnd(serial, 1);
+    json_objEnd(serial, 0);
 
     json_objEnd(serial, 0);
     json_objEnd(serial, 0);
