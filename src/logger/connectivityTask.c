@@ -117,7 +117,7 @@ static void createCombinedTelemetryTask(int16_t priority, xQueueHandle sampleQue
             params->always_streaming = true;
         }
 
-#if CELLULAR_SUPPORT
+#if CELLULAR_SUPPORT == 1
         /*cell overrides wireless*/
         if (cellEnabled) {
             params->check_connection_status = &sim900_check_connection_status;

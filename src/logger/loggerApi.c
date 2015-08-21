@@ -197,21 +197,19 @@ int api_systemReset(Serial *serial, const jsmntok_t *json)
 
 int api_factoryReset(Serial *serial, const jsmntok_t *json)
 {
-    int lc_rc = flash_default_logger_config();
-/* TODO BAP holee f fix this */
-#if LUA_SUPPORT == 1
-    int script_rc = flash_default_script();
-#else
+    const int lc_rc = flash_default_logger_config();
+    const int tracks_rc = flash_default_tracks();
+
     int script_rc = 0;
+#if LUA_SUPPORT == 1
+    script_rc = flash_default_script();
 #endif
-    int tracks_rc = flash_default_tracks();
-    int rc = (lc_rc == 0 && script_rc == 0 && tracks_rc == 0) ? API_SUCCESS : API_ERROR_SEVERE;
-    if (rc == API_SUCCESS) {
+
+    const int rc = (lc_rc == 0 && script_rc == 0 && tracks_rc == 0) ? API_SUCCESS : API_ERROR_SEVERE;
+    if (API_SUCCESS == rc)
         cpu_reset(0);
-        return API_SUCCESS_NO_RETURN;
-    } else {
-        return API_ERROR_SEVERE;
-    }
+
+    return rc;
 }
 
 int api_getVersion(Serial *serial, const jsmntok_t *json)
