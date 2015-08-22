@@ -74,9 +74,10 @@ void imu_calibrate_zero()
 
 int imu_init(LoggerConfig *loggerConfig)
 {
-    imu_device_init();
-    init_filters(loggerConfig);
-    return 1;
+        /* TODO BAP: IMU is unhappy */
+        //imu_device_init();
+        init_filters(loggerConfig);
+        return 1;
 }
 
 int imu_soft_init(LoggerConfig *loggerConfig)
@@ -92,4 +93,3 @@ int imu_read(unsigned int channel)
     int read = imu_device_read(channel);
     return read;
 }
-

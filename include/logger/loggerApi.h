@@ -30,9 +30,6 @@
 
 #define API_METHOD(_NAME, _FUNC) {(_NAME), (_FUNC)},
 
-/* STIEG: Figure out how to modify these macros. */
-/* TODO - make this more modular; maybe define size with preprocessor and then populate as necessary */
-
 #define BASE_API_METHODS                                        \
         API_METHOD("addTrackDb", api_addTrackDb)                \
         API_METHOD("facReset", api_factoryReset)                \
