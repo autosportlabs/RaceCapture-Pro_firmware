@@ -14,9 +14,7 @@
 #include "tracks.h"
 #include "loggerHardware.h"
 #include "printk.h"
-#if SDCARD_SUPPORT == 1
 #include "sdcard.h"
-#endif
 #include "loggerData.h"
 #include "sampleRecord.h"
 #include "loggerSampleData.h"
@@ -26,10 +24,7 @@
 #include "taskUtil.h"
 #include "cpu.h"
 #include "taskUtil.h"
-
-#if LUA_SUPPORT == 1
 #include "luaScript.h"
-#endif
 
 void TestSD(Serial *serial, unsigned int argc, char **argv)
 {
@@ -49,22 +44,23 @@ void TestSD(Serial *serial, unsigned int argc, char **argv)
 
 void ResetConfig(Serial *serial, unsigned int argc, char **argv)
 {
-    int lc_rc = flash_default_logger_config();
-/* TODO BAP holee f fix this */
-#if LUA_SUPPORT == 1
-    int script_rc = flash_default_script();
-#else
+        /* FIXME: WTF!!! HOW is this any different than api_factoryReset */
+    const int lc_rc = flash_default_logger_config();
+    const int tracks_rc = flash_default_tracks();
+
     int script_rc = 0;
+#if LUA_SUPPORT == 1
+    script_rc = flash_default_script();
 #endif
 
-    int tracks_rc = flash_default_tracks();
     if ( lc_rc == 0 &&  script_rc == 0 &&  tracks_rc == 0) {
         put_commandOK(serial);
         delayMs(500);
         cpu_reset(0);
-    } else {
-        put_commandError(serial, ERROR_CODE_CRITICAL_ERROR);
+        /* Should NEVER get to this comment */
     }
+
+    put_commandError(serial, ERROR_CODE_CRITICAL_ERROR);
 }
 
 static void StartTerminalSession(Serial *fromSerial, Serial *toSerial, uint8_t localEcho)

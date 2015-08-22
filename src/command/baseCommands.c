@@ -23,12 +23,9 @@
 #include "memory.h"
 #include "loggerConfig.h"
 #include "cpu.h"
-
-#if LUA_SUPPORT == 1
 #include "luaScript.h"
 #include "lua.h"
 #include "luaTask.h"
-#endif
 
 extern unsigned int _CONFIG_HEAP_SIZE;
 
@@ -123,4 +120,3 @@ void ResetSystem(Serial *serial, unsigned int argc, char **argv)
 {
     cpu_reset(0);
 }
-

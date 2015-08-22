@@ -1,8 +1,6 @@
 #include "serial.h"
 #include "usart.h"
-#ifdef USB_SERIAL_SUPPORT
 #include "usb_comm.h"
-#endif
 #include "modp_numtoa.h"
 #include "printk.h"
 static Serial serial_ports[SERIAL_COUNT];

@@ -20,10 +20,7 @@
 #include "LED.h"
 #include "null_device.h"
 #include "bluetooth.h"
-
-#if CELLULAR_SUPPORT == 1
 #include "sim900.h"
-#endif
 
 
 #if (CONNECTIVITY_CHANNELS == 1)
@@ -43,7 +40,6 @@
 #define TELEMETRY_DISCONNECT_TIMEOUT            60000
 
 #define TELEMETRY_STACK_SIZE  					1000
-#define SAMPLE_RECORD_QUEUE_SIZE				10
 #define BAD_MESSAGE_THRESHOLD					10
 
 #define METADATA_SAMPLE_INTERVAL				100
@@ -120,7 +116,7 @@ static void createCombinedTelemetryTask(int16_t priority, xQueueHandle sampleQue
             params->always_streaming = true;
         }
 
-#if CELLULAR_SUPPORT
+#if CELLULAR_SUPPORT == 1
         /*cell overrides wireless*/
         if (cellEnabled) {
             params->check_connection_status = &sim900_check_connection_status;
@@ -170,8 +166,7 @@ static void createTelemetryConnectionTask(int16_t priority, xQueueHandle sampleQ
 void startConnectivityTask(int16_t priority)
 {
         for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++) {
-                g_sampleQueue[i] = create_logger_message_queue(
-                        SAMPLE_RECORD_QUEUE_SIZE);
+                g_sampleQueue[i] = create_logger_message_queue();
 
                 if (NULL == g_sampleQueue[i]) {
                         pr_error("conn: err sample queue\r\n");

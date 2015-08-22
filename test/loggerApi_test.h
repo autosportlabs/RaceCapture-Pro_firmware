@@ -72,7 +72,7 @@ public:
     void setUp();
     void tearDown();
 
-    void stringToJson(string buffer, Object &json);
+    void stringToJson(const char* buffer, Object &json);
     char * processApiGeneric(string filename);
 
     void assertGenericResponse(char *buffer, const char *messageName, int responseCode);

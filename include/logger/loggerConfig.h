@@ -1,3 +1,24 @@
+/*
+ * Race Capture Pro Firmware
+ *
+ * Copyright (C) 2015 Autosport Labs
+ *
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef LOGGERCONFIG_H_
 #define LOGGERCONFIG_H_
 
@@ -7,7 +28,8 @@
 #include "capabilities.h"
 #include "versionInfo.h"
 
-#define FLASH_PAGE_SIZE						((unsigned int) 256) // Internal FLASH Page Size: 256 bytes
+/* Internal FLASH Page Size: 256 bytes */
+#define FLASH_PAGE_SIZE	((unsigned int) 256)
 
 //standard sample rates based on OS timer ticks
 #define SAMPLE_1000Hz                       (TICK_RATE_HZ / 1000)
@@ -81,9 +103,6 @@ struct TimeConfig {
 #define DEFAULT_UPTIME_TIME_CONFIG {DEFAULT_UPTIME_CONFIG, TimeType_Uptime}
 #define DEFAULT_UTC_MILLIS_TIME_CONFIG {DEFAULT_UTC_MILLIS_CONFIG, TimeType_UtcMillis}
 
-
-#if ANALOG_CHANNELS > 0
-
 /* ANALOG SENSOR SUPPORT */
 #define ANALOG_SCALING_BINS                 5
 #define SCALING_MODE_RAW                    0
@@ -141,9 +160,7 @@ typedef struct _ADCConfig {
          DEFAULT_SCALING_MODE,                  \
          DEFAULT_SCALING_MAP                    \
          }
-#endif
 
-#if TIMER_CHANNELS > 0
 typedef struct _TimerConfig {
     ChannelConfig cfg;
     char slowTimerEnabled;
@@ -180,9 +197,6 @@ typedef struct _TimerConfig {
          1,                                     \
          TIMER_MEDIUM                           \
          }
-#endif
-
-#if GPIO_CHANNELS > 0
 
 typedef struct _GPIOConfig {
     ChannelConfig cfg;
@@ -196,9 +210,6 @@ typedef struct _GPIOConfig {
 #define DEFAULT_GPIO_CHANNEL_CONFIG {"", "", 0, 1, SAMPLE_DISABLED, 1, 0}
 #define DEFAULT_GPIO_CONFIG {DEFAULT_GPIO_CHANNEL_CONFIG, CONFIG_GPIO_IN}
 
-#endif
-
-#if IMU_CHANNELS > 0
 typedef struct _ImuConfig {
     ChannelConfig cfg;
     unsigned char mode;
@@ -250,9 +261,6 @@ typedef struct _ImuConfig {
          0.1F                                   \
          }
 
-#endif
-
-#if PWM_CHANNELS > 0
 
 typedef struct _PWMConfig {
     ChannelConfig cfg;
@@ -290,7 +298,6 @@ typedef struct _PWMConfig {
 #define DEFAULT_PWM_CHANNEL_CONFIG {"PWM1", "", 0, 100, SAMPLE_DISABLED, 0, 0}
 #define DEFAULT_PWM_CONFIG {DEFAULT_PWM_CHANNEL_CONFIG, MODE_PWM_FREQUENCY, MODE_LOGGING_PWM_DUTY, DEFAULT_PWM_DUTY_CYCLE, DEFAULT_PWM_PERIOD}
 
-#endif
 
 #define OBD2_CHANNELS 20
 
@@ -491,8 +498,8 @@ typedef struct _LoggerConfig {
     // Time Config
     struct TimeConfig TimeConfigs[CONFIG_TIME_CHANNELS];
 
-#if ANALOG_CHANNELS > 0
     //ADC Calibrations
+#if ANALOG_CHANNELS > 0
     ADCConfig ADCConfigs[CONFIG_ADC_CHANNELS];
 #endif
 
@@ -551,38 +558,28 @@ int decodeSampleRate(int sampleRateCode);
 unsigned char filterBgStreamingMode(unsigned char mode);
 unsigned char filterSdLoggingMode(unsigned char mode);
 
-#if PWM_CHANNELS > 0
 PWMConfig * getPwmConfigChannel(int channel);
 char filterPwmOutputMode(int config);
 char filterPwmLoggingMode(int config);
 unsigned short filterPwmDutyCycle(int dutyCycle);
 unsigned short filterPwmPeriod(int period);
 uint16_t filterPwmClockFrequency(uint16_t frequency);
-#endif
 
-#if TIMER_CHANNELS > 0
 TimerConfig * getTimerConfigChannel(int channel);
 unsigned char filterPulsePerRevolution(unsigned char pulsePerRev);
 unsigned short filterTimerDivider(unsigned short divider);
 char filterTimerMode(int config);
-#endif
 
-#if ANALOG_CHANNELS > 0
 ADCConfig * getADCConfigChannel(int channel);
 unsigned char filterAnalogScalingMode(unsigned char mode);
-#endif
 
-#if GPIO_CHANNELS > 0
 GPIOConfig * getGPIOConfigChannel(int channel);
 char filterGpioMode(int config);
-#endif
 
-#if IMU_CHANNELS > 0
 ImuConfig * getImuConfigChannel(int channel);
 int filterImuRawValue(int accelRawValue);
 int filterImuMode(int mode);
 int filterImuChannel(int channel);
-#endif
 
 unsigned int getHighestSampleRate(LoggerConfig *config);
 size_t get_enabled_channel_count(LoggerConfig *loggerConfig);

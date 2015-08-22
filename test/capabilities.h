@@ -7,6 +7,14 @@
 
 #define TICK_RATE_HZ			1000
 #define MS_PER_TICK 5
+
+//USB support
+#define USB_SERIAL_SUPPORT      1
+#define LUA_SUPPORT             1
+#define VIRTUAL_CHANNEL_SUPPORT 1
+#define SDCARD_SUPPORT          1
+#define CELLULAR_SUPPORT        1
+
 //configuration
 #define MAX_TRACKS				240
 #define MAX_SECTORS				20
@@ -26,6 +34,13 @@
 #define MAX_SENSOR_SAMPLE_RATE	1000
 #define MAX_GPS_SAMPLE_RATE		50
 #define MAX_OBD2_SAMPLE_RATE	1000
+
+//logger message buffering
+// Should have no effect in testing.  Kept for consistency.
+#define LOGGER_MESSAGE_BUFFER_SIZE  5
+
+// Include this for posterity.  Should make no difference.
+#define TASK_TASK_INIT 1
 
 //logging
 #define LOG_BUFFER_SIZE			1024
