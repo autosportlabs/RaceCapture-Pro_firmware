@@ -28,139 +28,91 @@
 #include "sampleRecord.h"
 #include "serial.h"
 
+#define API_METHOD(_NAME, _FUNC) {(_NAME), (_FUNC)},
 
 /* STIEG: Figure out how to modify these macros. */
-/* TODO - make this more modular; maybe define size with preprocessor and then populate as necessary
-#define LOGGER_API \
-{"s", api_sampleData}, \
-{"hb", api_heart_beat}, \
-{"getVer", api_getVersion}, \
-{"getStatus", api_getStatus}, \
-{"getMeta", api_getMeta}, \
-{"log", api_log}, \
-{"getCapabilities", api_getCapabilities}, \
-{"flashCfg", api_flashConfig}, \
-{"getGpsCfg", api_getGpsConfig}, \
-{"setGpsCfg", api_setGpsConfig}, \
-{"setConnCfg", api_setConnectivityConfig}, \
-{"getConnCfg", api_getConnectivityConfig}, \
-{"getImuCfg", api_getImuConfig}, \
-{"setImuCfg", api_setImuConfig}, \
-{"calImu", api_calibrateImu}, \
-#if ANALOG_CHANNELS > 0 \
-{"setAnalogCfg", api_setAnalogConfig}, \
-{"getAnalogCfg", api_getAnalogConfig}, \
-#endif \
-#if PWM_CHANNELS > 0 \
-{"getPwmCfg", api_getPwmConfig}, \
-{"setPwmCfg", api_setPwmConfig}, \
-#endif \
-#if GPIO_CHANNELS > 0 \
-{"getGpioCfg", api_getGpioConfig}, \
-{"setGpioCfg", api_setGpioConfig}, \
-#endif \
-#if TIMER_CHANNELS > 0 \
-{"getTimerCfg", api_getTimerConfig}, \
-{"setTimerCfg", api_setTimerConfig}, \
-#endif \
-{"setLapCfg", api_setLapConfig}, \
-{"getLapCfg", api_getLapConfig}, \
-{"getTrackCfg", api_getTrackConfig}, \
-{"setTrackCfg", api_setTrackConfig}, \
-{"getLogfile", api_getLogfile}, \
-{"setLogfileLevel", api_setLogfileLevel}, \
-{"getCanCfg", api_getCanConfig}, \
-{"setCanCfg", api_setCanConfig}, \
-{"getObd2Cfg", api_getObd2Config}, \
-{"setObd2Cfg", api_setObd2Config}, \
-#if LUA_SUPPORT == 1
-{"getScriptCfg", api_getScript}, \
-{"setScriptCfg", api_setScript}, \
-{"runScript", api_runScript}, \
+/* TODO - make this more modular; maybe define size with preprocessor and then populate as necessary */
+
+#define BASE_API_METHODS                                        \
+        API_METHOD("addTrackDb", api_addTrackDb)                \
+        API_METHOD("facReset", api_factoryReset)                \
+        API_METHOD("getCanCfg", api_getCanConfig)               \
+        API_METHOD("getLapCfg", api_getLapConfig)               \
+        API_METHOD("getLogfile", api_getLogfile)                \
+        API_METHOD("getObd2Cfg", api_getObd2Config)             \
+        API_METHOD("getTrackCfg", api_getTrackConfig)           \
+        API_METHOD("getTrackDb", api_getTrackDb)                \
+        API_METHOD("setCanCfg", api_setCanConfig)               \
+        API_METHOD("setLapCfg", api_setLapConfig)               \
+        API_METHOD("setLogfileLevel", api_setLogfileLevel)      \
+        API_METHOD("setObd2Cfg", api_setObd2Config)             \
+        API_METHOD("setTrackCfg", api_setTrackConfig)           \
+        API_METHOD("sysReset", api_systemReset)                 \
+        API_METHOD("calImu", api_calibrateImu)                  \
+        API_METHOD("flashCfg", api_flashConfig)                 \
+        API_METHOD("getCapabilities", api_getCapabilities)      \
+        API_METHOD("getConnCfg", api_getConnectivityConfig)     \
+        API_METHOD("getGpsCfg", api_getGpsConfig)               \
+        API_METHOD("getImuCfg", api_getImuConfig)               \
+        API_METHOD("getMeta", api_getMeta)                      \
+        API_METHOD("getStatus", api_getStatus)                  \
+        API_METHOD("getVer", api_getVersion)                    \
+        API_METHOD("hb", api_heart_beat)                        \
+        API_METHOD("log", api_log)                              \
+        API_METHOD("s", api_sampleData)                         \
+        API_METHOD("setConnCfg", api_setConnectivityConfig)     \
+        API_METHOD("setGpsCfg", api_setGpsConfig)               \
+        API_METHOD("setImuCfg", api_setImuConfig)
+
+#if ANALOG_CHANNELS > 0
+#define ANALOG_API_METHODS                              \
+        API_METHOD("getAnalogCfg", api_getAnalogConfig) \
+        API_METHOD("setAnalogCfg", api_setAnalogConfig)
+#else
+#define ANALOG_API_METHODS
 #endif
-{"addTrackDb", api_addTrackDb}, \
-{"getTrackDb", api_getTrackDb}, \
-{"sysReset", api_systemReset}, \
-{"facReset", api_factoryReset}
-*/
 
-#define LOGGER_API \
-{"s", api_sampleData}, \
-{"hb", api_heart_beat}, \
-{"getVer", api_getVersion}, \
-{"getStatus", api_getStatus}, \
-{"getMeta", api_getMeta}, \
-{"log", api_log}, \
-{"getCapabilities", api_getCapabilities}, \
-{"flashCfg", api_flashConfig}, \
-{"getGpsCfg", api_getGpsConfig}, \
-{"setGpsCfg", api_setGpsConfig}, \
-{"setConnCfg", api_setConnectivityConfig}, \
-{"getConnCfg", api_getConnectivityConfig}, \
-{"getImuCfg", api_getImuConfig}, \
-{"setImuCfg", api_setImuConfig}, \
-{"calImu", api_calibrateImu}, \
-{"setAnalogCfg", api_setAnalogConfig}, \
-{"getAnalogCfg", api_getAnalogConfig}, \
-{"getPwmCfg", api_getPwmConfig}, \
-{"setPwmCfg", api_setPwmConfig}, \
-{"getGpioCfg", api_getGpioConfig}, \
-{"setGpioCfg", api_setGpioConfig}, \
-{"getTimerCfg", api_getTimerConfig}, \
-{"setTimerCfg", api_setTimerConfig}, \
-{"setLapCfg", api_setLapConfig}, \
-{"getLapCfg", api_getLapConfig}, \
-{"getTrackCfg", api_getTrackConfig}, \
-{"setTrackCfg", api_setTrackConfig}, \
-{"getLogfile", api_getLogfile}, \
-{"setLogfileLevel", api_setLogfileLevel}, \
-{"getCanCfg", api_getCanConfig}, \
-{"setCanCfg", api_setCanConfig}, \
-{"getObd2Cfg", api_getObd2Config}, \
-{"setObd2Cfg", api_setObd2Config}, \
-{"getScriptCfg", api_getScript}, \
-{"setScriptCfg", api_setScript}, \
-{"runScript", api_runScript}, \
-{"addTrackDb", api_addTrackDb}, \
-{"getTrackDb", api_getTrackDb}, \
-{"sysReset", api_systemReset}, \
-{"facReset", api_factoryReset}
+#if PWM_CHANNELS > 0
+#define PWM_API_METHODS                                 \
+        API_METHOD("getPwmCfg", api_getPwmConfig)       \
+        API_METHOD("setPwmCfg", api_setPwmConfig)
+#else
+#define PWM_API_METHODS
+#endif
 
-/* WORKING RCT */
-/*
-#define LOGGER_API \
-{"s", api_sampleData}, \
-{"hb", api_heart_beat}, \
-{"getVer", api_getVersion}, \
-{"getStatus", api_getStatus}, \
-{"getMeta", api_getMeta}, \
-{"log", api_log}, \
-{"getCapabilities", api_getCapabilities}, \
-{"flashCfg", api_flashConfig}, \
-{"getGpsCfg", api_getGpsConfig}, \
-{"setGpsCfg", api_setGpsConfig}, \
-{"setConnCfg", api_setConnectivityConfig}, \
-{"getConnCfg", api_getConnectivityConfig}, \
-{"getImuCfg", api_getImuConfig}, \
-{"setImuCfg", api_setImuConfig}, \
-{"calImu", api_calibrateImu}, \
-{"setAnalogCfg", api_setAnalogConfig}, \
-{"getAnalogCfg", api_getAnalogConfig}, \
-{"setLapCfg", api_setLapConfig}, \
-{"getLapCfg", api_getLapConfig}, \
-{"getTrackCfg", api_getTrackConfig}, \
-{"setTrackCfg", api_setTrackConfig}, \
-{"getLogfile", api_getLogfile}, \
-{"setLogfileLevel", api_setLogfileLevel}, \
-{"getCanCfg", api_getCanConfig}, \
-{"setCanCfg", api_setCanConfig}, \
-{"getObd2Cfg", api_getObd2Config}, \
-{"setObd2Cfg", api_setObd2Config}, \
-{"addTrackDb", api_addTrackDb}, \
-{"getTrackDb", api_getTrackDb}, \
-{"sysReset", api_systemReset}, \
-{"facReset", api_factoryReset}
-*/
+#if GPIO_CHANNELS > 0
+#define GPIO_API_METHODS                                \
+        API_METHOD("getGpioCfg", api_getGpioConfig)     \
+        API_METHOD("setGpioCfg", api_setGpioConfig)
+#else
+#define GPIO_API_METHODS
+#endif
+
+#if TIMER_CHANNELS > 0
+#define TIMER_API_METHODS                               \
+        API_METHOD("getTimerCfg", api_getTimerConfig)   \
+        API_METHOD("setTimerCfg", api_setTimerConfig)
+#else
+#define TIMER_API_METHODS
+#endif
+
+#if LUA_SUPPORT > 0
+#define LUA_API_METHODS                                 \
+        API_METHOD("getScriptCfg", api_getScript)       \
+        API_METHOD("runScript", api_runScript)          \
+        API_METHOD("setScriptCfg", api_setScript)
+#else
+#define LUA_API_METHODS
+#endif
+
+#define API_METHODS                             \
+        BASE_API_METHODS                        \
+        ANALOG_API_METHODS                      \
+        PWM_API_METHODS                         \
+        GPIO_API_METHODS                        \
+        TIMER_API_METHODS                       \
+        LUA_API_METHODS
+
 
 //commands
 int api_flashConfig(Serial *serial, const jsmntok_t *json);
@@ -212,7 +164,6 @@ void api_sendLogStart(Serial *serial);
 void api_sendLogEnd(Serial *serial);
 void api_send_sample_record(Serial *serial, struct sample *sample,
                             unsigned int tick, int sendMeta);
-
 //Utility functions
 void unescapeTextField(char *data);
 
