@@ -44,7 +44,6 @@
 #include "luaTask.h"
 #include "messaging.h"
 #include "printk.h"
-#include "stm32f30x_rcc.h"
 #include "task.h"
 #include "usb_comm.h"
 #include "watchdog.h"
@@ -102,6 +101,17 @@ static void fatalError(int type)
 #define USB_COMM_TASK_PRIORITY		( tskIDLE_PRIORITY + 6 )
 #define GPIO_TASK_PRIORITY 			( tskIDLE_PRIORITY + 4 )
 
+static void blinky_task( void *pvParameter )
+{
+    while(1) {
+
+    	LED_toggle(0);
+    	LED_toggle(1);
+    	LED_toggle(2);
+        vTaskDelay(20);
+    }
+}
+
 void setupTask(void *params)
 {
     (void)params;
@@ -133,42 +143,10 @@ void setupTask(void *params)
     startOBD2Task			( OBD2_TASK_PRIORITY);
     startLoggerTaskEx		( LOGGER_TASK_PRIORITY );
 
+    xTaskCreate(blinky_task, (signed char *) "Blinky", configMINIMAL_STACK_SIZE * 2, NULL, (tskIDLE_PRIORITY + 1), NULL);
+
     /* Removes this setup task from the scheduler */
     vTaskDelete(NULL);
-}
-
-/*TODO BAP move this into device driver layer */
-static void init_esp(void)
-{
-    GPIO_InitTypeDef  GPIO_InitStructure;
-
-    /* Enable the GPIO_LED Clock */
-    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
-
-    /* Configure the GPIO_LED pin */
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-    GPIO_SetBits(GPIOA, GPIO_Pin_3);
-    GPIO_SetBits(GPIOA, GPIO_Pin_4);
-    GPIO_SetBits(GPIOA, GPIO_Pin_5);
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14;
-    GPIO_Init(GPIOC, &GPIO_InitStructure);
-
-    GPIO_SetBits(GPIOC, GPIO_Pin_14);
-
 }
 
 static void init_gps(void)
@@ -189,67 +167,12 @@ static void init_gps(void)
     GPIO_SetBits(GPIOC, GPIO_Pin_2);
 }
 
-
-static void blinky_task( void *pvParameter )
-{
-    while(1) {
-
-        GPIO_SetBits(GPIOA, GPIO_Pin_0);
-        GPIO_SetBits(GPIOA, GPIO_Pin_1);
-        GPIO_SetBits(GPIOA, GPIO_Pin_2);
-        vTaskDelay(20);
-        GPIO_ResetBits(GPIOA, GPIO_Pin_0);
-        GPIO_ResetBits(GPIOA, GPIO_Pin_1);
-        GPIO_ResetBits(GPIOA, GPIO_Pin_2);
-        vTaskDelay(20);
-    }
-}
-
-static void init_rgb(void)
-{
-    GPIO_InitTypeDef  GPIO_InitStructure;
-
-    /* Enable the GPIO_LED Clock */
-    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
-
-
-    /* Configure the GPIO_LED pin */
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-    GPIO_SetBits(GPIOA, GPIO_Pin_0);
-    GPIO_SetBits(GPIOA, GPIO_Pin_1);
-    GPIO_SetBits(GPIOA, GPIO_Pin_2);
-
-}
-
-
 int main( void )
 {
     ALWAYS_KEEP(info_block);
     cpu_init();
 
     init_gps();
-    //init_esp();
 
     pr_info("*** Start! ***\r\n");
   //  watchdog_init(WATCHDOG_TIMEOUT_MS);
@@ -273,8 +196,6 @@ int main( void )
     } else {
         setupTask(NULL);
     }
-
-    //xTaskCreate(blinky_task, (signed char *) "Blinky", configMINIMAL_STACK_SIZE * 2, NULL, (tskIDLE_PRIORITY + 1), NULL);
 
     vTaskStartScheduler();
     fatalError(FATAL_ERROR_SCHEDULER);
