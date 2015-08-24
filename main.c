@@ -155,7 +155,7 @@ int main( void )
     cpu_init();
 
     pr_info("*** Start! ***\r\n");
-  //  watchdog_init(WATCHDOG_TIMEOUT_MS);
+    watchdog_init(WATCHDOG_TIMEOUT_MS);
 
     /* Start the scheduler.
 
