@@ -149,30 +149,10 @@ void setupTask(void *params)
     vTaskDelete(NULL);
 }
 
-static void init_gps(void)
-{
-    GPIO_InitTypeDef  GPIO_InitStructure;
-
-    /* Enable the GPIO_LED Clock */
-    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
-
-    /* Configure the GPIO_LED pin */
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
-    GPIO_SetBits(GPIOC, GPIO_Pin_2);
-}
-
 int main( void )
 {
     ALWAYS_KEEP(info_block);
     cpu_init();
-
-    init_gps();
 
     pr_info("*** Start! ***\r\n");
   //  watchdog_init(WATCHDOG_TIMEOUT_MS);
