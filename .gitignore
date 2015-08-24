@@ -1,4 +1,5 @@
 openocd.cfg
+openocd.log
 .build
 *.d
 *.a
