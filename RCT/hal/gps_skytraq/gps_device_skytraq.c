@@ -604,8 +604,30 @@ static uint8_t getTargetUpdateRate(uint8_t sampleRate)
     return 1;
 }
 
+/**
+ * Sets up the reset control for the GPS module which
+ * allows hard reset of the GPS module via software.
+ */
+static void GPS_init_reset_line(void)
+{
+	GPIO_InitTypeDef  GPIO_InitStructure;
+
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
+
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	GPIO_SetBits(GPIOC, GPIO_Pin_2);
+}
+
 gps_status_t GPS_device_init(uint8_t sampleRate, Serial *serial)
 {
+	GPS_init_reset_line();
+
     size_t attempts = MAX_PROVISIONING_ATTEMPTS;
     size_t gps_init_status = GPS_STATUS_NOT_INIT;
 
