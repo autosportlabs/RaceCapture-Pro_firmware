@@ -29,7 +29,6 @@
  *	these demo application projects then ensure Supervisor mode is used.
  */
 
-
 #include "FreeRTOS.h"
 #include "LED.h"
 #include "OBD2_task.h"
@@ -37,7 +36,6 @@
 #include "connectivityTask.h"
 #include "constants.h"
 #include "cpu.h"
-#include "fileWriter.h"
 #include "gpioTasks.h"
 #include "gpsTask.h"
 #include "loggerHardware.h"
@@ -97,16 +95,21 @@ static void fatalError(int type)
 #define GPS_TASK_PRIORITY 			( tskIDLE_PRIORITY + 5 )
 #define CONNECTIVITY_TASK_PRIORITY 	( tskIDLE_PRIORITY + 4 )
 #define LOGGER_TASK_PRIORITY		( tskIDLE_PRIORITY + 6 )
+
 #define FILE_WRITER_TASK_PRIORITY	( tskIDLE_PRIORITY + 4 )
 #define LUA_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
 #define USB_COMM_TASK_PRIORITY		( tskIDLE_PRIORITY + 6 )
 #define GPIO_TASK_PRIORITY 			( tskIDLE_PRIORITY + 4 )
 
-
-void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName)
+static void blinky_task( void *pvParameter )
 {
-    (void)pxTask;
-    (void)pcTaskName;
+    while(1) {
+
+    	LED_toggle(0);
+    	LED_toggle(1);
+    	LED_toggle(2);
+        vTaskDelay(20);
+    }
 }
 
 void setupTask(void *params)
@@ -115,28 +118,42 @@ void setupTask(void *params)
 
     initialize_tracks();
     initialize_logger_config();
+#if LUA_SUPPORT == 1
     initialize_script();
+#endif
     InitLoggerHardware();
     initMessaging();
 
+#if GPIO_CHANNELS > 0
     startGPIOTasks			( GPIO_TASK_PRIORITY );
+#endif
+#if USB_SERIAL_SUPPORT == 1
     startUSBCommTask		( USB_COMM_TASK_PRIORITY );
+#endif
+
+#if LUA_SUPPORT == 1
     startLuaTask			( LUA_TASK_PRIORITY );
+#endif
+
+#if SDCARD_SUPPORT == 1
     startFileWriterTask		( FILE_WRITER_TASK_PRIORITY );
+#endif
     startConnectivityTask	( CONNECTIVITY_TASK_PRIORITY );
     startGPSTask			( GPS_TASK_PRIORITY );
     startOBD2Task			( OBD2_TASK_PRIORITY);
     startLoggerTaskEx		( LOGGER_TASK_PRIORITY );
 
+    //xTaskCreate(blinky_task, (signed char *) "Blinky", configMINIMAL_STACK_SIZE * 2, NULL, (tskIDLE_PRIORITY + 1), NULL);
+
     /* Removes this setup task from the scheduler */
     vTaskDelete(NULL);
 }
-
 
 int main( void )
 {
     ALWAYS_KEEP(info_block);
     cpu_init();
+
     pr_info("*** Start! ***\r\n");
     watchdog_init(WATCHDOG_TIMEOUT_MS);
 
@@ -164,4 +181,34 @@ int main( void )
     fatalError(FATAL_ERROR_SCHEDULER);
 
     return 0;
+}
+
+/*-----------------------------------------------------------*/
+void vApplicationMallocFailedHook(void)
+{
+    /* vApplicationMallocFailedHook() will only be called if
+    configUSE_MALLOC_FAILED_HOOK is set to 1 in FreeRTOSConfig.h.  It is a hook
+    function that will get called if a call to pvPortMalloc() fails.
+    pvPortMalloc() is called internally by the kernel whenever a task, queue,
+    timer or semaphore is created.  It is also called by various parts of the
+    demo application.  If heap_1.c or heap_2.c are used, then the size of the
+    heap available to pvPortMalloc() is defined by configTOTAL_HEAP_SIZE in
+    FreeRTOSConfig.h, and the xPortGetFreeHeapSize() API function can be used
+    to query the size of free heap space that remains (although it does not
+    provide information on how the remaining heap might be fragmented). */
+    taskDISABLE_INTERRUPTS();
+    for(;;);
+}
+
+/*-----------------------------------------------------------*/
+void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName)
+{
+    (void) pcTaskName;
+    (void) pxTask;
+
+    /* Run time stack overflow checking is performed if
+    configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2.  This hook
+    function is called if a stack overflow is detected. */
+    taskDISABLE_INTERRUPTS();
+    for(;;);
 }

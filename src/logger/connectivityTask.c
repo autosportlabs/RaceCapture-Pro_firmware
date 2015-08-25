@@ -40,7 +40,6 @@
 #define TELEMETRY_DISCONNECT_TIMEOUT            60000
 
 #define TELEMETRY_STACK_SIZE  					1000
-#define SAMPLE_RECORD_QUEUE_SIZE				10
 #define BAD_MESSAGE_THRESHOLD					10
 
 #define METADATA_SAMPLE_INTERVAL				100
@@ -117,6 +116,7 @@ static void createCombinedTelemetryTask(int16_t priority, xQueueHandle sampleQue
             params->always_streaming = true;
         }
 
+#if CELLULAR_SUPPORT == 1
         /*cell overrides wireless*/
         if (cellEnabled) {
             params->check_connection_status = &sim900_check_connection_status;
@@ -124,6 +124,7 @@ static void createCombinedTelemetryTask(int16_t priority, xQueueHandle sampleQue
             params->disconnect = &sim900_disconnect;
             params->always_streaming = false;
         }
+#endif
         xTaskCreate(connectivityTask, (signed portCHAR *) "connTask", TELEMETRY_STACK_SIZE, params, priority, NULL );
     }
 }
@@ -146,6 +147,7 @@ static void createWirelessConnectionTask(int16_t priority, xQueueHandle sampleQu
 
 static void createTelemetryConnectionTask(int16_t priority, xQueueHandle sampleQueue, uint8_t isPrimary)
 {
+#if CELLULAR_SUPPORT == 1
     ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
     params->isPrimary = isPrimary;
     params->connectionName = "Telemetry";
@@ -158,13 +160,13 @@ static void createTelemetryConnectionTask(int16_t priority, xQueueHandle sampleQ
     params->sampleQueue = sampleQueue;
     params->always_streaming = false;
     xTaskCreate(connectivityTask, (signed portCHAR *) "connTelemetry", TELEMETRY_STACK_SIZE, params, priority, NULL );
+#endif
 }
 
 void startConnectivityTask(int16_t priority)
 {
         for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++) {
-                g_sampleQueue[i] = create_logger_message_queue(
-                        SAMPLE_RECORD_QUEUE_SIZE);
+                g_sampleQueue[i] = create_logger_message_queue();
 
                 if (NULL == g_sampleQueue[i]) {
                         pr_error("conn: err sample queue\r\n");
@@ -205,12 +207,12 @@ void startConnectivityTask(int16_t priority)
 
 static void toggle_connectivity_indicator()
 {
-    LED_toggle(0);
+    LED_toggle(1);
 }
 
 static void clear_connectivity_indicator()
 {
-    LED_disable(0);
+    LED_disable(1);
 }
 
 void connectivityTask(void *params)

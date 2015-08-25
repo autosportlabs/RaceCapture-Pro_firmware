@@ -11,7 +11,9 @@ void init_serial(void)
     usart_init_serial(&serial_ports[SERIAL_TELEMETRY], UART_TELEMETRY);
     usart_init_serial(&serial_ports[SERIAL_WIRELESS], UART_WIRELESS);
     usart_init_serial(&serial_ports[SERIAL_AUX], UART_AUX);
+    #if USB_SERIAL_SUPPORT == 1
     usb_init_serial(&serial_ports[SERIAL_USB]);
+    #endif
 }
 
 void configure_serial(serial_id_t port, uint8_t bits, uint8_t parity, uint8_t stopBits, uint32_t baud)

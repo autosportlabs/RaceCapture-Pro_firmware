@@ -12,7 +12,6 @@
 #include "modp_atonum.h"
 #include "loggerConfig.h"
 #include "tracks.h"
-#include "luaScript.h"
 #include "loggerHardware.h"
 #include "printk.h"
 #include "sdcard.h"
@@ -23,12 +22,14 @@
 #include "mem_mang.h"
 #include "loggerTaskEx.h"
 #include "taskUtil.h"
-#include "GPIO.h"
 #include "cpu.h"
 #include "taskUtil.h"
+#include "luaScript.h"
 
 void TestSD(Serial *serial, unsigned int argc, char **argv)
 {
+    /* TODO BAP - could not remove TestSD from command list b/c statically defined array, fix somehow */
+#if SDCARD_SUPPORT == 1
     int lines = 1;
     int doFlush = 0;
     int quiet = 0;
@@ -36,18 +37,30 @@ void TestSD(Serial *serial, unsigned int argc, char **argv)
     if (argc > 2) doFlush = modp_atoi(argv[2]);
     if (argc > 3) quiet = modp_atoi(argv[3]);
     TestSDWrite(serial, lines, doFlush, quiet);
+#endif
+
 }
 
 
 void ResetConfig(Serial *serial, unsigned int argc, char **argv)
 {
-    if (flash_default_logger_config() == 0 && flash_default_script() == 0 && flash_default_tracks() == 0) {
+        /* FIXME: WTF!!! HOW is this any different than api_factoryReset */
+    const int lc_rc = flash_default_logger_config();
+    const int tracks_rc = flash_default_tracks();
+
+    int script_rc = 0;
+#if LUA_SUPPORT == 1
+    script_rc = flash_default_script();
+#endif
+
+    if ( lc_rc == 0 &&  script_rc == 0 &&  tracks_rc == 0) {
         put_commandOK(serial);
         delayMs(500);
         cpu_reset(0);
-    } else {
-        put_commandError(serial, ERROR_CODE_CRITICAL_ERROR);
+        /* Should NEVER get to this comment */
     }
+
+    put_commandError(serial, ERROR_CODE_CRITICAL_ERROR);
 }
 
 static void StartTerminalSession(Serial *fromSerial, Serial *toSerial, uint8_t localEcho)

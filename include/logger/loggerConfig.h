@@ -1,3 +1,24 @@
+/*
+ * Race Capture Pro Firmware
+ *
+ * Copyright (C) 2015 Autosport Labs
+ *
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef LOGGERCONFIG_H_
 #define LOGGERCONFIG_H_
 
@@ -7,7 +28,20 @@
 #include "capabilities.h"
 #include "versionInfo.h"
 
-#define FLASH_PAGE_SIZE						((unsigned int) 256) // Internal FLASH Page Size: 256 bytes
+/* Internal FLASH Page Size: 256 bytes */
+#define FLASH_PAGE_SIZE	((unsigned int) 256)
+
+//standard sample rates based on OS timer ticks
+#define SAMPLE_1000Hz                       (TICK_RATE_HZ / 1000)
+#define SAMPLE_500Hz                        (TICK_RATE_HZ / 500)
+#define SAMPLE_200Hz                        (TICK_RATE_HZ / 200)
+#define SAMPLE_100Hz                        (TICK_RATE_HZ / 100)
+#define SAMPLE_50Hz                         (TICK_RATE_HZ / 50)
+#define SAMPLE_25Hz                         (TICK_RATE_HZ / 25)
+#define SAMPLE_10Hz                         (TICK_RATE_HZ / 10)
+#define SAMPLE_5Hz                          (TICK_RATE_HZ / 5)
+#define SAMPLE_1Hz                          (TICK_RATE_HZ / 1)
+#define SAMPLE_DISABLED                     0
 
 #define CONFIG_FEATURE_INSTALLED			1
 #define CONFIG_FEATURE_NOT_INSTALLED		0
@@ -24,33 +58,8 @@
 #define SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_10Hz
 #define FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_50Hz
 
-
-//standard sample rates based on OS timer ticks
-#define SAMPLE_1000Hz						(TICK_RATE_HZ / 1000)
-#define SAMPLE_500Hz						(TICK_RATE_HZ / 500)
-#define SAMPLE_200Hz						(TICK_RATE_HZ / 200)
-#define SAMPLE_100Hz 						(TICK_RATE_HZ / 100)
-#define SAMPLE_50Hz 						(TICK_RATE_HZ / 50)
-#define SAMPLE_25Hz 						(TICK_RATE_HZ / 25)
-#define SAMPLE_10Hz 						(TICK_RATE_HZ / 10)
-#define SAMPLE_5Hz 							(TICK_RATE_HZ / 5)
-#define SAMPLE_1Hz 							(TICK_RATE_HZ / 1)
-#define SAMPLE_DISABLED 					0
-
-#define ANALOG_SCALING_BINS					5
-
-#define SCALING_MODE_RAW					0
-#define SCALING_MODE_LINEAR					1
-#define SCALING_MODE_MAP					2
-#define DEFAULT_SCALING_MODE				SCALING_MODE_LINEAR
-#define LINEAR_SCALING_PRECISION			7
-#define FILTER_ALPHA_PRECISION				2
-#define SCALING_MAP_BIN_PRECISION			2
-
 #define DEFAULT_GPS_POSITION_PRECISION 		6
 #define DEFAULT_GPS_RADIUS_PRECISION 		5
-#define DEFAULT_VOLTAGE_SCALING_PRECISION	2
-#define DEFAULT_ANALOG_SCALING_PRECISION	2
 
 #define DEFAULT_LABEL_LENGTH					12
 #define DEFAULT_UNITS_LENGTH					8
@@ -75,11 +84,6 @@ typedef struct _ChannelConfig {
     unsigned char flags;
 } ChannelConfig;
 
-typedef struct _ScalingMap {
-    float rawValues[ANALOG_SCALING_BINS];
-    float scaledValues[ANALOG_SCALING_BINS];
-} ScalingMap;
-
 enum TimeType {
     TimeType_Uptime,
     TimeType_UtcMillis,
@@ -99,6 +103,22 @@ struct TimeConfig {
 #define DEFAULT_UPTIME_TIME_CONFIG {DEFAULT_UPTIME_CONFIG, TimeType_Uptime}
 #define DEFAULT_UTC_MILLIS_TIME_CONFIG {DEFAULT_UTC_MILLIS_CONFIG, TimeType_UtcMillis}
 
+/* ANALOG SENSOR SUPPORT */
+#define ANALOG_SCALING_BINS                 5
+#define SCALING_MODE_RAW                    0
+#define SCALING_MODE_LINEAR                 1
+#define SCALING_MODE_MAP                    2
+#define DEFAULT_SCALING_MODE                SCALING_MODE_LINEAR
+#define LINEAR_SCALING_PRECISION            7
+#define FILTER_ALPHA_PRECISION              2
+#define SCALING_MAP_BIN_PRECISION           2
+#define DEFAULT_ANALOG_SCALING_PRECISION    2
+#define DEFAULT_VOLTAGE_SCALING_PRECISION   2
+
+typedef struct _ScalingMap {
+    float rawValues[ANALOG_SCALING_BINS];
+    float scaledValues[ANALOG_SCALING_BINS];
+} ScalingMap;
 
 typedef struct _ADCConfig {
     ChannelConfig cfg;
@@ -190,7 +210,6 @@ typedef struct _GPIOConfig {
 #define DEFAULT_GPIO_CHANNEL_CONFIG {"", "", 0, 1, SAMPLE_DISABLED, 1, 0}
 #define DEFAULT_GPIO_CONFIG {DEFAULT_GPIO_CHANNEL_CONFIG, CONFIG_GPIO_IN}
 
-
 typedef struct _ImuConfig {
     ChannelConfig cfg;
     unsigned char mode;
@@ -243,7 +262,6 @@ typedef struct _ImuConfig {
          }
 
 
-
 typedef struct _PWMConfig {
     ChannelConfig cfg;
     unsigned char outputMode;
@@ -279,6 +297,7 @@ typedef struct _PWMConfig {
 
 #define DEFAULT_PWM_CHANNEL_CONFIG {"PWM1", "", 0, 100, SAMPLE_DISABLED, 0, 0}
 #define DEFAULT_PWM_CONFIG {DEFAULT_PWM_CHANNEL_CONFIG, MODE_PWM_FREQUENCY, MODE_LOGGING_PWM_DUTY, DEFAULT_PWM_DUTY_CYCLE, DEFAULT_PWM_PERIOD}
+
 
 #define OBD2_CHANNELS 20
 
@@ -480,18 +499,29 @@ typedef struct _LoggerConfig {
     struct TimeConfig TimeConfigs[CONFIG_TIME_CHANNELS];
 
     //ADC Calibrations
+#if ANALOG_CHANNELS > 0
     ADCConfig ADCConfigs[CONFIG_ADC_CHANNELS];
+#endif
 
+#if PWM_CHANNELS > 0
+    //PWM configuration
     PWMConfig PWMConfigs[CONFIG_PWM_CHANNELS];
+#endif
 
+#if GPIO_CHANNELS > 0
     //GPIO configurations
     GPIOConfig GPIOConfigs[CONFIG_GPIO_CHANNELS];
+#endif
 
+#if TIMER_CHANNELS > 0
     //Timer Configurations
     TimerConfig TimerConfigs[CONFIG_TIMER_CHANNELS];
+#endif
 
+#if IMU_CHANNELS > 0
     //IMU Configurations
     ImuConfig ImuConfigs[CONFIG_IMU_CHANNELS];
+#endif
 
     //CAN Configuration
     CANConfig CanConfig;
@@ -525,35 +555,39 @@ int getConnectivitySampleRateLimit();
 int encodeSampleRate(int sampleRate);
 int decodeSampleRate(int sampleRateCode);
 
-unsigned char filterAnalogScalingMode(unsigned char mode);
 unsigned char filterBgStreamingMode(unsigned char mode);
 unsigned char filterSdLoggingMode(unsigned char mode);
-char filterGpioMode(int config);
+
+PWMConfig * getPwmConfigChannel(int channel);
 char filterPwmOutputMode(int config);
 char filterPwmLoggingMode(int config);
 unsigned short filterPwmDutyCycle(int dutyCycle);
 unsigned short filterPwmPeriod(int period);
-int filterImuRawValue(int accelRawValue);
 uint16_t filterPwmClockFrequency(uint16_t frequency);
-char filterTimerMode(int config);
-unsigned char filterPulsePerRevolution(unsigned char pulsePerRev);
-unsigned short filterTimerDivider(unsigned short divider);
-int filterImuMode(int mode);
-int filterImuChannel(int channel);
 
 TimerConfig * getTimerConfigChannel(int channel);
+unsigned char filterPulsePerRevolution(unsigned char pulsePerRev);
+unsigned short filterTimerDivider(unsigned short divider);
+char filterTimerMode(int config);
+
 ADCConfig * getADCConfigChannel(int channel);
-PWMConfig * getPwmConfigChannel(int channel);
+unsigned char filterAnalogScalingMode(unsigned char mode);
+
 GPIOConfig * getGPIOConfigChannel(int channel);
+char filterGpioMode(int config);
+
 ImuConfig * getImuConfigChannel(int channel);
+int filterImuRawValue(int accelRawValue);
+int filterImuMode(int mode);
+int filterImuChannel(int channel);
 
 unsigned int getHighestSampleRate(LoggerConfig *config);
 size_t get_enabled_channel_count(LoggerConfig *loggerConfig);
 
-int flashLoggerConfig(void);
-int flash_default_logger_config(void);
-
 bool isHigherSampleRate(const int contender, const int champ);
 int getHigherSampleRate(const int a, const int b);
+
+int flashLoggerConfig(void);
+int flash_default_logger_config(void);
 
 #endif /*LOGGERCONFIG_H_*/

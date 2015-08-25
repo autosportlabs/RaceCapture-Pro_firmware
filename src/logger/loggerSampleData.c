@@ -1,26 +1,46 @@
-#include "dateTime.h"
-#include "GPIO.h"
-#include "lap_stats.h"
-#include "loggerSampleData.h"
-#include "loggerHardware.h"
-#include "loggerConfig.h"
-#include "loggerData.h"
-#include "virtual_channel.h"
-#include "imu.h"
+/*
+ * Race Capture Pro Firmware
+ *
+ * Copyright (C) 2015 Autosport Labs
+ *
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "ADC.h"
-#include "timer.h"
-#include "PWM.h"
+#include "FreeRTOS.h"
 #include "GPIO.h"
 #include "OBD2.h"
-#include "sampleRecord.h"
-#include "gps.h"
-#include "lap_stats.h"
+#include "PWM.h"
+#include "dateTime.h"
 #include "geopoint.h"
-#include "predictive_timer_2.h"
+#include "gps.h"
+#include "imu.h"
+#include "lap_stats.h"
+#include "lap_stats.h"
 #include "linear_interpolate.h"
+#include "loggerConfig.h"
+#include "loggerData.h"
+#include "loggerHardware.h"
+#include "loggerSampleData.h"
+#include "predictive_timer_2.h"
 #include "printk.h"
-#include "FreeRTOS.h"
+#include "sampleRecord.h"
 #include "taskUtil.h"
+#include "timer.h"
+#include "virtual_channel.h"
 
 #include <stdbool.h>
 
@@ -130,6 +150,7 @@ float get_mapped_value(float value, ScalingMap *scalingMap)
     return scaled;
 }
 
+#if ANALOG_CHANNELS > 0
 float get_analog_sample(int channelId)
 {
     LoggerConfig * loggerConfig = getWorkingLoggerConfig();
@@ -152,7 +173,9 @@ float get_analog_sample(int channelId)
     }
     return analogValue;
 }
+#endif
 
+#if TIMER_CHANNELS > 0
 float get_timer_sample(int channelId)
 {
     LoggerConfig *loggerConfig = getWorkingLoggerConfig();
@@ -178,7 +201,9 @@ float get_timer_sample(int channelId)
     }
     return timerValue;
 }
+#endif
 
+#if PWM_CHANNELS > 0
 float get_pwm_sample(int channelId)
 {
     LoggerConfig *loggerConfig = getWorkingLoggerConfig();
@@ -200,7 +225,9 @@ float get_pwm_sample(int channelId)
     }
     return pwmValue;
 }
+#endif
 
+#if IMU_CHANNELS > 0
 float get_imu_sample(int channelId)
 {
     LoggerConfig *config = getWorkingLoggerConfig();
@@ -208,6 +235,7 @@ float get_imu_sample(int channelId)
     float value = imu_read_value(channelId, c);
     return value;
 }
+#endif
 
 void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
 {
@@ -231,36 +259,45 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     chanCfg->flags = ALWAYS_SAMPLED; // Set always sampled flag here so we always take samples
     sample = processChannelSampleWithLongLongGetterNoarg(sample, chanCfg, getMillisSinceEpochAsLongLong);
 
-
+#if ANALOG_CHANNELS > 0
     for (int i=0; i < CONFIG_ADC_CHANNELS; i++) {
         ADCConfig *config = &(loggerConfig->ADCConfigs[i]);
         chanCfg = &(config->cfg);
         sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_analog_sample);
     }
+#endif
 
+#if IMU_CHANNELS > 0
     for (int i = 0; i < CONFIG_IMU_CHANNELS; i++) {
         ImuConfig *config = &(loggerConfig->ImuConfigs[i]);
         chanCfg = &(config->cfg);
         sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_imu_sample);
     }
+#endif
 
+#if TIMER_CHANNELS > 0
     for (int i=0; i < CONFIG_TIMER_CHANNELS; i++) {
         TimerConfig *config = &(loggerConfig->TimerConfigs[i]);
         chanCfg = &(config->cfg);
         sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_timer_sample);
     }
+#endif
 
+#if GPIO_CHANNELS > 0
     for (int i=0; i < CONFIG_GPIO_CHANNELS; i++) {
         GPIOConfig *config = &(loggerConfig->GPIOConfigs[i]);
         chanCfg = &(config->cfg);
         sample = processChannelSampleWithIntGetter(sample, chanCfg, i, GPIO_get);
     }
+#endif
 
+#if PWM_CHANNELS > 0
     for (int i=0; i < CONFIG_PWM_CHANNELS; i++) {
         PWMConfig *config = &(loggerConfig->PWMConfigs[i]);
         chanCfg = &(config->cfg);
         sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_pwm_sample);
     }
+#endif
 
     OBD2Config *obd2Config = &(loggerConfig->OBD2Configs);
     for (size_t i = 0; i < obd2Config->enabledPids; i++) {
@@ -268,12 +305,14 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
         sample = processChannelSampleWithIntGetter(sample, chanCfg, i, OBD2_get_current_PID_value);
     }
 
+#if VIRTUAL_CHANNEL_SUPPORT == 1
     const size_t virtualChannelCount = get_virtual_channel_count();
     for (size_t i = 0; i < virtualChannelCount; i++) {
         VirtualChannel *vc = get_virtual_channel(i);
         chanCfg = &(vc->config);
         sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_virtual_channel_value);
     }
+#endif
 
     GPSConfig *gpsConfig = &(loggerConfig->GPSConfigs);
     chanCfg = &(gpsConfig->latitude);

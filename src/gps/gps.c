@@ -4,7 +4,7 @@
 #include "modp_atonum.h"
 
 #define GPS_LOCK_FLASH_COUNT 5
-#define GPS_NOFIX_FLASH_COUNT 50
+#define GPS_NOFIX_FLASH_COUNT 25
 
 static GpsSnapshot g_gpsSnapshot;
 gps_status_t gps_status = GPS_STATUS_NOT_INIT;
@@ -35,7 +35,7 @@ gps_status_t GPS_getStatus()
 static void flashGpsStatusLed(enum GpsSignalQuality gpsQuality)
 {
     if (g_flashCount == 0) {
-        LED_disable(1);
+        LED_disable(0);
     }
     g_flashCount++;
 
@@ -43,7 +43,7 @@ static void flashGpsStatusLed(enum GpsSignalQuality gpsQuality)
                            GPS_LOCK_FLASH_COUNT : GPS_NOFIX_FLASH_COUNT;
 
     if (g_flashCount >= targetFlashCount) {
-        LED_enable(1);
+        LED_enable(0);
         g_flashCount = 0;
     }
 }

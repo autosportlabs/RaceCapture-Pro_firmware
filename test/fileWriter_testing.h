@@ -22,6 +22,7 @@
 #define _FILEWRITER_TESTING_H_
 
 #include "fileWriter.h"
+#include "sampleRecord.h"
 
 int flush_logfile(struct logging_status *ls);
 int logging_stop(struct logging_status *ls);

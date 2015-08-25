@@ -152,7 +152,7 @@ const char *luaO_pushvfstring (lua_State *L, const char *fmt, va_list argp)
             incr_top(L);
             break;
         }
-        /* XXX STIEG: Removed for space reasons... printf */
+        /* XXX: Removed for space reasons... printf */
         /* case 'p': { */
         /*     char buff[4*sizeof(void *) + 8]; /\* should be enough space for a `%p' *\/ */
         /*     sprintf(buff, "%p", va_arg(argp, void *)); */

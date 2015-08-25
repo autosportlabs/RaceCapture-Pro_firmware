@@ -20,12 +20,12 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "mem_mang.h"
-#include "luaScript.h"
-#include "lua.h"
-#include "luaTask.h"
 #include "memory.h"
 #include "loggerConfig.h"
 #include "cpu.h"
+#include "luaScript.h"
+#include "lua.h"
+#include "luaTask.h"
 
 extern unsigned int _CONFIG_HEAP_SIZE;
 
@@ -57,6 +57,7 @@ void ShowStats(Serial *serial, unsigned int argc, char **argv)
     put_uint(serial, portGetFreeHeapSize());
     put_crlf(serial);
 
+#if LUA_SUPPORT==1
     // LUA Info
     putHeader(serial, "Lua Info");
 
@@ -71,6 +72,7 @@ void ShowStats(Serial *serial, unsigned int argc, char **argv)
     putDataRowHeader(serial, "Lua Memory Usage (KB)");
     put_int(serial, lua_gc(L, LUA_GCCOUNT, 0));
     put_crlf(serial);
+#endif
 
     // Misc Info
     putHeader(serial, "Misc");
@@ -93,8 +95,9 @@ void ShowTaskInfo(Serial *serial, unsigned int argc, char **argv)
 
     char *taskList = (char *) portMalloc(1024);
     if (NULL != taskList) {
-        vTaskList(taskList);
-        serial->put_s(taskList);
+        //TODO BAP - get this working, when we have a USB console
+        //vTaskList(taskList);
+        //serial->put_s(taskList);
         portFree(taskList);
     } else {
         serial->put_s("Out of Memory!");
@@ -117,4 +120,3 @@ void ResetSystem(Serial *serial, unsigned int argc, char **argv)
 {
     cpu_reset(0);
 }
-
