@@ -143,7 +143,7 @@ void setupTask(void *params)
     startOBD2Task			( OBD2_TASK_PRIORITY);
     startLoggerTaskEx		( LOGGER_TASK_PRIORITY );
 
-    xTaskCreate(blinky_task, (signed char *) "Blinky", configMINIMAL_STACK_SIZE * 2, NULL, (tskIDLE_PRIORITY + 1), NULL);
+    //xTaskCreate(blinky_task, (signed char *) "Blinky", configMINIMAL_STACK_SIZE * 2, NULL, (tskIDLE_PRIORITY + 1), NULL);
 
     /* Removes this setup task from the scheduler */
     vTaskDelete(NULL);

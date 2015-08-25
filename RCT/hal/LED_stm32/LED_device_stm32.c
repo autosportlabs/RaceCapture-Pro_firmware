@@ -58,6 +58,7 @@ int LED_device_init(void)
     gpio_conf.GPIO_Speed = GPIO_Speed_50MHz;
     gpio_conf.GPIO_Mode = GPIO_Mode_OUT;
     gpio_conf.GPIO_OType = GPIO_OType_PP;
+    gpio_conf.GPIO_Pin = 0;
 
     for (i = 0; i < LED_COUNT; ++i)
         gpio_conf.GPIO_Pin |= leds[i].mask;
