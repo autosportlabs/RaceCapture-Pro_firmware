@@ -52,10 +52,8 @@
 #include "cellModem.h"
 #include "bluetooth.h"
 #include "sim900.h"
-#if LUA_SUPPORT == 1
 #include "luaTask.h"
 #include "luaScript.h"
-#endif
 
 /* SENSOR SUPPORT */
 #include "imu.h"
