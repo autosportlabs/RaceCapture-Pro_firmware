@@ -24,9 +24,7 @@
 #include "taskUtil.h"
 #include "cpu.h"
 #include "taskUtil.h"
-#if LUA_SUPPORT == 1
 #include "luaScript.h"
-#endif
 
 void TestSD(Serial *serial, unsigned int argc, char **argv)
 {
