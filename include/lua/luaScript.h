@@ -5,6 +5,7 @@
 #include "memory.h"
 #include "capabilities.h"
 
+#if LUA_SUPPORT == 1
 #define SCRIPT_ADD_RESULT_OK  		1
 #define SCRIPT_ADD_RESULT_FAIL  	0
 
@@ -33,4 +34,5 @@ void unescapeScript(char *data);
 
 #define DEFAULT_SCRIPT "function onTick() end"
 
+#endif /*LUA_SUPPORT == 1 */
 #endif /*LUASCRIPT_H_*/
