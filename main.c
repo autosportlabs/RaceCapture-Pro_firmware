@@ -40,8 +40,10 @@
 #include "gpsTask.h"
 #include "loggerHardware.h"
 #include "loggerTaskEx.h"
+#if LUA_SUPPORT == 1
 #include "luaScript.h"
 #include "luaTask.h"
+#endif
 #include "messaging.h"
 #include "printk.h"
 #include "task.h"

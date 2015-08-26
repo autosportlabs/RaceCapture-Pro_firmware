@@ -52,8 +52,10 @@
 #include "cellModem.h"
 #include "bluetooth.h"
 #include "sim900.h"
+#if LUA_SUPPORT == 1
 #include "luaTask.h"
 #include "luaScript.h"
+#endif
 
 /* SENSOR SUPPORT */
 #include "imu.h"
@@ -235,9 +237,15 @@ int api_getCapabilities(Serial *serial, const jsmntok_t *json)
     json_objStartString(serial,"channels");
     json_int(serial, "analog", ANALOG_CHANNELS, 1);
     json_int(serial, "imu", IMU_CHANNELS, 1);
+#if GPIO_CHANNELS > 0
     json_int(serial, "gpio", GPIO_CHANNELS, 1);
+#endif
+#if TIMER_CHANNELS > 0
     json_int(serial, "timer", TIMER_CHANNELS, 1);
+#endif
+#if PWM_CHANNELS > 0
     json_int(serial, "pwm", PWM_CHANNELS, 1);
+#endif
     json_int(serial, "can", CAN_CHANNELS, 0);
     json_objEnd(serial, 1);
 
@@ -247,9 +255,11 @@ int api_getCapabilities(Serial *serial, const jsmntok_t *json)
     json_objEnd(serial, 1);
 
     json_objStartString(serial,"db");
+#if LUA_SUPPORT > 0
+    json_int(serial, "script", SCRIPT_MEMORY_LENGTH, 1);
+#endif
     json_int(serial, "tracks", MAX_TRACKS, 1);
-    json_int(serial, "sectors", MAX_SECTORS, 1);
-    json_int(serial, "script", SCRIPT_MEMORY_LENGTH, 0);
+    json_int(serial, "sectors", MAX_SECTORS, 0);
     json_objEnd(serial, 0);
 
     json_objEnd(serial, 0);

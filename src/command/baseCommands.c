@@ -23,9 +23,7 @@
 #include "memory.h"
 #include "loggerConfig.h"
 #include "cpu.h"
-#include "luaScript.h"
 #include "lua.h"
-#include "luaTask.h"
 
 extern unsigned int _CONFIG_HEAP_SIZE;
 
