@@ -576,7 +576,9 @@ void USART1_IRQHandler(void)
     portBASE_TYPE xTaskWokenByTx = pdFALSE, xTaskWokenByPost = pdFALSE;
     signed portCHAR cChar;
 
-    if (USART_GetITStatus(USART1, USART_IT_TXE) != RESET) {
+    unsigned int ISR = USART1->ISR;
+
+    if (ISR & USART_FLAG_TXE) {
         /* The interrupt was caused by the TX becoming empty.  Are there any more characters to transmit? */
         if (xQueueReceiveFromISR(xUsart0Tx, &cChar, &xTaskWokenByTx) ==
             pdTRUE) {
@@ -588,12 +590,16 @@ void USART1_IRQHandler(void)
         }
     }
 
-    if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET) {
+    if (ISR & USART_FLAG_RXNE) {
         /* The interrupt was caused by a character being received.  Grab the
            character from the rx and place it in the queue or received
            characters. */
         cChar = USART_ReceiveData(USART1);
         xQueueSendFromISR(xUsart0Rx, &cChar, &xTaskWokenByPost);
+    }
+
+    if (ISR & USART_FLAG_ORE) {
+            USART_ClearITPendingBit (USART1, USART_IT_ORE);
     }
 
     /* If a task was woken by either a character being received or a character
@@ -606,7 +612,9 @@ void USART2_IRQHandler(void)
     portBASE_TYPE xTaskWokenByTx = pdFALSE, xTaskWokenByPost = pdFALSE;
     signed portCHAR cChar;
 
-    if (USART_GetITStatus(USART2, USART_IT_TXE) != RESET) {
+    unsigned int ISR = USART2->ISR;
+
+    if (ISR & USART_FLAG_TXE) {
         /* The interrupt was caused by the TX becoming empty.  Are there any more characters to transmit? */
         if (xQueueReceiveFromISR(xUsart2Tx, &cChar, &xTaskWokenByTx) ==
             pdTRUE) {
@@ -618,7 +626,7 @@ void USART2_IRQHandler(void)
         }
     }
 
-    if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET) {
+    if (ISR & USART_FLAG_RXNE) {
         /* The interrupt was caused by a character being received.  Grab the
         character from the rx and place it in the queue or received
         characters. */
@@ -626,6 +634,9 @@ void USART2_IRQHandler(void)
 		xQueueSendFromISR( xUsart2Rx, &cChar, &xTaskWokenByPost );
     }
 
+    if (ISR & USART_FLAG_ORE) {
+            USART_ClearITPendingBit (USART1, USART_IT_ORE);
+    }
 
     /* If a task was woken by either a character being received or a character
        being transmitted then we may need to switch to another task. */
@@ -637,7 +648,9 @@ void USART3_IRQHandler(void)
     portBASE_TYPE xTaskWokenByTx = pdFALSE, xTaskWokenByPost = pdFALSE;
     signed portCHAR cChar;
 
-    if (USART_GetITStatus(USART3, USART_IT_TXE) != RESET) {
+    unsigned int ISR = USART3->ISR;
+
+    if (ISR & USART_FLAG_TXE) {
         /* The interrupt was caused by the TX becoming empty.  Are there any more characters to transmit? */
         if (xQueueReceiveFromISR(xUsart3Tx, &cChar, &xTaskWokenByTx) ==
             pdTRUE) {
@@ -649,12 +662,16 @@ void USART3_IRQHandler(void)
         }
     }
 
-    if (USART_GetITStatus(USART3, USART_IT_RXNE) != RESET) {
+    if (ISR & USART_FLAG_RXNE) {
         /* The interrupt was caused by a character being received.  Grab the
            character from the rx and place it in the queue or received
            characters. */
         cChar = USART_ReceiveData(USART3);
         xQueueSendFromISR(xUsart3Rx, &cChar, &xTaskWokenByPost);
+    }
+
+    if (ISR & USART_FLAG_ORE) {
+               USART_ClearITPendingBit (USART1, USART_IT_ORE);
     }
 
     /* If a task was woken by either a character being received or a character
