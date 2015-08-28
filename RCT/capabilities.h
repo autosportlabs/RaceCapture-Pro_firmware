@@ -16,7 +16,7 @@
 #define CELLULAR_SUPPORT        0
 
 //configuration
-#define MAX_TRACKS				20
+#define MAX_TRACKS				5
 #define MAX_SECTORS				20
 #define MAX_VIRTUAL_CHANNELS	30
 
