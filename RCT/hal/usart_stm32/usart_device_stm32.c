@@ -599,7 +599,7 @@ void USART1_IRQHandler(void)
     }
 
     if (ISR & USART_FLAG_ORE) {
-            USART_ClearITPendingBit (USART1, USART_IT_ORE);
+        USART_ClearITPendingBit (USART1, USART_IT_ORE);
     }
 
     /* If a task was woken by either a character being received or a character
@@ -635,7 +635,7 @@ void USART2_IRQHandler(void)
     }
 
     if (ISR & USART_FLAG_ORE) {
-            USART_ClearITPendingBit (USART1, USART_IT_ORE);
+        USART_ClearITPendingBit (USART1, USART_IT_ORE);
     }
 
     /* If a task was woken by either a character being received or a character
@@ -671,7 +671,7 @@ void USART3_IRQHandler(void)
     }
 
     if (ISR & USART_FLAG_ORE) {
-               USART_ClearITPendingBit (USART1, USART_IT_ORE);
+        USART_ClearITPendingBit (USART1, USART_IT_ORE);
     }
 
     /* If a task was woken by either a character being received or a character
