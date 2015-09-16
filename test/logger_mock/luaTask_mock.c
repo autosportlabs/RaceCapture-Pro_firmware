@@ -63,3 +63,7 @@ size_t get_ontick_freq()
 {
     return 1;
 }
+
+void terminate_lua() {}
+void initialize_lua() {}
+void run_lua_interactive_cmd(Serial *serial, const char* cmd) {}
