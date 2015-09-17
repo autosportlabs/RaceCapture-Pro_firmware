@@ -166,11 +166,11 @@ void terminate_lua()
         pr_info("lua: Stopping...\r\n");
 
         if (LUA_DISABLED == lua_run_state)
-                goto out;
+                goto cleanup;
 
         _terminate_lua();
 
-out:
+cleanup:
         unlockLua();
 }
 
@@ -214,12 +214,12 @@ void initialize_lua()
         pr_info("lua: Starting...\r\n");
 
         if (LUA_ENABLED == lua_run_state)
-                goto out;
+                goto cleanup;
 
         g_lua = lua_newstate(myAlloc, NULL);
         if (!g_lua) {
                 pr_error("LUA: Can't allocate memory for LUA state.\r\n");
-                goto out;
+                goto cleanup;
         }
 
         //open optional libraries
@@ -232,13 +232,13 @@ void initialize_lua()
 
         if (!_load_script()) {
                 _terminate_lua();
-                goto out;
+                goto cleanup;
         }
 
         /* If here, then init was successful.  Enable runtime */
         lua_run_state = LUA_ENABLED;
 
-out:
+cleanup:
         unlockLua();
 }
 
@@ -248,32 +248,31 @@ static void run_lua_method(const char *method)
 
         lua_getglobal(g_lua, method);
         if (lua_isnil(g_lua, -1)) {
-                pr_error("Can't find \"");
-                pr_error(method);
-                pr_error("\"\r\n");
-
+                pr_error_str_msg("Method not found: ", method);
                 lua_pop(g_lua, 1);
-                _terminate_lua();
-                goto out;
+                goto cleanup;
         }
+
 
         if (0 != lua_pcall(g_lua, 0, 0, 0)) {
-                pr_error("lua method error: ");
-                pr_error(lua_tostring(g_lua, -1));
-                pr_error("\r\n");
-
+                pr_error_str_msg("Lua script error: ", lua_tostring(g_lua, -1));
                 lua_pop(g_lua, 1);
-                _terminate_lua();
-                goto out;
+                goto cleanup;
         }
 
-out:
+cleanup:
         unlockLua();
 }
 
 void run_lua_interactive_cmd(Serial *serial, const char* cmd)
 {
         lockLua();
+
+        if (!g_lua) {
+                serial->put_s("error: LUA not initialized.");
+                put_crlf(serial);
+                goto cleanup;
+        }
 
         lua_gc(g_lua, LUA_GCCOLLECT, 0);
 
@@ -286,28 +285,17 @@ void run_lua_interactive_cmd(Serial *serial, const char* cmd)
          * dostring calls pcall with MULTRET, which could leave items on
          * the stack.
          */
-
-        int result = luaL_loadstring(g_lua, cmd);
-        if (0 != result) {
-            serial->put_s("error: (");
-            serial->put_s(lua_tostring(g_lua, -1));
-            serial->put_s(")");
-            put_crlf(serial);
-            lua_pop(g_lua, 1);
-            goto out;
-        }
-
-        result = lua_pcall(g_lua, 0, 0, 0);
+        int result = luaL_loadstring(g_lua, cmd) || lua_pcall(g_lua, 0, 0, 0);
         if (0 != result) {
                 serial->put_s("error: (");
                 serial->put_s(lua_tostring(g_lua, -1));
                 serial->put_s(")");
                 put_crlf(serial);
                 lua_pop(g_lua, 1);
-                goto out;
+                goto cleanup;
         }
 
-out:
+cleanup:
         unlockLua();
 }
 
