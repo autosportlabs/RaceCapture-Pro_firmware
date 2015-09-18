@@ -299,26 +299,18 @@ cleanup:
         unlockLua();
 }
 
-static bool is_watchdog_reset(void)
-{
-        if (!watchdog_is_watchdog_reset())
-                return false;
-
-        pr_error("lua: Crash detected! Bypassing Lua script as a "
-                 "recovery mode\r\n");
-        LED_enable(3);
-
-        return true;
-}
-
 static void luaTask(void *params)
 {
         set_ontick_freq(DEFAULT_ONTICK_HZ);
         initialize_script();
 
         /* If we are starting up after watchdog, don't init LUA */
-        if (!is_watchdog_reset())
+        if (watchdog_is_watchdog_reset()) {
+                pr_error("lua: Crash detected! Bypassing Lua script \r\n");
+                LED_enable(3);
+        } else {
                 initialize_lua();
+        }
 
         for(;;) {
                 portTickType xLastWakeTime = xTaskGetTickCount();
@@ -334,6 +326,8 @@ static void luaTask(void *params)
 void startLuaTask(int priority)
 {
         vSemaphoreCreateBinary(xLuaLock);
+        lua_run_state = LUA_DISABLED;
+
         xTaskCreate(luaTask, (signed portCHAR *) "luaTask",
                     LUA_STACK_SIZE, NULL, priority, NULL);
 }
