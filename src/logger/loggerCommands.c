@@ -39,15 +39,40 @@ void TestSD(Serial *serial, unsigned int argc, char **argv)
 }
 
 
+static void print_reset_status(Serial *s, const char *msg, const int status)
+{
+        char* status_word = status ? "FAILED" : "PASS";
+        s->put_s(msg);
+        s->put_s(": ");
+        s->put_s(status_word);
+        s->put_s("\r\n");
+}
+
 void ResetConfig(Serial *serial, unsigned int argc, char **argv)
 {
-    if (flash_default_logger_config() == 0 && flash_default_script() == 0 && flash_default_tracks() == 0) {
-        put_commandOK(serial);
+        int tmp;
+        int res = 0;
+
+        tmp = flash_default_logger_config();
+        res += tmp;
+        print_reset_status(serial, "Flashing Default Logger Config", tmp);
+
+        tmp = flash_default_script();
+        res += tmp;
+        print_reset_status(serial, "Flashing Default Script", tmp);
+
+        tmp = flash_default_tracks();
+        res += tmp;
+        print_reset_status(serial, "Flashing Default Tracks", tmp);
+
+        if (res) {
+                put_commandError(serial, ERROR_CODE_CRITICAL_ERROR);
+        } else {
+                put_commandOK(serial);
+        }
+
         delayMs(500);
         cpu_reset(0);
-    } else {
-        put_commandError(serial, ERROR_CODE_CRITICAL_ERROR);
-    }
 }
 
 static void StartTerminalSession(Serial *fromSerial, Serial *toSerial, uint8_t localEcho)

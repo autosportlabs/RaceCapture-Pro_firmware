@@ -1,21 +1,36 @@
 /*
- * luaBaseBinding.c
+ * Race Capture Pro Firmware
  *
- *  Created on: May 10, 2011
- *      Author: brent
+ * Copyright (C) 2015 Autosport Labs
+ *
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "mod_string.h"
-#include "luaBaseBinding.h"
-#include "memory.h"
+
 #include "FreeRTOS.h"
-#include "lauxlib.h"
-#include "lualib.h"
-#include "luaScript.h"
-#include "luaCommands.h"
 #include "command.h"
-#include "taskUtil.h"
+#include "lauxlib.h"
+#include "luaBaseBinding.h"
+#include "luaCommands.h"
+#include "luaScript.h"
 #include "luaTask.h"
+#include "lualib.h"
+#include "memory.h"
+#include "mod_string.h"
 #include "printk.h"
+#include "taskUtil.h"
 
 
 void registerBaseLuaFunctions(lua_State *L)
@@ -52,21 +67,29 @@ int Lua_GetTickRate(lua_State *L)
 
 static int printLog(lua_State *L, int addNewline)
 {
-    if (lua_gettop(L) >= 1) {
+        if (0 == lua_gettop(L))
+                return 0;
+
         const char *msg = lua_tostring(L, 1);
-        int level = lua_gettop(L) >= 2 ? lua_tointeger(L, 2) : INFO;
+        const int level = lua_gettop(L) >= 2 ? lua_tointeger(L, 2) : INFO;
+
         if (in_interactive_mode()) {
-            Serial *serial = get_command_context()->serial;
-            if (lua_gettop(L) >= 1 && serial) {
-                serial->put_s(lua_tostring(L,1));
-                if (addNewline) put_crlf(serial);
-            }
-        } else {
-            printk(level, msg);
-            if (addNewline) printk(level, "\r\n");
+                Serial *serial = get_command_context()->serial;
+                if (serial) {
+                        serial->put_s(lua_tostring(L,1));
+                        if (addNewline) {
+                                put_crlf(serial);
+                        }
+                }
         }
-    }
-    return 0;
+
+        printk(level, msg);
+
+        if (addNewline) {
+                printk(level, "\r\n");
+        }
+
+        return 0;
 }
 
 int Lua_PrintLogLn(lua_State *L)
