@@ -15,11 +15,54 @@ following:
 Coding Standard
 ===============
 
+# Standard
+
 We use the Linux Kernel coding standard, which can be found here:
 https://www.kernel.org/doc/Documentation/CodingStyle
 
-We do however ask for the following modification to be made to your
-source contributions:  Single line if/for/while statements should
+# Modifications
+
+While we think the Linux standard is great, we have our own tweaks
+that we have made.  They are as follows...
+
+## File Headers
+
+Always ensure that the file header at the top of the file matches the
+following:
+
+```C
+/*
+ * Race Capture Pro Firmware
+ *
+ * Copyright (C) 2015 Autosport Labs
+ *
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
+```
+
+If it doesn't, please fix it as part of your patch.
+
+## Includes
+
+Please sort all include alphabetically.  Not only does this make things
+easier to find, it also eliminates duplicates.
+
+## Control Statements Always Have Brackets
+
+Single line if/for/while statements should
 always include braces.
 
 So:
