@@ -8,6 +8,8 @@
 * Expanded track detection radius from 1 KM to 5 KM so those who are amazingly
   far away from start/finish still have auto-track detection work when the
   unit boots up.
+* Release more RAM up by disabling LUA prior to flashing script.  This fixes
+  many MK1 issues reported by customers when resetting or programming LUA.
 
 === 2.8.4 ===
 * Background streaming switch only affects telemetry link; Wireless (Bluetooth) link always streams
