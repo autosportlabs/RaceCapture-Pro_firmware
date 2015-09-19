@@ -1,7 +1,29 @@
+/*
+ * Race Capture Pro Firmware
+ *
+ * Copyright (C) 2015 Autosport Labs
+ *
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "luaScript.h"
+#include "luaTask.h"
 #include "mem_mang.h"
-#include "printk.h"
 #include "mod_string.h"
+#include "printk.h"
 
 
 #ifndef RCP_TESTING
@@ -23,6 +45,13 @@ int flash_default_script()
 {
     int result = -1;
     pr_info("flashing default script...");
+
+    /*
+     * Stop LUA if we are flashing its data.  This is mainly done to recover
+     * RAM since our flashing operation is a heavy bugger
+     */
+    terminate_lua();
+
     ScriptConfig *defaultScriptConfig = (ScriptConfig *)portMalloc(sizeof(ScriptConfig));
     if (defaultScriptConfig != NULL) {
         defaultScriptConfig->magicInit = MAGIC_NUMBER_SCRIPT_INIT;
@@ -81,8 +110,13 @@ void unescapeScript(char *data)
 
 int flashScriptPage(unsigned int page, const char *data, int mode)
 {
-
     int result = SCRIPT_ADD_RESULT_OK;
+
+    /*
+     * Stop LUA if we are flashing its data.  This is mainly done to recover
+     * RAM since our flashing operation is a heavy bugger
+     */
+    terminate_lua();
 
     if (page < MAX_SCRIPT_PAGES) {
         if (mode == SCRIPT_ADD_MODE_IN_PROGRESS || mode == SCRIPT_ADD_MODE_COMPLETE) {
@@ -118,9 +152,3 @@ int flashScriptPage(unsigned int page, const char *data, int mode)
     }
     return result;
 }
-
-
-
-
-
-
