@@ -515,7 +515,7 @@
 */
 #define LUAI_UACNUMBER	double
 
-#define LUA_NUMBER_PRECISION 3
+#define LUA_NUMBER_PRECISION 6
 
 
 /*
@@ -790,4 +790,3 @@ union luai_Cast {
 #endif
 
 #endif
-
