@@ -1,58 +1,61 @@
-/**
- * AutoSport Labs - Race Capture Pro Firmware
+/*
+ * Race Capture Firmware
  *
- * Copyright (C) 2014 AutoSport Labs
+ * Copyright (C) 2015 Autosport Labs
  *
- * This file is part of the Race Capture Pro firmware suite
+ * This file is part of the Race Capture firmware suite
  *
- * This is free software: you can redistribute it and/or modify it under the terms of the
- * GNU General Public License as published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * See the GNU General Public License for more details. You should have received a copy of the GNU
- * General Public License along with this code. If not, see <http://www.gnu.org/licenses/>.
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
  */
+
+#include "ADC.h"
 #include "FreeRTOS.h"
-#include "task.h"
-#include "constants.h"
+#include "GPIO.h"
+#include "PWM.h"
+#include "bluetooth.h"
 #include "capabilities.h"
+#include "cellModem.h"
+#include "constants.h"
+#include "cpu.h"
+#include "dateTime.h"
+#include "geopoint.h"
+#include "gps.h"
+#include "imu.h"
+#include "lap_stats.h"
+#include "launch_control.h"
+#include "logger.h"
 #include "loggerApi.h"
 #include "loggerConfig.h"
-#include "modp_atonum.h"
-#include "mod_string.h"
-#include "sampleRecord.h"
-#include "loggerSampleData.h"
 #include "loggerData.h"
-#include "loggerNotifications.h"
-#include "imu.h"
-#include "tracks.h"
 #include "loggerHardware.h"
-#include "serial.h"
-#include "mem_mang.h"
-#include "printk.h"
-#include "geopoint.h"
-#include "timer.h"
-#include "ADC.h"
-#include "imu.h"
-#include "PWM.h"
-#include "cpu.h"
+#include "loggerNotifications.h"
+#include "loggerSampleData.h"
+#include "loggerTaskEx.h"
 #include "luaScript.h"
 #include "luaTask.h"
-#include "logger.h"
-#include "loggerTaskEx.h"
-#include "FreeRTOS.h"
-#include "taskUtil.h"
-#include "GPIO.h"
-#include "gps.h"
-#include "dateTime.h"
-#include "cellModem.h"
-#include "bluetooth.h"
+#include "mem_mang.h"
+#include "mod_string.h"
+#include "modp_atonum.h"
+#include "printk.h"
+#include "sampleRecord.h"
+#include "serial.h"
 #include "sim900.h"
-#include "launch_control.h"
-#include "lap_stats.h"
+#include "task.h"
+#include "taskUtil.h"
+#include "timer.h"
+#include "tracks.h"
+
 #include <stdbool.h>
 
 /* Max number of PIDs that can be specified in the setOBD2Cfg message */
@@ -86,7 +89,6 @@ void unescapeTextField(char *data)
             case '\0': //this should *NOT* happen
                 *result = '\0';
                 return;
-                break;
             default: // unknown escape char?
                 *result = ' ';
                 break;
@@ -1614,7 +1616,6 @@ int api_getScript(Serial *serial, const jsmntok_t *json)
 
 int api_setScript(Serial *serial, const jsmntok_t *json)
 {
-
     int rc = API_ERROR_UNSPECIFIED;
     bool reload_script = false;
     const jsmntok_t *dataTok = findNode(json, "data");
@@ -1644,12 +1645,17 @@ int api_setScript(Serial *serial, const jsmntok_t *json)
     } else {
         rc = API_ERROR_PARAMETER;
     }
-    setShouldReloadScript(reload_script);
+
+    /* If we are done loading in the script, then we can start LUA again */
+    if (reload_script)
+            initialize_lua();
+
     return rc;
 }
 
 int api_runScript(Serial *serial, const jsmntok_t *json)
 {
-    setShouldReloadScript(1);
-    return API_SUCCESS;
+        terminate_lua();
+        initialize_lua();
+        return API_SUCCESS;
 }

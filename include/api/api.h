@@ -1,9 +1,9 @@
 /**
- * AutoSport Labs - Race Capture Pro Firmware
+ * AutoSport Labs - Race Capture Firmware
  *
  * Copyright (C) 2014 AutoSport Labs
  *
- * This file is part of the Race Capture Pro firmware suite
+ * This file is part of the Race Capture firmware suite
  *
  * This is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the

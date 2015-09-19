@@ -1,9 +1,9 @@
 /*
- * Race Capture Pro Firmware
+ * Race Capture Firmware
  *
  * Copyright (C) 2015 Autosport Labs
  *
- * This file is part of the Race Capture Pro fimrware suite
+ * This file is part of the Race Capture firmware suite
  *
  * This is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -31,7 +31,6 @@
 #include "mod_string.h"
 #include "printk.h"
 #include "taskUtil.h"
-
 
 void registerBaseLuaFunctions(lua_State *L)
 {

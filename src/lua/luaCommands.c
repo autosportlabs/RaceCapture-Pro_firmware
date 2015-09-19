@@ -1,79 +1,71 @@
 /*
- * luaCommands.c
+ * Race Capture Firmware
  *
- *  Created on: Jul 24, 2011
- *      Author: brent
+ * Copyright (C) 2015 Autosport Labs
+ *
+ * This file is part of the Race Capture firmware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "mod_string.h"
-#include "luaCommands.h"
-#include "modp_numtoa.h"
-#include "modp_atonum.h"
-#include "luaScript.h"
-#include "lua.h"
-#include "luaTask.h"
-#include "memory.h"
-#include "FreeRTOS.h"
-#include "printk.h"
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
 
-#define LINE_BUFFER_SIZE  256
+#include "FreeRTOS.h"
+#include "lauxlib.h"
+#include "lua.h"
+#include "luaCommands.h"
+#include "luaScript.h"
+#include "luaTask.h"
+#include "lualib.h"
+#include "memory.h"
+#include "mod_string.h"
+#include "modp_atonum.h"
+#include "modp_numtoa.h"
+#include "printk.h"
 
 static int g_interactive_mode = 0;
 
 void ExecLuaInterpreter(Serial *serial, unsigned int argc, char **argv)
 {
+        serial->put_s("Entering Lua Interpreter. enter 'exit' to leave");
+        put_crlf(serial);
 
-    g_interactive_mode = 1;
-    serial->put_s("Entering Lua Interpreter. enter 'exit' to leave");
-    put_crlf(serial);
+        cmd_context *cmdContext = get_command_context();
+        char *luaLine = cmdContext->lineBuffer;
 
-    lua_State *L = getLua();
+        g_interactive_mode = 1;
 
-    cmd_context *cmdContext = get_command_context();
-    char * luaLine = cmdContext->lineBuffer;
+        for(;;) {
+                serial->put_s("> ");
+                interactive_read_line(serial, luaLine, cmdContext->lineBufferSize);
 
-    int result;
-    while(1) {
-        serial->put_s("> ");
-        interactive_read_line(serial, luaLine, cmdContext->lineBufferSize);
-        if (strcmp(luaLine,"exit") == 0) break;
-        lockLua();
-        lua_gc(L,LUA_GCCOLLECT,0);
-        result = luaL_loadbuffer(L, luaLine, strlen(luaLine), "");
-        if (0 != result) {
-            serial->put_s("error: (");
-            serial->put_s(lua_tostring(L,-1));
-            serial->put_s(")");
-            put_crlf(serial);
-            lua_pop(L,1);
-        } else {
-            lua_pushvalue(L,-1);
-            result = lua_pcall(L,0,0,0);
-            if (0 != result) {
-                serial->put_s("error: (");
-                serial->put_s(lua_tostring(L,-1));
-                serial->put_s(")");
-                put_crlf(serial);
-                lua_pop(L,1);
-            }
-            lua_pop(L,1);
+                if (0 == strcmp(luaLine, "exit"))
+                        break;
+
+                run_lua_interactive_cmd(serial, luaLine);
         }
-        unlockLua();
-    }
-    g_interactive_mode = 0;
+
+        g_interactive_mode = 0;
 }
 
 
 void ReloadScript(Serial *serial, unsigned int argc, char **argv)
 {
-    setShouldReloadScript(1);
-    put_commandOK(serial);
+        terminate_lua();
+        initialize_lua();
+        put_commandOK(serial);
 }
 
 int in_interactive_mode()
 {
-    return g_interactive_mode;
+        return g_interactive_mode;
 }
-

@@ -1,3 +1,14 @@
+=== 2.8.5 ===
+* Increased GPS task stack size from 200 to 256 to prevent HULK smash.
+* Increased printing precision in LUA from 3 to 6 decimal places (as needed).
+* Fixed a bug in LUA libraries.  Now functions like `math.sin()` no longer
+  cause the interpreter to crash.
+* Fixed bug with OBD-II configuration that would cause it to print out data
+  when OBD-II was disabled.
+* Expanded track detection radius from 1 KM to 5 KM so those who are amazingly
+  far away from start/finish still have auto-track detection work when the
+  unit boots up.
+
 === 2.8.4 ===
 * Background streaming switch only affects telemetry link; Wireless (Bluetooth) link always streams
 * Fixed duplicate log file issue
