@@ -1,4 +1,4 @@
-How to contribute
+How to Contribute
 =================
 
 Being an open hardware company, we love contributions from outside our
