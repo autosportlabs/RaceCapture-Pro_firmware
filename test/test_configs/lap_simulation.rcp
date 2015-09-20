@@ -1,0 +1,643 @@
+{
+  "rcpCfg": {
+    "analogCfg": {
+      "0": {
+        "alpha": 1.0,
+        "map": {
+          "raw": [
+            0.0,
+            1.25,
+            2.5,
+            3.75,
+            5.0
+          ],
+          "scal": [
+            0.0,
+            1.25,
+            2.5,
+            3.75,
+            5.0
+          ]
+        },
+        "max": 5.0,
+        "min": 0.0,
+        "nm": "Analog1",
+        "offset": 0.0,
+        "prec": 2,
+        "scalMod": 1,
+        "scaling": 1.0,
+        "sr": 0,
+        "ut": "Volts"
+      },
+      "1": {
+        "alpha": 1.0,
+        "map": {
+          "raw": [
+            0.0,
+            1.25,
+            2.5,
+            3.75,
+            5.0
+          ],
+          "scal": [
+            0.0,
+            1.25,
+            2.5,
+            3.75,
+            5.0
+          ]
+        },
+        "max": 5.0,
+        "min": 0.0,
+        "nm": "Analog2",
+        "offset": 0.0,
+        "prec": 2,
+        "scalMod": 1,
+        "scaling": 1.0,
+        "sr": 0,
+        "ut": "Volts"
+      },
+      "2": {
+        "alpha": 1.0,
+        "map": {
+          "raw": [
+            0.0,
+            1.25,
+            2.5,
+            3.75,
+            5.0
+          ],
+          "scal": [
+            0.0,
+            1.25,
+            2.5,
+            3.75,
+            5.0
+          ]
+        },
+        "max": 5.0,
+        "min": 0.0,
+        "nm": "Analog3",
+        "offset": 0.0,
+        "prec": 2,
+        "scalMod": 1,
+        "scaling": 1.0,
+        "sr": 0,
+        "ut": "Volts"
+      },
+      "3": {
+        "alpha": 1.0,
+        "map": {
+          "raw": [
+            0.0,
+            1.25,
+            2.5,
+            3.75,
+            5.0
+          ],
+          "scal": [
+            0.0,
+            1.25,
+            2.5,
+            3.75,
+            5.0
+          ]
+        },
+        "max": 5.0,
+        "min": 0.0,
+        "nm": "Analog4",
+        "offset": 0.0,
+        "prec": 2,
+        "scalMod": 1,
+        "scaling": 1.0,
+        "sr": 0,
+        "ut": "Volts"
+      },
+      "4": {
+        "alpha": 1.0,
+        "map": {
+          "raw": [
+            0.0,
+            1.25,
+            2.5,
+            3.75,
+            5.0
+          ],
+          "scal": [
+            0.0,
+            1.25,
+            2.5,
+            3.75,
+            5.0
+          ]
+        },
+        "max": 5.0,
+        "min": 0.0,
+        "nm": "Analog5",
+        "offset": 0.0,
+        "prec": 2,
+        "scalMod": 1,
+        "scaling": 1.0,
+        "sr": 0,
+        "ut": "Volts"
+      },
+      "5": {
+        "alpha": 1.0,
+        "map": {
+          "raw": [
+            0.0,
+            1.25,
+            2.5,
+            3.75,
+            5.0
+          ],
+          "scal": [
+            0.0,
+            1.25,
+            2.5,
+            3.75,
+            5.0
+          ]
+        },
+        "max": 5.0,
+        "min": 0.0,
+        "nm": "Analog6",
+        "offset": 0.0,
+        "prec": 2,
+        "scalMod": 1,
+        "scaling": 1.0,
+        "sr": 0,
+        "ut": "Volts"
+      },
+      "6": {
+        "alpha": 1.0,
+        "map": {
+          "raw": [
+            0.0,
+            1.25,
+            2.5,
+            3.75,
+            5.0
+          ],
+          "scal": [
+            0.0,
+            1.25,
+            2.5,
+            3.75,
+            5.0
+          ]
+        },
+        "max": 5.0,
+        "min": 0.0,
+        "nm": "Analog7",
+        "offset": 0.0,
+        "prec": 2,
+        "scalMod": 1,
+        "scaling": 1.0,
+        "sr": 0,
+        "ut": "Volts"
+      },
+      "7": {
+        "alpha": 1.0,
+        "map": {
+          "raw": [
+            0.0,
+            1.25,
+            2.5,
+            3.75,
+            5.0
+          ],
+          "scal": [
+            0.0,
+            1.25,
+            2.5,
+            3.75,
+            5.0
+          ]
+        },
+        "max": 20.0,
+        "min": 0.0,
+        "nm": "Battery",
+        "offset": 0.0,
+        "prec": 2,
+        "scalMod": 1,
+        "scaling": 1.0,
+        "sr": 1,
+        "ut": "Volts"
+      }
+    },
+    "canCfg": {
+      "baud": [
+        500000,
+        500000
+      ],
+      "en": 1
+    },
+    "capabilities": {
+      "channels": {
+        "analog": 8,
+        "can": 2,
+        "gpio": 3,
+        "imu": 7,
+        "pwm": 4,
+        "timer": 3
+      },
+      "db": {
+        "script": 10240,
+        "tracks": 240
+      },
+      "sampleRates": {
+        "gps": 50,
+        "sensor": 1000
+      }
+    },
+    "connCfg": {
+      "btCfg": {
+        "btEn": 1,
+        "name": "RaceCapturePro",
+        "passKey": "1010"
+      },
+      "cellCfg": {
+        "apnHost": "epc.tmobile.com",
+        "apnPass": "",
+        "apnUser": "",
+        "cellEn": 0
+      },
+      "telCfg": {
+        "bgStream": 1,
+        "deviceId": ""
+      }
+    },
+    "gpioCfg": {
+      "0": {
+        "max": 1.0,
+        "min": 0.0,
+        "mode": 0,
+        "nm": "GPIO1",
+        "prec": 1,
+        "sr": 0,
+        "ut": ""
+      },
+      "1": {
+        "max": 1.0,
+        "min": 0.0,
+        "mode": 0,
+        "nm": "GPIO2",
+        "prec": 1,
+        "sr": 0,
+        "ut": ""
+      },
+      "2": {
+        "max": 1.0,
+        "min": 0.0,
+        "mode": 0,
+        "nm": "GPIO3",
+        "prec": 1,
+        "sr": 0,
+        "ut": ""
+      }
+    },
+    "gpsCfg": {
+      "alt": 1,
+      "dist": 0,
+      "dop": 1,
+      "pos": 1,
+      "qual": 1,
+      "sats": 1,
+      "speed": 1,
+      "sr": 10
+    },
+    "imuCfg": {
+      "0": {
+        "alpha": 0.1,
+        "chan": 0,
+        "max": 3.0,
+        "min": -3.0,
+        "mode": 1,
+        "nm": "AccelX",
+        "prec": 2,
+        "sr": 5,
+        "ut": "G",
+        "zeroVal": 1499
+      },
+      "1": {
+        "alpha": 0.1,
+        "chan": 1,
+        "max": 3.0,
+        "min": -3.0,
+        "mode": 1,
+        "nm": "AccelY",
+        "prec": 2,
+        "sr": 5,
+        "ut": "G",
+        "zeroVal": -46
+      },
+      "2": {
+        "alpha": 0.1,
+        "chan": 2,
+        "max": 3.0,
+        "min": -3.0,
+        "mode": 1,
+        "nm": "AccelZ",
+        "prec": 2,
+        "sr": 5,
+        "ut": "G",
+        "zeroVal": 117
+      },
+      "3": {
+        "alpha": 0.1,
+        "chan": 3,
+        "max": 300.0,
+        "min": -300.0,
+        "mode": 1,
+        "nm": "Yaw",
+        "prec": 1,
+        "sr": 5,
+        "ut": "Deg/Sec",
+        "zeroVal": -113
+      },
+      "4": {
+        "alpha": 0.1,
+        "chan": 4,
+        "max": 300.0,
+        "min": -300.0,
+        "mode": 1,
+        "nm": "Pitch",
+        "prec": 1,
+        "sr": 5,
+        "ut": "Deg/Sec",
+        "zeroVal": 105
+      },
+      "5": {
+        "alpha": 0.1,
+        "chan": 5,
+        "max": 300.0,
+        "min": -300.0,
+        "mode": 1,
+        "nm": "Roll",
+        "prec": 1,
+        "sr": 5,
+        "ut": "Deg/Sec",
+        "zeroVal": -113
+      }
+    },
+    "lapCfg": {
+      "currentLap": {
+        "max": 0,
+        "min": 0,
+        "nm": "CurrentLap",
+        "prec": 0,
+        "sr": 0,
+        "ut": ""
+      },
+      "elapsedTime": {
+        "max": 0,
+        "min": 0,
+        "nm": "ElapsedTime",
+        "prec": 4,
+        "sr": 0,
+        "ut": "Min"
+      },
+      "lapCount": {
+        "max": 0,
+        "min": 0,
+        "nm": "LapCount",
+        "prec": 0,
+        "sr": 0,
+        "ut": ""
+      },
+      "lapTime": {
+        "max": 0,
+        "min": 0,
+        "nm": "LapTime",
+        "prec": 4,
+        "sr": 0,
+        "ut": "Min"
+      },
+      "predTime": {
+        "max": 0,
+        "min": 0,
+        "nm": "PredTime",
+        "prec": 4,
+        "sr": 0,
+        "ut": "Min"
+      },
+      "sector": {
+        "max": 0,
+        "min": 0,
+        "nm": "Sector",
+        "prec": 0,
+        "sr": 0,
+        "ut": ""
+      },
+      "sectorTime": {
+        "max": 0,
+        "min": 0,
+        "nm": "SectorTime",
+        "prec": 4,
+        "sr": 0,
+        "ut": "Min"
+      }
+    },
+    "obd2Cfg": {
+      "en": 0,
+      "pids": []
+    },
+    "pwmCfg": {
+      "0": {
+        "logMode": 1,
+        "max": 100,
+        "min": 0,
+        "nm": "PWM1",
+        "outMode": 1,
+        "prec": 0,
+        "sr": 0,
+        "stDutyCyc": 50,
+        "stPeriod": 100,
+        "ut": ""
+      },
+      "1": {
+        "logMode": 1,
+        "max": 100,
+        "min": 0,
+        "nm": "PWM2",
+        "outMode": 1,
+        "prec": 0,
+        "sr": 0,
+        "stDutyCyc": 50,
+        "stPeriod": 100,
+        "ut": ""
+      },
+      "2": {
+        "logMode": 1,
+        "max": 100,
+        "min": 0,
+        "nm": "PWM3",
+        "outMode": 1,
+        "prec": 0,
+        "sr": 0,
+        "stDutyCyc": 50,
+        "stPeriod": 100,
+        "ut": ""
+      },
+      "3": {
+        "logMode": 1,
+        "max": 100,
+        "min": 0,
+        "nm": "PWM4",
+        "outMode": 1,
+        "prec": 0,
+        "sr": 0,
+        "stDutyCyc": 50,
+        "stPeriod": 100,
+        "ut": ""
+      }
+    },
+    "scriptCfg": {
+      "data": "did = addChannel(\"Distance\", 10, 4)\nptid = addChannel(\"PredTime\", 10, 5)\nltid = addChannel(\"LapTime\", 10, 5)\ncltid = addChannel(\"CurLapTime\", 10, 5)\netid = addChannel(\"ElapsedTime\", 10, 5)\nclid = addChannel(\"CurrentLap\", 10, 0)\nlcid = addChannel(\"LapCount\", 10, 0)\ncoolid = addChannel(\"Coolant\", 1, 0, 0, 300)\n\ndistance = 0\npredTime = 0\nelapsedTime = 0\nlapTime = 0\ncurLapTime = 0\ncoolant = 198\ncurrentLap = 1\nlapCount = 0\n\n--lap time in seconds\ntargetLapTime = 30\ntickRate = 10\n\ntargetTicks = targetLapTime *  tickRate\nsetTickRate(tickRate)\ntick = 0\n\nfunction onTick()\n\n-- imu is a bit noisy, use this to add ranomness\nlocal noise = getImu(3)\n\ntick = tick + 1\n\nif tick > targetTicks then\n  tick = 0\n  currentLap = currentLap + 1\n  lapCount = lapCount + 1\n  if lapCount == 1 then\n    lapTime = elapsedTime\n  else\n    lapTime = predTime\n  end\n  distance = 0\n  elapsedTime = 0\nelse\n  distance = distance + 0.01\n  elapsedTime = tick / tickRate / 60\nend\n\nif lapCount > 0 then\n predTime =  (targetLapTime * (1 + noise)) / 60\nend\n\n--simulated timing channels\nsetChannel(did, distance)\nsetChannel(ptid, predTime)\nsetChannel(ltid, lapTime)\nsetChannel(lcid, lapCount)\nsetChannel(clid, currentLap)\nsetChannel(etid, elapsedTime)\n\n--sensor channel\nsetChannel(coolid, coolant + (noise * 10))\n\nend",
+      "page": null
+    },
+    "timerCfg": {
+      "0": {
+        "alpha": 1.0,
+        "max": 10000,
+        "min": 0,
+        "mode": 0,
+        "nm": "RPM",
+        "ppr": 1,
+        "prec": 0,
+        "speed": 1,
+        "sr": 0,
+        "st": 0,
+        "ut": ""
+      },
+      "1": {
+        "alpha": 1.0,
+        "max": 1000,
+        "min": 0,
+        "mode": 0,
+        "nm": "RPM2",
+        "ppr": 1,
+        "prec": 0,
+        "speed": 1,
+        "sr": 0,
+        "st": 0,
+        "ut": ""
+      },
+      "2": {
+        "alpha": 1.0,
+        "max": 1000,
+        "min": 0,
+        "mode": 0,
+        "nm": "RPM3",
+        "ppr": 1,
+        "prec": 0,
+        "speed": 1,
+        "sr": 0,
+        "st": 0,
+        "ut": ""
+      }
+    },
+    "trackCfg": {
+      "autoDetect": 1,
+      "rad": 0.0001,
+      "track": {
+        "id": 0,
+        "sec": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "sf": [
+          0.0,
+          0.0
+        ],
+        "type": 0
+      }
+    },
+    "trackDb": {
+      "size": 0,
+      "tracks": []
+    },
+    "ver": {
+      "bugfix": 4,
+      "fname": "RaceCapture/Pro MK2",
+      "major": 2,
+      "minor": 8,
+      "name": "RCP_MK2"
+    }
+  }
+}
