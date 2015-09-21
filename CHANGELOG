@@ -3,11 +3,9 @@
 * Increased printing precision in LUA from 3 to 6 decimal places (as needed).
 * Fixed a bug in LUA libraries.  Now functions like `math.sin()` no longer
   cause the interpreter to crash.
-* Fixed bug with OBD-II configuration that would cause it to print out data
-  when OBD-II was disabled.
-* Expanded track detection radius from 1 KM to 5 KM so those who are amazingly
-  far away from start/finish still have auto-track detection work when the
-  unit boots up.
+* Prevent OBD-II channels from being included if OBD-II is disabled
+* Expanded track detection radius from 1 KM to 5 KM to handle cases when users are
+  pitted far away from start/finish
 * Release more RAM up by disabling LUA prior to flashing script.  This fixes
   many MK1 issues reported by customers when resetting or programming LUA.
 
