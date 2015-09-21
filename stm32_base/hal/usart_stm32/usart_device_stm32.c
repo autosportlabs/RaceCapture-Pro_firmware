@@ -701,7 +701,7 @@ void USART1_IRQHandler(void)
 
     if (USART_GetITStatus(USART1, USART_IT_ORE_RX) != RESET) {
         /* Handle Overrun error
-         * This bit is set by hardware when the word currently being received in the shift register is
+           This bit is set by hardware when the word currently being received in the shift register is
            ready to be transferred into the RDR register while RXNE=1. An interrupt is generated if
            RXNEIE=1 in the USART_CR1 register. It is cleared by a software sequence (an read to the
            USART_SR register followed by a read to the USART_DR register) */
@@ -741,7 +741,7 @@ void USART2_IRQHandler(void)
 
     if (USART_GetITStatus(USART2, USART_IT_ORE_RX) != RESET) {
         /* Handle Overrun error
-         * This bit is set by hardware when the word currently being received in the shift register is
+           This bit is set by hardware when the word currently being received in the shift register is
            ready to be transferred into the RDR register while RXNE=1. An interrupt is generated if
            RXNEIE=1 in the USART_CR1 register. It is cleared by a software sequence (an read to the
            USART_SR register followed by a read to the USART_DR register) */
@@ -781,7 +781,7 @@ void USART3_IRQHandler(void)
 
     if (USART_GetITStatus(USART3, USART_IT_ORE_RX) != RESET) {
         /* Handle Overrun error
-         * This bit is set by hardware when the word currently being received in the shift register is
+           This bit is set by hardware when the word currently being received in the shift register is
            ready to be transferred into the RDR register while RXNE=1. An interrupt is generated if
            RXNEIE=1 in the USART_CR1 register. It is cleared by a software sequence (an read to the
            USART_SR register followed by a read to the USART_DR register) */
@@ -820,7 +820,7 @@ void UART4_IRQHandler(void)
 
     if (USART_GetITStatus(UART4, USART_IT_ORE_RX) != RESET) {
         /* Handle Overrun error
-         * This bit is set by hardware when the word currently being received in the shift register is
+           This bit is set by hardware when the word currently being received in the shift register is
            ready to be transferred into the RDR register while RXNE=1. An interrupt is generated if
            RXNEIE=1 in the USART_CR1 register. It is cleared by a software sequence (an read to the
            USART_SR register followed by a read to the USART_DR register) */
