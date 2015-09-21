@@ -648,6 +648,22 @@ int usart3_readLine(char *s, int len)
 // Interrupt Handlers
 ////////////////////////////////////////////////////////////////////////////
 
+inline static void handle_usart_overrun(USART_TypeDef* USARTx)
+{
+	uint32_t cChar;
+    if (USART_GetITStatus(USARTx, USART_IT_ORE_RX) != RESET) {
+        /*
+         * Handle Overrun error
+         * This bit is set by hardware when the word currently being received in the shift register is
+         * ready to be transferred into the RDR register while RXNE=1. An interrupt is generated if
+         * RXNEIE=1 in the USART_CR1 register. It is cleared by a software sequence (an read to the
+         * USART_SR register followed by a read to the USART_DR register)
+         */
+        cChar = USART1->SR;
+        cChar = USART1->DR;
+    }
+}
+
 void DMA1_Stream5_IRQHandler(void)
 {
     portBASE_TYPE xTaskWokenByPost = pdFALSE;
@@ -699,15 +715,7 @@ void USART1_IRQHandler(void)
         xQueueSendFromISR(xUsart0Rx, &cChar, &xTaskWokenByPost);
     }
 
-    if (USART_GetITStatus(USART1, USART_IT_ORE_RX) != RESET) {
-        /* Handle Overrun error
-           This bit is set by hardware when the word currently being received in the shift register is
-           ready to be transferred into the RDR register while RXNE=1. An interrupt is generated if
-           RXNEIE=1 in the USART_CR1 register. It is cleared by a software sequence (an read to the
-           USART_SR register followed by a read to the USART_DR register) */
-        cChar = USART1->SR;
-        cChar = USART1->DR;
-    }
+    handle_usart_overrun(USART1);
 
     /* If a task was woken by either a character being received or a character
        being transmitted then we may need to switch to another task. */
@@ -739,15 +747,7 @@ void USART2_IRQHandler(void)
 //		xQueueSendFromISR( xUsart2Rx, &cChar, &xTaskWokenByPost );
     }
 
-    if (USART_GetITStatus(USART2, USART_IT_ORE_RX) != RESET) {
-        /* Handle Overrun error
-           This bit is set by hardware when the word currently being received in the shift register is
-           ready to be transferred into the RDR register while RXNE=1. An interrupt is generated if
-           RXNEIE=1 in the USART_CR1 register. It is cleared by a software sequence (an read to the
-           USART_SR register followed by a read to the USART_DR register) */
-        cChar = USART2->SR;
-        cChar = USART2->DR;
-    }
+    handle_usart_overrun(USART2);
 
     /* If a task was woken by either a character being received or a character
        being transmitted then we may need to switch to another task. */
@@ -779,15 +779,7 @@ void USART3_IRQHandler(void)
         xQueueSendFromISR(xUsart1Rx, &cChar, &xTaskWokenByPost);
     }
 
-    if (USART_GetITStatus(USART3, USART_IT_ORE_RX) != RESET) {
-        /* Handle Overrun error
-           This bit is set by hardware when the word currently being received in the shift register is
-           ready to be transferred into the RDR register while RXNE=1. An interrupt is generated if
-           RXNEIE=1 in the USART_CR1 register. It is cleared by a software sequence (an read to the
-           USART_SR register followed by a read to the USART_DR register) */
-        cChar = USART3->SR;
-        cChar = USART3->DR;
-    }
+    handle_usart_overrun(USART3);
 
     /* If a task was woken by either a character being received or a character
        being transmitted then we may need to switch to another task. */
@@ -818,15 +810,7 @@ void UART4_IRQHandler(void)
         xQueueSendFromISR(xUsart3Rx, &cChar, &xTaskWokenByPost);
     }
 
-    if (USART_GetITStatus(UART4, USART_IT_ORE_RX) != RESET) {
-        /* Handle Overrun error
-           This bit is set by hardware when the word currently being received in the shift register is
-           ready to be transferred into the RDR register while RXNE=1. An interrupt is generated if
-           RXNEIE=1 in the USART_CR1 register. It is cleared by a software sequence (an read to the
-           USART_SR register followed by a read to the USART_DR register) */
-        cChar = UART4->SR;
-        cChar = UART4->DR;
-    }
+    handle_usart_overrun(UART4);
 
     /* If a task was woken by either a character being received or a character
        being transmitted then we may need to switch to another task. */
