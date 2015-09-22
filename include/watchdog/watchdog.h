@@ -7,10 +7,11 @@
 
 #ifndef WATCHDOG_H_
 #define WATCHDOG_H_
+#include <stdbool.h>
 
-void watchdog_reset();
+void watchdog_reset(void);
 void watchdog_init(int timeoutMs);
-int watchdog_is_watchdog_reset();
-int watchdog_is_poweron_reset();
+bool watchdog_is_watchdog_reset(void);
+bool watchdog_is_poweron_reset(void);
 
 #endif /* WATCHDOG_H_ */

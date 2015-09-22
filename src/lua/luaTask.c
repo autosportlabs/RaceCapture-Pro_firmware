@@ -37,13 +37,19 @@
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
+#include "GPIO.h"
 
 #include <stdbool.h>
 
+#define ERROR_LED 3
 #define DEFAULT_ONTICK_HZ 1
 #define MAX_ONTICK_HZ 30
 #define LUA_STACK_SIZE 1000
 #define LUA_PERIODIC_FUNCTION "onTick"
+
+#define LUA_BYPASS_FLASH_DELAY 250
+#define LUA_BYPASS_DELAY_SEC 5
+#define LUA_BYPASS_FLASH_COUNT (1000 / LUA_BYPASS_FLASH_DELAY) * LUA_BYPASS_DELAY_SEC
 
 static enum {
         LUA_DISABLED = 0,
@@ -179,7 +185,7 @@ static bool _load_script(void)
         const char *script = getScript();
         const size_t len = strlen(script);
 
-        pr_info("Loading lua script (len = ");
+        pr_info("lua: Loading lua script (len = ");
         pr_info_int(len);
         pr_info("): ");
 
@@ -207,18 +213,35 @@ static bool _load_script(void)
         return true;
 }
 
+static bool user_bypass_requested(void)
+{
+        pr_info("lua: Checking for Lua runtime bypass request\r\n");
+        bool bypass = false;
+        LED_disable(ERROR_LED);
+        for (size_t i = 0; i < LUA_BYPASS_FLASH_COUNT; i++) {
+            LED_toggle(ERROR_LED);
+            if (GPIO_is_button_pressed()) {
+                bypass = true;
+                break;
+            }
+            delayMs(LUA_BYPASS_FLASH_DELAY);
+        }
+        LED_disable(ERROR_LED);
+        return bypass;
+}
+
 void initialize_lua()
 {
         lockLua();
 
-        pr_info("lua: Starting...\r\n");
+        pr_info("lua: Initializing...\r\n");
 
         if (LUA_ENABLED == lua_run_state)
                 goto cleanup;
 
         g_lua = lua_newstate(myAlloc, NULL);
         if (!g_lua) {
-                pr_error("LUA: Can't allocate memory for LUA state.\r\n");
+                pr_error("lua: Can't allocate memory for LUA state.\r\n");
                 goto cleanup;
         }
 
@@ -248,14 +271,14 @@ static void run_lua_method(const char *method)
 
         lua_getglobal(g_lua, method);
         if (lua_isnil(g_lua, -1)) {
-                pr_error_str_msg("Method not found: ", method);
+                pr_error_str_msg("lua: Method not found: ", method);
                 lua_pop(g_lua, 1);
                 goto cleanup;
         }
 
 
         if (0 != lua_pcall(g_lua, 0, 0, 0)) {
-                pr_error_str_msg("Lua script error: ", lua_tostring(g_lua, -1));
+                pr_error_str_msg("lua: Script error: ", lua_tostring(g_lua, -1));
                 lua_pop(g_lua, 1);
                 goto cleanup;
         }
@@ -299,15 +322,16 @@ cleanup:
         unlockLua();
 }
 
+
 static void luaTask(void *params)
 {
         set_ontick_freq(DEFAULT_ONTICK_HZ);
         initialize_script();
 
-        /* If we are starting up after watchdog, don't init LUA */
-        if (watchdog_is_watchdog_reset()) {
-                pr_error("lua: Crash detected! Bypassing Lua script \r\n");
-                LED_enable(3);
+        bool should_bypass_lua = (watchdog_is_watchdog_reset() && user_bypass_requested());
+        if (should_bypass_lua) {
+                pr_error("lua: Bypassing Lua Runtime\r\n");
+                LED_enable(ERROR_LED);
         } else {
                 initialize_lua();
         }
