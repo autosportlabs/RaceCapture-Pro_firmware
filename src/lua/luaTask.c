@@ -41,7 +41,6 @@
 
 #include <stdbool.h>
 
-#define ERROR_LED 3
 #define DEFAULT_ONTICK_HZ 1
 #define MAX_ONTICK_HZ 30
 #define LUA_STACK_SIZE 1000
@@ -217,16 +216,16 @@ static bool user_bypass_requested(void)
 {
         pr_info("lua: Checking for Lua runtime bypass request\r\n");
         bool bypass = false;
-        LED_disable(ERROR_LED);
+        LED_disable(LED_ERROR);
         for (size_t i = 0; i < LUA_BYPASS_FLASH_COUNT; i++) {
-            LED_toggle(ERROR_LED);
+            LED_toggle(LED_ERROR);
             if (GPIO_is_button_pressed()) {
                 bypass = true;
                 break;
             }
             delayMs(LUA_BYPASS_FLASH_DELAY);
         }
-        LED_disable(ERROR_LED);
+        LED_disable(LED_ERROR);
         return bypass;
 }
 
@@ -328,10 +327,10 @@ static void luaTask(void *params)
         set_ontick_freq(DEFAULT_ONTICK_HZ);
         initialize_script();
 
-        bool should_bypass_lua = (watchdog_is_watchdog_reset() && user_bypass_requested());
+        const bool should_bypass_lua = (watchdog_is_watchdog_reset() && user_bypass_requested());
         if (should_bypass_lua) {
                 pr_error("lua: Bypassing Lua Runtime\r\n");
-                LED_enable(ERROR_LED);
+                LED_enable(LED_ERROR);
         } else {
                 initialize_lua();
         }
