@@ -662,6 +662,8 @@ static void handle_usart_overrun(USART_TypeDef* USARTx)
 	 */
 	cChar = USART1->SR;
 	cChar = USART1->DR;
+	/* Suppress compiler warning */
+	cChar = cChar;
 }
 
 void DMA1_Stream5_IRQHandler(void)
