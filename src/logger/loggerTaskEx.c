@@ -1,41 +1,44 @@
-/**
- * AutoSport Labs - Race Capture Firmware
+/*
+ * Race Capture Firmware
  *
- * Copyright (C) 2014 AutoSport Labs
+ * Copyright (C) 2015 Autosport Labs
  *
  * This file is part of the Race Capture firmware suite
  *
- * This is free software: you can redistribute it and/or modify it under the terms of the
- * GNU General Public License as published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * See the GNU General Public License for more details. You should have received a copy of the GNU
- * General Public License along with this code. If not, see <http://www.gnu.org/licenses/>.
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "FreeRTOS.h"
+#include "LED.h"
+#include "connectivityTask.h"
+#include "fileWriter.h"
+#include "gps.h"
+#include "imu.h"
+#include "lap_stats.h"
+#include "logger.h"
+#include "loggerConfig.h"
+#include "loggerData.h"
+#include "loggerHardware.h"
+#include "loggerSampleData.h"
+#include "loggerTaskEx.h"
+#include "mod_string.h"
+#include "printk.h"
+#include "sampleRecord.h"
+#include "semphr.h"
 #include "task.h"
 #include "taskUtil.h"
-#include "semphr.h"
-#include "logger.h"
-#include "mod_string.h"
 #include "watchdog.h"
-#include "LED.h"
-#include "fileWriter.h"
-#include "connectivityTask.h"
-#include "sampleRecord.h"
-#include "loggerSampleData.h"
-#include "loggerData.h"
-#include "loggerTaskEx.h"
-#include "loggerHardware.h"
-#include "loggerConfig.h"
-#include "imu.h"
-#include "gps.h"
-#include "lap_stats.h"
-#include "printk.h"
 
 #define LOGGER_TASK_PRIORITY	( tskIDLE_PRIORITY + 4 )
 #define LOGGER_STACK_SIZE	200
@@ -233,7 +236,8 @@ void loggerTaskEx(void *params)
                  * We only log to file if the user has manually pushed the
                  * logging button.
                  */
-                if (is_logging && sampledRate >= loggingSampleRate) {
+                if (!isHigherSampleRate(sampledRate, loggingSampleRate)
+                    && is_logging) {
                         /* XXX Move this to file writer? */
                         const portBASE_TYPE res = queue_logfile_record(&msg);
                         const logging_status_t ls = pdTRUE == res ?
@@ -243,8 +247,7 @@ void loggerTaskEx(void *params)
                 }
 
                 /* send the sample on to the telemetry task(s) */
-                if (sampledRate >= telemetrySampleRate ||
-                    currentTicks % telemetrySampleRate == 0)
+                if (!isHigherSampleRate(sampledRate, telemetrySampleRate))
                         queueTelemetryRecord(&msg);
 
                 ++bufferIndex;
