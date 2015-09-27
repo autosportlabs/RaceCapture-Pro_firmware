@@ -146,12 +146,12 @@ dumpasm: $(TARGET).elf
 	$(PREFIX)-objdump -D $< > $(TARGET).asm
 
 debug: $(TARGET).bin
-	$(OPENOCD) -f $(APP_PATH)/openocd.cfg
+	$(OPENOCD) -f $(APP_PATH)/openocd_stlinkv2.cfg
 
 ddd: $(TARGET).elf
 	$(DDD) --eval-command="target remote localhost:3333" --eval-command="set env LD_LIBRARY_PATH ../lib_lua/src" --debugger $(GDB) $(TARGET).elf
 
 gdb: $(TARGET).elf
-	$(GDB) -ex "target ext localhost:3333" -ex "mon reset halt" -ex "mon arm semihosting enable" $(TARGET).elf
+	$(GDB) -x gdb_stlinkv2.gdb
 
 .PHONY: clean flash debug ddd dumpasm

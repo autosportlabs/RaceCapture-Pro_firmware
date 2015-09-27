@@ -29,3 +29,4 @@ TAGS
 *.pyc
 *.ihex
 .vagrant
+*.log
