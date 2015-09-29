@@ -19,26 +19,27 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "luaTask.h"
 #include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "semphr.h"
-#include "portable.h"
-#include "luaScript.h"
+#include "GPIO.h"
+#include "LED.h"
+#include "lauxlib.h"
+#include "lua.h"
 #include "luaBaseBinding.h"
 #include "luaLoggerBinding.h"
-#include "mem_mang.h"
-#include "taskUtil.h"
-#include "printk.h"
-#include "mod_string.h"
-#include "watchdog.h"
-#include "LED.h"
-#include "lua.h"
-#include "lauxlib.h"
+#include "luaScript.h"
+#include "luaTask.h"
 #include "lualib.h"
-#include "GPIO.h"
+#include "mem_mang.h"
+#include "mod_string.h"
+#include "portable.h"
+#include "printk.h"
+#include "queue.h"
+#include "semphr.h"
+#include "task.h"
+#include "taskUtil.h"
+#include "watchdog.h"
 
+#include <math.h>
 #include <stdbool.h>
 
 #define DEFAULT_ONTICK_HZ 1
@@ -57,78 +58,47 @@ static enum {
 
 static lua_State *g_lua;
 static xSemaphoreHandle xLuaLock;
-static unsigned int lastPointer;
 static size_t onTickSleepInterval;
+static size_t lua_mem_size;
 
-#ifdef ALLOC_DEBUG
-static int g_allocDebug = 0;
-#endif
-void * myAlloc (void *ud, void *ptr, size_t osize,size_t nsize)
+static void* myAlloc(void *ud, void *ptr, size_t osize, size_t nsize)
 {
+        const int delta = nsize - osize;
+        const size_t new_lua_mem_size = lua_mem_size + delta;
 
-#ifdef ALLOC_DEBUG
-    if (g_allocDebug) {
-        SendString("myAlloc- ptr:");
-        SendUint((unsigned int)ptr);
-        SendString(" osize:");
-        SendInt(osize);
-        SendString(" nsize:");
-        SendInt(nsize);
-    }
-#endif
+        if (nsize == 0) {
+                pr_debug_int_msg("[lua] RAM Freed: ", abs(delta));
+                portFree(ptr);
+                lua_mem_size = new_lua_mem_size;
+                return NULL;
+        }
 
-    if (nsize == 0) {
-        portFree(ptr);
-#ifdef ALLOC_DEBUG
-        if (g_allocDebug) {
-            SendString(" (free)");
-            SendCrlf();
+        if (LUA_MEM_MAX && LUA_MEM_MAX < new_lua_mem_size) {
+                pr_info("[lua] Memory ceiling hit: ");
+                pr_info_int(new_lua_mem_size);
+                pr_info_int_msg(" > ", LUA_MEM_MAX);
+                return NULL;
         }
-#endif
-        return NULL;
-    } else {
-        void *newPtr;
-        if (osize != nsize) {
-            newPtr = portRealloc(ptr, nsize);
-        } else {
-            newPtr = ptr;
+
+        void *nptr = portRealloc(ptr, nsize);
+        if (nptr == NULL) {
+                pr_info("[lua] Realloc failed: ");
+                pr_info_int(lua_mem_size);
+                pr_info_int_msg(" -> ", new_lua_mem_size);
+                return NULL;
         }
-#ifdef ALLOC_DEBUG
-        if (g_allocDebug) {
-            if (ptr != newPtr) {
-                SendString(" newPtr:");
-                SendUint((unsigned int)newPtr);
-            } else {
-                SendString(" (same)");
-            }
-            SendCrlf();
-        }
-#endif
-        lastPointer = (unsigned int)newPtr;
-        return newPtr;
-    }
+
+        const char *msg = delta < 0 ? "[lua] RAM released: " :
+                "[lua] RAM allocated: ";
+        pr_trace_int_msg(msg, abs(delta));
+        lua_mem_size = new_lua_mem_size;
+
+        return nptr;
 }
 
-unsigned int getLastPointer()
+size_t get_lua_mem_size()
 {
-    return lastPointer;
-}
-
-void setAllocDebug(int enableDebug)
-{
-#ifdef ALLOC_DEBUG
-    g_allocDebug = enableDebug;
-#endif
-
-}
-
-int getAllocDebug()
-{
-#ifdef ALLOC_DEBUG
-    return g_allocDebug;
-#else
-    return 0;
-#endif
+        return lua_mem_size;
 }
 
 static void lockLua(void)
@@ -264,8 +234,10 @@ cleanup:
         unlockLua();
 }
 
-static void run_lua_method(const char *method)
+static int run_lua_method(const char *method)
 {
+        int status = -1;
+
         lockLua();
 
         lua_getglobal(g_lua, method);
@@ -275,8 +247,8 @@ static void run_lua_method(const char *method)
                 goto cleanup;
         }
 
-
-        if (0 != lua_pcall(g_lua, 0, 0, 0)) {
+        status = lua_pcall(g_lua, 0, 0, 0);
+        if (0 != status) {
                 pr_error_str_msg("lua: Script error: ", lua_tostring(g_lua, -1));
                 lua_pop(g_lua, 1);
                 goto cleanup;
@@ -284,6 +256,7 @@ static void run_lua_method(const char *method)
 
 cleanup:
         unlockLua();
+        return status;
 }
 
 void run_lua_interactive_cmd(Serial *serial, const char* cmd)
@@ -335,6 +308,7 @@ static void luaTask(void *params)
                 initialize_lua();
         }
 
+        int fales = 0;
         for(;;) {
                 portTickType xLastWakeTime = xTaskGetTickCount();
                 vTaskDelayUntil(&xLastWakeTime, onTickSleepInterval);
@@ -342,7 +316,20 @@ static void luaTask(void *params)
                 if (LUA_ENABLED != lua_run_state)
                         continue;
 
-                run_lua_method(LUA_PERIODIC_FUNCTION);
+                const int rc = run_lua_method(LUA_PERIODIC_FUNCTION);
+                if (LUA_ERRMEM != rc) {
+                        fales = 0;
+                        continue;
+                }
+
+                /* If here then LUA failed to alloc RAM. */
+                if (++fales < 3)
+                        continue;
+
+                pr_warning("[lua] LUA Memory Failure.  Resetting LUA\r\n");
+                terminate_lua();
+                initialize_lua();
+                fales = 0;
         }
 }
 

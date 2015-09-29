@@ -30,12 +30,13 @@ void startLuaTask(int priority);
 
 void* getLua(void);
 
-void setAllocDebug(int enableDebug);
-int getAllocDebug();
+/**
+ * @return The amount of RAM (bytes) currently being used by LUA.
+ */
+size_t get_lua_mem_size();
 
 void set_ontick_freq(size_t freq);
 size_t get_ontick_freq();
-
 void initialize_lua();
 void terminate_lua();
 void run_lua_interactive_cmd(Serial *serial, const char* cmd);

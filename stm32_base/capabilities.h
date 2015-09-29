@@ -12,7 +12,9 @@
 #define MAX_TRACKS				240
 #define MAX_SECTORS				20
 #define MAX_VIRTUAL_CHANNELS	30
-#define SCRIPT_MEMORY_LENGTH	10240
+#define SCRIPT_MEMORY_LENGTH	(1024 * 10)
+/* 50 K seems to be solid from testing.  Set to 0 for no limit */
+#define LUA_MEM_MAX (1024 * 50)
 
 //Input / output Channels
 #define ANALOG_CHANNELS 		8
