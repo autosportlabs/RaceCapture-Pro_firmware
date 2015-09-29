@@ -15,6 +15,7 @@
 #define SCRIPT_MEMORY_LENGTH	(1024 * 10)
 /* 50 K seems to be solid from testing.  Set to 0 for no limit */
 #define LUA_MEM_MAX (1024 * 50)
+#define LOGGER_MESSAGE_BUFFER_SIZE	10
 
 //Input / output Channels
 #define ANALOG_CHANNELS 		8

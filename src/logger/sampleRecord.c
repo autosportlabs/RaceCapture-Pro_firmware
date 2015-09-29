@@ -62,9 +62,9 @@ char receive_logger_message(xQueueHandle queue, LoggerMessage *lm,
         return res;
 }
 
-xQueueHandle create_logger_message_queue(const size_t len)
+xQueueHandle create_logger_message_queue()
 {
-        return xQueueCreate(len, sizeof(LoggerMessage));
+        return xQueueCreate(LOGGER_MESSAGE_BUFFER_SIZE, sizeof(LoggerMessage));
 }
 
 LoggerMessage create_logger_message(const enum LoggerMessageType t,

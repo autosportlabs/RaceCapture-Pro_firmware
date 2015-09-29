@@ -444,8 +444,7 @@ static void fileWriterTask(void *params)
 
 void startFileWriterTask(int priority)
 {
-        g_LoggerMessage_queue = create_logger_message_queue(
-                SAMPLE_RECORD_QUEUE_SIZE);
+        g_LoggerMessage_queue = create_logger_message_queue();
         if (NULL == g_LoggerMessage_queue) {
                 pr_error(_RCP_BASE_FILE_ "LoggerMessage Queue is null!\r\n");
                 return;
