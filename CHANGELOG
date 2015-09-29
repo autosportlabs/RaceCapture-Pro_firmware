@@ -9,6 +9,8 @@
 * Release more RAM up by disabling LUA prior to flashing script.  This fixes
   many MK1 issues reported by customers when resetting or programming LUA.
 * Fix intermittent hang due to USART receive overflow interrupt storm
+* Add in LUA garbage collection parameters to help LUA work in high
+  memory pressure situations
 
 === 2.8.4 ===
 * Background streaming switch only affects telemetry link; Wireless (Bluetooth) link always streams

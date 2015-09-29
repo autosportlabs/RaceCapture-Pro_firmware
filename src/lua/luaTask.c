@@ -174,11 +174,6 @@ static bool _load_script(void)
         pr_info("SUCCESS!\r\n");
         /* Empty the stack? --> lua_settop (g_lua, 0); */
 
-        lua_gc(g_lua, LUA_GCCOLLECT,0);
-        pr_info("lua: memory usage: ");
-        pr_info_int(lua_gc(g_lua, LUA_GCCOUNT,0));
-        pr_info("Kb\r\n");
-
         return true;
 }
 
@@ -197,6 +192,11 @@ static bool user_bypass_requested(void)
         }
         LED_disable(LED_ERROR);
         return bypass;
+}
+
+static int lua_gc_config(const int what, const int data)
+{
+        return 0 == data ? 0 : lua_gc(g_lua, what, data);
 }
 
 void initialize_lua()
@@ -226,6 +226,16 @@ void initialize_lua()
                 _terminate_lua();
                 goto cleanup;
         }
+
+        /* Set garbage collection settings */
+        lua_gc_config(LUA_GCSETPAUSE, LUA_GC_PAUSE_PCT);
+        lua_gc_config(LUA_GCSETSTEPMUL, LUA_GC_STEP_MULT_PCT);
+
+        /* Now do a GC cycle to cleanup as much as possible */
+        lua_gc(g_lua, LUA_GCCOLLECT, 0);
+        pr_info("lua: memory usage: ");
+        pr_info_int(lua_gc(g_lua, LUA_GCCOUNT, 0));
+        pr_info("KB\r\n");
 
         /* If here, then init was successful.  Enable runtime */
         lua_run_state = LUA_ENABLED;

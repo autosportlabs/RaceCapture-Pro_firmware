@@ -12,10 +12,39 @@
 #define MAX_TRACKS				40
 #define MAX_SECTORS				20
 #define MAX_VIRTUAL_CHANNELS	10
-#define SCRIPT_MEMORY_LENGTH	(1024 * 2)
-/* ??? K seems to be solid from testing.  Set to 0 for no limit */
-#define LUA_MEM_MAX (1024 * 0)
 #define LOGGER_MESSAGE_BUFFER_SIZE	5
+
+
+/* LUA Configuration */
+/*
+ * What is the maximum length of the script that can be provided?
+ *
+ * Must be divisible by 256 (write block size in Sam7s)
+ */
+#define SCRIPT_MEMORY_LENGTH	(1024 * 4)
+
+/*
+ * Defines the memory ceiling for LUA.  In other words, how much RAM can
+ * LUA allocate before we say no.  This keeps LUA from crashing the system
+ * when a memory hog LUA script is running.  Set to 0 for no limit.
+ *
+ * 16 K seems to be all we really have.
+ */
+#define LUA_MEM_MAX (1024 * 16)
+
+/*
+ * These values dictate how the LUA garbage collector will behave.
+ * Tweaking these is necessary in low memory environments to ensure
+ * that LUA's memory footprint does not exceed what can be spared.
+ * A value of 0 means that you want to use the default.  For more info
+ * see http://www.lua.org/manual/5.1/manual.html#2.10
+ *
+ * Decreasing the pause pct to 125 to ensure the GC runs frequently.
+ * Setting the mult to 300 so the GC can be more agressive.
+ */
+#define LUA_GC_PAUSE_PCT	110
+#define LUA_GC_STEP_MULT_PCT	1000
+
 
 //Input / output Channels
 #define ANALOG_CHANNELS 		8
