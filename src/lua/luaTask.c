@@ -216,26 +216,30 @@ void initialize_lua()
 
         //open optional libraries
         luaopen_base(g_lua);
-        luaopen_table(g_lua);
-        luaopen_string(g_lua);
-        luaopen_math(g_lua);
         registerBaseLuaFunctions(g_lua);
         registerLuaLoggerBindings(g_lua);
+
+        if (LUA_REGISTER_EXTERNAL_LIBS) {
+                luaopen_table(g_lua);
+                luaopen_string(g_lua);
+                luaopen_math(g_lua);
+        }
 
         if (!_load_script()) {
                 _terminate_lua();
                 goto cleanup;
         }
 
-        /* Set garbage collection settings */
-        lua_gc_config(LUA_GCSETPAUSE, LUA_GC_PAUSE_PCT);
-        lua_gc_config(LUA_GCSETSTEPMUL, LUA_GC_STEP_MULT_PCT);
-
-        /* Now do a GC cycle to cleanup as much as possible */
+        /* Now do an agressive GC cycle to cleanup as much as possible */
         lua_gc(g_lua, LUA_GCCOLLECT, 0);
         pr_info("lua: memory usage: ");
         pr_info_int(lua_gc(g_lua, LUA_GCCOUNT, 0));
         pr_info("KB\r\n");
+
+        /* Set garbage collection settings */
+        lua_gc_config(LUA_GCSETPAUSE, LUA_GC_PAUSE_PCT);
+        lua_gc_config(LUA_GCSETSTEPMUL, LUA_GC_STEP_MULT_PCT);
+
 
         /* If here, then init was successful.  Enable runtime */
         lua_run_state = LUA_ENABLED;

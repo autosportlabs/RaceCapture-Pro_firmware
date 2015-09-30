@@ -450,7 +450,7 @@ void startFileWriterTask(int priority)
                 return;
         }
 
-        g_logfile = (FIL *) pvPortMalloc(sizeof(FIL));
+        g_logfile = (FIL *) portMalloc(sizeof(FIL));
         if (NULL == g_logfile) {
                 pr_error(_RCP_BASE_FILE_ "logfile sruct alloc err\r\n");
                 return;

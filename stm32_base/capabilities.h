@@ -13,15 +13,12 @@
 #define MAX_SECTORS				20
 #define MAX_VIRTUAL_CHANNELS	30
 
-#define LUA_MEM_MAX (1024 * 50)
 #define LOGGER_MESSAGE_BUFFER_SIZE	10
 
 /* LUA Configuration */
 /*
  * What is the maximum length of the script that can be provided?
- *
- * In MK2 this is simply a 16K flash block.  If smaller, then
- * value % 256 must be 0.
+ * Must be divisible by 256.
  */
 #define SCRIPT_MEMORY_LENGTH	(1024 * 16)
 
@@ -29,8 +26,6 @@
  * Defines the memory ceiling for LUA.  In other words, how much RAM can
  * LUA allocate before we say no.  This keeps LUA from crashing the system
  * when a memory hog LUA script is running.  Set to 0 for no limit.
- *
- * 50 K seems to be solid from testing.
  */
 #define LUA_MEM_MAX (1024 * 50)
 
@@ -43,6 +38,12 @@
  */
 #define LUA_GC_PAUSE_PCT	0
 #define LUA_GC_STEP_MULT_PCT	0
+
+/*
+ * Controls whether or not we allow LUA to register the nice to have
+ * external libs.  These come at a memory cost, but are useful.
+ */
+#define LUA_REGISTER_EXTERNAL_LIBS	1
 
 
 //Input / output Channels
