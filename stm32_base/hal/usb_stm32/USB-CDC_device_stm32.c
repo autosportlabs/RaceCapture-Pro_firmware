@@ -10,7 +10,7 @@
 static volatile int _init_flag = 0;
 USB_OTG_CORE_HANDLE USB_OTG_dev __attribute__ ((aligned (4)));
 
-int USB_CDC_device_init()
+int USB_CDC_device_init(const int priority)
 {
     vcp_setup();
 
