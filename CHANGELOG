@@ -9,6 +9,11 @@
 * Release more RAM up by disabling LUA prior to flashing script.  This fixes
   many MK1 issues reported by customers when resetting or programming LUA.
 * Fix intermittent hang due to USART receive overflow interrupt storm
+* Add in LUA garbage collection parameters to help LUA work in high
+  memory pressure situations
+* Reduce max LUA script size on MK1 to 4K for stability reasons and increased
+  max script size on MK2 to 16K.  This will result in the LUA script being
+  restored to the default.  Please back up your scripts prior to upgrading.
 
 === 2.8.4 ===
 * Background streaming switch only affects telemetry link; Wireless (Bluetooth) link always streams

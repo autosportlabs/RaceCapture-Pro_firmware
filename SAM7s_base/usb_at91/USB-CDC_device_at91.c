@@ -148,9 +148,6 @@ static unsigned int uiCurrentBank;
 /*------------------------------------------------------------*/
 
 #define USB_CDC_TASK_SIZE					( 100 )
-#define USB_CDC_TASK_PRIORITY				( tskIDLE_PRIORITY + 3 )
-
-
 
 
 static void vUSBCDCTask( void *pvParameters )
@@ -254,7 +251,6 @@ void USB_CDC_SendByte( portCHAR cByte )
 portBASE_TYPE USB_CDC_ReceiveByteDelay(portCHAR *data, portTickType delay)
 {
     return xQueueReceive(xRxCDC, data, delay);
-
 }
 
 portBASE_TYPE USB_CDC_ReceiveByte(portCHAR *data)
@@ -691,9 +687,8 @@ static void vDetachUSBInterface( void)
 
 extern void ( vUSB_ISR )( void );
 
-int USB_CDC_device_init( void )
+int USB_CDC_device_init(const int priority)
 {
-
     vDetachUSBInterface();
     //TODO add a delay here after detaching
 
@@ -773,7 +768,7 @@ int USB_CDC_device_init( void )
 //*************************************************
 
     usbIntefacedInitialized  = 1;
-    startUSBCDCTask(USB_CDC_TASK_PRIORITY);
+    startUSBCDCTask(priority);
 
     return 1; //success
 }

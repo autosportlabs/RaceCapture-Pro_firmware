@@ -51,6 +51,7 @@
 #include "watchdog.h"
 
 #include <app_info.h>
+#include <stdbool.h>
 
 #define FATAL_ERROR_SCHEDULER	1
 #define FATAL_ERROR_HARDWARE	2
@@ -93,74 +94,69 @@ static void fatalError(int type)
     }
 }
 
-#define OBD2_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
-#define GPS_TASK_PRIORITY 			( tskIDLE_PRIORITY + 5 )
-#define CONNECTIVITY_TASK_PRIORITY 	( tskIDLE_PRIORITY + 4 )
-#define LOGGER_TASK_PRIORITY		( tskIDLE_PRIORITY + 6 )
-#define FILE_WRITER_TASK_PRIORITY	( tskIDLE_PRIORITY + 4 )
-#define LUA_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
-#define USB_COMM_TASK_PRIORITY		( tskIDLE_PRIORITY + 6 )
-#define GPIO_TASK_PRIORITY 			( tskIDLE_PRIORITY + 4 )
+/*
+ * Define task priorities here.  Ensure that these values are
+ * all below `configMAX_PRIORITIES - 1` in the FreeRTOSConfig.h.
+ * See http://www.freertos.org/RTOS-task-priority.html for more
+ * info on how to best set these.  0 is lowest priority.
+ */
+#define TASK_PRIORITY(v)	(tskIDLE_PRIORITY + v)
+#define RCP_INPUT_PRIORITY	TASK_PRIORITY(4)
+#define RCP_OUTPUT_PRIORITY	TASK_PRIORITY(3)
+#define RCP_LOGGING_PRIORITY	TASK_PRIORITY(2)
+#define RCP_LUA_PRIORITY	TASK_PRIORITY(1)
 
-
-void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName)
+void setupTask(void *delTask)
 {
-    (void)pxTask;
-    (void)pcTaskName;
-}
+        initialize_tracks();
+        initialize_logger_config();
+        InitLoggerHardware();
+        initMessaging();
 
-void setupTask(void *params)
-{
-    (void)params;
+        startUSBCommTask(RCP_INPUT_PRIORITY);
+        startGPIOTasks(RCP_INPUT_PRIORITY);
+        startGPSTask(RCP_INPUT_PRIORITY);
+        startOBD2Task(RCP_INPUT_PRIORITY);
+        startFileWriterTask(RCP_OUTPUT_PRIORITY);
+        startConnectivityTask(RCP_OUTPUT_PRIORITY);
+        startLoggerTaskEx(RCP_LOGGING_PRIORITY);
+        startLuaTask(RCP_LUA_PRIORITY);
 
-    initialize_tracks();
-    initialize_logger_config();
-    InitLoggerHardware();
-    initMessaging();
-
-    startGPIOTasks			( GPIO_TASK_PRIORITY );
-    startUSBCommTask		( USB_COMM_TASK_PRIORITY );
-    startLuaTask			( LUA_TASK_PRIORITY );
-    startFileWriterTask		( FILE_WRITER_TASK_PRIORITY );
-    startConnectivityTask	( CONNECTIVITY_TASK_PRIORITY );
-    startGPSTask			( GPS_TASK_PRIORITY );
-    startOBD2Task			( OBD2_TASK_PRIORITY);
-    startLoggerTaskEx		( LOGGER_TASK_PRIORITY );
-
-    /* Removes this setup task from the scheduler */
-    vTaskDelete(NULL);
+        /* Removes this setup task from the scheduler */
+        if (delTask)
+                vTaskDelete(NULL);
 }
 
 
 int main( void )
 {
-    ALWAYS_KEEP(info_block);
-    cpu_init();
-    pr_info("*** Start! ***\r\n");
-    watchdog_init(WATCHDOG_TIMEOUT_MS);
+        ALWAYS_KEEP(info_block);
+        cpu_init();
+        pr_info("*** Start! ***\r\n");
+        watchdog_init(WATCHDOG_TIMEOUT_MS);
 
-    /* Start the scheduler.
+        /*
+         * Start the scheduler.
+         *
+         * NOTE : Tasks run in system mode and the scheduler runs in
+         * Supervisor mode. The processor MUST be in supervisor mode
+         * when vTaskStartScheduler is called.  The demo applications
+         * included in the FreeRTOS.org download switch to supervisor
+         * mode prior to main being called.  If you are not using one
+         * of these demo application projects then ensure Supervisor
+         * mode is used here.
+         */
 
-       NOTE : Tasks run in system mode and the scheduler runs in Supervisor mode.
-       The processor MUST be in supervisor mode when vTaskStartScheduler is
-       called.  The demo applications included in the FreeRTOS.org download switch
-       to supervisor mode prior to main being called.  If you are not using one of
-       these demo application projects then ensure Supervisor mode is used here.
-    */
+        if (TASK_TASK_INIT) {
+                xTaskCreate(setupTask,(signed portCHAR*) "Hardware Init",
+                            configMINIMAL_STACK_SIZE + 500, (void *) true,
+                            tskIDLE_PRIORITY, NULL);
+        } else {
+                setupTask((void *) false);
+        }
 
-    if (TASK_TASK_INIT) {
-        xTaskCreate(setupTask,
-                    (signed portCHAR*)"Hardware Init",
-                    configMINIMAL_STACK_SIZE + 500,
-                    NULL,
-                    tskIDLE_PRIORITY + 4,
-                    NULL);
-    } else {
-        setupTask(NULL);
-    }
+        vTaskStartScheduler();
+        fatalError(FATAL_ERROR_SCHEDULER);
 
-    vTaskStartScheduler();
-    fatalError(FATAL_ERROR_SCHEDULER);
-
-    return 0;
+        return 0;
 }

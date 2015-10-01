@@ -1,41 +1,45 @@
-/**
- * AutoSport Labs - Race Capture Firmware
+/*
+ * Race Capture Pro Firmware
  *
- * Copyright (C) 2014 AutoSport Labs
+ * Copyright (C) 2015 Autosport Labs
  *
- * This file is part of the Race Capture firmware suite
+ * This file is part of the Race Capture Pro fimrware suite
  *
- * This is free software: you can redistribute it and/or modify it under the terms of the
- * GNU General Public License as published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * See the GNU General Public License for more details. You should have received a copy of the GNU
- * General Public License along with this code. If not, see <http://www.gnu.org/licenses/>.
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "FreeRTOS.h"
+#include "LED.h"
+#include "capabilities.h"
+#include "connectivityTask.h"
+#include "fileWriter.h"
+#include "gps.h"
+#include "imu.h"
+#include "lap_stats.h"
+#include "logger.h"
+#include "loggerConfig.h"
+#include "loggerData.h"
+#include "loggerHardware.h"
+#include "loggerSampleData.h"
+#include "loggerTaskEx.h"
+#include "mod_string.h"
+#include "printk.h"
+#include "sampleRecord.h"
+#include "semphr.h"
 #include "task.h"
 #include "taskUtil.h"
-#include "semphr.h"
-#include "logger.h"
-#include "mod_string.h"
 #include "watchdog.h"
-#include "LED.h"
-#include "fileWriter.h"
-#include "connectivityTask.h"
-#include "sampleRecord.h"
-#include "loggerSampleData.h"
-#include "loggerData.h"
-#include "loggerTaskEx.h"
-#include "loggerHardware.h"
-#include "loggerConfig.h"
-#include "imu.h"
-#include "gps.h"
-#include "lap_stats.h"
-#include "printk.h"
 
 #define LOGGER_TASK_PRIORITY	( tskIDLE_PRIORITY + 4 )
 #define LOGGER_STACK_SIZE	200
@@ -49,7 +53,6 @@ int g_telemetryBackgroundStreaming;
 
 xSemaphoreHandle onTick;
 
-#define LOGGER_MESSAGE_BUFFER_SIZE	10
 /* This should be 0'd out accroding to C standards */
 static struct sample g_sample_buffer[LOGGER_MESSAGE_BUFFER_SIZE];
 

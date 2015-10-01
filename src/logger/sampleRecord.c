@@ -1,15 +1,31 @@
 /*
- * sampleRecord.c
+ * Race Capture Pro Firmware
  *
- *  Created on: Feb 29, 2012
- *      Author: brent
+ * Copyright (C) 2015 Autosport Labs
+ *
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "sampleRecord.h"
-#include "loggerConfig.h"
-#include "mem_mang.h"
+
 #include "FreeRTOS.h"
-#include "taskUtil.h"
+#include "capabilities.h"
+#include "loggerConfig.h"
 #include "loggerSampleData.h"
+#include "mem_mang.h"
+#include "sampleRecord.h"
+#include "taskUtil.h"
 
 #include <stdbool.h>
 
@@ -62,9 +78,9 @@ char receive_logger_message(xQueueHandle queue, LoggerMessage *lm,
         return res;
 }
 
-xQueueHandle create_logger_message_queue(const size_t len)
+xQueueHandle create_logger_message_queue()
 {
-        return xQueueCreate(len, sizeof(LoggerMessage));
+        return xQueueCreate(LOGGER_MESSAGE_BUFFER_SIZE, sizeof(LoggerMessage));
 }
 
 LoggerMessage create_logger_message(const enum LoggerMessageType t,

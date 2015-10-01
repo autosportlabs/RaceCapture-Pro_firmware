@@ -138,7 +138,7 @@ bool is_data_sample_valid(const LoggerMessage *lm);
  * them.
  * @return A newly allocated queue.
  */
-xQueueHandle create_logger_message_queue(const size_t len);
+xQueueHandle create_logger_message_queue();
 
 /**
  * Enqueues a LoggerMessage onto a provided queue.

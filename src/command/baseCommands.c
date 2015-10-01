@@ -1,31 +1,34 @@
-/**
- * AutoSport Labs - Race Capture Firmware
+/*
+ * Race Capture Pro Firmware
  *
- * Copyright (C) 2014 AutoSport Labs
+ * Copyright (C) 2015 Autosport Labs
  *
- * This file is part of the Race Capture firmware suite
+ * This file is part of the Race Capture Pro fimrware suite
  *
- * This is free software: you can redistribute it and/or modify it under the terms of the
- * GNU General Public License as published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * See the GNU General Public License for more details. You should have received a copy of the GNU
- * General Public License along with this code. If not, see <http://www.gnu.org/licenses/>.
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "baseCommands.h"
 #include "FreeRTOS.h"
-#include "task.h"
-#include "mem_mang.h"
-#include "luaScript.h"
-#include "lua.h"
-#include "luaTask.h"
-#include "memory.h"
-#include "loggerConfig.h"
+#include "baseCommands.h"
 #include "cpu.h"
+#include "loggerConfig.h"
+#include "lua.h"
+#include "luaScript.h"
+#include "luaTask.h"
+#include "mem_mang.h"
+#include "memory.h"
+#include "task.h"
 
 extern unsigned int _CONFIG_HEAP_SIZE;
 
@@ -88,9 +91,14 @@ void ShowTaskInfo(Serial *serial, unsigned int argc, char **argv)
 {
     putHeader(serial, "Task Info");
 
-    serial->put_s("Status\tPri\tStack\tTask#\tName");
+    serial->put_s("Status\tPri\tStackHR\tTask#\tName");
     put_crlf(serial);
 
+    /*
+     * Memory info from vTaskList can be misleading.  See
+     * http://www.freertos.org/uxTaskGetSystemState.html for
+     * more detail about how it works and value meanings.
+     */
     char *taskList = (char *) portMalloc(1024);
     if (NULL != taskList) {
         vTaskList(taskList);
@@ -99,7 +107,10 @@ void ShowTaskInfo(Serial *serial, unsigned int argc, char **argv)
     } else {
         serial->put_s("Out of Memory!");
     }
+    put_crlf(serial);
 
+    put_crlf(serial);
+    serial->put_s("[Note] StackHR: If StackHR < 0; then stack smash");
     put_crlf(serial);
 }
 

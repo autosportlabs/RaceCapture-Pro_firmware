@@ -2,7 +2,7 @@
 #define USB_CDC_DEVICE_H_
 #include "FreeRTOS.h"
 
-int USB_CDC_device_init();
+int USB_CDC_device_init(const int priority);
 
 void USB_CDC_send_debug(portCHAR *string);
 
