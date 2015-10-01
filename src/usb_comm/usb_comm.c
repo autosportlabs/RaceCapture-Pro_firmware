@@ -34,8 +34,7 @@ void usb_init_serial(Serial *serial)
 
 void startUSBCommTask(int priority)
 {
-        /* The Comm priority should always be slightly higher */
-        usb_comm_init(priority + 1);
+        usb_comm_init(priority);
 
         xTaskCreate(onUSBCommTask,( signed portCHAR * ) "OnUSBComm",
                     mainUSB_COMM_STACK, NULL, priority, NULL );

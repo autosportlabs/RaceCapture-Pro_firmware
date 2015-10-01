@@ -82,9 +82,9 @@ static void* myAlloc(void *ud, void *ptr, size_t osize, size_t nsize)
 
         void *nptr = portRealloc(ptr, nsize);
         if (nptr == NULL) {
-                pr_info("[lua] Realloc failed: ");
-                pr_info_int(lua_mem_size);
-                pr_info_int_msg(" -> ", new_lua_mem_size);
+                pr_debug("[lua] Realloc failed: ");
+                pr_debug_int(lua_mem_size);
+                pr_debug_int_msg(" -> ", new_lua_mem_size);
                 return NULL;
         }
 
