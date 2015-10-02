@@ -120,33 +120,34 @@ enum script_add_result flashScriptPage(const unsigned int page,
                 /* Valid cases.  Carry on */
                 break;
         default:
-                pr_error_int_msg("Unknown script_add_mode: ", mode);
+                pr_error_int_msg("lua: Unknown script_add_mode: ", mode);
                 return SCRIPT_ADD_RESULT_FAIL;
         }
 
         static ScriptConfig *g_scriptBuffer;
-        if (g_scriptBuffer == NULL) {
+        if (NULL == g_scriptBuffer) {
                 terminate_lua();
 
-                pr_info("Allocating new script buffer\r\n");
+                pr_debug("lua: Allocating new script buffer\r\n");
                 g_scriptBuffer =
                         (ScriptConfig *) portMalloc(sizeof(ScriptConfig));
                 memcpy((void *)g_scriptBuffer, (void *)&g_scriptConfig,
                        sizeof(ScriptConfig));
         }
 
-        if (g_scriptBuffer == NULL) {
-                pr_error("Failed to allocate memory for script buffer.\r\n");
+        if (NULL == g_scriptBuffer) {
+                pr_error("lua: Failed to allocate memory for script "
+                         "buffer.\r\n");
                 return SCRIPT_ADD_RESULT_FAIL;
         }
 
         char *pageToAdd = g_scriptBuffer->script + page * SCRIPT_PAGE_SIZE;
         strncpy(pageToAdd, data, SCRIPT_PAGE_SIZE);
 
-        if (mode == SCRIPT_ADD_MODE_IN_PROGRESS)
+        if (SCRIPT_ADD_MODE_IN_PROGRESS == mode)
                 return SCRIPT_ADD_RESULT_OK;
 
-        pr_info("Completed updating LUA. Flashing... ");
+        pr_info("lua: Completed updating LUA. Flashing... ");
         const int rc = memory_flash_region((void*) &g_scriptConfig,
                                            (void*) g_scriptBuffer,
                                            sizeof(ScriptConfig));

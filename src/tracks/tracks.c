@@ -66,7 +66,7 @@ enum track_add_result add_track(const Track *track, const size_t index,
                                 const enum track_add_mode mode)
 {
         if (index >= MAX_TRACK_COUNT) {
-                pr_error("Invalid track index\r\n");
+                pr_error("tracks: Invalid track index\r\n");
                 return TRACK_ADD_RESULT_FAIL;
         }
 
@@ -76,21 +76,21 @@ enum track_add_result add_track(const Track *track, const size_t index,
                 /* Valid cases.  Carry on */
                 break;
         default:
-                pr_error_int_msg("Unknown track_add_mode: ", mode);
+                pr_error_int_msg("tracks: Unknown track_add_mode: ", mode);
                 return TRACK_ADD_RESULT_FAIL;
         }
 
         static Tracks *g_tracksBuffer;
-        if (g_tracksBuffer == NULL) {
+        if (NULL == g_tracksBuffer) {
                 terminate_lua();
 
-                pr_info("allocating new tracks buffer\r\n");
+                pr_debug("tracks: Allocating new tracks buffer\r\n");
                 g_tracksBuffer = (Tracks *) portMalloc(sizeof(Tracks));
                 memcpy(g_tracksBuffer, (void*) &g_tracks, sizeof(Tracks));
         }
 
-        if (g_tracksBuffer == NULL) {
-                pr_error("Failed to allocate memory for track buffer.\r\n");
+        if (NULL == g_tracksBuffer) {
+                pr_error("tracks: Failed to allocate memory for track buffer.\r\n");
                 return TRACK_ADD_RESULT_FAIL;
         }
 
@@ -99,11 +99,11 @@ enum track_add_result add_track(const Track *track, const size_t index,
         g_tracksBuffer->count = index + 1;
 
         /* If we made it here and are still in progress, then we are done */
-        if (mode == TRACK_ADD_MODE_IN_PROGRESS)
+        if (TRACK_ADD_MODE_IN_PROGRESS == mode)
                 return TRACK_ADD_RESULT_OK;
 
         /* If here, time to flash and tidy up */
-        pr_info("Completed updating tracks, flashing... ");
+        pr_info("tracks: Completed updating tracks. Flashing... ");
         const int rc = flash_tracks(g_tracksBuffer, sizeof(Tracks));
         portFree(g_tracksBuffer);
         g_tracksBuffer = NULL;

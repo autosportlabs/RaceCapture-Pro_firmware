@@ -34,7 +34,6 @@ enum track_add_result {
 };
 
 enum track_add_mode {
-        TRACK_ADD_MODE_UNKNOWN = 0,
         TRACK_ADD_MODE_IN_PROGRESS = 1,
         TRACK_ADD_MODE_COMPLETE = 2,
 };
