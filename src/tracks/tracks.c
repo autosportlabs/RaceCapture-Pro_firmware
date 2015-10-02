@@ -1,8 +1,30 @@
-#include "tracks.h"
+/*
+ * Race Capture Pro Firmware
+ *
+ * Copyright (C) 2015 Autosport Labs
+ *
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "luaTask.h"
+#include "mem_mang.h"
+#include "memory.h"
 #include "mod_string.h"
 #include "printk.h"
-#include "memory.h"
-#include "mem_mang.h"
+#include "tracks.h"
 
 #ifndef RCP_TESTING
 #include "memory.h"
@@ -12,8 +34,6 @@ static Tracks g_tracks = DEFAULT_TRACKS;
 #endif
 
 static const Tracks g_defaultTracks = DEFAULT_TRACKS;
-
-static Tracks *g_tracksBuffer = NULL;
 
 void initialize_tracks()
 {
@@ -42,44 +62,64 @@ const Tracks * get_tracks()
 }
 
 
-int add_track(const Track *track, size_t index, int mode)
+enum track_add_result add_track(const Track *track, const size_t index,
+                                const enum track_add_mode mode)
 {
-    int result = TRACK_ADD_RESULT_OK;
-
-    if (index < MAX_TRACK_COUNT) {
-        if (mode == TRACK_ADD_MODE_IN_PROGRESS || mode == TRACK_ADD_MODE_COMPLETE) {
-            if (g_tracksBuffer == NULL) {
-                pr_info("allocating new tracks buffer\r\n");
-                g_tracksBuffer = (Tracks *)portMalloc(sizeof(Tracks));
-                memcpy((void *)g_tracksBuffer, (void *)&g_tracks, sizeof(Tracks));
-            }
-
-            if (g_tracksBuffer != NULL) {
-                Track *trackToAdd = g_tracksBuffer->tracks + index;
-                memcpy(trackToAdd, track, sizeof(Track));
-                g_tracksBuffer->count = index + 1;
-
-                if (mode == TRACK_ADD_MODE_COMPLETE) {
-                    pr_info("completed updating tracks, flashing: ");
-                    if (flash_tracks(g_tracksBuffer, sizeof(Tracks)) == 0) {
-                        pr_info("win\r\n");
-                    } else {
-                        pr_error("fail\r\n");
-                        result = TRACK_ADD_RESULT_FAIL;
-                    }
-                    portFree(g_tracksBuffer);
-                    g_tracksBuffer = NULL;
-                }
-            } else {
-                pr_error("could not allocate buffer for tracks\r\n");
-                result = TRACK_ADD_RESULT_FAIL;
-            }
+        if (index >= MAX_TRACK_COUNT) {
+                pr_error("tracks: Invalid track index\r\n");
+                return TRACK_ADD_RESULT_FAIL;
         }
-    } else {
-        pr_error("invalid track index\r\n");
-        result = TRACK_ADD_RESULT_FAIL;
-    }
-    return result;
+
+        switch (mode) {
+        case TRACK_ADD_MODE_IN_PROGRESS:
+        case TRACK_ADD_MODE_COMPLETE:
+                /* Valid cases.  Carry on */
+                break;
+        default:
+                pr_error_int_msg("tracks: Unknown track_add_mode: ", mode);
+                return TRACK_ADD_RESULT_FAIL;
+        }
+
+        static Tracks *g_tracksBuffer;
+        if (NULL == g_tracksBuffer) {
+                if (RCP_LOW_MEM)
+                        terminate_lua();
+
+                pr_debug("tracks: Allocating new tracks buffer\r\n");
+                g_tracksBuffer = (Tracks *) portMalloc(sizeof(Tracks));
+                memcpy(g_tracksBuffer, (void*) &g_tracks, sizeof(Tracks));
+        }
+
+        if (NULL == g_tracksBuffer) {
+                pr_error("tracks: Failed to allocate memory for track buffer.\r\n");
+                return TRACK_ADD_RESULT_FAIL;
+        }
+
+        Track *trackToAdd = g_tracksBuffer->tracks + index;
+        memcpy(trackToAdd, track, sizeof(Track));
+        g_tracksBuffer->count = index + 1;
+
+        /* If we made it here and are still in progress, then we are done */
+        if (TRACK_ADD_MODE_IN_PROGRESS == mode)
+                return TRACK_ADD_RESULT_OK;
+
+        /* If here, time to flash and tidy up */
+        pr_info("tracks: Completed updating tracks. Flashing... ");
+        const int rc = flash_tracks(g_tracksBuffer, sizeof(Tracks));
+        portFree(g_tracksBuffer);
+        g_tracksBuffer = NULL;
+
+        if (0 != rc) {
+                pr_info_int_msg("failed with code ", rc);
+                return TRACK_ADD_RESULT_FAIL;
+        }
+
+        pr_info("win!\r\n");
+
+        if (RCP_LOW_MEM)
+                initialize_lua();
+
+        return TRACK_ADD_RESULT_OK;
 }
 
 static int isStage(const Track *t)

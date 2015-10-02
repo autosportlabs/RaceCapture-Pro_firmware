@@ -25,14 +25,11 @@
 #include "mod_string.h"
 #include "printk.h"
 
-
 #ifndef RCP_TESTING
 static const volatile ScriptConfig g_scriptConfig  __attribute__((section(".script\n\t#")));
 #else
 static ScriptConfig g_scriptConfig = {DEFAULT_SCRIPT, MAGIC_NUMBER_SCRIPT_INIT};
 #endif
-
-static ScriptConfig * g_scriptBuffer = NULL;
 
 void initialize_script()
 {
@@ -108,47 +105,61 @@ void unescapeScript(char *data)
     *result='\0';
 }
 
-int flashScriptPage(unsigned int page, const char *data, int mode)
+enum script_add_result flashScriptPage(const unsigned int page,
+                                       const char *data,
+                                       const enum script_add_mode mode)
 {
-    int result = SCRIPT_ADD_RESULT_OK;
-
-    /*
-     * Stop LUA if we are flashing its data.  This is mainly done to recover
-     * RAM since our flashing operation is a heavy bugger
-     */
-    terminate_lua();
-
-    if (page < MAX_SCRIPT_PAGES) {
-        if (mode == SCRIPT_ADD_MODE_IN_PROGRESS || mode == SCRIPT_ADD_MODE_COMPLETE) {
-            if (g_scriptBuffer == NULL) {
-                g_scriptBuffer = (ScriptConfig *)portMalloc(sizeof(ScriptConfig));
-                memcpy((void *)g_scriptBuffer, (void *)&g_scriptConfig, sizeof(ScriptConfig));
-            }
-
-            if (g_scriptBuffer != NULL) {
-                page = page * SCRIPT_PAGE_SIZE;
-                char *pageToAdd = g_scriptBuffer->script + page;
-                strncpy(pageToAdd, data, SCRIPT_PAGE_SIZE);
-
-                if (mode == SCRIPT_ADD_MODE_COMPLETE) {
-                    pr_info("lua: update complete, flashing: ");
-                    if (memory_flash_region((void *)&g_scriptConfig, (void *)g_scriptBuffer, sizeof(ScriptConfig)) == 0) {
-                        pr_info("win\r\n");
-                    } else {
-                        pr_error("fail\r\n");
-                        result = SCRIPT_ADD_RESULT_FAIL;
-                    }
-                    portFree(g_scriptBuffer);
-                    g_scriptBuffer = NULL;
-                }
-            } else {
-                pr_error("lua: script buffer alloc fail\r\n");
-                result = SCRIPT_ADD_RESULT_FAIL;
-            }
+        if (page >= MAX_SCRIPT_PAGES) {
+                pr_error("lua: invalid script index\r\n");
+                return SCRIPT_ADD_RESULT_FAIL;
         }
-    } else {
-        pr_error("lua: invalid script index\r\n");
-        result = SCRIPT_ADD_RESULT_FAIL;
-    }
-    return result;
+
+        switch (mode) {
+        case SCRIPT_ADD_MODE_IN_PROGRESS:
+        case SCRIPT_ADD_MODE_COMPLETE:
+                /* Valid cases.  Carry on */
+                break;
+        default:
+                pr_error_int_msg("lua: Unknown script_add_mode: ", mode);
+                return SCRIPT_ADD_RESULT_FAIL;
+        }
+
+        static ScriptConfig *g_scriptBuffer;
+        if (NULL == g_scriptBuffer) {
+                terminate_lua();
+
+                pr_debug("lua: Allocating new script buffer\r\n");
+                g_scriptBuffer =
+                        (ScriptConfig *) portMalloc(sizeof(ScriptConfig));
+                memcpy((void *)g_scriptBuffer, (void *)&g_scriptConfig,
+                       sizeof(ScriptConfig));
+        }
+
+        if (NULL == g_scriptBuffer) {
+                pr_error("lua: Failed to allocate memory for script "
+                         "buffer.\r\n");
+                return SCRIPT_ADD_RESULT_FAIL;
+        }
+
+        char *pageToAdd = g_scriptBuffer->script + page * SCRIPT_PAGE_SIZE;
+        strncpy(pageToAdd, data, SCRIPT_PAGE_SIZE);
+
+        if (SCRIPT_ADD_MODE_IN_PROGRESS == mode)
+                return SCRIPT_ADD_RESULT_OK;
+
+        pr_info("lua: Completed updating LUA. Flashing... ");
+        const int rc = memory_flash_region((void*) &g_scriptConfig,
+                                           (void*) g_scriptBuffer,
+                                           sizeof(ScriptConfig));
+        portFree(g_scriptBuffer);
+        g_scriptBuffer = NULL;
+
+        if (0 != rc) {
+                pr_info_int_msg("failed with code ", rc);
+                return SCRIPT_ADD_RESULT_FAIL;
+        }
+
+        pr_info("win!\r\n");
+        initialize_lua();
+        return SCRIPT_ADD_RESULT_FAIL;
 }

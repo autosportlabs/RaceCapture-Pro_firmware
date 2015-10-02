@@ -1566,7 +1566,8 @@ int api_addTrackDb(Serial *serial, const jsmntok_t *json)
         const jsmntok_t *trackNode = findNode(json, "track");
         if (trackNode != NULL)
             setTrack(trackNode + 1, &track);
-        int result = add_track(&track, index, mode);
+        const int result = (int) add_track(&track, index,
+                                     (enum track_add_mode) mode);
         if (result == TRACK_ADD_RESULT_OK) {
             if (mode == TRACK_ADD_MODE_COMPLETE) {
                 lapstats_config_changed();
@@ -1637,7 +1638,9 @@ int api_setScript(Serial *serial, const jsmntok_t *json)
         if (page < MAX_SCRIPT_PAGES) {
             char *script = dataTok->data;
             unescapeScript(script);
-            int flashResult = flashScriptPage(page, script, mode);
+            const int flashResult =
+               flashScriptPage(page, script, (enum script_add_mode) mode);
+
             rc = flashResult == 1 ? API_SUCCESS : API_ERROR_SEVERE;
             reload_script = rc == API_SUCCESS && mode == SCRIPT_ADD_MODE_COMPLETE;
         } else {
@@ -1646,10 +1649,6 @@ int api_setScript(Serial *serial, const jsmntok_t *json)
     } else {
         rc = API_ERROR_PARAMETER;
     }
-
-    /* If we are done loading in the script, then we can start LUA again */
-    if (reload_script)
-            initialize_lua();
 
     return rc;
 }
