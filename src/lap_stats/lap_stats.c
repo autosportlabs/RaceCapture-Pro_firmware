@@ -478,6 +478,10 @@ static void lapstats_setup(const GpsSnapshot *gps_snapshot)
     const TrackConfig *trackConfig = &(config->TrackConfigs);
     if (trackConfig->auto_detect) {
         track = auto_configure_track(NULL, gp);
+        if (track) {
+            g_track_status = TRACK_STATUS_AUTO_DETECTED;
+            pr_info_int_msg("track: detected track ", track->trackId);
+        }
     } else {
         track = &trackConfig->track;
         g_track_status = TRACK_STATUS_FIXED_CONFIG;
@@ -487,7 +491,6 @@ static void lapstats_setup(const GpsSnapshot *gps_snapshot)
 
     if (!track) return;
 
-    g_track_status = TRACK_STATUS_AUTO_DETECTED;
     g_start_finish_enabled = isStartFinishEnabled(track);
     g_sector_enabled = isSectorTrackingEnabled(track);
     lc_reset();
