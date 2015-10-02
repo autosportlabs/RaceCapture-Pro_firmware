@@ -1538,6 +1538,7 @@ int api_setTrackConfig(Serial *serial, const jsmntok_t *json)
         setTrack(track + 1, &trackCfg->track);
 
     configChanged();
+    lapstats_config_changed();
 
     return API_SUCCESS;
 }
