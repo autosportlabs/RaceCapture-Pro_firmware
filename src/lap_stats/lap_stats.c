@@ -429,7 +429,7 @@ static int isSectorTrackingEnabled(const Track *track)
          */
         const GeoPoint sp0 = getSectorGeoPointAtIndex(track, 0);
         const GeoPoint fin = getFinishPoint(track);
-        return !are_geo_points_equal(fin, sp0);
+        return !are_geo_points_equal(&fin, &sp0);
 }
 
 static void setupGeoTriggers(const TrackConfig *tc, const Track *track)
