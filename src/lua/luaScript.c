@@ -161,5 +161,5 @@ enum script_add_result flashScriptPage(const unsigned int page,
 
         pr_info("win!\r\n");
         initialize_lua();
-        return SCRIPT_ADD_RESULT_FAIL;
+        return SCRIPT_ADD_RESULT_OK;
 }
