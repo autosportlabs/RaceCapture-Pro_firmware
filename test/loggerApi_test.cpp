@@ -83,7 +83,15 @@ void LoggerApiTest::assertGenericResponse(char *buffer, const char * messageName
 				if (strcmp("rc", tok_rc->data) != 0){
 					CPPUNIT_FAIL("assertGenericResponse: rc element name does not match");
 				}
-				CPPUNIT_ASSERT_EQUAL(responseCode, modp_atoi(tok_rcVal->data));
+
+                                const int actual_response_code = modp_atoi(tok_rcVal->data);
+                                if (responseCode != actual_response_code) {
+                                        char buff[256];
+                                        sprintf(buff, "Msg \"%s\" failed.  Expected %d, got %d",
+                                                messageName, responseCode, actual_response_code);
+                                        CPPUNIT_FAIL(buff);
+
+                                }
 			}
 			else{
 				CPPUNIT_FAIL("assertGenericResponse: did not see expected result object");
