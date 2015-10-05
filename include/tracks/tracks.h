@@ -1,17 +1,42 @@
+/*
+ * Race Capture Pro Firmware
+ *
+ * Copyright (C) 2015 Autosport Labs
+ *
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef TRACKS_H_
 #define TRACKS_H_
 
-#include <stdint.h>
-#include "stddef.h"
-#include "geopoint.h"
 #include "capabilities.h"
+#include "geopoint.h"
+#include "stddef.h"
 #include "versionInfo.h"
+#include <stdint.h>
 
-#define TRACK_ADD_RESULT_OK  		1
-#define TRACK_ADD_RESULT_FAIL  		0
+enum track_add_result {
+        TRACK_ADD_RESULT_FAIL = 0,
+        TRACK_ADD_RESULT_OK = 1,
+};
 
-#define TRACK_ADD_MODE_IN_PROGRESS	1
-#define TRACK_ADD_MODE_COMPLETE 	2
+enum track_add_mode {
+        TRACK_ADD_MODE_IN_PROGRESS = 1,
+        TRACK_ADD_MODE_COMPLETE = 2,
+};
 
 #define MAX_TRACK_COUNT				40
 #define SECTOR_COUNT				MAX_SECTORS
@@ -61,7 +86,8 @@ typedef struct _Tracks {
 
 void initialize_tracks();
 int flash_tracks(const Tracks *source, size_t rawSize);
-int add_track(const Track *track, size_t index, int mode);
+enum track_add_result add_track(const Track *track, const size_t index,
+                                enum track_add_mode mode);
 int flash_default_tracks(void);
 const Tracks * get_tracks();
 

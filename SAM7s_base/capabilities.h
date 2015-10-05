@@ -14,8 +14,17 @@
 #define MAX_VIRTUAL_CHANNELS	10
 #define LOGGER_MESSAGE_BUFFER_SIZE	5
 
+/*
+ * Adds additional memory saving behavior for low memory systems.
+ * These come at a cost of interruption of other services as needed
+ * to save RAM.  Usually quick interruptions, but interruptions
+ * none the less.
+ */
+#define RCP_LOW_MEM	1
+
 
 /* LUA Configuration */
+
 /*
  * What is the maximum length of the script that can be provided?
  * Must be divisible by 256.
