@@ -1,7 +1,28 @@
+/*********************************************************************************/
+/* The MIT License (MIT)							 */
+/* 										 */
+/* Copyright (c)  2015  Jeff Ciesielski <jeffciesielski@gmail.com>		 */
+/* 										 */
+/* Permission is hereby granted, free of charge, to any person obtaining a copy	 */
+/* of this software and associated documentation files (the "Software"), to deal */
+/* in the Software without restriction, including without limitation the rights	 */
+/* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell	 */
+/* copies of the Software, and to permit persons to whom the Software is	 */
+/* furnished to do so, subject to the following conditions:			 */
+/* 										 */
+/* The above copyright notice and this permission notice shall be included in	 */
+/* all copies or substantial portions of the Software.				 */
+/* 										 */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR	 */
+/* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,	 */
+/* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE	 */
+/* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER	 */
+/* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, */
+/* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN	 */
+/* THE SOFTWARE.								 */
+/*********************************************************************************/
 /* 12c.c
  * Interrupt I2C Driver for the STM32F3
- * (c) 2015 AutosportLabs
- * Jeff Ciesielski <jeff.ciesielski@gmail.com>
  */
 #include <stdbool.h>
 #include <stdint.h>
@@ -60,91 +81,91 @@ struct i2c_priv {
 
 static struct i2c_priv priv_drivers[] = {
 #ifdef USE_I2C1
-    {
-        .initialized = false,
-        .ll_dev = I2C1,
-        .pins = {
-		    .sda = {
-			    .pin_mask = GPIO_Pin_7,
-			    .pin_source = GPIO_PinSource7,
-			    .port = GPIOB,
-			    .pin_af = GPIO_AF_4,
-			    .rcc = {
-				    .clock_cmd = RCC_AHBPeriphClockCmd,
-				    .periph = RCC_AHBPeriph_GPIOB,
-			    },
-		    },
-		    .scl = {
-			    .pin_mask = GPIO_Pin_6,
-			    .pin_source = GPIO_PinSource6,
-			    .port = GPIOB,
-			    .pin_af = GPIO_AF_4,
-			    .rcc = {
-				    .clock_cmd = RCC_AHBPeriphClockCmd,
-				    .periph = RCC_AHBPeriph_GPIOB,
-			    },
-		    },
-	    },
-        .rcc = {
-            .clock_cmd = RCC_APB1PeriphClockCmd,
-            .periph = RCC_APB1Periph_I2C1,
-        },
-        .ev_irqn = I2C1_EV_IRQn,
-        .er_irqn = I2C1_ER_IRQn,
-        .tx_len = 0,
-        .rx_len = 0,
-        .error_flag = false,
-    },
+	{
+		.initialized = false,
+		.ll_dev = I2C1,
+		.pins = {
+			.sda = {
+				.pin_mask = GPIO_Pin_7,
+				.pin_source = GPIO_PinSource7,
+				.port = GPIOB,
+				.pin_af = GPIO_AF_4,
+				.rcc = {
+					.clock_cmd = RCC_AHBPeriphClockCmd,
+					.periph = RCC_AHBPeriph_GPIOB,
+				},
+			},
+			.scl = {
+				.pin_mask = GPIO_Pin_6,
+				.pin_source = GPIO_PinSource6,
+				.port = GPIOB,
+				.pin_af = GPIO_AF_4,
+				.rcc = {
+					.clock_cmd = RCC_AHBPeriphClockCmd,
+					.periph = RCC_AHBPeriph_GPIOB,
+				},
+			},
+		},
+		.rcc = {
+			.clock_cmd = RCC_APB1PeriphClockCmd,
+			.periph = RCC_APB1Periph_I2C1,
+		},
+		.ev_irqn = I2C1_EV_IRQn,
+		.er_irqn = I2C1_ER_IRQn,
+		.tx_len = 0,
+		.rx_len = 0,
+		.error_flag = false,
+	},
 #endif	/* USE_I2C1 */
 #ifdef USE_I2C2
-    {
-        .initialized = false,
-        .ll_dev = I2C2,
-        .pins = {
-            .sda = {
-                .pin_mask = GPIO_Pin_11,
-                .pin_source = GPIO_PinSource11,
-                .port = GPIOB,
-                .pin_af = GPIO_AF_4,
-                .rcc = {
-                    .clock_cmd = RCC_AHB1PeriphClockCmd,
-                    .periph = RCC_AHB1Periph_GPIOB,
-                },
-            },
-            .scl = {
-                .pin_mask = GPIO_Pin_10,
-                .pin_source = GPIO_PinSource10,
-                .port = GPIOB,
-                .pin_af = GPIO_AF_4,
-                .rcc = {
-                    .clock_cmd = RCC_AHB1PeriphClockCmd,
-                    .periph = RCC_AHB1Periph_GPIOB,
-                },
-            },
-        },
-        .rcc = {
-            .clock_cmd = RCC_APB1PeriphClockCmd,
-            .periph = RCC_APB1Periph_I2C2,
-        },
-        .ev_irqn = I2C2_EV_IRQn,
-        .er_irqn = I2C2_ER_IRQn,
-        .tx_len = 0,
-        .rx_len = 0,
-        .error_flag = false,
-    }
+	{
+		.initialized = false,
+		.ll_dev = I2C2,
+		.pins = {
+			.sda = {
+				.pin_mask = GPIO_Pin_11,
+				.pin_source = GPIO_PinSource11,
+				.port = GPIOB,
+				.pin_af = GPIO_AF_4,
+				.rcc = {
+					.clock_cmd = RCC_AHB1PeriphClockCmd,
+					.periph = RCC_AHB1Periph_GPIOB,
+				},
+			},
+			.scl = {
+				.pin_mask = GPIO_Pin_10,
+				.pin_source = GPIO_PinSource10,
+				.port = GPIOB,
+				.pin_af = GPIO_AF_4,
+				.rcc = {
+					.clock_cmd = RCC_AHB1PeriphClockCmd,
+					.periph = RCC_AHB1Periph_GPIOB,
+				},
+			},
+		},
+		.rcc = {
+			.clock_cmd = RCC_APB1PeriphClockCmd,
+			.periph = RCC_APB1Periph_I2C2,
+		},
+		.ev_irqn = I2C2_EV_IRQn,
+		.er_irqn = I2C2_ER_IRQn,
+		.tx_len = 0,
+		.rx_len = 0,
+		.error_flag = false,
+	}
 #endif	/* USE_DMA2 */
 };
 
 static struct i2c_dev pub_drivers[] = {
 #ifdef USE_I2C1
-    {
-        .priv = &priv_drivers[0],
-    },
+	{
+		.priv = &priv_drivers[0],
+	},
 #endif	/* USE_I2C1 */
 #ifdef USE_I2C2
-    {
-        .priv = &priv_drivers[1],
-    }
+	{
+		.priv = &priv_drivers[1],
+	}
 #endif	/* USE_I2C2 */
 };
 
@@ -154,7 +175,7 @@ struct i2c_timingr_setting {
 	uint32_t timingr_val;
 };
 
-#define TIMINGR_FROM_DS_TABLE(presc, scll, sclh, sdadel, scldel) \
+#define TIMINGR_FROM_DS_TABLE(presc, scll, sclh, sdadel, scldel)	\
 	(((presc << 28) & I2C_TIMINGR_PRESC) | (scll & I2C_TIMINGR_SCLL) | \
 	 ((sclh << 8) & I2C_TIMINGR_SCLH) | ((sdadel << 16) & I2C_TIMINGR_SDADEL) | \
 	 ((scldel << 20) & I2C_TIMINGR_SCLDEL))
@@ -186,67 +207,67 @@ static struct i2c_timingr_setting timingr_map[] = {
 
 struct i2c_dev *i2c_get_device(enum i2c_bus device)
 {
-    switch (device) {
+	switch (device) {
 #ifdef USE_I2C1
-    case I2C_1:
-            return &pub_drivers[0];
+	case I2C_1:
+		return &pub_drivers[0];
 #endif	/* USE_I2C1 */
 #ifdef USE_I2C2
-    case I2C_2:
-        return &pub_drivers[1];
+	case I2C_2:
+		return &pub_drivers[1];
 #endif	/* USE_I2C2 */
-    default:
-        return NULL;
-    }
+	default:
+		return NULL;
+	}
 }
 
 static void i2c_irq_set_state(struct i2c_priv *p, FunctionalState state)
 {
-    I2C_ITConfig(p->ll_dev, I2C_IT_ERRI, state);
-    I2C_ITConfig(p->ll_dev, I2C_IT_TCI, state);
-    I2C_ITConfig(p->ll_dev, I2C_IT_STOPF, state);
-    I2C_ITConfig(p->ll_dev, I2C_IT_NACKI, state);
-    I2C_ITConfig(p->ll_dev, I2C_IT_ADDRI, state);
-    I2C_ITConfig(p->ll_dev, I2C_IT_RXI, state);
-    I2C_ITConfig(p->ll_dev, I2C_IT_TXI, state);
+	I2C_ITConfig(p->ll_dev, I2C_IT_ERRI, state);
+	I2C_ITConfig(p->ll_dev, I2C_IT_TCI, state);
+	I2C_ITConfig(p->ll_dev, I2C_IT_STOPF, state);
+	I2C_ITConfig(p->ll_dev, I2C_IT_NACKI, state);
+	I2C_ITConfig(p->ll_dev, I2C_IT_ADDRI, state);
+	I2C_ITConfig(p->ll_dev, I2C_IT_RXI, state);
+	I2C_ITConfig(p->ll_dev, I2C_IT_TXI, state);
 }
 
 int i2c_deinit(struct i2c_dev *dev)
 {
-    struct i2c_priv *p = (struct i2c_priv*)dev->priv;
+	struct i2c_priv *p = (struct i2c_priv*)dev->priv;
 
-    /* Disable interrupts for the device */
-    i2c_irq_set_state(p, DISABLE);
+	/* Disable interrupts for the device */
+	i2c_irq_set_state(p, DISABLE);
 
-    /* disable I2C device */
-    I2C_Cmd(p->ll_dev, DISABLE);
+	/* disable I2C device */
+	I2C_Cmd(p->ll_dev, DISABLE);
 
-    p->initialized = false;
+	p->initialized = false;
 
-    return 0;
+	return 0;
 }
 
 static void i2c_nvic_setup(struct i2c_priv *p)
 {
-    NVIC_InitTypeDef NVIC_InitStructure;
+	NVIC_InitTypeDef NVIC_InitStructure;
 
-    /* Configure the NVIC Preemption Priority Bits */
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+	/* Configure the NVIC Preemption Priority Bits */
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 
-    /* Enable the I2Cx Interrupt */
-    NVIC_InitStructure.NVIC_IRQChannel = p->ev_irqn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+	/* Enable the I2Cx Interrupt */
+	NVIC_InitStructure.NVIC_IRQChannel = p->ev_irqn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
 
-    /* Enable error interrupts */
-    NVIC_InitStructure.NVIC_IRQChannel = p->er_irqn;
-    NVIC_Init(&NVIC_InitStructure);
+	/* Enable error interrupts */
+	NVIC_InitStructure.NVIC_IRQChannel = p->er_irqn;
+	NVIC_Init(&NVIC_InitStructure);
 }
 
 static int i2c_get_timing(I2C_TypeDef *periph, uint32_t bus_speed,
-			       uint32_t *timingr)
+			  uint32_t *timingr)
 {
 	RCC_ClocksTypeDef clocks;
 	uint32_t periph_clk;
@@ -254,10 +275,11 @@ static int i2c_get_timing(I2C_TypeDef *periph, uint32_t bus_speed,
 
 	RCC_GetClocksFreq(&clocks);
 
-	if (periph == I2C1)
+	if (periph == I2C1) {
 		periph_clk = clocks.I2C1CLK_Frequency;
-	else if (periph == I2C2)
+	} else if (periph == I2C2) {
 		periph_clk = clocks.I2C2CLK_Frequency;
+	}
 
 	for (int i = 0; i < ARRAY_SIZE(timingr_map); i++) {
 		if ((bus_speed == timingr_map[i].bus_speed) &&
@@ -326,8 +348,9 @@ int i2c_init(struct i2c_dev *dev, uint32_t bus_speed)
 
 	uint32_t timingr;
 
-	if (i2c_get_timing(p->ll_dev, bus_speed, &timingr))
+	if (i2c_get_timing(p->ll_dev, bus_speed, &timingr)) {
 		return -3;
+	}
 
 	I2C_InitStruct.I2C_Mode = I2C_Mode_I2C;
 	I2C_InitStruct.I2C_Ack = I2C_Ack_Enable;
@@ -385,10 +408,11 @@ static void i2c_start(struct i2c_priv *p)
 	 */
 	if (p->trans_direction == I2C_Direction_Transmitter) {
 		num_bytes = p->tx_len;
-		if (p->rx_len > 0)
+		if (p->rx_len > 0) {
 			endmode = I2C_SoftEnd_Mode;
-		else
+		} else {
 			endmode = I2C_AutoEnd_Mode;
+		}
 		startmode = I2C_Generate_Start_Write;
 	} else {
 		num_bytes = p->rx_len;
@@ -451,10 +475,10 @@ int i2c_transact(struct i2c_dev *dev, uint8_t addr,
 	}
 
 unlock_and_return:
-    xSemaphoreGive(p->transact_lock);
+	xSemaphoreGive(p->transact_lock);
 
-    /* Return */
-    return ret;
+	/* Return */
+	return ret;
 }
 
 /* The following are helper functions to wrap common functionality
@@ -462,118 +486,119 @@ unlock_and_return:
 int i2c_write_reg8(struct i2c_dev *dev, uint8_t dev_addr,
                    uint8_t reg_addr, uint8_t reg_val)
 {
-    int res;
-    uint8_t payload[2];
-    payload[0] = reg_addr;
-    payload[1] = reg_val;
-    res = i2c_transact(dev, dev_addr, payload, 2, NULL, 0);
-    return res;
+	int res;
+	uint8_t payload[2];
+	payload[0] = reg_addr;
+	payload[1] = reg_val;
+	res = i2c_transact(dev, dev_addr, payload, 2, NULL, 0);
+	return res;
 }
 
 int i2c_read_reg8(struct i2c_dev *dev, uint8_t dev_addr,
                   uint8_t reg_addr, uint8_t *reg_val)
 {
-    int res;
-    res = i2c_transact(dev, dev_addr,
-                       &reg_addr, 1,
-                       reg_val, 1);
-    return res;
+	int res;
+	res = i2c_transact(dev, dev_addr,
+			   &reg_addr, 1,
+			   reg_val, 1);
+	return res;
 }
 
 int i2c_read_mem_block(struct i2c_dev *dev, uint8_t dev_addr,
                        uint8_t mem_addr, uint8_t *mem_buf,
                        size_t mem_len)
 {
-    int res;
-    res = i2c_transact(dev, dev_addr,
-                       &mem_addr, 1,
-                       mem_buf, mem_len);
-    return res;
+	int res;
+	res = i2c_transact(dev, dev_addr,
+			   &mem_addr, 1,
+			   mem_buf, mem_len);
+	return res;
 }
 
 int i2c_read_reg_bits(struct i2c_dev *dev, uint8_t dev_addr,
                       uint8_t reg_addr, size_t bit_pos,
                       size_t num_bits, uint8_t *bit_val)
 {
-    int res;
-    uint8_t reg_val;
-    uint8_t reg_mask = 0x00;
+	int res;
+	uint8_t reg_val;
+	uint8_t reg_mask = 0x00;
 
-    /* We need to make sure that the mask won't run off the edge
-     * of the register */
-    if (bit_pos + num_bits > 8) {
-        return -1;
-    }
+	/* We need to make sure that the mask won't run off the edge
+	 * of the register */
+	if (bit_pos + num_bits > 8) {
+		return -1;
+	}
 
-    res = i2c_read_reg8(dev, dev_addr, reg_addr, &reg_val);
-    if (res) {
-        return res;
-    }
+	res = i2c_read_reg8(dev, dev_addr, reg_addr, &reg_val);
+	if (res) {
+		return res;
+	}
 
-    /* Build the register mask */
-    for (size_t i = 0; i < num_bits; i++)
-        reg_mask |= 1 << (i + bit_pos);
+	/* Build the register mask */
+	for (size_t i = 0; i < num_bits; i++) {
+		reg_mask |= 1 << (i + bit_pos);
+	}
 
-    /* Mask off just the part we care about */
-    reg_val &= reg_mask;
+	/* Mask off just the part we care about */
+	reg_val &= reg_mask;
 
-    /* Return the newly masked value shifted back to 0 */
-    *bit_val = reg_val >> bit_pos;
+	/* Return the newly masked value shifted back to 0 */
+	*bit_val = reg_val >> bit_pos;
 
-    return 0;
+	return 0;
 }
 
 int i2c_write_reg_bits(struct i2c_dev *dev, uint8_t dev_addr,
                        uint8_t reg_addr, size_t bit_pos,
                        size_t num_bits, uint8_t bit_val)
 {
-    int res;
-    uint8_t reg_val;
-    uint8_t reg_mask = 0x00;
+	int res;
+	uint8_t reg_val;
+	uint8_t reg_mask = 0x00;
 
-    /* We need to make sure that the mask won't run off the edge
-     * of the register */
-    if (bit_pos + num_bits > 8) {
-        return -1;
-    }
+	/* We need to make sure that the mask won't run off the edge
+	 * of the register */
+	if (bit_pos + num_bits > 8) {
+		return -1;
+	}
 
-    res = i2c_read_reg8(dev, dev_addr, reg_addr, &reg_val);
-    if (res) {
-        return res;
-    }
+	res = i2c_read_reg8(dev, dev_addr, reg_addr, &reg_val);
+	if (res) {
+		return res;
+	}
 
-    /* Build the register mask */
-    for (size_t i = 0; i < num_bits; i++)
-        reg_mask |= 1 << (i + bit_pos);
+	/* Build the register mask */
+	for (size_t i = 0; i < num_bits; i++)
+		reg_mask |= 1 << (i + bit_pos);
 
-    /* Clear the bits we're going to be writing */
-    reg_val &= ~(reg_mask);
+	/* Clear the bits we're going to be writing */
+	reg_val &= ~(reg_mask);
 
-    /* now, write the new bit values into their appropriate place
-     * in the register */
-    reg_val |= (bit_val << bit_pos) & reg_mask;
+	/* now, write the new bit values into their appropriate place
+	 * in the register */
+	reg_val |= (bit_val << bit_pos) & reg_mask;
 
-    /* Write the register back to the device */
-    res = i2c_write_reg8(dev, dev_addr, reg_addr, reg_val);
-    if (res) {
-        return res;
-    }
+	/* Write the register back to the device */
+	res = i2c_write_reg8(dev, dev_addr, reg_addr, reg_val);
+	if (res) {
+		return res;
+	}
 
-    return 0;
+	return 0;
 }
 
 int i2c_write_raw(struct i2c_dev *dev, uint8_t dev_addr, uint8_t *buf, size_t len)
 {
-    int res = i2c_transact(dev, dev_addr, buf, len, NULL, 0);
+	int res = i2c_transact(dev, dev_addr, buf, len, NULL, 0);
 
-    return res;
+	return res;
 }
 
 int i2c_read_raw(struct i2c_dev *dev, uint8_t dev_addr, uint8_t *buf, size_t len)
 {
-    int res = i2c_transact(dev, dev_addr, NULL, 0, buf, len);
+	int res = i2c_transact(dev, dev_addr, NULL, 0, buf, len);
 
-    return res;
+	return res;
 }
 
 /*** Interrupt handlers and helper functions ***/
@@ -628,41 +653,41 @@ static void i2c_common_event_handler(struct i2c_priv *p)
 
 static void i2c_common_error_handler(struct i2c_priv *p)
 {
-    portBASE_TYPE task_woken = pdFALSE;
+	portBASE_TYPE task_woken = pdFALSE;
 
-    /* Send stop */
-    I2C_GenerateSTOP(p->ll_dev, ENABLE);
+	/* Send stop */
+	I2C_GenerateSTOP(p->ll_dev, ENABLE);
 
-    /* Disable any additional ISRs */
-    i2c_irq_set_state(p, DISABLE);
+	/* Disable any additional ISRs */
+	i2c_irq_set_state(p, DISABLE);
 
-    p->error_flag = true;
+	p->error_flag = true;
 
-    xSemaphoreGiveFromISR(p->event_lock, &task_woken);
-    portEND_SWITCHING_ISR(task_woken);
+	xSemaphoreGiveFromISR(p->event_lock, &task_woken);
+	portEND_SWITCHING_ISR(task_woken);
 }
 
 /* EVENT/ERROR HANDLERS */
 #ifdef USE_I2C1
 void I2C1_EV_IRQHandler(void)
 {
-    i2c_common_event_handler(&priv_drivers[0]);
+	i2c_common_event_handler(&priv_drivers[0]);
 }
 
 void I2C1_ER_IRQHandler(void)
 {
-    i2c_common_error_handler(&priv_drivers[0]);
+	i2c_common_error_handler(&priv_drivers[0]);
 }
 #endif	/* USE_I2C1 */
 #ifdef USE_I2C2
 void I2C2_EV_IRQHandler(void)
 {
-    i2c_common_event_handler(&priv_drivers[1]);
+	i2c_common_event_handler(&priv_drivers[1]);
 }
 
 
 void I2C2_ER_IRQHandler(void)
 {
-    i2c_common_error_handler(&priv_drivers[1]);
+	i2c_common_error_handler(&priv_drivers[1]);
 }
 #endif	/* USE_I2C2 */
