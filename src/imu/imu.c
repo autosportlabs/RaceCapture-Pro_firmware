@@ -75,7 +75,7 @@ void imu_calibrate_zero()
 int imu_init(LoggerConfig *loggerConfig)
 {
         /* TODO BAP: IMU is unhappy */
-        //imu_device_init();
+        imu_device_init();
         init_filters(loggerConfig);
         return 1;
 }

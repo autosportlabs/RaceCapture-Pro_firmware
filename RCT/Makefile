@@ -17,7 +17,7 @@ OBJCOPY := $(CROSS_COMPILE)objcopy
 MAKEFLAGS += -j16
 
 #specify the use of the external crystal
-BOARD_DEFINES = -DPLL_SOURCE_HSE
+BOARD_DEFINES = -DPLL_SOURCE_HSE -DUSE_I2C1
 
 ################################################################################
 # Project definition
