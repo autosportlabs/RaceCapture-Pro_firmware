@@ -39,8 +39,9 @@
 #include <stm32f30x_rcc.h>
 #include <stm32f30x_misc.h>
 
-#include <util.h>
 #include <i2c_device_stm32.h>
+
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 
 struct rcc_params {
 	void (*clock_cmd)(uint32_t, FunctionalState);
