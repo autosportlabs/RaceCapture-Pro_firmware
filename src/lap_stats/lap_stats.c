@@ -412,24 +412,14 @@ static int isStartFinishEnabled(const Track *track)
 
 static int isSectorTrackingEnabled(const Track *track)
 {
-        if (!isStartFinishEnabled(track))
-                return 0;
+    if (!isStartFinishEnabled(track))
+        return 0;
 
-        const LoggerConfig *config = getWorkingLoggerConfig();
-        if (SAMPLE_DISABLED != config->LapConfigs.sectorTimeCfg.sampleRate)
-                return 0;
-
-        /*
-         * Must have >= one valid sector; must start at position 0.  Be careful
-         * when using getSectorGeoPointAtIndex because if a point is in within
-         * a valid range but is an invalid GPS value, it will return the finish
-         * line (logical because the last sector boundary is always the finish
-         * line).  So we must compare sector 0 against the finish line and if
-         * they are the same, then we do not have sector values defined.
-         */
-        const GeoPoint sp0 = getSectorGeoPointAtIndex(track, 0);
-        const GeoPoint fin = getFinishPoint(track);
-        return !are_geo_points_equal(&fin, &sp0);
+    // Must have >=  one valid sector; must start at position 0.
+    const LoggerConfig *config = getWorkingLoggerConfig();
+    const GeoPoint p0 = getSectorGeoPointAtIndex(track, 0);
+    return config->LapConfigs.sectorTimeCfg.sampleRate != SAMPLE_DISABLED
+           && isValidPoint(&p0);
 }
 
 static void setupGeoTriggers(const TrackConfig *tc, const Track *track)
