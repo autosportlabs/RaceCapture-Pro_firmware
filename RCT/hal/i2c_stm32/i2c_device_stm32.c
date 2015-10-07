@@ -181,8 +181,10 @@ struct i2c_timingr_setting {
 	 ((sclh << 8) & I2C_TIMINGR_SCLH) | ((sdadel << 16) & I2C_TIMINGR_SDADEL) | \
 	 ((scldel << 20) & I2C_TIMINGR_SCLDEL))
 
-/* These values are pulled from section 28.4.9 of the STM32F3xx
- * reference manual */
+/*
+ * These values are pulled from section 28.4.9 of the STM32F3xx
+ * reference manual
+ */
 static struct i2c_timingr_setting timingr_map[] = {
 	{
 		.bus_speed = 100000,
@@ -620,8 +622,9 @@ static void i2c_common_event_handler(struct i2c_priv *p)
 	}
 
 	/* TX Buffer is empty */
-	if (I2C_GetITStatus(p->ll_dev, I2C_IT_TXIS) && p->tx_len--) {
+	if (I2C_GetITStatus(p->ll_dev, I2C_IT_TXIS) && p->tx_len) {
 		I2C_SendData(p->ll_dev, *(p->tx_buf++));
+		p->tx_len--;
 	}
 
 	/* RX Buffer is Full and needs drained */
