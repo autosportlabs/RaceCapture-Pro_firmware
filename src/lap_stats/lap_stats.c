@@ -416,7 +416,7 @@ static int isSectorTrackingEnabled(const Track *track)
                 return 0;
 
         const LoggerConfig *config = getWorkingLoggerConfig();
-        if (SAMPLE_DISABLED != config->LapConfigs.sectorTimeCfg.sampleRate)
+        if (SAMPLE_DISABLED == config->LapConfigs.sectorTimeCfg.sampleRate)
                 return 0;
 
         /*
