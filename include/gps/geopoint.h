@@ -48,4 +48,10 @@ float distPythag(const GeoPoint *a, const GeoPoint *b);
  */
 int isValidPoint(const GeoPoint *p);
 
+/**
+ * Tests if both GeoPoint values are the same.
+ * @return True if they are, false otherwise.
+ */
+bool are_geo_points_equal(const GeoPoint *p1, const GeoPoint *p2);
+
 #endif /* GEOPOINT_H_ */

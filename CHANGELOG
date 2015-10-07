@@ -14,6 +14,8 @@
 * Reduce max LUA script size on MK1 to 4K for stability reasons and increased
   max script size on MK2 to 16K.  This will result in the LUA script being
   restored to the default.  Please back up your scripts prior to upgrading.
+* Fix sector bug with no sector definitions.  Now sectors will not arbitrarily
+  count up.
 
 === 2.8.4 ===
 * Background streaming switch only affects telemetry link; Wireless (Bluetooth) link always streams
