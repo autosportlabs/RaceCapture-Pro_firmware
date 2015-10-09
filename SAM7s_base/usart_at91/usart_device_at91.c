@@ -31,26 +31,26 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include "usart_device.h"
 #include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "printk.h"
 #include "board.h"
+#include "printk.h"
+#include "queue.h"
+#include "task.h"
+#include "usart_device.h"
+#include "usart_device_at91.h"
 
 #define GPS_BAUDRATE 38400
 #define TELEMETRY_BAUDRATE 115200
-
 #define USART_INTERRUPT_LEVEL 5
-#define USART_QUEUE_LENGTH 300
 
 void usart0_irq_handler (void);
 void usart1_irq_handler (void);
 
-xQueueHandle xUsart0Tx;
-xQueueHandle xUsart0Rx;
-xQueueHandle xUsart1Tx;
-xQueueHandle xUsart1Rx;
+static struct txrx_queue usart_txrx_queues[2];
+
+struct txrx_queue* get_txrx_queue(const int idx) {
+        return &usart_txrx_queues[idx];
+}
 
 static void USART_Configure(AT91S_USART *usart,
                             unsigned int mode,
@@ -74,24 +74,17 @@ static void USART_Configure(AT91S_USART *usart,
     // TODO other modes
 }
 
-static int initQueues()
+static int init_txrx_queue(const int idx,
+                           const size_t tx_len,
+                           const size_t rx_len)
 {
+        const unsigned portBASE_TYPE char_size =
+                (unsigned portBASE_TYPE) sizeof(signed portCHAR);
 
-    int success = 1;
+        usart_txrx_queues[idx].tx = xQueueCreate(tx_len, char_size);
+        usart_txrx_queues[idx].rx = xQueueCreate(rx_len, char_size);
 
-    /* Create the queues used to hold Rx and Tx characters. */
-    xUsart0Rx = xQueueCreate( USART_QUEUE_LENGTH, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-    xUsart0Tx = xQueueCreate( USART_QUEUE_LENGTH + 1, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-    xUsart1Rx = xQueueCreate( USART_QUEUE_LENGTH, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-    xUsart1Tx = xQueueCreate( USART_QUEUE_LENGTH + 1, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-
-    if (xUsart0Rx == NULL ||
-        xUsart1Rx == NULL ||
-        xUsart0Rx == NULL ||
-        xUsart0Rx == NULL
-       ) success = 0;
-
-    return success;
+        return usart_txrx_queues[idx].tx && usart_txrx_queues[idx].rx;
 }
 
 static unsigned int createUartMode(unsigned int bits, unsigned int parity, unsigned int stopBits)
@@ -141,9 +134,17 @@ static unsigned int createUartMode(unsigned int bits, unsigned int parity, unsig
 int usart_device_init()
 {
     AT91F_PMC_EnablePeriphClock( AT91C_BASE_PMC,(1 << AT91C_ID_US0) | (1 << AT91C_ID_US1));
-    if (!initQueues()) return 0;
+
+    /* Init device 0 (Telemetry) */
+    if (!init_txrx_queue(0, 512, 512))
+            return 0;
     usart_device_init_0(8, 0, 1, TELEMETRY_BAUDRATE);
+
+    /* Init device 1 (GPS) */
+    if (!init_txrx_queue(1, 512, 128))
+            return 0;
     usart_device_init_1(8, 0, 1, GPS_BAUDRATE);
+
     return 1;
 }
 
@@ -253,113 +254,121 @@ void usart_device_init_1(unsigned int bits, unsigned int parity, unsigned int st
     AT91F_AIC_EnableIt( AT91C_BASE_AIC, AT91C_ID_US1 );
 }
 
+static void _usart_flush(const int idx)
+{
+        char rx;
+        while(xQueueReceive(usart_txrx_queues[idx].rx, &rx, 0));
+}
 
 void usart0_flush(void)
 {
-    char rx;
-    while(xQueueReceive( xUsart0Rx, &rx, 0 ));
+        _usart_flush(0);
 }
 
 void usart1_flush(void)
 {
-    char rx;
-    while(xQueueReceive( xUsart1Rx, &rx, 0 ));
+        _usart_flush(1);
+}
+
+static int _usart_get_char_wait(const int idx, char *c, size_t delay)
+{
+        return xQueueReceive(usart_txrx_queues[idx].rx, c, delay) == pdTRUE;
 }
 
 int usart0_getcharWait(char *c, size_t delay)
 {
-    return xQueueReceive( xUsart0Rx, c, delay ) == pdTRUE ? 1 : 0;
+        return _usart_get_char_wait(0, c, delay);
 }
 
 int usart1_getcharWait(char *c, size_t delay)
 {
-    return xQueueReceive( xUsart1Rx, c, delay ) == pdTRUE ? 1 : 0;
+        return _usart_get_char_wait(1, c, delay);
 }
 
 char usart0_getchar()
 {
-    char c;
-    usart0_getcharWait(&c, portMAX_DELAY);
-    return c;
+        char c;
+        _usart_get_char_wait(0, &c, portMAX_DELAY);
+        return c;
 }
 
 char usart1_getchar()
 {
-    char c;
-    return usart1_getcharWait(&c, portMAX_DELAY);
-    return c;
+        char c;
+        _usart_get_char_wait(1, &c, portMAX_DELAY);
+        return c;
 }
 
-void usart0_putchar(char c)
+static void _usart_putchar(const int idx, char c)
 {
-    if (TRACE_LEVEL) {
         char buf[2];
         buf[0] = c;
         buf[1] = '\0';
         pr_debug(buf);
-    }
-    xQueueSend( xUsart0Tx, &c, portMAX_DELAY );
-    //Enable transmitter interrupt
-    AT91F_US_EnableIt( AT91C_BASE_US0, AT91C_US_TXRDY | AT91C_US_RXRDY );
+
+        xQueueSend(usart_txrx_queues[idx].tx, &c, portMAX_DELAY);
+
+        //Enable transmitter interrupt
+        AT91F_US_EnableIt(AT91C_BASE_US0, AT91C_US_TXRDY | AT91C_US_RXRDY);
+}
+
+
+void usart0_putchar(char c)
+{
+        _usart_putchar(0, c);
 }
 
 void usart1_putchar(char c)
 {
-    if (TRACE_LEVEL) {
-        char buf[2];
-        buf[0] = c;
-        buf[1] = '\0';
-        pr_debug(buf);
-    }
-    xQueueSend( xUsart1Tx, &c, portMAX_DELAY );
-    //Enable transmitter interrupt
-    AT91F_US_EnableIt( AT91C_BASE_US1, AT91C_US_TXRDY | AT91C_US_RXRDY );
+        _usart_putchar(1, c);
 }
 
 void usart0_puts (const char* s )
 {
-    while ( *s ) usart0_putchar(*s++ );
+        while(*s)
+                _usart_putchar(0, *s++);
 }
 
 void usart1_puts (const char* s )
 {
-    while ( *s ) usart1_putchar(*s++ );
+        while(*s)
+                _usart_putchar(1, *s++);
+}
+
+static int _usart_read_line_wait(const int idx, char *s, int len, size_t delay)
+{
+        int count = 0;
+
+        while(count < len - 1) {
+                char c;
+                if (!_usart_get_char_wait(idx, &c, delay))
+                        break;
+                *s++ = c;
+                count++;
+                if ('\n' == c)
+                        break;
+        }
+
+        *s = '\0';
+        return count;
 }
 
 int usart0_readLineWait(char *s, int len, size_t delay)
 {
-    int count = 0;
-    while(count < len - 1) {
-        char c = 0;
-        if (!usart0_getcharWait(&c, delay)) break;
-        *s++ = c;
-        count++;
-        if (c == '\n') break;
-    }
-    *s = '\0';
-    return count;
+        return _usart_read_line_wait(0, s, len, delay);
 }
 
 int usart0_readLine(char *s, int len)
 {
-    return usart0_readLineWait(s,len,portMAX_DELAY);
+        return _usart_read_line_wait(0, s, len, portMAX_DELAY);
 }
 
 int usart1_readLineWait(char *s, int len, size_t delay)
 {
-    int count = 0;
-    while(count < len - 1) {
-        char c = 0;
-        if (!usart1_getcharWait(&c, delay)) break;
-        *s++ = c;
-        count++;
-        if (c == '\n') break;
-    }
-    *s = '\0';
-    return count;
+        return _usart_read_line_wait(1, s, len, delay);
 }
 
 int usart1_readLine(char *s, int len)
 {
-    return usart1_readLineWait(s,len,portMAX_DELAY);
+        return _usart_read_line_wait(1, s, len, portMAX_DELAY);
 }
