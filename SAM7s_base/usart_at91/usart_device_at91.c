@@ -141,7 +141,7 @@ int usart_device_init()
     usart_device_init_0(8, 0, 1, TELEMETRY_BAUDRATE);
 
     /* Init device 1 (GPS) */
-    if (!init_txrx_queue(1, 512, 128))
+    if (!init_txrx_queue(1, 512, 300))
             return 0;
     usart_device_init_1(8, 0, 1, GPS_BAUDRATE);
 
