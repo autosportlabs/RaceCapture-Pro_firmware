@@ -40,9 +40,7 @@
 
 #define GPS_BAUDRATE 38400
 #define TELEMETRY_BAUDRATE 115200
-
 #define USART_INTERRUPT_LEVEL 5
-#define USART_QUEUE_LENGTH 300
 
 void usart0_irq_handler (void);
 void usart1_irq_handler (void);
@@ -80,10 +78,13 @@ static int initQueues()
     int success = 1;
 
     /* Create the queues used to hold Rx and Tx characters. */
-    xUsart0Rx = xQueueCreate( USART_QUEUE_LENGTH, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-    xUsart0Tx = xQueueCreate( USART_QUEUE_LENGTH + 1, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-    xUsart1Rx = xQueueCreate( USART_QUEUE_LENGTH, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-    xUsart1Tx = xQueueCreate( USART_QUEUE_LENGTH + 1, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
+    /* Telemetry USART */
+    xUsart0Rx = xQueueCreate(512, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
+    xUsart0Tx = xQueueCreate(512, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
+
+    /* GPS USART */
+    xUsart1Rx = xQueueCreate(300, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
+    xUsart1Tx = xQueueCreate(300, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
 
     if (xUsart0Rx == NULL ||
         xUsart1Rx == NULL ||
