@@ -16,6 +16,7 @@
   restored to the default.  Please back up your scripts prior to upgrading.
 * Fix sector bug with no sector definitions.  Now sectors will not arbitrarily
   count up.
+* Fix MK1 BT buffer overflow when CPU under heavy load.
 
 === 2.8.4 ===
 * Background streaming switch only affects telemetry link; Wireless (Bluetooth) link always streams
