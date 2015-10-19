@@ -79,3 +79,23 @@ if (foo) {
 	bar();
 }
 ```
+
+## No Magic Numbers in Code
+If a method has a parameter whose purpose is non-trivial in the configuration
+of a device, then this number shall be defined in a `#define` declaration at
+the top of the file.
+
+So in example
+
+```
+init_txrx_queue(0, 512, 512)
+```
+
+should look like this:
+
+```
+#define TELEM_RX_QUEUE_LEN	512
+#define TELEM_TX_QUEUE_LEN	512
+...
+init_txrx_queue(0, TELEM_TX_QUEUE_LEN, TELEM_RX_QUEUE_LEN)
+```

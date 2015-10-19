@@ -1,3 +1,7 @@
+=== 2.8.6 ===
+* Improve the USART code for MK1 by removing duplicated code, eliminating
+  externs, and cleaning up the handling of character queues.
+
 === 2.8.5 ===
 * Increased GPS task stack size from 200 to 256 to prevent HULK smash.
 * Increased printing precision in LUA from 3 to 6 decimal places (as needed).
@@ -16,7 +20,6 @@
   restored to the default.  Please back up your scripts prior to upgrading.
 * Fix sector bug with no sector definitions.  Now sectors will not arbitrarily
   count up.
-* Fix MK1 BT buffer overflow when CPU under heavy load.
 
 === 2.8.4 ===
 * Background streaming switch only affects telemetry link; Wireless (Bluetooth) link always streams

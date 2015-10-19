@@ -43,6 +43,11 @@
 #define TELEMETRY_BAUDRATE 115200
 #define USART_INTERRUPT_LEVEL 5
 
+#define GPS_RX_QUEUE_LEN	512
+#define GPS_TX_QUEUE_LEN	512
+#define TELEM_RX_QUEUE_LEN	512
+#define TELEM_TX_QUEUE_LEN	8
+
 void usart0_irq_handler (void);
 void usart1_irq_handler (void);
 
@@ -136,12 +141,12 @@ int usart_device_init()
     AT91F_PMC_EnablePeriphClock( AT91C_BASE_PMC,(1 << AT91C_ID_US0) | (1 << AT91C_ID_US1));
 
     /* Init device 0 (Telemetry) */
-    if (!init_txrx_queue(0, 512, 512))
+    if (!init_txrx_queue(0, TELEM_TX_QUEUE_LEN, TELEM_RX_QUEUE_LEN))
             return 0;
     usart_device_init_0(8, 0, 1, TELEMETRY_BAUDRATE);
 
     /* Init device 1 (GPS) */
-    if (!init_txrx_queue(1, 512, 128))
+    if (!init_txrx_queue(1, GPS_TX_QUEUE_LEN, GPS_RX_QUEUE_LEN))
             return 0;
     usart_device_init_1(8, 0, 1, GPS_BAUDRATE);
 
