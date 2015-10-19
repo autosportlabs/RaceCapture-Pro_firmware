@@ -1618,39 +1618,27 @@ int api_getScript(Serial *serial, const jsmntok_t *json)
 
 int api_setScript(Serial *serial, const jsmntok_t *json)
 {
-    int rc = API_ERROR_UNSPECIFIED;
-    bool reload_script = false;
-    const jsmntok_t *dataTok = findNode(json, "data");
-    const jsmntok_t *pageTok = findNode(json, "page");
-    const jsmntok_t *modeTok = findNode(json, "mode");
+        const jsmntok_t *dataTok = findNode(json, "data");
+        const jsmntok_t *pageTok = findNode(json, "page");
+        const jsmntok_t *modeTok = findNode(json, "mode");
 
-    if (dataTok != NULL && pageTok != NULL && modeTok !=NULL) {
-        dataTok++;
-        pageTok++;
-        modeTok++;
+        if (dataTok == NULL || pageTok == NULL || modeTok == NULL)
+                return API_ERROR_PARAMETER;
 
-        jsmn_trimData(dataTok);
-        jsmn_trimData(pageTok);
-        jsmn_trimData(modeTok);
+        jsmn_trimData(++dataTok);
+        jsmn_trimData(++pageTok);
+        jsmn_trimData(++modeTok);
 
-        size_t page = modp_atoi(pageTok->data);
-        size_t mode = modp_atoi(modeTok->data);
-        if (page < MAX_SCRIPT_PAGES) {
-            char *script = dataTok->data;
-            unescapeScript(script);
-            const int flashResult =
-               flashScriptPage(page, script, (enum script_add_mode) mode);
+        const size_t page = modp_atoi(pageTok->data);
+        if (page >= MAX_SCRIPT_PAGES)
+                return API_ERROR_PARAMETER;
 
-            rc = flashResult == 1 ? API_SUCCESS : API_ERROR_SEVERE;
-            reload_script = rc == API_SUCCESS && mode == SCRIPT_ADD_MODE_COMPLETE;
-        } else {
-            rc = API_ERROR_PARAMETER;
-        }
-    } else {
-        rc = API_ERROR_PARAMETER;
-    }
-
-    return rc;
+        const enum script_add_mode mode =
+                (enum script_add_mode) modp_atoi(modeTok->data);
+        char *script = dataTok->data;
+        unescapeScript(script);
+        return flashScriptPage(page, script, mode) ?
+                API_SUCCESS : API_ERROR_SEVERE;
 }
 
 int api_runScript(Serial *serial, const jsmntok_t *json)
