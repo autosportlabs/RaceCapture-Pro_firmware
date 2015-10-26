@@ -44,9 +44,9 @@
 #define USART_INTERRUPT_LEVEL 5
 
 #define GPS_RX_QUEUE_LEN	512
-#define GPS_TX_QUEUE_LEN	512
+#define GPS_TX_QUEUE_LEN	8
 #define TELEM_RX_QUEUE_LEN	512
-#define TELEM_TX_QUEUE_LEN	8
+#define TELEM_TX_QUEUE_LEN	512
 
 void usart0_irq_handler (void);
 void usart1_irq_handler (void);
