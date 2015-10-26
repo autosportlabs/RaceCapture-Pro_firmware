@@ -114,11 +114,11 @@ void setupTask(void *delTask)
         initMessaging();
 
         startUSBCommTask(RCP_INPUT_PRIORITY);
-        startConnectivityTask(RCP_INPUT_PRIORITY);
         startGPIOTasks(RCP_INPUT_PRIORITY);
         startGPSTask(RCP_INPUT_PRIORITY);
         startOBD2Task(RCP_INPUT_PRIORITY);
         startFileWriterTask(RCP_OUTPUT_PRIORITY);
+        startConnectivityTask(RCP_OUTPUT_PRIORITY);
         startLoggerTaskEx(RCP_LOGGING_PRIORITY);
         startLuaTask(RCP_LUA_PRIORITY);
 
