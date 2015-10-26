@@ -1,14 +1,30 @@
+/*
+ * Race Capture Pro Firmware
+ *
+ * Copyright (C) 2015 Autosport Labs
+ *
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "FreeRTOS.h"
+#include "board.h"
 #include "queue.h"
 #include "semphr.h"
-#include "board.h"
 #include "task.h"
-
-extern xQueueHandle xUsart0Tx;
-extern xQueueHandle xUsart0Rx;
-extern xQueueHandle xUsart1Tx;
-extern xQueueHandle xUsart1Rx;
-
+#include "usart_device_at91.h"
 
 /* The ISR can cause a context switch so is declared naked. */
 void usart0_irq_handler( void ) __attribute__ ((naked));
@@ -27,7 +43,8 @@ void usart0_irq_handler( void )
     if( ulStatus & AT91C_US_TXRDY ) {
         /* The interrupt was caused by the THR becoming empty.  Are there any
         more characters to transmit? */
-        if( xQueueReceiveFromISR( xUsart0Tx, &cChar, &xTaskWokenByTx ) == pdTRUE ) {
+            if( xQueueReceiveFromISR(get_txrx_queue(0)->tx, &cChar,
+                                     &xTaskWokenByTx ) == pdTRUE ) {
             /* A character was retrieved from the queue so can be sent to the
             THR now. */
             AT91C_BASE_US0->US_THR = cChar;
@@ -42,7 +59,8 @@ void usart0_irq_handler( void )
         character from the RHR and place it in the queue or received
         characters. */
         cChar = AT91C_BASE_US0->US_RHR;
-        xTaskWokenByPost = xQueueSendFromISR( xUsart0Rx, &cChar, xTaskWokenByPost );
+        xTaskWokenByPost = xQueueSendFromISR(get_txrx_queue(0)->rx, &cChar,
+                                             xTaskWokenByPost );
     }
 
     /* If a task was woken by either a character being received or a character
@@ -73,7 +91,9 @@ void usart1_irq_handler( void )
     if( ulStatus & AT91C_US_TXRDY ) {
         /* The interrupt was caused by the THR becoming empty.  Are there any
         more characters to transmit? */
-        if( xQueueReceiveFromISR( xUsart1Tx, &cChar, &xTaskWokenByTx ) == pdTRUE ) {
+
+            if( xQueueReceiveFromISR(get_txrx_queue(1)->tx, &cChar,
+                                     &xTaskWokenByTx ) == pdTRUE ) {
             /* A character was retrieved from the queue so can be sent to the
             THR now. */
             AT91C_BASE_US1->US_THR = cChar;
@@ -88,7 +108,8 @@ void usart1_irq_handler( void )
         character from the RHR and place it in the queue or received
         characters. */
         cChar = AT91C_BASE_US1->US_RHR;
-        xTaskWokenByPost = xQueueSendFromISR( xUsart1Rx, &cChar, xTaskWokenByPost );
+        xTaskWokenByPost = xQueueSendFromISR(get_txrx_queue(1)->rx, &cChar,
+                                             xTaskWokenByPost );
     }
 
     /* If a task was woken by either a character being received or a character
