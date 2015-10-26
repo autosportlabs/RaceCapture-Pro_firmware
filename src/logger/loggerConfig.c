@@ -531,10 +531,10 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
     int s = SAMPLE_DISABLED;
     int sr;
 
-    /*
-     * Bypass Interval and Utc here since they will always be logging
-     * at the highest rate based on the results of this very method
-     */
+    for (int i = 0; i < CONFIG_TIME_CHANNELS; i++) {
+            sr = config->TimeConfigs[i].cfg.sampleRate;
+            s = getHigherSampleRate(sr, s);
+    }
 
     for (int i = 0; i < CONFIG_ADC_CHANNELS; i++) {
         sr = config->ADCConfigs[i].cfg.sampleRate;
