@@ -79,7 +79,11 @@ struct TimeConfig {
 
 #define EMPTY_CHANNEL_CONFIG {"","", 0.0f, 0.0f, SAMPLE_DISABLED, 0}
 
-// Default to lowest active sample rate.  This will change in code later.
+/*
+ * Default to lowest active sample rate.  This will change in code later.
+ * NOTE: This should never be below SAMPLE_1Hz, else you could potentially
+ *       starve the telemtry task if a user somehow disables all channels.
+ */
 #define DEFAULT_UPTIME_CONFIG {"Interval", "ms", 0, 0, SAMPLE_1Hz, 0, ALWAYS_SAMPLED}
 #define DEFAULT_UTC_MILLIS_CONFIG {"Utc", "ms", 0, 0, SAMPLE_1Hz, 0, ALWAYS_SAMPLED}
 
