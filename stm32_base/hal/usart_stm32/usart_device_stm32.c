@@ -650,24 +650,20 @@ int usart3_readLine(char *s, int len)
 
 static void handle_usart_overrun(USART_TypeDef* USARTx)
 {
-        if (USART_GetITStatus(USARTx, USART_IT_ORE_RX) != SET)
-                return;
-
-        /*
+    uint32_t cChar;
+    if (USART_GetITStatus(USARTx, USART_IT_ORE_RX) != SET)
+    	return;
+	/*
 	 * Handle Overrun error
-         *
-	 * This bit is set by hardware when the word currently being received in
-         * the shift register is ready to be transferred into the RDR register
-         * while RXNE=1. An interrupt is generated if RXNEIE=1 in the USART_CR1
-         * register. It is cleared by a software sequence (an read to the
-         * USART_SR register followed by a read to the USART_DR register)
+	 * This bit is set by hardware when the word currently being received in the shift register is
+	 * ready to be transferred into the RDR register while RXNE=1. An interrupt is generated if
+	 * RXNEIE=1 in the USART_CR1 register. It is cleared by a software sequence (an read to the
+	 * USART_SR register followed by a read to the USART_DR register)
 	 */
-        uint32_t cChar;
 	cChar = USART1->SR;
 	cChar = USART1->DR;
-
 	/* Suppress compiler warning */
-	(void) cChar;
+	cChar = cChar;
 }
 
 void DMA1_Stream5_IRQHandler(void)

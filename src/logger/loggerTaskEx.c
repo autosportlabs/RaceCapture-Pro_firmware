@@ -1,9 +1,9 @@
 /*
- * Race Capture Firmware
+ * Race Capture Pro Firmware
  *
  * Copyright (C) 2015 Autosport Labs
  *
- * This file is part of the Race Capture fimrware suite
+ * This file is part of the Race Capture Pro fimrware suite
  *
  * This is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -236,8 +236,7 @@ void loggerTaskEx(void *params)
                  * We only log to file if the user has manually pushed the
                  * logging button.
                  */
-                if (!isHigherSampleRate(sampledRate, loggingSampleRate)
-                    && is_logging) {
+                if (is_logging && sampledRate >= loggingSampleRate) {
                         /* XXX Move this to file writer? */
                         const portBASE_TYPE res = queue_logfile_record(&msg);
                         const logging_status_t ls = pdTRUE == res ?
@@ -247,7 +246,8 @@ void loggerTaskEx(void *params)
                 }
 
                 /* send the sample on to the telemetry task(s) */
-                if (!isHigherSampleRate(sampledRate, telemetrySampleRate))
+                if (sampledRate >= telemetrySampleRate ||
+                    currentTicks % telemetrySampleRate == 0)
                         queueTelemetryRecord(&msg);
 
                 ++bufferIndex;

@@ -43,7 +43,6 @@
 #include "taskUtil.h"
 #include "usart.h"
 
-
 #if (CONNECTIVITY_CHANNELS == 1)
 #define CONNECTIVITY_TASK_INIT {NULL}
 #elif (CONNECTIVITY_CHANNELS == 2)
