@@ -70,7 +70,7 @@ Do the following to setup the MK1 toolchain
 ### Compiling LUA for MK1
 Before compiling the firmware you must compile the LUA library for MK1.  Do the following from the root of the project
 * `cd lib_lua/src/`
-* `make PLAT=stm32 generic`
+* `make PLAT=sam7s generic`
 
 ### Compiling MK1 Firmware
 * run `make PLAT=sam7x` from the root directory of the RCP firmware
