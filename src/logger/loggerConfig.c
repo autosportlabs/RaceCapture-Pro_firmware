@@ -211,7 +211,8 @@ static void resetTelemetryConfig(TelemetryConfig *cfg)
 {
     memset(cfg, 0, sizeof(TelemetryConfig));
     cfg->backgroundStreaming = BACKGROUND_STREAMING_ENABLED;
-    strcpy(cfg->telemetryServerHost, DEFAULT_TELEMETRY_SERVER_HOST);
+    strncpy(cfg->telemetryServerHost, DEFAULT_TELEMETRY_SERVER_HOST,
+            sizeof(cfg->telemetryServerHost));
 }
 
 static void resetConnectivityConfig(ConnectivityConfig *cfg)
