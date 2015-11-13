@@ -410,7 +410,7 @@ typedef struct _TrackConfig {
 #define BT_DEVICE_NAME_LENGTH 21
 #define BT_PASSCODE_LENGTH 5
 #define DEFAULT_BT_DEVICE_NAME "RaceCapturePro"
-#define DEFAULT_BT_PASSCODE "1010"
+#define DEFAULT_BT_PASSCODE "0000"
 #define DEFAULT_BT_BAUD 115200
 #define DEFAULT_BT_ENABLED 1
 
