@@ -1,4 +1,6 @@
 === 2.8.6 ===
+* Code cleanup around the some API methods.  Also eliminates unused variable
+  errors and removes some unneeded variables.
 * Improve the USART code for MK1 by removing duplicated code, eliminating
   externs, and cleaning up the handling of character queues.
 * Correct gyro scaling value.  Was off by a factor of 4.
