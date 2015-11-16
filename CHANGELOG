@@ -5,6 +5,10 @@
 * Improve gyro sensitivity.  Cars don't rotate at a value of 2000 deg/sec.
   Changes maximum supported rotation rate to 250 deg/sec, but get much more
   sensitivity (8x more to be precise).
+* Add uniqueness to BT device name by appending last 4 digits of unit serial
+  to the BT device.  Applies after logger reset.
+* Fix up BT code so that we now properly set BT name and Pin.  Addresses race
+  issues observed in BT module during programming as well.
 
 === 2.8.5 ===
 * Increased GPS task stack size from 200 to 256 to prevent HULK smash.
