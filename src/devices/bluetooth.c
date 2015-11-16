@@ -1,23 +1,26 @@
-/**
- * AutoSport Labs - Race Capture Firmware
+/*
+ * Race Capture Pro Firmware
  *
- * Copyright (C) 2014 AutoSport Labs
+ * Copyright (C) 2015 Autosport Labs
  *
- * This file is part of the Race Capture firmware suite
+ * This file is part of the Race Capture Pro fimrware suite
  *
- * This is free software: you can redistribute it and/or modify it under the terms of the
- * GNU General Public License as published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * See the GNU General Public License for more details. You should have received a copy of the GNU
- * General Public License along with this code. If not, see <http://www.gnu.org/licenses/>.
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "bluetooth.h"
 #include "FreeRTOS.h"
+#include "bluetooth.h"
 #include "loggerConfig.h"
 #include "mod_string.h"
 #include "printk.h"
@@ -26,30 +29,30 @@
 
 #include <stdbool.h>
 
-#define COMMAND_WAIT 	600
 #define BT_AT_CMD_BAUD	9600
+#define BT_CMD_BACKOFF_MS	5
 #define BT_INIT_DELAY   100
 #define BT_MAX_NAME_LEN	20
 #define BT_MAX_PIN_LEN	4
-#define BT_CMD_BACKOFF_MS	5
+#define COMMAND_WAIT 	600
 
 static bluetooth_status_t g_bluetooth_status = BT_STATUS_NOT_INIT;
 
 bluetooth_status_t bt_get_status()
 {
-    return g_bluetooth_status;
+        return g_bluetooth_status;
 }
 
 static int readBtWait(DeviceConfig *config, size_t delay)
 {
-    int c = config->serial->get_line_wait(config->buffer, config->length, delay);
-    return c;
+        return config->serial->get_line_wait(config->buffer, config->length,
+                                             delay);
 }
 
 static void flushBt(DeviceConfig *config)
 {
-    config->buffer[0] = '\0';
-    config->serial->flush();
+        config->buffer[0] = '\0';
+        config->serial->flush();
 }
 
 void putsBt(DeviceConfig *config, const char *data)
@@ -152,7 +155,8 @@ static int bt_set_pin(DeviceConfig *config, const char *pin_str)
         char buf[BT_MAX_PIN_LEN + 6 + 1] = "AT+PIN";
         strlcpy(buf + 6, pin_str, BT_MAX_PIN_LEN + 1);
 
-        return sendBtCommandWaitResponse(config, buf, "OKsetPIN", COMMAND_WAIT);
+        return sendBtCommandWaitResponse(config, buf, "OKsetPIN",
+                                         COMMAND_WAIT);
 }
 
 
@@ -179,46 +183,48 @@ static bool bt_find_working_baud(DeviceConfig *config, const int targetBaud)
 
 int bt_disconnect(DeviceConfig *config)
 {
-    return 0; //NOOP
+        return 0; //NOOP
 }
 
 int bt_init_connection(DeviceConfig *config)
 {
-    BluetoothConfig *btConfig = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
-    unsigned int targetBaud = btConfig->baudRate;
-    const char *deviceName = btConfig->deviceName;
-    const char *pin = btConfig->passcode;
+        BluetoothConfig *btConfig =
+                &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
+        unsigned int targetBaud = btConfig->baudRate;
+        const char *deviceName = btConfig->deviceName;
+        const char *pin = btConfig->passcode;
 
-    /* give a chance for BT module to init */
-    delayMs(BT_INIT_DELAY);
+        /* give a chance for BT module to init */
+        delayMs(BT_INIT_DELAY);
 
-    /*
-     * The HC-O6 seems to sometimes have trouble dealing with long AT commands.
-     * Namely at high speed it seems that the device can't process certain AT
-     * commands fast enough, causing an empty response.  To get past this, we
-     * set the baud rate while programming down to factory level (9600).  This
-     * ensures things go slow enough for the HC-06 processor + code.
-     */
-    const bool status =
-            bt_find_working_baud(config, targetBaud) &&
-            bt_set_baud(config, BT_AT_CMD_BAUD) &&
-            bt_get_version(config) &&
-            bt_set_name(config, deviceName) &&
-            bt_set_pin(config, pin) &&
-            bt_set_baud(config, targetBaud);
+        /*
+         * The HC-O6 seems to sometimes have trouble dealing with long AT
+         * commands. Namely at high speed it seems that the device can't
+         * process certain AT commands fast enough, causing an empty response.
+         * To get past this, we set the baud rate while programming down to
+         * factory level (9600).  This ensures things go slow enough for the
+         * HC-06 processor + code to handle it.
+         */
+        const bool status =
+                bt_find_working_baud(config, targetBaud) &&
+                bt_set_baud(config, BT_AT_CMD_BAUD) &&
+                bt_get_version(config) &&
+                bt_set_name(config, deviceName) &&
+                bt_set_pin(config, pin) &&
+                bt_set_baud(config, targetBaud);
 
-    if (status) {
-        pr_info("BT: Init complete\r\n");
-        g_bluetooth_status = BT_STATUS_PROVISIONED;
-    } else {
-        pr_info("BT: Failed to provision module.\r\n");
-        g_bluetooth_status = BT_STATUS_ERROR;
-    }
+        if (status) {
+                pr_info("BT: Init complete\r\n");
+                g_bluetooth_status = BT_STATUS_PROVISIONED;
+        } else {
+                pr_info("BT: Failed to provision module.\r\n");
+                g_bluetooth_status = BT_STATUS_ERROR;
+        }
 
-    return DEVICE_INIT_SUCCESS;
+        return DEVICE_INIT_SUCCESS;
 }
 
 int bt_check_connection_status(DeviceConfig *config)
 {
-    return DEVICE_STATUS_NO_ERROR;
+        return DEVICE_STATUS_NO_ERROR;
 }
