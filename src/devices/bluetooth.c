@@ -217,7 +217,9 @@ int bt_init_connection(DeviceConfig *config)
                 pr_info("BT: Init complete\r\n");
                 g_bluetooth_status = BT_STATUS_PROVISIONED;
         } else {
-                pr_info("BT: Failed to provision module.\r\n");
+                pr_info("BT: Failed to provision module.  This may "
+                        "be caused by a device connecting to the BT "
+                        "module.\r\n");
                 g_bluetooth_status = BT_STATUS_ERROR;
         }
 
