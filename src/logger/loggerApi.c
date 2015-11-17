@@ -1619,7 +1619,7 @@ int api_getScript(Serial *serial, const jsmntok_t *json)
 int api_setScript(Serial *serial, const jsmntok_t *json)
 {
     int rc = API_ERROR_UNSPECIFIED;
-    bool reload_script = false;
+
     const jsmntok_t *dataTok = findNode(json, "data");
     const jsmntok_t *pageTok = findNode(json, "page");
     const jsmntok_t *modeTok = findNode(json, "mode");
@@ -1642,7 +1642,6 @@ int api_setScript(Serial *serial, const jsmntok_t *json)
                flashScriptPage(page, script, (enum script_add_mode) mode);
 
             rc = flashResult == 1 ? API_SUCCESS : API_ERROR_SEVERE;
-            reload_script = rc == API_SUCCESS && mode == SCRIPT_ADD_MODE_COMPLETE;
         } else {
             rc = API_ERROR_PARAMETER;
         }
