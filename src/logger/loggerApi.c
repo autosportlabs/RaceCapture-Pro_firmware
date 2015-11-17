@@ -102,7 +102,7 @@ void unescapeTextField(char *data)
     *result='\0';
 }
 
-const static jsmntok_t * findNode(const jsmntok_t *node, const char * name)
+static const jsmntok_t * findNode(const jsmntok_t *node, const char * name)
 {
     while (!(node->start == 0 && node->end == 0)) {
         if (strcmp(name, jsmn_trimData(node)->data) == 0)
@@ -112,7 +112,7 @@ const static jsmntok_t * findNode(const jsmntok_t *node, const char * name)
     return NULL;
 }
 
-const static jsmntok_t * findStringValueNode(const jsmntok_t *node, const char *name)
+static const jsmntok_t * findStringValueNode(const jsmntok_t *node, const char *name)
 {
     const jsmntok_t *field = findNode(node, name);
     if (field != NULL) {
@@ -125,7 +125,7 @@ const static jsmntok_t * findStringValueNode(const jsmntok_t *node, const char *
     return NULL;
 }
 
-const static jsmntok_t * findValueNode(const jsmntok_t *node, const char *name)
+static const jsmntok_t * findValueNode(const jsmntok_t *node, const char *name)
 {
     const jsmntok_t *field = findNode(node, name);
     if (field != NULL) {

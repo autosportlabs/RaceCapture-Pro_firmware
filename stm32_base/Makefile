@@ -52,9 +52,15 @@ include libs/stm32f4_periph.mk
 include libs/freertos.mk
 include libs/stm32_usb.mk
 
-CFLAGS ?= -Os -g -Wall -fno-common -c -mthumb -fno-strict-aliasing \
-		-Wuninitialized -Wsign-compare -mcpu=$(CPU_TYPE) -MD \
-		-std=gnu99
+#
+# Wish we had -Wunused-parameter in here but too much to fix
+# for this changeset alone plus need to address in other libraries
+# as well.
+#
+CFLAGS ?= -Os -g -fno-common -c -mthumb -fno-strict-aliasing \
+	-std=gnu99 -mcpu=$(CPU_TYPE) -MD -Wall -Werror -Wempty-body \
+	-Wclobbered -Wignored-qualifiers -Wmissing-parameter-type \
+	-Wold-style-declaration -Wunused-but-set-parameter
 
 LUA_INCLUDE=-I$(APP_PATH)/lib_lua/src
 LUA_LIBS=lua
