@@ -96,8 +96,9 @@ static bool insertTimeLocSample(const GeoPoint * point, tiny_millis_t time)
     timeLoc->point = *point;
     timeLoc->time = getCurrentLapTime(time);
 
-    if (++buffIndex >= MAX_TIMELOC_SAMPLES)
+    if (++buffIndex >= MAX_TIMELOC_SAMPLES) {
         DEBUG("Buffer now Full!\n");
+    }
 
     return true;
 }
