@@ -5,6 +5,8 @@
 * Improve gyro sensitivity.  Cars don't rotate at a value of 2000 deg/sec.
   Changes maximum supported rotation rate to 250 deg/sec, but get much more
   sensitivity (8x more to be precise).
+* Improve the MK2 compilation routine by adding stricter warning flags and
+  by making all warnings into errors.
 
 === 2.8.5 ===
 * Increased GPS task stack size from 200 to 256 to prevent HULK smash.
