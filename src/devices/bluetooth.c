@@ -63,7 +63,7 @@ void putsBt(DeviceConfig *config, const char *data)
 static int sendBtCommandWaitResponse(DeviceConfig *config, const char *cmd,
                                      const char *rsp, const size_t wait)
 {
-        pr_debug_str_msg("BT: cmd: ", cmd);
+        pr_trace_str_msg("BT: cmd: ", cmd);
 
         flushBt(config);
         putsBt(config, cmd);
@@ -71,9 +71,9 @@ static int sendBtCommandWaitResponse(DeviceConfig *config, const char *cmd,
 
         const bool res = 0 == strncmp(config->buffer, rsp, strlen(rsp));
 
-        pr_debug_str_msg("BT: wanted rsp: ", rsp);
-        pr_debug_str_msg("BT: actual rsp: ", config->buffer);
-        pr_debug_int_msg("BT: matched: ", res);
+        pr_trace_str_msg("BT: wanted rsp: ", rsp);
+        pr_trace_str_msg("BT: actual rsp: ", config->buffer);
+        pr_trace_int_msg("BT: matched: ", res);
 
         /* Put a little time between commands for the BT unit to catch up */
         delayMs(BT_CMD_BACKOFF_MS);
@@ -162,7 +162,7 @@ static int bt_set_pin(DeviceConfig *config, const char *pin_str)
 
 static bool bt_find_working_baud(DeviceConfig *config, const int targetBaud)
 {
-        pr_info("BT: Searching for working baud rate...\r\n");
+        pr_info("BT: Detecting baud rate...\r\n");
 
         const int rates[] = {targetBaud, 230400, 115200, 57600, 9600};
         size_t i = 0;
@@ -173,11 +173,11 @@ static bool bt_find_working_baud(DeviceConfig *config, const int targetBaud)
 
         /* Check that we didn't fail to find a workable rate */
         if (i == sizeof(rates)) {
-                pr_info("BT: Unable to communicate with device.\r\n");
+                pr_info("BT: Could not detect on known baud rates.\r\n");
                 return false;
         }
 
-        pr_info_int_msg("BT: Talking with BT device.  Baud: ", rates[i]);
+        pr_info_int_msg("BT: Device responds at baud ", rates[i]);
         return true;
 }
 
@@ -217,9 +217,8 @@ int bt_init_connection(DeviceConfig *config)
                 pr_info("BT: Init complete\r\n");
                 g_bluetooth_status = BT_STATUS_PROVISIONED;
         } else {
-                pr_info("BT: Failed to provision module.  This may "
-                        "be caused by a device connecting to the BT "
-                        "module.\r\n");
+                pr_info("BT: Failed to provision module. A client may "
+                        "already be connected.\r\n");
                 g_bluetooth_status = BT_STATUS_ERROR;
         }
 
