@@ -18,7 +18,7 @@
  * Authors: Stieg
  */
 
-
+#include "cpu.h"
 #include "loggerConfig_test.h"
 #include "loggerConfig.h"
 #include "mod_string.h"
@@ -230,7 +230,14 @@ void LoggerConfigTest::testLoggerInitConnectivityConfig() {
    LoggerConfig *lc = getWorkingLoggerConfig();
 
    BluetoothConfig *btc = &lc->ConnectivityConfigs.bluetoothConfig;
-   CPPUNIT_ASSERT_EQUAL(string(DEFAULT_BT_DEVICE_NAME), string(btc->deviceName));
+
+   /* Generate the expected name */
+   const char *cpu_serial_str = cpu_get_serialnumber();
+   const size_t len = strlen(cpu_serial_str);
+   string expected_name = string(DEFAULT_BT_DEVICE_NAME) + "-" +
+           string(cpu_serial_str + len - 4);
+
+   CPPUNIT_ASSERT_EQUAL(string(expected_name), string(btc->deviceName));
    CPPUNIT_ASSERT_EQUAL(string(DEFAULT_BT_PASSCODE), string(btc->passcode));
    CPPUNIT_ASSERT_EQUAL(DEFAULT_BT_ENABLED, (int) btc->btEnabled);
 
