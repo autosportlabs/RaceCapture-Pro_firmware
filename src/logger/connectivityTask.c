@@ -38,7 +38,7 @@
 #include "queue.h"
 #include "sampleRecord.h"
 #include "serial.h"
-#include "sim900.h"
+#include "cellular.h"
 #include "stdint.h"
 #include "task.h"
 #include "taskUtil.h"

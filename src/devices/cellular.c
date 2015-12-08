@@ -19,7 +19,7 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "sim900.h"
+#include "cellular.h"
 #include "cellModem.h"
 #include "loggerConfig.h"
 #include "mod_string.h"

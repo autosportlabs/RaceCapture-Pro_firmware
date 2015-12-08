@@ -40,7 +40,7 @@
 #include "luaScript.h"
 #include "rcp_cpp_unit.hh"
 #include "cellModem.h"
-#include "sim900.h"
+#include "cellular.h"
 #include "bluetooth.h"
 #include "logger.h"
 #include "lap_stats.h"

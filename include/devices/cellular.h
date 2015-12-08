@@ -1,9 +1,9 @@
 /*
- * Race Capture Firmware
+ * Race Capture Pro Firmware
  *
- * Copyright (C) 2016 Autosport Labs
+ * Copyright (C) 2015 Autosport Labs
  *
- * This file is part of the Race Capture firmware suite
+ * This file is part of the Race Capture Pro fimrware suite
  *
  * This is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -19,14 +19,11 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SIM900_H_
-#define SIM900_H_
+#ifndef _CELLULAR_H_
+#define _CELLULAR_H_
 
-#include "cpp_guard.h"
 #include "stddef.h"
 #include "devices_common.h"
-
-CPP_GUARD_BEGIN
 
 typedef enum {
     TELEMETRY_STATUS_IDLE = 0,
@@ -45,6 +42,4 @@ int cellular_disconnect(DeviceConfig *config);
 int cellular_init_connection(DeviceConfig *config);
 int cellular_check_connection_status(DeviceConfig *config);
 
-CPP_GUARD_END
-
-#endif /* SIM900_H_ */
+#endif /* _CELLULAR_H_ */
