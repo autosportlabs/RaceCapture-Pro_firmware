@@ -291,8 +291,8 @@ int api_getStatus(Serial *serial, const jsmntok_t *json)
     json_objEnd(serial, 1);
 
     json_objStartString(serial, "telemetry");
-    json_int(serial, "status", (int)sim900_get_connection_status(), 1);
-    json_int(serial, "dur", sim900_active_time(), 0);
+    json_int(serial, "status", (int)cellular_get_connection_status(), 1);
+    json_int(serial, "dur", cellular_active_time(), 0);
     json_objEnd(serial, 0);
 
     json_objEnd(serial, 0);

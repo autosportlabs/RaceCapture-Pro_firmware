@@ -39,11 +39,11 @@ typedef enum {
     TELEMETRY_STATUS_CELL_REGISTRATION_FAILED
 } telemetry_status_t;
 
-telemetry_status_t sim900_get_connection_status();
-int32_t sim900_active_time();
-int sim900_disconnect(DeviceConfig *config);
-int sim900_init_connection(DeviceConfig *config);
-int sim900_check_connection_status(DeviceConfig *config);
+telemetry_status_t cellular_get_connection_status();
+int32_t cellular_active_time();
+int cellular_disconnect(DeviceConfig *config);
+int cellular_init_connection(DeviceConfig *config);
+int cellular_check_connection_status(DeviceConfig *config);
 
 CPP_GUARD_END
 

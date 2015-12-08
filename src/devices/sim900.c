@@ -19,7 +19,6 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "sim900.h"
 #include "cellModem.h"
 #include "loggerConfig.h"
@@ -38,12 +37,12 @@
 static telemetry_status_t g_connection_status = TELEMETRY_STATUS_IDLE;
 static int32_t g_active_since = 0;
 
-telemetry_status_t sim900_get_connection_status()
+telemetry_status_t cellular_get_connection_status()
 {
     return g_connection_status;
 }
 
-int32_t sim900_active_time()
+int32_t cellular_active_time()
 {
     if (g_active_since) {
         int uptime = getUptimeAsInt();
@@ -81,7 +80,7 @@ static int writeAuthJSON(Serial *serial, const char *deviceId)
     return -1;
 }
 
-int sim900_disconnect(DeviceConfig *config)
+int cellular_disconnect(DeviceConfig *config)
 {
     setCellBuffer(config->buffer, config->length);
     g_connection_status = TELEMETRY_STATUS_IDLE;
@@ -89,7 +88,7 @@ int sim900_disconnect(DeviceConfig *config)
     return closeNet(config->serial);
 }
 
-int sim900_init_connection(DeviceConfig *config)
+int cellular_init_connection(DeviceConfig *config)
 {
     LoggerConfig *loggerConfig = getWorkingLoggerConfig();
     setCellBuffer(config->buffer, config->length);
@@ -133,7 +132,7 @@ int sim900_init_connection(DeviceConfig *config)
 	return initResult;
 }
 
-int sim900_check_connection_status(DeviceConfig *config)
+int cellular_check_connection_status(DeviceConfig *config)
 {
     setCellBuffer(config->buffer, config->length);
     int status = isNetConnectionErrorOrClosed() ? DEVICE_STATUS_DISCONNECTED : DEVICE_STATUS_NO_ERROR;
