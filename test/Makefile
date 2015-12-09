@@ -150,7 +150,7 @@ $(RCP_SRC)/auto_config/auto_track.c \
 $(RCP_SRC)/cpu/cpu.c \
 $(RCP_SRC)/devices/bluetooth.c \
 $(RCP_SRC)/devices/cellular.c \
-$(RCP_SRC)/devices/cellModem.c \
+$(RCP_SRC)/devices/sim900.c \
 $(RCP_SRC)/filter/filter.c \
 $(RCP_SRC)/gps/dateTime.c \
 $(RCP_SRC)/gps/geoCircle.c \

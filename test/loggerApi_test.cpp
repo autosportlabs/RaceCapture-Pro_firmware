@@ -39,7 +39,7 @@
 #include "predictive_timer_2.h"
 #include "luaScript.h"
 #include "rcp_cpp_unit.hh"
-#include "cellModem.h"
+//#include "sim900.h"
 #include "cellular.h"
 #include "bluetooth.h"
 #include "logger.h"

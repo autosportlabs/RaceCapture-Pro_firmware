@@ -91,7 +91,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/logger/luaLoggerBinding.c \
 			$(RCP_SRC)/logger/sampleRecord.c \
 			$(RCP_SRC)/devices/bluetooth.c \
-			$(RCP_SRC)/devices/cellModem.c \
+			$(RCP_SRC)/devices/sim900.c \
 			$(RCP_SRC)/devices/null_device.c \
 			$(RCP_SRC)/devices/cellular.c \
 			$(RCP_SRC)/tracks/tracks.c \
