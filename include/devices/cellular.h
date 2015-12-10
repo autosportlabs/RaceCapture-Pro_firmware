@@ -23,6 +23,7 @@
 #define _CELLULAR_H_
 
 #include "devices_common.h"
+#include "serial_buffer.h"
 #include "stddef.h"
 
 typedef enum {
@@ -64,5 +65,7 @@ int32_t cellular_active_time();
 int cellular_disconnect(DeviceConfig *config);
 int cellular_init_connection(DeviceConfig *config);
 int cellular_check_connection_status(DeviceConfig *config);
+const char* readsCell(struct serial_buffer *sb, size_t timeout);
+void putsCell(struct serial_buffer *sb, const char *data);
 
 #endif /* _CELLULAR_H_ */

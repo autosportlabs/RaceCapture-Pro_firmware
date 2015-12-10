@@ -29,6 +29,7 @@
 #include "loggerConfig.h"
 #include "mod_string.h"
 #include "printk.h"
+#include "serial_buffer.h"
 #include "sim900.h"
 #include "taskUtil.h"
 
@@ -40,6 +41,24 @@ static struct {
 } telemetry_info;
 
 static struct cellular_info cell_info;
+
+enum cellular_modem {
+        CELLULAR_MODEM_UNKNOWN = 0,
+        CELLULAR_MODEM_SIM900,
+};
+
+const char* readsCell(struct serial_buffer *sb, size_t timeout)
+{
+    serial_buffer_read_wait(sb, timeout);
+    return sb->buffer;
+}
+
+void putsCell(struct serial_buffer *sb, const char *data)
+{
+	LED_toggle(0);
+	sb->serial->put_s(data);
+	pr_debug_str_msg("cellWrite: ", data);
+}
 
 enum cellmodem_status cellmodem_get_status( void )
 {
@@ -61,6 +80,12 @@ const char* cell_get_IMEI()
         return (const char*) cell_info.imei;
 }
 
+enum cellular_modem probe_cellular_modem(struct serial_buffer *sb)
+{
+        /* XXX STIEG: STUB!  Finish me */
+        return CELLULAR_MODEM_UNKNOWN;
+}
+
 telemetry_status_t cellular_get_connection_status()
 {
         return telemetry_info.status;
@@ -72,7 +97,7 @@ int32_t cellular_active_time()
         return 0 == since ? 0 : (int) getUptime() - since;
 }
 
-static int writeAuthJSON(Serial *serial, const char *deviceId)
+static int writeAuthJSON(struct serial_buffer *sb, const char *deviceId)
 {
         /*
          * Send linefeed at slow intervals until we have the auth packet
@@ -80,10 +105,11 @@ static int writeAuthJSON(Serial *serial, const char *deviceId)
          * XXX STIEG: WTF!!!  What the hell is the point of this?
          */
         for (int i = 0; i < 5; i++) {
-                serial->put_s(" ");
+                serial_buffer_puts(sb, " ");
                 delayMs(250);
         }
 
+        Serial *serial = sb->serial;
         json_objStart(serial);
         json_objStartString(serial, "auth");
         json_string(serial, "deviceId", deviceId, 1);
@@ -100,7 +126,7 @@ static int writeAuthJSON(Serial *serial, const char *deviceId)
         int attempts = 20;
         const char* ok_resp = "{\"status\":\"ok\"}";
         while (attempts-- > 0) {
-                const char * data = readsCell(serial, 1000);
+                const char * data = readsCell(sb, 1000);
                 if (0 == strncmp(data, ok_resp, sizeof(ok_resp) - 1))
                         return 0;
         }
@@ -110,64 +136,78 @@ static int writeAuthJSON(Serial *serial, const char *deviceId)
 
 int cellular_disconnect(DeviceConfig *config)
 {
-    setCellBuffer(config->buffer, config->length);
-    telemetry_info.status = TELEMETRY_STATUS_IDLE;
-    pr_info("cell: disconnected\r\n");
-    return closeNet(config->serial);
+        telemetry_info.status = TELEMETRY_STATUS_IDLE;
+        pr_info("[cell] disconnected\r\n");
+        return closeNet((struct serial_buffer*) config);
 }
 
 int cellular_init_connection(DeviceConfig *config)
 {
-    LoggerConfig *loggerConfig = getWorkingLoggerConfig();
-    setCellBuffer(config->buffer, config->length);
-    Serial *serial = config->serial;
+	telemetry_info.active_since = 0;
+
+        LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+        CellularConfig *cellCfg =
+                &(loggerConfig->ConnectivityConfigs.cellularConfig);
+        TelemetryConfig *telemetryConfig =
+                &(loggerConfig->ConnectivityConfigs.telemetryConfig);
+
+        struct serial_buffer sb;
+        serial_buffer_create(&sb, config->serial, config->length,
+                             config->buffer);
+
+        /* Figure out what Modem we are using */
+        probe_cellular_modem(&sb);
 
 	pr_debug("init cell connection\r\n");
-	int initResult = DEVICE_INIT_FAIL;
-	telemetry_info.active_since = 0;
-    CellularConfig *cellCfg = &(loggerConfig->ConnectivityConfigs.cellularConfig);
-    TelemetryConfig *telemetryConfig = &(loggerConfig->ConnectivityConfigs.telemetryConfig);
-    if (0 == initCellModem(serial, cellCfg, &cell_info)){
-		if (0 == configureNet(serial)){
-			pr_info("cell: network configured\r\n");
-			if( 0 == connectNet(serial, telemetryConfig->telemetryServerHost, TELEMETRY_SERVER_PORT, 0)){
-				pr_info("cell: server connected\r\n");
-				if (0 == writeAuthJSON(serial, telemetryConfig->telemetryDeviceId)){
-					pr_info("cell: server authenticated\r\n");
-					initResult = DEVICE_INIT_SUCCESS;
-					telemetry_info.status = TELEMETRY_STATUS_CONNECTED;
-					telemetry_info.active_since = getUptime();
-				}
-				else{
-					telemetry_info.status = TELEMETRY_STATUS_REJECTED_DEVICE_ID;
-					pr_error_str_msg("err: auth- token: ", telemetryConfig->telemetryDeviceId);
-				}
-			}
-			else{
-				telemetry_info.status = TELEMETRY_STATUS_SERVER_CONNECTION_FAILED;
-				pr_error_str_msg("err: server connect ", telemetryConfig->telemetryServerHost);
-			}
-		}
-		else{
-			telemetry_info.status = TELEMETRY_STATUS_INTERNET_CONFIG_FAILED;
-			pr_error("Failed to configure network\r\n");
-		}
-	}
-	else{
-		telemetry_info.status = TELEMETRY_STATUS_CELL_REGISTRATION_FAILED;
+
+        if (0 != initCellModem(&sb, cellCfg, &cell_info)) {
+                telemetry_info.status = TELEMETRY_STATUS_CELL_REGISTRATION_FAILED;
 		pr_warning("Failed to init cell connection\r\n");
-	}
-	return initResult;
+                return DEVICE_INIT_FAIL;
+        }
+
+        pr_info("[cell] modem initialized\r\n");
+
+        if (0 != configureNet(&sb)) {
+                telemetry_info.status = TELEMETRY_STATUS_INTERNET_CONFIG_FAILED;
+                pr_warning("[cell] Failed to configure network\r\n");
+                return DEVICE_INIT_FAIL;
+        }
+
+        pr_info("[cell] network configured\r\n");
+
+        if(0 != connectNet(&sb, telemetryConfig->telemetryServerHost, TELEMETRY_SERVER_PORT, 0)){
+                telemetry_info.status = TELEMETRY_STATUS_SERVER_CONNECTION_FAILED;
+                pr_error_str_msg("err: server connect ", telemetryConfig->telemetryServerHost);
+                return DEVICE_INIT_FAIL;
+        }
+
+        pr_info("[cell] server connected\r\n");
+
+        if (0 != writeAuthJSON(&sb, telemetryConfig->telemetryDeviceId)){
+                telemetry_info.status = TELEMETRY_STATUS_REJECTED_DEVICE_ID;
+                pr_error_str_msg("err: auth- token: ", telemetryConfig->telemetryDeviceId);
+                return DEVICE_INIT_FAIL;
+
+        }
+
+        pr_info("[cell] server authenticated\r\n");
+        telemetry_info.status = TELEMETRY_STATUS_CONNECTED;
+        telemetry_info.active_since = getUptime();
+
+	return DEVICE_INIT_SUCCESS;
 }
 
 int cellular_check_connection_status(DeviceConfig *config)
 {
-    setCellBuffer(config->buffer, config->length);
-    int status = isNetConnectionErrorOrClosed() ? DEVICE_STATUS_DISCONNECTED : DEVICE_STATUS_NO_ERROR;
-    if (status == DEVICE_STATUS_DISCONNECTED) {
-        telemetry_info.status = TELEMETRY_STATUS_CURRENT_CONNECTION_TERMINATED;
-        pr_debug("cell disconnected\r\n");
+        const int status = isNetConnectionErrorOrClosed((struct serial_buffer*) config) ?
+                DEVICE_STATUS_DISCONNECTED : DEVICE_STATUS_NO_ERROR;
 
-    }
-    return status;
+        if (status == DEVICE_STATUS_DISCONNECTED) {
+                telemetry_info.status = TELEMETRY_STATUS_CURRENT_CONNECTION_TERMINATED;
+                pr_debug("cell disconnected\r\n");
+
+        }
+
+        return status;
 }

@@ -53,6 +53,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/OBD2/OBD2.c \
 			$(RCP_SRC)/jsmn/jsmn.c \
 			$(RCP_SRC)/serial/serial.c \
+			$(RCP_SRC)/serial/serial_buffer.c \
 			$(RCP_SRC)/usart/usart.c \
 			$(RCP_SRC)/cpu/cpu.c \
 			$(RCP_SRC)/imu/imu.c \

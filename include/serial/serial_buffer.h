@@ -19,23 +19,29 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _SIM900_H_
-#define _SIM900_H_
+#ifndef _SERIAL_BUFFER_H_
+#define _SERIAL_BUFFER_H_
 
-#include "cellular.h"
-#include "loggerConfig.h"
-#include "serial_buffer.h"
+#include "serial.h"
 
-#include <stdint.h>
+#include <stdbool.h>
 
-void setCellBuffer(char *buffer, size_t len);
-int loadDefaultCellConfig(struct serial_buffer *sb);
-int initCellModem(struct serial_buffer *sb, CellularConfig *cellCfg,
-                  struct cellular_info *cell_info);
-int configureNet(struct serial_buffer *sb);
-int connectNet(struct serial_buffer *sb, const char *host, const char *port, int udpMode);
-int closeNet(struct serial_buffer *sb);
-int isNetConnectionErrorOrClosed(struct serial_buffer *sb);
-const char * readsCell(struct serial_buffer *sb, size_t timeout);
+struct serial_buffer {
+        Serial *serial;
+        size_t length;
+        char *buffer;
+};
 
-#endif /* _SIM900_H_ */
+bool serial_buffer_create(struct serial_buffer *sb,
+                          Serial *serial,
+                          const size_t size,
+                          char *buffer);
+
+int serial_buffer_read_wait(struct serial_buffer *sb,
+                            const size_t ms_delay);
+
+void serial_buffer_flush(struct serial_buffer *sb);
+
+void serial_buffer_puts(struct serial_buffer *sb, const char *s);
+
+#endif /* _SERIAL_BUFFER_H_ */
