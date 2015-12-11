@@ -105,6 +105,72 @@ static void cell_serial_rx_cb(const char *data)
         }
 }
 
+/* XXX STIEG: Review sanity of this */
+static void cellular_rstrip(char *data)
+{
+        for(; *data >= 32; ++data);
+        *data = 0;
+}
+
+int cellular_wait_cmd_rsp(struct serial_buffer *sb, const char *expectedRsp,
+                               size_t wait)
+{
+        int res = NO_CELL_RESPONSE;
+        serial_buffer_read_wait(sb, wait);
+        int len = serial_buffer_read_wait(sb, READ_TIMEOUT);
+        delayMs(PAUSE_DELAY); //this is a magic delay that sim900 needs for proper communications
+
+        if (len) {
+                cellular_rstrip(sb->buffer);
+                if (strlen(sb->buffer) > 0) {
+                        res = (strstr(expectedRsp, sb->buffer) != NULL);
+                }
+        }
+
+        return res;
+}
+
+int cellular_send_cmd_wait(struct serial_buffer *sb, const char *cmd,
+                           const char *expectedRsp, size_t wait)
+{
+        serial_buffer_flush(sb);
+        serial_buffer_puts(sb, cmd);
+        return cellular_wait_cmd_rsp(sb, expectedRsp, wait);
+}
+
+int cellular_send_cmd(struct serial_buffer *sb, const char * cmd,
+                      const char *expectedRsp)
+{
+        return cellular_send_cmd_wait(sb, cmd, expectedRsp, READ_TIMEOUT);
+}
+
+int cellular_send_cmd_ok(struct serial_buffer *sb, const char * cmd)
+{
+        return cellular_send_cmd(sb, cmd, "OK");
+}
+
+int cellular_send_cmd_retry(struct serial_buffer *sb, const char * cmd,
+                            const char * expectedRsp, size_t maxAttempts,
+                            size_t maxNoResponseAttempts)
+{
+        int result = 0;
+        size_t attempts = 0;
+
+        while (attempts++ < maxAttempts) {
+                result = cellular_send_cmd(sb, cmd, expectedRsp);
+
+                if (result == 1)
+                        break;
+
+                if (result == NO_CELL_RESPONSE && attempts > maxNoResponseAttempts)
+                        break;
+
+                delayMs(1000);
+        }
+
+        return result;
+}
+
 enum cellmodem_status cellmodem_get_status( void )
 {
         return cell_info.status;

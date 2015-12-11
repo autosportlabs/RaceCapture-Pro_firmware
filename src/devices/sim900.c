@@ -34,83 +34,10 @@
 #define min(a,b) ((a)<(b)?(a):(b))
 #define NETWORK_CONNECT_MAX_TRIES 10
 
-#define PAUSE_DELAY 100
-#define READ_TIMEOUT 	1000
-#define SHORT_TIMEOUT 	4500
-#define MEDIUM_TIMEOUT 	15000
-#define CONNECT_TIMEOUT 60000
-#define NO_CELL_RESPONSE -99
-
-/* XXX STIEG: Review sanity of this */
-static void stripTrailingWhitespace(char *data)
-{
-        for(; *data >= 32; ++data);
-        *data = 0;
-}
-
-static int waitCommandResponse(struct serial_buffer *sb, const char *expectedRsp,
-                               size_t wait)
-{
-        int res = NO_CELL_RESPONSE;
-        serial_buffer_read_wait(sb, wait);
-        int len = serial_buffer_read_wait(sb, READ_TIMEOUT);
-        delayMs(PAUSE_DELAY); //this is a magic delay that sim900 needs for proper communications
-
-        if (len) {
-                stripTrailingWhitespace(sb->buffer);
-                if (strlen(sb->buffer) > 0) {
-                        res = (strstr(expectedRsp, sb->buffer) != NULL);
-                }
-        }
-
-        return res;
-}
-
-static int sendCommandWait(struct serial_buffer *sb, const char *cmd,
-                           const char *expectedRsp, size_t wait)
-{
-        serial_buffer_flush(sb);
-        serial_buffer_puts(sb, cmd);
-        return waitCommandResponse(sb, expectedRsp, wait);
-}
-
-static int sendCommand(struct serial_buffer *sb, const char * cmd,
-                       const char *expectedRsp)
-{
-        return sendCommandWait(sb, cmd, expectedRsp, READ_TIMEOUT);
-}
-
-static int sendCommandOK(struct serial_buffer *sb, const char * cmd)
-{
-        return sendCommand(sb, cmd, "OK");
-}
-
-static int sendCommandRetry(struct serial_buffer *sb, const char * cmd,
-                            const char * expectedRsp, size_t maxAttempts,
-                            size_t maxNoResponseAttempts)
-{
-        int result = 0;
-        size_t attempts = 0;
-
-        while (attempts++ < maxAttempts) {
-                result = sendCommand(sb, cmd, expectedRsp);
-
-                if (result == 1)
-                        break;
-
-                if (result == NO_CELL_RESPONSE && attempts > maxNoResponseAttempts)
-                        break;
-
-                delayMs(1000);
-        }
-
-        return result;
-}
-
 static int read_subscriber_number(struct serial_buffer *sb,
                                   struct cellular_info *cell_info)
 {
-        int res = sendCommand(sb, "AT+CNUM\r", "+CNUM:");
+        int res = cellular_send_cmd(sb, "AT+CNUM\r", "+CNUM:");
         if (res != NO_CELL_RESPONSE) {
                 char *num_start = strstr(sb->buffer, ",\"");
                 if (num_start) {
@@ -130,7 +57,7 @@ static int read_subscriber_number(struct serial_buffer *sb,
 static int getSignalStrength(struct serial_buffer *sb,
                              struct cellular_info *cell_info)
 {
-        const int res = sendCommand(sb, "AT+CSQ\r", "+CSQ:");
+        const int res = cellular_send_cmd(sb, "AT+CSQ\r", "+CSQ:");
 
         if (res == NO_CELL_RESPONSE || strlen(sb->buffer) <= 6)
                 return res;
@@ -148,7 +75,7 @@ static int getSignalStrength(struct serial_buffer *sb,
 
 static int read_IMEI(struct serial_buffer *sb, struct cellular_info *cell_info)
 {
-        const int res = sendCommand(sb, "AT+GSN\r", "");
+        const int res = cellular_send_cmd(sb, "AT+GSN\r", "");
 
         if (res == NO_CELL_RESPONSE || strlen(sb->buffer) != 15)
                 return res;
@@ -163,7 +90,7 @@ static int isNetworkConnected(struct serial_buffer *sb, size_t maxRetries,
                               size_t maxNoResponseRetries)
 {
         serial_buffer_flush(sb);
-        return sendCommandRetry(sb, "AT+CREG?\r", "+CREG: 0,1|+CREG: 0,5",
+        return cellular_send_cmd_retry(sb, "AT+CREG?\r", "+CREG: 0,1|+CREG: 0,5",
                                 maxRetries, maxNoResponseRetries);
 }
 
@@ -171,7 +98,7 @@ static int isDataReady(struct serial_buffer *sb, size_t maxRetries,
                        size_t maxNoResponseRetries)
 {
         serial_buffer_flush(sb);
-        return sendCommandRetry(sb, "AT+CGATT?\r", "+CGATT: 1",
+        return cellular_send_cmd_retry(sb, "AT+CGATT?\r", "+CGATT: 1",
                                 maxRetries, maxNoResponseRetries);
 }
 
@@ -201,7 +128,7 @@ static int getDNSServer(struct serial_buffer *sb)
 int configureNet(struct serial_buffer *sb)
 {
 
-	if (sendCommandWait(sb, "AT+UPSDA=0,3\r", "OK", CONNECT_TIMEOUT) != 1){
+	if (cellular_send_cmd_wait(sb, "AT+UPSDA=0,3\r", "OK", CONNECT_TIMEOUT) != 1){
 		return -1;
 	}
 
@@ -221,7 +148,7 @@ int connectNet(struct serial_buffer *sb, const char *host, const char *port, int
 	serial_buffer_flush(sb);
 
 	//create TCP socket
-        if (sendCommandWait(sb, "AT+USOCR=6\r", "+USOCR: 0", CONNECT_TIMEOUT) != 1){
+        if (cellular_send_cmd_wait(sb, "AT+USOCR=6\r", "+USOCR: 0", CONNECT_TIMEOUT) != 1){
                 return -1;
         }
 
@@ -231,8 +158,8 @@ int connectNet(struct serial_buffer *sb, const char *host, const char *port, int
 	strcat(sb->buffer, port);
 	strcat(sb->buffer, "\r");
 
-        if (sendCommandWait(sb, "AT+USOCO=0,\"race-capture.com\",8080\r", "OK", CONNECT_TIMEOUT) != 1){
-//    if (sendCommandWait(sb, sb->buffer, "OK", CONNECT_TIMEOUT) != 1){
+        if (cellular_send_cmd_wait(sb, "AT+USOCO=0,\"race-capture.com\",8080\r", "OK", CONNECT_TIMEOUT) != 1){
+//    if (cellular_send_cmd_wait(sb, sb->buffer, "OK", CONNECT_TIMEOUT) != 1){
                 return -2;
         }
 
@@ -252,8 +179,8 @@ int closeNet(struct serial_buffer *sb){
 	delayMs(1100);
 	serial_buffer_puts(sb, "+++");
 	delayMs(1100);
-	sendCommandWait(sb, "AT+USOCL=0\r", "OK", SHORT_TIMEOUT);
-	sendCommandWait(sb, "AT+UPSDA=0,4\r", "OK", SHORT_TIMEOUT);
+	cellular_send_cmd_wait(sb, "AT+USOCL=0\r", "OK", SHORT_TIMEOUT);
+	cellular_send_cmd_wait(sb, "AT+UPSDA=0,4\r", "OK", SHORT_TIMEOUT);
 	return 0;
 }
 
@@ -277,31 +204,31 @@ static int initAPN(struct serial_buffer *sb, CellularConfig *cellCfg){
         serial_buffer_puts(sb, "AT+UPSD=0,1,\"");
         serial_buffer_puts(sb, cellCfg->apnHost);
         serial_buffer_puts(sb, "\"\r");
-        if (!waitCommandResponse(sb, "OK", READ_TIMEOUT)){
+        if (!cellular_wait_cmd_rsp(sb, "OK", READ_TIMEOUT)){
                 return -1;
         }
 
         serial_buffer_puts(sb, "AT+UPSD=0,2,\"");
         serial_buffer_puts(sb, cellCfg->apnUser);
         serial_buffer_puts(sb, "\"\r");
-        if (!waitCommandResponse(sb, "OK", READ_TIMEOUT)){
+        if (!cellular_wait_cmd_rsp(sb, "OK", READ_TIMEOUT)){
                 return -2;
         }
 
         serial_buffer_puts(sb, "AT+UPSD=0,3,\"");
         serial_buffer_puts(sb, cellCfg->apnPass);
         serial_buffer_puts(sb, "\"\r");
-        if (!waitCommandResponse(sb, "OK", READ_TIMEOUT)){
+        if (!cellular_wait_cmd_rsp(sb, "OK", READ_TIMEOUT)){
                 return -3;
         }
 
         serial_buffer_puts(sb, "AT+UPSD=0,4,\"8.8.8.8\"\r");
-        if (!waitCommandResponse(sb, "OK", READ_TIMEOUT)){
+        if (!cellular_wait_cmd_rsp(sb, "OK", READ_TIMEOUT)){
                 return -4;
         }
 
         serial_buffer_puts(sb, "AT+UPSD=0,5,\"8.8.4.4\"\r");
-        if (!waitCommandResponse(sb, "OK", READ_TIMEOUT)){
+        if (!cellular_wait_cmd_rsp(sb, "OK", READ_TIMEOUT)){
                 return -5;
         }
         return 0;
@@ -318,16 +245,16 @@ int initCellModem(struct serial_buffer *sb, CellularConfig *cellCfg,
 
 		if (attempts > 1){
 			pr_debug("ublox: power cycling\r\n");
-			if (sendCommandOK(sb, "AT\r") == 1 && attempts > 1){
+			if (cellular_send_cmd_ok(sb, "AT\r") == 1 && attempts > 1){
 				pr_debug("ublox: powering down\r\n");
 				powerCycleCellModem();
 			}
 			powerCycleCellModem();
 		}
 
-		if (sendCommandRetry(sb, "ATZ\r", "OK", 2, 2) != 1)
+		if (cellular_send_cmd_retry(sb, "ATZ\r", "OK", 2, 2) != 1)
                         continue;
-		if (sendCommandRetry(sb, "ATE0\r", "OK", 2, 2) != 1)
+		if (cellular_send_cmd_retry(sb, "ATE0\r", "OK", 2, 2) != 1)
                         continue;
 		if (isNetworkConnected(sb, 60, 3) != 1)
                         continue;

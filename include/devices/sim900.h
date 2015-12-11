@@ -28,14 +28,11 @@
 
 #include <stdint.h>
 
-void setCellBuffer(char *buffer, size_t len);
-int loadDefaultCellConfig(struct serial_buffer *sb);
 int initCellModem(struct serial_buffer *sb, CellularConfig *cellCfg,
                   struct cellular_info *cell_info);
 int configureNet(struct serial_buffer *sb);
 int connectNet(struct serial_buffer *sb, const char *host, const char *port, int udpMode);
 int closeNet(struct serial_buffer *sb);
 int isNetConnectionErrorOrClosed(struct serial_buffer *sb);
-const char * readsCell(struct serial_buffer *sb, size_t timeout);
 
 #endif /* _SIM900_H_ */

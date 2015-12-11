@@ -26,6 +26,13 @@
 #include "serial_buffer.h"
 #include "stddef.h"
 
+#define PAUSE_DELAY 100
+#define READ_TIMEOUT 	1000
+#define SHORT_TIMEOUT 	4500
+#define MEDIUM_TIMEOUT 	15000
+#define CONNECT_TIMEOUT 60000
+#define NO_CELL_RESPONSE -99
+
 typedef enum {
     TELEMETRY_STATUS_IDLE = 0,
     TELEMETRY_STATUS_CONNECTED,
@@ -57,6 +64,16 @@ struct cellular_info {
 };
 
 int cell_get_signal_strength();
+int cellular_wait_cmd_rsp(struct serial_buffer *sb,
+                          const char *expectedRsp, size_t wait);
+int cellular_send_cmd_wait(struct serial_buffer *sb, const char *cmd,
+                           const char *expectedRsp, size_t wait);
+int cellular_send_cmd(struct serial_buffer *sb, const char * cmd,
+                      const char *expectedRsp);
+int cellular_send_cmd_ok(struct serial_buffer *sb, const char * cmd);
+int cellular_send_cmd_retry(struct serial_buffer *sb, const char * cmd,
+                            const char * expectedRsp, size_t maxAttempts,
+                            size_t maxNoResponseAttempts);
 const char* cell_get_subscriber_number();
 const char* cell_get_IMEI();
 telemetry_status_t cellular_get_connection_status();
