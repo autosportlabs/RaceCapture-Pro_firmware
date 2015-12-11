@@ -19,129 +19,154 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "capabilities.h"
 #include "mod_string.h"
+#include "modp_numtoa.h"
 #include "printk.h"
 #include "ring_buffer.h"
 #include "serial.h"
-#include "modp_numtoa.h"
+
 #include <stddef.h>
-#include "capabilities.h"
+
+#define IF_LEVEL_GT_CURR_LEVEL_RET_ZERO(l) if ((l) > curr_level) return 0
 
 static enum log_level curr_level = INFO;
 static char _log_buffer[LOG_BUFFER_SIZE];
 
 static struct ring_buff log_buff = {
-    .buf = _log_buffer,
-    .size = LOG_BUFFER_SIZE,
-    .head = _log_buffer,
-    .tail = _log_buffer
+        .buf = _log_buffer,
+        .size = LOG_BUFFER_SIZE,
+        .head = _log_buffer,
+        .tail = _log_buffer
 };
 static struct ring_buff * const lbp = &log_buff;
 
 size_t read_log_to_serial(Serial *s, int escape)
 {
-    char buff[16];
-    size_t to_read = get_used(lbp);
+        char buff[16];
+        size_t to_read = get_used(lbp);
 
-    while(has_data(lbp)) {
-        int read = get_data(lbp, &buff, sizeof(buff));
-        for(int i = 0; i < read; i++)
-            if (escape) {
-                put_escapedString(s, &buff[i],1);
-            } else {
-                s->put_c(buff[i]);
-            }
-    }
+        while(has_data(lbp)) {
+                int read = get_data(lbp, &buff, sizeof(buff));
+                for(int i = 0; i < read; i++)
+                        if (escape) {
+                                put_escapedString(s, &buff[i],1);
+                        } else {
+                                s->put_c(buff[i]);
+                        }
+        }
 
-    return to_read;
+        return to_read;
 }
 
-size_t write_to_log_buff(const char *msg)
+size_t write_to_log_buff(const char *msg, const size_t size)
 {
-    if (NULL == msg)
-        return 0;
+        if (0 == size)
+                return 0;
 
-    size_t msg_size = strlen(msg) + 1;
-    size_t data_written = put_data(lbp, msg, msg_size);
+        size_t data_written = put_data(lbp, msg, size);
 
-    if (data_written == msg_size)
+        if (data_written == size)
+                return data_written;
+
+        // else if here we need to dump some log data.
+        // XXX: Log this?
+        int size_diff = size - data_written;
+        dump_data(&log_buff, size_diff);
+        data_written += put_data(lbp, msg + data_written, size_diff);
+
         return data_written;
-
-    // else if here we need to dump some log data.
-    // XXX: Log this?
-    int size_diff = msg_size - data_written;
-    dump_data(&log_buff, size_diff);
-    data_written += put_data(lbp, msg + data_written, size_diff);
-
-    return data_written;
 }
 
 int writek(const char *msg)
 {
-    return write_to_log_buff(msg);
+        if (NULL == msg)
+                return 0;
+
+        return write_to_log_buff(msg, strlen(msg));
+}
+
+int writek_crlf()
+{
+        return writek("\r\n");
+}
+
+int writek_char(char c)
+{
+        return write_to_log_buff(&c, 1);
 }
 
 int writek_int(int value)
 {
-    char buf[12];
-    modp_itoa10(value, buf);
-    return write_to_log_buff(buf);
+        char buf[12];
+        modp_itoa10(value, buf);
+        return writek(buf);
 }
 
 int writek_float(float value)
 {
-    char buf[20];
-    modp_ftoa(value, buf, 6);
-    return write_to_log_buff(buf);
+        char buf[20];
+        modp_ftoa(value, buf, 6);
+        return writek(buf);
 }
 
 int printk(enum log_level level, const char *msg)
 {
-    if (level > curr_level) return 0;
-    return write_to_log_buff(msg);
+        IF_LEVEL_GT_CURR_LEVEL_RET_ZERO(level);
+        return writek(msg);
+}
+
+int printk_char(enum log_level level, const char c)
+{
+        IF_LEVEL_GT_CURR_LEVEL_RET_ZERO(level);
+        return writek_char(c);
+}
+
+int printk_crlf(enum log_level level)
+{
+        IF_LEVEL_GT_CURR_LEVEL_RET_ZERO(level);
+        return writek_crlf();
 }
 
 int printk_int(enum log_level level, int value)
 {
-    if (level > curr_level) return 0;
-    return writek_int(value);
+        IF_LEVEL_GT_CURR_LEVEL_RET_ZERO(level);
+        return writek_int(value);
 }
 
 int printk_int_msg(enum log_level level, const char *msg, int value)
 {
-    if (level > curr_level) return 0;
-    return write_to_log_buff(msg) + writek_int(value) + write_to_log_buff("\r\n");
+        IF_LEVEL_GT_CURR_LEVEL_RET_ZERO(level);
+        return writek(msg) + writek_int(value) + writek_crlf();
 }
-
 
 int printk_float(enum log_level level, float value)
 {
-    if (level > curr_level) return 0;
-    return writek_float(value);
+        IF_LEVEL_GT_CURR_LEVEL_RET_ZERO(level);
+        return writek_float(value);
 }
 
 int printk_float_msg(enum log_level level, const char *msg, float value)
 {
-    if (level > curr_level) return 0;
-    return write_to_log_buff(msg) + writek_float(value) + write_to_log_buff("\r\n");
+        IF_LEVEL_GT_CURR_LEVEL_RET_ZERO(level);
+        return writek(msg) + writek_float(value) + writek_crlf();
 }
 
 int printk_str_msg(enum log_level level, const char *msg, const char *value)
 {
-    if (level > curr_level) return 0;
-    return write_to_log_buff(msg) + write_to_log_buff(value) + write_to_log_buff("\r\n");
+        IF_LEVEL_GT_CURR_LEVEL_RET_ZERO(level);
+        return writek(msg) + writek(value) + writek_crlf();
 }
 
 enum log_level get_log_level()
 {
-    return curr_level;
+        return curr_level;
 }
 
 enum log_level set_log_level(enum log_level level)
 {
-    if (level <= TRACE)
-        curr_level = level;
+        if (level <= TRACE)
+                curr_level = level;
 
-    return curr_level;
+        return curr_level;
 }

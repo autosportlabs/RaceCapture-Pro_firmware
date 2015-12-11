@@ -54,27 +54,17 @@ bool serial_buffer_create(struct serial_buffer *sb,
 int serial_buffer_read_wait(struct serial_buffer *sb,
                             const size_t ms_delay)
 {
-    const int c = sb->serial->get_line_wait(sb->buffer, sb->length,
-                                            msToTicks(ms_delay));
-    if (c > 2) {
-            /*
-             * Cell messages always end with a newline.  This also ignores
-             * the messages that are simply stupid short.
-             */
-            pr_debug("[serial_buffer] read: ");
-            pr_debug(sb->buffer);
-    }
-
-    return c;
+        return serial_get_line_wait(sb->serial,sb->buffer, sb->length,
+                                    msToTicks(ms_delay));
 }
 
 void serial_buffer_flush(struct serial_buffer *sb)
 {
         sb->buffer[0] = '\0';
-        sb->serial->flush();
+        serial_flush(sb->serial);
 }
 
 void serial_buffer_puts(struct serial_buffer *sb, const char *s)
 {
-        sb->serial->put_s(s);
+        serial_put_s(sb->serial, s);
 }

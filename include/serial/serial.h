@@ -55,6 +55,11 @@ typedef struct _Serial {
 } Serial;
 
 
+void serial_flush(const Serial *s);
+
+void serial_init(const Serial *s, unsigned int bits, unsigned int parity,
+                 unsigned int stopBits, unsigned int baud);
+
 void init_serial(void);
 
 Serial * get_serial(serial_id_t port);

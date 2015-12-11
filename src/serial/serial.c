@@ -90,6 +90,17 @@ static void do_tx_callback_char(const Serial *s, const char data)
         do_tx_callback(s, str);
 }
 
+void serial_flush(const Serial *s)
+{
+        s->flush();
+}
+
+void serial_init(const Serial *s, unsigned int bits, unsigned int parity,
+                 unsigned int stopBits, unsigned int baud)
+{
+        s->init(bits, parity, stopBits, baud);
+}
+
 char serial_get_c(const Serial *s)
 {
         const char c = s->get_c();

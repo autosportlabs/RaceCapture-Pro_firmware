@@ -51,80 +51,80 @@ static void stripTrailingWhitespace(char *data)
 static int waitCommandResponse(struct serial_buffer *sb, const char *expectedRsp,
                                size_t wait)
 {
-    int res = NO_CELL_RESPONSE;
-    serial_buffer_read_wait(sb, wait);
-    int len = serial_buffer_read_wait(sb, READ_TIMEOUT);
-    delayMs(PAUSE_DELAY); //this is a magic delay that sim900 needs for proper communications
+        int res = NO_CELL_RESPONSE;
+        serial_buffer_read_wait(sb, wait);
+        int len = serial_buffer_read_wait(sb, READ_TIMEOUT);
+        delayMs(PAUSE_DELAY); //this is a magic delay that sim900 needs for proper communications
 
-    if (len) {
-        stripTrailingWhitespace(sb->buffer);
-        if (strlen(sb->buffer) > 0) {
-            res = (strstr(expectedRsp, sb->buffer) != NULL);
+        if (len) {
+                stripTrailingWhitespace(sb->buffer);
+                if (strlen(sb->buffer) > 0) {
+                        res = (strstr(expectedRsp, sb->buffer) != NULL);
+                }
         }
-    }
 
-    return res;
+        return res;
 }
 
 static int sendCommandWait(struct serial_buffer *sb, const char *cmd,
                            const char *expectedRsp, size_t wait)
 {
-    serial_buffer_flush(sb);
-    serial_buffer_puts(sb, cmd);
-    return waitCommandResponse(sb, expectedRsp, wait);
+        serial_buffer_flush(sb);
+        serial_buffer_puts(sb, cmd);
+        return waitCommandResponse(sb, expectedRsp, wait);
 }
 
 static int sendCommand(struct serial_buffer *sb, const char * cmd,
                        const char *expectedRsp)
 {
-    return sendCommandWait(sb, cmd, expectedRsp, READ_TIMEOUT);
+        return sendCommandWait(sb, cmd, expectedRsp, READ_TIMEOUT);
 }
 
 static int sendCommandOK(struct serial_buffer *sb, const char * cmd)
 {
-    return sendCommand(sb, cmd, "OK");
+        return sendCommand(sb, cmd, "OK");
 }
 
 static int sendCommandRetry(struct serial_buffer *sb, const char * cmd,
                             const char * expectedRsp, size_t maxAttempts,
                             size_t maxNoResponseAttempts)
 {
-    int result = 0;
-    size_t attempts = 0;
+        int result = 0;
+        size_t attempts = 0;
 
-    while (attempts++ < maxAttempts) {
-        result = sendCommand(sb, cmd, expectedRsp);
+        while (attempts++ < maxAttempts) {
+                result = sendCommand(sb, cmd, expectedRsp);
 
-        if (result == 1)
-                break;
+                if (result == 1)
+                        break;
 
-        if (result == NO_CELL_RESPONSE && attempts > maxNoResponseAttempts)
-                break;
+                if (result == NO_CELL_RESPONSE && attempts > maxNoResponseAttempts)
+                        break;
 
-        delayMs(1000);
-    }
+                delayMs(1000);
+        }
 
-    return result;
+        return result;
 }
 
 static int read_subscriber_number(struct serial_buffer *sb,
                                   struct cellular_info *cell_info)
 {
-    int res = sendCommand(sb, "AT+CNUM\r", "+CNUM:");
-    if (res != NO_CELL_RESPONSE) {
-        char *num_start = strstr(sb->buffer, ",\"");
-        if (num_start) {
-            num_start += 2;
-            char *num_end = strstr(num_start, "\"");
-            if (num_end) {
-                *num_end = '\0';
-                strncpy(cell_info->number, num_start,
-                        sizeof(cell_info->number));
-                pr_debug_str_msg("Cell: phone number: ", cell_info->number);
-            }
+        int res = sendCommand(sb, "AT+CNUM\r", "+CNUM:");
+        if (res != NO_CELL_RESPONSE) {
+                char *num_start = strstr(sb->buffer, ",\"");
+                if (num_start) {
+                        num_start += 2;
+                        char *num_end = strstr(num_start, "\"");
+                        if (num_end) {
+                                *num_end = '\0';
+                                strncpy(cell_info->number, num_start,
+                                        sizeof(cell_info->number));
+                                pr_debug_str_msg("Cell: phone number: ", cell_info->number);
+                        }
+                }
         }
-    }
-    return res;
+        return res;
 }
 
 static int getSignalStrength(struct serial_buffer *sb,
@@ -177,7 +177,7 @@ static int isDataReady(struct serial_buffer *sb, size_t maxRetries,
 
 static int getIpAddress(struct serial_buffer *sb)
 {
-	putsCell(sb, "AT+UPSND=0,0\r");
+	serial_buffer_puts(sb, "AT+UPSND=0,0\r");
 	serial_buffer_read_wait(sb, MEDIUM_TIMEOUT);
 	serial_buffer_read_wait(sb, READ_TIMEOUT);
 	if (strlen(sb->buffer) == 0) return -1;
@@ -188,13 +188,13 @@ static int getIpAddress(struct serial_buffer *sb)
 
 static int getDNSServer(struct serial_buffer *sb)
 {
-    putsCell(sb, "AT+UPSND=0,1\r");
-    serial_buffer_read_wait(sb, MEDIUM_TIMEOUT);
-    serial_buffer_read_wait(sb, READ_TIMEOUT);
-    if (strlen(sb->buffer) == 0) return -1;
-    if (strncmp(sb->buffer, "ERROR", 5) == 0) return -2;
-    delayMs(PAUSE_DELAY);
-    return 0;
+        serial_buffer_puts(sb, "AT+UPSND=0,1\r");
+        serial_buffer_read_wait(sb, MEDIUM_TIMEOUT);
+        serial_buffer_read_wait(sb, READ_TIMEOUT);
+        if (strlen(sb->buffer) == 0) return -1;
+        if (strncmp(sb->buffer, "ERROR", 5) == 0) return -2;
+        delayMs(PAUSE_DELAY);
+        return 0;
 }
 
 
@@ -236,7 +236,7 @@ int connectNet(struct serial_buffer *sb, const char *host, const char *port, int
                 return -2;
         }
 
-        putsCell(sb, "AT+USODL=0\r");
+        serial_buffer_puts(sb, "AT+USODL=0\r");
 	int attempt = 0;
 	while (attempt++ < 5){
 		serial_buffer_read_wait(sb, SHORT_TIMEOUT);
@@ -250,7 +250,7 @@ int connectNet(struct serial_buffer *sb, const char *host, const char *port, int
 
 int closeNet(struct serial_buffer *sb){
 	delayMs(1100);
-	putsCell(sb, "+++");
+	serial_buffer_puts(sb, "+++");
 	delayMs(1100);
 	sendCommandWait(sb, "AT+USOCL=0\r", "OK", SHORT_TIMEOUT);
 	sendCommandWait(sb, "AT+UPSDA=0,4\r", "OK", SHORT_TIMEOUT);
@@ -259,8 +259,8 @@ int closeNet(struct serial_buffer *sb){
 
 int isNetConnectionErrorOrClosed(struct serial_buffer *sb){
 	if (strncmp(sb->buffer,"DISCONNECT", 10) == 0){
-	    pr_info("ublox: socket disconnect\r\n");
-	    return 1;
+                pr_info("ublox: socket disconnect\r\n");
+                return 1;
 	}
 	return 0;
 }
@@ -274,37 +274,37 @@ static void powerCycleCellModem(void)
 }
 
 static int initAPN(struct serial_buffer *sb, CellularConfig *cellCfg){
-    putsCell(sb, "AT+UPSD=0,1,\"");
-    putsCell(sb, cellCfg->apnHost);
-    putsCell(sb, "\"\r");
-    if (!waitCommandResponse(sb, "OK", READ_TIMEOUT)){
-        return -1;
-    }
+        serial_buffer_puts(sb, "AT+UPSD=0,1,\"");
+        serial_buffer_puts(sb, cellCfg->apnHost);
+        serial_buffer_puts(sb, "\"\r");
+        if (!waitCommandResponse(sb, "OK", READ_TIMEOUT)){
+                return -1;
+        }
 
-    putsCell(sb, "AT+UPSD=0,2,\"");
-    putsCell(sb, cellCfg->apnUser);
-    putsCell(sb, "\"\r");
-    if (!waitCommandResponse(sb, "OK", READ_TIMEOUT)){
-        return -2;
-    }
+        serial_buffer_puts(sb, "AT+UPSD=0,2,\"");
+        serial_buffer_puts(sb, cellCfg->apnUser);
+        serial_buffer_puts(sb, "\"\r");
+        if (!waitCommandResponse(sb, "OK", READ_TIMEOUT)){
+                return -2;
+        }
 
-    putsCell(sb, "AT+UPSD=0,3,\"");
-    putsCell(sb, cellCfg->apnPass);
-    putsCell(sb, "\"\r");
-    if (!waitCommandResponse(sb, "OK", READ_TIMEOUT)){
-        return -3;
-    }
+        serial_buffer_puts(sb, "AT+UPSD=0,3,\"");
+        serial_buffer_puts(sb, cellCfg->apnPass);
+        serial_buffer_puts(sb, "\"\r");
+        if (!waitCommandResponse(sb, "OK", READ_TIMEOUT)){
+                return -3;
+        }
 
-    putsCell(sb, "AT+UPSD=0,4,\"8.8.8.8\"\r");
-    if (!waitCommandResponse(sb, "OK", READ_TIMEOUT)){
-        return -4;
-    }
+        serial_buffer_puts(sb, "AT+UPSD=0,4,\"8.8.8.8\"\r");
+        if (!waitCommandResponse(sb, "OK", READ_TIMEOUT)){
+                return -4;
+        }
 
-    putsCell(sb, "AT+UPSD=0,5,\"8.8.4.4\"\r");
-    if (!waitCommandResponse(sb, "OK", READ_TIMEOUT)){
-        return -5;
-    }
-    return 0;
+        serial_buffer_puts(sb, "AT+UPSD=0,5,\"8.8.4.4\"\r");
+        if (!waitCommandResponse(sb, "OK", READ_TIMEOUT)){
+                return -5;
+        }
+        return 0;
 }
 
 int initCellModem(struct serial_buffer *sb, CellularConfig *cellCfg,

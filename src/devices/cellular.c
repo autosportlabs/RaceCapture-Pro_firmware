@@ -33,6 +33,8 @@
 #include "sim900.h"
 #include "taskUtil.h"
 
+#include <stdbool.h>
+
 #define TELEMETRY_SERVER_PORT "8080"
 
 static struct {
@@ -49,15 +51,58 @@ enum cellular_modem {
 
 const char* readsCell(struct serial_buffer *sb, size_t timeout)
 {
-    serial_buffer_read_wait(sb, timeout);
-    return sb->buffer;
+        serial_buffer_read_wait(sb, timeout);
+        return sb->buffer;
 }
 
-void putsCell(struct serial_buffer *sb, const char *data)
+static void cell_serial_tx_cb(const char *data)
 {
-	LED_toggle(0);
-	sb->serial->put_s(data);
-	pr_debug_str_msg("cellWrite: ", data);
+        static bool pr_pfx = true;
+        const enum log_level lvl = INFO;
+
+        for(; *data; ++data) {
+                if (pr_pfx) {
+                        printk(lvl, "[cell] tx: ");
+                        LED_toggle(0);
+                        pr_pfx = false;
+                }
+
+                switch(*data) {
+                case('\r'):
+                case('\n'):
+                        printk_crlf(lvl);
+                        pr_pfx = true;
+                        break;
+                default:
+                        printk_char(lvl, *data);
+                        break;
+                }
+        }
+}
+
+static void cell_serial_rx_cb(const char *data)
+{
+        static bool pr_pfx = true;
+        const enum log_level lvl = INFO;
+
+        for(; *data; ++data) {
+                if (pr_pfx) {
+                        printk(lvl, "[cell] rx: ");
+                        LED_toggle(0);
+                        pr_pfx = false;
+                }
+
+                switch(*data) {
+                case('\r'):
+                case('\n'):
+                        printk_crlf(lvl);
+                        pr_pfx = true;
+                        break;
+                default:
+                        printk_char(lvl, *data);
+                        break;
+                }
+        }
 }
 
 enum cellmodem_status cellmodem_get_status( void )
@@ -143,6 +188,10 @@ int cellular_disconnect(DeviceConfig *config)
 
 int cellular_init_connection(DeviceConfig *config)
 {
+        /* XXX STIEG: HACK... setting callback here */
+        config->serial->tx_callback = cell_serial_tx_cb;
+        config->serial->rx_callback = cell_serial_rx_cb;
+
 	telemetry_info.active_since = 0;
 
         LoggerConfig *loggerConfig = getWorkingLoggerConfig();
@@ -151,16 +200,15 @@ int cellular_init_connection(DeviceConfig *config)
         TelemetryConfig *telemetryConfig =
                 &(loggerConfig->ConnectivityConfigs.telemetryConfig);
 
-        struct serial_buffer sb;
-        serial_buffer_create(&sb, config->serial, config->length,
-                             config->buffer);
+        /* This is sane since DeviceConfig is typedef'd as a serial_buffer */
+        struct serial_buffer *sb = (struct serial_buffer*) config;
 
         /* Figure out what Modem we are using */
-        probe_cellular_modem(&sb);
+        probe_cellular_modem(sb);
 
 	pr_debug("init cell connection\r\n");
 
-        if (0 != initCellModem(&sb, cellCfg, &cell_info)) {
+        if (0 != initCellModem(sb, cellCfg, &cell_info)) {
                 telemetry_info.status = TELEMETRY_STATUS_CELL_REGISTRATION_FAILED;
 		pr_warning("Failed to init cell connection\r\n");
                 return DEVICE_INIT_FAIL;
@@ -168,7 +216,7 @@ int cellular_init_connection(DeviceConfig *config)
 
         pr_info("[cell] modem initialized\r\n");
 
-        if (0 != configureNet(&sb)) {
+        if (0 != configureNet(sb)) {
                 telemetry_info.status = TELEMETRY_STATUS_INTERNET_CONFIG_FAILED;
                 pr_warning("[cell] Failed to configure network\r\n");
                 return DEVICE_INIT_FAIL;
@@ -176,7 +224,7 @@ int cellular_init_connection(DeviceConfig *config)
 
         pr_info("[cell] network configured\r\n");
 
-        if(0 != connectNet(&sb, telemetryConfig->telemetryServerHost, TELEMETRY_SERVER_PORT, 0)){
+        if(0 != connectNet(sb, telemetryConfig->telemetryServerHost, TELEMETRY_SERVER_PORT, 0)){
                 telemetry_info.status = TELEMETRY_STATUS_SERVER_CONNECTION_FAILED;
                 pr_error_str_msg("err: server connect ", telemetryConfig->telemetryServerHost);
                 return DEVICE_INIT_FAIL;
@@ -184,7 +232,7 @@ int cellular_init_connection(DeviceConfig *config)
 
         pr_info("[cell] server connected\r\n");
 
-        if (0 != writeAuthJSON(&sb, telemetryConfig->telemetryDeviceId)){
+        if (0 != writeAuthJSON(sb, telemetryConfig->telemetryDeviceId)){
                 telemetry_info.status = TELEMETRY_STATUS_REJECTED_DEVICE_ID;
                 pr_error_str_msg("err: auth- token: ", telemetryConfig->telemetryDeviceId);
                 return DEVICE_INIT_FAIL;
