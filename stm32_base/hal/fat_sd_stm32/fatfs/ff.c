@@ -2877,12 +2877,15 @@ FRESULT f_close (
 )
 {
     FRESULT res;
-
+    int res_test;
 
 #if !_FS_READONLY
     res = f_sync(fp);					/* Flush cached data */
-    if (res == FR_OK)
+    res_test = (res == FR_OK);
+#else
+    res_test = 1;
 #endif
+    if (res_test)
     {
         res = validate(fp);				/* Lock volume */
         if (res == FR_OK) {
@@ -2891,8 +2894,11 @@ FRESULT f_close (
 #endif
 #if _FS_LOCK
             res = dec_lock(fp->lockid);	/* Decrement file open counter */
-            if (res == FR_OK)
+            res_test = (res == FR_OK);
+#else
+	    res_test = 1;
 #endif
+	    if (res_test)
                 fp->fs = 0;				/* Invalidate file object */
 #if _FS_REENTRANT
             unlock_fs(fs, FR_OK);		/* Unlock volume */
