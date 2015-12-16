@@ -27,7 +27,7 @@
 #include "stddef.h"
 
 #define PAUSE_DELAY 100
-#define READ_TIMEOUT 	1000
+#define READ_TIMEOUT 	500
 #define SHORT_TIMEOUT 	4500
 #define MEDIUM_TIMEOUT 	15000
 #define CONNECT_TIMEOUT 60000
@@ -50,35 +50,56 @@ enum cellmodem_status {
     CELLMODEM_STATUS_NO_NETWORK
 };
 
+enum cellular_net_status {
+        CELLULAR_NETWORK_NOT_REGISTERED = 0,
+        CELLULAR_NETWORK_SEARCHING,
+        CELLULAR_NETWORK_DENIED,
+        CELLULAR_NETWORK_REGISTERED,
+};
+
+
 /* E.164 standard.  15 digits + 1 null terminator */
 #define CELLULAR_INFO_NUMBER_MAX_LENGTH 16
 
 /* Up to 17 digits with IMEIST (15 with IMEI).  So 17 + 1 */
 #define CELLULAR_INFO_IMEI_MAX_LENGTH 18
 
+/* Don't know a good value.  So setting arbitrary one. */
+#define CELLULAR_INFO_OPERATOR_MAX_LEN 18
+
 struct cellular_info {
         enum cellmodem_status status;
+        enum cellular_net_status net_status;
         int signal;
         char number[CELLULAR_INFO_NUMBER_MAX_LENGTH];
         char imei[CELLULAR_INFO_IMEI_MAX_LENGTH];
+        char operator[CELLULAR_INFO_OPERATOR_MAX_LEN];
 };
 
 int cell_get_signal_strength();
-int cellular_wait_cmd_rsp(struct serial_buffer *sb,
-                          const char *expectedRsp, size_t wait);
-int cellular_send_cmd_wait(struct serial_buffer *sb, const char *cmd,
-                           const char *expectedRsp, size_t wait);
-int cellular_send_cmd(struct serial_buffer *sb, const char * cmd,
-                      const char *expectedRsp);
-int cellular_send_cmd_ok(struct serial_buffer *sb, const char * cmd);
-int cellular_send_cmd_retry(struct serial_buffer *sb, const char * cmd,
-                            const char * expectedRsp, size_t maxAttempts,
-                            size_t maxNoResponseAttempts);
+
+bool is_rsp(const char **msgs, const size_t count, const char *ans);
+bool is_rsp_ok(const char **msgs, const size_t count);
+
+size_t cellular_exec_cmd(struct serial_buffer *sb, const size_t wait,
+                         const char **rx_msgs, const size_t rx_msgs_size);
+
+int cellular_exec_match(struct serial_buffer *sb, const size_t wait,
+                        const char **rx_msgs, const size_t rx_msgs_size,
+                        const char *answrs[], const size_t answrs_size,
+                        const size_t rx_msg_idx);
+
 const char* cell_get_subscriber_number();
 const char* cell_get_IMEI();
 telemetry_status_t cellular_get_connection_status();
 enum cellmodem_status cellmodem_get_status( void );
 int32_t cellular_active_time();
+
+/**
+ * Pings the modem with an AT command.  A proper reply is OK.
+ * @return true if a proper reply was received.
+ */
+bool ping_modem(struct serial_buffer *sb);
 int cellular_disconnect(DeviceConfig *config);
 int cellular_init_connection(DeviceConfig *config);
 int cellular_check_connection_status(DeviceConfig *config);

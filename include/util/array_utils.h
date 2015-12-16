@@ -19,20 +19,9 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _SIM900_H_
-#define _SIM900_H_
+#ifndef _ARRAY_UTILS_H_
+#define _ARRAY_UTILS_H_
 
-#include "cellular.h"
-#include "loggerConfig.h"
-#include "serial_buffer.h"
+#define ARRAY_LEN(x) (sizeof(x)/sizeof(*x))
 
-#include <stdint.h>
-
-int initCellModem(struct serial_buffer *sb, CellularConfig *cellCfg,
-                  struct cellular_info *cell_info);
-int configureNet(struct serial_buffer *sb);
-int connectNet(struct serial_buffer *sb, const char *host, const char *port, int udpMode);
-int closeNet(struct serial_buffer *sb);
-int isNetConnectionErrorOrClosed(struct serial_buffer *sb);
-
-#endif /* _SIM900_H_ */
+#endif /* _ARRAY_UTILS_H_ */

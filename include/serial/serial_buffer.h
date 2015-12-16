@@ -30,6 +30,7 @@ struct serial_buffer {
         Serial *serial;
         size_t length;
         char *buffer;
+        size_t curr_len;
 };
 
 bool serial_buffer_create(struct serial_buffer *sb,
@@ -37,11 +38,34 @@ bool serial_buffer_create(struct serial_buffer *sb,
                           const size_t size,
                           char *buffer);
 
-int serial_buffer_read_wait(struct serial_buffer *sb,
-                            const size_t ms_delay);
+int serial_buffer_rx(struct serial_buffer *sb,
+                     const size_t ms_delay);
+
+size_t serial_buffer_rx_msgs(struct serial_buffer *sb,
+                             const size_t ms_delay,
+                             const char *msgs[], size_t msgs_len);
 
 void serial_buffer_flush(struct serial_buffer *sb);
 
-void serial_buffer_puts(struct serial_buffer *sb, const char *s);
+void serial_buffer_clear(struct serial_buffer *sb);
+
+void serial_buffer_reset(struct serial_buffer *sb);
+
+/**
+ * Puts the contents of the serial buffer onto the wire.
+ */
+void serial_buffer_tx(struct serial_buffer *sb);
+
+/**
+ * Appends the contents of buff to the buffer.
+ */
+size_t serial_buffer_append(struct serial_buffer *sb, const char *buff);
+
+/**
+ * Performs sprintf operation and appends result to the buffer.
+ */
+size_t serial_buffer_printf_append(struct serial_buffer *sb,
+                                   const char *format_str, ...);
+
 
 #endif /* _SERIAL_BUFFER_H_ */
