@@ -27,12 +27,13 @@
 #include "constants.h"
 #include "cpu.h"
 #include "dateTime.h"
+#include "gsm.h"
 #include "loggerConfig.h"
 #include "mod_string.h"
 #include "printk.h"
 #include "serial_buffer.h"
 #include "serial.h"
-#include "sara_u280.h"
+#include "sim900.h"
 #include "taskUtil.h"
 
 #include <stdbool.h>
@@ -224,18 +225,6 @@ const char* cell_get_IMEI()
         return (const char*) cell_info.imei;
 }
 
-bool ping_modem(struct serial_buffer *sb)
-{
-        const char *msgs[2];
-        const size_t msgs_len = ARRAY_LEN(msgs);
-
-        serial_buffer_reset(sb);
-        serial_buffer_append(sb, "AT");
-        const size_t count =cellular_exec_cmd(sb, READ_TIMEOUT, msgs,
-                                              msgs_len);
-        return is_rsp_ok(msgs, count);
-}
-
 /**
  * Does auto-bauding.  This allows the chip to figure out what serial
  * settings to use (default 8N1) along with what baud rate to use.  This
@@ -248,7 +237,7 @@ bool autobaud_modem(struct serial_buffer *sb, size_t tries,
                     const size_t backoff_ms)
 {
         for(; tries > 0; --tries) {
-                if (ping_modem(sb)) {
+                if (gsm_ping_modem(sb)) {
                         pr_info("[cell] auto-baud successful\r\n");
                         return true;
                 }
@@ -260,30 +249,6 @@ bool autobaud_modem(struct serial_buffer *sb, size_t tries,
         pr_warning("[cell] Failed to auto-baud device\r\n");
         return false;
 }
-
-/**
- * Turns on/off echo from the modem.
- */
-static bool set_echo(struct serial_buffer *sb, bool on)
-{
-        const char *cmd = on ? "ATE1" : "ATE0";
-        const char *msgs[2];
-        const size_t msgs_len = ARRAY_LEN(msgs);
-
-        serial_buffer_reset(sb);
-        serial_buffer_append(sb, cmd);
-        const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs, msgs_len);
-        const bool status = is_rsp_ok(msgs, count);
-
-        if (status) {
-                pr_info_str_msg("[cell] Echo status: ", on ? "on" : "off");
-                return true;
-        }
-
-        pr_warning("[cell] Failed to alter echoing.\r\n");
-        return false;
-}
-
 
 enum cellular_modem probe_cellular_manuf(struct serial_buffer *sb)
 {
@@ -319,14 +284,14 @@ int cellular_disconnect(DeviceConfig *config)
         /* Sane because DeviceConfig is typedef from struct serial_buffer* */
         struct serial_buffer *sb = (struct serial_buffer*) config;
 
-        if (!sara_u280_stop_direct_mode(sb)) {
+        if (!sim900_stop_direct_mode(sb)) {
                 /* Then we don't know if can issue commands */
                 pr_warning("[cell] Failed to escape Direct Mode\r\n");
                 return -1;
         }
 
         const int sid = telemetry_info.socket;
-        if (!sara_u280_close_tcp_socket(sb, sid)) {
+        if (!sim900_close_tcp_socket(sb, sid)) {
                 pr_warning_int_msg("[cell] Failed to close socket ", sid);
                 return -2;
         }
@@ -348,12 +313,13 @@ static int cellular_init_modem(struct serial_buffer *sb)
         if (!autobaud_modem(sb, 30, 1000))
                 return DEVICE_INIT_FAIL;
 
-        if(!set_echo(sb, false))
+        if(!gsm_set_echo(sb, false))
                 return DEVICE_INIT_FAIL;
 
-        sara_u280_get_subscriber_number(sb, &cell_info);
-        sara_u280_get_imei(sb, &cell_info);
-        sara_u280_get_signal_strength(sb, &cell_info);
+        /* At this point system is configured properly. Use specific cmds */
+        sim900_get_subscriber_number(sb, &cell_info);
+        sim900_get_imei(sb, &cell_info);
+        sim900_get_signal_strength(sb, &cell_info);
 
         return DEVICE_INIT_SUCCESS;
 }
@@ -363,7 +329,7 @@ static bool register_on_network(struct serial_buffer *sb)
         /* Check our status on the network */
         enum cellular_net_status status;
         for (size_t tries = 30; tries; --tries) {
-                 status = get_net_reg_status(sb, &cell_info);
+                 status = sim900_get_net_reg_status(sb, &cell_info);
                 if (CELLULAR_NETWORK_REGISTERED == status)
                         break;
 
@@ -390,7 +356,7 @@ static bool register_on_network(struct serial_buffer *sb)
         }
 
         pr_info("[cell] Network registered\r\n");
-        get_network_reg_info(sb, &cell_info);
+        sim900_get_network_reg_info(sb, &cell_info);
         cell_info.status = CELLMODEM_STATUS_PROVISIONED;
 
         return cell_info.net_status;
@@ -402,7 +368,7 @@ static bool setup_gprs(struct serial_buffer *sb,
         /* Check GPRS attached */
         bool gprs_attached;
         for (size_t tries = 10; tries; --tries) {
-                gprs_attached = sara_u280_is_gprs_attached(sb);
+                gprs_attached = sim900_is_gprs_attached(sb);
 
                 if (gprs_attached)
                         break;
@@ -416,19 +382,18 @@ static bool setup_gprs(struct serial_buffer *sb,
 
         /* Setup APN */
         const bool status =
-                sara_u280_put_apn_config(sb, cc->apnHost,cc->apnUser,
+                sim900_put_pdp_config(sb, 0, cc->apnHost,cc->apnUser,
                                          cc->apnPass) &&
-                sara_u280_set_dynamic_ip(sb) &&
-                sara_u280_put_dns_config(sb, "8.8.8.8", "8.8.4.4");
+                sim900_put_dns_config(sb, "8.8.8.8", "8.8.4.4");
 
         if (!status) {
-                pr_warning("[cell] APN/IP/DNS config failed\r\n");
+                pr_warning("[cell] APN/DNS config failed\r\n");
                 return false;
         }
 
         bool gprs_active;
         for (size_t tries = 10; tries; --tries) {
-                gprs_active = sara_u280_activate_gprs(sb);
+                gprs_active = sim900_activate_pdp(sb, 0);
 
                 if (gprs_active)
                         break;
@@ -442,14 +407,14 @@ static bool setup_gprs(struct serial_buffer *sb,
         }
 
         pr_debug("[cell] GPRS connected\r\n");
-        sara_u280_get_ip_address(sb);
+        sim900_get_ip_address(sb);
         return true;
 }
 
 static bool connect_rcl_telem(struct serial_buffer *sb,
                               const TelemetryConfig *tc)
 {
-        const int socket_id = sara_u280_create_tcp_socket(sb);
+        const int socket_id = sim900_create_tcp_socket(sb);
         if (socket_id < 0) {
                 pr_warning("[cell] Failed to create socket\r\n");
                 telemetry_info.socket = -1;
@@ -459,12 +424,12 @@ static bool connect_rcl_telem(struct serial_buffer *sb,
 
         const char *host = tc->telemetryServerHost;
         const int port = 8080;
-        if (!sara_u280_connect_tcp_socket(sb, socket_id, host, port)) {
+        if (!sim900_connect_tcp_socket(sb, socket_id, host, port)) {
                 pr_warning_str_msg("[cell] Failed to connect to ", host);
                 return false;
         }
 
-        return sara_u280_start_direct_mode(sb, socket_id);
+        return sim900_start_direct_mode(sb, socket_id);
 }
 
 static bool auth_telem_stream(struct serial_buffer *sb,

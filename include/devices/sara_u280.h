@@ -23,10 +23,9 @@
 #define _SARA_U280_H_
 
 #include "cellular.h"
-#include "loggerConfig.h"
 #include "serial_buffer.h"
 
-#include <stdint.h>
+#include <stdbool.h>
 
 bool sara_u280_get_subscriber_number(struct serial_buffer *sb,
                                      struct cellular_info *ci);
@@ -37,8 +36,11 @@ bool sara_u280_get_signal_strength(struct serial_buffer *sb,
 bool sara_u280_get_imei(struct serial_buffer *sb,
                         struct cellular_info *ci);
 
-enum cellular_net_status get_net_reg_status(struct serial_buffer *sb,
-                                            struct cellular_info *ci);
+enum cellular_net_status sara_u280_get_net_reg_status(struct serial_buffer *sb,
+                                                      struct cellular_info *ci);
+
+bool sara_u280_get_network_reg_info(struct serial_buffer *sb,
+                                    struct cellular_info *ci);
 
 bool sara_u280_is_gprs_attached(struct serial_buffer *sb);
 
@@ -46,18 +48,16 @@ bool sara_u280_set_dynamic_ip(struct serial_buffer *sb);
 
 bool sara_u280_get_ip_address(struct serial_buffer *sb);
 
-bool sara_u280_put_apn_config(struct serial_buffer *sb, const char *host,
-                              const char* user, const char* password);
-
 bool sara_u280_put_dns_config(struct serial_buffer *sb, const char* dns1,
                               const char *dns2);
 
-int get_network_reg_info(struct serial_buffer *sb,
-                         struct cellular_info *ci);
+bool sara_u280_put_pdp_config(struct serial_buffer *sb, const int pdp_id,
+                              const char *apn_host, const char* apn_user,
+                              const char* apn_password);
 
-bool sara_u280_activate_gprs(struct serial_buffer *sb);
+bool sara_u280_activate_pdp(struct serial_buffer *sb, const int pdp_id);
 
-bool deactivate_gprs_connection(struct serial_buffer *sb);
+bool sara_u280_deactivate_pdp(struct serial_buffer *sb, const int pdp_id);
 
 int sara_u280_create_tcp_socket(struct serial_buffer *sb);
 
