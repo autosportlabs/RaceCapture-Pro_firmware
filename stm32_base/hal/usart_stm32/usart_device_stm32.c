@@ -466,13 +466,14 @@ char usart3_getchar()
 
 void usart0_putchar(char c)
 {
+#if 0
     if (TRACE_LEVEL) {
         char buf[2];
         buf[0] = c;
         buf[1] = '\0';
         pr_debug(buf);
     }
-
+#endif
     xQueueSend(xUsart0Tx, &c, portMAX_DELAY);
 
     //Enable transmitter interrupt
@@ -481,12 +482,14 @@ void usart0_putchar(char c)
 
 void usart1_putchar(char c)
 {
+#if 0
     if (TRACE_LEVEL) {
         char buf[2];
         buf[0] = c;
         buf[1] = '\0';
         pr_debug(buf);
     }
+#endif
 
     xQueueSend(xUsart1Tx, &c, portMAX_DELAY);
 

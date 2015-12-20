@@ -1338,7 +1338,8 @@ void LoggerApiTest::testGetStatus(){
     CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["GPS"]["sats"]);
     CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["GPS"]["DOP"]);
 
-    CPPUNIT_ASSERT_EQUAL((int)CELLMODEM_STATUS_NOT_INIT, (int)(Number)json["status"]["cell"]["init"]);
+    CPPUNIT_ASSERT_EQUAL((int) CELLULAR_NETWORK_STATUS_UNKNOWN,
+                         (int)(Number)json["status"]["cell"]["init"]);
     CPPUNIT_ASSERT_EQUAL(string(""), (string)(String)json["status"]["cell"]["IMEI"]);
     CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["cell"]["sig_str"]);
     CPPUNIT_ASSERT_EQUAL(string(""), (string)(String)json["status"]["cell"]["number"]);

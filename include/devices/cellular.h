@@ -22,9 +22,14 @@
 #ifndef _CELLULAR_H_
 #define _CELLULAR_H_
 
+#include "cpp_guard.h"
+#include "dateTime.h"
 #include "devices_common.h"
+#include "loggerConfig.h"
 #include "serial_buffer.h"
 #include "stddef.h"
+
+CPP_GUARD_BEGIN
 
 #define PAUSE_DELAY 100
 #define READ_TIMEOUT 	500
@@ -34,24 +39,26 @@
 #define NO_CELL_RESPONSE -99
 
 typedef enum {
-    TELEMETRY_STATUS_IDLE = 0,
-    TELEMETRY_STATUS_CONNECTED,
-    TELEMETRY_STATUS_CURRENT_CONNECTION_TERMINATED,
-    TELEMETRY_STATUS_REJECTED_DEVICE_ID,
-    TELEMETRY_STATUS_DATA_PLAN_NOT_AVAILABLE,
-    TELEMETRY_STATUS_SERVER_CONNECTION_FAILED,
-    TELEMETRY_STATUS_INTERNET_CONFIG_FAILED,
-    TELEMETRY_STATUS_CELL_REGISTRATION_FAILED
+        TELEMETRY_STATUS_IDLE = 0,
+        TELEMETRY_STATUS_CONNECTED,
+        TELEMETRY_STATUS_CURRENT_CONNECTION_TERMINATED,
+        TELEMETRY_STATUS_REJECTED_DEVICE_ID,
+        TELEMETRY_STATUS_DATA_PLAN_NOT_AVAILABLE,
+        TELEMETRY_STATUS_SERVER_CONNECTION_FAILED,
+        TELEMETRY_STATUS_INTERNET_CONFIG_FAILED,
+        TELEMETRY_STATUS_CELL_REGISTRATION_FAILED,
+        TELEMETRY_STATUS_MODEM_INIT_FAILED,
 } telemetry_status_t;
 
-enum cellmodem_status {
-    CELLMODEM_STATUS_NOT_INIT = 0,
-    CELLMODEM_STATUS_PROVISIONED,
-    CELLMODEM_STATUS_NO_NETWORK
+enum cellular_modem {
+        CELLULAR_MODEM_UNKNOWN = 0,
+        CELLULAR_MODEM_SIM900,
+        CELLULAR_MODEM_UBLOX_SARA_U280,
 };
 
 enum cellular_net_status {
-        CELLULAR_NETWORK_NOT_REGISTERED = 0,
+        CELLULAR_NETWORK_STATUS_UNKNOWN = 0,
+        CELLULAR_NETWORK_NOT_SEARCHING,
         CELLULAR_NETWORK_SEARCHING,
         CELLULAR_NETWORK_DENIED,
         CELLULAR_NETWORK_REGISTERED,
@@ -67,13 +74,45 @@ enum cellular_net_status {
 /* Don't know a good value.  So setting arbitrary one. */
 #define CELLULAR_INFO_OPERATOR_MAX_LEN 18
 
+struct at_config {
+        unsigned int urc_delay_ms;
+};
+
 struct cellular_info {
-        enum cellmodem_status status;
         enum cellular_net_status net_status;
         int signal;
         char number[CELLULAR_INFO_NUMBER_MAX_LENGTH];
         char imei[CELLULAR_INFO_IMEI_MAX_LENGTH];
-        char operator[CELLULAR_INFO_OPERATOR_MAX_LEN];
+        char op[CELLULAR_INFO_OPERATOR_MAX_LEN];
+};
+
+struct telemetry_info {
+        telemetry_status_t status;
+        tiny_millis_t active_since;
+        int socket;
+};
+
+
+struct cell_modem_methods {
+        const struct at_config* (*get_at_config)();
+        bool (*init_modem)(struct serial_buffer *sb,
+                           struct cellular_info *ci);
+        bool (*get_sim_info)(struct serial_buffer *sb,
+                             struct cellular_info *ci);
+        bool (*register_on_network)(struct serial_buffer *sb,
+                                    struct cellular_info *ci);
+        bool (*get_network_info)(struct serial_buffer *sb,
+                                 struct cellular_info *ci);
+        bool (*setup_pdp)(struct serial_buffer *sb,
+                          struct cellular_info *ci,
+                          const CellularConfig *cc);
+        bool (*open_telem_connection)(struct serial_buffer *sb,
+                                      struct cellular_info *ci,
+                                      struct telemetry_info *ti,
+                                      const TelemetryConfig *tc);
+        bool (*close_telem_connection)(struct serial_buffer *sb,
+                                       struct cellular_info *ci,
+                                       struct telemetry_info *ti);
 };
 
 int cell_get_signal_strength();
@@ -92,18 +131,15 @@ int cellular_exec_match(struct serial_buffer *sb, const size_t wait,
 const char* cell_get_subscriber_number();
 const char* cell_get_IMEI();
 telemetry_status_t cellular_get_connection_status();
-enum cellmodem_status cellmodem_get_status( void );
+enum cellular_net_status cellmodem_get_status(void);
 int32_t cellular_active_time();
-
-/**
- * Pings the modem with an AT command.  A proper reply is OK.
- * @return true if a proper reply was received.
- */
-bool ping_modem(struct serial_buffer *sb);
 int cellular_disconnect(DeviceConfig *config);
 int cellular_init_connection(DeviceConfig *config);
 int cellular_check_connection_status(DeviceConfig *config);
 const char* readsCell(struct serial_buffer *sb, size_t timeout);
 void putsCell(struct serial_buffer *sb, const char *data);
+const char* cellular_get_net_status_desc();
+
+CPP_GUARD_END
 
 #endif /* _CELLULAR_H_ */

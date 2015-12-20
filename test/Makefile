@@ -27,6 +27,7 @@ INCLUDES = \
 -I$(RCP_INC) \
 -I$(RCP_INC)/logging \
 -I$(RCP_INC)/gps \
+-I$(RCP_INC)/gsm \
 -I$(RCP_INC)/jsmn \
 -I$(RCP_INC)/api \
 -I$(RCP_INC)/filter \
@@ -130,13 +131,13 @@ $(MOCK_DIR)/CAN_device_mock.c \
 $(MOCK_DIR)/GPIO_device_mock.c \
 $(MOCK_DIR)/LED_device_mock.c \
 $(MOCK_DIR)/PWM_device_mock.c \
+$(MOCK_DIR)/cell_pwr_btn.c \
 $(MOCK_DIR)/cpu_device_mock.c \
 $(MOCK_DIR)/imu_device_mock.c \
 $(MOCK_DIR)/loggerNotifications_mock.c \
 $(MOCK_DIR)/luaTask_mock.c \
 $(MOCK_DIR)/memory_device_mock.c \
 $(MOCK_DIR)/sdcard_mock.c \
-$(MOCK_DIR)/sim900_device_mock.c \
 $(MOCK_DIR)/timer_device_mock.c \
 $(MOCK_DIR)/watchdog_device_mock.c \
 $(RCP_SRC)/ADC/ADC.c \
@@ -158,6 +159,7 @@ $(RCP_SRC)/gps/geoCircle.c \
 $(RCP_SRC)/gps/geoTrigger.c \
 $(RCP_SRC)/gps/geopoint.c \
 $(RCP_SRC)/gps/gps.c \
+$(RCP_SRC)/gsm/gsm.c \
 $(RCP_SRC)/imu/imu.c \
 $(RCP_SRC)/jsmn/jsmn.c \
 $(RCP_SRC)/launch_control.c \
@@ -174,6 +176,7 @@ $(RCP_SRC)/logging/printk.c \
 $(RCP_SRC)/lua/luaScript.c \
 $(RCP_SRC)/memory/memory.c \
 $(RCP_SRC)/predictive_timer/predictive_timer_2.c \
+$(RCP_SRC)/serial/serial_buffer.c \
 $(RCP_SRC)/serial/serial.c \
 $(RCP_SRC)/timer/timer.c \
 $(RCP_SRC)/tracks/tracks.c \

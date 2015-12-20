@@ -338,14 +338,13 @@ void connectivityTask(void *params)
                 pr_info("conn: disconnected\r\n");
                 break;
             }
+
             /*now process a complete message if available*/
             if (msgReceived) {
                 last_message_time = getUptimeAsInt();
-                pr_debug(connParams->connectionName);
-                pr_debug_str_msg(": rx: ", buffer);
-                int msgRes = process_api(serial, buffer, BUFFER_SIZE);
 
-                int msgError = (msgRes == API_ERROR_MALFORMED);
+                const int msgRes = process_api(serial, buffer, BUFFER_SIZE);
+                const int msgError = (msgRes == API_ERROR_MALFORMED);
                 if (msgError) {
                     pr_debug("(failed)\r\n");
                 }
@@ -369,6 +368,7 @@ void connectivityTask(void *params)
                 should_reconnect = true;
             }
         }
+
         clear_connectivity_indicator();
         connParams->disconnect(&deviceConfig);
     }

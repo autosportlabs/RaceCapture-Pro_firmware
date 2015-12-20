@@ -75,7 +75,7 @@ int serial_buffer_rx(struct serial_buffer *sb,
                         sb->serial, ptr, available, msToTicks(ms_delay));
 
                 if (!read) {
-                        pr_info("[serial_buffer] msg timeout\r\n");
+                        pr_trace("[serial_buffer] msg timeout\r\n");
                         return 0;
                 }
 
@@ -83,12 +83,11 @@ int serial_buffer_rx(struct serial_buffer *sb,
                 msg_len = strlen(ptr);
         }
 
-        /* XXX: Demote debug msg */
-        pr_info("[serial_buffer] Msg (offset = ");
-        pr_info_int(sb->curr_len);
-        pr_info("): \"");
-        pr_info(ptr);
-        pr_info("\"\r\n");
+        pr_trace("[serial_buffer] Msg (offset = ");
+        pr_trace_int(sb->curr_len);
+        pr_trace("): \"");
+        pr_trace(ptr);
+        pr_trace("\"\r\n");
 
         sb->curr_len += msg_len + 1;
         return msg_len + 1;

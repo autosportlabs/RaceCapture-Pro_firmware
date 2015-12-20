@@ -145,13 +145,13 @@ int strcasecmp(const char *s1, const char *s2)
 }
 
 
-char *strtok(const char * __restrict s1, const char * __restrict s2)
+char *strtok(char * __restrict s1, const char * __restrict s2)
 {
     static char *next_start;	/* Initialized to 0 since in bss. */
     return strtok_r(s1, s2, &next_start);
 }
 
-char *strtok_r(const char * __restrict s1, const char * __restrict s2, char ** __restrict next_start)
+char *strtok_r(char * __restrict s1, const char * __restrict s2, char ** __restrict next_start)
 {
     register char *s;
     register char *p;
@@ -162,7 +162,8 @@ char *strtok_r(const char * __restrict s1, const char * __restrict s2, char ** _
                 *p++ = 0;
             }
         } else {
-            p = s = NULL;
+            s = NULL;
+            p = NULL;
         }
         *next_start = p;
     }

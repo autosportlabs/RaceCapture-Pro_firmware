@@ -102,42 +102,6 @@ void unescapeTextField(char *data)
     *result='\0';
 }
 
-static const jsmntok_t * findNode(const jsmntok_t *node, const char * name)
-{
-    while (!(node->start == 0 && node->end == 0)) {
-        if (strcmp(name, jsmn_trimData(node)->data) == 0)
-            return node;
-        node++;
-    }
-    return NULL;
-}
-
-static const jsmntok_t * findStringValueNode(const jsmntok_t *node, const char *name)
-{
-    const jsmntok_t *field = findNode(node, name);
-    if (field != NULL) {
-        field++;
-        if (field->type == JSMN_STRING) {
-            jsmn_trimData(field);
-            return field;
-        }
-    }
-    return NULL;
-}
-
-static const jsmntok_t * findValueNode(const jsmntok_t *node, const char *name)
-{
-    const jsmntok_t *field = findNode(node, name);
-    if (field != NULL) {
-        field++;
-        if (field->type == JSMN_PRIMITIVE) {
-            jsmn_trimData(field);
-            return field;
-        }
-    }
-    return NULL;
-}
-
 static int setUnsignedCharValueIfExists(const jsmntok_t *root, const char * fieldName, unsigned char *target, unsigned char (*filter)(unsigned char))
 {
     const jsmntok_t *valueNode = findValueNode(root, fieldName);
@@ -270,7 +234,8 @@ int api_getStatus(Serial *serial, const jsmntok_t *json)
     json_int(serial, "init", cellmodem_get_status(), 1);
     json_string(serial, "IMEI", cell_get_IMEI(), 1);
     json_int(serial, "sig_str", cell_get_signal_strength(), 1);
-    json_string(serial, "number", cell_get_subscriber_number(), 0);
+    json_string(serial, "number", cell_get_subscriber_number(), 1);
+    json_string(serial, "net_status", cellular_get_net_status_desc(), 0);
     json_objEnd(serial, 1);
 
     json_objStartString(serial, "bt");

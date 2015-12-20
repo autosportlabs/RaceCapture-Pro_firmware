@@ -138,20 +138,7 @@ static int bt_set_baud(DeviceConfig *config, unsigned int targetBaud)
         return set_check_bt_serial_baud(config, targetBaud);
 }
 
-static bool bt_get_version(DeviceConfig *config)
-{
-        pr_info("BT: Retrieving version info\r\n");
-
-        const char *msg = "AT+VERSION";
-        if (!sendCommand(config, msg))
-                return false;
-
-        /* Strip the leading "OK" */
-        pr_info_str_msg("BT: Version Info: ", config->buffer + 2);
-        return strlen(config->buffer) > 0;
-}
-
-static int bt_set_name(DeviceConfig *config, const char *bt_name)
+static bool bt_set_name(DeviceConfig *config, const char *new_name)
 {
         pr_info_str_msg("BT: Setting name: ", new_name);
 

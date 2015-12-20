@@ -23,55 +23,15 @@
 #define _SARA_U280_H_
 
 #include "cellular.h"
+#include "cpp_guard.h"
 #include "serial_buffer.h"
 
 #include <stdbool.h>
 
-bool sara_u280_get_subscriber_number(struct serial_buffer *sb,
-                                     struct cellular_info *ci);
+CPP_GUARD_BEGIN
 
-bool sara_u280_get_signal_strength(struct serial_buffer *sb,
-                                   struct cellular_info *ci);
+const struct cell_modem_methods* get_sara_u280_methods();
 
-bool sara_u280_get_imei(struct serial_buffer *sb,
-                        struct cellular_info *ci);
-
-enum cellular_net_status sara_u280_get_net_reg_status(struct serial_buffer *sb,
-                                                      struct cellular_info *ci);
-
-bool sara_u280_get_network_reg_info(struct serial_buffer *sb,
-                                    struct cellular_info *ci);
-
-bool sara_u280_is_gprs_attached(struct serial_buffer *sb);
-
-bool sara_u280_set_dynamic_ip(struct serial_buffer *sb);
-
-bool sara_u280_get_ip_address(struct serial_buffer *sb);
-
-bool sara_u280_put_dns_config(struct serial_buffer *sb, const char* dns1,
-                              const char *dns2);
-
-bool sara_u280_put_pdp_config(struct serial_buffer *sb, const int pdp_id,
-                              const char *apn_host, const char* apn_user,
-                              const char* apn_password);
-
-bool sara_u280_activate_pdp(struct serial_buffer *sb, const int pdp_id);
-
-bool sara_u280_deactivate_pdp(struct serial_buffer *sb, const int pdp_id);
-
-int sara_u280_create_tcp_socket(struct serial_buffer *sb);
-
-bool sara_u280_connect_tcp_socket(struct serial_buffer *sb,
-                                  const int socket_id,
-                                  const char* host,
-                                  const int port);
-
-bool sara_u280_close_tcp_socket(struct serial_buffer *sb,
-                                const int socket_id);
-
-bool sara_u280_start_direct_mode(struct serial_buffer *sb,
-                                 const int socket_id);
-
-bool sara_u280_stop_direct_mode(struct serial_buffer *sb);
+CPP_GUARD_END
 
 #endif /* _SARA_U280_H_ */

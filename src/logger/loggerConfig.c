@@ -181,6 +181,8 @@ static void resetCellularConfig(CellularConfig *cfg)
     memset(cfg, 0, sizeof(CellularConfig));
     cfg->cellEnabled = DEFAULT_CELL_ENABLED;
     strcpy(cfg->apnHost, DEFAULT_APN_HOST);
+    strcpy(cfg->dns1, DEFAULT_DNS1);
+    strcpy(cfg->dns2, DEFAULT_DNS2);
 }
 
 static void resetTelemetryConfig(TelemetryConfig *cfg)
@@ -189,6 +191,7 @@ static void resetTelemetryConfig(TelemetryConfig *cfg)
     cfg->backgroundStreaming = BACKGROUND_STREAMING_ENABLED;
     strncpy(cfg->telemetryServerHost, DEFAULT_TELEMETRY_SERVER_HOST,
             sizeof(cfg->telemetryServerHost));
+    cfg->telemetry_port = DEFAULT_TELEMETRY_SERVER_PORT;
 }
 
 static void resetConnectivityConfig(ConnectivityConfig *cfg)

@@ -56,7 +56,7 @@ bool gsm_set_echo(struct serial_buffer *sb, bool on)
         const bool status = is_rsp_ok(msgs, count);
 
         if (!status)
-                pr_warning("[gsm_0707] Failed to alter echoing.\r\n");
+                pr_warning("[gsm] Failed to alter echoing.\r\n");
 
         return status;
 }
@@ -76,7 +76,7 @@ bool gsm_get_subscriber_number(struct serial_buffer *sb,
         const bool status = is_rsp_ok(msgs, count);
 
         if (!status) {
-                pr_warning("[gsm_0707] Failed to read phone number\r\n");
+                pr_warning("[gsm] Failed to read phone number\r\n");
                 return false;
         }
 
@@ -94,7 +94,7 @@ bool gsm_get_subscriber_number(struct serial_buffer *sb,
         return true;
 
 parse_fail:
-        pr_warning("[gsm_0707] Failed to prase phone number\r\n");
+        pr_warning("[gsm] Failed to prase phone number\r\n");
         return false;
 }
 
@@ -113,7 +113,7 @@ bool gsm_get_signal_strength(struct serial_buffer *sb,
         const bool status = is_rsp_ok(const_msgs, count);
 
         if (!status) {
-                pr_warning("[gsm_0707] Failed to read signal strength\r\n");
+                pr_warning("[gsm] Failed to read signal strength\r\n");
                 return false;
         }
 
@@ -171,6 +171,9 @@ enum cellular_net_status gsm_get_network_reg_status(
                                             answrs, answrs_len, 0);
 
         switch(idx) {
+        case 0:
+                ci->net_status = CELLULAR_NETWORK_NOT_SEARCHING;
+                break;
         case 1:
         case 5:
                 ci->net_status = CELLULAR_NETWORK_REGISTERED;
@@ -183,7 +186,7 @@ enum cellular_net_status gsm_get_network_reg_status(
                 ci->net_status = CELLULAR_NETWORK_DENIED;
                 break;
         default:
-                ci->net_status = CELLULAR_NETWORK_NOT_REGISTERED;
+                ci->net_status = CELLULAR_NETWORK_STATUS_UNKNOWN;
         }
 
         return ci->net_status;
@@ -194,17 +197,18 @@ bool gsm_is_gprs_attached(struct serial_buffer *sb)
         const char *cmd = "AT+CGATT?";
         const char *msgs[2];
         const size_t msgs_len = ARRAY_LEN(msgs);
-        const char *answrs[] = {"+CGATT: 1"};
+        const char *answrs[] = {"+CGATT: 0",
+                                "+CGATT: 1",};
         const size_t answrs_len = ARRAY_LEN(answrs);
 
         serial_buffer_reset(sb);
         serial_buffer_append(sb, cmd);
         return cellular_exec_match(sb, READ_TIMEOUT, msgs, msgs_len,
-                                   answrs, answrs_len, 0) == 0;
+                                   answrs, answrs_len, 0) == 1;
 }
 
 bool gsm_get_network_reg_info(struct serial_buffer *sb,
-                                  struct cellular_info *ci)
+                              struct cellular_info *ci)
 {
         const char *cmd = "AT+COPS?";
         const char *msgs[2];
@@ -232,6 +236,6 @@ bool gsm_get_network_reg_info(struct serial_buffer *sb,
                 str_beg = "UNKNOWN";
         }
 
-        strncpy(ci->operator, str_beg, sizeof(ci->operator));
+        strncpy(ci->op, str_beg, sizeof(ci->op));
         return status;
 }

@@ -19,19 +19,8 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _SIM900_H_
-#define _SIM900_H_
-
 #include "cellular.h"
-#include "cpp_guard.h"
-#include "serial_buffer.h"
 
-#include <stdbool.h>
+void cell_pwr_btn_init(const enum cellular_modem cm) {}
 
-CPP_GUARD_BEGIN
-
-const struct cell_modem_methods* get_sim900_methods();
-
-CPP_GUARD_END
-
-#endif /* _SIM900_H_ */
+void cell_pwr_btn(const bool pressed) {}

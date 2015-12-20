@@ -46,9 +46,9 @@ int strcmp(const char *s1, const char *s2);
 
 int strcasecmp(const char *s1, const char *s2);
 
-char *strtok(const char * __restrict s1, const char * __restrict s2);
+char *strtok(char * __restrict s1, const char * __restrict s2);
 
-char *strtok_r(const char * __restrict s1, const char * __restrict s2, char ** __restrict next_start);
+char *strtok_r(char * __restrict s1, const char * __restrict s2, char ** __restrict next_start);
 
 size_t strspn(const char *s1, const char *s2);
 

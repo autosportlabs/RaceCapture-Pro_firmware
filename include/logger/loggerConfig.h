@@ -47,7 +47,7 @@ CPP_GUARD_BEGIN
 #define CONFIG_TIMER_CHANNELS				TIMER_CHANNELS
 #define CONFIG_CAN_CHANNELS                 CAN_CHANNELS
 
-#define SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_50Hz
+#define SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_10Hz
 #define FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_50Hz
 
 
@@ -445,32 +445,39 @@ typedef struct _BluetoothConfig {
 #define CELL_APN_HOST_LENGTH 30
 #define CELL_APN_USER_LENGTH 30
 #define CELL_APN_PASS_LENGTH 30
+#define DNS_ADDR_LEN 16
 #define DEFAULT_APN_HOST "epc.tmobile.com"
 #define DEFAULT_APN_USER ""
 #define DEFAULT_APN_PASS ""
 #define DEFAULT_CELL_ENABLED 0
+#define DEFAULT_DNS1	"8.8.8.8"
+#define DEFAULT_DNS2	"8.8.4.4"
 
 typedef struct _CellularConfig {
-    unsigned char cellEnabled;
-    char apnHost [CELL_APN_HOST_LENGTH + 1];
-    char apnUser [CELL_APN_USER_LENGTH + 1];
-    char apnPass [CELL_APN_PASS_LENGTH + 1];
+        unsigned char cellEnabled;
+        char apnHost [CELL_APN_HOST_LENGTH + 1];
+        char apnUser [CELL_APN_USER_LENGTH + 1];
+        char apnPass [CELL_APN_PASS_LENGTH + 1];
+        char dns1[DNS_ADDR_LEN];
+        char dns2[DNS_ADDR_LEN];
 } CellularConfig;
 
 
-#define DEVICE_ID_LENGTH 36
-#define TELEMETRY_SERVER_HOST_LENGTH 100
+#define DEVICE_ID_LENGTH 35
+#define TELEMETRY_SERVER_HOST_LENGTH 95
 
 #define DEFAULT_DEVICE_ID ""
 #define DEFAULT_TELEMETRY_SERVER_HOST "telemetry.race-capture.com"
+#define DEFAULT_TELEMETRY_SERVER_PORT 8080
 
 #define BACKGROUND_STREAMING_ENABLED				1
 #define BACKGROUND_STREAMING_DISABLED				0
 
 typedef struct _TelemetryConfig {
-    unsigned char backgroundStreaming;
-    char telemetryDeviceId[DEVICE_ID_LENGTH + 1];
-    char telemetryServerHost[TELEMETRY_SERVER_HOST_LENGTH + 1];
+        unsigned char backgroundStreaming;
+        char telemetryDeviceId[DEVICE_ID_LENGTH + 1];
+        char telemetryServerHost[TELEMETRY_SERVER_HOST_LENGTH + 1];
+        int telemetry_port;
 } TelemetryConfig;
 
 
