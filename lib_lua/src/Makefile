@@ -13,15 +13,6 @@ PLAT= none
 # Disable the Memory optimizations as they are causing various system
 # libraries not to get registered.  The extra memory seems to be about
 # 1K.
-
-ifeq ($(PLAT), sam7s)
-	MCU   = arm7tdmi
-	THUMB = -mthumb -mthumb-interwork
-	CC = arm-elf-gcc
-	CFLAGS= -mcpu=$(MCU) $(THUMB) -ggdb -Os -Wall $(MYCFLAGS) -DLUA_OPTIMIZE_MEMORY=2 -DLUA_USE_MKSTEMP=1
-	AR = arm-elf-ar rcu
-	RANLIB= arm-elf-ranlib
-else
 ifeq ($(PLAT), stm32)
 	MCU   = cortex-m4
 	THUMB = -mthumb
@@ -30,12 +21,8 @@ ifeq ($(PLAT), stm32)
 	AR = arm-none-eabi-ar rcu
 	RANLIB= arm-none-eabi-ranlib
 else
-$(error please specify PLAT=stm32 or PLAT=sam7s)
+$(error please specify PLAT=stm32)
 endif
-endif
-
-
-
 
 RM= rm -f
 LIBS= -lm $(MYLIBS)
