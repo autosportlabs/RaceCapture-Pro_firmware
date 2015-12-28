@@ -16,6 +16,7 @@
 * Changed telemetry destination from race-capture.com to
   telemetry.race-capture.com.  This is so that we can better work with
   Cloudflare.
+* Remove MK1 code from mainstream dev tree and migrate to legacy branch.
 
 === 2.8.5 ===
 * Increased GPS task stack size from 200 to 256 to prevent HULK smash.
