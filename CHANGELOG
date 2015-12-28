@@ -3,6 +3,7 @@
 * Changed telemetry destination from race-capture.com to
   telemetry.race-capture.com.  This is so that we can better work with
   Cloudflare.
+* Remove MK1 code from mainstream dev tree and migrate to legacy branch.
 
 === 2.8.6 ===
 * Make OBD-II engine report temperature and speed that match channel defaults (deg. F / MPH)

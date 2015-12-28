@@ -8,7 +8,7 @@ SIMNAME = rcpsim
 RCP_BASE=..
 RCP_SRC=$(RCP_BASE)/src
 RCP_INC=$(RCP_BASE)/include
-SAM7S_SRC=$(RCP_BASE)/SAM7s_base
+STM32_SRC=$(RCP_BASE)/stm32_base
 MESSAGING_SRC=$(RCP_SRC)/messaging
 COMMAND_SRC=$(RCP_SRC)/command
 MOCK_DIR=logger_mock
@@ -22,7 +22,7 @@ INCLUDES = 	-I. \
 		-I./include \
 		-I$(RCP_BASE) \
 		-I$(RCP_BASE)/logger \
-		-I$(SAM7S_SRC)/fat_sd_at91 \
+		-I$(STM32_SRC)/hal/fat_sd_stm32/fatfs \
 		-I$(RCP_INC) \
 		-I$(RCP_INC)/logging \
 		-I$(RCP_INC)/gps \
@@ -41,10 +41,6 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/util \
 		-I$(RCP_INC)/serial \
 		-I$(RCP_INC)/devices \
-		-I$(SAM7S_SRC)/lua \
-		-I$(SAM7S_SRC)/command \
-		-I$(SAM7S_SRC)/uart \
-		-I$(SAM7S_SRC)/usb/include \
 		-I$(RCP_INC) \
 		-I$(RCP_INC)/usart \
 		-I$(RCP_INC)/usb_comm \
@@ -67,7 +63,11 @@ INCLUDES = 	-I. \
 		-I$(FREE_RTOS_KERNEL_DIR)/ \
 		-I$(FREE_RTOS_KERNEL_DIR)/include \
 		-I$(FREE_RTOS_KERNEL_DIR)/include_testing \
-		-I$(UTIL_DIR)
+		-I$(UTIL_DIR) \
+#		-I$(SAM7S_SRC)/lua \
+#		-I$(SAM7S_SRC)/command \
+#		-I$(SAM7S_SRC)/uart \
+#		-I$(SAM7S_SRC)/usb/include \
 
 # set up compiler and options
 CPP = g++
