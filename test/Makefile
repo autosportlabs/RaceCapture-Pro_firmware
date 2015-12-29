@@ -56,6 +56,7 @@ INCLUDES = 	-I. \
 		-I$(RCP_INC)/watchdog \
 		-I$(RCP_INC)/memory \
 		-I$(RCP_INC)/sdcard \
+		-I$(RCP_INC)/units \
 		-I$(RCP_INC)/lap_stats \
 		-I$(MOCK_DIR) \
 		-I$(GPS_DIR) \
@@ -153,6 +154,7 @@ $(RCP_SRC)/PWM/PWM.c \
 $(RCP_SRC)/LED/LED.c \
 $(RCP_SRC)/cpu/cpu.c \
 $(RCP_SRC)/usart/usart.c \
+$(RCP_SRC)/units/units.c \
 $(RCP_SRC)/serial/serial.c \
 $(RCP_SRC)/GPIO/GPIO.c \
 $(RCP_SRC)/watchdog/watchdog.c \
