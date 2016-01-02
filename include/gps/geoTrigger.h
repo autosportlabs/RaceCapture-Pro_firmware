@@ -59,6 +59,11 @@ void resetGeoTrigger(struct GeoTrigger *gt);
  */
 bool isGeoTriggerTripped(const struct GeoTrigger *gt);
 
+/**
+ * Trips a GeoTrigger object.
+ */
+void geo_trigger_trip(struct GeoTrigger *gt);
+
 CPP_GUARD_END
 
 #endif /* _GEOTRIGGER_H_ */

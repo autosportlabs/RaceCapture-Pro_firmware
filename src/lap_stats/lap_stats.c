@@ -308,6 +308,7 @@ static void processFinishLogic(const GpsSnapshot *gpsSnapshot,
 {
     if (!lapstats_lap_in_progress())
         return;
+
     if (!isGeoTriggerTripped(&g_finish_geo_trigger))
         return;
 
@@ -330,6 +331,7 @@ static void processStartLogic(const GpsSnapshot *gpsSnapshot,
 {
     if (lapstats_lap_in_progress())
         return;
+
     if (!isGeoTriggerTripped(&g_start_geo_trigger))
         return;
 
@@ -442,6 +444,9 @@ static void setupGeoTriggers(const TrackConfig *tc, const Track *track)
     gp = getStartPoint(track);
     gc = gc_createGeoCircle(gp, gtRadius);
     g_start_geo_trigger = createGeoTrigger(&gc);
+
+    /* Trip start trigger as unit may get powered up in start circle */
+    geo_trigger_trip(&g_start_geo_trigger);
 
     gp = getFinishPoint(track);
     gc = gc_createGeoCircle(gp, gtRadius);
