@@ -1,24 +1,45 @@
-#include "lap_stats.h"
+/*
+ * Race Capture Pro Firmware
+ *
+ * Copyright (C) 2016 Autosport Labs
+ *
+ * This file is part of the Race Capture Pro fimrware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "auto_track.h"
 #include "dateTime.h"
-#include "gps.h"
-#include "geopoint.h"
 #include "geoCircle.h"
 #include "geoTrigger.h"
-#include "loggerHardware.h"
+#include "geopoint.h"
+#include "gps.h"
+#include "lap_stats.h"
+#include "launch_control.h"
 #include "loggerConfig.h"
-#include "modp_numtoa.h"
-#include "modp_atonum.h"
+#include "loggerHardware.h"
 #include "mod_string.h"
+#include "modp_atonum.h"
+#include "modp_numtoa.h"
 #include "predictive_timer_2.h"
 #include "printk.h"
 #include "tracks.h"
-#include "test.h"
 
 #include <stdint.h>
 
-#include "auto_track.h"
-#include "launch_control.h"
-
+/* Make the radius 3x the size of start/finish radius.*/
+#define GEO_TRIGGER_RADIUS_MULTIPLIER 3
 #define KMS_TO_MILES_CONSTANT (.621371)
 
 // In Millis now.
@@ -26,14 +47,21 @@
 
 #define TIME_NULL -1
 
-static const Track * g_activeTrack;
+static const Track *g_active_track;
+static float g_geo_circle_radius;
+
 track_status_t g_track_status = TRACK_STATUS_WAITING_TO_CONFIG;
 static int g_sector_enabled = 0;
 static int g_start_finish_enabled = 0;
 
+static struct {
+        struct GeoCircle start;
+        struct GeoCircle finish;
+        struct GeoCircle sector;
+} g_geo_circles;
+
 static int g_configured;
 static int g_atStartFinish;
-static int g_prevAtStartFinish;
 static tiny_millis_t g_lapStartTimestamp;
 static tiny_millis_t g_elapsed_lap_time;
 
@@ -54,9 +82,9 @@ static float g_distance;
 static struct GeoTrigger g_start_geo_trigger;
 static struct GeoTrigger g_finish_geo_trigger;
 
-TESTABLE_STATIC void set_active_track(const Track* track)
+void set_active_track(const Track *t)
 {
-    g_activeTrack = track;
+        g_active_track = t;
 }
 
 static float degrees_to_meters(float degrees)
@@ -72,11 +100,10 @@ track_status_t lapstats_get_track_status(void)
 
 int32_t lapstats_get_selected_track_id(void)
 {
-    if (g_activeTrack == NULL) {
-        return 0;
-    } else {
-        return g_activeTrack->trackId;
-    }
+        if (NULL == g_active_track)
+                return 0;
+
+        return g_active_track->trackId;
 }
 
 bool lapstats_lap_in_progress()
@@ -132,7 +159,7 @@ float getLapDistanceInMiles()
     return KMS_TO_MILES_CONSTANT * g_distance;
 }
 
-TESTABLE_STATIC void reset_current_lap()
+static void reset_current_lap()
 {
     g_lap = 0;
 }
@@ -172,15 +199,16 @@ float getLastLapTimeInMinutes()
     return tinyMillisToMinutes(getLastLapTime());
 }
 
-TESTABLE_STATIC void reset_elapsed_time()
+static void reset_elapsed_time()
 {
     g_elapsed_lap_time = 0;
 }
 
-TESTABLE_STATIC void update_elapsed_time(const GpsSnapshot *snap)
+void update_elapsed_time(const GpsSnapshot *snap)
 {
     if (!lapstats_lap_in_progress())
         return;
+
     g_elapsed_lap_time = snap->deltaFirstFix - g_lapStartTimestamp;
 }
 
@@ -217,78 +245,63 @@ int getAtSector()
 /**
  * Called whenever we finish a lap.
  */
-TESTABLE_STATIC void lap_finished_event(const GpsSnapshot *gpsSnapshot)
+static void lap_finished_event(const GpsSnapshot *gpsSnapshot)
 {
-    pr_debug_int_msg("Finished Lap ", g_lapCount);
+        pr_debug_int_msg("Finished lap ", ++g_lapCount);
 
-    ++g_lapCount;
-    end_lap_timing(gpsSnapshot);
-    finishLap(gpsSnapshot);
+        end_lap_timing(gpsSnapshot);
+        finishLap(gpsSnapshot);
+        lc_reset();
 
-    // If in Circuit Mode, don't set cool off after finish.
-    if (g_activeTrack->track_type == TRACK_TYPE_CIRCUIT)
-        return;
-
-    /*
-     * Reset our startGeoTrigger so that we get away from start
-     * finish before we re-arm the system.  This is mainly used
-     * in stage situations.
-     */
-    resetGeoTrigger(&g_start_geo_trigger);
+        /*
+         * In Stage mode, enforce a de-bounce trigger for start to ensure
+         * we don't accidentally trigger a false start if the finish line
+         * and start line are close together.
+         *
+         * We only do this in STAGE mode becuse in circuit mode the start
+         * line _is_ the finish line and thus resetting this trigger in
+         * CIRCUIT mode would cause our start logic to function improperly.
+         */
+        if (g_active_track->track_type == TRACK_TYPE_STAGE)
+                resetGeoTrigger(&g_start_geo_trigger);
 }
 
-static void _lap_started_event(const tiny_millis_t time, const GeoPoint *sp,
-                               const float distance, const GpsSnapshot *gpsSnapshot)
+static void update_sector_geo_circle(const int sector)
 {
-    // Timing and predictive timing
-    ++g_lap;
-    start_lap_timing(time);
-    startLap(sp, time);
-    reset_elapsed_time();
-
-    // Reset the sector logic
-    g_lastSectorTimestamp = time;
-    g_sector = 0;
-
-    // Reset distance logic
-    set_distance(distance);
-
-    /*
-     * Reset our finishGeoTrigger so that we get away from
-     * finish before we re-arm the system.
-     */
-    resetGeoTrigger(&g_finish_geo_trigger);
+        const GeoPoint point =
+                getSectorGeoPointAtIndex(g_active_track, sector);
+        g_geo_circles.sector = gc_createGeoCircle(point, g_geo_circle_radius);
 }
 
-/**
- * Called whenever we start a new lap the normal way (ie no launch control).
- */
-TESTABLE_STATIC void lap_started_normal_event(const GpsSnapshot *gpsSnapshot)
+static void lap_started_event(const tiny_millis_t time, const GeoPoint *sp,
+                              const float distance)
 {
-    const tiny_millis_t time = gpsSnapshot->deltaFirstFix;
-    const GeoPoint gp = gpsSnapshot->sample.point;
-    pr_debug_int_msg("Start Lap ", g_lapCount);
-    _lap_started_event(time, &gp, 0, gpsSnapshot);
-}
+        pr_debug_int_msg("Starting lap ", ++g_lap);
 
-/**
- * Called whenever we start a new lap using Launch Control.  Has to be specially
- * handled due to the delayed timing information.
- */
-static void lap_started_launched_event(const GpsSnapshot *gpsSnapshot)
-{
-    const tiny_millis_t time = lc_getLaunchTime();
-    const GeoPoint sp = getStartPoint(g_activeTrack);
-    const GeoPoint gp = gpsSnapshot->sample.point;
-    const float distance = distPythag(&sp, &gp) / 1000;
-    pr_debug_int_msg("Start lap w/launch ", g_lapCount);
-    _lap_started_event(time, &sp, distance, gpsSnapshot);
+        // Timing and predictive timing
+        start_lap_timing(time);
+        startLap(sp, time);
+        reset_elapsed_time();
+
+        // Reset the sector logic
+        g_lastSectorTimestamp = time;
+        g_sector = 0;
+        update_sector_geo_circle(g_sector);
+
+        // Reset distance logic
+        set_distance(distance);
+
+        /*
+         * Reset our finishGeoTrigger so that we get away from
+         * finish before we re-arm the system.
+         */
+        resetGeoTrigger(&g_finish_geo_trigger);
 }
 
 /**
  * Called whenever we have hit a sector boundary.
  */
-static void sectorBoundaryEvent(const GpsSnapshot *gpsSnapshot)
+static void sector_boundary_event(const GpsSnapshot *gpsSnapshot)
 {
     const tiny_millis_t millis = gpsSnapshot->deltaFirstFix;
 
@@ -297,14 +310,13 @@ static void sectorBoundaryEvent(const GpsSnapshot *gpsSnapshot)
     g_lastSectorTime = millis - g_lastSectorTimestamp;
     g_lastSectorTimestamp = millis;
     g_lastSector = g_sector;
-    ++g_sector;
+    update_sector_geo_circle(++g_sector);
 }
 
 /**
  * All logic associated with determining if we are at the finish line.
  */
-static void processFinishLogic(const GpsSnapshot *gpsSnapshot,
-                               const Track *track, const float targetRadius)
+static void process_finish_logic(const GpsSnapshot *gpsSnapshot)
 {
     if (!lapstats_lap_in_progress())
         return;
@@ -313,72 +325,83 @@ static void processFinishLogic(const GpsSnapshot *gpsSnapshot,
         return;
 
     const GeoPoint point = gpsSnapshot->sample.point;
-    const GeoPoint finishPoint = getFinishPoint(track);
-    const struct GeoCircle finishCircle = gc_createGeoCircle(finishPoint,
-                                          targetRadius);
-    if (!gc_isPointInGeoCircle(&point, finishCircle))
+    if (!gc_isPointInGeoCircle(&point, g_geo_circles.finish))
         return;
 
     // If we get here, then we have completed a lap.
     lap_finished_event(gpsSnapshot);
 }
 
+static void process_start_normal(const GpsSnapshot *gpsSnapshot)
+{
+        const GeoPoint point = gpsSnapshot->sample.point;
+        if (!gc_isPointInGeoCircle(&point, g_geo_circles.start))
+                return;
+
+        const tiny_millis_t time = gpsSnapshot->deltaFirstFix;
+        lap_started_event(time, &point, 0);
+}
+
+static void process_start_launch_control(const GpsSnapshot *gpsSnapshot)
+{
+        lc_supplyGpsSnapshot(gpsSnapshot);
+        if (!lc_hasLaunched())
+                return;
+
+        /*
+         * If here, then launch control has determined that the lap
+         * has begun.  Launch control unfortunately causes a delay in
+         * reporting since it has to detect a launch before it can
+         * report it.  Hence we must retroactively calculate the
+         * distance we have traveled and the time elapsed since we
+         * launched from start as it is before this point in time.
+         */
+        const tiny_millis_t time = lc_getLaunchTime();
+        const GeoPoint sp = getStartPoint(g_active_track);
+        const GeoPoint gp = gpsSnapshot->sample.point;
+        const float distance = distPythag(&sp, &gp) / 1000;
+        lap_started_event(time, &sp, distance);
+}
+
 /**
  * All logic associated with determining if we are at the start line.
  */
-static void processStartLogic(const GpsSnapshot *gpsSnapshot,
-                              const Track *track, const float targetRadius)
+static void process_start(const GpsSnapshot *gps_ss)
 {
-    if (lapstats_lap_in_progress())
-        return;
+        if (lapstats_lap_in_progress())
+                return;
 
-    if (!isGeoTriggerTripped(&g_start_geo_trigger))
-        return;
+        if (!isGeoTriggerTripped(&g_start_geo_trigger))
+                return;
 
-    /*
-     * If we have crossed start finish at least once and we are a circuit
-     * track, then we need to disable launch control to prevent hiccups
-     * in reporting.
-     */
-    if (g_lapCount > 0 && track->track_type == TRACK_TYPE_CIRCUIT) {
-        lap_started_normal_event(gpsSnapshot);
-        return;
-    }
-
-    /*
-     * If in Stage mode or not launched, we need to do launch control
-     * on this lap start.  This way we can support multiple stage style
-     * laps.  This also buys us predictive timing.
-     */
-    if (lc_hasLaunched()) {
-        lc_reset();
-        lc_setup(track, targetRadius);
-    }
-
-    lc_supplyGpsSnapshot(gpsSnapshot);
-    if (!lc_hasLaunched())
-        return;
-
-    // If here, then the lap has started
-    lap_started_launched_event(gpsSnapshot);
+        /*
+         * If we have crossed start finish at least once and we are a circuit
+         * track, then we need to disable launch control to prevent hiccups
+         * in reporting.
+         */
+        if (g_lapCount > 0 &&
+            g_active_track->track_type == TRACK_TYPE_CIRCUIT) {
+                process_start_normal(gps_ss);
+        } else {
+                process_start_launch_control(gps_ss);
+        }
 }
 
-static void processSectorLogic(const GpsSnapshot *gpsSnapshot,
-                               const Track *track, const float radius)
+static void process_sector_logic(const GpsSnapshot *gpsSnapshot)
 {
-    if (!lapstats_lap_in_progress())
-        return;
+        if (!g_sector_enabled)
+                return;
 
-    const GeoPoint point = getSectorGeoPointAtIndex(track, g_sector);
-    const struct GeoCircle circle = gc_createGeoCircle(point, radius);
-    const GeoPoint curr = gpsSnapshot->sample.point;
+        if (!lapstats_lap_in_progress())
+                return;
 
-    g_atTarget = gc_isPointInGeoCircle(&curr, circle);
-    if (!g_atTarget)
-        return;
+        const GeoPoint point = gpsSnapshot->sample.point;
+        g_atTarget = gc_isPointInGeoCircle(&point, g_geo_circles.sector);
+        if (!g_atTarget)
+                return;
 
-    // If we are here, then we are at a Sector boundary.
-    sectorBoundaryEvent(gpsSnapshot);
+        // If we are here, then we are at a Sector boundary.
+        sector_boundary_event(gpsSnapshot);
 }
 
 void lapstats_config_changed(void)
@@ -394,11 +417,11 @@ void lapStats_init()
     set_active_track(NULL);
     resetPredictiveTimer();
     reset_current_lap();
+    g_geo_circle_radius = 0;
     g_configured = 0;
     g_lastLapTime = 0;
     g_lastSectorTime = 0;
     g_atStartFinish = 0;
-    g_prevAtStartFinish = 0;
     g_lapStartTimestamp = -1;
     g_atTarget = 0;
     g_lastSectorTimestamp = 0;
@@ -434,93 +457,131 @@ static int isSectorTrackingEnabled(const Track *track)
         return !are_geo_points_equal(&fin, &sp0);
 }
 
-static void setupGeoTriggers(const TrackConfig *tc, const Track *track)
+/**
+ * The GeoTriggers used here are effectively software de-bouncing
+ * systems.  They ensure that we don't accidentally trigger an
+ * event.  The tradeoff in using these is that we expect certain
+ * minimum distances be traveled by the vehicle before debouncing
+ * happens.  In this case we
+ */
+static void setup_geo_triggers(const Track *track, const float radius)
 {
-    // Make the radius 3x the size of start/finish radius.  Seems safe.
-    const float gtRadius = degrees_to_meters(tc->radius) * 3;
-    GeoPoint gp;
-    struct GeoCircle gc;
+        GeoPoint gp;
+        struct GeoCircle gc;
 
-    gp = getStartPoint(track);
-    gc = gc_createGeoCircle(gp, gtRadius);
-    g_start_geo_trigger = createGeoTrigger(&gc);
+        gp = getStartPoint(track);
+        gc = gc_createGeoCircle(gp, radius);
+        g_start_geo_trigger = createGeoTrigger(&gc);
 
-    /* Trip start trigger as unit may get powered up in start circle */
-    geo_trigger_trip(&g_start_geo_trigger);
+        /*
+         * Trip start geo trigger as unit may get powered up in start
+         * geo circle
+         */
+        geo_trigger_trip(&g_start_geo_trigger);
 
-    gp = getFinishPoint(track);
-    gc = gc_createGeoCircle(gp, gtRadius);
-    g_finish_geo_trigger = createGeoTrigger(&gc);
+        gp = getFinishPoint(track);
+        gc = gc_createGeoCircle(gp, radius);
+        g_finish_geo_trigger = createGeoTrigger(&gc);
 }
 
 static void lapstats_location_updated(const GpsSnapshot *gps_snapshot)
 {
-    const LoggerConfig *config = getWorkingLoggerConfig();
-    const GeoPoint *gp = &gps_snapshot->sample.point;
-    const float target_radius = degrees_to_meters(config->TrackConfigs.radius);
+        update_distance(gps_snapshot);
 
-    update_distance(gps_snapshot);
+        if (!g_start_finish_enabled)
+                return;
 
-    if (!g_start_finish_enabled)
-        return;
+        /* Process data fields first. */
+        const GeoPoint *gp = &gps_snapshot->sample.point;
+        updateGeoTrigger(&g_start_geo_trigger, gp);
+        updateGeoTrigger(&g_finish_geo_trigger, gp);
+        update_elapsed_time(gps_snapshot);
+        addGpsSample(gps_snapshot);
 
-    // Process data fields first.
-    updateGeoTrigger(&g_start_geo_trigger, gp);
-    updateGeoTrigger(&g_finish_geo_trigger, gp);
-    update_elapsed_time(gps_snapshot);
-    addGpsSample(gps_snapshot);
+        /*
+         * Now process the sector, finish and start logic in that order.
+         * Each processing can invoke their respective event if the logic
+         * agrees its time.
+         */
+        process_sector_logic(gps_snapshot);
+        process_finish_logic(gps_snapshot);
+        process_start(gps_snapshot);
+}
 
-    /*
-     * Now process the sector, finish and start logic in that order.
-     * Each processing can invoke their respective event if the logic
-     * agrees its time.
-     */
-    //Skip processing sectors bits if we haven't defined any... duh!
-    if (g_sector_enabled) {
-        processSectorLogic(gps_snapshot, g_activeTrack, target_radius);
-    }
-    processFinishLogic(gps_snapshot, g_activeTrack, target_radius);
-    processStartLogic(gps_snapshot, g_activeTrack, target_radius);
+static void setup_geo_circles()
+{
+        const GeoPoint start_p = getStartPoint(g_active_track);
+        g_geo_circles.start = gc_createGeoCircle(start_p,
+                                                 g_geo_circle_radius);
+
+        const GeoPoint finish_p = getFinishPoint(g_active_track);
+        g_geo_circles.finish = gc_createGeoCircle(finish_p,
+                                                  g_geo_circle_radius);
+
+        /* Set sector geo circle to first circle */
+        update_sector_geo_circle(0);
+}
+
+
+/**
+ * Useful for setting up internal state for unit tests.
+ */
+static void lapstats_setup_internals(const Track *track, const float gc_radius,
+                                     const bool auto_detect)
+{
+        set_active_track(track);
+        if (!track)
+                return;
+
+        g_geo_circle_radius = gc_radius;
+        g_start_finish_enabled = isStartFinishEnabled(track);
+        g_sector_enabled = isSectorTrackingEnabled(track);
+        g_track_status = auto_detect ? TRACK_STATUS_AUTO_DETECTED :
+                TRACK_STATUS_FIXED_CONFIG;
+
+        setup_geo_triggers(track, g_geo_circle_radius);
+        setup_geo_circles();
+
+        lc_setup(track, g_geo_circle_radius);
+
+        g_configured = 1;
 }
 
 static void lapstats_setup(const GpsSnapshot *gps_snapshot)
 {
-    const LoggerConfig *config = getWorkingLoggerConfig();
-    const float target_radius = degrees_to_meters(config->TrackConfigs.radius);
-    const GeoPoint *gp = &gps_snapshot->sample.point;
+        /*
+         * I am not a fan of this method.  Really this track config stuff should
+         * get moved over into its own file with its own separate testing.  It
+         * should generate an event when a track is detected so that we can listen
+         * and act accordingly.  For now it stays here.
+         */
+        const LoggerConfig *config = getWorkingLoggerConfig();
+        const GeoPoint *gp = &gps_snapshot->sample.point;
 
-    const Track *track = NULL;
-    const TrackConfig *trackConfig = &(config->TrackConfigs);
-    if (trackConfig->auto_detect) {
-        track = auto_configure_track(NULL, gp);
-        if (track) {
-            g_track_status = TRACK_STATUS_AUTO_DETECTED;
-            pr_info_int_msg("track: detected track ", track->trackId);
+        const Track *track = NULL;
+        const TrackConfig *trackConfig = &(config->TrackConfigs);
+        if (trackConfig->auto_detect) {
+                track = auto_configure_track(NULL, gp);
+                if (track)
+                        pr_info_int_msg("track: detected track ",
+                                        track->trackId);
+        } else {
+                track = &trackConfig->track;
+                pr_info("track: using fixed config");
         }
-    } else {
-        track = &trackConfig->track;
-        g_track_status = TRACK_STATUS_FIXED_CONFIG;
-        pr_info("track: using fixed config");
-    }
-    set_active_track(track);
 
-    if (!track) return;
-
-    g_start_finish_enabled = isStartFinishEnabled(track);
-    g_sector_enabled = isSectorTrackingEnabled(track);
-    lc_reset();
-    lc_setup(track, target_radius);
-    setupGeoTriggers(trackConfig, track);
-    g_configured = 1;
+        const float gc_radius = degrees_to_meters(config->TrackConfigs.radius);
+        lapstats_setup_internals(track, gc_radius, trackConfig->auto_detect);
 }
 
 void lapstats_processUpdate(const GpsSnapshot *gps_snapshot)
 {
-    if (!isGpsDataCold()) {
-        if (!g_configured) {
+    if (isGpsDataCold())
+            return; /* No valid GPS data to work with */
+
+    if (!g_configured)
             lapstats_setup(gps_snapshot);
-        } else {
+
+    if (g_configured)
             lapstats_location_updated(gps_snapshot);
-        }
-    }
 }
