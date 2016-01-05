@@ -358,10 +358,9 @@ void api_sendLogEnd(Serial *serial)
 
 int api_log(Serial *serial, const jsmntok_t *json)
 {
-    int doLogging = 0;
     if (json->type == JSMN_PRIMITIVE && json->size == 0) {
         jsmn_trimData(json);
-        doLogging = modp_atoi(json->data);
+        int doLogging = modp_atoi(json->data);
         //TODO when RCP simulator is fully working, enable this.
 #ifndef RCP_TESTING
 
@@ -370,6 +369,8 @@ int api_log(Serial *serial, const jsmntok_t *json)
         } else {
             stopLogging();
         }
+#else
+        (void) doLogging;
 #endif
 
     }
