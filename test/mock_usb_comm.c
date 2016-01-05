@@ -24,8 +24,6 @@
 
 #define BUFFER_SIZE 256 * 2
 
-static char lineBuffer[BUFFER_SIZE];
-
 int usb_comm_init()
 {
     return 1;

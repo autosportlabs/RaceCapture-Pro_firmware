@@ -72,8 +72,16 @@ INCLUDES = 	-I. \
 # set up compiler and options
 CPP = g++
 CC = gcc
-CPPFLAGS = -g $(INCLUDES) -DRCP_TESTING -DAPI_REV=$(API) -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
-CFLAGS = -g $(INCLUDES) -DRCP_TESTING -DAPI_REV=$(API) -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
+CPPFLAGS = \
+-g $(INCLUDES) -DRCP_TESTING -DAPI_REV=$(API) -DMAJOR_REV=$(MAJOR) \
+-DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
+
+CFLAGS = \
+-g $(INCLUDES) -std=gnu99 -Wall -Werror -Wempty-body \
+-Wclobbered -Wignored-qualifiers -Wmissing-parameter-type \
+-Wold-style-declaration -Wunused-but-set-parameter \
+-DRCP_TESTING -DAPI_REV=$(API) -DMAJOR_REV=$(MAJOR) \
+-DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
 
 #-----Suffix Rules---------------------------
 # set up C++ suffixes and relationship between .cc and .o files

@@ -65,10 +65,7 @@ Serial * getMockSerial()
     return &mockSerial;
 }
 
-void mock_flush(void)
-{
-    char rx;
-}
+void mock_flush(void) {}
 
 int mock_get_c_wait(char *c, size_t delay)
 {
