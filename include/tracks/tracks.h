@@ -22,11 +22,15 @@
 #ifndef TRACKS_H_
 #define TRACKS_H_
 
+#include "cpp_guard.h"
 #include "capabilities.h"
 #include "geopoint.h"
 #include "stddef.h"
 #include "versionInfo.h"
+
 #include <stdint.h>
+
+CPP_GUARD_BEGIN
 
 enum track_add_result {
         TRACK_ADD_RESULT_FAIL = 0,
@@ -122,5 +126,7 @@ int isStartPointValid(const Track *t);
 GeoPoint getSectorGeoPointAtIndex(const Track *t, const int index);
 
 int areGeoPointsEqual(const GeoPoint a, const GeoPoint b);
+
+CPP_GUARD_END
 
 #endif /* TRACKS_H_ */

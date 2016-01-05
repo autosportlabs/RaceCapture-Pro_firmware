@@ -22,9 +22,12 @@
 #ifndef LUATASK_H_
 #define LUATASK_H_
 
+#include "cpp_guard.h"
 #include "serial.h"
 
 #include <stddef.h>
+
+CPP_GUARD_BEGIN
 
 void startLuaTask(int priority);
 
@@ -40,5 +43,7 @@ size_t get_ontick_freq();
 void initialize_lua();
 void terminate_lua();
 void run_lua_interactive_cmd(Serial *serial, const char* cmd);
+
+CPP_GUARD_END
 
 #endif /*LUATASK_H_*/

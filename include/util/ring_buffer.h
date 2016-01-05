@@ -1,7 +1,7 @@
-/**
+/*
  * Race Capture Firmware
  *
- * Copyright (C) 2015 Autosport Labs
+ * Copyright (C) 2016 Autosport Labs
  *
  * This file is part of the Race Capture firmware suite
  *
@@ -22,8 +22,12 @@
 #ifndef __RING_BUFFER_H__
 #define __RING_BUFFER_H__
 
+#include "cpp_guard.h"
+
 #include <stdbool.h>
 #include <stddef.h>
+
+CPP_GUARD_BEGIN
 
 struct ring_buff {
     char *buf;
@@ -87,5 +91,7 @@ void free_ring_buffer(struct ring_buff *rb);
  * full, otherwise NULL if successful.
  */
 const char * put_string(struct ring_buff *rb, const char *str);
+
+CPP_GUARD_END
 
 #endif /* __RING_BUFFER_H__ */

@@ -1,22 +1,35 @@
 /*
- * predective_timer_2.h
+ * Race Capture Firmware
  *
- *  Created on: Jan 20, 2014
- *      Author: stieg
+ * Copyright (C) 2016 Autosport Labs
+ *
+ * This file is part of the Race Capture firmware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef PREDICTIVE_TIMER_2_H_
 #define PREDICTIVE_TIMER_2_H_
 
-/* #ifdef __cplusplus */
-/* extern "C" { */
-/* #endif */
-
+#include "cpp_guard.h"
 #include "dateTime.h"
 #include "geopoint.h"
 #include "gps.h"
 
 #include <stdbool.h>
+
+CPP_GUARD_BEGIN
 
 /**
  * Called when we finish a lap.  Adds the final sample and adjusts sample rates
@@ -95,9 +108,6 @@ void resetPredictiveTimer();
  */
 float distPctBtwnTwoPoints(const GeoPoint *s, const GeoPoint *e, const GeoPoint *m);
 
-
-/* #ifdef __cplusplus */
-/* } */
-/* #endif */
+CPP_GUARD_END
 
 #endif /* PREDICTIVE_TIMER_2_H_ */
