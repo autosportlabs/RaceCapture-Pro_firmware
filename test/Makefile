@@ -72,6 +72,7 @@ INCLUDES = 	-I. \
 # set up compiler and options
 CPP = g++
 CC = gcc
+
 CPPFLAGS = \
 -g $(INCLUDES) -DRCP_TESTING -DAPI_REV=$(API) -DMAJOR_REV=$(MAJOR) \
 -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
