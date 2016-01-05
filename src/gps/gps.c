@@ -19,6 +19,7 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #include "gps.h"
 #include "gps_device.h"
 #include "mod_string.h"

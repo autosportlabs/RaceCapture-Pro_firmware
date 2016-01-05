@@ -51,6 +51,7 @@
     licensing and training services.
 */
 
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -1299,4 +1300,3 @@ static void vQueueUnregisterQueue( xQueueHandle xQueue )
 }
 
 #endif
-

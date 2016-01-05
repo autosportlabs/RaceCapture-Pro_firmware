@@ -24,17 +24,11 @@
 #ifndef COM_MODP_STRINGENCODERS_NUMTOA_H
 #define COM_MODP_STRINGENCODERS_NUMTOA_H
 
-#ifdef __cplusplus
-#define BEGIN_C extern "C" {
-#define END_C }
-#else
-#define BEGIN_C
-#define END_C
-#endif
-
-BEGIN_C
+#include "cpp_guard.h"
 
 #include <stdint.h>
+
+CPP_GUARD_BEGIN
 
 /** \brief convert an signed integer to char buffer
  *
@@ -93,6 +87,7 @@ char* modp_itoaX(int value, char* result, int base);
  */
 char* trimLeadingZeros(char *ptr);
 
-END_C
+
+CPP_GUARD_END
 
 #endif
