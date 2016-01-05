@@ -168,6 +168,7 @@ void LoggerApiTest::setUp()
 	setupMockSerial();
 	imu_init(config);
 	resetPredictiveTimer();
+        lapStats_init();
 }
 
 
@@ -1316,8 +1317,9 @@ void LoggerApiTest::testGetVersion(){
 
 void LoggerApiTest::testGetStatus(){
 	set_ticks(3);
-    lc_reset();
-    lapStats_init();
+        lc_reset();
+        lapStats_init();
+
     char * response = processApiGeneric("getStatus1.json");
 
     Object json;
@@ -1330,7 +1332,7 @@ void LoggerApiTest::testGetStatus(){
     CPPUNIT_ASSERT_EQUAL(string(cpu_get_serialnumber()), (string)(String)json["status"]["system"]["serial"]);
     CPPUNIT_ASSERT_EQUAL(15, (int)(Number)json["status"]["system"]["uptime"]);
 
-    CPPUNIT_ASSERT_EQUAL((int)GPS_STATUS_NOT_INIT, (int)(Number)json["status"]["GPS"]["init"]);
+    CPPUNIT_ASSERT_EQUAL((int)GPS_STATUS_PROVISIONED, (int)(Number)json["status"]["GPS"]["init"]);
     CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["GPS"]["qual"]);
     CPPUNIT_ASSERT_EQUAL(0.0f, (float)(Number)json["status"]["GPS"]["lat"]);
     CPPUNIT_ASSERT_EQUAL(0.0f, (float)(Number)json["status"]["GPS"]["lon"]);

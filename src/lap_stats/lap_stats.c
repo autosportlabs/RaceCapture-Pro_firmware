@@ -19,6 +19,7 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #include "auto_track.h"
 #include "dateTime.h"
 #include "geoCircle.h"
@@ -61,11 +62,11 @@ static struct {
 } g_geo_circles;
 
 static int g_configured;
-static int g_atStartFinish;
+static int g_at_sf;
 static tiny_millis_t g_lapStartTimestamp;
 static tiny_millis_t g_elapsed_lap_time;
 
-static int g_atTarget;
+static int g_at_sector;
 static tiny_millis_t g_lastSectorTimestamp;
 
 static int g_sector;
@@ -234,12 +235,12 @@ float getLastSectorTimeInMinutes()
 
 int getAtStartFinish()
 {
-    return g_atStartFinish;
+    return g_at_sf;
 }
 
 int getAtSector()
 {
-    return g_atTarget;
+    return g_at_sector;
 }
 
 /**
@@ -251,6 +252,7 @@ static void lap_finished_event(const GpsSnapshot *gpsSnapshot)
 
         end_lap_timing(gpsSnapshot);
         finishLap(gpsSnapshot);
+        g_at_sf = true;
         lc_reset();
 
         /*
@@ -277,6 +279,7 @@ static void lap_started_event(const tiny_millis_t time, const GeoPoint *sp,
                               const float distance)
 {
         pr_debug_int_msg("Starting lap ", ++g_lap);
+        g_at_sf = true;
 
         // Timing and predictive timing
         start_lap_timing(time);
@@ -310,6 +313,7 @@ static void sector_boundary_event(const GpsSnapshot *gpsSnapshot)
     g_lastSectorTime = millis - g_lastSectorTimestamp;
     g_lastSectorTimestamp = millis;
     g_lastSector = g_sector;
+    g_at_sector = true;
     update_sector_geo_circle(++g_sector);
 }
 
@@ -396,8 +400,8 @@ static void process_sector_logic(const GpsSnapshot *gpsSnapshot)
                 return;
 
         const GeoPoint point = gpsSnapshot->sample.point;
-        g_atTarget = gc_isPointInGeoCircle(&point, g_geo_circles.sector);
-        if (!g_atTarget)
+        g_at_sector = gc_isPointInGeoCircle(&point, g_geo_circles.sector);
+        if (!g_at_sector)
                 return;
 
         // If we are here, then we are at a Sector boundary.
@@ -421,9 +425,9 @@ void lapStats_init()
     g_configured = 0;
     g_lastLapTime = 0;
     g_lastSectorTime = 0;
-    g_atStartFinish = 0;
+    g_at_sf = 0;
     g_lapStartTimestamp = -1;
-    g_atTarget = 0;
+    g_at_sector = 0;
     g_lastSectorTimestamp = 0;
     g_lapCount = 0;
     g_sector = -1;     // Indicates we haven't crossed start/finish yet.
@@ -438,10 +442,6 @@ static int isStartFinishEnabled(const Track *track)
 static int isSectorTrackingEnabled(const Track *track)
 {
         if (!isStartFinishEnabled(track))
-                return 0;
-
-        const LoggerConfig *config = getWorkingLoggerConfig();
-        if (SAMPLE_DISABLED == config->LapConfigs.sectorTimeCfg.sampleRate)
                 return 0;
 
         /*
@@ -487,6 +487,10 @@ static void setup_geo_triggers(const Track *track, const float radius)
 static void lapstats_location_updated(const GpsSnapshot *gps_snapshot)
 {
         update_distance(gps_snapshot);
+
+        /* Reset at_* flags on every sample. */
+        g_at_sf = false;
+        g_at_sector = false;
 
         if (!g_start_finish_enabled)
                 return;
