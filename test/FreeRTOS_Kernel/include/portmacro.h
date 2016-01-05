@@ -50,6 +50,10 @@
 #ifndef PORTMACRO_H
 #define PORTMACRO_H
 
+#include "cpp_guard.h"
+
+CPP_GUARD_BEGIN
+
 /*-----------------------------------------------------------
  * Port specific definitions.
  *
@@ -261,5 +265,7 @@ extern void vPortExitCritical( void );
 /* Task function macros as described on the FreeRTOS.org WEB site. */
 #define portTASK_FUNCTION_PROTO( vFunction, pvParameters ) void vFunction( void *pvParameters )
 #define portTASK_FUNCTION( vFunction, pvParameters ) void vFunction( void *pvParameters )
+
+CPP_GUARD_END
 
 #endif /* PORTMACRO_H */

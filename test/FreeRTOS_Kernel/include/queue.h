@@ -51,23 +51,17 @@
     licensing and training services.
 */
 
+#ifndef QUEUE_H
+#define QUEUE_H
+
 #ifndef INC_FREERTOS_H
 #error "#include FreeRTOS.h" must appear in source files before "#include queue.h"
 #endif
 
-
-
-
-#ifndef QUEUE_H
-#define QUEUE_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 #include "mpu_wrappers.h"
+#include "cpp_guard.h"
 
+CPP_GUARD_BEGIN
 
 typedef void * xQueueHandle;
 
@@ -1253,8 +1247,5 @@ void vQueueAddToRegistry( xQueueHandle xQueue, signed char *pcName );
 
 
 
-#ifdef __cplusplus
-}
-#endif
-
+CPP_GUARD_END
 #endif /* QUEUE_H */

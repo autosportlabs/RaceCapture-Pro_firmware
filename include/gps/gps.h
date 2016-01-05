@@ -22,10 +22,13 @@
 #ifndef GPS_H_
 #define GPS_H_
 
+#include "cpp_guard.h"
 #include "LED.h"
 #include "geopoint.h"
 #include "dateTime.h"
 #include "serial.h"
+
+CPP_GUARD_BEGIN
 
 enum GpsSignalQuality {
     GPS_QUALITY_NO_FIX = 0,
@@ -141,5 +144,7 @@ float getGpsSpeedInMph();
 int GPS_processUpdate(Serial *serial);
 
 int checksumValid(const char *gpsData, size_t len);
+
+CPP_GUARD_END
 
 #endif /*GPS_H_*/

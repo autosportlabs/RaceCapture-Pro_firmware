@@ -63,9 +63,8 @@
 
 #include "list.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "cpp_guard.h"
+CPP_GUARD_BEGIN
 
 /* Used to hide the implementation of the co-routine control block.  The
 control block structure however has to be included in the header due to
@@ -741,8 +740,5 @@ void vCoRoutineAddToDelayedList( portTickType xTicksToDelay, xList *pxEventList 
  */
 signed portBASE_TYPE xCoRoutineRemoveFromEventList( const xList *pxEventList );
 
-#ifdef __cplusplus
-}
-#endif
-
+CPP_GUARD_END
 #endif /* CO_ROUTINE_H */

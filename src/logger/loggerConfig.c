@@ -19,6 +19,7 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "cpu.h"
 #include "loggerConfig.h"
 #include "memory.h"
 #include "mod_string.h"
