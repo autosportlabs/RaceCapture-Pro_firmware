@@ -347,4 +347,3 @@ signed portBASE_TYPE xCoRoutineRemoveFromEventList( const xList *pxEventList )
 
     return xReturn;
 }
-

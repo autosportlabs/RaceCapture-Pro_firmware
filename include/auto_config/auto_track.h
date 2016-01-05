@@ -22,9 +22,12 @@
 #ifndef __AUTO_TRACK_H__
 #define __AUTO_TRACK_H__
 
+#include "cpp_guard.h"
 #include "geopoint.h"
 #include "loggerConfig.h"
 #include "tracks.h"
+
+CPP_GUARD_BEGIN
 
 /**
  * Using 5KM as max distance from start finish as if you are farther than
@@ -40,5 +43,7 @@
  * @return A status indicator that tells the caller the result of the call.
  */
 const Track* auto_configure_track(const Track *defaultCfg, const GeoPoint *gp);
+
+CPP_GUARD_END
 
 #endif // __AUTO_TRACK_H__

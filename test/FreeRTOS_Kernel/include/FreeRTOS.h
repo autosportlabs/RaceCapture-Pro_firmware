@@ -68,7 +68,9 @@
 
 /* Definitions specific to the port being used. */
 #include "portable.h"
+#include "cpp_guard.h"
 
+CPP_GUARD_BEGIN
 
 /* Defines the prototype to which the application task hook function must
 conform. */
@@ -416,5 +418,6 @@ task that attempted the write. */
 #define vPortFreeAligned( pvBlockToFree ) vPortFree( pvBlockToFree )
 #endif
 
-#endif /* INC_FREERTOS_H */
+CPP_GUARD_END
 
+#endif /* INC_FREERTOS_H */

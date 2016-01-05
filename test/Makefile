@@ -71,7 +71,7 @@ INCLUDES = 	-I. \
 
 # set up compiler and options
 CPP = g++
-CC = g++
+CC = gcc
 CPPFLAGS = -g $(INCLUDES) -DRCP_TESTING -DAPI_REV=$(API) -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
 CFLAGS = -g $(INCLUDES) -DRCP_TESTING -DAPI_REV=$(API) -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
 
@@ -94,95 +94,96 @@ build/rcp_base/%.o: ../%.c
 
 #-----File Dependencies----------------------
 
-T_SRC = loggerApi_test.cpp \
-		date_time_test.cpp \
-		launch_control_test.cpp \
-		loggerConfig_test.cpp \
-		sampleRecord_test.cpp \
-		PredictiveTimeTest2.cpp \
-		sector_test.cpp \
-		track_test.cpp \
-		loggerData_test.cpp \
-		loggerFileWriterTest.cpp \
-		virtualChannel_test.cpp \
-		$(GPS_DIR)/gps_test.cpp \
-		$(GPS_DIR)/geoTriggerTest.cpp \
-		$(LAP_STATS_DIR)/elapsedLapTimeTest.cpp \
-		$(LAP_STATS_DIR)/current_lap_test.cpp \
-		$(UTIL_DIR)/numtoa_test.cpp \
-		$(UTIL_DIR)/atonum_test.cpp \
-		ring_buffer_test.cpp \
+T_SRC = \
+loggerApi_test.cpp \
+date_time_test.cpp \
+launch_control_test.cpp \
+loggerConfig_test.cpp \
+sampleRecord_test.cpp \
+PredictiveTimeTest2.cpp \
+sector_test.cpp \
+track_test.cpp \
+loggerData_test.cpp \
+loggerFileWriterTest.cpp \
+virtualChannel_test.cpp \
+$(GPS_DIR)/gps_test.cpp \
+$(GPS_DIR)/geoTriggerTest.cpp \
+$(LAP_STATS_DIR)/elapsedLapTimeTest.cpp \
+$(LAP_STATS_DIR)/current_lap_test.cpp \
+$(UTIL_DIR)/numtoa_test.cpp \
+$(UTIL_DIR)/atonum_test.cpp \
+ring_buffer_test.cpp \
 
-SRC =		mock_uart.c \
-		mock_gps_device.c \
-		mock_usb_comm.c \
-		mock_serial.c \
-		$(FREE_RTOS_KERNEL_DIR)/stubs/ff.c \
-		$(FREE_RTOS_KERNEL_DIR)/stubs/heap.c \
-		$(FREE_RTOS_KERNEL_DIR)/stubs/queue.c \
-		$(FREE_RTOS_KERNEL_DIR)/stubs/task.c \
-		$(RCP_SRC)/launch_control.c \
-		$(RCP_SRC)/lua/luaScript.c \
-		$(RCP_SRC)/util/modp_numtoa.c \
-		$(RCP_SRC)/util/modp_atonum.c \
-		$(RCP_SRC)/util/mod_string.c \
-		$(RCP_SRC)/util/taskUtil.c \
-		$(RCP_SRC)/jsmn/jsmn.c \
-		$(RCP_SRC)/api/api.c \
-		$(RCP_SRC)/OBD2/OBD2.c \
-		$(RCP_SRC)/logging/printk.c \
-		$(RCP_SRC)/util/ring_buffer.c \
-		$(RCP_SRC)/logger/loggerApi.c \
-		$(RCP_SRC)/logger/fileWriter.c \
-		$(RCP_SRC)/filter/filter.c \
-		$(RCP_SRC)/imu/imu.c \
-		$(RCP_SRC)/ADC/ADC.c \
-		$(RCP_SRC)/memory/memory.c \
-		$(RCP_SRC)/timer/timer.c \
-		$(RCP_SRC)/PWM/PWM.c \
-		$(RCP_SRC)/LED/LED.c \
-		$(RCP_SRC)/cpu/cpu.c \
-		$(RCP_SRC)/usart/usart.c \
-		$(RCP_SRC)/serial/serial.c \
-		$(RCP_SRC)/GPIO/GPIO.c \
-		$(RCP_SRC)/watchdog/watchdog.c \
-		$(RCP_SRC)/CAN/CAN.c \
-		$(MOCK_DIR)/imu_device_mock.c \
-		$(MOCK_DIR)/timer_device_mock.c \
-		$(MOCK_DIR)/ADC_device_mock.c \
-		$(MOCK_DIR)/cpu_device_mock.c \
-		$(MOCK_DIR)/PWM_device_mock.c \
-		$(MOCK_DIR)/LED_device_mock.c \
-		$(MOCK_DIR)/luaTask_mock.c \
-		$(MOCK_DIR)/GPIO_device_mock.c \
-		$(MOCK_DIR)/memory_device_mock.c \
-		$(MOCK_DIR)/loggerNotifications_mock.c \
-		$(MOCK_DIR)/sdcard_mock.c \
-		$(MOCK_DIR)/watchdog_device_mock.c \
-		$(MOCK_DIR)/CAN_device_mock.c \
-		$(MOCK_DIR)/sim900_device_mock.c \
-		$(RCP_SRC)/predictive_timer/predictive_timer_2.c \
-		$(RCP_SRC)/auto_config/auto_track.c \
-		$(RCP_SRC)/util/linear_interpolate.c \
-		$(RCP_SRC)/logger/versionInfo.c \
-		$(RCP_SRC)/logger/loggerConfig.c \
-		$(RCP_SRC)/virtual_channel/virtual_channel.c \
-		$(RCP_SRC)/tracks/tracks.c \
-		$(RCP_SRC)/gps/gps.c \
-		$(RCP_SRC)/gps/dateTime.c \
-		$(RCP_SRC)/gps/geopoint.c \
-		$(RCP_SRC)/gps/geoCircle.c \
-		$(RCP_SRC)/gps/geoTrigger.c \
-		$(RCP_SRC)/lap_stats/lap_stats.c \
-		$(RCP_SRC)/logger/sampleRecord.c \
-		$(RCP_SRC)/logger/loggerSampleData.c \
-		$(RCP_SRC)/logger/loggerData.c \
-		$(RCP_SRC)/logger/loggerHardware.c \
-		$(RCP_SRC)/devices/cellModem.c \
-		$(RCP_SRC)/devices/bluetooth.c \
-		$(RCP_SRC)/devices/sim900.c \
-		$(RCP_SRC)/logger/logger.c \
-
+SRC = \
+mock_uart.c \
+mock_gps_device.c \
+mock_usb_comm.c \
+mock_serial.c \
+$(FREE_RTOS_KERNEL_DIR)/stubs/ff.c \
+$(FREE_RTOS_KERNEL_DIR)/stubs/heap.c \
+$(FREE_RTOS_KERNEL_DIR)/stubs/queue.c \
+$(FREE_RTOS_KERNEL_DIR)/stubs/task.c \
+$(RCP_SRC)/launch_control.c \
+$(RCP_SRC)/lua/luaScript.c \
+$(RCP_SRC)/util/modp_numtoa.c \
+$(RCP_SRC)/util/modp_atonum.c \
+$(RCP_SRC)/util/mod_string.c \
+$(RCP_SRC)/util/taskUtil.c \
+$(RCP_SRC)/jsmn/jsmn.c \
+$(RCP_SRC)/api/api.c \
+$(RCP_SRC)/OBD2/OBD2.c \
+$(RCP_SRC)/logging/printk.c \
+$(RCP_SRC)/util/ring_buffer.c \
+$(RCP_SRC)/logger/loggerApi.c \
+$(RCP_SRC)/logger/fileWriter.c \
+$(RCP_SRC)/filter/filter.c \
+$(RCP_SRC)/imu/imu.c \
+$(RCP_SRC)/ADC/ADC.c \
+$(RCP_SRC)/memory/memory.c \
+$(RCP_SRC)/timer/timer.c \
+$(RCP_SRC)/PWM/PWM.c \
+$(RCP_SRC)/LED/LED.c \
+$(RCP_SRC)/cpu/cpu.c \
+$(RCP_SRC)/usart/usart.c \
+$(RCP_SRC)/serial/serial.c \
+$(RCP_SRC)/GPIO/GPIO.c \
+$(RCP_SRC)/watchdog/watchdog.c \
+$(RCP_SRC)/CAN/CAN.c \
+$(MOCK_DIR)/imu_device_mock.c \
+$(MOCK_DIR)/timer_device_mock.c \
+$(MOCK_DIR)/ADC_device_mock.c \
+$(MOCK_DIR)/cpu_device_mock.c \
+$(MOCK_DIR)/PWM_device_mock.c \
+$(MOCK_DIR)/LED_device_mock.c \
+$(MOCK_DIR)/luaTask_mock.c \
+$(MOCK_DIR)/GPIO_device_mock.c \
+$(MOCK_DIR)/memory_device_mock.c \
+$(MOCK_DIR)/loggerNotifications_mock.c \
+$(MOCK_DIR)/sdcard_mock.c \
+$(MOCK_DIR)/watchdog_device_mock.c \
+$(MOCK_DIR)/CAN_device_mock.c \
+$(MOCK_DIR)/sim900_device_mock.c \
+$(RCP_SRC)/predictive_timer/predictive_timer_2.c \
+$(RCP_SRC)/auto_config/auto_track.c \
+$(RCP_SRC)/util/linear_interpolate.c \
+$(RCP_SRC)/logger/versionInfo.c \
+$(RCP_SRC)/logger/loggerConfig.c \
+$(RCP_SRC)/virtual_channel/virtual_channel.c \
+$(RCP_SRC)/tracks/tracks.c \
+$(RCP_SRC)/gps/gps.c \
+$(RCP_SRC)/gps/dateTime.c \
+$(RCP_SRC)/gps/geopoint.c \
+$(RCP_SRC)/gps/geoCircle.c \
+$(RCP_SRC)/gps/geoTrigger.c \
+$(RCP_SRC)/lap_stats/lap_stats.c \
+$(RCP_SRC)/logger/sampleRecord.c \
+$(RCP_SRC)/logger/loggerSampleData.c \
+$(RCP_SRC)/logger/loggerData.c \
+$(RCP_SRC)/logger/loggerHardware.c \
+$(RCP_SRC)/devices/cellModem.c \
+$(RCP_SRC)/devices/bluetooth.c \
+$(RCP_SRC)/devices/sim900.c \
+$(RCP_SRC)/logger/logger.c \
 
 OBJ_TEST = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $(basename $(SRC) $(T_SRC) RCPTest.cpp))))
 OBJ_SIM = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $(basename $(SRC) RCPSim.cpp))))
