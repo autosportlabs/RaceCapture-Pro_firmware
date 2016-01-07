@@ -29,6 +29,7 @@
  *	these demo application projects then ensure Supervisor mode is used.
  */
 
+/* Useless comment */
 
 #include "FreeRTOS.h"
 #include "LED.h"
