@@ -83,15 +83,15 @@ static const struct unit units[] = {
         UNIT(UNIT_GROUP_PERCENTAGE, "%"),
 };
 
-const struct unit* units_get_unit(const char *id)
+const struct unit* units_get_unit(const char *name)
 {
-        if (NULL == id)
+        if (NULL == name)
                 return NULL;
 
         /* XXX: Replace with HASHMAP */
         const int arr_len = ARRAY_LEN(units);
         for (int i = 0; i < arr_len; ++i) {
-                if (0 == strcmp(units[i].id, id))
+                if (0 == strcmp(units[i].name, name))
                         return units + i;
         }
 

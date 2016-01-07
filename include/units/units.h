@@ -36,15 +36,16 @@ enum unit_group {
         UNIT_GROUP_TORQUE,
         UNIT_GROUP_ACCELERATION,
         UNIT_GROUP_ANGLES,
+        UNIT_GROUP_ANGULAR_SPEED,
         UNIT_GROUP_PERCENTAGE,
 };
 
 struct unit {
         const enum unit_group group;
-        const char *id;
+        const char *name;
 };
 
-const struct unit* units_get_unit(const char *nm);
+const struct unit* units_get_unit(const char *name);
 
 
 #endif /* _UNITS_H_ */
