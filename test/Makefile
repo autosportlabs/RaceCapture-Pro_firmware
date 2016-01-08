@@ -18,57 +18,54 @@ LAP_STATS_DIR=lap_stats
 UTIL_DIR=util
 BUILD_DIR=build
 
-INCLUDES = 	-I. \
-		-I./include \
-		-I$(RCP_BASE) \
-		-I$(RCP_BASE)/logger \
-		-I$(STM32_SRC)/hal/fat_sd_stm32/fatfs \
-		-I$(RCP_INC) \
-		-I$(RCP_INC)/logging \
-		-I$(RCP_INC)/gps \
-		-I$(RCP_INC)/jsmn \
-		-I$(RCP_INC)/api \
-		-I$(RCP_INC)/filter \
-		-I$(RCP_INC)/logger \
-		-I$(RCP_INC)/channels \
-		-I$(RCP_INC)/virtual_channel \
-		-I$(RCP_INC)/tracks \
-		-I$(RCP_INC)/messaging \
-		-I$(RCP_INC)/lua \
-		-I$(RCP_INC)/command \
-		-I$(RCP_INC)/predictive_timer \
-		-I$(RCP_INC)/auto_config \
-		-I$(RCP_INC)/util \
-		-I$(RCP_INC)/serial \
-		-I$(RCP_INC)/devices \
-		-I$(RCP_INC) \
-		-I$(RCP_INC)/usart \
-		-I$(RCP_INC)/usb_comm \
-		-I$(RCP_INC)/imu \
-		-I$(RCP_INC)/ADC \
-		-I$(RCP_INC)/timer \
-		-I$(RCP_INC)/PWM \
-		-I$(RCP_INC)/LED \
-		-I$(RCP_INC)/cpu \
-		-I$(RCP_INC)/CAN \
-		-I$(RCP_INC)/OBD2 \
-		-I$(RCP_INC)/GPIO \
-		-I$(RCP_INC)/watchdog \
-		-I$(RCP_INC)/memory \
-		-I$(RCP_INC)/sdcard \
-		-I$(RCP_INC)/units \
-		-I$(RCP_INC)/lap_stats \
-		-I$(MOCK_DIR) \
-		-I$(GPS_DIR) \
-		-I$(LAP_STATS_DIR) \
-		-I$(FREE_RTOS_KERNEL_DIR)/ \
-		-I$(FREE_RTOS_KERNEL_DIR)/include \
-		-I$(FREE_RTOS_KERNEL_DIR)/include_testing \
-		-I$(UTIL_DIR) \
-#		-I$(SAM7S_SRC)/lua \
-#		-I$(SAM7S_SRC)/command \
-#		-I$(SAM7S_SRC)/uart \
-#		-I$(SAM7S_SRC)/usb/include \
+INCLUDES = \
+-I$(FREE_RTOS_KERNEL_DIR)/ \
+-I$(FREE_RTOS_KERNEL_DIR)/include \
+-I$(FREE_RTOS_KERNEL_DIR)/include_testing \
+-I$(GPS_DIR) \
+-I$(LAP_STATS_DIR) \
+-I$(MOCK_DIR) \
+-I$(RCP_BASE) \
+-I$(RCP_BASE)/logger \
+-I$(RCP_INC) \
+-I$(RCP_INC)/ADC \
+-I$(RCP_INC)/CAN \
+-I$(RCP_INC)/GPIO \
+-I$(RCP_INC)/LED \
+-I$(RCP_INC)/OBD2 \
+-I$(RCP_INC)/PWM \
+-I$(RCP_INC)/api \
+-I$(RCP_INC)/auto_config \
+-I$(RCP_INC)/channels \
+-I$(RCP_INC)/command \
+-I$(RCP_INC)/cpu \
+-I$(RCP_INC)/devices \
+-I$(RCP_INC)/filter \
+-I$(RCP_INC)/gps \
+-I$(RCP_INC)/imu \
+-I$(RCP_INC)/jsmn \
+-I$(RCP_INC)/lap_stats \
+-I$(RCP_INC)/logger \
+-I$(RCP_INC)/logging \
+-I$(RCP_INC)/lua \
+-I$(RCP_INC)/memory \
+-I$(RCP_INC)/messaging \
+-I$(RCP_INC)/predictive_timer \
+-I$(RCP_INC)/sdcard \
+-I$(RCP_INC)/serial \
+-I$(RCP_INC)/timer \
+-I$(RCP_INC)/tracks \
+-I$(RCP_INC)/units \
+-I$(RCP_INC)/usart \
+-I$(RCP_INC)/usb_comm \
+-I$(RCP_INC)/util \
+-I$(RCP_INC)/virtual_channel \
+-I$(RCP_INC)/watchdog \
+-I$(RCP_SRC)/units \
+-I$(STM32_SRC)/hal/fat_sd_stm32/fatfs \
+-I$(UTIL_DIR) \
+-I. \
+-I./include \
 
 # set up compiler and options
 CPP = g++
@@ -114,6 +111,7 @@ sector_test.cpp \
 track_test.cpp \
 loggerData_test.cpp \
 loggerFileWriterTest.cpp \
+UnitsTest.cpp \
 virtualChannel_test.cpp \
 $(GPS_DIR)/gps_test.cpp \
 $(GPS_DIR)/geoTriggerTest.cpp \
@@ -154,7 +152,6 @@ $(RCP_SRC)/PWM/PWM.c \
 $(RCP_SRC)/LED/LED.c \
 $(RCP_SRC)/cpu/cpu.c \
 $(RCP_SRC)/usart/usart.c \
-$(RCP_SRC)/units/units.c \
 $(RCP_SRC)/serial/serial.c \
 $(RCP_SRC)/GPIO/GPIO.c \
 $(RCP_SRC)/watchdog/watchdog.c \
@@ -195,8 +192,11 @@ $(RCP_SRC)/devices/bluetooth.c \
 $(RCP_SRC)/devices/sim900.c \
 $(RCP_SRC)/logger/logger.c \
 
+RCP_SIM_SRC = \
+$(RCP_SRC)/units/units.c \
+
 OBJ_TEST = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $(basename $(SRC) $(T_SRC) RCPTest.cpp))))
-OBJ_SIM = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $(basename $(SRC) RCPSim.cpp))))
+OBJ_SIM = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $(basename $(SRC) $(RCP_SIM_SRC) RCPSim.cpp))))
 
 all: test sim
 
