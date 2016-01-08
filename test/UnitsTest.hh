@@ -29,12 +29,14 @@ class UnitsTest : public CppUnit::TestFixture
         CPPUNIT_TEST( get_unit_test_success );
         CPPUNIT_TEST( get_unit_test_fail );
         CPPUNIT_TEST( no_dupes_test );
+        CPPUNIT_TEST( min_length_test );
         CPPUNIT_TEST_SUITE_END();
 
 public:
         void get_unit_test_success();
         void get_unit_test_fail();
         void no_dupes_test();
+        void min_length_test();
 };
 
 

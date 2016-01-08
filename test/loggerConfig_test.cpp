@@ -22,6 +22,7 @@
 #include "loggerConfig_test.h"
 #include "loggerConfig.h"
 #include "mod_string.h"
+#include "units.h"
 
 #include <string>
 
@@ -35,9 +36,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION( LoggerConfigTest );
 void LoggerConfigTest::setUp() {
 	initialize_logger_config();
 }
-
-
-void LoggerConfigTest::tearDown() {}
 
 void LoggerConfigTest::testLoggerInitVersionInfo() {
    LoggerConfig *lc = getWorkingLoggerConfig();
@@ -60,10 +58,12 @@ void LoggerConfigTest::testLoggerInitTimeConfig() {
    TimeConfig *tc = lc->TimeConfigs;
    CPPUNIT_ASSERT_EQUAL(string("Interval"), string(tc[0].cfg.label));
    CPPUNIT_ASSERT_EQUAL(string("ms"), string(tc[0].cfg.units));
+   CPPUNIT_ASSERT(units_get_unit(tc[0].cfg.units));
    CPPUNIT_ASSERT(tc[0].cfg.sampleRate != SAMPLE_DISABLED);
 
    CPPUNIT_ASSERT_EQUAL(string("Utc"), string(tc[1].cfg.label));
    CPPUNIT_ASSERT_EQUAL(string("ms"), string(tc[1].cfg.units));
+   CPPUNIT_ASSERT(units_get_unit(tc[1].cfg.units));
    CPPUNIT_ASSERT(tc[1].cfg.sampleRate != SAMPLE_DISABLED);
 }
 
@@ -73,11 +73,13 @@ void LoggerConfigTest::testLoggerInitAdcConfig() {
    ADCConfig *c = lc->ADCConfigs;
    for (int i = 0; i < 7; ++i) {
       CPPUNIT_ASSERT(strlen(c[i].cfg.label));
+      CPPUNIT_ASSERT(units_get_unit(c[i].cfg.units));
       CPPUNIT_ASSERT(c[i].cfg.sampleRate == SAMPLE_DISABLED);
    }
 
    CPPUNIT_ASSERT_EQUAL(string("Battery"), string(c[7].cfg.label));
-   CPPUNIT_ASSERT_EQUAL(string("Volts"), string(c[7].cfg.units));
+   CPPUNIT_ASSERT_EQUAL(string("V"), string(c[7].cfg.units));
+   CPPUNIT_ASSERT(units_get_unit(c[7].cfg.units));
    CPPUNIT_ASSERT(c[7].cfg.sampleRate != 0);
 }
 
@@ -87,6 +89,7 @@ void LoggerConfigTest::testLoggerInitPwmConfig() {
 
    for (size_t i = 0; i < CONFIG_PWM_CHANNELS; ++i) {
       CPPUNIT_ASSERT(strlen(c[i].cfg.label));
+      CPPUNIT_ASSERT(units_get_unit(c[i].cfg.units));
       CPPUNIT_ASSERT(c[i].cfg.sampleRate == SAMPLE_DISABLED);
    }
 }
@@ -97,6 +100,7 @@ void LoggerConfigTest::testLoggerInitGpioConfig() {
    GPIOConfig *c = lc->GPIOConfigs;
    for (size_t i = 0; i < CONFIG_GPIO_CHANNELS; ++i) {
       CPPUNIT_ASSERT(strlen(c[i].cfg.label));
+      CPPUNIT_ASSERT(units_get_unit(c[i].cfg.units));
       CPPUNIT_ASSERT(c[i].cfg.sampleRate == SAMPLE_DISABLED);
    }
 }
@@ -107,6 +111,7 @@ void LoggerConfigTest::testLoggerInitTimerConfig() {
    TimerConfig *c = lc->TimerConfigs;
    for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; ++i) {
       CPPUNIT_ASSERT(strlen(c[i].cfg.label));
+      CPPUNIT_ASSERT(units_get_unit(c[i].cfg.units));
       CPPUNIT_ASSERT(c[i].cfg.sampleRate == SAMPLE_DISABLED);
    }
 }
@@ -118,12 +123,13 @@ void LoggerConfigTest::testLoggerInitImuConfig() {
    ImuConfig *c = lc->ImuConfigs;
    for (size_t i = 0; i < 3; ++i) {
       CPPUNIT_ASSERT_EQUAL(string(names[i]), string(c[i].cfg.label));
-      CPPUNIT_ASSERT_EQUAL(string("G"), string(c[i].cfg.units));
+      CPPUNIT_ASSERT(units_get_unit(c[i].cfg.units));
       CPPUNIT_ASSERT(c[i].cfg.sampleRate == SAMPLE_25Hz);
    }
 
    CPPUNIT_ASSERT_EQUAL(string("Yaw"), string(c[3].cfg.label));
-   CPPUNIT_ASSERT_EQUAL(string("Deg/Sec"), string(c[3].cfg.units));
+   CPPUNIT_ASSERT_EQUAL(string("deg/s"), string(c[3].cfg.units));
+   CPPUNIT_ASSERT(units_get_unit(c[3].cfg.units));
    CPPUNIT_ASSERT(c[3].cfg.sampleRate == SAMPLE_25Hz);
 }
 
@@ -135,6 +141,7 @@ void LoggerConfigTest::testLoggerInitObd2Config() {
 
    for (int i = 0; i < OBD2_CHANNELS; ++i) {
       CPPUNIT_ASSERT(strlen(c->pids[i].cfg.label));
+      CPPUNIT_ASSERT(units_get_unit(c->pids[i].cfg.units));
       CPPUNIT_ASSERT(c->pids[i].cfg.sampleRate == 0);
    }
 }
@@ -145,42 +152,50 @@ void LoggerConfigTest::testLoggerInitGpsConfig() {
 
    cc = &lc->GPSConfigs.latitude;
    CPPUNIT_ASSERT_EQUAL(string("Latitude"), string(cc->label));
-   CPPUNIT_ASSERT_EQUAL(string("Degrees"), string(cc->units));
+   CPPUNIT_ASSERT_EQUAL(string("deg"), string(cc->units));
+   CPPUNIT_ASSERT(units_get_unit(cc->units));
    CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.longitude;
    CPPUNIT_ASSERT_EQUAL(string("Longitude"), string(cc->label));
-   CPPUNIT_ASSERT_EQUAL(string("Degrees"), string(cc->units));
+   CPPUNIT_ASSERT_EQUAL(string("deg"), string(cc->units));
+   CPPUNIT_ASSERT(units_get_unit(cc->units));
    CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.speed;
    CPPUNIT_ASSERT_EQUAL(string("Speed"), string(cc->label));
-   CPPUNIT_ASSERT_EQUAL(string("MPH"), string(cc->units));
+   CPPUNIT_ASSERT_EQUAL(string("Mph"), string(cc->units));
+   CPPUNIT_ASSERT(units_get_unit(cc->units));
    CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.distance;
    CPPUNIT_ASSERT_EQUAL(string("Distance"), string(cc->label));
-   CPPUNIT_ASSERT_EQUAL(string("Miles"), string(cc->units));
+   CPPUNIT_ASSERT_EQUAL(string("mi"), string(cc->units));
+   CPPUNIT_ASSERT(units_get_unit(cc->units));
    CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.altitude;
    CPPUNIT_ASSERT_EQUAL(string("Altitude"), string(cc->label));
-   CPPUNIT_ASSERT_EQUAL(string("Feet"), string(cc->units));
+   CPPUNIT_ASSERT_EQUAL(string("ft"), string(cc->units));
+   CPPUNIT_ASSERT(units_get_unit(cc->units));
    CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.satellites;
    CPPUNIT_ASSERT_EQUAL(string("GPSSats"), string(cc->label));
-   CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
+   CPPUNIT_ASSERT_EQUAL(string("#"), string(cc->units));
+   CPPUNIT_ASSERT(units_get_unit(cc->units));
    CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.quality;
    CPPUNIT_ASSERT_EQUAL(string("GPSQual"), string(cc->label));
-   CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
+   CPPUNIT_ASSERT_EQUAL(string("#"), string(cc->units));
+   CPPUNIT_ASSERT(units_get_unit(cc->units));
    CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
    cc = &lc->GPSConfigs.DOP;
    CPPUNIT_ASSERT_EQUAL(string("GPSDOP"), string(cc->label));
-   CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
+   CPPUNIT_ASSERT_EQUAL(string("#"), string(cc->units));
+   CPPUNIT_ASSERT(units_get_unit(cc->units));
    CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 }
 
@@ -190,39 +205,45 @@ void LoggerConfigTest::testLoggerInitLapConfig() {
 
    cc = &lc->LapConfigs.lapCountCfg;
    CPPUNIT_ASSERT_EQUAL(string("LapCount"), string(cc->label));
-   CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
+   CPPUNIT_ASSERT_EQUAL(string("#"), string(cc->units));
+   CPPUNIT_ASSERT(units_get_unit(cc->units));
    CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
 
    cc = &lc->LapConfigs.current_lap_cfg;
    CPPUNIT_ASSERT_EQUAL(string("CurrentLap"), string(cc->label));
-   CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
+   CPPUNIT_ASSERT_EQUAL(string("#"), string(cc->units));
+   CPPUNIT_ASSERT(units_get_unit(cc->units));
    CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
 
    cc = &lc->LapConfigs.lapTimeCfg;
    CPPUNIT_ASSERT_EQUAL(string("LapTime"), string(cc->label));
-   CPPUNIT_ASSERT_EQUAL(string("Min"), string(cc->units));
+   CPPUNIT_ASSERT_EQUAL(string("min"), string(cc->units));
+   CPPUNIT_ASSERT(units_get_unit(cc->units));
    CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
 
    cc = &lc->LapConfigs.sectorCfg;
    CPPUNIT_ASSERT_EQUAL(string("Sector"), string(cc->label));
-   CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
+   CPPUNIT_ASSERT_EQUAL(string("#"), string(cc->units));
+   CPPUNIT_ASSERT(units_get_unit(cc->units));
    CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
 
    cc = &lc->LapConfigs.sectorTimeCfg;
    CPPUNIT_ASSERT_EQUAL(string("SectorTime"), string(cc->label));
-   CPPUNIT_ASSERT_EQUAL(string("Min"), string(cc->units));
+   CPPUNIT_ASSERT_EQUAL(string("min"), string(cc->units));
+   CPPUNIT_ASSERT(units_get_unit(cc->units));
    CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
 
    cc = &lc->LapConfigs.predTimeCfg;
    CPPUNIT_ASSERT_EQUAL(string("PredTime"), string(cc->label));
-   CPPUNIT_ASSERT_EQUAL(string("Min"), string(cc->units));
+   CPPUNIT_ASSERT_EQUAL(string("min"), string(cc->units));
+   CPPUNIT_ASSERT(units_get_unit(cc->units));
    CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_5Hz);
 
    cc = &lc->LapConfigs.elapsed_time_cfg;
    CPPUNIT_ASSERT_EQUAL(string("ElapsedTime"), string(cc->label));
-   CPPUNIT_ASSERT_EQUAL(string("Min"), string(cc->units));
+   CPPUNIT_ASSERT_EQUAL(string("min"), string(cc->units));
+   CPPUNIT_ASSERT(units_get_unit(cc->units));
    CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
-
 }
 
 

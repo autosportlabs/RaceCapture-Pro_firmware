@@ -21,6 +21,7 @@
 
 #include "UnitsTest.hh"
 
+#include "loggerConfig.h"
 #include "units.h"
 
 #include <string.h>
@@ -35,7 +36,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION( UnitsTest );
 void UnitsTest::get_unit_test_success()
 {
         for(size_t i = 0; i < ARRAY_LEN(units); ++i)
-                CPPUNIT_ASSERT_EQUAL(units + i, units_get_unit((units + i)->name));
+                CPPUNIT_ASSERT_EQUAL(units + i,
+                                     units_get_unit((units + i)->name));
 }
 
 void UnitsTest::get_unit_test_fail()
@@ -55,4 +57,11 @@ void UnitsTest::no_dupes_test()
                                 ++count;
                 CPPUNIT_ASSERT_EQUAL(1, count);
         }
+}
+
+void UnitsTest::min_length_test()
+{
+        for(size_t i = 0; i < ARRAY_LEN(units); ++i)
+                CPPUNIT_ASSERT(
+                        strlen((units + i)->name) + 1 <= DEFAULT_UNITS_LENGTH);
 }

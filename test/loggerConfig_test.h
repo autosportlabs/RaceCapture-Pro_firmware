@@ -43,7 +43,6 @@ class LoggerConfigTest : public CppUnit::TestFixture
 
 public:
     void setUp();
-    void tearDown();
     void testLoggerInitVersionInfo();
     void testLoggerInitPwmClock();
     void testLoggerInitTimeConfig();

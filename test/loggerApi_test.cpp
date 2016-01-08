@@ -47,6 +47,7 @@
 #include "launch_control.h"
 #include "task.h"
 #include "task_testing.h"
+#include "units.h"
 
 #define JSON_TOKENS 10000
 #define FILE_PREFIX string("json_api_files/")
@@ -804,6 +805,7 @@ void LoggerApiTest::testFlashConfig(){
 void LoggerApiTest::testChannelConfig(ChannelConfig *cfg, string expNm, string expUt, unsigned short sr) {
     CPPUNIT_ASSERT_EQUAL(expNm, string(cfg->label));
     CPPUNIT_ASSERT_EQUAL(expUt, string(cfg->units));
+    CPPUNIT_ASSERT(units_get_unit(cfg->units));
     CPPUNIT_ASSERT_EQUAL((int) sr, decodeSampleRate(cfg->sampleRate));
 }
 
@@ -819,14 +821,14 @@ void LoggerApiTest::testSetGpsConfigFile(string filename, unsigned char channels
         if (channelsEnabled == 0)
            sampleRate = 0;
 
-        testChannelConfig(&gpsCfg->latitude, string("Latitude"), string("Degrees"), sampleRate);
-        testChannelConfig(&gpsCfg->longitude, string("Longitude"), string("Degrees"), sampleRate);
-        testChannelConfig(&gpsCfg->speed, string("Speed"), string("MPH"), sampleRate);
-        testChannelConfig(&gpsCfg->distance, string("Distance"), string("Miles"), sampleRate);
-        testChannelConfig(&gpsCfg->altitude, string("Altitude"), string("Feet"), sampleRate);
-        testChannelConfig(&gpsCfg->satellites, string("GPSSats"), string(""), sampleRate);
-        testChannelConfig(&gpsCfg->quality, string("GPSQual"), string(""), sampleRate);
-        testChannelConfig(&gpsCfg->DOP, string("GPSDOP"), string(""), sampleRate);
+        testChannelConfig(&gpsCfg->latitude, string("Latitude"), string("deg"), sampleRate);
+        testChannelConfig(&gpsCfg->longitude, string("Longitude"), string("deg"), sampleRate);
+        testChannelConfig(&gpsCfg->speed, string("Speed"), string("Mph"), sampleRate);
+        testChannelConfig(&gpsCfg->distance, string("Distance"), string("mi"), sampleRate);
+        testChannelConfig(&gpsCfg->altitude, string("Altitude"), string("ft"), sampleRate);
+        testChannelConfig(&gpsCfg->satellites, string("GPSSats"), string("#"), sampleRate);
+        testChannelConfig(&gpsCfg->quality, string("GPSQual"), string("#"), sampleRate);
+        testChannelConfig(&gpsCfg->DOP, string("GPSDOP"), string("#"), sampleRate);
 
 	assertGenericResponse(txBuffer, "setGpsCfg", API_SUCCESS);
 }
@@ -886,11 +888,11 @@ void LoggerApiTest::testSetLapConfigFile(string filename){
 
 	assertGenericResponse(txBuffer, "setLapCfg", API_SUCCESS);
 
-        testChannelConfig(&cfg->lapCountCfg, string("LapCount"), string(""), 50);
-        testChannelConfig(&cfg->lapTimeCfg, string("LapTime"), string("Min"), 50);
-        testChannelConfig(&cfg->sectorCfg, string("Sector"), string(""), 50);
-        testChannelConfig(&cfg->sectorTimeCfg, string("SectorTime"), string("Min"), 50);
-        testChannelConfig(&cfg->predTimeCfg, string("PredTime"), string("Min"), 50);
+        testChannelConfig(&cfg->lapCountCfg, string("LapCount"), string("#"), 50);
+        testChannelConfig(&cfg->lapTimeCfg, string("LapTime"), string("min"), 50);
+        testChannelConfig(&cfg->sectorCfg, string("Sector"), string("#"), 50);
+        testChannelConfig(&cfg->sectorTimeCfg, string("SectorTime"), string("min"), 50);
+        testChannelConfig(&cfg->predTimeCfg, string("PredTime"), string("min"), 50);
 }
 
 void LoggerApiTest::testGetLapConfigFile(string filename){
