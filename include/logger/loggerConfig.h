@@ -115,7 +115,7 @@ struct TimeConfig {
     enum TimeType tt;
 };
 
-#define EMPTY_CHANNEL_CONFIG {"","", 0.0f, 0.0f, SAMPLE_DISABLED, 0}
+#define EMPTY_CHANNEL_CONFIG {"","#", 0.0f, 0.0f, SAMPLE_DISABLED, 0}
 
 // Default to lowest active sample rate.  This will change in code later.
 #define DEFAULT_UPTIME_CONFIG {"Interval", "ms", 0, 0, SAMPLE_1Hz, 0, ALWAYS_SAMPLED}
@@ -140,9 +140,9 @@ typedef struct _ADCConfig {
 #define DEFAULT_CALIBRATION (1.0f)
 #define DEFAULT_SCALING_MAP {{0,1.25,2.5,3.75,5.0},{0,1.25,2.5,3.75,5.0}}
 
-#define DEFAULT_ADC_CHANNEL_CONFIG {"", "Volts", 0, 5, SAMPLE_DISABLED, 2, 0}
+#define DEFAULT_ADC_CHANNEL_CONFIG {"", "V", 0, 5, SAMPLE_DISABLED, 2, 0}
 // Define channel config for battery
-#define DEFAULT_ADC_BATTERY_CONFIG {"Battery", "Volts", 0, 20, SAMPLE_1Hz, 2, 0}
+#define DEFAULT_ADC_BATTERY_CONFIG {"Battery", "V", 0, 20, SAMPLE_1Hz, 2, 0}
 
 #define BATTERY_ADC_CONFIG                      \
    {                                            \
@@ -191,8 +191,8 @@ typedef struct _TimerConfig {
 #define DEFAULT_TIMER_DIVIDER TIMER_MEDIUM
 #define DEFAULT_TIMER_SCALING 375428
 
-#define DEFAULT_RPM_CHANNEL_CONFIG {"RPM", "", 0, 10000, SAMPLE_DISABLED, 0, 0}
-#define DEFAULT_FREQUENCY_CHANNEL_CONFIG {"", "", 0, 1000, SAMPLE_DISABLED, 0, 0}
+#define DEFAULT_RPM_CHANNEL_CONFIG {"RPM", "rpm", 0, 10000, SAMPLE_DISABLED, 0, 0}
+#define DEFAULT_FREQUENCY_CHANNEL_CONFIG {"", "Hz", 0, 1000, SAMPLE_DISABLED, 0, 0}
 
 #define DEFAULT_FREQUENCY_CONFIG {              \
       DEFAULT_FREQUENCY_CHANNEL_CONFIG,         \
@@ -212,7 +212,7 @@ typedef struct _GPIOConfig {
 #define CONFIG_GPIO_OUT  					1
 
 #define DEFAULT_GPIO_MODE CONFIG_GPIO_IN
-#define DEFAULT_GPIO_CHANNEL_CONFIG {"", "", 0, 1, SAMPLE_DISABLED, 1, 0}
+#define DEFAULT_GPIO_CHANNEL_CONFIG {"", "V", 0, 1, SAMPLE_DISABLED, 1, 0}
 #define DEFAULT_GPIO_CONFIG {DEFAULT_GPIO_CHANNEL_CONFIG, CONFIG_GPIO_IN}
 
 
@@ -244,12 +244,12 @@ typedef struct _ImuConfig {
 #define DEFAULT_ACCEL_X_CONFIG    {"AccelX",   "G", -3, 3, SAMPLE_25Hz, 2, 0}
 #define DEFAULT_ACCEL_Y_CONFIG    {"AccelY",   "G", -3, 3, SAMPLE_25Hz, 2, 0}
 #define DEFAULT_ACCEL_Z_CONFIG    {"AccelZ",   "G", -3, 3, SAMPLE_25Hz, 2, 0}
-#define DEFAULT_GYRO_YAW_CONFIG   {"Yaw",      "Deg/Sec", -300, 300, SAMPLE_25Hz, 1, 0}
-#define DEFAULT_GYRO_PITCH_CONFIG {"Pitch",    "Deg/Sec", -300, 300, SAMPLE_25Hz, 1, 0}
-#define DEFAULT_GYRO_ROLL_CONFIG  {"Roll",     "Deg/Sec", -300, 300, SAMPLE_25Hz, 1, 0}
+#define DEFAULT_GYRO_YAW_CONFIG   {"Yaw",      "deg/s", -300, 300, SAMPLE_25Hz, 1, 0}
+#define DEFAULT_GYRO_PITCH_CONFIG {"Pitch",    "deg/s", -300, 300, SAMPLE_25Hz, 1, 0}
+#define DEFAULT_GYRO_ROLL_CONFIG  {"Roll",     "deg/s", -300, 300, SAMPLE_25Hz, 1, 0}
 
 #define DEFAULT_IMU_CHANNEL_CONFIG  {"", "G", -3, 3, SAMPLE_25Hz, 2, 0}
-#define DEFAULT_GYRO_CHANNEL_CONFIG {"", "Deg/Sec", -300, 300, SAMPLE_25Hz, 1, 0}
+#define DEFAULT_GYRO_CHANNEL_CONFIG {"", "deg/s", -300, 300, SAMPLE_25Hz, 1, 0}
 
 #define DEFAULT_IMU_CONFIG                      \
    {                                            \
@@ -302,7 +302,7 @@ typedef struct _PWMConfig {
 #define DEFAULT_PWM_DUTY_CYCLE (50)
 #define DEFAULT_PWM_PERIOD (100)
 
-#define DEFAULT_PWM_CHANNEL_CONFIG {"PWM1", "", 0, 100, SAMPLE_DISABLED, 0, 0}
+#define DEFAULT_PWM_CHANNEL_CONFIG {"PWM1", "Hz", 0, 100, SAMPLE_DISABLED, 0, 0}
 #define DEFAULT_PWM_CONFIG {DEFAULT_PWM_CHANNEL_CONFIG, MODE_PWM_FREQUENCY, MODE_LOGGING_PWM_DUTY, DEFAULT_PWM_DUTY_CYCLE, DEFAULT_PWM_PERIOD}
 
 #define OBD2_CHANNELS 20
@@ -322,6 +322,7 @@ typedef struct _OBD2Config {
 
 #define DEFAULT_ENABLED_PIDS 1
 #define DEFAULT_OBD2_SAMPLE_RATE SAMPLE_10Hz
+#define DEFAULT_OBD2_PID_CONFIG {EMPTY_CHANNEL_CONFIG, 0}
 
 #define DEFAULT_OBD2_CONFIG \
 { \
@@ -329,7 +330,7 @@ typedef struct _OBD2Config {
 	DEFAULT_OBD2_SAMPLE_RATE, \
 	DEFAULT_ENABLED_PIDS, \
 	{ \
-		{{"RPM", "", 0, 10000, SAMPLE_10Hz, 0, 0}, 12}, \
+		{{"RPM", "rpm", 0, 10000, SAMPLE_10Hz, 0, 0}, 12}, \
 		{EMPTY_CHANNEL_CONFIG, 0}, \
 		{EMPTY_CHANNEL_CONFIG, 0}, \
 		{EMPTY_CHANNEL_CONFIG, 0}, \
@@ -374,14 +375,14 @@ typedef struct _GPSConfig {
 
 #define DEFAULT_GPS_SAMPLE_RATE SAMPLE_10Hz
 
-#define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "Degrees", -180, 180, DEFAULT_GPS_SAMPLE_RATE, 6, 0}
-#define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "Degrees", -180, 180, DEFAULT_GPS_SAMPLE_RATE, 6, 0}
-#define DEFAULT_GPS_SPEED_CONFIG {"Speed", "MPH", 0, 150, DEFAULT_GPS_SAMPLE_RATE, 2, 0}
-#define DEFAULT_GPS_DISTANCE_CONFIG {"Distance", "Miles", 0, 0, DEFAULT_GPS_SAMPLE_RATE, 3, 0}
-#define DEFAULT_GPS_ALTITUDE_CONFIG {"Altitude", "Feet", 0, 4000, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
-#define DEFAULT_GPS_SATELLITE_CONFIG {"GPSSats", "", 0, 20, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
-#define DEFAULT_GPS_QUALITY_CONFIG {"GPSQual", "", 0, 5, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
-#define DEFAULT_GPS_DOP_CONFIG {"GPSDOP", "", 0, 20, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
+#define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "deg", -180, 180, DEFAULT_GPS_SAMPLE_RATE, 6, 0}
+#define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "deg", -180, 180, DEFAULT_GPS_SAMPLE_RATE, 6, 0}
+#define DEFAULT_GPS_SPEED_CONFIG {"Speed", "Mph", 0, 150, DEFAULT_GPS_SAMPLE_RATE, 2, 0}
+#define DEFAULT_GPS_DISTANCE_CONFIG {"Distance", "mi", 0, 0, DEFAULT_GPS_SAMPLE_RATE, 3, 0}
+#define DEFAULT_GPS_ALTITUDE_CONFIG {"Altitude", "ft", 0, 4000, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
+#define DEFAULT_GPS_SATELLITE_CONFIG {"GPSSats", "#", 0, 20, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
+#define DEFAULT_GPS_QUALITY_CONFIG {"GPSQual", "#", 0, 5, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
+#define DEFAULT_GPS_DOP_CONFIG {"GPSDOP", "#", 0, 20, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
 
 #define DEFAULT_GPS_CONFIG {                   \
 		DEFAULT_GPS_LATITUDE_CONFIG,           \
@@ -406,13 +407,13 @@ typedef struct _LapConfig {
 
 #define DEFAULT_LAPSTATS_SAMPLE_RATE SAMPLE_10Hz
 
-#define DEFAULT_LAP_COUNT_CONFIG {"LapCount", "", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 0, 0}
-#define DEFAULT_LAP_TIME_CONFIG {"LapTime", "Min", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 4, 0}
-#define DEFAULT_SECTOR_CONFIG {"Sector", "", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 0, 0}
-#define DEFAULT_SECTOR_TIME_CONFIG {"SectorTime", "Min", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 4, 0}
-#define DEFAULT_PRED_TIME_CONFIG {"PredTime", "Min", 0, 0, SAMPLE_5Hz, 4, 0}
-#define DEFAULT_ELAPSED_LAP_TIME_CONFIG {"ElapsedTime", "Min", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 4, 0}
-#define DEFAULT_CURRENT_LAP_CONFIG {"CurrentLap", "", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 0, 0}
+#define DEFAULT_LAP_COUNT_CONFIG {"LapCount", "#", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 0, 0}
+#define DEFAULT_LAP_TIME_CONFIG {"LapTime", "min", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 4, 0}
+#define DEFAULT_SECTOR_CONFIG {"Sector", "#", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 0, 0}
+#define DEFAULT_SECTOR_TIME_CONFIG {"SectorTime", "min", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 4, 0}
+#define DEFAULT_PRED_TIME_CONFIG {"PredTime", "min", 0, 0, SAMPLE_5Hz, 4, 0}
+#define DEFAULT_ELAPSED_LAP_TIME_CONFIG {"ElapsedTime", "min", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 4, 0}
+#define DEFAULT_CURRENT_LAP_CONFIG {"CurrentLap", "#", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 0, 0}
 
 #define DEFAULT_LAP_CONFIG {                                    \
                 DEFAULT_LAP_COUNT_CONFIG,                       \

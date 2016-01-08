@@ -28,14 +28,15 @@
 
 CPP_GUARD_BEGIN
 
-#define API_SUCCESS_NO_RETURN 	2
-#define API_SUCCESS 			1
-
-#define API_ERROR_UNKNOWN_MSG	0
-#define API_ERROR_PARAMETER 	-1
-#define API_ERROR_MALFORMED 	-2
-#define API_ERROR_SEVERE		-99
-#define API_ERROR_UNSPECIFIED 	-100
+enum api_status {
+        API_ERROR_UNSPECIFIED = -100,
+        API_ERROR_SEVERE = -99,
+        API_ERROR_MALFORMED = -2,
+        API_ERROR_PARAMETER = -1,
+        API_ERROR_UNKNOWN_MSG = 0,
+        API_SUCCESS = 1,
+        API_SUCCESS_NO_RETURN = 2,
+};
 
 typedef struct _api_context {
     Serial * serial;

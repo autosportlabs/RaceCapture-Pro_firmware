@@ -19,7 +19,6 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "ADC.h"
 #include "FreeRTOS.h"
 #include "GPIO.h"
@@ -56,6 +55,7 @@
 #include "taskUtil.h"
 #include "timer.h"
 #include "tracks.h"
+#include "units.h"
 
 #include <stdbool.h>
 
@@ -68,6 +68,25 @@ typedef void (*getConfigs_func)(size_t channeId, void ** baseCfg, ChannelConfig 
 typedef const jsmntok_t * (*setExtField_func)(const jsmntok_t *json, const char *name, const char *value, void *cfg);
 typedef int (*reInitConfig_func)(LoggerConfig *config);
 
+/**
+ * Validates that a string is within the given limits.
+ * @param str The string to validate.
+ * @param min_len The minimum acceptable length of the string
+ * (including NULL char).  0 indicates that a NULL value for the
+ * string is acceptable.
+ * @param max_len The maximum acceptable length of a string (including the
+ * NULL char).
+ * @return true if valid, false otherwise.
+ */
+static bool validate_string(const char *str, const size_t min_len,
+                            const size_t max_len)
+{
+        if (NULL == str)
+                return min_len == 0;
+
+        const size_t len = strlen(str) + 1;
+        return min_len <= len && len <= max_len;
+}
 
 void unescapeTextField(char *data)
 {
@@ -504,50 +523,92 @@ void api_send_sample_record(Serial *serial, struct sample *sample,
         json_objEnd(serial, 0);
 }
 
-static const jsmntok_t * setChannelConfig(Serial *serial, const jsmntok_t *cfg,
-        ChannelConfig *channelCfg,
-        setExtField_func setExtField,
-        void *extCfg)
+/**
+ * Validates and sets a field in the ChannelConfig struct.
+ * @return API_SUCCESS if the operation was valid, a different
+ *         enum api_status value otherwise.
+ */
+static enum api_status set_chan_cfg_field(ChannelConfig *ch_cfg,
+                                          const char *name,
+                                          const char *value)
 {
-
-    if (cfg->type != JSMN_OBJECT || cfg->size % 2 != 0)
-        return cfg;
-
-    int size = cfg->size;
-    cfg++;
-
-    for (int i = 0; i < size; i += 2 ) {
-        const jsmntok_t *nameTok = cfg;
-        jsmn_trimData(nameTok);
-        cfg++;
-
-        const jsmntok_t *valueTok = cfg;
-        cfg++;
-
-        if (valueTok->type == JSMN_PRIMITIVE || valueTok->type == JSMN_STRING)
-            jsmn_trimData(valueTok);
-
-        char *name = nameTok->data;
-        char *value = valueTok->data;
-        unescapeTextField(value);
-
-        if (NAME_EQU("nm", name))
-            memcpy(channelCfg->label, value, DEFAULT_LABEL_LENGTH);
-        else if (NAME_EQU("ut", name))
-            memcpy(channelCfg->units, value, DEFAULT_UNITS_LENGTH);
-        else if (NAME_EQU("min", name))
-            channelCfg->min = modp_atof(value);
+        if (NAME_EQU("nm", name)) {
+                if (!validate_string(value, 1, DEFAULT_LABEL_LENGTH))
+                        goto fail;
+                strcpy(ch_cfg->label, value);
+        } else if (NAME_EQU("ut", name)) {
+                if (!validate_string(value, 1, DEFAULT_UNITS_LENGTH) ||
+                    NULL == units_get_unit(value))
+                        goto fail;
+                strcpy(ch_cfg->units, value);
+        } else if (NAME_EQU("min", name))
+                ch_cfg->min = modp_atof(value);
         else if (NAME_EQU("max", name))
-            channelCfg->max = modp_atof(value);
+                ch_cfg->max = modp_atof(value);
         else if (NAME_EQU("sr", name))
-            channelCfg->sampleRate = encodeSampleRate(modp_atoi(value));
+                ch_cfg->sampleRate =
+                        encodeSampleRate(modp_atoi(value));
         else if (NAME_EQU("prec", name))
-            channelCfg->precision = (unsigned char) modp_atoi(value);
-        else if (setExtField != NULL)
-            cfg = setExtField(valueTok, name, value, extCfg);
-    }
+                ch_cfg->precision =
+                        (unsigned char) modp_atoi(value);
+        else
+                return API_ERROR_UNKNOWN_MSG;
 
-    return cfg;
+        return API_SUCCESS;
+
+fail:
+        pr_warning_str_msg("Invalid parameter value for key: ", name);
+        return API_ERROR_PARAMETER;
+}
+
+/**
+ * Sets the ChannelConfig struct value based on the given JSON.
+ * @return API_ERROR_PARAMETER if there was an invalid parameter,
+ * API_ERROR_MALFORMED if the JSON is bad, API_SUCCESS if successful.
+ */
+static enum api_status setChannelConfig(Serial *serial,
+                                        const jsmntok_t **cfgp,
+                                        ChannelConfig *channelCfg,
+                                        setExtField_func setExtField,
+                                        void *extCfg)
+{
+        const jsmntok_t *cfg = *cfgp;
+        if (cfg->type != JSMN_OBJECT || cfg->size % 2 != 0)
+                return API_ERROR_MALFORMED;
+
+        int size = cfg->size;
+        cfg++;
+
+        for (int i = 0; i < size; i += 2 ) {
+                const jsmntok_t *nameTok = cfg;
+                jsmn_trimData(nameTok);
+                cfg++;
+
+                const jsmntok_t *valueTok = cfg;
+                cfg++;
+
+                if (valueTok->type == JSMN_PRIMITIVE ||
+                    valueTok->type == JSMN_STRING)
+                        jsmn_trimData(valueTok);
+
+                char *name = nameTok->data;
+                char *value = valueTok->data;
+                unescapeTextField(value);
+
+                switch(set_chan_cfg_field(channelCfg, name, value)) {
+                case API_ERROR_PARAMETER:
+                        return API_ERROR_PARAMETER;
+                case API_ERROR_UNKNOWN_MSG:
+                        if (setExtField)
+                                cfg = setExtField(valueTok, name, value,
+                                                  extCfg);
+                default:
+                        break;
+                }
+        }
+
+        *cfgp = cfg;
+        return API_SUCCESS;
 }
 
 static int setMultiChannelConfigGeneric(Serial *serial, const jsmntok_t * json,
@@ -555,25 +616,30 @@ static int setMultiChannelConfigGeneric(Serial *serial, const jsmntok_t * json,
                                         setExtField_func setExtFieldFunc,
                                         reInitConfig_func reInitConfigFunc)
 {
-    if (json->type == JSMN_OBJECT && json->size % 2 == 0) {
+        if (json->type != JSMN_OBJECT || json->size % 2 != 0)
+                return API_ERROR_MALFORMED;
+
         for (int i = 1; i <= json->size; i += 2) {
-            const jsmntok_t *idTok = json + i;
-            const jsmntok_t *cfgTok = json + i + 1;
-            jsmn_trimData(idTok);
-            size_t id = modp_atoi(idTok->data);
-            void *baseCfg = NULL;
-            ChannelConfig *channelCfg = NULL;
-            getConfigsFunc(id, &baseCfg, &channelCfg);
-            if (channelCfg && baseCfg) {
-                setChannelConfig(serial, cfgTok, channelCfg, setExtFieldFunc, baseCfg);
-            } else {
-                return API_ERROR_PARAMETER;
-            }
+                const jsmntok_t *idTok = json + i;
+                const jsmntok_t *cfgTok = json + i + 1;
+                jsmn_trimData(idTok);
+                size_t id = modp_atoi(idTok->data);
+                void *baseCfg = NULL;
+                ChannelConfig *channelCfg = NULL;
+                getConfigsFunc(id, &baseCfg, &channelCfg);
+                if (!channelCfg || !baseCfg)
+                        return API_ERROR_PARAMETER;
+
+                const enum api_status status =
+                        setChannelConfig(serial, &cfgTok, channelCfg,
+                                         setExtFieldFunc, baseCfg);
+                if (status != API_SUCCESS)
+                        return status;
         }
-    }
-    configChanged();
-    int initRes = reInitConfigFunc(getWorkingLoggerConfig());
-    return (initRes ? API_SUCCESS : API_ERROR_SEVERE);
+
+        configChanged();
+        const int initRes = reInitConfigFunc(getWorkingLoggerConfig());
+        return initRes ? API_SUCCESS : API_ERROR_SEVERE;
 }
 
 static const jsmntok_t * setScalingMapRaw(ADCConfig *adcCfg, const jsmntok_t *mapArrayTok)
@@ -1297,78 +1363,75 @@ static const jsmntok_t * setPidExtendedField(const jsmntok_t *valueTok, const ch
 
 int api_setObd2Config(Serial *serial, const jsmntok_t *json)
 {
-    OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
+        OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
 
-    int pidIndex = 0;
-    setIntValueIfExists(json, "index", &pidIndex);
+        int pidIndex = 0;
+        setIntValueIfExists(json, "index", &pidIndex);
 
-    if (pidIndex >= OBD2_CHANNELS) {
-        return API_ERROR_PARAMETER;
-    }
+        if (pidIndex >= OBD2_CHANNELS)
+                return API_ERROR_PARAMETER;
 
-    const jsmntok_t *pidsTok = findNode(json, "pids");
-    if (pidsTok != NULL && (++pidsTok)->type == JSMN_ARRAY) {
-        int pidMax = pidsTok->size;
-        if (pidMax > MAX_OBD2_MESSAGE_PIDS) {
-            return API_ERROR_PARAMETER;
+        const jsmntok_t *pidsTok = findNode(json, "pids");
+        if (pidsTok != NULL && (++pidsTok)->type == JSMN_ARRAY) {
+                int pidMax = pidsTok->size;
+                if (pidMax > MAX_OBD2_MESSAGE_PIDS)
+                        return API_ERROR_PARAMETER;
+
+                pidMax += pidIndex;
+                if (pidMax > OBD2_CHANNELS)
+                        return API_ERROR_PARAMETER;
+
+                for (pidsTok++; pidIndex < pidMax; pidIndex++) {
+                        PidConfig *pidCfg = obd2Cfg->pids + pidIndex;
+                        ChannelConfig *chCfg = &(pidCfg->cfg);
+                        const enum api_status status =
+                                setChannelConfig(serial, &pidsTok, chCfg,
+                                                 setPidExtendedField, pidCfg);
+                        if (status != API_SUCCESS)
+                                return status;
+                }
         }
-        pidMax += pidIndex;
-        if (pidMax > OBD2_CHANNELS) {
-            return API_ERROR_PARAMETER;
-        }
+        obd2Cfg->enabledPids = pidIndex;
 
-        for (pidsTok++; pidIndex < pidMax; pidIndex++) {
-            PidConfig *pidCfg = obd2Cfg->pids + pidIndex;
-            ChannelConfig *chCfg = &(pidCfg->cfg);
-            pidsTok = setChannelConfig(serial, pidsTok, chCfg, setPidExtendedField, pidCfg);
-        }
-    }
-    obd2Cfg->enabledPids = pidIndex;
+        setUnsignedCharValueIfExists(json, "en", &obd2Cfg->enabled, NULL);
 
-    setUnsignedCharValueIfExists(json, "en", &obd2Cfg->enabled, NULL);
-
-    configChanged();
-    return API_SUCCESS;
+        configChanged();
+        return API_SUCCESS;
 }
 
 int api_setLapConfig(Serial *serial, const jsmntok_t *json)
 {
-    LapConfig *lapCfg = &(getWorkingLoggerConfig()->LapConfigs);
+        LapConfig *lapCfg = &(getWorkingLoggerConfig()->LapConfigs);
 
-    const jsmntok_t *lapCount = findNode(json, "lapCount");
-    if (lapCount != NULL)
-        setChannelConfig(serial, lapCount + 1, &lapCfg->lapCountCfg, NULL, NULL);
+        const struct lc_nm_cfg {
+                char *nm;
+                ChannelConfig *cfg;
+        } chans[] = {
+                {"lapCount", &lapCfg->lapCountCfg},
+                {"lapTime", &lapCfg->lapTimeCfg},
+                {"predTime", &lapCfg->predTimeCfg},
+                {"sector", &lapCfg->sectorCfg},
+                {"sectorTime", &lapCfg->sectorTimeCfg},
+                {"elapsedTime", &lapCfg->elapsed_time_cfg},
+                {"currentLap", &lapCfg->current_lap_cfg},
+                {NULL, NULL},
+        };
 
-    const jsmntok_t *lapTime = findNode(json, "lapTime");
-    if (lapTime != NULL)
-        setChannelConfig(serial, lapTime + 1, &lapCfg->lapTimeCfg, NULL, NULL);
+        for (const struct lc_nm_cfg *chan = chans; chan->nm; ++chan) {
+                const jsmntok_t *tok = findNode(json, chan->nm);
+                if (!tok)
+                        continue;
 
-    const jsmntok_t *predTime = findNode(json, "predTime");
-    if (predTime != NULL)
-        setChannelConfig(serial, predTime + 1, &lapCfg->predTimeCfg, NULL, NULL);
+                ++tok;
+                const enum api_status status =
+                        setChannelConfig(serial, &tok,
+                                         chan->cfg, NULL, NULL);
+                if (status != API_SUCCESS)
+                        return status;
+        }
 
-    const jsmntok_t *sector = findNode(json, "sector");
-    if (sector != NULL)
-        setChannelConfig(serial, sector + 1, &lapCfg->sectorCfg, NULL, NULL);
-
-    const jsmntok_t *sectorTime = findNode(json, "sectorTime");
-    if (sectorTime != NULL)
-        setChannelConfig(serial, sectorTime + 1, &lapCfg->sectorTimeCfg, NULL, NULL);
-
-    const jsmntok_t *elapsed = findNode(json, "elapsedTime");
-    if (elapsed != NULL)
-        setChannelConfig(serial, elapsed + 1,
-                         &lapCfg->elapsed_time_cfg,
-                         NULL, NULL);
-
-    const jsmntok_t *current_lap = findNode(json, "currentLap");
-    if (current_lap != NULL)
-        setChannelConfig(serial, current_lap + 1,
-                         &lapCfg->current_lap_cfg,
-                         NULL, NULL);
-
-    configChanged();
-    return API_SUCCESS;
+        configChanged();
+        return API_SUCCESS;
 }
 
 int api_getLapConfig(Serial *serial, const jsmntok_t *json)

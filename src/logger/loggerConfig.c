@@ -77,7 +77,6 @@ static void resetAdcConfig(ADCConfig cfg[])
         ADCConfig *c = cfg + i;
         *c = (ADCConfig) DEFAULT_ADC_CONFIG;
         sPrintStrInt(c->cfg.label, "Analog", i + 1);
-        strcpy(c->cfg.units, "Volts");
     }
 
     // Now update the battery config
@@ -147,7 +146,7 @@ static void resetOBD2Config(OBD2Config *cfg)
 
     for (int i = 0; i < OBD2_CHANNELS; ++i) {
         PidConfig *c = &cfg->pids[i];
-        memset(c, 0, sizeof(PidConfig));
+        *c = (PidConfig) DEFAULT_OBD2_PID_CONFIG;
         sPrintStrInt(c->cfg.label, "OBD2 Pid ", i + 1);
     }
 }

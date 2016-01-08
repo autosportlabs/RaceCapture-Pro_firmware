@@ -47,6 +47,7 @@
 #include "launch_control.h"
 #include "task.h"
 #include "task_testing.h"
+#include "units.h"
 
 #define JSON_TOKENS 10000
 #define FILE_PREFIX string("json_api_files/")
@@ -343,18 +344,20 @@ void LoggerApiTest::testGetAnalogCfg(){
 
 void LoggerApiTest::testSetAnalogConfigFile(string filename){
 
+        LoggerConfig *c = getWorkingLoggerConfig();
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);
-	mock_resetTxBuffer();
-	process_api(getMockSerial(),(char *)json.c_str(), json.size());
 
-	LoggerConfig *c = getWorkingLoggerConfig();
+	mock_resetTxBuffer();
+        memset(c, 0, sizeof(c));
+
+	process_api(getMockSerial(),(char *)json.c_str(), json.size());
 
 	ADCConfig *adcCfg = &c->ADCConfigs[0];
 
 	ChannelConfig *cfg = &adcCfg->cfg;
 	CPPUNIT_ASSERT_EQUAL(string("I <3 Racing"), string(cfg->label));
-	CPPUNIT_ASSERT_EQUAL(string("Wheels"), string(cfg->units));
+	CPPUNIT_ASSERT_EQUAL(string("m"), string(cfg->units));
 	CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
 	CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
 	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(cfg->sampleRate));
@@ -425,18 +428,20 @@ void LoggerApiTest::testGetImuCfg(){
 }
 
 void LoggerApiTest::testSetImuConfigFile(string filename){
+	LoggerConfig *c = getWorkingLoggerConfig();
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);
-	mock_resetTxBuffer();
-	process_api(getMockSerial(),(char *)json.c_str(), json.size());
 
-	LoggerConfig *c = getWorkingLoggerConfig();
+	mock_resetTxBuffer();
+        memset(c, 0, sizeof(c));
+
+	process_api(getMockSerial(),(char *)json.c_str(), json.size());
 
 	ImuConfig *imuCfg = &c->ImuConfigs[0];
 
         ChannelConfig *cfg = &imuCfg->cfg;
         CPPUNIT_ASSERT_EQUAL(string("I <3 Inerta"), string(cfg->label));
-        CPPUNIT_ASSERT_EQUAL(string("Forces"), string(cfg->units));
+        CPPUNIT_ASSERT_EQUAL(string("G"), string(cfg->units));
         CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
         CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
 	CPPUNIT_ASSERT_EQUAL(50, decodeSampleRate(cfg->sampleRate));
@@ -458,6 +463,8 @@ void LoggerApiTest::testSetImuCfg(){
 void LoggerApiTest::testSetConnectivityCfgFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	ConnectivityConfig *connCfg = &c->ConnectivityConfigs;
+
+        memset(c, 0, sizeof(c));
 
 	processApiGeneric(filename);
 	char *txBuffer = mock_getTxBuffer();
@@ -550,15 +557,18 @@ void LoggerApiTest::testGetPwmCfg(){
 void LoggerApiTest::testSetPwmConfigFile(string filename){
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);
+	LoggerConfig *c = getWorkingLoggerConfig();
+
 	mock_resetTxBuffer();
+        memset(c, 0, sizeof(c));
+
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
 
-	LoggerConfig *c = getWorkingLoggerConfig();
 	PWMConfig *pwmCfg = &c->PWMConfigs[0];
 
         ChannelConfig *cfg = &pwmCfg->cfg;
         CPPUNIT_ASSERT_EQUAL(string("I <3 Pulses"), string(cfg->label));
-        CPPUNIT_ASSERT_EQUAL(string("Hertz"), string(cfg->units));
+        CPPUNIT_ASSERT_EQUAL(string("Hz"), string(cfg->units));
         CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
         CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
 	CPPUNIT_ASSERT_EQUAL(100, decodeSampleRate(cfg->sampleRate));
@@ -607,15 +617,20 @@ void LoggerApiTest::testGetGpioCfg(){
 void LoggerApiTest::testSetGpioConfigFile(string filename){
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);
-	mock_resetTxBuffer();
-	process_api(getMockSerial(),(char *)json.c_str(), json.size());
-
 	LoggerConfig *c = getWorkingLoggerConfig();
+
+        memset(c, 0, sizeof(c));
+	mock_resetTxBuffer();
+
+	const int rc = process_api(getMockSerial(),(char *)json.c_str(),
+                                   json.size());
+        CPPUNIT_ASSERT_EQUAL(1, rc);
+
 	GPIOConfig *gpioCfg = &c->GPIOConfigs[0];
 
         ChannelConfig *cfg = &gpioCfg->cfg;
         CPPUNIT_ASSERT_EQUAL(string("I <3 GenIO"), string(cfg->label));
-        CPPUNIT_ASSERT_EQUAL(string("Sexynss"), string(cfg->units));
+        CPPUNIT_ASSERT_EQUAL(string("N"), string(cfg->units));
         CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
         CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
 	CPPUNIT_ASSERT_EQUAL(100, decodeSampleRate(cfg->sampleRate));
@@ -670,15 +685,18 @@ void LoggerApiTest::testGetTimerCfg(){
 void LoggerApiTest::testSetTimerConfigFile(string filename){
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);
+	LoggerConfig *c = getWorkingLoggerConfig();
+
+        memset(c, 0, sizeof(c));
 	mock_resetTxBuffer();
+
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
 
-	LoggerConfig *c = getWorkingLoggerConfig();
 	TimerConfig *timerCfg = &c->TimerConfigs[0];
 
         ChannelConfig *cfg = &timerCfg->cfg;
         CPPUNIT_ASSERT_EQUAL(string("I <3 Timing"), string(cfg->label));
-        CPPUNIT_ASSERT_EQUAL(string("seconds"), string(cfg->units));
+        CPPUNIT_ASSERT_EQUAL(string("s"), string(cfg->units));
         CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
         CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
 	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(cfg->sampleRate));
@@ -787,27 +805,30 @@ void LoggerApiTest::testFlashConfig(){
 void LoggerApiTest::testChannelConfig(ChannelConfig *cfg, string expNm, string expUt, unsigned short sr) {
     CPPUNIT_ASSERT_EQUAL(expNm, string(cfg->label));
     CPPUNIT_ASSERT_EQUAL(expUt, string(cfg->units));
+    CPPUNIT_ASSERT(units_get_unit(cfg->units));
     CPPUNIT_ASSERT_EQUAL((int) sr, decodeSampleRate(cfg->sampleRate));
 }
 
 void LoggerApiTest::testSetGpsConfigFile(string filename, unsigned char channelsEnabled, unsigned short sampleRate){
+        LoggerConfig *c = getWorkingLoggerConfig();
+        memset(c, 0, sizeof(c));
+
 	processApiGeneric(filename);
 	char *txBuffer = mock_getTxBuffer();
 
-	LoggerConfig *c = getWorkingLoggerConfig();
 	GPSConfig *gpsCfg = &c->GPSConfigs;
 
         if (channelsEnabled == 0)
            sampleRate = 0;
 
-        testChannelConfig(&gpsCfg->latitude, string("Latitude"), string("Degrees"), sampleRate);
-        testChannelConfig(&gpsCfg->longitude, string("Longitude"), string("Degrees"), sampleRate);
-        testChannelConfig(&gpsCfg->speed, string("Speed"), string("MPH"), sampleRate);
-        testChannelConfig(&gpsCfg->distance, string("Distance"), string("Miles"), sampleRate);
-        testChannelConfig(&gpsCfg->altitude, string("Altitude"), string("Feet"), sampleRate);
-        testChannelConfig(&gpsCfg->satellites, string("GPSSats"), string(""), sampleRate);
-        testChannelConfig(&gpsCfg->quality, string("GPSQual"), string(""), sampleRate);
-        testChannelConfig(&gpsCfg->DOP, string("GPSDOP"), string(""), sampleRate);
+        testChannelConfig(&gpsCfg->latitude, string("Latitude"), string("deg"), sampleRate);
+        testChannelConfig(&gpsCfg->longitude, string("Longitude"), string("deg"), sampleRate);
+        testChannelConfig(&gpsCfg->speed, string("Speed"), string("Mph"), sampleRate);
+        testChannelConfig(&gpsCfg->distance, string("Distance"), string("mi"), sampleRate);
+        testChannelConfig(&gpsCfg->altitude, string("Altitude"), string("ft"), sampleRate);
+        testChannelConfig(&gpsCfg->satellites, string("GPSSats"), string("#"), sampleRate);
+        testChannelConfig(&gpsCfg->quality, string("GPSQual"), string("#"), sampleRate);
+        testChannelConfig(&gpsCfg->DOP, string("GPSDOP"), string("#"), sampleRate);
 
 	assertGenericResponse(txBuffer, "setGpsCfg", API_SUCCESS);
 }
@@ -857,19 +878,21 @@ void LoggerApiTest::testSetLapCfg(){
 }
 
 void LoggerApiTest::testSetLapConfigFile(string filename){
+        LoggerConfig *c = getWorkingLoggerConfig();
+        memset(c, 0, sizeof(c));
+
 	processApiGeneric(filename);
 	char *txBuffer = mock_getTxBuffer();
 
-	LoggerConfig *c = getWorkingLoggerConfig();
 	LapConfig *cfg = &c->LapConfigs;
 
 	assertGenericResponse(txBuffer, "setLapCfg", API_SUCCESS);
 
-        testChannelConfig(&cfg->lapCountCfg, string("LapCount"), string(""), 50);
-        testChannelConfig(&cfg->lapTimeCfg, string("LapTime"), string("Min"), 50);
-        testChannelConfig(&cfg->sectorCfg, string("Sector"), string(""), 50);
-        testChannelConfig(&cfg->sectorTimeCfg, string("SectorTime"), string("Min"), 50);
-        testChannelConfig(&cfg->predTimeCfg, string("PredTime"), string("Min"), 50);
+        testChannelConfig(&cfg->lapCountCfg, string("LapCount"), string("#"), 50);
+        testChannelConfig(&cfg->lapTimeCfg, string("LapTime"), string("min"), 50);
+        testChannelConfig(&cfg->sectorCfg, string("Sector"), string("#"), 50);
+        testChannelConfig(&cfg->sectorTimeCfg, string("SectorTime"), string("min"), 50);
+        testChannelConfig(&cfg->predTimeCfg, string("PredTime"), string("min"), 50);
 }
 
 void LoggerApiTest::testGetLapConfigFile(string filename){
@@ -912,12 +935,13 @@ void LoggerApiTest::testGetLapCfg(){
 }
 
 void LoggerApiTest::testSetTrackCfgCircuit(){
+        LoggerConfig *c = getWorkingLoggerConfig();
+        memset(c, 0, sizeof(c));
 
 	int sectors = 10; //to match file
 	processApiGeneric("setTrackCfg1.json");
 	char *txBuffer = mock_getTxBuffer();
 
-	LoggerConfig *c = getWorkingLoggerConfig();
 	TrackConfig *cfg = &c->TrackConfigs;
 
 	assertGenericResponse(txBuffer, "setTrackCfg", API_SUCCESS);
@@ -1107,10 +1131,12 @@ void LoggerApiTest::testSetCanCfg(){
 }
 
 void LoggerApiTest::testSetCanCfgFile(string filename){
+        LoggerConfig *c = getWorkingLoggerConfig();
+        memset(c, 0, sizeof(c));
+
 	processApiGeneric(filename);
 	char *txBuffer = mock_getTxBuffer();
 
-	LoggerConfig *c = getWorkingLoggerConfig();
 	CANConfig *canCfg = &c->CanConfig;
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)canCfg->enabled );
@@ -1162,10 +1188,12 @@ void LoggerApiTest::testGetObd2ConfigFile(string filename){
 }
 
 void LoggerApiTest::testSetObd2ConfigFile(string filename){
+        LoggerConfig *c = getWorkingLoggerConfig();
+        memset(c, 0, sizeof(c));
+
 	processApiGeneric(filename);
 	char *txBuffer = mock_getTxBuffer();
 
-	LoggerConfig *c = getWorkingLoggerConfig();
 	OBD2Config *obd2Config = &c->OBD2Configs;
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)obd2Config->enabled);
@@ -1176,7 +1204,7 @@ void LoggerApiTest::testSetObd2ConfigFile(string filename){
 
         ChannelConfig *cfg = &pidCfg1->cfg;
         CPPUNIT_ASSERT_EQUAL(string("I <3 OBD2"), string(cfg->label));
-        CPPUNIT_ASSERT_EQUAL(string("?????"), string(cfg->units));
+        CPPUNIT_ASSERT_EQUAL(string("rpm"), string(cfg->units));
         CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
         CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
 	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(cfg->sampleRate));
@@ -1184,8 +1212,8 @@ void LoggerApiTest::testSetObd2ConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(5, (int)pidCfg1->pid);
 
         cfg = &pidCfg2->cfg;
-        CPPUNIT_ASSERT_EQUAL(string("I <3 OBD2"), string(cfg->label));
-        CPPUNIT_ASSERT_EQUAL(string("?????"), string(cfg->units));
+        CPPUNIT_ASSERT_EQUAL(string("I <3 OBD-II"), string(cfg->label));
+        CPPUNIT_ASSERT_EQUAL(string("lbft"), string(cfg->units));
         CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
         CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
 	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(cfg->sampleRate));
@@ -1194,10 +1222,12 @@ void LoggerApiTest::testSetObd2ConfigFile(string filename){
 }
 
 void LoggerApiTest::testSetObd2ConfigFile_fromIndex(){
+        LoggerConfig *c = getWorkingLoggerConfig();
+        memset(c, 0, sizeof(c));
+
 	processApiGeneric("setObd2Cfg_fromIndex.json");
 	char *txBuffer = mock_getTxBuffer();
 
-	LoggerConfig *c = getWorkingLoggerConfig();
 	OBD2Config *obd2Config = &c->OBD2Configs;
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)obd2Config->enabled);
@@ -1210,7 +1240,7 @@ void LoggerApiTest::testSetObd2ConfigFile_fromIndex(){
 
         ChannelConfig *cfg = &pidCfg1->cfg;
         CPPUNIT_ASSERT_EQUAL(string("I <3 OBD2"), string(cfg->label));
-        CPPUNIT_ASSERT_EQUAL(string("?????"), string(cfg->units));
+        CPPUNIT_ASSERT_EQUAL(string("hp"), string(cfg->units));
         CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
         CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
 	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(cfg->sampleRate));
@@ -1218,8 +1248,8 @@ void LoggerApiTest::testSetObd2ConfigFile_fromIndex(){
 	CPPUNIT_ASSERT_EQUAL(5, (int)pidCfg1->pid);
 
         cfg = &pidCfg2->cfg;
-        CPPUNIT_ASSERT_EQUAL(string("I <3 OBD2"), string(cfg->label));
-        CPPUNIT_ASSERT_EQUAL(string("?????"), string(cfg->units));
+        CPPUNIT_ASSERT_EQUAL(string("I <3 OBD-II"), string(cfg->label));
+        CPPUNIT_ASSERT_EQUAL(string("W"), string(cfg->units));
         CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
         CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
 	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(cfg->sampleRate));
@@ -1256,10 +1286,12 @@ void LoggerApiTest::testGetScriptFile(string filename){
 }
 
 void LoggerApiTest::testSetScriptFile(string filename){
+        LoggerConfig *c = getWorkingLoggerConfig();
+        memset(c, 0, sizeof(c));
+
 	processApiGeneric(filename);
 	char *txBuffer = mock_getTxBuffer();
 
-	LoggerConfig *c = getWorkingLoggerConfig();
 	TrackConfig *cfg = &c->TrackConfigs;
 
 	assertGenericResponse(txBuffer, "setScriptCfg", API_SUCCESS);
