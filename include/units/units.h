@@ -22,6 +22,10 @@
 #ifndef _UNITS_H_
 #define _UNITS_H_
 
+#include "cpp_guard.h"
+
+CPP_GUARD_BEGIN
+
 enum unit_group {
         UNIT_GROUP_LENGTH,
         UNIT_GROUP_TEMPERATURE,
@@ -50,5 +54,6 @@ struct unit {
 
 const struct unit* units_get_unit(const char *name);
 
+CPP_GUARD_END
 
 #endif /* _UNITS_H_ */
