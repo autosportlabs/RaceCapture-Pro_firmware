@@ -608,7 +608,9 @@ void LoggerApiTest::testSetGpioConfigFile(string filename){
 	Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
-	process_api(getMockSerial(),(char *)json.c_str(), json.size());
+	const int rc = process_api(getMockSerial(),(char *)json.c_str(),
+                                   json.size());
+        CPPUNIT_ASSERT_EQUAL(1, rc);
 
 	LoggerConfig *c = getWorkingLoggerConfig();
 	GPIOConfig *gpioCfg = &c->GPIOConfigs[0];
