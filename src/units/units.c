@@ -87,6 +87,8 @@ static const struct unit units[] = {
         UNIT(UNIT_GROUP_FREQUENCY, "Hz"),
 
         UNIT(UNIT_GROUP_PERCENTAGE, "%"),
+
+        UNIT(UNIT_GROUP_COUNTING, "#"),
 };
 
 const struct unit* units_get_unit(const char *name)

@@ -45,6 +45,7 @@ enum unit_group {
         UNIT_GROUP_ANGULAR_VELOCITY,
         UNIT_GROUP_FREQUENCY,
         UNIT_GROUP_PERCENTAGE,
+        UNIT_GROUP_COUNTING,
 };
 
 struct unit {
