@@ -537,8 +537,8 @@ static enum api_status set_chan_cfg_field(ChannelConfig *ch_cfg,
                         goto fail;
                 strcpy(ch_cfg->label, value);
         } else if (NAME_EQU("ut", name)) {
-                if (!validate_string(value, 1, DEFAULT_UNITS_LENGTH))
-//                    NULL == units_get_unit(value))
+                if (!validate_string(value, 1, DEFAULT_UNITS_LENGTH) ||
+                    NULL == units_get_unit(value))
                         goto fail;
                 strcpy(ch_cfg->units, value);
         } else if (NAME_EQU("min", name))

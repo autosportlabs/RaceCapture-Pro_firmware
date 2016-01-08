@@ -62,8 +62,12 @@ static const struct unit units[] = {
 
         UNIT(UNIT_GROUP_ENERGY, "J"),
         UNIT(UNIT_GROUP_ENERGY, "btu"),
-        UNIT(UNIT_GROUP_ENERGY, "Whr"),
-        UNIT(UNIT_GROUP_ENERGY, "KWh"),
+        UNIT(UNIT_GROUP_ENERGY, "W/hr"),
+        UNIT(UNIT_GROUP_ENERGY, "KW/hr"),
+
+        UNIT(UNIT_GROUP_ELECTROMOTIVE, "V"),
+
+        UNIT(UNIT_GROUP_CURRENT, "A"),
 
         UNIT(UNIT_GROUP_FORCE, "N"),
 
@@ -76,9 +80,11 @@ static const struct unit units[] = {
         UNIT(UNIT_GROUP_ANGLES, "rad"),
         UNIT(UNIT_GROUP_ANGLES, "deg"),
 
-        UNIT(UNIT_GROUP_ANGULAR_SPEED, "rad/s"),
-        UNIT(UNIT_GROUP_ANGULAR_SPEED, "deg/s"),
-        UNIT(UNIT_GROUP_ANGULAR_SPEED, "rpm"),
+        UNIT(UNIT_GROUP_ANGULAR_VELOCITY, "rad/s"),
+        UNIT(UNIT_GROUP_ANGULAR_VELOCITY, "deg/s"),
+        UNIT(UNIT_GROUP_ANGULAR_VELOCITY, "rpm"),
+
+        UNIT(UNIT_GROUP_FREQUENCY, "Hz"),
 
         UNIT(UNIT_GROUP_PERCENTAGE, "%"),
 };
