@@ -336,7 +336,7 @@ static void process_finish_logic(const GpsSnapshot *gpsSnapshot)
     lap_finished_event(gpsSnapshot);
 }
 
-static void process_start_normal(const GpsSnapshot *gpsSnapshot)
+static void process_start_logic_no_lc(const GpsSnapshot *gpsSnapshot)
 {
         const GeoPoint point = gpsSnapshot->sample.point;
         if (!gc_isPointInGeoCircle(&point, g_geo_circles.start))
@@ -346,7 +346,7 @@ static void process_start_normal(const GpsSnapshot *gpsSnapshot)
         lap_started_event(time, &point, 0);
 }
 
-static void process_start_launch_control(const GpsSnapshot *gpsSnapshot)
+static void process_start_logic_with_lc(const GpsSnapshot *gpsSnapshot)
 {
         lc_supplyGpsSnapshot(gpsSnapshot);
         if (!lc_hasLaunched())
@@ -370,7 +370,7 @@ static void process_start_launch_control(const GpsSnapshot *gpsSnapshot)
 /**
  * All logic associated with determining if we are at the start line.
  */
-static void process_start(const GpsSnapshot *gps_ss)
+static void process_start_logic(const GpsSnapshot *gps_ss)
 {
         if (lapstats_lap_in_progress())
                 return;
@@ -385,9 +385,9 @@ static void process_start(const GpsSnapshot *gps_ss)
          */
         if (g_lapCount > 0 &&
             g_active_track->track_type == TRACK_TYPE_CIRCUIT) {
-                process_start_normal(gps_ss);
+                process_start_logic_no_lc(gps_ss);
         } else {
-                process_start_launch_control(gps_ss);
+                process_start_logic_with_lc(gps_ss);
         }
 }
 
@@ -509,7 +509,7 @@ static void lapstats_location_updated(const GpsSnapshot *gps_snapshot)
          */
         process_sector_logic(gps_snapshot);
         process_finish_logic(gps_snapshot);
-        process_start(gps_snapshot);
+        process_start_logic(gps_snapshot);
 }
 
 static void setup_geo_circles()
