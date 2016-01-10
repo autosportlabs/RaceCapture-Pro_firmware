@@ -39,8 +39,8 @@
 
 #include <stdint.h>
 
-/* Make the radius 3x the size of start/finish radius.*/
-#define GEO_TRIGGER_RADIUS_MULTIPLIER 3
+/* Make the radius 2x the size of start/finish radius.*/
+#define GEO_TRIGGER_RADIUS_MULTIPLIER 2
 #define KMS_TO_MILES_CONSTANT (.621371)
 
 // In Millis now.
@@ -543,7 +543,8 @@ static void lapstats_setup_internals(const Track *track, const float gc_radius,
         g_track_status = auto_detect ? TRACK_STATUS_AUTO_DETECTED :
                 TRACK_STATUS_FIXED_CONFIG;
 
-        setup_geo_triggers(track, g_geo_circle_radius);
+        setup_geo_triggers(track, g_geo_circle_radius *
+                           GEO_TRIGGER_RADIUS_MULTIPLIER);
         setup_geo_circles();
 
         lc_setup(track, g_geo_circle_radius);
