@@ -29,7 +29,8 @@
 #ifndef RCP_TESTING
 static const volatile ScriptConfig g_scriptConfig  __attribute__((section(".script\n\t#")));
 #else
-static ScriptConfig g_scriptConfig = {DEFAULT_SCRIPT, MAGIC_NUMBER_SCRIPT_INIT};
+static ScriptConfig g_scriptConfig = {MAGIC_NUMBER_SCRIPT_INIT,
+                                      DEFAULT_SCRIPT};
 #endif
 
 void initialize_script()

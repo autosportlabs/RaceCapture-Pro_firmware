@@ -45,8 +45,8 @@ enum script_add_mode {
 #define MAX_SCRIPT_PAGES	(SCRIPT_MEMORY_LENGTH / SCRIPT_PAGE_SIZE)
 
 typedef struct _ScriptConfig {
-        char script[SCRIPT_MEMORY_LENGTH - 4];
         uint32_t magicInit;
+        char script[SCRIPT_MEMORY_LENGTH - 4];
 } ScriptConfig;
 
 void initialize_script();
