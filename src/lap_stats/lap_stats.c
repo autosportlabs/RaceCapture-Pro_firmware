@@ -172,7 +172,8 @@ int lapstats_current_lap()
 
 void resetLapCount()
 {
-    g_lapCount = 0;
+        g_lapCount = 0;
+        reset_current_lap();
 }
 
 int getLapCount()
