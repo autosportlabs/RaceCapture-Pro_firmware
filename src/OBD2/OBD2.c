@@ -26,7 +26,7 @@ int OBD2_get_current_PID_value(int index)
 
 static float to_farenheight(float celcius)
 {
-    return celcius * 1.8 + 32;
+    return celcius * 1.8 + 32.0;
 }
 
 static float to_mph(float kph)
