@@ -1,4 +1,5 @@
 === 2.8.6 ===
+* Make OBD-II engine report temperature and speed that match channel defaults (deg. F / MPH)
 * Improved accuracy of IMU
 
 === 2.8.5 ===
