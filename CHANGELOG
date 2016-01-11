@@ -1,3 +1,7 @@
+=== 2.8.6 ===
+* Make OBD-II engine report temperature and speed that match channel defaults (deg. F / MPH)
+* Improved accuracy of IMU
+
 === 2.8.5 ===
 * Increased GPS task stack size from 200 to 256 to prevent HULK smash.
 * Increased printing precision in LUA from 3 to 6 decimal places (as needed).
