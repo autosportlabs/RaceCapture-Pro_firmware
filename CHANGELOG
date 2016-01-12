@@ -4,6 +4,8 @@
   telemetry.race-capture.com.  This is so that we can better work with
   Cloudflare.
 * Remove MK1 code from mainstream dev tree and migrate to legacy branch.
+* Fixes a bug in start logic in the lap_stats code and adds 12 new unit
+  tests to better ensure the stability of that code.
 
 === 2.8.6 ===
 * Make OBD-II engine report temperature and speed that match channel defaults (deg. F / MPH)

@@ -53,3 +53,8 @@ bool isGeoTriggerTripped(const struct GeoTrigger *gt)
 {
     return gt->tripped;
 }
+
+void geo_trigger_trip(struct GeoTrigger *gt)
+{
+        gt->tripped = true;
+}
