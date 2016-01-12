@@ -24,55 +24,76 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#define TEST_TRACK_VALID_CIRCUIT_TRACK {                \
-      1234,                                             \
-      TRACK_TYPE_CIRCUIT,                               \
-         {                                              \
-            {                                           \
-               {47.806934,-122.341150},                 \
-                  {47.806875,-122.335818},              \
-                     {47.79974,-122.335704},            \
-                        {47.799719,-122.346416},        \
-                           {47.806886,-122.346494},     \
-                              }                         \
-         }                                              \
-   }
+#define TEST_TRACK_VALID_CIRCUIT_TRACK {                        \
+                1234,                                           \
+                TRACK_TYPE_CIRCUIT,                             \
+                {                                               \
+                        {                                       \
+                                {47.806934,-122.341150},        \
+                                {47.806875,-122.335818},        \
+                                {47.79974,-122.335704},         \
+                                {47.799719,-122.346416},        \
+                                {47.806886,-122.346494},        \
+                        }                                       \
+                }                                               \
+        }
+
+#define TEST_TRACK_VALID_CIRCUIT_TRACK_NO_SECTORS {             \
+                1234,                                           \
+                TRACK_TYPE_CIRCUIT,                             \
+                {                                               \
+                        {                                       \
+                                {47.806934,-122.341150},        \
+                        }                                       \
+                }                                               \
+        }
 
 // Start, Finish, Sectors[]
-#define TEST_TRACK_VALID_STAGE_TRACK {                  \
-      4567,                                             \
-      TRACK_TYPE_STAGE,                                 \
-         {                                              \
-            {                                           \
-               {48.806934,-120.341150},                 \
-                  {48.806886,-120.346494},              \
-                     {48.806875,-120.335818},           \
-                        {48.79974,-120.335704},         \
-                           {48.799719,-120.346416},     \
-                              }                         \
-         }                                              \
-   }
+#define TEST_TRACK_VALID_STAGE_TRACK {                          \
+                4567,                                           \
+                TRACK_TYPE_STAGE,                               \
+                {                                               \
+                        {                                       \
+                                {48.806934,-120.341150},        \
+                                {48.806886,-120.346494},        \
+                                {48.806875,-120.335818},        \
+                                {48.79974,-120.335704},         \
+                                {48.799719,-120.346416},        \
+                        }                                       \
+                }                                               \
+        }
+
+#define TEST_TRACK_VALID_STAGE_TRACK_NO_SECTORS {               \
+                4567,                                           \
+                TRACK_TYPE_STAGE,                               \
+                {                                               \
+                        {                                       \
+                                {48.806934,-120.341150},        \
+                                {48.806886,-120.346494},        \
+                        }                                       \
+                }                                               \
+        }
 
 #define TEST_TRACK_INVALID_CIRCUIT_TRACK {      \
-      1111,                                     \
-      TRACK_TYPE_CIRCUIT,                       \
-         {                                      \
-            {                                   \
-               {0.0, 0.0},                      \
-                  }                             \
-         }                                      \
-   }
+                1111,                           \
+                TRACK_TYPE_CIRCUIT,             \
+                {                               \
+                        {                       \
+                                {0.0, 0.0},     \
+                        }                       \
+                }                               \
+        }
 
 
 #define TEST_TRACK_INVALID_STAGE_TRACK {        \
-      2222,                                     \
-      TRACK_TYPE_STAGE,                         \
-         {                                      \
-            {                                   \
-               {0.0, 0.0},                      \
-                  }                             \
-         }                                      \
-   }
+                2222,                           \
+                TRACK_TYPE_STAGE,               \
+                {                               \
+                        {                       \
+                                {0.0, 0.0},     \
+                        }                       \
+                }                               \
+        }
 
 
 class TrackTest : public CppUnit::TestFixture
