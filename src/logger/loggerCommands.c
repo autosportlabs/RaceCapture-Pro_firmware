@@ -45,6 +45,9 @@
 
 #include <stdbool.h>
 
+/* Time (ms) to wait for input before continuing */
+#define TERM_WAIT_MS 5
+
 void TestSD(Serial *serial, unsigned int argc, char **argv)
 {
     int lines = 1;
@@ -96,12 +99,11 @@ void ResetConfig(Serial *serial, unsigned int argc, char **argv)
 static void StartTerminalSession(Serial *fromSerial, Serial *toSerial, uint8_t localEcho)
 {
         bool stay = true;
+        const size_t delay_ticks = msToTicks(TERM_WAIT_MS);
         while (stay) {
-                /* Delay so we don't starve other tasks (like watchdog) */
-                delayMs(5);
-
                 char c;
-                while (fromSerial->get_c_wait(&c, 0)) {
+                /* Delay so we don't starve other tasks (like watchdog) */
+                while (fromSerial->get_c_wait(&c, delay_ticks)) {
                         if (c == 27)
                                 stay = false;
 
