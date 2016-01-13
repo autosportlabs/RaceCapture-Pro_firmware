@@ -21,6 +21,8 @@
   won't move if this block gets resized.
 * Fixes a bug in start logic in the lap_stats code and adds 12 new unit
   tests to better ensure the stability of that code.
+* Added Lua bitOp bitwise operations 
+* Converted Lua base number to double from float (allows 29 bit CAN IDs to work correctly)
 
 === 2.8.6 ===
 * Make OBD-II engine report temperature and speed that match channel defaults (deg. F / MPH)
