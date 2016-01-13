@@ -506,8 +506,11 @@
 #if defined(LUA_NUMBER_INTEGER)
 #define LUA_NUMBER      int
 #else
-#define LUA_NUMBER      float
+#define LUA_NUMBER      double
 #endif
+
+#define LUA_NUMBER double
+#define LUA_NUMBER_DOUBLE LUA_NUMBER
 
 /*
 @@ LUAI_UACNUMBER is the result of an 'usual argument conversion'
@@ -527,7 +530,7 @@
 #if defined(LUA_NUMBER_INTEGER)
 #define lua_number2str(s,n)     modp_itoa10((n),s)
 #else
-#define lua_number2str(s,n)     modp_ftoa((n),s, LUA_NUMBER_PRECISION)
+#define lua_number2str(s,n)     modp_dtoa((n),s, LUA_NUMBER_PRECISION)
 #endif
 
 #define LUAI_MAXNUMBER2STR      32 // 16 digits, sign, point, and \0
@@ -535,7 +538,7 @@
 #if defined(LUA_NUMBER_INTEGER)
 #define lua_str2number(s,p)     strtol((s), (p), 10)
 #else
-#define lua_str2number(s,p)     strtof((s), (p))
+#define lua_str2number(s,p)     strtod((s), (p))
 #endif
 
 

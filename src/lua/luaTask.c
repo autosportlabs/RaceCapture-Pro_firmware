@@ -223,6 +223,7 @@ void initialize_lua()
                 luaopen_table(g_lua);
                 luaopen_string(g_lua);
                 luaopen_math(g_lua);
+                luaopen_bit(g_lua);
         }
 
         if (!_load_script()) {
