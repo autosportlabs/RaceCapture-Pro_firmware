@@ -509,7 +509,6 @@
 #define LUA_NUMBER      double
 #endif
 
-#define LUA_NUMBER double
 #define LUA_NUMBER_DOUBLE LUA_NUMBER
 
 /*
