@@ -46,6 +46,16 @@ int OBD2_get_current_PID_value(int index)
     return OBD2_current_values[index];
 }
 
+static float celcius_to_farenheight(float celcius)
+{
+    return celcius * 1.8 + 32.0;
+}
+
+static float kph_to_mph(float kph)
+{
+    return kph * 1.60934;
+}
+
 static int decode_pid(unsigned char pid, CAN_msg *msg, int *value)
 {
     int result = 0;
@@ -68,7 +78,7 @@ static int decode_pid(unsigned char pid, CAN_msg *msg, int *value)
             *value = A * 100 / 255;
             break;
         case 0x05: //engine coolant temperature (C)
-            *value = A - 40;
+            *value = celcius_to_farenheight(A - 40);
             break;
         case 0x06: //short term fuel % trim - Bank 1
         case 0x07: //short term fuel % trim - Bank 1
@@ -86,13 +96,13 @@ static int decode_pid(unsigned char pid, CAN_msg *msg, int *value)
             *value = ((A * 256) + B) / 4;
             break;
         case 0x0D: //vehicle speed (km/ h)
-            *value = A;
+            *value = kph_to_mph(A);
             break;
         case 0x0E: //timing advance (degrees)
             *value = (A - 128) / 2;
             break;
         case 0x0F: //Intake air temperature (C)
-            *value = A - 40;
+            *value = celcius_to_farenheight(A - 40);
             break;
         case 0x10: //MAF airflow rate (grams / sec)
             *value = ((A * 256) + B) / 100;
@@ -104,7 +114,7 @@ static int decode_pid(unsigned char pid, CAN_msg *msg, int *value)
             *value = A * 100 / 255;
             break;
         case 0x5C: //Engine oil temp (C)
-            *value = A - 40;
+            *value = celcius_to_farenheight(A - 40);
             break;
         default:
             result = 0;
