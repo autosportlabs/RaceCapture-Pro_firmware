@@ -169,36 +169,12 @@ static void resetTrackConfig(TrackConfig *cfg)
     cfg->auto_detect = DEFAULT_TRACK_AUTO_DETECT;
 }
 
-static void generate_bt_name(char *buf, const size_t len)
-{
-        const char *pfx = DEFAULT_BT_DEVICE_NAME;
-        strlcpy(buf, pfx, len);
-
-        const char *serial = cpu_get_serialnumber();
-        if (NULL == serial)
-                return;
-
-        const size_t pfx_len = strlen(pfx);
-        const size_t serial_len = strlen(serial);
-        if (len - pfx_len < 5 || serial_len < 4)
-                return;
-
-        /*
-         * Add "-XXXX" as a suffix where X denotes the last 4 characters
-         * of the CPU serial number.  By this point we know it exists.
-         */
-        buf += pfx_len;
-        *buf = '-';
-        strcpy(++buf, serial + serial_len - 4);
-}
-
 static void resetBluetoothConfig(BluetoothConfig *cfg)
 {
-        *cfg = (BluetoothConfig) DEFAULT_BT_CONFIG;
-
-        char buf[sizeof(cfg->deviceName)];
-        generate_bt_name(buf, sizeof(buf));
-        strlcpy(cfg->deviceName, buf, sizeof(buf));
+        *cfg = (BluetoothConfig) {
+                .btEnabled = DEFAULT_BT_ENABLED,
+                .baudRate = DEFAULT_BT_BAUD,
+        };
 }
 
 static void resetCellularConfig(CellularConfig *cfg)
