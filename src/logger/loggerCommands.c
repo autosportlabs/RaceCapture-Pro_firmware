@@ -43,6 +43,11 @@
 #include "cpu.h"
 #include "taskUtil.h"
 
+#include <stdbool.h>
+
+/* Time (ms) to wait for input before continuing */
+#define TERM_WAIT_MS 5
+
 void TestSD(Serial *serial, unsigned int argc, char **argv)
 {
     int lines = 1;
@@ -93,44 +98,56 @@ void ResetConfig(Serial *serial, unsigned int argc, char **argv)
 
 static void StartTerminalSession(Serial *fromSerial, Serial *toSerial, uint8_t localEcho)
 {
+        bool stay = true;
+        const size_t delay_ticks = msToTicks(TERM_WAIT_MS);
+        while (stay) {
+                char c;
+                /* Delay so we don't starve other tasks (like watchdog) */
+                while (fromSerial->get_c_wait(&c, delay_ticks)) {
+                        if (c == 27)
+                                stay = false;
 
-    while (1) {
-        char c = 0;
-        if (fromSerial->get_c_wait(&c, 0)) {
-            if (c == 27) break;
-            if (localEcho) fromSerial->put_c(c);
-            if (c == '\r' && localEcho) fromSerial->put_c('\n');
-            toSerial->put_c(c);
-            if (c == '\r') toSerial->put_c('\n');
+                        if (localEcho)
+                                fromSerial->put_c(c);
+
+                        if (c == '\r' && localEcho)
+                                fromSerial->put_c('\n');
+
+                        toSerial->put_c(c);
+
+                        if (c == '\r')
+                                toSerial->put_c('\n');
+                }
+
+                while (toSerial->get_c_wait(&c, 0)) {
+                        fromSerial->put_c(c);
+                        if (c == '\r' && localEcho)
+                                fromSerial->put_c('\n');
+                }
         }
-        if (toSerial->get_c_wait(&c, 0)) {
-            fromSerial->put_c(c);
-            if (c == '\r' && localEcho) fromSerial->put_c('\n');
-        }
-    }
 }
 
 void StartTerminal(Serial *serial, unsigned int argc, char **argv)
 {
-    if (argc < 3) {
-        put_commandError(serial, ERROR_CODE_MISSING_PARAMS);
-        return;
-    }
+        if (argc < 3) {
+                put_commandError(serial, ERROR_CODE_MISSING_PARAMS);
+                return;
+        }
 
-    serial->put_s("Entering Terminal. Press ESC to exit\r\n");
+        serial->put_s("Entering Terminal. Press ESC to exit\r\n");
 
-    uint32_t port = modp_atoui(argv[1]);
-    uint32_t baud = modp_atoui(argv[2]);
-    uint8_t localEcho = (argc > 3 ? modp_atoui(argv[3]) : 1);
+        uint32_t port = modp_atoui(argv[1]);
+        uint32_t baud = modp_atoui(argv[2]);
+        uint8_t localEcho = (argc > 3 ? modp_atoui(argv[3]) : 1);
 
+        Serial *targetSerial = get_serial(port);
+        if (!targetSerial) {
+                put_commandError(serial, ERROR_CODE_INVALID_PARAM);
+                return;
+        }
 
-    Serial *targetSerial = get_serial(port);
-    if (targetSerial) {
         configure_serial(port, 8, 0, 1, baud);
         StartTerminalSession(serial, targetSerial, localEcho);
-    } else {
-        put_commandError(serial, ERROR_CODE_INVALID_PARAM);
-    }
 }
 
 void ViewLog(Serial *serial, unsigned int argc, char **argv)
