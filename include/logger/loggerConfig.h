@@ -28,6 +28,7 @@
 #include "capabilities.h"
 #include "versionInfo.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 
 CPP_GUARD_BEGIN
@@ -434,24 +435,15 @@ typedef struct _TrackConfig {
 
 #define BT_DEVICE_NAME_LENGTH 21
 #define BT_PASSCODE_LENGTH 5
-#define DEFAULT_BT_DEVICE_NAME "RaceCapturePro"
-#define DEFAULT_BT_PASSCODE "0000"
 #define DEFAULT_BT_BAUD 115200
 #define DEFAULT_BT_ENABLED 1
 
 typedef struct _BluetoothConfig {
-    unsigned char btEnabled;
-    char deviceName [BT_DEVICE_NAME_LENGTH];
-    char passcode [BT_PASSCODE_LENGTH];
-    unsigned int baudRate;
+        unsigned char btEnabled;
+        unsigned int baudRate;
+        char new_name [BT_DEVICE_NAME_LENGTH];
+        char new_pin [BT_PASSCODE_LENGTH];
 } BluetoothConfig;
-
-#define DEFAULT_BT_CONFIG { \
-	DEFAULT_BT_ENABLED, \
-	DEFAULT_BT_DEVICE_NAME, \
-	DEFAULT_BT_PASSCODE, \
-	DEFAULT_BT_BAUD \
-}
 
 #define CELL_APN_HOST_LENGTH 30
 #define CELL_APN_USER_LENGTH 30
