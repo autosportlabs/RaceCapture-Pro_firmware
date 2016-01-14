@@ -143,7 +143,6 @@ static void resetCanConfig(CANConfig *cfg)
 static void resetOBD2Config(OBD2Config *cfg)
 {
     memset(cfg, 0, sizeof(OBD2Config));
-    cfg->obd2SampleRate = SAMPLE_10Hz;
 
     for (int i = 0; i < OBD2_CHANNELS; ++i) {
         PidConfig *c = &cfg->pids[i];

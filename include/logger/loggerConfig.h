@@ -315,18 +315,14 @@ typedef struct _PidConfig {
 
 typedef struct _OBD2Config {
     unsigned char enabled;
-    unsigned char obd2SampleRate;
     unsigned short enabledPids;
     PidConfig pids[OBD2_CHANNELS];
 } OBD2Config;
 
 #define DEFAULT_ENABLED_PIDS 1
-#define DEFAULT_OBD2_SAMPLE_RATE SAMPLE_10Hz
-
 #define DEFAULT_OBD2_CONFIG \
 { \
 	CONFIG_FEATURE_NOT_INSTALLED, \
-	DEFAULT_OBD2_SAMPLE_RATE, \
 	DEFAULT_ENABLED_PIDS, \
 	{ \
 		{{"RPM", "", 0, 10000, SAMPLE_10Hz, 0, 0}, 12}, \
