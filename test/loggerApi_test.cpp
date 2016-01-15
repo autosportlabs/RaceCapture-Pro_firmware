@@ -397,8 +397,8 @@ void LoggerApiTest::testGetImuConfigFile(string filename, int index){
 
         populateChannelConfig(&imuCfg->cfg, index, 100);
 
-	imuCfg->mode = 1;
-	imuCfg->physicalChannel = 3;
+	imuCfg->mode = IMU_MODE_NORMAL;
+	imuCfg->physicalChannel = IMU_CHANNEL_YAW;
 	imuCfg->zeroValue = 1234;
 	imuCfg->filterAlpha = 0.7F;
 

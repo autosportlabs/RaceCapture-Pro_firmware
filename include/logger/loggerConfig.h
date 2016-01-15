@@ -216,59 +216,62 @@ typedef struct _GPIOConfig {
 #define DEFAULT_GPIO_CHANNEL_CONFIG {"", "", 0, 1, SAMPLE_DISABLED, 1, 0}
 #define DEFAULT_GPIO_CONFIG {DEFAULT_GPIO_CHANNEL_CONFIG, CONFIG_GPIO_IN}
 
+enum imu_mode {
+        IMU_MODE_DISABLED = 0,
+        IMU_MODE_NORMAL = 1,
+        IMU_MODE_INVERTED = 2,
+};
+
+enum imu_channel {
+        IMU_CHANNEL_X = 0,
+        IMU_CHANNEL_Y = 1,
+        IMU_CHANNEL_Z = 2,
+        IMU_CHANNEL_YAW = 3,
+        IMU_CHANNEL_PITCH = 4,
+        IMU_CHANNEL_ROLL = 5,
+};
 
 typedef struct _ImuConfig {
     ChannelConfig cfg;
-    unsigned char mode;
-    unsigned char physicalChannel;
+    enum imu_mode mode;
+    enum imu_channel physicalChannel;
     signed short zeroValue;
     float filterAlpha;
 } ImuConfig;
 
-#define MIN_IMU_RAW							0
-#define MAX_IMU_RAW							4097
+#define MIN_IMU_RAW	0
+#define MAX_IMU_RAW	4097
 
-#define MODE_IMU_DISABLED  					0
-#define MODE_IMU_NORMAL  					1
-#define MODE_IMU_INVERTED  					2
+#define DEFAULT_ACCEL_ZERO	2048
+/* LY330ALH zero state voltage output is 1.5v */
+#define DEFAULT_GYRO_ZERO	1862
 
-#define IMU_CHANNEL_X						0
-#define IMU_CHANNEL_Y						1
-#define IMU_CHANNEL_Z						2
-#define IMU_CHANNEL_YAW						3
-#define IMU_CHANNEL_PITCH					4
-#define IMU_CHANNEL_ROLL					5
+#define IMU_ACCEL_CH_CONFIG(name) {name, "G", -3, 3, SAMPLE_25Hz, 2, 0}
+#define IMU_GYRO_CH_CONFIG(name) {name, "Deg/Sec", -120, 120, SAMPLE_25Hz, 2, 0}
+#define IMU_ACCEL_CONFIG(name, mode, chan) {    \
+                IMU_ACCEL_CH_CONFIG(name),      \
+                        mode,                   \
+                        chan,                   \
+                        DEFAULT_ACCEL_ZERO,     \
+                        0.1F                    \
+                        }
 
-#define DEFAULT_ACCEL_ZERO					2048
-#define DEFAULT_GYRO_ZERO					1862 //LY330ALH zero state voltage output is 1.5v
+#define IMU_GYRO_CONFIG(name, mode, chan) {     \
+                IMU_GYRO_CH_CONFIG(name),       \
+                        mode,                   \
+                        chan,                   \
+                        DEFAULT_GYRO_ZERO,      \
+                        0.1F                    \
+                        }
 
-#define DEFAULT_ACCEL_X_CONFIG    {"AccelX",   "G", -3, 3, SAMPLE_25Hz, 2, 0}
-#define DEFAULT_ACCEL_Y_CONFIG    {"AccelY",   "G", -3, 3, SAMPLE_25Hz, 2, 0}
-#define DEFAULT_ACCEL_Z_CONFIG    {"AccelZ",   "G", -3, 3, SAMPLE_25Hz, 2, 0}
-#define DEFAULT_GYRO_YAW_CONFIG   {"Yaw",      "Deg/Sec", -300, 300, SAMPLE_25Hz, 1, 0}
-#define DEFAULT_GYRO_PITCH_CONFIG {"Pitch",    "Deg/Sec", -300, 300, SAMPLE_25Hz, 1, 0}
-#define DEFAULT_GYRO_ROLL_CONFIG  {"Roll",     "Deg/Sec", -300, 300, SAMPLE_25Hz, 1, 0}
-
-#define DEFAULT_IMU_CHANNEL_CONFIG  {"", "G", -3, 3, SAMPLE_25Hz, 2, 0}
-#define DEFAULT_GYRO_CHANNEL_CONFIG {"", "Deg/Sec", -300, 300, SAMPLE_25Hz, 1, 0}
-
-#define DEFAULT_IMU_CONFIG                      \
-   {                                            \
-      DEFAULT_IMU_CHANNEL_CONFIG,               \
-         MODE_IMU_NORMAL,                       \
-         0,                                     \
-         DEFAULT_ACCEL_ZERO,                    \
-         0.1F}
-
-#define DEFAULT_GYRO_CONFIG {                   \
-      DEFAULT_GYRO_CHANNEL_CONFIG,              \
-         MODE_IMU_NORMAL,                       \
-         IMU_CHANNEL_YAW,                       \
-         DEFAULT_GYRO_ZERO,                     \
-         0.1F                                   \
-         }
-
-
+#define IMU_CONFIG_DEFAULTS {                                                 \
+                IMU_ACCEL_CONFIG("AccelX", IMU_MODE_INVERTED, IMU_CHANNEL_Y), \
+                IMU_ACCEL_CONFIG("AccelY", IMU_MODE_INVERTED, IMU_CHANNEL_X), \
+                IMU_ACCEL_CONFIG("AccelZ", IMU_MODE_NORMAL, IMU_CHANNEL_Z),   \
+                IMU_GYRO_CONFIG("Yaw", IMU_MODE_INVERTED, IMU_CHANNEL_YAW),   \
+                IMU_GYRO_CONFIG("Pitch", IMU_MODE_NORMAL, IMU_CHANNEL_PITCH), \
+                IMU_GYRO_CONFIG("Roll", IMU_MODE_NORMAL, IMU_CHANNEL_ROLL),   \
+                }
 
 typedef struct _PWMConfig {
     ChannelConfig cfg;
