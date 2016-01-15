@@ -7,8 +7,6 @@
   sensitivity (8x more to be precise).
 * Improve the MK2 compilation routine by adding stricter warning flags and
   by making all warnings into errors.
-* Add uniqueness to BT device name by appending last 4 digits of unit serial
-  to the BT device.  Applies after logger reset.
 * Fix up BT code so that we now properly set BT name and Pin.  Addresses race
   issues observed in BT module during programming as well.
 * Added Lua sleep() function. When called will sleep for the specified number
@@ -21,7 +19,7 @@
   won't move if this block gets resized.
 * Fixes a bug in start logic in the lap_stats code and adds 12 new unit
   tests to better ensure the stability of that code.
-* Added Lua bitOp bitwise operations 
+* Added Lua bitOp bitwise operations
 * Converted Lua base number to double from float (allows 29 bit CAN IDs to work correctly)
 
 === 2.8.6 ===
