@@ -44,6 +44,8 @@
  */
 #define BT_BACKOFF_MS	1000
 #define BT_COMMAND_WAIT	600
+#define BT_DEFAULT_NAME	"RaceCapturePro"
+#define BT_DEFAULT_PIN	"1234"
 #define BT_DBG_LOG_LVL	TRACE
 #define BT_MAX_NAME_LEN	(BT_DEVICE_NAME_LENGTH - 1)
 #define BT_MAX_PIN_LEN	(BT_PASSCODE_LENGTH - 1)
@@ -138,9 +140,6 @@ static int bt_set_baud(DeviceConfig *config, unsigned int targetBaud)
 
 static bool bt_set_name(DeviceConfig *config, const char *new_name)
 {
-        if ('\0' == *new_name)
-                return true;
-
         pr_info_str_msg("BT: Setting name: ", new_name);
 
         char buf[BT_MAX_NAME_LEN + 7 + 1] = "AT+NAME";
@@ -152,9 +151,6 @@ static bool bt_set_name(DeviceConfig *config, const char *new_name)
 
 static bool bt_set_pin(DeviceConfig *config, const char *new_pin)
 {
-        if ('\0' == *new_pin)
-                return true;
-
         pr_info_str_msg("BT: Setting pin: ", new_pin);
 
         char buf[BT_MAX_PIN_LEN + 6 + 1] = "AT+PIN";
@@ -239,15 +235,15 @@ int bt_init_connection(DeviceConfig *config)
                 pr_info("BT: Detected factory settings.  Assuming not "
                         "configured. Initializing...\r\n");
                 /* Doing this allows us to set the name without reflashing */
-                new_name = "RaceCapturePro";
-                new_pin = "1234";
+                new_name = BT_DEFAULT_NAME;
+                new_pin = BT_DEFAULT_PIN;
                 break;
         }
 
         const bool status =
                 baud &&
-                bt_set_name(config, new_name) &&
-                bt_set_pin(config, new_pin) &&
+                ('\0' == *new_name || bt_set_name(config, new_name)) &&
+                ('\0' == *new_pin ||bt_set_pin(config, new_pin)) &&
                 (baud == targetBaud || bt_set_baud(config, targetBaud));
 
         if (status) {
