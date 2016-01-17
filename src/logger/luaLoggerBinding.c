@@ -507,7 +507,7 @@ int Lua_GetGPSPosition(lua_State *L)
 
 int Lua_GetGPSSpeed(lua_State *L)
 {
-    lua_pushnumber(L,getGPSSpeed());
+    lua_pushnumber(L,getGPSSpeedInMph());
     return 1;
 }
 
