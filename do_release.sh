@@ -55,24 +55,3 @@ cp SAM7s_base/HOW_TO_FLASH.txt $MK1_RELEASE_DIR
 cp $SAM7S_BASE_DIR/installer/* $MK1_RELEASE_DIR
 cp main.elf $MK1_RELEASE_DIR/$MK1_RELEASE_NAME.elf
 zip -FSr $MK1_RELEASE_NAME.zip $MK1_RELEASE_DIR
-
-###################################
-# MK2 release
-###################################
-pushd lib_lua
-make PLAT=stm32 clean
-make PLAT=stm32 generic -j $NUM_PROC
-popd
-pushd stm32_base
-make PLAT=stm32 clean
-make PLAT=stm32 all -j $NUM_PROC
-popd
-
-MK2_RELEASE_DIR=$RCP_DIST_DIR/RaceCapturePro_MK2
-MK2_RELEASE_NAME=RaceCapturePro_MK2_$RELEASE_NAME_SUFFIX
-mkdir $MK2_RELEASE_DIR
-
-cp CHANGELOG $MK2_RELEASE_DIR
-cp stm32_base/HOW_TO_FLASH.txt $MK2_RELEASE_DIR
-cp stm32_base/main.ihex $MK2_RELEASE_DIR/$MK2_RELEASE_NAME.ihex
-zip -FSr $MK2_RELEASE_NAME.zip $MK2_RELEASE_DIR
