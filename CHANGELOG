@@ -1,6 +1,7 @@
 === 2.8.6 ===
 * Make OBD-II engine report temperature and speed that match channel defaults (deg. F / MPH)
 * Report correct min/max values in logfile
+* Fix getLuaSpeed method in LUA to return value in MPH instead of KPH.
 
 === 2.8.5 ===
 * Increased GPS task stack size from 200 to 256 to prevent HULK smash.
