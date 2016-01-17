@@ -1,3 +1,6 @@
+=== 2.8.7 ===
+* Report correct min/max values in logfile 
+
 === 2.8.6 ===
 * Make OBD-II engine report temperature and speed that match channel defaults (deg. F / MPH)
 * Improved accuracy of IMU
