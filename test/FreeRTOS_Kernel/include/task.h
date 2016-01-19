@@ -51,22 +51,18 @@
     licensing and training services.
 */
 
+#ifndef TASK_H
+#define TASK_H
 
 #ifndef INC_FREERTOS_H
 #error "#include FreeRTOS.h" must appear in source files before "#include task.h"
 #endif
 
-
-
-#ifndef TASK_H
-#define TASK_H
-
+#include "cpp_guard.h"
 #include "portable.h"
 #include "list.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+CPP_GUARD_BEGIN
 
 /*-----------------------------------------------------------
  * MACROS AND DEFINITIONS
@@ -1251,7 +1247,6 @@ void vTaskPriorityDisinherit( xTaskHandle * const pxMutexHolder ) PRIVILEGED_FUN
  */
 signed portBASE_TYPE xTaskGenericCreate( pdTASK_CODE pvTaskCode, const signed char * const pcName, unsigned short usStackDepth, void *pvParameters, unsigned portBASE_TYPE uxPriority, xTaskHandle *pxCreatedTask, portSTACK_TYPE *puxStackBuffer, const xMemoryRegion * const xRegions ) PRIVILEGED_FUNCTION;
 
-#ifdef __cplusplus
-}
-#endif
+CPP_GUARD_END
+
 #endif /* TASK_H */

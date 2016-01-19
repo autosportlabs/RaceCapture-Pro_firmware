@@ -1,11 +1,36 @@
+/*
+ * Race Capture Firmware
+ *
+ * Copyright (C) 2016 Autosport Labs
+ *
+ * This file is part of the Race Capture firmware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef LOGGERCONFIG_H_
 #define LOGGERCONFIG_H_
 
-#include <stddef.h>
+#include "cpp_guard.h"
 #include "geopoint.h"
 #include "tracks.h"
 #include "capabilities.h"
 #include "versionInfo.h"
+
+#include <stddef.h>
+
+CPP_GUARD_BEGIN
 
 #define FLASH_PAGE_SIZE						((unsigned int) 256) // Internal FLASH Page Size: 256 bytes
 
@@ -448,7 +473,7 @@ typedef struct _CellularConfig {
 #define TELEMETRY_SERVER_HOST_LENGTH 100
 
 #define DEFAULT_DEVICE_ID ""
-#define DEFAULT_TELEMETRY_SERVER_HOST "race-capture.com"
+#define DEFAULT_TELEMETRY_SERVER_HOST "telemetry.race-capture.com"
 
 #define BACKGROUND_STREAMING_ENABLED				1
 #define BACKGROUND_STREAMING_DISABLED				0
@@ -555,5 +580,7 @@ int flash_default_logger_config(void);
 
 bool isHigherSampleRate(const int contender, const int champ);
 int getHigherSampleRate(const int a, const int b);
+
+CPP_GUARD_END
 
 #endif /*LOGGERCONFIG_H_*/

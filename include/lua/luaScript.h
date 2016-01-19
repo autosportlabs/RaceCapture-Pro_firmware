@@ -22,10 +22,13 @@
 #ifndef LUASCRIPT_H_
 #define LUASCRIPT_H_
 
+#include "cpp_guard.h"
 #include "capabilities.h"
 #include "memory.h"
 
 #include <stdint.h>
+
+CPP_GUARD_BEGIN
 
 enum script_add_result {
         SCRIPT_ADD_RESULT_FAIL = 0,
@@ -58,5 +61,7 @@ enum script_add_result flashScriptPage(unsigned int page, const char *data,
 void unescapeScript(char *data);
 
 #define DEFAULT_SCRIPT "function onTick() end"
+
+CPP_GUARD_END
 
 #endif /*LUASCRIPT_H_*/
