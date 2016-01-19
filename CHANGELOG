@@ -1,4 +1,5 @@
 === 2.8.7 ===
+* Properly handle analog linear scaling offset value
 * Report correct min/max values in logfile
 * Changed telemetry destination from race-capture.com to
   telemetry.race-capture.com.  This is so that we can better work with
