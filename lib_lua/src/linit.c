@@ -23,6 +23,7 @@ static const luaL_Reg lualibs[] = {
     {LUA_OSLIBNAME, luaopen_os},
     {LUA_TABLIBNAME, luaopen_table},
     {LUA_DBLIBNAME, luaopen_debug},
+    {LUA_BITLIBNAME, luaopen_bit},
 #endif
     {NULL, NULL}
 };
