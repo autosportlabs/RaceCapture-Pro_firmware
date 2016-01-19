@@ -22,11 +22,16 @@
 #ifndef GPS_TESTING_H_
 #define GPS_TESTING_H_
 
+#include "cpp_guard.h"
 #include "gps.h"
+
+CPP_GUARD_BEGIN
 
 /**
  * Pass in a fake sample for simulation.
  */
 void GPS_sample_update(GpsSample *newSample);
+
+CPP_GUARD_END
 
 #endif /* GPS_TESTING_H_ */

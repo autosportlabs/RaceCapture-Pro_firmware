@@ -19,6 +19,7 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #include "FreeRTOS.h"
 #include "GPIO.h"
 #include "LED.h"
@@ -223,6 +224,7 @@ void initialize_lua()
                 luaopen_table(g_lua);
                 luaopen_string(g_lua);
                 luaopen_math(g_lua);
+                luaopen_bit(g_lua);
         }
 
         if (!_load_script()) {

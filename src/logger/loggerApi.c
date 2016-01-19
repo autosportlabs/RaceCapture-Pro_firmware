@@ -19,6 +19,7 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #include "ADC.h"
 #include "FreeRTOS.h"
 #include "GPIO.h"
@@ -102,7 +103,7 @@ void unescapeTextField(char *data)
     *result='\0';
 }
 
-const static jsmntok_t * findNode(const jsmntok_t *node, const char * name)
+static const jsmntok_t * findNode(const jsmntok_t *node, const char * name)
 {
     while (!(node->start == 0 && node->end == 0)) {
         if (strcmp(name, jsmn_trimData(node)->data) == 0)
@@ -112,7 +113,7 @@ const static jsmntok_t * findNode(const jsmntok_t *node, const char * name)
     return NULL;
 }
 
-const static jsmntok_t * findStringValueNode(const jsmntok_t *node, const char *name)
+static const jsmntok_t * findStringValueNode(const jsmntok_t *node, const char *name)
 {
     const jsmntok_t *field = findNode(node, name);
     if (field != NULL) {
@@ -125,7 +126,7 @@ const static jsmntok_t * findStringValueNode(const jsmntok_t *node, const char *
     return NULL;
 }
 
-const static jsmntok_t * findValueNode(const jsmntok_t *node, const char *name)
+static const jsmntok_t * findValueNode(const jsmntok_t *node, const char *name)
 {
     const jsmntok_t *field = findNode(node, name);
     if (field != NULL) {
@@ -357,10 +358,9 @@ void api_sendLogEnd(Serial *serial)
 
 int api_log(Serial *serial, const jsmntok_t *json)
 {
-    int doLogging = 0;
     if (json->type == JSMN_PRIMITIVE && json->size == 0) {
         jsmn_trimData(json);
-        doLogging = modp_atoi(json->data);
+        int doLogging = modp_atoi(json->data);
         //TODO when RCP simulator is fully working, enable this.
 #ifndef RCP_TESTING
 
@@ -369,6 +369,8 @@ int api_log(Serial *serial, const jsmntok_t *json)
         } else {
             stopLogging();
         }
+#else
+        (void) doLogging;
 #endif
 
     }
@@ -1619,7 +1621,6 @@ int api_getScript(Serial *serial, const jsmntok_t *json)
 int api_setScript(Serial *serial, const jsmntok_t *json)
 {
     int rc = API_ERROR_UNSPECIFIED;
-    bool reload_script = false;
     const jsmntok_t *dataTok = findNode(json, "data");
     const jsmntok_t *pageTok = findNode(json, "page");
     const jsmntok_t *modeTok = findNode(json, "mode");
@@ -1642,7 +1643,6 @@ int api_setScript(Serial *serial, const jsmntok_t *json)
                flashScriptPage(page, script, (enum script_add_mode) mode);
 
             rc = flashResult == 1 ? API_SUCCESS : API_ERROR_SEVERE;
-            reload_script = rc == API_SUCCESS && mode == SCRIPT_ADD_MODE_COMPLETE;
         } else {
             rc = API_ERROR_PARAMETER;
         }

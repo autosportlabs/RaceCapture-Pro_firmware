@@ -52,9 +52,8 @@
 #ifndef PORTMACRO_H
 #define PORTMACRO_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "cpp_guard.h"
+CPP_GUARD_BEGIN
 
 /*-----------------------------------------------------------
  * Port specific definitions.
@@ -159,9 +158,5 @@ extern void vPortFindTicksPerSecond( void );
 extern unsigned long ulPortGetTimerValue( void );
 #define portGET_RUN_TIME_COUNTER_VALUE()			ulPortGetTimerValue()			/* Query the System time stats for this process. */
 
-#ifdef __cplusplus
-}
-#endif
-
+CPP_GUARD_END
 #endif /* PORTMACRO_H */
-

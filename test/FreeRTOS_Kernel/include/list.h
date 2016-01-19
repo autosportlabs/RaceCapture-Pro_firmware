@@ -89,9 +89,9 @@
 #ifndef LIST_H
 #define LIST_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "cpp_guard.h"
+
+CPP_GUARD_BEGIN
 /*
  * Definition of the only type of object that a list can contain.
  */
@@ -294,9 +294,6 @@ void vListInsertEnd( xList *pxList, xListItem *pxNewListItem );
  */
 void vListRemove( xListItem *pxItemToRemove );
 
-#ifdef __cplusplus
-}
-#endif
+CPP_GUARD_END
 
 #endif
-
