@@ -1,9 +1,7 @@
 === 2.8.7 ===
-* Properly handle analog linear scaling offset value
-* Report correct min/max values in logfile
-* Changed telemetry destination from race-capture.com to
-  telemetry.race-capture.com.  This is so that we can better work with
-  Cloudflare.
+* Properly handle analog linear scaling offset value.
+* Report correct min/max values in logfile.
+* Updated telemetry destination to work better with caching services.
 * Remove MK1 code from mainstream dev tree and migrate to legacy branch.
 * Fixes a bug in start logic in the lap_stats code and adds 12 new unit
   tests to better ensure the stability of that code.
