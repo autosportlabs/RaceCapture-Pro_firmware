@@ -7,6 +7,8 @@
 * Remove MK1 code from mainstream dev tree and migrate to legacy branch.
 * Fixes a bug in start logic in the lap_stats code and adds 12 new unit
   tests to better ensure the stability of that code.
+* Fix predictive time unit by having it return 0 when not in operation.
+  Otherwise it can return invalid data.
 
 === 2.8.6 ===
 * Make OBD-II engine report temperature and speed that match channel defaults (deg. F / MPH)
