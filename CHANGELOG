@@ -1,3 +1,13 @@
+=== 2.8.6 ===
+* Report correct min/max values in logfile
+* Fix getLuaSpeed method in LUA to return value in MPH instead of KPH.
+* Update telemetry destination to better work with web caching services.
+* Fixes a bug in start logic in the lap_stats code and adds 12 new unit
+  tests to better ensure the stability of that code.
+* Properly handle analog linear scaling offset value
+* Fix predictive time unit by having it return 0 when not in operation.
+  Otherwise it can return invalid data.
+
 === 2.8.5 ===
 * Increased GPS task stack size from 200 to 256 to prevent HULK smash.
 * Increased printing precision in LUA from 3 to 6 decimal places (as needed).

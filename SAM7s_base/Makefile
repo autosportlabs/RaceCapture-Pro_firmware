@@ -738,9 +738,6 @@ release :
 program: $(PROGRAM_TARGET)
 	openocd -f flash.cfg
 
-TAGS:
-	@find . -type f -name '*\.[ch]' | etags -
-
 clean_build:
 	$(MAKE) clean
 	$(MAKE) all

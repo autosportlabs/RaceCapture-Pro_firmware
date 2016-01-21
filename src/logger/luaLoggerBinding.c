@@ -1,32 +1,53 @@
-#include "luaLoggerBinding.h"
-#include "dateTime.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "semphr.h"
-#include "loggerConfig.h"
-#include "loggerData.h"
-#include "gps.h"
-#include "lap_stats.h"
-#include "imu.h"
+/*
+ * Race Capture Firmware
+ *
+ * Copyright (C) 2016 Autosport Labs
+ *
+ * This file is part of the Race Capture firmware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "ADC.h"
-#include "timer.h"
 #include "CAN.h"
+#include "FreeRTOS.h"
+#include "GPIO.h"
+#include "LED.h"
 #include "OBD2.h"
 #include "PWM.h"
-#include "LED.h"
-#include "GPIO.h"
+#include "dateTime.h"
+#include "gps.h"
+#include "imu.h"
+#include "lap_stats.h"
+#include "lap_stats.h"
+#include "logger.h"
+#include "loggerConfig.h"
+#include "loggerData.h"
+#include "loggerSampleData.h"
+#include "loggerTaskEx.h"
+#include "luaLoggerBinding.h"
 #include "luaScript.h"
 #include "luaTask.h"
 #include "mod_string.h"
-#include "serial.h"
-#include "printk.h"
 #include "modp_numtoa.h"
-#include "loggerTaskEx.h"
-#include "logger.h"
-#include "loggerSampleData.h"
+#include "printk.h"
+#include "queue.h"
+#include "semphr.h"
+#include "serial.h"
+#include "task.h"
+#include "timer.h"
 #include "virtual_channel.h"
-#include "lap_stats.h"
 
 #define TEMP_BUFFER_LEN 		200
 #define DEFAULT_CAN_TIMEOUT 	100
@@ -507,7 +528,7 @@ int Lua_GetGPSPosition(lua_State *L)
 
 int Lua_GetGPSSpeed(lua_State *L)
 {
-    lua_pushnumber(L,getGPSSpeed());
+    lua_pushnumber(L,getGpsSpeedInMph());
     return 1;
 }
 

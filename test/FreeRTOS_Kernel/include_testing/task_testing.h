@@ -22,11 +22,16 @@
 #define _TASK_TESTING_H_
 
 #include "FreeRTOS.h"
+#include "cpp_guard.h"
+
+CPP_GUARD_BEGIN
 
 void set_ticks(portTickType ticks);
 
 void reset_ticks( void );
 
 void increment_tick( void );
+
+CPP_GUARD_END
 
 #endif /* _TASK_TESTING_H_ */

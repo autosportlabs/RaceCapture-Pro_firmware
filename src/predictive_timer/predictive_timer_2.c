@@ -1,9 +1,24 @@
 /*
- * predictive_timer_2.c
+ * Race Capture Firmware
  *
- *  Created on: Jan 22, 2014
- *      Author: stieg
+ * Copyright (C) 2016 Autosport Labs
+ *
+ * This file is part of the Race Capture firmware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include "dateTime.h"
 #include "debug.h"
@@ -96,8 +111,9 @@ static bool insertTimeLocSample(const GeoPoint * point, tiny_millis_t time)
     timeLoc->point = *point;
     timeLoc->time = getCurrentLapTime(time);
 
-    if (++buffIndex >= MAX_TIMELOC_SAMPLES)
+    if (++buffIndex >= MAX_TIMELOC_SAMPLES) {
         DEBUG("Buffer now Full!\n");
+    }
 
     return true;
 }
@@ -400,15 +416,17 @@ tiny_millis_t getSplitAgainstFastLap(const GeoPoint * point, tiny_millis_t curre
  */
 tiny_millis_t getPredictedTime(const GeoPoint * point, tiny_millis_t time)
 {
+        if (DISABLED == status)
+                return 0;
 
-    tiny_millis_t timeDelta = getSplitAgainstFastLap(point, time);
-    tiny_millis_t newPredictedTime = fastLapTime - timeDelta;
+        tiny_millis_t timeDelta = getSplitAgainstFastLap(point, time);
+        tiny_millis_t newPredictedTime = fastLapTime - timeDelta;
 
-    // Check for a minimum predicted time to deal with start/finish errors.
-    if (newPredictedTime < MIN_PREDICTED_TIME)
-        return lastPredictedTime;
+        // Check for a minimum predicted time to deal with start/finish errors.
+        if (newPredictedTime < MIN_PREDICTED_TIME)
+                return lastPredictedTime;
 
-    return lastPredictedTime = newPredictedTime;
+        return lastPredictedTime = newPredictedTime;
 }
 
 /**

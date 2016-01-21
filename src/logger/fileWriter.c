@@ -19,6 +19,9 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+
+
 #include "LED.h"
 #include "fileWriter.h"
 #include "loggerHardware.h"
@@ -145,9 +148,9 @@ static int write_samples_header(const LoggerMessage *msg)
                 append_file_buffer("|");
                 appendQuotedString(sample->cfg->units);
                 append_file_buffer("|");
-                appendFloat(decodeSampleRate(sample->cfg->min), precision);
+                appendFloat(sample->cfg->min, precision);
                 append_file_buffer("|");
-                appendFloat(decodeSampleRate(sample->cfg->max), precision);
+                appendFloat(sample->cfg->max, precision);
                 append_file_buffer("|");
                 appendInt(decodeSampleRate(sample->cfg->sampleRate));
         }

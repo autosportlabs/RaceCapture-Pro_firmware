@@ -22,9 +22,12 @@
 #ifndef _GEOCIRCLE_H_
 #define _GEOCIRCLE_H_
 
+#include "cpp_guard.h"
 #include "geopoint.h"
 
 #include <stdbool.h>
+
+CPP_GUARD_BEGIN
 
 struct GeoCircle {
     GeoPoint point;
@@ -51,5 +54,7 @@ bool gc_isPointInGeoCircle(const GeoPoint * point, const struct GeoCircle gc);
  * @return true if its a valid geoCircle, false otherwise.
  */
 bool gc_isValidGeoCircle(const struct GeoCircle gc);
+
+CPP_GUARD_END
 
 #endif /* _GEOCIRCLE_H_ */

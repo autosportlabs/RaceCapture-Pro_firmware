@@ -33,6 +33,10 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
+#include "cpp_guard.h"
+
+CPP_GUARD_BEGIN
+
 //#include "board.h"
 //#error This should Fail
 /* The SWI is used by the scheduler. */
@@ -77,5 +81,6 @@ to exclude the API function. */
 #define INCLUDE_vTaskDelayUntil			1
 #define INCLUDE_vTaskDelay				1
 
+CPP_GUARD_END
 
 #endif /* FREERTOS_CONFIG_H */
