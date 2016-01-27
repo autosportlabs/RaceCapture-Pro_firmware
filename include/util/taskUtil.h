@@ -34,6 +34,7 @@ void delayMs(unsigned int delay);
 void delayTicks(size_t ticks);
 size_t msToTicks(size_t ms);
 size_t ticksToMs(size_t ticks);
+void yield();
 
 CPP_GUARD_END
 
