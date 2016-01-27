@@ -247,21 +247,51 @@ int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
 
 int CAN_device_tx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
 {
-    CanTxMsg TxMessage;
+        CanTxMsg TxMessage;
 
-    /* Transmit Structure preparation */
-    if (msg->isExtendedAddress) {
-        TxMessage.ExtId = msg->addressValue;
-        TxMessage.IDE = CAN_ID_EXT;
-    } else {
-        TxMessage.StdId = msg->addressValue;
-        TxMessage.IDE = CAN_ID_STD;
-    }
-    TxMessage.RTR = CAN_RTR_DATA;
-    TxMessage.DLC = msg->dataLength;
-    memcpy(TxMessage.Data, msg->data, msg->dataLength);
-    CAN_Transmit(channel == 0 ? CAN1 : CAN2, &TxMessage);
-    return 1;
+        /* Transmit Structure preparation */
+        if (msg->isExtendedAddress) {
+                TxMessage.ExtId = msg->addressValue;
+                TxMessage.IDE = CAN_ID_EXT;
+        } else {
+                TxMessage.StdId = msg->addressValue;
+                TxMessage.IDE = CAN_ID_STD;
+        }
+
+        TxMessage.RTR = CAN_RTR_DATA;
+        TxMessage.DLC = msg->dataLength;
+        memcpy(TxMessage.Data, msg->data, msg->dataLength);
+
+        CAN_TypeDef* chan = channel == 0 ? CAN1 : CAN2;
+        uint8_t mailbox = CAN_Transmit(chan, &TxMessage);
+
+        /* Then they don't want to wait.  Just assume successful */
+        if (!timeoutMs)
+                return 1;
+
+        /* Using ticks avoids a race-condition */
+        size_t ticks = getCurrentTicks();
+        const size_t trigger = ticks + msToTicks(timeoutMs);
+        uint8_t status;
+        while(ticks <= trigger) {
+                status = CAN_TransmitStatus(chan, mailbox);
+                if (CAN_TxStatus_Pending != status)
+                        break;
+
+                /*
+                 * Not using yield here as it will cause lower priority tasks
+                 * to starve.  Yield only allows tasks of equal or greater
+                 * priority to run.
+                 */
+                delayTicks(1);
+
+                ticks = getCurrentTicks();
+        }
+
+        if (CAN_TxStatus_Pending == status)
+                CAN_CancelTransmit(chan, mailbox);
+
+        return status == CAN_TxStatus_Ok;
 }
 
 int CAN_device_rx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
