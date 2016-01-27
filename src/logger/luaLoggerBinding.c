@@ -20,35 +20,34 @@
  */
 
 
-#include "luaLoggerBinding.h"
-#include "dateTime.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "semphr.h"
-#include "loggerConfig.h"
-#include "loggerData.h"
-#include "gps.h"
-#include "lap_stats.h"
-#include "imu.h"
 #include "ADC.h"
-#include "timer.h"
 #include "CAN.h"
+#include "FreeRTOS.h"
+#include "GPIO.h"
+#include "LED.h"
 #include "OBD2.h"
 #include "PWM.h"
-#include "LED.h"
-#include "GPIO.h"
+#include "dateTime.h"
+#include "gps.h"
+#include "imu.h"
+#include "lap_stats.h"
+#include "logger.h"
+#include "loggerConfig.h"
+#include "loggerData.h"
+#include "loggerSampleData.h"
+#include "loggerTaskEx.h"
+#include "luaLoggerBinding.h"
 #include "luaScript.h"
 #include "luaTask.h"
 #include "mod_string.h"
-#include "serial.h"
-#include "printk.h"
 #include "modp_numtoa.h"
-#include "loggerTaskEx.h"
-#include "logger.h"
-#include "loggerSampleData.h"
+#include "printk.h"
+#include "queue.h"
+#include "semphr.h"
+#include "serial.h"
+#include "task.h"
+#include "timer.h"
 #include "virtual_channel.h"
-#include "lap_stats.h"
 
 #define TEMP_BUFFER_LEN 		200
 #define DEFAULT_CAN_TIMEOUT 	100
@@ -92,6 +91,12 @@ static int lua_get_date_time(lua_State *L)
         return 7;
 }
 
+static int lua_get_gps_altitude(lua_State *L)
+{
+        lua_pushnumber(L, getAltitude());
+        return 1;
+}
+
 void registerLuaLoggerBindings(lua_State *L)
 {
 
@@ -119,10 +124,11 @@ void registerLuaLoggerBindings(lua_State *L)
     lua_registerlight(L,"getImuRaw",Lua_ReadImuRaw);
 
     lua_registerlight(L, "getGpsSats", Lua_GetGPSSatellites);
-    lua_registerlight(L,"getGpsPos", Lua_GetGPSPosition);
-    lua_registerlight(L,"getGpsSpeed",Lua_GetGPSSpeed);
-    lua_registerlight(L,"getGpsQuality", Lua_GetGPSQuality);
-    lua_registerlight(L,"getGpsDist", Lua_GetGPSDistance);
+    lua_registerlight(L, "getGpsPos", Lua_GetGPSPosition);
+    lua_registerlight(L, "getGpsSpeed", Lua_GetGPSSpeed);
+    lua_registerlight(L, "getGpsQuality", Lua_GetGPSQuality);
+    lua_registerlight(L, "getGpsDist", Lua_GetGPSDistance);
+    lua_registerlight(L, "getGpsAltitude", lua_get_gps_altitude);
 
     lua_registerlight(L, "getLapCount", Lua_GetLapCount);
     lua_registerlight(L, "getLapTime", Lua_GetLapTime);
