@@ -54,3 +54,8 @@ size_t ticksToMs(size_t ticks)
 {
     return ticks * portTICK_RATE_MS;
 }
+
+void yield()
+{
+        taskYIELD();
+}
