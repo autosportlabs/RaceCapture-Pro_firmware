@@ -736,13 +736,16 @@ release :
 
 # program the AT91SAM7S256 internal flash memory
 program: $(PROGRAM_TARGET)
-	openocd -f flash.cfg
+	openocd -f openocd_olimex_sam7s_flash.cfg
+
+gdb:
+	gdb -x gdb_olimex.gdb
 
 clean_build:
 	$(MAKE) clean
 	$(MAKE) all
 
 # Listing of phony targets.
-.PHONY : all begin finish end sizebefore sizeafter gccversion \
+.PHONY : all begin finish end sizebefore sizeafter gdb gccversion \
 build elf hex bin lss sym clean clean_list program TAGS clean_build \
 release
