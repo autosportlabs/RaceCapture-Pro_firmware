@@ -1,4 +1,6 @@
 === 2.9.0 ===
+* Add timeout support for CAN Tx method on MK2.  A value of 0 means
+  never timeout.
 * Improve the USART code for MK1 by removing duplicated code,
   eliminating externs, and cleaning up the handling of character
   queues.
