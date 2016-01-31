@@ -163,7 +163,7 @@ float get_analog_sample(int channelId)
         analogValue = value;
         break;
     case SCALING_MODE_LINEAR:
-        analogValue = (ac->linearScaling * (float)value);
+        analogValue = (ac->linearScaling * (float)value) + ac->linearOffset;
         break;
     case SCALING_MODE_MAP:
         analogValue = get_mapped_value((float)value,&(ac->scalingMap));

@@ -416,15 +416,17 @@ tiny_millis_t getSplitAgainstFastLap(const GeoPoint * point, tiny_millis_t curre
  */
 tiny_millis_t getPredictedTime(const GeoPoint * point, tiny_millis_t time)
 {
+        if (DISABLED == status)
+                return 0;
 
-    tiny_millis_t timeDelta = getSplitAgainstFastLap(point, time);
-    tiny_millis_t newPredictedTime = fastLapTime - timeDelta;
+        tiny_millis_t timeDelta = getSplitAgainstFastLap(point, time);
+        tiny_millis_t newPredictedTime = fastLapTime - timeDelta;
 
-    // Check for a minimum predicted time to deal with start/finish errors.
-    if (newPredictedTime < MIN_PREDICTED_TIME)
-        return lastPredictedTime;
+        // Check for a minimum predicted time to deal with start/finish errors.
+        if (newPredictedTime < MIN_PREDICTED_TIME)
+                return lastPredictedTime;
 
-    return lastPredictedTime = newPredictedTime;
+        return lastPredictedTime = newPredictedTime;
 }
 
 /**

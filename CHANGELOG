@@ -1,29 +1,36 @@
 === 2.9.0 ===
-* Improve the USART code for MK1 by removing duplicated code, eliminating
-  externs, and cleaning up the handling of character queues.
-* Correct gyro scaling value.  Was off by a factor of 4.
-* Improve gyro sensitivity.  Cars don't rotate at a value of 2000 deg/sec.
-  Changes maximum supported rotation rate to 250 deg/sec, but get much more
-  sensitivity (8x more to be precise).
-* Improve the MK2 compilation routine by adding stricter warning flags and
-  by making all warnings into errors.
-* Fix up BT code so that we now properly set BT name and Pin.  Addresses race
-  issues observed in BT module during programming as well.
-* Added Lua sleep() function. When called will sleep for the specified number
-  of milliseconds
-* Changed telemetry destination from race-capture.com to
-  telemetry.race-capture.com.  This is so that we can better work with
-  Cloudflare.
-* Remove MK1 code from mainstream dev tree and migrate to legacy branch.
-* Moves LUA magic number to the front of the LUA memory block so that the number
-  won't move if this block gets resized.
-* Fixes a bug in start logic in the lap_stats code and adds 12 new unit
-  tests to better ensure the stability of that code.
+* Improve the USART code for MK1 by removing duplicated code,
+  eliminating externs, and cleaning up the handling of character
+  queues.
+* Improve the MK2 compilation routine by adding stricter warning flags
+  and by making all warnings into errors.
+* Fix up BT code so that we now properly set BT name and Pin.
+  Addresses race issues observed in BT module during programming as
+  well.
+* Added Lua sleep() function. When called will sleep for the specified
+  number of milliseconds.
+* Moves LUA magic number to the front of the LUA memory block so that
+  the number won't move if this block gets resized.
+
+=== 2.8.7 ===
+* Properly handle analog linear scaling offset value.
+* Report correct min/max values in logfile.
+* Updated telemetry destination to work better with caching services.
+* Remove MK1 code from mainstream dev tree and migrate to legacy
+  branch.
+* Fixes a bug in start logic in the lap_stats code and adds 12 new
+  unit tests to better ensure the stability of that code.
+* Fix predictive time unit by having it return 0 when not in
+  operation.  Otherwise it can return invalid data.
+* Converted Lua base number to double from float (allows 29 bit CAN
+  IDs to work correctly).
 * Added Lua bitOp bitwise operations
-* Converted Lua base number to double from float (allows 29 bit CAN IDs to work correctly)
+* Fixes a bug in start logic in the lap_stats code and adds 12 new
+  unit tests to better ensure the stability of that code.
 
 === 2.8.6 ===
-* Make OBD-II engine report temperature and speed that match channel defaults (deg. F / MPH)
+* Make OBD-II engine report temperature and speed that match channel
+  defaults (deg. F / MPH)
 * Improved accuracy of IMU
 
 === 2.8.5 ===

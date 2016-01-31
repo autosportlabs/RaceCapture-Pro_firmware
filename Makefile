@@ -1,6 +1,7 @@
+# Leave this commented until we have a proper
+# top-level makefile working.
 #include stm32_base/Makefile
 
-# Introduce code to allow me to be verbose later
 Q := @
 
 PHONY :=

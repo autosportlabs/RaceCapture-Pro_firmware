@@ -19,7 +19,6 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "ADC.h"
 #include "CAN.h"
 #include "FreeRTOS.h"
@@ -535,7 +534,7 @@ int Lua_GetGPSPosition(lua_State *L)
 
 int Lua_GetGPSSpeed(lua_State *L)
 {
-    lua_pushnumber(L,getGPSSpeed());
+    lua_pushnumber(L,getGpsSpeedInMph());
     return 1;
 }
 
