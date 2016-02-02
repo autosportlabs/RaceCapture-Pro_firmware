@@ -72,7 +72,8 @@ static LoggerMessage getLogStopMessage()
  */
 void vApplicationTickHook(void)
 {
-    xSemaphoreGiveFromISR(onTick, pdFALSE);
+    if (onTick)
+        xSemaphoreGiveFromISR(onTick, pdFALSE);
 }
 
 void configChanged()
@@ -208,14 +209,18 @@ void loggerTaskEx(void *params)
                 if (g_loggingShouldRun && !is_logging) {
                         logging_started();
                         const LoggerMessage logStartMsg = getLogStartMessage();
+#if defined(SDCARD_SUPPORT)
                         queue_logfile_record(&logStartMsg);
+#endif
                         queueTelemetryRecord(&logStartMsg);
                 }
 
                 if (!g_loggingShouldRun && is_logging) {
                         logging_stopped();
                         const LoggerMessage logStopMsg = getLogStopMessage();
+#if defined(SDCARD_SUPPORT)
                         queue_logfile_record(&logStopMsg);
+#endif
                         queueTelemetryRecord(&logStopMsg);
                         logging_set_status(LOGGING_STATUS_IDLE);
                 }
@@ -237,6 +242,7 @@ void loggerTaskEx(void *params)
                  * We only log to file if the user has manually pushed the
                  * logging button.
                  */
+#if defined(SDCARD_SUPPORT)
                 if (is_logging && sampledRate >= loggingSampleRate) {
                         /* XXX Move this to file writer? */
                         const portBASE_TYPE res = queue_logfile_record(&msg);
@@ -245,6 +251,7 @@ void loggerTaskEx(void *params)
                                 LOGGING_STATUS_ERROR_WRITING;
                         logging_set_status(ls);
                 }
+#endif
 
                 /* send the sample on to the telemetry task(s) */
                 if (sampledRate >= telemetrySampleRate ||

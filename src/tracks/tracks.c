@@ -83,7 +83,7 @@ enum track_add_result add_track(const Track *track, const size_t index,
 
         static Tracks *g_tracksBuffer;
         if (NULL == g_tracksBuffer) {
-                if (RCP_LOW_MEM)
+                if ((RCP_LOW_MEM))
                         terminate_lua();
 
                 pr_debug("tracks: Allocating new tracks buffer\r\n");

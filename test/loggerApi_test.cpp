@@ -19,34 +19,37 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "loggerApi_test.h"
 #include "FreeRTOS.h"
-#include "constants.h"
 #include "api.h"
-#include "loggerApi.h"
-#include "mock_serial.h"
-#include "imu.h"
-#include "cpu.h"
-#include "loggerConfig.h"
-#include "jsmn.h"
-#include "mod_string.h"
-#include "modp_atonum.h"
-#include "memory_mock.h"
-#include "printk.h"
-#include <string>
-#include <fstream>
-#include <streambuf>
-#include "predictive_timer_2.h"
-#include "luaScript.h"
-#include "rcp_cpp_unit.hh"
-#include "cellModem.h"
-#include "sim900.h"
 #include "bluetooth.h"
-#include "logger.h"
+#include "cellModem.h"
+#include "constants.h"
+#include "cpu.h"
+#include "imu.h"
+#include "jsmn.h"
 #include "lap_stats.h"
 #include "launch_control.h"
+#include "logger.h"
+#include "loggerApi.h"
+#include "loggerApi_test.h"
+#include "loggerConfig.h"
+#include "luaScript.h"
+#include "memory_mock.h"
+#include "mock_serial.h"
+#include "mod_string.h"
+#include "modp_atonum.h"
+#include "predictive_timer_2.h"
+#include "printk.h"
+#include "rcp_cpp_unit.hh"
+#include "sim900.h"
 #include "task.h"
 #include "task_testing.h"
+
+#include <stdio.h>
+
+#include <fstream>
+#include <streambuf>
+#include <string>
 
 #define JSON_TOKENS 10000
 #define FILE_PREFIX string("json_api_files/")
@@ -65,16 +68,20 @@ char * LoggerApiTest::processApiGeneric(string filename){
 }
 
 
-void LoggerApiTest::stringToJson(string buffer, Object &json){
+void LoggerApiTest::stringToJson(const char* buffer, Object &json){
 	std::stringstream stream;
-	for (size_t i = 0; i < buffer.size(); i++){
-		stream.put(buffer[i]);
-	}
-	try{
-			Reader::Read(json, stream);
-	}
-	catch (json::Exception &e){
-			throw ("Could not parse json string");
+
+	for (const char *ptr = buffer; *ptr; ++ptr)
+		stream.put(*ptr);
+
+	try {
+                Reader::Read(json, stream);
+	} catch (json::Exception &e){
+                printf("\nParsing of the following JSON failed\n===\n");
+                printf("%s", buffer);
+                printf("\n===\n");
+                printf("With message \"%s\"\n", e.what());
+                throw ("Could not parse json string");
 	}
 }
 
@@ -251,7 +258,7 @@ void LoggerApiTest::testGetMultipleAnalogCfg(){
       }
    }
 
-   char * response = processApiGeneric("getAnalogCfg3.json");
+   const char *response = processApiGeneric("getAnalogCfg3.json");
 
    Object json;
    stringToJson(response, json);
@@ -307,8 +314,8 @@ void LoggerApiTest::testGetAnalogConfigFile(string filename, int index){
 	for (int x = 0; x < ANALOG_SCALING_BINS; iv+=1.1,x++){
 		analogCfg->scalingMap.scaledValues[x] = iv;
 	}
-	char * response = processApiGeneric(filename);
 
+        const char *response = processApiGeneric(filename);
 	Object json;
 	stringToJson(response, json);
 
@@ -402,8 +409,7 @@ void LoggerApiTest::testGetImuConfigFile(string filename, int index){
 	imuCfg->zeroValue = 1234;
 	imuCfg->filterAlpha = 0.7F;
 
-	char * response = processApiGeneric(filename);
-
+	const char * response = processApiGeneric(filename);
 	Object json;
 	stringToJson(response, json);
 
@@ -493,7 +499,7 @@ void LoggerApiTest::testGetConnectivityCfg(){
 	strcpy(connCfg->cellularConfig.apnUser, "apnUser");
 	strcpy(connCfg->cellularConfig.apnPass, "apnPass");
 
-	char *response = processApiGeneric("getConnCfg1.json");
+	const char *response = processApiGeneric("getConnCfg1.json");
 	Object json;
 	stringToJson(response, json);
 
@@ -524,8 +530,7 @@ void LoggerApiTest::testGetPwmConfigFile(string filename, int index){
 	pwmCfg->startupDutyCycle = 55;
 	pwmCfg->startupPeriod = 321;
 
-	char * response = processApiGeneric(filename);
-
+	const char *response = processApiGeneric(filename);
 	Object json;
 	stringToJson(response, json);
 
@@ -586,8 +591,7 @@ void LoggerApiTest::testGetGpioConfigFile(string filename, int index){
         populateChannelConfig(&gpioCfg->cfg, index, 100);
 	gpioCfg->mode = 1;
 
-	char * response = processApiGeneric(filename);
-
+	const char *response = processApiGeneric(filename);
 	Object json;
 	stringToJson(response, json);
 
@@ -645,8 +649,7 @@ void LoggerApiTest::testGetTimerConfigFile(string filename, int index){
 	timerCfg->pulsePerRevolution = 3;
 	timerCfg->timerSpeed = 2;
 
-	char * response = processApiGeneric(filename);
-
+	const char *response = processApiGeneric(filename);
 	Object json;
 	stringToJson(response, json);
 
@@ -720,7 +723,9 @@ void LoggerApiTest::testGetMeta(){
 void LoggerApiTest::testSampleData1() {
 	string requestJson1 = readFile("sampleData1.json");
 	string expectedResponseJson1 = readFile("sampleData_response1.json");
-
+        LoggerConfig *c = getWorkingLoggerConfig();
+        CPPUNIT_ASSERT_EQUAL((unsigned short) SAMPLE_DISABLED,
+                             c->TimerConfigs[0].cfg.sampleRate);
 	CPPUNIT_ASSERT_EQUAL(expectedResponseJson1,
                         getSampleResponse(requestJson1));
 }
@@ -831,8 +836,7 @@ void LoggerApiTest::testGetGpsConfigFile(string filename){
    populateChannelConfig(&gpsCfg->quality, 0, 100);
    populateChannelConfig(&gpsCfg->DOP, 0, 100);
 
-   char * response = processApiGeneric(filename);
-
+   const char *response = processApiGeneric(filename);
    Object json;
    stringToJson(response, json);
 
@@ -884,8 +888,7 @@ void LoggerApiTest::testGetLapConfigFile(string filename){
         populateChannelConfig(&cfg->sectorTimeCfg, 4, 50);
         populateChannelConfig(&cfg->predTimeCfg, 5, 50);
 
-	char * response = processApiGeneric(filename);
-
+	const char *response = processApiGeneric(filename);
 	Object json;
 	stringToJson(response, json);
 
@@ -959,8 +962,7 @@ void LoggerApiTest::testGetTrackCfgCircuit(){
 	cfg->track.track_type = TRACK_TYPE_CIRCUIT;
 	cfg->track.trackId = 1345;
 
-	char * response = processApiGeneric("getTrackCfg1.json");
-
+	const char *response = processApiGeneric("getTrackCfg1.json");
 	Object json;
 	stringToJson(response, json);
 
@@ -995,7 +997,7 @@ void LoggerApiTest::testAddTrackDbFile(string filename){
 
 	Object jsonCompare;
 	string compare = readFile(filename);
-	stringToJson(compare, jsonCompare);
+	stringToJson(compare.c_str(), jsonCompare);
 
 	int index = (int)(Number)jsonCompare["addTrackDb"]["index"];
 	const Track *track = tracks->tracks + index;
@@ -1053,7 +1055,7 @@ void LoggerApiTest::testGetTrackDbFile(string filename, string addedFilename){
 
 	Object jsonCompare;
 	string compare= readFile(addedFilename);
-	stringToJson(compare, jsonCompare);
+	stringToJson(compare.c_str(), jsonCompare);
 
 	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonResponse["trackDb"]["size"], 1);
 	CPPUNIT_ASSERT_EQUAL((int)(Number)jsonResponse["trackDb"]["max"], MAX_TRACK_COUNT);
@@ -1094,10 +1096,11 @@ void LoggerApiTest::testGetCanCfgFile(string filename){
 	canConfig->enabled = 1;
 	canConfig->baud[0] = 1000000;
 	canConfig->baud[1] = 125000;
-	char * response = processApiGeneric(filename);
 
+	const char *response = processApiGeneric(filename);
 	Object json;
 	stringToJson(response, json);
+
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)json["canCfg"]["en"]);
 	CPPUNIT_ASSERT_EQUAL(1000000, (int)(Number)json["canCfg"]["baud"][0]);
 	CPPUNIT_ASSERT_EQUAL(125000, (int)(Number)json["canCfg"]["baud"][1]);
@@ -1142,8 +1145,7 @@ void LoggerApiTest::testGetObd2ConfigFile(string filename){
         populateChannelConfig(cfg2, 2, 50);
 	obd2Config->pids[1].pid = 0x06;
 
-	char * response = processApiGeneric(filename);
-
+	const char *response = processApiGeneric(filename);
 	Object json;
 	stringToJson(response, json);
 
@@ -1247,8 +1249,7 @@ void LoggerApiTest::testGetScript(){
 }
 
 void LoggerApiTest::testGetScriptFile(string filename){
-	char * response = processApiGeneric(filename);
-
+	const char *response = processApiGeneric(filename);
 	Object json;
 	stringToJson(response, json);
 
@@ -1282,8 +1283,7 @@ void LoggerApiTest::testRunScriptFile(string filename){
 }
 
 void LoggerApiTest::testGetCapabilities(){
-	char * response = processApiGeneric("getCapabilities.json");
-
+	const char *response = processApiGeneric("getCapabilities.json");
 	Object json;
 	stringToJson(response, json);
 
@@ -1303,8 +1303,7 @@ void LoggerApiTest::testGetCapabilities(){
 }
 
 void LoggerApiTest::testGetVersion(){
-	char * response = processApiGeneric("getVersion1.json");
-
+	const char *response = processApiGeneric("getVersion1.json");
 	Object json;
 	stringToJson(response, json);
 
@@ -1320,8 +1319,7 @@ void LoggerApiTest::testGetStatus(){
         lc_reset();
         lapStats_init();
 
-    char * response = processApiGeneric("getStatus1.json");
-
+    const char *response = processApiGeneric("getStatus1.json");
     Object json;
     stringToJson(response, json);
 

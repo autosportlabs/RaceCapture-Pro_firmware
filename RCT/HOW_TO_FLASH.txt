@@ -1,0 +1,34 @@
+================================
+================================
+Flashing Instructions
+(RaceCapture/Pro MK2)
+================================
+================================
+
+**Save your configuration
+
+WARNING: Updating firmware will reset the default config on a major and minor release. Bugfix releases do not reset configuration.
+Version scheme:   MAJOR.MINOR.BUGFIX
+
+If in doubt, be sure to save your configuration using the RaceCapture app.
+
+================================
+Flashing
+================================
+Connect RaceCapture/Pro MK2 to your computer and connect to it with the app.
+
+* Press the 'Configuration' button to navigate to the configuration section.
+* On the left menu, select Firmware
+* On the firmware screen, press the button "Update Firmware"
+* Navigate to the firmware file ending in ".ihex"
+* Select this file.  The firmware will update and show a percentage progress indicator.
+
+* If there is a problem detecting RaceCapture/Pro, unplug/replug and restart the app.
+
+** Alternative method
+* While holding down the button on RaceCapture/Pro, power it up by plugging in to USB.
+* You should observe a rapidly flashing red LED on the unit.
+* Start the app; it will not be able to connect normally.
+* Navigate to the configuration/firmware update screen, select the firmware file and update the firmware.
+
+Problems? visit http://autosportlabs.org and post your question - we will help you promptly.

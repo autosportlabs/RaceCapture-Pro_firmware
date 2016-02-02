@@ -30,7 +30,6 @@
 #include "gps.h"
 #include "imu.h"
 #include "lap_stats.h"
-#include "lap_stats.h"
 #include "logger.h"
 #include "loggerConfig.h"
 #include "loggerData.h"
@@ -57,7 +56,6 @@
 #define LUA_DEFAULT_SERIAL_BITS 8
 #define LUA_DEFAULT_SERIAL_PARITY 0
 #define LUA_DEFAULT_SERIAL_STOP_BITS 1
-
 
 char g_tempBuffer[TEMP_BUFFER_LEN];
 

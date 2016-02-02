@@ -19,32 +19,32 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "cpu.h"
+#include "gpsTask.h"
+#include "loggerCommands.h"
+#include "loggerConfig.h"
+#include "loggerData.h"
+#include "loggerHardware.h"
+#include "loggerSampleData.h"
+#include "loggerTaskEx.h"
+#include "luaScript.h"
+#include "mem_mang.h"
+#include "mod_string.h"
+#include "modp_atonum.h"
+#include "modp_numtoa.h"
+#include "printk.h"
+#include "sampleRecord.h"
+#include "sdcard.h"
+#include "taskUtil.h"
+#include "tracks.h"
+#include "usart.h"
 
 #include <stddef.h>
-#include "gpsTask.h"
-#include "mod_string.h"
-#include "loggerCommands.h"
-#include "modp_numtoa.h"
-#include "modp_atonum.h"
-#include "loggerConfig.h"
-#include "tracks.h"
-#include "luaScript.h"
-#include "loggerHardware.h"
-#include "printk.h"
-#include "sdcard.h"
-#include "loggerData.h"
-#include "sampleRecord.h"
-#include "loggerSampleData.h"
-#include "usart.h"
-#include "mem_mang.h"
-#include "loggerTaskEx.h"
-#include "taskUtil.h"
-#include "GPIO.h"
-#include "cpu.h"
-#include "taskUtil.h"
 
 void TestSD(Serial *serial, unsigned int argc, char **argv)
 {
+    /* TODO BAP - could not remove TestSD from command list b/c statically defined array, fix somehow */
+#if defined(SDCARD_SUPPORT)
     int lines = 1;
     int doFlush = 0;
     int quiet = 0;
@@ -52,6 +52,8 @@ void TestSD(Serial *serial, unsigned int argc, char **argv)
     if (argc > 2) doFlush = modp_atoi(argv[2]);
     if (argc > 3) quiet = modp_atoi(argv[3]);
     TestSDWrite(serial, lines, doFlush, quiet);
+#endif
+
 }
 
 
@@ -73,9 +75,11 @@ void ResetConfig(Serial *serial, unsigned int argc, char **argv)
         res += tmp;
         print_reset_status(serial, "Flashing Default Logger Config", tmp);
 
+#if defined(LUA_SUPPORT)
         tmp = flash_default_script();
         res += tmp;
         print_reset_status(serial, "Flashing Default Script", tmp);
+#endif
 
         tmp = flash_default_tracks();
         res += tmp;

@@ -1,7 +1,7 @@
 /*
  * Race Capture Firmware
  *
- * Copyright (C) 2015 Autosport Labs
+ * Copyright (C) 2016 Autosport Labs
  *
  * This file is part of the Race Capture firmware suite
  *
@@ -19,10 +19,8 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "ADC.h"
 #include "FreeRTOS.h"
-#include "GPIO.h"
 #include "GPIO.h"
 #include "OBD2.h"
 #include "PWM.h"
@@ -30,7 +28,6 @@
 #include "geopoint.h"
 #include "gps.h"
 #include "imu.h"
-#include "lap_stats.h"
 #include "lap_stats.h"
 #include "linear_interpolate.h"
 #include "loggerConfig.h"
@@ -152,6 +149,7 @@ float get_mapped_value(float value, ScalingMap *scalingMap)
     return scaled;
 }
 
+#if ANALOG_CHANNELS > 0
 float get_analog_sample(int channelId)
 {
     LoggerConfig * loggerConfig = getWorkingLoggerConfig();
@@ -174,7 +172,9 @@ float get_analog_sample(int channelId)
     }
     return analogValue;
 }
+#endif
 
+#if TIMER_CHANNELS > 0
 float get_timer_sample(int channelId)
 {
     LoggerConfig *loggerConfig = getWorkingLoggerConfig();
@@ -200,7 +200,9 @@ float get_timer_sample(int channelId)
     }
     return timerValue;
 }
+#endif
 
+#if PWM_CHANNELS > 0
 float get_pwm_sample(int channelId)
 {
     LoggerConfig *loggerConfig = getWorkingLoggerConfig();
@@ -222,7 +224,9 @@ float get_pwm_sample(int channelId)
     }
     return pwmValue;
 }
+#endif
 
+#if IMU_CHANNELS > 0
 float get_imu_sample(int channelId)
 {
     LoggerConfig *config = getWorkingLoggerConfig();
@@ -230,6 +234,7 @@ float get_imu_sample(int channelId)
     float value = imu_read_value(channelId, c);
     return value;
 }
+#endif
 
 void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
 {
@@ -253,36 +258,45 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     chanCfg->flags = ALWAYS_SAMPLED; // Set always sampled flag here so we always take samples
     sample = processChannelSampleWithLongLongGetterNoarg(sample, chanCfg, getMillisSinceEpochAsLongLong);
 
-
+#if ANALOG_CHANNELS > 0
     for (int i=0; i < CONFIG_ADC_CHANNELS; i++) {
         ADCConfig *config = &(loggerConfig->ADCConfigs[i]);
         chanCfg = &(config->cfg);
         sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_analog_sample);
     }
+#endif
 
+#if IMU_CHANNELS > 0
     for (int i = 0; i < CONFIG_IMU_CHANNELS; i++) {
         ImuConfig *config = &(loggerConfig->ImuConfigs[i]);
         chanCfg = &(config->cfg);
         sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_imu_sample);
     }
+#endif
 
+#if TIMER_CHANNELS > 0
     for (int i=0; i < CONFIG_TIMER_CHANNELS; i++) {
         TimerConfig *config = &(loggerConfig->TimerConfigs[i]);
         chanCfg = &(config->cfg);
         sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_timer_sample);
     }
+#endif
 
+#if GPIO_CHANNELS > 0
     for (int i=0; i < CONFIG_GPIO_CHANNELS; i++) {
         GPIOConfig *config = &(loggerConfig->GPIOConfigs[i]);
         chanCfg = &(config->cfg);
         sample = processChannelSampleWithIntGetter(sample, chanCfg, i, GPIO_get);
     }
+#endif
 
+#if PWM_CHANNELS > 0
     for (int i=0; i < CONFIG_PWM_CHANNELS; i++) {
         PWMConfig *config = &(loggerConfig->PWMConfigs[i]);
         chanCfg = &(config->cfg);
         sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_pwm_sample);
     }
+#endif
 
     OBD2Config *obd2Config = &(loggerConfig->OBD2Configs);
     const unsigned char enabled = loggerConfig->OBD2Configs.enabled;
@@ -292,12 +306,14 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
                                                    OBD2_get_current_PID_value);
     }
 
+#if defined(VIRTUAL_CHANNEL_SUPPORT)
     const size_t virtualChannelCount = get_virtual_channel_count();
     for (size_t i = 0; i < virtualChannelCount; i++) {
         VirtualChannel *vc = get_virtual_channel(i);
         chanCfg = &(vc->config);
         sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_virtual_channel_value);
     }
+#endif /* VIRTUAL_CHANNEL_SUPPORT */
 
     GPSConfig *gpsConfig = &(loggerConfig->GPSConfigs);
     chanCfg = &(gpsConfig->latitude);
