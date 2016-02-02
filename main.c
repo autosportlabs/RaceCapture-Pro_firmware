@@ -107,6 +107,7 @@ void setupTask(void *delTask)
 {
         initialize_tracks();
         initialize_logger_config();
+
         InitLoggerHardware();
         initMessaging();
 
@@ -128,7 +129,6 @@ void setupTask(void *delTask)
 #endif
 
 #if defined(LUA_SUPPORT)
-        initialize_script();
         startLuaTask(RCP_LUA_PRIORITY);
 #endif
 

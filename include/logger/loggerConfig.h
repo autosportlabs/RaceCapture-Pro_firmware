@@ -28,6 +28,7 @@
 #include "capabilities.h"
 #include "versionInfo.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 
 CPP_GUARD_BEGIN
@@ -314,18 +315,14 @@ typedef struct _PidConfig {
 
 typedef struct _OBD2Config {
     unsigned char enabled;
-    unsigned char obd2SampleRate;
     unsigned short enabledPids;
     PidConfig pids[OBD2_CHANNELS];
 } OBD2Config;
 
 #define DEFAULT_ENABLED_PIDS 1
-#define DEFAULT_OBD2_SAMPLE_RATE SAMPLE_10Hz
-
 #define DEFAULT_OBD2_CONFIG \
 { \
 	CONFIG_FEATURE_NOT_INSTALLED, \
-	DEFAULT_OBD2_SAMPLE_RATE, \
 	DEFAULT_ENABLED_PIDS, \
 	{ \
 		{{"RPM", "", 0, 10000, SAMPLE_10Hz, 0, 0}, 12}, \
@@ -433,24 +430,15 @@ typedef struct _TrackConfig {
 
 #define BT_DEVICE_NAME_LENGTH 21
 #define BT_PASSCODE_LENGTH 5
-#define DEFAULT_BT_DEVICE_NAME "RaceCapturePro"
-#define DEFAULT_BT_PASSCODE "1010"
 #define DEFAULT_BT_BAUD 115200
 #define DEFAULT_BT_ENABLED 1
 
 typedef struct _BluetoothConfig {
-    unsigned char btEnabled;
-    char deviceName [BT_DEVICE_NAME_LENGTH];
-    char passcode [BT_PASSCODE_LENGTH];
-    unsigned int baudRate;
+        unsigned char btEnabled;
+        unsigned int baudRate;
+        char new_name [BT_DEVICE_NAME_LENGTH];
+        char new_pin [BT_PASSCODE_LENGTH];
 } BluetoothConfig;
-
-#define DEFAULT_BT_CONFIG { \
-	DEFAULT_BT_ENABLED, \
-	DEFAULT_BT_DEVICE_NAME, \
-	DEFAULT_BT_PASSCODE, \
-	DEFAULT_BT_BAUD \
-}
 
 #define CELL_APN_HOST_LENGTH 30
 #define CELL_APN_USER_LENGTH 30

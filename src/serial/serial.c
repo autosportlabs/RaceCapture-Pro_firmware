@@ -20,11 +20,13 @@
  */
 
 
+#include "capabilities.h"
+#include "modp_numtoa.h"
+#include "printk.h"
 #include "serial.h"
 #include "usart.h"
 #include "usb_comm.h"
-#include "modp_numtoa.h"
-#include "printk.h"
+
 static Serial serial_ports[SERIAL_COUNT];
 
 void init_serial(void)
@@ -34,7 +36,7 @@ void init_serial(void)
     usart_init_serial(&serial_ports[SERIAL_WIRELESS], UART_WIRELESS);
     usart_init_serial(&serial_ports[SERIAL_AUX], UART_AUX);
 
-#if USB_SERIAL_SUPPORT
+#if defined(USB_SERIAL_SUPPORT)
     usb_init_serial(&serial_ports[SERIAL_USB]);
 #endif
 }

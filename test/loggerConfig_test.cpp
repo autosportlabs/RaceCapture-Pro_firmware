@@ -18,7 +18,7 @@
  * Authors: Stieg
  */
 
-
+#include "cpu.h"
 #include "loggerConfig_test.h"
 #include "loggerConfig.h"
 #include "mod_string.h"
@@ -230,8 +230,9 @@ void LoggerConfigTest::testLoggerInitConnectivityConfig() {
    LoggerConfig *lc = getWorkingLoggerConfig();
 
    BluetoothConfig *btc = &lc->ConnectivityConfigs.bluetoothConfig;
-   CPPUNIT_ASSERT_EQUAL(string(DEFAULT_BT_DEVICE_NAME), string(btc->deviceName));
-   CPPUNIT_ASSERT_EQUAL(string(DEFAULT_BT_PASSCODE), string(btc->passcode));
+
+   CPPUNIT_ASSERT_EQUAL(string(""), string(btc->new_name));
+   CPPUNIT_ASSERT_EQUAL(string(""), string(btc->new_pin));
    CPPUNIT_ASSERT_EQUAL(DEFAULT_BT_ENABLED, (int) btc->btEnabled);
 
    CellularConfig *cc = &lc->ConnectivityConfigs.cellularConfig;

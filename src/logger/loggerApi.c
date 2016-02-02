@@ -853,8 +853,8 @@ int api_getBluetoothConfig(Serial *serial, const jsmntok_t *json)
     BluetoothConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
     json_objStart(serial);
     json_objStartString(serial, "btCfg");
-    json_string(serial, "name", cfg->deviceName, 1);
-    json_string(serial, "pass", cfg->passcode, 0);
+    json_string(serial, "name", cfg->new_name, 1);
+    json_string(serial, "pass", cfg->new_pin, 0);
     json_objEnd(serial, 0);
     json_objEnd(serial, 0);
     return API_SUCCESS_NO_RETURN;
@@ -902,8 +902,8 @@ static void setBluetoothConfig(const jsmntok_t *root)
         btCfgNode++;
         BluetoothConfig *btCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
         setUnsignedCharValueIfExists(btCfgNode, "btEn", &btCfg->btEnabled, NULL);
-        setStringValueIfExists(btCfgNode, "name", btCfg->deviceName, BT_DEVICE_NAME_LENGTH);
-        setStringValueIfExists(btCfgNode, "pass", btCfg->passcode, BT_PASSCODE_LENGTH);
+        setStringValueIfExists(btCfgNode, "name", btCfg->new_name, BT_DEVICE_NAME_LENGTH);
+        setStringValueIfExists(btCfgNode, "pass", btCfg->new_pin, BT_PASSCODE_LENGTH);
     }
 }
 
@@ -936,8 +936,8 @@ int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json)
 
     json_objStartString(serial, "btCfg");
     json_int(serial, "btEn", cfg->bluetoothConfig.btEnabled, 1);
-    json_string(serial, "name", cfg->bluetoothConfig.deviceName, 1);
-    json_string(serial, "pass", cfg->bluetoothConfig.passcode, 0);
+    json_string(serial, "name", cfg->bluetoothConfig.new_name, 1);
+    json_string(serial, "pass", cfg->bluetoothConfig.new_pin, 0);
     json_objEnd(serial, 1);
 
     json_objStartString(serial, "cellCfg");
@@ -1643,6 +1643,7 @@ int api_getScript(Serial *serial, const jsmntok_t *json)
 int api_setScript(Serial *serial, const jsmntok_t *json)
 {
     int rc = API_ERROR_UNSPECIFIED;
+
     const jsmntok_t *dataTok = findNode(json, "data");
     const jsmntok_t *pageTok = findNode(json, "page");
     const jsmntok_t *modeTok = findNode(json, "mode");

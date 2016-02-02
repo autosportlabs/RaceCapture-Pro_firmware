@@ -62,7 +62,7 @@ void InitLoggerHardware()
 #if CAN_CHANNELS > 0
     CAN_init(loggerConfig);
 #endif
-#if SD_CARD_SUPPORT == 1
+#if defined(SDCARD_SUPPORT)
     InitFSHardware();
 #endif
 

@@ -42,6 +42,15 @@ void registerBaseLuaFunctions(lua_State *L)
     lua_registerlight(L,"println", Lua_PrintLogLn);
     lua_registerlight(L,"setLogLevel", Lua_SetLogLevel);
     lua_registerlight(L,"getLogLevel", Lua_GetLogLevel);
+    lua_registerlight(L,"sleep", Lua_Sleep);
+}
+
+int Lua_Sleep(lua_State *L)
+{
+    if (lua_gettop(L) >= 1) {
+        delayMs(lua_tointeger(L,1));
+    }
+    return 0;
 }
 
 int Lua_GetStackSize(lua_State *L)

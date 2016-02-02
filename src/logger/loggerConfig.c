@@ -231,7 +231,6 @@ static void resetCanConfig(CANConfig *cfg)
 static void resetOBD2Config(OBD2Config *cfg)
 {
     memset(cfg, 0, sizeof(OBD2Config));
-    cfg->obd2SampleRate = SAMPLE_10Hz;
 
     for (int i = 0; i < OBD2_CHANNELS; ++i) {
         PidConfig *c = &cfg->pids[i];
@@ -275,7 +274,10 @@ static void resetTrackConfig(TrackConfig *cfg)
 
 static void resetBluetoothConfig(BluetoothConfig *cfg)
 {
-    *cfg = (BluetoothConfig) DEFAULT_BT_CONFIG;
+        *cfg = (BluetoothConfig) {
+                .btEnabled = DEFAULT_BT_ENABLED,
+                .baudRate = DEFAULT_BT_BAUD,
+        };
 }
 
 static void resetCellularConfig(CellularConfig *cfg)

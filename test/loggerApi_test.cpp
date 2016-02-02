@@ -476,8 +476,8 @@ void LoggerApiTest::testSetConnectivityCfgFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(string("blorg"), string(connCfg->cellularConfig.apnPass));
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)connCfg->bluetoothConfig.btEnabled);
-	CPPUNIT_ASSERT_EQUAL(string("myRacecar"), string(connCfg->bluetoothConfig.deviceName));
-	CPPUNIT_ASSERT_EQUAL(string("3311"), string(connCfg->bluetoothConfig.passcode));
+	CPPUNIT_ASSERT_EQUAL(string("myRacecar"), string(connCfg->bluetoothConfig.new_name));
+	CPPUNIT_ASSERT_EQUAL(string("3311"), string(connCfg->bluetoothConfig.new_pin));
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)connCfg->telemetryConfig.backgroundStreaming);
 	CPPUNIT_ASSERT_EQUAL(string("xyz123"), string(connCfg->telemetryConfig.telemetryDeviceId));
@@ -492,8 +492,8 @@ void LoggerApiTest::testGetConnectivityCfg(){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	ConnectivityConfig *connCfg = &c->ConnectivityConfigs;
 
-	strcpy(connCfg->bluetoothConfig.deviceName, "btDevName");
-	strcpy(connCfg->bluetoothConfig.passcode, "6543");
+	strcpy(connCfg->bluetoothConfig.new_name, "btDevName");
+	strcpy(connCfg->bluetoothConfig.new_pin, "6543");
 
 	strcpy(connCfg->cellularConfig.apnHost, "apnHost");
 	strcpy(connCfg->cellularConfig.apnUser, "apnUser");
@@ -506,8 +506,8 @@ void LoggerApiTest::testGetConnectivityCfg(){
 	Object &connJson = json["connCfg"];
 
 	CPPUNIT_ASSERT_EQUAL((int)(connCfg->bluetoothConfig.btEnabled), (int)(Number)connJson["btCfg"]["btEn"]);
-	CPPUNIT_ASSERT_EQUAL(string(connCfg->bluetoothConfig.deviceName), string((String)connJson["btCfg"]["name"]));
-	CPPUNIT_ASSERT_EQUAL(string(connCfg->bluetoothConfig.passcode), string((String)connJson["btCfg"]["pass"]));
+	CPPUNIT_ASSERT_EQUAL(string(connCfg->bluetoothConfig.new_name), string((String)connJson["btCfg"]["name"]));
+	CPPUNIT_ASSERT_EQUAL(string(connCfg->bluetoothConfig.new_pin), string((String)connJson["btCfg"]["pass"]));
 
 	CPPUNIT_ASSERT_EQUAL((int)(connCfg->cellularConfig.cellEnabled), (int)(Number)connJson["cellCfg"]["cellEn"]);
 	CPPUNIT_ASSERT_EQUAL(string(connCfg->cellularConfig.apnHost), string((String)connJson["cellCfg"]["apnHost"]));
