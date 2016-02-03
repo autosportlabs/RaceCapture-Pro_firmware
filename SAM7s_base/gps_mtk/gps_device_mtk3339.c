@@ -92,8 +92,9 @@ static void parseGGA(GpsSample * gpsSample, char *data)
             gpsSample->DOP = modp_atof(data);
             break;
         case 8:
-            gpsSample->altitude = modp_atof(data);
-            break;
+                /* Convert Meters to Ft.  Because MURICA! */
+                gpsSample->altitude = modp_atof(data) * 3.28084;
+                break;
         }
 
         param++;
