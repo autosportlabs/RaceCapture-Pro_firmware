@@ -104,6 +104,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/virtual_channel/virtual_channel.c \
 			$(RCP_SRC)/memory/memory.c \
 			$(RCP_SRC)/util/linear_interpolate.c \
+			$(RCP_SRC)/util/FreeRTOS-openocd.c \
 			$(RCP_SRC)/util/modp_atonum.c \
 			$(RCP_SRC)/util/modp_numtoa.c \
 			$(RCP_SRC)/util/byteswap.c \
