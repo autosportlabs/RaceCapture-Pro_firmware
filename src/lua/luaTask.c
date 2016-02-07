@@ -45,7 +45,8 @@
 
 #define DEFAULT_ONTICK_HZ 1
 #define MAX_ONTICK_HZ 30
-#define LUA_STACK_SIZE 1000
+/* Set this high as the parser can get very stack hungry.  Issue #411 */
+#define LUA_STACK_SIZE 1536
 #define LUA_PERIODIC_FUNCTION "onTick"
 
 #define LUA_BYPASS_FLASH_DELAY 250
