@@ -64,6 +64,11 @@ INCLUDES += $(CPU_INCLUDES) $(BOARD_INCLUDES) $(LIB_INCLUDES) $(APP_INCLUDES) $(
 CFLAGS += $(INCLUDES) $(CPU_DEFINES) $(BOARD_DEFINES) $(APP_DEFINES) $(CPU_FLAGS)
 ASFLAGS += -mcpu=$(CPU_TYPE) $(FPU) -g -Wa,--warn
 
+ifdef DEBUG
+CFLAGS += -D_DEBUG
+endif
+
+
 LIBS = -lnosys
 LIBS += $(addprefix -l,$(BASE_LIBS))
 LIBS += $(addprefix -l,$(LUA_LIBS))

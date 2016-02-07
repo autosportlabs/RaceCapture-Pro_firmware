@@ -53,11 +53,14 @@
 #include <app_info.h>
 #include <stdbool.h>
 
-#define FATAL_ERROR_SCHEDULER	1
-#define FATAL_ERROR_HARDWARE	2
+#define FLASH_PAUSE_DELAY_S 	5
+#define FLASH_DELAY_S		1
 
-#define FLASH_PAUSE_DELAY 	5000000
-#define FLASH_DELAY 		1000000
+enum fatal_error {
+        FATAL_ERROR_HARDWARE  = 1,
+        FATAL_ERROR_SCHEDULER = 2,
+        FATAL_ERROR_OVERFLOW  = 3,
+};
 
 __attribute__((aligned (4)))
 static const struct app_info_block info_block = {
@@ -65,34 +68,42 @@ static const struct app_info_block info_block = {
     .info_crc = 0xDEADBEEF,
 };
 
-static void fatalError(int type)
+static void delay_seconds(const size_t seconds)
 {
-    int count;
+        int64_t cycles = seconds * configCPU_CLOCK_HZ;
 
-    switch (type) {
-    case FATAL_ERROR_HARDWARE:
-        count = 1;
-        break;
-    case FATAL_ERROR_SCHEDULER:
-        count = 2;
-        break;
-    default:
-        count = 3;
-        break;
-    }
-
-    while(1) {
-        for (int c = 0; c < count; c++) {
-            LED_enable(1);
-            LED_enable(2);
-            for (int i=0; i<FLASH_DELAY; i++) {}
-            LED_disable(1);
-            LED_disable(2);
-            for (int i=0; i < FLASH_DELAY; i++) {}
-        }
-        for (int i=0; i < FLASH_PAUSE_DELAY; i++) {}
-    }
+        /* Each loop iteration takes 8 cycles */
+        for(; cycles > 0; cycles -= 8);
 }
+
+static void fatalError(const enum fatal_error type)
+{
+        for(;;) {
+                LED_enable(1);
+                LED_enable(2);
+                delay_seconds(FLASH_PAUSE_DELAY_S);
+                LED_disable(1);
+                LED_disable(2);
+                delay_seconds(FLASH_DELAY_S);
+
+                for (int c = 0; c < type; ++c) {
+                        LED_enable(1);
+                        LED_enable(2);
+                        delay_seconds(FLASH_DELAY_S);
+                        LED_disable(1);
+                        LED_disable(2);
+                        delay_seconds(FLASH_DELAY_S);
+                }
+        }
+}
+
+void vApplicationStackOverflowHook(xTaskHandle xTask,
+                                   signed char *pcTaskName)
+{
+        pr_error_str_msg("STACK OVERFLOW in ", (char *) pcTaskName);
+        fatalError(FATAL_ERROR_OVERFLOW);
+}
+
 
 /*
  * Define task priorities here.  Ensure that these values are
@@ -133,7 +144,10 @@ int main( void )
         ALWAYS_KEEP(info_block);
         cpu_init();
         pr_info("*** Start! ***\r\n");
+
+#if !defined(_DEBUG)
         watchdog_init(WATCHDOG_TIMEOUT_MS);
+#endif /* _DEBUG */
 
         /*
          * Start the scheduler.
@@ -156,7 +170,7 @@ int main( void )
         }
 
         vTaskStartScheduler();
-        fatalError(FATAL_ERROR_SCHEDULER);
 
+        fatalError(FATAL_ERROR_SCHEDULER);
         return 0;
 }
