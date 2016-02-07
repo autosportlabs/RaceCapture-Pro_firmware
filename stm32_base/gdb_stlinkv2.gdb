@@ -1,5 +1,5 @@
 # Sets up GDB for remote debugging
-target extended-remote | openocd -f openocd_stlinkv2.cfg -c "gdb_port pipe; log_output openocd.log"
+target extended-remote | openocd -c "gdb_port pipe; log_output openocd.log" -f openocd_stlinkv2_gdb.cfg
 file main.elf
 
 # Matches the output from openocd.  Must be set manually.
