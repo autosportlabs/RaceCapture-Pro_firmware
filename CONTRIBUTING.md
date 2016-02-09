@@ -16,7 +16,7 @@ rules.  These are outlined below.  Please read them.
 
 ## Coding Standard
 
-We have a [coding standards document](/CODING_STANDARDS.md) in this
+We have a [coding standards document](/CODING_STANDARD.md) in this
 repository.  Please read it and follow it.  Yes you may not agree with
 everything it says/does (like the use of tabs) but that is the way this
 project is and we follow it strictly.  Please adhere to it or your patches
