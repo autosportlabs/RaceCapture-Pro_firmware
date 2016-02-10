@@ -52,3 +52,21 @@ cp CHANGELOG $MK2_RELEASE_DIR
 cp stm32_base/HOW_TO_FLASH.txt $MK2_RELEASE_DIR
 cp stm32_base/main.ihex $MK2_RELEASE_DIR/$MK2_RELEASE_NAME.ihex
 zip -FSr $MK2_RELEASE_NAME.zip $MK2_RELEASE_DIR
+
+###################################
+# Race Capture Track
+###################################
+pushd RCT
+make clean
+make all -j $NUM_PROC
+popd
+
+RELEASE_DIR=$RCP_DIST_DIR/RaceCapture
+RELEASE_NAME=RaceCaptureTrack_$RELEASE_NAME_SUFFIX
+mkdir $RELEASE_DIR
+
+### Commenting out as release doesn't exist yet.
+#cp CHANGELOG $RELEASE_DIR
+#cp RCT/HOW_TO_FLASH.txt $RELEASE_DIR
+#cp RCT/main.ihex $RELEASE_DIR/$RELEASE_NAME.ihex
+#zip -FSr $RELEASE_NAME.zip $RELEASE_DIR

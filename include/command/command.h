@@ -49,7 +49,10 @@ typedef struct _cmd_t {
     void (*func)(Serial *serial, unsigned int argc, char **argv);
 } cmd_t;
 
-#define NULL_COMMAND {NULL, NULL,NULL, NULL}
+#define SYSTEM_COMMAND(_CMD, _DESC, _ARG_DESC, _METHOD) \
+        {(_CMD),(_DESC),(_ARG_DESC),(_METHOD)},
+
+#define NULL_COMMAND {NULL, NULL, NULL, NULL}
 
 void show_welcome(Serial *serial);
 

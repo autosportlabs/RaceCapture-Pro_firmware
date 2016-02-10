@@ -152,7 +152,9 @@ bool is_data_sample_valid(const LoggerMessage *lm);
 /**
  * Creates a brand new LoggerMessage queue.  This is useful for sending
  * LoggerMessage objects to all the little subscribers that need to get
- * them.
+ * them.  Its size is always equal to the number of sample buffers we
+ * allocate.  This is because there is little point in allocating more
+ * queue space than we have buffers.
  * @return A newly allocated queue.
  */
 xQueueHandle create_logger_message_queue();

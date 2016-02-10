@@ -27,14 +27,22 @@
 
 CPP_GUARD_BEGIN
 
-#define LOGGER_COMMANDS \
-{"resetConfig", "Resets All configuration Data to factory default", "", ResetConfig}, \
-{"testSD", "Test Write to SD card.","<lineWrites> <periodicFlush> <quietMode>", TestSD}, \
-\
-{"startTerminal", "Starts a debugging terminal session on the specified port.","<port> <baud> [echo 1|0]", StartTerminal },\
-{"viewLog", "Prints out logging messages to the terminal as they happen", "", ViewLog },\
-{"setLogLevel", "Sets the log level", "<level>", SetLogLevel },\
-{"logGpsData", "Enables logging of raw GPS data from the GPS Mouse", "<1|0>", LogGpsData }
+#define LOGGER_COMMANDS                                                 \
+        SYSTEM_COMMAND("resetConfig", "Resets All configuration Data "  \
+                       "to factory default", "", ResetConfig)           \
+        SYSTEM_COMMAND("testSD", "Test Write to SD card.",              \
+                       "<lineWrites> <periodicFlush> <quietMode>",      \
+                       TestSD)                                          \
+        SYSTEM_COMMAND("startTerminal", "Starts a debugging terminal "  \
+                       "session on the specified port.",                \
+                       "<port> <baud> [echo 1|0]", StartTerminal)       \
+        SYSTEM_COMMAND("setLogLevel", "Sets the log level", "<level>",  \
+                       SetLogLevel)                                     \
+        SYSTEM_COMMAND("logGpsData", "Enables logging of raw GPS data " \
+                       "from the GPS Mouse", "<1|0>", LogGpsData)       \
+        SYSTEM_COMMAND("viewLog", "Prints out logging messages to the " \
+                       "terminal as they happen", "", ViewLog)
+
 
 void ResetConfig(Serial *serial, unsigned int argc, char **argv);
 void TestSD(Serial *serial, unsigned int argc, char **argv);

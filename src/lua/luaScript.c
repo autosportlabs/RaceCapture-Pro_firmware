@@ -42,25 +42,37 @@ void initialize_script()
 
 int flash_default_script()
 {
-    int result = -1;
-    pr_info("flashing default script...");
+        int result = -1;
+        pr_info("flashing default script...");
 
-    /*
-     * Stop LUA if we are flashing its data.  This is mainly done to recover
-     * RAM since our flashing operation is a heavy bugger
-     */
-    terminate_lua();
+        /*
+         * Stop LUA if we are flashing its data.  This is mainly done to recover
+         * RAM since our flashing operation is a heavy bugger
+         */
+        terminate_lua();
 
-    ScriptConfig *defaultScriptConfig = (ScriptConfig *)portMalloc(sizeof(ScriptConfig));
-    if (defaultScriptConfig != NULL) {
+        ScriptConfig *defaultScriptConfig =
+                (ScriptConfig *) portMalloc(sizeof(ScriptConfig));
+        if (defaultScriptConfig == NULL) {
+                pr_error("LUA: Can't flash.  Can't allocate RAM\r\n");
+                return result;
+        }
+
         defaultScriptConfig->magicInit = MAGIC_NUMBER_SCRIPT_INIT;
-        strncpy(defaultScriptConfig->script, DEFAULT_SCRIPT, sizeof(DEFAULT_SCRIPT));
-        result = memory_flash_region((void *)&g_scriptConfig, (void *)defaultScriptConfig, sizeof (ScriptConfig));
+        strncpy(defaultScriptConfig->script, DEFAULT_SCRIPT,
+                sizeof(DEFAULT_SCRIPT));
+        result = memory_flash_region((void *)&g_scriptConfig,
+                                     (void *)defaultScriptConfig,
+                                     sizeof (ScriptConfig));
         portFree(defaultScriptConfig);
-    }
-    if (result == 0) pr_info("win\r\n");
-    else pr_info("fail\r\n");
-    return result;
+
+        if (result == 0) {
+                pr_info("win\r\n");
+        } else {
+                pr_info("fail\r\n");
+        }
+
+        return result;
 }
 
 const char * getScript()

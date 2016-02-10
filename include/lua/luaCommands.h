@@ -27,9 +27,16 @@
 #include "serial.h"
 
 CPP_GUARD_BEGIN
-#define LUA_COMMANDS \
-		{"lua", "Enter the lua script interpreter.","", ExecLuaInterpreter}, \
-		{"reloadScript", "Reloads the current script.","",ReloadScript}
+
+#if defined(LUA_SUPPORT)
+#define LUA_COMMANDS                                                    \
+        SYSTEM_COMMAND("lua", "Enter the lua script interpreter.", "",  \
+                       ExecLuaInterpreter)                              \
+        SYSTEM_COMMAND("reloadScript", "Reloads the current script.",   \
+                       "", ReloadScript)
+#else
+#define LUA_COMMANDS
+#endif /* LUA_SUPPORT */
 
 Serial *getLuaSerialContext();
 void ExecLuaInterpreter(Serial *serial, unsigned int argc, char **argv);

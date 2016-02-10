@@ -30,6 +30,8 @@
 
 CPP_GUARD_BEGIN
 
+#if defined(LUA_SUPPORT)
+
 enum script_add_result {
         SCRIPT_ADD_RESULT_FAIL = 0,
         SCRIPT_ADD_RESULT_OK = 1,
@@ -61,6 +63,8 @@ enum script_add_result flashScriptPage(unsigned int page, const char *data,
 void unescapeScript(char *data);
 
 #define DEFAULT_SCRIPT "function onTick() end"
+
+#endif /* LUA_SUPPORT */
 
 CPP_GUARD_END
 

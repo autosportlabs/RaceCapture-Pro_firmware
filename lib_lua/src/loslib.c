@@ -164,7 +164,7 @@ static int os_date (lua_State *L)
             if (*s != '%' || *(s + 1) == '\0')  /* no conversion specifier? */
                 luaL_addchar(&b, *s);
             else {
-                /* XXX STIEG: Removed for space reasons... printf */
+                /* XXX: Removed for space reasons... printf */
                 /* size_t reslen; */
                 /* char buff[200];  /\* should be big enough for any conversion result *\/ */
                 /* cc[1] = *(++s); */
