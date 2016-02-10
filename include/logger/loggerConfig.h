@@ -22,10 +22,10 @@
 #ifndef LOGGERCONFIG_H_
 #define LOGGERCONFIG_H_
 
+#include "capabilities.h"
 #include "cpp_guard.h"
 #include "geopoint.h"
 #include "tracks.h"
-#include "capabilities.h"
 #include "versionInfo.h"
 
 #include <stdbool.h>
@@ -216,6 +216,11 @@ typedef struct _GPIOConfig {
 #define DEFAULT_GPIO_CHANNEL_CONFIG {"", "", 0, 1, SAMPLE_DISABLED, 1, 0}
 #define DEFAULT_GPIO_CONFIG {DEFAULT_GPIO_CHANNEL_CONFIG, CONFIG_GPIO_IN}
 
+/*
+ * FIXME: These two enum types have to live in this file instead of
+ * something more proper like imu.h.  Otherwise we will get a chicken
+ * and egg problem in our headers.
+ */
 enum imu_mode {
         IMU_MODE_DISABLED = 0,
         IMU_MODE_NORMAL = 1,
@@ -239,12 +244,14 @@ typedef struct _ImuConfig {
     float filterAlpha;
 } ImuConfig;
 
-#define MIN_IMU_RAW	0
-#define MAX_IMU_RAW	4097
-
-#define DEFAULT_ACCEL_ZERO	2048
-/* LY330ALH zero state voltage output is 1.5v */
-#define DEFAULT_GYRO_ZERO	1862
+/*
+ * On InvenSense IMU 9150/9250 raw values are returned in 2's
+ * compliment.  Hence they are already formed the way we want,
+ * so the zeroValue is actually 0.  Just have to divide them
+ * by their units per element rate (defined by HAL).
+ */
+#define DEFAULT_ACCEL_ZERO	0
+#define DEFAULT_GYRO_ZERO	0
 
 #define IMU_ACCEL_CH_CONFIG(name) {name, "G", -3, 3, SAMPLE_25Hz, 2, 0}
 #define IMU_GYRO_CH_CONFIG(name) {name, "Deg/Sec", -120, 120, SAMPLE_25Hz, 2, 0}
@@ -265,10 +272,10 @@ typedef struct _ImuConfig {
                         }
 
 #define IMU_CONFIG_DEFAULTS {                                                 \
-                IMU_ACCEL_CONFIG("AccelX", IMU_MODE_INVERTED, IMU_CHANNEL_Y), \
-                IMU_ACCEL_CONFIG("AccelY", IMU_MODE_INVERTED, IMU_CHANNEL_X), \
+                IMU_ACCEL_CONFIG("AccelX", IMU_MODE_NORMAL, IMU_CHANNEL_X), \
+                IMU_ACCEL_CONFIG("AccelY", IMU_MODE_NORMAL, IMU_CHANNEL_Y), \
                 IMU_ACCEL_CONFIG("AccelZ", IMU_MODE_NORMAL, IMU_CHANNEL_Z),   \
-                IMU_GYRO_CONFIG("Yaw", IMU_MODE_INVERTED, IMU_CHANNEL_YAW),   \
+                IMU_GYRO_CONFIG("Yaw", IMU_MODE_NORMAL, IMU_CHANNEL_YAW),   \
                 IMU_GYRO_CONFIG("Pitch", IMU_MODE_NORMAL, IMU_CHANNEL_PITCH), \
                 IMU_GYRO_CONFIG("Roll", IMU_MODE_NORMAL, IMU_CHANNEL_ROLL),   \
                 }
@@ -575,7 +582,6 @@ GPIOConfig * getGPIOConfigChannel(int channel);
 char filterGpioMode(int config);
 
 ImuConfig * getImuConfigChannel(int channel);
-int filterImuRawValue(int accelRawValue);
 int filterImuMode(int mode);
 int filterImuChannel(int channel);
 

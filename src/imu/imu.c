@@ -46,28 +46,24 @@ void imu_sample_all()
     }
 }
 
-float imu_read_value(unsigned char imuChannel, ImuConfig *ac)
+float imu_read_value(enum imu_channel channel, ImuConfig *ac)
 {
-        size_t physicalChannel = ac->physicalChannel;
-        int raw = g_imu_filter[physicalChannel].current_value;
-        int zeroValue = ac->zeroValue;
-        float countsPerUnit = imu_device_counts_per_unit(imuChannel);
-        float scaledValue = ((float)(raw - zeroValue) / countsPerUnit);
+        const size_t physicalChannel = ac->physicalChannel;
+        const int raw = g_imu_filter[physicalChannel].current_value;
+        const int zeroValue = ac->zeroValue;
+        const float countsPerUnit = imu_device_counts_per_unit(channel);
+        const float scaledValue = ((float) (raw - zeroValue)) / countsPerUnit;
 
         /* now alter based on configuration */
         switch (ac->mode) {
         case IMU_MODE_NORMAL:
-                break;
+                return scaledValue;
         case IMU_MODE_INVERTED:
-                scaledValue = -scaledValue;
-                break;
+                return -scaledValue;
         case IMU_MODE_DISABLED:
         default:
-                scaledValue = 0;
-                break;
+                return 0;
         }
-
-        return scaledValue;
 }
 
 static void imu_flush_filter(size_t physicalChannel)
@@ -109,10 +105,7 @@ int imu_soft_init(LoggerConfig *loggerConfig)
     return 1;
 }
 
-
-
-int imu_read(unsigned int channel)
+int imu_read(enum imu_channel channel)
 {
-    int read = imu_device_read(channel);
-    return read;
+    return imu_device_read(channel);
 }

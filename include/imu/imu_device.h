@@ -23,14 +23,15 @@
 #define IMU_DEVICE_H_
 
 #include "cpp_guard.h"
+#include "imu.h"
 
 CPP_GUARD_BEGIN
 
 void imu_device_init();
 
-int imu_device_read(unsigned int channel);
+int imu_device_read(enum imu_channel channel);
 
-float imu_device_counts_per_unit(unsigned int channel);
+float imu_device_counts_per_unit(enum imu_channel channel);
 
 CPP_GUARD_END
 

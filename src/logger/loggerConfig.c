@@ -423,16 +423,6 @@ int filterImuChannel(int channel)
     return (channel < CONFIG_IMU_CHANNELS ? channel : CONFIG_IMU_CHANNELS - 1);
 }
 
-int filterImuRawValue(int imuRawValue)
-{
-    if (imuRawValue > MAX_IMU_RAW) {
-        imuRawValue = MAX_IMU_RAW;
-    } else if (imuRawValue < MIN_IMU_RAW) {
-        imuRawValue = MIN_IMU_RAW;
-    }
-    return imuRawValue;
-}
-
 int filterImuMode(int mode)
 {
         switch (mode) {
