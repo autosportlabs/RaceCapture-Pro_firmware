@@ -30,6 +30,19 @@
 #include <stdbool.h>
 #include <string.h>
 
+#define READ_TIMEOUT 	500
+#define MEDIUM_TIMEOUT 	15000
+#define CONNECT_TIMEOUT 60000
+
+#define GPRS_ACTIVATE_PDP_ATTEMPTS	3
+#define GPRS_ACTIVATE_PDP_BACKOFF_MS	2000
+#define GPRS_ATTACH_ATTEMPTS	10
+#define GPRS_ATTACH_BACKOFF_MS	2000
+#define NET_REG_ATTEMPTS	10
+#define NET_REG_BACKOFF_MS	3000
+#define STOP_DM_RX_EVENTS	10
+#define STOP_DM_RX_TIMEOUT_MS	1000
+
 static bool sim900_set_multiple_connections(struct serial_buffer *sb,
                                             const bool enable)
 {
@@ -189,7 +202,7 @@ static bool sim900_activate_pdp(struct serial_buffer *sb, const int pdp_id)
          * the serial bus.
          */
         if (status)
-                delayMs(1000);
+                delayMs(GPRS_ACTIVATE_PDP_BACKOFF_MS);
 
         return status;
 }
@@ -239,9 +252,9 @@ static bool sim900_stop_direct_mode(struct serial_buffer *sb)
         serial_buffer_reset(sb);
         serial_buffer_append(sb, "+++");
         serial_buffer_tx(sb);
-        for (size_t events = 10; events; --events) {
+        for (size_t events = STOP_DM_RX_EVENTS; events; --events) {
                 serial_buffer_reset(sb);
-                if (serial_buffer_rx(sb, 1000) &&
+                if (serial_buffer_rx(sb, STOP_DM_RX_TIMEOUT_MS) &&
                     is_rsp_ok((const char**) &(sb->buffer), 1))
                         return true;
         }
@@ -261,7 +274,7 @@ static bool sim900_register_on_network(struct serial_buffer *sb,
                                        struct cellular_info *ci)
 {
         /* Check our status on the network */
-        for (size_t tries = 10; tries; --tries) {
+        for (size_t tries = NET_REG_ATTEMPTS; tries; --tries) {
                 sim900_get_net_reg_status(sb, ci);
 
                 switch(ci->net_status) {
@@ -273,7 +286,7 @@ static bool sim900_register_on_network(struct serial_buffer *sb,
                 }
 
                 /* Wait before trying again */
-                delayMs(3000);
+                delayMs(NET_REG_BACKOFF_MS);
         }
 
 out:
@@ -286,14 +299,14 @@ static bool sim900_setup_pdp(struct serial_buffer *sb,
 {
         /* Check GPRS attached */
         bool gprs_attached;
-        for (size_t tries = 10; tries; --tries) {
+        for (size_t tries = GPRS_ATTACH_ATTEMPTS; tries; --tries) {
                 gprs_attached = sim900_is_gprs_attached(sb);
 
                 if (gprs_attached)
                         break;
 
                 /* Wait before trying again.  Arbitrary backoff */
-                delayMs(3000);
+                delayMs(GPRS_ATTACH_BACKOFF_MS);
         }
 
         pr_info_str_msg("[sim900] GPRS Attached: ",
@@ -311,19 +324,21 @@ static bool sim900_setup_pdp(struct serial_buffer *sb,
         }
 
         bool gprs_active;
-        for (size_t tries = 3; tries; --tries) {
+        for (size_t tries = GPRS_ACTIVATE_PDP_ATTEMPTS; tries; --tries) {
                 gprs_active = sim900_activate_pdp(sb, 0);
 
                 if (gprs_active)
                         break;
 
                 /* Wait before trying again.  Arbitrary backoff */
-                delayMs(3000);
+                delayMs(GPRS_ACTIVATE_PDP_BACKOFF_MS);
         }
+
         if (!gprs_active) {
                 pr_warning("[sim900] Failed connect GPRS\r\n");
                 return false;
         }
+
         pr_debug("[sim900] GPRS connected\r\n");
 
         /* Wait to get the IP */
@@ -334,6 +349,7 @@ static bool sim900_setup_pdp(struct serial_buffer *sb,
         }
         if (!has_ip)
                 return false;
+
         pr_debug("[sim900] IP acquired\r\n");
 
         if (!sim900_put_dns_config(sb, cc->dns1, cc->dns2)) {

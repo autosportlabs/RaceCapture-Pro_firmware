@@ -31,6 +31,19 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define READ_TIMEOUT 	500
+#define MEDIUM_TIMEOUT 	15000
+#define CONNECT_TIMEOUT 60000
+
+#define GPRS_ACTIVATE_PDP_ATTEMPTS	3
+#define GPRS_ACTIVATE_PDP_BACKOFF_MS	3000
+#define GPRS_ATTACH_ATTEMPTS	5
+#define GPRS_ATTACH_BACKOFF_MS	1000
+#define NET_REG_ATTEMPTS	10
+#define NET_REG_BACKOFF_MS	1000
+#define STOP_DM_RX_EVENTS	10
+#define STOP_DM_RX_TIMEOUT_MS	1000
+
 static bool sara_u280_get_subscriber_number(struct serial_buffer *sb,
                                             struct cellular_info *ci)
 {
@@ -40,7 +53,7 @@ static bool sara_u280_get_subscriber_number(struct serial_buffer *sb,
 static bool sara_u280_get_signal_strength(struct serial_buffer *sb,
                                           struct cellular_info *ci)
 {
-        return gsm_get_subscriber_number(sb, ci);
+        return gsm_get_signal_strength(sb, ci);
 }
 
 static bool sara_u280_get_imei(struct serial_buffer *sb,
@@ -142,7 +155,7 @@ static bool sara_u280_put_pdp_config(struct serial_buffer *sb,
         serial_buffer_printf_append(sb, ";+UPSD=0,3,\"%s\"", password);
 
         /* Dynamic IP */
-        //serial_buffer_append(sb, ";+UPSD=0,7,\"0.0.0.0\"");
+        /* serial_buffer_append(sb, ";+UPSD=0,7,\"0.0.0.0\""); */
 
 
         const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs,
@@ -190,14 +203,6 @@ static bool sara_u280_activate_pdp(struct serial_buffer *sb,
 {
         return sara_u280_gprs_psd_action(sb, pdp_id, 3);
 }
-
-#if 0
-static bool sara_u280_deactivate_pdp(struct serial_buffer *sb,
-                                     const int pdp_id)
-{
-        return sara_u280_gprs_psd_action(sb, pdp_id, 4);
-}
-#endif
 
 static int sara_u280_create_tcp_socket(struct serial_buffer *sb)
 {
@@ -285,9 +290,9 @@ static bool sara_u280_stop_direct_mode(struct serial_buffer *sb)
         serial_buffer_reset(sb);
         serial_buffer_append(sb, "+++");
         serial_buffer_tx(sb);
-        for (size_t events = 10; events; --events) {
+        for (size_t events = STOP_DM_RX_EVENTS; events; --events) {
                 serial_buffer_reset(sb);
-                if (serial_buffer_rx(sb, 1000) &&
+                if (serial_buffer_rx(sb, STOP_DM_RX_TIMEOUT_MS) &&
                     is_rsp_ok((const char**) &(sb->buffer), 1))
                         return true;
         }
@@ -314,7 +319,7 @@ static bool sara_u280_register_on_network(struct serial_buffer *sb,
                                           struct cellular_info *ci)
 {
         /* Check our status on the network */
-        for (size_t tries = 30; tries; --tries) {
+        for (size_t tries = NET_REG_ATTEMPTS; tries; --tries) {
                 sara_u280_get_net_reg_status(sb, ci);
 
                 switch(ci->net_status) {
@@ -326,7 +331,7 @@ static bool sara_u280_register_on_network(struct serial_buffer *sb,
                 }
 
                 /* Wait before trying again */
-                delayMs(1000);
+                delayMs(NET_REG_BACKOFF_MS);
         }
 
 out:
@@ -339,14 +344,14 @@ static bool sara_u280_setup_pdp(struct serial_buffer *sb,
 {
         /* Check GPRS attached */
         bool gprs_attached;
-        for (size_t tries = 10; tries; --tries) {
+        for (size_t tries = GPRS_ATTACH_ATTEMPTS; tries; --tries) {
                 gprs_attached = sara_u280_is_gprs_attached(sb);
 
                 if (gprs_attached)
                         break;
 
                 /* Wait before trying again.  Arbitrary backoff */
-                delayMs(3000);
+                delayMs(GPRS_ATTACH_BACKOFF_MS);
         }
 
         pr_info_str_msg("[sara_u280] GPRS Attached: ",
@@ -366,20 +371,23 @@ static bool sara_u280_setup_pdp(struct serial_buffer *sb,
                 return false;
         }
 
-        for (size_t tries = 3; tries && !gprs_active; --tries) {
+        for (size_t tries = GPRS_ACTIVATE_PDP_ATTEMPTS;
+             tries && !gprs_active; --tries) {
                 gprs_active = sara_u280_activate_pdp(sb, 0);
 
                 if (gprs_active)
                         break;
 
                 /* Wait before trying again.  Arbitrary backoff */
-                delayMs(3000);
+                delayMs(GPRS_ACTIVATE_PDP_BACKOFF_MS);
         }
+
         if (!gprs_active) {
                 pr_warning("[sara_u280] Failed connect GPRS. "
                            "Check APN settings.\r\n");
                 return false;
         }
+
         pr_debug("[sara_u280] GPRS connected\r\n");
 
         /* Wait to get the IP */
@@ -388,8 +396,10 @@ static bool sara_u280_setup_pdp(struct serial_buffer *sb,
                 has_ip = sara_u280_get_ip_address(sb);
                 delayMs(1000);
         }
+
         if (!has_ip)
                 return false;
+
         pr_debug("[sara_u280] IP acquired\r\n");
 
         return true;

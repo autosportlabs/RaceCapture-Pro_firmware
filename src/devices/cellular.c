@@ -40,7 +40,14 @@
 
 #include <stdbool.h>
 
-#define AUTH_MAX_JSMN_TOKENS	5
+#define AUTOBAUD_ATTEMPTS	5
+#define AUTOBAUD_BACKOFF_MS	200
+#define PROBE_READ_TIMEOUT_MS	500
+/* Good balance between SIM900 and Ublox sara module */
+#define RESET_MODEM_DELAY_MS	1100
+#define TELEM_AUTH_JSMN_TOKENS	5
+#define TELEM_AUTH_RX_TRIES	3
+#define TELEM_AUTH_RX_WAIT_MS	5000
 
 static const struct cell_modem_methods* methods;
 static const struct at_config *at_cfg;
@@ -66,7 +73,6 @@ static void cell_serial_tx_cb(const char *data)
         for(; *data; ++data) {
                 if (pr_tx_pfx) {
                         printk(serial_dbg_lvl, "[cell] tx: ");
-                        LED_toggle(0);
                         pr_tx_pfx = false;
                 }
 
@@ -267,7 +273,8 @@ enum cellular_modem probe_cellular_manuf(struct serial_buffer *sb)
 
         serial_buffer_reset(sb);
         serial_buffer_append(sb, "AT+CGMI");
-        const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs, msgs_len);
+        const size_t count = cellular_exec_cmd(sb, PROBE_READ_TIMEOUT_MS,
+                                               msgs, msgs_len);
 
         if (!is_rsp_ok(msgs, count))
                 return CELLULAR_MODEM_UNKNOWN;
@@ -339,9 +346,9 @@ static void reset_modem()
          * "Well enough"(tm).
          */
         cell_pwr_btn(true);
-        delayMs(1100);
+        delayMs(RESET_MODEM_DELAY_MS);
         cell_pwr_btn(false);
-        delayMs(1100);
+        delayMs(RESET_MODEM_DELAY_MS);
 
         at_cfg = get_safe_at_config();
 }
@@ -353,7 +360,7 @@ static int cellular_init_modem(struct serial_buffer *sb)
 {
         reset_modem();
 
-        if (!autobaud_modem(sb, 5, 200))
+        if (!autobaud_modem(sb, AUTOBAUD_ATTEMPTS, AUTOBAUD_BACKOFF_MS))
                 return DEVICE_INIT_FAIL;
 
         if(!gsm_set_echo(sb, false))
@@ -403,16 +410,16 @@ static bool auth_telem_stream(struct serial_buffer *sb,
 
         /* Parse the incoming JSON */
         jsmn_parser parser;
-        jsmntok_t toks[AUTH_MAX_JSMN_TOKENS];
+        jsmntok_t toks[TELEM_AUTH_JSMN_TOKENS];
 
-        for (size_t tries = 20; tries; --tries) {
-                const int chars = serial_buffer_rx(sb, 1000);
+        for (size_t tries = TELEM_AUTH_RX_TRIES; tries; --tries) {
+                const int chars = serial_buffer_rx(sb, TELEM_AUTH_RX_WAIT_MS);
                 if (!chars)
                         continue;
 
                 jsmn_init(&parser);
                 jsmnerr_t status = jsmn_parse(&parser, sb->buffer,
-                                              toks, AUTH_MAX_JSMN_TOKENS);
+                                              toks, TELEM_AUTH_JSMN_TOKENS);
 
                 if (JSMN_SUCCESS != status) {
                         pr_warning_int_msg("[cell] Auth JSON parsing error: ",
@@ -420,7 +427,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
                         continue;
                 }
 
-                const jsmntok_t *status_val = findStringValueNode(
+                const jsmntok_t *status_val = jsmn_find_get_node_value_string(
                         toks, "status");
                 if (status_val) {
                         /* Could be success or failure.  Handle both */
@@ -432,7 +439,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
 
                         /* If here, then something went wrong. */
                         pr_warning_str_msg("[cell] Auth status: ", status);
-                        const jsmntok_t *message_val = findStringValueNode(
+                        const jsmntok_t *message_val = jsmn_find_get_node_value_string(
                                 toks, "message");
                         if (message_val)
                                 pr_warning_str_msg("[cell] Auth message: ",
@@ -526,9 +533,9 @@ int cellular_init_connection(DeviceConfig *config)
 
 int cellular_check_connection_status(DeviceConfig *config)
 {
-	if (strncmp(config->buffer,"DISCONNECT", 10) == 0){
-                pr_info("[cell] socket disconnect\r\n");
-                return 1;
-	}
-	return 0;
+	if (0 != strncmp(config->buffer, "DISCONNECT", 10))
+                return 0;
+
+        pr_info("[cell] socket disconnect\r\n");
+        return 1;
 }

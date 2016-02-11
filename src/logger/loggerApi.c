@@ -104,7 +104,7 @@ void unescapeTextField(char *data)
 
 static int setUnsignedCharValueIfExists(const jsmntok_t *root, const char * fieldName, unsigned char *target, unsigned char (*filter)(unsigned char))
 {
-    const jsmntok_t *valueNode = findValueNode(root, fieldName);
+    const jsmntok_t *valueNode = jsmn_find_get_node_value_prim(root, fieldName);
     if (valueNode) {
         unsigned char value = modp_atoi(valueNode->data);
         if (filter != NULL)
@@ -116,7 +116,7 @@ static int setUnsignedCharValueIfExists(const jsmntok_t *root, const char * fiel
 
 static int setIntValueIfExists(const jsmntok_t *root, const char * fieldName, int *target)
 {
-    const jsmntok_t *valueNode = findValueNode(root, fieldName);
+    const jsmntok_t *valueNode = jsmn_find_get_node_value_prim(root, fieldName);
     if (valueNode)
         * target = modp_atoi(valueNode->data);
     return (valueNode != NULL);
@@ -124,7 +124,7 @@ static int setIntValueIfExists(const jsmntok_t *root, const char * fieldName, in
 
 static int setFloatValueIfExists(const jsmntok_t *root, const char * fieldName, float *target )
 {
-    const jsmntok_t *valueNode = findValueNode(root, fieldName);
+    const jsmntok_t *valueNode = jsmn_find_get_node_value_prim(root, fieldName);
     if (valueNode)
         * target = modp_atof(valueNode->data);
     return (valueNode != NULL);
@@ -132,7 +132,7 @@ static int setFloatValueIfExists(const jsmntok_t *root, const char * fieldName, 
 
 static int setStringValueIfExists(const jsmntok_t *root, const char * fieldName, char *target, size_t maxLen )
 {
-    const jsmntok_t *valueNode = findStringValueNode(root, fieldName);
+    const jsmntok_t *valueNode = jsmn_find_get_node_value_string(root, fieldName);
     if (valueNode)
         strlcpy(target, valueNode->data, maxLen);
     return (valueNode != NULL);
@@ -834,7 +834,7 @@ int api_setLogfileLevel(Serial *serial, const jsmntok_t *json)
 
 static void setCellConfig(const jsmntok_t *root)
 {
-    const jsmntok_t *cellCfgNode = findNode(root, "cellCfg");
+    const jsmntok_t *cellCfgNode = jsmn_find_node(root, "cellCfg");
     if (cellCfgNode) {
         CellularConfig *cellCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
         cellCfgNode++;
@@ -847,7 +847,7 @@ static void setCellConfig(const jsmntok_t *root)
 
 static void setBluetoothConfig(const jsmntok_t *root)
 {
-    const jsmntok_t *btCfgNode = findNode(root, "btCfg");
+    const jsmntok_t *btCfgNode = jsmn_find_node(root, "btCfg");
     if (btCfgNode != NULL) {
         btCfgNode++;
         BluetoothConfig *btCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
@@ -859,7 +859,7 @@ static void setBluetoothConfig(const jsmntok_t *root)
 
 static void setTelemetryConfig(const jsmntok_t *root)
 {
-    const jsmntok_t *telemetryCfgNode = findNode(root, "telCfg");
+    const jsmntok_t *telemetryCfgNode = jsmn_find_node(root, "telCfg");
     if (telemetryCfgNode) {
         telemetryCfgNode++;
         TelemetryConfig *telemetryCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.telemetryConfig);
@@ -1210,7 +1210,7 @@ int api_setCanConfig(Serial *serial, const jsmntok_t *json)
     CANConfig *canCfg = &getWorkingLoggerConfig()->CanConfig;
     setUnsignedCharValueIfExists( json, "en", &canCfg->enabled, NULL);
 
-    const jsmntok_t *baudTok = findNode(json, "baud");
+    const jsmntok_t *baudTok = jsmn_find_node(json, "baud");
     if (baudTok != NULL && (++baudTok)->type == JSMN_ARRAY) {
         size_t arrSize = json->size;
         if (arrSize > CONFIG_CAN_CHANNELS)
@@ -1270,7 +1270,7 @@ int api_setObd2Config(Serial *serial, const jsmntok_t *json)
         return API_ERROR_PARAMETER;
     }
 
-    const jsmntok_t *pidsTok = findNode(json, "pids");
+    const jsmntok_t *pidsTok = jsmn_find_node(json, "pids");
     if (pidsTok != NULL && (++pidsTok)->type == JSMN_ARRAY) {
         int pidMax = pidsTok->size;
         if (pidMax > MAX_OBD2_MESSAGE_PIDS) {
@@ -1299,33 +1299,33 @@ int api_setLapConfig(Serial *serial, const jsmntok_t *json)
 {
     LapConfig *lapCfg = &(getWorkingLoggerConfig()->LapConfigs);
 
-    const jsmntok_t *lapCount = findNode(json, "lapCount");
+    const jsmntok_t *lapCount = jsmn_find_node(json, "lapCount");
     if (lapCount != NULL)
         setChannelConfig(serial, lapCount + 1, &lapCfg->lapCountCfg, NULL, NULL);
 
-    const jsmntok_t *lapTime = findNode(json, "lapTime");
+    const jsmntok_t *lapTime = jsmn_find_node(json, "lapTime");
     if (lapTime != NULL)
         setChannelConfig(serial, lapTime + 1, &lapCfg->lapTimeCfg, NULL, NULL);
 
-    const jsmntok_t *predTime = findNode(json, "predTime");
+    const jsmntok_t *predTime = jsmn_find_node(json, "predTime");
     if (predTime != NULL)
         setChannelConfig(serial, predTime + 1, &lapCfg->predTimeCfg, NULL, NULL);
 
-    const jsmntok_t *sector = findNode(json, "sector");
+    const jsmntok_t *sector = jsmn_find_node(json, "sector");
     if (sector != NULL)
         setChannelConfig(serial, sector + 1, &lapCfg->sectorCfg, NULL, NULL);
 
-    const jsmntok_t *sectorTime = findNode(json, "sectorTime");
+    const jsmntok_t *sectorTime = jsmn_find_node(json, "sectorTime");
     if (sectorTime != NULL)
         setChannelConfig(serial, sectorTime + 1, &lapCfg->sectorTimeCfg, NULL, NULL);
 
-    const jsmntok_t *elapsed = findNode(json, "elapsedTime");
+    const jsmntok_t *elapsed = jsmn_find_node(json, "elapsedTime");
     if (elapsed != NULL)
         setChannelConfig(serial, elapsed + 1,
                          &lapCfg->elapsed_time_cfg,
                          NULL, NULL);
 
-    const jsmntok_t *current_lap = findNode(json, "currentLap");
+    const jsmntok_t *current_lap = jsmn_find_node(json, "currentLap");
     if (current_lap != NULL)
         setChannelConfig(serial, current_lap + 1,
                          &lapCfg->current_lap_cfg,
@@ -1427,7 +1427,7 @@ int api_getTrackConfig(Serial *serial, const jsmntok_t *json)
 static int setGeoPointIfExists(const jsmntok_t *root, const char * name, GeoPoint *geoPoint)
 {
     int success = 0;
-    const jsmntok_t *geoPointNode  = findNode(root, name);
+    const jsmntok_t *geoPointNode  = jsmn_find_node(root, name);
     if (geoPointNode) {
         geoPointNode++;
         if (geoPointNode && geoPointNode->type == JSMN_ARRAY && geoPointNode->size == 2) {
@@ -1459,7 +1459,7 @@ static void setTrack(const jsmntok_t *trackNode, Track *track)
             sectorsList = track->stage.sectors;
             maxSectors = STAGE_SECTOR_COUNT;
         }
-        const jsmntok_t *sectors = findNode(trackNode, "sec");
+        const jsmntok_t *sectors = jsmn_find_node(trackNode, "sec");
         if (sectors != NULL) {
             sectors++;
             if (sectors != NULL && sectors->type == JSMN_ARRAY) {
@@ -1499,7 +1499,7 @@ int api_setTrackConfig(Serial *serial, const jsmntok_t *json)
     setFloatValueIfExists(json, "rad", &trackCfg->radius);
     setUnsignedCharValueIfExists(json, "autoDetect", &trackCfg->auto_detect, NULL);
 
-    const jsmntok_t *track = findNode(json, "track");
+    const jsmntok_t *track = jsmn_find_node(json, "track");
     if (track != NULL)
         setTrack(track + 1, &trackCfg->track);
 
@@ -1529,7 +1529,7 @@ int api_addTrackDb(Serial *serial, const jsmntok_t *json)
 
     if (setUnsignedCharValueIfExists(json, "mode", &mode, NULL) && setIntValueIfExists(json, "index", &index)) {
         Track track;
-        const jsmntok_t *trackNode = findNode(json, "track");
+        const jsmntok_t *trackNode = jsmn_find_node(json, "track");
         if (trackNode != NULL)
             setTrack(trackNode + 1, &track);
         const int result = (int) add_track(&track, index,
@@ -1586,9 +1586,9 @@ int api_setScript(Serial *serial, const jsmntok_t *json)
 {
     int rc = API_ERROR_UNSPECIFIED;
 
-    const jsmntok_t *dataTok = findNode(json, "data");
-    const jsmntok_t *pageTok = findNode(json, "page");
-    const jsmntok_t *modeTok = findNode(json, "mode");
+    const jsmntok_t *dataTok = jsmn_find_node(json, "data");
+    const jsmntok_t *pageTok = jsmn_find_node(json, "page");
+    const jsmntok_t *modeTok = jsmn_find_node(json, "mode");
 
     if (dataTok != NULL && pageTok != NULL && modeTok !=NULL) {
         dataTok++;

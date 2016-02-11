@@ -324,39 +324,39 @@ int jsmn_isNull(const jsmntok_t *tok)
     return strncmp("null", tok->data, 3) == 0;
 }
 
-/* TODO: rename these with jsmn_ prefix */
-const jsmntok_t * findNode(const jsmntok_t *node, const char * name)
+const jsmntok_t * jsmn_find_node(const jsmntok_t *node, const char * name)
 {
-    while (!(node->start == 0 && node->end == 0)) {
-        if (strcmp(name, jsmn_trimData(node)->data) == 0)
-            return node;
-        node++;
-    }
-    return NULL;
+        if (NULL == node)
+                return NULL;
+
+        for (; node->start || node->end; ++node)
+                if (0 == strcmp(name, jsmn_trimData(node)->data))
+                        return node;
+
+        return NULL;
 }
 
-const jsmntok_t * findStringValueNode(const jsmntok_t *node, const char *name)
+const jsmntok_t * jsmn_find_get_node_value(const jsmntok_t *node,
+                                           const char *name,
+                                           const jsmntype_t val_type)
 {
-    const jsmntok_t *field = findNode(node, name);
-    if (field != NULL) {
-        field++;
-        if (field->type == JSMN_STRING) {
-            jsmn_trimData(field);
-            return field;
-        }
-    }
-    return NULL;
+        const jsmntok_t *field = jsmn_find_node(node, name);
+
+        if (!field)
+                return NULL;
+
+        /* Move to the value node */
+        ++field;
+        return val_type != field->type ? NULL : jsmn_trimData(field);
 }
 
-const jsmntok_t * findValueNode(const jsmntok_t *node, const char *name)
+const jsmntok_t * jsmn_find_get_node_value_string(const jsmntok_t *node,
+                                                  const char *name)
 {
-    const jsmntok_t *field = findNode(node, name);
-    if (field != NULL) {
-        field++;
-        if (field->type == JSMN_PRIMITIVE) {
-            jsmn_trimData(field);
-            return field;
-        }
-    }
-    return NULL;
+        return jsmn_find_get_node_value(node, name, JSMN_STRING);
+}
+
+const jsmntok_t * jsmn_find_get_node_value_prim(const jsmntok_t *node, const char *name)
+{
+        return jsmn_find_get_node_value(node, name, JSMN_PRIMITIVE);
 }

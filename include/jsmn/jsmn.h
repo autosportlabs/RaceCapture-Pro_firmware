@@ -103,17 +103,25 @@ int jsmn_isNull(const jsmntok_t *tok);
 /**
  * Finds the node with the given name.
  */
-const jsmntok_t * findNode(const jsmntok_t *node, const char * name);
+const jsmntok_t * jsmn_find_node(const jsmntok_t *node, const char * name);
+
+/**
+ * Finds the value node of the node with the given name and value type.
+ */
+const jsmntok_t * jsmn_find_get_node_value(const jsmntok_t *node,
+                                           const char *name,
+                                           const jsmntype_t val_type);
 
 /**
  * Finds the string value node of a Node with the given name.
  */
-const jsmntok_t * findStringValueNode(const jsmntok_t *node, const char *name);
+const jsmntok_t * jsmn_find_get_node_value_string(const jsmntok_t *node,
+                                                  const char *name);
 
 /**
- * Finds the value node of a Node with a given name.
+ * Finds the primitive value node of a Node with a given name.
  */
-const jsmntok_t * findValueNode(const jsmntok_t *node, const char *name);
+const jsmntok_t * jsmn_find_get_node_value_prim(const jsmntok_t *node, const char *name);
 
 CPP_GUARD_END
 

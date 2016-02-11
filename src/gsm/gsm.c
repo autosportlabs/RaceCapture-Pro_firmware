@@ -29,6 +29,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define READ_TIMEOUT 	500
+
 bool gsm_ping_modem(struct serial_buffer *sb)
 {
         const char *msgs[2];
@@ -71,7 +73,7 @@ bool gsm_get_subscriber_number(struct serial_buffer *sb,
 
         serial_buffer_reset(sb);
         serial_buffer_append(sb, cmd);
-        const size_t count = cellular_exec_cmd(sb, MEDIUM_TIMEOUT, msgs,
+        const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs,
                                                msgs_len);
         const bool status = is_rsp_ok(msgs, count);
 
@@ -94,7 +96,7 @@ bool gsm_get_subscriber_number(struct serial_buffer *sb,
         return true;
 
 parse_fail:
-        pr_warning("[gsm] Failed to prase phone number\r\n");
+        pr_warning("[gsm] Failed to parse phone number\r\n");
         return false;
 }
 
@@ -216,7 +218,7 @@ bool gsm_get_network_reg_info(struct serial_buffer *sb,
 
         serial_buffer_reset(sb);
         serial_buffer_append(sb, cmd);
-        const size_t count = cellular_exec_cmd(sb, CONNECT_TIMEOUT, msgs, msgs_len);
+        const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs, msgs_len);
         const bool status = is_rsp_ok(msgs, count);
         if (!status) {
                 pr_warning("[gsm] Failed to get network info\r\n");
