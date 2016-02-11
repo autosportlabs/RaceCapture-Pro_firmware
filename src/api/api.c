@@ -22,15 +22,16 @@
 
 #include "api.h"
 #include "constants.h"
-#include "printk.h"
+#include "loggerApi.h"
 #include "mod_string.h"
+#include "printk.h"
 
 #define JSON_TOKENS 200
 
 static jsmn_parser g_jsonParser;
 static jsmntok_t g_json_tok[JSON_TOKENS];
 
-const api_t apis[] = SYSTEM_APIS;
+const api_t apis[] = {API_METHODS NULL_API};
 
 void initApi()
 {

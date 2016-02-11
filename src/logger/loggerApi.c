@@ -19,7 +19,6 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "ADC.h"
 #include "FreeRTOS.h"
 #include "GPIO.h"
@@ -155,8 +154,11 @@ int api_systemReset(Serial *serial, const jsmntok_t *json)
 int api_factoryReset(Serial *serial, const jsmntok_t *json)
 {
         flash_default_logger_config();
-        flash_default_script();
         flash_default_tracks();
+
+#if defined(LUA_SUPPORT)
+        flash_default_script();
+#endif
 
         cpu_reset(0);
         return API_SUCCESS_NO_RETURN;
@@ -185,9 +187,15 @@ int api_getCapabilities(Serial *serial, const jsmntok_t *json)
     json_objStartString(serial,"channels");
     json_int(serial, "analog", ANALOG_CHANNELS, 1);
     json_int(serial, "imu", IMU_CHANNELS, 1);
+#if GPIO_CHANNELS > 0
     json_int(serial, "gpio", GPIO_CHANNELS, 1);
+#endif
+#if TIMER_CHANNELS > 0
     json_int(serial, "timer", TIMER_CHANNELS, 1);
+#endif
+#if PWM_CHANNELS > 0
     json_int(serial, "pwm", PWM_CHANNELS, 1);
+#endif
     json_int(serial, "can", CAN_CHANNELS, 0);
     json_objEnd(serial, 1);
 
@@ -197,9 +205,13 @@ int api_getCapabilities(Serial *serial, const jsmntok_t *json)
     json_objEnd(serial, 1);
 
     json_objStartString(serial,"db");
+
+#if defined(LUA_SUPPORT)
+    json_int(serial, "script", SCRIPT_MEMORY_LENGTH, 1);
+#endif
+
     json_int(serial, "tracks", MAX_TRACKS, 1);
-    json_int(serial, "sectors", MAX_SECTORS, 1);
-    json_int(serial, "script", SCRIPT_MEMORY_LENGTH, 0);
+    json_int(serial, "sectors", MAX_SECTORS, 0);
     json_objEnd(serial, 0);
 
     json_objEnd(serial, 0);
@@ -230,6 +242,7 @@ int api_getStatus(Serial *serial, const jsmntok_t *json)
     json_int(serial, "DOP", GPS_getDOP(), 0);
     json_objEnd(serial, 1);
 
+#if defined(CELLULAR_SUPPORT)
     json_objStartString(serial, "cell");
     json_int(serial, "init", cellmodem_get_status(), 1);
     json_string(serial, "IMEI", cell_get_IMEI(), 1);
@@ -237,6 +250,12 @@ int api_getStatus(Serial *serial, const jsmntok_t *json)
     json_string(serial, "number", cell_get_subscriber_number(), 1);
     json_string(serial, "net_status", cellular_get_net_status_desc(), 0);
     json_objEnd(serial, 1);
+
+    json_objStartString(serial, "telemetry");
+    json_int(serial, "status", (int) cellular_get_connection_status(), 1);
+    json_int(serial, "dur", cellular_active_time(), 0);
+    json_objEnd(serial, 1);
+#endif
 
     json_objStartString(serial, "bt");
     json_int(serial, "init", (int)bt_get_status(), 0);
@@ -252,11 +271,6 @@ int api_getStatus(Serial *serial, const jsmntok_t *json)
     json_int(serial, "trackId", lapstats_get_selected_track_id(), 1);
     json_int(serial, "inLap", (int)lapstats_lap_in_progress(), 1);
     json_int(serial, "armed", lc_is_armed(), 0);
-    json_objEnd(serial, 1);
-
-    json_objStartString(serial, "telemetry");
-    json_int(serial, "status", (int)cellular_get_connection_status(), 1);
-    json_int(serial, "dur", cellular_active_time(), 0);
     json_objEnd(serial, 0);
 
     json_objEnd(serial, 0);
@@ -908,6 +922,7 @@ int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
+#if PWM_CHANNELS > 0
 static void sendPwmConfig(Serial *serial, size_t startIndex, size_t endIndex)
 {
 
@@ -978,7 +993,9 @@ int api_setPwmConfig(Serial *serial, const jsmntok_t *json)
     int res = setMultiChannelConfigGeneric(serial, json, getPwmConfigs, setPwmExtendedField, PWM_update_config);
     return res;
 }
+#endif
 
+#if GPIO_CHANNELS > 0
 static void getGpioConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg)
 {
     if (channelId < GPIO_CHANNELS) {
@@ -1039,7 +1056,9 @@ int api_setGpioConfig(Serial *serial, const jsmntok_t *json)
     int res = setMultiChannelConfigGeneric(serial, json, getGpioConfigs, setGpioExtendedField, GPIO_init);
     return res;
 }
+#endif
 
+#if TIMER_CHANNELS > 0
 static void getTimerConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg)
 {
     if (channelId < TIMER_CHANNELS) {
@@ -1113,6 +1132,7 @@ int api_setTimerConfig(Serial *serial, const jsmntok_t *json)
     int res = setMultiChannelConfigGeneric(serial, json, getTimerConfigs, setTimerExtendedField, timer_init);
     return res;
 }
+#endif
 
 static unsigned short getGpsConfigHighSampleRate(GPSConfig *cfg)
 {
@@ -1568,6 +1588,8 @@ int api_getTrackDb(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
+#if defined(LUA_SUPPORT)
+
 int api_getScript(Serial *serial, const jsmntok_t *json)
 {
     const char *script = getScript();
@@ -1624,3 +1646,4 @@ int api_runScript(Serial *serial, const jsmntok_t *json)
         initialize_lua();
         return API_SUCCESS;
 }
+#endif /* LUA_SUPPORT */

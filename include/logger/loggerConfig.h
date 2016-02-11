@@ -22,10 +22,10 @@
 #ifndef LOGGERCONFIG_H_
 #define LOGGERCONFIG_H_
 
+#include "capabilities.h"
 #include "cpp_guard.h"
 #include "geopoint.h"
 #include "tracks.h"
-#include "capabilities.h"
 #include "versionInfo.h"
 
 #include <stdbool.h>
@@ -33,7 +33,20 @@
 
 CPP_GUARD_BEGIN
 
-#define FLASH_PAGE_SIZE						((unsigned int) 256) // Internal FLASH Page Size: 256 bytes
+/* Internal FLASH Page Size: 256 bytes */
+#define FLASH_PAGE_SIZE	((unsigned int) 256)
+
+//standard sample rates based on OS timer ticks
+#define SAMPLE_1000Hz                       (TICK_RATE_HZ / 1000)
+#define SAMPLE_500Hz                        (TICK_RATE_HZ / 500)
+#define SAMPLE_200Hz                        (TICK_RATE_HZ / 200)
+#define SAMPLE_100Hz                        (TICK_RATE_HZ / 100)
+#define SAMPLE_50Hz                         (TICK_RATE_HZ / 50)
+#define SAMPLE_25Hz                         (TICK_RATE_HZ / 25)
+#define SAMPLE_10Hz                         (TICK_RATE_HZ / 10)
+#define SAMPLE_5Hz                          (TICK_RATE_HZ / 5)
+#define SAMPLE_1Hz                          (TICK_RATE_HZ / 1)
+#define SAMPLE_DISABLED                     0
 
 #define CONFIG_FEATURE_INSTALLED			1
 #define CONFIG_FEATURE_NOT_INSTALLED		0
@@ -50,33 +63,8 @@ CPP_GUARD_BEGIN
 #define SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_10Hz
 #define FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_50Hz
 
-
-//standard sample rates based on OS timer ticks
-#define SAMPLE_1000Hz						(TICK_RATE_HZ / 1000)
-#define SAMPLE_500Hz						(TICK_RATE_HZ / 500)
-#define SAMPLE_200Hz						(TICK_RATE_HZ / 200)
-#define SAMPLE_100Hz 						(TICK_RATE_HZ / 100)
-#define SAMPLE_50Hz 						(TICK_RATE_HZ / 50)
-#define SAMPLE_25Hz 						(TICK_RATE_HZ / 25)
-#define SAMPLE_10Hz 						(TICK_RATE_HZ / 10)
-#define SAMPLE_5Hz 							(TICK_RATE_HZ / 5)
-#define SAMPLE_1Hz 							(TICK_RATE_HZ / 1)
-#define SAMPLE_DISABLED 					0
-
-#define ANALOG_SCALING_BINS					5
-
-#define SCALING_MODE_RAW					0
-#define SCALING_MODE_LINEAR					1
-#define SCALING_MODE_MAP					2
-#define DEFAULT_SCALING_MODE				SCALING_MODE_LINEAR
-#define LINEAR_SCALING_PRECISION			7
-#define FILTER_ALPHA_PRECISION				2
-#define SCALING_MAP_BIN_PRECISION			2
-
 #define DEFAULT_GPS_POSITION_PRECISION 		6
 #define DEFAULT_GPS_RADIUS_PRECISION 		5
-#define DEFAULT_VOLTAGE_SCALING_PRECISION	2
-#define DEFAULT_ANALOG_SCALING_PRECISION	2
 
 #define DEFAULT_LABEL_LENGTH					12
 #define DEFAULT_UNITS_LENGTH					8
@@ -101,11 +89,6 @@ typedef struct _ChannelConfig {
     unsigned char flags;
 } ChannelConfig;
 
-typedef struct _ScalingMap {
-    float rawValues[ANALOG_SCALING_BINS];
-    float scaledValues[ANALOG_SCALING_BINS];
-} ScalingMap;
-
 enum TimeType {
     TimeType_Uptime,
     TimeType_UtcMillis,
@@ -125,6 +108,22 @@ struct TimeConfig {
 #define DEFAULT_UPTIME_TIME_CONFIG {DEFAULT_UPTIME_CONFIG, TimeType_Uptime}
 #define DEFAULT_UTC_MILLIS_TIME_CONFIG {DEFAULT_UTC_MILLIS_CONFIG, TimeType_UtcMillis}
 
+/* ANALOG SENSOR SUPPORT */
+#define ANALOG_SCALING_BINS                 5
+#define SCALING_MODE_RAW                    0
+#define SCALING_MODE_LINEAR                 1
+#define SCALING_MODE_MAP                    2
+#define DEFAULT_SCALING_MODE                SCALING_MODE_LINEAR
+#define LINEAR_SCALING_PRECISION            7
+#define FILTER_ALPHA_PRECISION              2
+#define SCALING_MAP_BIN_PRECISION           2
+#define DEFAULT_ANALOG_SCALING_PRECISION    2
+#define DEFAULT_VOLTAGE_SCALING_PRECISION   2
+
+typedef struct _ScalingMap {
+    float rawValues[ANALOG_SCALING_BINS];
+    float scaledValues[ANALOG_SCALING_BINS];
+} ScalingMap;
 
 typedef struct _ADCConfig {
     ChannelConfig cfg;
@@ -217,59 +216,69 @@ typedef struct _GPIOConfig {
 #define DEFAULT_GPIO_CHANNEL_CONFIG {"", "", 0, 1, SAMPLE_DISABLED, 1, 0}
 #define DEFAULT_GPIO_CONFIG {DEFAULT_GPIO_CHANNEL_CONFIG, CONFIG_GPIO_IN}
 
+/*
+ * FIXME: These two enum types have to live in this file instead of
+ * something more proper like imu.h.  Otherwise we will get a chicken
+ * and egg problem in our headers.
+ */
+enum imu_mode {
+        IMU_MODE_DISABLED = 0,
+        IMU_MODE_NORMAL = 1,
+        IMU_MODE_INVERTED = 2,
+};
+
+enum imu_channel {
+        IMU_CHANNEL_X = 0,
+        IMU_CHANNEL_Y = 1,
+        IMU_CHANNEL_Z = 2,
+        IMU_CHANNEL_YAW = 3,
+        IMU_CHANNEL_PITCH = 4,
+        IMU_CHANNEL_ROLL = 5,
+};
 
 typedef struct _ImuConfig {
     ChannelConfig cfg;
-    unsigned char mode;
-    unsigned char physicalChannel;
+    enum imu_mode mode;
+    enum imu_channel physicalChannel;
     signed short zeroValue;
     float filterAlpha;
 } ImuConfig;
 
-#define MIN_IMU_RAW							0
-#define MAX_IMU_RAW							4097
+/*
+ * On InvenSense IMU 9150/9250 raw values are returned in 2's
+ * compliment.  Hence they are already formed the way we want,
+ * so the zeroValue is actually 0.  Just have to divide them
+ * by their units per element rate (defined by HAL).
+ */
+#define DEFAULT_ACCEL_ZERO	0
+#define DEFAULT_GYRO_ZERO	0
 
-#define MODE_IMU_DISABLED  					0
-#define MODE_IMU_NORMAL  					1
-#define MODE_IMU_INVERTED  					2
+#define IMU_ACCEL_CH_CONFIG(name) {name, "G", -3, 3, SAMPLE_25Hz, 2, 0}
+#define IMU_GYRO_CH_CONFIG(name) {name, "Deg/Sec", -120, 120, SAMPLE_25Hz, 2, 0}
+#define IMU_ACCEL_CONFIG(name, mode, chan) {    \
+                IMU_ACCEL_CH_CONFIG(name),      \
+                        mode,                   \
+                        chan,                   \
+                        DEFAULT_ACCEL_ZERO,     \
+                        0.1F                    \
+                        }
 
-#define IMU_CHANNEL_X						0
-#define IMU_CHANNEL_Y						1
-#define IMU_CHANNEL_Z						2
-#define IMU_CHANNEL_YAW						3
-#define IMU_CHANNEL_PITCH					4
-#define IMU_CHANNEL_ROLL					5
+#define IMU_GYRO_CONFIG(name, mode, chan) {     \
+                IMU_GYRO_CH_CONFIG(name),       \
+                        mode,                   \
+                        chan,                   \
+                        DEFAULT_GYRO_ZERO,      \
+                        0.1F                    \
+                        }
 
-#define DEFAULT_ACCEL_ZERO					2048
-#define DEFAULT_GYRO_ZERO					1862 //LY330ALH zero state voltage output is 1.5v
-
-#define DEFAULT_ACCEL_X_CONFIG    {"AccelX",   "G", -3, 3, SAMPLE_25Hz, 2, 0}
-#define DEFAULT_ACCEL_Y_CONFIG    {"AccelY",   "G", -3, 3, SAMPLE_25Hz, 2, 0}
-#define DEFAULT_ACCEL_Z_CONFIG    {"AccelZ",   "G", -3, 3, SAMPLE_25Hz, 2, 0}
-#define DEFAULT_GYRO_YAW_CONFIG   {"Yaw",      "Deg/Sec", -300, 300, SAMPLE_25Hz, 1, 0}
-#define DEFAULT_GYRO_PITCH_CONFIG {"Pitch",    "Deg/Sec", -300, 300, SAMPLE_25Hz, 1, 0}
-#define DEFAULT_GYRO_ROLL_CONFIG  {"Roll",     "Deg/Sec", -300, 300, SAMPLE_25Hz, 1, 0}
-
-#define DEFAULT_IMU_CHANNEL_CONFIG  {"", "G", -3, 3, SAMPLE_25Hz, 2, 0}
-#define DEFAULT_GYRO_CHANNEL_CONFIG {"", "Deg/Sec", -300, 300, SAMPLE_25Hz, 1, 0}
-
-#define DEFAULT_IMU_CONFIG                      \
-   {                                            \
-      DEFAULT_IMU_CHANNEL_CONFIG,               \
-         MODE_IMU_NORMAL,                       \
-         0,                                     \
-         DEFAULT_ACCEL_ZERO,                    \
-         0.1F}
-
-#define DEFAULT_GYRO_CONFIG {                   \
-      DEFAULT_GYRO_CHANNEL_CONFIG,              \
-         MODE_IMU_NORMAL,                       \
-         IMU_CHANNEL_YAW,                       \
-         DEFAULT_GYRO_ZERO,                     \
-         0.1F                                   \
-         }
-
-
+#define IMU_CONFIG_DEFAULTS {                                                 \
+                IMU_ACCEL_CONFIG("AccelX", IMU_MODE_NORMAL, IMU_CHANNEL_X), \
+                IMU_ACCEL_CONFIG("AccelY", IMU_MODE_NORMAL, IMU_CHANNEL_Y), \
+                IMU_ACCEL_CONFIG("AccelZ", IMU_MODE_NORMAL, IMU_CHANNEL_Z),   \
+                IMU_GYRO_CONFIG("Yaw", IMU_MODE_NORMAL, IMU_CHANNEL_YAW),   \
+                IMU_GYRO_CONFIG("Pitch", IMU_MODE_NORMAL, IMU_CHANNEL_PITCH), \
+                IMU_GYRO_CONFIG("Roll", IMU_MODE_NORMAL, IMU_CHANNEL_ROLL),   \
+                }
 
 typedef struct _PWMConfig {
     ChannelConfig cfg;
@@ -306,6 +315,7 @@ typedef struct _PWMConfig {
 
 #define DEFAULT_PWM_CHANNEL_CONFIG {"PWM1", "", 0, 100, SAMPLE_DISABLED, 0, 0}
 #define DEFAULT_PWM_CONFIG {DEFAULT_PWM_CHANNEL_CONFIG, MODE_PWM_FREQUENCY, MODE_LOGGING_PWM_DUTY, DEFAULT_PWM_DUTY_CYCLE, DEFAULT_PWM_PERIOD}
+
 
 #define OBD2_CHANNELS 20
 
@@ -501,18 +511,29 @@ typedef struct _LoggerConfig {
     struct TimeConfig TimeConfigs[CONFIG_TIME_CHANNELS];
 
     //ADC Calibrations
+#if ANALOG_CHANNELS > 0
     ADCConfig ADCConfigs[CONFIG_ADC_CHANNELS];
+#endif
 
+#if PWM_CHANNELS > 0
+    //PWM configuration
     PWMConfig PWMConfigs[CONFIG_PWM_CHANNELS];
+#endif
 
+#if GPIO_CHANNELS > 0
     //GPIO configurations
     GPIOConfig GPIOConfigs[CONFIG_GPIO_CHANNELS];
+#endif
 
+#if TIMER_CHANNELS > 0
     //Timer Configurations
     TimerConfig TimerConfigs[CONFIG_TIMER_CHANNELS];
+#endif
 
+#if IMU_CHANNELS > 0
     //IMU Configurations
     ImuConfig ImuConfigs[CONFIG_IMU_CHANNELS];
+#endif
 
     //CAN Configuration
     CANConfig CanConfig;
@@ -546,36 +567,39 @@ int getConnectivitySampleRateLimit();
 int encodeSampleRate(int sampleRate);
 int decodeSampleRate(int sampleRateCode);
 
-unsigned char filterAnalogScalingMode(unsigned char mode);
 unsigned char filterBgStreamingMode(unsigned char mode);
 unsigned char filterSdLoggingMode(unsigned char mode);
-char filterGpioMode(int config);
+
+PWMConfig * getPwmConfigChannel(int channel);
 char filterPwmOutputMode(int config);
 char filterPwmLoggingMode(int config);
 unsigned short filterPwmDutyCycle(int dutyCycle);
 unsigned short filterPwmPeriod(int period);
-int filterImuRawValue(int accelRawValue);
 uint16_t filterPwmClockFrequency(uint16_t frequency);
-char filterTimerMode(int config);
-unsigned char filterPulsePerRevolution(unsigned char pulsePerRev);
-unsigned short filterTimerDivider(unsigned short divider);
-int filterImuMode(int mode);
-int filterImuChannel(int channel);
 
 TimerConfig * getTimerConfigChannel(int channel);
+unsigned char filterPulsePerRevolution(unsigned char pulsePerRev);
+unsigned short filterTimerDivider(unsigned short divider);
+char filterTimerMode(int config);
+
 ADCConfig * getADCConfigChannel(int channel);
-PWMConfig * getPwmConfigChannel(int channel);
+unsigned char filterAnalogScalingMode(unsigned char mode);
+
 GPIOConfig * getGPIOConfigChannel(int channel);
+char filterGpioMode(int config);
+
 ImuConfig * getImuConfigChannel(int channel);
+int filterImuMode(int mode);
+int filterImuChannel(int channel);
 
 unsigned int getHighestSampleRate(LoggerConfig *config);
 size_t get_enabled_channel_count(LoggerConfig *loggerConfig);
 
-int flashLoggerConfig(void);
-int flash_default_logger_config(void);
-
 bool isHigherSampleRate(const int contender, const int champ);
 int getHigherSampleRate(const int a, const int b);
+
+int flashLoggerConfig(void);
+int flash_default_logger_config(void);
 
 CPP_GUARD_END
 

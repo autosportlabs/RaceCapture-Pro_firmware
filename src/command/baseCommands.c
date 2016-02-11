@@ -61,6 +61,7 @@ void ShowStats(Serial *serial, unsigned int argc, char **argv)
     put_uint(serial, portGetFreeHeapSize());
     put_crlf(serial);
 
+#if defined(LUA_SUPPORT)
     // LUA Info
     putHeader(serial, "Lua Info");
 
@@ -75,6 +76,7 @@ void ShowStats(Serial *serial, unsigned int argc, char **argv)
     putDataRowHeader(serial, "Lua Memory Usage (KB)");
     put_int(serial, lua_gc(L, LUA_GCCOUNT, 0));
     put_crlf(serial);
+#endif /* LUA_SUPPORT */
 
     // Misc Info
     putHeader(serial, "Misc");
@@ -102,8 +104,9 @@ void ShowTaskInfo(Serial *serial, unsigned int argc, char **argv)
      */
     char *taskList = (char *) portMalloc(1024);
     if (NULL != taskList) {
-        vTaskList(taskList);
-        serial->put_s(taskList);
+        //TODO BAP - get this working, when we have a USB console
+        //vTaskList(taskList);
+        //serial->put_s(taskList);
         portFree(taskList);
     } else {
         serial->put_s("Out of Memory!");

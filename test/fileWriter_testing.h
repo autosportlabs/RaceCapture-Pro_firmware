@@ -24,6 +24,7 @@
 
 #include "fileWriter.h"
 #include "cpp_guard.h"
+#include "sampleRecord.h"
 
 CPP_GUARD_BEGIN
 

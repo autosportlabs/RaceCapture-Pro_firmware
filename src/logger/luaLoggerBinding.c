@@ -57,7 +57,6 @@
 #define LUA_DEFAULT_SERIAL_PARITY 0
 #define LUA_DEFAULT_SERIAL_STOP_BITS 1
 
-
 char g_tempBuffer[TEMP_BUFFER_LEN];
 
 static int lua_get_uptime(lua_State *L)

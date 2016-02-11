@@ -40,7 +40,6 @@
 #define FILE_BUFFER_SIZE	256
 #define FILE_WRITER_STACK_SIZE	256
 #define MAX_LOG_FILE_INDEX	99999
-#define SAMPLE_RECORD_QUEUE_SIZE	20
 #define WRITE_FAIL	EOF
 
 static FIL *g_logfile;
@@ -445,6 +444,7 @@ static void fileWriterTask(void *params)
 void startFileWriterTask(int priority)
 {
         g_LoggerMessage_queue = create_logger_message_queue();
+
         if (NULL == g_LoggerMessage_queue) {
                 pr_error(_RCP_BASE_FILE_ "LoggerMessage Queue is null!\r\n");
                 return;

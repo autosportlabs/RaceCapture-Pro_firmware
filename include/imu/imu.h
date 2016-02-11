@@ -29,7 +29,7 @@ CPP_GUARD_BEGIN
 
 void imu_sample_all();
 
-float imu_read_value(unsigned char imuChannel, ImuConfig *ac);
+float imu_read_value(enum imu_channel channel, ImuConfig *ac);
 
 int imu_init(LoggerConfig *loggerConfig);
 
@@ -37,7 +37,7 @@ int imu_soft_init(LoggerConfig *loggerConfig);
 
 void imu_calibrate_zero();
 
-int imu_read(unsigned int channel);
+int imu_read(enum imu_channel channel);
 
 CPP_GUARD_END
 

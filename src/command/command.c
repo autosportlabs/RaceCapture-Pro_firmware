@@ -20,10 +20,19 @@
  */
 
 
+#include "baseCommands.h"
 #include "command.h"
-#include "serial.h"
 #include "constants.h"
+#include "loggerCommands.h"
+#include "luaCommands.h"
 #include "mod_string.h"
+#include "serial.h"
+
+#define SYSTEM_COMMANDS { LOGGER_COMMANDS       \
+                          BASE_COMMANDS         \
+                          LUA_COMMANDS          \
+                          NULL_COMMAND          \
+        }
 
 const cmd_t commands[] = SYSTEM_COMMANDS;
 

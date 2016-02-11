@@ -137,6 +137,7 @@ static void createCombinedTelemetryTask(int16_t priority, xQueueHandle sampleQue
             params->always_streaming = true;
         }
 
+#if defined(CELLULAR_SUPPORT)
         /*cell overrides wireless*/
         if (cellEnabled) {
             params->check_connection_status = &cellular_check_connection_status;
@@ -144,6 +145,7 @@ static void createCombinedTelemetryTask(int16_t priority, xQueueHandle sampleQue
             params->disconnect = &cellular_disconnect;
             params->always_streaming = false;
         }
+#endif
         xTaskCreate(connectivityTask, (signed portCHAR *) "connTask", TELEMETRY_STACK_SIZE, params, priority, NULL );
     }
 }
@@ -166,6 +168,7 @@ static void createWirelessConnectionTask(int16_t priority, xQueueHandle sampleQu
 
 static void createTelemetryConnectionTask(int16_t priority, xQueueHandle sampleQueue, uint8_t isPrimary)
 {
+#if defined(CELLULAR_SUPPORT)
     ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
     params->isPrimary = isPrimary;
     params->connectionName = "Telemetry";
@@ -178,12 +181,14 @@ static void createTelemetryConnectionTask(int16_t priority, xQueueHandle sampleQ
     params->sampleQueue = sampleQueue;
     params->always_streaming = false;
     xTaskCreate(connectivityTask, (signed portCHAR *) "connTelemetry", TELEMETRY_STACK_SIZE, params, priority, NULL );
+#endif
 }
 
 void startConnectivityTask(int16_t priority)
 {
         for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++) {
                 g_sampleQueue[i] = create_logger_message_queue();
+
                 if (NULL == g_sampleQueue[i]) {
                         pr_error("conn: err sample queue\r\n");
                         return;
@@ -223,12 +228,12 @@ void startConnectivityTask(int16_t priority)
 
 static void toggle_connectivity_indicator()
 {
-    LED_toggle(0);
+    LED_toggle(1);
 }
 
 static void clear_connectivity_indicator()
 {
-    LED_disable(0);
+    LED_disable(1);
 }
 
 void connectivityTask(void *params)

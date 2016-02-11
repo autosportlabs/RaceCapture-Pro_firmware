@@ -19,6 +19,7 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "capabilities.h"
 #include "modp_numtoa.h"
 #include "printk.h"
 #include "serial.h"
@@ -29,11 +30,15 @@ static Serial serial_ports[SERIAL_COUNT];
 
 void init_serial(void)
 {
+
         usart_init_serial(&serial_ports[SERIAL_GPS], UART_GPS);
         usart_init_serial(&serial_ports[SERIAL_TELEMETRY], UART_TELEMETRY);
         usart_init_serial(&serial_ports[SERIAL_WIRELESS], UART_WIRELESS);
         usart_init_serial(&serial_ports[SERIAL_AUX], UART_AUX);
+
+#if defined(USB_SERIAL_SUPPORT)
         usb_init_serial(&serial_ports[SERIAL_USB]);
+#endif /* USB_SERIAL_SUPPORT */
 }
 
 void configure_serial(serial_id_t port, uint8_t bits, uint8_t parity, uint8_t stopBits, uint32_t baud)

@@ -97,27 +97,27 @@ void SampleRecordTest::testPopulateSampleRecord(){
 
 	//accelerometer channels
 	samples++;
-	CPPUNIT_ASSERT_EQUAL(imu_read_value(0, &lc->ImuConfigs[0]),
+	CPPUNIT_ASSERT_EQUAL(imu_read_value(IMU_CHANNEL_X, &lc->ImuConfigs[0]),
                              samples->valueFloat);
 
 	samples++;
-	CPPUNIT_ASSERT_EQUAL(imu_read_value(1, &lc->ImuConfigs[1]),
+	CPPUNIT_ASSERT_EQUAL(imu_read_value(IMU_CHANNEL_Y, &lc->ImuConfigs[1]),
                              samples->valueFloat);
 
 	samples++;
-	CPPUNIT_ASSERT_EQUAL(imu_read_value(2, &lc->ImuConfigs[2]),
+	CPPUNIT_ASSERT_EQUAL(imu_read_value(IMU_CHANNEL_Z, &lc->ImuConfigs[2]),
                              samples->valueFloat);
 
 	samples++;
-	CPPUNIT_ASSERT_EQUAL(imu_read_value(3, &lc->ImuConfigs[3]),
+	CPPUNIT_ASSERT_EQUAL(imu_read_value(IMU_CHANNEL_YAW, &lc->ImuConfigs[3]),
                              samples->valueFloat);
 
 	samples++;
-	CPPUNIT_ASSERT_EQUAL(imu_read_value(4, &lc->ImuConfigs[4]),
+	CPPUNIT_ASSERT_EQUAL(imu_read_value(IMU_CHANNEL_PITCH, &lc->ImuConfigs[4]),
                              samples->valueFloat);
 
 	samples++;
-	CPPUNIT_ASSERT_EQUAL(imu_read_value(5, &lc->ImuConfigs[4]),
+	CPPUNIT_ASSERT_EQUAL(imu_read_value(IMU_CHANNEL_ROLL, &lc->ImuConfigs[5]),
                              samples->valueFloat);
 
 	//GPS / Track channels

@@ -20,18 +20,18 @@
  */
 
 
-#include "gpsTask.h"
-#include "gps.h"
-#include "lap_stats.h"
-#include "gps_device.h"
 #include "FreeRTOS.h"
-#include "printk.h"
-#include "task.h"
-#include "serial.h"
-#include "taskUtil.h"
+#include "gps.h"
+#include "gpsTask.h"
+#include "gps_device.h"
+#include "lap_stats.h"
 #include "loggerConfig.h"
+#include "printk.h"
+#include "serial.h"
+#include "task.h"
+#include "taskUtil.h"
 
-#define GPS_TASK_STACK_SIZE	256
+#define GPS_TASK_STACK_SIZE	300
 
 static bool g_enableGpsDataLogging = false;
 
