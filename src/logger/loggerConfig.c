@@ -203,20 +203,8 @@ static void resetTimerConfig(TimerConfig cfg[])
 #if IMU_CHANNELS > 0
 static void resetImuConfig(ImuConfig cfg[])
 {
-    const char *imu_names[] = {"AccelX", "AccelY", "AccelZ", "Yaw", "Pitch", "Roll"};
-
-    for (size_t i = 0; i < 6; ++i) {
-        ImuConfig *c = cfg + i;
-        if (i < IMU_CHANNEL_YAW) {
-            *c = (ImuConfig)DEFAULT_IMU_CONFIG;
-        } else {
-            *c = (ImuConfig)DEFAULT_GYRO_CONFIG;
-        }
-        strcpy(c->cfg.label, imu_names[i]);
-
-        // Channels go X, Y, Z.  Works perfectly with our counter.
-        c->physicalChannel = i;
-    }
+        const ImuConfig defaults[] = IMU_CONFIG_DEFAULTS;
+        memcpy(cfg, defaults, sizeof(defaults));
 }
 #endif
 
@@ -435,27 +423,17 @@ int filterImuChannel(int channel)
     return (channel < CONFIG_IMU_CHANNELS ? channel : CONFIG_IMU_CHANNELS - 1);
 }
 
-int filterImuRawValue(int imuRawValue)
-{
-    if (imuRawValue > MAX_IMU_RAW) {
-        imuRawValue = MAX_IMU_RAW;
-    } else if (imuRawValue < MIN_IMU_RAW) {
-        imuRawValue = MIN_IMU_RAW;
-    }
-    return imuRawValue;
-}
-
 int filterImuMode(int mode)
 {
-    switch (mode) {
-    case MODE_IMU_DISABLED:
-        return MODE_IMU_DISABLED;
-    case MODE_IMU_INVERTED:
-        return MODE_IMU_INVERTED;
-    default:
-    case MODE_IMU_NORMAL:
-        return MODE_IMU_NORMAL;
-    }
+        switch (mode) {
+        case IMU_MODE_DISABLED:
+                return IMU_MODE_DISABLED;
+        case IMU_MODE_INVERTED:
+                return IMU_MODE_INVERTED;
+        case IMU_MODE_NORMAL:
+        default:
+                return IMU_MODE_NORMAL;
+        }
 }
 #endif
 

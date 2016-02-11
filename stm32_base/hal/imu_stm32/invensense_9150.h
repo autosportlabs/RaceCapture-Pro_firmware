@@ -8,6 +8,7 @@
 /* REGISTER DEFINITIONS */
 #define IS_REG_PWR_MGMT_1	0x6B
 #define IS_REG_WHOAMI		0x75
+
 /* Gyro Registers */
 #define IS_REG_GYRO_CONFIG      0x1B
 #define IS_GYRO_MEAS_START      0x43
