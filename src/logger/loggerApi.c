@@ -25,6 +25,8 @@
 #include "PWM.h"
 #include "bluetooth.h"
 #include "capabilities.h"
+#include "cellular.h"
+#include "cellular_api_status_keys.h"
 #include "constants.h"
 #include "cpu.h"
 #include "dateTime.h"
@@ -49,7 +51,6 @@
 #include "printk.h"
 #include "sampleRecord.h"
 #include "serial.h"
-#include "cellular.h"
 #include "task.h"
 #include "taskUtil.h"
 #include "timer.h"
@@ -243,16 +244,23 @@ int api_getStatus(Serial *serial, const jsmntok_t *json)
     json_objEnd(serial, 1);
 
 #if defined(CELLULAR_SUPPORT)
+    const enum cellular_net_status ns = cellmodem_get_status();
+    const char* ns_val = cellular_net_status_api_key(ns);
+
     json_objStartString(serial, "cell");
-    json_int(serial, "init", cellmodem_get_status(), 1);
+    json_int(serial, "init", (int) ns, 1);
     json_string(serial, "IMEI", cell_get_IMEI(), 1);
     json_int(serial, "sig_str", cell_get_signal_strength(), 1);
     json_string(serial, "number", cell_get_subscriber_number(), 1);
-    json_string(serial, "net_status", cellular_get_net_status_desc(), 0);
+    json_string(serial, "sitrep", ns_val, 0);
     json_objEnd(serial, 1);
 
+    const telemetry_status_t ts = cellular_get_connection_status();
+    const char *ts_val = cellular_telemetry_status_api_key(ts);
+
     json_objStartString(serial, "telemetry");
-    json_int(serial, "status", (int) cellular_get_connection_status(), 1);
+    json_int(serial, "status", (int) ts, 1);
+    json_string(serial, "sitrep", ts_val, 1);
     json_int(serial, "dur", cellular_active_time(), 0);
     json_objEnd(serial, 1);
 #endif
