@@ -66,6 +66,7 @@ INCLUDES = \
 -I$(FREE_RTOS_KERNEL_DIR)/include \
 -I$(FREE_RTOS_KERNEL_DIR)/include_testing \
 -I$(UTIL_DIR) \
+-I$(RCP_SRC)/devices \
 -I$(RCP_SRC)/lap_stats \
 
 # set up compiler and options
@@ -108,6 +109,7 @@ $(GPS_DIR)/gps_test.cpp \
 $(LAP_STATS_DIR)/LapStatsTest.cpp \
 $(UTIL_DIR)/atonum_test.cpp \
 $(UTIL_DIR)/numtoa_test.cpp \
+CellularApiStatusKeysTest.cpp \
 PredictiveTimeTest2.cpp \
 date_time_test.cpp \
 launch_control_test.cpp \
@@ -151,7 +153,6 @@ $(RCP_SRC)/auto_config/auto_track.c \
 $(RCP_SRC)/cpu/cpu.c \
 $(RCP_SRC)/devices/bluetooth.c \
 $(RCP_SRC)/devices/cellular.c \
-$(RCP_SRC)/devices/cellular_api_status_keys.c \
 $(RCP_SRC)/devices/sara_u280.c \
 $(RCP_SRC)/devices/sim900.c \
 $(RCP_SRC)/filter/filter.c \
@@ -196,6 +197,7 @@ mock_uart.c \
 mock_usb_comm.c \
 
 SIM_C_SRC = \
+$(RCP_SRC)/devices/cellular_api_status_keys.c \
 $(RCP_SRC)/lap_stats/lap_stats.c \
 
 OBJ_TEST = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $(basename $(SRC) $(T_SRC) RCPTest.cpp))))
