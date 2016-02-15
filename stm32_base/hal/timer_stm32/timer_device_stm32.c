@@ -1,10 +1,32 @@
+/*
+ * Race Capture Firmware
+ *
+ * Copyright (C) 2016 Autosport Labs
+ *
+ * This file is part of the Race Capture firmware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "loggerConfig.h"
-#include "timer_device.h"
-#include "stm32f4xx_rcc.h"
-#include "stm32f4xx_gpio.h"
-#include "stm32f4xx_tim.h"
-#include "stm32f4xx_misc.h"
 #include "printk.h"
+#include "stm32f4xx.h"
+#include "stm32f4xx_gpio.h"
+#include "stm32f4xx_misc.h"
+#include "stm32f4xx_rcc.h"
+#include "stm32f4xx_tim.h"
+#include "timer_device.h"
 
 unsigned int g_timer0_overflow;
 unsigned int g_timer1_overflow;
@@ -43,6 +65,17 @@ static uint32_t timer2_period = 0;
 //TIMER 3 = PA7 / TIM8_CH1N / **TIM14_CH1** / TIM3_CH2 / TIM1_CH1N
 //////////////////////////////////////////////////////////////////////
 
+static void set_local_uri_source(TIM_TypeDef *tim)
+{
+        /*
+         * Set update request interrupt source to only occur during overflow.
+         * Otherwise it will be set to interrupt at a global scope, which
+         * means during overflow/underflow, setting of UG, or update
+         * generation through the slave controller (which happens every pulse).
+         */
+        TIM_UpdateRequestConfig(tim, TIM_UpdateSource_Regular);
+}
+
 static void init_timer_0(size_t prescaler, unsigned int slowTimerMode)
 {
     //enable and configure GPIO for alternate function
@@ -68,8 +101,11 @@ static void init_timer_0(size_t prescaler, unsigned int slowTimerMode)
     TIM_TimeBaseInitStructure.TIM_Period = 0xFFFF;
     TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
     TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
-
     TIM_TimeBaseInit(TIM3, &TIM_TimeBaseInitStructure);
+
+    /* Fix the Update Request Interrupt Source */
+    set_local_uri_source(TIM3);
+
     TIM_Cmd(TIM3, ENABLE);
 
     TIM_ICInitTypeDef TIM_ICInitStructure;
@@ -138,6 +174,10 @@ static void init_timer_1(size_t prescaler, unsigned int slowTimerMode)
     TIM_SelectMasterSlaveMode(TIM9, TIM_MasterSlaveMode_Enable);
 
     TIM_SelectInputTrigger(TIM9, TIM_TS_TI1FP1);
+
+    /* Fix the Update Request Interrupt Source */
+    set_local_uri_source(TIM9);
+
     TIM_Cmd(TIM9, ENABLE);
 
     /* Enable the TIM1 global Interrupt */
@@ -251,6 +291,7 @@ uint32_t timer_device_get_count(size_t channel)
     }
 }
 
+
 uint32_t timer_device_get_usec(size_t channel)
 {
     return timer_device_get_period(channel) * 10000 / 5000;
@@ -278,13 +319,12 @@ uint32_t timer_device_get_period(size_t channel)
 //logical timer 0
 void TIM3_IRQHandler(void)
 {
-
-    if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) {
-        /* Overflow interrupt */
-        TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
-        /* TODO this interrupt is getting triggered when it's not overflowing. need to research and fix */
-        /* timer0_period = 0;  */
-    }
+        if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) {
+                /* Overflow interrupt */
+                TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
+                timer0_duty_cycle = 0;
+                timer0_period = 0;
+        }
 
     if (TIM_GetITStatus(TIM3, TIM_IT_CC2) != RESET) {
         /* Clear Capture compare interrupt pending bit */
@@ -308,11 +348,14 @@ void TIM3_IRQHandler(void)
 //logical timer 1
 void TIM1_BRK_TIM9_IRQHandler(void)
 {
-    if (TIM_GetITStatus(TIM9, TIM_IT_Update) != RESET) {	// Overflow interrupt
-        TIM_ClearITPendingBit(TIM9, TIM_IT_Update);
-        /* TODO this interrupt is getting triggered when it's not overflowing. need to research and fix */
-        /* timer1_period = 0;  */
-    }
+        if (TIM_GetITStatus(TIM9, TIM_IT_Update) != RESET) {
+                /* Overflow interrupt */
+                TIM_ClearITPendingBit(TIM9, TIM_IT_Update);
+
+                timer1_duty_cycle = 0;
+                timer1_period = 0;
+        }
+
     if (TIM_GetITStatus(TIM9, TIM_IT_CC2) != RESET) {
         /* Clear Capture compare interrupt pending bit */
         TIM_ClearITPendingBit(TIM9, TIM_IT_CC2);
