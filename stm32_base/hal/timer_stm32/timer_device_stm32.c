@@ -37,6 +37,7 @@ unsigned int g_timer_counts[TIMER_CHANNELS];
 
 #define TIMER_IRQ_PRIORITY 	4
 #define TIMER_IRQ_SUB_PRIORITY 	0
+#define TIMER_PERIOD	0xFFFF
 
 #define PRESCALER_SLOW		1680
 #define PRESCALER_MEDIUM	168
@@ -98,7 +99,7 @@ static void init_timer_0(size_t prescaler, unsigned int slowTimerMode)
     TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
     TIM_TimeBaseInitStructure.TIM_Prescaler = prescaler - 1;
     TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
-    TIM_TimeBaseInitStructure.TIM_Period = 0xFFFF;
+    TIM_TimeBaseInitStructure.TIM_Period = TIMER_PERIOD;
     TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
     TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
     TIM_TimeBaseInit(TIM3, &TIM_TimeBaseInitStructure);
@@ -157,7 +158,7 @@ static void init_timer_1(size_t prescaler, unsigned int slowTimerMode)
     TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
     TIM_TimeBaseInitStructure.TIM_Prescaler = prescaler - 1;
     TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
-    TIM_TimeBaseInitStructure.TIM_Period = 0xFFFF;
+    TIM_TimeBaseInitStructure.TIM_Period = TIMER_PERIOD;
     TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
     TIM_TimeBaseInit(TIM9, &TIM_TimeBaseInitStructure);
 
@@ -216,7 +217,7 @@ static void init_timer_2(size_t prescaler, unsigned int slowTimerMode)
     TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
     TIM_TimeBaseInitStructure.TIM_Prescaler = prescaler - 1;
     TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
-    TIM_TimeBaseInitStructure.TIM_Period = 0xFFFFFFFF;
+    TIM_TimeBaseInitStructure.TIM_Period = TIMER_PERIOD;
     TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
     TIM_TimeBaseInit(TIM2, &TIM_TimeBaseInitStructure);
 
@@ -227,6 +228,8 @@ static void init_timer_2(size_t prescaler, unsigned int slowTimerMode)
     TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
     TIM_ICInitStructure.TIM_ICFilter = INPUT_CAPTURE_FILTER;
     TIM_ICInit(TIM2, &TIM_ICInitStructure);
+
+    set_local_uri_source(TIM3);
     TIM_Cmd(TIM2, ENABLE);
 
     /* Enable the TIM1 global Interrupt */
@@ -239,7 +242,7 @@ static void init_timer_2(size_t prescaler, unsigned int slowTimerMode)
 
     // Enable the CC2 Interrupt Request
     TIM_ITConfig(TIM2, TIM_IT_CC4, ENABLE);
-    //TIM_ITConfig(TIM2, TIM_IT_Update , ENABLE);  //TODO add this later
+    TIM_ITConfig(TIM2, TIM_IT_Update , ENABLE);
 }
 
 static size_t speed_to_prescaler(size_t speed)
@@ -377,26 +380,30 @@ void TIM1_BRK_TIM9_IRQHandler(void)
 
 void TIM2_IRQHandler(void)
 {
-    static uint32_t last = 0;
+    static uint32_t last;
+    static uint32_t sigs;
 
-    /* TODO add later when this can work */
-#if 0
     if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
         /* Overflow interrupt */
-        TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
-        timer2_period = 0;
+            TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+
+            if (0 == sigs)
+                    timer2_period = 0;
+            sigs = 0;
     }
-#endif
+
     if (TIM_GetITStatus(TIM2, TIM_IT_CC4) != RESET) {
         /* THIS IS A HORRIBLE HACK. */
         /* TIM2 CH4 does not seem to reset the counter upon input capture. this is doing it manually. */
         /* need to fix the configuration of this timer, if possible. */
         uint32_t current = TIM_GetCapture4(TIM2);
         if (last < current) {
-            uint32_t delta = current - last;
-            timer2_period = delta;
+                timer2_period = current - last;
+        } else {
+                timer2_period = TIMER_PERIOD - last + current;
         }
         last = current;
+        ++sigs;
         TIM_ClearITPendingBit(TIM2, TIM_IT_CC4);
     }
 }
