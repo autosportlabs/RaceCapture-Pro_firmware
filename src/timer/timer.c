@@ -28,12 +28,22 @@ static Filter g_timer_filter[CONFIG_TIMER_CHANNELS];
 
 int timer_init(LoggerConfig *loggerConfig)
 {
-    for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; i++) {
-        TimerConfig *tc = &loggerConfig->TimerConfigs[i];
-        timer_device_init(i, tc->timerSpeed, tc->mode);
-        init_filter(&g_timer_filter[i], tc->filterAlpha);
-    }
-    return 1;
+        for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; i++) {
+                TimerConfig *tc = &loggerConfig->TimerConfigs[i];
+
+                /*
+                 * Software Filter Hack Represents 20K Max.  For release
+                 * in 2.8.8.  Have to divide value by pulses per revolution
+                 * since this must scale depending on the number of pulses
+                 * per engine rotation.
+                 */
+                const uint16_t qp_us = 3000 / tc->pulsePerRevolution;
+
+                timer_device_init(i, tc->timerSpeed, qp_us);
+                init_filter(&g_timer_filter[i], tc->filterAlpha);
+        }
+
+        return 1;
 }
 
 uint32_t timer_get_raw(size_t channel)
