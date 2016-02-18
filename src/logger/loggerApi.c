@@ -252,7 +252,7 @@ int api_getStatus(Serial *serial, const jsmntok_t *json)
     json_string(serial, "IMEI", cell_get_IMEI(), 1);
     json_int(serial, "sig_str", cell_get_signal_strength(), 1);
     json_string(serial, "number", cell_get_subscriber_number(), 1);
-    json_string(serial, "sitrep", ns_val, 0);
+    json_string(serial, "state", ns_val, 0);
     json_objEnd(serial, 1);
 
     const telemetry_status_t ts = cellular_get_connection_status();
@@ -260,7 +260,7 @@ int api_getStatus(Serial *serial, const jsmntok_t *json)
 
     json_objStartString(serial, "telemetry");
     json_int(serial, "status", (int) ts, 1);
-    json_string(serial, "sitrep", ts_val, 1);
+    json_string(serial, "state", ts_val, 1);
     json_int(serial, "dur", cellular_active_time(), 0);
     json_objEnd(serial, 1);
 #endif

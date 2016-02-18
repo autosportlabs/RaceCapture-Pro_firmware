@@ -40,7 +40,7 @@ void CellularApiStatusKeysTest::net_status_api_key_test()
         const char* val;
 
         val = cellular_net_status_api_key(CELLULAR_NETWORK_NOT_SEARCHING);
-        CPPUNIT_ASSERT_EQUAL_CONST_CHAR("stopped searching", val);
+        CPPUNIT_ASSERT_EQUAL_CONST_CHAR("stopped_searching", val);
 
         val = cellular_net_status_api_key(CELLULAR_NETWORK_SEARCHING);
         CPPUNIT_ASSERT_EQUAL_CONST_CHAR("searching", val);
@@ -81,19 +81,19 @@ void CellularApiStatusKeysTest::telemetry_status_api_key_test()
 
         val = cellular_telemetry_status_api_key(
                 TELEMETRY_STATUS_SERVER_CONNECTION_FAILED);
-        CPPUNIT_ASSERT_EQUAL_CONST_CHAR("connect failed", val);
+        CPPUNIT_ASSERT_EQUAL_CONST_CHAR("connect_failed", val);
 
         val = cellular_telemetry_status_api_key(
                 TELEMETRY_STATUS_INTERNET_CONFIG_FAILED);
-        CPPUNIT_ASSERT_EQUAL_CONST_CHAR("data failed", val);
+        CPPUNIT_ASSERT_EQUAL_CONST_CHAR("data_failed", val);
 
         val = cellular_telemetry_status_api_key(
                 TELEMETRY_STATUS_CELL_REGISTRATION_FAILED);
-        CPPUNIT_ASSERT_EQUAL_CONST_CHAR("registration failed", val);
+        CPPUNIT_ASSERT_EQUAL_CONST_CHAR("registration_failed", val);
 
         val = cellular_telemetry_status_api_key(
                 TELEMETRY_STATUS_MODEM_INIT_FAILED);
-        CPPUNIT_ASSERT_EQUAL_CONST_CHAR("init failed", val);
+        CPPUNIT_ASSERT_EQUAL_CONST_CHAR("init_failed", val);
 
         val = cellular_telemetry_status_api_key(
                 TELEMETRY_STATUS_DATA_PLAN_NOT_AVAILABLE);
