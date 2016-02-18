@@ -30,36 +30,34 @@
 
 #include <stdbool.h>
 
-#define TIMER_CHANNELS	3
-
+#define INPUT_CAPTURE_FILTER 	0X0
+#define MK2_TIMER_CHANNELS	3
+#define PRESCALER_FAST		84
+#define PRESCALER_MEDIUM	168
+#define PRESCALER_SLOW		1680
 #define TIMER_IRQ_PRIORITY 	4
 #define TIMER_IRQ_SUB_PRIORITY 	0
-#define TIMER_PERIOD	0xFFFF
-
-#define PRESCALER_SLOW		1680
-#define PRESCALER_MEDIUM	168
-#define PRESCALER_FAST		84
-
-#define INPUT_CAPTURE_FILTER 	0X0
+#define TIMER_PERIOD		0xFFFF
 
 static struct state {
         uint16_t period;
         uint16_t duty_cycle;
         uint16_t q_period_ticks;
-} g_state[TIMER_CHANNELS];
+} g_state[MK2_TIMER_CHANNELS];
 
 static struct config {
         uint16_t prescaler;
         uint16_t q_period_us;
-} g_config[TIMER_CHANNELS];
+} g_config[MK2_TIMER_CHANNELS];
 
-//////////////////////////////////////////////////////////////////////
-//logical to hardware mappings for RCP MK2
-//TIMER 0 = PA6 / TIM13_CH1 / **TIM3_CH1** /
-//TIMER 1 = PA2 / TIM2_CH3(32bit) / **TIM9_CH1** / TIM5_CH3(32bit)
-//TIMER 2 = PA3 / **TIM5_CH4(32bit)** / TIM9_CH2 / TIM2_CH4(32bit)
-//TIMER 3 = PA7 / TIM8_CH1N / **TIM14_CH1** / TIM3_CH2 / TIM1_CH1N
-//////////////////////////////////////////////////////////////////////
+/*
+ * Logical to hardware mappings for RCP MK2
+ *
+ * TIMER 0 = PA6 / TIM13_CH1 / **TIM3_CH1** /
+ * TIMER 1 = PA2 / TIM2_CH3(32bit) / **TIM9_CH1** / TIM5_CH3(32bit)
+ * TIMER 2 = PA3 / **TIM5_CH4(32bit)** / TIM9_CH2 / TIM2_CH4(32bit)
+ * TIMER 3 = PA7 / TIM8_CH1N / **TIM14_CH1** / TIM3_CH2 / TIM1_CH1N
+ */
 
 static void set_local_uri_source(TIM_TypeDef *tim)
 {
@@ -255,7 +253,7 @@ static uint16_t speed_to_prescaler(size_t speed)
 
 void reset_device_state(const size_t chan)
 {
-        if (chan >= TIMER_CHANNELS)
+        if (chan >= MK2_TIMER_CHANNELS)
                 return;
 
         struct state *s = &g_state[chan];
@@ -268,7 +266,7 @@ void reset_device_state(const size_t chan)
 bool timer_device_init(const size_t channel, const uint32_t speed,
                        const uint16_t quiet_period_us)
 {
-        if (channel >= TIMER_CHANNELS)
+        if (channel >= MK2_TIMER_CHANNELS)
                 return false;
 
         struct config *c = &g_config[channel];
@@ -323,7 +321,7 @@ uint32_t timer_device_get_usec(size_t channel)
 
 uint32_t timer_device_get_period(size_t channel)
 {
-        return channel < TIMER_CHANNELS ? g_state[channel].period : 0;
+        return channel < MK2_TIMER_CHANNELS ? g_state[channel].period : 0;
 }
 
 
