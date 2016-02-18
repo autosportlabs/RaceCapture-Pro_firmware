@@ -326,9 +326,9 @@ static void luaTask(void *params)
         }
 
         int fales = 0;
-        for(;;) {
-                portTickType xLastWakeTime = xTaskGetTickCount();
-                vTaskDelayUntil(&xLastWakeTime, onTickSleepInterval);
+        for(portTickType xLastWakeTime;;
+            vTaskDelayUntil(&xLastWakeTime, onTickSleepInterval)) {
+                xLastWakeTime = xTaskGetTickCount();
 
                 if (LUA_ENABLED != lua_run_state)
                         continue;
