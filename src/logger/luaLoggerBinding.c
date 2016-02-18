@@ -733,6 +733,11 @@ int Lua_ReadOBD2(lua_State *L)
         unsigned char pid = (unsigned char)lua_tointeger(L, 1);
         int value;
         if (OBD2_request_PID(pid, &value, OBD2_PID_DEFAULT_TIMEOUT_MS)) {
+        	 if (DEBUG_LEVEL) {
+                 pr_debug("Return value ");
+                 pr_debug_int(value);
+                 pr_debug("\r\n");
+             }
             lua_pushnumber(L, value);
             return 1;
         }

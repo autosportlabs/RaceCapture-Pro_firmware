@@ -22,6 +22,7 @@
 
 #include "FreeRTOS.h"
 #include "GPIO.h"
+#include "OBD2.h"
 #include "LED.h"
 #include "lauxlib.h"
 #include "lua.h"

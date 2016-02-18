@@ -56,6 +56,13 @@ static float kph_to_mph(float kph)
     return kph * 1.60934;
 }
 
+static float kPa_to_psig(float kPa)
+{
+    return (kPa * 0.1450377377)-14.6959494;
+}
+
+//look into data bytes beyond 4
+//need 4F,50, 55,56,57,58,64
 static int decode_pid(unsigned char pid, CAN_msg *msg, int *value)
 {
     int result = 0;
@@ -64,14 +71,13 @@ static int decode_pid(unsigned char pid, CAN_msg *msg, int *value)
             msg->data[0] >= 3 &&
             msg->data[1] == CUSTOM_MODE_SHOW_CURRENT_DATA &&
             msg->data[2] == pid ) {
-
-
+    	
         result = 1;
-
+        
         int A = msg->data[3];
         int B = msg->data[4];
-        //int C = msg->data[5]; //save for later
-        //int D = msg->data[6];
+        int C = msg->data[5];
+        int D = msg->data[6];
 
         switch(pid) {
         case 0x04: //calculated engine load
@@ -110,11 +116,139 @@ static int decode_pid(unsigned char pid, CAN_msg *msg, int *value)
         case 0x11: //throttle position %
             *value = A * 100 / 255;
             break;
+        case 0x14: //Oxygen sensor voltage - Bank 1, Sensor 1
+        case 0x15: //Oxygen sensor voltage - Bank 1, Sensor 2
+        case 0x16: //Oxygen sensor voltage - Bank 1, Sensor 3
+        case 0x17: //Oxygen sensor voltage - Bank 1, Sensor 4
+        case 0x18: //Oxygen sensor voltage - Bank 2, Sensor 1
+        case 0x19: //Oxygen sensor voltage - Bank 2, Sensor 2
+        case 0x1A: //Oxygen sensor voltage - Bank 2, Sensor 3
+        case 0x1B: //Oxygen sensor voltage - Bank 2, Sensor 4
+            *value = A / 200;
+            break;
+        case 0x1F: //Run time since engine start
+            *value = (A * 256) + B;
+            break;
+        case 0x22: //Fuel rail Pressure (relative to manifold vacuum) kPa
+            *value = ((A * 256) + B) * 0.079;
+            break;
+        case 0x23: //Fuel rail Pressure (diesel, or gasoline direct inject) kPa 
+            *value = ((A * 256) + B) * 10;
+            break;
+        case 0x2E: //Commanded evaporative purge %
+            *value = A * 100 / 255;
+            break;
         case 0x2F: //fuel level input %
             *value = A * 100 / 255;
             break;
+        case 0x30: //# of warm-ups since codes cleared
+            *value = A;
+            break;
+        case 0x31: //Distance traveled since codes cleared - Validate km to miles
+            *value = kph_to_mph((A * 256) + B);
+            break;
+        case 0x32: //Evap. System Vapor Pressure
+            *value = ((A * 256) + B) / 4;
+            break;
+        case 0x33: //Barometric pressure kPa 
+            *value = A;
+            break;
+        case 0x34: //O2S1_WR_lambda Current
+        case 0x35: //O2S2_WR_lambda Current
+        case 0x36: //O2S3_WR_lambda Current
+        case 0x37: //O2S4_WR_lambda Current
+        case 0x38: //O2S5_WR_lambda Current
+        case 0x39: //O2S6_WR_lambda Current
+        case 0x3A: //O2S7_WR_lambda Current
+        case 0x3B: //O2S8_WR_lambda Current
+            *value = ((C * 256) + D) / 256 - 128;
+            break;
+        case 0x3C: //Catalyst Temperature Bank 1, Sensor 1
+        case 0x3D: //Catalyst Temperature Bank 1, Sensor 2
+        case 0x3E: //Catalyst Temperature Bank 2, Sensor 1
+        case 0x3F: //Catalyst Temperature Bank 2, Sensor 2
+            *value = celcius_to_farenheight((( A * 256) + B) / 10 - 40);
+            break;
+        case 0x42: //Control module voltage V
+            *value = ((A * 256) + B) / 1000;
+            break;
+        case 0x43: //Absolute load value %
+            *value = ((A * 256) + B) * 100 / 255; 
+            break;
+        case 0x44: //Fuel/Air commanded equivalence ratio
+            *value = ((A * 256) + B) / 32768; 
+            break;
+        case 0x45: //Relative throttle position %
+            *value = A * 100 / 255; 
+            break;
+        case 0x46: //Ambient air temperature
+            *value = celcius_to_farenheight(A - 40); 
+            break;
+        case 0x47: //Absolute throttle position B %
+        case 0x48: //Absolute throttle position C %
+        case 0x49: //Absolute throttle position D %
+        case 0x4A: //Absolute throttle position E %
+        case 0x4B: //Absolute throttle position F %
+            *value = A * 100 / 255; 
+            break;
+        case 0x4D: //Time run with MIL on minutes
+        case 0x4E: //Time since trouble codes cleared minutes
+            *value = (A * 256) + B; 
+            break;
+        case 0x51: //Fuel Type - see table
+            *value = A; 
+            break;
+        case 0x52: //Ethanol fuel %
+            *value = A * 100 / 255; 
+            break;
+        case 0x53: //Absolute Evap system Vapor Pressure kPa
+            *value = ((A * 256) + B) / 200; 
+            break;
+        case 0x54: //Evap system vapor pressure Pa
+            *value = ((A * 256) + B) - 32767; 
+            break;
+        case 0x59: //Fuel rail pressure (absolute) kPa
+            *value = ((A * 256) + B) * 10; 
+            break;
+        case 0x5A: //Relative accelerator pedal position % 
+            *value = A * 100 / 255; 
+            break;
+        case 0x5B: //Hybrid battery pack remaining life % 
+            *value = A * 100 / 255; 
+            break;
         case 0x5C: //Engine oil temp (C)
             *value = celcius_to_farenheight(A - 40);
+            break;
+        case 0x5D: //Fuel injection timing degree
+            *value = (((A * 256) + B) - 26880) / 128;
+            break;
+        case 0x5E: //Engine fuel rate l/h
+            *value = ((A * 256) + B) * 0.05;
+            break;
+        case 0x61: //Driver's demand engine - percent torque %
+        case 0x62: //Actual engine - percent torque %
+            *value = A - 125;
+            break;
+        case 0x63: //Engine reference torque - foot lbs
+            *value = ((A * 256) + B)*0.737562149277;
+            break;    
+        case 0x67: //Engine coolant temperature
+            *value = celcius_to_farenheight(A - 40); 
+            break;
+        case 0x68: //Intake air temperature sensor
+            *value = celcius_to_farenheight(A - 40); 
+            break;
+        case 0x6B: //Exhaust gas recirculation temperature
+            *value = celcius_to_farenheight(A - 40); 
+            break;
+        case 0x6F: //Turbocharger compressor inlet pressure psi
+            *value = kPa_to_psig(A); 
+            break;
+        case 0x70: //Boost pressure control in psi
+            *value = kPa_to_psig(A); 
+            break;
+        case 0x74: //Boost pressure control in psi
+            *value = kPa_to_psig(A); 
             break;
         default:
             result = 0;
