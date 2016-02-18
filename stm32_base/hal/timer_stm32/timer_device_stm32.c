@@ -38,6 +38,7 @@
 #define TIMER_IRQ_PRIORITY 	4
 #define TIMER_IRQ_SUB_PRIORITY 	0
 #define TIMER_PERIOD		0xFFFF
+#define TIMER_POLARITY		TIM_ICPolarity_Falling
 
 static struct state {
         uint16_t period;
@@ -104,7 +105,7 @@ static void init_timer_0(struct config *cfg)
 
     TIM_ICInitTypeDef TIM_ICInitStructure;
     TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
-    TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;
+    TIM_ICInitStructure.TIM_ICPolarity = TIMER_POLARITY;
     TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
     TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
     TIM_ICInitStructure.TIM_ICFilter = INPUT_CAPTURE_FILTER;
@@ -157,7 +158,7 @@ static void init_timer_1(struct config *cfg)
 
     TIM_ICInitTypeDef TIM_ICInitStructure;
     TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
-    TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;
+    TIM_ICInitStructure.TIM_ICPolarity = TIMER_POLARITY;
     TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
     TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
     TIM_ICInitStructure.TIM_ICFilter = INPUT_CAPTURE_FILTER;
@@ -216,7 +217,7 @@ static void init_timer_2(struct config *cfg)
 
     TIM_ICInitTypeDef TIM_ICInitStructure;
     TIM_ICInitStructure.TIM_Channel = TIM_Channel_4;
-    TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;
+    TIM_ICInitStructure.TIM_ICPolarity = TIMER_POLARITY;
     TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
     TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
     TIM_ICInitStructure.TIM_ICFilter = INPUT_CAPTURE_FILTER;
@@ -329,8 +330,8 @@ uint32_t timer_device_get_period(size_t channel)
  * = = = IRQ methods below this point = = =
  */
 
-void update_device_state(const size_t chan, const uint16_t p_ticks,
-                         const uint16_t p_h_ticks)
+static void update_device_state(const size_t chan, const uint16_t p_ticks,
+                                const uint16_t p_h_ticks)
 {
         if (0 == p_ticks)
                 return;
@@ -373,7 +374,7 @@ void TIM3_IRQHandler(void)
         }
 }
 
-//logical timer 1
+/* Logical Timer 1 IRQ Handler */
 void TIM1_BRK_TIM9_IRQHandler(void)
 {
         if (TIM_GetITStatus(TIM9, TIM_IT_Update) != RESET) {
@@ -394,7 +395,7 @@ void TIM1_BRK_TIM9_IRQHandler(void)
 }
 
 /*
- * Logical Timer 2 HACK
+ * Logical Timer 2 IRQ Handler with a HACK
  *
  * Unfortunately on MK2 there is a hardware bug where the GPIO input
  * for TIM2 can't trigger the interrupt on the slave controller for

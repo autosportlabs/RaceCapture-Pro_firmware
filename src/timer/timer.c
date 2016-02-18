@@ -33,12 +33,12 @@ static uint16_t get_timer_quiet_period(const TimerConfig *tc)
                 return 0;
 
         /*
-         * Software Filter Hack Represents 20K Max.  For release
+         * Software Filter Hack Represents 15K Max.  For release
          * in 2.8.8.  Have to divide value by pulses per revolution
          * since this must scale depending on the number of pulses
          * per engine rotation.
          */
-        return 3000 / tc->pulsePerRevolution;
+        return 4500 / tc->pulsePerRevolution;
 }
 
 int timer_init(LoggerConfig *loggerConfig)
