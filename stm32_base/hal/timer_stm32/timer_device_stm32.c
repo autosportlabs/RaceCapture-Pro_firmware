@@ -381,15 +381,16 @@ void TIM1_BRK_TIM9_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {
     static uint32_t last;
-    static uint32_t sigs;
+    static uint32_t cc4_irqs;
 
     if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
         /* Overflow interrupt */
             TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
 
-            if (0 == sigs)
+            if (0 == cc4_irqs)
                     timer2_period = 0;
-            sigs = 0;
+
+            cc4_irqs = 0;
     }
 
     if (TIM_GetITStatus(TIM2, TIM_IT_CC4) != RESET) {
@@ -403,7 +404,7 @@ void TIM2_IRQHandler(void)
                 timer2_period = TIMER_PERIOD - last + current;
         }
         last = current;
-        ++sigs;
+        ++cc4_irqs;
         TIM_ClearITPendingBit(TIM2, TIM_IT_CC4);
     }
 }
