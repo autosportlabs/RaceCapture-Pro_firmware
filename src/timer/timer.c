@@ -26,19 +26,26 @@
 
 static Filter g_timer_filter[CONFIG_TIMER_CHANNELS];
 
+static uint16_t get_timer_quiet_period(const TimerConfig *tc)
+{
+        /* Only use filtering when in RPM mode */
+        if (MODE_LOGGING_TIMER_RPM != tc->mode)
+                return 0;
+
+        /*
+         * Software Filter Hack Represents 20K Max.  For release
+         * in 2.8.8.  Have to divide value by pulses per revolution
+         * since this must scale depending on the number of pulses
+         * per engine rotation.
+         */
+        return 3000 / tc->pulsePerRevolution;
+}
+
 int timer_init(LoggerConfig *loggerConfig)
 {
         for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; i++) {
                 TimerConfig *tc = &loggerConfig->TimerConfigs[i];
-
-                /*
-                 * Software Filter Hack Represents 20K Max.  For release
-                 * in 2.8.8.  Have to divide value by pulses per revolution
-                 * since this must scale depending on the number of pulses
-                 * per engine rotation.
-                 */
-                const uint16_t qp_us = 3000 / tc->pulsePerRevolution;
-
+                const uint16_t qp_us = get_timer_quiet_period(tc);
                 timer_device_init(i, tc->timerSpeed, qp_us);
                 init_filter(&g_timer_filter[i], tc->filterAlpha);
         }
