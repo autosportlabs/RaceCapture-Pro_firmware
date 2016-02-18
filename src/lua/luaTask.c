@@ -69,24 +69,24 @@ static void* myAlloc(void *ud, void *ptr, size_t osize, size_t nsize)
         const size_t new_lua_mem_size = lua_mem_size + delta;
 
         if (nsize == 0) {
-                pr_debug_int_msg("[lua] RAM Freed: ", abs(delta));
+                pr_trace_int_msg("[lua] RAM Freed: ", abs(delta));
                 portFree(ptr);
                 lua_mem_size = new_lua_mem_size;
                 return NULL;
         }
 
         if (LUA_MEM_MAX && LUA_MEM_MAX < new_lua_mem_size) {
-                pr_info("[lua] Memory ceiling hit: ");
-                pr_info_int(new_lua_mem_size);
-                pr_info_int_msg(" > ", LUA_MEM_MAX);
+                pr_warning("[lua] Memory ceiling hit: ");
+                pr_warning_int(new_lua_mem_size);
+                pr_warning_int_msg(" > ", LUA_MEM_MAX);
                 return NULL;
         }
 
         void *nptr = portRealloc(ptr, nsize);
         if (nptr == NULL) {
-                pr_debug("[lua] Realloc failed: ");
-                pr_debug_int(lua_mem_size);
-                pr_debug_int_msg(" -> ", new_lua_mem_size);
+                pr_trace("[lua] Realloc failed: ");
+                pr_trace_int(lua_mem_size);
+                pr_trace_int_msg(" -> ", new_lua_mem_size);
                 return NULL;
         }
 
