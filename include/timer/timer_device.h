@@ -24,6 +24,7 @@
 
 #include "cpp_guard.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
 
