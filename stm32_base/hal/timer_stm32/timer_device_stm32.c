@@ -330,10 +330,20 @@ uint32_t timer_device_get_period(size_t channel)
  * = = = IRQ methods below this point = = =
  */
 
+/**
+ * Updates the device state based on the period ticks (p_ticks) and the
+ * duty cycle based on both period ticks and high-level ticks (h_ticks).
+ * If in the quiet time, it saves the period ticks value to be used later.
+ * otherwise it updates the period and duty_cycle values and clears the
+ * buffer used for ticks read during the quiet period.
+ * @param chan The timer channel index.
+ * @param p_ticks The tick count for the entire period.
+ * @param h_ticks The tick count for the length of the high signal level.
+ */
 static void update_device_state(const size_t chan, const uint16_t p_ticks,
-                                const uint16_t p_h_ticks)
+                                const uint16_t h_ticks)
 {
-        if (0 == p_ticks)
+        if (chan >= MK2_TIMER_CHANNELS || 0 == p_ticks)
                 return;
 
         struct state *s = &g_state[chan];
@@ -351,7 +361,7 @@ static void update_device_state(const size_t chan, const uint16_t p_ticks,
 
         /* If here, then past quiet period.  Update complete state */
         s->period = total_ticks;
-        s->duty_cycle = 100 * (uint32_t) p_h_ticks / total_ticks;
+        s->duty_cycle = 100 * (uint32_t) h_ticks / total_ticks;
         s->q_period_ticks = 0;
 }
 

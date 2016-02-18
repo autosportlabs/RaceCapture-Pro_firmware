@@ -24,6 +24,8 @@
 #include "timer_device.h"
 #include "filter.h"
 
+#define QUIET_PERIOD_US	4500
+
 static Filter g_timer_filter[CONFIG_TIMER_CHANNELS];
 
 static uint16_t get_timer_quiet_period(const TimerConfig *tc)
@@ -38,7 +40,7 @@ static uint16_t get_timer_quiet_period(const TimerConfig *tc)
          * since this must scale depending on the number of pulses
          * per engine rotation.
          */
-        return 4500 / tc->pulsePerRevolution;
+        return QUIET_PERIOD_US / tc->pulsePerRevolution;
 }
 
 int timer_init(LoggerConfig *loggerConfig)
