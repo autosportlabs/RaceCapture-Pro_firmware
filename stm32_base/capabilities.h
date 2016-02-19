@@ -11,7 +11,7 @@
 //configuration
 #define MAX_TRACKS				240
 #define MAX_SECTORS				20
-#define MAX_VIRTUAL_CHANNELS	30
+#define MAX_VIRTUAL_CHANNELS	100
 #define LOGGER_MESSAGE_BUFFER_SIZE	10
 
 /*
