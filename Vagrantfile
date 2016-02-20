@@ -21,10 +21,20 @@ Vagrant.configure(2) do |config|
     # Box name info
     vb.name = 'ASL Firmware Builder'
 
+    host = RbConfig::CONFIG['host_os']
+    mem = 512
+    if host =~ /darwin/
+      cpus = `sysctl -n hw.ncpu`.to_i
+    elsif host =~ /linux/
+      cpus = `nproc`.to_i
+    else # sorry Windows folks, I can't help you
+      cpus = 2
+    end
+
     # Needed for multi-core support on Vagrant machines.
     vb.customize ["modifyvm", :id, "--ioapic", "on"]
-    vb.memory = 384
-    vb.cpus = 2
+    vb.customize ["modifyvm", :id, "--memory", mem]
+    vb.customize ["modifyvm", :id, "--cpus", cpus]
 
     # Enable USB.  Needed for programming RCP units
     vb.customize ["modifyvm", :id, "--usb", "on"]
@@ -41,6 +51,6 @@ Vagrant.configure(2) do |config|
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
-     /vagrant/vagrant_setup.sh
+     /vagrant/bin/vagrant_setup.sh
   SHELL
 end
