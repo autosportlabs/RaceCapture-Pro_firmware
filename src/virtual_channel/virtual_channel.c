@@ -48,24 +48,27 @@ int find_virtual_channel(const char * channel_name)
 
 int create_virtual_channel(const ChannelConfig chCfg)
 {
+        /* If the channel exists, return it and be done */
+        if (find_virtual_channel(chCfg.label) != INVALID_VIRTUAL_CHANNEL)
+                return id;
 
-    int virtualChannelId = find_virtual_channel(chCfg.label);
-
-    if (virtualChannelId == INVALID_VIRTUAL_CHANNEL) {
-        if (g_virtualChannelCount < MAX_VIRTUAL_CHANNELS) {
-            virtualChannelId = g_virtualChannelCount;
-            g_virtualChannelCount++;
+        /*
+         * Here we actually try to create a new channel.  But only if we
+         * have the room for it.
+         */
+        if (g_virtualChannelCount >= MAX_VIRTUAL_CHANNELS) {
+                pr_error_int_msg("[vchan] Limit reached: ",
+                                 g_virtualChannelCount);
+                return INVALID_VIRTUAL_CHANNEL;
         }
-    }
-    if (virtualChannelId != INVALID_VIRTUAL_CHANNEL) {
-        VirtualChannel * channel = g_virtualChannels + virtualChannelId;
+
+
+        VirtualChannel * channel = g_virtualChannels + g_virtualChannelCount;
         channel->config = chCfg;
         channel->currentValue = 0;
         configChanged();
-    } else {
-        pr_error("vchan: limit exceeded\r\n");
-    }
-    return virtualChannelId;
+
+        return g_virtualChannelCount++;
 }
 
 void set_virtual_channel_value(size_t id, float value)
