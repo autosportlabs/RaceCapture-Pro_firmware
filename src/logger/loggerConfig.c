@@ -590,6 +590,7 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
     sr = gpsConfig->DOP.sampleRate;
     s = getHigherSampleRate(sr, s);
 
+
     LapConfig *trackCfg = &(config->LapConfigs);
     sr = trackCfg->lapCountCfg.sampleRate;
     s = getHigherSampleRate(sr, s);
@@ -611,6 +612,11 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
 
     sr = trackCfg->current_lap_cfg.sampleRate;
     s = getHigherSampleRate(sr, s);
+
+
+    /* Now check our Virtual Channels */
+    sr = get_virtual_channel_high_sample_rate();
+    s = getHigherSampleRate(s, sr);
 
     return s;
 }
