@@ -49,7 +49,8 @@ int find_virtual_channel(const char * channel_name)
 int create_virtual_channel(const ChannelConfig chCfg)
 {
         /* If the channel exists, return it and be done */
-        if (find_virtual_channel(chCfg.label) != INVALID_VIRTUAL_CHANNEL)
+        const int id = find_virtual_channel(chCfg.label);
+        if (id != INVALID_VIRTUAL_CHANNEL)
                 return id;
 
         /*

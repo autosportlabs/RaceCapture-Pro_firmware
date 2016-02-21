@@ -447,8 +447,7 @@ void api_send_sample_record(Serial *serial, struct sample *sample,
                 }
 
                 if (cs->populated) {
-                        channelBitmask[channelBitmaskIndex] =
-                                channelBitmask[channelBitmaskIndex] |
+                        channelBitmask[channelBitmaskIndex] |=
                                 (1 << channelBitPosition);
 
                         const int precision = cs->cfg->precision;
@@ -470,8 +469,9 @@ void api_send_sample_record(Serial *serial, struct sample *sample,
                                 put_double(serial, cs->valueDouble, precision);
                                 break;
                         default:
-                                pr_warning("sendSampleRec: unknown sample "
-                                           "data type\r\n");
+                                pr_warning_int_msg("[loggerApi] Unknown sample"
+                                                   " data type: ",
+                                                   cs->sampleData);
                                 break;
                         }
                         serial->put_c(',');
