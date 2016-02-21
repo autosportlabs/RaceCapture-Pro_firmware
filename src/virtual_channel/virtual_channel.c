@@ -88,3 +88,15 @@ void reset_virtual_channels(void)
 {
     g_virtualChannelCount = 0;
 }
+
+int get_virtual_channel_high_sample_rate(void)
+{
+        int sr = 0;
+
+        for (size_t i = 0; i < g_virtualChannelCount; ++i) {
+                const int vc_sr = g_virtualChannels[i].config.sampleRate;
+                sr = getHigherSampleRate(sr, vc_sr);
+        }
+
+        return sr;
+}
