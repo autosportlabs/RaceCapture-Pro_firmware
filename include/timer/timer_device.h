@@ -24,13 +24,21 @@
 
 #include "cpp_guard.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
 
 CPP_GUARD_BEGIN
 
-int32_t timer_device_init(size_t channel, uint32_t speed, uint32_t slowChannelMode);
-
+/**
+ * Initializes the timer channel.  Causes a reset in the state of
+ * that channel.  Also adjusts the quiet period based on the pulses
+ * per revolution.
+ * @param channel The channel to init
+ * @param speed The Speed enum value.  Controls
+ */
+bool timer_device_init(const size_t channel, const uint32_t speed,
+                       const uint16_t quiet_period_us);
 uint32_t timer_device_get_period(size_t channel);
 uint32_t timer_device_get_usec(size_t channel);
 uint32_t timer_device_get_count(size_t channel);

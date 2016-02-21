@@ -45,7 +45,8 @@
 
 #define DEFAULT_ONTICK_HZ 1
 #define MAX_ONTICK_HZ 30
-#define LUA_STACK_SIZE 1000
+/* Set this high as the parser can get very stack hungry.  Issue #411 */
+#define LUA_STACK_SIZE 1536
 #define LUA_PERIODIC_FUNCTION "onTick"
 
 #define LUA_BYPASS_FLASH_DELAY 250
@@ -68,24 +69,24 @@ static void* myAlloc(void *ud, void *ptr, size_t osize, size_t nsize)
         const size_t new_lua_mem_size = lua_mem_size + delta;
 
         if (nsize == 0) {
-                pr_debug_int_msg("[lua] RAM Freed: ", abs(delta));
+                pr_trace_int_msg("[lua] RAM Freed: ", abs(delta));
                 portFree(ptr);
                 lua_mem_size = new_lua_mem_size;
                 return NULL;
         }
 
         if (LUA_MEM_MAX && LUA_MEM_MAX < new_lua_mem_size) {
-                pr_info("[lua] Memory ceiling hit: ");
-                pr_info_int(new_lua_mem_size);
-                pr_info_int_msg(" > ", LUA_MEM_MAX);
+                pr_warning("[lua] Memory ceiling hit: ");
+                pr_warning_int(new_lua_mem_size);
+                pr_warning_int_msg(" > ", LUA_MEM_MAX);
                 return NULL;
         }
 
         void *nptr = portRealloc(ptr, nsize);
         if (nptr == NULL) {
-                pr_debug("[lua] Realloc failed: ");
-                pr_debug_int(lua_mem_size);
-                pr_debug_int_msg(" -> ", new_lua_mem_size);
+                pr_trace("[lua] Realloc failed: ");
+                pr_trace_int(lua_mem_size);
+                pr_trace_int_msg(" -> ", new_lua_mem_size);
                 return NULL;
         }
 
@@ -325,9 +326,9 @@ static void luaTask(void *params)
         }
 
         int fales = 0;
-        for(;;) {
-                portTickType xLastWakeTime = xTaskGetTickCount();
-                vTaskDelayUntil(&xLastWakeTime, onTickSleepInterval);
+        for(portTickType xLastWakeTime;;
+            vTaskDelayUntil(&xLastWakeTime, onTickSleepInterval)) {
+                xLastWakeTime = xTaskGetTickCount();
 
                 if (LUA_ENABLED != lua_run_state)
                         continue;

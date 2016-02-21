@@ -106,27 +106,31 @@ static void appendInt(int num)
 {
         char buf[12];
         modp_itoa10(num, buf);
+        buf[11] = '\0';
         append_file_buffer(buf);
 }
 
 static void appendLongLong(long long num)
 {
-        char buf[21];
+        char buf[24];
         modp_ltoa10(num, buf);
+        buf[23] = '\0';
         append_file_buffer(buf);
 }
 
 static void appendDouble(double num, int precision)
 {
-        char buf[30];
+        char buf[32];
         modp_dtoa(num, buf, precision);
+        buf[31] = '\0';
         append_file_buffer(buf);
 }
 
 static void appendFloat(float num, int precision)
 {
-        char buf[11];
+        char buf[16];
         modp_ftoa(num, buf, precision);
+        buf[15] = '\0';
         append_file_buffer(buf);
 }
 

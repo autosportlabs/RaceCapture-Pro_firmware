@@ -24,16 +24,35 @@
 #include "timer_device.h"
 #include "filter.h"
 
+#define QUIET_PERIOD_US	4500
+
 static Filter g_timer_filter[CONFIG_TIMER_CHANNELS];
+
+static uint16_t get_timer_quiet_period(const TimerConfig *tc)
+{
+        /* Only use filtering when in RPM mode */
+        if (MODE_LOGGING_TIMER_RPM != tc->mode)
+                return 0;
+
+        /*
+         * Software Filter Hack Represents 15K Max.  For release
+         * in 2.8.8.  Have to divide value by pulses per revolution
+         * since this must scale depending on the number of pulses
+         * per engine rotation.
+         */
+        return QUIET_PERIOD_US / tc->pulsePerRevolution;
+}
 
 int timer_init(LoggerConfig *loggerConfig)
 {
-    for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; i++) {
-        TimerConfig *tc = &loggerConfig->TimerConfigs[i];
-        timer_device_init(i, tc->timerSpeed, tc->mode);
-        init_filter(&g_timer_filter[i], tc->filterAlpha);
-    }
-    return 1;
+        for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; i++) {
+                TimerConfig *tc = &loggerConfig->TimerConfigs[i];
+                const uint16_t qp_us = get_timer_quiet_period(tc);
+                timer_device_init(i, tc->timerSpeed, qp_us);
+                init_filter(&g_timer_filter[i], tc->filterAlpha);
+        }
+
+        return 1;
 }
 
 uint32_t timer_get_raw(size_t channel)

@@ -51,10 +51,15 @@
 #include <app_info.h>
 #include <stdbool.h>
 
-#define FATAL_ERROR_SCHEDULER	1
-#define FATAL_ERROR_HARDWARE	2
-#define FLASH_PAUSE_DELAY 	5000000
-#define FLASH_DELAY 		1000000
+#define FLASH_PAUSE_DELAY_S 	5
+#define FLASH_DELAY_S		1
+
+enum fatal_error {
+        FATAL_ERROR_HARDWARE  = 1,
+        FATAL_ERROR_SCHEDULER = 2,
+        FATAL_ERROR_OVERFLOW  = 3,
+        FATAL_ERROR_MALLOC    = 4,
+};
 
 __attribute__((aligned (4)))
 static const struct app_info_block info_block = {
@@ -62,33 +67,66 @@ static const struct app_info_block info_block = {
     .info_crc = 0xDEADBEEF,
 };
 
-static void fatalError(int type)
+static void delay_seconds(const size_t seconds)
 {
-        int count;
+        int64_t cycles = seconds * configCPU_CLOCK_HZ;
 
-        switch (type) {
-        case FATAL_ERROR_HARDWARE:
-                count = 1;
-                break;
-        case FATAL_ERROR_SCHEDULER:
-                count = 2;
-                break;
-        default:
-                count = 3;
-                break;
-        }
+        /* Each loop iteration takes 8 cycles */
+        for(; cycles > 0; cycles -= 8);
+}
 
-        while(1) {
-                for (int c = 0; c < count; c++) {
+static void fatalError(const enum fatal_error type)
+{
+        taskDISABLE_INTERRUPTS();
+
+        for(;;) {
+                LED_enable(1);
+                LED_enable(2);
+                delay_seconds(FLASH_PAUSE_DELAY_S);
+                LED_disable(1);
+                LED_disable(2);
+                delay_seconds(FLASH_DELAY_S);
+
+                for (int c = 0; c < type; ++c) {
                         LED_enable(1);
                         LED_enable(2);
-                        for (int i=0; i<FLASH_DELAY; i++) {}
+                        delay_seconds(FLASH_DELAY_S);
                         LED_disable(1);
                         LED_disable(2);
-                        for (int i=0; i < FLASH_DELAY; i++) {}
+                        delay_seconds(FLASH_DELAY_S);
                 }
-                for (int i=0; i < FLASH_PAUSE_DELAY; i++) {}
         }
+}
+
+void vApplicationMallocFailedHook(void)
+{
+        /*
+         * vApplicationMallocFailedHook() will only be called if
+         * configUSE_MALLOC_FAILED_HOOK is set to 1 in FreeRTOSConfig.h.  It
+         * is a hook function that will get called if a call to pvPortMalloc()
+         * fails. pvPortMalloc() is called internally by the kernel whenever a
+         * task, queue, timer or semaphore is created.  It is also called by
+         * various parts of the demo application.  If heap_1.c or heap_2.c are
+         * used, then the size of the heap available to pvPortMalloc() is
+         * defined by configTOTAL_HEAP_SIZE in FreeRTOSConfig.h, and the
+         * xPortGetFreeHeapSize() API function can be used to query the size
+         * of free heap space that remains (although it does not provide
+         * information on how the remaining heap might be fragmented).
+         */
+        pr_error("MALLOC FAILURE\r\n");
+        fatalError(FATAL_ERROR_MALLOC);
+}
+
+void vApplicationStackOverflowHook(xTaskHandle pxTask, char *pcTaskName)
+{
+        /*
+         * Run time stack overflow checking is performed if
+         * configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2.
+         * This hook function is called if a stack overflow is detected.
+         */
+        (void) pxTask;
+        pr_error_str_msg("STACK OVERFLOW in ", pcTaskName);
+        fatalError(FATAL_ERROR_OVERFLOW);
 }
 
 /*
@@ -142,7 +180,10 @@ int main( void )
         ALWAYS_KEEP(info_block);
         cpu_init();
         pr_info("*** Start! ***\r\n");
+
+#if !defined(_DEBUG)
         watchdog_init(WATCHDOG_TIMEOUT_MS);
+#endif /* _DEBUG */
 
         /*
          * Start the scheduler.
@@ -165,42 +206,9 @@ int main( void )
         }
 
         vTaskStartScheduler();
+
         fatalError(FATAL_ERROR_SCHEDULER);
 
-        return 0;
-}
-
-/*-----------------------------------------------------------*/
-void vApplicationMallocFailedHook(void)
-{
-        /*
-         * vApplicationMallocFailedHook() will only be called if
-         * configUSE_MALLOC_FAILED_HOOK is set to 1 in FreeRTOSConfig.h.  It
-         * is a hook function that will get called if a call to pvPortMalloc()
-         * fails. pvPortMalloc() is called internally by the kernel whenever a
-         * task, queue, timer or semaphore is created.  It is also called by
-         * various parts of the demo application.  If heap_1.c or heap_2.c are
-         * used, then the size of the heap available to pvPortMalloc() is
-         * defined by configTOTAL_HEAP_SIZE in FreeRTOSConfig.h, and the
-         * xPortGetFreeHeapSize() API function can be used to query the size
-         * of free heap space that remains (although it does not provide
-         * information on how the remaining heap might be fragmented).
-         */
-        taskDISABLE_INTERRUPTS();
-        for(;;);
-}
-
-/*-----------------------------------------------------------*/
-void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName)
-{
-        (void) pcTaskName;
-        (void) pxTask;
-
-        /*
-         * Run time stack overflow checking is performed if
-         * configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2.
-         * This hook function is called if a stack overflow is detected.
-         */
-        taskDISABLE_INTERRUPTS();
-        for(;;);
+        /* SHOULD NEVER GET HERE */
+        return 1;
 }

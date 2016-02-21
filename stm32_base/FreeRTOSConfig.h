@@ -52,10 +52,13 @@
 #define configQUEUE_REGISTRY_SIZE	10
 #define configGENERATE_RUN_TIME_STATS	0
 #define configUSE_STATS_FORMATTING_FUNCTIONS 1
-#define configCHECK_FOR_STACK_OVERFLOW	0
 #define configUSE_RECURSIVE_MUTEXES	1
 #define configUSE_MALLOC_FAILED_HOOK	0
 #define configUSE_APPLICATION_TASK_TAG	0
+
+#if defined(_DEBUG)
+#define configCHECK_FOR_STACK_OVERFLOW	2
+#endif /* _DEBUG */
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES 		0
