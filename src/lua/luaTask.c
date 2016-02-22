@@ -19,10 +19,10 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "FreeRTOS.h"
 #include "GPIO.h"
 #include "LED.h"
+#include "capabilities.h"
 #include "lauxlib.h"
 #include "lua.h"
 #include "luaBaseBinding.h"
@@ -43,9 +43,9 @@
 #include <math.h>
 #include <stdbool.h>
 
-#define DEFAULT_ONTICK_HZ 1
-#define MAX_ONTICK_HZ 30
 /* Set this high as the parser can get very stack hungry.  Issue #411 */
+#define LUA_MAXIMUM_ONTICK_HZ	1000
+#define LUA_DEFAULT_ONTICK_HZ	1
 #define LUA_STACK_SIZE 1536
 #define LUA_PERIODIC_FUNCTION "onTick"
 
@@ -113,9 +113,12 @@ static void unlockLua(void)
     xSemaphoreGive(xLuaLock);
 }
 
-void set_ontick_freq(size_t freq)
+size_t set_ontick_freq(const size_t freq)
 {
-    if (freq <= MAX_ONTICK_HZ) onTickSleepInterval = msToTicks(1000 / freq);
+        if (LUA_MAXIMUM_ONTICK_HZ < freq || 0 == freq)
+                return 0;
+
+        return onTickSleepInterval = msToTicks(TICK_RATE_HZ / freq);
 }
 
 size_t get_ontick_freq()
@@ -314,7 +317,7 @@ cleanup:
 
 static void luaTask(void *params)
 {
-        set_ontick_freq(DEFAULT_ONTICK_HZ);
+        set_ontick_freq(LUA_DEFAULT_ONTICK_HZ);
         initialize_script();
 
         const bool should_bypass_lua = (watchdog_is_watchdog_reset() && user_bypass_requested());
