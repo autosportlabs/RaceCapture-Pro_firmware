@@ -73,19 +73,19 @@ static float kPa_to_psig(float kPa)
 static int decode_pid(unsigned char pid, CAN_msg *msg, int *value)
 {
     int result = 0;
-    
+
     if (msg->addressValue == STANDARD_PID_RESPONSE &&
         msg->data[0] >= 3 &&
         msg->data[1] == CUSTOM_MODE_SHOW_CURRENT_DATA &&
         msg->data[2] == pid ) {
-        
+
         result = 1;
-        
+
         int A = msg->data[3];
         int B = msg->data[4];
         int C = msg->data[5];
         int D = msg->data[6];
-        
+
         switch(pid) {
             /* Calculated engine load */
             case 0x04:
