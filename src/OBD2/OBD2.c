@@ -382,9 +382,7 @@ int OBD2_request_PID(unsigned char pid, int *value, size_t timeout)
     msg.data[7] = 0x55;
     msg.dataLength = 8;
     msg.isExtendedAddress = 0;
-    
     int pid_request_success = 0;
-    
     if (CAN_tx_msg(0, &msg, timeout)) {
         size_t start_time = xTaskGetTickCount();
         while (!isTimeoutMs(start_time, OBD2_PID_DEFAULT_TIMEOUT_MS)) {
