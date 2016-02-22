@@ -136,9 +136,9 @@ void vApplicationStackOverflowHook(xTaskHandle pxTask, char *pcTaskName)
  * info on how to best set these.  0 is lowest priority.
  */
 #define TASK_PRIORITY(v)	(tskIDLE_PRIORITY + v)
-#define RCP_INPUT_PRIORITY	TASK_PRIORITY(4)
-#define RCP_OUTPUT_PRIORITY	TASK_PRIORITY(3)
-#define RCP_LOGGING_PRIORITY	TASK_PRIORITY(2)
+#define RCP_LOGGING_PRIORITY	TASK_PRIORITY(4)
+#define RCP_INPUT_PRIORITY	TASK_PRIORITY(3)
+#define RCP_OUTPUT_PRIORITY	TASK_PRIORITY(2)
 #define RCP_LUA_PRIORITY	TASK_PRIORITY(1)
 
 void setupTask(void *delTask)
