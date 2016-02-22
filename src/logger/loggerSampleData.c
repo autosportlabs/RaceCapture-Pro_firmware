@@ -1,7 +1,7 @@
 /*
  * Race Capture Firmware
  *
- * Copyright (C) 2015 Autosport Labs
+ * Copyright (C) 2016 Autosport Labs
  *
  * This file is part of the Race Capture firmware suite
  *
@@ -19,13 +19,13 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "ADC.h"
 #include "FreeRTOS.h"
 #include "GPIO.h"
 #include "GPIO.h"
 #include "OBD2.h"
 #include "PWM.h"
+#include "channel_config.h"
 #include "dateTime.h"
 #include "geopoint.h"
 #include "gps.h"

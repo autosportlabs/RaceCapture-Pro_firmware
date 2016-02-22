@@ -19,33 +19,26 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VIRTUAL_CHANNEL_H_
-#define VIRTUAL_CHANNEL_H_
+#ifndef _CHANNELCONFIGTEST_H_
+#define _CHANNELCONFIGTEST_H_
 
-#include "channel_config.h"
-#include "cpp_guard.h"
-#include "loggerConfig.h"
-#include "loggerNotifications.h"
+#include <cppunit/extensions/HelperMacros.h>
 
-#include <stddef.h>
+class ChannelConfigTest : public CppUnit::TestFixture
+{
+        CPPUNIT_TEST_SUITE( ChannelConfigTest );
+        CPPUNIT_TEST( test_defaults );
+        CPPUNIT_TEST( test_validate_label );
+        CPPUNIT_TEST( test_validate_units );
+        CPPUNIT_TEST( test_validate );
+        CPPUNIT_TEST_SUITE_END();
 
-CPP_GUARD_BEGIN
+public:
+        void setUp();
+        void test_defaults();
+        void test_validate_label();
+        void test_validate_units();
+        void test_validate();
+};
 
-typedef struct _VirtualChannel {
-    ChannelConfig config;
-    float currentValue;
-} VirtualChannel;
-
-#define INVALID_VIRTUAL_CHANNEL -1
-
-int find_virtual_channel(const char * channel_name);
-int create_virtual_channel(const ChannelConfig chCfg);
-VirtualChannel * get_virtual_channel(size_t id);
-size_t get_virtual_channel_count(void);
-void set_virtual_channel_value(size_t id, float value);
-float get_virtual_channel_value(int id);
-void reset_virtual_channels(void);
-
-CPP_GUARD_END
-
-#endif /* VIRTUAL_CHANNEL_H_ */
+#endif /* _CHANNELCONFIGTEST_H_ */

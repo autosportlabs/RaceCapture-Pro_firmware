@@ -28,26 +28,15 @@
 #include "luaScript.h"
 #include "luaTask.h"
 #include "lualib.h"
+#include "lauxlib.h"
 #include "memory.h"
 #include "mod_string.h"
 #include "printk.h"
 #include "taskUtil.h"
 
-/**
- * Returns an error to the Lua runtime with a descriptive string
- * IMPORTANT: This methods never returns.  The `lua_error` method.
- *            does a long jump internally.  The return statements here
- *            are really only here to make things look pretty and logical.
- */
-static int rcp_lua_error(lua_State *L, const char *msg)
+int incorrect_arguments(lua_State *L)
 {
-        lua_pushstring(L, msg);
-        return lua_error(L);
-}
-
-static int incorrect_arguments(lua_State *L)
-{
-        return rcp_lua_error(L, "incorrect argument");
+        return luaL_error(L, "incorrect argument");
 }
 
 void registerBaseLuaFunctions(lua_State *L)
@@ -74,7 +63,7 @@ int Lua_SetTickRate(lua_State *L)
 
         const size_t res = set_ontick_freq(lua_tointeger(L, 1));
         if (!res)
-                return rcp_lua_error(L, "Invalid frequency");
+                return luaL_error(L, "Invalid frequency");
 
         lua_pushnumber(L, res);
         return 1;

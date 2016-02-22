@@ -27,6 +27,7 @@
 #include "bluetooth.h"
 #include "capabilities.h"
 #include "cellModem.h"
+#include "channel_config.h"
 #include "constants.h"
 #include "cpu.h"
 #include "dateTime.h"

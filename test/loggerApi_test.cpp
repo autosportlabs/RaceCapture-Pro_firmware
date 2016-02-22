@@ -19,34 +19,36 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "loggerApi_test.h"
 #include "FreeRTOS.h"
-#include "constants.h"
 #include "api.h"
-#include "loggerApi.h"
-#include "mock_serial.h"
-#include "imu.h"
-#include "cpu.h"
-#include "loggerConfig.h"
-#include "jsmn.h"
-#include "mod_string.h"
-#include "modp_atonum.h"
-#include "memory_mock.h"
-#include "printk.h"
-#include <string>
-#include <fstream>
-#include <streambuf>
-#include "predictive_timer_2.h"
-#include "luaScript.h"
-#include "rcp_cpp_unit.hh"
-#include "cellModem.h"
-#include "sim900.h"
 #include "bluetooth.h"
-#include "logger.h"
+#include "cellModem.h"
+#include "channel_config.h"
+#include "constants.h"
+#include "cpu.h"
+#include "imu.h"
+#include "jsmn.h"
 #include "lap_stats.h"
 #include "launch_control.h"
+#include "logger.h"
+#include "loggerApi.h"
+#include "loggerApi_test.h"
+#include "loggerConfig.h"
+#include "luaScript.h"
+#include "memory_mock.h"
+#include "mock_serial.h"
+#include "mod_string.h"
+#include "modp_atonum.h"
+#include "predictive_timer_2.h"
+#include "printk.h"
+#include "rcp_cpp_unit.hh"
+#include "sim900.h"
 #include "task.h"
 #include "task_testing.h"
+
+#include <fstream>
+#include <streambuf>
+#include <string>
 
 #define JSON_TOKENS 10000
 #define FILE_PREFIX string("json_api_files/")

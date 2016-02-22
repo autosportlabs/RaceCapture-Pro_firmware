@@ -26,11 +26,13 @@
 #include "LED.h"
 #include "OBD2.h"
 #include "PWM.h"
+#include "channel_config.h"
 #include "dateTime.h"
 #include "gps.h"
 #include "imu.h"
+#include "luaBaseBinding.h"
 #include "lap_stats.h"
-#include "lap_stats.h"
+#include "lauxlib.h"
 #include "logger.h"
 #include "loggerConfig.h"
 #include "loggerData.h"
@@ -782,29 +784,83 @@ int Lua_FlashLoggerConfig(lua_State *L)
 
 int Lua_AddVirtualChannel(lua_State *L)
 {
-    size_t args = lua_gettop(L);
-    if (args < 2) return 0;
+        const size_t args = lua_gettop(L);
+        if (args < 2 || args > 6)
+                return incorrect_arguments(L);
 
-    ChannelConfig cc;
-    strlcpy(cc.label, lua_tostring(L, 1), DEFAULT_LABEL_LENGTH);
-    cc.sampleRate = encodeSampleRate((unsigned short) lua_tointeger(L, 2));
-    cc.precision = args >= 3 ? lua_tointeger(L, 3) :
-                   DEFAULT_CHANNEL_LOGGING_PRECISION;
-    cc.min = args >= 4 ? lua_tointeger(L, 4) : DEFAULT_CHANNEL_MIN;
-    cc.max = args >= 5 ? lua_tointeger(L, 5) : DEFAULT_CHANNEL_MAX;
-    strlcpy(cc.units, args >=6 ? lua_tostring(L, 6) : DEFAULT_CHANNEL_UNITS,
-            DEFAULT_UNITS_LENGTH);
-    lua_pushinteger(L, create_virtual_channel(cc));
+        const char *label = lua_tostring(L, 1);
+        switch (validate_channel_config_label(label)) {
+        case CHAN_CFG_STATUS_OK:
+                break;
+        case CHAN_CFG_STATUS_NO_LABEL:
+                luaL_error(L, "Label is empty");
+        case CHAN_CFG_STATUS_LONG_LABEL:
+                luaL_error(L, "Label is too long");
+        default:
+                goto bug;
+        }
 
-    return 1;
+        const int sr = encodeSampleRate((unsigned short) lua_tointeger(L, 2));
+        if (SAMPLE_DISABLED == sr)
+                return luaL_error(L, "Unsupported sample rate");
+
+        ChannelConfig cc;
+        channel_config_defaults(&cc);
+        strcpy(cc.label, label);
+        cc.sampleRate = sr;
+
+        switch(args) {
+        case 6:
+                switch (validate_channel_config_units(lua_tostring(L, 6))) {
+                case CHAN_CFG_STATUS_OK:
+                        break;
+                case CHAN_CFG_STATUS_NO_UNITS:
+                        luaL_error(L, "Units is empty");
+                case CHAN_CFG_STATUS_LONG_UNITS:
+                        luaL_error(L, "Units is too long");
+                default:
+                        goto bug;
+                }
+                strcpy(cc.units, lua_tostring(L, 6));
+        case 5:
+                cc.max = lua_tointeger(L, 5);
+        case 4:
+                cc.min = lua_tointeger(L, 4);
+        case 3:
+                cc.precision = lua_tointeger(L, 3);
+        }
+
+        switch(validate_channel_config(&cc)) {
+        case CHAN_CFG_STATUS_OK:
+                break;
+        case CHAN_CFG_STATUS_MAX_LT_MIN:
+                return luaL_error(L, "Max is less than min");
+        default:
+                goto bug;
+        }
+
+        const int chan_id = create_virtual_channel(cc);
+        if (INVALID_VIRTUAL_CHANNEL == chan_id)
+                return luaL_error(L, "Unable to create channel. "
+                                     "Maximum channels reached.");
+
+        lua_pushinteger(L, chan_id);
+        return 1;
+
+bug:
+        return luaL_error(L, "BUG. Should never get here.  "
+                             "Please inform AutosportLabs");
 }
 
 int Lua_SetVirtualChannelValue(lua_State *L)
 {
-    if (lua_gettop(L) >= 2) {
-        int id = lua_tointeger(L, 1);
-        float value = lua_tonumber(L, 2);
-        set_virtual_channel_value(id,value);
-    }
-    return 0;
+        const size_t args = lua_gettop(L);
+        if (args != 2)
+                return incorrect_arguments(L);
+
+        const int id = lua_tointeger(L, 1);
+        const float value = lua_tonumber(L, 2);
+        set_virtual_channel_value(id, value);
+
+        return 0;
 }
