@@ -19,7 +19,7 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "capabilities.h"
 #include "luaTask.h"
 
 void lockLua(void)
@@ -77,10 +77,11 @@ void setShouldReloadScript(int reload)
 
 }
 
-void set_ontick_freq(size_t freq)
+size_t set_ontick_freq(size_t freq)
 {
-
+        return freq ? TICK_RATE_HZ / freq : 0;
 }
+
 size_t get_ontick_freq()
 {
     return 1;

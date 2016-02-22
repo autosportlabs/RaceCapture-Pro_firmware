@@ -38,7 +38,7 @@ void* getLua(void);
  */
 size_t get_lua_mem_size();
 
-void set_ontick_freq(size_t freq);
+size_t set_ontick_freq(const size_t freq);
 size_t get_ontick_freq();
 void initialize_lua();
 void terminate_lua();

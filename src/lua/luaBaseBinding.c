@@ -33,6 +33,23 @@
 #include "printk.h"
 #include "taskUtil.h"
 
+/**
+ * Returns an error to the Lua runtime with a descriptive string
+ * IMPORTANT: This methods never returns.  The `lua_error` method.
+ *            does a long jump internally.  The return statements here
+ *            are really only here to make things look pretty and logical.
+ */
+static int rcp_lua_error(lua_State *L, const char *msg)
+{
+        lua_pushstring(L, msg);
+        return lua_error(L);
+}
+
+static int incorrect_arguments(lua_State *L)
+{
+        return rcp_lua_error(L, "incorrect argument");
+}
+
 void registerBaseLuaFunctions(lua_State *L)
 {
     lua_registerlight(L,"getStackSize", Lua_GetStackSize);
@@ -61,11 +78,15 @@ int Lua_GetStackSize(lua_State *L)
 
 int Lua_SetTickRate(lua_State *L)
 {
-    if (lua_gettop(L) >= 1) {
-        int freq = lua_tointeger(L, 1);
-        set_ontick_freq(freq);
-    }
-    return 0;
+        if (lua_gettop(L) != 1 || !lua_isnumber(L, 1))
+                return incorrect_arguments(L);
+
+        const size_t res = set_ontick_freq(lua_tointeger(L, 1));
+        if (!res)
+                return rcp_lua_error(L, "Invalid frequency");
+
+        lua_pushnumber(L, res);
+        return 1;
 }
 
 int Lua_GetTickRate(lua_State *L)

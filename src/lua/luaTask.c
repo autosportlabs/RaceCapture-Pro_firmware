@@ -22,6 +22,7 @@
 #include "FreeRTOS.h"
 #include "GPIO.h"
 #include "LED.h"
+#include "capabilities.h"
 #include "lauxlib.h"
 #include "lua.h"
 #include "luaBaseBinding.h"
@@ -112,10 +113,12 @@ static void unlockLua(void)
     xSemaphoreGive(xLuaLock);
 }
 
-void set_ontick_freq(size_t freq)
+size_t set_ontick_freq(const size_t freq)
 {
-        if (freq <= LUA_MAXIMUM_ONTICK_HZ)
-                onTickSleepInterval = msToTicks(1000 / freq);
+        if (LUA_MAXIMUM_ONTICK_HZ < freq || 0 == freq)
+                return 0;
+
+        return onTickSleepInterval = msToTicks(TICK_RATE_HZ / freq);
 }
 
 size_t get_ontick_freq()
