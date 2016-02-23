@@ -38,8 +38,8 @@ bool serial_buffer_create(struct serial_buffer *sb,
                           const size_t size,
                           char *buffer);
 
-int serial_buffer_rx(struct serial_buffer *sb,
-                     const size_t ms_delay);
+char* serial_buffer_rx(struct serial_buffer *sb,
+                       const size_t ms_delay);
 
 size_t serial_buffer_rx_msgs(struct serial_buffer *sb,
                              const size_t ms_delay,
