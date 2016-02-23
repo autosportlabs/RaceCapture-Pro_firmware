@@ -788,9 +788,12 @@ int Lua_AddVirtualChannel(lua_State *L)
         if (args < 2 || args > 6)
                 return incorrect_arguments(L);
 
-        const char *label = lua_tostring(L, 1);
-        switch (validate_channel_config_label(label)) {
+        ChannelConfig cc;
+        channel_config_defaults(&cc);
+
+        switch (validate_channel_config_label(lua_tostring(L, 1))) {
         case CHAN_CFG_STATUS_OK:
+                strcpy(cc.label, lua_tostring(L, 1));
                 break;
         case CHAN_CFG_STATUS_NO_LABEL:
                 luaL_error(L, "Label is empty");
@@ -800,28 +803,23 @@ int Lua_AddVirtualChannel(lua_State *L)
                 goto bug;
         }
 
-        const int sr = encodeSampleRate((unsigned short) lua_tointeger(L, 2));
-        if (SAMPLE_DISABLED == sr)
+        cc.sampleRate = encodeSampleRate((unsigned short) lua_tointeger(L, 2));
+        if (SAMPLE_DISABLED == cc.sampleRate)
                 return luaL_error(L, "Unsupported sample rate");
-
-        ChannelConfig cc;
-        channel_config_defaults(&cc);
-        strcpy(cc.label, label);
-        cc.sampleRate = sr;
 
         switch(args) {
         case 6:
                 switch (validate_channel_config_units(lua_tostring(L, 6))) {
                 case CHAN_CFG_STATUS_OK:
+                        strcpy(cc.units, lua_tostring(L, 6));
                         break;
                 case CHAN_CFG_STATUS_NO_UNITS:
-                        luaL_error(L, "Units is empty");
+                        return luaL_error(L, "Units is empty");
                 case CHAN_CFG_STATUS_LONG_UNITS:
-                        luaL_error(L, "Units is too long");
+                        return luaL_error(L, "Units is too long");
                 default:
                         goto bug;
                 }
-                strcpy(cc.units, lua_tostring(L, 6));
         case 5:
                 cc.max = lua_tointeger(L, 5);
         case 4:
