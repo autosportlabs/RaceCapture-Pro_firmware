@@ -101,6 +101,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/tracks/tracks.c \
 			$(RCP_SRC)/auto_config/auto_track.c \
 			$(RCP_SRC)/messaging/messaging.c \
+			$(RCP_SRC)/modem/at.c \
 			$(RCP_SRC)/LED/LED.c \
 			$(RCP_SRC)/PWM/PWM.c \
 			$(RCP_SRC)/logging/printk.c \
@@ -178,6 +179,7 @@ APP_INCLUDES += -I. \
 				-I$(INCLUDE_DIR)/lua \
 				-I$(INCLUDE_DIR)/imu \
 				-I$(INCLUDE_DIR)/messaging \
+				-I$(INCLUDE_DIR)/modem \
 				-I$(INCLUDE_DIR)/predictive_timer \
 				-I$(INCLUDE_DIR)/util \
 				-I$(INCLUDE_DIR)/devices \
