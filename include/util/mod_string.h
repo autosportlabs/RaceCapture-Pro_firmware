@@ -24,6 +24,7 @@
 
 #include "cpp_guard.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 
 CPP_GUARD_BEGIN
@@ -59,6 +60,10 @@ char *strcat(char * s1, const char * s2);
 char *strstr (const char *phaystack, const char *pneedle);
 
 char * strchr(const char *s, const int c);
+
+char * strip(const char *s);
+
+char* trim(char *str);
 
 CPP_GUARD_END
 
