@@ -28,10 +28,16 @@
 #include "luaScript.h"
 #include "luaTask.h"
 #include "lualib.h"
+#include "lauxlib.h"
 #include "memory.h"
 #include "mod_string.h"
 #include "printk.h"
 #include "taskUtil.h"
+
+int incorrect_arguments(lua_State *L)
+{
+        return luaL_error(L, "incorrect argument");
+}
 
 void registerBaseLuaFunctions(lua_State *L)
 {
@@ -52,11 +58,15 @@ int Lua_GetStackSize(lua_State *L)
 
 int Lua_SetTickRate(lua_State *L)
 {
-    if (lua_gettop(L) >= 1) {
-        int freq = lua_tointeger(L, 1);
-        set_ontick_freq(freq);
-    }
-    return 0;
+        if (lua_gettop(L) != 1 || !lua_isnumber(L, 1))
+                return incorrect_arguments(L);
+
+        const size_t res = set_ontick_freq(lua_tointeger(L, 1));
+        if (!res)
+                return luaL_error(L, "Invalid frequency");
+
+        lua_pushnumber(L, res);
+        return 1;
 }
 
 int Lua_GetTickRate(lua_State *L)

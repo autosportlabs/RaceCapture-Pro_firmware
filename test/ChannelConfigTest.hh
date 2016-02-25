@@ -1,7 +1,7 @@
 /*
  * Race Capture Firmware
  *
- * Copyright (C) 2015 Autosport Labs
+ * Copyright (C) 2016 Autosport Labs
  *
  * This file is part of the Race Capture firmware suite
  *
@@ -19,31 +19,26 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LUATASK_H_
-#define LUATASK_H_
+#ifndef _CHANNELCONFIGTEST_H_
+#define _CHANNELCONFIGTEST_H_
 
-#include "cpp_guard.h"
-#include "serial.h"
+#include <cppunit/extensions/HelperMacros.h>
 
-#include <stddef.h>
+class ChannelConfigTest : public CppUnit::TestFixture
+{
+        CPPUNIT_TEST_SUITE( ChannelConfigTest );
+        CPPUNIT_TEST( test_defaults );
+        CPPUNIT_TEST( test_validate_label );
+        CPPUNIT_TEST( test_validate_units );
+        CPPUNIT_TEST( test_validate );
+        CPPUNIT_TEST_SUITE_END();
 
-CPP_GUARD_BEGIN
+public:
+        void setUp();
+        void test_defaults();
+        void test_validate_label();
+        void test_validate_units();
+        void test_validate();
+};
 
-void startLuaTask(int priority);
-
-void* getLua(void);
-
-/**
- * @return The amount of RAM (bytes) currently being used by LUA.
- */
-size_t get_lua_mem_size();
-
-size_t set_ontick_freq(const size_t freq);
-size_t get_ontick_freq();
-void initialize_lua();
-void terminate_lua();
-void run_lua_interactive_cmd(Serial *serial, const char* cmd);
-
-CPP_GUARD_END
-
-#endif /*LUATASK_H_*/
+#endif /* _CHANNELCONFIGTEST_H_ */

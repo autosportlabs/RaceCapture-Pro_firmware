@@ -22,9 +22,10 @@
 #ifndef SAMPLERECORD_H_
 #define SAMPLERECORD_H_
 
+#include "FreeRTOS.h"
+#include "channel_config.h"
 #include "cpp_guard.h"
 #include "dateTime.h"
-#include "FreeRTOS.h"
 #include "loggerConfig.h"
 #include "queue.h"
 

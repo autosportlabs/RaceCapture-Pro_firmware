@@ -1,7 +1,7 @@
 /*
  * Race Capture Firmware
  *
- * Copyright (C) 2015 Autosport Labs
+ * Copyright (C) 2016 Autosport Labs
  *
  * This file is part of the Race Capture firmware suite
  *
@@ -19,8 +19,8 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "cpu.h"
+#include "channel_config.h"
 #include "loggerConfig.h"
 #include "memory.h"
 #include "mod_string.h"

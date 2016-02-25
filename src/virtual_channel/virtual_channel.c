@@ -19,13 +19,13 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include "virtual_channel.h"
+#include "capabilities.h"
+#include "channel_config.h"
+#include "loggerTaskEx.h"
 #include "mem_mang.h"
 #include "mod_string.h"
 #include "printk.h"
-#include "loggerTaskEx.h"
-#include "capabilities.h"
+#include "virtual_channel.h"
 
 static size_t g_virtualChannelCount = 0;
 static VirtualChannel g_virtualChannels[MAX_VIRTUAL_CHANNELS];

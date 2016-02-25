@@ -22,6 +22,7 @@
 #ifndef VIRTUAL_CHANNEL_H_
 #define VIRTUAL_CHANNEL_H_
 
+#include "channel_config.h"
 #include "cpp_guard.h"
 #include "loggerConfig.h"
 #include "loggerNotifications.h"

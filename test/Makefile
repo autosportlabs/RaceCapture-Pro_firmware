@@ -66,6 +66,7 @@ INCLUDES = \
 -I$(FREE_RTOS_KERNEL_DIR)/include_testing \
 -I$(UTIL_DIR) \
 -I$(RCP_SRC)/lap_stats \
+-I$(RCP_SRC)/logger \
 
 # set up compiler and options
 CPP = g++
@@ -107,6 +108,7 @@ $(GPS_DIR)/gps_test.cpp \
 $(LAP_STATS_DIR)/LapStatsTest.cpp \
 $(UTIL_DIR)/atonum_test.cpp \
 $(UTIL_DIR)/numtoa_test.cpp \
+ChannelConfigTest.cpp \
 PredictiveTimeTest2.cpp \
 date_time_test.cpp \
 launch_control_test.cpp \
@@ -192,7 +194,7 @@ mock_usb_comm.c \
 
 SIM_C_SRC = \
 $(RCP_SRC)/lap_stats/lap_stats.c \
-
+$(RCP_SRC)/logger/channel_config.c \
 
 OBJ_TEST = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $(basename $(SRC) $(T_SRC) RCPTest.cpp))))
 OBJ_SIM = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $(basename $(SRC) $(SIM_C_SRC) RCPSim.cpp))))
