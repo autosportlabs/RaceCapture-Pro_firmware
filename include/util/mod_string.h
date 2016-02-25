@@ -61,8 +61,6 @@ char *strstr (const char *phaystack, const char *pneedle);
 
 char * strchr(const char *s, const int c);
 
-char * strip(const char *s);
-
 char* trim(char *str);
 
 CPP_GUARD_END
