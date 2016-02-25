@@ -69,6 +69,7 @@ INCLUDES = \
 -I$(UTIL_DIR) \
 -I$(RCP_SRC)/devices \
 -I$(RCP_SRC)/lap_stats \
+-I$(RCP_SRC)/modem \
 
 # set up compiler and options
 CPP = g++
@@ -110,6 +111,7 @@ $(GPS_DIR)/gps_test.cpp \
 $(LAP_STATS_DIR)/LapStatsTest.cpp \
 $(UTIL_DIR)/atonum_test.cpp \
 $(UTIL_DIR)/numtoa_test.cpp \
+AtTest.cpp \
 CellularApiStatusKeysTest.cpp \
 PredictiveTimeTest2.cpp \
 date_time_test.cpp \
