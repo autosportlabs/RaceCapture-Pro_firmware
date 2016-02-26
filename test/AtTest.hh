@@ -58,6 +58,8 @@ class AtTest : public CppUnit::TestFixture
         CPPUNIT_TEST( test_complete_urc );
         CPPUNIT_TEST( test_is_timed_out_fail );
         CPPUNIT_TEST( test_is_timed_out_ok );
+        CPPUNIT_TEST( test_at_configure_device );
+        CPPUNIT_TEST( test_at_ok );
 
         CPPUNIT_TEST_SUITE_END();
 
@@ -94,6 +96,8 @@ public:
         void test_complete_urc();
         void test_is_timed_out_fail();
         void test_is_timed_out_ok();
+        void test_at_configure_device();
+        void test_at_ok();
 };
 
 #endif /* _ATTEST_H_ */

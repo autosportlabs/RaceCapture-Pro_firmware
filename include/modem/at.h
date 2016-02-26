@@ -47,13 +47,17 @@ enum at_cmd_state {
         AT_CMD_STATE_QUIET,
 };
 
+/**
+ * All failure status values are < 0.  All successful ones are > 0.
+ */
 enum at_rsp_status {
-        AT_RSP_STATUS_UNKNOWN = 0,
-        AT_RSP_STATUS_OK,
-        AT_RSP_STATUS_NONE,
-        AT_RSP_STATUS_TIMEOUT,
-        AT_RSP_STATUS_FAILED,
-        AT_RSP_STATUS_ABORTED,
+        AT_RSP_STATUS_TIMEOUT = -4,
+        AT_RSP_STATUS_FAILED  = -3,
+        AT_RSP_STATUS_ABORTED = -2,
+        AT_RSP_STATUS_ERROR   = -1,
+        AT_RSP_STATUS_UNKNOWN =  0,
+        AT_RSP_STATUS_OK      =  1,
+        AT_RSP_STATUS_NONE    =  2,
 };
 
 struct at_rsp {
@@ -141,7 +145,10 @@ struct at_urc* at_register_urc(struct at_info *ati, const char *pfx,
                                void (*rsp_cb)(struct at_rsp *rsp, void *rsp_up),
                                void *rsp_up);
 
-void at_set_quiet_period(struct at_info *ati, const tiny_millis_t qp_ms);
+void at_configure_device(struct at_info *ati, const tiny_millis_t qp_ms,
+                         const char delim);
+
+bool at_rsp_ok(struct at_rsp *rsp);
 
 CPP_GUARD_END
 
