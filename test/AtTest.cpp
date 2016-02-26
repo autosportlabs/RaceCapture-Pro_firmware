@@ -426,3 +426,34 @@ void AtTest::test_is_timed_out_ok()
 {
         CPPUNIT_ASSERT(is_timed_out(getUptime(), 0));
 }
+
+void AtTest::test_at_configure_device()
+{
+        const tiny_millis_t qp = 5;
+        const char delim = '\b';
+
+        at_configure_device(&g_ati, qp, delim);
+
+        CPPUNIT_ASSERT_EQUAL(qp, g_ati.dev_cfg.quiet_period_ms);
+        CPPUNIT_ASSERT_EQUAL(delim, g_ati.dev_cfg.delim);
+}
+
+void AtTest::test_at_ok()
+{
+        CPPUNIT_ASSERT(!at_ok(NULL));
+
+
+        struct at_rsp rsp;
+        rsp.status = AT_RSP_STATUS_ERROR;
+        CPPUNIT_ASSERT(!at_ok(&rsp));
+
+        rsp.status = AT_RSP_STATUS_UNKNOWN;
+        CPPUNIT_ASSERT(!at_ok(&rsp));
+
+        rsp.status = AT_RSP_STATUS_NONE;
+        CPPUNIT_ASSERT(!at_ok(&rsp));
+
+
+        rsp.status = AT_RSP_STATUS_OK;
+        CPPUNIT_ASSERT(at_ok(&rsp));
+}

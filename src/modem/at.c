@@ -37,6 +37,7 @@ static const struct at_rsp_status_msgs {
         AT_STATUS_MSG("OK", AT_RSP_STATUS_OK),
         AT_STATUS_MSG("FAILED", AT_RSP_STATUS_FAILED),
         AT_STATUS_MSG("ABORTED", AT_RSP_STATUS_ABORTED),
+        AT_STATUS_MSG("ERROR", AT_RSP_STATUS_ERROR),
 };
 
 static bool is_timed_out(const tiny_millis_t t_start,
@@ -421,7 +422,20 @@ struct at_urc* at_register_urc(struct at_info *ati, const char *pfx,
         return aturc;
 }
 
-void at_set_quiet_period(struct at_info *ati, const tiny_millis_t qp_ms)
+/**
+ * Sets device specific settings that are unique per device.
+ * @param ati The pointer to the at_info struct.
+ * @param qp_ms The quiet period in milliseconds.
+ * @param delim The command delimeter character.  Normally this is '\r'.
+ */
+void at_configure_device(struct at_info *ati, const tiny_millis_t qp_ms,
+                         const char delim)
 {
         ati->dev_cfg.quiet_period_ms = qp_ms;
+        ati->dev_cfg.delim = delim;
+}
+
+bool at_ok(struct at_rsp *rsp)
+{
+        return rsp && AT_RSP_STATUS_OK == rsp->status;
 }
