@@ -58,7 +58,7 @@ static void complete_urc(struct at_info *ati, const enum at_rsp_status status)
         ati->rsp.run_time = getUptime() - ati->timing.urc_start_ms;
 
         if (ati->urc_ip->rsp_cb)
-                ati->urc_ip->rsp_cb(&ati->rsp);
+                ati->urc_ip->rsp_cb(&ati->rsp, ati->urc_ip->rsp_up);
 
         /* Post URC, cleanup is a wee bit different than of cmd */
         _complete_msg_cleanup(ati);
@@ -71,7 +71,7 @@ static void complete_cmd(struct at_info *ati, const enum at_rsp_status status)
         ati->rsp.run_time = getUptime() - ati->timing.cmd_start_ms;
 
         if (ati->cmd_ip->rsp_cb)
-                ati->cmd_ip->rsp_cb(&ati->rsp);
+                ati->cmd_ip->rsp_cb(&ati->rsp, ati->cmd_ip->rsp_up);
 
         /* Do all post command cleanup here */
         _complete_msg_cleanup(ati);
@@ -235,7 +235,7 @@ void at_task_quiet_period_handler(struct at_info *ati)
 {
         if (AT_CMD_STATE_QUIET == ati->cmd_state &&
             is_timed_out(ati->timing.quiet_start_ms,
-                         ati->timing.quiet_period_ms))
+                         ati->dev_cfg.quiet_period_ms))
                 ati->cmd_state = AT_CMD_STATE_READY;
 }
 
@@ -273,8 +273,7 @@ static bool at_task_cmd_handler(struct at_info *ati)
         serial_buffer_clear(ati->sb);
         serial_buffer_append(ati->sb, ati->cmd_ip->cmd);
         serial_buffer_tx(ati->sb);
-
-        /* Cleanup after we send our message */
+        serial_put_c(ati->sb->serial, ati->dev_cfg.delim);
         serial_buffer_clear(ati->sb);
 
         ati->timing.cmd_start_ms = getUptime();
@@ -310,7 +309,7 @@ void at_task(struct at_info *ati, const size_t ms_delay)
  *        and send URCs.
  */
 bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
-                  const tiny_millis_t quiet_period_ms)
+                  const tiny_millis_t quiet_period_ms, const char delim)
 {
         if (!ati || !sb)
                 return false;
@@ -321,7 +320,8 @@ bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
         ati->rx_state = AT_RX_STATE_READY;
         ati->cmd_state = AT_CMD_STATE_READY;
         ati->sb = sb;
-        ati->timing.quiet_period_ms = quiet_period_ms;
+        ati->dev_cfg.quiet_period_ms = quiet_period_ms;
+        ati->dev_cfg.delim = delim;
 
         /* Init the HEAD pointer of our queue... else segfault */
         ati->cmd_queue.head = ati->cmd_queue.cmds;
@@ -333,15 +333,17 @@ bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
  * Puts a new AT command in the execute queue.
  * @param ati The at_info state struct.
  * @param cmd The string command to execute.
+ * @param timeout_ms The amount of time to wait for a response in ms.
  * @param rsp_cb The callback to execute when the command completes.  May
  *        be NULL if you want no callback (not advised).
- * @param timeout_ms The amount of time to wait for a response in ms.
+ * @param rsp_up A void* parameter to pass to the call back when invoked.
  * @return The pointer to the location of the at_cmd struct in the queue,
  *         else NULL if submisison failed.
  */
 struct at_cmd* at_put_cmd(struct at_info *ati, const char *cmd,
-                          void (*rsp_cb)(struct at_rsp *rsp),
-                          const tiny_millis_t timeout_ms)
+                          const tiny_millis_t timeout_ms,
+                          void (*rsp_cb)(struct at_rsp *rsp, void *rsp_up),
+                          void *rsp_up)
 {
         if (ati->cmd_queue.count >= AT_CMD_MAX_CMDS) {
                  /* Full up */
@@ -363,6 +365,7 @@ struct at_cmd* at_put_cmd(struct at_info *ati, const char *cmd,
         ++ati->cmd_queue.count;
         atcmd->timeout_ms = timeout_ms;
         atcmd->rsp_cb = rsp_cb;
+        atcmd->rsp_up = rsp_up;
         strcpy(atcmd->cmd, cmd); /* Sane b/c len check above */
 
         return atcmd;
@@ -380,13 +383,17 @@ struct at_cmd* at_put_cmd(struct at_info *ati, const char *cmd,
  * updates for you.
  * @param ati An at_info structure.
  * @param pfx The URC prefix.  These often look like "+SOMECMD:"
+ * @param flags Control flags that change behavior of AT engine.  These are
+ *        needed because there are differences in how devices send URCs.
  * @param rsp_cb The callback to invoke when a URC is received.
+ * @param rsp_up A void* parameter to pass to the call back when invoked.
  * @return The pointer to the URC entry in our list, or NULL if we failed
  *         to register the URC.
  */
 struct at_urc* at_register_urc(struct at_info *ati, const char *pfx,
-                               void (*rsp_cb)(struct at_rsp *rsp),
-                               const enum at_urc_flags flags)
+                               const enum at_urc_flags flags,
+                               void (*rsp_cb)(struct at_rsp *rsp, void *rsp_up),
+                               void *rsp_up)
 {
         if (ati->urc_list.count >= AT_URC_MAX_URCS) {
                  /* Full up */
@@ -406,9 +413,15 @@ struct at_urc* at_register_urc(struct at_info *ati, const char *pfx,
         ++ati->urc_list.count;
 
         aturc->rsp_cb = rsp_cb;
+        aturc->rsp_up = rsp_up;
         aturc->flags = flags;
         aturc->pfx_len = pfx_len;
         strcpy(aturc->pfx, pfx); /* Sane b/c len check above */
 
         return aturc;
+}
+
+void at_set_quiet_period(struct at_info *ati, const tiny_millis_t qp_ms)
+{
+        ati->dev_cfg.quiet_period_ms = qp_ms;
 }

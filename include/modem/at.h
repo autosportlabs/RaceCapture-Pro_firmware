@@ -65,8 +65,9 @@ struct at_rsp {
 
 /* A command to send to our modem */
 struct at_cmd {
+        void (*rsp_cb)(struct at_rsp *rsp, void *rsp_up);
+        void *rsp_up;
         tiny_millis_t timeout_ms;
-        void (*rsp_cb)(struct at_rsp *rsp);
         char cmd[AT_CMD_MAX_LEN];
 };
 
@@ -80,6 +81,10 @@ struct at_timing {
         tiny_millis_t cmd_start_ms;
         tiny_millis_t urc_start_ms;
         tiny_millis_t quiet_start_ms;
+};
+
+struct at_dev_cfg {
+        char delim;
         tiny_millis_t quiet_period_ms;
 };
 
@@ -90,7 +95,8 @@ enum at_urc_flags {
 };
 
 struct at_urc {
-        void (*rsp_cb)(struct at_rsp *rsp);
+        void (*rsp_cb)(struct at_rsp *rsp, void *rsp_up);
+        void *rsp_up;
         enum at_urc_flags flags;
         size_t pfx_len;
         char pfx[AT_URC_MAX_LEN];
@@ -113,6 +119,7 @@ struct at_info {
         struct serial_buffer *sb;
         struct at_cmd *cmd_ip;
         struct at_urc *urc_ip;
+        struct at_dev_cfg dev_cfg;
         struct at_rsp rsp;
         struct at_timing timing;
         struct at_cmd_queue cmd_queue;
@@ -120,17 +127,21 @@ struct at_info {
 };
 
 bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
-                  const tiny_millis_t quiet_period_ms);
+                  const tiny_millis_t quiet_period_ms, const char delim);
 
 void at_task(struct at_info *ati, const size_t ms_delay);
 
 struct at_cmd* at_put_cmd(struct at_info *ati, const char *cmd,
-                          void (*rsp_cb)(struct at_rsp *rsp),
-                          const tiny_millis_t timeout);
+                          const tiny_millis_t timeout,
+                          void (*rsp_cb)(struct at_rsp *rsp, void *rsp_up),
+                          void *rsp_up);
 
 struct at_urc* at_register_urc(struct at_info *ati, const char *pfx,
-                               void (*rsp_cb)(struct at_rsp *rsp),
-                               const enum at_urc_flags flags);
+                               const enum at_urc_flags flags,
+                               void (*rsp_cb)(struct at_rsp *rsp, void *rsp_up),
+                               void *rsp_up);
+
+void at_set_quiet_period(struct at_info *ati, const tiny_millis_t qp_ms);
 
 CPP_GUARD_END
 
