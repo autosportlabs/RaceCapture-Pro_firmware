@@ -36,6 +36,7 @@ INCLUDES = \
 -I$(RCP_INC)/virtual_channel \
 -I$(RCP_INC)/tracks \
 -I$(RCP_INC)/messaging \
+-I$(RCP_INC)/modem \
 -I$(RCP_INC)/lua \
 -I$(RCP_INC)/command \
 -I$(RCP_INC)/predictive_timer \
@@ -68,6 +69,7 @@ INCLUDES = \
 -I$(UTIL_DIR) \
 -I$(RCP_SRC)/devices \
 -I$(RCP_SRC)/lap_stats \
+-I$(RCP_SRC)/modem \
 
 # set up compiler and options
 CPP = g++
@@ -109,6 +111,7 @@ $(GPS_DIR)/gps_test.cpp \
 $(LAP_STATS_DIR)/LapStatsTest.cpp \
 $(UTIL_DIR)/atonum_test.cpp \
 $(UTIL_DIR)/numtoa_test.cpp \
+AtTest.cpp \
 CellularApiStatusKeysTest.cpp \
 PredictiveTimeTest2.cpp \
 date_time_test.cpp \
@@ -199,6 +202,7 @@ mock_usb_comm.c \
 SIM_C_SRC = \
 $(RCP_SRC)/devices/cellular_api_status_keys.c \
 $(RCP_SRC)/lap_stats/lap_stats.c \
+$(RCP_SRC)/modem/at.c \
 
 OBJ_TEST = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $(basename $(SRC) $(T_SRC) RCPTest.cpp))))
 OBJ_SIM = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $(basename $(SRC) $(SIM_C_SRC) RCPSim.cpp))))

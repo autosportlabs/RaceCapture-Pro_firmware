@@ -22,9 +22,12 @@
 #ifndef _SERIAL_BUFFER_H_
 #define _SERIAL_BUFFER_H_
 
+#include "cpp_guard.h"
 #include "serial.h"
 
 #include <stdbool.h>
+
+CPP_GUARD_BEGIN
 
 struct serial_buffer {
         Serial *serial;
@@ -38,8 +41,8 @@ bool serial_buffer_create(struct serial_buffer *sb,
                           const size_t size,
                           char *buffer);
 
-int serial_buffer_rx(struct serial_buffer *sb,
-                     const size_t ms_delay);
+char* serial_buffer_rx(struct serial_buffer *sb,
+                       const size_t ms_delay);
 
 size_t serial_buffer_rx_msgs(struct serial_buffer *sb,
                              const size_t ms_delay,
@@ -67,5 +70,6 @@ size_t serial_buffer_append(struct serial_buffer *sb, const char *buff);
 size_t serial_buffer_printf_append(struct serial_buffer *sb,
                                    const char *format_str, ...);
 
+CPP_GUARD_END
 
 #endif /* _SERIAL_BUFFER_H_ */

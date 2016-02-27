@@ -170,6 +170,10 @@ inc-y += ../include/logger
 src-y += $(wildcard ../src/messaging/*.c)
 inc-y += ../include/messaging
 
+#modem
+src-y += $(wildcard ../src/modem/*.c)
+inc-y += ../include/modem
+
 # FreeRTOS
 src-y += $(wildcard FreeRTOS/Source/*.c) \
          FreeRTOS/Source/portable/GCC/ARM_CM3/port.c \
