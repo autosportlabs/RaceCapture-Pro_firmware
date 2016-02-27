@@ -49,6 +49,7 @@ class AtTest : public CppUnit::TestFixture
         CPPUNIT_TEST( test_at_process_urc_msg_with_status );
         CPPUNIT_TEST( test_at_process_urc_msg_no_status );
         CPPUNIT_TEST( test_at_process_cmd_msg );
+        CPPUNIT_TEST( test_at_task_run_bytes_read );
         CPPUNIT_TEST( test_is_urc_msg_none );
         CPPUNIT_TEST( test_is_urc_msg_no_match );
         CPPUNIT_TEST( test_is_urc_msg_match );
@@ -87,6 +88,7 @@ public:
         void test_at_process_urc_msg_with_status();
         void test_at_process_urc_msg_no_status();
         void test_at_process_cmd_msg();
+        void test_at_task_run_bytes_read();
         void test_is_urc_msg_none();
         void test_is_urc_msg_no_match();
         void test_is_urc_msg_match();

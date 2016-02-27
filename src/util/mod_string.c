@@ -22,7 +22,6 @@
 #include "mod_string.h"
 
 #include <stdbool.h>
-#include <ctype.h>
 
 void * memcpy(void * __restrict s1, const void * __restrict s2, size_t n)
 {
@@ -291,27 +290,4 @@ char * strchr(const char *s, const int i)
     } while (*s++);
 
     return NULL;
-}
-
-char* trim(char *str)
-{
-        /*
-         * Shamelessly borrowed and modified from
-         * http://stackoverflow.com/questions/122616/how-do-i-trim-leading-trailing-whitespace-in-a-standard-way
-         */
-
-        /* Trim leading space */
-        while(isspace(*str))
-                ++str;
-
-        if(!*str)
-                return str; /* All spaces */
-
-        /* Trim trailing space */
-        char *end = str + strlen(str) - 1;
-        while(end > str && isspace(*end))
-                --end;
-
-        *++end = '\0';
-        return str;
 }
