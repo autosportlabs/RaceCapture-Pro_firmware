@@ -46,6 +46,7 @@
 #include "printk.h"
 #include "task.h"
 #include "usb_comm.h"
+#include "wifi.h"
 #include "watchdog.h"
 
 #include <app_info.h>
@@ -153,7 +154,7 @@ void setupTask(void *delTask)
         startOBD2Task(RCP_INPUT_PRIORITY);
         startConnectivityTask(RCP_OUTPUT_PRIORITY);
         startLoggerTaskEx(RCP_LOGGING_PRIORITY);
-
+        start_wifi_task(RCP_OUTPUT_PRIORITY);
 #if defined(USB_SERIAL_SUPPORT)
         startUSBCommTask(RCP_INPUT_PRIORITY);
 #endif

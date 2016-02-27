@@ -23,8 +23,8 @@
 #include "array_utils.h"
 #include "at.h"
 #include "cpp_guard.h"
-#include "serial_buffer.h"
 #include "serial.h"
+#include "serial_buffer.h"
 
 #include <stdbool.h>
 
@@ -76,7 +76,7 @@ CPP_GUARD_END
 void AtTest::setUp()
 {
         /* Always init our structs */
-        init_at_info(&g_ati, &g_sb, 1, '\r');
+        init_at_info(&g_ati, &g_sb, 1, "\r\n");
         g_cb_called = false;
         g_up = NULL;
 }
@@ -89,7 +89,7 @@ void AtTest::test_init_at_info()
         g_ati.dev_cfg.quiet_period_ms = 42;
         g_ati.urc_list.count = 57;
 
-        CPPUNIT_ASSERT_EQUAL(true, init_at_info(&g_ati, &g_sb, 1, '\r'));
+        CPPUNIT_ASSERT_EQUAL(true, init_at_info(&g_ati, &g_sb, 1, "\r"));
         CPPUNIT_ASSERT_EQUAL(AT_CMD_STATE_READY, g_ati.cmd_state);
         CPPUNIT_ASSERT_EQUAL(AT_RX_STATE_READY, g_ati.rx_state);
         CPPUNIT_ASSERT_EQUAL(1, g_ati.dev_cfg.quiet_period_ms);
@@ -99,9 +99,14 @@ void AtTest::test_init_at_info()
 
 void AtTest::test_init_at_info_failures()
 {
-        /* No Serial Buffer should fail */
-        CPPUNIT_ASSERT_EQUAL(false, init_at_info(&g_ati, NULL, 0, ' '));
-        CPPUNIT_ASSERT_EQUAL(false, init_at_info(NULL, &g_sb, 0, ' '));
+        /* No Serial Buffer */
+        CPPUNIT_ASSERT_EQUAL(false, init_at_info(&g_ati, NULL, 0, "\r"));
+        /* No at_info struct */
+        CPPUNIT_ASSERT_EQUAL(false, init_at_info(NULL, &g_sb, 0, "\n"));
+        /* No delim */
+        CPPUNIT_ASSERT_EQUAL(false, init_at_info(&g_ati, &g_sb, 0, NULL));
+        /* Delim is too long here */
+        CPPUNIT_ASSERT_EQUAL(false, init_at_info(&g_ati, &g_sb, 0, "AAA"));
 }
 
 void AtTest::test_at_put_cmd_full()
@@ -332,6 +337,37 @@ void AtTest::test_at_process_cmd_msg()
         CPPUNIT_ASSERT_EQUAL(AT_RX_STATE_READY, g_ati.rx_state);
 }
 
+void AtTest::test_at_task_run_bytes_read()
+{
+        /* This sets up our command and urc */
+        test_at_task_cmd_handler_ok();
+        const enum at_urc_flags flags = AT_URC_FLAGS_NONE;
+        char pfx[] = "+FOOBAR";
+        struct at_urc *urc = at_register_urc(&g_ati, pfx, flags, cb, NULL);
+        CPPUNIT_ASSERT(urc);
+        begin_urc_msg(&g_ati, urc);
+
+        /* Just excersizes it... not much logic in there to test */
+        g_ati.rx_state = AT_RX_STATE_CMD;
+        char msg1[] = "Foo";
+        at_task_run_bytes_read(&g_ati, msg1);
+
+        /* Just excersizes it... not much logic in there to test */
+        g_ati.rx_state = AT_RX_STATE_URC;
+        at_task_run_bytes_read(&g_ati, msg1);
+
+        /* Tests that we go into the URC state */
+        g_ati.rx_state = AT_RX_STATE_READY;
+
+        char msg2[] = "+FOOBAR: BLAH BLAH";
+        at_task_run_bytes_read(&g_ati, msg2);
+        CPPUNIT_ASSERT_EQUAL(AT_RX_STATE_URC, g_ati.rx_state);
+
+        /* Tests that we go into the CMD state */
+        g_ati.rx_state = AT_RX_STATE_READY;
+        at_task_run_bytes_read(&g_ati, msg1);
+        CPPUNIT_ASSERT_EQUAL(AT_RX_STATE_CMD, g_ati.rx_state);
+}
 
 void AtTest::test_is_urc_msg_none()
 {
@@ -430,12 +466,12 @@ void AtTest::test_is_timed_out_ok()
 void AtTest::test_at_configure_device()
 {
         const tiny_millis_t qp = 5;
-        const char delim = '\b';
+        const char delim[] = "\b";
 
         at_configure_device(&g_ati, qp, delim);
 
         CPPUNIT_ASSERT_EQUAL(qp, g_ati.dev_cfg.quiet_period_ms);
-        CPPUNIT_ASSERT_EQUAL(delim, g_ati.dev_cfg.delim);
+        CPPUNIT_ASSERT(!strcmp(delim, g_ati.dev_cfg.delim));
 }
 
 void AtTest::test_at_ok()

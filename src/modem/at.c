@@ -26,6 +26,8 @@
 #include "printk.h"
 #include "serial_buffer.h"
 
+#include <ctype.h>
+
 static const enum log_level dbg_lvl = INFO;
 
 #define AT_STATUS_MSG(a, b)	{(a), sizeof(a), (b)}
@@ -39,6 +41,30 @@ static const struct at_rsp_status_msgs {
         AT_STATUS_MSG("ABORTED", AT_RSP_STATUS_ABORTED),
         AT_STATUS_MSG("ERROR", AT_RSP_STATUS_ERROR),
 };
+
+static char* trim(char *str)
+{
+        /*
+         * Shamelessly borrowed and modified from
+         * http://stackoverflow.com/questions/122616/how-do-i-trim-leading-trailing-whitespace-in-a-standard-way
+         */
+
+        /* Trim leading space */
+        while(isspace((int) *str))
+                ++str;
+
+        if(!*str)
+                return str; /* All spaces */
+
+        /* Trim trailing space */
+        char *end = str + strlen(str) - 1;
+        while(end > str && isspace((int) *end))
+                --end;
+
+        *++end = '\0';
+        return str;
+}
+
 
 static bool is_timed_out(const tiny_millis_t t_start,
                          const tiny_millis_t t_len)
@@ -98,7 +124,7 @@ static void at_task_run_no_bytes(struct at_info *ati)
                                  AT_URC_TIMEOUT_MS)) {
                         pr_warning("[at] Timed out in a URC!?!. "
                                    "Should never happen. Likely a bug.\r\n");
-                        complete_urc(ati, AT_RSP_STATUS_TIMEOUT);
+                        return complete_urc(ati, AT_RSP_STATUS_TIMEOUT);
                 }
         } else if (AT_CMD_STATE_IN_PROGRESS == ati->cmd_state) {
                 /*
@@ -108,8 +134,8 @@ static void at_task_run_no_bytes(struct at_info *ati)
                  */
                 if (is_timed_out(ati->timing.cmd_start_ms,
                                  ati->cmd_ip->timeout_ms)) {
-                        printk(dbg_lvl, "Command timed out\r\n");
-                        complete_cmd(ati, AT_RSP_STATUS_TIMEOUT);
+                        printk(dbg_lvl, "[at] Command timed out\r\n");
+                        return complete_cmd(ati, AT_RSP_STATUS_TIMEOUT);
                 }
         }
 
@@ -199,10 +225,10 @@ static void at_task_run_bytes_read(struct at_info *ati, char *msg)
         switch (ati->rx_state) {
         case AT_RX_STATE_CMD:
                 /* We are in the middle of receiving a command message. */
-                process_cmd_msg(ati, msg);
+                return process_cmd_msg(ati, msg);
         case AT_RX_STATE_URC:
                 /* We are in the middle of receiving a unexpected message. */
-                process_urc_msg(ati, msg);
+                return process_urc_msg(ati, msg);
         case AT_RX_STATE_READY:
                 /*
                  * We are starting a new message series.  Gotta figure out what
@@ -213,10 +239,10 @@ static void at_task_run_bytes_read(struct at_info *ati, char *msg)
                 struct at_urc *urc = is_urc_msg(ati, msg);
                 if (urc) {
                         begin_urc_msg(ati, urc);
-                        process_urc_msg(ati, msg);
+                        return process_urc_msg(ati, msg);
                 } else if (ati->cmd_ip) { /* Is there a command in progress */
                         /* If so, then cmd_ip is already set */
-                        process_cmd_msg(ati, msg);
+                        return process_cmd_msg(ati, msg);
                 } else {
                         /* We got data but have no URC or CMD for it */
                         pr_warning_str_msg("[at] Unhandled msg received: ",
@@ -273,8 +299,8 @@ static bool at_task_cmd_handler(struct at_info *ati)
 
         serial_buffer_clear(ati->sb);
         serial_buffer_append(ati->sb, ati->cmd_ip->cmd);
+        serial_buffer_append(ati->sb, ati->dev_cfg.delim);
         serial_buffer_tx(ati->sb);
-        serial_put_c(ati->sb->serial, ati->dev_cfg.delim);
         serial_buffer_clear(ati->sb);
 
         ati->timing.cmd_start_ms = getUptime();
@@ -308,9 +334,10 @@ void at_task(struct at_info *ati, const size_t ms_delay)
  * @param quiet_period_ms The quiet period to wait between the end of a
  *        command and when to start the next.  Some modems need time to recover
  *        and send URCs.
+ * @return true if the parameters were acceptable, false otherwise.
  */
 bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
-                  const tiny_millis_t quiet_period_ms, const char delim)
+                  const tiny_millis_t quiet_period_ms, const char *delim)
 {
         if (!ati || !sb)
                 return false;
@@ -321,11 +348,13 @@ bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
         ati->rx_state = AT_RX_STATE_READY;
         ati->cmd_state = AT_CMD_STATE_READY;
         ati->sb = sb;
-        ati->dev_cfg.quiet_period_ms = quiet_period_ms;
-        ati->dev_cfg.delim = delim;
+        if (!at_configure_device(ati, quiet_period_ms, delim))
+                return false;
 
         /* Init the HEAD pointer of our queue... else segfault */
         ati->cmd_queue.head = ati->cmd_queue.cmds;
+
+        serial_buffer_reset(ati->sb);
 
         return true;
 }
@@ -426,15 +455,24 @@ struct at_urc* at_register_urc(struct at_info *ati, const char *pfx,
  * Sets device specific settings that are unique per device.
  * @param ati The pointer to the at_info struct.
  * @param qp_ms The quiet period in milliseconds.
- * @param delim The command delimeter character.  Normally this is '\r'.
+ * @param delim The command delimeter characters.  Normally this is "\r\n".
+ * @return true if the parameters are acceptable, false otherwise.
  */
-void at_configure_device(struct at_info *ati, const tiny_millis_t qp_ms,
-                         const char delim)
+bool at_configure_device(struct at_info *ati, const tiny_millis_t qp_ms,
+                         const char *delim)
 {
+        if (!delim || strlen(delim) >= AT_DEV_CVG_DELIM_MAX_LEN)
+                return false;
+
         ati->dev_cfg.quiet_period_ms = qp_ms;
-        ati->dev_cfg.delim = delim;
+        strcpy(ati->dev_cfg.delim, delim); /* Sane b/c strlen check above */
+        return true;
 }
 
+/**
+ * Tests if the given response has an OK status.
+ * @return true if it exists and does, false otherwise.
+ */
 bool at_ok(struct at_rsp *rsp)
 {
         return rsp && AT_RSP_STATUS_OK == rsp->status;

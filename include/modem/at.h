@@ -30,6 +30,7 @@ CPP_GUARD_BEGIN
 
 #define AT_CMD_MAX_CMDS	3
 #define AT_CMD_MAX_LEN	64
+#define AT_DEV_CVG_DELIM_MAX_LEN	3
 #define AT_RSP_MAX_MSGS	8
 #define AT_URC_MAX_LEN	16
 #define AT_URC_MAX_URCS	16
@@ -88,7 +89,7 @@ struct at_timing {
 };
 
 struct at_dev_cfg {
-        char delim;
+        char delim[AT_DEV_CVG_DELIM_MAX_LEN];
         tiny_millis_t quiet_period_ms;
 };
 
@@ -131,7 +132,7 @@ struct at_info {
 };
 
 bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
-                  const tiny_millis_t quiet_period_ms, const char delim);
+                  const tiny_millis_t quiet_period_ms, const char *delim);
 
 void at_task(struct at_info *ati, const size_t ms_delay);
 
@@ -145,10 +146,10 @@ struct at_urc* at_register_urc(struct at_info *ati, const char *pfx,
                                void (*rsp_cb)(struct at_rsp *rsp, void *rsp_up),
                                void *rsp_up);
 
-void at_configure_device(struct at_info *ati, const tiny_millis_t qp_ms,
-                         const char delim);
+bool at_configure_device(struct at_info *ati, const tiny_millis_t qp_ms,
+                         const char *delim);
 
-bool at_rsp_ok(struct at_rsp *rsp);
+bool at_ok(struct at_rsp *rsp);
 
 CPP_GUARD_END
 
