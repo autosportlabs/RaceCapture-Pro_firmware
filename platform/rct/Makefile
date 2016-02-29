@@ -176,6 +176,10 @@ inc-y += $(RC_INCLUDE_DIR)/messaging
 src-y += $(wildcard ../src/modem/*.c)
 inc-y += ../include/modem
 
+# Tasks
+src-y += $(wildcard ../src/tasks/*.c)
+inc-y += ../include/tasks
+
 # FreeRTOS
 src-y += $(wildcard FreeRTOS/Source/*.c) \
          FreeRTOS/Source/portable/GCC/ARM_CM3/port.c \
