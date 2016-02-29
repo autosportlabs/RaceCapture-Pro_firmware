@@ -189,7 +189,7 @@ static bool check_tx_overrun(void)
 static bool is_usb_suspended(void)
 {
         /* Checks to see if the USB bus is suspended */
-        return !!(USB_OTG_dev.regs.DREGS->DSTS & 0x1);
+        return (bool) (USB_OTG_dev.regs.DREGS->DSTS & 0x1);
 }
 
 /**
