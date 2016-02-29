@@ -310,20 +310,8 @@ void OTG_FS_IRQHandler(void)
 {
     USBD_OTG_ISR_Handler (&USB_OTG_dev);
     deinit_if_needed();
-    /*
-     * If we were previous connected, and are now suspended, deinit
-     *
-     * Removing this code since this causes the device to never re-awaken
-     * when the OS enforces an aggressive USB sleep mode.  Power consumption
-     * is not an issue we care to spend too much time on now, so removing it
-     * rather than looking up a better fix.  Patches with a proper fix are
-     * most welcome here. --Stieg
-     *
-     * if (connected && is_usb_suspended())
-     *    VCP_DeInit();
-     *
-     */
 }
+
 #ifdef USB_OTG_HS_DEDICATED_EP1_ENABLED
 /**
   * @brief  This function handles EP1_IN Handler.
