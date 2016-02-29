@@ -183,23 +183,44 @@ static bool check_tx_overrun(void)
     return false;
 }
 
-static bool check_suspended(void)
+/**
+ * @return true if the device is in suspended mode, false otherwise.
+ */
+static bool is_usb_suspended(void)
 {
-    /* Checks to see if the USB bus is suspended */
-    if (USB_OTG_dev.regs.DREGS->DSTS & 0x1)
-        return true;
-
-    return false;
+        /* Checks to see if the USB bus is suspended */
+        return !!(USB_OTG_dev.regs.DREGS->DSTS & 0x1);
 }
+
+/**
+ * De-inits our USB device if the device is suspended.  This prevents an
+ * IRQ storm according to jeff_c, whom I trust on the matter.
+ */
+static void deinit_if_needed(void)
+{
+        if (connected && is_usb_suspended())
+                VCP_DeInit();
+}
+
+/**
+ * Re-inits our USB device if the device is returning from suspended state.
+ * Normally it would be nice to get an interrupt to know this, but I have
+ * been unable to locate a suitable one.  So receiving a character should
+ * be sufficient to know we are potentially coming out of suspend.
+ */
+static void reinit_if_needed(void)
+{
+        if (!connected && !is_usb_suspended())
+                VCP_Init();
+}
+
 
 static uint16_t VCP_DataTx (uint8_t* Buf, uint32_t Len)
 {
     bool overrun;
 
-    bool susp = check_suspended();
-
     /* If USB Is disconnected, drop the data on the floor */
-    if (susp)
+    if (is_usb_suspended())
         return USBD_FAIL;
 
     while (Len--) {
@@ -238,11 +259,13 @@ static uint16_t VCP_DataTx (uint8_t* Buf, uint32_t Len)
   */
 static uint16_t VCP_DataRx (uint8_t* Buf, uint32_t Len)
 {
-    portBASE_TYPE xHigherPriorityTaskWoken;
-    while(Len--)
-        xQueueSendFromISR(rx_queue, Buf++, &xHigherPriorityTaskWoken);
+        portBASE_TYPE xHigherPriorityTaskWoken;
 
-    return USBD_OK;
+        reinit_if_needed();
+        while(Len--)
+                xQueueSendFromISR(rx_queue, Buf++, &xHigherPriorityTaskWoken);
+
+        return USBD_OK;
 }
 
 #ifdef USE_USB_OTG_FS
@@ -285,14 +308,21 @@ void OTG_HS_IRQHandler(void)
 void OTG_FS_IRQHandler(void)
 #endif
 {
-    bool susp;
     USBD_OTG_ISR_Handler (&USB_OTG_dev);
-
-    susp = check_suspended();
-
-    /* If we were previous connected, and are now suspended, deinit */
-    if (connected && susp)
-        VCP_DeInit();
+    deinit_if_needed();
+    /*
+     * If we were previous connected, and are now suspended, deinit
+     *
+     * Removing this code since this causes the device to never re-awaken
+     * when the OS enforces an aggressive USB sleep mode.  Power consumption
+     * is not an issue we care to spend too much time on now, so removing it
+     * rather than looking up a better fix.  Patches with a proper fix are
+     * most welcome here. --Stieg
+     *
+     * if (connected && is_usb_suspended())
+     *    VCP_DeInit();
+     *
+     */
 }
 #ifdef USB_OTG_HS_DEDICATED_EP1_ENABLED
 /**
