@@ -5,13 +5,16 @@ set -e
 # of project.
 cd $(dirname $0)
 
+NUM_PROC=$(grep -c proc /proc/cpuinfo)
+exec make -j $NUM_PROC package
+
 # Clean out all .o files before we begin.
 find . -name '*.o' -delete
 
 source version.mk
 
 RCP_DIST_DIR=firmware_release
-NUM_PROC=$(grep -c proc /proc/cpuinfo)
+
 
 if [ "$BUILD_NUMBER" ]
 then

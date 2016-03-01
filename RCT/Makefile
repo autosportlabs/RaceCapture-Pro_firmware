@@ -214,7 +214,7 @@ obj-y := $(addprefix $(OUTDIR),$(patsubst %.s,%.o,$(patsubst %.c,%.o,$(src-y))))
 
 CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -DUSE_STM32303C_EVAL -MD -std=gnu99
 CFLAGS += -mcpu=cortex-m3 -mthumb
-CFLAGS += -DAPI_REV=$(API) -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
+CFLAGS += $(VERSION_CFLAGS)
 CFLAGS += $(BOARD_DEFINES)
 CFLAGS += -fno-builtin-sprintf
 CFLAGS += $(addprefix -I,$(inc-y))

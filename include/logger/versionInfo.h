@@ -29,15 +29,24 @@
 
 CPP_GUARD_BEGIN
 
+enum release_type {
+        RELEASE_TYPE_BETA,
+        RELEASE_TYPE_DEVEL,
+        RELEASE_TYPE_OFFICIAL,
+};
+
 typedef struct _VersionInfo {
-    uint32_t major;
-    uint32_t minor;
-    uint32_t bugfix;
+        uint32_t major;
+        uint32_t minor;
+        uint32_t bugfix;
 } VersionInfo;
 
 #define DEFAULT_VERSION_INFO {MAJOR_REV, MINOR_REV, BUGFIX_REV}
 
 bool versionChanged(const volatile VersionInfo *versionInfo);
+const char* version_git_description();
+enum release_type version_get_release_type();
+const char* version_release_type_api_key(const enum release_type rt);
 
 CPP_GUARD_END
 

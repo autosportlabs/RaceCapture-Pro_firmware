@@ -166,19 +166,33 @@ int api_factoryReset(Serial *serial, const jsmntok_t *json)
         return API_SUCCESS_NO_RETURN;
 }
 
+static void rc_version_info(Serial *serial, const int more,
+                            const char *major_name,
+                            const char *minor_name,
+                            const char *bf_name)
+{
+        const enum release_type rt = version_get_release_type();
+        const char* rt_key = version_release_type_api_key(rt);
+
+        json_int(serial, major_name, MAJOR_REV, 1);
+        json_int(serial, minor_name, MINOR_REV, 1);
+        json_int(serial, bf_name, BUGFIX_REV, 1);
+        json_string(serial, "serial", cpu_get_serialnumber(), 1);
+        json_string(serial, "git_info", version_git_description(), 1);
+        json_string(serial, "release_type", rt_key, more);
+}
+
 int api_getVersion(Serial *serial, const jsmntok_t *json)
 {
-    json_objStart(serial);
-    json_objStartString(serial,"ver");
-    json_string(serial, "name", DEVICE_NAME, 1);
-    json_string(serial, "fname", FRIENDLY_DEVICE_NAME, 1);
-    json_int(serial, "major", MAJOR_REV, 1);
-    json_int(serial, "minor", MINOR_REV, 1);
-    json_int(serial, "bugfix", BUGFIX_REV, 1);
-    json_string(serial, "serial", cpu_get_serialnumber(), 0);
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
-    return API_SUCCESS_NO_RETURN;
+        json_objStart(serial);
+        json_objStartString(serial,"ver");
+        json_string(serial, "name", DEVICE_NAME, 1);
+        json_string(serial, "fname", FRIENDLY_DEVICE_NAME, 1);
+        rc_version_info(serial, 0, "major", "minor", "bufix");
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+
+        return API_SUCCESS_NO_RETURN;
 }
 
 int api_getCapabilities(Serial *serial, const jsmntok_t *json)
@@ -223,68 +237,68 @@ int api_getCapabilities(Serial *serial, const jsmntok_t *json)
 
 int api_getStatus(Serial *serial, const jsmntok_t *json)
 {
-    json_objStart(serial);
-    json_objStartString(serial, "status");
+        json_objStart(serial);
+        json_objStartString(serial, "status");
 
-    json_objStartString(serial, "system");
-    json_string(serial, "model", FRIENDLY_DEVICE_NAME, 1);
-    json_int(serial, "ver_major", MAJOR_REV, 1);
-    json_int(serial, "ver_minor", MINOR_REV, 1);
-    json_int(serial, "ver_bugfix", BUGFIX_REV, 1);
-    json_string(serial, "serial", cpu_get_serialnumber(), 1);
-    json_uint(serial, "uptime", getUptimeAsInt(), 0);
-    json_objEnd(serial, 1);
+        json_objStartString(serial, "system");
+        json_string(serial, "model", FRIENDLY_DEVICE_NAME, 1);
+        rc_version_info(serial, 1, "ver_major", "ver_minor", "ver_bufix");
+        json_uint(serial, "uptime", getUptimeAsInt(), 0);
+        json_objEnd(serial, 1);
 
-    json_objStartString(serial, "GPS");
-    json_int(serial, "init", (int)GPS_getStatus(), 1);
-    json_int(serial, "qual", GPS_getQuality(), 1);
-    json_float(serial, "lat", GPS_getLatitude(), DEFAULT_GPS_POSITION_PRECISION, 1);
-    json_float(serial, "lon", GPS_getLongitude(), DEFAULT_GPS_POSITION_PRECISION, 1);
-    json_int(serial, "sats", GPS_getSatellitesUsedForPosition(), 1);
-    json_int(serial, "DOP", GPS_getDOP(), 0);
-    json_objEnd(serial, 1);
+        json_objStartString(serial, "GPS");
+        json_int(serial, "init", (int)GPS_getStatus(), 1);
+        json_int(serial, "qual", GPS_getQuality(), 1);
+        json_float(serial, "lat", GPS_getLatitude(),
+                   DEFAULT_GPS_POSITION_PRECISION, 1);
+        json_float(serial, "lon", GPS_getLongitude(),
+                   DEFAULT_GPS_POSITION_PRECISION, 1);
+        json_int(serial, "sats", GPS_getSatellitesUsedForPosition(), 1);
+        json_int(serial, "DOP", GPS_getDOP(), 0);
+        json_objEnd(serial, 1);
 
 #if defined(CELLULAR_SUPPORT)
-    const enum cellular_net_status ns = cellmodem_get_status();
-    const char* ns_val = cellular_net_status_api_key(ns);
+        const enum cellular_net_status ns = cellmodem_get_status();
+        const char* ns_val = cellular_net_status_api_key(ns);
 
-    json_objStartString(serial, "cell");
-    json_int(serial, "init", (int) ns, 1);
-    json_string(serial, "IMEI", cell_get_IMEI(), 1);
-    json_int(serial, "sig_str", cell_get_signal_strength(), 1);
-    json_string(serial, "number", cell_get_subscriber_number(), 1);
-    json_string(serial, "state", ns_val, 0);
-    json_objEnd(serial, 1);
+        json_objStartString(serial, "cell");
+        json_int(serial, "init", (int) ns, 1);
+        json_string(serial, "IMEI", cell_get_IMEI(), 1);
+        json_int(serial, "sig_str", cell_get_signal_strength(), 1);
+        json_string(serial, "number", cell_get_subscriber_number(), 1);
+        json_string(serial, "state", ns_val, 0);
+        json_objEnd(serial, 1);
 
-    const telemetry_status_t ts = cellular_get_connection_status();
-    const char *ts_val = cellular_telemetry_status_api_key(ts);
+        const telemetry_status_t ts = cellular_get_connection_status();
+        const char *ts_val = cellular_telemetry_status_api_key(ts);
 
-    json_objStartString(serial, "telemetry");
-    json_int(serial, "status", (int) ts, 1);
-    json_string(serial, "state", ts_val, 1);
-    json_int(serial, "dur", cellular_active_time(), 0);
-    json_objEnd(serial, 1);
+        json_objStartString(serial, "telemetry");
+        json_int(serial, "status", (int) ts, 1);
+        json_string(serial, "state", ts_val, 1);
+        json_int(serial, "dur", cellular_active_time(), 0);
+        json_objEnd(serial, 1);
 #endif
 
-    json_objStartString(serial, "bt");
-    json_int(serial, "init", (int)bt_get_status(), 0);
-    json_objEnd(serial, 1);
+        json_objStartString(serial, "bt");
+        json_int(serial, "init", (int)bt_get_status(), 0);
+        json_objEnd(serial, 1);
 
-    json_objStartString(serial, "logging");
-    json_int(serial, "status", (int)logging_get_status(), 1);
-    json_int(serial, "dur", logging_active_time(), 0);
-    json_objEnd(serial, 1);
+        json_objStartString(serial, "logging");
+        json_int(serial, "status", (int)logging_get_status(), 1);
+        json_int(serial, "dur", logging_active_time(), 0);
+        json_objEnd(serial, 1);
 
-    json_objStartString(serial, "track");
-    json_int(serial, "status", lapstats_get_track_status(), 1);
-    json_int(serial, "trackId", lapstats_get_selected_track_id(), 1);
-    json_int(serial, "inLap", (int)lapstats_lap_in_progress(), 1);
-    json_int(serial, "armed", lc_is_armed(), 0);
-    json_objEnd(serial, 0);
+        json_objStartString(serial, "track");
+        json_int(serial, "status", lapstats_get_track_status(), 1);
+        json_int(serial, "trackId", lapstats_get_selected_track_id(), 1);
+        json_int(serial, "inLap", (int)lapstats_lap_in_progress(), 1);
+        json_int(serial, "armed", lc_is_armed(), 0);
+        json_objEnd(serial, 0);
 
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
-    return API_SUCCESS_NO_RETURN;
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+
+        return API_SUCCESS_NO_RETURN;
 }
 
 int api_sampleData(Serial *serial, const jsmntok_t *json)
