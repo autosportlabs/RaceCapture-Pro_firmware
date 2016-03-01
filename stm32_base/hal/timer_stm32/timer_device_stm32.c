@@ -292,19 +292,19 @@ void reset_device_state(const size_t chan)
         s->q_period_ticks = 0;
 }
 
-bool timer_device_init(const size_t channel, const uint32_t speed,
+bool timer_device_init(const size_t chan, const uint32_t speed,
                        const uint16_t quiet_period_us)
 {
-        if (channel >= MK2_TIMER_CHANNELS)
+        if (chan >= MK2_TIMER_CHANNELS)
                 return false;
 
-        struct config *c = &g_config[channel];
-        c->prescaler = speed_to_prescaler(channel, speed);
+        struct config *c = &g_config[chan];
+        c->prescaler = speed_to_prescaler(chan, speed);
         c->q_period_us = quiet_period_us;
 
-        reset_device_state(channel);
+        reset_device_state(chan);
 
-        switch (channel) {
+        switch (chan) {
         case 0:
                 init_timer_0(c);
                 return true;
@@ -320,9 +320,9 @@ bool timer_device_init(const size_t channel, const uint32_t speed,
         return false;
 }
 
-void timer_device_reset_count(size_t channel) {}
+void timer_device_reset_count(size_t chan) {}
 
-uint32_t timer_device_get_count(size_t channel)
+uint32_t timer_device_get_count(size_t chan)
 {
         return 0;
 }
@@ -334,14 +334,14 @@ static uint32_t ticks_to_us(const size_t chan, const uint16_t ticks)
         return us_per_tick ? g_config[chan].prescaler * ticks / us_per_tick : 0;
 }
 
-uint32_t timer_device_get_usec(size_t channel)
+uint32_t timer_device_get_usec(size_t chan)
 {
-        return ticks_to_us(channel, timer_device_get_period(channel));
+        return ticks_to_us(chan, timer_device_get_period(chan));
 }
 
-uint32_t timer_device_get_period(size_t channel)
+uint32_t timer_device_get_period(size_t chan)
 {
-        return channel < MK2_TIMER_CHANNELS ? g_state[channel].period : 0;
+        return chan < MK2_TIMER_CHANNELS ? g_state[chan].period : 0;
 }
 
 
