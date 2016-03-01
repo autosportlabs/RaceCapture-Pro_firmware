@@ -35,6 +35,8 @@
 #define PRESCALER_FAST		84
 #define PRESCALER_MEDIUM	168
 #define PRESCALER_SLOW		1680
+#define TIMER_CLK_FREQ_FAST_HZ	168000000 /* Logical Timer 1 */
+#define TIMER_CLK_FREQ_SLOW_HZ	84000000  /* Logical Timer 0 & 2 */
 #define TIMER_IRQ_PRIORITY 	4
 #define TIMER_IRQ_SUB_PRIORITY 	0
 #define TIMER_PERIOD		0xFFFF
@@ -239,17 +241,43 @@ static void init_timer_2(struct config *cfg)
     TIM_ITConfig(TIM2, TIM_IT_Update , ENABLE);
 }
 
-static uint16_t speed_to_prescaler(size_t speed)
+/**
+ * @return the clock speed of the channel in Hz
+ */
+static uint32_t get_clk_speed(const size_t chan)
 {
+        switch (chan) {
+        case 1:
+                return TIMER_CLK_FREQ_FAST_HZ;
+        case 0:
+        case 2:
+                return TIMER_CLK_FREQ_SLOW_HZ;
+        default:
+                return 0; /* Hell if we know the speed... */
+        }
+}
+
+static uint16_t speed_to_prescaler(const size_t chan, const size_t speed)
+{
+        uint16_t prescalar;
         switch (speed) {
         case TIMER_SLOW:
-                return PRESCALER_SLOW;
+                prescalar = PRESCALER_SLOW;
         case TIMER_FAST:
-                return PRESCALER_FAST;
+                prescalar = PRESCALER_FAST;
         case TIMER_MEDIUM:
         default:
-                return PRESCALER_MEDIUM;
+                prescalar = PRESCALER_MEDIUM;
         }
+
+        /*
+         * For consistency among our timers, we set them all to increment
+         * at the same rate.  Unfortunately, not all timers share the same
+         * clock.  To compensate for this, adjust the prescalar as needed
+         * knowing that our FAST clock is a whole number multiple of our
+         * SLOW clock.
+         */
+        return prescalar * get_clk_speed(chan) / TIMER_CLK_FREQ_SLOW_HZ;
 }
 
 void reset_device_state(const size_t chan)
@@ -264,29 +292,19 @@ void reset_device_state(const size_t chan)
         s->q_period_ticks = 0;
 }
 
-bool timer_device_init(const size_t channel, const uint32_t speed,
+bool timer_device_init(const size_t chan, const uint32_t speed,
                        const uint16_t quiet_period_us)
 {
-        if (channel >= MK2_TIMER_CHANNELS)
+        if (chan >= MK2_TIMER_CHANNELS)
                 return false;
 
-        struct config *c = &g_config[channel];
-        c->prescaler = speed_to_prescaler(speed);
+        struct config *c = &g_config[chan];
+        c->prescaler = speed_to_prescaler(chan, speed);
         c->q_period_us = quiet_period_us;
 
-        reset_device_state(channel);
+        reset_device_state(chan);
 
-        /*
-         * TIM9 (logical timer 1) has a clock rate 2x that of the other
-         * timers.  Thus we compensate for that by doubling the prescalar
-         * value.
-         */
-        if (1 == channel)
-                c->prescaler <<= 1;
-
-
-
-        switch (channel) {
+        switch (chan) {
         case 0:
                 init_timer_0(c);
                 return true;
@@ -302,27 +320,28 @@ bool timer_device_init(const size_t channel, const uint32_t speed,
         return false;
 }
 
-void timer_device_reset_count(size_t channel) {}
+void timer_device_reset_count(size_t chan) {}
 
-uint32_t timer_device_get_count(size_t channel)
+uint32_t timer_device_get_count(size_t chan)
 {
         return 0;
 }
 
-uint32_t ticks_to_us(uint16_t ticks)
+static uint32_t ticks_to_us(const size_t chan, const uint16_t ticks)
 {
-        /* 1 tick == 2us */
-        return (uint32_t) ticks << 1;
+        /* Our pre-scalars are setup to never have less than 1 tick per us */
+        const uint32_t us_per_tick = get_clk_speed(chan) / 1000000;
+        return us_per_tick ? g_config[chan].prescaler * ticks / us_per_tick : 0;
 }
 
-uint32_t timer_device_get_usec(size_t channel)
+uint32_t timer_device_get_usec(size_t chan)
 {
-        return ticks_to_us(timer_device_get_period(channel));
+        return ticks_to_us(chan, timer_device_get_period(chan));
 }
 
-uint32_t timer_device_get_period(size_t channel)
+uint32_t timer_device_get_period(size_t chan)
 {
-        return channel < MK2_TIMER_CHANNELS ? g_state[channel].period : 0;
+        return chan < MK2_TIMER_CHANNELS ? g_state[chan].period : 0;
 }
 
 
@@ -349,7 +368,7 @@ static void update_device_state(const size_t chan, const uint16_t p_ticks,
         struct state *s = &g_state[chan];
 
         const uint16_t total_ticks = p_ticks + s->q_period_ticks;
-        const uint32_t us = ticks_to_us(total_ticks);
+        const uint32_t us = ticks_to_us(chan, total_ticks);
         if (us < g_config[chan].q_period_us) {
                 /*
                  * Then this is a reset in the quiet window.  Only need to adjust

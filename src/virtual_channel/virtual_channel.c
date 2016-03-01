@@ -19,13 +19,13 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include "virtual_channel.h"
+#include "capabilities.h"
+#include "channel_config.h"
+#include "loggerTaskEx.h"
 #include "mem_mang.h"
 #include "mod_string.h"
 #include "printk.h"
-#include "loggerTaskEx.h"
-#include "capabilities.h"
+#include "virtual_channel.h"
 
 static size_t g_virtualChannelCount = 0;
 static VirtualChannel g_virtualChannels[MAX_VIRTUAL_CHANNELS];
@@ -91,4 +91,16 @@ size_t get_virtual_channel_count(void)
 void reset_virtual_channels(void)
 {
     g_virtualChannelCount = 0;
+}
+
+int get_virtual_channel_high_sample_rate(void)
+{
+        int sr = 0;
+
+        for (size_t i = 0; i < g_virtualChannelCount; ++i) {
+                const int vc_sr = g_virtualChannels[i].config.sampleRate;
+                sr = getHigherSampleRate(sr, vc_sr);
+        }
+
+        return sr;
 }

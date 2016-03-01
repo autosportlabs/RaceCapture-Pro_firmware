@@ -23,6 +23,7 @@
 #define LOGGERCONFIG_H_
 
 #include "capabilities.h"
+#include "channel_config.h"
 #include "cpp_guard.h"
 #include "geopoint.h"
 #include "tracks.h"
@@ -65,29 +66,6 @@ CPP_GUARD_BEGIN
 
 #define DEFAULT_GPS_POSITION_PRECISION 		6
 #define DEFAULT_GPS_RADIUS_PRECISION 		5
-
-#define DEFAULT_LABEL_LENGTH					12
-#define DEFAULT_UNITS_LENGTH					8
-
-#define DEFAULT_CHANNEL_LOGGING_PRECISION		2
-#define DEFAULT_CHANNEL_UNITS					""
-#define DEFAULT_CHANNEL_MIN						0
-#define DEFAULT_CHANNEL_MAX						1000
-
-/*
- * These Flags dictate special behavior within the ChannelConfig struct.
- */
-#define ALWAYS_SAMPLED 1 << 0
-
-typedef struct _ChannelConfig {
-    char label[DEFAULT_LABEL_LENGTH];
-    char units[DEFAULT_UNITS_LENGTH];
-    float min;
-    float max;
-    unsigned short sampleRate;
-    unsigned char precision;
-    unsigned char flags;
-} ChannelConfig;
 
 enum TimeType {
     TimeType_Uptime,

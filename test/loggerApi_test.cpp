@@ -23,6 +23,7 @@
 #include "api.h"
 #include "bluetooth.h"
 #include "cellular.h"
+#include "channel_config.h"
 #include "constants.h"
 #include "cpu.h"
 #include "imu.h"

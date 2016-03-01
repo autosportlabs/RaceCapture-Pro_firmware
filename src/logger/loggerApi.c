@@ -27,6 +27,7 @@
 #include "capabilities.h"
 #include "cellular.h"
 #include "cellular_api_status_keys.h"
+#include "channel_config.h"
 #include "constants.h"
 #include "cpu.h"
 #include "dateTime.h"

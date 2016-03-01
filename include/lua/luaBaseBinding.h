@@ -43,6 +43,17 @@ int Lua_PrintLogLn(lua_State *L);
 int Lua_SetLogLevel(lua_State *L);
 int Lua_GetLogLevel(lua_State *L);
 
+/**
+ * Returns an error to the Lua runtime with a descriptive string
+ * IMPORTANT: This methods never returns.  The `lua_error` method.
+ *            does a long jump internally.  The return statements here
+ *            are really only here to make things look pretty and logical.
+ */
+int rcp_lua_error(lua_State *L, const char *msg);
+int incorrect_arguments(lua_State *L);
+
+
+
 CPP_GUARD_END
 
 #endif /* LUABASEBINDINGS_H_ */

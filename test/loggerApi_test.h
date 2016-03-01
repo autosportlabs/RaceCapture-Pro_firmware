@@ -24,9 +24,10 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
+#include "channel_config.h"
+#include "json/elements.h"
 #include "json/reader.h"
 #include "json/writer.h"
-#include "json/elements.h"
 #include "loggerConfig.h"
 
 using namespace json;

@@ -24,6 +24,7 @@
 #include "GPIO.h"
 #include "OBD2.h"
 #include "PWM.h"
+#include "channel_config.h"
 #include "dateTime.h"
 #include "geopoint.h"
 #include "gps.h"

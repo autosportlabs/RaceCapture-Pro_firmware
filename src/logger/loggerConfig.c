@@ -19,9 +19,9 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "capabilities.h"
 #include "cpu.h"
+#include "channel_config.h"
 #include "loggerConfig.h"
 #include "memory.h"
 #include "mod_string.h"
@@ -548,6 +548,7 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
     sr = gpsConfig->DOP.sampleRate;
     s = getHigherSampleRate(sr, s);
 
+
     LapConfig *trackCfg = &(config->LapConfigs);
     sr = trackCfg->lapCountCfg.sampleRate;
     s = getHigherSampleRate(sr, s);
@@ -570,6 +571,11 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
     sr = trackCfg->current_lap_cfg.sampleRate;
     s = getHigherSampleRate(sr, s);
 
+    /* Now check our Virtual Channels */
+#if defined(VIRTUAL_CHANNEL_SUPPORT)
+    sr = get_virtual_channel_high_sample_rate();
+    s = getHigherSampleRate(s, sr);
+#endif /* VIRTUAL_CHANNEL_SUPPORT */
     return s;
 }
 

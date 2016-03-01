@@ -22,6 +22,7 @@
 #ifndef VIRTUAL_CHANNEL_H_
 #define VIRTUAL_CHANNEL_H_
 
+#include "channel_config.h"
 #include "cpp_guard.h"
 #include "loggerConfig.h"
 #include "loggerNotifications.h"
@@ -44,6 +45,11 @@ size_t get_virtual_channel_count(void);
 void set_virtual_channel_value(size_t id, float value);
 float get_virtual_channel_value(int id);
 void reset_virtual_channels(void);
+
+/**
+ * @return The highest sample rate among all the virtual channels
+ */
+int get_virtual_channel_high_sample_rate(void);
 
 CPP_GUARD_END
 
