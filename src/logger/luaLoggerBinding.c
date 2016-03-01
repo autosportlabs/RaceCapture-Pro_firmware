@@ -60,8 +60,9 @@
 #define LUA_DEFAULT_SERIAL_PARITY 0
 #define LUA_DEFAULT_SERIAL_STOP_BITS 1
 
-
 char g_tempBuffer[TEMP_BUFFER_LEN];
+static int lua_get_virtual_channel(lua_State *ls);
+
 
 static int lua_get_uptime(lua_State *L)
 {
@@ -161,6 +162,7 @@ void registerLuaLoggerBindings(lua_State *L)
     lua_registerlight(L,"getBgStream", Lua_GetBackgroundStreaming);
 
     lua_registerlight(L, "addChannel", Lua_AddVirtualChannel);
+    lua_registerlight(L, "getChannel", lua_get_virtual_channel);
     lua_registerlight(L, "setChannel", Lua_SetVirtualChannelValue);
 
     /* Timing info */
@@ -848,6 +850,36 @@ int Lua_AddVirtualChannel(lua_State *L)
 bug:
         return luaL_error(L, "BUG. Should never get here.  "
                              "Please inform AutosportLabs");
+}
+
+static int lua_get_virtual_channel(lua_State *ls)
+{
+    if (lua_gettop(ls) != 1)
+            return incorrect_arguments(ls);
+
+    const bool is_num = lua_isnumber(ls, 1);
+    const bool is_str = lua_isstring(ls, 1);
+    if (!is_num && !is_str)
+            return luaL_error(ls, "This method only accepts channel names "
+                              "or channel IDs");
+
+    /*
+     * Numbers can be passed in as 123 or "123" in lua.  So handle
+     * that case first
+     */
+    VirtualChannel *vc;
+    if (is_num) {
+            vc = get_virtual_channel(lua_tointeger(ls, 1));
+    } else {
+            const int idx = find_virtual_channel(lua_tostring(ls, 1));
+            vc = get_virtual_channel(idx);
+    }
+
+    if (!vc)
+            return luaL_error(ls, "Virtual channel not found!");
+
+    lua_pushnumber(ls, vc->currentValue);
+    return 1;
 }
 
 int Lua_SetVirtualChannelValue(lua_State *L)
