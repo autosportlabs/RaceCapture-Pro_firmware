@@ -40,7 +40,7 @@ RCP_INSTALL_DIR = RaceCapturePro_Firmware
 
 
 INCLUDE_DIR = $(APP_PATH)/include
-HAL_SRC = $(APP_PATH)/stm32_base/hal
+HAL_SRC = $(APP_PATH)/platform/mk2/hal
 RCP_SRC = $(APP_PATH)/src
 
 # The source files of our application

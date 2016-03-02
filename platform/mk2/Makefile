@@ -23,7 +23,7 @@
 # building, otherwise it passes the BOARD environment variable to the
 # rest of the makefile
 
-APP_PATH = ..
+APP_PATH = ../..
 
 #load the board specific configuration
 include config.mk
@@ -62,9 +62,9 @@ CFLAGS ?= -Os -g -fno-common -c -mthumb -fno-strict-aliasing \
 	-Wclobbered -Wignored-qualifiers -Wmissing-parameter-type \
 	-Wold-style-declaration -Wunused-but-set-parameter
 
-LUA_INCLUDE=-I$(APP_PATH)/lib_lua/src
+LUA_INCLUDE=-I$(APP_PATH)/lib/lua/src
 LUA_LIBS=lua
-LUA_LIB_DIR=$(APP_PATH)/lib_lua/src
+LUA_LIB_DIR=$(APP_PATH)/lib/lua/src
 
 INCLUDES += $(CPU_INCLUDES) $(BOARD_INCLUDES) $(LIB_INCLUDES) $(APP_INCLUDES) $(LUA_INCLUDE)
 CFLAGS += $(INCLUDES) $(CPU_DEFINES) $(BOARD_DEFINES) $(APP_DEFINES) $(CPU_FLAGS)
@@ -162,7 +162,7 @@ debug: $(TARGET).bin
 	$(OPENOCD) -f $(APP_PATH)/openocd_stlinkv2.cfg
 
 ddd: $(TARGET).elf
-	$(DDD) --eval-command="target remote localhost:3333" --eval-command="set env LD_LIBRARY_PATH ../lib_lua/src" --debugger $(GDB) $(TARGET).elf
+	$(DDD) --eval-command="target remote localhost:3333" --eval-command="set env LD_LIBRARY_PATH ../lib/lua/src" --debugger $(GDB) $(TARGET).elf
 
 gdb: $(TARGET).elf
 	$(GDB) -x gdb_stlinkv2.gdb

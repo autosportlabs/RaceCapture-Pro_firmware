@@ -93,7 +93,7 @@ test: test-run
 #
 # Lua Bits
 #
-LUA_DIR := lib_lua
+LUA_DIR := lib/lua
 PHONY += lua-build
 lua-build:
 	$(MAKE) -C $(LUA_DIR) PLAT=stm32 generic
@@ -110,7 +110,7 @@ lua-pristine: lua-clean
 #
 # MK2
 #
-MK2_DIR := stm32_base
+MK2_DIR := platform/mk2
 PHONY += mk2-build
 mk2-build: lua-build
 	$(MAKE) -C $(MK2_DIR) all
@@ -127,13 +127,16 @@ PHONY += mk2-package
 mk2-package: mk2-pristine
 	./bin/package_release.sh MK2 $(VERSION_STR) $(MK2_DIR)
 
+PHONY += mk2
+mk2: mk2-build
+
 
 #
 # RCT
 #
-RCT_DIR := RCT
+RCT_DIR := platform/rct
 PHONY += rct-build
-rct-build: lua-build
+rct-build:
 	$(MAKE) -C $(RCT_DIR) all
 
 PHONY += rct-clean
@@ -141,13 +144,16 @@ rct-clean:
 	$(MAKE) -C $(RCT_DIR) clean
 
 PHONY += rct-pristine
-rct-pristine: lua-pristine rct-clean
+rct-pristine: rct-clean
 	$(MAKE) rct-build
 
 PHONY += rct-package
 rct-package: rct-pristine
 # NO-OP just yet.
 #	./bin/package_release.sh RCT $(VERSION_STR) $(RCT_DIR)
+
+PHONY += rct
+rct: rct-build
 
 
 #

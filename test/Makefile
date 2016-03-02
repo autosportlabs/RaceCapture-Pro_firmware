@@ -5,7 +5,7 @@ SIMNAME = rcpsim
 RCP_BASE=..
 RCP_SRC=$(RCP_BASE)/src
 RCP_INC=$(RCP_BASE)/include
-STM32_SRC=$(RCP_BASE)/stm32_base
+MK2_SRC=$(RCP_BASE)/platform/mk2
 MESSAGING_SRC=$(RCP_SRC)/messaging
 COMMAND_SRC=$(RCP_SRC)/command
 MOCK_DIR=logger_mock
@@ -20,7 +20,7 @@ INCLUDES = \
 -I./include \
 -I$(RCP_BASE) \
 -I$(RCP_BASE)/logger \
--I$(STM32_SRC)/hal/fat_sd_stm32/fatfs \
+-I$(MK2_SRC)/hal/fat_sd_stm32/fatfs \
 -I$(RCP_INC) \
 -I$(RCP_INC)/logging \
 -I$(RCP_INC)/gps \
