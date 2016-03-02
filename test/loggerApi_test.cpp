@@ -1312,6 +1312,8 @@ void LoggerApiTest::testGetVersion(){
 	CPPUNIT_ASSERT_EQUAL(MINOR_REV, (int)(Number)json["ver"]["minor"]);
 	CPPUNIT_ASSERT_EQUAL(BUGFIX_REV, (int)(Number)json["ver"]["bugfix"]);
 	CPPUNIT_ASSERT_EQUAL(string(cpu_get_serialnumber()), (string)(String)json["ver"]["serial"]);
+        CPPUNIT_ASSERT(((string)(String)json["ver"]["git_info"]).size());
+        CPPUNIT_ASSERT(((string)(String)json["ver"]["release_type"]).size());
 }
 
 void LoggerApiTest::testGetStatus(){
@@ -1328,6 +1330,8 @@ void LoggerApiTest::testGetStatus(){
     CPPUNIT_ASSERT_EQUAL(MINOR_REV, (int)(Number)json["status"]["system"]["ver_minor"]);
     CPPUNIT_ASSERT_EQUAL(BUGFIX_REV, (int)(Number)json["status"]["system"]["ver_bugfix"]);
     CPPUNIT_ASSERT_EQUAL(string(cpu_get_serialnumber()), (string)(String)json["status"]["system"]["serial"]);
+    CPPUNIT_ASSERT(((string)(String)json["status"]["system"]["git_info"]).size());
+    CPPUNIT_ASSERT(((string)(String)json["status"]["system"]["release_type"]).size());
     CPPUNIT_ASSERT_EQUAL(15, (int)(Number)json["status"]["system"]["uptime"]);
 
     CPPUNIT_ASSERT_EQUAL((int)GPS_STATUS_PROVISIONED, (int)(Number)json["status"]["GPS"]["init"]);
