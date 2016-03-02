@@ -30,7 +30,6 @@ ITM = 1
 #HEAP selection
 FREERTOS_HEAP=heap_4
 
-include $(APP_PATH)/version.mk
 RCP_RELEASE_DIR ?= .
 RELEASE_NAME = RaceCapturePro-$(MAJOR).$(MINOR).$(BUGFIX)
 RELEASE_NAME_ZIP = $(RELEASE_NAME).zip

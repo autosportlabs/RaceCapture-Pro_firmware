@@ -1,7 +1,4 @@
 #-----Macros---------------------------------
-
-include ../version.mk
-
 NAME=rcptest
 SIMNAME = rcpsim
 
