@@ -161,7 +161,8 @@ clean:
 	-name "*.o"      \
 	| xargs rm -f
 
-package: test-pristine
+package: clean
+	$(MAKE) test-pristine
 	$(MAKE) mk2-package
 	$(MAKE) rct-package
 
