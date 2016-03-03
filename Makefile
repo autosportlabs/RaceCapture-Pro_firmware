@@ -127,6 +127,10 @@ PHONY += mk2-package
 mk2-package: mk2-pristine
 	./bin/package_release.sh MK2 $(VERSION_STR) $(MK2_DIR)
 
+PHONY += mk2-flash
+mk2-flash: mk2-build
+	cd $(MK2_DIR) && openocd -f openocd_stlinkv2_flash.cfg
+
 PHONY += mk2
 mk2: mk2-build
 
