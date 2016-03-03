@@ -21,7 +21,7 @@
 
 
 #include "FreeRTOS.h"
-#include "LED.h"
+#include "led.h"
 #include "api.h"
 #include "bluetooth.h"
 #include "capabilities.h"
@@ -228,12 +228,12 @@ void startConnectivityTask(int16_t priority)
 
 static void toggle_connectivity_indicator()
 {
-    LED_toggle(1);
+        led_toggle(LED_TELEMETRY);
 }
 
 static void clear_connectivity_indicator()
 {
-    LED_disable(1);
+        led_disable(LED_TELEMETRY);
 }
 
 void connectivityTask(void *params)

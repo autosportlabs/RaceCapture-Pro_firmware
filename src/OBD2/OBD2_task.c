@@ -36,7 +36,7 @@
 
 #define OBD2_TASK_STACK 	100
 
-#define OBD2_FEATURE_DISABLED_DELAY_MS 2000
+#define OBD2_FEATURE_DISABled_DELAY_MS 2000
 void startOBD2Task(int priority)
 {
     xTaskCreate( OBD2Task, ( signed portCHAR * )"OBD2Task", OBD2_TASK_STACK, NULL, 	priority, NULL );
@@ -69,6 +69,6 @@ void OBD2Task(void *pvParameters)
                 delayTicks(max_obd2_samplerate);
             }
         }
-        delayMs(OBD2_FEATURE_DISABLED_DELAY_MS);
+        delayMs(OBD2_FEATURE_DISABled_DELAY_MS);
     }
 }

@@ -21,7 +21,7 @@
 
 #include "FreeRTOS.h"
 #include "GPIO.h"
-#include "LED.h"
+#include "led.h"
 #include "capabilities.h"
 #include "lauxlib.h"
 #include "lua.h"
@@ -186,16 +186,16 @@ static bool user_bypass_requested(void)
 {
         pr_info("lua: Checking for Lua runtime bypass request\r\n");
         bool bypass = false;
-        LED_disable(LED_ERROR);
+        led_disable(LED_ERROR);
         for (size_t i = 0; i < LUA_BYPASS_FLASH_COUNT; i++) {
-            LED_toggle(LED_ERROR);
+            led_toggle(LED_ERROR);
             if (GPIO_is_button_pressed()) {
                 bypass = true;
                 break;
             }
             delayMs(LUA_BYPASS_FLASH_DELAY);
         }
-        LED_disable(LED_ERROR);
+        led_disable(LED_ERROR);
         return bypass;
 }
 
@@ -323,7 +323,7 @@ static void luaTask(void *params)
         const bool should_bypass_lua = (watchdog_is_watchdog_reset() && user_bypass_requested());
         if (should_bypass_lua) {
                 pr_error("lua: Bypassing Lua Runtime\r\n");
-                LED_enable(LED_ERROR);
+                led_enable(LED_ERROR);
         } else {
                 initialize_lua();
         }

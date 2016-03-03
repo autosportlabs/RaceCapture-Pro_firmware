@@ -19,19 +19,29 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LED_H_
-#define LED_H_
+#ifndef _LED_H_
+#define _LED_H_
 
 #include "cpp_guard.h"
 
+#include <stdbool.h>
+
 CPP_GUARD_BEGIN
 
-#define LED_ERROR 3
-int LED_init(void);
-void LED_enable(unsigned int Led);
-void LED_disable(unsigned int Led);
-void LED_toggle(unsigned int Led);
+/* ORDER MATTERS.  DO NOT ALTER.  Only append */
+enum led {
+        LED_ERROR     = 0,
+        LED_LOGGING   = 1,
+        LED_GPS       = 2,
+        LED_TELEMETRY = 3,
+};
+
+bool led_init(void);
+bool led_set(const enum led l, const bool on);
+bool led_enable(const enum led l);
+bool led_disable(const enum led l);
+bool led_toggle(const enum led l);
 
 CPP_GUARD_END
 
-#endif /* LED_H_ */
+#endif /* _LED_H_ */

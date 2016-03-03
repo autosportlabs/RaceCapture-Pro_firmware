@@ -29,7 +29,7 @@
  */
 
 #include "FreeRTOS.h"
-#include "LED.h"
+#include "led.h"
 #include "OBD2_task.h"
 #include "capabilities.h"
 #include "connectivityTask.h"
@@ -80,19 +80,19 @@ static void fatalError(const enum fatal_error type)
         taskDISABLE_INTERRUPTS();
 
         for(;;) {
-                LED_enable(1);
-                LED_enable(2);
+                led_enable(LED_GPS);
+                led_enable(LED_LOGGING);
                 delay_seconds(FLASH_PAUSE_DELAY_S);
-                LED_disable(1);
-                LED_disable(2);
+                led_disable(LED_GPS);
+                led_disable(LED_LOGGING);
                 delay_seconds(FLASH_DELAY_S);
 
                 for (int c = 0; c < type; ++c) {
-                        LED_enable(1);
-                        LED_enable(2);
+                        led_enable(LED_GPS);
+                        led_enable(LED_LOGGING);
                         delay_seconds(FLASH_DELAY_S);
-                        LED_disable(1);
-                        LED_disable(2);
+                        led_disable(LED_GPS);
+                        led_disable(LED_LOGGING);
                         delay_seconds(FLASH_DELAY_S);
                 }
         }

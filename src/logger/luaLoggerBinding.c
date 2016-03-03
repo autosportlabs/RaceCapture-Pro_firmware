@@ -23,7 +23,7 @@
 #include "CAN.h"
 #include "FreeRTOS.h"
 #include "GPIO.h"
-#include "LED.h"
+#include "led.h"
 #include "OBD2.h"
 #include "PWM.h"
 #include "channel_config.h"
@@ -150,8 +150,6 @@ void registerLuaLoggerBindings(lua_State *L)
     lua_registerlight(L,"startLogging",Lua_StartLogging);
     lua_registerlight(L,"stopLogging",Lua_StopLogging);
     lua_registerlight(L,"isLogging" , Lua_IsLogging);
-
-    lua_registerlight(L,"setLed",Lua_SetLED);
 
     //Serial API
     lua_registerlight(L,"initSer", Lua_InitSerial);
@@ -768,21 +766,6 @@ int Lua_IsLogging(lua_State *L)
     lua_pushinteger(L, logging_is_active());
     return 1;
 }
-
-int Lua_SetLED(lua_State *L)
-{
-    if (lua_gettop(L) >= 2) {
-        unsigned int LED = lua_tointeger(L,1);
-        unsigned int state = lua_tointeger(L,2);
-        if (state) {
-            LED_enable(LED);
-        } else {
-            LED_disable(LED);
-        }
-    }
-    return 0;
-}
-
 
 int Lua_FlashLoggerConfig(lua_State *L)
 {

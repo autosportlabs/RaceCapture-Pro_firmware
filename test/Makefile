@@ -142,7 +142,7 @@ $(MOCK_DIR)/watchdog_device_mock.c \
 $(RCP_SRC)/ADC/ADC.c \
 $(RCP_SRC)/CAN/CAN.c \
 $(RCP_SRC)/GPIO/GPIO.c \
-$(RCP_SRC)/LED/LED.c \
+$(RCP_SRC)/LED/led.c \
 $(RCP_SRC)/OBD2/OBD2.c \
 $(RCP_SRC)/PWM/PWM.c \
 $(RCP_SRC)/api/api.c \

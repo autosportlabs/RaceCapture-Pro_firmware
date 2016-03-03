@@ -20,25 +20,30 @@
  */
 
 
-#include "LED.h"
-#include "LED_device.h"
+#include "led.h"
+#include "led_device.h"
 
-int LED_init(void)
+bool led_init(void)
 {
-    return LED_device_init();
+        return led_device_init();
 }
 
-void LED_enable(unsigned int Led)
+bool led_set(const enum led l, const bool on)
 {
-    LED_device_enable(Led);
+        return led_device_set(l, on);
 }
 
-void LED_disable(unsigned int Led)
+bool led_enable(const enum led l)
 {
-    LED_device_disable(Led);
+        return led_set(l, true);
 }
 
-void LED_toggle(unsigned int Led)
+bool led_disable(const enum led l)
 {
-    LED_device_toggle(Led);
+        return led_set(l, false);
+}
+
+bool led_toggle(const enum led l)
+{
+        return led_device_toggle(l);
 }

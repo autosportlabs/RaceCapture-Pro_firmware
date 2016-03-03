@@ -101,7 +101,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/tracks/tracks.c \
 			$(RCP_SRC)/auto_config/auto_track.c \
 			$(RCP_SRC)/messaging/messaging.c \
-			$(RCP_SRC)/LED/LED.c \
+			$(RCP_SRC)/LED/led.c \
 			$(RCP_SRC)/PWM/PWM.c \
 			$(RCP_SRC)/logging/printk.c \
 			$(RCP_SRC)/util/ring_buffer.c \
@@ -116,7 +116,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/sdcard/sdcard.c \
 			$(HAL_SRC)/cell_device/cell_pwr_btn.c \
 			$(HAL_SRC)/gps_skytraq/gps_device_skytraq.c \
-			$(HAL_SRC)/LED_stm32/LED_device_stm32.c \
+			$(HAL_SRC)/LED_stm32/led_device_stm32.c \
 			$(HAL_SRC)/memory_stm32/memory_device_stm32.c \
 			$(HAL_SRC)/GPIO_stm32/GPIO_device_stm32.c \
 			$(HAL_SRC)/PWM_stm32/PWM_device_stm32.c \

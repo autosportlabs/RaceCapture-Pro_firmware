@@ -23,13 +23,15 @@
 #define LED_DEVICE_H_
 
 #include "cpp_guard.h"
+#include "led.h"
+
+#include <stdbool.h>
 
 CPP_GUARD_BEGIN
 
-int LED_device_init(void);
-void LED_device_enable(unsigned int Led);
-void LED_device_disable(unsigned int Led);
-void LED_device_toggle(unsigned int Led);
+bool led_device_init(void);
+bool led_device_set(const enum led l, bool on);
+bool led_device_toggle(const enum led l);
 
 CPP_GUARD_END
 
