@@ -1,7 +1,4 @@
 #-----Macros---------------------------------
-
-include ../version.mk
-
 NAME=rcptest
 SIMNAME = rcpsim
 
@@ -75,15 +72,13 @@ CPP = g++
 CC = gcc
 
 CPPFLAGS = \
--g $(INCLUDES) -DRCP_TESTING -DAPI_REV=$(API) -DMAJOR_REV=$(MAJOR) \
--DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
+-g $(INCLUDES) -DRCP_TESTING -DAPI_REV=$(API) $(VERSION_CFLAGS)
 
 CFLAGS = \
 -g $(INCLUDES) -std=gnu99 -Wall -Werror -Wempty-body \
 -Wclobbered -Wignored-qualifiers -Wmissing-parameter-type \
 -Wold-style-declaration -Wunused-but-set-parameter \
--DRCP_TESTING -DAPI_REV=$(API) -DMAJOR_REV=$(MAJOR) \
--DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
+-DRCP_TESTING $(VERSION_CFLAGS)
 
 #-----Suffix Rules---------------------------
 # set up C++ suffixes and relationship between .cc and .o files
@@ -216,3 +211,8 @@ sim: $(OBJ_SIM)
 
 clean:
 	rm -f $(OBJ_TEST) $(OBJ_SIM) $(NAME) $(SIMNAME)
+
+test-run: test
+	./rcptest
+
+.PHONY: all test sim clean test-run
