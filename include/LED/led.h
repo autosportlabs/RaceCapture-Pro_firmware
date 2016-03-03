@@ -25,22 +25,33 @@
 #include "cpp_guard.h"
 
 #include <stdbool.h>
+#include <stdlib.h>
 
 CPP_GUARD_BEGIN
 
-/* ORDER MATTERS.  DO NOT ALTER.  Only append */
+/*
+ * README
+ *
+ * ORDER MATTERS! NAMING MATTERS! DO NOT REMOVE ENTRIES!
+ * You may only append here safely, and even then you may only
+ * add enum values with POSITIVE numbers.  If you don't want an LED
+ * enum to be ignored, you need to account for that in the driver.
+ */
 enum led {
-        LED_ERROR     = 0,
-        LED_LOGGING   = 1,
-        LED_GPS       = 2,
-        LED_TELEMETRY = 3,
+        LED_UNKNOWN   = -1,
+        LED_ERROR     =  0,
+        LED_LOGGER    =  1,
+        LED_GPS       =  2,
+        LED_TELEMETRY =  3,
 };
 
 bool led_init(void);
+bool led_set_index(const size_t index, const bool on);
 bool led_set(const enum led l, const bool on);
 bool led_enable(const enum led l);
 bool led_disable(const enum led l);
 bool led_toggle(const enum led l);
+enum led get_led_enum(const char *name);
 
 CPP_GUARD_END
 

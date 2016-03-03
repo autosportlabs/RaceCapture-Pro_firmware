@@ -30,7 +30,7 @@
 #define GPIO_PORT	GPIOA
 
 /*
- * Order of the leds in this array matters!  Corresponds to `enum led`.
+ * Order of the leds in this array matters!  Index order of LEDs (RGB).
  * Ensure you know what you are doing before you change it.
  *
  * LED outputs are on GPIOA group.  Pins 0 - 2
@@ -39,19 +39,14 @@
  * Red   - A:2 -> ERROR
  */
 static struct led_data {
+        const enum led led;
         uint16_t mask;
         bool level;
 } leds[] = {
-        {GPIO_Pin_2, 0}, /* LED_ERROR */
-        {GPIO_Pin_0, 0}, /* LED_LOGGING */
-        {GPIO_Pin_1, 0}, /* LED_GPS */
+        {LED_ERROR,  GPIO_Pin_2, 0},
+        {LED_GPS,    GPIO_Pin_1, 0},
+        {LED_LOGGER, GPIO_Pin_0, 0},
 };
-
-struct led_data* find_led_data(const enum led l)
-{
-        const int i = (int) l;
-        return i < ARRAY_LEN(leds) ? leds + i : NULL;
-}
 
 static bool led_set_level(struct led_data *ld, const bool on)
 {
@@ -66,6 +61,23 @@ static bool led_set_level(struct led_data *ld, const bool on)
         }
 
         return true;
+}
+
+bool led_device_set_index(const size_t i, const bool on)
+{
+        return i < ARRAY_LEN(leds) ? led_set_level(leds + i, on) : NULL;
+}
+
+struct led_data* find_led_data(const enum led l)
+{
+        /* Use an unsigned value here to handle negative indicies */
+        for (size_t i = 0; i < ARRAY_LEN(leds); ++i) {
+                struct led_data *ld = leds + i;
+                if (l == ld->led)
+                        return ld;
+        }
+
+        return NULL;
 }
 
 bool led_device_set(const enum led l, const bool on)

@@ -94,14 +94,14 @@ void stopLogging()
 static void logging_started()
 {
     logging_set_logging_start(getUptimeAsInt());
-    led_disable(LED_LOGGING);
+    led_disable(LED_LOGGER);
     pr_info("Logging started\r\n");
 }
 
 static void logging_stopped()
 {
     logging_set_logging_start(0);
-    led_disable(LED_LOGGING);
+    led_disable(LED_LOGGER);
     pr_info("Logging stopped\r\n");
 }
 

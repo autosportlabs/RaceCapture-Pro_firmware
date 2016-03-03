@@ -81,18 +81,18 @@ static void fatalError(const enum fatal_error type)
 
         for(;;) {
                 led_enable(LED_GPS);
-                led_enable(LED_LOGGING);
+                led_enable(LED_LOGGER);
                 delay_seconds(FLASH_PAUSE_DELAY_S);
                 led_disable(LED_GPS);
-                led_disable(LED_LOGGING);
+                led_disable(LED_LOGGER);
                 delay_seconds(FLASH_DELAY_S);
 
                 for (int c = 0; c < type; ++c) {
                         led_enable(LED_GPS);
-                        led_enable(LED_LOGGING);
+                        led_enable(LED_LOGGER);
                         delay_seconds(FLASH_DELAY_S);
                         led_disable(LED_GPS);
-                        led_disable(LED_LOGGING);
+                        led_disable(LED_LOGGER);
                         delay_seconds(FLASH_DELAY_S);
                 }
         }

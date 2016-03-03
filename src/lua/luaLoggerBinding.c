@@ -760,7 +760,6 @@ int Lua_IsLogging(lua_State *L)
 
 int Lua_SetLED(lua_State *L)
 {
-        /* STIEG: FIXME */
         if (lua_gettop(L) >= 2) {
                 unsigned int LED = lua_tointeger(L,1);
                 unsigned int state = lua_tointeger(L,2);

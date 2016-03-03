@@ -19,13 +19,33 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "array_utils.h"
+#include "mod_string.h"
 #include "led.h"
 #include "led_device.h"
+
+/*
+ * LED names are the same strings as the enums in code.
+ */
+#define LED_NAME_ENTRY(a)	{#a, a}
+static struct led_names {
+        const char *name;
+        const enum led led;
+} led_names[] = {
+        LED_NAME_ENTRY(LED_ERROR),
+        LED_NAME_ENTRY(LED_LOGGER),
+        LED_NAME_ENTRY(LED_GPS),
+        LED_NAME_ENTRY(LED_TELEMETRY),
+};
 
 bool led_init(void)
 {
         return led_device_init();
+}
+
+bool led_set_index(const size_t i, const bool on)
+{
+        return led_device_set_index(i, on);
 }
 
 bool led_set(const enum led l, const bool on)
@@ -46,4 +66,16 @@ bool led_disable(const enum led l)
 bool led_toggle(const enum led l)
 {
         return led_device_toggle(l);
+}
+
+enum led get_led_enum(const char *name)
+{
+        if (NULL == name)
+                return LED_UNKNOWN;
+
+        for (size_t i = 0; i < ARRAY_LEN(led_names); ++i)
+                if (0 == strcmp(led_names[i].name, name))
+                        return led_names[i].led;
+
+        return LED_UNKNOWN;
 }

@@ -257,12 +257,12 @@ static void close_log_file(struct logging_status *ls)
 
 static void logging_led_toggle(void)
 {
-        led_toggle(LED_LOGGING);
+        led_toggle(LED_LOGGER);
 }
 
 static void logging_led_off(void)
 {
-        led_disable(LED_LOGGING);
+        led_disable(LED_LOGGER);
 }
 
 static void open_log_file(struct logging_status *ls)

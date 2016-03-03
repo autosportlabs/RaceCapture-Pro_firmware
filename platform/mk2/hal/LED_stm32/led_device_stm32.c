@@ -29,7 +29,7 @@
 #include <stdlib.h>
 
 /*
- * Order of the leds in this array matters!  Corresponds to `enum led`.
+ * Order of the leds in this array matters!  Corresponds to index of lights.
  * Ensure you know what you are doing before you change it.
  *
  * Mapping:
@@ -39,21 +39,16 @@
  * Red Light - D:10 -> ERROR
  */
 static struct led_data {
+        const enum led led;
         GPIO_TypeDef *port;
         uint16_t mask;
         bool level;
 } leds[] = {
-        {GPIOD, GPIO_Pin_10}, /* LED_ERROR     */
-        {GPIOC, GPIO_Pin_6},  /* LED_LOGGING   */
-        {GPIOC, GPIO_Pin_7},  /* LED_GPS       */
-        {GPIOD, GPIO_Pin_11}, /* LED_TELEMETRY */
+        {LED_ERROR,     GPIOD, GPIO_Pin_10},
+        {LED_TELEMETRY, GPIOD, GPIO_Pin_11},
+        {LED_LOGGER,    GPIOC, GPIO_Pin_6 },
+        {LED_GPS,       GPIOC, GPIO_Pin_7 },
 };
-
-struct led_data* find_led_data(const enum led l)
-{
-        const int i = (int) l;
-        return i < ARRAY_LEN(leds) ? leds + i : NULL;
-}
 
 static bool led_set_level(struct led_data *ld, const bool on)
 {
@@ -68,6 +63,23 @@ static bool led_set_level(struct led_data *ld, const bool on)
         }
 
         return true;
+}
+
+bool led_device_set_index(const size_t i, const bool on)
+{
+        return i < ARRAY_LEN(leds) ? led_set_level(leds + i, on) : NULL;
+}
+
+struct led_data* find_led_data(const enum led l)
+{
+        /* Use an unsigned value here to handle negative indicies */
+        for (size_t i = 0; i < ARRAY_LEN(leds); ++i) {
+                struct led_data *ld = leds + i;
+                if (l == ld->led)
+                        return ld;
+        }
+
+        return NULL;
 }
 
 bool led_device_set(const enum led l, const bool on)

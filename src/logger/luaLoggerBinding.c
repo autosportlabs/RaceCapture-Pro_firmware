@@ -62,7 +62,7 @@
 
 char g_tempBuffer[TEMP_BUFFER_LEN];
 static int lua_get_virtual_channel(lua_State *ls);
-
+static int lua_set_led(lua_State *ls);
 
 static int lua_get_uptime(lua_State *L)
 {
@@ -150,6 +150,8 @@ void registerLuaLoggerBindings(lua_State *L)
     lua_registerlight(L,"startLogging",Lua_StartLogging);
     lua_registerlight(L,"stopLogging",Lua_StopLogging);
     lua_registerlight(L,"isLogging" , Lua_IsLogging);
+
+    lua_registerlight(L,"setLed", lua_set_led);
 
     //Serial API
     lua_registerlight(L,"initSer", Lua_InitSerial);
@@ -766,6 +768,35 @@ int Lua_IsLogging(lua_State *L)
     lua_pushinteger(L, logging_is_active());
     return 1;
 }
+
+static int lua_set_led(lua_State *ls)
+{
+        if (lua_gettop(ls) != 2)
+                return incorrect_arguments(ls);
+
+        const bool is_num = lua_isnumber(ls, 1);
+        const bool is_str = lua_isstring(ls, 1);
+        if (!is_num && !is_str)
+                return luaL_error(ls, "This method only accepts LED names "
+                                  "or LED IDs");
+
+        /*
+         * Numbers can be passed in as 123 or "123" in lua.  So handle
+         * that case first
+         */
+        const bool on = lua_toboolean(ls, 2);
+        bool res;
+        if (is_num) {
+                res = led_set_index(lua_tointeger(ls, 1), on);
+        } else {
+                const enum led led = get_led_enum(lua_tostring(ls, 1));
+                res = led_set(led, on);
+        }
+
+        lua_pushboolean(ls, res);
+        return 1;
+}
+
 
 int Lua_FlashLoggerConfig(lua_State *L)
 {
