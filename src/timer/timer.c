@@ -24,30 +24,39 @@
 #include "timer_device.h"
 #include "filter.h"
 
-#define QUIET_PERIOD_US	4500
+/* Adds 25% to the max RPM value */
+#define MAX_RPM_MULT	1.25
+#define SEC_IN_A_MIN	60
+#define US_IN_A_SEC	1000000
 
 static Filter g_timer_filter[CONFIG_TIMER_CHANNELS];
 
+/**
+ * Calculates the highest quiet period usable based on the timer
+ * configurations.  We calculate this by figuring out the expected
+ * maximum HZ of the engine based in the info provided.  Then we simply
+ * take the inverse of that and multiply it by the number of micro seconds
+ * in a second.
+ */
 static uint16_t get_timer_quiet_period(const TimerConfig *tc)
 {
-        /* Only use filtering when in RPM mode */
-        if (MODE_LOGGING_TIMER_RPM != tc->mode)
-                return 0;
+        const float max_rpm = tc->cfg.max;
+        const float ppr = (float) tc->pulsePerRevolution;
+        const float max_hz = max_rpm * ppr * MAX_RPM_MULT / SEC_IN_A_MIN;
 
-        /*
-         * Software Filter Hack Represents 15K Max.  For release
-         * in 2.8.8.  Have to divide value by pulses per revolution
-         * since this must scale depending on the number of pulses
-         * per engine rotation.
-         */
-        return QUIET_PERIOD_US / tc->pulsePerRevolution;
+        return max_hz ? US_IN_A_SEC / max_hz : 0;
 }
 
 int timer_init(LoggerConfig *loggerConfig)
 {
         for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; i++) {
                 TimerConfig *tc = &loggerConfig->TimerConfigs[i];
-                const uint16_t qp_us = get_timer_quiet_period(tc);
+
+                const uint16_t qp_us = 0;
+                /* Only use filtering when in RPM mode */
+                if (MODE_LOGGING_TIMER_RPM == tc->mode)
+                        qp_us = get_timer_quiet_period(tc);
+
                 timer_device_init(i, tc->timerSpeed, qp_us);
                 init_filter(&g_timer_filter[i], tc->filterAlpha);
         }
