@@ -150,12 +150,12 @@ typedef struct _ADCConfig {
          }
 
 typedef struct _TimerConfig {
-    ChannelConfig cfg;
-    char slowTimerEnabled;
-    unsigned char mode;
-    float filterAlpha;
-    unsigned char pulsePerRevolution;
-    unsigned short timerSpeed;
+        ChannelConfig cfg;
+        char slowTimerEnabled; /* DEPRECATED */
+        unsigned char mode;
+        float filterAlpha;
+        unsigned char pulsePerRevolution;
+        unsigned short timerSpeed;
 } TimerConfig;
 
 

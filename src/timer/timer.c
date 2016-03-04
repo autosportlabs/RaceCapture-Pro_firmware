@@ -93,3 +93,24 @@ void timer_reset_count(size_t channel)
 {
     timer_device_reset_count(channel);
 }
+
+float get_timer_sample(const int cid)
+{
+        if (cid >= TIMER_CHANNELS)
+                return -1;
+
+        TimerConfig *c = getWorkingLoggerConfig()->TimerConfigs + cid;
+        unsigned char ppr = c->pulsePerRevolution;
+        switch (c->mode) {
+        case MODE_LOGGING_TIMER_RPM:
+                return timer_get_rpm(cid) / ppr;
+        case MODE_LOGGING_TIMER_FREQUENCY:
+                return timer_get_hz(cid) / ppr;
+        case MODE_LOGGING_TIMER_PERIOD_MS:
+                return timer_get_ms(cid) * ppr;
+        case MODE_LOGGING_TIMER_PERIOD_USEC:
+                return timer_get_usec(cid) * ppr;
+        default:
+                return -1;
+        }
+}
