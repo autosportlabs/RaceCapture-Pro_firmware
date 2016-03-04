@@ -1629,9 +1629,9 @@ int api_getScript(Serial *serial, const jsmntok_t *json)
 
 int api_setScript(Serial *serial, const jsmntok_t *json)
 {
-        const jsmntok_t *dataTok = findNode(json, "data");
-        const jsmntok_t *pageTok = findNode(json, "page");
-        const jsmntok_t *modeTok = findNode(json, "mode");
+        const jsmntok_t *dataTok = jsmn_find_node(json, "data");
+        const jsmntok_t *pageTok = jsmn_find_node(json, "page");
+        const jsmntok_t *modeTok = jsmn_find_node(json, "mode");
 
         if (dataTok == NULL || pageTok == NULL || modeTok == NULL)
                 return API_ERROR_PARAMETER;
