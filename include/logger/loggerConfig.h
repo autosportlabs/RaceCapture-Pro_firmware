@@ -151,7 +151,6 @@ typedef struct _ADCConfig {
 
 typedef struct _TimerConfig {
         ChannelConfig cfg;
-        char slowTimerEnabled; /* DEPRECATED */
         unsigned char mode;
         float filterAlpha;
         unsigned char pulsePerRevolution;

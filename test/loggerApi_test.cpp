@@ -643,7 +643,6 @@ void LoggerApiTest::testGetTimerConfigFile(string filename, int index){
 
         populateChannelConfig(&timerCfg->cfg, index, 100);
 
-	timerCfg->slowTimerEnabled = 1;
 	timerCfg->mode = 2;
 	timerCfg->filterAlpha = 0.5F;
 	timerCfg->pulsePerRevolution = 3;
@@ -660,7 +659,7 @@ void LoggerApiTest::testGetTimerConfigFile(string filename, int index){
 	Object &timerJson = json["timerCfg"][iStr];
 
         checkChannelConfig(timerJson, index, iStr, 100);
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)timerJson["st"]);
+	CPPUNIT_ASSERT_EQUAL(0, (int)(Number)timerJson["st"]); /* DEPRECATED */
 	CPPUNIT_ASSERT_EQUAL(2, (int)(Number)timerJson["mode"]);
 	CPPUNIT_ASSERT_EQUAL(0.5F, (float)(Number)timerJson["alpha"]);
 	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)timerJson["ppr"]);
