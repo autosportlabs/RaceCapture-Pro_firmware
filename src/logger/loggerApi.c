@@ -1091,19 +1091,22 @@ static void getTimerConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** 
     }
 }
 
-static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg)
+static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok,
+                                               const char *name,
+                                               const char *value,
+                                               void *cfg)
 {
     TimerConfig *timerCfg = (TimerConfig *)cfg;
 
-    int iValue = modp_atoi(value);
     if (NAME_EQU("mode", name))
-        timerCfg->mode = filterTimerMode(iValue);
+        timerCfg->mode = filterTimerMode(modp_atoi(value));
     if (NAME_EQU("alpha", name))
         timerCfg->filterAlpha = modp_atof(value);
     if (NAME_EQU("ppr", name))
-        timerCfg->pulsePerRevolution = filterPulsePerRevolution(iValue);
+        timerCfg->pulsePerRevolution =
+                filterPulsePerRevolution(modp_atoi(value));
     if (NAME_EQU("speed", name))
-        timerCfg->timerSpeed = filterTimerDivider(iValue);
+        timerCfg->timerSpeed = filterTimerDivider(modp_atoi(value));
 
     return valueTok + 1;
 }

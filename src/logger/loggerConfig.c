@@ -27,6 +27,7 @@
 #include "mod_string.h"
 #include "modp_numtoa.h"
 #include "printk.h"
+#include "timer_config.h"
 #include "virtual_channel.h"
 
 #include <stdbool.h>
@@ -174,29 +175,6 @@ static void resetGpioConfig(GPIOConfig cfg[])
         *c = (GPIOConfig) DEFAULT_GPIO_CONFIG;
         sPrintStrInt(c->cfg.label, "GPIO", i + 1);
     }
-}
-#endif
-
-#if TIMER_CHANNELS > 0
-TimerConfig * getTimerConfigChannel(int channel)
-{
-    TimerConfig * c = NULL;
-    if (channel >=0 && channel < CONFIG_TIMER_CHANNELS) {
-        c = &(getWorkingLoggerConfig()->TimerConfigs[channel]);
-    }
-    return c;
-}
-
-static void resetTimerConfig(TimerConfig cfg[])
-{
-    for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; ++i) {
-        TimerConfig *c = cfg + i;
-        *c = (TimerConfig) DEFAULT_FREQUENCY_CONFIG;
-        sPrintStrInt(c->cfg.label, "RPM", i + 1);
-    }
-
-    // Make Channel 1 the default RPM config.
-    cfg[0].cfg = (ChannelConfig) DEFAULT_RPM_CHANNEL_CONFIG;
 }
 #endif
 
@@ -675,7 +653,7 @@ int flash_default_logger_config(void)
 #endif
 
 #if TIMER_CHANNELS > 0
-    resetTimerConfig(lc->TimerConfigs);
+    set_default_timer_config(lc->TimerConfigs);
 #endif
 
 #if IMU_CHANNELS > 0

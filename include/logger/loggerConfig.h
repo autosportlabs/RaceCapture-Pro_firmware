@@ -27,6 +27,7 @@
 #include "cpp_guard.h"
 #include "geopoint.h"
 #include "tracks.h"
+#include "timer_config.h"
 #include "versionInfo.h"
 
 #include <stdbool.h>
@@ -147,42 +148,6 @@ typedef struct _ADCConfig {
          DEFAULT_CALIBRATION,					\
          DEFAULT_SCALING_MODE,                  \
          DEFAULT_SCALING_MAP                    \
-         }
-
-typedef struct _TimerConfig {
-        ChannelConfig cfg;
-        unsigned char mode;
-        float filterAlpha;
-        unsigned char pulsePerRevolution;
-        unsigned short timerSpeed;
-} TimerConfig;
-
-
-#define MODE_LOGGING_TIMER_RPM		        0
-#define MODE_LOGGING_TIMER_FREQUENCY		1
-#define MODE_LOGGING_TIMER_PERIOD_MS		2
-#define MODE_LOGGING_TIMER_PERIOD_USEC		3
-
-
-#define TIMER_SLOW			0
-#define TIMER_MEDIUM		1
-#define TIMER_FAST			2
-
-#define DEFAULT_TIMER_FILTER_ALPHA (1.0f)
-#define DEFAULT_TIMER_PPR 1
-#define DEFAULT_TIMER_DIVIDER TIMER_MEDIUM
-#define DEFAULT_TIMER_SCALING 375428
-
-#define DEFAULT_RPM_CHANNEL_CONFIG {"RPM", "", 0, 10000, SAMPLE_DISABLED, 0, 0}
-#define DEFAULT_FREQUENCY_CHANNEL_CONFIG {"", "", 0, 1000, SAMPLE_DISABLED, 0, 0}
-
-#define DEFAULT_FREQUENCY_CONFIG {              \
-      DEFAULT_FREQUENCY_CHANNEL_CONFIG,         \
-         0,                                     \
-         MODE_LOGGING_TIMER_RPM,                \
-         1.0F,                                  \
-         1,                                     \
-         TIMER_MEDIUM                           \
          }
 
 typedef struct _GPIOConfig {
@@ -558,7 +523,6 @@ unsigned short filterPwmDutyCycle(int dutyCycle);
 unsigned short filterPwmPeriod(int period);
 uint16_t filterPwmClockFrequency(uint16_t frequency);
 
-TimerConfig * getTimerConfigChannel(int channel);
 unsigned char filterPulsePerRevolution(unsigned char pulsePerRev);
 unsigned short filterTimerDivider(unsigned short divider);
 char filterTimerMode(int config);

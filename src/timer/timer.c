@@ -21,6 +21,7 @@
 
 
 #include "timer.h"
+#include "timer_config.h"
 #include "timer_device.h"
 #include "filter.h"
 
@@ -52,7 +53,7 @@ int timer_init(LoggerConfig *loggerConfig)
         for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; i++) {
                 TimerConfig *tc = &loggerConfig->TimerConfigs[i];
 
-                const uint16_t qp_us = 0;
+                uint16_t qp_us = 0;
                 /* Only use filtering when in RPM mode */
                 if (MODE_LOGGING_TIMER_RPM == tc->mode)
                         qp_us = get_timer_quiet_period(tc);

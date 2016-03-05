@@ -687,7 +687,6 @@ void LoggerApiTest::testSetTimerConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(cfg->sampleRate));
 	CPPUNIT_ASSERT_EQUAL(1, (int)cfg->precision);
 
-	CPPUNIT_ASSERT_EQUAL(1, (int)timerCfg->slowTimerEnabled);
 	CPPUNIT_ASSERT_EQUAL(1, (int)timerCfg->mode);
 	CPPUNIT_ASSERT_EQUAL(0.5F, timerCfg->filterAlpha);
 	CPPUNIT_ASSERT_EQUAL(4, (int)timerCfg->pulsePerRevolution);
