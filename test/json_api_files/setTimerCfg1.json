@@ -11,7 +11,9 @@
             "mode": 1,
             "alpha": 0.5,
             "ppr": 4,
-            "speed": 2
+            "speed": 2,
+            "filter_period": -2,
+            "edge": "rising",
         }
     }
 }

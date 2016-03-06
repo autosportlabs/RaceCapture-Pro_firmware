@@ -19,9 +19,11 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "timer_config.h"
+#include "api.h"
 #include "loggerConfig.h"
 #include "mod_string.h"
+#include "modp_atonum.h"
+#include "timer_config.h"
 
 #include <stdlib.h>
 
@@ -29,6 +31,15 @@
 #define RPM_CHAN_UNITS	"rpm"
 #define RPM_CHAN_MIN	0
 #define RPM_CHAN_MAX	8000
+
+#define TIMER_DEFAULT_FILTER_ALPHA 1.0
+#define TIMER_DEFAULT_PULSE_PER_REV 1
+#define TIMER_DEFAULT_DIVIDER TIMER_MEDIUM
+#define TIMER_DEFAULT_FILTER	TIMER_FILTER_VALUE_AUTO
+#define TIMER_DEFAULT_EDGE	TIMER_EDGE_FALLING
+
+#define TIMER_EDGE_RISING_STR	"rising"
+#define TIMER_EDGE_FALLING_STR	"falling"
 
 TimerConfig* get_timer_config(int channel)
 {
@@ -44,10 +55,12 @@ void set_default_timer_config(TimerConfig tim_cfg[])
         for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; ++i) {
                 TimerConfig *tc = tim_cfg + i;
                 set_default_channel_config(&tc->cfg);
-                tc->filterAlpha = 1.0;
+                tc->filterAlpha = TIMER_DEFAULT_FILTER_ALPHA;
                 tc->mode = MODE_LOGGING_TIMER_RPM;
-                tc->pulsePerRevolution = 1;
+                tc->pulsePerRevolution = TIMER_DEFAULT_PULSE_PER_REV;
                 tc->timerSpeed = TIMER_MEDIUM;
+                tc->filter_period_us = TIMER_DEFAULT_FILTER;
+                tc->edge = TIMER_DEFAULT_EDGE;
         }
 
         /* Make Channel 1 the default RPM config. */
@@ -56,4 +69,27 @@ void set_default_timer_config(TimerConfig tim_cfg[])
         strcpy(t0cc->units, RPM_CHAN_UNITS);
         t0cc->min = RPM_CHAN_MIN;
         t0cc->max = RPM_CHAN_MAX;
+}
+
+enum timer_edge get_timer_edge_enum(const char *val)
+{
+        if (!strcmp(val, TIMER_EDGE_RISING_STR)) {
+                return TIMER_EDGE_RISING;
+        } else if (!strcmp(val, TIMER_EDGE_FALLING_STR)) {
+                return TIMER_EDGE_FALLING;
+        } else {
+                return TIMER_DEFAULT_EDGE;
+        }
+}
+
+const char* get_timer_edge_api_key(const enum timer_edge e)
+{
+        switch(e) {
+        case TIMER_EDGE_RISING:
+                return TIMER_EDGE_RISING_STR;
+        case TIMER_EDGE_FALLING:
+                return TIMER_EDGE_FALLING_STR;
+        default:
+                return unknown_api_key();
+        }
 }

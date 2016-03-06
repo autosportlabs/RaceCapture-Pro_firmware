@@ -27,20 +27,22 @@
 
 CPP_GUARD_BEGIN
 
-#define MODE_LOGGING_TIMER_RPM		        0
-#define MODE_LOGGING_TIMER_FREQUENCY		1
-#define MODE_LOGGING_TIMER_PERIOD_MS		2
-#define MODE_LOGGING_TIMER_PERIOD_USEC		3
-
+#define MODE_LOGGING_TIMER_RPM		0
+#define MODE_LOGGING_TIMER_FREQUENCY	1
+#define MODE_LOGGING_TIMER_PERIOD_MS	2
+#define MODE_LOGGING_TIMER_PERIOD_USEC	3
 
 #define TIMER_SLOW	0
 #define TIMER_MEDIUM	1
 #define TIMER_FAST	2
 
-#define DEFAULT_TIMER_FILTER_ALPHA (1.0f)
-#define DEFAULT_TIMER_PPR 1
-#define DEFAULT_TIMER_DIVIDER TIMER_MEDIUM
-#define DEFAULT_TIMER_SCALING 375428
+#define TIMER_FILTER_VALUE_AUTO	-1
+#define TIMER_FILTER_VALUE_DISABLED	0
+
+enum timer_edge {
+        TIMER_EDGE_RISING,
+        TIMER_EDGE_FALLING,
+};
 
 typedef struct _TimerConfig {
         ChannelConfig cfg;
@@ -48,10 +50,14 @@ typedef struct _TimerConfig {
         unsigned char mode;
         unsigned char pulsePerRevolution;
         unsigned short timerSpeed;
+        int filter_period_us;
+        enum timer_edge edge;
 } TimerConfig;
 
 TimerConfig* get_timer_config(int channel);
 void set_default_timer_config(TimerConfig cfg[]);
+enum timer_edge get_timer_edge_enum(const char *val);
+const char* get_timer_edge_api_key(const enum timer_edge e);
 
 CPP_GUARD_END
 

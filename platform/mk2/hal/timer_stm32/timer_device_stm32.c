@@ -26,6 +26,7 @@
 #include "stm32f4xx_misc.h"
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_tim.h"
+#include "timer_config.h"
 #include "timer_device.h"
 
 #include <stdbool.h>
@@ -40,7 +41,6 @@
 #define TIMER_IRQ_PRIORITY 	4
 #define TIMER_IRQ_SUB_PRIORITY 	0
 #define TIMER_PERIOD		0xFFFF
-#define TIMER_POLARITY		TIM_ICPolarity_Falling
 
 static struct state {
         uint16_t period;
@@ -50,8 +50,20 @@ static struct state {
 
 static struct config {
         uint16_t prescaler;
-        uint16_t q_period_us;
+        uint32_t q_period_us;
+        enum timer_edge edge;
 } g_config[MK2_TIMER_CHANNELS];
+
+static uint16_t get_polarity(const enum timer_edge edge)
+{
+        switch(edge) {
+        case TIMER_EDGE_RISING:
+                return TIM_ICPolarity_Rising;
+        case TIMER_EDGE_FALLING:
+        default:
+                return TIM_ICPolarity_Falling;
+        }
+}
 
 /*
  * Logical to hardware mappings for RCP MK2
@@ -107,7 +119,7 @@ static void init_timer_0(struct config *cfg)
 
     TIM_ICInitTypeDef TIM_ICInitStructure;
     TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
-    TIM_ICInitStructure.TIM_ICPolarity = TIMER_POLARITY;
+    TIM_ICInitStructure.TIM_ICPolarity = get_polarity(cfg->edge);
     TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
     TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
     TIM_ICInitStructure.TIM_ICFilter = INPUT_CAPTURE_FILTER;
@@ -160,7 +172,7 @@ static void init_timer_1(struct config *cfg)
 
     TIM_ICInitTypeDef TIM_ICInitStructure;
     TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
-    TIM_ICInitStructure.TIM_ICPolarity = TIMER_POLARITY;
+    TIM_ICInitStructure.TIM_ICPolarity = get_polarity(cfg->edge);
     TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
     TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
     TIM_ICInitStructure.TIM_ICFilter = INPUT_CAPTURE_FILTER;
@@ -219,7 +231,7 @@ static void init_timer_2(struct config *cfg)
 
     TIM_ICInitTypeDef TIM_ICInitStructure;
     TIM_ICInitStructure.TIM_Channel = TIM_Channel_4;
-    TIM_ICInitStructure.TIM_ICPolarity = TIMER_POLARITY;
+    TIM_ICInitStructure.TIM_ICPolarity = get_polarity(cfg->edge);
     TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
     TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
     TIM_ICInitStructure.TIM_ICFilter = INPUT_CAPTURE_FILTER;
@@ -293,7 +305,8 @@ void reset_device_state(const size_t chan)
 }
 
 bool timer_device_init(const size_t chan, const uint32_t speed,
-                       const uint16_t quiet_period_us)
+                       const uint16_t quiet_period_us,
+                       const enum timer_edge edge)
 {
         if (chan >= MK2_TIMER_CHANNELS)
                 return false;
@@ -301,6 +314,7 @@ bool timer_device_init(const size_t chan, const uint32_t speed,
         struct config *c = &g_config[chan];
         c->prescaler = speed_to_prescaler(chan, speed);
         c->q_period_us = quiet_period_us;
+        c->edge = edge;
 
         reset_device_state(chan);
 

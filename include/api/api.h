@@ -72,6 +72,8 @@ void json_sendResult(Serial *serial, const char *messageName, int resultCode);
 
 int process_api(Serial *serial, char * buffer, size_t bufferSize);
 
+const char* unknown_api_key();
+
 CPP_GUARD_END
 
 #endif /* API_H_ */

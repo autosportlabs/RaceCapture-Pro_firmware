@@ -27,7 +27,8 @@
 
 /* Adds 25% to the max RPM value */
 #define MAX_RPM_MULT	1.25
-#define SEC_IN_A_MIN	60
+#define SEC_IN_A_MIN	60.0
+#define SEC_IN_A_SEC	1.0
 #define US_IN_A_SEC	1000000
 
 static Filter g_timer_filter[CONFIG_TIMER_CHANNELS];
@@ -39,26 +40,36 @@ static Filter g_timer_filter[CONFIG_TIMER_CHANNELS];
  * take the inverse of that and multiply it by the number of micro seconds
  * in a second.
  */
-static uint16_t get_timer_quiet_period(const TimerConfig *tc)
+static unsigned int get_timer_auto_quiet_period(const TimerConfig *tc,
+                                                const float period)
 {
         const float max_rpm = tc->cfg.max;
         const float ppr = (float) tc->pulsePerRevolution;
-        const float max_hz = max_rpm * ppr * MAX_RPM_MULT / SEC_IN_A_MIN;
+        const float max_hz = max_rpm * ppr * MAX_RPM_MULT / period;
 
         return max_hz ? US_IN_A_SEC / max_hz : 0;
+}
+
+static unsigned int get_timer_quiet_period(const TimerConfig *tc)
+{
+        if (tc->filter_period_us >= 0)
+                return (unsigned int) tc->filter_period_us;
+
+        switch(tc->mode) {
+        case MODE_LOGGING_TIMER_RPM:
+                return get_timer_auto_quiet_period(tc, SEC_IN_A_MIN);
+        default:
+                return get_timer_auto_quiet_period(tc, SEC_IN_A_SEC);
+        }
 }
 
 int timer_init(LoggerConfig *loggerConfig)
 {
         for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; i++) {
                 TimerConfig *tc = &loggerConfig->TimerConfigs[i];
+                const int qp_us = get_timer_quiet_period(tc);
 
-                uint16_t qp_us = 0;
-                /* Only use filtering when in RPM mode */
-                if (MODE_LOGGING_TIMER_RPM == tc->mode)
-                        qp_us = get_timer_quiet_period(tc);
-
-                timer_device_init(i, tc->timerSpeed, qp_us);
+                timer_device_init(i, tc->timerSpeed, qp_us, tc->edge);
                 init_filter(&g_timer_filter[i], tc->filterAlpha);
         }
 

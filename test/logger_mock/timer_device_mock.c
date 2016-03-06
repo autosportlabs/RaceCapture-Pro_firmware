@@ -20,6 +20,7 @@
  */
 
 #include "capabilities.h"
+#include "timer_config.h"
 #include "timer_device.h"
 
 #include <stdbool.h>
@@ -27,9 +28,10 @@
 static int g_timer[TIMER_CHANNELS];
 
 bool timer_device_init(const size_t channel, const uint32_t speed,
-                       const uint16_t quiet_period_us)
+                       const uint16_t quiet_period_us,
+                       const enum timer_edge edge)
 {
-        return 1;
+        return true;
 }
 
 unsigned int timer_device_get_period(size_t channel)

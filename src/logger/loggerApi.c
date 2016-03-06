@@ -1098,15 +1098,19 @@ static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok,
 {
     TimerConfig *timerCfg = (TimerConfig *)cfg;
 
-    if (NAME_EQU("mode", name))
+    if (!strcmp("mode", name))
         timerCfg->mode = filterTimerMode(modp_atoi(value));
-    if (NAME_EQU("alpha", name))
+    if (!strcmp("alpha", name))
         timerCfg->filterAlpha = modp_atof(value);
-    if (NAME_EQU("ppr", name))
+    if (!strcmp("ppr", name))
         timerCfg->pulsePerRevolution =
                 filterPulsePerRevolution(modp_atoi(value));
-    if (NAME_EQU("speed", name))
+    if (!strcmp("speed", name))
         timerCfg->timerSpeed = filterTimerDivider(modp_atoi(value));
+    if (!strcmp("filter_period", name))
+            timerCfg->filter_period_us = modp_atoi(value);
+    if (!strcmp("edge", name))
+            timerCfg->edge = get_timer_edge_enum(value);
 
     return valueTok + 1;
 }
@@ -1124,7 +1128,9 @@ static void sendTimerConfig(Serial *serial, size_t startIndex, size_t endIndex)
         json_uint(serial, "mode", cfg->mode, 1);
         json_float(serial, "alpha", cfg->filterAlpha, FILTER_ALPHA_PRECISION, 1);
         json_uint(serial, "ppr", cfg->pulsePerRevolution, 1);
-        json_uint(serial, "speed", cfg->timerSpeed, 0);
+        json_uint(serial, "speed", cfg->timerSpeed, 1);
+        json_int(serial, "filter_period", cfg->filter_period_us, 1);
+        json_string(serial, "edge", get_timer_edge_api_key(cfg->edge), 0);
         json_objEnd(serial, i != endIndex);
     }
     json_objEnd(serial, 0);

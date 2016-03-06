@@ -691,6 +691,8 @@ void LoggerApiTest::testSetTimerConfigFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(0.5F, timerCfg->filterAlpha);
 	CPPUNIT_ASSERT_EQUAL(4, (int)timerCfg->pulsePerRevolution);
 	CPPUNIT_ASSERT_EQUAL(2, (int)timerCfg->timerSpeed);
+        CPPUNIT_ASSERT_EQUAL(-2, (int)timerCfg->filter_period_us);
+        CPPUNIT_ASSERT_EQUAL(TIMER_EDGE_RISING, timerCfg->edge);
 
 	char *txBuffer = mock_getTxBuffer();
 	assertGenericResponse(txBuffer, "setTimerCfg", API_SUCCESS);
