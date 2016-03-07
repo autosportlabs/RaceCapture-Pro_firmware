@@ -48,7 +48,7 @@ static struct ring_buff file_buff;
 
 static void error_led(const bool on)
 {
-        on ? led_enable(3) : led_disable(3);
+        led_set(LED_ERROR, on);
 }
 
 static FRESULT flush_file_buffer(void)

@@ -184,6 +184,7 @@ $(RCP_SRC)/util/linear_interpolate.c \
 $(RCP_SRC)/util/mod_string.c \
 $(RCP_SRC)/util/modp_atonum.c \
 $(RCP_SRC)/util/modp_numtoa.c \
+$(RCP_SRC)/util/panic.c \
 $(RCP_SRC)/util/ring_buffer.c \
 $(RCP_SRC)/util/taskUtil.c \
 $(RCP_SRC)/virtual_channel/virtual_channel.c \

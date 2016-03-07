@@ -111,6 +111,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/util/FreeRTOS-openocd.c \
 			$(RCP_SRC)/util/modp_atonum.c \
 			$(RCP_SRC)/util/modp_numtoa.c \
+			$(RCP_SRC)/util/panic.c \
 			$(RCP_SRC)/util/byteswap.c \
 			$(RCP_SRC)/util/taskUtil.c \
 			$(RCP_SRC)/sdcard/sdcard.c \
