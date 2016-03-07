@@ -1,9 +1,9 @@
 /*
- * Race Capture Pro Firmware
+ * Race Capture Firmware
  *
- * Copyright (C) 2015 Autosport Labs
+ * Copyright (C) 2016 Autosport Labs
  *
- * This file is part of the Race Capture Pro fimrware suite
+ * This file is part of the Race Capture firmware suite
  *
  * This is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
  * have received a copy of the GNU General Public License along with
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 #include "FreeRTOS.h"
 #include "led.h"
@@ -254,8 +253,7 @@ void loggerTaskEx(void *params)
 #endif
 
                 /* send the sample on to the telemetry task(s) */
-                if (sampledRate >= telemetrySampleRate ||
-                    currentTicks % telemetrySampleRate == 0)
+                if (!isHigherSampleRate(sampledRate, telemetrySampleRate))
                         queueTelemetryRecord(&msg);
 
                 ++bufferIndex;
