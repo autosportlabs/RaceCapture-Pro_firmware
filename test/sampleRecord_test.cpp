@@ -221,7 +221,7 @@ void SampleRecordTest::testInitSampleRecord()
 
                 CPPUNIT_ASSERT_EQUAL((size_t)i, ts->channelIndex);
                 CPPUNIT_ASSERT_EQUAL((void *) &tc->cfg, (void *) ts->cfg);
-                CPPUNIT_ASSERT_EQUAL((void *) get_timer_sample,
+                CPPUNIT_ASSERT_EQUAL((void *) timer_get_sample,
                                      (void *) ts->get_float_sample);
                 CPPUNIT_ASSERT_EQUAL(SampleData_Float, ts->sampleData);
                 ts++;

@@ -251,7 +251,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     for (int i=0; i < CONFIG_TIMER_CHANNELS; i++) {
         TimerConfig *config = &(loggerConfig->TimerConfigs[i]);
         chanCfg = &(config->cfg);
-        sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_timer_sample);
+        sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, timer_get_sample);
     }
 #endif
 

@@ -40,8 +40,8 @@ static Filter g_timer_filter[CONFIG_TIMER_CHANNELS];
  * take the inverse of that and multiply it by the number of micro seconds
  * in a second.
  */
-static unsigned int get_timer_auto_quiet_period(const TimerConfig *tc,
-                                                const float period)
+static unsigned int calc_quiet_period(const TimerConfig *tc,
+                                      const float period)
 {
         const float max_rpm = tc->cfg.max;
         const float ppr = (float) tc->pulsePerRevolution;
@@ -50,16 +50,16 @@ static unsigned int get_timer_auto_quiet_period(const TimerConfig *tc,
         return max_hz ? US_IN_A_SEC / max_hz : 0;
 }
 
-static unsigned int get_timer_quiet_period(const TimerConfig *tc)
+static unsigned int get_quiet_period(const TimerConfig *tc)
 {
         if (tc->filter_period_us >= 0)
                 return (unsigned int) tc->filter_period_us;
 
         switch(tc->mode) {
         case MODE_LOGGING_TIMER_RPM:
-                return get_timer_auto_quiet_period(tc, SEC_IN_A_MIN);
+                return calc_quiet_period(tc, SEC_IN_A_MIN);
         default:
-                return get_timer_auto_quiet_period(tc, SEC_IN_A_SEC);
+                return calc_quiet_period(tc, SEC_IN_A_SEC);
         }
 }
 
@@ -67,7 +67,7 @@ int timer_init(LoggerConfig *loggerConfig)
 {
         for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; i++) {
                 TimerConfig *tc = &loggerConfig->TimerConfigs[i];
-                const int qp_us = get_timer_quiet_period(tc);
+                const int qp_us = get_quiet_period(tc);
 
                 timer_device_init(i, tc->timerSpeed, qp_us, tc->edge);
                 init_filter(&g_timer_filter[i], tc->filterAlpha);
@@ -115,7 +115,7 @@ void timer_reset_count(size_t channel)
     timer_device_reset_count(channel);
 }
 
-float get_timer_sample(const int cid)
+float timer_get_sample(const int cid)
 {
         if (cid >= TIMER_CHANNELS)
                 return -1;
