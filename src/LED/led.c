@@ -25,17 +25,19 @@
 #include "led_device.h"
 
 /*
- * LED names are the same strings as the enums in code.
+ * LED names are the same strings as the enums in code.  These are the
+ * names used by certain APIs to refer to the LEDs.  DO NOT CHANGE
+ * THEM.
  */
-#define LED_NAME_ENTRY(a)	{#a, a}
+#define LED_NAME_ENTRY(str, enm)	{.name = str, .led = enm}
 static struct led_names {
         const char *name;
         const enum led led;
 } led_names[] = {
-        LED_NAME_ENTRY(LED_ERROR),
-        LED_NAME_ENTRY(LED_LOGGER),
-        LED_NAME_ENTRY(LED_GPS),
-        LED_NAME_ENTRY(LED_TELEMETRY),
+        LED_NAME_ENTRY("error", LED_ERROR),
+        LED_NAME_ENTRY("logger", LED_LOGGER),
+        LED_NAME_ENTRY("gps", LED_GPS),
+        LED_NAME_ENTRY("telemetry", LED_TELEMETRY),
 };
 
 bool led_init(void)
