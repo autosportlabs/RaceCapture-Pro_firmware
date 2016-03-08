@@ -65,7 +65,7 @@ static bool led_set_level(struct led_data *ld, const bool on)
 
 bool led_device_set_index(const size_t i, const bool on)
 {
-        return i < ARRAY_LEN(leds) ? led_set_level(leds + i, on) : NULL;
+        return i < ARRAY_LEN(leds) ? led_set_level(leds + i, on) : false;
 }
 
 struct led_data* find_led_data(const enum led l)
