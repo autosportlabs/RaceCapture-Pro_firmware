@@ -23,7 +23,7 @@
 #include "CAN.h"
 #include "FreeRTOS.h"
 #include "GPIO.h"
-#include "LED.h"
+#include "led.h"
 #include "OBD2.h"
 #include "PWM.h"
 #include "channel_config.h"
@@ -62,7 +62,7 @@
 
 char g_tempBuffer[TEMP_BUFFER_LEN];
 static int lua_get_virtual_channel(lua_State *ls);
-
+static int lua_set_led(lua_State *ls);
 
 static int lua_get_uptime(lua_State *L)
 {
@@ -151,7 +151,7 @@ void registerLuaLoggerBindings(lua_State *L)
     lua_registerlight(L,"stopLogging",Lua_StopLogging);
     lua_registerlight(L,"isLogging" , Lua_IsLogging);
 
-    lua_registerlight(L,"setLed",Lua_SetLED);
+    lua_registerlight(L,"setLed", lua_set_led);
 
     //Serial API
     lua_registerlight(L,"initSer", Lua_InitSerial);
@@ -769,18 +769,32 @@ int Lua_IsLogging(lua_State *L)
     return 1;
 }
 
-int Lua_SetLED(lua_State *L)
+static int lua_set_led(lua_State *ls)
 {
-    if (lua_gettop(L) >= 2) {
-        unsigned int LED = lua_tointeger(L,1);
-        unsigned int state = lua_tointeger(L,2);
-        if (state) {
-            LED_enable(LED);
+        if (lua_gettop(ls) != 2)
+                return incorrect_arguments(ls);
+
+        const bool is_num = lua_isnumber(ls, 1);
+        const bool is_str = lua_isstring(ls, 1);
+        if (!is_num && !is_str)
+                return luaL_error(ls, "This method only accepts LED names "
+                                  "or LED IDs");
+
+        /*
+         * Numbers can be passed in as 123 or "123" in lua.  So handle
+         * that case first
+         */
+        const bool on = lua_toboolean(ls, 2);
+        bool res;
+        if (is_num) {
+                res = led_set_index(lua_tointeger(ls, 1), on);
         } else {
-            LED_disable(LED);
+                const enum led led = get_led_enum(lua_tostring(ls, 1));
+                res = led_set(led, on);
         }
-    }
-    return 0;
+
+        lua_pushboolean(ls, res);
+        return 1;
 }
 
 

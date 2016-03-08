@@ -19,7 +19,7 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "LED.h"
+#include "led.h"
 #include "fileWriter.h"
 #include "loggerHardware.h"
 #include "mem_mang.h"
@@ -48,7 +48,7 @@ static struct ring_buff file_buff;
 
 static void error_led(const bool on)
 {
-        on ? LED_enable(3) : LED_disable(3);
+        led_set(LED_ERROR, on);
 }
 
 static FRESULT flush_file_buffer(void)
@@ -257,12 +257,12 @@ static void close_log_file(struct logging_status *ls)
 
 static void logging_led_toggle(void)
 {
-        LED_toggle(2);
+        led_toggle(LED_LOGGER);
 }
 
 static void logging_led_off(void)
 {
-        LED_disable(2);
+        led_disable(LED_LOGGER);
 }
 
 static void open_log_file(struct logging_status *ls)

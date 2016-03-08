@@ -19,26 +19,21 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef LED_DEVICE_H_
+#define LED_DEVICE_H_
 
-#include "LED.h"
-#include "LED_device.h"
+#include "cpp_guard.h"
+#include "led.h"
 
-int LED_init(void)
-{
-    return LED_device_init();
-}
+#include <stdbool.h>
 
-void LED_enable(unsigned int Led)
-{
-    LED_device_enable(Led);
-}
+CPP_GUARD_BEGIN
 
-void LED_disable(unsigned int Led)
-{
-    LED_device_disable(Led);
-}
+bool led_device_init(void);
+bool led_device_set_index(const size_t i, const bool on);
+bool led_device_set(const enum led l, bool on);
+bool led_device_toggle(const enum led l);
 
-void LED_toggle(unsigned int Led)
-{
-    LED_device_toggle(Led);
-}
+CPP_GUARD_END
+
+#endif /* LED_DEVICE_H_ */

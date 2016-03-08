@@ -20,7 +20,7 @@
  */
 
 #include "FreeRTOS.h"
-#include "LED.h"
+#include "led.h"
 #include "capabilities.h"
 #include "connectivityTask.h"
 #include "fileWriter.h"
@@ -93,14 +93,14 @@ void stopLogging()
 static void logging_started()
 {
     logging_set_logging_start(getUptimeAsInt());
-    LED_disable(3);
+    led_disable(LED_LOGGER);
     pr_info("Logging started\r\n");
 }
 
 static void logging_stopped()
 {
     logging_set_logging_start(0);
-    LED_disable(2);
+    led_disable(LED_LOGGER);
     pr_info("Logging stopped\r\n");
 }
 
@@ -177,7 +177,7 @@ void loggerTaskEx(void *params)
                         buffer_size = init_sample_ring_buffer(loggerConfig);
                         if (!buffer_size) {
                                 pr_error("Failed to allocate any buffers!\r\n");
-                                LED_enable(3);
+                                led_enable(LED_ERROR);
 
                                 /*
                                  * Do this to ensure the log message gets out
@@ -187,7 +187,7 @@ void loggerTaskEx(void *params)
                                 continue;
                         }
 
-                        LED_disable(3);
+                        led_disable(LED_ERROR);
 
                         updateSampleRates(loggerConfig, &loggingSampleRate,
                                           &telemetrySampleRate,

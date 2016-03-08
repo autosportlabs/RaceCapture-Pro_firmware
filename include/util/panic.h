@@ -19,18 +19,22 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LED_DEVICE_H_
-#define LED_DEVICE_H_
+#ifndef _PANIC_H_
+#define _PANIC_H_
 
 #include "cpp_guard.h"
 
 CPP_GUARD_BEGIN
 
-int LED_device_init(void);
-void LED_device_enable(unsigned int Led);
-void LED_device_disable(unsigned int Led);
-void LED_device_toggle(unsigned int Led);
+enum panic_cause {
+        PANIC_CAUSE_HARDWARE  = 1,
+        PANIC_CAUSE_SCHEDULER = 2,
+        PANIC_CAUSE_OVERFLOW  = 3,
+        PANIC_CAUSE_MALLOC    = 4,
+};
+
+void panic(const enum panic_cause cause);
 
 CPP_GUARD_END
 
-#endif /* LED_DEVICE_H_ */
+#endif /* _PANIC_H_ */
