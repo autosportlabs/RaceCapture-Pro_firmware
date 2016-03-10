@@ -23,6 +23,7 @@
 #include "array_utils.h"
 #include "at.h"
 #include "cpp_guard.h"
+#include "macros.h"
 #include "serial.h"
 #include "serial_buffer.h"
 
@@ -260,18 +261,18 @@ void AtTest::test_at_begin_urc_msg()
 
 void AtTest::test_at_process_msg_generic()
 {
-        const char *msg = "FOOOOOO";
+        char msg[] = "FOOOOOO";
         const enum at_rx_state state = AT_RX_STATE_URC;
         _process_msg_generic(&g_ati, state, msg);
 
         CPPUNIT_ASSERT_EQUAL(state, g_ati.rx_state);
-        CPPUNIT_ASSERT_EQUAL(msg, g_ati.rsp.msgs[0]);
+        CPPUNIT_ASSERT_EQUAL((char*) msg, g_ati.rsp.msgs[0]);
         CPPUNIT_ASSERT_EQUAL((size_t) 1, g_ati.rsp.msg_count);
 }
 
 void AtTest::test_at_process_msg_generic_too_many()
 {
-        const char *msg = "FOOOOOO";
+        char msg[] = "FOOOOOO";
         const enum at_rx_state state = AT_RX_STATE_URC;
         for(size_t i = 0; i < AT_RSP_MAX_MSGS; ++i)
                 CPPUNIT_ASSERT(_process_msg_generic(&g_ati, state, msg));
@@ -492,4 +493,71 @@ void AtTest::test_at_ok()
 
         rsp.status = AT_RSP_STATUS_OK;
         CPPUNIT_ASSERT(at_ok(&rsp));
+}
+
+void AtTest::test_at_parse_rsp_line()
+{
+        char *bkts[6] = {};
+
+        char rsp1[] = "+CWJAP:\"madworks\",\"2a:a4:3c:6d:46:37\",6,-53";
+        const size_t cnt1 = at_parse_rsp_line(rsp1, bkts, 6);
+
+        // printf("[ %s | %s | %s | %s | %s | %s ]\n", bkts[0], bkts[1], bkts[2],
+        //        bkts[3], bkts[4], bkts[5]);
+
+        CPPUNIT_ASSERT_EQUAL((size_t) 5, cnt1);
+        CPPUNIT_ASSERT(!strcmp("+CWJAP", bkts[0]));
+        CPPUNIT_ASSERT(!strcmp("\"madworks\"", bkts[1]));
+        CPPUNIT_ASSERT(!strcmp("\"2a:a4:3c:6d:46:37\"", bkts[2]));
+        CPPUNIT_ASSERT(!strcmp("6", bkts[3]));
+        CPPUNIT_ASSERT(!strcmp("-53", bkts[4]));
+
+        memset(bkts, 0, ARRAY_LEN(bkts));
+        char rsp2[] = "+CWJAP:\"mad\\\"works\",,\"2a:a4:3c:6d:46:37\",6,-53";
+        const size_t cnt2 = at_parse_rsp_line(rsp2, bkts, 6);
+
+        // printf("[ %s | %s | %s | %s | %s | %s ]\n", bkts[0], bkts[1], bkts[2],
+        //        bkts[3], bkts[4], bkts[5]);
+
+        CPPUNIT_ASSERT_EQUAL((size_t) 6, cnt2);
+        CPPUNIT_ASSERT(!strcmp("+CWJAP", bkts[0]));
+        CPPUNIT_ASSERT(!strcmp("\"mad\\\"works\"", bkts[1]));
+        CPPUNIT_ASSERT(!strcmp("", bkts[2]));
+        CPPUNIT_ASSERT(!strcmp("\"2a:a4:3c:6d:46:37\"", bkts[3]));
+        CPPUNIT_ASSERT(!strcmp("6", bkts[4]));
+        CPPUNIT_ASSERT(!strcmp("-53", bkts[5]));
+
+        char rsp3[] = "+CWMODE:2";
+        const size_t cnt3 = at_parse_rsp_line(rsp3, bkts, 6);
+        CPPUNIT_ASSERT_EQUAL((size_t) 2, cnt3);
+        CPPUNIT_ASSERT(!strcmp("+CWMODE", bkts[0]));
+        CPPUNIT_ASSERT(!strcmp("2", bkts[1]));
+
+        CPPUNIT_ASSERT_EQUAL((size_t) 0, at_parse_rsp_line(NULL, bkts, 6));
+        CPPUNIT_ASSERT_EQUAL((size_t) 0, at_parse_rsp_line(rsp3, NULL, 6));
+        CPPUNIT_ASSERT_EQUAL((size_t) 0, at_parse_rsp_line(rsp3, bkts, 0));
+}
+
+void AtTest::test_at_parse_rsp_str()
+{
+        char str1[] = "\"madworks\"";
+        char *rsp1 = at_parse_rsp_str(str1);
+        CPPUNIT_ASSERT_EQUAL(str1 + 1, rsp1);
+        CPPUNIT_ASSERT(!strcmp("madworks", rsp1));
+
+        char str2[] = "\"mad\\\"works\"";
+        char *rsp2 = at_parse_rsp_str(str2);
+        CPPUNIT_ASSERT_EQUAL(str2 + 1, rsp2);
+        CPPUNIT_ASSERT(!strcmp("mad\\\"works", rsp2));
+
+        char str3[] = "\"mad\\\"works";
+        CPPUNIT_ASSERT(NULL == at_parse_rsp_str(str3));
+
+        char str4[] = "madworks";
+        CPPUNIT_ASSERT(NULL == at_parse_rsp_str(str4));
+
+        char str5[] = "(\"foo\"bar\"baz\")";
+        char *rsp5 = at_parse_rsp_str(str5);
+        CPPUNIT_ASSERT_EQUAL(str5 + 2, rsp5);
+        CPPUNIT_ASSERT(!strcmp("foo", rsp5));
 }

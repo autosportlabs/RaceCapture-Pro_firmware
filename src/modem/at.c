@@ -175,7 +175,7 @@ static bool is_rsp_status(enum at_rsp_status *status, const char *msg)
 
 static bool _process_msg_generic(struct at_info *ati,
                                  const enum at_rx_state state,
-                                 const char *msg)
+                                 char *msg)
 {
         if (AT_RSP_MAX_MSGS <= ati->rsp.msg_count) {
                 pr_error("[at] BUG: Received more messages than can "
@@ -476,4 +476,109 @@ bool at_configure_device(struct at_info *ati, const tiny_millis_t qp_ms,
 bool at_ok(struct at_rsp *rsp)
 {
         return rsp && AT_RSP_STATUS_OK == rsp->status;
+}
+
+/**
+ * Breaks up an AT response line into the individual components, including the
+ * leading response tag.  This allows us to more easily parse and validate the
+ * messages.
+ * @param rsp The AT response line to be parsed.  Note it will get modified.
+ * @param bkts An array of char pointers that act as the buckets for the AT msg
+ * tokens.  We put the start of each token in a bucket.
+ * @param num_bkts The number of buckets we have to work with.
+ * @return The number of buckets used.
+ */
+size_t at_parse_rsp_line(char *rsp, char *bkts[], const size_t num_bkts)
+{
+        if (!rsp || !bkts || !num_bkts)
+                return 0;
+
+        size_t idx = 0;
+        bool in_str = false;
+        bool str_esc = false;
+        bool is_new = true;
+
+        for (; *rsp && idx < num_bkts; ++rsp) {
+                if (str_esc) {
+                        /*
+                         * If here, we are in a string and last char was
+                         * an escape char.  So ignore it and move along.
+                         */
+                        str_esc = false;
+                        continue;
+                }
+
+                if (is_new) {
+                        is_new = false;
+                        bkts[idx++] = rsp;
+                }
+
+                switch(*rsp) {
+                case '\\':
+                        /* Ignore the next character if in a string */
+                        str_esc = in_str;
+                        break;
+                case '"':
+                        in_str = !in_str;
+                        break;
+                case ':':
+                case ',':
+                        /*
+                         * We have found a boundary (maybe).  If we are in a
+                         * string, ignore it.  Else parse it and move along.
+                         */
+                        if (in_str)
+                                break;
+
+                        *rsp = '\0';
+                        is_new = true;
+                        break;
+                default:
+                        break;
+                }
+        }
+
+        return idx;
+}
+
+/**
+ * This command will "parse" out a string in an AT command response.  Put
+ * another way, all strings seem to come back surrounded in quotes.  This
+ * logic ensures that we extract the string and respect any escape
+ * characters that might be in there.
+ * @param rsp the parsed message which should contain an AT string.
+ * @return A pointer to the string within the quotes, NULL if there was
+ * an error during parsing.
+ */
+char* at_parse_rsp_str(char *rsp)
+{
+        bool esc = false;
+        char *beg = NULL, *end = NULL;
+
+        for (; *rsp; ++rsp) {
+                if (esc) {
+                        esc = false;
+                        continue;
+                }
+
+                switch(*rsp) {
+                case '"':
+                        if (!beg) {
+                                beg = rsp;
+                        } else if (!end) {
+                                end = rsp;
+                        }
+                        break;
+                case '\\':
+                        esc = beg != NULL && end == NULL;
+                        break;
+                }
+        }
+
+        /* At this point if it was successful, beg and end will be set */
+        if (!beg || !end)
+                return NULL;
+
+        *end = '\0';
+        return ++beg;
 }

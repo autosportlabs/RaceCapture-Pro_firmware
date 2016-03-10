@@ -65,7 +65,7 @@ struct at_rsp {
         enum at_rsp_status status;
         tiny_millis_t run_time;
         size_t msg_count;
-        const char *msgs[AT_RSP_MAX_MSGS];
+        char *msgs[AT_RSP_MAX_MSGS];
 };
 
 /* A command to send to our modem */
@@ -150,6 +150,10 @@ bool at_configure_device(struct at_info *ati, const tiny_millis_t qp_ms,
                          const char *delim);
 
 bool at_ok(struct at_rsp *rsp);
+
+size_t at_parse_rsp_line(char *rsp, char *bkts[], const size_t num_bkts);
+
+char* at_parse_rsp_str(char *rsp);
 
 CPP_GUARD_END
 

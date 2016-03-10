@@ -61,6 +61,8 @@ class AtTest : public CppUnit::TestFixture
         CPPUNIT_TEST( test_is_timed_out_ok );
         CPPUNIT_TEST( test_at_configure_device );
         CPPUNIT_TEST( test_at_ok );
+        CPPUNIT_TEST( test_at_parse_rsp_line );
+        CPPUNIT_TEST( test_at_parse_rsp_str );
 
         CPPUNIT_TEST_SUITE_END();
 
@@ -100,6 +102,8 @@ public:
         void test_is_timed_out_ok();
         void test_at_configure_device();
         void test_at_ok();
+        void test_at_parse_rsp_line();
+        void test_at_parse_rsp_str();
 };
 
 #endif /* _ATTEST_H_ */
