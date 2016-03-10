@@ -289,7 +289,9 @@ static uint16_t speed_to_prescaler(const size_t chan, const size_t speed)
          * knowing that our FAST clock is a whole number multiple of our
          * SLOW clock.
          */
-        return prescalar * get_clk_speed(chan) / TIMER_CLK_FREQ_SLOW_HZ;
+        uint16_t ps = prescalar * (get_clk_speed(chan) / TIMER_CLK_FREQ_SLOW_HZ);
+        pr_info_int_msg("[timer_device_stm32] Prescalar: ", ps);
+        return ps;
 }
 
 void reset_device_state(const size_t chan)
