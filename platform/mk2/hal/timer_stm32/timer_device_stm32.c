@@ -376,7 +376,8 @@ uint32_t timer_device_get_period(size_t chan)
 static void update_device_state(const size_t chan, const uint16_t p_ticks,
                                 const uint16_t h_ticks)
 {
-        if (chan >= MK2_TIMER_CHANNELS || 0 == p_ticks)
+        /* Ensure that we have some minimum sane number of ticks */
+        if (chan >= MK2_TIMER_CHANNELS || p_ticks <= 3)
                 return;
 
         struct state *s = &g_state[chan];
@@ -394,46 +395,48 @@ static void update_device_state(const size_t chan, const uint16_t p_ticks,
 
         /* If here, then past quiet period.  Update complete state */
         s->period = total_ticks;
-        s->duty_cycle = 100 * (uint32_t) h_ticks / total_ticks;
+        s->duty_cycle = 100 * (uint32_t) (h_ticks / total_ticks);
         s->q_period_ticks = 0;
 }
 
 /* Logical Timer 0 IRQ Handler */
 void TIM3_IRQHandler(void)
 {
-        /* Overflow interrupt */
-        if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) {
-                reset_device_state(0);
-                TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
-        }
-
+        /* Edge detected interrupt */
         if (TIM_GetITStatus(TIM3, TIM_IT_CC2) != RESET) {
                 const uint16_t p_ticks = TIM_GetCapture1(TIM3);
                 const uint16_t p_h_ticks = TIM_GetCapture2(TIM3);
                 update_device_state(0, p_ticks, p_h_ticks);
 
-                /* Clear Capture compare interrupt pending bit */
                 TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
         }
+
+        /* Overflow interrupt */
+        if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) {
+                reset_device_state(0);
+
+                TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
+        }
+
 }
 
 /* Logical Timer 1 IRQ Handler */
 void TIM1_BRK_TIM9_IRQHandler(void)
 {
-        if (TIM_GetITStatus(TIM9, TIM_IT_Update) != RESET) {
-                /* Overflow interrupt */
-                TIM_ClearITPendingBit(TIM9, TIM_IT_Update);
-
-                reset_device_state(1);
-        }
-
+        /* Edge detected interrupt */
         if (TIM_GetITStatus(TIM9, TIM_IT_CC2) != RESET) {
-                /* Clear Capture compare interrupt pending bit */
-                TIM_ClearITPendingBit(TIM9, TIM_IT_CC2);
-
                 const uint16_t p_ticks = TIM_GetCapture1(TIM9);
                 const uint16_t p_h_ticks = TIM_GetCapture2(TIM9);
                 update_device_state(1, p_ticks, p_h_ticks);
+
+                TIM_ClearITPendingBit(TIM9, TIM_IT_CC2);
+        }
+
+        /* Overflow interrupt */
+        if (TIM_GetITStatus(TIM9, TIM_IT_Update) != RESET) {
+                reset_device_state(1);
+
+                TIM_ClearITPendingBit(TIM9, TIM_IT_Update);
         }
 }
 
@@ -454,26 +457,25 @@ void TIM2_IRQHandler(void)
         static uint32_t last;
         static uint32_t cc4_irqs;
 
-        if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
-                /* Overflow interrupt */
-                TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
-
-                if (0 == cc4_irqs)
-                        reset_device_state(2);
-
-                cc4_irqs = 0;
-        }
-
         if (TIM_GetITStatus(TIM2, TIM_IT_CC4) != RESET) {
-                TIM_ClearITPendingBit(TIM2, TIM_IT_CC4);
                 const uint32_t current = TIM_GetCapture4(TIM2);
                 const uint16_t p_ticks = last < current ? current - last :
                         TIMER_PERIOD - last + current;
 
                 /* No duty cycle on timer 2 because of hardware bug */
                 update_device_state(2, p_ticks, 0);
-
                 last = current;
                 ++cc4_irqs;
+
+                TIM_ClearITPendingBit(TIM2, TIM_IT_CC4);
         }
+
+        if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
+                if (0 == cc4_irqs)
+                        reset_device_state(2);
+
+                cc4_irqs = 0;
+                TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+        }
+
 }
