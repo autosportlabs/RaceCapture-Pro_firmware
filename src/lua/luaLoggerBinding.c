@@ -249,7 +249,7 @@ static int luaToTimerValues(lua_State *L, uint8_t *pulsePerRevolution, size_t *c
     int result = 0;
     if (lua_gettop(L) >=  1) {
         size_t requestedChannel = lua_tointeger(L,1);
-        TimerConfig *c = getTimerConfigChannel(requestedChannel);
+        TimerConfig *c = get_timer_config(requestedChannel);
         if (NULL != c) {
             *pulsePerRevolution = c->pulsePerRevolution;
             *channel = requestedChannel;

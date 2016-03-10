@@ -181,6 +181,7 @@ $(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 $(RCP_SRC)/serial/serial_buffer.c \
 $(RCP_SRC)/serial/serial.c \
 $(RCP_SRC)/timer/timer.c \
+$(RCP_SRC)/timer/timer_config.c \
 $(RCP_SRC)/tracks/tracks.c \
 $(RCP_SRC)/usart/usart.c \
 $(RCP_SRC)/util/linear_interpolate.c \

@@ -20,6 +20,7 @@
  */
 
 #include "channel_config.h"
+#include "loggerConfig.h"
 #include "mod_string.h"
 
 /**
@@ -103,4 +104,10 @@ enum chan_cfg_status validate_channel_config(const ChannelConfig *cc)
                 return CHAN_CFG_STATUS_INVALID_FLAG;
 
         return CHAN_CFG_STATUS_OK;
+}
+
+void set_default_channel_config(ChannelConfig *cc)
+{
+        memset(cc, 0, sizeof(ChannelConfig));
+        cc->sampleRate = SAMPLE_DISABLED;
 }

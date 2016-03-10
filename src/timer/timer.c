@@ -21,34 +21,58 @@
 
 
 #include "timer.h"
+#include "timer_config.h"
 #include "timer_device.h"
 #include "filter.h"
+#include "printk.h"
 
-#define QUIET_PERIOD_US	4500
+/* Adds 25% to the max RPM value */
+#define MAX_RPM_MULT	1.25
+#define SEC_IN_A_MIN	60.0
+#define SEC_IN_A_SEC	1.0
+#define US_IN_A_SEC	1000000
 
 static Filter g_timer_filter[CONFIG_TIMER_CHANNELS];
 
-static uint16_t get_timer_quiet_period(const TimerConfig *tc)
+/**
+ * Calculates the highest quiet period usable based on the timer
+ * configurations.  We calculate this by figuring out the expected
+ * maximum HZ of the engine based in the info provided.  Then we simply
+ * take the inverse of that and multiply it by the number of micro seconds
+ * in a second.
+ */
+static uint32_t calc_quiet_period(const TimerConfig *tc,
+                                  const float period)
 {
-        /* Only use filtering when in RPM mode */
-        if (MODE_LOGGING_TIMER_RPM != tc->mode)
-                return 0;
+        const float max_rpm = tc->cfg.max;
+        const float ppr = (float) tc->pulsePerRevolution;
+        const float max_hz = max_rpm * ppr * MAX_RPM_MULT / period;
 
-        /*
-         * Software Filter Hack Represents 15K Max.  For release
-         * in 2.8.8.  Have to divide value by pulses per revolution
-         * since this must scale depending on the number of pulses
-         * per engine rotation.
-         */
-        return QUIET_PERIOD_US / tc->pulsePerRevolution;
+        const uint32_t res = max_hz ? US_IN_A_SEC / max_hz : 0;
+        pr_debug_int_msg("[timer] Calculated QP: ", res);
+        return res;
+}
+
+static uint32_t get_quiet_period(const TimerConfig *tc)
+{
+        if (tc->filter_period_us >= 0)
+                return (uint32_t) tc->filter_period_us;
+
+        switch(tc->mode) {
+        case MODE_LOGGING_TIMER_RPM:
+                return calc_quiet_period(tc, SEC_IN_A_MIN);
+        default:
+                return calc_quiet_period(tc, SEC_IN_A_SEC);
+        }
 }
 
 int timer_init(LoggerConfig *loggerConfig)
 {
         for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; i++) {
                 TimerConfig *tc = &loggerConfig->TimerConfigs[i];
-                const uint16_t qp_us = get_timer_quiet_period(tc);
-                timer_device_init(i, tc->timerSpeed, qp_us);
+                const uint32_t qp_us = get_quiet_period(tc);
+
+                timer_device_init(i, tc->timerSpeed, qp_us, tc->edge);
                 init_filter(&g_timer_filter[i], tc->filterAlpha);
         }
 
@@ -92,4 +116,25 @@ uint32_t timer_get_count(size_t channel)
 void timer_reset_count(size_t channel)
 {
     timer_device_reset_count(channel);
+}
+
+float timer_get_sample(const int cid)
+{
+        if (cid >= TIMER_CHANNELS)
+                return -1;
+
+        TimerConfig *c = getWorkingLoggerConfig()->TimerConfigs + cid;
+        unsigned char ppr = c->pulsePerRevolution;
+        switch (c->mode) {
+        case MODE_LOGGING_TIMER_RPM:
+                return timer_get_rpm(cid) / ppr;
+        case MODE_LOGGING_TIMER_FREQUENCY:
+                return timer_get_hz(cid) / ppr;
+        case MODE_LOGGING_TIMER_PERIOD_MS:
+                return timer_get_ms(cid) * ppr;
+        case MODE_LOGGING_TIMER_PERIOD_USEC:
+                return timer_get_usec(cid) * ppr;
+        default:
+                return -1;
+        }
 }

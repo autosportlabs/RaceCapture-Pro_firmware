@@ -26,9 +26,11 @@
 #include "stm32f4xx_misc.h"
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_tim.h"
+#include "timer_config.h"
 #include "timer_device.h"
 
 #include <stdbool.h>
+#include <string.h>
 
 #define INPUT_CAPTURE_FILTER 	0X0
 #define MK2_TIMER_CHANNELS	3
@@ -40,7 +42,6 @@
 #define TIMER_IRQ_PRIORITY 	4
 #define TIMER_IRQ_SUB_PRIORITY 	0
 #define TIMER_PERIOD		0xFFFF
-#define TIMER_POLARITY		TIM_ICPolarity_Falling
 
 static struct state {
         uint16_t period;
@@ -50,16 +51,27 @@ static struct state {
 
 static struct config {
         uint16_t prescaler;
-        uint16_t q_period_us;
+        uint32_t q_period_us;
+        enum timer_edge edge;
 } g_config[MK2_TIMER_CHANNELS];
+
+static uint16_t get_polarity(const enum timer_edge edge)
+{
+        switch(edge) {
+        case TIMER_EDGE_RISING:
+                return TIM_ICPolarity_Rising;
+        case TIMER_EDGE_FALLING:
+        default:
+                return TIM_ICPolarity_Falling;
+        }
+}
 
 /*
  * Logical to hardware mappings for RCP MK2
  *
  * TIMER 0 = PA6 / TIM13_CH1 / **TIM3_CH1** /
  * TIMER 1 = PA2 / TIM2_CH3(32bit) / **TIM9_CH1** / TIM5_CH3(32bit)
- * TIMER 2 = PA3 / **TIM5_CH4(32bit)** / TIM9_CH2 / TIM2_CH4(32bit)
- * TIMER 3 = PA7 / TIM8_CH1N / **TIM14_CH1** / TIM3_CH2 / TIM1_CH1N
+ * TIMER 2 = PA3 / TIM5_CH4(32bit) / TIM9_CH2 / **TIM2_CH4(32bit)**
  */
 
 static void set_local_uri_source(TIM_TypeDef *tim)
@@ -107,7 +119,7 @@ static void init_timer_0(struct config *cfg)
 
     TIM_ICInitTypeDef TIM_ICInitStructure;
     TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
-    TIM_ICInitStructure.TIM_ICPolarity = TIMER_POLARITY;
+    TIM_ICInitStructure.TIM_ICPolarity = get_polarity(cfg->edge);
     TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
     TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
     TIM_ICInitStructure.TIM_ICFilter = INPUT_CAPTURE_FILTER;
@@ -160,7 +172,7 @@ static void init_timer_1(struct config *cfg)
 
     TIM_ICInitTypeDef TIM_ICInitStructure;
     TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
-    TIM_ICInitStructure.TIM_ICPolarity = TIMER_POLARITY;
+    TIM_ICInitStructure.TIM_ICPolarity = get_polarity(cfg->edge);
     TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
     TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
     TIM_ICInitStructure.TIM_ICFilter = INPUT_CAPTURE_FILTER;
@@ -219,13 +231,13 @@ static void init_timer_2(struct config *cfg)
 
     TIM_ICInitTypeDef TIM_ICInitStructure;
     TIM_ICInitStructure.TIM_Channel = TIM_Channel_4;
-    TIM_ICInitStructure.TIM_ICPolarity = TIMER_POLARITY;
+    TIM_ICInitStructure.TIM_ICPolarity = get_polarity(cfg->edge);
     TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
     TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
     TIM_ICInitStructure.TIM_ICFilter = INPUT_CAPTURE_FILTER;
     TIM_ICInit(TIM2, &TIM_ICInitStructure);
 
-    set_local_uri_source(TIM3);
+    set_local_uri_source(TIM2);
     TIM_Cmd(TIM2, ENABLE);
 
     /* Enable the TIM1 global Interrupt */
@@ -277,7 +289,10 @@ static uint16_t speed_to_prescaler(const size_t chan, const size_t speed)
          * knowing that our FAST clock is a whole number multiple of our
          * SLOW clock.
          */
-        return prescalar * get_clk_speed(chan) / TIMER_CLK_FREQ_SLOW_HZ;
+        const uint16_t timer_mult = get_clk_speed(chan) / TIMER_CLK_FREQ_SLOW_HZ;
+        const uint16_t ps = prescalar * timer_mult;
+        pr_debug_int_msg("[timer_device_stm32] Prescalar: ", ps);
+        return ps;
 }
 
 void reset_device_state(const size_t chan)
@@ -285,15 +300,13 @@ void reset_device_state(const size_t chan)
         if (chan >= MK2_TIMER_CHANNELS)
                 return;
 
-        struct state *s = &g_state[chan];
-
-        s->period = 0;
-        s->duty_cycle = 0;
-        s->q_period_ticks = 0;
+        struct state *s = g_state + chan;
+        memset(s, 0, sizeof(struct state));
 }
 
 bool timer_device_init(const size_t chan, const uint32_t speed,
-                       const uint16_t quiet_period_us)
+                       const uint32_t quiet_period_us,
+                       const enum timer_edge edge)
 {
         if (chan >= MK2_TIMER_CHANNELS)
                 return false;
@@ -301,6 +314,7 @@ bool timer_device_init(const size_t chan, const uint32_t speed,
         struct config *c = &g_config[chan];
         c->prescaler = speed_to_prescaler(chan, speed);
         c->q_period_us = quiet_period_us;
+        c->edge = edge;
 
         reset_device_state(chan);
 
@@ -362,7 +376,8 @@ uint32_t timer_device_get_period(size_t chan)
 static void update_device_state(const size_t chan, const uint16_t p_ticks,
                                 const uint16_t h_ticks)
 {
-        if (chan >= MK2_TIMER_CHANNELS || 0 == p_ticks)
+        /* Ensure that we have some minimum sane number of ticks */
+        if (chan >= MK2_TIMER_CHANNELS || p_ticks <= 3)
                 return;
 
         struct state *s = &g_state[chan];
@@ -380,46 +395,48 @@ static void update_device_state(const size_t chan, const uint16_t p_ticks,
 
         /* If here, then past quiet period.  Update complete state */
         s->period = total_ticks;
-        s->duty_cycle = 100 * (uint32_t) h_ticks / total_ticks;
+        s->duty_cycle = 100 * (uint32_t) (h_ticks / total_ticks);
         s->q_period_ticks = 0;
 }
 
 /* Logical Timer 0 IRQ Handler */
 void TIM3_IRQHandler(void)
 {
-        /* Overflow interrupt */
-        if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) {
-                reset_device_state(0);
-                TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
-        }
-
+        /* Edge detected interrupt */
         if (TIM_GetITStatus(TIM3, TIM_IT_CC2) != RESET) {
                 const uint16_t p_ticks = TIM_GetCapture1(TIM3);
                 const uint16_t p_h_ticks = TIM_GetCapture2(TIM3);
                 update_device_state(0, p_ticks, p_h_ticks);
 
-                /* Clear Capture compare interrupt pending bit */
                 TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
         }
+
+        /* Overflow interrupt */
+        if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) {
+                reset_device_state(0);
+
+                TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
+        }
+
 }
 
 /* Logical Timer 1 IRQ Handler */
 void TIM1_BRK_TIM9_IRQHandler(void)
 {
-        if (TIM_GetITStatus(TIM9, TIM_IT_Update) != RESET) {
-                /* Overflow interrupt */
-                TIM_ClearITPendingBit(TIM9, TIM_IT_Update);
-
-                reset_device_state(1);
-        }
-
+        /* Edge detected interrupt */
         if (TIM_GetITStatus(TIM9, TIM_IT_CC2) != RESET) {
-                /* Clear Capture compare interrupt pending bit */
-                TIM_ClearITPendingBit(TIM9, TIM_IT_CC2);
-
                 const uint16_t p_ticks = TIM_GetCapture1(TIM9);
                 const uint16_t p_h_ticks = TIM_GetCapture2(TIM9);
                 update_device_state(1, p_ticks, p_h_ticks);
+
+                TIM_ClearITPendingBit(TIM9, TIM_IT_CC2);
+        }
+
+        /* Overflow interrupt */
+        if (TIM_GetITStatus(TIM9, TIM_IT_Update) != RESET) {
+                reset_device_state(1);
+
+                TIM_ClearITPendingBit(TIM9, TIM_IT_Update);
         }
 }
 
@@ -440,26 +457,25 @@ void TIM2_IRQHandler(void)
         static uint32_t last;
         static uint32_t cc4_irqs;
 
-        if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
-                /* Overflow interrupt */
-                TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
-
-                if (0 == cc4_irqs)
-                        reset_device_state(2);
-
-                cc4_irqs = 0;
-        }
-
         if (TIM_GetITStatus(TIM2, TIM_IT_CC4) != RESET) {
-                TIM_ClearITPendingBit(TIM2, TIM_IT_CC4);
                 const uint32_t current = TIM_GetCapture4(TIM2);
                 const uint16_t p_ticks = last < current ? current - last :
                         TIMER_PERIOD - last + current;
 
                 /* No duty cycle on timer 2 because of hardware bug */
                 update_device_state(2, p_ticks, 0);
-
                 last = current;
                 ++cc4_irqs;
+
+                TIM_ClearITPendingBit(TIM2, TIM_IT_CC4);
         }
+
+        if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
+                if (0 == cc4_irqs)
+                        reset_device_state(2);
+
+                cc4_irqs = 0;
+                TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+        }
+
 }

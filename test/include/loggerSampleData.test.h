@@ -28,7 +28,7 @@
 CPP_GUARD_BEGIN
 
 float get_analog_sample(int channelId);
-float get_timer_sample(int channelId);
+float timer_get_sample(int channelId);
 float get_pwm_sample(int channelId);
 float get_imu_sample(int channelId);
 

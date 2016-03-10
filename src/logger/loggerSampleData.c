@@ -175,34 +175,6 @@ float get_analog_sample(int channelId)
 }
 #endif
 
-#if TIMER_CHANNELS > 0
-float get_timer_sample(int channelId)
-{
-    LoggerConfig *loggerConfig = getWorkingLoggerConfig();
-    TimerConfig *c = &(loggerConfig->TimerConfigs[channelId]);
-    float timerValue = 0;
-    uint8_t pulsePerRevolution = c->pulsePerRevolution;
-    switch (c->mode) {
-    case MODE_LOGGING_TIMER_RPM:
-        timerValue = timer_get_rpm(channelId) / pulsePerRevolution;
-        break;
-    case MODE_LOGGING_TIMER_FREQUENCY:
-        timerValue = timer_get_hz(channelId) / pulsePerRevolution;
-        break;
-    case MODE_LOGGING_TIMER_PERIOD_MS:
-        timerValue = timer_get_ms(channelId) * pulsePerRevolution;
-        break;
-    case MODE_LOGGING_TIMER_PERIOD_USEC:
-        timerValue = timer_get_usec(channelId) * pulsePerRevolution;
-        break;
-    default:
-        timerValue = -1;
-        break;
-    }
-    return timerValue;
-}
-#endif
-
 #if PWM_CHANNELS > 0
 float get_pwm_sample(int channelId)
 {
@@ -279,7 +251,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     for (int i=0; i < CONFIG_TIMER_CHANNELS; i++) {
         TimerConfig *config = &(loggerConfig->TimerConfigs[i]);
         chanCfg = &(config->cfg);
-        sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_timer_sample);
+        sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, timer_get_sample);
     }
 #endif
 
