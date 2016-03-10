@@ -22,7 +22,7 @@
 #include "ADC.h"
 #include "CAN.h"
 #include "GPIO.h"
-#include "LED.h"
+#include "led.h"
 #include "PWM.h"
 #include "constants.h"
 #include "imu.h"
@@ -42,7 +42,7 @@ void InitLoggerHardware()
     LoggerConfig *loggerConfig = getWorkingLoggerConfig();
     usart_init();
     init_serial();
-    LED_init();
+    led_init();
 
 #if IMU_CHANNELS > 0
     imu_init(loggerConfig);

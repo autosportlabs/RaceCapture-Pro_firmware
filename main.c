@@ -29,7 +29,6 @@
  */
 
 #include "FreeRTOS.h"
-#include "LED.h"
 #include "OBD2_task.h"
 #include "capabilities.h"
 #include "connectivityTask.h"
@@ -38,11 +37,13 @@
 #include "fileWriter.h"
 #include "gpioTasks.h"
 #include "gpsTask.h"
+#include "led.h"
 #include "loggerHardware.h"
 #include "loggerTaskEx.h"
 #include "luaScript.h"
 #include "luaTask.h"
 #include "messaging.h"
+#include "panic.h"
 #include "printk.h"
 #include "task.h"
 #include "usb_comm.h"
@@ -51,83 +52,11 @@
 #include <app_info.h>
 #include <stdbool.h>
 
-#define FLASH_PAUSE_DELAY_S 	5
-#define FLASH_DELAY_S		1
-
-enum fatal_error {
-        FATAL_ERROR_HARDWARE  = 1,
-        FATAL_ERROR_SCHEDULER = 2,
-        FATAL_ERROR_OVERFLOW  = 3,
-        FATAL_ERROR_MALLOC    = 4,
-};
-
 __attribute__((aligned (4)))
 static const struct app_info_block info_block = {
     .magic_number = APP_INFO_MAGIC_NUMBER,
     .info_crc = 0xDEADBEEF,
 };
-
-static void delay_seconds(const size_t seconds)
-{
-        int64_t cycles = seconds * configCPU_CLOCK_HZ;
-
-        /* Each loop iteration takes 8 cycles */
-        for(; cycles > 0; cycles -= 8);
-}
-
-static void fatalError(const enum fatal_error type)
-{
-        taskDISABLE_INTERRUPTS();
-
-        for(;;) {
-                LED_enable(1);
-                LED_enable(2);
-                delay_seconds(FLASH_PAUSE_DELAY_S);
-                LED_disable(1);
-                LED_disable(2);
-                delay_seconds(FLASH_DELAY_S);
-
-                for (int c = 0; c < type; ++c) {
-                        LED_enable(1);
-                        LED_enable(2);
-                        delay_seconds(FLASH_DELAY_S);
-                        LED_disable(1);
-                        LED_disable(2);
-                        delay_seconds(FLASH_DELAY_S);
-                }
-        }
-}
-
-void vApplicationMallocFailedHook(void)
-{
-        /*
-         * vApplicationMallocFailedHook() will only be called if
-         * configUSE_MALLOC_FAILED_HOOK is set to 1 in FreeRTOSConfig.h.  It
-         * is a hook function that will get called if a call to pvPortMalloc()
-         * fails. pvPortMalloc() is called internally by the kernel whenever a
-         * task, queue, timer or semaphore is created.  It is also called by
-         * various parts of the demo application.  If heap_1.c or heap_2.c are
-         * used, then the size of the heap available to pvPortMalloc() is
-         * defined by configTOTAL_HEAP_SIZE in FreeRTOSConfig.h, and the
-         * xPortGetFreeHeapSize() API function can be used to query the size
-         * of free heap space that remains (although it does not provide
-         * information on how the remaining heap might be fragmented).
-         */
-        pr_error("MALLOC FAILURE\r\n");
-        fatalError(FATAL_ERROR_MALLOC);
-}
-
-void vApplicationStackOverflowHook(xTaskHandle pxTask, char *pcTaskName)
-{
-        /*
-         * Run time stack overflow checking is performed if
-         * configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2.
-         * This hook function is called if a stack overflow is detected.
-         */
-        (void) pxTask;
-        pr_error_str_msg("STACK OVERFLOW in ", pcTaskName);
-        fatalError(FATAL_ERROR_OVERFLOW);
-}
 
 /*
  * Define task priorities here.  Ensure that these values are
@@ -207,8 +136,7 @@ int main( void )
 
         vTaskStartScheduler();
 
-        fatalError(FATAL_ERROR_SCHEDULER);
-
         /* SHOULD NEVER GET HERE */
+        panic(PANIC_CAUSE_SCHEDULER);
         return 1;
 }

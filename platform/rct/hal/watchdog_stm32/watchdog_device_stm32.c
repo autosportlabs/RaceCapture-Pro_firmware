@@ -1,9 +1,9 @@
 /*
- * Race Capture Pro Firmware
+ * Race Capture Firmware
  *
- * Copyright (C) 2015 Autosport Labs
+ * Copyright (C) 2016 Autosport Labs
  *
- * This file is part of the Race Capture Pro fimrware suite
+ * This file is part of the Race Capture firmware suite
  *
  * This is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -19,11 +19,10 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "LED.h"
+#include "led.h"
+#include "stm32f30x_iwdg.h"
+#include "stm32f30x_rcc.h"
 #include "watchdog_device.h"
-
-#include <stm32f30x_iwdg.h>
-#include <stm32f30x_rcc.h>
 
 #define LSI_FREQUENCY 42000
 

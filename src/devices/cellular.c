@@ -19,7 +19,7 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "LED.h"
+#include "led.h"
 #include "api.h"
 #include "array_utils.h"
 #include "capabilities.h"

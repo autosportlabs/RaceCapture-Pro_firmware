@@ -142,7 +142,7 @@ $(MOCK_DIR)/watchdog_device_mock.c \
 $(RCP_SRC)/ADC/ADC.c \
 $(RCP_SRC)/CAN/CAN.c \
 $(RCP_SRC)/GPIO/GPIO.c \
-$(RCP_SRC)/LED/LED.c \
+$(RCP_SRC)/LED/led.c \
 $(RCP_SRC)/OBD2/OBD2.c \
 $(RCP_SRC)/PWM/PWM.c \
 $(RCP_SRC)/api/api.c \
@@ -185,6 +185,7 @@ $(RCP_SRC)/util/linear_interpolate.c \
 $(RCP_SRC)/util/mod_string.c \
 $(RCP_SRC)/util/modp_atonum.c \
 $(RCP_SRC)/util/modp_numtoa.c \
+$(RCP_SRC)/util/panic.c \
 $(RCP_SRC)/util/ring_buffer.c \
 $(RCP_SRC)/util/taskUtil.c \
 $(RCP_SRC)/virtual_channel/virtual_channel.c \

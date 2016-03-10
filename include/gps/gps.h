@@ -23,9 +23,9 @@
 #define GPS_H_
 
 #include "cpp_guard.h"
-#include "LED.h"
-#include "geopoint.h"
 #include "dateTime.h"
+#include "geopoint.h"
+#include "led.h"
 #include "serial.h"
 
 CPP_GUARD_BEGIN

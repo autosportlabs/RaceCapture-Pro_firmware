@@ -19,26 +19,25 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "LED_device.h"
+#include "led_device.h"
+#include "led.h"
 
-static int g_leds[3] = {0,0,0};
-
-int LED_device_init(void)
+bool led_device_init(void)
 {
-    return 1;
+        return true;
 }
 
-void LED_device_enable(unsigned int Led)
+bool led_device_set_index(const size_t i, const bool on)
 {
-    g_leds[Led] = 1;
+        return true;
 }
 
-void LED_device_disable(unsigned int Led)
+bool led_device_set(const enum led l, const bool on)
 {
-    g_leds[Led] = 0;
+        return true;
 }
 
-void LED_device_toggle(unsigned int Led)
+bool led_device_toggle(const enum led l)
 {
-    g_leds[Led] = g_leds[Led] == 1 ? 0 : 1;
+        return true;
 }

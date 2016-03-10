@@ -165,7 +165,9 @@ typedef struct xTASK_PARAMTERS {
  * \page taskDISABLE_INTERRUPTS taskDISABLE_INTERRUPTS
  * \ingroup SchedulerControl
  */
-#define taskDISABLE_INTERRUPTS()	portDISABLE_INTERRUPTS()
+/* #define taskDISABLE_INTERRUPTS()	portDISABLE_INTERRUPTS() */
+/* Disable in our testing.  Illegal instruction otherwise */
+#define taskDISABLE_INTERRUPTS()
 
 /**
  * task. h
