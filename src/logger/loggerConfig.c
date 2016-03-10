@@ -653,7 +653,7 @@ int flash_default_logger_config(void)
 #endif
 
 #if TIMER_CHANNELS > 0
-    set_default_timer_config(lc->TimerConfigs);
+    set_default_timer_config(lc->TimerConfigs, CONFIG_TIMER_CHANNELS);
 #endif
 
 #if IMU_CHANNELS > 0

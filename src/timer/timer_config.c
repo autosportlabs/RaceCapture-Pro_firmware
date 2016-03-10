@@ -50,9 +50,9 @@ TimerConfig* get_timer_config(int channel)
         return getWorkingLoggerConfig()->TimerConfigs + idx;
 }
 
-void set_default_timer_config(TimerConfig tim_cfg[])
+void set_default_timer_config(TimerConfig tim_cfg[], const size_t cnt)
 {
-        for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; ++i) {
+        for (size_t i = 0; i < cnt; ++i) {
                 TimerConfig *tc = tim_cfg + i;
                 set_default_channel_config(&tc->cfg);
                 tc->filterAlpha = TIMER_DEFAULT_FILTER_ALPHA;
@@ -64,7 +64,7 @@ void set_default_timer_config(TimerConfig tim_cfg[])
         }
 
         /* Make Channel 1 the default RPM config. */
-        ChannelConfig *t0cc = &tim_cfg->cfg;
+        ChannelConfig *t0cc = &tim_cfg[0].cfg;
         strcpy(t0cc->label, RPM_CHAN_LABEL);
         strcpy(t0cc->units, RPM_CHAN_UNITS);
         t0cc->min = RPM_CHAN_MIN;

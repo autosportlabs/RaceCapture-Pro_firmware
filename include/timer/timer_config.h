@@ -55,7 +55,7 @@ typedef struct _TimerConfig {
 } TimerConfig;
 
 TimerConfig* get_timer_config(int channel);
-void set_default_timer_config(TimerConfig cfg[]);
+void set_default_timer_config(TimerConfig tim_cfg[], const size_t cnt);
 enum timer_edge get_timer_edge_enum(const char *val);
 const char* get_timer_edge_api_key(const enum timer_edge e);
 
