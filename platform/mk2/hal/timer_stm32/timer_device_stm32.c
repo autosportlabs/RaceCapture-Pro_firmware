@@ -70,7 +70,7 @@ static uint16_t get_polarity(const enum timer_edge edge)
  *
  * TIMER 0 = PA6 / TIM13_CH1 / **TIM3_CH1** /
  * TIMER 1 = PA2 / TIM2_CH3(32bit) / **TIM9_CH1** / TIM5_CH3(32bit)
- * TIMER 2 = PA3 / **TIM5_CH4(32bit)** / TIM9_CH2 / TIM2_CH4(32bit)
+ * TIMER 2 = PA3 / TIM5_CH4(32bit) / TIM9_CH2 / **TIM2_CH4(32bit)**
  * TIMER 3 = PA7 / TIM8_CH1N / **TIM14_CH1** / TIM3_CH2 / TIM1_CH1N
  */
 
@@ -237,7 +237,7 @@ static void init_timer_2(struct config *cfg)
     TIM_ICInitStructure.TIM_ICFilter = INPUT_CAPTURE_FILTER;
     TIM_ICInit(TIM2, &TIM_ICInitStructure);
 
-    set_local_uri_source(TIM3);
+    set_local_uri_source(TIM2);
     TIM_Cmd(TIM2, ENABLE);
 
     /* Enable the TIM1 global Interrupt */
