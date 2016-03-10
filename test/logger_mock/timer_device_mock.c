@@ -28,7 +28,7 @@
 static int g_timer[TIMER_CHANNELS];
 
 bool timer_device_init(const size_t channel, const uint32_t speed,
-                       const uint16_t quiet_period_us,
+                       const uint32_t quiet_period_us,
                        const enum timer_edge edge)
 {
         return true;

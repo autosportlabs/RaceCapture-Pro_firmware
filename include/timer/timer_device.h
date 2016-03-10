@@ -38,7 +38,7 @@ CPP_GUARD_BEGIN
  * @param speed The Speed enum value.  Controls
  */
 bool timer_device_init(const size_t channel, const uint32_t speed,
-                       const uint16_t quiet_period_us,
+                       const uint32_t quiet_period_us,
                        const enum timer_edge edge);
 uint32_t timer_device_get_period(size_t channel);
 uint32_t timer_device_get_usec(size_t channel);

@@ -30,6 +30,7 @@
 #include "timer_device.h"
 
 #include <stdbool.h>
+#include <string.h>
 
 #define INPUT_CAPTURE_FILTER 	0X0
 #define MK2_TIMER_CHANNELS	3
@@ -71,7 +72,6 @@ static uint16_t get_polarity(const enum timer_edge edge)
  * TIMER 0 = PA6 / TIM13_CH1 / **TIM3_CH1** /
  * TIMER 1 = PA2 / TIM2_CH3(32bit) / **TIM9_CH1** / TIM5_CH3(32bit)
  * TIMER 2 = PA3 / TIM5_CH4(32bit) / TIM9_CH2 / **TIM2_CH4(32bit)**
- * TIMER 3 = PA7 / TIM8_CH1N / **TIM14_CH1** / TIM3_CH2 / TIM1_CH1N
  */
 
 static void set_local_uri_source(TIM_TypeDef *tim)
@@ -289,8 +289,9 @@ static uint16_t speed_to_prescaler(const size_t chan, const size_t speed)
          * knowing that our FAST clock is a whole number multiple of our
          * SLOW clock.
          */
-        uint16_t ps = prescalar * (get_clk_speed(chan) / TIMER_CLK_FREQ_SLOW_HZ);
-        pr_info_int_msg("[timer_device_stm32] Prescalar: ", ps);
+        const uint16_t timer_mult = get_clk_speed(chan) / TIMER_CLK_FREQ_SLOW_HZ;
+        const uint16_t ps = prescalar * timer_mult;
+        pr_debug_int_msg("[timer_device_stm32] Prescalar: ", ps);
         return ps;
 }
 
@@ -299,15 +300,12 @@ void reset_device_state(const size_t chan)
         if (chan >= MK2_TIMER_CHANNELS)
                 return;
 
-        struct state *s = &g_state[chan];
-
-        s->period = 0;
-        s->duty_cycle = 0;
-        s->q_period_ticks = 0;
+        struct state *s = g_state + chan;
+        memset(s, 0, sizeof(struct state));
 }
 
 bool timer_device_init(const size_t chan, const uint32_t speed,
-                       const uint16_t quiet_period_us,
+                       const uint32_t quiet_period_us,
                        const enum timer_edge edge)
 {
         if (chan >= MK2_TIMER_CHANNELS)
