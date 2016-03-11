@@ -77,6 +77,8 @@ bool esp8266_get_client_ip(void (*cb)
 bool esp8266_get_client_info(void (*cb)
                              (bool, const struct esp8266_client_info*));
 
+bool esp8266_set_mux_mode(const bool mux, void (*cb)(bool status));
+
 CPP_GUARD_END
 
 #endif /* _ESP8266_H_ */

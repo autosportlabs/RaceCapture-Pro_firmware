@@ -22,6 +22,7 @@
 #include "at.h"
 #include "array_utils.h"
 #include "esp8266.h"
+#include "macros.h"
 #include "printk.h"
 
 #include <stdbool.h>
@@ -377,6 +378,9 @@ static void clear_client_info(struct esp8266_client_info *info)
         memset(info, 0, sizeof(struct esp8266_client_info));
 }
 
+/**
+ * Extracts the wanted strings reply from the +CWJAP response.
+ */
 static bool parse_client_info(char *rsp)
 {
         clear_client_info(&state.client_info);
@@ -434,17 +438,23 @@ do_cb:
 }
 
 /**
- * Use this to figure out the info about the client AP.  Gets
+ * Use this to figure out the info about the client AP.  Gets both the
+ * client network SSID and the AP MAC address.
+ * @param cb The callback to be invoked when the method completes.
  */
 bool esp8266_get_client_ap(void (*cb)(bool, const struct esp8266_client_info*))
 {
         if (!check_initialized("get_client_ap"))
                 return false;
 
-        return NULL != at_put_cmd(state.ati, "AT+CWJAP?", TIMEOUT_SUPER_MS,
+        return NULL != at_put_cmd(state.ati, "AT+CWJAP?", TIMEOUT_SHORT_MS,
                                   get_client_ap_cb, cb);
 }
 
+/**
+ * Given an AT response for +CIFSR, this method decodes it and extracts
+ * the IP address.
+ */
 static bool parse_client_ip(struct at_rsp *rsp)
 {
         /*
@@ -454,11 +464,23 @@ static bool parse_client_ip(struct at_rsp *rsp)
         char *toks[4];
         char *ip_at_str = NULL;
         for(size_t i = 0; i < rsp->msg_count && NULL == ip_at_str; ++i) {
-                const size_t tok_cnt =
-                        at_parse_rsp_line(rsp, toks, ARRAY_LEN(toks));
+                char *at_msg_ln = rsp->msgs[i];
+                const size_t tok_count =
+                        at_parse_rsp_line(at_msg_ln, toks, ARRAY_LEN(toks));
+
                 if (tok_count == 3 && STR_EQ("STAIP", toks[1]))
                         ip_at_str = toks[2];
         }
+
+        if (!ip_at_str)
+                return false;
+
+        char *ip_str = at_parse_rsp_str(ip_at_str);
+        if (!ip_str)
+                return false;
+
+        strncpy(state.client_info.ip, ip_str, ARRAY_LEN(state.client_info.ip));
+        return true;
 }
 
 /**
@@ -467,7 +489,7 @@ static bool parse_client_ip(struct at_rsp *rsp)
 static void get_client_ip_cb(struct at_rsp *rsp, void *up)
 {
         static const char *cmd_name = "get_client_ip_cb";
-        void (*cb)(bool, const char*) = up;
+        void (*cb)(bool, const struct esp8266_client_info*) = up;
         bool status = at_ok(rsp);
 
         if (!status) {
@@ -475,27 +497,11 @@ static void get_client_ip_cb(struct at_rsp *rsp, void *up)
                 goto do_cb;
         }
 
-        /*
-         * +CIFSR:STAIP,"192.168.1.94"
-         * +CIFSR:STAMAC,"18:fe:34:f4:3a:95"
-         */
-        char *toks[4];
-        char *ip_at_str = NULL;
-        for(size_t i = 0; i < rsp->msg_count && NULL == ip_at_str; ++i) {
-                const size_t tok_cnt =
-                        at_parse_rsp_line(rsp, toks, ARRAY_LEN(toks));
-                if (tok_count == 3 && STR_EQ("STAIP", toks[1]))
-                        ip_at_str = toks[2];
-        }
-
-        if (!ip_at_str) {
-                cmd_failure(cmd_name, "Failed to parse IP");
+        if (!parse_client_ip(rsp)) {
                 status = false;
+                cmd_failure(cmd_name, "Failed to parse IP");
                 goto do_cb;
         }
-
-        char *ip_str = at_parse_rsp_str(ip_at_str);
-
 
 do_cb:
         if (cb)
@@ -504,14 +510,53 @@ do_cb:
 
 /**
  * Use this to figure out what our IP is as a wireless client.
+ * @param cb The callback to be invoked when the method completes.
  */
 bool esp8266_get_client_ip(void (*cb)(bool, const struct esp8266_client_info*))
 {
         if (!check_initialized("get_ap_mode"))
                 return false;
 
-        char cmd[64];
-        snprintf(cmd, ARRAY_LEN(cmd), "AT+CWJAP=\"%s\",\"%s\"", name, pass);
-        return NULL != at_put_cmd(state.ati, cmd, TIMEOUT_SUPER_MS,
-                                  get_ap_cb, cb);
+        return NULL != at_put_cmd(state.ati, "AT+CIFSR", TIMEOUT_SHORT_MS,
+                                  get_client_ip_cb, cb);
+}
+
+/**
+ * Gets both the client AP and IP info from the WiFi chip.  Populates
+ * the struct and pases back a pointer.
+ * @param cb The callback to be invoked when the method completes.
+ */
+bool esp8266_get_client_info(void (*cb)
+                             (bool, const struct esp8266_client_info*))
+{
+        return esp8266_get_client_ap(NULL) && esp8266_get_client_ip(cb);
+}
+
+static void set_mux_mode_cb(struct at_rsp *rsp, void *up)
+{
+        void (*cb)(bool) = up;
+
+        const bool status = at_ok(rsp);
+        if (!status)
+                cmd_failure("set_mux_mode_cb", NULL);
+
+        if (cb)
+                cb(status);
+}
+
+/**
+ * Sets whether or not we are in multiplexing mode.
+ * @param mux True if we want to, false otherwise.
+ * @cb The callback to invoke when complete.
+ * @return True if the command was queued, false otherwise.
+ */
+bool esp8266_set_mux_mode(const bool mux, void (*cb)(bool status))
+{
+        if (!check_initialized("set_mux_mode"))
+                return false;
+
+        char cmd_str[12];
+        snprintf(cmd_str, ARRAY_LEN(cmd_str), "AT+CIPMUX=%d", mux ? 1 : 0);
+        return NULL != at_put_cmd(state.ati, cmd_str, TIMEOUT_SHORT_MS,
+                                  set_mux_mode_cb, cb);
 }
