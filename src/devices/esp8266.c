@@ -20,17 +20,24 @@
  */
 
 #include "at.h"
+#include "array_utils.h"
 #include "esp8266.h"
 #include "printk.h"
 
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define ESP8266_AUTOBAUD_TRIES	20
 #define ESP8266_CMD_DELIM	"\r\n"
 #define ESP8266_QP_PRE_INIT_MS	500
 #define ESP8266_QP_STANDARD_MS	1	/* Can probably be 0 */
-#define TIMEOUT_LONG_MS		100
-#define TIMEOUT_SHORT_MS	10
+
+#define TIMEOUT_SUPER_MS	30000
+#define TIMEOUT_LONG_MS		5000
+#define TIMEOUT_MEDIUM_MS	500
+#define TIMEOUT_SHORT_MS	50
 
 static const enum log_level serial_dbg_lvl = INFO;
 
@@ -38,9 +45,21 @@ static const enum log_level serial_dbg_lvl = INFO;
  * Internal state of our driver.
  */
 static struct {
-        enum dev_init_state init_state;
         struct at_info *ati;
+        enum dev_init_state init_state;
+        struct esp8266_client_info client_info;
 } state;
+
+static void cmd_failure(const char *cmd_name, const char *msg)
+{
+        pr_warning("[esp8266] ");
+        pr_warning(cmd_name);
+        if (msg) {
+                pr_info_str_msg("failed with msg: ", msg);
+        } else {
+                pr_warning(" failed.\r\n");
+        }
+}
 
 /**
  * Call the if the init routine fails.
@@ -49,9 +68,7 @@ static struct {
 static void init_failed(const char *msg)
 {
         state.init_state = DEV_INIT_STATE_FAILED;
-
-        if (msg)
-                pr_info_str_msg("[esp8266] Init failure: ", msg);
+        cmd_failure("Init", msg);
 }
 
 static void init_success()
@@ -85,7 +102,7 @@ static void get_version_cb(struct at_rsp *rsp, void *up)
 
 static void get_version()
 {
-        at_put_cmd(state.ati, "AT+GMR", TIMEOUT_LONG_MS,
+        at_put_cmd(state.ati, "AT+GMR", TIMEOUT_MEDIUM_MS,
                    get_version_cb, NULL);
 }
 
@@ -127,7 +144,7 @@ static void autobaud_cb(struct at_rsp *rsp, void *tries)
                 return;
         }
 
-        at_put_cmd(state.ati, "AT", TIMEOUT_LONG_MS, autobaud_cb, tries);
+        at_put_cmd(state.ati, "AT", TIMEOUT_MEDIUM_MS, autobaud_cb, tries);
 }
 
 /**
@@ -227,4 +244,274 @@ bool esp8266_begin_init(struct at_info *ati)
 enum dev_init_state esp1866_get_dev_init_state()
 {
         return state.init_state;
+}
+
+/**
+ * Allows us to quickly check if the device has successfully initialized.
+ * Notifies the log if it isn't initialized.
+ * @return true if initialized, false otherwise.
+ */
+static bool check_initialized(const char *cmd_name)
+{
+        const bool init = DEV_INIT_STATE_READY == state.init_state;
+
+        if (!init)
+                cmd_failure(cmd_name, "Device not initialized");
+
+        return init;
+}
+
+static void set_op_mode_cb(struct at_rsp *rsp, void *up)
+{
+        void (*cb)(bool) = up;
+
+        const bool status = at_ok(rsp);
+        if (!status) {
+                /* We don't know the mode.  So do nothing */
+                cmd_failure("set_op_mode_cb", NULL);
+        }
+
+        if (cb)
+                cb(status);
+}
+
+/**
+ * Sets the operational mode of the WiFi device.
+ */
+bool esp8266_set_op_mode(const enum esp8266_op_mode mode,
+                         void (*cb)(bool status))
+{
+        if (!check_initialized("set_op_mode"))
+                return false;
+
+        char cmd_str[16];
+        snprintf(cmd_str, ARRAY_LEN(cmd_str), "AT+CWMODE=%d", (int) mode);
+        return NULL != at_put_cmd(state.ati, cmd_str, TIMEOUT_MEDIUM_MS,
+                                  set_op_mode_cb, cb);
+}
+
+static void read_op_mode_cb(struct at_rsp *rsp, void *up)
+{
+        static const char *cmd_name = "read_op_mode_cb";
+        void (*cb)(bool, enum esp8266_op_mode) = up;
+        bool status = at_ok(rsp);
+        enum esp8266_op_mode mode = ESP8266_OP_MODE_UNKNOWN;
+
+        if (!status) {
+                cmd_failure(cmd_name, NULL);
+                goto do_cb;
+        }
+
+        char *toks[2];
+        const size_t tok_cnt =
+                at_parse_rsp_line(rsp->msgs[rsp->msg_count - 1],
+                                  toks, ARRAY_LEN(toks));
+        if (tok_cnt != 2) {
+                cmd_failure(cmd_name, "Incorrect number of tokens parsed.");
+                status = false;
+                goto do_cb;
+        }
+
+        /* If here, parse the number.  It should match our enum*/
+        const int val = atoi(toks[1]);
+        pr_debug_int_msg("[esp8266] op mode: ", val);
+        mode = (enum esp8266_op_mode) val;
+
+        /* When we get here, we are done processing the reply*/
+do_cb:
+        if (cb)
+                cb(status, mode);
+}
+
+/**
+ * Reads the operational mode of the WiFi device.
+ */
+bool esp8266_get_op_mode(void (*cb)(bool, enum esp8266_op_mode))
+{
+        if (!check_initialized("read_op_mode"))
+                return false;
+
+        return NULL != at_put_cmd(state.ati, "AT+CWMODE?", TIMEOUT_SHORT_MS,
+                                  read_op_mode_cb, cb);
+}
+
+
+/**
+ * Callback invoked at the end of the join_ap command.
+ */
+static void join_ap_cb(struct at_rsp *rsp, void *up)
+{
+        void (*cb)(bool) = up;
+        const bool status = at_ok(rsp);
+
+        if (!status)
+                cmd_failure("join_ap_cb", NULL);
+
+        if (cb)
+                cb(status);
+}
+
+/**
+ * Instructs the ESP8266 to join the given AP.
+ * @param ssid The network Service Set ID (The name)
+ * @param pass The network password if there is one.  Use an empty string
+ * for no password.
+ * @param cb The callback to invoke when done.
+ */
+bool esp8266_join_ap(const char* ssid, const char* pass, void (*cb)(bool))
+{
+        if (!check_initialized("join_ap"))
+                return false;
+
+        char cmd[64];
+        snprintf(cmd, ARRAY_LEN(cmd), "AT+CWJAP=\"%s\",\"%s\"", ssid, pass);
+        return NULL != at_put_cmd(state.ati, cmd, TIMEOUT_SUPER_MS,
+                                  join_ap_cb, cb);
+}
+
+/**
+ * Clears the client_info structure we have.
+ */
+static void clear_client_info(struct esp8266_client_info *info)
+{
+        memset(info, 0, sizeof(struct esp8266_client_info));
+}
+
+static bool parse_client_info(char *rsp)
+{
+        clear_client_info(&state.client_info);
+
+        if (!rsp)
+                return false;
+
+        /*
+         * Success case:
+         * > +CWJAP:"madworks","2a:a4:3c:6d:46:37",6,-53
+         * No AP case:
+         * > No AP
+         */
+        char *toks[6];
+        const size_t tok_cnt = at_parse_rsp_line(rsp, toks, ARRAY_LEN(toks));
+        if (tok_cnt != 5)
+                return false;
+
+        const char *ssid = at_parse_rsp_str(toks[1]);
+        const char *mac = at_parse_rsp_str(toks[2]);
+        if (!ssid || !mac)
+                return false;
+
+        strncpy(state.client_info.ssid, ssid, ARRAY_LEN(state.client_info.ssid));
+        strncpy(state.client_info.mac, mac, ARRAY_LEN(state.client_info.mac));
+
+        state.client_info.has_ap = true;
+        return true;
+}
+
+/**
+ * Callback that is invoked when the get_ap command completes.
+ */
+static void get_client_ap_cb(struct at_rsp *rsp, void *up)
+{
+        static const char *cmd_name = "get_ap_cb";
+        void (*cb)(bool, const struct esp8266_client_info*) = up;
+        bool status = at_ok(rsp);
+
+        if (!status) {
+                cmd_failure(cmd_name, NULL);
+                goto do_cb;
+        }
+
+        char *client_info = rsp->msgs[rsp->msg_count - 1];
+        if (!parse_client_info(client_info)) {
+                cmd_failure(cmd_name, "Failed to parse AP info");
+                status = false;
+                goto do_cb;
+        }
+
+do_cb:
+        if (cb)
+                cb(status, &state.client_info);
+}
+
+/**
+ * Use this to figure out the info about the client AP.  Gets
+ */
+bool esp8266_get_client_ap(void (*cb)(bool, const struct esp8266_client_info*))
+{
+        if (!check_initialized("get_client_ap"))
+                return false;
+
+        return NULL != at_put_cmd(state.ati, "AT+CWJAP?", TIMEOUT_SUPER_MS,
+                                  get_client_ap_cb, cb);
+}
+
+static bool parse_client_ip(struct at_rsp *rsp)
+{
+        /*
+         * +CIFSR:STAIP,"192.168.1.94"
+         * +CIFSR:STAMAC,"18:fe:34:f4:3a:95"
+         */
+        char *toks[4];
+        char *ip_at_str = NULL;
+        for(size_t i = 0; i < rsp->msg_count && NULL == ip_at_str; ++i) {
+                const size_t tok_cnt =
+                        at_parse_rsp_line(rsp, toks, ARRAY_LEN(toks));
+                if (tok_count == 3 && STR_EQ("STAIP", toks[1]))
+                        ip_at_str = toks[2];
+        }
+}
+
+/**
+ * Callback that is invoked when the get_client_ip command completes.
+ */
+static void get_client_ip_cb(struct at_rsp *rsp, void *up)
+{
+        static const char *cmd_name = "get_client_ip_cb";
+        void (*cb)(bool, const char*) = up;
+        bool status = at_ok(rsp);
+
+        if (!status) {
+                cmd_failure(cmd_name, NULL);
+                goto do_cb;
+        }
+
+        /*
+         * +CIFSR:STAIP,"192.168.1.94"
+         * +CIFSR:STAMAC,"18:fe:34:f4:3a:95"
+         */
+        char *toks[4];
+        char *ip_at_str = NULL;
+        for(size_t i = 0; i < rsp->msg_count && NULL == ip_at_str; ++i) {
+                const size_t tok_cnt =
+                        at_parse_rsp_line(rsp, toks, ARRAY_LEN(toks));
+                if (tok_count == 3 && STR_EQ("STAIP", toks[1]))
+                        ip_at_str = toks[2];
+        }
+
+        if (!ip_at_str) {
+                cmd_failure(cmd_name, "Failed to parse IP");
+                status = false;
+                goto do_cb;
+        }
+
+        char *ip_str = at_parse_rsp_str(ip_at_str);
+
+
+do_cb:
+        if (cb)
+                cb(status, &state.client_info);
+}
+
+/**
+ * Use this to figure out what our IP is as a wireless client.
+ */
+bool esp8266_get_client_ip(void (*cb)(bool, const struct esp8266_client_info*))
+{
+        if (!check_initialized("get_ap_mode"))
+                return false;
+
+        char cmd[64];
+        snprintf(cmd, ARRAY_LEN(cmd), "AT+CWJAP=\"%s\",\"%s\"", name, pass);
+        return NULL != at_put_cmd(state.ati, cmd, TIMEOUT_SUPER_MS,
+                                  get_ap_cb, cb);
 }

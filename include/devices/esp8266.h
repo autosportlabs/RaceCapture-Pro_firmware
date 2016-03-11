@@ -24,6 +24,8 @@
 
 #include "cpp_guard.h"
 
+#include <stdbool.h>
+
 CPP_GUARD_BEGIN
 
 /**
@@ -41,6 +43,39 @@ bool esp8266_begin_init(struct at_info *ati);
 
 enum dev_init_state esp1866_get_dev_init_state();
 
+/**
+ * These are the AT codes for the mode of the device represented in enum
+ * form.  Do not change them unless you know what you are doing.
+ */
+enum esp8266_op_mode {
+        ESP8266_OP_MODE_UNKNOWN = 0, /* Default value. */
+        ESP8266_OP_MODE_CLIENT  = 1,
+        ESP8266_OP_MODE_AP      = 2,
+        ESP8266_OP_MODE_BOTH    = 3, /* Client & AP */
+};
+
+bool esp8266_set_op_mode(const enum esp8266_op_mode mode,
+                         void (*cb)(bool status));
+
+bool esp8266_get_op_mode(void (*cb)(bool, enum esp8266_op_mode));
+
+struct esp8266_client_info {
+        bool has_ap;
+        char ssid[24];
+        char mac[18];
+        char ip[16];
+};
+
+bool esp8266_join_ap(const char* ssid, const char* pass, void (*cb)(bool));
+
+bool esp8266_get_client_ap(void (*cb)
+                           (bool, const struct esp8266_client_info*));
+
+bool esp8266_get_client_ip(void (*cb)
+                           (bool, const struct esp8266_client_info*));
+
+bool esp8266_get_client_info(void (*cb)
+                             (bool, const struct esp8266_client_info*));
 
 CPP_GUARD_END
 
