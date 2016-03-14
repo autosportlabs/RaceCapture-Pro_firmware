@@ -22,24 +22,26 @@
 #include "array_utils.h"
 #include "at.h"
 #include "dateTime.h"
-#include "mod_string.h"
 #include "printk.h"
 #include "serial_buffer.h"
 
 #include <ctype.h>
+#include <string.h>
 
 static const enum log_level dbg_lvl = INFO;
 
-#define AT_STATUS_MSG(a, b)	{(a), sizeof(a), (b)}
+#define AT_STATUS_MSG(a, b)	{(a), ARRAY_LEN(a), (b)}
 static const struct at_rsp_status_msgs {
         const char* str;
         size_t str_len;
         enum at_rsp_status status;
 } at_status_msgs[] = {
         AT_STATUS_MSG("OK", AT_RSP_STATUS_OK),
-        AT_STATUS_MSG("FAILED", AT_RSP_STATUS_FAILED),
-        AT_STATUS_MSG("ABORTED", AT_RSP_STATUS_ABORTED),
+        AT_STATUS_MSG("SEND OK", AT_RSP_STATUS_SEND_OK),
+        AT_STATUS_MSG("SEND FAIL", AT_RSP_STATUS_SEND_FAIL),
+        AT_STATUS_MSG("FAIL", AT_RSP_STATUS_FAILED),
         AT_STATUS_MSG("ERROR", AT_RSP_STATUS_ERROR),
+        AT_STATUS_MSG("ABORTED", AT_RSP_STATUS_ABORTED),
 };
 
 static char* trim(char *str)
@@ -84,8 +86,13 @@ static void complete_urc(struct at_info *ati, const enum at_rsp_status status)
         ati->rsp.status = status;
         ati->rsp.run_time = getUptime() - ati->timing.urc_start_ms;
 
+        bool more = false;
         if (ati->urc_ip->rsp_cb)
-                ati->urc_ip->rsp_cb(&ati->rsp, ati->urc_ip->rsp_up);
+                more = ati->urc_ip->rsp_cb(&ati->rsp, ati->urc_ip->rsp_up);
+
+        if (more)
+                /* Then we have more to process after this status message */
+                return;
 
         /* Post URC, cleanup is a wee bit different than of cmd */
         _complete_msg_cleanup(ati);
@@ -97,8 +104,13 @@ static void complete_cmd(struct at_info *ati, const enum at_rsp_status status)
         ati->rsp.status = status;
         ati->rsp.run_time = getUptime() - ati->timing.cmd_start_ms;
 
+        bool more = false;
         if (ati->cmd_ip->rsp_cb)
-                ati->cmd_ip->rsp_cb(&ati->rsp, ati->cmd_ip->rsp_up);
+                more = ati->cmd_ip->rsp_cb(&ati->rsp, ati->cmd_ip->rsp_up);
+
+        if (more)
+                /* Then we have more to process after this status message */
+                return;
 
         /* Do all post command cleanup here */
         _complete_msg_cleanup(ati);
@@ -372,7 +384,7 @@ bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
  */
 struct at_cmd* at_put_cmd(struct at_info *ati, const char *cmd,
                           const tiny_millis_t timeout_ms,
-                          void (*rsp_cb)(struct at_rsp *rsp, void *rsp_up),
+                          bool (*rsp_cb)(struct at_rsp *rsp, void *rsp_up),
                           void *rsp_up)
 {
         if (ati->cmd_queue.count >= AT_CMD_MAX_CMDS) {
@@ -422,7 +434,7 @@ struct at_cmd* at_put_cmd(struct at_info *ati, const char *cmd,
  */
 struct at_urc* at_register_urc(struct at_info *ati, const char *pfx,
                                const enum at_urc_flags flags,
-                               void (*rsp_cb)(struct at_rsp *rsp, void *rsp_up),
+                               bool (*rsp_cb)(struct at_rsp *rsp, void *rsp_up),
                                void *rsp_up)
 {
         if (ati->urc_list.count >= AT_URC_MAX_URCS) {

@@ -24,6 +24,8 @@
 
 #include "cpp_guard.h"
 
+#include <string.h>
+
 CPP_GUARD_BEGIN
 
 /**

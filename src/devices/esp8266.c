@@ -42,13 +42,21 @@
 
 static const enum log_level serial_dbg_lvl = INFO;
 
+struct tx_info {
+        const char *data;
+        size_t len;
+        void (*cb) (bool);
+};
+
 /**
  * Internal state of our driver.
  */
 static struct {
         struct at_info *ati;
+        void (*init_cb)(enum dev_init_state); /* STIEG: Put in own struct? */
         enum dev_init_state init_state;
         struct esp8266_client_info client_info;
+        struct tx_info tx_info;
 } state;
 
 static void cmd_failure(const char *cmd_name, const char *msg)
@@ -56,7 +64,7 @@ static void cmd_failure(const char *cmd_name, const char *msg)
         pr_warning("[esp8266] ");
         pr_warning(cmd_name);
         if (msg) {
-                pr_info_str_msg("failed with msg: ", msg);
+                pr_info_str_msg(" failed with msg: ", msg);
         } else {
                 pr_warning(" failed.\r\n");
         }
@@ -68,22 +76,37 @@ static void cmd_failure(const char *cmd_name, const char *msg)
  */
 static void init_failed(const char *msg)
 {
+        /* If we aren't initializing, then don't do the callback */
+        if (state.init_state != DEV_INIT_INITIALIZING)
+                return;
+
         state.init_state = DEV_INIT_STATE_FAILED;
         cmd_failure("Init", msg);
+        state.init_cb(state.init_state); /* Will always be defined */
 }
 
-static void init_success()
+static void init_complete(bool status)
 {
+        /* If we aren't initializing, then don't do the callback */
+        if (state.init_state != DEV_INIT_INITIALIZING)
+                return;
+
+        if (!status) {
+                init_failed("set_mux_mode failed");
+                return;
+        }
+
         pr_info("[esp8266] Initialized\r\n");
         state.init_state = DEV_INIT_STATE_READY;
+        state.init_cb(state.init_state); /* Will always be defined */
 }
 
-static void get_version_cb(struct at_rsp *rsp, void *up)
+static bool get_version_cb(struct at_rsp *rsp, void *up)
 {
         if (!at_ok(rsp)) {
                 /* WTF Mate */
                 init_failed("Failed to get version info");
-                return;
+                return false;
         }
 
         /*
@@ -98,54 +121,96 @@ static void get_version_cb(struct at_rsp *rsp, void *up)
         for (size_t i = 0; i < rsp->msg_count - 1; ++i)
                 pr_info_str_msg("\t", rsp->msgs[i]);
 
-        init_success();
+        return false;
 }
 
-static void get_version()
+static bool get_version()
 {
-        at_put_cmd(state.ati, "AT+GMR", TIMEOUT_MEDIUM_MS,
-                   get_version_cb, NULL);
+        return NULL != at_put_cmd(state.ati, "AT+GMR", TIMEOUT_MEDIUM_MS,
+                                  get_version_cb, NULL);
 }
 
-static void set_echo_cb(struct at_rsp *rsp, void *up)
+static bool set_echo_cb(struct at_rsp *rsp, void *up)
 {
-        if (at_ok(rsp))
-                return;
+        if (!at_ok(rsp)) {
+                /* Failure. :( */
+                init_failed("Set echo failed.");
+        }
 
-        /* Failure. :( */
-        init_failed("Set echo failed.");
+        return false;
 }
 
-static void set_echo(const bool on)
+static bool set_echo(const bool on)
 {
         const char *cmd = on ? "ATE1" : "ATE0";
-        at_put_cmd(state.ati, cmd, TIMEOUT_SHORT_MS,
-                   set_echo_cb, NULL);
+        return NULL != at_put_cmd(state.ati, cmd, TIMEOUT_SHORT_MS,
+                                  set_echo_cb, NULL);
+}
+
+static bool set_mux_mode_cb(struct at_rsp *rsp, void *up)
+{
+        void (*cb)(bool) = up;
+
+        const bool status = at_ok(rsp);
+        if (!status)
+                cmd_failure("set_mux_mode_cb", NULL);
+
+        if (cb)
+                cb(status);
+
+        return false;
+}
+
+/**
+ * Sets whether or not we are in multiplexing mode.
+ * @param mux True if we want to, false otherwise.
+ * @cb The callback to invoke when complete.
+ * @return True if the command was queued, false otherwise.
+ */
+static bool set_mux_mode(const bool mux, void (*cb)(bool status))
+{
+        char cmd_str[12];
+        snprintf(cmd_str, ARRAY_LEN(cmd_str), "AT+CIPMUX=%d", mux ? 1 : 0);
+        return NULL != at_put_cmd(state.ati, cmd_str, TIMEOUT_SHORT_MS,
+                                  set_mux_mode_cb, cb);
+}
+
+static void do_remaining_init_tasks()
+{
+        /* Set normal quiet period since we have auto-bauded */
+        at_configure_device(state.ati, ESP8266_QP_STANDARD_MS,
+                            ESP8266_CMD_DELIM);
+
+        /* Ensure we don't put down more tasks than we have */
+        const bool res = set_echo(false) && get_version() &&
+                set_mux_mode(true, init_complete);
+
+        if (!res)
+                cmd_failure("do_remaining_init_tasks", "One or more init "
+                            "tasks failed to get scheduled");
+        /* May need to do more here, probably not */
 }
 
 /**
  * Callback for Autobauding.  Also used when starting
  */
-static void autobaud_cb(struct at_rsp *rsp, void *tries)
+static bool autobaud_cb(struct at_rsp *rsp, void *tries)
 {
-        /* Check if we got an OK reply.  If so, move to next step */
+        /* Check if we5B got an OK reply.  If so, move to next step */
         if (at_ok(rsp)) {
-                /* Set normal quiet period since we have auto-bauded */
-                at_configure_device(state.ati, ESP8266_QP_STANDARD_MS,
-                                    ESP8266_CMD_DELIM);
-                set_echo(false);
-                get_version();
-                return;
+                do_remaining_init_tasks();
+                return false;
         }
 
         --tries;
         if (!tries) {
                 /* Out of tries.  We are done */
                 init_failed("Autobaud failed.");
-                return;
+                return false;
         }
 
         at_put_cmd(state.ati, "AT", TIMEOUT_MEDIUM_MS, autobaud_cb, tries);
+        return false;
 }
 
 /**
@@ -162,7 +227,7 @@ static void begin_autobaud_cmd()
 
 static bool is_init_in_progress()
 {
-        return state.init_state == DEV_INIT_INITIALIZING;
+        return NULL != state.init_cb;
 }
 
 static void serial_tx_cb(const char *data)
@@ -221,20 +286,19 @@ static void serial_rx_cb(const char *data)
 /**
  * Kicks off the initilization process.
  */
-bool esp8266_begin_init(struct at_info *ati)
+bool esp8266_init(struct at_info *ati, void (*cb)(enum dev_init_state))
 {
-        if (is_init_in_progress())
+        if (is_init_in_progress() || !cb || !ati)
                 return false;
 
-        if (!ati)
-                return false;
+        state.init_cb = cb;
+        state.init_state = DEV_INIT_INITIALIZING;
+        state.ati = ati;
 
-        /* HACK: Remove me later */
+        /* SERIAL HACK: Remove me later */
         ati->sb->serial->tx_callback = serial_tx_cb;
         ati->sb->serial->rx_callback = serial_rx_cb;
 
-        state.init_state = DEV_INIT_INITIALIZING;
-        state.ati = ati;
         begin_autobaud_cmd();
         return true;
 }
@@ -262,7 +326,7 @@ static bool check_initialized(const char *cmd_name)
         return init;
 }
 
-static void set_op_mode_cb(struct at_rsp *rsp, void *up)
+static bool set_op_mode_cb(struct at_rsp *rsp, void *up)
 {
         void (*cb)(bool) = up;
 
@@ -274,6 +338,8 @@ static void set_op_mode_cb(struct at_rsp *rsp, void *up)
 
         if (cb)
                 cb(status);
+
+        return false;
 }
 
 /**
@@ -291,7 +357,7 @@ bool esp8266_set_op_mode(const enum esp8266_op_mode mode,
                                   set_op_mode_cb, cb);
 }
 
-static void read_op_mode_cb(struct at_rsp *rsp, void *up)
+static bool read_op_mode_cb(struct at_rsp *rsp, void *up)
 {
         static const char *cmd_name = "read_op_mode_cb";
         void (*cb)(bool, enum esp8266_op_mode) = up;
@@ -322,6 +388,8 @@ static void read_op_mode_cb(struct at_rsp *rsp, void *up)
 do_cb:
         if (cb)
                 cb(status, mode);
+
+        return false;
 }
 
 /**
@@ -340,7 +408,7 @@ bool esp8266_get_op_mode(void (*cb)(bool, enum esp8266_op_mode))
 /**
  * Callback invoked at the end of the join_ap command.
  */
-static void join_ap_cb(struct at_rsp *rsp, void *up)
+static bool join_ap_cb(struct at_rsp *rsp, void *up)
 {
         void (*cb)(bool) = up;
         const bool status = at_ok(rsp);
@@ -350,6 +418,8 @@ static void join_ap_cb(struct at_rsp *rsp, void *up)
 
         if (cb)
                 cb(status);
+
+        return false;
 }
 
 /**
@@ -365,7 +435,12 @@ bool esp8266_join_ap(const char* ssid, const char* pass, void (*cb)(bool))
                 return false;
 
         char cmd[64];
-        snprintf(cmd, ARRAY_LEN(cmd), "AT+CWJAP=\"%s\",\"%s\"", ssid, pass);
+        if (pass && *pass)
+                snprintf(cmd, ARRAY_LEN(cmd), "AT+CWJAP=\"%s\",\"%s\"",
+                         ssid, pass);
+        else
+                snprintf(cmd, ARRAY_LEN(cmd), "AT+CWJAP=\"%s\",", ssid);
+
         return NULL != at_put_cmd(state.ati, cmd, TIMEOUT_SUPER_MS,
                                   join_ap_cb, cb);
 }
@@ -414,7 +489,7 @@ static bool parse_client_info(char *rsp)
 /**
  * Callback that is invoked when the get_ap command completes.
  */
-static void get_client_ap_cb(struct at_rsp *rsp, void *up)
+static bool get_client_ap_cb(struct at_rsp *rsp, void *up)
 {
         static const char *cmd_name = "get_ap_cb";
         void (*cb)(bool, const struct esp8266_client_info*) = up;
@@ -425,7 +500,7 @@ static void get_client_ap_cb(struct at_rsp *rsp, void *up)
                 goto do_cb;
         }
 
-        char *client_info = rsp->msgs[rsp->msg_count - 1];
+        char *client_info = rsp->msgs[rsp->msg_count - 2];
         if (!parse_client_info(client_info)) {
                 cmd_failure(cmd_name, "Failed to parse AP info");
                 status = false;
@@ -435,6 +510,8 @@ static void get_client_ap_cb(struct at_rsp *rsp, void *up)
 do_cb:
         if (cb)
                 cb(status, &state.client_info);
+
+        return false;
 }
 
 /**
@@ -486,7 +563,7 @@ static bool parse_client_ip(struct at_rsp *rsp)
 /**
  * Callback that is invoked when the get_client_ip command completes.
  */
-static void get_client_ip_cb(struct at_rsp *rsp, void *up)
+static bool get_client_ip_cb(struct at_rsp *rsp, void *up)
 {
         static const char *cmd_name = "get_client_ip_cb";
         void (*cb)(bool, const struct esp8266_client_info*) = up;
@@ -506,6 +583,8 @@ static void get_client_ip_cb(struct at_rsp *rsp, void *up)
 do_cb:
         if (cb)
                 cb(status, &state.client_info);
+
+        return false;
 }
 
 /**
@@ -532,31 +611,148 @@ bool esp8266_get_client_info(void (*cb)
         return esp8266_get_client_ap(NULL) && esp8266_get_client_ip(cb);
 }
 
-static void set_mux_mode_cb(struct at_rsp *rsp, void *up)
+/**
+ *
+ * @param cb The callback to be invoked when the method completes.
+ */
+static bool connect_cb(struct at_rsp *rsp, void *up)
 {
-        void (*cb)(bool) = up;
+        static const char *cmd_name = "connect_cb";
+        void (*cb)(bool, const int) = up;
+        bool status = at_ok(rsp);
+        int chan_id = -1;
 
-        const bool status = at_ok(rsp);
-        if (!status)
-                cmd_failure("set_mux_mode_cb", NULL);
+        if (!status) {
+                cmd_failure(cmd_name, NULL);
+                goto do_cb;
+        }
 
+        /*
+         * <chan_id>,<connection status>
+         * 0,CONNECT
+         */
+        char *toks[3];
+        const int tok_cnt = at_parse_rsp_line(rsp->msgs[0], toks,
+                                              ARRAY_LEN(toks));
+
+        if (tok_cnt != 2) {
+                cmd_failure(cmd_name, "Unexpected # of tokens in response");
+                status = false;
+                goto do_cb;
+        }
+        chan_id = atoi(toks[0]);
+
+do_cb:
         if (cb)
-                cb(status);
+                cb(status, chan_id);
+
+        return false;
 }
 
 /**
- * Sets whether or not we are in multiplexing mode.
- * @param mux True if we want to, false otherwise.
- * @cb The callback to invoke when complete.
- * @return True if the command was queued, false otherwise.
+ * Opens a connection to a given destination.
+ * @param chan_id The channel ID to use.  0 - 4
+ * @param proto The Network protocol to use.
+ * @param dest_port The destination port to send data to.
+ * @param udp_port The source port from which data originates (UDP ONLY).
+ * @param udp_mode Tells the device whether or not the destination of the
+ * UDP packets are allowed to change.  0 means it won't change.  1 means it
+ * will change up to 1 time.  2 means it can change any number of times.
+ * @return true if the request was queued, false otherwise.
  */
-bool esp8266_set_mux_mode(const bool mux, void (*cb)(bool status))
+bool esp8266_connect(const int chan_id, const enum esp8266_net_proto proto,
+                     const char *ip_addr, const int dest_port,
+                     const int udp_port, const int udp_mode,
+                     void (*cb) (bool, const int))
 {
-        if (!check_initialized("set_mux_mode"))
+        if (!check_initialized("connect"))
                 return false;
 
-        char cmd_str[12];
-        snprintf(cmd_str, ARRAY_LEN(cmd_str), "AT+CIPMUX=%d", mux ? 1 : 0);
-        return NULL != at_put_cmd(state.ati, cmd_str, TIMEOUT_SHORT_MS,
-                                  set_mux_mode_cb, cb);
+        char cmd[64];
+        switch (proto) {
+        case ESP8266_NET_PROTO_TCP:
+                snprintf(cmd, ARRAY_LEN(cmd),
+                         "AT+CIPSTART=%d,\"TCP\",\"%s\",%d",
+                         chan_id, ip_addr, dest_port);
+                break;
+        case ESP8266_NET_PROTO_UDP:
+                snprintf(cmd, ARRAY_LEN(cmd),
+                         "AT+CIPSTART=%d,\"UDP\",\"%s\",%d,%d,%d",
+                         chan_id, ip_addr, dest_port, udp_port, udp_mode);
+                break;
+        }
+
+        return NULL != at_put_cmd(state.ati, cmd, TIMEOUT_LONG_MS,
+                                  connect_cb, cb);
+}
+
+/**
+ * This call back is designed to handle two types of response (since that is the
+ * way this wonkey device works).  So based on the state and reply we figure out
+ * how to handle things.
+ */
+static bool send_data_cb(struct at_rsp *rsp, void *up)
+{
+        const struct tx_info *ti = up;
+
+        switch(rsp->status) {
+        case AT_RSP_STATUS_OK:
+                /*
+                 * If here, then we are ready to send.  We copy straight from
+                 * the given pointer instead of copying the message to the
+                 * at_cmd struct because the message can be larger than what
+                 * that tiny struct can handle.  In a way, this is a poor man's
+                 * DMA, but it works well and should allow us to have the same
+                 * impact without loosing anything along the way.  We also return
+                 * true at the end of this method to indicate to the AT command
+                 * state machine that there is still more data to come from this
+                 * command.
+                 */
+                ; /* Silly C legacy issues */
+                const Serial *s = state.ati->sb->serial;
+                for (size_t i = 0; i < ti->len; ++i)
+                        s->put_c(ti->data[i]);
+
+                return true;
+        case AT_RSP_STATUS_SEND_OK:
+                /* Then we have successfully sent the message */
+                if (ti->cb)
+                        ti->cb(true);
+
+                return false;
+        default:
+                /* Then bad things happened */
+                cmd_failure("send_data_cb", "Bad response value");
+                if (ti->cb)
+                        ti->cb(false);
+
+                return false;
+        }
+}
+
+/**
+ * Use this to figure out what our IP is as a wireless client.
+ * @param cb The callback to be invoked when the method completes.
+ */
+bool esp8266_send_data(const int chan_id, const char *data,
+                       const size_t len, void (*cb)(bool))
+{
+        if (!check_initialized("send_data"))
+                return false;
+
+        /*
+         * Set the state before beginning the command.  This is a 2 part
+         * command with a fair bit of data, thus we need to use some
+         * internal state to handle it all.
+         */
+        struct tx_info *ti = &state.tx_info;
+        ti->data = data;
+        ti->len = len;
+        ti->cb = cb;
+
+        char cmd[32];
+        snprintf(cmd, ARRAY_LEN(cmd),"AT+CIPSEND=%d,%d", chan_id, len);
+
+        return NULL != at_put_cmd(state.ati, cmd, TIMEOUT_LONG_MS,
+                                  send_data_cb, ti);
 }

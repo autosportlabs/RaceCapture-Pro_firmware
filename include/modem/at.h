@@ -49,16 +49,18 @@ enum at_cmd_state {
 };
 
 /**
- * All failure status values are < 0.  All successful ones are > 0.
+ * All failure status values are < 0.  All successful command status values are > 0.
+ * All successful URC status values are >= 0.
  */
 enum at_rsp_status {
-        AT_RSP_STATUS_TIMEOUT = -4,
-        AT_RSP_STATUS_FAILED  = -3,
-        AT_RSP_STATUS_ABORTED = -2,
-        AT_RSP_STATUS_ERROR   = -1,
-        AT_RSP_STATUS_UNKNOWN =  0,
-        AT_RSP_STATUS_OK      =  1,
-        AT_RSP_STATUS_NONE    =  2,
+        AT_RSP_STATUS_SEND_FAIL = -5,
+        AT_RSP_STATUS_TIMEOUT   = -4,
+        AT_RSP_STATUS_FAILED    = -3,
+        AT_RSP_STATUS_ABORTED   = -2,
+        AT_RSP_STATUS_ERROR     = -1,
+        AT_RSP_STATUS_NONE      =  0,
+        AT_RSP_STATUS_OK        =  1,
+        AT_RSP_STATUS_SEND_OK   =  2,
 };
 
 struct at_rsp {
@@ -70,7 +72,7 @@ struct at_rsp {
 
 /* A command to send to our modem */
 struct at_cmd {
-        void (*rsp_cb)(struct at_rsp *rsp, void *rsp_up);
+        bool (*rsp_cb)(struct at_rsp *rsp, void *rsp_up);
         void *rsp_up;
         tiny_millis_t timeout_ms;
         char cmd[AT_CMD_MAX_LEN];
@@ -100,7 +102,7 @@ enum at_urc_flags {
 };
 
 struct at_urc {
-        void (*rsp_cb)(struct at_rsp *rsp, void *rsp_up);
+        bool (*rsp_cb)(struct at_rsp *rsp, void *rsp_up);
         void *rsp_up;
         enum at_urc_flags flags;
         size_t pfx_len;
@@ -138,12 +140,12 @@ void at_task(struct at_info *ati, const size_t ms_delay);
 
 struct at_cmd* at_put_cmd(struct at_info *ati, const char *cmd,
                           const tiny_millis_t timeout,
-                          void (*rsp_cb)(struct at_rsp *rsp, void *rsp_up),
+                          bool (*rsp_cb)(struct at_rsp *rsp, void *rsp_up),
                           void *rsp_up);
 
 struct at_urc* at_register_urc(struct at_info *ati, const char *pfx,
                                const enum at_urc_flags flags,
-                               void (*rsp_cb)(struct at_rsp *rsp, void *rsp_up),
+                               bool (*rsp_cb)(struct at_rsp *rsp, void *rsp_up),
                                void *rsp_up);
 
 bool at_configure_device(struct at_info *ati, const tiny_millis_t qp_ms,

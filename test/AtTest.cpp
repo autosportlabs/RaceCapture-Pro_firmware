@@ -67,9 +67,10 @@ static struct at_urc g_urc;
 
 static bool g_cb_called;
 static void *g_up;
-void cb(struct at_rsp *rsp, void *up) {
+bool cb(struct at_rsp *rsp, void *up) {
         g_cb_called = true;
         g_up = up;
+        return false;
 }
 
 CPP_GUARD_END
@@ -330,7 +331,7 @@ void AtTest::test_at_process_cmd_msg()
         CPPUNIT_ASSERT(!g_cb_called);
         CPPUNIT_ASSERT_EQUAL(AT_RX_STATE_CMD, g_ati.rx_state);
 
-        char status[] = "FAILED";
+        char status[] = "FAIL";
         process_cmd_msg(&g_ati, status);
         /* We expecte a callback b/c of status message */
         CPPUNIT_ASSERT(g_cb_called);
@@ -479,17 +480,12 @@ void AtTest::test_at_ok()
 {
         CPPUNIT_ASSERT(!at_ok(NULL));
 
-
         struct at_rsp rsp;
         rsp.status = AT_RSP_STATUS_ERROR;
         CPPUNIT_ASSERT(!at_ok(&rsp));
 
-        rsp.status = AT_RSP_STATUS_UNKNOWN;
-        CPPUNIT_ASSERT(!at_ok(&rsp));
-
         rsp.status = AT_RSP_STATUS_NONE;
         CPPUNIT_ASSERT(!at_ok(&rsp));
-
 
         rsp.status = AT_RSP_STATUS_OK;
         CPPUNIT_ASSERT(at_ok(&rsp));

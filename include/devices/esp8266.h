@@ -39,7 +39,7 @@ enum dev_init_state {
         DEV_INIT_STATE_FAILED,
 };
 
-bool esp8266_begin_init(struct at_info *ati);
+bool esp8266_init(struct at_info *ati, void (*cb)(enum dev_init_state));
 
 enum dev_init_state esp1866_get_dev_init_state();
 
@@ -77,7 +77,18 @@ bool esp8266_get_client_ip(void (*cb)
 bool esp8266_get_client_info(void (*cb)
                              (bool, const struct esp8266_client_info*));
 
-bool esp8266_set_mux_mode(const bool mux, void (*cb)(bool status));
+enum esp8266_net_proto {
+        ESP8266_NET_PROTO_TCP,
+        ESP8266_NET_PROTO_UDP,
+};
+
+bool esp8266_connect(const int chan_id, const enum esp8266_net_proto proto,
+                     const char *ip_addr, const int dest_port,
+                     const int udp_port, const int udp_mode,
+                     void (*cb) (bool, const int));
+
+bool esp8266_send_data(const int chan_id, const char *data,
+                       const size_t len, void (*cb)(bool));
 
 CPP_GUARD_END
 
