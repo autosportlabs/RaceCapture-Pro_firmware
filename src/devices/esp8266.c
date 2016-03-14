@@ -756,3 +756,40 @@ bool esp8266_send_data(const int chan_id, const char *data,
         return NULL != at_put_cmd(state.ati, cmd, TIMEOUT_LONG_MS,
                                   send_data_cb, ti);
 }
+
+/**
+ * Callback that is invoked when the get_client_ip command completes.
+ */
+static bool server_cmd_cb(struct at_rsp *rsp, void *up)
+{
+        static const char *cmd_name = "server_cmd_cb";
+        void (*cb)(bool) = up;
+        bool status = at_ok(rsp);
+
+        if (!status)
+                cmd_failure(cmd_name, NULL);
+
+        if (cb)
+                cb(status);
+
+        return false;
+}
+
+/**
+ * Use this command to start up the TCP server on the WiFi chip.
+ * @param action Pass in the action enum to control the action taken.
+ * @param port The port to listen on.
+ * @param cb The callback to be invoked when the method completes.
+ */
+bool esp8266_server_cmd(const enum esp8266_server_action action, int port,
+                        void (*cb)(bool))
+{
+        if (!check_initialized("server_cmd"))
+                return false;
+
+        char cmd[32];
+        snprintf(cmd, ARRAY_LEN(cmd),"AT+CIPSERVER=%d,%d", action, port);
+
+        return NULL != at_put_cmd(state.ati, cmd, TIMEOUT_MEDIUM_MS,
+                                  server_cmd_cb, cb);
+}

@@ -90,6 +90,19 @@ bool esp8266_connect(const int chan_id, const enum esp8266_net_proto proto,
 bool esp8266_send_data(const int chan_id, const char *data,
                        const size_t len, void (*cb)(bool));
 
+/**
+ * These ENUM values match the AT values needed for the command.  Do not
+ * change them unless you know what you are doing.
+ */
+enum esp8266_server_action {
+        ESP8266_SERVER_ACTION_DELETE = 0,
+        ESP8266_SERVER_ACTION_CREATE = 1,
+};
+
+bool esp8266_server_cmd(const enum esp8266_server_action action, int port,
+                        void (*cb)(bool));
+
+
 CPP_GUARD_END
 
 #endif /* _ESP8266_H_ */
