@@ -237,3 +237,8 @@ int process_api(Serial *serial, char *buffer, size_t bufferSize)
         return API_ERROR_MALFORMED;
     }
 }
+
+const char* unknown_api_key()
+{
+        return "unknown";
+}

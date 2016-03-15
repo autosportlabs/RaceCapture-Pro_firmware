@@ -37,6 +37,7 @@ uint32_t timer_get_rpm(size_t channel);
 uint32_t timer_get_hz(size_t channel);
 uint32_t timer_get_count(size_t channel);
 void timer_reset_count(size_t channel);
+float timer_get_sample(const int cid);
 
 unsigned int timerPeriodToUs(unsigned int ticks, unsigned int scaling);
 unsigned int timerPeriodToMs(unsigned int ticks, unsigned int scaling);

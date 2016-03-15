@@ -19,32 +19,18 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TIMER_DEVICE_H_
-#define TIMER_DEVICE_H_
+#ifndef _MACROS_H_
+#define _MACROS_H_
 
 #include "cpp_guard.h"
-
-#include <stdbool.h>
-#include <stdint.h>
-#include <stddef.h>
 
 CPP_GUARD_BEGIN
 
 /**
- * Initializes the timer channel.  Causes a reset in the state of
- * that channel.  Also adjusts the quiet period based on the pulses
- * per revolution.
- * @param channel The channel to init
- * @param speed The Speed enum value.  Controls
+ * Checks if two strings are equal.
  */
-bool timer_device_init(const size_t channel, const uint32_t speed,
-                       const uint32_t quiet_period_us,
-                       const enum timer_edge edge);
-uint32_t timer_device_get_period(size_t channel);
-uint32_t timer_device_get_usec(size_t channel);
-uint32_t timer_device_get_count(size_t channel);
-void timer_device_reset_count(size_t channel);
+#define STR_EQ(s1, s2)	(0 == strcmp((s1), (s2)))
 
 CPP_GUARD_END
 
-#endif /* TIMER_DEVICE_H_ */
+#endif /* _MACROS_H_ */

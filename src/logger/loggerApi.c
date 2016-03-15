@@ -1,7 +1,7 @@
 /*
  * Race Capture Firmware
  *
- * Copyright (C) 2015 Autosport Labs
+ * Copyright (C) 2016 Autosport Labs
  *
  * This file is part of the Race Capture firmware suite
  *
@@ -46,6 +46,7 @@
 #include "loggerTaskEx.h"
 #include "luaScript.h"
 #include "luaTask.h"
+#include "macros.h"
 #include "mem_mang.h"
 #include "mod_string.h"
 #include "modp_atonum.h"
@@ -61,8 +62,6 @@
 
 /* Max number of PIDs that can be specified in the setOBD2Cfg message */
 #define MAX_OBD2_MESSAGE_PIDS 10
-
-#define NAME_EQU(A, B) (strcmp(A, B) == 0)
 
 typedef void (*getConfigs_func)(size_t channeId, void ** baseCfg, ChannelConfig ** channelCfg);
 typedef const jsmntok_t * (*setExtField_func)(const jsmntok_t *json, const char *name, const char *value, void *cfg);
@@ -311,7 +310,7 @@ int api_sampleData(Serial *serial, const jsmntok_t *json)
         jsmn_trimData(meta);
         jsmn_trimData(value);
 
-        if (NAME_EQU("meta",meta->data)) {
+        if (STR_EQ("meta",meta->data)) {
             sendMeta = modp_atoi(value->data);
         }
     }
@@ -532,17 +531,17 @@ static const jsmntok_t * setChannelConfig(Serial *serial, const jsmntok_t *cfg,
         char *value = valueTok->data;
         unescapeTextField(value);
 
-        if (NAME_EQU("nm", name))
+        if (STR_EQ("nm", name))
             memcpy(channelCfg->label, value, DEFAULT_LABEL_LENGTH);
-        else if (NAME_EQU("ut", name))
+        else if (STR_EQ("ut", name))
             memcpy(channelCfg->units, value, DEFAULT_UNITS_LENGTH);
-        else if (NAME_EQU("min", name))
+        else if (STR_EQ("min", name))
             channelCfg->min = modp_atof(value);
-        else if (NAME_EQU("max", name))
+        else if (STR_EQ("max", name))
             channelCfg->max = modp_atof(value);
-        else if (NAME_EQU("sr", name))
+        else if (STR_EQ("sr", name))
             channelCfg->sampleRate = encodeSampleRate(modp_atoi(value));
-        else if (NAME_EQU("prec", name))
+        else if (STR_EQ("prec", name))
             channelCfg->precision = (unsigned char) modp_atoi(value);
         else if (setExtField != NULL)
             cfg = setExtField(valueTok, name, value, extCfg);
@@ -615,9 +614,9 @@ static const jsmntok_t * setScalingRow(ADCConfig *adcCfg, const jsmntok_t *mapRo
 {
     if (mapRow->type == JSMN_STRING) {
         jsmn_trimData(mapRow);
-        if (NAME_EQU(mapRow->data, "raw"))
+        if (STR_EQ(mapRow->data, "raw"))
             mapRow = setScalingMapRaw(adcCfg, mapRow + 1);
-        else if (NAME_EQU("scal", mapRow->data))
+        else if (STR_EQ("scal", mapRow->data))
             mapRow = setScalingMapValues(adcCfg, mapRow + 1);
     } else {
         mapRow++;
@@ -628,17 +627,17 @@ static const jsmntok_t * setScalingRow(ADCConfig *adcCfg, const jsmntok_t *mapRo
 static const jsmntok_t * setAnalogExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg)
 {
     ADCConfig *adcCfg = (ADCConfig *)cfg;
-    if (NAME_EQU("scalMod", name))
+    if (STR_EQ("scalMod", name))
         adcCfg->scalingMode = filterAnalogScalingMode(modp_atoi(value));
-    else if (NAME_EQU("scaling", name))
+    else if (STR_EQ("scaling", name))
         adcCfg->linearScaling = modp_atof(value);
-    else if (NAME_EQU("offset", name))
+    else if (STR_EQ("offset", name))
         adcCfg->linearOffset = modp_atof(value);
-    else if (NAME_EQU("alpha", name))
+    else if (STR_EQ("alpha", name))
         adcCfg->filterAlpha = modp_atof(value);
-    else if (NAME_EQU("cal", name))
+    else if (STR_EQ("cal", name))
         adcCfg->calibration = modp_atof(value);
-    else if (NAME_EQU("map", name)) {
+    else if (STR_EQ("map", name)) {
         if (valueTok->type == JSMN_OBJECT) {
             valueTok++;
             valueTok = setScalingRow(adcCfg, valueTok);
@@ -731,13 +730,13 @@ static const jsmntok_t * setImuExtendedField(const jsmntok_t *valueTok, const ch
 {
     ImuConfig *imuCfg = (ImuConfig *)cfg;
 
-    if (NAME_EQU("mode",name))
+    if (STR_EQ("mode",name))
         imuCfg->mode = filterImuMode(modp_atoi(value));
-    else if (NAME_EQU("chan",name))
+    else if (STR_EQ("chan",name))
         imuCfg->physicalChannel = filterImuChannel(modp_atoi(value));
-    else if (NAME_EQU("zeroVal",name))
+    else if (STR_EQ("zeroVal",name))
         imuCfg->zeroValue = modp_atoi(value);
-    else if (NAME_EQU("alpha", name))
+    else if (STR_EQ("alpha", name))
         imuCfg->filterAlpha = modp_atof(value);
     return valueTok + 1;
 }
@@ -1000,13 +999,13 @@ static const jsmntok_t * setPwmExtendedField(const jsmntok_t *valueTok, const ch
 {
     PWMConfig *pwmCfg = (PWMConfig *)cfg;
 
-    if (NAME_EQU("outMode", name))
+    if (STR_EQ("outMode", name))
         pwmCfg->outputMode = filterPwmOutputMode(modp_atoi(value));
-    if (NAME_EQU("logMode", name))
+    if (STR_EQ("logMode", name))
         pwmCfg->loggingMode = filterPwmLoggingMode(modp_atoi(value));
-    if (NAME_EQU("stDutyCyc", name))
+    if (STR_EQ("stDutyCyc", name))
         pwmCfg->startupDutyCycle = filterPwmDutyCycle(modp_atoi(value));
-    if (NAME_EQU("stPeriod", name))
+    if (STR_EQ("stPeriod", name))
         pwmCfg->startupPeriod = filterPwmPeriod(modp_atoi(value));
     return valueTok + 1;
 }
@@ -1032,7 +1031,7 @@ static const jsmntok_t * setGpioExtendedField(const jsmntok_t *valueTok, const c
 {
     GPIOConfig *gpioCfg = (GPIOConfig *)cfg;
 
-    if (NAME_EQU("mode", name))
+    if (STR_EQ("mode", name))
         gpioCfg->mode = filterGpioMode(modp_atoi(value));
     return valueTok + 1;
 }
@@ -1091,21 +1090,26 @@ static void getTimerConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** 
     }
 }
 
-static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg)
+static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok,
+                                               const char *name,
+                                               const char *value,
+                                               void *cfg)
 {
     TimerConfig *timerCfg = (TimerConfig *)cfg;
 
-    int iValue = modp_atoi(value);
-    if (NAME_EQU("st", name))
-        timerCfg->slowTimerEnabled = (iValue != 0);
-    if (NAME_EQU("mode", name))
-        timerCfg->mode = filterTimerMode(iValue);
-    if (NAME_EQU("alpha", name))
+    if (STR_EQ("mode", name))
+        timerCfg->mode = filterTimerMode(modp_atoi(value));
+    if (STR_EQ("alpha", name))
         timerCfg->filterAlpha = modp_atof(value);
-    if (NAME_EQU("ppr", name))
-        timerCfg->pulsePerRevolution = filterPulsePerRevolution(iValue);
-    if (NAME_EQU("speed", name))
-        timerCfg->timerSpeed = filterTimerDivider(iValue);
+    if (STR_EQ("ppr", name))
+        timerCfg->pulsePerRevolution =
+                filterPulsePerRevolution(modp_atoi(value));
+    if (STR_EQ("speed", name))
+        timerCfg->timerSpeed = filterTimerDivider(modp_atoi(value));
+    if (STR_EQ("filter_period", name))
+            timerCfg->filter_period_us = modp_atoi(value);
+    if (STR_EQ("edge", name))
+            timerCfg->edge = get_timer_edge_enum(value);
 
     return valueTok + 1;
 }
@@ -1118,11 +1122,14 @@ static void sendTimerConfig(Serial *serial, size_t startIndex, size_t endIndex)
         TimerConfig *cfg = &(getWorkingLoggerConfig()->TimerConfigs[i]);
         json_objStartInt(serial, i);
         json_channelConfig(serial, &(cfg->cfg), 1);
-        json_uint(serial, "st", cfg->slowTimerEnabled, 1);
+         /* DEPRECATED.  Only here for compatibility */
+        json_uint(serial, "st", 0, 1);
         json_uint(serial, "mode", cfg->mode, 1);
         json_float(serial, "alpha", cfg->filterAlpha, FILTER_ALPHA_PRECISION, 1);
         json_uint(serial, "ppr", cfg->pulsePerRevolution, 1);
-        json_uint(serial, "speed", cfg->timerSpeed, 0);
+        json_uint(serial, "speed", cfg->timerSpeed, 1);
+        json_int(serial, "filter_period", cfg->filter_period_us, 1);
+        json_string(serial, "edge", get_timer_edge_api_key(cfg->edge), 0);
         json_objEnd(serial, i != endIndex);
     }
     json_objEnd(serial, 0);
@@ -1296,7 +1303,7 @@ static const jsmntok_t * setPidExtendedField(const jsmntok_t *valueTok, const ch
 {
     PidConfig *pidCfg = (PidConfig *) cfg;
 
-    if (NAME_EQU("pid", name))
+    if (STR_EQ("pid", name))
         pidCfg->pid = (unsigned short) modp_atoi(value);
 
     return valueTok + 1;

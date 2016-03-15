@@ -104,13 +104,24 @@ void LoggerConfigTest::testLoggerInitGpioConfig() {
 }
 
 void LoggerConfigTest::testLoggerInitTimerConfig() {
-   LoggerConfig *lc = getWorkingLoggerConfig();
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        TimerConfig *tc = lc->TimerConfigs;
+        set_default_timer_config(tc, CONFIG_TIMER_CHANNELS);
 
-   TimerConfig *c = lc->TimerConfigs;
-   for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; ++i) {
-      CPPUNIT_ASSERT(strlen(c[i].cfg.label));
-      CPPUNIT_ASSERT(c[i].cfg.sampleRate == SAMPLE_DISABLED);
-   }
+        for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; ++i) {
+                if (0 == i) {
+                        CPPUNIT_ASSERT(strlen(tc[0].cfg.label));
+                } else {
+                        CPPUNIT_ASSERT(!strlen(tc[i].cfg.label));
+                }
+
+                CPPUNIT_ASSERT(tc[i].cfg.sampleRate == SAMPLE_DISABLED);
+        }
+
+        CPPUNIT_ASSERT(!strcmp("RPM", tc[0].cfg.label));
+        CPPUNIT_ASSERT(!strcmp("rpm", tc[0].cfg.units));
+        CPPUNIT_ASSERT_EQUAL((float) 0, tc[0].cfg.min);
+        CPPUNIT_ASSERT_EQUAL((float) 8000, tc[0].cfg.max);
 }
 
 void LoggerConfigTest::testLoggerInitImuConfig() {

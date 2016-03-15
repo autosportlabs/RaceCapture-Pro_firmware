@@ -63,6 +63,7 @@ void channel_config_defaults(ChannelConfig *cc);
 enum chan_cfg_status validate_channel_config_label(const char *label);
 enum chan_cfg_status validate_channel_config_units(const char *units);
 enum chan_cfg_status validate_channel_config(const ChannelConfig *cc);
+void set_default_channel_config(ChannelConfig *cc);
 
 CPP_GUARD_END
 
