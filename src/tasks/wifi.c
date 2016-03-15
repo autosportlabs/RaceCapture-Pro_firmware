@@ -61,10 +61,6 @@ static struct client_wifi_cfg {
         .ssid = "madworks",
         .pass = "reallyreallymad",
         },
-        {
-        .ssid = "Madworks 2Ghz N",
-        .pass = "reallyreallymad",
-        },
 };
 static struct client_wifi_cfg *clt_wifi_cfg = client_wifi_cfgs;
 
@@ -156,13 +152,6 @@ static bool is_client_wifi_on_desired_network()
         return STR_EQ(ci->ssid, clt_wifi_cfg->ssid);
 }
 
-static void next_wifi_client_cfg()
-{
-        clt_wifi_cfg += 1;
-        if (clt_wifi_cfg >= client_wifi_cfgs + ARRAY_LEN(client_wifi_cfgs))
-                clt_wifi_cfg = client_wifi_cfgs;
-}
-
 static void get_client_ap_cb(bool status, const struct esp8266_client_info *ci)
 {
         state.client_info = ci;
@@ -176,9 +165,7 @@ static void get_client_ap_cb(bool status, const struct esp8266_client_info *ci)
                 pr_info_str_msg("[wifi] Client network SSID: ", ci->ssid);
 
                 /* HACK FOR NOW */
-                state.cmd_state = WIFI_CMD_STATE_CLIENT_AP_GET;
-                next_wifi_client_cfg();
-                wifi_cmd_sleep(5000);
+                state.cmd_state = WIFI_CMD_STATE_NOOP;
         } else {
                 /* Not on the network we want to be on.  Set it */
                 state.cmd_state = WIFI_CMD_STATE_CLIENT_AP_SET;
@@ -235,6 +222,8 @@ static void wifi_task_loop()
                 return get_client_ap_info();
         case WIFI_CMD_STATE_CLIENT_AP_SET:
                 return set_client_ap();
+        case WIFI_CMD_STATE_NOOP:
+                wifi_cmd_sleep(1000);
         default:
                 pr_warning_int_msg("[wifi] CMD State Unhandled: ",
                                    state.cmd_state);

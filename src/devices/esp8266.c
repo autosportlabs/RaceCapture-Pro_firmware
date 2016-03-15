@@ -48,11 +48,16 @@ struct tx_info {
         void (*cb) (bool);
 };
 
+struct urc_cb {
+        void (*ipd_cb) (int id, size_t len, const char* data);
+};
+
 /**
  * Internal state of our driver.
  */
 static struct {
         struct at_info *ati;
+        struct urc_cb urc_cbs;
         void (*init_cb)(enum dev_init_state); /* STIEG: Put in own struct? */
         enum dev_init_state init_state;
         struct esp8266_client_info client_info;
@@ -693,7 +698,8 @@ bool esp8266_connect(const int chan_id, const enum esp8266_net_proto proto,
  */
 static bool send_data_cb(struct at_rsp *rsp, void *up)
 {
-        const struct tx_info *ti = up;
+        struct tx_info *ti = up;
+        bool status;
 
         switch(rsp->status) {
         case AT_RSP_STATUS_OK:
@@ -716,18 +722,21 @@ static bool send_data_cb(struct at_rsp *rsp, void *up)
                 return true;
         case AT_RSP_STATUS_SEND_OK:
                 /* Then we have successfully sent the message */
-                if (ti->cb)
-                        ti->cb(true);
-
-                return false;
+                status = true;
+                goto fini;
         default:
                 /* Then bad things happened */
                 cmd_failure("send_data_cb", "Bad response value");
-                if (ti->cb)
-                        ti->cb(false);
-
-                return false;
+                status = false;
+                goto fini;
         }
+
+fini:
+        if (ti->cb)
+                ti->cb(status);
+
+        ti->cb = NULL;
+        return false;
 }
 
 /**
@@ -746,6 +755,14 @@ bool esp8266_send_data(const int chan_id, const char *data,
          * internal state to handle it all.
          */
         struct tx_info *ti = &state.tx_info;
+
+        /*
+         * HACK: If a send is already in progress, fail for now.  Also
+         * this is totally not thread safe
+         */
+        if (ti->cb)
+                return false;
+
         ti->data = data;
         ti->len = len;
         ti->cb = cb;
@@ -792,4 +809,40 @@ bool esp8266_server_cmd(const enum esp8266_server_action action, int port,
 
         return NULL != at_put_cmd(state.ati, cmd, TIMEOUT_MEDIUM_MS,
                                   server_cmd_cb, cb);
+}
+
+/**
+ * This is the callback invoked when an IPD URC is seen.
+ */
+static bool ipd_urc_cb(struct at_rsp *rsp, void *up)
+{
+        if (!state.urc_cbs.ipd_cb)
+                return false; /* CB not registered yet */
+
+        static const char *cmd_name = "ipd_urc_cb";
+        if (AT_RSP_STATUS_NONE != rsp->status) {
+                cmd_failure(cmd_name, "Unexpected response status");
+                return false;
+        }
+
+        /* +IPD,<id>,<len>:<data> */
+        char *toks[5];
+        const int tok_cnt = at_parse_rsp_line(rsp->msgs[0], toks,
+                                              ARRAY_LEN(toks));
+        if (tok_cnt != 4) {
+                cmd_failure(cmd_name, "Unexpected # of tokens in response");
+                return false;
+        }
+
+        const int chan_id = atoi(toks[1]);
+        const size_t len = atoi(toks[2]);
+        state.urc_cbs.ipd_cb(chan_id, len, toks[3]);
+}
+
+bool esp8266_register_ipd_cb(void (*cb)(int, size_t, const char*))
+{
+        const enum at_urc_flags flags = AT_URC_FLAGS_NO_RSP_STATUS;
+
+        return NULL != at_register_urc(state.ati, "+IPD", flags,
+                                       ipd_urc_cb, NULL);
 }

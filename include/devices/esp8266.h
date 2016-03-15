@@ -102,6 +102,7 @@ enum esp8266_server_action {
 bool esp8266_server_cmd(const enum esp8266_server_action action, int port,
                         void (*cb)(bool));
 
+bool esp8266_register_ipd_cb(void (*cb)(int, size_t, const char*));
 
 CPP_GUARD_END
 
