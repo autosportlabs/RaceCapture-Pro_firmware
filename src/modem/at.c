@@ -187,7 +187,7 @@ static void process_urc_msg(struct at_info *ati, char *msg)
 
         _process_msg_generic(ati, AT_RX_STATE_URC, msg);
 
-        const bool no_status = ati->urc_ip->flags & AT_URC_FLAGS_NO_RSP_STATUS;
+        const bool no_status = !!(ati->urc_ip->flags & AT_URC_FLAGS_NO_RSP_STATUS);
         enum at_rsp_status status = AT_RSP_STATUS_NONE;
         if (no_status || is_rsp_status(&status, msg))
                 complete_urc(ati, status);

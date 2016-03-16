@@ -845,7 +845,9 @@ static bool ipd_urc_cb(struct at_rsp *rsp, void *up)
 
         const int chan_id = atoi(toks[1]);
         const size_t len = atoi(toks[2]);
-        cb(chan_id, len, toks[3]);
+        const char *msg = toks[3];
+
+        cb(chan_id, len, msg);
         return false;
 }
 
@@ -853,7 +855,7 @@ bool esp8266_register_ipd_cb(void (*cb)(int, size_t, const char*))
 {
         /* Control flags for special handling of response messages */
         const enum at_urc_flags flags =
-                AT_URC_FLAGS_NO_RSP_STATUS &
+                AT_URC_FLAGS_NO_RSP_STATUS |
                 AT_URC_FLAGS_NO_RSTRIP;
 
         return NULL != at_register_urc(state.ati, "+IPD,", flags,

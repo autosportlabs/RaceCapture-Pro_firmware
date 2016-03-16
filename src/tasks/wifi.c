@@ -28,6 +28,7 @@
 #include "rx_buff.h"
 #include "serial.h"
 #include "serial_buffer.h"
+#include "str_util.h"
 #include "task.h"
 #include "wifi.h"
 
@@ -82,9 +83,12 @@ static struct {
 
 static void rx_data_cb(int chan_id, size_t len, const char* data)
 {
-        const bool msg_ready = rx_buff_append(&state.rxb, chan_id, data);
-        if (msg_ready)
+        const bool msg_ready = rx_buff_append(&state.rxb, chan_id,
+                                              data, len);
+        if (msg_ready) {
+                rstrip_inline(state.rxb.buff + len - 1);
                 pr_info("[Wifi] Rx message ready!\r\n");
+        }
 }
 
 static bool init_task_state()
@@ -229,6 +233,13 @@ static void set_client_ap()
         set_cmd_in_prog();
 }
 
+static void process_rx_msgs_cb(bool status)
+{
+        pr_info_int_msg("[wifi] Msg tx status: ", status);
+        rx_buff_clear(&state.rxb);
+        clear_cmd_in_prog();
+}
+
 /**
  * Handles all of our incoming messages and what we do with them.
  */
@@ -241,7 +252,8 @@ static void process_rx_msgs()
         const char* data = rx_buff_get_buff(&state.rxb);
         const size_t len = strlen(data);
         const int chan_id = rx_buff_get_chan_id(&state.rxb);
-        esp8266_send_data(chan_id, data, len, NULL);
+        esp8266_send_data(chan_id, data, len, process_rx_msgs_cb);
+        set_cmd_in_prog();
 }
 
 static void server_cmd_cb(bool status)
