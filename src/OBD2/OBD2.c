@@ -53,7 +53,7 @@ static float celcius_to_farenheight(float celcius)
 
 static float kph_to_mph(float kph)
 {
-    return kph * 1.60934;
+    return kph * 0.621371;
 }
 
 /*
