@@ -48,16 +48,11 @@ struct tx_info {
         void (*cb) (bool);
 };
 
-struct urc_cb {
-        void (*ipd_cb) (int id, size_t len, const char* data);
-};
-
 /**
  * Internal state of our driver.
  */
 static struct {
         struct at_info *ati;
-        struct urc_cb urc_cbs;
         void (*init_cb)(enum dev_init_state); /* STIEG: Put in own struct? */
         enum dev_init_state init_state;
         struct esp8266_client_info client_info;
@@ -450,6 +445,21 @@ bool esp8266_join_ap(const char* ssid, const char* pass, void (*cb)(bool))
                                   join_ap_cb, cb);
 }
 
+void esp8266_log_client_info(const struct esp8266_client_info *info)
+{
+        pr_info("[esp8266] WiFi Client info:\r\n");
+        const bool connected = info->has_ap;
+        const char* conn_str = connected ? "Connected" : "Disconnected";
+        pr_info_str_msg("\tStatus: ", conn_str);
+
+        if (!connected)
+                return;
+
+        pr_info_str_msg("\tSSID: ", info->ssid);
+        pr_info_str_msg("\tAP MAC: ", info->mac);
+        pr_info_str_msg("\tIP: ", info->ip);
+}
+
 /**
  * Clears the client_info structure we have.
  */
@@ -816,8 +826,7 @@ bool esp8266_server_cmd(const enum esp8266_server_action action, int port,
  */
 static bool ipd_urc_cb(struct at_rsp *rsp, void *up)
 {
-        if (!state.urc_cbs.ipd_cb)
-                return false; /* CB not registered yet */
+        void (*cb)(int, size_t, const char*) = up;
 
         static const char *cmd_name = "ipd_urc_cb";
         if (AT_RSP_STATUS_NONE != rsp->status) {
@@ -836,13 +845,14 @@ static bool ipd_urc_cb(struct at_rsp *rsp, void *up)
 
         const int chan_id = atoi(toks[1]);
         const size_t len = atoi(toks[2]);
-        state.urc_cbs.ipd_cb(chan_id, len, toks[3]);
+        cb(chan_id, len, toks[3]);
+        return false;
 }
 
 bool esp8266_register_ipd_cb(void (*cb)(int, size_t, const char*))
 {
         const enum at_urc_flags flags = AT_URC_FLAGS_NO_RSP_STATUS;
 
-        return NULL != at_register_urc(state.ati, "+IPD", flags,
-                                       ipd_urc_cb, NULL);
+        return NULL != at_register_urc(state.ati, "+IPD,", flags,
+                                       ipd_urc_cb, cb);
 }

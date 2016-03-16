@@ -351,8 +351,10 @@ void at_task(struct at_info *ati, const size_t ms_delay)
 bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
                   const tiny_millis_t quiet_period_ms, const char *delim)
 {
-        if (!ati || !sb)
+        if (!ati || !sb) {
+                pr_error("[at] Bad init parameter\r\n");
                 return false;
+        }
 
         /* Clear everything.  We don't know where at_info has been */
         memset(ati, 0, sizeof(*ati));
@@ -365,7 +367,6 @@ bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
 
         /* Init the HEAD pointer of our queue... else segfault */
         ati->cmd_queue.head = ati->cmd_queue.cmds;
-
         serial_buffer_reset(ati->sb);
 
         return true;
@@ -439,7 +440,7 @@ struct at_urc* at_register_urc(struct at_info *ati, const char *pfx,
 {
         if (ati->urc_list.count >= AT_URC_MAX_URCS) {
                  /* Full up */
-                pr_warning("[at] URC list full");
+                pr_warning("[at] URC list full\r\n");
                 return NULL;
         }
 
@@ -473,8 +474,10 @@ struct at_urc* at_register_urc(struct at_info *ati, const char *pfx,
 bool at_configure_device(struct at_info *ati, const tiny_millis_t qp_ms,
                          const char *delim)
 {
-        if (!delim || strlen(delim) >= AT_DEV_CVG_DELIM_MAX_LEN)
+        if (!delim || strlen(delim) >= AT_DEV_CVG_DELIM_MAX_LEN) {
+                pr_error("[at] Failed to set delimeter\r\b");
                 return false;
+        }
 
         ati->dev_cfg.quiet_period_ms = qp_ms;
         strcpy(ati->dev_cfg.delim, delim); /* Sane b/c strlen check above */

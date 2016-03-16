@@ -66,6 +66,8 @@ struct esp8266_client_info {
         char ip[16];
 };
 
+void esp8266_log_client_info(const struct esp8266_client_info *info);
+
 bool esp8266_join_ap(const char* ssid, const char* pass, void (*cb)(bool));
 
 bool esp8266_get_client_ap(void (*cb)
