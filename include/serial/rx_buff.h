@@ -19,20 +19,38 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MACROS_H_
-#define _MACROS_H_
+#ifndef _RX_BUFF_H_
+#define _RX_BUFF_H_
 
 #include "cpp_guard.h"
 
-#include <string.h>
+#include <stdbool.h>
 
 CPP_GUARD_BEGIN
 
-/**
- * Checks if two strings are equal.
- */
-#define STR_EQ(s1, s2)	(0 == strcmp((s1), (s2)))
+struct rx_buff {
+        int chan_id;
+        bool msg_ready;
+        size_t idx;
+        size_t cap;
+        char *buff;
+};
+
+void rx_buff_clear(struct rx_buff *rxb);
+
+bool rx_buff_init(struct rx_buff *rxb, const size_t cap, char *buff);
+
+void rx_buff_free(struct rx_buff *rxb);
+
+bool rx_buff_append(struct rx_buff *rxb, int chan_id, const char *data,
+                    const size_t len);
+
+const char* rx_buff_get_buff(struct rx_buff *rxb);
+
+bool rx_buff_is_msg_ready(struct rx_buff *rxb);
+
+int rx_buff_get_chan_id(struct rx_buff *rxb);
 
 CPP_GUARD_END
 
-#endif /* _MACROS_H_ */
+#endif /* _RX_BUFF_H_ */

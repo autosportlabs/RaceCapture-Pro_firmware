@@ -19,20 +19,15 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MACROS_H_
-#define _MACROS_H_
+#ifndef _WIFI_H_
+#define _WIFI_H_
 
 #include "cpp_guard.h"
 
-#include <string.h>
-
 CPP_GUARD_BEGIN
 
-/**
- * Checks if two strings are equal.
- */
-#define STR_EQ(s1, s2)	(0 == strcmp((s1), (s2)))
+void start_wifi_task(const int priority);
 
 CPP_GUARD_END
 
-#endif /* _MACROS_H_ */
+#endif /* _WIFI_H_ */

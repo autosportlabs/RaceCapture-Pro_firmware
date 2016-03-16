@@ -413,8 +413,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
         jsmntok_t toks[TELEM_AUTH_JSMN_TOKENS];
 
         for (size_t tries = TELEM_AUTH_RX_TRIES; tries; --tries) {
-                const int chars = serial_buffer_rx(sb, TELEM_AUTH_RX_WAIT_MS);
-                if (!chars)
+                if (!serial_buffer_rx(sb, TELEM_AUTH_RX_WAIT_MS))
                         continue;
 
                 jsmn_init(&parser);

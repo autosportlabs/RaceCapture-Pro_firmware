@@ -19,20 +19,23 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MACROS_H_
-#define _MACROS_H_
+#ifndef _STR_UTIL_H_
+#define _STR_UTIL_H_
 
 #include "cpp_guard.h"
 
-#include <string.h>
+#include <stddef.h>
 
 CPP_GUARD_BEGIN
 
-/**
- * Checks if two strings are equal.
- */
-#define STR_EQ(s1, s2)	(0 == strcmp((s1), (s2)))
+size_t serial_msg_strlen(const char *data);
+
+char* lstrip_inline(char *str);
+
+char* rstrip_inline(char *str);
+
+char* strip_inline(char *str);
 
 CPP_GUARD_END
 
-#endif /* _MACROS_H_ */
+#endif /* _STR_UTIL_H_ */
