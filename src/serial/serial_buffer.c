@@ -24,19 +24,12 @@
 #include "serial.h"
 #include "serial_buffer.h"
 #include "stdutil.h"
-#include "string.h"
+#include "str_util.h"
 #include "taskUtil.h"
 
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
-
-static void ctrl_char_strip(char *data)
-{
-        /* Strip all control characters from our messages */
-        for(; *data >= 32; ++data);
-        *data = 0;
-}
 
 bool serial_buffer_create(struct serial_buffer *sb,
                           Serial *serial,
@@ -77,11 +70,11 @@ char* serial_buffer_rx(struct serial_buffer *sb,
                 if (!read)
                         return NULL;
 
-                ctrl_char_strip(ptr);
-                msg_len = strlen(ptr);
+                msg_len = serial_msg_strlen(ptr);
         }
 
-        sb->curr_len += msg_len + 1;
+        /* If here, got a non-empty msg.  Add on ctrl char len */
+        sb->curr_len += msg_len + strlen(ptr + msg_len) + 1;
         return ptr;
 }
 

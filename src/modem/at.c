@@ -44,30 +44,6 @@ static const struct at_rsp_status_msgs {
         AT_STATUS_MSG("ABORTED", AT_RSP_STATUS_ABORTED),
 };
 
-static char* trim(char *str)
-{
-        /*
-         * Shamelessly borrowed and modified from
-         * http://stackoverflow.com/questions/122616/how-do-i-trim-leading-trailing-whitespace-in-a-standard-way
-         */
-
-        /* Trim leading space */
-        while(isspace((int) *str))
-                ++str;
-
-        if(!*str)
-                return str; /* All spaces */
-
-        /* Trim trailing space */
-        char *end = str + strlen(str) - 1;
-        while(end > str && isspace((int) *end))
-                --end;
-
-        *++end = '\0';
-        return str;
-}
-
-
 static bool is_timed_out(const tiny_millis_t t_start,
                          const tiny_millis_t t_len)
 {

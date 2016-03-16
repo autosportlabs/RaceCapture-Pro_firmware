@@ -118,6 +118,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/util/modp_numtoa.c \
 			$(RCP_SRC)/util/panic.c \
 			$(RCP_SRC)/util/byteswap.c \
+			$(RCP_SRC)/util/str_util.c \
 			$(RCP_SRC)/util/taskUtil.c \
 			$(RCP_SRC)/sdcard/sdcard.c \
 			$(HAL_SRC)/cell_device/cell_pwr_btn.c \
