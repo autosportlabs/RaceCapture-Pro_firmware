@@ -80,9 +80,11 @@ void rx_buff_free(struct rx_buff *rxb)
  * Appends received data to our buffer
  * @param rxb The receive buffer to append too.
  * @param data The data to append.
+ * @param len The length of the data to append.
  * @return true if we have received a full message, false otherwise.
  */
-bool rx_buff_append(struct rx_buff *rxb, int chan_id, const char *data)
+bool rx_buff_append(struct rx_buff *rxb, int chan_id, const char *data,
+                    const size_t len)
 {
         if (rxb->chan_id > 0 && rxb->chan_id != chan_id) {
                 pr_warning(LOG_PFX "Data from differnt channel appended!  "
@@ -90,7 +92,8 @@ bool rx_buff_append(struct rx_buff *rxb, int chan_id, const char *data)
         }
         rxb->chan_id = chan_id;
 
-        for (; rxb->idx < rxb->cap && *data; ++rxb->idx, ++data)
+        for (size_t i = 0; rxb->idx < rxb->cap && i < len;
+             ++rxb->idx, ++data, ++i)
                 rxb->buff[rxb->idx] = *data;
 
         if (rxb->idx >= rxb->cap) {
@@ -101,23 +104,18 @@ bool rx_buff_append(struct rx_buff *rxb, int chan_id, const char *data)
                 return rxb->msg_ready = true;
         }
 
+        /* Cap the end of the string for sanity */
+        rxb->buff[rxb->idx] = 0;
+
         /*
          * If here, then we know we hit end of data stream.  Just need to
-         * check if we see our delimeters at the end of the message.  If
-         * so, trim them and end the string sanely.
+         * check if we see our delimeters at the end of the message.
          */
         bool delim_seen = false;
-        for (size_t i = rxb->idx - 1; i > 0; --i) {
-                switch(rxb->buff[i]) {
-                case '\n':
-                case '\r':
-                        delim_seen = true;
-                        rxb->buff[rxb->idx] = 0;
-                        break;
-                default:
-                        /* Break the loop */
-                        i = 0;
-                }
+        switch(rxb->buff[rxb->idx - 1]) {
+        case '\n':
+        case '\r':
+                delim_seen = true;
         }
 
         return rxb->msg_ready = delim_seen;

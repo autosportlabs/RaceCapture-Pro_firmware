@@ -42,7 +42,8 @@ bool rx_buff_init(struct rx_buff *rxb, const size_t cap, char *buff);
 
 void rx_buff_free(struct rx_buff *rxb);
 
-bool rx_buff_append(struct rx_buff *rxb, int chan_id, const char *data);
+bool rx_buff_append(struct rx_buff *rxb, int chan_id, const char *data,
+                    const size_t len);
 
 const char* rx_buff_get_buff(struct rx_buff *rxb);
 
