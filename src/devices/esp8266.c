@@ -851,7 +851,10 @@ static bool ipd_urc_cb(struct at_rsp *rsp, void *up)
 
 bool esp8266_register_ipd_cb(void (*cb)(int, size_t, const char*))
 {
-        const enum at_urc_flags flags = AT_URC_FLAGS_NO_RSP_STATUS;
+        /* Control flags for special handling of response messages */
+        const enum at_urc_flags flags =
+                AT_URC_FLAGS_NO_RSP_STATUS &
+                AT_URC_FLAGS_NO_RSTRIP;
 
         return NULL != at_register_urc(state.ati, "+IPD,", flags,
                                        ipd_urc_cb, cb);

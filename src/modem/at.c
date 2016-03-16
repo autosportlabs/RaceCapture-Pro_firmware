@@ -24,6 +24,7 @@
 #include "dateTime.h"
 #include "printk.h"
 #include "serial_buffer.h"
+#include "str_util.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -180,6 +181,10 @@ static bool _process_msg_generic(struct at_info *ati,
 
 static void process_urc_msg(struct at_info *ati, char *msg)
 {
+        const bool no_strip = ati->urc_ip->flags & AT_URC_FLAGS_NO_RSTRIP;
+        if (!no_strip)
+                msg = rstrip_inline(msg);
+
         _process_msg_generic(ati, AT_RX_STATE_URC, msg);
 
         const bool no_status = ati->urc_ip->flags & AT_URC_FLAGS_NO_RSP_STATUS;
@@ -190,6 +195,8 @@ static void process_urc_msg(struct at_info *ati, char *msg)
 
 static void process_cmd_msg(struct at_info *ati, char *msg)
 {
+        /* We always strip trialing message characters on cmd messages */
+        msg = rstrip_inline(msg);
         _process_msg_generic(ati, AT_RX_STATE_CMD, msg);
 
         enum at_rsp_status status;
@@ -306,7 +313,7 @@ void at_task(struct at_info *ati, const size_t ms_delay)
         char *msg = serial_buffer_rx(ati->sb, ms_delay);
 
         if (msg)
-                at_task_run_bytes_read(ati, trim(msg));
+                at_task_run_bytes_read(ati, lstrip_inline(msg));
         else
                 at_task_run_no_bytes(ati);
 

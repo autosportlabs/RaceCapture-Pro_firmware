@@ -24,6 +24,8 @@
 
 #include "cpp_guard.h"
 
+#include <stddef.h>
+
 CPP_GUARD_BEGIN
 
 size_t serial_msg_strlen(const char *data);

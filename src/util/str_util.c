@@ -22,6 +22,8 @@
 #include "str_util.h"
 
 #include <ctype.h>
+#include <stddef.h>
+#include <string.h>
 
 /**
  * Like strlen, except it ignores serial control characters.

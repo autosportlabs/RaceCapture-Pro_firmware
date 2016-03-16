@@ -30,6 +30,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 bool serial_buffer_create(struct serial_buffer *sb,
                           Serial *serial,

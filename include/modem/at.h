@@ -99,6 +99,8 @@ enum at_urc_flags {
         AT_URC_FLAGS_NONE = 0, /* For init with no flags set */
         /* Indicates URC is only one msg with no status */
         AT_URC_FLAGS_NO_RSP_STATUS = 1 << 0,
+        /* Indicates we should not strip the trailing msg whitespace chars. */
+        AT_URC_FLAGS_NO_RSTRIP     = 1 << 1,
 };
 
 struct at_urc {
