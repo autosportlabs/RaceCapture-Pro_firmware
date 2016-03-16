@@ -60,6 +60,7 @@
   a quiet period for filtering if they wish to override the automatically calculated
   value.  A value of 0 will disable the filtering altogether.  A value < 0 sets the
   code into automatic calculation mode. (Issue #464)
+* Fixed OBD-II speed conversion from kph to mph
 
 === 2.8.7 ===
 * Properly handle analog linear scaling offset value.
