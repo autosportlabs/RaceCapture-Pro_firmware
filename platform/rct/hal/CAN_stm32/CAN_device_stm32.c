@@ -129,12 +129,12 @@ static void CAN_device_init_1(int baud)
 
     /* CAN GPIOs configuration ************************************************* */
     /* Enable GPIO clock */
-    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
 
     /* Connect CAN pins to Alternate Function */
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource11, GPIO_AF_9);
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource12, GPIO_AF_9);
-    initGPIO(GPIOA, GPIO_Pin_11 | GPIO_Pin_12);
+    GPIO_PinAFConfig(GPIOB, GPIO_PinSource8, GPIO_AF_9);
+    GPIO_PinAFConfig(GPIOB, GPIO_PinSource9, GPIO_AF_9);
+    initGPIO(GPIOB, GPIO_Pin_8 | GPIO_Pin_9);
 
     /* CAN configuration ******************************************************* */
     /* Enable CAN clock */
