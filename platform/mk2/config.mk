@@ -51,6 +51,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/OBD2/OBD2_task.c \
 			$(RCP_SRC)/OBD2/OBD2.c \
 			$(RCP_SRC)/jsmn/jsmn.c \
+			$(RCP_SRC)/serial/ram_serial.c \
 			$(RCP_SRC)/serial/rx_buff.c \
 			$(RCP_SRC)/serial/serial.c \
 			$(RCP_SRC)/serial/serial_buffer.c \
