@@ -65,8 +65,8 @@ static struct client_wifi_cfg {
         char pass[24];
 } client_wifi_cfgs [] = {
         {
-        .ssid = "madworks",
-        .pass = "reallyreallymad",
+        .ssid = "LAN Downunder",
+        .pass = "HoyHoyHoy!",
         },
 };
 static struct client_wifi_cfg *clt_wifi_cfg = client_wifi_cfgs;
@@ -88,8 +88,11 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
         const bool msg_ready = rx_buff_append(&state.rxb, chan_id,
                                               data, len);
         if (msg_ready) {
-                rstrip_inline(state.rxb.buff + len - 1);
+                rx_buff_rstrip(&state.rxb);
                 pr_info("[Wifi] Rx message ready!\r\n");
+                pr_info("\"");
+                pr_info(rx_buff_get_buff(&state.rxb));
+                pr_info("\"\r\n");
         }
 }
 
@@ -240,7 +243,6 @@ static void process_rx_msgs_cb(bool status)
 {
         pr_info_int_msg("[wifi] Msg tx status: ", status);
 
-        rx_buff_clear(&state.rxb);
         ram_serial_clear();
 
         clear_cmd_in_prog();
@@ -258,13 +260,15 @@ static void process_rx_msgs()
         char *data_in = state.rxb.buff; /* HACK */
         const size_t len_in = strlen(data_in);
         Serial *serial = ram_serial_get_serial();
-        process_msg(serial, data_in, len_in);
+        process_read_msg(serial, data_in, len_in);
 
         const char *data_out = ram_serial_get_buff();
         const size_t len_out = ram_serial_get_len();
         const int chan_id = rx_buff_get_chan_id(&state.rxb);
         esp8266_send_data(chan_id, data_out, len_out,
                           process_rx_msgs_cb);
+
+        rx_buff_clear(&state.rxb);
 
         set_cmd_in_prog();
 }

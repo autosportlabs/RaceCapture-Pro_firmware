@@ -51,6 +51,8 @@ bool rx_buff_is_msg_ready(struct rx_buff *rxb);
 
 int rx_buff_get_chan_id(struct rx_buff *rxb);
 
+void rx_buff_rstrip(struct rx_buff *rxb);
+
 CPP_GUARD_END
 
 #endif /* _RX_BUFF_H_ */

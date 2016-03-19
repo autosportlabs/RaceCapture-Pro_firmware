@@ -69,8 +69,9 @@ char* rstrip_inline(char *str)
 {
         /* Trim trailing space */
         char *end = str + strlen(str) - 1;
-        for(; end > str && isspace((int) *end); --end);
-        *++end = '\0';
+        for(; end >= str && isspace((int) *end); --end);
+        *++end = 0;
+
         return str;
 }
 

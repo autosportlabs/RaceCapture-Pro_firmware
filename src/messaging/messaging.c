@@ -33,6 +33,33 @@ void initMessaging()
     initApi();
 }
 
+int process_read_msg(Serial *serial, char *buff, size_t len)
+{
+        if (!buff)
+                return 0;
+
+        switch(*buff) {
+        case '\0':
+                /* Empty line?  Show the Help and print the > */
+                show_welcome(serial);
+                show_command_prompt(serial);
+                return 1;
+        case '{':
+                /* Then we assume JSON. */
+                return process_api(serial, buff, len);
+        default:
+                /* Assume interactive command */
+                ;
+                const int res = process_command(serial, buff, len);
+                if (res != COMMAND_OK) {
+                    serial->put_s("Unknown Command- Press Enter for Help.");
+                    put_crlf(serial);
+                }
+                show_command_prompt(serial);
+                return res;
+        }
+}
+
 void process_msg(Serial *serial, char * buffer, size_t bufferSize)
 {
     if (lockedApiMode) {

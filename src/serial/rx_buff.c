@@ -22,6 +22,7 @@
 #include "mem_mang.h"
 #include "printk.h"
 #include "rx_buff.h"
+#include "str_util.h"
 
 #include <stdbool.h>
 #include <string.h>
@@ -139,7 +140,18 @@ bool rx_buff_is_msg_ready(struct rx_buff *rxb)
         return rxb->msg_ready;
 }
 
+/**
+ * @return The channel ID that provided the data.
+ */
 int rx_buff_get_chan_id(struct rx_buff *rxb)
 {
         return rxb->chan_id;
+}
+
+/**
+ * Strips all whitespace characters from the end of the buffer inline.
+ */
+void rx_buff_rstrip(struct rx_buff *rxb)
+{
+        rstrip_inline(rxb->buff);
 }
