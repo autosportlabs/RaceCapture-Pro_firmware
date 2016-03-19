@@ -24,7 +24,9 @@
 #include "at.h"
 #include "esp8266.h"
 #include "macros.h"
+#include "messaging.h"
 #include "printk.h"
+#include "ram_serial.h"
 #include "rx_buff.h"
 #include "serial.h"
 #include "serial_buffer.h"
@@ -159,6 +161,7 @@ static void init_wifi_cb(enum dev_init_state dev_state)
 static void init_wifi()
 {
         esp8266_init(&state.ati, init_wifi_cb);
+        ram_serial_init(WIFI_SERIAL_BUFF_SIZE);
 
         /*
          * Now register the callback for incoming data.  Safe to do
@@ -236,7 +239,10 @@ static void set_client_ap()
 static void process_rx_msgs_cb(bool status)
 {
         pr_info_int_msg("[wifi] Msg tx status: ", status);
+
         rx_buff_clear(&state.rxb);
+        ram_serial_clear();
+
         clear_cmd_in_prog();
 }
 
@@ -249,10 +255,17 @@ static void process_rx_msgs()
                 return; /* Nothing to do */
 
         /* If here, we have a message to handle */
-        const char* data = rx_buff_get_buff(&state.rxb);
-        const size_t len = strlen(data);
+        char *data_in = state.rxb.buff; /* HACK */
+        const size_t len_in = strlen(data_in);
+        Serial *serial = ram_serial_get_serial();
+        process_msg(serial, data_in, len_in);
+
+        const char *data_out = ram_serial_get_buff();
+        const size_t len_out = ram_serial_get_len();
         const int chan_id = rx_buff_get_chan_id(&state.rxb);
-        esp8266_send_data(chan_id, data, len, process_rx_msgs_cb);
+        esp8266_send_data(chan_id, data_out, len_out,
+                          process_rx_msgs_cb);
+
         set_cmd_in_prog();
 }
 
