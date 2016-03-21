@@ -22,19 +22,31 @@
 #include "capabilities.h"
 #include "modp_numtoa.h"
 #include "printk.h"
+#include "array_utils.h"
 #include "serial.h"
 #include "usart.h"
 #include "usb_comm.h"
 
 static Serial serial_ports[SERIAL_COUNT];
 
+bool _init_serial(Serial *s, uart_id_t uart_id, const char *name)
+{
+        serial_set_name(s, name);
+        return usart_init_serial(s, uart_id) != 0;
+}
+
 void init_serial(void)
 {
+        const bool init =
+                _init_serial(&serial_ports[SERIAL_GPS], UART_GPS, "GPS") &&
+                _init_serial(&serial_ports[SERIAL_TELEMETRY], UART_TELEMETRY,
+                             "BlueTooth") &&
+                _init_serial(&serial_ports[SERIAL_WIRELESS], UART_WIRELESS,
+                             "Cellular") &&
+                _init_serial(&serial_ports[SERIAL_AUX], UART_AUX, "Aux");
 
-        usart_init_serial(&serial_ports[SERIAL_GPS], UART_GPS);
-        usart_init_serial(&serial_ports[SERIAL_TELEMETRY], UART_TELEMETRY);
-        usart_init_serial(&serial_ports[SERIAL_WIRELESS], UART_WIRELESS);
-        usart_init_serial(&serial_ports[SERIAL_AUX], UART_AUX);
+        if (!init)
+                pr_error("[serial] Failed to initialize one or more ports\r\n");
 
 #if defined(USB_SERIAL_SUPPORT)
         usb_init_serial(&serial_ports[SERIAL_USB]);
@@ -71,63 +83,106 @@ Serial* get_serial(serial_id_t port)
         return port < SERIAL_COUNT ? &serial_ports[port] : NULL;
 }
 
-static void do_rx_callback(const Serial *s, const char *data)
+static void _serial_log(const Serial *s, const char *action, bool *pfx,
+                        const char *data)
 {
-        if (s->rx_callback)
-                s->rx_callback(data);
+        if (!s->sl.enabled || NULL == data)
+                return;
+
+        for(; *data; ++data) {
+                if (*pfx) {
+                        pr_info("[serial]");
+                        if (s->sl.name) {
+                                pr_info("[");
+                                pr_info(s->sl.name);
+                                pr_info("]");
+                        }
+                        pr_info(action);
+                        *pfx = false;
+                }
+
+                switch(*data) {
+                case('\r'):
+                        pr_info("\\r");
+                        break;
+                case('\n'):
+                        pr_info("\\n\r\n");
+                        *pfx = true;
+                        break;
+                default:
+                        pr_info_char(*data);
+                        break;
+                }
+        }
 }
 
-static void do_tx_callback(const Serial *s, const char *data)
+static void do_rx_callback(Serial *s, const char *data)
 {
-        if (s->tx_callback)
-                s->tx_callback(data);
+        _serial_log(s, " RX: ", &s->sl.rx_pfx, data);
 }
 
-static void do_rx_callback_char(const Serial *s, const char data)
+static void do_tx_callback(Serial *s, const char *data)
+{
+        _serial_log(s, " TX: ", &s->sl.tx_pfx, data);
+}
+
+static void do_rx_callback_char(Serial *s, const char data)
 {
         const char str[] = { data, '\0' };
         do_rx_callback(s, str);
 }
 
-static void do_tx_callback_char(const Serial *s, const char data)
+static void do_tx_callback_char(Serial *s, const char data)
 {
         const char str[] = { data, '\0' };
         do_tx_callback(s, str);
 }
 
-void serial_flush(const Serial *s)
+bool serial_logging(Serial *s, const bool enable)
+{
+        const bool prev = s->sl.enabled;
+        s->sl.enabled = enable;
+        return prev;
+}
+
+void serial_set_name(Serial *s, const char *name)
+{
+        s->sl.name = name;
+}
+
+void serial_flush(Serial *s)
 {
         s->flush();
 }
 
-void serial_init(const Serial *s, unsigned int bits, unsigned int parity,
+void serial_init(Serial *s, unsigned int bits, unsigned int parity,
                  unsigned int stopBits, unsigned int baud)
 {
         s->init(bits, parity, stopBits, baud);
 }
 
-char serial_get_c(const Serial *s)
+char serial_get_c(Serial *s)
 {
         const char c = s->get_c();
         do_rx_callback_char(s, c);
         return c;
 }
 
-int serial_get_c_wait(const Serial *s, char *c, const size_t delay)
+int serial_get_c_wait(Serial *s, char *c, const size_t delay)
 {
         const int rv = s->get_c_wait(c, delay);
         do_rx_callback_char(s, *c);
         return rv;
 }
 
-int serial_get_line(const Serial *s, char *l, const int len)
+int serial_get_line(Serial *s, char *l, const int len)
 {
         const int rv = s->get_line(l, len);
         do_rx_callback(s, l);
         return rv;
 }
 
-int serial_get_line_wait(const Serial *s, char *l, const int len,
+int serial_get_line_wait(Serial *s, char *l, const int len,
                          const size_t delay)
 {
         const int rv = s->get_line_wait(l, len, delay);
@@ -135,19 +190,19 @@ int serial_get_line_wait(const Serial *s, char *l, const int len,
         return rv;
 }
 
-void serial_put_c(const Serial *s, const char c)
+void serial_put_c(Serial *s, const char c)
 {
         do_tx_callback_char(s, c);
         s->put_c(c);
 }
 
-void serial_put_s(const Serial *s, const char *l)
+void serial_put_s(Serial *s, const char *l)
 {
         do_tx_callback(s, l);
         s->put_s(l);
 }
 
-size_t serial_read_byte(const Serial *serial, uint8_t *b, size_t delay)
+size_t serial_read_byte(Serial *serial, uint8_t *b, size_t delay)
 {
         return serial_get_c_wait(serial, (char*) b, delay);
 }
@@ -394,7 +449,7 @@ void put_bytes(Serial *serial, char *data, unsigned int length)
         }
 }
 
-void put_crlf(const Serial *serial)
+void put_crlf(Serial *serial)
 {
         serial_put_s(serial, "\r\n");
 }
