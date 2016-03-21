@@ -43,6 +43,7 @@
  * your own peril.
  */
 #define BT_BACKOFF_MS	1000
+#define BT_BAUD_RATES	{115200, 57600, 9600}
 #define BT_COMMAND_WAIT	600
 #define BT_DEFAULT_NAME	"RaceCapturePro"
 #define BT_DEFAULT_PIN	"1234"
@@ -121,7 +122,7 @@ static int set_check_bt_serial_baud(DeviceConfig *config, int baud)
         int rc = false;
 
         /* Change the baud and give things a bit to catch up */
-        config->serial->init(8, 0, 1, baud);
+        serial_init(config->serial, 8, 0, 1, baud);
         for (size_t tries = BT_PING_TRIES; 0 < tries && !rc; --tries)
                 rc = sendCommand(config, "AT");
 
@@ -165,22 +166,25 @@ static int bt_find_working_baud(DeviceConfig *config, BluetoothConfig *btc)
         pr_info("BT: Detecting baud rate...\r\n");
 
         const int targetBaud = btc->baudRate;
-        const int rates[] = {targetBaud, 115200, 57600, 9600};
+        const int rates[] = BT_BAUD_RATES;
         int rate = 0;
-        for (size_t i = 0; i < sizeof(rates)/sizeof(*rates); ++i) {
+
+        if (set_check_bt_serial_baud(config, targetBaud))
+                        rate = targetBaud;
+
+        for (size_t i = 0; rate == 0 && i < sizeof(rates)/sizeof(*rates); ++i) {
                 pr_info_int_msg("BT: Trying Baudrate: ", rates[i]);
-                if(set_check_bt_serial_baud(config, rates[i])) {
+                if (set_check_bt_serial_baud(config, rates[i]))
                         rate = rates[i];
-                        break;
-                }
         }
 
         /* Check that we didn't fail to find a workable rate */
-        if (!rate)
+        if (rate) {
+                pr_info_int_msg("BT: Device responds at baud ", rate);
+        } else {
                 pr_info("BT: Could not detect device using known baud "
                         "rates.\r\n");
-        else
-                pr_info_int_msg("BT: Device responds at baud ", rate);
+        }
 
         return rate;
 }
@@ -230,6 +234,10 @@ int bt_init_connection(DeviceConfig *config)
         switch (baud) {
         case 0:
                 pr_info("BT: Failed to communicate with device.\r\n");
+
+                /* Restore the targetBaud rate in case alreay in command mode */
+                set_check_bt_serial_baud(config, targetBaud);
+
                 break;
         case 9600:
                 pr_info("BT: Detected factory settings.  Assuming not "
