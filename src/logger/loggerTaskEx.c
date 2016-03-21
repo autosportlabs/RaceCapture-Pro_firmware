@@ -252,8 +252,10 @@ void loggerTaskEx(void *params)
                 }
 #endif
 
-                /* send the sample on to the telemetry task(s) */
-                if (!isHigherSampleRate(sampledRate, telemetrySampleRate))
+
+                /* If we're at the telemetry sample rate or lower
+                 * send it on to the telemetry task */
+                if (currentTicks % telemetrySampleRate == 0)
                         queueTelemetryRecord(&msg);
 
                 ++bufferIndex;
