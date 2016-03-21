@@ -235,7 +235,7 @@ int bt_init_connection(DeviceConfig *config)
         case 0:
                 pr_info("BT: Failed to communicate with device.\r\n");
 
-                /* Restore the targetBaud rate in case alreay in command mode */
+                /* Restore the targetBaud rate in case already in command mode */
                 set_check_bt_serial_baud(config, targetBaud);
 
                 break;
