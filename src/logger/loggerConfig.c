@@ -714,3 +714,8 @@ LoggerConfig * getWorkingLoggerConfig()
 {
     return &g_workingLoggerConfig;
 }
+
+bool should_sample(const int sample_rate, const int max_rate)
+{
+        return sample_rate == 0 ? false : sample_rate % max_rate == 0;
+}

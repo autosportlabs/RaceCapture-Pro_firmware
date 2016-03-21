@@ -242,7 +242,7 @@ void loggerTaskEx(void *params)
                  * logging button.
                  */
 #if defined(SDCARD_SUPPORT)
-                if (is_logging && sampledRate >= loggingSampleRate) {
+                if (is_logging && should_sample(currentTicks, loggingSampleRate)) {
                         /* XXX Move this to file writer? */
                         const portBASE_TYPE res = queue_logfile_record(&msg);
                         const logging_status_t ls = pdTRUE == res ?
@@ -253,9 +253,11 @@ void loggerTaskEx(void *params)
 #endif
 
 
-                /* If we're at the telemetry sample rate or lower
-                 * send it on to the telemetry task */
-                if (currentTicks % telemetrySampleRate == 0)
+                /*
+                 * If we're at the telemetry sample rate or lower
+                 * send it on to the telemetry task.
+                 */
+                if (should_sample(currentTicks, telemetrySampleRate))
                         queueTelemetryRecord(&msg);
 
                 ++bufferIndex;
