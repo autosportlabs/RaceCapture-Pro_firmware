@@ -59,32 +59,16 @@ bluetooth_status_t bt_get_status()
         return g_bluetooth_status;
 }
 
-static int readBtWait(DeviceConfig *config, size_t delay)
-{
-        return config->serial->get_line_wait(config->buffer, config->length,
-                                             delay);
-}
-
-static void flushBt(DeviceConfig *config)
-{
-        config->buffer[0] = '\0';
-        config->serial->flush();
-}
-
-void putsBt(DeviceConfig *config, const char *data)
-{
-        config->serial->put_s(data);
-}
-
 static int sendBtCommandWaitResponse(DeviceConfig *config, const char *cmd,
                                      const char *rsp, const size_t wait)
 {
         /* Put a little time between commands for the BT unit to catch up */
         delayMs(BT_BACKOFF_MS);
 
-        flushBt(config);
-        putsBt(config, cmd);
-        readBtWait(config, wait);
+        serial_flush(config->serial);
+        serial_put_s(config->serial, cmd);
+        serial_get_line_wait(config->serial, config->buffer,
+                             config->length, wait);
 
         const bool res = 0 == strncmp(config->buffer, rsp, strlen(rsp));
 

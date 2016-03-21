@@ -45,6 +45,9 @@ CPP_GUARD_BEGIN
         SYSTEM_COMMAND("setSerialLog", "Enables/disables logging of  "  \
                        "serial device for debug purposes",              \
                        "<port> <0|1>", SetSerialLog)                    \
+        SYSTEM_COMMAND("flashConfig", "Flashes the NVRAM with the "     \
+                       "current configuration of the LoggerConfig",     \
+                       "", FlashConfig)                                 \
 
 
 void ResetConfig(Serial *serial, unsigned int argc, char **argv);
@@ -55,6 +58,8 @@ void ViewLog(Serial *serial, unsigned int argc, char **argv);
 void SetLogLevel(Serial *serial, unsigned int argc, char **argv);
 void LogGpsData(Serial *serial, unsigned int argc, char **argv);
 void SetSerialLog(Serial *serial, unsigned int argc, char **argv);
+void FlashConfig(Serial *serial, unsigned int argc, char **argv);
+
 CPP_GUARD_END
 
 #endif /* LOGGERCOMMANDS_H_ */

@@ -41,15 +41,17 @@ typedef enum {
 #define SERIAL_COUNT 5
 
 struct serial_logging {
-        bool enabled;
+        /* bool enabled; XXX: Handled in LoggerConfig->logging_cfg */
         const char *name;
         bool tx_pfx;
         bool rx_pfx;
 };
 
 typedef struct _Serial {
+        serial_id_t serial_id;
         struct serial_logging sl;
 
+        /* DO NOT USE THESE METHODS DIRECTLY!!!  Use the wrappers below */
         void (*flush)(void);
         char (*get_c)(void);
         int  (*get_c_wait)(char *c, size_t delay);

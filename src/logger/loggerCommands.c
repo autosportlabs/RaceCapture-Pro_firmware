@@ -46,6 +46,11 @@
 /* Time (ms) to wait for input before continuing */
 #define TERM_WAIT_MS 5
 
+static const char* enable_str(const bool enable)
+{
+        return enable ? "Enabled" : "Disabled";
+}
+
 void TestSD(Serial *serial, unsigned int argc, char **argv)
 {
     /* TODO BAP - could not remove TestSD from command list b/c statically defined array, fix somehow */
@@ -195,7 +200,7 @@ void LogGpsData(Serial *serial, unsigned int argc, char **argv)
     } else {
         const bool enable = (argv[1][0] != '0');
         setGpsDataLogging(enable);
-        serial->put_s(enable ? "Enabling" : "Disabling");
+        serial->put_s(enable_str(enable));
         serial->put_s(" the printing of raw GPS data to the log.\r\n");
         put_commandOK(serial);
     }
@@ -205,28 +210,38 @@ void LogGpsData(Serial *serial, unsigned int argc, char **argv)
 
 void SetSerialLog(Serial *serial, unsigned int argc, char **argv)
 {
-    if (argc != 2) {
-            serial->put_s("Two arguments required to specify serial port "
-                          "and enable/disable option\r\n");
-            put_commandError(serial, ERROR_CODE_INVALID_PARAM);
-            goto done;
-    }
+        if (argc != 3) {
+                serial->put_s("Two arguments required to specify serial port "
+                              "and enable/disable option\r\n");
+                put_commandError(serial, ERROR_CODE_INVALID_PARAM);
+                goto done;
+        }
 
-    const serial_id_t port = (serial_id_t) atoi(argv[1]);
-    Serial *s = get_serial(port);
-    if (port == SERIAL_USB || !s) {
-            serial->put_s("Invalid serial port.\r\n");
-            put_commandError(serial, ERROR_CODE_INVALID_PARAM);
-            goto done;
-    }
+        const serial_id_t port = (serial_id_t) atoi(argv[1]);
+        Serial *s = get_serial(port);
+        if (port == SERIAL_USB || !s) {
+                serial->put_s("Invalid serial port.\r\n");
+                put_commandError(serial, ERROR_CODE_INVALID_PARAM);
+                goto done;
+        }
 
-    const bool enable = argv[2][0] != '0';
-    serial_logging(s, enable);
+        const bool enable = argv[2][0] != '0';
+        const bool prev = serial_logging(s, enable);
 
-    serial->put_s(enable ? "Enabling" : "Disabling");
-    serial->put_s("\r\n");
-    put_commandOK(serial);
+        serial->put_s(enable_str(prev));
+        serial->put_s(" -> ");
+        serial->put_s(enable_str(enable));
+        serial->put_s("\r\n");
+        put_commandOK(serial);
 
 done:
-    serial->flush();
+        serial->flush();
+}
+
+void FlashConfig(Serial *serial, unsigned int argc, char **argv)
+{
+        const bool success = flashLoggerConfig() == 0;
+        serial->put_s(success ? "Success" : "Failed");
+        serial->put_s("\r\n");
+        put_commandOK(serial);
 }

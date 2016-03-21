@@ -19,31 +19,34 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "array_utils.h"
 #include "capabilities.h"
+#include "loggerConfig.h"
 #include "modp_numtoa.h"
 #include "printk.h"
-#include "array_utils.h"
 #include "serial.h"
 #include "usart.h"
 #include "usb_comm.h"
 
 static Serial serial_ports[SERIAL_COUNT];
 
-bool _init_serial(Serial *s, uart_id_t uart_id, const char *name)
+bool _init_serial(serial_id_t serial_id, uart_id_t uart_id, const char *name)
 {
+        Serial *s = &serial_ports[serial_id];
+
+        s->serial_id = serial_id;
         serial_set_name(s, name);
+
         return usart_init_serial(s, uart_id) != 0;
 }
 
 void init_serial(void)
 {
         const bool init =
-                _init_serial(&serial_ports[SERIAL_GPS], UART_GPS, "GPS") &&
-                _init_serial(&serial_ports[SERIAL_TELEMETRY], UART_TELEMETRY,
-                             "BlueTooth") &&
-                _init_serial(&serial_ports[SERIAL_WIRELESS], UART_WIRELESS,
-                             "Cellular") &&
-                _init_serial(&serial_ports[SERIAL_AUX], UART_AUX, "Aux");
+                _init_serial(SERIAL_GPS, UART_GPS, "GPS") &&
+                _init_serial(SERIAL_TELEMETRY, UART_TELEMETRY, "Cellular") &&
+                _init_serial(SERIAL_WIRELESS, UART_WIRELESS, "BlueTooth") &&
+                _init_serial(SERIAL_AUX, UART_AUX, "Aux");
 
         if (!init)
                 pr_error("[serial] Failed to initialize one or more ports\r\n");
@@ -86,7 +89,10 @@ Serial* get_serial(serial_id_t port)
 static void _serial_log(const Serial *s, const char *action, bool *pfx,
                         const char *data)
 {
-        if (!s->sl.enabled || NULL == data)
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        const bool enabled = lc->logging_cfg.serial[s->serial_id];
+
+        if (!enabled || NULL == data)
                 return;
 
         for(; *data; ++data) {
@@ -140,8 +146,11 @@ static void do_tx_callback_char(Serial *s, const char data)
 
 bool serial_logging(Serial *s, const bool enable)
 {
-        const bool prev = s->sl.enabled;
-        s->sl.enabled = enable;
+        LoggerConfig *lc = getWorkingLoggerConfig();
+
+        const bool prev = lc->logging_cfg.serial[s->serial_id];
+        lc->logging_cfg.serial[s->serial_id] = enable;
+
         return prev;
 }
 

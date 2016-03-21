@@ -446,6 +446,12 @@ typedef struct _ConnectivityConfig {
 #define SD_LOGGING_MODE_DISABLED					0
 #define SD_LOGGING_MODE_CSV							1
 
+/**
+ * Configurations specific to our logging infrastructure.
+ */
+struct logging_config {
+        bool serial[SERIAL_COUNT];
+};
 
 typedef struct _LoggerConfig {
     VersionInfo RcpVersionInfo;
@@ -499,6 +505,7 @@ typedef struct _LoggerConfig {
     //Connectivity Configuration
     ConnectivityConfig ConnectivityConfigs;
 
+        struct logging_config logging_cfg;
     //Padding data to accommodate flash routine
     char padding_data[FLASH_PAGE_SIZE];
 } LoggerConfig;
