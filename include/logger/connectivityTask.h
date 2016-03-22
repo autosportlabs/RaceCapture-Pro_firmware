@@ -36,16 +36,17 @@
 CPP_GUARD_BEGIN
 
 typedef struct _ConnParams {
-    bool always_streaming;
-    uint8_t isPrimary;
-    char * connectionName;
-    int (*disconnect)(DeviceConfig *config);
-    int (*init_connection)(DeviceConfig *config);
-    int (*check_connection_status)(DeviceConfig *config);
-    serial_id_t serial;
-    size_t periodicMeta;
-    uint32_t connection_timeout;
-    xQueueHandle sampleQueue;
+        bool always_streaming;
+        uint8_t isPrimary;
+        char * connectionName;
+        int (*disconnect)(DeviceConfig *config);
+        int (*init_connection)(DeviceConfig *config);
+        int (*check_connection_status)(DeviceConfig *config);
+        serial_id_t serial;
+        size_t periodicMeta;
+        uint32_t connection_timeout;
+        xQueueHandle sampleQueue;
+        int max_sample_rate;
 } ConnParams;
 
 void queueTelemetryRecord(const LoggerMessage *msg);

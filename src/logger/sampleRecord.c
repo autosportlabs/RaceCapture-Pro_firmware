@@ -85,9 +85,8 @@ xQueueHandle create_logger_message_queue()
 }
 
 LoggerMessage create_logger_message(const enum LoggerMessageType t,
-                                    struct sample *s)
+                                    const size_t ticks, struct sample *s)
 {
-        const size_t ticks = getCurrentTicks();
         LoggerMessage msg;
 
         msg.type = t;
