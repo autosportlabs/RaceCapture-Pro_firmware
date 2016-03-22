@@ -42,8 +42,8 @@
  * but they seem to be very stable (even with name + pin changes).  Adjust at
  * your own peril.
  */
-#define BT_BACKOFF_MS	1000
-#define BT_BAUD_RATES	{115200, 57600, 9600}
+#define BT_BACKOFF_MS	500
+#define BT_BAUD_RATES	{115200, 9600}
 #define BT_COMMAND_WAIT	600
 #define BT_DEFAULT_NAME	"RaceCapturePro"
 #define BT_DEFAULT_PIN	"1234"
@@ -51,7 +51,6 @@
 #define BT_MAX_NAME_LEN	(BT_DEVICE_NAME_LENGTH - 1)
 #define BT_MAX_PIN_LEN	(BT_PASSCODE_LENGTH - 1)
 #define BT_PING_TRIES	3
-
 
 static bluetooth_status_t g_bluetooth_status = BT_STATUS_NOT_INIT;
 
@@ -157,6 +156,10 @@ static int bt_find_working_baud(DeviceConfig *config, BluetoothConfig *btc)
                         rate = targetBaud;
 
         for (size_t i = 0; rate == 0 && i < sizeof(rates)/sizeof(*rates); ++i) {
+                /* Skip the baud rate if we have already tried it */
+                if (rates[i] == targetBaud)
+                        continue;
+
                 pr_info_int_msg("BT: Trying Baudrate: ", rates[i]);
                 if (set_check_bt_serial_baud(config, rates[i]))
                         rate = rates[i];
@@ -220,6 +223,7 @@ int bt_init_connection(DeviceConfig *config)
                 pr_info("BT: Failed to communicate with device.\r\n");
 
                 /* Restore the targetBaud rate in case already in command mode */
+                pr_info_int_msg("[BT] Restoring to target baud: ", targetBaud);
                 set_check_bt_serial_baud(config, targetBaud);
 
                 break;
