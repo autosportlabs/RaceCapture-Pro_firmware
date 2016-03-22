@@ -278,6 +278,7 @@ void connectivityTask(void *params)
         bool should_reconnect = false;
 
         while (1) {
+                portTickType xLastWakeTime = xTaskGetTickCount();
             if ( should_reconnect )
                 break; /*break out and trigger the re-connection if needed */
 
@@ -286,8 +287,7 @@ void connectivityTask(void *params)
                     connParams->always_streaming ||
                     logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
 
-            const char res = receive_logger_message(sampleQueue, &msg,
-                                                    IDLE_TIMEOUT);
+            const char res = receive_logger_message(sampleQueue, &msg, 0);
 
             /*///////////////////////////////////////////////////////////
             // Process a pending message from logger task, if exists
@@ -372,6 +372,15 @@ void connectivityTask(void *params)
             if (connection_timeout && timeout > connection_timeout ) {
                 pr_info_str_msg(connParams->connectionName, ": timeout");
                 should_reconnect = true;
+            }
+
+            /*
+             * If we didn't rx or tx a message, sleep for a bit so as not
+             * starve the other tasks.
+             */
+            if (pdFALSE == res && !msgReceived) {
+                    size_t sleep_interval = msToTicks(IDLE_TIMEOUT);
+                    vTaskDelayUntil(&xLastWakeTime, sleep_interval);
             }
         }
 
