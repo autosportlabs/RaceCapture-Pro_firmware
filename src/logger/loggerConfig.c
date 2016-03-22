@@ -271,6 +271,11 @@ static void resetConnectivityConfig(ConnectivityConfig *cfg)
     resetTelemetryConfig(&cfg->telemetryConfig);
 }
 
+static void reset_logging_config(struct logging_config *lc)
+{
+        memset(lc, 0, sizeof(struct logging_config));
+}
+
 bool isHigherSampleRate(const int contender, const int champ)
 {
     // Contender can't win here.  Ever.
@@ -666,6 +671,7 @@ int flash_default_logger_config(void)
     resetLapConfig(&lc->LapConfigs);
     resetTrackConfig(&lc->TrackConfigs);
     resetConnectivityConfig(&lc->ConnectivityConfigs);
+    reset_logging_config(&lc->logging_cfg);
     strcpy(lc->padding_data, "");
 
     int result = flashLoggerConfig();

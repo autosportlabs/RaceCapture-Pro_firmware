@@ -24,6 +24,7 @@
 
 #include "cpp_guard.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -39,10 +40,18 @@ typedef enum {
 
 #define SERIAL_COUNT 5
 
-typedef struct _Serial {
-        void (*rx_callback)(const char *data);
-        void (*tx_callback)(const char *data);
+struct serial_logging {
+        /* bool enabled; XXX: Handled in LoggerConfig->logging_cfg */
+        const char *name;
+        bool tx_pfx;
+        bool rx_pfx;
+};
 
+typedef struct _Serial {
+        serial_id_t serial_id;
+        struct serial_logging sl;
+
+        /* DO NOT USE THESE METHODS DIRECTLY!!!  Use the wrappers below */
         void (*flush)(void);
         char (*get_c)(void);
         int  (*get_c_wait)(char *c, size_t delay);
@@ -55,9 +64,13 @@ typedef struct _Serial {
 } Serial;
 
 
-void serial_flush(const Serial *s);
+void serial_flush(Serial *s);
 
-void serial_init(const Serial *s, unsigned int bits, unsigned int parity,
+bool serial_logging(Serial *s, const bool enable);
+
+void serial_set_name(Serial *s, const char *name);
+
+void serial_init(Serial *s, unsigned int bits, unsigned int parity,
                  unsigned int stopBits, unsigned int baud);
 
 void init_serial(void);
@@ -67,20 +80,20 @@ Serial * get_serial(serial_id_t port);
 void configure_serial(serial_id_t port, uint8_t bits, uint8_t parity,
                       uint8_t stopBits, uint32_t baud);
 
-int serial_get_c_wait(const Serial *s, char *c, const size_t delay);
+int serial_get_c_wait(Serial *s, char *c, const size_t delay);
 
-char serial_get_c(const Serial *s);
+char serial_get_c(Serial *s);
 
-int serial_get_line(const Serial *s, char *l, const int len);
+int serial_get_line(Serial *s, char *l, const int len);
 
-int serial_get_line_wait(const Serial *s, char *l, const int len,
+int serial_get_line_wait(Serial *s, char *l, const int len,
                          const size_t delay);
 
-void serial_put_c(const Serial *s, const char c);
+void serial_put_c(Serial *s, const char c);
 
-void serial_put_s(const Serial *s, const char *l);
+void serial_put_s(Serial *s, const char *l);
 
-size_t serial_read_byte(const Serial *serial, uint8_t *b, size_t delay);
+size_t serial_read_byte(Serial *serial, uint8_t *b, size_t delay);
 
 void put_int(Serial * serial, int n);
 
@@ -139,7 +152,7 @@ void put_nameEscapedString(Serial * serial, const char *s, const char *v,
 
 void put_bytes(Serial *serial, char *data, unsigned int length);
 
-void put_crlf(const Serial * serial);
+void put_crlf(Serial *serial);
 
 void read_line(Serial *serial, char *buffer, size_t bufferSize);
 

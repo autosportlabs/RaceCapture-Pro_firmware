@@ -33,7 +33,7 @@
 
 extern unsigned int _CONFIG_HEAP_SIZE;
 
-static void putHeader(const Serial *serial, const char *str)
+static void putHeader(Serial *serial, const char *str)
 {
     put_crlf(serial);
     serial->put_s("- - - ");
@@ -42,7 +42,7 @@ static void putHeader(const Serial *serial, const char *str)
     put_crlf(serial);
 }
 
-static void putDataRowHeader(const Serial *serial, const char *str)
+static void putDataRowHeader(Serial *serial, const char *str)
 {
     serial->put_s(str);
     serial->put_s(" : ");

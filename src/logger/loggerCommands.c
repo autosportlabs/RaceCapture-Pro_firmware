@@ -35,16 +35,21 @@
 #include "printk.h"
 #include "sampleRecord.h"
 #include "sdcard.h"
+#include "serial.h"
 #include "taskUtil.h"
 #include "tracks.h"
 #include "usart.h"
 
 #include <stddef.h>
-
 #include <stdbool.h>
 
 /* Time (ms) to wait for input before continuing */
 #define TERM_WAIT_MS 5
+
+static const char* enable_str(const bool enable)
+{
+        return enable ? "Enabled" : "Disabled";
+}
 
 void TestSD(Serial *serial, unsigned int argc, char **argv)
 {
@@ -189,15 +194,54 @@ void SetLogLevel(Serial *serial, unsigned int argc, char **argv)
 void LogGpsData(Serial *serial, unsigned int argc, char **argv)
 {
     if (argc != 2) {
-        serial->put_s("Must pas one argument only.  Enter 0 to disable, or non-zero to enable\r\n");
+        serial->put_s("Must pass one argument only.  Enter 0 to disable, "
+                      "or non-zero to enable\r\n");
         put_commandError(serial, ERROR_CODE_INVALID_PARAM);
     } else {
         const bool enable = (argv[1][0] != '0');
         setGpsDataLogging(enable);
-        serial->put_s(enable ? "Enabling" : "Disabling");
+        serial->put_s(enable_str(enable));
         serial->put_s(" the printing of raw GPS data to the log.\r\n");
         put_commandOK(serial);
     }
 
     serial->flush();
+}
+
+void SetSerialLog(Serial *serial, unsigned int argc, char **argv)
+{
+        if (argc != 3) {
+                serial->put_s("Two arguments required to specify serial port "
+                              "and enable/disable option\r\n");
+                put_commandError(serial, ERROR_CODE_INVALID_PARAM);
+                goto done;
+        }
+
+        const serial_id_t port = (serial_id_t) atoi(argv[1]);
+        Serial *s = get_serial(port);
+        if (port == SERIAL_USB || !s) {
+                serial->put_s("Invalid serial port.\r\n");
+                put_commandError(serial, ERROR_CODE_INVALID_PARAM);
+                goto done;
+        }
+
+        const bool enable = argv[2][0] != '0';
+        const bool prev = serial_logging(s, enable);
+
+        serial->put_s(enable_str(prev));
+        serial->put_s(" -> ");
+        serial->put_s(enable_str(enable));
+        serial->put_s("\r\n");
+        put_commandOK(serial);
+
+done:
+        serial->flush();
+}
+
+void FlashConfig(Serial *serial, unsigned int argc, char **argv)
+{
+        const bool success = flashLoggerConfig() == 0;
+        serial->put_s(success ? "Success" : "Failed");
+        serial->put_s("\r\n");
+        put_commandOK(serial);
 }
