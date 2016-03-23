@@ -102,6 +102,7 @@ static const char * baudConfigCmdForRate(unsigned int baudRate)
 
 static void set_bt_serial_baud(DeviceConfig *config, int baud)
 {
+        pr_info_int_msg("BT: Baudrate: ", baud);
         serial_init(config->serial, 8, 0, 1, baud);
 }
 
@@ -165,7 +166,6 @@ static int bt_find_working_baud(DeviceConfig *config, BluetoothConfig *btc)
                 if (rates[i] == targetBaud)
                         continue;
 
-                pr_info_int_msg("BT: Trying Baudrate: ", rates[i]);
                 if (set_check_bt_serial_baud(config, rates[i]))
                         rate = rates[i];
         }
@@ -228,7 +228,7 @@ int bt_init_connection(DeviceConfig *config)
                 pr_info("BT: Failed to communicate with device.\r\n");
 
                 /* Restore the targetBaud rate in case already in command mode */
-                pr_info_int_msg("[BT] Restoring to target baud: ", targetBaud);
+                pr_info_int_msg("BT: Restoring to target baud: ", targetBaud);
                 set_bt_serial_baud(config, targetBaud);
 
                 break;
