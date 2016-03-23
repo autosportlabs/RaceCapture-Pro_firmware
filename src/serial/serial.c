@@ -44,8 +44,8 @@ void init_serial(void)
 {
         const bool init =
                 _init_serial(SERIAL_GPS, UART_GPS, "GPS") &&
-                _init_serial(SERIAL_TELEMETRY, UART_TELEMETRY, "Cellular") &&
-                _init_serial(SERIAL_WIRELESS, UART_WIRELESS, "BlueTooth") &&
+                _init_serial(SERIAL_TELEMETRY, UART_TELEMETRY, "Cell") &&
+                _init_serial(SERIAL_WIRELESS, UART_WIRELESS, "BT") &&
                 _init_serial(SERIAL_AUX, UART_AUX, "Aux");
 
         if (!init)
