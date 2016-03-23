@@ -100,12 +100,17 @@ static const char * baudConfigCmdForRate(unsigned int baudRate)
         return "";
 }
 
+static void set_bt_serial_baud(DeviceConfig *config, int baud)
+{
+        serial_init(config->serial, 8, 0, 1, baud);
+}
+
 static int set_check_bt_serial_baud(DeviceConfig *config, int baud)
 {
         int rc = false;
 
         /* Change the baud and give things a bit to catch up */
-        serial_init(config->serial, 8, 0, 1, baud);
+        set_bt_serial_baud(config, baud);
         for (size_t tries = BT_PING_TRIES; 0 < tries && !rc; --tries)
                 rc = sendCommand(config, "AT");
 
@@ -224,7 +229,7 @@ int bt_init_connection(DeviceConfig *config)
 
                 /* Restore the targetBaud rate in case already in command mode */
                 pr_info_int_msg("[BT] Restoring to target baud: ", targetBaud);
-                set_check_bt_serial_baud(config, targetBaud);
+                set_bt_serial_baud(config, targetBaud);
 
                 break;
         case 9600:
