@@ -310,9 +310,15 @@ static bool sara_u280_init(struct serial_buffer *sb,
 static bool sara_u280_get_sim_info(struct serial_buffer *sb,
                                    struct cellular_info *ci)
 {
-        return sara_u280_get_imei(sb, ci) &&
-                sara_u280_get_signal_strength(sb, ci) &&
-                sara_u280_get_subscriber_number(sb, ci);
+        bool status = false;
+
+        for (size_t i = 0; i < 3 && !status; ++i)
+                status = sara_u280_get_subscriber_number(sb, ci);
+
+        status = sara_u280_get_imei(sb, ci) && status;
+        status = sara_u280_get_signal_strength(sb, ci) && status;
+
+        return status;
 }
 
 static bool sara_u280_register_on_network(struct serial_buffer *sb,
