@@ -71,7 +71,7 @@ size_t cellular_exec_cmd(struct serial_buffer *sb,
                          const char **rx_msgs,
                          const size_t rx_msgs_size)
 {
-        serial_buffer_append(sb, "\r");
+        serial_buffer_append(sb, "\r\n");
         serial_buffer_tx(sb);
         serial_buffer_clear(sb);
         const size_t rv = serial_buffer_rx_msgs(sb, wait, rx_msgs,
