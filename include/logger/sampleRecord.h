@@ -89,9 +89,9 @@ struct sample {
 };
 
 typedef struct _LoggerMessage {
-    enum LoggerMessageType type;
-    size_t ticks;
-    struct sample *sample;
+        enum LoggerMessageType type;
+        size_t ticks;
+        struct sample *sample;
 } LoggerMessage;
 
 /**
@@ -114,10 +114,11 @@ void free_sample_buffer(struct sample *s);
 /**
  * Creates a LoggerMessage for use in the messaging between threads.
  * @param t The messaget type.
+ * @param ticks The logger tick value.
  * @param s The associated sample object (if any).
  */
 LoggerMessage create_logger_message(const enum LoggerMessageType t,
-                                    struct sample *s);
+                                    const size_t ticks, struct sample *s);
 
 /**
  * Tests if the given LoggerMessage points to valid data by comparing
