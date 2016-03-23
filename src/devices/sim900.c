@@ -19,9 +19,9 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "array_utils.h"
 #include "cellular.h"
 #include "gsm.h"
+#include "macros.h"
 #include "printk.h"
 #include "serial_buffer.h"
 #include "sim900.h"

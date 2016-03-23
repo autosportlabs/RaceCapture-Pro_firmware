@@ -19,9 +19,9 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "array_utils.h"
 #include "capabilities.h"
 #include "loggerConfig.h"
+#include "macros.h"
 #include "modp_numtoa.h"
 #include "printk.h"
 #include "serial.h"

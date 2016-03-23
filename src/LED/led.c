@@ -19,7 +19,7 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "array_utils.h"
+#include "macros.h"
 #include "mod_string.h"
 #include "led.h"
 #include "led_device.h"

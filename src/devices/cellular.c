@@ -21,7 +21,6 @@
 
 #include "led.h"
 #include "api.h"
-#include "array_utils.h"
 #include "capabilities.h"
 #include "cellular.h"
 #include "cell_pwr_btn.h"
@@ -30,6 +29,7 @@
 #include "dateTime.h"
 #include "gsm.h"
 #include "loggerConfig.h"
+#include "macros.h"
 #include "mod_string.h"
 #include "printk.h"
 #include "serial_buffer.h"
