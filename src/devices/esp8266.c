@@ -20,7 +20,6 @@
  */
 
 #include "at.h"
-#include "array_utils.h"
 #include "esp8266.h"
 #include "macros.h"
 #include "printk.h"
@@ -230,59 +229,6 @@ static bool is_init_in_progress()
         return NULL != state.init_cb;
 }
 
-static void serial_tx_cb(const char *data)
-{
-        static bool pr_tx_pfx = true;
-
-        for(; *data; ++data) {
-                if (pr_tx_pfx) {
-                        printk(serial_dbg_lvl, "[esp8266] tx: ");
-                        pr_tx_pfx = false;
-                }
-
-                switch(*data) {
-                case('\r'):
-                        printk(serial_dbg_lvl, "\\r");
-                        break;
-                case('\n'):
-                        printk(serial_dbg_lvl, "\\n\r\n");
-                        pr_tx_pfx = true;
-                        break;
-                default:
-                        printk_char(serial_dbg_lvl, *data);
-                        break;
-                }
-        }
-}
-
-static void serial_rx_cb(const char *data)
-{
-        static bool new_line = true;
-
-        if (NULL == data)
-                return;
-
-        for(; *data; ++data) {
-                if (new_line) {
-                        printk(serial_dbg_lvl, "[esp8266] rx: ");
-                        new_line = false;
-                }
-
-                switch(*data) {
-                case('\r'):
-                        printk(serial_dbg_lvl, "\\r");
-                        break;
-                case('\n'):
-                        printk(serial_dbg_lvl, "\\n\r\n");
-                        new_line = true;
-                        break;
-                default:
-                        printk_char(serial_dbg_lvl, *data);
-                        break;
-                }
-        }
-}
-
 /**
  * Kicks off the initilization process.
  */
@@ -294,10 +240,6 @@ bool esp8266_init(struct at_info *ati, void (*cb)(enum dev_init_state))
         state.init_cb = cb;
         state.init_state = DEV_INIT_INITIALIZING;
         state.ati = ati;
-
-        /* SERIAL HACK: Remove me later */
-        ati->sb->serial->tx_callback = serial_tx_cb;
-        ati->sb->serial->rx_callback = serial_rx_cb;
 
         begin_autobaud_cmd();
         return true;

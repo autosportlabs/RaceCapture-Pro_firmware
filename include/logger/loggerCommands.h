@@ -41,7 +41,13 @@ CPP_GUARD_BEGIN
         SYSTEM_COMMAND("logGpsData", "Enables logging of raw GPS data " \
                        "from the GPS Mouse", "<1|0>", LogGpsData)       \
         SYSTEM_COMMAND("viewLog", "Prints out logging messages to the " \
-                       "terminal as they happen", "", ViewLog)
+                       "terminal as they happen", "", ViewLog)          \
+        SYSTEM_COMMAND("setSerialLog", "Enables/disables logging of  "  \
+                       "serial device for debug purposes",              \
+                       "<port> <0|1>", SetSerialLog)                    \
+        SYSTEM_COMMAND("flashConfig", "Flashes the NVRAM with the "     \
+                       "current configuration of the LoggerConfig",     \
+                       "", FlashConfig)                                 \
 
 
 void ResetConfig(Serial *serial, unsigned int argc, char **argv);
@@ -51,6 +57,8 @@ void StartTerminal(Serial *serial, unsigned int argc, char **argv);
 void ViewLog(Serial *serial, unsigned int argc, char **argv);
 void SetLogLevel(Serial *serial, unsigned int argc, char **argv);
 void LogGpsData(Serial *serial, unsigned int argc, char **argv);
+void SetSerialLog(Serial *serial, unsigned int argc, char **argv);
+void FlashConfig(Serial *serial, unsigned int argc, char **argv);
 
 CPP_GUARD_END
 

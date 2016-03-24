@@ -40,8 +40,6 @@ static struct {
         size_t cap;
 } state = {
         .serial = {
-                .rx_callback = NULL,
-                .tx_callback = NULL,
                 .flush = _flush,
                 .get_c = _get_c,
                 .get_c_wait = _get_c_wait,

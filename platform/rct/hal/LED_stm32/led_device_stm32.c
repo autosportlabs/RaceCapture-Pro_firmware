@@ -19,8 +19,8 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "array_utils.h"
 #include "led_device.h"
+#include "macros.h"
 #include "stm32f30x_gpio.h"
 #include "stm32f30x_rcc.h"
 

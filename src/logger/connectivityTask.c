@@ -136,6 +136,7 @@ static void createCombinedTelemetryTask(int16_t priority, xQueueHandle sampleQue
             params->init_connection = &bt_init_connection;
             params->disconnect = &bt_disconnect;
             params->always_streaming = true;
+            params->max_sample_rate = SAMPLE_50Hz;
         }
 
 #if defined(CELLULAR_SUPPORT)
@@ -145,6 +146,7 @@ static void createCombinedTelemetryTask(int16_t priority, xQueueHandle sampleQue
             params->init_connection = &cellular_init_connection;
             params->disconnect = &cellular_disconnect;
             params->always_streaming = false;
+            params->max_sample_rate = SAMPLE_10Hz;
         }
 #endif
         xTaskCreate(connectivityTask, (signed portCHAR *) "connTask", TELEMETRY_STACK_SIZE, params, priority, NULL );
@@ -164,6 +166,7 @@ static void createWirelessConnectionTask(int16_t priority, xQueueHandle sampleQu
     params->serial = SERIAL_WIRELESS;
     params->sampleQueue = sampleQueue;
     params->always_streaming = true;
+    params->max_sample_rate = SAMPLE_50Hz;
     xTaskCreate(connectivityTask, (signed portCHAR *) "connWireless", TELEMETRY_STACK_SIZE, params, priority, NULL );
 }
 
@@ -181,6 +184,7 @@ static void createTelemetryConnectionTask(int16_t priority, xQueueHandle sampleQ
     params->serial = SERIAL_TELEMETRY;
     params->sampleQueue = sampleQueue;
     params->always_streaming = false;
+    params->max_sample_rate = SAMPLE_10Hz;
     xTaskCreate(connectivityTask, (signed portCHAR *) "connTelemetry", TELEMETRY_STACK_SIZE, params, priority, NULL );
 #endif
 }
@@ -250,6 +254,7 @@ void connectivityTask(void *params)
 
     xQueueHandle sampleQueue = connParams->sampleQueue;
     uint32_t connection_timeout = connParams->connection_timeout;
+    const size_t max_telem_rate = connParams->max_sample_rate;
 
     DeviceConfig deviceConfig;
     deviceConfig.serial = serial;
@@ -314,7 +319,8 @@ void connectivityTask(void *params)
                     break;
                 }
                 case LoggerMessageType_Sample: {
-                        if (!should_stream)
+                        if (!should_stream ||
+                            !should_sample(msg.ticks, max_telem_rate))
                                 break;
 
                         const int send_meta = tick == 0 ||

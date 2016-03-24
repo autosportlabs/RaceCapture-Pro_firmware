@@ -19,9 +19,9 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "array_utils.h"
 #include "at.h"
 #include "dateTime.h"
+#include "macros.h"
 #include "printk.h"
 #include "serial_buffer.h"
 #include "str_util.h"

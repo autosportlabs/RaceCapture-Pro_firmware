@@ -20,7 +20,6 @@
  */
 
 #include "AtTest.hh"
-#include "array_utils.h"
 #include "at.h"
 #include "cpp_guard.h"
 #include "macros.h"
@@ -42,8 +41,6 @@ void flush(void) {};
 void put_c(char c) {};
 void put_s(const char *c) {};
 static Serial g_serial = {
-        .rx_callback = NULL,
-        .tx_callback = NULL,
         .flush = flush,
         .get_c = NULL,
         .get_c_wait = NULL,

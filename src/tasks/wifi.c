@@ -20,7 +20,6 @@
  */
 
 #include "FreeRTOS.h"
-#include "array_utils.h"
 #include "at.h"
 #include "esp8266.h"
 #include "macros.h"

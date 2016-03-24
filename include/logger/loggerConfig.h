@@ -38,7 +38,13 @@ CPP_GUARD_BEGIN
 /* Internal FLASH Page Size: 256 bytes */
 #define FLASH_PAGE_SIZE	((unsigned int) 256)
 
-//standard sample rates based on OS timer ticks
+/**
+ * Standard sample rates based on OS timer ticks.  Note that every
+ * sample rate must be evenly divisible by all sample rates below
+ * it.  Otherwise our sampling will readings.  In example, the 100Hz
+ * sample rate is evenly divisible by the 50, 25, 10, 5 and 1 Hz sample
+ * rates.
+ */
 #define SAMPLE_1000Hz                       (TICK_RATE_HZ / 1000)
 #define SAMPLE_500Hz                        (TICK_RATE_HZ / 500)
 #define SAMPLE_200Hz                        (TICK_RATE_HZ / 200)
@@ -446,6 +452,12 @@ typedef struct _ConnectivityConfig {
 #define SD_LOGGING_MODE_DISABLED					0
 #define SD_LOGGING_MODE_CSV							1
 
+/**
+ * Configurations specific to our logging infrastructure.
+ */
+struct logging_config {
+        bool serial[SERIAL_COUNT];
+};
 
 typedef struct _LoggerConfig {
     VersionInfo RcpVersionInfo;
@@ -499,6 +511,7 @@ typedef struct _LoggerConfig {
     //Connectivity Configuration
     ConnectivityConfig ConnectivityConfigs;
 
+        struct logging_config logging_cfg;
     //Padding data to accommodate flash routine
     char padding_data[FLASH_PAGE_SIZE];
 } LoggerConfig;
@@ -541,6 +554,7 @@ unsigned int getHighestSampleRate(LoggerConfig *config);
 size_t get_enabled_channel_count(LoggerConfig *loggerConfig);
 
 bool isHigherSampleRate(const int contender, const int champ);
+bool should_sample(const int sample_rate, const int max_rate);
 int getHigherSampleRate(const int a, const int b);
 
 int flashLoggerConfig(void);

@@ -146,8 +146,7 @@ src-y += $(wildcard $(RC_SRC_DIR)/OBD2/*.c)
 inc-y += $(RC_INCLUDE_DIR)/OBD2
 
 #devices
-src-y += $(RC_SRC_DIR)/devices/bluetooth.c
-src-y += $(RC_SRC_DIR)/devices/null_device.c
+src-y += $(wildcard $(RC_SRC_DIR)/devices/*.c)
 inc-y += $(RC_INCLUDE_DIR)/devices
 
 #devices
@@ -162,6 +161,10 @@ inc-y += $(RC_INCLUDE_DIR)/command
 src-y += $(wildcard $(RC_SRC_DIR)/jsmn/*.c)
 inc-y += $(RC_INCLUDE_DIR)/jsmn
 
+#GSM
+src-y += $(wildcard $(RC_SRC_DIR)/gsm/*.c)
+inc-y += $(RC_INCLUDE_DIR)/gsm
+
 #logger
 src-y += $(wildcard $(RC_SRC_DIR)/logger/*.c)
 # STRIP fileWriter.c because we don't want to compile it.
@@ -173,12 +176,12 @@ src-y += $(wildcard $(RC_SRC_DIR)/messaging/*.c)
 inc-y += $(RC_INCLUDE_DIR)/messaging
 
 #modem
-src-y += $(wildcard ../src/modem/*.c)
-inc-y += ../include/modem
+src-y += $(wildcard $(RC_SRC_DIR)/modem/*.c)
+inc-y += $(RC_INCLUDE_DIR)/modem
 
 # Tasks
-src-y += $(wildcard ../src/tasks/*.c)
-inc-y += ../include/tasks
+src-y += $(wildcard $(RC_SRC_DIR)/tasks/*.c)
+inc-y += $(RC_INCLUDE_DIR)/tasks
 
 # FreeRTOS
 src-y += $(wildcard FreeRTOS/Source/*.c) \

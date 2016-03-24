@@ -1,18 +1,66 @@
-=== 2.9.0 ===
-* Add timeout support for CAN Tx method on MK2.  A value of 0 means
-  never timeout.
-* Improve the USART code for MK1 by removing duplicated code,
-  eliminating externs, and cleaning up the handling of character
-  queues.
-* Improve the MK2 compilation routine by adding stricter warning flags
-  and by making all warnings into errors.
-* Fix up BT code so that we now properly set BT name and Pin.
-  Addresses race issues observed in BT module during programming as
-  well.
-* Added Lua sleep() function. When called will sleep for the specified
-  number of milliseconds.
-* Moves LUA magic number to the front of the LUA memory block so that
-  the number won't move if this block gets resized.
+= 2.9.0 =
+* Fixed Lua stack overflow bug by increasing Lua Stack size (Issue #411)
+* Fixed timer input so it resets to 0 when no input detected (Issue #418)
+* Added RPM filtering in software to get rid of unrealistic engine speed
+  values (Issue #430). NOTE: The new quiet period logic uses your maximum
+  and pulse per revolution values to calculate the quiet period. Ensure
+  your maximum RPM and pulse per revolution values are set correctly.
+* Fixed Lua onTick timing bug that was causing Lua to wait longer than it
+  should between onTick events. (Issue #433)
+* Quieted various Lua memory alloc/free messages (Issue #410)
+* Fixed virtual channel issue where if the virtual channel sample rate was
+  faster than other channels, it would not record. (Issue #444)
+* Added new OBD-II PIDs into our OBD-II system.  Special thanks to
+  Justin Imhoff (https://github.com/imhoffj) for the patch.
+* Improved `addChannel` method in Lua environment to validate all inputs.
+  Now it will error with detailed information if a user supplies an invalid
+  input parameter or an invalid sample rate. (Issue #424)
+* Fix USB suspend bug that causes device to go non-responsive when put into
+  suspend mode. (Issue #426)
+* Fixed timer prescalar skew caused by varying timer speeds settings.  Now all
+  timer speeds report correct values (when frequency is within the timer
+  measurement range of course.  A good test is 100Hz). (Issue #435)
+* Fixed telemetry destination.  Currently set to telemetry.race-capture.com
+  (Issue #341)
+* Removed MK1 platform from build tree.
+* Improve unit test infrastructure to compile all firmware code strictly in
+  C (was C compiled as C++) and test accordingly.
+* Improved unit test platform to be able to directly include C files to test
+  static methods and other non-visible methods as part of the unit test suite.
+* Fixed serial device pass-through watchdog event.  (Issue #352)
+* Remove obd2SampleRate structure from LoggerConfig since deprecated (Issue #164)
+* Standardized accelerometer on SAE J670E vector axis spec and adjusted internal
+  mappings of RCP units to ensure that default orientation of MK2 matches this
+  exactly.
+* Added Lua method to get GPS altitude in Lua runtime. (Issue #397)
+* Fixed timeout support on Lua CAN tx method.  (Issue #404)
+* Merged RaceCapture codebase into this mainline project.
+* Add dynamic cellular modem support.  This allows us to support both our current
+  sim900 card and the new ublox-sara 3G cards. (Issue #182)
+* Added support for up to 100 virtual channels in Lua.  Up from 30. (Issue #414)
+* Adjusted internal process priorities so that the logging snapshot process
+  runs with this highest priority.  This is to ensure that we never miss time a
+  snap-shot operation.
+* Improve `onTick` method in Lua to be able to run at 1000Hz maximum rate.  Not
+  gauranteed to run at that rate (depends on how much Lua code there is to parse)
+  but local testing shows its possible to do if code is optimized. (Issue #423)
+* Added a new `getChannel` method in Lua so users don't have to maintain virtual
+  channel values in Lua environment variables if they want to later calculate
+  additional channels using the recorded virtual channel values. (Issue #456)
+* Add additional version information to the firmware.  Now include build type
+  (release, beta, dev) and a git description string. (Issue #436)
+* Fixed up LED mappings, added deterministic LED control code to firmware.  This
+  prevents us from turning the wrong LED on or off due to different LED mappings
+  between RaceCapture platforms. (Issue #437)
+* Fixed up Lua setLed method to be consistent on which LED is set and to also allow
+  the user to specify an LED based on a string identifier to be able to control it.
+  (Issue #437)
+* Improved our timer by adding support for selecting which edge we want to use for
+  timing measurements (Default is falling).  Also allows the user to specify the
+  a quiet period for filtering if they wish to override the automatically calculated
+  value.  A value of 0 will disable the filtering altogether.  A value < 0 sets the
+  code into automatic calculation mode. (Issue #464)
+* Fixed OBD-II speed conversion from kph to mph
 
 === 2.8.7 ===
 * Properly handle analog linear scaling offset value.

@@ -58,12 +58,12 @@ static struct sample g_sample_buffer[LOGGER_MESSAGE_BUFFER_SIZE];
 
 static LoggerMessage getLogStartMessage()
 {
-        return create_logger_message(LoggerMessageType_Start, NULL);
+        return create_logger_message(LoggerMessageType_Start, 0, NULL);
 }
 
 static LoggerMessage getLogStopMessage()
 {
-        return create_logger_message(LoggerMessageType_Stop, NULL);
+        return create_logger_message(LoggerMessageType_Stop, 0, NULL);
 }
 
 /**
@@ -235,14 +235,14 @@ void loggerTaskEx(void *params)
 
                 /* If here, create the LoggerMessage to send with the sample */
                 const LoggerMessage msg = create_logger_message(
-                        LoggerMessageType_Sample, sample);
+                        LoggerMessageType_Sample, currentTicks, sample);
 
                 /*
                  * We only log to file if the user has manually pushed the
                  * logging button.
                  */
 #if defined(SDCARD_SUPPORT)
-                if (is_logging && sampledRate >= loggingSampleRate) {
+                if (is_logging && should_sample(currentTicks, loggingSampleRate)) {
                         /* XXX Move this to file writer? */
                         const portBASE_TYPE res = queue_logfile_record(&msg);
                         const logging_status_t ls = pdTRUE == res ?
@@ -252,9 +252,12 @@ void loggerTaskEx(void *params)
                 }
 #endif
 
-                /* send the sample on to the telemetry task(s) */
-                if (!isHigherSampleRate(sampledRate, telemetrySampleRate))
-                        queueTelemetryRecord(&msg);
+
+                /*
+                 * The task is responsible for determining if it should use the
+                 * sample or if it should drop it due to rate limitations.
+                 */
+                queueTelemetryRecord(&msg);
 
                 ++bufferIndex;
                 bufferIndex %= buffer_size;

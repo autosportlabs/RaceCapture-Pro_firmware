@@ -21,7 +21,6 @@
 
 #include "led.h"
 #include "api.h"
-#include "array_utils.h"
 #include "capabilities.h"
 #include "cellular.h"
 #include "cell_pwr_btn.h"
@@ -30,6 +29,7 @@
 #include "dateTime.h"
 #include "gsm.h"
 #include "loggerConfig.h"
+#include "macros.h"
 #include "mod_string.h"
 #include "printk.h"
 #include "serial_buffer.h"
@@ -66,63 +66,12 @@ static const struct at_config* get_safe_at_config()
         return &cfg;
 }
 
-static void cell_serial_tx_cb(const char *data)
-{
-        static bool pr_tx_pfx = true;
-
-        for(; *data; ++data) {
-                if (pr_tx_pfx) {
-                        printk(serial_dbg_lvl, "[cell] tx: ");
-                        pr_tx_pfx = false;
-                }
-
-                switch(*data) {
-                case('\r'):
-                case('\n'):
-                        printk_crlf(serial_dbg_lvl);
-                        pr_tx_pfx = true;
-                        break;
-                default:
-                        printk_char(serial_dbg_lvl, *data);
-                        break;
-                }
-        }
-}
-
-static void cell_serial_rx_cb(const char *data)
-{
-        static bool new_line = true;
-
-        if (NULL == data)
-                return;
-
-        for(; *data; ++data) {
-                if (new_line) {
-                        printk(serial_dbg_lvl, "[cell] rx: ");
-                        new_line = false;
-                }
-
-                switch(*data) {
-                case('\r'):
-                        printk(serial_dbg_lvl, "<cr>");
-                        break;
-                case('\n'):
-                        printk(serial_dbg_lvl, "<lf>\r\n");
-                        new_line = true;
-                        break;
-                default:
-                        printk_char(serial_dbg_lvl, *data);
-                        break;
-                }
-        }
-}
-
 size_t cellular_exec_cmd(struct serial_buffer *sb,
                          const size_t wait,
                          const char **rx_msgs,
                          const size_t rx_msgs_size)
 {
-        serial_buffer_append(sb, "\r");
+        serial_buffer_append(sb, "\r\n");
         serial_buffer_tx(sb);
         serial_buffer_clear(sb);
         const size_t rv = serial_buffer_rx_msgs(sb, wait, rx_msgs,
@@ -467,8 +416,6 @@ int cellular_init_connection(DeviceConfig *config)
 
         /* This is sane since DeviceConfig is typedef'd as a serial_buffer */
         struct serial_buffer *sb = (struct serial_buffer*) config;
-        sb->serial->tx_callback = cell_serial_tx_cb;
-        sb->serial->rx_callback = cell_serial_rx_cb;
 
         const int init_status = cellular_init_modem(sb);
         if (DEVICE_INIT_SUCCESS != init_status)

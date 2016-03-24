@@ -29,6 +29,11 @@
 CPP_GUARD_BEGIN
 
 /**
+ * Calculates the length of an array of items.
+ */
+#define ARRAY_LEN(x) (sizeof(x)/sizeof(*x))
+
+/**
  * Checks if two strings are equal.
  */
 #define STR_EQ(s1, s2)	(0 == strcmp((s1), (s2)))

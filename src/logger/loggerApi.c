@@ -241,7 +241,7 @@ int api_getStatus(Serial *serial, const jsmntok_t *json)
 
         json_objStartString(serial, "system");
         json_string(serial, "model", FRIENDLY_DEVICE_NAME, 1);
-        rc_version_info(serial, 1, "ver_major", "ver_minor", "ver_bufix");
+        rc_version_info(serial, 1, "ver_major", "ver_minor", "ver_bugfix");
         json_uint(serial, "uptime", getUptimeAsInt(), 0);
         json_objEnd(serial, 1);
 
