@@ -19,49 +19,18 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "FreeRTOS.h"
 #include "mem_mang.h"
 #include "ram_serial.h"
 #include "serial.h"
-
-static void _flush() {}
-static char _get_c() { return 0; }
-static int _get_c_wait(char *c, size_t delay) { return 0; }
-static int _get_line(char *s, int len) { return 0; }
-static int _get_line_wait(char *s, int len, size_t delay) { return 0; }
-static void _init(unsigned int bits, unsigned int parity,
-                  unsigned int stopBits, unsigned int baud) {}
-static void _put_c(char c);
-static void _put_s(const char *s);
+#include "queue.h"
 
 static struct {
-        Serial serial;
+        struct Serial *serial;
         char *buff;
         size_t idx;
         size_t cap;
-} state = {
-        .serial = {
-                .flush = _flush,
-                .get_c = _get_c,
-                .get_c_wait = _get_c_wait,
-                .get_line = _get_line,
-                .get_line_wait = _get_line_wait,
-                .init = _init,
-                .put_c = _put_c,
-                .put_s = _put_s,
-        },
-};
-
-static void _put_c(char c)
-{
-        if (state.idx < state.cap)
-                state.buff[state.idx++] = c;
-}
-
-static void _put_s(const char *s)
-{
-        for(; *s; ++s)
-                _put_c(*s);
-}
+} state;
 
 /**
  * Clears the buffer that the serial writes to.
@@ -72,6 +41,13 @@ void ram_serial_clear()
         state.buff[0] = 0;
 }
 
+static void _post_tx(xQueueHandle q, void *post_tx_arg)
+{
+        char c;
+        while (state.idx < state.cap && xQueueReceive(q, &c, 0))
+                state.buff[state.idx++] = c;
+}
+
 /**
  * Initializes the ram_serial device by allocating the buffer size
  * based on the cap parameter
@@ -80,7 +56,7 @@ void ram_serial_clear()
  */
 bool ram_serial_init(const size_t cap)
 {
-        if (!cap || state.buff)
+        if (!cap || state.buff || state.serial)
                 return false;
 
         state.buff = portMalloc(cap);
@@ -88,6 +64,8 @@ bool ram_serial_init(const size_t cap)
                 return false;
 
         state.cap = cap;
+        state.serial = serial_create("RamSerial", 1, 1, NULL, NULL,
+                                     _post_tx, NULL);
         ram_serial_clear();
 
         return true;
@@ -105,15 +83,18 @@ bool ram_serial_destroy()
         portFree(state.buff);
         state.buff = NULL;
 
+        serial_destroy(state.serial);
+        state.serial = NULL;
+
         return true;
 }
 
 /**
  * @return The serial device that is RAM backed.
  */
-Serial* ram_serial_get_serial()
+struct Serial* ram_serial_get_serial()
 {
-        return &state.serial;
+        return state.serial;
 }
 
 /**

@@ -23,6 +23,7 @@
 #include "at.h"
 #include "cpp_guard.h"
 #include "macros.h"
+#include "mock_serial.h"
 #include "serial.h"
 #include "serial_buffer.h"
 
@@ -37,24 +38,10 @@ CPPUNIT_TEST_SUITE_REGISTRATION( AtTest );
 
 CPP_GUARD_BEGIN
 
-void flush(void) {};
-void put_c(char c) {};
-void put_s(const char *c) {};
-static Serial g_serial = {
-        .flush = flush,
-        .get_c = NULL,
-        .get_c_wait = NULL,
-        .get_line = NULL,
-        .get_line_wait = NULL,
-        .init = NULL,
-        .put_c = put_c,
-        .put_s = put_s,
-};
-
 static const size_t g_sb_buff_size = 64;
 static char g_sb_buff[g_sb_buff_size];
 static struct serial_buffer g_sb = {
-        .serial = &g_serial,
+        .serial = NULL,
         .length = g_sb_buff_size,
         .buffer = g_sb_buff,
 };
@@ -74,6 +61,10 @@ CPP_GUARD_END
 
 void AtTest::setUp()
 {
+        setupMockSerial();
+        struct Serial *s = getMockSerial();
+        g_sb.serial = s;
+
         /* Always init our structs */
         init_at_info(&g_ati, &g_sb, 1, "\r\n");
         g_cb_called = false;

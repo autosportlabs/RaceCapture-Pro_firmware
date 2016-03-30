@@ -33,7 +33,7 @@
 #include <string.h>
 
 bool serial_buffer_create(struct serial_buffer *sb,
-                          Serial *serial,
+                          struct Serial *serial,
                           const size_t size,
                           char *buffer)
 {

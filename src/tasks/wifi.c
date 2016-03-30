@@ -28,6 +28,7 @@
 #include "ram_serial.h"
 #include "rx_buff.h"
 #include "serial.h"
+#include "serial_device.h"
 #include "serial_buffer.h"
 #include "str_util.h"
 #include "task.h"
@@ -71,7 +72,7 @@ static struct client_wifi_cfg {
 static struct client_wifi_cfg *clt_wifi_cfg = client_wifi_cfgs;
 
 static struct {
-        Serial *serial;
+        struct Serial *serial;
         struct serial_buffer serial_buff;
         struct at_info ati;
         struct rx_buff rxb;
@@ -98,11 +99,12 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
 static bool init_task_state()
 {
         /* Get our serial port setup */
-        state.serial = get_serial(WIFI_SERIAL_PORT);
-        state.serial->init(WIFI_SERIAL_BITS, WIFI_SERIAL_PARITY,
-                           WIFI_SERIAL_STOP_BITS, WIFI_SERIAL_BAUD);
+        state.serial = serial_device_get(WIFI_SERIAL_PORT);
         if (!state.serial)
                 return false;
+
+        serial_config(state.serial, WIFI_SERIAL_BITS, WIFI_SERIAL_PARITY,
+                      WIFI_SERIAL_STOP_BITS, WIFI_SERIAL_BAUD);
 
         /*
          * Initialize the serial buffer.  This buffer is used for
@@ -258,7 +260,7 @@ static void process_rx_msgs()
         /* If here, we have a message to handle */
         char *data_in = state.rxb.buff; /* HACK */
         const size_t len_in = strlen(data_in);
-        Serial *serial = ram_serial_get_serial();
+        struct Serial *serial = ram_serial_get_serial();
         process_read_msg(serial, data_in, len_in);
 
         const char *data_out = ram_serial_get_buff();

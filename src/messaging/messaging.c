@@ -33,7 +33,7 @@ void initMessaging()
     initApi();
 }
 
-int process_read_msg(Serial *serial, char *buff, size_t len)
+int process_read_msg(struct Serial *serial, char *buff, size_t len)
 {
         if (!buff)
                 return 0;
@@ -52,15 +52,16 @@ int process_read_msg(Serial *serial, char *buff, size_t len)
                 ;
                 const int res = process_command(serial, buff, len);
                 if (res != COMMAND_OK) {
-                    serial->put_s("Unknown Command- Press Enter for Help.");
-                    put_crlf(serial);
+                        serial_put_s(serial, "Unknown Command- Press "
+                                     "Enter for Help.");
+                        put_crlf(serial);
                 }
                 show_command_prompt(serial);
                 return res;
         }
 }
 
-void process_msg(Serial *serial, char * buffer, size_t bufferSize)
+void process_msg(struct Serial *serial, char * buffer, size_t bufferSize)
 {
     if (lockedApiMode) {
         read_line(serial, buffer, bufferSize);
@@ -81,8 +82,9 @@ void process_msg(Serial *serial, char * buffer, size_t bufferSize)
             } else {
                 int res = process_command(serial, buffer, bufferSize);
                 if (res != COMMAND_OK) {
-                    serial->put_s("Unknown Command- Press Enter for Help.");
-                    put_crlf(serial);
+                        serial_put_s(serial, "Unknown Command- Press Enter "
+                                     "for Help.");
+                        put_crlf(serial);
                 }
             }
             show_command_prompt(serial);

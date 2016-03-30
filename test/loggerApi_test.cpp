@@ -59,12 +59,11 @@ CPPUNIT_TEST_SUITE_REGISTRATION( LoggerApiTest );
 
 
 char * LoggerApiTest::processApiGeneric(string filename){
-	Serial *serial = getMockSerial();
+	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
-	char *txBuffer = mock_getTxBuffer();
-	return txBuffer;
+	return mock_getTxBuffer();
 }
 
 
@@ -351,7 +350,7 @@ void LoggerApiTest::testGetAnalogCfg(){
 
 void LoggerApiTest::testSetAnalogConfigFile(string filename){
 
-	Serial *serial = getMockSerial();
+	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -432,7 +431,7 @@ void LoggerApiTest::testGetImuCfg(){
 }
 
 void LoggerApiTest::testSetImuConfigFile(string filename){
-	Serial *serial = getMockSerial();
+	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -466,8 +465,7 @@ void LoggerApiTest::testSetConnectivityCfgFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	ConnectivityConfig *connCfg = &c->ConnectivityConfigs;
 
-	processApiGeneric(filename);
-	char *txBuffer = mock_getTxBuffer();
+	char *txBuffer = processApiGeneric(filename);
 	assertGenericResponse(txBuffer, "setConnCfg", API_SUCCESS);
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)connCfg->cellularConfig.cellEnabled);
@@ -554,7 +552,7 @@ void LoggerApiTest::testGetPwmCfg(){
 
 
 void LoggerApiTest::testSetPwmConfigFile(string filename){
-	Serial *serial = getMockSerial();
+	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -610,7 +608,7 @@ void LoggerApiTest::testGetGpioCfg(){
 }
 
 void LoggerApiTest::testSetGpioConfigFile(string filename){
-	Serial *serial = getMockSerial();
+	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -671,7 +669,7 @@ void LoggerApiTest::testGetTimerCfg(){
 }
 
 void LoggerApiTest::testSetTimerConfigFile(string filename){
-	Serial *serial = getMockSerial();
+	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());

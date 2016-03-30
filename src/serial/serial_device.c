@@ -19,25 +19,33 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MESSAGING_H_
-#define MESSAGING_H_
-
-#include "cpp_guard.h"
+#include "USB-CDC_device.h"
 #include "serial.h"
-#include "command.h"
-#include "api.h"
+#include "serial_device.h"
+#include "usart.h"
+#include "usart_device.h"
 
 #include <stddef.h>
+#include <stdbool.h>
 
-CPP_GUARD_BEGIN
-
-void initMessaging();
-
-int process_read_msg(struct Serial *serial, char *buff, size_t len);
-
-void process_msg(struct Serial *serial, char * buffer, size_t bufferSize);
-
-CPP_GUARD_END
-
-
-#endif /* MESSAGING_H_ */
+struct Serial* serial_device_get(const serial_id_t port)
+{
+        switch(port) {
+        case SERIAL_USB:
+#if defined(USB_SERIAL_SUPPORT)
+                return USB_CDC_get_serial();
+#else
+                return NULL;
+#endif
+        case SERIAL_GPS:
+                return usart_device_get_serial(UART_GPS);
+        case SERIAL_TELEMETRY:
+                return usart_device_get_serial(UART_TELEMETRY);
+        case SERIAL_WIRELESS:
+                return usart_device_get_serial(UART_WIRELESS);
+        case SERIAL_AUX:
+                return usart_device_get_serial(UART_AUX);
+        default:
+                return NULL;
+        };
+}

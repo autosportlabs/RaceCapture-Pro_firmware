@@ -41,7 +41,7 @@ static struct ring_buff log_buff = {
 };
 static struct ring_buff * const lbp = &log_buff;
 
-size_t read_log_to_serial(Serial *s, int escape)
+size_t read_log_to_serial(struct Serial *s, int escape)
 {
         char buff[16];
         size_t to_read = get_used(lbp);
@@ -52,7 +52,7 @@ size_t read_log_to_serial(Serial *s, int escape)
                         if (escape) {
                                 put_escapedString(s, &buff[i],1);
                         } else {
-                                s->put_c(buff[i]);
+                                serial_put_c(s, buff[i]);
                         }
         }
 

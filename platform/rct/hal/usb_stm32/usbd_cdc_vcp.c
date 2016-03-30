@@ -91,27 +91,11 @@ void vcp_tx(uint8_t *buf, uint32_t len)
     xSemaphoreGive(_lock);
 }
 
-uint16_t vcp_rx(uint8_t *buf, uint32_t len, size_t max_delay)
-{
-    uint32_t i = 0;
-    for (i = 0; i < len; i++)
-        if (!xQueueReceive(rx_queue, &buf[i], max_delay))
-            break;
-
-    return i;
-}
-
-
-void vcp_setup(void)
+void vcp_setup(struct Serial* s)
 {
     vSemaphoreCreateBinary(_lock);
     xSemaphoreTake(_lock, portMAX_DELAY);
-
-    rx_queue = xQueueCreate(512, sizeof(uint8_t));
-
-    if (rx_queue == 0) {
-        while(1);
-    }
+    rx_queue = serial_get_rx_queue(s);
 }
 
 /* Private functions ---------------------------------------------------------*/

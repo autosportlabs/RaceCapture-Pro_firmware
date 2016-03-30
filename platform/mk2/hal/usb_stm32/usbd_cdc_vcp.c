@@ -65,6 +65,7 @@ static uint16_t VCP_DeInit   (void);
 static uint16_t VCP_Ctrl     (uint32_t Cmd, uint8_t* Buf, uint32_t Len);
 static uint16_t VCP_DataTx   (uint8_t* Buf, uint32_t Len);
 static uint16_t VCP_DataRx   (uint8_t* Buf, uint32_t Len);
+
 /* Locks */
 static volatile bool vcp_configured = false;
 /* Locks */
@@ -91,27 +92,11 @@ void vcp_tx(uint8_t *buf, uint32_t len)
     xSemaphoreGive(_lock);
 }
 
-uint16_t vcp_rx(uint8_t *buf, uint32_t len, size_t max_delay)
-{
-    uint32_t i = 0;
-    for (i = 0; i < len; i++)
-        if (!xQueueReceive(rx_queue, &buf[i], max_delay))
-            break;
-
-    return i;
-}
-
-
-void vcp_setup(void)
+void vcp_setup(struct Serial* s)
 {
     vSemaphoreCreateBinary(_lock);
     xSemaphoreTake(_lock, portMAX_DELAY);
-
-    rx_queue = xQueueCreate(512, sizeof(uint8_t));
-
-    if (rx_queue == 0) {
-        while(1);
-    }
+    rx_queue = serial_get_rx_queue(s);
 }
 
 /* Private functions ---------------------------------------------------------*/
@@ -163,15 +148,6 @@ static uint16_t VCP_Ctrl (uint32_t Cmd, uint8_t* Buf, uint32_t Len)
     return USBD_OK;
 }
 
-/**
-  * @brief  VCP_DataTx
-  *         CDC received data to be send over USB IN endpoint are managed in
-  *         this function.
-  * @param  Buf: Buffer of data to be sent
-  * @param  Len: Number of data to be sent (in bytes)
-  * @retval Result of the opeartion: USBD_OK if all operations are OK else VCP_FAIL
-  */
-
 static bool check_tx_overrun(void)
 {
     if (APP_Rx_ptr_in == APP_Rx_ptr_out - 1)
@@ -214,7 +190,14 @@ static void reinit_if_needed(void)
                 VCP_Init();
 }
 
-
+/**
+  * @brief  VCP_DataTx
+  *         CDC received data to be send over USB IN endpoint are managed in
+  *         this function.
+  * @param  Buf: Buffer of data to be sent
+  * @param  Len: Number of data to be sent (in bytes)
+  * @retval Result of the opeartion: USBD_OK if all operations are OK else VCP_FAIL
+  */
 static uint16_t VCP_DataTx (uint8_t* Buf, uint32_t Len)
 {
     bool overrun;

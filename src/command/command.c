@@ -42,7 +42,7 @@ static int menuPadding = 0;
 
 cmd_context commandContext;
 
-static void set_command_context(Serial *serial, char *buffer, size_t bufferSize)
+static void set_command_context(struct Serial *serial, char *buffer, size_t bufferSize)
 {
     commandContext.lineBuffer = buffer;
     commandContext.serial = serial;
@@ -56,27 +56,26 @@ static void clear_command_context()
     commandContext.lineBufferSize = 0;
 }
 
-static void show_help(Serial *serial)
+static void show_help(struct Serial *serial)
 {
-    serial->put_s("Available Commands:");
-    put_crlf(serial);
-    put_crlf(serial);
+        serial_put_s(serial, "Available Commands:");
+        put_crlf(serial);
+        put_crlf(serial);
 
     const cmd_t * cmd = commands;
     while (cmd->cmd != NULL) {
-        serial->put_s(cmd->cmd);
+            serial_put_s(serial, cmd->cmd);
         int padding = menuPadding - strlen(cmd->cmd);
-        while (padding-- > 0)
-            serial->put_c(' ');
 
-        serial->put_c(':');
-        serial->put_c(' ');
-        serial->put_s(cmd->help);
-        serial->put_c(' ');
-        serial->put_s("Usage: ");
-        serial->put_s(cmd->cmd);
-        serial->put_c(' ');
-        serial->put_s(cmd->paramHelp);
+        while (padding-- > 0)
+                serial_put_c(serial, ' ');
+
+        serial_put_s(serial, ": ");
+        serial_put_s(serial, cmd->help);
+        serial_put_s(serial, " Usage: ");
+        serial_put_s(serial, cmd->cmd);
+        serial_put_c(serial, ' ');
+        serial_put_s(serial, cmd->paramHelp);
 
         put_crlf(serial);
         cmd++;
@@ -97,33 +96,33 @@ static void calculateMenuPadding()
     menuPadding++;
 }
 
-static void send_header(Serial *serial, unsigned int len)
+static void send_header(struct Serial *serial, unsigned int len)
 {
     while (len-- > 0) {
-        serial->put_c('=');
+        serial_put_c(serial, '=');
     }
     put_crlf(serial);
 }
 
-void show_welcome(Serial *serial)
+void show_welcome(struct Serial *serial)
 {
     put_crlf(serial);
     size_t len = strlen(welcomeMsg);
     send_header(serial, len);
-    serial->put_s(welcomeMsg);
+    serial_put_s(serial, welcomeMsg);
     put_crlf(serial);
     send_header(serial, len);
     put_crlf(serial);
     show_help(serial);
 }
 
-void show_command_prompt(Serial *serial)
+void show_command_prompt(struct Serial *serial)
 {
-    serial->put_s(cmdPrompt);
-    serial->put_s(" > ");
+    serial_put_s(serial, cmdPrompt);
+    serial_put_s(serial, " > ");
 }
 
-static int execute_command(Serial *serial, char *buffer)
+static int execute_command(struct Serial *serial, char *buffer)
 {
     unsigned char argc = 0;
     char *argv[30];
@@ -148,7 +147,7 @@ static int execute_command(Serial *serial, char *buffer)
     return (NULL != cmd->cmd);
 }
 
-int process_command(Serial *serial, char * buffer, size_t bufferSize)
+int process_command(struct Serial *serial, char * buffer, size_t bufferSize)
 {
     //this is not thread safe. need to throw a mutex around here
     set_command_context(serial, buffer, bufferSize);
@@ -158,25 +157,25 @@ int process_command(Serial *serial, char * buffer, size_t bufferSize)
     return res;
 }
 
-void put_commandOK(Serial *serial)
+void put_commandOK(struct Serial *serial)
 {
-    serial->put_s(COMMAND_OK_MSG);
+    serial_put_s(serial, COMMAND_OK_MSG);
 }
 
-void put_commandParamError(Serial *serial, char *msg)
+void put_commandParamError(struct Serial *serial, char *msg)
 {
-    serial->put_s(COMMAND_ERROR_MSG);
-    serial->put_s("extended=\"");
-    serial->put_s(msg);
-    serial->put_s("\";");
+    serial_put_s(serial, COMMAND_ERROR_MSG);
+    serial_put_s(serial, "extended=\"");
+    serial_put_s(serial, msg);
+    serial_put_s(serial, "\";");
 }
 
-void put_commandError(Serial *serial, int result)
+void put_commandError(struct Serial *serial, int result)
 {
-    serial->put_s(COMMAND_ERROR_MSG);
-    serial->put_s("code=");
+    serial_put_s(serial, COMMAND_ERROR_MSG);
+    serial_put_s(serial, "code=");
     put_int(serial, result);
-    serial->put_s(";");
+    serial_put_s(serial, ";");
 }
 
 void init_command(void)

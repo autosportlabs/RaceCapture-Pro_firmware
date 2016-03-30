@@ -93,9 +93,9 @@ static int printLog(lua_State *L, int addNewline)
         const int level = lua_gettop(L) >= 2 ? lua_tointeger(L, 2) : INFO;
 
         if (in_interactive_mode()) {
-                Serial *serial = get_command_context()->serial;
+                struct Serial *serial = get_command_context()->serial;
                 if (serial) {
-                        serial->put_s(lua_tostring(L,1));
+                        serial_put_s(serial, lua_tostring(L,1));
                         if (addNewline) {
                                 put_crlf(serial);
                         }

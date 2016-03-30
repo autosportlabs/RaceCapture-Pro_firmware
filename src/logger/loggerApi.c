@@ -138,7 +138,7 @@ static int setStringValueIfExists(const jsmntok_t *root, const char * fieldName,
     return (valueNode != NULL);
 }
 
-int api_systemReset(Serial *serial, const jsmntok_t *json)
+int api_systemReset(struct Serial *serial, const jsmntok_t *json)
 {
     int loader = 0;
     int reset_delay_ms = 0;
@@ -152,7 +152,7 @@ int api_systemReset(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
-int api_factoryReset(Serial *serial, const jsmntok_t *json)
+int api_factoryReset(struct Serial *serial, const jsmntok_t *json)
 {
         flash_default_logger_config();
         flash_default_tracks();
@@ -165,7 +165,7 @@ int api_factoryReset(Serial *serial, const jsmntok_t *json)
         return API_SUCCESS_NO_RETURN;
 }
 
-static void rc_version_info(Serial *serial, const int more,
+static void rc_version_info(struct Serial *serial, const int more,
                             const char *major_name,
                             const char *minor_name,
                             const char *bf_name)
@@ -181,7 +181,7 @@ static void rc_version_info(Serial *serial, const int more,
         json_string(serial, "release_type", rt_key, more);
 }
 
-int api_getVersion(Serial *serial, const jsmntok_t *json)
+int api_getVersion(struct Serial *serial, const jsmntok_t *json)
 {
         json_objStart(serial);
         json_objStartString(serial,"ver");
@@ -194,7 +194,7 @@ int api_getVersion(Serial *serial, const jsmntok_t *json)
         return API_SUCCESS_NO_RETURN;
 }
 
-int api_getCapabilities(Serial *serial, const jsmntok_t *json)
+int api_getCapabilities(struct Serial *serial, const jsmntok_t *json)
 {
     json_objStart(serial);
     json_objStartString(serial,"capabilities");
@@ -234,7 +234,7 @@ int api_getCapabilities(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
-int api_getStatus(Serial *serial, const jsmntok_t *json)
+int api_getStatus(struct Serial *serial, const jsmntok_t *json)
 {
         json_objStart(serial);
         json_objStartString(serial, "status");
@@ -300,7 +300,7 @@ int api_getStatus(Serial *serial, const jsmntok_t *json)
         return API_SUCCESS_NO_RETURN;
 }
 
-int api_sampleData(Serial *serial, const jsmntok_t *json)
+int api_sampleData(struct Serial *serial, const jsmntok_t *json)
 {
     int sendMeta = 0;
     if (json->type == JSMN_OBJECT && json->size == 2) {
@@ -334,7 +334,7 @@ int api_sampleData(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
-int api_heart_beat(Serial *serial, const jsmntok_t *json)
+int api_heart_beat(struct Serial *serial, const jsmntok_t *json)
 {
     json_objStart(serial);
     json_int(serial, "hb", getUptimeAsInt(), 0);
@@ -342,21 +342,21 @@ int api_heart_beat(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
-void api_sendLogStart(Serial *serial)
+void api_sendLogStart(struct Serial *serial)
 {
     json_objStart(serial);
     json_int(serial, "logStart", 1, 0);
     json_objEnd(serial, 0);
 }
 
-void api_sendLogEnd(Serial *serial)
+void api_sendLogEnd(struct Serial *serial)
 {
     json_objStart(serial);
     json_int(serial, "logEnd", 1, 0);
     json_objEnd(serial, 0);
 }
 
-int api_log(Serial *serial, const jsmntok_t *json)
+int api_log(struct Serial *serial, const jsmntok_t *json)
 {
     if (json->type == JSMN_PRIMITIVE && json->size == 0) {
         jsmn_trimData(json);
@@ -377,7 +377,7 @@ int api_log(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS;
 }
 
-static void json_channelConfig(Serial *serial, ChannelConfig *cfg, int more)
+static void json_channelConfig(struct Serial *serial, ChannelConfig *cfg, int more)
 {
     json_string(serial, "nm", cfg->label, 1);
     json_string(serial, "ut", cfg->units, 1);
@@ -387,7 +387,7 @@ static void json_channelConfig(Serial *serial, ChannelConfig *cfg, int more)
     json_int(serial, "sr", decodeSampleRate(cfg->sampleRate), more);
 }
 
-static void write_sample_meta(Serial *serial, const struct sample *sample,
+static void write_sample_meta(struct Serial *serial, const struct sample *sample,
                               int sampleRateLimit, int more)
 {
         json_arrayStart(serial, "meta");
@@ -395,17 +395,17 @@ static void write_sample_meta(Serial *serial, const struct sample *sample,
 
         for (size_t i = 0; i < sample->channel_count; ++i, ++channel_sample) {
                 if (0 < i)
-                        serial->put_c(',');
+                        serial_put_c(serial, ',');
 
-                serial->put_c('{');
+                serial_put_c(serial, '{');
                 json_channelConfig(serial, channel_sample->cfg, 0);
-                serial->put_c('}');
+                serial_put_c(serial, '}');
         }
 
         json_arrayEnd(serial, more);
 }
 
-int api_getMeta(Serial *serial, const jsmntok_t *json)
+int api_getMeta(struct Serial *serial, const jsmntok_t *json)
 {
     json_objStart(serial);
 
@@ -431,7 +431,7 @@ int api_getMeta(Serial *serial, const jsmntok_t *json)
 
 #define MAX_BITMAPS 10
 
-void api_send_sample_record(Serial *serial, struct sample *sample,
+void api_send_sample_record(struct Serial *serial, struct sample *sample,
                             unsigned int tick, int sendMeta)
 {
         json_objStart(serial);
@@ -488,7 +488,7 @@ void api_send_sample_record(Serial *serial, struct sample *sample,
                                                    cs->sampleData);
                                 break;
                         }
-                        serial->put_c(',');
+                        serial_put_c(serial, ',');
                 }
         }
 
@@ -496,7 +496,7 @@ void api_send_sample_record(Serial *serial, struct sample *sample,
         for (size_t i = 0; i < channelBitmaskCount; i++) {
                 put_uint(serial, channelBitmask[i]);
                 if (i < channelBitmaskCount - 1)
-                        serial->put_c(',');
+                        serial_put_c(serial, ',');
         }
 
         json_arrayEnd(serial, 0);
@@ -504,7 +504,7 @@ void api_send_sample_record(Serial *serial, struct sample *sample,
         json_objEnd(serial, 0);
 }
 
-static const jsmntok_t * setChannelConfig(Serial *serial, const jsmntok_t *cfg,
+static const jsmntok_t * setChannelConfig(struct Serial *serial, const jsmntok_t *cfg,
         ChannelConfig *channelCfg,
         setExtField_func setExtField,
         void *extCfg)
@@ -550,7 +550,7 @@ static const jsmntok_t * setChannelConfig(Serial *serial, const jsmntok_t *cfg,
     return cfg;
 }
 
-static int setMultiChannelConfigGeneric(Serial *serial, const jsmntok_t * json,
+static int setMultiChannelConfigGeneric(struct Serial *serial, const jsmntok_t * json,
                                         getConfigs_func getConfigsFunc,
                                         setExtField_func setExtFieldFunc,
                                         reInitConfig_func reInitConfigFunc)
@@ -657,13 +657,13 @@ static void getAnalogConfigs(size_t channelId, void ** baseCfg, ChannelConfig **
     }
 }
 
-int api_setAnalogConfig(Serial *serial, const jsmntok_t * json)
+int api_setAnalogConfig(struct Serial *serial, const jsmntok_t * json)
 {
     int res = setMultiChannelConfigGeneric(serial, json, getAnalogConfigs, setAnalogExtendedField, ADC_init);
     return res;
 }
 
-static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
+static void sendAnalogConfig(struct Serial *serial, size_t startIndex, size_t endIndex)
 {
 
     json_objStart(serial);
@@ -685,7 +685,7 @@ static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
         for (size_t b = 0; b < ANALOG_SCALING_BINS; b++) {
             put_float(serial,  adcCfg->scalingMap.rawValues[b], SCALING_MAP_BIN_PRECISION);
             if (b < ANALOG_SCALING_BINS - 1)
-                serial->put_c(',');
+                serial_put_c(serial, ',');
         }
 
         json_arrayEnd(serial, 1);
@@ -694,7 +694,7 @@ static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
         for (size_t b = 0; b < ANALOG_SCALING_BINS; b++) {
             put_float(serial, adcCfg->scalingMap.scaledValues[b], DEFAULT_ANALOG_SCALING_PRECISION);
             if (b < ANALOG_SCALING_BINS - 1)
-                serial->put_c(',');
+                serial_put_c(serial, ',');
         }
 
         json_arrayEnd(serial, 0);
@@ -705,7 +705,7 @@ static void sendAnalogConfig(Serial *serial, size_t startIndex, size_t endIndex)
     json_objEnd(serial, 0);
 }
 
-int api_getAnalogConfig(Serial *serial, const jsmntok_t * json)
+int api_getAnalogConfig(struct Serial *serial, const jsmntok_t * json)
 {
     size_t startIndex = 0;
     size_t endIndex = 0;
@@ -750,13 +750,13 @@ static void getImuConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** ch
     }
 }
 
-int api_setImuConfig(Serial *serial, const jsmntok_t *json)
+int api_setImuConfig(struct Serial *serial, const jsmntok_t *json)
 {
     int res = setMultiChannelConfigGeneric(serial, json, getImuConfigs, setImuExtendedField, imu_soft_init);
     return res;
 }
 
-static void sendImuConfig(Serial *serial, size_t startIndex, size_t endIndex)
+static void sendImuConfig(struct Serial *serial, size_t startIndex, size_t endIndex)
 {
     json_objStart(serial);
     json_objStartString(serial, "imuCfg");
@@ -774,7 +774,7 @@ static void sendImuConfig(Serial *serial, size_t startIndex, size_t endIndex)
     json_objEnd(serial, 0);
 }
 
-int api_getImuConfig(Serial *serial, const jsmntok_t *json)
+int api_getImuConfig(struct Serial *serial, const jsmntok_t *json)
 {
     size_t startIndex = 0;
     size_t endIndex = 0;
@@ -797,7 +797,7 @@ int api_getImuConfig(Serial *serial, const jsmntok_t *json)
 
 #ifdef FALSE
 // DELETE ME after June 1, 2014 if not used.
-static void setConfigGeneric(Serial *serial, const jsmntok_t * json, void *cfg, setExtField_func setExtField)
+static void setConfigGeneric(struct Serial *serial, const jsmntok_t * json, void *cfg, setExtField_func setExtField)
 {
     int size = json->size;
     if (json->type == JSMN_OBJECT && json->size % 2 == 0) {
@@ -821,7 +821,7 @@ static void setConfigGeneric(Serial *serial, const jsmntok_t * json, void *cfg, 
 }
 #endif
 
-int api_getCellConfig(Serial *serial, const jsmntok_t *json)
+int api_getCellConfig(struct Serial *serial, const jsmntok_t *json)
 {
     CellularConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
     json_objStart(serial);
@@ -834,7 +834,7 @@ int api_getCellConfig(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
-int api_getBluetoothConfig(Serial *serial, const jsmntok_t *json)
+int api_getBluetoothConfig(struct Serial *serial, const jsmntok_t *json)
 {
     BluetoothConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
     json_objStart(serial);
@@ -846,18 +846,18 @@ int api_getBluetoothConfig(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
-int api_getLogfile(Serial *serial, const jsmntok_t *json)
+int api_getLogfile(struct Serial *serial, const jsmntok_t *json)
 {
     json_objStart(serial);
     json_valueStart(serial, "logfile");
-    serial->put_c('"');
+    serial_put_c(serial, '"');
     read_log_to_serial(serial, 1);
-    serial->put_c('"');
+    serial_put_c(serial, '"');
     json_objEnd(serial,0);
     return API_SUCCESS_NO_RETURN;
 }
 
-int api_setLogfileLevel(Serial *serial, const jsmntok_t *json)
+int api_setLogfileLevel(struct Serial *serial, const jsmntok_t *json)
 {
     int level;
     if (setIntValueIfExists(json, "level", &level)) {
@@ -905,7 +905,7 @@ static void setTelemetryConfig(const jsmntok_t *root)
     }
 }
 
-int api_setConnectivityConfig(Serial *serial, const jsmntok_t *json)
+int api_setConnectivityConfig(struct Serial *serial, const jsmntok_t *json)
 {
     setBluetoothConfig(json);
     setCellConfig(json);
@@ -914,7 +914,7 @@ int api_setConnectivityConfig(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS;
 }
 
-int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json)
+int api_getConnectivityConfig(struct Serial *serial, const jsmntok_t *json)
 {
     ConnectivityConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs);
     json_objStart(serial);
@@ -945,7 +945,7 @@ int api_getConnectivityConfig(Serial *serial, const jsmntok_t *json)
 }
 
 #if PWM_CHANNELS > 0
-static void sendPwmConfig(Serial *serial, size_t startIndex, size_t endIndex)
+static void sendPwmConfig(struct Serial *serial, size_t startIndex, size_t endIndex)
 {
 
     json_objStart(serial);
@@ -965,7 +965,7 @@ static void sendPwmConfig(Serial *serial, size_t startIndex, size_t endIndex)
 }
 
 
-int api_getPwmConfig(Serial *serial, const jsmntok_t *json)
+int api_getPwmConfig(struct Serial *serial, const jsmntok_t *json)
 {
     size_t startIndex = 0;
     size_t endIndex = 0;
@@ -1010,7 +1010,7 @@ static const jsmntok_t * setPwmExtendedField(const jsmntok_t *valueTok, const ch
     return valueTok + 1;
 }
 
-int api_setPwmConfig(Serial *serial, const jsmntok_t *json)
+int api_setPwmConfig(struct Serial *serial, const jsmntok_t *json)
 {
     int res = setMultiChannelConfigGeneric(serial, json, getPwmConfigs, setPwmExtendedField, PWM_update_config);
     return res;
@@ -1036,7 +1036,7 @@ static const jsmntok_t * setGpioExtendedField(const jsmntok_t *valueTok, const c
     return valueTok + 1;
 }
 
-static void sendGpioConfig(Serial *serial, size_t startIndex, size_t endIndex)
+static void sendGpioConfig(struct Serial *serial, size_t startIndex, size_t endIndex)
 {
     json_objStart(serial);
     json_objStartString(serial, "gpioCfg");
@@ -1052,7 +1052,7 @@ static void sendGpioConfig(Serial *serial, size_t startIndex, size_t endIndex)
 }
 
 
-int api_getGpioConfig(Serial *serial, const jsmntok_t *json)
+int api_getGpioConfig(struct Serial *serial, const jsmntok_t *json)
 {
     size_t startIndex = 0;
     size_t endIndex = 0;
@@ -1073,7 +1073,7 @@ int api_getGpioConfig(Serial *serial, const jsmntok_t *json)
     }
 }
 
-int api_setGpioConfig(Serial *serial, const jsmntok_t *json)
+int api_setGpioConfig(struct Serial *serial, const jsmntok_t *json)
 {
     int res = setMultiChannelConfigGeneric(serial, json, getGpioConfigs, setGpioExtendedField, GPIO_init);
     return res;
@@ -1114,7 +1114,7 @@ static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok,
     return valueTok + 1;
 }
 
-static void sendTimerConfig(Serial *serial, size_t startIndex, size_t endIndex)
+static void sendTimerConfig(struct Serial *serial, size_t startIndex, size_t endIndex)
 {
     json_objStart(serial);
     json_objStartString(serial, "timerCfg");
@@ -1136,7 +1136,7 @@ static void sendTimerConfig(Serial *serial, size_t startIndex, size_t endIndex)
     json_objEnd(serial, 0);
 }
 
-int api_getTimerConfig(Serial *serial, const jsmntok_t *json)
+int api_getTimerConfig(struct Serial *serial, const jsmntok_t *json)
 {
     size_t startIndex = 0;
     size_t endIndex = 0;
@@ -1157,7 +1157,7 @@ int api_getTimerConfig(Serial *serial, const jsmntok_t *json)
     }
 }
 
-int api_setTimerConfig(Serial *serial, const jsmntok_t *json)
+int api_setTimerConfig(struct Serial *serial, const jsmntok_t *json)
 {
     int res = setMultiChannelConfigGeneric(serial, json, getTimerConfigs, setTimerExtendedField, timer_init);
     return res;
@@ -1179,7 +1179,7 @@ static unsigned short getGpsConfigHighSampleRate(GPSConfig *cfg)
     return rate;
 }
 
-int api_getGpsConfig(Serial *serial, const jsmntok_t *json)
+int api_getGpsConfig(struct Serial *serial, const jsmntok_t *json)
 {
 
     GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
@@ -1214,7 +1214,7 @@ static void gpsConfigTestAndSet(const jsmntok_t *json, ChannelConfig *cfg,
 
 }
 
-int api_setGpsConfig(Serial *serial, const jsmntok_t *json)
+int api_setGpsConfig(struct Serial *serial, const jsmntok_t *json)
 {
     GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
 
@@ -1236,7 +1236,7 @@ int api_setGpsConfig(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS;
 }
 
-int api_getCanConfig(Serial *serial, const jsmntok_t *json)
+int api_getCanConfig(struct Serial *serial, const jsmntok_t *json)
 {
 
     CANConfig *canCfg = &getWorkingLoggerConfig()->CanConfig;
@@ -1254,7 +1254,7 @@ int api_getCanConfig(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
-int api_setCanConfig(Serial *serial, const jsmntok_t *json)
+int api_setCanConfig(struct Serial *serial, const jsmntok_t *json)
 {
 
     CANConfig *canCfg = &getWorkingLoggerConfig()->CanConfig;
@@ -1273,7 +1273,7 @@ int api_setCanConfig(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS;
 }
 
-int api_getObd2Config(Serial *serial, const jsmntok_t *json)
+int api_getObd2Config(struct Serial *serial, const jsmntok_t *json)
 {
     json_objStart(serial);
     json_objStartString(serial, "obd2Cfg");
@@ -1309,7 +1309,7 @@ static const jsmntok_t * setPidExtendedField(const jsmntok_t *valueTok, const ch
     return valueTok + 1;
 }
 
-int api_setObd2Config(Serial *serial, const jsmntok_t *json)
+int api_setObd2Config(struct Serial *serial, const jsmntok_t *json)
 {
     OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
 
@@ -1345,7 +1345,7 @@ int api_setObd2Config(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS;
 }
 
-int api_setLapConfig(Serial *serial, const jsmntok_t *json)
+int api_setLapConfig(struct Serial *serial, const jsmntok_t *json)
 {
     LapConfig *lapCfg = &(getWorkingLoggerConfig()->LapConfigs);
 
@@ -1385,7 +1385,7 @@ int api_setLapConfig(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS;
 }
 
-int api_getLapConfig(Serial *serial, const jsmntok_t *json)
+int api_getLapConfig(struct Serial *serial, const jsmntok_t *json)
 {
     LapConfig *lapCfg = &(getWorkingLoggerConfig()->LapConfigs);
 
@@ -1425,7 +1425,7 @@ int api_getLapConfig(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
-static void json_geoPointArray(Serial *serial, const char *name, const GeoPoint *point, int more)
+static void json_geoPointArray(struct Serial *serial, const char *name, const GeoPoint *point, int more)
 {
     json_arrayStart(serial, name);
     json_arrayElementFloat(serial, point->latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
@@ -1433,7 +1433,7 @@ static void json_geoPointArray(Serial *serial, const char *name, const GeoPoint 
     json_arrayEnd(serial, more);
 }
 
-static void json_track(Serial *serial, const Track *track)
+static void json_track(struct Serial *serial, const Track *track)
 {
     json_int(serial, "id", track->trackId, 1);
     json_int(serial, "type", track->track_type, 1);
@@ -1457,7 +1457,7 @@ static void json_track(Serial *serial, const Track *track)
     }
 }
 
-int api_getTrackConfig(Serial *serial, const jsmntok_t *json)
+int api_getTrackConfig(struct Serial *serial, const jsmntok_t *json)
 {
     TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs);
 
@@ -1537,12 +1537,12 @@ static void setTrack(const jsmntok_t *trackNode, Track *track)
     }
 }
 
-int api_resetMCU(Serial *serial, const jsmntok_t *json)
+int api_resetMCU(struct Serial *serial, const jsmntok_t *json)
 {
     return API_SUCCESS;
 }
 
-int api_setTrackConfig(Serial *serial, const jsmntok_t *json)
+int api_setTrackConfig(struct Serial *serial, const jsmntok_t *json)
 {
 
     TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs);
@@ -1559,19 +1559,19 @@ int api_setTrackConfig(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS;
 }
 
-int api_calibrateImu(Serial *serial, const jsmntok_t *json)
+int api_calibrateImu(struct Serial *serial, const jsmntok_t *json)
 {
     imu_calibrate_zero();
     return API_SUCCESS;
 }
 
-int api_flashConfig(Serial *serial, const jsmntok_t *json)
+int api_flashConfig(struct Serial *serial, const jsmntok_t *json)
 {
     int rc = flashLoggerConfig();
     return (rc == 0 ? 1 : rc); //success means on internal command; other errors passed through
 }
 
-int api_addTrackDb(Serial *serial, const jsmntok_t *json)
+int api_addTrackDb(struct Serial *serial, const jsmntok_t *json)
 {
 
     unsigned char mode = 0;
@@ -1596,7 +1596,7 @@ int api_addTrackDb(Serial *serial, const jsmntok_t *json)
     return API_ERROR_MALFORMED;
 }
 
-int api_getTrackDb(Serial *serial, const jsmntok_t *json)
+int api_getTrackDb(struct Serial *serial, const jsmntok_t *json)
 {
     const Tracks * tracks = get_tracks();
 
@@ -1620,7 +1620,7 @@ int api_getTrackDb(Serial *serial, const jsmntok_t *json)
 
 #if defined(LUA_SUPPORT)
 
-int api_getScript(Serial *serial, const jsmntok_t *json)
+int api_getScript(struct Serial *serial, const jsmntok_t *json)
 {
     const char *script = getScript();
 
@@ -1634,7 +1634,7 @@ int api_getScript(Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
-int api_setScript(Serial *serial, const jsmntok_t *json)
+int api_setScript(struct Serial *serial, const jsmntok_t *json)
 {
         const jsmntok_t *dataTok = jsmn_find_node(json, "data");
         const jsmntok_t *pageTok = jsmn_find_node(json, "page");
@@ -1659,7 +1659,7 @@ int api_setScript(Serial *serial, const jsmntok_t *json)
                 API_SUCCESS : API_ERROR_SEVERE;
 }
 
-int api_runScript(Serial *serial, const jsmntok_t *json)
+int api_runScript(struct Serial *serial, const jsmntok_t *json)
 {
         terminate_lua();
         initialize_lua();

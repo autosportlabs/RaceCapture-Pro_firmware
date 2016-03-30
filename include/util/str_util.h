@@ -36,6 +36,12 @@ char* rstrip_inline(char *str);
 
 char* strip_inline(char *str);
 
+char* str_util_lstrip_zeros_inline(char *str);
+
+char* str_util_rstrip_zeros_inline(char *str);
+
+char* str_util_strip_zeros_inline(char *str);
+
 CPP_GUARD_END
 
 #endif /* _STR_UTIL_H_ */

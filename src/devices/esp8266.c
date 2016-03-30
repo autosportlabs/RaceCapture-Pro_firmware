@@ -667,9 +667,9 @@ static bool send_data_cb(struct at_rsp *rsp, void *up)
                  * command.
                  */
                 ; /* Silly C legacy issues */
-                const Serial *s = state.ati->sb->serial;
+                struct Serial *s = state.ati->sb->serial;
                 for (size_t i = 0; i < ti->len; ++i)
-                        s->put_c(ti->data[i]);
+                        serial_put_c(s, ti->data[i]);
 
                 return true;
         case AT_RSP_STATUS_SEND_OK:

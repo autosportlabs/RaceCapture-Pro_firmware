@@ -42,7 +42,7 @@ size_t set_ontick_freq(const size_t freq);
 size_t get_ontick_freq();
 void initialize_lua();
 void terminate_lua();
-void run_lua_interactive_cmd(Serial *serial, const char* cmd);
+void run_lua_interactive_cmd(struct Serial *serial, const char* cmd);
 
 CPP_GUARD_END
 

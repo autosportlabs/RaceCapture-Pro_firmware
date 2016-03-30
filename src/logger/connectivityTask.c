@@ -81,9 +81,10 @@ static size_t trimBuffer(char *buffer, size_t count)
     return count;
 }
 
-static int processRxBuffer(Serial *serial, char *buffer, size_t *rxCount)
+static int processRxBuffer(struct Serial *serial, char *buffer, size_t *rxCount)
 {
-    size_t count = serial->get_line_wait(buffer + *rxCount, BUFFER_SIZE - *rxCount, 0);
+        size_t count = serial_get_line_wait(serial, buffer + *rxCount,
+                                            BUFFER_SIZE - *rxCount, 0);
 
     *rxCount += count;
     int processMsg = 0;
@@ -250,7 +251,7 @@ void connectivityTask(void *params)
     ConnParams *connParams = (ConnParams*)params;
     LoggerMessage msg;
 
-    Serial *serial = get_serial(connParams->serial);
+    struct Serial *serial = serial_device_get(connParams->serial);
 
     xQueueHandle sampleQueue = connParams->sampleQueue;
     uint32_t connection_timeout = connParams->connection_timeout;
@@ -275,7 +276,7 @@ void connectivityTask(void *params)
             vTaskDelay(INIT_DELAY);
         }
 
-        serial->flush();
+        serial_flush(serial);
         rxCount = 0;
         size_t badMsgCount = 0;
         size_t tick = 0;

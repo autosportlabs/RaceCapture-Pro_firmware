@@ -54,6 +54,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/serial/ram_serial.c \
 			$(RCP_SRC)/serial/rx_buff.c \
 			$(RCP_SRC)/serial/serial.c \
+			$(RCP_SRC)/serial/serial_device.c \
 			$(RCP_SRC)/serial/serial_buffer.c \
 			$(RCP_SRC)/usart/usart.c \
 			$(RCP_SRC)/cpu/cpu.c \

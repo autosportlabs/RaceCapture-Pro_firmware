@@ -33,7 +33,7 @@ bool ram_serial_init(const size_t cap);
 
 bool ram_serial_destroy();
 
-Serial* ram_serial_get_serial();
+struct Serial* ram_serial_get_serial();
 
 void ram_serial_clear();
 

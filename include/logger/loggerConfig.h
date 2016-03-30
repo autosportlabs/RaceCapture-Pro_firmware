@@ -26,8 +26,9 @@
 #include "channel_config.h"
 #include "cpp_guard.h"
 #include "geopoint.h"
-#include "tracks.h"
+#include "serial_device.h"
 #include "timer_config.h"
+#include "tracks.h"
 #include "versionInfo.h"
 
 #include <stdbool.h>
@@ -456,7 +457,7 @@ typedef struct _ConnectivityConfig {
  * Configurations specific to our logging infrastructure.
  */
 struct logging_config {
-        bool serial[SERIAL_COUNT];
+        bool serial[__SERIAL_COUNT];
 };
 
 typedef struct _LoggerConfig {

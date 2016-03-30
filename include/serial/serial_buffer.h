@@ -30,14 +30,14 @@
 CPP_GUARD_BEGIN
 
 struct serial_buffer {
-        Serial *serial;
+        struct Serial *serial;
         size_t length;
         char *buffer;
         size_t curr_len;
 };
 
 bool serial_buffer_create(struct serial_buffer *sb,
-                          Serial *serial,
+                          struct Serial *serial,
                           const size_t size,
                           char *buffer);
 

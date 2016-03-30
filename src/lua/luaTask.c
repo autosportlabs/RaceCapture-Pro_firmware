@@ -279,12 +279,12 @@ cleanup:
         return status;
 }
 
-void run_lua_interactive_cmd(Serial *serial, const char* cmd)
+void run_lua_interactive_cmd(struct Serial *serial, const char* cmd)
 {
         lockLua();
 
         if (!g_lua) {
-                serial->put_s("error: LUA not initialized.");
+                serial_put_s(serial, "error: LUA not initialized.");
                 put_crlf(serial);
                 goto cleanup;
         }
@@ -302,9 +302,9 @@ void run_lua_interactive_cmd(Serial *serial, const char* cmd)
          */
         int result = luaL_loadstring(g_lua, cmd) || lua_pcall(g_lua, 0, 0, 0);
         if (0 != result) {
-                serial->put_s("error: (");
-                serial->put_s(lua_tostring(g_lua, -1));
-                serial->put_s(")");
+                serial_put_s(serial, "error: (");
+                serial_put_s(serial, lua_tostring(g_lua, -1));
+                serial_put_c(serial, ')');
                 put_crlf(serial);
                 lua_pop(g_lua, 1);
                 goto cleanup;

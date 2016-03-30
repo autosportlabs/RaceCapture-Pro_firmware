@@ -19,25 +19,28 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MESSAGING_H_
-#define MESSAGING_H_
+#ifndef _SERIAL_DEVICE_H_
+#define _SERIAL_DEVICE_H_
 
 #include "cpp_guard.h"
 #include "serial.h"
-#include "command.h"
-#include "api.h"
 
-#include <stddef.h>
+#include <stdbool.h>
 
 CPP_GUARD_BEGIN
 
-void initMessaging();
+/* STIEG: Update Enum type to be proper later */
+typedef enum {
+        SERIAL_USB = 0,
+        SERIAL_GPS,
+        SERIAL_TELEMETRY,
+        SERIAL_WIRELESS,
+        SERIAL_AUX,
+        __SERIAL_COUNT, /* ALWAYS AT THE END */
+} serial_id_t;
 
-int process_read_msg(struct Serial *serial, char *buff, size_t len);
-
-void process_msg(struct Serial *serial, char * buffer, size_t bufferSize);
+struct Serial* serial_device_get(const serial_id_t port);
 
 CPP_GUARD_END
 
-
-#endif /* MESSAGING_H_ */
+#endif /* _SERIAL_DEVICE_H_ */

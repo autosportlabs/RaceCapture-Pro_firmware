@@ -343,7 +343,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
 
         const char *deviceId = tc->telemetryDeviceId;
 
-        Serial *serial = sb->serial;
+        struct Serial *serial = sb->serial;
         json_objStart(serial);
         json_objStartString(serial, "auth");
         json_string(serial, "deviceId", deviceId, 1);
@@ -353,7 +353,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
         json_string(serial, "sn", cpu_get_serialnumber(), 0);
         json_objEnd(serial, 0);
         json_objEnd(serial, 0);
-        serial->put_c('\n');
+        serial_put_c(serial, '\n');
 
         pr_debug_str_msg("sending auth- deviceId: ", deviceId);
 

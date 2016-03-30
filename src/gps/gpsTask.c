@@ -42,9 +42,13 @@ void setGpsDataLogging(bool enable)
 
 void GPSTask(void *pvParameters)
 {
-    Serial *serial = get_serial(SERIAL_GPS);
-    uint8_t targetSampleRate = decodeSampleRate(getWorkingLoggerConfig()->GPSConfigs.speed.sampleRate);
-    lapStats_init();
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        struct Serial *serial = serial_device_get(SERIAL_GPS);
+        const uint8_t targetSampleRate =
+                decodeSampleRate(lc->GPSConfigs.speed.sampleRate);
+
+        lapStats_init();
+
     while(1) {
         const gps_status_t gps_status = GPS_init(targetSampleRate, serial);
         if (!gps_status) {

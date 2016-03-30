@@ -38,10 +38,8 @@
 
 void InitLoggerHardware()
 {
-
     LoggerConfig *loggerConfig = getWorkingLoggerConfig();
     usart_init();
-    init_serial();
     led_init();
 
 #if IMU_CHANNELS > 0

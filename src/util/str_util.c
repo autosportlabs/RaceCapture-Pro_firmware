@@ -84,3 +84,63 @@ char* strip_inline(char *str)
 {
         return lstrip_inline(rstrip_inline(str));
 }
+
+/**
+ * Left or leading strip.  Strips all leading '0' characters from the string
+ * by effectively returning a pointer to the first non-zero character
+ * that it encounters. It will always give you at least one character to
+ * print before a decimal or end of string. Will not modify the string, but
+ * may not return the pointer that was initially given.
+ * @return Pointer to the first non-whitespace character in the string.
+ */
+char* str_util_lstrip_zeros_inline(char *str)
+{
+        if (!*str)
+                return str;
+
+        for(; '0' == *str; ++str);
+
+        switch (*str) {
+        case '\0':
+        case '.':
+                return --str;
+        default:
+                return str;
+        }
+}
+
+/**
+ * Right or reverse strip.  Strips all trailing '0' characters from the right
+ * side of the string by placing a null terminator where we detect the
+ * last 0 character to be.  This may modify the string passed i
+ * @return Pointer to the string passed in.
+ */
+char* str_util_rstrip_zeros_inline(char *str)
+{
+        /* Save the beginning val since we need it */
+        char* const begin = str;
+
+        for(; '\0' != *str && '.' != *str; ++str);
+
+        if ('\0' == *str || '\0' == *++str)
+                return begin;
+
+        char *ld = str;
+        for(++str; *str; ++str)
+                if (*str != '0')
+                        ld = str;
+
+        *++ld = 0;
+        return begin;
+}
+
+/**
+ * Convenience method that calls both rstrip_inline then lstrip_inline to
+ * strip both sides of the string.  Note that string passed in may modified
+ * and that pointer returned might not equal pointer given.
+ */
+char* str_util_strip_zeros_inline(char *str)
+{
+        str = str_util_lstrip_zeros_inline(str);
+        return str_util_rstrip_zeros_inline(str);
+}

@@ -103,7 +103,7 @@ static const char * baudConfigCmdForRate(unsigned int baudRate)
 static void set_bt_serial_baud(DeviceConfig *config, int baud)
 {
         pr_info_int_msg("BT: Baudrate: ", baud);
-        serial_init(config->serial, 8, 0, 1, baud);
+        serial_config(config->serial, 8, 0, 1, baud);
 }
 
 static int set_check_bt_serial_baud(DeviceConfig *config, int baud)
