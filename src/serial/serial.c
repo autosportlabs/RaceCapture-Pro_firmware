@@ -289,47 +289,59 @@ xQueueHandle serial_get_tx_queue(struct Serial *s)
 /* }; */
 
 /* STIEG: Add "Serial_" prefix to these methods without them */
+/* STIEG: Migrate to _put_numeric_val once figure out float printf issue */
+/* static int _put_numeric_val(struct Serial *s, const char *fmt, ...) */
+/* { */
+/*         char buf[32]; */
+/*         va_list ap; */
 
-static int _put_numeric_val(struct Serial *s, const char *fmt, ...)
-{
-        char buf[32];
-        va_list ap;
+/*         va_start(ap, fmt); */
+/*         vsnprintf(buf, ARRAY_LEN(buf), fmt, ap); */
+/*         va_end(ap); */
 
-        va_start(ap, fmt);
-        vsnprintf(buf, ARRAY_LEN(buf), fmt, ap);
-        va_end(ap);
-
-        return serial_put_s(s, str_util_rstrip_zeros_inline(buf));
-}
+/*         return serial_put_s(s, str_util_rstrip_zeros_inline(buf)); */
+/* } */
 
 int put_int(struct Serial *s, const int n)
 {
-        return _put_numeric_val(s, "%d", n);
+        char buf[12];
+        modp_itoa10(n, buf);
+        return serial_put_s(s, buf);
 }
 
 int put_ll(struct Serial *s, const long long l)
 {
-        return _put_numeric_val(s, "%lld", l);
-}
-
-int put_float(struct Serial *s, const float f, const int precision)
-{
-        return _put_numeric_val(s, "%.*f", precision, f);
-}
-
-int put_double(struct Serial *s, const double f, const int precision)
-{
-        return _put_numeric_val(s, "%.*f", precision, f);
+        char buf[22];
+        modp_ltoa10(l, buf);
+        return serial_put_s(s, buf);
 }
 
 int put_hex(struct Serial *s, const int i)
 {
-        return _put_numeric_val(s, "%x", i);
+        char buf[30];
+        modp_itoaX(i, buf, 16);
+        return serial_put_s(s, buf);
 }
 
 int put_uint(struct Serial *s, const unsigned int n)
 {
-        return _put_numeric_val(s, "%u", n);
+        char buf[20];
+        modp_uitoa10(n, buf);
+        return serial_put_s(s, buf);
+}
+
+int put_float(struct Serial *s, const float f, const int precision)
+{
+        char buf[20];
+        modp_ftoa(f, buf, precision);
+        return serial_put_s(s, buf);
+}
+
+int put_double(struct Serial *s, const double f, const int precision)
+{
+        char buf[30];
+        modp_dtoa(f, buf, precision);
+        return serial_put_s(s, buf);
 }
 
 void put_nameIndexUint(struct Serial *serial, const char *s, int i, unsigned int n)
