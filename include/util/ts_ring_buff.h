@@ -19,31 +19,32 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __RING_BUFFER_H__
-#define __RING_BUFFER_H__
+#ifndef __TS_RING_BUFFER_H__
+#define __TS_RING_BUFFER_H__
 
 #include "cpp_guard.h"
+
 #include <stdbool.h>
 #include <stddef.h>
 
 CPP_GUARD_BEGIN
 
-struct ring_buff;
+struct ts_ring_buff;
 
-void ring_buffer_destroy(struct ring_buff *rb);
-struct ring_buff* ring_buffer_create(const size_t cap);
-void ring_buffer_clear(struct ring_buff *rb);
-size_t ring_buffer_capacity(struct ring_buff *rb);
-size_t ring_buffer_bytes_free(struct ring_buff *rb);
-size_t ring_buffer_bytes_used(struct ring_buff *rb);
-size_t ring_buffer_get(struct ring_buff *rb, void *buff,
-                       size_t size);
-size_t ring_buffer_peek(struct ring_buff *rb, void *data,
+struct ts_ring_buff* ts_ring_buff_create(const size_t cap);
+void ts_ring_buff_clear(struct ts_ring_buff *rb);
+size_t ts_ring_buff_capacity(struct ts_ring_buff *rb);
+size_t ts_ring_buff_bytes_free(struct ts_ring_buff *rb);
+size_t ts_ring_buff_bytes_used(struct ts_ring_buff *rb);
+size_t ts_ring_buff_get(struct ts_ring_buff *rb, void *buff,
                         size_t size);
-size_t ring_buffer_put(struct ring_buff *rb, const void *data,
-                       size_t size);
-size_t ring_buffer_write(struct ring_buff *rb, const void *data,
+size_t ts_ring_buff_peek(struct ts_ring_buff *rb, void *data,
                          size_t size);
+size_t ts_ring_buff_put(struct ts_ring_buff *rb, const void *data,
+                        size_t size);
+size_t ts_ring_buff_write(struct ts_ring_buff *rb, const void *data,
+                          size_t size);
+
 CPP_GUARD_END
 
-#endif /* __RING_BUFFER_H__ */
+#endif /* __TS_RING_BUFFER_H__ */
