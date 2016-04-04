@@ -165,3 +165,16 @@ void RingBufferTest::testClear()
         CPPUNIT_ASSERT_EQUAL((size_t) RING_BUFF_CAP,
                              ring_buffer_bytes_free(rb));
 }
+
+void RingBufferTest::testWrite()
+{
+        const char data[] = "baZb";
+        const size_t size = ARRAY_LEN(data);
+
+        while(ring_buffer_bytes_free(rb) >= size)
+                CPPUNIT_ASSERT_EQUAL(size, ring_buffer_write(rb, data, size));
+
+        /* Now that there is less free space than size, ensure write works */
+        const size_t avail = ring_buffer_bytes_free(rb);
+        CPPUNIT_ASSERT_EQUAL(avail, ring_buffer_write(rb, data, size));
+}

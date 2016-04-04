@@ -127,3 +127,12 @@ size_t ts_ring_buff_put(struct ts_ring_buff *tsrb, const void *data,
         give_mutex(tsrb);
         return rv;
 }
+
+size_t ts_ring_buff_write(struct ts_ring_buff *tsrb, const void *data,
+                          size_t size)
+{
+        take_mutex(tsrb);
+        const size_t rv = ring_buffer_write(tsrb->rb, data, size);
+        give_mutex(tsrb);
+        return rv;
+}

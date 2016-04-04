@@ -34,6 +34,7 @@ class RingBufferTest : public CppUnit::TestFixture
         CPPUNIT_TEST( testPeek );
         CPPUNIT_TEST( testDrop );
         CPPUNIT_TEST( testClear );
+        CPPUNIT_TEST( testWrite );
         CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -46,6 +47,7 @@ public:
         void testPeek();
         void testDrop();
         void testClear();
+        void testWrite();
 };
 
 #endif /* _RING_BUFFER_TEST_H_ */

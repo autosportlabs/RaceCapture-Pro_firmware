@@ -204,3 +204,21 @@ size_t ring_buffer_put(struct ring_buff *rb, const void *data,
         rb->head = get_new_ptr_val(rb, rb->head, size);
         return size;
 }
+
+/**
+ * Writes data into the ring buffer without clobbering.  If there isn't
+ * enough free space then this method will only write what it can and
+ * will report back what it was able to write.
+ * @param data The data to put into the buffer.
+ * @param size The amount of data to put in from the buffer.
+ * @return The amount of data actually written to the buffer.
+ */
+size_t ring_buffer_write(struct ring_buff *rb, const void *data,
+                         size_t size)
+{
+        const size_t avail = ring_buffer_bytes_free(rb);
+        if (avail < size)
+                size = avail;
+
+        return size ? ring_buffer_put(rb, data, size) : 0;
+}

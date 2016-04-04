@@ -42,6 +42,8 @@ size_t ts_ring_buff_peek(struct ts_ring_buff *rb, void *data,
                          size_t size);
 size_t ts_ring_buff_put(struct ts_ring_buff *rb, const void *data,
                         size_t size);
+size_t ts_ring_buff_write(struct ts_ring_buff *rb, const void *data,
+                          size_t size);
 
 CPP_GUARD_END
 

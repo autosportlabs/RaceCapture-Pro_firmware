@@ -42,7 +42,8 @@ size_t ring_buffer_peek(struct ring_buff *rb, void *data,
                         size_t size);
 size_t ring_buffer_put(struct ring_buff *rb, const void *data,
                        size_t size);
-
+size_t ring_buffer_write(struct ring_buff *rb, const void *data,
+                         size_t size);
 CPP_GUARD_END
 
 #endif /* __RING_BUFFER_H__ */
