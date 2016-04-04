@@ -20,11 +20,10 @@
  */
 
 #include "macros.h"
-#include "ring_buffer_test.hh"
 #include "ring_buffer.h"
-
-#include <string.h>
+#include "ring_buffer_test.hh"
 #include <stdio.h>
+#include <string.h>
 
 #define RING_BUFF_CAP	((size_t) 8)
 

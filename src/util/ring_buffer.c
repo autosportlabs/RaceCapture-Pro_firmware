@@ -33,15 +33,14 @@
 #include "mem_mang.h"
 #include "mod_string.h"
 #include "ring_buffer.h"
-
 #include <stdbool.h>
 #include <stddef.h>
 
 struct ring_buff {
-    char *buff;
-    size_t size;
-    char *head;
-    char *tail;
+        char *buff;
+        size_t size;
+        char *head;
+        char *tail;
 };
 
 /**

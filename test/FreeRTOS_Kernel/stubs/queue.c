@@ -24,9 +24,9 @@
 #include "queue.h"
 
 signed portBASE_TYPE xQueueGenericSend( xQueueHandle xQueue,
-                                            const void * const pvItemToQueue,
-                                            portTickType xTicksToWait,
-                                            portBASE_TYPE xCopyPosition )
+                                        const void * const pvItemToQueue,
+                                        portTickType xTicksToWait,
+                                        portBASE_TYPE xCopyPosition )
 {
         return 0;
 }
@@ -45,4 +45,10 @@ xQueueHandle xQueueCreate(
         unsigned portBASE_TYPE uxItemSize)
 {
         return NULL;
+}
+
+xQueueHandle xQueueCreateMutex()
+{
+        /* Can't return NULL b/c failure checks.  Wing it */
+        return (xQueueHandle) 1;
 }

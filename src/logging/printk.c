@@ -24,7 +24,7 @@
 #include "mod_string.h"
 #include "modp_numtoa.h"
 #include "printk.h"
-#include "ring_buffer.h"
+#include "ts_ring_buff.h"
 #include "serial.h"
 
 #include <stddef.h>
@@ -32,18 +32,20 @@
 #define IF_LEVEL_GT_CURR_LEVEL_RET_ZERO(l) if ((l) > curr_level) return 0
 
 static enum log_level curr_level = INFO;
-static struct ring_buff *log_buff;
+static struct ts_ring_buff *log_buff;
 
 size_t read_log_to_serial(Serial *s, int escape)
 {
         char buff[16];
-        const size_t bytes_avail = ring_buffer_bytes_used(log_buff);
-        size_t to_read = bytes_avail;
-        while(to_read){
-                size_t read = ring_buffer_get(log_buff, &buff,
-                                              ARRAY_LEN(buff));
-                to_read -= read;
+        size_t read = 0;
 
+        while(true){
+                size_t bytes = ts_ring_buff_get(log_buff, &buff,
+                                                ARRAY_LEN(buff));
+                if (0 == bytes)
+                        break;
+
+                read += bytes;
                 for(int i = 0; i < read; i++)
                         if (escape) {
                                 put_escapedString(s, &buff[i],1);
@@ -52,18 +54,18 @@ size_t read_log_to_serial(Serial *s, int escape)
                         }
         }
 
-        return bytes_avail;
+        return read;
 }
 
 int writek(const char *msg)
 {
         if (!log_buff)
-                log_buff = ring_buffer_create(LOG_BUFFER_SIZE);
+                log_buff = ts_ring_buff_create(LOG_BUFFER_SIZE);
 
         if (NULL == msg)
                 return 0;
 
-        return ring_buffer_put(log_buff, msg, strlen(msg));
+        return ts_ring_buff_put(log_buff, msg, strlen(msg));
 }
 
 int writek_crlf()
@@ -73,7 +75,7 @@ int writek_crlf()
 
 int writek_char(char c)
 {
-        return ring_buffer_put(log_buff, &c, 1);
+        return ts_ring_buff_put(log_buff, &c, 1);
 }
 
 int writek_int(int value)
