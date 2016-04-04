@@ -1,52 +1,250 @@
-#include "USB-CDC_device.h"
+#include <FreeRTOS.h>
+#include <task.h>
+#include <portmacro.h>
+#include <semphr.h>
+#include <timers.h>
+#include <queue.h>
+
+#include <usb_lib.h>
+#include <usb_desc.h>
+#include <usb_mem.h>
+#include <hw_config.h>
+#include <usb_istr.h>
+#include <usb_pwr.h>
+#include <usb_prop.h>
+
 #include <string.h>
+#include <stdbool.h>
 
-#include <usbd_cdc_core.h>
-#include <usbd_usr.h>
-#include <usbd_conf.h>
-#include <usbd_desc.h>
-#include <usbd_cdc_vcp.h>
+#include <USB-CDC_device.h>
 
-static volatile int _init_flag = 0;
-USB_OTG_CORE_HANDLE USB_OTG_dev __attribute__ ((aligned (4)));
+#define USB_BUF_ELTS(in, out, bufsize) ((in - out + bufsize) % bufsize)
 
-int USB_CDC_device_init()
+static struct {
+	uint8_t USB_Rx_Buffer[VIRTUAL_COM_PORT_DATA_SIZE];
+	uint8_t USB_Tx_Buffer[VIRTUAL_COM_PORT_DATA_SIZE];
+	volatile uint32_t USB_Tx_ptr_in;
+	volatile uint32_t USB_Tx_ptr_out;
+	volatile uint32_t USB_Rx_ptr_in;
+	volatile uint32_t USB_Rx_ptr_out;
+	volatile int _init_flag;
+	xSemaphoreHandle _rlock;
+	xSemaphoreHandle _wlock;
+} usb_state;
+
+/* ST's USB hardware doesn't include an internal pullup resistor on
+ * USB_DP for some odd reason and instead relies on an externally
+ * gated (via a set of transistors) pull up attached to a
+ * USB_DISCONNECT pin. As this is only used during startup (we don't
+ * do any dynamic re-enumeration), we can shortcut this by having a
+ * static pullup, and simply causing a glitch on the line by forcing
+ * USB_DP low before we initialize the rest of the USB hardware. It's
+ * a little hacky, but doesn't seem to cause any ill effects. */
+static int USB_CDC_force_reenumeration(void)
 {
-    vcp_setup();
+	GPIO_InitTypeDef GPIO_InitStructure;
 
-    /* Initialize the USB hardware */
-    USBD_Init(&USB_OTG_dev,
-              USB_OTG_FS_CORE_ID,
-              &USR_desc,
-              &USBD_CDC_cb,
-              &USR_cb);
-    _init_flag = 1;
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-    return 0;
+ 	GPIO_ResetBits(GPIOA, GPIO_Pin_12);
+
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+
 }
 
+/* Public API */
+int USB_CDC_device_init(const int priority)
+{
+	/* Perform a full USB reset */
+	USB_CDC_force_reenumeration();
+
+	/* Create read/write mutexes */
+	usb_state._rlock = xSemaphoreCreateMutex();
+	usb_state._wlock = xSemaphoreCreateMutex();
+
+	if (usb_state._rlock == NULL || usb_state._wlock == NULL) {
+		return -1;
+	}
+
+	Set_System();
+	Set_USBClock();
+
+	USB_Interrupts_Config();
+
+	USB_Init();
+
+	usb_state._init_flag = 1;
+
+	return 0;
+}
+
+void USB_CDC_Write(portCHAR *cByte, int len)
+{
+	xSemaphoreTake(usb_state._wlock, portMAX_DELAY);
+	while (len--) {
+		/* If the transmit buffer is full, wait until the USB
+		 * hardware has had time to flush it out */
+		uint16_t usb_buf_elements = USB_BUF_ELTS(usb_state.USB_Tx_ptr_in,
+							 usb_state.USB_Tx_ptr_out,
+							 VIRTUAL_COM_PORT_DATA_SIZE);
+
+		while (usb_buf_elements == VIRTUAL_COM_PORT_DATA_SIZE - 1) {
+			portYIELD();
+			usb_buf_elements = USB_BUF_ELTS(usb_state.USB_Tx_ptr_in,
+							usb_state.USB_Tx_ptr_out,
+							VIRTUAL_COM_PORT_DATA_SIZE);
+		}
+
+		usb_state.USB_Tx_Buffer[usb_state.USB_Tx_ptr_in] = *cByte++;
+
+		/* Handle wrapping */
+		if(usb_state.USB_Tx_ptr_in == VIRTUAL_COM_PORT_DATA_SIZE - 1) {
+			usb_state.USB_Tx_ptr_in = 0;
+		} else {
+			usb_state.USB_Tx_ptr_in++;
+		}
+
+	}
+	xSemaphoreGive(usb_state._wlock);
+}
+
+/* TODO: Deprecate this.  It's unused, and having to use strnlen this
+ * deep in the driver stack gives me a wiggins */
 void USB_CDC_send_debug(portCHAR *string)
 {
-    int len = strnlen(string, 2048);
-    vcp_tx((uint8_t*)string, len);
+	if (string == NULL) {
+		return;
+	}
+
+	int len = strnlen(string, 2048);
+
+	USB_CDC_Write(string, len);
 }
 
 void USB_CDC_SendByte( portCHAR cByte )
 {
-    vcp_tx((uint8_t*)&cByte, 1);
+	USB_CDC_Write(&cByte, 1);
 }
 
 portBASE_TYPE USB_CDC_ReceiveByte(portCHAR *data)
 {
-    return vcp_rx((uint8_t*)data, 1, 0);
+	return USB_CDC_ReceiveByteDelay(data, 0);
 }
 
 portBASE_TYPE USB_CDC_ReceiveByteDelay(portCHAR *data, portTickType delay )
 {
-    return vcp_rx((uint8_t*)data, 1, delay);
+	xSemaphoreTake(usb_state._rlock, portMAX_DELAY);
+	int ret = 1;
+	bool byte_received = false;
+
+	while (!byte_received) {
+		if (usb_state.USB_Rx_ptr_out != usb_state.USB_Rx_ptr_in) {
+			*data = usb_state.USB_Rx_Buffer[usb_state.USB_Rx_ptr_out++];
+			/* If we've cleared the buffer, send a signal to the
+			 * USB hardware to stop NAKing packets and to
+			 * continue receiving */
+			if (usb_state.USB_Rx_ptr_out == usb_state.USB_Rx_ptr_in) {
+				/* Enable the receive of data on EP3 */
+				SetEPRxValid(ENDP3);
+			}
+
+			/* Note: We don't need to handle wrapping in
+			 * the receive calls because we always fill
+			 * the rx buffer from the start and drain to completion */
+			byte_received = true;
+		} else {
+			if (delay == portMAX_DELAY) {
+				portYIELD();
+			} else if (delay) {
+				portYIELD();
+				delay--;
+			} else {
+				ret = 0;
+				goto unlock_and_return;
+			}
+		}
+	}
+
+unlock_and_return:
+	xSemaphoreGive(usb_state._rlock);
+
+	return ret;
 }
 
 int USB_CDC_is_initialized()
 {
-    return _init_flag;
+	return usb_state._init_flag;
+}
+
+/* Private USB Stack callbacks */
+/* This code has been adapted from the ST Microelectronics CDC
+ * Example, which is covered under the V2 Liberty License:
+ * http://www.st.com/software_license_agreement_liberty_v2
+ */
+void usb_handle_transfer(void)
+{
+	uint16_t USB_Tx_length = USB_BUF_ELTS(usb_state.USB_Tx_ptr_in,
+					      usb_state.USB_Tx_ptr_out,
+					      VIRTUAL_COM_PORT_DATA_SIZE);
+
+	if(USB_Tx_length == 0) {
+		return;
+	}
+
+	/* Handle the situation where we can only transmit to the end
+	 * of the buffer in this packet */
+	if(usb_state.USB_Tx_ptr_out > usb_state.USB_Tx_ptr_in) {
+		USB_Tx_length = (VIRTUAL_COM_PORT_DATA_SIZE -
+				 usb_state.USB_Tx_ptr_out);
+	}
+
+	UserToPMABufferCopy(&usb_state.USB_Tx_Buffer[usb_state.USB_Tx_ptr_out],
+			    ENDP1_TXADDR, USB_Tx_length);
+	usb_state.USB_Tx_ptr_out += USB_Tx_length;
+
+	/* Handle wrapping */
+	if (usb_state.USB_Tx_ptr_out == VIRTUAL_COM_PORT_DATA_SIZE) {
+		usb_state.USB_Tx_ptr_out = 0;
+	}
+
+	SetEPTxCount(ENDP1, USB_Tx_length);
+	SetEPTxValid(ENDP1);
+}
+
+void EP1_IN_Callback (void)
+{
+	usb_handle_transfer();
+}
+
+void EP3_OUT_Callback(void)
+{
+	/* Get the received data buffer and clear the counter */
+	usb_state.USB_Rx_ptr_in = USB_SIL_Read(EP3_OUT, usb_state.USB_Rx_Buffer);
+	usb_state.USB_Rx_ptr_out = 0;
+
+	/* USB data will be processed by handler threads, we will
+	 * continue to NAK packets until such a time as all of the
+	 * prior data has been handled */
+}
+
+void SOF_Callback(void)
+{
+	static uint32_t FrameCount = 0;
+
+	if(bDeviceState == CONFIGURED) {
+		if (FrameCount++ ==  VIRTUAL_COM_PORT_IN_FRAME_INTERVAL) {
+			/* Reset the frame counter */
+			FrameCount = 0;
+
+			/* Check the data to be sent through IN pipe */
+			usb_handle_transfer();
+		}
+         }
 }

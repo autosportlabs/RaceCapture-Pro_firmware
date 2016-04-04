@@ -7,6 +7,7 @@
 
 #define TICK_RATE_HZ			configTICK_RATE_HZ
 #define MS_PER_TICK 1
+#define USB_SERIAL_SUPPORT
 
 //configuration
 #define MAX_TRACKS	5

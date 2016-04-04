@@ -159,5 +159,5 @@ standard names. */
 #define vPortSVCHandler SVC_Handler
 #define xPortPendSVHandler PendSV_Handler
 #define xPortSysTickHandler SysTick_Handler
-
+void __attribute__((used)) vTaskSwitchContext(void);
 #endif /* FREERTOS_CONFIG_H */
