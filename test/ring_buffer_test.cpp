@@ -19,162 +19,150 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ring_buffer.h"
+#include "macros.h"
 #include "ring_buffer_test.hh"
+#include "ring_buffer.h"
 
 #include <string.h>
 #include <stdio.h>
 
-CPPUNIT_TEST_SUITE_REGISTRATION( RingBufferTest );
+#define RING_BUFF_CAP	((size_t) 8)
 
-static const size_t buff_size = 8;
-static char buff[buff_size];
-static struct ring_buff rb;
+static struct ring_buff *rb;
+
+CPPUNIT_TEST_SUITE_REGISTRATION( RingBufferTest );
 
 void RingBufferTest::setUp()
 {
-        init_ring_buffer(&rb, buff, buff_size);
-
-        /* To better test wrapping, move head and tail forward */
-        rb.head++;
-        rb.tail++;
+        rb = ring_buffer_create(RING_BUFF_CAP);
 }
 
-void RingBufferTest::tearDown() {}
-
-void RingBufferTest::putGetTest()
+void RingBufferTest::tearDown()
 {
-        char data_in[] = "FOO";
-        const size_t size = sizeof(data_in);
-        char data_out[size];
+        ring_buffer_destroy(rb);
+        rb = NULL;
+}
 
-        /* Check initial sizes */
-        CPPUNIT_ASSERT_EQUAL(buff_size - 1, get_space(&rb));
-        CPPUNIT_ASSERT_EQUAL((size_t) 0, get_used(&rb));
+void RingBufferTest::testSanity()
+{
+        CPPUNIT_ASSERT_EQUAL((size_t) RING_BUFF_CAP,
+                             ring_buffer_capacity(rb));
+        CPPUNIT_ASSERT_EQUAL((size_t) RING_BUFF_CAP,
+                             ring_buffer_bytes_free(rb));
+        CPPUNIT_ASSERT_EQUAL((size_t) 0,
+                             ring_buffer_bytes_used(rb));
+        CPPUNIT_ASSERT_EQUAL((size_t) 0,
+                             ring_buffer_peek(rb, NULL, RING_BUFF_CAP));
+        CPPUNIT_ASSERT_EQUAL((size_t) 0,
+                             ring_buffer_get(rb, NULL, RING_BUFF_CAP));
+}
+
+void RingBufferTest::testFreeAndUsed()
+{
+        /* We know that 0 works from test above */
+        size_t used;
+        for (used = 0; used <= RING_BUFF_CAP;
+             ++used, ring_buffer_put(rb, "A", 1)) {
+                const size_t free = RING_BUFF_CAP - used;
+
+                CPPUNIT_ASSERT_EQUAL(free, ring_buffer_bytes_free(rb));
+                CPPUNIT_ASSERT_EQUAL(used, ring_buffer_bytes_used(rb));
+        }
+
+        CPPUNIT_ASSERT_EQUAL(RING_BUFF_CAP + 1, used);
+}
+
+void RingBufferTest::testPutGet()
+{
+        const char data[] = "FOO";
+        char buff[ARRAY_LEN(data) + 1];
+        const size_t size = ARRAY_LEN(data);
 
         /* Put in the data */
-        CPPUNIT_ASSERT_EQUAL(size, put_data(&rb, data_in, size));
+        CPPUNIT_ASSERT_EQUAL(size, ring_buffer_put(rb, data, size));
 
         /* Check the sizes now */
-        CPPUNIT_ASSERT_EQUAL(buff_size - 1 - size, get_space(&rb));
-        CPPUNIT_ASSERT_EQUAL(size, get_used(&rb));
+        const size_t free_exp = RING_BUFF_CAP - size;
+        CPPUNIT_ASSERT_EQUAL(size, ring_buffer_bytes_used(rb));
+        CPPUNIT_ASSERT_EQUAL(free_exp, ring_buffer_bytes_free(rb));
 
-        /* Get the data */
-        CPPUNIT_ASSERT_EQUAL(size, get_data(&rb, data_out, size));
+        /* Get the data.  Ensure we only read `size` bytes */
+        CPPUNIT_ASSERT_EQUAL(size, ring_buffer_get(rb, buff,
+                                                   ARRAY_LEN(buff)));
 
-        /* Check final sizes */
-        CPPUNIT_ASSERT_EQUAL(buff_size - 1, get_space(&rb));
-        CPPUNIT_ASSERT_EQUAL((size_t) 0, get_used(&rb));
+        /* Check sizes again */
+        CPPUNIT_ASSERT_EQUAL((size_t) 0, ring_buffer_bytes_used(rb));
+        CPPUNIT_ASSERT_EQUAL((size_t) RING_BUFF_CAP,
+                             ring_buffer_bytes_free(rb));
 
         /* Check data in == data out */
-        CPPUNIT_ASSERT(0 == strcmp(data_in, data_out));
+        CPPUNIT_ASSERT(0 == strcmp(data, buff));
 }
 
-void RingBufferTest::putStringTest()
+void RingBufferTest::testPutTooMuch()
 {
-        const char str[] = "FooBarBazBizFizzBah";
-        const char *ptr = str;
+        const char data[] = "FooBarBazBizFizzBah";
+        CPPUNIT_ASSERT_EQUAL((size_t) RING_BUFF_CAP,
+                             ring_buffer_put(rb, data, ARRAY_LEN(data)));
 
-        /* First addition should result in failure */
-        ptr = put_string(&rb, ptr);
-        CPPUNIT_ASSERT_EQUAL(str + 7, ptr);
+        char buff[RING_BUFF_CAP + 1];
+        CPPUNIT_ASSERT_EQUAL((size_t) RING_BUFF_CAP,
+                             ring_buffer_get(rb, buff, ARRAY_LEN(buff)));
 
-        /* Now dump 7 bytes and try to add more */
-        CPPUNIT_ASSERT_EQUAL((size_t) 7, dump_data(&rb, 7));
-
-        /* Second addition should result in failure as well. */
-        ptr = put_string(&rb, ptr);
-        CPPUNIT_ASSERT_EQUAL(str + 14, ptr);
-
-        /* Now dump 7 bytes again and try to add more */
-        CPPUNIT_ASSERT_EQUAL((size_t) 7, dump_data(&rb, 7));
-
-        /* The final addition should result in success. */
-        ptr = put_string(&rb, ptr);
-        CPPUNIT_ASSERT_EQUAL((const char *) NULL, ptr);
+        /* Check data out to ensure its the last bits of the input */
+        const size_t offset = ARRAY_LEN(data) - RING_BUFF_CAP;
+        CPPUNIT_ASSERT(0 == strcmp(data + offset, buff));
 }
 
-void RingBufferTest::putNullStringTest()
+void RingBufferTest::testPeek()
 {
-        /* Put a NULL string.  Ensure it returns null without segfaulting */
-        CPPUNIT_ASSERT_EQUAL((const char *) NULL, put_string(&rb, NULL));
+        const char data[] = "FOO";
+        char buff[ARRAY_LEN(data) + 1];
+        const size_t size = ARRAY_LEN(data);
+
+        /* Put in the data */
+        CPPUNIT_ASSERT_EQUAL(size, ring_buffer_put(rb, data, size));
+        /* Peek at the data.  Ensure we only read `size` bytes */
+        CPPUNIT_ASSERT_EQUAL(size, ring_buffer_peek(rb, buff,
+                                                    ARRAY_LEN(buff)));
+
+        /* Check the sizes now.  They should be unchanged. */
+        const size_t free_exp = RING_BUFF_CAP - size;
+        CPPUNIT_ASSERT_EQUAL(size, ring_buffer_bytes_used(rb));
+        CPPUNIT_ASSERT_EQUAL(free_exp, ring_buffer_bytes_free(rb));
+
+        /* Check data in == data out */
+        CPPUNIT_ASSERT(0 == strcmp(data, buff));
 }
 
-
-void RingBufferTest::putFailTest()
+void RingBufferTest::testDrop()
 {
-        /* Fill up the buffer */
-        for(size_t i = 0; i < buff_size - 1; ++i)
-                CPPUNIT_ASSERT_EQUAL((size_t) 1, put_data(&rb, "F", 1));
+        const char data[] = "BARbaz";
+        const size_t size = ARRAY_LEN(data);
 
-        /* Check that we have no space */
-        CPPUNIT_ASSERT_EQUAL(false, have_space(&rb, 1));
+        /* Put in the data */
+        CPPUNIT_ASSERT_EQUAL(size, ring_buffer_put(rb, data, size));
+        /* Drop the data.  Ensure we only read `size` bytes */
+        CPPUNIT_ASSERT_EQUAL(size, ring_buffer_get(rb, NULL,
+                                                   ARRAY_LEN(data)));
 
-        /* Now it should fail to put */
-        CPPUNIT_ASSERT_EQUAL((size_t) 0, put_data(&rb, "F", 1));
+        CPPUNIT_ASSERT_EQUAL((size_t) 0, ring_buffer_bytes_used(rb));
+        CPPUNIT_ASSERT_EQUAL((size_t) RING_BUFF_CAP,
+                             ring_buffer_bytes_free(rb));
 }
 
-void RingBufferTest::getFailTest()
+void RingBufferTest::testClear()
 {
-        char buff[1];
+        const char data[] = "baZbaR";
+        const size_t size = ARRAY_LEN(data);
 
-        /* Clear our ring bufer (should be already) */
-        CPPUNIT_ASSERT_EQUAL((size_t) 0, clear_data(&rb));
+        /* Put in the data */
+        CPPUNIT_ASSERT_EQUAL(size, ring_buffer_put(rb, data, size));
 
-        /* Check that we don't get anything */
-        CPPUNIT_ASSERT_EQUAL((size_t) 0, get_data(&rb, buff, 1));
-}
+        /* Clear the data.  */
+        ring_buffer_clear(rb);
 
-void RingBufferTest::dumpTest()
-{
-        const size_t toDump = 3;
-
-        /* Sanity Check */
-        CPPUNIT_ASSERT(toDump < buff_size - 1);
-
-        /* Fill up the buffer */
-        for(size_t i = 0; i < buff_size - 1; ++i)
-                CPPUNIT_ASSERT_EQUAL((size_t) 1, put_data(&rb, "F", 1));
-
-        /* Check that we have no space */
-        CPPUNIT_ASSERT_EQUAL((size_t) 0, get_space(&rb));
-
-        /* Dump toDump bytes */
-        CPPUNIT_ASSERT_EQUAL(toDump, dump_data(&rb, toDump));
-
-        /* Check that we have toDump space now */
-        CPPUNIT_ASSERT_EQUAL(toDump, get_space(&rb));
-}
-
-void RingBufferTest::clearTest()
-{
-        /* Fill up the buffer */
-        for(size_t i = 0; i < buff_size - 1; ++i)
-                CPPUNIT_ASSERT_EQUAL((size_t) 1, put_data(&rb, "F", 1));
-
-        /* Check that we have no space */
-        CPPUNIT_ASSERT_EQUAL((size_t) 0, get_space(&rb));
-
-        /* Clear out all the data.  Ensure we clear buff_size -1 bytes */
-        CPPUNIT_ASSERT_EQUAL(buff_size - 1, clear_data(&rb));
-
-        /* Check that we have no space */
-        CPPUNIT_ASSERT_EQUAL(buff_size - 1, get_space(&rb));
-}
-
-void RingBufferTest::createDestroyTest()
-{
-        const size_t size = 11;
-
-        /* Check that creation works as expected */
-        CPPUNIT_ASSERT_EQUAL(size - 1, create_ring_buffer(&rb, size));
-
-        /* Check that we have expected space */
-        CPPUNIT_ASSERT_EQUAL(size - 1, get_space(&rb));
-
-        /* Now destroy it */
-        free_ring_buffer(&rb);
-
-        /* Assert that we have no space internally */
-        CPPUNIT_ASSERT_EQUAL((size_t) 0, rb.size);
+        CPPUNIT_ASSERT_EQUAL((size_t) 0, ring_buffer_bytes_used(rb));
+        CPPUNIT_ASSERT_EQUAL((size_t) RING_BUFF_CAP,
+                             ring_buffer_bytes_free(rb));
 }

@@ -19,6 +19,16 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * This ring buffer is designed to be as optimal as possible for the
+ * FreeRTOS environment.  Using memcpy allows underlying layer to use
+ * native register copying to speed up operations.  Also allowing the
+ * user to put in more data than free space is available allows for
+ * maximum flexibility at the cost of inheriently being SPSC threadsafe.
+ * The buffer still meets that requirement if the user DOES NOT put in
+ * more data than the buffer has free space available.  That choice is
+ * intentionally left to the user to decide.
+ */
 
 #include "mem_mang.h"
 #include "mod_string.h"
@@ -27,132 +37,171 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-static size_t get_end_dist(struct ring_buff *rb, const char *p)
+struct ring_buff {
+    char *buff;
+    size_t size;
+    char *head;
+    char *tail;
+};
+
+/**
+ * Destroys the given buffer.  Note that the given pointer will no longer
+ * be valid.
+ */
+void ring_buffer_destroy(struct ring_buff *rb)
 {
-        return rb->buf + rb->size - p;
+        if (rb->buff)
+                portFree(rb->buff);
+
+        portFree(rb);
 }
 
-size_t get_space(struct ring_buff *rb)
+/**
+ * Removes all data from the buffer.
+ */
+void ring_buffer_clear(struct ring_buff *rb)
 {
-        int diff = rb->tail - rb->head;
-        if (diff <= 0)
-                diff += rb->size;
-
-        return diff - 1;
+        rb->tail = rb->head = rb->buff;
 }
 
-bool have_space(struct ring_buff *rb, size_t size)
+/**
+ * Creates a new ring buffer.
+ * @param cap The capacity of the ring buffer.  Note that this method
+ * will always allocate 1 extra byte due to limits of ring buffers.
+ * @return An opaque pointer to the ring buffer struct.
+ */
+struct ring_buff* ring_buffer_create(const size_t cap)
 {
-        return size <= get_space(rb);
-}
-
-size_t put_data(struct ring_buff *rb, const void *data, size_t size)
-{
-        /* Check if we have the space.  If not, only write what we can */
-        size_t dist = get_space(rb);
-        if (dist < size)
-                size = dist;
-
-        dist = get_end_dist(rb, rb->head);
-        if (size < dist) {
-                memcpy(rb->head, data, size);
-                rb->head += size;
-        } else {
-                size_t wrap_size = size - dist;
-                memcpy(rb->head, data, dist);
-                memcpy(rb->buf, dist + (char *)data, wrap_size);
-                rb->head = rb->buf + wrap_size;
-        }
-
-        return size;
-}
-
-const char * put_string(struct ring_buff *rb, const char *str)
-{
-        if (!str)
+        struct ring_buff *rb = portMalloc(sizeof(struct ring_buff));
+        if (!rb)
                 return NULL;
 
-        while (0 < get_space(rb) && *str) {
-                *rb->head = *str;
-
-                rb->head += 1;
-                if (0 == get_end_dist(rb, rb->head))
-                        rb->head = rb->buf;
-                ++str;
+        rb->size = cap + 1;
+        rb->buff = portMalloc(rb->size);
+        if (!rb->buff) {
+                ring_buffer_destroy(rb);
+                return NULL;
         }
 
-        return *str ? str : NULL;
+        ring_buffer_clear(rb);
+        return rb;
 }
 
-
-size_t get_used(struct ring_buff *rb)
+size_t ring_buffer_capacity(struct ring_buff *rb)
 {
-        return rb->size - get_space(rb) - 1;
+        return rb->size - 1;
 }
 
-size_t get_data(struct ring_buff *rb, void *data, size_t size)
+size_t ring_buffer_bytes_free(struct ring_buff *rb)
 {
-        size_t dist = get_used(rb);
-        if (size > dist)
-                size = dist;
-
-        dist = get_end_dist(rb, rb->tail);
-        if (size < dist) {
-                memcpy(data, rb->tail, size);
-                rb->tail += size;
-        } else {
-                size_t wrap_size = size - dist;
-                memcpy(data, rb->tail, dist);
-                memcpy((char *)data + dist, rb->buf, wrap_size);
-                rb->tail = rb->buf + wrap_size;
-        }
-
-        return size;
+        if (rb->tail <= rb->head)
+                return ring_buffer_capacity(rb) - (rb->head - rb->tail);
+        else
+                return rb->tail - rb->head - 1;
 }
 
-size_t dump_data(struct ring_buff *rb, size_t size)
+size_t ring_buffer_bytes_used(struct ring_buff *rb)
 {
-        const size_t used = get_used(rb);
-        if (size > used)
+        return ring_buffer_capacity(rb) - ring_buffer_bytes_free(rb);
+}
+
+/**
+ * Calculates the new pointer value for a position within the ring
+ * buffer.  Is able to handle offset values larger than buffer size
+ * so we can do relative offsets if needed.
+ * @param ptr The current pointer value.
+ * @param offset Number of spots forward you want to off-set it.
+ * @return The new pointer value, wrapped if needed.
+ */
+static char* get_new_ptr_val(struct ring_buff *rb, void *ptr,
+                             const size_t offset)
+{
+        return rb->buff + ((char*) ptr - rb->buff + offset) % rb->size;
+}
+
+/**
+ * Read up to size bytes from the ring buffer and puts the data into
+ * the given buffer without modifying the tail pointer.
+ * @param buff Buffer to put the data copied out.  If NULL, then no
+ * data copying will happen but the amount of bytes that would have been
+ * copied is returned.
+ * @param size The maximum amount of data to copy out.  Note that if
+ * the data is a string it will not be NULL terminated.  Caller is
+ * responsible for that.
+ * @return The amount of the data that was (or would have been if
+ * buffer was not NULL) copied out.
+ */
+size_t ring_buffer_peek(struct ring_buff *rb, void *buffer,
+                        size_t size)
+{
+        const size_t used = ring_buffer_bytes_used(rb);
+        if (used < size)
                 size = used;
 
-        const size_t dist = get_end_dist(rb, rb->tail);
+        if (!buffer)
+                return size;
+
+        const size_t dist = rb->buff - rb->tail + rb->size;
         if (size < dist) {
-                rb->tail += size;
+                memcpy(buffer, rb->tail, size);
         } else {
-                rb->tail = rb->buf + size - dist;
+                void *offset = (char*) buffer + dist;
+                memcpy(buffer, rb->tail, dist);
+                memcpy(offset, rb->buff, size - dist);
         }
 
         return size;
 }
 
-size_t clear_data(struct ring_buff *rb)
+/**
+ * Gets up to size bytes from the ring buffer and puts the data into
+ * the given buffer.
+ * @param buff Buffer to put the data copied out.  If NULL, the data is
+ * simply discarded from the buffer.
+ * @param size The maximum amount of data to copy out.  Note that if
+ * the data is a string it will not be NULL terminated.  Caller is
+ * responsible for that.
+ */
+size_t ring_buffer_get(struct ring_buff *rb, void *buff,
+                       const size_t size)
 {
-        return dump_data(rb, rb->size);
+        const size_t bytes = ring_buffer_peek(rb, buff, size);
+        rb->tail = get_new_ptr_val(rb, rb->tail, bytes);
+        return bytes;
 }
 
-bool has_data(struct ring_buff *rb)
+/**
+ * Puts data into the ring buffer.  If there isn't enough free space
+ * then the ring buffer will drop the data in FIFO fashion.  If you
+ * attempt to put in more data than the ring buffer has capacity, it
+ * will treat the data in FIFO fashion and will keep the latter portion
+ * of the data given up to its capacity.
+ * @param data The data to put into the buffer.
+ * @param size The amount of data to put in from the buffer.
+ */
+size_t ring_buffer_put(struct ring_buff *rb, const void *data,
+                       size_t size)
 {
-        return rb->head != rb->tail;
-}
+        /* If buffer size > capacity of ring buffer */
+        const size_t cap = ring_buffer_capacity(rb);
+        if (size > cap) {
+                data += size - cap;
+                size = cap;
+        }
 
-size_t init_ring_buffer(struct ring_buff *rb, char *buff,
-                        const size_t size)
-{
-        rb->head = rb->tail = rb->buf = buff;
-        rb->size = size;
-        return size - 1;
-}
+        /* If data is getting overwritten, update tail. */
+        if (size > ring_buffer_bytes_free(rb))
+                rb->tail = get_new_ptr_val(rb, rb->tail, size + 1);
 
-size_t create_ring_buffer(struct ring_buff *rb, size_t size)
-{
-        char *buff = (char *) portMalloc(size);
-        return NULL == buff ? 0 : init_ring_buffer(rb, buff, size);
-}
+        const size_t dist = rb->buff - rb->head + rb->size;
+        if (size < dist) {
+                memcpy(rb->head, data, size);
+        } else {
+                void *offset = (char*) data + dist;
+                memcpy(rb->head, data, dist);
+                memcpy(rb->buff, offset, size - dist);
+        }
 
-void free_ring_buffer(struct ring_buff *rb)
-{
-        portFree(rb->buf);
-        rb->size = 0;
-        rb->buf = rb->head = rb->tail = NULL;
+        rb->head = get_new_ptr_val(rb, rb->head, size);
+        return size;
 }
