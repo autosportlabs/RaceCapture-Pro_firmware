@@ -26,7 +26,7 @@
  * to save RAM.  Usually quick interruptions, but interruptions
  * none the less.
  */
-#define RCP_LOW_MEM	0
+#define RCP_LOW_MEM	1
 
 
 /* LUA Configuration */
