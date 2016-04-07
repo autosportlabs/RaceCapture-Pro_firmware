@@ -196,6 +196,7 @@ $(RCP_SRC)/util/modp_numtoa.c \
 $(RCP_SRC)/util/panic.c \
 $(RCP_SRC)/util/ring_buffer.c \
 $(RCP_SRC)/util/str_util.c \
+$(RCP_SRC)/util/ts_ring_buff.c \
 $(RCP_SRC)/util/taskUtil.c \
 $(RCP_SRC)/virtual_channel/virtual_channel.c \
 $(RCP_SRC)/watchdog/watchdog.c \

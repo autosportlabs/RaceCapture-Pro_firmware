@@ -29,16 +29,28 @@
 
 struct mock_queue {
         size_t item_size;
-        struct ring_buff rb;
+        struct ring_buff *rb;
 };
+
+/*
+ * Note that xQueueGenericSend and xQueueGenericReceive are also used for
+ * mutexes.  We know this because the pvBuffer value will be NULL.  In that
+ * case just return true for now to indicate that we have acquired the
+ * mutex.  We may have to implement actual mutex capabilities in the future,
+ * lets do that when its actually needed.
+ */
 
 signed portBASE_TYPE xQueueGenericSend(xQueueHandle pxQueue,
                                        const void * const pvBuffer,
                                        portTickType xTicksToWait,
                                        portBASE_TYPE xCopyPosition )
 {
+        if (!pvBuffer)
+                return true;
+
+
         struct mock_queue *mc = pxQueue;
-        return !!put_data(&mc->rb, pvBuffer, mc->item_size);
+        return !!ring_buffer_write(mc->rb, pvBuffer, mc->item_size);
 }
 
 signed portBASE_TYPE xQueueGenericReceive(
@@ -46,14 +58,17 @@ signed portBASE_TYPE xQueueGenericReceive(
         const pvBuffer, portTickType xTicksToWait,
         portBASE_TYPE xJustPeeking )
 {
+        if (!pvBuffer)
+                return true;
+
         struct mock_queue *mc = pxQueue;
-        return !!get_data(&mc->rb, pvBuffer, mc->item_size);
+        return !!ring_buffer_get(mc->rb, pvBuffer, mc->item_size);
 }
 
 void vQueueDelete(xQueueHandle pxQueue)
 {
         struct mock_queue *mc = pxQueue;
-        free_ring_buffer(&mc->rb);
+        ring_buffer_destroy(mc->rb);
         portFree(mc);
 }
 
@@ -62,6 +77,12 @@ xQueueHandle xQueueCreate(unsigned portBASE_TYPE uxQueueLength,
 {
         struct mock_queue *mc = portMalloc(sizeof(struct mock_queue));
         mc->item_size = (size_t) uxItemSize;
-        create_ring_buffer(&mc->rb, uxQueueLength * uxItemSize);
+        mc->rb = ring_buffer_create(uxQueueLength * uxItemSize);
         return mc;
+}
+
+xQueueHandle xQueueCreateMutex()
+{
+        /* Can't return NULL b/c failure checks.  Wing it */
+        return (xQueueHandle) 1;
 }
