@@ -70,7 +70,7 @@ static int initQueues()
     /* Create the queues used to hold Rx and Tx characters. */
     xUsart0Rx = xQueueCreate(UART_RX_QUEUE_LENGTH,
                              (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    xUsart0Tx = xQueueCreate(UART_TX_QUEUE_LENGTH + 1,
+    xUsart0Tx = xQueueCreate(UART_TX_QUEUE_LENGTH,
                              (unsigned portBASE_TYPE)sizeof(signed portCHAR));
     if (xUsart0Rx == NULL || xUsart0Tx == NULL) {
         success = 0;
@@ -79,7 +79,7 @@ static int initQueues()
 
     xUsart2Rx = xQueueCreate(UART_RX_QUEUE_LENGTH,
                              (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    xUsart2Tx = xQueueCreate(UART_TX_QUEUE_LENGTH + 1,
+    xUsart2Tx = xQueueCreate(UART_TX_QUEUE_LENGTH,
                              (unsigned portBASE_TYPE)sizeof(signed portCHAR));
     if (xUsart2Rx == NULL || xUsart2Tx == NULL) {
         success = 0;
@@ -88,7 +88,7 @@ static int initQueues()
 
     xUsart3Rx = xQueueCreate(UART_RX_QUEUE_LENGTH,
                              (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    xUsart3Tx = xQueueCreate(UART_TX_QUEUE_LENGTH + 1,
+    xUsart3Tx = xQueueCreate(UART_TX_QUEUE_LENGTH,
                              (unsigned portBASE_TYPE)sizeof(signed portCHAR));
     if (xUsart3Rx == NULL || xUsart3Tx == NULL) {
         success = 0;

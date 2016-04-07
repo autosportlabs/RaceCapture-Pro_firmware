@@ -1,22 +1,43 @@
+/*
+ * Race Capture Firmware
+ *
+ * Copyright (C) 2016 Autosport Labs
+ *
+ * This file is part of the Race Capture firmware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <FreeRTOS.h>
-#include <task.h>
 #include <portmacro.h>
-#include <semphr.h>
-#include <timers.h>
 #include <queue.h>
+#include <semphr.h>
+#include <task.h>
+#include <timers.h>
 
-#include <usb_lib.h>
-#include <usb_desc.h>
-#include <usb_mem.h>
 #include <hw_config.h>
-#include <usb_istr.h>
-#include <usb_pwr.h>
-#include <usb_prop.h>
-
-#include <string.h>
-#include <stdbool.h>
-
 #include <USB-CDC_device.h>
+#include <usb_desc.h>
+#include <usb_istr.h>
+#include <usb_lib.h>
+#include <usb_mem.h>
+#include <usb_prop.h>
+#include <usb_pwr.h>
+
+#include <stdbool.h>
+#include <string.h>
+
 
 #define USB_BUF_ELTS(in, out, bufsize) ((in - out + bufsize) % bufsize)
 
@@ -32,14 +53,16 @@ static struct {
 	xSemaphoreHandle _wlock;
 } usb_state;
 
-/* ST's USB hardware doesn't include an internal pullup resistor on
+/*
+ * ST's USB hardware doesn't include an internal pullup resistor on
  * USB_DP for some odd reason and instead relies on an externally
  * gated (via a set of transistors) pull up attached to a
  * USB_DISCONNECT pin. As this is only used during startup (we don't
  * do any dynamic re-enumeration), we can shortcut this by having a
  * static pullup, and simply causing a glitch on the line by forcing
  * USB_DP low before we initialize the rest of the USB hardware. It's
- * a little hacky, but doesn't seem to cause any ill effects. */
+ * a little hacky, but doesn't seem to cause any ill effects.
+ */
 static int USB_CDC_force_reenumeration(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -69,7 +92,7 @@ int USB_CDC_device_init(const int priority)
 	usb_state._rlock = xSemaphoreCreateMutex();
 	usb_state._wlock = xSemaphoreCreateMutex();
 
-	if (usb_state._rlock == NULL || usb_state._wlock == NULL) {
+	if (NULL == usb_state._rlock || NULL == usb_state._wlock) {
 		return -1;
 	}
 
@@ -89,13 +112,15 @@ void USB_CDC_Write(portCHAR *cByte, int len)
 {
 	xSemaphoreTake(usb_state._wlock, portMAX_DELAY);
 	while (len--) {
-		/* If the transmit buffer is full, wait until the USB
-		 * hardware has had time to flush it out */
+		/*
+		 * If the transmit buffer is full, wait until the USB
+		 * hardware has had time to flush it out
+		 */
 		uint16_t usb_buf_elements = USB_BUF_ELTS(usb_state.USB_Tx_ptr_in,
 							 usb_state.USB_Tx_ptr_out,
 							 VIRTUAL_COM_PORT_DATA_SIZE);
 
-		while (usb_buf_elements == VIRTUAL_COM_PORT_DATA_SIZE - 1) {
+		while (VIRTUAL_COM_PORT_DATA_SIZE - 1 == usb_buf_elements) {
 			portYIELD();
 			usb_buf_elements = USB_BUF_ELTS(usb_state.USB_Tx_ptr_in,
 							usb_state.USB_Tx_ptr_out,
@@ -105,7 +130,7 @@ void USB_CDC_Write(portCHAR *cByte, int len)
 		usb_state.USB_Tx_Buffer[usb_state.USB_Tx_ptr_in] = *cByte++;
 
 		/* Handle wrapping */
-		if(usb_state.USB_Tx_ptr_in == VIRTUAL_COM_PORT_DATA_SIZE - 1) {
+		if(VIRTUAL_COM_PORT_DATA_SIZE - 1 == usb_state.USB_Tx_ptr_in) {
 			usb_state.USB_Tx_ptr_in = 0;
 		} else {
 			usb_state.USB_Tx_ptr_in++;
@@ -113,19 +138,6 @@ void USB_CDC_Write(portCHAR *cByte, int len)
 
 	}
 	xSemaphoreGive(usb_state._wlock);
-}
-
-/* TODO: Deprecate this.  It's unused, and having to use strnlen this
- * deep in the driver stack gives me a wiggins */
-void USB_CDC_send_debug(portCHAR *string)
-{
-	if (string == NULL) {
-		return;
-	}
-
-	int len = strnlen(string, 2048);
-
-	USB_CDC_Write(string, len);
 }
 
 void USB_CDC_SendByte( portCHAR cByte )
@@ -147,17 +159,22 @@ portBASE_TYPE USB_CDC_ReceiveByteDelay(portCHAR *data, portTickType delay )
 	while (!byte_received) {
 		if (usb_state.USB_Rx_ptr_out != usb_state.USB_Rx_ptr_in) {
 			*data = usb_state.USB_Rx_Buffer[usb_state.USB_Rx_ptr_out++];
-			/* If we've cleared the buffer, send a signal to the
+			/*
+			 * If we've cleared the buffer, send a signal to the
 			 * USB hardware to stop NAKing packets and to
-			 * continue receiving */
+			 * continue receiving
+			 */
 			if (usb_state.USB_Rx_ptr_out == usb_state.USB_Rx_ptr_in) {
 				/* Enable the receive of data on EP3 */
 				SetEPRxValid(ENDP3);
 			}
 
-			/* Note: We don't need to handle wrapping in
+			/*
+			 * Note: We don't need to handle wrapping in
 			 * the receive calls because we always fill
-			 * the rx buffer from the start and drain to completion */
+			 * the rx buffer from the start and drain to
+			 * completion
+			 */
 			byte_received = true;
 		} else {
 			if (delay == portMAX_DELAY) {
@@ -184,7 +201,9 @@ int USB_CDC_is_initialized()
 }
 
 /* Private USB Stack callbacks */
-/* This code has been adapted from the ST Microelectronics CDC
+
+/*
+ * This code has been adapted from the ST Microelectronics CDC
  * Example, which is covered under the V2 Liberty License:
  * http://www.st.com/software_license_agreement_liberty_v2
  */
@@ -194,12 +213,14 @@ void usb_handle_transfer(void)
 					      usb_state.USB_Tx_ptr_out,
 					      VIRTUAL_COM_PORT_DATA_SIZE);
 
-	if(USB_Tx_length == 0) {
+	if(0 == USB_Tx_length) {
 		return;
 	}
 
-	/* Handle the situation where we can only transmit to the end
-	 * of the buffer in this packet */
+	/*
+	 * Handle the situation where we can only transmit to the end
+	 * of the buffer in this packet
+	 */
 	if(usb_state.USB_Tx_ptr_out > usb_state.USB_Tx_ptr_in) {
 		USB_Tx_length = (VIRTUAL_COM_PORT_DATA_SIZE -
 				 usb_state.USB_Tx_ptr_out);
@@ -210,7 +231,7 @@ void usb_handle_transfer(void)
 	usb_state.USB_Tx_ptr_out += USB_Tx_length;
 
 	/* Handle wrapping */
-	if (usb_state.USB_Tx_ptr_out == VIRTUAL_COM_PORT_DATA_SIZE) {
+	if (VIRTUAL_COM_PORT_DATA_SIZE == usb_state.USB_Tx_ptr_out) {
 		usb_state.USB_Tx_ptr_out = 0;
 	}
 
@@ -229,9 +250,11 @@ void EP3_OUT_Callback(void)
 	usb_state.USB_Rx_ptr_in = USB_SIL_Read(EP3_OUT, usb_state.USB_Rx_Buffer);
 	usb_state.USB_Rx_ptr_out = 0;
 
-	/* USB data will be processed by handler threads, we will
+	/*
+	 * USB data will be processed by handler threads, we will
 	 * continue to NAK packets until such a time as all of the
-	 * prior data has been handled */
+	 * prior data has been handled
+	 */
 }
 
 void SOF_Callback(void)
@@ -239,7 +262,7 @@ void SOF_Callback(void)
 	static uint32_t FrameCount = 0;
 
 	if(bDeviceState == CONFIGURED) {
-		if (FrameCount++ ==  VIRTUAL_COM_PORT_IN_FRAME_INTERVAL) {
+		if (VIRTUAL_COM_PORT_IN_FRAME_INTERVAL == FrameCount++) {
 			/* Reset the frame counter */
 			FrameCount = 0;
 
