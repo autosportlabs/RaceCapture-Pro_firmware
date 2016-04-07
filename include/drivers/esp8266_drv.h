@@ -19,17 +19,19 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _WIFI_H_
-#define _WIFI_H_
+#ifndef _ESP8266_DRV_H_
+#define _ESP8266_DRV_H_
 
 #include "cpp_guard.h"
-#include <stdbool.h>
+#include "serial.h"
 
 CPP_GUARD_BEGIN
 
-bool wifi_init_task(const int wifi_task_priority,
-                    const int wifi_drv_priority);
+typedef void new_conn_func_t(struct Serial *s);
+
+bool esp8266_drv_init(struct Serial *s, const int priority,
+                      new_conn_func_t new_conn_cb);
 
 CPP_GUARD_END
 
-#endif /* _WIFI_H_ */
+#endif /* _ESP8266_DRV_H_ */

@@ -23,10 +23,12 @@
 #define _ESP8266_H_
 
 #include "cpp_guard.h"
-
+#include "serial.h"
 #include <stdbool.h>
 
 CPP_GUARD_BEGIN
+
+void esp8266_do_loop(const size_t timeout);
 
 /**
  * The various initialization states of the device.  Probably should
@@ -39,7 +41,8 @@ enum dev_init_state {
         DEV_INIT_STATE_FAILED,
 };
 
-bool esp8266_init(struct at_info *ati, void (*cb)(enum dev_init_state));
+bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
+                  void (*cb)(enum dev_init_state));
 
 enum dev_init_state esp1866_get_dev_init_state();
 
@@ -74,10 +77,7 @@ bool esp8266_get_client_ap(void (*cb)
                            (bool, const struct esp8266_client_info*));
 
 bool esp8266_get_client_ip(void (*cb)
-                           (bool, const struct esp8266_client_info*));
-
-bool esp8266_get_client_info(void (*cb)
-                             (bool, const struct esp8266_client_info*));
+                           (bool, const char*));
 
 enum esp8266_net_proto {
         ESP8266_NET_PROTO_TCP,
@@ -89,8 +89,11 @@ bool esp8266_connect(const int chan_id, const enum esp8266_net_proto proto,
                      const int udp_port, const int udp_mode,
                      void (*cb) (bool, const int));
 
-bool esp8266_send_data(const int chan_id, const char *data,
-                       const size_t len, void (*cb)(bool));
+bool esp8266_send_data(const int chan_id, struct Serial *data,
+                       const size_t len, void (*cb)(int));
+
+bool esp8266_send_serial(const int chan_id, struct Serial *serial,
+                         const size_t len, void (*cb)(bool));
 
 /**
  * These ENUM values match the AT values needed for the command.  Do not

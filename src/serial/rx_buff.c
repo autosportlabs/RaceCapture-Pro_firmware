@@ -22,12 +22,14 @@
 #include "mem_mang.h"
 #include "printk.h"
 #include "rx_buff.h"
+#include "serial.h"
 #include "str_util.h"
 
+#include <ctype.h>
 #include <stdbool.h>
 #include <string.h>
 
-#define LOG_PFX	"[rx_buff] "
+#define _LOG_PFX	"[rx_buff] "
 
 /**
  * Clears the contents of an rx_buff struct.
@@ -35,8 +37,6 @@
  */
 void rx_buff_clear(struct rx_buff *rxb)
 {
-        rxb->msg_ready = false;
-        rxb->chan_id = -1;
         rxb->idx = 0;
         rxb->buff[0] = 0;
 }
@@ -56,7 +56,7 @@ bool rx_buff_init(struct rx_buff *rxb, const size_t cap, char *buff)
 
         if (NULL == buff) {
                 /* Failed to get the memory we need */
-                pr_error(LOG_PFX "alloc failed\r\n");
+                pr_error(_LOG_PFX "alloc failed\r\n");
                 return false;
         }
 
@@ -78,80 +78,46 @@ void rx_buff_free(struct rx_buff *rxb)
 }
 
 /**
- * Appends received data to our buffer
- * @param rxb The receive buffer to append too.
- * @param data The data to append.
- * @param len The length of the data to append.
- * @return true if we have received a full message, false otherwise.
+ * Reads data from the Serial device into our buffer.
+ * @param s The serial device to read data from.
+ * @param ticks_to_wait The mount of time to wait before we timeout.
+ * @return Pointer to a full message that is ready for processing if it was
+ * received in time, NULL otherwise.
  */
-bool rx_buff_append(struct rx_buff *rxb, int chan_id, const char *data,
-                    const size_t len)
+char* rx_buff_read(struct rx_buff *rxb, struct Serial *s,
+                  const size_t ticks_to_wait)
 {
-        if (rxb->chan_id > 0 && rxb->chan_id != chan_id) {
-                pr_warning(LOG_PFX "Data from differnt channel appended!  "
-                           "This will likely cause corruption.");
-        }
-        rxb->chan_id = chan_id;
 
-        for (size_t i = 0; rxb->idx < rxb->cap && i < len;
-             ++rxb->idx, ++data, ++i)
-                rxb->buff[rxb->idx] = *data;
+        xQueueHandle h = serial_get_rx_queue(s);
+
+        for(; rxb->idx < rxb->cap; ++rxb->idx) {
+                if (!xQueueReceive(h, rxb->buff + rxb->idx, ticks_to_wait)) {
+                        /* If here, we timed out on receiving a message */
+                        rx_buff_clear(rxb);
+                        return NULL;
+                }
+
+                if ('\r' == rxb->buff[rxb->idx])
+                        /* Then we got a message */
+                        break;
+        }
+
+        /* If there is a \n after the \r, remove it */
+        char c;
+        if (xQueuePeek(h, &c, 0) && '\n' == c)
+                xQueueReceive(h, &c, 0);
 
         if (rxb->idx >= rxb->cap) {
-                /* Overflow */
-                pr_warning(LOG_PFX "Overflow!");
+                /* Overflow scenario */
+                pr_warning(_LOG_PFX "Overflow!");
                 /* Cap the end so we don't do undefined things */
                 rxb->buff[rxb->cap - 1] = 0;
-                return rxb->msg_ready = true;
+        } else {
+                /* Cap the end of the string for sanity */
+                rxb->buff[rxb->idx] = 0;
         }
 
-        /* Cap the end of the string for sanity */
-        rxb->buff[rxb->idx] = 0;
-
-        /*
-         * If here, then we know we hit end of data stream.  Just need to
-         * check if we see our delimeters at the end of the message.
-         */
-        bool delim_seen = false;
-        switch(rxb->buff[rxb->idx - 1]) {
-        case '\n':
-        case '\r':
-                delim_seen = true;
-        }
-
-        return rxb->msg_ready = delim_seen;
-}
-
-/**
- * Gets our buffer as a const char*
- * @return A const char* buff pointer to the rx buffer.
- */
-const char* rx_buff_get_buff(struct rx_buff *rxb)
-{
-        return rxb->buff;
-}
-
-/**
- * Use to determine if the buffer has a message that is ready for processing.
- * @return true if it does, false otherwise.
- */
-bool rx_buff_is_msg_ready(struct rx_buff *rxb)
-{
-        return rxb->msg_ready;
-}
-
-/**
- * @return The channel ID that provided the data.
- */
-int rx_buff_get_chan_id(struct rx_buff *rxb)
-{
-        return rxb->chan_id;
-}
-
-/**
- * Strips all whitespace characters from the end of the buffer inline.
- */
-void rx_buff_rstrip(struct rx_buff *rxb)
-{
-        rstrip_inline(rxb->buff);
+        /* Now strip any leading or trailing characters */
+        /* STIEG: Make constant when process_read_msg is updated */
+        return strip_inline(rxb->buff);
 }

@@ -104,6 +104,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/devices/null_device.c \
 			$(RCP_SRC)/devices/cellular.c \
 			$(RCP_SRC)/devices/cellular_api_status_keys.c \
+			$(RCP_SRC)/drivers/esp8266_drv.c \
 			$(RCP_SRC)/tracks/tracks.c \
 			$(RCP_SRC)/auto_config/auto_track.c \
 			$(RCP_SRC)/messaging/messaging.c \
@@ -192,6 +193,7 @@ APP_INCLUDES += -I. \
 				-I$(INCLUDE_DIR)/predictive_timer \
 				-I$(INCLUDE_DIR)/util \
 				-I$(INCLUDE_DIR)/devices \
+				-I$(INCLUDE_DIR)/drivers \
 				-I$(INCLUDE_DIR)/gps \
 				-I$(INCLUDE_DIR)/gsm \
 				-I$(INCLUDE_DIR)/lap_stats \

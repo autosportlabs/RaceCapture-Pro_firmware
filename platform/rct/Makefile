@@ -149,6 +149,10 @@ inc-y += $(RC_INCLUDE_DIR)/OBD2
 src-y += $(wildcard $(RC_SRC_DIR)/devices/*.c)
 inc-y += $(RC_INCLUDE_DIR)/devices
 
+#drivers
+src-y += $(wildcard $(RC_SRC_DIR)/drivers/*.c)
+inc-y += $(RC_INCLUDE_DIR)/drivers
+
 #devices
 src-y += $(wildcard $(RC_SRC_DIR)/api/*.c)
 inc-y += $(RC_INCLUDE_DIR)/api

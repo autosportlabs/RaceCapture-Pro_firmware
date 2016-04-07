@@ -107,6 +107,10 @@ int getUptimeAsInt();
  */
 void getDateTimeFromEpochMillis(DateTime *dateTime, millis_t millis);
 
+tiny_millis_t getUptimeFromNow(const tiny_millis_t to_add);
+
+bool isTimePassed(const tiny_millis_t time);
+
 CPP_GUARD_END
 
 #endif //__DATE_TIME_H__

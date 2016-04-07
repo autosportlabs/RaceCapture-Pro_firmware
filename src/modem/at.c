@@ -479,7 +479,8 @@ bool at_ok(struct at_rsp *rsp)
 /**
  * Breaks up an AT response line into the individual components, including the
  * leading response tag.  This allows us to more easily parse and validate the
- * messages.
+ * messages.  If there are more components than buckets, then what hasn't been
+ * processed will go in the last bucket.
  * @param rsp The AT response line to be parsed.  Note it will get modified.
  * @param bkts An array of char pointers that act as the buckets for the AT msg
  * tokens.  We put the start of each token in a bucket.
@@ -509,6 +510,9 @@ size_t at_parse_rsp_line(char *rsp, char *bkts[], const size_t num_bkts)
                 if (is_new) {
                         is_new = false;
                         bkts[idx++] = rsp;
+
+                        if (idx == num_bkts)
+                                break;
                 }
 
                 switch(*rsp) {

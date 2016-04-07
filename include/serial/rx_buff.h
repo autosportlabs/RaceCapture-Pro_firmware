@@ -29,8 +29,6 @@
 CPP_GUARD_BEGIN
 
 struct rx_buff {
-        int chan_id;
-        bool msg_ready;
         size_t idx;
         size_t cap;
         char *buff;
@@ -42,16 +40,8 @@ bool rx_buff_init(struct rx_buff *rxb, const size_t cap, char *buff);
 
 void rx_buff_free(struct rx_buff *rxb);
 
-bool rx_buff_append(struct rx_buff *rxb, int chan_id, const char *data,
-                    const size_t len);
-
-const char* rx_buff_get_buff(struct rx_buff *rxb);
-
-bool rx_buff_is_msg_ready(struct rx_buff *rxb);
-
-int rx_buff_get_chan_id(struct rx_buff *rxb);
-
-void rx_buff_rstrip(struct rx_buff *rxb);
+char* rx_buff_read(struct rx_buff *rxb, struct Serial *s,
+                   const size_t ticks_to_wait);
 
 CPP_GUARD_END
 
