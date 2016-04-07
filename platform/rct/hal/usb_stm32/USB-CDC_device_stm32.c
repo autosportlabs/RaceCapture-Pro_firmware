@@ -20,24 +20,21 @@
  */
 
 #include <FreeRTOS.h>
+#include <USB-CDC_device.h>
+#include <hw_config.h>
 #include <portmacro.h>
 #include <queue.h>
 #include <semphr.h>
+#include <stdbool.h>
+#include <string.h>
 #include <task.h>
 #include <timers.h>
-
-#include <hw_config.h>
-#include <USB-CDC_device.h>
 #include <usb_desc.h>
 #include <usb_istr.h>
 #include <usb_lib.h>
 #include <usb_mem.h>
 #include <usb_prop.h>
 #include <usb_pwr.h>
-
-#include <stdbool.h>
-#include <string.h>
-
 
 #define USB_BUF_ELTS(in, out, bufsize) ((in - out + bufsize) % bufsize)
 
