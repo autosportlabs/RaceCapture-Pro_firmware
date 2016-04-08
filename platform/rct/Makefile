@@ -40,6 +40,10 @@ inc-y := \
 src-y += $(wildcard Libraries/STM32F30x_StdPeriph_Driver/src/*.c)
 inc-y += Libraries/STM32F30x_StdPeriph_Driver/inc
 
+# USB
+src-y += $(wildcard Libraries/STM32_USB-FS-Device_Driver/src/*.c)
+inc-y += Libraries/STM32_USB-FS-Device_Driver/inc
+
 # Memory Management
 inc-y += mem_mang
 inc-y += FreeRTOS/Source/portable/MemMang
@@ -58,6 +62,7 @@ inc-y += $(RC_INCLUDE_DIR)/util
 # serial API
 src-y += $(wildcard $(RC_SRC_DIR)/serial/*.c)
 inc-y += $(RC_INCLUDE_DIR)/serial
+
 src-y += $(wildcard $(RC_SRC_DIR)/usart/*.c)
 inc-y += $(RC_INCLUDE_DIR)/usart
 
@@ -72,6 +77,7 @@ inc-y += $(RC_INCLUDE_DIR)/ADC
 # CAN
 src-y += $(wildcard $(RC_SRC_DIR)/CAN/*.c)
 src-y += $(wildcard hal/CAN_stm32/*.c)
+inc-y += hal/CAN_stm32
 inc-y += $(RC_INCLUDE_DIR)/CAN
 
 # GPS
@@ -172,6 +178,14 @@ inc-y += $(RC_INCLUDE_DIR)/logger
 src-y += $(wildcard $(RC_SRC_DIR)/messaging/*.c)
 inc-y += $(RC_INCLUDE_DIR)/messaging
 
+# CDC-ACM
+src-y += $(wildcard hal/usb_stm32/*.c)
+src-y += $(wildcard $(RC_SRC_DIR)/usb_comm/*.c)
+inc-y += hal/usb_stm32
+
+# Combined interrupts
+src-y += $(wildcard hal/common_irq_stm32/*.c)
+
 # FreeRTOS
 src-y += $(wildcard FreeRTOS/Source/*.c) \
          FreeRTOS/Source/portable/GCC/ARM_CM3/port.c \
@@ -214,14 +228,15 @@ inc-y += $(RC_PLATFORM_DIR)/mk2/hal/fat_sd_stm32/fatfs
 ################################################################################
 obj-y := $(addprefix $(OUTDIR)/,$(patsubst %.s,%.o,$(patsubst %.c,%.o,$(src-y))))
 
-CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -DUSE_STM32303C_EVAL -MD -std=gnu99
+CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -MD -std=gnu99
 CFLAGS += -mcpu=cortex-m3 -mthumb
 CFLAGS += $(VERSION_CFLAGS)
 CFLAGS += $(BOARD_DEFINES)
 CFLAGS += -fno-builtin-sprintf
 CFLAGS += $(addprefix -I,$(inc-y))
 CFLAGS += -O0 -g
-LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld -Wl,-cref,-u,Reset_Handler,-Map=$(OUTDIR)/main.map,--gc-sections
+LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld
+LDFLAGS += -Wl,-cref,-u,Reset_Handler,-Map=$(OUTDIR)/main.map,--gc-sections
 AFLAGS := $(CFLAGS)
 
 # disable auto-removing of intermediate files

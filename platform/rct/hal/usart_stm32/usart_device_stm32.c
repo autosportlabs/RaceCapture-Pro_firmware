@@ -32,7 +32,9 @@
 #include "task.h"
 #include "usart_device.h"
 
-#define UART_QUEUE_LENGTH 	1024
+#define UART_RX_QUEUE_LENGTH 	256
+#define UART_TX_QUEUE_LENGTH 	64
+
 #define GPS_BUFFER_SIZE		132
 
 #define UART_WIRELESS_IRQ_PRIORITY 	7
@@ -66,27 +68,27 @@ static int initQueues()
     int success = 1;
 
     /* Create the queues used to hold Rx and Tx characters. */
-    xUsart0Rx = xQueueCreate(UART_QUEUE_LENGTH,
+    xUsart0Rx = xQueueCreate(UART_RX_QUEUE_LENGTH,
                              (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    xUsart0Tx = xQueueCreate(UART_QUEUE_LENGTH + 1,
+    xUsart0Tx = xQueueCreate(UART_TX_QUEUE_LENGTH,
                              (unsigned portBASE_TYPE)sizeof(signed portCHAR));
     if (xUsart0Rx == NULL || xUsart0Tx == NULL) {
         success = 0;
         goto cleanup_and_return;
     }
 
-    xUsart2Rx = xQueueCreate(UART_QUEUE_LENGTH,
+    xUsart2Rx = xQueueCreate(UART_RX_QUEUE_LENGTH,
                              (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    xUsart2Tx = xQueueCreate(UART_QUEUE_LENGTH + 1,
+    xUsart2Tx = xQueueCreate(UART_TX_QUEUE_LENGTH,
                              (unsigned portBASE_TYPE)sizeof(signed portCHAR));
     if (xUsart2Rx == NULL || xUsart2Tx == NULL) {
         success = 0;
         goto cleanup_and_return;
     }
 
-    xUsart3Rx = xQueueCreate(UART_QUEUE_LENGTH,
+    xUsart3Rx = xQueueCreate(UART_RX_QUEUE_LENGTH,
                              (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    xUsart3Tx = xQueueCreate(UART_QUEUE_LENGTH + 1,
+    xUsart3Tx = xQueueCreate(UART_TX_QUEUE_LENGTH,
                              (unsigned portBASE_TYPE)sizeof(signed portCHAR));
     if (xUsart3Rx == NULL || xUsart3Tx == NULL) {
         success = 0;

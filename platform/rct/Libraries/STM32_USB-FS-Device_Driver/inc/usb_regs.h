@@ -30,6 +30,8 @@
 #ifndef __USB_REGS_H
 #define __USB_REGS_H
 
+#include <stdint.h>
+
 /* Includes ------------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 typedef enum _EP_DBUF_DIR
