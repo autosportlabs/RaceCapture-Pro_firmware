@@ -75,6 +75,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 			$(RCP_SRC)/filter/filter.c \
 			$(RCP_SRC)/lua/luaBaseBinding.c \
+			$(RCP_SRC)/lua/luaLoggerBinding.c \
 			$(RCP_SRC)/lua/luaCommands.c \
 			$(RCP_SRC)/lua/luaScript.c \
 			$(RCP_SRC)/lua/luaTask.c \
@@ -91,7 +92,6 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/logger/channel_config.c \
 			$(RCP_SRC)/logger/logger.c \
 			$(RCP_SRC)/logger/connectivityTask.c \
-			$(RCP_SRC)/logger/luaLoggerBinding.c \
 			$(RCP_SRC)/logger/sampleRecord.c \
 			$(RCP_SRC)/devices/bluetooth.c \
 			$(RCP_SRC)/devices/sara_u280.c \

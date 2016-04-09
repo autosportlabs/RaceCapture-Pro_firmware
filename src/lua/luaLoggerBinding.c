@@ -26,11 +26,13 @@
 #include "led.h"
 #include "OBD2.h"
 #include "PWM.h"
+#include "channel_config.h"
 #include "dateTime.h"
 #include "gps.h"
 #include "imu.h"
+#include "luaBaseBinding.h"
 #include "lap_stats.h"
-#include "lap_stats.h"
+#include "lauxlib.h"
 #include "logger.h"
 #include "loggerConfig.h"
 #include "loggerData.h"
@@ -58,8 +60,9 @@
 #define LUA_DEFAULT_SERIAL_PARITY 0
 #define LUA_DEFAULT_SERIAL_STOP_BITS 1
 
-
 char g_tempBuffer[TEMP_BUFFER_LEN];
+static int lua_get_virtual_channel(lua_State *ls);
+static int lua_set_led(lua_State *ls);
 
 static int lua_get_uptime(lua_State *L)
 {
@@ -91,6 +94,12 @@ static int lua_get_date_time(lua_State *L)
         return 7;
 }
 
+static int lua_get_gps_altitude(lua_State *L)
+{
+        lua_pushnumber(L, getAltitude());
+        return 1;
+}
+
 void registerLuaLoggerBindings(lua_State *L)
 {
 
@@ -118,10 +127,11 @@ void registerLuaLoggerBindings(lua_State *L)
     lua_registerlight(L,"getImuRaw",Lua_ReadImuRaw);
 
     lua_registerlight(L, "getGpsSats", Lua_GetGPSSatellites);
-    lua_registerlight(L,"getGpsPos", Lua_GetGPSPosition);
-    lua_registerlight(L,"getGpsSpeed",Lua_GetGPSSpeed);
-    lua_registerlight(L,"getGpsQuality", Lua_GetGPSQuality);
-    lua_registerlight(L,"getGpsDist", Lua_GetGPSDistance);
+    lua_registerlight(L, "getGpsPos", Lua_GetGPSPosition);
+    lua_registerlight(L, "getGpsSpeed", Lua_GetGPSSpeed);
+    lua_registerlight(L, "getGpsQuality", Lua_GetGPSQuality);
+    lua_registerlight(L, "getGpsDist", Lua_GetGPSDistance);
+    lua_registerlight(L, "getGpsAltitude", lua_get_gps_altitude);
 
     lua_registerlight(L, "getLapCount", Lua_GetLapCount);
     lua_registerlight(L, "getLapTime", Lua_GetLapTime);
@@ -141,7 +151,7 @@ void registerLuaLoggerBindings(lua_State *L)
     lua_registerlight(L,"stopLogging",Lua_StopLogging);
     lua_registerlight(L,"isLogging" , Lua_IsLogging);
 
-    lua_registerlight(L,"setLed",Lua_SetLED);
+    lua_registerlight(L,"setLed", lua_set_led);
 
     //Serial API
     lua_registerlight(L,"initSer", Lua_InitSerial);
@@ -159,6 +169,7 @@ void registerLuaLoggerBindings(lua_State *L)
     lua_registerlight(L,"getBgStream", Lua_GetBackgroundStreaming);
 
     lua_registerlight(L, "addChannel", Lua_AddVirtualChannel);
+    lua_registerlight(L, "getChannel", lua_get_virtual_channel);
     lua_registerlight(L, "setChannel", Lua_SetVirtualChannelValue);
 
     /* Timing info */
@@ -758,18 +769,32 @@ int Lua_IsLogging(lua_State *L)
     return 1;
 }
 
-int Lua_SetLED(lua_State *L)
+static int lua_set_led(lua_State *ls)
 {
-        if (lua_gettop(L) >= 2) {
-                unsigned int LED = lua_tointeger(L,1);
-                unsigned int state = lua_tointeger(L,2);
-                if (state) {
-                        //LED_enable(LED);
-                } else {
-                        //LED_disable(LED);
-                }
+        if (lua_gettop(ls) != 2)
+                return incorrect_arguments(ls);
+
+        const bool is_num = lua_isnumber(ls, 1);
+        const bool is_str = lua_isstring(ls, 1);
+        if (!is_num && !is_str)
+                return luaL_error(ls, "This method only accepts LED names "
+                                  "or LED IDs");
+
+        /*
+         * Numbers can be passed in as 123 or "123" in lua.  So handle
+         * that case first
+         */
+        const bool on = lua_toboolean(ls, 2);
+        bool res;
+        if (is_num) {
+                res = led_set_index(lua_tointeger(ls, 1), on);
+        } else {
+                const enum led led = get_led_enum(lua_tostring(ls, 1));
+                res = led_set(led, on);
         }
-        return 0;
+
+        lua_pushboolean(ls, res);
+        return 1;
 }
 
 
@@ -782,29 +807,111 @@ int Lua_FlashLoggerConfig(lua_State *L)
 
 int Lua_AddVirtualChannel(lua_State *L)
 {
-    size_t args = lua_gettop(L);
-    if (args < 2) return 0;
+        const size_t args = lua_gettop(L);
+        if (args < 2 || args > 6)
+                return incorrect_arguments(L);
 
-    ChannelConfig cc;
-    strlcpy(cc.label, lua_tostring(L, 1), DEFAULT_LABEL_LENGTH);
-    cc.sampleRate = encodeSampleRate((unsigned short) lua_tointeger(L, 2));
-    cc.precision = args >= 3 ? lua_tointeger(L, 3) :
-                   DEFAULT_CHANNEL_LOGGING_PRECISION;
-    cc.min = args >= 4 ? lua_tointeger(L, 4) : DEFAULT_CHANNEL_MIN;
-    cc.max = args >= 5 ? lua_tointeger(L, 5) : DEFAULT_CHANNEL_MAX;
-    strlcpy(cc.units, args >=6 ? lua_tostring(L, 6) : DEFAULT_CHANNEL_UNITS,
-            DEFAULT_UNITS_LENGTH);
-    lua_pushinteger(L, create_virtual_channel(cc));
+        ChannelConfig cc;
+        channel_config_defaults(&cc);
 
+        switch (validate_channel_config_label(lua_tostring(L, 1))) {
+        case CHAN_CFG_STATUS_OK:
+                strcpy(cc.label, lua_tostring(L, 1));
+                break;
+        case CHAN_CFG_STATUS_NO_LABEL:
+                luaL_error(L, "Label is empty");
+        case CHAN_CFG_STATUS_LONG_LABEL:
+                luaL_error(L, "Label is too long");
+        default:
+                goto bug;
+        }
+
+        cc.sampleRate = encodeSampleRate((unsigned short) lua_tointeger(L, 2));
+        if (SAMPLE_DISABLED == cc.sampleRate)
+                return luaL_error(L, "Unsupported sample rate");
+
+        switch(args) {
+        case 6:
+                switch (validate_channel_config_units(lua_tostring(L, 6))) {
+                case CHAN_CFG_STATUS_OK:
+                        strcpy(cc.units, lua_tostring(L, 6));
+                        break;
+                case CHAN_CFG_STATUS_NO_UNITS:
+                        return luaL_error(L, "Units is empty");
+                case CHAN_CFG_STATUS_LONG_UNITS:
+                        return luaL_error(L, "Units is too long");
+                default:
+                        goto bug;
+                }
+        case 5:
+                cc.max = lua_tointeger(L, 5);
+        case 4:
+                cc.min = lua_tointeger(L, 4);
+        case 3:
+                cc.precision = lua_tointeger(L, 3);
+        }
+
+        switch(validate_channel_config(&cc)) {
+        case CHAN_CFG_STATUS_OK:
+                break;
+        case CHAN_CFG_STATUS_MAX_LT_MIN:
+                return luaL_error(L, "Max is less than min");
+        default:
+                goto bug;
+        }
+
+        const int chan_id = create_virtual_channel(cc);
+        if (INVALID_VIRTUAL_CHANNEL == chan_id)
+                return luaL_error(L, "Unable to create channel. "
+                                     "Maximum channels reached.");
+
+        lua_pushinteger(L, chan_id);
+        return 1;
+
+bug:
+        return luaL_error(L, "BUG. Should never get here.  "
+                             "Please inform AutosportLabs");
+}
+
+static int lua_get_virtual_channel(lua_State *ls)
+{
+    if (lua_gettop(ls) != 1)
+            return incorrect_arguments(ls);
+
+    const bool is_num = lua_isnumber(ls, 1);
+    const bool is_str = lua_isstring(ls, 1);
+    if (!is_num && !is_str)
+            return luaL_error(ls, "This method only accepts channel names "
+                              "or channel IDs");
+
+    /*
+     * Numbers can be passed in as 123 or "123" in lua.  So handle
+     * that case first
+     */
+    VirtualChannel *vc;
+    if (is_num) {
+            vc = get_virtual_channel(lua_tointeger(ls, 1));
+    } else {
+            const int idx = find_virtual_channel(lua_tostring(ls, 1));
+            vc = get_virtual_channel(idx);
+    }
+
+    if (!vc)
+            return luaL_error(ls, "Virtual channel not found!");
+
+    lua_pushnumber(ls, vc->currentValue);
     return 1;
 }
 
 int Lua_SetVirtualChannelValue(lua_State *L)
 {
-    if (lua_gettop(L) >= 2) {
-        int id = lua_tointeger(L, 1);
-        float value = lua_tonumber(L, 2);
-        set_virtual_channel_value(id,value);
-    }
-    return 0;
+        const size_t args = lua_gettop(L);
+        if (args != 2)
+                return incorrect_arguments(L);
+
+        const int id = lua_tointeger(L, 1);
+        const float value = lua_tonumber(L, 2);
+        set_virtual_channel_value(id, value);
+
+        return 0;
 }
