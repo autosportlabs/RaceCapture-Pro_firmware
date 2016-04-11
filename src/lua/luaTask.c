@@ -409,6 +409,8 @@ bool lua_task_stop()
         lua_close(state.lua_runtime);
         state.lua_runtime = NULL;
 
+        led_disable(LED_ERROR);
+
         /*
          * If we didn't get the semaphore, then the task we just
          * killed was the likely owner of it (better be).  Since
