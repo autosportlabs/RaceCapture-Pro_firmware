@@ -1661,8 +1661,8 @@ int api_setScript(Serial *serial, const jsmntok_t *json)
 
 int api_runScript(Serial *serial, const jsmntok_t *json)
 {
-        terminate_lua();
-        initialize_lua();
+        lua_task_stop();
+        lua_task_start();
         return API_SUCCESS;
 }
 #endif /* LUA_SUPPORT */

@@ -96,7 +96,7 @@ void setupTask(void *delTask)
 #endif
 
 #if defined(LUA_SUPPORT)
-        startLuaTask(RCP_LUA_PRIORITY);
+        lua_task_init(RCP_LUA_PRIORITY);
 #endif
 
         /* Removes this setup task from the scheduler */

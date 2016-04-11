@@ -83,8 +83,10 @@ enum track_add_result add_track(const Track *track, const size_t index,
 
         static Tracks *g_tracksBuffer;
         if (NULL == g_tracksBuffer) {
-                if ((RCP_LOW_MEM))
-                        terminate_lua();
+
+#if defined(LUA_SUPPORT)
+                lua_task_stop();
+#endif /* LUA_SUPPORT */
 
                 pr_debug("tracks: Allocating new tracks buffer\r\n");
                 g_tracksBuffer = (Tracks *) portMalloc(sizeof(Tracks));
@@ -117,8 +119,9 @@ enum track_add_result add_track(const Track *track, const size_t index,
 
         pr_info("win!\r\n");
 
-        if (RCP_LOW_MEM)
-                initialize_lua();
+#if defined(LUA_SUPPORT)
+        lua_task_start();
+#endif /* LUA_SUPPORT */
 
         return TRACK_ADD_RESULT_OK;
 }

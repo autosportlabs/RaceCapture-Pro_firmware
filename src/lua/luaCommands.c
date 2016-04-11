@@ -52,7 +52,7 @@ void ExecLuaInterpreter(Serial *serial, unsigned int argc, char **argv)
                 if (0 == strcmp(luaLine, "exit"))
                         break;
 
-                run_lua_interactive_cmd(serial, luaLine);
+                lua_task_run_interactive_cmd(serial, luaLine);
         }
 
         g_interactive_mode = 0;
@@ -61,8 +61,8 @@ void ExecLuaInterpreter(Serial *serial, unsigned int argc, char **argv)
 
 void ReloadScript(Serial *serial, unsigned int argc, char **argv)
 {
-        terminate_lua();
-        initialize_lua();
+        lua_task_stop();
+        lua_task_start();
         put_commandOK(serial);
 }
 
