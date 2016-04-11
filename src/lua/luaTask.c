@@ -391,12 +391,16 @@ bool lua_task_stop()
 
         const size_t ticks = msToTicks(LUA_LOCK_WAIT_MS);
         const bool got_lock = get_lock_wait(ticks);
-        if(!got_lock)
-                pr_warning(_LOG_PFX "Killing Lua task b/c unresponsive\r\n");
 
         /* Its possible to have a runtime but no task */
         if (state.task_handle) {
-                pr_info(_LOG_PFX "Stopping Lua Task\r\n");
+                if (!got_lock) {
+                        pr_warning(_LOG_PFX "Killing Lua task because "
+                                   "it is unresponsive\r\n");
+                } else {
+                        pr_info(_LOG_PFX "Gracefully stopping Lua Task\r\n");
+                }
+
                 vTaskDelete(state.task_handle);
                 state.task_handle = NULL;
         }
