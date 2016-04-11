@@ -38,6 +38,7 @@
 #include "semphr.h"
 #include "task.h"
 #include "taskUtil.h"
+#include "virtual_channel.h"
 #include "watchdog.h"
 
 #include <math.h>
@@ -148,6 +149,12 @@ static int lua_invocation(struct lua_run_state *rs)
 
         /* First load our script if needed */
         if (!rs->script_loaded) {
+                /*
+                 * Reset virt channels before we load the script as these are
+                 * often defined as part of the script load process.
+                 */
+                reset_virtual_channels();
+
                 if (!load_script(rs->lua_state)) {
                         status = LUA_ERR_SCRIPT_LOAD_FAILED;
                         goto done;
