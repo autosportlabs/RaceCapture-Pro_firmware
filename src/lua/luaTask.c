@@ -318,7 +318,15 @@ void lua_task_run_interactive_cmd(Serial *serial, const char* cmd)
                 return;
         }
 
-        get_lock();
+        const size_t ticks = msToTicks(LUA_LOCK_WAIT_MS);
+        const bool got_lock = get_lock_wait(ticks);
+        if (!got_lock) {
+                serial_put_s(serial, "Error: Lua Runtime unresponsive.  "
+                             "Check script.");
+                put_crlf(serial);
+                return;
+        }
+
         lua_State *ls = state.lua_runtime;
         lua_gc(ls, LUA_GCCOLLECT, 0);
 
