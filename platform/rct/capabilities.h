@@ -43,15 +43,6 @@
 //initialize main tasks in temporary FreeRTOS task
 #define TASK_TASK_INIT 1
 
-/*
- * Adds additional memory saving behavior for low memory systems.
- * These come at a cost of interruption of other services as needed
- * to save RAM.  Usually quick interruptions, but interruptions
- * none the less.
- */
-#define RCP_LOW_MEM	0
-
-
 /* LUA Configuration */
 
 /*

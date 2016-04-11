@@ -70,7 +70,7 @@ int Lua_SetTickRate(lua_State *L)
         if (lua_gettop(L) != 1 || !lua_isnumber(L, 1))
                 return incorrect_arguments(L);
 
-        const size_t res = set_ontick_freq(lua_tointeger(L, 1));
+        const size_t res = lua_task_set_callback_freq(lua_tointeger(L, 1));
         if (!res)
                 return luaL_error(L, "Invalid frequency");
 
@@ -80,7 +80,7 @@ int Lua_SetTickRate(lua_State *L)
 
 int Lua_GetTickRate(lua_State *L)
 {
-    lua_pushinteger(L, get_ontick_freq());
+    lua_pushinteger(L, lua_task_get_callback_freq());
     return 1;
 }
 

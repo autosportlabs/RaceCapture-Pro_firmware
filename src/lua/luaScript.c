@@ -49,7 +49,7 @@ int flash_default_script()
          * Stop LUA if we are flashing its data.  This is mainly done to recover
          * RAM since our flashing operation is a heavy bugger
          */
-        terminate_lua();
+        lua_task_stop();
 
         ScriptConfig *defaultScriptConfig =
                 (ScriptConfig *) portMalloc(sizeof(ScriptConfig));
@@ -140,7 +140,7 @@ enum script_add_result flashScriptPage(const unsigned int page,
 
         static ScriptConfig *g_scriptBuffer;
         if (NULL == g_scriptBuffer) {
-                terminate_lua();
+                lua_task_stop();
 
                 pr_debug("lua: Allocating new script buffer\r\n");
                 g_scriptBuffer =
@@ -174,6 +174,6 @@ enum script_add_result flashScriptPage(const unsigned int page,
         }
 
         pr_info("win!\r\n");
-        initialize_lua();
+        lua_task_start();
         return SCRIPT_ADD_RESULT_OK;
 }
