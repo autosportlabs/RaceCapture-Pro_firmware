@@ -1,6 +1,6 @@
 #!/bin/bash
 
-[ -n "$DEBUG"] && set -x
+[ -n "$DEBUG" ] && set -x
 
 TMP_DIR=$(mktemp -d)
 PLATFORM=$1
@@ -20,4 +20,5 @@ cp $BUILD_DIR/main.ihex $RELEASE_DIR_PATH/$RELEASE_NAME.ihex
 (cd $TMP_DIR; zip -FSr $RELEASE_NAME.zip $RELEASE_DIR)
 
 cp $TMP_DIR/$RELEASE_NAME.zip .
-[ -z "$DEBUG"] && rm -rf $TMP_DIR
+[ -z "$DEBUG" ] && rm -rf $TMP_DIR
+exit 0

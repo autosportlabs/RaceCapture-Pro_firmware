@@ -20,15 +20,6 @@
 #define MAX_VIRTUAL_CHANNELS	100
 #define LOGGER_MESSAGE_BUFFER_SIZE	10
 
-/*
- * Adds additional memory saving behavior for low memory systems.
- * These come at a cost of interruption of other services as needed
- * to save RAM.  Usually quick interruptions, but interruptions
- * none the less.
- */
-#define RCP_LOW_MEM	0
-
-
 /* LUA Configuration */
 
 /*

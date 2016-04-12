@@ -27,6 +27,7 @@
 #include "ts_ring_buff.h"
 #include "serial.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 
 #define IF_LEVEL_GT_CURR_LEVEL_RET_ZERO(l) if ((l) > curr_level) return 0
@@ -138,6 +139,13 @@ int printk_str_msg(enum log_level level, const char *msg, const char *value)
 {
         IF_LEVEL_GT_CURR_LEVEL_RET_ZERO(level);
         return writek(msg) + writek(value) + writek_crlf();
+}
+
+int printk_bool_msg(enum log_level level, const char *msg, const bool value)
+{
+        IF_LEVEL_GT_CURR_LEVEL_RET_ZERO(level);
+        const char* bool_value = value ? "true" : "false";
+        return writek(msg) + writek(bool_value) + writek_crlf();
 }
 
 enum log_level get_log_level()
