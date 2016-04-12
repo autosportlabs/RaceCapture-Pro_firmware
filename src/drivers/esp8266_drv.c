@@ -24,10 +24,12 @@
 #include "esp8266.h"
 #include "esp8266_drv.h"
 #include "macros.h"
+#include "loggerConfig.h"
 #include "panic.h"
 #include "printk.h"
 #include "queue.h"
 #include "task.h"
+#include "wifi.h"
 #include <stdbool.h>
 #include <string.h>
 
@@ -37,7 +39,7 @@
 #define _DAEMON_SERVER_PORT	7223
 #define _INIT_FAIL_SLEEP_MS	10000
 #define _LOG_PFX		"[ESP8266 Driver] "
-#define _MAX_CHANNELS		4
+#define _MAX_CHANNELS		5
 #define _SERIAL_BAUD		115200
 #define _SERIAL_BITS		8
 #define _SERIAL_CMD_MAX_LEN	1024
@@ -58,14 +60,9 @@ enum _cmd {
         _CMD_DAEMON_SETUP,
 };
 
-struct _client_config {
-        char ssid[24];
-        char pass[24];
-};
-
 struct _client {
         struct esp8266_client_info info;
-        struct _client_config config;
+        const struct wifi_client_cfg *config;
         tiny_millis_t next_check_ms;
 };
 
@@ -206,10 +203,10 @@ static void init_wifi()
 
 static bool is_client_wifi_on_desired_network(const struct esp8266_client_info *ci)
 {
-        if (!ci || !ci->has_ap)
+        if (!ci || !ci->has_ap || !state.client.config)
                 return false;
 
-        return STR_EQ(ci->ssid, state.client.config.ssid);
+        return STR_EQ(ci->ssid, state.client.config->ssid);
 }
 
 static void get_client_ap_cb(bool status, const struct esp8266_client_info *ci)
@@ -276,9 +273,9 @@ static void set_client_ap_cb(bool status)
 
 static void set_client_ap()
 {
-        struct _client_config *cc = &state.client.config;
+        const struct wifi_client_cfg *cc = state.client.config;
         pr_info_str_msg(_LOG_PFX "Joining network: ", cc->ssid);
-        esp8266_join_ap(cc->ssid, cc->pass, set_client_ap_cb);
+        esp8266_join_ap(cc->ssid, cc->passwd, set_client_ap_cb);
         cmd_started();
 }
 
@@ -409,18 +406,12 @@ static void _task(void *params)
         panic(PANIC_CAUSE_UNREACHABLE);
 }
 
-bool esp8266_drv_set_client(const char *ssid, const char *pass)
+bool esp8266_drv_update_client_cfg(const struct wifi_client_cfg *cc)
 {
-        if (!ssid && !pass)
+        if (NULL == cc)
                 return false;
 
-        struct _client_config *cc = &state.client.config;
-        if (ssid)
-                strncpy(cc->ssid, ssid, ARRAY_LEN(cc->ssid));
-
-        if (pass)
-                strncpy(cc->pass, pass, ARRAY_LEN(cc->pass));
-
+        state.client.config = cc;
         /* Zero this out so we force the scheduler to check it */
         state.client.next_check_ms = 0;
         return true;
@@ -442,8 +433,14 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         serial_config(state.serial, _SERIAL_BITS, _SERIAL_PARITY,
                       _SERIAL_STOP_BITS, _SERIAL_BAUD);
 
-        /* STIEG HACK: Sets Wifi here in the code.  Remove later */
-        esp8266_drv_set_client("madworks", "reallyreallymad");
+        /* Initialize our WiFi configs here */
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        const struct wifi_client_cfg *cfg =
+                &lc->ConnectivityConfigs.wifi.client;
+        if (!esp8266_drv_update_client_cfg(cfg)) {
+                pr_error(_LOG_PFX "Failed to set WiFi cfg\r\n");
+                return false;
+        }
 
         state.cmd = _CMD_INIT;
         state.new_conn_cb = new_conn_cb;

@@ -6,7 +6,6 @@ RCP_BASE=..
 RCP_SRC=$(RCP_BASE)/src
 RCP_INC=$(RCP_BASE)/include
 MK2_SRC=$(RCP_BASE)/platform/mk2
-MESSAGING_SRC=$(RCP_SRC)/messaging
 COMMAND_SRC=$(RCP_SRC)/command
 MOCK_DIR=logger_mock
 GPS_DIR=gps
@@ -32,6 +31,7 @@ INCLUDES = \
 -I$(RCP_INC)/channels \
 -I$(RCP_INC)/virtual_channel \
 -I$(RCP_INC)/tracks \
+-I$(RCP_INC)/tasks \
 -I$(RCP_INC)/messaging \
 -I$(RCP_INC)/modem \
 -I$(RCP_INC)/lua \
@@ -140,6 +140,7 @@ $(MOCK_DIR)/imu_device_mock.c \
 $(MOCK_DIR)/loggerNotifications_mock.c \
 $(MOCK_DIR)/luaTask_mock.c \
 $(MOCK_DIR)/memory_device_mock.c \
+$(MOCK_DIR)/messaging.c \
 $(MOCK_DIR)/sdcard_mock.c \
 $(MOCK_DIR)/timer_device_mock.c \
 $(MOCK_DIR)/watchdog_device_mock.c \
@@ -185,9 +186,11 @@ $(RCP_SRC)/serial/ram_serial.c \
 $(RCP_SRC)/serial/rx_buff.c \
 $(RCP_SRC)/serial/serial_buffer.c \
 $(RCP_SRC)/serial/serial.c \
+$(RCP_SRC)/serial/serial_device.c \
 $(RCP_SRC)/timer/timer.c \
 $(RCP_SRC)/timer/timer_config.c \
 $(RCP_SRC)/tracks/tracks.c \
+$(RCP_SRC)/tasks/wifi.c \
 $(RCP_SRC)/usart/usart.c \
 $(RCP_SRC)/util/linear_interpolate.c \
 $(RCP_SRC)/util/mod_string.c \

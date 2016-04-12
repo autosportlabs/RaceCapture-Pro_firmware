@@ -59,6 +59,8 @@ void json_uint(struct Serial *serial, const char *name, unsigned int value, int 
 void json_escapedString(struct Serial *serial, const char *name, const char *value, int more);
 void json_string(struct Serial *serial, const char *name, const char *value, int more);
 void json_float(struct Serial *serial, const char *name, float value, int precision, int more);
+void json_bool(struct Serial *serial, const char *name,
+               const bool value, bool more);
 void json_objStartString(struct Serial *serial, const char * label);
 void json_objStartInt(struct Serial *serial, int label);
 void json_objStart(struct Serial *serial);

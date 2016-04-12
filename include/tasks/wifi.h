@@ -27,8 +27,25 @@
 
 CPP_GUARD_BEGIN
 
+#define WIFI_SSID_MAX_LEN	24
+#define WIFI_PASSWD_MAX_LEN	24
+
+struct wifi_client_cfg {
+        bool active;
+        char ssid[WIFI_SSID_MAX_LEN];
+        char passwd[WIFI_PASSWD_MAX_LEN];
+};
+
+struct wifi_cfg {
+        struct wifi_client_cfg client;
+};
+
 bool wifi_init_task(const int wifi_task_priority,
                     const int wifi_drv_priority);
+
+void wifi_reset_config(struct wifi_cfg *cfg);
+
+bool wifi_update_client_config(struct wifi_client_cfg *wcc);
 
 CPP_GUARD_END
 

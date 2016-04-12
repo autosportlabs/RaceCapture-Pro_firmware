@@ -118,3 +118,23 @@ bool wifi_init_task(const int wifi_task_priority,
 
         return true;
 }
+
+void wifi_reset_config(struct wifi_cfg *cfg)
+{
+        /* For now simply zero this out */
+        memset(cfg, 0, sizeof(struct wifi_cfg));
+
+        /* Inform the Wifi device that settings may have changed */
+        wifi_update_client_config(&cfg->client);
+}
+
+/**
+ * Wrapper for the driver to update the client wifi config
+ * settings.  This is here because it makes sense for these
+ * calls to enter the Wifi subsystem here instead of through
+ * the driver directly.
+ */
+bool wifi_update_client_config(struct wifi_client_cfg *wcc)
+{
+        return esp8266_drv_update_client_cfg(wcc);
+}

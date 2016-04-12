@@ -33,36 +33,39 @@ CPP_GUARD_BEGIN
 
 #define API_METHOD(_NAME, _FUNC) {(_NAME), (_FUNC)},
 
-#define BASE_API_METHODS                                        \
-        API_METHOD("addTrackDb", api_addTrackDb)                \
-        API_METHOD("facReset", api_factoryReset)                \
-        API_METHOD("getCanCfg", api_getCanConfig)               \
-        API_METHOD("getLapCfg", api_getLapConfig)               \
-        API_METHOD("getLogfile", api_getLogfile)                \
-        API_METHOD("getObd2Cfg", api_getObd2Config)             \
-        API_METHOD("getTrackCfg", api_getTrackConfig)           \
-        API_METHOD("getTrackDb", api_getTrackDb)                \
-        API_METHOD("setCanCfg", api_setCanConfig)               \
-        API_METHOD("setLapCfg", api_setLapConfig)               \
-        API_METHOD("setLogfileLevel", api_setLogfileLevel)      \
-        API_METHOD("setObd2Cfg", api_setObd2Config)             \
-        API_METHOD("setTrackCfg", api_setTrackConfig)           \
-        API_METHOD("sysReset", api_systemReset)                 \
-        API_METHOD("calImu", api_calibrateImu)                  \
-        API_METHOD("flashCfg", api_flashConfig)                 \
-        API_METHOD("getCapabilities", api_getCapabilities)      \
-        API_METHOD("getConnCfg", api_getConnectivityConfig)     \
-        API_METHOD("getGpsCfg", api_getGpsConfig)               \
-        API_METHOD("getImuCfg", api_getImuConfig)               \
-        API_METHOD("getMeta", api_getMeta)                      \
-        API_METHOD("getStatus", api_getStatus)                  \
-        API_METHOD("getVer", api_getVersion)                    \
-        API_METHOD("hb", api_heart_beat)                        \
-        API_METHOD("log", api_log)                              \
-        API_METHOD("s", api_sampleData)                         \
-        API_METHOD("setConnCfg", api_setConnectivityConfig)     \
-        API_METHOD("setGpsCfg", api_setGpsConfig)               \
-        API_METHOD("setImuCfg", api_setImuConfig)
+#define BASE_API_METHODS                                                \
+        API_METHOD("addTrackDb", api_addTrackDb)                        \
+        API_METHOD("calImu", api_calibrateImu)                          \
+        API_METHOD("facReset", api_factoryReset)                        \
+        API_METHOD("flashCfg", api_flashConfig)                         \
+        API_METHOD("getCanCfg", api_getCanConfig)                       \
+        API_METHOD("getCapabilities", api_getCapabilities)              \
+        API_METHOD("getConnCfg", api_getConnectivityConfig)             \
+        API_METHOD("getGpsCfg", api_getGpsConfig)                       \
+        API_METHOD("getImuCfg", api_getImuConfig)                       \
+        API_METHOD("getLapCfg", api_getLapConfig)                       \
+        API_METHOD("getLogfile", api_getLogfile)                        \
+        API_METHOD("getMeta", api_getMeta)                              \
+        API_METHOD("getObd2Cfg", api_getObd2Config)                     \
+        API_METHOD("getStatus", api_getStatus)                          \
+        API_METHOD("getTrackCfg", api_getTrackConfig)                   \
+        API_METHOD("getTrackDb", api_getTrackDb)                        \
+        API_METHOD("getVer", api_getVersion)                            \
+        API_METHOD("get_wifi_client_cfg", api_get_wifi_client_cfg)      \
+        API_METHOD("hb", api_heart_beat)                                \
+        API_METHOD("log", api_log)                                      \
+        API_METHOD("s", api_sampleData)                                 \
+        API_METHOD("setCanCfg", api_setCanConfig)                       \
+        API_METHOD("setConnCfg", api_setConnectivityConfig)             \
+        API_METHOD("setGpsCfg", api_setGpsConfig)                       \
+        API_METHOD("setImuCfg", api_setImuConfig)                       \
+        API_METHOD("setLapCfg", api_setLapConfig)                       \
+        API_METHOD("setLogfileLevel", api_setLogfileLevel)              \
+        API_METHOD("setObd2Cfg", api_setObd2Config)                     \
+        API_METHOD("setTrackCfg", api_setTrackConfig)                   \
+        API_METHOD("set_wifi_client_cfg", api_set_wifi_client_cfg)      \
+        API_METHOD("sysReset", api_systemReset)                         \
+
 
 #if ANALOG_CHANNELS > 0
 #define ANALOG_API_METHODS                              \
@@ -166,6 +169,10 @@ void api_send_sample_record(struct Serial *serial, struct sample *sample,
                             unsigned int tick, int sendMeta);
 //Utility functions
 void unescapeTextField(char *data);
+
+/* Wifi methods */
+int api_get_wifi_client_cfg(struct Serial *s, const jsmntok_t *json);
+int api_set_wifi_client_cfg(struct Serial *s, const jsmntok_t *json);
 
 CPP_GUARD_END
 

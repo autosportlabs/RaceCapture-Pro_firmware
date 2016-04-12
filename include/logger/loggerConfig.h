@@ -30,6 +30,7 @@
 #include "timer_config.h"
 #include "tracks.h"
 #include "versionInfo.h"
+#include "wifi.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -443,11 +444,11 @@ typedef struct _TelemetryConfig {
         int telemetry_port;
 } TelemetryConfig;
 
-
 typedef struct _ConnectivityConfig {
-    BluetoothConfig bluetoothConfig;
-    CellularConfig cellularConfig;
-    TelemetryConfig telemetryConfig;
+        BluetoothConfig bluetoothConfig;
+        CellularConfig cellularConfig;
+        TelemetryConfig telemetryConfig;
+        struct wifi_cfg wifi;
 } ConnectivityConfig;
 
 #define SD_LOGGING_MODE_DISABLED					0

@@ -117,6 +117,14 @@ void json_float(struct Serial *serial, const char *name, float value, int precis
     putCommaIfNecessary(serial, more);
 }
 
+void json_bool(struct Serial *serial, const char *name,
+               const bool value, bool more)
+{
+    putKeyAndColon(serial, name);
+    serial_put_s(serial, value ? "true" : "false");
+    putCommaIfNecessary(serial, more);
+}
+
 void json_objStartString(struct Serial *serial, const char *label)
 {
     putKeyAndColon(serial, label);

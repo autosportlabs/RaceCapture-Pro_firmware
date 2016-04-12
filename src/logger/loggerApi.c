@@ -138,6 +138,17 @@ static int setStringValueIfExists(const jsmntok_t *root, const char * fieldName,
     return (valueNode != NULL);
 }
 
+static bool setBoolValueIfExists(const jsmntok_t *root, const char *fieldName,
+                                 bool *target)
+{
+        const jsmntok_t *vNode = jsmn_find_get_node_value_prim(root, fieldName);
+
+        if (vNode)
+                *target = STR_EQ("true", vNode->data);
+
+        return NULL != vNode;
+}
+
 int api_systemReset(struct Serial *serial, const jsmntok_t *json)
 {
     int loader = 0;
@@ -1666,3 +1677,38 @@ int api_runScript(struct Serial *serial, const jsmntok_t *json)
         return API_SUCCESS;
 }
 #endif /* LUA_SUPPORT */
+
+int api_set_wifi_client_cfg(struct Serial *s, const jsmntok_t *json)
+{
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        struct wifi_client_cfg *cfg = &lc->ConnectivityConfigs.wifi.client;
+
+        setBoolValueIfExists(json, "active", &cfg->active);
+        setStringValueIfExists(json, "ssid", cfg->ssid,
+                               ARRAY_LEN(cfg->ssid));
+        setStringValueIfExists(json, "passwd", cfg->passwd,
+                               ARRAY_LEN(cfg->passwd));
+
+        /* Inform the Wifi device that settings may have changed */
+        wifi_update_client_config(cfg);
+
+        return API_SUCCESS;
+}
+
+int api_get_wifi_client_cfg(struct Serial *serial, const jsmntok_t *json)
+{
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        struct wifi_client_cfg *cfg = &lc->ConnectivityConfigs.wifi.client;
+
+        json_objStart(serial);
+        json_objStartString(serial, "wifi_client_cfg");
+
+        json_bool(serial, "active", cfg->active, 1);
+        json_string(serial, "ssid", cfg->ssid,1);
+        json_string(serial, "passwd", cfg->passwd,0);
+
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+
+        return API_SUCCESS_NO_RETURN;
+}

@@ -19,22 +19,19 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _ESP8266_DRV_H_
-#define _ESP8266_DRV_H_
+/*
+ * This cheap harlet of a stub is only here to get my WiFi bits
+ * to compile.  This is merely a band-aid in the name of progress.
+ * Some good soul will eliminate it down the road and replace it
+ * with full code unit testing....
+ */
 
-#include "cpp_guard.h"
 #include "serial.h"
-#include "wifi.h"
+#include <stddef.h>
 
-CPP_GUARD_BEGIN
+int process_read_msg(struct Serial *serial, char *buff, size_t len)
+{
+        return 0;
+}
 
-typedef void new_conn_func_t(struct Serial *s);
-
-bool esp8266_drv_update_client_cfg(const struct wifi_client_cfg *cc);
-
-bool esp8266_drv_init(struct Serial *s, const int priority,
-                      new_conn_func_t new_conn_cb);
-
-CPP_GUARD_END
-
-#endif /* _ESP8266_DRV_H_ */
+void process_msg(struct Serial *serial, char * buffer, size_t bufferSize) {}
