@@ -21,72 +21,41 @@
 
 #include "capabilities.h"
 #include "luaTask.h"
+#include "serial.h"
 
-void lockLua(void)
+void lua_task_run_interactive_cmd(struct Serial *serial, const char* cmd) {}
+
+struct lua_runtime_info lua_task_get_runtime_info()
 {
-
+        return (struct lua_runtime_info) { 0 };
 }
 
-void unlockLua(void)
+size_t lua_task_get_mem_size()
 {
-
+        return 0;
 }
 
-void startLuaTask(int priority)
+bool lua_task_stop()
 {
-
+        return true;
 }
 
-void luaTask(void *params)
+bool lua_task_start()
 {
-
+        return true;
 }
 
-void *myAlloc (void *ud, void *ptr, size_t osize,size_t nsize)
+bool lua_task_init(const int priority)
 {
-    return NULL;
+        return true;
 }
 
-void * getLua(void)
-{
-    return NULL;
-}
-
-unsigned int getLastPointer()
-{
-    return 0;
-}
-
-void setAllocDebug(int enableDebug)
-{
-
-}
-
-int getAllocDebug()
-{
-    return 0;
-}
-
-int getShouldReloadScript(void)
-{
-    return 0;
-}
-
-void setShouldReloadScript(int reload)
-{
-
-}
-
-size_t set_ontick_freq(size_t freq)
+size_t lua_task_set_callback_freq(const size_t freq)
 {
         return freq ? TICK_RATE_HZ / freq : 0;
 }
 
-size_t get_ontick_freq()
+size_t lua_task_get_callback_freq()
 {
-    return 1;
+        return 1;
 }
-
-void terminate_lua() {}
-void initialize_lua() {}
-void run_lua_interactive_cmd(struct Serial *serial, const char* cmd) {}

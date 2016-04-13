@@ -7,6 +7,7 @@
 
 #define TICK_RATE_HZ			configTICK_RATE_HZ
 #define MS_PER_TICK 1
+#define USB_SERIAL_SUPPORT
 
 //configuration
 #define MAX_TRACKS	5
@@ -42,15 +43,6 @@
 
 //initialize main tasks in temporary FreeRTOS task
 #define TASK_TASK_INIT 1
-
-/*
- * Adds additional memory saving behavior for low memory systems.
- * These come at a cost of interruption of other services as needed
- * to save RAM.  Usually quick interruptions, but interruptions
- * none the less.
- */
-#define RCP_LOW_MEM	0
-
 
 /* LUA Configuration */
 

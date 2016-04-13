@@ -198,7 +198,7 @@ int api_getVersion(struct Serial *serial, const jsmntok_t *json)
         json_objStartString(serial,"ver");
         json_string(serial, "name", DEVICE_NAME, 1);
         json_string(serial, "fname", FRIENDLY_DEVICE_NAME, 1);
-        rc_version_info(serial, 0, "major", "minor", "bufix");
+        rc_version_info(serial, 0, "major", "minor", "bugfix");
         json_objEnd(serial, 0);
         json_objEnd(serial, 0);
 
@@ -1672,8 +1672,8 @@ int api_setScript(struct Serial *serial, const jsmntok_t *json)
 
 int api_runScript(struct Serial *serial, const jsmntok_t *json)
 {
-        terminate_lua();
-        initialize_lua();
+        lua_task_stop();
+        lua_task_start();
         return API_SUCCESS;
 }
 #endif /* LUA_SUPPORT */

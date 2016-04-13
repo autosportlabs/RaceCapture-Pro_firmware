@@ -35,7 +35,9 @@
 #include "task.h"
 #include "usart_device.h"
 
-#define UART_QUEUE_LEN 	1024
+#define UART_RX_QUEUE_LEN 	256
+#define UART_TX_QUEUE_LEN 	64
+
 #define GPS_BUFFER_SIZE		132
 
 #define UART_WIRELESS_IRQ_PRIORITY 	7
@@ -275,7 +277,7 @@ static bool init_usart_serial(const uart_id_t uart_id, USART_TypeDef *usart,
                               const serial_id_t serial_id, const char *name)
 {
         struct Serial *s =
-                serial_create(name, UART_QUEUE_LEN, UART_QUEUE_LEN,
+                serial_create(name, UART_TX_QUEUE_LEN, UART_RX_QUEUE_LEN,
                               _config_cb, usart, _char_tx_cb, usart);
         if (!s) {
                 pr_error("[USART] Serial Malloc failure!\r\n");

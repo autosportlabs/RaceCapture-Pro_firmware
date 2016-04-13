@@ -24,25 +24,31 @@
 
 #include "cpp_guard.h"
 #include "serial.h"
-
+#include <stdbool.h>
 #include <stddef.h>
 
 CPP_GUARD_BEGIN
 
-void startLuaTask(int priority);
+struct lua_runtime_info {
+        int top_index;
+        size_t mem_usage_kb;
+};
 
-void* getLua(void);
+void lua_task_run_interactive_cmd(struct Serial *serial, const char* cmd);
 
-/**
- * @return The amount of RAM (bytes) currently being used by LUA.
- */
-size_t get_lua_mem_size();
+struct lua_runtime_info lua_task_get_runtime_info();
 
-size_t set_ontick_freq(const size_t freq);
-size_t get_ontick_freq();
-void initialize_lua();
-void terminate_lua();
-void run_lua_interactive_cmd(struct Serial *serial, const char* cmd);
+size_t lua_task_get_mem_size();
+
+size_t lua_task_set_callback_freq(const size_t freq);
+
+size_t lua_task_get_callback_freq();
+
+bool lua_task_stop();
+
+bool lua_task_start();
+
+bool lua_task_init(const int priority);
 
 CPP_GUARD_END
 

@@ -62,19 +62,15 @@ void ShowStats(struct Serial *serial, unsigned int argc, char **argv)
     put_crlf(serial);
 
 #if defined(LUA_SUPPORT)
-    // LUA Info
+    struct lua_runtime_info ri = lua_task_get_runtime_info();
     putHeader(serial, "Lua Info");
 
-    //TODO: this was done for unit testing. fix when Lua runtime is part of unit testing framework
-    lua_State *L = (lua_State *) getLua();
-    lua_gc(L, LUA_GCCOLLECT, 0);
-
     putDataRowHeader(serial, "Lua Top");
-    put_int(serial, lua_gettop(L));
+    put_int(serial, ri.top_index);
     put_crlf(serial);
 
     putDataRowHeader(serial, "Lua Memory Usage (KB)");
-    put_int(serial, lua_gc(L, LUA_GCCOUNT, 0));
+    put_int(serial, ri.mem_usage_kb);
     put_crlf(serial);
 #endif /* LUA_SUPPORT */
 
