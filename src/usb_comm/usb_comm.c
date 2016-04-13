@@ -27,8 +27,8 @@
 #include "task.h"
 #include "usb_comm.h"
 
-#define mainUSB_COMM_STACK	512
-#define BUFFER_SIZE	256
+#define mainUSB_COMM_STACK	256
+#define BUFFER_SIZE		256
 
 static char lineBuffer[BUFFER_SIZE];
 static struct Serial *serial;
