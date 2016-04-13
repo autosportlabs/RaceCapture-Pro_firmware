@@ -32,76 +32,11 @@ CPP_GUARD_BEGIN
 
 int usart_device_init();
 
-void usart_device_config(uint8_t port, uint8_t bits, uint8_t parity, uint8_t stopbits, uint32_t baud);
+struct Serial* usart_device_get_serial(const uart_id_t port);
 
-int usart_device_init_serial(Serial *serial, uart_id_t id);
-
-void usart_device_init_0(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud);
-
-void usart_device_init_1(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud);
-
-void usart_device_init_2(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud);
-
-void usart_device_init_3(unsigned int bits, unsigned int parity, unsigned int stopBits, unsigned int baud);
-
-void usart0_flush(void);
-
-char usart0_getchar();
-
-int usart0_getcharWait(char *c, size_t delay);
-
-void usart0_putchar(char c);
-
-void usart0_puts (const char* s );
-
-int usart0_readLine(char *s, int len);
-
-int usart0_readLineWait(char *s, int len, size_t delay);
-
-
-void usart1_flush(void);
-
-char usart1_getchar();
-
-int usart1_getcharWait(char *c, size_t delay);
-
-void usart1_putchar(char c);
-
-void usart1_puts (const char* s );
-
-int usart1_readLine(char *s, int len);
-
-int usart1_readLineWait(char *s, int len, size_t delay);
-
-
-void usart2_flush(void);
-
-char usart2_getchar();
-
-int usart2_getcharWait(char *c, size_t delay);
-
-void usart2_putchar(char c);
-
-void usart2_puts (const char* s );
-
-int usart2_readLine(char *s, int len);
-
-int usart2_readLineWait(char *s, int len, size_t delay);
-
-
-void usart3_flush(void);
-
-char usart3_getchar();
-
-int usart3_getcharWait(char *c, size_t delay);
-
-void usart3_putchar(char c);
-
-void usart3_puts (const char* s );
-
-int usart3_readLine(char *s, int len);
-
-int usart3_readLineWait(char *s, int len, size_t delay);
+void usart_device_config(const uart_id_t id, const size_t bits,
+                         const size_t parity, const size_t stop_bits,
+                         const size_t baud);
 
 CPP_GUARD_END
 

@@ -28,7 +28,7 @@
 
 CPP_GUARD_BEGIN
 
-void TestSDWrite(Serial *serial, int lines,int doFlush, int quiet);
+void TestSDWrite(struct Serial *serial, int lines,int doFlush, int quiet);
 void InitFSHardware(void);
 int InitFS();
 int UnmountFS();

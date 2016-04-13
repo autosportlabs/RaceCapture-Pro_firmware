@@ -310,7 +310,7 @@ static lua_State* setup_lua_state()
         return ls;
 }
 
-void lua_task_run_interactive_cmd(Serial *serial, const char* cmd)
+void lua_task_run_interactive_cmd(struct Serial *serial, const char* cmd)
 {
         if (!is_init(false) || !is_runtime_active()) {
                 serial_put_s(serial, "error: LUA not initialized or active.");
@@ -343,7 +343,7 @@ void lua_task_run_interactive_cmd(Serial *serial, const char* cmd)
         if (0 != result) {
                 serial_put_s(serial, "error: (");
                 serial_put_s(serial, lua_tostring(ls, -1));
-                serial_put_s(serial, ")");
+                serial_put_c(serial, ')');
                 put_crlf(serial);
                 lua_pop(ls, 1);
         }

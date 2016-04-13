@@ -92,7 +92,9 @@ enum log_level {
 #define WARNING_LEVEL	(get_log_level() >= WARNING)
 #define TRACE_LEVEL 	(get_log_level() >= TRACE)
 
-size_t read_log_to_serial(Serial *s, int escape);
+size_t read_log_to_serial(struct Serial *s, int escape);
+int writek(const char *msg);
+int writek_int(int value);
 int printk(enum log_level level, const char *msg);
 int printk_bool_msg(enum log_level level, const char *msg, const bool value);
 int printk_char(enum log_level level, const char c);

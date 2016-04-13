@@ -266,9 +266,10 @@ static void resetTelemetryConfig(TelemetryConfig *cfg)
 
 static void resetConnectivityConfig(ConnectivityConfig *cfg)
 {
-    resetBluetoothConfig(&cfg->bluetoothConfig);
-    resetCellularConfig(&cfg->cellularConfig);
-    resetTelemetryConfig(&cfg->telemetryConfig);
+        resetBluetoothConfig(&cfg->bluetoothConfig);
+        resetCellularConfig(&cfg->cellularConfig);
+        resetTelemetryConfig(&cfg->telemetryConfig);
+        wifi_reset_config(&cfg->wifi);
 }
 
 static void reset_logging_config(struct logging_config *lc)

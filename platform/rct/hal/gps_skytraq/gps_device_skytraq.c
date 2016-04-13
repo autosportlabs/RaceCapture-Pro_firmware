@@ -215,28 +215,28 @@ static uint8_t calculateChecksum(GpsMessage * msg)
     return checksum;
 }
 
-static void txGpsMessage(GpsMessage * msg, Serial * serial)
+static void txGpsMessage(GpsMessage * msg, struct Serial * serial)
 {
-    serial->put_c(0xA0);
-    serial->put_c(0xA1);
+        serial_put_c(serial, 0xA0);
+        serial_put_c(serial, 0xA1);
 
-    uint16_t payloadLength = msg->payloadLength;
-    serial->put_c((uint8_t) payloadLength >> 8);
-    serial->put_c((uint8_t) payloadLength & 0xFF);
+        uint16_t payloadLength = msg->payloadLength;
+        serial_put_c(serial, (uint8_t) payloadLength >> 8);
+        serial_put_c(serial, (uint8_t) payloadLength & 0xFF);
 
-    uint8_t *payload = msg->payload;
-    while (payloadLength--) {
-        serial->put_c(*(payload++));
-    }
+        uint8_t *payload = msg->payload;
+        while (payloadLength--) {
+                serial_put_c(serial, *(payload++));
+        }
 
-    serial->put_c(msg->checksum);
+        serial_put_c(serial, msg->checksum);
 
-    serial->put_c(0x0D);
-    serial->put_c(0x0A);
+        serial_put_c(serial, 0x0D);
+        serial_put_c(serial, 0x0A);
 }
 
 /* TODO: Comment this epic blob-o-code */
-static gps_msg_result_t rxGpsMessage(GpsMessage * msg, Serial * serial,
+static gps_msg_result_t rxGpsMessage(GpsMessage * msg, struct Serial * serial,
                                      uint8_t expectedMessageId)
 {
 
@@ -310,7 +310,7 @@ static gps_msg_result_t rxGpsMessage(GpsMessage * msg, Serial * serial,
     return result;
 }
 
-static void sendSetFactoryDefaults(GpsMessage * gpsMsg, Serial * serial)
+static void sendSetFactoryDefaults(GpsMessage * gpsMsg, struct Serial * serial)
 {
     gpsMsg->messageId = MSG_ID_SET_FACTORY_DEFAULTS;
     gpsMsg->setFactoryDefaultsMsg.type = 0x01;
@@ -318,7 +318,7 @@ static void sendSetFactoryDefaults(GpsMessage * gpsMsg, Serial * serial)
     txGpsMessage(gpsMsg, serial);
 }
 
-static void sendQuerySwVersion(GpsMessage * gpsMsg, Serial * serial)
+static void sendQuerySwVersion(GpsMessage * gpsMsg, struct Serial * serial)
 {
     gpsMsg->messageId = MSG_ID_QUERY_SW_VERSION;
     gpsMsg->querySoftwareVersionMsg.softwareType = 0x00;
@@ -327,7 +327,7 @@ static void sendQuerySwVersion(GpsMessage * gpsMsg, Serial * serial)
     txGpsMessage(gpsMsg, serial);
 }
 
-static void sendQueryPositionUpdateRate(GpsMessage * gpsMsg, Serial * serial)
+static void sendQueryPositionUpdateRate(GpsMessage * gpsMsg, struct Serial * serial)
 {
     gpsMsg->messageId = MSG_ID_QUERY_POSITION_UPDATE_RATE;
     gpsMsg->payloadLength = sizeof(QueryPositionUpdateRate);
@@ -335,7 +335,7 @@ static void sendQueryPositionUpdateRate(GpsMessage * gpsMsg, Serial * serial)
     txGpsMessage(gpsMsg, serial);
 }
 
-static void sendConfigureSerialPort(GpsMessage * gpsMsg, Serial * serial,
+static void sendConfigureSerialPort(GpsMessage * gpsMsg, struct Serial * serial,
                                     uint8_t baudRateCode)
 {
     gpsMsg->messageId = MSG_ID_CONFIGURE_SERIAL_PORT;
@@ -347,7 +347,7 @@ static void sendConfigureSerialPort(GpsMessage * gpsMsg, Serial * serial,
     txGpsMessage(gpsMsg, serial);
 }
 
-static void sendDisableNmea(GpsMessage *gpsMsg, Serial *serial)
+static void sendDisableNmea(GpsMessage *gpsMsg, struct Serial *serial)
 {
     gpsMsg->messageId = MSG_ID_CONFIGURE_NMEA_MESSAGE;
     gpsMsg->configureNmeaMessage.GGA_interval = 0;
@@ -363,7 +363,7 @@ static void sendDisableNmea(GpsMessage *gpsMsg, Serial *serial)
     txGpsMessage(gpsMsg, serial);
 }
 
-static void sendConfigureNmea(GpsMessage *gpsMsg, Serial *serial)
+static void sendConfigureNmea(GpsMessage *gpsMsg, struct Serial *serial)
 {
     gpsMsg->messageId = MSG_ID_CONFIGURE_NMEA_MESSAGE;
     gpsMsg->configureNmeaMessage.GGA_interval = GGA_INTERVAL;
@@ -379,7 +379,7 @@ static void sendConfigureNmea(GpsMessage *gpsMsg, Serial *serial)
     txGpsMessage(gpsMsg, serial);
 }
 
-static void sendConfigureGnssNavigationMode(GpsMessage *gpsMsg, Serial *serial, uint8_t navigationMode)
+static void sendConfigureGnssNavigationMode(GpsMessage *gpsMsg, struct Serial *serial, uint8_t navigationMode)
 {
     gpsMsg->messageId = MSG_ID_CONFIGURE_GNSS_NAVIGATION_MODE;
     gpsMsg->configureGnssNavigationMode.messageSubId = MSG_SUBID_CONFIGURE_GNSS_NAVIGATION_MODE;
@@ -390,7 +390,7 @@ static void sendConfigureGnssNavigationMode(GpsMessage *gpsMsg, Serial *serial, 
     txGpsMessage(gpsMsg, serial);
 }
 
-static void sendConfigureMessageType(GpsMessage *gpsMsg, Serial *serial, uint8_t messageType)
+static void sendConfigureMessageType(GpsMessage *gpsMsg, struct Serial *serial, uint8_t messageType)
 {
     gpsMsg->messageId = MSG_ID_CONFIGURE_MESSAGE_TYPE;
     gpsMsg->configureMessageType.type = messageType;
@@ -400,7 +400,7 @@ static void sendConfigureMessageType(GpsMessage *gpsMsg, Serial *serial, uint8_t
     txGpsMessage(gpsMsg, serial);
 }
 
-static void sendConfigureNavigationDataMessageInterval(GpsMessage *gpsMsg, Serial *serial, uint8_t interval)
+static void sendConfigureNavigationDataMessageInterval(GpsMessage *gpsMsg, struct Serial *serial, uint8_t interval)
 {
     gpsMsg->messageId = MSG_ID_CONFIGURE_NAVIGATION_DATA_MESSAGE_INTERVAL;
     gpsMsg->configureNavigationDataMessageInterval.navigationMessageInterval = interval;
@@ -410,7 +410,7 @@ static void sendConfigureNavigationDataMessageInterval(GpsMessage *gpsMsg, Seria
     txGpsMessage(gpsMsg, serial);
 }
 
-static void sendConfigurePositionUpdateRate(GpsMessage *gpsMsg, Serial *serial, uint8_t updateRate)
+static void sendConfigurePositionUpdateRate(GpsMessage *gpsMsg, struct Serial *serial, uint8_t updateRate)
 {
     gpsMsg->messageId = MSG_ID_CONFIGURE_POSITION_UPDATE_RATE;
     gpsMsg->configurePositionUpdateRate.rate = updateRate;
@@ -420,14 +420,14 @@ static void sendConfigurePositionUpdateRate(GpsMessage *gpsMsg, Serial *serial, 
     txGpsMessage(gpsMsg, serial);
 }
 
-uint32_t detectGpsBaudRate(GpsMessage *gpsMsg, Serial *serial)
+uint32_t detectGpsBaudRate(GpsMessage *gpsMsg, struct Serial *serial)
 {
     BaudRateCodes baud_rates[BAUD_RATE_COUNT] = BAUD_RATES;
 
     for (size_t i = 0; i < BAUD_RATE_COUNT; i++) {
         uint32_t baudRate = baud_rates[i].baud;
         pr_info_int_msg("GPS: probing baud rate: ", baudRate);
-        configure_serial(SERIAL_GPS, 8, 0, 1, baudRate);
+        serial_config(serial, 8, 0, 1, baudRate);
         sendQuerySwVersion(gpsMsg, serial);
         if (rxGpsMessage(gpsMsg, serial, MSG_ID_SW_VERSION) ==
             GPS_MSG_SUCCESS) {
@@ -438,15 +438,15 @@ uint32_t detectGpsBaudRate(GpsMessage *gpsMsg, Serial *serial)
 }
 
 static gps_cmd_result_t attemptFactoryDefaults(GpsMessage * gpsMsg,
-        Serial * serial)
+        struct Serial * serial)
 {
     BaudRateCodes baud_rates[BAUD_RATE_COUNT] = BAUD_RATES;
 
     for (size_t i = 0; i < BAUD_RATE_COUNT; i++) {
         uint32_t baudRate = baud_rates[i].baud;
         pr_info_int_msg("GPS: attempting factory defaults at: ", baudRate);
-        configure_serial(SERIAL_GPS, 8, 0, 1, baudRate);
-        serial->flush();
+        serial_config(serial, 8, 0, 1, baudRate);
+        serial_flush(serial);
         sendSetFactoryDefaults(gpsMsg, serial);
         if ((rxGpsMessage(gpsMsg, serial, MSG_ID_ACK) == GPS_MSG_SUCCESS) &&
             (gpsMsg->ackMsg.messageId == MSG_ID_SET_FACTORY_DEFAULTS)) {
@@ -468,7 +468,7 @@ static uint8_t getBaudRateCode(uint32_t baudRate)
     return 0;
 }
 
-static gps_cmd_result_t configureBaudRate(GpsMessage * gpsMsg, Serial * serial,
+static gps_cmd_result_t configureBaudRate(GpsMessage * gpsMsg, struct Serial * serial,
         uint32_t targetBaudRate)
 {
     pr_info_int_msg("GPS: Configuring baud rate to: ", targetBaudRate);
@@ -486,7 +486,7 @@ static gps_cmd_result_t configureBaudRate(GpsMessage * gpsMsg, Serial * serial,
 }
 
 static gps_cmd_result_t configureNmeaMessages(GpsMessage * gpsMsg,
-        Serial * serial)
+        struct Serial * serial)
 {
     pr_info("GPS: Configuring NMEA messages: ");
 
@@ -504,7 +504,7 @@ static gps_cmd_result_t configureNmeaMessages(GpsMessage * gpsMsg,
     return result;
 }
 
-static gps_cmd_result_t configureGnssNavigationMode(GpsMessage *gpsMsg, Serial *serial)
+static gps_cmd_result_t configureGnssNavigationMode(GpsMessage *gpsMsg, struct Serial *serial)
 {
     pr_info("GPS: Configuring Gnss Navigation Mode: ");
 
@@ -517,7 +517,7 @@ static gps_cmd_result_t configureGnssNavigationMode(GpsMessage *gpsMsg, Serial *
     return result;
 }
 
-static gps_cmd_result_t disableNmeaMessages(GpsMessage *gpsMsg, Serial *serial)
+static gps_cmd_result_t disableNmeaMessages(GpsMessage *gpsMsg, struct Serial *serial)
 {
     pr_info("GPS: Disable NMEA messages: ");
 
@@ -530,7 +530,7 @@ static gps_cmd_result_t disableNmeaMessages(GpsMessage *gpsMsg, Serial *serial)
     return result;
 }
 
-static gps_cmd_result_t configureMessageType(GpsMessage *gpsMsg, Serial *serial)
+static gps_cmd_result_t configureMessageType(GpsMessage *gpsMsg, struct Serial *serial)
 {
     pr_info("GPS: configure message type: ");
     gps_cmd_result_t result = GPS_COMMAND_FAIL;
@@ -542,7 +542,7 @@ static gps_cmd_result_t configureMessageType(GpsMessage *gpsMsg, Serial *serial)
     return result;
 }
 
-static gps_cmd_result_t configureNavigationDataMessageInterval(GpsMessage *gpsMsg, Serial *serial)
+static gps_cmd_result_t configureNavigationDataMessageInterval(GpsMessage *gpsMsg, struct Serial *serial)
 {
     pr_info("GPS: configure navigation data message interval: ");
     gps_cmd_result_t result = GPS_COMMAND_FAIL;
@@ -554,7 +554,7 @@ static gps_cmd_result_t configureNavigationDataMessageInterval(GpsMessage *gpsMs
     return result;
 }
 
-static uint8_t queryPositionUpdateRate(GpsMessage *gpsMsg, Serial *serial)
+static uint8_t queryPositionUpdateRate(GpsMessage *gpsMsg, struct Serial *serial)
 {
     uint8_t updateRate = 0;
     sendQueryPositionUpdateRate(gpsMsg, serial);
@@ -568,7 +568,7 @@ static uint8_t queryPositionUpdateRate(GpsMessage *gpsMsg, Serial *serial)
 }
 
 static gps_cmd_result_t configureUpdateRate(GpsMessage * gpsMsg,
-        Serial * serial,
+        struct Serial * serial,
         uint8_t targetUpdateRate)
 {
     gps_cmd_result_t result = GPS_COMMAND_FAIL;
@@ -624,7 +624,7 @@ static void GPS_init_reset_line(void)
 	GPIO_SetBits(GPIOB, GPIO_Pin_2);
 }
 
-gps_status_t GPS_device_init(uint8_t sampleRate, Serial *serial)
+gps_status_t GPS_device_init(uint8_t sampleRate, struct Serial *serial)
 {
 	GPS_init_reset_line();
 
@@ -643,10 +643,8 @@ gps_status_t GPS_device_init(uint8_t sampleRate, Serial *serial)
                     break;
                 }
 
-                configure_serial(SERIAL_GPS, 8, 0, 1,
-                                 TARGET_BAUD_RATE);
-
-                serial->flush();
+                serial_config(serial, 8, 0, 1, TARGET_BAUD_RATE);
+                serial_flush(serial);
 
                 uint8_t targetUpdateRate = getTargetUpdateRate(sampleRate);
                 uint8_t currentUpdateRate = queryPositionUpdateRate(&gpsMsg, serial);
@@ -701,7 +699,7 @@ gps_status_t GPS_device_init(uint8_t sampleRate, Serial *serial)
     return gps_init_status;
 }
 
-gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, Serial *serial)
+gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, struct Serial *serial)
 {
     gps_msg_result_t result = rxGpsMessage(&gpsMsg, serial, MSG_ID_NAVIGATION_DATA_MESSAGE);
 

@@ -53,7 +53,7 @@
 #define configGENERATE_RUN_TIME_STATS	0
 #define configUSE_STATS_FORMATTING_FUNCTIONS 1
 #define configUSE_RECURSIVE_MUTEXES	1
-#define configUSE_MALLOC_FAILED_HOOK	0
+#define configUSE_MALLOC_FAILED_HOOK	1
 #define configUSE_APPLICATION_TASK_TAG	0
 
 #if defined(_DEBUG)

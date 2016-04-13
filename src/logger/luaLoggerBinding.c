@@ -372,23 +372,26 @@ int Lua_InitSerial(lua_State *L)
 
     switch(params) {
     case 5:
-        stop_bits = lua_tointeger(L, 5);
+            stop_bits = lua_tointeger(L, 5);
     case 4:
-        parity = lua_tointeger(L, 4);
+            parity = lua_tointeger(L, 4);
     case 3:
-        bits = lua_tointeger(L, 3);
+            bits = lua_tointeger(L, 3);
     case 2:
-        baud = lua_tointeger(L, 2);
+            baud = lua_tointeger(L, 2);
     case 1:
-        port = lua_tointeger(L, 1);
+            port = lua_tointeger(L, 1);
     case 0:
-        configure_serial(port, bits, parity, stop_bits, baud);
-        lua_pushnumber(L, 1);
-        break;
+            ;
+            struct Serial *s = serial_device_get(port);
+            serial_config(s, bits, parity, stop_bits, baud);
+            lua_pushnumber(L, 1);
+            break;
     default:
-        lua_pushnumber(L, -1);
-        break;
+            lua_pushnumber(L, -1);
+            break;
     }
+
     return 1;
 }
 
@@ -411,10 +414,10 @@ int Lua_ReadSerialChar(lua_State *L)
 
     serial_id_t port = lua_tointeger(L,1);
     size_t timeout = params >= 2 ? lua_tointeger(L, 2) : DEFAULT_SERIAL_TIMEOUT;
-    Serial *serial = get_serial(port);
+    struct Serial *serial = serial_device_get(port);
     if (serial) {
         char c;
-        if (serial->get_c_wait(&c, timeout)) {
+        if (serial_get_c_wait(serial, &c, timeout)) {
             lua_pushnumber(L, c);
             return 1;
         }
@@ -441,9 +444,10 @@ int Lua_ReadSerialLine(lua_State *L)
 
     int serialPort = lua_tointeger(L,1);
     size_t timeout = params >= 2 ? lua_tointeger(L, 2) : DEFAULT_SERIAL_TIMEOUT;
-    Serial *serial = get_serial(serialPort);
+    struct Serial *serial = serial_device_get(serialPort);
     if (serial) {
-        serial->get_line_wait(g_tempBuffer, TEMP_BUFFER_LEN, timeout);
+            serial_get_line_wait(serial, g_tempBuffer,
+                                 TEMP_BUFFER_LEN, timeout);
         lua_pushstring(L,g_tempBuffer);
         return 1;
     }
@@ -467,11 +471,11 @@ int Lua_WriteSerialLine(lua_State *L)
 {
     if (lua_gettop(L) >= 2) {
         int serialPort = lua_tointeger(L,1);
-        Serial *serial = get_serial(serialPort);
+        struct Serial *serial = serial_device_get(serialPort);
         if (serial) {
             const char * data = lua_tostring(L, 2);
-            serial->put_s(data);
-            serial->put_s("\n");
+            serial_put_s(serial, data);
+            serial_put_c(serial, '\n');
         }
     }
     return 0;
@@ -494,10 +498,10 @@ int Lua_WriteSerialChar(lua_State *L)
 {
     if (lua_gettop(L) >= 2) {
         int serialPort = lua_tointeger(L,1);
-        Serial *serial = get_serial(serialPort);
+        struct Serial *serial = serial_device_get(serialPort);
         if (serial) {
             char c = (char)lua_tonumber(L, 2);
-            serial->put_c((char)c);
+            serial_put_c(serial, c);
         }
     }
     return 0;

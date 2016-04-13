@@ -35,7 +35,7 @@
 static enum log_level curr_level = INFO;
 static struct ts_ring_buff *log_buff;
 
-size_t read_log_to_serial(Serial *s, int escape)
+size_t read_log_to_serial(struct Serial *s, int escape)
 {
         char buff[16];
         size_t read = 0;
@@ -51,7 +51,7 @@ size_t read_log_to_serial(Serial *s, int escape)
                         if (escape) {
                                 put_escapedString(s, &buff[i],1);
                         } else {
-                                s->put_c(buff[i]);
+                                serial_put_c(s, buff[i]);
                         }
         }
 

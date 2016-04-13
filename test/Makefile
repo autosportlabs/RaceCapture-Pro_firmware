@@ -6,7 +6,6 @@ RCP_BASE=..
 RCP_SRC=$(RCP_BASE)/src
 RCP_INC=$(RCP_BASE)/include
 MK2_SRC=$(RCP_BASE)/platform/mk2
-MESSAGING_SRC=$(RCP_SRC)/messaging
 COMMAND_SRC=$(RCP_SRC)/command
 MOCK_DIR=logger_mock
 GPS_DIR=gps
@@ -32,7 +31,9 @@ INCLUDES = \
 -I$(RCP_INC)/channels \
 -I$(RCP_INC)/virtual_channel \
 -I$(RCP_INC)/tracks \
+-I$(RCP_INC)/tasks \
 -I$(RCP_INC)/messaging \
+-I$(RCP_INC)/modem \
 -I$(RCP_INC)/lua \
 -I$(RCP_INC)/command \
 -I$(RCP_INC)/predictive_timer \
@@ -40,6 +41,7 @@ INCLUDES = \
 -I$(RCP_INC)/util \
 -I$(RCP_INC)/serial \
 -I$(RCP_INC)/devices \
+-I$(RCP_INC)/drivers \
 -I$(RCP_INC) \
 -I$(RCP_INC)/usart \
 -I$(RCP_INC)/usb_comm \
@@ -66,6 +68,7 @@ INCLUDES = \
 -I$(RCP_SRC)/devices \
 -I$(RCP_SRC)/lap_stats \
 -I$(RCP_SRC)/logger \
+-I$(RCP_SRC)/modem \
 
 # set up compiler and options
 CPP = g++
@@ -105,6 +108,7 @@ $(GPS_DIR)/gps_test.cpp \
 $(LAP_STATS_DIR)/LapStatsTest.cpp \
 $(UTIL_DIR)/atonum_test.cpp \
 $(UTIL_DIR)/numtoa_test.cpp \
+AtTest.cpp \
 CellularApiStatusKeysTest.cpp \
 ChannelConfigTest.cpp \
 PredictiveTimeTest2.cpp \
@@ -136,6 +140,7 @@ $(MOCK_DIR)/imu_device_mock.c \
 $(MOCK_DIR)/loggerNotifications_mock.c \
 $(MOCK_DIR)/luaTask_mock.c \
 $(MOCK_DIR)/memory_device_mock.c \
+$(MOCK_DIR)/messaging.c \
 $(MOCK_DIR)/sdcard_mock.c \
 $(MOCK_DIR)/timer_device_mock.c \
 $(MOCK_DIR)/watchdog_device_mock.c \
@@ -150,8 +155,10 @@ $(RCP_SRC)/auto_config/auto_track.c \
 $(RCP_SRC)/cpu/cpu.c \
 $(RCP_SRC)/devices/bluetooth.c \
 $(RCP_SRC)/devices/cellular.c \
+$(RCP_SRC)/devices/esp8266.c \
 $(RCP_SRC)/devices/sara_u280.c \
 $(RCP_SRC)/devices/sim900.c \
+$(RCP_SRC)/drivers/esp8266_drv.c \
 $(RCP_SRC)/filter/filter.c \
 $(RCP_SRC)/gps/dateTime.c \
 $(RCP_SRC)/gps/geoCircle.c \
@@ -175,11 +182,15 @@ $(RCP_SRC)/logging/printk.c \
 $(RCP_SRC)/lua/luaScript.c \
 $(RCP_SRC)/memory/memory.c \
 $(RCP_SRC)/predictive_timer/predictive_timer_2.c \
+$(RCP_SRC)/serial/ram_serial.c \
+$(RCP_SRC)/serial/rx_buff.c \
 $(RCP_SRC)/serial/serial_buffer.c \
 $(RCP_SRC)/serial/serial.c \
+$(RCP_SRC)/serial/serial_device.c \
 $(RCP_SRC)/timer/timer.c \
 $(RCP_SRC)/timer/timer_config.c \
 $(RCP_SRC)/tracks/tracks.c \
+$(RCP_SRC)/tasks/wifi.c \
 $(RCP_SRC)/usart/usart.c \
 $(RCP_SRC)/util/linear_interpolate.c \
 $(RCP_SRC)/util/mod_string.c \
@@ -187,6 +198,7 @@ $(RCP_SRC)/util/modp_atonum.c \
 $(RCP_SRC)/util/modp_numtoa.c \
 $(RCP_SRC)/util/panic.c \
 $(RCP_SRC)/util/ring_buffer.c \
+$(RCP_SRC)/util/str_util.c \
 $(RCP_SRC)/util/ts_ring_buff.c \
 $(RCP_SRC)/util/taskUtil.c \
 $(RCP_SRC)/virtual_channel/virtual_channel.c \
@@ -200,6 +212,7 @@ SIM_C_SRC = \
 $(RCP_SRC)/devices/cellular_api_status_keys.c \
 $(RCP_SRC)/lap_stats/lap_stats.c \
 $(RCP_SRC)/logger/channel_config.c \
+$(RCP_SRC)/modem/at.c \
 
 OBJ_TEST = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $(basename $(SRC) $(T_SRC) RCPTest.cpp))))
 OBJ_SIM = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $(basename $(SRC) $(SIM_C_SRC) RCPSim.cpp))))
