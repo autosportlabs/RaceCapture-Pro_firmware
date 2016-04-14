@@ -114,7 +114,7 @@ int USB_CDC_is_initialized()
  * Example, which is covered under the V2 Liberty License:
  * http://www.st.com/software_license_agreement_liberty_v2
  */
-void usb_handle_transfer(void)
+static void usb_handle_transfer(void)
 {
         portBASE_TYPE hpta;
         xQueueHandle queue = serial_get_tx_queue(usb_state.serial);
@@ -122,7 +122,7 @@ void usb_handle_transfer(void)
         size_t len;
 
         for (len = 0; len < VIRTUAL_COM_PORT_DATA_SIZE; ++len)
-                if (!xQueueSendFromISR(queue, buff + len, &hpta))
+                if (!xQueueReceiveFromISR(queue, buff + len, &hpta))
                         break;
 
         /* Check if we actually have something to send */
