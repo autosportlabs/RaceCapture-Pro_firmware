@@ -106,6 +106,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/PWM/PWM.c \
 			$(RCP_SRC)/logging/printk.c \
 			$(RCP_SRC)/util/ring_buffer.c \
+			$(RCP_SRC)/util/ts_ring_buff.c \
 			$(RCP_SRC)/virtual_channel/virtual_channel.c \
 			$(RCP_SRC)/memory/memory.c \
 			$(RCP_SRC)/util/linear_interpolate.c \

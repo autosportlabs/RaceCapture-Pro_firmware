@@ -20,10 +20,11 @@
  */
 
 #include "capabilities.h"
+#include "macros.h"
 #include "mod_string.h"
 #include "modp_numtoa.h"
 #include "printk.h"
-#include "ring_buffer.h"
+#include "ts_ring_buff.h"
 #include "serial.h"
 
 #include <stdbool.h>
@@ -32,23 +33,20 @@
 #define IF_LEVEL_GT_CURR_LEVEL_RET_ZERO(l) if ((l) > curr_level) return 0
 
 static enum log_level curr_level = INFO;
-static char _log_buffer[LOG_BUFFER_SIZE];
-
-static struct ring_buff log_buff = {
-        .buf = _log_buffer,
-        .size = LOG_BUFFER_SIZE,
-        .head = _log_buffer,
-        .tail = _log_buffer
-};
-static struct ring_buff * const lbp = &log_buff;
+static struct ts_ring_buff *log_buff;
 
 size_t read_log_to_serial(Serial *s, int escape)
 {
         char buff[16];
-        size_t to_read = get_used(lbp);
+        size_t read = 0;
 
-        while(has_data(lbp)) {
-                int read = get_data(lbp, &buff, sizeof(buff));
+        while(true){
+                size_t bytes = ts_ring_buff_get(log_buff, &buff,
+                                                ARRAY_LEN(buff));
+                if (0 == bytes)
+                        break;
+
+                read += bytes;
                 for(int i = 0; i < read; i++)
                         if (escape) {
                                 put_escapedString(s, &buff[i],1);
@@ -57,34 +55,18 @@ size_t read_log_to_serial(Serial *s, int escape)
                         }
         }
 
-        return to_read;
-}
-
-size_t write_to_log_buff(const char *msg, const size_t size)
-{
-        if (0 == size)
-                return 0;
-
-        size_t data_written = put_data(lbp, msg, size);
-
-        if (data_written == size)
-                return data_written;
-
-        // else if here we need to dump some log data.
-        // XXX: Log this?
-        int size_diff = size - data_written;
-        dump_data(&log_buff, size_diff);
-        data_written += put_data(lbp, msg + data_written, size_diff);
-
-        return data_written;
+        return read;
 }
 
 int writek(const char *msg)
 {
+        if (!log_buff)
+                log_buff = ts_ring_buff_create(LOG_BUFFER_SIZE);
+
         if (NULL == msg)
                 return 0;
 
-        return write_to_log_buff(msg, strlen(msg));
+        return ts_ring_buff_put(log_buff, msg, strlen(msg));
 }
 
 int writek_crlf()
@@ -94,7 +76,7 @@ int writek_crlf()
 
 int writek_char(char c)
 {
-        return write_to_log_buff(&c, 1);
+        return ts_ring_buff_put(log_buff, &c, 1);
 }
 
 int writek_int(int value)
