@@ -182,7 +182,6 @@ $(RCP_SRC)/logging/printk.c \
 $(RCP_SRC)/lua/luaScript.c \
 $(RCP_SRC)/memory/memory.c \
 $(RCP_SRC)/predictive_timer/predictive_timer_2.c \
-$(RCP_SRC)/serial/ram_serial.c \
 $(RCP_SRC)/serial/rx_buff.c \
 $(RCP_SRC)/serial/serial_buffer.c \
 $(RCP_SRC)/serial/serial.c \
