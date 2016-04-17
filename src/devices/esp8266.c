@@ -676,9 +676,16 @@ struct tx_info {
 };
 
 /**
- * This call back is designed to handle two types of response (since that is the
- * way this wonkey device works).  So based on the state and reply we figure out
- * how to handle things.
+ * This call back is special in that it handle two types of response.
+ * Since the send_data command for the esp8266 is a two step command,
+ * this method needs to be able to handle both reply types from the
+ * Esp8266 modem.  The first reply type should be AT_RSP_STATUS_OK,
+ * which means we are ready to send the message.  At this point we
+ * put the message on the serial line and return `true`, indicating
+ * that there are more replies to be had.  When the entierty of the
+ * message has been sent, the modem will return AT_RSP_STATUS_SEND_OK
+ * and we will be done.  Otherwise it may return some other status, at
+ * which point we will deem the attempted failed and escape.
  */
 static bool send_data_cb(struct at_rsp *rsp, void *up)
 {
@@ -748,7 +755,9 @@ bool esp8266_send_data(const int chan_id, struct Serial *serial,
         /*
          * Set the state before beginning the command.  This is a 2 part
          * command with a fair bit of data, thus we need to use some
-         * internal state to handle it all.
+         * internal state to handle it all.  This data is free'd at the
+         * end of the command in the send_data_cb above when the command
+         * is done.
          */
         struct tx_info *ti = portMalloc(sizeof(struct tx_info));
         if (!ti) {

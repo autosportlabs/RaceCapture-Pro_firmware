@@ -249,7 +249,8 @@ CFLAGS += $(VERSION_CFLAGS)
 CFLAGS += $(BOARD_DEFINES)
 CFLAGS += -fno-builtin-sprintf
 CFLAGS += $(addprefix -I,$(inc-y))
-CFLAGS += -O0 -g
+CFLAGS += -Os
+#CFLAGS += -g
 LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld
 LDFLAGS += -Wl,-cref,-u,Reset_Handler,-Map=$(OUTDIR)/main.map,--gc-sections
 AFLAGS := $(CFLAGS)

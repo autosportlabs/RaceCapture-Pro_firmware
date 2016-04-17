@@ -20,6 +20,7 @@
  */
 
 #include "FreeRTOS.h"
+#include "constants.h"
 #include "dateTime.h"
 #include "esp8266.h"
 #include "esp8266_drv.h"
@@ -36,7 +37,6 @@
 #define _AT_TASK_TIMEOUT_MS	3
 #define _BAD_STATE_BACKOFF_MS	3000
 #define _CLIENT_BACKOFF_MS	30000
-#define _DAEMON_SERVER_PORT	7223
 #define _INIT_FAIL_SLEEP_MS	10000
 #define _LOG_PFX		"[ESP8266 Driver] "
 #define _MAX_CHANNELS		5
@@ -96,7 +96,7 @@ static void cmd_completed(const enum _cmd next_cmd,
                           const tiny_millis_t sleep_ms)
 {
         state.cmd = next_cmd;
-        state.cmd_sleep_until = getUptimeFromNow(sleep_ms);
+        state.cmd_sleep_until = date_time_uptime_now_plus(sleep_ms);
         state.cmd_ip = false;
 }
 
@@ -107,6 +107,7 @@ static const char* get_channel_name(const size_t chan_id)
                 "Wifi Chan 1",
                 "Wifi Chan 2",
                 "Wifi Chan 3",
+                "Wifi Chan 4",
         };
 
         if (chan_id >= ARRAY_LEN(_serial_names))
@@ -212,7 +213,7 @@ static bool is_client_wifi_on_desired_network(const struct esp8266_client_info *
 static void get_client_ap_cb(bool status, const struct esp8266_client_info *ci)
 {
         memcpy(&state.client.info, ci, sizeof(struct esp8266_client_info));
-        state.client.next_check_ms = getUptimeFromNow(_CLIENT_BACKOFF_MS);
+        state.client.next_check_ms = date_time_uptime_now_plus(_CLIENT_BACKOFF_MS);
 
         if (!status) {
                 /* Command failed */
@@ -291,8 +292,8 @@ static void server_cmd_cb(bool status)
 static void setup_server()
 {
         pr_info_int_msg(_LOG_PFX "Starting server on port: ",
-                        _DAEMON_SERVER_PORT);
-        esp8266_server_cmd(ESP8266_SERVER_ACTION_CREATE, _DAEMON_SERVER_PORT,
+                        RCP_SERVICE_PORT);
+        esp8266_server_cmd(ESP8266_SERVER_ACTION_CREATE, RCP_SERVICE_PORT,
                            server_cmd_cb);
         cmd_started();
 }
@@ -308,7 +309,7 @@ static enum _cmd determine_cmd()
 
         /* If client is enabled, ensure setup if not in timeout */
         /* STIEG: Assume it enabled for now */
-        if (isTimePassed(state.client.next_check_ms))
+        if (date_time_is_past(state.client.next_check_ms))
                 return _CMD_CLIENT_AP_GET;
 
         /* If host is enabled, ensure setup if not in timeount*/
@@ -371,7 +372,7 @@ static void _task_loop()
         process_outgoing();
 
         /* If we are in a command sleep, do nothing until it expires. */
-        if (!isTimePassed(state.cmd_sleep_until))
+        if (!date_time_is_past(state.cmd_sleep_until))
                 return;
 
         enum _cmd cmd = state.cmd;

@@ -39,4 +39,6 @@
 
 #define WATCHDOG_TIMEOUT_MS 2000
 
+#define RCP_SERVICE_PORT	7223
+
 #endif /* CONSTANTS_H_ */

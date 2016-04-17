@@ -28,12 +28,23 @@
 
 CPP_GUARD_BEGIN
 
+/*
+ * These setting define the various default parameters within the
+ * AT state machine.
+ */
+/* Maximum # of commands queued at once */
 #define AT_CMD_MAX_CMDS	3
+/* Maximum String length of a command */
 #define AT_CMD_MAX_LEN	64
+/* Maximum # of chars in the device delimeter string (including NULL) */
 #define AT_DEV_CVG_DELIM_MAX_LEN	3
+/* Maximum number of message lines we can receive per command. */
 #define AT_RSP_MAX_MSGS	8
+/* Maximum length of a URC prefix */
 #define AT_URC_MAX_LEN	16
+/* Maximum number of URCs that can be registered. */
 #define AT_URC_MAX_URCS	16
+/* Maximum amount of time a URC message should take to complete */
 #define AT_URC_TIMEOUT_MS	5
 
 enum at_rx_state {
