@@ -22,7 +22,7 @@
 
 export MAJOR  := 2
 export MINOR  := 9
-export BUGFIX := 0
+export BUGFIX := 1
 export API    := 1
 
 export VERSION_STR := "$(MAJOR).$(MINOR).$(BUGFIX)"
