@@ -90,7 +90,7 @@ void ShowTaskInfo(struct Serial *serial, unsigned int argc, char **argv)
 {
         putHeader(serial, "Task Info");
 
-        serial_put_s(serial, "Status\tPri\tStackHR\tTask#\tName");
+        serial_put_s(serial, "Name\t\t\tStatus\tPri\tStackHR\tTask#");
         put_crlf(serial);
 
         /*
@@ -98,9 +98,9 @@ void ShowTaskInfo(struct Serial *serial, unsigned int argc, char **argv)
          * http://www.freertos.org/uxTaskGetSystemState.html for
          * more detail about how it works and value meanings.
          */
-        char *taskList = (char *) portMalloc(1024);
+        char *taskList = portMalloc(1024);
         if (NULL != taskList) {
-                vTaskList(taskList);
+                vTaskList((signed char*) taskList);
                 serial_put_s(serial, taskList);
                 portFree(taskList);
         } else {

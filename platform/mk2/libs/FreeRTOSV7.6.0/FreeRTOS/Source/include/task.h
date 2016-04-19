@@ -1282,7 +1282,7 @@ unsigned portBASE_TYPE uxTaskGetSystemState( xTaskStatusType *pxTaskStatusArray,
  * \defgroup vTaskList vTaskList
  * \ingroup TaskUtils
  */
-void vTaskList( char *pcWriteBuffer ) PRIVILEGED_FUNCTION;
+void vTaskList(signed char *pcWriteBuffer ) PRIVILEGED_FUNCTION;
 
 /**
  * task. h
@@ -1509,6 +1509,3 @@ eSleepModeStatus eTaskConfirmSleepModeStatus( void );
 }
 #endif
 #endif /* INC_TASK_H */
-
-
-

@@ -78,15 +78,10 @@ static void imu_update_task(void *params)
 
 void imu_device_init()
 {
-    /* Create a lock around the sensor buffers */
-
-    xTaskCreate(imu_update_task,
-                (signed portCHAR*)"IMU update",
-                configMINIMAL_STACK_SIZE,
-                NULL,
-                IMU_TASK_PRIORITY,
-                NULL);
-
+        /* Create a lock around the sensor buffers */
+        static const signed portCHAR task_name[] = "IMU Reader Task";
+        xTaskCreate(imu_update_task, task_name, configMINIMAL_STACK_SIZE,
+                    NULL, IMU_TASK_PRIORITY, NULL);
 }
 
 int imu_device_read(enum imu_channel channel)

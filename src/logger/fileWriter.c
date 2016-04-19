@@ -475,6 +475,8 @@ void startFileWriterTask(int priority)
                 return;
         }
 
-        xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter",
-                     FILE_WRITER_STACK_SIZE, NULL, priority, NULL );
+        /* Make all task names 16 chars including NULL char */
+        static const signed portCHAR task_name[] = "File Task       ";
+        xTaskCreate(fileWriterTask, task_name, FILE_WRITER_STACK_SIZE,
+                    NULL, priority, NULL );
 }

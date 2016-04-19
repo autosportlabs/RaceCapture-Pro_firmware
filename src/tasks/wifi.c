@@ -33,7 +33,8 @@
 #include "wifi.h"
 #include <stdbool.h>
 
-#define _THREAD_NAME	"WiFi Task"
+/* Make all task names 16 chars including NULL char */
+#define _THREAD_NAME	"WiFi Task      "
 #define _CONN_WAIT_MS	100
 #define _STACK_SIZE	256
 #define _RX_BUFF_SIZE	1024
@@ -110,8 +111,7 @@ bool wifi_init_task(const int wifi_task_priority,
         if (!esp8266_drv_init(s, wifi_drv_priority, _new_conn_cb))
                 return false;
 
-        const signed char * const task_name =
-                (const signed char *) _THREAD_NAME;
+        static const signed char task_name[] = _THREAD_NAME;
         const size_t stack_size = _STACK_SIZE;
         xTaskCreate(_task, task_name, stack_size, NULL,
                             wifi_task_priority, NULL);

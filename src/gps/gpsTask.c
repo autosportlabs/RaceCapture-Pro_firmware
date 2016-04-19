@@ -70,5 +70,8 @@ void GPSTask(void *pvParameters)
 
 void startGPSTask(int priority)
 {
-    xTaskCreate( GPSTask, ( signed portCHAR * )"GPSTask", GPS_TASK_STACK_SIZE, NULL, priority, NULL );
+        /* Make all task names 16 chars including NULL char*/
+        static const signed portCHAR task_name[] = "GPS Comm Task  ";
+        xTaskCreate(GPSTask, task_name, GPS_TASK_STACK_SIZE, NULL,
+                    priority, NULL );
 }

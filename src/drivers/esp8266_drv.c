@@ -446,10 +446,8 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         state.cmd = _CMD_INIT;
         state.new_conn_cb = new_conn_cb;
 
-        const signed char * const task_name =
-                (const signed char *) _TASK_THREAD_NAME;
+        static const signed char task_name[] = _TASK_THREAD_NAME;
         const size_t stack_size = _TASK_STACK_SIZE;
-
         xTaskCreate(_task, task_name, stack_size, NULL, priority, NULL);
 
         return true;
