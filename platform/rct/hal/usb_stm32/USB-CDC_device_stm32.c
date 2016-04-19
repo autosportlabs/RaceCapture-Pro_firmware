@@ -37,7 +37,7 @@
 #include <usb_pwr.h>
 
 /* STIEG: Make this device support buffered Tx */
-#define USB_TX_BUF_CAP	256
+#define USB_TX_BUF_CAP	128
 #define USB_RX_BUF_CAP	512
 #define USB_BUF_ELTS(in, out, bufsize) ((in - out + bufsize) % bufsize)
 
@@ -116,7 +116,7 @@ int USB_CDC_is_initialized()
  */
 static void usb_handle_transfer(void)
 {
-        portBASE_TYPE hpta;
+        portBASE_TYPE hpta = false;
         xQueueHandle queue = serial_get_tx_queue(usb_state.serial);
         uint8_t *buff = usb_state.USB_Tx_Buffer;
         size_t len;
@@ -143,7 +143,7 @@ void EP1_IN_Callback (void)
 
 void EP3_OUT_Callback(void)
 {
-        portBASE_TYPE hpta;
+        portBASE_TYPE hpta = false;
         xQueueHandle queue = serial_get_rx_queue(usb_state.serial);
         uint8_t *buff = usb_state.USB_Rx_Buffer;
 
@@ -151,7 +151,7 @@ void EP3_OUT_Callback(void)
 	const size_t len = USB_SIL_Read(EP3_OUT, buff);
 
         for (size_t i = 0; i < len; ++i)
-                xQueueSendFromISR(queue, buff + len, &hpta);
+                xQueueSendFromISR(queue, buff + i, &hpta);
 
 	/*
          * STIEG HACK
