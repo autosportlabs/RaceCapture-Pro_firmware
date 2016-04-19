@@ -21,7 +21,7 @@
 
 
 export MAJOR  := 2
-export MINOR  := 9
+export MINOR  := 10
 export BUGFIX := 0
 export API    := 1
 
