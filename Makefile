@@ -147,6 +147,10 @@ PHONY += rct-clean
 rct-clean:
 	$(MAKE) -C $(RCT_DIR) clean
 
+PHONY += rct-flash
+rct-flash: rct-build
+	cd $(RCT_DIR) && openocd -f openocd_flash.cfg
+
 PHONY += rct-pristine
 rct-pristine: rct-clean
 	$(MAKE) rct-build

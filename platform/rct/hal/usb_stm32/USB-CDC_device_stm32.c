@@ -76,7 +76,7 @@ static int USB_CDC_force_reenumeration(void)
 
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
-
+        return 0;
 }
 
 /* Public API */
