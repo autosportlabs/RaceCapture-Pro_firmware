@@ -59,6 +59,7 @@ export VERSION_CFLAGS := \
 -DRC_BUILD_GIT_DESCRIPTION=$(GIT_DESCRIPTION) \
 -DRC_BUILD_RELEASE_TYPE=$(RELEASE_TYPE) \
 
+export DEBUG
 
 Q := @
 PHONY :=
@@ -146,6 +147,10 @@ rct-build:
 PHONY += rct-clean
 rct-clean:
 	$(MAKE) -C $(RCT_DIR) clean
+
+PHONY += rct-flash
+rct-flash: rct-build
+	cd $(RCT_DIR) && openocd -f openocd_flash.cfg
 
 PHONY += rct-pristine
 rct-pristine: rct-clean

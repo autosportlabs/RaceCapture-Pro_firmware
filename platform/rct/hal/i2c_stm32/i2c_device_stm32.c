@@ -282,7 +282,9 @@ static int i2c_get_timing(I2C_TypeDef *periph, uint32_t bus_speed,
 		periph_clk = clocks.I2C1CLK_Frequency;
 	} else if (periph == I2C2) {
 		periph_clk = clocks.I2C2CLK_Frequency;
-	}
+	} else {
+                return -1;
+        }
 
 	for (int i = 0; i < ARRAY_SIZE(timingr_map); i++) {
 		if ((bus_speed == timingr_map[i].bus_speed) &&

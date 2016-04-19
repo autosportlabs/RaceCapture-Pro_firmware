@@ -17,6 +17,9 @@ OBJCOPY := $(CROSS_COMPILE)objcopy
 #specify the use of the external crystal
 BOARD_DEFINES = -DPLL_SOURCE_HSE -DUSE_I2C1
 
+# Needed for FreeRTOS GDB debugging
+FREERTOS_LD_FLAGS := -Wl,--undefined=uxTopUsedPriority
+
 ################################################################################
 # Project definition
 ################################################################################
@@ -248,11 +251,22 @@ CFLAGS += -mcpu=cortex-m3 -mthumb
 CFLAGS += $(VERSION_CFLAGS)
 CFLAGS += $(BOARD_DEFINES)
 CFLAGS += -fno-builtin-sprintf
+CFLAGS += -ggdb
+CFLAGS += -Wall -Werror -Wempty-body -Wclobbered -Wignored-qualifiers \
+	-Wmissing-parameter-type -Wold-style-declaration \
+	-Wunused-but-set-parameter
+ifdef DEBUG
+CFLAGS += -D_DEBUG
+CFLAGS += -O0
+else
 CFLAGS += -Os
-CFLAGS += -g -ggdb
+endif
 CFLAGS += $(addprefix -I,$(inc-y))
+
 LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld
 LDFLAGS += -Wl,-cref,-u,Reset_Handler,-Map=$(OUTDIR)/main.map,--gc-sections
+LDFLAGS += $(FREERTOS_LD_FLAGS)
+
 AFLAGS := $(CFLAGS)
 
 # disable auto-removing of intermediate files
