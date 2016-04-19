@@ -88,30 +88,30 @@ void ShowStats(struct Serial *serial, unsigned int argc, char **argv)
 
 void ShowTaskInfo(struct Serial *serial, unsigned int argc, char **argv)
 {
-    putHeader(serial, "Task Info");
+        putHeader(serial, "Task Info");
 
-    serial_put_s(serial, "Status\tPri\tStackHR\tTask#\tName");
-    put_crlf(serial);
+        serial_put_s(serial, "Status\tPri\tStackHR\tTask#\tName");
+        put_crlf(serial);
 
-    /*
-     * Memory info from vTaskList can be misleading.  See
-     * http://www.freertos.org/uxTaskGetSystemState.html for
-     * more detail about how it works and value meanings.
-     */
-    char *taskList = (char *) portMalloc(1024);
-    if (NULL != taskList) {
-        //TODO BAP - get this working, when we have a USB console
-        //vTaskList(taskList);
-        //serial->put_s(taskList);
-        portFree(taskList);
-    } else {
-            serial_put_s(serial, "Out of Memory!");
-    }
-    put_crlf(serial);
+        /*
+         * Memory info from vTaskList can be misleading.  See
+         * http://www.freertos.org/uxTaskGetSystemState.html for
+         * more detail about how it works and value meanings.
+         */
+        char *taskList = (char *) portMalloc(1024);
+        if (NULL != taskList) {
+                vTaskList(taskList);
+                serial_put_s(serial, taskList);
+                portFree(taskList);
+        } else {
+                serial_put_s(serial, "Out of Memory!");
+        }
 
-    put_crlf(serial);
-    serial_put_s(serial, "[Note] StackHR: If StackHR < 0; then stack smash");
-    put_crlf(serial);
+        put_crlf(serial);
+        put_crlf(serial);
+        serial_put_s(serial, "[Note] StackHR: If StackHR < 0; then "
+                     "stack smash");
+        put_crlf(serial);
 }
 
 void GetVersion(struct Serial *serial, unsigned int argc, char **argv)
