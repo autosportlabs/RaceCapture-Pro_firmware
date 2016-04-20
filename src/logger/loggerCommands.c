@@ -151,6 +151,7 @@ void StartTerminal(struct Serial *serial, unsigned int argc, char **argv)
 
         struct Serial *targetSerial = serial_device_get(port);
         if (!targetSerial) {
+                serial_put_s(serial, "Requested Serial port is NULL!\r\n");
                 put_commandError(serial, ERROR_CODE_INVALID_PARAM);
                 return;
         }
