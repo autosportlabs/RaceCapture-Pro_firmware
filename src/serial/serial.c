@@ -163,9 +163,11 @@ void serial_flush(struct Serial *s)
 
 bool serial_get_c_wait(struct Serial *s, char *c, const size_t delay)
 {
-        const bool rv = pdTRUE == xQueueReceive(s->rx_queue, c, delay);
+        if (pdFALSE == xQueueReceive(s->rx_queue, c, delay))
+                return false;
+
         log_rx(s, *c);
-        return rv;
+        return true;
 }
 
 char serial_get_c(struct Serial *s)
@@ -194,15 +196,15 @@ int serial_get_line(struct Serial *s, char *l, const size_t len)
 
 bool serial_put_c_wait(struct Serial *s, const char c, const size_t delay)
 {
-        const bool rv = pdTRUE == xQueueSend(s->tx_queue, &c, delay);
+        if (pdFALSE == xQueueSend(s->tx_queue, &c, delay))
+                return false;
 
-        if (rv) {
-                log_tx(s, c);
-                if (s->post_tx_cb)
-                        s->post_tx_cb(s->tx_queue, s->post_tx_cb_arg);
-        }
+        log_tx(s, c);
 
-        return rv;
+        if (s->post_tx_cb)
+                s->post_tx_cb(s->tx_queue, s->post_tx_cb_arg);
+
+        return true;
 }
 
 bool serial_put_c(struct Serial *s, const char c)
