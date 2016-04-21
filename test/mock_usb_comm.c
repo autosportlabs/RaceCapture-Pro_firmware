@@ -70,3 +70,8 @@ void usb_putchar(char c)
 void onUSBCommTask(void *pvParameters)
 {
 }
+
+struct Serial* USB_CDC_get_serial()
+{
+        return NULL;
+}

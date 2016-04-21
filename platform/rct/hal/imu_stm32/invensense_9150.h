@@ -89,7 +89,8 @@
 #define IS_CLOCK_STOPPED	0x07
 
 /* Chip Defaults */
-#define IS_WHOAMI_DEFAULT	0x68
+#define IS_WHOAMI_9150	0x68
+#define IS_WHOAMI_9250	0x71
 
 struct is9150_gyro_data {
     int16_t gyro_x;

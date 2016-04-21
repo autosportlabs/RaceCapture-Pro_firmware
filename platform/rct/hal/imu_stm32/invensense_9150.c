@@ -19,8 +19,9 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <i2c_device_stm32.h>
-#include <invensense_9150.h>
+#include "i2c_device_stm32.h"
+#include "invensense_9150.h"
+#include "printk.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -56,6 +57,17 @@ static int is9150_read_reg_block(uint8_t start_addr, size_t len,
     return res;
 }
 
+bool is_9150_or_9250(const int reg)
+{
+        switch(reg) {
+        case (IS_WHOAMI_9150):
+        case (IS_WHOAMI_9250):
+                return true;
+        default:
+                return false;
+        }
+}
+
 int is9150_init(struct i2c_dev *dev, uint8_t addr)
 {
     int res;
@@ -67,10 +79,9 @@ int is9150_init(struct i2c_dev *dev, uint8_t addr)
     /* Read the 'who am I' register to make sure that the device
      * is out there and alive */
     res = is9150_readreg(IS_REG_WHOAMI, &reg);
-    if (res) {
-        return IS_9150_ERR_INIT;
-    } else if (reg != IS_WHOAMI_DEFAULT) {
-        return IS_9150_ERR_INIT;
+    if (res || !is_9150_or_9250(reg)) {
+            pr_error_int_msg("IMU: failed who am I test.  Value: ", reg);
+            return IS_9150_ERR_INIT;
     }
 
     /* Set the sleep bit in the power management register, this
@@ -78,7 +89,8 @@ int is9150_init(struct i2c_dev *dev, uint8_t addr)
     res = is9150_write_reg_bits(IS_REG_PWR_MGMT_1, IS_POWER_SLEEP_POS,
                                 1, 1);
     if (res) {
-        return IS_9150_ERR_INIT;
+            pr_error("IMU: failed power management\r\n");
+            return IS_9150_ERR_INIT;
     }
 
     /* Set the device clock source to internal PLL + GYRO_X sync */
@@ -87,21 +99,24 @@ int is9150_init(struct i2c_dev *dev, uint8_t addr)
     res = is9150_write_reg_bits(IS_REG_PWR_MGMT_1, IS_CLOCK_POS,
                                 IS_CLOCK_NUM_BITS, IS_CLOCK_GYRO_X);
     if (res) {
-        return IS_9150_ERR_INIT;
+            pr_error("IMU: failed clock source change\r\n");
+            return IS_9150_ERR_INIT;
     }
 
     /* Set the Gyro range to 1000* per second */
     res = is9150_write_reg_bits(IS_REG_GYRO_CONFIG, IS_GYRO_SCALE_POS,
                                 IS_GYRO_NUM_BITS, IS_GYRO_SCALE_2000);
     if (res) {
-        return IS_9150_ERR_INIT;
+            pr_error("IMU: failed gyro range update\r\n");
+            return IS_9150_ERR_INIT;
     }
 
     /* Set the accelerometer range to 4G per second */
     res = is9150_write_reg_bits(IS_REG_ACCEL_CONFIG, IS_ACCEL_SCALE_POS,
                                 IS_ACCEL_NUM_BITS, IS_ACCEL_SCALE_4G);
     if (res) {
-        return IS_9150_ERR_INIT;
+            pr_error("IMU: failed accelerometer setup\r\n");
+            return IS_9150_ERR_INIT;
     }
 
     /* Clear the sleep bit in the power management register, this
@@ -109,7 +124,8 @@ int is9150_init(struct i2c_dev *dev, uint8_t addr)
     res = is9150_write_reg_bits(IS_REG_PWR_MGMT_1, IS_POWER_SLEEP_POS,
                                 1, 0);
     if (res) {
-        return IS_9150_ERR_INIT;
+            pr_error("IMU: failed setting the power management bit.\r\n");
+            return IS_9150_ERR_INIT;
     }
 
     return 0;
