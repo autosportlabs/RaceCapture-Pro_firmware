@@ -20,6 +20,7 @@
  */
 
 #include "USB-CDC_device.h"
+#include "loggerConfig.h"
 #include "serial.h"
 #include "serial_device.h"
 #include "usart.h"
@@ -30,22 +31,36 @@
 
 struct Serial* serial_device_get(const serial_id_t port)
 {
+        struct Serial *s = NULL;
         switch(port) {
         case SERIAL_USB:
 #if defined(USB_SERIAL_SUPPORT)
-                return USB_CDC_get_serial();
-#else
-                return NULL;
+                s =  USB_CDC_get_serial();
 #endif
+                break;
         case SERIAL_GPS:
-                return usart_device_get_serial(UART_GPS);
+                s = usart_device_get_serial(UART_GPS);
+                break;
         case SERIAL_TELEMETRY:
-                return usart_device_get_serial(UART_TELEMETRY);
+                s = usart_device_get_serial(UART_TELEMETRY);
+                break;
         case SERIAL_WIRELESS:
-                return usart_device_get_serial(UART_WIRELESS);
+                s = usart_device_get_serial(UART_WIRELESS);
+                break;
         case SERIAL_AUX:
-                return usart_device_get_serial(UART_AUX);
+                s = usart_device_get_serial(UART_AUX);
+                break;
         default:
-                return NULL;
+                s = NULL;
         };
+
+        if (!s)
+                return NULL;
+
+        /* Hack to get serial logging working temporarily */
+        const bool enable_logs =
+                getWorkingLoggerConfig()->logging_cfg.serial[port];
+        serial_logging(s, enable_logs);
+
+        return s;
 }

@@ -228,6 +228,7 @@ void SetSerialLog(struct Serial *serial, unsigned int argc, char **argv)
 
         const bool enable = argv[2][0] != '0';
         const bool prev = serial_logging(s, enable);
+        getWorkingLoggerConfig()->logging_cfg.serial[port] = enable;
 
         serial_put_s(serial, enable_str(prev));
         serial_put_s(serial, " -> ");
