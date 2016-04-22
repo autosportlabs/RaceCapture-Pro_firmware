@@ -241,12 +241,14 @@ int CAN_device_rx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
     }
 }
 
-void USB_LP_CAN1_RX0_IRQHandler(void)
-//void CAN1_RX1_IRQHandler(void)
+void CAN_device_isr(void)
 {
-    portBASE_TYPE xTaskWokenByRx = pdFALSE;
-    CanRxMsg rxMsg;
-    CAN_Receive(CAN1, CAN_FIFO0, &rxMsg);
-    xQueueSendFromISR(xCan1Rx, &rxMsg, &xTaskWokenByRx);
-    portEND_SWITCHING_ISR(xTaskWokenByRx);
+    if (CAN_GetITStatus(CAN1, CAN_IT_FMP0) != RESET)
+    {
+        portBASE_TYPE xTaskWokenByRx = pdFALSE;
+        CanRxMsg rxMsg;
+        CAN_Receive(CAN1, CAN_FIFO0, &rxMsg);
+        xQueueSendFromISR(xCan1Rx, &rxMsg, &xTaskWokenByRx);
+        portEND_SWITCHING_ISR(xTaskWokenByRx);
+    }
 }
