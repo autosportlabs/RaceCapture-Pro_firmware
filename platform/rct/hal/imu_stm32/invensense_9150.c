@@ -57,7 +57,7 @@ static int is9150_read_reg_block(uint8_t start_addr, size_t len,
     return res;
 }
 
-bool is_9150_or_9250(const int reg)
+static bool is_9150_or_9250(const int reg)
 {
         switch(reg) {
         case (IS_WHOAMI_9150):

@@ -172,6 +172,8 @@ clean:
 	-name "*.d"   -o \
 	-name "*.lst" -o \
 	-name "*.o"      \
+	-name "*.elf"      \
+	-name "*.hex"      \
 	| xargs rm -f
 
 package: clean
