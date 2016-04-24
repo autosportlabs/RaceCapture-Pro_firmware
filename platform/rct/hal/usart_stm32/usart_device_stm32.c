@@ -55,8 +55,6 @@ typedef enum {
 static uint8_t *gpsRxBuffer;
 
 static volatile struct usart_info {
-        xQueueHandle tx;
-        xQueueHandle rx;
         struct Serial *serial;
         USART_TypeDef *usart;
 } usart_data[__UART_COUNT];
@@ -285,8 +283,6 @@ static bool init_usart_serial(const uart_id_t uart_id, USART_TypeDef *usart,
 
         /* Set the usart_info data */
         volatile struct usart_info *ui = usart_data + uart_id;
-        ui->rx = serial_get_rx_queue(s);
-        ui->tx = serial_get_tx_queue(s);
         ui->usart = usart;
         ui->serial = s;
 
@@ -352,15 +348,18 @@ void usart_device_config(const uart_id_t id, const size_t bits,
 void DMA1_Channel6_IRQHandler(void)
 {
         volatile struct usart_info *ui = usart_data + UART_GPS;
+        xQueueHandle rx_queue = serial_get_rx_queue(ui->serial);
+
         portBASE_TYPE xTaskWokenByPost = pdFALSE;
         signed portCHAR cChar;
+
         /* Test on DMA Stream Transfer Complete interrupt */
         if (DMA_GetITStatus(DMA1_IT_TC6)) {
                 /* Clear DMA Stream Transfer Complete interrupt pending bit */
                 DMA_ClearITPendingBit(DMA1_IT_TC6);
                 for (size_t i = GPS_BUFFER_SIZE / 2; i < GPS_BUFFER_SIZE; i++) {
                         cChar = gpsRxBuffer[i];
-                        xQueueSendFromISR(ui->rx, &cChar, &xTaskWokenByPost);
+                        xQueueSendFromISR(rx_queue, &cChar, &xTaskWokenByPost);
                 }
         }
 
@@ -370,7 +369,7 @@ void DMA1_Channel6_IRQHandler(void)
                 DMA_ClearITPendingBit(DMA1_IT_HT6);
                 for (size_t i = 0; i < GPS_BUFFER_SIZE / 2; i++) {
                         cChar = gpsRxBuffer[i];
-                        xQueueSendFromISR(ui->rx, &cChar, &xTaskWokenByPost);
+                        xQueueSendFromISR(rx_queue, &cChar, &xTaskWokenByPost);
                 }
         }
 
@@ -380,9 +379,6 @@ void DMA1_Channel6_IRQHandler(void)
 static void usart_generic_irq_handler(volatile struct usart_info *ui)
 {
         USART_TypeDef *usart = ui->usart;
-        xQueueHandle rx = ui->rx;
-        xQueueHandle tx = ui->tx;
-
         signed portCHAR cChar;
         portBASE_TYPE xTaskWokenByTx = pdFALSE;
         if (SET == USART_GetITStatus(usart, USART_IT_TXE)) {
@@ -390,8 +386,8 @@ static void usart_generic_irq_handler(volatile struct usart_info *ui)
                  * The interrupt was caused by the TX becoming empty.
                  * Are there any more characters to transmit?
                  */
-                if (tx != NULL &&
-                    pdTRUE == xQueueReceiveFromISR(tx, &cChar,
+                xQueueHandle tx_queue = serial_get_tx_queue(ui->serial);
+                if (pdTRUE == xQueueReceiveFromISR(tx_queue, &cChar,
                                                    &xTaskWokenByTx)) {
                         /*
                          * A character was retrieved from the queue so
@@ -415,8 +411,8 @@ static void usart_generic_irq_handler(volatile struct usart_info *ui)
                  * or received characters.
                  */
                 cChar = USART_ReceiveData(usart);
-                if (rx)
-                        xQueueSendFromISR(rx, &cChar, &xTaskWokenByPost);
+                xQueueHandle rx_queue = serial_get_rx_queue(ui->serial);
+                xQueueSendFromISR(rx_queue, &cChar, &xTaskWokenByPost);
         }
 
         if (SET == USART_GetITStatus(usart, USART_FLAG_ORE))
