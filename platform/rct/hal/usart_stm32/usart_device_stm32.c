@@ -182,6 +182,10 @@ static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
     NVIC_InitTypeDef NVIC_InitStructure;
 
     /* Test to clear the Error Flags */
+    USART_ITConfig(USARTx, USART_IT_WU, DISABLE);
+    USART_ITConfig(USARTx, USART_IT_CM, DISABLE);
+    USART_ITConfig(USARTx, USART_IT_EOB, DISABLE);
+    USART_ITConfig(USARTx, USART_IT_RTO, DISABLE);
     USART_ITConfig(USARTx, USART_IT_CTS, DISABLE);
     USART_ITConfig(USARTx, USART_IT_LBD, DISABLE);
     USART_ITConfig(USARTx, USART_IT_TC, DISABLE);
@@ -389,6 +393,7 @@ static void usart_generic_irq_handler(volatile struct usart_info *ui)
         USART_TypeDef *usart = ui->usart;
         signed portCHAR cChar;
         portBASE_TYPE xTaskWokenByTx = pdFALSE;
+        bool done_work = false;
 
         if (SET == USART_GetITStatus(usart, USART_IT_TXE)) {
                 /*
@@ -410,6 +415,8 @@ static void usart_generic_irq_handler(volatile struct usart_info *ui)
                          */
                         USART_ITConfig(usart, USART_IT_TXE, DISABLE);
                 }
+
+                done_work = true;
         }
 
         portBASE_TYPE xTaskWokenByPost = pdFALSE;
@@ -422,10 +429,24 @@ static void usart_generic_irq_handler(volatile struct usart_info *ui)
                 cChar = USART_ReceiveData(usart);
                 xQueueHandle rx_queue = serial_get_rx_queue(ui->serial);
                 xQueueSendFromISR(rx_queue, &cChar, &xTaskWokenByPost);
+                done_work = true;
         }
 
-        if (SET == USART_GetITStatus(usart, USART_FLAG_ORE))
-                USART_ClearITPendingBit (usart, USART_IT_ORE);
+        if (!done_work) {
+                /* Testing hack to try to eliminate interrupts */
+                USART_ClearITPendingBit(usart, USART_IT_WU);
+                USART_ClearITPendingBit(usart, USART_IT_CM);
+                USART_ClearITPendingBit(usart, USART_IT_EOB);
+                USART_ClearITPendingBit(usart, USART_IT_RTO);
+                USART_ClearITPendingBit(usart, USART_IT_CTS);
+                USART_ClearITPendingBit(usart, USART_IT_LBD);
+                USART_ClearITPendingBit(usart, USART_IT_TC);
+                USART_ClearITPendingBit(usart, USART_IT_IDLE);
+                USART_ClearITPendingBit(usart, USART_IT_ORE);
+                USART_ClearITPendingBit(usart, USART_IT_NE);
+                USART_ClearITPendingBit(usart, USART_IT_FE);
+                USART_ClearITPendingBit(usart, USART_IT_PE);
+        }
 
         /*
          * If a task was woken by either a character being received or a
@@ -438,6 +459,39 @@ static void usart_generic_irq_handler(volatile struct usart_info *ui)
 
 void USART1_IRQHandler(void)
 {
+        volatile struct usart_info *ui = usart_data + UART_WIRELESS;
+        USART_TypeDef *usart = ui->usart;
+
+        ITStatus wu_status = USART_GetITStatus(usart, USART_FLAG_WU);
+        ITStatus cm_status = USART_GetITStatus(usart, USART_FLAG_CM);
+        ITStatus eob_status = USART_GetITStatus(usart, USART_FLAG_EOB);
+        ITStatus rto_status = USART_GetITStatus(usart, USART_FLAG_RTO);
+        ITStatus cts_status = USART_GetITStatus(usart, USART_FLAG_CTS);
+        ITStatus lbd_status = USART_GetITStatus(usart, USART_FLAG_LBD);
+        ITStatus txe_status = USART_GetITStatus(usart, USART_FLAG_TXE);
+        ITStatus tc_status = USART_GetITStatus(usart, USART_FLAG_TC);
+        ITStatus rxne_status = USART_GetITStatus(usart, USART_FLAG_RXNE);
+        ITStatus idle_status = USART_GetITStatus(usart, USART_FLAG_IDLE);
+        ITStatus ore_status = USART_GetITStatus(usart, USART_FLAG_ORE);
+        ITStatus ne_status = USART_GetITStatus(usart, USART_FLAG_NE);
+        ITStatus fe_status = USART_GetITStatus(usart, USART_FLAG_FE);
+        ITStatus pe_status = USART_GetITStatus(usart, USART_FLAG_PE);
+
+        (void) wu_status;
+        (void) cm_status;
+        (void) eob_status;
+        (void) rto_status;
+        (void) cts_status;
+        (void) lbd_status;
+        (void) txe_status;
+        (void) tc_status;
+        (void) rxne_status;
+        (void) idle_status;
+        (void) ore_status;
+        (void) ne_status;
+        (void) fe_status;
+        (void) pe_status;
+
         usart_generic_irq_handler(usart_data + UART_WIRELESS);
 }
 

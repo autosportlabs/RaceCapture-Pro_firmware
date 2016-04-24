@@ -43,7 +43,8 @@ void InitLoggerHardware()
     led_init();
 
 #if IMU_CHANNELS > 0
-    imu_init(loggerConfig);
+    /* TODO STIEG: FIX IMU */
+    /* imu_init(loggerConfig); */
 #endif
 #if ANALOG_CHANNELS > 0
     ADC_init(loggerConfig);
