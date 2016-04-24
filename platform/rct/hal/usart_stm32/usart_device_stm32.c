@@ -169,7 +169,7 @@ static void enableRxDMA(uint32_t RCC_AHBPeriph,
      NVIC_InitTypeDef NVIC_InitStruct;
      NVIC_InitStruct.NVIC_IRQChannel = NVIC_IRQ_channel;
      NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
-     NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 1; //IRQ_priority;
+     NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = UART_GPS_IRQ_PRIORITY; //1; //IRQ_priority;
      NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0;
 
      NVIC_Init(&NVIC_InitStruct);
@@ -180,6 +180,14 @@ static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
                           uint8_t IRQ_priority, uart_irq_type_t irqType)
 {
     NVIC_InitTypeDef NVIC_InitStructure;
+
+    /* Test to clear the Error Flags */
+    USART_ITConfig(USARTx, USART_IT_CTS, DISABLE);
+    USART_ITConfig(USARTx, USART_IT_LBD, DISABLE);
+    USART_ITConfig(USARTx, USART_IT_TC, DISABLE);
+    USART_ITConfig(USARTx, USART_IT_IDLE, DISABLE);
+    USART_ITConfig(USARTx, USART_IT_PE, DISABLE);
+    USART_ITConfig(USARTx, USART_IT_ERR, DISABLE);
 
     /* Configure the NVIC Preemption Priority Bits */
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
@@ -381,6 +389,7 @@ static void usart_generic_irq_handler(volatile struct usart_info *ui)
         USART_TypeDef *usart = ui->usart;
         signed portCHAR cChar;
         portBASE_TYPE xTaskWokenByTx = pdFALSE;
+
         if (SET == USART_GetITStatus(usart, USART_IT_TXE)) {
                 /*
                  * The interrupt was caused by the TX becoming empty.
