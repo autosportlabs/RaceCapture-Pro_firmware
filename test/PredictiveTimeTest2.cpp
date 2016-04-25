@@ -15,6 +15,7 @@
 #include "gps.testing.h"
 #include "lap_stats.h"
 #include "loggerConfig.h"
+#include "mock_serial.h"
 #include "modp_atonum.h"
 #include "mod_string.h"
 #include "predictive_timer_2.h"
@@ -51,7 +52,8 @@ static int atoiOffsetLenSafe(const char *str, size_t offset, size_t len) {
 }
 
 void PredictiveTimeTest2::setUp() {
-	GPS_init(10, get_serial(SERIAL_GPS));
+        setupMockSerial();
+	GPS_init(10, getMockSerial());
 	resetPredictiveTimer();
 }
 

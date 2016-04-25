@@ -32,3 +32,4 @@ TAGS
 *.ihex
 .vagrant
 *.log
+core.*

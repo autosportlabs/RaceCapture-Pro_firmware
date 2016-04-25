@@ -43,7 +43,7 @@
  * your own peril.
  */
 #define BT_BACKOFF_MS	500
-#define BT_BAUD_RATES	{115200, 9600}
+#define BT_BAUD_RATES	{230400, 115200, 9600}
 #define BT_COMMAND_WAIT	600
 #define BT_DEFAULT_NAME	"RaceCapturePro"
 #define BT_DEFAULT_PIN	"1234"
@@ -103,7 +103,7 @@ static const char * baudConfigCmdForRate(unsigned int baudRate)
 static void set_bt_serial_baud(DeviceConfig *config, int baud)
 {
         pr_info_int_msg("BT: Baudrate: ", baud);
-        serial_init(config->serial, 8, 0, 1, baud);
+        serial_config(config->serial, 8, 0, 1, baud);
 }
 
 static int set_check_bt_serial_baud(DeviceConfig *config, int baud)

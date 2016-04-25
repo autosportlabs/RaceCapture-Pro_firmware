@@ -21,14 +21,36 @@
 
 
 #include "FreeRTOS.h"
+#include "mem_mang.h"
 #include "queue.h"
+#include "ring_buffer.h"
 
-signed portBASE_TYPE xQueueGenericSend( xQueueHandle xQueue,
-                                        const void * const pvItemToQueue,
-                                        portTickType xTicksToWait,
-                                        portBASE_TYPE xCopyPosition )
+#include <stddef.h>
+
+struct mock_queue {
+        size_t item_size;
+        struct ring_buff *rb;
+};
+
+/*
+ * Note that xQueueGenericSend and xQueueGenericReceive are also used for
+ * mutexes.  We know this because the pvBuffer value will be NULL.  In that
+ * case just return true for now to indicate that we have acquired the
+ * mutex.  We may have to implement actual mutex capabilities in the future,
+ * lets do that when its actually needed.
+ */
+
+signed portBASE_TYPE xQueueGenericSend(xQueueHandle pxQueue,
+                                       const void * const pvBuffer,
+                                       portTickType xTicksToWait,
+                                       portBASE_TYPE xCopyPosition )
 {
-        return 0;
+        if (!pvBuffer)
+                return true;
+
+
+        struct mock_queue *mc = pxQueue;
+        return !!ring_buffer_write(mc->rb, pvBuffer, mc->item_size);
 }
 
 signed portBASE_TYPE xQueueGenericReceive(
@@ -36,15 +58,27 @@ signed portBASE_TYPE xQueueGenericReceive(
         const pvBuffer, portTickType xTicksToWait,
         portBASE_TYPE xJustPeeking )
 {
-        return 0;
+        if (!pvBuffer)
+                return true;
+
+        struct mock_queue *mc = pxQueue;
+        return !!ring_buffer_get(mc->rb, pvBuffer, mc->item_size);
 }
 
-
-xQueueHandle xQueueCreate(
-        unsigned portBASE_TYPE uxQueueLength,
-        unsigned portBASE_TYPE uxItemSize)
+void vQueueDelete(xQueueHandle pxQueue)
 {
-        return NULL;
+        struct mock_queue *mc = pxQueue;
+        ring_buffer_destroy(mc->rb);
+        portFree(mc);
+}
+
+xQueueHandle xQueueCreate(unsigned portBASE_TYPE uxQueueLength,
+                          unsigned portBASE_TYPE uxItemSize)
+{
+        struct mock_queue *mc = portMalloc(sizeof(struct mock_queue));
+        mc->item_size = (size_t) uxItemSize;
+        mc->rb = ring_buffer_create(uxQueueLength * uxItemSize);
+        return mc;
 }
 
 xQueueHandle xQueueCreateMutex()

@@ -30,21 +30,11 @@ CPP_GUARD_BEGIN
 
 int ADC_device_init(void);
 
-void ADC_device_sample_all(
-    unsigned int *a0,
-    unsigned int *a1,
-    unsigned int *a2,
-    unsigned int *a3,
-    unsigned int *a4,
-    unsigned int *a5,
-    unsigned int *a6,
-    unsigned int *a7 );
+int ADC_device_sample(const size_t channel);
 
-unsigned int ADC_device_sample(unsigned int channel);
+float ADC_device_get_voltage_range(const size_t channel);
 
-float ADC_device_get_voltage_range(size_t channel);
-
-float ADC_device_get_channel_scaling(size_t channel);
+float ADC_device_get_channel_scaling(const size_t channel);
 
 CPP_GUARD_END
 

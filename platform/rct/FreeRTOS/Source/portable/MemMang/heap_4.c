@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -64,14 +64,15 @@
 */
 
 /*
- * A sample implementation of pvPortMalloc() and vPortFree() that combines 
- * (coalescences) adjacent memory blocks as they are freed, and in so doing 
+ * A sample implementation of pvPortMalloc() and vPortFree() that combines
+ * (coalescences) adjacent memory blocks as they are freed, and in so doing
  * limits memory fragmentation.
  *
- * See heap_1.c, heap_2.c and heap_3.c for alternative implementations, and the 
+ * See heap_1.c, heap_2.c and heap_3.c for alternative implementations, and the
  * memory management pages of http://www.FreeRTOS.org for more information.
  */
 #include <stdlib.h>
+#include <string.h>
 
 /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
 all the API functions to use the MPU wrappers.  That should only be done when
@@ -106,7 +107,7 @@ typedef struct A_BLOCK_LINK
 /*-----------------------------------------------------------*/
 
 /*
- * Inserts a block of memory that is being freed into the correct position in 
+ * Inserts a block of memory that is being freed into the correct position in
  * the list of free memory blocks.  The block being freed will be merged with
  * the block in front it and/or the block behind it if the memory blocks are
  * adjacent to each other.
@@ -135,8 +136,8 @@ static xBlockLink xStart, *pxEnd = NULL;
 fragmentation. */
 static size_t xFreeBytesRemaining = ( ( size_t ) heapADJUSTED_HEAP_SIZE ) & ( ( size_t ) ~portBYTE_ALIGNMENT_MASK );
 
-/* Gets set to the top bit of an size_t type.  When this bit in the xBlockSize 
-member of an xBlockLink structure is set then the block belongs to the 
+/* Gets set to the top bit of an size_t type.  When this bit in the xBlockSize
+member of an xBlockLink structure is set then the block belongs to the
 application.  When the bit is free the block is still part of the free heap
 space. */
 static size_t xBlockAllocatedBit = 0;
@@ -158,7 +159,7 @@ void *pvReturn = NULL;
 		}
 
 		/* Check the requested block size is not so large that the top bit is
-		set.  The top bit of the block size member of the xBlockLink structure 
+		set.  The top bit of the block size member of the xBlockLink structure
 		is used to determine who owns the block - the application or the
 		kernel, so it must be free. */
 		if( ( xWantedSize & xBlockAllocatedBit ) == 0 )
@@ -169,7 +170,7 @@ void *pvReturn = NULL;
 			{
 				xWantedSize += heapSTRUCT_SIZE;
 
-				/* Ensure that blocks are always aligned to the required number 
+				/* Ensure that blocks are always aligned to the required number
 				of bytes. */
 				if( ( xWantedSize & portBYTE_ALIGNMENT_MASK ) != 0x00 )
 				{
@@ -180,7 +181,7 @@ void *pvReturn = NULL;
 
 			if( ( xWantedSize > 0 ) && ( xWantedSize <= xFreeBytesRemaining ) )
 			{
-				/* Traverse the list from the start	(lowest address) block until 
+				/* Traverse the list from the start	(lowest address) block until
 				one	of adequate size is found. */
 				pxPreviousBlock = &xStart;
 				pxBlock = xStart.pxNextFreeBlock;
@@ -190,29 +191,29 @@ void *pvReturn = NULL;
 					pxBlock = pxBlock->pxNextFreeBlock;
 				}
 
-				/* If the end marker was reached then a block of adequate size 
+				/* If the end marker was reached then a block of adequate size
 				was	not found. */
 				if( pxBlock != pxEnd )
 				{
-					/* Return the memory space pointed to - jumping over the 
+					/* Return the memory space pointed to - jumping over the
 					xBlockLink structure at its start. */
 					pvReturn = ( void * ) ( ( ( unsigned char * ) pxPreviousBlock->pxNextFreeBlock ) + heapSTRUCT_SIZE );
 
-					/* This block is being returned for use so must be taken out 
+					/* This block is being returned for use so must be taken out
 					of the list of free blocks. */
 					pxPreviousBlock->pxNextFreeBlock = pxBlock->pxNextFreeBlock;
 
-					/* If the block is larger than required it can be split into 
+					/* If the block is larger than required it can be split into
 					two. */
 					if( ( pxBlock->xBlockSize - xWantedSize ) > heapMINIMUM_BLOCK_SIZE )
 					{
-						/* This block is to be split into two.  Create a new 
-						block following the number of bytes requested. The void 
-						cast is used to prevent byte alignment warnings from the 
+						/* This block is to be split into two.  Create a new
+						block following the number of bytes requested. The void
+						cast is used to prevent byte alignment warnings from the
 						compiler. */
 						pxNewBlockLink = ( void * ) ( ( ( unsigned char * ) pxBlock ) + xWantedSize );
 
-						/* Calculate the sizes of two blocks split from the 
+						/* Calculate the sizes of two blocks split from the
 						single block. */
 						pxNewBlockLink->xBlockSize = pxBlock->xBlockSize - xWantedSize;
 						pxBlock->xBlockSize = xWantedSize;
@@ -266,7 +267,7 @@ xBlockLink *pxLink;
 		/* Check the block is actually allocated. */
 		configASSERT( ( pxLink->xBlockSize & xBlockAllocatedBit ) != 0 );
 		configASSERT( pxLink->pxNextFreeBlock == NULL );
-		
+
 		if( ( pxLink->xBlockSize & xBlockAllocatedBit ) != 0 )
 		{
 			if( pxLink->pxNextFreeBlock == NULL )
@@ -350,7 +351,7 @@ unsigned char *puc;
 	}
 
 	/* Do the block being inserted, and the block it is being inserted after
-	make a contiguous block of memory? */	
+	make a contiguous block of memory? */
 	puc = ( unsigned char * ) pxIterator;
 	if( ( puc + pxIterator->xBlockSize ) == ( unsigned char * ) pxBlockToInsert )
 	{
@@ -376,7 +377,7 @@ unsigned char *puc;
 	}
 	else
 	{
-		pxBlockToInsert->pxNextFreeBlock = pxIterator->pxNextFreeBlock;		
+		pxBlockToInsert->pxNextFreeBlock = pxIterator->pxNextFreeBlock;
 	}
 
 	/* If the block being inserted plugged a gab, so was merged with the block
@@ -389,3 +390,25 @@ unsigned char *puc;
 	}
 }
 
+void * pvPortRealloc( void *pv, size_t xWantedSize)
+{
+
+    if (! pv) {
+        return pvPortMalloc(xWantedSize);
+    } else {
+        unsigned portCHAR *puc = ( unsigned portCHAR * ) pv;
+        xBlockLink *pxLink;
+        puc -= heapSTRUCT_SIZE;
+
+        pxLink = (void *)puc;
+        size_t origSize = pxLink->xBlockSize;
+        if (origSize == xWantedSize) {
+            return pv;
+        } else {
+            void *newPv = pvPortMalloc(xWantedSize);
+            memcpy(newPv, pv, xWantedSize < origSize ? xWantedSize : origSize);
+            vPortFree(pv);
+            return newPv;
+        }
+    }
+}

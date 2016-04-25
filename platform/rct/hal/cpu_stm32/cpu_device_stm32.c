@@ -40,8 +40,8 @@ int cpu_device_init(void)
 
 void cpu_device_reset(int bootloader)
 {
-    struct app_handshake_block *handshake =
-        (struct app_handshake_block *)HANDSHAKE_ADDR;
+    /* struct app_handshake_block *handshake = */
+    /*     (struct app_handshake_block *)HANDSHAKE_ADDR; */
 
     /* Clear any reset flags that might be present (i.e. watchdog) */
     RCC_ClearFlag();

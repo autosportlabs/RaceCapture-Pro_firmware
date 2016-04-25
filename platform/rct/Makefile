@@ -17,6 +17,9 @@ OBJCOPY := $(CROSS_COMPILE)objcopy
 #specify the use of the external crystal
 BOARD_DEFINES = -DPLL_SOURCE_HSE -DUSE_I2C1
 
+# Needed for FreeRTOS GDB debugging
+FREERTOS_LD_FLAGS := -Wl,--undefined=uxTopUsedPriority
+
 ################################################################################
 # Project definition
 ################################################################################
@@ -152,9 +155,12 @@ src-y += $(wildcard $(RC_SRC_DIR)/OBD2/*.c)
 inc-y += $(RC_INCLUDE_DIR)/OBD2
 
 #devices
-src-y += $(RC_SRC_DIR)/devices/bluetooth.c
-src-y += $(RC_SRC_DIR)/devices/null_device.c
+src-y += $(wildcard $(RC_SRC_DIR)/devices/*.c)
 inc-y += $(RC_INCLUDE_DIR)/devices
+
+#drivers
+src-y += $(wildcard $(RC_SRC_DIR)/drivers/*.c)
+inc-y += $(RC_INCLUDE_DIR)/drivers
 
 #devices
 src-y += $(wildcard $(RC_SRC_DIR)/api/*.c)
@@ -168,6 +174,10 @@ inc-y += $(RC_INCLUDE_DIR)/command
 src-y += $(wildcard $(RC_SRC_DIR)/jsmn/*.c)
 inc-y += $(RC_INCLUDE_DIR)/jsmn
 
+#GSM
+src-y += $(wildcard $(RC_SRC_DIR)/gsm/*.c)
+inc-y += $(RC_INCLUDE_DIR)/gsm
+
 #logger
 src-y += $(wildcard $(RC_SRC_DIR)/logger/*.c)
 # STRIP fileWriter.c because we don't want to compile it.
@@ -177,6 +187,14 @@ inc-y += $(RC_INCLUDE_DIR)/logger
 #messaging
 src-y += $(wildcard $(RC_SRC_DIR)/messaging/*.c)
 inc-y += $(RC_INCLUDE_DIR)/messaging
+
+#modem
+src-y += $(wildcard $(RC_SRC_DIR)/modem/*.c)
+inc-y += $(RC_INCLUDE_DIR)/modem
+
+# Tasks
+src-y += $(wildcard $(RC_SRC_DIR)/tasks/*.c)
+inc-y += $(RC_INCLUDE_DIR)/tasks
 
 # CDC-ACM
 src-y += $(wildcard hal/usb_stm32/*.c)
@@ -233,10 +251,22 @@ CFLAGS += -mcpu=cortex-m3 -mthumb
 CFLAGS += $(VERSION_CFLAGS)
 CFLAGS += $(BOARD_DEFINES)
 CFLAGS += -fno-builtin-sprintf
+CFLAGS += -ggdb
+CFLAGS += -Wall -Werror -Wempty-body -Wclobbered -Wignored-qualifiers \
+	-Wmissing-parameter-type -Wold-style-declaration \
+	-Wunused-but-set-parameter
+ifdef DEBUG
+CFLAGS += -D_DEBUG
+CFLAGS += -O0
+else
+CFLAGS += -Os
+endif
 CFLAGS += $(addprefix -I,$(inc-y))
-CFLAGS += -O0 -g
+
 LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld
 LDFLAGS += -Wl,-cref,-u,Reset_Handler,-Map=$(OUTDIR)/main.map,--gc-sections
+LDFLAGS += $(FREERTOS_LD_FLAGS)
+
 AFLAGS := $(CFLAGS)
 
 # disable auto-removing of intermediate files

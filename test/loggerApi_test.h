@@ -79,6 +79,8 @@ class LoggerApiTest : public CppUnit::TestFixture
     CPPUNIT_TEST( testGetVersion);
     CPPUNIT_TEST( testGetStatus);
     CPPUNIT_TEST( testGetCapabilities);
+    CPPUNIT_TEST( testSetWifiClientCfg );
+    CPPUNIT_TEST( testGetWifiClientCfg );
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -134,6 +136,8 @@ public:
     void testGetVersion();
     void testGetStatus();
     void testGetCapabilities();
+    void testSetWifiClientCfg();
+    void testGetWifiClientCfg();
 
 private:
     void testSetScriptFile(string filename);

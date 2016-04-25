@@ -34,7 +34,7 @@
  * Ensure you know what you are doing before you change it.
  *
  * LED outputs are on GPIOA group.  Pins 0 - 2
- * Blue  - A:0 -> LOGGING
+ * Blue  - A:0 -> LOGGING/Telemetry
  * Green - A:1 -> GPS
  * Red   - A:2 -> ERROR
  */
@@ -43,9 +43,9 @@ static struct led_data {
         uint16_t mask;
         bool level;
 } leds[] = {
-        {LED_ERROR,  GPIO_Pin_2, 0},
-        {LED_GPS,    GPIO_Pin_1, 0},
-        {LED_LOGGER, GPIO_Pin_0, 0},
+        {LED_ERROR,     GPIO_Pin_2, 0},
+        {LED_GPS,       GPIO_Pin_1, 0},
+        {LED_TELEMETRY, GPIO_Pin_0, 0},
 };
 
 static bool led_set_level(struct led_data *ld, const bool on)
