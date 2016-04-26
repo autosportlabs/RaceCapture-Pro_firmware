@@ -19,7 +19,6 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "FreeRTOS.h"
 #include "command.h"
 #include "lauxlib.h"
@@ -33,42 +32,137 @@
 #include "mod_string.h"
 #include "printk.h"
 #include "taskUtil.h"
+#include <string.h>
 
-int incorrect_arguments(lua_State *L)
+/**
+ * Called whenever we hit a panic state.  Errors and prints a note
+ * to get in contact with us.  I opted to use this here since it will
+ * be easier to debug in the field instead of using the standard panic.
+ */
+int lua_panic(lua_State *l)
 {
-        return luaL_error(L, "incorrect argument");
+        return luaL_error(l, "BUG. Please inform AutosportLabs");
 }
 
-void registerBaseLuaFunctions(lua_State *L)
+/**
+ * Validates the number of arguments passed.  If either bound is exceeded,
+ * then this method will throw a lua error and will long jump back into
+ * the interpreter, effectively bypassing the remaining C code.
+ */
+void lua_validate_args_count(lua_State *l, const int min, const int max)
 {
-    lua_registerlight(L,"getStackSize", Lua_GetStackSize);
-    lua_registerlight(L,"setTickRate", Lua_SetTickRate);
-    lua_registerlight(L,"getTickRate", Lua_GetTickRate);
-    lua_registerlight(L,"print", Lua_PrintLog);
-    lua_registerlight(L,"println", Lua_PrintLogLn);
-    lua_registerlight(L,"setLogLevel", Lua_SetLogLevel);
-    lua_registerlight(L,"getLogLevel", Lua_GetLogLevel);
-    lua_registerlight(L,"sleep", Lua_Sleep);
+        const int args = lua_gettop(l);
+        if (min <= args && args <= max)
+                return;
+
+        /* If here, then failure. */
+        char buff[64];
+        if (min == max) {
+                sprintf(buff, "Incorrect number of arguments. Expected %d",
+                        min);
+        } else {
+                sprintf(buff, "Incorrect number of arguments. Expected "
+                        "between %d to %d", min, max);
+        }
+
+        luaL_error(l, buff);
 }
 
-int Lua_Sleep(lua_State *L)
+/**
+ * Validates that the argument at idx is of boolean type.  If not
+ * then this method will throw a lua error and will long jump back into
+ * the interpreter, effectively bypassing the remaining C code.
+ */
+void lua_validate_arg_boolean(lua_State *l, const int idx)
 {
-    if (lua_gettop(L) >= 1) {
-        delayMs(lua_tointeger(L,1));
-    }
-    return 0;
+        if (lua_isboolean(l, idx))
+                return;
+
+        char buff[48];
+        sprintf(buff, "Expected boolean argument at position %d", idx);
+        luaL_error(l, buff);
 }
 
-int Lua_GetStackSize(lua_State *L)
+/**
+ * Validates that the argument at idx is of number (int/float) type.
+ * This includes strings that are all digits (like "123.45"). If not
+ * then this method will throw a lua error and will long jump back into
+ * the interpreter, effectively bypassing the remaining C code.
+ */
+void lua_validate_arg_number(lua_State *l, const int idx)
 {
-    lua_pushinteger(L,lua_gettop(L));
-    return 1;
+        if (lua_isnumber(l, idx))
+                return;
+
+        char buff[48];
+        sprintf(buff, "Expected number argument at position %d", idx);
+        luaL_error(l, buff);
 }
 
-int Lua_SetTickRate(lua_State *L)
+/**
+ * Validates that the argument at idx is a string. If not
+ * then this method will throw a lua error and will long jump back into
+ * the interpreter, effectively bypassing the remaining C code.
+ */
+void lua_validate_arg_string(lua_State *l, const int idx)
 {
-        if (lua_gettop(L) != 1 || !lua_isnumber(L, 1))
-                return incorrect_arguments(L);
+        if (lua_isstring(l, idx))
+                return;
+
+        char buff[48];
+        sprintf(buff, "Expected string argument at position %d", idx);
+        luaL_error(l, buff);
+}
+
+/**
+ * Validates that the argument at idx is a number or a string. If not
+ * then this method will throw a lua error and will long jump back into
+ * the interpreter, effectively bypassing the remaining C code.
+ */
+void lua_validate_arg_number_or_string(lua_State *l, const int idx)
+{
+        if (lua_isnumber(l, idx) || lua_isstring(l, idx))
+                return;
+
+        char buff[64];
+        sprintf(buff, "Expected number or string argument at position %d",
+                idx);
+        luaL_error(l, buff);
+}
+
+/**
+ * Validates that the argument at idx is a table. If not
+ * then this method will throw a lua error and will long jump back into
+ * the interpreter, effectively bypassing the remaining C code.
+ */
+void lua_validate_arg_table(lua_State *l, const int idx)
+{
+        if (lua_isstring(l, idx))
+                return;
+
+        char buff[48];
+        sprintf(buff, "Expected table argument at position %d", idx);
+        luaL_error(l, buff);
+}
+
+static int lua_sleep(lua_State *L)
+{
+        lua_validate_args_count(L, 1, 1);
+
+        delayMs(lua_tointeger(L, 1));
+        return 0;
+}
+
+static int lua_get_stack_size(lua_State *L)
+{
+        lua_pushinteger(L, lua_gettop(L));
+        return 1;
+}
+
+static int lua_set_tick_rate(lua_State *L)
+{
+        lua_validate_args_count(L, 1, 1);
+        lua_validate_arg_number(L, 1);
 
         const size_t res = lua_task_set_callback_freq(lua_tointeger(L, 1));
         if (!res)
@@ -78,60 +172,80 @@ int Lua_SetTickRate(lua_State *L)
         return 1;
 }
 
-int Lua_GetTickRate(lua_State *L)
+static int lua_get_tick_rate(lua_State *L)
 {
-    lua_pushinteger(L, lua_task_get_callback_freq());
-    return 1;
+        lua_pushinteger(L, lua_task_get_callback_freq());
+        return 1;
 }
 
-static int printLog(lua_State *L, int addNewline)
+static int log_print(lua_State *L, bool addNewline)
 {
-        if (0 == lua_gettop(L))
-                return 0;
+        lua_validate_args_count(L, 0, 2);
 
-        const char *msg = lua_tostring(L, 1);
-        const int level = lua_gettop(L) >= 2 ? lua_tointeger(L, 2) : INFO;
+        int level = INFO;
+        const char *msg;
+
+        switch(lua_gettop(L)) {
+        case 0:
+                return 0;
+        case 2:
+                lua_validate_arg_number(L, 2);
+                level = lua_tointeger(L, 2);
+        case 1:
+                lua_validate_arg_string(L, 1);
+                msg = lua_tostring(L, 1);
+        default:
+                return lua_panic(L);
+        }
 
         if (in_interactive_mode()) {
                 struct Serial *serial = get_command_context()->serial;
                 if (serial) {
                         serial_put_s(serial, lua_tostring(L,1));
-                        if (addNewline) {
+                        if (addNewline)
                                 put_crlf(serial);
-                        }
                 }
         }
 
         printk(level, msg);
-
-        if (addNewline) {
+        if (addNewline)
                 printk(level, "\r\n");
-        }
 
         return 0;
 }
 
-int Lua_PrintLogLn(lua_State *L)
+static int lua_log_println(lua_State *L)
 {
-    return printLog(L, 1);
+        return log_print(L, true);
 }
 
-int Lua_PrintLog(lua_State *L)
+static int lua_log_print(lua_State *L)
 {
-    return printLog(L, 0);
+        return log_print(L, false);
 }
 
-int Lua_SetLogLevel(lua_State *L)
+static int lua_log_set_level(lua_State *L)
 {
-    if (lua_gettop(L) >= 1) {
-        int level = lua_tointeger(L, 1);
-        set_log_level(level);
-    }
-    return 0;
+        lua_validate_args_count(L, 1, 1);
+
+        set_log_level(lua_tointeger(L, 1));
+        return 0;
 }
 
-int Lua_GetLogLevel(lua_State *L)
+static int lua_log_get_level(lua_State *L)
 {
-    lua_pushinteger(L, get_log_level());
-    return 1;
+        lua_pushinteger(L, get_log_level());
+        return 1;
+}
+
+void registerBaseLuaFunctions(lua_State *L)
+{
+        lua_registerlight(L, "getStackSize", lua_get_stack_size);
+        lua_registerlight(L, "setTickRate", lua_set_tick_rate);
+        lua_registerlight(L, "getTickRate", lua_get_tick_rate);
+        lua_registerlight(L, "print", lua_log_print);
+        lua_registerlight(L, "println", lua_log_println);
+        lua_registerlight(L, "setLogLevel", lua_log_set_level);
+        lua_registerlight(L, "getLogLevel", lua_log_get_level);
+        lua_registerlight(L, "sleep", lua_sleep);
 }
