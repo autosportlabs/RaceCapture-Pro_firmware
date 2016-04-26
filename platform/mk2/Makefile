@@ -127,19 +127,19 @@ $(TARGET).ihex: $(TARGET).bin
 
 $(TARGET).bin: $(TARGET).elf
 	@printf "  OBJCOPY $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(PREFIX)-objcopy -Obinary $< $@
+	$(Q) $(PREFIX)-objcopy -Obinary $< $@
 
 $(TARGET).elf: $(OBJS)
 	@printf "  LD      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CC) $(OBJS) $(LDFLAGS) -o $@
+	$(Q) $(CC) $(OBJS) $(LDFLAGS) -o $@
 
 .c.o:
 	@printf "  CC      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CC) $(CFLAGS) -D_RCP_BASE_FILE_="\"$(notdir $<): \"" $< -o $@
+	$(Q) $(CCACHE) $(CC) $(CFLAGS) -D_RCP_BASE_FILE_="\"$(notdir $<): \"" $< -o $@
 
 .s.o:
 	@printf "  AS      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CC) $(ASFLAGS) -c $< -o $@
+	$(Q) $(CCACHE) $(CC) $(ASFLAGS) -c $< -o $@
 
 clean:
 	$(Q)rm -f *.o *.a *.d ../*.o ../*.d \
