@@ -19,15 +19,22 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "mock_serial.h"
+#include "serial.h"
 #include "usart.h"
+
+struct Serial* usart_device_get_serial(const uart_id_t p)
+{
+        setupMockSerial();
+        return getMockSerial();
+}
 
 int usart_device_init()
 {
     return 1;
 }
 
-int usart_device_init_serial(Serial *serial, uart_id_t id)
+int usart_device_init_serial(struct Serial *serial, uart_id_t id)
 {
     return 1;
 }

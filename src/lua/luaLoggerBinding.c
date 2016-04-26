@@ -267,6 +267,16 @@ static int lua_get_button(lua_State *L)
         return 1;
 }
 
+static struct Serial* lua_get_serial(lua_State *L, const serial_id_t pid)
+{
+        struct Serial *serial = serial_device_get(pid);
+        if (!serial)
+                /* This will never return. */
+                luaL_error(L, "Serial port not found");
+
+        return serial;
+}
+
 /**
  * Initializes the specified serial port
  * Lua Params:
@@ -304,11 +314,11 @@ static int lua_init_serial(lua_State *L)
         case 1:
                 lua_validate_arg_number(L, 1);
                 port = lua_tointeger(L, 1);
-        case 0:
-                configure_serial(port, bits, parity, stop_bits, baud);
-                lua_pushboolean(L, true);
-                break;
         }
+
+        struct Serial* serial = lua_get_serial(L, port);
+        serial_config(serial, bits, parity, stop_bits, baud);
+        lua_pushboolean(L, true);
 
         return 1;
 }
@@ -340,11 +350,8 @@ static int lua_serial_read_char(lua_State *L)
                 port = (serial_id_t) lua_tointeger(L, 1);
         }
 
-        Serial *serial = get_serial(port);
-        if (!serial)
-                return luaL_error(L, "Serial port not found");
-
         char c;
+        struct Serial *serial = lua_get_serial(L, port);
         if (serial_get_c_wait(serial, &c, timeout)) {
                 lua_pushlstring(L, &c, 1);
         } else {
@@ -380,10 +387,7 @@ static int lua_serial_read_line(lua_State *L)
                 port = (serial_id_t) lua_tointeger(L, 1);
         }
 
-        Serial *serial = get_serial(port);
-        if (!serial)
-                return luaL_error(L, "Serial port not found");
-
+        struct Serial *serial = lua_get_serial(L, port);
         /* STIEG: Would be nice to be rid of that tempBuffer */
         if (serial_get_line_wait(serial, g_tempBuffer, TEMP_BUFFER_LEN,
                                  timeout)) {
@@ -416,12 +420,10 @@ static int lua_serial_write_line(lua_State *L)
         const serial_id_t port = (serial_id_t) lua_tointeger(L, 1);
         const char *data = lua_tostring(L, 2);
 
-        Serial *serial = get_serial(port);
-        if (!serial)
-                return luaL_error(L, "Serial port not found");
-
+        struct Serial *serial = lua_get_serial(L, port);
         serial_put_s(serial, data);
         serial_put_c(serial, '\n');
+
         return 0;
 }
 
@@ -447,11 +449,9 @@ static int lua_serial_write_char(lua_State *L)
         const serial_id_t port = (serial_id_t) lua_tointeger(L, 1);
         const char *data = lua_tostring(L, 2);
 
-        Serial *serial = get_serial(port);
-        if (!serial)
-                return luaL_error(L, "Serial port not found");
-
+        struct Serial *serial = lua_get_serial(L, port);
         serial_put_c(serial, *data);
+
         return 0;
 }
 

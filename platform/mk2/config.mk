@@ -51,7 +51,9 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/OBD2/OBD2_task.c \
 			$(RCP_SRC)/OBD2/OBD2.c \
 			$(RCP_SRC)/jsmn/jsmn.c \
+			$(RCP_SRC)/serial/rx_buff.c \
 			$(RCP_SRC)/serial/serial.c \
+			$(RCP_SRC)/serial/serial_device.c \
 			$(RCP_SRC)/serial/serial_buffer.c \
 			$(RCP_SRC)/usart/usart.c \
 			$(RCP_SRC)/cpu/cpu.c \
@@ -62,6 +64,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/ADC/ADC.c \
 			$(RCP_SRC)/GPIO/GPIO.c \
 			$(RCP_SRC)/GPIO/gpioTasks.c \
+			$(RCP_SRC)/tasks/wifi.c \
 			$(RCP_SRC)/watchdog/watchdog.c \
 			$(RCP_SRC)/launch_control.c \
 			$(RCP_SRC)/lap_stats/lap_stats.c \
@@ -94,14 +97,17 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/logger/connectivityTask.c \
 			$(RCP_SRC)/logger/sampleRecord.c \
 			$(RCP_SRC)/devices/bluetooth.c \
+			$(RCP_SRC)/devices/esp8266.c \
 			$(RCP_SRC)/devices/sara_u280.c \
 			$(RCP_SRC)/devices/sim900.c \
 			$(RCP_SRC)/devices/null_device.c \
 			$(RCP_SRC)/devices/cellular.c \
 			$(RCP_SRC)/devices/cellular_api_status_keys.c \
+			$(RCP_SRC)/drivers/esp8266_drv.c \
 			$(RCP_SRC)/tracks/tracks.c \
 			$(RCP_SRC)/auto_config/auto_track.c \
 			$(RCP_SRC)/messaging/messaging.c \
+			$(RCP_SRC)/modem/at.c \
 			$(RCP_SRC)/LED/led.c \
 			$(RCP_SRC)/PWM/PWM.c \
 			$(RCP_SRC)/logging/printk.c \
@@ -115,6 +121,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/util/modp_numtoa.c \
 			$(RCP_SRC)/util/panic.c \
 			$(RCP_SRC)/util/byteswap.c \
+			$(RCP_SRC)/util/str_util.c \
 			$(RCP_SRC)/util/taskUtil.c \
 			$(RCP_SRC)/sdcard/sdcard.c \
 			$(HAL_SRC)/cell_device/cell_pwr_btn.c \
@@ -160,6 +167,7 @@ APP_INCLUDES += -I. \
 				-I$(INCLUDE_DIR)/api \
 				-I$(INCLUDE_DIR)/logger \
 				-I$(INCLUDE_DIR)/channels \
+				-I$(INCLUDE_DIR)/tasks \
 				-I$(INCLUDE_DIR)/tracks \
 				-I$(INCLUDE_DIR)/logging \
 				-I$(INCLUDE_DIR)/filter \
@@ -181,9 +189,11 @@ APP_INCLUDES += -I. \
 				-I$(INCLUDE_DIR)/lua \
 				-I$(INCLUDE_DIR)/imu \
 				-I$(INCLUDE_DIR)/messaging \
+				-I$(INCLUDE_DIR)/modem \
 				-I$(INCLUDE_DIR)/predictive_timer \
 				-I$(INCLUDE_DIR)/util \
 				-I$(INCLUDE_DIR)/devices \
+				-I$(INCLUDE_DIR)/drivers \
 				-I$(INCLUDE_DIR)/gps \
 				-I$(INCLUDE_DIR)/gsm \
 				-I$(INCLUDE_DIR)/lap_stats \

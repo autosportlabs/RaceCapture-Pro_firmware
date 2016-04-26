@@ -36,18 +36,15 @@
 #include <usb_prop.h>
 #include <usb_pwr.h>
 
+/* STIEG: Make this device support buffered Tx */
+#define USB_TX_BUF_CAP	128
+#define USB_RX_BUF_CAP	512
 #define USB_BUF_ELTS(in, out, bufsize) ((in - out + bufsize) % bufsize)
 
 static struct {
 	uint8_t USB_Rx_Buffer[VIRTUAL_COM_PORT_DATA_SIZE];
 	uint8_t USB_Tx_Buffer[VIRTUAL_COM_PORT_DATA_SIZE];
-	volatile uint32_t USB_Tx_ptr_in;
-	volatile uint32_t USB_Tx_ptr_out;
-	volatile uint32_t USB_Rx_ptr_in;
-	volatile uint32_t USB_Rx_ptr_out;
-	volatile int _init_flag;
-	xSemaphoreHandle _rlock;
-	xSemaphoreHandle _wlock;
+        struct Serial *serial;
 } usb_state;
 
 /*
@@ -76,7 +73,7 @@ static int USB_CDC_force_reenumeration(void)
 
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
-
+        return 0;
 }
 
 /* Public API */
@@ -86,115 +83,28 @@ int USB_CDC_device_init(const int priority)
 	USB_CDC_force_reenumeration();
 
 	/* Create read/write mutexes */
-	usb_state._rlock = xSemaphoreCreateMutex();
-	usb_state._wlock = xSemaphoreCreateMutex();
-
-	if (NULL == usb_state._rlock || NULL == usb_state._wlock) {
+        usb_state.serial = serial_create("USB", USB_TX_BUF_CAP, USB_RX_BUF_CAP,
+                                         NULL, NULL, NULL, NULL);
+	if (NULL == usb_state.serial)
 		return -1;
-	}
 
 	Set_System();
 	Set_USBClock();
 
 	USB_Interrupts_Config();
-
 	USB_Init();
-
-	usb_state._init_flag = 1;
 
 	return 0;
 }
 
-void USB_CDC_Write(portCHAR *cByte, int len)
+struct Serial* USB_CDC_get_serial()
 {
-	xSemaphoreTake(usb_state._wlock, portMAX_DELAY);
-	while (len--) {
-		/*
-		 * If the transmit buffer is full, wait until the USB
-		 * hardware has had time to flush it out
-		 */
-		uint16_t usb_buf_elements = USB_BUF_ELTS(usb_state.USB_Tx_ptr_in,
-							 usb_state.USB_Tx_ptr_out,
-							 VIRTUAL_COM_PORT_DATA_SIZE);
-
-		while (VIRTUAL_COM_PORT_DATA_SIZE - 1 == usb_buf_elements) {
-			portYIELD();
-			usb_buf_elements = USB_BUF_ELTS(usb_state.USB_Tx_ptr_in,
-							usb_state.USB_Tx_ptr_out,
-							VIRTUAL_COM_PORT_DATA_SIZE);
-		}
-
-		usb_state.USB_Tx_Buffer[usb_state.USB_Tx_ptr_in] = *cByte++;
-
-		/* Handle wrapping */
-		if(VIRTUAL_COM_PORT_DATA_SIZE - 1 == usb_state.USB_Tx_ptr_in) {
-			usb_state.USB_Tx_ptr_in = 0;
-		} else {
-			usb_state.USB_Tx_ptr_in++;
-		}
-
-	}
-	xSemaphoreGive(usb_state._wlock);
-}
-
-void USB_CDC_SendByte( portCHAR cByte )
-{
-	USB_CDC_Write(&cByte, 1);
-}
-
-portBASE_TYPE USB_CDC_ReceiveByte(portCHAR *data)
-{
-	return USB_CDC_ReceiveByteDelay(data, 0);
-}
-
-portBASE_TYPE USB_CDC_ReceiveByteDelay(portCHAR *data, portTickType delay )
-{
-	xSemaphoreTake(usb_state._rlock, portMAX_DELAY);
-	int ret = 1;
-	bool byte_received = false;
-
-	while (!byte_received) {
-		if (usb_state.USB_Rx_ptr_out != usb_state.USB_Rx_ptr_in) {
-			*data = usb_state.USB_Rx_Buffer[usb_state.USB_Rx_ptr_out++];
-			/*
-			 * If we've cleared the buffer, send a signal to the
-			 * USB hardware to stop NAKing packets and to
-			 * continue receiving
-			 */
-			if (usb_state.USB_Rx_ptr_out == usb_state.USB_Rx_ptr_in) {
-				/* Enable the receive of data on EP3 */
-				SetEPRxValid(ENDP3);
-			}
-
-			/*
-			 * Note: We don't need to handle wrapping in
-			 * the receive calls because we always fill
-			 * the rx buffer from the start and drain to
-			 * completion
-			 */
-			byte_received = true;
-		} else {
-			if (delay == portMAX_DELAY) {
-				portYIELD();
-			} else if (delay) {
-				portYIELD();
-				delay--;
-			} else {
-				ret = 0;
-				goto unlock_and_return;
-			}
-		}
-	}
-
-unlock_and_return:
-	xSemaphoreGive(usb_state._rlock);
-
-	return ret;
+        return (struct Serial*) usb_state.serial;
 }
 
 int USB_CDC_is_initialized()
 {
-	return usb_state._init_flag;
+        return NULL != usb_state.serial;
 }
 
 /* Private USB Stack callbacks */
@@ -204,36 +114,26 @@ int USB_CDC_is_initialized()
  * Example, which is covered under the V2 Liberty License:
  * http://www.st.com/software_license_agreement_liberty_v2
  */
-void usb_handle_transfer(void)
+static void usb_handle_transfer(void)
 {
-	uint16_t USB_Tx_length = USB_BUF_ELTS(usb_state.USB_Tx_ptr_in,
-					      usb_state.USB_Tx_ptr_out,
-					      VIRTUAL_COM_PORT_DATA_SIZE);
+        portBASE_TYPE hpta = false;
+        xQueueHandle queue = serial_get_tx_queue(usb_state.serial);
+        uint8_t *buff = usb_state.USB_Tx_Buffer;
+        size_t len;
 
-	if(0 == USB_Tx_length) {
+        for (len = 0; len < VIRTUAL_COM_PORT_DATA_SIZE; ++len)
+                if (!xQueueReceiveFromISR(queue, buff + len, &hpta))
+                        break;
+
+        /* Check if we actually have something to send */
+	if (0 == len)
 		return;
-	}
 
-	/*
-	 * Handle the situation where we can only transmit to the end
-	 * of the buffer in this packet
-	 */
-	if(usb_state.USB_Tx_ptr_out > usb_state.USB_Tx_ptr_in) {
-		USB_Tx_length = (VIRTUAL_COM_PORT_DATA_SIZE -
-				 usb_state.USB_Tx_ptr_out);
-	}
-
-	UserToPMABufferCopy(&usb_state.USB_Tx_Buffer[usb_state.USB_Tx_ptr_out],
-			    ENDP1_TXADDR, USB_Tx_length);
-	usb_state.USB_Tx_ptr_out += USB_Tx_length;
-
-	/* Handle wrapping */
-	if (VIRTUAL_COM_PORT_DATA_SIZE == usb_state.USB_Tx_ptr_out) {
-		usb_state.USB_Tx_ptr_out = 0;
-	}
-
-	SetEPTxCount(ENDP1, USB_Tx_length);
+	UserToPMABufferCopy(usb_state.USB_Tx_Buffer, ENDP1_TXADDR, len);
+	SetEPTxCount(ENDP1, len);
 	SetEPTxValid(ENDP1);
+
+        portEND_SWITCHING_ISR(hpta);
 }
 
 void EP1_IN_Callback (void)
@@ -243,15 +143,24 @@ void EP1_IN_Callback (void)
 
 void EP3_OUT_Callback(void)
 {
+        portBASE_TYPE hpta = false;
+        xQueueHandle queue = serial_get_rx_queue(usb_state.serial);
+        uint8_t *buff = usb_state.USB_Rx_Buffer;
+
 	/* Get the received data buffer and clear the counter */
-	usb_state.USB_Rx_ptr_in = USB_SIL_Read(EP3_OUT, usb_state.USB_Rx_Buffer);
-	usb_state.USB_Rx_ptr_out = 0;
+	const size_t len = USB_SIL_Read(EP3_OUT, buff);
+
+        for (size_t i = 0; i < len; ++i)
+                xQueueSendFromISR(queue, buff + i, &hpta);
 
 	/*
-	 * USB data will be processed by handler threads, we will
-	 * continue to NAK packets until such a time as all of the
-	 * prior data has been handled
+         * STIEG HACK
+         * For now just assume that all the data made it into the queue.  This
+         * is what we do in MK2.  Probably shouldn't go out the door like this.
 	 */
+        SetEPRxValid(ENDP3);
+
+        portEND_SWITCHING_ISR(hpta);
 }
 
 void SOF_Callback(void)

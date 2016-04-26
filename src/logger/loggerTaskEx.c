@@ -106,8 +106,10 @@ static void logging_stopped()
 
 void startLoggerTaskEx(int priority)
 {
-    xTaskCreate(loggerTaskEx, ( signed portCHAR * ) "logger",
-                 LOGGER_STACK_SIZE, NULL, priority, NULL );
+        /* Make all task names 16 chars including NULL char */
+        static const signed portCHAR task_name[] = "Logger Task    ";
+        xTaskCreate(loggerTaskEx, task_name, LOGGER_STACK_SIZE,
+                    NULL, priority, NULL );
 }
 
 static int init_sample_ring_buffer(LoggerConfig *loggerConfig)

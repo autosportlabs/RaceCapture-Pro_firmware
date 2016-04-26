@@ -29,18 +29,25 @@
 
 CPP_GUARD_BEGIN
 
+/*
+ * This must remain a 0 based enum as its values are used to
+ * retrieve data from an internal array.
+ */
 typedef enum {
     UART_GPS = 0,
     UART_TELEMETRY,
     UART_WIRELESS,
-    UART_AUX
+    UART_AUX,
+    __UART_COUNT, /* Maximum number of UART devices */
 } uart_id_t;
 
-#define SERIAL_COUNT 5
-
 int usart_init();
-int usart_init_serial(Serial *serial, uart_id_t port);
-void usart_config(uart_id_t port, uint8_t bits, uint8_t parity, uint8_t stopbits, uint32_t baud);
+
+struct Serial* get_serial(uart_id_t id);
+
+void usart_config(const uart_id_t id, const size_t bits,
+                  const size_t parity, const size_t stop_bits,
+                  const size_t baud);
 
 CPP_GUARD_END
 

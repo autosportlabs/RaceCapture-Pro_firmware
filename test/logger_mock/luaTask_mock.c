@@ -21,8 +21,9 @@
 
 #include "capabilities.h"
 #include "luaTask.h"
+#include "serial.h"
 
-void lua_task_run_interactive_cmd(Serial *serial, const char* cmd) {}
+void lua_task_run_interactive_cmd(struct Serial *serial, const char* cmd) {}
 
 struct lua_runtime_info lua_task_get_runtime_info()
 {

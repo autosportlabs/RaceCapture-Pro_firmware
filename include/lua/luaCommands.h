@@ -38,10 +38,10 @@ CPP_GUARD_BEGIN
 #define LUA_COMMANDS
 #endif /* LUA_SUPPORT */
 
-Serial *getLuaSerialContext();
-void ExecLuaInterpreter(Serial *serial, unsigned int argc, char **argv);
-void ReloadScript(Serial *serial, unsigned int argc, char **argv);
-void ShowMemInfo(Serial *serial, unsigned int argc, char **argv);
+struct Serial *getLuaSerialContext();
+void ExecLuaInterpreter(struct Serial *serial, unsigned int argc, char **argv);
+void ReloadScript(struct Serial *serial, unsigned int argc, char **argv);
+void ShowMemInfo(struct Serial *serial, unsigned int argc, char **argv);
 
 int in_interactive_mode();
 

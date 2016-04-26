@@ -50,15 +50,15 @@ CPP_GUARD_BEGIN
                        "", FlashConfig)                                 \
 
 
-void ResetConfig(Serial *serial, unsigned int argc, char **argv);
-void TestSD(Serial *serial, unsigned int argc, char **argv);
+void ResetConfig(struct Serial *serial, unsigned int argc, char **argv);
+void TestSD(struct Serial *serial, unsigned int argc, char **argv);
 
-void StartTerminal(Serial *serial, unsigned int argc, char **argv);
-void ViewLog(Serial *serial, unsigned int argc, char **argv);
-void SetLogLevel(Serial *serial, unsigned int argc, char **argv);
-void LogGpsData(Serial *serial, unsigned int argc, char **argv);
-void SetSerialLog(Serial *serial, unsigned int argc, char **argv);
-void FlashConfig(Serial *serial, unsigned int argc, char **argv);
+void StartTerminal(struct Serial *serial, unsigned int argc, char **argv);
+void ViewLog(struct Serial *serial, unsigned int argc, char **argv);
+void SetLogLevel(struct Serial *serial, unsigned int argc, char **argv);
+void LogGpsData(struct Serial *serial, unsigned int argc, char **argv);
+void SetSerialLog(struct Serial *serial, unsigned int argc, char **argv);
+void FlashConfig(struct Serial *serial, unsigned int argc, char **argv);
 
 CPP_GUARD_END
 

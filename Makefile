@@ -21,7 +21,7 @@
 
 
 export MAJOR  := 2
-export MINOR  := 9
+export MINOR  := 10
 export BUGFIX := 0
 export API    := 1
 
@@ -58,7 +58,6 @@ export VERSION_CFLAGS := \
 -DBUGFIX_REV=$(BUGFIX) \
 -DRC_BUILD_GIT_DESCRIPTION=$(GIT_DESCRIPTION) \
 -DRC_BUILD_RELEASE_TYPE=$(RELEASE_TYPE) \
-
 
 Q := @
 PHONY :=
@@ -147,6 +146,10 @@ PHONY += rct-clean
 rct-clean:
 	$(MAKE) -C $(RCT_DIR) clean
 
+PHONY += rct-flash
+rct-flash: rct-build
+	cd $(RCT_DIR) && openocd -f openocd_flash.cfg
+
 PHONY += rct-pristine
 rct-pristine: rct-clean
 	$(MAKE) rct-build
@@ -169,6 +172,8 @@ clean:
 	-name "*.d"   -o \
 	-name "*.lst" -o \
 	-name "*.o"      \
+	-name "*.elf"      \
+	-name "*.hex"      \
 	| xargs rm -f
 
 package: clean
