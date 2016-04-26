@@ -179,34 +179,34 @@ static void enableRxDMA(uint32_t RCC_AHBPeriph,
 static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
                           uint8_t IRQ_priority, uart_irq_type_t irqType)
 {
-    NVIC_InitTypeDef NVIC_InitStructure;
+        NVIC_InitTypeDef NVIC_InitStructure;
 
-    /* Test to clear the Error Flags */
-    USART_ITConfig(USARTx, USART_IT_WU, DISABLE);
-    USART_ITConfig(USARTx, USART_IT_CM, DISABLE);
-    USART_ITConfig(USARTx, USART_IT_EOB, DISABLE);
-    USART_ITConfig(USARTx, USART_IT_RTO, DISABLE);
-    USART_ITConfig(USARTx, USART_IT_CTS, DISABLE);
-    USART_ITConfig(USARTx, USART_IT_LBD, DISABLE);
-    USART_ITConfig(USARTx, USART_IT_TC, DISABLE);
-    USART_ITConfig(USARTx, USART_IT_IDLE, DISABLE);
-    USART_ITConfig(USARTx, USART_IT_PE, DISABLE);
-    USART_ITConfig(USARTx, USART_IT_ERR, DISABLE);
+        /* Configure the NVIC Preemption Priority Bits */
+        NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 
-    /* Configure the NVIC Preemption Priority Bits */
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+        /* Enable the USART Interrupt */
+        NVIC_InitStructure.NVIC_IRQChannel = usartIrq;
+        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = IRQ_priority;
+        NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+        NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+        NVIC_Init(&NVIC_InitStructure);
 
-    /* Enable the USART Interrupt */
-    NVIC_InitStructure.NVIC_IRQChannel = usartIrq;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = IRQ_priority;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+        /* Explicitly disable most interrupts.  Only enable ones we want */
+        USART_ITConfig(USARTx, USART_IT_WU, DISABLE);
+        USART_ITConfig(USARTx, USART_IT_CM, DISABLE);
+        USART_ITConfig(USARTx, USART_IT_EOB, DISABLE);
+        USART_ITConfig(USARTx, USART_IT_RTO, DISABLE);
+        USART_ITConfig(USARTx, USART_IT_CTS, DISABLE);
+        USART_ITConfig(USARTx, USART_IT_LBD, DISABLE);
+        USART_ITConfig(USARTx, USART_IT_TC, DISABLE);
+        USART_ITConfig(USARTx, USART_IT_IDLE, DISABLE);
+        USART_ITConfig(USARTx, USART_IT_PE, DISABLE);
+        USART_ITConfig(USARTx, USART_IT_ERR, DISABLE);
 
-    if (irqType | UART_RX_IRQ)
-        USART_ITConfig(USARTx, USART_IT_RXNE, ENABLE);
-    if (irqType | UART_TX_IRQ)
-        USART_ITConfig(USARTx, USART_IT_TXE, ENABLE);
+        if (irqType | UART_RX_IRQ)
+                USART_ITConfig(USARTx, USART_IT_RXNE, ENABLE);
+        if (irqType | UART_TX_IRQ)
+                USART_ITConfig(USARTx, USART_IT_TXE, ENABLE);
 }
 
 /* Wireless port */
@@ -393,7 +393,6 @@ static void usart_generic_irq_handler(volatile struct usart_info *ui)
         USART_TypeDef *usart = ui->usart;
         signed portCHAR cChar;
         portBASE_TYPE xTaskWokenByTx = pdFALSE;
-        bool done_work = false;
 
         if (SET == USART_GetITStatus(usart, USART_IT_TXE)) {
                 /*
@@ -415,8 +414,6 @@ static void usart_generic_irq_handler(volatile struct usart_info *ui)
                          */
                         USART_ITConfig(usart, USART_IT_TXE, DISABLE);
                 }
-
-                done_work = true;
         }
 
         portBASE_TYPE xTaskWokenByPost = pdFALSE;
@@ -429,24 +426,21 @@ static void usart_generic_irq_handler(volatile struct usart_info *ui)
                 cChar = USART_ReceiveData(usart);
                 xQueueHandle rx_queue = serial_get_rx_queue(ui->serial);
                 xQueueSendFromISR(rx_queue, &cChar, &xTaskWokenByPost);
-                done_work = true;
         }
 
-        if (!done_work) {
-                /* Testing hack to try to eliminate interrupts */
-                USART_ClearITPendingBit(usart, USART_IT_WU);
-                USART_ClearITPendingBit(usart, USART_IT_CM);
-                USART_ClearITPendingBit(usart, USART_IT_EOB);
-                USART_ClearITPendingBit(usart, USART_IT_RTO);
-                USART_ClearITPendingBit(usart, USART_IT_CTS);
-                USART_ClearITPendingBit(usart, USART_IT_LBD);
-                USART_ClearITPendingBit(usart, USART_IT_TC);
-                USART_ClearITPendingBit(usart, USART_IT_IDLE);
-                USART_ClearITPendingBit(usart, USART_IT_ORE);
-                USART_ClearITPendingBit(usart, USART_IT_NE);
-                USART_ClearITPendingBit(usart, USART_IT_FE);
-                USART_ClearITPendingBit(usart, USART_IT_PE);
-        }
+        /*
+         * ORE interrupt can occur when USART_IT_RXNE interrupt is active
+         * OR when USART_IT_ERR interrupt is active. See page 933 of the
+         * STm32F3XX manual for a logic diagram.  If ORE triggers it won't
+         * necessarily set the USART_IT_ORE interrupt flag because we
+         * disable the USART_IT_ERR interrupt.  This breaks the check
+         * provided by USART_GetITStatus(usart, USART_IT_ORE).  This bug has
+         * been fixed in the STM32F4XX libs, but not this series :(.  Thus
+         * we must check the ISR directly to see if this is what caused the
+         * interrupt and clear it appropriately.
+         */
+        if (SET == USART_GetFlagStatus(usart, USART_FLAG_ORE))
+                USART_ClearFlag(usart, USART_FLAG_ORE);
 
         /*
          * If a task was woken by either a character being received or a
@@ -459,39 +453,6 @@ static void usart_generic_irq_handler(volatile struct usart_info *ui)
 
 void USART1_IRQHandler(void)
 {
-        volatile struct usart_info *ui = usart_data + UART_WIRELESS;
-        USART_TypeDef *usart = ui->usart;
-
-        ITStatus wu_status = USART_GetITStatus(usart, USART_FLAG_WU);
-        ITStatus cm_status = USART_GetITStatus(usart, USART_FLAG_CM);
-        ITStatus eob_status = USART_GetITStatus(usart, USART_FLAG_EOB);
-        ITStatus rto_status = USART_GetITStatus(usart, USART_FLAG_RTO);
-        ITStatus cts_status = USART_GetITStatus(usart, USART_FLAG_CTS);
-        ITStatus lbd_status = USART_GetITStatus(usart, USART_FLAG_LBD);
-        ITStatus txe_status = USART_GetITStatus(usart, USART_FLAG_TXE);
-        ITStatus tc_status = USART_GetITStatus(usart, USART_FLAG_TC);
-        ITStatus rxne_status = USART_GetITStatus(usart, USART_FLAG_RXNE);
-        ITStatus idle_status = USART_GetITStatus(usart, USART_FLAG_IDLE);
-        ITStatus ore_status = USART_GetITStatus(usart, USART_FLAG_ORE);
-        ITStatus ne_status = USART_GetITStatus(usart, USART_FLAG_NE);
-        ITStatus fe_status = USART_GetITStatus(usart, USART_FLAG_FE);
-        ITStatus pe_status = USART_GetITStatus(usart, USART_FLAG_PE);
-
-        (void) wu_status;
-        (void) cm_status;
-        (void) eob_status;
-        (void) rto_status;
-        (void) cts_status;
-        (void) lbd_status;
-        (void) txe_status;
-        (void) tc_status;
-        (void) rxne_status;
-        (void) idle_status;
-        (void) ore_status;
-        (void) ne_status;
-        (void) fe_status;
-        (void) pe_status;
-
         usart_generic_irq_handler(usart_data + UART_WIRELESS);
 }
 
