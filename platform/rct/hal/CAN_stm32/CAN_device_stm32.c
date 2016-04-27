@@ -13,8 +13,7 @@
 #include "printk.h"
 #include "led.h"
 
-static xQueueHandle xCan1Tx = NULL;
-static xQueueHandle xCan1Rx = NULL;
+static xQueueHandle xCan1Rx;
 
 #define CAN_QUEUE_LENGTH	10
 
@@ -44,23 +43,15 @@ static const u32 can_baud_rate[] = { 100000, 125000, 250000, 500000, 1000000 };
 
 static int initQueues()
 {
-    RCC_ClocksTypeDef clocks;
-    RCC_GetClocksFreq(&clocks);
-
-    int success = 1;
-
-    if (!(xCan1Rx && xCan1Tx)) {
-        xCan1Rx = xQueueCreate(CAN_QUEUE_LENGTH,
-                               (unsigned portBASE_TYPE)
-                               sizeof(CanRxMsg));
-        if (xCan1Rx == NULL) {
-            success = 0;
-            goto cleanup_and_return;
+        if (!xCan1Rx) {
+                xCan1Rx = xQueueCreate(CAN_QUEUE_LENGTH,
+                                       (unsigned portBASE_TYPE)
+                                       sizeof(CanRxMsg));
+                if (!xCan1Rx)
+                        return 0;
         }
-    }
 
-cleanup_and_return:
-    return success;
+        return 1;
 }
 
 static void initGPIO(GPIO_TypeDef * GPIOx, uint32_t gpioPins)
@@ -154,7 +145,6 @@ static void CAN_device_init_1(int baud)
 
 int CAN_device_init(uint8_t channel, uint32_t baud)
 {
-
     pr_info("CAN");
     pr_info_int(channel);
     pr_info(" init @ ");
