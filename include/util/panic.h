@@ -32,6 +32,7 @@ enum panic_cause {
         PANIC_CAUSE_OVERFLOW    = 3,
         PANIC_CAUSE_MALLOC      = 4,
         PANIC_CAUSE_UNREACHABLE = 5,
+        PANIC_CAUSE_TASK_CREATE = 6,
 };
 
 void panic(const enum panic_cause cause);
