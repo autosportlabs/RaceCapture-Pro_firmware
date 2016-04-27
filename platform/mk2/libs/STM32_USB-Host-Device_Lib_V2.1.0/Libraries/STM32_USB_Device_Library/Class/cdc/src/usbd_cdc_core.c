@@ -222,7 +222,7 @@ __ALIGN_BEGIN uint8_t usbd_cdc_CfgDesc[USB_CDC_CONFIG_DESC_SIZ]  __ALIGN_END = {
     0x02,   /* bNumInterfaces: 2 interface */
     0x01,   /* bConfigurationValue: Configuration value */
     0x00,   /* iConfiguration: Index of string descriptor describing the configuration */
-    0xC0,   /* bmAttributes: self powered */
+    0x80,   /* bmAttributes: bus powered */
     0xFA,   /* MaxPower 500 mA */
 
     /*---------------------------------------------------------------------------*/
@@ -325,7 +325,7 @@ __ALIGN_BEGIN uint8_t usbd_cdc_OtherCfgDesc[USB_CDC_CONFIG_DESC_SIZ]  __ALIGN_EN
     0x02,   /* bNumInterfaces: 2 interfaces */
     0x01,   /* bConfigurationValue: */
     0x04,   /* iConfiguration: */
-    0xC0,   /* bmAttributes: self powered */
+    0x80,   /* bmAttributes: bus powered */
     0xFA,   /* MaxPower 500 mA */
 
     /*Interface Descriptor */
