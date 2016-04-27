@@ -42,8 +42,9 @@ _Min_Stack_Size = 0x400; 	/* required amount of stack */
 /* Specify the memory areas */
 MEMORY
 {
-  FLASH     (rx)    : ORIGIN = 0x08000000, LENGTH = 256K
-  
+  BOOTLDR   (rx)    : ORIGIN = 0x08000000, LENGTH = 16K
+  FLASH     (rx)    : ORIGIN = 0x08004000, LENGTH = 256K - 48K
+
   CONFIG    (rx)    : ORIGIN = 0x08038000, LENGTH = 16K
   TRACKS    (rx)    : ORIGIN = 0x0803C000, LENGTH = 16K  
   
