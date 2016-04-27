@@ -167,13 +167,14 @@ rct: rct-build
 # Common targets.
 #
 PHONY += clean
-clean: rct-clean mk2-clean test-clean
+clean: rct-clean mk2-clean test-clean lua-clean
 	$(Q)find . -type f \
+	-name "*.a"   -o   \
 	-name "*.d"   -o   \
-	-name "*.lst" -o   \
-	-name "*.o"   -o   \
 	-name "*.elf" -o   \
-	-name "*.hex"      \
+	-name "*.hex" -o   \
+	-name "*.lst" -o   \
+	-name "*.o"        \
 	| xargs rm -f
 
 package: clean
