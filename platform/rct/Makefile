@@ -14,6 +14,13 @@ LD := $(CROSS_COMPILE)g++
 OBJDUMP := $(CROSS_COMPILE)objdump
 OBJCOPY := $(CROSS_COMPILE)objcopy
 
+ASL_FW_POSTPROCESS := asl_f4_fw_postprocess
+ifeq ($(PYTHON),python2.7)
+ASL_FW_POSTPROCESS := /usr/local/bin/asl_f4_fw_postprocess
+else
+PYTHON :=
+endif
+
 #specify the use of the external crystal
 BOARD_DEFINES = -DPLL_SOURCE_HSE -DUSE_I2C1
 
@@ -282,6 +289,10 @@ $(OUTDIR)/%.o: %.s
 	mkdir -p $(@D)
 	$(AS) $(AFLAGS) -c -o $@ $<
 
+$(OUTDIR)/%.ihex: $(OUTDIR)/%.bin
+	@echo "[ASL_FW_POSTPROCESS] $(@F)"
+	$(PYTHON) $(ASL_FW_POSTPROCESS) -f $< -e $(OUTDIR)/main.elf -o 0x08004000 -b $< -i $@
+
 $(OUTDIR)/%.elf: $(obj-y)
 	@echo "[LD] $(@F)"
 	$(LD) $(LDFLAGS) -o $@ $^
@@ -299,13 +310,13 @@ $(OUTDIR)/%.dis: $(OUTDIR)/%.elf
 	$(OBJDUMP) -D $< > $@
 
 .PHONY: all
-all: $(OUTDIR)/main.elf $(OUTDIR)/main.bin $(OUTDIR)/main.hex $(OUTDIR)/main.dis
+all: $(OUTDIR)/main.elf $(OUTDIR)/main.bin $(OUTDIR)/main.hex  $(OUTDIR)/main.ihex $(OUTDIR)/main.dis
 
 .PHONY: clean
 clean:
 	rm -rf $(OUTDIR)
 
-flash: $(OUTDIR)/main.hex
+flash: $(OUTDIR)/main.ihex
 	openocd -f board/stm32f3discovery.cfg -f ./flash.cfg
 
 dbg:
