@@ -275,12 +275,12 @@ AFLAGS := $(CFLAGS)
 $(OUTDIR)/%.o: %.c
 	@echo "[CC] $(@F)"
 	mkdir -p $(@D)
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CCACHE) $(CC) $(CFLAGS) -c -o $@ $<
 
 $(OUTDIR)/%.o: %.s
 	@echo "[AS] $(@F)"
 	mkdir -p $(@D)
-	$(AS) $(AFLAGS) -c -o $@ $<
+	$(CCACHE) $(AS) $(AFLAGS) -c -o $@ $<
 
 $(OUTDIR)/%.elf: $(obj-y)
 	@echo "[LD] $(@F)"
