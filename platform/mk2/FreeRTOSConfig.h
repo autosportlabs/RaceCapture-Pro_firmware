@@ -63,10 +63,6 @@
 #define configUSE_MALLOC_FAILED_HOOK	0
 #endif /* _DEBUG */
 
-#if defined(_DEBUG)
-#define configCHECK_FOR_STACK_OVERFLOW	2
-#endif /* _DEBUG */
-
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES 		0
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
