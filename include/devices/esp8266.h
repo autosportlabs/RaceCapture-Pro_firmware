@@ -23,6 +23,7 @@
 #define _ESP8266_H_
 
 #include "cpp_guard.h"
+#include "net/protocol.h"
 #include "serial.h"
 #include <stdbool.h>
 
@@ -79,14 +80,8 @@ bool esp8266_get_client_ap(void (*cb)
 bool esp8266_get_client_ip(void (*cb)
                            (bool, const char*));
 
-enum esp8266_net_proto {
-        ESP8266_NET_PROTO_TCP,
-        ESP8266_NET_PROTO_UDP,
-};
-
-bool esp8266_connect(const int chan_id, const enum esp8266_net_proto proto,
+bool esp8266_connect(const int chan_id, const enum protocol proto,
                      const char *ip_addr, const int dest_port,
-                     const int udp_port, const int udp_mode,
                      void (*cb) (bool, const int));
 
 bool esp8266_send_data(const int chan_id, struct Serial *data,

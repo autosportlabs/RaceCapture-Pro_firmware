@@ -23,6 +23,7 @@
 #include "esp8266.h"
 #include "macros.h"
 #include "mem_mang.h"
+#include "net/protocol.h"
 #include "printk.h"
 #include "serial_buffer.h"
 #include "taskUtil.h"
@@ -637,33 +638,35 @@ do_cb:
  * @param chan_id The channel ID to use.  0 - 4
  * @param proto The Network protocol to use.
  * @param dest_port The destination port to send data to.
- * @param udp_port The source port from which data originates (UDP ONLY).
- * @param udp_mode Tells the device whether or not the destination of the
- * UDP packets are allowed to change.  0 means it won't change.  1 means it
- * will change up to 1 time.  2 means it can change any number of times.
  * @return true if the request was queued, false otherwise.
  */
-bool esp8266_connect(const int chan_id, const enum esp8266_net_proto proto,
+bool esp8266_connect(const int chan_id, const enum protocol proto,
                      const char *ip_addr, const int dest_port,
-                     const int udp_port, const int udp_mode,
                      void (*cb) (bool, const int))
 {
         if (!check_initialized("connect"))
                 return false;
 
         char cmd[64];
+        const char* proto_str;
         switch (proto) {
-        case ESP8266_NET_PROTO_TCP:
-                snprintf(cmd, ARRAY_LEN(cmd),
-                         "AT+CIPSTART=%d,\"TCP\",\"%s\",%d",
-                         chan_id, ip_addr, dest_port);
+        case PROTOCOL_TCP:
+                proto_str = "TCP";
                 break;
-        case ESP8266_NET_PROTO_UDP:
-                snprintf(cmd, ARRAY_LEN(cmd),
-                         "AT+CIPSTART=%d,\"UDP\",\"%s\",%d,%d,%d",
-                         chan_id, ip_addr, dest_port, udp_port, udp_mode);
+        case PROTOCOL_UDP:
+                proto_str = "UDP";
                 break;
+        default:
+                proto_str = NULL;
         }
+
+        if (!proto_str) {
+                cmd_failure("esp8266_connect", "Invalid protocol");
+                return false;
+        }
+
+        snprintf(cmd, ARRAY_LEN(cmd), "AT+CIPSTART=%d,\"%s\",\"%s\",%d",
+                 chan_id, proto_str, ip_addr, dest_port);
 
         return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
                                   connect_cb, cb);
