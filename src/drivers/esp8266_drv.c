@@ -534,3 +534,8 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
 
         return ch->serial;
 }
+
+const struct esp8266_client_info* esp8266_drv_get_client_info()
+{
+        return &state.client.info;
+}

@@ -20,6 +20,10 @@
  */
 
 #include "FreeRTOS.h"
+#include "capabilities.h"
+#include "constants.h"
+#include "cpu.h"
+#include "dateTime.h"
 #include "esp8266_drv.h"
 #include "macros.h"
 #include "messaging.h"
@@ -34,16 +38,19 @@
 #include <stdbool.h>
 
 /* Make all task names 16 chars including NULL char */
-#define _THREAD_NAME	"WiFi Task      "
-#define _CONN_WAIT_MS	100
-#define _STACK_SIZE	256
-#define _RX_BUFF_SIZE	1024
-#define _LOG_PFX	"[wifi] "
+#define _THREAD_NAME		"WiFi Task      "
+#define _CONN_WAIT_MS		100
+#define _STACK_SIZE		256
+#define _RX_BUFF_SIZE		1024
+#define _LOG_PFX		"[wifi] "
+#define _BEACON_PERIOD_MS	3000
 
 static struct {
         struct Serial *incoming_conn;
         struct rx_buff rxb;
         xSemaphoreHandle semaphor;
+        tiny_millis_t time_last_beacon;
+        struct Serial* beacon_serial;
 } state;
 
 static void _new_conn_cb(struct Serial *s)
@@ -77,11 +84,85 @@ static void process_rx_msgs()
         }
 }
 
+static tiny_millis_t get_next_beacon_wkup_time()
+{
+        /* Figure out the next we need to update the beacon */
+        return state.time_last_beacon + _BEACON_PERIOD_MS;
+}
+
+static bool time_for_beacon()
+{
+        return state.time_last_beacon <= getUptime();
+}
+
+static void send_beacon(struct Serial* serial, const char* ips[])
+{
+        json_objStart(serial);
+        json_objStartString(serial, "beacon");
+
+        json_string(serial, "name", DEVICE_NAME, true);
+        json_int(serial, "port", RCP_SERVICE_PORT, true);
+        json_string(serial, "serial", cpu_get_serialnumber(), true);
+
+        json_arrayStart(serial, "ip");
+        while(*ips) {
+                const char* ip = *ips++;
+                const bool more = !!*ips;
+                /* Don't add empty strings to the array */
+                if (0 != *ip)
+                        json_arrayElementString(serial, ip, more);
+        }
+        json_arrayEnd(serial, false);
+
+        json_objEnd(serial, false);
+        json_objEnd(serial, false);
+}
+
+static void do_beacon()
+{
+        /* Update the time the beacon last went out */
+        state.time_last_beacon = getUptime();
+
+        /* Do the work to send the beacon here */
+        if (NULL == state.beacon_serial) {
+                state.beacon_serial =
+                        esp8266_drv_connect(PROTOCOL_UDP, "255.255.255.255",
+                                            RCP_SERVICE_PORT);
+        }
+
+        struct Serial* serial = state.beacon_serial;
+        if (!serial) {
+                pr_warning("Unable to create Serial for Beacon\r\n");
+                return;
+        }
+
+        const struct esp8266_client_info* ci = esp8266_drv_get_client_info();
+        const char* ips[] = {
+                ci->ip,
+                NULL,
+        };
+        send_beacon(serial, ips);
+}
+
+static tiny_millis_t get_task_sleep_time()
+{
+        const tiny_millis_t next = get_next_beacon_wkup_time();
+        const tiny_millis_t now = getUptime();
+
+        return now >= next ? 0 : next - now;
+}
 
 static void _task_loop()
 {
-        xSemaphoreTake(state.semaphor, portMAX_DELAY);
-        process_rx_msgs();
+        const tiny_millis_t sleep_time = get_task_sleep_time();
+        const bool awoke_by_rx =
+                pdTRUE == xSemaphoreTake(state.semaphor, sleep_time);
+
+        if (awoke_by_rx)
+                process_rx_msgs();
+
+        if (time_for_beacon())
+                do_beacon();
 }
 
 static void _task(void *params)

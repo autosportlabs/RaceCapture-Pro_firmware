@@ -23,6 +23,7 @@
 #define _ESP8266_DRV_H_
 
 #include "cpp_guard.h"
+#include "esp8266.h"
 #include "net/protocol.h"
 #include "serial.h"
 #include "wifi.h"
@@ -39,6 +40,9 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
 struct Serial* esp8266_drv_connect(const enum protocol proto,
                                    const char* dst_ip,
                                    const unsigned int dst_port);
+
+const struct esp8266_client_info* esp8266_drv_get_client_info();
+
 CPP_GUARD_END
 
 #endif /* _ESP8266_DRV_H_ */
