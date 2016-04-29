@@ -42,6 +42,7 @@
 #include <i2c_device_stm32.h>
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
+#define I2C_IRQ_PRIORITY 5
 
 struct rcc_params {
 	void (*clock_cmd)(uint32_t, FunctionalState);
@@ -259,7 +260,7 @@ static void i2c_nvic_setup(struct i2c_priv *p)
 
 	/* Enable the I2Cx Interrupt */
 	NVIC_InitStructure.NVIC_IRQChannel = p->ev_irqn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = I2C_IRQ_PRIORITY;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
