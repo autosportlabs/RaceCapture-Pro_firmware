@@ -34,6 +34,7 @@
 #include "loggerSampleData.h"
 #include "loggerTaskEx.h"
 #include "mod_string.h"
+#include "panic.h"
 #include "printk.h"
 #include "sampleRecord.h"
 #include "semphr.h"
@@ -41,7 +42,6 @@
 #include "taskUtil.h"
 #include "watchdog.h"
 
-#define LOGGER_TASK_PRIORITY	( tskIDLE_PRIORITY + 4 )
 #define LOGGER_STACK_SIZE	200
 #define IDLE_TIMEOUT	configTICK_RATE_HZ / 1
 
@@ -108,8 +108,11 @@ void startLoggerTaskEx(int priority)
 {
         /* Make all task names 16 chars including NULL char */
         static const signed portCHAR task_name[] = "Logger Task    ";
-        xTaskCreate(loggerTaskEx, task_name, LOGGER_STACK_SIZE,
-                    NULL, priority, NULL );
+        const bool status = xTaskCreate(loggerTaskEx, task_name,
+                                        LOGGER_STACK_SIZE, NULL,
+                                        priority, NULL );
+        if (!status)
+                panic(PANIC_CAUSE_TASK_CREATE);
 }
 
 static int init_sample_ring_buffer(LoggerConfig *loggerConfig)
@@ -264,4 +267,6 @@ void loggerTaskEx(void *params)
                 ++bufferIndex;
                 bufferIndex %= buffer_size;
         }
+
+        panic(PANIC_CAUSE_UNREACHABLE);
 }

@@ -342,13 +342,13 @@ void connectivityTask(void *params)
                             !should_sample(msg.ticks, max_telem_rate))
                                 break;
 
+                        if (connParams->isPrimary)
+                                toggle_connectivity_indicator();
+
                         const int send_meta = tick == 0 ||
                                 (connParams->periodicMeta &&
                                  (tick % METADATA_SAMPLE_INTERVAL == 0));
                         api_send_sample_record(serial, msg.sample, tick, send_meta);
-
-                        if (connParams->isPrimary)
-                                toggle_connectivity_indicator();
 
                         put_crlf(serial);
                         tick++;

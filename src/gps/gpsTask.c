@@ -31,7 +31,7 @@
 #include "task.h"
 #include "taskUtil.h"
 
-#define GPS_TASK_STACK_SIZE	300
+#define GPS_TASK_STACK_SIZE	384
 
 static bool g_enableGpsDataLogging = false;
 

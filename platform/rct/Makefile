@@ -255,12 +255,17 @@ CFLAGS += -ggdb
 CFLAGS += -Wall -Werror -Wempty-body -Wclobbered -Wignored-qualifiers \
 	-Wmissing-parameter-type -Wold-style-declaration \
 	-Wunused-but-set-parameter
-ifdef DEBUG
-CFLAGS += -D_DEBUG
+
+ifdef NOOPT
 CFLAGS += -O0
 else
 CFLAGS += -Os
 endif
+
+ifdef DEBUG
+CFLAGS += -D_DEBUG
+endif
+
 CFLAGS += $(addprefix -I,$(inc-y))
 
 LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld
