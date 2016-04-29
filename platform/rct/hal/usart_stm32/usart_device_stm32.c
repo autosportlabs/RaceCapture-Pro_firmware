@@ -191,20 +191,9 @@ static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
         NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
         NVIC_Init(&NVIC_InitStructure);
 
-        /* Explicitly disable most interrupts.  Only enable ones we want */
-        USART_ITConfig(USARTx, USART_IT_WU, DISABLE);
-        USART_ITConfig(USARTx, USART_IT_CM, DISABLE);
-        USART_ITConfig(USARTx, USART_IT_EOB, DISABLE);
-        USART_ITConfig(USARTx, USART_IT_RTO, DISABLE);
-        USART_ITConfig(USARTx, USART_IT_CTS, DISABLE);
-        USART_ITConfig(USARTx, USART_IT_LBD, DISABLE);
-        USART_ITConfig(USARTx, USART_IT_TC, DISABLE);
-        USART_ITConfig(USARTx, USART_IT_IDLE, DISABLE);
-        USART_ITConfig(USARTx, USART_IT_PE, DISABLE);
-        USART_ITConfig(USARTx, USART_IT_ERR, DISABLE);
-
         if (irqType | UART_RX_IRQ)
                 USART_ITConfig(USARTx, USART_IT_RXNE, ENABLE);
+
         if (irqType | UART_TX_IRQ)
                 USART_ITConfig(USARTx, USART_IT_TXE, ENABLE);
 }
