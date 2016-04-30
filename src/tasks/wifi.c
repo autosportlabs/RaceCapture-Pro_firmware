@@ -106,7 +106,9 @@ static void send_beacon(struct Serial* serial, const char* ips[])
 
         json_arrayStart(serial, "ip");
         while(*ips) {
-                const char* ip = *ips++;
+                const char* ip = *ips;
+                /* Advance to next non-zero len string or end or array */
+                for(++ips; *ips && 0 == **ips; ++ips);
                 const bool more = !!*ips;
                 /* Don't add empty strings to the array */
                 if (0 != *ip)
@@ -123,7 +125,13 @@ static void do_beacon()
         /* Update the time the beacon last went out */
         state.time_last_beacon = getUptime();
 
-        /* Do the work to send the beacon here */
+        const struct esp8266_client_info* ci = esp8266_drv_get_client_info();
+        if (!ci->has_ap) {
+                /* Then don't bother since we don't have a connection */
+                return;
+        }
+
+        /* If here then we have at least one connection.  Send the beacon */
         if (NULL == state.beacon_serial) {
                 state.beacon_serial =
                         esp8266_drv_connect(PROTOCOL_UDP, "255.255.255.255",
@@ -136,7 +144,6 @@ static void do_beacon()
                 return;
         }
 
-        const struct esp8266_client_info* ci = esp8266_drv_get_client_info();
         const char* ips[] = {
                 ci->ip,
                 NULL,
