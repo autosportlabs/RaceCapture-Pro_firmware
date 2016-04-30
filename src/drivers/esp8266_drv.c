@@ -314,6 +314,7 @@ static void set_client_ap_cb(bool status)
         if (!status) {
                 /* Failed. */
                 pr_info(_LOG_PFX "Failed to join network\r\n");
+                memset(&state.client.info, 0, sizeof(state.client.info));
                 cmd_completed(_CMD_UNKNOWN, 0);
         } else {
                 /* If here, we were successful.  Now get client wifi info */
