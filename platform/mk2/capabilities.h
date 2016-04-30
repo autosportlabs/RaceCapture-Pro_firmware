@@ -13,6 +13,7 @@
 #define VIRTUAL_CHANNEL_SUPPORT
 #define SDCARD_SUPPORT
 #define CELLULAR_SUPPORT
+#define WIFI_SUPPORT
 
 //configuration
 #define MAX_TRACKS	240
