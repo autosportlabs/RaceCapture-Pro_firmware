@@ -657,10 +657,6 @@ bool esp8266_connect(const int chan_id, const enum protocol proto,
                 proto_str = "UDP";
                 break;
         default:
-                proto_str = NULL;
-        }
-
-        if (!proto_str) {
                 cmd_failure("esp8266_connect", "Invalid protocol");
                 return false;
         }
