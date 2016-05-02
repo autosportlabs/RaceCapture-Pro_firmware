@@ -286,9 +286,12 @@ int CAN_device_tx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
         CAN_TypeDef* chan = channel == 0 ? CAN1 : CAN2;
         uint8_t mailbox = CAN_Transmit(chan, &TxMessage);
 
-        /* Then they don't want to wait.  Just assume successful */
-        if (!timeoutMs)
-                return 1;
+        /*
+         * Then they don't want to wait.  Ok.  Let caller know if they
+         * got a mailbox then.  If not, message was unable to be sent.
+         */
+        if (0 == timeoutMs)
+                return mailbox != CAN_TxStatus_NoMailBox;
 
         /* Using ticks avoids a race-condition */
         size_t ticks = getCurrentTicks();
