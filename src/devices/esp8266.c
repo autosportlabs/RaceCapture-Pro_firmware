@@ -93,7 +93,7 @@ static bool _setup(struct Serial *s, const size_t max_cmd_len)
 
         /* Init our AT engine here */
         if (!init_at_info(state.ati, state.scb, _AT_DEFAULT_QP_MS,
-                          _AT_CMD_DELIM))
+                          _AT_CMD_DELIM, NULL))
                 return false;
 
         return true;
