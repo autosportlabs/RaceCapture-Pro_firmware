@@ -58,7 +58,7 @@ bool cb(struct at_rsp *rsp, void *up) {
 }
 
 static bool g_uhurc_cb_called;
-bool uhurc_cb(const char* msg) {
+bool uhurc_cb(char* msg) {
         g_uhurc_cb_called = true;
         return false;
 }

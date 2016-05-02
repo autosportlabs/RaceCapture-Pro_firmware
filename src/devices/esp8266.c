@@ -26,6 +26,7 @@
 #include "net/protocol.h"
 #include "printk.h"
 #include "serial_buffer.h"
+#include "str_util.h"
 #include "taskUtil.h"
 
 #include <stdbool.h>
@@ -57,6 +58,7 @@ static struct {
         struct at_info *ati;
         void (*init_cb)(enum dev_init_state); /* STIEG: Put in own struct? */
         enum dev_init_state init_state;
+        struct esp8266_event_hooks hooks;
 } state;
 
 static void cmd_failure(const char *cmd_name, const char *msg)
@@ -71,9 +73,50 @@ static void cmd_failure(const char *cmd_name, const char *msg)
 }
 
 /**
+ * Callback that gets invoked when we are unable to handle the URC using
+ * the standard URC callbacks.  Used for the silly messages like
+ * `0,CONNECT` where there is no prefix for the URC like their should be.
+ * Messages this callback handles:
+ * * <0-4>,CONNECT
+ * * <0-4>,CLOSED
+ * * WIFI DISCONNECT
+ */
+static bool sparse_urc_cb(char* msg)
+{
+        msg = strip_inline(msg);
+
+        if (STR_EQ(msg, "WIFI DISCONNECT")) {
+                if (state.hooks.client_wifi_disconnect_cb)
+                        state.hooks.client_wifi_disconnect_cb();
+                return true;
+        }
+
+        /* Now look for a message with a comma */
+        char* comma = strchr(msg, ',');
+        if (!comma)
+                return false;
+
+        *comma = '\0';
+        const char* m1 = msg;
+        const char* m2 = ++comma;
+        if (STR_EQ(m2, "CONNECT")) {
+                if (state.hooks.socket_connect_cb)
+                        state.hooks.socket_connect_cb(atoi(m1));
+        } else if (STR_EQ(m2, "CLOSED")) {
+                if (state.hooks.socket_closed_cb)
+                        state.hooks.socket_closed_cb(atoi(m1));
+        } else {
+                return false;
+        }
+
+        return true;
+}
+
+/**
  * Sets up the internal state of the driver.  Must be called before init.
  */
-static bool _setup(struct Serial *s, const size_t max_cmd_len)
+static bool _setup(struct Serial *s, const size_t max_cmd_len,
+                   const struct esp8266_event_hooks hooks)
 {
         /* Check if already initialized.  If so, do nothing */
         if (state.ati)
@@ -81,6 +124,7 @@ static bool _setup(struct Serial *s, const size_t max_cmd_len)
 
         state.ati = &_ati;
         state.scb = &_serial_cmd_buff;
+        state.hooks = hooks;
 
         /*
          * Initialize the serial command buffer.  This buffer is used for
@@ -93,7 +137,7 @@ static bool _setup(struct Serial *s, const size_t max_cmd_len)
 
         /* Init our AT engine here */
         if (!init_at_info(state.ati, state.scb, _AT_DEFAULT_QP_MS,
-                          _AT_CMD_DELIM, NULL))
+                          _AT_CMD_DELIM, sparse_urc_cb))
                 return false;
 
         return true;
@@ -274,13 +318,14 @@ static bool is_init_in_progress()
  * Kicks off the initilization process.
  */
 bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
+                  const struct esp8266_event_hooks hooks,
                   void (*cb)(enum dev_init_state))
 {
         if (!cb || !s || is_init_in_progress())
                 return false;
 
         /* Init objects.  If fail, then nothing we can do. */
-        if (!_setup(s, max_cmd_len))
+        if (!_setup(s, max_cmd_len, hooks))
                 return false;
 
         state.init_cb = cb;

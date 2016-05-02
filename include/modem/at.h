@@ -142,7 +142,7 @@ struct at_urc_list {
  * @return true if the callback was able to parse the message,
  *         false otherwise.
  */
-typedef bool unhandled_urc_cb_t(const char* msg);
+typedef bool unhandled_urc_cb_t(char* msg);
 
 struct at_info {
         /*

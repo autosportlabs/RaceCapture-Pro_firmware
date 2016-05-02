@@ -65,6 +65,8 @@ struct Serial* serial_create(const char *name, const size_t tx_cap,
 
 void serial_flush(struct Serial *s);
 
+void serial_clear(struct Serial *s);
+
 bool serial_logging(struct Serial *s, const bool enable);
 
 void serial_set_name(struct Serial *s, const char *name);

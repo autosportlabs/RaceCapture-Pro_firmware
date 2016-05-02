@@ -29,9 +29,11 @@
 #include "panic.h"
 #include "printk.h"
 #include "queue.h"
+#include "str_util.h"
 #include "task.h"
 #include "wifi.h"
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define _AT_TASK_TIMEOUT_MS	3
@@ -102,6 +104,11 @@ static void cmd_completed(const enum _cmd next_cmd,
         state.cmd_ip = false;
 }
 
+static bool is_valid_socket_channel_id(const size_t chan_id)
+{
+        return chan_id < ARRAY_LEN(state.channels);
+}
+
 static const char* get_channel_name(const size_t chan_id)
 {
         static const char* _serial_names[] = {
@@ -160,7 +167,7 @@ static struct Serial* setup_channel_serial(const unsigned int i)
 
 static struct _channel* get_channel_for_use(const unsigned int i)
 {
-        if (i >= _MAX_CHANNELS)
+        if (!is_valid_socket_channel_id(i))
                 return NULL;
 
         struct _channel* ch =state.channels + i;
@@ -180,7 +187,7 @@ static struct _channel* get_channel_for_use(const unsigned int i)
 
 static int get_next_free_channel_num()
 {
-        for (int i = 0; i < _MAX_CHANNELS; ++i) {
+        for (size_t i = 0; is_valid_socket_channel_id(i); ++i) {
                 struct _channel *ch = state.channels + i;
                 if (!ch->in_use)
                         return i;
@@ -191,7 +198,7 @@ static int get_next_free_channel_num()
 
 static void rx_data_cb(int chan_id, size_t len, const char* data)
 {
-        if (chan_id >= ARRAY_LEN(state.channels)) {
+        if (!is_valid_socket_channel_id(chan_id)) {
                 pr_error_int_msg(_LOG_PFX "Channel id to big: ", chan_id);
                 return;
         }
@@ -218,6 +225,52 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
                 xQueueSend(q, data + i, portMAX_DELAY);
 }
 
+/**
+ * Callback that gets invoked when our client wifi gets disconnected
+ * from its network.
+ */
+static void client_wifi_disconnect_cb()
+{
+        pr_info(_LOG_PFX "WiFi client disconnected from AP\r\n");
+        memset(&state.client.info, 0, sizeof(state.client.info));
+}
+
+/**
+ * Callback that gets invoked when a socket becomes connected.  Usually
+ * this happens when a new client connects.
+ */
+static void socket_connect_cb(const size_t chan_id)
+{
+        if (!is_valid_socket_channel_id(chan_id)) {
+                pr_error_int_msg(_LOG_PFX "Invalid socket id during "
+                                 "connect: ", chan_id);
+                return;
+        }
+
+        pr_info_int_msg(_LOG_PFX "Socket connect on channel ", chan_id);
+        struct _channel *ch = state.channels + chan_id;
+        ch->connected = true;
+}
+
+/**
+ * Callback that gets invoked when a socket gets closed.  Usually
+ * this happens when there is a TCP timeout or a socket close call
+ * gets invoked.
+ */
+static void socket_closed_cb(const size_t chan_id)
+{
+        if (!is_valid_socket_channel_id(chan_id)) {
+                pr_error_int_msg(_LOG_PFX "Invalid socket id during "
+                                 "close: ", chan_id);
+                return;
+        }
+
+        pr_info_int_msg(_LOG_PFX "Socket closed on channel ", chan_id);
+        struct _channel *ch = state.channels + chan_id;
+        ch->connected = false;
+        serial_clear(ch->serial);
+}
+
 static void init_wifi_cb(enum dev_init_state dev_state)
 {
         state.dev_state = dev_state;
@@ -234,7 +287,14 @@ static void init_wifi_cb(enum dev_init_state dev_state)
 
 static void init_wifi()
 {
-        if (!esp8266_init(state.serial, _SERIAL_CMD_MAX_LEN, init_wifi_cb)) {
+        const struct esp8266_event_hooks hooks = {
+                .client_wifi_disconnect_cb = client_wifi_disconnect_cb,
+                .socket_connect_cb = socket_connect_cb,
+                .socket_closed_cb = socket_closed_cb,
+        };
+
+        if (!esp8266_init(state.serial, _SERIAL_CMD_MAX_LEN,
+                          hooks, init_wifi_cb)) {
                 /* Failed to init critical bits.  */
                 pr_error(_LOG_PFX "Failed to init esp8266 device code.\r\n");
                 cmd_completed(_CMD_INIT, _INIT_FAIL_SLEEP_MS);
@@ -314,7 +374,7 @@ static void set_client_ap_cb(bool status)
         if (!status) {
                 /* Failed. */
                 pr_info(_LOG_PFX "Failed to join network\r\n");
-                memset(&state.client.info, 0, sizeof(state.client.info));
+                client_wifi_disconnect_cb();
                 cmd_completed(_CMD_UNKNOWN, 0);
         } else {
                 /* If here, we were successful.  Now get client wifi info */
