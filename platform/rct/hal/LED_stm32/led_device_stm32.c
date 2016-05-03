@@ -55,9 +55,9 @@ static bool led_set_level(struct led_data *ld, const bool on)
 
         ld->level = on;
         if (on) {
-                GPIO_SetBits(GPIO_PORT, ld->mask);
-        } else {
                 GPIO_ResetBits(GPIO_PORT, ld->mask);
+        } else {
+                GPIO_SetBits(GPIO_PORT, ld->mask);
         }
 
         return true;
@@ -105,7 +105,7 @@ bool led_device_init(void)
 
         gpio_conf.GPIO_Speed = GPIO_Speed_50MHz;
         gpio_conf.GPIO_Mode = GPIO_Mode_OUT;
-        gpio_conf.GPIO_OType = GPIO_OType_PP;
+        gpio_conf.GPIO_OType = GPIO_OType_OD;
         gpio_conf.GPIO_Pin = 0;
 
         for (size_t i = 0; i < ARRAY_LEN(leds); ++i) {
