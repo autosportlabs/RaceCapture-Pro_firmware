@@ -41,7 +41,7 @@
 #define _THREAD_NAME		"WiFi Task      "
 #define _CONN_WAIT_MS		100
 #define _STACK_SIZE		256
-#define _RX_BUFF_SIZE		1024
+#define _RX_BUFF_SIZE		512
 #define _LOG_PFX		"[wifi] "
 #define _BEACON_PERIOD_MS	3000
 
