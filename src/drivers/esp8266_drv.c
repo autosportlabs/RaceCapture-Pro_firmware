@@ -287,6 +287,7 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
                 xQueueSend(q, data + i, portMAX_DELAY);
         }
         /* pr_info("\"\r\n"); */
+
         cmd_set_check(CHECK_DATA);
 }
 
@@ -309,6 +310,8 @@ static void _send_data_cb(int bytes_sent)
  */
 static void check_data()
 {
+        cmd_check_complete(CHECK_DATA);
+
         for (size_t i = 0; i < ARRAY_LEN(state.comm.channels); ++i) {
                 struct channel *ch = state.comm.channels + i;
                 const size_t size = ch->tx_chars_buffered;
@@ -344,8 +347,6 @@ static void check_data()
                 ch->tx_chars_buffered = 0;
                 return;
         }
-
-        cmd_check_complete(CHECK_DATA);
 }
 
 /**
@@ -475,11 +476,12 @@ static void init_wifi()
  */
 static void check_init()
 {
+        cmd_check_complete(CHECK_INIT);
+
         pr_info(LOG_PFX "Checking Init\r\n");
         switch(state.device.init_state) {
         case DEV_INIT_STATE_READY:
                 /* Then we are where we want to be and are done */
-                cmd_check_complete(CHECK_INIT);
                 return;
         default:
                 /* STIEG: TODO Handle reset here when implemented. */
@@ -505,7 +507,6 @@ static void get_client_ap_cb(bool status, const struct esp8266_client_info *ci)
 {
         cmd_completed();
         cmd_set_check(CHECK_CLIENT);
-        cmd_set_check(CHECK_DAEMON);
 
         memcpy(&state.client.info, ci, sizeof(struct esp8266_client_info));
         *state.client.info.ip = 0;
@@ -597,7 +598,7 @@ static void client_try_join_ap()
                 /* Then we need to backoff */
                 const tiny_millis_t sleep_len =
                         state.client.next_join_attempt - getUptime();
-                cmd_sleep_until(CHECK_CLIENT, sleep_len);
+                cmd_sleep(CHECK_CLIENT, sleep_len);
         } else {
                 /* If here, then its time to do work */
                 state.client.next_join_attempt =
@@ -613,6 +614,8 @@ static void client_try_join_ap()
  */
 static void check_client()
 {
+        cmd_check_complete(CHECK_CLIENT);
+
         pr_info(LOG_PFX "Checking Client\r\n");
 
         /* First check that we are initialized */
@@ -654,7 +657,6 @@ static void check_client()
                 }
 
                 /* If here, we are done */
-                cmd_check_complete(CHECK_CLIENT);
                 return;
         } else {
                 /* Client should be inactive.  Disable as needed */
@@ -664,12 +666,10 @@ static void check_client()
                          * STIEG: TODO: Implement Leave AP call. We are done
                          * for now since code not implemented.
                          */
-                        cmd_check_complete(CHECK_INIT);
                         return;
                 }
 
                 /* Then config and reality align.  Done */
-                cmd_check_complete(CHECK_CLIENT);
                 return;
         }
 }
@@ -700,11 +700,13 @@ static void setup_daemon()
  */
 static void check_daemon()
 {
+        cmd_check_complete(CHECK_DAEMON);
+
         pr_info(LOG_PFX "Checking Daemon\r\n");
 
         /* First check that we are initialized */
         if (!device_initialized()) {
-                cmd_sleep(CHECK_CLIENT, CLIENT_BACKOFF_MS);
+                cmd_sleep(CHECK_DAEMON, CLIENT_BACKOFF_MS);
                 return;
         }
 
@@ -715,7 +717,7 @@ static void check_daemon()
         }
 
         /* Then its listening.  We are done */
-        cmd_check_complete(CHECK_DAEMON);
+        return;
 }
 
 
@@ -796,9 +798,8 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
 
         state.comm.new_conn_cb = new_conn_cb;
 
-        /* Set all check flags so we check the whole system */
-        for (size_t i = 0; i < __NUM_CHECKS; ++i)
-                cmd_set_check(i);
+        /* Set the task loop to check init first */
+        cmd_set_check(CHECK_INIT);
 
         static const signed char task_name[] = TASK_THREAD_NAME;
         const size_t stack_size = TASK_STACK_SIZE;
