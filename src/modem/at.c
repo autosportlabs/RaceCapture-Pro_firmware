@@ -168,7 +168,7 @@ static bool _process_msg_generic(struct at_info *ati,
 {
         if (AT_RSP_MAX_MSGS <= ati->rsp.msg_count) {
                 pr_error("[at] BUG: Received more messages than can "
-                         "handle. Dropping.");
+                         "handle. Dropping.\r\n");
                 return false;
         }
 
