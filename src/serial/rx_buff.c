@@ -89,16 +89,20 @@ char* rx_buff_read(struct rx_buff *rxb, struct Serial *s,
         xQueueHandle h = serial_get_rx_queue(s);
         size_t i = 0;
         char c;
+        /* pr_info(LOG_PFX "RX Chars: \""); */
         for(bool done = false; i < rxb->cap && !done; ++i) {
                 const bool rx_status = xQueueReceive(h, &c, ticks_to_wait);
 
                 if (!rx_status) {
                         /* If here, we timed out on receiving a message */
+                        /* pr_info("\"\r\n"); */
                         pr_debug(LOG_PFX "Timeout receiving msg\r\n");
                         rx_buff_clear(rxb);
                         return NULL;
                 }
 
+                /* pr_info_int(c); */
+                /* pr_info_char(','); */
                 switch(c) {
                 case '\r':
                 case '\0':
@@ -108,6 +112,7 @@ char* rx_buff_read(struct rx_buff *rxb, struct Serial *s,
 
                 rxb->buff[i] = c;
         }
+        /* pr_info("\"\r\n"); */
 
         /* If there is a \n after the \r, remove it */
         if ('\r' == c && xQueuePeek(h, &c, 0) && '\n' == c)
