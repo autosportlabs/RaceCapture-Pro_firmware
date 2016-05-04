@@ -24,12 +24,12 @@
 #include "rx_buff.h"
 #include "serial.h"
 #include "str_util.h"
-
 #include <ctype.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 
-#define _LOG_PFX	"[rx_buff] "
+#define LOG_PFX	"[rx_buff] "
 
 /**
  * Clears the contents of an rx_buff struct.
@@ -37,7 +37,6 @@
  */
 void rx_buff_clear(struct rx_buff *rxb)
 {
-        rxb->idx = 0;
         rxb->buff[0] = 0;
 }
 
@@ -56,7 +55,7 @@ bool rx_buff_init(struct rx_buff *rxb, const size_t cap, char *buff)
 
         if (NULL == buff) {
                 /* Failed to get the memory we need */
-                pr_error(_LOG_PFX "alloc failed\r\n");
+                pr_error(LOG_PFX "alloc failed\r\n");
                 return false;
         }
 
@@ -85,36 +84,46 @@ void rx_buff_free(struct rx_buff *rxb)
  * received in time, NULL otherwise.
  */
 char* rx_buff_read(struct rx_buff *rxb, struct Serial *s,
-                  const size_t ticks_to_wait)
+                   const size_t ticks_to_wait)
 {
-
         xQueueHandle h = serial_get_rx_queue(s);
+        size_t i = 0;
+        char c;
+        for(bool done = false; i < rxb->cap && !done; ++i) {
+                const bool rx_status = xQueueReceive(h, &c, ticks_to_wait);
 
-        for(; rxb->idx < rxb->cap; ++rxb->idx) {
-                if (!xQueueReceive(h, rxb->buff + rxb->idx, ticks_to_wait)) {
+                if (!rx_status) {
                         /* If here, we timed out on receiving a message */
+                        pr_debug(LOG_PFX "Timeout receiving msg\r\n");
                         rx_buff_clear(rxb);
                         return NULL;
                 }
 
-                if ('\r' == rxb->buff[rxb->idx])
-                        /* Then we got a message */
+                switch(c) {
+                case '\r':
+                case '\0':
+                        done = true;
                         break;
+                }
+
+                rxb->buff[i] = c;
         }
 
         /* If there is a \n after the \r, remove it */
-        char c;
-        if (xQueuePeek(h, &c, 0) && '\n' == c)
+        if ('\r' == c && xQueuePeek(h, &c, 0) && '\n' == c)
                 xQueueReceive(h, &c, 0);
 
-        if (rxb->idx >= rxb->cap) {
+        if (i >= rxb->cap) {
                 /* Overflow scenario */
-                pr_warning(_LOG_PFX "Overflow!");
+                pr_warning(LOG_PFX "Overflow!");
                 /* Cap the end so we don't do undefined things */
                 rxb->buff[rxb->cap - 1] = 0;
         } else {
-                /* Cap the end of the string for sanity */
-                rxb->buff[rxb->idx] = 0;
+                /*
+                 * Cap the end of the string.  This also gets rid of the
+                 * delimiting character.
+                 */
+                rxb->buff[i] = 0;
         }
 
         /* Now strip any leading or trailing characters */

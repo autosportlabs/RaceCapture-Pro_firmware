@@ -29,7 +29,6 @@
 CPP_GUARD_BEGIN
 
 struct rx_buff {
-        size_t idx;
         size_t cap;
         char *buff;
 };
