@@ -60,13 +60,14 @@ bool serial_buffer_create(struct serial_buffer *sb,
 char* serial_buffer_rx(struct serial_buffer *sb,
                        const size_t ms_delay)
 {
-        const size_t available = sb->length - sb->curr_len;
+        const size_t available = sb->length - sb->curr_len - 1;
         char *ptr = sb->buffer + sb->curr_len;
         size_t msg_len = 0;
+        int read;
 
         while (!msg_len) {
-                const int read = serial_get_line_wait(
-                        sb->serial, ptr, available, msToTicks(ms_delay));
+                read  = serial_get_line_wait(sb->serial, ptr, available,
+                                             msToTicks(ms_delay));
 
                 if (!read)
                         return NULL;
@@ -74,8 +75,9 @@ char* serial_buffer_rx(struct serial_buffer *sb,
                 msg_len = serial_msg_strlen(ptr);
         }
 
-        /* If here, got a non-empty msg.  Add on ctrl char len */
-        sb->curr_len += msg_len + strlen(ptr + msg_len) + 1;
+        /* If here, got a non-empty msg.  Terminate it and add the length */
+        ptr[read] = 0;
+        sb->curr_len += ++read;
         return ptr;
 }
 

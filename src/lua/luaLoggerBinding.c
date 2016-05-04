@@ -389,8 +389,11 @@ static int lua_serial_read_line(lua_State *L)
 
         struct Serial *serial = lua_get_serial(L, port);
         /* STIEG: Would be nice to be rid of that tempBuffer */
-        if (serial_get_line_wait(serial, g_tempBuffer, TEMP_BUFFER_LEN,
-                                 timeout)) {
+        const size_t len = serial_get_line_wait(serial, g_tempBuffer,
+                                                TEMP_BUFFER_LEN - 1,
+                                                timeout);
+        g_tempBuffer[len] = 0;
+        if (len) {
                 lua_pushstring(L, g_tempBuffer);
         } else {
                 lua_pushnil(L);

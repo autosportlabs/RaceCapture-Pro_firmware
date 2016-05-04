@@ -216,18 +216,12 @@ static struct channel* get_channel_for_use(const unsigned int i)
                 return NULL;
 
         struct channel* ch =state.comm.channels + i;
-        if (!ch->serial) {
-                ch->serial = setup_channel_serial(i);
-                if (!ch->serial)
-                        return NULL;
-        }
+        if (ch->serial)
+                return ch;
 
-        /* Prep the channel for use */
-        ch->tx_chars_buffered = 0;
-        ch->in_use = true;
-        ch->created_externally = false;
-
-        return ch;
+        /* If here, channel has no serial.  Try to set one up */
+        ch->serial = setup_channel_serial(i);
+        return ch->serial ? ch : NULL;
 }
 
 static int get_next_free_channel_num()
@@ -264,6 +258,8 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
          * we know to reap the channel when the connection disappears.
          */
         ch->created_externally = true;
+        ch->in_use = true;
+        ch->connected = true;
 
         /*
          * Check that we actually have a call back set to handle the
@@ -282,11 +278,15 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
          * data, start sending it said data.  It will unblock and read this
          * data very shortly.
          */
-        pr_debug_str_msg(LOG_PFX "Message: ", data);
+        /* pr_info_int_msg(LOG_PFX "rx_data_cb data len: ", len); */
+        /* pr_info(LOG_PFX "rx_data_cb data: \""); */
         xQueueHandle q = serial_get_rx_queue(ch->serial);
-        for (size_t i = 0; i < len; ++i)
+        for (size_t i = 0; i < len; ++i) {
+                /* pr_info_int(data[i]); */
+                /* pr_info_char('|'); */
                 xQueueSend(q, data + i, portMAX_DELAY);
-
+        }
+        /* pr_info("\"\r\n"); */
         cmd_set_check(CHECK_DATA);
 }
 
@@ -341,7 +341,7 @@ static void check_data()
                 }
 
                 cmd_started();
-                ch->tx_chars_buffered -= size;
+                ch->tx_chars_buffered = 0;
                 return;
         }
 
@@ -448,6 +448,7 @@ static void init_wifi()
                 .socket_closed_cb = socket_closed_cb,
         };
 
+        serial_clear(state.device.serial);
         if (!esp8266_init(state.device.serial, SERIAL_CMD_MAX_LEN,
                           hooks, init_wifi_cb)) {
                 /* Failed to init critical bits.  */
@@ -810,7 +811,6 @@ static void _connect_cb(bool status, const int chan_id)
 {
         struct channel *ch = state.comm.channels + chan_id;
         ch->connected = status;
-        ch->in_use = status;
         cmd_set_check(CHECK_DATA);
 }
 
@@ -830,6 +830,7 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
                 return NULL;
         }
 
+        ch->in_use = true;
         if (!esp8266_connect(chan_id, proto, dst_ip, dst_port,
                              _connect_cb)) {
                 pr_warning(LOG_PFX "Failed to issue connect command\r\n");

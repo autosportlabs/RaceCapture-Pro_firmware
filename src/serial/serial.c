@@ -114,10 +114,10 @@ static void _log(const struct Serial *s, const char *action,
 
         switch(data) {
         case('\r'):
-                pr_info("\\r");
+                pr_info("(\\r)");
                 break;
         case('\n'):
-                pr_info("\\n\r\n");
+                pr_info("(\\n)\r\n");
                 *pfx = true;
                 break;
         default:
@@ -186,16 +186,31 @@ char serial_get_c(struct Serial *s)
         return serial_get_c_wait(s, &c, portMAX_DELAY) ? c : 0;
 }
 
-int serial_get_line_wait(struct Serial *s, char *l, const size_t len,
+/**
+ * Reads in a line from a serial device delimeted by \n.  The data is
+ * written to buff BUT MAY NOT BE NULL TERMINATED.  NULL termination is the
+ * responsibility of the caller.
+ * @param s The Serial device to read from.
+ * @param buff The buffer to put the data into.
+ * @param len The length of the buffer.
+ * @param delay The number of ticks to wait.
+ * @return Number of characters read.
+ */
+int serial_get_line_wait(struct Serial *s, char *buff, const size_t len,
                          const size_t delay)
 {
-        int i;
+        size_t i = 0;
 
-        for (i = 0; i < len - 1; ++i)
-                if (!serial_get_c_wait(s, l + i, delay) || '\n' == l[i])
-                        break;
+        for (; i < len; ++i) {
+                if (!serial_get_c_wait(s, buff + i, delay))
+                        return i;
 
-        l[i] = 0;
+                switch(buff[i]) {
+                case '\n':
+                        return ++i;
+                }
+        }
+
         return i;
 }
 
