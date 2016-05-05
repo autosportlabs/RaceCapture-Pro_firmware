@@ -43,7 +43,7 @@
 #define _STACK_SIZE		256
 #define _RX_BUFF_SIZE		1024
 #define _LOG_PFX		"[wifi] "
-#define _BEACON_PERIOD_MS	3000
+#define _BEACON_PERIOD_MS	1000
 
 static struct {
         struct Serial *incoming_conn;
