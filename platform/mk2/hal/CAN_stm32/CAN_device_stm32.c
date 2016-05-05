@@ -33,14 +33,10 @@
 
 #include <stdint.h>
 
-static xQueueHandle xCan1Tx = NULL;
 static xQueueHandle xCan1Rx = NULL;
-
-static xQueueHandle xCan2Tx = NULL;
 static xQueueHandle xCan2Rx = NULL;
 
 #define CAN_QUEUE_LENGTH	10
-
 #define CAN_IRQ_PRIORITY 	5
 #define CAN_IRQ_SUB_PRIORITY 	0
 
@@ -67,32 +63,13 @@ static const u32 can_baud_rate[] = { 100000, 125000, 250000, 500000, 1000000 };
 
 static int initQueues()
 {
-    int success = 1;
+        if (!xCan1Rx)
+                xCan1Rx = xQueueCreate(CAN_QUEUE_LENGTH, sizeof(CanRxMsg));
 
-    if (!(xCan1Rx && xCan1Tx && xCan2Rx && xCan2Tx)) {
-        xCan1Rx = xQueueCreate(CAN_QUEUE_LENGTH,
-                               (unsigned portBASE_TYPE)
-                               sizeof(CanRxMsg));
-        xCan1Tx = xQueueCreate(CAN_QUEUE_LENGTH + 1,
-                               (unsigned portBASE_TYPE)sizeof(CanRxMsg));
-        if (xCan1Rx == NULL || xCan1Rx == NULL) {
-            success = 0;
-            goto cleanup_and_return;
-        }
+        if (!xCan2Rx)
+                xCan2Rx = xQueueCreate(CAN_QUEUE_LENGTH, sizeof(CanRxMsg));
 
-        xCan2Rx = xQueueCreate(CAN_QUEUE_LENGTH,
-                               (unsigned portBASE_TYPE)
-                               sizeof(CanRxMsg));
-        xCan2Tx = xQueueCreate(CAN_QUEUE_LENGTH + 1,
-                               (unsigned portBASE_TYPE)sizeof(CanRxMsg));
-        if (xCan2Rx == NULL || xCan2Rx == NULL) {
-            success = 0;
-            goto cleanup_and_return;
-        }
-    }
-
-cleanup_and_return:
-    return success;
+        return xCan1Rx && xCan2Rx;
 }
 
 static void initGPIO(GPIO_TypeDef * GPIOx, uint32_t gpioPins)
