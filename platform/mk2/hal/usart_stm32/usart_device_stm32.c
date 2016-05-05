@@ -687,8 +687,8 @@ static void handle_usart_overrun(USART_TypeDef* USARTx)
          * USART_SR register followed by a read to the USART_DR register)
 	 */
         uint32_t cChar;
-	cChar = USART1->SR;
-	cChar = USART1->DR;
+	cChar = USARTx->SR;
+	cChar = USARTx->DR;
 
 	/* Suppress compiler warning */
 	(void) cChar;
