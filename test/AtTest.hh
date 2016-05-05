@@ -38,7 +38,7 @@ class AtTest : public CppUnit::TestFixture
         CPPUNIT_TEST( test_at_task_cmd_handler_bad_state );
         CPPUNIT_TEST( test_at_task_cmd_handler_no_cmd );
         CPPUNIT_TEST( test_at_task_cmd_handler_ok );
-        CPPUNIT_TEST( test_at_regisger_urc_full );
+        CPPUNIT_TEST( test_at_register_urc_full );
         CPPUNIT_TEST( test_at_register_urc_too_long );
         CPPUNIT_TEST( test_at_register_urc_ok );
         CPPUNIT_TEST( test_at_qp_handler_no_change );
@@ -53,6 +53,8 @@ class AtTest : public CppUnit::TestFixture
         CPPUNIT_TEST( test_is_urc_msg_none );
         CPPUNIT_TEST( test_is_urc_msg_no_match );
         CPPUNIT_TEST( test_is_urc_msg_match );
+        CPPUNIT_TEST( test_urc_unhandled_cb );
+        CPPUNIT_TEST( test_urc_unhandled_cb_cb_undefined );
         CPPUNIT_TEST( test_is_rsp_status_nope );
         CPPUNIT_TEST( test_is_rsp_status_ok );
         CPPUNIT_TEST( test_complete_cmd );
@@ -79,7 +81,7 @@ public:
         void test_at_task_cmd_handler_bad_state();
         void test_at_task_cmd_handler_no_cmd();
         void test_at_task_cmd_handler_ok();
-        void test_at_regisger_urc_full();
+        void test_at_register_urc_full();
         void test_at_register_urc_too_long();
         void test_at_register_urc_ok();
         void test_at_qp_handler_no_change();
@@ -94,6 +96,8 @@ public:
         void test_is_urc_msg_none();
         void test_is_urc_msg_no_match();
         void test_is_urc_msg_match();
+        void test_urc_unhandled_cb();
+        void test_urc_unhandled_cb_cb_undefined();
         void test_is_rsp_status_nope();
         void test_is_rsp_status_ok();
         void test_complete_cmd();

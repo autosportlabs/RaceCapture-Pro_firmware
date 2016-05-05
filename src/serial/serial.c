@@ -161,6 +161,16 @@ void serial_flush(struct Serial *s)
         /* STIEG: TODO Figure out how to flush Tx sanely */
 }
 
+/**
+ * Clears the contents of the rx and tx queues.
+ */
+void serial_clear(struct Serial *s)
+{
+        char c;
+        for(; pdTRUE == xQueueReceive(s->rx_queue, &c, 0););
+        for(; pdTRUE == xQueueReceive(s->tx_queue, &c, 0););
+}
+
 bool serial_get_c_wait(struct Serial *s, char *c, const size_t delay)
 {
         if (pdFALSE == xQueueReceive(s->rx_queue, c, delay))
