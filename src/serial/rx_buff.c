@@ -31,13 +31,22 @@
 
 #define LOG_PFX	"[rx_buff] "
 
+struct rx_buff {
+        size_t cap;
+        size_t idx;
+        char *buff;
+        bool msg_ready;
+};
+
 /**
  * Clears the contents of an rx_buff struct.
  * @param rxb The rx_buff struct to adjust.
  */
 void rx_buff_clear(struct rx_buff *rxb)
 {
+        rxb->idx = 0;
         rxb->buff[0] = 0;
+        rxb->msg_ready = false;
 }
 
 /**
@@ -45,93 +54,125 @@ void rx_buff_clear(struct rx_buff *rxb)
  * provided, it will dynamically allocate one.
  * @param rxb The rx_buff struct to adjust.
  * @param cap The capacity of the buffer in bytes.
- * @param buff Pointer to a buffer to use.  If NULL, the function will
  * allocate a buffer for you.
  */
-bool rx_buff_init(struct rx_buff *rxb, const size_t cap, char *buff)
+struct rx_buff* rx_buff_create(const size_t cap)
 {
-        if (NULL == buff)
-                buff = portMalloc(cap);
+        struct rx_buff *rxb = portMalloc(sizeof(struct rx_buff));
+        if (!rxb)
+                goto fail_obj_alloc;
 
-        if (NULL == buff) {
-                /* Failed to get the memory we need */
-                pr_error(LOG_PFX "alloc failed\r\n");
-                return false;
-        }
+        rxb->buff = portMalloc(cap);
+        if (!rxb->buff)
+                goto fail_buff_alloc;
 
         rxb->cap = cap;
-        rxb->buff = buff;
         rx_buff_clear(rxb);
-        return true;
+        return rxb;
+
+fail_buff_alloc:
+        portFree(rxb);
+fail_obj_alloc:
+        /* Failed to get the memory we need */
+        pr_error(LOG_PFX "create failed\r\n");
+        return NULL;
 }
 
 /**
- * Frees the dynamically allocated buffer.
+ * Destroys the rx_buff object and its internal components.
  * @param rxb The rx_buff struct to adjust.
  */
-void rx_buff_free(struct rx_buff *rxb)
+void rx_buff_destroy(struct rx_buff *rxb)
 {
         portFree(rxb->buff);
-        rxb->buff = NULL;
-        rxb->cap = 0;
+        portFree(rxb);
+}
+
+static bool is_term_char(const char c)
+{
+        switch(c) {
+        case '\r':
+        case '\0':
+                return true;
+        default:
+                return false;
+        }
 }
 
 /**
  * Reads data from the Serial device into our buffer.
  * @param s The serial device to read data from.
- * @param ticks_to_wait The mount of time to wait before we timeout.
- * @return Pointer to a full message that is ready for processing if it was
- * received in time, NULL otherwise.
+ * @return true if we have received a full message that is ready to be
+ * read, false otherwise.
  */
-char* rx_buff_read(struct rx_buff *rxb, struct Serial *s,
-                   const size_t ticks_to_wait)
+bool rx_buff_read(struct rx_buff *rxb, struct Serial *s)
 {
         xQueueHandle h = serial_get_rx_queue(s);
-        size_t i = 0;
-        char c;
+        char c = 1;
         /* pr_info(LOG_PFX "RX Chars: \""); */
-        for(bool done = false; i < rxb->cap && !done; ++i) {
-                const bool rx_status = xQueueReceive(h, &c, ticks_to_wait);
-
+        for(; rxb->idx < rxb->cap && !rxb->msg_ready; ++rxb->idx) {
+                const bool rx_status = xQueueReceive(h, &c, 0);
                 if (!rx_status) {
-                        /* If here, we timed out on receiving a message */
+                        /* If here, no more data to read for now */
                         /* pr_info("\"\r\n"); */
-                        pr_debug(LOG_PFX "Timeout receiving msg\r\n");
-                        rx_buff_clear(rxb);
-                        return NULL;
+                        return false;
                 }
 
                 /* pr_info_int(c); */
                 /* pr_info_char(','); */
-                switch(c) {
-                case '\r':
-                case '\0':
-                        done = true;
-                        break;
-                }
-
-                rxb->buff[i] = c;
+                rxb->msg_ready = is_term_char(c);
+                rxb->buff[rxb->idx] = c;
         }
         /* pr_info("\"\r\n"); */
+
+        /*
+         * Possible Overflow Scenario
+         * If the message length is exactly cap - 1, then the term
+         * character trigger overflow to happen if we weren't careful.
+         * This is not an overflow so handle it accordingly.  But if the
+         * last character was not a term character, then this is an
+         * overflow for real.  Terminate the string so its stillusable
+         * and set our state to indicate overflow. To save a bit of space,
+         * we simply set the index to be cap + 1.
+         */
+        if (rxb->idx < rxb->cap ||
+            (rxb->idx == rxb->cap && is_term_char(c))) {
+                /* Turn the term character into the null */
+                rxb->buff[rxb->idx - 1] = 0;
+        } else {
+                pr_warning(LOG_PFX "Overflow!");
+                /* Cap the end so we don't do undefined things */
+                rxb->buff[rxb->cap - 1] = 0;
+                /* Set our idx value to cap + 1 to indicate overflow */
+                rxb->idx = rxb->cap + 1;
+        }
 
         /* If there is a \n after the \r, remove it */
         if ('\r' == c && xQueuePeek(h, &c, 0) && '\n' == c)
                 xQueueReceive(h, &c, 0);
 
-        if (i >= rxb->cap) {
-                /* Overflow scenario */
-                pr_warning(LOG_PFX "Overflow!");
-                /* Cap the end so we don't do undefined things */
-                rxb->buff[rxb->cap - 1] = 0;
-        } else {
-                /*
-                 * Cap the end of the string.  This also gets rid of the
-                 * delimiting character.
-                 */
-                rxb->buff[i] = 0;
-        }
+        return true;
+}
 
-        /* Now strip any leading or trailing characters */
-        /* STIEG: Make constant when process_read_msg is updated */
-        return strip_inline(rxb->buff);
+char* rx_buff_get_msg(struct rx_buff *rxb)
+{
+        return rxb->msg_ready ? strip_inline(rxb->buff) : NULL;
+}
+
+bool rx_buff_is_overflow(struct rx_buff *rxb)
+{
+        return rxb->idx > rxb->cap;
+}
+
+/**
+ * Gives us our status in enum form.
+ */
+enum rx_buff_status rx_buff_get_status(struct rx_buff *rxb)
+{
+        if (rxb->msg_ready)
+                return rx_buff_is_overflow(rxb) ?
+                        RX_BUFF_STATUS_OVERFLOW : RX_BUFF_STATUS_READY;
+
+        return rxb->idx == 0 ?
+                RX_BUFF_STATUS_EMPTY : RX_BUFF_STATUS_PARTIAL;
 }
