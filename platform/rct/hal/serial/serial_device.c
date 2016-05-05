@@ -41,14 +41,9 @@ struct Serial* serial_device_get(const serial_id_t port)
         case SERIAL_GPS:
                 s = usart_device_get_serial(UART_GPS);
                 break;
-        case SERIAL_TELEMETRY:
-                s = usart_device_get_serial(UART_TELEMETRY);
-                break;
-        case SERIAL_WIRELESS:
+        case SERIAL_BLUETOOTH:
+        case SERIAL_WIFI:
                 s = usart_device_get_serial(UART_WIRELESS);
-                break;
-        case SERIAL_AUX:
-                s = usart_device_get_serial(UART_AUX);
                 break;
         default:
                 s = NULL;

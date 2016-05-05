@@ -145,6 +145,9 @@ src-y += $(wildcard $(RC_SRC_DIR)/usart/*.c)
 src-y += $(wildcard hal/usart_stm32/*.c)
 inc-y += $(RC_INCLUDE_DIR)/usart
 
+# Serial Device
+src-y += $(wildcard hal/serial/*.c)
+
 # Watchdog
 src-y += $(wildcard $(RC_SRC_DIR)/watchdog/*.c)
 src-y += $(wildcard hal/watchdog_stm32/*.c)
