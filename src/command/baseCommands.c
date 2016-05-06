@@ -100,8 +100,9 @@ void ShowTaskInfo(Serial *serial, unsigned int argc, char **argv)
      */
     char *taskList = (char *) portMalloc(1024);
     if (NULL != taskList) {
-        vTaskList(taskList);
-        serial->put_s(taskList);
+        //TODO BAP - get this working, when we have a USB console
+        //vTaskList(taskList);
+        //serial->put_s(taskList);
         portFree(taskList);
     } else {
         serial->put_s("Out of Memory!");
