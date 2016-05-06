@@ -60,15 +60,6 @@ int InitFS()
         if(!is_initialized())
                 return -1;
 
-        taskENTER_CRITICAL();
-        const int res = disk_initialize(0);
-        taskEXIT_CRITICAL();
-
-        if (0 != res) {
-                pr_error("sdcard: Disk init fail\r\n");
-                return res;
-        }
-
         return f_mount(fat_fs, "0", 1);
 }
 

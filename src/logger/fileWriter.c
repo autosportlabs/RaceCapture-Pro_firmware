@@ -37,7 +37,7 @@
 #include <stdbool.h>
 
 #define ERROR_SLEEP_DELAY_MS	500
-#define FILE_BUFFER_SIZE	256
+#define FILE_BUFFER_SIZE	512
 #define FILE_WRITER_STACK_SIZE	256
 #define MAX_LOG_FILE_INDEX	99999
 #define WRITE_FAIL	EOF
