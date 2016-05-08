@@ -29,9 +29,11 @@
 #include "panic.h"
 #include "printk.h"
 #include "queue.h"
+#include "str_util.h"
 #include "task.h"
 #include "wifi.h"
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define _AT_TASK_TIMEOUT_MS	3
@@ -73,6 +75,8 @@ struct _daemon {
 struct _channel {
         struct Serial *serial;
         size_t tx_chars_buffered;
+        bool in_use;
+        bool connected;
 };
 
 static struct _state {
@@ -100,6 +104,11 @@ static void cmd_completed(const enum _cmd next_cmd,
         state.cmd_ip = false;
 }
 
+static bool is_valid_socket_channel_id(const size_t chan_id)
+{
+        return chan_id < ARRAY_LEN(state.channels);
+}
+
 static const char* get_channel_name(const size_t chan_id)
 {
         static const char* _serial_names[] = {
@@ -119,44 +128,92 @@ static const char* get_channel_name(const size_t chan_id)
 static void _tx_char_cb(xQueueHandle queue, void *post_tx_arg)
 {
         struct _channel *ch = post_tx_arg;
-        ++ch->tx_chars_buffered;
+
+        /*
+         * Because we are mimicking a Serial device on top of an actual
+         * socket we need to do some dirty tricks to get the same behavior.
+         * If we have a good connection, then buffer it and send it as
+         * needed.
+         * If we aren't connected we dump all the data on the floor to prevent
+         * the unnecessary stalling of pipelines.  This is on par with
+         * Serial device behavior, but is not ideal for obvious reasons.
+         * We need to move to a socket model before we can fix this properly.
+         * But that will take some work. ITMT this is a good solution until
+         * we get there.
+         */
+        if (ch->connected) {
+                ++ch->tx_chars_buffered;
+        } else {
+                char c;
+                while(pdTRUE == xQueueReceive(queue, &c, 0));
+                ch->tx_chars_buffered = 0;
+        }
 }
 
-static struct _channel* get_channel(const int chan_id)
+static struct Serial* setup_channel_serial(const unsigned int i)
 {
-        struct _channel *ch = state.channels + chan_id;
-        if (ch->serial)
-                return ch;
-
-        const char* name = get_channel_name(chan_id);
+        const char* name = get_channel_name(i);
+        struct _channel* ch =state.channels + i;
         struct Serial *s = serial_create(name, _SERIAL_TX_BUFF_SIZE,
                                          _SERIAL_RX_BUFF_SIZE, NULL, NULL,
                                          _tx_char_cb, ch);
-        if (NULL == s)
-                pr_error(_LOG_PFX "Failed to create serial port\r\n");
+        if (s)
+                return s;
 
-        ch->serial = s;
+        /* Fail state */
+        pr_error(_LOG_PFX "Failed to create serial port\r\n");
+        return NULL;
+}
+
+static struct _channel* get_channel_for_use(const unsigned int i)
+{
+        if (!is_valid_socket_channel_id(i))
+                return NULL;
+
+        struct _channel* ch =state.channels + i;
+        if (!ch->serial) {
+                ch->serial = setup_channel_serial(i);
+                if (!ch->serial)
+                        return NULL;
+        }
+
+        /* Prep the channel for use */
         ch->tx_chars_buffered = 0;
+        ch->in_use = true;
+        ch->connected = false; /* Not connected until we say so */
 
         return ch;
 }
 
+static int get_next_free_channel_num()
+{
+        for (size_t i = 0; is_valid_socket_channel_id(i); ++i) {
+                struct _channel *ch = state.channels + i;
+                if (!ch->in_use)
+                        return i;
+        }
+
+        return -1;
+}
+
 static void rx_data_cb(int chan_id, size_t len, const char* data)
 {
-        if (chan_id >= ARRAY_LEN(state.channels)) {
+        if (!is_valid_socket_channel_id(chan_id)) {
                 pr_error_int_msg(_LOG_PFX "Channel id to big: ", chan_id);
                 return;
         }
 
-        struct _channel *ch = get_channel(chan_id);
+        struct _channel *ch = get_channel_for_use((unsigned int) chan_id);
         if (NULL == ch) {
                 pr_error(_LOG_PFX "No channel available.  Dropping\r\n");
                 return;
         }
+        ch->connected = true; /* Connected here because request came in */
 
         /* Call back to listening task to indicate new socket */
         if (!state.new_conn_cb) {
                 pr_error(_LOG_PFX "No Serial callback defined\r\n");
+                ch->in_use = false; /* Channel is no longer in use */
                 return;
         }
         state.new_conn_cb(ch->serial);
@@ -166,6 +223,52 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
         xQueueHandle q = serial_get_rx_queue(ch->serial);
         for (size_t i = 0; i < len; ++i)
                 xQueueSend(q, data + i, portMAX_DELAY);
+}
+
+/**
+ * Callback that gets invoked when our client wifi gets disconnected
+ * from its network.
+ */
+static void client_wifi_disconnect_cb()
+{
+        pr_info(_LOG_PFX "WiFi client disconnected from AP\r\n");
+        memset(&state.client.info, 0, sizeof(state.client.info));
+}
+
+/**
+ * Callback that gets invoked when a socket becomes connected.  Usually
+ * this happens when a new client connects.
+ */
+static void socket_connect_cb(const size_t chan_id)
+{
+        if (!is_valid_socket_channel_id(chan_id)) {
+                pr_error_int_msg(_LOG_PFX "Invalid socket id during "
+                                 "connect: ", chan_id);
+                return;
+        }
+
+        pr_info_int_msg(_LOG_PFX "Socket connect on channel ", chan_id);
+        struct _channel *ch = state.channels + chan_id;
+        ch->connected = true;
+}
+
+/**
+ * Callback that gets invoked when a socket gets closed.  Usually
+ * this happens when there is a TCP timeout or a socket close call
+ * gets invoked.
+ */
+static void socket_closed_cb(const size_t chan_id)
+{
+        if (!is_valid_socket_channel_id(chan_id)) {
+                pr_error_int_msg(_LOG_PFX "Invalid socket id during "
+                                 "close: ", chan_id);
+                return;
+        }
+
+        pr_info_int_msg(_LOG_PFX "Socket closed on channel ", chan_id);
+        struct _channel *ch = state.channels + chan_id;
+        ch->connected = false;
+        serial_clear(ch->serial);
 }
 
 static void init_wifi_cb(enum dev_init_state dev_state)
@@ -184,7 +287,14 @@ static void init_wifi_cb(enum dev_init_state dev_state)
 
 static void init_wifi()
 {
-        if (!esp8266_init(state.serial, _SERIAL_CMD_MAX_LEN, init_wifi_cb)) {
+        const struct esp8266_event_hooks hooks = {
+                .client_wifi_disconnect_cb = client_wifi_disconnect_cb,
+                .socket_connect_cb = socket_connect_cb,
+                .socket_closed_cb = socket_closed_cb,
+        };
+
+        if (!esp8266_init(state.serial, _SERIAL_CMD_MAX_LEN,
+                          hooks, init_wifi_cb)) {
                 /* Failed to init critical bits.  */
                 pr_error(_LOG_PFX "Failed to init esp8266 device code.\r\n");
                 cmd_completed(_CMD_INIT, _INIT_FAIL_SLEEP_MS);
@@ -264,6 +374,7 @@ static void set_client_ap_cb(bool status)
         if (!status) {
                 /* Failed. */
                 pr_info(_LOG_PFX "Failed to join network\r\n");
+                client_wifi_disconnect_cb();
                 cmd_completed(_CMD_UNKNOWN, 0);
         } else {
                 /* If here, we were successful.  Now get client wifi info */
@@ -451,4 +562,41 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         xTaskCreate(_task, task_name, stack_size, NULL, priority, NULL);
 
         return true;
+}
+
+static void _connect_cb(bool status, const int chan_id)
+{
+        struct _channel *ch = state.channels + chan_id;
+        ch->connected = status;
+        ch->in_use = status;
+}
+
+struct Serial* esp8266_drv_connect(const enum protocol proto,
+                                   const char* dst_ip,
+                                   const unsigned int dst_port)
+{
+        const int chan_id = get_next_free_channel_num();
+        if (chan_id < 0) {
+                pr_warning(_LOG_PFX "Failed to acquire a free channel\r\n");
+                return NULL;
+        }
+
+        struct _channel *ch = get_channel_for_use(chan_id);
+        if (NULL == ch) {
+                pr_warning(_LOG_PFX "Can't allocate resources for channel\r\n");
+                return NULL;
+        }
+
+        if (!esp8266_connect(chan_id, proto, dst_ip, dst_port,
+                             _connect_cb)) {
+                pr_warning(_LOG_PFX "Failed to issue connect command\r\n");
+                return NULL;
+        }
+
+        return ch->serial;
+}
+
+const struct esp8266_client_info* esp8266_drv_get_client_info()
+{
+        return &state.client.info;
 }

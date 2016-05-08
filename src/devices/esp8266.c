@@ -23,8 +23,10 @@
 #include "esp8266.h"
 #include "macros.h"
 #include "mem_mang.h"
+#include "net/protocol.h"
 #include "printk.h"
 #include "serial_buffer.h"
+#include "str_util.h"
 #include "taskUtil.h"
 
 #include <stdbool.h>
@@ -56,6 +58,7 @@ static struct {
         struct at_info *ati;
         void (*init_cb)(enum dev_init_state); /* STIEG: Put in own struct? */
         enum dev_init_state init_state;
+        struct esp8266_event_hooks hooks;
 } state;
 
 static void cmd_failure(const char *cmd_name, const char *msg)
@@ -70,9 +73,50 @@ static void cmd_failure(const char *cmd_name, const char *msg)
 }
 
 /**
+ * Callback that gets invoked when we are unable to handle the URC using
+ * the standard URC callbacks.  Used for the silly messages like
+ * `0,CONNECT` where there is no prefix for the URC like their should be.
+ * Messages this callback handles:
+ * * <0-4>,CONNECT
+ * * <0-4>,CLOSED
+ * * WIFI DISCONNECT
+ */
+static bool sparse_urc_cb(char* msg)
+{
+        msg = strip_inline(msg);
+
+        if (STR_EQ(msg, "WIFI DISCONNECT")) {
+                if (state.hooks.client_wifi_disconnect_cb)
+                        state.hooks.client_wifi_disconnect_cb();
+                return true;
+        }
+
+        /* Now look for a message with a comma */
+        char* comma = strchr(msg, ',');
+        if (!comma)
+                return false;
+
+        *comma = '\0';
+        const char* m1 = msg;
+        const char* m2 = ++comma;
+        if (STR_EQ(m2, "CONNECT")) {
+                if (state.hooks.socket_connect_cb)
+                        state.hooks.socket_connect_cb(atoi(m1));
+        } else if (STR_EQ(m2, "CLOSED")) {
+                if (state.hooks.socket_closed_cb)
+                        state.hooks.socket_closed_cb(atoi(m1));
+        } else {
+                return false;
+        }
+
+        return true;
+}
+
+/**
  * Sets up the internal state of the driver.  Must be called before init.
  */
-static bool _setup(struct Serial *s, const size_t max_cmd_len)
+static bool _setup(struct Serial *s, const size_t max_cmd_len,
+                   const struct esp8266_event_hooks hooks)
 {
         /* Check if already initialized.  If so, do nothing */
         if (state.ati)
@@ -80,6 +124,7 @@ static bool _setup(struct Serial *s, const size_t max_cmd_len)
 
         state.ati = &_ati;
         state.scb = &_serial_cmd_buff;
+        state.hooks = hooks;
 
         /*
          * Initialize the serial command buffer.  This buffer is used for
@@ -92,7 +137,7 @@ static bool _setup(struct Serial *s, const size_t max_cmd_len)
 
         /* Init our AT engine here */
         if (!init_at_info(state.ati, state.scb, _AT_DEFAULT_QP_MS,
-                          _AT_CMD_DELIM))
+                          _AT_CMD_DELIM, sparse_urc_cb))
                 return false;
 
         return true;
@@ -273,13 +318,14 @@ static bool is_init_in_progress()
  * Kicks off the initilization process.
  */
 bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
+                  const struct esp8266_event_hooks hooks,
                   void (*cb)(enum dev_init_state))
 {
         if (!cb || !s || is_init_in_progress())
                 return false;
 
         /* Init objects.  If fail, then nothing we can do. */
-        if (!_setup(s, max_cmd_len))
+        if (!_setup(s, max_cmd_len, hooks))
                 return false;
 
         state.init_cb = cb;
@@ -637,33 +683,31 @@ do_cb:
  * @param chan_id The channel ID to use.  0 - 4
  * @param proto The Network protocol to use.
  * @param dest_port The destination port to send data to.
- * @param udp_port The source port from which data originates (UDP ONLY).
- * @param udp_mode Tells the device whether or not the destination of the
- * UDP packets are allowed to change.  0 means it won't change.  1 means it
- * will change up to 1 time.  2 means it can change any number of times.
  * @return true if the request was queued, false otherwise.
  */
-bool esp8266_connect(const int chan_id, const enum esp8266_net_proto proto,
+bool esp8266_connect(const int chan_id, const enum protocol proto,
                      const char *ip_addr, const int dest_port,
-                     const int udp_port, const int udp_mode,
                      void (*cb) (bool, const int))
 {
         if (!check_initialized("connect"))
                 return false;
 
         char cmd[64];
+        const char* proto_str;
         switch (proto) {
-        case ESP8266_NET_PROTO_TCP:
-                snprintf(cmd, ARRAY_LEN(cmd),
-                         "AT+CIPSTART=%d,\"TCP\",\"%s\",%d",
-                         chan_id, ip_addr, dest_port);
+        case PROTOCOL_TCP:
+                proto_str = "TCP";
                 break;
-        case ESP8266_NET_PROTO_UDP:
-                snprintf(cmd, ARRAY_LEN(cmd),
-                         "AT+CIPSTART=%d,\"UDP\",\"%s\",%d,%d,%d",
-                         chan_id, ip_addr, dest_port, udp_port, udp_mode);
+        case PROTOCOL_UDP:
+                proto_str = "UDP";
                 break;
+        default:
+                cmd_failure("esp8266_connect", "Invalid protocol");
+                return false;
         }
+
+        snprintf(cmd, ARRAY_LEN(cmd), "AT+CIPSTART=%d,\"%s\",\"%s\",%d",
+                 chan_id, proto_str, ip_addr, dest_port);
 
         return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
                                   connect_cb, cb);

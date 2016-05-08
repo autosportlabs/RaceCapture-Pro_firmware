@@ -55,8 +55,6 @@ typedef enum {
 static uint8_t *gpsRxBuffer;
 
 static volatile struct usart_info {
-        xQueueHandle tx;
-        xQueueHandle rx;
         struct Serial *serial;
         USART_TypeDef *usart;
 } usart_data[__UART_COUNT];
@@ -171,7 +169,7 @@ static void enableRxDMA(uint32_t RCC_AHBPeriph,
      NVIC_InitTypeDef NVIC_InitStruct;
      NVIC_InitStruct.NVIC_IRQChannel = NVIC_IRQ_channel;
      NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
-     NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 1; //IRQ_priority;
+     NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = UART_GPS_IRQ_PRIORITY; //1; //IRQ_priority;
      NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0;
 
      NVIC_Init(&NVIC_InitStruct);
@@ -181,22 +179,23 @@ static void enableRxDMA(uint32_t RCC_AHBPeriph,
 static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
                           uint8_t IRQ_priority, uart_irq_type_t irqType)
 {
-    NVIC_InitTypeDef NVIC_InitStructure;
+        NVIC_InitTypeDef NVIC_InitStructure;
 
-    /* Configure the NVIC Preemption Priority Bits */
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+        /* Configure the NVIC Preemption Priority Bits */
+        NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 
-    /* Enable the USART Interrupt */
-    NVIC_InitStructure.NVIC_IRQChannel = usartIrq;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = IRQ_priority;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+        /* Enable the USART Interrupt */
+        NVIC_InitStructure.NVIC_IRQChannel = usartIrq;
+        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = IRQ_priority;
+        NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+        NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+        NVIC_Init(&NVIC_InitStructure);
 
-    if (irqType | UART_RX_IRQ)
-        USART_ITConfig(USARTx, USART_IT_RXNE, ENABLE);
-    if (irqType | UART_TX_IRQ)
-        USART_ITConfig(USARTx, USART_IT_TXE, ENABLE);
+        if (irqType | UART_RX_IRQ)
+                USART_ITConfig(USARTx, USART_IT_RXNE, ENABLE);
+
+        if (irqType | UART_TX_IRQ)
+                USART_ITConfig(USARTx, USART_IT_TXE, ENABLE);
 }
 
 /* Wireless port */
@@ -285,8 +284,6 @@ static bool init_usart_serial(const uart_id_t uart_id, USART_TypeDef *usart,
 
         /* Set the usart_info data */
         volatile struct usart_info *ui = usart_data + uart_id;
-        ui->rx = serial_get_rx_queue(s);
-        ui->tx = serial_get_tx_queue(s);
         ui->usart = usart;
         ui->serial = s;
 
@@ -352,15 +349,18 @@ void usart_device_config(const uart_id_t id, const size_t bits,
 void DMA1_Channel6_IRQHandler(void)
 {
         volatile struct usart_info *ui = usart_data + UART_GPS;
+        xQueueHandle rx_queue = serial_get_rx_queue(ui->serial);
+
         portBASE_TYPE xTaskWokenByPost = pdFALSE;
         signed portCHAR cChar;
+
         /* Test on DMA Stream Transfer Complete interrupt */
         if (DMA_GetITStatus(DMA1_IT_TC6)) {
                 /* Clear DMA Stream Transfer Complete interrupt pending bit */
                 DMA_ClearITPendingBit(DMA1_IT_TC6);
                 for (size_t i = GPS_BUFFER_SIZE / 2; i < GPS_BUFFER_SIZE; i++) {
                         cChar = gpsRxBuffer[i];
-                        xQueueSendFromISR(ui->rx, &cChar, &xTaskWokenByPost);
+                        xQueueSendFromISR(rx_queue, &cChar, &xTaskWokenByPost);
                 }
         }
 
@@ -370,7 +370,7 @@ void DMA1_Channel6_IRQHandler(void)
                 DMA_ClearITPendingBit(DMA1_IT_HT6);
                 for (size_t i = 0; i < GPS_BUFFER_SIZE / 2; i++) {
                         cChar = gpsRxBuffer[i];
-                        xQueueSendFromISR(ui->rx, &cChar, &xTaskWokenByPost);
+                        xQueueSendFromISR(rx_queue, &cChar, &xTaskWokenByPost);
                 }
         }
 
@@ -380,18 +380,16 @@ void DMA1_Channel6_IRQHandler(void)
 static void usart_generic_irq_handler(volatile struct usart_info *ui)
 {
         USART_TypeDef *usart = ui->usart;
-        xQueueHandle rx = ui->rx;
-        xQueueHandle tx = ui->tx;
-
         signed portCHAR cChar;
         portBASE_TYPE xTaskWokenByTx = pdFALSE;
+
         if (SET == USART_GetITStatus(usart, USART_IT_TXE)) {
                 /*
                  * The interrupt was caused by the TX becoming empty.
                  * Are there any more characters to transmit?
                  */
-                if (tx != NULL &&
-                    pdTRUE == xQueueReceiveFromISR(tx, &cChar,
+                xQueueHandle tx_queue = serial_get_tx_queue(ui->serial);
+                if (pdTRUE == xQueueReceiveFromISR(tx_queue, &cChar,
                                                    &xTaskWokenByTx)) {
                         /*
                          * A character was retrieved from the queue so
@@ -415,12 +413,23 @@ static void usart_generic_irq_handler(volatile struct usart_info *ui)
                  * or received characters.
                  */
                 cChar = USART_ReceiveData(usart);
-                if (rx)
-                        xQueueSendFromISR(rx, &cChar, &xTaskWokenByPost);
+                xQueueHandle rx_queue = serial_get_rx_queue(ui->serial);
+                xQueueSendFromISR(rx_queue, &cChar, &xTaskWokenByPost);
         }
 
-        if (SET == USART_GetITStatus(usart, USART_FLAG_ORE))
-                USART_ClearITPendingBit (usart, USART_IT_ORE);
+        /*
+         * ORE interrupt can occur when USART_IT_RXNE interrupt is active
+         * OR when USART_IT_ERR interrupt is active. See page 933 of the
+         * STm32F3XX manual for a logic diagram.  If ORE triggers it won't
+         * necessarily set the USART_IT_ORE interrupt flag because we
+         * disable the USART_IT_ERR interrupt.  This breaks the check
+         * provided by USART_GetITStatus(usart, USART_IT_ORE).  This bug has
+         * been fixed in the STM32F4XX libs, but not this series :(.  Thus
+         * we must check the ISR directly to see if this is what caused the
+         * interrupt and clear it appropriately.
+         */
+        if (SET == USART_GetFlagStatus(usart, USART_FLAG_ORE))
+                USART_ClearFlag(usart, USART_FLAG_ORE);
 
         /*
          * If a task was woken by either a character being received or a

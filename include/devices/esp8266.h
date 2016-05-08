@@ -22,7 +22,9 @@
 #ifndef _ESP8266_H_
 #define _ESP8266_H_
 
+#include "at.h"
 #include "cpp_guard.h"
+#include "net/protocol.h"
 #include "serial.h"
 #include <stdbool.h>
 
@@ -41,7 +43,18 @@ enum dev_init_state {
         DEV_INIT_STATE_FAILED,
 };
 
+typedef void client_wifi_disconnect_cb_t();
+typedef void socket_connect_cb_t(const size_t chan_id);
+typedef void socket_closed_cb_t(const size_t chan_id);
+
+struct esp8266_event_hooks {
+        client_wifi_disconnect_cb_t *client_wifi_disconnect_cb;
+        socket_connect_cb_t *socket_connect_cb;
+        socket_closed_cb_t *socket_closed_cb;
+};
+
 bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
+                  const struct esp8266_event_hooks hooks,
                   void (*cb)(enum dev_init_state));
 
 enum dev_init_state esp1866_get_dev_init_state();
@@ -79,14 +92,8 @@ bool esp8266_get_client_ap(void (*cb)
 bool esp8266_get_client_ip(void (*cb)
                            (bool, const char*));
 
-enum esp8266_net_proto {
-        ESP8266_NET_PROTO_TCP,
-        ESP8266_NET_PROTO_UDP,
-};
-
-bool esp8266_connect(const int chan_id, const enum esp8266_net_proto proto,
+bool esp8266_connect(const int chan_id, const enum protocol proto,
                      const char *ip_addr, const int dest_port,
-                     const int udp_port, const int udp_mode,
                      void (*cb) (bool, const int));
 
 bool esp8266_send_data(const int chan_id, struct Serial *data,

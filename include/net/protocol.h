@@ -19,30 +19,18 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _ESP8266_DRV_H_
-#define _ESP8266_DRV_H_
+#ifndef _PROTOCOL_H_
+#define _PROTOCOL_H_
 
 #include "cpp_guard.h"
-#include "esp8266.h"
-#include "net/protocol.h"
-#include "serial.h"
-#include "wifi.h"
 
 CPP_GUARD_BEGIN
 
-typedef void new_conn_func_t(struct Serial *s);
-
-bool esp8266_drv_update_client_cfg(const struct wifi_client_cfg *cc);
-
-bool esp8266_drv_init(struct Serial *s, const int priority,
-                      new_conn_func_t new_conn_cb);
-
-struct Serial* esp8266_drv_connect(const enum protocol proto,
-                                   const char* dst_ip,
-                                   const unsigned int dst_port);
-
-const struct esp8266_client_info* esp8266_drv_get_client_info();
+enum protocol {
+        PROTOCOL_TCP,
+        PROTOCOL_UDP,
+};
 
 CPP_GUARD_END
 
-#endif /* _ESP8266_DRV_H_ */
+#endif /* _PROTOCOL_H_ */

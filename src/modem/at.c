@@ -210,6 +210,42 @@ static void begin_urc_msg(struct at_info *ati, struct at_urc *urc)
         ati->timing.urc_start_ms = getUptime();
 }
 
+static void process_cmd_or_urc_msg(struct at_info *ati, char *msg)
+{
+        /*
+         * We are starting a new message series.  Gotta figure out
+         * what type of message this is before we process it.  Then
+         * we process it appropriately.  Even though a command may
+         * be in progress, it could be a URC buffered in our input.
+         * thus this is why we check for URC match first.
+         */
+
+        struct at_urc* const urc = is_urc_msg(ati, msg);
+        if (urc) {
+                begin_urc_msg(ati, urc);
+                return process_urc_msg(ati, msg);
+        } else if (ati->cmd_ip) { /* Now check if command in progress */
+                /* If so, then cmd_ip is already set */
+                return process_cmd_msg(ati, msg);
+        } else {
+                /*
+                 * We got data but have no URC or CMD for it.  Check
+                 * if we have a unhandled_urc_cb method defined.  If
+                 * so use it. If it passes, great, but if it fails or is
+                 * not defined, throw the warning.
+                 */
+                const bool msg_handled =
+                        NULL != ati->unhandled_urc_cb &&
+                        ati->unhandled_urc_cb(msg);
+                if (!msg_handled)
+                        pr_warning_str_msg("[at] Unhandled msg received: ",
+                                           msg);
+
+                /* Need clean the buffer for new msgs */
+                serial_buffer_clear(ati->sb);
+        }
+}
+
 static void at_task_run_bytes_read(struct at_info *ati, char *msg)
 {
         /*
@@ -225,26 +261,8 @@ static void at_task_run_bytes_read(struct at_info *ati, char *msg)
                 /* We are in the middle of receiving a unexpected message. */
                 return process_urc_msg(ati, msg);
         case AT_RX_STATE_READY:
-                /*
-                 * We are starting a new message series.  Gotta figure out what
-                 * type of message this is before we process it.  Then we process
-                 * it appropriately.
-                 */
-                ; /* C is stupid after labels.  Workaround :\ */
-                struct at_urc *urc = is_urc_msg(ati, msg);
-                if (urc) {
-                        begin_urc_msg(ati, urc);
-                        return process_urc_msg(ati, msg);
-                } else if (ati->cmd_ip) { /* Is there a command in progress */
-                        /* If so, then cmd_ip is already set */
-                        return process_cmd_msg(ati, msg);
-                } else {
-                        /* We got data but have no URC or CMD for it */
-                        pr_warning_str_msg("[at] Unhandled msg received: ",
-                                           msg);
-                        /* Need a clean buffer for expected msgs */
-                        serial_buffer_clear(ati->sb);
-                }
+                /* We are starting a new message series. */
+                return process_cmd_or_urc_msg(ati, msg);
         }
 }
 
@@ -329,10 +347,16 @@ void at_task(struct at_info *ati, const size_t ms_delay)
  * @param quiet_period_ms The quiet period to wait between the end of a
  *        command and when to start the next.  Some modems need time to recover
  *        and send URCs.
+ * @param unhandled_urc_cb A method to invoke if we receive a URC that is not
+ *        handled by one of our URC handlers.  Happens sometimes when there is
+ *        poor AT command design.  This is the last resort method of handling
+ *        a URC.  Use the URC handlers when possible for sanity and better
+ *        features.  Can be NULL, indicating that there is no method to use.
  * @return true if the parameters were acceptable, false otherwise.
  */
 bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
-                  const tiny_millis_t quiet_period_ms, const char *delim)
+                  const tiny_millis_t quiet_period_ms, const char *delim,
+                  unhandled_urc_cb_t unhandled_urc_cb)
 {
         if (!ati || !sb) {
                 pr_error("[at] Bad init parameter\r\n");
@@ -344,6 +368,7 @@ bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
 
         ati->rx_state = AT_RX_STATE_READY;
         ati->cmd_state = AT_CMD_STATE_READY;
+        ati->unhandled_urc_cb = unhandled_urc_cb;
         ati->sb = sb;
         if (!at_configure_device(ati, quiet_period_ms, delim))
                 return false;
