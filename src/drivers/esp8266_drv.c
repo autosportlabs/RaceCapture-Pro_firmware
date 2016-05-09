@@ -91,13 +91,13 @@ struct comm {
  *
  * Note that each check represents a tiny state machine.  These
  * state machines have interdependeinces upon one another. In
- * example the client wifi (CHECK_CLIENT) requires that the wifi
+ * example the client wifi (CHECK_WIFI_CLIENT) requires that the wifi
  * subsystem (CHECK_INIT) be initialized. Thus we need a priority
  * with the lowest value being the highest priority.
  */
 enum check {
         CHECK_INIT,
-        CHECK_CLIENT,
+        CHECK_WIFI_CLIENT,
         CHECK_SERVER,
         CHECK_DATA,
         __NUM_CHECKS, /* Always the last */
@@ -353,7 +353,7 @@ static void check_data()
 static void client_wifi_disconnect_cb()
 {
         /* Need to check our client now that a change has occured */
-        cmd_set_check(CHECK_CLIENT);
+        cmd_set_check(CHECK_WIFI_CLIENT);
         cmd_set_check(CHECK_DATA);
 
         memset(&state.client.info, 0, sizeof(state.client.info));
@@ -427,7 +427,7 @@ static void init_wifi_cb(enum dev_init_state dev_state)
 
         /* Now that init state has changed, check them */
         cmd_set_check(CHECK_INIT);
-        cmd_set_check(CHECK_CLIENT);
+        cmd_set_check(CHECK_WIFI_CLIENT);
         cmd_set_check(CHECK_SERVER);
         cmd_set_check(CHECK_DATA);
 }
@@ -503,7 +503,7 @@ static bool device_initialized()
 static void get_client_ap_cb(bool status, const struct esp8266_client_info *ci)
 {
         cmd_completed();
-        cmd_set_check(CHECK_CLIENT);
+        cmd_set_check(CHECK_WIFI_CLIENT);
 
         memcpy(&state.client.info, ci, sizeof(struct esp8266_client_info));
         *state.client.info.ip = 0;
@@ -525,7 +525,7 @@ static void get_client_ap()
 static void get_client_ip_cb(bool status, const char* ip)
 {
         cmd_completed();
-        cmd_set_check(CHECK_CLIENT);
+        cmd_set_check(CHECK_WIFI_CLIENT);
 
         /* STIEG: This is a HACK.  IP Info should be its own struct */
         if (!status) {
@@ -557,7 +557,7 @@ static void get_client_ip()
 static void set_client_ap_cb(bool status)
 {
         cmd_completed();
-        cmd_set_check(CHECK_CLIENT);
+        cmd_set_check(CHECK_WIFI_CLIENT);
 
         if (!status) {
                 /* Failed. */
@@ -585,7 +585,7 @@ static void set_client_ap()
 }
 
 /**
- * Helper method to check_client.  This method tries to join an AP, but
+ * Helper method to check_wifi_client.  This method tries to join an AP, but
  * also handles cases where its not reachable or we have other issues
  * (like an incorrect password).
  */
@@ -595,7 +595,7 @@ static void client_try_join_ap()
                 /* Then we need to backoff */
                 const tiny_millis_t sleep_len =
                         state.client.next_join_attempt - getUptime();
-                cmd_sleep(CHECK_CLIENT, sleep_len);
+                cmd_sleep(CHECK_WIFI_CLIENT, sleep_len);
         } else {
                 /* If here, then its time to do work */
                 state.client.next_join_attempt =
@@ -609,15 +609,15 @@ static void client_try_join_ap()
  * Its responsible for keeping the client status as close to the
  * configuration as is reasonably possible.
  */
-static void check_client()
+static void check_wifi_client()
 {
-        cmd_check_complete(CHECK_CLIENT);
+        cmd_check_complete(CHECK_WIFI_CLIENT);
 
         pr_info(LOG_PFX "Checking Client\r\n");
 
         /* First check that we are initialized */
         if (!device_initialized()) {
-                cmd_sleep(CHECK_CLIENT, CLIENT_BACKOFF_MS);
+                cmd_sleep(CHECK_WIFI_CLIENT, CLIENT_BACKOFF_MS);
                 return;
         }
 
@@ -732,8 +732,8 @@ static void task_loop()
         case CHECK_INIT:
                 check_init();
                 break;
-        case CHECK_CLIENT:
-                check_client();
+        case CHECK_WIFI_CLIENT:
+                check_wifi_client();
                 break;
         case CHECK_SERVER:
                 check_server();
@@ -763,7 +763,7 @@ bool esp8266_drv_update_client_cfg(const struct wifi_client_cfg *cc)
         state.client.config = cc;
 
         /* Client state changed.  Need to check client */
-        cmd_set_check(CHECK_CLIENT);
+        cmd_set_check(CHECK_WIFI_CLIENT);
 
         return true;
 }
