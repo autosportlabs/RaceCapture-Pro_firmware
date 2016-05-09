@@ -268,7 +268,7 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
 
         /*
          * Check that we actually have a call back set to handle the
-         * incomming data.  If not then the socket stays open until it is
+         * incoming data.  If not then the socket stays open until it is
          * closed by our WiFi host.
          */
         if (!state.comm.new_conn_cb) {
@@ -279,7 +279,7 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
         state.comm.new_conn_cb(ch->serial);
 
         /*
-         * Now that the upper layer has been informed about the incomming
+         * Now that the upper layer has been informed about the incoming
          * data, start sending it said data.  It will unblock and read this
          * data very shortly.
          */
@@ -458,7 +458,7 @@ static void init_wifi()
         cmd_started();
 
         /*
-         * Now register the callback for incomming data.  Safe to do
+         * Now register the callback for incoming data.  Safe to do
          * before init has completed b/c this invokes no modem calls.
          * This should only fail if there was an issue with space or config.
          */
