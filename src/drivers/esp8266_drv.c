@@ -324,9 +324,7 @@ static void check_data()
                  * connection is still active.  If not, dump the data
                  */
                 if (!ch->connected) {
-                        char c;
-                        xQueueHandle queue = serial_get_tx_queue(ch->serial);
-                        while(pdTRUE == xQueueReceive(queue, &c, 0));
+                        serial_purge_tx_queue(ch->serial);
                         ch->tx_chars_buffered = 0;
                         continue;
                 }

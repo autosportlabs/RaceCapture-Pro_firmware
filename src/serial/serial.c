@@ -153,12 +153,19 @@ bool serial_config(const struct Serial *s, const size_t bits,
         return s->config_cb(s->config_cb_arg, bits, parity, stop_bits, baud);
 }
 
-void serial_flush(struct Serial *s)
+static void purge_queue(xQueueHandle q)
 {
-        /* Legacy Behavior.  Don't log the chars being dumped. */
-        for(char c; pdTRUE == xQueueReceive(s->rx_queue, &c, 0););
+        for(char c; pdTRUE == xQueueReceive(q, &c, 0););
+}
 
-        /* STIEG: TODO Figure out how to flush Tx sanely */
+void serial_purge_rx_queue(struct Serial* s)
+{
+        purge_queue(s->rx_queue);
+}
+
+void serial_purge_tx_queue(struct Serial* s)
+{
+        purge_queue(s->tx_queue);
 }
 
 /**
@@ -166,9 +173,16 @@ void serial_flush(struct Serial *s)
  */
 void serial_clear(struct Serial *s)
 {
-        char c;
-        for(; pdTRUE == xQueueReceive(s->rx_queue, &c, 0););
-        for(; pdTRUE == xQueueReceive(s->tx_queue, &c, 0););
+        serial_purge_rx_queue(s);
+        serial_purge_tx_queue(s);
+}
+
+void serial_flush(struct Serial *s)
+{
+        /* Legacy Behavior.  Don't log the chars being dumped. */
+        serial_purge_rx_queue(s);
+
+        /* STIEG: TODO Figure out how to flush Tx sanely */
 }
 
 bool serial_get_c_wait(struct Serial *s, char *c, const size_t delay)
