@@ -24,6 +24,7 @@
 
 #include "at.h"
 #include "cpp_guard.h"
+#include "dateTime.h"
 #include "net/protocol.h"
 #include "serial.h"
 #include <stdbool.h>
@@ -76,6 +77,7 @@ bool esp8266_set_op_mode(const enum esp8266_op_mode mode,
 bool esp8266_get_op_mode(void (*cb)(bool, enum esp8266_op_mode));
 
 struct esp8266_client_info {
+        tiny_millis_t snapshot_time;
         bool has_ap;
         char ssid[24];
         char mac[18];

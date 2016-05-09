@@ -101,7 +101,8 @@ size_t cellular_exec_cmd(struct serial_buffer *sb,
 bool is_rsp(const char **msgs, const size_t count, const char *ans)
 {
         /* Check to ensure last msg we got was an OK */
-        return msgs && count && 0 == strcmp(ans, msgs[count - 1]);
+        return msgs && count && 0 == strncmp(ans, msgs[count - 1],
+                                             strlen(ans));
 }
 
 /**

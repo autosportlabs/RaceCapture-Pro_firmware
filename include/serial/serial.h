@@ -63,9 +63,13 @@ struct Serial* serial_create(const char *name, const size_t tx_cap,
                              void *cfg_cb_arg, post_tx_func_t *post_tx_cb,
                              void *post_tx_cb_arg);
 
-void serial_flush(struct Serial *s);
+void serial_purge_rx_queue(struct Serial* s);
+
+void serial_purge_tx_queue(struct Serial* s);
 
 void serial_clear(struct Serial *s);
+
+void serial_flush(struct Serial *s);
 
 bool serial_logging(struct Serial *s, const bool enable);
 

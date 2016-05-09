@@ -114,10 +114,10 @@ static void _log(const struct Serial *s, const char *action,
 
         switch(data) {
         case('\r'):
-                pr_info("\\r");
+                pr_info("(\\r)");
                 break;
         case('\n'):
-                pr_info("\\n\r\n");
+                pr_info("(\\n)\r\n");
                 *pfx = true;
                 break;
         default:
@@ -153,12 +153,19 @@ bool serial_config(const struct Serial *s, const size_t bits,
         return s->config_cb(s->config_cb_arg, bits, parity, stop_bits, baud);
 }
 
-void serial_flush(struct Serial *s)
+static void purge_queue(xQueueHandle q)
 {
-        /* Legacy Behavior.  Don't log the chars being dumped. */
-        for(char c; pdTRUE == xQueueReceive(s->rx_queue, &c, 0););
+        for(char c; pdTRUE == xQueueReceive(q, &c, 0););
+}
 
-        /* STIEG: TODO Figure out how to flush Tx sanely */
+void serial_purge_rx_queue(struct Serial* s)
+{
+        purge_queue(s->rx_queue);
+}
+
+void serial_purge_tx_queue(struct Serial* s)
+{
+        purge_queue(s->tx_queue);
 }
 
 /**
@@ -166,9 +173,16 @@ void serial_flush(struct Serial *s)
  */
 void serial_clear(struct Serial *s)
 {
-        char c;
-        for(; pdTRUE == xQueueReceive(s->rx_queue, &c, 0););
-        for(; pdTRUE == xQueueReceive(s->tx_queue, &c, 0););
+        serial_purge_rx_queue(s);
+        serial_purge_tx_queue(s);
+}
+
+void serial_flush(struct Serial *s)
+{
+        /* Legacy Behavior.  Don't log the chars being dumped. */
+        serial_purge_rx_queue(s);
+
+        /* STIEG: TODO Figure out how to flush Tx sanely */
 }
 
 bool serial_get_c_wait(struct Serial *s, char *c, const size_t delay)
@@ -186,16 +200,31 @@ char serial_get_c(struct Serial *s)
         return serial_get_c_wait(s, &c, portMAX_DELAY) ? c : 0;
 }
 
-int serial_get_line_wait(struct Serial *s, char *l, const size_t len,
+/**
+ * Reads in a line from a serial device delimeted by \n.  The data is
+ * written to buff BUT MAY NOT BE NULL TERMINATED.  NULL termination is the
+ * responsibility of the caller.
+ * @param s The Serial device to read from.
+ * @param buff The buffer to put the data into.
+ * @param len The length of the buffer.
+ * @param delay The number of ticks to wait.
+ * @return Number of characters read.
+ */
+int serial_get_line_wait(struct Serial *s, char *buff, const size_t len,
                          const size_t delay)
 {
-        int i;
+        size_t i = 0;
 
-        for (i = 0; i < len - 1; ++i)
-                if (!serial_get_c_wait(s, l + i, delay) || '\n' == l[i])
-                        break;
+        for (; i < len; ++i) {
+                if (!serial_get_c_wait(s, buff + i, delay))
+                        return i;
 
-        l[i] = 0;
+                switch(buff[i]) {
+                case '\n':
+                        return ++i;
+                }
+        }
+
         return i;
 }
 

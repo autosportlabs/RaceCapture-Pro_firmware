@@ -67,8 +67,9 @@ static int sendBtCommandWaitResponse(DeviceConfig *config, const char *cmd,
 
         serial_flush(config->serial);
         serial_put_s(config->serial, cmd);
-        serial_get_line_wait(config->serial, config->buffer,
-                             config->length, wait);
+        const int len = serial_get_line_wait(config->serial, config->buffer,
+                                             config->length, wait);
+        config->buffer[len] = 0;
 
         const bool res = 0 == strncmp(config->buffer, rsp, strlen(rsp));
 
