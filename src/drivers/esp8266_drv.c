@@ -458,7 +458,7 @@ static void init_wifi()
         cmd_started();
 
         /*
-         * Now register the callback for incoming data.  Safe to do
+         * Now register the callback for incomming data.  Safe to do
          * before init has completed b/c this invokes no modem calls.
          * This should only fail if there was an issue with space or config.
          */
