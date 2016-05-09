@@ -82,13 +82,18 @@ struct comm {
 };
 
 /**
- * These enums define the various thecks we can perform.
- * Checks can lead to action.  Actions lead to update state,
- * and then we check again until we hit a completion point in
- * the check.
+ * These enums define the various checks that we can perform.
+ * Checks can lead to action.  Actions lead to updated state,
+ * which can then trigger checks.  We go round and round with
+ * this methodology to ensure that all decision making is kept
+ * in a single location.  Checks stop when nothing needs to
+ * be changed.
  *
- * Note that this is in order of priority with the lowest value
- * being the highest priority.
+ * Note that each check represents a tiny state machine.  These
+ * state machines have interdependeinces upon one another. In
+ * example the client wifi (CHECK_CLIENT) requires that the wifi
+ * subsystem (CHECK_INIT) be initialized. Thus we need a priority
+ * with the lowest value being the highest priority.
  */
 enum check {
         CHECK_INIT,
@@ -215,7 +220,7 @@ static struct channel* get_channel_for_use(const unsigned int i)
         if (!is_valid_socket_channel_id(i))
                 return NULL;
 
-        struct channel* ch =state.comm.channels + i;
+        struct channel* ch = state.comm.channels + i;
         if (ch->serial)
                 return ch;
 
@@ -278,15 +283,9 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
          * data, start sending it said data.  It will unblock and read this
          * data very shortly.
          */
-        /* pr_info_int_msg(LOG_PFX "rx_data_cb data len: ", len); */
-        /* pr_info(LOG_PFX "rx_data_cb data: \""); */
         xQueueHandle q = serial_get_rx_queue(ch->serial);
-        for (size_t i = 0; i < len; ++i) {
-                /* pr_info_int(data[i]); */
-                /* pr_info_char('|'); */
+        for (size_t i = 0; i < len; ++i)
                 xQueueSend(q, data + i, portMAX_DELAY);
-        }
-        /* pr_info("\"\r\n"); */
 
         cmd_set_check(CHECK_DATA);
 }
