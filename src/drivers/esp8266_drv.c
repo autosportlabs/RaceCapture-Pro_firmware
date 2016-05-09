@@ -64,7 +64,7 @@ struct client {
         tiny_millis_t next_join_attempt;
 };
 
-struct daemon {
+struct server {
         bool listening;
 };
 
@@ -98,7 +98,7 @@ struct comm {
 enum check {
         CHECK_INIT,
         CHECK_CLIENT,
-        CHECK_DAEMON,
+        CHECK_SERVER,
         CHECK_DATA,
         __NUM_CHECKS, /* Always the last */
 };
@@ -111,7 +111,7 @@ struct cmd {
 static struct {
         struct device device;
         struct client client;
-        struct daemon daemon;
+        struct server server;
         struct comm comm;
         struct cmd cmd;
 } state;
@@ -428,7 +428,7 @@ static void init_wifi_cb(enum dev_init_state dev_state)
         /* Now that init state has changed, check them */
         cmd_set_check(CHECK_INIT);
         cmd_set_check(CHECK_CLIENT);
-        cmd_set_check(CHECK_DAEMON);
+        cmd_set_check(CHECK_SERVER);
         cmd_set_check(CHECK_DATA);
 }
 
@@ -672,44 +672,44 @@ static void check_client()
 }
 
 
-/* *** Methods that handle the Daemon and its actions *** */
+/* *** Methods that handle the Server and its actions *** */
 
-static void daemon_cmd_cb(bool status)
+static void server_cmd_cb(bool status)
 {
         cmd_completed();
-        state.daemon.listening = status;
+        state.server.listening = status;
         if (!status)
-                pr_warning(LOG_PFX "Failed to setup daemon\r\n");
+                pr_warning(LOG_PFX "Failed to setup server\r\n");
 }
 
-static void setup_daemon()
+static void setup_server()
 {
-        pr_info_int_msg(LOG_PFX "Starting daemon on port: ",
+        pr_info_int_msg(LOG_PFX "Starting server on port: ",
                         RCP_SERVICE_PORT);
         esp8266_server_cmd(ESP8266_SERVER_ACTION_CREATE, RCP_SERVICE_PORT,
-                           daemon_cmd_cb);
+                           server_cmd_cb);
         cmd_started();
 }
 
 /**
- * This logic is responsible for checking the daemon and ensuring that it
+ * This logic is responsible for checking the server and ensuring that it
  * is in its correct state.  If its not, then this code will get it there.
  */
-static void check_daemon()
+static void check_server()
 {
-        cmd_check_complete(CHECK_DAEMON);
+        cmd_check_complete(CHECK_SERVER);
 
-        pr_info(LOG_PFX "Checking Daemon\r\n");
+        pr_info(LOG_PFX "Checking Server\r\n");
 
         /* First check that we are initialized */
         if (!device_initialized()) {
-                cmd_sleep(CHECK_DAEMON, CLIENT_BACKOFF_MS);
+                cmd_sleep(CHECK_SERVER, CLIENT_BACKOFF_MS);
                 return;
         }
 
-        if (!state.daemon.listening) {
+        if (!state.server.listening) {
                 /* Then we need to activate it */
-                setup_daemon();
+                setup_server();
                 return;
         }
 
@@ -735,8 +735,8 @@ static void task_loop()
         case CHECK_CLIENT:
                 check_client();
                 break;
-        case CHECK_DAEMON:
-                check_daemon();
+        case CHECK_SERVER:
+                check_server();
                 break;
         case CHECK_DATA:
                 check_data();
