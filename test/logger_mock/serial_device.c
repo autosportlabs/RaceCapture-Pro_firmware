@@ -19,29 +19,10 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _SERIAL_DEVICE_H_
-#define _SERIAL_DEVICE_H_
+#include "mock_serial.h"
+#include "serial_device.h"
 
-#include "cpp_guard.h"
-#include "serial.h"
-
-#include <stdbool.h>
-
-CPP_GUARD_BEGIN
-
-/* STIEG: Update Enum type to be proper later */
-typedef enum {
-        SERIAL_USB = 0,
-        SERIAL_GPS,
-        SERIAL_TELEMETRY,
-        SERIAL_BLUETOOTH,
-        SERIAL_WIFI,
-        SERIAL_AUX,
-        __SERIAL_COUNT, /* ALWAYS AT THE END */
-} serial_id_t;
-
-struct Serial* serial_device_get(const serial_id_t port);
-
-CPP_GUARD_END
-
-#endif /* _SERIAL_DEVICE_H_ */
+struct Serial* serial_device_get(const serial_id_t port)
+{
+        return getMockSerial();
+}

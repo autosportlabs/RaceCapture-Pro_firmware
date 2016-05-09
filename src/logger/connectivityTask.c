@@ -171,7 +171,7 @@ static void createWirelessConnectionTask(int16_t priority,
         params->check_connection_status = &bt_check_connection_status;
         params->disconnect = &bt_disconnect;
         params->init_connection = &bt_init_connection;
-        params->serial = SERIAL_WIRELESS;
+        params->serial = SERIAL_BLUETOOTH;
         params->sampleQueue = sampleQueue;
         params->always_streaming = true;
         params->max_sample_rate = SAMPLE_50Hz;

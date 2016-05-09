@@ -304,7 +304,7 @@ int usart_device_init()
                 init_usart_serial(UART_GPS, USART2,
                                   SERIAL_GPS, "GPS") &&
                 init_usart_serial(UART_WIRELESS, USART1,
-                                  SERIAL_WIRELESS, "WiFi");
+                                  SERIAL_WIFI, "WiFi");
 
 
         if (!mem_alloc_success) {
