@@ -109,21 +109,16 @@ bool rx_buff_read(struct rx_buff *rxb, struct Serial *s)
 {
         xQueueHandle h = serial_get_rx_queue(s);
         char c = 1;
-        /* pr_info(LOG_PFX "RX Chars: \""); */
         for(; rxb->idx < rxb->cap && !rxb->msg_ready; ++rxb->idx) {
                 const bool rx_status = xQueueReceive(h, &c, 0);
                 if (!rx_status) {
                         /* If here, no more data to read for now */
-                        /* pr_info("\"\r\n"); */
                         return false;
                 }
 
-                /* pr_info_int(c); */
-                /* pr_info_char(','); */
                 rxb->msg_ready = is_term_char(c);
                 rxb->buff[rxb->idx] = c;
         }
-        /* pr_info("\"\r\n"); */
 
         /*
          * Possible Overflow Scenario
