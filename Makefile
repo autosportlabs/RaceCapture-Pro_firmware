@@ -178,6 +178,16 @@ package: clean
 
 PHONY += TAGS
 TAGS:
-	$(Q)find . -type f -regex '.*\.\(c\|cpp\|h\|hh\)$$' | etags -
+	$(Q)find         \
+	include          \
+	platform         \
+	src              \
+	test             \
+	-type f          \
+	-name "*.c"   -o \
+	-name "*.cpp" -o \
+	-name "*.h"   -o \
+	-name "*.hh"     \
+	| etags -
 
 .PHONY: $(PHONY)

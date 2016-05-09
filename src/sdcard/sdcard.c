@@ -33,124 +33,139 @@
 #include "sdcard_device.h"
 #include "mem_mang.h"
 
-static FATFS *FatFs = NULL;
+static FATFS *fat_fs = NULL;
 
 void InitFSHardware(void)
 {
-    disk_init_hardware();
+        disk_init_hardware();
+
+        if (fat_fs == NULL)
+                fat_fs = pvPortMalloc(sizeof(FATFS));
+
+        if (fat_fs == NULL)
+                pr_error("sdcard: FatFS init fail\r\n");
+}
+
+static bool is_initialized()
+{
+        if (fat_fs)
+                return true;
+
+        pr_error("sdcard: Not initialized");
+        return false;
 }
 
 int InitFS()
 {
-    if (FatFs == NULL)
-        FatFs = pvPortMalloc(sizeof(FATFS));
+        if(!is_initialized())
+                return -1;
 
-    if (FatFs == NULL) {
-        pr_error("sdcard: FatFS init fail\r\n");
-        return -1;
-    }
-
-    taskENTER_CRITICAL();
-    const int res = disk_initialize(0);
-    taskEXIT_CRITICAL();
-
-    if (0 != res) {
-        pr_error("sdcard: Disk init fail\r\n");
-        return res;
-    }
-
-    return f_mount(FatFs, "0", 1);
+        return f_mount(fat_fs, "0", 1);
 }
 
 int UnmountFS()
 {
-    return f_mount(NULL, "0", 1);
+        if(!is_initialized())
+                return -1;
+
+        return f_mount(NULL, "0", 1);
 }
 
 void TestSDWrite(Serial *serial, int lines, int doFlush, int quiet)
 {
-    int res = 0;
-    FIL *fatFile = NULL;
+        int res = 0;
+        FIL *fatFile = NULL;
 
-    fatFile = pvPortMalloc(sizeof(FIL));
-    if (NULL == fatFile) {
-        if (!quiet) serial->put_s("could not allocate file object\r\n");
-        goto exit;
-    }
+        if(!is_initialized())
+                return;
 
-    if (!quiet) {
-        serial->put_s("Test Write: Lines: ");
-        put_int(serial, lines);
-        put_crlf(serial);
-        serial->put_s("Flushing Enabled: " );
-        put_int(serial, doFlush);
-        put_crlf(serial);
-        serial->put_s("Card Init... ");
-    }
-    res = InitFS();
-    if (res) goto exit;
-
-    if (!quiet) {
-        put_int(serial, res);
-        put_crlf(serial);
-        serial->put_s("Opening File... ");
-    }
-    res = f_open(fatFile,"test1.txt", FA_WRITE | FA_CREATE_ALWAYS);
-    if (!quiet) {
-        put_int(serial, res);
-        put_crlf(serial);
-    }
-    if (res) goto exit;
-
-    if (!quiet) serial->put_s("Writing file..");
-    portTickType startTicks = xTaskGetTickCount();
-    for (int i = 1; i <= lines; i++) {
-        res = f_puts("The quick brown fox jumped over the lazy dog\n",fatFile);
-        if (doFlush) f_sync(fatFile);
-        if (res == EOF) {
-            if (!quiet) serial->put_s("failed writing at line ");
-            put_int(serial, i);
-            serial->put_s("(");
-            put_int(serial, res);
-            serial->put_s(")");
-            put_crlf(serial);
-            goto exit;
+        fatFile = pvPortMalloc(sizeof(FIL));
+        if (NULL == fatFile) {
+                if (!quiet) serial->put_s("could not allocate file object\r\n");
+                goto exit;
         }
-        watchdog_reset();
-    }
-    portTickType endTicks = xTaskGetTickCount();
 
-    if (!quiet) {
-        serial->put_s("Ticks to write: ");
-        put_int(serial, endTicks - startTicks);
-        put_crlf(serial);
-        serial->put_s("Closing... ");
-    }
+        if (!quiet) {
+                serial->put_s("Test Write: Lines: ");
+                put_int(serial, lines);
+                put_crlf(serial);
+                serial->put_s("Flushing Enabled: " );
+                put_int(serial, doFlush);
+                put_crlf(serial);
+                serial->put_s("Card Init... ");
+        }
 
-    res = f_close(fatFile);
-    if (!quiet) {
-        put_int(serial, res);
-        put_crlf(serial);
-    }
-    if (res) goto exit;
+        res = InitFS();
+        if (res) goto exit;
 
-    if (!quiet)		serial->put_s("Unmounting... ");
-    res = UnmountFS();
-    if (!quiet) {
-        put_int(serial, res);
-        put_crlf(serial);
-    }
+        if (!quiet) {
+                put_int(serial, res);
+                put_crlf(serial);
+                serial->put_s("Opening File... ");
+        }
+
+        res = f_open(fatFile,"test1.txt", FA_WRITE | FA_CREATE_ALWAYS);
+        if (!quiet) {
+                put_int(serial, res);
+                put_crlf(serial);
+        }
+
+        if (res)
+                goto exit;
+
+        if (!quiet) serial->put_s("Writing file..");
+        portTickType startTicks = xTaskGetTickCount();
+        for (int i = 1; i <= lines; i++) {
+                res = f_puts("The quick brown fox jumped over the lazy dog\n",fatFile);
+                if (doFlush) f_sync(fatFile);
+                if (res == EOF) {
+                        if (!quiet) serial->put_s("failed writing at line ");
+                        put_int(serial, i);
+                        serial->put_s("(");
+                        put_int(serial, res);
+                        serial->put_s(")");
+                        put_crlf(serial);
+                        goto exit;
+                }
+                watchdog_reset();
+        }
+        portTickType endTicks = xTaskGetTickCount();
+
+        if (!quiet) {
+                serial->put_s("Ticks to write: ");
+                put_int(serial, endTicks - startTicks);
+                put_crlf(serial);
+                serial->put_s("Closing... ");
+        }
+
+        res = f_close(fatFile);
+        if (!quiet) {
+                put_int(serial, res);
+                put_crlf(serial);
+        }
+        if (res) goto exit;
+
+        if (!quiet)
+                serial->put_s("Unmounting... ");
+
+        res = UnmountFS();
+
+        if (!quiet) {
+                put_int(serial, res);
+                put_crlf(serial);
+        }
+
 exit:
-    if (quiet) {
-        put_int(serial, res == 0 ? 1 : 0);
-    } else {
-        if(res == 0) {
-            serial->put_s("SUCCESS");
+        if (quiet) {
+                put_int(serial, res == 0 ? 1 : 0);
         } else {
-            serial->put_s("ERROR");
-            put_int(serial, res);
-            put_crlf(serial);
+                if(res == 0) {
+                        serial->put_s("SUCCESS");
+                } else {
+                        serial->put_s("ERROR");
+                        put_int(serial, res);
+                        put_crlf(serial);
+                }
         }
-    }
-    if (fatFile != NULL) vPortFree(fatFile);
+        if (fatFile != NULL) vPortFree(fatFile);
 }
