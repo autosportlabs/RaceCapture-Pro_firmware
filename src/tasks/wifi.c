@@ -39,7 +39,8 @@
 #include <stdbool.h>
 
 /* Time between beacon messages */
-#define BEACON_PERIOD_MS	3000
+#define BEACON_PERIOD_MS	1000
+/* Prefix for all log messages */
 #define LOG_PFX			"[wifi] "
 /* How long to wait between polling our incomming msg Serial */
 #define READ_DELAY_MS		3
