@@ -49,7 +49,7 @@ size_t read_log_to_serial(struct Serial *s, int escape)
                 buff[bytes] = 0;
                 read += bytes;
                 if (escape) {
-                        put_escapedString(s, buff, 1);
+                        put_escapedString(s, buff, bytes);
                 } else {
                         serial_put_s(s, buff);
                 }

@@ -38,6 +38,7 @@ size_t serial_msg_strlen(const char *data)
                 switch (*data) {
                 case '\r':
                 case '\n':
+                case '\0':
                         return len;
                 }
         }

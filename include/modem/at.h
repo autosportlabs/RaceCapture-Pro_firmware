@@ -127,6 +127,23 @@ struct at_urc_list {
         struct at_urc urcs[AT_URC_MAX_URCS];
 };
 
+/**
+ * Callback for unhandled URCs.  This is designed to handle cases
+ * where AT commands introduce odd messages that would be difficult
+ * to register a callback for.  An example would be `0,CONNECTED`,
+ * this is hard to register since the 0 indicates the multiplexed
+ * channel, and in this case there are 5 potential combinations.
+ * Really this is a broken AT URC, so we use as sort of broken way
+ * to handle it.  A proper URC would have something like
+ * `+CONNINF: 0,"CONNECTED".  Then you would be able to handle this
+ * with a URC handler since you could match the prefix.  Oh well,
+ * imperfect solution for an imperfect world.
+ * @param msg The message that was received.
+ * @return true if the callback was able to parse the message,
+ *         false otherwise.
+ */
+typedef bool unhandled_urc_cb_t(char* msg);
+
 struct at_info {
         /*
          * All of this is really read only.  Don't alter directly.
@@ -144,10 +161,12 @@ struct at_info {
         struct at_timing timing;
         struct at_cmd_queue cmd_queue;
         struct at_urc_list urc_list;
+        unhandled_urc_cb_t *unhandled_urc_cb;
 };
 
 bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
-                  const tiny_millis_t quiet_period_ms, const char *delim);
+                  const tiny_millis_t quiet_period_ms, const char *delim,
+                  unhandled_urc_cb_t *unhandled_urc_cb);
 
 void at_task(struct at_info *ati, const size_t ms_delay);
 
