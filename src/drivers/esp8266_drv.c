@@ -709,7 +709,7 @@ static void get_ap_info_cb(const bool status,
         pr_info_str_msg("\t SSID      : ", info->ssid);
         pr_info_str_msg("\t Password  : ", info->password);
         pr_info_int_msg("\t Channel   : ", info->channel);
-        pr_info_int_msg("\t Encrpytion: ", info->encryption);
+        pr_info_int_msg("\t Encryption: ", info->encryption);
 }
 
 /**
@@ -981,19 +981,13 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         const struct wifi_client_cfg *cfg =
                 &lc->ConnectivityConfigs.wifi.client;
         if (!esp8266_drv_update_client_cfg(cfg)) {
-                pr_error(LOG_PFX "Failed to set WiFi cfg\r\n");
+                pr_error(LOG_PFX "Failed to set WiFi client cfg\r\n");
                 return false;
         }
 
-        /* Temporary until we add the config section */
-        static struct wifi_ap_cfg wifi_ap_config = {
-                .active = true,
-                .ssid = "RaceCapture WiFi",
-                .password = "driveitlikeyoustoleit",
-                .channel = 11,
-                .encryption = ESP8266_ENCRYPTION_WPA2_PSK,
-        };
-        esp8266_drv_update_ap_cfg(&wifi_ap_config);
+        const struct wifi_ap_cfg* wac =
+                &lc->ConnectivityConfigs.wifi.ap;
+        esp8266_drv_update_ap_cfg(wac);
 
         esp8266_state.comm.new_conn_cb = new_conn_cb;
 

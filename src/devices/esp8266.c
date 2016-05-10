@@ -725,8 +725,8 @@ bool esp8266_set_ap_info(const struct esp8266_ap_info* info,
                 return false;
 
         char cmd[64];
-        snprintf(cmd, ARRAY_LEN(cmd), "AT+CWSAP_DEF=\"%s\",\"%s\",%zu,%d",
-                 info->ssid, info->password, info->channel,
+        snprintf(cmd, ARRAY_LEN(cmd), "AT+CWSAP_DEF=\"%s\",\"%s\",%d,%d",
+                 info->ssid, info->password, (int) info->channel,
                  info->encryption);
 
         return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
