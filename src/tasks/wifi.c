@@ -271,15 +271,6 @@ bool wifi_init_task(const int wifi_task_priority,
         return true;
 }
 
-void wifi_reset_config(struct wifi_cfg *cfg)
-{
-        /* For now simply zero this out */
-        memset(cfg, 0, sizeof(struct wifi_cfg));
-
-        /* Inform the Wifi device that settings may have changed */
-        wifi_update_client_config(&cfg->client);
-}
-
 /**
  * Wrapper for the driver to update the client wifi config
  * settings.  This is here because it makes sense for these
@@ -289,4 +280,23 @@ void wifi_reset_config(struct wifi_cfg *cfg)
 bool wifi_update_client_config(struct wifi_client_cfg *wcc)
 {
         return esp8266_drv_update_client_cfg(wcc);
+}
+
+/**
+ * Wrapper for the driver to update the ap wifi config
+ * settings.
+ */
+bool wifi_update_ap_config(struct wifi_ap_cfg *wac)
+{
+        return esp8266_drv_update_ap_cfg(wac);
+}
+
+void wifi_reset_config(struct wifi_cfg *cfg)
+{
+        /* For now simply zero this out */
+        memset(cfg, 0, sizeof(struct wifi_cfg));
+
+        /* Inform the Wifi device that settings may have changed */
+        wifi_update_client_config(&cfg->client);
+        wifi_update_ap_config(&cfg->ap);
 }
