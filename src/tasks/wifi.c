@@ -24,6 +24,7 @@
 #include "constants.h"
 #include "cpu.h"
 #include "dateTime.h"
+#include "esp8266.h"
 #include "esp8266_drv.h"
 #include "macros.h"
 #include "messaging.h"
@@ -52,6 +53,8 @@
 #define STACK_SIZE		256
 /* Make all task names 16 chars including NULL char */
 #define THREAD_NAME		"WiFi Task      "
+/* The highest channel WiFi can use (USA) */
+#define WIFI_MAX_CHANNEL	11
 
 struct rx_msgs {
         struct Serial* serial;
@@ -296,7 +299,73 @@ void wifi_reset_config(struct wifi_cfg *cfg)
         /* For now simply zero this out */
         memset(cfg, 0, sizeof(struct wifi_cfg));
 
+        /* Set some sane values for the AP configuration */
+        strncpy(cfg->ap.ssid, "RaceCapture", ARRAY_LEN(cfg->ap.ssid));
+        strncpy(cfg->ap.password, "racecapture", ARRAY_LEN(cfg->ap.password));
+        cfg->ap.channel = 11;
+        cfg->ap.encryption = ESP8266_ENCRYPTION_WPA2_PSK;
+
         /* Inform the Wifi device that settings may have changed */
         wifi_update_client_config(&cfg->client);
         wifi_update_ap_config(&cfg->ap);
+}
+
+/**
+ * Validates that a given Wifi Ap Configuration is valid
+ * for use.
+ * @return true if it is, false otherwise.
+ */
+bool wifi_validate_ap_config(const struct wifi_ap_cfg *wac)
+{
+        return NULL != wac &&
+                wac->channel > 0 &&
+                wac->channel <= WIFI_MAX_CHANNEL &&
+                wac->encryption <= __ESP8266_ENCRYPTION_MAX;
+}
+
+/**
+ * Gets the string representation of the enum esp8266_encryption value.
+ * @return The corresponding string if a match, "unknown" otherwise.
+ */
+const char* wifi_api_get_encryption_str_val(const enum esp8266_encryption enc)
+{
+        switch(enc) {
+        case ESP8266_ENCRYPTION_NONE:
+                return "none";
+        case ESP8266_ENCRYPTION_WEP:
+                return "wep";
+        case ESP8266_ENCRYPTION_WPA_PSK:
+                return "wpa";
+        case ESP8266_ENCRYPTION_WPA2_PSK:
+                return "wpa2";
+        case ESP8266_ENCRYPTION_WPA_WPA2_PSK:
+                return "wpa/wpa2";
+        default:
+                return "unknown"; /* Put our default here */
+        }
+}
+
+/**
+ * Gets the enum esp8266_encryption representation of the string value.
+ * @return The corresponding enum esp8266_encryption value if a match is
+ * found, -1 otherwise.
+ */
+enum esp8266_encryption wifi_api_get_encryption_enum_val(const char* str)
+{
+        if (STR_EQ(str, "none"))
+                return ESP8266_ENCRYPTION_NONE;
+
+        if (STR_EQ(str, "wep"))
+                return ESP8266_ENCRYPTION_WEP;
+
+        if (STR_EQ(str, "wpa"))
+                return ESP8266_ENCRYPTION_WPA_PSK;
+
+        if (STR_EQ(str, "wpa2"))
+                return ESP8266_ENCRYPTION_WPA2_PSK;
+
+        if (STR_EQ(str, "wpa/wpa2"))
+                return ESP8266_ENCRYPTION_WPA_WPA2_PSK;
+
+        return -1;
 }

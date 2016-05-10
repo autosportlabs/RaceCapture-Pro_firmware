@@ -1712,3 +1712,59 @@ int api_get_wifi_client_cfg(struct Serial *serial, const jsmntok_t *json)
 
         return API_SUCCESS_NO_RETURN;
 }
+
+int api_set_wifi_ap_cfg(struct Serial *s, const jsmntok_t *json)
+{
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        struct wifi_ap_cfg *cfg = &lc->ConnectivityConfigs.wifi.ap;
+
+        struct wifi_ap_cfg tmp_cfg;
+        memcpy(&tmp_cfg, cfg, sizeof(struct wifi_ap_cfg));
+
+        setBoolValueIfExists(json, "active", &tmp_cfg.active);
+        setStringValueIfExists(json, "ssid", tmp_cfg.ssid,
+                               ARRAY_LEN(tmp_cfg.ssid));
+        setStringValueIfExists(json, "passwd", tmp_cfg.password,
+                               ARRAY_LEN(tmp_cfg.password));
+        setIntValueIfExists(json, "channel", (int*) &tmp_cfg.channel);
+
+
+        char enc_str[12];
+        setStringValueIfExists(json, "encryption", enc_str,
+                               ARRAY_LEN(enc_str));
+        tmp_cfg.encryption = wifi_api_get_encryption_enum_val(enc_str);
+
+        if (!wifi_validate_ap_config(&tmp_cfg)) {
+                pr_info("Invalid Wifi AP config given\r\n");
+                return API_ERROR_PARAMETER;
+        }
+
+        /* Copy the validated config to our real config */
+        memcpy(cfg, &tmp_cfg, sizeof(struct wifi_ap_cfg));
+
+        /* Inform the Wifi device that settings may have changed */
+        wifi_update_ap_config(cfg);
+
+        return API_SUCCESS;
+}
+
+int api_get_wifi_ap_cfg(struct Serial *serial, const jsmntok_t *json)
+{
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        const struct wifi_ap_cfg *cfg = &lc->ConnectivityConfigs.wifi.ap;
+
+        json_objStart(serial);
+        json_objStartString(serial, "wifi_ap_cfg");
+
+        json_bool(serial, "active", cfg->active, 1);
+        json_string(serial, "ssid", cfg->ssid,1);
+        json_string(serial, "passwd", cfg->password,1);
+        json_int(serial, "channel", cfg->channel,1);
+        json_string(serial, "encryption",
+                    wifi_api_get_encryption_str_val(cfg->encryption), 0);
+
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+
+        return API_SUCCESS_NO_RETURN;
+}

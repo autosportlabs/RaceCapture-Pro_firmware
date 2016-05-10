@@ -60,6 +60,12 @@ bool wifi_update_client_config(struct wifi_client_cfg *wcc);
 
 bool wifi_update_ap_config(struct wifi_ap_cfg *wac);
 
+bool wifi_validate_ap_config(const struct wifi_ap_cfg *wac);
+
+const char* wifi_api_get_encryption_str_val(const enum esp8266_encryption enc);
+
+enum esp8266_encryption wifi_api_get_encryption_enum_val(const char* str);
+
 CPP_GUARD_END
 
 #endif /* _WIFI_H_ */

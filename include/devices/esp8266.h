@@ -101,9 +101,11 @@ bool esp8266_get_client_ip(void (*cb)
 
 enum esp8266_encryption {
         ESP8266_ENCRYPTION_NONE = 0,
+        ESP8266_ENCRYPTION_WEP = 1, /* Support deprecated */
         ESP8266_ENCRYPTION_WPA_PSK = 2,
         ESP8266_ENCRYPTION_WPA2_PSK = 3,
         ESP8266_ENCRYPTION_WPA_WPA2_PSK = 4,
+        __ESP8266_ENCRYPTION_MAX, /* Always the last value */
 };
 
 struct esp8266_ap_info {
