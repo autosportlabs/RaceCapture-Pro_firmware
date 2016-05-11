@@ -51,10 +51,8 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/OBD2/OBD2_task.c \
 			$(RCP_SRC)/OBD2/OBD2.c \
 			$(RCP_SRC)/jsmn/jsmn.c \
-			$(RCP_SRC)/serial/ram_serial.c \
 			$(RCP_SRC)/serial/rx_buff.c \
 			$(RCP_SRC)/serial/serial.c \
-			$(RCP_SRC)/serial/serial_device.c \
 			$(RCP_SRC)/serial/serial_buffer.c \
 			$(RCP_SRC)/usart/usart.c \
 			$(RCP_SRC)/cpu/cpu.c \
@@ -79,6 +77,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 			$(RCP_SRC)/filter/filter.c \
 			$(RCP_SRC)/lua/luaBaseBinding.c \
+			$(RCP_SRC)/lua/luaLoggerBinding.c \
 			$(RCP_SRC)/lua/luaCommands.c \
 			$(RCP_SRC)/lua/luaScript.c \
 			$(RCP_SRC)/lua/luaTask.c \
@@ -95,7 +94,6 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/logger/channel_config.c \
 			$(RCP_SRC)/logger/logger.c \
 			$(RCP_SRC)/logger/connectivityTask.c \
-			$(RCP_SRC)/logger/luaLoggerBinding.c \
 			$(RCP_SRC)/logger/sampleRecord.c \
 			$(RCP_SRC)/devices/bluetooth.c \
 			$(RCP_SRC)/devices/esp8266.c \
@@ -151,7 +149,8 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(HAL_SRC)/usb_stm32/usbd_desc.c \
 			$(HAL_SRC)/usb_stm32/usbd_usr.c \
 			$(HAL_SRC)/i2c_stm32/i2c_device_stm32.c \
-			$(HAL_SRC)/imu_stm32/invensense_9150.c
+			$(HAL_SRC)/imu_stm32/invensense_9150.c \
+			$(HAL_SRC)/serial/serial_device.c \
 
 
 #Macro that expands our source files into their fully qualified paths

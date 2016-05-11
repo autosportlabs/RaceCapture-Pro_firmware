@@ -22,11 +22,19 @@
 #ifndef _ESP8266_H_
 #define _ESP8266_H_
 
+#include "at.h"
 #include "cpp_guard.h"
+#include "dateTime.h"
+#include "net/protocol.h"
 #include "serial.h"
 #include <stdbool.h>
 
 CPP_GUARD_BEGIN
+
+#define ESP8266_SSID_LEN_MAX	24
+#define ESP8266_MAC_LEN_MAX	18
+#define ESP8266_IPV4_LEN_MAX	16
+#define ESP8266_PASSWD_LEN_MAX	24
 
 void esp8266_do_loop(const size_t timeout);
 
@@ -41,7 +49,18 @@ enum dev_init_state {
         DEV_INIT_STATE_FAILED,
 };
 
+typedef void client_wifi_disconnect_cb_t();
+typedef void socket_connect_cb_t(const size_t chan_id);
+typedef void socket_closed_cb_t(const size_t chan_id);
+
+struct esp8266_event_hooks {
+        client_wifi_disconnect_cb_t *client_wifi_disconnect_cb;
+        socket_connect_cb_t *socket_connect_cb;
+        socket_closed_cb_t *socket_closed_cb;
+};
+
 bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
+                  const struct esp8266_event_hooks hooks,
                   void (*cb)(enum dev_init_state));
 
 enum dev_init_state esp1866_get_dev_init_state();
@@ -63,10 +82,11 @@ bool esp8266_set_op_mode(const enum esp8266_op_mode mode,
 bool esp8266_get_op_mode(void (*cb)(bool, enum esp8266_op_mode));
 
 struct esp8266_client_info {
+        tiny_millis_t snapshot_time;
         bool has_ap;
-        char ssid[24];
-        char mac[18];
-        char ip[16];
+        char ssid[ESP8266_SSID_LEN_MAX];
+        char mac[ESP8266_MAC_LEN_MAX];
+        char ip[ESP8266_IPV4_LEN_MAX];
 };
 
 void esp8266_log_client_info(const struct esp8266_client_info *info);
@@ -79,14 +99,35 @@ bool esp8266_get_client_ap(void (*cb)
 bool esp8266_get_client_ip(void (*cb)
                            (bool, const char*));
 
-enum esp8266_net_proto {
-        ESP8266_NET_PROTO_TCP,
-        ESP8266_NET_PROTO_UDP,
+enum esp8266_encryption {
+        ESP8266_ENCRYPTION_NONE = 0,
+        ESP8266_ENCRYPTION_WEP = 1, /* Support deprecated */
+        ESP8266_ENCRYPTION_WPA_PSK = 2,
+        ESP8266_ENCRYPTION_WPA2_PSK = 3,
+        ESP8266_ENCRYPTION_WPA_WPA2_PSK = 4,
+        __ESP8266_ENCRYPTION_MAX, /* Always the last value */
 };
 
-bool esp8266_connect(const int chan_id, const enum esp8266_net_proto proto,
+struct esp8266_ap_info {
+        char ssid[ESP8266_SSID_LEN_MAX];
+        char password[ESP8266_PASSWD_LEN_MAX];
+        size_t channel;
+        enum esp8266_encryption encryption;
+};
+
+typedef void esp8266_get_ap_info_cb_t(const bool status,
+                                      const struct esp8266_ap_info* info);
+
+bool esp8266_get_ap_info(esp8266_get_ap_info_cb_t *cb);
+
+typedef void esp8266_set_ap_info_cb_t(const bool status);
+
+bool esp8266_set_ap_info(const struct esp8266_ap_info* info,
+                         esp8266_set_ap_info_cb_t *cb);
+
+
+bool esp8266_connect(const int chan_id, const enum protocol proto,
                      const char *ip_addr, const int dest_port,
-                     const int udp_port, const int udp_mode,
                      void (*cb) (bool, const int));
 
 bool esp8266_send_data(const int chan_id, struct Serial *data,

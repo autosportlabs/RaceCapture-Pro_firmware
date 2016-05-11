@@ -23,8 +23,10 @@
 #include "esp8266.h"
 #include "macros.h"
 #include "mem_mang.h"
+#include "net/protocol.h"
 #include "printk.h"
 #include "serial_buffer.h"
+#include "str_util.h"
 #include "taskUtil.h"
 
 #include <stdbool.h>
@@ -56,6 +58,7 @@ static struct {
         struct at_info *ati;
         void (*init_cb)(enum dev_init_state); /* STIEG: Put in own struct? */
         enum dev_init_state init_state;
+        struct esp8266_event_hooks hooks;
 } state;
 
 static void cmd_failure(const char *cmd_name, const char *msg)
@@ -70,9 +73,50 @@ static void cmd_failure(const char *cmd_name, const char *msg)
 }
 
 /**
+ * Callback that gets invoked when we are unable to handle the URC using
+ * the standard URC callbacks.  Used for the silly messages like
+ * `0,CONNECT` where there is no prefix for the URC like their should be.
+ * Messages this callback handles:
+ * * <0-4>,CONNECT
+ * * <0-4>,CLOSED
+ * * WIFI DISCONNECT
+ */
+static bool sparse_urc_cb(char* msg)
+{
+        msg = strip_inline(msg);
+
+        if (STR_EQ(msg, "WIFI DISCONNECT")) {
+                if (state.hooks.client_wifi_disconnect_cb)
+                        state.hooks.client_wifi_disconnect_cb();
+                return true;
+        }
+
+        /* Now look for a message with a comma */
+        char* comma = strchr(msg, ',');
+        if (!comma)
+                return false;
+
+        *comma = '\0';
+        const char* m1 = msg;
+        const char* m2 = ++comma;
+        if (STR_EQ(m2, "CONNECT")) {
+                if (state.hooks.socket_connect_cb)
+                        state.hooks.socket_connect_cb(atoi(m1));
+        } else if (STR_EQ(m2, "CLOSED")) {
+                if (state.hooks.socket_closed_cb)
+                        state.hooks.socket_closed_cb(atoi(m1));
+        } else {
+                return false;
+        }
+
+        return true;
+}
+
+/**
  * Sets up the internal state of the driver.  Must be called before init.
  */
-static bool _setup(struct Serial *s, const size_t max_cmd_len)
+static bool _setup(struct Serial *s, const size_t max_cmd_len,
+                   const struct esp8266_event_hooks hooks)
 {
         /* Check if already initialized.  If so, do nothing */
         if (state.ati)
@@ -80,6 +124,7 @@ static bool _setup(struct Serial *s, const size_t max_cmd_len)
 
         state.ati = &_ati;
         state.scb = &_serial_cmd_buff;
+        state.hooks = hooks;
 
         /*
          * Initialize the serial command buffer.  This buffer is used for
@@ -92,7 +137,7 @@ static bool _setup(struct Serial *s, const size_t max_cmd_len)
 
         /* Init our AT engine here */
         if (!init_at_info(state.ati, state.scb, _AT_DEFAULT_QP_MS,
-                          _AT_CMD_DELIM))
+                          _AT_CMD_DELIM, sparse_urc_cb))
                 return false;
 
         return true;
@@ -273,13 +318,14 @@ static bool is_init_in_progress()
  * Kicks off the initilization process.
  */
 bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
+                  const struct esp8266_event_hooks hooks,
                   void (*cb)(enum dev_init_state))
 {
         if (!cb || !s || is_init_in_progress())
                 return false;
 
         /* Init objects.  If fail, then nothing we can do. */
-        if (!_setup(s, max_cmd_len))
+        if (!_setup(s, max_cmd_len, hooks))
                 return false;
 
         state.init_cb = cb;
@@ -500,6 +546,7 @@ static bool get_client_ap_cb(struct at_rsp *rsp, void *up)
         }
 
         struct esp8266_client_info ci;
+        ci.snapshot_time = getUptime();
         char *client_info_rsp = rsp->msgs[rsp->msg_count - 2];
         if (!parse_client_info(client_info_rsp, &ci)) {
                 cmd_failure(cmd_name, "Failed to parse AP info");
@@ -595,6 +642,99 @@ bool esp8266_get_client_ip(void (*cb)(bool, const char*))
 }
 
 /**
+ * The callback invoked by our AT state machine upon the completion
+ * of the command
+ */
+static bool get_ap_info_cb(struct at_rsp *rsp, void *up)
+{
+        static const char *cmd_name = "get_ap_info_cb";
+        esp8266_get_ap_info_cb_t *cb = up;
+        struct esp8266_ap_info ap_info;
+        memset(&ap_info, 0, sizeof(struct esp8266_ap_info));
+
+        bool status = at_ok(rsp);
+        if (!status) {
+                cmd_failure(cmd_name, NULL);
+                goto do_cb;
+        }
+
+        /*
+         * AT+CWSAP_DEF=<ssid>,<pwd>,<chl>,<ecn>
+         * ssid -> string
+         * pwd  -> string
+         * chl  -> number
+         * ecn  -> number
+         */
+        char *toks[6];
+        const int tok_cnt = at_parse_rsp_line(rsp->msgs[0], toks,
+                                              ARRAY_LEN(toks));
+
+        if (tok_cnt != 5) {
+                cmd_failure(cmd_name, "Unexpected # of tokens in response");
+                status = false;
+                goto do_cb;
+        }
+
+        strncpy(ap_info.ssid, at_parse_rsp_str(toks[1]),
+                ARRAY_LEN(ap_info.ssid));
+        strncpy(ap_info.password, at_parse_rsp_str(toks[2]),
+                ARRAY_LEN(ap_info.password));
+        ap_info.channel = atoi(toks[3]);
+        ap_info.encryption = (enum esp8266_encryption) atoi(toks[4]);
+
+do_cb:
+        if (cb)
+                cb(status, &ap_info);
+
+        return false;
+}
+
+bool esp8266_get_ap_info(esp8266_get_ap_info_cb_t *cb)
+{
+        if (!check_initialized("get_ap_info"))
+                return false;
+
+        const char cmd[] = "AT+CWSAP_DEF?";
+        return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_MEDIUM_MS,
+                                  get_ap_info_cb, cb);
+}
+
+/**
+ * Callback that gets invoked when the set_ap_info command completes.
+ */
+static bool set_ap_info_cb(struct at_rsp *rsp, void *up)
+{
+        static const char *cmd_name = "set_ap_info_cb";
+        esp8266_set_ap_info_cb_t *cb = up;
+
+        bool status = at_ok(rsp);
+        if (!status) {
+                cmd_failure(cmd_name, NULL);
+        }
+
+        if (cb)
+                cb(status);
+
+        return false;
+}
+
+bool esp8266_set_ap_info(const struct esp8266_ap_info* info,
+                         esp8266_set_ap_info_cb_t *cb)
+{
+        if (!check_initialized("set_ap_info") || NULL == info)
+                return false;
+
+        char cmd[64];
+        snprintf(cmd, ARRAY_LEN(cmd), "AT+CWSAP_DEF=\"%s\",\"%s\",%d,%d",
+                 info->ssid, info->password, (int) info->channel,
+                 info->encryption);
+
+        return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
+                                  set_ap_info_cb, cb);
+
+}
+
+/**
  *
  * @param cb The callback to be invoked when the method completes.
  */
@@ -637,33 +777,31 @@ do_cb:
  * @param chan_id The channel ID to use.  0 - 4
  * @param proto The Network protocol to use.
  * @param dest_port The destination port to send data to.
- * @param udp_port The source port from which data originates (UDP ONLY).
- * @param udp_mode Tells the device whether or not the destination of the
- * UDP packets are allowed to change.  0 means it won't change.  1 means it
- * will change up to 1 time.  2 means it can change any number of times.
  * @return true if the request was queued, false otherwise.
  */
-bool esp8266_connect(const int chan_id, const enum esp8266_net_proto proto,
+bool esp8266_connect(const int chan_id, const enum protocol proto,
                      const char *ip_addr, const int dest_port,
-                     const int udp_port, const int udp_mode,
                      void (*cb) (bool, const int))
 {
         if (!check_initialized("connect"))
                 return false;
 
         char cmd[64];
+        const char* proto_str;
         switch (proto) {
-        case ESP8266_NET_PROTO_TCP:
-                snprintf(cmd, ARRAY_LEN(cmd),
-                         "AT+CIPSTART=%d,\"TCP\",\"%s\",%d",
-                         chan_id, ip_addr, dest_port);
+        case PROTOCOL_TCP:
+                proto_str = "TCP";
                 break;
-        case ESP8266_NET_PROTO_UDP:
-                snprintf(cmd, ARRAY_LEN(cmd),
-                         "AT+CIPSTART=%d,\"UDP\",\"%s\",%d,%d,%d",
-                         chan_id, ip_addr, dest_port, udp_port, udp_mode);
+        case PROTOCOL_UDP:
+                proto_str = "UDP";
                 break;
+        default:
+                cmd_failure("esp8266_connect", "Invalid protocol");
+                return false;
         }
+
+        snprintf(cmd, ARRAY_LEN(cmd), "AT+CIPSTART=%d,\"%s\",\"%s\",%d",
+                 chan_id, proto_str, ip_addr, dest_port);
 
         return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
                                   connect_cb, cb);
@@ -676,9 +814,16 @@ struct tx_info {
 };
 
 /**
- * This call back is designed to handle two types of response (since that is the
- * way this wonkey device works).  So based on the state and reply we figure out
- * how to handle things.
+ * This call back is special in that it handle two types of response.
+ * Since the send_data command for the esp8266 is a two step command,
+ * this method needs to be able to handle both reply types from the
+ * Esp8266 modem.  The first reply type should be AT_RSP_STATUS_OK,
+ * which means we are ready to send the message.  At this point we
+ * put the message on the serial line and return `true`, indicating
+ * that there are more replies to be had.  When the entierty of the
+ * message has been sent, the modem will return AT_RSP_STATUS_SEND_OK
+ * and we will be done.  Otherwise it may return some other status, at
+ * which point we will deem the attempted failed and escape.
  */
 static bool send_data_cb(struct at_rsp *rsp, void *up)
 {
@@ -748,7 +893,9 @@ bool esp8266_send_data(const int chan_id, struct Serial *serial,
         /*
          * Set the state before beginning the command.  This is a 2 part
          * command with a fair bit of data, thus we need to use some
-         * internal state to handle it all.
+         * internal state to handle it all.  This data is free'd at the
+         * end of the command in the send_data_cb above when the command
+         * is done.
          */
         struct tx_info *ti = portMalloc(sizeof(struct tx_info));
         if (!ti) {

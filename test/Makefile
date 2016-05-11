@@ -1,3 +1,22 @@
+# Race Capture Firmware
+#
+# Copyright (C) 2016 Autosport Labs
+#
+# This file is part of the Race Capture firmware suite
+#
+# This is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This software is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See the GNU General Public License for more details. You should
+# have received a copy of the GNU General Public License along with
+# this code. If not, see <http://www.gnu.org/licenses/>.
+
 #-----Macros---------------------------------
 NAME=rcptest
 SIMNAME = rcpsim
@@ -90,15 +109,15 @@ dir_guard=@mkdir -p $(@D)
 
 build/%.o: %.c
 	$(dir_guard)
-	$(CC) $(CFLAGS) -c -D_RCP_BASE_FILE_="\"$(notdir $<): \"" $< -o $@
+	$(CCACHE) $(CC) $(CFLAGS) -c -D_RCP_BASE_FILE_="\"$(notdir $<): \"" $< -o $@
 
 build/%.o: %.cpp
 	$(dir_guard)
-	$(CPP) $(CPPFLAGS) -c -D_RCP_BASE_FILE_="\"$(notdir $<): \"" $< -o $@
+	$(CCACHE) $(CPP) $(CPPFLAGS) -c -D_RCP_BASE_FILE_="\"$(notdir $<): \"" $< -o $@
 
 build/rcp_base/%.o: ../%.c
 	$(dir_guard)
-	$(CC) $(CFLAGS) -D_RCP_BASE_FILE_="\"$(notdir $<): \"" -c $< -o $@
+	$(CCACHE) $(CC) $(CFLAGS) -D_RCP_BASE_FILE_="\"$(notdir $<): \"" -c $< -o $@
 
 #-----File Dependencies----------------------
 
@@ -142,6 +161,7 @@ $(MOCK_DIR)/luaTask_mock.c \
 $(MOCK_DIR)/memory_device_mock.c \
 $(MOCK_DIR)/messaging.c \
 $(MOCK_DIR)/sdcard_mock.c \
+$(MOCK_DIR)/serial_device.c \
 $(MOCK_DIR)/timer_device_mock.c \
 $(MOCK_DIR)/watchdog_device_mock.c \
 $(RCP_SRC)/ADC/ADC.c \
@@ -182,11 +202,9 @@ $(RCP_SRC)/logging/printk.c \
 $(RCP_SRC)/lua/luaScript.c \
 $(RCP_SRC)/memory/memory.c \
 $(RCP_SRC)/predictive_timer/predictive_timer_2.c \
-$(RCP_SRC)/serial/ram_serial.c \
 $(RCP_SRC)/serial/rx_buff.c \
 $(RCP_SRC)/serial/serial_buffer.c \
 $(RCP_SRC)/serial/serial.c \
-$(RCP_SRC)/serial/serial_device.c \
 $(RCP_SRC)/timer/timer.c \
 $(RCP_SRC)/timer/timer_config.c \
 $(RCP_SRC)/tracks/tracks.c \

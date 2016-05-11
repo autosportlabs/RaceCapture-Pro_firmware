@@ -54,7 +54,7 @@ static const char* enable_str(const bool enable)
 void TestSD(struct Serial *serial, unsigned int argc, char **argv)
 {
     /* TODO BAP - could not remove TestSD from command list b/c statically defined array, fix somehow */
-#if defined(SDCARD_SUPPORT)
+#if SDCARD_SUPPORT
     int lines = 1;
     int doFlush = 0;
     int quiet = 0;
@@ -85,7 +85,7 @@ void ResetConfig(struct Serial *serial, unsigned int argc, char **argv)
         res += tmp;
         print_reset_status(serial, "Flashing Default Logger Config", tmp);
 
-#if defined(LUA_SUPPORT)
+#if LUA_SUPPORT
         tmp = flash_default_script();
         res += tmp;
         print_reset_status(serial, "Flashing Default Script", tmp);
@@ -151,6 +151,7 @@ void StartTerminal(struct Serial *serial, unsigned int argc, char **argv)
 
         struct Serial *targetSerial = serial_device_get(port);
         if (!targetSerial) {
+                serial_put_s(serial, "Requested Serial port is NULL!\r\n");
                 put_commandError(serial, ERROR_CODE_INVALID_PARAM);
                 return;
         }
@@ -227,6 +228,7 @@ void SetSerialLog(struct Serial *serial, unsigned int argc, char **argv)
 
         const bool enable = argv[2][0] != '0';
         const bool prev = serial_logging(s, enable);
+        getWorkingLoggerConfig()->logging_cfg.serial[port] = enable;
 
         serial_put_s(serial, enable_str(prev));
         serial_put_s(serial, " -> ");

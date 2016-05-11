@@ -28,20 +28,28 @@
 
 CPP_GUARD_BEGIN
 
-struct rx_buff {
-        size_t idx;
-        size_t cap;
-        char *buff;
+struct rx_buff;
+
+enum rx_buff_status {
+        RX_BUFF_STATUS_EMPTY,
+        RX_BUFF_STATUS_PARTIAL,
+        RX_BUFF_STATUS_READY,
+        RX_BUFF_STATUS_OVERFLOW,
 };
 
 void rx_buff_clear(struct rx_buff *rxb);
 
-bool rx_buff_init(struct rx_buff *rxb, const size_t cap, char *buff);
+struct rx_buff* rx_buff_create(const size_t cap);
 
-void rx_buff_free(struct rx_buff *rxb);
+void rx_buff_destroy(struct rx_buff *rxb);
 
-char* rx_buff_read(struct rx_buff *rxb, struct Serial *s,
-                   const size_t ticks_to_wait);
+bool rx_buff_read(struct rx_buff *rxb, struct Serial *s);
+
+char* rx_buff_get_msg(struct rx_buff *rxb);
+
+bool rx_buff_is_overflow(struct rx_buff *rxb);
+
+enum rx_buff_status rx_buff_get_status(struct rx_buff *rxb);
 
 CPP_GUARD_END
 

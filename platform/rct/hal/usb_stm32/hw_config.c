@@ -34,7 +34,7 @@
 #include "hw_config.h"
 #include "usb_pwr.h"
 
-
+#define USB_IRQ_PRIORITY 7
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -119,13 +119,6 @@ void Set_System(void)
   GPIO_PinAFConfig(GPIOA, GPIO_PinSource11, GPIO_AF_14);
   GPIO_PinAFConfig(GPIOA, GPIO_PinSource12, GPIO_AF_14);
 
-  /* USB_DISCONNECT used as USB pull-up */
-  GPIO_InitStructure.GPIO_Pin = USB_DISCONNECT_PIN;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_Init(USB_DISCONNECT, &GPIO_InitStructure);
 #endif /* STM32F37X && STM32F30X */
 
   /* Configure the EXTI line 18 connected internally to the USB IP */
@@ -207,6 +200,7 @@ void USB_Interrupts_Config(void)
   NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 
 #if defined(STM32L1XX_MD) || defined(STM32L1XX_HD)|| defined(STM32L1XX_MD_PLUS)
+#error "Why are we here?"
   NVIC_InitStructure.NVIC_IRQChannel = USB_LP_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
@@ -220,6 +214,7 @@ void USB_Interrupts_Config(void)
   NVIC_Init(&NVIC_InitStructure);
 
 #elif defined(STM32F37X)
+#error "Why are we here?"
   /* Enable the USB interrupt */
   NVIC_InitStructure.NVIC_IRQChannel = USB_LP_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
@@ -235,14 +230,14 @@ void USB_Interrupts_Config(void)
 
 #else
   NVIC_InitStructure.NVIC_IRQChannel = USB_LP_CAN1_RX0_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = USB_IRQ_PRIORITY;
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
 
     /* Enable the USB Wake-up interrupt */
   NVIC_InitStructure.NVIC_IRQChannel = USBWakeUp_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = USB_IRQ_PRIORITY;
   NVIC_Init(&NVIC_InitStructure);
 #endif /* STM32L1XX_XD */
 

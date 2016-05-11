@@ -438,9 +438,12 @@ bool lua_task_start()
         }
 
         pr_info(_LOG_PFX "Starting Lua Task\r\n");
-        ok = pdPASS == xTaskCreate(lua_task, (signed portCHAR *) "Lua Task",
-                                   LUA_STACK_SIZE, state.lua_runtime,
-                                   state.priority, &state.task_handle);
+
+        /* Make all task names 16 chars including NULL char */
+        static const signed portCHAR task_name[] = "Lua Exec Task  ";
+        ok = pdPASS == xTaskCreate(lua_task, task_name, LUA_STACK_SIZE,
+                                   state.lua_runtime, state.priority,
+                                   &state.task_handle);
 
         if (!ok) {
                 pr_warning(_LOG_PFX "Failed to start Lua Task\r\n");

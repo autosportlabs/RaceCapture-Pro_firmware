@@ -20,6 +20,11 @@
  */
 
 #include "FreeRTOS.h"
+#include "capabilities.h"
+#include "constants.h"
+#include "cpu.h"
+#include "dateTime.h"
+#include "esp8266.h"
 #include "esp8266_drv.h"
 #include "macros.h"
 #include "messaging.h"
@@ -30,26 +35,86 @@
 #include "serial_device.h"
 #include "semphr.h"
 #include "task.h"
+#include "taskUtil.h"
 #include "wifi.h"
 #include <stdbool.h>
 
-#define _THREAD_NAME	"WiFi Task"
-#define _CONN_WAIT_MS	100
-#define _STACK_SIZE	256
-#define _RX_BUFF_SIZE	1024
-#define _LOG_PFX	"[wifi] "
+/* Time between beacon messages */
+#define BEACON_PERIOD_MS	1000
+/* Prefix for all log messages */
+#define LOG_PFX			"[wifi] "
+/* How long to wait between polling our incomming msg Serial */
+#define READ_DELAY_MS		3
+/* How long to wait before giving up on the message */
+#define READ_TIMEOUT_MS		100
+/* Max size of an incomming message */
+#define RX_BUFF_SIZE		512
+/* How much stack does this task deserve */
+#define STACK_SIZE		256
+/* Make all task names 16 chars including NULL char */
+#define THREAD_NAME		"WiFi Task      "
+/* The highest channel WiFi can use (USA) */
+#define WIFI_MAX_CHANNEL	11
+
+struct rx_msgs {
+        struct Serial* serial;
+        struct rx_buff* rxb;
+        tiny_millis_t timeout;
+        xSemaphoreHandle semaphor;
+};
+
+struct beacon {
+        tiny_millis_t time_last;
+        struct Serial* serial;
+};
 
 static struct {
-        struct Serial *incoming_conn;
-        struct rx_buff rxb;
-        xSemaphoreHandle semaphor;
+        struct rx_msgs rx_msgs;
+        struct beacon beacon;
 } state;
 
 static void _new_conn_cb(struct Serial *s)
 {
         /* Set the incoming connection serial pointer and release the task */
-        state.incoming_conn = s;
-        xSemaphoreGive(state.semaphor);
+        state.rx_msgs.serial = s;
+        xSemaphoreGive(state.rx_msgs.semaphor);
+}
+
+static void reset_rx_state()
+{
+        rx_buff_clear(state.rx_msgs.rxb);
+        state.rx_msgs.timeout = 0;
+}
+
+/**
+ * Code used to process part of a message.
+ * @return false if we have timed out waiting for the message, true otherwise.
+ */
+static bool process_partial_and_continue()
+{
+        /* If here then no timeout has been set.  Set one */
+        if (!state.rx_msgs.timeout)
+                state.rx_msgs.timeout = date_time_uptime_now_plus(READ_TIMEOUT_MS);
+
+        if (date_time_is_past(state.rx_msgs.timeout)) {
+                /* Then timeout has passed */
+                return false;
+        }
+
+        /* Timeout hasn't passed, wait a bit and retry */
+        delayMs(READ_DELAY_MS);
+        return true;
+}
+
+/**
+ * Code that gets invoked when we have a complete message in our rx_buff
+ * that is ready to be processed.
+ */
+static void process_ready_msg(struct Serial* s)
+{
+        char *data_in = rx_buff_get_msg(state.rx_msgs.rxb);
+        pr_info_str_msg(LOG_PFX "Received CMD: ", data_in);
+        process_read_msg(s, data_in, strlen(data_in));
 }
 
 /**
@@ -57,30 +122,120 @@ static void _new_conn_cb(struct Serial *s)
  */
 static void process_rx_msgs()
 {
-        while(state.incoming_conn) {
-                rx_buff_clear(&state.rxb);
-                char *data_in = rx_buff_read(&state.rxb, state.incoming_conn,
-                                             _CONN_WAIT_MS);
+        struct Serial* s = state.rx_msgs.serial;
+        state.rx_msgs.serial = NULL;
 
-                if (!data_in) {
-                        /* Message was not received in time */
-                        serial_flush(state.incoming_conn);
-                        state.incoming_conn = NULL;
-                        break;
+        while(true) {
+                struct rx_buff* const rxb = state.rx_msgs.rxb;
+                rx_buff_read(rxb, s);
+
+                switch (rx_buff_get_status(rxb)) {
+                case RX_BUFF_STATUS_EMPTY:
+                        /* Read and there was nothing.  We are done */
+                        reset_rx_state();
+                        return;
+                case RX_BUFF_STATUS_PARTIAL:
+                        /* Partial message. Wait for reset or timeout */
+                        if (process_partial_and_continue())
+                                continue;
+
+                        reset_rx_state();
+                        return;
+                default:
+                        /* A message awaits us */
+                        process_ready_msg(s);
+                        reset_rx_state();
+                        return;
                 }
-
-                /* If here, we have a message to handle */
-                pr_info_str_msg(_LOG_PFX "Received CMD: ", data_in);
-                const size_t len_in = strlen(data_in);
-                process_read_msg(state.incoming_conn, data_in, len_in);
         }
 }
 
+static tiny_millis_t get_next_beacon_wkup_time()
+{
+        /* Figure out the next we need to update the beacon */
+        return state.beacon.time_last + BEACON_PERIOD_MS;
+}
+
+static bool time_for_beacon()
+{
+        return state.beacon.time_last <= getUptime();
+}
+
+static void send_beacon(struct Serial* serial, const char* ips[])
+{
+        json_objStart(serial);
+        json_objStartString(serial, "beacon");
+
+        json_string(serial, "name", DEVICE_NAME, true);
+        json_int(serial, "port", RCP_SERVICE_PORT, true);
+        json_string(serial, "serial", cpu_get_serialnumber(), true);
+
+        json_arrayStart(serial, "ip");
+        while(*ips) {
+                const char* ip = *ips;
+                /* Advance to next non-zero len string or end or array */
+                for(++ips; *ips && 0 == **ips; ++ips);
+                const bool more = !!*ips;
+                /* Don't add empty strings to the array */
+                if (0 != *ip)
+                        json_arrayElementString(serial, ip, more);
+        }
+        json_arrayEnd(serial, false);
+
+        json_objEnd(serial, false);
+        json_objEnd(serial, false);
+}
+
+static void do_beacon()
+{
+        /* Update the time the beacon last went out */
+        state.beacon.time_last = getUptime();
+
+        const struct esp8266_client_info* ci = esp8266_drv_get_client_info();
+        if (!ci->has_ap) {
+                /* Then don't bother since we don't have a connection */
+                return;
+        }
+
+        /* If here then we have at least one connection.  Send the beacon */
+        if (NULL == state.beacon.serial) {
+                state.beacon.serial =
+                        esp8266_drv_connect(PROTOCOL_UDP, "255.255.255.255",
+                                            RCP_SERVICE_PORT);
+        }
+
+        struct Serial* serial = state.beacon.serial;
+        if (!serial) {
+                pr_warning("Unable to create Serial for Beacon\r\n");
+                return;
+        }
+
+        const char* ips[] = {
+                ci->ip,
+                NULL,
+        };
+        send_beacon(serial, ips);
+}
+
+static tiny_millis_t get_task_sleep_time()
+{
+        const tiny_millis_t next = get_next_beacon_wkup_time();
+        const tiny_millis_t now = getUptime();
+
+        return now >= next ? 0 : next - now;
+}
 
 static void _task_loop()
 {
-        xSemaphoreTake(state.semaphor, portMAX_DELAY);
-        process_rx_msgs();
+        const tiny_millis_t sleep_time = get_task_sleep_time();
+        const bool awoke_by_rx =
+                pdTRUE == xSemaphoreTake(state.rx_msgs.semaphor, sleep_time);
+
+        if (awoke_by_rx)
+                process_rx_msgs();
+
+        if (time_for_beacon())
+                do_beacon();
 }
 
 static void _task(void *params)
@@ -95,37 +250,28 @@ bool wifi_init_task(const int wifi_task_priority,
                     const int wifi_drv_priority)
 {
         /* Get our serial port setup */
-        struct Serial *s = serial_device_get(SERIAL_AUX);
+        struct Serial *s = serial_device_get(SERIAL_WIFI);
         if (!s)
                 return false;
 
-        state.semaphor = xSemaphoreCreateBinary();
-        if (!state.semaphor)
+        state.rx_msgs.semaphor = xSemaphoreCreateBinary();
+        if (!state.rx_msgs.semaphor)
                 return false;
 
         /* Allocate our RX buffer for incomming data */
-        if (!rx_buff_init(&state.rxb, _RX_BUFF_SIZE, NULL))
+        state.rx_msgs.rxb = rx_buff_create( RX_BUFF_SIZE);
+        if (!state.rx_msgs.rxb)
                 return false;
 
         if (!esp8266_drv_init(s, wifi_drv_priority, _new_conn_cb))
                 return false;
 
-        const signed char * const task_name =
-                (const signed char *) _THREAD_NAME;
-        const size_t stack_size = _STACK_SIZE;
+        static const signed char task_name[] = THREAD_NAME;
+        const size_t stack_size = STACK_SIZE;
         xTaskCreate(_task, task_name, stack_size, NULL,
                             wifi_task_priority, NULL);
 
         return true;
-}
-
-void wifi_reset_config(struct wifi_cfg *cfg)
-{
-        /* For now simply zero this out */
-        memset(cfg, 0, sizeof(struct wifi_cfg));
-
-        /* Inform the Wifi device that settings may have changed */
-        wifi_update_client_config(&cfg->client);
 }
 
 /**
@@ -137,4 +283,89 @@ void wifi_reset_config(struct wifi_cfg *cfg)
 bool wifi_update_client_config(struct wifi_client_cfg *wcc)
 {
         return esp8266_drv_update_client_cfg(wcc);
+}
+
+/**
+ * Wrapper for the driver to update the ap wifi config
+ * settings.
+ */
+bool wifi_update_ap_config(struct wifi_ap_cfg *wac)
+{
+        return esp8266_drv_update_ap_cfg(wac);
+}
+
+void wifi_reset_config(struct wifi_cfg *cfg)
+{
+        /* For now simply zero this out */
+        memset(cfg, 0, sizeof(struct wifi_cfg));
+
+        /* Set some sane values for the AP configuration */
+        strncpy(cfg->ap.ssid, "RaceCapture", ARRAY_LEN(cfg->ap.ssid));
+        strncpy(cfg->ap.password, "racecapture", ARRAY_LEN(cfg->ap.password));
+        cfg->ap.channel = 11;
+        cfg->ap.encryption = ESP8266_ENCRYPTION_WPA2_PSK;
+
+        /* Inform the Wifi device that settings may have changed */
+        wifi_update_client_config(&cfg->client);
+        wifi_update_ap_config(&cfg->ap);
+}
+
+/**
+ * Validates that a given Wifi Ap Configuration is valid
+ * for use.
+ * @return true if it is, false otherwise.
+ */
+bool wifi_validate_ap_config(const struct wifi_ap_cfg *wac)
+{
+        return NULL != wac &&
+                wac->channel > 0 &&
+                wac->channel <= WIFI_MAX_CHANNEL &&
+                wac->encryption <= __ESP8266_ENCRYPTION_MAX;
+}
+
+/**
+ * Gets the string representation of the enum esp8266_encryption value.
+ * @return The corresponding string if a match, "unknown" otherwise.
+ */
+const char* wifi_api_get_encryption_str_val(const enum esp8266_encryption enc)
+{
+        switch(enc) {
+        case ESP8266_ENCRYPTION_NONE:
+                return "none";
+        case ESP8266_ENCRYPTION_WEP:
+                return "wep";
+        case ESP8266_ENCRYPTION_WPA_PSK:
+                return "wpa";
+        case ESP8266_ENCRYPTION_WPA2_PSK:
+                return "wpa2";
+        case ESP8266_ENCRYPTION_WPA_WPA2_PSK:
+                return "wpa/wpa2";
+        default:
+                return "unknown"; /* Put our default here */
+        }
+}
+
+/**
+ * Gets the enum esp8266_encryption representation of the string value.
+ * @return The corresponding enum esp8266_encryption value if a match is
+ * found, -1 otherwise.
+ */
+enum esp8266_encryption wifi_api_get_encryption_enum_val(const char* str)
+{
+        if (STR_EQ(str, "none"))
+                return ESP8266_ENCRYPTION_NONE;
+
+        if (STR_EQ(str, "wep"))
+                return ESP8266_ENCRYPTION_WEP;
+
+        if (STR_EQ(str, "wpa"))
+                return ESP8266_ENCRYPTION_WPA_PSK;
+
+        if (STR_EQ(str, "wpa2"))
+                return ESP8266_ENCRYPTION_WPA2_PSK;
+
+        if (STR_EQ(str, "wpa/wpa2"))
+                return ESP8266_ENCRYPTION_WPA_WPA2_PSK;
+
+        return -1;
 }

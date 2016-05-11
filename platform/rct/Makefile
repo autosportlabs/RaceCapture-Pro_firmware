@@ -17,6 +17,9 @@ OBJCOPY := $(CROSS_COMPILE)objcopy
 #specify the use of the external crystal
 BOARD_DEFINES = -DPLL_SOURCE_HSE -DUSE_I2C1
 
+# Needed for FreeRTOS GDB debugging
+FREERTOS_LD_FLAGS := -Wl,--undefined=uxTopUsedPriority
+
 ################################################################################
 # Project definition
 ################################################################################
@@ -142,6 +145,9 @@ src-y += $(wildcard $(RC_SRC_DIR)/usart/*.c)
 src-y += $(wildcard hal/usart_stm32/*.c)
 inc-y += $(RC_INCLUDE_DIR)/usart
 
+# Serial Device
+src-y += $(wildcard hal/serial/*.c)
+
 # Watchdog
 src-y += $(wildcard $(RC_SRC_DIR)/watchdog/*.c)
 src-y += $(wildcard hal/watchdog_stm32/*.c)
@@ -248,10 +254,27 @@ CFLAGS += -mcpu=cortex-m3 -mthumb
 CFLAGS += $(VERSION_CFLAGS)
 CFLAGS += $(BOARD_DEFINES)
 CFLAGS += -fno-builtin-sprintf
+CFLAGS += -ggdb
+CFLAGS += -Wall -Werror -Wempty-body -Wclobbered -Wignored-qualifiers \
+	-Wmissing-parameter-type -Wold-style-declaration \
+	-Wunused-but-set-parameter
+
+ifdef NOOPT
+CFLAGS += -O0
+else
+CFLAGS += -Os
+endif
+
+ifdef DEBUG
+CFLAGS += -D_DEBUG
+endif
+
 CFLAGS += $(addprefix -I,$(inc-y))
-CFLAGS += -O0 -g
+
 LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld
 LDFLAGS += -Wl,-cref,-u,Reset_Handler,-Map=$(OUTDIR)/main.map,--gc-sections
+LDFLAGS += $(FREERTOS_LD_FLAGS)
+
 AFLAGS := $(CFLAGS)
 
 # disable auto-removing of intermediate files
@@ -260,12 +283,12 @@ AFLAGS := $(CFLAGS)
 $(OUTDIR)/%.o: %.c
 	@echo "[CC] $(@F)"
 	mkdir -p $(@D)
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CCACHE) $(CC) $(CFLAGS) -c -o $@ $<
 
 $(OUTDIR)/%.o: %.s
 	@echo "[AS] $(@F)"
 	mkdir -p $(@D)
-	$(AS) $(AFLAGS) -c -o $@ $<
+	$(CCACHE) $(AS) $(AFLAGS) -c -o $@ $<
 
 $(OUTDIR)/%.elf: $(obj-y)
 	@echo "[LD] $(@F)"

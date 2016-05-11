@@ -19,30 +19,18 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _RAM_SERIAL_H_
-#define _RAM_SERIAL_H_
+#ifndef _PROTOCOL_H_
+#define _PROTOCOL_H_
 
 #include "cpp_guard.h"
-#include "serial.h"
-
-#include <stdbool.h>
 
 CPP_GUARD_BEGIN
 
-bool ram_serial_init(const size_t cap);
-
-bool ram_serial_destroy();
-
-struct Serial* ram_serial_get_serial();
-
-void ram_serial_clear();
-
-size_t ram_serial_get_len();
-
-size_t ram_serial_get_cap();
-
-const char* ram_serial_get_buff();
+enum protocol {
+        PROTOCOL_TCP,
+        PROTOCOL_UDP,
+};
 
 CPP_GUARD_END
 
-#endif /* _RAM_SERIAL_H_ */
+#endif /* _PROTOCOL_H_ */

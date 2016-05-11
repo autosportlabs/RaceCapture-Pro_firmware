@@ -57,7 +57,7 @@ include libs/stm32_usb.mk
 # for this changeset alone plus need to address in other libraries
 # as well.
 #
-CFLAGS ?= -Os -g -fno-common -c -mthumb -fno-strict-aliasing \
+CFLAGS ?= -g -fno-common -c -mthumb -fno-strict-aliasing \
 	-std=gnu99 -mcpu=$(CPU_TYPE) -MD -Wall -Werror -Wempty-body \
 	-Wclobbered -Wignored-qualifiers -Wmissing-parameter-type \
 	-Wold-style-declaration -Wunused-but-set-parameter
@@ -69,6 +69,12 @@ LUA_LIB_DIR=$(APP_PATH)/lib/lua/src
 INCLUDES += $(CPU_INCLUDES) $(BOARD_INCLUDES) $(LIB_INCLUDES) $(APP_INCLUDES) $(LUA_INCLUDE)
 CFLAGS += $(INCLUDES) $(CPU_DEFINES) $(BOARD_DEFINES) $(APP_DEFINES) $(CPU_FLAGS)
 ASFLAGS += -mcpu=$(CPU_TYPE) $(FPU) -g -Wa,--warn
+
+ifdef NOOPT
+CFLAGS += -O0
+else
+CFLAGS += -Os
+endif
 
 ifdef DEBUG
 CFLAGS += -D_DEBUG
@@ -127,19 +133,19 @@ $(TARGET).ihex: $(TARGET).bin
 
 $(TARGET).bin: $(TARGET).elf
 	@printf "  OBJCOPY $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(PREFIX)-objcopy -Obinary $< $@
+	$(Q) $(PREFIX)-objcopy -Obinary $< $@
 
 $(TARGET).elf: $(OBJS)
 	@printf "  LD      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CC) $(OBJS) $(LDFLAGS) -o $@
+	$(Q) $(CC) $(OBJS) $(LDFLAGS) -o $@
 
 .c.o:
 	@printf "  CC      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CC) $(CFLAGS) -D_RCP_BASE_FILE_="\"$(notdir $<): \"" $< -o $@
+	$(Q) $(CCACHE) $(CC) $(CFLAGS) -D_RCP_BASE_FILE_="\"$(notdir $<): \"" $< -o $@
 
 .s.o:
 	@printf "  AS      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CC) $(ASFLAGS) -c $< -o $@
+	$(Q) $(CCACHE) $(CC) $(ASFLAGS) -c $< -o $@
 
 clean:
 	$(Q)rm -f *.o *.a *.d ../*.o ../*.d \

@@ -27,8 +27,8 @@
 #include "task.h"
 #include "usb_comm.h"
 
-#define mainUSB_COMM_STACK	256
-#define BUFFER_SIZE		256
+#define USB_COMM_STACK_SIZE	256
+#define BUFFER_SIZE		1024
 
 static char lineBuffer[BUFFER_SIZE];
 static struct Serial *serial;
@@ -49,6 +49,8 @@ void startUSBCommTask(int priority)
         USB_CDC_device_init(priority);
         serial = USB_CDC_get_serial();
 
-        xTaskCreate(usb_comm_task, (signed portCHAR *) "USB_Comm",
-                    mainUSB_COMM_STACK, NULL, priority, NULL);
+        /* Make all task names 16 chars including NULL char */
+        static const signed portCHAR task_name[] = "USB Comm Task  ";
+        xTaskCreate(usb_comm_task, task_name, USB_COMM_STACK_SIZE,
+                    NULL, priority, NULL);
 }

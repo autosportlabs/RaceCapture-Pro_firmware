@@ -319,7 +319,7 @@ int usart_device_init()
                 init_usart_serial(UART_TELEMETRY, UART4,
                                   SERIAL_TELEMETRY, "Cell") &&
                 init_usart_serial(UART_WIRELESS, USART1,
-                                  SERIAL_WIRELESS, "BT") &&
+                                  SERIAL_BLUETOOTH, "BT") &&
                 init_usart_serial(UART_AUX, USART3, SERIAL_AUX, "Aux");
 
         if (!mem_alloc_success) {
@@ -362,28 +362,6 @@ void usart_device_config(const uart_id_t id, const size_t bits,
 
 /* *** Interrupt Handlers *** */
 
-static void handle_usart_overrun(USART_TypeDef* USARTx)
-{
-        if (USART_GetITStatus(USARTx, USART_IT_ORE_RX) != SET)
-                return;
-
-        /*
-	 * Handle Overrun error
-         *
-	 * This bit is set by hardware when the word currently being received in
-         * the shift register is ready to be transferred into the RDR register
-         * while RXNE=1. An interrupt is generated if RXNEIE=1 in the USART_CR1
-         * register. It is cleared by a software sequence (an read to the
-         * USART_SR register followed by a read to the USART_DR register)
-	 */
-        uint32_t cChar;
-	cChar = USART1->SR;
-	cChar = USART1->DR;
-
-	/* Suppress compiler warning */
-	(void) cChar;
-}
-
 void DMA1_Stream5_IRQHandler(void)
 {
         struct usart_info *ui = usart_data + UART_GPS;
@@ -414,19 +392,17 @@ void DMA1_Stream5_IRQHandler(void)
 }
 
 static void usart_generic_irq_handler(USART_TypeDef *usart,
-                                      xQueueHandle rx,
-                                      xQueueHandle tx)
+                                      struct Serial *serial)
 {
-        portBASE_TYPE xTaskWokenByTx = pdFALSE, xTaskWokenByPost = pdFALSE;
         signed portCHAR cChar;
-
-        if (USART_GetITStatus(usart, USART_IT_TXE) != RESET) {
+        portBASE_TYPE xTaskWokenByTx = pdFALSE;
+        if (USART_GetITStatus(usart, USART_IT_TXE) == SET) {
                 /*
                  * The interrupt was caused by the TX becoming empty.
                  * Are there any more characters to transmit?
                  */
-                if (tx != NULL &&
-                    pdTRUE == xQueueReceiveFromISR(tx, &cChar,
+                xQueueHandle tx_queue = serial_get_tx_queue(serial);
+                if (pdTRUE == xQueueReceiveFromISR(tx_queue, &cChar,
                                                    &xTaskWokenByTx)) {
                         /*
                          * A character was retrieved from the queue so
@@ -442,18 +418,43 @@ static void usart_generic_irq_handler(USART_TypeDef *usart,
                 }
         }
 
-        if (USART_GetITStatus(usart, USART_IT_RXNE) != RESET) {
+        /*
+         * Read the ORE status flag here because doing this along with
+         * reading data from our UART will clear the ORE flag if it has
+         * been set.  Thus we get a two for one and reduce the chance of
+         * accidentially dumping a character like we could do with our
+         * previous overrun handler. This is per the documentation in the
+         * USART_ClearFlag method.
+         */
+        const bool ore_set =
+                SET == USART_GetFlagStatus(usart, USART_FLAG_ORE);
+
+
+        portBASE_TYPE xTaskWokenByPost = pdFALSE;
+        if (USART_GetITStatus(usart, USART_IT_RXNE) == SET) {
                 /*
                  * The interrupt was caused by a character being received.
                  * Grab the character from the rx and place it in the queue
                  * or received characters.
                  */
                 cChar = USART_ReceiveData(usart);
-                if (rx)
-                        xQueueSendFromISR(rx, &cChar, &xTaskWokenByPost);
+                xQueueHandle rx_queue = serial_get_rx_queue(serial);
+                xQueueSendFromISR(rx_queue, &cChar, &xTaskWokenByPost);
+        } else if (ore_set) {
+                /*
+                 * We will likely never get in here, but this is to
+                 * be sure we cover all our bases.  See page 968 of the
+                 * reference manual for why I did this.  In short its safe to dump
+                 * the data here since we know there is nothing in the RDR
+                 * register (since RXNE is not set).  Having the ORE set here
+                 * indicates a race case where we read the data as the other
+                 * data was lost in the shift register (thus leaving the ORE
+                 * flag set but clearing the RXNE flag). In other words, this
+                 * is done purely to clear the ORE flag knowing we are not losing
+                 * data.
+                 */
+                USART_ReceiveData(usart);
         }
-
-        handle_usart_overrun(usart);
 
         /*
          * If a task was woken by either a character being received or a
@@ -467,30 +468,23 @@ static void usart_generic_irq_handler(USART_TypeDef *usart,
 void USART1_IRQHandler(void)
 {
         struct usart_info *ui = usart_data + UART_WIRELESS;
-        usart_generic_irq_handler(USART1, ui->rx, ui->tx);
+        usart_generic_irq_handler(USART1, ui->serial);
 }
 
 void USART2_IRQHandler(void)
 {
         struct usart_info *ui = usart_data + UART_GPS;
-        /*
-         * rx is NULL here b/c its incomming data is handled by DMA.
-         * Setting NULL just prevents us from inserting a character into
-         * the serial buffer.  It will still receive and clear the flag
-         * if it gets called, but it shouldn't be called since we do not
-         * enable it.
-         */
-        usart_generic_irq_handler(USART2, NULL, ui->tx);
+        usart_generic_irq_handler(USART2, ui->serial);
 }
 
 void USART3_IRQHandler(void)
 {
         struct usart_info *ui = usart_data + UART_AUX;
-        usart_generic_irq_handler(USART3, ui->rx, ui->tx);
+        usart_generic_irq_handler(USART3, ui->serial);
 }
 
 void UART4_IRQHandler(void)
 {
         struct usart_info *ui = usart_data + UART_TELEMETRY;
-        usart_generic_irq_handler(UART4, ui->rx, ui->tx);
+        usart_generic_irq_handler(UART4, ui->serial);
 }

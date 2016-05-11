@@ -38,7 +38,7 @@
 
 #define ERROR_SLEEP_DELAY_MS	500
 #define FILE_BUFFER_SIZE	256
-#define FILE_WRITER_STACK_SIZE	256
+#define FILE_WRITER_STACK_SIZE	192
 #define MAX_LOG_FILE_INDEX	99999
 #define WRITE_FAIL	EOF
 
@@ -475,6 +475,8 @@ void startFileWriterTask(int priority)
                 return;
         }
 
-        xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter",
-                     FILE_WRITER_STACK_SIZE, NULL, priority, NULL );
+        /* Make all task names 16 chars including NULL char */
+        static const signed portCHAR task_name[] = "File Task       ";
+        xTaskCreate(fileWriterTask, task_name, FILE_WRITER_STACK_SIZE,
+                    NULL, priority, NULL );
 }

@@ -287,7 +287,7 @@ void getDateTimeFromEpochMillis(DateTime *dateTime, millis_t millis)
  * @param to_add The amount of time to add to the current time.  Value is
  * in milliseconds.
  */
-tiny_millis_t getUptimeFromNow(const tiny_millis_t to_add)
+tiny_millis_t date_time_uptime_now_plus(const tiny_millis_t to_add)
 {
         return getUptime() + to_add;
 }
@@ -297,7 +297,7 @@ tiny_millis_t getUptimeFromNow(const tiny_millis_t to_add)
  * @param time The time to check
  * @return True if the time is in the past, false otherwise.
  */
-bool isTimePassed(const tiny_millis_t time)
+bool date_time_is_past(const tiny_millis_t time)
 {
         return getUptime() > time;
 }
