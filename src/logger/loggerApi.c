@@ -238,6 +238,18 @@ int api_getCapabilities(struct Serial *serial, const jsmntok_t *json)
 
         json_int(serial, "tracks", MAX_TRACKS, 1);
         json_int(serial, "sectors", MAX_SECTORS, 0);
+        json_objEnd(serial, 1);
+
+        /* Information about what communication methods are supported */
+        const bool bluetooth = BLUETOOTH_SUPPORT != 0;
+        const bool cellular = CELLULAR_SUPPORT != 0;
+        const bool usb = USB_SERIAL_SUPPORT != 0;
+        const bool wifi = WIFI_SUPPORT != 0;
+        json_objStartString(serial,"links");
+        json_bool(serial, "bluetooth", bluetooth, 1);
+        json_bool(serial, "cellular", cellular, 1);
+        json_bool(serial, "usb", usb, 1);
+        json_bool(serial, "wifi", wifi, 0);
         json_objEnd(serial, 0);
 
         json_objEnd(serial, 0);
