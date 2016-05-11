@@ -43,11 +43,11 @@ bool serial_buffer_create(struct serial_buffer *sb,
         sb->serial = serial;
         sb->length = size;
         sb->buffer = buffer;
-        serial_buffer_clear(sb);
 
         if (NULL == sb->buffer)
                 sb->buffer = (char*) portMalloc(size);
 
+        serial_buffer_clear(sb);
         if (NULL != sb->buffer)
                 return true;
 
