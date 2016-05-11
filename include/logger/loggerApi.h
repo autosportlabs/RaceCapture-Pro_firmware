@@ -101,7 +101,7 @@ CPP_GUARD_BEGIN
 #define TIMER_API_METHODS
 #endif
 
-#if defined(LUA_SUPPORT)
+#if LUA_SUPPORT
 #define LUA_API_METHODS                                 \
         API_METHOD("getScriptCfg", api_getScript)       \
         API_METHOD("runScript", api_runScript)          \

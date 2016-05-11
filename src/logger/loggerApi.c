@@ -168,7 +168,7 @@ int api_factoryReset(struct Serial *serial, const jsmntok_t *json)
         flash_default_logger_config();
         flash_default_tracks();
 
-#if defined(LUA_SUPPORT)
+#if LUA_SUPPORT
         flash_default_script();
 #endif
 
@@ -207,42 +207,42 @@ int api_getVersion(struct Serial *serial, const jsmntok_t *json)
 
 int api_getCapabilities(struct Serial *serial, const jsmntok_t *json)
 {
-    json_objStart(serial);
-    json_objStartString(serial,"capabilities");
+        json_objStart(serial);
+        json_objStartString(serial,"capabilities");
 
-    json_objStartString(serial,"channels");
-    json_int(serial, "analog", ANALOG_CHANNELS, 1);
-    json_int(serial, "imu", IMU_CHANNELS, 1);
+        json_objStartString(serial,"channels");
+        json_int(serial, "analog", ANALOG_CHANNELS, 1);
+        json_int(serial, "imu", IMU_CHANNELS, 1);
 #if GPIO_CHANNELS > 0
-    json_int(serial, "gpio", GPIO_CHANNELS, 1);
+        json_int(serial, "gpio", GPIO_CHANNELS, 1);
 #endif
 #if TIMER_CHANNELS > 0
-    json_int(serial, "timer", TIMER_CHANNELS, 1);
+        json_int(serial, "timer", TIMER_CHANNELS, 1);
 #endif
 #if PWM_CHANNELS > 0
-    json_int(serial, "pwm", PWM_CHANNELS, 1);
+        json_int(serial, "pwm", PWM_CHANNELS, 1);
 #endif
-    json_int(serial, "can", CAN_CHANNELS, 0);
-    json_objEnd(serial, 1);
+        json_int(serial, "can", CAN_CHANNELS, 0);
+        json_objEnd(serial, 1);
 
-    json_objStartString(serial,"sampleRates");
-    json_int(serial, "sensor", MAX_SENSOR_SAMPLE_RATE, 1);
-    json_int(serial, "gps", MAX_GPS_SAMPLE_RATE, 0);
-    json_objEnd(serial, 1);
+        json_objStartString(serial,"sampleRates");
+        json_int(serial, "sensor", MAX_SENSOR_SAMPLE_RATE, 1);
+        json_int(serial, "gps", MAX_GPS_SAMPLE_RATE, 0);
+        json_objEnd(serial, 1);
 
-    json_objStartString(serial,"db");
+        json_objStartString(serial,"db");
 
-#if defined(LUA_SUPPORT)
-    json_int(serial, "script", SCRIPT_MEMORY_LENGTH, 1);
+#if LUA_SUPPORT
+        json_int(serial, "script", SCRIPT_MEMORY_LENGTH, 1);
 #endif
 
-    json_int(serial, "tracks", MAX_TRACKS, 1);
-    json_int(serial, "sectors", MAX_SECTORS, 0);
-    json_objEnd(serial, 0);
+        json_int(serial, "tracks", MAX_TRACKS, 1);
+        json_int(serial, "sectors", MAX_SECTORS, 0);
+        json_objEnd(serial, 0);
 
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
-    return API_SUCCESS_NO_RETURN;
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+        return API_SUCCESS_NO_RETURN;
 }
 
 int api_getStatus(struct Serial *serial, const jsmntok_t *json)
@@ -267,7 +267,7 @@ int api_getStatus(struct Serial *serial, const jsmntok_t *json)
         json_int(serial, "DOP", GPS_getDOP(), 0);
         json_objEnd(serial, 1);
 
-#if defined(CELLULAR_SUPPORT)
+#if CELLULAR_SUPPORT
         const enum cellular_net_status ns = cellmodem_get_status();
         const char* ns_val = cellular_net_status_api_key(ns);
 
@@ -1629,7 +1629,7 @@ int api_getTrackDb(struct Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
-#if defined(LUA_SUPPORT)
+#if LUA_SUPPORT
 
 int api_getScript(struct Serial *serial, const jsmntok_t *json)
 {

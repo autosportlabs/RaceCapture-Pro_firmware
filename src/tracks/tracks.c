@@ -84,7 +84,7 @@ enum track_add_result add_track(const Track *track, const size_t index,
         static Tracks *g_tracksBuffer;
         if (NULL == g_tracksBuffer) {
 
-#if defined(LUA_SUPPORT)
+#if LUA_SUPPORT
                 lua_task_stop();
 #endif /* LUA_SUPPORT */
 
@@ -119,7 +119,7 @@ enum track_add_result add_track(const Track *track, const size_t index,
 
         pr_info("win!\r\n");
 
-#if defined(LUA_SUPPORT)
+#if LUA_SUPPORT
         lua_task_start();
 #endif /* LUA_SUPPORT */
 

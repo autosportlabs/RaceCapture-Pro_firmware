@@ -54,7 +54,7 @@ static const char* enable_str(const bool enable)
 void TestSD(struct Serial *serial, unsigned int argc, char **argv)
 {
     /* TODO BAP - could not remove TestSD from command list b/c statically defined array, fix somehow */
-#if defined(SDCARD_SUPPORT)
+#if SDCARD_SUPPORT
     int lines = 1;
     int doFlush = 0;
     int quiet = 0;
@@ -85,7 +85,7 @@ void ResetConfig(struct Serial *serial, unsigned int argc, char **argv)
         res += tmp;
         print_reset_status(serial, "Flashing Default Logger Config", tmp);
 
-#if defined(LUA_SUPPORT)
+#if LUA_SUPPORT
         tmp = flash_default_script();
         res += tmp;
         print_reset_status(serial, "Flashing Default Script", tmp);

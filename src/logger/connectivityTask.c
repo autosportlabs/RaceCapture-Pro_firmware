@@ -142,7 +142,7 @@ static void createCombinedTelemetryTask(int16_t priority,
                         params->max_sample_rate = SAMPLE_50Hz;
                 }
 
-#if defined(CELLULAR_SUPPORT)
+#if CELLULAR_SUPPORT
                 /*cell overrides wireless*/
                 if (cellEnabled) {
                         params->check_connection_status = &cellular_check_connection_status;
@@ -163,6 +163,7 @@ static void createWirelessConnectionTask(int16_t priority,
                                          xQueueHandle sampleQueue,
                                          uint8_t isPrimary)
 {
+#if BLUETOOTH_SUPPORT
         ConnParams *params = portMalloc(sizeof(ConnParams));
         params->isPrimary = isPrimary;
         params->connectionName = "Wireless";
@@ -180,13 +181,14 @@ static void createWirelessConnectionTask(int16_t priority,
         static const signed portCHAR task_name[] = "Bluetooth Task ";
         xTaskCreate(connectivityTask, task_name, TELEMETRY_STACK_SIZE,
                     params, priority, NULL );
+#endif
 }
 
 static void createTelemetryConnectionTask(int16_t priority,
                                           xQueueHandle sampleQueue,
                                           uint8_t isPrimary)
 {
-#if defined(CELLULAR_SUPPORT)
+#if CELLULAR_SUPPORT
         ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
         params->isPrimary = isPrimary;
         params->connectionName = "Telemetry";

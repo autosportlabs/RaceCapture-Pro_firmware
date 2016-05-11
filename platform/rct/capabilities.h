@@ -7,7 +7,15 @@
 
 #define TICK_RATE_HZ			configTICK_RATE_HZ
 #define MS_PER_TICK 1
-#define USB_SERIAL_SUPPORT
+
+/* Support Flags */
+#define BLUETOOTH_SUPPORT	1
+#define CELLULAR_SUPPORT	0
+#define LUA_SUPPORT		0
+#define SDCARD_SUPPORT		0
+#define USB_SERIAL_SUPPORT	1
+#define VIRTUAL_CHANNEL_SUPPORT	0
+#define WIFI_SUPPORT		1
 
 //configuration
 #define MAX_TRACKS	5

@@ -8,12 +8,13 @@
 #define MS_PER_TICK	1
 
 /* Support Flags */
-#define USB_SERIAL_SUPPORT
-#define LUA_SUPPORT
-#define VIRTUAL_CHANNEL_SUPPORT
-#define SDCARD_SUPPORT
-#define CELLULAR_SUPPORT
-#define WIFI_SUPPORT
+#define BLUETOOTH_SUPPORT	1
+#define CELLULAR_SUPPORT	1
+#define LUA_SUPPORT		1
+#define SDCARD_SUPPORT		1
+#define USB_SERIAL_SUPPORT	1
+#define VIRTUAL_CHANNEL_SUPPORT	1
+#define WIFI_SUPPORT		1
 
 //configuration
 #define MAX_TRACKS	240

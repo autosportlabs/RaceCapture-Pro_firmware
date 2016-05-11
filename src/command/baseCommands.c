@@ -61,7 +61,7 @@ void ShowStats(struct Serial *serial, unsigned int argc, char **argv)
     put_uint(serial, portGetFreeHeapSize());
     put_crlf(serial);
 
-#if defined(LUA_SUPPORT)
+#if LUA_SUPPORT
     struct lua_runtime_info ri = lua_task_get_runtime_info();
     putHeader(serial, "Lua Info");
 
