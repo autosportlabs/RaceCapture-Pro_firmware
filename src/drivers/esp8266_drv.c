@@ -347,72 +347,67 @@ static void check_data()
 }
 
 /**
- * Callback that gets invoked when our client wifi gets disconnected
- * from its network.
+ * Callback that gets invoked when our client wifi state changes.
  */
-static void client_wifi_disconnect_cb()
+static void client_state_changed_cb(const char* msg)
 {
         /* Need to check our client now that a change has occured */
         cmd_set_check(CHECK_WIFI_CLIENT);
-        cmd_set_check(CHECK_DATA);
 
-        memset(&esp8266_state.client.info, 0, sizeof(esp8266_state.client.info));
-        pr_info(LOG_PFX "WiFi client disconnected from AP\r\n");
+        memset(&esp8266_state.client.info, 0,
+               sizeof(esp8266_state.client.info));
+        pr_info_str_msg(LOG_PFX "Client state changed: ", msg);
 }
 
 /**
- * Callback that gets invoked when a socket becomes connected.  Usually
- * this happens when a new client connects.
+ * Callback that gets invoked when a socket state changes.
  */
-static void socket_connect_cb(const size_t chan_id)
+static void socket_state_changed_cb(const size_t chan_id,
+                                    const enum socket_action action)
 {
         if (!is_valid_socket_channel_id(chan_id)) {
-                pr_error_int_msg(LOG_PFX "Invalid socket id during "
-                                 "connect: ", chan_id);
+                pr_warning_int_msg(LOG_PFX "Invalid socket id: ",
+                                   chan_id);
                 return;
         }
 
-        pr_info_int_msg(LOG_PFX "Socket connect on channel ", chan_id);
         struct channel *ch = esp8266_state.comm.channels + chan_id;
-        ch->connected = true;
-        cmd_set_check(CHECK_DATA);
-}
+        switch (action) {
+        case SOCKET_ACTION_DISCONNECT:
+                pr_info_int_msg(LOG_PFX "Socket closed on channel ",
+                                chan_id);
+                /*
+                 * If channel created externally, then when closed it
+                 * means it is no longer in use.
+                 */
+                if (ch->created_externally)
+                        ch->in_use = false;
 
-/**
- * Callback that gets invoked when a socket gets closed.  Usually
- * this happens when there is a TCP timeout or a socket close call
- * gets invoked.
- */
-static void socket_closed_cb(const size_t chan_id)
-{
-        if (!is_valid_socket_channel_id(chan_id)) {
-                pr_error_int_msg(LOG_PFX "Invalid socket id during "
-                                 "close: ", chan_id);
-                return;
+                ch->created_externally = false;
+                ch->connected = false;
+
+                /*
+                 * Clear the serial data out since channel is now closed
+                 * we don't want any cruft in there the next time a channel
+                 * gets opened.  Also be sure the serial exists, as it could
+                 * fail to get created.
+                 */
+                if (ch->serial)
+                        serial_clear(ch->serial);
+
+                break;
+        case SOCKET_ACTION_CONNECT:
+                pr_info_int_msg(LOG_PFX "Socket connected on channel ",
+                                chan_id);
+                ch->connected = true;
+                break;
+        default:
+                pr_warning(LOG_PFX "Unknown socket action\r\n");
+                break;
         }
 
-        pr_info_int_msg(LOG_PFX "Socket closed on channel ", chan_id);
-        struct channel *ch = esp8266_state.comm.channels + chan_id;
-
-        /*
-         * If channel created externally, then when closed it means it
-         * is no longer in use
-         */
-        if (ch->created_externally)
-                ch->in_use = false;
-
-        ch->created_externally = false;
-        ch->connected = false;
-
-        /*
-         * Clear the serial data out since channel is now closed
-         * we don't want any cruft in there the next time a channel
-         * gets opened.
-         */
-        serial_clear(ch->serial);
         cmd_set_check(CHECK_DATA);
 }
-
 
 /* *** Methods that handle device init and reset *** */
 
@@ -440,17 +435,11 @@ static void init_wifi()
 {
         pr_info(LOG_PFX "Initializing Wifi\r\n");
 
-        const struct esp8266_event_hooks hooks = {
-                .client_wifi_disconnect_cb = client_wifi_disconnect_cb,
-                .socket_connect_cb = socket_connect_cb,
-                .socket_closed_cb = socket_closed_cb,
-        };
-
         serial_clear(esp8266_state.device.serial);
         if (!esp8266_init(esp8266_state.device.serial, SERIAL_CMD_MAX_LEN,
-                          hooks, init_wifi_cb)) {
+                          init_wifi_cb)) {
                 /* Failed to init critical bits.  */
-                pr_error(LOG_PFX "Failed to init esp8266 device code.\r\n");
+                pr_warning(LOG_PFX "Failed to init esp8266 device.\r\n");
                 cmd_sleep(CHECK_INIT, INIT_FAIL_SLEEP_MS);
                 return;
         }
@@ -462,8 +451,14 @@ static void init_wifi()
          * before init has completed b/c this invokes no modem calls.
          * This should only fail if there was an issue with space or config.
          */
-        if (!esp8266_register_ipd_cb(rx_data_cb))
-                pr_error(LOG_PFX "Failed to register IPD callback\r\n");
+        const struct esp8266_event_hooks hooks = {
+                .client_state_changed_cb = client_state_changed_cb,
+                .socket_state_changed_cb = socket_state_changed_cb,
+                .data_received_cb = rx_data_cb,
+        };
+
+        if (!esp8266_register_callbacks(&hooks))
+                pr_warning(LOG_PFX "Failed to register callbacks\r\n");
 }
 
 /**

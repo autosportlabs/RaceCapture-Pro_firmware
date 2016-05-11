@@ -44,21 +44,45 @@ enum dev_init_state {
         DEV_INIT_STATE_FAILED,
 };
 
-typedef void client_wifi_disconnect_cb_t();
-typedef void socket_connect_cb_t(const size_t chan_id);
-typedef void socket_closed_cb_t(const size_t chan_id);
+/**
+ * Called whenever the device informs us that the state of the
+ * wifi client has changed.
+ */
+typedef void client_state_changed_cb_t(const char* msg);
 
-struct esp8266_event_hooks {
-        client_wifi_disconnect_cb_t *client_wifi_disconnect_cb;
-        socket_connect_cb_t *socket_connect_cb;
-        socket_closed_cb_t *socket_closed_cb;
+/**
+ * An action taken by the ESP8266 on a socket.
+ */
+enum socket_action {
+        SOCKET_ACTION_UNKNOWN,
+        SOCKET_ACTION_DISCONNECT,
+        SOCKET_ACTION_CONNECT,
 };
 
+/**
+ * Called whenever the device informs us that the state of a socket
+ * has changed.
+ */
+typedef void socket_state_changed_cb_t(const size_t chan_id,
+                                       const enum socket_action action);
+
+/**
+ * Called whenever we receive new data on a socket.
+ */
+typedef void data_received_cb_t(int chan_id, size_t len, const char* data);
+
+struct esp8266_event_hooks {
+        client_state_changed_cb_t *client_state_changed_cb;
+        socket_state_changed_cb_t *socket_state_changed_cb;
+        data_received_cb_t *data_received_cb;
+};
+
+bool esp8266_register_callbacks(const struct esp8266_event_hooks* hooks);
+
 bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
-                  const struct esp8266_event_hooks hooks,
                   void (*cb)(enum dev_init_state));
 
-enum dev_init_state esp1866_get_dev_init_state();
+enum dev_init_state esp8266_get_dev_init_state();
 
 /**
  * These are the AT codes for the mode of the device represented in enum
@@ -115,8 +139,6 @@ enum esp8266_server_action {
 
 bool esp8266_server_cmd(const enum esp8266_server_action action, int port,
                         void (*cb)(bool));
-
-bool esp8266_register_ipd_cb(void (*cb)(int, size_t, const char*));
 
 CPP_GUARD_END
 

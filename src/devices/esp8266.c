@@ -85,9 +85,12 @@ static bool sparse_urc_cb(char* msg)
 {
         msg = strip_inline(msg);
 
-        if (STR_EQ(msg, "WIFI DISCONNECT")) {
-                if (state.hooks.client_wifi_disconnect_cb)
-                        state.hooks.client_wifi_disconnect_cb();
+        /* Handle and ignore NO-OP URCs */
+        if (STR_EQ(msg, "WIFI CONNECTED") ||
+            STR_EQ(msg, "WIFI GOT IP") ||
+            STR_EQ(msg, "WIFI DISCONNECT")) {
+                if (state.hooks.client_state_changed_cb)
+                        state.hooks.client_state_changed_cb(msg);
                 return true;
         }
 
@@ -99,15 +102,16 @@ static bool sparse_urc_cb(char* msg)
         *comma = '\0';
         const char* m1 = msg;
         const char* m2 = ++comma;
-        if (STR_EQ(m2, "CONNECT")) {
-                if (state.hooks.socket_connect_cb)
-                        state.hooks.socket_connect_cb(atoi(m1));
-        } else if (STR_EQ(m2, "CLOSED")) {
-                if (state.hooks.socket_closed_cb)
-                        state.hooks.socket_closed_cb(atoi(m1));
-        } else {
-                return false;
-        }
+
+        enum socket_action action = SOCKET_ACTION_UNKNOWN;
+        if (STR_EQ(m2, "CONNECT"))
+                action = SOCKET_ACTION_CONNECT;
+
+        if (STR_EQ(m2, "CLOSED"))
+                action = SOCKET_ACTION_DISCONNECT;
+
+        if (state.hooks.socket_state_changed_cb)
+                state.hooks.socket_state_changed_cb(atoi(m1), action);
 
         return true;
 }
@@ -115,8 +119,7 @@ static bool sparse_urc_cb(char* msg)
 /**
  * Sets up the internal state of the driver.  Must be called before init.
  */
-static bool _setup(struct Serial *s, const size_t max_cmd_len,
-                   const struct esp8266_event_hooks hooks)
+static bool _setup(struct Serial *s, const size_t max_cmd_len)
 {
         /* Check if already initialized.  If so, do nothing */
         if (state.ati)
@@ -124,7 +127,6 @@ static bool _setup(struct Serial *s, const size_t max_cmd_len,
 
         state.ati = &_ati;
         state.scb = &_serial_cmd_buff;
-        state.hooks = hooks;
 
         /*
          * Initialize the serial command buffer.  This buffer is used for
@@ -318,14 +320,13 @@ static bool is_init_in_progress()
  * Kicks off the initilization process.
  */
 bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
-                  const struct esp8266_event_hooks hooks,
                   void (*cb)(enum dev_init_state))
 {
         if (!cb || !s || is_init_in_progress())
                 return false;
 
         /* Init objects.  If fail, then nothing we can do. */
-        if (!_setup(s, max_cmd_len, hooks))
+        if (!_setup(s, max_cmd_len))
                 return false;
 
         state.init_cb = cb;
@@ -338,7 +339,7 @@ bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
 /**
  * @return The initialization state of the device.
  */
-enum dev_init_state esp1866_get_dev_init_state()
+enum dev_init_state esp8266_get_dev_init_state()
 {
         return state.init_state;
 }
@@ -865,8 +866,6 @@ bool esp8266_server_cmd(const enum esp8266_server_action action, int port,
  */
 static bool ipd_urc_cb(struct at_rsp *rsp, void *up)
 {
-        void (*cb)(int, size_t, const char*) = up;
-
         static const char *cmd_name = "ipd_urc_cb";
         if (AT_RSP_STATUS_NONE != rsp->status) {
                 cmd_failure(cmd_name, "Unexpected response status");
@@ -886,17 +885,21 @@ static bool ipd_urc_cb(struct at_rsp *rsp, void *up)
         const size_t len = atoi(toks[2]);
         const char *msg = toks[3];
 
-        cb(chan_id, len, msg);
+        if (state.hooks.data_received_cb)
+                state.hooks.data_received_cb(chan_id, len, msg);
+
         return false;
 }
 
-bool esp8266_register_ipd_cb(void (*cb)(int, size_t, const char*))
+bool esp8266_register_callbacks(const struct esp8266_event_hooks* hooks)
 {
+        memcpy(&state.hooks, hooks, sizeof(struct esp8266_event_hooks));
+
         /* Control flags for special handling of response messages */
         const enum at_urc_flags flags =
                 AT_URC_FLAGS_NO_RSP_STATUS |
                 AT_URC_FLAGS_NO_RSTRIP;
 
         return NULL != at_register_urc(state.ati, "+IPD,", flags,
-                                       ipd_urc_cb, cb);
+                                       ipd_urc_cb, NULL);
 }
