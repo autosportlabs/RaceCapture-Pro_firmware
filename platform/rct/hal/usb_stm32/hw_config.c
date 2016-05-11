@@ -200,6 +200,7 @@ void USB_Interrupts_Config(void)
   NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 
 #if defined(STM32L1XX_MD) || defined(STM32L1XX_HD)|| defined(STM32L1XX_MD_PLUS)
+#error "Why are we here?"
   NVIC_InitStructure.NVIC_IRQChannel = USB_LP_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
@@ -213,6 +214,7 @@ void USB_Interrupts_Config(void)
   NVIC_Init(&NVIC_InitStructure);
 
 #elif defined(STM32F37X)
+#error "Why are we here?"
   /* Enable the USB interrupt */
   NVIC_InitStructure.NVIC_IRQChannel = USB_LP_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
@@ -235,7 +237,7 @@ void USB_Interrupts_Config(void)
 
     /* Enable the USB Wake-up interrupt */
   NVIC_InitStructure.NVIC_IRQChannel = USBWakeUp_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = USB_IRQ_PRIORITY;
   NVIC_Init(&NVIC_InitStructure);
 #endif /* STM32L1XX_XD */
 
