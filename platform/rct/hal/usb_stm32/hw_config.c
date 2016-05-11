@@ -119,13 +119,6 @@ void Set_System(void)
   GPIO_PinAFConfig(GPIOA, GPIO_PinSource11, GPIO_AF_14);
   GPIO_PinAFConfig(GPIOA, GPIO_PinSource12, GPIO_AF_14);
 
-  /* USB_DISCONNECT used as USB pull-up */
-  GPIO_InitStructure.GPIO_Pin = USB_DISCONNECT_PIN;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_Init(USB_DISCONNECT, &GPIO_InitStructure);
 #endif /* STM32F37X && STM32F30X */
 
   /* Configure the EXTI line 18 connected internally to the USB IP */

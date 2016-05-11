@@ -250,7 +250,7 @@ bool wifi_init_task(const int wifi_task_priority,
                     const int wifi_drv_priority)
 {
         /* Get our serial port setup */
-        struct Serial *s = serial_device_get(SERIAL_AUX);
+        struct Serial *s = serial_device_get(SERIAL_WIFI);
         if (!s)
                 return false;
 
