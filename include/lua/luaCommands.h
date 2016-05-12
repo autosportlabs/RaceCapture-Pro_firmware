@@ -28,7 +28,7 @@
 
 CPP_GUARD_BEGIN
 
-#if defined(LUA_SUPPORT)
+#if LUA_SUPPORT
 #define LUA_COMMANDS                                                    \
         SYSTEM_COMMAND("lua", "Enter the lua script interpreter.", "",  \
                        ExecLuaInterpreter)                              \

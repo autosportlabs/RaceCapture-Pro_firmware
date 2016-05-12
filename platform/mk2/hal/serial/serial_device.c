@@ -34,7 +34,7 @@ struct Serial* serial_device_get(const serial_id_t port)
         struct Serial *s = NULL;
         switch(port) {
         case SERIAL_USB:
-#if defined(USB_SERIAL_SUPPORT)
+#if USB_SERIAL_SUPPORT
                 s =  USB_CDC_get_serial();
 #endif
                 break;
