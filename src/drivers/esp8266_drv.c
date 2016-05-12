@@ -1050,7 +1050,12 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
         return ch->serial;
 }
 
-const struct esp8266_client_info* esp8266_drv_get_client_info()
+const struct esp8266_ipv4_info* get_client_ipv4_info()
 {
-        return &esp8266_state.client.info;
+        return &esp8266_state.client.ipv4;
+}
+
+const struct esp8266_ipv4_info* get_ap_ipv4_info()
+{
+        return &esp8266_state.ap.ipv4;
 }

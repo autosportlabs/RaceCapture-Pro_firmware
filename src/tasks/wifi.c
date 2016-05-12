@@ -193,13 +193,14 @@ static void do_beacon()
         /* Update the time the beacon last went out */
         state.beacon.time_last = getUptime();
 
-        const struct esp8266_client_info* ci = esp8266_drv_get_client_info();
-        if (!ci->has_ap) {
-                /* Then don't bother since we don't have a connection */
+        const struct esp8266_ipv4_info* client_ipv4 = get_client_ipv4_info();
+        const struct esp8266_ipv4_info* softap_ipv4 = get_ap_ipv4_info();
+        if (!*client_ipv4->address && !*softap_ipv4->address) {
+                /* Then don't bother since we don't have any IP addresses */
                 return;
         }
 
-        /* If here then we have at least one connection.  Send the beacon */
+        /* If here then we have at least one IP.  Send the beacon */
         if (NULL == state.beacon.serial) {
                 state.beacon.serial =
                         esp8266_drv_connect(PROTOCOL_UDP, "255.255.255.255",
@@ -213,6 +214,8 @@ static void do_beacon()
         }
 
         const char* ips[] = {
+                client_ipv4->address,
+                softap_ipv4->address,
                 NULL,
         };
         send_beacon(serial, ips);

@@ -43,7 +43,9 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
                                    const char* dst_ip,
                                    const unsigned int dst_port);
 
-const struct esp8266_client_info* esp8266_drv_get_client_info();
+const struct esp8266_ipv4_info* get_client_ipv4_info();
+
+const struct esp8266_ipv4_info* get_ap_ipv4_info();
 
 CPP_GUARD_END
 
