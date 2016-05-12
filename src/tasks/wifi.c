@@ -367,5 +367,5 @@ enum esp8266_encryption wifi_api_get_encryption_enum_val(const char* str)
         if (STR_EQ(str, "wpa/wpa2"))
                 return ESP8266_ENCRYPTION_WPA_WPA2_PSK;
 
-        return -1;
+        return ESP8266_ENCRYPTION_INVALID;
 }

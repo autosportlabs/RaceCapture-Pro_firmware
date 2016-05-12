@@ -100,6 +100,7 @@ bool esp8266_get_client_ip(void (*cb)
                            (bool, const char*));
 
 enum esp8266_encryption {
+        ESP8266_ENCRYPTION_INVALID = -1,
         ESP8266_ENCRYPTION_NONE = 0,
         ESP8266_ENCRYPTION_WEP = 1, /* Support deprecated */
         ESP8266_ENCRYPTION_WPA_PSK = 2,
