@@ -684,6 +684,7 @@ static void check_wifi_client()
                 }
 
                 /* Then config and reality align.  Done */
+                pr_info(LOG_PFX "Client is inactive.\r\n");
                 return;
         }
 }
