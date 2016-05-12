@@ -270,7 +270,7 @@ CFLAGS += -Os
 endif
 
 ifdef DEBUG
-CFLAGS += -D_DEBUG
+CFLAGS += -D_DEBUG -DUSE_FULL_ASSERT
 endif
 
 CFLAGS += $(addprefix -I,$(inc-y))

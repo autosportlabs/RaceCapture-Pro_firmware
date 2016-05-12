@@ -60,3 +60,9 @@ const char *cpu_device_get_serialnumber(void)
 {
     return cpu_id;
 }
+
+void assert_failed(uint8_t* file, uint32_t line)
+{
+	while(1);
+}
+
