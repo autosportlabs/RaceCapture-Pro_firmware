@@ -33,17 +33,23 @@ CPP_GUARD_BEGIN
 #define MS_PER_TICK 5
 
 //USB support
-#define USB_SERIAL_SUPPORT
-#define LUA_SUPPORT
-#define VIRTUAL_CHANNEL_SUPPORT
-#define SDCARD_SUPPORT
-#define CELLULAR_SUPPORT
+#define USB_SERIAL_SUPPORT	1
+#define LUA_SUPPORT		1
+#define VIRTUAL_CHANNEL_SUPPORT	1
+#define SDCARD_SUPPORT		1
+#define CELLULAR_SUPPORT	1
+#define BLUETOOTH_SUPPORT	1
+#define WIFI_SUPPORT		1
 
 //configuration
 #define MAX_TRACKS				240
 #define MAX_SECTORS				20
 #define MAX_VIRTUAL_CHANNELS	10
-
+/*
+ * What is the maximum number of samples available per predictive time
+ * buffer.  More samples == better resolution. Each slot is 12 bytes.
+ */
+#define PREDICTIVE_TIME_MAX_SAMPLES	96
 #define LOGGER_MESSAGE_BUFFER_SIZE	5
 
 /* LUA Configuration */

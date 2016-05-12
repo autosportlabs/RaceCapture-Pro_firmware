@@ -1439,17 +1439,3 @@ void LoggerApiTest::testSetAndGetWifiApCfg()
         CPPUNIT_ASSERT_EQUAL(1, (int)(Number)wcc["channel"]);
         CPPUNIT_ASSERT_EQUAL(string("none"), (string)(String)wcc["encryption"]);
 }
-
-void LoggerApiTest::testGetDefaultWifiApCfg()
-{
-        const char *response = processApiGeneric("get_wifi_ap_cfg.json");
-        Object json;
-        stringToJson(response, json);
-
-        Object wcc = json["wifi_ap_cfg"];
-        CPPUNIT_ASSERT_EQUAL(false, (bool)(Boolean)wcc["active"]);
-        CPPUNIT_ASSERT_EQUAL(string("RaceCapture"), (string)(String)wcc["ssid"]);
-        CPPUNIT_ASSERT_EQUAL(string("racecapture"), (string)(String)wcc["passwd"]);
-        CPPUNIT_ASSERT_EQUAL(11, (int)(Number)wcc["channel"]);
-        CPPUNIT_ASSERT_EQUAL(string("wpa2"), (string)(String)wcc["encryption"]);
-}

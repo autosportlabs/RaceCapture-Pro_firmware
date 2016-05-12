@@ -23,6 +23,7 @@
 #include "capabilities.h"
 #include "constants.h"
 #include "cpu.h"
+#include "cpu_device.h"
 #include "dateTime.h"
 #include "esp8266.h"
 #include "esp8266_drv.h"
@@ -38,6 +39,7 @@
 #include "taskUtil.h"
 #include "wifi.h"
 #include <stdbool.h>
+#include <stdio.h>
 
 /* Time between beacon messages */
 #define BEACON_PERIOD_MS	1000
@@ -250,7 +252,7 @@ bool wifi_init_task(const int wifi_task_priority,
                     const int wifi_drv_priority)
 {
         /* Get our serial port setup */
-        struct Serial *s = serial_device_get(SERIAL_AUX);
+        struct Serial *s = serial_device_get(SERIAL_WIFI);
         if (!s)
                 return false;
 
@@ -299,11 +301,28 @@ void wifi_reset_config(struct wifi_cfg *cfg)
         /* For now simply zero this out */
         memset(cfg, 0, sizeof(struct wifi_cfg));
 
-        /* Set some sane values for the AP configuration */
-        strncpy(cfg->ap.ssid, "RaceCapture", ARRAY_LEN(cfg->ap.ssid));
-        strncpy(cfg->ap.password, "racecapture", ARRAY_LEN(cfg->ap.password));
+        /*
+         * Set some sane values for the AP configuration.  We turn on our
+         * AP by default because it gives us a way to communicate with the
+         * RCT device.  We make the SSID as unique as possible using our
+         * serial number.  Assumption is that user will adjust it when they
+         * configure it.
+         */
+        const char* cpu_serial = cpu_device_get_serialnumber();
+        const char* prefix = "RaceCapture-";
+        const int cpu_serial_len = strlen(cpu_serial);
+        int offset = cpu_serial_len - ARRAY_LEN(cfg->ap.ssid) +
+                strlen(prefix) + 1;
+        if (offset < 0)
+                offset = 0;
+        if (offset > cpu_serial_len)
+                offset = cpu_serial_len;
+        snprintf(cfg->ap.ssid, ARRAY_LEN(cfg->ap.ssid), "%s%s",
+                 prefix, cpu_serial + offset);
+
+        cfg->ap.active = true;
         cfg->ap.channel = 11;
-        cfg->ap.encryption = ESP8266_ENCRYPTION_WPA2_PSK;
+        cfg->ap.encryption = ESP8266_ENCRYPTION_NONE;
 
         /* Inform the Wifi device that settings may have changed */
         wifi_update_client_config(&cfg->client);

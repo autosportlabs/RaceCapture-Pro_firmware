@@ -280,8 +280,7 @@ static struct Serial* lua_get_serial(lua_State *L, const serial_id_t pid)
 /**
  * Initializes the specified serial port
  * Lua Params:
- * port - the serial port to initialize (SERIAL_USB, SERIAL_GPS,
- * SERIAL_TELEMETRY, SERIAL_WIRELESS, SERIAL_AUX) (defaults to SERIAL_AUX)
+ * port - the serial port to initialize (defaults to SERIAL_AUX)
  * baud - Baud Rate (defaults to 115200)
  * bits - Number of bit in the message (8 or 7) (defaults to 8)
  * parity - (1 = Even Parity, 2 = Odd Parity, 0 = No Parity)
@@ -327,7 +326,6 @@ static int lua_init_serial(lua_State *L)
  * Read a character from the specified serial port
  * Lua Params:
  * port - the serial port to initialize
- *        (SERIAL_USB, SERIAL_GPS, SERIAL_TELEMETRY, SERIAL_WIRELESS, SERIAL_AUX)
  * timeout - the read timeout, in ms.
  *
  * Lua Returns:
@@ -365,7 +363,6 @@ static int lua_serial_read_char(lua_State *L)
  * Read a single newline terminated line from the specified serial port
  * Lua Params:
  * port - the serial port to initialize
- *        (SERIAL_USB, SERIAL_GPS, SERIAL_TELEMETRY, SERIAL_WIRELESS, SERIAL_AUX)
  * timeout - the read timeout, in ms.
  *
  * Lua Returns:
@@ -408,7 +405,6 @@ static int lua_serial_read_line(lua_State *L)
  *
  * Lua Params:
  * port - the serial port to write
- *        (SERIAL_USB, SERIAL_GPS, SERIAL_TELEMETRY, SERIAL_WIRELESS, SERIAL_AUX)
  * line - the string to write. A newline will automatically be added at the end.
  *
  * Lua Returns:
@@ -436,7 +432,6 @@ static int lua_serial_write_line(lua_State *L)
  *
  * Lua Params:
  * port - the serial port to write
- *        (SERIAL_USB, SERIAL_GPS, SERIAL_TELEMETRY, SERIAL_WIRELESS, SERIAL_AUX)
  * char - the character to write.
  *
  * Lua Returns:

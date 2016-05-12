@@ -84,11 +84,11 @@ void setupTask(void *delTask)
         startConnectivityTask(RCP_OUTPUT_PRIORITY);
         startLoggerTaskEx(RCP_LOGGING_PRIORITY);
 
-#if defined(WIFI_SUPPORT)
+#if WIFI_SUPPORT
         wifi_init_task(RCP_OUTPUT_PRIORITY, RCP_INPUT_PRIORITY);
 #endif
 
-#if defined(USB_SERIAL_SUPPORT)
+#if USB_SERIAL_SUPPORT
         startUSBCommTask(RCP_INPUT_PRIORITY);
 #endif
 
@@ -96,11 +96,11 @@ void setupTask(void *delTask)
         startGPIOTasks(RCP_INPUT_PRIORITY);
 #endif
 
-#if defined(SDCARD_SUPPORT)
+#if SDCARD_SUPPORT
         startFileWriterTask(RCP_OUTPUT_PRIORITY);
 #endif
 
-#if defined(LUA_SUPPORT)
+#if LUA_SUPPORT
         lua_task_init(RCP_LUA_PRIORITY);
 #endif
 

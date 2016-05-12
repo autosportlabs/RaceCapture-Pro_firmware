@@ -51,7 +51,7 @@
 #define SERIAL_RX_BUFF_SIZE	256
 #define SERIAL_STOP_BITS	1
 #define SERIAL_TX_BUFF_SIZE	256
-#define TASK_STACK_SIZE		512
+#define TASK_STACK_SIZE		256
 #define TASK_THREAD_NAME	"ESP8266 Driver"
 
 struct device {

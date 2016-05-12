@@ -43,7 +43,7 @@
 #define configCPU_CLOCK_HZ		( SystemCoreClock )
 #define configTICK_RATE_HZ		1000
 #define configMAX_PRIORITIES		((unsigned portBASE_TYPE) 5)
-#define configMINIMAL_STACK_SIZE	((unsigned short) 170)
+#define configMINIMAL_STACK_SIZE	((unsigned short) 128)
 #define configMAX_TASK_NAME_LEN		( 16 )
 #define configUSE_TRACE_FACILITY	1
 #define configUSE_16_BIT_TICKS		0
