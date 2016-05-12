@@ -85,12 +85,12 @@ static bool sparse_urc_cb(char* msg)
 {
         msg = strip_inline(msg);
 
-        /* Handle and ignore NO-OP URCs */
-        if (STR_EQ(msg, "WIFI CONNECTED") ||
-            STR_EQ(msg, "WIFI GOT IP") ||
-            STR_EQ(msg, "WIFI DISCONNECT")) {
+        if (STR_EQ(msg, "WIFI CONNECTED")  ||
+            STR_EQ(msg, "WIFI DISCONNECT") ||
+            STR_EQ(msg, "WIFI GOT IP")) {
                 if (state.hooks.client_state_changed_cb)
                         state.hooks.client_state_changed_cb(msg);
+
                 return true;
         }
 
