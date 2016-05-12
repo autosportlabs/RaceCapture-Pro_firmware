@@ -62,12 +62,14 @@ struct device {
 struct client {
         const struct wifi_client_cfg *config;
         struct esp8266_client_info info;
+        struct esp8266_ipv4_info ipv4;
         tiny_millis_t next_join_attempt;
 };
 
 struct ap {
         const struct wifi_ap_cfg *config;
         struct esp8266_ap_info info;
+        struct esp8266_ipv4_info ipv4;
         tiny_millis_t info_timestamp;
         tiny_millis_t next_set_attempt;
 };
@@ -366,6 +368,9 @@ static void client_state_changed_cb(const char* msg)
 
         memset(&esp8266_state.client.info, 0,
                sizeof(esp8266_state.client.info));
+        memset(&esp8266_state.client.ipv4, 0,
+               sizeof(esp8266_state.client.ipv4));
+
         pr_info_str_msg(LOG_PFX "Client state changed: ", msg);
 }
 
@@ -512,7 +517,6 @@ static void get_client_ap_cb(bool status, const struct esp8266_client_info *ci)
         cmd_set_check(CHECK_WIFI_CLIENT);
 
         memcpy(&esp8266_state.client.info, ci, sizeof(struct esp8266_client_info));
-        *esp8266_state.client.info.ip = 0;
 }
 
 /**
@@ -526,34 +530,38 @@ static void get_client_ap()
 }
 
 /**
- * Callback that gets invoked when the get_client_ip command completes.
+ * Callback that gets invoked when the get_ip_info call completes.
  */
-static void get_client_ip_cb(bool status, const char* ip)
+static void get_ip_info_cb(const bool status,
+                           const struct esp8266_ipv4_info* client,
+                           const struct esp8266_ipv4_info* station)
 {
         cmd_completed();
         cmd_set_check(CHECK_WIFI_CLIENT);
+        cmd_set_check(CHECK_WIFI_AP);
 
-        /* STIEG: This is a HACK.  IP Info should be its own struct */
         if (!status) {
-                /* We don't know the IP */
-                *esp8266_state.client.info.ip = 0;
-        } else {
-                /* On the network we want to be on */
-                pr_info_str_msg(LOG_PFX "Got IP: ", ip);
-                strncpy(esp8266_state.client.info.ip, ip,
-                        ARRAY_LEN(esp8266_state.client.info.ip));
+                pr_info(LOG_PFX "Failed to obtain IP info\r\n");
         }
+
+        /*
+         * Update IP information for both station and client.
+         * This is sane in the failure case since the driver will
+         * return zeroed out objects.
+         */
+        const size_t size = sizeof(struct esp8266_ipv4_info);
+        memcpy(&esp8266_state.client.ipv4, client, size);
+        memcpy(&esp8266_state.ap.ipv4, station, size);
 }
 
 /**
- * Command that will retrieve the client IP of the WiFi device and stuff it
- * into our client_info structure.  This is a bit of a hack until we move
- * the IP info into its own struct.
+ * Command that will get the ip information about our system and
+ * update both our AP and Client structs with data.
  */
-static void get_client_ip()
+static void get_ip_info()
 {
-        pr_info(LOG_PFX "Retrieving Wifi Client IP\r\n");
-        esp8266_get_client_ip(get_client_ip_cb);
+        pr_info(LOG_PFX "Retrieving Wifi IP info\r\n");
+        esp8266_get_ip_info(get_ip_info_cb);
         cmd_started();
 }
 
@@ -653,13 +661,16 @@ static void check_wifi_client()
                 }
 
                 /* If here, then on correct AP.  Do we have IP info? */
-                if (!*ci->ip) {
+                if (!*esp8266_state.client.ipv4.address) {
                         /* Then we need to get IP Information */
-                        get_client_ip();
+                        get_ip_info();
                         return;
                 }
 
                 /* If here, we are done */
+                pr_info(LOG_PFX "Client configured correctly\r\n");
+                pr_info_str_msg(LOG_PFX "Client IP: ",
+                        esp8266_state.client.ipv4.address);
                 return;
         } else {
                 /* Client should be inactive.  Disable as needed */
@@ -834,8 +845,17 @@ static void check_wifi_ap()
                 return;
         }
 
+        /* If here, then our AP setup is correct.  Do we have IP info? */
+        if (!*esp8266_state.ap.ipv4.address) {
+                /* Then we need to get IP Information */
+                get_ip_info();
+                return;
+        }
+
         /* If here, we are setup properly and are done */
         pr_info(LOG_PFX "AP configured properly\r\n");
+        pr_info_str_msg(LOG_PFX "Station IP: ",
+                        esp8266_state.ap.ipv4.address);
         return;
 }
 

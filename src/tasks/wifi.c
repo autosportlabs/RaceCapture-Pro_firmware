@@ -213,7 +213,6 @@ static void do_beacon()
         }
 
         const char* ips[] = {
-                ci->ip,
                 NULL,
         };
         send_beacon(serial, ips);

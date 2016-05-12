@@ -490,7 +490,6 @@ void esp8266_log_client_info(const struct esp8266_client_info *info)
 
         pr_info_str_msg("\t  SSID: ", info->ssid);
         pr_info_str_msg("\tAP MAC: ", info->mac);
-        pr_info_str_msg("\t    IP: ", info->ip);
 }
 
 /**
@@ -577,69 +576,69 @@ bool esp8266_get_client_ap(void (*cb)(bool, const struct esp8266_client_info*))
 }
 
 /**
- * Given an AT response for +CIFSR, this method decodes it and extracts
- * the IP address.
- */
-static const char* parse_client_ip(struct at_rsp *rsp)
-{
-        /*
-         * +CIFSR:STAIP,"192.168.1.94"
-         * +CIFSR:STAMAC,"18:fe:34:f4:3a:95"
-         */
-        char *toks[4];
-        char *ip_at_str = NULL;
-        for(size_t i = 0; i < rsp->msg_count && NULL == ip_at_str; ++i) {
-                char *at_msg_ln = rsp->msgs[i];
-                const size_t tok_count =
-                        at_parse_rsp_line(at_msg_ln, toks, ARRAY_LEN(toks));
-
-                if (tok_count == 3 && STR_EQ("STAIP", toks[1]))
-                        ip_at_str = toks[2];
-        }
-
-        return ip_at_str ? at_parse_rsp_str(ip_at_str) : NULL;
-}
-
-/**
  * Callback that is invoked when the get_client_ip command completes.
  */
-static bool get_client_ip_cb(struct at_rsp *rsp, void *up)
+static bool get_ip_info_cb(struct at_rsp *rsp, void *up)
 {
-        static const char *cmd_name = "get_client_ip_cb";
-        void (*cb)(bool, const char*) = up;
+        static const char *cmd_name = "get_ip_info_cb";
+        get_ip_info_cb_t* cb = up;
         bool status = at_ok(rsp);
-        const char* ip_str = NULL;
+
+        struct esp8266_ipv4_info client_info;
+        struct esp8266_ipv4_info station_info;
+        memset(&client_info, 0, sizeof(struct esp8266_ipv4_info));
+        memset(&station_info, 0, sizeof(struct esp8266_ipv4_info));
 
         if (!status) {
                 cmd_failure(cmd_name, NULL);
                 goto do_cb;
         }
 
-        ip_str = parse_client_ip(rsp);
-        if (NULL == ip_str) {
-                status = false;
-                cmd_failure(cmd_name, "Failed to parse IP");
-                goto do_cb;
+        /*
+         * +CIFSR:APIP,"192.168.4.1"
+         * +CIFSR:APMAC,"1a:fe:34:f4:3a:95"
+         * +CIFSR:STAIP,"192.168.1.94"
+         * +CIFSR:STAMAC,"18:fe:34:f4:3a:95"
+         */
+        char *toks[4];
+        for(size_t i = 0; i < rsp->msg_count; ++i) {
+                const size_t tok_count = at_parse_rsp_line(rsp->msgs[i], toks,
+                                                           ARRAY_LEN(toks));
+                if (tok_count != 3)
+                        continue;
+
+                struct esp8266_ipv4_info* info = NULL;
+                if (STR_EQ("STAIP", toks[1]))
+                        info = &client_info;
+
+                if (STR_EQ("APIP", toks[1]))
+                        info = &station_info;
+
+                if (!info)
+                        continue;
+
+                const char* ip_str = at_parse_rsp_str(toks[2]);
+                strncpy(info->address, ip_str, ARRAY_LEN(info->address));
         }
 
 do_cb:
         if (cb)
-                cb(status, ip_str);
+                cb(status, &client_info, &station_info);
 
         return false;
 }
 
 /**
- * Use this to figure out what our IP is as a wireless client.
+ * Use this to figure out IP information of our
  * @param cb The callback to be invoked when the method completes.
  */
-bool esp8266_get_client_ip(void (*cb)(bool, const char*))
+bool esp8266_get_ip_info(get_ip_info_cb_t callback)
 {
-        if (!check_initialized("get_ap_mode"))
+        if (!check_initialized("get_ip_info"))
                 return false;
 
         return NULL != at_put_cmd(state.ati, "AT+CIFSR", _TIMEOUT_SHORT_MS,
-                                  get_client_ip_cb, cb);
+                                  get_ip_info_cb, callback);
 }
 
 /**

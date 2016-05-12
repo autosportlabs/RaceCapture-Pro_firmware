@@ -110,7 +110,6 @@ struct esp8266_client_info {
         bool has_ap;
         char ssid[ESP8266_SSID_LEN_MAX];
         char mac[ESP8266_MAC_LEN_MAX];
-        char ip[ESP8266_IPV4_LEN_MAX];
 };
 
 void esp8266_log_client_info(const struct esp8266_client_info *info);
@@ -120,8 +119,15 @@ bool esp8266_join_ap(const char* ssid, const char* pass, void (*cb)(bool));
 bool esp8266_get_client_ap(void (*cb)
                            (bool, const struct esp8266_client_info*));
 
-bool esp8266_get_client_ip(void (*cb)
-                           (bool, const char*));
+struct esp8266_ipv4_info {
+        char address[ESP8266_IPV4_LEN_MAX];
+};
+
+typedef void get_ip_info_cb_t(const bool status,
+                              const struct esp8266_ipv4_info* client,
+                              const struct esp8266_ipv4_info* station);
+
+bool esp8266_get_ip_info(get_ip_info_cb_t callback);
 
 enum esp8266_encryption {
         ESP8266_ENCRYPTION_INVALID = -1,
