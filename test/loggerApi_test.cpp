@@ -1404,7 +1404,7 @@ void LoggerApiTest::testSetWifiApCfg()
 	CPPUNIT_ASSERT_EQUAL(true, cfg->active);
 	CPPUNIT_ASSERT_EQUAL(string("RaceIt"), string(cfg->ssid));
         CPPUNIT_ASSERT_EQUAL(string("dontcrashit"), string(cfg->password));
-        CPPUNIT_ASSERT_EQUAL((size_t) 1, cfg->channel);
+        CPPUNIT_ASSERT_EQUAL((uint8_t) 1, cfg->channel);
         CPPUNIT_ASSERT_EQUAL(ESP8266_ENCRYPTION_NONE, cfg->encryption);
 
 	assertGenericResponse(response, "set_wifi_ap_cfg", API_SUCCESS);

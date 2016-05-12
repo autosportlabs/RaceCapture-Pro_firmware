@@ -339,6 +339,7 @@ bool wifi_validate_ap_config(const struct wifi_ap_cfg *wac)
         return NULL != wac &&
                 wac->channel > 0 &&
                 wac->channel <= WIFI_MAX_CHANNEL &&
+                wac->encryption >= 0 &&
                 wac->encryption <= __ESP8266_ENCRYPTION_MAX;
 }
 
