@@ -1393,5 +1393,63 @@ void LoggerApiTest::testGetWifiClientCfg() {
         CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)wcc2["active"]);
         CPPUNIT_ASSERT_EQUAL(string("foobar"), (string)(String)wcc2["ssid"]);
         CPPUNIT_ASSERT_EQUAL(string("bazbiz"), (string)(String)wcc2["passwd"]);
+}
 
+void LoggerApiTest::testSetWifiApCfg()
+{
+        char *response = processApiGeneric("set_wifi_ap_cfg.json");
+
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        struct wifi_ap_cfg *cfg = &lc->ConnectivityConfigs.wifi.ap;
+	CPPUNIT_ASSERT_EQUAL(true, cfg->active);
+	CPPUNIT_ASSERT_EQUAL(string("RaceIt"), string(cfg->ssid));
+        CPPUNIT_ASSERT_EQUAL(string("dontcrashit"), string(cfg->password));
+        CPPUNIT_ASSERT_EQUAL((size_t) 1, cfg->channel);
+        CPPUNIT_ASSERT_EQUAL(ESP8266_ENCRYPTION_NONE, cfg->encryption);
+
+	assertGenericResponse(response, "set_wifi_ap_cfg", API_SUCCESS);
+}
+
+void LoggerApiTest::testSetWifiApCfgBadChannel()
+{
+        char *response = processApiGeneric("set_wifi_ap_cfg_bad_channel.json");
+	assertGenericResponse(response, "set_wifi_ap_cfg", API_ERROR_PARAMETER);
+}
+
+void LoggerApiTest::testSetWifiApCfgBadEncryption()
+{
+        char *response = processApiGeneric("set_wifi_ap_cfg_bad_encryption.json");
+	assertGenericResponse(response, "set_wifi_ap_cfg", API_ERROR_PARAMETER);
+}
+
+void LoggerApiTest::testSetAndGetWifiApCfg()
+{
+        /* Run the above to setup the values */
+        testSetWifiApCfg();
+
+        setupMockSerial();
+        const char *response = processApiGeneric("get_wifi_ap_cfg.json");
+        Object json;
+        stringToJson(response, json);
+
+        Object wcc = json["wifi_ap_cfg"];
+        CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)wcc["active"]);
+        CPPUNIT_ASSERT_EQUAL(string("RaceIt"), (string)(String)wcc["ssid"]);
+        CPPUNIT_ASSERT_EQUAL(string("dontcrashit"), (string)(String)wcc["passwd"]);
+        CPPUNIT_ASSERT_EQUAL(1, (int)(Number)wcc["channel"]);
+        CPPUNIT_ASSERT_EQUAL(string("none"), (string)(String)wcc["encryption"]);
+}
+
+void LoggerApiTest::testGetDefaultWifiApCfg()
+{
+        const char *response = processApiGeneric("get_wifi_ap_cfg.json");
+        Object json;
+        stringToJson(response, json);
+
+        Object wcc = json["wifi_ap_cfg"];
+        CPPUNIT_ASSERT_EQUAL(false, (bool)(Boolean)wcc["active"]);
+        CPPUNIT_ASSERT_EQUAL(string("RaceCapture"), (string)(String)wcc["ssid"]);
+        CPPUNIT_ASSERT_EQUAL(string("racecapture"), (string)(String)wcc["passwd"]);
+        CPPUNIT_ASSERT_EQUAL(11, (int)(Number)wcc["channel"]);
+        CPPUNIT_ASSERT_EQUAL(string("wpa2"), (string)(String)wcc["encryption"]);
 }

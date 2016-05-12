@@ -40,6 +40,7 @@
 #define AT_TASK_TIMEOUT_MS	3
 #define CHECK_DONE_SLEEP_MS	3600000
 #define CLIENT_BACKOFF_MS	30000
+#define AP_BACKOFF_MS		60000
 #define INIT_FAIL_SLEEP_MS	10000
 #define LOG_PFX			"[ESP8266 Driver] "
 #define MAX_CHANNELS		5
@@ -62,6 +63,13 @@ struct client {
         const struct wifi_client_cfg *config;
         struct esp8266_client_info info;
         tiny_millis_t next_join_attempt;
+};
+
+struct ap {
+        const struct wifi_ap_cfg *config;
+        struct esp8266_ap_info info;
+        tiny_millis_t info_timestamp;
+        tiny_millis_t next_set_attempt;
 };
 
 struct server {
@@ -98,6 +106,7 @@ struct comm {
 enum check {
         CHECK_INIT,
         CHECK_WIFI_CLIENT,
+        CHECK_WIFI_AP,
         CHECK_SERVER,
         CHECK_DATA,
         __NUM_CHECKS, /* Always the last */
@@ -111,6 +120,7 @@ struct cmd {
 static struct {
         struct device device;
         struct client client;
+        struct ap ap;
         struct server server;
         struct comm comm;
         struct cmd cmd;
@@ -428,6 +438,7 @@ static void init_wifi_cb(enum dev_init_state dev_state)
         /* Now that init state has changed, check them */
         cmd_set_check(CHECK_INIT);
         cmd_set_check(CHECK_WIFI_CLIENT);
+        cmd_set_check(CHECK_WIFI_AP);
         cmd_set_check(CHECK_SERVER);
         cmd_set_check(CHECK_DATA);
 }
@@ -672,6 +683,168 @@ static void check_wifi_client()
 }
 
 
+/* *** Methods that handle the Wifi AP and its actions *** */
+
+/**
+ * Callback that gets invoked when the get_ap_info command completes.
+ */
+static void get_ap_info_cb(const bool status,
+                           const struct esp8266_ap_info* info)
+{
+        cmd_completed();
+        cmd_set_check(CHECK_WIFI_AP);
+        esp8266_state.ap.info_timestamp = getUptime();
+
+        const size_t ap_info_size = sizeof(esp8266_state.ap.info);
+        if (!status) {
+                pr_warning(LOG_PFX "Failed to read AP info\r\n");
+                memset(&esp8266_state.ap.info, 0, ap_info_size);
+                return;
+        }
+
+        memcpy(&esp8266_state.ap.info, info, ap_info_size);
+
+        /* Print out our AP Info here */
+        pr_info(LOG_PFX "AP info:\r\n");
+        pr_info_str_msg("\t SSID      : ", info->ssid);
+        pr_info_str_msg("\t Password  : ", info->password);
+        pr_info_int_msg("\t Channel   : ", info->channel);
+        pr_info_int_msg("\t Encryption: ", info->encryption);
+}
+
+/**
+ * Command that will retrieve the Soft AP configuration settings
+ * from the WiFi device.
+ */
+static bool get_ap_info()
+{
+        pr_info(LOG_PFX "Retrieving Wifi AP Info\r\n");
+
+        const bool queued = esp8266_get_ap_info(get_ap_info_cb);
+        if (queued)
+                cmd_started();
+
+        return queued;
+}
+
+/**
+ * Callback that is invoked when the set_ap command complets.
+ */
+static void set_ap_cb(const bool status)
+{
+        cmd_completed();
+        cmd_set_check(CHECK_WIFI_AP);
+
+        /* Update our backoff timer to prevent busy loops */
+        esp8266_state.ap.next_set_attempt =
+                date_time_uptime_now_plus(AP_BACKOFF_MS);
+
+        /* Clear out the info since it has changed */
+        const size_t ap_info_size = sizeof(esp8266_state.ap.info);
+        memset(&esp8266_state.ap.info, 0, ap_info_size);
+        esp8266_state.ap.info_timestamp = 0;
+
+        if (!status)
+                pr_warning(LOG_PFX "Failed to read AP info\r\n");
+}
+
+/**
+ * Command that will set the configuration of the soft AP of the
+ * esp8266 device.
+ */
+static bool set_ap(struct esp8266_ap_info* ap_info)
+{
+        pr_info(LOG_PFX "Updating Wifi AP Config:");
+        const bool queued = esp8266_set_ap_info(ap_info, set_ap_cb);
+        if (queued)
+                cmd_started();
+
+        return queued;
+}
+
+/**
+ * Helper method to check_wifi_ap.  This method will attempt to adjust the
+ * wifi ap settings if it deems that enough time has passed.  Otherwise it
+ * will cause a back-off to occur.  This is necessary so that a bad config
+ * doesn't cause a busy wait in the system.
+ */
+static void ap_check_try_set()
+{
+        if (!date_time_is_past(esp8266_state.ap.next_set_attempt)){
+                /* Then we need to backoff */
+                const tiny_millis_t sleep_len =
+                        esp8266_state.ap.next_set_attempt - getUptime();
+                cmd_sleep(CHECK_WIFI_AP, sleep_len);
+                return;
+        }
+
+        /* Setup our configuration structure to pass in */
+        const struct wifi_ap_cfg* cfg = esp8266_state.ap.config;
+        struct esp8266_ap_info ap_info;
+        strncpy(ap_info.ssid, cfg->ssid, ARRAY_LEN(ap_info.ssid));
+        strncpy(ap_info.password, cfg->password, ARRAY_LEN(ap_info.password));
+        ap_info.channel = cfg->channel;
+        ap_info.encryption = cfg->encryption;
+
+        if (!set_ap(&ap_info))
+                pr_warning(LOG_PFX "Failed to issue set_ap command\r\n");
+}
+
+/**
+ * This is the block of logic that manages our WiFi client state.
+ * Its responsible for keeping the client status as close to the
+ * configuration as is reasonably possible.
+ */
+static void check_wifi_ap()
+{
+        cmd_check_complete(CHECK_WIFI_AP);
+        pr_info(LOG_PFX "Checking WiFi AP\r\n");
+
+        /* First check that we are initialized */
+        if (!device_initialized()) {
+                cmd_sleep(CHECK_WIFI_AP, AP_BACKOFF_MS);
+                return;
+        }
+
+        /*
+         * First check if we have reasonably fresh AP info. Have to
+         * have it before we can make any decisions.
+         */
+        if (0 == esp8266_state.ap.info_timestamp) {
+                get_ap_info();
+                return;
+        }
+
+        /* If here, we have fresh AP info.  Use it to make decisions. */
+        const struct wifi_ap_cfg* cfg = esp8266_state.ap.config;
+        if (!cfg->active) {
+                /*
+                 * AP should be inactive. This should be controlled by a
+                 * different state machine because managing the esp8266
+                 * device mode effects both the wifi client and the soft
+                 * AP.  Hence this is a NO OP.
+                 */
+                pr_info(LOG_PFX "AP is inactive.\r\n");
+                return;
+        }
+
+        /* Config says AP should be active. Make it so. */
+        const struct esp8266_ap_info* info = &esp8266_state.ap.info;
+        if (!STR_EQ(cfg->ssid, info->ssid) ||
+            !STR_EQ(cfg->password, info->password) ||
+            cfg->channel != info->channel ||
+            cfg->encryption != info->encryption) {
+                /* Then we need to re-setup our AP */
+                ap_check_try_set();
+                return;
+        }
+
+        /* If here, we are setup properly and are done */
+        pr_info(LOG_PFX "AP configured properly\r\n");
+        return;
+}
+
+
 /* *** Methods that handle the Server and its actions *** */
 
 static void server_cmd_cb(bool status)
@@ -735,6 +908,9 @@ static void task_loop()
         case CHECK_WIFI_CLIENT:
                 check_wifi_client();
                 break;
+        case CHECK_WIFI_AP:
+                check_wifi_ap();
+                break;
         case CHECK_SERVER:
                 check_server();
                 break;
@@ -768,6 +944,22 @@ bool esp8266_drv_update_client_cfg(const struct wifi_client_cfg *cc)
         return true;
 }
 
+bool esp8266_drv_update_ap_cfg(const struct wifi_ap_cfg *wac)
+{
+        if (NULL == wac)
+                return false;
+
+        esp8266_state.ap.config = wac;
+
+        /* Zero this value out so we will forego any backoff attempts */
+        esp8266_state.ap.next_set_attempt = 0;
+
+        /* AP state changed. */
+        cmd_set_check(CHECK_WIFI_AP);
+
+        return true;
+}
+
 bool esp8266_drv_init(struct Serial *s, const int priority,
                       new_conn_func_t new_conn_cb)
 {
@@ -789,9 +981,13 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         const struct wifi_client_cfg *cfg =
                 &lc->ConnectivityConfigs.wifi.client;
         if (!esp8266_drv_update_client_cfg(cfg)) {
-                pr_error(LOG_PFX "Failed to set WiFi cfg\r\n");
+                pr_error(LOG_PFX "Failed to set WiFi client cfg\r\n");
                 return false;
         }
+
+        const struct wifi_ap_cfg* wac =
+                &lc->ConnectivityConfigs.wifi.ap;
+        esp8266_drv_update_ap_cfg(wac);
 
         esp8266_state.comm.new_conn_cb = new_conn_cb;
 

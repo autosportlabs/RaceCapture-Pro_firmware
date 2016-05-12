@@ -23,6 +23,7 @@
 #define _WIFI_H_
 
 #include "cpp_guard.h"
+#include "esp8266.h"
 #include <stdbool.h>
 
 CPP_GUARD_BEGIN
@@ -36,8 +37,18 @@ struct wifi_client_cfg {
         char passwd[WIFI_PASSWD_MAX_LEN];
 };
 
+struct wifi_ap_cfg {
+        bool active;
+        char ssid[WIFI_SSID_MAX_LEN];
+        char password[WIFI_PASSWD_MAX_LEN];
+        size_t channel;
+        /* Ok for now.  If needed could make independent */
+        enum esp8266_encryption encryption;
+};
+
 struct wifi_cfg {
         struct wifi_client_cfg client;
+        struct wifi_ap_cfg ap;
 };
 
 bool wifi_init_task(const int wifi_task_priority,
@@ -46,6 +57,14 @@ bool wifi_init_task(const int wifi_task_priority,
 void wifi_reset_config(struct wifi_cfg *cfg);
 
 bool wifi_update_client_config(struct wifi_client_cfg *wcc);
+
+bool wifi_update_ap_config(struct wifi_ap_cfg *wac);
+
+bool wifi_validate_ap_config(const struct wifi_ap_cfg *wac);
+
+const char* wifi_api_get_encryption_str_val(const enum esp8266_encryption enc);
+
+enum esp8266_encryption wifi_api_get_encryption_enum_val(const char* str);
 
 CPP_GUARD_END
 

@@ -642,6 +642,99 @@ bool esp8266_get_client_ip(void (*cb)(bool, const char*))
 }
 
 /**
+ * The callback invoked by our AT state machine upon the completion
+ * of the command
+ */
+static bool get_ap_info_cb(struct at_rsp *rsp, void *up)
+{
+        static const char *cmd_name = "get_ap_info_cb";
+        esp8266_get_ap_info_cb_t *cb = up;
+        struct esp8266_ap_info ap_info;
+        memset(&ap_info, 0, sizeof(struct esp8266_ap_info));
+
+        bool status = at_ok(rsp);
+        if (!status) {
+                cmd_failure(cmd_name, NULL);
+                goto do_cb;
+        }
+
+        /*
+         * AT+CWSAP_DEF=<ssid>,<pwd>,<chl>,<ecn>
+         * ssid -> string
+         * pwd  -> string
+         * chl  -> number
+         * ecn  -> number
+         */
+        char *toks[6];
+        const int tok_cnt = at_parse_rsp_line(rsp->msgs[0], toks,
+                                              ARRAY_LEN(toks));
+
+        if (tok_cnt != 5) {
+                cmd_failure(cmd_name, "Unexpected # of tokens in response");
+                status = false;
+                goto do_cb;
+        }
+
+        strncpy(ap_info.ssid, at_parse_rsp_str(toks[1]),
+                ARRAY_LEN(ap_info.ssid));
+        strncpy(ap_info.password, at_parse_rsp_str(toks[2]),
+                ARRAY_LEN(ap_info.password));
+        ap_info.channel = atoi(toks[3]);
+        ap_info.encryption = (enum esp8266_encryption) atoi(toks[4]);
+
+do_cb:
+        if (cb)
+                cb(status, &ap_info);
+
+        return false;
+}
+
+bool esp8266_get_ap_info(esp8266_get_ap_info_cb_t *cb)
+{
+        if (!check_initialized("get_ap_info"))
+                return false;
+
+        const char cmd[] = "AT+CWSAP_DEF?";
+        return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_MEDIUM_MS,
+                                  get_ap_info_cb, cb);
+}
+
+/**
+ * Callback that gets invoked when the set_ap_info command completes.
+ */
+static bool set_ap_info_cb(struct at_rsp *rsp, void *up)
+{
+        static const char *cmd_name = "set_ap_info_cb";
+        esp8266_set_ap_info_cb_t *cb = up;
+
+        bool status = at_ok(rsp);
+        if (!status) {
+                cmd_failure(cmd_name, NULL);
+        }
+
+        if (cb)
+                cb(status);
+
+        return false;
+}
+
+bool esp8266_set_ap_info(const struct esp8266_ap_info* info,
+                         esp8266_set_ap_info_cb_t *cb)
+{
+        if (!check_initialized("set_ap_info") || NULL == info)
+                return false;
+
+        char cmd[64];
+        snprintf(cmd, ARRAY_LEN(cmd), "AT+CWSAP_DEF=\"%s\",\"%s\",%d,%d",
+                 info->ssid, info->password, (int) info->channel,
+                 info->encryption);
+
+        return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
+                                  set_ap_info_cb, cb);
+
+}
+
+/**
  *
  * @param cb The callback to be invoked when the method completes.
  */

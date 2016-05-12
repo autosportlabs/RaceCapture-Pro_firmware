@@ -34,6 +34,8 @@ typedef void new_conn_func_t(struct Serial *s);
 
 bool esp8266_drv_update_client_cfg(const struct wifi_client_cfg *cc);
 
+bool esp8266_drv_update_ap_cfg(const struct wifi_ap_cfg *wac);
+
 bool esp8266_drv_init(struct Serial *s, const int priority,
                       new_conn_func_t new_conn_cb);
 
