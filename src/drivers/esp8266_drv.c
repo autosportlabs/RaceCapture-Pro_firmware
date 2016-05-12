@@ -728,7 +728,7 @@ static bool get_ap_info()
 }
 
 /**
- * Callback that is invoked when the set_ap command complets.
+ * Callback that is invoked when the set_ap command completes.
  */
 static void set_ap_cb(const bool status)
 {

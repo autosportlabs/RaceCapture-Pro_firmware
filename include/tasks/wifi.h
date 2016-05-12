@@ -41,7 +41,7 @@ struct wifi_ap_cfg {
         bool active;
         char ssid[WIFI_SSID_MAX_LEN];
         char password[WIFI_PASSWD_MAX_LEN];
-        size_t channel;
+        uint8_t channel;
         /* Ok for now.  If needed could make independent */
         enum esp8266_encryption encryption;
 };
