@@ -85,7 +85,6 @@ class LoggerApiTest : public CppUnit::TestFixture
     CPPUNIT_TEST( testSetWifiApCfgBadChannel );
     CPPUNIT_TEST( testSetWifiApCfgBadEncryption );
     CPPUNIT_TEST( testSetAndGetWifiApCfg );
-    CPPUNIT_TEST( testGetDefaultWifiApCfg );
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -147,7 +146,6 @@ public:
     void testSetWifiApCfgBadChannel();
     void testSetWifiApCfgBadEncryption();
     void testSetAndGetWifiApCfg();
-    void testGetDefaultWifiApCfg();
 
 private:
     void testSetScriptFile(string filename);
