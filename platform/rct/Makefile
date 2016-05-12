@@ -40,8 +40,8 @@ RC_SRC_DIR := $(RC_TOP_LEVEL_DIR)/src
 
 # CMSIS
 src-y := \
-    Libraries/CMSIS/Device/ST/STM32F30x/Source/Templates/TrueSTUDIO/startup_stm32f30x.s
-#    Libraries/CMSIS/Device/ST/STM32F30x/Source/Templates/system_stm32f30x.c
+    Libraries/CMSIS/Device/ST/STM32F30x/Source/Templates/TrueSTUDIO/startup_stm32f30x.s \
+    Libraries/CMSIS/Device/ST/STM32F30x/Source/Templates/system_stm32f30x.c
 inc-y := \
     Libraries/CMSIS/Device/ST/STM32F30x/Include \
     Libraries/CMSIS/Include
@@ -218,8 +218,6 @@ src-y += $(wildcard FreeRTOS/Source/*.c) \
 
 inc-y += FreeRTOS/Source/include \
          FreeRTOS/Source/portable/GCC/ARM_CM3
-
-src-y += Project/system_stm32f30x.c
 
 #newlib
 src-y += $(wildcard util/*.c)
