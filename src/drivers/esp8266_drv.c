@@ -40,7 +40,7 @@
 #define AT_TASK_TIMEOUT_MS	3
 #define CHECK_DONE_SLEEP_MS	3600000
 #define CLIENT_BACKOFF_MS	30000
-#define AP_BACKOFF_MS		60000
+#define AP_BACKOFF_MS		30000
 #define INIT_FAIL_SLEEP_MS	10000
 #define LOG_PFX			"[ESP8266 Driver] "
 #define MAX_CHANNELS		5
@@ -763,7 +763,7 @@ static void set_ap_cb(const bool status)
  */
 static bool set_ap(struct esp8266_ap_info* ap_info)
 {
-        pr_info(LOG_PFX "Updating Wifi AP Config:");
+        pr_info(LOG_PFX "Updating Wifi AP Config.\r\n");
         const bool queued = esp8266_set_ap_info(ap_info, set_ap_cb);
         if (queued)
                 cmd_started();

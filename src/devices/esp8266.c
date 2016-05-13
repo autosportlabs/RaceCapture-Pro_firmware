@@ -662,7 +662,7 @@ static bool get_ap_info_cb(struct at_rsp *rsp, void *up)
         }
 
         /*
-         * AT+CWSAP_DEF=<ssid>,<pwd>,<chl>,<ecn>
+         * AT+CWSAP=<ssid>,<pwd>,<chl>,<ecn>
          * ssid -> string
          * pwd  -> string
          * chl  -> number
@@ -697,7 +697,7 @@ bool esp8266_get_ap_info(esp8266_get_ap_info_cb_t *cb)
         if (!check_initialized("get_ap_info"))
                 return false;
 
-        const char cmd[] = "AT+CWSAP_DEF?";
+        const char cmd[] = "AT+CWSAP?";
         return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_MEDIUM_MS,
                                   get_ap_info_cb, cb);
 }
@@ -728,7 +728,7 @@ bool esp8266_set_ap_info(const struct esp8266_ap_info* info,
                 return false;
 
         char cmd[64];
-        snprintf(cmd, ARRAY_LEN(cmd), "AT+CWSAP_CUR=\"%s\",\"%s\",%d,%d",
+        snprintf(cmd, ARRAY_LEN(cmd), "AT+CWSAP=\"%s\",\"%s\",%d,%d",
                  info->ssid, info->password, (int) info->channel,
                  info->encryption);
 
