@@ -51,6 +51,13 @@ ifneq ($(OFFICIAL_TAG),)
 endif
 export RELEASE_TYPE
 
+#
+# Set the DEBUG flag if we are not build an official release.
+#
+ifneq ($(RELEASE_TYPE),RELEASE_TYPE_OFFICIAL)
+export DEBUG=1
+endif
+
 export VERSION_CFLAGS := \
 -DAPI_REV=$(API) \
 -DMAJOR_REV=$(MAJOR) \
