@@ -311,7 +311,7 @@ void wifi_reset_config(struct wifi_cfg *cfg)
          * configure it.
          */
         const char* cpu_serial = cpu_device_get_serialnumber();
-        const char* prefix = FRIENDLY_DEVICE_NAME"-";
+        const char* prefix = FRIENDLY_DEVICE_NAME" ";
         const int cpu_serial_len = strlen(cpu_serial);
         int offset = cpu_serial_len - ARRAY_LEN(cfg->ap.ssid) +
                 strlen(prefix) + 1;
