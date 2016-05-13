@@ -106,7 +106,6 @@ bool esp8266_set_op_mode(const enum esp8266_op_mode mode,
 bool esp8266_get_op_mode(void (*cb)(bool, enum esp8266_op_mode));
 
 struct esp8266_client_info {
-        tiny_millis_t snapshot_time;
         bool has_ap;
         char ssid[ESP8266_SSID_LEN_MAX];
         char mac[ESP8266_MAC_LEN_MAX];

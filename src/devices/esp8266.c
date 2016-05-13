@@ -546,7 +546,6 @@ static bool get_client_ap_cb(struct at_rsp *rsp, void *up)
         }
 
         struct esp8266_client_info ci;
-        ci.snapshot_time = getUptime();
         char *client_info_rsp = rsp->msgs[rsp->msg_count - 2];
         if (!parse_client_info(client_info_rsp, &ci)) {
                 cmd_failure(cmd_name, "Failed to parse AP info");
