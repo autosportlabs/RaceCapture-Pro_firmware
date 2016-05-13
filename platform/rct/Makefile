@@ -120,6 +120,9 @@ inc-y += $(RC_INCLUDE_DIR)/tracks
 src-y += $(wildcard hal/i2c_stm32/*.c)
 inc-y += hal/i2c_stm32
 
+# wifi
+src-y += $(wildcard hal/wifi_esp8266/*.c)
+
 # IMU
 src-y += $(wildcard $(RC_SRC_DIR)/imu/*.c)
 src-y += $(wildcard hal/imu_stm32/*.c)
