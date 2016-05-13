@@ -62,6 +62,7 @@ struct device {
 struct client {
         const struct wifi_client_cfg *config;
         struct esp8266_client_info info;
+        tiny_millis_t info_timestamp;
         tiny_millis_t next_join_attempt;
 };
 
@@ -510,6 +511,7 @@ static void get_client_ap_cb(bool status, const struct esp8266_client_info *ci)
 {
         cmd_completed();
         cmd_set_check(CHECK_WIFI_CLIENT);
+        esp8266_state.client.info_timestamp = getUptime();
 
         memcpy(&esp8266_state.client.info, ci, sizeof(struct esp8266_client_info));
         *esp8266_state.client.info.ip = 0;
@@ -631,14 +633,14 @@ static void check_wifi_client()
          * First check if we have reasonably fresh client info. Have to
          * have it before we can make any decisions.
          */
-        const struct esp8266_client_info *ci = &esp8266_state.client.info;
-        if (0 == ci->snapshot_time) {
+        if (0 == esp8266_state.client.info_timestamp) {
                 get_client_ap();
                 return;
         }
 
         /* If here, we have fresh client info.  Use it to make decisions. */
         const struct wifi_client_cfg *cfg = esp8266_state.client.config;
+        const struct esp8266_client_info *ci = &esp8266_state.client.info;
         if (cfg->active) {
                 /*
                  * Config says client should be active. Make it so.
