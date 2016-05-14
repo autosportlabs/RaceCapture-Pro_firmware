@@ -663,12 +663,14 @@ static bool get_ap_info_cb(struct at_rsp *rsp, void *up)
          * pwd  -> string
          * chl  -> number
          * ecn  -> number
+         * [max conn] -> number
+         * [ssid hidden] -> number
          */
-        char *toks[6];
+        char *toks[8];
         const int tok_cnt = at_parse_rsp_line(rsp->msgs[0], toks,
                                               ARRAY_LEN(toks));
 
-        if (tok_cnt != 5) {
+        if (tok_cnt < 5 || tok_cnt > 7) {
                 cmd_failure(cmd_name, "Unexpected # of tokens in response");
                 status = false;
                 goto do_cb;
