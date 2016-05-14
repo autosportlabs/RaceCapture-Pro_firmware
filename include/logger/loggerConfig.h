@@ -339,14 +339,15 @@ typedef struct _CANConfig {
 #define DEFAULT_CAN_BAUD_RATE 500000
 
 typedef struct _GPSConfig {
-    ChannelConfig latitude;
-    ChannelConfig longitude;
-    ChannelConfig speed;
-    ChannelConfig distance;
-    ChannelConfig altitude;
-    ChannelConfig satellites;
-    ChannelConfig quality;
-    ChannelConfig DOP;
+        ChannelConfig latitude;
+        ChannelConfig longitude;
+        ChannelConfig speed;
+        ChannelConfig distance;
+        ChannelConfig altitude;
+        ChannelConfig satellites;
+        ChannelConfig quality;
+        ChannelConfig DOP;
+        ChannelConfig bearing;
 } GPSConfig;
 
 
@@ -361,17 +362,19 @@ typedef struct _GPSConfig {
 #define DEFAULT_GPS_SATELLITE_CONFIG {"GPSSats", "", 0, 20, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
 #define DEFAULT_GPS_QUALITY_CONFIG {"GPSQual", "", 0, 5, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
 #define DEFAULT_GPS_DOP_CONFIG {"GPSDOP", "", 0, 20, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
+#define DEFAULT_GPS_BEARING_CONFIG {"Bearing", "Degrees", 0, 360, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
 
-#define DEFAULT_GPS_CONFIG {                   \
-		DEFAULT_GPS_LATITUDE_CONFIG,           \
-		DEFAULT_GPS_LONGITUDE_CONFIG,          \
-		DEFAULT_GPS_SPEED_CONFIG,              \
-		DEFAULT_GPS_DISTANCE_CONFIG,           \
-		DEFAULT_GPS_ALTITUDE_CONFIG,           \
-		DEFAULT_GPS_SATELLITE_CONFIG,          \
-		DEFAULT_GPS_QUALITY_CONFIG,            \
-		DEFAULT_GPS_DOP_CONFIG                 \
-         }
+#define DEFAULT_GPS_CONFIG {                            \
+		DEFAULT_GPS_LATITUDE_CONFIG,            \
+                        DEFAULT_GPS_LONGITUDE_CONFIG,   \
+                        DEFAULT_GPS_SPEED_CONFIG,       \
+                        DEFAULT_GPS_DISTANCE_CONFIG,    \
+                        DEFAULT_GPS_ALTITUDE_CONFIG,    \
+                        DEFAULT_GPS_SATELLITE_CONFIG,   \
+                        DEFAULT_GPS_QUALITY_CONFIG,     \
+                        DEFAULT_GPS_DOP_CONFIG,         \
+                        DEFAULT_GPS_BEARING_CONFIG      \
+                        }
 
 typedef struct _LapConfig {
     ChannelConfig lapCountCfg;
