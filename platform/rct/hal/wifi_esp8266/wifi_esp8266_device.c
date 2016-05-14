@@ -24,18 +24,15 @@
 #include "taskUtil.h"
 #include "stm32f30x_gpio.h"
 #include "stm32f30x_rcc.h"
-#include "printk.h"
 
 /* How long we hold the reset line for the ESP8266 */
 #define ESP8266_RESET_DURATION_MS 1
 
 /* I/O definitions for ESP8266 BOOT (PA3)*/
-#define ESP8266_BOOT_PORT 3
 #define ESP8266_BOOT_PIN GPIO_Pin_3
 #define ESP8266_BOOT_GPIO GPIOA
 
 /* I/O definitions for ESP8266 RESET (PA5)*/
-#define ESP8266_RESET_PORT 5
 #define ESP8266_RESET_PIN GPIO_Pin_5
 #define ESP8266_RESET_GPIO GPIOA
 
@@ -51,16 +48,12 @@ static void esp8266_init_io(void)
     GPIO_InitTypeDef gpio_conf;
     GPIO_StructInit(&gpio_conf);
 
-    /* Configure the ESP8266 BOOT pin */
+    /* Configure the ESP8266 BOOT and RESET pins */
     gpio_conf.GPIO_Speed = GPIO_Speed_50MHz;
     gpio_conf.GPIO_Mode = GPIO_Mode_OUT;
     gpio_conf.GPIO_OType = GPIO_OType_PP;
-    gpio_conf.GPIO_Pin = ESP8266_BOOT_PORT;
+    gpio_conf.GPIO_Pin = ESP8266_BOOT_PIN | ESP8266_RESET_PIN;
     GPIO_Init(ESP8266_BOOT_GPIO, &gpio_conf);
-
-    /* Configure the ESP8266 RESET pin */
-    gpio_conf.GPIO_Pin = ESP8266_RESET_PORT;
-    GPIO_Init(ESP8266_RESET_GPIO, &gpio_conf);
 }
 
 /**
@@ -68,7 +61,6 @@ static void esp8266_init_io(void)
  */
 static void esp8266_enable_flash_boot(void)
 {
-    pr_info("setting flash boot for es8266\r\n");
     GPIO_SetBits(ESP8266_BOOT_GPIO, ESP8266_BOOT_PIN);
 }
 
@@ -77,7 +69,6 @@ static void esp8266_enable_flash_boot(void)
  */
 void wifi_device_reset()
 {
-    pr_info("es8266 device reset\r\n");
     GPIO_ResetBits(ESP8266_RESET_GPIO, ESP8266_RESET_PIN);
     delayMs(ESP8266_RESET_DURATION_MS);
     GPIO_SetBits(ESP8266_RESET_GPIO, ESP8266_RESET_PIN);
