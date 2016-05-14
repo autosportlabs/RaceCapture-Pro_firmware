@@ -111,14 +111,16 @@ signal gain in wooded areas).
 ### MK2 Toolchain Setup
 Do the following to setup the MK2 toolchain:
 * Download [the official MK2
-  toolchain](https://s3-us-west-2.amazonaws.com/asl-firmware/vagrant_setup/gcc-arm-none-eabi-4_7-2013q1.tgz)
+  toolchain](https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2)
 * Extract the tarball to a directory of your choice
 * Add the 'bin' directory from within the newly extracted directory to
   your system PATH.
 * Install pip (the Python package manager)
-* Run `sudo pip install crcmod https://s3-us-west-2.amazonaws.com/asl-firmware/vagrant_setup/asl_f4_loader-0.0.6.tgz`
-to install the asl_f4_loader package.  This does post-processing on MK2 firmware and provides a firmware loading
-utility.
+* Go to the [ASL F4 Loader
+  Project](https://github.com/autosportlabs/ASL_F4_bootloader) and
+  follow the instructions on the README.md to install the
+  asl_f4_loader package.  This package does all the post-processing on
+  MK2 firmware and provides a firmware loading utility.
 
 ### Compiling LUA library for MK2
 Before compiling the firmware you must compile the LUA library for MK2.  Do the following from the root of the project
