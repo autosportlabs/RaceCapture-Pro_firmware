@@ -23,8 +23,29 @@
 #ifndef _RCP_CPP_UNIT_H_
 #define _RCP_CPP_UNIT_H_
 
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#define CPPUNIT_ASSERT_CLOSE_ENOUGH(ACTUAL, EXPECTED) CPPUNIT_ASSERT((ACTUAL - EXPECTED) < 0.00001 && (ACTUAL - EXPECTED) > -0.00001)
+/**
+ * Tests if a condition is close enough.  Useful for tests where the results aren't
+ * directly exact.  Try to avoid using this unless absolutely necessary.
+ */
+#define RCPUNIT_ASSERT_CLOSE(EXPECTED, TOLERANCE, ACTUAL)               \
+        CPPUNIT_ASSERT((TOLERANCE) > 0 &&                               \
+                       ((ACTUAL) - (EXPECTED)) > (-TOLERANCE) &&        \
+                       ((ACTUAL) - (EXPECTED)) < (TOLERANCE))
+
+const bool debug = getenv("DEBUG") != NULL;
+#define RCPUNIT_DEBUG(MSG, ...) if (debug) printf(MSG, ##__VA_ARGS__)
+
+/**
+ * Older close_enough macro that was inflexible.  The newer #RCPUNIT_ASSERT_CLOSE is more flexible.
+ * @deprecated Use #RCPUNIT_ASSERT_CLOSE instead.
+ */
+#define CPPUNIT_ASSERT_CLOSE_ENOUGH(ACTUAL, EXPECTED) \
+        RCPUNIT_ASSERT_CLOSE(EXPECTED, 0.00001, ACTUAL)
+
 
 #endif /* _RCP_CPP_UNIT_H_ */

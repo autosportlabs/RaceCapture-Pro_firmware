@@ -107,6 +107,7 @@ T_SRC = loggerApi_test.cpp \
 		virtualChannel_test.cpp \
 		$(GPS_DIR)/gps_test.cpp \
 		$(GPS_DIR)/geoTriggerTest.cpp \
+		$(GPS_DIR)/geo_point_test.cpp \
 		$(LAP_STATS_DIR)/elapsedLapTimeTest.cpp \
 		$(LAP_STATS_DIR)/current_lap_test.cpp \
 		$(UTIL_DIR)/numtoa_test.cpp \

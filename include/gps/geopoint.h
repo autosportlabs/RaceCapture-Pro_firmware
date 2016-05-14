@@ -44,6 +44,15 @@ typedef struct _GeoPoint {
 float distPythag(const GeoPoint *a, const GeoPoint *b);
 
 /**
+ * Returns the heading as calculated between the last GPS
+ * point and the current GPS point.
+ * @param last The last GPS point.
+ * @param curr The current GPS point.
+ * @return The heading in degrees.
+ */
+float gps_heading(const GeoPoint *last, const GeoPoint *curr);
+
+/**
  * @return true if the given point is valid, false otherwise.
  */
 int isValidPoint(const GeoPoint *p);
