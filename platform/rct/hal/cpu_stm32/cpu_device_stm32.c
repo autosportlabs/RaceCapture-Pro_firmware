@@ -61,6 +61,8 @@ const char *cpu_device_get_serialnumber(void)
     return cpu_id;
 }
 
+/* This is required by the STM32 libraries for their ASSERT macros to
+ * work.  Useful if you need to catch HAL bugs */
 void assert_failed(uint8_t* file, uint32_t line)
 {
 	while(1);
