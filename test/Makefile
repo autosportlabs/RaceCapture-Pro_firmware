@@ -148,6 +148,7 @@ $(FREE_RTOS_KERNEL_DIR)/stubs/ff.c \
 $(FREE_RTOS_KERNEL_DIR)/stubs/heap.c \
 $(FREE_RTOS_KERNEL_DIR)/stubs/queue.c \
 $(FREE_RTOS_KERNEL_DIR)/stubs/task.c \
+$(MOCK_DIR)/wifi_device_mock.c \
 $(MOCK_DIR)/ADC_device_mock.c \
 $(MOCK_DIR)/CAN_device_mock.c \
 $(MOCK_DIR)/GPIO_device_mock.c \
