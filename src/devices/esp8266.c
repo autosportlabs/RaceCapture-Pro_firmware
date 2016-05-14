@@ -28,6 +28,7 @@
 #include "serial_buffer.h"
 #include "str_util.h"
 #include "taskUtil.h"
+#include "wifi_device.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -328,6 +329,9 @@ bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
         /* Init objects.  If fail, then nothing we can do. */
         if (!_setup(s, max_cmd_len))
                 return false;
+
+        /* Hard reset our ESP8266*/
+        wifi_device_reset();
 
         state.init_cb = cb;
         state.init_state = DEV_INIT_INITIALIZING;
