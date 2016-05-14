@@ -33,6 +33,7 @@
 #include "task.h"
 #include "taskUtil.h"
 #include "wifi.h"
+#include "wifi_device.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -981,6 +982,12 @@ bool esp8266_drv_update_ap_cfg(const struct wifi_ap_cfg *wac)
 bool esp8266_drv_init(struct Serial *s, const int priority,
                       new_conn_func_t new_conn_cb)
 {
+        /* Initialize the esp8266 hardware */
+        if (!wifi_device_init()) {
+            pr_error(LOG_PFX "Failed to init WiFi device\r\n");
+            return false;
+        }
+
         if (esp8266_state.device.serial)
                 return false; /* Already setup */
 

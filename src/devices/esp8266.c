@@ -323,8 +323,8 @@ static bool is_init_in_progress()
 bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
                   void (*cb)(enum dev_init_state))
 {
-        /* Initialize the esp8266 hardware */
-        wifi_device_init();
+        /* Hard reset our ESP8266*/
+        wifi_device_reset();
 
         if (!cb || !s || is_init_in_progress())
                 return false;
