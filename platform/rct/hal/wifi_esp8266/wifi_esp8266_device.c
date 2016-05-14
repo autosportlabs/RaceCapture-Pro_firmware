@@ -28,6 +28,11 @@
 /* How long we hold the reset line for the ESP8266 */
 #define ESP8266_RESET_DURATION_MS 1
 
+/* How long we wait after reset.
+ * Approximately the boot time for the ESP8266
+ */
+#define ESP8266_BOOT_DURATION_MS 50
+
 /* I/O definitions for ESP8266 BOOT (PA3)*/
 #define ESP8266_BOOT_PIN GPIO_Pin_3
 #define ESP8266_BOOT_GPIO GPIOA
@@ -72,6 +77,7 @@ void wifi_device_reset()
         GPIO_ResetBits(ESP8266_RESET_GPIO, ESP8266_RESET_PIN);
         delayMs(ESP8266_RESET_DURATION_MS);
         GPIO_SetBits(ESP8266_RESET_GPIO, ESP8266_RESET_PIN);
+        delayMs(ESP8266_BOOT_DURATION_MS);
 }
 
 /**
