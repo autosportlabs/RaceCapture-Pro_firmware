@@ -156,7 +156,7 @@ void SectorTest::testSectorTimes(){
 	int lineNo = 0;
 	string line;
 
-        const bool debug = getenv("DEBUG") != NULL;
+        const bool debug = getenv("TRACE") != NULL;
         if (debug) printf("\r\n");
 
 	while (std::getline(iss, line)) {
