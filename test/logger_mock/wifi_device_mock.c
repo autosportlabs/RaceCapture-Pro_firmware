@@ -28,5 +28,5 @@ void wifi_device_reset()
 
 bool wifi_device_init()
 {
-    return true;
+        return true;
 }

@@ -43,17 +43,17 @@
  */
 static void esp8266_init_io(void)
 {
-    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
+        RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
 
-    GPIO_InitTypeDef gpio_conf;
-    GPIO_StructInit(&gpio_conf);
+        GPIO_InitTypeDef gpio_conf;
+        GPIO_StructInit(&gpio_conf);
 
-    /* Configure the ESP8266 BOOT and RESET pins */
-    gpio_conf.GPIO_Speed = GPIO_Speed_50MHz;
-    gpio_conf.GPIO_Mode = GPIO_Mode_OUT;
-    gpio_conf.GPIO_OType = GPIO_OType_PP;
-    gpio_conf.GPIO_Pin = ESP8266_BOOT_PIN | ESP8266_RESET_PIN;
-    GPIO_Init(ESP8266_BOOT_GPIO, &gpio_conf);
+        /* Configure the ESP8266 BOOT and RESET pins */
+        gpio_conf.GPIO_Speed = GPIO_Speed_50MHz;
+        gpio_conf.GPIO_Mode = GPIO_Mode_OUT;
+        gpio_conf.GPIO_OType = GPIO_OType_PP;
+        gpio_conf.GPIO_Pin = ESP8266_BOOT_PIN | ESP8266_RESET_PIN;
+        GPIO_Init(ESP8266_BOOT_GPIO, &gpio_conf);
 }
 
 /**
@@ -61,7 +61,7 @@ static void esp8266_init_io(void)
  */
 static void esp8266_enable_flash_boot(void)
 {
-    GPIO_SetBits(ESP8266_BOOT_GPIO, ESP8266_BOOT_PIN);
+        GPIO_SetBits(ESP8266_BOOT_GPIO, ESP8266_BOOT_PIN);
 }
 
 /**
@@ -69,9 +69,9 @@ static void esp8266_enable_flash_boot(void)
  */
 void wifi_device_reset()
 {
-    GPIO_ResetBits(ESP8266_RESET_GPIO, ESP8266_RESET_PIN);
-    delayMs(ESP8266_RESET_DURATION_MS);
-    GPIO_SetBits(ESP8266_RESET_GPIO, ESP8266_RESET_PIN);
+        GPIO_ResetBits(ESP8266_RESET_GPIO, ESP8266_RESET_PIN);
+        delayMs(ESP8266_RESET_DURATION_MS);
+        GPIO_SetBits(ESP8266_RESET_GPIO, ESP8266_RESET_PIN);
 }
 
 /**
@@ -79,8 +79,8 @@ void wifi_device_reset()
  */
 bool wifi_device_init()
 {
-    esp8266_init_io();
-    esp8266_enable_flash_boot();
-    wifi_device_reset();
-    return true;
+        esp8266_init_io();
+        esp8266_enable_flash_boot();
+        wifi_device_reset();
+        return true;
 }

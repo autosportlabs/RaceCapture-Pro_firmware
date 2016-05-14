@@ -27,7 +27,7 @@
  */
 void wifi_device_reset()
 {
-    /*No ability to hard reset the ESP8266 on MK2, so this is NOOP */
+        /*No ability to hard reset the ESP8266 on MK2, so this is NOOP */
 }
 
 /**
@@ -35,6 +35,6 @@ void wifi_device_reset()
  */
 bool wifi_device_init()
 {
-    /*ESP8266 hardware configuration is fixed on MK2, so this is NOOP */
-    return true;
+        /*ESP8266 hardware configuration is fixed on MK2, so this is NOOP */
+        return true;
 }
