@@ -28,7 +28,7 @@
 CPP_GUARD_BEGIN
 
 bool wifi_device_init();
-bool wifi_device_reset();
+void wifi_device_reset();
 
 CPP_GUARD_END
 
