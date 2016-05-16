@@ -54,7 +54,6 @@ static const struct at_config *at_cfg;
 
 static struct cellular_info cell_info;
 static struct telemetry_info telemetry_info;
-static const enum log_level serial_dbg_lvl = TRACE;
 
 static const struct at_config* get_safe_at_config()
 {
