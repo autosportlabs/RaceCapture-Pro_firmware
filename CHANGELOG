@@ -1,3 +1,29 @@
+= 2.9.1 =
+* Added CHAP support for APN authentication on 3G modem.  This is activated
+  when user provides an APN password.
+  https://github.com/autosportlabs/RaceCapture-Pro_firmware/issues/619
+* Improved SD Card operations by removing duplicate initialization issue and
+  removing unnecessary critical task guards which lead to long system pauses.
+  Other pauses remain, but the SD card logging no longer blocks preemption.
+  https://github.com/autosportlabs/RaceCapture-Pro_firmware/issues/571
+* Back ported fix for the dual malloc issue.  We were unintentionally running
+  both the FreeRTOS allocator and the glibc allocator.  Fortunately this did
+  not cause issues because we made very limited use of the glibc allocator.
+  This patch adds the code so that we always use the FreeRTOS allocator, even
+  if we use glibc malloc/realloc/calloc/free calls.
+  https://github.com/autosportlabs/RaceCapture-Pro_firmware/issues/565
+* Fixed issue in USART on MK2 where an improper clearing of the ORE flag could
+  cause the system to lock up and watchdog.
+  https://github.com/autosportlabs/RaceCapture-Pro_firmware/issues/562
+* Removed unused CAN TX queues in MK2 hal to improve memory
+  https://github.com/autosportlabs/RaceCapture-Pro_firmware/issues/553
+* Fixed invalid status return value when timeout = 0 on CAN TX invocation.  Now
+  we return a useful status, informing the caller of whether or not the message
+  was added to the mailbox to send.
+  https://github.com/autosportlabs/RaceCapture-Pro_firmware/issues/549
+* Drastically improved Lua GC behavior; built Lua Test script to prove it.
+  https://github.com/autosportlabs/RaceCapture-Pro_firmware/issues/476
+
 = 2.9.0 =
 * Fixed Lua stack overflow bug by increasing Lua Stack size (Issue #411)
 * Fixed timer input so it resets to 0 when no input detected (Issue #418)

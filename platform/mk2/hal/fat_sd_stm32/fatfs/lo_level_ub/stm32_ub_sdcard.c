@@ -211,7 +211,8 @@ int MMC_disk_read(BYTE *buff, DWORD sector, BYTE count)
 
     /* Check if the Transfer is finished */
     status =  SD_WaitReadOperation();
-    while(SD_GetStatus() != SD_TRANSFER_OK);
+    while(SD_GetStatus() != SD_TRANSFER_OK)
+            taskYIELD();
 
     if (status == SD_OK) {
         ret_wert=0;
@@ -1628,6 +1629,7 @@ SD_Error SD_SendSDStatus(uint32_t *psdstatus)
             }
             psdstatus += 8;
         }
+        taskYIELD();
     }
 
     if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
@@ -1766,6 +1768,7 @@ static SD_Error CmdResp1Error(uint8_t cmd)
 
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT))) {
         status = SDIO->STA;
+        taskYIELD();
     }
 
     if (status & SDIO_FLAG_CTIMEOUT) {
@@ -1882,6 +1885,7 @@ static SD_Error CmdResp3Error(void)
 
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT))) {
         status = SDIO->STA;
+        taskYIELD();
     }
 
     if (status & SDIO_FLAG_CTIMEOUT) {
@@ -1904,6 +1908,7 @@ static SD_Error CmdResp2Error(void)
 
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CTIMEOUT | SDIO_FLAG_CMDREND))) {
         status = SDIO->STA;
+        taskYIELD();
     }
 
     if (status & SDIO_FLAG_CTIMEOUT) {
@@ -1933,6 +1938,7 @@ static SD_Error CmdResp6Error(uint8_t cmd, uint16_t *prca)
 
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CTIMEOUT | SDIO_FLAG_CMDREND))) {
         status = SDIO->STA;
+        taskYIELD();
     }
 
     if (status & SDIO_FLAG_CTIMEOUT) {
@@ -2089,6 +2095,7 @@ static SD_Error IsCardProgramming(uint8_t *pstatus)
     status = SDIO->STA;
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT))) {
         status = SDIO->STA;
+        taskYIELD();
     }
 
     if (status & SDIO_FLAG_CTIMEOUT) {
@@ -2265,6 +2272,7 @@ static SD_Error FindSCR(uint16_t rca, uint32_t *pscr)
             *(tempscr + index) = SDIO_ReadData();
             index++;
         }
+        taskYIELD();
     }
 
     if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
@@ -2370,6 +2378,7 @@ SD_Error SD_HighSpeed (void)
                 }
                 tempbuff += 8;
             }
+            taskYIELD();
         }
 
         if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
@@ -2624,6 +2633,3 @@ void SD_SDIO_DMA_IRQHANDLER(void)
     /* Process DMA2 Stream3 or DMA2 Stream6 Interrupt Sources */
     SD_ProcessDMAIRQ();
 }
-
-
-
