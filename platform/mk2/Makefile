@@ -1,3 +1,4 @@
+
 # This file is part of the Racecapture/Track project
 #
 # Copyright (C) 2013 Autosport Labs
@@ -57,29 +58,16 @@ include libs/stm32_usb.mk
 # for this changeset alone plus need to address in other libraries
 # as well.
 #
-CFLAGS ?= -g -fno-common -c -mthumb -fno-strict-aliasing \
-	-std=gnu99 -mcpu=$(CPU_TYPE) -MD -Wall -Werror -Wempty-body \
-	-Wclobbered -Wignored-qualifiers -Wmissing-parameter-type \
-	-Wold-style-declaration -Wunused-but-set-parameter
+CFLAGS := -c -MD $(ASL_CFLAGS) $(CPU_DEFINES) $(BOARD_DEFINES) \
+$(APP_DEFINES) $(CPU_FLAGS)
 
 LUA_INCLUDE=-I$(APP_PATH)/lib/lua/src
 LUA_LIBS=lua
 LUA_LIB_DIR=$(APP_PATH)/lib/lua/src
 
 INCLUDES += $(CPU_INCLUDES) $(BOARD_INCLUDES) $(LIB_INCLUDES) $(APP_INCLUDES) $(LUA_INCLUDE)
-CFLAGS += $(INCLUDES) $(CPU_DEFINES) $(BOARD_DEFINES) $(APP_DEFINES) $(CPU_FLAGS)
+CFLAGS += $(INCLUDES)
 ASFLAGS += -mcpu=$(CPU_TYPE) $(FPU) -g -Wa,--warn
-
-ifdef NOOPT
-CFLAGS += -O0
-else
-CFLAGS += -Os
-endif
-
-ifdef DEBUG
-CFLAGS += -D_DEBUG
-endif
-
 
 LIBS = -lnosys
 LIBS += $(addprefix -l,$(BASE_LIBS))

@@ -45,8 +45,6 @@
 #define _TIMEOUT_SHORT_MS	50
 #define _TIMEOUT_SUPER_MS	30000
 
-static const enum log_level serial_dbg_lvl = INFO;
-
 /* STIEG: Temp until we write *_create methods for serial_buff and at_info */
 struct serial_buffer _serial_cmd_buff;
 struct at_info _ati;
