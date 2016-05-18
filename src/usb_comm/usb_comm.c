@@ -27,7 +27,7 @@
 #include "task.h"
 #include "usb_comm.h"
 
-#define USB_COMM_STACK_SIZE	256
+#define USB_COMM_STACK_SIZE	320
 #define BUFFER_SIZE		1024
 
 static char lineBuffer[BUFFER_SIZE];
