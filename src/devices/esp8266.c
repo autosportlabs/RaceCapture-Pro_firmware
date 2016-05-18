@@ -29,7 +29,6 @@
 #include "str_util.h"
 #include "taskUtil.h"
 #include "wifi_device.h"
-
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -404,10 +403,9 @@ static bool read_op_mode_cb(struct at_rsp *rsp, void *up)
                 goto do_cb;
         }
 
-        char *toks[2];
+        char *toks[3];
         const size_t tok_cnt =
-                at_parse_rsp_line(rsp->msgs[rsp->msg_count - 1],
-                                  toks, ARRAY_LEN(toks));
+                at_parse_rsp_line(rsp->msgs[0], toks, ARRAY_LEN(toks));
         if (tok_cnt != 2) {
                 cmd_failure(cmd_name, "Incorrect number of tokens parsed.");
                 status = false;
@@ -470,11 +468,13 @@ bool esp8266_join_ap(const char* ssid, const char* pass, void (*cb)(bool))
                 return false;
 
         char cmd[64];
-        if (pass && *pass)
-                snprintf(cmd, ARRAY_LEN(cmd), "AT+CWJAP=\"%s\",\"%s\"",
-                         ssid, pass);
-        else
-                snprintf(cmd, ARRAY_LEN(cmd), "AT+CWJAP=\"%s\",", ssid);
+        const char pfx[] = "AT+CWJAP_DEF";
+        if (pass && *pass) {
+                snprintf(cmd, ARRAY_LEN(cmd), "%s=\"%s\",\"%s\"",
+                         pfx, ssid, pass);
+        } else {
+                snprintf(cmd, ARRAY_LEN(cmd), "%s=\"%s\",", pfx, ssid);
+        }
 
         return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_SUPER_MS,
                                   join_ap_cb, cb);
@@ -572,8 +572,8 @@ bool esp8266_get_client_ap(void (*cb)(bool, const struct esp8266_client_info*))
         if (!check_initialized("get_client_ap"))
                 return false;
 
-        return NULL != at_put_cmd(state.ati, "AT+CWJAP?", _TIMEOUT_SHORT_MS,
-                                  get_client_ap_cb, cb);
+        return NULL != at_put_cmd(state.ati, "AT+CWJAP_DEF?",
+                                  _TIMEOUT_SHORT_MS, get_client_ap_cb, cb);
 }
 
 /**
