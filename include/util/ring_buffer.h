@@ -23,75 +23,27 @@
 #define __RING_BUFFER_H__
 
 #include "cpp_guard.h"
-
 #include <stdbool.h>
 #include <stddef.h>
 
 CPP_GUARD_BEGIN
 
-struct ring_buff {
-    char *buf;
-    size_t size;
-    char *head;
-    char *tail;
-};
+struct ring_buff;
 
-/**
- * Copies size bytes from the ring buffer into data.
- * @return The number of bytes copied.
- */
-size_t get_data(struct ring_buff *rb, void *data, size_t size);
-size_t get_space(struct ring_buff *rb);
-size_t get_used(struct ring_buff *rb);
-bool have_space(struct ring_buff *rb, size_t size);
-size_t put_data(struct ring_buff *rb, const void *data, size_t size);
-size_t dump_data(struct ring_buff *rb, size_t size);
-
-/**
- * Clears all data from the ring buffer.  Doesn't actually wipe it,
- * but the data is forgotten about, and that is good enough.
- * @param rb The ring_buff structure.
- * @return Number of bytes cleared.
- */
-size_t clear_data(struct ring_buff *rb);
-
-bool has_data(struct ring_buff *rb);
-
-/**
- * Initializes a ring_buff structure with the data given.  Sets all
- * other appropriate variables as needed.
- * @param rb The ring_buff structure to setup.
- * @param buff Pointer to the buffer to use.
- * @param size Size of the buffer
- * @return The size of the buffer.
- */
-size_t init_ring_buffer(struct ring_buff *rb, char *buff,
-                        const size_t size);
-
-/**
- * Allocates a Ring Buffer and assigns relevant data to the ring_buff
- * structure provided.
- * @param rb The ring_buff structure to populate.
- * @param size The size of the buffer to allocate.
- * @return The size of the buffer allocated.
- */
-size_t create_ring_buffer(struct ring_buff *rb, size_t size);
-
-/**
- * Frees a populated ring_buf struct.  Sets all values to 0.
- */
-void free_ring_buffer(struct ring_buff *rb);
-
-/**
- * Puts a string onto the ring_buffer.  This method is a bit more
- * optimized than put_data as it avoids an extra iteration over the string
- * @param rb The ring buffer structure we are adding to.
- * @param str The string to append.
- * @return The pointer where we are in the string when the buffer became
- * full, otherwise NULL if successful.
- */
-const char * put_string(struct ring_buff *rb, const char *str);
-
+void ring_buffer_destroy(struct ring_buff *rb);
+struct ring_buff* ring_buffer_create(const size_t cap);
+void ring_buffer_clear(struct ring_buff *rb);
+size_t ring_buffer_capacity(struct ring_buff *rb);
+size_t ring_buffer_bytes_free(struct ring_buff *rb);
+size_t ring_buffer_bytes_used(struct ring_buff *rb);
+size_t ring_buffer_get(struct ring_buff *rb, void *buff,
+                       size_t size);
+size_t ring_buffer_peek(struct ring_buff *rb, void *data,
+                        size_t size);
+size_t ring_buffer_put(struct ring_buff *rb, const void *data,
+                       size_t size);
+size_t ring_buffer_write(struct ring_buff *rb, const void *data,
+                         size_t size);
 CPP_GUARD_END
 
 #endif /* __RING_BUFFER_H__ */

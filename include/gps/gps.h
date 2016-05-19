@@ -62,7 +62,7 @@ typedef enum {
 
 gps_status_t GPS_getStatus();
 
-gps_status_t GPS_init(uint8_t targetSampleRate, Serial *serial);
+gps_status_t GPS_init(uint8_t targetSampleRate, struct Serial *serial);
 
 float getSecondsSinceMidnight();
 
@@ -141,7 +141,7 @@ tiny_millis_t getUptimeAtSample();
 
 float getGpsSpeedInMph();
 
-int GPS_processUpdate(Serial *serial);
+int GPS_processUpdate(struct Serial *serial);
 
 int checksumValid(const char *gpsData, size_t len);
 

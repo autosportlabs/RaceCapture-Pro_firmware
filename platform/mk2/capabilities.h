@@ -8,17 +8,24 @@
 #define MS_PER_TICK	1
 
 /* Support Flags */
-#define USB_SERIAL_SUPPORT
-#define LUA_SUPPORT
-#define VIRTUAL_CHANNEL_SUPPORT
-#define SDCARD_SUPPORT
-#define CELLULAR_SUPPORT
+#define BLUETOOTH_SUPPORT	1
+#define CELLULAR_SUPPORT	1
+#define LUA_SUPPORT		1
+#define SDCARD_SUPPORT		1
+#define USB_SERIAL_SUPPORT	1
+#define VIRTUAL_CHANNEL_SUPPORT	1
+#define WIFI_SUPPORT		1
 
-//configuration
+/* Configuration */
 #define MAX_TRACKS	240
 #define MAX_SECTORS	20
 #define MAX_VIRTUAL_CHANNELS	100
 #define LOGGER_MESSAGE_BUFFER_SIZE	10
+/*
+ * What is the maximum number of samples available per predictive time
+ * buffer.  More samples == better resolution. Each slot is 12 bytes.
+ */
+#define PREDICTIVE_TIME_MAX_SAMPLES	96
 
 /* LUA Configuration */
 
@@ -42,8 +49,10 @@
  * A value of 0 means that you want to use the default.  For more info
  * see http://www.lua.org/manual/5.1/manual.html#2.10
  */
-#define LUA_GC_PAUSE_PCT	0
-#define LUA_GC_STEP_MULT_PCT	0
+/* Pause between runs.  < 100 means don't wait */
+#define LUA_GC_PAUSE_PCT	99
+/* Runtime of GC to malloc.  Setting to 10x for agressive behavior. */
+#define LUA_GC_STEP_MULT_PCT	1000
 
 /*
  * Controls whether or not we allow LUA to register the nice to have

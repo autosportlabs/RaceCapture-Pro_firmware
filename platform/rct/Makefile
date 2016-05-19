@@ -17,6 +17,9 @@ OBJCOPY := $(CROSS_COMPILE)objcopy
 #specify the use of the external crystal
 BOARD_DEFINES = -DPLL_SOURCE_HSE -DUSE_I2C1
 
+# Needed for FreeRTOS GDB debugging
+FREERTOS_LD_FLAGS := -Wl,--undefined=uxTopUsedPriority
+
 ################################################################################
 # Project definition
 ################################################################################
@@ -40,6 +43,10 @@ inc-y := \
 src-y += $(wildcard Libraries/STM32F30x_StdPeriph_Driver/src/*.c)
 inc-y += Libraries/STM32F30x_StdPeriph_Driver/inc
 
+# USB
+src-y += $(wildcard Libraries/STM32_USB-FS-Device_Driver/src/*.c)
+inc-y += Libraries/STM32_USB-FS-Device_Driver/inc
+
 # Memory Management
 inc-y += mem_mang
 inc-y += FreeRTOS/Source/portable/MemMang
@@ -58,6 +65,7 @@ inc-y += $(RC_INCLUDE_DIR)/util
 # serial API
 src-y += $(wildcard $(RC_SRC_DIR)/serial/*.c)
 inc-y += $(RC_INCLUDE_DIR)/serial
+
 src-y += $(wildcard $(RC_SRC_DIR)/usart/*.c)
 inc-y += $(RC_INCLUDE_DIR)/usart
 
@@ -72,6 +80,7 @@ inc-y += $(RC_INCLUDE_DIR)/ADC
 # CAN
 src-y += $(wildcard $(RC_SRC_DIR)/CAN/*.c)
 src-y += $(wildcard hal/CAN_stm32/*.c)
+inc-y += hal/CAN_stm32
 inc-y += $(RC_INCLUDE_DIR)/CAN
 
 # GPS
@@ -111,6 +120,9 @@ inc-y += $(RC_INCLUDE_DIR)/tracks
 src-y += $(wildcard hal/i2c_stm32/*.c)
 inc-y += hal/i2c_stm32
 
+# wifi
+src-y += $(wildcard hal/wifi_esp8266/*.c)
+
 # IMU
 src-y += $(wildcard $(RC_SRC_DIR)/imu/*.c)
 src-y += $(wildcard hal/imu_stm32/*.c)
@@ -136,6 +148,9 @@ src-y += $(wildcard $(RC_SRC_DIR)/usart/*.c)
 src-y += $(wildcard hal/usart_stm32/*.c)
 inc-y += $(RC_INCLUDE_DIR)/usart
 
+# Serial Device
+src-y += $(wildcard hal/serial/*.c)
+
 # Watchdog
 src-y += $(wildcard $(RC_SRC_DIR)/watchdog/*.c)
 src-y += $(wildcard hal/watchdog_stm32/*.c)
@@ -146,9 +161,12 @@ src-y += $(wildcard $(RC_SRC_DIR)/OBD2/*.c)
 inc-y += $(RC_INCLUDE_DIR)/OBD2
 
 #devices
-src-y += $(RC_SRC_DIR)/devices/bluetooth.c
-src-y += $(RC_SRC_DIR)/devices/null_device.c
+src-y += $(wildcard $(RC_SRC_DIR)/devices/*.c)
 inc-y += $(RC_INCLUDE_DIR)/devices
+
+#drivers
+src-y += $(wildcard $(RC_SRC_DIR)/drivers/*.c)
+inc-y += $(RC_INCLUDE_DIR)/drivers
 
 #devices
 src-y += $(wildcard $(RC_SRC_DIR)/api/*.c)
@@ -162,6 +180,10 @@ inc-y += $(RC_INCLUDE_DIR)/command
 src-y += $(wildcard $(RC_SRC_DIR)/jsmn/*.c)
 inc-y += $(RC_INCLUDE_DIR)/jsmn
 
+#GSM
+src-y += $(wildcard $(RC_SRC_DIR)/gsm/*.c)
+inc-y += $(RC_INCLUDE_DIR)/gsm
+
 #logger
 src-y += $(wildcard $(RC_SRC_DIR)/logger/*.c)
 # STRIP fileWriter.c because we don't want to compile it.
@@ -171,6 +193,22 @@ inc-y += $(RC_INCLUDE_DIR)/logger
 #messaging
 src-y += $(wildcard $(RC_SRC_DIR)/messaging/*.c)
 inc-y += $(RC_INCLUDE_DIR)/messaging
+
+#modem
+src-y += $(wildcard $(RC_SRC_DIR)/modem/*.c)
+inc-y += $(RC_INCLUDE_DIR)/modem
+
+# Tasks
+src-y += $(wildcard $(RC_SRC_DIR)/tasks/*.c)
+inc-y += $(RC_INCLUDE_DIR)/tasks
+
+# CDC-ACM
+src-y += $(wildcard hal/usb_stm32/*.c)
+src-y += $(wildcard $(RC_SRC_DIR)/usb_comm/*.c)
+inc-y += hal/usb_stm32
+
+# Combined interrupts
+src-y += $(wildcard hal/common_irq_stm32/*.c)
 
 # FreeRTOS
 src-y += $(wildcard FreeRTOS/Source/*.c) \
@@ -214,14 +252,32 @@ inc-y += $(RC_PLATFORM_DIR)/mk2/hal/fat_sd_stm32/fatfs
 ################################################################################
 obj-y := $(addprefix $(OUTDIR)/,$(patsubst %.s,%.o,$(patsubst %.c,%.o,$(src-y))))
 
-CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -DUSE_STM32303C_EVAL -MD -std=gnu99
+CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -MD -std=gnu99
 CFLAGS += -mcpu=cortex-m3 -mthumb
 CFLAGS += $(VERSION_CFLAGS)
 CFLAGS += $(BOARD_DEFINES)
 CFLAGS += -fno-builtin-sprintf
+CFLAGS += -ggdb
+CFLAGS += -Wall -Werror -Wempty-body -Wclobbered -Wignored-qualifiers \
+	-Wmissing-parameter-type -Wold-style-declaration \
+	-Wunused-but-set-parameter
+
+ifdef NOOPT
+CFLAGS += -O0
+else
+CFLAGS += -Os
+endif
+
+ifdef DEBUG
+CFLAGS += -D_DEBUG
+endif
+
 CFLAGS += $(addprefix -I,$(inc-y))
-CFLAGS += -O0 -g
-LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld -Wl,-cref,-u,Reset_Handler,-Map=$(OUTDIR)/main.map,--gc-sections
+
+LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld
+LDFLAGS += -Wl,-cref,-u,Reset_Handler,-Map=$(OUTDIR)/main.map,--gc-sections
+LDFLAGS += $(FREERTOS_LD_FLAGS)
+
 AFLAGS := $(CFLAGS)
 
 # disable auto-removing of intermediate files
@@ -230,12 +286,12 @@ AFLAGS := $(CFLAGS)
 $(OUTDIR)/%.o: %.c
 	@echo "[CC] $(@F)"
 	mkdir -p $(@D)
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CCACHE) $(CC) $(CFLAGS) -c -o $@ $<
 
 $(OUTDIR)/%.o: %.s
 	@echo "[AS] $(@F)"
 	mkdir -p $(@D)
-	$(AS) $(AFLAGS) -c -o $@ $<
+	$(CCACHE) $(AS) $(AFLAGS) -c -o $@ $<
 
 $(OUTDIR)/%.elf: $(obj-y)
 	@echo "[LD] $(@F)"

@@ -38,8 +38,8 @@ bool gsm_ping_modem(struct serial_buffer *sb)
 
         serial_buffer_reset(sb);
         serial_buffer_append(sb, "AT");
-        const size_t count =cellular_exec_cmd(sb, READ_TIMEOUT, msgs,
-                                              msgs_len);
+        const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs,
+                                               msgs_len);
         return is_rsp_ok(msgs, count);
 }
 

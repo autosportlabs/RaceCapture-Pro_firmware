@@ -39,7 +39,7 @@ bool isGpsSignalUsable(enum GpsSignalQuality q)
     return q != GPS_QUALITY_NO_FIX;
 }
 
-gps_status_t GPS_init(uint8_t targetSampleRate, Serial *serial)
+gps_status_t GPS_init(uint8_t targetSampleRate, struct Serial *serial)
 {
     memset(&g_gpsSnapshot, 0, sizeof(GpsSnapshot));
     g_timeFirstFix = 0;
@@ -201,7 +201,7 @@ void GPS_sample_update(GpsSample *newSample)
     g_gpsSnapshot.previousPoint = prevPoint;
 }
 
-int GPS_processUpdate(Serial *serial)
+int GPS_processUpdate(struct Serial *serial)
 {
     GpsSample s;
     const gps_msg_result_t result = GPS_device_get_update(&s, serial);

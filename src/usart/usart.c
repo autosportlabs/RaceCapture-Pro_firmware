@@ -19,22 +19,25 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "serial.h"
 #include "usart.h"
 #include "usart_device.h"
+
 #include <stdint.h>
 
 int usart_init()
 {
-    return usart_device_init();
+        return usart_device_init();
 }
 
-int usart_init_serial(Serial *serial, uart_id_t port)
+struct Serial* usart_get_serial(const uart_id_t port)
 {
-    return usart_device_init_serial(serial, port);
+        return usart_device_get_serial(port);
 }
 
-void usart_config(uart_id_t port, uint8_t bits, uint8_t parity, uint8_t stopbits, uint32_t baud)
+void usart_config(const uart_id_t id, const size_t bits,
+                  const size_t parity, const size_t stop_bits,
+                  const size_t baud)
 {
-    usart_device_config(port, bits, parity, stopbits, baud);
+        usart_device_config(id, bits, parity, stop_bits, baud);
 }

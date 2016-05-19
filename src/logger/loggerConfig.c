@@ -266,9 +266,10 @@ static void resetTelemetryConfig(TelemetryConfig *cfg)
 
 static void resetConnectivityConfig(ConnectivityConfig *cfg)
 {
-    resetBluetoothConfig(&cfg->bluetoothConfig);
-    resetCellularConfig(&cfg->cellularConfig);
-    resetTelemetryConfig(&cfg->telemetryConfig);
+        resetBluetoothConfig(&cfg->bluetoothConfig);
+        resetCellularConfig(&cfg->cellularConfig);
+        resetTelemetryConfig(&cfg->telemetryConfig);
+        wifi_reset_config(&cfg->wifi);
 }
 
 static void reset_logging_config(struct logging_config *lc)
@@ -556,7 +557,7 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
     s = getHigherSampleRate(sr, s);
 
     /* Now check our Virtual Channels */
-#if defined(VIRTUAL_CHANNEL_SUPPORT)
+#if VIRTUAL_CHANNEL_SUPPORT
     sr = get_virtual_channel_high_sample_rate();
     s = getHigherSampleRate(s, sr);
 #endif /* VIRTUAL_CHANNEL_SUPPORT */
@@ -626,7 +627,7 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
     if (lapConfig->elapsed_time_cfg.sampleRate != SAMPLE_DISABLED) channels++;
     if (lapConfig->current_lap_cfg.sampleRate != SAMPLE_DISABLED) channels++;
 
-#if defined(VIRTUAL_CHANNEL_SUPPORT)
+#if VIRTUAL_CHANNEL_SUPPORT
     channels += get_virtual_channel_count();
 #endif /* VIRTUAL_CHANNEL_SUPPORT */
 

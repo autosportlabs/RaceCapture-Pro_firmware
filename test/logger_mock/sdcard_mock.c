@@ -22,7 +22,7 @@
 
 #include "sdcard.h"
 
-void TestSDWrite(Serial *serial, int lines,int doFlush, int quiet)
+void TestSDWrite(struct Serial *serial, int lines,int doFlush, int quiet)
 {
 
 }

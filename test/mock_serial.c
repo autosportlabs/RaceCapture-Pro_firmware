@@ -21,99 +21,56 @@
 
 
 #include "mock_serial.h"
-#include "mod_string.h"
+#include "serial.h"
+
 #include <stddef.h>
-static Serial mockSerial;
-static char rxBuffer[20000];
-static char txBuffer[20000];
-size_t bufIndex;
+
+#define BUFF_SIZE	(1024 * 16)
+
+static struct Serial *s;
+static char buff[BUFF_SIZE + 1];
+static char *ptr = buff;
+
+static void  _post_tx_cb(xQueueHandle q, void *arg)
+{
+        for(; ptr < buff + BUFF_SIZE && xQueueReceive(q, ptr, 0); ++ptr);
+        *ptr = 0;
+}
 
 void setupMockSerial()
 {
-    mockSerial.flush = &mock_flush;
-    mockSerial.get_c = &mock_get_c;
-    mockSerial.get_c_wait = &mock_get_c_wait;
-    mockSerial.get_line = &mock_get_line;
-    mockSerial.get_line_wait = &mock_get_line_wait;
-    mockSerial.put_c = &mock_put_c;
-    mockSerial.put_s = &mock_put_s;
+        if (!s)
+                s = serial_create("Mock", 10, BUFF_SIZE,
+                                  NULL, NULL, _post_tx_cb, NULL);
+
+        serial_flush(s);
+        mock_resetTxBuffer();
 }
 
-char * mock_getTxBuffer()
+char* mock_getTxBuffer()
 {
-    return txBuffer;
-}
-
-void mock_setRxBuffer(const char *src)
-{
-    strcpy(rxBuffer, src);
-    bufIndex = 0;
-}
-
-void mock_appendRxBuffer(const char *src)
-{
-    strcat(rxBuffer, src);
+        return buff;
 }
 
 void mock_resetTxBuffer()
 {
-    txBuffer[0] = '\0';
+        ptr = buff;
+        *ptr = 0;
 }
 
-Serial * getMockSerial()
+void mock_appendRxBuffer(const char *src)
 {
-    return &mockSerial;
+        xQueueHandle q = serial_get_rx_queue(s);
+        for (; *src && xQueueSend(q, src, 0); ++src);
 }
 
-void mock_flush(void) {}
-
-int mock_get_c_wait(char *c, size_t delay)
+void mock_setRxBuffer(const char *src)
 {
-
-    if (bufIndex < strlen(rxBuffer)) {
-        *c = rxBuffer[bufIndex++];
-        return 1;
-    } else {
-        return 0;
-    }
+        serial_flush(s);
+        mock_appendRxBuffer(src);
 }
 
-char mock_get_c()
+struct Serial* getMockSerial()
 {
-    char c = 0;
-    mock_get_c_wait(&c, 0);
-    return c;
-}
-
-void mock_put_c(char c)
-{
-    char append[2];
-    append[0] = c;
-    append[1] = '\0';
-    strcat(txBuffer, append);
-}
-
-void mock_put_s(const char* s )
-{
-    while ( *s ) mock_put_c(*s++ );
-}
-
-int mock_get_line_wait(char *s, int len, size_t delay)
-{
-    int count = 0;
-    while(count < len - 1) {
-        char c;
-        if (! mock_get_c_wait(&c, delay)) break;
-        if (c == 0) break; //timeout
-        *s++ = c;
-        count++;
-        if (c == '\n') break;
-    }
-    *s = '\0';
-    return count;
-}
-
-int mock_get_line(char *s, int len)
-{
-    return mock_get_line_wait(s,len,0);
+        return s;
 }

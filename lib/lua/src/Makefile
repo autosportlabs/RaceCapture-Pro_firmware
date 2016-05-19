@@ -16,7 +16,7 @@ PLAT= none
 ifeq ($(PLAT), stm32)
 	MCU   = cortex-m4
 	THUMB = -mthumb
-	CC = arm-none-eabi-gcc
+	CC = $(CCACHE) arm-none-eabi-gcc
 	CFLAGS= -mcpu=$(MCU) $(THUMB) -ggdb -Os -Wall $(MYCFLAGS) -DLUA_OPTIMIZE_MEMORY=0 -DLUA_USE_MKSTEMP=1
 	AR = arm-none-eabi-ar rcu
 	RANLIB= arm-none-eabi-ranlib

@@ -22,22 +22,17 @@
 #ifndef USB_CDC_DEVICE_H_
 #define USB_CDC_DEVICE_H_
 
-#include "cpp_guard.h"
 #include "FreeRTOS.h"
+#include "cpp_guard.h"
+#include "serial.h"
 
 CPP_GUARD_BEGIN
 
 int USB_CDC_device_init(const int priority);
 
-void USB_CDC_send_debug(portCHAR *string);
-
-void USB_CDC_SendByte( portCHAR cByte );
-
-portBASE_TYPE USB_CDC_ReceiveByte(portCHAR *data);
-
-portBASE_TYPE USB_CDC_ReceiveByteDelay(portCHAR *data, portTickType delay );
-
 int USB_CDC_is_initialized();
+
+struct Serial* USB_CDC_get_serial();
 
 CPP_GUARD_END
 
