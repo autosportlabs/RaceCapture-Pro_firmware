@@ -32,7 +32,7 @@ int ADC_init(LoggerConfig *loggerConfig);
 
 void ADC_sample_all(void);
 
-float ADC_read(unsigned int channel);
+float ADC_read(const size_t channel);
 
 CPP_GUARD_END
 

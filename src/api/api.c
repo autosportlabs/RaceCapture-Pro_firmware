@@ -38,66 +38,66 @@ void initApi()
     jsmn_init(&g_jsonParser);
 }
 
-static void putQuotedStr(const Serial *serial, const char *str)
+static void putQuotedStr(struct Serial *serial, const char *str)
 {
-    serial->put_c('"');
-    serial->put_s(str);
-    serial->put_c('"');
+    serial_put_c(serial, '"');
+    serial_put_s(serial, str);
+    serial_put_c(serial, '"');
 }
 
-static void putKeyAndColon(const Serial *serial, const char *key)
+static void putKeyAndColon(struct Serial *serial, const char *key)
 {
     putQuotedStr(serial, key);
-    serial->put_c(':');
+    serial_put_c(serial, ':');
 }
 
-static void putNull(Serial *serial)
+static void putNull(struct Serial *serial)
 {
-    serial->put_s("null");
+    serial_put_s(serial, "null");
 }
 
-static void putCommaIfNecessary(const Serial *serial, int necessary)
+static void putCommaIfNecessary(struct Serial *serial, int necessary)
 {
     if (necessary)
-        serial->put_c(',');
+        serial_put_c(serial, ',');
 }
 
-void json_valueStart(Serial *serial, const char *name)
+void json_valueStart(struct Serial *serial, const char *name)
 {
     putKeyAndColon(serial, name);
 }
 
-void json_null(Serial *serial, const char *name, int more)
+void json_null(struct Serial *serial, const char *name, int more)
 {
     putKeyAndColon(serial, name);
     putNull(serial);
     putCommaIfNecessary(serial, more);
 }
 
-void json_int(Serial *serial, const char *name, int value, int more)
+void json_int(struct Serial *serial, const char *name, int value, int more)
 {
     putKeyAndColon(serial, name);
     put_int(serial, value);
     putCommaIfNecessary(serial, more);
 }
 
-void json_uint(Serial *serial, const char *name, unsigned int value, int more)
+void json_uint(struct Serial *serial, const char *name, unsigned int value, int more)
 {
     putKeyAndColon(serial, name);
     put_uint(serial, value);
     putCommaIfNecessary(serial, more);
 }
 
-void json_escapedString(Serial *serial, const char *name, const char *value, int more)
+void json_escapedString(struct Serial *serial, const char *name, const char *value, int more)
 {
     putKeyAndColon(serial, name);
-    serial->put_c('"');
+    serial_put_c(serial, '"');
     put_escapedString(serial, value, strlen(value));
-    serial->put_c('"');
+    serial_put_c(serial, '"');
     putCommaIfNecessary(serial, more);
 }
 
-void json_string(Serial *serial, const char *name, const char *value, int more)
+void json_string(struct Serial *serial, const char *name, const char *value, int more)
 {
     putKeyAndColon(serial, name);
 
@@ -110,71 +110,79 @@ void json_string(Serial *serial, const char *name, const char *value, int more)
     putCommaIfNecessary(serial, more);
 }
 
-void json_float(Serial *serial, const char *name, float value, int precision, int more)
+void json_float(struct Serial *serial, const char *name, float value, int precision, int more)
 {
     putKeyAndColon(serial, name);
     put_float(serial, value, precision);
     putCommaIfNecessary(serial, more);
 }
 
-void json_objStartString(Serial *serial, const char *label)
+void json_bool(struct Serial *serial, const char *name,
+               const bool value, bool more)
 {
-    putKeyAndColon(serial, label);
-    serial->put_c('{');
-}
-
-// Call itoa here and use above?
-void json_objStartInt(Serial *serial, int label)
-{
-    serial->put_c('"');
-    put_int(serial, label);
-    serial->put_s("\":{");
-}
-
-void json_objStart(Serial *serial)
-{
-    serial->put_c('{');
-}
-
-void json_objEnd(Serial *serial, int more)
-{
-    serial->put_c('}');
+    putKeyAndColon(serial, name);
+    serial_put_s(serial, value ? "true" : "false");
     putCommaIfNecessary(serial, more);
 }
 
-void json_arrayStart(Serial *serial, const char * name)
+void json_objStartString(struct Serial *serial, const char *label)
+{
+    putKeyAndColon(serial, label);
+    serial_put_c(serial, '{');
+}
+
+// Call itoa here and use above?
+void json_objStartInt(struct Serial *serial, int label)
+{
+    serial_put_c(serial, '"');
+    put_int(serial, label);
+    serial_put_s(serial, "\":{");
+}
+
+void json_objStart(struct Serial *serial)
+{
+    serial_put_c(serial, '{');
+}
+
+void json_objEnd(struct Serial *serial, int more)
+{
+    serial_put_c(serial, '}');
+    putCommaIfNecessary(serial, more);
+}
+
+void json_arrayStart(struct Serial *serial, const char * name)
 {
     if (name != NULL)
         putKeyAndColon(serial, name);
 
-    serial->put_c('[');
+    serial_put_c(serial, '[');
 }
 
-void json_arrayElementString(Serial *serial, const char *value, int more)
+void json_arrayElementString(struct Serial *serial, const char *value, int more)
 {
     putQuotedStr(serial, value);
     putCommaIfNecessary(serial, more);
 }
 
-void json_arrayElementInt(Serial *serial, int value, int more)
+void json_arrayElementInt(struct Serial *serial, int value, int more)
 {
     put_int(serial, value);
     putCommaIfNecessary(serial, more);
 }
 
-void json_arrayElementFloat(Serial *serial, float value, int precision, int more)
+void json_arrayElementFloat(struct Serial *serial, float value, int precision, int more)
 {
     put_float(serial, value, precision);
     putCommaIfNecessary(serial, more);
 }
 
-void json_arrayEnd(Serial *serial, int more)
+void json_arrayEnd(struct Serial *serial, int more)
 {
-    serial->put_c(']');
+    serial_put_c(serial, ']');
     putCommaIfNecessary(serial, more);
 }
 
-void json_sendResult(Serial *serial, const char *messageName, int resultCode)
+void json_sendResult(struct Serial *serial, const char *messageName, int resultCode)
 {
     json_objStart(serial);
     json_objStartString(serial, messageName);
@@ -183,7 +191,7 @@ void json_sendResult(Serial *serial, const char *messageName, int resultCode)
     json_objEnd(serial, 0);
 }
 
-static int dispatch_api(Serial *serial, const char * apiMsgName, const jsmntok_t *apiPayload)
+static int dispatch_api(struct Serial *serial, const char * apiMsgName, const jsmntok_t *apiPayload)
 {
 
     const api_t * api = apis;
@@ -205,7 +213,7 @@ static int dispatch_api(Serial *serial, const char * apiMsgName, const jsmntok_t
     return res;
 }
 
-static int execute_api(Serial * serial, const jsmntok_t *json)
+static int execute_api(struct Serial * serial, const jsmntok_t *json)
 {
     const jsmntok_t *root = &json[0];
     if (root->type == JSMN_OBJECT && root->size == 2) {
@@ -222,7 +230,7 @@ static int execute_api(Serial * serial, const jsmntok_t *json)
     }
 }
 
-int process_api(Serial *serial, char *buffer, size_t bufferSize)
+int process_api(struct Serial *serial, char *buffer, size_t bufferSize)
 {
     jsmn_init(&g_jsonParser);
     memset(g_json_tok, 0, sizeof(g_json_tok));

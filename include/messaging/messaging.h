@@ -33,7 +33,9 @@ CPP_GUARD_BEGIN
 
 void initMessaging();
 
-void process_msg(Serial *serial, char * buffer, size_t bufferSize);
+int process_read_msg(struct Serial *serial, char *buff, size_t len);
+
+void process_msg(struct Serial *serial, char * buffer, size_t bufferSize);
 
 CPP_GUARD_END
 

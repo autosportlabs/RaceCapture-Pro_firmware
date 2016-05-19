@@ -27,32 +27,15 @@
 
 CPP_GUARD_BEGIN
 
-int f_impl(lua_State *L);
+int lua_panic(lua_State *l);
+void lua_validate_args_count(lua_State *l, const int min, const int max);
+void lua_validate_arg_boolean(lua_State *l, const int idx);
+void lua_validate_arg_number(lua_State *l, const int idx);
+void lua_validate_arg_string(lua_State *l, const int idx);
+void lua_validate_arg_table(lua_State *l, const int idx);
+void lua_validate_arg_number_or_string(lua_State *l, const int idx);
 
 void registerBaseLuaFunctions(lua_State *L);
-
-// utility functions
-int Lua_Sleep(lua_State *L);
-int Lua_Print(lua_State *L);
-int Lua_Println(lua_State *L);
-int Lua_GetStackSize(lua_State *L);
-int Lua_SetTickRate(lua_State *L);
-int Lua_GetTickRate(lua_State *L);
-int Lua_PrintLog(lua_State *L);
-int Lua_PrintLogLn(lua_State *L);
-int Lua_SetLogLevel(lua_State *L);
-int Lua_GetLogLevel(lua_State *L);
-
-/**
- * Returns an error to the Lua runtime with a descriptive string
- * IMPORTANT: This methods never returns.  The `lua_error` method.
- *            does a long jump internally.  The return statements here
- *            are really only here to make things look pretty and logical.
- */
-int rcp_lua_error(lua_State *L, const char *msg);
-int incorrect_arguments(lua_State *L);
-
-
 
 CPP_GUARD_END
 

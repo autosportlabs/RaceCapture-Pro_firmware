@@ -30,7 +30,7 @@
 
 CPP_GUARD_BEGIN
 
-#if defined(LUA_SUPPORT)
+#if LUA_SUPPORT
 
 enum script_add_result {
         SCRIPT_ADD_RESULT_FAIL = 0,

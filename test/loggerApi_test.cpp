@@ -59,12 +59,10 @@ CPPUNIT_TEST_SUITE_REGISTRATION( LoggerApiTest );
 
 
 char * LoggerApiTest::processApiGeneric(string filename){
-	Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
-	char *txBuffer = mock_getTxBuffer();
-	return txBuffer;
+	return mock_getTxBuffer();
 }
 
 
@@ -351,7 +349,7 @@ void LoggerApiTest::testGetAnalogCfg(){
 
 void LoggerApiTest::testSetAnalogConfigFile(string filename){
 
-	Serial *serial = getMockSerial();
+	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -432,7 +430,7 @@ void LoggerApiTest::testGetImuCfg(){
 }
 
 void LoggerApiTest::testSetImuConfigFile(string filename){
-	Serial *serial = getMockSerial();
+	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -466,8 +464,7 @@ void LoggerApiTest::testSetConnectivityCfgFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	ConnectivityConfig *connCfg = &c->ConnectivityConfigs;
 
-	processApiGeneric(filename);
-	char *txBuffer = mock_getTxBuffer();
+	char *txBuffer = processApiGeneric(filename);
 	assertGenericResponse(txBuffer, "setConnCfg", API_SUCCESS);
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)connCfg->cellularConfig.cellEnabled);
@@ -554,7 +551,7 @@ void LoggerApiTest::testGetPwmCfg(){
 
 
 void LoggerApiTest::testSetPwmConfigFile(string filename){
-	Serial *serial = getMockSerial();
+	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -610,7 +607,7 @@ void LoggerApiTest::testGetGpioCfg(){
 }
 
 void LoggerApiTest::testSetGpioConfigFile(string filename){
-	Serial *serial = getMockSerial();
+	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -671,7 +668,7 @@ void LoggerApiTest::testGetTimerCfg(){
 }
 
 void LoggerApiTest::testSetTimerConfigFile(string filename){
-	Serial *serial = getMockSerial();
+	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -1359,4 +1356,86 @@ void LoggerApiTest::testGetStatus(){
 
     CPPUNIT_ASSERT_EQUAL((int)TELEMETRY_STATUS_IDLE, (int)(Number)json["status"]["telemetry"]["status"]);
     CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["telemetry"]["started"]);
+}
+
+void LoggerApiTest::testSetWifiClientCfg() {
+        char *response = processApiGeneric("set_wifi_client_cfg.json");
+
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        struct wifi_client_cfg *cfg = &lc->ConnectivityConfigs.wifi.client;
+	CPPUNIT_ASSERT_EQUAL(true, cfg->active);
+	CPPUNIT_ASSERT_EQUAL(string("foobar"), string(cfg->ssid));
+        CPPUNIT_ASSERT_EQUAL(string("bazbiz"), string(cfg->passwd));
+
+	assertGenericResponse(response, "set_wifi_client_cfg",
+                              API_SUCCESS);
+}
+
+void LoggerApiTest::testGetWifiClientCfg() {
+        const char *response = processApiGeneric("get_wifi_client_cfg.json");
+        Object json;
+        stringToJson(response, json);
+
+        Object wcc = json["wifi_client_cfg"];
+        CPPUNIT_ASSERT_EQUAL(false, (bool)(Boolean)wcc["active"]);
+        CPPUNIT_ASSERT_EQUAL(string(""), (string)(String)wcc["ssid"]);
+        CPPUNIT_ASSERT_EQUAL(string(""), (string)(String)wcc["passwd"]);
+
+        setupMockSerial();
+        testSetWifiClientCfg();
+
+        setupMockSerial();
+        const char *response2 = processApiGeneric("get_wifi_client_cfg.json");
+        Object json2;
+        stringToJson(response2, json2);
+
+        Object wcc2 = json2["wifi_client_cfg"];
+        CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)wcc2["active"]);
+        CPPUNIT_ASSERT_EQUAL(string("foobar"), (string)(String)wcc2["ssid"]);
+        CPPUNIT_ASSERT_EQUAL(string("bazbiz"), (string)(String)wcc2["passwd"]);
+}
+
+void LoggerApiTest::testSetWifiApCfg()
+{
+        char *response = processApiGeneric("set_wifi_ap_cfg.json");
+
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        struct wifi_ap_cfg *cfg = &lc->ConnectivityConfigs.wifi.ap;
+	CPPUNIT_ASSERT_EQUAL(true, cfg->active);
+	CPPUNIT_ASSERT_EQUAL(string("RaceIt"), string(cfg->ssid));
+        CPPUNIT_ASSERT_EQUAL(string("dontcrashit"), string(cfg->password));
+        CPPUNIT_ASSERT_EQUAL((uint8_t) 1, cfg->channel);
+        CPPUNIT_ASSERT_EQUAL(ESP8266_ENCRYPTION_NONE, cfg->encryption);
+
+	assertGenericResponse(response, "set_wifi_ap_cfg", API_SUCCESS);
+}
+
+void LoggerApiTest::testSetWifiApCfgBadChannel()
+{
+        char *response = processApiGeneric("set_wifi_ap_cfg_bad_channel.json");
+	assertGenericResponse(response, "set_wifi_ap_cfg", API_ERROR_PARAMETER);
+}
+
+void LoggerApiTest::testSetWifiApCfgBadEncryption()
+{
+        char *response = processApiGeneric("set_wifi_ap_cfg_bad_encryption.json");
+	assertGenericResponse(response, "set_wifi_ap_cfg", API_ERROR_PARAMETER);
+}
+
+void LoggerApiTest::testSetAndGetWifiApCfg()
+{
+        /* Run the above to setup the values */
+        testSetWifiApCfg();
+
+        setupMockSerial();
+        const char *response = processApiGeneric("get_wifi_ap_cfg.json");
+        Object json;
+        stringToJson(response, json);
+
+        Object wcc = json["wifi_ap_cfg"];
+        CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)wcc["active"]);
+        CPPUNIT_ASSERT_EQUAL(string("RaceIt"), (string)(String)wcc["ssid"]);
+        CPPUNIT_ASSERT_EQUAL(string("dontcrashit"), (string)(String)wcc["passwd"]);
+        CPPUNIT_ASSERT_EQUAL(1, (int)(Number)wcc["channel"]);
+        CPPUNIT_ASSERT_EQUAL(string("none"), (string)(String)wcc["encryption"]);
 }

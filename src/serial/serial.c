@@ -22,243 +22,370 @@
 #include "capabilities.h"
 #include "loggerConfig.h"
 #include "macros.h"
+#include "mem_mang.h"
 #include "modp_numtoa.h"
 #include "printk.h"
+#include "projdefs.h"
 #include "serial.h"
+#include "str_util.h"
 #include "usart.h"
 #include "usb_comm.h"
 
-static Serial serial_ports[SERIAL_COUNT];
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdio.h>
 
-bool _init_serial(serial_id_t serial_id, uart_id_t uart_id, const char *name)
+struct Serial {
+        const char *name;
+        xQueueHandle tx_queue;
+        xQueueHandle rx_queue;
+
+        config_func_t *config_cb;
+        void *config_cb_arg;
+        post_tx_func_t *post_tx_cb;
+        void *post_tx_cb_arg;
+
+        bool log;
+        bool log_tx_pfx;
+        bool log_rx_pfx;
+};
+
+
+void serial_destroy(struct Serial *s)
 {
-        Serial *s = &serial_ports[serial_id];
+        if (s->tx_queue)
+                vQueueDelete(s->tx_queue);
 
-        s->serial_id = serial_id;
-        serial_set_name(s, name);
+        if (s->rx_queue)
+                vQueueDelete(s->rx_queue);
 
-        return usart_init_serial(s, uart_id) != 0;
+        portFree(s);
 }
 
-void init_serial(void)
+struct Serial* serial_create(const char *name, const size_t tx_cap,
+                             const size_t rx_cap, config_func_t *cfg_cb,
+                             void *cfg_cb_arg, post_tx_func_t *post_tx_cb,
+                             void *post_tx_cb_arg)
 {
-        const bool init =
-                _init_serial(SERIAL_GPS, UART_GPS, "GPS") &&
-                _init_serial(SERIAL_TELEMETRY, UART_TELEMETRY, "Cell") &&
-                _init_serial(SERIAL_WIRELESS, UART_WIRELESS, "BT") &&
-                _init_serial(SERIAL_AUX, UART_AUX, "Aux");
+        struct Serial *s = portMalloc(sizeof(struct Serial));
+        if (!s)
+                return NULL;
 
-        if (!init)
-                pr_error("[serial] Failed to initialize one or more ports\r\n");
+        memset(s, 0, sizeof(struct Serial));
 
-#if defined(USB_SERIAL_SUPPORT)
-        usb_init_serial(&serial_ports[SERIAL_USB]);
-#endif /* USB_SERIAL_SUPPORT */
+        s->name = name;
+        s->config_cb = cfg_cb;
+        s->config_cb_arg = cfg_cb_arg;
+        s->post_tx_cb = post_tx_cb;
+        s->post_tx_cb_arg = post_tx_cb_arg;
+
+        const unsigned portBASE_TYPE c_size =
+                (unsigned portBASE_TYPE) sizeof(signed portCHAR);
+        s->tx_queue = xQueueCreate(tx_cap, c_size);
+        s->rx_queue = xQueueCreate(rx_cap, c_size);
+
+        /* If one of these is NULL, then alloc failure.  Handle */
+        if (!s->tx_queue || !s->rx_queue) {
+                serial_destroy(s);
+                return NULL;
+        }
+
+        /* If here, all good.  Return the new object */
+        return s;
 }
 
-void configure_serial(serial_id_t port, uint8_t bits, uint8_t parity, uint8_t stopBits, uint32_t baud)
+static void _log(const struct Serial *s, const char *action,
+                 bool *pfx, const char data)
 {
-        uart_id_t uartPort;
+        if (!s->log)
+                return;
 
-        switch(port) {
-        case SERIAL_GPS:
-                uartPort = UART_GPS;
+        if (*pfx) {
+                if (s->name) {
+                        pr_info("[serial (");
+                        pr_info(s->name);
+                        pr_info(")] ");
+                } else {
+                        pr_info("[serial] ");
+                }
+                pr_info(action);
+                *pfx = false;
+        }
+
+        switch(data) {
+        case('\r'):
+                pr_info("(\\r)");
                 break;
-        case SERIAL_TELEMETRY:
-                uartPort = UART_TELEMETRY;
-                break;
-        case SERIAL_WIRELESS:
-                uartPort = UART_WIRELESS;
-                break;
-        case SERIAL_AUX:
-                uartPort = UART_AUX;
+        case('\n'):
+                pr_info("(\\n)\r\n");
+                *pfx = true;
                 break;
         default:
-                return;
-        }
-
-        /* If here, we have a real USART port to configure */
-        usart_config(uartPort, bits, parity, stopBits, baud);
-}
-
-Serial* get_serial(serial_id_t port)
-{
-        return port < SERIAL_COUNT ? &serial_ports[port] : NULL;
-}
-
-static void _serial_log(const Serial *s, const char *action, bool *pfx,
-                        const char *data)
-{
-        LoggerConfig *lc = getWorkingLoggerConfig();
-        const bool enabled = lc->logging_cfg.serial[s->serial_id];
-
-        if (!enabled || NULL == data)
-                return;
-
-        for(; *data; ++data) {
-                if (*pfx) {
-                        pr_info("[serial]");
-                        if (s->sl.name) {
-                                pr_info("[");
-                                pr_info(s->sl.name);
-                                pr_info("]");
-                        }
-                        pr_info(action);
-                        *pfx = false;
-                }
-
-                switch(*data) {
-                case('\r'):
-                        pr_info("\\r");
-                        break;
-                case('\n'):
-                        pr_info("\\n\r\n");
-                        *pfx = true;
-                        break;
-                default:
-                        pr_info_char(*data);
-                        break;
-                }
+                pr_info_char(data);
+                break;
         }
 }
 
-static void do_rx_callback(Serial *s, const char *data)
+static void log_rx(struct Serial *s, const char data)
 {
-        _serial_log(s, " RX: ", &s->sl.rx_pfx, data);
+        _log(s, "RX: ", &s->log_rx_pfx, data);
 }
 
-static void do_tx_callback(Serial *s, const char *data)
+static void log_tx(struct Serial *s, const char data)
 {
-        _serial_log(s, " TX: ", &s->sl.tx_pfx, data);
+        _log(s, "TX: ", &s->log_tx_pfx, data);
 }
 
-static void do_rx_callback_char(Serial *s, const char data)
+bool serial_logging(struct Serial *s, const bool enable)
 {
-        const char str[] = { data, '\0' };
-        do_rx_callback(s, str);
-}
-
-static void do_tx_callback_char(Serial *s, const char data)
-{
-        const char str[] = { data, '\0' };
-        do_tx_callback(s, str);
-}
-
-bool serial_logging(Serial *s, const bool enable)
-{
-        LoggerConfig *lc = getWorkingLoggerConfig();
-
-        const bool prev = lc->logging_cfg.serial[s->serial_id];
-        lc->logging_cfg.serial[s->serial_id] = enable;
-
+        const bool prev = s->log;
+        s->log = enable;
         return prev;
 }
 
-void serial_set_name(Serial *s, const char *name)
+bool serial_config(const struct Serial *s, const size_t bits,
+                   const size_t parity, const size_t stop_bits,
+                   const size_t baud)
 {
-        s->sl.name = name;
+        if (!s->config_cb)
+                return true; /* No-op always succeeds */
+
+        return s->config_cb(s->config_cb_arg, bits, parity, stop_bits, baud);
 }
 
-void serial_flush(Serial *s)
+static void purge_queue(xQueueHandle q)
 {
-        s->flush();
+        for(char c; pdTRUE == xQueueReceive(q, &c, 0););
 }
 
-void serial_init(Serial *s, unsigned int bits, unsigned int parity,
-                 unsigned int stopBits, unsigned int baud)
+void serial_purge_rx_queue(struct Serial* s)
 {
-        s->init(bits, parity, stopBits, baud);
+        purge_queue(s->rx_queue);
 }
 
-char serial_get_c(Serial *s)
+void serial_purge_tx_queue(struct Serial* s)
 {
-        const char c = s->get_c();
-        do_rx_callback_char(s, c);
-        return c;
+        purge_queue(s->tx_queue);
 }
 
-int serial_get_c_wait(Serial *s, char *c, const size_t delay)
+/**
+ * Clears the contents of the rx and tx queues.
+ */
+void serial_clear(struct Serial *s)
 {
-        const int rv = s->get_c_wait(c, delay);
-        do_rx_callback_char(s, *c);
-        return rv;
+        serial_purge_rx_queue(s);
+        serial_purge_tx_queue(s);
 }
 
-int serial_get_line(Serial *s, char *l, const int len)
+void serial_flush(struct Serial *s)
 {
-        const int rv = s->get_line(l, len);
-        do_rx_callback(s, l);
-        return rv;
+        /* Legacy Behavior.  Don't log the chars being dumped. */
+        serial_purge_rx_queue(s);
+
+        /* STIEG: TODO Figure out how to flush Tx sanely */
 }
 
-int serial_get_line_wait(Serial *s, char *l, const int len,
+bool serial_get_c_wait(struct Serial *s, char *c, const size_t delay)
+{
+        if (pdFALSE == xQueueReceive(s->rx_queue, c, delay))
+                return false;
+
+        log_rx(s, *c);
+        return true;
+}
+
+char serial_get_c(struct Serial *s)
+{
+        char c;
+        return serial_get_c_wait(s, &c, portMAX_DELAY) ? c : 0;
+}
+
+/**
+ * Reads in a line from a serial device delimeted by \n.  The data is
+ * written to buff BUT MAY NOT BE NULL TERMINATED.  NULL termination is the
+ * responsibility of the caller.
+ * @param s The Serial device to read from.
+ * @param buff The buffer to put the data into.
+ * @param len The length of the buffer.
+ * @param delay The number of ticks to wait.
+ * @return Number of characters read.
+ */
+int serial_get_line_wait(struct Serial *s, char *buff, const size_t len,
                          const size_t delay)
 {
-        const int rv = s->get_line_wait(l, len, delay);
-        do_rx_callback(s, l);
-        return rv;
+        size_t i = 0;
+
+        for (; i < len; ++i) {
+                if (!serial_get_c_wait(s, buff + i, delay))
+                        return i;
+
+                switch(buff[i]) {
+                case '\n':
+                        return ++i;
+                }
+        }
+
+        return i;
 }
 
-void serial_put_c(Serial *s, const char c)
+int serial_get_line(struct Serial *s, char *l, const size_t len)
 {
-        do_tx_callback_char(s, c);
-        s->put_c(c);
+        return serial_get_line_wait(s, l, len, portMAX_DELAY);
 }
 
-void serial_put_s(Serial *s, const char *l)
+bool serial_put_c_wait(struct Serial *s, const char c, const size_t delay)
 {
-        do_tx_callback(s, l);
-        s->put_s(l);
+        if (pdFALSE == xQueueSend(s->tx_queue, &c, delay))
+                return false;
+
+        log_tx(s, c);
+
+        if (s->post_tx_cb)
+                s->post_tx_cb(s->tx_queue, s->post_tx_cb_arg);
+
+        return true;
 }
 
-size_t serial_read_byte(Serial *serial, uint8_t *b, size_t delay)
+bool serial_put_c(struct Serial *s, const char c)
+{
+        return serial_put_c_wait(s, c, portMAX_DELAY);
+}
+
+int serial_put_buff_wait(struct Serial *s, const char *buf, const size_t len,
+                         const size_t delay)
+{
+        int i;
+
+        for (i = 0; i < len; ++i)
+                serial_put_c_wait(s, buf[i], delay);
+
+        return i;
+}
+
+int serial_put_buff(struct Serial *s, const char *buf, const size_t len)
+{
+        return serial_put_buff_wait(s, buf, len, portMAX_DELAY);
+}
+
+int serial_put_s_wait(struct Serial *s, const char *l, const size_t delay)
+{
+        int i;
+
+        for (i = 0; *l; ++i, ++l)
+                serial_put_c_wait(s, *l, delay);
+
+        return i;
+}
+
+int serial_put_s(struct Serial *s, const char *l)
+{
+        return serial_put_s_wait(s, l, portMAX_DELAY);
+}
+
+bool serial_read_byte(struct Serial *serial, uint8_t *b, const size_t delay)
 {
         return serial_get_c_wait(serial, (char*) b, delay);
 }
 
-void put_int(Serial *serial, int n)
+xQueueHandle serial_get_rx_queue(struct Serial *s)
+{
+        return s->rx_queue;
+}
+
+xQueueHandle serial_get_tx_queue(struct Serial *s)
+{
+        return s->tx_queue;
+}
+
+/* STIEG: Replace vsnprintf with vfprintf if you can make a stream */
+/* typedef ssize_t cookie_read_function_t(void *__cookie, char *__buf, size_t __n); */
+/* static ssize_t _read(void *cookie, char *buf, size_t n) */
+/* { */
+/*         struct Serial *s = cookie; */
+/*         return (ssize_t) serial_get_line(s, buf, n); */
+/* } */
+
+/* typedef ssize_t cookie_write_function_t(void *__cookie, const char *__buf, */
+/*                                         size_t __n); */
+/* static ssize_t _write(void *cookie, const char *buf, size_t n) */
+/* { */
+/*         struct Serial *s = cookie; */
+/*         return (ssize_t) serial_put_buff(s, buf, n); */
+/* } */
+
+/* typedef struct */
+/* { */
+/*         /\* These four struct member names are dictated by Linux; hopefully, */
+/*            they don't conflict with any macros.  *\/ */
+/*         cookie_read_function_t  *read; */
+/*         cookie_write_function_t *write; */
+/*         cookie_seek_function_t  *seek; */
+/*         cookie_close_function_t *close; */
+/* } cookie_io_functions_t; */
+/* static const cookie_io_functions_t serial_cookie = { */
+/*         .read = _read, */
+/*         .write = _write, */
+/*         .seek = NULL, */
+/*         .close = NULL, */
+/* }; */
+
+/* STIEG: Add "Serial_" prefix to these methods without them */
+/* STIEG: Migrate to _put_numeric_val once figure out float printf issue */
+/* static int _put_numeric_val(struct Serial *s, const char *fmt, ...) */
+/* { */
+/*         char buf[32]; */
+/*         va_list ap; */
+
+/*         va_start(ap, fmt); */
+/*         vsnprintf(buf, ARRAY_LEN(buf), fmt, ap); */
+/*         va_end(ap); */
+
+/*         return serial_put_s(s, str_util_rstrip_zeros_inline(buf)); */
+/* } */
+
+int put_int(struct Serial *s, const int n)
 {
         char buf[12];
         modp_itoa10(n, buf);
-        serial_put_s(serial, buf);
+        return serial_put_s(s, buf);
 }
 
-void put_ll(Serial *serial, long long l)
+int put_ll(struct Serial *s, const long long l)
 {
         char buf[22];
         modp_ltoa10(l, buf);
-        serial_put_s(serial, buf);
+        return serial_put_s(s, buf);
 }
 
-void put_float(Serial *serial, float f,int precision)
+int put_hex(struct Serial *s, const int i)
+{
+        char buf[30];
+        modp_itoaX(i, buf, 16);
+        return serial_put_s(s, buf);
+}
+
+int put_uint(struct Serial *s, const unsigned int n)
+{
+        char buf[20];
+        modp_uitoa10(n, buf);
+        return serial_put_s(s, buf);
+}
+
+int put_float(struct Serial *s, const float f, const int precision)
 {
         char buf[20];
         modp_ftoa(f, buf, precision);
-        serial_put_s(serial, buf);
+        return serial_put_s(s, buf);
 }
 
-void put_double(Serial *serial, double f, int precision)
+int put_double(struct Serial *s, const double f, const int precision)
 {
         char buf[30];
-        modp_dtoa(f,buf,precision);
-        serial_put_s(serial, buf);
+        modp_dtoa(f, buf, precision);
+        return serial_put_s(s, buf);
 }
 
-void put_hex(Serial *serial, int n)
-{
-        char buf[30];
-        modp_itoaX(n,buf,16);
-        serial_put_s(serial, buf);
-}
-
-void put_uint(Serial *serial, unsigned int n)
-{
-        char buf[20];
-        modp_uitoa10(n,buf);
-        serial_put_s(serial, buf);
-}
-
-void put_nameIndexUint(Serial *serial, const char *s, int i, unsigned int n)
+void put_nameIndexUint(struct Serial *serial, const char *s, int i, unsigned int n)
 {
         serial_put_s(serial, s);
         serial_put_s(serial, "_");
@@ -268,7 +395,7 @@ void put_nameIndexUint(Serial *serial, const char *s, int i, unsigned int n)
         serial_put_s(serial, ";");
 }
 
-void put_nameSuffixUint(Serial *serial, const char *s, const char *suf, unsigned int n)
+void put_nameSuffixUint(struct Serial *serial, const char *s, const char *suf, unsigned int n)
 {
         serial_put_s(serial, s);
         serial_put_s(serial, "_");
@@ -278,7 +405,7 @@ void put_nameSuffixUint(Serial *serial, const char *s, const char *suf, unsigned
         serial_put_s(serial, ";");
 }
 
-void put_nameUint(Serial *serial, const char *s, unsigned int n)
+void put_nameUint(struct Serial *serial, const char *s, unsigned int n)
 {
         serial_put_s(serial, s);
         serial_put_s(serial, "=");
@@ -286,7 +413,7 @@ void put_nameUint(Serial *serial, const char *s, unsigned int n)
         serial_put_s(serial, ";");
 }
 
-void put_nameIndexInt(Serial *serial, const char *s, int i, int n)
+void put_nameIndexInt(struct Serial *serial, const char *s, int i, int n)
 {
         serial_put_s(serial, s);
         serial_put_s(serial, "_");
@@ -296,7 +423,7 @@ void put_nameIndexInt(Serial *serial, const char *s, int i, int n)
         serial_put_s(serial, ";");
 }
 
-void put_nameSuffixInt(Serial *serial, const char *s, const char *suf, int n)
+void put_nameSuffixInt(struct Serial *serial, const char *s, const char *suf, int n)
 {
         serial_put_s(serial, s);
         serial_put_s(serial, "_");
@@ -306,7 +433,7 @@ void put_nameSuffixInt(Serial *serial, const char *s, const char *suf, int n)
         serial_put_s(serial, ";");
 }
 
-void put_nameInt(Serial *serial, const char *s, int n)
+void put_nameInt(struct Serial *serial, const char *s, int n)
 {
         serial_put_s(serial, s);
         serial_put_s(serial, "=");
@@ -314,7 +441,7 @@ void put_nameInt(Serial *serial, const char *s, int n)
         serial_put_s(serial, ";");
 }
 
-void put_nameIndexDouble(Serial *serial, const char *s, int i, double n, int precision)
+void put_nameIndexDouble(struct Serial *serial, const char *s, int i, double n, int precision)
 {
         serial_put_s(serial, s);
         serial_put_s(serial, "_");
@@ -324,7 +451,7 @@ void put_nameIndexDouble(Serial *serial, const char *s, int i, double n, int pre
         serial_put_s(serial, ";");
 }
 
-void put_nameSuffixDouble(Serial *serial, const char *s, const char *suf, double n, int precision)
+void put_nameSuffixDouble(struct Serial *serial, const char *s, const char *suf, double n, int precision)
 {
         serial_put_s(serial, s);
         serial_put_s(serial, "_");
@@ -334,7 +461,7 @@ void put_nameSuffixDouble(Serial *serial, const char *s, const char *suf, double
         serial_put_s(serial, ";");
 }
 
-void put_nameDouble(Serial *serial, const char *s, double n, int precision)
+void put_nameDouble(struct Serial *serial, const char *s, double n, int precision)
 {
         serial_put_s(serial, s);
         serial_put_s(serial, "=");
@@ -342,7 +469,7 @@ void put_nameDouble(Serial *serial, const char *s, double n, int precision)
         serial_put_s(serial, ";");
 }
 
-void put_nameIndexFloat(Serial *serial, const char *s, int i, float n, int precision)
+void put_nameIndexFloat(struct Serial *serial, const char *s, int i, float n, int precision)
 {
         serial_put_s(serial, s);
         serial_put_s(serial, "_");
@@ -352,7 +479,7 @@ void put_nameIndexFloat(Serial *serial, const char *s, int i, float n, int preci
         serial_put_s(serial, ";");
 }
 
-void put_nameSuffixFloat(Serial *serial, const char *s, const char *suf, float n, int precision)
+void put_nameSuffixFloat(struct Serial *serial, const char *s, const char *suf, float n, int precision)
 {
         serial_put_s(serial, s);
         serial_put_s(serial, "_");
@@ -362,7 +489,7 @@ void put_nameSuffixFloat(Serial *serial, const char *s, const char *suf, float n
         serial_put_s(serial, ";");
 }
 
-void put_nameFloat(Serial *serial, const char *s, float n, int precision)
+void put_nameFloat(struct Serial *serial, const char *s, float n, int precision)
 {
         serial_put_s(serial, s);
         serial_put_s(serial, "=");
@@ -370,7 +497,7 @@ void put_nameFloat(Serial *serial, const char *s, float n, int precision)
         serial_put_s(serial, ";");
 }
 
-void put_nameString(Serial *serial, const char *s, const char *v)
+void put_nameString(struct Serial *serial, const char *s, const char *v)
 {
         serial_put_s(serial, s);
         serial_put_s(serial, "=\"");
@@ -378,7 +505,7 @@ void put_nameString(Serial *serial, const char *s, const char *v)
         serial_put_s(serial, "\";");
 }
 
-void put_nameSuffixString(Serial *serial, const char *s, const char *suf, const char *v)
+void put_nameSuffixString(struct Serial *serial, const char *s, const char *suf, const char *v)
 {
         serial_put_s(serial, s);
         serial_put_s(serial, "_");
@@ -388,7 +515,7 @@ void put_nameSuffixString(Serial *serial, const char *s, const char *suf, const 
         serial_put_s(serial, "\";");
 }
 
-void put_nameIndexString(Serial *serial, const char *s, int i, const char *v)
+void put_nameIndexString(struct Serial *serial, const char *s, int i, const char *v)
 {
         serial_put_s(serial, s);
         serial_put_s(serial, "_");
@@ -398,7 +525,7 @@ void put_nameIndexString(Serial *serial, const char *s, int i, const char *v)
         serial_put_s(serial, "\";");
 }
 
-void put_escapedString(Serial * serial, const char *v, int length)
+void put_escapedString(struct Serial * serial, const char *v, int length)
 {
         const char *value = v;
         while (value - v < length) {
@@ -420,7 +547,7 @@ void put_escapedString(Serial * serial, const char *v, int length)
         }
 }
 
-void put_nameEscapedString(Serial *serial, const char *s, const char *v, int length)
+void put_nameEscapedString(struct Serial *serial, const char *s, const char *v, int length)
 {
         serial_put_s(serial, s);
         serial_put_s(serial, "=\"");
@@ -449,7 +576,7 @@ void put_nameEscapedString(Serial *serial, const char *s, const char *v, int len
 }
 
 
-void put_bytes(Serial *serial, char *data, unsigned int length)
+void put_bytes(struct Serial *serial, char *data, unsigned int length)
 {
         while (length > 0) {
                 serial_put_c(serial, *data);
@@ -458,12 +585,12 @@ void put_bytes(Serial *serial, char *data, unsigned int length)
         }
 }
 
-void put_crlf(Serial *serial)
+void put_crlf(struct Serial *serial)
 {
         serial_put_s(serial, "\r\n");
 }
 
-void read_line(Serial *serial, char *buffer, size_t bufferSize)
+void read_line(struct Serial *serial, char *buffer, size_t bufferSize)
 {
         size_t bufIndex = 0;
         char c;
@@ -480,7 +607,7 @@ void read_line(Serial *serial, char *buffer, size_t bufferSize)
         buffer[bufIndex]='\0';
 }
 
-void interactive_read_line(Serial *serial, char * buffer, size_t bufferSize)
+void interactive_read_line(struct Serial *serial, char * buffer, size_t bufferSize)
 {
         size_t bufIndex = 0;
         char c;

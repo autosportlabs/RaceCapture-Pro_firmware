@@ -22,8 +22,11 @@
 #include "FreeRTOS.h"
 #include "led.h"
 #include "mem_mang.h"
+#include "panic.h"
 #include "printk.h"
 #include "queue.h"
+#include "serial.h"
+#include "serial_device.h"
 #include "stm32f4xx_dma.h"
 #include "stm32f4xx_gpio.h"
 #include "stm32f4xx_misc.h"
@@ -32,8 +35,8 @@
 #include "task.h"
 #include "usart_device.h"
 
-#define UART_QUEUE_LENGTH 	1024
-#define GPS_BUFFER_SIZE		132
+#define UART_QUEUE_LEN 	1024
+#define GPS_BUFFER_SIZE	132
 
 #define UART_WIRELESS_IRQ_PRIORITY 	7
 #define UART_AUX_IRQ_PRIORITY 		8
@@ -50,208 +53,66 @@ typedef enum {
     UART_TX_IRQ = 2
 } uart_irq_type_t;
 
-xQueueHandle xUsart0Tx;
-xQueueHandle xUsart0Rx;
-
-xQueueHandle xUsart1Tx;
-xQueueHandle xUsart1Rx;
-
-xQueueHandle xUsart2Tx;
-xQueueHandle xUsart2Rx;
-
-xQueueHandle xUsart3Tx;
-xQueueHandle xUsart3Rx;
-
 static uint8_t *gpsRxBuffer;
 
-static int initQueues()
+static struct usart_info {
+        xQueueHandle tx;
+        xQueueHandle rx;
+        struct Serial *serial;
+        USART_TypeDef *usart;
+} usart_data[__UART_COUNT];
+
+
+static void init_usart(USART_TypeDef *USARTx, const size_t bits,
+                       const size_t parity, const size_t stop_bits,
+                       const size_t baud)
 {
-    gpsRxBuffer = (uint8_t *) portMalloc(sizeof(uint8_t) * GPS_BUFFER_SIZE);
+        uint16_t wordLengthFlag;
+        switch (bits) {
+        case 9:
+                wordLengthFlag = USART_WordLength_9b;
+                break;
+        case 8:
+        default:
+                wordLengthFlag = USART_WordLength_8b;
+                break;
+        }
 
-    int success = 1;
+        uint16_t stopBitsFlag;
+        switch (stop_bits) {
+        case 2:
+                stopBitsFlag = USART_StopBits_2;
+                break;
+        case 1:
+        default:
+                stopBitsFlag = USART_StopBits_1;
+                break;
+        }
 
-    /* Create the queues used to hold Rx and Tx characters. */
-    xUsart0Rx = xQueueCreate(UART_QUEUE_LENGTH,
-                             (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    xUsart0Tx = xQueueCreate(UART_QUEUE_LENGTH + 1,
-                             (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    if (xUsart0Rx == NULL || xUsart0Tx == NULL) {
-        success = 0;
-        goto cleanup_and_return;
-    }
+        uint16_t parityFlag;
+        switch (parity) {
+        case 1:
+                parityFlag = USART_Parity_Even;
+                break;
+        case 2:
+                parityFlag = USART_Parity_Odd;
+                break;
+        case 0:
+        default:
+                parityFlag = USART_Parity_No;
+                break;
+        }
 
+        USART_InitTypeDef usart;
+        usart.USART_BaudRate = baud;
+        usart.USART_WordLength = wordLengthFlag;
+        usart.USART_StopBits = stopBitsFlag;
+        usart.USART_Parity = parityFlag;
+        usart.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+        usart.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 
-    xUsart1Rx = xQueueCreate(UART_QUEUE_LENGTH,
-                             (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    xUsart1Tx = xQueueCreate(UART_QUEUE_LENGTH + 1,
-                             (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    if (xUsart1Rx == NULL || xUsart1Tx == NULL) {
-        success = 0;
-        goto cleanup_and_return;
-    }
-
-    xUsart2Rx = xQueueCreate(UART_QUEUE_LENGTH,
-                             (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    xUsart2Tx = xQueueCreate(UART_QUEUE_LENGTH + 1,
-                             (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    if (xUsart2Rx == NULL || xUsart2Tx == NULL) {
-        success = 0;
-        goto cleanup_and_return;
-    }
-
-    xUsart3Rx = xQueueCreate(UART_QUEUE_LENGTH,
-                             (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    xUsart3Tx = xQueueCreate(UART_QUEUE_LENGTH + 1,
-                             (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    if (xUsart3Rx == NULL || xUsart3Tx == NULL) {
-        success = 0;
-        goto cleanup_and_return;
-    }
-
-cleanup_and_return:
-    return success;
-}
-
-static void initUsart(USART_TypeDef * USARTx, unsigned int bits,
-                      unsigned int parity, unsigned int stopBits,
-                      unsigned int baud)
-{
-    uint16_t wordLengthFlag;
-    switch (bits) {
-    case 9:
-        wordLengthFlag = USART_WordLength_9b;
-        break;
-    case 8:
-    default:
-        wordLengthFlag = USART_WordLength_8b;
-        break;
-    }
-
-    uint16_t stopBitsFlag;
-    switch (stopBits) {
-    case 2:
-        stopBitsFlag = USART_StopBits_2;
-        break;
-    case 1:
-    default:
-        stopBitsFlag = USART_StopBits_1;
-        break;
-    }
-
-    uint16_t parityFlag;
-    switch (parity) {
-    case 1:
-        parityFlag = USART_Parity_Even;
-        break;
-    case 2:
-        parityFlag = USART_Parity_Odd;
-        break;
-    case 0:
-    default:
-        parityFlag = USART_Parity_No;
-        break;
-    }
-
-    USART_InitTypeDef usart;
-    usart.USART_BaudRate = baud;
-    usart.USART_WordLength = wordLengthFlag;
-    usart.USART_StopBits = stopBitsFlag;
-    usart.USART_Parity = parityFlag;
-    usart.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-    usart.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-
-    USART_Init(USARTx, &usart);
-    USART_Cmd(USARTx, ENABLE);
-}
-
-int usart_device_init()
-{
-    if (!initQueues()) {
-        return 0;
-    }
-
-    usart_device_init_0(8, 0, 1, DEFAULT_WIRELESS_BAUD_RATE);	//wireless
-    usart_device_init_1(8, 0, 1, DEFAULT_AUX_BAUD_RATE);	//auxilary
-    usart_device_init_2(8, 0, 1, DEFAULT_GPS_BAUD_RATE);	//GPS
-    usart_device_init_3(8, 0, 1, DEFAULT_TELEMETRY_BAUD_RATE);	//telemetry
-    return 1;
-}
-
-void usart_device_config(uart_id_t port, uint8_t bits, uint8_t parity,
-                         uint8_t stopbits, uint32_t baud)
-{
-    switch (port) {
-    case UART_WIRELESS:
-        initUsart(USART1, bits, parity, stopbits, baud);
-        break;
-    case UART_AUX:
-        initUsart(USART3, bits, parity, stopbits, baud);
-        break;
-    case UART_GPS:
-        initUsart(USART2, bits, parity, stopbits, baud);
-        break;
-    case UART_TELEMETRY:
-        initUsart(UART4, bits, parity, stopbits, baud);
-        break;
-    default:
-        break;
-    }
-}
-
-int usart_device_init_serial(Serial * serial, uart_id_t id)
-{
-    int rc = 1;
-
-    switch (id) {
-    case UART_WIRELESS:
-        serial->init = &usart_device_init_0;
-        serial->flush = &usart0_flush;
-        serial->get_c = &usart0_getchar;
-        serial->get_c_wait = &usart0_getcharWait;
-        serial->get_line = &usart0_readLine;
-        serial->get_line_wait = &usart0_readLineWait;
-        serial->put_c = &usart0_putchar;
-        serial->put_s = &usart0_puts;
-        break;
-
-    case UART_AUX:
-        serial->init = &usart_device_init_1;
-        serial->flush = &usart1_flush;
-        serial->get_c = &usart1_getchar;
-        serial->get_c_wait = &usart1_getcharWait;
-        serial->get_line = &usart1_readLine;
-        serial->get_line_wait = &usart1_readLineWait;
-        serial->put_c = &usart1_putchar;
-        serial->put_s = &usart1_puts;
-        break;
-
-    case UART_GPS:
-        serial->init = &usart_device_init_2;
-        serial->flush = &usart2_flush;
-        serial->get_c = &usart2_getchar;
-        serial->get_c_wait = &usart2_getcharWait;
-        serial->get_line = &usart2_readLine;
-        serial->get_line_wait = &usart2_readLineWait;
-        serial->put_c = &usart2_putchar;
-        serial->put_s = &usart2_puts;
-        break;
-
-    case UART_TELEMETRY:
-        serial->init = &usart_device_init_3;
-        serial->flush = &usart3_flush;
-        serial->get_c = &usart3_getchar;
-        serial->get_c_wait = &usart3_getcharWait;
-        serial->get_line = &usart3_readLine;
-        serial->get_line_wait = &usart3_readLineWait;
-        serial->put_c = &usart3_putchar;
-        serial->put_s = &usart3_puts;
-        break;
-
-    default:
-        rc = 0;
-        break;
-    }
-    return rc;
+        USART_Init(USARTx, &usart);
+        USART_Cmd(USARTx, ENABLE);
 }
 
 static void initGPIO(GPIO_TypeDef * GPIOx, uint32_t gpioPins)
@@ -336,9 +197,9 @@ static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
         USART_ITConfig(USARTx, USART_IT_TXE, ENABLE);
 }
 
-//Wireless port
-void usart_device_init_0(unsigned int bits, unsigned int parity,
-                         unsigned int stopBits, unsigned int baud)
+/* Wireless port */
+static void usart_device_init_0(size_t bits, size_t parity,
+                                size_t stopBits, size_t baud)
 {
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
@@ -350,12 +211,12 @@ void usart_device_init_0(unsigned int bits, unsigned int parity,
     enableRxTxIrq(USART1, USART1_IRQn, UART_WIRELESS_IRQ_PRIORITY,
                   (UART_RX_IRQ | UART_TX_IRQ));
 
-    initUsart(USART1, bits, parity, stopBits, baud);
+    init_usart(USART1, bits, parity, stopBits, baud);
 }
 
-//Auxilary port
-void usart_device_init_1(unsigned int bits, unsigned int parity,
-                         unsigned int stopBits, unsigned int baud)
+/* Auxilary port */
+static void usart_device_init_1(size_t bits, size_t parity,
+                                size_t stopBits, size_t baud)
 {
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
@@ -367,12 +228,12 @@ void usart_device_init_1(unsigned int bits, unsigned int parity,
     enableRxTxIrq(USART3, USART3_IRQn, UART_AUX_IRQ_PRIORITY,
                   (UART_RX_IRQ | UART_TX_IRQ));
 
-    initUsart(USART3, bits, parity, stopBits, baud);
+    init_usart(USART3, bits, parity, stopBits, baud);
 }
 
-//GPS port
-void usart_device_init_2(unsigned int bits, unsigned int parity,
-                         unsigned int stopBits, unsigned int baud)
+/* GPS port */
+static void usart_device_init_2(size_t bits, size_t parity,
+                                size_t stopBits, size_t baud)
 {
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
@@ -381,16 +242,16 @@ void usart_device_init_2(unsigned int bits, unsigned int parity,
     GPIO_PinAFConfig(GPIOD, GPIO_PinSource5, GPIO_AF_USART2);
     GPIO_PinAFConfig(GPIOD, GPIO_PinSource6, GPIO_AF_USART2);
 
-    initUsart(USART2, bits, parity, stopBits, baud);
+    init_usart(USART2, bits, parity, stopBits, baud);
     enableRxTxIrq(USART2, USART2_IRQn, UART_GPS_IRQ_PRIORITY, UART_TX_IRQ);
     enableRxDMA(RCC_AHB1Periph_DMA1, DMA1_Stream5, DMA_Channel_4,
                 gpsRxBuffer, GPS_BUFFER_SIZE, USART2, DMA1_Stream5_IRQn,
                 UART_GPS_IRQ_PRIORITY);
 }
 
-//Telemetry port
-void usart_device_init_3(unsigned int bits, unsigned int parity,
-                         unsigned int stopBits, unsigned int baud)
+/* Telemetry port */
+static void usart_device_init_3(size_t bits, size_t parity,
+                                size_t stopBits, size_t baud)
 {
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
@@ -402,447 +263,228 @@ void usart_device_init_3(unsigned int bits, unsigned int parity,
     enableRxTxIrq(UART4, UART4_IRQn, UART_TELEMETRY_IRQ_PRIORITY,
                   (UART_RX_IRQ | UART_TX_IRQ));
 
-    initUsart(UART4, bits, parity, stopBits, baud);
+    init_usart(UART4, bits, parity, stopBits, baud);
 }
 
-////////////////////////////////////////////////////////////////////////////
-// Communication functions
-////////////////////////////////////////////////////////////////////////////
-
-void usart0_flush(void)
+static bool _config_cb(void *cfg_cb_arg, const size_t bits,
+                       const size_t parity, const size_t stop_bits,
+                       const size_t baud)
 {
-    char rx;
-    while (xQueueReceive(xUsart0Rx, &rx, 0))
-        ;
+        USART_TypeDef *usart = cfg_cb_arg;
+        init_usart(usart, bits, parity, stop_bits, baud);
+        return true;
 }
 
-void usart1_flush(void)
+static void _char_tx_cb(xQueueHandle queue, void *post_tx_arg)
 {
-    char rx;
-    while (xQueueReceive(xUsart1Rx, &rx, 0))
-        ;
+        USART_TypeDef *usart = (USART_TypeDef*) post_tx_arg;
+        /* Set the interrupt Tx Flag */
+        USART_ITConfig(usart, USART_IT_TXE, ENABLE);
 }
 
-void usart2_flush(void)
+static bool init_usart_serial(const uart_id_t uart_id, USART_TypeDef *usart,
+                              const serial_id_t serial_id, const char *name)
 {
-    char rx;
-    while (xQueueReceive(xUsart2Rx, &rx, 0))
-        ;
-}
-
-void usart3_flush(void)
-{
-    char rx;
-    while (xQueueReceive(xUsart3Rx, &rx, 0))
-        ;
-}
-
-int usart0_getcharWait(char *c, size_t delay)
-{
-    return xQueueReceive(xUsart0Rx, c, delay) == pdTRUE ? 1 : 0;
-}
-
-int usart1_getcharWait(char *c, size_t delay)
-{
-    return xQueueReceive(xUsart1Rx, c, delay) == pdTRUE ? 1 : 0;
-}
-
-int usart2_getcharWait(char *c, size_t delay)
-{
-    return xQueueReceive(xUsart2Rx, c, delay) == pdTRUE ? 1 : 0;
-}
-
-int usart3_getcharWait(char *c, size_t delay)
-{
-    return xQueueReceive(xUsart3Rx, c, delay) == pdTRUE ? 1 : 0;
-}
-
-char usart0_getchar()
-{
-    char c;
-    usart0_getcharWait(&c, portMAX_DELAY);
-    return c;
-}
-
-char usart1_getchar()
-{
-    char c;
-    usart1_getcharWait(&c, portMAX_DELAY);
-    return c;
-}
-
-char usart2_getchar()
-{
-    char c;
-    usart2_getcharWait(&c, portMAX_DELAY);
-    return c;
-}
-
-char usart3_getchar()
-{
-    char c;
-    usart3_getcharWait(&c, portMAX_DELAY);
-    return c;
-}
-
-void usart0_putchar(char c)
-{
-#if 0
-    if (TRACE_LEVEL) {
-        char buf[2];
-        buf[0] = c;
-        buf[1] = '\0';
-        pr_debug(buf);
-    }
-#endif
-    xQueueSend(xUsart0Tx, &c, portMAX_DELAY);
-
-    //Enable transmitter interrupt
-    USART_ITConfig(USART1, USART_IT_TXE, ENABLE);
-}
-
-void usart1_putchar(char c)
-{
-#if 0
-    if (TRACE_LEVEL) {
-        char buf[2];
-        buf[0] = c;
-        buf[1] = '\0';
-        pr_debug(buf);
-    }
-#endif
-
-    xQueueSend(xUsart1Tx, &c, portMAX_DELAY);
-
-    //Enable transmitter interrupt
-    USART_ITConfig(USART3, USART_IT_TXE, ENABLE);
-}
-
-void usart2_putchar(char c)
-{
-    if (TRACE_LEVEL) {
-        char buf[2];
-        buf[0] = c;
-        buf[1] = '\0';
-        pr_debug(buf);
-    }
-
-    xQueueSend(xUsart2Tx, &c, portMAX_DELAY);
-
-    //Enable transmitter interrupt
-    USART_ITConfig(USART2, USART_IT_TXE, ENABLE);
-}
-
-void usart3_putchar(char c)
-{
-    if (TRACE_LEVEL) {
-        char buf[2];
-        buf[0] = c;
-        buf[1] = '\0';
-        pr_debug(buf);
-    }
-
-    xQueueSend(xUsart3Tx, &c, portMAX_DELAY);
-
-    //Enable transmitter interrupt
-    USART_ITConfig(UART4, USART_IT_TXE, ENABLE);
-}
-
-void usart0_puts(const char *s)
-{
-    while (*s)
-        usart0_putchar(*s++);
-}
-
-void usart1_puts(const char *s)
-{
-    while (*s)
-        usart1_putchar(*s++);
-}
-
-void usart2_puts(const char *s)
-{
-    while (*s)
-        usart2_putchar(*s++);
-}
-
-void usart3_puts(const char *s)
-{
-    while (*s)
-        usart3_putchar(*s++);
-}
-
-int usart0_readLineWait(char *s, int len, size_t delay)
-{
-    int count = 0;
-    while (count < len - 1) {
-        char c = 0;
-
-        if (!usart0_getcharWait(&c, delay)) {
-            break;
+        struct Serial *s =
+                serial_create(name, UART_QUEUE_LEN, UART_QUEUE_LEN,
+                              _config_cb, usart, _char_tx_cb, usart);
+        if (!s) {
+                pr_error("[USART] Serial Malloc failure!\r\n");
+                return false;
         }
 
-        *s++ = c;
-        count++;
-        if (c == '\n')
-            break;
-    }
-    *s = '\0';
-    return count;
+        /* Set the usart_info data */
+        struct usart_info *ui = usart_data + uart_id;
+        ui->rx = serial_get_rx_queue(s);
+        ui->tx = serial_get_tx_queue(s);
+        ui->usart = usart;
+        ui->serial = s;
+
+        return true;
 }
 
-int usart1_readLineWait(char *s, int len, size_t delay)
+int usart_device_init()
 {
-    int count = 0;
-    while (count < len - 1) {
-        char c = 0;
-
-        if (!usart1_getcharWait(&c, delay)) {
-            break;
-        }
-
-        *s++ = c;
-        count++;
-        if (c == '\n')
-            break;
-    }
-    *s = '\0';
-    return count;
-}
-
-int usart2_readLineWait(char *s, int len, size_t delay)
-{
-    int count = 0;
-    while (count < len - 1) {
-        char c = 0;
-
-        if (!usart2_getcharWait(&c, delay)) {
-            break;
-        }
-
-        *s++ = c;
-        count++;
-        if (c == '\n')
-            break;
-    }
-    *s = '\0';
-    return count;
-}
-
-int usart3_readLineWait(char *s, int len, size_t delay)
-{
-    int count = 0;
-    while (count < len - 1) {
-        char c = 0;
-
-        if (!usart3_getcharWait(&c, delay)) {
-            break;
-        }
-
-        *s++ = c;
-        count++;
-        if (c == '\n')
-            break;
-    }
-    *s = '\0';
-    return count;
-}
-
-int usart0_readLine(char *s, int len)
-{
-    return usart0_readLineWait(s, len, portMAX_DELAY);
-}
-
-int usart1_readLine(char *s, int len)
-{
-    return usart1_readLineWait(s, len, portMAX_DELAY);
-}
-
-int usart2_readLine(char *s, int len)
-{
-    return usart2_readLineWait(s, len, portMAX_DELAY);
-}
-
-int usart3_readLine(char *s, int len)
-{
-    return usart3_readLineWait(s, len, portMAX_DELAY);
-}
-
-////////////////////////////////////////////////////////////////////////////
-// Interrupt Handlers
-////////////////////////////////////////////////////////////////////////////
-
-static void handle_usart_overrun(USART_TypeDef* USARTx)
-{
-        if (USART_GetITStatus(USARTx, USART_IT_ORE_RX) != SET)
-                return;
+        /* Must be malloc b/c will be used for DMA.  DMA requires heap mem */
+        gpsRxBuffer = (uint8_t *) portMalloc(GPS_BUFFER_SIZE);
 
         /*
-	 * Handle Overrun error
-         *
-	 * This bit is set by hardware when the word currently being received in
-         * the shift register is ready to be transferred into the RDR register
-         * while RXNE=1. An interrupt is generated if RXNEIE=1 in the USART_CR1
-         * register. It is cleared by a software sequence (an read to the
-         * USART_SR register followed by a read to the USART_DR register)
-	 */
-        uint32_t cChar;
-	cChar = USARTx->SR;
-	cChar = USARTx->DR;
+         * NOTE: Careful with the mappings here.  If you change them
+         *       ensure that you also update the values in the IRQ
+         *       handlers below.
+         */
+        const bool mem_alloc_success =  gpsRxBuffer &&
+                init_usart_serial(UART_GPS, USART2,
+                                  SERIAL_GPS, "GPS") &&
+                init_usart_serial(UART_TELEMETRY, UART4,
+                                  SERIAL_TELEMETRY, "Cell") &&
+                init_usart_serial(UART_WIRELESS, USART1,
+                                  SERIAL_BLUETOOTH, "BT") &&
+                init_usart_serial(UART_AUX, USART3, SERIAL_AUX, "Aux");
 
-	/* Suppress compiler warning */
-	(void) cChar;
+        if (!mem_alloc_success) {
+                pr_error("[USART] Failed to init\r\n");
+                panic(PANIC_CAUSE_MALLOC);
+        }
+
+        usart_device_init_0(8, 0, 1, DEFAULT_WIRELESS_BAUD_RATE);
+        usart_device_init_1(8, 0, 1, DEFAULT_AUX_BAUD_RATE);
+        usart_device_init_2(8, 0, 1, DEFAULT_GPS_BAUD_RATE);
+        usart_device_init_3(8, 0, 1, DEFAULT_TELEMETRY_BAUD_RATE);
+
+        return 1;
 }
+
+static bool usart_id_in_bounds(const uart_id_t id)
+{
+        return ((size_t) id) < __UART_COUNT;
+}
+
+struct Serial* usart_device_get_serial(const uart_id_t id)
+{
+        if (!usart_id_in_bounds(id))
+                return NULL;
+
+        struct usart_info *ui = usart_data + id;
+        return ui->serial;
+}
+
+void usart_device_config(const uart_id_t id, const size_t bits,
+                         const size_t parity, const size_t stop_bits,
+                         const size_t baud)
+{
+        if (!usart_id_in_bounds(id))
+                return;
+
+        struct usart_info *ui = usart_data + id;
+        init_usart(ui->usart, bits, parity, stop_bits, baud);
+}
+
+/* *** Interrupt Handlers *** */
 
 void DMA1_Stream5_IRQHandler(void)
 {
-    portBASE_TYPE xTaskWokenByPost = pdFALSE;
-    signed portCHAR cChar;
-    /* Test on DMA Stream Transfer Complete interrupt */
-    if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_TCIF5)) {
-        /* Clear DMA Stream Transfer Complete interrupt pending bit */
-        DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5);
-        for (size_t i = GPS_BUFFER_SIZE / 2; i < GPS_BUFFER_SIZE; i++) {
-            cChar = gpsRxBuffer[i];
-            xQueueSendFromISR(xUsart2Rx, &cChar, &xTaskWokenByPost);
-        }
-    }
+        struct usart_info *ui = usart_data + UART_GPS;
+        portBASE_TYPE xTaskWokenByPost = pdFALSE;
+        signed portCHAR cChar;
 
-    /* Test on DMA Stream Half Transfer interrupt */
-    if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_HTIF5)) {
-        /* Clear DMA Stream Half Transfer interrupt pending bit */
-        DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_HTIF5);
-        for (size_t i = 0; i < GPS_BUFFER_SIZE / 2; i++) {
-            cChar = gpsRxBuffer[i];
-            xQueueSendFromISR(xUsart2Rx, &cChar, &xTaskWokenByPost);
+        /* Test on DMA Stream Transfer Complete interrupt */
+        if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_TCIF5)) {
+                /* Clear DMA Stream Transfer Complete interrupt pending bit */
+                DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5);
+                for (size_t i = GPS_BUFFER_SIZE / 2; i < GPS_BUFFER_SIZE; i++) {
+                        cChar = gpsRxBuffer[i];
+                        xQueueSendFromISR(ui->rx, &cChar, &xTaskWokenByPost);
+                }
         }
-    }
-    portEND_SWITCHING_ISR(xTaskWokenByPost);
+
+        /* Test on DMA Stream Half Transfer interrupt */
+        if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_HTIF5)) {
+                /* Clear DMA Stream Half Transfer interrupt pending bit */
+                DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_HTIF5);
+                for (size_t i = 0; i < GPS_BUFFER_SIZE / 2; i++) {
+                        cChar = gpsRxBuffer[i];
+                        xQueueSendFromISR(ui->rx, &cChar, &xTaskWokenByPost);
+                }
+        }
+
+        portEND_SWITCHING_ISR(xTaskWokenByPost);
 }
+
+static void usart_generic_irq_handler(USART_TypeDef *usart,
+                                      struct Serial *serial)
+{
+        signed portCHAR cChar;
+        portBASE_TYPE xTaskWokenByTx = pdFALSE;
+        if (USART_GetITStatus(usart, USART_IT_TXE) == SET) {
+                /*
+                 * The interrupt was caused by the TX becoming empty.
+                 * Are there any more characters to transmit?
+                 */
+                xQueueHandle tx_queue = serial_get_tx_queue(serial);
+                if (pdTRUE == xQueueReceiveFromISR(tx_queue, &cChar,
+                                                   &xTaskWokenByTx)) {
+                        /*
+                         * A character was retrieved from the queue so
+                         * can be sent to the USART.
+                         */
+                        USART_SendData(usart, cChar);
+                } else {
+                        /*
+                         * Queue empty, nothing to send so turn off the
+                         * Tx interrupt.
+                         */
+                        USART_ITConfig(usart, USART_IT_TXE, DISABLE);
+                }
+        }
+
+        /*
+         * Read the ORE status flag here because doing this along with
+         * reading data from our UART will clear the ORE flag if it has
+         * been set.  Thus we get a two for one and reduce the chance of
+         * accidentially dumping a character like we could do with our
+         * previous overrun handler. This is per the documentation in the
+         * USART_ClearFlag method.
+         */
+        const bool ore_set =
+                SET == USART_GetFlagStatus(usart, USART_FLAG_ORE);
+
+
+        portBASE_TYPE xTaskWokenByPost = pdFALSE;
+        if (USART_GetITStatus(usart, USART_IT_RXNE) == SET) {
+                /*
+                 * The interrupt was caused by a character being received.
+                 * Grab the character from the rx and place it in the queue
+                 * or received characters.
+                 */
+                cChar = USART_ReceiveData(usart);
+                xQueueHandle rx_queue = serial_get_rx_queue(serial);
+                xQueueSendFromISR(rx_queue, &cChar, &xTaskWokenByPost);
+        } else if (ore_set) {
+                /*
+                 * We will likely never get in here, but this is to
+                 * be sure we cover all our bases.  See page 968 of the
+                 * reference manual for why I did this.  In short its safe to dump
+                 * the data here since we know there is nothing in the RDR
+                 * register (since RXNE is not set).  Having the ORE set here
+                 * indicates a race case where we read the data as the other
+                 * data was lost in the shift register (thus leaving the ORE
+                 * flag set but clearing the RXNE flag). In other words, this
+                 * is done purely to clear the ORE flag knowing we are not losing
+                 * data.
+                 */
+                USART_ReceiveData(usart);
+        }
+
+        /*
+         * If a task was woken by either a character being received or a
+         * character being transmitted then we may need to switch to
+         * another task.
+         */
+        portEND_SWITCHING_ISR(xTaskWokenByPost || xTaskWokenByTx);
+}
+
 
 void USART1_IRQHandler(void)
 {
-    portBASE_TYPE xTaskWokenByTx = pdFALSE, xTaskWokenByPost = pdFALSE;
-    signed portCHAR cChar;
-
-    if (USART_GetITStatus(USART1, USART_IT_TXE) != RESET) {
-        /* The interrupt was caused by the TX becoming empty.  Are there any more characters to transmit? */
-        if (xQueueReceiveFromISR(xUsart0Tx, &cChar, &xTaskWokenByTx) ==
-            pdTRUE) {
-            // A character was retrieved from the queue so can be sent to the USART
-            USART_SendData(USART1, cChar);
-        } else {
-            /* Queue empty, nothing to send so turn off the Tx interrupt. */
-            USART_ITConfig(USART1, USART_IT_TXE, DISABLE);
-        }
-    }
-
-    if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET) {
-        /* The interrupt was caused by a character being received.  Grab the
-           character from the rx and place it in the queue or received
-           characters. */
-        cChar = USART_ReceiveData(USART1);
-        xQueueSendFromISR(xUsart0Rx, &cChar, &xTaskWokenByPost);
-    }
-
-    handle_usart_overrun(USART1);
-
-    /* If a task was woken by either a character being received or a character
-       being transmitted then we may need to switch to another task. */
-    portEND_SWITCHING_ISR(xTaskWokenByPost || xTaskWokenByTx);
+        struct usart_info *ui = usart_data + UART_WIRELESS;
+        usart_generic_irq_handler(USART1, ui->serial);
 }
 
 void USART2_IRQHandler(void)
 {
-    portBASE_TYPE xTaskWokenByTx = pdFALSE, xTaskWokenByPost = pdFALSE;
-    signed portCHAR cChar;
-
-    if (USART_GetITStatus(USART2, USART_IT_TXE) != RESET) {
-        /* The interrupt was caused by the TX becoming empty.  Are there any more characters to transmit? */
-        if (xQueueReceiveFromISR(xUsart2Tx, &cChar, &xTaskWokenByTx) ==
-            pdTRUE) {
-            // A character was retrieved from the queue so can be sent to the USART
-            USART_SendData(USART2, cChar);
-        } else {
-            /* Queue empty, nothing to send so turn off the Tx interrupt. */
-            USART_ITConfig(USART2, USART_IT_TXE, DISABLE);
-        }
-    }
-
-    if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET) {
-        /* The interrupt was caused by a character being received.  Grab the
-        character from the rx and place it in the queue or received
-        characters. */
-//		cChar = USART_ReceiveData(USART2);
-//		xQueueSendFromISR( xUsart2Rx, &cChar, &xTaskWokenByPost );
-    }
-
-    handle_usart_overrun(USART2);
-
-    /* If a task was woken by either a character being received or a character
-       being transmitted then we may need to switch to another task. */
-    portEND_SWITCHING_ISR(xTaskWokenByPost || xTaskWokenByTx);
+        struct usart_info *ui = usart_data + UART_GPS;
+        usart_generic_irq_handler(USART2, ui->serial);
 }
 
 void USART3_IRQHandler(void)
 {
-    portBASE_TYPE xTaskWokenByTx = pdFALSE, xTaskWokenByPost = pdFALSE;
-    signed portCHAR cChar;
-
-    if (USART_GetITStatus(USART3, USART_IT_TXE) != RESET) {
-        /* The interrupt was caused by the TX becoming empty.  Are there any more characters to transmit? */
-        if (xQueueReceiveFromISR(xUsart1Tx, &cChar, &xTaskWokenByTx) ==
-            pdTRUE) {
-            // A character was retrieved from the queue so can be sent to the USART
-            USART_SendData(USART3, cChar);
-        } else {
-            /* Queue empty, nothing to send so turn off the Tx interrupt. */
-            USART_ITConfig(USART3, USART_IT_TXE, DISABLE);
-        }
-    }
-
-    if (USART_GetITStatus(USART3, USART_IT_RXNE) != RESET) {
-        /* The interrupt was caused by a character being received.  Grab the
-           character from the rx and place it in the queue or received
-           characters. */
-        cChar = USART_ReceiveData(USART3);
-        xQueueSendFromISR(xUsart1Rx, &cChar, &xTaskWokenByPost);
-    }
-
-    handle_usart_overrun(USART3);
-
-    /* If a task was woken by either a character being received or a character
-       being transmitted then we may need to switch to another task. */
-    portEND_SWITCHING_ISR(xTaskWokenByPost || xTaskWokenByTx);
+        struct usart_info *ui = usart_data + UART_AUX;
+        usart_generic_irq_handler(USART3, ui->serial);
 }
 
 void UART4_IRQHandler(void)
 {
-    portBASE_TYPE xTaskWokenByTx = pdFALSE, xTaskWokenByPost = pdFALSE;
-    signed portCHAR cChar;
-
-    if (USART_GetITStatus(UART4, USART_IT_TXE) != RESET) {
-        /* The interrupt was caused by the TX becoming empty.  Are there any more characters to transmit? */
-        if (xQueueReceiveFromISR(xUsart3Tx, &cChar, &xTaskWokenByTx) ==
-            pdTRUE) {
-            // A character was retrieved from the queue so can be sent to the USART
-            USART_SendData(UART4, cChar);
-        } else {
-            /* Queue empty, nothing to send so turn off the Tx interrupt. */
-            USART_ITConfig(UART4, USART_IT_TXE, DISABLE);
-        }
-    }
-    if (USART_GetITStatus(UART4, USART_IT_RXNE) != RESET) {
-        /* The interrupt was caused by a character being received.  Grab the
-           character from the rx and place it in the queue or received
-           characters. */
-        cChar = USART_ReceiveData(UART4);
-        xQueueSendFromISR(xUsart3Rx, &cChar, &xTaskWokenByPost);
-    }
-
-    handle_usart_overrun(UART4);
-
-    /* If a task was woken by either a character being received or a character
-       being transmitted then we may need to switch to another task. */
-    portEND_SWITCHING_ISR(xTaskWokenByPost || xTaskWokenByTx);
+        struct usart_info *ui = usart_data + UART_TELEMETRY;
+        usart_generic_irq_handler(UART4, ui->serial);
 }
