@@ -34,19 +34,24 @@ static const volatile Tracks g_tracks __attribute__((section(".tracks\n\t#")));
 static Tracks g_tracks = DEFAULT_TRACKS;
 #endif
 
-static const Tracks g_defaultTracks = DEFAULT_TRACKS;
-
 void initialize_tracks()
 {
-    if (versionChanged(&g_tracks.versionInfo)) {
-        flash_default_tracks();
-    }
+        const VersionInfo vi = g_tracks.versionInfo;
+        if (version_check_changed(&vi, "Tracks DB"))
+                flash_default_tracks();
 }
 
 int flash_default_tracks(void)
 {
-    pr_info("flashing default tracks...");
-    return flash_tracks(&g_defaultTracks, sizeof (g_defaultTracks));
+        Tracks* def_tracks = calloc(1, sizeof(Tracks));
+        const VersionInfo* cv = get_current_version_info();
+        memcpy(&def_tracks->versionInfo, cv, sizeof(VersionInfo));
+
+        pr_info("flashing default tracks...");
+        const int status = flash_tracks(def_tracks, sizeof(Tracks));
+
+        free(def_tracks);
+        return status;
 }
 
 int flash_tracks(const Tracks *source, size_t rawSize)

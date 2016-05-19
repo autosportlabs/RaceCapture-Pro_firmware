@@ -41,9 +41,9 @@ typedef struct _VersionInfo {
         uint32_t bugfix;
 } VersionInfo;
 
-#define DEFAULT_VERSION_INFO {MAJOR_REV, MINOR_REV, BUGFIX_REV}
-
-bool versionChanged(const volatile VersionInfo *versionInfo);
+bool version_check_changed(const VersionInfo *versionInfo,
+                           const char* log_pfx);
+const VersionInfo* get_current_version_info();
 const char* version_git_description();
 enum release_type version_get_release_type();
 const char* version_release_type_api_key(const enum release_type rt);
