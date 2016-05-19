@@ -45,55 +45,7 @@ platform that we use for mock operations to test our firmware.  Info
 on each platform and how to use/compile for it can be found below.
 
 ## Simple Build All Tool
-To make things super simple there is a script called do_release.sh
-that will build all platforms and test.  To invoke it simply run
-`./do_release.sh` from the root directory of the project.
-
-## MK1
-MK1 is the original RaceCapture/Pro unit.  Based on the AT91SAM7s
-chipset, it provided a solid platform for our initial release.  It
-allows for up to a 100Hz channel sampling rate and up to 10Hz GPS
-sampling.  It also supports CAN & OBD-II via the extrernal CANx
-module, various I/O, an SD card, and a remote GPS mouse for high
-quality GPS reception.  It optionally comes with a separate telemetry
-unit that can handle passing the data over the cellular network.  It,
-has now been succedded by the next generation of RaceCapture/Pro, MK2.
-
-### Toolchain Setup
-Do the following to setup the MK1 toolchain
-* Download [the official MK1
-  toolchain](https://s3-us-west-2.amazonaws.com/asl-firmware/vagrant_setup/gnuarm-4.0.2.tgz)
-* Extract the tarball to a directory of your choice
-* Add the 'bin' directory from within the 'gnuarm-4.0.2' directory to
-  your system PATH.
-
-### Compiling LUA for MK1
-Before compiling the firmware you must compile the LUA library for MK1.  Do the following from the root of the project
-* `cd lib_lua/src/`
-* `make PLAT=sam7s generic`
-
-### Compiling MK1 Firmware
-* run `make PLAT=sam7x` from the root directory of the RCP firmware
-  project.
-
-### Flashing
-The output from the compilation should create a main.elf file.  The
-flashing utility can be found in SAM7s_base/installer.
-
-#### Flashing Mode
-Before you can flash the firmware you _MUST_ put the MK1 device into
-flashing mode.  Do the following:
-
-* Ensure your MK1 is powered down.
-* Hold down the button on RaceCapture/Pro
-* Plug the MK1 unit into USB and release the button. You should see 3 green LEDs light up.
-
-#### Flashing in Linux
-Perform the following steps from the root level of the project:
-* Put the MK1 into programming mode by holding down the button while
-  applying power.
-* `sudo SAM7s_base/installer/flasher main.elf`
-
+Easy.  Its make!  Just run `make` and it will build it all.
 
 ## MK2
 MK2 is the second generation RaceCapture/Pro unit.  Like its successor
@@ -111,14 +63,16 @@ signal gain in wooded areas).
 ### MK2 Toolchain Setup
 Do the following to setup the MK2 toolchain:
 * Download [the official MK2
-  toolchain](https://s3-us-west-2.amazonaws.com/asl-firmware/vagrant_setup/gcc-arm-none-eabi-4_7-2013q1.tgz)
+  toolchain](https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2)
 * Extract the tarball to a directory of your choice
 * Add the 'bin' directory from within the newly extracted directory to
   your system PATH.
 * Install pip (the Python package manager)
-* Run `sudo pip install crcmod https://s3-us-west-2.amazonaws.com/asl-firmware/vagrant_setup/asl_f4_loader-0.0.6.tgz`
-to install the asl_f4_loader package.  This does post-processing on MK2 firmware and provides a firmware loading
-utility.
+* Go to the [ASL F4 Loader
+  Project](https://github.com/autosportlabs/ASL_F4_bootloader) and
+  follow the instructions on the README.md to install the
+  asl_f4_loader package.  This package does all the post-processing on
+  MK2 firmware and provides a firmware loading utility.
 
 ### Compiling LUA library for MK2
 Before compiling the firmware you must compile the LUA library for MK2.  Do the following from the root of the project
@@ -138,7 +92,6 @@ test platform will work natively with Linux and OSX (>10.10).
 
 ### Toolchain Setup of Test
 #### Linux
-* Install the 64bit clang packages for your system
 * Install the 64bit GCC packages for your system (need ld)
 * Install libstdc++-static and libstdc++-devel for linking in test applications.
 * Install the 64bit libcppunit library and its header and devel packages

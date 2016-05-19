@@ -717,7 +717,6 @@ static void get_ap_info_cb(const bool status,
         /* Print out our AP Info here */
         pr_info(LOG_PFX "AP info:\r\n");
         pr_info_str_msg("\t SSID      : ", info->ssid);
-        pr_info_str_msg("\t Password  : ", info->password);
         pr_info_int_msg("\t Channel   : ", info->channel);
         pr_info_int_msg("\t Encryption: ", info->encryption);
 }

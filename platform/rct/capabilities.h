@@ -46,7 +46,7 @@
 #define LOGGER_MESSAGE_BUFFER_SIZE  5
 
 //logging
-#define LOG_BUFFER_SIZE	1024
+#define LOG_BUFFER_SIZE	2048
 
 //system info
 #define DEVICE_NAME    "RCT"

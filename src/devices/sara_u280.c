@@ -182,6 +182,28 @@ static bool sara_u280_put_dns_config(struct serial_buffer *sb,
         return is_rsp_ok(msgs, count);
 }
 
+enum sara_apn_auth {
+        SARA_APN_AUTH_NONE = 0,
+        SARA_APN_AUTH_PAP  = 1,
+        SARA_APN_AUTH_CHAP = 2,
+};
+
+static bool sara_u280_set_apn_auth(struct serial_buffer *sb,
+                                   const enum sara_apn_auth auth)
+{
+        const char *msgs[1];
+        const size_t msgs_len = ARRAY_LEN(msgs);
+
+        serial_buffer_reset(sb);
+
+        /* Enables Automatic CHAP authentication for APN */
+        serial_buffer_printf_append(sb, "AT+UPSD=0,6,%d", auth);
+
+        const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs,
+                                               msgs_len);
+        return is_rsp_ok(msgs, count);
+}
+
 static bool sara_u280_gprs_psd_action(struct serial_buffer *sb,
                                       const int pid,
                                       const int aid)
@@ -372,6 +394,25 @@ static bool sara_u280_setup_pdp(struct serial_buffer *sb,
                 (sara_u280_put_pdp_config(sb, 0, cc->apnHost,
                                           cc->apnUser, cc->apnPass) &&
                  sara_u280_put_dns_config(sb, cc->dns1, cc->dns2));
+
+        /*
+         * Control our APN authentication settings based on whether
+         * or not the user has given a password.  For now if they have
+         * assume that they are using PPP and thus need some form of auth.
+         * We will use CHAP since it is the stronger of the two methods
+         * (the other being PAP).  If we need to control this in finer
+         * detail, then we need more configuration support for it.
+         */
+        if (strlen(cc->apnPass)) {
+                pr_info("[sara_u280] Enabling CHAP auth b/c APN "
+                        "password is not empty\r\n");
+                sara_u280_set_apn_auth(sb, SARA_APN_AUTH_CHAP);
+        } else {
+                pr_info("[sara_u280] Disabling APN/PPP auth b/c APN "
+                        "password is empty\r\n");
+                sara_u280_set_apn_auth(sb, SARA_APN_AUTH_NONE);
+        }
+
         if (!status) {
                 pr_warning("[sara_u280] APN/DNS config failed\r\n");
                 return false;

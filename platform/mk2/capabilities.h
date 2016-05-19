@@ -49,8 +49,10 @@
  * A value of 0 means that you want to use the default.  For more info
  * see http://www.lua.org/manual/5.1/manual.html#2.10
  */
-#define LUA_GC_PAUSE_PCT	0
-#define LUA_GC_STEP_MULT_PCT	0
+/* Pause between runs.  < 100 means don't wait */
+#define LUA_GC_PAUSE_PCT	99
+/* Runtime of GC to malloc.  Setting to 10x for agressive behavior. */
+#define LUA_GC_STEP_MULT_PCT	1000
 
 /*
  * Controls whether or not we allow LUA to register the nice to have
