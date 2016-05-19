@@ -19,8 +19,8 @@
 
 ASL_CFLAGS :=
 
-ASL_DEBUG := -ggdb
-ASL_CFLAGS += $(ASL_DEBUG)
+ASL_GDB := -ggdb
+ASL_CFLAGS += $(ASL_GDB)
 
 
 ASL_COPT := s
@@ -58,10 +58,16 @@ ASL_CFLAGS_MISC := \
 
 ASL_CFLAGS += $(ASL_CFLAGS_MISC)
 
-
-ifneq ($(RELEASE_TYPE),RELEASE_TYPE_OFFICIAL)
+#
+# Only specify ASL_DEBUG on devel builds. Reason being that when
+# we release RC builds to the field, we want them to be as close
+# to the official build as possible without being labeled as official.
+# That means no checks that would occur when DEBUG is active.
+#
+ifeq ($(RELEASE_TYPE),RELEASE_TYPE_DEVEL)
 ASL_CFLAGS += -DASL_DEBUG
 endif
+
 
 export VERSION_CFLAGS := \
 -DAPI_REV=$(API) \
