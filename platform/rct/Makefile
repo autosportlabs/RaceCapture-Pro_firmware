@@ -15,11 +15,6 @@ OBJDUMP := $(CROSS_COMPILE)objdump
 OBJCOPY := $(CROSS_COMPILE)objcopy
 
 ASL_FW_POSTPROCESS := asl_f4_fw_postprocess
-ifeq ($(PYTHON),python2.7)
-ASL_FW_POSTPROCESS := /usr/local/bin/asl_f4_fw_postprocess
-else
-PYTHON :=
-endif
 
 #specify the use of the external crystal
 BOARD_DEFINES = -DPLL_SOURCE_HSE -DUSE_I2C1
