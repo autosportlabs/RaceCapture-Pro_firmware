@@ -58,6 +58,7 @@
 struct device {
         struct Serial *serial;
         enum dev_init_state init_state;
+        enum esp8266_op_mode op_mode;
 };
 
 struct client {
@@ -104,11 +105,11 @@ struct comm {
  * Note that each check represents a tiny state machine.  These
  * state machines have interdependeinces upon one another. In
  * example the client wifi (CHECK_WIFI_CLIENT) requires that the wifi
- * subsystem (CHECK_INIT) be initialized. Thus we need a priority
+ * subsystem (CHECK_WIFI_DEVICE) be initialized. Thus we need a priority
  * with the lowest value being the highest priority.
  */
 enum check {
-        CHECK_INIT,
+        CHECK_WIFI_DEVICE,
         CHECK_WIFI_CLIENT,
         CHECK_WIFI_AP,
         CHECK_SERVER,
@@ -434,11 +435,13 @@ static void socket_state_changed_cb(const size_t chan_id,
 static void init_wifi_cb(enum dev_init_state dev_state)
 {
         cmd_completed();
+        cmd_set_check(CHECK_WIFI_DEVICE);
+
         pr_info_int_msg(LOG_PFX "Device state: ", dev_state);
         esp8266_state.device.init_state = dev_state;
 
         /* Now that init state has changed, check them */
-        cmd_set_check(CHECK_INIT);
+        cmd_set_check(CHECK_WIFI_DEVICE);
         cmd_set_check(CHECK_WIFI_CLIENT);
         cmd_set_check(CHECK_WIFI_AP);
         cmd_set_check(CHECK_SERVER);
@@ -458,7 +461,7 @@ static void init_wifi()
                           init_wifi_cb)) {
                 /* Failed to init critical bits.  */
                 pr_warning(LOG_PFX "Failed to init esp8266 device.\r\n");
-                cmd_sleep(CHECK_INIT, INIT_FAIL_SLEEP_MS);
+                cmd_sleep(CHECK_WIFI_DEVICE, INIT_FAIL_SLEEP_MS);
                 return;
         }
 
@@ -480,26 +483,122 @@ static void init_wifi()
 }
 
 /**
- * The method that checks our state machine and ensures that we are in
- * the proper init state.  If we are not then the logic is here to get
- * us to the correct state (if possible).
+ * Callback used by the get_op_mode call.
  */
-static void check_init()
+static void get_op_mode_cb(bool status, enum esp8266_op_mode mode)
 {
-        cmd_check_complete(CHECK_INIT);
+        cmd_completed();
+        cmd_set_check(CHECK_WIFI_DEVICE);
 
-        pr_info(LOG_PFX "Checking Init\r\n");
-        switch(esp8266_state.device.init_state) {
-        case DEV_INIT_STATE_READY:
-                /* Then we are where we want to be and are done */
+        if (!status) {
+                pr_warning(LOG_PFX "Get OP mode failed!\r\n");
+                esp8266_state.device.op_mode = ESP8266_OP_MODE_UNKNOWN;
+        } else {
+                esp8266_state.device.op_mode = mode;
+        }
+}
+
+/**
+ * Command that gets the wifi device operational mode.  This can be
+ * client, soft_ap, or both.
+ */
+static void get_op_mode()
+{
+        if (!esp8266_get_op_mode(get_op_mode_cb)) {
+                pr_warning(LOG_PFX "Failed to get OP mode\r\n");
                 return;
-        default:
-                /* STIEG: TODO Handle reset here when implemented. */
-                delayMs(CLIENT_BACKOFF_MS);
+        }
+
+        cmd_started();
+}
+
+/**
+ * Callback used by the set_op_mode call.
+ */
+static void set_op_mode_cb(const bool status)
+{
+        cmd_completed();
+        cmd_set_check(CHECK_WIFI_DEVICE);
+
+        /*
+         * Clear out our state and read from device again to ensure that
+         * the value actually took
+         */
+        esp8266_state.device.op_mode = ESP8266_OP_MODE_UNKNOWN;
+
+        if (!status)
+                pr_warning(LOG_PFX "Set OP mode failed!\r\n");
+}
+
+/**
+ * Command that sets the wifi device operational mode. Useful for changing
+ * between modes after actions like a user changing the config.
+ */
+static void set_op_mode(const enum esp8266_op_mode mode)
+{
+        if (!esp8266_set_op_mode(mode, set_op_mode_cb)) {
+                pr_warning(LOG_PFX "Failed to invoke set OP mode\r\n");
+                return;
+        }
+
+        cmd_started();
+}
+
+/**
+ * Method that checks the device state.  Handles all aspects including
+ * initialization, reset, mode, and whatever else may need handling
+ * down the road.
+ */
+static void check_wifi_device()
+{
+        cmd_check_complete(CHECK_WIFI_DEVICE);
+        pr_info(LOG_PFX "Checking WiFi Device...\r\n");
+
+        switch(esp8266_state.device.init_state) {
         case DEV_INIT_STATE_NOT_READY:
                 init_wifi();
                 return;
+        case DEV_INIT_STATE_READY:
+                /* Then we are where we want to be */
+                break;
+        default:
+                /* STIEG: TODO Handle reset here when implemented. */
+                delayMs(CLIENT_BACKOFF_MS);
         }
+
+        /* Check if we know our device mode.  If not, get it */
+        if (ESP8266_OP_MODE_UNKNOWN == esp8266_state.device.op_mode) {
+                /* Get OP mode */
+                get_op_mode();
+                return;
+        }
+
+        /* Now check device mode to ensure its correct */
+        enum esp8266_op_mode exp_mode;
+        const bool ap_active = esp8266_state.ap.config->active;
+        const bool client_active = esp8266_state.client.config->active;
+        if (ap_active) {
+                /* AP should be active.  Is the client? */
+                exp_mode = client_active ?
+                        ESP8266_OP_MODE_BOTH : ESP8266_OP_MODE_AP;
+        } else {
+                /*
+                 * AP should be inactive.  We just set client here since
+                 * we can't disable both client and AP.  We effectively do
+                 * this by simply not having the client associate with any
+                 * AP.
+                 */
+                exp_mode = ESP8266_OP_MODE_CLIENT;
+        }
+
+        if (exp_mode != esp8266_state.device.op_mode) {
+                /* Then set the correct mode */
+                set_op_mode(exp_mode);
+                return;
+        }
+
+        /* If here, WiFi Device is in the correct state */
+        return;
 }
 
 static bool device_initialized()
@@ -585,7 +684,9 @@ static void set_client_ap_cb(bool status)
         }
 
         /* Clear the client info since it has changed. */
-        memset(&esp8266_state.client.info, 0, sizeof(esp8266_state.client.info));
+        esp8266_state.client.info_timestamp = 0;
+        memset(&esp8266_state.client.info, 0,
+               sizeof(esp8266_state.client.info));
 }
 
 /**
@@ -828,10 +929,10 @@ static void check_wifi_ap()
         const struct wifi_ap_cfg* cfg = esp8266_state.ap.config;
         if (!cfg->active) {
                 /*
-                 * AP should be inactive. This should be controlled by a
-                 * different state machine because managing the esp8266
+                 * AP should be inactive. This is controlled by the device
+                 * state machine because managing the esp8266
                  * device mode effects both the wifi client and the soft
-                 * AP.  Hence this is a NO OP.
+                 * AP.  Hence this is a NO OP here.
                  */
                 pr_info(LOG_PFX "AP is inactive.\r\n");
                 return;
@@ -920,8 +1021,8 @@ static void task_loop()
                 return;
 
         switch(cmd_get_next_check()) {
-        case CHECK_INIT:
-                check_init();
+        case CHECK_WIFI_DEVICE:
+                check_wifi_device();
                 break;
         case CHECK_WIFI_CLIENT:
                 check_wifi_client();
@@ -956,7 +1057,8 @@ bool esp8266_drv_update_client_cfg(const struct wifi_client_cfg *cc)
 
         esp8266_state.client.config = cc;
 
-        /* Client state changed.  Need to check client */
+        /* Set flags for what states need checking */
+        cmd_set_check(CHECK_WIFI_DEVICE);
         cmd_set_check(CHECK_WIFI_CLIENT);
 
         return true;
@@ -972,7 +1074,8 @@ bool esp8266_drv_update_ap_cfg(const struct wifi_ap_cfg *wac)
         /* Zero this value out so we will forego any backoff attempts */
         esp8266_state.ap.next_set_attempt = 0;
 
-        /* AP state changed. */
+        /* Set flags for what states need checking */
+        cmd_set_check(CHECK_WIFI_DEVICE);
         cmd_set_check(CHECK_WIFI_AP);
 
         return true;
@@ -1015,8 +1118,8 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
 
         esp8266_state.comm.new_conn_cb = new_conn_cb;
 
-        /* Set the task loop to check init first */
-        cmd_set_check(CHECK_INIT);
+        /* Set the task loop to check the wifi_device first */
+        cmd_set_check(CHECK_WIFI_DEVICE);
 
         static const signed char task_name[] = TASK_THREAD_NAME;
         const size_t stack_size = TASK_STACK_SIZE;
