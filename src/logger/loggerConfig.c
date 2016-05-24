@@ -690,14 +690,14 @@ int flashLoggerConfig(void)
 
 static bool checkFlashDefaultConfig(void)
 {
-    bool changed = versionChanged(&g_savedLoggerConfig.RcpVersionInfo);
-    if (changed) {
+        const VersionInfo sv = g_savedLoggerConfig.RcpVersionInfo;
+        bool changed = version_check_changed(&sv, "Config DB");
+        if (!changed)
+                return false;
+
         pr_info("major/minor version changed\r\n");
         flash_default_logger_config();
         return true;
-    } else {
-        return false;
-    }
 }
 
 static void loadWorkingLoggerConfig(void)

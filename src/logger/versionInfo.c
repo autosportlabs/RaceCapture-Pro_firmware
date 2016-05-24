@@ -19,15 +19,50 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "printk.h"
 #include "versionInfo.h"
-
 #include <stddef.h>
 
-bool versionChanged(const volatile VersionInfo *versionInfo)
+static void print_version(const VersionInfo *vi)
 {
-        bool major_version_changed = versionInfo->major != MAJOR_REV;
-        bool minor_version_changed = versionInfo->minor != MINOR_REV;
-        bool changed = (major_version_changed || minor_version_changed);
+        pr_info_int(vi->major);
+        pr_info_char('.');
+        pr_info_int(vi->minor);
+        pr_info_char('.');
+        pr_info_int(vi->bugfix);
+}
+
+const VersionInfo* get_current_version_info() {
+        static const VersionInfo vi = {
+                .major = MAJOR_REV,
+                .minor = MINOR_REV,
+                .bugfix = BUGFIX_REV,
+        };
+
+        return &vi;
+}
+
+bool version_check_changed(const VersionInfo *pv,
+                           const char* log_pfx)
+{
+        const VersionInfo* cv = get_current_version_info();
+        const bool changed = cv->major != pv->major ||
+                cv->minor != pv->minor;
+
+        if (changed) {
+                if (log_pfx) {
+                        pr_info(log_pfx);
+                        pr_info(" version changed: ");
+                } else {
+                        pr_info("Version changed: ");
+                }
+
+                print_version(pv);
+                pr_info(" -> ");
+                print_version(cv);
+                pr_info("\r\n");
+        }
+
         return changed;
 }
 

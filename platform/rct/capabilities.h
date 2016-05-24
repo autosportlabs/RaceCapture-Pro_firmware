@@ -45,8 +45,8 @@
 //logger message buffering
 #define LOGGER_MESSAGE_BUFFER_SIZE  5
 
-//logging
-#define LOG_BUFFER_SIZE	2048
+/* Logging Buffer Size (in 1K Blocks) */
+#define LOG_BUFFER_SIZE	(1024 * 3)
 
 //system info
 #define DEVICE_NAME    "RCT"
