@@ -31,7 +31,7 @@
 #include "memory.h"
 static const volatile Tracks g_tracks __attribute__((section(".tracks\n\t#")));
 #else
-static Tracks g_tracks = DEFAULT_TRACKS;
+static Tracks g_tracks = {};
 #endif
 
 void initialize_tracks()
