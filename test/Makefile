@@ -93,14 +93,10 @@ INCLUDES = \
 CPP = g++
 CC = gcc
 
-CPPFLAGS = \
--g $(INCLUDES) -DRCP_TESTING -DAPI_REV=$(API) $(VERSION_CFLAGS)
+CPPFLAGS := -g -DRCP_TESTING -DAPI_REV=$(API) \
+$(VERSION_CFLAGS) $(INCLUDES)
 
-CFLAGS = \
--g $(INCLUDES) -std=gnu99 -Wall -Werror -Wempty-body \
--Wclobbered -Wignored-qualifiers -Wmissing-parameter-type \
--Wold-style-declaration -Wunused-but-set-parameter \
--DRCP_TESTING $(VERSION_CFLAGS)
+CFLAGS := $(ASL_CFLAGS) -DRCP_TESTING $(VERSION_CFLAGS) $(INCLUDES)
 
 #-----Suffix Rules---------------------------
 # set up C++ suffixes and relationship between .cc and .o files

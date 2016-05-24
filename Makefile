@@ -19,7 +19,6 @@
 # this code. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
 export MAJOR  := 2
 export MINOR  := 10
 export BUGFIX := 0
@@ -51,20 +50,8 @@ ifneq ($(OFFICIAL_TAG),)
 endif
 export RELEASE_TYPE
 
-#
-# Set the DEBUG flag if we are not build an official release.
-#
-ifneq ($(RELEASE_TYPE),RELEASE_TYPE_OFFICIAL)
-export DEBUG=1
-endif
-
-export VERSION_CFLAGS := \
--DAPI_REV=$(API) \
--DMAJOR_REV=$(MAJOR) \
--DMINOR_REV=$(MINOR) \
--DBUGFIX_REV=$(BUGFIX) \
--DRC_BUILD_GIT_DESCRIPTION=$(GIT_DESCRIPTION) \
--DRC_BUILD_RELEASE_TYPE=$(RELEASE_TYPE) \
+# Now with basic version info, import all our sub makefiles
+include make/*.mk
 
 Q := @
 PHONY :=

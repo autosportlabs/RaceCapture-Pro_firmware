@@ -252,26 +252,10 @@ inc-y += $(RC_PLATFORM_DIR)/mk2/hal/fat_sd_stm32/fatfs
 ################################################################################
 obj-y := $(addprefix $(OUTDIR)/,$(patsubst %.s,%.o,$(patsubst %.c,%.o,$(src-y))))
 
-CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -MD -std=gnu99
+CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -MD -c
+CFLAGS += $(ASL_CFLAGS)
 CFLAGS += -mcpu=cortex-m3 -mthumb
-CFLAGS += $(VERSION_CFLAGS)
 CFLAGS += $(BOARD_DEFINES)
-CFLAGS += -fno-builtin-sprintf
-CFLAGS += -ggdb
-CFLAGS += -Wall -Werror -Wempty-body -Wclobbered -Wignored-qualifiers \
-	-Wmissing-parameter-type -Wold-style-declaration \
-	-Wunused-but-set-parameter
-
-ifdef NOOPT
-CFLAGS += -O0
-else
-CFLAGS += -Os
-endif
-
-ifdef DEBUG
-CFLAGS += -D_DEBUG
-endif
-
 CFLAGS += $(addprefix -I,$(inc-y))
 
 LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld

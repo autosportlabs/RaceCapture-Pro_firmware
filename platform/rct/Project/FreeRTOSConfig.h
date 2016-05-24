@@ -103,13 +103,13 @@ extern uint32_t SystemCoreClock;
 #define configUSE_COUNTING_SEMAPHORES			1
 #define configGENERATE_RUN_TIME_STATS			0
 
-#if defined(_DEBUG)
+#ifdef ASL_DEBUG
 #define configCHECK_FOR_STACK_OVERFLOW			2
 #define configUSE_MALLOC_FAILED_HOOK			1
 #else
 #define configCHECK_FOR_STACK_OVERFLOW			0
 #define configUSE_MALLOC_FAILED_HOOK			0
-#endif /* _DEBUG */
+#endif /* ASL_DEBUG */
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES				0

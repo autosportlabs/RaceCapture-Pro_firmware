@@ -115,9 +115,9 @@ int main( void )
         cpu_init();
         pr_info("*** Start! ***\r\n");
 
-#if !defined(_DEBUG)
-        watchdog_init(WATCHDOG_TIMEOUT_MS);
-#endif /* _DEBUG */
+        /* Defined as part of our compilation process */
+        if (true == ASL_WATCHDOG)
+                watchdog_init(WATCHDOG_TIMEOUT_MS);
 
         /*
          * Start the scheduler.
