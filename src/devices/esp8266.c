@@ -856,7 +856,8 @@ bool esp8266_close(const int chan_id, esp8266_close_cb_t* cb)
 struct tx_info {
         struct Serial *serial;
         size_t len;
-        void (*cb)(int);
+        size_t sent;
+        esp8266_send_data_cb* cb;
 };
 
 /**
@@ -874,7 +875,7 @@ struct tx_info {
 static bool send_data_cb(struct at_rsp *rsp, void *up)
 {
         struct tx_info *ti = up;
-        int status = -1;
+        bool status = false;
 
         switch(rsp->status) {
         case AT_RSP_STATUS_OK:
@@ -893,7 +894,7 @@ static bool send_data_cb(struct at_rsp *rsp, void *up)
                 struct Serial *s = state.ati->sb->serial;
                 xQueueHandle q = serial_get_tx_queue(ti->serial);
                 char c;
-                for (size_t i = 0; i < ti->len; ++i) {
+                for (; ti->sent < ti->len; ++ti->sent) {
                         if (!xQueueReceive(q, &c, 0))
                             c = 0;
 
@@ -903,18 +904,18 @@ static bool send_data_cb(struct at_rsp *rsp, void *up)
                 return true;
         case AT_RSP_STATUS_SEND_OK:
                 /* Then we have successfully sent the message */
-                status = ti->len;
+                status = true;
                 goto fini;
         default:
                 /* Then bad things happened */
                 cmd_failure("send_data_cb", "Bad response value");
-                status = -1;
+                status = false;
                 goto fini;
         }
 
 fini:
         if (ti->cb)
-                ti->cb(status);
+                ti->cb(status, ti->sent);
 
         portFree(ti);
         return false;
@@ -925,7 +926,7 @@ fini:
  * @param cb The callback to be invoked when the method completes.
  */
 bool esp8266_send_data(const int chan_id, struct Serial *serial,
-                       const size_t len, void (*cb)(int))
+                       const size_t len, esp8266_send_data_cb* cb)
 {
         const char* cmd_name = "send_data";
         if (!check_initialized(cmd_name))
@@ -943,7 +944,7 @@ bool esp8266_send_data(const int chan_id, struct Serial *serial,
          * end of the command in the send_data_cb above when the command
          * is done.
          */
-        struct tx_info *ti = portMalloc(sizeof(struct tx_info));
+        struct tx_info *ti = calloc(1, sizeof(struct tx_info));
         if (!ti) {
                 /* Malloc failure.  Le-sigh */
                 cmd_failure(cmd_name, "Malloc failed for send procedure.");

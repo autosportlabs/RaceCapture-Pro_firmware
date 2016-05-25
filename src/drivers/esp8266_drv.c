@@ -342,19 +342,19 @@ static void drop_data(struct channel *ch)
 /**
  * Callback that is invoked when the send_data method completes.
  */
-static void _send_data_cb(int bytes_sent)
+static void _send_data_cb(const bool status, const size_t sent)
 {
         cmd_completed();
         cmd_set_check(CHECK_DATA);
 
         struct channel* tx_chan = esp8266_state.comm.tx_chan;
         esp8266_state.comm.tx_chan = NULL;
+        tx_chan->tx_chars_buffered -= sent;
 
-        if (bytes_sent < 0) {
+        if (!status) {
                 pr_warning(LOG_PFX "Failed to send data\r\n");
         } else {
-                pr_debug_int_msg(LOG_PFX "# of bytes sent: ", bytes_sent);
-                tx_chan->tx_chars_buffered -= bytes_sent;
+                pr_info_int_msg(LOG_PFX "# of bytes sent: ", sent);
         }
 }
 
