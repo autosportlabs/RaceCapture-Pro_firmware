@@ -257,7 +257,19 @@ static void at_task_run_bytes_read(struct at_info *ati, char *msg)
          * Our rx state will dictate how we process this message beacuse that
          * allows us to know previous messages and what message type to expect.
          */
-        switch (ati->rx_state) {
+        enum at_rx_state state = ati->rx_state;
+
+        /*
+         * If the device is a rude device, then we need to treat every message
+         * as a new message. Sane AT devices will buffer all URCs until after a
+         * command is complete.  Some however do not and thus we must acomodate
+         * them here.  This has potential drawbacks if a URC and a command
+         * response conflict, but that is the price of a rude device.
+         */
+        if (ati->dev_cfg.flags & AT_DEV_CFG_FLAG_RUDE)
+                state = AT_RX_STATE_READY;
+
+        switch (state) {
         case AT_RX_STATE_CMD:
                 /* We are in the middle of receiving a command message. */
                 return process_cmd_msg(ati, msg);
