@@ -186,6 +186,7 @@ static void send_beacon(struct Serial* serial, const char* ips[])
 
         json_objEnd(serial, false);
         json_objEnd(serial, false);
+        put_crlf(serial);
 }
 
 static void do_beacon()
