@@ -99,6 +99,7 @@ struct channel_sync_op {
 
 struct comm {
         new_conn_func_t *new_conn_cb;
+        struct channel* tx_chan;
         struct channel channels[MAX_CHANNELS];
         struct channel_sync_op connect_op;
         struct channel_sync_op close_op;
@@ -328,6 +329,17 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
 }
 
 /**
+ * Drops all the data in a queue because there is no connection to send
+ * the data over.
+ * @param ch The channel containing the data to drop.
+ */
+static void drop_data(struct channel *ch)
+{
+        serial_purge_tx_queue(ch->serial);
+        ch->tx_chars_buffered = 0;
+}
+
+/**
  * Callback that is invoked when the send_data method completes.
  */
 static void _send_data_cb(int bytes_sent)
@@ -335,9 +347,15 @@ static void _send_data_cb(int bytes_sent)
         cmd_completed();
         cmd_set_check(CHECK_DATA);
 
-        if (bytes_sent < 0)
-                /* STIEG: Include channel info here somehow */
+        struct channel* tx_chan = esp8266_state.comm.tx_chan;
+        esp8266_state.comm.tx_chan = NULL;
+
+        if (bytes_sent < 0) {
                 pr_warning(LOG_PFX "Failed to send data\r\n");
+        } else {
+                pr_debug_int_msg(LOG_PFX "# of bytes sent: ", bytes_sent);
+                tx_chan->tx_chars_buffered -= bytes_sent;
+        }
 }
 
 /**
@@ -347,9 +365,10 @@ static void _send_data_cb(int bytes_sent)
 static void check_data()
 {
         cmd_check_complete(CHECK_DATA);
+        struct comm* comm = &esp8266_state.comm;
 
-        for (size_t i = 0; i < ARRAY_LEN(esp8266_state.comm.channels); ++i) {
-                struct channel *ch = esp8266_state.comm.channels + i;
+        for (size_t i = 0; i < ARRAY_LEN(comm->channels); ++i) {
+                struct channel *ch = comm->channels + i;
                 const size_t size = ch->tx_chars_buffered;
 
                 /* If the size is 0, nothing to send */
@@ -361,8 +380,7 @@ static void check_data()
                  * connection is still active.  If not, dump the data
                  */
                 if (!ch->connected) {
-                        serial_purge_tx_queue(ch->serial);
-                        ch->tx_chars_buffered = 0;
+                        drop_data(ch);
                         continue;
                 }
 
@@ -377,8 +395,13 @@ static void check_data()
                         return;
                 }
 
+                /*
+                 * Set the tx_chan so we know which chan to update
+                 * when the callback arrives.
+                 */
+                comm->tx_chan = ch;
+
                 cmd_started();
-                ch->tx_chars_buffered = 0;
                 return;
         }
 }
