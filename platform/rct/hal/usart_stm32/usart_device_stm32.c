@@ -304,9 +304,10 @@ static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
-    if (irqType | UART_RX_IRQ)
+    if (irqType & UART_RX_IRQ)
         USART_ITConfig(USARTx, USART_IT_RXNE, ENABLE);
-    if (irqType | UART_TX_IRQ)
+
+    if (irqType & UART_TX_IRQ)
         USART_ITConfig(USARTx, USART_IT_TXE, ENABLE);
 }
 
