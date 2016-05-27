@@ -458,7 +458,7 @@ typedef struct _ConnectivityConfig {
  * Configurations specific to our logging infrastructure.
  */
 struct logging_config {
-        bool serial[__SERIAL_COUNT];
+        enum serial_log_type serial[__SERIAL_COUNT];
 };
 
 typedef struct _LoggerConfig {

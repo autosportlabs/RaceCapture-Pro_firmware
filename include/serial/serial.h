@@ -54,6 +54,12 @@ typedef bool config_func_t(void *cfg_cb_arg, const size_t bits,
  */
 typedef void post_tx_func_t(xQueueHandle queue, void *post_tx_arg);
 
+enum serial_log_type {
+        SERIAL_LOG_TYPE_NONE   = 0,
+        SERIAL_LOG_TYPE_ASCII  = 1,
+        SERIAL_LOG_TYPE_BINARY = 2,
+};
+
 struct Serial;
 
 void serial_destroy(struct Serial *s);
@@ -71,7 +77,8 @@ void serial_clear(struct Serial *s);
 
 void serial_flush(struct Serial *s);
 
-bool serial_logging(struct Serial *s, const bool enable);
+enum serial_log_type serial_logging(struct Serial *s,
+                                    const enum serial_log_type type);
 
 void serial_set_name(struct Serial *s, const char *name);
 
