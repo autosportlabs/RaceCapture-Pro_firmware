@@ -35,7 +35,6 @@
 #include "task.h"
 #include "timers.h"
 #include "usart_device.h"
-#include <string.h>
 
 #define UART_RX_QUEUE_LEN 	256
 #define UART_TX_QUEUE_LEN 	64
@@ -48,13 +47,6 @@
 #define DEFAULT_WIRELESS_BAUD_RATE	9600
 #define DEFAULT_TELEMETRY_BAUD_RATE	115200
 #define DEFAULT_GPS_BAUD_RATE		9600
-/*
- * Use the unit separator character to denote the end of the buffer. This
- * control character is the lowest in the ascii delimeter heirarchy and is
- * thus perfect for denoting when we have read all characters from the DMA
- * buffer. It should never be used in our streams, so this should be safe.
- */
-#define UNIT_SEPERATOR_CHARACTER 31
 
 /* 32 bytes is good up to a baud of 230400 (28 chars / ms) */
 #define WIFI_DMA_RX_BUFF_SIZE	32
@@ -312,9 +304,6 @@ static bool init_usart_serial(const uart_id_t uart_id, USART_TypeDef *usart,
                         pr_error(LOG_PFX "Rx DMA Buff Malloc failure!\r\n");
                         return false;
                 }
-
-                /* Fill our buffer with delimeters */
-                memset(rx_buff, UNIT_SEPERATOR_CHARACTER, rx_buff_size);
         }
 
         /* Set the usart_info data */
@@ -459,24 +448,28 @@ void USART3_IRQHandler(void)
 
 static size_t dma_rx_to_queue(volatile struct usart_info *ui)
 {
-        const char delim = UNIT_SEPERATOR_CHARACTER;
         volatile uint8_t* buff = ui->dma_rx.buff;
         volatile const uint8_t* const edge = buff + ui->dma_rx.buff_size;
+        volatile const uint8_t* const head = edge - ui->dma_rx.chan->CNDTR;
         volatile uint8_t* tail = ui->dma_rx.ptr;
         xQueueHandle queue = serial_get_rx_queue(ui->serial);
+
+        if (tail == head)
+                return 0;
+
         size_t read = 0;
+        uint8_t val;
+        if (head < tail) {
+                for (; tail < edge; ++tail, ++read) {
+                        val = *tail;
+                        xQueueSend(queue, &val, 0);
+                }
+                tail = buff;
+        }
 
-        while (true) {
-                const uint8_t val = *tail;
-                if (delim == *tail)
-                        break;
-
+        for (; tail < head; ++tail, ++read) {
+                val = *tail;
                 xQueueSend(queue, &val, 0);
-                *tail = delim;
-                ++read;
-
-                if (++tail >= edge)
-                        tail = buff;
         }
 
         ui->dma_rx.ptr = tail;
