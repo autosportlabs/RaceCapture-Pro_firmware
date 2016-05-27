@@ -48,6 +48,7 @@
 #define DEFAULT_TELEMETRY_BAUD_RATE	115200
 #define DEFAULT_GPS_BAUD_RATE		9600
 #define WIFI_DMA_RX_BUFF_SIZE	32
+#define WIFI_DMA_TX_BUFF_SIZE	32
 
 typedef enum {
     UART_RX_IRQ = 1,
@@ -55,16 +56,17 @@ typedef enum {
 } uart_irq_type_t;
 
 struct dma_info {
+        DMA_Channel_TypeDef* chan;      /* Pointer to our DMA channel */
         size_t buff_size;               /* Size of the buffer */
         volatile uint8_t* buff;         /* Base address of buffer */
         volatile uint8_t* volatile ptr; /* Tail/Head pointer of the buffer */
-        DMA_Channel_TypeDef* chan;      /* Pointer to our DMA channel */
 };
 
 static struct usart_info {
         struct Serial *serial;
         USART_TypeDef *usart;
         struct dma_info dma_rx;
+        struct dma_info dma_tx;
 } usart_data[__UART_COUNT];
 
 static void init_usart(USART_TypeDef *USARTx, const size_t bits,
@@ -172,8 +174,49 @@ static void enableRxDMA(uint32_t RCC_AHBPeriph,
         USART_DMACmd(ui->usart, USART_DMAReq_Rx, ENABLE);
         DMA_Init(ui->dma_rx.chan, &DMA_InitStruct);
 
-        // Enable USART2 RX DMA Channel.
+        /*  Enable USART2 RX DMA Channel. */
         DMA_Cmd(ui->dma_rx.chan, ENABLE);
+}
+
+static void enable_dma_tx(uint32_t RCC_AHBPeriph,
+                          const uint8_t irq_channel,
+                          const uint8_t irq_priority,
+                          const uint32_t dma_it_flags,
+                          struct usart_info* ui)
+{
+        RCC_AHBPeriphClockCmd(RCC_AHBPeriph, ENABLE);
+        DMA_DeInit(ui->dma_tx.chan);
+
+        DMA_InitTypeDef DMA_InitStruct;
+        DMA_InitStruct.DMA_PeripheralBaseAddr = (uint32_t) &ui->usart->TDR;
+        DMA_InitStruct.DMA_MemoryBaseAddr = (uint32_t) ui->dma_tx.buff;
+        DMA_InitStruct.DMA_DIR = DMA_DIR_PeripheralDST;
+        DMA_InitStruct.DMA_BufferSize = 0;
+        DMA_InitStruct.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+        DMA_InitStruct.DMA_MemoryInc = DMA_MemoryInc_Enable;
+        DMA_InitStruct.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+        DMA_InitStruct.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+        DMA_InitStruct.DMA_Mode = DMA_Mode_Normal;
+        DMA_InitStruct.DMA_Priority = DMA_Priority_Medium;
+        DMA_InitStruct.DMA_M2M = DMA_M2M_Disable;
+
+        /*  Configure Tx DMA Channel Interrupts. */
+        if (dma_it_flags) {
+                NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+
+                NVIC_InitTypeDef NVIC_InitStruct;
+                NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
+                NVIC_InitStruct.NVIC_IRQChannel = irq_channel;
+                NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = irq_priority;
+                NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0;
+                NVIC_Init(&NVIC_InitStruct);
+
+                DMA_ITConfig(ui->dma_tx.chan, dma_it_flags, ENABLE);
+        }
+
+        /* Initialize RX DMA Channel. */
+        USART_DMACmd(ui->usart, USART_DMAReq_Tx, ENABLE);
+        DMA_Init(ui->dma_tx.chan, &DMA_InitStruct);
 }
 
 static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
@@ -213,12 +256,16 @@ static void usart_device_init_1(size_t bits, size_t parity,
         init_usart(ui->usart, bits, parity, stopBits, baud);
 
         /* Note, only transmit interrupt is enabled */
-        enableRxTxIrq(ui->usart, USART1_IRQn,
-                      UART_WIRELESS_IRQ_PRIORITY, UART_TX_IRQ);
+        /* enableRxTxIrq(ui->usart, USART1_IRQn, */
+        /*  UART_WIRELESS_IRQ_PRIORITY, UART_TX_IRQ); */
 
         enableRxDMA(RCC_AHBPeriph_DMA1, DMA1_Channel5_IRQn,
                     UART_WIRELESS_IRQ_PRIORITY,
                     DMA_IT_TC | DMA_IT_HT, ui);
+
+        enable_dma_tx(RCC_AHBPeriph_DMA1, DMA1_Channel4_IRQn,
+                      UART_WIRELESS_IRQ_PRIORITY,
+                      DMA_IT_TC, ui);
 }
 
 /* GPS port */
@@ -274,41 +321,60 @@ static bool _config_cb(void *cfg_cb_arg, const size_t bits,
 
 static void _char_tx_cb(xQueueHandle queue, void *post_tx_arg)
 {
-        USART_TypeDef *usart = (USART_TypeDef*) post_tx_arg;
-        /* Set the interrupt Tx Flag */
-        USART_ITConfig(usart, USART_IT_TXE, ENABLE);
+        struct usart_info *ui = (struct usart_info*) post_tx_arg;
+        if (!ui->dma_tx.chan) {
+                /* Set the interrupt Tx Flag */
+                USART_ITConfig(ui->usart, USART_IT_TXE, ENABLE);
+        }
 }
 
 static bool init_usart_serial(const uart_id_t uart_id, USART_TypeDef *usart,
                               const serial_id_t serial_id, const char *name,
-                              const size_t rx_buff_size,
-                              DMA_Channel_TypeDef* dma_chan)
+                              const size_t dma_rx_buff_size,
+                              DMA_Channel_TypeDef* dma_rx_chan,
+                              const size_t dma_tx_buff_size,
+                              DMA_Channel_TypeDef* dma_tx_chan)
 {
+        struct usart_info *ui = usart_data + uart_id;
         struct Serial *s =
                 serial_create(name, UART_TX_QUEUE_LEN, UART_RX_QUEUE_LEN,
-                              _config_cb, usart, _char_tx_cb, usart);
+                              _config_cb, usart, _char_tx_cb, ui);
         if (!s) {
                 pr_error(LOG_PFX "Serial Malloc failure!\r\n");
                 return false;
         }
 
-        uint8_t* rx_buff = NULL;
-        if (rx_buff_size) {
-                rx_buff = malloc(rx_buff_size);
-                if (!rx_buff) {
-                        pr_error(LOG_PFX "Rx DMA Buff Malloc failure!\r\n");
+        uint8_t* dma_rx_buff = NULL;
+        if (dma_rx_buff_size) {
+                dma_rx_buff = malloc(dma_rx_buff_size);
+                if (!dma_rx_buff) {
+                        pr_error(LOG_PFX "DMA Rx Buff Malloc failure!\r\n");
+                        return false;
+                }
+        }
+
+        uint8_t* dma_tx_buff = NULL;
+        if (dma_tx_buff_size) {
+                dma_tx_buff = malloc(dma_tx_buff_size);
+                if (!dma_tx_buff) {
+                        pr_error(LOG_PFX "DMA Tx Buff Malloc failure!\r\n");
                         return false;
                 }
         }
 
         /* Set the usart_info data */
-        struct usart_info *ui = usart_data + uart_id;
         ui->usart = usart;
         ui->serial = s;
-        ui->dma_rx.buff_size = rx_buff_size;
-        ui->dma_rx.buff = rx_buff;
-        ui->dma_rx.ptr = rx_buff;
-        ui->dma_rx.chan = dma_chan;
+
+        ui->dma_rx.buff_size = dma_rx_buff_size;
+        ui->dma_rx.buff = dma_rx_buff;
+        ui->dma_rx.ptr = dma_rx_buff;
+        ui->dma_rx.chan = dma_rx_chan;
+
+        ui->dma_tx.buff_size = dma_tx_buff_size;
+        ui->dma_tx.buff = dma_tx_buff;
+        ui->dma_tx.ptr = dma_tx_buff;
+        ui->dma_tx.chan = dma_tx_chan;
 
         return true;
 }
@@ -466,20 +532,70 @@ void DMA1_Channel6_IRQHandler(void)
         portEND_SWITCHING_ISR(task_awoken);
 }
 
+static bool complete_dma_tx_isr(struct usart_info* ui)
+{
+        volatile uint8_t* buff = ui->dma_tx.buff;
+        volatile uint8_t* const edge = buff + ui->dma_tx.buff_size;
+        volatile uint8_t* head = buff;
+        xQueueHandle queue = serial_get_tx_queue(ui->serial);
+        portBASE_TYPE task_awoke = pdFALSE;
+
+        DMA_Cmd(ui->dma_tx.chan, DISABLE);
+
+        /*
+         * Now that we are done transferring, see if there is anything
+         * else in the Tx queue that needs to be sent. If so, copy it
+         * into the buffer.  If we fill up more than 1/2 of the buffer,
+         * then lets start another transfer. Else defer until the next
+         * timer interrupt. This helps ensure that we limit the # of
+         * interrupts we need to service at the expense of a tiny bit
+         * of latency.
+         */
+        for (uint8_t var; head < edge; ++head) {
+                if (!xQueueReceiveFromISR(queue, &var, &task_awoke))
+                        break;
+
+                *head = var;
+        }
+
+        const size_t min_tx_size = ui->dma_tx.buff_size / 2;
+        const size_t curr_tx_size = (size_t) (head - buff);
+        if (min_tx_size < curr_tx_size) {
+                /* Then we have enough to transfer */
+                ui->dma_tx.chan->CNDTR = (uint32_t) curr_tx_size;
+                DMA_Cmd(ui->dma_tx.chan, ENABLE);
+        } else {
+                /* Not enough. Set ptr to head to indicate DMA done. */
+                ui->dma_tx.ptr = head;
+        }
+
+        return task_awoke;
+}
+
+void DMA1_Channel4_IRQHandler(void)
+{
+        struct usart_info *ui = usart_data + UART_WIRELESS;
+        const bool task_awoken = complete_dma_tx_isr(ui);
+        DMA_ClearITPendingBit(DMA1_IT_TC4);
+        portEND_SWITCHING_ISR(task_awoken);
+}
+
+
+/* *** Timer Methods *** */
+
 static void dma_rx_to_queue(struct usart_info *ui)
 {
         /* Disable DMA interrupts during this to prevent contention */
         static const uint32_t dma_it_mask =
                 DMA_IT_TC | DMA_IT_HT | DMA_IT_TE;
-        const volatile uint32_t dma_it_flags =
-                ui->dma_rx.chan->CCR & dma_it_mask;
+        const uint32_t dma_it_flags = ui->dma_rx.chan->CCR & dma_it_mask;
         if (dma_it_flags)
                 DMA_ITConfig(ui->dma_rx.chan, dma_it_flags, DISABLE);
 
         volatile uint8_t* buff = ui->dma_rx.buff;
         volatile uint8_t* const edge = buff + ui->dma_rx.buff_size;
-        volatile uint8_t* volatile head = edge - ui->dma_rx.chan->CNDTR;
-        volatile uint8_t* volatile tail = ui->dma_rx.ptr;
+        volatile uint8_t* head = edge - ui->dma_rx.chan->CNDTR;
+        volatile uint8_t* tail = ui->dma_rx.ptr;
         xQueueHandle queue = serial_get_rx_queue(ui->serial);
 
         if (head < tail) {
@@ -499,9 +615,39 @@ static void dma_rx_to_queue(struct usart_info *ui)
                 DMA_ITConfig(ui->dma_rx.chan, dma_it_flags, ENABLE);
 }
 
+static void setup_and_start_dma_tx(struct usart_info* ui)
+{
+        volatile uint8_t* head = ui->dma_tx.ptr;
+        if (!head)
+                return; /* DMA transfer in progress */
+
+        volatile uint8_t* buff = ui->dma_tx.buff;
+        volatile uint8_t* const edge = buff + ui->dma_tx.buff_size;
+        xQueueHandle queue = serial_get_tx_queue(ui->serial);
+
+        for (uint8_t var; head < edge; ++head) {
+                if (!xQueueReceive(queue, &var, 0))
+                        break;
+
+                *head = var;
+        }
+
+        if (buff == head)
+                return; /* Nothing to transmit */
+
+        /* Set our ptr value to NULL to indicate that DMA is in progress */
+        ui->dma_tx.ptr = NULL;
+
+        /* Tell DMA amount to transfer and enable. Addresses set during init */
+        ui->dma_tx.chan->CNDTR = (uint32_t) (head - buff);
+        DMA_Cmd(ui->dma_tx.chan, ENABLE);
+}
+
 static void timer_dma_handler(xTimerHandle handle)
 {
-        dma_rx_to_queue(usart_data + UART_WIRELESS);
+        struct usart_info *wifi_info = usart_data + UART_WIRELESS;
+
+        dma_rx_to_queue(wifi_info);
         /*
          * Disabling this for now since this line will cause our GPS to
          * not be able to disable NMEA messages. Don't know why just yet,
@@ -509,6 +655,8 @@ static void timer_dma_handler(xTimerHandle handle)
          *
          * dma_rx_to_queue(usart_data + UART_GPS);
          */
+
+        setup_and_start_dma_tx(wifi_info);
 }
 
 
@@ -523,9 +671,10 @@ int usart_device_init()
          */
         const bool mem_alloc_success =
                 init_usart_serial(UART_WIRELESS, USART1, SERIAL_WIFI, "WiFi",
-                                  WIFI_DMA_RX_BUFF_SIZE, DMA1_Channel5) &&
+                                  WIFI_DMA_RX_BUFF_SIZE, DMA1_Channel5,
+                                  WIFI_DMA_TX_BUFF_SIZE, DMA1_Channel4) &&
                 init_usart_serial(UART_GPS, USART2, SERIAL_GPS, "GPS",
-                                  GPS_BUFFER_SIZE, DMA1_Channel6);
+                                  GPS_BUFFER_SIZE, DMA1_Channel6, 0, NULL);
 
         if (!mem_alloc_success) {
                 pr_error("[USART] Failed to init\r\n");
