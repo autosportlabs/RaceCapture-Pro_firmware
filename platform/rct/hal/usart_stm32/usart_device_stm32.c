@@ -61,7 +61,7 @@ struct dma_info {
         DMA_Channel_TypeDef* chan;      /* Pointer to our DMA channel */
 };
 
-static volatile struct usart_info {
+static struct usart_info {
         struct Serial *serial;
         USART_TypeDef *usart;
         struct dma_info dma_rx;
@@ -135,7 +135,7 @@ static void enableRxDMA(uint32_t RCC_AHBPeriph,
                         const uint8_t irq_channel,
                         const uint8_t irq_priority,
                         const uint32_t dma_it_flags,
-                        volatile struct usart_info* ui)
+                        struct usart_info* ui)
 {
         RCC_AHBPeriphClockCmd(RCC_AHBPeriph, ENABLE);
         DMA_DeInit(ui->dma_rx.chan);
@@ -202,7 +202,7 @@ static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
 static void usart_device_init_1(size_t bits, size_t parity,
                                 size_t stopBits, size_t baud)
 {
-        volatile struct usart_info* ui = usart_data + UART_WIRELESS;
+        struct usart_info* ui = usart_data + UART_WIRELESS;
 
         RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
         initGPIO(GPIOA, (GPIO_Pin_9 | GPIO_Pin_10));
@@ -225,7 +225,7 @@ static void usart_device_init_1(size_t bits, size_t parity,
 void usart_device_init_2(size_t bits, size_t parity,
                          size_t stopBits, size_t baud)
 {
-        volatile struct usart_info* ui = usart_data + UART_GPS;
+        struct usart_info* ui = usart_data + UART_GPS;
 
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
         initGPIO(GPIOB, (GPIO_Pin_4 | GPIO_Pin_3));
@@ -302,7 +302,7 @@ static bool init_usart_serial(const uart_id_t uart_id, USART_TypeDef *usart,
         }
 
         /* Set the usart_info data */
-        volatile struct usart_info *ui = usart_data + uart_id;
+        struct usart_info *ui = usart_data + uart_id;
         ui->usart = usart;
         ui->serial = s;
         ui->dma_rx.buff_size = rx_buff_size;
@@ -325,15 +325,14 @@ void usart_device_config(const uart_id_t id, const size_t bits,
         if (!usart_id_in_bounds(id))
                 return;
 
-        volatile struct usart_info *ui = usart_data + id;
+        struct usart_info *ui = usart_data + id;
         init_usart(ui->usart, bits, parity, stop_bits, baud);
 }
 
 /* *** Interrupt Handlers *** */
-
 void DMA1_Channel6_IRQHandler(void)
 {
-        volatile struct usart_info *ui = usart_data + UART_GPS;
+        struct usart_info *ui = usart_data + UART_GPS;
         const size_t buff_size = ui->dma_rx.buff_size;
         volatile uint8_t* buff = ui->dma_rx.buff;
         xQueueHandle rx_queue = serial_get_rx_queue(ui->serial);
@@ -363,7 +362,7 @@ void DMA1_Channel6_IRQHandler(void)
         portEND_SWITCHING_ISR(task_awoken);
 }
 
-static void usart_generic_irq_handler(volatile struct usart_info *ui)
+static void usart_generic_irq_handler(struct usart_info *ui)
 {
         USART_TypeDef *usart = ui->usart;
         signed portCHAR cChar;
@@ -458,7 +457,7 @@ static void dma_data_to_queue(xQueueHandle queue,
 }
 
 
-static bool dma_rx_to_queue_isr(volatile struct usart_info *ui)
+static bool dma_rx_to_queue_isr(struct usart_info *ui)
 {
         volatile uint8_t* buff = ui->dma_rx.buff;
         volatile uint8_t* const edge = buff + ui->dma_rx.buff_size;
@@ -483,14 +482,14 @@ static bool dma_rx_to_queue_isr(volatile struct usart_info *ui)
 
 void DMA1_Channel5_IRQHandler(void)
 {
-        volatile struct usart_info *ui = usart_data + UART_WIRELESS;
+        struct usart_info *ui = usart_data + UART_WIRELESS;
         const bool task_awoken = dma_rx_to_queue_isr(ui);
         DMA_ClearITPendingBit(DMA1_IT_TC5);
         DMA_ClearITPendingBit(DMA1_IT_HT5);
         portEND_SWITCHING_ISR(task_awoken);
 }
 
-static void dma_rx_to_queue(volatile struct usart_info *ui)
+static void dma_rx_to_queue(struct usart_info *ui)
 {
         /* Disable DMA interrupts during this to prevent contention */
         static const uint32_t dma_it_mask =
@@ -567,6 +566,6 @@ struct Serial* usart_device_get_serial(const uart_id_t id)
         if (!usart_id_in_bounds(id))
                 return NULL;
 
-        volatile struct usart_info *ui = usart_data + id;
+        struct usart_info *ui = usart_data + id;
         return ui->serial;
 }
