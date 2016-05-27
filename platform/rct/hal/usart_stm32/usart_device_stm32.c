@@ -38,7 +38,7 @@
 
 #define UART_RX_QUEUE_LEN 	256
 #define UART_TX_QUEUE_LEN 	64
-#define GPS_BUFFER_SIZE		132
+#define GPS_BUFFER_SIZE		32
 #define LOG_PFX		"[USART] "
 #define UART_WIRELESS_IRQ_PRIORITY 	7
 #define UART_GPS_IRQ_PRIORITY 		5
@@ -330,38 +330,6 @@ void usart_device_config(const uart_id_t id, const size_t bits,
 }
 
 /* *** Interrupt Handlers *** */
-void DMA1_Channel6_IRQHandler(void)
-{
-        struct usart_info *ui = usart_data + UART_GPS;
-        const size_t buff_size = ui->dma_rx.buff_size;
-        volatile uint8_t* buff = ui->dma_rx.buff;
-        xQueueHandle rx_queue = serial_get_rx_queue(ui->serial);
-        /* We only ever expect one interrupt or the other, not both */
-        portBASE_TYPE task_awoken = pdFALSE;
-
-        /* Test on DMA Stream Transfer Complete interrupt */
-        if (DMA_GetITStatus(DMA1_IT_TC6)) {
-                /* Clear DMA Stream Transfer Complete interrupt pending bit */
-                DMA_ClearITPendingBit(DMA1_IT_TC6);
-                for (size_t i = buff_size / 2; i < buff_size; i++) {
-                        const uint8_t val = buff[i];
-                        xQueueSendFromISR(rx_queue, &val, &task_awoken);
-                }
-        }
-
-        /* Test on DMA Stream Half Transfer interrupt */
-        if (DMA_GetITStatus(DMA1_IT_HT6)) {
-                /* Clear DMA Stream Half Transfer interrupt pending bit */
-                DMA_ClearITPendingBit(DMA1_IT_HT6);
-                for (size_t i = 0; i < buff_size / 2; i++) {
-                        const uint8_t val = buff[i];
-                        xQueueSendFromISR(rx_queue, &val, &task_awoken);
-                }
-        }
-
-        portEND_SWITCHING_ISR(task_awoken);
-}
-
 static void usart_generic_irq_handler(struct usart_info *ui)
 {
         USART_TypeDef *usart = ui->usart;
@@ -440,11 +408,12 @@ void USART3_IRQHandler(void)
         usart_generic_irq_handler(usart_data + UART_AUX);
 }
 
-static void dma_data_to_queue(xQueueHandle queue,
-                              const volatile uint8_t* tail,
-                              const volatile uint8_t* head,
-                              const bool in_isr,
-                              portBASE_TYPE* task_awoke)
+/* Prevents code dupe below.  Hence why inline */
+inline static void dma_data_to_queue(xQueueHandle queue,
+                                     const volatile uint8_t* tail,
+                                     const volatile uint8_t* head,
+                                     const bool in_isr,
+                                     portBASE_TYPE* task_awoke)
 {
         for (uint8_t val; tail < head; ++tail) {
                 val = *tail;
@@ -455,7 +424,6 @@ static void dma_data_to_queue(xQueueHandle queue,
                 }
         }
 }
-
 
 static bool dma_rx_to_queue_isr(struct usart_info *ui)
 {
@@ -486,6 +454,15 @@ void DMA1_Channel5_IRQHandler(void)
         const bool task_awoken = dma_rx_to_queue_isr(ui);
         DMA_ClearITPendingBit(DMA1_IT_TC5);
         DMA_ClearITPendingBit(DMA1_IT_HT5);
+        portEND_SWITCHING_ISR(task_awoken);
+}
+
+void DMA1_Channel6_IRQHandler(void)
+{
+        struct usart_info *ui = usart_data + UART_GPS;
+        const bool task_awoken = dma_rx_to_queue_isr(ui);
+        DMA_ClearITPendingBit(DMA1_IT_TC6);
+        DMA_ClearITPendingBit(DMA1_IT_HT6);
         portEND_SWITCHING_ISR(task_awoken);
 }
 
@@ -525,6 +502,13 @@ static void dma_rx_to_queue(struct usart_info *ui)
 static void timer_dma_handler(xTimerHandle handle)
 {
         dma_rx_to_queue(usart_data + UART_WIRELESS);
+        /*
+         * Disabling this for now since this line will cause our GPS to
+         * not be able to disable NMEA messages. Don't know why just yet,
+         * but it does.
+         *
+         * dma_rx_to_queue(usart_data + UART_GPS);
+         */
 }
 
 
