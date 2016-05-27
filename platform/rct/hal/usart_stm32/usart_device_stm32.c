@@ -38,7 +38,8 @@
 
 #define UART_RX_QUEUE_LEN 	256
 #define UART_TX_QUEUE_LEN 	64
-#define GPS_BUFFER_SIZE		32
+#define GPS_DMA_RX_BUFF_SIZE		32
+#define GPS_DMA_TX_BUFF_SIZE		16
 #define LOG_PFX		"[USART] "
 #define UART_WIRELESS_IRQ_PRIORITY 	7
 #define UART_GPS_IRQ_PRIORITY 		5
@@ -123,13 +124,13 @@ static void init_usart(USART_TypeDef *USARTx, const size_t bits,
 
 static void initGPIO(GPIO_TypeDef * GPIOx, uint32_t gpioPins)
 {
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin = gpioPins;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOx, &GPIO_InitStructure);
+        GPIO_InitTypeDef GPIO_InitStructure;
+        GPIO_InitStructure.GPIO_Pin = gpioPins;
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+        GPIO_Init(GPIOx, &GPIO_InitStructure);
 }
 
 
@@ -219,6 +220,7 @@ static void enable_dma_tx(uint32_t RCC_AHBPeriph,
         DMA_Init(ui->dma_tx.chan, &DMA_InitStruct);
 }
 
+#if 0
 static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
                           uint8_t IRQ_priority, uart_irq_type_t irqType)
 {
@@ -240,6 +242,7 @@ static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
         if (irqType & UART_TX_IRQ)
                 USART_ITConfig(USARTx, USART_IT_TXE, ENABLE);
 }
+#endif
 
 /* Wireless port */
 static void usart_device_init_1(size_t bits, size_t parity,
@@ -254,10 +257,6 @@ static void usart_device_init_1(size_t bits, size_t parity,
 
         RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
         init_usart(ui->usart, bits, parity, stopBits, baud);
-
-        /* Note, only transmit interrupt is enabled */
-        /* enableRxTxIrq(ui->usart, USART1_IRQn, */
-        /*  UART_WIRELESS_IRQ_PRIORITY, UART_TX_IRQ); */
 
         enableRxDMA(RCC_AHBPeriph_DMA1, DMA1_Channel5_IRQn,
                     UART_WIRELESS_IRQ_PRIORITY,
@@ -282,13 +281,13 @@ void usart_device_init_2(size_t bits, size_t parity,
         RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
         init_usart(ui->usart, bits, parity, stopBits, baud);
 
-        /* Note, only transmit interrupt is enabled */
-        enableRxTxIrq(ui->usart, USART2_IRQn,
-                      UART_GPS_IRQ_PRIORITY, UART_TX_IRQ);
-
         enableRxDMA(RCC_AHBPeriph_DMA1, DMA1_Channel6_IRQn,
                     UART_GPS_IRQ_PRIORITY,
                     DMA_IT_TC | DMA_IT_HT, ui);
+
+        enable_dma_tx(RCC_AHBPeriph_DMA1, DMA1_Channel7_IRQn,
+                      UART_GPS_IRQ_PRIORITY,
+                      DMA_IT_TC, ui);
 }
 
 /* Telemetry port - Commented out for now b/c need RAM */
@@ -580,6 +579,14 @@ void DMA1_Channel4_IRQHandler(void)
         portEND_SWITCHING_ISR(task_awoken);
 }
 
+void DMA1_Channel7_IRQHandler(void)
+{
+        struct usart_info *ui = usart_data + UART_GPS;
+        const bool task_awoken = complete_dma_tx_isr(ui);
+        DMA_ClearITPendingBit(DMA1_IT_TC7);
+        portEND_SWITCHING_ISR(task_awoken);
+}
+
 
 /* *** Timer Methods *** */
 
@@ -646,6 +653,7 @@ static void setup_and_start_dma_tx(struct usart_info* ui)
 static void timer_dma_handler(xTimerHandle handle)
 {
         struct usart_info *wifi_info = usart_data + UART_WIRELESS;
+        struct usart_info *gps_info = usart_data + UART_GPS;
 
         dma_rx_to_queue(wifi_info);
         /*
@@ -657,6 +665,7 @@ static void timer_dma_handler(xTimerHandle handle)
          */
 
         setup_and_start_dma_tx(wifi_info);
+        setup_and_start_dma_tx(gps_info);
 }
 
 
@@ -674,7 +683,8 @@ int usart_device_init()
                                   WIFI_DMA_RX_BUFF_SIZE, DMA1_Channel5,
                                   WIFI_DMA_TX_BUFF_SIZE, DMA1_Channel4) &&
                 init_usart_serial(UART_GPS, USART2, SERIAL_GPS, "GPS",
-                                  GPS_BUFFER_SIZE, DMA1_Channel6, 0, NULL);
+                                  GPS_DMA_RX_BUFF_SIZE, DMA1_Channel6,
+                                  GPS_DMA_TX_BUFF_SIZE, DMA1_Channel7);
 
         if (!mem_alloc_success) {
                 pr_error("[USART] Failed to init\r\n");
