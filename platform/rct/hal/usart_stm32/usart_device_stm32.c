@@ -38,7 +38,7 @@
 
 #define UART_RX_QUEUE_LEN 	256
 #define UART_TX_QUEUE_LEN 	64
-#define GPS_DMA_RX_BUFF_SIZE		32
+#define GPS_DMA_RX_BUFF_SIZE		128
 #define GPS_DMA_TX_BUFF_SIZE		16
 #define LOG_PFX		"[USART] "
 #define UART_WIRELESS_IRQ_PRIORITY 	7
@@ -140,15 +140,16 @@ static void enableRxDMA(uint32_t RCC_AHBPeriph,
                         const uint32_t dma_it_flags,
                         struct usart_info* ui)
 {
+        const struct dma_info* dma = &ui->dma_rx;
         RCC_AHBPeriphClockCmd(RCC_AHBPeriph, ENABLE);
-        DMA_DeInit(ui->dma_rx.chan);
+        DMA_DeInit(dma->chan);
 
         /*  Initialize USART2 RX DMA Channel */
         DMA_InitTypeDef DMA_InitStruct;
         DMA_InitStruct.DMA_PeripheralBaseAddr = (uint32_t) &ui->usart->RDR;
-        DMA_InitStruct.DMA_MemoryBaseAddr = (uint32_t) ui->dma_rx.buff;
+        DMA_InitStruct.DMA_MemoryBaseAddr = (uint32_t) dma->buff;
         DMA_InitStruct.DMA_DIR = DMA_DIR_PeripheralSRC;
-        DMA_InitStruct.DMA_BufferSize = ui->dma_rx.buff_size;
+        DMA_InitStruct.DMA_BufferSize = dma->buff_size;
         DMA_InitStruct.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
         DMA_InitStruct.DMA_MemoryInc = DMA_MemoryInc_Enable;
         DMA_InitStruct.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
@@ -168,15 +169,15 @@ static void enableRxDMA(uint32_t RCC_AHBPeriph,
                 NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0;
                 NVIC_Init(&NVIC_InitStruct);
 
-                DMA_ITConfig(ui->dma_rx.chan, dma_it_flags, ENABLE);
+                DMA_ITConfig(dma->chan, dma_it_flags, ENABLE);
         }
 
         /* Initialize RX DMA Channel. */
         USART_DMACmd(ui->usart, USART_DMAReq_Rx, ENABLE);
-        DMA_Init(ui->dma_rx.chan, &DMA_InitStruct);
+        DMA_Init(dma->chan, &DMA_InitStruct);
 
         /*  Enable USART2 RX DMA Channel. */
-        DMA_Cmd(ui->dma_rx.chan, ENABLE);
+        DMA_Cmd(dma->chan, ENABLE);
 }
 
 static void enable_dma_tx(uint32_t RCC_AHBPeriph,
@@ -185,14 +186,15 @@ static void enable_dma_tx(uint32_t RCC_AHBPeriph,
                           const uint32_t dma_it_flags,
                           struct usart_info* ui)
 {
+        const struct dma_info* dma = &ui->dma_tx;
         RCC_AHBPeriphClockCmd(RCC_AHBPeriph, ENABLE);
-        DMA_DeInit(ui->dma_tx.chan);
+        DMA_DeInit(dma->chan);
 
         DMA_InitTypeDef DMA_InitStruct;
         DMA_InitStruct.DMA_PeripheralBaseAddr = (uint32_t) &ui->usart->TDR;
-        DMA_InitStruct.DMA_MemoryBaseAddr = (uint32_t) ui->dma_tx.buff;
+        DMA_InitStruct.DMA_MemoryBaseAddr = (uint32_t) dma->buff;
         DMA_InitStruct.DMA_DIR = DMA_DIR_PeripheralDST;
-        DMA_InitStruct.DMA_BufferSize = 0;
+        DMA_InitStruct.DMA_BufferSize = 0; /* Set later */
         DMA_InitStruct.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
         DMA_InitStruct.DMA_MemoryInc = DMA_MemoryInc_Enable;
         DMA_InitStruct.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
@@ -212,12 +214,12 @@ static void enable_dma_tx(uint32_t RCC_AHBPeriph,
                 NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0;
                 NVIC_Init(&NVIC_InitStruct);
 
-                DMA_ITConfig(ui->dma_tx.chan, dma_it_flags, ENABLE);
+                DMA_ITConfig(dma->chan, dma_it_flags, ENABLE);
         }
 
         /* Initialize RX DMA Channel. */
         USART_DMACmd(ui->usart, USART_DMAReq_Tx, ENABLE);
-        DMA_Init(ui->dma_tx.chan, &DMA_InitStruct);
+        DMA_Init(dma->chan, &DMA_InitStruct);
 }
 
 #if 0
@@ -593,11 +595,12 @@ void DMA1_Channel7_IRQHandler(void)
 static void dma_rx_to_queue(struct usart_info *ui)
 {
         /* Disable DMA interrupts during this to prevent contention */
-        static const uint32_t dma_it_mask =
-                DMA_IT_TC | DMA_IT_HT | DMA_IT_TE;
-        const uint32_t dma_it_flags = ui->dma_rx.chan->CCR & dma_it_mask;
-        if (dma_it_flags)
-                DMA_ITConfig(ui->dma_rx.chan, dma_it_flags, DISABLE);
+        /* static const uint32_t dma_it_mask = */
+        /*         DMA_IT_TC | DMA_IT_HT | DMA_IT_TE; */
+        /* const uint32_t dma_it_flags = ui->dma_rx.chan->CCR & dma_it_mask; */
+        /* if (dma_it_flags) */
+        /*         DMA_ITConfig(ui->dma_rx.chan, dma_it_flags, DISABLE); */
+        taskDISABLE_INTERRUPTS();
 
         volatile uint8_t* buff = ui->dma_rx.buff;
         volatile uint8_t* const edge = buff + ui->dma_rx.buff_size;
@@ -617,9 +620,10 @@ static void dma_rx_to_queue(struct usart_info *ui)
 
         ui->dma_rx.ptr = tail;
 
+        taskENABLE_INTERRUPTS();
         /* Re-enable DMA interrupts if they were set originally. */
-        if (dma_it_flags)
-                DMA_ITConfig(ui->dma_rx.chan, dma_it_flags, ENABLE);
+        /* if (dma_it_flags) */
+        /*         DMA_ITConfig(ui->dma_rx.chan, dma_it_flags, ENABLE); */
 }
 
 static void setup_and_start_dma_tx(struct usart_info* ui)
@@ -655,14 +659,15 @@ static void timer_dma_handler(xTimerHandle handle)
         struct usart_info *wifi_info = usart_data + UART_WIRELESS;
         struct usart_info *gps_info = usart_data + UART_GPS;
 
+        dma_rx_to_queue(gps_info);
         dma_rx_to_queue(wifi_info);
         /*
          * Disabling this for now since this line will cause our GPS to
          * not be able to disable NMEA messages. Don't know why just yet,
          * but it does.
-         *
-         * dma_rx_to_queue(usart_data + UART_GPS);
          */
+
+
 
         setup_and_start_dma_tx(wifi_info);
         setup_and_start_dma_tx(gps_info);
