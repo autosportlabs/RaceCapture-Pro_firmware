@@ -284,8 +284,8 @@ static gps_msg_result_t rxGpsMessage(GpsMessage * msg, struct Serial * serial,
                     return GPS_MSG_PAYLOAD_TOO_BIG;
 
             msg->payloadLength = len;
-            uint8_t c = 0;
             for (size_t i = 0; i < len; i++) {
+                    uint8_t c;
                     if (!serial_read_byte(serial, &c, timeoutLen))
                             return GPS_MSG_PAYLOAD_READ_TIMEOUT;
 
@@ -296,6 +296,7 @@ static gps_msg_result_t rxGpsMessage(GpsMessage * msg, struct Serial * serial,
             if (!serial_read_byte(serial, &checksum, timeoutLen))
                     return GPS_MSG_CHECKSUM_READ_TIMEOUT;
 
+            msg->checksum = checksum;
             uint8_t calculatedChecksum = calculateChecksum(msg);
             if (calculatedChecksum != checksum)
                     return GPS_MSG_CHECKSUM_FAILURE;
@@ -440,7 +441,23 @@ static void sendConfigurePositionUpdateRate(GpsMessage *gpsMsg, struct Serial *s
     txGpsMessage(gpsMsg, serial);
 }
 
-uint32_t detectGpsBaudRate(GpsMessage *gpsMsg, struct Serial *serial)
+static void print_gps_msg_result(const gps_msg_result_t result)
+{
+        switch(result) {
+        case GPS_MSG_SUCCESS:
+                pr_info("GPS: Message was successfully received.\r\n");
+                break;
+        case GPS_MSG_NONE:
+                pr_info("GPS: Message was non-existent?!?  BUG!\r\n");
+                break;
+        default:
+                pr_info_int_msg("GPS: Msg Rx failed with status: ", result);
+                break;
+        }
+}
+
+static uint32_t detectGpsBaudRate(GpsMessage *gpsMsg,
+                                  struct Serial *serial)
 {
     BaudRateCodes baud_rates[BAUD_RATE_COUNT] = BAUD_RATES;
 
@@ -451,7 +468,8 @@ uint32_t detectGpsBaudRate(GpsMessage *gpsMsg, struct Serial *serial)
         sendQuerySwVersion(gpsMsg, serial);
         if (rxGpsMessage(gpsMsg, serial, MSG_ID_SW_VERSION) ==
             GPS_MSG_SUCCESS) {
-            return baudRate;
+                pr_info_int_msg("GPS: Using baud rate: ", baudRate);
+                return baudRate;
         }
     }
     return 0;
@@ -470,10 +488,12 @@ static gps_cmd_result_t attemptFactoryDefaults(GpsMessage * gpsMsg,
         sendSetFactoryDefaults(gpsMsg, serial);
         if ((rxGpsMessage(gpsMsg, serial, MSG_ID_ACK) == GPS_MSG_SUCCESS) &&
             (gpsMsg->ackMsg.messageId == MSG_ID_SET_FACTORY_DEFAULTS)) {
-            pr_info("Set Factory Defaults Success\r\n");
+                pr_info("Set Factory Defaults Success\r\n");
             return GPS_COMMAND_SUCCESS;
         }
     }
+
+    pr_info("GPS: Failed to set factory defaults\r\n");
     return GPS_COMMAND_FAIL;
 }
 
@@ -492,36 +512,39 @@ static gps_cmd_result_t configureBaudRate(GpsMessage * gpsMsg, struct Serial * s
         uint32_t targetBaudRate)
 {
     pr_info_int_msg("GPS: Configuring baud rate to: ", targetBaudRate);
-    gps_cmd_result_t result = GPS_COMMAND_FAIL;
+
     uint8_t baudRateCode = getBaudRateCode(targetBaudRate);
     sendConfigureSerialPort(gpsMsg, serial, baudRateCode);
-
-    if (rxGpsMessage(gpsMsg, serial, MSG_ID_ACK) == GPS_MSG_SUCCESS) {
-        result = (gpsMsg->ackMsg.ackId == MSG_ID_CONFIGURE_SERIAL_PORT) ?
-                 GPS_COMMAND_SUCCESS : GPS_COMMAND_FAIL;
+    const gps_msg_result_t result = rxGpsMessage(gpsMsg, serial, MSG_ID_ACK);
+    print_gps_msg_result(result);
+    if (gpsMsg->ackMsg.ackId == MSG_ID_CONFIGURE_SERIAL_PORT) {
+            pr_info("GPS: Configuring was successful.\r\n");
+            return GPS_COMMAND_SUCCESS;
     }
 
-    pr_info(result == GPS_COMMAND_SUCCESS ? "win\r\n" : "fail\r\n");
-    return result;
+    pr_info_int_msg("GPS: Configuring failed, ack id: ",
+                    gpsMsg->ackMsg.ackId);
+    return GPS_COMMAND_FAIL;
 }
 
 static gps_cmd_result_t configureNmeaMessages(GpsMessage * gpsMsg,
         struct Serial * serial)
 {
-    pr_info("GPS: Configuring NMEA messages: ");
-
-    gps_cmd_result_t result = GPS_COMMAND_FAIL;
+    pr_info("GPS: Configuring NMEA messages\r\n");
     sendConfigureNmea(gpsMsg, serial);
 
-    if (rxGpsMessage(gpsMsg, serial, MSG_ID_ACK) == GPS_MSG_SUCCESS) {
-        result =
-            (gpsMsg->ackMsg.ackId ==
-             MSG_ID_CONFIGURE_NMEA_MESSAGE) ? GPS_COMMAND_SUCCESS :
-            GPS_COMMAND_FAIL;
+    const gps_msg_result_t result =
+            rxGpsMessage(gpsMsg, serial, MSG_ID_ACK);
+    print_gps_msg_result(result);
+
+    if (result == GPS_MSG_SUCCESS &&
+        gpsMsg->ackMsg.ackId == MSG_ID_CONFIGURE_NMEA_MESSAGE) {
+            pr_info("GPS: Successfully configured NMEA\r\n");
+            return GPS_COMMAND_SUCCESS;
     }
 
-    pr_info(result == GPS_COMMAND_SUCCESS ? "win\r\n" : "fail\r\n");
-    return result;
+    pr_info("GPS: Failed configured NMEA\r\n");
+    return GPS_COMMAND_FAIL;
 }
 
 static gps_cmd_result_t configureGnssNavigationMode(GpsMessage *gpsMsg, struct Serial *serial)
@@ -539,15 +562,20 @@ static gps_cmd_result_t configureGnssNavigationMode(GpsMessage *gpsMsg, struct S
 
 static gps_cmd_result_t disableNmeaMessages(GpsMessage *gpsMsg, struct Serial *serial)
 {
-    pr_info("GPS: Disable NMEA messages: ");
+        pr_info("GPS: Disabling NMEA messages\r\n");
 
-    gps_cmd_result_t result = GPS_COMMAND_FAIL;
-    sendDisableNmea(gpsMsg, serial);
-    if (rxGpsMessage(gpsMsg, serial, MSG_ID_ACK) == GPS_MSG_SUCCESS) {
-        result = (gpsMsg->ackMsg.ackId == MSG_ID_CONFIGURE_NMEA_MESSAGE) ? GPS_COMMAND_SUCCESS : GPS_COMMAND_FAIL;
-    }
-    pr_info(result == GPS_COMMAND_SUCCESS ? "win\r\n" : "fail\r\n");
-    return result;
+        sendDisableNmea(gpsMsg, serial);
+        const gps_msg_result_t result = rxGpsMessage(gpsMsg, serial,
+                                                     MSG_ID_ACK);
+        print_gps_msg_result(result);
+
+        if (GPS_MSG_SUCCESS == result &&
+            gpsMsg->ackMsg.ackId == MSG_ID_CONFIGURE_NMEA_MESSAGE) {
+                pr_info("GPS: Successfully disabled NMEA messages\r\n");
+                return GPS_COMMAND_SUCCESS;
+        }
+
+        return GPS_COMMAND_FAIL;
 }
 
 static gps_cmd_result_t configureMessageType(GpsMessage *gpsMsg, struct Serial *serial)
