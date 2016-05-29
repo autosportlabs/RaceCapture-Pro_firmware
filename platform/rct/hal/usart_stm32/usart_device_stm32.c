@@ -480,9 +480,9 @@ void USART3_IRQHandler(void)
 inline static void dma_data_to_queue(xQueueHandle queue,
                                      const volatile uint8_t* tail,
                                      const volatile uint8_t* head,
-                                     const bool in_isr,
                                      portBASE_TYPE* task_awoke)
 {
+        const bool in_isr = task_awoke != NULL;
         for (uint8_t val; tail < head; ++tail) {
                 val = *tail;
                 if (in_isr) {
@@ -495,24 +495,21 @@ inline static void dma_data_to_queue(xQueueHandle queue,
 
 static bool dma_rx_to_queue_isr(volatile struct usart_info *ui)
 {
-        volatile uint8_t* buff = ui->dma_rx.buff;
+        volatile uint8_t* const buff = ui->dma_rx.buff;
         volatile uint8_t* const edge = buff + ui->dma_rx.buff_size;
-        volatile uint8_t* volatile head = edge - ui->dma_rx.chan->CNDTR;
-        volatile uint8_t* volatile tail = ui->dma_rx.ptr;
+        volatile uint8_t* const head = edge - ui->dma_rx.chan->CNDTR;
+        volatile uint8_t* const tail = ui->dma_rx.ptr;
         xQueueHandle queue = serial_get_rx_queue(ui->serial);
         portBASE_TYPE task_awoke = pdFALSE;
 
         if (head < tail) {
-                dma_data_to_queue(queue, tail, edge, true, &task_awoke);
-                tail = buff;
+                dma_data_to_queue(queue, tail, edge, &task_awoke);
+                dma_data_to_queue(queue, buff, head, &task_awoke);
+        } else {
+                dma_data_to_queue(queue, tail, head, &task_awoke);
         }
 
-        if (tail < head) {
-                dma_data_to_queue(queue, tail, head, true, &task_awoke);
-                tail = head;
-        }
-
-        ui->dma_rx.ptr = tail;
+        ui->dma_rx.ptr = head;
         return task_awoke;
 }
 
@@ -601,24 +598,20 @@ static void dma_rx_to_queue(volatile struct usart_info *ui)
         /* if (dma_it_flags) */
         /*         DMA_ITConfig(ui->dma_rx.chan, dma_it_flags, DISABLE); */
 
-
-        volatile uint8_t* buff = ui->dma_rx.buff;
+        volatile uint8_t* const buff = ui->dma_rx.buff;
         volatile uint8_t* const edge = buff + ui->dma_rx.buff_size;
-        volatile uint8_t* head = edge - ui->dma_rx.chan->CNDTR;
-        volatile uint8_t* tail = ui->dma_rx.ptr;
+        volatile uint8_t* const head = edge - ui->dma_rx.chan->CNDTR;
+        volatile uint8_t* const tail = ui->dma_rx.ptr;
         xQueueHandle queue = serial_get_rx_queue(ui->serial);
 
         if (head < tail) {
-                dma_data_to_queue(queue, tail, edge, false, NULL);
-                tail = buff;
+                dma_data_to_queue(queue, tail, edge, NULL);
+                dma_data_to_queue(queue, buff, head, NULL);
+        } else {
+                dma_data_to_queue(queue, tail, head, NULL);
         }
 
-        if (tail < head) {
-                dma_data_to_queue(queue, tail, head, false, NULL);
-                tail = head;
-        }
-
-        ui->dma_rx.ptr = tail;
+        ui->dma_rx.ptr = head;
 
         /* Re-enable DMA interrupts if they were set originally. */
         /* if (dma_it_flags) */
