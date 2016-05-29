@@ -161,7 +161,7 @@ static void log_binary(size_t* cntr, const char data)
                 pr_info("00(\\0)");
                 break;
         case '\n':
-                pr_info("0d(\\r)");
+                pr_info("0a(\\n)");
                 break;
         case '\r':
                 pr_info("0d(\\r)");
