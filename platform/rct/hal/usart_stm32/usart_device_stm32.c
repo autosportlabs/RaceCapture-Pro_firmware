@@ -63,7 +63,7 @@ struct dma_info {
         volatile uint8_t* volatile ptr; /* Tail/Head pointer of the buffer */
 };
 
-static struct usart_info {
+static volatile struct usart_info {
         struct Serial *serial;
         USART_TypeDef *usart;
         struct dma_info dma_rx;
@@ -138,9 +138,9 @@ static void enableRxDMA(uint32_t RCC_AHBPeriph,
                         const uint8_t irq_channel,
                         const uint8_t irq_priority,
                         const uint32_t dma_it_flags,
-                        struct usart_info* ui)
+                        volatile struct usart_info* ui)
 {
-        const struct dma_info* dma = &ui->dma_rx;
+        const volatile struct dma_info* dma = &ui->dma_rx;
         RCC_AHBPeriphClockCmd(RCC_AHBPeriph, ENABLE);
         DMA_DeInit(dma->chan);
 
@@ -184,9 +184,9 @@ static void enable_dma_tx(uint32_t RCC_AHBPeriph,
                           const uint8_t irq_channel,
                           const uint8_t irq_priority,
                           const uint32_t dma_it_flags,
-                          struct usart_info* ui)
+                          volatile struct usart_info* ui)
 {
-        const struct dma_info* dma = &ui->dma_tx;
+        const volatile struct dma_info* dma = &ui->dma_tx;
         RCC_AHBPeriphClockCmd(RCC_AHBPeriph, ENABLE);
         DMA_DeInit(dma->chan);
 
@@ -250,7 +250,7 @@ static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
 static void usart_device_init_1(size_t bits, size_t parity,
                                 size_t stopBits, size_t baud)
 {
-        struct usart_info* ui = usart_data + UART_WIRELESS;
+        volatile struct usart_info* ui = usart_data + UART_WIRELESS;
 
         RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
         initGPIO(GPIOA, (GPIO_Pin_9 | GPIO_Pin_10));
@@ -273,7 +273,7 @@ static void usart_device_init_1(size_t bits, size_t parity,
 void usart_device_init_2(size_t bits, size_t parity,
                          size_t stopBits, size_t baud)
 {
-        struct usart_info* ui = usart_data + UART_GPS;
+        volatile struct usart_info* ui = usart_data + UART_GPS;
 
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
         initGPIO(GPIOB, (GPIO_Pin_4 | GPIO_Pin_3));
@@ -322,7 +322,7 @@ static bool _config_cb(void *cfg_cb_arg, const size_t bits,
 
 static void _char_tx_cb(xQueueHandle queue, void *post_tx_arg)
 {
-        struct usart_info *ui = (struct usart_info*) post_tx_arg;
+        volatile struct usart_info *ui = (struct usart_info*) post_tx_arg;
         if (!ui->dma_tx.chan) {
                 /* Set the interrupt Tx Flag */
                 USART_ITConfig(ui->usart, USART_IT_TXE, ENABLE);
@@ -336,10 +336,11 @@ static bool init_usart_serial(const uart_id_t uart_id, USART_TypeDef *usart,
                               const size_t dma_tx_buff_size,
                               DMA_Channel_TypeDef* dma_tx_chan)
 {
-        struct usart_info *ui = usart_data + uart_id;
+        volatile struct usart_info *ui = usart_data + uart_id;
         struct Serial *s =
                 serial_create(name, UART_TX_QUEUE_LEN, UART_RX_QUEUE_LEN,
-                              _config_cb, usart, _char_tx_cb, ui);
+                              _config_cb, (void*) usart,
+                              _char_tx_cb, (void*) ui);
         if (!s) {
                 pr_error(LOG_PFX "Serial Malloc failure!\r\n");
                 return false;
@@ -392,12 +393,12 @@ void usart_device_config(const uart_id_t id, const size_t bits,
         if (!usart_id_in_bounds(id))
                 return;
 
-        struct usart_info *ui = usart_data + id;
+        volatile struct usart_info *ui = usart_data + id;
         init_usart(ui->usart, bits, parity, stop_bits, baud);
 }
 
 /* *** Interrupt Handlers *** */
-static void usart_generic_irq_handler(struct usart_info *ui)
+static void usart_generic_irq_handler(volatile struct usart_info *ui)
 {
         USART_TypeDef *usart = ui->usart;
         signed portCHAR cChar;
@@ -492,7 +493,7 @@ inline static void dma_data_to_queue(xQueueHandle queue,
         }
 }
 
-static bool dma_rx_to_queue_isr(struct usart_info *ui)
+static bool dma_rx_to_queue_isr(volatile struct usart_info *ui)
 {
         volatile uint8_t* buff = ui->dma_rx.buff;
         volatile uint8_t* const edge = buff + ui->dma_rx.buff_size;
@@ -517,7 +518,7 @@ static bool dma_rx_to_queue_isr(struct usart_info *ui)
 
 void DMA1_Channel5_IRQHandler(void)
 {
-        struct usart_info *ui = usart_data + UART_WIRELESS;
+        volatile struct usart_info *ui = usart_data + UART_WIRELESS;
         const bool task_awoken = dma_rx_to_queue_isr(ui);
         DMA_ClearITPendingBit(DMA1_IT_TC5);
         DMA_ClearITPendingBit(DMA1_IT_HT5);
@@ -526,14 +527,14 @@ void DMA1_Channel5_IRQHandler(void)
 
 void DMA1_Channel6_IRQHandler(void)
 {
-        struct usart_info *ui = usart_data + UART_GPS;
+        volatile struct usart_info *ui = usart_data + UART_GPS;
         const bool task_awoken = dma_rx_to_queue_isr(ui);
         DMA_ClearITPendingBit(DMA1_IT_TC6);
         DMA_ClearITPendingBit(DMA1_IT_HT6);
         portEND_SWITCHING_ISR(task_awoken);
 }
 
-static bool complete_dma_tx_isr(struct usart_info* ui)
+static bool complete_dma_tx_isr(volatile struct usart_info* ui)
 {
         volatile uint8_t* buff = ui->dma_tx.buff;
         volatile uint8_t* const edge = buff + ui->dma_tx.buff_size;
@@ -575,7 +576,7 @@ static bool complete_dma_tx_isr(struct usart_info* ui)
 
 void DMA1_Channel4_IRQHandler(void)
 {
-        struct usart_info *ui = usart_data + UART_WIRELESS;
+        volatile struct usart_info *ui = usart_data + UART_WIRELESS;
         const bool task_awoken = complete_dma_tx_isr(ui);
         DMA_ClearITPendingBit(DMA1_IT_TC4);
         portEND_SWITCHING_ISR(task_awoken);
@@ -583,7 +584,7 @@ void DMA1_Channel4_IRQHandler(void)
 
 void DMA1_Channel7_IRQHandler(void)
 {
-        struct usart_info *ui = usart_data + UART_GPS;
+        volatile struct usart_info *ui = usart_data + UART_GPS;
         const bool task_awoken = complete_dma_tx_isr(ui);
         DMA_ClearITPendingBit(DMA1_IT_TC7);
         portEND_SWITCHING_ISR(task_awoken);
@@ -591,8 +592,7 @@ void DMA1_Channel7_IRQHandler(void)
 
 
 /* *** Timer Methods *** */
-
-static void dma_rx_to_queue(struct usart_info *ui)
+static void dma_rx_to_queue(volatile struct usart_info *ui)
 {
         /* Disable DMA interrupts during this to prevent contention */
         /* static const uint32_t dma_it_mask = */
@@ -600,7 +600,7 @@ static void dma_rx_to_queue(struct usart_info *ui)
         /* const uint32_t dma_it_flags = ui->dma_rx.chan->CCR & dma_it_mask; */
         /* if (dma_it_flags) */
         /*         DMA_ITConfig(ui->dma_rx.chan, dma_it_flags, DISABLE); */
-        taskDISABLE_INTERRUPTS();
+
 
         volatile uint8_t* buff = ui->dma_rx.buff;
         volatile uint8_t* const edge = buff + ui->dma_rx.buff_size;
@@ -620,13 +620,12 @@ static void dma_rx_to_queue(struct usart_info *ui)
 
         ui->dma_rx.ptr = tail;
 
-        taskENABLE_INTERRUPTS();
         /* Re-enable DMA interrupts if they were set originally. */
         /* if (dma_it_flags) */
         /*         DMA_ITConfig(ui->dma_rx.chan, dma_it_flags, ENABLE); */
 }
 
-static void setup_and_start_dma_tx(struct usart_info* ui)
+static void setup_and_start_dma_tx(volatile struct usart_info* ui)
 {
         volatile uint8_t* head = ui->dma_tx.ptr;
         if (!head)
@@ -656,21 +655,17 @@ static void setup_and_start_dma_tx(struct usart_info* ui)
 
 static void timer_dma_handler(xTimerHandle handle)
 {
-        struct usart_info *wifi_info = usart_data + UART_WIRELESS;
-        struct usart_info *gps_info = usart_data + UART_GPS;
+        taskDISABLE_INTERRUPTS();
 
+        volatile struct usart_info *gps_info = usart_data + UART_GPS;
         dma_rx_to_queue(gps_info);
-        dma_rx_to_queue(wifi_info);
-        /*
-         * Disabling this for now since this line will cause our GPS to
-         * not be able to disable NMEA messages. Don't know why just yet,
-         * but it does.
-         */
-
-
-
-        setup_and_start_dma_tx(wifi_info);
         setup_and_start_dma_tx(gps_info);
+
+        volatile struct usart_info *wifi_info = usart_data + UART_WIRELESS;
+        dma_rx_to_queue(wifi_info);
+        setup_and_start_dma_tx(wifi_info);
+
+        taskENABLE_INTERRUPTS();
 }
 
 
@@ -714,6 +709,6 @@ struct Serial* usart_device_get_serial(const uart_id_t id)
         if (!usart_id_in_bounds(id))
                 return NULL;
 
-        struct usart_info *ui = usart_data + id;
+        volatile struct usart_info *ui = usart_data + id;
         return ui->serial;
 }
