@@ -156,25 +156,13 @@ static void log_ascii(size_t* cntr, const char data)
 static void log_binary(size_t* cntr, const char data)
 {
         char buf[12];
-        switch (data) {
-        case '\0':
-                pr_info("00(\\0)");
-                break;
-        case '\n':
-                pr_info("0a(\\n)");
-                break;
-        case '\r':
-                pr_info("0d(\\r)");
-                break;
-        default:
-                /* Only print printable characters in data column */
-                if (32 <= data && data <= 126) {
-                        sprintf(buf, "%02x(%c)", data, data);
-                } else {
-                        sprintf(buf, "%02x(\\?)", data);
-                }
-                pr_info(buf);
+        /* Only print printable characters in data column */
+        if (32 <= data && data <= 126) {
+                sprintf(buf, "0x%02x(%c)", data, data);
+        } else {
+                sprintf(buf, "0x%02x(.)", data);
         }
+        pr_info(buf);
 
         if (*cntr < 16) {
                 pr_info_char(',');
