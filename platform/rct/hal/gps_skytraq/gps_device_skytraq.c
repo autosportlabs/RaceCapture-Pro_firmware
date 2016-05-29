@@ -1,14 +1,14 @@
-#include "gps_device.h"
-#include "byteswap.h"
-#include <stdint.h>
-#include <stddef.h>
-#include "printk.h"
-#include "mem_mang.h"
-#include "taskUtil.h"
-#include "printk.h"
 #include "FreeRTOS.h"
+#include "byteswap.h"
+#include "gps_device.h"
+#include "mem_mang.h"
+#include "printk.h"
 #include "task.h"
+#include "taskUtil.h"
 #include <math.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 
 /* UNIX time (epoch 1/1/1970) at the start of GNSS epoch (1/6/1980) */
 #define GNSS_EPOCH_IN_UNIX_EPOCH 315964800
@@ -200,6 +200,17 @@ typedef enum {
     GPS_COMMAND_SUCCESS
 } gps_cmd_result_t;
 
+/**
+ * Poisons the contents of the GpsMessage structure so that we can be
+ * sure that our values are being set and reset every time. Shouldn't
+ * be necessary yet here I am debugging an issue that should never
+ * happen...
+ */
+static void poison_gps_message(GpsMessage* gpsMsg)
+{
+        memset(gpsMsg, 0x6b, sizeof(GpsMessage));
+}
+
 static uint8_t calculateChecksum(GpsMessage * msg)
 {
     uint8_t checksum = 0;
@@ -311,6 +322,7 @@ static gps_msg_result_t rxGpsMessage(GpsMessage * msg, struct Serial * serial,
 
 static void sendSetFactoryDefaults(GpsMessage * gpsMsg, struct Serial * serial)
 {
+        poison_gps_message(gpsMsg);
     gpsMsg->messageId = MSG_ID_SET_FACTORY_DEFAULTS;
     gpsMsg->setFactoryDefaultsMsg.type = 0x01;
     gpsMsg->checksum = calculateChecksum(gpsMsg);
@@ -319,6 +331,7 @@ static void sendSetFactoryDefaults(GpsMessage * gpsMsg, struct Serial * serial)
 
 static void sendQuerySwVersion(GpsMessage * gpsMsg, struct Serial * serial)
 {
+        poison_gps_message(gpsMsg);
     gpsMsg->messageId = MSG_ID_QUERY_SW_VERSION;
     gpsMsg->querySoftwareVersionMsg.softwareType = 0x00;
     gpsMsg->payloadLength = sizeof(QuerySwVersion);
@@ -328,6 +341,7 @@ static void sendQuerySwVersion(GpsMessage * gpsMsg, struct Serial * serial)
 
 static void sendQueryPositionUpdateRate(GpsMessage * gpsMsg, struct Serial * serial)
 {
+        poison_gps_message(gpsMsg);
     gpsMsg->messageId = MSG_ID_QUERY_POSITION_UPDATE_RATE;
     gpsMsg->payloadLength = sizeof(QueryPositionUpdateRate);
     gpsMsg->checksum = calculateChecksum(gpsMsg);
@@ -337,6 +351,7 @@ static void sendQueryPositionUpdateRate(GpsMessage * gpsMsg, struct Serial * ser
 static void sendConfigureSerialPort(GpsMessage * gpsMsg, struct Serial * serial,
                                     uint8_t baudRateCode)
 {
+        poison_gps_message(gpsMsg);
     gpsMsg->messageId = MSG_ID_CONFIGURE_SERIAL_PORT;
     gpsMsg->configureSerialPort.baudRateCode = baudRateCode;
     gpsMsg->configureSerialPort.comPort = 0;
@@ -348,6 +363,7 @@ static void sendConfigureSerialPort(GpsMessage * gpsMsg, struct Serial * serial,
 
 static void sendDisableNmea(GpsMessage *gpsMsg, struct Serial *serial)
 {
+        poison_gps_message(gpsMsg);
     gpsMsg->messageId = MSG_ID_CONFIGURE_NMEA_MESSAGE;
     gpsMsg->configureNmeaMessage.GGA_interval = 0;
     gpsMsg->configureNmeaMessage.GSA_interval = 0;
@@ -356,7 +372,7 @@ static void sendDisableNmea(GpsMessage *gpsMsg, struct Serial *serial)
     gpsMsg->configureNmeaMessage.RMC_interval = 0;
     gpsMsg->configureNmeaMessage.VTG_interval = 0;
     gpsMsg->configureNmeaMessage.ZDA_interval = 0;
-    gpsMsg->configureSerialPort.attributes = ATTRIBUTE_UPDATE_TO_SRAM;
+    gpsMsg->configureNmeaMessage.attributes = ATTRIBUTE_UPDATE_TO_SRAM;
     gpsMsg->payloadLength = sizeof(ConfigureNmeaMessage);
     gpsMsg->checksum = calculateChecksum(gpsMsg);
     txGpsMessage(gpsMsg, serial);
@@ -364,6 +380,7 @@ static void sendDisableNmea(GpsMessage *gpsMsg, struct Serial *serial)
 
 static void sendConfigureNmea(GpsMessage *gpsMsg, struct Serial *serial)
 {
+        poison_gps_message(gpsMsg);
     gpsMsg->messageId = MSG_ID_CONFIGURE_NMEA_MESSAGE;
     gpsMsg->configureNmeaMessage.GGA_interval = GGA_INTERVAL;
     gpsMsg->configureNmeaMessage.GSA_interval = GSA_INTERVAL;
@@ -372,7 +389,7 @@ static void sendConfigureNmea(GpsMessage *gpsMsg, struct Serial *serial)
     gpsMsg->configureNmeaMessage.RMC_interval = RMC_INTERVAL;
     gpsMsg->configureNmeaMessage.VTG_interval = VTG_INTERVAL;
     gpsMsg->configureNmeaMessage.ZDA_interval = ZDA_INTERVAL;
-    gpsMsg->configureSerialPort.attributes = ATTRIBUTE_UPDATE_TO_SRAM;
+    gpsMsg->configureNmeaMessage.attributes = ATTRIBUTE_UPDATE_TO_SRAM;
     gpsMsg->payloadLength = sizeof(ConfigureNmeaMessage);
     gpsMsg->checksum = calculateChecksum(gpsMsg);
     txGpsMessage(gpsMsg, serial);
@@ -380,6 +397,7 @@ static void sendConfigureNmea(GpsMessage *gpsMsg, struct Serial *serial)
 
 static void sendConfigureGnssNavigationMode(GpsMessage *gpsMsg, struct Serial *serial, uint8_t navigationMode)
 {
+        poison_gps_message(gpsMsg);
     gpsMsg->messageId = MSG_ID_CONFIGURE_GNSS_NAVIGATION_MODE;
     gpsMsg->configureGnssNavigationMode.messageSubId = MSG_SUBID_CONFIGURE_GNSS_NAVIGATION_MODE;
     gpsMsg->configureGnssNavigationMode.navigationMode = navigationMode;
@@ -391,6 +409,7 @@ static void sendConfigureGnssNavigationMode(GpsMessage *gpsMsg, struct Serial *s
 
 static void sendConfigureMessageType(GpsMessage *gpsMsg, struct Serial *serial, uint8_t messageType)
 {
+        poison_gps_message(gpsMsg);
     gpsMsg->messageId = MSG_ID_CONFIGURE_MESSAGE_TYPE;
     gpsMsg->configureMessageType.type = messageType;
     gpsMsg->configureMessageType.attributes = ATTRIBUTE_UPDATE_TO_SRAM;
@@ -401,6 +420,7 @@ static void sendConfigureMessageType(GpsMessage *gpsMsg, struct Serial *serial, 
 
 static void sendConfigureNavigationDataMessageInterval(GpsMessage *gpsMsg, struct Serial *serial, uint8_t interval)
 {
+        poison_gps_message(gpsMsg);
     gpsMsg->messageId = MSG_ID_CONFIGURE_NAVIGATION_DATA_MESSAGE_INTERVAL;
     gpsMsg->configureNavigationDataMessageInterval.navigationMessageInterval = interval;
     gpsMsg->configureNavigationDataMessageInterval.attributes = ATTRIBUTE_UPDATE_TO_SRAM;
@@ -411,6 +431,7 @@ static void sendConfigureNavigationDataMessageInterval(GpsMessage *gpsMsg, struc
 
 static void sendConfigurePositionUpdateRate(GpsMessage *gpsMsg, struct Serial *serial, uint8_t updateRate)
 {
+        poison_gps_message(gpsMsg);
     gpsMsg->messageId = MSG_ID_CONFIGURE_POSITION_UPDATE_RATE;
     gpsMsg->configurePositionUpdateRate.rate = updateRate;
     gpsMsg->configurePositionUpdateRate.attributes = ATTRIBUTE_UPDATE_TO_SRAM;
@@ -587,7 +608,7 @@ static gps_cmd_result_t configureUpdateRate(GpsMessage * gpsMsg,
     return result;
 }
 
-GpsMessage gpsMsg;
+static GpsMessage gpsMsg;
 
 static uint8_t getTargetUpdateRate(uint8_t sampleRate)
 {
