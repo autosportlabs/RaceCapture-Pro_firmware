@@ -29,9 +29,16 @@
 CPP_GUARD_BEGIN
 
 typedef enum {
-    GPS_MSG_SUCCESS = 0,
-    GPS_MSG_TIMEOUT,
-    GPS_MSG_NONE
+        GPS_MSG_EOS_INVALID           = -8,
+        GPS_MSG_EOS_READ_TIMEOUT      = -7,
+        GPS_MSG_CHECKSUM_FAILURE      = -6,
+        GPS_MSG_CHECKSUM_READ_TIMEOUT = -5,
+        GPS_MSG_PAYLOAD_READ_TIMEOUT  = -4,
+        GPS_MSG_PAYLOAD_TOO_BIG       = -3,
+        GPS_MSG_NO_LEN                = -2,
+        GPS_MSG_TIMEOUT               = -1,
+        GPS_MSG_NONE                  = 0,
+        GPS_MSG_SUCCESS               = 1,
 } gps_msg_result_t;
 
 gps_status_t GPS_device_init(uint8_t targetSampleRate, struct Serial *serial);
