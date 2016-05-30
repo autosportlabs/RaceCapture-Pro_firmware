@@ -68,6 +68,7 @@ static volatile struct usart_info {
         USART_TypeDef *usart;
         struct dma_info dma_rx;
         struct dma_info dma_tx;
+        bool rx_overflow;
 } usart_data[__UART_COUNT];
 
 static void init_usart(USART_TypeDef *USARTx, const size_t bits,
@@ -180,6 +181,7 @@ static void enableRxDMA(uint32_t RCC_AHBPeriph,
         DMA_Cmd(dma->chan, ENABLE);
 }
 
+#if 0
 static void enable_dma_tx(uint32_t RCC_AHBPeriph,
                           const uint8_t irq_channel,
                           const uint8_t irq_priority,
@@ -221,8 +223,8 @@ static void enable_dma_tx(uint32_t RCC_AHBPeriph,
         USART_DMACmd(ui->usart, USART_DMAReq_Tx, ENABLE);
         DMA_Init(dma->chan, &DMA_InitStruct);
 }
+#endif
 
-#if 0
 static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
                           uint8_t IRQ_priority, uart_irq_type_t irqType)
 {
@@ -244,7 +246,6 @@ static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
         if (irqType & UART_TX_IRQ)
                 USART_ITConfig(USARTx, USART_IT_TXE, ENABLE);
 }
-#endif
 
 /* Wireless port */
 static void usart_device_init_1(size_t bits, size_t parity,
@@ -260,13 +261,16 @@ static void usart_device_init_1(size_t bits, size_t parity,
         RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
         init_usart(ui->usart, bits, parity, stopBits, baud);
 
+        enableRxTxIrq(ui->usart, USART1_IRQn,
+                      UART_WIRELESS_IRQ_PRIORITY, UART_TX_IRQ);
+
         enableRxDMA(RCC_AHBPeriph_DMA1, DMA1_Channel5_IRQn,
                     UART_WIRELESS_IRQ_PRIORITY,
                     DMA_IT_TC | DMA_IT_HT, ui);
 
-        enable_dma_tx(RCC_AHBPeriph_DMA1, DMA1_Channel4_IRQn,
-                      UART_WIRELESS_IRQ_PRIORITY,
-                      DMA_IT_TC, ui);
+        /* enable_dma_tx(RCC_AHBPeriph_DMA1, DMA1_Channel4_IRQn, */
+        /*               UART_WIRELESS_IRQ_PRIORITY, */
+        /*               DMA_IT_TC, ui); */
 }
 
 /* GPS port */
@@ -283,13 +287,16 @@ void usart_device_init_2(size_t bits, size_t parity,
         RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
         init_usart(ui->usart, bits, parity, stopBits, baud);
 
+        enableRxTxIrq(ui->usart, USART2_IRQn,
+                      UART_WIRELESS_IRQ_PRIORITY, UART_TX_IRQ);
+
         enableRxDMA(RCC_AHBPeriph_DMA1, DMA1_Channel6_IRQn,
                     UART_GPS_IRQ_PRIORITY,
                     DMA_IT_TC | DMA_IT_HT, ui);
 
-        enable_dma_tx(RCC_AHBPeriph_DMA1, DMA1_Channel7_IRQn,
-                      UART_GPS_IRQ_PRIORITY,
-                      DMA_IT_TC, ui);
+        /* enable_dma_tx(RCC_AHBPeriph_DMA1, DMA1_Channel7_IRQn, */
+        /*               UART_GPS_IRQ_PRIORITY, */
+        /*               DMA_IT_TC, ui); */
 }
 
 /* Telemetry port - Commented out for now b/c need RAM */
@@ -346,37 +353,36 @@ static bool init_usart_serial(const uart_id_t uart_id, USART_TypeDef *usart,
                 return false;
         }
 
+        ui->usart = usart;
+        ui->serial = s;
+
         uint8_t* dma_rx_buff = NULL;
-        if (dma_rx_buff_size) {
+        if (dma_rx_chan && dma_rx_buff_size) {
                 dma_rx_buff = malloc(dma_rx_buff_size);
                 if (!dma_rx_buff) {
                         pr_error(LOG_PFX "DMA Rx Buff Malloc failure!\r\n");
                         return false;
                 }
+
+                ui->dma_rx.buff_size = dma_rx_buff_size;
+                ui->dma_rx.buff = dma_rx_buff;
+                ui->dma_rx.ptr = dma_rx_buff;
+                ui->dma_rx.chan = dma_rx_chan;
         }
 
         uint8_t* dma_tx_buff = NULL;
-        if (dma_tx_buff_size) {
+        if (dma_tx_chan && dma_tx_buff_size) {
                 dma_tx_buff = malloc(dma_tx_buff_size);
                 if (!dma_tx_buff) {
                         pr_error(LOG_PFX "DMA Tx Buff Malloc failure!\r\n");
                         return false;
                 }
+
+                ui->dma_tx.buff_size = dma_tx_buff_size;
+                ui->dma_tx.buff = dma_tx_buff;
+                ui->dma_tx.ptr = dma_tx_buff;
+                ui->dma_tx.chan = dma_tx_chan;
         }
-
-        /* Set the usart_info data */
-        ui->usart = usart;
-        ui->serial = s;
-
-        ui->dma_rx.buff_size = dma_rx_buff_size;
-        ui->dma_rx.buff = dma_rx_buff;
-        ui->dma_rx.ptr = dma_rx_buff;
-        ui->dma_rx.chan = dma_rx_chan;
-
-        ui->dma_tx.buff_size = dma_tx_buff_size;
-        ui->dma_tx.buff = dma_tx_buff;
-        ui->dma_tx.ptr = dma_tx_buff;
-        ui->dma_tx.chan = dma_tx_chan;
 
         return true;
 }
@@ -477,39 +483,49 @@ void USART3_IRQHandler(void)
 }
 
 /* Prevents code dupe below.  Hence why inline */
-inline static void dma_data_to_queue(xQueueHandle queue,
-                                     const volatile uint8_t* tail,
-                                     const volatile uint8_t* head,
-                                     portBASE_TYPE* task_awoke)
+static bool dma_data_to_queue(xQueueHandle queue,
+                              volatile uint8_t* curr,
+                              const volatile uint8_t* end,
+                              portBASE_TYPE* task_awoke)
 {
         const bool in_isr = task_awoke != NULL;
-        for (uint8_t val; tail < head; ++tail) {
-                val = *tail;
+        bool overflow = false;
+
+        for (; curr < end; ++curr) {
+                uint8_t val;
+                val = *curr;
+                *curr = 0x6b; /* Poison the DMA buff */
                 if (in_isr) {
-                        xQueueSendFromISR(queue, &val, task_awoke);
+                        overflow |= !xQueueSendFromISR(queue, &val, task_awoke);
                 } else {
-                        xQueueSend(queue, &val, 0);
+                        overflow |= !xQueueSend(queue, &val, 0);
                 }
         }
+
+        return overflow;
 }
 
 static bool dma_rx_to_queue_isr(volatile struct usart_info *ui)
 {
+        const size_t cndtr = (volatile uint32_t) ui->dma_rx.chan->CNDTR;
         volatile uint8_t* const buff = ui->dma_rx.buff;
         volatile uint8_t* const edge = buff + ui->dma_rx.buff_size;
-        volatile uint8_t* const head = edge - ui->dma_rx.chan->CNDTR;
+        volatile uint8_t* const head = edge - cndtr;
         volatile uint8_t* const tail = ui->dma_rx.ptr;
         xQueueHandle queue = serial_get_rx_queue(ui->serial);
         portBASE_TYPE task_awoke = pdFALSE;
+        bool overflow = false;
 
         if (head < tail) {
-                dma_data_to_queue(queue, tail, edge, &task_awoke);
-                dma_data_to_queue(queue, buff, head, &task_awoke);
+                overflow |= dma_data_to_queue(queue, tail, edge, &task_awoke);
+                overflow |= dma_data_to_queue(queue, buff, head, &task_awoke);
         } else {
-                dma_data_to_queue(queue, tail, head, &task_awoke);
+                overflow |= dma_data_to_queue(queue, tail, head, &task_awoke);
         }
 
         ui->dma_rx.ptr = head;
+        ui->rx_overflow |= overflow;
+
         return task_awoke;
 }
 
@@ -591,33 +607,30 @@ void DMA1_Channel7_IRQHandler(void)
 /* *** Timer Methods *** */
 static void dma_rx_to_queue(volatile struct usart_info *ui)
 {
-        /* Disable DMA interrupts during this to prevent contention */
-        /* static const uint32_t dma_it_mask = */
-        /*         DMA_IT_TC | DMA_IT_HT | DMA_IT_TE; */
-        /* const uint32_t dma_it_flags = ui->dma_rx.chan->CCR & dma_it_mask; */
-        /* if (dma_it_flags) */
-        /*         DMA_ITConfig(ui->dma_rx.chan, dma_it_flags, DISABLE); */
+        taskENTER_CRITICAL();
 
+        const size_t cndtr = (volatile uint32_t) ui->dma_rx.chan->CNDTR;
         volatile uint8_t* const buff = ui->dma_rx.buff;
         volatile uint8_t* const edge = buff + ui->dma_rx.buff_size;
-        volatile uint8_t* const head = edge - ui->dma_rx.chan->CNDTR;
+        volatile uint8_t* const head = edge - cndtr;
         volatile uint8_t* const tail = ui->dma_rx.ptr;
         xQueueHandle queue = serial_get_rx_queue(ui->serial);
+        bool overflow = false;
 
         if (head < tail) {
-                dma_data_to_queue(queue, tail, edge, NULL);
-                dma_data_to_queue(queue, buff, head, NULL);
+                overflow |= dma_data_to_queue(queue, tail, edge, NULL);
+                overflow |= dma_data_to_queue(queue, buff, head, NULL);
         } else {
-                dma_data_to_queue(queue, tail, head, NULL);
+                overflow |= dma_data_to_queue(queue, tail, head, NULL);
         }
 
         ui->dma_rx.ptr = head;
+        ui->rx_overflow |= overflow;
 
-        /* Re-enable DMA interrupts if they were set originally. */
-        /* if (dma_it_flags) */
-        /*         DMA_ITConfig(ui->dma_rx.chan, dma_it_flags, ENABLE); */
+        taskEXIT_CRITICAL();
 }
 
+#if 0
 static void setup_and_start_dma_tx(volatile struct usart_info* ui)
 {
         volatile uint8_t* head = ui->dma_tx.ptr;
@@ -645,20 +658,29 @@ static void setup_and_start_dma_tx(volatile struct usart_info* ui)
         ui->dma_tx.chan->CNDTR = (uint32_t) (head - buff);
         DMA_Cmd(ui->dma_tx.chan, ENABLE);
 }
+#endif
 
 static void timer_dma_handler(xTimerHandle handle)
 {
-        taskDISABLE_INTERRUPTS();
-
         volatile struct usart_info *gps_info = usart_data + UART_GPS;
-        dma_rx_to_queue(gps_info);
-        setup_and_start_dma_tx(gps_info);
-
         volatile struct usart_info *wifi_info = usart_data + UART_WIRELESS;
-        dma_rx_to_queue(wifi_info);
-        setup_and_start_dma_tx(wifi_info);
 
-        taskENABLE_INTERRUPTS();
+        /*
+         * @Jeff... So this the method that is causing all the fun. If I
+         * uncomment it, then we fail to disable NMEA. Else GPS works
+         * somehow.
+         */
+        /* dma_rx_to_queue(gps_info); */
+        dma_rx_to_queue(wifi_info);
+
+        if (gps_info->rx_overflow) {
+                pr_warning(LOG_PFX "Overflow in GPS Rx Queue\r\n");
+                gps_info->rx_overflow = false;
+        }
+
+        /* STIEG: DISABLE Tx DMA for now */
+        /* setup_and_start_dma_tx(gps_info); */
+        /* setup_and_start_dma_tx(wifi_info); */
 }
 
 
@@ -674,10 +696,10 @@ int usart_device_init()
         const bool mem_alloc_success =
                 init_usart_serial(UART_WIRELESS, USART1, SERIAL_WIFI, "WiFi",
                                   WIFI_DMA_RX_BUFF_SIZE, DMA1_Channel5,
-                                  WIFI_DMA_TX_BUFF_SIZE, DMA1_Channel4) &&
+                                  0, DMA1_Channel4) &&
                 init_usart_serial(UART_GPS, USART2, SERIAL_GPS, "GPS",
                                   GPS_DMA_RX_BUFF_SIZE, DMA1_Channel6,
-                                  GPS_DMA_TX_BUFF_SIZE, DMA1_Channel7);
+                                  0, DMA1_Channel7);
 
         if (!mem_alloc_success) {
                 pr_error("[USART] Failed to init\r\n");
