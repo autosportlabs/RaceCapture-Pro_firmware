@@ -239,7 +239,7 @@ void SetSerialLog(struct Serial *serial, unsigned int argc, char **argv)
         }
 
         const enum serial_log_type lt = atoi(argv[2]);
-        const bool prev = serial_logging(s, lt);
+        const enum serial_log_type prev = serial_logging(s, lt);
         getWorkingLoggerConfig()->logging_cfg.serial[port] = lt;
 
         serial_put_s(serial, log_type_str(prev));
