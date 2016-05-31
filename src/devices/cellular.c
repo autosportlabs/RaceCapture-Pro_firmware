@@ -54,7 +54,6 @@ static const struct at_config *at_cfg;
 
 static struct cellular_info cell_info;
 static struct telemetry_info telemetry_info;
-static const enum log_level serial_dbg_lvl = TRACE;
 
 static const struct at_config* get_safe_at_config()
 {
@@ -101,7 +100,8 @@ size_t cellular_exec_cmd(struct serial_buffer *sb,
 bool is_rsp(const char **msgs, const size_t count, const char *ans)
 {
         /* Check to ensure last msg we got was an OK */
-        return msgs && count && 0 == strcmp(ans, msgs[count - 1]);
+        return msgs && count && 0 == strncmp(ans, msgs[count - 1],
+                                             strlen(ans));
 }
 
 /**

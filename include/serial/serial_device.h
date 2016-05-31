@@ -34,7 +34,8 @@ typedef enum {
         SERIAL_USB = 0,
         SERIAL_GPS,
         SERIAL_TELEMETRY,
-        SERIAL_WIRELESS,
+        SERIAL_BLUETOOTH,
+        SERIAL_WIFI,
         SERIAL_AUX,
         __SERIAL_COUNT, /* ALWAYS AT THE END */
 } serial_id_t;

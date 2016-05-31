@@ -213,7 +213,7 @@ void loggerTaskEx(void *params)
                 if (g_loggingShouldRun && !is_logging) {
                         logging_started();
                         const LoggerMessage logStartMsg = getLogStartMessage();
-#if defined(SDCARD_SUPPORT)
+#if SDCARD_SUPPORT
                         queue_logfile_record(&logStartMsg);
 #endif
                         queueTelemetryRecord(&logStartMsg);
@@ -222,7 +222,7 @@ void loggerTaskEx(void *params)
                 if (!g_loggingShouldRun && is_logging) {
                         logging_stopped();
                         const LoggerMessage logStopMsg = getLogStopMessage();
-#if defined(SDCARD_SUPPORT)
+#if SDCARD_SUPPORT
                         queue_logfile_record(&logStopMsg);
 #endif
                         queueTelemetryRecord(&logStopMsg);
@@ -246,7 +246,7 @@ void loggerTaskEx(void *params)
                  * We only log to file if the user has manually pushed the
                  * logging button.
                  */
-#if defined(SDCARD_SUPPORT)
+#if SDCARD_SUPPORT
                 if (is_logging && should_sample(currentTicks, loggingSampleRate)) {
                         /* XXX Move this to file writer? */
                         const portBASE_TYPE res = queue_logfile_record(&msg);

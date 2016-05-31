@@ -122,6 +122,9 @@ inc-y += $(RC_INCLUDE_DIR)/tracks
 src-y += $(wildcard hal/i2c_stm32/*.c)
 inc-y += hal/i2c_stm32
 
+# wifi
+src-y += $(wildcard hal/wifi_esp8266/*.c)
+
 # IMU
 src-y += $(wildcard $(RC_SRC_DIR)/imu/*.c)
 src-y += $(wildcard hal/imu_stm32/*.c)
@@ -146,6 +149,9 @@ inc-y += $(RC_INCLUDE_DIR)/memory
 src-y += $(wildcard $(RC_SRC_DIR)/usart/*.c)
 src-y += $(wildcard hal/usart_stm32/*.c)
 inc-y += $(RC_INCLUDE_DIR)/usart
+
+# Serial Device
+src-y += $(wildcard hal/serial/*.c)
 
 # Watchdog
 src-y += $(wildcard $(RC_SRC_DIR)/watchdog/*.c)
@@ -246,9 +252,9 @@ inc-y += $(RC_PLATFORM_DIR)/mk2/hal/fat_sd_stm32/fatfs
 ################################################################################
 obj-y := $(addprefix $(OUTDIR)/,$(patsubst %.s,%.o,$(patsubst %.c,%.o,$(src-y))))
 
-CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -MD -std=gnu99
+CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -MD -c
+CFLAGS += $(ASL_CFLAGS)
 CFLAGS += -mcpu=cortex-m3 -mthumb
-CFLAGS += $(VERSION_CFLAGS)
 CFLAGS += $(BOARD_DEFINES)
 CFLAGS += -fno-builtin-sprintf
 CFLAGS += -ggdb

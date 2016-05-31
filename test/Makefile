@@ -93,14 +93,10 @@ INCLUDES = \
 CPP = g++
 CC = gcc
 
-CPPFLAGS = \
--g $(INCLUDES) -DRCP_TESTING -DAPI_REV=$(API) $(VERSION_CFLAGS)
+CPPFLAGS := -g -DRCP_TESTING -DAPI_REV=$(API) \
+$(VERSION_CFLAGS) $(INCLUDES)
 
-CFLAGS = \
--g $(INCLUDES) -std=gnu99 -Wall -Werror -Wempty-body \
--Wclobbered -Wignored-qualifiers -Wmissing-parameter-type \
--Wold-style-declaration -Wunused-but-set-parameter \
--DRCP_TESTING $(VERSION_CFLAGS)
+CFLAGS := $(ASL_CFLAGS) -DRCP_TESTING $(VERSION_CFLAGS) $(INCLUDES)
 
 #-----Suffix Rules---------------------------
 # set up C++ suffixes and relationship between .cc and .o files
@@ -148,6 +144,7 @@ $(FREE_RTOS_KERNEL_DIR)/stubs/ff.c \
 $(FREE_RTOS_KERNEL_DIR)/stubs/heap.c \
 $(FREE_RTOS_KERNEL_DIR)/stubs/queue.c \
 $(FREE_RTOS_KERNEL_DIR)/stubs/task.c \
+$(MOCK_DIR)/wifi_device_mock.c \
 $(MOCK_DIR)/ADC_device_mock.c \
 $(MOCK_DIR)/CAN_device_mock.c \
 $(MOCK_DIR)/GPIO_device_mock.c \
@@ -161,6 +158,7 @@ $(MOCK_DIR)/luaTask_mock.c \
 $(MOCK_DIR)/memory_device_mock.c \
 $(MOCK_DIR)/messaging.c \
 $(MOCK_DIR)/sdcard_mock.c \
+$(MOCK_DIR)/serial_device.c \
 $(MOCK_DIR)/timer_device_mock.c \
 $(MOCK_DIR)/watchdog_device_mock.c \
 $(RCP_SRC)/ADC/ADC.c \
@@ -204,7 +202,6 @@ $(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 $(RCP_SRC)/serial/rx_buff.c \
 $(RCP_SRC)/serial/serial_buffer.c \
 $(RCP_SRC)/serial/serial.c \
-$(RCP_SRC)/serial/serial_device.c \
 $(RCP_SRC)/timer/timer.c \
 $(RCP_SRC)/timer/timer_config.c \
 $(RCP_SRC)/tracks/tracks.c \

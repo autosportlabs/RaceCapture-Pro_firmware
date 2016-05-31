@@ -53,7 +53,6 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/jsmn/jsmn.c \
 			$(RCP_SRC)/serial/rx_buff.c \
 			$(RCP_SRC)/serial/serial.c \
-			$(RCP_SRC)/serial/serial_device.c \
 			$(RCP_SRC)/serial/serial_buffer.c \
 			$(RCP_SRC)/usart/usart.c \
 			$(RCP_SRC)/cpu/cpu.c \
@@ -124,6 +123,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/util/str_util.c \
 			$(RCP_SRC)/util/taskUtil.c \
 			$(RCP_SRC)/sdcard/sdcard.c \
+			$(HAL_SRC)/wifi_esp8266/wifi_esp8266_device.c \
 			$(HAL_SRC)/cell_device/cell_pwr_btn.c \
 			$(HAL_SRC)/gps_skytraq/gps_device_skytraq.c \
 			$(HAL_SRC)/LED_stm32/led_device_stm32.c \
@@ -150,7 +150,8 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(HAL_SRC)/usb_stm32/usbd_desc.c \
 			$(HAL_SRC)/usb_stm32/usbd_usr.c \
 			$(HAL_SRC)/i2c_stm32/i2c_device_stm32.c \
-			$(HAL_SRC)/imu_stm32/invensense_9150.c
+			$(HAL_SRC)/imu_stm32/invensense_9150.c \
+			$(HAL_SRC)/serial/serial_device.c \
 
 
 #Macro that expands our source files into their fully qualified paths

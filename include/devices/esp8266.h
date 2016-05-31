@@ -24,11 +24,17 @@
 
 #include "at.h"
 #include "cpp_guard.h"
+#include "dateTime.h"
 #include "net/protocol.h"
 #include "serial.h"
 #include <stdbool.h>
 
 CPP_GUARD_BEGIN
+
+#define ESP8266_SSID_LEN_MAX	24
+#define ESP8266_MAC_LEN_MAX	18
+#define ESP8266_IPV4_LEN_MAX	16
+#define ESP8266_PASSWD_LEN_MAX	24
 
 void esp8266_do_loop(const size_t timeout);
 
@@ -43,21 +49,45 @@ enum dev_init_state {
         DEV_INIT_STATE_FAILED,
 };
 
-typedef void client_wifi_disconnect_cb_t();
-typedef void socket_connect_cb_t(const size_t chan_id);
-typedef void socket_closed_cb_t(const size_t chan_id);
+/**
+ * Called whenever the device informs us that the state of the
+ * wifi client has changed.
+ */
+typedef void client_state_changed_cb_t(const char* msg);
 
-struct esp8266_event_hooks {
-        client_wifi_disconnect_cb_t *client_wifi_disconnect_cb;
-        socket_connect_cb_t *socket_connect_cb;
-        socket_closed_cb_t *socket_closed_cb;
+/**
+ * An action taken by the ESP8266 on a socket.
+ */
+enum socket_action {
+        SOCKET_ACTION_UNKNOWN,
+        SOCKET_ACTION_DISCONNECT,
+        SOCKET_ACTION_CONNECT,
 };
 
+/**
+ * Called whenever the device informs us that the state of a socket
+ * has changed.
+ */
+typedef void socket_state_changed_cb_t(const size_t chan_id,
+                                       const enum socket_action action);
+
+/**
+ * Called whenever we receive new data on a socket.
+ */
+typedef void data_received_cb_t(int chan_id, size_t len, const char* data);
+
+struct esp8266_event_hooks {
+        client_state_changed_cb_t *client_state_changed_cb;
+        socket_state_changed_cb_t *socket_state_changed_cb;
+        data_received_cb_t *data_received_cb;
+};
+
+bool esp8266_register_callbacks(const struct esp8266_event_hooks* hooks);
+
 bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
-                  const struct esp8266_event_hooks hooks,
                   void (*cb)(enum dev_init_state));
 
-enum dev_init_state esp1866_get_dev_init_state();
+enum dev_init_state esp8266_get_dev_init_state();
 
 /**
  * These are the AT codes for the mode of the device represented in enum
@@ -77,9 +107,8 @@ bool esp8266_get_op_mode(void (*cb)(bool, enum esp8266_op_mode));
 
 struct esp8266_client_info {
         bool has_ap;
-        char ssid[24];
-        char mac[18];
-        char ip[16];
+        char ssid[ESP8266_SSID_LEN_MAX];
+        char mac[ESP8266_MAC_LEN_MAX];
 };
 
 void esp8266_log_client_info(const struct esp8266_client_info *info);
@@ -89,8 +118,43 @@ bool esp8266_join_ap(const char* ssid, const char* pass, void (*cb)(bool));
 bool esp8266_get_client_ap(void (*cb)
                            (bool, const struct esp8266_client_info*));
 
-bool esp8266_get_client_ip(void (*cb)
-                           (bool, const char*));
+struct esp8266_ipv4_info {
+        char address[ESP8266_IPV4_LEN_MAX];
+};
+
+typedef void get_ip_info_cb_t(const bool status,
+                              const struct esp8266_ipv4_info* client,
+                              const struct esp8266_ipv4_info* station);
+
+bool esp8266_get_ip_info(get_ip_info_cb_t callback);
+
+enum esp8266_encryption {
+        ESP8266_ENCRYPTION_INVALID = -1,
+        ESP8266_ENCRYPTION_NONE = 0,
+        ESP8266_ENCRYPTION_WEP = 1, /* Support deprecated */
+        ESP8266_ENCRYPTION_WPA_PSK = 2,
+        ESP8266_ENCRYPTION_WPA2_PSK = 3,
+        ESP8266_ENCRYPTION_WPA_WPA2_PSK = 4,
+        __ESP8266_ENCRYPTION_MAX, /* Always the last value */
+};
+
+struct esp8266_ap_info {
+        char ssid[ESP8266_SSID_LEN_MAX];
+        char password[ESP8266_PASSWD_LEN_MAX];
+        size_t channel;
+        enum esp8266_encryption encryption;
+};
+
+typedef void esp8266_get_ap_info_cb_t(const bool status,
+                                      const struct esp8266_ap_info* info);
+
+bool esp8266_get_ap_info(esp8266_get_ap_info_cb_t *cb);
+
+typedef void esp8266_set_ap_info_cb_t(const bool status);
+
+bool esp8266_set_ap_info(const struct esp8266_ap_info* info,
+                         esp8266_set_ap_info_cb_t *cb);
+
 
 bool esp8266_connect(const int chan_id, const enum protocol proto,
                      const char *ip_addr, const int dest_port,
@@ -113,8 +177,6 @@ enum esp8266_server_action {
 
 bool esp8266_server_cmd(const enum esp8266_server_action action, int port,
                         void (*cb)(bool));
-
-bool esp8266_register_ipd_cb(void (*cb)(int, size_t, const char*));
 
 CPP_GUARD_END
 

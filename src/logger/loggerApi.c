@@ -168,7 +168,7 @@ int api_factoryReset(struct Serial *serial, const jsmntok_t *json)
         flash_default_logger_config();
         flash_default_tracks();
 
-#if defined(LUA_SUPPORT)
+#if LUA_SUPPORT
         flash_default_script();
 #endif
 
@@ -207,42 +207,54 @@ int api_getVersion(struct Serial *serial, const jsmntok_t *json)
 
 int api_getCapabilities(struct Serial *serial, const jsmntok_t *json)
 {
-    json_objStart(serial);
-    json_objStartString(serial,"capabilities");
+        json_objStart(serial);
+        json_objStartString(serial,"capabilities");
 
-    json_objStartString(serial,"channels");
-    json_int(serial, "analog", ANALOG_CHANNELS, 1);
-    json_int(serial, "imu", IMU_CHANNELS, 1);
+        json_objStartString(serial,"channels");
+        json_int(serial, "analog", ANALOG_CHANNELS, 1);
+        json_int(serial, "imu", IMU_CHANNELS, 1);
 #if GPIO_CHANNELS > 0
-    json_int(serial, "gpio", GPIO_CHANNELS, 1);
+        json_int(serial, "gpio", GPIO_CHANNELS, 1);
 #endif
 #if TIMER_CHANNELS > 0
-    json_int(serial, "timer", TIMER_CHANNELS, 1);
+        json_int(serial, "timer", TIMER_CHANNELS, 1);
 #endif
 #if PWM_CHANNELS > 0
-    json_int(serial, "pwm", PWM_CHANNELS, 1);
+        json_int(serial, "pwm", PWM_CHANNELS, 1);
 #endif
-    json_int(serial, "can", CAN_CHANNELS, 0);
-    json_objEnd(serial, 1);
+        json_int(serial, "can", CAN_CHANNELS, 0);
+        json_objEnd(serial, 1);
 
-    json_objStartString(serial,"sampleRates");
-    json_int(serial, "sensor", MAX_SENSOR_SAMPLE_RATE, 1);
-    json_int(serial, "gps", MAX_GPS_SAMPLE_RATE, 0);
-    json_objEnd(serial, 1);
+        json_objStartString(serial,"sampleRates");
+        json_int(serial, "sensor", MAX_SENSOR_SAMPLE_RATE, 1);
+        json_int(serial, "gps", MAX_GPS_SAMPLE_RATE, 0);
+        json_objEnd(serial, 1);
 
-    json_objStartString(serial,"db");
+        json_objStartString(serial,"db");
 
-#if defined(LUA_SUPPORT)
-    json_int(serial, "script", SCRIPT_MEMORY_LENGTH, 1);
+#if LUA_SUPPORT
+        json_int(serial, "script", SCRIPT_MEMORY_LENGTH, 1);
 #endif
 
-    json_int(serial, "tracks", MAX_TRACKS, 1);
-    json_int(serial, "sectors", MAX_SECTORS, 0);
-    json_objEnd(serial, 0);
+        json_int(serial, "tracks", MAX_TRACKS, 1);
+        json_int(serial, "sectors", MAX_SECTORS, 0);
+        json_objEnd(serial, 1);
 
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
-    return API_SUCCESS_NO_RETURN;
+        /* Information about what communication methods are supported */
+        const bool bluetooth = BLUETOOTH_SUPPORT != 0;
+        const bool cellular = CELLULAR_SUPPORT != 0;
+        const bool usb = USB_SERIAL_SUPPORT != 0;
+        const bool wifi = WIFI_SUPPORT != 0;
+        json_objStartString(serial,"links");
+        json_bool(serial, "bluetooth", bluetooth, 1);
+        json_bool(serial, "cellular", cellular, 1);
+        json_bool(serial, "usb", usb, 1);
+        json_bool(serial, "wifi", wifi, 0);
+        json_objEnd(serial, 0);
+
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+        return API_SUCCESS_NO_RETURN;
 }
 
 int api_getStatus(struct Serial *serial, const jsmntok_t *json)
@@ -267,7 +279,7 @@ int api_getStatus(struct Serial *serial, const jsmntok_t *json)
         json_int(serial, "DOP", GPS_getDOP(), 0);
         json_objEnd(serial, 1);
 
-#if defined(CELLULAR_SUPPORT)
+#if CELLULAR_SUPPORT
         const enum cellular_net_status ns = cellmodem_get_status();
         const char* ns_val = cellular_net_status_api_key(ns);
 
@@ -1629,7 +1641,7 @@ int api_getTrackDb(struct Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
-#if defined(LUA_SUPPORT)
+#if LUA_SUPPORT
 
 int api_getScript(struct Serial *serial, const jsmntok_t *json)
 {
@@ -1706,6 +1718,62 @@ int api_get_wifi_client_cfg(struct Serial *serial, const jsmntok_t *json)
         json_bool(serial, "active", cfg->active, 1);
         json_string(serial, "ssid", cfg->ssid,1);
         json_string(serial, "passwd", cfg->passwd,0);
+
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+
+        return API_SUCCESS_NO_RETURN;
+}
+
+int api_set_wifi_ap_cfg(struct Serial *s, const jsmntok_t *json)
+{
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        struct wifi_ap_cfg *cfg = &lc->ConnectivityConfigs.wifi.ap;
+
+        struct wifi_ap_cfg tmp_cfg;
+        memcpy(&tmp_cfg, cfg, sizeof(struct wifi_ap_cfg));
+
+        setBoolValueIfExists(json, "active", &tmp_cfg.active);
+        setStringValueIfExists(json, "ssid", tmp_cfg.ssid,
+                               ARRAY_LEN(tmp_cfg.ssid));
+        setStringValueIfExists(json, "passwd", tmp_cfg.password,
+                               ARRAY_LEN(tmp_cfg.password));
+        setIntValueIfExists(json, "channel", (int*) &tmp_cfg.channel);
+
+
+        char enc_str[12];
+        setStringValueIfExists(json, "encryption", enc_str,
+                               ARRAY_LEN(enc_str));
+        tmp_cfg.encryption = wifi_api_get_encryption_enum_val(enc_str);
+
+        if (!wifi_validate_ap_config(&tmp_cfg)) {
+                pr_info("Invalid Wifi AP config given\r\n");
+                return API_ERROR_PARAMETER;
+        }
+
+        /* Copy the validated config to our real config */
+        memcpy(cfg, &tmp_cfg, sizeof(struct wifi_ap_cfg));
+
+        /* Inform the Wifi device that settings may have changed */
+        wifi_update_ap_config(cfg);
+
+        return API_SUCCESS;
+}
+
+int api_get_wifi_ap_cfg(struct Serial *serial, const jsmntok_t *json)
+{
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        const struct wifi_ap_cfg *cfg = &lc->ConnectivityConfigs.wifi.ap;
+
+        json_objStart(serial);
+        json_objStartString(serial, "wifi_ap_cfg");
+
+        json_bool(serial, "active", cfg->active, 1);
+        json_string(serial, "ssid", cfg->ssid,1);
+        json_string(serial, "passwd", cfg->password,1);
+        json_int(serial, "channel", cfg->channel,1);
+        json_string(serial, "encryption",
+                    wifi_api_get_encryption_str_val(cfg->encryption), 0);
 
         json_objEnd(serial, 0);
         json_objEnd(serial, 0);

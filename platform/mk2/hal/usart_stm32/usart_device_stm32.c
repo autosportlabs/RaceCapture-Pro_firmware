@@ -319,7 +319,7 @@ int usart_device_init()
                 init_usart_serial(UART_TELEMETRY, UART4,
                                   SERIAL_TELEMETRY, "Cell") &&
                 init_usart_serial(UART_WIRELESS, USART1,
-                                  SERIAL_WIRELESS, "BT") &&
+                                  SERIAL_BLUETOOTH, "BT") &&
                 init_usart_serial(UART_AUX, USART3, SERIAL_AUX, "Aux");
 
         if (!mem_alloc_success) {

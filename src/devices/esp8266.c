@@ -28,7 +28,7 @@
 #include "serial_buffer.h"
 #include "str_util.h"
 #include "taskUtil.h"
-
+#include "wifi_device.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,8 +43,6 @@
 #define _TIMEOUT_MEDIUM_MS	500
 #define _TIMEOUT_SHORT_MS	50
 #define _TIMEOUT_SUPER_MS	30000
-
-static const enum log_level serial_dbg_lvl = INFO;
 
 /* STIEG: Temp until we write *_create methods for serial_buff and at_info */
 struct serial_buffer _serial_cmd_buff;
@@ -85,9 +83,12 @@ static bool sparse_urc_cb(char* msg)
 {
         msg = strip_inline(msg);
 
-        if (STR_EQ(msg, "WIFI DISCONNECT")) {
-                if (state.hooks.client_wifi_disconnect_cb)
-                        state.hooks.client_wifi_disconnect_cb();
+        if (STR_EQ(msg, "WIFI CONNECTED")  ||
+            STR_EQ(msg, "WIFI DISCONNECT") ||
+            STR_EQ(msg, "WIFI GOT IP")) {
+                if (state.hooks.client_state_changed_cb)
+                        state.hooks.client_state_changed_cb(msg);
+
                 return true;
         }
 
@@ -99,15 +100,16 @@ static bool sparse_urc_cb(char* msg)
         *comma = '\0';
         const char* m1 = msg;
         const char* m2 = ++comma;
-        if (STR_EQ(m2, "CONNECT")) {
-                if (state.hooks.socket_connect_cb)
-                        state.hooks.socket_connect_cb(atoi(m1));
-        } else if (STR_EQ(m2, "CLOSED")) {
-                if (state.hooks.socket_closed_cb)
-                        state.hooks.socket_closed_cb(atoi(m1));
-        } else {
-                return false;
-        }
+
+        enum socket_action action = SOCKET_ACTION_UNKNOWN;
+        if (STR_EQ(m2, "CONNECT"))
+                action = SOCKET_ACTION_CONNECT;
+
+        if (STR_EQ(m2, "CLOSED"))
+                action = SOCKET_ACTION_DISCONNECT;
+
+        if (state.hooks.socket_state_changed_cb)
+                state.hooks.socket_state_changed_cb(atoi(m1), action);
 
         return true;
 }
@@ -115,8 +117,7 @@ static bool sparse_urc_cb(char* msg)
 /**
  * Sets up the internal state of the driver.  Must be called before init.
  */
-static bool _setup(struct Serial *s, const size_t max_cmd_len,
-                   const struct esp8266_event_hooks hooks)
+static bool _setup(struct Serial *s, const size_t max_cmd_len)
 {
         /* Check if already initialized.  If so, do nothing */
         if (state.ati)
@@ -124,7 +125,6 @@ static bool _setup(struct Serial *s, const size_t max_cmd_len,
 
         state.ati = &_ati;
         state.scb = &_serial_cmd_buff;
-        state.hooks = hooks;
 
         /*
          * Initialize the serial command buffer.  This buffer is used for
@@ -318,15 +318,17 @@ static bool is_init_in_progress()
  * Kicks off the initilization process.
  */
 bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
-                  const struct esp8266_event_hooks hooks,
                   void (*cb)(enum dev_init_state))
 {
         if (!cb || !s || is_init_in_progress())
                 return false;
 
         /* Init objects.  If fail, then nothing we can do. */
-        if (!_setup(s, max_cmd_len, hooks))
+        if (!_setup(s, max_cmd_len))
                 return false;
+
+        /* Hard reset our ESP8266*/
+        wifi_device_reset();
 
         state.init_cb = cb;
         state.init_state = DEV_INIT_INITIALIZING;
@@ -338,7 +340,7 @@ bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
 /**
  * @return The initialization state of the device.
  */
-enum dev_init_state esp1866_get_dev_init_state()
+enum dev_init_state esp8266_get_dev_init_state()
 {
         return state.init_state;
 }
@@ -401,10 +403,9 @@ static bool read_op_mode_cb(struct at_rsp *rsp, void *up)
                 goto do_cb;
         }
 
-        char *toks[2];
+        char *toks[3];
         const size_t tok_cnt =
-                at_parse_rsp_line(rsp->msgs[rsp->msg_count - 1],
-                                  toks, ARRAY_LEN(toks));
+                at_parse_rsp_line(rsp->msgs[0], toks, ARRAY_LEN(toks));
         if (tok_cnt != 2) {
                 cmd_failure(cmd_name, "Incorrect number of tokens parsed.");
                 status = false;
@@ -467,11 +468,13 @@ bool esp8266_join_ap(const char* ssid, const char* pass, void (*cb)(bool))
                 return false;
 
         char cmd[64];
-        if (pass && *pass)
-                snprintf(cmd, ARRAY_LEN(cmd), "AT+CWJAP=\"%s\",\"%s\"",
-                         ssid, pass);
-        else
-                snprintf(cmd, ARRAY_LEN(cmd), "AT+CWJAP=\"%s\",", ssid);
+        const char pfx[] = "AT+CWJAP_DEF";
+        if (pass && *pass) {
+                snprintf(cmd, ARRAY_LEN(cmd), "%s=\"%s\",\"%s\"",
+                         pfx, ssid, pass);
+        } else {
+                snprintf(cmd, ARRAY_LEN(cmd), "%s=\"%s\",", pfx, ssid);
+        }
 
         return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_SUPER_MS,
                                   join_ap_cb, cb);
@@ -489,7 +492,6 @@ void esp8266_log_client_info(const struct esp8266_client_info *info)
 
         pr_info_str_msg("\t  SSID: ", info->ssid);
         pr_info_str_msg("\tAP MAC: ", info->mac);
-        pr_info_str_msg("\t    IP: ", info->ip);
 }
 
 /**
@@ -570,74 +572,169 @@ bool esp8266_get_client_ap(void (*cb)(bool, const struct esp8266_client_info*))
         if (!check_initialized("get_client_ap"))
                 return false;
 
-        return NULL != at_put_cmd(state.ati, "AT+CWJAP?", _TIMEOUT_SHORT_MS,
-                                  get_client_ap_cb, cb);
-}
-
-/**
- * Given an AT response for +CIFSR, this method decodes it and extracts
- * the IP address.
- */
-static const char* parse_client_ip(struct at_rsp *rsp)
-{
-        /*
-         * +CIFSR:STAIP,"192.168.1.94"
-         * +CIFSR:STAMAC,"18:fe:34:f4:3a:95"
-         */
-        char *toks[4];
-        char *ip_at_str = NULL;
-        for(size_t i = 0; i < rsp->msg_count && NULL == ip_at_str; ++i) {
-                char *at_msg_ln = rsp->msgs[i];
-                const size_t tok_count =
-                        at_parse_rsp_line(at_msg_ln, toks, ARRAY_LEN(toks));
-
-                if (tok_count == 3 && STR_EQ("STAIP", toks[1]))
-                        ip_at_str = toks[2];
-        }
-
-        return ip_at_str ? at_parse_rsp_str(ip_at_str) : NULL;
+        return NULL != at_put_cmd(state.ati, "AT+CWJAP_DEF?",
+                                  _TIMEOUT_SHORT_MS, get_client_ap_cb, cb);
 }
 
 /**
  * Callback that is invoked when the get_client_ip command completes.
  */
-static bool get_client_ip_cb(struct at_rsp *rsp, void *up)
+static bool get_ip_info_cb(struct at_rsp *rsp, void *up)
 {
-        static const char *cmd_name = "get_client_ip_cb";
-        void (*cb)(bool, const char*) = up;
+        static const char *cmd_name = "get_ip_info_cb";
+        get_ip_info_cb_t* cb = up;
         bool status = at_ok(rsp);
-        const char* ip_str = NULL;
+
+        struct esp8266_ipv4_info client_info;
+        struct esp8266_ipv4_info station_info;
+        memset(&client_info, 0, sizeof(struct esp8266_ipv4_info));
+        memset(&station_info, 0, sizeof(struct esp8266_ipv4_info));
 
         if (!status) {
                 cmd_failure(cmd_name, NULL);
                 goto do_cb;
         }
 
-        ip_str = parse_client_ip(rsp);
-        if (NULL == ip_str) {
-                status = false;
-                cmd_failure(cmd_name, "Failed to parse IP");
-                goto do_cb;
+        /*
+         * +CIFSR:APIP,"192.168.4.1"
+         * +CIFSR:APMAC,"1a:fe:34:f4:3a:95"
+         * +CIFSR:STAIP,"192.168.1.94"
+         * +CIFSR:STAMAC,"18:fe:34:f4:3a:95"
+         */
+        char *toks[4];
+        for(size_t i = 0; i < rsp->msg_count; ++i) {
+                const size_t tok_count = at_parse_rsp_line(rsp->msgs[i], toks,
+                                                           ARRAY_LEN(toks));
+                if (tok_count != 3)
+                        continue;
+
+                struct esp8266_ipv4_info* info = NULL;
+                if (STR_EQ("STAIP", toks[1]))
+                        info = &client_info;
+
+                if (STR_EQ("APIP", toks[1]))
+                        info = &station_info;
+
+                if (!info)
+                        continue;
+
+                const char* ip_str = at_parse_rsp_str(toks[2]);
+                strncpy(info->address, ip_str, ARRAY_LEN(info->address));
         }
 
 do_cb:
         if (cb)
-                cb(status, ip_str);
+                cb(status, &client_info, &station_info);
 
         return false;
 }
 
 /**
- * Use this to figure out what our IP is as a wireless client.
+ * Use this to figure out IP information of our
  * @param cb The callback to be invoked when the method completes.
  */
-bool esp8266_get_client_ip(void (*cb)(bool, const char*))
+bool esp8266_get_ip_info(get_ip_info_cb_t callback)
 {
-        if (!check_initialized("get_ap_mode"))
+        if (!check_initialized("get_ip_info"))
                 return false;
 
         return NULL != at_put_cmd(state.ati, "AT+CIFSR", _TIMEOUT_SHORT_MS,
-                                  get_client_ip_cb, cb);
+                                  get_ip_info_cb, callback);
+}
+
+/**
+ * The callback invoked by our AT state machine upon the completion
+ * of the command
+ */
+static bool get_ap_info_cb(struct at_rsp *rsp, void *up)
+{
+        static const char *cmd_name = "get_ap_info_cb";
+        esp8266_get_ap_info_cb_t *cb = up;
+        struct esp8266_ap_info ap_info;
+        memset(&ap_info, 0, sizeof(struct esp8266_ap_info));
+
+        bool status = at_ok(rsp);
+        if (!status) {
+                cmd_failure(cmd_name, NULL);
+                goto do_cb;
+        }
+
+        /*
+         * AT+CWSAP=<ssid>,<pwd>,<chl>,<ecn>
+         * ssid -> string
+         * pwd  -> string
+         * chl  -> number
+         * ecn  -> number
+         * [max conn] -> number
+         * [ssid hidden] -> number
+         */
+        char *toks[8];
+        const int tok_cnt = at_parse_rsp_line(rsp->msgs[0], toks,
+                                              ARRAY_LEN(toks));
+
+        if (tok_cnt < 5 || tok_cnt > 7) {
+                cmd_failure(cmd_name, "Unexpected # of tokens in response");
+                status = false;
+                goto do_cb;
+        }
+
+        strncpy(ap_info.ssid, at_parse_rsp_str(toks[1]),
+                ARRAY_LEN(ap_info.ssid));
+        strncpy(ap_info.password, at_parse_rsp_str(toks[2]),
+                ARRAY_LEN(ap_info.password));
+        ap_info.channel = atoi(toks[3]);
+        ap_info.encryption = (enum esp8266_encryption) atoi(toks[4]);
+
+do_cb:
+        if (cb)
+                cb(status, &ap_info);
+
+        return false;
+}
+
+bool esp8266_get_ap_info(esp8266_get_ap_info_cb_t *cb)
+{
+        if (!check_initialized("get_ap_info"))
+                return false;
+
+        const char cmd[] = "AT+CWSAP?";
+        return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_MEDIUM_MS,
+                                  get_ap_info_cb, cb);
+}
+
+/**
+ * Callback that gets invoked when the set_ap_info command completes.
+ */
+static bool set_ap_info_cb(struct at_rsp *rsp, void *up)
+{
+        static const char *cmd_name = "set_ap_info_cb";
+        esp8266_set_ap_info_cb_t *cb = up;
+
+        bool status = at_ok(rsp);
+        if (!status) {
+                cmd_failure(cmd_name, NULL);
+        }
+
+        if (cb)
+                cb(status);
+
+        return false;
+}
+
+bool esp8266_set_ap_info(const struct esp8266_ap_info* info,
+                         esp8266_set_ap_info_cb_t *cb)
+{
+        if (!check_initialized("set_ap_info") || NULL == info)
+                return false;
+
+        char cmd[64];
+        snprintf(cmd, ARRAY_LEN(cmd), "AT+CWSAP=\"%s\",\"%s\",%d,%d",
+                 info->ssid, info->password, (int) info->channel,
+                 info->encryption);
+
+        return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
+                                  set_ap_info_cb, cb);
+
 }
 
 /**
@@ -864,8 +961,6 @@ bool esp8266_server_cmd(const enum esp8266_server_action action, int port,
  */
 static bool ipd_urc_cb(struct at_rsp *rsp, void *up)
 {
-        void (*cb)(int, size_t, const char*) = up;
-
         static const char *cmd_name = "ipd_urc_cb";
         if (AT_RSP_STATUS_NONE != rsp->status) {
                 cmd_failure(cmd_name, "Unexpected response status");
@@ -885,17 +980,21 @@ static bool ipd_urc_cb(struct at_rsp *rsp, void *up)
         const size_t len = atoi(toks[2]);
         const char *msg = toks[3];
 
-        cb(chan_id, len, msg);
+        if (state.hooks.data_received_cb)
+                state.hooks.data_received_cb(chan_id, len, msg);
+
         return false;
 }
 
-bool esp8266_register_ipd_cb(void (*cb)(int, size_t, const char*))
+bool esp8266_register_callbacks(const struct esp8266_event_hooks* hooks)
 {
+        memcpy(&state.hooks, hooks, sizeof(struct esp8266_event_hooks));
+
         /* Control flags for special handling of response messages */
         const enum at_urc_flags flags =
                 AT_URC_FLAGS_NO_RSP_STATUS |
                 AT_URC_FLAGS_NO_RSTRIP;
 
         return NULL != at_register_urc(state.ati, "+IPD,", flags,
-                                       ipd_urc_cb, cb);
+                                       ipd_urc_cb, NULL);
 }

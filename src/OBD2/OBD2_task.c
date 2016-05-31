@@ -34,7 +34,7 @@
 #include "taskUtil.h"
 #include "capabilities.h"
 
-#define OBD2_TASK_STACK 	256
+#define OBD2_TASK_STACK 	configMINIMAL_STACK_SIZE
 #define OBD2_FEATURE_DISABLED_DELAY_MS 2000
 
 void startOBD2Task(int priority)
