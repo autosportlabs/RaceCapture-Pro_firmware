@@ -51,6 +51,8 @@
 #define WIFI_DMA_RX_BUFF_SIZE	32
 #define WIFI_DMA_TX_BUFF_SIZE	32
 
+#define POISON_BYTE	0x6b
+
 typedef enum {
     UART_RX_IRQ = 1,
     UART_TX_IRQ = 2
@@ -482,69 +484,45 @@ void USART3_IRQHandler(void)
         usart_generic_irq_handler(usart_data + UART_AUX);
 }
 
-/* Prevents code dupe below.  Hence why inline */
-static bool dma_data_to_queue(xQueueHandle queue,
-                              volatile uint8_t* curr,
-                              const volatile uint8_t* end,
-                              portBASE_TYPE* task_awoke)
-{
-        const bool in_isr = task_awoke != NULL;
-        bool overflow = false;
-
-        for (; curr < end; ++curr) {
-                uint8_t val;
-                val = *curr;
-                *curr = 0x6b; /* Poison the DMA buff */
-                if (in_isr) {
-                        overflow |= !xQueueSendFromISR(queue, &val, task_awoke);
-                } else {
-                        overflow |= !xQueueSend(queue, &val, 0);
-                }
-        }
-
-        return overflow;
-}
-
 static bool dma_rx_to_queue_isr(volatile struct usart_info *ui)
 {
-        const size_t cndtr = (volatile uint32_t) ui->dma_rx.chan->CNDTR;
         volatile uint8_t* const buff = ui->dma_rx.buff;
         volatile uint8_t* const edge = buff + ui->dma_rx.buff_size;
-        volatile uint8_t* const head = edge - cndtr;
-        volatile uint8_t* const tail = ui->dma_rx.ptr;
+        volatile uint8_t* const head = edge - ui->dma_rx.chan->CNDTR;
+        volatile uint8_t* tail = ui->dma_rx.ptr;
         xQueueHandle queue = serial_get_rx_queue(ui->serial);
         portBASE_TYPE task_awoke = pdFALSE;
-        bool overflow = false;
 
-        if (head < tail) {
-                overflow |= dma_data_to_queue(queue, tail, edge, &task_awoke);
-                overflow |= dma_data_to_queue(queue, buff, head, &task_awoke);
-        } else {
-                overflow |= dma_data_to_queue(queue, tail, head, &task_awoke);
+        while (tail != head) {
+                uint8_t val = *tail;
+                *tail = POISON_BYTE; /* Poison the DMA buff */
+                ui->rx_overflow |= !xQueueSendFromISR(queue, &val, &task_awoke);
+
+                if (++tail >= edge)
+                        tail = buff;
         }
 
         ui->dma_rx.ptr = head;
-        ui->rx_overflow |= overflow;
 
         return task_awoke;
 }
 
 void DMA1_Channel5_IRQHandler(void)
 {
+        /* Clears all pending IRQs for DMA channel 5 */
+        DMA_ClearITPendingBit(DMA1_IT_GL5);
+
         volatile struct usart_info *ui = usart_data + UART_WIRELESS;
-        const bool task_awoken = dma_rx_to_queue_isr(ui);
-        DMA_ClearITPendingBit(DMA1_IT_TC5);
-        DMA_ClearITPendingBit(DMA1_IT_HT5);
-        portEND_SWITCHING_ISR(task_awoken);
+        portEND_SWITCHING_ISR(dma_rx_to_queue_isr(ui));
 }
 
 void DMA1_Channel6_IRQHandler(void)
 {
+        /* Clears all pending IRQs for DMA channel 6 */
+        DMA_ClearITPendingBit(DMA1_IT_GL6);
+
         volatile struct usart_info *ui = usart_data + UART_GPS;
-        const bool task_awoken = dma_rx_to_queue_isr(ui);
-        DMA_ClearITPendingBit(DMA1_IT_TC6);
-        DMA_ClearITPendingBit(DMA1_IT_HT6);
-        portEND_SWITCHING_ISR(task_awoken);
+        portEND_SWITCHING_ISR(dma_rx_to_queue_isr(ui));
 }
 
 static bool complete_dma_tx_isr(volatile struct usart_info* ui)
@@ -607,27 +585,22 @@ void DMA1_Channel7_IRQHandler(void)
 /* *** Timer Methods *** */
 static void dma_rx_to_queue(volatile struct usart_info *ui)
 {
-        taskENTER_CRITICAL();
-
-        const size_t cndtr = (volatile uint32_t) ui->dma_rx.chan->CNDTR;
         volatile uint8_t* const buff = ui->dma_rx.buff;
         volatile uint8_t* const edge = buff + ui->dma_rx.buff_size;
-        volatile uint8_t* const head = edge - cndtr;
-        volatile uint8_t* const tail = ui->dma_rx.ptr;
+        volatile uint8_t* const head = edge - ui->dma_rx.chan->CNDTR;
+        volatile uint8_t* tail = ui->dma_rx.ptr;
         xQueueHandle queue = serial_get_rx_queue(ui->serial);
-        bool overflow = false;
 
-        if (head < tail) {
-                overflow |= dma_data_to_queue(queue, tail, edge, NULL);
-                overflow |= dma_data_to_queue(queue, buff, head, NULL);
-        } else {
-                overflow |= dma_data_to_queue(queue, tail, head, NULL);
+        while (tail != head) {
+                uint8_t val = *tail;
+                *tail = POISON_BYTE; /* Poison the DMA buff */
+                ui->rx_overflow |= !xQueueSend(queue, &val, 0);
+
+                if (++tail >= edge)
+                        tail = buff;
         }
 
         ui->dma_rx.ptr = head;
-        ui->rx_overflow |= overflow;
-
-        taskEXIT_CRITICAL();
 }
 
 #if 0
