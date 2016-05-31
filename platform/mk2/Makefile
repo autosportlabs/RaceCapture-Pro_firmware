@@ -117,7 +117,7 @@ libstm32_usb.a: $(STM32_USB_OBJS)
 
 $(TARGET).ihex: $(TARGET).bin
 	@printf "  Creating upgrade images\n"
-	$(PYTHON) $(ASL_FW_POSTPROCESS) -f $(TARGET).bin -o 0x08020000 -b $(TARGET).bin -i $(TARGET).ihex
+	$(PYTHON) $(ASL_FW_POSTPROCESS) -f $(TARGET).bin -o 0x08020000 -b $(TARGET).bin -i $(TARGET).ihex -e $(TARGET).elf
 
 $(TARGET).bin: $(TARGET).elf
 	@printf "  OBJCOPY $(subst $(shell pwd)/,,$(@))\n"
