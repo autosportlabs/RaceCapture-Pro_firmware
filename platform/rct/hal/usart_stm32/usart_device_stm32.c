@@ -38,20 +38,19 @@
 
 #define UART_RX_QUEUE_LEN 	256
 #define UART_TX_QUEUE_LEN 	64
-#define GPS_DMA_RX_BUFF_SIZE		128
+#define GPS_DMA_RX_BUFF_SIZE		48
 #define GPS_DMA_TX_BUFF_SIZE		16
 #define LOG_PFX		"[USART] "
 #define UART_WIRELESS_IRQ_PRIORITY 	7
 #define UART_GPS_IRQ_PRIORITY 		5
 #define UART_TELEMETRY_IRQ_PRIORITY 	6
+#define DMA_IRQ_PRIORITY		5
 
 #define DEFAULT_WIRELESS_BAUD_RATE	9600
 #define DEFAULT_TELEMETRY_BAUD_RATE	115200
 #define DEFAULT_GPS_BAUD_RATE		9600
 #define WIFI_DMA_RX_BUFF_SIZE	32
 #define WIFI_DMA_TX_BUFF_SIZE	32
-
-#define POISON_BYTE	0x6b
 
 typedef enum {
     UART_RX_IRQ = 1,
@@ -68,9 +67,8 @@ struct dma_info {
 static volatile struct usart_info {
         struct Serial *serial;
         USART_TypeDef *usart;
-        struct dma_info dma_rx;
-        struct dma_info dma_tx;
-        bool rx_overflow;
+        volatile struct dma_info dma_rx;
+        volatile struct dma_info dma_tx;
 } usart_data[__UART_COUNT];
 
 static void init_usart(USART_TypeDef *USARTx, const size_t bits,
@@ -267,8 +265,7 @@ static void usart_device_init_1(size_t bits, size_t parity,
                       UART_WIRELESS_IRQ_PRIORITY, UART_TX_IRQ);
 
         enableRxDMA(RCC_AHBPeriph_DMA1, DMA1_Channel5_IRQn,
-                    UART_WIRELESS_IRQ_PRIORITY,
-                    DMA_IT_TC | DMA_IT_HT, ui);
+                    DMA_IRQ_PRIORITY, DMA_IT_TC | DMA_IT_HT, ui);
 
         /* enable_dma_tx(RCC_AHBPeriph_DMA1, DMA1_Channel4_IRQn, */
         /*               UART_WIRELESS_IRQ_PRIORITY, */
@@ -293,8 +290,7 @@ void usart_device_init_2(size_t bits, size_t parity,
                       UART_WIRELESS_IRQ_PRIORITY, UART_TX_IRQ);
 
         enableRxDMA(RCC_AHBPeriph_DMA1, DMA1_Channel6_IRQn,
-                    UART_GPS_IRQ_PRIORITY,
-                    DMA_IT_TC | DMA_IT_HT, ui);
+                    DMA_IRQ_PRIORITY, DMA_IT_TC | DMA_IT_HT, ui);
 
         /* enable_dma_tx(RCC_AHBPeriph_DMA1, DMA1_Channel7_IRQn, */
         /*               UART_GPS_IRQ_PRIORITY, */
@@ -486,24 +482,26 @@ void USART3_IRQHandler(void)
 
 static bool dma_rx_to_queue_isr(volatile struct usart_info *ui)
 {
+        volatile uint8_t* tail = ui->dma_rx.ptr;
+        if (!tail)
+                return false;
+        ui->dma_rx.ptr = NULL; /* This indicates a txfer in progress */
+
         volatile uint8_t* const buff = ui->dma_rx.buff;
         volatile uint8_t* const edge = buff + ui->dma_rx.buff_size;
-        volatile uint8_t* const head = edge - ui->dma_rx.chan->CNDTR;
-        volatile uint8_t* tail = ui->dma_rx.ptr;
+        volatile uint8_t* const head = edge - (uint16_t) ui->dma_rx.chan->CNDTR;
         xQueueHandle queue = serial_get_rx_queue(ui->serial);
         portBASE_TYPE task_awoke = pdFALSE;
 
         while (tail != head) {
                 uint8_t val = *tail;
-                *tail = POISON_BYTE; /* Poison the DMA buff */
-                ui->rx_overflow |= !xQueueSendFromISR(queue, &val, &task_awoke);
+                xQueueSendFromISR(queue, &val, &task_awoke);
 
                 if (++tail >= edge)
                         tail = buff;
         }
 
         ui->dma_rx.ptr = head;
-
         return task_awoke;
 }
 
@@ -583,24 +581,51 @@ void DMA1_Channel7_IRQHandler(void)
 
 
 /* *** Timer Methods *** */
-static void dma_rx_to_queue(volatile struct usart_info *ui)
+
+/* Logical Timer 0 IRQ Handler */
+void TIM7_IRQHandler(void)
 {
-        volatile uint8_t* const buff = ui->dma_rx.buff;
-        volatile uint8_t* const edge = buff + ui->dma_rx.buff_size;
-        volatile uint8_t* const head = edge - ui->dma_rx.chan->CNDTR;
-        volatile uint8_t* tail = ui->dma_rx.ptr;
-        xQueueHandle queue = serial_get_rx_queue(ui->serial);
+        TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
 
-        while (tail != head) {
-                uint8_t val = *tail;
-                *tail = POISON_BYTE; /* Poison the DMA buff */
-                ui->rx_overflow |= !xQueueSend(queue, &val, 0);
+        volatile struct usart_info *ui_wifi = usart_data + UART_WIRELESS;
+        volatile struct usart_info *ui_gps = usart_data + UART_GPS;
 
-                if (++tail >= edge)
-                        tail = buff;
-        }
+        const bool task_awoke_gps = dma_rx_to_queue_isr(ui_gps);
+        const bool task_awoke_wifi = dma_rx_to_queue_isr(ui_wifi);
 
-        ui->dma_rx.ptr = head;
+        portEND_SWITCHING_ISR(task_awoke_gps || task_awoke_wifi);
+}
+
+
+void setup_dma_timer(void)
+{
+        /* We use Timer 7 */
+        TIM_TypeDef* const timer = TIM7;
+
+        RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM7, ENABLE);
+
+        TIM_DeInit(timer);
+
+        TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
+        TIM_TimeBaseStructInit(&TIM_TimeBaseInitStructure);
+        /* Proc is 80MHz, so prescalar is 80 - 1 to make clock 1MHz */
+        TIM_TimeBaseInitStructure.TIM_Prescaler = 79;
+        /* With above clock, each tick is 1 us. We want interrupts every 1ms */
+        TIM_TimeBaseInitStructure.TIM_Period = 1000;
+        TIM_TimeBaseInit(timer, &TIM_TimeBaseInitStructure);
+
+        TIM_UpdateDisableConfig(timer, DISABLE);
+        TIM_UpdateRequestConfig(timer, TIM_UpdateSource_Global);
+
+        NVIC_InitTypeDef NVIC_InitStructure;
+        NVIC_InitStructure.NVIC_IRQChannel = TIM7_IRQn;
+        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = DMA_IRQ_PRIORITY;
+        NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+        NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+        NVIC_Init(&NVIC_InitStructure);
+        TIM_ITConfig(timer, TIM_IT_Update, ENABLE);
+
+        TIM_Cmd(timer, ENABLE);
 }
 
 #if 0
@@ -633,30 +658,6 @@ static void setup_and_start_dma_tx(volatile struct usart_info* ui)
 }
 #endif
 
-static void timer_dma_handler(xTimerHandle handle)
-{
-        volatile struct usart_info *gps_info = usart_data + UART_GPS;
-        volatile struct usart_info *wifi_info = usart_data + UART_WIRELESS;
-
-        /*
-         * @Jeff... So this the method that is causing all the fun. If I
-         * uncomment it, then we fail to disable NMEA. Else GPS works
-         * somehow.
-         */
-        /* dma_rx_to_queue(gps_info); */
-        dma_rx_to_queue(wifi_info);
-
-        if (gps_info->rx_overflow) {
-                pr_warning(LOG_PFX "Overflow in GPS Rx Queue\r\n");
-                gps_info->rx_overflow = false;
-        }
-
-        /* STIEG: DISABLE Tx DMA for now */
-        /* setup_and_start_dma_tx(gps_info); */
-        /* setup_and_start_dma_tx(wifi_info); */
-}
-
-
 /* *** Public methods *** */
 
 int usart_device_init()
@@ -667,12 +668,14 @@ int usart_device_init()
          *       handlers.
          */
         const bool mem_alloc_success =
+                /* DMA Rx/Tx Chan 5/4 */
                 init_usart_serial(UART_WIRELESS, USART1, SERIAL_WIFI, "WiFi",
                                   WIFI_DMA_RX_BUFF_SIZE, DMA1_Channel5,
-                                  0, DMA1_Channel4) &&
+                                  0, NULL) &&
+                /* DMA Rx/Tx Chan 6/7 */
                 init_usart_serial(UART_GPS, USART2, SERIAL_GPS, "GPS",
                                   GPS_DMA_RX_BUFF_SIZE, DMA1_Channel6,
-                                  0, DMA1_Channel7);
+                                  0, NULL);
 
         if (!mem_alloc_success) {
                 pr_error("[USART] Failed to init\r\n");
@@ -684,10 +687,7 @@ int usart_device_init()
         /* usart_device_init_3(8, 0, 1, DEFAULT_TELEMETRY_BAUD_RATE); */
 
         /* Create a timer that fires every tick to handle DMA data */
-        const signed char timer_name[] = "USART DMA Timer";
-        const xTimerHandle dma_timer =
-                xTimerCreate(timer_name, 1, pdTRUE, NULL, timer_dma_handler);
-        xTimerStart(dma_timer, 0);
+        setup_dma_timer();
 
         return 1;
 }
