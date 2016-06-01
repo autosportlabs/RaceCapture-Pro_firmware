@@ -228,6 +228,13 @@ static uint8_t calculateChecksum(GpsMessage * msg)
 
 static void txGpsMessage(GpsMessage * msg, struct Serial * serial)
 {
+        /*
+         * Add this delay here to ensure that we don't issue commands to
+         * the unit faster thant it can process them.  10ms seems to
+         * work well.
+         */
+        delayMs(10);
+
         serial_put_c(serial, 0xA0);
         serial_put_c(serial, 0xA1);
 
@@ -274,13 +281,13 @@ static gps_msg_result_t rxGpsMessage(GpsMessage * msg, struct Serial * serial,
                         serial_read_byte(serial, len8 + 1, timeoutLen);
 
                 if (!read_data_len) {
-                        pr_info("GPS: Failed to read msg length\r\n");
+                        pr_trace("GPS: Failed to read msg length\r\n");
                         continue;
                 }
 
                 uint16_t len = (len8[0] << 8) + len8[1];
                 if (len > MAX_PAYLOAD_LEN) {
-                        pr_info("GPS: Msg payload too big\r\n");
+                        pr_trace("GPS: Msg payload too big\r\n");
                         continue;
                 }
 
@@ -293,19 +300,19 @@ static gps_msg_result_t rxGpsMessage(GpsMessage * msg, struct Serial * serial,
                         msg->payload[i] = c;
                 }
                 if (0 != len) {
-                        pr_info("GPS: Failed to read payload\r\n");
+                        pr_trace("GPS: Failed to read payload\r\n");
                         continue;
                 }
 
                 uint8_t checksum = 0;
                 if (!serial_read_byte(serial, &checksum, timeoutLen)) {
-                        pr_info("GPS: Failed to read checksum\r\n");
+                        pr_trace("GPS: Failed to read checksum\r\n");
                         continue;
                 }
 
                 uint8_t calculatedChecksum = calculateChecksum(msg);
                 if (calculatedChecksum != checksum) {
-                        pr_info("GPS: Msg checksum mismatch\r\n");
+                        pr_trace("GPS: Msg checksum mismatch\r\n");
                         continue;
                 }
 
@@ -314,17 +321,17 @@ static gps_msg_result_t rxGpsMessage(GpsMessage * msg, struct Serial * serial,
                         serial_read_byte(serial, eos + 0, timeoutLen) &&
                         serial_read_byte(serial, eos + 1, timeoutLen);
                 if (!read_eos) {
-                        pr_info("GPS: Failed to read EOS\r\n");
+                        pr_trace("GPS: Failed to read EOS\r\n");
                         continue;
                 }
 
                 if (eos[0] != 0x0D || eos[1] != 0x0A) {
-                        pr_info("GPS: Invalid EOS\r\n");
+                        pr_trace("GPS: Invalid EOS\r\n");
                         continue;
                 }
 
                 if (msg->messageId != expectedMessageId) {
-                        pr_info_int_msg("GPS: Unexpected Message ID: ",
+                        pr_trace_int_msg("GPS: Unexpected Message ID: ",
                                         msg->messageId);
                         continue;
                 }
