@@ -1,0 +1,1 @@
+{"setWifiCfg":{"active": true,"client":{"active": true,"ssid":"foobar","password":"bazbiz"}, "ap":{"active":true,"ssid":"RaceIt","password":"dontcrashit","channel":1,"encryption":"wpa2"}}}

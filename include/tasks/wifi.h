@@ -47,6 +47,7 @@ struct wifi_ap_cfg {
 };
 
 struct wifi_cfg {
+        bool active;
         struct wifi_client_cfg client;
         struct wifi_ap_cfg ap;
 };

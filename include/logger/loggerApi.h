@@ -51,8 +51,7 @@ CPP_GUARD_BEGIN
         API_METHOD("getTrackCfg", api_getTrackConfig)                   \
         API_METHOD("getTrackDb", api_getTrackDb)                        \
         API_METHOD("getVer", api_getVersion)                            \
-        API_METHOD("get_wifi_ap_cfg", api_get_wifi_ap_cfg)              \
-        API_METHOD("get_wifi_client_cfg", api_get_wifi_client_cfg)      \
+        API_METHOD("getWifiCfg", api_get_wifi_cfg)                      \
         API_METHOD("hb", api_heart_beat)                                \
         API_METHOD("log", api_log)                                      \
         API_METHOD("s", api_sampleData)                                 \
@@ -64,8 +63,7 @@ CPP_GUARD_BEGIN
         API_METHOD("setLogfileLevel", api_setLogfileLevel)              \
         API_METHOD("setObd2Cfg", api_setObd2Config)                     \
         API_METHOD("setTrackCfg", api_setTrackConfig)                   \
-        API_METHOD("set_wifi_ap_cfg", api_set_wifi_ap_cfg)              \
-        API_METHOD("set_wifi_client_cfg", api_set_wifi_client_cfg)      \
+        API_METHOD("setWifiCfg", api_set_wifi_cfg)                      \
         API_METHOD("sysReset", api_systemReset)                         \
 
 
@@ -173,10 +171,8 @@ void api_send_sample_record(struct Serial *serial, struct sample *sample,
 void unescapeTextField(char *data);
 
 /* Wifi methods */
-int api_get_wifi_client_cfg(struct Serial *s, const jsmntok_t *json);
-int api_set_wifi_client_cfg(struct Serial *s, const jsmntok_t *json);
-int api_get_wifi_ap_cfg(struct Serial *serial, const jsmntok_t *json);
-int api_set_wifi_ap_cfg(struct Serial *s, const jsmntok_t *json);
+int api_get_wifi_cfg(struct Serial *s, const jsmntok_t *json);
+int api_set_wifi_cfg(struct Serial *s, const jsmntok_t *json);
 
 CPP_GUARD_END
 

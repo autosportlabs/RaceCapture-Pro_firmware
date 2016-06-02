@@ -303,6 +303,9 @@ void wifi_reset_config(struct wifi_cfg *cfg)
         /* For now simply zero this out */
         memset(cfg, 0, sizeof(struct wifi_cfg));
 
+        /* Enable WiFi by Default */
+        cfg->active = true;
+
         /*
          * Set some sane values for the AP configuration.  We turn on our
          * AP by default because it gives us a way to communicate with the
