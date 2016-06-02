@@ -220,10 +220,10 @@ static void txGpsMessage(GpsMessage * msg, struct Serial * serial)
 {
         /*
          * Add this delay here to ensure that we don't issue commands to
-         * the unit faster thant it can process them.  10ms seems to
+         * the unit faster thant it can process them.  20ms seems to
          * work well.
          */
-        delayMs(10);
+        delayMs(20);
 
         serial_put_c(serial, 0xA0);
         serial_put_c(serial, 0xA1);
