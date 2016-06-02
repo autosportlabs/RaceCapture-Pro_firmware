@@ -95,6 +95,8 @@ static const char * baudConfigCmdForRate(unsigned int baudRate)
                 return "AT+BAUD7";
         case 115200:
                 return "AT+BAUD8";
+        case 230400:
+                return "AT+BAUD9";
         }
 
         pr_error_int_msg("invalid BT baud", baudRate);
