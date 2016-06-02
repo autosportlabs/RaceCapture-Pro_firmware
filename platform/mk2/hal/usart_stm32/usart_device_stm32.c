@@ -171,10 +171,6 @@ static void enable_dma_rx(const uint32_t dma_periph,
         DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
         DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
         DMA_InitStructure.DMA_Priority = DMA_Priority_High;
-        DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;
-        DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
-        DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
-        DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
 
         DMA_Init(dma->stream, &DMA_InitStructure);
 
@@ -283,10 +279,10 @@ static void usart_device_init_0(size_t bits, size_t parity,
 
         enableRxTxIrq(ui->usart, USART1_IRQn,
                       UART_WIRELESS_IRQ_PRIORITY,
-                      UART_RX_IRQ | UART_TX_IRQ);
+                      UART_TX_IRQ);
 
-        /* enable_dma_rx(RCC_AHB1Periph_DMA2, DMA2_Stream5_IRQn, */
-        /*               DMA_IRQ_PRIORITY, DMA_IT_TC | DMA_IT_HT, ui); */
+        enable_dma_rx(RCC_AHB1Periph_DMA2, DMA2_Stream5_IRQn,
+                      DMA_IRQ_PRIORITY, DMA_IT_TC | DMA_IT_HT, ui);
 
         init_usart(ui->usart, bits, parity, stopBits, baud);
 }
@@ -571,12 +567,12 @@ void TIM7_IRQHandler(void)
 {
         TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
 
-        /* volatile struct usart_info *ui_wireless = */
-        /*         usart_data + UART_WIRELESS; */
+        volatile struct usart_info *ui_wireless =
+                usart_data + UART_WIRELESS;
         volatile struct usart_info *ui_gps = usart_data + UART_GPS;
 
         const bool gps_ta = dma_rx_isr(ui_gps);
-        const bool wireless_ta = false; //dma_rx_isr(ui_wireless);
+        const bool wireless_ta = dma_rx_isr(ui_wireless);
 
         /* const bool ta_gps_tx = dma_tx_isr(ui_gps, false); */
         /* const bool ta_wifi_tx = dma_tx_isr(ui_wifi, false); */
@@ -630,7 +626,7 @@ int usart_device_init()
                 init_usart_serial(UART_TELEMETRY, UART4, SERIAL_TELEMETRY,
                                   "Cell", 0, NULL, 0, 0, NULL, 0) &&
                 init_usart_serial(UART_WIRELESS, USART1, SERIAL_BLUETOOTH,
-                                  "BT", DMA_RX_BUFF_SIZE, NULL,
+                                  "BT", DMA_RX_BUFF_SIZE, DMA2_Stream5,
                                   DMA_Channel_4, 0, NULL, 0) &&
                 init_usart_serial(UART_AUX, USART3, SERIAL_AUX, "Aux",
                                   0, NULL, 0, 0, NULL, 0);
