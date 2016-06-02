@@ -53,9 +53,9 @@ struct Serial* serial_device_get(const serial_id_t port)
                 return NULL;
 
         /* Hack to get serial logging working temporarily */
-        const bool enable_logs =
+        const enum serial_log_type log_type =
                 getWorkingLoggerConfig()->logging_cfg.serial[port];
-        serial_logging(s, enable_logs);
+        serial_logging(s, log_type);
 
         return s;
 }
