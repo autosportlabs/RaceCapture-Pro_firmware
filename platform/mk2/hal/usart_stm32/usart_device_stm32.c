@@ -45,7 +45,9 @@
  * USART3 - DMA1 Ch 4 / Stream 1   || DMA1 Ch 4 / Stream 3
  * UART4  - DMA1 Ch 4 / Stream 2   || DMA1 Ch 4 / Stream 4
  *
- * NOTE: DMA2_Stream2 is in use by ADC2.  So must use DMA2_S5
+ * NOTE:
+ * * DMA2_Stream2 is in use by ADC2.  Instead use DMA2_S5
+ * * DMA2_Stream6 is in use by I2C.  No workaround :(
  */
 
 #define DEFAULT_AUX_BAUD_RATE		115200
@@ -187,26 +189,27 @@ static void enable_dma_rx(const uint32_t dma_periph,
                 DMA_ITConfig(dma->stream, dma_it_flags, ENABLE);
         }
 
-    /* Enable the USART Rx DMA request */
-    USART_DMACmd(ui->usart, USART_DMAReq_Rx, ENABLE);
+        /* Enable the USART Rx DMA request */
+        USART_DMACmd(ui->usart, USART_DMAReq_Rx, ENABLE);
 
-    /* Enable the DMA RX Stream */
-    DMA_Cmd(dma->stream, ENABLE);
+        /* Enable the DMA RX Stream */
+        DMA_Cmd(dma->stream, ENABLE);
 }
 
-#if 0
-static void enable_dma_tx(uint32_t RCC_AHBPeriph,
+static void enable_dma_tx(const uint32_t dma_periph,
                           const uint8_t irq_channel,
                           const uint8_t irq_priority,
                           const uint32_t dma_it_flags,
                           volatile struct usart_info* ui)
 {
         const volatile struct dma_info* dma = &ui->dma_tx;
-        RCC_AHB1PeriphClockCmd(RCC_AHB1Periph, ENABLE);
-        DMA_DeInit(dma->chan);
+        RCC_AHB1PeriphClockCmd(dma_periph, ENABLE);
+        DMA_DeInit(dma->stream);
 
         DMA_InitTypeDef DMA_InitStructure;
-        DMA_InitStructure.DMA_Channel = dma->chan;
+        DMA_StructInit(&DMA_InitStructure);
+
+        DMA_InitStructure.DMA_Channel = dma->channel;
         DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t) dma->buff;
         DMA_InitStructure.DMA_BufferSize = 0;
         DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) &ui->usart->DR;
@@ -217,30 +220,26 @@ static void enable_dma_tx(uint32_t RCC_AHBPeriph,
         DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
         DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
         DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;
-        DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;
-        DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
-        DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
-        DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
 
-        DMA_Init(DMA_stream, &DMA_InitStructure);
+        DMA_Init(dma->stream, &DMA_InitStructure);
 
         if (dma_it_flags) {
                 NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 
                 NVIC_InitTypeDef NVIC_InitStructure;
                 NVIC_InitStructure.NVIC_IRQChannel = irq_channel;
-                NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = irq_priority;
+                NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority
+                        = irq_priority;
                 NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
                 NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
                 NVIC_Init(&NVIC_InitStructure);
 
-                DMA_ITConfig(DMA_stream, dma_it_flags, ENABLE);
+                DMA_ITConfig(dma->stream, dma_it_flags, ENABLE);
         }
 
-    /* Enable the USART Rx DMA request */
-    USART_DMACmd(ui->usart, USART_DMAReq_Tx, ENABLE);
+        /* Enable the USART Rx DMA request */
+        USART_DMACmd(ui->usart, USART_DMAReq_Tx, ENABLE);
 }
-#endif
 
 static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
                           uint8_t IRQ_priority, uart_irq_type_t irqType)
@@ -264,7 +263,7 @@ static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
                 USART_ITConfig(USARTx, USART_IT_TXE, ENABLE);
 }
 
-/* Wireless port */
+/* Bluetooth */
 static void usart_device_init_0(size_t bits, size_t parity,
                                 size_t stopBits, size_t baud)
 {
@@ -277,14 +276,14 @@ static void usart_device_init_0(size_t bits, size_t parity,
         GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_USART1);
         GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_USART1);
 
-        enableRxTxIrq(ui->usart, USART1_IRQn,
-                      UART_WIRELESS_IRQ_PRIORITY,
-                      UART_TX_IRQ);
+        init_usart(ui->usart, bits, parity, stopBits, baud);
 
         enable_dma_rx(RCC_AHB1Periph_DMA2, DMA2_Stream5_IRQn,
                       DMA_IRQ_PRIORITY, DMA_IT_TC | DMA_IT_HT, ui);
 
-        init_usart(ui->usart, bits, parity, stopBits, baud);
+        enable_dma_tx(RCC_AHB1Periph_DMA1, DMA2_Stream7_IRQn,
+                      DMA_IRQ_PRIORITY, DMA_IT_TC, ui);
+
 }
 
 /* Auxilary port */
@@ -301,14 +300,15 @@ static void usart_device_init_1(size_t bits, size_t parity,
         GPIO_PinAFConfig(GPIOD, GPIO_PinSource9, GPIO_AF_USART3);
 
         init_usart(ui->usart, bits, parity, stopBits, baud);
-        enableRxTxIrq(ui->usart, USART3_IRQn, UART_AUX_IRQ_PRIORITY,
-                      UART_TX_IRQ);
 
         enable_dma_rx(RCC_AHB1Periph_DMA1, DMA1_Stream1_IRQn,
                       DMA_IRQ_PRIORITY, DMA_IT_TC | DMA_IT_HT, ui);
+
+        enable_dma_tx(RCC_AHB1Periph_DMA1, DMA1_Stream3_IRQn,
+                      DMA_IRQ_PRIORITY, DMA_IT_TC, ui);
 }
 
-/* GPS port */
+/* GPS */
 static void usart_device_init_2(size_t bits, size_t parity,
                                 size_t stopBits, size_t baud)
 {
@@ -322,6 +322,7 @@ static void usart_device_init_2(size_t bits, size_t parity,
         GPIO_PinAFConfig(GPIOD, GPIO_PinSource6, GPIO_AF_USART2);
 
         init_usart(ui->usart, bits, parity, stopBits, baud);
+        /* No TX DMA here becasue I2C is using that stream */
         enableRxTxIrq(ui->usart, USART2_IRQn, UART_GPS_IRQ_PRIORITY,
                       UART_TX_IRQ);
 
@@ -329,7 +330,7 @@ static void usart_device_init_2(size_t bits, size_t parity,
                       DMA_IRQ_PRIORITY, DMA_IT_TC | DMA_IT_HT, ui);
 }
 
-/* Telemetry port */
+/* Cellular */
 static void usart_device_init_3(size_t bits, size_t parity,
                                 size_t stopBits, size_t baud)
 {
@@ -343,12 +344,12 @@ static void usart_device_init_3(size_t bits, size_t parity,
         GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_UART4);
 
         init_usart(ui->usart, bits, parity, stopBits, baud);
-        enableRxTxIrq(ui->usart, UART4_IRQn, UART_TELEMETRY_IRQ_PRIORITY,
-                      UART_TX_IRQ);
 
         enable_dma_rx(RCC_AHB1Periph_DMA1, DMA1_Stream2_IRQn,
                       DMA_IRQ_PRIORITY, DMA_IT_TC | DMA_IT_HT, ui);
 
+        enable_dma_tx(RCC_AHB1Periph_DMA1, DMA1_Stream4_IRQn,
+                      DMA_IRQ_PRIORITY, DMA_IT_TC, ui);
 }
 
 static bool _config_cb(void *cfg_cb_arg, const size_t bits,
@@ -553,7 +554,6 @@ static bool dma_rx_isr(volatile struct usart_info *ui)
         return task_awoke;
 }
 
-
 void DMA1_Stream1_IRQHandler(void)
 {
         DMA_ClearITPendingBit(DMA1_Stream1, DMA_IT_HTIF1);
@@ -582,24 +582,87 @@ void DMA2_Stream5_IRQHandler(void)
         portEND_SWITCHING_ISR(dma_rx_isr(usart_data + UART_WIRELESS));
 }
 
+static bool dma_tx_isr(volatile struct usart_info* ui,
+                       const bool is_dma_tc_it)
+{
+        /*
+         * Check that we are able to queue up data to send via DMA.
+         * If head is NULL, then a transfer is in progress. Else we
+         * can come past here if we are the Transfer complete IT.
+         */
+        if (!is_dma_tc_it && NULL == ui->dma_tx.ptr)
+                return false;
+
+        DMA_Cmd(ui->dma_tx.stream, DISABLE);
+
+        /*
+         * If here we are done transferring, see if there is anything
+         * else in the Tx queue that needs to be sent. If so, copy it
+         * into the buffer.
+         */
+        volatile uint8_t* head = ui->dma_tx.buff;
+        volatile uint8_t* const edge = ui->dma_tx.buff + ui->dma_tx.buff_size;
+        xQueueHandle queue = serial_get_tx_queue(ui->serial);
+        portBASE_TYPE task_awoke = pdFALSE;
+        uint32_t bytes = 0;
+        for (; head < edge; ++head, ++bytes) {
+                uint8_t var;
+                if (!xQueueReceiveFromISR(queue, &var, &task_awoke))
+                        break;
+
+                *head = var;
+        }
+
+        if (bytes) {
+                /* Then we have data to transfer */
+                ui->dma_tx.ptr = NULL;
+                ui->dma_tx.stream->NDTR = bytes;
+                DMA_Cmd(ui->dma_tx.stream, ENABLE);
+        } else {
+                /* No data to send.  Set our pointer to beginning */
+                ui->dma_tx.ptr = ui->dma_tx.buff;
+        }
+
+        return task_awoke;
+}
+
+void DMA1_Stream3_IRQHandler(void)
+{
+        DMA_ClearITPendingBit(DMA1_Stream3, DMA_IT_TCIF3);
+        portEND_SWITCHING_ISR(dma_tx_isr(usart_data + UART_AUX, true));
+}
+
+void DMA1_Stream4_IRQHandler(void)
+{
+        DMA_ClearITPendingBit(DMA1_Stream4, DMA_IT_TCIF4);
+        portEND_SWITCHING_ISR(dma_tx_isr(usart_data + UART_TELEMETRY, true));
+}
+
+void DMA2_Stream7_IRQHandler(void)
+{
+        DMA_ClearITPendingBit(DMA2_Stream7, DMA_IT_TCIF7);
+        portEND_SWITCHING_ISR(dma_tx_isr(usart_data + UART_WIRELESS, true));
+}
+
+
 /* *** Timer Methods *** */
-/* Timer 7 IRQ Handler */
+
 void TIM7_IRQHandler(void)
 {
         TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
 
         bool task_awoken = false;
         for(size_t i = 0; i < __UART_COUNT; ++i) {
-                if (usart_data[i].dma_rx.stream)
-                        task_awoken |= dma_rx_isr(usart_data + i);
-        }
+                volatile struct usart_info* ui = usart_data + i;
+                if (ui->dma_rx.stream)
+                        task_awoken |= dma_rx_isr(ui);
 
-        /* const bool ta_gps_tx = dma_tx_isr(ui_gps, false); */
-        /* const bool ta_wifi_tx = dma_tx_isr(ui_wifi, false); */
+                if (ui->dma_tx.stream)
+                        task_awoken |= dma_tx_isr(ui, false);
+        }
 
         portEND_SWITCHING_ISR(task_awoken);
 }
-
 
 void setup_dma_timer(void)
 {
@@ -640,18 +703,22 @@ int usart_device_init()
          *       handlers below.
          */
         const bool mem_alloc_success =
+                /* No Tx DMA here b/c conflict with I2C */
                 init_usart_serial(UART_GPS, USART2, SERIAL_GPS, "GPS",
                                   DMA_RX_BUFF_SIZE, DMA1_Stream5,
                                   DMA_Channel_4, 0, NULL, 0) &&
                 init_usart_serial(UART_TELEMETRY, UART4, SERIAL_TELEMETRY,
                                   "Cell", DMA_RX_BUFF_SIZE, DMA1_Stream2,
-                                  DMA_Channel_4, 0, NULL, 0) &&
+                                  DMA_Channel_4, DMA_TX_BUFF_SIZE,
+                                  DMA1_Stream4, DMA_Channel_4) &&
                 init_usart_serial(UART_WIRELESS, USART1, SERIAL_BLUETOOTH,
                                   "BT", DMA_RX_BUFF_SIZE, DMA2_Stream5,
-                                  DMA_Channel_4, 0, NULL, 0) &&
+                                  DMA_Channel_4, DMA_TX_BUFF_SIZE,
+                                  DMA2_Stream7, DMA_Channel_4) &&
                 init_usart_serial(UART_AUX, USART3, SERIAL_AUX, "Aux/Wifi",
                                   DMA_RX_BUFF_SIZE, DMA1_Stream1,
-                                  DMA_Channel_4, 0, NULL, 0);
+                                  DMA_Channel_4, DMA_TX_BUFF_SIZE,
+                                  DMA1_Stream3, DMA_Channel_4);
 
         if (!mem_alloc_success) {
                 pr_error(LOG_PFX "Failed to init\r\n");
@@ -663,6 +730,7 @@ int usart_device_init()
         usart_device_init_2(8, 0, 1, DEFAULT_GPS_BAUD_RATE);
         usart_device_init_3(8, 0, 1, DEFAULT_TELEMETRY_BAUD_RATE);
 
+        /* Sets up the DMA timeout timer */
         setup_dma_timer();
 
         return 1;
