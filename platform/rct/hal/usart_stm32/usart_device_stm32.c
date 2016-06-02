@@ -480,10 +480,6 @@ void USART3_IRQHandler(void)
 static bool dma_rx_isr(volatile struct usart_info *ui)
 {
         volatile uint8_t* tail = ui->dma_rx.ptr;
-        if (!tail)
-                return false;
-        ui->dma_rx.ptr = NULL; /* This indicates a txfer in progress */
-
         volatile uint8_t* const buff = ui->dma_rx.buff;
         volatile uint8_t* const edge = buff + ui->dma_rx.buff_size;
         volatile uint8_t* const head = edge - (uint16_t) ui->dma_rx.chan->CNDTR;
