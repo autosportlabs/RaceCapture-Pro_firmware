@@ -96,7 +96,17 @@ CC = gcc
 CPPFLAGS := -g -DRCP_TESTING -DAPI_REV=$(API) \
 $(VERSION_CFLAGS) $(INCLUDES)
 
-CFLAGS := $(ASL_CFLAGS) -DRCP_TESTING $(VERSION_CFLAGS) $(INCLUDES)
+#
+# Disable Opts during test builds since we have hit GCC Bugzilla – Bug 56689
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56689 on our official build
+# system.
+#
+# [jenkins@ip-172-30-0-247 workspace]$ gcc --version
+# gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-4)
+#
+# Should remove this once we are on a newer GCC.
+#
+CFLAGS := $(ASL_CFLAGS) -O0 -DRCP_TESTING $(VERSION_CFLAGS) $(INCLUDES)
 
 #-----Suffix Rules---------------------------
 # set up C++ suffixes and relationship between .cc and .o files
