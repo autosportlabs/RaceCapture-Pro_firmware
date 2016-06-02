@@ -291,6 +291,8 @@ static void usart_device_init_0(size_t bits, size_t parity,
 static void usart_device_init_1(size_t bits, size_t parity,
                                 size_t stopBits, size_t baud)
 {
+        volatile struct usart_info* ui = usart_data + UART_AUX;
+
         RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
         RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 
@@ -298,10 +300,12 @@ static void usart_device_init_1(size_t bits, size_t parity,
         GPIO_PinAFConfig(GPIOD, GPIO_PinSource8, GPIO_AF_USART3);
         GPIO_PinAFConfig(GPIOD, GPIO_PinSource9, GPIO_AF_USART3);
 
-        enableRxTxIrq(USART3, USART3_IRQn, UART_AUX_IRQ_PRIORITY,
-                      (UART_RX_IRQ | UART_TX_IRQ));
+        init_usart(ui->usart, bits, parity, stopBits, baud);
+        enableRxTxIrq(ui->usart, USART3_IRQn, UART_AUX_IRQ_PRIORITY,
+                      UART_TX_IRQ);
 
-        init_usart(USART3, bits, parity, stopBits, baud);
+        enable_dma_rx(RCC_AHB1Periph_DMA1, DMA1_Stream1_IRQn,
+                      DMA_IRQ_PRIORITY, DMA_IT_TC | DMA_IT_HT, ui);
 }
 
 /* GPS port */
@@ -329,6 +333,8 @@ static void usart_device_init_2(size_t bits, size_t parity,
 static void usart_device_init_3(size_t bits, size_t parity,
                                 size_t stopBits, size_t baud)
 {
+        volatile struct usart_info* ui = usart_data + UART_TELEMETRY;
+
         RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
         RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 
@@ -336,10 +342,13 @@ static void usart_device_init_3(size_t bits, size_t parity,
         GPIO_PinAFConfig(GPIOA, GPIO_PinSource0, GPIO_AF_UART4);
         GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_UART4);
 
-        enableRxTxIrq(UART4, UART4_IRQn, UART_TELEMETRY_IRQ_PRIORITY,
-                      (UART_RX_IRQ | UART_TX_IRQ));
+        init_usart(ui->usart, bits, parity, stopBits, baud);
+        enableRxTxIrq(ui->usart, UART4_IRQn, UART_TELEMETRY_IRQ_PRIORITY,
+                      UART_TX_IRQ);
 
-        init_usart(UART4, bits, parity, stopBits, baud);
+        enable_dma_rx(RCC_AHB1Periph_DMA1, DMA1_Stream2_IRQn,
+                      DMA_IRQ_PRIORITY, DMA_IT_TC | DMA_IT_HT, ui);
+
 }
 
 static bool _config_cb(void *cfg_cb_arg, const size_t bits,
@@ -545,20 +554,32 @@ static bool dma_rx_isr(volatile struct usart_info *ui)
 }
 
 
+void DMA1_Stream1_IRQHandler(void)
+{
+        DMA_ClearITPendingBit(DMA1_Stream1, DMA_IT_HTIF1);
+        DMA_ClearITPendingBit(DMA1_Stream1, DMA_IT_TCIF1);
+        portEND_SWITCHING_ISR(dma_rx_isr(usart_data + UART_AUX));
+}
+
+void DMA1_Stream2_IRQHandler(void)
+{
+        DMA_ClearITPendingBit(DMA1_Stream2, DMA_IT_HTIF2);
+        DMA_ClearITPendingBit(DMA1_Stream2, DMA_IT_TCIF2);
+        portEND_SWITCHING_ISR(dma_rx_isr(usart_data + UART_TELEMETRY));
+}
+
 void DMA1_Stream5_IRQHandler(void)
 {
         DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_HTIF5);
         DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5);
-        volatile struct usart_info *ui = usart_data + UART_GPS;
-        portEND_SWITCHING_ISR(dma_rx_isr(ui));
+        portEND_SWITCHING_ISR(dma_rx_isr(usart_data + UART_GPS));
 }
 
 void DMA2_Stream5_IRQHandler(void)
 {
         DMA_ClearITPendingBit(DMA2_Stream5, DMA_IT_HTIF5);
         DMA_ClearITPendingBit(DMA2_Stream5, DMA_IT_TCIF5);
-        volatile struct usart_info *ui = usart_data + UART_WIRELESS;
-        portEND_SWITCHING_ISR(dma_rx_isr(ui));
+        portEND_SWITCHING_ISR(dma_rx_isr(usart_data + UART_WIRELESS));
 }
 
 /* *** Timer Methods *** */
@@ -567,17 +588,16 @@ void TIM7_IRQHandler(void)
 {
         TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
 
-        volatile struct usart_info *ui_wireless =
-                usart_data + UART_WIRELESS;
-        volatile struct usart_info *ui_gps = usart_data + UART_GPS;
-
-        const bool gps_ta = dma_rx_isr(ui_gps);
-        const bool wireless_ta = dma_rx_isr(ui_wireless);
+        bool task_awoken = false;
+        for(size_t i = 0; i < __UART_COUNT; ++i) {
+                if (usart_data[i].dma_rx.stream)
+                        task_awoken |= dma_rx_isr(usart_data + i);
+        }
 
         /* const bool ta_gps_tx = dma_tx_isr(ui_gps, false); */
         /* const bool ta_wifi_tx = dma_tx_isr(ui_wifi, false); */
 
-        portEND_SWITCHING_ISR(gps_ta || wireless_ta);
+        portEND_SWITCHING_ISR(task_awoken);
 }
 
 
@@ -624,12 +644,14 @@ int usart_device_init()
                                   DMA_RX_BUFF_SIZE, DMA1_Stream5,
                                   DMA_Channel_4, 0, NULL, 0) &&
                 init_usart_serial(UART_TELEMETRY, UART4, SERIAL_TELEMETRY,
-                                  "Cell", 0, NULL, 0, 0, NULL, 0) &&
+                                  "Cell", DMA_RX_BUFF_SIZE, DMA1_Stream2,
+                                  DMA_Channel_4, 0, NULL, 0) &&
                 init_usart_serial(UART_WIRELESS, USART1, SERIAL_BLUETOOTH,
                                   "BT", DMA_RX_BUFF_SIZE, DMA2_Stream5,
                                   DMA_Channel_4, 0, NULL, 0) &&
-                init_usart_serial(UART_AUX, USART3, SERIAL_AUX, "Aux",
-                                  0, NULL, 0, 0, NULL, 0);
+                init_usart_serial(UART_AUX, USART3, SERIAL_AUX, "Aux/Wifi",
+                                  DMA_RX_BUFF_SIZE, DMA1_Stream1,
+                                  DMA_Channel_4, 0, NULL, 0);
 
         if (!mem_alloc_success) {
                 pr_error(LOG_PFX "Failed to init\r\n");
