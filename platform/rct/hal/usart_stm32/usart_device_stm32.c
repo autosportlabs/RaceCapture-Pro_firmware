@@ -260,9 +260,6 @@ static void usart_device_init_1(size_t bits, size_t parity,
         RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
         init_usart(ui->usart, bits, parity, stopBits, baud);
 
-        /* enableRxTxIrq(ui->usart, USART1_IRQn, */
-        /*               UART_WIRELESS_IRQ_PRIORITY, UART_TX_IRQ); */
-
         enableRxDMA(RCC_AHBPeriph_DMA1, DMA1_Channel5_IRQn,
                     DMA_IRQ_PRIORITY, DMA_IT_TC | DMA_IT_HT, ui);
 
@@ -283,9 +280,6 @@ void usart_device_init_2(size_t bits, size_t parity,
 
         RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
         init_usart(ui->usart, bits, parity, stopBits, baud);
-
-        /* enableRxTxIrq(ui->usart, USART2_IRQn, */
-        /*               UART_WIRELESS_IRQ_PRIORITY, UART_TX_IRQ); */
 
         enableRxDMA(RCC_AHBPeriph_DMA1, DMA1_Channel6_IRQn,
                     DMA_IRQ_PRIORITY, DMA_IT_TC | DMA_IT_HT, ui);
@@ -325,10 +319,8 @@ static bool _config_cb(void *cfg_cb_arg, const size_t bits,
 static void _char_tx_cb(xQueueHandle queue, void *post_tx_arg)
 {
         volatile struct usart_info *ui = (struct usart_info*) post_tx_arg;
-        if (!ui->dma_tx.chan) {
-                /* Set the interrupt Tx Flag */
+        if (!ui->dma_tx.chan)
                 USART_ITConfig(ui->usart, USART_IT_TXE, ENABLE);
-        }
 }
 
 static bool init_usart_serial(const uart_id_t uart_id, USART_TypeDef *usart,
@@ -582,17 +574,17 @@ void TIM7_IRQHandler(void)
 {
         TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
 
-        volatile struct usart_info *ui_wifi = usart_data + UART_WIRELESS;
-        volatile struct usart_info *ui_gps = usart_data + UART_GPS;
+        bool task_awoken = false;
+        for(size_t i = 0; i < __UART_COUNT; ++i) {
+                volatile struct usart_info* ui = usart_data + i;
+                if (ui->dma_rx.chan)
+                        task_awoken |= dma_rx_isr(ui);
 
-        const bool ta_gps_rx = dma_rx_isr(ui_gps);
-        const bool ta_wifi_rx = dma_rx_isr(ui_wifi);
+                if (ui->dma_tx.chan)
+                        task_awoken |= dma_tx_isr(ui, false);
+        }
 
-        const bool ta_gps_tx = dma_tx_isr(ui_gps, false);
-        const bool ta_wifi_tx = dma_tx_isr(ui_wifi, false);
-
-        portEND_SWITCHING_ISR(ta_gps_rx || ta_gps_tx ||
-                              ta_wifi_rx || ta_wifi_tx);
+        portEND_SWITCHING_ISR(task_awoken);
 }
 
 
