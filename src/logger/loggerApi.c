@@ -1743,7 +1743,7 @@ int api_set_wifi_cfg(struct Serial *serial, const jsmntok_t *json)
         struct wifi_ap_cfg *ap_cfg = &cfg->ap;
 
         const jsmntok_t* client_json_root = jsmn_find_node(json, "client");
-        const jsmntok_t* ap_json_root = jsmn_find_node(json, "ap");;
+        const jsmntok_t* ap_json_root = jsmn_find_node(json, "ap");
 
         if (ap_json_root)
                 if (!set_wifi_ap_cfg(ap_json_root, ap_cfg))
@@ -1795,7 +1795,7 @@ int api_get_wifi_cfg(struct Serial *serial, const jsmntok_t *json)
         const struct wifi_ap_cfg *ap_cfg = &cfg->ap;
 
         json_objStart(serial);
-        json_objStartString(serial, "getWifiCfg");
+        json_objStartString(serial, "wifiCfg");
 
         json_bool(serial, "active", cfg->active, true);
         get_wifi_client_cfg(serial, client_cfg, true);

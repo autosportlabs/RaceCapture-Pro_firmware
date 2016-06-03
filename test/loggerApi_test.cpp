@@ -1398,7 +1398,7 @@ void LoggerApiTest::testGetWifiCfgDefault() {
         Object json;
         stringToJson(response, json);
 
-        Object gwc = json["getWifiCfg"];
+        Object gwc = json["wifiCfg"];
         CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)gwc["active"]);
 
         Object wcc = gwc["client"];
@@ -1422,7 +1422,7 @@ void LoggerApiTest::testSetGetWifiCfg() {
         Object json;
         stringToJson(response, json);
 
-        Object gwc = json["getWifiCfg"];
+        Object gwc = json["wifiCfg"];
         CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)gwc["active"]);
 
         Object wcc = gwc["client"];
