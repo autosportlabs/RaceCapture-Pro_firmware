@@ -275,11 +275,14 @@ static uint16_t speed_to_prescaler(const size_t chan, const size_t speed)
         switch (speed) {
         case TIMER_SLOW:
                 prescalar = PRESCALER_SLOW;
+                break;
         case TIMER_FAST:
                 prescalar = PRESCALER_FAST;
+                break;
         case TIMER_MEDIUM:
         default:
                 prescalar = PRESCALER_MEDIUM;
+                break;
         }
 
         /*
