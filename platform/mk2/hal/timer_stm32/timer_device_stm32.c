@@ -39,7 +39,7 @@
 #define PRESCALER_SLOW		1680
 #define TIMER_CLK_FREQ_FAST_HZ	168000000 /* Logical Timer 1 */
 #define TIMER_CLK_FREQ_SLOW_HZ	84000000  /* Logical Timer 0 & 2 */
-#define TIMER_IRQ_PRIORITY 	4
+#define TIMER_IRQ_PRIORITY 	5
 #define TIMER_IRQ_SUB_PRIORITY 	0
 #define TIMER_PERIOD		0xFFFF
 
