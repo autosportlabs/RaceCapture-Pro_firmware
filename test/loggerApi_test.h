@@ -79,12 +79,11 @@ class LoggerApiTest : public CppUnit::TestFixture
     CPPUNIT_TEST( testGetVersion);
     CPPUNIT_TEST( testGetStatus);
     CPPUNIT_TEST( testGetCapabilities);
-    CPPUNIT_TEST( testSetWifiClientCfg );
-    CPPUNIT_TEST( testGetWifiClientCfg );
-    CPPUNIT_TEST( testSetWifiApCfg );
-    CPPUNIT_TEST( testSetWifiApCfgBadChannel );
-    CPPUNIT_TEST( testSetWifiApCfgBadEncryption );
-    CPPUNIT_TEST( testSetAndGetWifiApCfg );
+    CPPUNIT_TEST( testSetWifiCfg );
+    CPPUNIT_TEST( testSetWifiCfgApBadChannel );
+    CPPUNIT_TEST( testSetWifiCfgApBadEncryption );
+    CPPUNIT_TEST( testGetWifiCfgDefault );
+    CPPUNIT_TEST( testSetGetWifiCfg );
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -140,12 +139,11 @@ public:
     void testGetVersion();
     void testGetStatus();
     void testGetCapabilities();
-    void testSetWifiClientCfg();
-    void testGetWifiClientCfg();
-    void testSetWifiApCfg();
-    void testSetWifiApCfgBadChannel();
-    void testSetWifiApCfgBadEncryption();
-    void testSetAndGetWifiApCfg();
+    void testSetWifiCfg();
+    void testSetWifiCfgApBadChannel();
+    void testSetWifiCfgApBadEncryption();
+    void testGetWifiCfgDefault();
+    void testSetGetWifiCfg();
 
 private:
     void testSetScriptFile(string filename);
