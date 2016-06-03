@@ -24,11 +24,12 @@ export MINOR  := 10
 export BUGFIX := 0
 export API    := 1
 
-export VERSION_STR := "$(MAJOR).$(MINOR).$(BUGFIX)"
+export VERSION := $(shell git describe --dirty)
+
 #
 # Gets the sha-1 hash (hex encoded string) of our build)
 #
-export GIT_DESCRIPTION := "\"$(shell git describe --dirty)\""
+export GIT_DESCRIPTION := "\"$(VERSION)\""
 
 #
 # Build types:
@@ -118,7 +119,7 @@ mk2-pristine: lua-pristine mk2-clean
 
 PHONY += mk2-package
 mk2-package: mk2-pristine
-	./bin/package_release.sh MK2 $(VERSION_STR) $(MK2_DIR)
+	./bin/package_release.sh "RaceCapturePro_MK2" $(VERSION) $(MK2_DIR)
 
 PHONY += mk2-flash
 mk2-flash: mk2-build
@@ -150,8 +151,7 @@ rct-pristine: rct-clean
 
 PHONY += rct-package
 rct-package: rct-pristine
-# NO-OP just yet.
-#	./bin/package_release.sh RCT $(VERSION_STR) $(RCT_DIR)
+	./bin/package_release.sh "RaceCapture" $(VERSION) $(RCT_DIR)
 
 PHONY += rct
 rct: rct-build
@@ -164,11 +164,16 @@ PHONY += clean
 clean: rct-clean mk2-clean test-clean lua-clean
 	$(Q)find . -type f \
 	-name "*.a"   -o   \
+	-name "*.bin" -o   \
 	-name "*.d"   -o   \
+	-name "*.dis" -o   \
 	-name "*.elf" -o   \
 	-name "*.hex" -o   \
 	-name "*.lst" -o   \
-	-name "*.o"        \
+	-name "*.map" -o   \
+	-name "*.o"   -o   \
+	-name "*.sym" -o   \
+	-name "*.zip"      \
 	| xargs rm -f
 
 package: clean
