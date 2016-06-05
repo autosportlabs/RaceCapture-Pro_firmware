@@ -277,36 +277,36 @@ $(OUTDIR)/%.o: %.s
 	mkdir -p $(@D)
 	$(CCACHE) $(AS) $(AFLAGS) -c -o $@ $<
 
-$(OUTDIR)/%.elf: $(obj-y)
+%.elf: $(obj-y)
 	@echo "[LD] $(@F)"
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(OUTDIR)/%.bin: $(OUTDIR)/%.elf
+%.bin: $(OUTDIR)/%.elf
 	@echo "[OBJCOPY] $(@F)"
 	$(OBJCOPY) -O binary $< $@
 
-$(OUTDIR)/%.hex: $(OUTDIR)/%.elf
+%.hex: $(OUTDIR)/%.elf
 	@echo "[OBJCOPY] $(@F)"
 	$(OBJCOPY) -O ihex $< $@
 
-$(OUTDIR)/%.dis: $(OUTDIR)/%.elf
+%.dis: $(OUTDIR)/%.elf
 	@echo "[OBJDUMP] $(@F)"
 	$(OBJDUMP) -D $< > $@
 
 .PHONY: all
-all: $(OUTDIR)/main.elf $(OUTDIR)/main.bin $(OUTDIR)/main.hex $(OUTDIR)/main.dis
+all: main.elf main.bin main.hex main.dis
 
 .PHONY: clean
 clean:
 	rm -rf $(OUTDIR)
-
-flash: $(OUTDIR)/main.hex
-	openocd -f board/stm32f3discovery.cfg -f ./flash.cfg
 
 dbg:
 	@echo "src: $(src-y)"
 	@echo "obj: $(obj-y)"
 	@echo "inc: $(inc-y)"
 
-gdb: $(OUTDIR)/main.elf
-	gdb -x ./gdb_setup.gdb .build/main.elf
+flash: main.elf
+	openocd -f ./openocd_flash.cfg
+
+gdb: main.elf
+	gdb -x ./gdb_setup.gdb main.elf
