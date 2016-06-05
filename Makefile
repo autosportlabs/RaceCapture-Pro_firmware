@@ -24,7 +24,7 @@ export MINOR  := 10
 export BUGFIX := 0
 export API    := 1
 
-export VERSION := $(shell git describe --dirty)
+export VERSION := $(shell git describe --dirty --always)
 
 #
 # Gets the sha-1 hash (hex encoded string) of our build)
