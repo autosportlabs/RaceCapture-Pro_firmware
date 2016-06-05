@@ -240,10 +240,8 @@ static void resetTrackConfig(TrackConfig *cfg)
 
 static void resetBluetoothConfig(BluetoothConfig *cfg)
 {
-        *cfg = (BluetoothConfig) {
-                .btEnabled = DEFAULT_BT_ENABLED,
-                .baudRate = DEFAULT_BT_BAUD,
-        };
+        memset(cfg, 0, sizeof(BluetoothConfig));
+        cfg->btEnabled = DEFAULT_BT_ENABLED;
 }
 
 static void resetCellularConfig(CellularConfig *cfg)
