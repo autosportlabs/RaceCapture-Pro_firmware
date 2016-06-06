@@ -19,13 +19,12 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include <stdbool.h>
-
 #include "capabilities.h"
 #include "dateTime.h"
 #include "FreeRTOS.h"
 #include "task.h"
+
+#include <stdbool.h>
 
 bool isLeapYear(const int year)
 {
@@ -281,4 +280,24 @@ void getDateTimeFromEpochMillis(DateTime *dateTime, millis_t millis)
     dateTime->month = month;
     dateTime->day = mday;
     dateTime->year = year;
+}
+
+/**
+ * Gets the uptime from now as given by the first argument.
+ * @param to_add The amount of time to add to the current time.  Value is
+ * in milliseconds.
+ */
+tiny_millis_t date_time_uptime_now_plus(const tiny_millis_t to_add)
+{
+        return getUptime() + to_add;
+}
+
+/**
+ * Tells the caller whether or not the provided time is in the past.
+ * @param time The time to check
+ * @return True if the time is in the past, false otherwise.
+ */
+bool date_time_is_past(const tiny_millis_t time)
+{
+        return getUptime() > time;
 }

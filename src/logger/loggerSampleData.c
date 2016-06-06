@@ -279,7 +279,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
                                                    OBD2_get_current_PID_value);
     }
 
-#if defined(VIRTUAL_CHANNEL_SUPPORT)
+#if VIRTUAL_CHANNEL_SUPPORT
     const size_t virtualChannelCount = get_virtual_channel_count();
     for (size_t i = 0; i < virtualChannelCount; i++) {
         VirtualChannel *vc = get_virtual_channel(i);

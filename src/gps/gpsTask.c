@@ -31,7 +31,7 @@
 #include "task.h"
 #include "taskUtil.h"
 
-#define GPS_TASK_STACK_SIZE	300
+#define GPS_TASK_STACK_SIZE	256
 
 static bool g_enableGpsDataLogging = false;
 
@@ -42,9 +42,13 @@ void setGpsDataLogging(bool enable)
 
 void GPSTask(void *pvParameters)
 {
-    Serial *serial = get_serial(SERIAL_GPS);
-    uint8_t targetSampleRate = decodeSampleRate(getWorkingLoggerConfig()->GPSConfigs.speed.sampleRate);
-    lapStats_init();
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        struct Serial *serial = serial_device_get(SERIAL_GPS);
+        const uint8_t targetSampleRate =
+                decodeSampleRate(lc->GPSConfigs.speed.sampleRate);
+
+        lapStats_init();
+
     while(1) {
         const gps_status_t gps_status = GPS_init(targetSampleRate, serial);
         if (!gps_status) {
@@ -66,5 +70,8 @@ void GPSTask(void *pvParameters)
 
 void startGPSTask(int priority)
 {
-    xTaskCreate( GPSTask, ( signed portCHAR * )"GPSTask", GPS_TASK_STACK_SIZE, NULL, priority, NULL );
+        /* Make all task names 16 chars including NULL char*/
+        static const signed portCHAR task_name[] = "GPS Comm Task  ";
+        xTaskCreate(GPSTask, task_name, GPS_TASK_STACK_SIZE, NULL,
+                    priority, NULL );
 }

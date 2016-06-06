@@ -34,12 +34,15 @@
 #include "taskUtil.h"
 #include "capabilities.h"
 
-#define OBD2_TASK_STACK 	100
+#define OBD2_TASK_STACK 	configMINIMAL_STACK_SIZE
 #define OBD2_FEATURE_DISABLED_DELAY_MS 2000
 
 void startOBD2Task(int priority)
 {
-    xTaskCreate( OBD2Task, ( signed portCHAR * )"OBD2Task", OBD2_TASK_STACK, NULL, 	priority, NULL );
+        /* Make all task names 16 chars including NULL char*/
+        static const signed portCHAR task_name[] = "OBD-II Task    ";
+        xTaskCreate(OBD2Task, task_name, OBD2_TASK_STACK, NULL,
+                    priority, NULL );
 }
 
 void OBD2Task(void *pvParameters)

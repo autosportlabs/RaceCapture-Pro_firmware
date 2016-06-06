@@ -32,6 +32,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usb_conf.h"
+#include <stdbool.h>
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
@@ -39,11 +40,8 @@
 #define NULL ((void *)0)
 #endif
 
-typedef enum
-{
-    FALSE = 0, TRUE  = !FALSE
-}
-bool;
+#define FALSE false
+#define TRUE true
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */

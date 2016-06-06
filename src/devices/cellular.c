@@ -54,7 +54,6 @@ static const struct at_config *at_cfg;
 
 static struct cellular_info cell_info;
 static struct telemetry_info telemetry_info;
-static const enum log_level serial_dbg_lvl = TRACE;
 
 static const struct at_config* get_safe_at_config()
 {
@@ -101,7 +100,8 @@ size_t cellular_exec_cmd(struct serial_buffer *sb,
 bool is_rsp(const char **msgs, const size_t count, const char *ans)
 {
         /* Check to ensure last msg we got was an OK */
-        return msgs && count && 0 == strcmp(ans, msgs[count - 1]);
+        return msgs && count && 0 == strncmp(ans, msgs[count - 1],
+                                             strlen(ans));
 }
 
 /**
@@ -343,7 +343,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
 
         const char *deviceId = tc->telemetryDeviceId;
 
-        Serial *serial = sb->serial;
+        struct Serial *serial = sb->serial;
         json_objStart(serial);
         json_objStartString(serial, "auth");
         json_string(serial, "deviceId", deviceId, 1);
@@ -353,7 +353,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
         json_string(serial, "sn", cpu_get_serialnumber(), 0);
         json_objEnd(serial, 0);
         json_objEnd(serial, 0);
-        serial->put_c('\n');
+        serial_put_c(serial, '\n');
 
         pr_debug_str_msg("sending auth- deviceId: ", deviceId);
 
@@ -362,8 +362,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
         jsmntok_t toks[TELEM_AUTH_JSMN_TOKENS];
 
         for (size_t tries = TELEM_AUTH_RX_TRIES; tries; --tries) {
-                const int chars = serial_buffer_rx(sb, TELEM_AUTH_RX_WAIT_MS);
-                if (!chars)
+                if (!serial_buffer_rx(sb, TELEM_AUTH_RX_WAIT_MS))
                         continue;
 
                 jsmn_init(&parser);

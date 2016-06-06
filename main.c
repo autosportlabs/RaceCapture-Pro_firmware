@@ -47,6 +47,7 @@
 #include "printk.h"
 #include "task.h"
 #include "usb_comm.h"
+#include "wifi.h"
 #include "watchdog.h"
 
 #include <app_info.h>
@@ -83,7 +84,11 @@ void setupTask(void *delTask)
         startConnectivityTask(RCP_OUTPUT_PRIORITY);
         startLoggerTaskEx(RCP_LOGGING_PRIORITY);
 
-#if defined(USB_SERIAL_SUPPORT)
+#if WIFI_SUPPORT
+        wifi_init_task(RCP_OUTPUT_PRIORITY, RCP_INPUT_PRIORITY);
+#endif
+
+#if USB_SERIAL_SUPPORT
         startUSBCommTask(RCP_INPUT_PRIORITY);
 #endif
 
@@ -91,11 +96,11 @@ void setupTask(void *delTask)
         startGPIOTasks(RCP_INPUT_PRIORITY);
 #endif
 
-#if defined(SDCARD_SUPPORT)
+#if SDCARD_SUPPORT
         startFileWriterTask(RCP_OUTPUT_PRIORITY);
 #endif
 
-#if defined(LUA_SUPPORT)
+#if LUA_SUPPORT
         lua_task_init(RCP_LUA_PRIORITY);
 #endif
 
@@ -110,9 +115,9 @@ int main( void )
         cpu_init();
         pr_info("*** Start! ***\r\n");
 
-#if !defined(_DEBUG)
-        watchdog_init(WATCHDOG_TIMEOUT_MS);
-#endif /* _DEBUG */
+        /* Defined as part of our compilation process */
+        if (true == ASL_WATCHDOG)
+                watchdog_init(WATCHDOG_TIMEOUT_MS);
 
         /*
          * Start the scheduler.

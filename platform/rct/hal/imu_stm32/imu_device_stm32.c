@@ -33,7 +33,7 @@
 #include <invensense_9150.h>
 
 #define IMU_DEVICE_COUNTS_PER_G 		16384
-#define IMU_DEVICE_COUNTS_PER_DEGREE_PER_SEC	32.8
+#define IMU_DEVICE_COUNTS_PER_DEGREE_PER_SEC	131.0
 
 #define ACCEL_MAX_RANGE 	ACCEL_COUNTS_PER_G * 4
 #define IMU_TASK_PRIORITY	(tskIDLE_PRIORITY + 2)
@@ -78,15 +78,10 @@ static void imu_update_task(void *params)
 
 void imu_device_init()
 {
-    /* Create a lock around the sensor buffers */
-
-    xTaskCreate(imu_update_task,
-                (signed portCHAR*)"IMU update",
-                configMINIMAL_STACK_SIZE,
-                NULL,
-                IMU_TASK_PRIORITY,
-                NULL);
-
+        /* Create a lock around the sensor buffers */
+        static const signed portCHAR task_name[] = "IMU Reader Task";
+        xTaskCreate(imu_update_task, task_name, configMINIMAL_STACK_SIZE,
+                    NULL, IMU_TASK_PRIORITY, NULL);
 }
 
 int imu_device_read(enum imu_channel channel)

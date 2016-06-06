@@ -27,7 +27,7 @@ int usart_device_init()
     return 1;
 }
 
-int usart_device_init_serial(Serial *serial, uart_id_t id)
+int usart_device_init_serial(struct Serial *serial, uart_id_t id)
 {
     return 1;
 }

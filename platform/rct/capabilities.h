@@ -8,10 +8,25 @@
 #define TICK_RATE_HZ			configTICK_RATE_HZ
 #define MS_PER_TICK 1
 
-//configuration
+/* Support Flags */
+#define BLUETOOTH_SUPPORT	0
+#define CELLULAR_SUPPORT	0
+#define LUA_SUPPORT		0
+#define SDCARD_SUPPORT		0
+#define USB_SERIAL_SUPPORT	1
+#define VIRTUAL_CHANNEL_SUPPORT	0
+#define WIFI_SUPPORT		1
+
+/* Configuration */
 #define MAX_TRACKS	5
 #define MAX_SECTORS	20
 #define MAX_VIRTUAL_CHANNELS	30
+/*
+ * What is the maximum number of samples available per predictive time
+ * buffer.  More samples == better resolution. Each slot is 12 bytes.
+ */
+#define PREDICTIVE_TIME_MAX_SAMPLES	48
+
 
 //Input / output Channels
 #define ANALOG_CHANNELS	1
@@ -30,8 +45,8 @@
 //logger message buffering
 #define LOGGER_MESSAGE_BUFFER_SIZE  5
 
-//logging
-#define LOG_BUFFER_SIZE	1024
+/* Logging Buffer Size (in 1K Blocks) */
+#define LOG_BUFFER_SIZE	(1024 * 3)
 
 //system info
 #define DEVICE_NAME    "RCT"

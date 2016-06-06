@@ -32,6 +32,7 @@
 #include "loggerConfig.h"
 #include "loggerHardware.h"
 #include "loggerSampleData.test.h"
+#include "mock_serial.h"
 #include "predictive_timer_2.h"
 #include "sampleRecord.h"
 #include "task.h"
@@ -50,7 +51,8 @@ struct sample s;
 void SampleRecordTest::setUp()
 {
 	InitLoggerHardware();
-	GPS_init(10, get_serial(SERIAL_GPS));
+        setupMockSerial();
+        GPS_init(10, getMockSerial());
 	initialize_logger_config();
 	reset_ticks();
 

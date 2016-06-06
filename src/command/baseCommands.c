@@ -33,22 +33,22 @@
 
 extern unsigned int _CONFIG_HEAP_SIZE;
 
-static void putHeader(Serial *serial, const char *str)
+static void putHeader(struct Serial *serial, const char *str)
 {
     put_crlf(serial);
-    serial->put_s("- - - ");
-    serial->put_s(str);
-    serial->put_s(" - - -");
+    serial_put_s(serial, "- - - ");
+    serial_put_s(serial, str);
+    serial_put_s(serial, " - - -");
     put_crlf(serial);
 }
 
-static void putDataRowHeader(Serial *serial, const char *str)
+static void putDataRowHeader(struct Serial *serial, const char *str)
 {
-    serial->put_s(str);
-    serial->put_s(" : ");
+    serial_put_s(serial, str);
+    serial_put_s(serial, " : ");
 }
 
-void ShowStats(Serial *serial, unsigned int argc, char **argv)
+void ShowStats(struct Serial *serial, unsigned int argc, char **argv)
 {
     // Memory Info
     putHeader(serial, "Memory Info");
@@ -61,7 +61,7 @@ void ShowStats(Serial *serial, unsigned int argc, char **argv)
     put_uint(serial, portGetFreeHeapSize());
     put_crlf(serial);
 
-#if defined(LUA_SUPPORT)
+#if LUA_SUPPORT
     struct lua_runtime_info ri = lua_task_get_runtime_info();
     putHeader(serial, "Lua Info");
 
@@ -86,35 +86,35 @@ void ShowStats(Serial *serial, unsigned int argc, char **argv)
     put_crlf(serial);
 }
 
-void ShowTaskInfo(Serial *serial, unsigned int argc, char **argv)
+void ShowTaskInfo(struct Serial *serial, unsigned int argc, char **argv)
 {
-    putHeader(serial, "Task Info");
+        putHeader(serial, "Task Info");
 
-    serial->put_s("Status\tPri\tStackHR\tTask#\tName");
-    put_crlf(serial);
+        serial_put_s(serial, "Name\t\t\tStatus\tPri\tStackHR\tTask#");
+        put_crlf(serial);
 
-    /*
-     * Memory info from vTaskList can be misleading.  See
-     * http://www.freertos.org/uxTaskGetSystemState.html for
-     * more detail about how it works and value meanings.
-     */
-    char *taskList = (char *) portMalloc(1024);
-    if (NULL != taskList) {
-        //TODO BAP - get this working, when we have a USB console
-        //vTaskList(taskList);
-        //serial->put_s(taskList);
-        portFree(taskList);
-    } else {
-        serial->put_s("Out of Memory!");
-    }
-    put_crlf(serial);
+        /*
+         * Memory info from vTaskList can be misleading.  See
+         * http://www.freertos.org/uxTaskGetSystemState.html for
+         * more detail about how it works and value meanings.
+         */
+        char *taskList = portMalloc(1024);
+        if (NULL != taskList) {
+                vTaskList((signed char*) taskList);
+                serial_put_s(serial, taskList);
+                portFree(taskList);
+        } else {
+                serial_put_s(serial, "Out of Memory!");
+        }
 
-    put_crlf(serial);
-    serial->put_s("[Note] StackHR: If StackHR < 0; then stack smash");
-    put_crlf(serial);
+        put_crlf(serial);
+        put_crlf(serial);
+        serial_put_s(serial, "[Note] StackHR: If StackHR < 0; then "
+                     "stack smash");
+        put_crlf(serial);
 }
 
-void GetVersion(Serial *serial, unsigned int argc, char **argv)
+void GetVersion(struct Serial *serial, unsigned int argc, char **argv)
 {
     putHeader(serial, "Version Info");
     put_nameString(serial, "major", MAJOR_REV_STR);
@@ -124,7 +124,7 @@ void GetVersion(Serial *serial, unsigned int argc, char **argv)
     put_crlf(serial);
 }
 
-void ResetSystem(Serial *serial, unsigned int argc, char **argv)
+void ResetSystem(struct Serial *serial, unsigned int argc, char **argv)
 {
     cpu_reset(0);
 }

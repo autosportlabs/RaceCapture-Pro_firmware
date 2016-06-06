@@ -19,8 +19,9 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "mod_string.h"
+
+#include <stdbool.h>
 
 void * memcpy(void * __restrict s1, const void * __restrict s2, size_t n)
 {

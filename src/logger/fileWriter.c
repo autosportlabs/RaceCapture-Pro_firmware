@@ -29,12 +29,12 @@
 #include "ring_buffer.h"
 #include "sampleRecord.h"
 #include "sdcard.h"
-#include "semphr.h"
 #include "task.h"
 #include "taskUtil.h"
 #include "test.h"
 
 #include <stdbool.h>
+#include <string.h>
 
 #define ERROR_SLEEP_DELAY_MS	500
 #define FILE_BUFFER_SIZE	512
@@ -44,7 +44,7 @@
 
 static FIL *g_logfile;
 static xQueueHandle g_LoggerMessage_queue;
-static struct ring_buff file_buff;
+static struct ring_buff *file_buff;
 
 static void error_led(const bool on)
 {
@@ -57,20 +57,20 @@ static FRESULT flush_file_buffer(void)
         char tmp[32];
 
         /* pr_trace(_RCP_BASE_FILE_ "Flushing file buffer\r\n"); */
-        size_t chars = get_used(&file_buff);
+        size_t chars = ring_buffer_bytes_used(file_buff);
         while(0 < chars) {
                 if (chars > sizeof(tmp))
                         chars = sizeof(tmp);
 
                 /* pr_trace_int_msg(_RCP_BASE_FILE_ "Chars is ", chars); */
-                get_data(&file_buff, &tmp, chars);
+                ring_buffer_get(file_buff, &tmp, chars);
                 if (g_logfile->fs) {
                         unsigned int bw;
                         res = f_write(g_logfile, &tmp, chars, &bw);
                         error_led(FR_OK != res);
                 }
 
-                chars = get_used(&file_buff);
+                chars = ring_buffer_bytes_used(file_buff);
         }
 
         /* pr_trace(_RCP_BASE_FILE_ "Flushing file buffer DONE\r\n"); */
@@ -79,11 +79,19 @@ static FRESULT flush_file_buffer(void)
 
 static FRESULT append_file_buffer(const char *str)
 {
-        FRESULT res = FR_OK;
+        if (!str)
+                return FR_OK;
 
-        while(str && *str) {
-                str = put_string(&file_buff, str);
-                if (str)
+        FRESULT res = FR_OK;
+        size_t len = strlen(str);
+        while(len) {
+                size_t space = ring_buffer_bytes_used(file_buff);
+                ring_buffer_put(file_buff, str, space);
+                str += space;
+                len -= space;
+
+                /* If not at end of string, more to write.  Flush */
+                if (len > 0)
                         res = flush_file_buffer();
         }
 
@@ -461,12 +469,14 @@ void startFileWriterTask(int priority)
         }
         memset(g_logfile, 0, sizeof(FIL));
 
-        const size_t size = create_ring_buffer(&file_buff, FILE_BUFFER_SIZE);
-        if (FILE_BUFFER_SIZE != size + 1) {
+        file_buff = ring_buffer_create(FILE_BUFFER_SIZE);
+        if (!file_buff) {
                 pr_error(_RCP_BASE_FILE_ "Failed to alloc ring buffer.\r\n");
                 return;
         }
 
-        xTaskCreate( fileWriterTask,( signed portCHAR * ) "fileWriter",
-                     FILE_WRITER_STACK_SIZE, NULL, priority, NULL );
+        /* Make all task names 16 chars including NULL char */
+        static const signed portCHAR task_name[] = "File Task       ";
+        xTaskCreate(fileWriterTask, task_name, FILE_WRITER_STACK_SIZE,
+                    NULL, priority, NULL );
 }

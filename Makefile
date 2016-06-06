@@ -19,10 +19,9 @@
 # this code. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
 export MAJOR  := 2
-export MINOR  := 9
-export BUGFIX := 1
+export MINOR  := 10
+export BUGFIX := 0
 export API    := 1
 
 export VERSION_STR := "$(MAJOR).$(MINOR).$(BUGFIX)"
@@ -51,14 +50,8 @@ ifneq ($(OFFICIAL_TAG),)
 endif
 export RELEASE_TYPE
 
-export VERSION_CFLAGS := \
--DAPI_REV=$(API) \
--DMAJOR_REV=$(MAJOR) \
--DMINOR_REV=$(MINOR) \
--DBUGFIX_REV=$(BUGFIX) \
--DRC_BUILD_GIT_DESCRIPTION=$(GIT_DESCRIPTION) \
--DRC_BUILD_RELEASE_TYPE=$(RELEASE_TYPE) \
-
+# Now with basic version info, import all our sub makefiles
+include make/*.mk
 
 Q := @
 PHONY :=
@@ -147,6 +140,10 @@ PHONY += rct-clean
 rct-clean:
 	$(MAKE) -C $(RCT_DIR) clean
 
+PHONY += rct-flash
+rct-flash: rct-build
+	cd $(RCT_DIR) && openocd -f openocd_flash.cfg
+
 PHONY += rct-pristine
 rct-pristine: rct-clean
 	$(MAKE) rct-build
@@ -164,11 +161,14 @@ rct: rct-build
 # Common targets.
 #
 PHONY += clean
-clean:
+clean: rct-clean mk2-clean test-clean lua-clean
 	$(Q)find . -type f \
-	-name "*.d"   -o \
-	-name "*.lst" -o \
-	-name "*.o"      \
+	-name "*.a"   -o   \
+	-name "*.d"   -o   \
+	-name "*.elf" -o   \
+	-name "*.hex" -o   \
+	-name "*.lst" -o   \
+	-name "*.o"        \
 	| xargs rm -f
 
 package: clean
