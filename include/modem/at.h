@@ -164,6 +164,8 @@ struct at_info {
         unhandled_urc_cb_t *unhandled_urc_cb;
 };
 
+void at_reset(struct at_info* ati);
+
 bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
                   const tiny_millis_t quiet_period_ms, const char *delim,
                   unhandled_urc_cb_t *unhandled_urc_cb);
@@ -188,6 +190,7 @@ bool at_ok(struct at_rsp *rsp);
 size_t at_parse_rsp_line(char *rsp, char *bkts[], const size_t num_bkts);
 
 char* at_parse_rsp_str(char *rsp);
+
 
 CPP_GUARD_END
 
