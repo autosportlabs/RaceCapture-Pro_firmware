@@ -22,8 +22,9 @@
 #include "wifi_device.h"
 #include <stdbool.h>
 
-void wifi_device_reset()
+bool wifi_device_reset()
 {
+        return false;
 }
 
 bool wifi_device_init()

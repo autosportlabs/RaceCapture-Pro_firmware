@@ -998,3 +998,36 @@ bool esp8266_register_callbacks(const struct esp8266_event_hooks* hooks)
         return NULL != at_register_urc(state.ati, "+IPD,", flags,
                                        ipd_urc_cb, NULL);
 }
+
+/**
+ * Callback that is invoked upon command completion.
+ */
+static bool soft_reset_cb(struct at_rsp *rsp, void *up)
+{
+        static const char *cmd_name = "reset_cb";
+        esp8266_soft_reset_cb_t* cb = up;
+        bool status = at_ok(rsp);
+
+        if (!status)
+                cmd_failure(cmd_name, NULL);
+
+        if (cb)
+                cb(status);
+
+        return false;
+}
+
+/**
+ * Soft reset the device back to its initial state.
+ * @param cb The callback to be invoked when the method completes.
+ * @return true if the request was queued, false otherwise.
+ */
+bool esp8266_soft_reset(esp8266_soft_reset_cb_t* cb)
+{
+        if (!check_initialized("soft_reset"))
+                return false;
+
+        const char cmd[] = "AT+RST";
+        return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
+                                  soft_reset_cb, cb);
+}

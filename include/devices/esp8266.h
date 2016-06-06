@@ -178,6 +178,9 @@ enum esp8266_server_action {
 bool esp8266_server_cmd(const enum esp8266_server_action action, int port,
                         void (*cb)(bool));
 
+typedef void esp8266_soft_reset_cb_t(const bool status);
+
+bool esp8266_soft_reset(esp8266_soft_reset_cb_t* cb);
 CPP_GUARD_END
 
 #endif /* _ESP8266_H_ */
