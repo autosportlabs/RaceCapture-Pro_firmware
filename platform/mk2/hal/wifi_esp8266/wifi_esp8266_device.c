@@ -25,9 +25,10 @@
 /**
  * Perform a hard reset of the ESP8266 module
  */
-void wifi_device_reset()
+bool wifi_device_reset()
 {
         /*No ability to hard reset the ESP8266 on MK2, so this is NOOP */
+        return false;
 }
 
 /**
