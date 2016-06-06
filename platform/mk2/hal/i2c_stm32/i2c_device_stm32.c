@@ -333,7 +333,7 @@ static void i2c_nvic_setup(struct i2c_priv *p)
 
     /* Enable the I2Cx Interrupt */
     NVIC_InitStructure.NVIC_IRQChannel = p->ev_irqn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 5;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);

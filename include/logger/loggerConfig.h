@@ -396,12 +396,10 @@ typedef struct _TrackConfig {
 
 #define BT_DEVICE_NAME_LENGTH 21
 #define BT_PASSCODE_LENGTH 5
-#define DEFAULT_BT_BAUD 115200
 #define DEFAULT_BT_ENABLED 1
 
 typedef struct _BluetoothConfig {
         unsigned char btEnabled;
-        unsigned int baudRate;
         char new_name [BT_DEVICE_NAME_LENGTH];
         char new_pin [BT_PASSCODE_LENGTH];
 } BluetoothConfig;
@@ -458,7 +456,7 @@ typedef struct _ConnectivityConfig {
  * Configurations specific to our logging infrastructure.
  */
 struct logging_config {
-        bool serial[__SERIAL_COUNT];
+        enum serial_log_type serial[__SERIAL_COUNT];
 };
 
 typedef struct _LoggerConfig {

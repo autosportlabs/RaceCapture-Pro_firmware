@@ -51,6 +51,7 @@
 #define BT_MAX_NAME_LEN	(BT_DEVICE_NAME_LENGTH - 1)
 #define BT_MAX_PIN_LEN	(BT_PASSCODE_LENGTH - 1)
 #define BT_PING_TRIES	3
+#define TARGET_BAUD	230400
 
 static bluetooth_status_t g_bluetooth_status = BT_STATUS_NOT_INIT;
 
@@ -95,6 +96,8 @@ static const char * baudConfigCmdForRate(unsigned int baudRate)
                 return "AT+BAUD7";
         case 115200:
                 return "AT+BAUD8";
+        case 230400:
+                return "AT+BAUD9";
         }
 
         pr_error_int_msg("invalid BT baud", baudRate);
@@ -151,11 +154,11 @@ static bool bt_set_pin(DeviceConfig *config, const char *new_pin)
                                          BT_COMMAND_WAIT);
 }
 
-static int bt_find_working_baud(DeviceConfig *config, BluetoothConfig *btc)
+static int bt_find_working_baud(DeviceConfig *config,
+                                BluetoothConfig *btc,
+                                const int targetBaud)
 {
         pr_info("BT: Detecting baud rate...\r\n");
-
-        const int targetBaud = btc->baudRate;
         const int rates[] = BT_BAUD_RATES;
         int rate = 0;
 
@@ -211,7 +214,7 @@ int bt_init_connection(DeviceConfig *config)
 {
         BluetoothConfig *btConfig =
                 &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
-        unsigned int targetBaud = btConfig->baudRate;
+        const int targetBaud = TARGET_BAUD;
         const char *new_name = btConfig->new_name;
         const char *new_pin = btConfig->new_pin;
 
@@ -223,7 +226,7 @@ int bt_init_connection(DeviceConfig *config)
          * factory level (9600).  This ensures things go slow enough for the
          * HC-06 processor + code to handle it.
          */
-        int baud = bt_find_working_baud(config, btConfig);
+        int baud = bt_find_working_baud(config, btConfig, targetBaud);
         switch (baud) {
         case 0:
                 pr_info("BT: Failed to communicate with device.\r\n");

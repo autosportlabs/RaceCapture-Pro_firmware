@@ -293,40 +293,40 @@ $(OUTDIR)/%.o: %.s
 	mkdir -p $(@D)
 	$(CCACHE) $(AS) $(AFLAGS) -c -o $@ $<
 
-$(OUTDIR)/%.ihex: $(OUTDIR)/%.bin
+%.ihex: $(OUTDIR)/%.bin
 	@echo "[ASL_FW_POSTPROCESS] $(@F)"
 	$(PYTHON) $(ASL_FW_POSTPROCESS) -f $< -e $(OUTDIR)/main.elf -o 0x08004000 -b $< -i $@
 
-$(OUTDIR)/%.elf: $(obj-y)
+%.elf: $(obj-y)
 	@echo "[LD] $(@F)"
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(OUTDIR)/%.bin: $(OUTDIR)/%.elf
+%.bin: %.elf
 	@echo "[OBJCOPY] $(@F)"
 	$(OBJCOPY) -O binary $< $@
 
-$(OUTDIR)/%.hex: $(OUTDIR)/%.elf
+%.hex: %.elf
 	@echo "[OBJCOPY] $(@F)"
 	$(OBJCOPY) -O ihex $< $@
 
-$(OUTDIR)/%.dis: $(OUTDIR)/%.elf
+%.dis: %.elf
 	@echo "[OBJDUMP] $(@F)"
 	$(OBJDUMP) -D $< > $@
 
-.PHONY: all
-all: $(OUTDIR)/main.elf $(OUTDIR)/main.bin $(OUTDIR)/main.hex  $(OUTDIR)/main.ihex $(OUTDIR)/main.dis
+all: main.elf main.bin main.hex main.dis main.ihex
 
-.PHONY: clean
 clean:
 	rm -rf $(OUTDIR)
-
-flash: $(OUTDIR)/main.ihex
-	openocd -f board/stm32f3discovery.cfg -f ./flash.cfg
 
 dbg:
 	@echo "src: $(src-y)"
 	@echo "obj: $(obj-y)"
 	@echo "inc: $(inc-y)"
 
-gdb: $(OUTDIR)/main.elf
-	gdb -x ./gdb_setup.gdb .build/main.elf
+flash: main.elf
+	openocd -f ./openocd_flash.cfg
+
+gdb: main.elf
+	gdb -x ./gdb_setup.gdb main.elf
+
+.PHONY: all clean

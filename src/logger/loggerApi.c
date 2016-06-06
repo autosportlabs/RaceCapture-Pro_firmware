@@ -1690,56 +1690,31 @@ int api_runScript(struct Serial *serial, const jsmntok_t *json)
 }
 #endif /* LUA_SUPPORT */
 
-int api_set_wifi_client_cfg(struct Serial *s, const jsmntok_t *json)
+static void set_wifi_client_cfg(const jsmntok_t *json,
+                                struct wifi_client_cfg* cfg)
 {
-        LoggerConfig *lc = getWorkingLoggerConfig();
-        struct wifi_client_cfg *cfg = &lc->ConnectivityConfigs.wifi.client;
-
         setBoolValueIfExists(json, "active", &cfg->active);
         setStringValueIfExists(json, "ssid", cfg->ssid,
                                ARRAY_LEN(cfg->ssid));
-        setStringValueIfExists(json, "passwd", cfg->passwd,
+        setStringValueIfExists(json, "password", cfg->passwd,
                                ARRAY_LEN(cfg->passwd));
 
         /* Inform the Wifi device that settings may have changed */
         wifi_update_client_config(cfg);
-
-        return API_SUCCESS;
 }
 
-int api_get_wifi_client_cfg(struct Serial *serial, const jsmntok_t *json)
+static bool set_wifi_ap_cfg(const jsmntok_t *json,
+                            struct wifi_ap_cfg* cfg)
 {
-        LoggerConfig *lc = getWorkingLoggerConfig();
-        struct wifi_client_cfg *cfg = &lc->ConnectivityConfigs.wifi.client;
-
-        json_objStart(serial);
-        json_objStartString(serial, "wifi_client_cfg");
-
-        json_bool(serial, "active", cfg->active, 1);
-        json_string(serial, "ssid", cfg->ssid,1);
-        json_string(serial, "passwd", cfg->passwd,0);
-
-        json_objEnd(serial, 0);
-        json_objEnd(serial, 0);
-
-        return API_SUCCESS_NO_RETURN;
-}
-
-int api_set_wifi_ap_cfg(struct Serial *s, const jsmntok_t *json)
-{
-        LoggerConfig *lc = getWorkingLoggerConfig();
-        struct wifi_ap_cfg *cfg = &lc->ConnectivityConfigs.wifi.ap;
-
         struct wifi_ap_cfg tmp_cfg;
         memcpy(&tmp_cfg, cfg, sizeof(struct wifi_ap_cfg));
 
         setBoolValueIfExists(json, "active", &tmp_cfg.active);
         setStringValueIfExists(json, "ssid", tmp_cfg.ssid,
                                ARRAY_LEN(tmp_cfg.ssid));
-        setStringValueIfExists(json, "passwd", tmp_cfg.password,
+        setStringValueIfExists(json, "password", tmp_cfg.password,
                                ARRAY_LEN(tmp_cfg.password));
         setIntValueIfExists(json, "channel", (int*) &tmp_cfg.channel);
-
 
         char enc_str[12];
         setStringValueIfExists(json, "encryption", enc_str,
@@ -1748,7 +1723,7 @@ int api_set_wifi_ap_cfg(struct Serial *s, const jsmntok_t *json)
 
         if (!wifi_validate_ap_config(&tmp_cfg)) {
                 pr_info("Invalid Wifi AP config given\r\n");
-                return API_ERROR_PARAMETER;
+                return false;
         }
 
         /* Copy the validated config to our real config */
@@ -1757,26 +1732,77 @@ int api_set_wifi_ap_cfg(struct Serial *s, const jsmntok_t *json)
         /* Inform the Wifi device that settings may have changed */
         wifi_update_ap_config(cfg);
 
+        return true;
+}
+
+int api_set_wifi_cfg(struct Serial *serial, const jsmntok_t *json)
+{
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        struct wifi_cfg *cfg = &lc->ConnectivityConfigs.wifi;
+        struct wifi_client_cfg *client_cfg = &cfg->client;
+        struct wifi_ap_cfg *ap_cfg = &cfg->ap;
+
+        const jsmntok_t* client_json_root = jsmn_find_node(json, "client");
+        const jsmntok_t* ap_json_root = jsmn_find_node(json, "ap");
+
+        if (ap_json_root)
+                if (!set_wifi_ap_cfg(ap_json_root, ap_cfg))
+                        return API_ERROR_PARAMETER;
+
+        if (client_json_root)
+                set_wifi_client_cfg(client_json_root, client_cfg);
+
+        setBoolValueIfExists(json, "active", &cfg->active);
+
         return API_SUCCESS;
 }
 
-int api_get_wifi_ap_cfg(struct Serial *serial, const jsmntok_t *json)
-{
-        LoggerConfig *lc = getWorkingLoggerConfig();
-        const struct wifi_ap_cfg *cfg = &lc->ConnectivityConfigs.wifi.ap;
+static void get_wifi_client_cfg(struct Serial *serial,
+                                const struct wifi_client_cfg* cfg,
+                                const bool more)
 
-        json_objStart(serial);
-        json_objStartString(serial, "wifi_ap_cfg");
+{
+        json_objStartString(serial, "client");
+
+        json_bool(serial, "active", cfg->active, true);
+        json_string(serial, "ssid", cfg->ssid, true);
+        json_string(serial, "password", cfg->passwd, false);
+
+        json_objEnd(serial, more);
+}
+
+static void get_wifi_ap_cfg(struct Serial *serial,
+                            const struct wifi_ap_cfg* cfg,
+                            const bool more)
+{
+        json_objStartString(serial, "ap");
 
         json_bool(serial, "active", cfg->active, 1);
-        json_string(serial, "ssid", cfg->ssid,1);
-        json_string(serial, "passwd", cfg->password,1);
-        json_int(serial, "channel", cfg->channel,1);
+        json_string(serial, "ssid", cfg->ssid, 1);
+        json_string(serial, "password", cfg->password, 1);
+        json_int(serial, "channel", cfg->channel, 1);
         json_string(serial, "encryption",
                     wifi_api_get_encryption_str_val(cfg->encryption), 0);
 
-        json_objEnd(serial, 0);
-        json_objEnd(serial, 0);
+        json_objEnd(serial, more);
+}
+
+int api_get_wifi_cfg(struct Serial *serial, const jsmntok_t *json)
+{
+        const LoggerConfig *lc = getWorkingLoggerConfig();
+        const struct wifi_cfg *cfg = &lc->ConnectivityConfigs.wifi;
+        const struct wifi_client_cfg *client_cfg = &cfg->client;
+        const struct wifi_ap_cfg *ap_cfg = &cfg->ap;
+
+        json_objStart(serial);
+        json_objStartString(serial, "wifiCfg");
+
+        json_bool(serial, "active", cfg->active, true);
+        get_wifi_client_cfg(serial, client_cfg, true);
+        get_wifi_ap_cfg(serial, ap_cfg, false);
+
+        json_objEnd(serial, false);
+        json_objEnd(serial, false);
 
         return API_SUCCESS_NO_RETURN;
 }

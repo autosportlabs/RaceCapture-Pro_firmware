@@ -35,6 +35,11 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+enum data_dir {
+        DATA_DIR_RX,
+        DATA_DIR_TX,
+};
+
 struct Serial {
         const char *name;
         xQueueHandle tx_queue;
@@ -45,9 +50,9 @@ struct Serial {
         post_tx_func_t *post_tx_cb;
         void *post_tx_cb_arg;
 
-        bool log;
-        bool log_tx_pfx;
-        bool log_rx_pfx;
+        enum serial_log_type log_type;
+        size_t log_rx_cntr;
+        size_t log_tx_cntr;
 };
 
 
@@ -94,31 +99,53 @@ struct Serial* serial_create(const char *name, const size_t tx_cap,
         return s;
 }
 
-static void _log(const struct Serial *s, const char *action,
-                 bool *pfx, const char data)
+static void log_header_if_necessary(struct Serial *s,
+                                    const enum data_dir dir)
 {
-        if (!s->log)
-                return;
-
-        if (*pfx) {
-                if (s->name) {
-                        pr_info("[serial (");
-                        pr_info(s->name);
-                        pr_info(")] ");
-                } else {
-                        pr_info("[serial] ");
-                }
-                pr_info(action);
-                *pfx = false;
+        size_t count = 0;
+        switch (dir) {
+        case DATA_DIR_RX:
+                count = s->log_rx_cntr;
+                break;
+        case DATA_DIR_TX:
+                count = s->log_tx_cntr;
+                break;
         }
 
+        /* If not at 0'th position, do not print header */
+        if (count)
+                return;
+
+        pr_info("\r\n");
+        if (s->name) {
+                pr_info("[serial (");
+                pr_info(s->name);
+                pr_info(")] ");
+        } else {
+                pr_info("[serial] ");
+        }
+
+        switch (dir) {
+        case DATA_DIR_RX:
+                pr_info("RX: ");
+                s->log_tx_cntr = 0;
+                break;
+        case DATA_DIR_TX:
+                pr_info("TX: ");
+                s->log_rx_cntr = 0;
+                break;
+        }
+}
+
+static void log_ascii(size_t* cntr, const char data)
+{
         switch(data) {
         case('\r'):
                 pr_info("(\\r)");
                 break;
         case('\n'):
-                pr_info("(\\n)\r\n");
-                *pfx = true;
+                pr_info("(\\n)");
+                *cntr = 0;
                 break;
         default:
                 pr_info_char(data);
@@ -126,20 +153,70 @@ static void _log(const struct Serial *s, const char *action,
         }
 }
 
+static void log_binary(size_t* cntr, const char data)
+{
+        char buf[12];
+        /* Only print printable characters in data column */
+        if (32 <= data && data <= 126) {
+                sprintf(buf, "0x%02x(%c)", data, data);
+        } else {
+                sprintf(buf, "0x%02x(.)", data);
+        }
+        pr_info(buf);
+
+        if (*cntr < 16) {
+                pr_info_char(',');
+        } else {
+                *cntr = 0;
+        }
+}
+
+static void _log(struct Serial *s,
+                 const enum data_dir dir,
+                 const char data)
+{
+        if (SERIAL_LOG_TYPE_NONE == s->log_type)
+                return;
+
+        log_header_if_necessary(s, dir);
+        size_t* cntr = NULL;
+        switch (dir) {
+        case DATA_DIR_RX:
+                cntr = &s->log_rx_cntr;
+                break;
+        case DATA_DIR_TX:
+                cntr = &s->log_tx_cntr;
+                break;
+        }
+        *cntr += 1;
+
+        switch(s->log_type) {
+        case SERIAL_LOG_TYPE_ASCII:
+                log_ascii(cntr, data);
+                break;
+        case SERIAL_LOG_TYPE_BINARY:
+                log_binary(cntr, data);
+                break;
+        default:
+                break;
+        }
+}
+
 static void log_rx(struct Serial *s, const char data)
 {
-        _log(s, "RX: ", &s->log_rx_pfx, data);
+        _log(s, DATA_DIR_RX, data);
 }
 
 static void log_tx(struct Serial *s, const char data)
 {
-        _log(s, "TX: ", &s->log_tx_pfx, data);
+        _log(s, DATA_DIR_TX, data);
 }
 
-bool serial_logging(struct Serial *s, const bool enable)
+enum serial_log_type serial_logging(struct Serial *s,
+                                    const enum serial_log_type type)
 {
-        const bool prev = s->log;
-        s->log = enable;
+        const enum serial_log_type prev = s->log_type;
+        s->log_type = type;
         return prev;
 }
 

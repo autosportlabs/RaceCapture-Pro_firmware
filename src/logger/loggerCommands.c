@@ -46,6 +46,18 @@
 /* Time (ms) to wait for input before continuing */
 #define TERM_WAIT_MS 5
 
+static const char* log_type_str(enum serial_log_type type)
+{
+        switch(type) {
+        case SERIAL_LOG_TYPE_ASCII:
+                return "ASCII";
+        case SERIAL_LOG_TYPE_BINARY:
+                return "Binary";
+        default:
+                return "None";
+        }
+}
+
 static const char* enable_str(const bool enable)
 {
         return enable ? "Enabled" : "Disabled";
@@ -226,13 +238,13 @@ void SetSerialLog(struct Serial *serial, unsigned int argc, char **argv)
                 goto done;
         }
 
-        const bool enable = argv[2][0] != '0';
-        const bool prev = serial_logging(s, enable);
-        getWorkingLoggerConfig()->logging_cfg.serial[port] = enable;
+        const enum serial_log_type lt = atoi(argv[2]);
+        const enum serial_log_type prev = serial_logging(s, lt);
+        getWorkingLoggerConfig()->logging_cfg.serial[port] = lt;
 
-        serial_put_s(serial, enable_str(prev));
+        serial_put_s(serial, log_type_str(prev));
         serial_put_s(serial, " -> ");
-        serial_put_s(serial, enable_str(enable));
+        serial_put_s(serial, log_type_str(lt));
         serial_put_s(serial, "\r\n");
         put_commandOK(serial);
 

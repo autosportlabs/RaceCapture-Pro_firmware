@@ -60,10 +60,10 @@ more RAM (for better LUA support) and an integrated cellular device
 for a thinner wire and adjustable antenna (for those needing higher
 signal gain in wooded areas).
 
-### MK2 Toolchain Setup
+### Toolchain Setup
 Do the following to setup the MK2 toolchain:
 * Download [the official MK2
-  toolchain](https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2)
+  toolchain](https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/)
 * Extract the tarball to a directory of your choice
 * Add the 'bin' directory from within the newly extracted directory to
   your system PATH.
@@ -74,38 +74,19 @@ Do the following to setup the MK2 toolchain:
   asl_f4_loader package.  This package does all the post-processing on
   MK2 firmware and provides a firmware loading utility.
 
-### Compiling LUA library for MK2
-Before compiling the firmware you must compile the LUA library for MK2.  Do the following from the root of the project
-* `cd lib_lua/src/`
-* `make PLAT=stm32 generic`
-
 ### Compiling MK2 Firmware
-From the root of the project do the following:
-* `cd stm32_base`
-* `make PLAT=stm32`
-
+From the root of the project, simply run `make mk2`.  For a package run
+`make mk2-package`.
 
 ## Test
 The Test platform is used to validate and stress test our firmware code.
 While not a real platform per se, its easier to treat it this way.  The
 test platform will work natively with Linux and OSX (>10.10).
 
-### Toolchain Setup of Test
+### Toolchain Setup
 #### Linux
 * Install the 64bit GCC packages for your system (need ld)
 * Install libstdc++-static and libstdc++-devel for linking in test applications.
 * Install the 64bit libcppunit library and its header and devel packages
 * Install glibc-devel and glibc-headers
-
-#### OSX
-* Install the OSX clang compiler.  This is typically done by installing command line tools from XCode.
-* Use brew to install libcppunit by executing the following: `brew install cppunit`
-
-### Compiling Test Applications
-From the root of the project do the following:
-* `cd test`
-* `make`
-
-### Running the Unit Tests
-From the root of the project do the following:
-* `test/rcptest`
+* `make test`
