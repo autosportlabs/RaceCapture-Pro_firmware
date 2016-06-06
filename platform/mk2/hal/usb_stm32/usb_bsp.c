@@ -99,7 +99,7 @@ void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev)
     RCC_OTGFSCLKConfig(RCC_OTGFSCLKSource_PLLVCO_Div3);
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph_OTG_FS, ENABLE) ;
 
-#else // USE_STM322xG_EVAL  
+#else // USE_STM322xG_EVAL
     GPIO_InitTypeDef GPIO_InitStructure;
 #ifdef USE_USB_OTG_FS
     RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA , ENABLE);
@@ -119,7 +119,7 @@ void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev)
 
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
     RCC_AHB2PeriphClockCmd(RCC_AHB2Periph_OTG_FS, ENABLE) ;
-#else // USE_USB_OTG_HS 
+#else // USE_USB_OTG_HS
 
 #ifdef USE_ULPI_PHY // ULPI
     RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB |
@@ -237,21 +237,21 @@ void USB_OTG_BSP_EnableInterrupt(USB_OTG_CORE_HANDLE *pdev)
     NVIC_InitStructure.NVIC_IRQChannel = OTG_FS_IRQn;
 #endif
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 5;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 #ifdef USB_OTG_HS_DEDICATED_EP1_ENABLED
     //NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
     NVIC_InitStructure.NVIC_IRQChannel = OTG_HS_EP1_OUT_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 5;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
     //NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
     NVIC_InitStructure.NVIC_IRQChannel = OTG_HS_EP1_IN_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 5;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 #endif
