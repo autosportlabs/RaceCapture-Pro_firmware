@@ -30,6 +30,7 @@
 #include "mem_mang.h"
 #include "memory.h"
 #include "task.h"
+#include <stdbool.h>
 
 extern unsigned int _CONFIG_HEAP_SIZE;
 
@@ -126,5 +127,6 @@ void GetVersion(struct Serial *serial, unsigned int argc, char **argv)
 
 void ResetSystem(struct Serial *serial, unsigned int argc, char **argv)
 {
-    cpu_reset(0);
+        const bool into_bootldr = argc == 2 && argv[1][0] != '0';
+        cpu_reset(into_bootldr);
 }

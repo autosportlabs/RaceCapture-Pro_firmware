@@ -31,32 +31,40 @@ static void init_cpu_id()
 
 int cpu_device_init(void)
 {
-    /*TODO BAP fix this so we jump to the correct location */
-    //NVIC_SetVectorTable(NVIC_VectTab_FLASH, _flash_start);
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
-    init_cpu_id();
-    return 1;
+	NVIC_SetVectorTable(NVIC_VectTab_FLASH, (uint32_t)&_flash_start);
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+	init_cpu_id();
+	return 1;
 }
 
 void cpu_device_reset(int bootloader)
 {
-    /* struct app_handshake_block *handshake = */
-    /*     (struct app_handshake_block *)HANDSHAKE_ADDR; */
+	struct app_handshake_block *handshake =
+		(struct app_handshake_block *)HANDSHAKE_ADDR;
 
-    /* Clear any reset flags that might be present (i.e. watchdog) */
-    RCC_ClearFlag();
+	/* Clear any reset flags that might be present (i.e. watchdog) */
+	RCC_ClearFlag();
 
-    /*TODO BAP enable bootloader */
-    /* If bootloader mode is requested, Set the flag in the
-     * handshake area */
-/*    if (bootloader == 1) {
-        handshake->loader_magic = LOADER_KEY;
-    } */
+	/*
+	 * If bootloader mode is requested, Set the flag in the
+	 * handshake area
+	 */
+	if (bootloader == 1) {
+		handshake->loader_magic = LOADER_KEY;
+	}
 
-    NVIC_SystemReset();
+	NVIC_SystemReset();
 }
 
 const char *cpu_device_get_serialnumber(void)
 {
     return cpu_id;
 }
+
+/* This is required by the STM32 libraries for their ASSERT macros to
+ * work.  Useful if you need to catch HAL bugs */
+void assert_failed(uint8_t* file, uint32_t line)
+{
+	while(1);
+}
+
