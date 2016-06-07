@@ -36,7 +36,8 @@ CPP_GUARD_BEGIN
                        GetVersion)                                      \
         SYSTEM_COMMAND("showStats", "Info on system statistics.","",    \
                        ShowStats)                                       \
-        SYSTEM_COMMAND("sysReset", "Reset the system", "", ResetSystem)
+        SYSTEM_COMMAND("sysReset", "Reset the system",                  \
+                       "[bootloader 0|1]", ResetSystem)
 
 
 void ShowTaskInfo(struct Serial *serial, unsigned int argc, char **argv);

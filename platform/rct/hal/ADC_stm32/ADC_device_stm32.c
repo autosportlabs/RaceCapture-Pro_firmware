@@ -51,6 +51,7 @@ int ADC_device_init(void)
         RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA2, ENABLE);
 
         DMA_InitTypeDef DMA_InitStructure;
+	DMA_StructInit(&DMA_InitStructure);
         DMA_InitStructure.DMA_BufferSize = 1;
         DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
         DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)&ADC_Val[0];

@@ -14,6 +14,8 @@ LD := $(CROSS_COMPILE)g++
 OBJDUMP := $(CROSS_COMPILE)objdump
 OBJCOPY := $(CROSS_COMPILE)objcopy
 
+ASL_FW_POSTPROCESS := asl_f4_fw_postprocess
+
 #specify the use of the external crystal
 BOARD_DEFINES = -DPLL_SOURCE_HSE -DUSE_I2C1
 
@@ -33,8 +35,8 @@ RC_SRC_DIR := $(RC_TOP_LEVEL_DIR)/src
 
 # CMSIS
 src-y := \
-    Libraries/CMSIS/Device/ST/STM32F30x/Source/Templates/TrueSTUDIO/startup_stm32f30x.s
-#    Libraries/CMSIS/Device/ST/STM32F30x/Source/Templates/system_stm32f30x.c
+    Libraries/CMSIS/Device/ST/STM32F30x/Source/Templates/TrueSTUDIO/startup_stm32f30x.s \
+    Libraries/CMSIS/Device/ST/STM32F30x/Source/Templates/system_stm32f30x.c
 inc-y := \
     Libraries/CMSIS/Device/ST/STM32F30x/Include \
     Libraries/CMSIS/Include
@@ -218,8 +220,6 @@ src-y += $(wildcard FreeRTOS/Source/*.c) \
 inc-y += FreeRTOS/Source/include \
          FreeRTOS/Source/portable/GCC/ARM_CM3
 
-src-y += Project/system_stm32f30x.c
-
 #newlib
 src-y += $(wildcard util/*.c)
 inc-y += util
@@ -256,6 +256,22 @@ CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -MD -c
 CFLAGS += $(ASL_CFLAGS)
 CFLAGS += -mcpu=cortex-m3 -mthumb
 CFLAGS += $(BOARD_DEFINES)
+CFLAGS += -fno-builtin-sprintf
+CFLAGS += -ggdb
+CFLAGS += -Wall -Werror -Wempty-body -Wclobbered -Wignored-qualifiers \
+	-Wmissing-parameter-type -Wold-style-declaration \
+	-Wunused-but-set-parameter
+
+ifdef NOOPT
+CFLAGS += -O0
+else
+CFLAGS += -Os
+endif
+
+ifdef DEBUG
+CFLAGS += -D_DEBUG -DUSE_FULL_ASSERT
+endif
+
 CFLAGS += $(addprefix -I,$(inc-y))
 
 LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld
@@ -277,26 +293,28 @@ $(OUTDIR)/%.o: %.s
 	mkdir -p $(@D)
 	$(CCACHE) $(AS) $(AFLAGS) -c -o $@ $<
 
+%.ihex: $(OUTDIR)/%.bin
+	@echo "[ASL_FW_POSTPROCESS] $(@F)"
+	$(PYTHON) $(ASL_FW_POSTPROCESS) -f $< -e $(OUTDIR)/main.elf -o 0x08004000 -b $< -i $@
+
 %.elf: $(obj-y)
 	@echo "[LD] $(@F)"
 	$(LD) $(LDFLAGS) -o $@ $^
 
-%.bin: $(OUTDIR)/%.elf
+%.bin: %.elf
 	@echo "[OBJCOPY] $(@F)"
 	$(OBJCOPY) -O binary $< $@
 
-%.hex: $(OUTDIR)/%.elf
+%.hex: %.elf
 	@echo "[OBJCOPY] $(@F)"
 	$(OBJCOPY) -O ihex $< $@
 
-%.dis: $(OUTDIR)/%.elf
+%.dis: %.elf
 	@echo "[OBJDUMP] $(@F)"
 	$(OBJDUMP) -D $< > $@
 
-.PHONY: all
-all: main.elf main.bin main.hex main.dis
+all: main.elf main.bin main.hex main.dis main.ihex
 
-.PHONY: clean
 clean:
 	rm -rf $(OUTDIR)
 
@@ -310,3 +328,5 @@ flash: main.elf
 
 gdb: main.elf
 	gdb -x ./gdb_setup.gdb main.elf
+
+.PHONY: all clean
