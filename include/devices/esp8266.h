@@ -173,6 +173,10 @@ bool esp8266_connect_udp(const int chan_id, const char* addr,
                          const enum esp8266_udp_mode udp_mode,
                          esp8266_connect_cb_t* cb);
 
+typedef void esp8266_close_cb_t(const bool status);
+
+bool esp8266_close(const int chan_id, esp8266_close_cb_t* cb);
+
 bool esp8266_send_data(const int chan_id, struct Serial *data,
                        const size_t len, void (*cb)(int));
 

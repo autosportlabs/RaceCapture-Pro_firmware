@@ -819,6 +819,40 @@ bool esp8266_connect_udp(const int chan_id, const char* addr,
                                   connect_cb, cb);
 }
 
+/**
+ * Method that is invoked upon the completion of the close method.
+ */
+static bool close_cb(struct at_rsp *rsp, void *up)
+{
+        static const char *cmd_name = "close_cb";
+        esp8266_close_cb_t* cb = up;
+        bool status = at_ok(rsp);
+
+        if (!status)
+                cmd_failure(cmd_name, NULL);
+
+        if (cb)
+                cb(status);
+
+        return false;
+}
+
+/**
+ * Closes a connection
+ * @param chan_id The channel ID to use.  0 - 4
+ * @return true if the request was queued, false otherwise.
+ */
+bool esp8266_close(const int chan_id, esp8266_close_cb_t* cb)
+{
+        if (!check_initialized("close"))
+                return false;
+
+        char cmd[16];
+        snprintf(cmd, ARRAY_LEN(cmd), "AT+CIPCLOSE=%d", chan_id);
+        return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
+                                  close_cb, cb);
+}
+
 struct tx_info {
         struct Serial *serial;
         size_t len;
