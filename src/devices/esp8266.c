@@ -738,39 +738,19 @@ bool esp8266_set_ap_info(const struct esp8266_ap_info* info,
 }
 
 /**
- *
- * @param cb The callback to be invoked when the method completes.
+ * The callback to be invoked when the connect method completes.
  */
 static bool connect_cb(struct at_rsp *rsp, void *up)
 {
         static const char *cmd_name = "connect_cb";
-        void (*cb)(bool, const int) = up;
-        bool status = at_ok(rsp);
-        int chan_id = -1;
+        esp8266_connect_cb_t *cb = up;
+        const bool status = at_ok(rsp);
 
-        if (!status) {
+        if (!status)
                 cmd_failure(cmd_name, NULL);
-                goto do_cb;
-        }
 
-        /*
-         * <chan_id>,<connection status>
-         * 0,CONNECT
-         */
-        char *toks[3];
-        const int tok_cnt = at_parse_rsp_line(rsp->msgs[0], toks,
-                                              ARRAY_LEN(toks));
-
-        if (tok_cnt != 2) {
-                cmd_failure(cmd_name, "Unexpected # of tokens in response");
-                status = false;
-                goto do_cb;
-        }
-        chan_id = atoi(toks[0]);
-
-do_cb:
         if (cb)
-                cb(status, chan_id);
+                cb(status);
 
         return false;
 }
@@ -784,7 +764,7 @@ do_cb:
  */
 bool esp8266_connect(const int chan_id, const enum protocol proto,
                      const char *ip_addr, const int dest_port,
-                     void (*cb) (bool, const int))
+                     esp8266_connect_cb_t* cb)
 {
         if (!check_initialized("connect"))
                 return false;

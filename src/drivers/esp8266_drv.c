@@ -95,6 +95,7 @@ struct comm {
         struct channel channels[MAX_CHANNELS];
         xSemaphoreHandle connect_semaphore;
         xSemaphoreHandle connect_cb_semaphore;
+        bool connect_status;
 };
 
 /**
@@ -1140,12 +1141,14 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
 /**
  * Callback method invoked when a callback completes.
  */
-static void connect_cb(bool status, const int chan_id)
+static void connect_cb(const bool status)
 {
-        struct channel *ch = esp8266_state.comm.channels + chan_id;
-        ch->connected = status;
-        xSemaphoreGive(esp8266_state.comm.connect_cb_semaphore);
+        struct comm *comm = &esp8266_state.comm;
+        comm->connect_status = status;
+
         cmd_set_check(CHECK_DATA);
+
+        xSemaphoreGive(comm->connect_cb_semaphore);
 }
 
 struct Serial* esp8266_drv_connect(const enum protocol proto,
@@ -1181,8 +1184,10 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
                 goto done;
         }
 
+        ch->connected = comm->connect_status;
         if (!ch->connected) {
                 pr_info_str_msg(LOG_PFX "Failed to connect: ", dst_ip);
+
                 goto done;
         }
 

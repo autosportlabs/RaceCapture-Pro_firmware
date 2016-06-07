@@ -155,10 +155,11 @@ typedef void esp8266_set_ap_info_cb_t(const bool status);
 bool esp8266_set_ap_info(const struct esp8266_ap_info* info,
                          esp8266_set_ap_info_cb_t *cb);
 
+typedef void esp8266_connect_cb_t(const bool status);
 
 bool esp8266_connect(const int chan_id, const enum protocol proto,
                      const char *ip_addr, const int dest_port,
-                     void (*cb) (bool, const int));
+                     esp8266_connect_cb_t* cb);
 
 bool esp8266_send_data(const int chan_id, struct Serial *data,
                        const size_t len, void (*cb)(int));
