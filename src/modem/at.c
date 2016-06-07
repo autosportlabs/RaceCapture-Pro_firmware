@@ -39,6 +39,7 @@ static const struct at_rsp_status_msgs {
 } at_status_msgs[] = {
         AT_STATUS_MSG("OK", AT_RSP_STATUS_OK),
         AT_STATUS_MSG("SEND OK", AT_RSP_STATUS_SEND_OK),
+        AT_STATUS_MSG("ALREADY CONNECTED", AT_RSP_STATUS_OK),
         AT_STATUS_MSG("SEND FAIL", AT_RSP_STATUS_SEND_FAIL),
         AT_STATUS_MSG("FAIL", AT_RSP_STATUS_FAILED),
         AT_STATUS_MSG("ERROR", AT_RSP_STATUS_ERROR),
