@@ -29,6 +29,7 @@
 #include "panic.h"
 #include "printk.h"
 #include "queue.h"
+#include "semphr.h"
 #include "str_util.h"
 #include "task.h"
 #include "taskUtil.h"
@@ -92,6 +93,8 @@ struct channel {
 struct comm {
         new_conn_func_t *new_conn_cb;
         struct channel channels[MAX_CHANNELS];
+        xSemaphoreHandle connect_semaphore;
+        xSemaphoreHandle connect_cb_semaphore;
 };
 
 /**
@@ -1103,6 +1106,12 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         serial_config(esp8266_state.device.serial, SERIAL_BITS, SERIAL_PARITY,
                       SERIAL_STOP_BITS, SERIAL_BAUD);
 
+        /* Create and setup semaphores for connections */
+        esp8266_state.comm.connect_semaphore = xSemaphoreCreateBinary();
+        xSemaphoreGive(esp8266_state.comm.connect_semaphore);
+        esp8266_state.comm.connect_cb_semaphore = xSemaphoreCreateBinary();
+
+
         /* Initialize our WiFi configs here */
         LoggerConfig *lc = getWorkingLoggerConfig();
         const struct wifi_client_cfg *cfg =
@@ -1128,10 +1137,14 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         return true;
 }
 
-static void _connect_cb(bool status, const int chan_id)
+/**
+ * Callback method invoked when a callback completes.
+ */
+static void connect_cb(bool status, const int chan_id)
 {
         struct channel *ch = esp8266_state.comm.channels + chan_id;
         ch->connected = status;
+        xSemaphoreGive(esp8266_state.comm.connect_cb_semaphore);
         cmd_set_check(CHECK_DATA);
 }
 
@@ -1139,27 +1152,47 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
                                    const char* dst_ip,
                                    const unsigned int dst_port)
 {
+        /* This is synchronous code for now */
+        struct comm *comm = &esp8266_state.comm;
+        xSemaphoreTake(comm->connect_semaphore, portMAX_DELAY);
+
+        struct Serial* serial = NULL;
         const int chan_id = get_next_free_channel_num();
         if (chan_id < 0) {
                 pr_warning(LOG_PFX "Failed to acquire a free channel\r\n");
-                return NULL;
+                goto done;
         }
 
         struct channel *ch = get_channel_for_use(chan_id);
         if (NULL == ch) {
                 pr_warning(LOG_PFX "Can't allocate resources for channel\r\n");
-                return NULL;
+                goto done;
+        }
+
+        if (!esp8266_connect(chan_id, proto, dst_ip, dst_port, connect_cb)) {
+                pr_warning(LOG_PFX "Failed to issue connect command\r\n");
+                goto done;
+        }
+
+        /* Now wait for our callback to come */
+        if (!xSemaphoreTake(comm->connect_cb_semaphore, portMAX_DELAY)) {
+                pr_warning(LOG_PFX "Timed out waiting for connect "
+                           "response\r\n");
+                goto done;
+        }
+
+        if (!ch->connected) {
+                pr_info_str_msg(LOG_PFX "Failed to connect: ", dst_ip);
+                goto done;
         }
 
         ch->in_use = true;
-        if (!esp8266_connect(chan_id, proto, dst_ip, dst_port,
-                             _connect_cb)) {
-                pr_warning(LOG_PFX "Failed to issue connect command\r\n");
-                return NULL;
-        }
+        serial = ch->serial;
+        pr_info_int_msg(LOG_PFX "Connected on comm channel ", chan_id);
 
-        pr_info_int_msg(LOG_PFX "Opened comm channel ", chan_id);
-        return ch->serial;
+done:
+        xSemaphoreGive(comm->connect_semaphore);
+        return serial;
 }
 
 const struct esp8266_ipv4_info* get_client_ipv4_info()
