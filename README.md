@@ -71,7 +71,7 @@ Do the following to setup the MK2 toolchain:
 * Go to the [ASL F4 Loader
   Project](https://github.com/autosportlabs/ASL_F4_bootloader) and
   follow the instructions on the README.md to install the
-  asl_f4_loader package.  This package does all the post-processing on
+  asl_f4_loader application.  This package does all the post-processing on
   MK2 firmware and provides a firmware loading utility.
 
 ### Compiling MK2 Firmware
