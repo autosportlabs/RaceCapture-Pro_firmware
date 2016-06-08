@@ -1142,10 +1142,16 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
 /**
  * Callback method invoked when a callback completes.
  */
-static void connect_cb(const bool status)
+static void connect_cb(const bool status, const bool already_connected)
 {
         struct comm *comm = &esp8266_state.comm;
         comm->connect_status = status;
+
+        if (!status && already_connected) {
+                /* Attempt to close the connection to rectify state */
+                /* TODO: Do call here */
+                pr_info(LOG_PFX "Closing unexpectedly open connection\r\n");
+        }
 
         cmd_set_check(CHECK_DATA);
 

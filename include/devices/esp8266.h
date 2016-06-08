@@ -155,7 +155,7 @@ typedef void esp8266_set_ap_info_cb_t(const bool status);
 bool esp8266_set_ap_info(const struct esp8266_ap_info* info,
                          esp8266_set_ap_info_cb_t *cb);
 
-typedef void esp8266_connect_cb_t(const bool status);
+typedef void esp8266_connect_cb_t(const bool status, const bool in_use);
 
 bool esp8266_connect_tcp(const int chan_id, const char* addr,
                          const int port, const int keepalive,
