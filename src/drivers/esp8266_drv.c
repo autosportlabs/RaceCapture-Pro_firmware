@@ -24,6 +24,7 @@
 #include "dateTime.h"
 #include "esp8266.h"
 #include "esp8266_drv.h"
+#include "net/ipv4.h"
 #include "macros.h"
 #include "loggerConfig.h"
 #include "panic.h"
@@ -1172,7 +1173,26 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
                 goto done;
         }
 
-        if (!esp8266_connect(chan_id, proto, dst_ip, dst_port, connect_cb)) {
+        bool connect_result = false;
+        switch(proto) {
+        case PROTOCOL_TCP:
+                connect_result = esp8266_connect_tcp(chan_id, dst_ip, dst_port,
+                                                     -1, connect_cb);
+                break;
+        case PROTOCOL_UDP:
+                ;
+                int src_port = 0;
+                enum esp8266_udp_mode udp_mode = ESP8266_UDP_MODE_NONE;
+                if (0 == strcmp(dst_ip, IPV4_BROADCAST_ADDRESS_STR)) {
+                        src_port = dst_port;
+                        udp_mode = ESP8266_UDP_MODE_PEER_CHANGE_WHENEVER;
+                }
+                connect_result = esp8266_connect_udp(chan_id, dst_ip, dst_port,
+                                                     src_port, udp_mode,
+                                                     connect_cb);
+                break;
+        }
+        if (!connect_result) {
                 pr_warning(LOG_PFX "Failed to issue connect command\r\n");
                 goto done;
         }

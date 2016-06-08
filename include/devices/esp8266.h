@@ -157,9 +157,21 @@ bool esp8266_set_ap_info(const struct esp8266_ap_info* info,
 
 typedef void esp8266_connect_cb_t(const bool status);
 
-bool esp8266_connect(const int chan_id, const enum protocol proto,
-                     const char *ip_addr, const int dest_port,
-                     esp8266_connect_cb_t* cb);
+bool esp8266_connect_tcp(const int chan_id, const char* addr,
+                         const int port, const int keepalive,
+                         esp8266_connect_cb_t* cb);
+
+enum esp8266_udp_mode {
+        ESP8266_UDP_MODE_NONE                 = -1,
+        ESP8266_UDP_MODE_PEER_CHANGE_NEVER    = 0,
+        ESP8266_UDP_MODE_PEER_CHANGE_ONCE     = 1,
+        ESP8266_UDP_MODE_PEER_CHANGE_WHENEVER = 2,
+};
+
+bool esp8266_connect_udp(const int chan_id, const char* addr,
+                         const int port, const int src_port,
+                         const enum esp8266_udp_mode udp_mode,
+                         esp8266_connect_cb_t* cb);
 
 bool esp8266_send_data(const int chan_id, struct Serial *data,
                        const size_t len, void (*cb)(int));
