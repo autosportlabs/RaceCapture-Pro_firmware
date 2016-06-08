@@ -342,7 +342,8 @@ static void drop_data(struct channel *ch)
 /**
  * Callback that is invoked when the send_data method completes.
  */
-static void _send_data_cb(const bool status, const size_t sent)
+static void _send_data_cb(const bool status, const size_t sent,
+                          const bool valid_link)
 {
         cmd_completed();
         cmd_set_check(CHECK_DATA);
@@ -353,8 +354,14 @@ static void _send_data_cb(const bool status, const size_t sent)
 
         if (!status) {
                 pr_warning(LOG_PFX "Failed to send data\r\n");
+                if (!valid_link) {
+                        /* Link has closed */
+                        pr_info(LOG_PFX "Link invalid. Closing\r\n");
+                        tx_chan->connected = false;
+                }
+
         } else {
-                pr_info_int_msg(LOG_PFX "# of bytes sent: ", sent);
+                pr_trace_int_msg(LOG_PFX "# of bytes sent: ", sent);
         }
 }
 

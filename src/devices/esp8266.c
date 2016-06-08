@@ -876,6 +876,7 @@ static bool send_data_cb(struct at_rsp *rsp, void *up)
 {
         struct tx_info *ti = up;
         bool status = false;
+        bool valid_link = true;
 
         switch(rsp->status) {
         case AT_RSP_STATUS_OK:
@@ -908,6 +909,7 @@ static bool send_data_cb(struct at_rsp *rsp, void *up)
                 goto fini;
         default:
                 /* Then bad things happened */
+                valid_link = !STR_EQ(rsp->msgs[0], "link is not valid");
                 cmd_failure("send_data_cb", "Bad response value");
                 status = false;
                 goto fini;
@@ -915,7 +917,7 @@ static bool send_data_cb(struct at_rsp *rsp, void *up)
 
 fini:
         if (ti->cb)
-                ti->cb(status, ti->sent);
+                ti->cb(status, ti->sent, valid_link);
 
         portFree(ti);
         return false;
