@@ -42,7 +42,7 @@
 
 #define AT_TASK_TIMEOUT_MS	3
 #define CHECK_DONE_SLEEP_MS	3600000
-#define CLIENT_BACKOFF_MS	30000
+#define CLIENT_BACKOFF_MS	3000
 #define AP_BACKOFF_MS		30000
 #define INIT_FAIL_SLEEP_MS	10000
 #define LOG_PFX			"[ESP8266 Driver] "
@@ -57,9 +57,17 @@
 #define TASK_STACK_SIZE		256
 #define TASK_THREAD_NAME	"ESP8266 Driver"
 
+enum init_state {
+        INIT_STATE_UNINITIALIZED = 0,
+        INIT_STATE_READY,
+        INIT_STATE_FAILED,
+        INIT_STATE_RESET,
+        INIT_STATE_RESET_HARD,
+};
+
 struct device {
         struct Serial *serial;
-        enum dev_init_state init_state;
+        enum init_state init_state;
         enum esp8266_op_mode op_mode;
 };
 
@@ -484,13 +492,20 @@ static void socket_state_changed_cb(const size_t chan_id,
 /**
  * Callback that is invoked when the init_wifi command completes.
  */
-static void init_wifi_cb(enum dev_init_state dev_state)
+static void init_wifi_cb(const bool status)
 {
         cmd_completed();
         cmd_set_check(CHECK_WIFI_DEVICE);
 
-        pr_info_int_msg(LOG_PFX "Device state: ", dev_state);
-        esp8266_state.device.init_state = dev_state;
+        if (!status) {
+                /* Then failed to init wifi */
+                pr_warning(LOG_PFX "Initialization failed\r\n");
+                esp8266_state.device.init_state = INIT_STATE_FAILED;
+                return;
+        }
+
+        pr_info(LOG_PFX "Initialization successful\r\n");
+        esp8266_state.device.init_state = INIT_STATE_READY;
 
         /* Now that init state has changed, check them */
         cmd_set_check(CHECK_WIFI_DEVICE);
@@ -514,6 +529,7 @@ static void init_wifi()
                 /* Failed to init critical bits.  */
                 pr_warning(LOG_PFX "Failed to init esp8266 device.\r\n");
                 cmd_sleep(CHECK_WIFI_DEVICE, INIT_FAIL_SLEEP_MS);
+                esp8266_state.device.init_state = INIT_STATE_FAILED;
                 return;
         }
 
@@ -596,6 +612,64 @@ static void set_op_mode(const enum esp8266_op_mode mode)
         cmd_started();
 }
 
+
+/**
+ * Callback used by the set_op_mode call.
+ */
+static void reset_cb(const bool status)
+{
+        cmd_completed();
+        cmd_set_check(CHECK_WIFI_DEVICE);
+
+        if (!status) {
+                pr_warning(LOG_PFX "Soft reset failed\r\n");
+                esp8266_state.device.init_state = INIT_STATE_RESET_HARD;
+                return;
+        }
+
+        cmd_set_check(CHECK_WIFI_CLIENT);
+        cmd_set_check(CHECK_WIFI_AP);
+        cmd_set_check(CHECK_SERVER);
+        cmd_set_check(CHECK_DATA);
+
+        /*
+         * Clear out the timestamps and set the checks on all the
+         * subsystems since they will all change after a reset.
+         */
+        esp8266_state.client.info_timestamp = 0;
+        esp8266_state.ap.info_timestamp = 0;
+        esp8266_state.device.init_state = DEV_INIT_STATE_NOT_READY;
+}
+
+/**
+ * Command that sets the wifi device operational mode. Useful for changing
+ * between modes after actions like a user changing the config.
+ */
+static bool reset(bool force_hard)
+{
+        pr_info(LOG_PFX "Resetting device.\r\n");
+        if (!force_hard) {
+                if (esp8266_soft_reset(reset_cb)) {
+                        cmd_started();
+                        return true;
+                }
+
+                /* If here can't soft reset for some reason.  Hard reset */
+                pr_warning(LOG_PFX "Failed to soft reset device.\r\n");
+        }
+
+        if (wifi_device_reset()) {
+                /* Invoke callback here to get correct state */
+                reset_cb(true);
+                return true;
+        }
+
+        /* If here can't hard reset because not supported.  Hell */
+        pr_warning(LOG_PFX "Failed to hard reset device.\r\n");
+        return false;
+}
+
+
 /**
  * Method that checks the device state.  Handles all aspects including
  * initialization, reset, mode, and whatever else may need handling
@@ -607,15 +681,21 @@ static void check_wifi_device()
         pr_info(LOG_PFX "Checking WiFi Device...\r\n");
 
         switch(esp8266_state.device.init_state) {
-        case DEV_INIT_STATE_NOT_READY:
+        case INIT_STATE_UNINITIALIZED:
                 init_wifi();
                 return;
-        case DEV_INIT_STATE_READY:
+        case INIT_STATE_FAILED:
+                delayMs(CLIENT_BACKOFF_MS);
+                /* Fall into reset call */
+        case INIT_STATE_RESET:
+                reset(false);
+                return;
+        case INIT_STATE_RESET_HARD:
+                reset(true);
+                return;
+        case INIT_STATE_READY:
                 /* Then we are where we want to be */
                 break;
-        default:
-                /* STIEG: TODO Handle reset here when implemented. */
-                delayMs(CLIENT_BACKOFF_MS);
         }
 
         /* Check if we know our device mode.  If not, get it */
@@ -655,7 +735,7 @@ static void check_wifi_device()
 
 static bool device_initialized()
 {
-        return esp8266_state.device.init_state == DEV_INIT_STATE_READY;
+        return esp8266_state.device.init_state == INIT_STATE_READY;
 }
 
 

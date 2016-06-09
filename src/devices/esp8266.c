@@ -54,7 +54,7 @@ struct at_info _ati;
 static struct {
         struct serial_buffer *scb;
         struct at_info *ati;
-        void (*init_cb)(enum dev_init_state); /* STIEG: Put in own struct? */
+        esp8266_init_cb_t* init_cb; /* STIEG: Put in own struct? */
         enum dev_init_state init_state;
         struct esp8266_event_hooks hooks;
 } state;
@@ -166,15 +166,11 @@ static void init_failed(const char *msg)
 
         state.init_state = DEV_INIT_STATE_FAILED;
         cmd_failure("Init", msg);
-        state.init_cb(state.init_state); /* Will always be defined */
+        state.init_cb(false); /* Will always be defined */
 }
 
 static void init_complete(bool status)
 {
-        /* If we aren't initializing, then don't do the callback */
-        if (state.init_state != DEV_INIT_INITIALIZING)
-                return;
-
         if (!status) {
                 init_failed("set_mux_mode failed");
                 return;
@@ -182,7 +178,7 @@ static void init_complete(bool status)
 
         pr_info("[esp8266] Initialized\r\n");
         state.init_state = DEV_INIT_STATE_READY;
-        state.init_cb(state.init_state); /* Will always be defined */
+        state.init_cb(true); /* Will always be defined */
 }
 
 static bool get_version_cb(struct at_rsp *rsp, void *up)
@@ -318,7 +314,7 @@ static bool is_init_in_progress()
  * Kicks off the initilization process.
  */
 bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
-                  void (*cb)(enum dev_init_state))
+                  esp8266_init_cb_t* cb)
 {
         if (!cb || !s || is_init_in_progress())
                 return false;
@@ -327,11 +323,8 @@ bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
         if (!_setup(s, max_cmd_len))
                 return false;
 
-        /* Hard reset our ESP8266*/
-        wifi_device_reset();
-
+        at_reset(state.ati);
         state.init_cb = cb;
-        state.init_state = DEV_INIT_INITIALIZING;
         begin_autobaud_cmd();
 
         return true;
@@ -1043,4 +1036,39 @@ bool esp8266_register_callbacks(const struct esp8266_event_hooks* hooks)
 
         return NULL != at_register_urc(state.ati, "+IPD,", flags,
                                        ipd_urc_cb, NULL);
+}
+
+/**
+ * Callback that is invoked upon command completion.
+ */
+static bool soft_reset_cb(struct at_rsp *rsp, void *up)
+{
+        static const char *cmd_name = "reset_cb";
+        esp8266_soft_reset_cb_t* cb = up;
+        bool status = at_ok(rsp);
+
+        if (!status)
+                cmd_failure(cmd_name, NULL);
+
+        if (cb)
+                cb(status);
+
+        return false;
+}
+
+/**
+ * Soft reset the device back to its initial state.
+ * @param cb The callback to be invoked when the method completes.
+ * @return true if the request was queued, false otherwise.
+ */
+bool esp8266_soft_reset(esp8266_soft_reset_cb_t* cb)
+{
+        if (!state.ati) {
+                cmd_failure("soft_reset", "AT interface not initialized.");
+                return false;
+        }
+
+        const char cmd[] = "AT+RST";
+        return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
+                                  soft_reset_cb, cb);
 }

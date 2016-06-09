@@ -84,8 +84,10 @@ struct esp8266_event_hooks {
 
 bool esp8266_register_callbacks(const struct esp8266_event_hooks* hooks);
 
+typedef void esp8266_init_cb_t(const bool status);
+
 bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
-                  void (*cb)(enum dev_init_state));
+                  esp8266_init_cb_t* cb);
 
 enum dev_init_state esp8266_get_dev_init_state();
 
@@ -197,6 +199,10 @@ enum esp8266_server_action {
 
 bool esp8266_server_cmd(const enum esp8266_server_action action, int port,
                         void (*cb)(bool));
+
+typedef void esp8266_soft_reset_cb_t(const bool status);
+
+bool esp8266_soft_reset(esp8266_soft_reset_cb_t* cb);
 
 CPP_GUARD_END
 

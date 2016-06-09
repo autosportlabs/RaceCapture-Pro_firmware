@@ -353,6 +353,24 @@ void at_task(struct at_info *ati, const size_t ms_delay)
 }
 
 /**
+ * Utility to reset the AT state machine.  Useful after device reset.
+ */
+void at_reset(struct at_info *ati)
+{
+        if (!ati->sb) {
+                pr_error("[at] AT machine not yet initialized!\r\n");
+                return;
+        }
+
+        ati->rx_state = AT_RX_STATE_READY;
+        ati->cmd_state = AT_CMD_STATE_READY;
+        ati->cmd_queue.head = ati->cmd_queue.cmds;
+        ati->cmd_queue.count = 0;
+
+        serial_buffer_reset(ati->sb);
+}
+
+/**
  * Initializes an at_info struct for use with the AT system.
  * @param ati The at_info structure to initialize.
  * @param sb The serial_buffer to use for tx/rx.  Data is kept in the buffer
@@ -378,18 +396,13 @@ bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
 
         /* Clear everything.  We don't know where at_info has been */
         memset(ati, 0, sizeof(*ati));
-
-        ati->rx_state = AT_RX_STATE_READY;
-        ati->cmd_state = AT_CMD_STATE_READY;
         ati->unhandled_urc_cb = unhandled_urc_cb;
         ati->sb = sb;
         if (!at_configure_device(ati, quiet_period_ms, delim))
                 return false;
 
-        /* Init the HEAD pointer of our queue... else segfault */
-        ati->cmd_queue.head = ati->cmd_queue.cmds;
-        serial_buffer_reset(ati->sb);
-
+        /* Reset the state machine, and now we are ready to run */
+        at_reset(ati);
         return true;
 }
 
