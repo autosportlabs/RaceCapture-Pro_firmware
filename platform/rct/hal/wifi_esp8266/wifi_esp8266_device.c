@@ -72,12 +72,13 @@ static void esp8266_enable_flash_boot(void)
 /**
  * Perform a hard reset of the ESP8266 module
  */
-void wifi_device_reset()
+bool wifi_device_reset()
 {
         GPIO_ResetBits(ESP8266_RESET_GPIO, ESP8266_RESET_PIN);
         delayMs(ESP8266_RESET_DURATION_MS);
         GPIO_SetBits(ESP8266_RESET_GPIO, ESP8266_RESET_PIN);
         delayMs(ESP8266_BOOT_DURATION_MS);
+        return true;
 }
 
 /**
@@ -87,6 +88,5 @@ bool wifi_device_init()
 {
         esp8266_init_io();
         esp8266_enable_flash_boot();
-        wifi_device_reset();
-        return true;
+        return wifi_device_reset();
 }
