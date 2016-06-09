@@ -101,9 +101,15 @@ struct at_timing {
         tiny_millis_t quiet_start_ms;
 };
 
+enum at_dev_cfg_flag {
+        /* Used for AT devices that will send URCS mid command response */
+        AT_DEV_CFG_FLAG_RUDE = 1 << 0,
+};
+
 struct at_dev_cfg {
         char delim[AT_DEV_CVG_DELIM_MAX_LEN];
         tiny_millis_t quiet_period_ms;
+        enum at_dev_cfg_flag flags;
 };
 
 enum at_urc_flags {
