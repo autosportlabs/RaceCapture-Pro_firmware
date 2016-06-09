@@ -507,12 +507,12 @@ static bool parse_client_info(char *rsp,
         case 1:
                 /* No AP */
                 return true;
-        case 5:
-                break;
-        default:
+        case 0:
+        case 2: /* Then we fail */
                 return false;
         }
 
+        /* If here, we have 3 or more tokens. */
         info->has_ap = true;
         const char *ssid = at_parse_rsp_str(toks[1]);
         const char *mac = at_parse_rsp_str(toks[2]);
