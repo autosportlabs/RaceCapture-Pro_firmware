@@ -24,11 +24,13 @@
 #include "dateTime.h"
 #include "esp8266.h"
 #include "esp8266_drv.h"
+#include "net/ipv4.h"
 #include "macros.h"
 #include "loggerConfig.h"
 #include "panic.h"
 #include "printk.h"
 #include "queue.h"
+#include "semphr.h"
 #include "str_util.h"
 #include "task.h"
 #include "taskUtil.h"
@@ -97,9 +99,17 @@ struct channel {
         bool created_externally;
 };
 
+struct channel_sync_op {
+        xSemaphoreHandle op_semaphore;
+        xSemaphoreHandle cb_semaphore;
+        size_t chan_id;
+};
+
 struct comm {
         new_conn_func_t *new_conn_cb;
         struct channel channels[MAX_CHANNELS];
+        struct channel_sync_op connect_op;
+        struct channel_sync_op close_op;
 };
 
 /**
@@ -262,6 +272,18 @@ static int get_next_free_channel_num()
 
         return -1;
 }
+
+static int find_channel_with_serial(struct Serial *serial)
+{
+        for (size_t i = 0; is_valid_socket_channel_id(i); ++i) {
+                struct channel *ch = esp8266_state.comm.channels + i;
+                if (serial == ch->serial)
+                        return i;
+        }
+
+        return -1;
+}
+
 
 /**
  * Callback that gets invoked by the device code whenever new data
@@ -1161,6 +1183,23 @@ bool esp8266_drv_update_ap_cfg(const struct wifi_ap_cfg *wac)
         return true;
 }
 
+static bool init_channel_sync_op(struct channel_sync_op* op)
+{
+        if (op->op_semaphore || op->cb_semaphore) {
+                pr_error(LOG_PFX "Sync op already initialized\r\n");
+                return false;
+        }
+
+        op->op_semaphore = xSemaphoreCreateBinary();
+        op->cb_semaphore = xSemaphoreCreateBinary();
+
+        if (!op->op_semaphore || !op->cb_semaphore)
+                return false;
+
+        xSemaphoreGive(op->op_semaphore);
+        return true;
+}
+
 bool esp8266_drv_init(struct Serial *s, const int priority,
                       new_conn_func_t new_conn_cb)
 {
@@ -1182,6 +1221,15 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
 
         serial_config(esp8266_state.device.serial, SERIAL_BITS, SERIAL_PARITY,
                       SERIAL_STOP_BITS, SERIAL_BAUD);
+
+        /* Create and setup semaphores for connections */
+        const bool init_sync_ops =
+                init_channel_sync_op(&esp8266_state.comm.connect_op) &&
+                init_channel_sync_op(&esp8266_state.comm.close_op);
+        if (!init_sync_ops) {
+                pr_error(LOG_PFX "Failed to initialize sync op structs\r\n");
+                return false;
+        }
 
         /* Initialize our WiFi configs here */
         LoggerConfig *lc = getWorkingLoggerConfig();
@@ -1208,38 +1256,163 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         return true;
 }
 
-static void _connect_cb(bool status, const int chan_id)
+/**
+ * Callback method invoked when a callback completes.
+ */
+static void connect_cb(const bool status, const bool already_connected)
 {
-        struct channel *ch = esp8266_state.comm.channels + chan_id;
-        ch->connected = status;
-        cmd_set_check(CHECK_DATA);
-}
+        struct channel_sync_op *cso = &esp8266_state.comm.connect_op;
+        struct channel *ch = esp8266_state.comm.channels + cso->chan_id;
 
-struct Serial* esp8266_drv_connect(const enum protocol proto,
-                                   const char* dst_ip,
-                                   const unsigned int dst_port)
-{
-        const int chan_id = get_next_free_channel_num();
-        if (chan_id < 0) {
-                pr_warning(LOG_PFX "Failed to acquire a free channel\r\n");
-                return NULL;
+        ch->connected = status;
+
+        if (!status && already_connected) {
+                /* Attempt to close the connection to rectify state */
+                pr_info(LOG_PFX "Closing unexpectedly open connection\r\n");
+                esp8266_close(cso->chan_id, NULL);
         }
 
-        struct channel *ch = get_channel_for_use(chan_id);
+        cmd_set_check(CHECK_DATA);
+
+        xSemaphoreGive(cso->cb_semaphore);
+}
+
+/**
+ * Synchronous command used to open a new connection to a given destinataion
+ * @param proto The protocol to use.
+ * @param addr The destination address (either IP or DNS name).
+ * @param port The destination port to connect to.
+ * @return A valid Serial object if a connection was made, NULL otherwise.
+ */
+struct Serial* esp8266_drv_connect(const enum protocol proto,
+                                   const char* addr,
+                                   const unsigned int port)
+{
+        /* This is synchronous code for now */
+        struct channel_sync_op *cso = &esp8266_state.comm.connect_op;
+        xSemaphoreTake(cso->op_semaphore, portMAX_DELAY);
+
+        struct Serial* serial = NULL;
+        cso->chan_id = get_next_free_channel_num();
+        if (cso->chan_id < 0) {
+                pr_warning(LOG_PFX "Failed to acquire a free channel\r\n");
+                goto done;
+        }
+
+        struct channel *ch = get_channel_for_use(cso->chan_id);
         if (NULL == ch) {
                 pr_warning(LOG_PFX "Can't allocate resources for channel\r\n");
-                return NULL;
+                goto done;
+        }
+
+        bool connect_result = false;
+        switch(proto) {
+        case PROTOCOL_TCP:
+                connect_result = esp8266_connect_tcp(cso->chan_id, addr,
+                                                     port, -1, connect_cb);
+                break;
+        case PROTOCOL_UDP:
+                ;
+                int src_port = 0;
+                enum esp8266_udp_mode udp_mode = ESP8266_UDP_MODE_NONE;
+                if (0 == strcmp(addr, IPV4_BROADCAST_ADDRESS_STR)) {
+                        src_port = port;
+                        udp_mode = ESP8266_UDP_MODE_PEER_CHANGE_WHENEVER;
+                }
+                connect_result = esp8266_connect_udp(cso->chan_id, addr,
+                                                     port, src_port,
+                                                     udp_mode, connect_cb);
+                break;
+        }
+        if (!connect_result) {
+                pr_warning(LOG_PFX "Failed to issue connect command\r\n");
+                goto done;
+        }
+
+        /* Now wait for our callback to come */
+        if (!xSemaphoreTake(cso->cb_semaphore, portMAX_DELAY)) {
+                pr_warning(LOG_PFX "Timed out waiting for connect "
+                           "response\r\n");
+                goto done;
+        }
+
+        if (!ch->connected) {
+                pr_info_str_msg(LOG_PFX "Failed to connect: ", addr);
+                goto done;
         }
 
         ch->in_use = true;
-        if (!esp8266_connect(chan_id, proto, dst_ip, dst_port,
-                             _connect_cb)) {
-                pr_warning(LOG_PFX "Failed to issue connect command\r\n");
-                return NULL;
+        serial = ch->serial;
+        pr_info_int_msg(LOG_PFX "Connected on comm channel ", cso->chan_id);
+
+done:
+        xSemaphoreGive(cso->op_semaphore);
+        return serial;
+}
+
+/**
+ * Callback invoked when the close command completes.
+ */
+static void close_cb(const bool status)
+{
+        struct channel_sync_op *cso = &esp8266_state.comm.close_op;
+        struct channel *ch = esp8266_state.comm.channels + cso->chan_id;
+
+        if (status)
+                ch->connected = false;
+
+        cmd_set_check(CHECK_DATA);
+
+        xSemaphoreGive(cso->cb_semaphore);
+}
+
+/**
+ * Closes an open connection given the Serial object returned by
+ * esp8266_drv_connect
+ * @param serial Serial object returned by esp8266_drv_connect
+ * @return True if the operation was successful, false otherwise.
+ */
+bool esp8266_drv_close(struct Serial* serial)
+{
+        /* This is synchronous code for now */
+        struct channel_sync_op *cso = &esp8266_state.comm.close_op;
+        xSemaphoreTake(cso->op_semaphore, portMAX_DELAY);
+        bool status = false;
+
+        cso->chan_id = find_channel_with_serial(serial);
+        if (0 > cso->chan_id) {
+                pr_warning(LOG_PFX "Unable to find channel with associated "
+                           "Serial device.\r\n");
+                goto done;
         }
 
-        pr_info_int_msg(LOG_PFX "Opened comm channel ", chan_id);
-        return ch->serial;
+        struct channel *ch = esp8266_state.comm.channels + cso->chan_id;
+        if (!ch->connected)
+                pr_warning(LOG_PFX "Channel supposedly not connected.\r\n");
+
+        if (!esp8266_close(cso->chan_id, close_cb)) {
+                pr_warning(LOG_PFX "Failed to issue close command\r\n");
+                goto done;
+        }
+
+        /* Now wait for our callback to come */
+        if (!xSemaphoreTake(cso->cb_semaphore, portMAX_DELAY)) {
+                pr_warning(LOG_PFX "Timed out waiting for close "
+                           "response\r\n");
+                goto done;
+        }
+
+        if (ch->connected) {
+                pr_info_int_msg(LOG_PFX "Failed to close channel ", cso->chan_id);
+                goto done;
+        }
+
+        ch->in_use = false;
+        ch->created_externally = false;
+
+done:
+        xSemaphoreGive(cso->op_semaphore);
+        return status;
 }
 
 const struct esp8266_ipv4_info* get_client_ipv4_info()

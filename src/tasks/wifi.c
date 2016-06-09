@@ -219,6 +219,9 @@ static void do_beacon()
                 NULL,
         };
         send_beacon(serial, ips);
+
+        /* Now flush all incomming data.  We don't care about it. */
+        serial_purge_rx_queue(serial);
 }
 
 static tiny_millis_t get_task_sleep_time()

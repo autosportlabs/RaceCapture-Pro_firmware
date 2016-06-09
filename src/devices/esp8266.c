@@ -731,76 +731,119 @@ bool esp8266_set_ap_info(const struct esp8266_ap_info* info,
 }
 
 /**
- *
- * @param cb The callback to be invoked when the method completes.
+ * The callback to be invoked when a connect method completes.
  */
 static bool connect_cb(struct at_rsp *rsp, void *up)
 {
         static const char *cmd_name = "connect_cb";
-        void (*cb)(bool, const int) = up;
-        bool status = at_ok(rsp);
-        int chan_id = -1;
+        esp8266_connect_cb_t *cb = up;
+        const bool status = at_ok(rsp);
+        const bool in_use = STR_EQ(rsp->msgs[0], "ALREADY CONNECTED");
 
-        if (!status) {
+        if (!status)
                 cmd_failure(cmd_name, NULL);
-                goto do_cb;
-        }
 
-        /*
-         * <chan_id>,<connection status>
-         * 0,CONNECT
-         */
-        char *toks[3];
-        const int tok_cnt = at_parse_rsp_line(rsp->msgs[0], toks,
-                                              ARRAY_LEN(toks));
-
-        if (tok_cnt != 2) {
-                cmd_failure(cmd_name, "Unexpected # of tokens in response");
-                status = false;
-                goto do_cb;
-        }
-        chan_id = atoi(toks[0]);
-
-do_cb:
         if (cb)
-                cb(status, chan_id);
+                cb(status, in_use);
 
         return false;
 }
 
 /**
- * Opens a connection to a given destination.
+ * Opens a TCP connection to a given destination.
  * @param chan_id The channel ID to use.  0 - 4
- * @param proto The Network protocol to use.
- * @param dest_port The destination port to send data to.
+ * @param addr The destination IP/Name for the connection.
+ * @param port The destination port to send data to.
+ * @param keepalive The keepalive timeout for TCP. Set to -1 for defualt.
  * @return true if the request was queued, false otherwise.
  */
-bool esp8266_connect(const int chan_id, const enum protocol proto,
-                     const char *ip_addr, const int dest_port,
-                     void (*cb) (bool, const int))
+bool esp8266_connect_tcp(const int chan_id, const char* addr,
+                         const int port, const int keepalive,
+                         esp8266_connect_cb_t* cb)
+{
+        if (!check_initialized("connect_tcp"))
+                return false;
+
+        char cmd[64];
+        if (0 < keepalive) {
+                snprintf(cmd, ARRAY_LEN(cmd), "AT+CIPSTART=%d,\"TCP\","
+                         "\"%s\",%d,%d",chan_id, addr, port, keepalive);
+        } else {
+                snprintf(cmd, ARRAY_LEN(cmd), "AT+CIPSTART=%d,\"TCP\","
+                         "\"%s\",%d",chan_id, addr, port);
+        }
+
+        return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
+                                  connect_cb, cb);
+}
+
+/**
+ * Opens a UDP connection to a given destination.
+ * @param chan_id The channel ID to use.  0 - 4
+ * @param addr The destination IP/Name for the connection.
+ * @param port The destination port.
+ * @param src_port Optional source port for UDP.  Set to 0 for default.
+ * @param udp_mode Optional UDP mode.  Set to ESP8266_UDP_MODE_NONE to
+ * ignore this.  If set, requires src_port be defined.
+ * @return true if the request was queued, false otherwise.
+ */
+bool esp8266_connect_udp(const int chan_id, const char* addr,
+                         const int port, const int src_port,
+                         const enum esp8266_udp_mode udp_mode,
+                         esp8266_connect_cb_t* cb)
 {
         if (!check_initialized("connect"))
                 return false;
 
         char cmd[64];
-        const char* proto_str;
-        switch (proto) {
-        case PROTOCOL_TCP:
-                proto_str = "TCP";
-                break;
-        case PROTOCOL_UDP:
-                proto_str = "UDP";
-                break;
-        default:
-                cmd_failure("esp8266_connect", "Invalid protocol");
-                return false;
+        if (ESP8266_UDP_MODE_NONE != udp_mode) {
+                snprintf(cmd, ARRAY_LEN(cmd), "AT+CIPSTART=%d,\"UDP\","
+                         "\"%s\",%d,%d,%d", chan_id, addr, port,
+                         src_port, udp_mode);
+        } else if (src_port) {
+                snprintf(cmd, ARRAY_LEN(cmd), "AT+CIPSTART=%d,\"UDP\","
+                         "\"%s\",%d,%d", chan_id, addr, port, src_port);
+        } else {
+                snprintf(cmd, ARRAY_LEN(cmd), "AT+CIPSTART=%d,\"UDP\","
+                         "\"%s\",%d", chan_id, addr, port);
         }
-
-        snprintf(cmd, ARRAY_LEN(cmd), "AT+CIPSTART=%d,\"%s\",\"%s\",%d",
-                 chan_id, proto_str, ip_addr, dest_port);
 
         return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
                                   connect_cb, cb);
+}
+
+/**
+ * Method that is invoked upon the completion of the close method.
+ */
+static bool close_cb(struct at_rsp *rsp, void *up)
+{
+        static const char *cmd_name = "close_cb";
+        esp8266_close_cb_t* cb = up;
+        bool status = at_ok(rsp);
+
+        if (!status)
+                cmd_failure(cmd_name, NULL);
+
+        if (cb)
+                cb(status);
+
+        return false;
+}
+
+/**
+ * Closes a connection
+ * @param chan_id The channel ID to use.  0 - 4
+ * @return true if the request was queued, false otherwise.
+ */
+bool esp8266_close(const int chan_id, esp8266_close_cb_t* cb)
+{
+        if (!check_initialized("close"))
+                return false;
+
+        char cmd[16];
+        snprintf(cmd, ARRAY_LEN(cmd), "AT+CIPCLOSE=%d", chan_id);
+        return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
+                                  close_cb, cb);
 }
 
 struct tx_info {
