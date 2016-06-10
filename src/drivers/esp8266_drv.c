@@ -291,6 +291,8 @@ static int find_channel_with_serial(struct Serial *serial)
  */
 static void rx_data_cb(int chan_id, size_t len, const char* data)
 {
+        pr_debug_str_msg(LOG_PFX "Rx: ", data);
+
         if (!is_valid_socket_channel_id(chan_id)) {
                 pr_error_int_msg(LOG_PFX "Channel id to big: ", chan_id);
                 return;
@@ -329,8 +331,13 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
          * data very shortly.
          */
         xQueueHandle q = serial_get_rx_queue(ch->serial);
-        for (size_t i = 0; i < len; ++i)
-                xQueueSend(q, data + i, portMAX_DELAY);
+        bool data_dropped = false;
+        for (size_t i = 0; i < len && !data_dropped; ++i)
+                if (!xQueueSend(q, data + i, 0))
+                        data_dropped = true;
+
+        if (data_dropped)
+                pr_warning(LOG_PFX "Rx data dropped!\r\n");
 
         cmd_set_check(CHECK_DATA);
 }
