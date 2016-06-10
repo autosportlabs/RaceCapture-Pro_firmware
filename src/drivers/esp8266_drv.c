@@ -47,6 +47,7 @@
 #define INIT_FAIL_SLEEP_MS	10000
 #define LOG_PFX			"[ESP8266 Driver] "
 #define MAX_CHANNELS		5
+#define RX_DATA_TIMEOUT_TICKS	1
 #define SERIAL_BAUD		115200
 #define SERIAL_BITS		8
 #define SERIAL_CMD_MAX_LEN	1024
@@ -333,7 +334,7 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
         xQueueHandle q = serial_get_rx_queue(ch->serial);
         bool data_dropped = false;
         for (size_t i = 0; i < len && !data_dropped; ++i)
-                if (!xQueueSend(q, data + i, 0))
+                if (!xQueueSend(q, data + i, RX_DATA_TIMEOUT_TICKS))
                         data_dropped = true;
 
         if (data_dropped)
