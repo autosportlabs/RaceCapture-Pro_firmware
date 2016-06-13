@@ -62,6 +62,8 @@ CPP_GUARD_BEGIN
         API_METHOD("setLapCfg", api_setLapConfig)                       \
         API_METHOD("setLogfileLevel", api_setLogfileLevel)              \
         API_METHOD("setObd2Cfg", api_setObd2Config)                     \
+        API_METHOD("setTelemetryStart", api_set_telemetry_start)        \
+        API_METHOD("setTelemetryStop", api_set_telemetry_stop)          \
         API_METHOD("setTrackCfg", api_setTrackConfig)                   \
         API_METHOD("setWifiCfg", api_set_wifi_cfg)                      \
         API_METHOD("sysReset", api_systemReset)                         \
@@ -173,6 +175,10 @@ void unescapeTextField(char *data);
 /* Wifi methods */
 int api_get_wifi_cfg(struct Serial *s, const jsmntok_t *json);
 int api_set_wifi_cfg(struct Serial *s, const jsmntok_t *json);
+
+/* Telemetry Stream Actions */
+int api_set_telemetry_start(struct Serial *serial, const jsmntok_t *json);
+int api_set_telemetry_stop(struct Serial *serial, const jsmntok_t *json);
 
 CPP_GUARD_END
 

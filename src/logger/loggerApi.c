@@ -1806,3 +1806,33 @@ int api_get_wifi_cfg(struct Serial *serial, const jsmntok_t *json)
 
         return API_SUCCESS_NO_RETURN;
 }
+
+static int get_telemetry_api_return_code(const int cmd_result)
+{
+        switch(cmd_result) {
+        case 0:
+                return API_SUCCESS;
+        case -1:
+                return API_ERROR_UNSUPPORTED;
+        default:
+                return API_ERROR_UNSPECIFIED;
+       }
+}
+
+int api_set_telemetry_start(struct Serial *serial, const jsmntok_t *json)
+{
+        int sample_rate = 1;
+        setIntValueIfExists(json, "sample_rate", &sample_rate);
+
+        const int cmd_result =
+                serial_ioctl(serial, SERIAL_IOCTL_TELEMETRY_ENABLE,
+                             (void*) sample_rate);
+        return get_telemetry_api_return_code(cmd_result);
+}
+
+int api_set_telemetry_stop(struct Serial *serial, const jsmntok_t *json)
+{
+        const int cmd_result =
+                serial_ioctl(serial, SERIAL_IOCTL_TELEMETRY_DISABLE, NULL);
+        return get_telemetry_api_return_code(cmd_result);
+}
