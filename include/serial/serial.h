@@ -115,6 +115,25 @@ xQueueHandle serial_get_rx_queue(struct Serial *s);
 
 xQueueHandle serial_get_tx_queue(struct Serial *s);
 
+enum serial_ioctl {
+        SERIAL_IOCTL_TELEMETRY_ENABLE  = 1,
+        SERIAL_IOCTL_TELEMETRY_DISABLE = 2,
+};
+
+/**
+ * The call back that gets fired when an ioctl is invoked on a Serial device.
+ * @param req The request to be handled.
+ * @param argp Memory pointer that may be useful for the command.
+ * @return Usually on success 0 is returned, but this is dependent on the
+ * ioctl request.  The return value may be a parameter.  Values < 0 usually
+ * indicate an error.
+ */
+typedef int serial_ioctl_cb_t(unsigned long req, void* argp);
+
+void serial_set_ioctl_cb(struct Serial *s, serial_ioctl_cb_t* cb);
+
+int serial_ioctl(struct Serial *s, unsigned long req, void* argp);
+
 int put_int(struct Serial * serial, int n);
 
 int put_ll(struct Serial *serial, long long l);
