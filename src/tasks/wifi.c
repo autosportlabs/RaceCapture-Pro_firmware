@@ -29,6 +29,7 @@
 #include "esp8266_drv.h"
 #include "macros.h"
 #include "messaging.h"
+#include "loggerTaskEx.h"
 #include "panic.h"
 #include "printk.h"
 #include "rx_buff.h"
@@ -42,6 +43,7 @@
 #include "wifi.h"
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 /* Time between beacon messages */
 #define BEACON_PERIOD_MS	1000
@@ -64,7 +66,7 @@
 
 static struct {
         xQueueHandle event_queue;
-        struct rx_msgs {
+        struct {
                 struct rx_buff* rxb;
                 tiny_millis_t timeout;
         } rx_msgs;
@@ -80,11 +82,14 @@ static void log_event_overflow(const char* event_name)
 
 /* *** All methods that are used to generate events *** */
 
-/* Event struct used for all events that come into our wifi task */
+/**
+ * Event struct used for all events that come into our wifi task
+ */
 struct event {
         enum task {
                 TASK_BEACON,
                 TASK_RX_DATA,
+                TASK_SAMPLE,
         } task;
         void *data;
 };
@@ -110,6 +115,66 @@ static void beacon_timer_cb( xTimerHandle xTimer )
 
         if (!xQueueSend(state.event_queue, &event, 0))
                 log_event_overflow("Beacon");
+}
+
+/**
+ * Structure used to house sample data for a wifi telemetry stream until
+ * the event handler picks it up.
+ */
+struct wifi_sample_data {
+        struct Serial* serial;
+        const struct sample* sample;
+};
+
+static void wifi_sample_cb(struct Serial* const serial,
+                           const struct sample* sample)
+{
+        /* Gotta malloc a small buff b/c stuff to send :\ */
+        struct wifi_sample_data* data =
+                malloc(sizeof(struct wifi_sample_data));
+        if (!data) {
+                pr_warning(LOG_PFX "Failed to allocate wifi sample buff\r\n");
+                return;
+        }
+        data->serial = serial;
+        data->sample = sample;
+
+        struct event event = {
+                .task = TASK_SAMPLE,
+                .data = data,
+        };
+
+        /* Send the message here to wake the timer */
+        if (!xQueueSend(state.event_queue, &event, 0))
+                log_event_overflow("Sample CB");
+}
+
+/* *** Wifi Serial IOCTL Handlers *** */
+
+static int wifi_serial_ioctl(struct Serial* serial, unsigned long req,
+                             void* argp)
+{
+        switch(req) {
+        case SERIAL_IOCTL_TELEMETRY_ENABLE:
+        {
+                const bool success =
+                        logger_task_register_sample_cb(wifi_sample_cb,
+                                                       serial) &&
+                        logger_task_enable_sample_cb(serial, (int) argp);
+
+                return success ? 0 : -2;
+        }
+        case SERIAL_IOCTL_TELEMETRY_DISABLE:
+        {
+                const bool success = logger_task_disable_sample_cb(serial);
+
+                return success ? 0 : -2;
+        }
+        default:
+                pr_warning_int_msg(LOG_PFX "Unhandled ioctl request: ",
+                                   (int) req);
+                return -1;
+        }
 }
 
 
@@ -151,6 +216,9 @@ static void process_ready_msg(struct Serial* s)
  */
 static void process_rx_msgs(struct Serial* s)
 {
+        /* Set the Serial IOCTL handler here b/c this is managing task */
+        serial_set_ioctl_cb(s, wifi_serial_ioctl);
+
         struct rx_buff* const rxb = state.rx_msgs.rxb;
 
         while(true) {

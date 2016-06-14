@@ -401,7 +401,7 @@ void serial_set_ioctl_cb(struct Serial *s, serial_ioctl_cb_t* cb)
  */
 int serial_ioctl(struct Serial *s, unsigned long req, void* argp)
 {
-        return s->ioctl_cb ? s->ioctl_cb(req, argp) : -1;
+        return s->ioctl_cb ? s->ioctl_cb(s, req, argp) : -1;
 }
 
 /* STIEG: Replace vsnprintf with vfprintf if you can make a stream */

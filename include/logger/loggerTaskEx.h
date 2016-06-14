@@ -39,7 +39,7 @@ void loggerTaskEx(void *params);
 typedef void logger_task_sample_cb_t(struct Serial* const serial,
                                      const struct sample* sample);
 
-bool logger_task_register_sample_cb(const logger_task_sample_cb_t* cb,
+bool logger_task_register_sample_cb(logger_task_sample_cb_t* cb,
                                     struct Serial* const serial);
 
 bool logger_task_enable_sample_cb(struct Serial* const serial,

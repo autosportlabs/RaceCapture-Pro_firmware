@@ -77,8 +77,8 @@ void do_sample_callbacks(const int sample_tick, const struct sample* sample)
         }
 }
 
-bool logger_task_register_sample_cb(const logger_task_sample_cb_t* cb,
-                                   struct Serial* const serial)
+bool logger_task_register_sample_cb(logger_task_sample_cb_t* cb,
+                                    struct Serial* const serial)
 {
         if (!cb || !serial)
                 return false;

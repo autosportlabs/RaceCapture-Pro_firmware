@@ -128,7 +128,8 @@ enum serial_ioctl {
  * ioctl request.  The return value may be a parameter.  Values < 0 usually
  * indicate an error.
  */
-typedef int serial_ioctl_cb_t(unsigned long req, void* argp);
+typedef int serial_ioctl_cb_t(struct Serial *s, unsigned long req,
+                              void* argp);
 
 void serial_set_ioctl_cb(struct Serial *s, serial_ioctl_cb_t* cb);
 
