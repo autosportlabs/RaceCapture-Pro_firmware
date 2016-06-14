@@ -24,7 +24,7 @@
 
 #include "cpp_guard.h"
 #include "loggerNotifications.h"
-
+#include "sampleRecord.h"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -35,6 +35,18 @@ void stopLogging();
 
 void startLoggerTaskEx( int priority);
 void loggerTaskEx(void *params);
+
+typedef void logger_task_sample_cb_t(struct Serial* const serial,
+                                     const struct sample* sample);
+
+bool logger_task_register_sample_cb(const logger_task_sample_cb_t* cb,
+                                    struct Serial* const serial);
+
+bool logger_task_enable_sample_cb(struct Serial* const serial,
+                                  const int sample_rate);
+
+bool logger_task_disable_sample_cb(struct Serial* const serial);
+
 
 CPP_GUARD_END
 
