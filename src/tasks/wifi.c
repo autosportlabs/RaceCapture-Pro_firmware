@@ -29,7 +29,8 @@
 #include "esp8266_drv.h"
 #include "macros.h"
 #include "messaging.h"
-#include "loggerTaskEx.h"
+#include "loggerApi.h"
+#include "loggerSampleData.h"
 #include "panic.h"
 #include "printk.h"
 #include "rx_buff.h"
@@ -124,12 +125,17 @@ static void beacon_timer_cb( xTimerHandle xTimer )
 struct wifi_sample_data {
         struct Serial* serial;
         const struct sample* sample;
+        size_t tick;
 };
 
 static void wifi_sample_cb(struct Serial* const serial,
-                           const struct sample* sample)
+                           const struct sample* sample,
+                           const int tick)
 {
-        /* Gotta malloc a small buff b/c stuff to send :\ */
+        /*
+         * Gotta malloc a small buff b/c stuff to send. We will free this
+         * in the event handler below.
+         */
         struct wifi_sample_data* data =
                 malloc(sizeof(struct wifi_sample_data));
         if (!data) {
@@ -138,6 +144,7 @@ static void wifi_sample_cb(struct Serial* const serial,
         }
         data->serial = serial;
         data->sample = sample;
+        data->tick = tick;
 
         struct event event = {
                 .task = TASK_SAMPLE,
@@ -149,6 +156,7 @@ static void wifi_sample_cb(struct Serial* const serial,
                 log_event_overflow("Sample CB");
 }
 
+
 /* *** Wifi Serial IOCTL Handlers *** */
 
 static int wifi_serial_ioctl(struct Serial* serial, unsigned long req,
@@ -157,16 +165,22 @@ static int wifi_serial_ioctl(struct Serial* serial, unsigned long req,
         switch(req) {
         case SERIAL_IOCTL_TELEMETRY_ENABLE:
         {
+                pr_info_int_msg(LOG_PFX "Starting telem stream on serial ",
+                                (int) (long) serial);
+                const int rate = (int) (long) argp;
                 const bool success =
-                        logger_task_register_sample_cb(wifi_sample_cb,
-                                                       serial) &&
-                        logger_task_enable_sample_cb(serial, (int) argp);
+                        logger_sample_register_sample_cb(wifi_sample_cb,
+                                                         serial) &&
+                        logger_sample_enable_sample_cb(serial, rate);
 
                 return success ? 0 : -2;
         }
         case SERIAL_IOCTL_TELEMETRY_DISABLE:
         {
-                const bool success = logger_task_disable_sample_cb(serial);
+                pr_info_int_msg(LOG_PFX "Stopping telem stream on serial ",
+                                (int) (long) serial);
+
+                const bool success = logger_sample_disable_sample_cb(serial);
 
                 return success ? 0 : -2;
         }
@@ -275,6 +289,7 @@ static void send_beacon(struct Serial* serial, const char* ips[])
 
         json_objEnd(serial, false);
         json_objEnd(serial, false);
+        put_crlf(serial);
 }
 
 static void do_beacon()
@@ -315,6 +330,25 @@ static void do_beacon()
 }
 
 
+static void process_sample(struct wifi_sample_data* data)
+{
+        struct Serial* serial = data->serial;
+        const struct sample* sample = data->sample;
+        const size_t ticks = data->tick;
+        const bool meta = ticks == 0;
+        free(data);
+
+        if (ticks != sample->ticks) {
+                /* Then the sample has changed underneath us */
+                pr_warning(LOG_PFX "Stale sample.  Dropping \r\n");
+                return;
+        }
+
+        api_send_sample_record(serial, sample, ticks, meta);
+        put_crlf(serial);
+}
+
+
 /* *** Task loop and all public methods *** */
 
 static void _task(void *params)
@@ -333,6 +367,9 @@ static void _task(void *params)
                 case TASK_RX_DATA:
                         /* The event data will have the serial device */
                         process_rx_msgs((struct Serial*) event.data);
+                        break;
+                case TASK_SAMPLE:
+                        process_sample((struct wifi_sample_data*) event.data);
                         break;
                 default:
                         panic(PANIC_CAUSE_UNREACHABLE);

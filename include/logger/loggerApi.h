@@ -167,8 +167,9 @@ int api_runScript(struct Serial *serial, const jsmntok_t *json);
 //messages
 void api_sendLogStart(struct Serial *serial);
 void api_sendLogEnd(struct Serial *serial);
-void api_send_sample_record(struct Serial *serial, struct sample *sample,
-                            unsigned int tick, int sendMeta);
+void api_send_sample_record(struct Serial *serial,
+                            const struct sample *sample,
+                            const unsigned int tick, const int sendMeta);
 //Utility functions
 void unescapeTextField(char *data);
 

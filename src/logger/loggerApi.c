@@ -454,8 +454,9 @@ int api_getMeta(struct Serial *serial, const jsmntok_t *json)
 
 #define MAX_BITMAPS 10
 
-void api_send_sample_record(struct Serial *serial, struct sample *sample,
-                            unsigned int tick, int sendMeta)
+void api_send_sample_record(struct Serial *serial,
+                            const struct sample *sample,
+                            const unsigned int tick, const int sendMeta)
 {
         json_objStart(serial);
         json_objStartString(serial, "s");
@@ -1822,11 +1823,11 @@ static int get_telemetry_api_return_code(const int cmd_result)
 int api_set_telemetry_start(struct Serial *serial, const jsmntok_t *json)
 {
         int sample_rate = 1;
-        setIntValueIfExists(json, "sample_rate", &sample_rate);
+        setIntValueIfExists(json, "rate", &sample_rate);
 
         const int cmd_result =
                 serial_ioctl(serial, SERIAL_IOCTL_TELEMETRY_ENABLE,
-                             (void*) sample_rate);
+                             (void*) (long) sample_rate);
         return get_telemetry_api_return_code(cmd_result);
 }
 

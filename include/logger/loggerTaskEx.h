@@ -36,18 +36,6 @@ void stopLogging();
 void startLoggerTaskEx( int priority);
 void loggerTaskEx(void *params);
 
-typedef void logger_task_sample_cb_t(struct Serial* const serial,
-                                     const struct sample* sample);
-
-bool logger_task_register_sample_cb(logger_task_sample_cb_t* cb,
-                                    struct Serial* const serial);
-
-bool logger_task_enable_sample_cb(struct Serial* const serial,
-                                  const int sample_rate);
-
-bool logger_task_disable_sample_cb(struct Serial* const serial);
-
-
 CPP_GUARD_END
 
 #endif /* LOGGERTASKEX_H_ */

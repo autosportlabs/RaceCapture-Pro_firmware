@@ -46,7 +46,7 @@
 
 #define LOGGER_STACK_SIZE	200
 #define IDLE_TIMEOUT	configTICK_RATE_HZ / 1
-#define SAMPLE_CB_REGISTRY_SIZE	8
+
 #define BACKGROUND_SAMPLE_RATE	SAMPLE_50Hz
 
 int g_loggingShouldRun;
@@ -54,79 +54,6 @@ int g_configChanged;
 int g_telemetryBackgroundStreaming;
 
 xSemaphoreHandle onTick;
-
-struct sample_cb_registry {
-        logger_task_sample_cb_t* cb;
-        struct Serial* serial;
-        int sample_rate;
-} sample_cb_registry[SAMPLE_CB_REGISTRY_SIZE];
-
-static bool is_valid_registry_index(int idx)
-{
-        return (size_t) idx < ARRAY_LEN(sample_cb_registry);
-}
-
-void do_sample_callbacks(const int sample_tick, const struct sample* sample)
-{
-        for (int i = 0; is_valid_registry_index(i); ++i) {
-                struct sample_cb_registry* slot = sample_cb_registry + i;
-                if (slot->cb &&
-                    slot->sample_rate &&
-                    0 == slot->sample_rate % sample_tick)
-                        slot->cb(slot->serial, sample);
-        }
-}
-
-bool logger_task_register_sample_cb(logger_task_sample_cb_t* cb,
-                                    struct Serial* const serial)
-{
-        if (!cb || !serial)
-                return false;
-
-        for (int i = 0; is_valid_registry_index(i); ++i) {
-                struct sample_cb_registry* slot = sample_cb_registry + i;
-                if (serial == slot->serial || NULL == slot->cb) {
-                        slot->cb = cb;
-                        slot->serial = serial;
-                        slot->sample_rate = 0;
-                        return true;
-                }
-        }
-
-        return false;
-}
-
-struct sample_cb_registry* find_registry_slot(struct Serial* const serial)
-{
-        for (int i = 0; is_valid_registry_index(i); ++i) {
-                struct sample_cb_registry* slot = sample_cb_registry + i;
-                if (serial == slot->serial)
-                        return slot;
-        }
-
-        return NULL;
-}
-
-bool logger_task_enable_sample_cb(struct Serial* const serial, const int rate)
-{
-        struct sample_cb_registry* const slot = find_registry_slot(serial);
-        if (!slot)
-                return false;
-
-        slot->sample_rate = encodeSampleRate(rate);
-        return !!slot->sample_rate;
-}
-
-bool logger_task_disable_sample_cb(struct Serial* const serial)
-{
-        struct sample_cb_registry* const slot = find_registry_slot(serial);
-        if (!slot)
-                return false;
-
-        slot->sample_rate = 0;
-        return true;
-}
-
 
 /* This should be 0'd out accroding to C standards */
 static struct sample g_sample_buffer[LOGGER_MESSAGE_BUFFER_SIZE];
@@ -340,7 +267,7 @@ void loggerTaskEx(void *params)
 
 
                 /* Process callback handlers for the samples */
-                do_sample_callbacks(currentTicks, sample);
+                logger_sample_process_callbacks(currentTicks, sample);
 
                 ++bufferIndex;
                 bufferIndex %= buffer_size;
