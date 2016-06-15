@@ -58,6 +58,8 @@
 #define RX_BUFF_SIZE		512
 /* How much stack does this task deserve */
 #define STACK_SIZE		256
+/* Max telemetry stream sample rate */
+#define TELEMETRY_SAMPLE_RATE	10
 /* Make all task names 16 chars including NULL char */
 #define THREAD_NAME		"WiFi Task      "
 /* How many events can be pending before we overflow */
@@ -166,11 +168,16 @@ static int wifi_serial_ioctl(struct Serial* serial, unsigned long req,
         {
                 pr_info_int_msg(LOG_PFX "Starting telem stream on serial ",
                                 (int) (long) serial);
-                const int rate = (int) (long) argp;
-                const bool success =
-                        logger_sample_register_sample_cb(wifi_sample_cb,
-                                                         serial) &&
-                        logger_sample_enable_sample_cb(serial, rate);
+                int rate = (int) (long) argp;
+                if (rate > TELEMETRY_SAMPLE_RATE) {
+                        pr_info_int_msg(LOG_PFX "Telemetry stream rate too "
+                                        "high.  Reducing to ", rate);
+                        rate = TELEMETRY_SAMPLE_RATE;
+                }
+
+                const bool success = logger_sample_register_callback(
+                        wifi_sample_cb, serial) &&
+                        logger_sample_enable_callback(serial, rate);
 
                 return success ? 0 : -2;
         }
@@ -179,7 +186,7 @@ static int wifi_serial_ioctl(struct Serial* serial, unsigned long req,
                 pr_info_int_msg(LOG_PFX "Stopping telem stream on serial ",
                                 (int) (long) serial);
 
-                const bool success = logger_sample_disable_sample_cb(serial);
+                const bool success = logger_sample_disable_callback(serial);
 
                 return success ? 0 : -2;
         }

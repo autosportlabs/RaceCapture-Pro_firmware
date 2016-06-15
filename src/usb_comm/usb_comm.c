@@ -116,17 +116,16 @@ static int usb_serial_ioctl(struct Serial* serial, unsigned long req,
         {
                 pr_info(LOG_PFX "Starting telem stream\r\n");
                 const int rate = (int) (long) argp;
-                const bool success =
-                        logger_sample_register_sample_cb(usb_sample_cb,
-                                                         serial) &&
-                        logger_sample_enable_sample_cb(serial, rate);
+                const bool success = logger_sample_register_callback(
+                        usb_sample_cb, serial) &&
+                        logger_sample_enable_callback(serial, rate);
 
                 return success ? 0 : -2;
         }
         case SERIAL_IOCTL_TELEMETRY_DISABLE:
         {
                 pr_info(LOG_PFX "Stopping telem stream\r\n");
-                const bool success = logger_sample_disable_sample_cb(serial);
+                const bool success = logger_sample_disable_callback(serial);
 
                 return success ? 0 : -2;
         }

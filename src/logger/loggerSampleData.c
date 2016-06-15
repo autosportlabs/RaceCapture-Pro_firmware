@@ -47,7 +47,7 @@
 #define SAMPLE_CB_REGISTRY_SIZE	8
 
 struct sample_cb_registry {
-        logger_sample_sample_cb_t* cb;
+        logger_sample_cb_t* cb;
         struct Serial* serial;
         int sample_rate;
 } sample_cb_registry[SAMPLE_CB_REGISTRY_SIZE];
@@ -424,8 +424,8 @@ void logger_sample_process_callbacks(const int ticks,
         }
 }
 
-bool logger_sample_register_sample_cb(logger_sample_sample_cb_t* cb,
-                                      struct Serial* const serial)
+bool logger_sample_register_callback(logger_sample_cb_t* cb,
+                                     struct Serial* const serial)
 {
         if (!cb || !serial)
                 return false;
@@ -455,8 +455,8 @@ static struct sample_cb_registry* find_registry_slot(
         return NULL;
 }
 
-bool logger_sample_enable_sample_cb(struct Serial* const serial,
-                                    const int rate)
+bool logger_sample_enable_callback(struct Serial* const serial,
+                                   const int rate)
 {
         struct sample_cb_registry* const slot = find_registry_slot(serial);
         if (!slot)
@@ -466,7 +466,7 @@ bool logger_sample_enable_sample_cb(struct Serial* const serial,
         return !!slot->sample_rate;
 }
 
-bool logger_sample_disable_sample_cb(struct Serial* const serial)
+bool logger_sample_disable_callback(struct Serial* const serial)
 {
         struct sample_cb_registry* const slot = find_registry_slot(serial);
         if (!slot)
