@@ -36,6 +36,7 @@ struct rx_buff {
         size_t idx;
         char *buff;
         bool msg_ready;
+        bool echo;
 };
 
 /**
@@ -102,10 +103,11 @@ static bool is_term_char(const char c)
 /**
  * Reads data from the Serial device into our buffer.
  * @param s The serial device to read data from.
+ * @param echo Echo characters if not JSON?
  * @return true if we have received a full message that is ready to be
  * read, false otherwise.
  */
-bool rx_buff_read(struct rx_buff *rxb, struct Serial *s)
+bool rx_buff_read(struct rx_buff *rxb, struct Serial *s, const bool echo)
 {
         xQueueHandle h = serial_get_rx_queue(s);
         char c = 1;
@@ -115,6 +117,13 @@ bool rx_buff_read(struct rx_buff *rxb, struct Serial *s)
                         /* If here, no more data to read for now */
                         return false;
                 }
+
+                /* Set echo based on first character */
+                if (0 == rxb->idx)
+                        rxb->echo = echo && '{' != c;
+
+                if (rxb->echo)
+                        serial_put_c(s, c);
 
                 rxb->msg_ready = is_term_char(c);
                 rxb->buff[rxb->idx] = c;
@@ -133,6 +142,9 @@ bool rx_buff_read(struct rx_buff *rxb, struct Serial *s)
         if (rxb->idx < rxb->cap ||
             (rxb->idx == rxb->cap && is_term_char(c))) {
                 /* Turn the term character into the null */
+                if (rxb->echo)
+                        serial_put_c(s, c);
+
                 rxb->buff[rxb->idx - 1] = 0;
         } else {
                 pr_warning(LOG_PFX "Overflow!");

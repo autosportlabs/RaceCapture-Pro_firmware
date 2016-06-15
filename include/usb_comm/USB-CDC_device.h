@@ -25,10 +25,13 @@
 #include "FreeRTOS.h"
 #include "cpp_guard.h"
 #include "serial.h"
+#include <stdbool.h>
 
 CPP_GUARD_BEGIN
 
-int USB_CDC_device_init(const int priority);
+typedef bool usb_device_data_rx_isr_cb_t();
+
+int USB_CDC_device_init(const int priority, usb_device_data_rx_isr_cb_t* cb);
 
 int USB_CDC_is_initialized();
 

@@ -152,8 +152,10 @@ static void wifi_sample_cb(struct Serial* const serial,
         };
 
         /* Send the message here to wake the timer */
-        if (!xQueueSend(state.event_queue, &event, 0))
+        if (!xQueueSend(state.event_queue, &event, 0)) {
                 log_event_overflow("Sample CB");
+                free(data);
+        }
 }
 
 
@@ -236,7 +238,8 @@ static void process_rx_msgs(struct Serial* s)
         struct rx_buff* const rxb = state.rx_msgs.rxb;
 
         while(true) {
-                rx_buff_read(rxb, s);
+                /* Never echo while reading in WiFi code */
+                rx_buff_read(rxb, s, false);
 
                 switch (rx_buff_get_status(rxb)) {
                 case RX_BUFF_STATUS_EMPTY:

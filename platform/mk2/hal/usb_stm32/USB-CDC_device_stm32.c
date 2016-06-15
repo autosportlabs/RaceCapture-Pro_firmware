@@ -53,7 +53,7 @@ static void _post_tx(xQueueHandle q, void *arg)
                 vcp_tx((uint8_t*) &c, 1);
 }
 
-int USB_CDC_device_init(const int priority)
+int USB_CDC_device_init(const int priority, usb_device_data_rx_isr_cb_t* cb)
 {
         if (usb_serial) {
                 pr_error("[USB] Re-initialized USB Serial!  No bueno\r\n");
@@ -67,7 +67,7 @@ int USB_CDC_device_init(const int priority)
                 panic(PANIC_CAUSE_MALLOC);
         }
 
-        vcp_setup(usb_serial);
+        vcp_setup(usb_serial, cb);
 
         /* Initialize the USB hardware */
         USBD_Init(&USB_OTG_dev, USB_OTG_FS_CORE_ID,
