@@ -1,3 +1,17 @@
+= 2.9.2 =
+* Reduce the size of the DMA buffer to ensure small GPS messages are received.
+* Add 'break;' statements in timer init to use user setting and not fall into
+  the default value of "medium".
+* Improve the processing of GPS stream data to not require start of message to
+  be aligned on even bytes.
+* Added delays to GPS command responses so we can be sure the GPS chips is
+  caught up before the next command is sent. Otherwise we see sporadic
+  failures.
+* Fix a bitwise bug logic in the USART init code.  This would incorretly
+  enable usart interrupts on usart channels where DMA was used.
+* Fixed compilation on GCC 6 toolchain.
+* Verified that USB only power no longer causes the unit to hang.
+
 = 2.9.1 =
 * Added CHAP support for APN authentication on 3G modem.  This is activated
   when user provides an APN password.
