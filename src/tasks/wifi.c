@@ -84,41 +84,6 @@ static void log_event_overflow(const char* event_name)
 /* *** All methods that are used to generate events *** */
 
 /**
- * Event struct used for all events that come into our wifi task
- */
-struct event {
-        enum task {
-                TASK_BEACON,
-                TASK_RX_DATA,
-                TASK_SAMPLE,
-        } task;
-        void *data;
-};
-
-static void _new_conn_cb(struct Serial *s)
-{
-        /* Send event message here to wake the task */
-        struct event event = {
-                .task = TASK_RX_DATA,
-                .data = s,
-        };
-
-        if (!xQueueSend(state.event_queue, &event, 0))
-                log_event_overflow("New Connection");
-}
-
-static void beacon_timer_cb( xTimerHandle xTimer )
-{
-        /* Send the message here to wake the timer */
-        struct event event = {
-                .task = TASK_BEACON,
-        };
-
-        if (!xQueueSend(state.event_queue, &event, 0))
-                log_event_overflow("Beacon");
-}
-
-/**
  * Structure used to house sample data for a wifi telemetry stream until
  * the event handler picks it up.
  */
@@ -128,6 +93,44 @@ struct wifi_sample_data {
         size_t tick;
 };
 
+/**
+ * Event struct used for all events that come into our wifi task
+ */
+struct wifi_event {
+        enum task {
+                TASK_BEACON,
+                TASK_RX_DATA,
+                TASK_SAMPLE,
+        } task;
+        union {
+                struct wifi_sample_data sample;
+                struct Serial* serial;
+        } data;
+};
+
+static void _new_conn_cb(struct Serial *s)
+{
+        /* Send event message here to wake the task */
+        struct wifi_event event = {
+                .task = TASK_RX_DATA,
+                .data.serial = s,
+        };
+
+        if (!xQueueSend(state.event_queue, &event, 0))
+                log_event_overflow("New Connection");
+}
+
+static void beacon_timer_cb( xTimerHandle xTimer )
+{
+        /* Send the message here to wake the timer */
+        struct wifi_event event = {
+                .task = TASK_BEACON,
+        };
+
+        if (!xQueueSend(state.event_queue, &event, 0))
+                log_event_overflow("Beacon");
+}
+
 static void wifi_sample_cb(struct Serial* const serial,
                            const struct sample* sample,
                            const int tick)
@@ -136,26 +139,20 @@ static void wifi_sample_cb(struct Serial* const serial,
          * Gotta malloc a small buff b/c stuff to send. We will free this
          * in the event handler below.
          */
-        struct wifi_sample_data* data =
-                malloc(sizeof(struct wifi_sample_data));
-        if (!data) {
-                pr_warning(LOG_PFX "Failed to allocate wifi sample buff\r\n");
-                return;
-        }
-        data->serial = serial;
-        data->sample = sample;
-        data->tick = tick;
+        const struct wifi_sample_data data_sample = {
+                .serial = serial,
+                .sample = sample,
+                .tick = tick,
+        };
 
-        struct event event = {
+        struct wifi_event event = {
                 .task = TASK_SAMPLE,
-                .data = data,
+                .data.sample = data_sample,
         };
 
         /* Send the message here to wake the timer */
-        if (!xQueueSend(state.event_queue, &event, 0)) {
+        if (!xQueueSend(state.event_queue, &event, 0))
                 log_event_overflow("Sample CB");
-                free(data);
-        }
 }
 
 
@@ -339,7 +336,6 @@ static void process_sample(struct wifi_sample_data* data)
         const struct sample* sample = data->sample;
         const size_t ticks = data->tick;
         const bool meta = ticks == 0;
-        free(data);
 
         if (ticks != sample->ticks) {
                 /* Then the sample has changed underneath us */
@@ -357,7 +353,7 @@ static void process_sample(struct wifi_sample_data* data)
 static void _task(void *params)
 {
         for(;;) {
-                struct event event;
+                struct wifi_event event;
                 if (!xQueueReceive(state.event_queue, &event,
                                    portMAX_DELAY))
                         continue;
@@ -369,10 +365,10 @@ static void _task(void *params)
                         break;
                 case TASK_RX_DATA:
                         /* The event data will have the serial device */
-                        process_rx_msgs((struct Serial*) event.data);
+                        process_rx_msgs(event.data.serial);
                         break;
                 case TASK_SAMPLE:
-                        process_sample((struct wifi_sample_data*) event.data);
+                        process_sample(&event.data.sample);
                         break;
                 default:
                         panic(PANIC_CAUSE_UNREACHABLE);
@@ -391,7 +387,7 @@ bool wifi_init_task(const int wifi_task_priority,
                 return false;
 
         state.event_queue = xQueueCreate(WIFI_EVENT_QUEUE_DEPTH,
-                                         sizeof(struct event));
+                                         sizeof(struct wifi_event));
         if (!state.event_queue)
                 return false;
 

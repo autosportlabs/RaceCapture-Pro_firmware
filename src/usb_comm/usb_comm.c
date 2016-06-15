@@ -53,6 +53,15 @@ static void log_event_overflow(const char* event_name)
 }
 
 /**
+ * Structure used to house sample data for a wifi telemetry stream until
+ * the usb_event handler picks it up.
+ */
+struct usb_sample_data {
+        const struct sample* sample;
+        size_t tick;
+};
+
+/**
  * Event struct used for all events that come into our wifi task
  */
 struct usb_event {
@@ -60,7 +69,9 @@ struct usb_event {
                 TASK_RX_DATA,
                 TASK_SAMPLE,
         } task;
-        void *data;
+        union {
+                struct usb_sample_data sample;
+        } data ;
 };
 
 static bool data_rx_isr_cb()
@@ -75,42 +86,23 @@ static bool data_rx_isr_cb()
         return !!hpta;
 }
 
-/**
- * Structure used to house sample data for a wifi telemetry stream until
- * the usb_event handler picks it up.
- */
-struct usb_sample_data {
-        const struct sample* sample;
-        size_t tick;
-};
-
 static void usb_sample_cb(struct Serial* const serial,
                           const struct sample* sample,
                           const int tick)
 {
-        /*
-         * Gotta malloc a small buff b/c stuff to send. We will free this
-         * in the usb_event handler below.
-         */
-        struct usb_sample_data* data =
-                malloc(sizeof(struct usb_sample_data));
-        if (!data) {
-                pr_warning(LOG_PFX "Failed to allocate usb sample buff\r\n");
-                return;
-        }
-        data->sample = sample;
-        data->tick = tick;
+        const struct usb_sample_data sample_data = {
+                .sample = sample,
+                .tick = tick,
+        };
 
         struct usb_event event = {
                 .task = TASK_SAMPLE,
-                .data = data,
+                .data.sample = sample_data,
         };
 
         /* Send the message here to wake the timer */
-        if (!xQueueSend(usb_state.event_queue, &event, 0)) {
+        if (!xQueueSend(usb_state.event_queue, &event, 0))
                 log_event_overflow("Sample CB");
-                free(data);
-        }
 }
 
 
@@ -189,7 +181,6 @@ static void process_sample(struct usb_sample_data* data)
         const struct sample* sample = data->sample;
         const size_t ticks = data->tick;
         const bool meta = ticks == 0;
-        free(data);
 
         if (ticks != sample->ticks) {
                 /* Then the sample has changed underneath us */
@@ -218,7 +209,7 @@ static void usb_comm_task(void *pvParameters)
                         process_rx_msgs();
                         break;
                 case TASK_SAMPLE:
-                        process_sample((struct usb_sample_data*) event.data);
+                        process_sample(&event.data.sample);
                         break;
                 default:
                         panic(PANIC_CAUSE_UNREACHABLE);
