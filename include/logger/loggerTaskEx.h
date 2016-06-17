@@ -24,7 +24,7 @@
 
 #include "cpp_guard.h"
 #include "loggerNotifications.h"
-
+#include "sampleRecord.h"
 #include <stdbool.h>
 #include <stdint.h>
 

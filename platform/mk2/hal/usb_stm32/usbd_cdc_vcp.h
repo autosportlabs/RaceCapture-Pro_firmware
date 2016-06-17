@@ -36,6 +36,7 @@
 #include "stm32f10x.h"
 #endif /* STM32F2XX */
 
+#include "USB-CDC_device.h"
 #include "serial.h"
 #include "usbd_cdc_core.h"
 #include "usbd_conf.h"
@@ -69,7 +70,7 @@ typedef struct {
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
-void vcp_setup(struct Serial *s);
+void vcp_setup(struct Serial *s, usb_device_data_rx_isr_cb_t* cb);
 void vcp_tx(uint8_t *buf, uint32_t len);
 #endif /* __USBD_CDC_VCP_H */
 

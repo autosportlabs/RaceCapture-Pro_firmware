@@ -35,14 +35,22 @@
 #include "loggerData.h"
 #include "loggerHardware.h"
 #include "loggerSampleData.h"
+#include "macros.h"
 #include "predictive_timer_2.h"
 #include "printk.h"
 #include "sampleRecord.h"
 #include "taskUtil.h"
 #include "timer.h"
 #include "virtual_channel.h"
-
 #include <stdbool.h>
+
+#define SAMPLE_CB_REGISTRY_SIZE	8
+
+struct sample_cb_registry {
+        logger_sample_cb_t* cb;
+        struct Serial* serial;
+        int sample_rate;
+} sample_cb_registry[SAMPLE_CB_REGISTRY_SIZE];
 
 static ChannelSample* processChannelSampleWithFloatGetter(ChannelSample *s,
         ChannelConfig *cfg,
@@ -398,4 +406,72 @@ int populate_sample_buffer(struct sample *s, size_t logTick)
     }
 
     return highestRate;
+}
+
+
+static bool is_valid_registry_index(const int idx)
+{
+        return (size_t) idx < ARRAY_LEN(sample_cb_registry);
+}
+
+void logger_sample_process_callbacks(const int ticks,
+                                     const struct sample* sample)
+{
+        for (int i = 0; is_valid_registry_index(i); ++i) {
+                struct sample_cb_registry* slot = sample_cb_registry + i;
+                if (slot->cb && should_sample(ticks, slot->sample_rate))
+                        slot->cb(slot->serial, sample, ticks);
+        }
+}
+
+bool logger_sample_register_callback(logger_sample_cb_t* cb,
+                                     struct Serial* const serial)
+{
+        if (!cb || !serial)
+                return false;
+
+        for (int i = 0; is_valid_registry_index(i); ++i) {
+                struct sample_cb_registry* slot = sample_cb_registry + i;
+                if (serial == slot->serial || NULL == slot->cb) {
+                        slot->cb = cb;
+                        slot->serial = serial;
+                        slot->sample_rate = 0;
+                        return true;
+                }
+        }
+
+        return false;
+}
+
+static struct sample_cb_registry* find_registry_slot(
+        struct Serial* const serial)
+{
+        for (int i = 0; is_valid_registry_index(i); ++i) {
+                struct sample_cb_registry* slot = sample_cb_registry + i;
+                if (serial == slot->serial)
+                        return slot;
+        }
+
+        return NULL;
+}
+
+bool logger_sample_enable_callback(struct Serial* const serial,
+                                   const int rate)
+{
+        struct sample_cb_registry* const slot = find_registry_slot(serial);
+        if (!slot)
+                return false;
+
+        slot->sample_rate = encodeSampleRate(rate);
+        return !!slot->sample_rate;
+}
+
+bool logger_sample_disable_callback(struct Serial* const serial)
+{
+        struct sample_cb_registry* const slot = find_registry_slot(serial);
+        if (!slot)
+                return false;
+
+        slot->sample_rate = 0;
+        return true;
 }

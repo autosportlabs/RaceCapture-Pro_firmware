@@ -30,20 +30,20 @@
 #endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
 
 /* Includes ------------------------------------------------------------------*/
-#include "usbd_cdc_vcp.h"
+#include "FreeRTOS.h"
+#include "USB-CDC_device.h"
 #include "usb_conf.h"
+#include "usbd_cdc_vcp.h"
+#include <portmacro.h>
+#include <queue.h>
+#include <semphr.h>
+#include <stdbool.h>
+#include <stm32f4xx_exti.h>
+#include <task.h>
+#include <timers.h>
 #include <usb_core.h>
 #include <usb_dcd.h>
 
-#include <stdbool.h>
-#include <FreeRTOS.h>
-#include <task.h>
-#include <portmacro.h>
-#include <semphr.h>
-#include <timers.h>
-#include <queue.h>
-
-#include <stm32f4xx_exti.h>
 /* TODO: Ditch this weird circular buffer and instead make transmit
  * driven from an interrupt */
 /* These are external variables imported from CDC core to be used for IN
@@ -70,7 +70,10 @@ static uint16_t VCP_DataRx   (uint8_t* Buf, uint32_t Len);
 static volatile bool vcp_configured = false;
 /* Locks */
 static xSemaphoreHandle _lock;
+
 static xQueueHandle rx_queue;
+static usb_device_data_rx_isr_cb_t* rx_isr_cb;
+
 static volatile bool connected = false;
 CDC_IF_Prop_TypeDef VCP_fops = {
     VCP_Init,
@@ -92,11 +95,12 @@ void vcp_tx(uint8_t *buf, uint32_t len)
     xSemaphoreGive(_lock);
 }
 
-void vcp_setup(struct Serial* s)
+void vcp_setup(struct Serial* s, usb_device_data_rx_isr_cb_t* cb)
 {
     vSemaphoreCreateBinary(_lock);
     xSemaphoreTake(_lock, portMAX_DELAY);
     rx_queue = serial_get_rx_queue(s);
+    rx_isr_cb = cb;
 }
 
 /* Private functions ---------------------------------------------------------*/
@@ -242,12 +246,16 @@ static uint16_t VCP_DataTx (uint8_t* Buf, uint32_t Len)
   */
 static uint16_t VCP_DataRx (uint8_t* Buf, uint32_t Len)
 {
-        portBASE_TYPE xHigherPriorityTaskWoken;
+        portBASE_TYPE hptw = false;
 
         reinit_if_needed();
         while(Len--)
-                xQueueSendFromISR(rx_queue, Buf++, &xHigherPriorityTaskWoken);
+                xQueueSendFromISR(rx_queue, Buf++, &hptw);
 
+        if (rx_isr_cb)
+                hptw |= rx_isr_cb();
+
+        portEND_SWITCHING_ISR(hptw);
         return USBD_OK;
 }
 

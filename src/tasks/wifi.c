@@ -29,6 +29,8 @@
 #include "esp8266_drv.h"
 #include "macros.h"
 #include "messaging.h"
+#include "loggerApi.h"
+#include "loggerSampleData.h"
 #include "panic.h"
 #include "printk.h"
 #include "rx_buff.h"
@@ -37,56 +39,166 @@
 #include "semphr.h"
 #include "task.h"
 #include "taskUtil.h"
+#include "timers.h"
+#include "queue.h"
 #include "wifi.h"
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 /* Time between beacon messages */
 #define BEACON_PERIOD_MS	1000
 /* Prefix for all log messages */
 #define LOG_PFX			"[wifi] "
 /* How long to wait between polling our incomming msg Serial */
-#define READ_DELAY_MS		3
+#define READ_DELAY_MS		1
 /* How long to wait before giving up on the message */
-#define READ_TIMEOUT_MS		100
+#define READ_TIMEOUT_MS		20
 /* Max size of an incomming message */
 #define RX_BUFF_SIZE		512
 /* How much stack does this task deserve */
 #define STACK_SIZE		256
+/* Max telemetry stream sample rate */
+#define TELEMETRY_SAMPLE_RATE	10
 /* Make all task names 16 chars including NULL char */
 #define THREAD_NAME		"WiFi Task      "
+/* How many events can be pending before we overflow */
+#define WIFI_EVENT_QUEUE_DEPTH	8
 /* The highest channel WiFi can use (USA) */
 #define WIFI_MAX_CHANNEL	11
 
-struct rx_msgs {
-        struct Serial* serial;
-        struct rx_buff* rxb;
-        tiny_millis_t timeout;
-        xSemaphoreHandle semaphor;
-};
-
-struct beacon {
-        tiny_millis_t time_last;
-        struct Serial* serial;
-};
-
 static struct {
-        struct rx_msgs rx_msgs;
-        struct beacon beacon;
+        xQueueHandle event_queue;
+        struct {
+                struct rx_buff* rxb;
+                tiny_millis_t timeout;
+        } rx_msgs;
+        struct {
+                struct Serial* serial;
+        } beacon;
 } state;
+
+static void log_event_overflow(const char* event_name)
+{
+        pr_warning_str_msg(LOG_PFX "Event overflow: ", event_name);
+}
+
+/* *** All methods that are used to generate events *** */
+
+/**
+ * Structure used to house sample data for a wifi telemetry stream until
+ * the event handler picks it up.
+ */
+struct wifi_sample_data {
+        struct Serial* serial;
+        const struct sample* sample;
+        size_t tick;
+};
+
+/**
+ * Event struct used for all events that come into our wifi task
+ */
+struct wifi_event {
+        enum task {
+                TASK_BEACON,
+                TASK_RX_DATA,
+                TASK_SAMPLE,
+        } task;
+        union {
+                struct wifi_sample_data sample;
+                struct Serial* serial;
+        } data;
+};
 
 static void _new_conn_cb(struct Serial *s)
 {
-        /* Set the incoming connection serial pointer and release the task */
-        state.rx_msgs.serial = s;
-        xSemaphoreGive(state.rx_msgs.semaphor);
+        /* Send event message here to wake the task */
+        struct wifi_event event = {
+                .task = TASK_RX_DATA,
+                .data.serial = s,
+        };
+
+        if (!xQueueSend(state.event_queue, &event, 0))
+                log_event_overflow("New Connection");
 }
 
-static void reset_rx_state()
+static void beacon_timer_cb( xTimerHandle xTimer )
 {
-        rx_buff_clear(state.rx_msgs.rxb);
-        state.rx_msgs.timeout = 0;
+        /* Send the message here to wake the timer */
+        struct wifi_event event = {
+                .task = TASK_BEACON,
+        };
+
+        if (!xQueueSend(state.event_queue, &event, 0))
+                log_event_overflow("Beacon");
 }
+
+static void wifi_sample_cb(struct Serial* const serial,
+                           const struct sample* sample,
+                           const int tick)
+{
+        /*
+         * Gotta malloc a small buff b/c stuff to send. We will free this
+         * in the event handler below.
+         */
+        const struct wifi_sample_data data_sample = {
+                .serial = serial,
+                .sample = sample,
+                .tick = tick,
+        };
+
+        struct wifi_event event = {
+                .task = TASK_SAMPLE,
+                .data.sample = data_sample,
+        };
+
+        /* Send the message here to wake the timer */
+        if (!xQueueSend(state.event_queue, &event, 0))
+                log_event_overflow("Sample CB");
+}
+
+
+/* *** Wifi Serial IOCTL Handlers *** */
+
+static int wifi_serial_ioctl(struct Serial* serial, unsigned long req,
+                             void* argp)
+{
+        switch(req) {
+        case SERIAL_IOCTL_TELEMETRY_ENABLE:
+        {
+                pr_info_int_msg(LOG_PFX "Starting telem stream on serial ",
+                                (int) (long) serial);
+                int rate = (int) (long) argp;
+                if (rate > TELEMETRY_SAMPLE_RATE) {
+                        pr_info_int_msg(LOG_PFX "Telemetry stream rate too "
+                                        "high.  Reducing to ", rate);
+                        rate = TELEMETRY_SAMPLE_RATE;
+                }
+
+                const bool success = logger_sample_register_callback(
+                        wifi_sample_cb, serial) &&
+                        logger_sample_enable_callback(serial, rate);
+
+                return success ? 0 : -2;
+        }
+        case SERIAL_IOCTL_TELEMETRY_DISABLE:
+        {
+                pr_info_int_msg(LOG_PFX "Stopping telem stream on serial ",
+                                (int) (long) serial);
+
+                const bool success = logger_sample_disable_callback(serial);
+
+                return success ? 0 : -2;
+        }
+        default:
+                pr_warning_int_msg(LOG_PFX "Unhandled ioctl request: ",
+                                   (int) req);
+                return -1;
+        }
+}
+
+
+/* *** All methods that are used to handle Rx Msgs *** */
 
 /**
  * Code used to process part of a message.
@@ -122,46 +234,44 @@ static void process_ready_msg(struct Serial* s)
 /**
  * Handles all of our incoming messages and what we do with them.
  */
-static void process_rx_msgs()
+static void process_rx_msgs(struct Serial* s)
 {
-        struct Serial* s = state.rx_msgs.serial;
-        state.rx_msgs.serial = NULL;
+        /* Set the Serial IOCTL handler here b/c this is managing task */
+        serial_set_ioctl_cb(s, wifi_serial_ioctl);
+
+        struct rx_buff* const rxb = state.rx_msgs.rxb;
 
         while(true) {
-                struct rx_buff* const rxb = state.rx_msgs.rxb;
-                rx_buff_read(rxb, s);
+                /* Never echo while reading in WiFi code */
+                rx_buff_read(rxb, s, false);
 
                 switch (rx_buff_get_status(rxb)) {
                 case RX_BUFF_STATUS_EMPTY:
                         /* Read and there was nothing.  We are done */
-                        reset_rx_state();
-                        return;
+                        goto rx_done;
                 case RX_BUFF_STATUS_PARTIAL:
                         /* Partial message. Wait for reset or timeout */
                         if (process_partial_and_continue())
                                 continue;
 
-                        reset_rx_state();
-                        return;
-                default:
-                        /* A message awaits us */
+                        /* If here, then rx timeout. */
+                        pr_warning(LOG_PFX "Rx message timeout\r\n");
+                        goto rx_done;
+                case RX_BUFF_STATUS_READY:
+                case RX_BUFF_STATUS_OVERFLOW:
+                        /* A message (possibly partial) awaits us */
                         process_ready_msg(s);
-                        reset_rx_state();
-                        return;
+                        goto rx_done;
                 }
         }
+
+rx_done:
+        rx_buff_clear(rxb);
+        state.rx_msgs.timeout = 0;
 }
 
-static tiny_millis_t get_next_beacon_wkup_time()
-{
-        /* Figure out the next we need to update the beacon */
-        return state.beacon.time_last + BEACON_PERIOD_MS;
-}
 
-static bool time_for_beacon()
-{
-        return state.beacon.time_last <= getUptime();
-}
+/* *** All methods that are used to handle sending beacons *** */
 
 static void send_beacon(struct Serial* serial, const char* ips[])
 {
@@ -186,13 +296,11 @@ static void send_beacon(struct Serial* serial, const char* ips[])
 
         json_objEnd(serial, false);
         json_objEnd(serial, false);
+        put_crlf(serial);
 }
 
 static void do_beacon()
 {
-        /* Update the time the beacon last went out */
-        state.beacon.time_last = getUptime();
-
         const struct esp8266_ipv4_info* client_ipv4 = get_client_ipv4_info();
         const struct esp8266_ipv4_info* softap_ipv4 = get_ap_ipv4_info();
         if (!*client_ipv4->address && !*softap_ipv4->address) {
@@ -200,7 +308,11 @@ static void do_beacon()
                 return;
         }
 
-        /* If here then we have at least one IP.  Send the beacon */
+        /*
+         * If here then we have at least one IP.  Send the beacon.  Now
+         * we need a channel to send the beacon on. Lets grab one if we
+         * don't have one yet.
+         */
         if (NULL == state.beacon.serial) {
                 state.beacon.serial =
                         esp8266_drv_connect(PROTOCOL_UDP, "255.255.255.255",
@@ -220,35 +332,55 @@ static void do_beacon()
         };
         send_beacon(serial, ips);
 
-        /* Now flush all incomming data.  We don't care about it. */
+        /* Now flush all incomming data since we don't care about it. */
         serial_purge_rx_queue(serial);
 }
 
-static tiny_millis_t get_task_sleep_time()
-{
-        const tiny_millis_t next = get_next_beacon_wkup_time();
-        const tiny_millis_t now = getUptime();
 
-        return now >= next ? 0 : next - now;
+static void process_sample(struct wifi_sample_data* data)
+{
+        struct Serial* serial = data->serial;
+        const struct sample* sample = data->sample;
+        const size_t ticks = data->tick;
+        const bool meta = ticks == 0;
+
+        if (ticks != sample->ticks) {
+                /* Then the sample has changed underneath us */
+                pr_warning(LOG_PFX "Stale sample.  Dropping \r\n");
+                return;
+        }
+
+        api_send_sample_record(serial, sample, ticks, meta);
+        put_crlf(serial);
 }
 
-static void _task_loop()
-{
-        const tiny_millis_t sleep_time = get_task_sleep_time();
-        const bool awoke_by_rx =
-                pdTRUE == xSemaphoreTake(state.rx_msgs.semaphor, sleep_time);
 
-        if (awoke_by_rx)
-                process_rx_msgs();
-
-        if (time_for_beacon())
-                do_beacon();
-}
+/* *** Task loop and all public methods *** */
 
 static void _task(void *params)
 {
-        for(;;)
-                _task_loop();
+        for(;;) {
+                struct wifi_event event;
+                if (!xQueueReceive(state.event_queue, &event,
+                                   portMAX_DELAY))
+                        continue;
+
+                /* If here we have an event. Process it */
+                switch (event.task) {
+                case TASK_BEACON:
+                        do_beacon();
+                        break;
+                case TASK_RX_DATA:
+                        /* The event data will have the serial device */
+                        process_rx_msgs(event.data.serial);
+                        break;
+                case TASK_SAMPLE:
+                        process_sample(&event.data.sample);
+                        break;
+                default:
+                        panic(PANIC_CAUSE_UNREACHABLE);
+                }
+        }
 
         panic(PANIC_CAUSE_UNREACHABLE);
 }
@@ -261,12 +393,13 @@ bool wifi_init_task(const int wifi_task_priority,
         if (!s)
                 return false;
 
-        state.rx_msgs.semaphor = xSemaphoreCreateBinary();
-        if (!state.rx_msgs.semaphor)
+        state.event_queue = xQueueCreate(WIFI_EVENT_QUEUE_DEPTH,
+                                         sizeof(struct wifi_event));
+        if (!state.event_queue)
                 return false;
 
         /* Allocate our RX buffer for incomming data */
-        state.rx_msgs.rxb = rx_buff_create( RX_BUFF_SIZE);
+        state.rx_msgs.rxb = rx_buff_create(RX_BUFF_SIZE);
         if (!state.rx_msgs.rxb)
                 return false;
 
@@ -278,8 +411,21 @@ bool wifi_init_task(const int wifi_task_priority,
         xTaskCreate(_task, task_name, stack_size, NULL,
                             wifi_task_priority, NULL);
 
+        const size_t timer_ticks = msToTicks(BEACON_PERIOD_MS);
+        const signed char* timer_name = (signed char*) "Wifi Beacon Timer";
+        xTimerHandle timer_handle = xTimerCreate(timer_name, timer_ticks,
+                                                 true, NULL, beacon_timer_cb);
+        if (!timer_handle)
+                return false;
+
+        /* Start the timer, but delay 1 period to give our WiFi unit time */
+        xTimerStart(timer_handle, timer_ticks);
+
         return true;
 }
+
+
+/* *** Wifi configuration methods *** */
 
 /**
  * Wrapper for the driver to update the client wifi config

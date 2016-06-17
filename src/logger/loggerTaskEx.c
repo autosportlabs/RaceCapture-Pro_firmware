@@ -33,11 +33,13 @@
 #include "loggerHardware.h"
 #include "loggerSampleData.h"
 #include "loggerTaskEx.h"
+#include "macros.h"
 #include "mod_string.h"
 #include "panic.h"
 #include "printk.h"
 #include "sampleRecord.h"
 #include "semphr.h"
+#include "serial.h"
 #include "task.h"
 #include "taskUtil.h"
 #include "watchdog.h"
@@ -257,12 +259,15 @@ void loggerTaskEx(void *params)
                 }
 #endif
 
-
                 /*
                  * The task is responsible for determining if it should use the
                  * sample or if it should drop it due to rate limitations.
                  */
                 queueTelemetryRecord(&msg);
+
+
+                /* Process callback handlers for the samples */
+                logger_sample_process_callbacks(currentTicks, sample);
 
                 ++bufferIndex;
                 bufferIndex %= buffer_size;

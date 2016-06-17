@@ -45,6 +45,7 @@ static struct {
 	uint8_t USB_Rx_Buffer[VIRTUAL_COM_PORT_DATA_SIZE];
 	uint8_t USB_Tx_Buffer[VIRTUAL_COM_PORT_DATA_SIZE];
         struct Serial *serial;
+        usb_device_data_rx_isr_cb_t* rx_isr_cb;
 } usb_state;
 
 /*
@@ -77,7 +78,7 @@ static int USB_CDC_force_reenumeration(void)
 }
 
 /* Public API */
-int USB_CDC_device_init(const int priority)
+int USB_CDC_device_init(const int priority, usb_device_data_rx_isr_cb_t* cb)
 {
 	/* Perform a full USB reset */
 	USB_CDC_force_reenumeration();
@@ -87,6 +88,7 @@ int USB_CDC_device_init(const int priority)
                                          NULL, NULL, NULL, NULL);
 	if (NULL == usb_state.serial)
 		return -1;
+        usb_state.rx_isr_cb = cb;
 
 	Set_System();
 	Set_USBClock();
@@ -159,6 +161,9 @@ void EP3_OUT_Callback(void)
          * is what we do in MK2.  Probably shouldn't go out the door like this.
 	 */
         SetEPRxValid(ENDP3);
+
+        if (usb_state.rx_isr_cb)
+                usb_state.rx_isr_cb();
 
         portEND_SWITCHING_ISR(hpta);
 }

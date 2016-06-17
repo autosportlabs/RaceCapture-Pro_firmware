@@ -23,7 +23,6 @@
 #define _RX_BUFF_H_
 
 #include "cpp_guard.h"
-
 #include <stdbool.h>
 
 CPP_GUARD_BEGIN
@@ -43,7 +42,7 @@ struct rx_buff* rx_buff_create(const size_t cap);
 
 void rx_buff_destroy(struct rx_buff *rxb);
 
-bool rx_buff_read(struct rx_buff *rxb, struct Serial *s);
+bool rx_buff_read(struct rx_buff *rxb, struct Serial *s, const bool echo);
 
 char* rx_buff_get_msg(struct rx_buff *rxb);
 

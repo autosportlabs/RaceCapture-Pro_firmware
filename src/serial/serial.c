@@ -49,6 +49,7 @@ struct Serial {
         void *config_cb_arg;
         post_tx_func_t *post_tx_cb;
         void *post_tx_cb_arg;
+        serial_ioctl_cb_t *ioctl_cb;
 
         enum serial_log_type log_type;
         size_t log_rx_cntr;
@@ -372,6 +373,35 @@ xQueueHandle serial_get_rx_queue(struct Serial *s)
 xQueueHandle serial_get_tx_queue(struct Serial *s)
 {
         return s->tx_queue;
+}
+
+/**
+ * Used to set the callback handler for Serial based IOCTL devices. This
+ * should only be used by the task that is responsible for managing a
+ * serial device. In effect this allows the task to handle Serial specific
+ * requests.  This interface intentionally mimics socket ioctl calls so that
+ * we can more easily replace Serial with Sockets at a later date.
+ * @param s The serial device to alter.
+ * @param cb The callback address.
+ * @note Ideally this would be better placed in the _init method for seial.
+ * But that is not pratical as of this writing because not all Serial
+ * devices are created in the tasks that will actually manage them.
+ * We should fix that at a later date.
+ */
+void serial_set_ioctl_cb(struct Serial *s, serial_ioctl_cb_t* cb)
+{
+        s->ioctl_cb = cb;
+}
+
+/**
+ * Invoke an ioctl request on a Serial device.
+ * @param s The Serial device.
+ * @param req The request to enact.
+ * @param argp Memory address that may be useful for these commands.
+ */
+int serial_ioctl(struct Serial *s, unsigned long req, void* argp)
+{
+        return s->ioctl_cb ? s->ioctl_cb(s, req, argp) : -1;
 }
 
 /* STIEG: Replace vsnprintf with vfprintf if you can make a stream */
