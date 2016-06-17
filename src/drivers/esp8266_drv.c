@@ -26,6 +26,7 @@
 #include "esp8266_drv.h"
 #include "net/ipv4.h"
 #include "macros.h"
+#include "led.h"
 #include "loggerConfig.h"
 #include "panic.h"
 #include "printk.h"
@@ -34,6 +35,7 @@
 #include "str_util.h"
 #include "task.h"
 #include "taskUtil.h"
+#include "timers.h"
 #include "wifi.h"
 #include "wifi_device.h"
 #include <stdbool.h>
@@ -57,6 +59,7 @@
 #define SERIAL_TX_BUFF_SIZE	256
 #define TASK_STACK_SIZE		256
 #define TASK_THREAD_NAME	"ESP8266 Driver"
+#define TXRX_LIGHT_PERIOD_MS	50
 
 enum init_state {
         INIT_STATE_UNINITIALIZED = 0,
@@ -148,6 +151,7 @@ static struct {
         struct server server;
         struct comm comm;
         struct cmd cmd;
+        volatile bool txrx_flag;
 } esp8266_state;
 
 static void cmd_started()
@@ -292,6 +296,7 @@ static int find_channel_with_serial(struct Serial *serial)
  */
 static void rx_data_cb(int chan_id, size_t len, const char* data)
 {
+        esp8266_state.txrx_flag = true;
         pr_debug_str_msg(LOG_PFX "Rx: ", data);
 
         if (!is_valid_socket_channel_id(chan_id)) {
@@ -350,6 +355,7 @@ static void _send_data_cb(int bytes_sent)
 {
         cmd_completed();
         cmd_set_check(CHECK_DATA);
+        esp8266_state.txrx_flag = true;
 
         if (bytes_sent < 0)
                 /* STIEG: Include channel info here somehow */
@@ -1208,6 +1214,18 @@ static bool init_channel_sync_op(struct channel_sync_op* op)
         return true;
 }
 
+static void txrx_light_timer_cb( xTimerHandle xTimer )
+{
+        if (esp8266_state.txrx_flag) {
+                led_toggle(LED_WIFI);
+        } else {
+                led_disable(LED_WIFI);
+        }
+
+        esp8266_state.txrx_flag = false;
+}
+
+
 bool esp8266_drv_init(struct Serial *s, const int priority,
                       new_conn_func_t new_conn_cb)
 {
@@ -1260,6 +1278,17 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         static const signed char task_name[] = TASK_THREAD_NAME;
         const size_t stack_size = TASK_STACK_SIZE;
         xTaskCreate(task, task_name, stack_size, NULL, priority, NULL);
+
+        const size_t timer_ticks = msToTicks(TXRX_LIGHT_PERIOD_MS);
+        const signed char* timer_name = (signed char*) "Wifi TxRx Light Timer";
+        xTimerHandle timer_handle = xTimerCreate(timer_name, timer_ticks,
+                                                 true, NULL, txrx_light_timer_cb);
+        if (!timer_handle)
+                return false;
+
+        /* Start the timer, but delay 1 period to give our WiFi unit time */
+        xTimerStart(timer_handle, timer_ticks);
+
 
         return true;
 }

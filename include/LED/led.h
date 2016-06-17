@@ -43,6 +43,7 @@ enum led {
         LED_LOGGER    =  1,
         LED_GPS       =  2,
         LED_TELEMETRY =  3,
+        LED_WIFI      =  4,
 };
 
 bool led_init(void);
