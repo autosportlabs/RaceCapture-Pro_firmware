@@ -129,15 +129,22 @@ static void end_lap_timing(const GpsSnapshot *gpsSnapshot)
     g_lapStartTimestamp = -1;
 }
 
-static void update_distance(const GpsSnapshot *gpsSnapshot)
+static void update_distance(const GpsSnapshot *gps_ss)
 {
-    const GeoPoint prev = gpsSnapshot->previousPoint;
-    const GeoPoint curr = gpsSnapshot->sample.point;
+        const float speed_avg =
+                (gps_ss->sample.speed + gps_ss->previous_speed) / 2;
 
-    if (!isValidPoint(&prev) || !isValidPoint(&curr))
-        return;
+        if (speed_avg < 1)
+                return;
 
-    g_distance += distPythag(&prev, &curr) / 1000;
+        /*
+         * Speed: KM/H
+         * Delta ms: ms
+         * KM/H * delta ms / 3600 = distance.  To save a divide
+         * we do KM/H * delta ms * (1 / 3600)
+         */
+        static const float factor = 1 / 3600;
+        g_distance += speed_avg * gps_ss->delta_last_sample * factor;
 }
 
 static void set_distance(const float distance)

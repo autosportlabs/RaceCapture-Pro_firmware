@@ -190,15 +190,25 @@ static void updateFullDateTime(GpsSample *gpsSample)
 
 void GPS_sample_update(GpsSample *newSample)
 {
-    if (!isGpsSignalUsable(newSample->quality)) return;
+        if (!isGpsSignalUsable(newSample->quality))
+                return;
 
-    const GeoPoint prevPoint = g_gpsSnapshot.sample.point;
+        const GeoPoint prevPoint = g_gpsSnapshot.sample.point;
+        const float prev_speed = g_gpsSnapshot.sample.speed;
+        const tiny_millis_t prev_deltaff = g_gpsSnapshot.deltaFirstFix;
 
-    // Deep copy stuff.
-    g_gpsSnapshot.sample = *newSample;
-    updateFullDateTime(newSample);
-    g_gpsSnapshot.deltaFirstFix = newSample->time - g_timeFirstFix;
-    g_gpsSnapshot.previousPoint = prevPoint;
+        /*
+         * Deep copy stuff and call updateFullDateTime before we update
+         * everything else.
+         */
+        g_gpsSnapshot.sample = *newSample;
+        updateFullDateTime(newSample);
+
+        g_gpsSnapshot.deltaFirstFix = newSample->time - g_timeFirstFix;
+        g_gpsSnapshot.previousPoint = prevPoint;
+        g_gpsSnapshot.previous_speed = prev_speed;
+        g_gpsSnapshot.delta_last_sample =
+                g_gpsSnapshot.deltaFirstFix - prev_deltaff;
 }
 
 int GPS_processUpdate(struct Serial *serial)
