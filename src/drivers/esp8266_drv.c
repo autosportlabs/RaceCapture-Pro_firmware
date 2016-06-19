@@ -42,24 +42,24 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define AT_TASK_TIMEOUT_MS	3
+#define AP_BACKOFF_MS			30000
+#define AT_TASK_TIMEOUT_MS		3
 #define CHECK_DONE_SLEEP_MS	3600000
-#define CLIENT_BACKOFF_MS	3000
-#define AP_BACKOFF_MS		30000
-#define INIT_FAIL_SLEEP_MS	10000
-#define LOG_PFX			"[ESP8266 Driver] "
-#define MAX_CHANNELS		5
+#define CLIENT_BACKOFF_MS		3000
+#define INIT_FAIL_SLEEP_MS		10000
+#define LED_PERIOD_MS			25
+#define LOG_PFX					"[ESP8266 Driver] "
+#define MAX_CHANNELS          5
 #define RX_DATA_TIMEOUT_TICKS	1
-#define SERIAL_BAUD		115200
-#define SERIAL_BITS		8
-#define SERIAL_CMD_MAX_LEN	1024
-#define SERIAL_PARITY		0
+#define SERIAL_BAUD           115200
+#define SERIAL_BITS           8
+#define SERIAL_CMD_MAX_LEN    1024
+#define SERIAL_PARITY         0
 #define SERIAL_RX_BUFF_SIZE	256
-#define SERIAL_STOP_BITS	1
+#define SERIAL_STOP_BITS      1
 #define SERIAL_TX_BUFF_SIZE	256
-#define TASK_STACK_SIZE		256
-#define TASK_THREAD_NAME	"ESP8266 Driver"
-#define TXRX_LIGHT_PERIOD_MS	50
+#define TASK_STACK_SIZE       256
+#define TASK_THREAD_NAME      "ESP8266 Driver"
 
 enum init_state {
         INIT_STATE_UNINITIALIZED = 0,
@@ -151,8 +151,31 @@ static struct {
         struct server server;
         struct comm comm;
         struct cmd cmd;
-        volatile bool txrx_flag;
+        struct {
+                tiny_millis_t backoff;
+                xTimerHandle timer;
+        } led;
 } esp8266_state;
+
+static void led_timer_cb( xTimerHandle xTimer )
+{
+        led_set(LED_WIFI, false);
+}
+
+static void trigger_led()
+{
+        const tiny_millis_t now = getUptime();
+
+        /* Backoff until backoff is expired */
+        if (esp8266_state.led.timer && now < esp8266_state.led.backoff)
+                return;
+
+        /* If here, set the light, and set the timer to turn it off */
+        esp8266_state.led.backoff = now + msToTicks(LED_PERIOD_MS) * 2;
+        xTimerStart(esp8266_state.led.timer, 0);
+        led_set(LED_WIFI, true);
+}
+
 
 static void cmd_started()
 {
@@ -161,6 +184,7 @@ static void cmd_started()
 
 static void cmd_completed()
 {
+        trigger_led();
         esp8266_state.cmd.in_progress = false;
 }
 
@@ -296,7 +320,7 @@ static int find_channel_with_serial(struct Serial *serial)
  */
 static void rx_data_cb(int chan_id, size_t len, const char* data)
 {
-        esp8266_state.txrx_flag = true;
+        trigger_led();
         pr_debug_str_msg(LOG_PFX "Rx: ", data);
 
         if (!is_valid_socket_channel_id(chan_id)) {
@@ -355,7 +379,6 @@ static void _send_data_cb(int bytes_sent)
 {
         cmd_completed();
         cmd_set_check(CHECK_DATA);
-        esp8266_state.txrx_flag = true;
 
         if (bytes_sent < 0)
                 /* STIEG: Include channel info here somehow */
@@ -1214,18 +1237,6 @@ static bool init_channel_sync_op(struct channel_sync_op* op)
         return true;
 }
 
-static void txrx_light_timer_cb( xTimerHandle xTimer )
-{
-        if (esp8266_state.txrx_flag) {
-                led_toggle(LED_WIFI);
-        } else {
-                led_disable(LED_WIFI);
-        }
-
-        esp8266_state.txrx_flag = false;
-}
-
-
 bool esp8266_drv_init(struct Serial *s, const int priority,
                       new_conn_func_t new_conn_cb)
 {
@@ -1279,18 +1290,12 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         const size_t stack_size = TASK_STACK_SIZE;
         xTaskCreate(task, task_name, stack_size, NULL, priority, NULL);
 
-        const size_t timer_ticks = msToTicks(TXRX_LIGHT_PERIOD_MS);
-        const signed char* timer_name = (signed char*) "Wifi TxRx Light Timer";
-        xTimerHandle timer_handle = xTimerCreate(timer_name, timer_ticks,
-                                                 true, NULL, txrx_light_timer_cb);
-        if (!timer_handle)
-                return false;
+        const signed char* timer_name = (signed char*) "Wifi LED Timer";
+        const size_t period = msToTicks(LED_PERIOD_MS);
+        esp8266_state.led.timer = xTimerCreate(timer_name, period, false,
+                                               NULL, led_timer_cb);
 
-        /* Start the timer, but delay 1 period to give our WiFi unit time */
-        xTimerStart(timer_handle, timer_ticks);
-
-
-        return true;
+        return !!esp8266_state.led.timer;
 }
 
 /**
