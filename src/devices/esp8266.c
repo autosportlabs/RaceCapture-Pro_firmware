@@ -378,8 +378,8 @@ bool esp8266_set_op_mode(const enum esp8266_op_mode mode,
         if (!check_initialized("set_op_mode"))
                 return false;
 
-        char cmd_str[16];
-        snprintf(cmd_str, ARRAY_LEN(cmd_str), "AT+CWMODE=%d", (int) mode);
+        char cmd_str[24];
+        snprintf(cmd_str, ARRAY_LEN(cmd_str), "AT+CWMODE_DEF=%d", (int) mode);
         return NULL != at_put_cmd(state.ati, cmd_str, _TIMEOUT_MEDIUM_MS,
                                   set_op_mode_cb, cb);
 }
@@ -426,8 +426,8 @@ bool esp8266_get_op_mode(void (*cb)(bool, enum esp8266_op_mode))
         if (!check_initialized("read_op_mode"))
                 return false;
 
-        return NULL != at_put_cmd(state.ati, "AT+CWMODE?", _TIMEOUT_SHORT_MS,
-                                  read_op_mode_cb, cb);
+        return NULL != at_put_cmd(state.ati, "AT+CWMODE_DEF?",
+                                  _TIMEOUT_SHORT_MS, read_op_mode_cb, cb);
 }
 
 
@@ -690,7 +690,7 @@ bool esp8266_get_ap_info(esp8266_get_ap_info_cb_t *cb)
         if (!check_initialized("get_ap_info"))
                 return false;
 
-        const char cmd[] = "AT+CWSAP?";
+        const char cmd[] = "AT+CWSAP_DEF?";
         return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_MEDIUM_MS,
                                   get_ap_info_cb, cb);
 }
@@ -720,8 +720,8 @@ bool esp8266_set_ap_info(const struct esp8266_ap_info* info,
         if (!check_initialized("set_ap_info") || NULL == info)
                 return false;
 
-        char cmd[64];
-        snprintf(cmd, ARRAY_LEN(cmd), "AT+CWSAP=\"%s\",\"%s\",%d,%d",
+        char cmd[80];
+        snprintf(cmd, ARRAY_LEN(cmd), "AT+CWSAP_DEF=\"%s\",\"%s\",%d,%d",
                  info->ssid, info->password, (int) info->channel,
                  info->encryption);
 
