@@ -19,7 +19,6 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "auto_track.h"
 #include "dateTime.h"
 #include "geoCircle.h"
@@ -42,6 +41,7 @@
 #define GEO_CIRCLE_RADIUS_MIN		1
 #define GEO_TRIGGER_RADIUS_MULTIPLIER	2
 #define KMS_TO_MILES_CONSTANT		0.621371
+#define MEASUREMENT_SPEED_MIN_KPH	1
 /* In Millis */
 #define START_FINISH_TIME_THRESHOLD 	10000
 #define TIME_NULL -1
@@ -324,17 +324,19 @@ static void update_distance(const GpsSnapshot *gps_ss)
         const float speed_avg =
                 (gps_ss->sample.speed + gps_ss->previous_speed) / 2;
 
-        if (speed_avg < 1)
+        /*
+         * Filter out low speed measurements to prevent updates when
+         * a vehicle is stationary or moving at trivial speed.
+         */
+        if (speed_avg < MEASUREMENT_SPEED_MIN_KPH)
                 return;
 
         /*
          * Speed: KM/H
          * Delta ms: ms
-         * KM/H * delta ms / 3600 = distance.  To save a divide
-         * we do KM/H * delta ms * (1 / 3600)
+         * KM/H * delta ms / 3600 = delta distance.
          */
-        static const float factor = 1 / 3600;
-        g_distance += speed_avg * gps_ss->delta_last_sample * factor;
+        g_distance += speed_avg * gps_ss->delta_last_sample / 3600;
 }
 
 static void set_distance(const float distance)
