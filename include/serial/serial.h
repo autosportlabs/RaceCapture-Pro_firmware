@@ -82,6 +82,8 @@ enum serial_log_type serial_logging(struct Serial *s,
 
 void serial_set_name(struct Serial *s, const char *name);
 
+const char* serial_get_name(struct Serial *s);
+
 void serial_init(struct Serial *s, unsigned int bits, unsigned int parity,
                  unsigned int stopBits, unsigned int baud);
 
