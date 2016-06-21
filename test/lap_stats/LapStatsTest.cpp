@@ -45,10 +45,13 @@ void LapStatsTest::setUp()
         gps_ss.sample.point.latitude = 1.1;
         gps_ss.sample.point.longitude = 2.1;
         gps_ss.sample.time = 1234567;
-        gps_ss.deltaFirstFix = 303;
+        gps_ss.sample.speed = 42;
 
+        gps_ss.deltaFirstFix = 303;
         gps_ss.previousPoint.latitude = 1.0;
         gps_ss.previousPoint.longitude = 2.0;
+        gps_ss.previous_speed = 34;
+        gps_ss.delta_last_sample = 100;
 }
 
 void LapStatsTest::reset_test()
@@ -322,8 +325,9 @@ void LapStatsTest::sector_boundary_event_test()
 
 void LapStatsTest::update_distance_test()
 {
-        const float expected = distPythag(&gps_ss.previousPoint,
-                                          &gps_ss.sample.point) / 1000;
+        const float expected =
+                (gps_ss.sample.speed + gps_ss.previous_speed) / 2 *
+                gps_ss.delta_last_sample / 3600;
 
         CPPUNIT_ASSERT_EQUAL((float) 0, getLapDistance());
 
@@ -332,11 +336,13 @@ void LapStatsTest::update_distance_test()
         CPPUNIT_ASSERT_EQUAL(expected, getLapDistance());
 }
 
-void LapStatsTest::update_distance_no_prev_point_test()
+void LapStatsTest::update_distance_low_speed_test()
 {
         CPPUNIT_ASSERT_EQUAL((float) 0, getLapDistance());
 
-        gps_ss.previousPoint = (GeoPoint) { 0 };
+        /* Threshold is 1 KM/H as of this writing */
+        gps_ss.sample.speed = 1.0;
+        gps_ss.previous_speed = 0.8;
         update_distance(&gps_ss);
 
         CPPUNIT_ASSERT_EQUAL((float) 0, getLapDistance());
