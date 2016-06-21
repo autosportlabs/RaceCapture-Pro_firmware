@@ -142,7 +142,7 @@ static void update_distance(const GpsSnapshot *gps_ss)
          * Delta ms: ms
          * KM/H * delta ms / 3600 = delta distance.
          */
-        g_distance += speed_avg * gps_ss->delta_last_sample / 3600;
+        g_distance += speed_avg * gps_ss->delta_last_sample / 3600000.0;
 }
 
 static void set_distance(const float distance)

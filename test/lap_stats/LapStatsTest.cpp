@@ -288,13 +288,14 @@ void LapStatsTest::update_distance_test()
 {
         const float expected =
                 (gps_ss.sample.speed + gps_ss.previous_speed) / 2 *
-                gps_ss.delta_last_sample / 3600;
+                gps_ss.delta_last_sample / 3600000.0;
 
         CPPUNIT_ASSERT_EQUAL((float) 0, getLapDistance());
 
         update_distance(&gps_ss);
 
         CPPUNIT_ASSERT_EQUAL(expected, getLapDistance());
+        CPPUNIT_ASSERT(0 != getLapDistance());
 }
 
 void LapStatsTest::update_distance_low_speed_test()
