@@ -639,6 +639,19 @@ static void dropped_char_timer_cb( xTimerHandle xTimer )
         }
 }
 
+static void setup_debug_tools()
+{
+        /* Only enable this code if we are doing debug work */
+#if ! (ASL_DEBUG)
+        return;
+#endif
+        const size_t timer_ticks = msToTicks(CHAR_CHECK_PERIOD_MS);
+        const signed char* timer_name = (signed char*) "Dropped Char Check Timer";
+        xTimerHandle timer_handle = xTimerCreate(timer_name, timer_ticks,
+                                                 true, NULL, dropped_char_timer_cb);
+        xTimerStart(timer_handle, timer_ticks);
+}
+
 
 /* *** Public methods *** */
 
@@ -671,11 +684,7 @@ int usart_device_init()
         /* Create a timer that fires every tick to handle DMA data */
         setup_dma_timer();
 
-        const size_t timer_ticks = msToTicks(CHAR_CHECK_PERIOD_MS);
-        const signed char* timer_name = (signed char*) "Dropped Char Check Timer";
-        xTimerHandle timer_handle = xTimerCreate(timer_name, timer_ticks,
-                                                 true, NULL, dropped_char_timer_cb);
-        xTimerStart(timer_handle, timer_ticks);
+        setup_debug_tools();
 
         return 1;
 }
