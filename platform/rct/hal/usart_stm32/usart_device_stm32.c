@@ -34,22 +34,24 @@
 #include "stm32f30x_usart.h"
 #include "task.h"
 #include "timers.h"
+#include "taskUtil.h"
 #include "usart_device.h"
 
-#define DEFAULT_GPS_BAUD_RATE		115200
-#define DEFAULT_TELEMETRY_BAUD_RATE	115200
-#define DEFAULT_WIRELESS_BAUD_RATE	115200
-#define DMA_IRQ_PRIORITY		5
-#define GPS_DMA_RX_BUFF_SIZE		32
-#define GPS_DMA_TX_BUFF_SIZE		16
-#define LOG_PFX				"[USART] "
-#define UART_GPS_IRQ_PRIORITY 		5
-#define UART_RX_QUEUE_LEN 		256
-#define UART_TELEMETRY_IRQ_PRIORITY 	6
-#define UART_TX_QUEUE_LEN 		64
-#define UART_WIRELESS_IRQ_PRIORITY 	7
-#define WIFI_DMA_RX_BUFF_SIZE		32
-#define WIFI_DMA_TX_BUFF_SIZE		16
+#define CHAR_CHECK_PERIOD_MS	    100
+#define DEFAULT_GPS_BAUD_RATE	    115200
+#define DEFAULT_TELEMETRY_BAUD_RATE 115200
+#define DEFAULT_WIRELESS_BAUD_RATE  115200
+#define DMA_IRQ_PRIORITY	    5
+#define GPS_DMA_RX_BUFF_SIZE	    32
+#define GPS_DMA_TX_BUFF_SIZE	    16
+#define LOG_PFX			    "[USART] "
+#define UART_GPS_IRQ_PRIORITY	    5
+#define UART_RX_QUEUE_LEN	    384
+#define UART_TELEMETRY_IRQ_PRIORITY 6
+#define UART_TX_QUEUE_LEN	    64
+#define UART_WIRELESS_IRQ_PRIORITY  7
+#define WIFI_DMA_RX_BUFF_SIZE	    32
+#define WIFI_DMA_TX_BUFF_SIZE	    16
 
 typedef enum {
     UART_RX_IRQ = 1,
@@ -68,6 +70,7 @@ static volatile struct usart_info {
         USART_TypeDef *usart;
         volatile struct dma_info dma_rx;
         volatile struct dma_info dma_tx;
+        bool char_dropped;
 } usart_data[__UART_COUNT];
 
 static void init_usart(USART_TypeDef *USARTx, const size_t bits,
@@ -428,7 +431,8 @@ static void usart_generic_irq_handler(volatile struct usart_info *ui)
                  */
                 cChar = USART_ReceiveData(usart);
                 xQueueHandle rx_queue = serial_get_rx_queue(ui->serial);
-                xQueueSendFromISR(rx_queue, &cChar, &xTaskWokenByPost);
+                if (!xQueueSendFromISR(rx_queue, &cChar, &xTaskWokenByPost))
+                        ui->char_dropped = true;
         }
 
         /*
@@ -621,6 +625,21 @@ void setup_dma_timer(void)
         TIM_Cmd(timer, ENABLE);
 }
 
+static void dropped_char_timer_cb( xTimerHandle xTimer )
+{
+        for(size_t i = 0; i < __UART_COUNT; ++i) {
+                volatile struct usart_info* ui = usart_data + i;
+
+                /* Warning for dropped characters */
+                if (ui->char_dropped) {
+                        ui->char_dropped = false;
+                        pr_warning_str_msg(LOG_PFX "Dropped char: ",
+                                           serial_get_name(ui->serial));
+                }
+        }
+}
+
+
 /* *** Public methods *** */
 
 int usart_device_init()
@@ -651,6 +670,12 @@ int usart_device_init()
 
         /* Create a timer that fires every tick to handle DMA data */
         setup_dma_timer();
+
+        const size_t timer_ticks = msToTicks(CHAR_CHECK_PERIOD_MS);
+        const signed char* timer_name = (signed char*) "Dropped Char Check Timer";
+        xTimerHandle timer_handle = xTimerCreate(timer_name, timer_ticks,
+                                                 true, NULL, dropped_char_timer_cb);
+        xTimerStart(timer_handle, timer_ticks);
 
         return 1;
 }
