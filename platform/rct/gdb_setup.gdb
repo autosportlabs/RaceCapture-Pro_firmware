@@ -1,7 +1,7 @@
 # Sets up GDB for remote debugging
 target remote | openocd -c "log_output openocd.log; gdb_port pipe" \
        -f openocd_debug.cfg
-file .build/main.elf
+file main.elf
 
 # Matches the output from openocd.  Must be set manually.
 set remote hardware-breakpoint-limit 6
