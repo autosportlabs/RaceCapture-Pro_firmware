@@ -34,7 +34,8 @@
 #include "stm32f4xx_tim.h"
 #include "stm32f4xx_usart.h"
 #include "task.h"
-#include "timer.h"
+#include "taskUtil.h"
+#include "timers.h"
 #include "usart_device.h"
 
 /*
@@ -50,6 +51,7 @@
  * * DMA2_Stream6 is in use by I2C.  No workaround :(
  */
 
+#define CHAR_CHECK_PERIOD_MS	    	100
 #define DEFAULT_AUX_BAUD_RATE		115200
 #define DEFAULT_GPS_BAUD_RATE		921600
 #define DEFAULT_TELEMETRY_BAUD_RATE	115200
@@ -82,6 +84,7 @@ static volatile struct usart_info {
         USART_TypeDef *usart;
         volatile struct dma_info dma_rx;
         volatile struct dma_info dma_tx;
+        bool char_dropped;
 } usart_data[__UART_COUNT];
 
 
@@ -488,7 +491,8 @@ static void usart_generic_irq_handler(volatile struct usart_info *ui)
                  */
                 cChar = USART_ReceiveData(usart);
                 xQueueHandle rx_queue = serial_get_rx_queue(ui->serial);
-                xQueueSendFromISR(rx_queue, &cChar, &xTaskWoken);
+                if (!xQueueSendFromISR(rx_queue, &cChar, &xTaskWoken))
+                        ui->char_dropped = true;
         } else if (ore_set) {
                 /*
                  * We will likely never get in here, but this is to
@@ -535,16 +539,18 @@ void UART4_IRQHandler(void)
 
 static bool dma_rx_isr(volatile struct usart_info *ui)
 {
+        const uint16_t dma_counter = (uint16_t) ui->dma_rx.stream->NDTR;
         volatile uint8_t* tail = ui->dma_rx.ptr;
         volatile uint8_t* const buff = ui->dma_rx.buff;
         volatile uint8_t* const edge = buff + ui->dma_rx.buff_size;
-        volatile uint8_t* const head = edge - ui->dma_rx.stream->NDTR;
+        volatile uint8_t* const head = dma_counter ? edge - dma_counter : buff;
         xQueueHandle queue = serial_get_rx_queue(ui->serial);
         portBASE_TYPE task_awoke = pdFALSE;
 
         while (tail != head) {
                 uint8_t val = *tail;
-                xQueueSendFromISR(queue, &val, &task_awoke);
+                if (!xQueueSendFromISR(queue, &val, &task_awoke))
+                        ui->char_dropped = true;
 
                 if (++tail >= edge)
                         tail = buff;
@@ -694,6 +700,33 @@ void setup_dma_timer(void)
         TIM_Cmd(timer, ENABLE);
 }
 
+static void dropped_char_timer_cb( xTimerHandle xTimer )
+{
+        for(size_t i = 0; i < __UART_COUNT; ++i) {
+                volatile struct usart_info* ui = usart_data + i;
+
+                /* Warning for dropped characters */
+                if (ui->char_dropped) {
+                        ui->char_dropped = false;
+                        pr_warning_str_msg(LOG_PFX "Dropped char: ",
+                                           serial_get_name(ui->serial));
+                }
+        }
+}
+
+static void setup_debug_tools()
+{
+        /* Only enable this code if we are doing debug work */
+#if ! (ASL_DEBUG)
+        return;
+#endif
+        const size_t timer_ticks = msToTicks(CHAR_CHECK_PERIOD_MS);
+        const signed char* timer_name = (signed char*) "Dropped Char Check Timer";
+        xTimerHandle timer_handle = xTimerCreate(timer_name, timer_ticks,
+                                                 true, NULL, dropped_char_timer_cb);
+        xTimerStart(timer_handle, timer_ticks);
+}
+
 /* *** Public Methods *** */
 int usart_device_init()
 {
@@ -732,6 +765,8 @@ int usart_device_init()
 
         /* Sets up the DMA timeout timer */
         setup_dma_timer();
+
+        setup_debug_tools();
 
         return 1;
 }
