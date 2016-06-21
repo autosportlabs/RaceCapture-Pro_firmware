@@ -32,6 +32,7 @@
 #include "taskUtil.h"
 
 #define GPS_TASK_STACK_SIZE	256
+#define MSG_FAILURES_TRIGGER	3
 
 static bool g_enableGpsDataLogging = false;
 
@@ -47,23 +48,34 @@ void GPSTask(void *pvParameters)
         const uint8_t targetSampleRate =
                 decodeSampleRate(lc->GPSConfigs.speed.sampleRate);
 
-    while(1) {
-        const gps_status_t gps_status = GPS_init(targetSampleRate, serial);
-        if (!gps_status) {
-            pr_error("GPS: Error provisioning\r\n");
-        }
+        /* Call this here to effectively reset lapstats */
+        lapstats_config_changed();
 
-        for (;;) {
-            gps_msg_result_t result = GPS_processUpdate(serial);
-            if (result == GPS_MSG_SUCCESS) {
-                const GpsSnapshot snap = getGpsSnapshot();
-                lapstats_processUpdate(&snap);
-            } else {
-                pr_warning("GPS: timeout\r\n");
-                break;
-            }
+        while(1) {
+                size_t failures = 0;
+
+                const gps_status_t gps_status = GPS_init(targetSampleRate, serial);
+                if (!gps_status) {
+                        pr_error("GPS: Error provisioning\r\n");
+                }
+
+                for (;;) {
+                        gps_msg_result_t result = GPS_processUpdate(serial);
+                        if (result == GPS_MSG_SUCCESS) {
+                                const GpsSnapshot snap = getGpsSnapshot();
+                                lapstats_processUpdate(&snap);
+                                if (failures > 0)
+                                        --failures;
+                        } else {
+                                pr_debug("GPS: Msx Rx Failure\r\n");
+                                if (++failures >= MSG_FAILURES_TRIGGER) {
+                                        pr_warning("GPS: Too many failures.  "
+                                                   "Reenum\r\n");
+                                        break;
+                                }
+                        }
+                }
         }
-    }
 }
 
 void startGPSTask(int priority)
