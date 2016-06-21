@@ -471,16 +471,18 @@ void USART3_IRQHandler(void)
 
 static bool dma_rx_isr(volatile struct usart_info *ui)
 {
+        const uint16_t dma_counter = (uint16_t) ui->dma_rx.chan->CNDTR;
         volatile uint8_t* tail = ui->dma_rx.ptr;
         volatile uint8_t* const buff = ui->dma_rx.buff;
         volatile uint8_t* const edge = buff + ui->dma_rx.buff_size;
-        volatile uint8_t* const head = edge - (uint16_t) ui->dma_rx.chan->CNDTR;
+        volatile uint8_t* const head = dma_counter ? edge - dma_counter : buff;
         xQueueHandle queue = serial_get_rx_queue(ui->serial);
         portBASE_TYPE task_awoke = pdFALSE;
 
         while (tail != head) {
                 uint8_t val = *tail;
-                xQueueSendFromISR(queue, &val, &task_awoke);
+                if (!xQueueSendFromISR(queue, &val, &task_awoke))
+                        ui->char_dropped = true;
 
                 if (++tail >= edge)
                         tail = buff;
