@@ -89,17 +89,6 @@ void rx_buff_destroy(struct rx_buff *rxb)
         portFree(rxb);
 }
 
-static bool is_term_char(const char c)
-{
-        switch(c) {
-        case '\r':
-        case '\0':
-                return true;
-        default:
-                return false;
-        }
-}
-
 /**
  * Reads data from the Serial device into our buffer.
  * @param s The serial device to read data from.
@@ -111,7 +100,7 @@ bool rx_buff_read(struct rx_buff *rxb, struct Serial *s, const bool echo)
 {
         xQueueHandle h = serial_get_rx_queue(s);
         char c = 1;
-        for(; rxb->idx < rxb->cap && !rxb->msg_ready; ++rxb->idx) {
+        while (rxb->idx < rxb->cap && !rxb->msg_ready) {
                 const bool rx_status = xQueueReceive(h, &c, 0);
                 if (!rx_status) {
                         /* If here, no more data to read for now */
@@ -122,11 +111,32 @@ bool rx_buff_read(struct rx_buff *rxb, struct Serial *s, const bool echo)
                 if (0 == rxb->idx)
                         rxb->echo = echo && '{' != c;
 
-                if (rxb->echo)
-                        serial_put_c(s, c);
+                switch(c) {
+                case 0x08: /* Backspace */
+                        /*
+                         * On RaceCapture this acts like a delete command
+                         * per the VT220 mapping.
+                         */
+                        if (rxb->idx) {
+                                --rxb->idx;
+                                if (rxb->echo) {
+                                        serial_put_c(s, 0x08);
+                                        serial_put_c(s, 0x7f);
+                                }
+                        }
+                        break;
+                case '\r':
+                case '\0':
+                        rxb->msg_ready = true;
+                        /* Break intentionally missing here */
+                default:
+                        /* If we are echoing, do it */
+                        if (rxb->echo)
+                                serial_put_c(s, c);
 
-                rxb->msg_ready = is_term_char(c);
-                rxb->buff[rxb->idx] = c;
+                        rxb->buff[rxb->idx] = c;
+                        ++rxb->idx;
+                }
         }
 
         /*
@@ -140,7 +150,7 @@ bool rx_buff_read(struct rx_buff *rxb, struct Serial *s, const bool echo)
          * we simply set the index to be cap + 1.
          */
         if (rxb->idx < rxb->cap ||
-            (rxb->idx == rxb->cap && is_term_char(c))) {
+            (rxb->idx == rxb->cap && rxb->msg_ready)) {
                 /* Turn the term character into the null */
                 if (rxb->echo)
                         serial_put_c(s, c);
@@ -155,8 +165,11 @@ bool rx_buff_read(struct rx_buff *rxb, struct Serial *s, const bool echo)
         }
 
         /* If there is a \n after the \r, remove it */
-        if ('\r' == c && xQueuePeek(h, &c, 0) && '\n' == c)
+        if ('\r' == c && xQueuePeek(h, &c, 0) && '\n' == c) {
                 xQueueReceive(h, &c, 0);
+                if (rxb->echo)
+                        serial_put_c(s, c);
+        }
 
         return true;
 }

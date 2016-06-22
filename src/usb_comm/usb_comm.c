@@ -165,6 +165,7 @@ static void process_rx_msgs()
         {
                 /* A message awaits us */
                 char *data_in = rx_buff_get_msg(rxb);
+                put_crlf(s);
                 pr_trace_str_msg(LOG_PFX "Received CMD: ", data_in);
                 process_read_msg(s, data_in, strlen(data_in));
                 break;
