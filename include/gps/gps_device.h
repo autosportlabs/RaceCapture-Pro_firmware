@@ -29,6 +29,7 @@
 CPP_GUARD_BEGIN
 
 typedef enum {
+        GPS_MSG_READERR = -2,
         GPS_MSG_TIMEOUT = -1,
         GPS_MSG_NONE    = 0,
         GPS_MSG_SUCCESS = 1,
