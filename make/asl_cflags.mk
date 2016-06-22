@@ -19,13 +19,13 @@
 
 ASL_CFLAGS :=
 
-ASL_GDB := -ggdb
-ASL_CFLAGS += $(ASL_GDB)
+ASL_C_GDB ?=
+export ASL_C_GDB
+ASL_CFLAGS += $(ASL_C_GDB)
 
-
-ASL_COPT := s
-ASL_CFLAGS += -O$(ASL_COPT)
-
+ASL_C_OPT ?= -Os
+export ASL_C_OPT
+ASL_CFLAGS += $(ASL_C_OPT)
 
 ASL_CSTD := -std=gnu99
 ASL_CFLAGS += $(ASL_CSTD)

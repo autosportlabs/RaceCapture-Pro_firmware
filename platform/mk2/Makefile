@@ -67,7 +67,8 @@ LUA_LIB_DIR=$(APP_PATH)/lib/lua/src
 
 INCLUDES += $(CPU_INCLUDES) $(BOARD_INCLUDES) $(LIB_INCLUDES) $(APP_INCLUDES) $(LUA_INCLUDE)
 CFLAGS += $(INCLUDES)
-ASFLAGS += -mcpu=$(CPU_TYPE) $(FPU) -g -Wa,--warn
+# STIEG: Investigate size opt flags on assembler.
+ASFLAGS += -mcpu=$(CPU_TYPE) $(FPU) $(ASL_C_GDB) -Wa,--warn
 
 LIBS = -lnosys
 LIBS += $(addprefix -l,$(BASE_LIBS))
@@ -75,7 +76,7 @@ LIBS += $(addprefix -l,$(LUA_LIBS))
 
 FREERTOS_LD_FLAGS := -Wl,--undefined=uxTopUsedPriority
 
-LDFLAGS ?= --specs=nano.specs -lc -lgcc $(LIBS) -mcpu=$(CPU_TYPE) -g -ggdb \
+LDFLAGS ?= --specs=nano.specs -lc -lgcc $(LIBS) -mcpu=$(CPU_TYPE) \
 	-L. -Lcpu/common -L$(LUA_LIB_DIR) -L$(CPU_BASE) -T$(CPU_LINK_MEM) \
 	-Tlink_sections.ld -nostartfiles -Wl,--gc-sections -mthumb \
 	-mcpu=$(CPU_TYPE) -msoft-float $(FREERTOS_LD_FLAGS)
