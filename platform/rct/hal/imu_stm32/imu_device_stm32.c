@@ -86,33 +86,27 @@ void imu_device_init()
 
 int imu_device_read(enum imu_channel channel)
 {
-    unsigned int ret = 0;
-
-    switch(channel) {
-    case IMU_CHANNEL_X:
-        ret = read_buf->accel.accel_x;
-        break;
-    case IMU_CHANNEL_Y:
-        ret = read_buf->accel.accel_y;
-        break;
-    case IMU_CHANNEL_Z:
-        ret = read_buf->accel.accel_z;
-        break;
-    case IMU_CHANNEL_YAW:
-        ret = read_buf->gyro.gyro_z;
-        break;
-    case IMU_CHANNEL_PITCH:
-        ret = read_buf->gyro.gyro_x;
-        break;
-    case IMU_CHANNEL_ROLL:
-        ret = read_buf->gyro.gyro_y;
-        break;
-    default:
-        break;
-
-    }
-
-    return ret;
+        /*
+         * Mapped to SAE J670E standard. Front of unit is RJ-45 and USB
+         * plug facing front of vehicle when mounted on windshield.
+         * Issue #425
+         */
+        switch(channel) {
+        case IMU_CHANNEL_X:
+                return read_buf->accel.accel_y;
+        case IMU_CHANNEL_Y:
+                return read_buf->accel.accel_x;
+        case IMU_CHANNEL_Z:
+                return read_buf->accel.accel_z;
+        case IMU_CHANNEL_YAW:
+                return -read_buf->gyro.gyro_z;
+        case IMU_CHANNEL_PITCH:
+                return read_buf->gyro.gyro_x;
+        case IMU_CHANNEL_ROLL:
+                return read_buf->gyro.gyro_y;
+        default:
+                return 0;
+        }
 }
 
 float imu_device_counts_per_unit(enum imu_channel channel)
