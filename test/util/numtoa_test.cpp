@@ -21,7 +21,7 @@
 
 #include "numtoa_test.h"
 #include "modp_numtoa.h"
-#include "mod_string.h"
+#include <string.h>
 
 #include <string>
 

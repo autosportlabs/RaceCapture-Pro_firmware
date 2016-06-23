@@ -22,8 +22,9 @@
 
 #include "gps.h"
 #include "gps_device.h"
-#include "mod_string.h"
+#include <string.h>
 #include "modp_atonum.h"
+#include <string.h>
 
 #define GPS_LOCK_FLASH_COUNT 5
 #define GPS_NOFIX_FLASH_COUNT 25

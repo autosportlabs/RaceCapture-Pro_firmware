@@ -21,7 +21,7 @@
 
 
 #include <stdlib.h>
-#include "mod_string.h"
+#include <string.h>
 #include "jsmn.h"
 
 /**

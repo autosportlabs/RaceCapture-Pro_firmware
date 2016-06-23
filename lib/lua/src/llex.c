@@ -7,7 +7,7 @@
 
 #include <ctype.h>
 #include <locale.h>
-#include "mod_string.h"
+#include <string.h>
 
 #define llex_c
 #define LUA_CORE
@@ -501,4 +501,3 @@ void luaX_lookahead (LexState *ls)
     lua_assert(ls->lookahead.token == TK_EOS);
     ls->lookahead.token = llex(ls, &ls->lookahead.seminfo);
 }
-

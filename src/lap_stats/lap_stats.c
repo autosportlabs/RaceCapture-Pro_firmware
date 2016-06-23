@@ -30,7 +30,6 @@
 #include "launch_control.h"
 #include "loggerConfig.h"
 #include "loggerHardware.h"
-#include "mod_string.h"
 #include "modp_atonum.h"
 #include "modp_numtoa.h"
 #include "predictive_timer_2.h"

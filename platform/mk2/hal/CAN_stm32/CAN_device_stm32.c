@@ -21,7 +21,7 @@
 
 #include "CAN_device.h"
 #include "FreeRTOS.h"
-#include "mod_string.h"
+#include <string.h>
 #include "printk.h"
 #include "queue.h"
 #include "stm32f4xx_can.h"

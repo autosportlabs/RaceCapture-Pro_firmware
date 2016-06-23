@@ -21,7 +21,7 @@
 
 #include "capabilities.h"
 #include "macros.h"
-#include "mod_string.h"
+#include <string.h>
 #include "modp_numtoa.h"
 #include "printk.h"
 #include "ts_ring_buff.h"

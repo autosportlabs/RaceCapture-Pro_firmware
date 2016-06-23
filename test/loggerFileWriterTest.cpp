@@ -22,7 +22,7 @@
 #include "FreeRTOS.h"
 #include "fileWriter.h"
 #include "fileWriter_testing.h"
-#include "mod_string.h"
+#include <string.h>
 #include "task.h"
 #include "task_testing.h"
 

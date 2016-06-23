@@ -26,7 +26,7 @@
 #include <fstream>
 #include <streambuf>
 #include "mock_serial.h"
-#include "mod_string.h"
+#include <string.h>
 #include "modp_atonum.h"
 #include "lap_stats.h"
 #include "rcp_cpp_unit.hh"

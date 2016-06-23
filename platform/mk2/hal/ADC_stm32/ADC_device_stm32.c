@@ -21,7 +21,7 @@
 
 #include "ADC_device.h"
 #include "mem_mang.h"
-#include "mod_string.h"
+#include <string.h>
 #include "stm32f4xx.h"
 #include "stm32f4xx_adc.h"
 #include "stm32f4xx_dma.h"
@@ -29,7 +29,7 @@
 #include "stm32f4xx_rcc.h"
 #include <stdbool.h>
 #include <stdint.h>
-
+#include <string.h>
 /*
  * On RCP MK2
  * Analog1 - PC4 - ADC12_IN14

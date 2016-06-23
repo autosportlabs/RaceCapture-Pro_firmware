@@ -21,7 +21,7 @@
 
 
 #include "messaging.h"
-#include "mod_string.h"
+#include <string.h>
 #include "serial.h"
 #include "printk.h"
 

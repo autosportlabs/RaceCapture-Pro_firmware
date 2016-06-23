@@ -31,7 +31,7 @@
 #include "loggerConfig.h"
 #include "loggerHardware.h"
 #include "mem_mang.h"
-#include "mod_string.h"
+#include <string.h>
 #include "modp_numtoa.h"
 #include "null_device.h"
 #include "printk.h"

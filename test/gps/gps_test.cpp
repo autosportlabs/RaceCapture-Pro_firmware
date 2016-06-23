@@ -20,7 +20,7 @@
 
 #include "gps_test.h"
 #include "gps.h"
-#include "mod_string.h"
+#include <string.h>
 
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( GpsTest );

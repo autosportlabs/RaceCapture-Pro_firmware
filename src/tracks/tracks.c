@@ -23,7 +23,7 @@
 #include "luaTask.h"
 #include "mem_mang.h"
 #include "memory.h"
-#include "mod_string.h"
+#include <string.h>
 #include "printk.h"
 #include "tracks.h"
 

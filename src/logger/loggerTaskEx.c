@@ -34,7 +34,7 @@
 #include "loggerSampleData.h"
 #include "loggerTaskEx.h"
 #include "macros.h"
-#include "mod_string.h"
+#include <string.h>
 #include "panic.h"
 #include "printk.h"
 #include "sampleRecord.h"

@@ -31,7 +31,7 @@
 #include "luaTask.h"
 #include "lualib.h"
 #include "mem_mang.h"
-#include "mod_string.h"
+#include <string.h>
 #include "portable.h"
 #include "printk.h"
 #include "queue.h"
@@ -40,9 +40,9 @@
 #include "taskUtil.h"
 #include "virtual_channel.h"
 #include "watchdog.h"
-
 #include <math.h>
 #include <stdbool.h>
+#include <string.h>
 
 /* Keep Stack value high as the parser can get very stack hungry.  Issue #411 */
 #define LUA_BYPASS_DELAY_SEC		5

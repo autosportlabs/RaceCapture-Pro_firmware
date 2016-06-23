@@ -30,7 +30,7 @@
 #include "gsm.h"
 #include "loggerConfig.h"
 #include "macros.h"
-#include "mod_string.h"
+#include <string.h>
 #include "printk.h"
 #include "serial_buffer.h"
 #include "serial.h"

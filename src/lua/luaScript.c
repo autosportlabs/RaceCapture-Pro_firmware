@@ -23,7 +23,7 @@
 #include "luaScript.h"
 #include "luaTask.h"
 #include "mem_mang.h"
-#include "mod_string.h"
+#include <string.h>
 #include "printk.h"
 
 #ifndef RCP_TESTING

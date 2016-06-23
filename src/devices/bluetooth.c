@@ -23,7 +23,7 @@
 #include "FreeRTOS.h"
 #include "bluetooth.h"
 #include "loggerConfig.h"
-#include "mod_string.h"
+#include <string.h>
 #include "printk.h"
 #include "task.h"
 #include "taskUtil.h"
@@ -137,7 +137,7 @@ static bool bt_set_name(DeviceConfig *config, const char *new_name)
         pr_info_str_msg("BT: Setting name: ", new_name);
 
         char buf[BT_MAX_NAME_LEN + 7 + 1] = "AT+NAME";
-        strlcpy(buf + 7, new_name, BT_MAX_NAME_LEN + 1);
+        strncpy(buf + 7, new_name, BT_MAX_NAME_LEN + 1);
 
         return sendBtCommandWaitResponse(config, buf, "OKsetname",
                                          BT_COMMAND_WAIT);
@@ -148,7 +148,7 @@ static bool bt_set_pin(DeviceConfig *config, const char *new_pin)
         pr_info_str_msg("BT: Setting pin: ", new_pin);
 
         char buf[BT_MAX_PIN_LEN + 6 + 1] = "AT+PIN";
-        strlcpy(buf + 6, new_pin, BT_MAX_PIN_LEN + 1);
+        strncpy(buf + 6, new_pin, BT_MAX_PIN_LEN + 1);
 
         return sendBtCommandWaitResponse(config, buf, "OKsetPIN",
                                          BT_COMMAND_WAIT);

@@ -24,13 +24,13 @@
 #include "channel_config.h"
 #include "loggerConfig.h"
 #include "memory.h"
-#include "mod_string.h"
+#include <string.h>
 #include "modp_numtoa.h"
 #include "printk.h"
 #include "timer_config.h"
 #include "virtual_channel.h"
-
 #include <stdbool.h>
+#include <string.h>
 
 #ifndef RCP_TESTING
 #include "memory.h"

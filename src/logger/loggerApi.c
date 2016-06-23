@@ -48,7 +48,7 @@
 #include "luaTask.h"
 #include "macros.h"
 #include "mem_mang.h"
-#include "mod_string.h"
+#include <string.h>
 #include "modp_atonum.h"
 #include "printk.h"
 #include "sampleRecord.h"
@@ -134,7 +134,7 @@ static int setStringValueIfExists(const jsmntok_t *root, const char * fieldName,
 {
     const jsmntok_t *valueNode = jsmn_find_get_node_value_string(root, fieldName);
     if (valueNode)
-        strlcpy(target, valueNode->data, maxLen);
+        strncpy(target, valueNode->data, maxLen);
     return (valueNode != NULL);
 }
 

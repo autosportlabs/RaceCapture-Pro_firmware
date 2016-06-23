@@ -20,7 +20,7 @@
  */
 
 #include "macros.h"
-#include "mod_string.h"
+#include <string.h>
 #include "led.h"
 #include "led_device.h"
 

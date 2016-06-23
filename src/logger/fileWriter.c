@@ -23,7 +23,7 @@
 #include "fileWriter.h"
 #include "loggerHardware.h"
 #include "mem_mang.h"
-#include "mod_string.h"
+#include <string.h>
 #include "modp_numtoa.h"
 #include "printk.h"
 #include "ring_buffer.h"

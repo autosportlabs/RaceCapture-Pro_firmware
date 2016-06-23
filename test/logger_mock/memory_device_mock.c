@@ -22,7 +22,7 @@
 
 #include "memory_device.h"
 #include "memory_mock.h"
-#include "mod_string.h"
+#include <string.h>
 #include <stdio.h>
 
 static int g_isFlashed = 0;

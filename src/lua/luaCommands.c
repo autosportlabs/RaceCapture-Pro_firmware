@@ -28,7 +28,7 @@
 #include "luaTask.h"
 #include "lualib.h"
 #include "memory.h"
-#include "mod_string.h"
+#include <string.h>
 #include "modp_atonum.h"
 #include "modp_numtoa.h"
 #include "printk.h"

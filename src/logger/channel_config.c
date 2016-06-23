@@ -21,7 +21,8 @@
 
 #include "channel_config.h"
 #include "loggerConfig.h"
-#include "mod_string.h"
+#include <string.h>
+#include <string.h>
 
 /**
  * Creates a new default ChannelConfig.  It is not ready to use because

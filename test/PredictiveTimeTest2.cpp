@@ -17,7 +17,7 @@
 #include "loggerConfig.h"
 #include "mock_serial.h"
 #include "modp_atonum.h"
-#include "mod_string.h"
+#include <string.h>
 #include "predictive_timer_2.h"
 #include "rcp_cpp_unit.hh"
 
