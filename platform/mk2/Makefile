@@ -70,16 +70,16 @@ CFLAGS += $(INCLUDES)
 # STIEG: Investigate size opt flags on assembler.
 ASFLAGS += -mcpu=$(CPU_TYPE) $(FPU) $(ASL_C_GDB) -Wa,--warn
 
-LIBS = -lnosys
+LIBS =
 LIBS += $(addprefix -l,$(BASE_LIBS))
 LIBS += $(addprefix -l,$(LUA_LIBS))
 
 FREERTOS_LD_FLAGS := -Wl,--undefined=uxTopUsedPriority
 
-LDFLAGS ?= --specs=nano.specs -lc -lgcc $(LIBS) -mcpu=$(CPU_TYPE) \
+LDFLAGS ?= --specs=nano.specs $(LIBS) -mcpu=$(CPU_TYPE) \
 	-L. -Lcpu/common -L$(LUA_LIB_DIR) -L$(CPU_BASE) -T$(CPU_LINK_MEM) \
 	-Tlink_sections.ld -nostartfiles -Wl,--gc-sections -mthumb \
-	-mcpu=$(CPU_TYPE) -msoft-float $(FREERTOS_LD_FLAGS)
+	-msoft-float $(FREERTOS_LD_FLAGS) -Wl,-static
 
 # Be silent per default, but 'make V=1' will show all compiler calls.
 ifneq ($(V),1)
