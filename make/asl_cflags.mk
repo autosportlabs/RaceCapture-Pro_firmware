@@ -51,6 +51,9 @@ endif
 
 ASL_CFLAGS += -DASL_WATCHDOG=$(ASL_WATCHDOG)
 
+ifdef DEBUG
+ASL_CFLAGS += -D_DEBUG -DUSE_FULL_ASSERT
+endif
 
 ASL_CFLAGS_MISC := \
 -fno-common \

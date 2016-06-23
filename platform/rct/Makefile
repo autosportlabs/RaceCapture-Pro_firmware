@@ -256,26 +256,12 @@ CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -MD -c
 CFLAGS += $(ASL_CFLAGS)
 CFLAGS += -mcpu=cortex-m3 -mthumb
 CFLAGS += $(BOARD_DEFINES)
-CFLAGS += -fno-builtin-sprintf
-CFLAGS += -ggdb
-CFLAGS += -Wall -Werror -Wempty-body -Wclobbered -Wignored-qualifiers \
-	-Wmissing-parameter-type -Wold-style-declaration \
-	-Wunused-but-set-parameter
-
-ifdef NOOPT
-CFLAGS += -O0
-else
-CFLAGS += -Os
-endif
-
-ifdef DEBUG
-CFLAGS += -D_DEBUG -DUSE_FULL_ASSERT
-endif
-
+#CFLAGS += -fno-builtin-sprintf
 CFLAGS += $(addprefix -I,$(inc-y))
 
 LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld
-LDFLAGS += -Wl,-cref,-u,Reset_Handler,-Map=$(OUTDIR)/main.map,--gc-sections
+LDFLAGS += -Wl,-cref,-u,Reset_Handler,-Map=$(OUTDIR)/main.map
+LDFLAGS += -Wl,--gc-sections,-static
 LDFLAGS += $(FREERTOS_LD_FLAGS)
 
 AFLAGS := $(CFLAGS)
