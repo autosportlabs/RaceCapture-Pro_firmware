@@ -7,9 +7,8 @@ endif
 ################################################################################
 export PATH := /opt/arm-2012.03/bin:$(PATH)
 CROSS_COMPILE := arm-none-eabi-
-AS := $(CROSS_COMPILE)gcc -x assembler-with-cpp
+AS := $(CROSS_COMPILE)as
 CC := $(CROSS_COMPILE)gcc
-CXX := $(CROSS_COMPILE)g++
 LD := $(CROSS_COMPILE)g++
 OBJDUMP := $(CROSS_COMPILE)objdump
 OBJCOPY := $(CROSS_COMPILE)objcopy
@@ -275,8 +274,7 @@ LDFLAGS += -Wl,-cref,-u,Reset_Handler,-Map=main.map
 LDFLAGS += -Wl,--gc-sections,-static
 LDFLAGS += $(FREERTOS_LD_FLAGS)
 
-#AFLAGS := $(CFLAGS)
-AFLSGS := $(CPU_FLAGS) -Wa,--warn
+ASFLAGS := $(CPU_FLAGS) --warn
 
 # disable auto-removing of intermediate files
 .PRECIOUS: $(obj-y)
@@ -289,7 +287,7 @@ $(OUTDIR)/%.o: %.c
 $(OUTDIR)/%.o: %.s
 	@echo "[AS] $(@F)"
 	mkdir -p $(@D)
-	$(CCACHE) $(AS) $(AFLAGS) -c -o $@ $<
+	$(AS) $(ASFLAGS) -c -o $@ $<
 
 %.ihex: %.bin
 	@echo "[ASL_FW_POSTPROCESS] $(@F)"
