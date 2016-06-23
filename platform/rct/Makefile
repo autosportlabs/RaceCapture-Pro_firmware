@@ -252,19 +252,31 @@ inc-y += $(RC_PLATFORM_DIR)/mk2/hal/fat_sd_stm32/fatfs
 ################################################################################
 obj-y := $(addprefix $(OUTDIR)/,$(patsubst %.s,%.o,$(patsubst %.c,%.o,$(src-y))))
 
+# May need to make this softfp... gotta learn more about these ABIs.
+CPU_FLAGS := \
+-mcpu=cortex-m4 \
+-mthumb \
+-mfpu=fpv4-sp-d16 \
+-mfloat-abi=hard \
+
+#-mfloat-abi=soft \
+#-msoft-float \
+
 CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -MD -c
+CFLAGS += $(CPU_FLAGS)
 CFLAGS += $(ASL_CFLAGS)
-CFLAGS += -mcpu=cortex-m3 -mthumb
 CFLAGS += $(BOARD_DEFINES)
 #CFLAGS += -fno-builtin-sprintf
 CFLAGS += $(addprefix -I,$(inc-y))
 
-LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld
-LDFLAGS += -Wl,-cref,-u,Reset_Handler,-Map=$(OUTDIR)/main.map
+LDFLAGS := $(CPU_FLAGS)
+LDFLAGS += -lc -TProject/STM32_FLASH.ld
+LDFLAGS += -Wl,-cref,-u,Reset_Handler,-Map=main.map
 LDFLAGS += -Wl,--gc-sections,-static
 LDFLAGS += $(FREERTOS_LD_FLAGS)
 
-AFLAGS := $(CFLAGS)
+#AFLAGS := $(CFLAGS)
+AFLSGS := $(CPU_FLAGS) -Wa,--warn
 
 # disable auto-removing of intermediate files
 .PRECIOUS: $(obj-y)
