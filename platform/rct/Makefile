@@ -300,7 +300,7 @@ $(OUTDIR)/%.o: %.s
 	@echo "[ASL_FW_POSTPROCESS] $(@F)"
 	$(PYTHON) $(ASL_FW_POSTPROCESS) -f $< -e main.elf -o 0x08004000 -b $< -i $@
 
-%.elf: $(obj-y)
+%.elf: $(sort $(obj-y))
 	@echo "[LD] $(@F)"
 	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
