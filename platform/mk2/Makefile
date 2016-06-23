@@ -112,7 +112,7 @@ all: $(LIBS_ALL) $(TARGET).ihex
 libfreertos.a: $(FREERTOS_OBJS)
 	$(Q) $(AR) $(ARFLAGS) $@ $^
 
-libstm32f4_periph.a: $(sort $(STM32F4_PERIPH_OBJS))
+libstm32f4_periph.a: $(STM32F4_PERIPH_OBJS)
 	$(Q) $(AR) $(ARFLAGS) $@ $^
 
 libstm32_usb.a: $(STM32_USB_OBJS)

@@ -21,7 +21,8 @@ LIB_INCLUDES += -I$(F4_LIB_BASE)/inc
 LIB_INCLUDES += -I$(F4_CMSIS_BASE)/Include
 LIB_INCLUDES += -I$(F4_CMSIS_BASE)/Device/ST/STM32F4xx/Include
 
-STM32F4_PERIPH_SRCS = $(wildcard $(F4_LIB_BASE)/src/*.c)
+# Sort files here for deterministic behavior between platforms.
+STM32F4_PERIPH_SRCS = $(sort $(wildcard $(F4_LIB_BASE)/src/*.c))
 STM32F4_PERIPH_SRCS += $(F4_CMSIS_SOURCES)
 
 STM32F4_PERIPH_OBJS = $(STM32F4_PERIPH_SRCS:.c=.o) $(F4_CMSIS_STARTUP_SOURCES:.s=.o)
