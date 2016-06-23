@@ -9,7 +9,7 @@ export PATH := /opt/arm-2012.03/bin:$(PATH)
 CROSS_COMPILE := arm-none-eabi-
 AS := $(CROSS_COMPILE)as
 CC := $(CROSS_COMPILE)gcc
-LD := $(CROSS_COMPILE)g++
+LD := $(CROSS_COMPILE)gcc
 OBJDUMP := $(CROSS_COMPILE)objdump
 OBJCOPY := $(CROSS_COMPILE)objcopy
 
@@ -272,10 +272,14 @@ CFLAGS += $(BOARD_DEFINES)
 CFLAGS += $(addprefix -I,$(inc-y))
 
 LDFLAGS := $(CPU_FLAGS)
-LDFLAGS += -lc -TProject/STM32_FLASH.ld
+LDFLAGS += -TProject/STM32_FLASH.ld
 LDFLAGS += -Wl,-cref,-u,Reset_Handler,-Map=main.map
 LDFLAGS += -Wl,--gc-sections,-static
 LDFLAGS += $(FREERTOS_LD_FLAGS)
+
+LDLIBS :=
+LDLIBS += -lc
+LDLIBS += -lm
 
 ASFLAGS := $(CPU_FLAGS) --warn
 
@@ -298,7 +302,7 @@ $(OUTDIR)/%.o: %.s
 
 %.elf: $(obj-y)
 	@echo "[LD] $(@F)"
-	$(LD) $(LDFLAGS) -o $@ $^
+	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 %.bin: %.elf
 	@echo "[OBJCOPY] $(@F)"
