@@ -251,21 +251,24 @@ inc-y += $(RC_PLATFORM_DIR)/mk2/hal/fat_sd_stm32/fatfs
 ################################################################################
 obj-y := $(addprefix $(OUTDIR)/,$(patsubst %.s,%.o,$(patsubst %.c,%.o,$(src-y))))
 
-# May need to make this softfp... gotta learn more about these ABIs.
+#
+# Our chip is actually a cortex-m4 with FPU.  We have not included the correct
+# FreeRTOS libs as well as compiler args to make it work properly with this arch
+# so for now this stays as an M3.
+# -mcpu=cortex-m4 \
+# -mthumb \
+# -mfpu=fpv4-sp-d16 \
+# -mfloat-abi=softfp \
+#
 CPU_FLAGS := \
--mcpu=cortex-m4 \
+-mcpu=cortex-m3 \
 -mthumb \
--mfpu=fpv4-sp-d16 \
--mfloat-abi=hard \
-
-#-mfloat-abi=soft \
-#-msoft-float \
+-mfloat-abi=soft \
 
 CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -MD -c
 CFLAGS += $(CPU_FLAGS)
 CFLAGS += $(ASL_CFLAGS)
 CFLAGS += $(BOARD_DEFINES)
-#CFLAGS += -fno-builtin-sprintf
 CFLAGS += $(addprefix -I,$(inc-y))
 
 LDFLAGS := $(CPU_FLAGS)
