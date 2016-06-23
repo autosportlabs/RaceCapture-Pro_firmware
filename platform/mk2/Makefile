@@ -105,16 +105,18 @@ endif
 
 LIBS_ALL = $(addprefix lib,$(BASE_LIBS:=.a))
 
+ARFLAGS := Drv
+
 all: $(LIBS_ALL) $(TARGET).ihex
 
 libfreertos.a: $(FREERTOS_OBJS)
-	$(Q)$(AR) $(ARFLAGS) $@ $^
+	$(Q) $(AR) $(ARFLAGS) $@ $^
 
 libstm32f4_periph.a: $(STM32F4_PERIPH_OBJS)
-	$(Q)$(AR) $(ARFLAGS) $@ $^
+	$(Q) $(AR) $(ARFLAGS) $@ $^
 
 libstm32_usb.a: $(STM32_USB_OBJS)
-	$(Q)$(AR) $(ARFLAGS) $@ $^
+	$(Q) $(AR) $(ARFLAGS) $@ $^
 
 $(TARGET).ihex: $(TARGET).bin
 	@printf "  Creating upgrade images\n"
