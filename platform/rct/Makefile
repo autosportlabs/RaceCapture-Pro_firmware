@@ -279,9 +279,9 @@ $(OUTDIR)/%.o: %.s
 	mkdir -p $(@D)
 	$(CCACHE) $(AS) $(AFLAGS) -c -o $@ $<
 
-%.ihex: $(OUTDIR)/%.bin
+%.ihex: %.bin
 	@echo "[ASL_FW_POSTPROCESS] $(@F)"
-	$(PYTHON) $(ASL_FW_POSTPROCESS) -f $< -e $(OUTDIR)/main.elf -o 0x08004000 -b $< -i $@
+	$(PYTHON) $(ASL_FW_POSTPROCESS) -f $< -e main.elf -o 0x08004000 -b $< -i $@
 
 %.elf: $(obj-y)
 	@echo "[LD] $(@F)"
