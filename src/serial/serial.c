@@ -375,6 +375,17 @@ xQueueHandle serial_get_tx_queue(struct Serial *s)
         return s->tx_queue;
 }
 
+void serial_set_name(struct Serial *s, const char *name)
+{
+        s->name = name;
+}
+
+const char* serial_get_name(struct Serial *s)
+{
+        return s->name;
+}
+
+
 /**
  * Used to set the callback handler for Serial based IOCTL devices. This
  * should only be used by the task that is responsible for managing a
