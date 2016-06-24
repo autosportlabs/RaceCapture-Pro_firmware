@@ -180,6 +180,7 @@ package: clean
 	$(MAKE) test-pristine
 	$(MAKE) mk2-package
 	$(MAKE) rct-package
+	$(MAKE) hashes
 
 PHONY += TAGS
 TAGS:
@@ -194,5 +195,12 @@ TAGS:
 	-name "*.h"   -o \
 	-name "*.hh"     \
 	| etags -
+
+PHONY += hashes
+hashes:
+	$(Q)echo
+	$(Q)echo "SHA256 Hashes for all main.* files: "
+	$(Q)sha256sum $(wildcard platform/*/main.*)
+	$(Q)echo
 
 .PHONY: $(PHONY)
