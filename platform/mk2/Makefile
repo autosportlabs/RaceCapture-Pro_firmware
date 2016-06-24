@@ -70,7 +70,7 @@ CFLAGS += $(INCLUDES)
 # STIEG: Investigate size opt flags on assembler.
 ASFLAGS += -mcpu=$(CPU_TYPE) $(FPU) $(ASL_C_GDB) -Wa,--warn
 
-LIBS =
+LIBS = -lc -lm
 LIBS += $(addprefix -l,$(BASE_LIBS))
 LIBS += $(addprefix -l,$(LUA_LIBS))
 
