@@ -169,6 +169,7 @@ clean: rct-clean mk2-clean test-clean lua-clean
 	-name "*.dis" -o   \
 	-name "*.elf" -o   \
 	-name "*.hex" -o   \
+	-name "*.ihex" -o   \
 	-name "*.lst" -o   \
 	-name "*.map" -o   \
 	-name "*.o"   -o   \
@@ -200,7 +201,7 @@ PHONY += hashes
 hashes:
 	$(Q)echo
 	$(Q)echo "SHA256 Hashes for all main.* files: "
-	$(Q)sha256sum $(wildcard platform/*/main.*)
+	$(Q)sha256sum -b $(wildcard platform/*/main.*) </dev/null
 	$(Q)echo
 
 .PHONY: $(PHONY)
