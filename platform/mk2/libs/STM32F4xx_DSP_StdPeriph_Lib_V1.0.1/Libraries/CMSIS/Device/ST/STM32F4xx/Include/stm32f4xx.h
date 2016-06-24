@@ -49,6 +49,7 @@
 /** @addtogroup stm32f4xx
   * @{
   */
+#include <stdint.h>
 
 #ifndef __STM32F4xx_H
 #define __STM32F4xx_H
@@ -260,7 +261,7 @@ typedef enum IRQn {
 
 #include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
 #include "system_stm32f4xx.h"
-#include <stdint.h>
+
 
 /** @addtogroup Exported_types
   * @{

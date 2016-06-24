@@ -1,4 +1,5 @@
 #include "cpu_device.h"
+#include "portmacro.h"
 #include <stm32f30x_misc.h>
 #include <stm32f30x_rcc.h>
 #include <core_cm4.h>
@@ -65,6 +66,6 @@ const char *cpu_device_get_serialnumber(void)
  * work.  Useful if you need to catch HAL bugs */
 void assert_failed(uint8_t* file, uint32_t line)
 {
+        portDISABLE_INTERRUPTS();
 	while(1);
 }
-
