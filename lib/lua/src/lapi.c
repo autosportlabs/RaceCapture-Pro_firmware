@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <math.h>
 #include <stdarg.h>
-#include "mod_string.h"
+#include <string.h>
 
 
 #define lapi_c
@@ -1189,4 +1189,3 @@ LUA_API const char *lua_setupvalue (lua_State *L, int funcindex, int n)
     lua_unlock(L);
     return name;
 }
-

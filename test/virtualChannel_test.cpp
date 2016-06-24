@@ -20,7 +20,7 @@
  */
 
 #include "channel_config.h"
-#include "mod_string.h"
+#include <string.h>
 #include "modp_numtoa.h"
 #include "virtualChannel_test.h"
 #include "virtual_channel.h"

@@ -29,7 +29,7 @@
 #include "loggerTaskEx.h"
 #include "luaScript.h"
 #include "mem_mang.h"
-#include "mod_string.h"
+#include <string.h>
 #include "modp_atonum.h"
 #include "modp_numtoa.h"
 #include "printk.h"

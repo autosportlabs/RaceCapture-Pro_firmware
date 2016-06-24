@@ -23,8 +23,9 @@
 #include "api.h"
 #include "constants.h"
 #include "loggerApi.h"
-#include "mod_string.h"
+#include <string.h>
 #include "printk.h"
+#include <string.h>
 
 #define JSON_TOKENS 200
 

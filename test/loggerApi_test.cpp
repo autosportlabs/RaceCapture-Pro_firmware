@@ -37,7 +37,7 @@
 #include "luaScript.h"
 #include "memory_mock.h"
 #include "mock_serial.h"
-#include "mod_string.h"
+#include <string.h>
 #include "modp_atonum.h"
 #include "predictive_timer_2.h"
 #include "printk.h"

@@ -29,7 +29,7 @@
 #include "lualib.h"
 #include "lauxlib.h"
 #include "memory.h"
-#include "mod_string.h"
+#include <string.h>
 #include "printk.h"
 #include "taskUtil.h"
 #include <string.h>

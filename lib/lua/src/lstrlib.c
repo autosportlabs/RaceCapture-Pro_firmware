@@ -9,7 +9,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "mod_string.h"
+#include <string.h>
 
 #define lstrlib_c
 #define LUA_LIB

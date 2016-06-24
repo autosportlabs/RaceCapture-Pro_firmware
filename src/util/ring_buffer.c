@@ -31,7 +31,7 @@
  */
 
 #include "mem_mang.h"
-#include "mod_string.h"
+#include <string.h>
 #include "ring_buffer.h"
 #include <stdbool.h>
 #include <stddef.h>

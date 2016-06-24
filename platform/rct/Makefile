@@ -7,10 +7,9 @@ endif
 ################################################################################
 export PATH := /opt/arm-2012.03/bin:$(PATH)
 CROSS_COMPILE := arm-none-eabi-
-AS := $(CROSS_COMPILE)gcc -x assembler-with-cpp
+AS := $(CROSS_COMPILE)as
 CC := $(CROSS_COMPILE)gcc
-CXX := $(CROSS_COMPILE)g++
-LD := $(CROSS_COMPILE)g++
+LD := $(CROSS_COMPILE)gcc
 OBJDUMP := $(CROSS_COMPILE)objdump
 OBJCOPY := $(CROSS_COMPILE)objcopy
 
@@ -252,33 +251,37 @@ inc-y += $(RC_PLATFORM_DIR)/mk2/hal/fat_sd_stm32/fatfs
 ################################################################################
 obj-y := $(addprefix $(OUTDIR)/,$(patsubst %.s,%.o,$(patsubst %.c,%.o,$(src-y))))
 
+#
+# Our chip is actually a cortex-m4 with FPU.  We have not included the correct
+# FreeRTOS libs as well as compiler args to make it work properly with this arch
+# so for now this stays as an M3.
+# -mcpu=cortex-m4 \
+# -mthumb \
+# -mfpu=fpv4-sp-d16 \
+# -mfloat-abi=softfp \
+#
+CPU_FLAGS := \
+-mcpu=cortex-m3 \
+-mthumb \
+-mfloat-abi=soft \
+
 CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -MD -c
+CFLAGS += $(CPU_FLAGS)
 CFLAGS += $(ASL_CFLAGS)
-CFLAGS += -mcpu=cortex-m3 -mthumb
 CFLAGS += $(BOARD_DEFINES)
-CFLAGS += -fno-builtin-sprintf
-CFLAGS += -ggdb
-CFLAGS += -Wall -Werror -Wempty-body -Wclobbered -Wignored-qualifiers \
-	-Wmissing-parameter-type -Wold-style-declaration \
-	-Wunused-but-set-parameter
-
-ifdef NOOPT
-CFLAGS += -O0
-else
-CFLAGS += -Os
-endif
-
-ifdef DEBUG
-CFLAGS += -D_DEBUG -DUSE_FULL_ASSERT
-endif
-
 CFLAGS += $(addprefix -I,$(inc-y))
 
-LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld
-LDFLAGS += -Wl,-cref,-u,Reset_Handler,-Map=$(OUTDIR)/main.map,--gc-sections
+LDFLAGS := $(CPU_FLAGS)
+LDFLAGS += -TProject/STM32_FLASH.ld
+LDFLAGS += -Wl,-cref,-u,Reset_Handler,-Map=main.map
+LDFLAGS += -Wl,--gc-sections,-static
 LDFLAGS += $(FREERTOS_LD_FLAGS)
 
-AFLAGS := $(CFLAGS)
+LDLIBS :=
+LDLIBS += -lc
+LDLIBS += -lm
+
+ASFLAGS := $(CPU_FLAGS) --warn
 
 # disable auto-removing of intermediate files
 .PRECIOUS: $(obj-y)
@@ -291,15 +294,15 @@ $(OUTDIR)/%.o: %.c
 $(OUTDIR)/%.o: %.s
 	@echo "[AS] $(@F)"
 	mkdir -p $(@D)
-	$(CCACHE) $(AS) $(AFLAGS) -c -o $@ $<
+	$(AS) $(ASFLAGS) -c -o $@ $<
 
-%.ihex: $(OUTDIR)/%.bin
+%.ihex: %.bin
 	@echo "[ASL_FW_POSTPROCESS] $(@F)"
-	$(PYTHON) $(ASL_FW_POSTPROCESS) -f $< -e $(OUTDIR)/main.elf -o 0x08004000 -b $< -i $@
+	$(PYTHON) $(ASL_FW_POSTPROCESS) -f $< -e main.elf -o 0x08004000 -b $< -i $@
 
-%.elf: $(obj-y)
+%.elf: $(sort $(obj-y))
 	@echo "[LD] $(@F)"
-	$(LD) $(LDFLAGS) -o $@ $^
+	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 %.bin: %.elf
 	@echo "[OBJCOPY] $(@F)"

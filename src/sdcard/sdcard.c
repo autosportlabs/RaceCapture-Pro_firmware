@@ -22,7 +22,7 @@
 
 #include "printk.h"
 #include "sdcard.h"
-#include "mod_string.h"
+#include <string.h>
 #include "modp_numtoa.h"
 #include "FreeRTOS.h"
 #include "task.h"

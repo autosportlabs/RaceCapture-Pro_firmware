@@ -5,7 +5,7 @@
 */
 
 
-#include "mod_string.h"
+#include <string.h>
 
 #define lzio_c
 #define LUA_CORE
@@ -83,5 +83,3 @@ char *luaZ_openspace (lua_State *L, Mbuffer *buff, size_t n)
     }
     return buff->buffer;
 }
-
-

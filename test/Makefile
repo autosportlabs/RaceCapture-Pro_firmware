@@ -219,7 +219,6 @@ $(RCP_SRC)/tracks/tracks.c \
 $(RCP_SRC)/tasks/wifi.c \
 $(RCP_SRC)/usart/usart.c \
 $(RCP_SRC)/util/linear_interpolate.c \
-$(RCP_SRC)/util/mod_string.c \
 $(RCP_SRC)/util/modp_atonum.c \
 $(RCP_SRC)/util/modp_numtoa.c \
 $(RCP_SRC)/util/panic.c \

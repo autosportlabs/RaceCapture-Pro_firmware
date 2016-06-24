@@ -132,9 +132,9 @@ int main( void )
          */
 
         if (TASK_TASK_INIT) {
-                xTaskCreate(setupTask,(signed portCHAR*) "Hardware Init",
-                            configMINIMAL_STACK_SIZE + 500, (void *) true,
-                            tskIDLE_PRIORITY, NULL);
+                xTaskCreate(setupTask, (signed portCHAR*) "Hardware Init",
+                            configMINIMAL_STACK_SIZE * 2, (void *) true,
+                            RCP_LUA_PRIORITY, NULL);
         } else {
                 setupTask((void *) false);
         }

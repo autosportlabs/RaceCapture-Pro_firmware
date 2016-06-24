@@ -19,17 +19,26 @@
 
 ASL_CFLAGS :=
 
-ASL_GDB := -ggdb
-ASL_CFLAGS += $(ASL_GDB)
+# Basic flags
+ASL_CFLAGS += -Os -std=gnu99
 
+#
+# Only specify ASL_DEBUG on devel builds. Reason being that when
+# we release RC builds to the field, we want them to be as close
+# to the official build as possible without being labeled as official.
+# That means no checks that would occur when DEBUG is active.
+#
+# STIEG: BUG: -DUSE_FULL_ASSERT - Not working on MK2.
+#
+ifeq ($(RELEASE_TYPE),RELEASE_TYPE_DEVEL)
+ASL_CFLAGS += -DASL_DEBUG -D_DEBUG
+endif
 
-ASL_COPT := s
-ASL_CFLAGS += -O$(ASL_COPT)
-
-
-ASL_CSTD := -std=gnu99
-ASL_CFLAGS += $(ASL_CSTD)
-
+ASL_WATCHDOG := false
+ifeq ($(RELEASE_TYPE),RELEASE_TYPE_OFFICIAL)
+ASL_WATCHDOG := true
+endif
+ASL_CFLAGS += -DASL_WATCHDOG=$(ASL_WATCHDOG)
 
 ASL_WARNING_FLAGS := \
 -Wall \
@@ -43,31 +52,11 @@ ASL_WARNING_FLAGS := \
 
 ASL_CFLAGS += $(ASL_WARNING_FLAGS)
 
-
-ASL_WATCHDOG := false
-ifeq ($(RELEASE_TYPE),RELEASE_TYPE_OFFICIAL)
-ASL_WATCHDOG := true
-endif
-
-ASL_CFLAGS += -DASL_WATCHDOG=$(ASL_WATCHDOG)
-
-
 ASL_CFLAGS_MISC := \
 -fno-common \
 -fno-strict-aliasing \
 
 ASL_CFLAGS += $(ASL_CFLAGS_MISC)
-
-#
-# Only specify ASL_DEBUG on devel builds. Reason being that when
-# we release RC builds to the field, we want them to be as close
-# to the official build as possible without being labeled as official.
-# That means no checks that would occur when DEBUG is active.
-#
-ifeq ($(RELEASE_TYPE),RELEASE_TYPE_DEVEL)
-ASL_CFLAGS += -DASL_DEBUG
-endif
-
 
 export VERSION_CFLAGS := \
 -DAPI_REV=$(API) \
@@ -79,5 +68,11 @@ export VERSION_CFLAGS := \
 
 ASL_CFLAGS += $(VERSION_CFLAGS)
 
+#
+# ASL_DEV_CLFAGS
+# CFLAGS provided provided by the developer to aid in debugging
+# and other nefarious tasks
+#
+ASL_CFLAGS += $(ASL_DEV_CFLAGS)
 
 export ASL_CFLAGS

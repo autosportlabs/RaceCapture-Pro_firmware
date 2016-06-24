@@ -8,7 +8,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "mod_string.h"
+#include <string.h>
 
 #define lua_c
 
@@ -413,4 +413,3 @@ int main (int argc, char **argv)
     lua_close(L);
     return (status || s.status) ? EXIT_FAILURE : EXIT_SUCCESS;
 }
-

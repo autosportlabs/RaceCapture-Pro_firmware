@@ -25,7 +25,7 @@
 #include "constants.h"
 #include "loggerCommands.h"
 #include "luaCommands.h"
-#include "mod_string.h"
+#include <string.h>
 #include "serial.h"
 
 #define SYSTEM_COMMANDS { LOGGER_COMMANDS       \

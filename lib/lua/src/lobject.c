@@ -8,7 +8,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "mod_string.h"
+#include <string.h>
 
 #define lobject_c
 #define LUA_CORE

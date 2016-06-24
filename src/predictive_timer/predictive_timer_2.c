@@ -24,7 +24,7 @@
 #include "debug.h"
 #include "geopoint.h"
 #include "gps.h"
-#include "mod_string.h"
+#include <string.h>
 #include "predictive_timer_2.h"
 
 /**

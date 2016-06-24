@@ -7,7 +7,7 @@
 
 #include <setjmp.h>
 #include <stdlib.h>
-#include "mod_string.h"
+#include <string.h>
 
 #define ldo_c
 #define LUA_CORE
@@ -537,5 +537,3 @@ int luaD_protectedparser (lua_State *L, ZIO *z, const char *name)
     luaZ_freebuffer(L, &p.buff);
     return status;
 }
-
-

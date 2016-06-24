@@ -21,7 +21,7 @@
 
 #include "api.h"
 #include "loggerConfig.h"
-#include "mod_string.h"
+#include <string.h>
 #include "modp_atonum.h"
 #include "timer_config.h"
 

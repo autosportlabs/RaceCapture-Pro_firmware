@@ -41,7 +41,7 @@
 #include "luaLoggerBinding.h"
 #include "luaScript.h"
 #include "luaTask.h"
-#include "mod_string.h"
+#include <string.h>
 #include "modp_numtoa.h"
 #include "printk.h"
 #include "queue.h"

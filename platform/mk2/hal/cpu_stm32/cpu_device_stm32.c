@@ -1,4 +1,5 @@
 #include "cpu_device.h"
+#include "portmacro.h"
 #include <stm32f4xx_misc.h>
 #include <stm32f4xx_rcc.h>
 #include <core_cm4.h>
@@ -57,4 +58,12 @@ void cpu_device_reset(int bootloader)
 const char *cpu_device_get_serialnumber(void)
 {
     return cpu_id;
+}
+
+/* This is required by the STM32 libraries for their ASSERT macros to
+ * work.  Useful if you need to catch HAL bugs */
+void assert_failed(uint8_t* file, uint32_t line)
+{
+        portDISABLE_INTERRUPTS();
+	while(1);
 }

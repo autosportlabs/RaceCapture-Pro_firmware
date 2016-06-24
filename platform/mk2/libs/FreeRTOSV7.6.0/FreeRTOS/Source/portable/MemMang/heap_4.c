@@ -80,7 +80,7 @@ task.h is included from an application file. */
 
 #include "FreeRTOS.h"
 #include "task.h"
-#include "mod_string.h"
+#include <string.h>
 #undef MPU_WRAPPERS_INCLUDED_FROM_API_FILE
 
 /* Block sizes must not get too small. */
@@ -398,4 +398,3 @@ static void prvInsertBlockIntoFreeList( xBlockLink *pxBlockToInsert )
         pxIterator->pxNextFreeBlock = pxBlockToInsert;
     }
 }
-
