@@ -201,7 +201,7 @@ PHONY += hashes
 hashes:
 	$(Q)echo
 	$(Q)echo "SHA256 Hashes for all main.* files: "
-	$(Q)sha256sum -b $(wildcard platform/*/main.*) </dev/null
+	$(Q)sha256sum -b $(sort $(wildcard platform/*/main.*)) </dev/null
 	$(Q)echo
 
 .PHONY: $(PHONY)
