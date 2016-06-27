@@ -47,8 +47,6 @@ void GPSTask(void *pvParameters)
         const uint8_t targetSampleRate =
                 decodeSampleRate(lc->GPSConfigs.speed.sampleRate);
 
-        lapStats_init();
-
     while(1) {
         const gps_status_t gps_status = GPS_init(targetSampleRate, serial);
         if (!gps_status) {

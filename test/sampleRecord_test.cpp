@@ -57,7 +57,7 @@ void SampleRecordTest::setUp()
 	reset_ticks();
 
         lc = getWorkingLoggerConfig();
-        lapStats_init();
+        lapstats_reset();
         size_t channelCount = get_enabled_channel_count(lc);
         init_sample_buffer(&s, channelCount);
 

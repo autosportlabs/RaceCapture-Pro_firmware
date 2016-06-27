@@ -37,7 +37,8 @@ GpsSnapshot gps_ss;
 
 void LapStatsTest::setUp()
 {
-        lapStats_init();
+        lapstats_reset();
+        reset_track();
 
         /* Give us valid values. */
         gps_ss.sample.quality = GPS_QUALITY_2D;
@@ -50,13 +51,27 @@ void LapStatsTest::setUp()
         gps_ss.previousPoint.longitude = 2.0;
 }
 
-void LapStatsTest::tearDown() {}
-
-void LapStatsTest::test_init()
+void LapStatsTest::reset_test()
 {
-        /* Internal state checks.  Only do these if no other options */
-        CPPUNIT_ASSERT_EQUAL((float) 0, g_geo_circle_radius);
-        CPPUNIT_ASSERT_EQUAL(0, g_configured);
+        lapstats_set_active_track(NULL, 10);
+        CPPUNIT_ASSERT_EQUAL(1, g_configured);
+
+        g_at_sector = 1;
+        g_at_sf = 1;
+        g_lapStartTimestamp = 4565;
+        g_lastLapTime = 324;
+        g_lastSector = 3;
+        g_lastSectorTime = 235;
+        g_lastSectorTimestamp = 4363;
+        g_sector = 4;
+        g_distance = 234;
+        g_lap = 3;
+        g_lapCount = 2;
+
+        lapstats_reset();
+
+        CPPUNIT_ASSERT_EQUAL((int) false, g_at_sector);
+        CPPUNIT_ASSERT_EQUAL(1, g_configured);
 
         CPPUNIT_ASSERT_EQUAL((tiny_millis_t) 0, lapstats_elapsed_time());
         CPPUNIT_ASSERT_EQUAL((tiny_millis_t) 0, getLastLapTime());
@@ -73,20 +88,34 @@ void LapStatsTest::test_init()
         CPPUNIT_ASSERT_EQUAL(0, getAtStartFinish());
         CPPUNIT_ASSERT_EQUAL(0, getAtSector());
         CPPUNIT_ASSERT_EQUAL(false, lapstats_lap_in_progress());
+}
+
+void LapStatsTest::reset_track_test()
+{
+        const Track track = TEST_TRACK_VALID_CIRCUIT_TRACK;
+        lapstats_set_active_track(&track, 10);
+        CPPUNIT_ASSERT_EQUAL(1, g_configured);
+        CPPUNIT_ASSERT(lapstats_get_selected_track_id());
+        CPPUNIT_ASSERT(g_start_finish_enabled);
+        CPPUNIT_ASSERT(g_sector_enabled);
+
+        reset_track();
 
         CPPUNIT_ASSERT_EQUAL(0, lapstats_get_selected_track_id());
         CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_WAITING_TO_CONFIG,
                              lapstats_get_track_status());
-
-        lapstats_location_updated(&gps_ss);
+        CPPUNIT_ASSERT_EQUAL(0, g_configured);
+        CPPUNIT_ASSERT(0 == lapstats_get_selected_track_id());
+        CPPUNIT_ASSERT(0 == g_start_finish_enabled);
+        CPPUNIT_ASSERT(0 == g_sector_enabled);
 }
 
 void LapStatsTest::null_track_test()
 {
-        lapstats_setup_internals(NULL, 10, false);
+        lapstats_set_active_track(NULL, 10);
 
-        CPPUNIT_ASSERT_EQUAL(0, g_configured);
-        CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_WAITING_TO_CONFIG,
+        CPPUNIT_ASSERT_EQUAL(1, g_configured);
+        CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_EXTERNALLY_SET,
                              lapstats_get_track_status());
 
         lapstats_location_updated(&gps_ss);
@@ -95,7 +124,7 @@ void LapStatsTest::null_track_test()
 void LapStatsTest::invalid_track_test()
 {
         const Track track = TEST_TRACK_INVALID_CIRCUIT_TRACK;
-        lapstats_setup_internals(&track, 10, false);
+        _set_active_track(&track, 10, TRACK_STATUS_FIXED_CONFIG);
 
         CPPUNIT_ASSERT_EQUAL(1, g_configured);
         CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_FIXED_CONFIG,
@@ -107,7 +136,7 @@ void LapStatsTest::invalid_track_test()
 void LapStatsTest::automatic_track_test()
 {
         const Track track = TEST_TRACK_VALID_CIRCUIT_TRACK;
-        lapstats_setup_internals(&track, 10, true);
+        _set_active_track(&track, 10, TRACK_STATUS_AUTO_DETECTED);
 
         CPPUNIT_ASSERT_EQUAL(1, g_configured);
         CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_AUTO_DETECTED,
@@ -117,17 +146,17 @@ void LapStatsTest::automatic_track_test()
 void LapStatsTest::manual_track_test()
 {
         const Track track = TEST_TRACK_VALID_CIRCUIT_TRACK;
-        lapstats_setup_internals(&track, 10, false);
+        lapstats_set_active_track(&track, 10);
 
         CPPUNIT_ASSERT_EQUAL(1, g_configured);
-        CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_FIXED_CONFIG,
+        CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_EXTERNALLY_SET,
                              lapstats_get_track_status());
 }
 
 void LapStatsTest::sectors_disabled_test()
 {
         const Track track = TEST_TRACK_VALID_CIRCUIT_TRACK_NO_SECTORS;
-        lapstats_setup_internals(&track, 10, false);
+        lapstats_set_active_track(&track, 10);
 
         CPPUNIT_ASSERT_EQUAL(false, (bool) g_sector_enabled);
 }
@@ -135,7 +164,7 @@ void LapStatsTest::sectors_disabled_test()
 void LapStatsTest::sectors_enabled_test()
 {
         const Track track = TEST_TRACK_VALID_CIRCUIT_TRACK;
-        lapstats_setup_internals(&track, 10, false);
+        lapstats_set_active_track(&track, 10);
 
         CPPUNIT_ASSERT_EQUAL(true, (bool) g_sector_enabled);
 }
@@ -143,7 +172,7 @@ void LapStatsTest::sectors_enabled_test()
 void LapStatsTest::circuit_lap_start_event_test()
 {
         const Track track = TEST_TRACK_VALID_CIRCUIT_TRACK;
-        lapstats_setup_internals(&track, 10, false);
+        lapstats_set_active_track(&track, 10);
 
         const tiny_millis_t time = 45;
         const GeoPoint pt = gps_ss.sample.point;
@@ -174,7 +203,7 @@ void LapStatsTest::circuit_lap_start_event_test()
 void LapStatsTest::stage_lap_start_event_test()
 {
         const Track track = TEST_TRACK_VALID_STAGE_TRACK;
-        lapstats_setup_internals(&track, 10, false);
+        lapstats_set_active_track(&track, 10);
 
         const tiny_millis_t time = 42;
         const GeoPoint pt = gps_ss.sample.point;
@@ -205,7 +234,7 @@ void LapStatsTest::stage_lap_start_event_test()
 void LapStatsTest::circuit_lap_finish_event_test()
 {
         const Track track = TEST_TRACK_VALID_CIRCUIT_TRACK;
-        lapstats_setup_internals(&track, 10, false);
+        lapstats_set_active_track(&track, 10);
 
         const tiny_millis_t stime = 3;
         const GeoPoint pt = gps_ss.sample.point;
@@ -235,7 +264,7 @@ void LapStatsTest::circuit_lap_finish_event_test()
 void LapStatsTest::stage_lap_finish_event_test()
 {
         const Track track = TEST_TRACK_VALID_STAGE_TRACK;
-        lapstats_setup_internals(&track, 10, false);
+        lapstats_set_active_track(&track, 10);
 
         const tiny_millis_t stime = 6;
         const GeoPoint pt = gps_ss.sample.point;
@@ -265,7 +294,7 @@ void LapStatsTest::stage_lap_finish_event_test()
 void LapStatsTest::sector_boundary_event_test()
 {
         const Track track = TEST_TRACK_VALID_STAGE_TRACK;
-        lapstats_setup_internals(&track, 10, false);
+        lapstats_set_active_track(&track, 10);
 
         const tiny_millis_t stime = 17;
         const GeoPoint pt = gps_ss.sample.point;
@@ -306,7 +335,7 @@ void LapStatsTest::update_distance_no_prev_point_test()
 void LapStatsTest::update_sector_geo_circle_test()
 {
         const Track track = TEST_TRACK_VALID_STAGE_TRACK;
-        lapstats_setup_internals(&track, 1, false);
+        lapstats_set_active_track(&track, 1);
 
         const GeoPoint point0 =
                 getSectorGeoPointAtIndex(&track, 0);
@@ -324,7 +353,7 @@ void LapStatsTest::update_sector_geo_circle_test()
 void LapStatsTest::update_elapsed_time_test()
 {
         const Track track = TEST_TRACK_VALID_STAGE_TRACK;
-        lapstats_setup_internals(&track, 1, false);
+        lapstats_set_active_track(&track, 1);
 
         const tiny_millis_t stime = 5;
         const GeoPoint pt = gps_ss.sample.point;
@@ -342,7 +371,7 @@ void LapStatsTest::update_elapsed_time_test()
 void LapStatsTest::at_sf_reset_test()
 {
         const Track track = TEST_TRACK_VALID_STAGE_TRACK;
-        lapstats_setup_internals(&track, 1, false);
+        lapstats_set_active_track(&track, 1);
 
         CPPUNIT_ASSERT_EQUAL(false, (bool) getAtStartFinish());
 
@@ -361,7 +390,7 @@ void LapStatsTest::at_sf_reset_test()
 void LapStatsTest::at_sector_reset_test()
 {
         const Track track = TEST_TRACK_VALID_STAGE_TRACK;
-        lapstats_setup_internals(&track, 1, false);
+        lapstats_set_active_track(&track, 1);
 
         CPPUNIT_ASSERT_EQUAL(false, (bool) getAtSector());
 
@@ -376,4 +405,35 @@ void LapStatsTest::at_sector_reset_test()
         lapstats_location_updated(&gps_ss);
 
         CPPUNIT_ASSERT_EQUAL(false, (bool) getAtSector());
+}
+
+void LapStatsTest::config_changed_test()
+{
+        /* Run this test as it will setup a working environment */
+        automatic_track_test();
+
+        lapstats_config_changed();
+
+        CPPUNIT_ASSERT_EQUAL(0, g_configured);
+        CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_WAITING_TO_CONFIG,
+                             lapstats_get_track_status());
+
+        CPPUNIT_ASSERT_EQUAL((float) 0, g_geo_circle_radius);
+        CPPUNIT_ASSERT_EQUAL((tiny_millis_t) 0, lapstats_elapsed_time());
+        CPPUNIT_ASSERT_EQUAL((tiny_millis_t) 0, getLastLapTime());
+        CPPUNIT_ASSERT_EQUAL((tiny_millis_t) 0, getLastSectorTime());
+
+        CPPUNIT_ASSERT_EQUAL(0, getLapCount());
+        CPPUNIT_ASSERT_EQUAL(0, lapstats_current_lap());
+
+        CPPUNIT_ASSERT_EQUAL(-1, getSector());
+        CPPUNIT_ASSERT_EQUAL(-1, getLastSector());
+
+        CPPUNIT_ASSERT_EQUAL((float) 0, getLapDistance());
+
+        CPPUNIT_ASSERT_EQUAL((int) false, getAtStartFinish());
+        CPPUNIT_ASSERT_EQUAL((int) false, getAtSector());
+        CPPUNIT_ASSERT_EQUAL(false, lapstats_lap_in_progress());
+
+        CPPUNIT_ASSERT_EQUAL(0, lapstats_get_selected_track_id());
 }

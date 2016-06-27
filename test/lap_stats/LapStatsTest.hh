@@ -27,7 +27,9 @@
 class LapStatsTest : public CppUnit::TestFixture
 {
         CPPUNIT_TEST_SUITE( LapStatsTest );
-        CPPUNIT_TEST( test_init );
+        CPPUNIT_TEST( reset_test );
+        CPPUNIT_TEST( reset_track_test );
+        CPPUNIT_TEST( config_changed_test );
         CPPUNIT_TEST( null_track_test );
         CPPUNIT_TEST( invalid_track_test );
         CPPUNIT_TEST( automatic_track_test );
@@ -49,8 +51,9 @@ class LapStatsTest : public CppUnit::TestFixture
 
 public:
         void setUp();
-        void tearDown();
-        void test_init();
+        void reset_test();
+        void reset_track_test();
+        void config_changed_test();
         void null_track_test();
         void invalid_track_test();
         void automatic_track_test();

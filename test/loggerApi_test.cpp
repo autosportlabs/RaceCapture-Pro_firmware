@@ -173,7 +173,7 @@ void LoggerApiTest::setUp()
 	setupMockSerial();
 	imu_init(config);
 	resetPredictiveTimer();
-        lapStats_init();
+        lapstats_reset();
 }
 
 
@@ -1315,8 +1315,7 @@ void LoggerApiTest::testGetVersion(){
 
 void LoggerApiTest::testGetStatus(){
 	set_ticks(3);
-        lc_reset();
-        lapStats_init();
+        lapstats_reset();
 
     const char *response = processApiGeneric("getStatus1.json");
     Object json;
