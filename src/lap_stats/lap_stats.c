@@ -276,9 +276,16 @@ float lapstats_degrees_to_meters(const float degrees)
         return degrees * 110574.27;
 }
 
-bool lapstats_is_track_vald()
+/**
+ * Informs the caller as to whether or not the currenctly configured
+ * track (if one is configured at all) is valid. By valid we mean that
+ * the track is capable of recording laps (valid start/finish points
+ * are defined).
+ * @return true if valid start/finish points exist, false otherwise.
+ */
+bool lapstats_is_track_valid()
 {
-        return g_start_finish_enabled;
+        return !!g_start_finish_enabled;
 }
 
 track_status_t lapstats_get_track_status(void)

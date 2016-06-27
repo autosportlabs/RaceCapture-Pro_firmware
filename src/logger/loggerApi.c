@@ -312,6 +312,7 @@ int api_getStatus(struct Serial *serial, const jsmntok_t *json)
 
         json_objStartString(serial, "track");
         json_int(serial, "status", lapstats_get_track_status(), 1);
+        json_bool(serial, "valid", lapstats_is_track_valid(), 1);
         json_int(serial, "trackId", lapstats_get_selected_track_id(), 1);
         json_int(serial, "inLap", (int)lapstats_lap_in_progress(), 1);
         json_int(serial, "armed", lc_is_armed(), 0);

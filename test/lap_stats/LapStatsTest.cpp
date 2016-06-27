@@ -53,8 +53,10 @@ void LapStatsTest::setUp()
 
 void LapStatsTest::reset_test()
 {
-        lapstats_set_active_track(NULL, 10);
+        const Track track = TEST_TRACK_VALID_CIRCUIT_TRACK;
+        lapstats_set_active_track(&track, 10);
         CPPUNIT_ASSERT_EQUAL(1, g_configured);
+        CPPUNIT_ASSERT_EQUAL(true, lapstats_is_track_valid());
 
         g_at_sector = 1;
         g_at_sf = 1;
@@ -70,8 +72,9 @@ void LapStatsTest::reset_test()
 
         lapstats_reset();
 
-        CPPUNIT_ASSERT_EQUAL((int) false, g_at_sector);
+        /* Track setting don't change here */
         CPPUNIT_ASSERT_EQUAL(1, g_configured);
+        CPPUNIT_ASSERT_EQUAL(true, lapstats_is_track_valid());
 
         CPPUNIT_ASSERT_EQUAL((tiny_millis_t) 0, lapstats_elapsed_time());
         CPPUNIT_ASSERT_EQUAL((tiny_millis_t) 0, getLastLapTime());
@@ -82,6 +85,7 @@ void LapStatsTest::reset_test()
 
         CPPUNIT_ASSERT_EQUAL(-1, getSector());
         CPPUNIT_ASSERT_EQUAL(-1, getLastSector());
+        CPPUNIT_ASSERT_EQUAL((int) false, g_at_sector);
 
         CPPUNIT_ASSERT_EQUAL((float) 0, getLapDistance());
 
@@ -98,6 +102,7 @@ void LapStatsTest::reset_track_test()
         CPPUNIT_ASSERT(lapstats_get_selected_track_id());
         CPPUNIT_ASSERT(g_start_finish_enabled);
         CPPUNIT_ASSERT(g_sector_enabled);
+        CPPUNIT_ASSERT_EQUAL(true, lapstats_is_track_valid());
 
         reset_track();
 
@@ -108,6 +113,7 @@ void LapStatsTest::reset_track_test()
         CPPUNIT_ASSERT(0 == lapstats_get_selected_track_id());
         CPPUNIT_ASSERT(0 == g_start_finish_enabled);
         CPPUNIT_ASSERT(0 == g_sector_enabled);
+        CPPUNIT_ASSERT_EQUAL(false, lapstats_is_track_valid());
 }
 
 void LapStatsTest::null_track_test()
@@ -117,6 +123,7 @@ void LapStatsTest::null_track_test()
         CPPUNIT_ASSERT_EQUAL(1, g_configured);
         CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_EXTERNALLY_SET,
                              lapstats_get_track_status());
+        CPPUNIT_ASSERT_EQUAL(false, lapstats_is_track_valid());
 
         lapstats_location_updated(&gps_ss);
 }
@@ -129,6 +136,7 @@ void LapStatsTest::invalid_track_test()
         CPPUNIT_ASSERT_EQUAL(1, g_configured);
         CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_FIXED_CONFIG,
                              lapstats_get_track_status());
+        CPPUNIT_ASSERT_EQUAL(false, lapstats_is_track_valid());
 
         lapstats_location_updated(&gps_ss);
 }
@@ -141,6 +149,7 @@ void LapStatsTest::automatic_track_test()
         CPPUNIT_ASSERT_EQUAL(1, g_configured);
         CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_AUTO_DETECTED,
                              lapstats_get_track_status());
+        CPPUNIT_ASSERT_EQUAL(true, lapstats_is_track_valid());
 }
 
 void LapStatsTest::manual_track_test()
@@ -151,6 +160,7 @@ void LapStatsTest::manual_track_test()
         CPPUNIT_ASSERT_EQUAL(1, g_configured);
         CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_EXTERNALLY_SET,
                              lapstats_get_track_status());
+        CPPUNIT_ASSERT_EQUAL(true, lapstats_is_track_valid());
 }
 
 void LapStatsTest::sectors_disabled_test()

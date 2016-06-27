@@ -27,6 +27,7 @@
 #include "geopoint.h"
 #include "gps.h"
 #include "tracks.h"
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -54,6 +55,8 @@ void lapstats_reset(void);
 void lapstats_processUpdate(const GpsSnapshot *gpsSnapshot);
 
 track_status_t lapstats_get_track_status( void );
+
+bool lapstats_is_track_valid();
 
 int32_t lapstats_get_selected_track_id( void );
 
