@@ -110,6 +110,8 @@ bool lapstats_lap_in_progress();
 
 float lapstats_degrees_to_meters(const float degrees);
 
+float lapstats_get_geo_circle_radius();
+
 CPP_GUARD_END
 
 #endif /* LAP_STATS_H_ */

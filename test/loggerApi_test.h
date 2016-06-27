@@ -84,6 +84,11 @@ class LoggerApiTest : public CppUnit::TestFixture
     CPPUNIT_TEST( testSetWifiCfgApBadEncryption );
     CPPUNIT_TEST( testGetWifiCfgDefault );
     CPPUNIT_TEST( testSetGetWifiCfg );
+    CPPUNIT_TEST( setActiveTrack );
+    CPPUNIT_TEST( setActiveTrackInvalid );
+    CPPUNIT_TEST( setActiveTrackRadiusMeters );
+    CPPUNIT_TEST( setActiveTrackRadiusDegrees );
+
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -92,6 +97,11 @@ public:
     string readFile(string filename);
     void setUp();
     void tearDown();
+
+    void setActiveTrack();
+    void setActiveTrackInvalid();
+    void setActiveTrackRadiusMeters();
+    void setActiveTrackRadiusDegrees();
 
     void stringToJson(const char* buffer, Object &json);
     char * processApiGeneric(string filename);

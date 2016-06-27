@@ -64,7 +64,7 @@ void SectorTest::setUp()
 {
         setupMockSerial();
 	GPS_init(10, getMockSerial());
-	lapstats_reset();
+	lapstats_config_changed();
 }
 
 

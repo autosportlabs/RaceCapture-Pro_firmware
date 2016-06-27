@@ -371,6 +371,11 @@ int getLastSector()
     return g_lastSector;
 }
 
+float lapstats_get_geo_circle_radius()
+{
+        return g_geo_circle_radius;
+}
+
 tiny_millis_t getLastLapTime()
 {
     return g_lastLapTime;

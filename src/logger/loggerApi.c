@@ -1845,12 +1845,12 @@ int api_set_active_track(struct Serial *serial, const jsmntok_t *json)
         float tmp;
         float radius_m;
 
-        memset(&track, 0, sizeof(track));
         const jsmntok_t *json_track = jsmn_find_node(json, "track");
         /* If no track is given, then fail */
         if (json_track == NULL)
                 return API_ERROR_PARAMETER;
 
+        memset(&track, 0, sizeof(track));
         setTrack(json_track + 1, &track);
 
         const bool rad_set = setFloatValueIfExists(json, "rad", &tmp);
