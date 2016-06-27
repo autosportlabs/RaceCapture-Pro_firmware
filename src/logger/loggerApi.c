@@ -1837,3 +1837,35 @@ int api_set_telemetry_stop(struct Serial *serial, const jsmntok_t *json)
                 serial_ioctl(serial, SERIAL_IOCTL_TELEMETRY_DISABLE, NULL);
         return get_telemetry_api_return_code(cmd_result);
 }
+
+int api_set_active_track(struct Serial *serial, const jsmntok_t *json)
+{
+        Track track;
+        float tmp;
+        float radius_m;
+
+        memset(&track, 0, sizeof(track));
+        const jsmntok_t *json_track = jsmn_find_node(json, "track");
+        /* If no track is given, then fail */
+        if (json_track == NULL)
+                return API_ERROR_PARAMETER;
+
+        setTrack(json_track + 1, &track);
+
+        const bool rad_set = setFloatValueIfExists(json, "rad", &tmp);
+        const bool radius_set = setFloatValueIfExists(json, "radius", &radius_m);
+        if (radius_set) {
+                /* Then radius_m already has value we want.  No-op */
+        } else if (rad_set) {
+                /* Supported only for legacy b/c setTrack */
+                radius_m = lapstats_degrees_to_meters(tmp);
+        } else {
+                /* Default to user config, which is in degrees lat */
+                const TrackConfig *trackCfg =
+                        &(getWorkingLoggerConfig()->TrackConfigs);
+                radius_m = lapstats_degrees_to_meters(trackCfg->radius);
+        }
+
+        lapstats_set_active_track(&track, radius_m);
+        return API_SUCCESS;
+}

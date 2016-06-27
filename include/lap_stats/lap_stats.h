@@ -105,6 +105,8 @@ bool lapstats_set_active_track(const Track *track, const float radius);
  */
 bool lapstats_lap_in_progress();
 
+float lapstats_degrees_to_meters(const float degrees);
+
 CPP_GUARD_END
 
 #endif /* LAP_STATS_H_ */

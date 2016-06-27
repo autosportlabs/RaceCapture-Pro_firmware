@@ -259,10 +259,21 @@ bool lapstats_set_active_track(const Track *track, const float radius)
         return _set_active_track(track, radius, TRACK_STATUS_EXTERNALLY_SET);
 }
 
-static float degrees_to_meters(float degrees)
+/**
+ * Basic method that calculates distances represented in degrees of latitude
+ * at the equator into meters.  Only present to deal with legacy issues.
+ */
+float lapstats_degrees_to_meters(const float degrees)
 {
-    // There are 110574.27 meters per degree of latitude at the equator.
-    return degrees * 110574.27;
+        /*
+         * LEGACY HACK. Our original Track object had the radius of
+         * geoCircle measured in degrees!!! This method exists to convert
+         * from that measurement to one that is measured in meters, a more
+         * civilized unit of measure. I would love to murder the need to use
+         * this in the future.
+         * 110574.27 meters per degree of latitude at the equator.
+         */
+        return degrees * 110574.27;
 }
 
 bool lapstats_is_track_vald()
@@ -604,7 +615,7 @@ static void lapstats_setup(const GpsSnapshot *gps_snapshot)
         const LoggerConfig *config = getWorkingLoggerConfig();
         const GeoPoint *gp = &gps_snapshot->sample.point;
         const float radius_in_meters =
-                degrees_to_meters(config->TrackConfigs.radius);
+                lapstats_degrees_to_meters(config->TrackConfigs.radius);
 
         const Track *track = NULL;
         const TrackConfig *trackConfig = &(config->TrackConfigs);
