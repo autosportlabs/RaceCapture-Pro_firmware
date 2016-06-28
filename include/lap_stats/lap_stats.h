@@ -26,16 +26,18 @@
 #include "dateTime.h"
 #include "geopoint.h"
 #include "gps.h"
-
+#include "tracks.h"
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
 CPP_GUARD_BEGIN
 
 typedef enum {
-    TRACK_STATUS_WAITING_TO_CONFIG = 0,
-    TRACK_STATUS_FIXED_CONFIG,
-    TRACK_STATUS_AUTO_DETECTED,
+        TRACK_STATUS_WAITING_TO_CONFIG = 0,
+        TRACK_STATUS_FIXED_CONFIG,
+        TRACK_STATUS_AUTO_DETECTED,
+        TRACK_STATUS_EXTERNALLY_SET,
 } track_status_t;
 
 /**
@@ -48,11 +50,13 @@ typedef struct _TimeLoc {
 
 void lapstats_config_changed(void);
 
-void lapStats_init();
+void lapstats_reset(void);
 
 void lapstats_processUpdate(const GpsSnapshot *gpsSnapshot);
 
 track_status_t lapstats_get_track_status( void );
+
+bool lapstats_is_track_valid();
 
 int32_t lapstats_get_selected_track_id( void );
 
@@ -97,10 +101,18 @@ float getLapDistance();
 
 float getLapDistanceInMiles();
 
+bool lapstats_set_active_track(const Track *track, const float radius);
+
 /**
  * @return True if we are in the middle of a lap.  False otherwise.
  */
 bool lapstats_lap_in_progress();
+
+float lapstats_degrees_to_meters(const float degrees);
+
+float lapstats_get_geo_circle_radius();
+
+bool lapstats_track_has_sectors();
 
 CPP_GUARD_END
 

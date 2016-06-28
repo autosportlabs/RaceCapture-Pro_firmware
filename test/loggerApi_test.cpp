@@ -173,7 +173,7 @@ void LoggerApiTest::setUp()
 	setupMockSerial();
 	imu_init(config);
 	resetPredictiveTimer();
-        lapStats_init();
+        lapstats_config_changed();
 }
 
 
@@ -1315,8 +1315,7 @@ void LoggerApiTest::testGetVersion(){
 
 void LoggerApiTest::testGetStatus(){
 	set_ticks(3);
-        lc_reset();
-        lapStats_init();
+        lapstats_reset();
 
     const char *response = processApiGeneric("getStatus1.json");
     Object json;
@@ -1437,4 +1436,76 @@ void LoggerApiTest::testSetGetWifiCfg() {
                              (string)(String)apc["password"]);
         CPPUNIT_ASSERT_EQUAL(string("wpa2"), (string)(String)apc["encryption"]);
         CPPUNIT_ASSERT_EQUAL(1, (int)(Number)apc["channel"]);
+}
+
+void LoggerApiTest::setActiveTrack()
+{
+        char *response = processApiGeneric("set_active_track.json");
+        assertGenericResponse(response, "setActiveTrack", API_SUCCESS);
+
+        CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_EXTERNALLY_SET,
+                             lapstats_get_track_status());
+        CPPUNIT_ASSERT_EQUAL(true, lapstats_is_track_valid());
+        CPPUNIT_ASSERT_EQUAL(999999, lapstats_get_selected_track_id());
+        CPPUNIT_ASSERT_EQUAL(false, lapstats_track_has_sectors());
+
+        const float rad_deg = getWorkingLoggerConfig()->TrackConfigs.radius;
+        const float radius_m = lapstats_degrees_to_meters(rad_deg);
+        CPPUNIT_ASSERT_EQUAL(radius_m, lapstats_get_geo_circle_radius());
+}
+
+void LoggerApiTest::setActiveTrackSectors()
+{
+        char *response = processApiGeneric("set_active_track_sectors.json");
+        assertGenericResponse(response, "setActiveTrack", API_SUCCESS);
+
+        CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_EXTERNALLY_SET,
+                             lapstats_get_track_status());
+        CPPUNIT_ASSERT_EQUAL(true, lapstats_is_track_valid());
+        CPPUNIT_ASSERT_EQUAL(999999, lapstats_get_selected_track_id());
+        CPPUNIT_ASSERT_EQUAL(true, lapstats_track_has_sectors());
+
+        const float rad_deg = getWorkingLoggerConfig()->TrackConfigs.radius;
+        const float radius_m = lapstats_degrees_to_meters(rad_deg);
+        CPPUNIT_ASSERT_EQUAL(radius_m, lapstats_get_geo_circle_radius());
+}
+
+
+void LoggerApiTest::setActiveTrackInvalid()
+{
+        char *response = processApiGeneric("set_active_track_invalid.json");
+        assertGenericResponse(response, "setActiveTrack", API_ERROR_PARAMETER);
+
+        CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_WAITING_TO_CONFIG,
+                             lapstats_get_track_status());
+        CPPUNIT_ASSERT_EQUAL(false, lapstats_is_track_valid());
+        CPPUNIT_ASSERT_EQUAL(0, lapstats_get_selected_track_id());
+}
+
+void LoggerApiTest::setActiveTrackRadiusMeters()
+{
+        char *response =
+                processApiGeneric("set_active_track_radius_meters.json");
+        assertGenericResponse(response, "setActiveTrack", API_SUCCESS);
+
+        CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_EXTERNALLY_SET,
+                             lapstats_get_track_status());
+        CPPUNIT_ASSERT_EQUAL(true, lapstats_is_track_valid());
+        CPPUNIT_ASSERT_EQUAL(8888, lapstats_get_selected_track_id());
+        CPPUNIT_ASSERT_EQUAL((float) 7, lapstats_get_geo_circle_radius());
+}
+
+void LoggerApiTest::setActiveTrackRadiusDegrees()
+{
+        char *response =
+                processApiGeneric("set_active_track_radius_degrees.json");
+        assertGenericResponse(response, "setActiveTrack", API_SUCCESS);
+
+        CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_EXTERNALLY_SET,
+                             lapstats_get_track_status());
+        CPPUNIT_ASSERT_EQUAL(true, lapstats_is_track_valid());
+        CPPUNIT_ASSERT_EQUAL(8675309, lapstats_get_selected_track_id());
+        const float rad_deg = 0.007;
+        const float radius_m = lapstats_degrees_to_meters(rad_deg);
+        CPPUNIT_ASSERT_EQUAL(radius_m, lapstats_get_geo_circle_radius());
 }

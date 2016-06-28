@@ -55,6 +55,7 @@ CPP_GUARD_BEGIN
         API_METHOD("hb", api_heart_beat)                                \
         API_METHOD("log", api_log)                                      \
         API_METHOD("s", api_sampleData)                                 \
+        API_METHOD("setActiveTrack", api_set_active_track)              \
         API_METHOD("setCanCfg", api_setCanConfig)                       \
         API_METHOD("setConnCfg", api_setConnectivityConfig)             \
         API_METHOD("setGpsCfg", api_setGpsConfig)                       \
@@ -180,6 +181,9 @@ int api_set_wifi_cfg(struct Serial *s, const jsmntok_t *json);
 /* Telemetry Stream Actions */
 int api_set_telemetry_start(struct Serial *serial, const jsmntok_t *json);
 int api_set_telemetry_stop(struct Serial *serial, const jsmntok_t *json);
+
+/* Volatile setter of active Track */
+int api_set_active_track(struct Serial *serial, const jsmntok_t *json);
 
 CPP_GUARD_END
 
