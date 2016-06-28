@@ -131,7 +131,7 @@ void LapStatsTest::null_track_test()
 void LapStatsTest::invalid_track_test()
 {
         const Track track = TEST_TRACK_INVALID_CIRCUIT_TRACK;
-        _set_active_track(&track, 10, TRACK_STATUS_FIXED_CONFIG);
+        set_active_track(&track, 10, TRACK_STATUS_FIXED_CONFIG);
 
         CPPUNIT_ASSERT_EQUAL(1, g_configured);
         CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_FIXED_CONFIG,
@@ -144,7 +144,7 @@ void LapStatsTest::invalid_track_test()
 void LapStatsTest::automatic_track_test()
 {
         const Track track = TEST_TRACK_VALID_CIRCUIT_TRACK;
-        _set_active_track(&track, 10, TRACK_STATUS_AUTO_DETECTED);
+        set_active_track(&track, 10, TRACK_STATUS_AUTO_DETECTED);
 
         CPPUNIT_ASSERT_EQUAL(1, g_configured);
         CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_AUTO_DETECTED,

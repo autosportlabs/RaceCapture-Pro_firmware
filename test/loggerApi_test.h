@@ -85,6 +85,7 @@ class LoggerApiTest : public CppUnit::TestFixture
     CPPUNIT_TEST( testGetWifiCfgDefault );
     CPPUNIT_TEST( testSetGetWifiCfg );
     CPPUNIT_TEST( setActiveTrack );
+    CPPUNIT_TEST( setActiveTrackSectors );
     CPPUNIT_TEST( setActiveTrackInvalid );
     CPPUNIT_TEST( setActiveTrackRadiusMeters );
     CPPUNIT_TEST( setActiveTrackRadiusDegrees );
@@ -99,6 +100,7 @@ public:
     void tearDown();
 
     void setActiveTrack();
+    void setActiveTrackSectors();
     void setActiveTrackInvalid();
     void setActiveTrackRadiusMeters();
     void setActiveTrackRadiusDegrees();

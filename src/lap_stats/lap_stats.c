@@ -39,20 +39,19 @@
 #include <string.h>
 
 /* Make the radius 2x the size of start/finish radius.*/
-#define GEO_TRIGGER_RADIUS_MULTIPLIER 2
-#define KMS_TO_MILES_CONSTANT (.621371)
-
-// In Millis now.
-#define START_FINISH_TIME_THRESHOLD 10000
-
+#define GEO_CIRCLE_RADIUS_MIN		1
+#define GEO_TRIGGER_RADIUS_MULTIPLIER	2
+#define KMS_TO_MILES_CONSTANT		0.621371
+/* In Millis */
+#define START_FINISH_TIME_THRESHOLD 	10000
 #define TIME_NULL -1
 
 static Track g_active_track;
 static float g_geo_circle_radius;
 
 track_status_t g_track_status = TRACK_STATUS_WAITING_TO_CONFIG;
-static int g_sector_enabled = 0;
-static int g_start_finish_enabled = 0;
+static int g_sector_enabled;
+static int g_start_finish_enabled;
 
 static struct {
         struct GeoCircle start;
@@ -229,8 +228,8 @@ static bool isSectorTrackingEnabled(const Track *track)
  * @param track_status Status indicating who set the track value.
  * @return true if setup was successful, false otherwise.
  */
-static bool _set_active_track(const Track *track, const float radius,
-                              const track_status_t track_status)
+static bool set_active_track(const Track *track, const float radius,
+                             const track_status_t track_status)
 {
         /* We are changing our track, so we need to reset stats */
         lapstats_reset();
@@ -238,7 +237,7 @@ static bool _set_active_track(const Track *track, const float radius,
         g_track_status = track_status;
         g_configured = 1;
 
-        if (!track || !radius)
+        if (!track || radius < GEO_CIRCLE_RADIUS_MIN)
                 return false;
 
         memcpy(&g_active_track, track, sizeof(Track));
@@ -256,7 +255,7 @@ static bool _set_active_track(const Track *track, const float radius,
 
 bool lapstats_set_active_track(const Track *track, const float radius)
 {
-        return _set_active_track(track, radius, TRACK_STATUS_EXTERNALLY_SET);
+        return set_active_track(track, radius, TRACK_STATUS_EXTERNALLY_SET);
 }
 
 /**
@@ -369,6 +368,11 @@ int getSector()
 int getLastSector()
 {
     return g_lastSector;
+}
+
+bool lapstats_track_has_sectors()
+{
+        return g_sector_enabled;
 }
 
 float lapstats_get_geo_circle_radius()
@@ -644,7 +648,7 @@ static void lapstats_setup(const GpsSnapshot *gps_snapshot)
                 pr_info("track: using fixed config");
         }
 
-        _set_active_track(track, radius_in_meters, track_status);
+        set_active_track(track, radius_in_meters, track_status);
 }
 
 void lapstats_processUpdate(const GpsSnapshot *gps_snapshot)

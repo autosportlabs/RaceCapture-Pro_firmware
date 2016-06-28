@@ -1447,11 +1447,29 @@ void LoggerApiTest::setActiveTrack()
                              lapstats_get_track_status());
         CPPUNIT_ASSERT_EQUAL(true, lapstats_is_track_valid());
         CPPUNIT_ASSERT_EQUAL(999999, lapstats_get_selected_track_id());
+        CPPUNIT_ASSERT_EQUAL(false, lapstats_track_has_sectors());
 
         const float rad_deg = getWorkingLoggerConfig()->TrackConfigs.radius;
         const float radius_m = lapstats_degrees_to_meters(rad_deg);
         CPPUNIT_ASSERT_EQUAL(radius_m, lapstats_get_geo_circle_radius());
 }
+
+void LoggerApiTest::setActiveTrackSectors()
+{
+        char *response = processApiGeneric("set_active_track_sectors.json");
+        assertGenericResponse(response, "setActiveTrack", API_SUCCESS);
+
+        CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_EXTERNALLY_SET,
+                             lapstats_get_track_status());
+        CPPUNIT_ASSERT_EQUAL(true, lapstats_is_track_valid());
+        CPPUNIT_ASSERT_EQUAL(999999, lapstats_get_selected_track_id());
+        CPPUNIT_ASSERT_EQUAL(true, lapstats_track_has_sectors());
+
+        const float rad_deg = getWorkingLoggerConfig()->TrackConfigs.radius;
+        const float radius_m = lapstats_degrees_to_meters(rad_deg);
+        CPPUNIT_ASSERT_EQUAL(radius_m, lapstats_get_geo_circle_radius());
+}
+
 
 void LoggerApiTest::setActiveTrackInvalid()
 {

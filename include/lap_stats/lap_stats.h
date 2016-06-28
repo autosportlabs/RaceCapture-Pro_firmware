@@ -112,6 +112,8 @@ float lapstats_degrees_to_meters(const float degrees);
 
 float lapstats_get_geo_circle_radius();
 
+bool lapstats_track_has_sectors();
+
 CPP_GUARD_END
 
 #endif /* LAP_STATS_H_ */
