@@ -49,9 +49,11 @@ typedef struct _GpsSample {
 } GpsSample;
 
 typedef struct _GpsSnapshot {
-    GpsSample sample;
-    tiny_millis_t deltaFirstFix;
-    GeoPoint previousPoint;
+        GpsSample sample;
+        tiny_millis_t deltaFirstFix;
+        GeoPoint previousPoint;
+        float previous_speed;
+        tiny_millis_t delta_last_sample; /* Time since last sample */
 } GpsSnapshot;
 
 typedef enum {
