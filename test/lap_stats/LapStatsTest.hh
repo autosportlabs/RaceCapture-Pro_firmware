@@ -40,7 +40,7 @@ class LapStatsTest : public CppUnit::TestFixture
         CPPUNIT_TEST( stage_lap_finish_event_test );
         CPPUNIT_TEST( sector_boundary_event_test );
         CPPUNIT_TEST( update_distance_test );
-        CPPUNIT_TEST( update_distance_no_prev_point_test );
+        CPPUNIT_TEST( update_distance_low_speed_test );
         CPPUNIT_TEST( update_sector_geo_circle_test );
         CPPUNIT_TEST( update_elapsed_time_test );
         CPPUNIT_TEST( at_sf_reset_test );
@@ -63,7 +63,7 @@ public:
         void stage_lap_finish_event_test();
         void sector_boundary_event_test();
         void update_distance_test();
-        void update_distance_no_prev_point_test();
+        void update_distance_low_speed_test();
         void update_sector_geo_circle_test();
         void update_elapsed_time_test();
         void at_sf_reset_test();
