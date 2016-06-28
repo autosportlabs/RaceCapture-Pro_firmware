@@ -25,6 +25,7 @@
 #include "stm32f30x_dma.h"
 #include "stm32f30x_gpio.h"
 #include "stm32f30x_rcc.h"
+#include "taskUtil.h"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -34,8 +35,8 @@
  */
 
 #define ADC_SYSTEM_VOLTAGE_RANGE	20.0f
-#define SCALING_BATTERYV	0.00465f
-#define TOTAL_ADC_CHANNELS	1
+#define SCALING_BATTERYV		0.00465f
+#define TOTAL_ADC_CHANNELS		1
 
 volatile unsigned short ADC_Val[TOTAL_ADC_CHANNELS];
 
@@ -81,12 +82,14 @@ int ADC_device_init(void)
 
         /* Calibration procedure */
         ADC_VoltageRegulatorCmd(ADC3, ENABLE);
+
         /*
          * Wait at least 10us before starting calibration or enabling.
-         * This is a total hack since I don't want to put a timer here
-         * and there is no interrupt to tell me this is ready :(.
+         * Since there is no interrupt to tell me this is ready we just
+         * delay one scheduler tick which should be more than 10us.  This
+         * assumes that the scheduler is always active during init.
          */
-        for (size_t i = 0; i < 10000; ++i);
+        delayTicks(1);
 
         /* We compare against Vref only */
         ADC_SelectDifferentialMode(ADC3, ADC_Channel_1, DISABLE);
