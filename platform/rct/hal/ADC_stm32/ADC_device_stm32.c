@@ -25,6 +25,7 @@
 #include "stm32f30x_dma.h"
 #include "stm32f30x_gpio.h"
 #include "stm32f30x_rcc.h"
+#include "taskUtil.h"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -34,8 +35,8 @@
  */
 
 #define ADC_SYSTEM_VOLTAGE_RANGE	20.0f
-#define SCALING_BATTERYV	0.00465f
-#define TOTAL_ADC_CHANNELS	1
+#define SCALING_BATTERYV		0.00465f
+#define TOTAL_ADC_CHANNELS		1
 
 volatile unsigned short ADC_Val[TOTAL_ADC_CHANNELS];
 
@@ -50,15 +51,18 @@ int ADC_device_init(void)
         /* DMA configuration */
         RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA2, ENABLE);
 
+        DMA_Cmd(DMA2_Channel5, DISABLE);
+        DMA_DeInit(DMA2_Channel5);
+
         DMA_InitTypeDef DMA_InitStructure;
 	DMA_StructInit(&DMA_InitStructure);
-        DMA_InitStructure.DMA_BufferSize = 1;
+        DMA_InitStructure.DMA_BufferSize = TOTAL_ADC_CHANNELS;
         DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
-        DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)&ADC_Val[0];
+        DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t) &ADC_Val[0];
         DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
         DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
         DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
-        DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&ADC3->DR;
+        DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) &ADC3->DR;
         DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
         DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
         DMA_InitStructure.DMA_Priority = DMA_Priority_High;
@@ -76,46 +80,38 @@ int ADC_device_init(void)
         GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
         GPIO_Init(GPIOB, &GPIO_InitStructure);
 
-        /* Calibration procedure
-         *  TODO see if this is necessary
-         *
-         ADC_VoltageRegulatorCmd(ADC1, ENABLE);
+        /* Calibration procedure */
+        ADC_VoltageRegulatorCmd(ADC3, ENABLE);
 
-         ADC_SelectCalibrationMode(ADC1, ADC_CalibrationMode_Single);
-         ADC_StartCalibration(ADC1);
+        /*
+         * Wait at least 10us before starting calibration or enabling.
+         * Since there is no interrupt to tell me this is ready we just
+         * delay one scheduler tick which should be more than 10us.  This
+         * assumes that the scheduler is always active during init.
+         */
+        delayTicks(1);
 
-         while(ADC_GetCalibrationStatus(ADC1) != RESET );
-         calibration_value = ADC_GetCalibrationValue(ADC1);
-        */
+        /* We compare against Vref only */
+        ADC_SelectDifferentialMode(ADC3, ADC_Channel_1, DISABLE);
 
-        ADC_CommonInitTypeDef   ADC_CommonInitStructure;
+        /* Now calibrate our ADC */
+        ADC_SelectCalibrationMode(ADC3, ADC_CalibrationMode_Single);
+        ADC_StartCalibration(ADC3);
+        while(SET == ADC_GetCalibrationStatus(ADC3));
 
-        ADC_CommonInitStructure.ADC_Mode = ADC_Mode_Independent;
-        ADC_CommonInitStructure.ADC_Clock = ADC_Clock_AsynClkMode;
-        ADC_CommonInitStructure.ADC_DMAAccessMode = ADC_DMAAccessMode_Disabled;
-        ADC_CommonInitStructure.ADC_DMAMode = ADC_DMAMode_Circular;
-        ADC_CommonInitStructure.ADC_TwoSamplingDelay = 0;
-        ADC_CommonInit(ADC3, &ADC_CommonInitStructure);
-
-        ADC_InitTypeDef         ADC_InitStructure;
+        ADC_InitTypeDef ADC_InitStructure;
+        ADC_StructInit(&ADC_InitStructure);
         ADC_InitStructure.ADC_ContinuousConvMode = ADC_ContinuousConvMode_Enable;
-        ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;
-        ADC_InitStructure.ADC_ExternalTrigConvEvent = ADC_ExternalTrigConvEvent_0;
-        ADC_InitStructure.ADC_ExternalTrigEventEdge = ADC_ExternalTrigEventEdge_None;
-        ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
-        ADC_InitStructure.ADC_OverrunMode = ADC_OverrunMode_Disable;
-        ADC_InitStructure.ADC_AutoInjMode = ADC_AutoInjec_Disable;
         ADC_InitStructure.ADC_NbrOfRegChannel = 1;
         ADC_Init(ADC3, &ADC_InitStructure);
 
-        /* ADC1 regular channel 6, 7 & 9 configuration.  PB1 */
+        /* Register the channel(s) to read/convert */
         ADC_RegularChannelConfig(ADC3, ADC_Channel_1, 1, ADC_SampleTime_19Cycles5);
 
         /* Enables DMA channel */
-        DMA_Cmd(DMA2_Channel5, ENABLE);
-
-        /* Enable ADC3 DMA */
         ADC_DMACmd(ADC3, ENABLE);
+        ADC_DMAConfig(ADC3, ADC_DMAMode_Circular);
+        DMA_Cmd(DMA2_Channel5, ENABLE);
 
 	/* Enable ADC3 */
 	ADC_Cmd(ADC3, ENABLE);
@@ -123,7 +119,7 @@ int ADC_device_init(void)
         /* wait for ADRDY */
 	while(!ADC_GetFlagStatus(ADC3, ADC_FLAG_RDY));
 
-        /* Start ADC3 Conversion */
+        /* Start ADC3 Conversion. Must be called after ADC enabled */
         ADC_StartConversion(ADC3);
 
         return 1;

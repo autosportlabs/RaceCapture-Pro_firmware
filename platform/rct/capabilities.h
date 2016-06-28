@@ -55,9 +55,6 @@
 #define VERSION_STR MAJOR_REV_STR "." MINOR_REV_STR "." BUGFIX_REV_STR
 #define WELCOME_MSG "Welcome to RaceCapture : Firmware Version " VERSION_STR
 
-//initialize main tasks in temporary FreeRTOS task
-#define TASK_TASK_INIT 1
-
 /* LUA Configuration */
 
 /*
