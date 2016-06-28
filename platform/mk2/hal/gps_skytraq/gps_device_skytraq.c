@@ -201,19 +201,15 @@ typedef enum {
 } gps_cmd_result_t;
 
 
-static uint8_t calculateChecksum(GpsMessage * msg)
+static uint8_t calculateChecksum(const GpsMessage* msg)
 {
-    uint8_t checksum = 0;
-    if (msg) {
-        uint16_t len = msg->payloadLength;
-        if (len <= MAX_PAYLOAD_LEN) {
-            uint8_t *payload = msg->payload;
-            for (size_t i = 0; i < len; i++) {
+        const uint16_t len = msg->payloadLength;
+        const uint8_t *payload = msg->payload;
+        uint8_t checksum = 0;
+        for (size_t i = 0; i < len; ++i)
                 checksum ^= payload[i];
-            }
-        }
-    }
-    return checksum;
+
+        return checksum;
 }
 
 static void txGpsMessage(GpsMessage * msg, struct Serial * serial)
@@ -243,89 +239,88 @@ static void txGpsMessage(GpsMessage * msg, struct Serial * serial)
         serial_put_c(serial, 0x0A);
 }
 
-/* TODO: Comment this epic blob-o-code */
-static gps_msg_result_t rxGpsMessage(GpsMessage * msg, struct Serial * serial,
+static gps_msg_result_t rxGpsMessage(GpsMessage* msg, struct Serial* serial,
                                      uint8_t expectedMessageId)
 {
         const size_t timeoutLen = msToTicks(GPS_MSG_RX_WAIT_MS);
         const size_t timeoutStart = xTaskGetTickCount();
 
         while (true) {
-                if (isTimeoutMs(timeoutStart, GPS_MSG_RX_WAIT_MS)) {
+                if (isTimeoutMs(timeoutStart, GPS_MSG_RX_WAIT_MS))
                         return GPS_MSG_TIMEOUT;
-                }
 
-                uint8_t som[2];
-                if (!serial_read_byte(serial, som + 0, timeoutLen) ||
-                    0xA0 != som[0])
+                uint8_t tmp;
+                if (!serial_read_byte(serial, &tmp, timeoutLen) ||
+                    0xA0 != tmp)
                         continue;
 
-                if (!serial_read_byte(serial, som + 1, timeoutLen) ||
-                    0xA1 != som[1])
+                if (!serial_read_byte(serial, &tmp, timeoutLen) ||
+                    0xA1 != tmp)
                         continue;
 
-                /* If here, we have our start of message found. */
+                /*
+                 * If here, we have found our start of message. All errors
+                 * from here until we check expectedMessageId are fatal.
+                 */
                 uint8_t len8[2];
-                const bool read_data_len =
-                        serial_read_byte(serial, len8 + 0, timeoutLen) &&
-                        serial_read_byte(serial, len8 + 1, timeoutLen);
-
-                if (!read_data_len) {
-                        pr_trace("GPS: Failed to read msg length\r\n");
-                        continue;
+                if (!serial_read_byte(serial, len8 + 0, timeoutLen) ||
+                    !serial_read_byte(serial, len8 + 1, timeoutLen)) {
+                        pr_debug("GPS: Failed to read msg length\r\n");
+                        return GPS_MSG_READERR;
                 }
 
-                uint16_t len = (len8[0] << 8) + len8[1];
-                if (len > MAX_PAYLOAD_LEN) {
-                        pr_trace("GPS: Msg payload too big\r\n");
-                        continue;
+                uint16_t msg_len = (len8[0] << 8) + len8[1];
+                if (msg_len > MAX_PAYLOAD_LEN) {
+                        pr_debug("GPS: Msg payload too big\r\n");
+                        return GPS_MSG_READERR;
                 }
 
-                msg->payloadLength = len;
-                for (size_t i = 0; len; i++, --len) {
-                        uint8_t c;
-                        if (!serial_read_byte(serial, &c, timeoutLen))
-                                break;
-
-                        msg->payload[i] = c;
-                }
-                if (0 != len) {
-                        pr_trace("GPS: Failed to read payload\r\n");
-                        continue;
+                for (size_t i = 0; i < msg_len; ++i) {
+                        if (!serial_read_byte(serial, msg->payload + i,
+                                              timeoutLen)) {
+                                pr_debug("GPS: Payload read timeout\r\n");
+                                return GPS_MSG_READERR;
+                        }
                 }
 
                 uint8_t checksum = 0;
                 if (!serial_read_byte(serial, &checksum, timeoutLen)) {
-                        pr_trace("GPS: Failed to read checksum\r\n");
-                        continue;
+                        pr_debug("GPS: Failed to read checksum\r\n");
+                        return GPS_MSG_READERR;
                 }
 
-                uint8_t calculatedChecksum = calculateChecksum(msg);
+                msg->payloadLength = msg_len;
+                const uint8_t calculatedChecksum = calculateChecksum(msg);
                 if (calculatedChecksum != checksum) {
-                        pr_trace("GPS: Msg checksum mismatch\r\n");
-                        continue;
+                        pr_debug("GPS: Msg checksum mismatch\r\n");
+                        pr_trace_int_msg("GPS: Checksum expected: ",
+                                         (int) calculatedChecksum);
+                        pr_trace_int_msg("GPS: Checksum actual: ",
+                                         (int) checksum);
+                        return GPS_MSG_READERR;
                 }
 
-                uint8_t eos[2];
                 const bool read_eos =
-                        serial_read_byte(serial, eos + 0, timeoutLen) &&
-                        serial_read_byte(serial, eos + 1, timeoutLen);
+                        serial_read_byte(serial, &tmp, timeoutLen) &&
+                        tmp == 0x0D &&
+                        serial_read_byte(serial, &tmp, timeoutLen) &&
+                        tmp == 0x0A;
                 if (!read_eos) {
-                        pr_trace("GPS: Failed to read EOS\r\n");
-                        continue;
+                        pr_debug("GPS: Invalid EOS\r\n");
+                        return GPS_MSG_READERR;
                 }
 
-                if (eos[0] != 0x0D || eos[1] != 0x0A) {
-                        pr_trace("GPS: Invalid EOS\r\n");
-                        continue;
-                }
-
+                /*
+                 * If here then we have a good message. Check to see that its
+                 * what we expect.  If not, start this whole process over.
+                 */
                 if (msg->messageId != expectedMessageId) {
                         pr_trace_int_msg("GPS: Unexpected Message ID: ",
-                                        msg->messageId);
+                                         msg->messageId);
                         continue;
                 }
 
+                pr_trace("GPS: Successfully read message\r\n");
                 return GPS_MSG_SUCCESS;
         }
 }
@@ -464,6 +459,7 @@ static uint32_t detectGpsBaudRate(GpsMessage *gpsMsg,
         uint32_t baudRate = baud_rates[i].baud;
         pr_info_int_msg("GPS: probing baud rate: ", baudRate);
         serial_config(serial, 8, 0, 1, baudRate);
+        serial_clear(serial);
         sendQuerySwVersion(gpsMsg, serial);
         if (rxGpsMessage(gpsMsg, serial, MSG_ID_SW_VERSION) ==
             GPS_MSG_SUCCESS) {
