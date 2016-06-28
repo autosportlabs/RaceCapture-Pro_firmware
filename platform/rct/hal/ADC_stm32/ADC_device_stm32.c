@@ -95,7 +95,6 @@ int ADC_device_init(void)
         ADC_SelectCalibrationMode(ADC3, ADC_CalibrationMode_Single);
         ADC_StartCalibration(ADC3);
         while(SET == ADC_GetCalibrationStatus(ADC3));
-        /* calibration_value = ADC_GetCalibrationValue(ADC3); */
 
         ADC_InitTypeDef ADC_InitStructure;
         ADC_StructInit(&ADC_InitStructure);
