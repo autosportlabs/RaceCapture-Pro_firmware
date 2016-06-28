@@ -29,7 +29,7 @@
 #define MESSAGE_TYPE_BINARY		2
 #define GNSS_NAVIGATION_MODE		GNSS_NAVIGATION_MODE_AUTOMOBILE
 
-#define BAUD_RATE_COUNT 5
+#define BAUD_RATE_COUNT 3
 #define BAUD_RATES      {                       \
                 {921600, 8},                    \
                 {115200, 5},                    \
