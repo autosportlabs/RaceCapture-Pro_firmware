@@ -140,39 +140,35 @@ static int usb_serial_ioctl(struct Serial* serial, unsigned long req,
 /* *** Task Handlers *** */
 
 /**
- * Handles all of our incoming messages and what we do with them.
+ *
  */
 static void process_rx_msgs()
 {
         struct Serial* const s = usb_state.serial;
         struct rx_buff* const rxb = usb_state.rx.buff;
 
-        rx_buff_read(rxb, s, true);
-
-        switch (rx_buff_get_status(rxb)) {
-        case RX_BUFF_STATUS_EMPTY:
-                /* Read and there was nothing.  We are done */
-                break;
-        case RX_BUFF_STATUS_PARTIAL:
-                /*
-                 * Partial message has been received. USB doesn't
-                 * timeout since its an interactive console so we
-                 * just return here and wait for more data to come.
-                 */
-                return;
-        case RX_BUFF_STATUS_READY:
-        case RX_BUFF_STATUS_OVERFLOW:
-        {
-                /* A message awaits us */
-                char *data_in = rx_buff_get_msg(rxb);
-                put_crlf(s);
-                pr_trace_str_msg(LOG_PFX "Received CMD: ", data_in);
-                process_read_msg(s, data_in, strlen(data_in));
-                break;
+        for(;;) {
+                rx_buff_read(rxb, s, true);
+                switch (rx_buff_get_status(rxb)) {
+                case RX_BUFF_STATUS_EMPTY:
+                case RX_BUFF_STATUS_PARTIAL:
+                        /*
+                         * Read and there was nothing or a
+                         * partial message has been received. USB doesn't
+                         * timeout since its an interactive console so we
+                         * just return here and wait for more data to come.
+                         */
+                        return;
+                case RX_BUFF_STATUS_READY:
+                case RX_BUFF_STATUS_OVERFLOW:
+                        /* A message awaits us */
+                        put_crlf(s);
+                        char *data_in = rx_buff_get_msg(rxb);
+                        pr_trace_str_msg(LOG_PFX "Received CMD: ", data_in);
+                        process_read_msg(s, data_in, strlen(data_in));
+                        rx_buff_clear(rxb);
+                }
         }
-        }
-
-        rx_buff_clear(rxb);
 }
 
 static void process_sample(struct usb_sample_data* data)
