@@ -126,9 +126,9 @@ $(TARGET).bin: $(TARGET).elf
 	@printf "  OBJCOPY $(subst $(shell pwd)/,,$(@))\n"
 	$(Q) $(PREFIX)-objcopy -Obinary $< $@
 
-$(TARGET).elf: $(OBJS)
+$(TARGET).elf: $(sort $(OBJS))
 	@printf "  LD      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q) $(CC) $(OBJS) $(LDFLAGS) -o $@
+	$(Q) $(CC) $^ $(LDFLAGS) -o $@
 
 .c.o:
 	@printf "  CC      $(subst $(shell pwd)/,,$(@))\n"

@@ -84,7 +84,7 @@ endif
 ST_USB_SRCS += $(addprefix $(ST_USB_OTG_BASE)/src/, $(OTG_SRCS))
 LIB_INCLUDES += -I$(ST_USB_OTG_BASE)/inc
 
-STM32_USB_OBJS = $(ST_USB_SRCS:.c=.o)
+STM32_USB_OBJS = $(sort $(ST_USB_SRCS:.c=.o))
 BASE_LIBS += stm32_usb
 
 endif #STM32_USB_LIBS
