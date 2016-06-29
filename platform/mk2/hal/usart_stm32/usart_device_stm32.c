@@ -214,7 +214,11 @@ static void enable_dma_tx(const uint32_t dma_periph,
 
         DMA_InitStructure.DMA_Channel = dma->channel;
         DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t) dma->buff;
-        DMA_InitStructure.DMA_BufferSize = 0;
+        /*
+         * Setting BufferSize here to 0 is invalid. Its initial value
+         * doesn't matter anyways so set 1 here.
+         */
+        DMA_InitStructure.DMA_BufferSize = 1;
         DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) &ui->usart->DR;
         DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
         DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
