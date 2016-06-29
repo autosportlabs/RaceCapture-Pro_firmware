@@ -356,8 +356,8 @@ typedef struct {
 /** @defgroup DMA_flags_definition
   * @{
   */
-#define DMA_FLAG_FEIF0                    ((uint32_t)0x10800001)
-#define DMA_FLAG_DMEIF0                   ((uint32_t)0x10800004)
+#define DMA_FLAG_FEIF0                    ((uint32_t)0x10000001)
+#define DMA_FLAG_DMEIF0                   ((uint32_t)0x10000004)
 #define DMA_FLAG_TEIF0                    ((uint32_t)0x10000008)
 #define DMA_FLAG_HTIF0                    ((uint32_t)0x10000010)
 #define DMA_FLAG_TCIF0                    ((uint32_t)0x10000020)
