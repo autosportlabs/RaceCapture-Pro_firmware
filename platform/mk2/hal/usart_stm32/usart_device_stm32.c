@@ -463,9 +463,11 @@ static void usart_generic_irq_handler(volatile struct usart_info *ui)
                                                    &xTaskWoken)) {
                         /*
                          * A character was retrieved from the queue so
-                         * can be sent to the USART.
+                         * can be sent to the USART. Casting to uint8_t
+                         * here to avoid issues when SendData casts the
+                         * value to a uint16_t (sign extension).
                          */
-                        USART_SendData(usart, cChar);
+                        USART_SendData(usart, (uint8_t) cChar);
                 } else {
                         /*
                          * Queue empty, nothing to send so turn off the
@@ -491,9 +493,10 @@ static void usart_generic_irq_handler(volatile struct usart_info *ui)
                 /*
                  * The interrupt was caused by a character being received.
                  * Grab the character from the rx and place it in the queue
-                 * or received characters.
+                 * or received characters. Casting to uint8_t first here
+                 * to avoid any casting issues from uint16_t
                  */
-                cChar = USART_ReceiveData(usart);
+                cChar = (uint8_t) USART_ReceiveData(usart);
                 xQueueHandle rx_queue = serial_get_rx_queue(ui->serial);
                 if (!xQueueSendFromISR(rx_queue, &cChar, &xTaskWoken))
                         ui->char_dropped = true;
