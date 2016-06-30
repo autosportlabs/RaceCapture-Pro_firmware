@@ -191,10 +191,13 @@ static int log_print(lua_State *L, bool addNewline)
         case 2:
                 lua_validate_arg_number(L, 2);
                 level = lua_tointeger(L, 2);
+                /* Break intentionally missing here */
         case 1:
                 lua_validate_arg_string(L, 1);
                 msg = lua_tostring(L, 1);
+                break;
         default:
+                /* Should never get here */
                 return lua_panic(L);
         }
 
