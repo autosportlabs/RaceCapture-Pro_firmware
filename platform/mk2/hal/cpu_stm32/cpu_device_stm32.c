@@ -1,5 +1,6 @@
 #include "cpu_device.h"
 #include "portmacro.h"
+#include "printk.h"
 #include <stm32f4xx_misc.h>
 #include <stm32f4xx_rcc.h>
 #include <core_cm4.h>
@@ -12,7 +13,13 @@
 #define SERIAL_ID_BITS		96
 #define SERIAL_ID_BUFFER_LEN	(((SERIAL_ID_BITS / 8) * 2) + 1)
 
-extern uint32_t _flash_start;
+/*
+ * Set by f407_mem.ld linker script.  Somehow this is getting
+ * altered to a value of 0x20020000.  Don't know why yet.
+ * But we handle this below by masking off the top 12 bits.
+ */
+extern const uint32_t _flash_start;
+
 static char cpu_id[SERIAL_ID_BUFFER_LEN];
 
 static void init_cpu_id()
@@ -32,10 +39,10 @@ static void init_cpu_id()
 
 int cpu_device_init(void)
 {
-    NVIC_SetVectorTable(NVIC_VectTab_FLASH, _flash_start);
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
-    init_cpu_id();
-    return 1;
+        NVIC_SetVectorTable(NVIC_VectTab_FLASH, _flash_start & 0x000FFFFF);
+        NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+        init_cpu_id();
+        return 1;
 }
 
 void cpu_device_reset(int bootloader)
