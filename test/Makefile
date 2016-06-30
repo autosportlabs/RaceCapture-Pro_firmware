@@ -131,7 +131,6 @@ T_SRC = \
 $(GPS_DIR)/geoTriggerTest.cpp \
 $(GPS_DIR)/gps_test.cpp \
 $(LAP_STATS_DIR)/LapStatsTest.cpp \
-$(UTIL_DIR)/atonum_test.cpp \
 $(UTIL_DIR)/numtoa_test.cpp \
 AtTest.cpp \
 CellularApiStatusKeysTest.cpp \
@@ -219,7 +218,6 @@ $(RCP_SRC)/tracks/tracks.c \
 $(RCP_SRC)/tasks/wifi.c \
 $(RCP_SRC)/usart/usart.c \
 $(RCP_SRC)/util/linear_interpolate.c \
-$(RCP_SRC)/util/modp_atonum.c \
 $(RCP_SRC)/util/modp_numtoa.c \
 $(RCP_SRC)/util/panic.c \
 $(RCP_SRC)/util/ring_buffer.c \

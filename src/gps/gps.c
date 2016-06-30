@@ -23,8 +23,6 @@
 #include "gps.h"
 #include "gps_device.h"
 #include <string.h>
-#include "modp_atonum.h"
-#include <string.h>
 
 #define GPS_LOCK_FLASH_COUNT 5
 #define GPS_NOFIX_FLASH_COUNT 25
@@ -224,26 +222,4 @@ int GPS_processUpdate(struct Serial *serial)
     }
 
     return result;
-}
-
-int checksumValid(const char *gpsData, size_t len)
-{
-    int valid = 0;
-    unsigned char checksum = 0;
-    size_t i = 0;
-
-    for (; i < len - 1; i++) {
-        char c = *(gpsData + i);
-        if (c == '*' || c == '\0') break;
-        else if (c == '$') continue;
-        else checksum ^= c;
-    }
-
-    if (len > i + 2) {
-        unsigned char dataChecksum = modp_xtoc(gpsData + i + 1);
-        if (checksum == dataChecksum)
-            valid = 1;
-    }
-
-    return valid;
 }

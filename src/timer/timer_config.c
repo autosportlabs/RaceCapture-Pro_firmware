@@ -21,11 +21,9 @@
 
 #include "api.h"
 #include "loggerConfig.h"
-#include <string.h>
-#include "modp_atonum.h"
 #include "timer_config.h"
-
 #include <stdlib.h>
+#include <string.h>
 
 #define RPM_CHAN_LABEL	"RPM"
 #define RPM_CHAN_UNITS	"rpm"

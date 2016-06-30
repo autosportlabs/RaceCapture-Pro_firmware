@@ -37,18 +37,17 @@
 #include "luaScript.h"
 #include "memory_mock.h"
 #include "mock_serial.h"
-#include <string.h>
-#include "modp_atonum.h"
 #include "predictive_timer_2.h"
 #include "printk.h"
 #include "rcp_cpp_unit.hh"
 #include "sim900.h"
 #include "task.h"
 #include "task_testing.h"
-
-#include <stdio.h>
 #include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
 #include <streambuf>
+#include <string.h>
 #include <string>
 
 #define JSON_TOKENS 10000
@@ -105,7 +104,7 @@ void LoggerApiTest::assertGenericResponse(char *buffer, const char * messageName
 					CPPUNIT_FAIL("assertGenericResponse: rc element name does not match");
 				}
 
-                                const int actual_response_code = modp_atoi(tok_rcVal->data);
+                                const int actual_response_code = atoi(tok_rcVal->data);
                                 if (responseCode != actual_response_code) {
                                         char buff[256];
                                         sprintf(buff, "Msg \"%s\" failed.  Expected %d, got %d",

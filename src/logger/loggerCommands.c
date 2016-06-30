@@ -29,9 +29,6 @@
 #include "loggerTaskEx.h"
 #include "luaScript.h"
 #include "mem_mang.h"
-#include <string.h>
-#include "modp_atonum.h"
-#include "modp_numtoa.h"
 #include "printk.h"
 #include "sampleRecord.h"
 #include "sdcard.h"
@@ -39,9 +36,10 @@
 #include "taskUtil.h"
 #include "tracks.h"
 #include "usart.h"
-
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
 
 /* Time (ms) to wait for input before continuing */
 #define TERM_WAIT_MS 5
@@ -70,9 +68,9 @@ void TestSD(struct Serial *serial, unsigned int argc, char **argv)
     int lines = 1;
     int doFlush = 0;
     int quiet = 0;
-    if (argc > 1) lines = modp_atoi(argv[1]);
-    if (argc > 2) doFlush = modp_atoi(argv[2]);
-    if (argc > 3) quiet = modp_atoi(argv[3]);
+    if (argc > 1) lines = atoi(argv[1]);
+    if (argc > 2) doFlush = atoi(argv[2]);
+    if (argc > 3) quiet = atoi(argv[3]);
     TestSDWrite(serial, lines, doFlush, quiet);
 #endif
 
@@ -157,9 +155,9 @@ void StartTerminal(struct Serial *serial, unsigned int argc, char **argv)
 
         serial_put_s(serial, "Entering Terminal. Press ESC to exit\r\n");
 
-        uint32_t port = modp_atoui(argv[1]);
-        uint32_t baud = modp_atoui(argv[2]);
-        uint8_t localEcho = (argc > 3 ? modp_atoui(argv[3]) : 1);
+        uint32_t port = (uint32_t) atoi(argv[1]);
+        uint32_t baud = (uint32_t) atoi(argv[2]);
+        uint8_t localEcho = (argc > 3 ? (uint8_t) atoi(argv[3]) : 1);
 
         struct Serial *targetSerial = serial_device_get(port);
         if (!targetSerial) {
@@ -199,7 +197,7 @@ void SetLogLevel(struct Serial *serial, unsigned int argc, char **argv)
         return;
     }
 
-    enum log_level level = (enum log_level) modp_atoui(argv[1]);
+    enum log_level level = (enum log_level) atoi(argv[1]);
     set_log_level(level);
     put_commandOK(serial);
 }
