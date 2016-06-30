@@ -412,7 +412,7 @@ static void usart_generic_irq_handler(volatile struct usart_info *ui)
                          * A character was retrieved from the queue so
                          * can be sent to the USART.
                          */
-                        USART_SendData(usart, cChar);
+                        USART_SendData(usart, (uint8_t) cChar);
                 } else {
                         /*
                          * Queue empty, nothing to send so turn off the
@@ -429,7 +429,7 @@ static void usart_generic_irq_handler(volatile struct usart_info *ui)
                  * Grab the character from the rx and place it in the queue
                  * or received characters.
                  */
-                cChar = USART_ReceiveData(usart);
+                cChar = (uint8_t) USART_ReceiveData(usart);
                 xQueueHandle rx_queue = serial_get_rx_queue(ui->serial);
                 if (!xQueueSendFromISR(rx_queue, &cChar, &xTaskWokenByPost))
                         ui->char_dropped = true;

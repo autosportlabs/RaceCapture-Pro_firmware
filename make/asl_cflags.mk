@@ -28,16 +28,13 @@ ASL_CFLAGS += -Os -std=gnu99
 # to the official build as possible without being labeled as official.
 # That means no checks that would occur when DEBUG is active.
 #
-# STIEG: BUG: -DUSE_FULL_ASSERT - Not working on MK2.
-#
 ifeq ($(RELEASE_TYPE),RELEASE_TYPE_DEVEL)
-ASL_CFLAGS += -DASL_DEBUG -D_DEBUG
-endif
-
+ASL_CFLAGS += -DASL_DEBUG -D_DEBUG -DUSE_FULL_ASSERT
 ASL_WATCHDOG := false
-ifeq ($(RELEASE_TYPE),RELEASE_TYPE_OFFICIAL)
+else
 ASL_WATCHDOG := true
 endif
+
 ASL_CFLAGS += -DASL_WATCHDOG=$(ASL_WATCHDOG)
 
 ASL_WARNING_FLAGS := \

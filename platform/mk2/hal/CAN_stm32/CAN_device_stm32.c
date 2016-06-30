@@ -274,6 +274,7 @@ int CAN_device_tx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
         size_t ticks = getCurrentTicks();
         const size_t trigger = ticks + msToTicks(timeoutMs);
         uint8_t status = CAN_TxStatus_Failed;
+
         while(ticks <= trigger) {
                 status = CAN_TransmitStatus(chan, mailbox);
                 if (CAN_TxStatus_Pending != status)
