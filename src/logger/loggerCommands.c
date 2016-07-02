@@ -168,7 +168,7 @@ void StartTerminal(struct Serial *serial, unsigned int argc, char **argv)
                 return;
         }
 
-        serial_config(serial, 8, 0, 1, baud);
+        serial_config(targetSerial, 8, 0, 1, baud);
         StartTerminalSession(serial, targetSerial, localEcho);
 }
 

@@ -388,6 +388,10 @@ static void _task(void *params)
 bool wifi_init_task(const int wifi_task_priority,
                     const int wifi_drv_priority)
 {
+        /* Do not initialze if the entire WiFi subsystem is disabled */
+        if (!getWorkingLoggerConfig()->ConnectivityConfigs.wifi.active)
+            return false;
+
         /* Get our serial port setup */
         struct Serial *s = serial_device_get(SERIAL_WIFI);
         if (!s)
