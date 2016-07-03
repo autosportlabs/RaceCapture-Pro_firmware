@@ -19,19 +19,18 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "sector_test.h"
 #include "gps.testing.h"
-#include "loggerConfig.h"
-#include <stdlib.h>
-#include <fstream>
-#include <streambuf>
-#include "mock_serial.h"
-#include <string.h>
-#include "modp_atonum.h"
 #include "lap_stats.h"
+#include "loggerConfig.h"
+#include "mock_serial.h"
 #include "rcp_cpp_unit.hh"
-
+#include "sector_test.h"
 #include <cppunit/extensions/HelperMacros.h>
+#include <fstream>
+#include <stdlib.h>
+#include <streambuf>
+#include <string.h>
+
 using std::ifstream;
 using std::ios;
 using std::istreambuf_iterator;
@@ -57,7 +56,7 @@ static int atoiOffsetLenSafe(const char *str, size_t offset, size_t len) {
          len = sizeof(buff) - 1;
 
    memcpy(buff, str + offset, len);
-   return modp_atoi(buff);
+   return atoi(buff);
 }
 
 void SectorTest::setUp()
@@ -177,9 +176,9 @@ void SectorTest::testSectorTimes(){
                printf("%d,%d,%d,%f\n",lapstats_current_lap(), getLapCount(), getSector(), getLapDistanceInMiles());
            }
 
-           float lat = modp_atof(latitudeRaw.c_str());
-           float lon = modp_atof(longitudeRaw.c_str());
-           float speed = modp_atof(speedRaw.c_str());
+           float lat = atof(latitudeRaw.c_str());
+           float lon = atof(longitudeRaw.c_str());
+           float speed = atof(speedRaw.c_str());
 
            const char *utcTimeStr = timeRaw.c_str();
            DateTime dt;

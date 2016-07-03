@@ -48,8 +48,6 @@
 #include "luaTask.h"
 #include "macros.h"
 #include "mem_mang.h"
-#include <string.h>
-#include "modp_atonum.h"
 #include "printk.h"
 #include "sampleRecord.h"
 #include "serial.h"
@@ -57,8 +55,9 @@
 #include "taskUtil.h"
 #include "timer.h"
 #include "tracks.h"
-
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 /* Max number of PIDs that can be specified in the setOBD2Cfg message */
 #define MAX_OBD2_MESSAGE_PIDS 10
@@ -106,7 +105,7 @@ static int setUnsignedCharValueIfExists(const jsmntok_t *root, const char * fiel
 {
     const jsmntok_t *valueNode = jsmn_find_get_node_value_prim(root, fieldName);
     if (valueNode) {
-        unsigned char value = modp_atoi(valueNode->data);
+        unsigned char value = atoi(valueNode->data);
         if (filter != NULL)
             value = filter(value);
         * target = value;
@@ -118,7 +117,7 @@ static int setIntValueIfExists(const jsmntok_t *root, const char * fieldName, in
 {
     const jsmntok_t *valueNode = jsmn_find_get_node_value_prim(root, fieldName);
     if (valueNode)
-        * target = modp_atoi(valueNode->data);
+        * target = atoi(valueNode->data);
     return (valueNode != NULL);
 }
 
@@ -126,7 +125,7 @@ static int setFloatValueIfExists(const jsmntok_t *root, const char * fieldName, 
 {
     const jsmntok_t *valueNode = jsmn_find_get_node_value_prim(root, fieldName);
     if (valueNode)
-        * target = modp_atof(valueNode->data);
+        *target = atof(valueNode->data);
     return (valueNode != NULL);
 }
 
@@ -335,7 +334,7 @@ int api_sampleData(struct Serial *serial, const jsmntok_t *json)
         jsmn_trimData(value);
 
         if (STR_EQ("meta",meta->data)) {
-            sendMeta = modp_atoi(value->data);
+            sendMeta = atoi(value->data);
         }
     }
 
@@ -384,7 +383,7 @@ int api_log(struct Serial *serial, const jsmntok_t *json)
 {
     if (json->type == JSMN_PRIMITIVE && json->size == 0) {
         jsmn_trimData(json);
-        int doLogging = modp_atoi(json->data);
+        int doLogging = atoi(json->data);
         //TODO when RCP simulator is fully working, enable this.
 #ifndef RCP_TESTING
 
@@ -561,13 +560,13 @@ static const jsmntok_t * setChannelConfig(struct Serial *serial, const jsmntok_t
         else if (STR_EQ("ut", name))
             memcpy(channelCfg->units, value, DEFAULT_UNITS_LENGTH);
         else if (STR_EQ("min", name))
-            channelCfg->min = modp_atof(value);
+            channelCfg->min = atof(value);
         else if (STR_EQ("max", name))
-            channelCfg->max = modp_atof(value);
+            channelCfg->max = atof(value);
         else if (STR_EQ("sr", name))
-            channelCfg->sampleRate = encodeSampleRate(modp_atoi(value));
+            channelCfg->sampleRate = encodeSampleRate(atoi(value));
         else if (STR_EQ("prec", name))
-            channelCfg->precision = (unsigned char) modp_atoi(value);
+            channelCfg->precision = (unsigned char) atoi(value);
         else if (setExtField != NULL)
             cfg = setExtField(valueTok, name, value, extCfg);
     }
@@ -585,7 +584,7 @@ static int setMultiChannelConfigGeneric(struct Serial *serial, const jsmntok_t *
             const jsmntok_t *idTok = json + i;
             const jsmntok_t *cfgTok = json + i + 1;
             jsmn_trimData(idTok);
-            size_t id = modp_atoi(idTok->data);
+            size_t id = atoi(idTok->data);
             void *baseCfg = NULL;
             ChannelConfig *channelCfg = NULL;
             getConfigsFunc(id, &baseCfg, &channelCfg);
@@ -610,7 +609,7 @@ static const jsmntok_t * setScalingMapRaw(ADCConfig *adcCfg, const jsmntok_t *ma
             if (mapArrayTok->type == JSMN_PRIMITIVE) {
                 jsmn_trimData(mapArrayTok);
                 if (i < ANALOG_SCALING_BINS) {
-                    adcCfg->scalingMap.rawValues[i] = modp_atof(mapArrayTok->data);
+                    adcCfg->scalingMap.rawValues[i] = atof(mapArrayTok->data);
                 }
             }
         }
@@ -627,7 +626,7 @@ static const jsmntok_t * setScalingMapValues(ADCConfig *adcCfg, const jsmntok_t 
             if (mapArrayTok->type == JSMN_PRIMITIVE) {
                 jsmn_trimData(mapArrayTok);
                 if (i < ANALOG_SCALING_BINS) {
-                    adcCfg->scalingMap.scaledValues[i] = modp_atof(mapArrayTok->data);
+                    adcCfg->scalingMap.scaledValues[i] = atof(mapArrayTok->data);
                 }
             }
         }
@@ -653,15 +652,15 @@ static const jsmntok_t * setAnalogExtendedField(const jsmntok_t *valueTok, const
 {
     ADCConfig *adcCfg = (ADCConfig *)cfg;
     if (STR_EQ("scalMod", name))
-        adcCfg->scalingMode = filterAnalogScalingMode(modp_atoi(value));
+        adcCfg->scalingMode = filterAnalogScalingMode(atoi(value));
     else if (STR_EQ("scaling", name))
-        adcCfg->linearScaling = modp_atof(value);
+        adcCfg->linearScaling = atof(value);
     else if (STR_EQ("offset", name))
-        adcCfg->linearOffset = modp_atof(value);
+        adcCfg->linearOffset = atof(value);
     else if (STR_EQ("alpha", name))
-        adcCfg->filterAlpha = modp_atof(value);
+        adcCfg->filterAlpha = atof(value);
     else if (STR_EQ("cal", name))
-        adcCfg->calibration = modp_atof(value);
+        adcCfg->calibration = atof(value);
     else if (STR_EQ("map", name)) {
         if (valueTok->type == JSMN_OBJECT) {
             valueTok++;
@@ -740,7 +739,7 @@ int api_getAnalogConfig(struct Serial *serial, const jsmntok_t * json)
             endIndex = CONFIG_ADC_CHANNELS - 1;
         } else {
             jsmn_trimData(json);
-            startIndex = endIndex = modp_atoi(json->data);
+            startIndex = endIndex = atoi(json->data);
         }
     }
     if (startIndex <= CONFIG_ADC_CHANNELS) {
@@ -756,13 +755,13 @@ static const jsmntok_t * setImuExtendedField(const jsmntok_t *valueTok, const ch
     ImuConfig *imuCfg = (ImuConfig *)cfg;
 
     if (STR_EQ("mode",name))
-        imuCfg->mode = filterImuMode(modp_atoi(value));
+        imuCfg->mode = filterImuMode(atoi(value));
     else if (STR_EQ("chan",name))
-        imuCfg->physicalChannel = filterImuChannel(modp_atoi(value));
+        imuCfg->physicalChannel = filterImuChannel(atoi(value));
     else if (STR_EQ("zeroVal",name))
-        imuCfg->zeroValue = modp_atoi(value);
+        imuCfg->zeroValue = atoi(value);
     else if (STR_EQ("alpha", name))
-        imuCfg->filterAlpha = modp_atof(value);
+        imuCfg->filterAlpha = atof(value);
     return valueTok + 1;
 }
 
@@ -809,7 +808,7 @@ int api_getImuConfig(struct Serial *serial, const jsmntok_t *json)
             endIndex = CONFIG_IMU_CHANNELS - 1;
         } else {
             jsmn_trimData(json);
-            startIndex = endIndex = modp_atoi(json->data);
+            startIndex = endIndex = atoi(json->data);
         }
     }
     if (startIndex <= CONFIG_IMU_CHANNELS) {
@@ -1000,7 +999,7 @@ int api_getPwmConfig(struct Serial *serial, const jsmntok_t *json)
             endIndex = CONFIG_PWM_CHANNELS - 1;
         } else {
             jsmn_trimData(json);
-            startIndex = endIndex = modp_atoi(json->data);
+            startIndex = endIndex = atoi(json->data);
         }
     }
     if (startIndex <= CONFIG_PWM_CHANNELS) {
@@ -1025,13 +1024,13 @@ static const jsmntok_t * setPwmExtendedField(const jsmntok_t *valueTok, const ch
     PWMConfig *pwmCfg = (PWMConfig *)cfg;
 
     if (STR_EQ("outMode", name))
-        pwmCfg->outputMode = filterPwmOutputMode(modp_atoi(value));
+        pwmCfg->outputMode = filterPwmOutputMode(atoi(value));
     if (STR_EQ("logMode", name))
-        pwmCfg->loggingMode = filterPwmLoggingMode(modp_atoi(value));
+        pwmCfg->loggingMode = filterPwmLoggingMode(atoi(value));
     if (STR_EQ("stDutyCyc", name))
-        pwmCfg->startupDutyCycle = filterPwmDutyCycle(modp_atoi(value));
+        pwmCfg->startupDutyCycle = filterPwmDutyCycle(atoi(value));
     if (STR_EQ("stPeriod", name))
-        pwmCfg->startupPeriod = filterPwmPeriod(modp_atoi(value));
+        pwmCfg->startupPeriod = filterPwmPeriod(atoi(value));
     return valueTok + 1;
 }
 
@@ -1057,7 +1056,7 @@ static const jsmntok_t * setGpioExtendedField(const jsmntok_t *valueTok, const c
     GPIOConfig *gpioCfg = (GPIOConfig *)cfg;
 
     if (STR_EQ("mode", name))
-        gpioCfg->mode = filterGpioMode(modp_atoi(value));
+        gpioCfg->mode = filterGpioMode(atoi(value));
     return valueTok + 1;
 }
 
@@ -1087,7 +1086,7 @@ int api_getGpioConfig(struct Serial *serial, const jsmntok_t *json)
             endIndex = CONFIG_GPIO_CHANNELS - 1;
         } else {
             jsmn_trimData(json);
-            startIndex = endIndex = modp_atoi(json->data);
+            startIndex = endIndex = atoi(json->data);
         }
     }
     if (startIndex <= CONFIG_GPIO_CHANNELS) {
@@ -1123,16 +1122,16 @@ static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok,
     TimerConfig *timerCfg = (TimerConfig *)cfg;
 
     if (STR_EQ("mode", name))
-        timerCfg->mode = filterTimerMode(modp_atoi(value));
+        timerCfg->mode = filterTimerMode(atoi(value));
     if (STR_EQ("alpha", name))
-        timerCfg->filterAlpha = modp_atof(value);
+        timerCfg->filterAlpha = atof(value);
     if (STR_EQ("ppr", name))
         timerCfg->pulsePerRevolution =
-                filterPulsePerRevolution(modp_atoi(value));
+                filterPulsePerRevolution(atoi(value));
     if (STR_EQ("speed", name))
-        timerCfg->timerSpeed = filterTimerDivider(modp_atoi(value));
+        timerCfg->timerSpeed = filterTimerDivider(atoi(value));
     if (STR_EQ("filter_period", name))
-            timerCfg->filter_period_us = modp_atoi(value);
+            timerCfg->filter_period_us = atoi(value);
     if (STR_EQ("edge", name))
             timerCfg->edge = get_timer_edge_enum(value);
 
@@ -1171,7 +1170,7 @@ int api_getTimerConfig(struct Serial *serial, const jsmntok_t *json)
             endIndex = CONFIG_TIMER_CHANNELS - 1;
         } else {
             jsmn_trimData(json);
-            startIndex = endIndex = modp_atoi(json->data);
+            startIndex = endIndex = atoi(json->data);
         }
     }
     if (startIndex <= CONFIG_TIMER_CHANNELS) {
@@ -1292,7 +1291,7 @@ int api_setCanConfig(struct Serial *serial, const jsmntok_t *json)
             arrSize = CONFIG_CAN_CHANNELS;
         size_t can_index = 0;
         for (baudTok++; can_index < arrSize; can_index++, baudTok++) {
-            canCfg->baud[can_index] = modp_atoi(baudTok->data);
+            canCfg->baud[can_index] = atoi(baudTok->data);
         }
     }
     return API_SUCCESS;
@@ -1329,7 +1328,7 @@ static const jsmntok_t * setPidExtendedField(const jsmntok_t *valueTok, const ch
     PidConfig *pidCfg = (PidConfig *) cfg;
 
     if (STR_EQ("pid", name))
-        pidCfg->pid = (unsigned short) modp_atoi(value);
+        pidCfg->pid = (unsigned short) atoi(value);
 
     return valueTok + 1;
 }
@@ -1508,10 +1507,10 @@ static int setGeoPointIfExists(const jsmntok_t *root, const char * name, GeoPoin
         if (geoPointNode && geoPointNode->type == JSMN_ARRAY && geoPointNode->size == 2) {
             geoPointNode += 1;
             jsmn_trimData(geoPointNode);
-            geoPoint->latitude = modp_atof(geoPointNode->data);
+            geoPoint->latitude = atof(geoPointNode->data);
             geoPointNode += 1;
             jsmn_trimData(geoPointNode);
-            geoPoint->longitude = modp_atof(geoPointNode->data);
+            geoPoint->longitude = atof(geoPointNode->data);
             success = 1;
         }
     }
@@ -1546,8 +1545,8 @@ static void setTrack(const jsmntok_t *trackNode, Track *track)
                     const jsmntok_t *lon = sectors + 2;
                     jsmn_trimData(lat);
                     jsmn_trimData(lon);
-                    sector->latitude = modp_atof(lat->data);
-                    sector->longitude = modp_atof(lon->data);
+                    sector->latitude = atof(lat->data);
+                    sector->longitude = atof(lon->data);
                     sectorIndex++;
                     sectors +=3;
                 }
@@ -1672,12 +1671,12 @@ int api_setScript(struct Serial *serial, const jsmntok_t *json)
         jsmn_trimData(++pageTok);
         jsmn_trimData(++modeTok);
 
-        const size_t page = modp_atoi(pageTok->data);
+        const size_t page = atoi(pageTok->data);
         if (page >= MAX_SCRIPT_PAGES)
                 return API_ERROR_PARAMETER;
 
         const enum script_add_mode mode =
-                (enum script_add_mode) modp_atoi(modeTok->data);
+                (enum script_add_mode) atoi(modeTok->data);
         char *script = dataTok->data;
         unescapeScript(script);
         return flashScriptPage(page, script, mode) ?

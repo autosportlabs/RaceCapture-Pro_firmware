@@ -19,7 +19,6 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "FreeRTOS.h"
 #include "lauxlib.h"
 #include "lua.h"
@@ -28,10 +27,9 @@
 #include "luaTask.h"
 #include "lualib.h"
 #include "memory.h"
-#include <string.h>
-#include "modp_atonum.h"
 #include "modp_numtoa.h"
 #include "printk.h"
+#include <string.h>
 
 static int g_interactive_mode = 0;
 
