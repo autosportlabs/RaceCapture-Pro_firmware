@@ -79,7 +79,7 @@ FREERTOS_LD_FLAGS := -Wl,--undefined=uxTopUsedPriority
 LDFLAGS ?= --specs=nano.specs $(LIBS) -mcpu=$(CPU_TYPE) \
 	-L. -Lcpu/common -L$(LUA_LIB_DIR) -L$(CPU_BASE) -T$(CPU_LINK_MEM) \
 	-Tlink_sections.ld -nostartfiles -Wl,--gc-sections -mthumb \
-	-msoft-float $(FREERTOS_LD_FLAGS) -Wl,-static
+	-msoft-float $(FREERTOS_LD_FLAGS) -Wl,-static -Wl,-Map=main.map
 
 # Be silent per default, but 'make V=1' will show all compiler calls.
 ifneq ($(V),1)
