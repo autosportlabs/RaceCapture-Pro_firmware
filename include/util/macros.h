@@ -38,6 +38,16 @@ CPP_GUARD_BEGIN
  */
 #define STR_EQ(s1, s2)	(0 == strcmp((s1), (s2)))
 
+/**
+ * Chooses the maximum of two values.
+ */
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
+/**
+ * Chooses the minimum of two values.
+ */
+#define MIN(a,b) (((a)<(b))?(a):(b))
+
 CPP_GUARD_END
 
 #endif /* _MACROS_H_ */

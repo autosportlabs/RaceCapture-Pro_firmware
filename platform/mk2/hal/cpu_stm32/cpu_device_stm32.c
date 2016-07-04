@@ -1,17 +1,36 @@
+/*
+ * Race Capture Firmware
+ *
+ * Copyright (C) 2016 Autosport Labs
+ *
+ * This file is part of the Race Capture firmware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "cpu_device.h"
 #include "portmacro.h"
 #include "printk.h"
-#include <stm32f4xx_misc.h>
-#include <stm32f4xx_rcc.h>
+#include <app_info.h>
 #include <core_cm4.h>
 #include <stdint.h>
-#include <app_info.h>
+#include <stm32f4xx_misc.h>
+#include <stm32f4xx_rcc.h>
 
 #define CPU_ID_REGISTER_START 	0x1FFF7A10
-#define CPU_ID_REGISTER_END   	0x1FFF7A1C
-#define ASCII(x)		(((x)&0xF) < 10) ? (((x)&0xF)+'0') : (((x)&0xF)-10+'A')
-#define SERIAL_ID_BITS		96
-#define SERIAL_ID_BUFFER_LEN	(((SERIAL_ID_BITS / 8) * 2) + 1)
+#define CPU_ID_BYTE_COUNT	12
+#define SERIAL_ID_BUFFER_LEN	(CPU_ID_BYTE_COUNT * 2 + 1)
 
 /*
  * Set by f407_mem.ld linker script.  Somehow this is getting
@@ -22,19 +41,20 @@ extern const uint32_t _flash_start;
 
 static char cpu_id[SERIAL_ID_BUFFER_LEN];
 
+static char to_hex(uint8_t val)
+{
+        val &= 0x0F;
+        return val >= 10 ? val - 10  + 'A' : val + '0';
+}
+
 static void init_cpu_id()
 {
-    uint32_t *p = (uint32_t *) CPU_ID_REGISTER_START;
-    int i = 0, j = 0;
+        const uint8_t* ids = (const uint8_t*) CPU_ID_REGISTER_START;
 
-    while (p <= (uint32_t *) CPU_ID_REGISTER_END) {
-        for (i = 0; i < 8; i++)
-            cpu_id[7 - i + j] = ASCII(*p >> (i * 4));
-        p++;
-        j += 8;
-    }
-
-    cpu_id[SERIAL_ID_BUFFER_LEN - 1] = 0;
+        for (size_t i = 0; i < CPU_ID_BYTE_COUNT; ++i) {
+                cpu_id[2 * i] = to_hex(ids[i] >> 4);
+                cpu_id[2 * i + 1] = to_hex(ids[i] & 0xF);
+        }
 }
 
 int cpu_device_init(void)
