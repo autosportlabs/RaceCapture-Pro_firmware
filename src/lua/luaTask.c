@@ -166,9 +166,10 @@ static int lua_invocation(struct lua_run_state *rs)
         /* Now run the callback */
         lua_getglobal(rs->lua_state, function);
         if (lua_isnil(rs->lua_state, -1)) {
-                pr_error_str_msg(_LOG_PFX "Function not found: ", function);
+                /* No longer a failure per Issue #707 */
+                pr_debug_str_msg(_LOG_PFX "Function not found: ", function);
                 lua_pop(rs->lua_state, 1);
-                status = LUA_ERR_CALLBACK_NOT_FOUND;
+                status = 0;
                 goto done;
         }
 
