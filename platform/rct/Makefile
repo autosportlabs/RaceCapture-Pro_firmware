@@ -67,6 +67,10 @@ inc-y += $(RC_INCLUDE_DIR)/util
 src-y += $(wildcard $(RC_SRC_DIR)/serial/*.c)
 inc-y += $(RC_INCLUDE_DIR)/serial
 
+# system
+src-y += $(wildcard $(RC_SRC_DIR)/system/*.c)
+inc-y += $(RC_INCLUDE_DIR)/system
+
 src-y += $(wildcard $(RC_SRC_DIR)/usart/*.c)
 inc-y += $(RC_INCLUDE_DIR)/usart
 
