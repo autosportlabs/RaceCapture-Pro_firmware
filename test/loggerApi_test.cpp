@@ -502,8 +502,8 @@ void LoggerApiTest::testGetConnectivityCfg(){
 	Object &connJson = json["connCfg"];
 
 	CPPUNIT_ASSERT_EQUAL((int)(connCfg->bluetoothConfig.btEnabled), (int)(Number)connJson["btCfg"]["btEn"]);
-	CPPUNIT_ASSERT_EQUAL(string(connCfg->bluetoothConfig.new_name), string((String)connJson["btCfg"]["name"]));
-	CPPUNIT_ASSERT_EQUAL(string(connCfg->bluetoothConfig.new_pin), string((String)connJson["btCfg"]["pass"]));
+	CPPUNIT_ASSERT_EQUAL(string(""), string((String)connJson["btCfg"]["name"]));
+	CPPUNIT_ASSERT_EQUAL(string(""), string((String)connJson["btCfg"]["pass"]));
 
 	CPPUNIT_ASSERT_EQUAL((int)(connCfg->cellularConfig.cellEnabled), (int)(Number)connJson["cellCfg"]["cellEn"]);
 	CPPUNIT_ASSERT_EQUAL(string(connCfg->cellularConfig.apnHost), string((String)connJson["cellCfg"]["apnHost"]));
