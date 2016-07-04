@@ -19,11 +19,12 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "led.h"
+
 #include "fileWriter.h"
+#include "led.h"
 #include "loggerHardware.h"
+#include "macros.h"
 #include "mem_mang.h"
-#include <string.h>
 #include "modp_numtoa.h"
 #include "printk.h"
 #include "ring_buffer.h"
@@ -32,8 +33,8 @@
 #include "task.h"
 #include "taskUtil.h"
 #include "test.h"
-
 #include <stdbool.h>
+#include <string.h>
 #include <string.h>
 
 #define ERROR_SLEEP_DELAY_MS	500
@@ -85,10 +86,11 @@ static FRESULT append_file_buffer(const char *str)
         FRESULT res = FR_OK;
         size_t len = strlen(str);
         while(len) {
-                size_t space = ring_buffer_bytes_used(file_buff);
-                ring_buffer_put(file_buff, str, space);
-                str += space;
-                len -= space;
+                const size_t write_len =
+                        MIN(ring_buffer_bytes_free(file_buff), len);
+                ring_buffer_put(file_buff, str, write_len);
+                str += write_len;
+                len -= write_len;
 
                 /* If not at end of string, more to write.  Flush */
                 if (len > 0)
