@@ -43,7 +43,7 @@ static void init_cpu_id()
 {
         const uint8_t* ids = (const uint8_t *) CPU_ID_REGISTER_START;
 
-        for (int i = 0; i < CPU_ID_BYTE_COUNT; ++i) {
+        for (size_t i = 0; i < CPU_ID_BYTE_COUNT; ++i) {
                 cpu_id[2 * i] = to_hex(ids[i] >> 4);
                 cpu_id[2 * i + 1] = to_hex(ids[i] & 0xF);
         }
