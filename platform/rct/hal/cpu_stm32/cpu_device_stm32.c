@@ -22,6 +22,7 @@
 #include "cpu_device.h"
 #include "portmacro.h"
 #include <app_info.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stm32f30x_misc.h>
 #include <stm32f30x_rcc.h>
