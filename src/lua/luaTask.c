@@ -48,8 +48,8 @@
 #define LUA_BYPASS_DELAY_SEC		5
 #define LUA_CONSECUTIVE_FAILURES_LIMIT	3
 #define LUA_DEFAULT_ONTICK_HZ		1
+#define LUA_ERR_NONE			0
 #define LUA_ERR_BUG			-1
-#define LUA_ERR_CALLBACK_NOT_FOUND	-2
 #define LUA_ERR_SCRIPT_LOAD_FAILED	-3
 #define LUA_FLASH_DELAY_MS		250
 #define LUA_LOCK_WAIT_MS		1000
@@ -169,7 +169,7 @@ static int lua_invocation(struct lua_run_state *rs)
                 /* No longer a failure per Issue #707 */
                 pr_debug_str_msg(_LOG_PFX "Function not found: ", function);
                 lua_pop(rs->lua_state, 1);
-                status = 0;
+                status = LUA_ERR_NONE;
                 goto done;
         }
 
@@ -200,8 +200,6 @@ static const char* get_failure_msg(const int cause)
                 return "Unknown Lua Error";
         case LUA_ERR_BUG:
                 return "ASL BUG";
-        case LUA_ERR_CALLBACK_NOT_FOUND:
-                return "Callback not found";
         case LUA_ERR_SCRIPT_LOAD_FAILED:
                 return "Failed to load script";
         default:
@@ -233,7 +231,7 @@ static void lua_task(void *params)
                 xLastWakeTime = xTaskGetTickCount();
 
                 const int rc = lua_invocation(&rs);
-                if (0 == rc) {
+                if (LUA_ERR_NONE == rc) {
                         consecutive_failures = 0;
                         continue;
                 }
@@ -244,7 +242,6 @@ static void lua_task(void *params)
                 /* If its a known unrecoverable, fail fast */
                 switch (rc) {
                 case LUA_ERR_BUG:
-                case LUA_ERR_CALLBACK_NOT_FOUND:
                 case LUA_ERR_SCRIPT_LOAD_FAILED:
                         lua_failure_state(rc);
                 }
