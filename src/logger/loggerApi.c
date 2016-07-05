@@ -869,18 +869,6 @@ int api_getCellConfig(struct Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
-int api_getBluetoothConfig(struct Serial *serial, const jsmntok_t *json)
-{
-    BluetoothConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
-    json_objStart(serial);
-    json_objStartString(serial, "btCfg");
-    json_string(serial, "name", cfg->new_name, 1);
-    json_string(serial, "pass", cfg->new_pin, 0);
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
-    return API_SUCCESS_NO_RETURN;
-}
-
 int api_getLogfile(struct Serial *serial, const jsmntok_t *json)
 {
     json_objStart(serial);
@@ -957,8 +945,9 @@ int api_getConnectivityConfig(struct Serial *serial, const jsmntok_t *json)
 
     json_objStartString(serial, "btCfg");
     json_int(serial, "btEn", cfg->bluetoothConfig.btEnabled, 1);
-    json_string(serial, "name", cfg->bluetoothConfig.new_name, 1);
-    json_string(serial, "pass", cfg->bluetoothConfig.new_pin, 0);
+    /* Remove Name and Pass in next major API version change.  Issue #720 */
+    json_string(serial, "name", "", 1);
+    json_string(serial, "pass", "", 0);
     json_objEnd(serial, 1);
 
     json_objStartString(serial, "cellCfg");
