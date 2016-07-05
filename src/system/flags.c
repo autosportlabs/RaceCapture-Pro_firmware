@@ -68,10 +68,13 @@ static const char* feature_flags[] = {
 #if LUA_SUPPORT > 0
         FEATURE_FLAG("lua")
 #endif
-#if PWM_CHANNELS > 0
-        FEATURE_FLAG("pwmin")
+#if CAN_CHANNELS > 0
+        FEATURE_FLAG("obd2")
 #endif
 #if TIMER_CHANNELS > 0
+        FEATURE_FLAG("pwmin")
+#endif
+#if PWM_CHANNELS > 0
         FEATURE_FLAG("pwmout")
 #endif
         FEATURE_FLAG("telemstream")
