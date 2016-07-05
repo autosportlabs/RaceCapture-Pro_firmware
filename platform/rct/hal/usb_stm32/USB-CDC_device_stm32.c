@@ -121,19 +121,19 @@ static void usb_handle_transfer(void)
         portBASE_TYPE hpta = false;
         xQueueHandle queue = serial_get_tx_queue(usb_state.serial);
         uint8_t *buff = usb_state.USB_Tx_Buffer;
-        size_t len;
+        size_t len = 0;
 
-        for (len = 0; len < VIRTUAL_COM_PORT_DATA_SIZE; ++len)
+        for (; len < VIRTUAL_COM_PORT_DATA_SIZE; ++len)
                 if (!xQueueReceiveFromISR(queue, buff + len, &hpta))
                         break;
 
         /* Check if we actually have something to send */
-	if (0 == len)
-		return;
-
-	UserToPMABufferCopy(usb_state.USB_Tx_Buffer, ENDP1_TXADDR, len);
-	SetEPTxCount(ENDP1, len);
-	SetEPTxValid(ENDP1);
+	if (len) {
+                UserToPMABufferCopy(usb_state.USB_Tx_Buffer,
+                                    ENDP1_TXADDR, len);
+                SetEPTxCount(ENDP1, len);
+                SetEPTxValid(ENDP1);
+        }
 
         portEND_SWITCHING_ISR(hpta);
 }
