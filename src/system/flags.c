@@ -39,9 +39,9 @@
  * - gps Global Positioning Satellite support
  * - imu Inertia Measurement Unit support
  * - lua Lua scripting support
- * - pwmin Pulse width modulation measurement input support
- * - pwmout Pulsw width modulation generation output support
+ * - pwm Pulsw width modulation generation output support
  * - telemstream Supports telemetry streaming API
+ * - timer Timed pulse frequency measurement support
  * - tracks Track DB support
  * - usb USB connectivity support
  * - wifi WiFi support
@@ -71,13 +71,13 @@ static const char* feature_flags[] = {
 #if CAN_CHANNELS > 0
         FEATURE_FLAG("obd2")
 #endif
-#if TIMER_CHANNELS > 0
-        FEATURE_FLAG("pwmin")
-#endif
 #if PWM_CHANNELS > 0
-        FEATURE_FLAG("pwmout")
+        FEATURE_FLAG("pwm")
 #endif
         FEATURE_FLAG("telemstream")
+#if TIMER_CHANNELS > 0
+        FEATURE_FLAG("timer")
+#endif
 #if MAX_TRACKS > 0
         FEATURE_FLAG("tracks")
 #endif
