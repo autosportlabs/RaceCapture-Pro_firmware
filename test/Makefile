@@ -76,6 +76,7 @@ INCLUDES = \
 -I$(RCP_INC)/watchdog \
 -I$(RCP_INC)/memory \
 -I$(RCP_INC)/sdcard \
+-I$(RCP_INC)/system \
 -I$(RCP_INC)/lap_stats \
 -I$(MOCK_DIR) \
 -I$(GPS_DIR) \
@@ -212,6 +213,7 @@ $(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 $(RCP_SRC)/serial/rx_buff.c \
 $(RCP_SRC)/serial/serial_buffer.c \
 $(RCP_SRC)/serial/serial.c \
+$(RCP_SRC)/system/flags.c \
 $(RCP_SRC)/timer/timer.c \
 $(RCP_SRC)/timer/timer_config.c \
 $(RCP_SRC)/tracks/tracks.c \

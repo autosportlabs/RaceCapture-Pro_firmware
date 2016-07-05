@@ -31,6 +31,7 @@
 #include "constants.h"
 #include "cpu.h"
 #include "dateTime.h"
+#include "flags.h"
 #include "geopoint.h"
 #include "gps.h"
 #include "imu.h"
@@ -208,6 +209,16 @@ int api_getCapabilities(struct Serial *serial, const jsmntok_t *json)
 {
         json_objStart(serial);
         json_objStartString(serial,"capabilities");
+
+        /* Send all of our feature flags over the wire */
+        json_arrayStart(serial, "flags");
+        const char** flags = flags_get_features();
+        while (*flags) {
+                const char** next = flags + 1;
+                json_arrayElementString(serial, *flags, !!*next);
+                flags = next;
+        }
+        json_arrayEnd(serial, 1);
 
         json_objStartString(serial,"channels");
         json_int(serial, "analog", ANALOG_CHANNELS, 1);

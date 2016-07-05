@@ -122,6 +122,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/util/str_util.c \
 			$(RCP_SRC)/util/taskUtil.c \
 			$(RCP_SRC)/sdcard/sdcard.c \
+			$(RCP_SRC)/system/flags.c \
 			$(HAL_SRC)/wifi_esp8266/wifi_esp8266_device.c \
 			$(HAL_SRC)/cell_device/cell_pwr_btn.c \
 			$(HAL_SRC)/gps_skytraq/gps_device_skytraq.c \
@@ -202,6 +203,7 @@ APP_INCLUDES += -I. \
 				-I$(INCLUDE_DIR)/command \
 				-I$(INCLUDE_DIR)/virtual_channel \
 				-I$(INCLUDE_DIR)/auto_config \
+				-I$(INCLUDE_DIR)/system \
 				-I$(HAL_SRC)/fat_sd_stm32/fatfs \
 				-I$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub \
 				-I$(HAL_SRC)/usb_stm32 \
