@@ -897,7 +897,7 @@ static void check_wifi_client()
                  * the correct client network.  If not, try to get on
                  * the correct network.
                  */
-                if (!ci->has_ap || !STR_EQ(ci->ssid, cfg->ssid)) {
+                if (!esp8266_drv_client_connected()) {
                         /* Then we need to try and join the AP */
                         client_try_join_ap();
                         return;
@@ -1203,6 +1203,11 @@ bool esp8266_drv_update_client_cfg(const struct wifi_client_cfg *cc)
         return true;
 }
 
+const struct wifi_client_cfg* esp8266_drv_get_client_config()
+{
+        return esp8266_state.client.config;
+}
+
 bool esp8266_drv_update_ap_cfg(const struct wifi_ap_cfg *wac)
 {
         if (NULL == wac)
@@ -1218,6 +1223,11 @@ bool esp8266_drv_update_ap_cfg(const struct wifi_ap_cfg *wac)
         cmd_set_check(CHECK_WIFI_AP);
 
         return true;
+}
+
+const struct wifi_ap_cfg* esp8266_drv_get_ap_config()
+{
+        return esp8266_state.ap.config;
 }
 
 static bool init_channel_sync_op(struct channel_sync_op* op)
@@ -1465,4 +1475,15 @@ const struct esp8266_ipv4_info* get_client_ipv4_info()
 const struct esp8266_ipv4_info* get_ap_ipv4_info()
 {
         return &esp8266_state.ap.ipv4;
+}
+
+/**
+ * Tells us if the WiFi client is connected to the correct WiFi network.
+ * @return true if it is, false otherwise.
+ */
+bool esp8266_drv_client_connected()
+{
+        const struct wifi_client_cfg *cfg = esp8266_state.client.config;
+        const struct esp8266_client_info *ci = &esp8266_state.client.info;
+        return cfg && ci->has_ap && STR_EQ(ci->ssid, cfg->ssid);
 }
