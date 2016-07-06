@@ -268,7 +268,7 @@ int api_getCapabilities(struct Serial *serial, const jsmntok_t *json)
         return API_SUCCESS_NO_RETURN;
 }
 
-static void imu_status(struct Serial *serial, const bool more)
+static void get_imu_status(struct Serial *serial, const bool more)
 {
         const bool imu_init =
                 imu_device_init_status() == IMU_INIT_STATUS_SUCCESS;
@@ -339,7 +339,7 @@ int api_getStatus(struct Serial *serial, const jsmntok_t *json)
         json_int(serial, "armed", lc_is_armed(), 0);
         json_objEnd(serial, true);
 
-        imu_status(serial, false);
+        get_imu_status(serial, false);
 
         json_objEnd(serial, 0);
         json_objEnd(serial, 0);
