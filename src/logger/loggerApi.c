@@ -35,6 +35,7 @@
 #include "geopoint.h"
 #include "gps.h"
 #include "imu.h"
+#include "imu_device.h"
 #include "lap_stats.h"
 #include "launch_control.h"
 #include "logger.h"
@@ -267,6 +268,16 @@ int api_getCapabilities(struct Serial *serial, const jsmntok_t *json)
         return API_SUCCESS_NO_RETURN;
 }
 
+static void imu_status(struct Serial *serial, const bool more)
+{
+        const bool imu_init =
+                imu_device_init_status() == IMU_INIT_STATUS_SUCCESS;
+
+        json_objStartString(serial, "imu");
+        json_bool(serial, "init", imu_init, false);
+        json_objEnd(serial, more);
+}
+
 int api_getStatus(struct Serial *serial, const jsmntok_t *json)
 {
         json_objStart(serial);
@@ -326,7 +337,9 @@ int api_getStatus(struct Serial *serial, const jsmntok_t *json)
         json_int(serial, "trackId", lapstats_get_selected_track_id(), 1);
         json_int(serial, "inLap", (int)lapstats_lap_in_progress(), 1);
         json_int(serial, "armed", lc_is_armed(), 0);
-        json_objEnd(serial, 0);
+        json_objEnd(serial, true);
+
+        imu_status(serial, false);
 
         json_objEnd(serial, 0);
         json_objEnd(serial, 0);
