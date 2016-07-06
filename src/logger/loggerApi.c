@@ -31,6 +31,7 @@
 #include "constants.h"
 #include "cpu.h"
 #include "dateTime.h"
+#include "esp8266_drv.h"
 #include "flags.h"
 #include "geopoint.h"
 #include "gps.h"
@@ -56,6 +57,7 @@
 #include "taskUtil.h"
 #include "timer.h"
 #include "tracks.h"
+#include "wifi.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -267,6 +269,29 @@ int api_getCapabilities(struct Serial *serial, const jsmntok_t *json)
         return API_SUCCESS_NO_RETURN;
 }
 
+static void get_wifi_status(struct Serial* serial, const bool more)
+{
+        const struct wifi_ap_cfg* ap_cfg = esp8266_drv_get_ap_config();
+        const struct wifi_client_cfg* clt_cfg = esp8266_drv_get_client_config();
+
+        const bool ap_active = ap_cfg && ap_cfg->active;
+        const bool client_active = clt_cfg && clt_cfg->active;
+        const bool client_connected = esp8266_drv_client_connected();
+
+        json_objStartString(serial, "wifi");
+
+        json_objStartString(serial, "ap");
+        json_bool(serial, "active", ap_active, false);
+        json_objEnd(serial, true);
+
+        json_objStartString(serial, "client");
+        json_bool(serial, "active", client_active, true);
+        json_bool(serial, "connected", client_connected, false);
+        json_objEnd(serial, false);
+
+        json_objEnd(serial, more);
+}
+
 int api_getStatus(struct Serial *serial, const jsmntok_t *json)
 {
         json_objStart(serial);
@@ -326,7 +351,9 @@ int api_getStatus(struct Serial *serial, const jsmntok_t *json)
         json_int(serial, "trackId", lapstats_get_selected_track_id(), 1);
         json_int(serial, "inLap", (int)lapstats_lap_in_progress(), 1);
         json_int(serial, "armed", lc_is_armed(), 0);
-        json_objEnd(serial, 0);
+        json_objEnd(serial, true);
+
+        get_wifi_status(serial, false);
 
         json_objEnd(serial, 0);
         json_objEnd(serial, 0);
