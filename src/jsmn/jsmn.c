@@ -19,10 +19,12 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include <stdlib.h>
-#include "mod_string.h"
 #include "jsmn.h"
+#include "macros.h"
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
 
 /**
  * Allocates a fresh unused token from the token pull.
@@ -359,4 +361,56 @@ const jsmntok_t * jsmn_find_get_node_value_string(const jsmntok_t *node,
 const jsmntok_t * jsmn_find_get_node_value_prim(const jsmntok_t *node, const char *name)
 {
         return jsmn_find_get_node_value(node, name, JSMN_PRIMITIVE);
+}
+
+bool jsmn_exists_set_val_int(const jsmntok_t* root, const char* field,
+                             void* val)
+{
+    const jsmntok_t *node = jsmn_find_get_node_value_prim(root, field);
+
+    if (!node)
+            return false;
+
+    int* value = val;
+    *value = atoi(node->data);
+    return true;
+}
+
+bool jsmn_exists_set_val_float(const jsmntok_t* root, const char* field,
+                               void* val)
+{
+    const jsmntok_t *node = jsmn_find_get_node_value_prim(root, field);
+
+    if (!node)
+            return false;
+
+    float* value = val;
+    *value = atof(node->data);
+    return true;
+}
+
+bool jsmn_exists_set_val_bool(const jsmntok_t* root, const char* field,
+                              void* val)
+{
+    const jsmntok_t *node = jsmn_find_get_node_value_prim(root, field);
+
+    if (!node)
+            return false;
+
+    bool* value = val;
+    *value = STR_EQ("true", node->data);
+    return true;
+}
+
+
+bool jsmn_exists_set_val_string(const jsmntok_t* root, const char* field,
+                                void* val, const size_t max_len)
+{
+    const jsmntok_t *node = jsmn_find_get_node_value_prim(root, field);
+
+    if (!node)
+            return false;
+
+    strncpy(val, node->data, max_len);
+    return true;
 }

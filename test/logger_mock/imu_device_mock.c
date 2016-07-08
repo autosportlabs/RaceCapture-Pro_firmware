@@ -45,3 +45,8 @@ float imu_device_counts_per_unit(unsigned int channel)
 {
     return (channel == IMU_CHANNEL_YAW ? YAW_DEVICE_COUNTS_PER_DEGREE_PER_SEC : ACCEL_DEVICE_COUNTS_PER_G);
 }
+
+enum imu_init_status imu_device_init_status()
+{
+        return IMU_INIT_STATUS_SUCCESS;
+}

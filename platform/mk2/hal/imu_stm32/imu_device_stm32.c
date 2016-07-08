@@ -21,6 +21,7 @@
 static struct is9150_all_sensor_data sensor_data[2];
 static struct is9150_all_sensor_data *read_buf = &sensor_data[0];
 static struct is9150_all_sensor_data *fill_buf = &sensor_data[1];
+static enum imu_init_status init_status;
 
 static void imu_update_buf_ptrs(void)
 {
@@ -47,6 +48,7 @@ static void imu_update_task(void *params)
 
     /* Clear the sensor data structures */
     memset(sensor_data, 0x00, sizeof(struct is9150_all_sensor_data) * 2);
+    init_status = 0 == res ? IMU_INIT_STATUS_SUCCESS : IMU_INIT_STATUS_FAILED;
 
     while(1) {
         res = is9150_read_all_sensors(fill_buf);
@@ -58,15 +60,15 @@ static void imu_update_task(void *params)
 
 void imu_device_init()
 {
-    /* Create a lock around the sensor buffers */
+        /* Create a lock around the sensor buffers */
+        static const signed portCHAR task_name[] = "IMU Reader Task";
+        xTaskCreate(imu_update_task, task_name, configMINIMAL_STACK_SIZE,
+                    NULL, IMU_TASK_PRIORITY, NULL);
+}
 
-    xTaskCreate(imu_update_task,
-                (signed portCHAR*)"IMU update",
-                configMINIMAL_STACK_SIZE,
-                NULL,
-                IMU_TASK_PRIORITY,
-                NULL);
-
+enum imu_init_status imu_device_init_status()
+{
+        return init_status;
 }
 
 int imu_device_read(enum imu_channel channel)

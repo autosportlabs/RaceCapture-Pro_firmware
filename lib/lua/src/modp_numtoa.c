@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 #include <math.h>
-#include "mod_string.h"
+#include <string.h>
 
 // other interesting references on num to string convesion
 // http://www.jb.man.ac.uk/~slowe/cpp/itoa.html
@@ -237,5 +237,3 @@ void modp_dtoa(double value, char* str, int prec)
     *wstr='\0';
     strreverse(str, wstr-1);
 }
-
-

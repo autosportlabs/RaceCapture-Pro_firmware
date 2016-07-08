@@ -31,7 +31,8 @@
 #include "task.h"
 #include "taskUtil.h"
 
-#define GPS_TASK_STACK_SIZE	300
+#define GPS_TASK_STACK_SIZE	256
+#define MSG_FAILURES_TRIGGER	3
 
 static bool g_enableGpsDataLogging = false;
 
@@ -42,29 +43,45 @@ void setGpsDataLogging(bool enable)
 
 void GPSTask(void *pvParameters)
 {
-    Serial *serial = get_serial(SERIAL_GPS);
-    uint8_t targetSampleRate = decodeSampleRate(getWorkingLoggerConfig()->GPSConfigs.speed.sampleRate);
-    lapStats_init();
-    while(1) {
-        const gps_status_t gps_status = GPS_init(targetSampleRate, serial);
-        if (!gps_status) {
-            pr_error("GPS: Error provisioning\r\n");
-        }
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        struct Serial *serial = serial_device_get(SERIAL_GPS);
+        const uint8_t targetSampleRate =
+                decodeSampleRate(lc->GPSConfigs.speed.sampleRate);
 
-        for (;;) {
-            gps_msg_result_t result = GPS_processUpdate(serial);
-            if (result == GPS_MSG_SUCCESS) {
-                const GpsSnapshot snap = getGpsSnapshot();
-                lapstats_processUpdate(&snap);
-            } else {
-                pr_warning("GPS: timeout\r\n");
-                break;
-            }
+        /* Call this here to effectively reset lapstats */
+        lapstats_config_changed();
+
+        while(1) {
+                size_t failures = 0;
+
+                const gps_status_t gps_status = GPS_init(targetSampleRate, serial);
+                if (!gps_status) {
+                        pr_error("GPS: Error provisioning\r\n");
+                }
+
+                for (;;) {
+                        gps_msg_result_t result = GPS_processUpdate(serial);
+                        if (result == GPS_MSG_SUCCESS) {
+                                const GpsSnapshot snap = getGpsSnapshot();
+                                lapstats_processUpdate(&snap);
+                                if (failures > 0)
+                                        --failures;
+                        } else {
+                                pr_debug("GPS: Msx Rx Failure\r\n");
+                                if (++failures >= MSG_FAILURES_TRIGGER) {
+                                        pr_warning("GPS: Too many failures.  "
+                                                   "Reenum\r\n");
+                                        break;
+                                }
+                        }
+                }
         }
-    }
 }
 
 void startGPSTask(int priority)
 {
-    xTaskCreate( GPSTask, ( signed portCHAR * )"GPSTask", GPS_TASK_STACK_SIZE, NULL, priority, NULL );
+        /* Make all task names 16 chars including NULL char*/
+        static const signed portCHAR task_name[] = "GPS Comm Task  ";
+        xTaskCreate(GPSTask, task_name, GPS_TASK_STACK_SIZE, NULL,
+                    priority, NULL );
 }

@@ -202,6 +202,7 @@ int _write(int file, char *ptr, int len)
             ITM_SendChar(c);
 #else
             /* TODO: Add usart support */
+            (void) c;
 #endif
         }
         break;
@@ -209,6 +210,7 @@ int _write(int file, char *ptr, int len)
         errno = EBADF;
         return -1;
     }
+
     return len;
 }
 

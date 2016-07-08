@@ -22,828 +22,767 @@
 #include "FreeRTOS.h"
 #include "led.h"
 #include "mem_mang.h"
+#include "panic.h"
 #include "printk.h"
 #include "queue.h"
+#include "serial.h"
+#include "serial_device.h"
 #include "stm32f4xx_dma.h"
 #include "stm32f4xx_gpio.h"
 #include "stm32f4xx_misc.h"
 #include "stm32f4xx_rcc.h"
+#include "stm32f4xx_tim.h"
 #include "stm32f4xx_usart.h"
 #include "task.h"
+#include "taskUtil.h"
+#include "timers.h"
 #include "usart_device.h"
 
-#define UART_QUEUE_LENGTH 	1024
-#define GPS_BUFFER_SIZE		32
+/*
+ * DMA Channels (Rx Ch/Stream || Tx Ch/Stream)
+ *
+ * USART1 - DMA2 Ch 4 / Stream 2/5 || DMA2 Ch 4 / Stream 7
+ * USART2 - DMA1 Ch 4 / Stream 5   || DMA1 Ch 4 / Stream 6
+ * USART3 - DMA1 Ch 4 / Stream 1   || DMA1 Ch 4 / Stream 3
+ * UART4  - DMA1 Ch 4 / Stream 2   || DMA1 Ch 4 / Stream 4
+ *
+ * NOTE:
+ * * DMA2_Stream2 is in use by ADC2.  Instead use DMA2_S5
+ * * DMA2_Stream6 is in use by I2C.  No workaround :(
+ */
 
-#define UART_WIRELESS_IRQ_PRIORITY 	7
-#define UART_AUX_IRQ_PRIORITY 		8
-#define UART_GPS_IRQ_PRIORITY 		5
-#define UART_TELEMETRY_IRQ_PRIORITY 	6
-
-#define DEFAULT_WIRELESS_BAUD_RATE	115200
+#define CHAR_CHECK_PERIOD_MS		100
 #define DEFAULT_AUX_BAUD_RATE		115200
-#define DEFAULT_TELEMETRY_BAUD_RATE	115200
 #define DEFAULT_GPS_BAUD_RATE		921600
+#define DEFAULT_TELEMETRY_BAUD_RATE	115200
+#define DEFAULT_WIRELESS_BAUD_RATE	115200
+#define DMA_RX_BUFF_SIZE		32
+#define DMA_TX_BUFF_SIZE		32
+#define DMA_IRQ_PRIORITY		5
+#define LOG_PFX				"[USART] "
+#define UART_AUX_IRQ_PRIORITY		8
+#define UART_GPS_IRQ_PRIORITY		5
+#define UART_QUEUE_LEN			1024
+#define UART_TELEMETRY_IRQ_PRIORITY	6
+#define UART_WIRELESS_IRQ_PRIORITY	7
 
 typedef enum {
     UART_RX_IRQ = 1,
     UART_TX_IRQ = 2
 } uart_irq_type_t;
 
-xQueueHandle xUsart0Tx;
-xQueueHandle xUsart0Rx;
+struct dma_info {
+        DMA_Stream_TypeDef* stream;     /* Pointer to our DMA Stream */
+        uint32_t channel;               /* Channel number for our stream */
+        size_t buff_size;               /* Size of the buffer */
+        volatile uint8_t* buff;         /* Base address of buffer */
+        volatile uint8_t* volatile ptr; /* Tail/Head pointer of the buffer */
+};
 
-xQueueHandle xUsart1Tx;
-xQueueHandle xUsart1Rx;
+static volatile struct usart_info {
+        struct Serial *serial;
+        USART_TypeDef *usart;
+        volatile struct dma_info dma_rx;
+        volatile struct dma_info dma_tx;
+        bool char_dropped;
+} usart_data[__UART_COUNT];
 
-xQueueHandle xUsart2Tx;
-xQueueHandle xUsart2Rx;
 
-xQueueHandle xUsart3Tx;
-xQueueHandle xUsart3Rx;
-
-static uint8_t *gpsRxBuffer;
-
-static int initQueues()
+static void init_usart(USART_TypeDef *USARTx, const size_t bits,
+                       const size_t parity, const size_t stop_bits,
+                       const size_t baud)
 {
-    gpsRxBuffer = (uint8_t *) portMalloc(sizeof(uint8_t) * GPS_BUFFER_SIZE);
+        uint16_t wordLengthFlag;
+        switch (bits) {
+        case 9:
+                wordLengthFlag = USART_WordLength_9b;
+                break;
+        case 8:
+        default:
+                wordLengthFlag = USART_WordLength_8b;
+                break;
+        }
 
-    int success = 1;
+        uint16_t stopBitsFlag;
+        switch (stop_bits) {
+        case 2:
+                stopBitsFlag = USART_StopBits_2;
+                break;
+        case 1:
+        default:
+                stopBitsFlag = USART_StopBits_1;
+                break;
+        }
 
-    /* Create the queues used to hold Rx and Tx characters. */
-    xUsart0Rx = xQueueCreate(UART_QUEUE_LENGTH,
-                             (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    xUsart0Tx = xQueueCreate(UART_QUEUE_LENGTH + 1,
-                             (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    if (xUsart0Rx == NULL || xUsart0Tx == NULL) {
-        success = 0;
-        goto cleanup_and_return;
-    }
+        uint16_t parityFlag;
+        switch (parity) {
+        case 1:
+                parityFlag = USART_Parity_Even;
+                break;
+        case 2:
+                parityFlag = USART_Parity_Odd;
+                break;
+        case 0:
+        default:
+                parityFlag = USART_Parity_No;
+                break;
+        }
 
+        USART_InitTypeDef usart;
+        usart.USART_BaudRate = baud;
+        usart.USART_WordLength = wordLengthFlag;
+        usart.USART_StopBits = stopBitsFlag;
+        usart.USART_Parity = parityFlag;
+        usart.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+        usart.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 
-    xUsart1Rx = xQueueCreate(UART_QUEUE_LENGTH,
-                             (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    xUsart1Tx = xQueueCreate(UART_QUEUE_LENGTH + 1,
-                             (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    if (xUsart1Rx == NULL || xUsart1Tx == NULL) {
-        success = 0;
-        goto cleanup_and_return;
-    }
-
-    xUsart2Rx = xQueueCreate(UART_QUEUE_LENGTH,
-                             (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    xUsart2Tx = xQueueCreate(UART_QUEUE_LENGTH + 1,
-                             (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    if (xUsart2Rx == NULL || xUsart2Tx == NULL) {
-        success = 0;
-        goto cleanup_and_return;
-    }
-
-    xUsart3Rx = xQueueCreate(UART_QUEUE_LENGTH,
-                             (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    xUsart3Tx = xQueueCreate(UART_QUEUE_LENGTH + 1,
-                             (unsigned portBASE_TYPE)sizeof(signed portCHAR));
-    if (xUsart3Rx == NULL || xUsart3Tx == NULL) {
-        success = 0;
-        goto cleanup_and_return;
-    }
-
-cleanup_and_return:
-    return success;
-}
-
-static void initUsart(USART_TypeDef * USARTx, unsigned int bits,
-                      unsigned int parity, unsigned int stopBits,
-                      unsigned int baud)
-{
-    uint16_t wordLengthFlag;
-    switch (bits) {
-    case 9:
-        wordLengthFlag = USART_WordLength_9b;
-        break;
-    case 8:
-    default:
-        wordLengthFlag = USART_WordLength_8b;
-        break;
-    }
-
-    uint16_t stopBitsFlag;
-    switch (stopBits) {
-    case 2:
-        stopBitsFlag = USART_StopBits_2;
-        break;
-    case 1:
-    default:
-        stopBitsFlag = USART_StopBits_1;
-        break;
-    }
-
-    uint16_t parityFlag;
-    switch (parity) {
-    case 1:
-        parityFlag = USART_Parity_Even;
-        break;
-    case 2:
-        parityFlag = USART_Parity_Odd;
-        break;
-    case 0:
-    default:
-        parityFlag = USART_Parity_No;
-        break;
-    }
-
-    USART_InitTypeDef usart;
-    usart.USART_BaudRate = baud;
-    usart.USART_WordLength = wordLengthFlag;
-    usart.USART_StopBits = stopBitsFlag;
-    usart.USART_Parity = parityFlag;
-    usart.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-    usart.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-
-    USART_Init(USARTx, &usart);
-    USART_Cmd(USARTx, ENABLE);
-}
-
-int usart_device_init()
-{
-    if (!initQueues()) {
-        return 0;
-    }
-
-    usart_device_init_0(8, 0, 1, DEFAULT_WIRELESS_BAUD_RATE);	//wireless
-    usart_device_init_1(8, 0, 1, DEFAULT_AUX_BAUD_RATE);	//auxilary
-    usart_device_init_2(8, 0, 1, DEFAULT_GPS_BAUD_RATE);	//GPS
-    usart_device_init_3(8, 0, 1, DEFAULT_TELEMETRY_BAUD_RATE);	//telemetry
-    return 1;
-}
-
-void usart_device_config(uart_id_t port, uint8_t bits, uint8_t parity,
-                         uint8_t stopbits, uint32_t baud)
-{
-    switch (port) {
-    case UART_WIRELESS:
-        initUsart(USART1, bits, parity, stopbits, baud);
-        break;
-    case UART_AUX:
-        initUsart(USART3, bits, parity, stopbits, baud);
-        break;
-    case UART_GPS:
-        initUsart(USART2, bits, parity, stopbits, baud);
-        break;
-    case UART_TELEMETRY:
-        initUsart(UART4, bits, parity, stopbits, baud);
-        break;
-    default:
-        break;
-    }
-}
-
-int usart_device_init_serial(Serial * serial, uart_id_t id)
-{
-    int rc = 1;
-
-    switch (id) {
-    case UART_WIRELESS:
-        serial->init = &usart_device_init_0;
-        serial->flush = &usart0_flush;
-        serial->get_c = &usart0_getchar;
-        serial->get_c_wait = &usart0_getcharWait;
-        serial->get_line = &usart0_readLine;
-        serial->get_line_wait = &usart0_readLineWait;
-        serial->put_c = &usart0_putchar;
-        serial->put_s = &usart0_puts;
-        break;
-
-    case UART_AUX:
-        serial->init = &usart_device_init_1;
-        serial->flush = &usart1_flush;
-        serial->get_c = &usart1_getchar;
-        serial->get_c_wait = &usart1_getcharWait;
-        serial->get_line = &usart1_readLine;
-        serial->get_line_wait = &usart1_readLineWait;
-        serial->put_c = &usart1_putchar;
-        serial->put_s = &usart1_puts;
-        break;
-
-    case UART_GPS:
-        serial->init = &usart_device_init_2;
-        serial->flush = &usart2_flush;
-        serial->get_c = &usart2_getchar;
-        serial->get_c_wait = &usart2_getcharWait;
-        serial->get_line = &usart2_readLine;
-        serial->get_line_wait = &usart2_readLineWait;
-        serial->put_c = &usart2_putchar;
-        serial->put_s = &usart2_puts;
-        break;
-
-    case UART_TELEMETRY:
-        serial->init = &usart_device_init_3;
-        serial->flush = &usart3_flush;
-        serial->get_c = &usart3_getchar;
-        serial->get_c_wait = &usart3_getcharWait;
-        serial->get_line = &usart3_readLine;
-        serial->get_line_wait = &usart3_readLineWait;
-        serial->put_c = &usart3_putchar;
-        serial->put_s = &usart3_puts;
-        break;
-
-    default:
-        rc = 0;
-        break;
-    }
-    return rc;
+        USART_Init(USARTx, &usart);
+        USART_Cmd(USARTx, ENABLE);
 }
 
 static void initGPIO(GPIO_TypeDef * GPIOx, uint32_t gpioPins)
 {
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin = gpioPins;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOx, &GPIO_InitStructure);
+        GPIO_InitTypeDef GPIO_InitStructure;
+        GPIO_InitStructure.GPIO_Pin = gpioPins;
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+        GPIO_Init(GPIOx, &GPIO_InitStructure);
 }
 
-static void enableRxDMA(uint32_t RCC_AHB1Periph,
-                        DMA_Stream_TypeDef * DMA_stream, uint32_t DMA_channel,
-                        uint8_t * rxBuffer, uint32_t rxBufferSize,
-                        USART_TypeDef * USARTx, uint8_t NVIC_IRQ_channel,
-                        uint8_t IRQ_priority)
+static void enable_dma_rx(const uint32_t dma_periph,
+                          const uint8_t irq_channel,
+                          const uint8_t irq_priority,
+                          const uint32_t dma_it_flags,
+                          volatile struct usart_info* ui)
 {
-    /* Configure the Priority Group to 2 bits */
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+        const volatile struct dma_info* dma = &ui->dma_rx;
+        RCC_AHB1PeriphClockCmd(dma_periph, ENABLE);
 
-    NVIC_InitTypeDef NVIC_InitStructure;
-    /* Enable the USARTx RX DMA Interrupt */
-    NVIC_InitStructure.NVIC_IRQChannel = NVIC_IRQ_channel;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = IRQ_priority;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+        DMA_DeInit(dma->stream);
 
-    /* DMA configuration ------------------------------------------------------ */
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph, ENABLE);
-    DMA_InitTypeDef DMA_InitStructure;
-    DMA_DeInit(DMA_stream);
-    DMA_InitStructure.DMA_Channel = DMA_channel;
-    DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;	// Receive
-    DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t) rxBuffer;
-    DMA_InitStructure.DMA_BufferSize = rxBufferSize;
-    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) & USARTx->DR;
-    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
-    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
-    DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
-    DMA_InitStructure.DMA_Priority = DMA_Priority_High;
-    DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;
-    DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
-    DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
-    DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+        DMA_InitTypeDef DMA_InitStructure;
+        DMA_StructInit(&DMA_InitStructure);
 
-    DMA_Init(DMA_stream, &DMA_InitStructure);
+        DMA_InitStructure.DMA_Channel = dma->channel;
+        DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t) dma->buff;
+        DMA_InitStructure.DMA_BufferSize = dma->buff_size;
+        DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) &ui->usart->DR;
+        DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;
+        DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+        DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+        DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+        DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+        DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
+        DMA_InitStructure.DMA_Priority = DMA_Priority_High;
 
-    /* Enable the USART Rx DMA request */
-    USART_DMACmd(USARTx, USART_DMAReq_Rx, ENABLE);
+        DMA_Init(dma->stream, &DMA_InitStructure);
 
-    /* Enable DMA Stream Half Transfer and Transfer Complete interrupt */
-    DMA_ITConfig(DMA_stream, DMA_IT_TC, ENABLE);
-    DMA_ITConfig(DMA_stream, DMA_IT_HT, ENABLE);
+        if (dma_it_flags) {
+                NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 
-    /* Enable the DMA RX Stream */
-    DMA_Cmd(DMA_stream, ENABLE);
+                NVIC_InitTypeDef NVIC_InitStructure;
+                NVIC_InitStructure.NVIC_IRQChannel = irq_channel;
+                NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = irq_priority;
+                NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+                NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+                NVIC_Init(&NVIC_InitStructure);
+
+                DMA_ITConfig(dma->stream, dma_it_flags, ENABLE);
+        }
+
+        /* Enable the USART Rx DMA request */
+        USART_DMACmd(ui->usart, USART_DMAReq_Rx, ENABLE);
+
+        /* Enable the DMA RX Stream */
+        DMA_Cmd(dma->stream, ENABLE);
+}
+
+static void enable_dma_tx(const uint32_t dma_periph,
+                          const uint8_t irq_channel,
+                          const uint8_t irq_priority,
+                          const uint32_t dma_it_flags,
+                          volatile struct usart_info* ui)
+{
+        const volatile struct dma_info* dma = &ui->dma_tx;
+        RCC_AHB1PeriphClockCmd(dma_periph, ENABLE);
+        DMA_DeInit(dma->stream);
+
+        DMA_InitTypeDef DMA_InitStructure;
+        DMA_StructInit(&DMA_InitStructure);
+
+        DMA_InitStructure.DMA_Channel = dma->channel;
+        DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t) dma->buff;
+        /*
+         * Setting BufferSize here to 0 is invalid. Its initial value
+         * doesn't matter anyways so set 1 here.
+         */
+        DMA_InitStructure.DMA_BufferSize = 1;
+        DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) &ui->usart->DR;
+        DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
+        DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+        DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+        DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+        DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+        DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
+        DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;
+
+        DMA_Init(dma->stream, &DMA_InitStructure);
+
+        if (dma_it_flags) {
+                NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+
+                NVIC_InitTypeDef NVIC_InitStructure;
+                NVIC_InitStructure.NVIC_IRQChannel = irq_channel;
+                NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority
+                        = irq_priority;
+                NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+                NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+                NVIC_Init(&NVIC_InitStructure);
+
+                DMA_ITConfig(dma->stream, dma_it_flags, ENABLE);
+        }
+
+        /* Enable the USART Rx DMA request */
+        USART_DMACmd(ui->usart, USART_DMAReq_Tx, ENABLE);
 }
 
 static void enableRxTxIrq(USART_TypeDef * USARTx, uint8_t usartIrq,
                           uint8_t IRQ_priority, uart_irq_type_t irqType)
 {
-    NVIC_InitTypeDef NVIC_InitStructure;
+        NVIC_InitTypeDef NVIC_InitStructure;
 
-    /* Configure the NVIC Preemption Priority Bits */
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+        /* Configure the NVIC Preemption Priority Bits */
+        NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 
-    /* Enable the USART Interrupt */
-    NVIC_InitStructure.NVIC_IRQChannel = usartIrq;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = IRQ_priority;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+        /* Enable the USART Interrupt */
+        NVIC_InitStructure.NVIC_IRQChannel = usartIrq;
+        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = IRQ_priority;
+        NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+        NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+        NVIC_Init(&NVIC_InitStructure);
 
-    if (irqType & UART_RX_IRQ)
-        USART_ITConfig(USARTx, USART_IT_RXNE, ENABLE);
+        if (irqType & UART_RX_IRQ)
+                USART_ITConfig(USARTx, USART_IT_RXNE, ENABLE);
 
-    if (irqType & UART_TX_IRQ)
-        USART_ITConfig(USARTx, USART_IT_TXE, ENABLE);
+        if (irqType & UART_TX_IRQ)
+                USART_ITConfig(USARTx, USART_IT_TXE, ENABLE);
 }
 
-//Wireless port
-void usart_device_init_0(unsigned int bits, unsigned int parity,
-                         unsigned int stopBits, unsigned int baud)
+/* Bluetooth */
+static void usart_device_init_0(size_t bits, size_t parity,
+                                size_t stopBits, size_t baud)
 {
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+        volatile struct usart_info* ui = usart_data + UART_WIRELESS;
 
-    initGPIO(GPIOA, (GPIO_Pin_9 | GPIO_Pin_10));
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_USART1);
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_USART1);
+        RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
+        RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 
-    enableRxTxIrq(USART1, USART1_IRQn, UART_WIRELESS_IRQ_PRIORITY,
-                  (UART_RX_IRQ | UART_TX_IRQ));
+        initGPIO(GPIOA, (GPIO_Pin_9 | GPIO_Pin_10));
+        GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_USART1);
+        GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_USART1);
 
-    initUsart(USART1, bits, parity, stopBits, baud);
+        init_usart(ui->usart, bits, parity, stopBits, baud);
+
+        enable_dma_rx(RCC_AHB1Periph_DMA2, DMA2_Stream5_IRQn,
+                      DMA_IRQ_PRIORITY, DMA_IT_TC | DMA_IT_HT, ui);
+
+        enable_dma_tx(RCC_AHB1Periph_DMA1, DMA2_Stream7_IRQn,
+                      DMA_IRQ_PRIORITY, DMA_IT_TC, ui);
+
 }
 
-//Auxilary port
-void usart_device_init_1(unsigned int bits, unsigned int parity,
-                         unsigned int stopBits, unsigned int baud)
+/* Auxilary port */
+static void usart_device_init_1(size_t bits, size_t parity,
+                                size_t stopBits, size_t baud)
 {
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
+        volatile struct usart_info* ui = usart_data + UART_AUX;
 
-    initGPIO(GPIOD, (GPIO_Pin_8 | GPIO_Pin_9));
-    GPIO_PinAFConfig(GPIOD, GPIO_PinSource8, GPIO_AF_USART3);
-    GPIO_PinAFConfig(GPIOD, GPIO_PinSource9, GPIO_AF_USART3);
+        RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
+        RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 
-    enableRxTxIrq(USART3, USART3_IRQn, UART_AUX_IRQ_PRIORITY,
-                  (UART_RX_IRQ | UART_TX_IRQ));
+        initGPIO(GPIOD, (GPIO_Pin_8 | GPIO_Pin_9));
+        GPIO_PinAFConfig(GPIOD, GPIO_PinSource8, GPIO_AF_USART3);
+        GPIO_PinAFConfig(GPIOD, GPIO_PinSource9, GPIO_AF_USART3);
 
-    initUsart(USART3, bits, parity, stopBits, baud);
+        init_usart(ui->usart, bits, parity, stopBits, baud);
+
+        enable_dma_rx(RCC_AHB1Periph_DMA1, DMA1_Stream1_IRQn,
+                      DMA_IRQ_PRIORITY, DMA_IT_TC | DMA_IT_HT, ui);
+
+        enable_dma_tx(RCC_AHB1Periph_DMA1, DMA1_Stream3_IRQn,
+                      DMA_IRQ_PRIORITY, DMA_IT_TC, ui);
 }
 
-//GPS port
-void usart_device_init_2(unsigned int bits, unsigned int parity,
-                         unsigned int stopBits, unsigned int baud)
+/* GPS */
+static void usart_device_init_2(size_t bits, size_t parity,
+                                size_t stopBits, size_t baud)
 {
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
+        volatile struct usart_info* ui = usart_data + UART_GPS;
 
-    initGPIO(GPIOD, (GPIO_Pin_5 | GPIO_Pin_6));
-    GPIO_PinAFConfig(GPIOD, GPIO_PinSource5, GPIO_AF_USART2);
-    GPIO_PinAFConfig(GPIOD, GPIO_PinSource6, GPIO_AF_USART2);
+        RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+        RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 
-    initUsart(USART2, bits, parity, stopBits, baud);
-    enableRxTxIrq(USART2, USART2_IRQn, UART_GPS_IRQ_PRIORITY, UART_TX_IRQ);
-    enableRxDMA(RCC_AHB1Periph_DMA1, DMA1_Stream5, DMA_Channel_4,
-                gpsRxBuffer, GPS_BUFFER_SIZE, USART2, DMA1_Stream5_IRQn,
-                UART_GPS_IRQ_PRIORITY);
+        initGPIO(GPIOD, (GPIO_Pin_5 | GPIO_Pin_6));
+        GPIO_PinAFConfig(GPIOD, GPIO_PinSource5, GPIO_AF_USART2);
+        GPIO_PinAFConfig(GPIOD, GPIO_PinSource6, GPIO_AF_USART2);
+
+        init_usart(ui->usart, bits, parity, stopBits, baud);
+        /* No TX DMA here becasue I2C is using that stream */
+        enableRxTxIrq(ui->usart, USART2_IRQn, UART_GPS_IRQ_PRIORITY,
+                      UART_TX_IRQ);
+
+        enable_dma_rx(RCC_AHB1Periph_DMA1, DMA1_Stream5_IRQn,
+                      DMA_IRQ_PRIORITY, DMA_IT_TC | DMA_IT_HT, ui);
 }
 
-//Telemetry port
-void usart_device_init_3(unsigned int bits, unsigned int parity,
-                         unsigned int stopBits, unsigned int baud)
+/* Cellular */
+static void usart_device_init_3(size_t bits, size_t parity,
+                                size_t stopBits, size_t baud)
 {
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+        volatile struct usart_info* ui = usart_data + UART_TELEMETRY;
 
-    initGPIO(GPIOA, (GPIO_Pin_0 | GPIO_Pin_1));
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource0, GPIO_AF_UART4);
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_UART4);
+        RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
+        RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 
-    enableRxTxIrq(UART4, UART4_IRQn, UART_TELEMETRY_IRQ_PRIORITY,
-                  (UART_RX_IRQ | UART_TX_IRQ));
+        initGPIO(GPIOA, (GPIO_Pin_0 | GPIO_Pin_1));
+        GPIO_PinAFConfig(GPIOA, GPIO_PinSource0, GPIO_AF_UART4);
+        GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_UART4);
 
-    initUsart(UART4, bits, parity, stopBits, baud);
+        init_usart(ui->usart, bits, parity, stopBits, baud);
+
+        enable_dma_rx(RCC_AHB1Periph_DMA1, DMA1_Stream2_IRQn,
+                      DMA_IRQ_PRIORITY, DMA_IT_TC | DMA_IT_HT, ui);
+
+        enable_dma_tx(RCC_AHB1Periph_DMA1, DMA1_Stream4_IRQn,
+                      DMA_IRQ_PRIORITY, DMA_IT_TC, ui);
 }
 
-////////////////////////////////////////////////////////////////////////////
-// Communication functions
-////////////////////////////////////////////////////////////////////////////
-
-void usart0_flush(void)
+static bool _config_cb(void *cfg_cb_arg, const size_t bits,
+                       const size_t parity, const size_t stop_bits,
+                       const size_t baud)
 {
-    char rx;
-    while (xQueueReceive(xUsart0Rx, &rx, 0))
-        ;
+        USART_TypeDef *usart = cfg_cb_arg;
+        init_usart(usart, bits, parity, stop_bits, baud);
+        return true;
 }
 
-void usart1_flush(void)
+static void _char_tx_cb(xQueueHandle queue, void *post_tx_arg)
 {
-    char rx;
-    while (xQueueReceive(xUsart1Rx, &rx, 0))
-        ;
+        volatile struct usart_info *ui = post_tx_arg;
+        if (!ui->dma_tx.stream)
+                USART_ITConfig(ui->usart, USART_IT_TXE, ENABLE);
 }
 
-void usart2_flush(void)
+static bool init_usart_serial(const uart_id_t uart_id, USART_TypeDef *usart,
+                              const serial_id_t serial_id, const char *name,
+                              const size_t dma_rx_buff_size,
+                              DMA_Stream_TypeDef* dma_rx_stream,
+                              const uint32_t dma_rx_channel,
+                              const size_t dma_tx_buff_size,
+                              DMA_Stream_TypeDef* dma_tx_stream,
+                              const uint32_t dma_tx_channel)
 {
-    char rx;
-    while (xQueueReceive(xUsart2Rx, &rx, 0))
-        ;
-}
-
-void usart3_flush(void)
-{
-    char rx;
-    while (xQueueReceive(xUsart3Rx, &rx, 0))
-        ;
-}
-
-int usart0_getcharWait(char *c, size_t delay)
-{
-    return xQueueReceive(xUsart0Rx, c, delay) == pdTRUE ? 1 : 0;
-}
-
-int usart1_getcharWait(char *c, size_t delay)
-{
-    return xQueueReceive(xUsart1Rx, c, delay) == pdTRUE ? 1 : 0;
-}
-
-int usart2_getcharWait(char *c, size_t delay)
-{
-    return xQueueReceive(xUsart2Rx, c, delay) == pdTRUE ? 1 : 0;
-}
-
-int usart3_getcharWait(char *c, size_t delay)
-{
-    return xQueueReceive(xUsart3Rx, c, delay) == pdTRUE ? 1 : 0;
-}
-
-char usart0_getchar()
-{
-    char c;
-    usart0_getcharWait(&c, portMAX_DELAY);
-    return c;
-}
-
-char usart1_getchar()
-{
-    char c;
-    usart1_getcharWait(&c, portMAX_DELAY);
-    return c;
-}
-
-char usart2_getchar()
-{
-    char c;
-    usart2_getcharWait(&c, portMAX_DELAY);
-    return c;
-}
-
-char usart3_getchar()
-{
-    char c;
-    usart3_getcharWait(&c, portMAX_DELAY);
-    return c;
-}
-
-void usart0_putchar(char c)
-{
-#if 0
-    if (TRACE_LEVEL) {
-        char buf[2];
-        buf[0] = c;
-        buf[1] = '\0';
-        pr_debug(buf);
-    }
-#endif
-    xQueueSend(xUsart0Tx, &c, portMAX_DELAY);
-
-    //Enable transmitter interrupt
-    USART_ITConfig(USART1, USART_IT_TXE, ENABLE);
-}
-
-void usart1_putchar(char c)
-{
-#if 0
-    if (TRACE_LEVEL) {
-        char buf[2];
-        buf[0] = c;
-        buf[1] = '\0';
-        pr_debug(buf);
-    }
-#endif
-
-    xQueueSend(xUsart1Tx, &c, portMAX_DELAY);
-
-    //Enable transmitter interrupt
-    USART_ITConfig(USART3, USART_IT_TXE, ENABLE);
-}
-
-void usart2_putchar(char c)
-{
-    if (TRACE_LEVEL) {
-        char buf[2];
-        buf[0] = c;
-        buf[1] = '\0';
-        pr_debug(buf);
-    }
-
-    xQueueSend(xUsart2Tx, &c, portMAX_DELAY);
-
-    //Enable transmitter interrupt
-    USART_ITConfig(USART2, USART_IT_TXE, ENABLE);
-}
-
-void usart3_putchar(char c)
-{
-    if (TRACE_LEVEL) {
-        char buf[2];
-        buf[0] = c;
-        buf[1] = '\0';
-        pr_debug(buf);
-    }
-
-    xQueueSend(xUsart3Tx, &c, portMAX_DELAY);
-
-    //Enable transmitter interrupt
-    USART_ITConfig(UART4, USART_IT_TXE, ENABLE);
-}
-
-void usart0_puts(const char *s)
-{
-    while (*s)
-        usart0_putchar(*s++);
-}
-
-void usart1_puts(const char *s)
-{
-    while (*s)
-        usart1_putchar(*s++);
-}
-
-void usart2_puts(const char *s)
-{
-    while (*s)
-        usart2_putchar(*s++);
-}
-
-void usart3_puts(const char *s)
-{
-    while (*s)
-        usart3_putchar(*s++);
-}
-
-int usart0_readLineWait(char *s, int len, size_t delay)
-{
-    int count = 0;
-    while (count < len - 1) {
-        char c = 0;
-
-        if (!usart0_getcharWait(&c, delay)) {
-            break;
+        volatile struct usart_info *ui = usart_data + uart_id;
+        struct Serial *s =
+                serial_create(name, UART_QUEUE_LEN, UART_QUEUE_LEN,
+                              _config_cb, usart, _char_tx_cb,
+                              (void*) ui);
+        if (!s) {
+                pr_error(LOG_PFX "Serial Malloc failure!\r\n");
+                return false;
         }
 
-        *s++ = c;
-        count++;
-        if (c == '\n')
-            break;
-    }
-    *s = '\0';
-    return count;
-}
+        ui->usart = usart;
+        ui->serial = s;
 
-int usart1_readLineWait(char *s, int len, size_t delay)
-{
-    int count = 0;
-    while (count < len - 1) {
-        char c = 0;
+        uint8_t* dma_rx_buff = NULL;
+        if (dma_rx_stream && dma_rx_buff_size) {
+                dma_rx_buff = malloc(dma_rx_buff_size);
+                if (!dma_rx_buff) {
+                        pr_error(LOG_PFX "DMA Rx Buff Malloc failure!\r\n");
+                        return false;
+                }
 
-        if (!usart1_getcharWait(&c, delay)) {
-            break;
+                ui->dma_rx.buff_size = dma_rx_buff_size;
+                ui->dma_rx.buff = dma_rx_buff;
+                ui->dma_rx.ptr = dma_rx_buff;
+                ui->dma_rx.channel = dma_rx_channel;
+                ui->dma_rx.stream = dma_rx_stream;
         }
 
-        *s++ = c;
-        count++;
-        if (c == '\n')
-            break;
-    }
-    *s = '\0';
-    return count;
-}
+        uint8_t* dma_tx_buff = NULL;
+        if (dma_tx_stream && dma_tx_buff_size) {
+                dma_tx_buff = malloc(dma_tx_buff_size);
+                if (!dma_tx_buff) {
+                        pr_error(LOG_PFX "DMA Tx Buff Malloc failure!\r\n");
+                        return false;
+                }
 
-int usart2_readLineWait(char *s, int len, size_t delay)
-{
-    int count = 0;
-    while (count < len - 1) {
-        char c = 0;
-
-        if (!usart2_getcharWait(&c, delay)) {
-            break;
+                ui->dma_tx.buff_size = dma_tx_buff_size;
+                ui->dma_tx.buff = dma_tx_buff;
+                ui->dma_tx.ptr = dma_tx_buff;
+                ui->dma_tx.channel = dma_tx_channel;
+                ui->dma_tx.stream = dma_tx_stream;
         }
 
-        *s++ = c;
-        count++;
-        if (c == '\n')
-            break;
-    }
-    *s = '\0';
-    return count;
+        return true;
 }
 
-int usart3_readLineWait(char *s, int len, size_t delay)
+static bool usart_id_in_bounds(const uart_id_t id)
 {
-    int count = 0;
-    while (count < len - 1) {
-        char c = 0;
-
-        if (!usart3_getcharWait(&c, delay)) {
-            break;
-        }
-
-        *s++ = c;
-        count++;
-        if (c == '\n')
-            break;
-    }
-    *s = '\0';
-    return count;
+        return ((size_t) id) < __UART_COUNT;
 }
 
-int usart0_readLine(char *s, int len)
+void usart_device_config(const uart_id_t id, const size_t bits,
+                         const size_t parity, const size_t stop_bits,
+                         const size_t baud)
 {
-    return usart0_readLineWait(s, len, portMAX_DELAY);
-}
-
-int usart1_readLine(char *s, int len)
-{
-    return usart1_readLineWait(s, len, portMAX_DELAY);
-}
-
-int usart2_readLine(char *s, int len)
-{
-    return usart2_readLineWait(s, len, portMAX_DELAY);
-}
-
-int usart3_readLine(char *s, int len)
-{
-    return usart3_readLineWait(s, len, portMAX_DELAY);
-}
-
-////////////////////////////////////////////////////////////////////////////
-// Interrupt Handlers
-////////////////////////////////////////////////////////////////////////////
-
-static void handle_usart_overrun(USART_TypeDef* USARTx)
-{
-        if (USART_GetITStatus(USARTx, USART_IT_ORE_RX) != SET)
+        if (!usart_id_in_bounds(id))
                 return;
 
-        /*
-	 * Handle Overrun error
-         *
-	 * This bit is set by hardware when the word currently being received in
-         * the shift register is ready to be transferred into the RDR register
-         * while RXNE=1. An interrupt is generated if RXNEIE=1 in the USART_CR1
-         * register. It is cleared by a software sequence (an read to the
-         * USART_SR register followed by a read to the USART_DR register)
-	 */
-        uint32_t cChar;
-	cChar = USARTx->SR;
-	cChar = USARTx->DR;
-
-	/* Suppress compiler warning */
-	(void) cChar;
+        volatile struct usart_info *ui = usart_data + id;
+        init_usart(ui->usart, bits, parity, stop_bits, baud);
 }
 
-void DMA1_Stream5_IRQHandler(void)
+/* *** Interrupt Handlers *** */
+static void usart_generic_irq_handler(volatile struct usart_info *ui)
 {
-    portBASE_TYPE xTaskWokenByPost = pdFALSE;
-    signed portCHAR cChar;
-    /* Test on DMA Stream Transfer Complete interrupt */
-    if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_TCIF5)) {
-        /* Clear DMA Stream Transfer Complete interrupt pending bit */
-        DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5);
-        for (size_t i = GPS_BUFFER_SIZE / 2; i < GPS_BUFFER_SIZE; i++) {
-            cChar = gpsRxBuffer[i];
-            xQueueSendFromISR(xUsart2Rx, &cChar, &xTaskWokenByPost);
-        }
-    }
+        USART_TypeDef *usart = ui->usart;
+        signed portCHAR cChar;
+        portBASE_TYPE xTaskWoken = pdFALSE;
 
-    /* Test on DMA Stream Half Transfer interrupt */
-    if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_HTIF5)) {
-        /* Clear DMA Stream Half Transfer interrupt pending bit */
-        DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_HTIF5);
-        for (size_t i = 0; i < GPS_BUFFER_SIZE / 2; i++) {
-            cChar = gpsRxBuffer[i];
-            xQueueSendFromISR(xUsart2Rx, &cChar, &xTaskWokenByPost);
+        if (SET == USART_GetITStatus(usart, USART_IT_TXE)) {
+                /*
+                 * The interrupt was caused by the TX becoming empty.
+                 * Are there any more characters to transmit?
+                 */
+                xQueueHandle tx_queue = serial_get_tx_queue(ui->serial);
+                if (pdTRUE == xQueueReceiveFromISR(tx_queue, &cChar,
+                                                   &xTaskWoken)) {
+                        /*
+                         * A character was retrieved from the queue so
+                         * can be sent to the USART. Casting to uint8_t
+                         * here to avoid issues when SendData casts the
+                         * value to a uint16_t (sign extension).
+                         */
+                        USART_SendData(usart, (uint8_t) cChar);
+                } else {
+                        /*
+                         * Queue empty, nothing to send so turn off the
+                         * Tx interrupt.
+                         */
+                        USART_ITConfig(usart, USART_IT_TXE, DISABLE);
+                }
         }
-    }
-    portEND_SWITCHING_ISR(xTaskWokenByPost);
+
+        /*
+         * Read the ORE status flag here because doing this along with
+         * reading data from our UART will clear the ORE flag if it has
+         * been set.  Thus we get a two for one and reduce the chance of
+         * accidentially dumping a character like we could do with our
+         * previous overrun handler. This is per the documentation in the
+         * USART_ClearFlag method.
+         */
+        const bool ore_set =
+                SET == USART_GetFlagStatus(usart, USART_FLAG_ORE);
+
+
+        if (USART_GetITStatus(usart, USART_IT_RXNE) == SET) {
+                /*
+                 * The interrupt was caused by a character being received.
+                 * Grab the character from the rx and place it in the queue
+                 * or received characters. Casting to uint8_t first here
+                 * to avoid any casting issues from uint16_t
+                 */
+                cChar = (uint8_t) USART_ReceiveData(usart);
+                xQueueHandle rx_queue = serial_get_rx_queue(ui->serial);
+                if (!xQueueSendFromISR(rx_queue, &cChar, &xTaskWoken))
+                        ui->char_dropped = true;
+        } else if (ore_set) {
+                /*
+                 * We will likely never get in here, but this is to
+                 * be sure we cover all our bases.  See page 968 of the
+                 * reference manual for why I did this.  In short its safe to dump
+                 * the data here since we know there is nothing in the RDR
+                 * register (since RXNE is not set).  Having the ORE set here
+                 * indicates a race case where we read the data as the other
+                 * data was lost in the shift register (thus leaving the ORE
+                 * flag set but clearing the RXNE flag). In other words, this
+                 * is done purely to clear the ORE flag knowing we are not losing
+                 * data.
+                 */
+                USART_ReceiveData(usart);
+        }
+
+        /*
+         * If a task was woken by either a character being received or a
+         * character being transmitted then we may need to switch to
+         * another task.
+         */
+        portEND_SWITCHING_ISR(xTaskWoken);
 }
 
 void USART1_IRQHandler(void)
 {
-    portBASE_TYPE xTaskWokenByTx = pdFALSE, xTaskWokenByPost = pdFALSE;
-    signed portCHAR cChar;
-
-    if (USART_GetITStatus(USART1, USART_IT_TXE) != RESET) {
-        /* The interrupt was caused by the TX becoming empty.  Are there any more characters to transmit? */
-        if (xQueueReceiveFromISR(xUsart0Tx, &cChar, &xTaskWokenByTx) ==
-            pdTRUE) {
-            // A character was retrieved from the queue so can be sent to the USART
-            USART_SendData(USART1, cChar);
-        } else {
-            /* Queue empty, nothing to send so turn off the Tx interrupt. */
-            USART_ITConfig(USART1, USART_IT_TXE, DISABLE);
-        }
-    }
-
-    if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET) {
-        /* The interrupt was caused by a character being received.  Grab the
-           character from the rx and place it in the queue or received
-           characters. */
-        cChar = USART_ReceiveData(USART1);
-        xQueueSendFromISR(xUsart0Rx, &cChar, &xTaskWokenByPost);
-    }
-
-    handle_usart_overrun(USART1);
-
-    /* If a task was woken by either a character being received or a character
-       being transmitted then we may need to switch to another task. */
-    portEND_SWITCHING_ISR(xTaskWokenByPost || xTaskWokenByTx);
+        usart_generic_irq_handler(usart_data + UART_WIRELESS);
 }
 
 void USART2_IRQHandler(void)
 {
-    portBASE_TYPE xTaskWokenByTx = pdFALSE, xTaskWokenByPost = pdFALSE;
-    signed portCHAR cChar;
-
-    if (USART_GetITStatus(USART2, USART_IT_TXE) != RESET) {
-        /* The interrupt was caused by the TX becoming empty.  Are there any more characters to transmit? */
-        if (xQueueReceiveFromISR(xUsart2Tx, &cChar, &xTaskWokenByTx) ==
-            pdTRUE) {
-            // A character was retrieved from the queue so can be sent to the USART
-            USART_SendData(USART2, cChar);
-        } else {
-            /* Queue empty, nothing to send so turn off the Tx interrupt. */
-            USART_ITConfig(USART2, USART_IT_TXE, DISABLE);
-        }
-    }
-
-    if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET) {
-        /* The interrupt was caused by a character being received.  Grab the
-        character from the rx and place it in the queue or received
-        characters. */
-//		cChar = USART_ReceiveData(USART2);
-//		xQueueSendFromISR( xUsart2Rx, &cChar, &xTaskWokenByPost );
-    }
-
-    handle_usart_overrun(USART2);
-
-    /* If a task was woken by either a character being received or a character
-       being transmitted then we may need to switch to another task. */
-    portEND_SWITCHING_ISR(xTaskWokenByPost || xTaskWokenByTx);
+        usart_generic_irq_handler(usart_data + UART_GPS);
 }
 
 void USART3_IRQHandler(void)
 {
-    portBASE_TYPE xTaskWokenByTx = pdFALSE, xTaskWokenByPost = pdFALSE;
-    signed portCHAR cChar;
-
-    if (USART_GetITStatus(USART3, USART_IT_TXE) != RESET) {
-        /* The interrupt was caused by the TX becoming empty.  Are there any more characters to transmit? */
-        if (xQueueReceiveFromISR(xUsart1Tx, &cChar, &xTaskWokenByTx) ==
-            pdTRUE) {
-            // A character was retrieved from the queue so can be sent to the USART
-            USART_SendData(USART3, cChar);
-        } else {
-            /* Queue empty, nothing to send so turn off the Tx interrupt. */
-            USART_ITConfig(USART3, USART_IT_TXE, DISABLE);
-        }
-    }
-
-    if (USART_GetITStatus(USART3, USART_IT_RXNE) != RESET) {
-        /* The interrupt was caused by a character being received.  Grab the
-           character from the rx and place it in the queue or received
-           characters. */
-        cChar = USART_ReceiveData(USART3);
-        xQueueSendFromISR(xUsart1Rx, &cChar, &xTaskWokenByPost);
-    }
-
-    handle_usart_overrun(USART3);
-
-    /* If a task was woken by either a character being received or a character
-       being transmitted then we may need to switch to another task. */
-    portEND_SWITCHING_ISR(xTaskWokenByPost || xTaskWokenByTx);
+        usart_generic_irq_handler(usart_data + UART_AUX);
 }
 
 void UART4_IRQHandler(void)
 {
-    portBASE_TYPE xTaskWokenByTx = pdFALSE, xTaskWokenByPost = pdFALSE;
-    signed portCHAR cChar;
+        usart_generic_irq_handler(usart_data + UART_TELEMETRY);
+}
 
-    if (USART_GetITStatus(UART4, USART_IT_TXE) != RESET) {
-        /* The interrupt was caused by the TX becoming empty.  Are there any more characters to transmit? */
-        if (xQueueReceiveFromISR(xUsart3Tx, &cChar, &xTaskWokenByTx) ==
-            pdTRUE) {
-            // A character was retrieved from the queue so can be sent to the USART
-            USART_SendData(UART4, cChar);
-        } else {
-            /* Queue empty, nothing to send so turn off the Tx interrupt. */
-            USART_ITConfig(UART4, USART_IT_TXE, DISABLE);
+static bool dma_rx_isr(volatile struct usart_info *ui)
+{
+        const uint16_t dma_counter = (uint16_t) ui->dma_rx.stream->NDTR;
+        volatile uint8_t* tail = ui->dma_rx.ptr;
+        volatile uint8_t* const buff = ui->dma_rx.buff;
+        volatile uint8_t* const edge = buff + ui->dma_rx.buff_size;
+        volatile uint8_t* const head = dma_counter ? edge - dma_counter : buff;
+        xQueueHandle queue = serial_get_rx_queue(ui->serial);
+        portBASE_TYPE task_awoke = pdFALSE;
+
+        while (tail != head) {
+                uint8_t val = *tail;
+                if (!xQueueSendFromISR(queue, &val, &task_awoke))
+                        ui->char_dropped = true;
+
+                if (++tail >= edge)
+                        tail = buff;
         }
-    }
-    if (USART_GetITStatus(UART4, USART_IT_RXNE) != RESET) {
-        /* The interrupt was caused by a character being received.  Grab the
-           character from the rx and place it in the queue or received
-           characters. */
-        cChar = USART_ReceiveData(UART4);
-        xQueueSendFromISR(xUsart3Rx, &cChar, &xTaskWokenByPost);
-    }
 
-    handle_usart_overrun(UART4);
+        ui->dma_rx.ptr = head;
+        return task_awoke;
+}
 
-    /* If a task was woken by either a character being received or a character
-       being transmitted then we may need to switch to another task. */
-    portEND_SWITCHING_ISR(xTaskWokenByPost || xTaskWokenByTx);
+void DMA1_Stream1_IRQHandler(void)
+{
+        DMA_ClearITPendingBit(DMA1_Stream1, DMA_IT_HTIF1);
+        DMA_ClearITPendingBit(DMA1_Stream1, DMA_IT_TCIF1);
+        portEND_SWITCHING_ISR(dma_rx_isr(usart_data + UART_AUX));
+}
+
+void DMA1_Stream2_IRQHandler(void)
+{
+        DMA_ClearITPendingBit(DMA1_Stream2, DMA_IT_HTIF2);
+        DMA_ClearITPendingBit(DMA1_Stream2, DMA_IT_TCIF2);
+        portEND_SWITCHING_ISR(dma_rx_isr(usart_data + UART_TELEMETRY));
+}
+
+void DMA1_Stream5_IRQHandler(void)
+{
+        DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_HTIF5);
+        DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5);
+        portEND_SWITCHING_ISR(dma_rx_isr(usart_data + UART_GPS));
+}
+
+void DMA2_Stream5_IRQHandler(void)
+{
+        DMA_ClearITPendingBit(DMA2_Stream5, DMA_IT_HTIF5);
+        DMA_ClearITPendingBit(DMA2_Stream5, DMA_IT_TCIF5);
+        portEND_SWITCHING_ISR(dma_rx_isr(usart_data + UART_WIRELESS));
+}
+
+static bool dma_tx_isr(volatile struct usart_info* ui,
+                       const bool is_dma_tc_it)
+{
+        /*
+         * Check that we are able to queue up data to send via DMA.
+         * If head is NULL, then a transfer is in progress. Else we
+         * can come past here if we are the Transfer complete IT.
+         */
+        if (!is_dma_tc_it && NULL == ui->dma_tx.ptr)
+                return false;
+
+        DMA_Cmd(ui->dma_tx.stream, DISABLE);
+
+        /*
+         * If here we are done transferring, see if there is anything
+         * else in the Tx queue that needs to be sent. If so, copy it
+         * into the buffer.
+         */
+        volatile uint8_t* head = ui->dma_tx.buff;
+        volatile uint8_t* const edge = ui->dma_tx.buff + ui->dma_tx.buff_size;
+        xQueueHandle queue = serial_get_tx_queue(ui->serial);
+        portBASE_TYPE task_awoke = pdFALSE;
+        uint32_t bytes = 0;
+        for (; head < edge; ++head, ++bytes) {
+                uint8_t var;
+                if (!xQueueReceiveFromISR(queue, &var, &task_awoke))
+                        break;
+
+                *head = var;
+        }
+
+        if (bytes) {
+                /* Then we have data to transfer */
+                ui->dma_tx.ptr = NULL;
+                ui->dma_tx.stream->NDTR = bytes;
+                DMA_Cmd(ui->dma_tx.stream, ENABLE);
+        } else {
+                /* No data to send.  Set our pointer to beginning */
+                ui->dma_tx.ptr = ui->dma_tx.buff;
+        }
+
+        return task_awoke;
+}
+
+void DMA1_Stream3_IRQHandler(void)
+{
+        DMA_ClearITPendingBit(DMA1_Stream3, DMA_IT_TCIF3);
+        portEND_SWITCHING_ISR(dma_tx_isr(usart_data + UART_AUX, true));
+}
+
+void DMA1_Stream4_IRQHandler(void)
+{
+        DMA_ClearITPendingBit(DMA1_Stream4, DMA_IT_TCIF4);
+        portEND_SWITCHING_ISR(dma_tx_isr(usart_data + UART_TELEMETRY, true));
+}
+
+void DMA2_Stream7_IRQHandler(void)
+{
+        DMA_ClearITPendingBit(DMA2_Stream7, DMA_IT_TCIF7);
+        portEND_SWITCHING_ISR(dma_tx_isr(usart_data + UART_WIRELESS, true));
+}
+
+
+/* *** Timer Methods *** */
+
+void TIM7_IRQHandler(void)
+{
+        TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
+
+        bool task_awoken = false;
+        for(size_t i = 0; i < __UART_COUNT; ++i) {
+                volatile struct usart_info* ui = usart_data + i;
+                if (ui->dma_rx.stream)
+                        task_awoken |= dma_rx_isr(ui);
+
+                if (ui->dma_tx.stream)
+                        task_awoken |= dma_tx_isr(ui, false);
+        }
+
+        portEND_SWITCHING_ISR(task_awoken);
+}
+
+void setup_dma_timer(void)
+{
+        /* We use Timer 7 */
+        TIM_TypeDef* const timer = TIM7;
+
+        RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM7, ENABLE);
+        TIM_DeInit(timer);
+
+        TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
+        TIM_TimeBaseStructInit(&TIM_TimeBaseInitStructure);
+        /* Proc is 168MHz, so prescalar is 168 - 1 to make clock 1MHz */
+        TIM_TimeBaseInitStructure.TIM_Prescaler = 167;
+        /* With above clock, each tick is 1 us. We want interrupts every 1ms */
+        TIM_TimeBaseInitStructure.TIM_Period = 1000;
+        TIM_TimeBaseInit(timer, &TIM_TimeBaseInitStructure);
+
+        TIM_UpdateDisableConfig(timer, DISABLE);
+        TIM_UpdateRequestConfig(timer, TIM_UpdateSource_Global);
+
+        NVIC_InitTypeDef NVIC_InitStructure;
+        NVIC_InitStructure.NVIC_IRQChannel = TIM7_IRQn;
+        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = DMA_IRQ_PRIORITY;
+        NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+        NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+        NVIC_Init(&NVIC_InitStructure);
+        TIM_ITConfig(timer, TIM_IT_Update, ENABLE);
+
+        TIM_Cmd(timer, ENABLE);
+}
+
+static void dropped_char_timer_cb( xTimerHandle xTimer )
+{
+        for(size_t i = 0; i < __UART_COUNT; ++i) {
+                volatile struct usart_info* ui = usart_data + i;
+
+                /* Warning for dropped characters */
+                if (ui->char_dropped) {
+                        ui->char_dropped = false;
+                        pr_warning_str_msg(LOG_PFX "Dropped char: ",
+                                           serial_get_name(ui->serial));
+                }
+        }
+}
+
+static void setup_debug_tools()
+{
+        /* Only enable this code if we are doing debug work */
+#if ! (ASL_DEBUG)
+        return;
+#endif
+        const size_t timer_ticks = msToTicks(CHAR_CHECK_PERIOD_MS);
+        const signed char* timer_name = (signed char*) "Dropped Char Check Timer";
+        xTimerHandle timer_handle = xTimerCreate(timer_name, timer_ticks,
+                                                 true, NULL, dropped_char_timer_cb);
+        xTimerStart(timer_handle, timer_ticks);
+}
+
+/* *** Public Methods *** */
+int usart_device_init()
+{
+        /*
+         * NOTE: Careful with the mappings here.  If you change them
+         *       ensure that you also update the values in the IRQ
+         *       handlers below.
+         */
+        const bool mem_alloc_success =
+                /* No Tx DMA here b/c conflict with I2C */
+                init_usart_serial(UART_GPS, USART2, SERIAL_GPS, "GPS",
+                                  DMA_RX_BUFF_SIZE, DMA1_Stream5,
+                                  DMA_Channel_4, 0, NULL, 0) &&
+                init_usart_serial(UART_TELEMETRY, UART4, SERIAL_TELEMETRY,
+                                  "Cell", DMA_RX_BUFF_SIZE, DMA1_Stream2,
+                                  DMA_Channel_4, DMA_TX_BUFF_SIZE,
+                                  DMA1_Stream4, DMA_Channel_4) &&
+                init_usart_serial(UART_WIRELESS, USART1, SERIAL_BLUETOOTH,
+                                  "BT", DMA_RX_BUFF_SIZE, DMA2_Stream5,
+                                  DMA_Channel_4, DMA_TX_BUFF_SIZE,
+                                  DMA2_Stream7, DMA_Channel_4) &&
+                init_usart_serial(UART_AUX, USART3, SERIAL_AUX, "Aux/Wifi",
+                                  DMA_RX_BUFF_SIZE, DMA1_Stream1,
+                                  DMA_Channel_4, DMA_TX_BUFF_SIZE,
+                                  DMA1_Stream3, DMA_Channel_4);
+
+        if (!mem_alloc_success) {
+                pr_error(LOG_PFX "Failed to init\r\n");
+                panic(PANIC_CAUSE_MALLOC);
+        }
+
+        usart_device_init_0(8, 0, 1, DEFAULT_WIRELESS_BAUD_RATE);
+        usart_device_init_1(8, 0, 1, DEFAULT_AUX_BAUD_RATE);
+        usart_device_init_2(8, 0, 1, DEFAULT_GPS_BAUD_RATE);
+        usart_device_init_3(8, 0, 1, DEFAULT_TELEMETRY_BAUD_RATE);
+
+        /* Sets up the DMA timeout timer */
+        setup_dma_timer();
+
+        setup_debug_tools();
+
+        return 1;
+}
+
+struct Serial* usart_device_get_serial(const uart_id_t id)
+{
+        if (!usart_id_in_bounds(id))
+                return NULL;
+
+        volatile struct usart_info *ui = usart_data + id;
+        return ui->serial;
 }

@@ -4,7 +4,7 @@
 ** See Copyright Notice in lua.h
 */
 
-#include "mod_string.h"
+#include <string.h>
 
 #define lgc_c
 #define LUA_CORE
@@ -746,4 +746,3 @@ void luaC_linkupval (lua_State *L, UpVal *uv)
         }
     }
 }
-

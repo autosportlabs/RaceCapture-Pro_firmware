@@ -33,15 +33,17 @@
 #include "loggerHardware.h"
 #include "loggerSampleData.h"
 #include "loggerTaskEx.h"
-#include "mod_string.h"
+#include "macros.h"
+#include <string.h>
+#include "panic.h"
 #include "printk.h"
 #include "sampleRecord.h"
 #include "semphr.h"
+#include "serial.h"
 #include "task.h"
 #include "taskUtil.h"
 #include "watchdog.h"
 
-#define LOGGER_TASK_PRIORITY	( tskIDLE_PRIORITY + 4 )
 #define LOGGER_STACK_SIZE	200
 #define IDLE_TIMEOUT	configTICK_RATE_HZ / 1
 
@@ -106,8 +108,13 @@ static void logging_stopped()
 
 void startLoggerTaskEx(int priority)
 {
-    xTaskCreate(loggerTaskEx, ( signed portCHAR * ) "logger",
-                 LOGGER_STACK_SIZE, NULL, priority, NULL );
+        /* Make all task names 16 chars including NULL char */
+        static const signed portCHAR task_name[] = "Logger Task    ";
+        const bool status = xTaskCreate(loggerTaskEx, task_name,
+                                        LOGGER_STACK_SIZE, NULL,
+                                        priority, NULL );
+        if (!status)
+                panic(PANIC_CAUSE_TASK_CREATE);
 }
 
 static int init_sample_ring_buffer(LoggerConfig *loggerConfig)
@@ -208,7 +215,7 @@ void loggerTaskEx(void *params)
                 if (g_loggingShouldRun && !is_logging) {
                         logging_started();
                         const LoggerMessage logStartMsg = getLogStartMessage();
-#if defined(SDCARD_SUPPORT)
+#if SDCARD_SUPPORT
                         queue_logfile_record(&logStartMsg);
 #endif
                         queueTelemetryRecord(&logStartMsg);
@@ -217,7 +224,7 @@ void loggerTaskEx(void *params)
                 if (!g_loggingShouldRun && is_logging) {
                         logging_stopped();
                         const LoggerMessage logStopMsg = getLogStopMessage();
-#if defined(SDCARD_SUPPORT)
+#if SDCARD_SUPPORT
                         queue_logfile_record(&logStopMsg);
 #endif
                         queueTelemetryRecord(&logStopMsg);
@@ -241,7 +248,7 @@ void loggerTaskEx(void *params)
                  * We only log to file if the user has manually pushed the
                  * logging button.
                  */
-#if defined(SDCARD_SUPPORT)
+#if SDCARD_SUPPORT
                 if (is_logging && should_sample(currentTicks, loggingSampleRate)) {
                         /* XXX Move this to file writer? */
                         const portBASE_TYPE res = queue_logfile_record(&msg);
@@ -252,14 +259,19 @@ void loggerTaskEx(void *params)
                 }
 #endif
 
-
                 /*
                  * The task is responsible for determining if it should use the
                  * sample or if it should drop it due to rate limitations.
                  */
                 queueTelemetryRecord(&msg);
 
+
+                /* Process callback handlers for the samples */
+                logger_sample_process_callbacks(currentTicks, sample);
+
                 ++bufferIndex;
                 bufferIndex %= buffer_size;
         }
+
+        panic(PANIC_CAUSE_UNREACHABLE);
 }

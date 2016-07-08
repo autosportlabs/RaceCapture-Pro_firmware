@@ -47,6 +47,7 @@
 #include "printk.h"
 #include "task.h"
 #include "usb_comm.h"
+#include "wifi.h"
 #include "watchdog.h"
 
 #include <app_info.h>
@@ -70,7 +71,7 @@ static const struct app_info_block info_block = {
 #define RCP_OUTPUT_PRIORITY	TASK_PRIORITY(2)
 #define RCP_LUA_PRIORITY	TASK_PRIORITY(1)
 
-void setupTask(void *delTask)
+void setupTask(void *param)
 {
         initialize_tracks();
         initialize_logger_config();
@@ -83,7 +84,11 @@ void setupTask(void *delTask)
         startConnectivityTask(RCP_OUTPUT_PRIORITY);
         startLoggerTaskEx(RCP_LOGGING_PRIORITY);
 
-#if defined(USB_SERIAL_SUPPORT)
+#if WIFI_SUPPORT
+        wifi_init_task(RCP_OUTPUT_PRIORITY, RCP_INPUT_PRIORITY);
+#endif
+
+#if USB_SERIAL_SUPPORT
         startUSBCommTask(RCP_INPUT_PRIORITY);
 #endif
 
@@ -91,17 +96,16 @@ void setupTask(void *delTask)
         startGPIOTasks(RCP_INPUT_PRIORITY);
 #endif
 
-#if defined(SDCARD_SUPPORT)
+#if SDCARD_SUPPORT
         startFileWriterTask(RCP_OUTPUT_PRIORITY);
 #endif
 
-#if defined(LUA_SUPPORT)
+#if LUA_SUPPORT
         lua_task_init(RCP_LUA_PRIORITY);
 #endif
 
         /* Removes this setup task from the scheduler */
-        if (delTask)
-                vTaskDelete(NULL);
+        vTaskDelete(NULL);
 }
 
 int main( void )
@@ -110,29 +114,13 @@ int main( void )
         cpu_init();
         pr_info("*** Start! ***\r\n");
 
-#if !defined(_DEBUG)
-        watchdog_init(WATCHDOG_TIMEOUT_MS);
-#endif /* _DEBUG */
+        /* Defined as part of our compilation process */
+        if (true == ASL_WATCHDOG)
+                watchdog_init(WATCHDOG_TIMEOUT_MS);
 
-        /*
-         * Start the scheduler.
-         *
-         * NOTE : Tasks run in system mode and the scheduler runs in
-         * Supervisor mode. The processor MUST be in supervisor mode
-         * when vTaskStartScheduler is called.  The demo applications
-         * included in the FreeRTOS.org download switch to supervisor
-         * mode prior to main being called.  If you are not using one
-         * of these demo application projects then ensure Supervisor
-         * mode is used here.
-         */
-
-        if (TASK_TASK_INIT) {
-                xTaskCreate(setupTask,(signed portCHAR*) "Hardware Init",
-                            configMINIMAL_STACK_SIZE + 500, (void *) true,
-                            tskIDLE_PRIORITY, NULL);
-        } else {
-                setupTask((void *) false);
-        }
+        const signed portCHAR task_name[] = "Hardware Init";
+        xTaskCreate(setupTask, task_name, configMINIMAL_STACK_SIZE * 2,
+                    NULL, RCP_LUA_PRIORITY, NULL);
 
         vTaskStartScheduler();
 

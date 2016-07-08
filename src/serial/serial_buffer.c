@@ -24,22 +24,16 @@
 #include "serial.h"
 #include "serial_buffer.h"
 #include "stdutil.h"
-#include "string.h"
+#include "str_util.h"
 #include "taskUtil.h"
 
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
-
-static void ctrl_char_strip(char *data)
-{
-        /* Strip all control characters from our messages */
-        for(; *data >= 32; ++data);
-        *data = 0;
-}
+#include <string.h>
 
 bool serial_buffer_create(struct serial_buffer *sb,
-                          Serial *serial,
+                          struct Serial *serial,
                           const size_t size,
                           char *buffer)
 {
@@ -49,11 +43,11 @@ bool serial_buffer_create(struct serial_buffer *sb,
         sb->serial = serial;
         sb->length = size;
         sb->buffer = buffer;
-        serial_buffer_clear(sb);
 
         if (NULL == sb->buffer)
                 sb->buffer = (char*) portMalloc(size);
 
+        serial_buffer_clear(sb);
         if (NULL != sb->buffer)
                 return true;
 
@@ -63,50 +57,42 @@ bool serial_buffer_create(struct serial_buffer *sb,
         return false;
 }
 
-int serial_buffer_rx(struct serial_buffer *sb,
-                     const size_t ms_delay)
+char* serial_buffer_rx(struct serial_buffer *sb,
+                       const size_t ms_delay)
 {
-        const size_t available = sb->length - sb->curr_len;
+        const size_t available = sb->length - sb->curr_len - 1;
         char *ptr = sb->buffer + sb->curr_len;
         size_t msg_len = 0;
+        int read;
 
         while (!msg_len) {
-                const int read = serial_get_line_wait(
-                        sb->serial, ptr, available, msToTicks(ms_delay));
+                read  = serial_get_line_wait(sb->serial, ptr, available,
+                                             msToTicks(ms_delay));
 
-                if (!read) {
-                        pr_trace("[serial_buffer] msg timeout\r\n");
-                        return 0;
-                }
+                if (!read)
+                        return NULL;
 
-                ctrl_char_strip(ptr);
-                msg_len = strlen(ptr);
+                msg_len = serial_msg_strlen(ptr);
         }
 
-        pr_trace("[serial_buffer] Msg (offset = ");
-        pr_trace_int(sb->curr_len);
-        pr_trace("): \"");
-        pr_trace(ptr);
-        pr_trace("\"\r\n");
-
-        sb->curr_len += msg_len + 1;
-        return msg_len + 1;
+        /* If here, got a non-empty msg.  Terminate it and add the length */
+        ptr[read] = 0;
+        sb->curr_len += ++read;
+        return ptr;
 }
 
 size_t serial_buffer_rx_msgs(struct serial_buffer *sb, const size_t ms_delay,
                              const char *msgs[], size_t msgs_len)
 {
-        size_t rx_bytes = 0;
         size_t msgs_rx = 0;
 
         for (; msgs_len; --msgs_len, ++msgs_rx) {
-                const size_t read = serial_buffer_rx(sb, ms_delay);
+                const char* msg = serial_buffer_rx(sb, ms_delay);
 
-                if (0 == read)
+                if (!msg)
                         break;
 
-                *msgs++ = sb->buffer + rx_bytes;
-                rx_bytes += read;
+                *msgs++ = msg;
         }
 
         return msgs_rx;

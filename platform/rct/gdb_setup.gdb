@@ -1,6 +1,7 @@
 # Sets up GDB for remote debugging
-target remote | openocd -f board/stm32f3discovery.cfg -c "gdb_port pipe; log_output openocd.log"
-mon reset halt
+target remote | openocd -c "log_output openocd.log; gdb_port pipe" \
+       -f openocd_debug.cfg
+file main.elf
 
 # Matches the output from openocd.  Must be set manually.
 set remote hardware-breakpoint-limit 6
@@ -14,6 +15,11 @@ define hookpost-step
 mon cortex_m maskisr off
 end
 
-# Load up the firmware and go!
-load
-continue
+echo \n
+echo === ASL RCT Setup Done ===\n
+echo Use "mon reset init" to reset to initial state.\n
+echo Use "load main.elf" to load up new firmware image.\n
+
+echo \n\n
+echo *** Ready Player 1 ***
+echo \n\n

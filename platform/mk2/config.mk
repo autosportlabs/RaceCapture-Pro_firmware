@@ -51,6 +51,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/OBD2/OBD2_task.c \
 			$(RCP_SRC)/OBD2/OBD2.c \
 			$(RCP_SRC)/jsmn/jsmn.c \
+			$(RCP_SRC)/serial/rx_buff.c \
 			$(RCP_SRC)/serial/serial.c \
 			$(RCP_SRC)/serial/serial_buffer.c \
 			$(RCP_SRC)/usart/usart.c \
@@ -62,6 +63,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/ADC/ADC.c \
 			$(RCP_SRC)/GPIO/GPIO.c \
 			$(RCP_SRC)/GPIO/gpioTasks.c \
+			$(RCP_SRC)/tasks/wifi.c \
 			$(RCP_SRC)/watchdog/watchdog.c \
 			$(RCP_SRC)/launch_control.c \
 			$(RCP_SRC)/lap_stats/lap_stats.c \
@@ -75,10 +77,12 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 			$(RCP_SRC)/filter/filter.c \
 			$(RCP_SRC)/lua/luaBaseBinding.c \
+			$(RCP_SRC)/lua/luaLoggerBinding.c \
 			$(RCP_SRC)/lua/luaCommands.c \
 			$(RCP_SRC)/lua/luaScript.c \
 			$(RCP_SRC)/lua/luaTask.c \
 			$(RCP_SRC)/usb_comm/usb_comm.c \
+			$(RCP_SRC)/logger/auto_logger.c \
 			$(RCP_SRC)/logger/loggerApi.c \
 			$(RCP_SRC)/logger/fileWriter.c \
 			$(RCP_SRC)/logger/loggerCommands.c \
@@ -91,31 +95,37 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/logger/channel_config.c \
 			$(RCP_SRC)/logger/logger.c \
 			$(RCP_SRC)/logger/connectivityTask.c \
-			$(RCP_SRC)/logger/luaLoggerBinding.c \
 			$(RCP_SRC)/logger/sampleRecord.c \
 			$(RCP_SRC)/devices/bluetooth.c \
+			$(RCP_SRC)/devices/esp8266.c \
 			$(RCP_SRC)/devices/sara_u280.c \
 			$(RCP_SRC)/devices/sim900.c \
 			$(RCP_SRC)/devices/null_device.c \
 			$(RCP_SRC)/devices/cellular.c \
 			$(RCP_SRC)/devices/cellular_api_status_keys.c \
+			$(RCP_SRC)/drivers/esp8266_drv.c \
 			$(RCP_SRC)/tracks/tracks.c \
 			$(RCP_SRC)/auto_config/auto_track.c \
 			$(RCP_SRC)/messaging/messaging.c \
+			$(RCP_SRC)/modem/at.c \
 			$(RCP_SRC)/LED/led.c \
 			$(RCP_SRC)/PWM/PWM.c \
 			$(RCP_SRC)/logging/printk.c \
+			$(RCP_SRC)/util/convert.c \
 			$(RCP_SRC)/util/ring_buffer.c \
+			$(RCP_SRC)/util/ts_ring_buff.c \
 			$(RCP_SRC)/virtual_channel/virtual_channel.c \
 			$(RCP_SRC)/memory/memory.c \
 			$(RCP_SRC)/util/linear_interpolate.c \
 			$(RCP_SRC)/util/FreeRTOS-openocd.c \
-			$(RCP_SRC)/util/modp_atonum.c \
 			$(RCP_SRC)/util/modp_numtoa.c \
 			$(RCP_SRC)/util/panic.c \
 			$(RCP_SRC)/util/byteswap.c \
+			$(RCP_SRC)/util/str_util.c \
 			$(RCP_SRC)/util/taskUtil.c \
 			$(RCP_SRC)/sdcard/sdcard.c \
+			$(RCP_SRC)/system/flags.c \
+			$(HAL_SRC)/wifi_esp8266/wifi_esp8266_device.c \
 			$(HAL_SRC)/cell_device/cell_pwr_btn.c \
 			$(HAL_SRC)/gps_skytraq/gps_device_skytraq.c \
 			$(HAL_SRC)/LED_stm32/led_device_stm32.c \
@@ -142,7 +152,8 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(HAL_SRC)/usb_stm32/usbd_desc.c \
 			$(HAL_SRC)/usb_stm32/usbd_usr.c \
 			$(HAL_SRC)/i2c_stm32/i2c_device_stm32.c \
-			$(HAL_SRC)/imu_stm32/invensense_9150.c
+			$(HAL_SRC)/imu_stm32/invensense_9150.c \
+			$(HAL_SRC)/serial/serial_device.c \
 
 
 #Macro that expands our source files into their fully qualified paths
@@ -159,6 +170,7 @@ APP_INCLUDES += -I. \
 				-I$(INCLUDE_DIR)/api \
 				-I$(INCLUDE_DIR)/logger \
 				-I$(INCLUDE_DIR)/channels \
+				-I$(INCLUDE_DIR)/tasks \
 				-I$(INCLUDE_DIR)/tracks \
 				-I$(INCLUDE_DIR)/logging \
 				-I$(INCLUDE_DIR)/filter \
@@ -180,9 +192,11 @@ APP_INCLUDES += -I. \
 				-I$(INCLUDE_DIR)/lua \
 				-I$(INCLUDE_DIR)/imu \
 				-I$(INCLUDE_DIR)/messaging \
+				-I$(INCLUDE_DIR)/modem \
 				-I$(INCLUDE_DIR)/predictive_timer \
 				-I$(INCLUDE_DIR)/util \
 				-I$(INCLUDE_DIR)/devices \
+				-I$(INCLUDE_DIR)/drivers \
 				-I$(INCLUDE_DIR)/gps \
 				-I$(INCLUDE_DIR)/gsm \
 				-I$(INCLUDE_DIR)/lap_stats \
@@ -191,6 +205,7 @@ APP_INCLUDES += -I. \
 				-I$(INCLUDE_DIR)/command \
 				-I$(INCLUDE_DIR)/virtual_channel \
 				-I$(INCLUDE_DIR)/auto_config \
+				-I$(INCLUDE_DIR)/system \
 				-I$(HAL_SRC)/fat_sd_stm32/fatfs \
 				-I$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub \
 				-I$(HAL_SRC)/usb_stm32 \

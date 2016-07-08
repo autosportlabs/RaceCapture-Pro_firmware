@@ -36,7 +36,7 @@ FREERTOS_SRCS += $(FREERTOS_SOURCE)/portable/MemMang/$(FREERTOS_HEAP).c $(RTOS_P
 
 #All of the standard sources
 FREERTOS_SRCS += $(addprefix $(FREERTOS_SOURCE)/,$(rtos_srcs))
-FREERTOS_OBJS = $(FREERTOS_SRCS:.c=.o)
+FREERTOS_OBJS = $(sort $(FREERTOS_SRCS:.c=.o))
 
 #FreeRTOS Includes
 LIB_INCLUDES += -I$(FREERTOS_SOURCE)/include \

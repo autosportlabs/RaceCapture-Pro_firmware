@@ -27,7 +27,9 @@
 class LapStatsTest : public CppUnit::TestFixture
 {
         CPPUNIT_TEST_SUITE( LapStatsTest );
-        CPPUNIT_TEST( test_init );
+        CPPUNIT_TEST( reset_test );
+        CPPUNIT_TEST( reset_track_test );
+        CPPUNIT_TEST( config_changed_test );
         CPPUNIT_TEST( null_track_test );
         CPPUNIT_TEST( invalid_track_test );
         CPPUNIT_TEST( automatic_track_test );
@@ -40,7 +42,7 @@ class LapStatsTest : public CppUnit::TestFixture
         CPPUNIT_TEST( stage_lap_finish_event_test );
         CPPUNIT_TEST( sector_boundary_event_test );
         CPPUNIT_TEST( update_distance_test );
-        CPPUNIT_TEST( update_distance_no_prev_point_test );
+        CPPUNIT_TEST( update_distance_low_speed_test );
         CPPUNIT_TEST( update_sector_geo_circle_test );
         CPPUNIT_TEST( update_elapsed_time_test );
         CPPUNIT_TEST( at_sf_reset_test );
@@ -49,8 +51,9 @@ class LapStatsTest : public CppUnit::TestFixture
 
 public:
         void setUp();
-        void tearDown();
-        void test_init();
+        void reset_test();
+        void reset_track_test();
+        void config_changed_test();
         void null_track_test();
         void invalid_track_test();
         void automatic_track_test();
@@ -63,7 +66,7 @@ public:
         void stage_lap_finish_event_test();
         void sector_boundary_event_test();
         void update_distance_test();
-        void update_distance_no_prev_point_test();
+        void update_distance_low_speed_test();
         void update_sector_geo_circle_test();
         void update_elapsed_time_test();
         void at_sf_reset_test();

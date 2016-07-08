@@ -27,27 +27,27 @@
 class RingBufferTest : public CppUnit::TestFixture
 {
         CPPUNIT_TEST_SUITE( RingBufferTest );
-        CPPUNIT_TEST( putGetTest );
-        CPPUNIT_TEST( putStringTest );
-        CPPUNIT_TEST( putNullStringTest );
-        CPPUNIT_TEST( putFailTest );
-        CPPUNIT_TEST( getFailTest );
-        CPPUNIT_TEST( dumpTest );
-        CPPUNIT_TEST( clearTest );
-        CPPUNIT_TEST( createDestroyTest );
+        CPPUNIT_TEST( testSanity );
+        CPPUNIT_TEST( testFreeAndUsed );
+        CPPUNIT_TEST( testPutGet );
+        CPPUNIT_TEST( testPutTooMuch );
+        CPPUNIT_TEST( testPeek );
+        CPPUNIT_TEST( testDrop );
+        CPPUNIT_TEST( testClear );
+        CPPUNIT_TEST( testWrite );
         CPPUNIT_TEST_SUITE_END();
 
 public:
         void setUp();
         void tearDown();
-        void putGetTest();
-        void putStringTest();
-        void putNullStringTest();
-        void putFailTest();
-        void getFailTest();
-        void dumpTest();
-        void clearTest();
-        void createDestroyTest();
+        void testSanity();
+        void testFreeAndUsed();
+        void testPutGet();
+        void testPutTooMuch();
+        void testPeek();
+        void testDrop();
+        void testClear();
+        void testWrite();
 };
 
 #endif /* _RING_BUFFER_TEST_H_ */

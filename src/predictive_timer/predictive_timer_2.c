@@ -19,23 +19,13 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "capabilities.h"
 #include "dateTime.h"
 #include "debug.h"
 #include "geopoint.h"
 #include "gps.h"
-#include "mod_string.h"
+#include <string.h>
 #include "predictive_timer_2.h"
-
-/**
- * These settings control critical values that will affect performance.  Understand these values
- * before altering them.  All time values are in milliseconds since epoch.  All time deltas are
- * in milliseconds.
- */
-/**
- * # of slots per buffer.  Each slot is 12 bytes.
- */
-#define MAX_TIMELOC_SAMPLES 96
 
 /**
  * How frequently to initially take in GPS data.  To small and we overflow.  To large and we don't
@@ -55,8 +45,13 @@ struct PtTimeLoc {
     tiny_millis_t time;
 };
 
-static struct PtTimeLoc buff1[MAX_TIMELOC_SAMPLES];
-static struct PtTimeLoc buff2[MAX_TIMELOC_SAMPLES];
+/*
+ * What is the maximum number of samples available per predictive time
+ * buffer.  More samples == better resolution. Each slot is 12 bytes.
+ * This is defined in capabilities.h
+ */
+static struct PtTimeLoc buff1[PREDICTIVE_TIME_MAX_SAMPLES];
+static struct PtTimeLoc buff2[PREDICTIVE_TIME_MAX_SAMPLES];
 
 // Our pointers that maintain the fast lap and current lap buffers.
 static struct PtTimeLoc *currLap = buff1;
@@ -104,14 +99,14 @@ static tiny_millis_t getCurrentLapTime(tiny_millis_t time)
  */
 static bool insertTimeLocSample(const GeoPoint * point, tiny_millis_t time)
 {
-    if (buffIndex >= MAX_TIMELOC_SAMPLES)
+    if (buffIndex >= PREDICTIVE_TIME_MAX_SAMPLES)
         return false;
 
     struct PtTimeLoc *timeLoc = currLap + buffIndex;
     timeLoc->point = *point;
     timeLoc->time = getCurrentLapTime(time);
 
-    if (++buffIndex >= MAX_TIMELOC_SAMPLES) {
+    if (++buffIndex >= PREDICTIVE_TIME_MAX_SAMPLES) {
         DEBUG("Buffer now Full!\n");
     }
 
@@ -149,7 +144,7 @@ static tiny_millis_t adjustPollInterval(tiny_millis_t lapTime)
         return pollInterval;
 
     // Target 90% buffer use +- 10%.
-    const float slots = (float) MAX_TIMELOC_SAMPLES;
+    const float slots = (float) PREDICTIVE_TIME_MAX_SAMPLES;
     const float percentUsed = ((float) buffIndex) / slots;
     DEBUG("Recorded %d samples.  Targeting ~ %f samples.\n", buffIndex, slots * 0.9);
 
@@ -186,8 +181,8 @@ void finishLap(const GpsSnapshot *gpsSnapshot)
     const GeoPoint *point = &gpsSnapshot->sample.point;
 
     // Drop last entry if necessary to record end of lap.
-    if (buffIndex >= MAX_TIMELOC_SAMPLES)
-        buffIndex = MAX_TIMELOC_SAMPLES - 1;
+    if (buffIndex >= PREDICTIVE_TIME_MAX_SAMPLES)
+        buffIndex = PREDICTIVE_TIME_MAX_SAMPLES - 1;
 
     insertTimeLocSample(point, time);
 

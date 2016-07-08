@@ -9,7 +9,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "mod_string.h"
+#include <string.h>
 
 #define lbaselib_c
 #define LUA_LIB
@@ -716,4 +716,3 @@ LUALIB_API int luaopen_base (lua_State *L)
     return 1;
 #endif
 }
-

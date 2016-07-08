@@ -19,109 +19,233 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include "usb_comm.h"
 #include "FreeRTOS.h"
-#include "task.h"
-#include "mod_string.h"
 #include "USB-CDC_device.h"
-#include "modp_numtoa.h"
-#include "modp_atonum.h"
-#include "memory.h"
-#include "serial.h"
+#include "loggerApi.h"
+#include "loggerSampleData.h"
 #include "messaging.h"
+#include "panic.h"
+#include "printk.h"
+#include "rx_buff.h"
+#include "serial.h"
+#include "task.h"
+#include "usb_comm.h"
+#include <stdlib.h>
+#include <string.h>
 
-#define BUFFER_SIZE 1025
+#define LOG_PFX			"[USB] "
+#define RX_BUFF_SIZE		1024
+#define USB_COMM_STACK_SIZE	320
+#define USB_EVENT_QUEUE_DEPTH	8
 
-static char lineBuffer[BUFFER_SIZE];
+static volatile struct {
+        xQueueHandle event_queue;
+        struct Serial* serial;
+        struct {
+                struct rx_buff* buff;
+        } rx;
+} usb_state;
 
-#define mainUSB_COMM_STACK	( 1000 )
 
-static int usb_comm_init(const int priority)
+static void log_event_overflow(const char* event_name)
 {
-    return USB_CDC_device_init(priority);
+        pr_warning_str_msg(LOG_PFX "Event overflow: ", event_name);
 }
 
-void usb_init_serial(Serial *serial)
+/**
+ * Structure used to house sample data for a wifi telemetry stream until
+ * the usb_event handler picks it up.
+ */
+struct usb_sample_data {
+        const struct sample* sample;
+        size_t tick;
+};
+
+/**
+ * Event struct used for all events that come into our wifi task
+ */
+struct usb_event {
+        enum task {
+                TASK_RX_DATA,
+                TASK_SAMPLE,
+        } task;
+        union {
+                struct usb_sample_data sample;
+        } data ;
+};
+
+static bool data_rx_isr_cb()
 {
-    serial->init = &usb_init;
-    serial->flush = &usb_flush;
-    serial->get_c = &usb_getchar;
-    serial->get_c_wait = &usb_getcharWait;
-    serial->get_line = &usb_readLine;
-    serial->get_line_wait = &usb_readLineWait;
-    serial->put_c = &usb_putchar;
-    serial->put_s = &usb_puts;
+        portBASE_TYPE hpta = false;
+        /* Send usb_event message here to wake the task */
+        struct usb_event event = {
+                .task = TASK_RX_DATA,
+        };
+
+        xQueueSendFromISR(usb_state.event_queue, &event, &hpta);
+        return !!hpta;
 }
 
-void startUSBCommTask(int priority)
+static void usb_sample_cb(struct Serial* const serial,
+                          const struct sample* sample,
+                          const int tick)
 {
-        usb_comm_init(priority);
+        const struct usb_sample_data sample_data = {
+                .sample = sample,
+                .tick = tick,
+        };
 
-        xTaskCreate(onUSBCommTask,( signed portCHAR * ) "OnUSBComm",
-                    mainUSB_COMM_STACK, NULL, priority, NULL );
+        struct usb_event event = {
+                .task = TASK_SAMPLE,
+                .data.sample = sample_data,
+        };
+
+        /* Send the message here to wake the timer */
+        if (!xQueueSend(usb_state.event_queue, &event, 0))
+                log_event_overflow("Sample CB");
 }
 
-void onUSBCommTask(void *pvParameters)
+
+/* *** USB Serial IOCTL Handler *** */
+
+static int usb_serial_ioctl(struct Serial* serial, unsigned long req,
+                            void* argp)
 {
-        while (1) {
-                if (USB_CDC_is_initialized())
-                        process_msg(get_serial(SERIAL_USB), lineBuffer, BUFFER_SIZE);
-                taskYIELD();
+        switch(req) {
+        case SERIAL_IOCTL_TELEMETRY_ENABLE:
+        {
+                pr_info(LOG_PFX "Starting telem stream\r\n");
+                const int rate = (int) (long) argp;
+                const bool success = logger_sample_register_callback(
+                        usb_sample_cb, serial) &&
+                        logger_sample_enable_callback(serial, rate);
+
+                return success ? 0 : -2;
+        }
+        case SERIAL_IOCTL_TELEMETRY_DISABLE:
+        {
+                pr_info(LOG_PFX "Stopping telem stream\r\n");
+                const bool success = logger_sample_disable_callback(serial);
+
+                return success ? 0 : -2;
+        }
+        default:
+                pr_warning_int_msg(LOG_PFX "Unhandled ioctl request: ",
+                                   (int) req);
+                return -1;
         }
 }
 
-void usb_init(unsigned int bits, unsigned int parity,
-              unsigned int stopBits, unsigned int baud)
+
+/* *** Task Handlers *** */
+
+/**
+ *
+ */
+static void process_rx_msgs()
 {
-    //null function - does not apply to USB CDC
+        struct Serial* const s = usb_state.serial;
+        struct rx_buff* const rxb = usb_state.rx.buff;
+
+        for(;;) {
+                rx_buff_read(rxb, s, true);
+                switch (rx_buff_get_status(rxb)) {
+                case RX_BUFF_STATUS_EMPTY:
+                case RX_BUFF_STATUS_PARTIAL:
+                        /*
+                         * Read and there was nothing or a
+                         * partial message has been received. USB doesn't
+                         * timeout since its an interactive console so we
+                         * just return here and wait for more data to come.
+                         */
+                        return;
+                case RX_BUFF_STATUS_READY:
+                case RX_BUFF_STATUS_OVERFLOW:
+                        /* A message awaits us */
+                        put_crlf(s);
+                        char *data_in = rx_buff_get_msg(rxb);
+                        pr_trace_str_msg(LOG_PFX "Received CMD: ", data_in);
+                        process_read_msg(s, data_in, strlen(data_in));
+                        rx_buff_clear(rxb);
+                }
+        }
 }
 
-void usb_flush(void)
+static void process_sample(struct usb_sample_data* data)
 {
-    char c;
-    while(usb_getcharWait(&c, 0));
+        struct Serial* serial = usb_state.serial;
+        const struct sample* sample = data->sample;
+        const size_t ticks = data->tick;
+        const bool meta = ticks == 0;
+
+        if (ticks != sample->ticks) {
+                /* Then the sample has changed underneath us */
+                pr_warning(LOG_PFX "Stale sample.  Dropping \r\n");
+                return;
+        }
+
+        api_send_sample_record(serial, sample, ticks, meta);
+        put_crlf(serial);
 }
 
-int usb_getcharWait(char *c, size_t delay)
+
+static void usb_comm_task(void *pvParameters)
 {
-    return USB_CDC_ReceiveByteDelay(c, delay);
+        while (!USB_CDC_is_initialized());
+
+        for(;;) {
+                struct usb_event event;
+                if (!xQueueReceive(usb_state.event_queue, &event,
+                                   portMAX_DELAY))
+                        continue;
+
+                /* If here we have an event. Process it */
+                switch (event.task) {
+                case TASK_RX_DATA:
+                        process_rx_msgs();
+                        break;
+                case TASK_SAMPLE:
+                        process_sample(&event.data.sample);
+                        break;
+                default:
+                        panic(PANIC_CAUSE_UNREACHABLE);
+                }
+        }
+
+        panic(PANIC_CAUSE_UNREACHABLE);
 }
 
-char usb_getchar(void)
-{
-    char c;
-    usb_getcharWait(&c, portMAX_DELAY);
-    return c;
-}
 
-int usb_readLine(char *s, int len)
-{
-    return usb_readLineWait(s,len,portMAX_DELAY);
-}
+/* *** Public Methods *** */
 
-int usb_readLineWait(char *s, int len, size_t delay)
+void startUSBCommTask(int priority)
 {
-    int count = 0;
-    while(count < len - 1) {
-        char c = 0;
-        if (!usb_getcharWait(&c, delay)) break;
-        *s++ = c;
-        count++;
-        if (c == '\n') break;
-    }
-    *s = '\0';
-    return count;
-}
+        USB_CDC_device_init(priority, data_rx_isr_cb);
 
-void usb_puts(const char *s)
-{
-    while ( *s ) {
-        USB_CDC_SendByte(*s++ );
-    }
-}
+        /* Allocate our RX buffer for incomming data */
+        usb_state.rx.buff = rx_buff_create(RX_BUFF_SIZE);
+        if (!usb_state.rx.buff)
+                goto init_fail;
 
-void usb_putchar(char c)
-{
-    USB_CDC_SendByte(c);
+        usb_state.event_queue = xQueueCreate(USB_EVENT_QUEUE_DEPTH,
+                                             sizeof(struct usb_event));
+        if (!usb_state.event_queue)
+                goto init_fail;
+
+        usb_state.serial = USB_CDC_get_serial();
+        if (!usb_state.serial)
+                goto init_fail;
+
+        /* Set the Serial IOCTL handler here b/c this is managing task */
+        serial_set_ioctl_cb(usb_state.serial, usb_serial_ioctl);
+
+        /* Make all task names 16 chars including NULL char */
+        static const signed portCHAR task_name[] = "USB Comm Task  ";
+        xTaskCreate(usb_comm_task, task_name, USB_COMM_STACK_SIZE,
+                    NULL, priority, NULL);
+        return;
+
+init_fail:
+        pr_error(LOG_PFX "Init failed\r\n");
+        return;
 }

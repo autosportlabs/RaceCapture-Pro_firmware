@@ -29,6 +29,14 @@ CPP_GUARD_BEGIN
 
 void imu_device_init();
 
+enum imu_init_status {
+        IMU_INIT_STATUS_FAILED  = -1,
+        IMU_INIT_STATUS_UNINIT  =  0,
+        IMU_INIT_STATUS_SUCCESS =  1,
+};
+
+enum imu_init_status imu_device_init_status();
+
 int imu_device_read(enum imu_channel channel);
 
 float imu_device_counts_per_unit(enum imu_channel channel);

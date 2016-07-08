@@ -23,7 +23,7 @@
 #include "geoCircle.h"
 #include "geoTrigger.h"
 #include "gps.h"
-#include "mod_string.h"
+#include <string.h>
 
 #include <stdbool.h>
 

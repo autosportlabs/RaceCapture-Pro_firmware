@@ -1,3 +1,4 @@
+
 # This file is part of the Racecapture/Track project
 #
 # Copyright (C) 2013 Autosport Labs
@@ -57,34 +58,28 @@ include libs/stm32_usb.mk
 # for this changeset alone plus need to address in other libraries
 # as well.
 #
-CFLAGS ?= -Os -g -fno-common -c -mthumb -fno-strict-aliasing \
-	-std=gnu99 -mcpu=$(CPU_TYPE) -MD -Wall -Werror -Wempty-body \
-	-Wclobbered -Wignored-qualifiers -Wmissing-parameter-type \
-	-Wold-style-declaration -Wunused-but-set-parameter
+CFLAGS := -c -MD $(ASL_CFLAGS) $(CPU_DEFINES) $(BOARD_DEFINES) \
+$(APP_DEFINES) $(CPU_FLAGS)
 
 LUA_INCLUDE=-I$(APP_PATH)/lib/lua/src
 LUA_LIBS=lua
 LUA_LIB_DIR=$(APP_PATH)/lib/lua/src
 
 INCLUDES += $(CPU_INCLUDES) $(BOARD_INCLUDES) $(LIB_INCLUDES) $(APP_INCLUDES) $(LUA_INCLUDE)
-CFLAGS += $(INCLUDES) $(CPU_DEFINES) $(BOARD_DEFINES) $(APP_DEFINES) $(CPU_FLAGS)
-ASFLAGS += -mcpu=$(CPU_TYPE) $(FPU) -g -Wa,--warn
+CFLAGS += $(INCLUDES)
+# STIEG: Investigate size opt flags on assembler.
+ASFLAGS += -mcpu=$(CPU_TYPE) $(FPU) $(ASL_C_GDB) -Wa,--warn
 
-ifdef DEBUG
-CFLAGS += -D_DEBUG
-endif
-
-
-LIBS = -lnosys
+LIBS = -lc -lm
 LIBS += $(addprefix -l,$(BASE_LIBS))
 LIBS += $(addprefix -l,$(LUA_LIBS))
 
 FREERTOS_LD_FLAGS := -Wl,--undefined=uxTopUsedPriority
 
-LDFLAGS ?= --specs=nano.specs -lc -lgcc $(LIBS) -mcpu=$(CPU_TYPE) -g -ggdb \
+LDFLAGS ?= --specs=nano.specs $(LIBS) -mcpu=$(CPU_TYPE) \
 	-L. -Lcpu/common -L$(LUA_LIB_DIR) -L$(CPU_BASE) -T$(CPU_LINK_MEM) \
 	-Tlink_sections.ld -nostartfiles -Wl,--gc-sections -mthumb \
-	-mcpu=$(CPU_TYPE) -msoft-float $(FREERTOS_LD_FLAGS)
+	-msoft-float $(FREERTOS_LD_FLAGS) -Wl,-static -Wl,-Map=main.map
 
 # Be silent per default, but 'make V=1' will show all compiler calls.
 ifneq ($(V),1)
@@ -110,36 +105,38 @@ endif
 
 LIBS_ALL = $(addprefix lib,$(BASE_LIBS:=.a))
 
+ARFLAGS := Drv
+
 all: $(LIBS_ALL) $(TARGET).ihex
 
 libfreertos.a: $(FREERTOS_OBJS)
-	$(Q)$(AR) $(ARFLAGS) $@ $^
+	$(Q) $(AR) $(ARFLAGS) $@ $^
 
 libstm32f4_periph.a: $(STM32F4_PERIPH_OBJS)
-	$(Q)$(AR) $(ARFLAGS) $@ $^
+	$(Q) $(AR) $(ARFLAGS) $@ $^
 
 libstm32_usb.a: $(STM32_USB_OBJS)
-	$(Q)$(AR) $(ARFLAGS) $@ $^
+	$(Q) $(AR) $(ARFLAGS) $@ $^
 
 $(TARGET).ihex: $(TARGET).bin
 	@printf "  Creating upgrade images\n"
-	$(PYTHON) $(ASL_FW_POSTPROCESS) -f $(TARGET).bin -o 0x08020000 -b $(TARGET).bin -i $(TARGET).ihex
+	$(PYTHON) $(ASL_FW_POSTPROCESS) -f $(TARGET).bin -o 0x08020000 -b $(TARGET).bin -i $(TARGET).ihex -e $(TARGET).elf
 
 $(TARGET).bin: $(TARGET).elf
 	@printf "  OBJCOPY $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(PREFIX)-objcopy -Obinary $< $@
+	$(Q) $(PREFIX)-objcopy -Obinary $< $@
 
-$(TARGET).elf: $(OBJS)
+$(TARGET).elf: $(sort $(OBJS))
 	@printf "  LD      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CC) $(OBJS) $(LDFLAGS) -o $@
+	$(Q) $(CC) $^ $(LDFLAGS) -o $@
 
 .c.o:
 	@printf "  CC      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CC) $(CFLAGS) -D_RCP_BASE_FILE_="\"$(notdir $<): \"" $< -o $@
+	$(Q) $(CCACHE) $(CC) $(CFLAGS) -D_RCP_BASE_FILE_="\"$(notdir $<): \"" $< -o $@
 
 .s.o:
 	@printf "  AS      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CC) $(ASFLAGS) -c $< -o $@
+	$(Q) $(CCACHE) $(CC) $(ASFLAGS) -c $< -o $@
 
 clean:
 	$(Q)rm -f *.o *.a *.d ../*.o ../*.d \

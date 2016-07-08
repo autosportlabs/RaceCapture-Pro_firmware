@@ -7,7 +7,7 @@
 #include "mock_serial.h"
 #include "predictive_timer_2.h"
 #include "loggerConfig.h"
-#include "mod_string.h"
+#include <string.h>
 #include "printk.h"
 
 #define LINE_BUFFER_SIZE 2049

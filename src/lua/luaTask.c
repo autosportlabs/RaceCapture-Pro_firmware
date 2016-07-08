@@ -31,7 +31,7 @@
 #include "luaTask.h"
 #include "lualib.h"
 #include "mem_mang.h"
-#include "mod_string.h"
+#include <string.h>
 #include "portable.h"
 #include "printk.h"
 #include "queue.h"
@@ -40,16 +40,16 @@
 #include "taskUtil.h"
 #include "virtual_channel.h"
 #include "watchdog.h"
-
 #include <math.h>
 #include <stdbool.h>
+#include <string.h>
 
 /* Keep Stack value high as the parser can get very stack hungry.  Issue #411 */
 #define LUA_BYPASS_DELAY_SEC		5
 #define LUA_CONSECUTIVE_FAILURES_LIMIT	3
 #define LUA_DEFAULT_ONTICK_HZ		1
+#define LUA_ERR_NONE			0
 #define LUA_ERR_BUG			-1
-#define LUA_ERR_CALLBACK_NOT_FOUND	-2
 #define LUA_ERR_SCRIPT_LOAD_FAILED	-3
 #define LUA_FLASH_DELAY_MS		250
 #define LUA_LOCK_WAIT_MS		1000
@@ -166,9 +166,10 @@ static int lua_invocation(struct lua_run_state *rs)
         /* Now run the callback */
         lua_getglobal(rs->lua_state, function);
         if (lua_isnil(rs->lua_state, -1)) {
-                pr_error_str_msg(_LOG_PFX "Function not found: ", function);
+                /* No longer a failure per Issue #707 */
+                pr_debug_str_msg(_LOG_PFX "Function not found: ", function);
                 lua_pop(rs->lua_state, 1);
-                status = LUA_ERR_CALLBACK_NOT_FOUND;
+                status = LUA_ERR_NONE;
                 goto done;
         }
 
@@ -199,8 +200,6 @@ static const char* get_failure_msg(const int cause)
                 return "Unknown Lua Error";
         case LUA_ERR_BUG:
                 return "ASL BUG";
-        case LUA_ERR_CALLBACK_NOT_FOUND:
-                return "Callback not found";
         case LUA_ERR_SCRIPT_LOAD_FAILED:
                 return "Failed to load script";
         default:
@@ -232,7 +231,7 @@ static void lua_task(void *params)
                 xLastWakeTime = xTaskGetTickCount();
 
                 const int rc = lua_invocation(&rs);
-                if (0 == rc) {
+                if (LUA_ERR_NONE == rc) {
                         consecutive_failures = 0;
                         continue;
                 }
@@ -243,7 +242,6 @@ static void lua_task(void *params)
                 /* If its a known unrecoverable, fail fast */
                 switch (rc) {
                 case LUA_ERR_BUG:
-                case LUA_ERR_CALLBACK_NOT_FOUND:
                 case LUA_ERR_SCRIPT_LOAD_FAILED:
                         lua_failure_state(rc);
                 }
@@ -310,7 +308,7 @@ static lua_State* setup_lua_state()
         return ls;
 }
 
-void lua_task_run_interactive_cmd(Serial *serial, const char* cmd)
+void lua_task_run_interactive_cmd(struct Serial *serial, const char* cmd)
 {
         if (!is_init(false) || !is_runtime_active()) {
                 serial_put_s(serial, "error: LUA not initialized or active.");
@@ -343,7 +341,7 @@ void lua_task_run_interactive_cmd(Serial *serial, const char* cmd)
         if (0 != result) {
                 serial_put_s(serial, "error: (");
                 serial_put_s(serial, lua_tostring(ls, -1));
-                serial_put_s(serial, ")");
+                serial_put_c(serial, ')');
                 put_crlf(serial);
                 lua_pop(ls, 1);
         }
@@ -438,9 +436,12 @@ bool lua_task_start()
         }
 
         pr_info(_LOG_PFX "Starting Lua Task\r\n");
-        ok = pdPASS == xTaskCreate(lua_task, (signed portCHAR *) "Lua Task",
-                                   LUA_STACK_SIZE, state.lua_runtime,
-                                   state.priority, &state.task_handle);
+
+        /* Make all task names 16 chars including NULL char */
+        static const signed portCHAR task_name[] = "Lua Exec Task  ";
+        ok = pdPASS == xTaskCreate(lua_task, task_name, LUA_STACK_SIZE,
+                                   state.lua_runtime, state.priority,
+                                   &state.task_handle);
 
         if (!ok) {
                 pr_warning(_LOG_PFX "Failed to start Lua Task\r\n");

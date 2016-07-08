@@ -24,7 +24,7 @@
 #include "loggerTaskEx.h"
 #include "macros.h"
 #include "mem_mang.h"
-#include "mod_string.h"
+#include <string.h>
 #include "printk.h"
 #include "virtual_channel.h"
 

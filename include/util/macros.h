@@ -24,6 +24,8 @@
 
 #include "cpp_guard.h"
 
+#include <string.h>
+
 CPP_GUARD_BEGIN
 
 /**
@@ -35,6 +37,16 @@ CPP_GUARD_BEGIN
  * Checks if two strings are equal.
  */
 #define STR_EQ(s1, s2)	(0 == strcmp((s1), (s2)))
+
+/**
+ * Chooses the maximum of two values.
+ */
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
+/**
+ * Chooses the minimum of two values.
+ */
+#define MIN(a,b) (((a)<(b))?(a):(b))
 
 CPP_GUARD_END
 

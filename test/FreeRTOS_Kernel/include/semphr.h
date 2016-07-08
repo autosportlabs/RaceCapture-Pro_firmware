@@ -114,6 +114,16 @@ typedef xQueueHandle xSemaphoreHandle;
 													}
 
 /**
+ * A wonderfully annoying hack since vSemaphoreCreateBinary doesn't exist
+ * in the newer versions of FreeRTOS.  It has been deprecated in favor of
+ * xSemaphoreCreateBinary.
+ */
+#define xSemaphoreCreateBinary() \
+        xQueueCreate( ( unsigned portBASE_TYPE ) 1, semSEMAPHORE_QUEUE_ITEM_LENGTH );
+
+
+
+/**
  * semphr. h
  * <pre>xSemaphoreTake(
  *                   xSemaphoreHandle xSemaphore,
@@ -707,5 +717,3 @@ typedef xQueueHandle xSemaphoreHandle;
 
 
 #endif /* SEMAPHORE_H */
-
-

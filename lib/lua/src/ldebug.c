@@ -7,7 +7,7 @@
 
 #include <stdarg.h>
 #include <stddef.h>
-#include "mod_string.h"
+#include <string.h>
 
 
 #define ldebug_c
@@ -681,4 +681,3 @@ void luaG_runerror (lua_State *L, const char *fmt, ...)
     va_end(argp);
     luaG_errormsg(L);
 }
-

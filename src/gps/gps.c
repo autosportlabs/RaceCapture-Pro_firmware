@@ -19,11 +19,10 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "convert.h"
 #include "gps.h"
 #include "gps_device.h"
-#include "mod_string.h"
-#include "modp_atonum.h"
+#include <string.h>
 
 #define GPS_LOCK_FLASH_COUNT 5
 #define GPS_NOFIX_FLASH_COUNT 25
@@ -39,7 +38,7 @@ bool isGpsSignalUsable(enum GpsSignalQuality q)
     return q != GPS_QUALITY_NO_FIX;
 }
 
-gps_status_t GPS_init(uint8_t targetSampleRate, Serial *serial)
+gps_status_t GPS_init(uint8_t targetSampleRate, struct Serial *serial)
 {
     memset(&g_gpsSnapshot, 0, sizeof(GpsSnapshot));
     g_timeFirstFix = 0;
@@ -153,7 +152,7 @@ float getGPSSpeed()
 
 float getGpsSpeedInMph()
 {
-    return getGPSSpeed() * 0.621371192; //convert to MPH
+        return convert_kph_mph(getGPSSpeed());
 }
 
 millis_t getLastFix()
@@ -190,18 +189,28 @@ static void updateFullDateTime(GpsSample *gpsSample)
 
 void GPS_sample_update(GpsSample *newSample)
 {
-    if (!isGpsSignalUsable(newSample->quality)) return;
+        if (!isGpsSignalUsable(newSample->quality))
+                return;
 
-    const GeoPoint prevPoint = g_gpsSnapshot.sample.point;
+        const GeoPoint prevPoint = g_gpsSnapshot.sample.point;
+        const float prev_speed = g_gpsSnapshot.sample.speed;
+        const tiny_millis_t prev_deltaff = g_gpsSnapshot.deltaFirstFix;
 
-    // Deep copy stuff.
-    g_gpsSnapshot.sample = *newSample;
-    updateFullDateTime(newSample);
-    g_gpsSnapshot.deltaFirstFix = newSample->time - g_timeFirstFix;
-    g_gpsSnapshot.previousPoint = prevPoint;
+        /*
+         * Deep copy stuff and call updateFullDateTime before we update
+         * everything else.
+         */
+        g_gpsSnapshot.sample = *newSample;
+        updateFullDateTime(newSample);
+
+        g_gpsSnapshot.deltaFirstFix = newSample->time - g_timeFirstFix;
+        g_gpsSnapshot.previousPoint = prevPoint;
+        g_gpsSnapshot.previous_speed = prev_speed;
+        g_gpsSnapshot.delta_last_sample =
+                g_gpsSnapshot.deltaFirstFix - prev_deltaff;
 }
 
-int GPS_processUpdate(Serial *serial)
+int GPS_processUpdate(struct Serial *serial)
 {
     GpsSample s;
     const gps_msg_result_t result = GPS_device_get_update(&s, serial);
@@ -213,26 +222,4 @@ int GPS_processUpdate(Serial *serial)
     }
 
     return result;
-}
-
-int checksumValid(const char *gpsData, size_t len)
-{
-    int valid = 0;
-    unsigned char checksum = 0;
-    size_t i = 0;
-
-    for (; i < len - 1; i++) {
-        char c = *(gpsData + i);
-        if (c == '*' || c == '\0') break;
-        else if (c == '$') continue;
-        else checksum ^= c;
-    }
-
-    if (len > i + 2) {
-        unsigned char dataChecksum = modp_xtoc(gpsData + i + 1);
-        if (checksum == dataChecksum)
-            valid = 1;
-    }
-
-    return valid;
 }

@@ -24,6 +24,7 @@
 #include "date_time_test.h"
 #include "gps.h"
 #include "gps.testing.h"
+#include "mock_serial.h"
 #include "task.h"
 #include "task_testing.h"
 #include "serial.h"
@@ -34,8 +35,9 @@
 CPPUNIT_TEST_SUITE_REGISTRATION( DateTimeTest );
 
 void DateTimeTest::setUp() {
-  reset_ticks();
-  GPS_init(10, get_serial(SERIAL_GPS));
+        reset_ticks();
+        setupMockSerial();
+        GPS_init(10, getMockSerial());
 }
 
 void DateTimeTest::tearDown() {}

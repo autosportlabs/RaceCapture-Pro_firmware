@@ -7,15 +7,19 @@ endif
 ################################################################################
 export PATH := /opt/arm-2012.03/bin:$(PATH)
 CROSS_COMPILE := arm-none-eabi-
-AS := $(CROSS_COMPILE)gcc -x assembler-with-cpp
+AS := $(CROSS_COMPILE)as
 CC := $(CROSS_COMPILE)gcc
-CXX := $(CROSS_COMPILE)g++
-LD := $(CROSS_COMPILE)g++
+LD := $(CROSS_COMPILE)gcc
 OBJDUMP := $(CROSS_COMPILE)objdump
 OBJCOPY := $(CROSS_COMPILE)objcopy
 
+ASL_FW_POSTPROCESS := asl_f4_fw_postprocess
+
 #specify the use of the external crystal
 BOARD_DEFINES = -DPLL_SOURCE_HSE -DUSE_I2C1
+
+# Needed for FreeRTOS GDB debugging
+FREERTOS_LD_FLAGS := -Wl,--undefined=uxTopUsedPriority
 
 ################################################################################
 # Project definition
@@ -30,8 +34,8 @@ RC_SRC_DIR := $(RC_TOP_LEVEL_DIR)/src
 
 # CMSIS
 src-y := \
-    Libraries/CMSIS/Device/ST/STM32F30x/Source/Templates/TrueSTUDIO/startup_stm32f30x.s
-#    Libraries/CMSIS/Device/ST/STM32F30x/Source/Templates/system_stm32f30x.c
+    Libraries/CMSIS/Device/ST/STM32F30x/Source/Templates/TrueSTUDIO/startup_stm32f30x.s \
+    Libraries/CMSIS/Device/ST/STM32F30x/Source/Templates/system_stm32f30x.c
 inc-y := \
     Libraries/CMSIS/Device/ST/STM32F30x/Include \
     Libraries/CMSIS/Include
@@ -39,6 +43,10 @@ inc-y := \
 # StdPeriph
 src-y += $(wildcard Libraries/STM32F30x_StdPeriph_Driver/src/*.c)
 inc-y += Libraries/STM32F30x_StdPeriph_Driver/inc
+
+# USB
+src-y += $(wildcard Libraries/STM32_USB-FS-Device_Driver/src/*.c)
+inc-y += Libraries/STM32_USB-FS-Device_Driver/inc
 
 # Memory Management
 inc-y += mem_mang
@@ -58,6 +66,11 @@ inc-y += $(RC_INCLUDE_DIR)/util
 # serial API
 src-y += $(wildcard $(RC_SRC_DIR)/serial/*.c)
 inc-y += $(RC_INCLUDE_DIR)/serial
+
+# system
+src-y += $(wildcard $(RC_SRC_DIR)/system/*.c)
+inc-y += $(RC_INCLUDE_DIR)/system
+
 src-y += $(wildcard $(RC_SRC_DIR)/usart/*.c)
 inc-y += $(RC_INCLUDE_DIR)/usart
 
@@ -72,6 +85,7 @@ inc-y += $(RC_INCLUDE_DIR)/ADC
 # CAN
 src-y += $(wildcard $(RC_SRC_DIR)/CAN/*.c)
 src-y += $(wildcard hal/CAN_stm32/*.c)
+inc-y += hal/CAN_stm32
 inc-y += $(RC_INCLUDE_DIR)/CAN
 
 # GPS
@@ -111,6 +125,9 @@ inc-y += $(RC_INCLUDE_DIR)/tracks
 src-y += $(wildcard hal/i2c_stm32/*.c)
 inc-y += hal/i2c_stm32
 
+# wifi
+src-y += $(wildcard hal/wifi_esp8266/*.c)
+
 # IMU
 src-y += $(wildcard $(RC_SRC_DIR)/imu/*.c)
 src-y += $(wildcard hal/imu_stm32/*.c)
@@ -136,6 +153,9 @@ src-y += $(wildcard $(RC_SRC_DIR)/usart/*.c)
 src-y += $(wildcard hal/usart_stm32/*.c)
 inc-y += $(RC_INCLUDE_DIR)/usart
 
+# Serial Device
+src-y += $(wildcard hal/serial/*.c)
+
 # Watchdog
 src-y += $(wildcard $(RC_SRC_DIR)/watchdog/*.c)
 src-y += $(wildcard hal/watchdog_stm32/*.c)
@@ -146,9 +166,12 @@ src-y += $(wildcard $(RC_SRC_DIR)/OBD2/*.c)
 inc-y += $(RC_INCLUDE_DIR)/OBD2
 
 #devices
-src-y += $(RC_SRC_DIR)/devices/bluetooth.c
-src-y += $(RC_SRC_DIR)/devices/null_device.c
+src-y += $(wildcard $(RC_SRC_DIR)/devices/*.c)
 inc-y += $(RC_INCLUDE_DIR)/devices
+
+#drivers
+src-y += $(wildcard $(RC_SRC_DIR)/drivers/*.c)
+inc-y += $(RC_INCLUDE_DIR)/drivers
 
 #devices
 src-y += $(wildcard $(RC_SRC_DIR)/api/*.c)
@@ -162,6 +185,10 @@ inc-y += $(RC_INCLUDE_DIR)/command
 src-y += $(wildcard $(RC_SRC_DIR)/jsmn/*.c)
 inc-y += $(RC_INCLUDE_DIR)/jsmn
 
+#GSM
+src-y += $(wildcard $(RC_SRC_DIR)/gsm/*.c)
+inc-y += $(RC_INCLUDE_DIR)/gsm
+
 #logger
 src-y += $(wildcard $(RC_SRC_DIR)/logger/*.c)
 # STRIP fileWriter.c because we don't want to compile it.
@@ -172,6 +199,22 @@ inc-y += $(RC_INCLUDE_DIR)/logger
 src-y += $(wildcard $(RC_SRC_DIR)/messaging/*.c)
 inc-y += $(RC_INCLUDE_DIR)/messaging
 
+#modem
+src-y += $(wildcard $(RC_SRC_DIR)/modem/*.c)
+inc-y += $(RC_INCLUDE_DIR)/modem
+
+# Tasks
+src-y += $(wildcard $(RC_SRC_DIR)/tasks/*.c)
+inc-y += $(RC_INCLUDE_DIR)/tasks
+
+# CDC-ACM
+src-y += $(wildcard hal/usb_stm32/*.c)
+src-y += $(wildcard $(RC_SRC_DIR)/usb_comm/*.c)
+inc-y += hal/usb_stm32
+
+# Combined interrupts
+src-y += $(wildcard hal/common_irq_stm32/*.c)
+
 # FreeRTOS
 src-y += $(wildcard FreeRTOS/Source/*.c) \
          FreeRTOS/Source/portable/GCC/ARM_CM3/port.c \
@@ -179,8 +222,6 @@ src-y += $(wildcard FreeRTOS/Source/*.c) \
 
 inc-y += FreeRTOS/Source/include \
          FreeRTOS/Source/portable/GCC/ARM_CM3
-
-src-y += Project/system_stm32f30x.c
 
 #newlib
 src-y += $(wildcard util/*.c)
@@ -214,19 +255,37 @@ inc-y += $(RC_PLATFORM_DIR)/mk2/hal/fat_sd_stm32/fatfs
 ################################################################################
 obj-y := $(addprefix $(OUTDIR)/,$(patsubst %.s,%.o,$(patsubst %.c,%.o,$(src-y))))
 
-CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -DUSE_STM32303C_EVAL -MD -std=gnu99
-CFLAGS += -mcpu=cortex-m3 -mthumb
-CFLAGS += $(VERSION_CFLAGS)
+#
+# Our chip is actually a cortex-m4 with FPU.  We have not included the correct
+# FreeRTOS libs as well as compiler args to make it work properly with this arch
+# so for now this stays as an M3.
+# -mcpu=cortex-m4 \
+# -mthumb \
+# -mfpu=fpv4-sp-d16 \
+# -mfloat-abi=softfp \
+#
+CPU_FLAGS := \
+-mcpu=cortex-m3 \
+-mthumb \
+-mfloat-abi=soft \
+
+CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -MD -c
+CFLAGS += $(CPU_FLAGS)
+CFLAGS += $(ASL_CFLAGS)
 CFLAGS += $(BOARD_DEFINES)
-CFLAGS += -fno-builtin-sprintf
-CFLAGS += -Os
-CFLAGS += -ggdb
 CFLAGS += $(addprefix -I,$(inc-y))
 
-LDFLAGS := -mcpu=cortex-m3 -mthumb -TProject/STM32_FLASH.ld
-LDFLAGS += -Wl,-cref,-u,Reset_Handler,-Map=$(OUTDIR)/main.map,--gc-sections
+LDFLAGS := $(CPU_FLAGS)
+LDFLAGS += -TProject/STM32_FLASH.ld
+LDFLAGS += -Wl,-cref,-u,Reset_Handler,-Map=main.map
+LDFLAGS += -Wl,--gc-sections,-static
+LDFLAGS += $(FREERTOS_LD_FLAGS)
 
-AFLAGS := $(CFLAGS)
+LDLIBS :=
+LDLIBS += -lc
+LDLIBS += -lm
+
+ASFLAGS := $(CPU_FLAGS) --warn
 
 # disable auto-removing of intermediate files
 .PRECIOUS: $(obj-y)
@@ -234,43 +293,47 @@ AFLAGS := $(CFLAGS)
 $(OUTDIR)/%.o: %.c
 	@echo "[CC] $(@F)"
 	mkdir -p $(@D)
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CCACHE) $(CC) $(CFLAGS) -c -o $@ $<
 
 $(OUTDIR)/%.o: %.s
 	@echo "[AS] $(@F)"
 	mkdir -p $(@D)
-	$(AS) $(AFLAGS) -c -o $@ $<
+	$(AS) $(ASFLAGS) -c -o $@ $<
 
-$(OUTDIR)/%.elf: $(obj-y)
+%.ihex: %.bin
+	@echo "[ASL_FW_POSTPROCESS] $(@F)"
+	$(PYTHON) $(ASL_FW_POSTPROCESS) -f $< -e main.elf -o 0x08004000 -b $< -i $@
+
+%.elf: $(sort $(obj-y))
 	@echo "[LD] $(@F)"
-	$(LD) $(LDFLAGS) -o $@ $^
+	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-$(OUTDIR)/%.bin: $(OUTDIR)/%.elf
+%.bin: %.elf
 	@echo "[OBJCOPY] $(@F)"
 	$(OBJCOPY) -O binary $< $@
 
-$(OUTDIR)/%.hex: $(OUTDIR)/%.elf
+%.hex: %.elf
 	@echo "[OBJCOPY] $(@F)"
 	$(OBJCOPY) -O ihex $< $@
 
-$(OUTDIR)/%.dis: $(OUTDIR)/%.elf
+%.dis: %.elf
 	@echo "[OBJDUMP] $(@F)"
 	$(OBJDUMP) -D $< > $@
 
-.PHONY: all
-all: $(OUTDIR)/main.elf $(OUTDIR)/main.bin $(OUTDIR)/main.hex $(OUTDIR)/main.dis
+all: main.elf main.bin main.hex main.dis main.ihex
 
-.PHONY: clean
 clean:
 	rm -rf $(OUTDIR)
-
-flash: $(OUTDIR)/main.hex
-	openocd -f board/stm32f3discovery.cfg -f ./flash.cfg
 
 dbg:
 	@echo "src: $(src-y)"
 	@echo "obj: $(obj-y)"
 	@echo "inc: $(inc-y)"
 
-gdb: $(OUTDIR)/main.elf
-	gdb -x ./gdb_setup.gdb .build/main.elf
+flash: main.elf
+	openocd -f ./openocd_flash.cfg
+
+gdb: main.elf
+	gdb -x ./gdb_setup.gdb main.elf
+
+.PHONY: all clean

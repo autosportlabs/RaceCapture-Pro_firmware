@@ -23,7 +23,7 @@
 #include "FreeRTOS.h"
 #include "bluetooth.h"
 #include "loggerConfig.h"
-#include "mod_string.h"
+#include <string.h>
 #include "printk.h"
 #include "task.h"
 #include "taskUtil.h"
@@ -43,7 +43,7 @@
  * your own peril.
  */
 #define BT_BACKOFF_MS	500
-#define BT_BAUD_RATES	{115200, 9600}
+#define BT_BAUD_RATES	{230400, 115200, 9600}
 #define BT_COMMAND_WAIT	600
 #define BT_DEFAULT_NAME	"RaceCapturePro"
 #define BT_DEFAULT_PIN	"1234"
@@ -51,6 +51,7 @@
 #define BT_MAX_NAME_LEN	(BT_DEVICE_NAME_LENGTH - 1)
 #define BT_MAX_PIN_LEN	(BT_PASSCODE_LENGTH - 1)
 #define BT_PING_TRIES	3
+#define TARGET_BAUD	230400
 
 static bluetooth_status_t g_bluetooth_status = BT_STATUS_NOT_INIT;
 
@@ -67,8 +68,9 @@ static int sendBtCommandWaitResponse(DeviceConfig *config, const char *cmd,
 
         serial_flush(config->serial);
         serial_put_s(config->serial, cmd);
-        serial_get_line_wait(config->serial, config->buffer,
-                             config->length, wait);
+        const int len = serial_get_line_wait(config->serial, config->buffer,
+                                             config->length, wait);
+        config->buffer[len] = 0;
 
         const bool res = 0 == strncmp(config->buffer, rsp, strlen(rsp));
 
@@ -94,6 +96,8 @@ static const char * baudConfigCmdForRate(unsigned int baudRate)
                 return "AT+BAUD7";
         case 115200:
                 return "AT+BAUD8";
+        case 230400:
+                return "AT+BAUD9";
         }
 
         pr_error_int_msg("invalid BT baud", baudRate);
@@ -103,7 +107,7 @@ static const char * baudConfigCmdForRate(unsigned int baudRate)
 static void set_bt_serial_baud(DeviceConfig *config, int baud)
 {
         pr_info_int_msg("BT: Baudrate: ", baud);
-        serial_init(config->serial, 8, 0, 1, baud);
+        serial_config(config->serial, 8, 0, 1, baud);
 }
 
 static int set_check_bt_serial_baud(DeviceConfig *config, int baud)
@@ -133,7 +137,7 @@ static bool bt_set_name(DeviceConfig *config, const char *new_name)
         pr_info_str_msg("BT: Setting name: ", new_name);
 
         char buf[BT_MAX_NAME_LEN + 7 + 1] = "AT+NAME";
-        strlcpy(buf + 7, new_name, BT_MAX_NAME_LEN + 1);
+        strncpy(buf + 7, new_name, BT_MAX_NAME_LEN + 1);
 
         return sendBtCommandWaitResponse(config, buf, "OKsetname",
                                          BT_COMMAND_WAIT);
@@ -144,17 +148,17 @@ static bool bt_set_pin(DeviceConfig *config, const char *new_pin)
         pr_info_str_msg("BT: Setting pin: ", new_pin);
 
         char buf[BT_MAX_PIN_LEN + 6 + 1] = "AT+PIN";
-        strlcpy(buf + 6, new_pin, BT_MAX_PIN_LEN + 1);
+        strncpy(buf + 6, new_pin, BT_MAX_PIN_LEN + 1);
 
         return sendBtCommandWaitResponse(config, buf, "OKsetPIN",
                                          BT_COMMAND_WAIT);
 }
 
-static int bt_find_working_baud(DeviceConfig *config, BluetoothConfig *btc)
+static int bt_find_working_baud(DeviceConfig *config,
+                                BluetoothConfig *btc,
+                                const int targetBaud)
 {
         pr_info("BT: Detecting baud rate...\r\n");
-
-        const int targetBaud = btc->baudRate;
         const int rates[] = BT_BAUD_RATES;
         int rate = 0;
 
@@ -210,7 +214,7 @@ int bt_init_connection(DeviceConfig *config)
 {
         BluetoothConfig *btConfig =
                 &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
-        unsigned int targetBaud = btConfig->baudRate;
+        const int targetBaud = TARGET_BAUD;
         const char *new_name = btConfig->new_name;
         const char *new_pin = btConfig->new_pin;
 
@@ -222,7 +226,7 @@ int bt_init_connection(DeviceConfig *config)
          * factory level (9600).  This ensures things go slow enough for the
          * HC-06 processor + code to handle it.
          */
-        int baud = bt_find_working_baud(config, btConfig);
+        int baud = bt_find_working_baud(config, btConfig, targetBaud);
         switch (baud) {
         case 0:
                 pr_info("BT: Failed to communicate with device.\r\n");

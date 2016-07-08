@@ -49,9 +49,11 @@ typedef struct _GpsSample {
 } GpsSample;
 
 typedef struct _GpsSnapshot {
-    GpsSample sample;
-    tiny_millis_t deltaFirstFix;
-    GeoPoint previousPoint;
+        GpsSample sample;
+        tiny_millis_t deltaFirstFix;
+        GeoPoint previousPoint;
+        float previous_speed;
+        tiny_millis_t delta_last_sample; /* Time since last sample */
 } GpsSnapshot;
 
 typedef enum {
@@ -62,7 +64,7 @@ typedef enum {
 
 gps_status_t GPS_getStatus();
 
-gps_status_t GPS_init(uint8_t targetSampleRate, Serial *serial);
+gps_status_t GPS_init(uint8_t targetSampleRate, struct Serial *serial);
 
 float getSecondsSinceMidnight();
 
@@ -141,9 +143,7 @@ tiny_millis_t getUptimeAtSample();
 
 float getGpsSpeedInMph();
 
-int GPS_processUpdate(Serial *serial);
-
-int checksumValid(const char *gpsData, size_t len);
+int GPS_processUpdate(struct Serial *serial);
 
 CPP_GUARD_END
 

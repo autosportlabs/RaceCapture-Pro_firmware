@@ -29,13 +29,14 @@
 CPP_GUARD_BEGIN
 
 typedef enum {
-    GPS_MSG_SUCCESS = 0,
-    GPS_MSG_TIMEOUT,
-    GPS_MSG_NONE
+        GPS_MSG_READERR = -2,
+        GPS_MSG_TIMEOUT = -1,
+        GPS_MSG_NONE    = 0,
+        GPS_MSG_SUCCESS = 1,
 } gps_msg_result_t;
 
-gps_status_t GPS_device_init(uint8_t targetSampleRate, Serial *serial);
-gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, Serial *serial);
+gps_status_t GPS_device_init(uint8_t targetSampleRate, struct Serial *serial);
+gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, struct Serial *serial);
 CPP_GUARD_END
 
 #endif /* GPS_DEVICE_H_ */

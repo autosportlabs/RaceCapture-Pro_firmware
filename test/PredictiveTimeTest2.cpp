@@ -6,19 +6,17 @@
  */
 
 #include "PredictiveTimeTest2.h"
-
-#include <stdlib.h>
-
 #include "dateTime.h"
 #include "geopoint.h"
 #include "gps.h"
 #include "gps.testing.h"
 #include "lap_stats.h"
 #include "loggerConfig.h"
-#include "modp_atonum.h"
-#include "mod_string.h"
+#include "mock_serial.h"
 #include "predictive_timer_2.h"
 #include "rcp_cpp_unit.hh"
+#include <stdlib.h>
+#include <string.h>
 
 #define FILE_PREFIX string("test/")
 
@@ -47,11 +45,12 @@ static int atoiOffsetLenSafe(const char *str, size_t offset, size_t len) {
          len = sizeof(buff) - 1;
 
    memcpy(buff, str + offset, len);
-   return modp_atoi(buff);
+   return atoi(buff);
 }
 
 void PredictiveTimeTest2::setUp() {
-	GPS_init(10, get_serial(SERIAL_GPS));
+        setupMockSerial();
+	GPS_init(10, getMockSerial());
 	resetPredictiveTimer();
 }
 
@@ -132,9 +131,9 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
               || timeRaw.size() <= 0) continue;
 
           //printf("%s", line.c_str());
-          float lat = modp_atof(latitudeRaw.c_str());
-          float lon = modp_atof(longitudeRaw.c_str());
-          float speed = modp_atof(speedRaw.c_str());
+          float lat = atof(latitudeRaw.c_str());
+          float lon = atof(longitudeRaw.c_str());
+          float speed = atof(speedRaw.c_str());
 
           const char *utcTimeStr = timeRaw.c_str();
           DateTime dt;

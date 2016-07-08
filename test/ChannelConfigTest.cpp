@@ -21,7 +21,7 @@
 
 #include "ChannelConfigTest.hh"
 #include "channel_config.h"
-#include "mod_string.h"
+#include <string.h>
 
 /* Inclue the code to test here */
 extern "C" {

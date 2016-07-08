@@ -79,6 +79,19 @@ class LoggerApiTest : public CppUnit::TestFixture
     CPPUNIT_TEST( testGetVersion);
     CPPUNIT_TEST( testGetStatus);
     CPPUNIT_TEST( testGetCapabilities);
+    CPPUNIT_TEST( testSetWifiCfg );
+    CPPUNIT_TEST( testSetWifiCfgApBadChannel );
+    CPPUNIT_TEST( testSetWifiCfgApBadEncryption );
+    CPPUNIT_TEST( testGetWifiCfgDefault );
+    CPPUNIT_TEST( testSetGetWifiCfg );
+    CPPUNIT_TEST( setActiveTrack );
+    CPPUNIT_TEST( setActiveTrackSectors );
+    CPPUNIT_TEST( setActiveTrackInvalid );
+    CPPUNIT_TEST( setActiveTrackRadiusMeters );
+    CPPUNIT_TEST( setActiveTrackRadiusDegrees );
+    CPPUNIT_TEST( testGetAutoLoggerCfgDefault );
+    CPPUNIT_TEST( testSetAutoLoggerCfg );
+
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -87,6 +100,12 @@ public:
     string readFile(string filename);
     void setUp();
     void tearDown();
+
+    void setActiveTrack();
+    void setActiveTrackSectors();
+    void setActiveTrackInvalid();
+    void setActiveTrackRadiusMeters();
+    void setActiveTrackRadiusDegrees();
 
     void stringToJson(const char* buffer, Object &json);
     char * processApiGeneric(string filename);
@@ -134,6 +153,13 @@ public:
     void testGetVersion();
     void testGetStatus();
     void testGetCapabilities();
+    void testSetWifiCfg();
+    void testSetWifiCfgApBadChannel();
+    void testSetWifiCfgApBadEncryption();
+    void testGetWifiCfgDefault();
+    void testSetGetWifiCfg();
+    void testGetAutoLoggerCfgDefault();
+    void testSetAutoLoggerCfg();
 
 private:
     void testSetScriptFile(string filename);

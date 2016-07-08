@@ -24,7 +24,7 @@
 
 #include "cpp_guard.h"
 #include "loggerNotifications.h"
-
+#include "sampleRecord.h"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -32,6 +32,8 @@ CPP_GUARD_BEGIN
 
 void startLogging();
 void stopLogging();
+
+void configChanged();
 
 void startLoggerTaskEx( int priority);
 void loggerTaskEx(void *params);

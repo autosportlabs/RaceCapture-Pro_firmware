@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "mod_string.h"
+#include <string.h>
 
 #define liolib_c
 #define LUA_LIB

@@ -49,13 +49,6 @@ enum track_add_mode {
 
 #define DEFAULT_TRACK_TARGET_RADIUS	0.0001
 
-#define DEFAULT_TRACKS \
-{ \
-    DEFAULT_VERSION_INFO, \
-    0, \
-    {} \
-}
-
 enum TrackType {
     TRACK_TYPE_CIRCUIT = 0,
     TRACK_TYPE_STAGE = 1,

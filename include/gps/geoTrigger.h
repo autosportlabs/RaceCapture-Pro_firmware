@@ -25,7 +25,7 @@
 #include "cpp_guard.h"
 #include "geoCircle.h"
 #include "geopoint.h"
-#include "mod_string.h"
+#include <string.h>
 
 #include <stdbool.h>
 

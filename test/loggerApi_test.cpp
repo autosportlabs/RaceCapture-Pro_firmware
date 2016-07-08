@@ -21,6 +21,7 @@
 
 #include "FreeRTOS.h"
 #include "api.h"
+#include "auto_logger.h"
 #include "bluetooth.h"
 #include "cellular.h"
 #include "channel_config.h"
@@ -37,18 +38,17 @@
 #include "luaScript.h"
 #include "memory_mock.h"
 #include "mock_serial.h"
-#include "mod_string.h"
-#include "modp_atonum.h"
 #include "predictive_timer_2.h"
 #include "printk.h"
 #include "rcp_cpp_unit.hh"
 #include "sim900.h"
 #include "task.h"
 #include "task_testing.h"
-
-#include <stdio.h>
 #include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
 #include <streambuf>
+#include <string.h>
 #include <string>
 
 #define JSON_TOKENS 10000
@@ -59,12 +59,10 @@ CPPUNIT_TEST_SUITE_REGISTRATION( LoggerApiTest );
 
 
 char * LoggerApiTest::processApiGeneric(string filename){
-	Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
-	char *txBuffer = mock_getTxBuffer();
-	return txBuffer;
+	return mock_getTxBuffer();
 }
 
 
@@ -107,7 +105,7 @@ void LoggerApiTest::assertGenericResponse(char *buffer, const char * messageName
 					CPPUNIT_FAIL("assertGenericResponse: rc element name does not match");
 				}
 
-                                const int actual_response_code = modp_atoi(tok_rcVal->data);
+                                const int actual_response_code = atoi(tok_rcVal->data);
                                 if (responseCode != actual_response_code) {
                                         char buff[256];
                                         sprintf(buff, "Msg \"%s\" failed.  Expected %d, got %d",
@@ -175,7 +173,7 @@ void LoggerApiTest::setUp()
 	setupMockSerial();
 	imu_init(config);
 	resetPredictiveTimer();
-        lapStats_init();
+        lapstats_config_changed();
 }
 
 
@@ -351,7 +349,7 @@ void LoggerApiTest::testGetAnalogCfg(){
 
 void LoggerApiTest::testSetAnalogConfigFile(string filename){
 
-	Serial *serial = getMockSerial();
+	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -432,7 +430,7 @@ void LoggerApiTest::testGetImuCfg(){
 }
 
 void LoggerApiTest::testSetImuConfigFile(string filename){
-	Serial *serial = getMockSerial();
+	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -466,8 +464,7 @@ void LoggerApiTest::testSetConnectivityCfgFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	ConnectivityConfig *connCfg = &c->ConnectivityConfigs;
 
-	processApiGeneric(filename);
-	char *txBuffer = mock_getTxBuffer();
+	char *txBuffer = processApiGeneric(filename);
 	assertGenericResponse(txBuffer, "setConnCfg", API_SUCCESS);
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)connCfg->cellularConfig.cellEnabled);
@@ -506,8 +503,8 @@ void LoggerApiTest::testGetConnectivityCfg(){
 	Object &connJson = json["connCfg"];
 
 	CPPUNIT_ASSERT_EQUAL((int)(connCfg->bluetoothConfig.btEnabled), (int)(Number)connJson["btCfg"]["btEn"]);
-	CPPUNIT_ASSERT_EQUAL(string(connCfg->bluetoothConfig.new_name), string((String)connJson["btCfg"]["name"]));
-	CPPUNIT_ASSERT_EQUAL(string(connCfg->bluetoothConfig.new_pin), string((String)connJson["btCfg"]["pass"]));
+	CPPUNIT_ASSERT_EQUAL(string(""), string((String)connJson["btCfg"]["name"]));
+	CPPUNIT_ASSERT_EQUAL(string(""), string((String)connJson["btCfg"]["pass"]));
 
 	CPPUNIT_ASSERT_EQUAL((int)(connCfg->cellularConfig.cellEnabled), (int)(Number)connJson["cellCfg"]["cellEn"]);
 	CPPUNIT_ASSERT_EQUAL(string(connCfg->cellularConfig.apnHost), string((String)connJson["cellCfg"]["apnHost"]));
@@ -554,7 +551,7 @@ void LoggerApiTest::testGetPwmCfg(){
 
 
 void LoggerApiTest::testSetPwmConfigFile(string filename){
-	Serial *serial = getMockSerial();
+	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -610,7 +607,7 @@ void LoggerApiTest::testGetGpioCfg(){
 }
 
 void LoggerApiTest::testSetGpioConfigFile(string filename){
-	Serial *serial = getMockSerial();
+	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -671,7 +668,7 @@ void LoggerApiTest::testGetTimerCfg(){
 }
 
 void LoggerApiTest::testSetTimerConfigFile(string filename){
-	Serial *serial = getMockSerial();
+	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -1318,8 +1315,7 @@ void LoggerApiTest::testGetVersion(){
 
 void LoggerApiTest::testGetStatus(){
 	set_ticks(3);
-        lc_reset();
-        lapStats_init();
+        lapstats_reset();
 
     const char *response = processApiGeneric("getStatus1.json");
     Object json;
@@ -1359,4 +1355,194 @@ void LoggerApiTest::testGetStatus(){
 
     CPPUNIT_ASSERT_EQUAL((int)TELEMETRY_STATUS_IDLE, (int)(Number)json["status"]["telemetry"]["status"]);
     CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["telemetry"]["started"]);
+}
+
+void LoggerApiTest::testSetWifiCfg() {
+        const LoggerConfig *lc = getWorkingLoggerConfig();
+        char *response = processApiGeneric("set_wifi_cfg.json");
+
+        const struct wifi_cfg* cfg = &lc->ConnectivityConfigs.wifi;
+        CPPUNIT_ASSERT_EQUAL(true, cfg->active);
+
+        const struct wifi_client_cfg *client_cfg = &cfg->client;
+	CPPUNIT_ASSERT_EQUAL(true, client_cfg->active);
+	CPPUNIT_ASSERT_EQUAL(string("foobar"), string(client_cfg->ssid));
+        CPPUNIT_ASSERT_EQUAL(string("bazbiz"), string(client_cfg->passwd));
+
+        const struct wifi_ap_cfg *ap_cfg = &cfg->ap;
+	CPPUNIT_ASSERT_EQUAL(true, ap_cfg->active);
+	CPPUNIT_ASSERT_EQUAL(string("RaceIt"), string(ap_cfg->ssid));
+        CPPUNIT_ASSERT_EQUAL(string("dontcrashit"), string(ap_cfg->password));
+        CPPUNIT_ASSERT_EQUAL((uint8_t) 1, ap_cfg->channel);
+        CPPUNIT_ASSERT_EQUAL(ESP8266_ENCRYPTION_WPA2_PSK, ap_cfg->encryption);
+
+	assertGenericResponse(response, "setWifiCfg", API_SUCCESS);
+}
+
+void LoggerApiTest::testSetWifiCfgApBadChannel()
+{
+        char *response = processApiGeneric("set_wifi_cfg_ap_bad_channel.json");
+	assertGenericResponse(response, "setWifiCfg", API_ERROR_PARAMETER);
+}
+
+void LoggerApiTest::testSetWifiCfgApBadEncryption()
+{
+        char *response = processApiGeneric("set_wifi_cfg_ap_bad_encryption.json");
+	assertGenericResponse(response, "setWifiCfg", API_ERROR_PARAMETER);
+}
+
+void LoggerApiTest::testGetWifiCfgDefault() {
+        const char *response = processApiGeneric("get_wifi_cfg.json");
+
+        Object json;
+        stringToJson(response, json);
+
+        Object gwc = json["wifiCfg"];
+        CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)gwc["active"]);
+
+        Object wcc = gwc["client"];
+        CPPUNIT_ASSERT_EQUAL(false, (bool)(Boolean)wcc["active"]);
+        CPPUNIT_ASSERT_EQUAL(string(""), (string)(String)wcc["ssid"]);
+        CPPUNIT_ASSERT_EQUAL(string(""), (string)(String)wcc["password"]);
+
+        Object apc = gwc["ap"];
+        CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)apc["active"]);
+        CPPUNIT_ASSERT_EQUAL(string(""), (string)(String)apc["password"]);
+        CPPUNIT_ASSERT_EQUAL(string("none"), (string)(String)apc["encryption"]);
+        CPPUNIT_ASSERT_EQUAL(11, (int)(Number)apc["channel"]);
+}
+
+void LoggerApiTest::testSetGetWifiCfg() {
+        testSetWifiCfg();
+
+        setupMockSerial();
+        const char *response = processApiGeneric("get_wifi_cfg.json");
+
+        Object json;
+        stringToJson(response, json);
+
+        Object gwc = json["wifiCfg"];
+        CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)gwc["active"]);
+
+        Object wcc = gwc["client"];
+        CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)wcc["active"]);
+        CPPUNIT_ASSERT_EQUAL(string("foobar"), (string)(String)wcc["ssid"]);
+        CPPUNIT_ASSERT_EQUAL(string("bazbiz"), (string)(String)wcc["password"]);
+
+        Object apc = gwc["ap"];
+        CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)apc["active"]);
+        CPPUNIT_ASSERT_EQUAL(string("RaceIt"), (string)(String)apc["ssid"]);
+        CPPUNIT_ASSERT_EQUAL(string("dontcrashit"),
+                             (string)(String)apc["password"]);
+        CPPUNIT_ASSERT_EQUAL(string("wpa2"), (string)(String)apc["encryption"]);
+        CPPUNIT_ASSERT_EQUAL(1, (int)(Number)apc["channel"]);
+}
+
+void LoggerApiTest::setActiveTrack()
+{
+        char *response = processApiGeneric("set_active_track.json");
+        assertGenericResponse(response, "setActiveTrack", API_SUCCESS);
+
+        CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_EXTERNALLY_SET,
+                             lapstats_get_track_status());
+        CPPUNIT_ASSERT_EQUAL(true, lapstats_is_track_valid());
+        CPPUNIT_ASSERT_EQUAL(999999, lapstats_get_selected_track_id());
+        CPPUNIT_ASSERT_EQUAL(false, lapstats_track_has_sectors());
+
+        const float rad_deg = getWorkingLoggerConfig()->TrackConfigs.radius;
+        const float radius_m = lapstats_degrees_to_meters(rad_deg);
+        CPPUNIT_ASSERT_EQUAL(radius_m, lapstats_get_geo_circle_radius());
+}
+
+void LoggerApiTest::setActiveTrackSectors()
+{
+        char *response = processApiGeneric("set_active_track_sectors.json");
+        assertGenericResponse(response, "setActiveTrack", API_SUCCESS);
+
+        CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_EXTERNALLY_SET,
+                             lapstats_get_track_status());
+        CPPUNIT_ASSERT_EQUAL(true, lapstats_is_track_valid());
+        CPPUNIT_ASSERT_EQUAL(999999, lapstats_get_selected_track_id());
+        CPPUNIT_ASSERT_EQUAL(true, lapstats_track_has_sectors());
+
+        const float rad_deg = getWorkingLoggerConfig()->TrackConfigs.radius;
+        const float radius_m = lapstats_degrees_to_meters(rad_deg);
+        CPPUNIT_ASSERT_EQUAL(radius_m, lapstats_get_geo_circle_radius());
+}
+
+
+void LoggerApiTest::setActiveTrackInvalid()
+{
+        char *response = processApiGeneric("set_active_track_invalid.json");
+        assertGenericResponse(response, "setActiveTrack", API_ERROR_PARAMETER);
+
+        CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_WAITING_TO_CONFIG,
+                             lapstats_get_track_status());
+        CPPUNIT_ASSERT_EQUAL(false, lapstats_is_track_valid());
+        CPPUNIT_ASSERT_EQUAL(0, lapstats_get_selected_track_id());
+}
+
+void LoggerApiTest::setActiveTrackRadiusMeters()
+{
+        char *response =
+                processApiGeneric("set_active_track_radius_meters.json");
+        assertGenericResponse(response, "setActiveTrack", API_SUCCESS);
+
+        CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_EXTERNALLY_SET,
+                             lapstats_get_track_status());
+        CPPUNIT_ASSERT_EQUAL(true, lapstats_is_track_valid());
+        CPPUNIT_ASSERT_EQUAL(8888, lapstats_get_selected_track_id());
+        CPPUNIT_ASSERT_EQUAL((float) 7, lapstats_get_geo_circle_radius());
+}
+
+void LoggerApiTest::setActiveTrackRadiusDegrees()
+{
+        char *response =
+                processApiGeneric("set_active_track_radius_degrees.json");
+        assertGenericResponse(response, "setActiveTrack", API_SUCCESS);
+
+        CPPUNIT_ASSERT_EQUAL(TRACK_STATUS_EXTERNALLY_SET,
+                             lapstats_get_track_status());
+        CPPUNIT_ASSERT_EQUAL(true, lapstats_is_track_valid());
+        CPPUNIT_ASSERT_EQUAL(8675309, lapstats_get_selected_track_id());
+        const float rad_deg = 0.007;
+        const float radius_m = lapstats_degrees_to_meters(rad_deg);
+        CPPUNIT_ASSERT_EQUAL(radius_m, lapstats_get_geo_circle_radius());
+}
+
+void LoggerApiTest::testGetAutoLoggerCfgDefault() {
+        const char *response = processApiGeneric("get_auto_logger_cfg.json");
+
+        struct auto_logger_config alc;
+        auto_logger_reset_config(&alc);
+
+        Object json;
+        stringToJson(response, json);
+
+        Object galc = json["autoLoggerCfg"];
+        CPPUNIT_ASSERT_EQUAL(alc.active, (bool)(Boolean)galc["active"]);
+
+        Object alctc = galc["time"];
+        CPPUNIT_ASSERT_EQUAL(alc.time_start, (uint32_t)(Number)alctc["start"]);
+        CPPUNIT_ASSERT_EQUAL(alc.time_stop, (uint32_t)(Number)alctc["stop"]);
+
+        Object alcsc = galc["speed"];
+        CPPUNIT_ASSERT_EQUAL(alc.speed_start, (float)(Number)alcsc["start"]);
+        CPPUNIT_ASSERT_EQUAL(alc.speed_stop, (float)(Number)alcsc["stop"]);
+}
+
+void LoggerApiTest::testSetAutoLoggerCfg() {
+        const LoggerConfig *lc = getWorkingLoggerConfig();
+        char *response = processApiGeneric("set_auto_logger_cfg.json");
+
+        const struct auto_logger_config* cfg = &lc->auto_logger_cfg;
+        CPPUNIT_ASSERT_EQUAL(true, cfg->active);
+
+	CPPUNIT_ASSERT_EQUAL((uint32_t) 3, cfg->time_start);
+        CPPUNIT_ASSERT_EQUAL((uint32_t) 42, cfg->time_stop);
+
+        CPPUNIT_ASSERT_EQUAL((float) 45.6, cfg->speed_start);
+        CPPUNIT_ASSERT_EQUAL((float) 34.5, cfg->speed_stop);
+
+        assertGenericResponse(response, "setAutoLoggerCfg", API_SUCCESS);
 }

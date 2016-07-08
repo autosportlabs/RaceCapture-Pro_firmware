@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -197,8 +197,8 @@ static void prvProcessTimerOrBlockTask( portTickType xNextExpireTime, portBASE_T
 
 portBASE_TYPE xTimerCreateTimerTask( void )
 {
-portBASE_TYPE xReturn = pdFAIL;
-
+        portBASE_TYPE xReturn = pdFAIL;
+        static const signed portCHAR task_name[] = "Timer Service  ";
 	/* This function is called when the scheduler is started if
 	configUSE_TIMERS is set to 1.  Check that the infrastructure used by the
 	timer service task has been created/initialised.  If timers have already
@@ -211,12 +211,12 @@ portBASE_TYPE xReturn = pdFAIL;
 		{
 			/* Create the timer task, storing its handle in xTimerTaskHandle so
 			it can be returned by the xTimerGetTimerDaemonTaskHandle() function. */
-			xReturn = xTaskCreate( prvTimerTask, ( const signed char * ) "Tmr Svc", ( unsigned short ) configTIMER_TASK_STACK_DEPTH, NULL, ( ( unsigned portBASE_TYPE ) configTIMER_TASK_PRIORITY ) | portPRIVILEGE_BIT, &xTimerTaskHandle );
+			xReturn = xTaskCreate( prvTimerTask, task_name, ( unsigned short ) configTIMER_TASK_STACK_DEPTH, NULL, ( ( unsigned portBASE_TYPE ) configTIMER_TASK_PRIORITY ) | portPRIVILEGE_BIT, &xTimerTaskHandle );
 		}
 		#else
 		{
 			/* Create the timer task without storing its handle. */
-			xReturn = xTaskCreate( prvTimerTask, ( const signed char * ) "Tmr Svc", ( unsigned short ) configTIMER_TASK_STACK_DEPTH, NULL, ( ( unsigned portBASE_TYPE ) configTIMER_TASK_PRIORITY ) | portPRIVILEGE_BIT, NULL);
+			xReturn = xTaskCreate( prvTimerTask, task_name, ( unsigned short ) configTIMER_TASK_STACK_DEPTH, NULL, ( ( unsigned portBASE_TYPE ) configTIMER_TASK_PRIORITY ) | portPRIVILEGE_BIT, NULL);
 		}
 		#endif
 	}
@@ -535,9 +535,9 @@ portTickType xTimeNow;
 
 		traceTIMER_COMMAND_RECEIVED( pxTimer, xMessage.xMessageID, xMessage.xMessageValue );
 
-		/* In this case the xTimerListsWereSwitched parameter is not used, but 
-		it must be present in the function call.  prvSampleTimeNow() must be 
-		called after the message is received from xTimerQueue so there is no 
+		/* In this case the xTimerListsWereSwitched parameter is not used, but
+		it must be present in the function call.  prvSampleTimeNow() must be
+		called after the message is received from xTimerQueue so there is no
 		possibility of a higher priority task adding a message to the message
 		queue with a time that is ahead of the timer daemon task (because it
 		pre-empted the timer daemon task after the xTimeNow value was set). */
@@ -572,7 +572,7 @@ portTickType xTimeNow;
 				configASSERT( ( pxTimer->xTimerPeriodInTicks > 0 ) );
 
 				/* The new period does not really have a reference, and can be
-				longer or shorter than the old one.  The command time is 
+				longer or shorter than the old one.  The command time is
 				therefore set to the current time, and as the period cannot be
 				zero the next expiry time can only be in the future, meaning
 				(unlike for the xTimerStart() case above) there is no fail case
@@ -702,6 +702,3 @@ xTIMER *pxTimer = ( xTIMER * ) xTimer;
 to include software timer functionality.  If you want to include software timer
 functionality then ensure configUSE_TIMERS is set to 1 in FreeRTOSConfig.h. */
 #endif /* configUSE_TIMERS == 1 */
-
-
-

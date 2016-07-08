@@ -23,7 +23,7 @@
 #include "luaTask.h"
 #include "mem_mang.h"
 #include "memory.h"
-#include "mod_string.h"
+#include <string.h>
 #include "printk.h"
 #include "tracks.h"
 
@@ -31,22 +31,27 @@
 #include "memory.h"
 static const volatile Tracks g_tracks __attribute__((section(".tracks\n\t#")));
 #else
-static Tracks g_tracks = DEFAULT_TRACKS;
+static Tracks g_tracks = {};
 #endif
-
-static const Tracks g_defaultTracks = DEFAULT_TRACKS;
 
 void initialize_tracks()
 {
-    if (versionChanged(&g_tracks.versionInfo)) {
-        flash_default_tracks();
-    }
+        const VersionInfo vi = g_tracks.versionInfo;
+        if (version_check_changed(&vi, "Tracks DB"))
+                flash_default_tracks();
 }
 
 int flash_default_tracks(void)
 {
-    pr_info("flashing default tracks...");
-    return flash_tracks(&g_defaultTracks, sizeof (g_defaultTracks));
+        Tracks* def_tracks = calloc(1, sizeof(Tracks));
+        const VersionInfo* cv = get_current_version_info();
+        memcpy(&def_tracks->versionInfo, cv, sizeof(VersionInfo));
+
+        pr_info("flashing default tracks...");
+        const int status = flash_tracks(def_tracks, sizeof(Tracks));
+
+        free(def_tracks);
+        return status;
 }
 
 int flash_tracks(const Tracks *source, size_t rawSize)
@@ -84,7 +89,7 @@ enum track_add_result add_track(const Track *track, const size_t index,
         static Tracks *g_tracksBuffer;
         if (NULL == g_tracksBuffer) {
 
-#if defined(LUA_SUPPORT)
+#if LUA_SUPPORT
                 lua_task_stop();
 #endif /* LUA_SUPPORT */
 
@@ -119,7 +124,7 @@ enum track_add_result add_track(const Track *track, const size_t index,
 
         pr_info("win!\r\n");
 
-#if defined(LUA_SUPPORT)
+#if LUA_SUPPORT
         lua_task_start();
 #endif /* LUA_SUPPORT */
 

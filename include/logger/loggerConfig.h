@@ -22,13 +22,16 @@
 #ifndef LOGGERCONFIG_H_
 #define LOGGERCONFIG_H_
 
+#include "auto_logger.h"
 #include "capabilities.h"
 #include "channel_config.h"
 #include "cpp_guard.h"
 #include "geopoint.h"
-#include "tracks.h"
+#include "serial_device.h"
 #include "timer_config.h"
+#include "tracks.h"
 #include "versionInfo.h"
+#include "wifi.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -394,12 +397,10 @@ typedef struct _TrackConfig {
 
 #define BT_DEVICE_NAME_LENGTH 21
 #define BT_PASSCODE_LENGTH 5
-#define DEFAULT_BT_BAUD 115200
 #define DEFAULT_BT_ENABLED 1
 
 typedef struct _BluetoothConfig {
         unsigned char btEnabled;
-        unsigned int baudRate;
         char new_name [BT_DEVICE_NAME_LENGTH];
         char new_pin [BT_PASSCODE_LENGTH];
 } BluetoothConfig;
@@ -442,11 +443,11 @@ typedef struct _TelemetryConfig {
         int telemetry_port;
 } TelemetryConfig;
 
-
 typedef struct _ConnectivityConfig {
-    BluetoothConfig bluetoothConfig;
-    CellularConfig cellularConfig;
-    TelemetryConfig telemetryConfig;
+        BluetoothConfig bluetoothConfig;
+        CellularConfig cellularConfig;
+        TelemetryConfig telemetryConfig;
+        struct wifi_cfg wifi;
 } ConnectivityConfig;
 
 #define SD_LOGGING_MODE_DISABLED					0
@@ -456,7 +457,7 @@ typedef struct _ConnectivityConfig {
  * Configurations specific to our logging infrastructure.
  */
 struct logging_config {
-        bool serial[SERIAL_COUNT];
+        enum serial_log_type serial[__SERIAL_COUNT];
 };
 
 typedef struct _LoggerConfig {
@@ -512,6 +513,7 @@ typedef struct _LoggerConfig {
     ConnectivityConfig ConnectivityConfigs;
 
         struct logging_config logging_cfg;
+        struct auto_logger_config auto_logger_cfg;
     //Padding data to accommodate flash routine
     char padding_data[FLASH_PAGE_SIZE];
 } LoggerConfig;

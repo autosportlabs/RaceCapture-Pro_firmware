@@ -23,7 +23,7 @@
 #include "channel_config.h"
 #include "loggerConfig_test.h"
 #include "loggerConfig.h"
-#include "mod_string.h"
+#include <string.h>
 
 #include <string>
 

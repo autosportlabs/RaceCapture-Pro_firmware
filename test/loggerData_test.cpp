@@ -1,7 +1,7 @@
 #include "loggerData_test.h"
 #include "loggerSampleData.test.h"
 #include "loggerApi.h"
-#include "mod_string.h"
+#include <string.h>
 #include "mock_serial.h"
 #include "rcp_cpp_unit.hh"
 #include "imu_mock.h"
