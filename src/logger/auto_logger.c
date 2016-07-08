@@ -35,12 +35,23 @@
 
 #define DEFAULT_START_SPEED_MPH	25
 #define DEFAULT_START_TIME_SEC	5
-#define DEFAULT_STOP_SPEED_MPH	3
-#define DEFAULT_STOP_TIME_SEC	30
+#define DEFAULT_STOP_SPEED_MPH	15
+#define DEFAULT_STOP_TIME_SEC	10
 #define LOG_PFX			"[auto_logger] "
+
+/*
+ * NOTE:
+ * We use the logging bool here because it helps us prevent contention
+ * with manual user directives.  In example it will allow a user to start
+ * logging using the manual button and not have the auto logger fight them
+ * by shutting logging off right away.  Vice versa applies when coming off
+ * the track.  It runs on the assumption that changing logging to a state
+ * that it is already in is a no-op.
+ */
 
 static struct {
         struct auto_logger_config *cfg;
+        bool logging;
         tiny_millis_t timestamp_start;
         tiny_millis_t timestamp_stop;
 } auto_logger_state;
@@ -106,6 +117,7 @@ bool auto_logger_init(struct auto_logger_config* cfg)
                 return false;
 
         auto_logger_state.cfg = cfg;
+        auto_logger_state.logging = logging_is_active();
         auto_logger_state.timestamp_start = 0;
         auto_logger_state.timestamp_stop = 0;
         return true;
@@ -169,17 +181,19 @@ void auto_logger_gps_sample_cb(const GpsSample* sample)
                 return;
 
         const tiny_millis_t uptime = getUptime();
-        if (!logging_is_active()) {
+        if (!auto_logger_state.logging) {
                 if (!should_start_logging(sample, uptime))
                         return;
 
                 pr_info(LOG_PFX "Starting logging\r\n");
                 startLogging();
+                auto_logger_state.logging = true;
         } else {
                 if (!should_stop_logging(sample, uptime))
                         return;
 
                 pr_info(LOG_PFX "Stopping logging\r\n");
                 stopLogging();
+                auto_logger_state.logging = false;
         }
 }
