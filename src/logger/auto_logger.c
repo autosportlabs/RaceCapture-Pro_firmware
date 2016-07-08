@@ -32,7 +32,6 @@
 #include "printk.h"
 #include "serial.h"
 #include <stdbool.h>
-#include <string.h>
 
 #define DEFAULT_START_SPEED_MPH	25
 #define DEFAULT_START_TIME_SEC	5
@@ -48,7 +47,7 @@ static struct {
 
 void auto_logger_reset_config(struct auto_logger_config* cfg)
 {
-        memset(cfg, 0, sizeof(*cfg));
+        cfg->active = true;
 
         cfg->time_start = DEFAULT_START_TIME_SEC;
         cfg->speed_start = DEFAULT_START_SPEED_MPH;
