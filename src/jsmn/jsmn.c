@@ -406,7 +406,7 @@ bool jsmn_exists_set_val_bool(const jsmntok_t* root, const char* field,
 bool jsmn_exists_set_val_string(const jsmntok_t* root, const char* field,
                                 void* val, const size_t max_len)
 {
-    const jsmntok_t *node = jsmn_find_get_node_value_prim(root, field);
+    const jsmntok_t *node = jsmn_find_get_node_value_string(root, field);
 
     if (!node)
             return false;
