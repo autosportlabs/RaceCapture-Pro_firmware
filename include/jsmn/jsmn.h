@@ -23,6 +23,8 @@
 #define __JSMN_H_
 
 #include "cpp_guard.h"
+#include <stdbool.h>
+#include <stddef.h>
 
 CPP_GUARD_BEGIN
 
@@ -122,6 +124,18 @@ const jsmntok_t * jsmn_find_get_node_value_string(const jsmntok_t *node,
  * Finds the primitive value node of a Node with a given name.
  */
 const jsmntok_t * jsmn_find_get_node_value_prim(const jsmntok_t *node, const char *name);
+
+bool jsmn_exists_set_val_int(const jsmntok_t* root, const char* field,
+                             void* val);
+
+bool jsmn_exists_set_val_float(const jsmntok_t* root, const char* field,
+                               void* val);
+
+bool jsmn_exists_set_val_bool(const jsmntok_t* root, const char* field,
+                              void* val);
+
+bool jsmn_exists_set_val_string(const jsmntok_t* root, const char* field,
+                                void* val, const size_t max_len);
 
 CPP_GUARD_END
 
