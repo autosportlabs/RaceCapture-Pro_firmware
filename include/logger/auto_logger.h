@@ -31,14 +31,15 @@
 
 CPP_GUARD_BEGIN
 
+struct auto_logger_speed_time {
+        float speed;
+        uint32_t time;
+};
+
 struct auto_logger_config {
         bool active;
-        /* Time is in seconds */
-        uint32_t time_start;
-        uint32_t time_stop;
-        /* Speed is in MPH */
-        float speed_start;
-        float speed_stop;
+        struct auto_logger_speed_time start;
+        struct auto_logger_speed_time stop;
 };
 
 void auto_logger_reset_config(struct auto_logger_config* cfg);

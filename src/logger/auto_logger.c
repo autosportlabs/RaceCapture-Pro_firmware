@@ -49,11 +49,22 @@ void auto_logger_reset_config(struct auto_logger_config* cfg)
 {
         cfg->active = true;
 
-        cfg->time_start = DEFAULT_START_TIME_SEC;
-        cfg->speed_start = DEFAULT_START_SPEED_MPH;
+        cfg->start.time = DEFAULT_START_TIME_SEC;
+        cfg->start.speed = DEFAULT_START_SPEED_MPH;
 
-        cfg->time_stop = DEFAULT_STOP_TIME_SEC;
-        cfg->speed_stop = DEFAULT_STOP_SPEED_MPH;
+        cfg->stop.time = DEFAULT_STOP_TIME_SEC;
+        cfg->stop.speed = DEFAULT_STOP_SPEED_MPH;
+}
+
+static void get_speed_time(struct Serial* serial,
+                           struct auto_logger_speed_time *alst,
+                           const char* name,
+                           const bool more)
+{
+        json_objStartString(serial, name);
+        json_float(serial, "speed", alst->speed, 2, true);
+        json_uint(serial, "time", alst->time, false);
+        json_objEnd(serial, more);
 }
 
 void auto_logger_get_config(struct auto_logger_config* cfg,
@@ -62,38 +73,30 @@ void auto_logger_get_config(struct auto_logger_config* cfg,
 {
         json_objStartString(serial, "autoLoggerCfg");
         json_bool(serial, "active", cfg->active, true);
-
-        json_objStartString(serial, "time");
-        json_uint(serial, "start", cfg->time_start, true);
-        json_uint(serial, "stop", cfg->time_stop, false);
-        json_objEnd(serial, true);
-
-        json_objStartString(serial, "speed");
-        json_float(serial, "start", cfg->speed_start, 2, true);
-        json_float(serial, "stop", cfg->speed_stop, 2, false);
-        json_objEnd(serial, false);
-
+        get_speed_time(serial, &cfg->start, "start", true);
+        get_speed_time(serial, &cfg->stop, "stop", false);
         json_objEnd(serial, more);
 }
+
+static void set_speed_time(struct auto_logger_speed_time *alst,
+                           const char* name,
+                           const jsmntok_t* root)
+{
+        const jsmntok_t* tok = jsmn_find_node(root, name);
+        if (!tok)
+                return;
+
+        jsmn_exists_set_val_float(tok, "speed", &alst->speed);
+        jsmn_exists_set_val_int(tok, "time", &alst->time);
+}
+
 
 bool auto_logger_set_config(struct auto_logger_config* cfg,
                             const jsmntok_t *json)
 {
-        const jsmntok_t* tok;
         jsmn_exists_set_val_bool(json, "active", &cfg->active);
-
-        tok = jsmn_find_node(json, "time");
-        if (tok) {
-                jsmn_exists_set_val_int(tok, "start", &cfg->time_start);
-                jsmn_exists_set_val_int(tok, "stop", &cfg->time_stop);
-        }
-
-        tok = jsmn_find_node(json, "speed");
-        if (tok) {
-                jsmn_exists_set_val_float(tok, "start", &cfg->speed_start);
-                jsmn_exists_set_val_float(tok, "stop", &cfg->speed_stop);
-        }
-
+        set_speed_time(&cfg->start, "start", json);
+        set_speed_time(&cfg->stop, "stop", json);
         return true;
 }
 
@@ -112,9 +115,9 @@ static bool should_start_logging(const GpsSample* sample,
                                  const tiny_millis_t uptime)
 {
         const tiny_millis_t trig_time =
-                (tiny_millis_t) auto_logger_state.cfg->time_start * 1000;
+                (tiny_millis_t) auto_logger_state.cfg->start.time * 1000;
         const float trig_speed =
-                convert_mph_kph(auto_logger_state.cfg->speed_start);
+                convert_mph_kph(auto_logger_state.cfg->start.speed);
 
         if (0 == trig_time)
                 return false;
@@ -138,9 +141,9 @@ static bool should_stop_logging(const GpsSample* sample,
                                 const tiny_millis_t uptime)
 {
         const tiny_millis_t trig_time =
-                (tiny_millis_t) auto_logger_state.cfg->time_stop * 1000;
+                (tiny_millis_t) auto_logger_state.cfg->stop.time * 1000;
         const float trig_speed =
-                convert_mph_kph(auto_logger_state.cfg->speed_stop);
+                convert_mph_kph(auto_logger_state.cfg->stop.speed);
 
         if (0 == trig_time)
                 return false;

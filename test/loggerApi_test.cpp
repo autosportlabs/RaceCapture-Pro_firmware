@@ -1522,13 +1522,13 @@ void LoggerApiTest::testGetAutoLoggerCfgDefault() {
         Object galc = json["autoLoggerCfg"];
         CPPUNIT_ASSERT_EQUAL(alc.active, (bool)(Boolean)galc["active"]);
 
-        Object alctc = galc["time"];
-        CPPUNIT_ASSERT_EQUAL(alc.time_start, (uint32_t)(Number)alctc["start"]);
-        CPPUNIT_ASSERT_EQUAL(alc.time_stop, (uint32_t)(Number)alctc["stop"]);
+        Object start_st = galc["start"];
+        CPPUNIT_ASSERT_EQUAL(alc.start.speed, (float)(Number)start_st["speed"]);
+        CPPUNIT_ASSERT_EQUAL(alc.start.time, (uint32_t)(Number)start_st["time"]);
 
-        Object alcsc = galc["speed"];
-        CPPUNIT_ASSERT_EQUAL(alc.speed_start, (float)(Number)alcsc["start"]);
-        CPPUNIT_ASSERT_EQUAL(alc.speed_stop, (float)(Number)alcsc["stop"]);
+        Object stop_st = galc["stop"];
+        CPPUNIT_ASSERT_EQUAL(alc.stop.time, (uint32_t)(Number)stop_st["time"]);
+        CPPUNIT_ASSERT_EQUAL(alc.stop.speed, (float)(Number)stop_st["speed"]);
 }
 
 void LoggerApiTest::testSetAutoLoggerCfg() {
@@ -1538,11 +1538,11 @@ void LoggerApiTest::testSetAutoLoggerCfg() {
         const struct auto_logger_config* cfg = &lc->auto_logger_cfg;
         CPPUNIT_ASSERT_EQUAL(true, cfg->active);
 
-	CPPUNIT_ASSERT_EQUAL((uint32_t) 3, cfg->time_start);
-        CPPUNIT_ASSERT_EQUAL((uint32_t) 42, cfg->time_stop);
+        CPPUNIT_ASSERT_EQUAL((float) 45.6, cfg->start.speed);
+	CPPUNIT_ASSERT_EQUAL((uint32_t) 3, cfg->start.time);
 
-        CPPUNIT_ASSERT_EQUAL((float) 45.6, cfg->speed_start);
-        CPPUNIT_ASSERT_EQUAL((float) 34.5, cfg->speed_stop);
+        CPPUNIT_ASSERT_EQUAL((uint32_t) 42, cfg->stop.time);
+        CPPUNIT_ASSERT_EQUAL((float) 34.5, cfg->stop.speed);
 
         assertGenericResponse(response, "setAutoLoggerCfg", API_SUCCESS);
 }

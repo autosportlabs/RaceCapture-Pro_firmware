@@ -75,7 +75,7 @@ void AutoLoggerTest::shouldStartLoggingNoTrigTime()
         const tiny_millis_t t2 = t1 + getTriggerTimeStart();
 
         setGpsSpeedAboveStartTrigger();
-        auto_logger_state.cfg->time_start = 0;
+        auto_logger_state.cfg->start.time = 0;
         auto_logger_state.timestamp_start = t1;
 
         CPPUNIT_ASSERT_EQUAL(false, should_start_logging(&gps_sample, t1));
@@ -112,7 +112,7 @@ void AutoLoggerTest::shouldStopLoggingNoTrigTime()
         const tiny_millis_t t2 = t1 + getTriggerTimeStop();
 
         setGpsSpeedBelowStopTrigger();
-        auto_logger_state.cfg->time_stop = 0;
+        auto_logger_state.cfg->stop.time = 0;
         auto_logger_state.timestamp_stop = t1;
 
         CPPUNIT_ASSERT_EQUAL(false, should_stop_logging(&gps_sample, t1));
