@@ -86,3 +86,11 @@ xQueueHandle xQueueCreateMutex()
         /* Can't return NULL b/c failure checks.  Wing it */
         return (xQueueHandle) 1;
 }
+
+signed portBASE_TYPE xQueueGenericSendFromISR(xQueueHandle pxQueue,
+                                              const void * const pvItemToQueue,
+                                              signed portBASE_TYPE *pxHigherPriorityTaskWoken,
+                                              portBASE_TYPE xCopyPosition)
+{
+        return pdTRUE;
+}

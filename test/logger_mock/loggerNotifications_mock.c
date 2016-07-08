@@ -22,4 +22,4 @@
 
 #include "loggerNotifications.h"
 
-void configChanged() {}
+//void configChanged() {}
