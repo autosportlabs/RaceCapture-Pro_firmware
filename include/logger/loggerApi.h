@@ -38,6 +38,7 @@ CPP_GUARD_BEGIN
         API_METHOD("calImu", api_calibrateImu)                          \
         API_METHOD("facReset", api_factoryReset)                        \
         API_METHOD("flashCfg", api_flashConfig)                         \
+        API_METHOD("getAutoLoggerCfg", api_get_auto_logger_cfg)         \
         API_METHOD("getCanCfg", api_getCanConfig)                       \
         API_METHOD("getCapabilities", api_getCapabilities)              \
         API_METHOD("getConnCfg", api_getConnectivityConfig)             \
@@ -56,6 +57,7 @@ CPP_GUARD_BEGIN
         API_METHOD("log", api_log)                                      \
         API_METHOD("s", api_sampleData)                                 \
         API_METHOD("setActiveTrack", api_set_active_track)              \
+        API_METHOD("setAutoLoggerCfg", api_set_auto_logger_cfg)         \
         API_METHOD("setCanCfg", api_setCanConfig)                       \
         API_METHOD("setConnCfg", api_setConnectivityConfig)             \
         API_METHOD("setGpsCfg", api_setGpsConfig)                       \
@@ -185,6 +187,8 @@ int api_set_telemetry_stop(struct Serial *serial, const jsmntok_t *json);
 /* Volatile setter of active Track */
 int api_set_active_track(struct Serial *serial, const jsmntok_t *json);
 
+int api_get_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json);
+int api_set_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json);
 CPP_GUARD_END
 
 #endif /* LOGGERAPI_H_ */

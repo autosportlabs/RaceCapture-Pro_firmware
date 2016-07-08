@@ -82,6 +82,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/lua/luaScript.c \
 			$(RCP_SRC)/lua/luaTask.c \
 			$(RCP_SRC)/usb_comm/usb_comm.c \
+			$(RCP_SRC)/logger/auto_logger.c \
 			$(RCP_SRC)/logger/loggerApi.c \
 			$(RCP_SRC)/logger/fileWriter.c \
 			$(RCP_SRC)/logger/loggerCommands.c \
@@ -110,6 +111,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/LED/led.c \
 			$(RCP_SRC)/PWM/PWM.c \
 			$(RCP_SRC)/logging/printk.c \
+			$(RCP_SRC)/util/convert.c \
 			$(RCP_SRC)/util/ring_buffer.c \
 			$(RCP_SRC)/util/ts_ring_buff.c \
 			$(RCP_SRC)/virtual_channel/virtual_channel.c \

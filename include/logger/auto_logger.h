@@ -19,25 +19,41 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LOGGERTASKEX_H_
-#define LOGGERTASKEX_H_
+#ifndef _AUTO_LOGGER_H_
+#define _AUTO_LOGGER_H_
 
 #include "cpp_guard.h"
-#include "loggerNotifications.h"
-#include "sampleRecord.h"
+#include "dateTime.h"
+#include "serial.h"
+#include "jsmn.h"
+#include "gps.h"
 #include <stdbool.h>
-#include <stdint.h>
 
 CPP_GUARD_BEGIN
 
-void startLogging();
-void stopLogging();
+struct auto_logger_config {
+        bool active;
+        /* Time is in seconds */
+        uint32_t time_start;
+        uint32_t time_stop;
+        /* Speed is in MPH */
+        float speed_start;
+        float speed_stop;
+};
 
-void configChanged();
+void auto_logger_reset_config(struct auto_logger_config* cfg);
 
-void startLoggerTaskEx( int priority);
-void loggerTaskEx(void *params);
+void auto_logger_get_config(struct auto_logger_config* cfg,
+                            struct Serial* serial,
+                            const bool more);
+
+bool auto_logger_set_config(struct auto_logger_config* cfg,
+                            const jsmntok_t *json);
+
+bool auto_logger_init(struct auto_logger_config* cfg);
+
+void auto_logger_gps_sample_cb(const GpsSample* sample);
 
 CPP_GUARD_END
 
-#endif /* LOGGERTASKEX_H_ */
+#endif /* _AUTO_LOGGER_H_ */

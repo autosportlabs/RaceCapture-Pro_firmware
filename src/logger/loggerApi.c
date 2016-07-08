@@ -1908,3 +1908,24 @@ int api_set_active_track(struct Serial *serial, const jsmntok_t *json)
         lapstats_set_active_track(&track, radius_m);
         return API_SUCCESS;
 }
+
+int api_get_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json)
+{
+        struct auto_logger_config* cfg =
+                &getWorkingLoggerConfig()->auto_logger_cfg;
+
+        json_objStart(serial);
+        auto_logger_get_config(cfg, serial, false);
+        json_objEnd(serial, false);
+
+        return API_SUCCESS_NO_RETURN;
+}
+
+int api_set_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json)
+{
+        struct auto_logger_config* cfg =
+                &getWorkingLoggerConfig()->auto_logger_cfg;
+
+        return auto_logger_set_config(cfg, json) ?
+                API_SUCCESS : API_ERROR_UNSPECIFIED;
+}
