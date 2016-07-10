@@ -466,10 +466,10 @@ static int lua_set_gpio(lua_State *L)
 {
         lua_validate_args_count(L, 2, 2);
         lua_validate_arg_number(L, 1);
-        lua_validate_arg_boolean(L, 2);
+        lua_validate_arg_boolean_flex(L, 2);
 
         const unsigned int channel = (unsigned int) lua_tointeger(L, 1);
-        const unsigned int state = (unsigned int) lua_toboolean(L, 2);
+        const unsigned int state = lua_toboolean_flex(L, 2);
         GPIO_set(channel, state);
         return 0;
 }
@@ -767,12 +767,13 @@ static int lua_set_led(lua_State *ls)
 {
         lua_validate_args_count(ls, 2, 2);
         lua_validate_arg_number_or_string(ls, 1);
+	lua_validate_arg_boolean_flex(ls, 2);
 
         /*
          * Numbers can be passed in as 123 or "123" in lua.  So handle
          * that case first
          */
-        const bool on = lua_toboolean(ls, 2);
+        volatile const bool on = lua_toboolean_flex(ls, 2);
         bool res;
         if (lua_isnumber(ls, 1)) {
                 res = led_set_index(lua_tointeger(ls, 1), on);
