@@ -42,24 +42,24 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define AP_BACKOFF_MS			30000
-#define AT_TASK_TIMEOUT_MS		3
+#define AP_BACKOFF_MS		30000
+#define AT_TASK_TIMEOUT_MS	3
 #define CHECK_DONE_SLEEP_MS	3600000
-#define CLIENT_BACKOFF_MS		3000
-#define INIT_FAIL_SLEEP_MS		10000
-#define LED_PERIOD_MS			25
-#define LOG_PFX					"[ESP8266 Driver] "
-#define MAX_CHANNELS          5
+#define CLIENT_BACKOFF_MS	3000
+#define INIT_FAIL_SLEEP_MS	10000
+#define LED_PERIOD_MS		25
+#define LOG_PFX			"[ESP8266 Driver] "
+#define MAX_CHANNELS		5
 #define RX_DATA_TIMEOUT_TICKS	1
-#define SERIAL_BAUD           115200
-#define SERIAL_BITS           8
-#define SERIAL_CMD_MAX_LEN    1024
-#define SERIAL_PARITY         0
+#define SERIAL_BAUD		115200
+#define SERIAL_BITS		8
+#define SERIAL_CMD_MAX_LEN	1024
+#define SERIAL_PARITY		0
 #define SERIAL_RX_BUFF_SIZE	256
-#define SERIAL_STOP_BITS      1
+#define SERIAL_STOP_BITS	1
 #define SERIAL_TX_BUFF_SIZE	256
-#define TASK_STACK_SIZE       256
-#define TASK_THREAD_NAME      "ESP8266 Driver"
+#define TASK_STACK_SIZE		256
+#define TASK_THREAD_NAME	"ESP8266 Driver"
 
 enum init_state {
         INIT_STATE_UNINITIALIZED = 0,
