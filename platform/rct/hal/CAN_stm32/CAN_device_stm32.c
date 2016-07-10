@@ -1,17 +1,38 @@
+/*
+ * Race Capture Firmware
+ *
+ * Copyright (C) 2016 Autosport Labs
+ *
+ * This file is part of the Race Capture firmware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "CAN_device.h"
-#include <stdint.h>
-#include <mod_string.h>
 #include "FreeRTOS.h"
-#include "task.h"
+#include "led.h"
+#include "mod_string.h"
+#include "printk.h"
 #include "queue.h"
+#include "stm32f30x.h"
 #include "stm32f30x_can.h"
 #include "stm32f30x_gpio.h"
-#include "stm32f30x_rcc.h"
 #include "stm32f30x_misc.h"
-#include "stm32f30x.h"
+#include "stm32f30x_rcc.h"
+#include "task.h"
 #include "taskUtil.h"
-#include "printk.h"
-#include "led.h"
+#include <stdint.h>
 
 static xQueueHandle xCan1Rx;
 
@@ -191,25 +212,57 @@ int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
 
 int CAN_device_tx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
 {
-	if (channel > 0) {
+	if (channel != 0)
 		return 0;
+
+	CanTxMsg TxMessage;
+
+	/* Transmit Structure preparation */
+	if (msg->isExtendedAddress) {
+		TxMessage.ExtId = msg->addressValue;
+		TxMessage.IDE = CAN_ID_EXT;
+	} else {
+		TxMessage.StdId = msg->addressValue;
+		TxMessage.IDE = CAN_ID_STD;
 	}
 
-    CanTxMsg TxMessage;
+	TxMessage.RTR = CAN_RTR_DATA;
+	TxMessage.DLC = msg->dataLength;
+	memcpy(TxMessage.Data, msg->data, msg->dataLength);
+	const uint8_t mailbox = CAN_Transmit(CAN1, &TxMessage);
 
-    /* Transmit Structure preparation */
-    if (msg->isExtendedAddress) {
-        TxMessage.ExtId = msg->addressValue;
-        TxMessage.IDE = CAN_ID_EXT;
-    } else {
-        TxMessage.StdId = msg->addressValue;
-        TxMessage.IDE = CAN_ID_STD;
-    }
-    TxMessage.RTR = CAN_RTR_DATA;
-    TxMessage.DLC = msg->dataLength;
-    memcpy(TxMessage.Data, msg->data, msg->dataLength);
-    CAN_Transmit(CAN1, &TxMessage);
-    return 1;
+	/*
+         * Then they don't want to wait.  Ok.  Let caller know if they
+         * got a mailbox then.  If not, message was unable to be sent.
+         */
+        if (0 == timeoutMs)
+                return mailbox != CAN_TxStatus_NoMailBox;
+
+        /* Using ticks avoids a race-condition */
+        size_t ticks = getCurrentTicks();
+        const size_t trigger = ticks + msToTicks(timeoutMs);
+        uint8_t status = CAN_TxStatus_Failed;
+
+        while(ticks <= trigger) {
+                status = CAN_TransmitStatus(CAN1, mailbox);
+                if (CAN_TxStatus_Pending != status)
+                        break;
+
+                /*
+                 * Not using yield here as it will cause lower priority tasks
+                 * to starve.  Yield only allows tasks of equal or greater
+                 * priority to run.
+                 */
+                delayTicks(1);
+
+                ticks = getCurrentTicks();
+        }
+
+        if (CAN_TxStatus_Pending == status)
+                CAN_CancelTransmit(CAN1, mailbox);
+
+        return status == CAN_TxStatus_Ok;
+
 }
 
 int CAN_device_rx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
