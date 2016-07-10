@@ -21,7 +21,6 @@
 
 #include "CAN_device.h"
 #include "FreeRTOS.h"
-#include <string.h>
 #include "printk.h"
 #include "queue.h"
 #include "stm32f4xx_can.h"
@@ -30,8 +29,8 @@
 #include "stm32f4xx_rcc.h"
 #include "task.h"
 #include "taskUtil.h"
-
 #include <stdint.h>
+#include <string.h>
 
 static xQueueHandle xCan1Rx = NULL;
 static xQueueHandle xCan2Rx = NULL;
@@ -261,7 +260,7 @@ int CAN_device_tx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
         memcpy(TxMessage.Data, msg->data, msg->dataLength);
 
         CAN_TypeDef* chan = channel == 0 ? CAN1 : CAN2;
-        uint8_t mailbox = CAN_Transmit(chan, &TxMessage);
+        const uint8_t mailbox = CAN_Transmit(chan, &TxMessage);
 
         /*
          * Then they don't want to wait.  Ok.  Let caller know if they
