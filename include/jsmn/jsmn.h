@@ -135,7 +135,8 @@ bool jsmn_exists_set_val_bool(const jsmntok_t* root, const char* field,
                               void* val);
 
 bool jsmn_exists_set_val_string(const jsmntok_t* root, const char* field,
-                                void* val, const size_t max_len);
+                                void* val, const size_t max_len,
+				const bool strip);
 
 CPP_GUARD_END
 

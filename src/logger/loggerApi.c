@@ -903,9 +903,12 @@ static void setCellConfig(const jsmntok_t *root)
         CellularConfig *cellCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
         cellCfgNode++;
         setUnsignedCharValueIfExists(cellCfgNode, "cellEn", &cellCfg->cellEnabled, NULL);
-        jsmn_exists_set_val_string(cellCfgNode, "apnHost", cellCfg->apnHost, CELL_APN_HOST_LENGTH);
-        jsmn_exists_set_val_string(cellCfgNode, "apnUser", cellCfg->apnUser, CELL_APN_USER_LENGTH);
-        jsmn_exists_set_val_string(cellCfgNode, "apnPass", cellCfg->apnPass, CELL_APN_PASS_LENGTH);
+        jsmn_exists_set_val_string(cellCfgNode, "apnHost", cellCfg->apnHost,
+				   CELL_APN_HOST_LENGTH, true);
+        jsmn_exists_set_val_string(cellCfgNode, "apnUser", cellCfg->apnUser,
+				   CELL_APN_USER_LENGTH, true);
+        jsmn_exists_set_val_string(cellCfgNode, "apnPass", cellCfg->apnPass,
+				   CELL_APN_PASS_LENGTH, false);
     }
 }
 
@@ -916,8 +919,10 @@ static void setBluetoothConfig(const jsmntok_t *root)
         btCfgNode++;
         BluetoothConfig *btCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
         setUnsignedCharValueIfExists(btCfgNode, "btEn", &btCfg->btEnabled, NULL);
-        jsmn_exists_set_val_string(btCfgNode, "name", btCfg->new_name, BT_DEVICE_NAME_LENGTH);
-        jsmn_exists_set_val_string(btCfgNode, "pass", btCfg->new_pin, BT_PASSCODE_LENGTH);
+        jsmn_exists_set_val_string(btCfgNode, "name", btCfg->new_name,
+				   BT_DEVICE_NAME_LENGTH, true);
+        jsmn_exists_set_val_string(btCfgNode, "pass", btCfg->new_pin,
+				   BT_PASSCODE_LENGTH, false);
     }
 }
 
@@ -927,9 +932,15 @@ static void setTelemetryConfig(const jsmntok_t *root)
     if (telemetryCfgNode) {
         telemetryCfgNode++;
         TelemetryConfig *telemetryCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.telemetryConfig);
-        jsmn_exists_set_val_string(telemetryCfgNode, "deviceId", telemetryCfg->telemetryDeviceId, DEVICE_ID_LENGTH);
-        jsmn_exists_set_val_string(telemetryCfgNode, "host", telemetryCfg->telemetryServerHost, TELEMETRY_SERVER_HOST_LENGTH);
-        setUnsignedCharValueIfExists(telemetryCfgNode, "bgStream", &telemetryCfg->backgroundStreaming, filterBgStreamingMode);
+        jsmn_exists_set_val_string(telemetryCfgNode, "deviceId",
+				   telemetryCfg->telemetryDeviceId,
+				   DEVICE_ID_LENGTH, true);
+        jsmn_exists_set_val_string(telemetryCfgNode, "host",
+				   telemetryCfg->telemetryServerHost,
+				   TELEMETRY_SERVER_HOST_LENGTH, true);
+        setUnsignedCharValueIfExists(telemetryCfgNode, "bgStream",
+				     &telemetryCfg->backgroundStreaming,
+				     filterBgStreamingMode);
     }
 }
 
@@ -1700,9 +1711,9 @@ static void set_wifi_client_cfg(const jsmntok_t *json,
 {
         jsmn_exists_set_val_bool(json, "active", &cfg->active);
         jsmn_exists_set_val_string(json, "ssid", cfg->ssid,
-                               ARRAY_LEN(cfg->ssid));
+				   ARRAY_LEN(cfg->ssid), true);
         jsmn_exists_set_val_string(json, "password", cfg->passwd,
-                               ARRAY_LEN(cfg->passwd));
+				   ARRAY_LEN(cfg->passwd), false);
 
         /* Inform the Wifi device that settings may have changed */
         wifi_update_client_config(cfg);
@@ -1716,14 +1727,14 @@ static bool set_wifi_ap_cfg(const jsmntok_t *json,
 
         jsmn_exists_set_val_bool(json, "active", &tmp_cfg.active);
         jsmn_exists_set_val_string(json, "ssid", tmp_cfg.ssid,
-                               ARRAY_LEN(tmp_cfg.ssid));
+				   ARRAY_LEN(tmp_cfg.ssid), true);
         jsmn_exists_set_val_string(json, "password", tmp_cfg.password,
-                               ARRAY_LEN(tmp_cfg.password));
+				   ARRAY_LEN(tmp_cfg.password), false);
         jsmn_exists_set_val_int(json, "channel", (int*) &tmp_cfg.channel);
 
         char enc_str[12];
         jsmn_exists_set_val_string(json, "encryption", enc_str,
-                               ARRAY_LEN(enc_str));
+				   ARRAY_LEN(enc_str), true);
         tmp_cfg.encryption = wifi_api_get_encryption_enum_val(enc_str);
 
         if (!wifi_validate_ap_config(&tmp_cfg)) {
