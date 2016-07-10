@@ -34,7 +34,8 @@ void lua_validate_arg_number(lua_State *l, const int idx);
 void lua_validate_arg_string(lua_State *l, const int idx);
 void lua_validate_arg_table(lua_State *l, const int idx);
 void lua_validate_arg_number_or_string(lua_State *l, const int idx);
-
+void lua_validate_arg_boolean_flex(lua_State *l, const int idx);
+bool lua_toboolean_flex(lua_State *l, const int idx);
 void registerBaseLuaFunctions(lua_State *L);
 
 CPP_GUARD_END

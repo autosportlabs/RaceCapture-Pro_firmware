@@ -145,6 +145,38 @@ void lua_validate_arg_table(lua_State *l, const int idx)
         luaL_error(l, buff);
 }
 
+/**
+ * Validates that the argument at idx is of boolean type or int type.  The
+ * intention here is that the value will be converted using lua_toboolean_flex.
+ * This method is a form of a stop gap until we can implement strong typing
+ * in our bindings to/from lua since we have used 0 and 1 in places where
+ * we should have been using false/true respectively.
+ */
+void lua_validate_arg_boolean_flex(lua_State *l, const int idx)
+{
+        if (lua_isboolean(l, idx) || lua_isnumber(l, idx))
+                return;
+
+        char buff[48];
+        sprintf(buff, "Expected boolean/int argument at position %d", idx);
+        luaL_error(l, buff);
+}
+
+/**
+ * Similar to the lua_toboolean method except this method will treat a value
+ * of 0 as false instead of true.  This is for legacy purposese since we have
+ * used 1 and 0 in place of true and false in our API respectively.
+ * @return false if false, nil, 0 or string that represent 0; true otherwise.
+ */
+bool lua_toboolean_flex(lua_State *l, const int idx)
+{
+	if (lua_isnumber(l, idx))
+		return 0 != lua_tonumber(l, idx);
+
+	return lua_toboolean(l, idx);
+}
+
+
 static int lua_sleep(lua_State *L)
 {
         lua_validate_args_count(L, 1, 1);
