@@ -47,8 +47,8 @@ enum timer_edge {
 typedef struct _TimerConfig {
         ChannelConfig cfg;
         float filterAlpha;
+	float pulsePerRevolution;
         unsigned char mode;
-        unsigned char pulsePerRevolution;
         unsigned short timerSpeed;
         int filter_period_us;
         enum timer_edge edge;

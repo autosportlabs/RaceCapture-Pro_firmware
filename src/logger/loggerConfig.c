@@ -359,11 +359,6 @@ unsigned char filterSdLoggingMode(unsigned char mode)
 
 
 #if TIMER_CHANNELS > 0
-unsigned char filterPulsePerRevolution(unsigned char pulsePerRev)
-{
-    return pulsePerRev == 0 ? 1 : pulsePerRev;
-}
-
 unsigned short filterTimerDivider(unsigned short speed)
 {
     switch(speed) {
