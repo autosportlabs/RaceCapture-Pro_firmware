@@ -652,6 +652,8 @@ static int lua_send_can_msg(lua_State *L)
         size_t size;
         size_t timeout = DEFAULT_CAN_TIMEOUT;
         switch(lua_gettop(L)) {
+        default:
+                return lua_panic(L);
         case 5:
                 lua_validate_arg_number(L, 5);
                 timeout = lua_tointeger(L, 5);
@@ -665,8 +667,6 @@ static int lua_send_can_msg(lua_State *L)
                 msg.addressValue = (unsigned int) lua_tointeger(L, 2);
                 msg.isExtendedAddress = lua_tointeger(L, 3);
                 size = luaL_getn(L, 4);
-        default:
-                return lua_panic(L);
         }
 
         if (size > CAN_MSG_SIZE)
@@ -692,14 +692,14 @@ static int lua_rx_can_msg(lua_State *L)
         size_t timeout = DEFAULT_CAN_TIMEOUT;
 
         switch(lua_gettop(L)) {
+        default:
+                return lua_panic(L);
         case 2:
                 lua_validate_arg_number(L, 2);
                 timeout = lua_tointeger(L, 2);
         case 1:
                 lua_validate_arg_number(L, 1);
                 channel = lua_tointeger(L, 1);
-        default:
-                return lua_panic(L);
         }
 
         CAN_msg msg;
@@ -727,14 +727,14 @@ static int lua_obd2_read(lua_State *L)
         size_t timeout = OBD2_PID_DEFAULT_TIMEOUT_MS;
 
         switch(lua_gettop(L)) {
+        default:
+                return lua_panic(L);
         case 2:
                 lua_validate_arg_number(L, 2);
                 timeout = lua_tointeger(L, 2);
         case 1:
                 lua_validate_arg_number(L, 1);
                 pid = lua_tointeger(L, 1);
-        default:
-                return lua_panic(L);
         }
 
         int value;
@@ -830,9 +830,9 @@ static int lua_add_virt_channel(lua_State *L)
                 strcpy(cc.label, lua_tostring(L, 1));
                 break;
         case CHAN_CFG_STATUS_NO_LABEL:
-                luaL_error(L, "Label is empty");
+                return luaL_error(L, "Label is empty");
         case CHAN_CFG_STATUS_LONG_LABEL:
-                luaL_error(L, "Label is too long");
+                return luaL_error(L, "Label is too long");
         default:
                 return lua_panic(L);
         }

@@ -137,7 +137,7 @@ void lua_validate_arg_number_or_string(lua_State *l, const int idx)
  */
 void lua_validate_arg_table(lua_State *l, const int idx)
 {
-        if (lua_isstring(l, idx))
+        if (lua_istable(l, idx))
                 return;
 
         char buff[48];
@@ -218,6 +218,9 @@ static int log_print(lua_State *L, bool addNewline)
         const char *msg;
 
         switch(lua_gettop(L)) {
+        default:
+                /* Should never get here */
+                return lua_panic(L);
         case 0:
                 return 0;
         case 2:
@@ -227,10 +230,6 @@ static int log_print(lua_State *L, bool addNewline)
         case 1:
                 lua_validate_arg_string(L, 1);
                 msg = lua_tostring(L, 1);
-                break;
-        default:
-                /* Should never get here */
-                return lua_panic(L);
         }
 
         if (in_interactive_mode()) {
