@@ -538,7 +538,6 @@ unsigned short filterPwmDutyCycle(int dutyCycle);
 unsigned short filterPwmPeriod(int period);
 uint16_t filterPwmClockFrequency(uint16_t frequency);
 
-unsigned char filterPulsePerRevolution(unsigned char pulsePerRev);
 unsigned short filterTimerDivider(unsigned short divider);
 char filterTimerMode(int config);
 

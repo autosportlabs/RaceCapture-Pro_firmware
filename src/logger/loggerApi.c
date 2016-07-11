@@ -1131,8 +1131,7 @@ static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok,
     if (STR_EQ("alpha", name))
         timerCfg->filterAlpha = atof(value);
     if (STR_EQ("ppr", name))
-        timerCfg->pulsePerRevolution =
-                filterPulsePerRevolution(atoi(value));
+        timerCfg->pulsePerRevolution = atof(value);
     if (STR_EQ("speed", name))
         timerCfg->timerSpeed = filterTimerDivider(atoi(value));
     if (STR_EQ("filter_period", name))
@@ -1155,7 +1154,7 @@ static void sendTimerConfig(struct Serial *serial, size_t startIndex, size_t end
         json_uint(serial, "st", 0, 1);
         json_uint(serial, "mode", cfg->mode, 1);
         json_float(serial, "alpha", cfg->filterAlpha, FILTER_ALPHA_PRECISION, 1);
-        json_uint(serial, "ppr", cfg->pulsePerRevolution, 1);
+        json_float(serial, "ppr", cfg->pulsePerRevolution, 6, 1);
         json_uint(serial, "speed", cfg->timerSpeed, 1);
         json_int(serial, "filter_period", cfg->filter_period_us, 1);
         json_string(serial, "edge", get_timer_edge_api_key(cfg->edge), 0);

@@ -44,8 +44,11 @@ static Filter g_timer_filter[CONFIG_TIMER_CHANNELS];
 static uint32_t calc_quiet_period(const TimerConfig *tc,
                                   const float period)
 {
+        const float ppr = tc->pulsePerRevolution;
+	if (!ppr)
+		return 0;
+
         const float max_rpm = tc->cfg.max;
-        const float ppr = (float) tc->pulsePerRevolution;
         const float max_hz = max_rpm * ppr * MAX_RPM_MULT / period;
 
         const uint32_t res = max_hz ? US_IN_A_SEC / max_hz : 0;
@@ -124,7 +127,10 @@ float timer_get_sample(const int cid)
                 return -1;
 
         TimerConfig *c = getWorkingLoggerConfig()->TimerConfigs + cid;
-        unsigned char ppr = c->pulsePerRevolution;
+        const float ppr = c->pulsePerRevolution;
+	if (0 == ppr)
+		return 0;
+
         switch (c->mode) {
         case MODE_LOGGING_TIMER_RPM:
                 return timer_get_rpm(cid) / ppr;

@@ -642,7 +642,7 @@ void LoggerApiTest::testGetTimerConfigFile(string filename, int index){
 
 	timerCfg->mode = 2;
 	timerCfg->filterAlpha = 0.5F;
-	timerCfg->pulsePerRevolution = 3;
+	timerCfg->pulsePerRevolution = 3.1;
 	timerCfg->timerSpeed = 2;
 
 	const char *response = processApiGeneric(filename);
@@ -659,7 +659,8 @@ void LoggerApiTest::testGetTimerConfigFile(string filename, int index){
 	CPPUNIT_ASSERT_EQUAL(0, (int)(Number)timerJson["st"]); /* DEPRECATED */
 	CPPUNIT_ASSERT_EQUAL(2, (int)(Number)timerJson["mode"]);
 	CPPUNIT_ASSERT_EQUAL(0.5F, (float)(Number)timerJson["alpha"]);
-	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)timerJson["ppr"]);
+	CPPUNIT_ASSERT_EQUAL(timerCfg->pulsePerRevolution,
+			     (float)(Number)timerJson["ppr"]);
 	CPPUNIT_ASSERT_EQUAL(2, (int)(Number)timerJson["speed"]);
 }
 
@@ -686,7 +687,7 @@ void LoggerApiTest::testSetTimerConfigFile(string filename){
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)timerCfg->mode);
 	CPPUNIT_ASSERT_EQUAL(0.5F, timerCfg->filterAlpha);
-	CPPUNIT_ASSERT_EQUAL(4, (int)timerCfg->pulsePerRevolution);
+	CPPUNIT_ASSERT_EQUAL((float) 4, timerCfg->pulsePerRevolution);
 	CPPUNIT_ASSERT_EQUAL(2, (int)timerCfg->timerSpeed);
         CPPUNIT_ASSERT_EQUAL(-2, (int)timerCfg->filter_period_us);
         CPPUNIT_ASSERT_EQUAL(TIMER_EDGE_RISING, timerCfg->edge);
