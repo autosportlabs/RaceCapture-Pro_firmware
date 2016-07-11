@@ -367,56 +367,56 @@ const jsmntok_t * jsmn_find_get_node_value_prim(const jsmntok_t *node, const cha
 bool jsmn_exists_set_val_int(const jsmntok_t* root, const char* field,
                              void* val)
 {
-    const jsmntok_t *node = jsmn_find_get_node_value_prim(root, field);
+	const jsmntok_t *node = jsmn_find_get_node_value_prim(root, field);
 
-    if (!node)
-            return false;
+	if (!node)
+		return false;
 
-    int* value = val;
-    *value = atoi(node->data);
-    return true;
+	int* value = val;
+	*value = atoi(node->data);
+	return true;
 }
 
 bool jsmn_exists_set_val_float(const jsmntok_t* root, const char* field,
                                void* val)
 {
-    const jsmntok_t *node = jsmn_find_get_node_value_prim(root, field);
+	const jsmntok_t *node = jsmn_find_get_node_value_prim(root, field);
 
-    if (!node)
-            return false;
+	if (!node)
+		return false;
 
-    float* value = val;
-    *value = atof(node->data);
-    return true;
+	float* value = val;
+	*value = atof(node->data);
+	return true;
 }
 
 bool jsmn_exists_set_val_bool(const jsmntok_t* root, const char* field,
                               void* val)
 {
-    const jsmntok_t *node = jsmn_find_get_node_value_prim(root, field);
+	const jsmntok_t *node = jsmn_find_get_node_value_prim(root, field);
 
-    if (!node)
-            return false;
+	if (!node)
+		return false;
 
-    bool* value = val;
-    *value = STR_EQ("true", node->data);
-    return true;
+	bool* value = val;
+	*value = STR_EQ("true", node->data);
+	return true;
 }
 
 
 bool jsmn_exists_set_val_string(const jsmntok_t* root, const char* field,
-                                void* val, const size_t max_len,
+				void* val, const size_t max_len,
 				const bool strip)
 {
-    const jsmntok_t *node = jsmn_find_get_node_value_string(root, field);
+	const jsmntok_t *node = jsmn_find_get_node_value_string(root, field);
 
-    if (!node)
-            return false;
+	if (!node)
+		return false;
 
-    char* data = node->data;
-    if (strip)
-	    data = strip_inline(data);
+	char* data = node->data;
+	if (strip)
+		data = strip_inline(data);
 
-    strncpy(val, data, max_len);
-    return true;
+	strncpy(val, data, max_len);
+	return true;
 }
