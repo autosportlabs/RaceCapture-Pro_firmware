@@ -22,6 +22,7 @@
 #ifndef LOGGERCONFIG_H_
 #define LOGGERCONFIG_H_
 
+#include "auto_logger.h"
 #include "capabilities.h"
 #include "channel_config.h"
 #include "cpp_guard.h"
@@ -512,6 +513,7 @@ typedef struct _LoggerConfig {
     ConnectivityConfig ConnectivityConfigs;
 
         struct logging_config logging_cfg;
+        struct auto_logger_config auto_logger_cfg;
     //Padding data to accommodate flash routine
     char padding_data[FLASH_PAGE_SIZE];
 } LoggerConfig;

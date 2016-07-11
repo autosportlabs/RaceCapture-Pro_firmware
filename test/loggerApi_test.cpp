@@ -21,6 +21,7 @@
 
 #include "FreeRTOS.h"
 #include "api.h"
+#include "auto_logger.h"
 #include "bluetooth.h"
 #include "cellular.h"
 #include "channel_config.h"
@@ -1507,4 +1508,41 @@ void LoggerApiTest::setActiveTrackRadiusDegrees()
         const float rad_deg = 0.007;
         const float radius_m = lapstats_degrees_to_meters(rad_deg);
         CPPUNIT_ASSERT_EQUAL(radius_m, lapstats_get_geo_circle_radius());
+}
+
+void LoggerApiTest::testGetAutoLoggerCfgDefault() {
+        const char *response = processApiGeneric("get_auto_logger_cfg.json");
+
+        struct auto_logger_config alc;
+        auto_logger_reset_config(&alc);
+
+        Object json;
+        stringToJson(response, json);
+
+        Object galc = json["autoLoggerCfg"];
+        CPPUNIT_ASSERT_EQUAL(alc.active, (bool)(Boolean)galc["active"]);
+
+        Object start_st = galc["start"];
+        CPPUNIT_ASSERT_EQUAL(alc.start.speed, (float)(Number)start_st["speed"]);
+        CPPUNIT_ASSERT_EQUAL(alc.start.time, (uint32_t)(Number)start_st["time"]);
+
+        Object stop_st = galc["stop"];
+        CPPUNIT_ASSERT_EQUAL(alc.stop.time, (uint32_t)(Number)stop_st["time"]);
+        CPPUNIT_ASSERT_EQUAL(alc.stop.speed, (float)(Number)stop_st["speed"]);
+}
+
+void LoggerApiTest::testSetAutoLoggerCfg() {
+        const LoggerConfig *lc = getWorkingLoggerConfig();
+        char *response = processApiGeneric("set_auto_logger_cfg.json");
+
+        const struct auto_logger_config* cfg = &lc->auto_logger_cfg;
+        CPPUNIT_ASSERT_EQUAL(true, cfg->active);
+
+        CPPUNIT_ASSERT_EQUAL((float) 45.6, cfg->start.speed);
+	CPPUNIT_ASSERT_EQUAL((uint32_t) 3, cfg->start.time);
+
+        CPPUNIT_ASSERT_EQUAL((uint32_t) 42, cfg->stop.time);
+        CPPUNIT_ASSERT_EQUAL((float) 34.5, cfg->stop.speed);
+
+        assertGenericResponse(response, "setAutoLoggerCfg", API_SUCCESS);
 }

@@ -133,6 +133,7 @@ $(GPS_DIR)/geoTriggerTest.cpp \
 $(GPS_DIR)/gps_test.cpp \
 $(LAP_STATS_DIR)/LapStatsTest.cpp \
 $(UTIL_DIR)/numtoa_test.cpp \
+AutoLoggerTest.cpp \
 AtTest.cpp \
 CellularApiStatusKeysTest.cpp \
 ChannelConfigTest.cpp \
@@ -184,6 +185,7 @@ $(RCP_SRC)/cpu/cpu.c \
 $(RCP_SRC)/devices/bluetooth.c \
 $(RCP_SRC)/devices/cellular.c \
 $(RCP_SRC)/devices/esp8266.c \
+$(RCP_SRC)/devices/null_device.c \
 $(RCP_SRC)/devices/sara_u280.c \
 $(RCP_SRC)/devices/sim900.c \
 $(RCP_SRC)/drivers/esp8266_drv.c \
@@ -198,12 +200,14 @@ $(RCP_SRC)/imu/imu.c \
 $(RCP_SRC)/jsmn/jsmn.c \
 $(RCP_SRC)/launch_control.c \
 $(RCP_SRC)/logger/fileWriter.c \
+$(RCP_SRC)/logger/connectivityTask.c \
 $(RCP_SRC)/logger/logger.c \
 $(RCP_SRC)/logger/loggerApi.c \
 $(RCP_SRC)/logger/loggerConfig.c \
 $(RCP_SRC)/logger/loggerData.c \
 $(RCP_SRC)/logger/loggerHardware.c \
 $(RCP_SRC)/logger/loggerSampleData.c \
+$(RCP_SRC)/logger/loggerTaskEx.c \
 $(RCP_SRC)/logger/sampleRecord.c \
 $(RCP_SRC)/logger/versionInfo.c \
 $(RCP_SRC)/logging/printk.c \
@@ -219,6 +223,7 @@ $(RCP_SRC)/timer/timer_config.c \
 $(RCP_SRC)/tracks/tracks.c \
 $(RCP_SRC)/tasks/wifi.c \
 $(RCP_SRC)/usart/usart.c \
+$(RCP_SRC)/util/convert.c \
 $(RCP_SRC)/util/linear_interpolate.c \
 $(RCP_SRC)/util/modp_numtoa.c \
 $(RCP_SRC)/util/panic.c \
@@ -236,6 +241,7 @@ mock_usb_comm.c \
 SIM_C_SRC = \
 $(RCP_SRC)/devices/cellular_api_status_keys.c \
 $(RCP_SRC)/lap_stats/lap_stats.c \
+$(RCP_SRC)/logger/auto_logger.c \
 $(RCP_SRC)/logger/channel_config.c \
 $(RCP_SRC)/modem/at.c \
 

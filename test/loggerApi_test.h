@@ -89,6 +89,8 @@ class LoggerApiTest : public CppUnit::TestFixture
     CPPUNIT_TEST( setActiveTrackInvalid );
     CPPUNIT_TEST( setActiveTrackRadiusMeters );
     CPPUNIT_TEST( setActiveTrackRadiusDegrees );
+    CPPUNIT_TEST( testGetAutoLoggerCfgDefault );
+    CPPUNIT_TEST( testSetAutoLoggerCfg );
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -156,6 +158,8 @@ public:
     void testSetWifiCfgApBadEncryption();
     void testGetWifiCfgDefault();
     void testSetGetWifiCfg();
+    void testGetAutoLoggerCfgDefault();
+    void testSetAutoLoggerCfg();
 
 private:
     void testSetScriptFile(string filename);

@@ -21,6 +21,7 @@
 
 
 #include "FreeRTOS.h"
+#include "auto_logger.h"
 #include "gps.h"
 #include "gpsTask.h"
 #include "gps_device.h"
@@ -51,6 +52,8 @@ void GPSTask(void *pvParameters)
         /* Call this here to effectively reset lapstats */
         lapstats_config_changed();
 
+        auto_logger_init(&lc->auto_logger_cfg);
+
         while(1) {
                 size_t failures = 0;
 
@@ -64,6 +67,8 @@ void GPSTask(void *pvParameters)
                         if (result == GPS_MSG_SUCCESS) {
                                 const GpsSnapshot snap = getGpsSnapshot();
                                 lapstats_processUpdate(&snap);
+                                auto_logger_gps_sample_cb(&snap.sample);
+
                                 if (failures > 0)
                                         --failures;
                         } else {

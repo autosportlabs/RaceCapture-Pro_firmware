@@ -23,10 +23,12 @@
 #define LOGGERNOTIFICATIONS_H_
 
 #include "cpp_guard.h"
+#include "loggerTaskEx.h"
 
 CPP_GUARD_BEGIN
 
-void configChanged();
+/* Defined in loggerTaskEx.h */
+/* void configChanged(); */
 
 CPP_GUARD_END
 

@@ -19,25 +19,17 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LOGGERTASKEX_H_
-#define LOGGERTASKEX_H_
+#ifndef _CONVERT_H_
+#define _CONVERT_H_
 
 #include "cpp_guard.h"
-#include "loggerNotifications.h"
-#include "sampleRecord.h"
-#include <stdbool.h>
-#include <stdint.h>
 
 CPP_GUARD_BEGIN
 
-void startLogging();
-void stopLogging();
+float convert_kph_mph(const float kph);
 
-void configChanged();
-
-void startLoggerTaskEx( int priority);
-void loggerTaskEx(void *params);
+float convert_mph_kph(const float mph);
 
 CPP_GUARD_END
 
-#endif /* LOGGERTASKEX_H_ */
+#endif /* _CONVERT_H_ */

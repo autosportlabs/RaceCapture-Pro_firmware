@@ -671,6 +671,7 @@ int flash_default_logger_config(void)
     resetTrackConfig(&lc->TrackConfigs);
     resetConnectivityConfig(&lc->ConnectivityConfigs);
     reset_logging_config(&lc->logging_cfg);
+    auto_logger_reset_config(&lc->auto_logger_cfg);
     strcpy(lc->padding_data, "");
 
     int result = flashLoggerConfig();

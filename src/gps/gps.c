@@ -19,7 +19,7 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "convert.h"
 #include "gps.h"
 #include "gps_device.h"
 #include <string.h>
@@ -152,7 +152,7 @@ float getGPSSpeed()
 
 float getGpsSpeedInMph()
 {
-    return getGPSSpeed() * 0.621371192; //convert to MPH
+        return convert_kph_mph(getGPSSpeed());
 }
 
 millis_t getLastFix()

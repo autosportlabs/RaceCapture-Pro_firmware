@@ -37,6 +37,7 @@
 #include "gps.h"
 #include "imu.h"
 #include "imu_device.h"
+#include "jsmn.h"
 #include "lap_stats.h"
 #include "launch_control.h"
 #include "logger.h"
@@ -117,47 +118,12 @@ static int setUnsignedCharValueIfExists(const jsmntok_t *root, const char * fiel
     return (valueNode != NULL);
 }
 
-static int setIntValueIfExists(const jsmntok_t *root, const char * fieldName, int *target)
-{
-    const jsmntok_t *valueNode = jsmn_find_get_node_value_prim(root, fieldName);
-    if (valueNode)
-        * target = atoi(valueNode->data);
-    return (valueNode != NULL);
-}
-
-static int setFloatValueIfExists(const jsmntok_t *root, const char * fieldName, float *target )
-{
-    const jsmntok_t *valueNode = jsmn_find_get_node_value_prim(root, fieldName);
-    if (valueNode)
-        *target = atof(valueNode->data);
-    return (valueNode != NULL);
-}
-
-static int setStringValueIfExists(const jsmntok_t *root, const char * fieldName, char *target, size_t maxLen )
-{
-    const jsmntok_t *valueNode = jsmn_find_get_node_value_string(root, fieldName);
-    if (valueNode)
-        strncpy(target, valueNode->data, maxLen);
-    return (valueNode != NULL);
-}
-
-static bool setBoolValueIfExists(const jsmntok_t *root, const char *fieldName,
-                                 bool *target)
-{
-        const jsmntok_t *vNode = jsmn_find_get_node_value_prim(root, fieldName);
-
-        if (vNode)
-                *target = STR_EQ("true", vNode->data);
-
-        return NULL != vNode;
-}
-
 int api_systemReset(struct Serial *serial, const jsmntok_t *json)
 {
     int loader = 0;
     int reset_delay_ms = 0;
-    setIntValueIfExists(json, "loader", &loader);
-    setIntValueIfExists(json, "delay", &reset_delay_ms);
+    jsmn_exists_set_val_int(json, "loader", &loader);
+    jsmn_exists_set_val_int(json, "delay", &reset_delay_ms);
 
     if (reset_delay_ms > 0) {
         vTaskDelay(reset_delay_ms / portTICK_RATE_MS);
@@ -922,7 +888,7 @@ int api_getLogfile(struct Serial *serial, const jsmntok_t *json)
 int api_setLogfileLevel(struct Serial *serial, const jsmntok_t *json)
 {
     int level;
-    if (setIntValueIfExists(json, "level", &level)) {
+    if (jsmn_exists_set_val_int(json, "level", &level)) {
         set_log_level((enum log_level) level);
         return API_SUCCESS;
     } else {
@@ -937,9 +903,9 @@ static void setCellConfig(const jsmntok_t *root)
         CellularConfig *cellCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
         cellCfgNode++;
         setUnsignedCharValueIfExists(cellCfgNode, "cellEn", &cellCfg->cellEnabled, NULL);
-        setStringValueIfExists(cellCfgNode, "apnHost", cellCfg->apnHost, CELL_APN_HOST_LENGTH);
-        setStringValueIfExists(cellCfgNode, "apnUser", cellCfg->apnUser, CELL_APN_USER_LENGTH);
-        setStringValueIfExists(cellCfgNode, "apnPass", cellCfg->apnPass, CELL_APN_PASS_LENGTH);
+        jsmn_exists_set_val_string(cellCfgNode, "apnHost", cellCfg->apnHost, CELL_APN_HOST_LENGTH);
+        jsmn_exists_set_val_string(cellCfgNode, "apnUser", cellCfg->apnUser, CELL_APN_USER_LENGTH);
+        jsmn_exists_set_val_string(cellCfgNode, "apnPass", cellCfg->apnPass, CELL_APN_PASS_LENGTH);
     }
 }
 
@@ -950,8 +916,8 @@ static void setBluetoothConfig(const jsmntok_t *root)
         btCfgNode++;
         BluetoothConfig *btCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
         setUnsignedCharValueIfExists(btCfgNode, "btEn", &btCfg->btEnabled, NULL);
-        setStringValueIfExists(btCfgNode, "name", btCfg->new_name, BT_DEVICE_NAME_LENGTH);
-        setStringValueIfExists(btCfgNode, "pass", btCfg->new_pin, BT_PASSCODE_LENGTH);
+        jsmn_exists_set_val_string(btCfgNode, "name", btCfg->new_name, BT_DEVICE_NAME_LENGTH);
+        jsmn_exists_set_val_string(btCfgNode, "pass", btCfg->new_pin, BT_PASSCODE_LENGTH);
     }
 }
 
@@ -961,8 +927,8 @@ static void setTelemetryConfig(const jsmntok_t *root)
     if (telemetryCfgNode) {
         telemetryCfgNode++;
         TelemetryConfig *telemetryCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.telemetryConfig);
-        setStringValueIfExists(telemetryCfgNode, "deviceId", telemetryCfg->telemetryDeviceId, DEVICE_ID_LENGTH);
-        setStringValueIfExists(telemetryCfgNode, "host", telemetryCfg->telemetryServerHost, TELEMETRY_SERVER_HOST_LENGTH);
+        jsmn_exists_set_val_string(telemetryCfgNode, "deviceId", telemetryCfg->telemetryDeviceId, DEVICE_ID_LENGTH);
+        jsmn_exists_set_val_string(telemetryCfgNode, "host", telemetryCfg->telemetryServerHost, TELEMETRY_SERVER_HOST_LENGTH);
         setUnsignedCharValueIfExists(telemetryCfgNode, "bgStream", &telemetryCfg->backgroundStreaming, filterBgStreamingMode);
     }
 }
@@ -1283,7 +1249,7 @@ int api_setGpsConfig(struct Serial *serial, const jsmntok_t *json)
 
     unsigned short sr = SAMPLE_DISABLED;
     int tmp = 0;
-    if (setIntValueIfExists(json, "sr", &tmp))
+    if (jsmn_exists_set_val_int(json, "sr", &tmp))
         sr = encodeSampleRate(tmp);
 
     gpsConfigTestAndSet(json, &(gpsCfg->latitude), "pos", sr);
@@ -1377,7 +1343,7 @@ int api_setObd2Config(struct Serial *serial, const jsmntok_t *json)
     OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
 
     int pidIndex = 0;
-    setIntValueIfExists(json, "index", &pidIndex);
+    jsmn_exists_set_val_int(json, "index", &pidIndex);
 
     if (pidIndex >= OBD2_CHANNELS) {
         return API_ERROR_PARAMETER;
@@ -1558,7 +1524,7 @@ static int setGeoPointIfExists(const jsmntok_t *root, const char * name, GeoPoin
 
 static void setTrack(const jsmntok_t *trackNode, Track *track)
 {
-    setIntValueIfExists(trackNode, "id", (int*)&(track->trackId));
+    jsmn_exists_set_val_int(trackNode, "id", (int*)&(track->trackId));
     unsigned char trackType;
     if (setUnsignedCharValueIfExists(trackNode, "type", &trackType, NULL)) {
         track->track_type = (enum TrackType) trackType;
@@ -1609,7 +1575,7 @@ int api_setTrackConfig(struct Serial *serial, const jsmntok_t *json)
 {
 
     TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs);
-    setFloatValueIfExists(json, "rad", &trackCfg->radius);
+    jsmn_exists_set_val_float(json, "rad", &trackCfg->radius);
     setUnsignedCharValueIfExists(json, "autoDetect", &trackCfg->auto_detect, NULL);
 
     const jsmntok_t *track = jsmn_find_node(json, "track");
@@ -1640,7 +1606,7 @@ int api_addTrackDb(struct Serial *serial, const jsmntok_t *json)
     unsigned char mode = 0;
     int index = 0;
 
-    if (setUnsignedCharValueIfExists(json, "mode", &mode, NULL) && setIntValueIfExists(json, "index", &index)) {
+    if (setUnsignedCharValueIfExists(json, "mode", &mode, NULL) && jsmn_exists_set_val_int(json, "index", &index)) {
         Track track;
         const jsmntok_t *trackNode = jsmn_find_node(json, "track");
         if (trackNode != NULL)
@@ -1733,10 +1699,10 @@ int api_runScript(struct Serial *serial, const jsmntok_t *json)
 static void set_wifi_client_cfg(const jsmntok_t *json,
                                 struct wifi_client_cfg* cfg)
 {
-        setBoolValueIfExists(json, "active", &cfg->active);
-        setStringValueIfExists(json, "ssid", cfg->ssid,
+        jsmn_exists_set_val_bool(json, "active", &cfg->active);
+        jsmn_exists_set_val_string(json, "ssid", cfg->ssid,
                                ARRAY_LEN(cfg->ssid));
-        setStringValueIfExists(json, "password", cfg->passwd,
+        jsmn_exists_set_val_string(json, "password", cfg->passwd,
                                ARRAY_LEN(cfg->passwd));
 
         /* Inform the Wifi device that settings may have changed */
@@ -1749,15 +1715,15 @@ static bool set_wifi_ap_cfg(const jsmntok_t *json,
         struct wifi_ap_cfg tmp_cfg;
         memcpy(&tmp_cfg, cfg, sizeof(struct wifi_ap_cfg));
 
-        setBoolValueIfExists(json, "active", &tmp_cfg.active);
-        setStringValueIfExists(json, "ssid", tmp_cfg.ssid,
+        jsmn_exists_set_val_bool(json, "active", &tmp_cfg.active);
+        jsmn_exists_set_val_string(json, "ssid", tmp_cfg.ssid,
                                ARRAY_LEN(tmp_cfg.ssid));
-        setStringValueIfExists(json, "password", tmp_cfg.password,
+        jsmn_exists_set_val_string(json, "password", tmp_cfg.password,
                                ARRAY_LEN(tmp_cfg.password));
-        setIntValueIfExists(json, "channel", (int*) &tmp_cfg.channel);
+        jsmn_exists_set_val_int(json, "channel", (int*) &tmp_cfg.channel);
 
         char enc_str[12];
-        setStringValueIfExists(json, "encryption", enc_str,
+        jsmn_exists_set_val_string(json, "encryption", enc_str,
                                ARRAY_LEN(enc_str));
         tmp_cfg.encryption = wifi_api_get_encryption_enum_val(enc_str);
 
@@ -1792,7 +1758,7 @@ int api_set_wifi_cfg(struct Serial *serial, const jsmntok_t *json)
         if (client_json_root)
                 set_wifi_client_cfg(client_json_root, client_cfg);
 
-        setBoolValueIfExists(json, "active", &cfg->active);
+        jsmn_exists_set_val_bool(json, "active", &cfg->active);
 
         return API_SUCCESS;
 }
@@ -1862,7 +1828,7 @@ static int get_telemetry_api_return_code(const int cmd_result)
 int api_set_telemetry_start(struct Serial *serial, const jsmntok_t *json)
 {
         int sample_rate = 1;
-        setIntValueIfExists(json, "rate", &sample_rate);
+        jsmn_exists_set_val_int(json, "rate", &sample_rate);
 
         const int cmd_result =
                 serial_ioctl(serial, SERIAL_IOCTL_TELEMETRY_ENABLE,
@@ -1891,8 +1857,8 @@ int api_set_active_track(struct Serial *serial, const jsmntok_t *json)
         memset(&track, 0, sizeof(track));
         setTrack(json_track + 1, &track);
 
-        const bool rad_set = setFloatValueIfExists(json, "rad", &tmp);
-        const bool radius_set = setFloatValueIfExists(json, "radius", &radius_m);
+        const bool rad_set = jsmn_exists_set_val_float(json, "rad", &tmp);
+        const bool radius_set = jsmn_exists_set_val_float(json, "radius", &radius_m);
         if (radius_set) {
                 /* Then radius_m already has value we want.  No-op */
         } else if (rad_set) {
@@ -1907,4 +1873,25 @@ int api_set_active_track(struct Serial *serial, const jsmntok_t *json)
 
         lapstats_set_active_track(&track, radius_m);
         return API_SUCCESS;
+}
+
+int api_get_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json)
+{
+        struct auto_logger_config* cfg =
+                &getWorkingLoggerConfig()->auto_logger_cfg;
+
+        json_objStart(serial);
+        auto_logger_get_config(cfg, serial, false);
+        json_objEnd(serial, false);
+
+        return API_SUCCESS_NO_RETURN;
+}
+
+int api_set_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json)
+{
+        struct auto_logger_config* cfg =
+                &getWorkingLoggerConfig()->auto_logger_cfg;
+
+        return auto_logger_set_config(cfg, json) ?
+                API_SUCCESS : API_ERROR_UNSPECIFIED;
 }
