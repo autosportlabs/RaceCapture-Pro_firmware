@@ -16,6 +16,9 @@
 #define VIRTUAL_CHANNEL_SUPPORT	1
 #define WIFI_SUPPORT		1
 
+/* Wifi Specific Info */
+#define WIFI_MAX_BAUD	230400
+
 /* Configuration */
 #define MAX_TRACKS	240
 #define MAX_SECTORS	20

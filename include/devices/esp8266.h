@@ -31,10 +31,14 @@
 
 CPP_GUARD_BEGIN
 
-#define ESP8266_SSID_LEN_MAX	24
-#define ESP8266_MAC_LEN_MAX	18
-#define ESP8266_IPV4_LEN_MAX	16
-#define ESP8266_PASSWD_LEN_MAX	24
+#define ESP8266_SSID_LEN_MAX		24
+#define ESP8266_MAC_LEN_MAX		18
+#define ESP8266_IPV4_LEN_MAX		16
+#define ESP8266_PASSWD_LEN_MAX		24
+#define ESP8266_SERIAL_DEF_BAUD		115200
+#define ESP8266_SERIAL_DEF_BITS		8
+#define ESP8266_SERIAL_DEF_PARITY	0
+#define ESP8266_SERIAL_DEF_STOP		1
 
 bool esp8266_setup(struct Serial *s, const size_t max_cmd_len);
 
@@ -201,6 +205,7 @@ bool esp8266_set_uart_config(const size_t baud, const size_t bits,
 			     const size_t parity, const size_t stop_bits,
 			     esp8266_set_uart_config_cb_t* cb);
 
+bool esp8266_probe_device(struct Serial* serial, const int fast_baud);
 
 CPP_GUARD_END
 

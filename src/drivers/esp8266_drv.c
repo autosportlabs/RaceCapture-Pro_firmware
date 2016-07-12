@@ -20,6 +20,8 @@
  */
 
 #include "FreeRTOS.h"
+#include "at_basic.h"
+#include "capabilities.h"
 #include "constants.h"
 #include "dateTime.h"
 #include "esp8266.h"
@@ -51,15 +53,24 @@
 #define LOG_PFX			"[ESP8266 Driver] "
 #define MAX_CHANNELS		5
 #define RX_DATA_TIMEOUT_TICKS	1
-#define SERIAL_BAUD		115200
+#define SERIAL_DEFAULT_BAUD	115200
+#define SERIAL_IDEAL_BAUD	230400
 #define SERIAL_BITS		8
 #define SERIAL_CMD_MAX_LEN	1024
 #define SERIAL_PARITY		0
+#define SERIAL_PROBE_BAUD_TRIES	3
+#define SERIAL_PROBE_DELAY_MS	100
 #define SERIAL_RX_BUFF_SIZE	256
 #define SERIAL_STOP_BITS	1
 #define SERIAL_TX_BUFF_SIZE	256
 #define TASK_STACK_SIZE		256
 #define TASK_THREAD_NAME	"ESP8266 Driver"
+
+/* static const int wifi_supported_bauds[] = { */
+/* 	SERIAL_DEFAULT_BAUD, */
+/* 	SERIAL_IDEAL_BAUD, */
+/* 	NULL, */
+/* }; */
 
 enum init_state {
         INIT_STATE_UNINITIALIZED = 0,
@@ -1205,14 +1216,16 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
                 return false; /* Already setup */
 
         esp8266_state.device.serial = s;
-
         if (!esp8266_state.device.serial) {
                 pr_error(LOG_PFX "NULL serial\r\n");
                 return false;
         }
 
-        serial_config(esp8266_state.device.serial, SERIAL_BITS, SERIAL_PARITY,
-                      SERIAL_STOP_BITS, SERIAL_BAUD);
+	/* Probe for our serial device and adjust baud. */
+	if (!esp8266_probe_device(esp8266_state.device.serial, WIFI_MAX_BAUD)) {
+		pr_warning(LOG_PFX "Failed to probe WiFi device\r\n");
+		return false;
+	}
 
         /* Create and setup semaphores for connections */
         const bool init_sync_ops =
@@ -1237,8 +1250,10 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         esp8266_drv_update_ap_cfg(wac);
 
 	/* Initialize the esp8266 AT subsystem here */
-	if (!esp8266_setup(esp8266_state.device.serial, SERIAL_CMD_MAX_LEN))
+	if (!esp8266_setup(esp8266_state.device.serial, SERIAL_CMD_MAX_LEN)) {
+		pr_warning(LOG_PFX "Failed to setup WiFi AT subsys\r\n");
 		return false;
+	}
 
 	/* Setup callback for new connections */
 	esp8266_state.comm.new_conn_cb = new_conn_cb;

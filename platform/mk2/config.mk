@@ -108,6 +108,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/auto_config/auto_track.c \
 			$(RCP_SRC)/messaging/messaging.c \
 			$(RCP_SRC)/modem/at.c \
+			$(RCP_SRC)/modem/at_basic.c \
 			$(RCP_SRC)/LED/led.c \
 			$(RCP_SRC)/PWM/PWM.c \
 			$(RCP_SRC)/logging/printk.c \

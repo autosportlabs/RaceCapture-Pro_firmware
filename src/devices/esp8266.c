@@ -20,6 +20,7 @@
  */
 
 #include "at.h"
+#include "at_basic.h"
 #include "esp8266.h"
 #include "macros.h"
 #include "mem_mang.h"
@@ -35,16 +36,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define AT_PROBE_TRIES		3
+#define AT_PROBE_DELAY_MS	200
 #define _AT_CMD_DELIM		"\r\n"
 #define _AT_DEFAULT_QP_MS	250
 #define _AT_QP_PRE_INIT_MS	500
 #define _AT_QP_STANDARD_MS	1
 #define _AUTOBAUD_TRIES		3
 #define RESET_SLEEP_MS		500
-#define SERIAL_DEF_BAUD		115200
-#define SERIAL_DEF_MSG_BITS	8
-#define SERIAL_DEF_PARITY_BITS	0
-#define SERIAL_DEF_STOP_BITS	1
 #define _TIMEOUT_LONG_MS	5000
 #define _TIMEOUT_MEDIUM_MS	500
 #define _TIMEOUT_SHORT_MS	50
@@ -169,9 +168,10 @@ void esp8266_do_loop(const size_t timeout)
 
 bool esp8266_set_default_serial_params(struct Serial* serial)
 {
-	return serial_config(serial, SERIAL_DEF_MSG_BITS,
-			     SERIAL_DEF_PARITY_BITS, SERIAL_DEF_STOP_BITS,
-			     SERIAL_DEF_BAUD);
+	return serial_config(serial, ESP8266_SERIAL_DEF_BITS,
+			     ESP8266_SERIAL_DEF_PARITY,
+			     ESP8266_SERIAL_DEF_STOP,
+			     ESP8266_SERIAL_DEF_BAUD);
 }
 
 static void init_complete(const bool success)
@@ -279,9 +279,14 @@ static bool init_soft_reset_cb(struct at_rsp *rsp, void *up)
 	delayMs(RESET_SLEEP_MS);
 
 	/* Reset Serial to Default values here and ping test */
-	serial_clear(state.ati->sb->serial);
-	esp8266_set_default_serial_params(state.ati->sb->serial);
-	/* STIEG: COMPLETE PING TEST. */
+	struct Serial* serial = state.ati->sb->serial;
+	serial_clear(serial);
+	esp8266_set_default_serial_params(serial);
+	if (!at_basic_ping(serial, AT_PROBE_TRIES, AT_PROBE_DELAY_MS)) {
+		init_failed("Post reset ping failed\r\n");
+		return false;
+	}
+
 
 	/*
 	 * If here, queue up reset of init tasks.  Use single &
@@ -1073,9 +1078,7 @@ static bool set_uart_config_cb(struct at_rsp *rsp, void *up)
 
 
 /**
- * both the esp8266 device and the local serial device (because we need to,
- * duh!). Must be used before you initialize the device.  Will only adjust
- * the local serial device on an "OK" response from the device.
+ * Sets the uart configuration on the esp8266 device.
  */
 bool esp8266_set_uart_config(const size_t baud, const size_t bits,
 			     const size_t parity, const size_t stop_bits,
@@ -1101,4 +1104,13 @@ bool esp8266_set_uart_config(const size_t baud, const size_t bits,
 
 	return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
                                   set_uart_config_cb, cb);
+}
+
+bool esp8266_probe_device(struct Serial* serial, const int fast_baud)
+{
+	const int bauds[] = {ESP8266_SERIAL_DEF_BAUD, fast_baud, 0};
+	return at_basic_probe(serial, bauds, AT_PROBE_TRIES, AT_PROBE_DELAY_MS,
+			      ESP8266_SERIAL_DEF_BITS,
+			      ESP8266_SERIAL_DEF_PARITY,
+			      ESP8266_SERIAL_DEF_STOP);
 }
