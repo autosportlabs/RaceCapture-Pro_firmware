@@ -36,6 +36,8 @@ CPP_GUARD_BEGIN
 #define ESP8266_IPV4_LEN_MAX	16
 #define ESP8266_PASSWD_LEN_MAX	24
 
+bool esp8266_setup(struct Serial *s, const size_t max_cmd_len);
+
 void esp8266_do_loop(const size_t timeout);
 
 /**
@@ -86,8 +88,7 @@ bool esp8266_register_callbacks(const struct esp8266_event_hooks* hooks);
 
 typedef void esp8266_init_cb_t(const bool status);
 
-bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
-                  esp8266_init_cb_t* cb);
+bool esp8266_init(esp8266_init_cb_t* cb);
 
 enum dev_init_state esp8266_get_dev_init_state();
 

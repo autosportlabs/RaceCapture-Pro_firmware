@@ -115,13 +115,17 @@ static bool sparse_urc_cb(char* msg)
 }
 
 /**
- * Sets up the internal state of the driver.  Must be called before init.
+ * Sets up the internal state.  Must be called first and only once. All other
+ * methods will fail if this is not called.
+ * @param serial The serial device to use.
+ * @param mad_cmd_length Maximum command length we shall see.
+ * @param true if successful setup occurred, false otherwise.
  */
-static bool _setup(struct Serial *s, const size_t max_cmd_len)
+bool esp8266_setup(struct Serial *serial, const size_t max_cmd_len)
 {
-        /* Check if already initialized.  If so, do nothing */
+        /* Check if already initialized. */
         if (state.ati)
-                return true;
+                return false;
 
         state.ati = &_ati;
         state.scb = &_serial_cmd_buff;
@@ -132,7 +136,7 @@ static bool _setup(struct Serial *s, const size_t max_cmd_len)
          * tx/rx buffers and our AT state machine.  Commands may not
          * exceed max_cmd_len.
          */
-        if (!serial_buffer_create(state.scb, s, max_cmd_len, NULL))
+        if (!serial_buffer_create(state.scb, serial, max_cmd_len, NULL))
                 return false;
 
         /* Init our AT engine here */
@@ -305,23 +309,15 @@ static void begin_autobaud_cmd()
         autobaud_cb(NULL, (void*) _AUTOBAUD_TRIES);
 }
 
-static bool is_init_in_progress()
-{
-        return NULL != state.init_cb;
-}
-
 /**
  * Kicks off the initilization process.
  */
-bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
-                  esp8266_init_cb_t* cb)
+bool esp8266_init(esp8266_init_cb_t* cb)
 {
-        if (!cb || !s || is_init_in_progress())
+        if (!state.ati) {
+		cmd_failure("esp8266_init", "AT subsys not initialized");
                 return false;
-
-        /* Init objects.  If fail, then nothing we can do. */
-        if (!_setup(s, max_cmd_len))
-                return false;
+	}
 
         at_reset(state.ati);
         state.init_cb = cb;

@@ -531,8 +531,7 @@ static void init_wifi()
         pr_info(LOG_PFX "Initializing Wifi\r\n");
 
         serial_clear(esp8266_state.device.serial);
-        if (!esp8266_init(esp8266_state.device.serial, SERIAL_CMD_MAX_LEN,
-                          init_wifi_cb)) {
+        if (!esp8266_init(init_wifi_cb)) {
                 /* Failed to init critical bits.  */
                 pr_warning(LOG_PFX "Failed to init esp8266 device.\r\n");
                 cmd_sleep(CHECK_WIFI_DEVICE, INIT_FAIL_SLEEP_MS);
@@ -1291,9 +1290,14 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
                 &lc->ConnectivityConfigs.wifi.ap;
         esp8266_drv_update_ap_cfg(wac);
 
-        esp8266_state.comm.new_conn_cb = new_conn_cb;
+	/* Initialize the esp8266 AT subsystem here */
+	if (!esp8266_setup(esp8266_state.device.serial, SERIAL_CMD_MAX_LEN))
+		return false;
 
-        /* Set the task loop to check the wifi_device first */
+	/* Setup callback for new connections */
+	esp8266_state.comm.new_conn_cb = new_conn_cb;
+
+	/* Set the task loop to check the wifi_device first */
         cmd_set_check(CHECK_WIFI_DEVICE);
 
         static const signed char task_name[] = TASK_THREAD_NAME;
