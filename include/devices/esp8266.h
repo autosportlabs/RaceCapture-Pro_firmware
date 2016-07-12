@@ -40,15 +40,12 @@ bool esp8266_setup(struct Serial *s, const size_t max_cmd_len);
 
 void esp8266_do_loop(const size_t timeout);
 
-/**
- * The various initialization states of the device.  Probably should
- * get put in a more generic file.  Here is good for now.
- */
+bool esp8266_set_default_serial_params(struct Serial* serial);
+
 enum dev_init_state {
-        DEV_INIT_STATE_NOT_READY = 0,
-        DEV_INIT_INITIALIZING,
-        DEV_INIT_STATE_READY,
-        DEV_INIT_STATE_FAILED,
+	DEV_INIT_STATE_FAILED	 = -1,
+	DEV_INIT_STATE_NOT_READY =  0,
+	DEV_INIT_STATE_READY	 =  1,
 };
 
 /**
@@ -197,10 +194,6 @@ enum esp8266_server_action {
 
 bool esp8266_server_cmd(const enum esp8266_server_action action, int port,
                         void (*cb)(bool));
-
-typedef void esp8266_soft_reset_cb_t(const bool status);
-
-bool esp8266_soft_reset(esp8266_soft_reset_cb_t* cb);
 
 typedef void esp8266_set_uart_config_cb_t(const bool status);
 

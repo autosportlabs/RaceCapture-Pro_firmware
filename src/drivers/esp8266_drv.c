@@ -512,6 +512,13 @@ static void init_wifi_cb(const bool status)
         }
 
         pr_info(LOG_PFX "Initialization successful\r\n");
+
+	/*
+	 * Clear out the timestamps and set the checks on all the
+	 * subsystems since they will all change after an init.
+	 */
+	esp8266_state.client.info_timestamp = 0;
+	esp8266_state.ap.info_timestamp = 0;
         esp8266_state.device.init_state = INIT_STATE_READY;
 
         /* Now that init state has changed, check them */
@@ -618,64 +625,6 @@ static void set_op_mode(const enum esp8266_op_mode mode)
         cmd_started();
 }
 
-
-/**
- * Callback used by the set_op_mode call.
- */
-static void reset_cb(const bool status)
-{
-        cmd_completed();
-        cmd_set_check(CHECK_WIFI_DEVICE);
-
-        if (!status) {
-                pr_warning(LOG_PFX "Soft reset failed\r\n");
-                esp8266_state.device.init_state = INIT_STATE_RESET_HARD;
-                return;
-        }
-
-        cmd_set_check(CHECK_WIFI_CLIENT);
-        cmd_set_check(CHECK_WIFI_AP);
-        cmd_set_check(CHECK_SERVER);
-        cmd_set_check(CHECK_DATA);
-
-        /*
-         * Clear out the timestamps and set the checks on all the
-         * subsystems since they will all change after a reset.
-         */
-        esp8266_state.client.info_timestamp = 0;
-        esp8266_state.ap.info_timestamp = 0;
-        esp8266_state.device.init_state = DEV_INIT_STATE_NOT_READY;
-}
-
-/**
- * Command that sets the wifi device operational mode. Useful for changing
- * between modes after actions like a user changing the config.
- */
-static bool reset(bool force_hard)
-{
-        pr_info(LOG_PFX "Resetting device.\r\n");
-        if (!force_hard) {
-                if (esp8266_soft_reset(reset_cb)) {
-                        cmd_started();
-                        return true;
-                }
-
-                /* If here can't soft reset for some reason.  Hard reset */
-                pr_warning(LOG_PFX "Failed to soft reset device.\r\n");
-        }
-
-        if (wifi_device_reset()) {
-                /* Invoke callback here to get correct state */
-                reset_cb(true);
-                return true;
-        }
-
-        /* If here can't hard reset because not supported.  Hell */
-        pr_warning(LOG_PFX "Failed to hard reset device.\r\n");
-        return false;
-}
-
-
 /**
  * Method that checks the device state.  Handles all aspects including
  * initialization, reset, mode, and whatever else may need handling
@@ -687,17 +636,14 @@ static void check_wifi_device()
         pr_info(LOG_PFX "Checking WiFi Device...\r\n");
 
         switch(esp8266_state.device.init_state) {
+	case INIT_STATE_FAILED:
+		delayMs(CLIENT_BACKOFF_MS);
+		/* Fall into hard reset */
+	case INIT_STATE_RESET_HARD:
+		wifi_device_reset();
+        case INIT_STATE_RESET:
         case INIT_STATE_UNINITIALIZED:
                 init_wifi();
-                return;
-        case INIT_STATE_FAILED:
-                delayMs(CLIENT_BACKOFF_MS);
-                /* Fall into reset call */
-        case INIT_STATE_RESET:
-                reset(false);
-                return;
-        case INIT_STATE_RESET_HARD:
-                reset(true);
                 return;
         case INIT_STATE_READY:
                 /* Then we are where we want to be */
