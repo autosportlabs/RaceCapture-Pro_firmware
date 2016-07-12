@@ -201,6 +201,13 @@ typedef void esp8266_soft_reset_cb_t(const bool status);
 
 bool esp8266_soft_reset(esp8266_soft_reset_cb_t* cb);
 
+typedef void esp8266_set_uart_config_cb_t(const bool status);
+
+bool esp8266_set_uart_config(const size_t baud, const size_t bits,
+			     const size_t parity, const size_t stop_bits,
+			     esp8266_set_uart_config_cb_t* cb);
+
+
 CPP_GUARD_END
 
 #endif /* _ESP8266_H_ */

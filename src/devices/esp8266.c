@@ -1061,11 +1061,62 @@ static bool soft_reset_cb(struct at_rsp *rsp, void *up)
 bool esp8266_soft_reset(esp8266_soft_reset_cb_t* cb)
 {
         if (!state.ati) {
-                cmd_failure("soft_reset", "AT interface not initialized.");
+                cmd_failure("soft_reset", "AT subsys not initialized.");
                 return false;
         }
 
         const char cmd[] = "AT+RST";
         return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
                                   soft_reset_cb, cb);
+}
+
+
+/**
+ * Callback that is invoked upon command completion.
+ */
+static bool set_uart_config_cb(struct at_rsp *rsp, void *up)
+{
+        static const char *cmd_name = "set_uart_config_cb";
+        esp8266_set_uart_config_cb_t* cb = up;
+        bool status = at_ok(rsp);
+
+        if (!status)
+                cmd_failure(cmd_name, NULL);
+
+        if (cb)
+                cb(status);
+
+        return false;
+}
+
+
+/**
+ * both the esp8266 device and the local serial device (because we need to,
+ * duh!). Must be used before you initialize the device.  Will only adjust
+ * the local serial device on an "OK" response from the device.
+ */
+bool esp8266_set_uart_config(const size_t baud, const size_t bits,
+			     const size_t parity, const size_t stop_bits,
+			     esp8266_set_uart_config_cb_t* cb)
+{
+        const char cmd_name[] = "set_uart_config";
+        if (!state.ati) {
+                cmd_failure(cmd_name, "AT subsys not initialized.");
+                return false;
+        }
+
+        /* ESP8266 says value of 2 stop bits is 3.  2 is 1.5 stop bits. WTF */
+        size_t esp8266_stop_bits = stop_bits;
+        if (2 == stop_bits)
+                esp8266_stop_bits = 3;
+
+        /*
+	 * AT+UART_CUR=<baudrate>,<databits>,<stopbits>,<parity>,<flowctrl>
+	 */
+	char cmd[48];
+        snprintf(cmd, ARRAY_LEN(cmd), "AT+UART_CUR=%d,%d,%d,%d,0", baud,
+		 bits, esp8266_stop_bits, parity);
+
+	return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
+                                  set_uart_config_cb, cb);
 }
