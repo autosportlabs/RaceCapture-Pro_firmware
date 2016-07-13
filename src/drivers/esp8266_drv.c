@@ -628,7 +628,7 @@ static void set_fast_baud_cb(const bool status)
 	cmd_completed();
 	cmd_set_check(CHECK_WIFI_DEVICE);
 
-	if (status) {
+	if (!status) {
 		pr_warning(LOG_PFX "Set uart mode failed!\r\n");
 		return;
 	}

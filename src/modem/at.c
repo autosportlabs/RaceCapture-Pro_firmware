@@ -181,27 +181,31 @@ static bool _process_msg_generic(struct at_info *ati,
 
 static void process_urc_msg(struct at_info *ati, char *msg)
 {
-        const bool no_strip = ati->urc_ip->flags & AT_URC_FLAGS_NO_RSTRIP;
-        if (!no_strip)
-                msg = rstrip_inline(msg);
+	const bool no_strip = ati->urc_ip->flags & AT_URC_FLAGS_NO_RSTRIP;
+	if (!no_strip) {
+		const size_t msg_len = serial_msg_strlen(msg);
+		msg[msg_len] = '\0';
+	}
 
-        _process_msg_generic(ati, AT_RX_STATE_URC, msg);
+	_process_msg_generic(ati, AT_RX_STATE_URC, msg);
 
-        const bool no_status = !!(ati->urc_ip->flags & AT_URC_FLAGS_NO_RSP_STATUS);
-        enum at_rsp_status status = AT_RSP_STATUS_NONE;
-        if (no_status || is_rsp_status(&status, msg))
-                complete_urc(ati, status);
+	const bool no_status = !!(ati->urc_ip->flags & AT_URC_FLAGS_NO_RSP_STATUS);
+	enum at_rsp_status status = AT_RSP_STATUS_NONE;
+	if (no_status || is_rsp_status(&status, msg))
+		complete_urc(ati, status);
 }
 
 static void process_cmd_msg(struct at_info *ati, char *msg)
 {
-        /* We always strip trialing message characters on cmd messages */
-        msg = rstrip_inline(msg);
-        _process_msg_generic(ati, AT_RX_STATE_CMD, msg);
+	/* We always strip trialing message characters on cmd messages */
+	const size_t msg_len = serial_msg_strlen(msg);
+	msg[msg_len] = '\0';
 
-        enum at_rsp_status status;
-        if (is_rsp_status(&status, msg))
-                complete_cmd(ati, status);
+	_process_msg_generic(ati, AT_RX_STATE_CMD, msg);
+
+	enum at_rsp_status status;
+	if (is_rsp_status(&status, msg))
+		complete_cmd(ati, status);
 }
 
 static void begin_urc_msg(struct at_info *ati, struct at_urc *urc)
