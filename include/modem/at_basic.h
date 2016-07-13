@@ -29,6 +29,9 @@
 
 CPP_GUARD_BEGIN
 
+bool at_basic_wait_for_msg(struct Serial* serial, const char* msg,
+			   const size_t delay_ms);
+
 bool at_basic_ping(struct Serial* serial, const size_t tries,
 		   const size_t delay_ms);
 

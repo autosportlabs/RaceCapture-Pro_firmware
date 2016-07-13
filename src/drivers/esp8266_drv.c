@@ -53,24 +53,11 @@
 #define LOG_PFX			"[ESP8266 Driver] "
 #define MAX_CHANNELS		5
 #define RX_DATA_TIMEOUT_TICKS	1
-#define SERIAL_DEFAULT_BAUD	115200
-#define SERIAL_IDEAL_BAUD	230400
-#define SERIAL_BITS		8
 #define SERIAL_CMD_MAX_LEN	1024
-#define SERIAL_PARITY		0
-#define SERIAL_PROBE_BAUD_TRIES	3
-#define SERIAL_PROBE_DELAY_MS	100
 #define SERIAL_RX_BUFF_SIZE	256
-#define SERIAL_STOP_BITS	1
 #define SERIAL_TX_BUFF_SIZE	256
 #define TASK_STACK_SIZE		256
 #define TASK_THREAD_NAME	"ESP8266 Driver"
-
-/* static const int wifi_supported_bauds[] = { */
-/* 	SERIAL_DEFAULT_BAUD, */
-/* 	SERIAL_IDEAL_BAUD, */
-/* 	NULL, */
-/* }; */
 
 enum init_state {
         INIT_STATE_UNINITIALIZED = 0,
@@ -636,30 +623,71 @@ static void set_op_mode(const enum esp8266_op_mode mode)
         cmd_started();
 }
 
+static void set_fast_baud_cb(const bool status)
+{
+	cmd_completed();
+	cmd_set_check(CHECK_WIFI_DEVICE);
+
+	if (status) {
+		pr_warning(LOG_PFX "Set uart mode failed!\r\n");
+		return;
+	}
+
+	serial_config(esp8266_state.device.serial, ESP8266_SERIAL_DEF_BITS,
+		      ESP8266_SERIAL_DEF_PARITY, ESP8266_SERIAL_DEF_STOP,
+		      WIFI_MAX_BAUD);
+	serial_clear(esp8266_state.device.serial);
+}
+
+static void set_fast_baud()
+{
+	pr_info_int_msg(LOG_PFX "Increasing baud to ", WIFI_MAX_BAUD);
+
+	if (!esp8266_set_uart_config(WIFI_MAX_BAUD, ESP8266_SERIAL_DEF_BITS,
+				     ESP8266_SERIAL_DEF_PARITY,
+				     ESP8266_SERIAL_DEF_STOP,
+				     set_fast_baud_cb)) {
+		pr_warning(LOG_PFX "Failed to invoke set_uart_config\r\n");
+		return;
+	}
+
+	cmd_started();
+}
+
 /**
- * Method that checks the device state.  Handles all aspects including
+ * Method that checks the device state.	 Handles all aspects including
  * initialization, reset, mode, and whatever else may need handling
  * down the road.
  */
 static void check_wifi_device()
 {
-        cmd_check_complete(CHECK_WIFI_DEVICE);
-        pr_info(LOG_PFX "Checking WiFi Device...\r\n");
+	cmd_check_complete(CHECK_WIFI_DEVICE);
+	pr_info(LOG_PFX "Checking WiFi Device...\r\n");
 
-        switch(esp8266_state.device.init_state) {
+	switch(esp8266_state.device.init_state) {
 	case INIT_STATE_FAILED:
 		delayMs(CLIENT_BACKOFF_MS);
 		/* Fall into hard reset */
 	case INIT_STATE_RESET_HARD:
 		wifi_device_reset();
-        case INIT_STATE_RESET:
-        case INIT_STATE_UNINITIALIZED:
-                init_wifi();
-                return;
-        case INIT_STATE_READY:
-                /* Then we are where we want to be */
-                break;
-        }
+	case INIT_STATE_RESET:
+	case INIT_STATE_UNINITIALIZED:
+		init_wifi();
+		return;
+	case INIT_STATE_READY:
+		/* Then we are where we want to be */
+		break;
+	}
+
+
+	/* Check our baud rate and ensure it maxed out */
+	const struct serial_cfg* serial_cfg =
+		serial_get_config(esp8266_state.device.serial);
+	if (serial_cfg->baud != WIFI_MAX_BAUD) {
+		set_fast_baud();
+		return;
+	}
+
 
         /* Check if we know our device mode.  If not, get it */
         if (ESP8266_OP_MODE_UNKNOWN == esp8266_state.device.op_mode) {
@@ -1215,14 +1243,15 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         if (esp8266_state.device.serial)
                 return false; /* Already setup */
 
-        esp8266_state.device.serial = s;
-        if (!esp8266_state.device.serial) {
+        if (!s) {
                 pr_error(LOG_PFX "NULL serial\r\n");
                 return false;
         }
+        esp8266_state.device.serial = s;
 
 	/* Probe for our serial device and adjust baud. */
-	if (!esp8266_probe_device(esp8266_state.device.serial, WIFI_MAX_BAUD)) {
+	esp8266_wait_for_ready(s);
+	if (!esp8266_probe_device(s, WIFI_MAX_BAUD)) {
 		pr_warning(LOG_PFX "Failed to probe WiFi device\r\n");
 		return false;
 	}

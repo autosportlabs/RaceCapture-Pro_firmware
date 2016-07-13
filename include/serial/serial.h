@@ -32,6 +32,13 @@
 
 CPP_GUARD_BEGIN
 
+struct serial_cfg {
+	size_t baud;
+	size_t data_bits;
+	size_t parity_bits;
+	size_t stop_bits;
+};
+
 /**
  * The callback that gets fired when a user attempts to configure a
  * serial device.
@@ -87,7 +94,7 @@ const char* serial_get_name(struct Serial *s);
 void serial_init(struct Serial *s, unsigned int bits, unsigned int parity,
                  unsigned int stopBits, unsigned int baud);
 
-bool serial_config(const struct Serial *s, const size_t bits,
+bool serial_config(struct Serial *s, const size_t bits,
                    const size_t parity, const size_t stop_bits,
                    const size_t baud);
 
@@ -136,6 +143,8 @@ typedef int serial_ioctl_cb_t(struct Serial *s, unsigned long req,
 void serial_set_ioctl_cb(struct Serial *s, serial_ioctl_cb_t* cb);
 
 int serial_ioctl(struct Serial *s, unsigned long req, void* argp);
+
+const struct serial_cfg* serial_get_config(const struct Serial* s);
 
 int put_int(struct Serial * serial, int n);
 

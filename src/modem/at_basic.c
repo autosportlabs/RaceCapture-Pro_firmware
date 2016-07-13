@@ -20,15 +20,37 @@
  */
 
 #include "at_basic.h"
+#include "dateTime.h"
 #include "macros.h"
 #include "serial.h"
 #include "str_util.h"
 #include <stdbool.h>
 #include <stddef.h>
 
-#define MAX_AT_REPLY_READS	10
 #define PROBE_PING_ATTEMPTS	3
 #define PROBE_PING_DELAY_MS	100
+
+/**
+ * Waits for a message to come in.
+ * @param serial Serial device to monitor
+ * @param msg Message to wait for.
+ * @param delay_ms Max time to wait.
+ */
+bool at_basic_wait_for_msg(struct Serial* serial, const char* msg,
+			   const size_t delay_ms)
+{
+	const tiny_millis_t term = date_time_uptime_now_plus(delay_ms);
+	const char* ptr = msg;
+
+	while (!date_time_is_past(term) && *ptr) {
+		const size_t max_delay_ms = term - getUptime();
+		char rx_char;
+		if (serial_get_c_wait(serial, &rx_char, max_delay_ms))
+			ptr = rx_char == *ptr ? ptr + 1 : msg;
+	}
+
+	return !*ptr;
+}
 
 /**
  * Sends a basic Ping command to the device and waits for a reply.
@@ -39,21 +61,13 @@
 bool at_basic_ping(struct Serial* serial, const size_t tries,
 		   const size_t delay_ms)
 {
-	char buff[16];
 	const char cmd[] = "AT\r\n";
-	const size_t len = ARRAY_LEN(buff) - 1;
 
 	for (size_t try = 0; try < tries; ++try) {
 		serial_flush(serial);
 		serial_put_s(serial, cmd);
-
-		for (size_t reads = MAX_AT_REPLY_READS;
-		     reads && serial_get_line_wait(serial, buff, len, delay_ms);
-		     --reads) {
-			const char* msg = strip_inline(buff);
-			if (STR_EQ("OK", msg))
-				return true;
-		}
+		if (at_basic_wait_for_msg(serial, "OK", delay_ms))
+			return true;
 	}
 
 	return false;

@@ -43,7 +43,6 @@
 #define _AT_QP_PRE_INIT_MS	500
 #define _AT_QP_STANDARD_MS	1
 #define _AUTOBAUD_TRIES		3
-#define RESET_SLEEP_MS		500
 #define _TIMEOUT_LONG_MS	5000
 #define _TIMEOUT_MEDIUM_MS	500
 #define _TIMEOUT_SHORT_MS	50
@@ -275,13 +274,13 @@ static bool init_soft_reset_cb(struct at_rsp *rsp, void *up)
 		return false;
 	}
 
-	/* Wait a tiny bit and clear the serial after a reset */
-	delayMs(RESET_SLEEP_MS);
-
-	/* Reset Serial to Default values here and ping test */
+	/* Reset Serial to default values first */
 	struct Serial* serial = state.ati->sb->serial;
 	serial_clear(serial);
 	esp8266_set_default_serial_params(serial);
+
+	/* Wait for the ready notice from the modem and ping test. */
+	esp8266_wait_for_ready(serial);
 	if (!at_basic_ping(serial, AT_PROBE_TRIES, AT_PROBE_DELAY_MS)) {
 		init_failed("Post reset ping failed\r\n");
 		return false;
@@ -1065,7 +1064,7 @@ static bool set_uart_config_cb(struct at_rsp *rsp, void *up)
 {
         static const char *cmd_name = "set_uart_config_cb";
         esp8266_set_uart_config_cb_t* cb = up;
-        bool status = at_ok(rsp);
+        const bool status = at_ok(rsp);
 
         if (!status)
                 cmd_failure(cmd_name, NULL);
@@ -1113,4 +1112,15 @@ bool esp8266_probe_device(struct Serial* serial, const int fast_baud)
 			      ESP8266_SERIAL_DEF_BITS,
 			      ESP8266_SERIAL_DEF_PARITY,
 			      ESP8266_SERIAL_DEF_STOP);
+}
+
+/**
+ * Waits for the "ready" string that comes from the wifi module when
+ * it is ready to receive commands.  This is useful to wait for after
+ * a reset so we know the module is ready to go.
+ */
+bool esp8266_wait_for_ready(struct Serial* serial)
+{
+	return at_basic_wait_for_msg(serial, "ready",
+				     ESP8266_INIT_TIMEOUT_MS);
 }

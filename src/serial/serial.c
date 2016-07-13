@@ -41,19 +41,21 @@ enum data_dir {
 };
 
 struct Serial {
-        const char *name;
-        xQueueHandle tx_queue;
-        xQueueHandle rx_queue;
+	const char *name;
+	xQueueHandle tx_queue;
+	xQueueHandle rx_queue;
 
-        config_func_t *config_cb;
-        void *config_cb_arg;
-        post_tx_func_t *post_tx_cb;
-        void *post_tx_cb_arg;
-        serial_ioctl_cb_t *ioctl_cb;
+	config_func_t *config_cb;
+	void *config_cb_arg;
+	post_tx_func_t *post_tx_cb;
+	void *post_tx_cb_arg;
+	serial_ioctl_cb_t *ioctl_cb;
 
-        enum serial_log_type log_type;
-        size_t log_rx_cntr;
-        size_t log_tx_cntr;
+	enum serial_log_type log_type;
+	size_t log_rx_cntr;
+	size_t log_tx_cntr;
+
+	struct serial_cfg cfg;
 };
 
 
@@ -221,14 +223,27 @@ enum serial_log_type serial_logging(struct Serial *s,
         return prev;
 }
 
-bool serial_config(const struct Serial *s, const size_t bits,
-                   const size_t parity, const size_t stop_bits,
-                   const size_t baud)
+bool serial_config(struct Serial *s, const size_t bits,
+		   const size_t parity, const size_t stop_bits,
+		   const size_t baud)
 {
-        if (!s->config_cb)
-                return true; /* No-op always succeeds */
+	s->cfg.data_bits = bits;
+	s->cfg.parity_bits = parity;
+	s->cfg.stop_bits = stop_bits;
+	s->cfg.baud = baud;
 
-        return s->config_cb(s->config_cb_arg, bits, parity, stop_bits, baud);
+	if (!s->config_cb)
+		return true; /* No-op always succeeds */
+
+	return s->config_cb(s->config_cb_arg, bits, parity, stop_bits, baud);
+}
+
+/**
+ * @return The serial config as set by the #serial_config method.
+ */
+const struct serial_cfg* serial_get_config(const struct Serial* s)
+{
+	return &s->cfg;
 }
 
 static void purge_queue(xQueueHandle q)
