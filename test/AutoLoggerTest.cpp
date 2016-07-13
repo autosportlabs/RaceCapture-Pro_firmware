@@ -41,22 +41,22 @@ void AutoLoggerTest::setUp()
 
 void AutoLoggerTest::setGpsSpeedAboveStartTrigger()
 {
-        gps_sample.speed = convert_mph_kph(DEFAULT_START_SPEED_MPH + 1);
+        gps_sample.speed = DEFAULT_START_SPEED_KPH + 1;
 }
 
 void AutoLoggerTest::setGpsSpeedBelowStartTrigger()
 {
-        gps_sample.speed = convert_mph_kph(DEFAULT_START_SPEED_MPH - 1);
+        gps_sample.speed = DEFAULT_START_SPEED_KPH - 1;
 }
 
 void AutoLoggerTest::setGpsSpeedAboveStopTrigger()
 {
-        gps_sample.speed = convert_mph_kph(DEFAULT_STOP_SPEED_MPH + 1);
+        gps_sample.speed = DEFAULT_STOP_SPEED_KPH + 1;
 }
 
 void AutoLoggerTest::setGpsSpeedBelowStopTrigger()
 {
-        gps_sample.speed = convert_mph_kph(DEFAULT_STOP_SPEED_MPH - 1);
+        gps_sample.speed = DEFAULT_STOP_SPEED_KPH - 1;
 }
 
 tiny_millis_t AutoLoggerTest::getTriggerTimeStart()
