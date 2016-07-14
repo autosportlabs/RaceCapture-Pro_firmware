@@ -21,7 +21,6 @@
 
 #include "api.h"
 #include "auto_logger.h"
-#include "convert.h"
 #include "cpp_guard.h"
 #include "dateTime.h"
 #include "gps.h"
@@ -33,9 +32,9 @@
 #include "serial.h"
 #include <stdbool.h>
 
-#define DEFAULT_START_SPEED_MPH	25
+#define DEFAULT_START_SPEED_KPH	40
 #define DEFAULT_START_TIME_SEC	5
-#define DEFAULT_STOP_SPEED_MPH	15
+#define DEFAULT_STOP_SPEED_KPH	25
 #define DEFAULT_STOP_TIME_SEC	10
 #define LOG_PFX			"[auto_logger] "
 
@@ -61,10 +60,10 @@ void auto_logger_reset_config(struct auto_logger_config* cfg)
         cfg->active = true;
 
         cfg->start.time = DEFAULT_START_TIME_SEC;
-        cfg->start.speed = DEFAULT_START_SPEED_MPH;
+        cfg->start.speed = DEFAULT_START_SPEED_KPH;
 
         cfg->stop.time = DEFAULT_STOP_TIME_SEC;
-        cfg->stop.speed = DEFAULT_STOP_SPEED_MPH;
+        cfg->stop.speed = DEFAULT_STOP_SPEED_KPH;
 }
 
 static void get_speed_time(struct Serial* serial,
@@ -128,8 +127,7 @@ static bool should_start_logging(const GpsSample* sample,
 {
         const tiny_millis_t trig_time =
                 (tiny_millis_t) auto_logger_state.cfg->start.time * 1000;
-        const float trig_speed =
-                convert_mph_kph(auto_logger_state.cfg->start.speed);
+        const float trig_speed = auto_logger_state.cfg->start.speed;
 
         if (0 == trig_time)
                 return false;
@@ -154,8 +152,7 @@ static bool should_stop_logging(const GpsSample* sample,
 {
         const tiny_millis_t trig_time =
                 (tiny_millis_t) auto_logger_state.cfg->stop.time * 1000;
-        const float trig_speed =
-                convert_mph_kph(auto_logger_state.cfg->stop.speed);
+        const float trig_speed = auto_logger_state.cfg->stop.speed;
 
         if (0 == trig_time)
                 return false;
