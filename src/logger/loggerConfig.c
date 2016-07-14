@@ -667,7 +667,6 @@ int flash_default_logger_config(void)
     resetConnectivityConfig(&lc->ConnectivityConfigs);
     reset_logging_config(&lc->logging_cfg);
     auto_logger_reset_config(&lc->auto_logger_cfg);
-    strcpy(lc->padding_data, "");
 
     int result = flashLoggerConfig();
 
@@ -677,8 +676,8 @@ int flash_default_logger_config(void)
 
 int flashLoggerConfig(void)
 {
-    return memory_flash_region((void *) &g_savedLoggerConfig,
-                               (void *) &g_workingLoggerConfig,
+    return memory_flash_region(&g_savedLoggerConfig,
+                               &g_workingLoggerConfig,
                                sizeof (LoggerConfig));
 }
 

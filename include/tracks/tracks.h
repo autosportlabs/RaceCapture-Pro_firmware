@@ -24,6 +24,7 @@
 
 #include "cpp_guard.h"
 #include "capabilities.h"
+#include "macros.h"
 #include "geopoint.h"
 #include "stddef.h"
 #include "versionInfo.h"
@@ -65,7 +66,11 @@ typedef struct _Stage {
     GeoPoint sectors[STAGE_SECTOR_COUNT];
 } Stage;
 
-typedef struct _Track {
+/*
+ * The ALIGNED_WORD attributes are present to ensure that the values
+ * are always word
+ */
+typedef struct ALIGNED_WORD _Track {
     int32_t trackId;
     enum TrackType track_type;
     union {
@@ -75,10 +80,10 @@ typedef struct _Track {
     };
 } Track;
 
-typedef struct _Tracks {
-    VersionInfo versionInfo;
-    size_t count;
-    Track tracks[MAX_TRACK_COUNT];
+typedef struct ALIGNED_WORD _Tracks {
+    ALIGNED_WORD VersionInfo versionInfo;
+    ALIGNED_WORD size_t count;
+    ALIGNED_WORD Track tracks[MAX_TRACK_COUNT];
 } Tracks;
 
 void initialize_tracks();

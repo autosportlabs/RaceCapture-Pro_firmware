@@ -24,6 +24,7 @@
 
 #include "cpp_guard.h"
 #include "capabilities.h"
+#include "macros.h"
 #include "memory.h"
 
 #include <stdint.h>
@@ -46,9 +47,9 @@ enum script_add_mode {
 #define SCRIPT_PAGE_SIZE	256
 #define MAX_SCRIPT_PAGES	(SCRIPT_MEMORY_LENGTH / SCRIPT_PAGE_SIZE)
 
-typedef struct _ScriptConfig {
-        uint32_t magicInit;
-        char script[SCRIPT_MEMORY_LENGTH - 4];
+typedef struct ALIGNED_WORD _ScriptConfig {
+	uint32_t magicInit;
+	char script[SCRIPT_MEMORY_LENGTH - 4];
 } ScriptConfig;
 
 void initialize_script();

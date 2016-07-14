@@ -19,29 +19,45 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "memory_device.h"
 #include "memory_mock.h"
-#include <string.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 static int g_isFlashed = 0;
 
-enum memory_flash_result_t memory_device_flash_region(const void *vAddress, const void *vData, unsigned int length)
+bool memory_device_region_clear(const volatile void *addr)
 {
-    g_isFlashed = 1;
-    void * addr = (void *)vAddress;
-    memcpy(addr, vData, length);
-    //printf("\r\nflash: %d %d |%s|\r\n", length, strlen((const char *)vData), (const char*)vData);
-    return MEMORY_FLASH_SUCCESS;
+	g_isFlashed = 0;
+	return true;
+}
+
+int memory_device_write_words(const volatile void* addr, const void* data,
+			      const size_t len)
+{
+	memcpy((void *) addr, data, len);
+	g_isFlashed = 1;
+	return (int) len;
+}
+
+enum memory_flash_result_t memory_device_flash_region(const volatile void *vAddress,
+						      const void *vData,
+						      unsigned int length)
+{
+	const bool status =
+		memory_device_region_clear(vAddress) &&
+		length <= memory_device_write_words(vAddress, vData, length);
+
+	return status ? MEMORY_FLASH_SUCCESS : MEMORY_FLASH_WRITE_ERROR;
 }
 
 void memory_mock_set_is_flashed(int isFlashed)
 {
-    g_isFlashed = isFlashed;
+	g_isFlashed = isFlashed;
 }
 
 int memory_mock_get_is_flashed()
 {
-    return g_isFlashed;
+	return g_isFlashed;
 }

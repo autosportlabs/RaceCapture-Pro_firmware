@@ -1654,6 +1654,7 @@ int api_getTrackDb(struct Serial *serial, const jsmntok_t *json)
     json_arrayEnd(serial, 0);
     json_objEnd(serial, 0);
     json_objEnd(serial, 0);
+
     return API_SUCCESS_NO_RETURN;
 }
 

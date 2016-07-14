@@ -24,10 +24,19 @@
 
 #include "cpp_guard.h"
 #include "memory.h"
+#include <stdbool.h>
+#include <stddef.h>
 
 CPP_GUARD_BEGIN
 
-enum memory_flash_result_t memory_device_flash_region(const void *vAddress, const void *vData, unsigned int length);
+bool memory_device_region_clear(const volatile void *address);
+
+int memory_device_write_words(const volatile void* address, const void* data,
+			      const size_t len);
+
+enum memory_flash_result_t memory_device_flash_region(const volatile void *vAddress,
+						      const void *vData,
+						      unsigned int length);
 
 CPP_GUARD_END
 

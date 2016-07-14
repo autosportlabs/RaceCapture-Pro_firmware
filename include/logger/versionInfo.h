@@ -23,7 +23,7 @@
 #define VERSIONINFO_H_
 
 #include "cpp_guard.h"
-
+#include "macros.h"
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -35,7 +35,7 @@ enum release_type {
         RELEASE_TYPE_OFFICIAL,
 };
 
-typedef struct _VersionInfo {
+typedef struct ALIGNED_WORD _VersionInfo {
         uint32_t major;
         uint32_t minor;
         uint32_t bugfix;
