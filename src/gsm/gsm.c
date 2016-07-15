@@ -156,15 +156,15 @@ bool gsm_get_imei(struct serial_buffer *sb,
 enum cellular_net_status gsm_get_network_reg_status(
         struct serial_buffer *sb, struct cellular_info *ci)
 {
-        const char *cmd = "AT+CREG?";
+        const char *cmd = "AT+CGREG?";
         const char *msgs[2];
         const size_t msgs_len = ARRAY_LEN(msgs);
-        const char *answrs[] = {"+CREG: 0,0",
-                                "+CREG: 0,1",
-                                "+CREG: 0,2",
-                                "+CREG: 0,3",
-                                "+CREG: 0,4",
-                                "+CREG: 0,5"};
+        const char *answrs[] = {"+CGREG: 0,0",
+                                "+CGREG: 0,1",
+                                "+CGREG: 0,2",
+                                "+CGREG: 0,3",
+                                "+CGREG: 0,4",
+                                "+CGREG: 0,5"};
         const size_t answrs_len = ARRAY_LEN(answrs);
 
         serial_buffer_reset(sb);
