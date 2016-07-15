@@ -20,6 +20,8 @@
  */
 
 #include "FreeRTOS.h"
+#include "at_basic.h"
+#include "capabilities.h"
 #include "constants.h"
 #include "dateTime.h"
 #include "esp8266.h"
@@ -51,12 +53,8 @@
 #define LOG_PFX			"[ESP8266 Driver] "
 #define MAX_CHANNELS		5
 #define RX_DATA_TIMEOUT_TICKS	1
-#define SERIAL_BAUD		115200
-#define SERIAL_BITS		8
 #define SERIAL_CMD_MAX_LEN	1024
-#define SERIAL_PARITY		0
 #define SERIAL_RX_BUFF_SIZE	256
-#define SERIAL_STOP_BITS	1
 #define SERIAL_TX_BUFF_SIZE	256
 #define TASK_STACK_SIZE		256
 #define TASK_THREAD_NAME	"ESP8266 Driver"
@@ -512,6 +510,13 @@ static void init_wifi_cb(const bool status)
         }
 
         pr_info(LOG_PFX "Initialization successful\r\n");
+
+	/*
+	 * Clear out the timestamps and set the checks on all the
+	 * subsystems since they will all change after an init.
+	 */
+	esp8266_state.client.info_timestamp = 0;
+	esp8266_state.ap.info_timestamp = 0;
         esp8266_state.device.init_state = INIT_STATE_READY;
 
         /* Now that init state has changed, check them */
@@ -531,8 +536,7 @@ static void init_wifi()
         pr_info(LOG_PFX "Initializing Wifi\r\n");
 
         serial_clear(esp8266_state.device.serial);
-        if (!esp8266_init(esp8266_state.device.serial, SERIAL_CMD_MAX_LEN,
-                          init_wifi_cb)) {
+        if (!esp8266_init(init_wifi_cb)) {
                 /* Failed to init critical bits.  */
                 pr_warning(LOG_PFX "Failed to init esp8266 device.\r\n");
                 cmd_sleep(CHECK_WIFI_DEVICE, INIT_FAIL_SLEEP_MS);
@@ -619,91 +623,71 @@ static void set_op_mode(const enum esp8266_op_mode mode)
         cmd_started();
 }
 
-
-/**
- * Callback used by the set_op_mode call.
- */
-static void reset_cb(const bool status)
+static void set_fast_baud_cb(const bool status)
 {
-        cmd_completed();
-        cmd_set_check(CHECK_WIFI_DEVICE);
+	cmd_completed();
+	cmd_set_check(CHECK_WIFI_DEVICE);
 
-        if (!status) {
-                pr_warning(LOG_PFX "Soft reset failed\r\n");
-                esp8266_state.device.init_state = INIT_STATE_RESET_HARD;
-                return;
-        }
+	if (!status) {
+		pr_warning(LOG_PFX "Set uart mode failed!\r\n");
+		return;
+	}
 
-        cmd_set_check(CHECK_WIFI_CLIENT);
-        cmd_set_check(CHECK_WIFI_AP);
-        cmd_set_check(CHECK_SERVER);
-        cmd_set_check(CHECK_DATA);
+	serial_config(esp8266_state.device.serial, ESP8266_SERIAL_DEF_BITS,
+		      ESP8266_SERIAL_DEF_PARITY, ESP8266_SERIAL_DEF_STOP,
+		      WIFI_MAX_BAUD);
+	serial_clear(esp8266_state.device.serial);
+}
 
-        /*
-         * Clear out the timestamps and set the checks on all the
-         * subsystems since they will all change after a reset.
-         */
-        esp8266_state.client.info_timestamp = 0;
-        esp8266_state.ap.info_timestamp = 0;
-        esp8266_state.device.init_state = DEV_INIT_STATE_NOT_READY;
+static void set_fast_baud()
+{
+	pr_info_int_msg(LOG_PFX "Increasing baud to ", WIFI_MAX_BAUD);
+
+	if (!esp8266_set_uart_config(WIFI_MAX_BAUD, ESP8266_SERIAL_DEF_BITS,
+				     ESP8266_SERIAL_DEF_PARITY,
+				     ESP8266_SERIAL_DEF_STOP,
+				     set_fast_baud_cb)) {
+		pr_warning(LOG_PFX "Failed to invoke set_uart_config\r\n");
+		return;
+	}
+
+	cmd_started();
 }
 
 /**
- * Command that sets the wifi device operational mode. Useful for changing
- * between modes after actions like a user changing the config.
- */
-static bool reset(bool force_hard)
-{
-        pr_info(LOG_PFX "Resetting device.\r\n");
-        if (!force_hard) {
-                if (esp8266_soft_reset(reset_cb)) {
-                        cmd_started();
-                        return true;
-                }
-
-                /* If here can't soft reset for some reason.  Hard reset */
-                pr_warning(LOG_PFX "Failed to soft reset device.\r\n");
-        }
-
-        if (wifi_device_reset()) {
-                /* Invoke callback here to get correct state */
-                reset_cb(true);
-                return true;
-        }
-
-        /* If here can't hard reset because not supported.  Hell */
-        pr_warning(LOG_PFX "Failed to hard reset device.\r\n");
-        return false;
-}
-
-
-/**
- * Method that checks the device state.  Handles all aspects including
+ * Method that checks the device state.	 Handles all aspects including
  * initialization, reset, mode, and whatever else may need handling
  * down the road.
  */
 static void check_wifi_device()
 {
-        cmd_check_complete(CHECK_WIFI_DEVICE);
-        pr_info(LOG_PFX "Checking WiFi Device...\r\n");
+	cmd_check_complete(CHECK_WIFI_DEVICE);
+	pr_info(LOG_PFX "Checking WiFi Device...\r\n");
 
-        switch(esp8266_state.device.init_state) {
-        case INIT_STATE_UNINITIALIZED:
-                init_wifi();
-                return;
-        case INIT_STATE_FAILED:
-                delayMs(CLIENT_BACKOFF_MS);
-                /* Fall into reset call */
-        case INIT_STATE_RESET:
-                reset(false);
-                return;
-        case INIT_STATE_RESET_HARD:
-                reset(true);
-                return;
-        case INIT_STATE_READY:
-                /* Then we are where we want to be */
-                break;
-        }
+	switch(esp8266_state.device.init_state) {
+	case INIT_STATE_FAILED:
+		delayMs(CLIENT_BACKOFF_MS);
+		/* Fall into hard reset */
+	case INIT_STATE_RESET_HARD:
+		wifi_device_reset();
+	case INIT_STATE_RESET:
+	case INIT_STATE_UNINITIALIZED:
+		init_wifi();
+		return;
+	case INIT_STATE_READY:
+		/* Then we are where we want to be */
+		break;
+	}
+
+
+	/* Check our baud rate and ensure it maxed out */
+	const struct serial_cfg* serial_cfg =
+		serial_get_config(esp8266_state.device.serial);
+	if (serial_cfg->baud != WIFI_MAX_BAUD) {
+		set_fast_baud();
+		return;
+	}
+
 
         /* Check if we know our device mode.  If not, get it */
         if (ESP8266_OP_MODE_UNKNOWN == esp8266_state.device.op_mode) {
@@ -1259,15 +1243,18 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         if (esp8266_state.device.serial)
                 return false; /* Already setup */
 
-        esp8266_state.device.serial = s;
-
-        if (!esp8266_state.device.serial) {
+        if (!s) {
                 pr_error(LOG_PFX "NULL serial\r\n");
                 return false;
         }
+        esp8266_state.device.serial = s;
 
-        serial_config(esp8266_state.device.serial, SERIAL_BITS, SERIAL_PARITY,
-                      SERIAL_STOP_BITS, SERIAL_BAUD);
+	/* Probe for our serial device and adjust baud. */
+	esp8266_wait_for_ready(s);
+	if (!esp8266_probe_device(s, WIFI_MAX_BAUD)) {
+		pr_warning(LOG_PFX "Failed to probe WiFi device\r\n");
+		return false;
+	}
 
         /* Create and setup semaphores for connections */
         const bool init_sync_ops =
@@ -1291,9 +1278,16 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
                 &lc->ConnectivityConfigs.wifi.ap;
         esp8266_drv_update_ap_cfg(wac);
 
-        esp8266_state.comm.new_conn_cb = new_conn_cb;
+	/* Initialize the esp8266 AT subsystem here */
+	if (!esp8266_setup(esp8266_state.device.serial, SERIAL_CMD_MAX_LEN)) {
+		pr_warning(LOG_PFX "Failed to setup WiFi AT subsys\r\n");
+		return false;
+	}
 
-        /* Set the task loop to check the wifi_device first */
+	/* Setup callback for new connections */
+	esp8266_state.comm.new_conn_cb = new_conn_cb;
+
+	/* Set the task loop to check the wifi_device first */
         cmd_set_check(CHECK_WIFI_DEVICE);
 
         static const signed char task_name[] = TASK_THREAD_NAME;

@@ -213,6 +213,7 @@ $(RCP_SRC)/logger/versionInfo.c \
 $(RCP_SRC)/logging/printk.c \
 $(RCP_SRC)/lua/luaScript.c \
 $(RCP_SRC)/memory/memory.c \
+$(RCP_SRC)/modem/at_basic.c \
 $(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 $(RCP_SRC)/serial/rx_buff.c \
 $(RCP_SRC)/serial/serial_buffer.c \

@@ -31,22 +31,26 @@
 
 CPP_GUARD_BEGIN
 
-#define ESP8266_SSID_LEN_MAX	24
-#define ESP8266_MAC_LEN_MAX	18
-#define ESP8266_IPV4_LEN_MAX	16
-#define ESP8266_PASSWD_LEN_MAX	24
+#define ESP8266_SSID_LEN_MAX		24
+#define ESP8266_MAC_LEN_MAX		18
+#define ESP8266_INIT_TIMEOUT_MS		4000
+#define ESP8266_IPV4_LEN_MAX		16
+#define ESP8266_PASSWD_LEN_MAX		24
+#define ESP8266_SERIAL_DEF_BAUD		115200
+#define ESP8266_SERIAL_DEF_BITS		8
+#define ESP8266_SERIAL_DEF_PARITY	0
+#define ESP8266_SERIAL_DEF_STOP		1
+
+bool esp8266_setup(struct Serial *s, const size_t max_cmd_len);
 
 void esp8266_do_loop(const size_t timeout);
 
-/**
- * The various initialization states of the device.  Probably should
- * get put in a more generic file.  Here is good for now.
- */
+bool esp8266_set_default_serial_params(struct Serial* serial);
+
 enum dev_init_state {
-        DEV_INIT_STATE_NOT_READY = 0,
-        DEV_INIT_INITIALIZING,
-        DEV_INIT_STATE_READY,
-        DEV_INIT_STATE_FAILED,
+	DEV_INIT_STATE_FAILED	 = -1,
+	DEV_INIT_STATE_NOT_READY =  0,
+	DEV_INIT_STATE_READY	 =  1,
 };
 
 /**
@@ -86,8 +90,7 @@ bool esp8266_register_callbacks(const struct esp8266_event_hooks* hooks);
 
 typedef void esp8266_init_cb_t(const bool status);
 
-bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
-                  esp8266_init_cb_t* cb);
+bool esp8266_init(esp8266_init_cb_t* cb);
 
 enum dev_init_state esp8266_get_dev_init_state();
 
@@ -197,9 +200,15 @@ enum esp8266_server_action {
 bool esp8266_server_cmd(const enum esp8266_server_action action, int port,
                         void (*cb)(bool));
 
-typedef void esp8266_soft_reset_cb_t(const bool status);
+typedef void esp8266_set_uart_config_cb_t(const bool status);
 
-bool esp8266_soft_reset(esp8266_soft_reset_cb_t* cb);
+bool esp8266_set_uart_config(const size_t baud, const size_t bits,
+			     const size_t parity, const size_t stop_bits,
+			     esp8266_set_uart_config_cb_t* cb);
+
+bool esp8266_probe_device(struct Serial* serial, const int fast_baud);
+
+bool esp8266_wait_for_ready(struct Serial* serial);
 
 CPP_GUARD_END
 

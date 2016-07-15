@@ -20,11 +20,13 @@
  */
 
 #include "at.h"
+#include "at_basic.h"
 #include "esp8266.h"
 #include "macros.h"
 #include "mem_mang.h"
 #include "net/protocol.h"
 #include "printk.h"
+#include "serial.h"
 #include "serial_buffer.h"
 #include "str_util.h"
 #include "taskUtil.h"
@@ -34,15 +36,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define AT_PROBE_TRIES		3
+#define AT_PROBE_DELAY_MS	200
 #define _AT_CMD_DELIM		"\r\n"
 #define _AT_DEFAULT_QP_MS	250
-#define _AT_QP_PRE_INIT_MS     	500
-#define _AT_QP_STANDARD_MS	1	/* Can probably be 0 */
+#define _AT_QP_PRE_INIT_MS	500
+#define _AT_QP_STANDARD_MS	1
 #define _AUTOBAUD_TRIES		3
 #define _TIMEOUT_LONG_MS	5000
 #define _TIMEOUT_MEDIUM_MS	500
 #define _TIMEOUT_SHORT_MS	50
 #define _TIMEOUT_SUPER_MS	30000
+
 
 /* STIEG: Temp until we write *_create methods for serial_buff and at_info */
 struct serial_buffer _serial_cmd_buff;
@@ -54,8 +59,10 @@ struct at_info _ati;
 static struct {
         struct serial_buffer *scb;
         struct at_info *ati;
-        esp8266_init_cb_t* init_cb; /* STIEG: Put in own struct? */
-        enum dev_init_state init_state;
+	struct {
+		esp8266_init_cb_t* cb;
+		enum dev_init_state state;
+	} init;
         struct esp8266_event_hooks hooks;
 } state;
 
@@ -115,13 +122,17 @@ static bool sparse_urc_cb(char* msg)
 }
 
 /**
- * Sets up the internal state of the driver.  Must be called before init.
+ * Sets up the internal state.  Must be called first and only once. All other
+ * methods will fail if this is not called.
+ * @param serial The serial device to use.
+ * @param mad_cmd_length Maximum command length we shall see.
+ * @param true if successful setup occurred, false otherwise.
  */
-static bool _setup(struct Serial *s, const size_t max_cmd_len)
+bool esp8266_setup(struct Serial *serial, const size_t max_cmd_len)
 {
-        /* Check if already initialized.  If so, do nothing */
+        /* Check if already initialized. */
         if (state.ati)
-                return true;
+                return false;
 
         state.ati = &_ati;
         state.scb = &_serial_cmd_buff;
@@ -132,7 +143,7 @@ static bool _setup(struct Serial *s, const size_t max_cmd_len)
          * tx/rx buffers and our AT state machine.  Commands may not
          * exceed max_cmd_len.
          */
-        if (!serial_buffer_create(state.scb, s, max_cmd_len, NULL))
+        if (!serial_buffer_create(state.scb, serial, max_cmd_len, NULL))
                 return false;
 
         /* Init our AT engine here */
@@ -154,34 +165,42 @@ void esp8266_do_loop(const size_t timeout)
         at_task(state.ati, timeout);
 }
 
+bool esp8266_set_default_serial_params(struct Serial* serial)
+{
+	return serial_config(serial, ESP8266_SERIAL_DEF_BITS,
+			     ESP8266_SERIAL_DEF_PARITY,
+			     ESP8266_SERIAL_DEF_STOP,
+			     ESP8266_SERIAL_DEF_BAUD);
+}
+
+static void init_complete(const bool success)
+{
+	/* Only do the callback once */
+	esp8266_init_cb_t* cb = state.init.cb;
+	state.init.cb = NULL;
+
+	if (success) {
+		pr_info("[esp8266] Initialized\r\n");
+		state.init.state = DEV_INIT_STATE_READY;
+	} else {
+		state.init.state = DEV_INIT_STATE_FAILED;
+	}
+
+	if (cb)
+		cb(success);
+}
+
 /**
  * Call the if the init routine fails.
  * @param msg The message to print.
  */
 static void init_failed(const char *msg)
 {
-        /* If we aren't initializing, then don't do the callback */
-        if (state.init_state != DEV_INIT_INITIALIZING)
-                return;
-
-        state.init_state = DEV_INIT_STATE_FAILED;
-        cmd_failure("Init", msg);
-        state.init_cb(false); /* Will always be defined */
+	cmd_failure("Init", msg);
+        init_complete(false);
 }
 
-static void init_complete(bool status)
-{
-        if (!status) {
-                init_failed("set_mux_mode failed");
-                return;
-        }
-
-        pr_info("[esp8266] Initialized\r\n");
-        state.init_state = DEV_INIT_STATE_READY;
-        state.init_cb(true); /* Will always be defined */
-}
-
-static bool get_version_cb(struct at_rsp *rsp, void *up)
+static bool init_get_version_cb(struct at_rsp *rsp, void *up)
 {
         if (!at_ok(rsp)) {
                 /* WTF Mate */
@@ -204,130 +223,133 @@ static bool get_version_cb(struct at_rsp *rsp, void *up)
         return false;
 }
 
-static bool get_version()
+static bool init_get_version()
 {
         return NULL != at_put_cmd(state.ati, "AT+GMR", _TIMEOUT_MEDIUM_MS,
-                                  get_version_cb, NULL);
+                                  init_get_version_cb, NULL);
 }
 
-static bool set_echo_cb(struct at_rsp *rsp, void *up)
+static bool init_set_echo_cb(struct at_rsp *rsp, void *up)
 {
-        if (!at_ok(rsp)) {
-                /* Failure. :( */
+        if (!at_ok(rsp))
                 init_failed("Set echo failed.");
-        }
 
         return false;
 }
 
-static bool set_echo(const bool on)
+static bool init_set_echo()
 {
-        const char *cmd = on ? "ATE1" : "ATE0";
+        const char *cmd = "ATE0";
         return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_SHORT_MS,
-                                  set_echo_cb, NULL);
+                                  init_set_echo_cb, NULL);
 }
 
-static bool set_mux_mode_cb(struct at_rsp *rsp, void *up)
+static bool init_set_mux_mode_cb(struct at_rsp *rsp, void *up)
 {
-        void (*cb)(bool) = up;
-
         const bool status = at_ok(rsp);
-        if (!status)
-                cmd_failure("set_mux_mode_cb", NULL);
+        if (!status) {
+                init_failed("set_mux_mode_cb");
+	} else {
+		init_complete(true);
+	}
 
-        if (cb)
-                cb(status);
+        return false;
+}
+
+static bool init_set_mux_mode()
+{
+        const char cmd_str[] = "AT+CIPMUX=1";
+        return NULL != at_put_cmd(state.ati, cmd_str, _TIMEOUT_SHORT_MS,
+                                  init_set_mux_mode_cb, NULL);
+}
+
+/**
+ * Callback that is invoked upon command completion.
+ */
+static bool init_soft_reset_cb(struct at_rsp *rsp, void *up)
+{
+        const bool status = at_ok(rsp);
+        if (!status) {
+		init_failed("Soft reset failed.");
+		return false;
+	}
+
+	/* Reset Serial to default values first */
+	struct Serial* serial = state.ati->sb->serial;
+	serial_clear(serial);
+	esp8266_set_default_serial_params(serial);
+
+	/* Wait for the ready notice from the modem and ping test. */
+	esp8266_wait_for_ready(serial);
+	if (!at_basic_ping(serial, AT_PROBE_TRIES, AT_PROBE_DELAY_MS)) {
+		init_failed("Post reset ping failed\r\n");
+		return false;
+	}
+
+
+	/*
+	 * If here, queue up reset of init tasks.  Use single &
+	 * to prevent short-circuiting of commands should one fail
+	 * to queue.
+	 */
+	const bool queued =
+		init_set_echo() &&
+		init_get_version() &&
+                init_set_mux_mode();
+	if (!queued)
+		init_failed("Failed to queue up all init tasks\r\n");
 
         return false;
 }
 
 /**
- * Sets whether or not we are in multiplexing mode.
- * @param mux True if we want to, false otherwise.
- * @cb The callback to invoke when complete.
- * @return True if the command was queued, false otherwise.
+ * Soft reset the device back to its initial state.
+ * @param cb The callback to be invoked when the method completes.
+ * @return true if the request was queued, false otherwise.
  */
-static bool set_mux_mode(const bool mux, void (*cb)(bool status))
+static bool init_soft_reset()
 {
-        char cmd_str[12];
-        snprintf(cmd_str, ARRAY_LEN(cmd_str), "AT+CIPMUX=%d", mux ? 1 : 0);
-        return NULL != at_put_cmd(state.ati, cmd_str, _TIMEOUT_SHORT_MS,
-                                  set_mux_mode_cb, cb);
+        const char cmd[] = "AT+RST";
+        return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
+                                  init_soft_reset_cb, NULL);
 }
 
-static void do_remaining_init_tasks()
+/**
+ * Resets and initializes our WiFi device to a known sane state where
+ * the driver can then take over and control sanely.
+ * @param cb Callback to invoke when init is complete.
+ */
+bool esp8266_init(esp8266_init_cb_t* cb)
 {
-        /* Set normal quiet period since we have auto-bauded */
+	const char task_name[] = "esp8266_init";
+        if (!state.ati) {
+		cmd_failure(task_name, "AT subsys not initialized");
+                return false;
+	}
+
+	if (state.init.cb) {
+		cmd_failure(task_name, "Init already in progress");
+		return false;
+	}
+
+	state.init.cb = cb;
+
+	/* Set normal quiet period */
         at_configure_device(state.ati, _AT_QP_STANDARD_MS,
                             _AT_CMD_DELIM);
 
-        /* Ensure we don't put down more tasks than we have */
-        const bool res = set_echo(false) && get_version() &&
-                set_mux_mode(true, init_complete);
-
-        if (!res)
-                cmd_failure("do_remaining_init_tasks", "One or more init "
-                            "tasks failed to get scheduled");
-        /* May need to do more here, probably not */
-}
-
-/**
- * Callback for Autobauding.  Also used when starting
- */
-static bool autobaud_cb(struct at_rsp *rsp, void *tries)
-{
-        /* Check if we got an OK reply.  If so, move to next step */
-        if (at_ok(rsp)) {
-                do_remaining_init_tasks();
-                return false;
-        }
-
-        --tries;
-        if (!tries) {
-                /* Out of tries.  We are done */
-                init_failed("Autobaud failed.");
-                return false;
-        }
-
-        at_put_cmd(state.ati, "AT", _TIMEOUT_MEDIUM_MS, autobaud_cb, tries);
-        return false;
-}
-
-/**
- * Kicks off the autobauding process.  We configure the AT engine to use
- * the callback method for both call backs and the initilazation routine.
- * Saves us a method.  Its like recursion, except without the stack overflows.
- */
-static void begin_autobaud_cmd()
-{
-        at_configure_device(state.ati, _AT_QP_PRE_INIT_MS,
-                            _AT_CMD_DELIM);
-        autobaud_cb(NULL, (void*) _AUTOBAUD_TRIES);
-}
-
-static bool is_init_in_progress()
-{
-        return NULL != state.init_cb;
-}
-
-/**
- * Kicks off the initilization process.
- */
-bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
-                  esp8266_init_cb_t* cb)
-{
-        if (!cb || !s || is_init_in_progress())
-                return false;
-
-        /* Init objects.  If fail, then nothing we can do. */
-        if (!_setup(s, max_cmd_len))
-                return false;
-
-        at_reset(state.ati);
-        state.init_cb = cb;
-        begin_autobaud_cmd();
-
-        return true;
+	/*
+	 * To ensure our device is initialized properly we do the
+	 * following in this order:
+	 *
+	 * + Soft Reset
+	 * + Print Version Info
+	 * + Disable Cmd Echo
+	 * + Setup Muxing
+	 *
+	 * This gaurantees sane initialized state for the WiFi device.
+	 */
+        return init_soft_reset();
 }
 
 /**
@@ -335,7 +357,7 @@ bool esp8266_init(struct Serial *s, const size_t max_cmd_len,
  */
 enum dev_init_state esp8266_get_dev_init_state()
 {
-        return state.init_state;
+        return state.init.state;
 }
 
 /**
@@ -345,7 +367,7 @@ enum dev_init_state esp8266_get_dev_init_state()
  */
 static bool check_initialized(const char *cmd_name)
 {
-        const bool init = DEV_INIT_STATE_READY == state.init_state;
+        const bool init = DEV_INIT_STATE_READY == state.init.state;
 
         if (!state.ati || !init)
                 cmd_failure(cmd_name, "Device not initialized");
@@ -1038,11 +1060,11 @@ bool esp8266_register_callbacks(const struct esp8266_event_hooks* hooks)
 /**
  * Callback that is invoked upon command completion.
  */
-static bool soft_reset_cb(struct at_rsp *rsp, void *up)
+static bool set_uart_config_cb(struct at_rsp *rsp, void *up)
 {
-        static const char *cmd_name = "reset_cb";
-        esp8266_soft_reset_cb_t* cb = up;
-        bool status = at_ok(rsp);
+        static const char *cmd_name = "set_uart_config_cb";
+        esp8266_set_uart_config_cb_t* cb = up;
+        const bool status = at_ok(rsp);
 
         if (!status)
                 cmd_failure(cmd_name, NULL);
@@ -1053,19 +1075,52 @@ static bool soft_reset_cb(struct at_rsp *rsp, void *up)
         return false;
 }
 
+
 /**
- * Soft reset the device back to its initial state.
- * @param cb The callback to be invoked when the method completes.
- * @return true if the request was queued, false otherwise.
+ * Sets the uart configuration on the esp8266 device.
  */
-bool esp8266_soft_reset(esp8266_soft_reset_cb_t* cb)
+bool esp8266_set_uart_config(const size_t baud, const size_t bits,
+			     const size_t parity, const size_t stop_bits,
+			     esp8266_set_uart_config_cb_t* cb)
 {
+        const char cmd_name[] = "set_uart_config";
         if (!state.ati) {
-                cmd_failure("soft_reset", "AT interface not initialized.");
+                cmd_failure(cmd_name, "AT subsys not initialized.");
                 return false;
         }
 
-        const char cmd[] = "AT+RST";
-        return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
-                                  soft_reset_cb, cb);
+        /* ESP8266 says value of 2 stop bits is 3.  2 is 1.5 stop bits. WTF */
+        int stop_bits_adj = (int) stop_bits;
+        if (2 == stop_bits_adj)
+                stop_bits_adj = 3;
+
+        /*
+	 * AT+UART_CUR=<baudrate>,<databits>,<stopbits>,<parity>,<flowctrl>
+	 */
+	char cmd[48];
+        snprintf(cmd, ARRAY_LEN(cmd), "AT+UART_CUR=%d,%d,%d,%d,0", (int) baud,
+		 (int) bits, stop_bits_adj, (int) parity);
+
+	return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
+                                  set_uart_config_cb, cb);
+}
+
+bool esp8266_probe_device(struct Serial* serial, const int fast_baud)
+{
+	const int bauds[] = {ESP8266_SERIAL_DEF_BAUD, fast_baud, 0};
+	return at_basic_probe(serial, bauds, AT_PROBE_TRIES, AT_PROBE_DELAY_MS,
+			      ESP8266_SERIAL_DEF_BITS,
+			      ESP8266_SERIAL_DEF_PARITY,
+			      ESP8266_SERIAL_DEF_STOP);
+}
+
+/**
+ * Waits for the "ready" string that comes from the wifi module when
+ * it is ready to receive commands.  This is useful to wait for after
+ * a reset so we know the module is ready to go.
+ */
+bool esp8266_wait_for_ready(struct Serial* serial)
+{
+	return at_basic_wait_for_msg(serial, "ready",
+				     ESP8266_INIT_TIMEOUT_MS);
 }

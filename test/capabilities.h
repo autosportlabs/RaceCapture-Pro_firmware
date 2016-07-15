@@ -45,6 +45,8 @@ CPP_GUARD_BEGIN
 #define MAX_TRACKS				240
 #define MAX_SECTORS				20
 #define MAX_VIRTUAL_CHANNELS	10
+
+#define WIFI_MAX_BAUD	921600
 /*
  * What is the maximum number of samples available per predictive time
  * buffer.  More samples == better resolution. Each slot is 12 bytes.
