@@ -638,8 +638,9 @@ static int lua_set_can_filter(lua_State *L)
         const uint8_t extended = lua_tointeger(L, 3);
         const uint32_t filter = lua_tointeger(L, 4);
         const uint32_t mask = lua_tointeger(L, 5);
+
         lua_pushinteger(L, CAN_set_filter(channel, id, extended,
-                                          filter, mask));
+                                          filter, mask, true));
         return 1;
 }
 
