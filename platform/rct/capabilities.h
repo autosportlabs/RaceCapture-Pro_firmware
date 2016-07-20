@@ -21,7 +21,7 @@
 #define WIFI_MAX_BAUD	921600
 
 /* Configuration */
-#define MAX_TRACKS	5
+#define MAX_TRACKS	0
 #define MAX_SECTORS	20
 #define MAX_VIRTUAL_CHANNELS	30
 /*
