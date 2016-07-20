@@ -117,6 +117,7 @@ APP_SRC = 	$(APP_PATH)/main.c \
 			$(RCP_SRC)/util/ts_ring_buff.c \
 			$(RCP_SRC)/virtual_channel/virtual_channel.c \
 			$(RCP_SRC)/memory/memory.c \
+			$(RCP_SRC)/units/units.c \
 			$(RCP_SRC)/util/linear_interpolate.c \
 			$(RCP_SRC)/util/FreeRTOS-openocd.c \
 			$(RCP_SRC)/util/modp_numtoa.c \
@@ -207,6 +208,7 @@ APP_INCLUDES += -I. \
 				-I$(INCLUDE_DIR)/virtual_channel \
 				-I$(INCLUDE_DIR)/auto_config \
 				-I$(INCLUDE_DIR)/system \
+				-I$(INCLUDE_DIR)/units \
 				-I$(HAL_SRC)/fat_sd_stm32/fatfs \
 				-I$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub \
 				-I$(HAL_SRC)/usb_stm32 \
