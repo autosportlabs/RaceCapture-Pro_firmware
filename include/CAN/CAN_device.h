@@ -25,13 +25,14 @@
 #include "cpp_guard.h"
 #include "CAN.h"
 #include "loggerConfig.h"
-
+#include <stdbool.h>
 #include <stdint.h>
 
 CPP_GUARD_BEGIN
 
 int CAN_device_init(uint8_t channel, uint32_t baud);
-int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended, uint32_t filter, uint32_t mask);
+int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
+			  uint32_t filter, uint32_t mask, const bool enabled);
 int CAN_device_tx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs);
 int CAN_device_rx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs);
 

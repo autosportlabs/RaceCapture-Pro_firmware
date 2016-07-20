@@ -29,15 +29,17 @@
 #include "stm32f4xx_rcc.h"
 #include "task.h"
 #include "taskUtil.h"
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
 static xQueueHandle xCan1Rx = NULL;
 static xQueueHandle xCan2Rx = NULL;
 
+#define CAN_FILTER_COUNT	13
+#define CAN_IRQ_PRIORITY	5
+#define CAN_IRQ_SUB_PRIORITY	0
 #define CAN_QUEUE_LENGTH	10
-#define CAN_IRQ_PRIORITY 	5
-#define CAN_IRQ_SUB_PRIORITY 	0
 
 //For 168MHz clock
 /*       BS1 BS2 SJW Pre
@@ -117,7 +119,6 @@ static void initCAN(CAN_TypeDef * CANx, uint32_t baud)
     CAN_InitStructure.CAN_Prescaler = can_baud_pre[baudIndex];
 
     CAN_Init(CANx, &CAN_InitStructure);
-
 }
 
 static void initCANInterrupts(CAN_TypeDef * CANx, uint8_t irqNumber)
@@ -150,9 +151,6 @@ static void CAN_device_init_1(int baud)
 
     initCAN(CAN1, baud);
 
-    //set default filter
-    CAN_device_set_filter(0, 0, 0, 0, 0);
-
     /* Enable FIFO 0 message pending Interrupt */
     CAN_ITConfig(CAN1, CAN_IT_FMP0, ENABLE);
 
@@ -178,9 +176,6 @@ static void CAN_device_init_2(int baud)
 
     initCAN(CAN2, baud);
 
-    /* set default filter */
-    CAN_device_set_filter(1, 0, 0, 0, 0);
-
     /* Enable FIFO 0 message pending Interrupt */
     CAN_ITConfig(CAN2, CAN_IT_FMP1, ENABLE);
 
@@ -189,57 +184,76 @@ static void CAN_device_init_2(int baud)
 
 int CAN_device_init(uint8_t channel, uint32_t baud)
 {
+	pr_info("Initializing CAN");
+	pr_info_int(channel);
+	pr_info_int_msg(" with baud rate ", baud);
 
-    pr_info("CAN");
-    pr_info_int(channel);
-    pr_info(" init @ ");
-    pr_info_int(baud);
+	if (!initQueues()) {
+		pr_info("CAN init queues failed\r\n");
+		return 0;
+	}
 
-    if (initQueues()) {
-        switch (channel) {
-        case 0:
-            CAN_device_init_1(baud);
-            break;
-        case 1:
-            CAN_device_init_2(baud);
-            break;
-        }
-        pr_info(" win\r\n");
-        return 1;
-    } else {
-        pr_info(" fail\r\n");
-        return 0;
-    }
+	switch (channel) {
+	case 0:
+		CAN_device_init_1(baud);
+		break;
+	case 1:
+		CAN_device_init_2(baud);
+		break;
+	default:
+		pr_info("CAN init device failed\r\n");
+		return 0;
+	}
+
+	/* Clear out all filter values except 0.  It accepts all. */
+	CAN_device_set_filter(channel, 0, 1, 0, 0, true);
+	for (size_t i = 1; i < CAN_FILTER_COUNT; ++i)
+		CAN_device_set_filter(channel, i, 0, 0, 0, false);
+
+	pr_info("CAN init success!\r\n");
+	return 1;
 }
 
 int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
-                          uint32_t filter, uint32_t mask)
+			  uint32_t filter, uint32_t mask, const bool enabled)
 {
-    if (channel > 1) {
-        return 0;
-    }
+	if (channel > 1)
+		return 0;
 
-    if (id > 13) {
-        return 0;
-    }
+	if (id > 13)
+		return 0;
 
-    if (channel == 1) {
-        /* CAN2 filters start at 14 by default */
-        id += 14;
-    }
+	/* CAN2 filters start at 14 by default */
+	if (channel == 1)
+		id += 14;
 
-    CAN_FilterInitTypeDef CAN_FilterInitStructure;
-    CAN_FilterInitStructure.CAN_FilterNumber = id;
-    CAN_FilterInitStructure.CAN_FilterMode = CAN_FilterMode_IdMask;
-    CAN_FilterInitStructure.CAN_FilterScale = CAN_FilterScale_32bit;
-    CAN_FilterInitStructure.CAN_FilterIdHigh = filter >> 16;
-    CAN_FilterInitStructure.CAN_FilterIdLow = filter & 0xFFFF;
-    CAN_FilterInitStructure.CAN_FilterMaskIdHigh = mask >> 16;
-    CAN_FilterInitStructure.CAN_FilterMaskIdLow = mask & 0xFFFF;
-    CAN_FilterInitStructure.CAN_FilterFIFOAssignment = (channel == 0 ? CAN_FIFO0 : CAN_FIFO1);
-    CAN_FilterInitStructure.CAN_FilterActivation = ENABLE;
-    CAN_FilterInit(&CAN_FilterInitStructure);
-    return 1;
+	/*
+	 * The mapping for these filters/masks is wonkey.  See page
+	 * 1080 of the stm32f4 reference guide for details.
+	 * - STD CAN ID -> Bits [31:21]
+	 * - EXT CAN ID -> Bits [31:03]
+	 */
+
+	CAN_FilterInitTypeDef CAN_FilterInitStructure;
+	CAN_FilterInitStructure.CAN_FilterNumber = id;
+	CAN_FilterInitStructure.CAN_FilterMode = CAN_FilterMode_IdMask;
+	CAN_FilterInitStructure.CAN_FilterScale = CAN_FilterScale_32bit;
+	CAN_FilterInitStructure.CAN_FilterFIFOAssignment =
+		(channel == 0 ? CAN_FIFO0 : CAN_FIFO1);
+	CAN_FilterInitStructure.CAN_FilterActivation =
+		enabled ? ENABLE : DISABLE;
+
+	const size_t shift = extended ? 3 : 21;
+	filter <<= shift;
+	mask <<= shift;
+	CAN_FilterInitStructure.CAN_FilterIdHigh = filter >> 16;
+	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = mask >> 16;
+	CAN_FilterInitStructure.CAN_FilterIdLow = (uint16_t) filter;
+	CAN_FilterInitStructure.CAN_FilterMaskIdLow = (uint16_t) mask;
+
+	CAN_FilterInit(&CAN_FilterInitStructure);
+
+	return 1;
 }
 
 int CAN_device_tx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)

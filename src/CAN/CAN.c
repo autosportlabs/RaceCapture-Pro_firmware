@@ -42,9 +42,11 @@ int CAN_init_port(uint8_t port, uint32_t baud)
     return CAN_device_init(port, baud);
 }
 
-int CAN_set_filter(uint8_t channel, uint8_t id, uint8_t extended, uint32_t filter, uint32_t mask)
+int CAN_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
+		   uint32_t filter, uint32_t mask, const bool enabled)
 {
-    return CAN_device_set_filter(channel, id, extended, filter, mask);
+	return CAN_device_set_filter(channel, id, extended, filter,
+				     mask, enabled);
 }
 
 int CAN_tx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs)

@@ -629,18 +629,33 @@ static int lua_init_can(lua_State *L)
 
 static int lua_set_can_filter(lua_State *L)
 {
-        lua_validate_args_count(L, 5, 5);
-        for (int i = 1; i <= 5; ++i)
-                lua_validate_arg_number(L, i);
+	lua_validate_args_count(L, 5, 6);
 
-        const uint8_t channel = lua_tointeger(L, 1);
-        const uint8_t id = lua_tointeger(L, 2);
-        const uint8_t extended = lua_tointeger(L, 3);
-        const uint32_t filter = lua_tointeger(L, 4);
-        const uint32_t mask = lua_tointeger(L, 5);
-        lua_pushinteger(L, CAN_set_filter(channel, id, extended,
-                                          filter, mask));
-        return 1;
+	bool enable = true;
+	switch(lua_gettop(L)) {
+	default:
+		return lua_panic(L);
+	case 6:
+		lua_validate_arg_boolean(L, 6);
+		enable = lua_toboolean(L, 6);
+	case 5:
+		break;
+	}
+
+	for (int i = 1; i <= 5; ++i)
+		lua_validate_arg_number(L, i);
+
+	const uint8_t channel = lua_tointeger(L, 1);
+	const uint8_t id = lua_tointeger(L, 2);
+	const uint8_t extended = lua_tointeger(L, 3);
+	const uint32_t filter = lua_tointeger(L, 4);
+	const uint32_t mask = lua_tointeger(L, 5);
+
+	const int result = CAN_set_filter(channel, id, extended, filter,
+					  mask, enable);
+	lua_pushinteger(L, result);
+
+	return 1;
 }
 
 static int lua_send_can_msg(lua_State *L)
