@@ -82,10 +82,15 @@ const char *cpu_device_get_serialnumber(void)
     return cpu_id;
 }
 
-/* This is required by the STM32 libraries for their ASSERT macros to
- * work.  Useful if you need to catch HAL bugs */
-void assert_failed(uint8_t* file, uint32_t line)
+/**
+ * Causes the cpu to busy wait the specified number of milliseconds.
+ * This is by no means accurate and is really only designed to be used
+ * in cases where a crude timing mechanism is all that is available
+ * (like when the system panics).
+ */
+void cpu_device_spin(uint32_t ms)
 {
-        portDISABLE_INTERRUPTS();
-	while(1);
+	const uint32_t iterations = 5200;
+	while(ms-- > 0)
+		for (volatile size_t i = 0; i < iterations; ++i);
 }

@@ -21,21 +21,14 @@
 
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
+#include "cpu_device.h"
 #include "led.h"
 #include "panic.h"
 #include "printk.h"
 #include "task.h"
 
-#define FLASH_PAUSE_DELAY_S 	5
-#define FLASH_DELAY_S		1
-
-static void delay_seconds(const size_t seconds)
-{
-        int64_t cycles = seconds * configCPU_CLOCK_HZ;
-
-        /* Each loop iteration takes ~8 cycles */
-        for(; cycles > 0; cycles -= 8);
-}
+#define FLASH_PAUSE_DELAY_MS 	5000
+#define FLASH_DELAY_MS		1000
 
 /**
  * Called when the system hits a non-recoverable error.  Ensure to use
@@ -49,18 +42,18 @@ void panic(const enum panic_cause cause)
         for(;;) {
                 led_enable(LED_GPS);
                 led_enable(LED_LOGGER);
-                delay_seconds(FLASH_PAUSE_DELAY_S);
+                cpu_device_spin(FLASH_PAUSE_DELAY_MS);
                 led_disable(LED_GPS);
                 led_disable(LED_LOGGER);
-                delay_seconds(FLASH_DELAY_S);
+                cpu_device_spin(FLASH_DELAY_MS);
 
                 for (int c = 0; c < cause; ++c) {
                         led_enable(LED_GPS);
                         led_enable(LED_LOGGER);
-                        delay_seconds(FLASH_DELAY_S);
+                        cpu_device_spin(FLASH_DELAY_MS);
                         led_disable(LED_GPS);
                         led_disable(LED_LOGGER);
-                        delay_seconds(FLASH_DELAY_S);
+                        cpu_device_spin(FLASH_DELAY_MS);
                 }
         }
 }
@@ -96,4 +89,16 @@ void vApplicationStackOverflowHook(xTaskHandle pxTask, char *pcTaskName)
         (void) pxTask;
         pr_error_str_msg("STACK OVERFLOW in ", pcTaskName);
         panic(PANIC_CAUSE_OVERFLOW);
+}
+
+/* *** STM32 Hooks that lead to a panic *** */
+
+/*
+ * This is required by the STM32 libraries for their ASSERT macros to
+ * work.  Useful if you need to catch HAL bugs
+ */
+void assert_failed(uint8_t* file, uint32_t line)
+{
+	pr_error("ASSERTION Failure\r\n");
+	panic(PANIC_CAUSE_ASSERT);
 }
