@@ -17,7 +17,8 @@
 #define WIFI_SUPPORT		1
 
 /* Wifi Specific Info */
-#define WIFI_MAX_BAUD	230400
+#define WIFI_MAX_BAUD		230400
+#define WIFI_MAX_SAMPLE_RATE	50
 
 /* Configuration */
 #define MAX_TRACKS	240

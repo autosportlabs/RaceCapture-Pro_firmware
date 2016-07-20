@@ -18,7 +18,8 @@
 #define WIFI_SUPPORT		1
 
 /* Wifi Specific Info */
-#define WIFI_MAX_BAUD	921600
+#define WIFI_MAX_BAUD		921600
+#define WIFI_MAX_SAMPLE_RATE	50
 
 /* Configuration */
 #define MAX_TRACKS	5
@@ -41,9 +42,9 @@
 #define CONNECTIVITY_CHANNELS	2
 
 //sample rates
-#define MAX_SENSOR_SAMPLE_RATE	100
+#define MAX_SENSOR_SAMPLE_RATE	50
 #define MAX_GPS_SAMPLE_RATE	50
-#define MAX_OBD2_SAMPLE_RATE	100
+#define MAX_OBD2_SAMPLE_RATE	50
 
 //logger message buffering
 #define LOGGER_MESSAGE_BUFFER_SIZE  5
