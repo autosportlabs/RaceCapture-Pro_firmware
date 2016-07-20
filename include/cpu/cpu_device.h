@@ -23,12 +23,15 @@
 #define CPU_DEVICE_H_
 
 #include "cpp_guard.h"
+#include <stdint.h>
 
 CPP_GUARD_BEGIN
 
 int cpu_device_init(void);
 void cpu_device_reset(int bootloader);
 const char * cpu_device_get_serialnumber(void);
+
+void cpu_device_spin(uint32_t ms);
 
 CPP_GUARD_END
 

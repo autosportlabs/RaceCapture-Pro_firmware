@@ -21,21 +21,14 @@
 
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
+#include "cpu_device.h"
 #include "led.h"
 #include "panic.h"
 #include "printk.h"
 #include "task.h"
 
-#define FLASH_PAUSE_DELAY_S 	5
-#define FLASH_DELAY_S		1
-
-static void delay_seconds(const size_t seconds)
-{
-        int64_t cycles = seconds * configCPU_CLOCK_HZ;
-
-        /* Each loop iteration takes ~8 cycles */
-        for(; cycles > 0; cycles -= 8);
-}
+#define FLASH_PAUSE_DELAY_MS 	5000
+#define FLASH_DELAY_MS		1000
 
 /**
  * Called when the system hits a non-recoverable error.  Ensure to use
@@ -49,18 +42,18 @@ void panic(const enum panic_cause cause)
         for(;;) {
                 led_enable(LED_GPS);
                 led_enable(LED_LOGGER);
-                delay_seconds(FLASH_PAUSE_DELAY_S);
+                cpu_device_spin(FLASH_PAUSE_DELAY_MS);
                 led_disable(LED_GPS);
                 led_disable(LED_LOGGER);
-                delay_seconds(FLASH_DELAY_S);
+                cpu_device_spin(FLASH_DELAY_MS);
 
                 for (int c = 0; c < cause; ++c) {
                         led_enable(LED_GPS);
                         led_enable(LED_LOGGER);
-                        delay_seconds(FLASH_DELAY_S);
+                        cpu_device_spin(FLASH_DELAY_MS);
                         led_disable(LED_GPS);
                         led_disable(LED_LOGGER);
-                        delay_seconds(FLASH_DELAY_S);
+                        cpu_device_spin(FLASH_DELAY_MS);
                 }
         }
 }
