@@ -97,3 +97,15 @@ void vApplicationStackOverflowHook(xTaskHandle pxTask, char *pcTaskName)
         pr_error_str_msg("STACK OVERFLOW in ", pcTaskName);
         panic(PANIC_CAUSE_OVERFLOW);
 }
+
+/* *** STM32 Hooks that lead to a panic *** */
+
+/*
+ * This is required by the STM32 libraries for their ASSERT macros to
+ * work.  Useful if you need to catch HAL bugs
+ */
+void assert_failed(uint8_t* file, uint32_t line)
+{
+	pr_error("ASSERTION Failure\r\n");
+	panic(PANIC_CAUSE_ASSERT);
+}
