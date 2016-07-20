@@ -1384,6 +1384,33 @@ int api_setObd2Config(struct Serial *serial, const jsmntok_t *json)
     return API_SUCCESS;
 }
 
+/**
+ * Sets the sampleRate in the LapConfig struct of all channels to the
+ * rate of the highest channel within the LapConfig struct.
+ */
+void set_consistent_sample_rates(LapConfig *lc)
+{
+	ChannelConfig *lc_cfgs[] = {
+		&lc->lapCountCfg,
+		&lc->lapTimeCfg,
+		&lc->sectorCfg,
+		&lc->sectorTimeCfg,
+		&lc->predTimeCfg,
+		&lc->elapsed_time_cfg,
+		&lc->current_lap_cfg,
+		NULL,
+	};
+
+	/* Find the highest sample rate */
+	int high_sr = 0;
+	for (ChannelConfig **cc_ptr = lc_cfgs; *cc_ptr; ++cc_ptr)
+		high_sr = getHigherSampleRate(high_sr, (*cc_ptr)->sampleRate);
+
+	/* Now set them all to the highest rate. */
+	for (ChannelConfig **cc_ptr = lc_cfgs; *cc_ptr; ++cc_ptr)
+		(*cc_ptr)->sampleRate = high_sr;
+}
+
 int api_setLapConfig(struct Serial *serial, const jsmntok_t *json)
 {
     LapConfig *lapCfg = &(getWorkingLoggerConfig()->LapConfigs);
@@ -1420,6 +1447,7 @@ int api_setLapConfig(struct Serial *serial, const jsmntok_t *json)
                          &lapCfg->current_lap_cfg,
                          NULL, NULL);
 
+    set_consistent_sample_rates(lapCfg);
     configChanged();
     return API_SUCCESS;
 }
@@ -1654,6 +1682,7 @@ int api_getTrackDb(struct Serial *serial, const jsmntok_t *json)
     json_arrayEnd(serial, 0);
     json_objEnd(serial, 0);
     json_objEnd(serial, 0);
+
     return API_SUCCESS_NO_RETURN;
 }
 
