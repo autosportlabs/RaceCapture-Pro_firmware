@@ -80,6 +80,8 @@ float GPS_getLongitude();
 
 float getAltitude();
 
+float gps_get_altitude_meters();
+
 bool isGpsDataCold();
 
 bool isGpsSignalUsable(enum GpsSignalQuality q);

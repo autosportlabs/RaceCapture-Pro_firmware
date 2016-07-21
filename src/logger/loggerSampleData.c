@@ -41,6 +41,7 @@
 #include "sampleRecord.h"
 #include "taskUtil.h"
 #include "timer.h"
+#include "units.h"
 #include "virtual_channel.h"
 #include <stdbool.h>
 
@@ -217,6 +218,24 @@ float get_imu_sample(int channelId)
 }
 #endif
 
+static void* get_altitude_getter(const ChannelConfig *cc)
+{
+	return UNIT_LENGTH_METERS == units_get_unit(cc->units) ?
+		gps_get_altitude_meters : getAltitude;
+}
+
+static void* get_distance_getter(const ChannelConfig *cc)
+{
+	return UNIT_LENGTH_KILOMETERS == units_get_unit(cc->units) ?
+		getLapDistance : getLapDistanceInMiles;
+}
+
+static void* get_speed_getter(const ChannelConfig *cc)
+{
+	return UNIT_SPEED_KILOMETERS_HOUR == units_get_unit(cc->units) ?
+		getGPSSpeed : getGpsSpeedInMph;
+}
+
 void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
 {
         buff->ticks = 0;
@@ -302,11 +321,14 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     chanCfg = &(gpsConfig->longitude);
     sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getLongitude);
     chanCfg = &(gpsConfig->speed);
-    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getGpsSpeedInMph);
+    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
+						      get_speed_getter(chanCfg));
     chanCfg = &(gpsConfig->distance);
-    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getLapDistanceInMiles);
+    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
+						      get_distance_getter(chanCfg));
     chanCfg = &(gpsConfig->altitude);
-    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, getAltitude);
+    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
+						      get_altitude_getter(chanCfg));
     chanCfg = &(gpsConfig->satellites);
     sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, GPS_getSatellitesUsedForPosition);
     chanCfg = &(gpsConfig->quality);

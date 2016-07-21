@@ -20,6 +20,7 @@
  */
 
 #include "auto_track.h"
+#include "convert.h"
 #include "dateTime.h"
 #include "geoCircle.h"
 #include "geoTrigger.h"
@@ -39,7 +40,6 @@
 /* Make the radius 2x the size of start/finish radius.*/
 #define GEO_CIRCLE_RADIUS_MIN		1
 #define GEO_TRIGGER_RADIUS_MULTIPLIER	2
-#define KMS_TO_MILES_CONSTANT		0.621371
 #define MEASUREMENT_SPEED_MIN_KPH	1
 /* In Millis */
 #define START_FINISH_TIME_THRESHOLD 	10000
@@ -348,14 +348,15 @@ void lapstats_reset_distance()
     set_distance(0);
 }
 
+/* This distance is in km */
 float getLapDistance()
 {
-    return g_distance;
+	return g_distance;
 }
 
 float getLapDistanceInMiles()
 {
-    return KMS_TO_MILES_CONSTANT * g_distance;
+	return convert_km_mi(g_distance);
 }
 
 int lapstats_current_lap()
