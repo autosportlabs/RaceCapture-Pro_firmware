@@ -22,13 +22,13 @@
 #ifndef LOGGERAPI_TEST_H_
 #define LOGGERAPI_TEST_H_
 
-#include <cppunit/extensions/HelperMacros.h>
-
 #include "channel_config.h"
 #include "json/elements.h"
 #include "json/reader.h"
 #include "json/writer.h"
 #include "loggerConfig.h"
+#include <cppunit/extensions/HelperMacros.h>
+#include <stdbool.h>
 
 using namespace json;
 using std::string;
@@ -179,7 +179,10 @@ private:
     void testGetTimerConfigFile(string filename, int index);
     void testSetTimerConfigFile(string filename);
     void testGetGpsConfigFile(string filename);
-    void testSetGpsConfigFile(string filename, unsigned char channelsEnabled, unsigned short sampleRate);
+    void testSetGpsConfigFile(string filename,
+			      unsigned char channelsEnabled,
+			      unsigned short sampleRate,
+			      const bool metric);
     void testAddTrackDbFile(string filename);
     void testGetTrackDbFile(string filename, string addedFilename);
     void testSetLapConfigFile(string filename);

@@ -10,9 +10,9 @@
         "qual": 0,
         "dop": 0
 	"units" : {
-	    "altitude" : "ft",
-	    "distance" : "badval",
+	    "altitude" : "m",
+	    "distance" : "km",
+	    "speed" : "kph",
 	}
-
     }
 }

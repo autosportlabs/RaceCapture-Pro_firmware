@@ -44,6 +44,7 @@
 #include "sim900.h"
 #include "task.h"
 #include "task_testing.h"
+#include "units.h"
 #include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -788,13 +789,19 @@ void LoggerApiTest::testFlashConfig(){
 	testFlashConfigFile("flashCfg.json");
 }
 
-void LoggerApiTest::testChannelConfig(ChannelConfig *cfg, string expNm, string expUt, unsigned short sr) {
-    CPPUNIT_ASSERT_EQUAL(expNm, string(cfg->label));
-    CPPUNIT_ASSERT_EQUAL(expUt, string(cfg->units));
-    CPPUNIT_ASSERT_EQUAL((int) sr, decodeSampleRate(cfg->sampleRate));
+void LoggerApiTest::testChannelConfig(ChannelConfig *cfg, string expNm,
+				      string expUt, unsigned short sr)
+{
+	CPPUNIT_ASSERT_EQUAL(expNm, string(cfg->label));
+	CPPUNIT_ASSERT_EQUAL(expUt, string(cfg->units));
+	CPPUNIT_ASSERT_EQUAL((int) sr, decodeSampleRate(cfg->sampleRate));
 }
 
-void LoggerApiTest::testSetGpsConfigFile(string filename, unsigned char channelsEnabled, unsigned short sampleRate){
+void LoggerApiTest::testSetGpsConfigFile(string filename,
+					 unsigned char channelsEnabled,
+					 unsigned short sampleRate,
+					 const bool metric)
+{
 	processApiGeneric(filename);
 	char *txBuffer = mock_getTxBuffer();
 
@@ -804,11 +811,21 @@ void LoggerApiTest::testSetGpsConfigFile(string filename, unsigned char channels
         if (channelsEnabled == 0)
            sampleRate = 0;
 
-        testChannelConfig(&gpsCfg->latitude, string("Latitude"), string("Degrees"), sampleRate);
+	enum unit speed_unit = metric ?
+		UNIT_SPEED_KILOMETERS_HOUR : UNIT_SPEED_MILES_HOUR;
+	enum unit distance_unit = metric ?
+		UNIT_LENGTH_KILOMETERS : UNIT_LENGTH_MILES;
+	enum unit altitude_unit = metric ?
+		UNIT_LENGTH_METERS : UNIT_LENGTH_FEET;
+
+        testChannelConfig(&gpsCfg->speed, string("Speed"),
+			  string(units_get_label(speed_unit)), sampleRate);
+        testChannelConfig(&gpsCfg->distance, string("Distance"),
+			  string(units_get_label(distance_unit)), sampleRate);
+        testChannelConfig(&gpsCfg->altitude, string("Altitude"),
+			  string(units_get_label(altitude_unit)), sampleRate);
+	testChannelConfig(&gpsCfg->latitude, string("Latitude"), string("Degrees"), sampleRate);
         testChannelConfig(&gpsCfg->longitude, string("Longitude"), string("Degrees"), sampleRate);
-        testChannelConfig(&gpsCfg->speed, string("Speed"), string("MPH"), sampleRate);
-        testChannelConfig(&gpsCfg->distance, string("Distance"), string("Miles"), sampleRate);
-        testChannelConfig(&gpsCfg->altitude, string("Altitude"), string("Feet"), sampleRate);
         testChannelConfig(&gpsCfg->satellites, string("GPSSats"), string(""), sampleRate);
         testChannelConfig(&gpsCfg->quality, string("GPSQual"), string(""), sampleRate);
         testChannelConfig(&gpsCfg->DOP, string("GPSDOP"), string(""), sampleRate);
@@ -817,41 +834,53 @@ void LoggerApiTest::testSetGpsConfigFile(string filename, unsigned char channels
 }
 
 void LoggerApiTest::testSetGpsCfg(){
-	testSetGpsConfigFile("setGpsCfg1.json", 1, 100);
-	testSetGpsConfigFile("setGpsCfg2.json", 0, 50);
+	testSetGpsConfigFile("setGpsCfg1.json", 1, 100, false);
+	testSetGpsConfigFile("setGpsCfg2.json", 0, 50, false);
+	testSetGpsConfigFile("setGpsCfg3.json", 0, 50, true);
 }
 
-void LoggerApiTest::testGetGpsConfigFile(string filename){
-   LoggerConfig *c = getWorkingLoggerConfig();
-   GPSConfig *gpsCfg = &c->GPSConfigs;
+void LoggerApiTest::testGetGpsConfigFile(string filename)
+{
+	LoggerConfig *c = getWorkingLoggerConfig();
+	GPSConfig *gpsCfg = &c->GPSConfigs;
 
-   populateChannelConfig(&gpsCfg->latitude, 0, 100);
-   populateChannelConfig(&gpsCfg->longitude, 0, 100);
-   populateChannelConfig(&gpsCfg->speed, 0, 100);
-   populateChannelConfig(&gpsCfg->distance, 0, 100);
-   populateChannelConfig(&gpsCfg->altitude, 0, 100);
-   populateChannelConfig(&gpsCfg->satellites, 0, 100);
-   populateChannelConfig(&gpsCfg->quality, 0, 100);
-   populateChannelConfig(&gpsCfg->DOP, 0, 100);
+	populateChannelConfig(&gpsCfg->latitude, 0, 100);
+	populateChannelConfig(&gpsCfg->longitude, 0, 100);
+	populateChannelConfig(&gpsCfg->speed, 1, 100);
+	populateChannelConfig(&gpsCfg->distance, 2, 100);
+	populateChannelConfig(&gpsCfg->altitude, 3, 100);
+	populateChannelConfig(&gpsCfg->satellites, 0, 100);
+	populateChannelConfig(&gpsCfg->quality, 0, 100);
+	populateChannelConfig(&gpsCfg->DOP, 0, 100);
 
-   const char *response = processApiGeneric(filename);
-   Object json;
-   stringToJson(response, json);
+	const char *response = processApiGeneric(filename);
+	Object json;
+	stringToJson(response, json);
 
-   Object &gpsCfgJson = json["gpsCfg"];
+	Object &gpsCfgJson = json["gpsCfg"];
 
-   CPPUNIT_ASSERT_EQUAL((int)100, (int)(Number)gpsCfgJson["sr"]);
+	CPPUNIT_ASSERT_EQUAL((int)100, (int)(Number)gpsCfgJson["sr"]);
 
-   CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["pos"]);
-   CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["speed"]);
-   CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["dist"]);
-   CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["alt"]);
-   CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["sats"]);
-   CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["qual"]);
-   CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["dop"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["pos"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["speed"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["dist"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["alt"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["sats"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["qual"]);
+	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["dop"]);
+
+	Object &unitsJson = gpsCfgJson["units"];
+	/* Special values here per pupulateChannelConfig above */
+	CPPUNIT_ASSERT_EQUAL(string("unit_3"),
+			     (string) (String) unitsJson["altitude"]);
+	CPPUNIT_ASSERT_EQUAL(string("unit_2"),
+			     (string) (String) unitsJson["distance"]);
+	CPPUNIT_ASSERT_EQUAL(string("unit_1"),
+			     (string) (String) unitsJson["speed"]);
 }
 
-void LoggerApiTest::testGetGpsCfg(){
+void LoggerApiTest::testGetGpsCfg()
+{
 	testGetGpsConfigFile("getGpsCfg1.json");
 }
 
