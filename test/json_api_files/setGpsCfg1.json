@@ -1,13 +1,13 @@
 {
     "setGpsCfg": {
-        "sr": 100,
-        "pos": 1,
-        "speed": 1,
-        "time": 1,
-        "sats": 1,
-        "dist": 1,
-        "alt": 1,
-        "qual": 1,
-        "dop": 1
+	"sr": 100,
+	"pos": 1,
+	"speed": 1,
+	"time": 1,
+	"sats": 1,
+	"dist": 1,
+	"alt": 1,
+	"qual": 1,
+	"dop": 1
     }
 }

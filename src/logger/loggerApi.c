@@ -1241,8 +1241,8 @@ int api_getGpsConfig(struct Serial *serial, const jsmntok_t *json)
     json_int(serial, "dop", gpsCfg->DOP.sampleRate != SAMPLE_DISABLED, 1);
 
     json_objStartString(serial, "units");
-    json_string(serial, "altitude", gpsCfg->altitude.units, 1);
-    json_string(serial, "distance", gpsCfg->distance.units, 1);
+    json_string(serial, "alt", gpsCfg->altitude.units, 1);
+    json_string(serial, "dist", gpsCfg->distance.units, 1);
     json_string(serial, "speed", gpsCfg->speed.units, 0);
     json_objEnd(serial, 0);
 
@@ -1259,9 +1259,9 @@ int api_getGpsConfig(struct Serial *serial, const jsmntok_t *json)
  */
 static void gps_set_units(const jsmntok_t *json, GPSConfig *cfg)
 {
-	jsmn_exists_set_val_string(json, "altitude", &cfg->altitude.units,
+	jsmn_exists_set_val_string(json, "alt", &cfg->altitude.units,
 				   DEFAULT_UNITS_LENGTH, true);
-	jsmn_exists_set_val_string(json, "distance", &cfg->distance.units,
+	jsmn_exists_set_val_string(json, "dist", &cfg->distance.units,
 				   DEFAULT_UNITS_LENGTH, true);
 	jsmn_exists_set_val_string(json, "speed", &cfg->speed.units,
 				   DEFAULT_UNITS_LENGTH, true);

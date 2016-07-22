@@ -1,18 +1,18 @@
 {
     "setGpsCfg": {
-        "sr": 50,
-        "pos": 0,
-        "speed": 0,
-        "time": 0,
-        "sats": 0,
-        "dist": 0,
-        "alt": 0,
-        "qual": 0,
-        "dop": 0
-	"units" : {
-	    "altitude" : "m",
-	    "distance" : "km",
-	    "speed" : "kph",
+	"sr": 50,
+	"pos": 0,
+	"speed": 0,
+	"time": 0,
+	"sats": 0,
+	"dist": 0,
+	"alt": 0,
+	"qual": 0,
+	"dop": 0,
+	"units": {
+	    "alt": "m",
+	    "dist": "km",
+	    "speed": "kph"
 	}
     }
 }

@@ -872,9 +872,9 @@ void LoggerApiTest::testGetGpsConfigFile(string filename)
 	Object &unitsJson = gpsCfgJson["units"];
 	/* Special values here per pupulateChannelConfig above */
 	CPPUNIT_ASSERT_EQUAL(string("unit_3"),
-			     (string) (String) unitsJson["altitude"]);
+			     (string) (String) unitsJson["alt"]);
 	CPPUNIT_ASSERT_EQUAL(string("unit_2"),
-			     (string) (String) unitsJson["distance"]);
+			     (string) (String) unitsJson["dist"]);
 	CPPUNIT_ASSERT_EQUAL(string("unit_1"),
 			     (string) (String) unitsJson["speed"]);
 }
