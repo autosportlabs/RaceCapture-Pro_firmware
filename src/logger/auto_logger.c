@@ -57,7 +57,7 @@ static struct {
 
 void auto_logger_reset_config(struct auto_logger_config* cfg)
 {
-        cfg->active = true;
+        cfg->active = false;
 
         cfg->start.time = DEFAULT_START_TIME_SEC;
         cfg->start.speed = DEFAULT_START_SPEED_KPH;
