@@ -46,8 +46,8 @@ MEMORY
   FLASH     (rx)    : ORIGIN = 0x08004000, LENGTH = 256K - 48K
 
   CONFIG    (rx)    : ORIGIN = 0x08038000, LENGTH = 16K
-  TRACKS    (rx)    : ORIGIN = 0x0803C000, LENGTH = 16K  
-  
+  TRACKS    (rx)    : ORIGIN = 0x0803C000, LENGTH = 16K
+
   HANDSHAKE (rwx)   : ORIGIN = 0x20000000, LENGTH = 8
   RAM       (xrw)   : ORIGIN = 0x20000008, LENGTH = 40K - 8
   CCM_RAM   (rxw)   : ORIGIN = 0x10000000, LENGTH = 8K
@@ -128,6 +128,7 @@ SECTIONS
   } >FLASH
 
   /* used by the startup to initialize data */
+  . = ALIGN(4);
   _sidata = .;
 
   /* Initialized data sections goes into RAM, load LMA copy after code */

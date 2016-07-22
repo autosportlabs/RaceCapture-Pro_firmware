@@ -53,7 +53,7 @@ ENTRY(Reset_Handler)
     . = ALIGN(4);
     KEEP (*(.channels))
   } > CHANNELS
-    
+
   script :
   {
     . = ALIGN(4);
@@ -110,6 +110,7 @@ ENTRY(Reset_Handler)
    } >FLASH
 
    /* used by the startup to initialize data */
+   . = ALIGN(4);
    _sidata = .;
 
    /* Initialized data sections goes into CCM, load LMA copy after code */
