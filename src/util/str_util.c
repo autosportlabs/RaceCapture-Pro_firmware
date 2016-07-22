@@ -90,30 +90,40 @@ char* strip_inline(char *str)
  * Left or leading strip.  Strips all leading '0' characters from the string
  * by effectively returning a pointer to the first non-zero character
  * that it encounters. It will always give you at least one character to
- * print before a decimal or end of string. Will not modify the string, but
- * may not return the pointer that was initially given.
- * @return Pointer to the first non-whitespace character in the string.
+ * print before a decimal or end of string.
+ * @return Pointer to the first non-zero character in the string exclusing
+ * leading +/- symbols.
  */
 char* str_util_lstrip_zeros_inline(char *str)
 {
-        if (!*str)
-                return str;
+	char* const begin = str;
+
+	char lead_sym = 0;
+	switch(*str) {
+	case '-':
+	case '+':
+		lead_sym = *str++;
+	}
 
         for(; '0' == *str; ++str);
 
         switch (*str) {
         case '\0':
         case '.':
-                return --str;
-        default:
-                return str;
+                if (str != begin)
+			--str;
         }
+
+	if (lead_sym)
+		*--str = lead_sym;
+
+	return str;
 }
 
 /**
  * Right or reverse strip.  Strips all trailing '0' characters from the right
  * side of the string by placing a null terminator where we detect the
- * last 0 character to be.  This may modify the string passed i
+ * last 0 character to be.  This may modify the string provided.
  * @return Pointer to the string passed in.
  */
 char* str_util_rstrip_zeros_inline(char *str)
