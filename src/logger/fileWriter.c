@@ -38,7 +38,7 @@
 #include <string.h>
 
 #define ERROR_SLEEP_DELAY_MS	500
-#define FILE_BUFFER_SIZE	512
+#define FILE_BUFFER_SIZE	1024
 #define FILE_WRITER_STACK_SIZE	256
 #define MAX_LOG_FILE_INDEX	99999
 #define WRITE_FAIL	EOF
@@ -54,28 +54,27 @@ static void error_led(const bool on)
 
 static FRESULT flush_file_buffer(void)
 {
-        FRESULT res = FR_OK;
-        char tmp[32];
+        while(true) {
+		size_t available = 0;
+		size_t written = 0;
+		const void* buff =
+			ring_buffer_dma_read_init(file_buff, &available);
 
-        /* pr_trace(_RCP_BASE_FILE_ "Flushing file buffer\r\n"); */
-        size_t chars = ring_buffer_bytes_used(file_buff);
-        while(0 < chars) {
-                if (chars > sizeof(tmp))
-                        chars = sizeof(tmp);
+		/* If nothing to write, we are done. */
+		if (!available)
+			return FR_OK;
 
-                /* pr_trace_int_msg(_RCP_BASE_FILE_ "Chars is ", chars); */
-                ring_buffer_get(file_buff, &tmp, chars);
-                if (g_logfile->fs) {
-                        unsigned int bw;
-                        res = f_write(g_logfile, &tmp, chars, &bw);
-                        error_led(FR_OK != res);
-                }
+		const FRESULT res =
+			f_write(g_logfile, buff, available, &written);
 
-                chars = ring_buffer_bytes_used(file_buff);
+		ring_buffer_dma_read_fini(file_buff, written);
+		if (FR_OK != res) {
+			pr_debug_int_msg("[FileWriter] f_write failed "
+					 "with status: ", (int) res);
+			error_led(true);
+			return res;
+		}
         }
-
-        /* pr_trace(_RCP_BASE_FILE_ "Flushing file buffer DONE\r\n"); */
-        return res;
 }
 
 static FRESULT append_file_buffer(const char *str)
