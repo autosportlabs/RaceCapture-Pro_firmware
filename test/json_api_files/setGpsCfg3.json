@@ -9,10 +9,10 @@
 	"alt": 0,
 	"qual": 0,
 	"dop": 0,
-	"units" : {
-	    "alt" : "ft",
-	    "dist" : "badval"
+	"units": {
+	    "alt": "m",
+	    "dist": "km",
+	    "speed": "kph"
 	}
-
     }
 }

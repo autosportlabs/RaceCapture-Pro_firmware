@@ -148,6 +148,10 @@ src-y += $(wildcard hal/memory_stm32/*.c)
 src-y += $(wildcard $(RC_SRC_DIR)/memory/*.c)
 inc-y += $(RC_INCLUDE_DIR)/memory
 
+# Units
+src-y += $(wildcard $(RC_SRC_DIR)/units/*.c)
+inc-y += $(RC_INCLUDE_DIR)/units
+
 # USART
 src-y += $(wildcard $(RC_SRC_DIR)/usart/*.c)
 src-y += $(wildcard hal/usart_stm32/*.c)

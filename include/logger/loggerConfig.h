@@ -339,9 +339,9 @@ typedef struct _GPSConfig {
 
 #define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "Degrees", -180, 180, DEFAULT_GPS_SAMPLE_RATE, 6, 0}
 #define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "Degrees", -180, 180, DEFAULT_GPS_SAMPLE_RATE, 6, 0}
-#define DEFAULT_GPS_SPEED_CONFIG {"Speed", "MPH", 0, 150, DEFAULT_GPS_SAMPLE_RATE, 2, 0}
-#define DEFAULT_GPS_DISTANCE_CONFIG {"Distance", "Miles", 0, 0, DEFAULT_GPS_SAMPLE_RATE, 3, 0}
-#define DEFAULT_GPS_ALTITUDE_CONFIG {"Altitude", "Feet", 0, 4000, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
+#define DEFAULT_GPS_SPEED_CONFIG {"Speed", "", 0, 150, DEFAULT_GPS_SAMPLE_RATE, 2, 0}
+#define DEFAULT_GPS_DISTANCE_CONFIG {"Distance", "", 0, 0, DEFAULT_GPS_SAMPLE_RATE, 3, 0}
+#define DEFAULT_GPS_ALTITUDE_CONFIG {"Altitude", "", 0, 4000, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
 #define DEFAULT_GPS_SATELLITE_CONFIG {"GPSSats", "", 0, 20, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
 #define DEFAULT_GPS_QUALITY_CONFIG {"GPSQual", "", 0, 5, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
 #define DEFAULT_GPS_DOP_CONFIG {"GPSDOP", "", 0, 20, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
@@ -560,6 +560,8 @@ int getHigherSampleRate(const int a, const int b);
 
 int flashLoggerConfig(void);
 int flash_default_logger_config(void);
+
+void logger_config_reset_gps_config(GPSConfig *cfg);
 
 CPP_GUARD_END
 

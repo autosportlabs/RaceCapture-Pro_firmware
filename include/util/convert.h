@@ -30,6 +30,14 @@ float convert_kph_mph(const float kph);
 
 float convert_mph_kph(const float mph);
 
+float convert_km_mi(const float km);
+
+float convert_mi_km(const float mi);
+
+float convert_ft_m(const float ft);
+
+float convert_m_ft(const float m);
+
 CPP_GUARD_END
 
 #endif /* _CONVERT_H_ */

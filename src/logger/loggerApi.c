@@ -59,6 +59,7 @@
 #include "taskUtil.h"
 #include "timer.h"
 #include "tracks.h"
+#include "units.h"
 #include "wifi.h"
 #include <stdbool.h>
 #include <stdlib.h>
@@ -1237,42 +1238,82 @@ int api_getGpsConfig(struct Serial *serial, const jsmntok_t *json)
     json_int(serial, "alt", gpsCfg->altitude.sampleRate != SAMPLE_DISABLED, 1);
     json_int(serial, "sats", gpsCfg->satellites.sampleRate != SAMPLE_DISABLED, 1);
     json_int(serial, "qual", gpsCfg->quality.sampleRate != SAMPLE_DISABLED, 1);
-    json_int(serial, "dop", gpsCfg->DOP.sampleRate != SAMPLE_DISABLED, 0);
+    json_int(serial, "dop", gpsCfg->DOP.sampleRate != SAMPLE_DISABLED, 1);
+
+    json_objStartString(serial, "units");
+    json_string(serial, "alt", gpsCfg->altitude.units, 1);
+    json_string(serial, "dist", gpsCfg->distance.units, 1);
+    json_string(serial, "speed", gpsCfg->speed.units, 0);
+    json_objEnd(serial, 0);
 
     json_objEnd(serial, 0);
     json_objEnd(serial, 0);
     return API_SUCCESS_NO_RETURN;
 }
 
+/**
+ * Sets alternate unit configuration or default values based on what users
+ * provide.  This will never fail, but will fall back to using default
+ * values when an invalid unit is given.
+ * @see https://github.com/autosportlabs/RaceCapture-Pro_firmware/issues/734
+ */
+static void gps_set_units(const jsmntok_t *json, GPSConfig *cfg)
+{
+	jsmn_exists_set_val_string(json, "alt", &cfg->altitude.units,
+				   DEFAULT_UNITS_LENGTH, true);
+	jsmn_exists_set_val_string(json, "dist", &cfg->distance.units,
+				   DEFAULT_UNITS_LENGTH, true);
+	jsmn_exists_set_val_string(json, "speed", &cfg->speed.units,
+				   DEFAULT_UNITS_LENGTH, true);
+
+	/* Altitude supports only Meters or Feet */
+	if (UNIT_LENGTH_METERS != units_get_unit(cfg->altitude.units))
+		strcpy(cfg->altitude.units,
+		       units_get_label(UNIT_LENGTH_FEET));
+
+	/* Distance supports only Kilometers or Miles */
+	if (UNIT_LENGTH_KILOMETERS != units_get_unit(cfg->distance.units))
+		strcpy(cfg->distance.units,
+		       units_get_label(UNIT_LENGTH_MILES));
+
+	/* Speed supports only Kilometers/Hr or Miles/Hr */
+	if (UNIT_SPEED_KILOMETERS_HOUR != units_get_unit(cfg->speed.units))
+		strcpy(cfg->speed.units,
+		       units_get_label(UNIT_SPEED_MILES_HOUR));
+}
+
 static void gpsConfigTestAndSet(const jsmntok_t *json, ChannelConfig *cfg,
                                 const char *str, const unsigned short sr)
 {
-    unsigned char test = 0;
-    setUnsignedCharValueIfExists(json, str, &test, NULL);
-    cfg->sampleRate = test == 0 ? SAMPLE_DISABLED : sr;
-
+	unsigned char test = 0;
+	setUnsignedCharValueIfExists(json, str, &test, NULL);
+	cfg->sampleRate = test == 0 ? SAMPLE_DISABLED : sr;
 }
 
 int api_setGpsConfig(struct Serial *serial, const jsmntok_t *json)
 {
-    GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
+	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
 
-    unsigned short sr = SAMPLE_DISABLED;
-    int tmp = 0;
-    if (jsmn_exists_set_val_int(json, "sr", &tmp))
-        sr = encodeSampleRate(tmp);
+	unsigned short sr = SAMPLE_DISABLED;
+	int tmp = 0;
+	if (jsmn_exists_set_val_int(json, "sr", &tmp))
+		sr = encodeSampleRate(tmp);
 
-    gpsConfigTestAndSet(json, &(gpsCfg->latitude), "pos", sr);
-    gpsConfigTestAndSet(json, &(gpsCfg->longitude), "pos", sr);
-    gpsConfigTestAndSet(json, &(gpsCfg->speed), "speed", sr);
-    gpsConfigTestAndSet(json, &(gpsCfg->distance), "dist", sr);
-    gpsConfigTestAndSet(json, &(gpsCfg->altitude), "alt", sr);
-    gpsConfigTestAndSet(json, &(gpsCfg->satellites), "sats", sr);
-    gpsConfigTestAndSet(json, &(gpsCfg->quality), "qual", sr);
-    gpsConfigTestAndSet(json, &(gpsCfg->DOP), "dop", sr);
+	gpsConfigTestAndSet(json, &(gpsCfg->latitude), "pos", sr);
+	gpsConfigTestAndSet(json, &(gpsCfg->longitude), "pos", sr);
+	gpsConfigTestAndSet(json, &(gpsCfg->speed), "speed", sr);
+	gpsConfigTestAndSet(json, &(gpsCfg->distance), "dist", sr);
+	gpsConfigTestAndSet(json, &(gpsCfg->altitude), "alt", sr);
+	gpsConfigTestAndSet(json, &(gpsCfg->satellites), "sats", sr);
+	gpsConfigTestAndSet(json, &(gpsCfg->quality), "qual", sr);
+	gpsConfigTestAndSet(json, &(gpsCfg->DOP), "dop", sr);
 
-    configChanged();
-    return API_SUCCESS;
+	const jsmntok_t *units_tok = jsmn_find_node(json, "units");
+	if (units_tok)
+		gps_set_units(units_tok, gpsCfg);
+
+	configChanged();
+	return API_SUCCESS;
 }
 
 int api_getCanConfig(struct Serial *serial, const jsmntok_t *json)

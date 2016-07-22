@@ -20,20 +20,19 @@
  */
 
 #include "capabilities.h"
-#include "cpu.h"
 #include "channel_config.h"
+#include "cpu.h"
 #include "loggerConfig.h"
 #include "memory.h"
-#include <string.h>
 #include "modp_numtoa.h"
 #include "printk.h"
 #include "timer_config.h"
+#include "units.h"
 #include "virtual_channel.h"
 #include <stdbool.h>
 #include <string.h>
 
 #ifndef RCP_TESTING
-#include "memory.h"
 static const volatile LoggerConfig g_savedLoggerConfig  __attribute__((section(".config\n\t#")));
 #else
 static LoggerConfig g_savedLoggerConfig;
@@ -221,9 +220,14 @@ static void resetOBD2Config(OBD2Config *cfg)
     */
 }
 
-static void resetGPSConfig(GPSConfig *cfg)
+void logger_config_reset_gps_config(GPSConfig *cfg)
 {
-    *cfg = (GPSConfig) DEFAULT_GPS_CONFIG;
+	*cfg = (GPSConfig) DEFAULT_GPS_CONFIG;
+
+	/* Setting here b/c this now uses units.h labels */
+	strcpy(cfg->altitude.units, units_get_label(UNIT_LENGTH_FEET));
+	strcpy(cfg->distance.units, units_get_label(UNIT_LENGTH_MILES));
+	strcpy(cfg->speed.units, units_get_label(UNIT_SPEED_MILES_HOUR));
 }
 
 static void resetLapConfig(LapConfig *cfg)
@@ -661,7 +665,7 @@ int flash_default_logger_config(void)
 
     resetCanConfig(&lc->CanConfig);
     resetOBD2Config(&lc->OBD2Configs);
-    resetGPSConfig(&lc->GPSConfigs);
+    logger_config_reset_gps_config(&lc->GPSConfigs);
     resetLapConfig(&lc->LapConfigs);
     resetTrackConfig(&lc->TrackConfigs);
     resetConnectivityConfig(&lc->ConnectivityConfigs);

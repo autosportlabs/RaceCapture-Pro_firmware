@@ -1,9 +1,9 @@
 /*
- * Race Capture Pro Firmware
+ * Race Capture Firmware
  *
- * Copyright (C) 2015 Autosport Labs
+ * Copyright (C) 2016 Autosport Labs
  *
- * This file is part of the Race Capture Pro fimrware suite
+ * This file is part of the Race Capture firmware suite
  *
  * This is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -125,9 +125,15 @@ float GPS_getLongitude()
     return g_gpsSnapshot.sample.point.longitude;
 }
 
+/* Altitude is in ft */
 float getAltitude()
 {
-    return g_gpsSnapshot.sample.altitude;
+	return g_gpsSnapshot.sample.altitude;
+}
+
+float gps_get_altitude_meters()
+{
+	return convert_ft_m(g_gpsSnapshot.sample.altitude);
 }
 
 int GPS_getQuality()
@@ -145,6 +151,7 @@ int GPS_getSatellitesUsedForPosition()
     return g_gpsSnapshot.sample.satellites;
 }
 
+/* GPS speed in KPH */
 float getGPSSpeed()
 {
     return g_gpsSnapshot.sample.speed;
