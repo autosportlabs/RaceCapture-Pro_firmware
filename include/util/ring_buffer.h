@@ -44,6 +44,9 @@ size_t ring_buffer_put(struct ring_buff *rb, const void *data,
                        size_t size);
 size_t ring_buffer_write(struct ring_buff *rb, const void *data,
                          size_t size);
+const void* ring_buffer_dma_read_init(struct ring_buff* rb, size_t* avail);
+void ring_buffer_dma_read_fini(struct ring_buff* rb, const size_t read);
+
 CPP_GUARD_END
 
 #endif /* __RING_BUFFER_H__ */
