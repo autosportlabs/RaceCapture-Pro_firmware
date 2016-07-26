@@ -225,7 +225,7 @@ static bool process_partial_and_continue()
 static void process_ready_msg(struct Serial* s)
 {
         char *data_in = rx_buff_get_msg(state.rx_msgs.rxb);
-        pr_info_str_msg(LOG_PFX "Received CMD: ", data_in);
+        pr_trace_str_msg(LOG_PFX "Received CMD: ", data_in);
         process_read_msg(s, data_in, strlen(data_in));
 }
 
