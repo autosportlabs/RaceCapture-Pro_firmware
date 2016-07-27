@@ -56,7 +56,6 @@ static FRESULT flush_file_buffer(void)
 {
         while(true) {
 		size_t available = 0;
-		size_t written = 0;
 		const void* buff =
 			ring_buffer_dma_read_init(file_buff, &available);
 
@@ -64,6 +63,7 @@ static FRESULT flush_file_buffer(void)
 		if (!available)
 			return FR_OK;
 
+		unsigned int written = 0;
 		const FRESULT res =
 			f_write(g_logfile, buff, available, &written);
 
