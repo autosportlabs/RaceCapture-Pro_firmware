@@ -30,11 +30,12 @@
  * intentionally left to the user to decide.
  */
 
+#include "macros.h"
 #include "mem_mang.h"
-#include <string.h>
 #include "ring_buffer.h"
 #include <stdbool.h>
 #include <stddef.h>
+#include <string.h>
 
 struct ring_buff {
         char *buff;
@@ -140,7 +141,7 @@ size_t ring_buffer_peek(struct ring_buff *rb, void *buffer,
         if (!buffer)
                 return size;
 
-        const size_t dist = rb->buff - rb->tail + rb->size;
+        const size_t dist = rb->size + rb->buff - rb->tail;
         if (size < dist) {
                 memcpy(buffer, rb->tail, size);
         } else {
@@ -221,4 +222,37 @@ size_t ring_buffer_write(struct ring_buff *rb, const void *data,
                 size = avail;
 
         return size ? ring_buffer_put(rb, data, size) : 0;
+}
+
+/**
+ * Enables a form of poor man's DMA access to the ring buffer by
+ * exposing the tail pointer and how much space is available until
+ * either the end of the buffer or the location of the head pointer.
+ * Use this method to figure out where to start the copy operation at
+ * and then report how much was actually copied by invoking the
+ * #ring_buffer_dma_read_fini command.
+ * @param rb Ring buffer structure which has all the state.
+ * @param avail Pointer to a size_t variable where we set how much space
+ * is available to read.
+ * @return pointer on where to start reading.
+ */
+const void* ring_buffer_dma_read_init(struct ring_buff* rb, size_t* avail)
+{
+	const size_t used = ring_buffer_bytes_used(rb);
+        const size_t dist = rb->size + rb->buff - rb->tail;
+	*avail = MIN(used, dist);
+
+	return rb->tail;
+}
+
+/**
+ * The counterpart of the #ring_buffer_dma_read_init method, this gets called
+ * after a buffer DMA operation has completed.  Internally it updates the state
+ * of the buffer as if bits were copied out.
+ * @param rb Ring buffer structure which has all the state.
+ * @param read The amount of data that was read from the buffer.
+ */
+void ring_buffer_dma_read_fini(struct ring_buff* rb, const size_t read)
+{
+	rb->tail = get_new_ptr_val(rb, rb->tail, read);
 }
