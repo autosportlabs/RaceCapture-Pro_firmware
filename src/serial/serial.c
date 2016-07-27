@@ -24,16 +24,17 @@
 #include "macros.h"
 #include "mem_mang.h"
 #include "modp_numtoa.h"
+#include "panic.h"
 #include "printk.h"
 #include "projdefs.h"
 #include "serial.h"
 #include "str_util.h"
 #include "usart.h"
 #include "usb_comm.h"
-
-#include <stddef.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 
 enum data_dir {
         DATA_DIR_RX,
@@ -58,15 +59,27 @@ struct Serial {
 	struct serial_cfg cfg;
 };
 
+/**
+ * Closes the Serial device and releases the associated buffer resources
+ * to ensure that we use as few resources as necessary.
+ */
+void serial_close(struct Serial* s)
+{
+	if (s->tx_queue) {
+                vQueueDelete(s->tx_queue);
+		s->tx_queue = NULL;
+	}
+
+        if (s->rx_queue) {
+                vQueueDelete(s->rx_queue);
+		s->rx_queue = NULL;
+	}
+}
+
 
 void serial_destroy(struct Serial *s)
 {
-        if (s->tx_queue)
-                vQueueDelete(s->tx_queue);
-
-        if (s->rx_queue)
-                vQueueDelete(s->rx_queue);
-
+	serial_close(s);
         portFree(s);
 }
 
@@ -238,6 +251,11 @@ bool serial_config(struct Serial *s, const size_t bits,
 	return s->config_cb(s->config_cb_arg, bits, parity, stop_bits, baud);
 }
 
+bool serial_is_connected(const struct Serial* s)
+{
+	return s->rx_queue || s->tx_queue;
+}
+
 /**
  * @return The serial config as set by the #serial_config method.
  */
@@ -253,12 +271,14 @@ static void purge_queue(xQueueHandle q)
 
 void serial_purge_rx_queue(struct Serial* s)
 {
-        purge_queue(s->rx_queue);
+	if (s->rx_queue)
+		purge_queue(s->rx_queue);
 }
 
 void serial_purge_tx_queue(struct Serial* s)
 {
-        purge_queue(s->tx_queue);
+	if (s->tx_queue)
+		purge_queue(s->tx_queue);
 }
 
 /**
@@ -278,19 +298,21 @@ void serial_flush(struct Serial *s)
         /* STIEG: TODO Figure out how to flush Tx sanely */
 }
 
-bool serial_get_c_wait(struct Serial *s, char *c, const size_t delay)
+int serial_get_c_wait(struct Serial *s, char *c, const size_t delay)
 {
+	if (!s->rx_queue)
+		return -1;
+
         if (pdFALSE == xQueueReceive(s->rx_queue, c, delay))
-                return false;
+                return 0;
 
         log_rx(s, *c);
-        return true;
+        return 1;
 }
 
-char serial_get_c(struct Serial *s)
+int serial_get_c(struct Serial *s, char* c)
 {
-        char c;
-        return serial_get_c_wait(s, &c, portMAX_DELAY) ? c : 0;
+        return serial_get_c_wait(s, c, portMAX_DELAY);
 }
 
 /**
@@ -306,17 +328,22 @@ char serial_get_c(struct Serial *s)
 int serial_get_line_wait(struct Serial *s, char *buff, const size_t len,
                          const size_t delay)
 {
-        size_t i = 0;
-
+        int i = 0;
         for (; i < len; ++i) {
-                if (!serial_get_c_wait(s, buff + i, delay))
-                        return i;
-
-                switch(buff[i]) {
-                case '\n':
-                        return ++i;
-                }
-        }
+                switch(serial_get_c_wait(s, buff + i, delay)) {
+		default:
+			panic(PANIC_CAUSE_UNREACHABLE);
+			break;
+		case -1:
+			/* If partially read, return what was read. */
+			return i == 0 ? -1 : i;
+		case 0:
+			return i;
+		case 1:
+			if ('\n' == buff[i])
+				return ++i;
+		}
+	}
 
         return i;
 }
@@ -326,20 +353,23 @@ int serial_get_line(struct Serial *s, char *l, const size_t len)
         return serial_get_line_wait(s, l, len, portMAX_DELAY);
 }
 
-bool serial_put_c_wait(struct Serial *s, const char c, const size_t delay)
+int serial_put_c_wait(struct Serial *s, const char c, const size_t delay)
 {
+	if (!s->tx_queue)
+		return -1;
+
         if (pdFALSE == xQueueSend(s->tx_queue, &c, delay))
-                return false;
+                return 0;
 
         log_tx(s, c);
 
         if (s->post_tx_cb)
                 s->post_tx_cb(s->tx_queue, s->post_tx_cb_arg);
 
-        return true;
+        return 1;
 }
 
-bool serial_put_c(struct Serial *s, const char c)
+int serial_put_c(struct Serial *s, const char c)
 {
         return serial_put_c_wait(s, c, portMAX_DELAY);
 }
@@ -347,10 +377,21 @@ bool serial_put_c(struct Serial *s, const char c)
 int serial_put_buff_wait(struct Serial *s, const char *buf, const size_t len,
                          const size_t delay)
 {
-        int i;
-
-        for (i = 0; i < len; ++i)
-                serial_put_c_wait(s, buf[i], delay);
+        int i = 0;
+        for (; i < len; ++i) {
+                switch(serial_put_c_wait(s, buf[i], delay)) {
+		default:
+			panic(PANIC_CAUSE_UNREACHABLE);
+			break;
+		case -1:
+			/* If partially sent, then return what was sent. */
+			return i == 0 ? -1 : i;
+		case 0:
+			return i;
+		case 1:
+			break;
+		}
+	}
 
         return i;
 }
@@ -362,12 +403,7 @@ int serial_put_buff(struct Serial *s, const char *buf, const size_t len)
 
 int serial_put_s_wait(struct Serial *s, const char *l, const size_t delay)
 {
-        int i;
-
-        for (i = 0; *l; ++i, ++l)
-                serial_put_c_wait(s, *l, delay);
-
-        return i;
+	return serial_put_buff_wait(s, l, strlen(l), delay);
 }
 
 int serial_put_s(struct Serial *s, const char *l)
@@ -375,7 +411,7 @@ int serial_put_s(struct Serial *s, const char *l)
         return serial_put_s_wait(s, l, portMAX_DELAY);
 }
 
-bool serial_read_byte(struct Serial *serial, uint8_t *b, const size_t delay)
+int serial_read_byte(struct Serial *serial, uint8_t *b, const size_t delay)
 {
         return serial_get_c_wait(serial, (char*) b, delay);
 }
@@ -726,10 +762,9 @@ void put_crlf(struct Serial *serial)
 void read_line(struct Serial *serial, char *buffer, size_t bufferSize)
 {
         size_t bufIndex = 0;
-        char c;
         while(bufIndex < bufferSize - 1) {
-                c = serial_get_c(serial);
-                if (c) {
+		char c;
+                if (1 == serial_get_c(serial, &c)) {
                         if ('\r' == c) {
                                 break;
                         } else {
@@ -737,16 +772,16 @@ void read_line(struct Serial *serial, char *buffer, size_t bufferSize)
                         }
                 }
         }
+
         buffer[bufIndex]='\0';
 }
 
 void interactive_read_line(struct Serial *serial, char * buffer, size_t bufferSize)
 {
         size_t bufIndex = 0;
-        char c;
         while(bufIndex < bufferSize - 1) {
-                c = serial_get_c(serial);
-                if (c) {
+		char c;
+                if (1 == serial_get_c(serial, &c)) {
                         if ('\r' == c) {
                                 break;
                         } else if ('\b' == c) {
