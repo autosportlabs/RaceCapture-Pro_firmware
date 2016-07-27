@@ -139,6 +139,7 @@ AtTest.cpp \
 CellularApiStatusKeysTest.cpp \
 ChannelConfigTest.cpp \
 PredictiveTimeTest2.cpp \
+StrUtilTest.cpp \
 date_time_test.cpp \
 launch_control_test.cpp \
 loggerApi_test.cpp \
