@@ -353,7 +353,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
         json_string(serial, "sn", cpu_get_serialnumber(), 0);
         json_objEnd(serial, 0);
         json_objEnd(serial, 0);
-        serial_put_c(serial, '\n');
+        serial_write_c(serial, '\n');
 
         pr_debug_str_msg("sending auth- deviceId: ", deviceId);
 

@@ -102,27 +102,27 @@ bool serial_config(struct Serial *s, const size_t bits,
                    const size_t parity, const size_t stop_bits,
                    const size_t baud);
 
-int serial_get_c_wait(struct Serial *s, char *c, const size_t delay);
+int serial_read_c_wait(struct Serial *s, char *c, const size_t delay);
 
-int serial_get_c(struct Serial *s, char* c);
-
-int serial_get_line(struct Serial *s, char *l, const size_t len);
-
-int serial_get_line_wait(struct Serial *s, char *l, const size_t len,
-                         const size_t delay);
-
-int serial_put_c(struct Serial *s, const char c);
-
-int serial_put_buff_wait(struct Serial *s, const char *buf,
-                         const size_t len, const size_t delay);
-
-int serial_put_buff(struct Serial *s, const char *buf, const size_t len);
-
-int serial_put_s_wait(struct Serial *s, const char *l, const size_t delay);
-
-int serial_put_s(struct Serial *s, const char *l);
+int serial_read_c(struct Serial *s, char* c);
 
 int serial_read_byte(struct Serial *serial, uint8_t *b, const size_t delay);
+
+int serial_read_line(struct Serial *s, char *l, const size_t len);
+
+int serial_read_line_wait(struct Serial *s, char *l, const size_t len,
+			  const size_t delay);
+
+int serial_write_c(struct Serial *s, const char c);
+
+int serial_write_buff_wait(struct Serial *s, const char *buf,
+			   const size_t len, const size_t delay);
+
+int serial_write_buff(struct Serial *s, const char *buf, const size_t len);
+
+int serial_write_s_wait(struct Serial *s, const char *l, const size_t delay);
+
+int serial_write_s(struct Serial *s, const char *l);
 
 xQueueHandle serial_get_rx_queue(struct Serial *s);
 

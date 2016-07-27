@@ -45,7 +45,7 @@ bool at_basic_wait_for_msg(struct Serial* serial, const char* msg,
 	while (!date_time_is_past(term) && *ptr) {
 		const size_t max_delay_ms = term - getUptime();
 		char rx_char;
-		if (serial_get_c_wait(serial, &rx_char, max_delay_ms))
+		if (0 < serial_read_c_wait(serial, &rx_char, max_delay_ms))
 			ptr = rx_char == *ptr ? ptr + 1 : msg;
 	}
 
@@ -65,7 +65,7 @@ bool at_basic_ping(struct Serial* serial, const size_t tries,
 
 	for (size_t try = 0; try < tries; ++try) {
 		serial_flush(serial);
-		serial_put_s(serial, cmd);
+		serial_write_s(serial, cmd);
 		if (at_basic_wait_for_msg(serial, "OK", delay_ms))
 			return true;
 	}

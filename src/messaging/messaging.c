@@ -52,7 +52,7 @@ int process_read_msg(struct Serial *serial, char *buff, size_t len)
                 ;
                 const int res = process_command(serial, buff, len);
                 if (res != COMMAND_OK) {
-                        serial_put_s(serial, "Unknown Command- Press "
+                        serial_write_s(serial, "Unknown Command- Press "
                                      "Enter for Help.");
                         put_crlf(serial);
                 }
@@ -82,8 +82,8 @@ void process_msg(struct Serial *serial, char * buffer, size_t bufferSize)
             } else {
                 int res = process_command(serial, buffer, bufferSize);
                 if (res != COMMAND_OK) {
-                        serial_put_s(serial, "Unknown Command- Press Enter "
-                                     "for Help.");
+                        serial_write_s(serial, "Unknown Command- Press Enter "
+				       "for Help.");
                         put_crlf(serial);
                 }
             }

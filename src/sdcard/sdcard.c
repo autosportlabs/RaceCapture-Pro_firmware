@@ -81,19 +81,19 @@ void TestSDWrite(struct Serial *serial, int lines, int doFlush, int quiet)
 
         fatFile = pvPortMalloc(sizeof(FIL));
         if (NULL == fatFile) {
-                if (!quiet) serial_put_s(serial,
-                                         "could not allocate file object\r\n");
+                if (!quiet) serial_write_s(serial,
+					   "could not allocate file object\r\n");
                 goto exit;
         }
 
         if (!quiet) {
-                serial_put_s(serial,"Test Write: Lines: ");
+                serial_write_s(serial,"Test Write: Lines: ");
                 put_int(serial, lines);
                 put_crlf(serial);
-                serial_put_s(serial,"Flushing Enabled: " );
+                serial_write_s(serial,"Flushing Enabled: " );
                 put_int(serial, doFlush);
                 put_crlf(serial);
-                serial_put_s(serial,"Card Init... ");
+                serial_write_s(serial,"Card Init... ");
         }
 
         res = InitFS();
@@ -102,7 +102,7 @@ void TestSDWrite(struct Serial *serial, int lines, int doFlush, int quiet)
         if (!quiet) {
                 put_int(serial, res);
                 put_crlf(serial);
-                serial_put_s(serial,"Opening File... ");
+                serial_write_s(serial,"Opening File... ");
         }
 
         res = f_open(fatFile,"test1.txt", FA_WRITE | FA_CREATE_ALWAYS);
@@ -115,7 +115,7 @@ void TestSDWrite(struct Serial *serial, int lines, int doFlush, int quiet)
                 goto exit;
 
         if (!quiet)
-                serial_put_s(serial, "Writing file..");
+                serial_write_s(serial, "Writing file..");
 
         portTickType startTicks = xTaskGetTickCount();
         for (int i = 1; i <= lines; i++) {
@@ -123,12 +123,12 @@ void TestSDWrite(struct Serial *serial, int lines, int doFlush, int quiet)
                 if (doFlush) f_sync(fatFile);
                 if (res == EOF) {
                         if (!quiet)
-                                serial_put_s(serial, "failed writing at line ");
+                                serial_write_s(serial, "failed writing at line ");
 
                         put_int(serial, i);
-                        serial_put_s(serial,"(");
+                        serial_write_s(serial,"(");
                         put_int(serial, res);
-                        serial_put_s(serial,")");
+                        serial_write_s(serial,")");
                         put_crlf(serial);
                         goto exit;
                 }
@@ -137,10 +137,10 @@ void TestSDWrite(struct Serial *serial, int lines, int doFlush, int quiet)
         portTickType endTicks = xTaskGetTickCount();
 
         if (!quiet) {
-                serial_put_s(serial,"Ticks to write: ");
+                serial_write_s(serial,"Ticks to write: ");
                 put_int(serial, endTicks - startTicks);
                 put_crlf(serial);
-                serial_put_s(serial,"Closing... ");
+                serial_write_s(serial,"Closing... ");
         }
 
         res = f_close(fatFile);
@@ -151,7 +151,7 @@ void TestSDWrite(struct Serial *serial, int lines, int doFlush, int quiet)
         if (res) goto exit;
 
         if (!quiet)
-                serial_put_s(serial,"Unmounting... ");
+                serial_write_s(serial,"Unmounting... ");
 
         res = UnmountFS();
 
@@ -165,9 +165,9 @@ exit:
                 put_int(serial, res == 0 ? 1 : 0);
         } else {
                 if(res == 0) {
-                        serial_put_s(serial,"SUCCESS");
+                        serial_write_s(serial,"SUCCESS");
                 } else {
-                        serial_put_s(serial,"ERROR");
+                        serial_write_s(serial,"ERROR");
                         put_int(serial, res);
                         put_crlf(serial);
                 }

@@ -67,9 +67,18 @@ static int sendBtCommandWaitResponse(DeviceConfig *config, const char *cmd,
         delayMs(BT_BACKOFF_MS);
 
         serial_flush(config->serial);
-        serial_put_s(config->serial, cmd);
-        const int len = serial_get_line_wait(config->serial, config->buffer,
-                                             config->length, wait);
+        if (0 < serial_write_s(config->serial, cmd)) {
+		pr_error("BT: Failed to write serial command\r\n");
+		return 0;
+	};
+
+        const int len = serial_read_line_wait(config->serial, config->buffer,
+					      config->length, wait);
+	if (len < 0) {
+		pr_error("BT: Serial device closed\r\n");
+		return 0;
+	}
+
         config->buffer[len] = 0;
 
         const bool res = 0 == strncmp(config->buffer, rsp, strlen(rsp));

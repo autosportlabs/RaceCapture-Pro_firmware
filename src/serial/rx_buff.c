@@ -120,8 +120,8 @@ bool rx_buff_read(struct rx_buff *rxb, struct Serial *s, const bool echo)
                         if (rxb->idx) {
                                 --rxb->idx;
                                 if (rxb->echo) {
-                                        serial_put_c(s, 0x08);
-                                        serial_put_c(s, 0x7f);
+                                        serial_write_c(s, 0x08);
+                                        serial_write_c(s, 0x7f);
                                 }
                         }
                         break;
@@ -132,7 +132,7 @@ bool rx_buff_read(struct rx_buff *rxb, struct Serial *s, const bool echo)
                 default:
                         /* If we are echoing, do it */
                         if (rxb->echo)
-                                serial_put_c(s, c);
+                                serial_write_c(s, c);
 
                         rxb->buff[rxb->idx] = c;
                         ++rxb->idx;
@@ -153,7 +153,7 @@ bool rx_buff_read(struct rx_buff *rxb, struct Serial *s, const bool echo)
             (rxb->idx == rxb->cap && rxb->msg_ready)) {
                 /* Turn the term character into the null */
                 if (rxb->echo)
-                        serial_put_c(s, c);
+                        serial_write_c(s, c);
 
                 rxb->buff[rxb->idx - 1] = 0;
         } else {
@@ -168,7 +168,7 @@ bool rx_buff_read(struct rx_buff *rxb, struct Serial *s, const bool echo)
         if ('\r' == c && xQueuePeek(h, &c, 0) && '\n' == c) {
                 xQueueReceive(h, &c, 0);
                 if (rxb->echo)
-                        serial_put_c(s, c);
+                        serial_write_c(s, c);
         }
 
         return true;

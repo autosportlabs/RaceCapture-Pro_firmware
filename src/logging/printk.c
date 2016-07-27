@@ -51,7 +51,7 @@ size_t read_log_to_serial(struct Serial *s, int escape)
                 if (escape) {
                         put_escapedString(s, buff, bytes);
                 } else {
-                        serial_put_s(s, buff);
+                        serial_write_s(s, buff);
                 }
         }
 

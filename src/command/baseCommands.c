@@ -37,16 +37,16 @@ extern unsigned int _CONFIG_HEAP_SIZE;
 static void putHeader(struct Serial *serial, const char *str)
 {
     put_crlf(serial);
-    serial_put_s(serial, "- - - ");
-    serial_put_s(serial, str);
-    serial_put_s(serial, " - - -");
+    serial_write_s(serial, "- - - ");
+    serial_write_s(serial, str);
+    serial_write_s(serial, " - - -");
     put_crlf(serial);
 }
 
 static void putDataRowHeader(struct Serial *serial, const char *str)
 {
-    serial_put_s(serial, str);
-    serial_put_s(serial, " : ");
+    serial_write_s(serial, str);
+    serial_write_s(serial, " : ");
 }
 
 void ShowStats(struct Serial *serial, unsigned int argc, char **argv)
@@ -91,7 +91,7 @@ void ShowTaskInfo(struct Serial *serial, unsigned int argc, char **argv)
 {
         putHeader(serial, "Task Info");
 
-        serial_put_s(serial, "Name\t\t\tStatus\tPri\tStackHR\tTask#");
+        serial_write_s(serial, "Name\t\t\tStatus\tPri\tStackHR\tTask#");
         put_crlf(serial);
 
         /*
@@ -102,16 +102,16 @@ void ShowTaskInfo(struct Serial *serial, unsigned int argc, char **argv)
         char *taskList = portMalloc(1024);
         if (NULL != taskList) {
                 vTaskList((signed char*) taskList);
-                serial_put_s(serial, taskList);
+                serial_write_s(serial, taskList);
                 portFree(taskList);
         } else {
-                serial_put_s(serial, "Out of Memory!");
+                serial_write_s(serial, "Out of Memory!");
         }
 
         put_crlf(serial);
         put_crlf(serial);
-        serial_put_s(serial, "[Note] StackHR: If StackHR < 0; then "
-                     "stack smash");
+        serial_write_s(serial, "[Note] StackHR: If StackHR < 0; then "
+		       "stack smash");
         put_crlf(serial);
 }
 

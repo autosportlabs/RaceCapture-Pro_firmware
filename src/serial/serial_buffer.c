@@ -66,10 +66,10 @@ char* serial_buffer_rx(struct serial_buffer *sb,
         int read;
 
         while (!msg_len) {
-                read  = serial_get_line_wait(sb->serial, ptr, available,
-                                             msToTicks(ms_delay));
+                read  = serial_read_line_wait(sb->serial, ptr, available,
+					      msToTicks(ms_delay));
 
-                if (!read)
+                if (read < 1)
                         return NULL;
 
                 msg_len = serial_msg_strlen(ptr);
@@ -117,7 +117,7 @@ void serial_buffer_reset(struct serial_buffer *sb)
 
 void serial_buffer_tx(struct serial_buffer *sb)
 {
-        serial_put_s(sb->serial, sb->buffer);
+        serial_write_s(sb->serial, sb->buffer);
 }
 
 size_t serial_buffer_append(struct serial_buffer *sb, const char *buff)
