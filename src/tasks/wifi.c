@@ -48,6 +48,10 @@
 
 /* Time between beacon messages */
 #define BEACON_PERIOD_MS	1000
+/* Time between checks of our connections. */
+#define EXT_CONN_PERIOD_MS	5
+/* Maximum number of external connections we will manage */
+#define EXT_CONN_MAX	3
 /* Prefix for all log messages */
 #define LOG_PFX			"[wifi] "
 /* How long to wait between polling our incomming msg Serial */
@@ -74,12 +78,8 @@ static struct {
         struct {
                 struct Serial* serial;
         } beacon;
+	struct Serial* connections[EXT_CONN_MAX];
 } state;
-
-static void log_event_overflow(const char* event_name)
-{
-        pr_warning_str_msg(LOG_PFX "Event overflow: ", event_name);
-}
 
 /* *** All methods that are used to generate events *** */
 
@@ -99,7 +99,8 @@ struct wifi_sample_data {
 struct wifi_event {
         enum task {
                 TASK_BEACON,
-                TASK_RX_DATA,
+                TASK_NEW_CONNECTION,
+		TASK_CHECK_CONNECTIONS,
                 TASK_SAMPLE,
         } task;
         union {
@@ -108,27 +109,41 @@ struct wifi_event {
         } data;
 };
 
-static void _new_conn_cb(struct Serial *s)
+static void send_event(struct wifi_event* event, const char* event_name)
+{
+	if (!xQueueSend(state.event_queue, event, 0))
+		pr_warning_str_msg(LOG_PFX "Event overflow: ", event_name);
+}
+
+static void new_ext_conn_cb(struct Serial *s)
 {
         /* Send event message here to wake the task */
         struct wifi_event event = {
-                .task = TASK_RX_DATA,
+                .task = TASK_NEW_CONNECTION,
                 .data.serial = s,
         };
 
-        if (!xQueueSend(state.event_queue, &event, 0))
-                log_event_overflow("New Connection");
+	send_event(&event, "New Connection");
 }
 
-static void beacon_timer_cb( xTimerHandle xTimer )
+static void check_connections_cb(xTimerHandle xTimer)
+{
+	/* Send event message here to wake the task */
+        struct wifi_event event = {
+                .task = TASK_CHECK_CONNECTIONS,
+        };
+
+	send_event(&event, "Connection Check");
+}
+
+static void beacon_timer_cb(xTimerHandle xTimer)
 {
         /* Send the message here to wake the timer */
         struct wifi_event event = {
                 .task = TASK_BEACON,
         };
 
-        if (!xQueueSend(state.event_queue, &event, 0))
-                log_event_overflow("Beacon");
+	send_event(&event, "Beacon");
 }
 
 static void wifi_sample_cb(struct Serial* const serial,
@@ -151,8 +166,7 @@ static void wifi_sample_cb(struct Serial* const serial,
         };
 
         /* Send the message here to wake the timer */
-        if (!xQueueSend(state.event_queue, &event, 0))
-                log_event_overflow("Sample CB");
+	send_event(&event, "Sample CB");
 }
 
 
@@ -196,7 +210,7 @@ static int wifi_serial_ioctl(struct Serial* serial, unsigned long req,
 }
 
 
-/* *** All methods that are used to handle Rx Msgs *** */
+/* *** All methods that are used with Serial connections. *** */
 
 /**
  * Code used to process part of a message.
@@ -232,11 +246,9 @@ static void process_ready_msg(struct Serial* s)
 /**
  * Handles all of our incoming messages and what we do with them.
  */
-static void process_rx_msgs(struct Serial* s)
+static bool process_rx_msg(struct Serial* s)
 {
-        /* Set the Serial IOCTL handler here b/c this is managing task */
-        serial_set_ioctl_cb(s, wifi_serial_ioctl);
-
+	bool msg_handled = false;
         struct rx_buff* const rxb = state.rx_msgs.rxb;
 
         while(true) {
@@ -259,6 +271,7 @@ static void process_rx_msgs(struct Serial* s)
                 case RX_BUFF_STATUS_OVERFLOW:
                         /* A message (possibly partial) awaits us */
                         process_ready_msg(s);
+			msg_handled = true;
                         goto rx_done;
                 }
         }
@@ -266,8 +279,59 @@ static void process_rx_msgs(struct Serial* s)
 rx_done:
         rx_buff_clear(rxb);
         state.rx_msgs.timeout = 0;
+	return msg_handled;
 }
 
+/**
+ * Polls all of our Serial devices to see if one of them has a message.
+ * Will process all serial devices in completely fair queueing mannerisms
+ * until all available messages have been processed.
+ */
+static void check_connections()
+{
+	while(true) {
+		bool msg_handled = false;
+		for (int i = 0; i < ARRAY_LEN(state.connections); ++i) {
+			struct Serial* serial = state.connections[i];
+			if (!serial)
+				continue;
+
+			/* Check if serial is closed.  If so, handle it */
+			if (!serial_is_connected(serial)) {
+				state.connections[i] = NULL;
+				logger_sample_disable_callback(serial);
+				serial_destroy(serial);
+				continue;
+			}
+
+			msg_handled |= process_rx_msg(serial);
+		}
+
+		if (!msg_handled)
+			return;
+	}
+}
+
+static void process_new_connection(struct Serial *s)
+{
+	/* Find an empy connection slot.  If none, close it */
+	for (int i = 0; i < ARRAY_LEN(state.connections); ++i) {
+		if (state.connections[i])
+			continue;
+
+		/*
+		 * If here, found slot. Set the serial IOCTL handler here
+		 * b/c this is managing task
+		 */
+		serial_set_ioctl_cb(s, wifi_serial_ioctl);
+		return;
+	}
+
+	/* If here, no slot found.  Close the Serial port */
+	pr_warning(LOG_PFX "Max external connections reached. Closing\r\n");
+	esp8266_drv_close(s);
+	serial_destroy(s);
+}
 
 /* *** All methods that are used to handle sending beacons *** */
 
@@ -348,10 +412,12 @@ static void process_sample(struct wifi_sample_data* data)
                 return;
         }
 
-        api_send_sample_record(serial, sample, ticks, meta);
-        put_crlf(serial);
+	/* Only try to send if our Serial device is connected */
+	if (serial_is_connected(serial)) {
+		api_send_sample_record(serial, sample, ticks, meta);
+		put_crlf(serial);
+	}
 }
-
 
 /* *** Task loop and all public methods *** */
 
@@ -368,9 +434,11 @@ static void _task(void *params)
                 case TASK_BEACON:
                         do_beacon();
                         break;
-                case TASK_RX_DATA:
-                        /* The event data will have the serial device */
-                        process_rx_msgs(event.data.serial);
+                case TASK_NEW_CONNECTION:
+			process_new_connection(event.data.serial);
+			break;
+		case TASK_CHECK_CONNECTIONS:
+			check_connections();
                         break;
                 case TASK_SAMPLE:
                         process_sample(&event.data.sample);
@@ -383,12 +451,27 @@ static void _task(void *params)
         panic(PANIC_CAUSE_UNREACHABLE);
 }
 
+static bool create_periodic_timer(const char* name, const size_t period_ms,
+				  tmrTIMER_CALLBACK cb)
+{
+	const size_t timer_ticks = msToTicks(period_ms);
+        const signed char* timer_name = (signed char*) name;
+        xTimerHandle timer_handle = xTimerCreate(timer_name, timer_ticks,
+                                                 true, NULL, cb);
+        if (!timer_handle)
+                return false;
+
+        /* Start the timer, but delay one period value */
+        return pdPASS == xTimerStart(timer_handle, timer_ticks);
+}
+
+
 bool wifi_init_task(const int wifi_task_priority,
                     const int wifi_drv_priority)
 {
         /* Do not initialze if the entire WiFi subsystem is disabled */
         if (!getWorkingLoggerConfig()->ConnectivityConfigs.wifi.active)
-            return false;
+		return false;
 
         /* Get our serial port setup */
         struct Serial *s = serial_device_get(SERIAL_WIFI);
@@ -405,23 +488,21 @@ bool wifi_init_task(const int wifi_task_priority,
         if (!state.rx_msgs.rxb)
                 return false;
 
-        if (!esp8266_drv_init(s, wifi_drv_priority, _new_conn_cb))
+        if (!esp8266_drv_init(s, wifi_drv_priority, new_ext_conn_cb))
                 return false;
 
         static const signed char task_name[] = THREAD_NAME;
         const size_t stack_size = STACK_SIZE;
         xTaskCreate(_task, task_name, stack_size, NULL,
-                            wifi_task_priority, NULL);
+		    wifi_task_priority, NULL);
 
-        const size_t timer_ticks = msToTicks(BEACON_PERIOD_MS);
-        const signed char* timer_name = (signed char*) "Wifi Beacon Timer";
-        xTimerHandle timer_handle = xTimerCreate(timer_name, timer_ticks,
-                                                 true, NULL, beacon_timer_cb);
-        if (!timer_handle)
-                return false;
+	if (!create_periodic_timer("WiFi Beacon Timer", BEACON_PERIOD_MS,
+				   beacon_timer_cb))
+		return false;
 
-        /* Start the timer, but delay 1 period to give our WiFi unit time */
-        xTimerStart(timer_handle, timer_ticks);
+	if (!create_periodic_timer("WiFi Connections Timer",
+				   EXT_CONN_PERIOD_MS, check_connections_cb))
+		return false;
 
         return true;
 }
