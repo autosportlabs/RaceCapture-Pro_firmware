@@ -253,7 +253,7 @@ bool serial_config(struct Serial *s, const size_t bits,
 
 bool serial_is_connected(const struct Serial* s)
 {
-	return s->rx_queue || s->tx_queue;
+	return s && (s->rx_queue || s->tx_queue);
 }
 
 /**
