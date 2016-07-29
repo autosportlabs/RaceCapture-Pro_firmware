@@ -1327,7 +1327,6 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
                 goto done;
         }
 
-	ch->serial = serial;
         bool connect_result = false;
         switch(proto) {
         case PROTOCOL_TCP:

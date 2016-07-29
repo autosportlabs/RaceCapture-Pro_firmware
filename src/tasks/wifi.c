@@ -51,7 +51,7 @@
 /* Time between checks of our connections. */
 #define EXT_CONN_PERIOD_MS	5
 /* Maximum number of external connections we will manage */
-#define EXT_CONN_MAX	3
+#define EXT_CONN_MAX	2
 /* Prefix for all log messages */
 #define LOG_PFX			"[wifi] "
 /* How long to wait between polling our incomming msg Serial */
@@ -65,7 +65,7 @@
 /* Make all task names 16 chars including NULL char */
 #define THREAD_NAME		"WiFi Task      "
 /* How many events can be pending before we overflow */
-#define WIFI_EVENT_QUEUE_DEPTH	8
+#define WIFI_EVENT_QUEUE_DEPTH	32
 /* The highest channel WiFi can use (USA) */
 #define WIFI_MAX_CHANNEL	11
 
@@ -178,8 +178,8 @@ static int wifi_serial_ioctl(struct Serial* serial, unsigned long req,
         switch(req) {
         case SERIAL_IOCTL_TELEMETRY_ENABLE:
         {
-                pr_info_int_msg(LOG_PFX "Starting telem stream on serial ",
-                                (int) (long) serial);
+                pr_info_str_msg(LOG_PFX "Starting telem stream on ",
+                                serial_get_name(serial));
                 int rate = (int) (long) argp;
                 if (rate > WIFI_MAX_SAMPLE_RATE) {
                         pr_info_int_msg(LOG_PFX "Telemetry stream rate too "
@@ -289,27 +289,32 @@ rx_done:
  */
 static void check_connections()
 {
-	while(true) {
-		bool msg_handled = false;
-		for (int i = 0; i < ARRAY_LEN(state.connections); ++i) {
-			struct Serial* serial = state.connections[i];
-			if (!serial)
-				continue;
+	bool msg_handled = false;
+	for (int i = 0; i < ARRAY_LEN(state.connections); ++i) {
+		struct Serial* serial = state.connections[i];
+		if (!serial)
+			continue;
 
-			/* Check if serial is closed.  If so, handle it */
-			if (!serial_is_connected(serial)) {
-				state.connections[i] = NULL;
-				logger_sample_disable_callback(serial);
-				serial_destroy(serial);
-				continue;
-			}
-
-			msg_handled |= process_rx_msg(serial);
+		/* Check if serial is closed.  If so, handle it */
+		if (!serial_is_connected(serial)) {
+			pr_info_int_msg(LOG_PFX "Closing external "
+					"connection: ", i);
+			state.connections[i] = NULL;
+			logger_sample_disable_callback(serial);
+			serial_destroy(serial);
+			continue;
 		}
 
-		if (!msg_handled)
-			return;
+		msg_handled |= process_rx_msg(serial);
 	}
+
+	/*
+	 * Check if a message was handled.  If so then schedule again.
+	 * We do this to ensure we don't starve the event queue of resources
+	 * since this can take a while to do.
+	 */
+	if (msg_handled)
+		check_connections_cb(NULL);
 }
 
 static void process_new_connection(struct Serial *s)
@@ -323,7 +328,9 @@ static void process_new_connection(struct Serial *s)
 		 * If here, found slot. Set the serial IOCTL handler here
 		 * b/c this is managing task
 		 */
+		pr_info_int_msg(LOG_PFX "New external connection: ", i);
 		serial_set_ioctl_cb(s, wifi_serial_ioctl);
+		state.connections[i] = s;
 		return;
 	}
 
