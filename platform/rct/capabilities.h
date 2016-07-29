@@ -20,6 +20,7 @@
 /* Wifi Specific Info */
 #define WIFI_MAX_BAUD		921600
 #define WIFI_MAX_SAMPLE_RATE	50
+#define WIFI_ENABLED_DEFAULT	true
 
 /* Configuration */
 #define MAX_TRACKS	0
