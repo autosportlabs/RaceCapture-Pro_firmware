@@ -51,7 +51,7 @@
 #define BT_MAX_NAME_LEN	(BT_DEVICE_NAME_LENGTH - 1)
 #define BT_MAX_PIN_LEN	(BT_PASSCODE_LENGTH - 1)
 #define BT_PING_TRIES	3
-#define TARGET_BAUD	230400
+#define TARGET_BAUD	115200
 
 static bluetooth_status_t g_bluetooth_status = BT_STATUS_NOT_INIT;
 
