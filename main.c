@@ -79,18 +79,14 @@ void setupTask(void *param)
         InitLoggerHardware();
         initMessaging();
 
+#if USB_SERIAL_SUPPORT
+        startUSBCommTask(RCP_INPUT_PRIORITY);
+#endif
+
         startGPSTask(RCP_INPUT_PRIORITY);
         startOBD2Task(RCP_INPUT_PRIORITY);
         startConnectivityTask(RCP_OUTPUT_PRIORITY);
         startLoggerTaskEx(RCP_LOGGING_PRIORITY);
-
-#if WIFI_SUPPORT
-        wifi_init_task(RCP_OUTPUT_PRIORITY, RCP_INPUT_PRIORITY);
-#endif
-
-#if USB_SERIAL_SUPPORT
-        startUSBCommTask(RCP_INPUT_PRIORITY);
-#endif
 
 #if GPIO_CHANNELS > 0
         startGPIOTasks(RCP_INPUT_PRIORITY);
@@ -102,6 +98,10 @@ void setupTask(void *param)
 
 #if LUA_SUPPORT
         lua_task_init(RCP_LUA_PRIORITY);
+#endif
+
+#if WIFI_SUPPORT
+        wifi_init_task(RCP_OUTPUT_PRIORITY, RCP_INPUT_PRIORITY);
 #endif
 
         /* Removes this setup task from the scheduler */
