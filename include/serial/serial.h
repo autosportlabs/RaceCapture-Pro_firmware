@@ -71,6 +71,10 @@ struct Serial;
 
 void serial_destroy(struct Serial *s);
 
+void serial_close(struct Serial* s);
+
+bool serial_is_connected(const struct Serial* s);
+
 struct Serial* serial_create(const char *name, const size_t tx_cap,
                              const size_t rx_cap, config_func_t *cfg_cb,
                              void *cfg_cb_arg, post_tx_func_t *post_tx_cb,
@@ -98,35 +102,34 @@ bool serial_config(struct Serial *s, const size_t bits,
                    const size_t parity, const size_t stop_bits,
                    const size_t baud);
 
-bool serial_get_c_wait(struct Serial *s, char *c, const size_t delay);
+int serial_read_c_wait(struct Serial *s, char *c, const size_t delay);
 
-char serial_get_c(struct Serial *s);
+int serial_read_c(struct Serial *s, char* c);
 
-int serial_get_line(struct Serial *s, char *l, const size_t len);
+int serial_read_byte(struct Serial *serial, uint8_t *b, const size_t delay);
 
-int serial_get_line_wait(struct Serial *s, char *l, const size_t len,
-                         const size_t delay);
+int serial_read_line(struct Serial *s, char *l, const size_t len);
 
-bool serial_put_c(struct Serial *s, const char c);
+int serial_read_line_wait(struct Serial *s, char *l, const size_t len,
+			  const size_t delay);
 
-int serial_put_buff_wait(struct Serial *s, const char *buf,
-                         const size_t len, const size_t delay);
+int serial_write_c(struct Serial *s, const char c);
 
-int serial_put_buff(struct Serial *s, const char *buf, const size_t len);
+int serial_write_buff_wait(struct Serial *s, const char *buf,
+			   const size_t len, const size_t delay);
 
-int serial_put_s_wait(struct Serial *s, const char *l, const size_t delay);
+int serial_write_buff(struct Serial *s, const char *buf, const size_t len);
 
-int serial_put_s(struct Serial *s, const char *l);
+int serial_write_s_wait(struct Serial *s, const char *l, const size_t delay);
 
-bool serial_read_byte(struct Serial *serial, uint8_t *b, const size_t delay);
+int serial_write_s(struct Serial *s, const char *l);
 
 xQueueHandle serial_get_rx_queue(struct Serial *s);
 
 xQueueHandle serial_get_tx_queue(struct Serial *s);
 
 enum serial_ioctl {
-        SERIAL_IOCTL_TELEMETRY_ENABLE  = 1,
-        SERIAL_IOCTL_TELEMETRY_DISABLE = 2,
+        SERIAL_IOCTL_TELEMETRY = 1,
 };
 
 /**

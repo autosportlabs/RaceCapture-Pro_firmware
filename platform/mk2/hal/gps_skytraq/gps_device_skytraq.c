@@ -221,22 +221,22 @@ static void txGpsMessage(GpsMessage * msg, struct Serial * serial)
          */
         delayMs(20);
 
-        serial_put_c(serial, 0xA0);
-        serial_put_c(serial, 0xA1);
+        serial_write_c(serial, 0xA0);
+        serial_write_c(serial, 0xA1);
 
         uint16_t payloadLength = msg->payloadLength;
-        serial_put_c(serial, (uint8_t) payloadLength >> 8);
-        serial_put_c(serial, (uint8_t) payloadLength & 0xFF);
+        serial_write_c(serial, (uint8_t) payloadLength >> 8);
+        serial_write_c(serial, (uint8_t) payloadLength & 0xFF);
 
         uint8_t *payload = msg->payload;
         while (payloadLength--) {
-                serial_put_c(serial, *(payload++));
+                serial_write_c(serial, *(payload++));
         }
 
-        serial_put_c(serial, msg->checksum);
+        serial_write_c(serial, msg->checksum);
 
-        serial_put_c(serial, 0x0D);
-        serial_put_c(serial, 0x0A);
+        serial_write_c(serial, 0x0D);
+        serial_write_c(serial, 0x0A);
 }
 
 static gps_msg_result_t rxGpsMessage(GpsMessage* msg, struct Serial* serial,

@@ -102,3 +102,8 @@ void assert_failed(uint8_t* file, uint32_t line)
 	pr_error("ASSERTION Failure\r\n");
 	panic(PANIC_CAUSE_ASSERT);
 }
+
+void HardFault_Handler()
+{
+	panic(PANIC_CAUSE_ASSERT);
+}

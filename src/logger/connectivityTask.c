@@ -83,8 +83,13 @@ static size_t trimBuffer(char *buffer, size_t count)
 
 static int processRxBuffer(struct Serial *serial, char *buffer, size_t *rxCount)
 {
-        size_t count = serial_get_line_wait(serial, buffer + *rxCount,
-                                            BUFFER_SIZE - *rxCount, 0);
+        const int count = serial_read_line_wait(serial, buffer + *rxCount,
+						BUFFER_SIZE - *rxCount, 0);
+
+	if (count < 0) {
+		pr_error("[connectivityTask] Serial device closed\r\n");
+		return 0;
+	}
 
     *rxCount += count;
     int processMsg = 0;

@@ -35,7 +35,7 @@ static int g_interactive_mode = 0;
 
 void ExecLuaInterpreter(struct Serial *serial, unsigned int argc, char **argv)
 {
-        serial_put_s(serial, "Entering Lua Interpreter. enter 'exit' "
+        serial_write_s(serial, "Entering Lua Interpreter. enter 'exit' "
                      "to leave");
         put_crlf(serial);
 
@@ -45,7 +45,7 @@ void ExecLuaInterpreter(struct Serial *serial, unsigned int argc, char **argv)
         g_interactive_mode = 1;
 
         for(;;) {
-                serial_put_s(serial, "> ");
+                serial_write_s(serial, "> ");
                 interactive_read_line(serial, luaLine, cmdContext->lineBufferSize);
 
                 if (0 == strcmp(luaLine, "exit"))

@@ -42,20 +42,17 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig,
 
 float get_mapped_value(float value, ScalingMap *scalingMap);
 
-typedef void logger_sample_cb_t(struct Serial* const serial,
-                                const struct sample* sample,
-                                const int ticks);
-
-bool logger_sample_register_callback(logger_sample_cb_t* cb,
-                                     struct Serial* const serial);
+typedef void logger_sample_cb_t(const struct sample* sample,
+                                const int ticks,
+				void* data);
 
 void logger_sample_process_callbacks(const int sample_tick,
                                      const struct sample* sample);
 
-bool logger_sample_enable_callback(struct Serial* const serial,
-                                   const int sample_rate);
+int logger_sample_create_callback(logger_sample_cb_t* cb, const int rate,
+				  void* data);
 
-bool logger_sample_disable_callback(struct Serial* const serial);
+bool logger_sample_destroy_callback(const int handle);
 
 CPP_GUARD_END
 

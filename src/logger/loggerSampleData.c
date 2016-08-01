@@ -49,8 +49,8 @@
 
 struct sample_cb_registry {
         logger_sample_cb_t* cb;
-        struct Serial* serial;
-        int sample_rate;
+        void* data;
+        int rate;
 } sample_cb_registry[SAMPLE_CB_REGISTRY_SIZE];
 
 static ChannelSample* processChannelSampleWithFloatGetter(ChannelSample *s,
@@ -441,59 +441,49 @@ void logger_sample_process_callbacks(const int ticks,
 {
         for (int i = 0; is_valid_registry_index(i); ++i) {
                 struct sample_cb_registry* slot = sample_cb_registry + i;
-                if (slot->cb && should_sample(ticks, slot->sample_rate))
-                        slot->cb(slot->serial, sample, ticks);
+                if (slot->cb && should_sample(ticks, slot->rate))
+                        slot->cb(sample, ticks, slot->data);
         }
 }
 
-bool logger_sample_register_callback(logger_sample_cb_t* cb,
-                                     struct Serial* const serial)
+/**
+ * Sets up a callback for logger samples at the specified rate.  An optinal
+ * user defined argument allows the caller to include context when they get
+ * the callback so that they may send out data appropriately.
+ * @param cb The method to call back.
+ * @param rate The sample rate that is desired.
+ * @param data User defined data that will be provided to the callback.
+ * @return A handle that references this callback's registration id; else -1
+ * if there was an error.
+ */
+int logger_sample_create_callback(logger_sample_cb_t* cb, const int rate,
+				  void* data)
 {
-        if (!cb || !serial)
-                return false;
-
-        for (int i = 0; is_valid_registry_index(i); ++i) {
+        for (int i = 0; cb && is_valid_registry_index(i); ++i) {
                 struct sample_cb_registry* slot = sample_cb_registry + i;
-                if (serial == slot->serial || NULL == slot->cb) {
-                        slot->cb = cb;
-                        slot->serial = serial;
-                        slot->sample_rate = 0;
-                        return true;
-                }
+                if (slot->cb)
+			continue;
+
+		/* If here then we found a slot */
+		slot->cb = cb;
+		slot->data = data;
+		slot->rate = encodeSampleRate(rate);
+		return i;
         }
 
-        return false;
+        return -1;
 }
 
-static struct sample_cb_registry* find_registry_slot(
-        struct Serial* const serial)
+/**
+ * Destroys a logger callback created by the #logger_sample_create_callback method.
+ * Requires the handle returned by the creation process to destroy it.
+ */
+bool logger_sample_destroy_callback(const int handle)
 {
-        for (int i = 0; is_valid_registry_index(i); ++i) {
-                struct sample_cb_registry* slot = sample_cb_registry + i;
-                if (serial == slot->serial)
-                        return slot;
-        }
+	if (!is_valid_registry_index(handle))
+		return false;
 
-        return NULL;
-}
-
-bool logger_sample_enable_callback(struct Serial* const serial,
-                                   const int rate)
-{
-        struct sample_cb_registry* const slot = find_registry_slot(serial);
-        if (!slot)
-                return false;
-
-        slot->sample_rate = encodeSampleRate(rate);
-        return !!slot->sample_rate;
-}
-
-bool logger_sample_disable_callback(struct Serial* const serial)
-{
-        struct sample_cb_registry* const slot = find_registry_slot(serial);
-        if (!slot)
-                return false;
-
-        slot->sample_rate = 0;
-        return true;
+	struct sample_cb_registry* slot = sample_cb_registry + handle;
+	memset(slot, 0, sizeof(struct sample_cb_registry));
+	return true;
 }

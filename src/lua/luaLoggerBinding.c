@@ -350,7 +350,7 @@ static int lua_serial_read_char(lua_State *L)
 
         char c;
         struct Serial *serial = lua_get_serial(L, port);
-        if (serial_get_c_wait(serial, &c, timeout)) {
+        if (0 < serial_read_c_wait(serial, &c, timeout)) {
                 lua_pushlstring(L, &c, 1);
         } else {
                 lua_pushnil(L);
@@ -386,11 +386,12 @@ static int lua_serial_read_line(lua_State *L)
 
         struct Serial *serial = lua_get_serial(L, port);
         /* STIEG: Would be nice to be rid of that tempBuffer */
-        const size_t len = serial_get_line_wait(serial, g_tempBuffer,
-                                                TEMP_BUFFER_LEN - 1,
-                                                timeout);
-        g_tempBuffer[len] = 0;
-        if (len) {
+        const int len = serial_read_line_wait(serial, g_tempBuffer,
+					      TEMP_BUFFER_LEN - 1,
+					      timeout);
+
+        if (0 < len) {
+		g_tempBuffer[len] = 0;
                 lua_pushstring(L, g_tempBuffer);
         } else {
                 lua_pushnil(L);
@@ -420,8 +421,8 @@ static int lua_serial_write_line(lua_State *L)
         const char *data = lua_tostring(L, 2);
 
         struct Serial *serial = lua_get_serial(L, port);
-        serial_put_s(serial, data);
-        serial_put_c(serial, '\n');
+        serial_write_s(serial, data);
+        serial_write_c(serial, '\n');
 
         return 0;
 }
@@ -448,7 +449,7 @@ static int lua_serial_write_char(lua_State *L)
         const char *data = lua_tostring(L, 2);
 
         struct Serial *serial = lua_get_serial(L, port);
-        serial_put_c(serial, *data);
+        serial_write_c(serial, *data);
 
         return 0;
 }

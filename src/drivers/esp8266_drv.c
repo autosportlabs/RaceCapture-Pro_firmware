@@ -96,9 +96,6 @@ struct server {
 struct channel {
         struct Serial *serial;
         size_t tx_chars_buffered;
-        bool in_use;
-        bool connected;
-        bool created_externally;
 };
 
 struct channel_sync_op {
@@ -230,14 +227,31 @@ static bool cmd_ready() {
         return !esp8266_state.cmd.in_progress;
 }
 
-/* Begin code for sending/receiving data */
+/* Begin code for sending/receiving data using our internal channels */
 
-static bool is_valid_socket_channel_id(const size_t chan_id)
+static bool channel_is_valid_id(const size_t chan_id)
 {
         return chan_id < ARRAY_LEN(esp8266_state.comm.channels);
 }
 
-static const char* get_channel_name(const size_t chan_id)
+static bool channel_is_open(struct channel* ch)
+{
+	return !!ch->serial;
+}
+
+/**
+ * Called when we close a channel.
+ */
+static void channel_close(struct channel* ch)
+{
+	if (!ch->serial)
+		return;
+
+	serial_close(ch->serial);
+	ch->serial = NULL;
+}
+
+static const char* channel_get_name(const size_t chan_id)
 {
         static const char* _serial_names[] = {
                 "Wifi Chan 0",
@@ -260,49 +274,39 @@ static void _tx_char_cb(xQueueHandle queue, void *post_tx_arg)
         cmd_set_check(CHECK_DATA);
 }
 
-static struct Serial* setup_channel_serial(const unsigned int i)
+static struct channel* channel_setup(const unsigned int i)
 {
-        const char* name = get_channel_name(i);
-        struct channel* ch =esp8266_state.comm.channels + i;
-        struct Serial *s = serial_create(name, SERIAL_TX_BUFF_SIZE,
-                                         SERIAL_RX_BUFF_SIZE, NULL, NULL,
-                                         _tx_char_cb, ch);
-        if (s)
-                return s;
-
-        /* Fail state */
-        pr_warning(LOG_PFX "Failed to create serial port\r\n");
-        return NULL;
-}
-
-static struct channel* get_channel_for_use(const unsigned int i)
-{
-        if (!is_valid_socket_channel_id(i))
+        if (!channel_is_valid_id(i))
                 return NULL;
 
         struct channel* ch = esp8266_state.comm.channels + i;
-        if (ch->serial)
-                return ch;
+        if (ch->serial) {
+		/* Channel is in use!  Something is wrong */
+                pr_warning_int_msg(LOG_PFX "Setup called on allocated "
+				   "channel ", i);
+		pr_warning(LOG_PFX "Closing stale Serial object");
+		channel_close(ch);
+	}
 
-        /* If here, channel has no serial.  Try to set one up */
-        ch->serial = setup_channel_serial(i);
-        return ch->serial ? ch : NULL;
+	const char* name = channel_get_name(i);
+        struct Serial *s = serial_create(name, SERIAL_TX_BUFF_SIZE,
+                                         SERIAL_RX_BUFF_SIZE, NULL, NULL,
+                                         _tx_char_cb, ch);
+
+	if (!s) {
+		/* Fail state */
+		pr_warning(LOG_PFX "Insufficient resources for new "
+			   "Serial\r\n");
+		return NULL;
+	}
+
+        ch->serial = s;
+        return ch;
 }
 
-static int get_next_free_channel_num()
+static int channel_find_serial(struct Serial *serial)
 {
-        for (size_t i = 0; is_valid_socket_channel_id(i); ++i) {
-                struct channel *ch = esp8266_state.comm.channels + i;
-                if (!ch->in_use)
-                        return i;
-        }
-
-        return -1;
-}
-
-static int find_channel_with_serial(struct Serial *serial)
-{
-        for (size_t i = 0; is_valid_socket_channel_id(i); ++i) {
+        for (size_t i = 0; channel_is_valid_id(i); ++i) {
                 struct channel *ch = esp8266_state.comm.channels + i;
                 if (serial == ch->serial)
                         return i;
@@ -311,6 +315,55 @@ static int find_channel_with_serial(struct Serial *serial)
         return -1;
 }
 
+static int channel_get_next_available()
+{
+	return channel_find_serial(NULL);
+}
+
+
+/**
+ * Callback that gets invoked when a socket state changes.
+ */
+static void socket_state_changed_cb(const size_t chan_id,
+                                    const enum socket_action action)
+{
+        if (!channel_is_valid_id(chan_id)) {
+                pr_warning_int_msg(LOG_PFX "Invalid socket id: ",
+                                   chan_id);
+                return;
+        }
+
+        struct channel *ch = esp8266_state.comm.channels + chan_id;
+        switch (action) {
+        case SOCKET_ACTION_DISCONNECT:
+                pr_info_int_msg(LOG_PFX "Socket closed on channel ",
+                                chan_id);
+		channel_close(ch);
+                break;
+        case SOCKET_ACTION_CONNECT:
+                pr_info_int_msg(LOG_PFX "Socket connected on channel ",
+                                chan_id);
+
+		if (!channel_setup(chan_id)) {
+			/* Close the channel.  Best effort here. */
+			esp8266_close(chan_id, NULL);
+			break;
+		}
+
+		if (esp8266_state.comm.new_conn_cb) {
+			esp8266_state.comm.new_conn_cb(ch->serial);
+		} else {
+			pr_warning(LOG_PFX "No incoming server callback "
+				   "defined. Data \r\n");
+		}
+                break;
+        default:
+                pr_warning(LOG_PFX "Unknown socket action\r\n");
+                break;
+        }
+
+        cmd_set_check(CHECK_DATA);
+}
 
 /**
  * Callback that gets invoked by the device code whenever new data
@@ -319,45 +372,24 @@ static int find_channel_with_serial(struct Serial *serial)
 static void rx_data_cb(int chan_id, size_t len, const char* data)
 {
         trigger_led();
-        pr_debug_str_msg(LOG_PFX "Rx: ", data);
+        pr_trace_str_msg(LOG_PFX "Rx: ", data);
 
-        if (!is_valid_socket_channel_id(chan_id)) {
-                pr_error_int_msg(LOG_PFX "Channel id to big: ", chan_id);
+        if (!channel_is_valid_id(chan_id)) {
+                pr_error_int_msg(LOG_PFX "Invalid Channel ID: ", chan_id);
                 return;
         }
 
-        struct channel *ch = get_channel_for_use(chan_id);
-        if (NULL == ch) {
-                pr_error(LOG_PFX "No channel available.  Dropping\r\n");
-                return;
-        }
+	/*
+	 * Check that we have a backing serial device before we read in
+	 * the data. If none, gotta dump it.
+	 */
+	struct channel *ch = esp8266_state.comm.channels + chan_id;
+	if (!channel_is_open(ch)) {
+		pr_error(LOG_PFX "Channel has no backing serial device. "
+			 "Dropping data\r\n");
+		return;
+	}
 
-        /*
-         * Since these connections are created by an external source,
-         * we set the created_externally flag here.  This way
-         * we know to reap the channel when the connection disappears.
-         */
-        ch->created_externally = true;
-        ch->in_use = true;
-        ch->connected = true;
-
-        /*
-         * Check that we actually have a call back set to handle the
-         * incoming data.  If not then the socket stays open until it is
-         * closed by our WiFi host.
-         */
-        if (!esp8266_state.comm.new_conn_cb) {
-                pr_error(LOG_PFX "No Serial callback defined\r\n");
-                return;
-        }
-
-        esp8266_state.comm.new_conn_cb(ch->serial);
-
-        /*
-         * Now that the upper layer has been informed about the incoming
-         * data, start sending it said data.  It will unblock and read this
-         * data very shortly.
-         */
         xQueueHandle q = serial_get_rx_queue(ch->serial);
         bool data_dropped = false;
         for (size_t i = 0; i < len && !data_dropped; ++i)
@@ -365,7 +397,7 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
                         data_dropped = true;
 
         if (data_dropped)
-                pr_warning(LOG_PFX "Rx data dropped!\r\n");
+                pr_warning(LOG_PFX "Rx Buffer Overflow Detected\r\n");
 
         cmd_set_check(CHECK_DATA);
 }
@@ -394,6 +426,7 @@ static void check_data()
         for (size_t i = 0; i < ARRAY_LEN(esp8266_state.comm.channels); ++i) {
                 struct channel *ch = esp8266_state.comm.channels + i;
                 const size_t size = ch->tx_chars_buffered;
+		struct Serial* serial = ch->serial;
 
                 /* If the size is 0, nothing to send */
                 if (0 == size)
@@ -401,19 +434,16 @@ static void check_data()
 
                 /*
                  * If here, then we have data to send.  Check that the
-                 * connection is still active.  If not, dump the data
+                 * connection is still active.  If not, clear our count
+		 * and be done.
                  */
-                if (!ch->connected) {
-                        serial_purge_tx_queue(ch->serial);
+		if (!serial_is_connected(ch->serial)) {
                         ch->tx_chars_buffered = 0;
                         continue;
                 }
 
                 /* If here, we have a connection and data to send. Do Eet! */
-                const bool cmd_queued =
-                        esp8266_send_data(i, ch->serial, size, _send_data_cb);
-
-                if (!cmd_queued) {
+                if (!esp8266_send_data(i, serial, size, _send_data_cb)) {
                         pr_warning(LOG_PFX "Failed to queue send "
                                    "data command!!!\r\n");
                         /* We will retry */
@@ -440,56 +470,6 @@ static void client_state_changed_cb(const char* msg)
                sizeof(esp8266_state.client.ipv4));
 
         pr_info_str_msg(LOG_PFX "Client state changed: ", msg);
-}
-
-/**
- * Callback that gets invoked when a socket state changes.
- */
-static void socket_state_changed_cb(const size_t chan_id,
-                                    const enum socket_action action)
-{
-        if (!is_valid_socket_channel_id(chan_id)) {
-                pr_warning_int_msg(LOG_PFX "Invalid socket id: ",
-                                   chan_id);
-                return;
-        }
-
-        struct channel *ch = esp8266_state.comm.channels + chan_id;
-        switch (action) {
-        case SOCKET_ACTION_DISCONNECT:
-                pr_info_int_msg(LOG_PFX "Socket closed on channel ",
-                                chan_id);
-                /*
-                 * If channel created externally, then when closed it
-                 * means it is no longer in use.
-                 */
-                if (ch->created_externally)
-                        ch->in_use = false;
-
-                ch->created_externally = false;
-                ch->connected = false;
-
-                /*
-                 * Clear the serial data out since channel is now closed
-                 * we don't want any cruft in there the next time a channel
-                 * gets opened.  Also be sure the serial exists, as it could
-                 * fail to get created.
-                 */
-                if (ch->serial)
-                        serial_clear(ch->serial);
-
-                break;
-        case SOCKET_ACTION_CONNECT:
-                pr_info_int_msg(LOG_PFX "Socket connected on channel ",
-                                chan_id);
-                ch->connected = true;
-                break;
-        default:
-                pr_warning(LOG_PFX "Unknown socket action\r\n");
-                break;
-        }
-
-        cmd_set_check(CHECK_DATA);
 }
 
 /* *** Methods that handle device init and reset *** */
@@ -1310,16 +1290,17 @@ static void connect_cb(const bool status, const bool already_connected)
         struct channel_sync_op *cso = &esp8266_state.comm.connect_op;
         struct channel *ch = esp8266_state.comm.channels + cso->chan_id;
 
-        ch->connected = status;
-
-        if (!status && already_connected) {
-                /* Attempt to close the connection to rectify state */
-                pr_info(LOG_PFX "Closing unexpectedly open connection\r\n");
-                esp8266_close(cso->chan_id, NULL);
-        }
+        if (already_connected) {
+		pr_info_int_msg(LOG_PFX "State mismatch. Channel already "
+				"connected: ", cso->chan_id);
+                channel_close(ch);
+        } else if (!status) {
+		pr_info_int_msg(LOG_PFX "Failed to connect channel: ",
+				cso->chan_id);
+		channel_close(ch);
+	}
 
         cmd_set_check(CHECK_DATA);
-
         xSemaphoreGive(cso->cb_semaphore);
 }
 
@@ -1339,13 +1320,13 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
         xSemaphoreTake(cso->op_semaphore, portMAX_DELAY);
 
         struct Serial* serial = NULL;
-        cso->chan_id = get_next_free_channel_num();
+        cso->chan_id = channel_get_next_available();
         if (cso->chan_id < 0) {
                 pr_warning(LOG_PFX "Failed to acquire a free channel\r\n");
                 goto done;
         }
 
-        struct channel *ch = get_channel_for_use(cso->chan_id);
+        struct channel *ch = channel_setup(cso->chan_id);
         if (NULL == ch) {
                 pr_warning(LOG_PFX "Can't allocate resources for channel\r\n");
                 goto done;
@@ -1382,12 +1363,14 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
                 goto done;
         }
 
-        if (!ch->connected) {
+	/* If unsuccessful, the callback will close the channel */
+        if (!channel_is_open(ch)) {
                 pr_info_str_msg(LOG_PFX "Failed to connect: ", addr);
+		serial_destroy(serial);
+		serial = NULL;
                 goto done;
         }
 
-        ch->in_use = true;
         serial = ch->serial;
         pr_info_int_msg(LOG_PFX "Connected on comm channel ", cso->chan_id);
 
@@ -1402,12 +1385,11 @@ done:
 static void close_cb(const bool status)
 {
         struct channel_sync_op *cso = &esp8266_state.comm.close_op;
-        struct channel *ch = esp8266_state.comm.channels + cso->chan_id;
-
-        if (status)
-                ch->connected = false;
-
         cmd_set_check(CHECK_DATA);
+
+	if (!status)
+		pr_warning_int_msg(LOG_PFX "Failed to close channel ",
+				   (int) cso->chan_id);
 
         xSemaphoreGive(cso->cb_semaphore);
 }
@@ -1425,16 +1407,19 @@ bool esp8266_drv_close(struct Serial* serial)
         xSemaphoreTake(cso->op_semaphore, portMAX_DELAY);
         bool status = false;
 
-        cso->chan_id = find_channel_with_serial(serial);
-        if (0 > cso->chan_id) {
+        cso->chan_id = channel_find_serial(serial);
+        if (cso->chan_id < 0) {
                 pr_warning(LOG_PFX "Unable to find channel with associated "
-                           "Serial device.\r\n");
+                           "serial device.\r\n");
                 goto done;
         }
 
         struct channel *ch = esp8266_state.comm.channels + cso->chan_id;
-        if (!ch->connected)
-                pr_warning(LOG_PFX "Channel supposedly not connected.\r\n");
+        if (channel_is_open(ch)) {
+		struct Serial* s = ch->serial;
+		channel_close(ch);
+		serial_destroy(s);
+	}
 
         if (!esp8266_close(cso->chan_id, close_cb)) {
                 pr_warning(LOG_PFX "Failed to issue close command\r\n");
@@ -1447,14 +1432,6 @@ bool esp8266_drv_close(struct Serial* serial)
                            "response\r\n");
                 goto done;
         }
-
-        if (ch->connected) {
-                pr_info_int_msg(LOG_PFX "Failed to close channel ", cso->chan_id);
-                goto done;
-        }
-
-        ch->in_use = false;
-        ch->created_externally = false;
 
 done:
         xSemaphoreGive(cso->op_semaphore);

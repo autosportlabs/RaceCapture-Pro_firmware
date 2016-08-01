@@ -423,11 +423,11 @@ static void write_sample_meta(struct Serial *serial, const struct sample *sample
 
         for (size_t i = 0; i < sample->channel_count; ++i, ++channel_sample) {
                 if (0 < i)
-                        serial_put_c(serial, ',');
+                        serial_write_c(serial, ',');
 
-                serial_put_c(serial, '{');
+                serial_write_c(serial, '{');
                 json_channelConfig(serial, channel_sample->cfg, 0);
-                serial_put_c(serial, '}');
+                serial_write_c(serial, '}');
         }
 
         json_arrayEnd(serial, more);
@@ -517,7 +517,7 @@ void api_send_sample_record(struct Serial *serial,
                                                    cs->sampleData);
                                 break;
                         }
-                        serial_put_c(serial, ',');
+                        serial_write_c(serial, ',');
                 }
         }
 
@@ -525,7 +525,7 @@ void api_send_sample_record(struct Serial *serial,
         for (size_t i = 0; i < channelBitmaskCount; i++) {
                 put_uint(serial, channelBitmask[i]);
                 if (i < channelBitmaskCount - 1)
-                        serial_put_c(serial, ',');
+                        serial_write_c(serial, ',');
         }
 
         json_arrayEnd(serial, 0);
@@ -714,7 +714,7 @@ static void sendAnalogConfig(struct Serial *serial, size_t startIndex, size_t en
         for (size_t b = 0; b < ANALOG_SCALING_BINS; b++) {
             put_float(serial,  adcCfg->scalingMap.rawValues[b], SCALING_MAP_BIN_PRECISION);
             if (b < ANALOG_SCALING_BINS - 1)
-                serial_put_c(serial, ',');
+                serial_write_c(serial, ',');
         }
 
         json_arrayEnd(serial, 1);
@@ -723,7 +723,7 @@ static void sendAnalogConfig(struct Serial *serial, size_t startIndex, size_t en
         for (size_t b = 0; b < ANALOG_SCALING_BINS; b++) {
             put_float(serial, adcCfg->scalingMap.scaledValues[b], DEFAULT_ANALOG_SCALING_PRECISION);
             if (b < ANALOG_SCALING_BINS - 1)
-                serial_put_c(serial, ',');
+                serial_write_c(serial, ',');
         }
 
         json_arrayEnd(serial, 0);
@@ -867,9 +867,9 @@ int api_getLogfile(struct Serial *serial, const jsmntok_t *json)
 {
     json_objStart(serial);
     json_valueStart(serial, "logfile");
-    serial_put_c(serial, '"');
+    serial_write_c(serial, '"');
     read_log_to_serial(serial, 1);
-    serial_put_c(serial, '"');
+    serial_write_c(serial, '"');
     json_objEnd(serial,0);
     return API_SUCCESS_NO_RETURN;
 }
@@ -1893,21 +1893,13 @@ static int get_telemetry_api_return_code(const int cmd_result)
        }
 }
 
-int api_set_telemetry_start(struct Serial *serial, const jsmntok_t *json)
+int api_set_telemetry(struct Serial *serial, const jsmntok_t *json)
 {
-        int sample_rate = 1;
+        int sample_rate = 0;
         jsmn_exists_set_val_int(json, "rate", &sample_rate);
 
-        const int cmd_result =
-                serial_ioctl(serial, SERIAL_IOCTL_TELEMETRY_ENABLE,
-                             (void*) (long) sample_rate);
-        return get_telemetry_api_return_code(cmd_result);
-}
-
-int api_set_telemetry_stop(struct Serial *serial, const jsmntok_t *json)
-{
-        const int cmd_result =
-                serial_ioctl(serial, SERIAL_IOCTL_TELEMETRY_DISABLE, NULL);
+        const int cmd_result = serial_ioctl(serial, SERIAL_IOCTL_TELEMETRY,
+					    (void*) (long) sample_rate);
         return get_telemetry_api_return_code(cmd_result);
 }
 

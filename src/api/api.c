@@ -41,26 +41,26 @@ void initApi()
 
 static void putQuotedStr(struct Serial *serial, const char *str)
 {
-    serial_put_c(serial, '"');
-    serial_put_s(serial, str);
-    serial_put_c(serial, '"');
+    serial_write_c(serial, '"');
+    serial_write_s(serial, str);
+    serial_write_c(serial, '"');
 }
 
 static void putKeyAndColon(struct Serial *serial, const char *key)
 {
     putQuotedStr(serial, key);
-    serial_put_c(serial, ':');
+    serial_write_c(serial, ':');
 }
 
 static void putNull(struct Serial *serial)
 {
-    serial_put_s(serial, "null");
+    serial_write_s(serial, "null");
 }
 
 static void putCommaIfNecessary(struct Serial *serial, int necessary)
 {
     if (necessary)
-        serial_put_c(serial, ',');
+        serial_write_c(serial, ',');
 }
 
 void json_valueStart(struct Serial *serial, const char *name)
@@ -92,9 +92,9 @@ void json_uint(struct Serial *serial, const char *name, unsigned int value, int 
 void json_escapedString(struct Serial *serial, const char *name, const char *value, int more)
 {
     putKeyAndColon(serial, name);
-    serial_put_c(serial, '"');
+    serial_write_c(serial, '"');
     put_escapedString(serial, value, strlen(value));
-    serial_put_c(serial, '"');
+    serial_write_c(serial, '"');
     putCommaIfNecessary(serial, more);
 }
 
@@ -122,32 +122,32 @@ void json_bool(struct Serial *serial, const char *name,
                const bool value, bool more)
 {
     putKeyAndColon(serial, name);
-    serial_put_s(serial, value ? "true" : "false");
+    serial_write_s(serial, value ? "true" : "false");
     putCommaIfNecessary(serial, more);
 }
 
 void json_objStartString(struct Serial *serial, const char *label)
 {
     putKeyAndColon(serial, label);
-    serial_put_c(serial, '{');
+    serial_write_c(serial, '{');
 }
 
 // Call itoa here and use above?
 void json_objStartInt(struct Serial *serial, int label)
 {
-    serial_put_c(serial, '"');
+    serial_write_c(serial, '"');
     put_int(serial, label);
-    serial_put_s(serial, "\":{");
+    serial_write_s(serial, "\":{");
 }
 
 void json_objStart(struct Serial *serial)
 {
-    serial_put_c(serial, '{');
+    serial_write_c(serial, '{');
 }
 
 void json_objEnd(struct Serial *serial, int more)
 {
-    serial_put_c(serial, '}');
+    serial_write_c(serial, '}');
     putCommaIfNecessary(serial, more);
 }
 
@@ -156,7 +156,7 @@ void json_arrayStart(struct Serial *serial, const char * name)
     if (name != NULL)
         putKeyAndColon(serial, name);
 
-    serial_put_c(serial, '[');
+    serial_write_c(serial, '[');
 }
 
 void json_arrayElementString(struct Serial *serial, const char *value, int more)
@@ -179,7 +179,7 @@ void json_arrayElementFloat(struct Serial *serial, float value, int precision, i
 
 void json_arrayEnd(struct Serial *serial, int more)
 {
-    serial_put_c(serial, ']');
+    serial_write_c(serial, ']');
     putCommaIfNecessary(serial, more);
 }
 

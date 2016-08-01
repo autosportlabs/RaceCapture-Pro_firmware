@@ -235,7 +235,7 @@ static int log_print(lua_State *L, bool addNewline)
         if (in_interactive_mode()) {
                 struct Serial *serial = get_command_context()->serial;
                 if (serial) {
-                        serial_put_s(serial, lua_tostring(L,1));
+                        serial_write_s(serial, lua_tostring(L,1));
                         if (addNewline)
                                 put_crlf(serial);
                 }

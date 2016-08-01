@@ -80,10 +80,10 @@ void TestSD(struct Serial *serial, unsigned int argc, char **argv)
 static void print_reset_status(struct Serial *s, const char *msg, const int status)
 {
         char* status_word = status ? "FAILED" : "PASS";
-        serial_put_s(s, msg);
-        serial_put_s(s, ": ");
-        serial_put_s(s, status_word);
-        serial_put_s(s, "\r\n");
+        serial_write_s(s, msg);
+        serial_write_s(s, ": ");
+        serial_write_s(s, status_word);
+        serial_write_s(s, "\r\n");
 }
 
 void ResetConfig(struct Serial *serial, unsigned int argc, char **argv)
@@ -122,26 +122,26 @@ static void StartTerminalSession(struct Serial *fromSerial, struct Serial *toSer
         while (stay) {
                 char c;
                 /* Delay so we don't starve other tasks (like watchdog) */
-                while (serial_get_c_wait(fromSerial, &c, delay_ticks)) {
+                while (0 < serial_read_c_wait(fromSerial, &c, delay_ticks)) {
                         if (c == 27)
                                 stay = false;
 
                         if (localEcho)
-                                serial_put_c(fromSerial, c);
+                                serial_write_c(fromSerial, c);
 
                         if (c == '\r' && localEcho)
-                                serial_put_c(fromSerial, '\n');
+                                serial_write_c(fromSerial, '\n');
 
-                        serial_put_c(toSerial, c);
+                        serial_write_c(toSerial, c);
 
                         if (c == '\r')
-                                serial_put_c(toSerial, '\n');
+                                serial_write_c(toSerial, '\n');
                 }
 
-                while (serial_get_c_wait(toSerial, &c, 0)) {
-                        serial_put_c(fromSerial, c);
+                while (0 < serial_read_c_wait(toSerial, &c, 0)) {
+                        serial_write_c(fromSerial, c);
                         if (c == '\r' && localEcho)
-                                serial_put_c(fromSerial, '\n');
+                                serial_write_c(fromSerial, '\n');
                 }
         }
 }
@@ -153,7 +153,7 @@ void StartTerminal(struct Serial *serial, unsigned int argc, char **argv)
                 return;
         }
 
-        serial_put_s(serial, "Entering Terminal. Press ESC to exit\r\n");
+        serial_write_s(serial, "Entering Terminal. Press ESC to exit\r\n");
 
         uint32_t port = (uint32_t) atoi(argv[1]);
         uint32_t baud = (uint32_t) atoi(argv[2]);
@@ -161,7 +161,7 @@ void StartTerminal(struct Serial *serial, unsigned int argc, char **argv)
 
         struct Serial *targetSerial = serial_device_get(port);
         if (!targetSerial) {
-                serial_put_s(serial, "Requested Serial port is NULL!\r\n");
+                serial_write_s(serial, "Requested Serial port is NULL!\r\n");
                 put_commandError(serial, ERROR_CODE_INVALID_PARAM);
                 return;
         }
@@ -172,7 +172,7 @@ void StartTerminal(struct Serial *serial, unsigned int argc, char **argv)
 
 void ViewLog(struct Serial *serial, unsigned int argc, char **argv)
 {
-    serial_put_s(serial, "Starting logging mode.  Hit \"q\" to exit\r\n");
+    serial_write_s(serial, "Starting logging mode.  Hit \"q\" to exit\r\n");
 
     while(1) {
         // Write log to serial
@@ -180,12 +180,12 @@ void ViewLog(struct Serial *serial, unsigned int argc, char **argv)
 
         // Look for 'q' to exit.
         char c = 0;
-        serial_get_c_wait(serial, &c, msToTicks(5));
+        serial_read_c_wait(serial, &c, msToTicks(5));
         if (c == 'q') break;
     }
 
     // Give a little space when we finish up with log watching.
-    serial_put_s(serial, "\r\n\r\n");
+    serial_write_s(serial, "\r\n\r\n");
     serial_flush(serial);
 }
 
@@ -205,14 +205,14 @@ void SetLogLevel(struct Serial *serial, unsigned int argc, char **argv)
 void LogGpsData(struct Serial *serial, unsigned int argc, char **argv)
 {
     if (argc != 2) {
-        serial_put_s(serial, "Must pass one argument only.  Enter 0 to disable, "
+        serial_write_s(serial, "Must pass one argument only.  Enter 0 to disable, "
                       "or non-zero to enable\r\n");
         put_commandError(serial, ERROR_CODE_INVALID_PARAM);
     } else {
         const bool enable = (argv[1][0] != '0');
         setGpsDataLogging(enable);
-        serial_put_s(serial, enable_str(enable));
-        serial_put_s(serial, " the printing of raw GPS data to the log.\r\n");
+        serial_write_s(serial, enable_str(enable));
+        serial_write_s(serial, " the printing of raw GPS data to the log.\r\n");
         put_commandOK(serial);
     }
 
@@ -222,7 +222,7 @@ void LogGpsData(struct Serial *serial, unsigned int argc, char **argv)
 void SetSerialLog(struct Serial *serial, unsigned int argc, char **argv)
 {
         if (argc != 3) {
-                serial_put_s(serial, "Two arguments required to specify serial port "
+                serial_write_s(serial, "Two arguments required to specify serial port "
                               "and enable/disable option\r\n");
                 put_commandError(serial, ERROR_CODE_INVALID_PARAM);
                 goto done;
@@ -231,7 +231,7 @@ void SetSerialLog(struct Serial *serial, unsigned int argc, char **argv)
         const serial_id_t port = (serial_id_t) atoi(argv[1]);
         struct Serial *s = serial_device_get(port);
         if (port == SERIAL_USB || !s) {
-                serial_put_s(serial, "Invalid serial port.\r\n");
+                serial_write_s(serial, "Invalid serial port.\r\n");
                 put_commandError(serial, ERROR_CODE_INVALID_PARAM);
                 goto done;
         }
@@ -240,10 +240,10 @@ void SetSerialLog(struct Serial *serial, unsigned int argc, char **argv)
         const enum serial_log_type prev = serial_logging(s, lt);
         getWorkingLoggerConfig()->logging_cfg.serial[port] = lt;
 
-        serial_put_s(serial, log_type_str(prev));
-        serial_put_s(serial, " -> ");
-        serial_put_s(serial, log_type_str(lt));
-        serial_put_s(serial, "\r\n");
+        serial_write_s(serial, log_type_str(prev));
+        serial_write_s(serial, " -> ");
+        serial_write_s(serial, log_type_str(lt));
+        serial_write_s(serial, "\r\n");
         put_commandOK(serial);
 
 done:
@@ -253,7 +253,7 @@ done:
 void FlashConfig(struct Serial *serial, unsigned int argc, char **argv)
 {
         const bool success = flashLoggerConfig() == 0;
-        serial_put_s(serial, success ? "Success" : "Failed");
-        serial_put_s(serial, "\r\n");
+        serial_write_s(serial, success ? "Success" : "Failed");
+        serial_write_s(serial, "\r\n");
         put_commandOK(serial);
 }

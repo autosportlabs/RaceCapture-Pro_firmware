@@ -41,6 +41,7 @@
 static volatile struct {
         xQueueHandle event_queue;
         struct Serial* serial;
+	int ls_handle;
         struct {
                 struct rx_buff* buff;
         } rx;
@@ -86,9 +87,8 @@ static bool data_rx_isr_cb()
         return !!hpta;
 }
 
-static void usb_sample_cb(struct Serial* const serial,
-                          const struct sample* sample,
-                          const int tick)
+static void usb_sample_cb(const struct sample* sample,
+                          const int tick, void* data)
 {
         const struct usb_sample_data sample_data = {
                 .sample = sample,
@@ -108,27 +108,34 @@ static void usb_sample_cb(struct Serial* const serial,
 
 /* *** USB Serial IOCTL Handler *** */
 
+static int set_telemetry(int rate)
+{
+	const char* serial_name = serial_get_name(usb_state.serial);
+
+	/* Stop the stream if the rate is <= 0 */
+	if (rate <= 0) {
+		pr_info_str_msg(LOG_PFX "Stopping telem stream on ",
+				serial_name);
+
+		if (!logger_sample_destroy_callback(usb_state.ls_handle))
+			return -2;
+
+		usb_state.ls_handle = -1;
+		return 0;
+	}
+
+	pr_info_str_msg(LOG_PFX "Starting telem stream on ", serial_name);
+	usb_state.ls_handle = logger_sample_create_callback(usb_sample_cb,
+							    rate, NULL);
+	return usb_state.ls_handle < 0 ? -2 : 0;
+}
+
 static int usb_serial_ioctl(struct Serial* serial, unsigned long req,
                             void* argp)
 {
         switch(req) {
-        case SERIAL_IOCTL_TELEMETRY_ENABLE:
-        {
-                pr_info(LOG_PFX "Starting telem stream\r\n");
-                const int rate = (int) (long) argp;
-                const bool success = logger_sample_register_callback(
-                        usb_sample_cb, serial) &&
-                        logger_sample_enable_callback(serial, rate);
-
-                return success ? 0 : -2;
-        }
-        case SERIAL_IOCTL_TELEMETRY_DISABLE:
-        {
-                pr_info(LOG_PFX "Stopping telem stream\r\n");
-                const bool success = logger_sample_disable_callback(serial);
-
-                return success ? 0 : -2;
-        }
+        case SERIAL_IOCTL_TELEMETRY:
+		return set_telemetry((int) (long) argp);
         default:
                 pr_warning_int_msg(LOG_PFX "Unhandled ioctl request: ",
                                    (int) req);

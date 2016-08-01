@@ -311,7 +311,7 @@ static lua_State* setup_lua_state()
 void lua_task_run_interactive_cmd(struct Serial *serial, const char* cmd)
 {
         if (!is_init(false) || !is_runtime_active()) {
-                serial_put_s(serial, "error: LUA not initialized or active.");
+                serial_write_s(serial, "error: LUA not initialized or active.");
                 put_crlf(serial);
                 return;
         }
@@ -319,7 +319,7 @@ void lua_task_run_interactive_cmd(struct Serial *serial, const char* cmd)
         const size_t ticks = msToTicks(LUA_LOCK_WAIT_MS);
         const bool got_lock = get_lock_wait(ticks);
         if (!got_lock) {
-                serial_put_s(serial, "Error: Lua Runtime unresponsive.  "
+                serial_write_s(serial, "Error: Lua Runtime unresponsive.  "
                              "Check script.");
                 put_crlf(serial);
                 return;
@@ -339,9 +339,9 @@ void lua_task_run_interactive_cmd(struct Serial *serial, const char* cmd)
          */
         int result = luaL_loadstring(ls, cmd) || lua_pcall(ls, 0, 0, 0);
         if (0 != result) {
-                serial_put_s(serial, "error: (");
-                serial_put_s(serial, lua_tostring(ls, -1));
-                serial_put_c(serial, ')');
+                serial_write_s(serial, "error: (");
+                serial_write_s(serial, lua_tostring(ls, -1));
+                serial_write_c(serial, ')');
                 put_crlf(serial);
                 lua_pop(ls, 1);
         }

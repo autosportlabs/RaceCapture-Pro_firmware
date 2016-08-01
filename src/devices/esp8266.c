@@ -912,7 +912,7 @@ static bool send_data_cb(struct at_rsp *rsp, void *up)
                         if (!xQueueReceive(q, &c, 0))
                             c = 0;
 
-                        serial_put_c(s, c);
+                        serial_write_c(s, c);
                 }
 
                 return true;
