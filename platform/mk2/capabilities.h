@@ -22,7 +22,7 @@
 #define WIFI_ENABLED_DEFAULT	false
 
 /* Configuration */
-#define MAX_TRACKS	240
+#define MAX_TRACKS	160
 #define MAX_SECTORS	20
 #define MAX_VIRTUAL_CHANNELS	100
 #define LOGGER_MESSAGE_BUFFER_SIZE	10
