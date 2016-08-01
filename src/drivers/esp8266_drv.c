@@ -240,8 +240,7 @@ static bool channel_is_open(struct channel* ch)
 }
 
 /**
- * Called when we close a channel.  If we own the channel, reap it
- * completely to avoid memory leaks.  Else simply close it.
+ * Called when we close a channel.
  */
 static void channel_close(struct channel* ch)
 {
@@ -345,13 +344,17 @@ static void socket_state_changed_cb(const size_t chan_id,
                 pr_info_int_msg(LOG_PFX "Socket connected on channel ",
                                 chan_id);
 
-		channel_setup(chan_id);
-		if (!esp8266_state.comm.new_conn_cb) {
-			pr_error(LOG_PFX "No incomming server callback "
-				 "defined. Data \r\n");
-			return;
-		} else {
+		if (!channel_setup(chan_id)) {
+			/* Close the channel.  Best effort here. */
+			esp8266_close(chan_id, NULL);
+			break;
+		}
+
+		if (esp8266_state.comm.new_conn_cb) {
 			esp8266_state.comm.new_conn_cb(ch->serial);
+		} else {
+			pr_warning(LOG_PFX "No incomming server callback "
+				   "defined. Data \r\n");
 		}
                 break;
         default:
