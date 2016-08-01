@@ -69,6 +69,11 @@
 /* The highest channel WiFi can use (USA) */
 #define WIFI_MAX_CHANNEL	11
 
+struct connection {
+	struct Serial* serial;
+	int ls_handle;
+};
+
 static struct {
         xQueueHandle event_queue;
         struct {
@@ -78,8 +83,20 @@ static struct {
         struct {
                 struct Serial* serial;
         } beacon;
-	struct Serial* connections[EXT_CONN_MAX];
+	struct connection connections[EXT_CONN_MAX];
 } state;
+
+/**
+ * Finds a connection with a given serial device in our state.
+ */
+static struct connection* find_connection(struct Serial* serial)
+{
+	for (int i = 0; i < ARRAY_LEN(state.connections); ++i)
+		if (state.connections[i].serial == serial)
+			return  state.connections + i;
+
+	return NULL;
+}
 
 /* *** All methods that are used to generate events *** */
 
@@ -146,10 +163,12 @@ static void beacon_timer_cb(xTimerHandle xTimer)
 	send_event(&event, "Beacon");
 }
 
-static void wifi_sample_cb(struct Serial* const serial,
-                           const struct sample* sample,
-                           const int tick)
+static void wifi_sample_cb(const struct sample* sample,
+                           const int tick,
+			   void* data)
 {
+	struct Serial* const serial = data;
+
         /*
          * Gotta malloc a small buff b/c stuff to send. We will free this
          * in the event handler below.
@@ -172,36 +191,49 @@ static void wifi_sample_cb(struct Serial* const serial,
 
 /* *** Wifi Serial IOCTL Handlers *** */
 
+static int set_telemetry(struct connection* conn, int rate)
+{
+	const char* serial_name = serial_get_name(conn->serial);
+
+	/* Stop the stream if the rate is <= 0 */
+	if (rate <= 0) {
+		pr_info_str_msg(LOG_PFX "Stopping telem stream on ",
+				serial_name);
+
+		if (!logger_sample_destroy_callback(conn->ls_handle))
+			return -2;
+
+		conn->ls_handle = -1;
+		return 0;
+	}
+
+	pr_info_str_msg(LOG_PFX "Starting telem stream on ", serial_name);
+
+	if (rate > WIFI_MAX_SAMPLE_RATE) {
+		pr_info_int_msg(LOG_PFX "Telemetry stream rate too "
+				"high.  Reducing to ", rate);
+		rate = WIFI_MAX_SAMPLE_RATE;
+	}
+
+	conn->ls_handle = logger_sample_create_callback(wifi_sample_cb,
+							 rate, conn->serial);
+	return conn->ls_handle < 0 ? -2 : 0;
+}
+
 static int wifi_serial_ioctl(struct Serial* serial, unsigned long req,
                              void* argp)
 {
+	struct connection* conn = find_connection(serial);
+	if (!conn) {
+		pr_warning(LOG_PFX "Serial device not under our control\r\n");
+		return -1;
+	}
+
         switch(req) {
-        case SERIAL_IOCTL_TELEMETRY_ENABLE:
-        {
-                pr_info_str_msg(LOG_PFX "Starting telem stream on ",
-                                serial_get_name(serial));
-                int rate = (int) (long) argp;
-                if (rate > WIFI_MAX_SAMPLE_RATE) {
-                        pr_info_int_msg(LOG_PFX "Telemetry stream rate too "
-                                        "high.  Reducing to ", rate);
-                        rate = WIFI_MAX_SAMPLE_RATE;
-                }
-
-                const bool success = logger_sample_register_callback(
-                        wifi_sample_cb, serial) &&
-                        logger_sample_enable_callback(serial, rate);
-
-                return success ? 0 : -2;
-        }
+	case SERIAL_IOCTL_TELEMETRY_ENABLE:
+		return set_telemetry(conn, (int) (long) argp);
         case SERIAL_IOCTL_TELEMETRY_DISABLE:
-        {
-                pr_info_int_msg(LOG_PFX "Stopping telem stream on serial ",
-                                (int) (long) serial);
-
-                const bool success = logger_sample_disable_callback(serial);
-
-                return success ? 0 : -2;
-        }
+		return set_telemetry(conn, 0);
         default:
                 pr_warning_int_msg(LOG_PFX "Unhandled ioctl request: ",
                                    (int) req);
@@ -291,7 +323,8 @@ static void check_connections()
 {
 	bool msg_handled = false;
 	for (int i = 0; i < ARRAY_LEN(state.connections); ++i) {
-		struct Serial* serial = state.connections[i];
+		struct connection* conn = state.connections + i;
+		struct Serial* serial = conn->serial;
 		if (!serial)
 			continue;
 
@@ -299,9 +332,9 @@ static void check_connections()
 		if (!serial_is_connected(serial)) {
 			pr_info_int_msg(LOG_PFX "Closing external "
 					"connection: ", i);
-			state.connections[i] = NULL;
-			logger_sample_disable_callback(serial);
+			set_telemetry(conn, 0);
 			serial_destroy(serial);
+			conn->serial = NULL;
 			continue;
 		}
 
@@ -321,7 +354,8 @@ static void process_new_connection(struct Serial *s)
 {
 	/* Find an empy connection slot.  If none, close it */
 	for (int i = 0; i < ARRAY_LEN(state.connections); ++i) {
-		if (state.connections[i])
+		struct connection* conn = state.connections + i;
+		if (conn->serial)
 			continue;
 
 		/*
@@ -330,7 +364,8 @@ static void process_new_connection(struct Serial *s)
 		 */
 		pr_info_int_msg(LOG_PFX "New external connection: ", i);
 		serial_set_ioctl_cb(s, wifi_serial_ioctl);
-		state.connections[i] = s;
+		conn->serial = s;
+		conn->ls_handle = -1;
 		return;
 	}
 
