@@ -353,7 +353,7 @@ static void socket_state_changed_cb(const size_t chan_id,
 		if (esp8266_state.comm.new_conn_cb) {
 			esp8266_state.comm.new_conn_cb(ch->serial);
 		} else {
-			pr_warning(LOG_PFX "No incomming server callback "
+			pr_warning(LOG_PFX "No incoming server callback "
 				   "defined. Data \r\n");
 		}
                 break;
@@ -1291,10 +1291,12 @@ static void connect_cb(const bool status, const bool already_connected)
         struct channel *ch = esp8266_state.comm.channels + cso->chan_id;
 
         if (already_connected) {
-		pr_info(LOG_PFX "State Mismatch. Channel already connected\r\n");
+		pr_info_int_msg(LOG_PFX "State mismatch. Channel already "
+				"connected: ", cso->chan_id);
                 channel_close(ch);
         } else if (!status) {
-		pr_info(LOG_PFX "Channel failed to connect\r\n");
+		pr_info_int_msg(LOG_PFX "Failed to connect channel: ",
+				cso->chan_id);
 		channel_close(ch);
 	}
 
@@ -1408,7 +1410,7 @@ bool esp8266_drv_close(struct Serial* serial)
         cso->chan_id = channel_find_serial(serial);
         if (cso->chan_id < 0) {
                 pr_warning(LOG_PFX "Unable to find channel with associated "
-                           "Serial device.\r\n");
+                           "serial device.\r\n");
                 goto done;
         }
 
