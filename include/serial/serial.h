@@ -129,8 +129,7 @@ xQueueHandle serial_get_rx_queue(struct Serial *s);
 xQueueHandle serial_get_tx_queue(struct Serial *s);
 
 enum serial_ioctl {
-        SERIAL_IOCTL_TELEMETRY_ENABLE  = 1,
-        SERIAL_IOCTL_TELEMETRY_DISABLE = 2,
+        SERIAL_IOCTL_TELEMETRY = 1,
 };
 
 /**

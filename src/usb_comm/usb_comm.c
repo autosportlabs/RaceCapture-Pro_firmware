@@ -134,10 +134,8 @@ static int usb_serial_ioctl(struct Serial* serial, unsigned long req,
                             void* argp)
 {
         switch(req) {
-        case SERIAL_IOCTL_TELEMETRY_ENABLE:
+        case SERIAL_IOCTL_TELEMETRY:
 		return set_telemetry((int) (long) argp);
-        case SERIAL_IOCTL_TELEMETRY_DISABLE:
-		return set_telemetry(0);
         default:
                 pr_warning_int_msg(LOG_PFX "Unhandled ioctl request: ",
                                    (int) req);

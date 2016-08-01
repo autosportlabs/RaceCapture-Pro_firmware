@@ -1893,21 +1893,13 @@ static int get_telemetry_api_return_code(const int cmd_result)
        }
 }
 
-int api_set_telemetry_start(struct Serial *serial, const jsmntok_t *json)
+int api_set_telemetry(struct Serial *serial, const jsmntok_t *json)
 {
-        int sample_rate = 1;
+        int sample_rate = 0;
         jsmn_exists_set_val_int(json, "rate", &sample_rate);
 
-        const int cmd_result =
-                serial_ioctl(serial, SERIAL_IOCTL_TELEMETRY_ENABLE,
-                             (void*) (long) sample_rate);
-        return get_telemetry_api_return_code(cmd_result);
-}
-
-int api_set_telemetry_stop(struct Serial *serial, const jsmntok_t *json)
-{
-        const int cmd_result =
-                serial_ioctl(serial, SERIAL_IOCTL_TELEMETRY_DISABLE, NULL);
+        const int cmd_result = serial_ioctl(serial, SERIAL_IOCTL_TELEMETRY,
+					    (void*) (long) sample_rate);
         return get_telemetry_api_return_code(cmd_result);
 }
 

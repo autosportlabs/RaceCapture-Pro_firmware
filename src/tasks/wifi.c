@@ -230,10 +230,8 @@ static int wifi_serial_ioctl(struct Serial* serial, unsigned long req,
 	}
 
         switch(req) {
-	case SERIAL_IOCTL_TELEMETRY_ENABLE:
+	case SERIAL_IOCTL_TELEMETRY:
 		return set_telemetry(conn, (int) (long) argp);
-        case SERIAL_IOCTL_TELEMETRY_DISABLE:
-		return set_telemetry(conn, 0);
         default:
                 pr_warning_int_msg(LOG_PFX "Unhandled ioctl request: ",
                                    (int) req);
