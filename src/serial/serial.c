@@ -461,9 +461,13 @@ void serial_set_ioctl_cb(struct Serial *s, serial_ioctl_cb_t* cb)
  * @param req The request to enact.
  * @param argp Memory address that may be useful for these commands.
  */
-int serial_ioctl(struct Serial *s, unsigned long req, void* argp)
+enum serial_ioctl_status serial_ioctl(struct Serial *s,
+				      unsigned long req, void* argp)
 {
-        return s->ioctl_cb ? s->ioctl_cb(s, req, argp) : -1;
+	if(!s->ioctl_cb)
+		return SERIAL_IOCTL_STATUS_UNSUPPORTED;
+
+	return s->ioctl_cb(s, req, argp);
 }
 
 /* STIEG: Replace vsnprintf with vfprintf if you can make a stream */

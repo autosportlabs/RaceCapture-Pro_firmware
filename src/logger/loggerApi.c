@@ -1881,26 +1881,24 @@ int api_get_wifi_cfg(struct Serial *serial, const jsmntok_t *json)
         return API_SUCCESS_NO_RETURN;
 }
 
-static int get_telemetry_api_return_code(const int cmd_result)
-{
-        switch(cmd_result) {
-        case 0:
-                return API_SUCCESS;
-        case -1:
-                return API_ERROR_UNSUPPORTED;
-        default:
-                return API_ERROR_UNSPECIFIED;
-       }
-}
-
 int api_set_telemetry(struct Serial *serial, const jsmntok_t *json)
 {
         int sample_rate = 0;
         jsmn_exists_set_val_int(json, "rate", &sample_rate);
+	void* data = (void*) (long) sample_rate;
 
-        const int cmd_result = serial_ioctl(serial, SERIAL_IOCTL_TELEMETRY,
-					    (void*) (long) sample_rate);
-        return get_telemetry_api_return_code(cmd_result);
+        const enum serial_ioctl_status status =
+		serial_ioctl(serial, SERIAL_IOCTL_TELEMETRY, data);
+
+	switch(status) {
+        case SERIAL_IOCTL_STATUS_OK:
+                return API_SUCCESS;
+        case SERIAL_IOCTL_STATUS_UNSUPPORTED:
+                return API_ERROR_UNSUPPORTED;
+	case SERIAL_IOCTL_STATUS_ERR:
+        default:
+                return API_ERROR_UNSPECIFIED;
+	}
 }
 
 int api_set_active_track(struct Serial *serial, const jsmntok_t *json)

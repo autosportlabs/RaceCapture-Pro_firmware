@@ -191,7 +191,8 @@ static void wifi_sample_cb(const struct sample* sample,
 
 /* *** Wifi Serial IOCTL Handlers *** */
 
-static int set_telemetry(struct connection* conn, int rate)
+static enum serial_ioctl_status set_telemetry(struct connection* conn,
+					      int rate)
 {
 	const char* serial_name = serial_get_name(conn->serial);
 
@@ -201,10 +202,10 @@ static int set_telemetry(struct connection* conn, int rate)
 				serial_name);
 
 		if (!logger_sample_destroy_callback(conn->ls_handle))
-			return -2;
+			return SERIAL_IOCTL_STATUS_ERR;
 
 		conn->ls_handle = -1;
-		return 0;
+		return SERIAL_IOCTL_STATUS_OK;
 	}
 
 	pr_info_str_msg(LOG_PFX "Starting telem stream on ", serial_name);
@@ -216,17 +217,18 @@ static int set_telemetry(struct connection* conn, int rate)
 	}
 
 	conn->ls_handle = logger_sample_create_callback(wifi_sample_cb,
-							 rate, conn->serial);
-	return conn->ls_handle < 0 ? -2 : 0;
+							rate, conn->serial);
+	return conn->ls_handle < 0 ?
+		SERIAL_IOCTL_STATUS_ERR : SERIAL_IOCTL_STATUS_OK;
 }
 
-static int wifi_serial_ioctl(struct Serial* serial, unsigned long req,
-                             void* argp)
+static enum serial_ioctl_status wifi_serial_ioctl(struct Serial* serial,
+						  unsigned long req, void* argp)
 {
 	struct connection* conn = find_connection(serial);
 	if (!conn) {
 		pr_warning(LOG_PFX "Serial device not under our control\r\n");
-		return -1;
+		return SERIAL_IOCTL_STATUS_ERR;
 	}
 
         switch(req) {
@@ -235,7 +237,7 @@ static int wifi_serial_ioctl(struct Serial* serial, unsigned long req,
         default:
                 pr_warning_int_msg(LOG_PFX "Unhandled ioctl request: ",
                                    (int) req);
-                return -1;
+                return SERIAL_IOCTL_STATUS_UNSUPPORTED;
         }
 }
 

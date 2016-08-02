@@ -128,6 +128,13 @@ xQueueHandle serial_get_rx_queue(struct Serial *s);
 
 xQueueHandle serial_get_tx_queue(struct Serial *s);
 
+enum serial_ioctl_status {
+	SERIAL_IOCTL_STATUS_OK = 0,
+	SERIAL_IOCTL_STATUS_ERR = -1,
+	SERIAL_IOCTL_STATUS_UNSUPPORTED	= -2,
+};
+
+
 enum serial_ioctl {
         SERIAL_IOCTL_TELEMETRY = 1,
 };
@@ -135,17 +142,18 @@ enum serial_ioctl {
 /**
  * The call back that gets fired when an ioctl is invoked on a Serial device.
  * @param req The request to be handled.
- * @param argp Memory pointer that may be useful for the command.
+ * @param data Memory pointer that may be useful for the command.
  * @return Usually on success 0 is returned, but this is dependent on the
  * ioctl request.  The return value may be a parameter.  Values < 0 usually
  * indicate an error.
  */
-typedef int serial_ioctl_cb_t(struct Serial *s, unsigned long req,
-                              void* argp);
+typedef enum serial_ioctl_status serial_ioctl_cb_t(struct Serial *s,
+						   unsigned long req, void* data);
 
 void serial_set_ioctl_cb(struct Serial *s, serial_ioctl_cb_t* cb);
 
-int serial_ioctl(struct Serial *s, unsigned long req, void* argp);
+enum serial_ioctl_status serial_ioctl(struct Serial *s,
+				      unsigned long req, void* argp);
 
 const struct serial_cfg* serial_get_config(const struct Serial* s);
 

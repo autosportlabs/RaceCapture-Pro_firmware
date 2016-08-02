@@ -118,20 +118,22 @@ static int set_telemetry(int rate)
 				serial_name);
 
 		if (!logger_sample_destroy_callback(usb_state.ls_handle))
-			return -2;
+			return SERIAL_IOCTL_STATUS_ERR;
 
 		usb_state.ls_handle = -1;
-		return 0;
+		return SERIAL_IOCTL_STATUS_OK;
 	}
 
 	pr_info_str_msg(LOG_PFX "Starting telem stream on ", serial_name);
 	usb_state.ls_handle = logger_sample_create_callback(usb_sample_cb,
 							    rate, NULL);
-	return usb_state.ls_handle < 0 ? -2 : 0;
+	return usb_state.ls_handle < 0 ?
+		SERIAL_IOCTL_STATUS_ERR : SERIAL_IOCTL_STATUS_OK;
 }
 
-static int usb_serial_ioctl(struct Serial* serial, unsigned long req,
-                            void* argp)
+static enum serial_ioctl_status usb_serial_ioctl(struct Serial* serial,
+						 unsigned long req,
+						 void* argp)
 {
         switch(req) {
         case SERIAL_IOCTL_TELEMETRY:
