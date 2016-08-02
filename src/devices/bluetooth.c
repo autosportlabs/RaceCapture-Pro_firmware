@@ -67,7 +67,7 @@ static int sendBtCommandWaitResponse(DeviceConfig *config, const char *cmd,
         delayMs(BT_BACKOFF_MS);
 
         serial_flush(config->serial);
-        if (0 < serial_write_s(config->serial, cmd)) {
+        if (serial_write_s(config->serial, cmd) <= 0) {
 		pr_error("BT: Failed to write serial command\r\n");
 		return 0;
 	};
