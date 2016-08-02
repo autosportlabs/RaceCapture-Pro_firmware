@@ -66,8 +66,6 @@ CPP_GUARD_BEGIN
 	API_METHOD("setLogfileLevel", api_setLogfileLevel)		\
 	API_METHOD("setObd2Cfg", api_setObd2Config)			\
 	API_METHOD("setTelemetry", api_set_telemetry)			\
-	API_METHOD("setTelemetryStart", api_set_telemetry)		\
-	API_METHOD("setTelemetryStop", api_set_telemetry)		\
 	API_METHOD("setTrackCfg", api_setTrackConfig)			\
 	API_METHOD("setWifiCfg", api_set_wifi_cfg)			\
 	API_METHOD("sysReset", api_systemReset)				\
