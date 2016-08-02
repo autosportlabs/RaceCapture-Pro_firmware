@@ -113,7 +113,7 @@ static int set_telemetry(int rate)
 	const char* serial_name = serial_get_name(usb_state.serial);
 
 	/* Stop the stream if the rate is <= 0 */
-	if (rate <= 0) {
+	if (rate <= 0 || usb_state.ls_handle >= 0) {
 		pr_info_str_msg(LOG_PFX "Stopping telem stream on ",
 				serial_name);
 
@@ -121,14 +121,19 @@ static int set_telemetry(int rate)
 			return SERIAL_IOCTL_STATUS_ERR;
 
 		usb_state.ls_handle = -1;
-		return SERIAL_IOCTL_STATUS_OK;
 	}
 
-	pr_info_str_msg(LOG_PFX "Starting telem stream on ", serial_name);
-	usb_state.ls_handle = logger_sample_create_callback(usb_sample_cb,
-							    rate, NULL);
-	return usb_state.ls_handle < 0 ?
-		SERIAL_IOCTL_STATUS_ERR : SERIAL_IOCTL_STATUS_OK;
+	if (rate > 0) {
+		pr_info_str_msg(LOG_PFX "Starting telem stream on ",
+				serial_name);
+		usb_state.ls_handle =
+			logger_sample_create_callback(usb_sample_cb,
+						      rate, NULL);
+		if (usb_state.ls_handle < 0)
+			return SERIAL_IOCTL_STATUS_ERR;
+	}
+
+	return SERIAL_IOCTL_STATUS_OK;
 }
 
 static enum serial_ioctl_status usb_serial_ioctl(struct Serial* serial,
@@ -247,6 +252,7 @@ void startUSBCommTask(int priority)
 
         /* Set the Serial IOCTL handler here b/c this is managing task */
         serial_set_ioctl_cb(usb_state.serial, usb_serial_ioctl);
+	usb_state.ls_handle = -1;
 
         /* Make all task names 16 chars including NULL char */
         static const signed portCHAR task_name[] = "USB Comm Task  ";
