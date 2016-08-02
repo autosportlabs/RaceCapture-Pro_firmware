@@ -98,6 +98,15 @@ static struct connection* find_connection(struct Serial* serial)
 	return NULL;
 }
 
+/**
+ * Resets a given connection back to a sane initial state.
+ */
+static void reset_connection(struct connection* c)
+{
+	c->serial = NULL;
+	c->ls_handle = -1;
+}
+
 /* *** All methods that are used to generate events *** */
 
 /**
@@ -191,42 +200,49 @@ static void wifi_sample_cb(const struct sample* sample,
 
 /* *** Wifi Serial IOCTL Handlers *** */
 
-static int set_telemetry(struct connection* conn, int rate)
+static enum serial_ioctl_status set_telemetry(struct connection* conn,
+					      int rate)
 {
 	const char* serial_name = serial_get_name(conn->serial);
 
-	/* Stop the stream if the rate is <= 0 */
-	if (rate <= 0) {
+	if (rate <= 0 || conn->ls_handle >= 0) {
 		pr_info_str_msg(LOG_PFX "Stopping telem stream on ",
 				serial_name);
 
 		if (!logger_sample_destroy_callback(conn->ls_handle))
-			return -2;
+			return SERIAL_IOCTL_STATUS_ERR;
 
 		conn->ls_handle = -1;
-		return 0;
 	}
 
-	pr_info_str_msg(LOG_PFX "Starting telem stream on ", serial_name);
+	if (rate > 0) {
+		pr_info_str_msg(LOG_PFX "Starting telem stream on ",
+				serial_name);
 
-	if (rate > WIFI_MAX_SAMPLE_RATE) {
-		pr_info_int_msg(LOG_PFX "Telemetry stream rate too "
-				"high.  Reducing to ", rate);
-		rate = WIFI_MAX_SAMPLE_RATE;
+		if (rate > WIFI_MAX_SAMPLE_RATE) {
+			pr_info_int_msg(LOG_PFX "Telemetry stream rate too "
+					"high.  Reducing to ", rate);
+			rate = WIFI_MAX_SAMPLE_RATE;
+		}
+
+		conn->ls_handle =
+			logger_sample_create_callback(wifi_sample_cb,
+						      rate, conn->serial);
+
+		if (conn->ls_handle < 0)
+			return SERIAL_IOCTL_STATUS_ERR;
 	}
 
-	conn->ls_handle = logger_sample_create_callback(wifi_sample_cb,
-							 rate, conn->serial);
-	return conn->ls_handle < 0 ? -2 : 0;
+	return SERIAL_IOCTL_STATUS_OK;
 }
 
-static int wifi_serial_ioctl(struct Serial* serial, unsigned long req,
-                             void* argp)
+static enum serial_ioctl_status wifi_serial_ioctl(struct Serial* serial,
+						  unsigned long req, void* argp)
 {
 	struct connection* conn = find_connection(serial);
 	if (!conn) {
 		pr_warning(LOG_PFX "Serial device not under our control\r\n");
-		return -1;
+		return SERIAL_IOCTL_STATUS_ERR;
 	}
 
         switch(req) {
@@ -235,7 +251,7 @@ static int wifi_serial_ioctl(struct Serial* serial, unsigned long req,
         default:
                 pr_warning_int_msg(LOG_PFX "Unhandled ioctl request: ",
                                    (int) req);
-                return -1;
+                return SERIAL_IOCTL_STATUS_UNSUPPORTED;
         }
 }
 
@@ -332,7 +348,7 @@ static void check_connections()
 					"connection: ", i);
 			set_telemetry(conn, 0);
 			serial_destroy(serial);
-			conn->serial = NULL;
+			reset_connection(conn);
 			continue;
 		}
 
@@ -530,6 +546,10 @@ bool wifi_init_task(const int wifi_task_priority,
 
         if (!esp8266_drv_init(s, wifi_drv_priority, new_ext_conn_cb))
                 return false;
+
+	/* Initialize our connection states */
+	for (int i = 0; i < EXT_CONN_MAX; ++i)
+		reset_connection(state.connections + i);
 
         static const signed char task_name[] = THREAD_NAME;
         const size_t stack_size = STACK_SIZE;
