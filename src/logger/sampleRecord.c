@@ -103,9 +103,5 @@ LoggerMessage create_logger_message(const enum LoggerMessageType t,
         msg.ticks = ticks;
         msg.sample = s;
 
-        /* Set matching timestamps.  Needed for validation */
-        if (s)
-                s->ticks = ticks;
-
         return msg;
 }

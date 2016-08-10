@@ -398,6 +398,7 @@ int populate_sample_buffer(struct sample *s, size_t logTick)
     unsigned short highestRate = SAMPLE_DISABLED;
     ChannelSample *samples = s->channel_samples;
     const size_t count = s->channel_count;
+    s->ticks = logTick;
 
     for (size_t i = 0; i < count; i++, samples++) {
         const unsigned short sampleRate = samples->cfg->sampleRate;
