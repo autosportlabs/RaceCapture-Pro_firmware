@@ -54,6 +54,7 @@ $(HAL_SRC)/cell_device/cell_pwr_btn.c \
 $(HAL_SRC)/cpu_stm32/cpu_device_stm32.c \
 $(HAL_SRC)/fat_sd_stm32/fatfs/diskio.c \
 $(HAL_SRC)/fat_sd_stm32/fatfs/drivers/fatfs_sd_sdio.c \
+$(HAL_SRC)/fat_sd_stm32/fatfs/drivers/stm32_fattime.c \
 $(HAL_SRC)/fat_sd_stm32/fatfs/ff.c \
 $(HAL_SRC)/fat_sd_stm32/fatfs/option/syscall.c \
 $(HAL_SRC)/fat_sd_stm32/fatfs/option/unicode.c \
