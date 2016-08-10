@@ -53,12 +53,13 @@ $(HAL_SRC)/PWM_stm32/PWM_device_stm32.c \
 $(HAL_SRC)/cell_device/cell_pwr_btn.c \
 $(HAL_SRC)/cpu_stm32/cpu_device_stm32.c \
 $(HAL_SRC)/fat_sd_stm32/fatfs/diskio.c \
+$(HAL_SRC)/fat_sd_stm32/fatfs/drivers/fatfs_sd_sdio.c \
 $(HAL_SRC)/fat_sd_stm32/fatfs/ff.c \
-$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_fattime.c \
-$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_ub_atadrive.c \
-$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_ub_sdcard.c \
-$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub/stm32_ub_usbdisk.c \
+$(HAL_SRC)/fat_sd_stm32/fatfs/option/syscall.c \
+$(HAL_SRC)/fat_sd_stm32/fatfs/option/unicode.c \
 $(HAL_SRC)/fat_sd_stm32/sdcard_device_stm32.c \
+$(HAL_SRC)/fat_sd_stm32/tm_stm32f4_fatfs.c \
+$(HAL_SRC)/fat_sd_stm32/tm_stm32f4_gpio.c \
 $(HAL_SRC)/gps_skytraq/gps_device_skytraq.c \
 $(HAL_SRC)/i2c_stm32/i2c_device_stm32.c \
 $(HAL_SRC)/imu_stm32/imu_device_stm32.c \
@@ -165,8 +166,10 @@ APP_OBJS = $(addprefix $(APP_BASE)/, $(APP_SRC:.c=.o))
 # Adds this directory to the global application includes
 APP_INCLUDES += \
 -I$(APP_PATH) \
+-I$(HAL_SRC)/fat_sd_stm32/ \
 -I$(HAL_SRC)/fat_sd_stm32/fatfs \
--I$(HAL_SRC)/fat_sd_stm32/fatfs/lo_level_ub \
+-I$(HAL_SRC)/fat_sd_stm32/fatfs/drivers \
+-I$(HAL_SRC)/fat_sd_stm32/fatfs/option \
 -I$(HAL_SRC)/i2c_stm32 \
 -I$(HAL_SRC)/imu_stm32 \
 -I$(HAL_SRC)/usb_stm32 \
