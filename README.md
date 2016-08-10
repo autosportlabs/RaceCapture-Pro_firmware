@@ -78,6 +78,12 @@ Do the following to setup the MK2 toolchain:
 From the root of the project, simply run `make mk2`.  For a package run
 `make mk2-package`.
 
+When building from the command line, a debug version of the firmware is
+built by default. To disable debug and enable standard optimization,
+prefix the make command with:
+
+RELEASE_TYPE=RELEASE_TYPE_BETA
+
 ## Test
 The Test platform is used to validate and stress test our firmware code.
 While not a real platform per se, its easier to treat it this way.  The
