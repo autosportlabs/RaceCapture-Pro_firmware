@@ -21,11 +21,12 @@
 
 #include "api.h"
 #include "loggerConfig.h"
+#include "macros.h"
 #include "timer_config.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
-#define RPM_CHAN_LABEL	"RPM"
 #define RPM_CHAN_UNITS	"rpm"
 #define RPM_CHAN_MIN	0
 #define RPM_CHAN_MAX	8000
@@ -50,23 +51,24 @@ TimerConfig* get_timer_config(int channel)
 
 void set_default_timer_config(TimerConfig tim_cfg[], const size_t cnt)
 {
-        for (size_t i = 0; i < cnt; ++i) {
-                TimerConfig *tc = tim_cfg + i;
-                set_default_channel_config(&tc->cfg);
-                tc->filterAlpha = TIMER_DEFAULT_FILTER_ALPHA;
-                tc->mode = MODE_LOGGING_TIMER_RPM;
-                tc->pulsePerRevolution = TIMER_DEFAULT_PULSE_PER_REV;
-                tc->timerSpeed = TIMER_MEDIUM;
-                tc->filter_period_us = TIMER_DEFAULT_FILTER;
-                tc->edge = TIMER_DEFAULT_EDGE;
-        }
+	for (int i = 0; i < cnt; ++i) {
+		TimerConfig *tc = tim_cfg + i;
 
-        /* Make Channel 1 the default RPM config. */
-        ChannelConfig *t0cc = &tim_cfg[0].cfg;
-        strcpy(t0cc->label, RPM_CHAN_LABEL);
-        strcpy(t0cc->units, RPM_CHAN_UNITS);
-        t0cc->min = RPM_CHAN_MIN;
-        t0cc->max = RPM_CHAN_MAX;
+		ChannelConfig *tcc = &tc->cfg;
+		set_default_channel_config(tcc);
+		snprintf(tcc->label, ARRAY_LEN(tcc->label),
+			 i ? "RPM%d" : "RPM", i + 1);
+		strcpy(tcc->units, RPM_CHAN_UNITS);
+		tcc->min = RPM_CHAN_MIN;
+		tcc->max = RPM_CHAN_MAX;
+
+		tc->filterAlpha = TIMER_DEFAULT_FILTER_ALPHA;
+		tc->mode = MODE_LOGGING_TIMER_RPM;
+		tc->pulsePerRevolution = TIMER_DEFAULT_PULSE_PER_REV;
+		tc->timerSpeed = TIMER_MEDIUM;
+		tc->filter_period_us = TIMER_DEFAULT_FILTER;
+		tc->edge = TIMER_DEFAULT_EDGE;
+	}
 }
 
 enum timer_edge get_timer_edge_enum(const char *val)

@@ -104,24 +104,24 @@ void LoggerConfigTest::testLoggerInitGpioConfig() {
 }
 
 void LoggerConfigTest::testLoggerInitTimerConfig() {
-        LoggerConfig *lc = getWorkingLoggerConfig();
-        TimerConfig *tc = lc->TimerConfigs;
-        set_default_timer_config(tc, CONFIG_TIMER_CHANNELS);
+	LoggerConfig *lc = getWorkingLoggerConfig();
+	set_default_timer_config(lc->TimerConfigs, CONFIG_TIMER_CHANNELS);
 
-        for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; ++i) {
-                if (0 == i) {
-                        CPPUNIT_ASSERT(strlen(tc[0].cfg.label));
-                } else {
-                        CPPUNIT_ASSERT(!strlen(tc[i].cfg.label));
-                }
+	for (size_t i = 0; i < CONFIG_TIMER_CHANNELS; ++i) {
+		TimerConfig *tc = lc->TimerConfigs + i;
+		char label[8];
+		if (i)
+			snprintf(label, 8, "RPM%d", i + 1);
+		else
+			strcpy(label, "RPM");
 
-                CPPUNIT_ASSERT(tc[i].cfg.sampleRate == SAMPLE_DISABLED);
-        }
 
-        CPPUNIT_ASSERT(!strcmp("RPM", tc[0].cfg.label));
-        CPPUNIT_ASSERT(!strcmp("rpm", tc[0].cfg.units));
-        CPPUNIT_ASSERT_EQUAL((float) 0, tc[0].cfg.min);
-        CPPUNIT_ASSERT_EQUAL((float) 8000, tc[0].cfg.max);
+		CPPUNIT_ASSERT_EQUAL(string(label), string(tc->cfg.label));
+		CPPUNIT_ASSERT_EQUAL(string("rpm"), string(tc->cfg.units));
+		CPPUNIT_ASSERT_EQUAL((float) 0, tc->cfg.min);
+		CPPUNIT_ASSERT_EQUAL((float) 8000, tc->cfg.max);
+		CPPUNIT_ASSERT(tc->cfg.sampleRate == SAMPLE_DISABLED);
+	}
 }
 
 void LoggerConfigTest::testLoggerInitImuConfig() {
