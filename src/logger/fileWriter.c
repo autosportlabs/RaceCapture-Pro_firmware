@@ -39,7 +39,8 @@
 
 #define ERROR_SLEEP_DELAY_MS	500
 #define FILE_BUFFER_SIZE	1024
-#define FILE_WRITER_STACK_SIZE	256
+#define FILE_WRITER_STACK_SIZE	512
+#define LOG_PFX	"[fileWriter] "
 #define MAX_LOG_FILE_INDEX	99999
 #define WRITE_FAIL	EOF
 
@@ -327,7 +328,13 @@ TESTABLE_STATIC int logging_stop(struct logging_status *ls)
 
 static int write_samples(struct logging_status *ls, const LoggerMessage *msg)
 {
-        int rc = 0;
+	/* Ensure the LoggerMessage we are writing is valid */
+	if (!is_sample_data_valid(msg)) {
+		pr_warning(LOG_PFX "Sample invalid.  Skipping...\r\n");
+		return 0;
+	}
+
+	int rc = 0;
 
         /* If we haven't written to this file yet, start with the headers */
         if (0 == ls->rows_written) {

@@ -232,7 +232,7 @@ void loggerTaskEx(void *params)
                 }
 
                 /* Prepare a Sample */
-                struct sample *sample = &g_sample_buffer[bufferIndex];
+                struct sample *sample = g_sample_buffer + bufferIndex;
 
                 /* Check if we need to actually populate the buffer. */
                 const int sampledRate = populate_sample_buffer(sample,

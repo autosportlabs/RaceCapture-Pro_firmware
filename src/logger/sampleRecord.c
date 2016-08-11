@@ -54,6 +54,16 @@ void free_sample_buffer(struct sample *s)
         s->channel_samples = NULL;
 }
 
+/**
+ * Checks to ensure that the LoggerMessage object is pointing to a
+ * usable data_sample structure.  This is needed because while the
+ * LoggerMessages are deeply copied to their respective queues, the
+ * data_sample structures are not (they are a part of a ring buffer).
+ * So we must validate that the timestamp on the LoggerMessage matches
+ * that of the data_sample object.
+ * @param lm The LoggerMessage object.
+ * @return True if the data_sample is usable, false otherwise.
+ */
 bool is_sample_data_valid(const LoggerMessage *lm)
 {
         /* Only validate messages with non-null samples */
@@ -92,10 +102,6 @@ LoggerMessage create_logger_message(const enum LoggerMessageType t,
         msg.type = t;
         msg.ticks = ticks;
         msg.sample = s;
-
-        /* Set matching timestamps.  Needed for validation */
-        if (s)
-                s->ticks = ticks;
 
         return msg;
 }

@@ -19,10 +19,11 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "sdcard_device.h"
-#include "fatfs_sd_sdio.h"
+#ifndef _DEFINES_H_
+#define _DEFINES_H_
 
-void disk_init_hardware(void)
-{
-	SD_Init();
-}
+/* Definitions for the SD Card Handler */
+
+/* See fatfs_sd_sdio.h for info on overrides */
+
+#endif /* _DEFINES_H_ */
