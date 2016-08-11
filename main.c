@@ -105,6 +105,7 @@ void setupTask(void *param)
 #endif
 
         /* Removes this setup task from the scheduler */
+	pr_info("[main] Setup Task complete!\r\n");
         vTaskDelete(NULL);
 }
 

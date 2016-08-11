@@ -1322,15 +1322,15 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         /* Initialize the esp8266 hardware */
         if (!wifi_device_init()) {
             pr_error(LOG_PFX "Failed to init WiFi device\r\n");
-            return false;
+            goto init_failed;
         }
 
         if (esp8266_state.device.serial)
-                return false; /* Already setup */
+                goto init_failed; /* Already setup */
 
         if (!s) {
                 pr_error(LOG_PFX "NULL serial\r\n");
-                return false;
+                goto init_failed;
         }
         esp8266_state.device.serial = s;
 
@@ -1338,7 +1338,7 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
 	esp8266_wait_for_ready(s);
 	if (!esp8266_probe_device(s, WIFI_MAX_BAUD)) {
 		pr_warning(LOG_PFX "Failed to probe WiFi device\r\n");
-		return false;
+		goto init_failed;
 	}
 
         /* Create and setup semaphores for connections */
@@ -1347,7 +1347,7 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
                 init_channel_sync_op(&esp8266_state.comm.close_op);
         if (!init_sync_ops) {
                 pr_error(LOG_PFX "Failed to initialize sync op structs\r\n");
-                return false;
+                goto init_failed;
         }
 
         /* Initialize our WiFi configs here */
@@ -1359,13 +1359,13 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         if (!esp8266_drv_update_client_cfg(cfg) ||
 	    !esp8266_drv_update_ap_cfg(wac)) {
                 pr_error(LOG_PFX "Failed to set WiFi client cfg\r\n");
-                return false;
+                goto init_failed;
         }
 
 	/* Initialize the esp8266 AT subsystem here */
 	if (!esp8266_setup(esp8266_state.device.serial, SERIAL_CMD_MAX_LEN)) {
 		pr_warning(LOG_PFX "Failed to setup WiFi AT subsys\r\n");
-		return false;
+		goto init_failed;
 	}
 
 	/* Setup callback for new connections */
@@ -1382,8 +1382,14 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         const size_t period = msToTicks(LED_PERIOD_MS);
         esp8266_state.led.timer = xTimerCreate(timer_name, period, false,
                                                NULL, led_timer_cb);
+	if (!esp8266_state.led.timer)
+		goto init_failed;
 
-        return !!esp8266_state.led.timer;
+        return true;
+
+init_failed:
+	pr_warning(LOG_PFX "Init failed\r\n");
+	return false;
 }
 
 /**

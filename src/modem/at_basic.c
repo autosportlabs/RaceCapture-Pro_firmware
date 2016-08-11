@@ -80,7 +80,8 @@ bool at_basic_ping(struct Serial* serial, const size_t tries,
  * Probes a Serial port for a device that will respond to the basic
  * AT command.
  * @param Serial The serial device
- * @param bauds A NULL terminated list of baud rates.
+ * @param bauds A list of baud rates to try
+ * @param size The length of the list of baud rates to try.
  * @param tries The number of tries per baud rate before giving up.
  * @param delay_ms The time we wait in ms for a response before giving up.
  * @param msg_bits Serial configuration of # of bits per message
@@ -89,14 +90,14 @@ bool at_basic_ping(struct Serial* serial, const size_t tries,
  * @return The baud rate that the device responded to. 0 if no response.
  */
 int at_basic_probe(struct Serial* serial, const int bauds[],
-		   const size_t tries, const tiny_millis_t delay_ms,
-		   const size_t msg_bits, const size_t parity,
-		   const size_t stop_bits)
+		   const size_t size, const size_t tries,
+		   const tiny_millis_t delay_ms, const size_t msg_bits,
+		   const size_t parity, const size_t stop_bits)
 {
-	for (const int* baud = bauds; bauds && *baud; ++baud) {
-		serial_config(serial, msg_bits, parity, stop_bits, *baud);
+	for (int i = 0; i < size; ++i) {
+		serial_config(serial, msg_bits, parity, stop_bits, bauds[i]);
 		if (at_basic_ping(serial, tries, delay_ms))
-			return *baud;
+			return bauds[i];
 	}
 
 	return 0;

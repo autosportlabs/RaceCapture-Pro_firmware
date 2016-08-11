@@ -1159,8 +1159,9 @@ bool esp8266_set_uart_config_raw(const size_t baud, const size_t bits,
 
 bool esp8266_probe_device(struct Serial* serial, const int fast_baud)
 {
-	const int bauds[] = {ESP8266_SERIAL_DEF_BAUD, fast_baud, 0};
-	return at_basic_probe(serial, bauds, AT_PROBE_TRIES, AT_PROBE_DELAY_MS,
+	const int bauds[] = {fast_baud, ESP8266_SERIAL_DEF_BAUD};
+	return at_basic_probe(serial, bauds, ARRAY_LEN(bauds),
+			      AT_PROBE_TRIES, AT_PROBE_DELAY_MS,
 			      ESP8266_SERIAL_DEF_BITS,
 			      ESP8266_SERIAL_DEF_PARITY,
 			      ESP8266_SERIAL_DEF_STOP);

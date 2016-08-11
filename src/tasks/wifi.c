@@ -562,23 +562,25 @@ bool wifi_init_task(const int wifi_task_priority,
         if (!getWorkingLoggerConfig()->ConnectivityConfigs.wifi.active)
 		return false;
 
+	pr_info(LOG_PFX "Initializing...\r\n");
+
         /* Get our serial port setup */
         struct Serial *s = serial_device_get(SERIAL_WIFI);
         if (!s)
-                return false;
+                goto init_failed;
 
         state.event_queue = xQueueCreate(WIFI_EVENT_QUEUE_DEPTH,
                                          sizeof(struct wifi_event));
         if (!state.event_queue)
-                return false;
+                goto init_failed;
 
         /* Allocate our RX buffer for incomming data */
         state.rx_msgs.rxb = rx_buff_create(RX_MAX_MSG_LEN);
         if (!state.rx_msgs.rxb)
-                return false;
+                goto init_failed;
 
         if (!esp8266_drv_init(s, wifi_drv_priority, new_ext_conn_cb))
-                return false;
+                goto init_failed;
 
 	/* Initialize our connection states */
 	for (int i = 0; i < EXT_CONN_MAX; ++i)
@@ -591,13 +593,17 @@ bool wifi_init_task(const int wifi_task_priority,
 
 	if (!create_periodic_timer("WiFi Beacon Timer", BEACON_PERIOD_MS,
 				   beacon_timer_cb))
-		return false;
+		goto init_failed;
 
 	if (!create_periodic_timer("WiFi Connections Timer",
 				   EXT_CONN_PERIOD_MS, check_connections_cb))
-		return false;
+		goto init_failed;
 
         return true;
+
+init_failed:
+	pr_warning(LOG_PFX "Initialization failed!\r\n");
+	return false;
 }
 
 
