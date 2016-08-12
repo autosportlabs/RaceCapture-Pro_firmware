@@ -1269,14 +1269,13 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         LoggerConfig *lc = getWorkingLoggerConfig();
         const struct wifi_client_cfg *cfg =
                 &lc->ConnectivityConfigs.wifi.client;
-        if (!esp8266_drv_update_client_cfg(cfg)) {
+	const struct wifi_ap_cfg* wac =
+                &lc->ConnectivityConfigs.wifi.ap;
+        if (!esp8266_drv_update_client_cfg(cfg) ||
+	    !esp8266_drv_update_ap_cfg(wac)) {
                 pr_error(LOG_PFX "Failed to set WiFi client cfg\r\n");
                 return false;
         }
-
-        const struct wifi_ap_cfg* wac =
-                &lc->ConnectivityConfigs.wifi.ap;
-        esp8266_drv_update_ap_cfg(wac);
 
 	/* Initialize the esp8266 AT subsystem here */
 	if (!esp8266_setup(esp8266_state.device.serial, SERIAL_CMD_MAX_LEN)) {

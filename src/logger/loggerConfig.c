@@ -180,7 +180,7 @@ static void resetGpioConfig(GPIOConfig cfg[])
 #if IMU_CHANNELS > 0
 static void resetImuConfig(ImuConfig cfg[])
 {
-        const ImuConfig defaults[] = IMU_CONFIG_DEFAULTS;
+        static const ImuConfig defaults[] = IMU_CONFIG_DEFAULTS;
         memcpy(cfg, defaults, sizeof(defaults));
 }
 #endif

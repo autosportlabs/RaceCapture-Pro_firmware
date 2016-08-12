@@ -49,7 +49,6 @@
 #include "usb_comm.h"
 #include "wifi.h"
 #include "watchdog.h"
-
 #include <app_info.h>
 #include <stdbool.h>
 
@@ -70,6 +69,7 @@ static const struct app_info_block info_block = {
 #define RCP_INPUT_PRIORITY	TASK_PRIORITY(3)
 #define RCP_OUTPUT_PRIORITY	TASK_PRIORITY(2)
 #define RCP_LUA_PRIORITY	TASK_PRIORITY(1)
+#define HARDWARE_INIT_STACK_SIZE	192
 
 void setupTask(void *param)
 {
@@ -119,7 +119,7 @@ int main( void )
                 watchdog_init(WATCHDOG_TIMEOUT_MS);
 
         const signed portCHAR task_name[] = "Hardware Init";
-        xTaskCreate(setupTask, task_name, configMINIMAL_STACK_SIZE * 2,
+        xTaskCreate(setupTask, task_name, HARDWARE_INIT_STACK_SIZE,
                     NULL, RCP_LUA_PRIORITY, NULL);
 
         vTaskStartScheduler();

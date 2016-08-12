@@ -83,7 +83,7 @@ void imu_device_init()
 {
         /* Create a lock around the sensor buffers */
         static const signed portCHAR task_name[] = "IMU Reader Task";
-        xTaskCreate(imu_update_task, task_name, configMINIMAL_STACK_SIZE,
+        xTaskCreate(imu_update_task, task_name, configMINIMAL_STACK_SIZE * 2,
                     NULL, IMU_TASK_PRIORITY, NULL);
 }
 

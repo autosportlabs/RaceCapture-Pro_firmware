@@ -19,14 +19,13 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "baseCommands.h"
 #include "command.h"
 #include "constants.h"
 #include "loggerCommands.h"
 #include "luaCommands.h"
-#include <string.h>
 #include "serial.h"
+#include <string.h>
 
 #define SYSTEM_COMMANDS { LOGGER_COMMANDS       \
                           BASE_COMMANDS         \
@@ -34,6 +33,7 @@
                           NULL_COMMAND          \
         }
 
+#define MAX_ARGS	10
 const cmd_t commands[] = SYSTEM_COMMANDS;
 
 const char cmdPrompt[] = COMMAND_PROMPT;
@@ -125,7 +125,7 @@ void show_command_prompt(struct Serial *serial)
 static int execute_command(struct Serial *serial, char *buffer)
 {
     unsigned char argc = 0;
-    char *argv[30];
+    char *argv[MAX_ARGS];
 
     argv[argc] = strtok(buffer, " ");
 

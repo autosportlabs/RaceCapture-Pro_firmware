@@ -44,7 +44,7 @@
 #include "taskUtil.h"
 #include "watchdog.h"
 
-#define LOGGER_STACK_SIZE	200
+#define LOGGER_STACK_SIZE	152
 #define IDLE_TIMEOUT	configTICK_RATE_HZ / 1
 
 #define BACKGROUND_SAMPLE_RATE	SAMPLE_50Hz
