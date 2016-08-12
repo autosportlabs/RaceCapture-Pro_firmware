@@ -322,11 +322,15 @@ static bool process_rx_msg(struct Serial* s)
                         pr_warning(LOG_PFX "Rx message timeout\r\n");
                         goto rx_done;
                 case RX_BUFF_STATUS_READY:
-                case RX_BUFF_STATUS_OVERFLOW:
                         /* A message (possibly partial) awaits us */
                         process_ready_msg(s);
 			msg_handled = true;
                         goto rx_done;
+		case RX_BUFF_STATUS_OVERFLOW:
+			/* Something has gone wrong.  Dump it and move along */
+			pr_warning(LOG_PFX "RX buffer overflow. "
+				   "Dumping and moving on...\r\n");
+			goto rx_done;
                 }
         }
 

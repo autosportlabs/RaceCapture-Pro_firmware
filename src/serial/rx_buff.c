@@ -157,7 +157,7 @@ bool rx_buff_read(struct rx_buff *rxb, struct Serial *s, const bool echo)
 
                 rxb->buff[rxb->idx - 1] = 0;
         } else {
-                pr_warning(LOG_PFX "Overflow!");
+                pr_warning(LOG_PFX "Overflow!\r\n");
                 /* Cap the end so we don't do undefined things */
                 rxb->buff[rxb->cap - 1] = 0;
                 /* Set our idx value to cap + 1 to indicate overflow */
