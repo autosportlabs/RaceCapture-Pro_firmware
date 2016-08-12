@@ -21,6 +21,9 @@
 #define WIFI_MAX_SAMPLE_RATE	50
 #define WIFI_ENABLED_DEFAULT	false
 
+/* Rx Max Message length */
+#define RX_MAX_MSG_LEN	768
+
 /* Configuration */
 #define MAX_TRACKS	160
 #define MAX_SECTORS	20

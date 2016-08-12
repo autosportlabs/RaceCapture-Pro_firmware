@@ -53,6 +53,9 @@
 /* Logging Buffer Size (in 1K Blocks) */
 #define LOG_BUFFER_SIZE	(1024 * 3)
 
+/* Rx Max Message length */
+#define RX_MAX_MSG_LEN	768
+
 //system info
 #define DEVICE_NAME    "RCT"
 #define FRIENDLY_DEVICE_NAME "RaceCapture"

@@ -53,9 +53,9 @@
 #define LOG_PFX			"[ESP8266 Driver] "
 #define MAX_CHANNELS		5
 #define RX_DATA_TIMEOUT_TICKS	1
-#define SERIAL_CMD_MAX_LEN	1024
-#define SERIAL_RX_BUFF_SIZE	SERIAL_CMD_MAX_LEN
-#define SERIAL_TX_BUFF_SIZE	256
+#define SERIAL_BUFF_DEF_RX_SIZE	RX_MAX_MSG_LEN
+#define SERIAL_BUFF_DEF_TX_SIZE	256
+#define SERIAL_CMD_MAX_LEN	(RX_MAX_MSG_LEN + 16)
 #define TASK_STACK_SIZE		256
 #define TASK_THREAD_NAME	"ESP8266 Driver"
 
@@ -271,24 +271,38 @@ static void _tx_char_cb(xQueueHandle queue, void *post_tx_arg)
         cmd_set_check(CHECK_DATA);
 }
 
-static struct channel* channel_setup(const unsigned int i)
+/**
+ * Sets up a channel by allocating a channel and then creating a Serial
+ * device that backs it.
+ * @param index Channel ID/index.
+ * @param rx_size Size of the Rx Buffer
+ * @param tx_size Size of the Tx Buffer
+ * @param pointer to the channel structure that was setup, NULL if failure.
+ */
+static struct channel* channel_setup(const unsigned int index,
+				     size_t rx_size, size_t tx_size)
 {
-        if (!channel_is_valid_id(i))
+        if (!channel_is_valid_id(index))
                 return NULL;
 
-        struct channel* ch = esp8266_state.comm.channels + i;
+        struct channel* ch = esp8266_state.comm.channels + index;
         if (ch->serial) {
 		/* Channel is in use!  Something is wrong */
                 pr_warning_int_msg(LOG_PFX "Setup called on allocated "
-				   "channel ", i);
+				   "channel ", index);
 		pr_warning(LOG_PFX "Closing stale Serial object");
 		channel_close(ch);
 	}
 
-	const char* name = channel_get_name(i);
-        struct Serial *s = serial_create(name, SERIAL_TX_BUFF_SIZE,
-                                         SERIAL_RX_BUFF_SIZE, NULL, NULL,
-                                         _tx_char_cb, ch);
+	if (0 == rx_size)
+		rx_size = SERIAL_BUFF_DEF_RX_SIZE;
+
+	if (0 == tx_size)
+		tx_size = SERIAL_BUFF_DEF_TX_SIZE;
+
+	const char* name = channel_get_name(index);
+        struct Serial *s = serial_create(name, tx_size, rx_size, NULL,
+					 NULL, _tx_char_cb, ch);
 
 	if (!s) {
 		/* Fail state */
@@ -341,7 +355,8 @@ static void socket_state_changed_cb(const size_t chan_id,
                 pr_info_int_msg(LOG_PFX "Socket connected on channel ",
                                 chan_id);
 
-		if (!channel_setup(chan_id)) {
+		/* Use Defaults for rx and tx buff sizes */
+		if (!channel_setup(chan_id, 0, 0)) {
 			/* Close the channel.  Best effort here. */
 			esp8266_close(chan_id, NULL);
 			break;
@@ -1314,11 +1329,15 @@ static void connect_cb(const bool status, const bool already_connected)
  * @param proto The protocol to use.
  * @param addr The destination address (either IP or DNS name).
  * @param port The destination port to connect to.
+ * @param rx_size The size of the Rx buffer. 0 will yeild the default value.
+ * @param tx_size The size of the Tx buffer. 0 will yeild the default value.
  * @return A valid Serial object if a connection was made, NULL otherwise.
  */
 struct Serial* esp8266_drv_connect(const enum protocol proto,
                                    const char* addr,
-                                   const unsigned int port)
+                                   const unsigned int port,
+				   const size_t rx_size,
+				   const size_t tx_size)
 {
         /* This is synchronous code for now */
         struct channel_sync_op *cso = &esp8266_state.comm.connect_op;
@@ -1331,7 +1350,7 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
                 goto done;
         }
 
-        struct channel *ch = channel_setup(cso->chan_id);
+        struct channel *ch = channel_setup(cso->chan_id, rx_size, tx_size);
         if (NULL == ch) {
                 pr_warning(LOG_PFX "Can't allocate resources for channel\r\n");
                 goto done;

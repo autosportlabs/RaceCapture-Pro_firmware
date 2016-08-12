@@ -27,6 +27,7 @@
 #include "dateTime.h"
 #include "esp8266.h"
 #include "esp8266_drv.h"
+#include "net/ipv4.h"
 #include "macros.h"
 #include "messaging.h"
 #include "loggerApi.h"
@@ -48,6 +49,9 @@
 
 /* Time between beacon messages */
 #define BEACON_PERIOD_MS	1000
+#define BEACON_SERIAL_BUFF_RX_SIZE	64
+#define BEACON_SERIAL_BUFF_TX_SIZE	192
+
 /* Time between checks of our connections. */
 #define EXT_CONN_PERIOD_MS	5
 /* Maximum number of external connections we will manage */
@@ -58,8 +62,6 @@
 #define READ_DELAY_MS		1
 /* How long to wait before giving up on the message */
 #define READ_TIMEOUT_MS		100
-/* Max size of an incomming message */
-#define RX_BUFF_SIZE		512
 /* How much stack does this task deserve */
 #define STACK_SIZE		256
 /* Make all task names 16 chars including NULL char */
@@ -449,8 +451,11 @@ static void do_beacon()
          */
         if (NULL == state.beacon.serial) {
                 state.beacon.serial =
-                        esp8266_drv_connect(PROTOCOL_UDP, "255.255.255.255",
-                                            RCP_SERVICE_PORT);
+                        esp8266_drv_connect(PROTOCOL_UDP,
+					    IPV4_BROADCAST_ADDRESS_STR,
+                                            RCP_SERVICE_PORT,
+					    BEACON_SERIAL_BUFF_RX_SIZE,
+					    BEACON_SERIAL_BUFF_TX_SIZE);
         }
 
         struct Serial* serial = state.beacon.serial;
@@ -556,7 +561,7 @@ bool wifi_init_task(const int wifi_task_priority,
                 return false;
 
         /* Allocate our RX buffer for incomming data */
-        state.rx_msgs.rxb = rx_buff_create(RX_BUFF_SIZE);
+        state.rx_msgs.rxb = rx_buff_create(RX_MAX_MSG_LEN);
         if (!state.rx_msgs.rxb)
                 return false;
 

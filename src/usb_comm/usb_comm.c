@@ -34,7 +34,6 @@
 #include <string.h>
 
 #define LOG_PFX			"[USB] "
-#define RX_BUFF_SIZE		1024
 #define USB_COMM_STACK_SIZE	320
 #define USB_EVENT_QUEUE_DEPTH	8
 
@@ -237,7 +236,7 @@ void startUSBCommTask(int priority)
         USB_CDC_device_init(priority, data_rx_isr_cb);
 
         /* Allocate our RX buffer for incomming data */
-        usb_state.rx.buff = rx_buff_create(RX_BUFF_SIZE);
+        usb_state.rx.buff = rx_buff_create(RX_MAX_MSG_LEN);
         if (!usb_state.rx.buff)
                 goto init_fail;
 
