@@ -84,6 +84,7 @@ static struct {
                 struct Serial* serial;
         } beacon;
 	struct connection connections[EXT_CONN_MAX];
+	bool conn_check_pending;
 } state;
 
 /**
@@ -135,10 +136,13 @@ struct wifi_event {
         } data;
 };
 
-static void send_event(struct wifi_event* event, const char* event_name)
+static bool send_event(struct wifi_event* event, const char* event_name)
 {
-	if (!xQueueSend(state.event_queue, event, 0))
-		pr_warning_str_msg(LOG_PFX "Event overflow: ", event_name);
+	if (xQueueSend(state.event_queue, event, 0))
+		return true;
+
+	pr_warning_str_msg(LOG_PFX "Event overflow: ", event_name);
+	return false;
 }
 
 static void new_ext_conn_cb(struct Serial *s)
@@ -154,12 +158,16 @@ static void new_ext_conn_cb(struct Serial *s)
 
 static void check_connections_cb(xTimerHandle xTimer)
 {
+	if (state.conn_check_pending)
+		return;
+
 	/* Send event message here to wake the task */
         struct wifi_event event = {
                 .task = TASK_CHECK_CONNECTIONS,
         };
 
-	send_event(&event, "Connection Check");
+	if (send_event(&event, "Connection Check"))
+		state.conn_check_pending = true;
 }
 
 static void beacon_timer_cb(xTimerHandle xTimer)
@@ -335,6 +343,8 @@ rx_done:
  */
 static void check_connections()
 {
+	state.conn_check_pending = false;
+
 	bool msg_handled = false;
 	for (int i = 0; i < ARRAY_LEN(state.connections); ++i) {
 		struct connection* conn = state.connections + i;
