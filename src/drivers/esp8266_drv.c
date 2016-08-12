@@ -95,7 +95,6 @@ struct server {
 
 struct channel {
         struct Serial *serial;
-        size_t tx_chars_buffered;
 };
 
 struct channel_sync_op {
@@ -269,8 +268,6 @@ static const char* channel_get_name(const size_t chan_id)
 
 static void _tx_char_cb(xQueueHandle queue, void *post_tx_arg)
 {
-        struct channel *ch = post_tx_arg;
-        ++ch->tx_chars_buffered;
         cmd_set_check(CHECK_DATA);
 }
 
@@ -408,57 +405,52 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
 static void _send_data_cb(const bool status, const size_t bytes,
 			  const int chan)
 {
-        cmd_completed();
-        cmd_set_check(CHECK_DATA);
+	cmd_completed();
+	cmd_set_check(CHECK_DATA);
 
-        if (!status) {
-                pr_warning_int_msg(LOG_PFX "Failed to send data on "
+	if (!status) {
+		pr_warning_int_msg(LOG_PFX "Failed to send data on "
 				   "channel ", chan);
 		return;
 	}
-
-	struct channel *ch = esp8266_state.comm.channels + chan;
-	ch->tx_chars_buffered -= bytes;
 }
 
 /**
- * Method that processes outgoing data if any.  If there is, this
+ * Method that processes outgoing data if any.	If there is, this
  * will start a command.
  */
 static void check_data()
 {
-        cmd_check_complete(CHECK_DATA);
+	cmd_check_complete(CHECK_DATA);
 
-        for (size_t i = 0; i < ARRAY_LEN(esp8266_state.comm.channels); ++i) {
-                struct channel *ch = esp8266_state.comm.channels + i;
-                const size_t size = ch->tx_chars_buffered;
+	for (size_t i = 0; i < ARRAY_LEN(esp8266_state.comm.channels); ++i) {
+		struct channel *ch = esp8266_state.comm.channels + i;
 		struct Serial* serial = ch->serial;
 
-                /* If the size is 0, nothing to send */
-                if (0 == size)
-                        continue;
+		/*
+		 * Check if connection is still active.	 If not then
+		 * there is nothing for us to do.
+		 */
+		if (!serial_is_connected(serial))
+			continue;
 
-                /*
-                 * If here, then we have data to send.  Check that the
-                 * connection is still active.  If not, clear our count
-		 * and be done.
-                 */
-		if (!serial_is_connected(ch->serial)) {
-                        ch->tx_chars_buffered = 0;
-                        continue;
-                }
+		/* If the size is 0, nothing to send */
+		xQueueHandle q = serial_get_tx_queue(ch->serial);
+		const size_t size = uxQueueMessagesWaiting(q);
+		if (0 == size)
+			continue;
 
-                /* If here, we have a connection and data to send. Do Eet! */
-                if (!esp8266_send_data(i, serial, size, _send_data_cb)) {
-                        pr_warning(LOG_PFX "Failed to queue send "
-                                   "data command!!!\r\n");
-                        /* We will retry */
-                        return;
-                }
+		/* If here, we have a connection and data to send. Do Eet! */
+		if (!esp8266_send_data(i, serial, size, _send_data_cb)) {
+			pr_warning(LOG_PFX "Failed to queue send "
+				   "data command!!!\r\n");
+			/* We will retry */
+			return;
+		}
 
-                cmd_started();
-                return;
-        }
+		cmd_started();
+		return;
+	}
 }
 
 /**
