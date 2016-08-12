@@ -57,7 +57,7 @@
 /* How long to wait between polling our incomming msg Serial */
 #define READ_DELAY_MS		1
 /* How long to wait before giving up on the message */
-#define READ_TIMEOUT_MS		20
+#define READ_TIMEOUT_MS		100
 /* Max size of an incomming message */
 #define RX_BUFF_SIZE		512
 /* How much stack does this task deserve */
