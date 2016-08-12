@@ -937,7 +937,6 @@ static bool send_data_cb(struct at_rsp *rsp, void *up)
         default:
                 /* Then bad things happened */
                 cmd_failure("send_data_cb", "Bad response value");
-                status = -1;
                 goto fini;
         }
 

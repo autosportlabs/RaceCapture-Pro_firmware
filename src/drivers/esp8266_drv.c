@@ -411,6 +411,14 @@ static void _send_data_cb(const bool status, const size_t bytes,
 	if (!status) {
 		pr_warning_int_msg(LOG_PFX "Failed to send data on "
 				   "channel ", chan);
+
+		/*
+		 * Hack: Close channel when error b/c we have lost data.
+		 * Issue #807
+		 */
+		struct channel *ch = esp8266_state.comm.channels + chan;
+		channel_close(ch);
+
 		return;
 	}
 }
@@ -431,7 +439,7 @@ static void check_data()
 		 * Check if connection is still active.	 If not then
 		 * there is nothing for us to do.
 		 */
-		if (!serial_is_connected(serial))
+		if (!serial || !serial_is_connected(serial))
 			continue;
 
 		/* If the size is 0, nothing to send */

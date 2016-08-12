@@ -358,8 +358,9 @@ static void check_connections()
 
 		/* Check if serial is closed.  If so, handle it */
 		if (!serial_is_connected(serial)) {
-			pr_info_int_msg(LOG_PFX "Closing external "
-					"connection: ", i);
+			pr_info_str_msg(
+				LOG_PFX "Closing external connection: ",
+				serial_get_name(serial));
 			set_telemetry(conn, 0);
 			serial_destroy(serial);
 			reset_connection(conn);
@@ -390,7 +391,8 @@ static void process_new_connection(struct Serial *s)
 		 * If here, found slot. Set the serial IOCTL handler here
 		 * b/c this is managing task
 		 */
-		pr_info_int_msg(LOG_PFX "New external connection: ", i);
+		pr_info_str_msg(LOG_PFX "New external connection: ",
+				serial_get_name(s));
 		serial_set_ioctl_cb(s, wifi_serial_ioctl);
 		conn->serial = s;
 		conn->ls_handle = -1;
