@@ -405,14 +405,20 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
 /**
  * Callback that is invoked when the send_data method completes.
  */
-static void _send_data_cb(int bytes_sent)
+static void _send_data_cb(const bool status, const size_t bytes,
+			  const int chan)
 {
         cmd_completed();
         cmd_set_check(CHECK_DATA);
 
-        if (bytes_sent < 0)
-                /* STIEG: Include channel info here somehow */
-                pr_warning(LOG_PFX "Failed to send data\r\n");
+        if (!status) {
+                pr_warning_int_msg(LOG_PFX "Failed to send data on "
+				   "channel ", chan);
+		return;
+	}
+
+	struct channel *ch = esp8266_state.comm.channels + chan;
+	ch->tx_chars_buffered -= bytes;
 }
 
 /**
@@ -451,7 +457,6 @@ static void check_data()
                 }
 
                 cmd_started();
-                ch->tx_chars_buffered = 0;
                 return;
         }
 }

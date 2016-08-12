@@ -38,6 +38,7 @@
 
 #define AT_PROBE_TRIES		3
 #define AT_PROBE_DELAY_MS	200
+#define LOG_PFX	"[esp8266] "
 #define _AT_CMD_DELIM		"\r\n"
 #define _AT_DEFAULT_QP_MS	250
 #define _AT_QP_PRE_INIT_MS	500
@@ -68,7 +69,7 @@ static struct {
 
 static void cmd_failure(const char *cmd_name, const char *msg)
 {
-        pr_warning("[esp8266] ");
+        pr_warning(LOG_PFX);
         pr_warning(cmd_name);
         if (msg) {
                 pr_info_str_msg(" failed with msg: ", msg);
@@ -180,7 +181,7 @@ static void init_complete(const bool success)
 	state.init.cb = NULL;
 
 	if (success) {
-		pr_info("[esp8266] Initialized\r\n");
+		pr_info(LOG_PFX "Initialized\r\n");
 		state.init.state = DEV_INIT_STATE_READY;
 	} else {
 		state.init.state = DEV_INIT_STATE_FAILED;
@@ -216,7 +217,7 @@ static bool init_get_version_cb(struct at_rsp *rsp, void *up)
          *
          * Print for now beacuse I am lazy
          */
-        pr_info("[esp8266] Version info:\r\n");
+        pr_info(LOG_PFX "Version info:\r\n");
         for (size_t i = 0; i < rsp->msg_count - 1; ++i)
                 pr_info_str_msg("\t", rsp->msgs[i]);
 
@@ -429,7 +430,7 @@ static bool read_op_mode_cb(struct at_rsp *rsp, void *up)
 
         /* If here, parse the number.  It should match our enum*/
         const int val = atoi(toks[1]);
-        pr_debug_int_msg("[esp8266] op mode: ", val);
+        pr_debug_int_msg(LOG_PFX "OP mode: ", val);
         mode = (enum esp8266_op_mode) val;
 
         /* When we get here, we are done processing the reply*/
@@ -497,7 +498,7 @@ bool esp8266_join_ap(const char* ssid, const char* pass, void (*cb)(bool))
 
 void esp8266_log_client_info(const struct esp8266_client_info *info)
 {
-        pr_info("[esp8266] WiFi Client info:\r\n");
+        pr_info(LOG_PFX "WiFi Client info:\r\n");
         const bool connected = info->has_ap;
         const char* conn_str = connected ? "Connected" : "Disconnected";
         pr_info_str_msg("\tStatus: ", conn_str);
@@ -871,7 +872,9 @@ bool esp8266_close(const int chan_id, esp8266_close_cb_t* cb)
 struct tx_info {
         struct Serial *serial;
         size_t len;
-        void (*cb)(int);
+	size_t sent;
+	int chan_id;
+        esp8266_send_data_cb_t* cb;
 };
 
 /**
@@ -889,10 +892,10 @@ struct tx_info {
 static bool send_data_cb(struct at_rsp *rsp, void *up)
 {
         struct tx_info *ti = up;
-        int status = -1;
+        bool status = false;
 
         switch(rsp->status) {
-        case AT_RSP_STATUS_OK:
+        case AT_RSP_STATUS_OK: {
                 /*
                  * If here, then we are ready to send.  We copy straight from
                  * the given pointer instead of copying the message to the
@@ -903,22 +906,33 @@ static bool send_data_cb(struct at_rsp *rsp, void *up)
                  * true at the end of this method to indicate to the AT command
                  * state machine that there is still more data to come from this
                  * command.
+		 *
+		 * TODO: Make this non-destructive if the send failed. We should
+		 * be able to peek at all items on the queue and not remove them
+		 * until the send operation was successful. Issue #807
                  */
-                ; /* Silly C legacy issues */
                 struct Serial *s = state.ati->sb->serial;
                 xQueueHandle q = serial_get_tx_queue(ti->serial);
-                char c;
-                for (size_t i = 0; i < ti->len; ++i) {
-                        if (!xQueueReceive(q, &c, 0))
-                            c = 0;
+		bool underrun = false;
+
+                for (; ti->sent < ti->len; ++ti->sent) {
+			char c;
+                        if (!xQueueReceive(q, &c, 0)) {
+				underrun = true;
+				c = 0xEF; /* Invalid UTF-8 Byte */
+			}
 
                         serial_write_c(s, c);
                 }
 
+		if (underrun)
+			pr_error(LOG_PFX "BUG: Tx underrun!\r\n");
+
                 return true;
+	}
         case AT_RSP_STATUS_SEND_OK:
                 /* Then we have successfully sent the message */
-                status = ti->len;
+		status = true;
                 goto fini;
         default:
                 /* Then bad things happened */
@@ -929,7 +943,7 @@ static bool send_data_cb(struct at_rsp *rsp, void *up)
 
 fini:
         if (ti->cb)
-                ti->cb(status);
+                ti->cb(status, ti->sent, ti->chan_id);
 
         portFree(ti);
         return false;
@@ -940,7 +954,7 @@ fini:
  * @param cb The callback to be invoked when the method completes.
  */
 bool esp8266_send_data(const int chan_id, struct Serial *serial,
-                       const size_t len, void (*cb)(int))
+                       const size_t len, esp8266_send_data_cb_t* cb)
 {
         const char* cmd_name = "send_data";
         if (!check_initialized(cmd_name))
@@ -958,7 +972,7 @@ bool esp8266_send_data(const int chan_id, struct Serial *serial,
          * end of the command in the send_data_cb above when the command
          * is done.
          */
-        struct tx_info *ti = portMalloc(sizeof(struct tx_info));
+        struct tx_info *ti = calloc(sizeof(struct tx_info), 1);
         if (!ti) {
                 /* Malloc failure.  Le-sigh */
                 cmd_failure(cmd_name, "Malloc failed for send procedure.");
@@ -968,6 +982,7 @@ bool esp8266_send_data(const int chan_id, struct Serial *serial,
         ti->serial = serial;
         ti->len = len;
         ti->cb = cb;
+	ti->chan_id = chan_id;
 
         char cmd[32];
         snprintf(cmd, ARRAY_LEN(cmd),"AT+CIPSEND=%d,%d", chan_id, (int) len);
