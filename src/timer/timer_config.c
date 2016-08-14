@@ -51,7 +51,7 @@ TimerConfig* get_timer_config(int channel)
 
 void set_default_timer_config(TimerConfig tim_cfg[], const size_t cnt)
 {
-	for (int i = 0; i < cnt; ++i) {
+	for (unsigned int i = 0; i < cnt; ++i) {
 		TimerConfig *tc = tim_cfg + i;
 
 		ChannelConfig *tcc = &tc->cfg;
