@@ -121,14 +121,6 @@ LoggerMessage create_logger_message(const enum LoggerMessageType t,
                                     const size_t ticks, struct sample *s);
 
 /**
- * Tests if the given LoggerMessage points to valid data by comparing
- * timestamps.
- * @param lm The LoggerMessage to validate
- * @return true if valid, false otherwise
- */
-bool is_sample_data_valid(const LoggerMessage *lm);
-
-/**
  * Receives and validates a LoggerMessage from the provided queue.  If the
  * LoggerMessage is invalid, then it is ignored.
  * @param queue The Queue containing the message
@@ -140,16 +132,7 @@ bool is_sample_data_valid(const LoggerMessage *lm);
 char receive_logger_message(xQueueHandle queue, LoggerMessage *lm,
                             portTickType timeout);
 
-/**
- * Checks to ensure that the LoggerMessage object is pointing to a usable
- * data_sample structure.  This is needed because while the LoggerMessages are
- * deeply copied to their respective queues, the data_sample structures are not
- * (they are a part of a ring buffer).  So we must validate that the timestamp
- * on the LoggerMessage matches that of the data_sample object.
- * @param lm The LoggerMessage object.
- * @return True if the data_sample is usable, false otherwise.
- */
-bool is_data_sample_valid(const LoggerMessage *lm);
+bool is_sample_data_valid(const LoggerMessage *lm);
 
 /**
  * Creates a brand new LoggerMessage queue.  This is useful for sending

@@ -45,6 +45,7 @@
 #include "task.h"
 #include "task_testing.h"
 #include "units.h"
+#include "versionInfo.h"
 #include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1335,56 +1336,87 @@ void LoggerApiTest::testGetVersion(){
 	stringToJson(response, json);
 
 	CPPUNIT_ASSERT_EQUAL(string(DEVICE_NAME), (string)(String)json["ver"]["name"]);
+	CPPUNIT_ASSERT_EQUAL(string(FRIENDLY_DEVICE_NAME),
+			     (string)(String)json["ver"]["fname"]);
 	CPPUNIT_ASSERT_EQUAL(MAJOR_REV, (int)(Number)json["ver"]["major"]);
 	CPPUNIT_ASSERT_EQUAL(MINOR_REV, (int)(Number)json["ver"]["minor"]);
 	CPPUNIT_ASSERT_EQUAL(BUGFIX_REV, (int)(Number)json["ver"]["bugfix"]);
-	CPPUNIT_ASSERT_EQUAL(string(cpu_get_serialnumber()), (string)(String)json["ver"]["serial"]);
-        CPPUNIT_ASSERT(((string)(String)json["ver"]["git_info"]).size());
-        CPPUNIT_ASSERT(((string)(String)json["ver"]["release_type"]).size());
+	CPPUNIT_ASSERT_EQUAL(string(cpu_get_serialnumber()),
+			     (string)(String)json["ver"]["serial"]);
+        CPPUNIT_ASSERT_EQUAL(string(version_git_description()),
+			     (string)(String)json["ver"]["git_info"]);
+
+	const enum release_type rt = version_get_release_type();
+        CPPUNIT_ASSERT_EQUAL(string(version_release_type_api_key(rt)),
+			     (string)(String)json["ver"]["release_type"]);
 }
 
 void LoggerApiTest::testGetStatus(){
 	set_ticks(3);
         lapstats_reset();
 
-    const char *response = processApiGeneric("getStatus1.json");
-    Object json;
-    stringToJson(response, json);
+	const char *response = processApiGeneric("getStatus1.json");
+	Object json;
+	stringToJson(response, json);
 
-    CPPUNIT_ASSERT_EQUAL(string(FRIENDLY_DEVICE_NAME), (string)(String)json["status"]["system"]["model"]);
-    CPPUNIT_ASSERT_EQUAL(MAJOR_REV, (int)(Number)json["status"]["system"]["ver_major"]);
-    CPPUNIT_ASSERT_EQUAL(MINOR_REV, (int)(Number)json["status"]["system"]["ver_minor"]);
-    CPPUNIT_ASSERT_EQUAL(BUGFIX_REV, (int)(Number)json["status"]["system"]["ver_bugfix"]);
-    CPPUNIT_ASSERT_EQUAL(string(cpu_get_serialnumber()), (string)(String)json["status"]["system"]["serial"]);
-    CPPUNIT_ASSERT(((string)(String)json["status"]["system"]["git_info"]).size());
-    CPPUNIT_ASSERT(((string)(String)json["status"]["system"]["release_type"]).size());
-    CPPUNIT_ASSERT_EQUAL(15, (int)(Number)json["status"]["system"]["uptime"]);
+	CPPUNIT_ASSERT_EQUAL(string(FRIENDLY_DEVICE_NAME),
+			     (string)(String)json["status"]["system"]["model"]);
 
-    CPPUNIT_ASSERT_EQUAL((int)GPS_STATUS_PROVISIONED, (int)(Number)json["status"]["GPS"]["init"]);
-    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["GPS"]["qual"]);
-    CPPUNIT_ASSERT_EQUAL(0.0f, (float)(Number)json["status"]["GPS"]["lat"]);
-    CPPUNIT_ASSERT_EQUAL(0.0f, (float)(Number)json["status"]["GPS"]["lon"]);
-    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["GPS"]["sats"]);
-    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["GPS"]["DOP"]);
+	Object sys_obj = json["status"]["system"];
+	CPPUNIT_ASSERT_EQUAL(MAJOR_REV, (int)(Number)sys_obj["ver_major"]);
+	CPPUNIT_ASSERT_EQUAL(MINOR_REV, (int)(Number)sys_obj["ver_minor"]);
+	CPPUNIT_ASSERT_EQUAL(BUGFIX_REV, (int)(Number)sys_obj["ver_bugfix"]);
+	CPPUNIT_ASSERT_EQUAL(string(cpu_get_serialnumber()),
+			     (string)(String)sys_obj["serial"]);
+	CPPUNIT_ASSERT_EQUAL(string(version_git_description()),
+			     (string)(String)sys_obj["git_info"]);
 
-    CPPUNIT_ASSERT_EQUAL((int) CELLULAR_NETWORK_STATUS_UNKNOWN,
-                         (int)(Number)json["status"]["cell"]["init"]);
-    CPPUNIT_ASSERT_EQUAL(string(""), (string)(String)json["status"]["cell"]["IMEI"]);
-    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["cell"]["sig_str"]);
-    CPPUNIT_ASSERT_EQUAL(string(""), (string)(String)json["status"]["cell"]["number"]);
+	const enum release_type rt = version_get_release_type();
+	CPPUNIT_ASSERT_EQUAL(string(version_release_type_api_key(rt)),
+			     (string)(String)sys_obj["release_type"]);
 
-    CPPUNIT_ASSERT_EQUAL((int)BT_STATUS_NOT_INIT, (int)(Number)json["status"]["bt"]["init"]);
+	CPPUNIT_ASSERT_EQUAL(15, (int)(Number)sys_obj["uptime"]);
 
-    CPPUNIT_ASSERT_EQUAL((int)LOGGING_STATUS_IDLE, (int)(Number)json["status"]["logging"]["status"]);
-    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["logging"]["started"]);
+	Object gps_obj = json["status"]["GPS"];
+	CPPUNIT_ASSERT_EQUAL((int)GPS_STATUS_PROVISIONED,
+			     (int)(Number)gps_obj["init"]);
+	CPPUNIT_ASSERT_EQUAL(0, (int)(Number)gps_obj["qual"]);
+	CPPUNIT_ASSERT_EQUAL(0.0f, (float)(Number)gps_obj["lat"]);
+	CPPUNIT_ASSERT_EQUAL(0.0f, (float)(Number)gps_obj["lon"]);
+	CPPUNIT_ASSERT_EQUAL(0, (int)(Number)gps_obj["sats"]);
+	CPPUNIT_ASSERT_EQUAL(0, (int)(Number)gps_obj["DOP"]);
 
-    CPPUNIT_ASSERT_EQUAL((int)TRACK_STATUS_WAITING_TO_CONFIG, (int)(Number)json["status"]["track"]["status"]);
-    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["track"]["trackId"]);
-    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["track"]["armed"]);
-    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["track"]["inLap"]);
+	Object cell_obj = json["status"]["cell"];
+	CPPUNIT_ASSERT_EQUAL((int) CELLULAR_NETWORK_STATUS_UNKNOWN,
+			     (int)(Number)cell_obj["init"]);
+	CPPUNIT_ASSERT_EQUAL(string(""),
+			     (string)(String)cell_obj["IMEI"]);
+	CPPUNIT_ASSERT_EQUAL(0, (int)(Number)cell_obj["sig_str"]);
+	CPPUNIT_ASSERT_EQUAL(string(""), (string)(String)cell_obj["number"]);
 
-    CPPUNIT_ASSERT_EQUAL((int)TELEMETRY_STATUS_IDLE, (int)(Number)json["status"]["telemetry"]["status"]);
-    CPPUNIT_ASSERT_EQUAL(0, (int)(Number)json["status"]["telemetry"]["started"]);
+
+	Object bt_obj = json["status"]["bt"];
+	CPPUNIT_ASSERT_EQUAL((int)BT_STATUS_NOT_INIT,
+			     (int)(Number)bt_obj["init"]);
+
+
+	Object logging_obj = json["status"]["logging"];
+	CPPUNIT_ASSERT_EQUAL((int)LOGGING_STATUS_IDLE,
+			     (int)(Number)logging_obj["status"]);
+	CPPUNIT_ASSERT_EQUAL(0, (int)(Number)logging_obj["started"]);
+
+
+	Object track_obj = json["status"]["track"];
+	CPPUNIT_ASSERT_EQUAL((int)TRACK_STATUS_WAITING_TO_CONFIG,
+			     (int)(Number)track_obj["status"]);
+	CPPUNIT_ASSERT_EQUAL(0, (int)(Number)track_obj["trackId"]);
+	CPPUNIT_ASSERT_EQUAL(0, (int)(Number)track_obj["armed"]);
+	CPPUNIT_ASSERT_EQUAL(0, (int)(Number)track_obj["inLap"]);
+
+	Object telemetry_obj = json["status"]["telemetry"];
+	CPPUNIT_ASSERT_EQUAL((int) TELEMETRY_STATUS_IDLE,
+			     (int)(Number)telemetry_obj["status"]);
+	CPPUNIT_ASSERT_EQUAL(0, (int)(Number)telemetry_obj["started"]);
 }
 
 void LoggerApiTest::testSetWifiCfg() {
