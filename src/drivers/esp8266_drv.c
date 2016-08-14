@@ -1328,8 +1328,8 @@ static void connect_cb(const bool status, const bool already_connected)
  * @param proto The protocol to use.
  * @param addr The destination address (either IP or DNS name).
  * @param port The destination port to connect to.
- * @param rx_size The size of the Rx buffer. 0 will yeild the default value.
- * @param tx_size The size of the Tx buffer. 0 will yeild the default value.
+ * @param rx_size The size of the Rx buffer. 0 will yield the default value.
+ * @param tx_size The size of the Tx buffer. 0 will yield the default value.
  * @return A valid Serial object if a connection was made, NULL otherwise.
  */
 struct Serial* esp8266_drv_connect(const enum protocol proto,
