@@ -61,7 +61,7 @@
 /* How long to wait between polling our incomming msg Serial */
 #define READ_DELAY_MS		1
 /* How long to wait before giving up on the message */
-#define READ_TIMEOUT_MS		100
+#define READ_TIMEOUT_MS		250
 /* How much stack does this task deserve */
 #define STACK_SIZE		256
 /* Make all task names 16 chars including NULL char */
@@ -322,9 +322,11 @@ static bool process_rx_msg(struct Serial* s)
 
                         /* If here, then rx timeout. */
                         pr_warning(LOG_PFX "Rx message timeout\r\n");
+			pr_debug_str_msg(LOG_PFX "Buff contents: ",
+					 rx_buff_get_msg(rxb))
                         goto rx_done;
                 case RX_BUFF_STATUS_READY:
-                        /* A message (possibly partial) awaits us */
+                        /* A message awaits us */
                         process_ready_msg(s);
 			msg_handled = true;
                         goto rx_done;
