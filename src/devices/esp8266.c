@@ -876,7 +876,7 @@ struct tx_info {
         struct Serial *serial;
         size_t len;
 	size_t sent;
-	int chan_id;
+	unsigned int chan_id;
         esp8266_send_data_cb_t* cb;
 };
 
@@ -955,7 +955,7 @@ fini:
  * Use this to figure out what our IP is as a wireless client.
  * @param cb The callback to be invoked when the method completes.
  */
-bool esp8266_send_data(const int chan_id, struct Serial *serial,
+bool esp8266_send_data(const unsigned int chan_id, struct Serial *serial,
                        const size_t len, esp8266_send_data_cb_t* cb)
 {
         const char* cmd_name = "send_data";

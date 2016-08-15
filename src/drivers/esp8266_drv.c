@@ -419,7 +419,7 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
  * Callback that is invoked when the send_data method completes.
  */
 static void _send_data_cb(const bool status, const size_t bytes,
-			  const int chan)
+			  const unsigned int chan)
 {
 	cmd_completed();
 	cmd_set_check(CHECK_DATA);
