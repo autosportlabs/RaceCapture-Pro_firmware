@@ -102,7 +102,7 @@ bool rx_buff_read(struct rx_buff *rxb, struct Serial *s, const bool echo)
 	if (!h)
 		return false;
 
-        char c = 0xFF;
+        char c = INVALID_CHAR;
         while (rxb->idx < rxb->cap && !rxb->msg_ready) {
                 const bool rx_status = xQueueReceive(h, &c, 0);
                 if (!rx_status) {

@@ -919,7 +919,7 @@ static bool send_data_cb(struct at_rsp *rsp, void *up)
 			char c;
                         if (!xQueueReceive(q, &c, 0)) {
 				underrun = true;
-				c = 0xFF; /* Invalid UTF-8 Byte */
+				c = INVALID_CHAR; /* Invalid UTF-8 Byte */
 			}
 
                         serial_write_c(s, c);
