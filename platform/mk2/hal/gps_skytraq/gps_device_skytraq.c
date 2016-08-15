@@ -320,7 +320,7 @@ static gps_msg_result_t rxGpsMessage(GpsMessage* msg, struct Serial* serial,
                         continue;
                 }
 
-                pr_trace("GPS: Successfully read message\r\n");
+                /* pr_trace("GPS: Successfully read message\r\n"); */
                 return GPS_MSG_SUCCESS;
         }
 }
