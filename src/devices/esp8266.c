@@ -85,7 +85,7 @@ static void cmd_failure(const char *cmd_name, const char *msg)
  * Messages this callback handles:
  * * <0-4>,CONNECT
  * * <0-4>,CLOSED
- * * WIFI DISCONNECT
+ * * WIFI {CONNECTED,DISCONNECT,GOT IP}
  */
 static bool sparse_urc_cb(char* msg)
 {
@@ -116,10 +116,13 @@ static bool sparse_urc_cb(char* msg)
         if (STR_EQ(m2, "CLOSED"))
                 action = SOCKET_ACTION_DISCONNECT;
 
-        if (state.hooks.socket_state_changed_cb)
+        if (state.hooks.socket_state_changed_cb &&
+	    action != SOCKET_ACTION_UNKNOWN) {
                 state.hooks.socket_state_changed_cb(atoi(m1), action);
+		return true;
+	}
 
-        return true;
+	return false;
 }
 
 /**

@@ -370,7 +370,8 @@ static void socket_state_changed_cb(const size_t chan_id,
 		}
                 break;
         default:
-                pr_warning(LOG_PFX "Unknown socket action\r\n");
+                pr_warning_int_msg(LOG_PFX "Unknown socket action: ",
+				   action);
                 break;
         }
 
