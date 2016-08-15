@@ -53,9 +53,9 @@
 #define LOG_PFX			"[ESP8266 Driver] "
 #define MAX_CHANNELS		5
 #define RX_DATA_TIMEOUT_TICKS	1
-#define SERIAL_CMD_MAX_LEN	1024
-#define SERIAL_RX_BUFF_SIZE	256
-#define SERIAL_TX_BUFF_SIZE	256
+#define SERIAL_BUFF_DEF_RX_SIZE	RX_MAX_MSG_LEN
+#define SERIAL_BUFF_DEF_TX_SIZE	256
+#define SERIAL_CMD_MAX_LEN	(RX_MAX_MSG_LEN + 16)
 #define TASK_STACK_SIZE		256
 #define TASK_THREAD_NAME	"ESP8266 Driver"
 
@@ -95,7 +95,6 @@ struct server {
 
 struct channel {
         struct Serial *serial;
-        size_t tx_chars_buffered;
 };
 
 struct channel_sync_op {
@@ -269,29 +268,41 @@ static const char* channel_get_name(const size_t chan_id)
 
 static void _tx_char_cb(xQueueHandle queue, void *post_tx_arg)
 {
-        struct channel *ch = post_tx_arg;
-        ++ch->tx_chars_buffered;
         cmd_set_check(CHECK_DATA);
 }
 
-static struct channel* channel_setup(const unsigned int i)
+/**
+ * Sets up a channel by allocating a channel and then creating a Serial
+ * device that backs it.
+ * @param index Channel ID/index.
+ * @param rx_size Size of the Rx Buffer
+ * @param tx_size Size of the Tx Buffer
+ * @param pointer to the channel structure that was setup, NULL if failure.
+ */
+static struct channel* channel_setup(const unsigned int index,
+				     size_t rx_size, size_t tx_size)
 {
-        if (!channel_is_valid_id(i))
+        if (!channel_is_valid_id(index))
                 return NULL;
 
-        struct channel* ch = esp8266_state.comm.channels + i;
+        struct channel* ch = esp8266_state.comm.channels + index;
         if (ch->serial) {
 		/* Channel is in use!  Something is wrong */
                 pr_warning_int_msg(LOG_PFX "Setup called on allocated "
-				   "channel ", i);
+				   "channel ", index);
 		pr_warning(LOG_PFX "Closing stale Serial object");
 		channel_close(ch);
 	}
 
-	const char* name = channel_get_name(i);
-        struct Serial *s = serial_create(name, SERIAL_TX_BUFF_SIZE,
-                                         SERIAL_RX_BUFF_SIZE, NULL, NULL,
-                                         _tx_char_cb, ch);
+	if (0 == rx_size)
+		rx_size = SERIAL_BUFF_DEF_RX_SIZE;
+
+	if (0 == tx_size)
+		tx_size = SERIAL_BUFF_DEF_TX_SIZE;
+
+	const char* name = channel_get_name(index);
+        struct Serial *s = serial_create(name, tx_size, rx_size, NULL,
+					 NULL, _tx_char_cb, ch);
 
 	if (!s) {
 		/* Fail state */
@@ -344,7 +355,8 @@ static void socket_state_changed_cb(const size_t chan_id,
                 pr_info_int_msg(LOG_PFX "Socket connected on channel ",
                                 chan_id);
 
-		if (!channel_setup(chan_id)) {
+		/* Use Defaults for rx and tx buff sizes */
+		if (!channel_setup(chan_id, 0, 0)) {
 			/* Close the channel.  Best effort here. */
 			esp8266_close(chan_id, NULL);
 			break;
@@ -358,7 +370,8 @@ static void socket_state_changed_cb(const size_t chan_id,
 		}
                 break;
         default:
-                pr_warning(LOG_PFX "Unknown socket action\r\n");
+                pr_warning_int_msg(LOG_PFX "Unknown socket action: ",
+				   action);
                 break;
         }
 
@@ -405,55 +418,63 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
 /**
  * Callback that is invoked when the send_data method completes.
  */
-static void _send_data_cb(int bytes_sent)
+static void _send_data_cb(const bool status, const size_t bytes,
+			  const unsigned int chan)
 {
-        cmd_completed();
-        cmd_set_check(CHECK_DATA);
+	cmd_completed();
+	cmd_set_check(CHECK_DATA);
 
-        if (bytes_sent < 0)
-                /* STIEG: Include channel info here somehow */
-                pr_warning(LOG_PFX "Failed to send data\r\n");
+	if (!status) {
+		pr_warning_int_msg(LOG_PFX "Failed to send data on "
+				   "channel ", chan);
+
+		/*
+		 * Hack: Close channel when error b/c we have lost data.
+		 * Issue #807
+		 */
+		struct channel *ch = esp8266_state.comm.channels + chan;
+		channel_close(ch);
+
+		return;
+	}
 }
 
 /**
- * Method that processes outgoing data if any.  If there is, this
+ * Method that processes outgoing data if any.	If there is, this
  * will start a command.
  */
 static void check_data()
 {
-        cmd_check_complete(CHECK_DATA);
+	cmd_check_complete(CHECK_DATA);
 
-        for (size_t i = 0; i < ARRAY_LEN(esp8266_state.comm.channels); ++i) {
-                struct channel *ch = esp8266_state.comm.channels + i;
-                const size_t size = ch->tx_chars_buffered;
+	for (size_t i = 0; i < ARRAY_LEN(esp8266_state.comm.channels); ++i) {
+		struct channel *ch = esp8266_state.comm.channels + i;
 		struct Serial* serial = ch->serial;
 
-                /* If the size is 0, nothing to send */
-                if (0 == size)
-                        continue;
+		/*
+		 * Check if connection is still active.	 If not then
+		 * there is nothing for us to do.
+		 */
+		if (!serial || !serial_is_connected(serial))
+			continue;
 
-                /*
-                 * If here, then we have data to send.  Check that the
-                 * connection is still active.  If not, clear our count
-		 * and be done.
-                 */
-		if (!serial_is_connected(ch->serial)) {
-                        ch->tx_chars_buffered = 0;
-                        continue;
-                }
+		/* If the size is 0, nothing to send */
+		xQueueHandle q = serial_get_tx_queue(ch->serial);
+		const size_t size = uxQueueMessagesWaiting(q);
+		if (0 == size)
+			continue;
 
-                /* If here, we have a connection and data to send. Do Eet! */
-                if (!esp8266_send_data(i, serial, size, _send_data_cb)) {
-                        pr_warning(LOG_PFX "Failed to queue send "
-                                   "data command!!!\r\n");
-                        /* We will retry */
-                        return;
-                }
+		/* If here, we have a connection and data to send. Do Eet! */
+		if (!esp8266_send_data(i, serial, size, _send_data_cb)) {
+			pr_warning(LOG_PFX "Failed to queue send "
+				   "data command!!!\r\n");
+			/* We will retry */
+			return;
+		}
 
-                cmd_started();
-                ch->tx_chars_buffered = 0;
-                return;
-        }
+		cmd_started();
+		return;
+	}
 }
 
 /**
@@ -1249,14 +1270,13 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         LoggerConfig *lc = getWorkingLoggerConfig();
         const struct wifi_client_cfg *cfg =
                 &lc->ConnectivityConfigs.wifi.client;
-        if (!esp8266_drv_update_client_cfg(cfg)) {
+	const struct wifi_ap_cfg* wac =
+                &lc->ConnectivityConfigs.wifi.ap;
+        if (!esp8266_drv_update_client_cfg(cfg) ||
+	    !esp8266_drv_update_ap_cfg(wac)) {
                 pr_error(LOG_PFX "Failed to set WiFi client cfg\r\n");
                 return false;
         }
-
-        const struct wifi_ap_cfg* wac =
-                &lc->ConnectivityConfigs.wifi.ap;
-        esp8266_drv_update_ap_cfg(wac);
 
 	/* Initialize the esp8266 AT subsystem here */
 	if (!esp8266_setup(esp8266_state.device.serial, SERIAL_CMD_MAX_LEN)) {
@@ -1309,11 +1329,15 @@ static void connect_cb(const bool status, const bool already_connected)
  * @param proto The protocol to use.
  * @param addr The destination address (either IP or DNS name).
  * @param port The destination port to connect to.
+ * @param rx_size The size of the Rx buffer. 0 will yield the default value.
+ * @param tx_size The size of the Tx buffer. 0 will yield the default value.
  * @return A valid Serial object if a connection was made, NULL otherwise.
  */
 struct Serial* esp8266_drv_connect(const enum protocol proto,
                                    const char* addr,
-                                   const unsigned int port)
+                                   const unsigned int port,
+				   const size_t rx_size,
+				   const size_t tx_size)
 {
         /* This is synchronous code for now */
         struct channel_sync_op *cso = &esp8266_state.comm.connect_op;
@@ -1326,7 +1350,7 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
                 goto done;
         }
 
-        struct channel *ch = channel_setup(cso->chan_id);
+        struct channel *ch = channel_setup(cso->chan_id, rx_size, tx_size);
         if (NULL == ch) {
                 pr_warning(LOG_PFX "Can't allocate resources for channel\r\n");
                 goto done;

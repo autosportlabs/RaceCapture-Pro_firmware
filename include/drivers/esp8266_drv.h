@@ -44,8 +44,10 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
                       new_conn_func_t new_conn_cb);
 
 struct Serial* esp8266_drv_connect(const enum protocol proto,
-                                   const char* dst_ip,
-                                   const unsigned int dst_port);
+                                   const char* addr,
+                                   const unsigned int port,
+				   const size_t rx_size,
+				   const size_t tx_size);
 
 bool esp8266_drv_close(struct Serial* serial);
 

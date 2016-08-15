@@ -99,7 +99,10 @@ void rx_buff_destroy(struct rx_buff *rxb)
 bool rx_buff_read(struct rx_buff *rxb, struct Serial *s, const bool echo)
 {
         xQueueHandle h = serial_get_rx_queue(s);
-        char c = 1;
+	if (!h)
+		return false;
+
+        char c = INVALID_CHAR;
         while (rxb->idx < rxb->cap && !rxb->msg_ready) {
                 const bool rx_status = xQueueReceive(h, &c, 0);
                 if (!rx_status) {
@@ -157,7 +160,7 @@ bool rx_buff_read(struct rx_buff *rxb, struct Serial *s, const bool echo)
 
                 rxb->buff[rxb->idx - 1] = 0;
         } else {
-                pr_warning(LOG_PFX "Overflow!");
+                pr_warning(LOG_PFX "Overflow!\r\n");
                 /* Cap the end so we don't do undefined things */
                 rxb->buff[rxb->cap - 1] = 0;
                 /* Set our idx value to cap + 1 to indicate overflow */

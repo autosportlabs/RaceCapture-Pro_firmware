@@ -23,10 +23,11 @@
 #define _STR_UTIL_H_
 
 #include "cpp_guard.h"
-
 #include <stddef.h>
 
 CPP_GUARD_BEGIN
+
+#define INVALID_CHAR	0xFF
 
 size_t serial_msg_strlen(const char *data);
 

@@ -182,8 +182,12 @@ typedef void esp8266_close_cb_t(const bool status);
 
 bool esp8266_close(const int chan_id, esp8266_close_cb_t* cb);
 
-bool esp8266_send_data(const int chan_id, struct Serial *data,
-                       const size_t len, void (*cb)(int));
+typedef void esp8266_send_data_cb_t(const bool status,
+				    const size_t bytes,
+				    const unsigned int chan);
+
+bool esp8266_send_data(const unsigned int chan_id, struct Serial *data,
+                       const size_t len, esp8266_send_data_cb_t* cb);
 
 bool esp8266_send_serial(const int chan_id, struct Serial *serial,
                          const size_t len, void (*cb)(bool));

@@ -27,6 +27,7 @@
 #include "dateTime.h"
 #include "esp8266.h"
 #include "esp8266_drv.h"
+#include "net/ipv4.h"
 #include "macros.h"
 #include "messaging.h"
 #include "loggerApi.h"
@@ -48,6 +49,9 @@
 
 /* Time between beacon messages */
 #define BEACON_PERIOD_MS	1000
+#define BEACON_SERIAL_BUFF_RX_SIZE	64
+#define BEACON_SERIAL_BUFF_TX_SIZE	192
+
 /* Time between checks of our connections. */
 #define EXT_CONN_PERIOD_MS	5
 /* Maximum number of external connections we will manage */
@@ -57,9 +61,7 @@
 /* How long to wait between polling our incomming msg Serial */
 #define READ_DELAY_MS		1
 /* How long to wait before giving up on the message */
-#define READ_TIMEOUT_MS		20
-/* Max size of an incomming message */
-#define RX_BUFF_SIZE		512
+#define READ_TIMEOUT_MS		250
 /* How much stack does this task deserve */
 #define STACK_SIZE		256
 /* Make all task names 16 chars including NULL char */
@@ -84,6 +86,7 @@ static struct {
                 struct Serial* serial;
         } beacon;
 	struct connection connections[EXT_CONN_MAX];
+	bool conn_check_pending;
 } state;
 
 /**
@@ -135,10 +138,18 @@ struct wifi_event {
         } data;
 };
 
-static void send_event(struct wifi_event* event, const char* event_name)
+static bool send_event(struct wifi_event* event, const char* event_name,
+		       const bool high_priority)
 {
-	if (!xQueueSend(state.event_queue, event, 0))
-		pr_warning_str_msg(LOG_PFX "Event overflow: ", event_name);
+	const bool sent = high_priority ?
+		xQueueSendToFront(state.event_queue, event, 0) :
+		xQueueSendToBack(state.event_queue, event, 0);
+
+	if (sent)
+		return true;
+
+	pr_warning_str_msg(LOG_PFX "Event overflow: ", event_name);
+	return false;
 }
 
 static void new_ext_conn_cb(struct Serial *s)
@@ -149,17 +160,21 @@ static void new_ext_conn_cb(struct Serial *s)
                 .data.serial = s,
         };
 
-	send_event(&event, "New Connection");
+	send_event(&event, "New Connection", true);
 }
 
 static void check_connections_cb(xTimerHandle xTimer)
 {
+	if (state.conn_check_pending)
+		return;
+
 	/* Send event message here to wake the task */
         struct wifi_event event = {
                 .task = TASK_CHECK_CONNECTIONS,
         };
 
-	send_event(&event, "Connection Check");
+	if (send_event(&event, "Connection Check", true))
+		state.conn_check_pending = true;
 }
 
 static void beacon_timer_cb(xTimerHandle xTimer)
@@ -169,7 +184,7 @@ static void beacon_timer_cb(xTimerHandle xTimer)
                 .task = TASK_BEACON,
         };
 
-	send_event(&event, "Beacon");
+	send_event(&event, "Beacon", false);
 }
 
 static void wifi_sample_cb(const struct sample* sample,
@@ -194,7 +209,7 @@ static void wifi_sample_cb(const struct sample* sample,
         };
 
         /* Send the message here to wake the timer */
-	send_event(&event, "Sample CB");
+	send_event(&event, "Sample CB", false);
 }
 
 
@@ -312,13 +327,20 @@ static bool process_rx_msg(struct Serial* s)
 
                         /* If here, then rx timeout. */
                         pr_warning(LOG_PFX "Rx message timeout\r\n");
+			const char* buff = rx_buff_get_msg(rxb);
+			pr_debug_int_msg(LOG_PFX "Buff Length: ", strlen(buff));
+			pr_debug_str_msg(LOG_PFX "Buff contents: ", buff);
                         goto rx_done;
                 case RX_BUFF_STATUS_READY:
-                case RX_BUFF_STATUS_OVERFLOW:
-                        /* A message (possibly partial) awaits us */
+                        /* A message awaits us */
                         process_ready_msg(s);
 			msg_handled = true;
                         goto rx_done;
+		case RX_BUFF_STATUS_OVERFLOW:
+			/* Something has gone wrong.  Dump it and move along */
+			pr_warning(LOG_PFX "RX buffer overflow. "
+				   "Dumping and moving on...\r\n");
+			goto rx_done;
                 }
         }
 
@@ -335,6 +357,8 @@ rx_done:
  */
 static void check_connections()
 {
+	state.conn_check_pending = false;
+
 	bool msg_handled = false;
 	for (int i = 0; i < ARRAY_LEN(state.connections); ++i) {
 		struct connection* conn = state.connections + i;
@@ -344,8 +368,9 @@ static void check_connections()
 
 		/* Check if serial is closed.  If so, handle it */
 		if (!serial_is_connected(serial)) {
-			pr_info_int_msg(LOG_PFX "Closing external "
-					"connection: ", i);
+			pr_info_str_msg(
+				LOG_PFX "Closing external connection: ",
+				serial_get_name(serial));
 			set_telemetry(conn, 0);
 			serial_destroy(serial);
 			reset_connection(conn);
@@ -376,7 +401,8 @@ static void process_new_connection(struct Serial *s)
 		 * If here, found slot. Set the serial IOCTL handler here
 		 * b/c this is managing task
 		 */
-		pr_info_int_msg(LOG_PFX "New external connection: ", i);
+		pr_info_str_msg(LOG_PFX "New external connection: ",
+				serial_get_name(s));
 		serial_set_ioctl_cb(s, wifi_serial_ioctl);
 		conn->serial = s;
 		conn->ls_handle = -1;
@@ -433,8 +459,11 @@ static void do_beacon()
          */
         if (NULL == state.beacon.serial) {
                 state.beacon.serial =
-                        esp8266_drv_connect(PROTOCOL_UDP, "255.255.255.255",
-                                            RCP_SERVICE_PORT);
+                        esp8266_drv_connect(PROTOCOL_UDP,
+					    IPV4_BROADCAST_ADDRESS_STR,
+                                            RCP_SERVICE_PORT,
+					    BEACON_SERIAL_BUFF_RX_SIZE,
+					    BEACON_SERIAL_BUFF_TX_SIZE);
         }
 
         struct Serial* serial = state.beacon.serial;
@@ -540,7 +569,7 @@ bool wifi_init_task(const int wifi_task_priority,
                 return false;
 
         /* Allocate our RX buffer for incomming data */
-        state.rx_msgs.rxb = rx_buff_create(RX_BUFF_SIZE);
+        state.rx_msgs.rxb = rx_buff_create(RX_MAX_MSG_LEN);
         if (!state.rx_msgs.rxb)
                 return false;
 

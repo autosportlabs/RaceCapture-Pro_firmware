@@ -51,6 +51,9 @@ CPP_GUARD_BEGIN
 #define WIFI_MAX_SAMPLE_RATE	50
 #define WIFI_ENABLED_DEFAULT	true
 
+/* Rx Max Message length */
+#define RX_MAX_MSG_LEN	768
+
 /*
  * What is the maximum number of samples available per predictive time
  * buffer.  More samples == better resolution. Each slot is 12 bytes.

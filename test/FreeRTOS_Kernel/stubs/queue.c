@@ -94,3 +94,8 @@ signed portBASE_TYPE xQueueGenericSendFromISR(xQueueHandle pxQueue,
 {
         return pdTRUE;
 }
+
+unsigned portBASE_TYPE uxQueueMessagesWaiting( const xQueueHandle xQueue )
+{
+	return 0;
+}
