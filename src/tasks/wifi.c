@@ -138,9 +138,14 @@ struct wifi_event {
         } data;
 };
 
-static bool send_event(struct wifi_event* event, const char* event_name)
+static bool send_event(struct wifi_event* event, const char* event_name,
+		       const bool high_priority)
 {
-	if (xQueueSend(state.event_queue, event, 0))
+	const bool sent = high_priority ?
+		xQueueSendToFront(state.event_queue, event, 0) :
+		xQueueSendToBack(state.event_queue, event, 0);
+
+	if (sent)
 		return true;
 
 	pr_warning_str_msg(LOG_PFX "Event overflow: ", event_name);
@@ -155,7 +160,7 @@ static void new_ext_conn_cb(struct Serial *s)
                 .data.serial = s,
         };
 
-	send_event(&event, "New Connection");
+	send_event(&event, "New Connection", true);
 }
 
 static void check_connections_cb(xTimerHandle xTimer)
@@ -168,7 +173,7 @@ static void check_connections_cb(xTimerHandle xTimer)
                 .task = TASK_CHECK_CONNECTIONS,
         };
 
-	if (send_event(&event, "Connection Check"))
+	if (send_event(&event, "Connection Check", true))
 		state.conn_check_pending = true;
 }
 
@@ -179,7 +184,7 @@ static void beacon_timer_cb(xTimerHandle xTimer)
                 .task = TASK_BEACON,
         };
 
-	send_event(&event, "Beacon");
+	send_event(&event, "Beacon", false);
 }
 
 static void wifi_sample_cb(const struct sample* sample,
@@ -204,7 +209,7 @@ static void wifi_sample_cb(const struct sample* sample,
         };
 
         /* Send the message here to wake the timer */
-	send_event(&event, "Sample CB");
+	send_event(&event, "Sample CB", false);
 }
 
 
@@ -322,8 +327,9 @@ static bool process_rx_msg(struct Serial* s)
 
                         /* If here, then rx timeout. */
                         pr_warning(LOG_PFX "Rx message timeout\r\n");
-			pr_debug_str_msg(LOG_PFX "Buff contents: ",
-					 rx_buff_get_msg(rxb))
+			const char* buff = rx_buff_get_msg(rxb);
+			pr_debug_int_msg(LOG_PFX "Buff Length: ", strlen(buff));
+			pr_debug_str_msg(LOG_PFX "Buff contents: ", buff);
                         goto rx_done;
                 case RX_BUFF_STATUS_READY:
                         /* A message awaits us */
