@@ -433,8 +433,8 @@ static void _send_data_cb(const bool status, const size_t bytes,
 		 * Issue #807
 		 */
 		struct channel *ch = esp8266_state.comm.channels + chan;
+		esp8266_close(chan, NULL);
 		channel_close(ch);
-
 		return;
 	}
 }
