@@ -1244,7 +1244,8 @@ portBASE_TYPE xQueueGiveMutexRecursive( xQueueHandle xMutex );
 void vQueueAddToRegistry( xQueueHandle xQueue, signed char *pcName );
 #endif
 
-
+portBASE_TYPE xQueueGenericReset( xQueueHandle xQueue, portBASE_TYPE xNewQueue ) PRIVILEGED_FUNCTION;
+#define xQueueReset( xQueue ) xQueueGenericReset( xQueue, pdFALSE )
 
 
 CPP_GUARD_END
