@@ -102,6 +102,7 @@ struct at_timing {
 };
 
 enum at_dev_cfg_flag {
+	AT_DEV_CFG_FLAG_NONE = 0,
         /* Used for AT devices that will send URCS mid command response */
         AT_DEV_CFG_FLAG_RUDE = 1 << 0,
 };
@@ -134,9 +135,9 @@ struct at_urc_list {
 };
 
 /**
- * Callback for unhandled URCs.  This is designed to handle cases
- * where AT commands introduce odd messages that would be difficult
- * to register a callback for.  An example would be `0,CONNECTED`,
+ * Callback for sparse URCs.  This is designed to handle cases
+ * where AT commands introduce sparse messages that would be difficult
+ * to register a callback against.  An example would be `0,CONNECTED`;
  * this is hard to register since the 0 indicates the multiplexed
  * channel, and in this case there are 5 potential combinations.
  * Really this is a broken AT URC, so we use as sort of broken way
@@ -146,9 +147,9 @@ struct at_urc_list {
  * imperfect solution for an imperfect world.
  * @param msg The message that was received.
  * @return true if the callback was able to parse the message,
- *         false otherwise.
+ * false otherwise.
  */
-typedef bool unhandled_urc_cb_t(char* msg);
+typedef bool sparse_urc_cb_t(char* msg);
 
 struct at_info {
         /*
@@ -167,16 +168,17 @@ struct at_info {
         struct at_timing timing;
         struct at_cmd_queue cmd_queue;
         struct at_urc_list urc_list;
-        unhandled_urc_cb_t *unhandled_urc_cb;
+        sparse_urc_cb_t *sparse_urc_cb;
 };
 
 void at_reset(struct at_info* ati);
 
 bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
-                  const tiny_millis_t quiet_period_ms, const char *delim,
-                  unhandled_urc_cb_t *unhandled_urc_cb);
+                  const tiny_millis_t quiet_period_ms, const char *delim);
 
 void at_task(struct at_info *ati, const size_t ms_delay);
+
+void at_set_sparse_urc_cb(struct at_info* ati, sparse_urc_cb_t* cb);
 
 struct at_cmd* at_put_cmd(struct at_info *ati, const char *cmd,
                           const tiny_millis_t timeout,

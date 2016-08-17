@@ -229,8 +229,8 @@ static void process_cmd_or_urc_msg(struct at_info *ati, char *msg)
                 return process_urc_msg(ati, msg);
         }
 
-	if (ati->unhandled_urc_cb && ati->unhandled_urc_cb(msg)) {
-		/* It was a generic URC that was handled. */
+	if (ati->sparse_urc_cb && ati->sparse_urc_cb(msg)) {
+		/* It was a sparse URC that was handled. */
 		return;
 	}
 
@@ -385,16 +385,10 @@ void at_reset(struct at_info *ati)
  * @param quiet_period_ms The quiet period to wait between the end of a
  *        command and when to start the next.  Some modems need time to recover
  *        and send URCs.
- * @param unhandled_urc_cb A method to invoke if we receive a URC that is not
- *        handled by one of our URC handlers.  Happens sometimes when there is
- *        poor AT command design.  This is the last resort method of handling
- *        a URC.  Use the URC handlers when possible for sanity and better
- *        features.  Can be NULL, indicating that there is no method to use.
  * @return true if the parameters were acceptable, false otherwise.
  */
 bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
-                  const tiny_millis_t quiet_period_ms, const char *delim,
-                  unhandled_urc_cb_t unhandled_urc_cb)
+                  const tiny_millis_t quiet_period_ms, const char *delim)
 {
         if (!ati || !sb) {
                 pr_error("[at] Bad init parameter\r\n");
@@ -403,7 +397,6 @@ bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
 
         /* Clear everything.  We don't know where at_info has been */
         memset(ati, 0, sizeof(*ati));
-        ati->unhandled_urc_cb = unhandled_urc_cb;
         ati->sb = sb;
         if (!at_configure_device(ati, quiet_period_ms, delim))
                 return false;
@@ -411,6 +404,16 @@ bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
         /* Reset the state machine, and now we are ready to run */
         at_reset(ati);
         return true;
+}
+
+/**
+ * Allows the caller to set the sparse URC handler.  This handler should only
+ * be used in cases where the URCs coming back from the device are so bad that
+ * they can not be parsed by the normal URC parser.
+ */
+void at_set_sparse_urc_cb(struct at_info *ati, sparse_urc_cb_t* cb)
+{
+        ati->sparse_urc_cb = cb;
 }
 
 /**
@@ -516,7 +519,7 @@ bool at_configure_device(struct at_info *ati, const tiny_millis_t qp_ms,
                          const char *delim)
 {
         if (!delim || strlen(delim) >= AT_DEV_CVG_DELIM_MAX_LEN) {
-                pr_error("[at] Failed to set delimeter\r\b");
+                pr_error("[at] Failed to set delimeter\r\n");
                 return false;
         }
 

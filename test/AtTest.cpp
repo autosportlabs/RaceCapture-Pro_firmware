@@ -57,9 +57,9 @@ bool cb(struct at_rsp *rsp, void *up) {
         return false;
 }
 
-static bool g_uhurc_cb_called;
-bool uhurc_cb(char* msg) {
-        g_uhurc_cb_called = true;
+static bool g_sparse_urc_cb_called;
+bool sparse_urc_cb(char* msg) {
+        g_sparse_urc_cb_called = true;
         return false;
 }
 
@@ -72,10 +72,12 @@ void AtTest::setUp()
         g_sb.serial = s;
 
         /* Always init our structs */
-        init_at_info(&g_ati, &g_sb, 1, "\r\n", uhurc_cb);
+        init_at_info(&g_ati, &g_sb, 1, "\r\n");
+	at_set_sparse_urc_cb(&g_ati, sparse_urc_cb);
+
         g_cb_called = false;
         g_up = NULL;
-        g_uhurc_cb_called = false;
+        g_sparse_urc_cb_called = false;
 }
 
 void AtTest::test_init_at_info()
@@ -86,30 +88,38 @@ void AtTest::test_init_at_info()
         g_ati.dev_cfg.quiet_period_ms = 42;
         g_ati.urc_list.count = 57;
 
-        CPPUNIT_ASSERT_EQUAL(true, init_at_info(&g_ati, &g_sb, 1,
-                                                "\r", uhurc_cb));
+        CPPUNIT_ASSERT_EQUAL(true, init_at_info(&g_ati, &g_sb, 1, "\r"));
         CPPUNIT_ASSERT_EQUAL(AT_CMD_STATE_READY, g_ati.cmd_state);
         CPPUNIT_ASSERT_EQUAL(AT_RX_STATE_READY, g_ati.rx_state);
         CPPUNIT_ASSERT_EQUAL(1, g_ati.dev_cfg.quiet_period_ms);
         CPPUNIT_ASSERT_EQUAL((size_t) 0, g_ati.urc_list.count);
         CPPUNIT_ASSERT_EQUAL(&g_sb, g_ati.sb);
-        CPPUNIT_ASSERT_EQUAL(&uhurc_cb, g_ati.unhandled_urc_cb);
+        CPPUNIT_ASSERT_EQUAL((void*) NULL, (void*) g_ati.sparse_urc_cb);
 }
 
 void AtTest::test_init_at_info_failures()
 {
         /* No Serial Buffer */
-        CPPUNIT_ASSERT_EQUAL(false, init_at_info(&g_ati, NULL, 0,
-                                                 "\r", NULL));
+        CPPUNIT_ASSERT_EQUAL(false, init_at_info(&g_ati, NULL, 0, "\r"));
+
         /* No at_info struct */
-        CPPUNIT_ASSERT_EQUAL(false, init_at_info(NULL, &g_sb, 0,
-                                                 "\n", NULL));
+        CPPUNIT_ASSERT_EQUAL(false, init_at_info(NULL, &g_sb, 0, "\n"));
+
         /* No delim */
-        CPPUNIT_ASSERT_EQUAL(false, init_at_info(&g_ati, &g_sb, 0,
-                                                 NULL, NULL));
+        CPPUNIT_ASSERT_EQUAL(false, init_at_info(&g_ati, &g_sb, 0, NULL));
+
         /* Delim is too long here */
-        CPPUNIT_ASSERT_EQUAL(false, init_at_info(&g_ati, &g_sb, 0,
-                                                 "AAA", NULL));
+        CPPUNIT_ASSERT_EQUAL(false, init_at_info(&g_ati, &g_sb, 0, "AAA"));
+}
+
+void AtTest::test_set_sparse_urc_cb()
+{
+	init_at_info(&g_ati, &g_sb, 1, "\r");
+	CPPUNIT_ASSERT_EQUAL((void*) NULL, (void*) g_ati.sparse_urc_cb);
+
+	at_set_sparse_urc_cb(&g_ati, sparse_urc_cb);
+	CPPUNIT_ASSERT_EQUAL((void*) sparse_urc_cb,
+			     (void*) g_ati.sparse_urc_cb);
 }
 
 void AtTest::test_at_put_cmd_full()
@@ -399,15 +409,15 @@ void AtTest::test_urc_unhandled_cb()
          * Since no URC match, we should have gone into our unhandled URC
          * handler.  Ensure that we did.
          */
-        CPPUNIT_ASSERT(g_uhurc_cb_called);
+        CPPUNIT_ASSERT(g_sparse_urc_cb_called);
 }
 
 void AtTest::test_urc_unhandled_cb_cb_undefined()
 {
         /* Like the test above, except cb is NULL */
-        g_ati.unhandled_urc_cb = NULL;
+        g_ati.sparse_urc_cb = NULL;
 
-        CPPUNIT_ASSERT(!g_ati.unhandled_urc_cb);
+        CPPUNIT_ASSERT(!g_ati.sparse_urc_cb);
         CPPUNIT_ASSERT(!g_ati.cmd_ip);
 
         char msg[] = "A,POOR,URC,MSG";
@@ -418,7 +428,7 @@ void AtTest::test_urc_unhandled_cb_cb_undefined()
          * handler.  However since one is not defined we should not have
          * made it in there.
          */
-        CPPUNIT_ASSERT(!g_uhurc_cb_called);
+        CPPUNIT_ASSERT(!g_sparse_urc_cb_called);
 }
 
 

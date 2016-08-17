@@ -30,6 +30,7 @@ class AtTest : public CppUnit::TestFixture
 
         CPPUNIT_TEST( test_init_at_info );
         CPPUNIT_TEST( test_init_at_info_failures );
+	CPPUNIT_TEST( test_set_sparse_urc_cb );
         CPPUNIT_TEST( test_at_put_cmd_full );
         CPPUNIT_TEST( test_at_put_cmd_too_long );
         CPPUNIT_TEST( test_at_put_cmd_ok );
@@ -72,6 +73,7 @@ public:
         void setUp();
         void test_init_at_info();
         void test_init_at_info_failures();
+	void test_set_sparse_urc_cb();
         void test_at_put_cmd_full();
         void test_at_put_cmd_too_long();
         void test_at_put_cmd_ok();

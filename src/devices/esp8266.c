@@ -151,8 +151,10 @@ bool esp8266_setup(struct Serial *serial, const size_t max_cmd_len)
 
         /* Init our AT engine here */
         if (!init_at_info(state.ati, state.scb, _AT_DEFAULT_QP_MS,
-                          _AT_CMD_DELIM, sparse_urc_cb))
+                          _AT_CMD_DELIM))
                 return false;
+
+	at_set_sparse_urc_cb(state.ati, sparse_urc_cb);
 
         return true;
 }
