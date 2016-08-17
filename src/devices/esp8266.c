@@ -39,11 +39,8 @@
 #define AT_PROBE_TRIES		3
 #define AT_PROBE_DELAY_MS	200
 #define LOG_PFX	"[esp8266] "
-#define _AT_CMD_DELIM		"\r\n"
-#define _AT_DEFAULT_QP_MS	250
-#define _AT_QP_PRE_INIT_MS	500
-#define _AT_QP_STANDARD_MS	1
-#define _AUTOBAUD_TRIES		3
+#define ESP8266_CMD_DELIM      	"\r\n"
+#define ESP8266_QP_MS	1
 #define _TIMEOUT_LONG_MS	5000
 #define _TIMEOUT_MEDIUM_MS	500
 #define _TIMEOUT_SHORT_MS	50
@@ -150,10 +147,10 @@ bool esp8266_setup(struct Serial *serial, const size_t max_cmd_len)
                 return false;
 
         /* Init our AT engine here */
-        if (!init_at_info(state.ati, state.scb, _AT_DEFAULT_QP_MS,
-                          _AT_CMD_DELIM))
+        if (!at_info_init(state.ati, state.scb))
                 return false;
 
+	at_configure_device(state.ati, ESP8266_QP_MS, ESP8266_CMD_DELIM);
 	at_set_sparse_urc_cb(state.ati, sparse_urc_cb);
 
         return true;
@@ -338,10 +335,6 @@ bool esp8266_init(esp8266_init_cb_t* cb)
 	}
 
 	state.init.cb = cb;
-
-	/* Set normal quiet period */
-        at_configure_device(state.ati, _AT_QP_STANDARD_MS,
-                            _AT_CMD_DELIM);
 
 	/*
 	 * To ensure our device is initialized properly we do the

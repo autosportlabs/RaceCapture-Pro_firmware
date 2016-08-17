@@ -173,8 +173,7 @@ struct at_info {
 
 void at_reset(struct at_info* ati);
 
-bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
-                  const tiny_millis_t quiet_period_ms, const char *delim);
+bool at_info_init(struct at_info *ati, struct serial_buffer *sb);
 
 void at_task(struct at_info *ati, const size_t ms_delay);
 

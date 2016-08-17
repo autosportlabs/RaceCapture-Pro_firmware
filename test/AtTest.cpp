@@ -34,6 +34,9 @@ extern "C" {
 #include "at.c"
 }
 
+#define DELIMETER	"\n"
+#define QUIET_PERIOD_MS	10
+
 CPPUNIT_TEST_SUITE_REGISTRATION( AtTest );
 
 CPP_GUARD_BEGIN
@@ -72,7 +75,8 @@ void AtTest::setUp()
         g_sb.serial = s;
 
         /* Always init our structs */
-        init_at_info(&g_ati, &g_sb, 1, "\r\n");
+        at_info_init(&g_ati, &g_sb);
+	at_configure_device(&g_ati, QUIET_PERIOD_MS, DELIMETER);
 	at_set_sparse_urc_cb(&g_ati, sparse_urc_cb);
 
         g_cb_called = false;
@@ -80,7 +84,7 @@ void AtTest::setUp()
         g_sparse_urc_cb_called = false;
 }
 
-void AtTest::test_init_at_info()
+void AtTest::test_at_info_init()
 {
         /* Setup some random data to ensure it gets wiped */
         g_ati.cmd_state = AT_CMD_STATE_IN_PROGRESS;
@@ -88,33 +92,27 @@ void AtTest::test_init_at_info()
         g_ati.dev_cfg.quiet_period_ms = 42;
         g_ati.urc_list.count = 57;
 
-        CPPUNIT_ASSERT_EQUAL(true, init_at_info(&g_ati, &g_sb, 1, "\r"));
+        CPPUNIT_ASSERT_EQUAL(true, at_info_init(&g_ati, &g_sb));
         CPPUNIT_ASSERT_EQUAL(AT_CMD_STATE_READY, g_ati.cmd_state);
         CPPUNIT_ASSERT_EQUAL(AT_RX_STATE_READY, g_ati.rx_state);
-        CPPUNIT_ASSERT_EQUAL(1, g_ati.dev_cfg.quiet_period_ms);
+        CPPUNIT_ASSERT_EQUAL(250, g_ati.dev_cfg.quiet_period_ms);
         CPPUNIT_ASSERT_EQUAL((size_t) 0, g_ati.urc_list.count);
         CPPUNIT_ASSERT_EQUAL(&g_sb, g_ati.sb);
         CPPUNIT_ASSERT_EQUAL((void*) NULL, (void*) g_ati.sparse_urc_cb);
 }
 
-void AtTest::test_init_at_info_failures()
+void AtTest::test_at_info_init_failures()
 {
         /* No Serial Buffer */
-        CPPUNIT_ASSERT_EQUAL(false, init_at_info(&g_ati, NULL, 0, "\r"));
+        CPPUNIT_ASSERT_EQUAL(false, at_info_init(&g_ati, NULL));
 
         /* No at_info struct */
-        CPPUNIT_ASSERT_EQUAL(false, init_at_info(NULL, &g_sb, 0, "\n"));
-
-        /* No delim */
-        CPPUNIT_ASSERT_EQUAL(false, init_at_info(&g_ati, &g_sb, 0, NULL));
-
-        /* Delim is too long here */
-        CPPUNIT_ASSERT_EQUAL(false, init_at_info(&g_ati, &g_sb, 0, "AAA"));
+        CPPUNIT_ASSERT_EQUAL(false, at_info_init(NULL, &g_sb));
 }
 
 void AtTest::test_set_sparse_urc_cb()
 {
-	init_at_info(&g_ati, &g_sb, 1, "\r");
+	at_info_init(&g_ati, &g_sb);
 	CPPUNIT_ASSERT_EQUAL((void*) NULL, (void*) g_ati.sparse_urc_cb);
 
 	at_set_sparse_urc_cb(&g_ati, sparse_urc_cb);
@@ -518,6 +516,17 @@ void AtTest::test_at_configure_device()
 
         CPPUNIT_ASSERT_EQUAL(qp, g_ati.dev_cfg.quiet_period_ms);
         CPPUNIT_ASSERT(!strcmp(delim, g_ati.dev_cfg.delim));
+}
+
+void AtTest::test_at_configure_device_returns()
+{
+	/* A NULL delimeter should yield a false result */
+	CPPUNIT_ASSERT_EQUAL(false, at_configure_device(&g_ati, 1, NULL));
+
+	/* A delimeter that is too large should cause a failure */
+	char delim[AT_DEV_CVG_DELIM_MAX_LEN + 1];
+	memset(delim, '\n', sizeof(delim));
+	CPPUNIT_ASSERT_EQUAL(false, at_configure_device(&g_ati, 2, delim));
 }
 
 void AtTest::test_at_ok()

@@ -25,9 +25,11 @@
 #include "printk.h"
 #include "serial_buffer.h"
 #include "str_util.h"
-
 #include <ctype.h>
 #include <string.h>
+
+#define AT_DEFAULT_QP_MS	250
+#define AT_DEFAULT_DELIMETER	"\r\n"
 
 static const enum log_level dbg_lvl = INFO;
 
@@ -382,13 +384,9 @@ void at_reset(struct at_info *ati)
  * @param ati The at_info structure to initialize.
  * @param sb The serial_buffer to use for tx/rx.  Data is kept in the buffer
  *           and is referenced until the command completes.  Then its gone.
- * @param quiet_period_ms The quiet period to wait between the end of a
- *        command and when to start the next.  Some modems need time to recover
- *        and send URCs.
  * @return true if the parameters were acceptable, false otherwise.
  */
-bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
-                  const tiny_millis_t quiet_period_ms, const char *delim)
+bool at_info_init(struct at_info *ati, struct serial_buffer *sb)
 {
         if (!ati || !sb) {
                 pr_error("[at] Bad init parameter\r\n");
@@ -398,8 +396,8 @@ bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
         /* Clear everything.  We don't know where at_info has been */
         memset(ati, 0, sizeof(*ati));
         ati->sb = sb;
-        if (!at_configure_device(ati, quiet_period_ms, delim))
-                return false;
+
+	at_configure_device(ati, AT_DEFAULT_QP_MS, AT_DEFAULT_DELIMETER);
 
         /* Reset the state machine, and now we are ready to run */
         at_reset(ati);

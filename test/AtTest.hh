@@ -28,8 +28,8 @@ class AtTest : public CppUnit::TestFixture
 {
         CPPUNIT_TEST_SUITE( AtTest );
 
-        CPPUNIT_TEST( test_init_at_info );
-        CPPUNIT_TEST( test_init_at_info_failures );
+        CPPUNIT_TEST( test_at_info_init );
+        CPPUNIT_TEST( test_at_info_init_failures );
 	CPPUNIT_TEST( test_set_sparse_urc_cb );
         CPPUNIT_TEST( test_at_put_cmd_full );
         CPPUNIT_TEST( test_at_put_cmd_too_long );
@@ -63,6 +63,7 @@ class AtTest : public CppUnit::TestFixture
         CPPUNIT_TEST( test_is_timed_out_fail );
         CPPUNIT_TEST( test_is_timed_out_ok );
         CPPUNIT_TEST( test_at_configure_device );
+	CPPUNIT_TEST( test_at_configure_device_returns );
         CPPUNIT_TEST( test_at_ok );
         CPPUNIT_TEST( test_at_parse_rsp_line );
         CPPUNIT_TEST( test_at_parse_rsp_str );
@@ -71,8 +72,8 @@ class AtTest : public CppUnit::TestFixture
 
 public:
         void setUp();
-        void test_init_at_info();
-        void test_init_at_info_failures();
+        void test_at_info_init();
+        void test_at_info_init_failures();
 	void test_set_sparse_urc_cb();
         void test_at_put_cmd_full();
         void test_at_put_cmd_too_long();
@@ -107,6 +108,7 @@ public:
         void test_is_timed_out_fail();
         void test_is_timed_out_ok();
         void test_at_configure_device();
+	void test_at_configure_device_returns();
         void test_at_ok();
         void test_at_parse_rsp_line();
         void test_at_parse_rsp_str();
