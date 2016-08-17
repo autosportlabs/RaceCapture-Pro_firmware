@@ -237,9 +237,10 @@ static void resetLapConfig(LapConfig *cfg)
 
 static void resetTrackConfig(TrackConfig *cfg)
 {
-    memset(cfg, 0, sizeof(TrackConfig));
-    cfg->radius = DEFAULT_TRACK_TARGET_RADIUS;
-    cfg->auto_detect = DEFAULT_TRACK_AUTO_DETECT;
+	memset(cfg, 0, sizeof(TrackConfig));
+	cfg->radius = DEFAULT_TRACK_TARGET_RADIUS;
+	/* True if we support a track DB, false otherwise */
+	cfg->auto_detect = !!MAX_TRACKS;
 }
 
 static void resetBluetoothConfig(BluetoothConfig *cfg)
