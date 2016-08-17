@@ -358,6 +358,7 @@ static void socket_state_changed_cb(const size_t chan_id,
 		/* Use Defaults for rx and tx buff sizes */
 		if (!channel_setup(chan_id, 0, 0)) {
 			/* Close the channel.  Best effort here. */
+			channel_close(ch);
 			esp8266_close(chan_id, NULL);
 			break;
 		}
@@ -366,8 +367,9 @@ static void socket_state_changed_cb(const size_t chan_id,
 			esp8266_state.comm.new_conn_cb(ch->serial);
 		} else {
 			pr_warning(LOG_PFX "No incoming server callback "
-				   "defined. Data \r\n");
+				   "defined. Dropping data...\r\n");
 		}
+
                 break;
         default:
                 pr_warning_int_msg(LOG_PFX "Unknown socket action: ",
@@ -433,8 +435,8 @@ static void _send_data_cb(const bool status, const size_t bytes,
 		 * Issue #807
 		 */
 		struct channel *ch = esp8266_state.comm.channels + chan;
+		esp8266_close(chan, NULL);
 		channel_close(ch);
-
 		return;
 	}
 }

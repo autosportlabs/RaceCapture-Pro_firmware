@@ -99,3 +99,8 @@ unsigned portBASE_TYPE uxQueueMessagesWaiting( const xQueueHandle xQueue )
 {
 	return 0;
 }
+
+portBASE_TYPE xQueueGenericReset( xQueueHandle pxQueue, portBASE_TYPE xNewQueue )
+{
+	return pdTRUE;
+}

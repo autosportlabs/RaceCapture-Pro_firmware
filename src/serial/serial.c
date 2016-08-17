@@ -29,12 +29,15 @@
 #include "projdefs.h"
 #include "serial.h"
 #include "str_util.h"
+#include "queue.h"
 #include "usart.h"
 #include "usb_comm.h"
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
+
+static const char invalid_char = INVALID_CHAR;
 
 enum data_dir {
         DATA_DIR_RX,
@@ -45,6 +48,7 @@ struct Serial {
 	const char *name;
 	xQueueHandle tx_queue;
 	xQueueHandle rx_queue;
+	bool closed;
 
 	config_func_t *config_cb;
 	void *config_cb_arg;
@@ -59,27 +63,52 @@ struct Serial {
 	struct serial_cfg cfg;
 };
 
+void serial_purge_rx_queue(struct Serial* s)
+{
+	xQueueReset(s->rx_queue);
+}
+
+void serial_purge_tx_queue(struct Serial* s)
+{
+	xQueueReset(s->tx_queue);
+}
+
+/**
+ * Clears the contents of the rx and tx queues.
+ */
+void serial_clear(struct Serial *s)
+{
+        serial_purge_rx_queue(s);
+        serial_purge_tx_queue(s);
+}
+
+/**
+ * Unblocks our Seral rx queue by putting an invalid character on the
+ * front of the queue. This will unblock any task that is waiting on
+ * the queue.  Its up to the rx handler below to ensure that we return
+ * the correct status code.
+ */
+static void unblock_rx_queue(struct Serial *s)
+{
+	xQueueSendToFront(s->rx_queue, &invalid_char, 0);
+}
+
 /**
  * Closes the Serial device and releases the associated buffer resources
  * to ensure that we use as few resources as necessary.
  */
 void serial_close(struct Serial* s)
 {
-	if (s->tx_queue) {
-                vQueueDelete(s->tx_queue);
-		s->tx_queue = NULL;
-	}
-
-        if (s->rx_queue) {
-                vQueueDelete(s->rx_queue);
-		s->rx_queue = NULL;
-	}
+	s->closed = true;
+	serial_clear(s);
+	unblock_rx_queue(s);
 }
 
 
 void serial_destroy(struct Serial *s)
 {
-	serial_close(s);
+	vQueueDelete(s->tx_queue);
+	vQueueDelete(s->rx_queue);
         portFree(s);
 }
 
@@ -253,7 +282,7 @@ bool serial_config(struct Serial *s, const size_t bits,
 
 bool serial_is_connected(const struct Serial* s)
 {
-	return s && (s->rx_queue || s->tx_queue);
+	return s && !s->closed;
 }
 
 /**
@@ -262,32 +291,6 @@ bool serial_is_connected(const struct Serial* s)
 const struct serial_cfg* serial_get_config(const struct Serial* s)
 {
 	return &s->cfg;
-}
-
-static void purge_queue(xQueueHandle q)
-{
-        for(char c; pdTRUE == xQueueReceive(q, &c, 0););
-}
-
-void serial_purge_rx_queue(struct Serial* s)
-{
-	if (s->rx_queue)
-		purge_queue(s->rx_queue);
-}
-
-void serial_purge_tx_queue(struct Serial* s)
-{
-	if (s->tx_queue)
-		purge_queue(s->tx_queue);
-}
-
-/**
- * Clears the contents of the rx and tx queues.
- */
-void serial_clear(struct Serial *s)
-{
-        serial_purge_rx_queue(s);
-        serial_purge_tx_queue(s);
 }
 
 void serial_flush(struct Serial *s)
@@ -300,11 +303,18 @@ void serial_flush(struct Serial *s)
 
 int serial_read_c_wait(struct Serial *s, char *c, const size_t delay)
 {
-	if (!s->rx_queue)
+	if (s->closed)
 		return -1;
 
         if (pdFALSE == xQueueReceive(s->rx_queue, c, delay))
                 return 0;
+
+	/* Check & handle closure of serial device here */
+	if (*c == invalid_char && s->closed) {
+		/* Unblock the queue for other waiting tasks */
+		unblock_rx_queue(s);
+		return -1;
+	}
 
         log_rx(s, *c);
         return 1;
@@ -355,11 +365,15 @@ int serial_read_line(struct Serial *s, char *l, const size_t len)
 
 int serial_write_c_wait(struct Serial *s, const char c, const size_t delay)
 {
-	if (!s->tx_queue)
+	if (s->closed)
 		return -1;
 
         if (pdFALSE == xQueueSend(s->tx_queue, &c, delay))
                 return 0;
+
+	/* Handle case where closing queue unblocks xQueueSend */
+	if (s->closed)
+		return -1;
 
         log_tx(s, c);
 
