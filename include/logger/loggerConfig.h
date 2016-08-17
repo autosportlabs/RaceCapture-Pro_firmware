@@ -209,7 +209,7 @@ typedef struct _ImuConfig {
 #define DEFAULT_GYRO_ZERO	0
 
 #define IMU_ACCEL_CH_CONFIG(name) {name, "G", -3, 3, SAMPLE_25Hz, 2, 0}
-#define IMU_GYRO_CH_CONFIG(name) {name, "Deg/Sec", -120, 120, SAMPLE_25Hz, 0, 0}
+#define IMU_GYRO_CH_CONFIG(name) {name, "Deg/Sec", -120, 120, SAMPLE_25Hz, 2, 0}
 #define IMU_ACCEL_CONFIG(name, mode, chan) {    \
                 IMU_ACCEL_CH_CONFIG(name),      \
                         mode,                   \
