@@ -638,14 +638,19 @@ static void lapstats_setup(const GpsSnapshot *gps_snapshot)
          * and act accordingly.  For now it stays here.
          */
         const LoggerConfig *config = getWorkingLoggerConfig();
-        const GeoPoint *gp = &gps_snapshot->sample.point;
+        const TrackConfig *trackConfig = &(config->TrackConfigs);
+	const bool auto_detect_track = trackConfig->auto_detect;
+	const GeoPoint *gp = &gps_snapshot->sample.point;
+
+	/* If we are using auto-detect and have no valid point, we are done */
+	if (auto_detect_track && !isValidPoint(gp))
+		return;
+
         const float radius_in_meters =
                 lapstats_degrees_to_meters(config->TrackConfigs.radius);
-
         const Track *track = NULL;
-        const TrackConfig *trackConfig = &(config->TrackConfigs);
         track_status_t track_status;
-        if (trackConfig->auto_detect) {
+        if (auto_detect_track) {
                 track_status = TRACK_STATUS_AUTO_DETECTED;
                 track = auto_configure_track(NULL, gp);
                 if (track)
@@ -662,12 +667,12 @@ static void lapstats_setup(const GpsSnapshot *gps_snapshot)
 
 void lapstats_processUpdate(const GpsSnapshot *gps_snapshot)
 {
-    if (isGpsDataCold())
-            return; /* No valid GPS data to work with */
+	if (!g_configured)
+		lapstats_setup(gps_snapshot);
 
-    if (!g_configured)
-            lapstats_setup(gps_snapshot);
+	if (isGpsDataCold())
+		return; /* No valid GPS data to work with */
 
-    if (g_configured)
-            lapstats_location_updated(gps_snapshot);
+	if (g_configured)
+		lapstats_location_updated(gps_snapshot);
 }
