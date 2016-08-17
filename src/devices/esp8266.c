@@ -83,8 +83,7 @@ static void cmd_failure(const char *cmd_name, const char *msg)
  * the standard URC callbacks.  Used for the silly messages like
  * `0,CONNECT` where there is no prefix for the URC like their should be.
  * Messages this callback handles:
- * * <0-4>,CONNECT
- * * <0-4>,CLOSED
+ * * <0-4>,{CONNECT,CLOSED}
  * * WIFI {CONNECTED,DISCONNECT,GOT IP}
  */
 static bool sparse_urc_cb(char* msg)
@@ -100,9 +99,9 @@ static bool sparse_urc_cb(char* msg)
                 return true;
         }
 
-        /* Now look for a message with a comma */
+        /* Now look for a message format <0-4>,MSG */
         char* comma = strchr(msg, ',');
-        if (!comma)
+        if (comma != msg + 1)
                 return false;
 
         *comma = '\0';

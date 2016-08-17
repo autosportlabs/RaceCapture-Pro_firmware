@@ -223,31 +223,35 @@ static void process_cmd_or_urc_msg(struct at_info *ati, char *msg)
          * be in progress, it could be a URC buffered in our input.
          * thus this is why we check for URC match first.
          */
-
         struct at_urc* const urc = is_urc_msg(ati, msg);
         if (urc) {
                 begin_urc_msg(ati, urc);
                 return process_urc_msg(ati, msg);
-        } else if (ati->cmd_ip) { /* Now check if command in progress */
-                /* If so, then cmd_ip is already set */
-                return process_cmd_msg(ati, msg);
-        } else {
-                /*
-                 * We got data but have no URC or CMD for it.  Check
-                 * if we have a unhandled_urc_cb method defined.  If
-                 * so use it. If it passes, great, but if it fails or is
-                 * not defined, throw the warning.
-                 */
-                const bool msg_handled =
-                        NULL != ati->unhandled_urc_cb &&
-                        ati->unhandled_urc_cb(msg);
-                if (!msg_handled)
-                        pr_warning_str_msg("[at] Unhandled msg received: ",
-                                           msg);
-
-                /* Need clean the buffer for new msgs */
-                serial_buffer_clear(ati->sb);
         }
+
+	if (ati->unhandled_urc_cb && ati->unhandled_urc_cb(msg)) {
+		/* It was a generic URC that was handled. */
+		return;
+	}
+
+	/*
+	 * Ok... not a URC. Check if there is a command in progress.
+	 * If so, then cmd_ip will be set and we will treat this
+	 * message as a command response.
+	 */
+	if (ati->cmd_ip)
+                return process_cmd_msg(ati, msg);
+
+	/*
+	 * If we end up here we have data but have no URC that handles
+	 * it nor is there any command in progress. This means that we
+	 * have an unhandled message (and these should not happen).
+	 * Log it and move on with life.
+	 */
+	pr_warning_str_msg("[at] Unhandled msg received: ", msg);
+
+	/* Need clean the buffer for new msgs */
+	serial_buffer_clear(ati->sb);
 }
 
 static void at_task_run_bytes_read(struct at_info *ati, char *msg)
