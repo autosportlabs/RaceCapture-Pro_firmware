@@ -103,22 +103,22 @@ struct at_timing {
 
 enum at_dev_cfg_flag {
 	AT_DEV_CFG_FLAG_NONE = 0,
-        /* Used for AT devices that will send URCS mid command response */
-        AT_DEV_CFG_FLAG_RUDE = 1 << 0,
+	/* Used for AT devices that will send URCS mid command response */
+	AT_DEV_CFG_FLAG_RUDE = 1 << 0,
 };
 
 struct at_dev_cfg {
-        char delim[AT_DEV_CVG_DELIM_MAX_LEN];
-        tiny_millis_t quiet_period_ms;
-        enum at_dev_cfg_flag flags;
+	char delim[AT_DEV_CVG_DELIM_MAX_LEN];
+	tiny_millis_t quiet_period_ms;
+	enum at_dev_cfg_flag flags;
 };
 
 enum at_urc_flags {
-        AT_URC_FLAGS_NONE = 0, /* For init with no flags set */
-        /* Indicates URC is only one msg with no status */
-        AT_URC_FLAGS_NO_RSP_STATUS = 1 << 0,
-        /* Indicates we should not strip the trailing msg whitespace chars. */
-        AT_URC_FLAGS_NO_RSTRIP     = 1 << 1,
+	AT_URC_FLAGS_NONE = 0, /* For init with no flags set */
+	/* Indicates URC is only one msg with no status */
+	AT_URC_FLAGS_NO_RSP_STATUS = 1 << 0,
+	/* Indicates we should not strip the trailing msg whitespace chars. */
+	AT_URC_FLAGS_NO_RSTRIP	   = 1 << 1,
 };
 
 struct at_urc {
@@ -190,7 +190,7 @@ struct at_urc* at_register_urc(struct at_info *ati, const char *pfx,
                                void *rsp_up);
 
 bool at_configure_device(struct at_info *ati, const tiny_millis_t qp_ms,
-                         const char *delim);
+                         const char *delim, const enum at_dev_cfg_flag flags);
 
 bool at_ok(struct at_rsp *rsp);
 

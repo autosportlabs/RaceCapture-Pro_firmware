@@ -40,6 +40,7 @@
 #define AT_PROBE_DELAY_MS	200
 #define LOG_PFX	"[esp8266] "
 #define ESP8266_CMD_DELIM      	"\r\n"
+#define ESP8266_DEV_FLAGS	(AT_DEV_CFG_FLAG_RUDE)
 #define ESP8266_QP_MS	1
 #define _TIMEOUT_LONG_MS	5000
 #define _TIMEOUT_MEDIUM_MS	500
@@ -150,7 +151,8 @@ bool esp8266_setup(struct Serial *serial, const size_t max_cmd_len)
         if (!at_info_init(state.ati, state.scb))
                 return false;
 
-	at_configure_device(state.ati, ESP8266_QP_MS, ESP8266_CMD_DELIM);
+	at_configure_device(state.ati, ESP8266_QP_MS, ESP8266_CMD_DELIM,
+			    ESP8266_DEV_FLAGS);
 	at_set_sparse_urc_cb(state.ati, sparse_urc_cb);
 
         return true;

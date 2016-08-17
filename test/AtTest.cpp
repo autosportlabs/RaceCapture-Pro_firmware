@@ -26,13 +26,15 @@
 #include "mock_serial.h"
 #include "serial.h"
 #include "serial_buffer.h"
-
 #include <stdbool.h>
+#include <string.h>
 
 /* Inclue the code to test here */
 extern "C" {
 #include "at.c"
 }
+
+using std::string;
 
 #define DELIMETER	"\n"
 #define QUIET_PERIOD_MS	10
@@ -76,7 +78,8 @@ void AtTest::setUp()
 
         /* Always init our structs */
         at_info_init(&g_ati, &g_sb);
-	at_configure_device(&g_ati, QUIET_PERIOD_MS, DELIMETER);
+	at_configure_device(&g_ati, QUIET_PERIOD_MS, DELIMETER,
+			    AT_DEV_CFG_FLAG_NONE);
 	at_set_sparse_urc_cb(&g_ati, sparse_urc_cb);
 
         g_cb_called = false;
@@ -95,10 +98,14 @@ void AtTest::test_at_info_init()
         CPPUNIT_ASSERT_EQUAL(true, at_info_init(&g_ati, &g_sb));
         CPPUNIT_ASSERT_EQUAL(AT_CMD_STATE_READY, g_ati.cmd_state);
         CPPUNIT_ASSERT_EQUAL(AT_RX_STATE_READY, g_ati.rx_state);
-        CPPUNIT_ASSERT_EQUAL(250, g_ati.dev_cfg.quiet_period_ms);
         CPPUNIT_ASSERT_EQUAL((size_t) 0, g_ati.urc_list.count);
         CPPUNIT_ASSERT_EQUAL(&g_sb, g_ati.sb);
         CPPUNIT_ASSERT_EQUAL((void*) NULL, (void*) g_ati.sparse_urc_cb);
+
+	CPPUNIT_ASSERT_EQUAL(AT_DEFAULT_QP_MS, g_ati.dev_cfg.quiet_period_ms);
+	CPPUNIT_ASSERT_EQUAL(string(AT_DEFAULT_DELIMETER),
+			     string(g_ati.dev_cfg.delim));
+	CPPUNIT_ASSERT_EQUAL(AT_DEV_CFG_FLAG_NONE, g_ati.dev_cfg.flags);
 }
 
 void AtTest::test_at_info_init_failures()
@@ -512,7 +519,7 @@ void AtTest::test_at_configure_device()
         const tiny_millis_t qp = 5;
         const char delim[] = "\b";
 
-        at_configure_device(&g_ati, qp, delim);
+        at_configure_device(&g_ati, qp, delim, AT_DEV_CFG_FLAG_NONE);
 
         CPPUNIT_ASSERT_EQUAL(qp, g_ati.dev_cfg.quiet_period_ms);
         CPPUNIT_ASSERT(!strcmp(delim, g_ati.dev_cfg.delim));
@@ -521,12 +528,14 @@ void AtTest::test_at_configure_device()
 void AtTest::test_at_configure_device_returns()
 {
 	/* A NULL delimeter should yield a false result */
-	CPPUNIT_ASSERT_EQUAL(false, at_configure_device(&g_ati, 1, NULL));
+	CPPUNIT_ASSERT_EQUAL(false, at_configure_device(
+				     &g_ati, 1, NULL, AT_DEV_CFG_FLAG_NONE));
 
 	/* A delimeter that is too large should cause a failure */
 	char delim[AT_DEV_CVG_DELIM_MAX_LEN + 1];
 	memset(delim, '\n', sizeof(delim));
-	CPPUNIT_ASSERT_EQUAL(false, at_configure_device(&g_ati, 2, delim));
+	CPPUNIT_ASSERT_EQUAL(false, at_configure_device(
+				     &g_ati, 2, delim, AT_DEV_CFG_FLAG_NONE));
 }
 
 void AtTest::test_at_ok()

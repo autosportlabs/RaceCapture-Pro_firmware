@@ -397,7 +397,8 @@ bool at_info_init(struct at_info *ati, struct serial_buffer *sb)
         memset(ati, 0, sizeof(*ati));
         ati->sb = sb;
 
-	at_configure_device(ati, AT_DEFAULT_QP_MS, AT_DEFAULT_DELIMETER);
+	at_configure_device(ati, AT_DEFAULT_QP_MS, AT_DEFAULT_DELIMETER,
+			    AT_DEV_CFG_FLAG_NONE);
 
         /* Reset the state machine, and now we are ready to run */
         at_reset(ati);
@@ -511,10 +512,11 @@ struct at_urc* at_register_urc(struct at_info *ati, const char *pfx,
  * @param ati The pointer to the at_info struct.
  * @param qp_ms The quiet period in milliseconds.
  * @param delim The command delimeter characters.  Normally this is "\r\n".
+ * @param flags One or more at_dev_cfg_flag items or'd together.
  * @return true if the parameters are acceptable, false otherwise.
  */
 bool at_configure_device(struct at_info *ati, const tiny_millis_t qp_ms,
-                         const char *delim)
+                         const char *delim, const enum at_dev_cfg_flag flags)
 {
         if (!delim || strlen(delim) >= AT_DEV_CVG_DELIM_MAX_LEN) {
                 pr_error("[at] Failed to set delimeter\r\n");
@@ -523,6 +525,7 @@ bool at_configure_device(struct at_info *ati, const tiny_millis_t qp_ms,
 
         ati->dev_cfg.quiet_period_ms = qp_ms;
         strcpy(ati->dev_cfg.delim, delim); /* Sane b/c strlen check above */
+	ati->dev_cfg.flags = flags;
         return true;
 }
 
