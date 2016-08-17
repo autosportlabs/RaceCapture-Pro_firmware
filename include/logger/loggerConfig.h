@@ -393,8 +393,6 @@ typedef struct _TrackConfig {
     Track track;
 } TrackConfig;
 
-#define DEFAULT_TRACK_AUTO_DETECT 1
-
 #define BT_DEVICE_NAME_LENGTH 21
 #define BT_PASSCODE_LENGTH 5
 #define DEFAULT_BT_ENABLED 1
