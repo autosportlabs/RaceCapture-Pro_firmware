@@ -93,4 +93,7 @@
 #define VERSION_STR MAJOR_REV_STR "." MINOR_REV_STR "." BUGFIX_REV_STR
 #define WELCOME_MSG "Welcome to RaceCapture/Pro MK2 : Firmware Version " VERSION_STR
 
+/* How big is our hardware init stack */
+#define HARDWARE_INIT_STACK_SIZE	256
+
 #endif /* CAPABILITIES_H_ */

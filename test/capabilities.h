@@ -130,6 +130,9 @@ CPP_GUARD_BEGIN
 #define VERSION_STR MAJOR_REV_STR "." MINOR_REV_STR "." BUGFIX_REV_STR
 #define WELCOME_MSG "Welcome to RaceCapture/Pro Sim: Firmware Version " VERSION_STR
 
+/* How big is our hardware init stack */
+#define HARDWARE_INIT_STACK_SIZE	192
+
 CPP_GUARD_END
 
 #endif /* CAPABILITIES_H_ */

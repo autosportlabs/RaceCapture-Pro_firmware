@@ -69,7 +69,6 @@ static const struct app_info_block info_block = {
 #define RCP_INPUT_PRIORITY	TASK_PRIORITY(3)
 #define RCP_OUTPUT_PRIORITY	TASK_PRIORITY(2)
 #define RCP_LUA_PRIORITY	TASK_PRIORITY(1)
-#define HARDWARE_INIT_STACK_SIZE	192
 
 void setupTask(void *param)
 {

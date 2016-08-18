@@ -94,4 +94,7 @@
  */
 #define LUA_REGISTER_EXTERNAL_LIBS	0
 
+/* How big is our hardware init stack */
+#define HARDWARE_INIT_STACK_SIZE	192
+
 #endif /* CAPABILITIES_H_ */
