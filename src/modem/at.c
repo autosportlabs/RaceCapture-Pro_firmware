@@ -218,31 +218,31 @@ static void begin_urc_msg(struct at_info *ati, struct at_urc *urc)
 
 static void process_cmd_or_urc_msg(struct at_info *ati, char *msg)
 {
-        /*
-         * We are starting a new message series.  Gotta figure out
-         * what type of message this is before we process it.  Then
-         * we process it appropriately.  Even though a command may
-         * be in progress, it could be a URC buffered in our input.
-         * thus this is why we check for URC match first.
-         */
-        struct at_urc* const urc = is_urc_msg(ati, msg);
-        if (urc) {
-                begin_urc_msg(ati, urc);
-                return process_urc_msg(ati, msg);
-        }
-
+	/*
+	 * We are starting a new message series or handling a device
+	 * where URCs come in at any time (including mid message).
+	 * Gotta figure out what type of message this is before we
+	 * process it.
+	 */
 	if (ati->sparse_urc_cb && ati->sparse_urc_cb(msg)) {
 		/* It was a sparse URC that was handled. */
 		return;
 	}
 
+	/* Not a sparse URC. Let's see if it is a registered URC */
+	struct at_urc* const urc = is_urc_msg(ati, msg);
+	if (urc) {
+		begin_urc_msg(ati, urc);
+		return process_urc_msg(ati, msg);
+	}
+
 	/*
-	 * Ok... not a URC. Check if there is a command in progress.
+	 * Check if there is a command in progress.
 	 * If so, then cmd_ip will be set and we will treat this
 	 * message as a command response.
 	 */
 	if (ati->cmd_ip)
-                return process_cmd_msg(ati, msg);
+		return process_cmd_msg(ati, msg);
 
 	/*
 	 * If we end up here we have data but have no URC that handles
@@ -259,13 +259,6 @@ static void process_cmd_or_urc_msg(struct at_info *ati, char *msg)
 static void at_task_run_bytes_read(struct at_info *ati, char *msg)
 {
         /*
-         * If here, then we have read a message.  Now we have to process it.
-         * Our rx state will dictate how we process this message beacuse that
-         * allows us to know previous messages and what message type to expect.
-         */
-        enum at_rx_state state = ati->rx_state;
-
-        /*
          * If the device is a rude device, then we need to treat every message
          * as a new message. Sane AT devices will buffer all URCs until after a
          * command is complete.  Some however do not and thus we must acomodate
@@ -273,9 +266,9 @@ static void at_task_run_bytes_read(struct at_info *ati, char *msg)
          * response conflict, but that is the price of a rude device.
          */
         if (ati->dev_cfg.flags & AT_DEV_CFG_FLAG_RUDE)
-                state = AT_RX_STATE_READY;
+                return process_cmd_or_urc_msg(ati, msg);
 
-        switch (state) {
+        switch (ati->rx_state) {
         case AT_RX_STATE_CMD:
                 /* We are in the middle of receiving a command message. */
                 return process_cmd_msg(ati, msg);

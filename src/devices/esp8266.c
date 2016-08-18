@@ -77,20 +77,59 @@ static void cmd_failure(const char *cmd_name, const char *msg)
 }
 
 /**
+ * This is the callback invoked when an IPD URC is seen.
+ */
+static void ipd_urc_cb(char *msg)
+{
+	if (!state.hooks.data_received_cb)
+		return;
+
+	static const char *cmd_name = "ipd_urc_cb";
+
+        /* +IPD,<id>,<len>:<data> */
+        char *toks[4];
+        const int tok_cnt = at_parse_rsp_line(msg, toks, ARRAY_LEN(toks));
+        if (tok_cnt != 4) {
+                cmd_failure(cmd_name, "Unexpected # of tokens in response");
+                return;
+        }
+
+        const int chan_id = atoi(toks[1]);
+        const size_t len = atoi(toks[2]);
+        const char *data = toks[3];
+	const size_t data_len = strlen(data);
+	if (data_len != len) {
+		pr_error(LOG_PFX "IPD Length Mismatch.  Dropping. \r\n");
+		pr_info_int_msg(LOG_PFX "Length Expected: ", (int) len);
+		pr_info_int_msg(LOG_PFX "Length Actual: ", (int) data_len);
+		pr_info_str_msg(LOG_PFX "Data: ", data);
+		return;
+	}
+
+	/* Check twice to ensure that it wasn't unset after first check */
+	if (state.hooks.data_received_cb)
+		state.hooks.data_received_cb(chan_id, len, data);
+}
+
+/**
  * Callback that gets invoked when we are unable to handle the URC using
  * the standard URC callbacks.  Used for the silly messages like
  * `0,CONNECT` where there is no prefix for the URC like their should be.
  * Messages this callback handles:
- * * <0-4>,{CONNECT,CLOSED}
- * * WIFI {CONNECTED,DISCONNECT,GOT IP}
+ * + IPD - Incoming data.
+ * + <0-4>,{CONNECT,CLOSED}
+ * + WIFI {CONNECTED,DISCONNECT,GOT IP}
  */
 static bool sparse_urc_cb(char* msg)
 {
-        msg = strip_inline(msg);
+	if (strncmp(msg, "+IPD,", 5) == 0) {
+		ipd_urc_cb(msg);
+		return true;
+	}
 
-        if (STR_EQ(msg, "WIFI CONNECTED")  ||
-            STR_EQ(msg, "WIFI DISCONNECT") ||
-            STR_EQ(msg, "WIFI GOT IP")) {
+        if (STR_EQ(msg, "WIFI CONNECTED\r\n")  ||
+            STR_EQ(msg, "WIFI DISCONNECT\r\n") ||
+            STR_EQ(msg, "WIFI GOT IP\r\n")) {
                 if (state.hooks.client_state_changed_cb)
                         state.hooks.client_state_changed_cb(msg);
 
@@ -107,10 +146,10 @@ static bool sparse_urc_cb(char* msg)
         const char* m2 = ++comma;
 
         enum socket_action action = SOCKET_ACTION_UNKNOWN;
-        if (STR_EQ(m2, "CONNECT"))
+        if (STR_EQ(m2, "CONNECT\r\n"))
                 action = SOCKET_ACTION_CONNECT;
 
-        if (STR_EQ(m2, "CLOSED"))
+        if (STR_EQ(m2, "CLOSED\r\n"))
                 action = SOCKET_ACTION_DISCONNECT;
 
         if (state.hooks.socket_state_changed_cb &&
@@ -1028,46 +1067,13 @@ bool esp8266_server_cmd(const enum esp8266_server_action action, int port,
 }
 
 /**
- * This is the callback invoked when an IPD URC is seen.
+ * Use this method to update or unset registered callbacks against this
+ * device.
  */
-static bool ipd_urc_cb(struct at_rsp *rsp, void *up)
-{
-        static const char *cmd_name = "ipd_urc_cb";
-        if (AT_RSP_STATUS_NONE != rsp->status) {
-                cmd_failure(cmd_name, "Unexpected response status");
-                return false;
-        }
-
-        /* +IPD,<id>,<len>:<data> */
-        char *toks[4];
-        const int tok_cnt = at_parse_rsp_line(rsp->msgs[0], toks,
-                                              ARRAY_LEN(toks));
-        if (tok_cnt != 4) {
-                cmd_failure(cmd_name, "Unexpected # of tokens in response");
-                return false;
-        }
-
-        const int chan_id = atoi(toks[1]);
-        const size_t len = atoi(toks[2]);
-        const char *msg = toks[3];
-
-        if (state.hooks.data_received_cb)
-                state.hooks.data_received_cb(chan_id, len, msg);
-
-        return false;
-}
-
 bool esp8266_register_callbacks(const struct esp8266_event_hooks* hooks)
 {
         memcpy(&state.hooks, hooks, sizeof(struct esp8266_event_hooks));
-
-        /* Control flags for special handling of response messages */
-        const enum at_urc_flags flags =
-                AT_URC_FLAGS_NO_RSP_STATUS |
-                AT_URC_FLAGS_NO_RSTRIP;
-
-        return NULL != at_register_urc(state.ati, "+IPD,", flags,
-                                       ipd_urc_cb, NULL);
+	return true;
 }
 
 /**
