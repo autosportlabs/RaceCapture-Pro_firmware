@@ -43,7 +43,10 @@ bool at_basic_wait_for_msg(struct Serial* serial, const char* msg,
 	const char* ptr = msg;
 
 	while (!date_time_is_past(term) && *ptr) {
-		const size_t max_delay_ms = term - getUptime();
+		const tiny_millis_t max_delay_ms = term - getUptime();
+		if (max_delay_ms <= 0)
+			continue;
+
 		char rx_char;
 		if (0 < serial_read_c_wait(serial, &rx_char, max_delay_ms))
 			ptr = rx_char == *ptr ? ptr + 1 : msg;

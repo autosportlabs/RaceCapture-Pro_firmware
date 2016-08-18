@@ -96,12 +96,16 @@ static void ipd_urc_cb(char *msg)
 
         const int chan_id = atoi(toks[1]);
         const size_t len = atoi(toks[2]);
-        const char *data = toks[3];
-	const size_t data_len = strlen(data);
-	if (data_len != len) {
+        char *data = toks[3];
+
+	/* Clip the Serial EOM off of the message */
+	const size_t serial_len = serial_msg_strlen(data);
+	data[serial_len] = 0;
+
+	if (serial_len != len) {
 		pr_error(LOG_PFX "IPD Length Mismatch.  Dropping. \r\n");
 		pr_info_int_msg(LOG_PFX "Length Expected: ", (int) len);
-		pr_info_int_msg(LOG_PFX "Length Actual: ", (int) data_len);
+		pr_info_int_msg(LOG_PFX "Length Actual: ", (int) serial_len);
 		pr_info_str_msg(LOG_PFX "Data: ", data);
 		return;
 	}
@@ -1077,30 +1081,18 @@ bool esp8266_register_callbacks(const struct esp8266_event_hooks* hooks)
 }
 
 /**
- * Callback that is invoked upon command completion.
+ * Sets the uart configuration on the esp8266 device. This is a raw &
+ * synchronous operation since the ESP8266 module has a bug in some of its
+ * firmware versions where, upon completion of the command, will not return
+ * a proper serial EOL sequence (\r\n). Instead it only returns a carriage
+ * return character (\r).  Thus we have to manually do the operation here
+ * to account for that anomoly.
+ * @note This method does not adjust anything else besides the esp8266
+ * device. That is left to the caller to handle.
+ * @return True if the operation was successful, false otherwise.
  */
-static bool set_uart_config_cb(struct at_rsp *rsp, void *up)
-{
-        static const char *cmd_name = "set_uart_config_cb";
-        esp8266_set_uart_config_cb_t* cb = up;
-        const bool status = at_ok(rsp);
-
-        if (!status)
-                cmd_failure(cmd_name, NULL);
-
-        if (cb)
-                cb(status);
-
-        return false;
-}
-
-
-/**
- * Sets the uart configuration on the esp8266 device.
- */
-bool esp8266_set_uart_config(const size_t baud, const size_t bits,
-			     const size_t parity, const size_t stop_bits,
-			     esp8266_set_uart_config_cb_t* cb)
+bool esp8266_set_uart_config_raw(const size_t baud, const size_t bits,
+				 const size_t parity, const size_t stop_bits)
 {
         const char cmd_name[] = "set_uart_config";
         if (!state.ati) {
@@ -1117,11 +1109,18 @@ bool esp8266_set_uart_config(const size_t baud, const size_t bits,
 	 * AT+UART_CUR=<baudrate>,<databits>,<stopbits>,<parity>,<flowctrl>
 	 */
 	char cmd[48];
-        snprintf(cmd, ARRAY_LEN(cmd), "AT+UART_CUR=%d,%d,%d,%d,0", (int) baud,
-		 (int) bits, stop_bits_adj, (int) parity);
+        snprintf(cmd, ARRAY_LEN(cmd), "AT+UART_CUR=%d,%d,%d,%d,0%s", (int) baud,
+		 (int) bits, stop_bits_adj, (int) parity, ESP8266_CMD_DELIM);
 
-	return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
-                                  set_uart_config_cb, cb);
+	/* Do it manually because of the ESP8266 Bug */
+	struct Serial* serial = state.scb->serial;
+	serial_flush(serial);
+	serial_write_s(serial, cmd);
+	const bool done = at_basic_wait_for_msg(serial, "OK",
+						_TIMEOUT_MEDIUM_MS);
+	serial_flush(serial);
+
+	return done;
 }
 
 bool esp8266_probe_device(struct Serial* serial, const int fast_baud)
