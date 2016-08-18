@@ -209,7 +209,7 @@ typedef struct _ImuConfig {
 #define DEFAULT_GYRO_ZERO	0
 
 #define IMU_ACCEL_CH_CONFIG(name) {name, "G", -3, 3, SAMPLE_25Hz, 2, 0}
-#define IMU_GYRO_CH_CONFIG(name) {name, "Deg/Sec", -120, 120, SAMPLE_25Hz, 0, 0}
+#define IMU_GYRO_CH_CONFIG(name) {name, "Deg/Sec", -120, 120, SAMPLE_25Hz, 2, 0}
 #define IMU_ACCEL_CONFIG(name, mode, chan) {    \
                 IMU_ACCEL_CH_CONFIG(name),      \
                         mode,                   \
@@ -392,8 +392,6 @@ typedef struct _TrackConfig {
     unsigned char auto_detect;
     Track track;
 } TrackConfig;
-
-#define DEFAULT_TRACK_AUTO_DETECT 1
 
 #define BT_DEVICE_NAME_LENGTH 21
 #define BT_PASSCODE_LENGTH 5
