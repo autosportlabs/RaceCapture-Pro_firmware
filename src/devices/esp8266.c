@@ -97,18 +97,26 @@ static void ipd_urc_cb(char *msg)
         const int chan_id = atoi(toks[1]);
         const size_t len = atoi(toks[2]);
         char *data = toks[3];
+	const size_t serial_len = strlen(data);
 
-	/* Clip the Serial EOM off of the message */
-	const size_t serial_len = serial_msg_strlen(data);
-	data[serial_len] = 0;
 
-	if (serial_len != len) {
+	/*
+	 * Check that we at least got the number of characters expected.
+	 * Clip the message at the given len b/c sometimes esp8266 adds an
+	 * extra \r\n at the end.  This is actually a bug in how we process
+	 * messages from esp8266 since we always expect AT messages to end
+	 * in \r\n and the IPD URC does not always do this (the extra \r\n
+	 * comes from the command messages.
+	 */
+	if (serial_len < len) {
 		pr_error(LOG_PFX "IPD Length Mismatch.  Dropping. \r\n");
 		pr_info_int_msg(LOG_PFX "Length Expected: ", (int) len);
 		pr_info_int_msg(LOG_PFX "Length Actual: ", (int) serial_len);
 		pr_info_str_msg(LOG_PFX "Data: ", data);
 		return;
 	}
+	data[len] = 0;
+
 
 	/* Check twice to ensure that it wasn't unset after first check */
 	if (state.hooks.data_received_cb)
