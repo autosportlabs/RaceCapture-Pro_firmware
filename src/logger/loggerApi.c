@@ -561,9 +561,9 @@ static const jsmntok_t * setChannelConfig(struct Serial *serial, const jsmntok_t
         unescapeTextField(value);
 
         if (STR_EQ("nm", name))
-            memcpy(channelCfg->label, value, DEFAULT_LABEL_LENGTH);
+            strncpy(channelCfg->label, value, DEFAULT_LABEL_LENGTH);
         else if (STR_EQ("ut", name))
-            memcpy(channelCfg->units, value, DEFAULT_UNITS_LENGTH);
+            strncpy(channelCfg->units, value, DEFAULT_UNITS_LENGTH);
         else if (STR_EQ("min", name))
             channelCfg->min = atof(value);
         else if (STR_EQ("max", name))
