@@ -626,35 +626,28 @@ static void set_op_mode(const enum esp8266_op_mode mode)
         cmd_started();
 }
 
-static void set_fast_baud_cb(const bool status)
-{
-	cmd_completed();
-	cmd_set_check(CHECK_WIFI_DEVICE);
-
-	if (!status) {
-		pr_warning(LOG_PFX "Set uart mode failed!\r\n");
-		return;
-	}
-
-	serial_config(esp8266_state.device.serial, ESP8266_SERIAL_DEF_BITS,
-		      ESP8266_SERIAL_DEF_PARITY, ESP8266_SERIAL_DEF_STOP,
-		      WIFI_MAX_BAUD);
-	serial_clear(esp8266_state.device.serial);
-}
-
 static void set_fast_baud()
 {
 	pr_info_int_msg(LOG_PFX "Increasing baud to ", WIFI_MAX_BAUD);
+	cmd_started();
 
-	if (!esp8266_set_uart_config(WIFI_MAX_BAUD, ESP8266_SERIAL_DEF_BITS,
-				     ESP8266_SERIAL_DEF_PARITY,
-				     ESP8266_SERIAL_DEF_STOP,
-				     set_fast_baud_cb)) {
-		pr_warning(LOG_PFX "Failed to invoke set_uart_config\r\n");
-		return;
+	const bool ok = esp8266_set_uart_config_raw(
+		WIFI_MAX_BAUD, ESP8266_SERIAL_DEF_BITS,
+		ESP8266_SERIAL_DEF_PARITY, ESP8266_SERIAL_DEF_STOP);
+
+	if (ok) {
+		serial_config(esp8266_state.device.serial,
+			      ESP8266_SERIAL_DEF_BITS,
+			      ESP8266_SERIAL_DEF_PARITY,
+			      ESP8266_SERIAL_DEF_STOP,
+			      WIFI_MAX_BAUD);
+		serial_clear(esp8266_state.device.serial);
+	} else {
+		pr_warning(LOG_PFX "Set fast baud failed!\r\n");
 	}
 
-	cmd_started();
+	cmd_completed();
+	cmd_set_check(CHECK_WIFI_DEVICE);
 }
 
 /**

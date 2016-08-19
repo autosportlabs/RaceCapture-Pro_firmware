@@ -25,9 +25,11 @@
 #include "printk.h"
 #include "serial_buffer.h"
 #include "str_util.h"
-
 #include <ctype.h>
 #include <string.h>
+
+#define AT_DEFAULT_QP_MS	250
+#define AT_DEFAULT_DELIMETER	"\r\n"
 
 static const enum log_level dbg_lvl = INFO;
 
@@ -216,47 +218,56 @@ static void begin_urc_msg(struct at_info *ati, struct at_urc *urc)
 
 static void process_cmd_or_urc_msg(struct at_info *ati, char *msg)
 {
-        /*
-         * We are starting a new message series.  Gotta figure out
-         * what type of message this is before we process it.  Then
-         * we process it appropriately.  Even though a command may
-         * be in progress, it could be a URC buffered in our input.
-         * thus this is why we check for URC match first.
-         */
+	/*
+	 * We are starting a new message series or handling a device
+	 * where URCs come in at any time (including mid message).
+	 * Gotta figure out what type of message this is before we
+	 * process it.
+	 */
+	if (ati->sparse_urc_cb && ati->sparse_urc_cb(msg)) {
+		/* It was a sparse URC that was handled. */
+		return;
+	}
 
-        struct at_urc* const urc = is_urc_msg(ati, msg);
-        if (urc) {
-                begin_urc_msg(ati, urc);
-                return process_urc_msg(ati, msg);
-        } else if (ati->cmd_ip) { /* Now check if command in progress */
-                /* If so, then cmd_ip is already set */
-                return process_cmd_msg(ati, msg);
-        } else {
-                /*
-                 * We got data but have no URC or CMD for it.  Check
-                 * if we have a unhandled_urc_cb method defined.  If
-                 * so use it. If it passes, great, but if it fails or is
-                 * not defined, throw the warning.
-                 */
-                const bool msg_handled =
-                        NULL != ati->unhandled_urc_cb &&
-                        ati->unhandled_urc_cb(msg);
-                if (!msg_handled)
-                        pr_warning_str_msg("[at] Unhandled msg received: ",
-                                           msg);
+	/* Not a sparse URC. Let's see if it is a registered URC */
+	struct at_urc* const urc = is_urc_msg(ati, msg);
+	if (urc) {
+		begin_urc_msg(ati, urc);
+		return process_urc_msg(ati, msg);
+	}
 
-                /* Need clean the buffer for new msgs */
-                serial_buffer_clear(ati->sb);
-        }
+	/*
+	 * Check if there is a command in progress.
+	 * If so, then cmd_ip will be set and we will treat this
+	 * message as a command response.
+	 */
+	if (ati->cmd_ip)
+		return process_cmd_msg(ati, msg);
+
+	/*
+	 * If we end up here we have data but have no URC that handles
+	 * it nor is there any command in progress. This means that we
+	 * have an unhandled message (and these should not happen).
+	 * Log it and move on with life.
+	 */
+	pr_warning_str_msg("[at] Unhandled msg received: ", msg);
+
+	/* Need clean the buffer for new msgs */
+	serial_buffer_clear(ati->sb);
 }
 
 static void at_task_run_bytes_read(struct at_info *ati, char *msg)
 {
         /*
-         * If here, then we have read a message.  Now we have to process it.
-         * Our rx state will dictate how we process this message beacuse that
-         * allows us to know previous messages and what message type to expect.
+         * If the device is a rude device, then we need to treat every message
+         * as a new message. Sane AT devices will buffer all URCs until after a
+         * command is complete.  Some however do not and thus we must acomodate
+         * them here.  This has potential drawbacks if a URC and a command
+         * response conflict, but that is the price of a rude device.
          */
+        if (ati->dev_cfg.flags & AT_DEV_CFG_FLAG_RUDE)
+                return process_cmd_or_urc_msg(ati, msg);
+
         switch (ati->rx_state) {
         case AT_RX_STATE_CMD:
                 /* We are in the middle of receiving a command message. */
@@ -366,19 +377,9 @@ void at_reset(struct at_info *ati)
  * @param ati The at_info structure to initialize.
  * @param sb The serial_buffer to use for tx/rx.  Data is kept in the buffer
  *           and is referenced until the command completes.  Then its gone.
- * @param quiet_period_ms The quiet period to wait between the end of a
- *        command and when to start the next.  Some modems need time to recover
- *        and send URCs.
- * @param unhandled_urc_cb A method to invoke if we receive a URC that is not
- *        handled by one of our URC handlers.  Happens sometimes when there is
- *        poor AT command design.  This is the last resort method of handling
- *        a URC.  Use the URC handlers when possible for sanity and better
- *        features.  Can be NULL, indicating that there is no method to use.
  * @return true if the parameters were acceptable, false otherwise.
  */
-bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
-                  const tiny_millis_t quiet_period_ms, const char *delim,
-                  unhandled_urc_cb_t unhandled_urc_cb)
+bool at_info_init(struct at_info *ati, struct serial_buffer *sb)
 {
         if (!ati || !sb) {
                 pr_error("[at] Bad init parameter\r\n");
@@ -387,14 +388,24 @@ bool init_at_info(struct at_info *ati, struct serial_buffer *sb,
 
         /* Clear everything.  We don't know where at_info has been */
         memset(ati, 0, sizeof(*ati));
-        ati->unhandled_urc_cb = unhandled_urc_cb;
         ati->sb = sb;
-        if (!at_configure_device(ati, quiet_period_ms, delim))
-                return false;
+
+	at_configure_device(ati, AT_DEFAULT_QP_MS, AT_DEFAULT_DELIMETER,
+			    AT_DEV_CFG_FLAG_NONE);
 
         /* Reset the state machine, and now we are ready to run */
         at_reset(ati);
         return true;
+}
+
+/**
+ * Allows the caller to set the sparse URC handler.  This handler should only
+ * be used in cases where the URCs coming back from the device are so bad that
+ * they can not be parsed by the normal URC parser.
+ */
+void at_set_sparse_urc_cb(struct at_info *ati, sparse_urc_cb_t* cb)
+{
+        ati->sparse_urc_cb = cb;
 }
 
 /**
@@ -494,18 +505,20 @@ struct at_urc* at_register_urc(struct at_info *ati, const char *pfx,
  * @param ati The pointer to the at_info struct.
  * @param qp_ms The quiet period in milliseconds.
  * @param delim The command delimeter characters.  Normally this is "\r\n".
+ * @param flags One or more at_dev_cfg_flag items or'd together.
  * @return true if the parameters are acceptable, false otherwise.
  */
 bool at_configure_device(struct at_info *ati, const tiny_millis_t qp_ms,
-                         const char *delim)
+                         const char *delim, const enum at_dev_cfg_flag flags)
 {
         if (!delim || strlen(delim) >= AT_DEV_CVG_DELIM_MAX_LEN) {
-                pr_error("[at] Failed to set delimeter\r\b");
+                pr_error("[at] Failed to set delimeter\r\n");
                 return false;
         }
 
         ati->dev_cfg.quiet_period_ms = qp_ms;
         strcpy(ati->dev_cfg.delim, delim); /* Sane b/c strlen check above */
+	ati->dev_cfg.flags = flags;
         return true;
 }
 

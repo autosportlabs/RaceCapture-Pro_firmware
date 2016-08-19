@@ -26,7 +26,9 @@
 #include <string.h>
 
 /**
- * Like strlen, except it ignores serial control characters.
+ * Like strlen, except it ignores serial control characters. We consider
+ * it the end of a serial message if the message ends with "\r\n" or if it
+ * ends with '\0'.
  * @return length of the message, not including any serial control
  * characters.
  */
@@ -34,11 +36,14 @@ size_t serial_msg_strlen(const char *data)
 {
         size_t len = 0;
 
+	/* The for loop check handles the "\0" case */
         for (; *data; ++data, ++len) {
                 switch (*data) {
                 case '\r':
-                case '\n':
-                case '\0':
+			/* Check for the "\r\n" case */
+			if ('\n' != data[1])
+				continue;
+
                         return len;
                 }
         }

@@ -32,8 +32,8 @@ using std::string;
 
 void StrUtilTest::serial_msg_strlen_test()
 {
-        CPPUNIT_ASSERT_EQUAL((size_t) 3, serial_msg_strlen("Foo\r"));
-	CPPUNIT_ASSERT_EQUAL((size_t) 5, serial_msg_strlen("baRRR\n"));
+        CPPUNIT_ASSERT_EQUAL((size_t) 4, serial_msg_strlen("Foo\r"));
+	CPPUNIT_ASSERT_EQUAL((size_t) 5, serial_msg_strlen("baRRR\r\n"));
 	CPPUNIT_ASSERT_EQUAL((size_t) 7, serial_msg_strlen("bazzzz\t"));
 	CPPUNIT_ASSERT_EQUAL((size_t) 0, serial_msg_strlen(""));
 }

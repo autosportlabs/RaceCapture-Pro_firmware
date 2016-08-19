@@ -204,11 +204,8 @@ enum esp8266_server_action {
 bool esp8266_server_cmd(const enum esp8266_server_action action, int port,
                         void (*cb)(bool));
 
-typedef void esp8266_set_uart_config_cb_t(const bool status);
-
-bool esp8266_set_uart_config(const size_t baud, const size_t bits,
-			     const size_t parity, const size_t stop_bits,
-			     esp8266_set_uart_config_cb_t* cb);
+bool esp8266_set_uart_config_raw(const size_t baud, const size_t bits,
+				 const size_t parity, const size_t stop_bits);
 
 bool esp8266_probe_device(struct Serial* serial, const int fast_baud);
 
