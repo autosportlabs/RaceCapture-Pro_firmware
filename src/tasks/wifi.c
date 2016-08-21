@@ -148,7 +148,7 @@ static bool send_event(struct wifi_event* event, const char* event_name,
 	if (sent)
 		return true;
 
-	pr_warning_str_msg(LOG_PFX "Event overflow: ", event_name);
+	pr_debug_str_msg(LOG_PFX "Event overflow: ", event_name);
 	return false;
 }
 
@@ -493,7 +493,7 @@ static void process_sample(struct wifi_sample_data* data)
 
         if (ticks != sample->ticks) {
                 /* Then the sample has changed underneath us */
-                pr_warning(LOG_PFX "Stale sample.  Dropping \r\n");
+                pr_debug(LOG_PFX "Stale sample.  Dropping \r\n");
                 return;
         }
 

@@ -83,6 +83,14 @@ int ADC_device_init(void)
         /* Calibration procedure */
         ADC_VoltageRegulatorCmd(ADC3, ENABLE);
 
+	/* Disable ADC3 and its associated DMA before we calibrate if enabled. */
+	if (ADC3->CR & ADC_CR_ADEN) {
+		ADC_StopConversion(ADC3);
+		while(SET == ADC_GetStartConversionStatus(ADC3));
+		ADC_Cmd(ADC3, DISABLE);
+		while(SET == ADC_GetDisableCmdStatus(ADC3));
+	}
+
         /*
          * Wait at least 10us before starting calibration or enabling.
          * Since there is no interrupt to tell me this is ready we just
