@@ -1477,3 +1477,12 @@ bool esp8266_drv_client_connected()
         const struct esp8266_client_info *ci = &esp8266_state.client.info;
         return cfg && ci->has_ap && STR_EQ(ci->ssid, cfg->ssid);
 }
+
+/**
+ * Tells us if the driver is in an initialized and ready state.
+ * @return true if it is, false otherwise.
+ */
+bool esp8266_drv_is_initialized()
+{
+	return esp8266_state.device.init_state == INIT_STATE_READY;
+}

@@ -237,14 +237,20 @@ static void get_imu_status(struct Serial *serial, const bool more)
 
 static void get_wifi_status(struct Serial* serial, const bool more)
 {
+        const LoggerConfig *lc = getWorkingLoggerConfig();
+
         const struct wifi_ap_cfg* ap_cfg = esp8266_drv_get_ap_config();
         const struct wifi_client_cfg* clt_cfg = esp8266_drv_get_client_config();
 
         const bool ap_active = ap_cfg && ap_cfg->active;
         const bool client_active = clt_cfg && clt_cfg->active;
         const bool client_connected = esp8266_drv_client_connected();
+	const bool device_active = lc->ConnectivityConfigs.wifi.active;
+	const bool device_init = esp8266_drv_is_initialized();
 
         json_objStartString(serial, "wifi");
+	json_bool(serial, "active", device_active, true);
+	json_bool(serial, "initialized", device_init, true);
 
         json_objStartString(serial, "ap");
         json_bool(serial, "active", ap_active, false);
