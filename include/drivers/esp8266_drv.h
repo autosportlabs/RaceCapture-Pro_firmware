@@ -57,6 +57,8 @@ const struct esp8266_ipv4_info* get_ap_ipv4_info();
 
 bool esp8266_drv_client_connected();
 
+bool esp8266_drv_is_initialized();
+
 CPP_GUARD_END
 
 #endif /* _ESP8266_DRV_H_ */
