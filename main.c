@@ -78,11 +78,12 @@ void setupTask(void *param)
         InitLoggerHardware();
         initMessaging();
 
+	startGPSTask(RCP_INPUT_PRIORITY);
+
 #if USB_SERIAL_SUPPORT
         startUSBCommTask(RCP_INPUT_PRIORITY);
 #endif
 
-        startGPSTask(RCP_INPUT_PRIORITY);
         startOBD2Task(RCP_INPUT_PRIORITY);
         startConnectivityTask(RCP_OUTPUT_PRIORITY);
         startLoggerTaskEx(RCP_LOGGING_PRIORITY);

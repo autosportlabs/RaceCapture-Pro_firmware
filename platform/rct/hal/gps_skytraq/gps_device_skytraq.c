@@ -24,6 +24,7 @@
 #define MAX_PAYLOAD_LEN			256
 #define GPS_MSG_RX_WAIT_MS		2000
 #define GPS_MESSAGE_BUFFER_LEN		1024
+#define GPS_INIT_DELAY_MS		100
 #define TARGET_BAUD_RATE 		115200
 #define MESSAGE_TYPE_NMEA		1
 #define MESSAGE_TYPE_BINARY		2
@@ -647,34 +648,18 @@ static uint8_t getTargetUpdateRate(uint8_t sampleRate)
     return 1;
 }
 
-/**
- * Sets up the reset control for the GPS module which
- * allows hard reset of the GPS module via software.
- */
-static void GPS_init_reset_line(void)
-{
-	GPIO_InitTypeDef  GPIO_InitStructure;
-
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
-
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
-	GPIO_SetBits(GPIOB, GPIO_Pin_2);
-}
-
 gps_status_t GPS_device_init(uint8_t sampleRate, struct Serial *serial)
 {
-	GPS_init_reset_line();
+	pr_info("GPS: Initializing...\r\n");
+	serial_flush(serial);
+
+	/* Delay a bit to let GPS chip come online */
+	vTaskDelay(msToTicks(GPS_INIT_DELAY_MS));
+	serial_flush(serial);
 
     size_t attempts = MAX_PROVISIONING_ATTEMPTS;
     size_t gps_init_status = GPS_STATUS_NOT_INIT;
 
-    vTaskDelay(msToTicks(500));
     while(attempts-- && gps_init_status == GPS_STATUS_NOT_INIT) {
         while(1) {
             pr_info("GPS: provisioning attempt\r\n");
