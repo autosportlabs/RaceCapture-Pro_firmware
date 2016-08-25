@@ -649,10 +649,15 @@ static uint8_t getTargetUpdateRate(uint8_t sampleRate)
 
 gps_status_t GPS_device_init(uint8_t sampleRate, struct Serial *serial)
 {
+	pr_info("GPS: Initializing...\r\n");
+	serial_flush(serial);
+
+	vTaskDelay(msToTicks(500));
+	serial_flush(serial);
+
     size_t attempts = MAX_PROVISIONING_ATTEMPTS;
     size_t gps_init_status = GPS_STATUS_NOT_INIT;
 
-    vTaskDelay(msToTicks(500));
     while(attempts-- && gps_init_status == GPS_STATUS_NOT_INIT) {
         while(1) {
             pr_info("GPS: provisioning attempt\r\n");
