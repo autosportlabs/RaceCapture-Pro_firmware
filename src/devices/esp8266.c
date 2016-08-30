@@ -133,15 +133,19 @@ static void wifi_action_callback(const char* msg)
 	/* Look at our 5th character to determin our action */
 	switch (msg[5]) {
 	case 'C':
+		/* WIFI CONNECT */
 		action = CLIENT_ACTION_CONNECT;
 		break;
 	case 'D':
+		/* WIFI DISCONNECT */
 		action = CLIENT_ACTION_DISCONNECT;
 		break;
 	case 'G':
+		/* WIFI GOT IP */
 		action = CLIENT_ACTION_GOT_IP;
 		break;
 	default:
+		pr_warning_str_msg(LOG_PFX "Unknown Wifi Action: ", msg);
 		action = CLIENT_ACTION_UNKNOWN;
 		break;
 	}
