@@ -53,11 +53,18 @@ enum dev_init_state {
 	DEV_INIT_STATE_READY	 =  1,
 };
 
+enum client_action {
+	CLIENT_ACTION_UNKNOWN,
+	CLIENT_ACTION_CONNECT,
+	CLIENT_ACTION_DISCONNECT,
+	CLIENT_ACTION_GOT_IP,
+};
+
 /**
  * Called whenever the device informs us that the state of the
  * wifi client has changed.
  */
-typedef void client_state_changed_cb_t(const char* msg);
+typedef void client_state_changed_cb_t(const enum client_action action);
 
 /**
  * An action taken by the ESP8266 on a socket.

@@ -123,6 +123,36 @@ static void ipd_urc_cb(char *msg)
 		state.hooks.data_received_cb(chan_id, len, data);
 }
 
+static void wifi_action_callback(const char* msg)
+{
+	/* Check for the hook */
+	if (!state.hooks.client_state_changed_cb)
+		return;
+
+	enum client_action action;
+	/* Look at our 5th character to determin our action */
+	switch (msg[5]) {
+	case 'C':
+		/* WIFI CONNECT */
+		action = CLIENT_ACTION_CONNECT;
+		break;
+	case 'D':
+		/* WIFI DISCONNECT */
+		action = CLIENT_ACTION_DISCONNECT;
+		break;
+	case 'G':
+		/* WIFI GOT IP */
+		action = CLIENT_ACTION_GOT_IP;
+		break;
+	default:
+		pr_warning_str_msg(LOG_PFX "Unknown Wifi Action: ", msg);
+		action = CLIENT_ACTION_UNKNOWN;
+		break;
+	}
+
+	state.hooks.client_state_changed_cb(action);
+}
+
 /**
  * Callback that gets invoked when we are unable to handle the URC using
  * the standard URC callbacks.  Used for the silly messages like
@@ -139,14 +169,10 @@ static bool sparse_urc_cb(char* msg)
 		return true;
 	}
 
-        if (STR_EQ(msg, "WIFI CONNECTED\r\n")  ||
-            STR_EQ(msg, "WIFI DISCONNECT\r\n") ||
-            STR_EQ(msg, "WIFI GOT IP\r\n")) {
-                if (state.hooks.client_state_changed_cb)
-                        state.hooks.client_state_changed_cb(msg);
-
-                return true;
-        }
+        if (strncmp(msg, "WIFI ", 5) == 0) {
+		wifi_action_callback(msg);
+		return true;
+	}
 
         /* Now look for a message format <0-4>,MSG */
         char* comma = strchr(msg, ',');

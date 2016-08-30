@@ -79,6 +79,7 @@ struct client {
         struct esp8266_ipv4_info ipv4;
         tiny_millis_t info_timestamp;
         tiny_millis_t next_join_attempt;
+	bool configured;
 };
 
 struct ap {
@@ -290,7 +291,7 @@ static struct channel* channel_setup(const unsigned int index,
 		/* Channel is in use!  Something is wrong */
                 pr_warning_int_msg(LOG_PFX "Setup called on allocated "
 				   "channel ", index);
-		pr_warning(LOG_PFX "Closing stale Serial object");
+		pr_warning(LOG_PFX "Closing stale Serial object\r\n");
 		channel_close(ch);
 	}
 
@@ -482,17 +483,38 @@ static void check_data()
 /**
  * Callback that gets invoked when our client wifi state changes.
  */
-static void client_state_changed_cb(const char* msg)
+static void client_state_changed_cb(const enum client_action action)
 {
         /* Need to check our client now that a change has occured */
         cmd_set_check(CHECK_WIFI_CLIENT);
 
-        memset(&esp8266_state.client.info, 0,
-               sizeof(esp8266_state.client.info));
-        memset(&esp8266_state.client.ipv4, 0,
-               sizeof(esp8266_state.client.ipv4));
+	switch (action) {
+	case CLIENT_ACTION_CONNECT:
+		pr_info(LOG_PFX "Client connected\r\n");
+		esp8266_state.client.info.has_ap = true;
+		break;
+	case CLIENT_ACTION_DISCONNECT:
+		pr_info(LOG_PFX "Client disconnected\r\n");
+		memset(&esp8266_state.client.info, 0,
+		       sizeof(esp8266_state.client.info));
+		memset(&esp8266_state.client.ipv4, 0,
+		       sizeof(esp8266_state.client.ipv4));
+		break;
+	case CLIENT_ACTION_GOT_IP:
+		pr_info(LOG_PFX "Client got IPv4 address\r\n");
+		memset(&esp8266_state.client.ipv4, 0,
+		       sizeof(esp8266_state.client.ipv4));
 
-        pr_info_str_msg(LOG_PFX "Client state changed: ", msg);
+		/*
+		 * Don't update client info until we get an IP.  Because
+		 * if you try to do this it will fail.  Blah.
+		 */
+		esp8266_state.client.info_timestamp = 0;
+		break;
+	default:
+		pr_warning(LOG_PFX "BUG: Unknown client action.\r\n");
+		break;
+	}
 }
 
 /* *** Methods that handle device init and reset *** */
@@ -800,12 +822,11 @@ static void set_client_ap_cb(bool status)
         } else {
                 /* If here, we were successful. */
                 pr_info(LOG_PFX "Successfully joined network\r\n");
+		esp8266_state.client.info_timestamp = 0;
         }
 
-        /* Clear the client info since it has changed. */
-        esp8266_state.client.info_timestamp = 0;
-        memset(&esp8266_state.client.info, 0,
-               sizeof(esp8266_state.client.info));
+	/* Even if we fail to connect, we have still configured esp8266 */
+	esp8266_state.client.configured = true;
 }
 
 /**
@@ -819,26 +840,6 @@ static void set_client_ap()
         pr_info_str_msg(LOG_PFX "Joining network: ", cc->ssid);
         esp8266_join_ap(cc->ssid, cc->passwd, set_client_ap_cb);
         cmd_started();
-}
-
-/**
- * Helper method to check_wifi_client.  This method tries to join an AP, but
- * also handles cases where its not reachable or we have other issues
- * (like an incorrect password).
- */
-static void client_try_join_ap()
-{
-        if (!date_time_is_past(esp8266_state.client.next_join_attempt)){
-                /* Then we need to backoff */
-                const tiny_millis_t sleep_len =
-                        esp8266_state.client.next_join_attempt - getUptime();
-                cmd_sleep(CHECK_WIFI_CLIENT, sleep_len);
-        } else {
-                /* If here, then its time to do work */
-                esp8266_state.client.next_join_attempt =
-                        date_time_uptime_now_plus(CLIENT_BACKOFF_MS);
-                set_client_ap();
-        }
 }
 
 /**
@@ -877,13 +878,19 @@ static void check_wifi_client()
                  * the correct client network.  If not, try to get on
                  * the correct network.
                  */
-                if (!esp8266_drv_client_connected()) {
+                if (!esp8266_state.client.configured) {
                         /* Then we need to try and join the AP */
-                        client_try_join_ap();
+			set_client_ap();
                         return;
                 }
 
-                /* If here, then on correct AP.  Do we have IP info? */
+		if (!esp8266_drv_client_connected()) {
+			/* Then no client connection yet.  Done */
+			pr_info(LOG_PFX "Can't connect to client Wifi\r\n");
+			return;
+		}
+
+                /* If here, then on client network.  Do we have IP info? */
                 if (!*esp8266_state.client.ipv4.address) {
                         /* Then we need to get IP Information */
                         get_ip_info();
@@ -1177,6 +1184,7 @@ bool esp8266_drv_update_client_cfg(const struct wifi_client_cfg *cc)
         esp8266_state.client.config = cc;
 
         /* Set flags for what states need checking */
+	esp8266_state.client.configured = false;
         cmd_set_check(CHECK_WIFI_DEVICE);
         cmd_set_check(CHECK_WIFI_CLIENT);
 
@@ -1475,7 +1483,7 @@ bool esp8266_drv_client_connected()
 {
         const struct wifi_client_cfg *cfg = esp8266_state.client.config;
         const struct esp8266_client_info *ci = &esp8266_state.client.info;
-        return cfg && ci->has_ap && STR_EQ(ci->ssid, cfg->ssid);
+        return cfg && ci->has_ap;
 }
 
 /**
