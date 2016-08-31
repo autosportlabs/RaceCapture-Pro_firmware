@@ -23,20 +23,25 @@
 #include "api.h"
 #include "constants.h"
 #include "loggerApi.h"
-#include <string.h>
+#include "panic.h"
 #include "printk.h"
 #include <string.h>
 
 #define JSON_TOKENS 200
 
 static jsmn_parser g_jsonParser;
-static jsmntok_t g_json_tok[JSON_TOKENS];
-
-const api_t apis[] = {API_METHODS NULL_API};
+static jsmntok_t* g_json_tok;
+static const api_t apis[] = {API_METHODS NULL_API};
 
 void initApi()
 {
-    jsmn_init(&g_jsonParser);
+	if (NULL == g_json_tok)
+		g_json_tok = calloc(sizeof(jsmntok_t), JSON_TOKENS);
+
+	if (NULL == g_json_tok)
+		panic(PANIC_CAUSE_MALLOC);
+
+	jsmn_init(&g_jsonParser);
 }
 
 static void putQuotedStr(struct Serial *serial, const char *str)
@@ -233,18 +238,17 @@ static int execute_api(struct Serial * serial, const jsmntok_t *json)
 
 int process_api(struct Serial *serial, char *buffer, size_t bufferSize)
 {
-    jsmn_init(&g_jsonParser);
-    memset(g_json_tok, 0, sizeof(g_json_tok));
+	jsmn_init(&g_jsonParser);
+	memset(g_json_tok, 0, sizeof(jsmntok_t) * JSON_TOKENS);
 
-    int r = jsmn_parse(&g_jsonParser, buffer, g_json_tok, JSON_TOKENS);
-    if (r == JSMN_SUCCESS) {
-        return execute_api(serial, g_json_tok);
-    } else {
-        pr_warning("API Parsing Error: \"");
-        pr_warning(buffer);
-        pr_warning_int_msg("\"\r\n failed with code ", r);
-        return API_ERROR_MALFORMED;
-    }
+	const int r = jsmn_parse(&g_jsonParser, buffer, g_json_tok, JSON_TOKENS);
+	if (JSMN_SUCCESS == r)
+		return execute_api(serial, g_json_tok);
+
+	pr_warning("API Parsing Error: \"");
+	pr_warning(buffer);
+	pr_warning_int_msg("\"\r\n failed with code ", r);
+	return API_ERROR_MALFORMED;
 }
 
 const char* unknown_api_key()
