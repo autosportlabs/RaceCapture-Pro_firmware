@@ -101,7 +101,7 @@ struct channel {
 struct channel_sync_op {
         xSemaphoreHandle op_semaphore;
         xSemaphoreHandle cb_semaphore;
-        size_t chan_id;
+        int chan_id;
 };
 
 struct comm {
@@ -292,7 +292,9 @@ static struct channel* channel_setup(const unsigned int index,
                 pr_warning_int_msg(LOG_PFX "Setup called on allocated "
 				   "channel ", index);
 		pr_warning(LOG_PFX "Closing stale Serial object\r\n");
+		struct Serial* s = ch->serial;
 		channel_close(ch);
+		serial_destroy(s);
 	}
 
 	if (0 == rx_size)
@@ -332,53 +334,70 @@ static int channel_get_next_available()
 	return channel_find_serial(NULL);
 }
 
+static void socket_connect_handler(const size_t chan_id)
+{
+	/* Check if the connect op is in progress.  If so, take no action */
+	struct channel_sync_op *cso = &esp8266_state.comm.connect_op;
+	if (cso->chan_id == chan_id)
+		return;
+
+	struct channel *ch = esp8266_state.comm.channels + chan_id;
+	/* Use Defaults for rx and tx buff sizes */
+	if (!channel_setup(chan_id, 0, 0)) {
+		/* Close the channel.  Best effort here. */
+		channel_close(ch);
+		esp8266_close(chan_id, NULL);
+		return;
+	}
+
+	if (esp8266_state.comm.new_conn_cb) {
+		esp8266_state.comm.new_conn_cb(ch->serial);
+	} else {
+		pr_warning(LOG_PFX "No incoming server callback "
+			   "defined.\r\n");
+	}
+}
+
+static void socket_disconnect_handler(const size_t chan_id)
+{
+	/* Check if the close op is in progress.  If so, take no action */
+	struct channel_sync_op *cso = &esp8266_state.comm.close_op;
+	if (cso->chan_id == chan_id)
+		return;
+
+	struct channel *ch = esp8266_state.comm.channels + chan_id;
+	channel_close(ch);
+}
 
 /**
  * Callback that gets invoked when a socket state changes.
  */
 static void socket_state_changed_cb(const size_t chan_id,
-                                    const enum socket_action action)
+				    const enum socket_action action)
 {
-        if (!channel_is_valid_id(chan_id)) {
-                pr_warning_int_msg(LOG_PFX "Invalid socket id: ",
-                                   chan_id);
-                return;
-        }
+	if (!channel_is_valid_id(chan_id)) {
+		pr_warning_int_msg(LOG_PFX "Invalid socket id: ",
+				   chan_id);
+		return;
+	}
 
-        struct channel *ch = esp8266_state.comm.channels + chan_id;
-        switch (action) {
-        case SOCKET_ACTION_DISCONNECT:
-                pr_info_int_msg(LOG_PFX "Socket closed on channel ",
-                                chan_id);
-		channel_close(ch);
-                break;
-        case SOCKET_ACTION_CONNECT:
-                pr_info_int_msg(LOG_PFX "Socket connected on channel ",
-                                chan_id);
-
-		/* Use Defaults for rx and tx buff sizes */
-		if (!channel_setup(chan_id, 0, 0)) {
-			/* Close the channel.  Best effort here. */
-			channel_close(ch);
-			esp8266_close(chan_id, NULL);
-			break;
-		}
-
-		if (esp8266_state.comm.new_conn_cb) {
-			esp8266_state.comm.new_conn_cb(ch->serial);
-		} else {
-			pr_warning(LOG_PFX "No incoming server callback "
-				   "defined. Dropping data...\r\n");
-		}
-
-                break;
-        default:
-                pr_warning_int_msg(LOG_PFX "Unknown socket action: ",
+	cmd_set_check(CHECK_DATA);
+	switch (action) {
+	case SOCKET_ACTION_DISCONNECT:
+		pr_info_int_msg(LOG_PFX "Socket closed on channel ",
+				chan_id);
+		socket_disconnect_handler(chan_id);
+		break;
+	case SOCKET_ACTION_CONNECT:
+		pr_info_int_msg(LOG_PFX "Socket connected on channel ",
+				chan_id);
+		socket_connect_handler(chan_id);
+		break;
+	default:
+		pr_warning_int_msg(LOG_PFX "Unknown socket action: ",
 				   action);
-                break;
-        }
-
-        cmd_set_check(CHECK_DATA);
+		break;
+	}
 }
 
 /**
@@ -1402,6 +1421,7 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
         pr_info_int_msg(LOG_PFX "Connected on comm channel ", cso->chan_id);
 
 done:
+	cso->chan_id = -1;
         xSemaphoreGive(cso->op_semaphore);
         return serial;
 }
@@ -1416,7 +1436,7 @@ static void close_cb(const bool status)
 
 	if (!status)
 		pr_warning_int_msg(LOG_PFX "Failed to close channel ",
-				   (int) cso->chan_id);
+				   cso->chan_id);
 
         xSemaphoreGive(cso->cb_semaphore);
 }
@@ -1461,6 +1481,7 @@ bool esp8266_drv_close(struct Serial* serial)
         }
 
 done:
+	cso->chan_id = -1;
         xSemaphoreGive(cso->op_semaphore);
         return status;
 }
