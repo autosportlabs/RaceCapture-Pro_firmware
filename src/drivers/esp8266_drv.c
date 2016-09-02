@@ -49,6 +49,7 @@
 #define CHECK_DONE_SLEEP_MS	3600000
 #define CLIENT_BACKOFF_MS	3000
 #define INIT_FAIL_SLEEP_MS	10000
+#define INVALID_CHANNEL_ID	-1
 #define LED_PERIOD_MS		25
 #define LOG_PFX			"[ESP8266 Driver] "
 #define MAX_CHANNELS		5
@@ -326,7 +327,7 @@ static int channel_find_serial(struct Serial *serial)
                         return i;
         }
 
-        return -1;
+        return INVALID_CHANNEL_ID;
 }
 
 static int channel_get_next_available()
@@ -1421,7 +1422,7 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
         pr_info_int_msg(LOG_PFX "Connected on comm channel ", cso->chan_id);
 
 done:
-	cso->chan_id = -1;
+	cso->chan_id = INVALID_CHANNEL_ID;
         xSemaphoreGive(cso->op_semaphore);
         return serial;
 }
@@ -1481,7 +1482,7 @@ bool esp8266_drv_close(struct Serial* serial)
         }
 
 done:
-	cso->chan_id = -1;
+	cso->chan_id = INVALID_CHANNEL_ID;
         xSemaphoreGive(cso->op_semaphore);
         return status;
 }
