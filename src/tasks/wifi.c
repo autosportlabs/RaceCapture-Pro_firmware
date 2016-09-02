@@ -236,7 +236,8 @@ static enum serial_ioctl_status set_telemetry(struct connection* conn,
 
 		if (rate > WIFI_MAX_SAMPLE_RATE) {
 			pr_info_int_msg(LOG_PFX "Telemetry stream rate too "
-					"high.  Reducing to ", rate);
+					"high.  Reducing to ",
+					WIFI_MAX_SAMPLE_RATE);
 			rate = WIFI_MAX_SAMPLE_RATE;
 		}
 
