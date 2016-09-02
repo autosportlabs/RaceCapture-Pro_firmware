@@ -43,19 +43,23 @@ _Min_Stack_Size = 0x400; 	/* required amount of stack */
 MEMORY
 {
   BOOTLDR   (rx)    : ORIGIN = 0x08000000, LENGTH = 16K
-  FLASH     (rx)    : ORIGIN = 0x08004000, LENGTH = 256K - 48K
+  FLASH	    (rx)    : ORIGIN = 0x08004000, LENGTH = 256K - 48K
 
   CONFIG    (rx)    : ORIGIN = 0x08038000, LENGTH = 16K
   TRACKS    (rx)    : ORIGIN = 0x0803C000, LENGTH = 16K
 
+  /* BSS segment of STM32f3.  8K in size */
+  BSS       (rxw)   : ORIGIN = 0x10000000, LENGTH = 8K
+
+  /* SRAM segment of STM32f3. 40K in size */
   HANDSHAKE (rwx)   : ORIGIN = 0x20000000, LENGTH = 8
-  RAM       (xrw)   : ORIGIN = 0x20000008, LENGTH = 40K - 8
-  CCM_RAM   (rxw)   : ORIGIN = 0x10000000, LENGTH = 8K
+  DATA      (rwx)   : ORIGIN = 0x20000008, LENGTH = 4K - 8
+  HEAP      (rwx)   : ORIGIN = 0x20001000, LENGTH = 36K
 }
 
-_heap_address = ORIGIN(RAM);
+_heap_address = ORIGIN(HEAP);
 _flash_start = ORIGIN(FLASH) - ORIGIN(BOOTLDR);
-_CONFIG_HEAP_SIZE = LENGTH(RAM);
+_CONFIG_HEAP_SIZE = LENGTH(HEAP);
 
 /* Define output sections */
 SECTIONS
@@ -141,7 +145,7 @@ SECTIONS
 
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
-  } >RAM
+  } >DATA
 
   /* Uninitialized data section */
   . = ALIGN(4);
@@ -157,7 +161,7 @@ SECTIONS
     . = ALIGN(4);
     _ebss = .;         /* define a global symbol at bss end */
     __bss_end__ = _ebss;
-  } >RAM
+  } >BSS
 
   PROVIDE ( end = _ebss );
   PROVIDE ( _end = _ebss );
@@ -169,7 +173,14 @@ SECTIONS
     . = . + _Min_Heap_Size;
     . = . + _Min_Stack_Size;
     . = ALIGN(4);
-  } >RAM
+  } >DATA
+
+  heap :
+   {
+    . = ALIGN(4);
+    KEEP (*(.heap))
+   } >HEAP
+
 
   /* Remove information from the standard libraries */
   /DISCARD/ :

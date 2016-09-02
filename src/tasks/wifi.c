@@ -372,7 +372,7 @@ static void check_connections()
 				LOG_PFX "Closing external connection: ",
 				serial_get_name(serial));
 			set_telemetry(conn, 0);
-			serial_destroy(serial);
+			serial_close(serial);
 			reset_connection(conn);
 			continue;
 		}
@@ -403,16 +403,19 @@ static void process_new_connection(struct Serial *s)
 		 */
 		pr_info_str_msg(LOG_PFX "New external connection: ",
 				serial_get_name(s));
+		pr_debug_int_msg(LOG_PFX "External conn slot: ", i);
 		serial_set_ioctl_cb(s, wifi_serial_ioctl);
+
+		reset_connection(conn);
 		conn->serial = s;
-		conn->ls_handle = -1;
+
 		return;
 	}
 
 	/* If here, no slot found.  Close the Serial port */
 	pr_warning(LOG_PFX "Max external connections reached. Closing\r\n");
+	serial_close(s);
 	esp8266_drv_close(s);
-	serial_destroy(s);
 }
 
 /* *** All methods that are used to handle sending beacons *** */
