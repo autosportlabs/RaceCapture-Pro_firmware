@@ -49,7 +49,7 @@ void panic(const enum panic_cause cause)
                 led_disable(LED_LOGGER);
                 cpu_device_spin(FLASH_DELAY_MS);
 
-                for (int c = 0; c < cause; ++c) {
+                for (int c = 0; c < cause - 1; ++c) {
                         led_enable(LED_GPS);
                         led_enable(LED_LOGGER);
                         cpu_device_spin(FLASH_DELAY_MS);
