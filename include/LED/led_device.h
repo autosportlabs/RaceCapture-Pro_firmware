@@ -33,6 +33,7 @@ bool led_device_init(void);
 bool led_device_set_index(const size_t i, const bool on);
 bool led_device_set(const enum led l, bool on);
 bool led_device_toggle(const enum led l);
+void led_device_set_all(const bool on);
 
 CPP_GUARD_END
 

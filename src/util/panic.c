@@ -23,6 +23,7 @@
 #include "FreeRTOSConfig.h"
 #include "cpu_device.h"
 #include "led.h"
+#include "led_device.h"
 #include "panic.h"
 #include "printk.h"
 #include "task.h"
@@ -37,6 +38,7 @@
 void panic(const enum panic_cause cause)
 {
         taskDISABLE_INTERRUPTS();
+	led_device_set_all(false);
 
         led_enable(LED_ERROR);
         for(;;) {

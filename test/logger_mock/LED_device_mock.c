@@ -41,3 +41,5 @@ bool led_device_toggle(const enum led l)
 {
         return true;
 }
+
+void led_device_set_all(const bool on) {}

@@ -93,6 +93,14 @@ bool led_device_toggle(const enum led l)
         return ld ? led_set_level(ld, !ld->level) : false;
 }
 
+void led_device_set_all(const bool on)
+{
+        for (size_t i = 0; i < ARRAY_LEN(leds); ++i) {
+                struct led_data *ld = leds + i;
+                led_set_level(ld, on);
+        }
+}
+
 bool led_device_init(void)
 {
         GPIO_InitTypeDef gpio_conf;
@@ -112,8 +120,8 @@ bool led_device_init(void)
                 struct led_data *ld = leds + i;
                 gpio_conf.GPIO_Pin = ld->mask;
                 GPIO_Init(GPIO_PORT, &gpio_conf);
-                led_set_level(ld, false);
         }
 
+	led_device_set_all(false);
         return true;
 }
