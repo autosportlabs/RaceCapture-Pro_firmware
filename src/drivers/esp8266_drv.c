@@ -48,6 +48,7 @@
 #define AT_TASK_TIMEOUT_MS	3
 #define CHECK_DONE_SLEEP_MS	3600000
 #define CLIENT_BACKOFF_MS	3000
+#define CMD_MAX_FAILURES	3
 #define INIT_FAIL_SLEEP_MS	10000
 #define INVALID_CHANNEL_ID	-1
 #define LED_PERIOD_MS		25
@@ -138,6 +139,7 @@ enum check {
 struct cmd {
         bool in_progress;
         tiny_millis_t check[__NUM_CHECKS];
+	unsigned int failures;
 };
 
 static struct {
@@ -172,18 +174,6 @@ static void trigger_led()
         led_set(LED_WIFI, true);
 }
 
-
-static void cmd_started()
-{
-        esp8266_state.cmd.in_progress = true;
-}
-
-static void cmd_completed()
-{
-        trigger_led();
-        esp8266_state.cmd.in_progress = false;
-}
-
 static void cmd_sleep_until(enum check check,
                             const tiny_millis_t time)
 {
@@ -200,6 +190,34 @@ static void cmd_sleep(enum check check,
 static void cmd_set_check(enum check check)
 {
         esp8266_state.cmd.check[check] = 0;
+}
+
+static void cmd_started()
+{
+        esp8266_state.cmd.in_progress = true;
+}
+
+static void cmd_completed(const bool success)
+{
+        trigger_led();
+        esp8266_state.cmd.in_progress = false;
+
+	/*
+	 * If command failed, then we increment our failure count.
+	 * If command succeeded, decrement our failure count unless
+	 * it is 0.  If we hit the threshold of failures, trigger
+	 * a reset.
+	 */
+	if (!success)
+		++esp8266_state.cmd.failures;
+	else if (esp8266_state.cmd.failures)
+		--esp8266_state.cmd.failures;
+
+	if (esp8266_state.cmd.failures >= CMD_MAX_FAILURES) {
+		pr_warning(LOG_PFX "Too many failures.  Resetting...\r\n");
+		esp8266_state.device.init_state = INIT_STATE_RESET_HARD;
+		cmd_set_check(CHECK_WIFI_DEVICE);
+	}
 }
 
 /**
@@ -444,7 +462,8 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
 static void _send_data_cb(const bool status, const size_t bytes,
 			  const unsigned int chan)
 {
-	cmd_completed();
+	/* Failure to send data should not lead to WiFi Reset */
+	cmd_completed(true);
 	cmd_set_check(CHECK_DATA);
 
 	if (!status) {
@@ -544,7 +563,7 @@ static void client_state_changed_cb(const enum client_action action)
  */
 static void init_wifi_cb(const bool status)
 {
-        cmd_completed();
+        cmd_completed(status);
         cmd_set_check(CHECK_WIFI_DEVICE);
 
         if (!status) {
@@ -562,7 +581,13 @@ static void init_wifi_cb(const bool status)
 	 */
 	esp8266_state.client.info_timestamp = 0;
 	esp8266_state.ap.info_timestamp = 0;
+	esp8266_state.cmd.failures = 0;
         esp8266_state.device.init_state = INIT_STATE_READY;
+	/* Close all channels if open since we just reset */
+	for (unsigned int i = 0; channel_is_valid_id(i); ++i) {
+                struct channel *ch = esp8266_state.comm.channels + i;
+                channel_close(ch);
+        }
 
         /* Now that init state has changed, check them */
         cmd_set_check(CHECK_WIFI_DEVICE);
@@ -611,7 +636,7 @@ static void init_wifi()
  */
 static void get_op_mode_cb(bool status, enum esp8266_op_mode mode)
 {
-        cmd_completed();
+        cmd_completed(status);
         cmd_set_check(CHECK_WIFI_DEVICE);
 
         if (!status) {
@@ -641,7 +666,7 @@ static void get_op_mode()
  */
 static void set_op_mode_cb(const bool status)
 {
-        cmd_completed();
+        cmd_completed(status);
         cmd_set_check(CHECK_WIFI_DEVICE);
 
         /*
@@ -688,7 +713,7 @@ static void set_fast_baud()
 		pr_warning(LOG_PFX "Set fast baud failed!\r\n");
 	}
 
-	cmd_completed();
+	cmd_completed(ok);
 	cmd_set_check(CHECK_WIFI_DEVICE);
 }
 
@@ -775,7 +800,7 @@ static bool device_initialized()
  */
 static void get_client_ap_cb(bool status, const struct esp8266_client_info *ci)
 {
-        cmd_completed();
+        cmd_completed(status);
         cmd_set_check(CHECK_WIFI_CLIENT);
         esp8266_state.client.info_timestamp = getUptime();
 
@@ -799,7 +824,7 @@ static void get_ip_info_cb(const bool status,
                            const struct esp8266_ipv4_info* client,
                            const struct esp8266_ipv4_info* station)
 {
-        cmd_completed();
+        cmd_completed(status);
         cmd_set_check(CHECK_WIFI_CLIENT);
         cmd_set_check(CHECK_WIFI_AP);
 
@@ -833,7 +858,7 @@ static void get_ip_info()
  */
 static void set_client_ap_cb(bool status)
 {
-        cmd_completed();
+        cmd_completed(status);
         cmd_set_check(CHECK_WIFI_CLIENT);
 
         if (!status) {
@@ -948,7 +973,7 @@ static void check_wifi_client()
 static void get_ap_info_cb(const bool status,
                            const struct esp8266_ap_info* info)
 {
-        cmd_completed();
+        cmd_completed(status);
         cmd_set_check(CHECK_WIFI_AP);
         esp8266_state.ap.info_timestamp = getUptime();
 
@@ -988,7 +1013,7 @@ static bool get_ap_info()
  */
 static void set_ap_cb(const bool status)
 {
-        cmd_completed();
+        cmd_completed(status);
         cmd_set_check(CHECK_WIFI_AP);
 
         /* Update our backoff timer to prevent busy loops */
@@ -1114,7 +1139,7 @@ static void check_wifi_ap()
 
 static void server_cmd_cb(bool status)
 {
-        cmd_completed();
+        cmd_completed(status);
         esp8266_state.server.listening = status;
         if (!status)
                 pr_warning(LOG_PFX "Failed to setup server\r\n");
