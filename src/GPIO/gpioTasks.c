@@ -32,7 +32,7 @@
 #include "GPIO.h"
 
 #define DEBOUNCE_DELAY_PERIOD		30
-#define GPIO_TASK_STACK_SIZE		50
+#define GPIO_TASK_STACK_SIZE		64
 
 xSemaphoreHandle xOnPushbutton;
 

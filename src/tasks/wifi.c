@@ -63,7 +63,7 @@
 /* How long to wait before giving up on the message */
 #define READ_TIMEOUT_MS		250
 /* How much stack does this task deserve */
-#define STACK_SIZE		256
+#define STACK_SIZE		288
 /* Make all task names 16 chars including NULL char */
 #define THREAD_NAME		"WiFi Task      "
 /* How many events can be pending before we overflow */
