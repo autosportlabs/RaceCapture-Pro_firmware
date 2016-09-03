@@ -21,9 +21,9 @@
 
 #include "FreeRTOS.h"
 #include "GPIO.h"
-#include "led.h"
 #include "capabilities.h"
 #include "lauxlib.h"
+#include "led.h"
 #include "lua.h"
 #include "luaBaseBinding.h"
 #include "luaLoggerBinding.h"
@@ -31,7 +31,7 @@
 #include "luaTask.h"
 #include "lualib.h"
 #include "mem_mang.h"
-#include <string.h>
+#include "panic.h"
 #include "portable.h"
 #include "printk.h"
 #include "queue.h"
@@ -50,6 +50,7 @@
 #define LUA_DEFAULT_ONTICK_HZ		1
 #define LUA_ERR_NONE			0
 #define LUA_ERR_BUG			-1
+#define LUA_NO_PERIODIC_FUNCTION	-2
 #define LUA_ERR_SCRIPT_LOAD_FAILED	-3
 #define LUA_FLASH_DELAY_MS		250
 #define LUA_LOCK_WAIT_MS		1000
@@ -169,7 +170,7 @@ static int lua_invocation(struct lua_run_state *rs)
                 /* No longer a failure per Issue #707 */
                 pr_debug_str_msg(_LOG_PFX "Function not found: ", function);
                 lua_pop(rs->lua_state, 1);
-                status = LUA_ERR_NONE;
+                status = LUA_NO_PERIODIC_FUNCTION;
                 goto done;
         }
 
@@ -241,6 +242,15 @@ static void lua_task(void *params)
 
                 /* If its a known unrecoverable, fail fast */
                 switch (rc) {
+		case LUA_NO_PERIODIC_FUNCTION:
+			/* Stop the task if nothing to do */
+			pr_info(_LOG_PFX "Stopping lua b/c no callback\r\n");
+			lua_close(state.lua_runtime);
+			state.lua_runtime = NULL;
+			state.task_handle = NULL;
+			vTaskDelete(NULL);
+			/* Should never get here */
+			panic(PANIC_CAUSE_UNREACHABLE);
                 case LUA_ERR_BUG:
                 case LUA_ERR_SCRIPT_LOAD_FAILED:
                         lua_failure_state(rc);
