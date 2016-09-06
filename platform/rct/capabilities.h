@@ -30,7 +30,7 @@
  * What is the maximum number of samples available per predictive time
  * buffer.  More samples == better resolution. Each slot is 12 bytes.
  */
-#define PREDICTIVE_TIME_MAX_SAMPLES	48
+#define PREDICTIVE_TIME_MAX_SAMPLES	72
 
 
 //Input / output Channels
