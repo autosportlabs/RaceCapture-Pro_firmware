@@ -104,6 +104,17 @@ void serial_close(struct Serial* s)
 	unblock_rx_queue(s);
 }
 
+/**
+ * Re-opens a closed serial object.  This exists because there are inherent
+ * race conditions when using serial objects directly and closing/destroying
+ * them.  We need
+ */
+void serial_reopen(struct Serial* s)
+{
+	serial_clear(s);
+	s->closed = false;
+}
+
 
 void serial_destroy(struct Serial *s)
 {

@@ -73,6 +73,8 @@ void serial_destroy(struct Serial *s);
 
 void serial_close(struct Serial* s);
 
+void serial_reopen(struct Serial* s);
+
 bool serial_is_connected(const struct Serial* s);
 
 struct Serial* serial_create(const char *name, const size_t tx_cap,
