@@ -43,9 +43,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-
 #define AP_BACKOFF_MS		30000
 #define AT_TASK_TIMEOUT_MS	3
+/* MS to wait before checking/updating wifi configs */
+#define CFG_UPDATE_SLEEP_MS	1000
 #define CHECK_DONE_SLEEP_MS	3600000
 #define CLIENT_BACKOFF_MS	3000
 #define CMD_MAX_FAILURES	3
@@ -1245,8 +1246,8 @@ bool esp8266_drv_update_client_cfg(const struct wifi_client_cfg *cc)
 
         /* Set flags for what states need checking */
 	esp8266_state.client.configured = false;
-        cmd_set_check(CHECK_WIFI_DEVICE);
-        cmd_set_check(CHECK_WIFI_CLIENT);
+        cmd_sleep(CHECK_WIFI_DEVICE, CFG_UPDATE_SLEEP_MS);
+        cmd_sleep(CHECK_WIFI_CLIENT, CFG_UPDATE_SLEEP_MS);
 
         return true;
 }
@@ -1267,8 +1268,8 @@ bool esp8266_drv_update_ap_cfg(const struct wifi_ap_cfg *wac)
         esp8266_state.ap.next_set_attempt = 0;
 
         /* Set flags for what states need checking */
-        cmd_set_check(CHECK_WIFI_DEVICE);
-        cmd_set_check(CHECK_WIFI_AP);
+        cmd_sleep(CHECK_WIFI_DEVICE, CFG_UPDATE_SLEEP_MS);
+        cmd_sleep(CHECK_WIFI_AP, CFG_UPDATE_SLEEP_MS);
 
         return true;
 }

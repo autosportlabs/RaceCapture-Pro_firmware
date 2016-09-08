@@ -1788,48 +1788,65 @@ int api_runScript(struct Serial *serial, const jsmntok_t *json)
 #endif /* LUA_SUPPORT */
 
 static void set_wifi_client_cfg(const jsmntok_t *json,
-                                struct wifi_client_cfg* cfg)
+				struct wifi_client_cfg* cfg)
 {
-        jsmn_exists_set_val_bool(json, "active", &cfg->active);
-        jsmn_exists_set_val_string(json, "ssid", cfg->ssid,
-				   ARRAY_LEN(cfg->ssid), true);
-        jsmn_exists_set_val_string(json, "password", cfg->passwd,
-				   ARRAY_LEN(cfg->passwd), false);
+	struct wifi_client_cfg tmp_cfg;
+	memcpy(&tmp_cfg, cfg, sizeof(struct wifi_client_cfg));
 
-        /* Inform the Wifi device that settings may have changed */
-        wifi_update_client_config(cfg);
+	jsmn_exists_set_val_bool(json, "active", &tmp_cfg.active);
+	jsmn_exists_set_val_string(json, "ssid", tmp_cfg.ssid,
+				   ARRAY_LEN(tmp_cfg.ssid), true);
+	jsmn_exists_set_val_string(json, "password", tmp_cfg.passwd,
+				   ARRAY_LEN(tmp_cfg.passwd), false);
+
+	/*
+	 * Only Inform the Wifi device of a new config if the settings
+	 * have changed. Otherwise no-op.
+	 */
+	if (0 == memcmp(cfg, &tmp_cfg, sizeof(struct wifi_client_cfg)))
+		return;
+
+	memcpy(cfg, &tmp_cfg, sizeof(struct wifi_client_cfg));
+	wifi_update_client_config(cfg);
 }
 
 static bool set_wifi_ap_cfg(const jsmntok_t *json,
-                            struct wifi_ap_cfg* cfg)
+			    struct wifi_ap_cfg* cfg)
 {
-        struct wifi_ap_cfg tmp_cfg;
-        memcpy(&tmp_cfg, cfg, sizeof(struct wifi_ap_cfg));
+	struct wifi_ap_cfg tmp_cfg;
+	memcpy(&tmp_cfg, cfg, sizeof(struct wifi_ap_cfg));
 
-        jsmn_exists_set_val_bool(json, "active", &tmp_cfg.active);
-        jsmn_exists_set_val_string(json, "ssid", tmp_cfg.ssid,
+	jsmn_exists_set_val_bool(json, "active", &tmp_cfg.active);
+	jsmn_exists_set_val_string(json, "ssid", tmp_cfg.ssid,
 				   ARRAY_LEN(tmp_cfg.ssid), true);
-        jsmn_exists_set_val_string(json, "password", tmp_cfg.password,
+	jsmn_exists_set_val_string(json, "password", tmp_cfg.password,
 				   ARRAY_LEN(tmp_cfg.password), false);
-        jsmn_exists_set_val_int(json, "channel", (int*) &tmp_cfg.channel);
+	jsmn_exists_set_val_int(json, "channel", (int*) &tmp_cfg.channel);
 
-        char enc_str[12];
-        jsmn_exists_set_val_string(json, "encryption", enc_str,
+	char enc_str[12];
+	jsmn_exists_set_val_string(json, "encryption", enc_str,
 				   ARRAY_LEN(enc_str), true);
-        tmp_cfg.encryption = wifi_api_get_encryption_enum_val(enc_str);
+	tmp_cfg.encryption = wifi_api_get_encryption_enum_val(enc_str);
 
-        if (!wifi_validate_ap_config(&tmp_cfg)) {
-                pr_info("Invalid Wifi AP config given\r\n");
-                return false;
-        }
+	if (!wifi_validate_ap_config(&tmp_cfg)) {
+		pr_info("Invalid Wifi AP config given\r\n");
+		return false;
+	}
 
-        /* Copy the validated config to our real config */
-        memcpy(cfg, &tmp_cfg, sizeof(struct wifi_ap_cfg));
+	/*
+	 * Only Inform the Wifi device of a new config if the settings
+	 * have changed. Otherwise no-op.
+	 */
+	if (0 == memcmp(cfg, &tmp_cfg, sizeof(struct wifi_ap_cfg)))
+		return true;
 
-        /* Inform the Wifi device that settings may have changed */
-        wifi_update_ap_config(cfg);
+	/* Copy the validated config to our real config */
+	memcpy(cfg, &tmp_cfg, sizeof(struct wifi_ap_cfg));
 
-        return true;
+	/* Inform the Wifi device that settings may have changed */
+	wifi_update_ap_config(cfg);
+
+	return true;
 }
 
 int api_set_wifi_cfg(struct Serial *serial, const jsmntok_t *json)
