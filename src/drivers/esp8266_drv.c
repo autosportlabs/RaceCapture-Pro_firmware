@@ -77,7 +77,7 @@ struct device {
 };
 
 struct client {
-        const struct wifi_client_cfg *config;
+        struct wifi_client_cfg config;
         struct esp8266_client_info info;
         struct esp8266_ipv4_info ipv4;
         tiny_millis_t info_timestamp;
@@ -86,7 +86,7 @@ struct client {
 };
 
 struct ap {
-        const struct wifi_ap_cfg *config;
+        struct wifi_ap_cfg config;
         struct esp8266_ap_info info;
         struct esp8266_ipv4_info ipv4;
         tiny_millis_t info_timestamp;
@@ -777,8 +777,8 @@ static void check_wifi_device()
 
         /* Now check device mode to ensure its correct */
         enum esp8266_op_mode exp_mode;
-        const bool ap_active = esp8266_state.ap.config->active;
-        const bool client_active = esp8266_state.client.config->active;
+        const bool ap_active = esp8266_state.ap.config.active;
+        const bool client_active = esp8266_state.client.config.active;
         if (ap_active) {
                 /* AP should be active.  Is the client? */
                 exp_mode = client_active ?
@@ -897,7 +897,7 @@ static void set_client_ap_cb(bool status)
 static void set_client_ap()
 {
         pr_info(LOG_PFX "Setting Wifi Client Info\r\n");
-        const struct wifi_client_cfg *cc = esp8266_state.client.config;
+        const struct wifi_client_cfg *cc = &esp8266_state.client.config;
         pr_info_str_msg(LOG_PFX "Joining network: ", cc->ssid);
         esp8266_join_ap(cc->ssid, cc->passwd, set_client_ap_cb);
         cmd_started();
@@ -930,7 +930,7 @@ static void check_wifi_client()
         }
 
         /* If here, we have fresh client info.  Use it to make decisions. */
-        const struct wifi_client_cfg *cfg = esp8266_state.client.config;
+        const struct wifi_client_cfg *cfg = &esp8266_state.client.config;
         const struct esp8266_client_info *ci = &esp8266_state.client.info;
         if (cfg->active) {
                 /*
@@ -1076,7 +1076,7 @@ static void ap_check_try_set()
         }
 
         /* Setup our configuration structure to pass in */
-        const struct wifi_ap_cfg* cfg = esp8266_state.ap.config;
+        const struct wifi_ap_cfg* cfg = &esp8266_state.ap.config;
         struct esp8266_ap_info ap_info;
         strncpy(ap_info.ssid, cfg->ssid, ARRAY_LEN(ap_info.ssid));
         strncpy(ap_info.password, cfg->password, ARRAY_LEN(ap_info.password));
@@ -1113,7 +1113,7 @@ static void check_wifi_ap()
         }
 
         /* If here, we have fresh AP info.  Use it to make decisions. */
-        const struct wifi_ap_cfg* cfg = esp8266_state.ap.config;
+        const struct wifi_ap_cfg* cfg = &esp8266_state.ap.config;
         if (!cfg->active) {
                 /*
                  * AP should be inactive. This is controlled by the device
@@ -1237,12 +1237,22 @@ static void task(void *params)
         panic(PANIC_CAUSE_UNREACHABLE);
 }
 
-bool esp8266_drv_update_client_cfg(const struct wifi_client_cfg *cc)
+bool esp8266_drv_update_client_cfg(const struct wifi_client_cfg *wcc)
 {
-        if (NULL == cc)
+        if (NULL == wcc)
                 return false;
 
-        esp8266_state.client.config = cc;
+	/*
+	 * Only trigger the update of a Wifi device if the config settings
+	 * have changed. Otherwise no-op.
+	 */
+	struct wifi_client_cfg* lwcc = &esp8266_state.client.config;
+	if (!memcmp(lwcc, wcc, sizeof(*lwcc))) {
+		pr_info(LOG_PFX "Client config unchanged by update\r\n");
+		return true;
+	}
+
+	memcpy(lwcc, wcc, sizeof(*wcc));
 
         /* Set flags for what states need checking */
 	esp8266_state.client.configured = false;
@@ -1254,7 +1264,7 @@ bool esp8266_drv_update_client_cfg(const struct wifi_client_cfg *cc)
 
 const struct wifi_client_cfg* esp8266_drv_get_client_config()
 {
-        return esp8266_state.client.config;
+        return &esp8266_state.client.config;
 }
 
 bool esp8266_drv_update_ap_cfg(const struct wifi_ap_cfg *wac)
@@ -1262,7 +1272,17 @@ bool esp8266_drv_update_ap_cfg(const struct wifi_ap_cfg *wac)
         if (NULL == wac)
                 return false;
 
-        esp8266_state.ap.config = wac;
+	/*
+	 * Only trigger the update of a Wifi device if the config settings
+	 * have changed. Otherwise no-op.
+	 */
+	struct wifi_ap_cfg* lwac = &esp8266_state.ap.config;
+	if (!memcmp(lwac, wac, sizeof(*lwac))) {
+		pr_info(LOG_PFX "AP config unchanged by update\r\n");
+		return true;
+	}
+
+	memcpy(lwac, wac, sizeof(*wac));
 
         /* Zero this value out so we will forego any backoff attempts */
         esp8266_state.ap.next_set_attempt = 0;
@@ -1276,7 +1296,7 @@ bool esp8266_drv_update_ap_cfg(const struct wifi_ap_cfg *wac)
 
 const struct wifi_ap_cfg* esp8266_drv_get_ap_config()
 {
-        return esp8266_state.ap.config;
+        return &esp8266_state.ap.config;
 }
 
 static bool init_channel_sync_op(struct channel_sync_op* op)
@@ -1535,14 +1555,12 @@ const struct esp8266_ipv4_info* get_ap_ipv4_info()
 }
 
 /**
- * Tells us if the WiFi client is connected to the correct WiFi network.
+ * Tells us if the WiFi client is connected to the configured wireless network.
  * @return true if it is, false otherwise.
  */
 bool esp8266_drv_client_connected()
 {
-        const struct wifi_client_cfg *cfg = esp8266_state.client.config;
-        const struct esp8266_client_info *ci = &esp8266_state.client.info;
-        return cfg && ci->has_ap;
+        return esp8266_state.client.info.has_ap;
 }
 
 /**
