@@ -97,6 +97,7 @@ struct server {
 };
 
 struct channel {
+	bool in_use;
         struct Serial *serial;
 };
 
@@ -255,7 +256,7 @@ static bool channel_is_valid_id(const size_t chan_id)
 
 static bool channel_is_open(struct channel* ch)
 {
-	return !!ch->serial;
+	return ch->in_use;
 }
 
 /**
@@ -263,11 +264,11 @@ static bool channel_is_open(struct channel* ch)
  */
 static void channel_close(struct channel* ch)
 {
-	if (!ch->serial)
+	if (!channel_is_open(ch))
 		return;
 
 	serial_close(ch->serial);
-	ch->serial = NULL;
+	ch->in_use = false;
 }
 
 static const char* channel_get_name(const size_t chan_id)
@@ -306,14 +307,11 @@ static struct channel* channel_setup(const unsigned int index,
                 return NULL;
 
         struct channel* ch = esp8266_state.comm.channels + index;
-        if (ch->serial) {
-		/* Channel is in use!  Something is wrong */
+        if (channel_is_open(ch)) {
                 pr_warning_int_msg(LOG_PFX "Setup called on allocated "
 				   "channel ", index);
 		pr_warning(LOG_PFX "Closing stale Serial object\r\n");
-		struct Serial* s = ch->serial;
 		channel_close(ch);
-		serial_destroy(s);
 	}
 
 	if (0 == rx_size)
@@ -322,18 +320,30 @@ static struct channel* channel_setup(const unsigned int index,
 	if (0 == tx_size)
 		tx_size = SERIAL_BUFF_DEF_TX_SIZE;
 
-	const char* name = channel_get_name(index);
-        struct Serial *s = serial_create(name, tx_size, rx_size, NULL,
-					 NULL, _tx_char_cb, ch);
+	/*
+	 * HACK: Because I can no longer destory Serial devices due to the
+	 *       chance of hard fault (issue #847), I must instead reopen
+	 *       the Serial device if it has already been allocated.
+	 *       This means that sometimes rx_size and tx_size will not
+	 *       be applied since I am not creating a new Serial object.
+	 *       This should get fixed when issue #542 is resolved.  Sorry.
+	 */
+	if (NULL == ch->serial) {
+		const char* name = channel_get_name(index);
+		ch->serial = serial_create(name, tx_size, rx_size, NULL,
+					   NULL, _tx_char_cb, ch);
+	} else {
+		serial_reopen(ch->serial);
+	}
 
-	if (!s) {
+	if (NULL == ch->serial) {
 		/* Fail state */
-		pr_warning(LOG_PFX "Insufficient resources for new "
-			   "Serial\r\n");
+		pr_warning(LOG_PFX "Insufficient resources for new channel\r\n");
 		return NULL;
 	}
 
-        ch->serial = s;
+	/* Set our channel to open now */
+	ch->in_use = true;
         return ch;
 }
 
@@ -350,7 +360,12 @@ static int channel_find_serial(struct Serial *serial)
 
 static int channel_get_next_available()
 {
-	return channel_find_serial(NULL);
+	for (int i = 0; channel_is_valid_id(i); ++i)
+                if (!channel_is_open(esp8266_state.comm.channels + i))
+                        return i;
+
+        return INVALID_CHANNEL_ID;
+
 }
 
 static void socket_connect_handler(const size_t chan_id)
@@ -439,8 +454,7 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
 	 */
 	struct channel *ch = esp8266_state.comm.channels + chan_id;
 	if (!channel_is_open(ch)) {
-		pr_error(LOG_PFX "Channel has no backing serial device. "
-			 "Dropping data\r\n");
+		pr_error(LOG_PFX "Channel is not open.  Dropping data\r\n");
 		return;
 	}
 
@@ -475,8 +489,8 @@ static void _send_data_cb(const bool status, const size_t bytes,
 		 * Issue #807
 		 */
 		struct channel *ch = esp8266_state.comm.channels + chan;
-		esp8266_close(chan, NULL);
 		channel_close(ch);
+		esp8266_close(chan, NULL);
 		return;
 	}
 }
@@ -497,7 +511,7 @@ static void check_data()
 		 * Check if connection is still active.	 If not then
 		 * there is nothing for us to do.
 		 */
-		if (!serial || !serial_is_connected(serial))
+		if (!channel_is_open(ch))
 			continue;
 
 		/* If the size is 0, nothing to send */
@@ -583,6 +597,7 @@ static void init_wifi_cb(const bool status)
 	esp8266_state.ap.info_timestamp = 0;
 	esp8266_state.cmd.failures = 0;
         esp8266_state.device.init_state = INIT_STATE_READY;
+
 	/* Close all channels if open since we just reset */
 	for (unsigned int i = 0; channel_is_valid_id(i); ++i) {
                 struct channel *ch = esp8266_state.comm.channels + i;
@@ -1438,8 +1453,6 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
 	/* If unsuccessful, the callback will close the channel */
         if (!channel_is_open(ch)) {
                 pr_info_str_msg(LOG_PFX "Failed to connect: ", addr);
-		serial_destroy(serial);
-		serial = NULL;
                 goto done;
         }
 
@@ -1489,9 +1502,7 @@ bool esp8266_drv_close(struct Serial* serial)
 
         struct channel *ch = esp8266_state.comm.channels + cso->chan_id;
         if (channel_is_open(ch)) {
-		struct Serial* s = ch->serial;
 		channel_close(ch);
-		serial_destroy(s);
 	}
 
         if (!esp8266_close(cso->chan_id, close_cb)) {
