@@ -107,7 +107,8 @@ void serial_close(struct Serial* s)
 /**
  * Re-opens a closed serial object.  This exists because there are inherent
  * race conditions when using serial objects directly and closing/destroying
- * them.  We need
+ * them.  We need an intermediary step like what glibc does with file handles
+ * and streams.  That is tracked by issue #542.
  */
 void serial_reopen(struct Serial* s)
 {
