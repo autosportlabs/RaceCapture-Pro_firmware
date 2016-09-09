@@ -61,7 +61,7 @@
 /* How long to wait between polling our incomming msg Serial */
 #define READ_DELAY_MS		1
 /* How long to wait before giving up on the message */
-#define READ_TIMEOUT_MS		250
+#define READ_TIMEOUT_MS		500
 /* How much stack does this task deserve */
 #define STACK_SIZE		288
 /* Make all task names 16 chars including NULL char */
