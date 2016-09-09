@@ -1788,30 +1788,22 @@ int api_runScript(struct Serial *serial, const jsmntok_t *json)
 #endif /* LUA_SUPPORT */
 
 static void set_wifi_client_cfg(const jsmntok_t *json,
-				struct wifi_client_cfg* cfg)
+				struct wifi_client_cfg* cfg,
+				const bool apply)
 {
-	struct wifi_client_cfg tmp_cfg;
-	memcpy(&tmp_cfg, cfg, sizeof(struct wifi_client_cfg));
+	jsmn_exists_set_val_bool(json, "active", &cfg->active);
+	jsmn_exists_set_val_string(json, "ssid", cfg->ssid,
+				   ARRAY_LEN(cfg->ssid), true);
+	jsmn_exists_set_val_string(json, "password", cfg->passwd,
+				   ARRAY_LEN(cfg->passwd), false);
 
-	jsmn_exists_set_val_bool(json, "active", &tmp_cfg.active);
-	jsmn_exists_set_val_string(json, "ssid", tmp_cfg.ssid,
-				   ARRAY_LEN(tmp_cfg.ssid), true);
-	jsmn_exists_set_val_string(json, "password", tmp_cfg.passwd,
-				   ARRAY_LEN(tmp_cfg.passwd), false);
-
-	/*
-	 * Only Inform the Wifi device of a new config if the settings
-	 * have changed. Otherwise no-op.
-	 */
-	if (0 == memcmp(cfg, &tmp_cfg, sizeof(struct wifi_client_cfg)))
-		return;
-
-	memcpy(cfg, &tmp_cfg, sizeof(struct wifi_client_cfg));
-	wifi_update_client_config(cfg);
+	if (apply)
+		wifi_update_client_config(cfg);
 }
 
 static bool set_wifi_ap_cfg(const jsmntok_t *json,
-			    struct wifi_ap_cfg* cfg)
+			    struct wifi_ap_cfg* cfg,
+			    const bool apply)
 {
 	struct wifi_ap_cfg tmp_cfg;
 	memcpy(&tmp_cfg, cfg, sizeof(struct wifi_ap_cfg));
@@ -1833,18 +1825,12 @@ static bool set_wifi_ap_cfg(const jsmntok_t *json,
 		return false;
 	}
 
-	/*
-	 * Only Inform the Wifi device of a new config if the settings
-	 * have changed. Otherwise no-op.
-	 */
-	if (0 == memcmp(cfg, &tmp_cfg, sizeof(struct wifi_ap_cfg)))
-		return true;
-
 	/* Copy the validated config to our real config */
 	memcpy(cfg, &tmp_cfg, sizeof(struct wifi_ap_cfg));
 
 	/* Inform the Wifi device that settings may have changed */
-	wifi_update_ap_config(cfg);
+	if (apply)
+		wifi_update_ap_config(cfg);
 
 	return true;
 }
@@ -1859,14 +1845,17 @@ int api_set_wifi_cfg(struct Serial *serial, const jsmntok_t *json)
         const jsmntok_t* client_json_root = jsmn_find_node(json, "client");
         const jsmntok_t* ap_json_root = jsmn_find_node(json, "ap");
 
+	jsmn_exists_set_val_bool(json, "active", &cfg->active);
+
+	bool apply = true;
+	jsmn_exists_set_val_bool(json, "apply", &apply);
+
         if (ap_json_root)
-                if (!set_wifi_ap_cfg(ap_json_root, ap_cfg))
+                if (!set_wifi_ap_cfg(ap_json_root, ap_cfg, apply))
                         return API_ERROR_PARAMETER;
 
         if (client_json_root)
-                set_wifi_client_cfg(client_json_root, client_cfg);
-
-        jsmn_exists_set_val_bool(json, "active", &cfg->active);
+                set_wifi_client_cfg(client_json_root, client_cfg, apply);
 
         return API_SUCCESS;
 }
