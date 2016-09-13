@@ -1,4 +1,5 @@
 #include "FreeRTOS.h"
+#include "at_basic.h"
 #include "byteswap.h"
 #include "gps_device.h"
 #include "mem_mang.h"
@@ -22,6 +23,7 @@
 
 #define MAX_PROVISIONING_ATTEMPTS	10
 #define MAX_PAYLOAD_LEN			256
+#define GPS_INIT_DELAY_MS		1000
 #define GPS_MSG_RX_WAIT_MS		2000
 #define GPS_MESSAGE_BUFFER_LEN		1024
 #define TARGET_BAUD_RATE 		115200
@@ -652,8 +654,14 @@ gps_status_t GPS_device_init(uint8_t sampleRate, struct Serial *serial)
 	pr_info("GPS: Initializing...\r\n");
 	serial_flush(serial);
 
-	vTaskDelay(msToTicks(500));
-	serial_flush(serial);
+	/*
+	 * Delay a bit to let GPS chip come online.  To do this without
+	 * leading our driver to think that we are dropping characters
+	 * (since a basic vTaskDelay would cause rx buffer overflow if we
+	 * don't read characters out from the Rx queue frequently) we
+	 * simply wait for a message that will never come.
+	 */
+	at_basic_wait_for_msg(serial, "FOO", GPS_INIT_DELAY_MS);
 
     size_t attempts = MAX_PROVISIONING_ATTEMPTS;
     size_t gps_init_status = GPS_STATUS_NOT_INIT;
