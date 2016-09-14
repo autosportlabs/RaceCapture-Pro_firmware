@@ -26,6 +26,7 @@
 #include "luaScript.h"
 #include "luaTask.h"
 #include "lualib.h"
+#include "macros.h"
 #include "memory.h"
 #include "modp_numtoa.h"
 #include "printk.h"
@@ -39,14 +40,13 @@ void ExecLuaInterpreter(struct Serial *serial, unsigned int argc, char **argv)
                      "to leave");
         put_crlf(serial);
 
-        cmd_context *cmdContext = get_command_context();
-        char *luaLine = cmdContext->lineBuffer;
+        static char luaLine[256];
 
         g_interactive_mode = 1;
 
         for(;;) {
                 serial_write_s(serial, "> ");
-                interactive_read_line(serial, luaLine, cmdContext->lineBufferSize);
+                interactive_read_line(serial, luaLine, ARRAY_LEN(luaLine));
 
                 if (0 == strcmp(luaLine, "exit"))
                         break;
