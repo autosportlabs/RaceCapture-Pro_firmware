@@ -65,7 +65,8 @@ struct lua_run_state {
 };
 
 enum run_status {
-	LUA_CMD_LOCK_ERROR = -1,
+	LUA_CMD_LOCK_ERROR = -2,
+	LUA_CMD_GENERIC_ERROR = -1,
 	LUA_CMD_FAILURE = 0,
 	LUA_CMD_SUCCESS = 1,
 };
@@ -231,14 +232,17 @@ static void lua_failure_state(const int cause)
         while(true) {
                 delayMs(LUA_FLASH_DELAY_MS);
                 led_toggle(LED_ERROR);
+
+		/* Give to unblock any waiting interactive commands */
+		xSemaphoreGive(state.interactive.cmd_signal);
         }
 }
 
-static void lua_interactive(struct lua_run_state *rs)
+static bool lua_interactive(struct lua_run_state *rs)
 {
 	/* Check if there is a command */
 	if (NULL == state.interactive.cmd)
-		return;
+		return false;
 
 	/* If here then there is a command.  Lets get it rolling */
 	lua_State *ls = rs->lua_state;
@@ -265,6 +269,7 @@ done:
 	 /* Clear the stack before we return */
 	lua_settop(ls, 0);
 	release_lock();
+	return true;
 }
 
 static void lua_task(void *params)
@@ -277,15 +282,17 @@ static void lua_task(void *params)
         int consecutive_failures = 0;
 	portTickType wake_tick = 0;
         for(;;) {
+		/* Handle the interactive commands if there are any */
+		if (lua_interactive(&rs))
+			continue;
+
 		portTickType curr_tick = xTaskGetTickCount();
 		if (curr_tick < wake_tick)
-			xSemaphoreTake(state.lua_signal, wake_tick - curr_tick);
+			/* If signal is given, restart loop, else normal op */
+			if (xSemaphoreTake(state.lua_signal, wake_tick - curr_tick))
+				continue;
 
                 wake_tick = xTaskGetTickCount() + state.callback_interval;
-
-		/* Handle the interactive commands if there are any */
-		lua_interactive(&rs);
-
                 const int rc = lua_invocation(&rs);
 
                 /* If its a known unrecoverable, fail fast */
@@ -397,6 +404,7 @@ void lua_task_run_interactive_cmd(struct Serial *serial, const char* cmd)
 	 * and has given the lua_signa, the lua_interactive task will
 	 * re-activate and will clean up and continue as normal.
 	 */
+	state.interactive.status = LUA_CMD_GENERIC_ERROR;
 	state.interactive.cmd = cmd;
 	xSemaphoreGive(state.lua_signal);
 	xSemaphoreTake(state.interactive.cmd_signal, portMAX_DELAY);
@@ -407,6 +415,11 @@ void lua_task_run_interactive_cmd(struct Serial *serial, const char* cmd)
 	 * user.
 	 */
 	switch (state.interactive.status) {
+	case LUA_CMD_GENERIC_ERROR:
+		serial_write_s(serial, "Internal Error.  Sorry :(");
+		put_crlf(serial);
+		break;
+
 	case LUA_CMD_LOCK_ERROR:
 		serial_write_s(serial, "Internal Error: Failed to acquire "
 			"Lua lock. Check script.");
