@@ -287,28 +287,24 @@ static void lua_task(void *params)
 		lua_interactive(&rs);
 
                 const int rc = lua_invocation(&rs);
-                if (LUA_ERR_NONE == rc) {
-                        consecutive_failures = 0;
-                        continue;
-                }
-
-                /* If here then there was a failure. */
-                ++consecutive_failures;
 
                 /* If its a known unrecoverable, fail fast */
                 switch (rc) {
+		case LUA_ERR_NONE:
 		case LUA_NO_PERIODIC_FUNCTION:
-			/* Stop the task if nothing to do */
-			pr_info(_LOG_PFX "Stopping lua b/c no callback\r\n");
-			lua_close(state.lua_runtime);
-			state.lua_runtime = NULL;
-			state.task_handle = NULL;
-			vTaskDelete(NULL);
-			/* Should never get here */
-			panic(PANIC_CAUSE_UNREACHABLE);
+			consecutive_failures = 0;
+			/*
+			 * We no longer stop the task because we always want to
+			 * have a Lua interactive session available.
+			 */
+			continue;
                 case LUA_ERR_BUG:
                 case LUA_ERR_SCRIPT_LOAD_FAILED:
                         lua_failure_state(rc);
+		default:
+			/* If here then there was a failure. */
+			++consecutive_failures;
+
                 }
 
                 /* If here, perhaps we can recover.  */
