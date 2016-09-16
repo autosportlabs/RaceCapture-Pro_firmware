@@ -183,7 +183,6 @@ static int lua_invocation(struct lua_run_state *rs)
         lua_getglobal(rs->lua_state, function);
         if (lua_isnil(rs->lua_state, -1)) {
                 /* No longer a failure per Issue #707 */
-                pr_debug_str_msg(_LOG_PFX "Function not found: ", function);
                 lua_pop(rs->lua_state, 1);
                 status = LUA_NO_PERIODIC_FUNCTION;
                 goto done;
