@@ -1453,18 +1453,16 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
                                                      port, -1, connect_cb);
                 break;
         case PROTOCOL_UDP:
-                ;
-                int src_port = 0;
-                enum esp8266_udp_mode udp_mode = ESP8266_UDP_MODE_NONE;
-                if (0 == strcmp(addr, IPV4_BROADCAST_ADDRESS_STR)) {
-                        src_port = port;
-                        udp_mode = ESP8266_UDP_MODE_PEER_CHANGE_WHENEVER;
-                }
+	{
+                const int src_port = 0;
+                const enum esp8266_udp_mode udp_mode = ESP8266_UDP_MODE_NONE;
                 connect_result = esp8266_connect_udp(cso->chan_id, addr,
                                                      port, src_port,
                                                      udp_mode, connect_cb);
                 break;
+	}
         }
+
         if (!connect_result) {
                 pr_warning(LOG_PFX "Failed to issue connect command\r\n");
                 goto done;
