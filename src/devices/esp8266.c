@@ -153,27 +153,8 @@ static void wifi_action_callback(const char* msg)
 	state.hooks.client_state_changed_cb(action);
 }
 
-/**
- * Callback that gets invoked when we are unable to handle the URC using
- * the standard URC callbacks.  Used for the silly messages like
- * `0,CONNECT` where there is no prefix for the URC like their should be.
- * Messages this callback handles:
- * + IPD - Incoming data.
- * + <0-4>,{CONNECT,CLOSED}
- * + WIFI {CONNECTED,DISCONNECT,GOT IP}
- */
-static bool sparse_urc_cb(char* msg)
+static bool channel_action_cb(const char* msg)
 {
-	if (strncmp(msg, "+IPD,", 5) == 0) {
-		ipd_urc_cb(msg);
-		return true;
-	}
-
-        if (strncmp(msg, "WIFI ", 5) == 0) {
-		wifi_action_callback(msg);
-		return true;
-	}
-
         /* Now look for a message format <0-4>,MSG */
         char* comma = strchr(msg, ',');
         if (comma != msg + 1)
@@ -181,7 +162,7 @@ static bool sparse_urc_cb(char* msg)
 
         *comma = '\0';
         const char* m1 = msg;
-        const char* m2 = ++comma;
+        const char* m2 = comma + 1;
 
         enum socket_action action = SOCKET_ACTION_UNKNOWN;
         if (STR_EQ(m2, "CONNECT\r\n"))
@@ -190,6 +171,9 @@ static bool sparse_urc_cb(char* msg)
         if (STR_EQ(m2, "CLOSED\r\n"))
                 action = SOCKET_ACTION_DISCONNECT;
 
+	if (STR_EQ(m2, "CONNECT FAIL\r\n"))
+                action = SOCKET_ACTION_CONNECT_FAIL;
+
         if (state.hooks.socket_state_changed_cb &&
 	    action != SOCKET_ACTION_UNKNOWN) {
                 state.hooks.socket_state_changed_cb(atoi(m1), action);
@@ -197,6 +181,30 @@ static bool sparse_urc_cb(char* msg)
 	}
 
 	return false;
+
+}
+
+/**
+ * Callback that gets invoked when we are unable to handle the URC using
+ * the standard URC callbacks.  Used for the silly messages like
+ * `0,CONNECT` where there is no prefix for the URC like their should be.
+ */
+static bool sparse_urc_cb(char* msg)
+{
+	/* + IPD,... - Incoming data. */
+	if (strncmp(msg, "+IPD,", 5) == 0) {
+		ipd_urc_cb(msg);
+		return true;
+	}
+
+	/* WIFI ... - Device actions */
+        if (strncmp(msg, "WIFI ", 5) == 0) {
+		wifi_action_callback(msg);
+		return true;
+	}
+
+	/* <0-4>,... - Socket actions */
+	return channel_action_cb(msg);
 }
 
 /**

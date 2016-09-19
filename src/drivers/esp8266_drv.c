@@ -419,6 +419,7 @@ static void socket_state_changed_cb(const size_t chan_id,
 	cmd_set_check(CHECK_DATA);
 	switch (action) {
 	case SOCKET_ACTION_DISCONNECT:
+	case SOCKET_ACTION_CONNECT_FAIL:
 		pr_info_int_msg(LOG_PFX "Socket closed on channel ",
 				chan_id);
 		socket_disconnect_handler(chan_id);
