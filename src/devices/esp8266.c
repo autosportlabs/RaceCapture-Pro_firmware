@@ -153,6 +153,37 @@ static void wifi_action_callback(const char* msg)
 	state.hooks.client_state_changed_cb(action);
 }
 
+static bool channel_action_cb(const char* msg)
+{
+        /* Now look for a message format <0-4>,MSG */
+        char* comma = strchr(msg, ',');
+        if (comma != msg + 1)
+                return false;
+
+        *comma = '\0';
+        const char* m1 = msg;
+        const char* m2 = comma + 1;
+
+        enum socket_action action = SOCKET_ACTION_UNKNOWN;
+        if (STR_EQ(m2, "CONNECT\r\n"))
+                action = SOCKET_ACTION_CONNECT;
+
+        if (STR_EQ(m2, "CLOSED\r\n"))
+                action = SOCKET_ACTION_DISCONNECT;
+
+	if (STR_EQ(m2, "CONNECT FAIL\r\n"))
+                action = SOCKET_ACTION_CONNECT_FAIL;
+
+        if (state.hooks.socket_state_changed_cb &&
+	    action != SOCKET_ACTION_UNKNOWN) {
+                state.hooks.socket_state_changed_cb(atoi(m1), action);
+		return true;
+	}
+
+	return false;
+
+}
+
 /**
  * Callback that gets invoked when we are unable to handle the URC using
  * the standard URC callbacks.  Used for the silly messages like
@@ -174,29 +205,7 @@ static bool sparse_urc_cb(char* msg)
 		return true;
 	}
 
-        /* Now look for a message format <0-4>,MSG */
-        char* comma = strchr(msg, ',');
-        if (comma != msg + 1)
-                return false;
-
-        *comma = '\0';
-        const char* m1 = msg;
-        const char* m2 = ++comma;
-
-        enum socket_action action = SOCKET_ACTION_UNKNOWN;
-        if (STR_EQ(m2, "CONNECT\r\n"))
-                action = SOCKET_ACTION_CONNECT;
-
-        if (STR_EQ(m2, "CLOSED\r\n"))
-                action = SOCKET_ACTION_DISCONNECT;
-
-        if (state.hooks.socket_state_changed_cb &&
-	    action != SOCKET_ACTION_UNKNOWN) {
-                state.hooks.socket_state_changed_cb(atoi(m1), action);
-		return true;
-	}
-
-	return false;
+	return channel_action_cb(msg);
 }
 
 /**

@@ -73,6 +73,7 @@ enum socket_action {
         SOCKET_ACTION_UNKNOWN,
         SOCKET_ACTION_DISCONNECT,
         SOCKET_ACTION_CONNECT,
+	SOCKET_ACTION_CONNECT_FAIL,
 };
 
 /**
