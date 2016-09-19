@@ -188,23 +188,22 @@ static bool channel_action_cb(const char* msg)
  * Callback that gets invoked when we are unable to handle the URC using
  * the standard URC callbacks.  Used for the silly messages like
  * `0,CONNECT` where there is no prefix for the URC like their should be.
- * Messages this callback handles:
- * + IPD - Incoming data.
- * + <0-4>,{CONNECT,CLOSED}
- * + WIFI {CONNECTED,DISCONNECT,GOT IP}
  */
 static bool sparse_urc_cb(char* msg)
 {
+	/* + IPD,... - Incoming data. */
 	if (strncmp(msg, "+IPD,", 5) == 0) {
 		ipd_urc_cb(msg);
 		return true;
 	}
 
+	/* WIFI ... - Device actions */
         if (strncmp(msg, "WIFI ", 5) == 0) {
 		wifi_action_callback(msg);
 		return true;
 	}
 
+	/* <0-4>,... - Socket actions */
 	return channel_action_cb(msg);
 }
 
