@@ -1,3 +1,42 @@
+= 2.10.0 =
+* RaceCapture supported!
+* Reduction of stack sizes to improve RAM usage
+* WiFi support
+* TCP socket support
+* Streaming telemetry over Wifi Support
+* IOCTL support for all communications channels
+* Added support for Bluetooth baud rate to adjust to 230400.  Will
+  become default in 2.11.0
+* Changed distance calculation to integration of speed over time
+  instead of point to point measurement.
+* Improved usage of newlib libc to reduce code duplication internally.
+* Upgraded SD card driver and FATFS subsystem.  Result is a very
+  stable SD card system.
+* Created new AT subsystem for use with all AT modems (ESP8266,
+  U-Blox).  Used with ESP8266 currently.
+* Audited and fixed all IRQ values to be lower than those of FreeRTOS
+  to ensure no interrupt conflicts.
+* Added debug builds for all dev builds with ASSERT support to help
+  find hidden bugs early.
+* Moved all UART communication to DMA, reducing interrupt rates as
+  much as 32x.
+* Improved testing on API calls to help avoid future regressions.
+* Boot loader fixes to work around small bugs in USB.
+* LUA now supports scripts without the `onTick` method as one time
+  only
+* Make builds binary identical across platform to help with debugging.
+* Add `setActiveTrack` API to allow app to override active track to
+  improve user experience.
+* Adjusted timer to support measuring of slow rotation rates (down to
+  1/10 Hz)
+* Added auto-logger support, a new subsystem that start/stops file
+  logging based on speed and time parameters
+* Added basic metric support to GPS page for European customers.
+* Added Serial Logging support to be able to debug any serial port
+  during run time.
+* Added capabilites flags to firmware.  Useful for determining what
+  the firmware supports.
+
 = 2.9.2 =
 * Reduce the size of the DMA buffer to ensure small GPS messages are received.
 * Add 'break;' statements in timer init to use user setting and not fall into
