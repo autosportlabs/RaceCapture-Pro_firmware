@@ -24,6 +24,8 @@
 #include "watchdog_device.h"
 #include "printk.h"
 
+#define LOG_PFX	"[watchdog] "
+
 void watchdog_reset(void)
 {
     watchdog_device_reset();
@@ -31,10 +33,11 @@ void watchdog_reset(void)
 
 void watchdog_init(int timeoutMs)
 {
-    watchdog_device_init(timeoutMs);
-    if (watchdog_is_watchdog_reset()) {
-        pr_warning("watchdog: detected watchdog reset!\r\n");
-    }
+	pr_info(LOG_PFX "Initializing...\r\n");
+	watchdog_device_init(timeoutMs);
+
+	if (watchdog_is_watchdog_reset())
+		pr_warning(LOG_PFX "Detected watchdog reset!\r\n");
 }
 
 bool watchdog_is_watchdog_reset(void)
