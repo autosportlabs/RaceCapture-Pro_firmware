@@ -417,6 +417,6 @@ bool jsmn_exists_set_val_string(const jsmntok_t* root, const char* field,
 	if (strip)
 		data = strip_inline(data);
 
-	strncpy(val, data, max_len);
+	strntcpy(val, data, max_len);
 	return true;
 }

@@ -138,7 +138,7 @@ size_t serial_buffer_append(struct serial_buffer *sb, const char *buff)
 
         char *ptr = sb->buffer + sb->curr_len;
         const size_t max_len = sb->length - sb->curr_len;
-        strncpy(ptr, buff, max_len);
+        strntcpy(ptr, buff, max_len);
 
         const size_t buff_len = strlen(buff) + 1;
         const size_t cpy_len = MIN(buff_len, max_len);
