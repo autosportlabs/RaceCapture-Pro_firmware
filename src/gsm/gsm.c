@@ -24,7 +24,7 @@
 #include "macros.h"
 #include "printk.h"
 #include "serial_buffer.h"
-
+#include "str_util.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -92,7 +92,7 @@ bool gsm_get_subscriber_number(struct serial_buffer *sb,
                 goto parse_fail;
 
         *num_end = '\0';
-        strncpy(ci->number, num_start, sizeof(ci->number));
+        strntcpy(ci->number, num_start, sizeof(ci->number));
         return true;
 
 parse_fail:
@@ -148,7 +148,7 @@ bool gsm_get_imei(struct serial_buffer *sb,
                 return false;
         }
 
-        strncpy(cell_info->imei, msgs[0], sizeof(cell_info->imei));
+        strntcpy(cell_info->imei, msgs[0], sizeof(cell_info->imei));
 
         return 1;
 }
@@ -238,6 +238,6 @@ bool gsm_get_network_reg_info(struct serial_buffer *sb,
                 str_beg = "UNKNOWN";
         }
 
-        strncpy(ci->op, str_beg, sizeof(ci->op));
+        strntcpy(ci->op, str_beg, sizeof(ci->op));
         return status;
 }

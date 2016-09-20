@@ -55,6 +55,7 @@
 #include "printk.h"
 #include "sampleRecord.h"
 #include "serial.h"
+#include "str_util.h"
 #include "task.h"
 #include "taskUtil.h"
 #include "timer.h"
@@ -584,9 +585,9 @@ static const jsmntok_t * setChannelConfig(struct Serial *serial, const jsmntok_t
         unescapeTextField(value);
 
         if (STR_EQ("nm", name))
-            strncpy(channelCfg->label, value, DEFAULT_LABEL_LENGTH);
+            strntcpy(channelCfg->label, value, DEFAULT_LABEL_LENGTH);
         else if (STR_EQ("ut", name))
-            strncpy(channelCfg->units, value, DEFAULT_UNITS_LENGTH);
+            strntcpy(channelCfg->units, value, DEFAULT_UNITS_LENGTH);
         else if (STR_EQ("min", name))
             channelCfg->min = atof(value);
         else if (STR_EQ("max", name))

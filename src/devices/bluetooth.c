@@ -19,16 +19,14 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "FreeRTOS.h"
 #include "bluetooth.h"
 #include "loggerConfig.h"
-#include <string.h>
 #include "printk.h"
 #include "task.h"
 #include "taskUtil.h"
-
 #include <stdbool.h>
+#include <string.h>
 
 /*
  * https://www.olimex.com/Products/Components/RF/BLUETOOTH-SERIAL-HC-06/resources/hc06.pdf

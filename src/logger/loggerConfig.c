@@ -26,6 +26,7 @@
 #include "memory.h"
 #include "modp_numtoa.h"
 #include "printk.h"
+#include "str_util.h"
 #include "timer_config.h"
 #include "units.h"
 #include "virtual_channel.h"
@@ -260,11 +261,11 @@ static void resetCellularConfig(CellularConfig *cfg)
 
 static void resetTelemetryConfig(TelemetryConfig *cfg)
 {
-    memset(cfg, 0, sizeof(TelemetryConfig));
-    cfg->backgroundStreaming = BACKGROUND_STREAMING_ENABLED;
-    strncpy(cfg->telemetryServerHost, DEFAULT_TELEMETRY_SERVER_HOST,
-            sizeof(cfg->telemetryServerHost));
-    cfg->telemetry_port = DEFAULT_TELEMETRY_SERVER_PORT;
+	memset(cfg, 0, sizeof(TelemetryConfig));
+	cfg->backgroundStreaming = BACKGROUND_STREAMING_ENABLED;
+	strntcpy(cfg->telemetryServerHost, DEFAULT_TELEMETRY_SERVER_HOST,
+		 sizeof(cfg->telemetryServerHost));
+	cfg->telemetry_port = DEFAULT_TELEMETRY_SERVER_PORT;
 }
 
 static void resetConnectivityConfig(ConnectivityConfig *cfg)

@@ -626,8 +626,8 @@ static bool parse_client_info(char *rsp,
         if (!ssid || !mac)
                 return false;
 
-        strncpy(info->ssid, ssid, ARRAY_LEN(info->ssid));
-        strncpy(info->mac, mac, ARRAY_LEN(info->mac));
+        strntcpy(info->ssid, ssid, ARRAY_LEN(info->ssid));
+        strntcpy(info->mac, mac, ARRAY_LEN(info->mac));
         info->has_ap = true;
 
         return true;

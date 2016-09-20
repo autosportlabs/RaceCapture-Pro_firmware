@@ -19,12 +19,12 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "luaScript.h"
 #include "luaTask.h"
 #include "mem_mang.h"
-#include <string.h>
 #include "printk.h"
+#include "str_util.h"
+#include <string.h>
 
 #ifndef RCP_TESTING
 static const volatile ScriptConfig g_scriptConfig  __attribute__((section(".script\n\t#")));
@@ -52,15 +52,15 @@ int flash_default_script()
         lua_task_stop();
 
         ScriptConfig *defaultScriptConfig =
-                (ScriptConfig *) portMalloc(sizeof(ScriptConfig));
+                (ScriptConfig *) calloc(sizeof(ScriptConfig), 1);
         if (defaultScriptConfig == NULL) {
                 pr_error("LUA: Can't flash.  Can't allocate RAM\r\n");
                 return result;
         }
 
         defaultScriptConfig->magicInit = MAGIC_NUMBER_SCRIPT_INIT;
-        strncpy(defaultScriptConfig->script, DEFAULT_SCRIPT,
-                sizeof(DEFAULT_SCRIPT));
+        strntcpy(defaultScriptConfig->script, DEFAULT_SCRIPT,
+		 sizeof(DEFAULT_SCRIPT));
         result = memory_flash_region((void *)&g_scriptConfig,
                                      (void *)defaultScriptConfig,
                                      sizeof (ScriptConfig));

@@ -43,6 +43,8 @@ char* str_util_rstrip_zeros_inline(char *str);
 
 char* str_util_strip_zeros_inline(char *str);
 
+char* strntcpy(char* dest, const char* src, size_t n);
+
 CPP_GUARD_END
 
 #endif /* _STR_UTIL_H_ */
