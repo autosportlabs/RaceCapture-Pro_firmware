@@ -160,3 +160,22 @@ char* str_util_strip_zeros_inline(char *str)
         str = str_util_lstrip_zeros_inline(str);
         return str_util_rstrip_zeros_inline(str);
 }
+
+/**
+ * Just like strncpy except this method always ensures the resulting string
+ * is null ternimated.  Think of this as safe strncpy.
+ * @param dest The destination pointer
+ * @param src The source pointer
+ * @param n The maximum length of the string.
+ */
+char* strntcpy(char* dest, const char* src, size_t n)
+{
+	if (!n)
+		return dest;
+
+	/* Copy and NULL terminate the string always to avoid overflow */
+	strncpy(dest, src, --n);
+	dest[n] = 0;
+
+	return dest;
+}
