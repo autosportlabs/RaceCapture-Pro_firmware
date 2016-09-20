@@ -456,18 +456,26 @@ static void do_beacon()
                 return;
         }
 
+	/*
+	 * Check if the socket is closed.  If so, whine about it then move
+	 * on and try re-opening it.
+	 */
+	if (state.beacon.serial &&
+	    !serial_is_connected(state.beacon.serial)) {
+		pr_warning("Beacon socket closed!  WTF!\r\n");
+		state.beacon.serial = NULL;
+	}
+
         /*
          * If here then we have at least one IP.  Send the beacon.  Now
          * we need a channel to send the beacon on. Lets grab one if we
          * don't have one yet.
          */
         if (NULL == state.beacon.serial) {
-                state.beacon.serial =
-                        esp8266_drv_connect(PROTOCOL_UDP,
-					    IPV4_BROADCAST_ADDRESS_STR,
-                                            RCP_SERVICE_PORT,
-					    BEACON_SERIAL_BUFF_RX_SIZE,
-					    BEACON_SERIAL_BUFF_TX_SIZE);
+                state.beacon.serial = esp8266_drv_connect(
+			PROTOCOL_UDP,IPV4_BROADCAST_ADDRESS_STR,
+			RCP_SERVICE_PORT, BEACON_SERIAL_BUFF_RX_SIZE,
+			BEACON_SERIAL_BUFF_TX_SIZE);
         }
 
         struct Serial* serial = state.beacon.serial;
