@@ -437,7 +437,7 @@ static void send_beacon(struct Serial* serial, const char* ips[])
                 for(++ips; *ips && 0 == **ips; ++ips);
                 const bool more = !!*ips;
                 /* Don't add empty strings to the array */
-                if (0 != *ip)
+                if (0 != *ip && !STR_EQ(ip, IPV4_NO_IP_STR))
                         json_arrayElementString(serial, ip, more);
         }
         json_arrayEnd(serial, false);
@@ -451,10 +451,20 @@ static void do_beacon()
 {
         const struct esp8266_ipv4_info* client_ipv4 = get_client_ipv4_info();
         const struct esp8266_ipv4_info* softap_ipv4 = get_ap_ipv4_info();
-        if (!*client_ipv4->address && !*softap_ipv4->address) {
+	if (!*client_ipv4->address && !*softap_ipv4->address) {
                 /* Then don't bother since we don't have any IP addresses */
                 return;
         }
+
+	/*
+	 * Check if the socket is closed.  If so, whine about it then move
+	 * on and try re-opening it.
+	 */
+	if (state.beacon.serial &&
+	    !serial_is_connected(state.beacon.serial)) {
+		pr_warning("Beacon socket closed!  WTF!\r\n");
+		state.beacon.serial = NULL;
+	}
 
         /*
          * If here then we have at least one IP.  Send the beacon.  Now
@@ -462,12 +472,10 @@ static void do_beacon()
          * don't have one yet.
          */
         if (NULL == state.beacon.serial) {
-                state.beacon.serial =
-                        esp8266_drv_connect(PROTOCOL_UDP,
-					    IPV4_BROADCAST_ADDRESS_STR,
-                                            RCP_SERVICE_PORT,
-					    BEACON_SERIAL_BUFF_RX_SIZE,
-					    BEACON_SERIAL_BUFF_TX_SIZE);
+                state.beacon.serial = esp8266_drv_connect(
+			PROTOCOL_UDP,IPV4_BROADCAST_ADDRESS_STR,
+			RCP_SERVICE_PORT, BEACON_SERIAL_BUFF_RX_SIZE,
+			BEACON_SERIAL_BUFF_TX_SIZE);
         }
 
         struct Serial* serial = state.beacon.serial;

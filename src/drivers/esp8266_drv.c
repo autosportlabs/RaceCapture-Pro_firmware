@@ -315,20 +315,22 @@ static struct channel* channel_setup(const unsigned int index,
 		channel_close(ch);
 	}
 
-	if (0 == rx_size)
-		rx_size = SERIAL_BUFF_DEF_RX_SIZE;
-
-	if (0 == tx_size)
-		tx_size = SERIAL_BUFF_DEF_TX_SIZE;
-
 	/*
-	 * HACK: Because I can no longer destory Serial devices due to the
-	 *       chance of hard fault (issue #847), I must instead reopen
-	 *       the Serial device if it has already been allocated.
-	 *       This means that sometimes rx_size and tx_size will not
-	 *       be applied since I am not creating a new Serial object.
-	 *       This should get fixed when issue #542 is resolved.  Sorry.
+	 * HACK:
+	 * Because I can no longer destory Serial devices due to the
+	 * chance of hard fault (issue #847), I must instead reopen
+	 * the Serial device if it has already been allocated. This means
+	 * that rx_size and tx_size have to be the default sizes for now.
+	 * This should get fixed when issue #542 is resolved.  Sorry.
 	 */
+	/* if (0 == rx_size) */
+	/* 	rx_size = SERIAL_BUFF_DEF_RX_SIZE; */
+
+	/* if (0 == tx_size) */
+	/* 	tx_size = SERIAL_BUFF_DEF_TX_SIZE; */
+	rx_size = SERIAL_BUFF_DEF_RX_SIZE;
+	tx_size = SERIAL_BUFF_DEF_TX_SIZE;
+
 	if (NULL == ch->serial) {
 		const char* name = channel_get_name(index);
 		ch->serial = serial_create(name, tx_size, rx_size, NULL,
