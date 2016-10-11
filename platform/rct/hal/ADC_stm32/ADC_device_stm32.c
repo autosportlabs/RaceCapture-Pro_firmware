@@ -28,6 +28,7 @@
 #include "taskUtil.h"
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 /*
  * RC/T
@@ -38,10 +39,12 @@
 #define SCALING_BATTERYV		0.00465f
 #define TOTAL_ADC_CHANNELS		1
 
-volatile unsigned short ADC_Val[TOTAL_ADC_CHANNELS];
+volatile unsigned short *ADC_Val;
 
 int ADC_device_init(void)
 {
+	ADC_Val = calloc(TOTAL_ADC_CHANNELS, sizeof(*ADC_Val));
+
         /* Configure the ADC clock */
         RCC_ADCCLKConfig(RCC_ADC34PLLCLK_Div2);
 
