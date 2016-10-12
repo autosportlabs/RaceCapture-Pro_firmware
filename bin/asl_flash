@@ -1,0 +1,32 @@
+#!/bin/bash
+
+set -e
+
+IMAGE=$1
+if [ ! -r "$IMAGE" ]; then
+    echo "Image \"$IMAGE\" not readable" >&2
+    exit 1
+fi
+
+DEV=$(find /dev -name 'ttyACM*' | head -n 1)
+if [ -z "$DEV" ]; then
+    echo "Device not found" >&2
+    exit 1
+fi
+echo "Device found at \"$DEV\"."
+
+if pkill minicom; then
+    echo "Minicom was open.  Closed it and will sleep for a bit..."
+    sleep 2
+fi
+
+echo "Entering Bootloader mode..."
+stty --file=$DEV 115200
+echo -en "q\r\n {\"sysReset\":{\"loader\":1}}\r\n" >$DEV
+sleep 2
+
+echo "Starting flash procedure"
+echo | asl_f4_loader -f $IMAGE
+
+echo "Done"
+exit 0
