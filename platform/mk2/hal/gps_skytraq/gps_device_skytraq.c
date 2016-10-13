@@ -159,8 +159,8 @@ typedef struct _NavigationDataMessage {
     uint32_t GNSS_timeOfWeek;
     int32_t latitude;
     int32_t longitude;
-    uint32_t ellipsoid_altitidue;
-    uint32_t mean_sea_level_altitude;
+    int32_t ellipsoid_altitidue;
+    int32_t mean_sea_level_altitude;
     uint16_t GDOP;
     uint16_t PDOP;
     uint16_t HDOP;
@@ -746,7 +746,6 @@ gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, struct Serial *seri
     int32_t longitude_raw = swap_int32(gpsMsg.navigationDataMessage.longitude);
     gpsSample->point.latitude = ((float)latitude_raw) * 0.0000001f;
     gpsSample->point.longitude = ((float)longitude_raw) * 0.0000001f;
-    //gpsSample->altitude =((float)gpsMsg.navigationDataMessage.ellipsoid_altitidue) * 0.01;
 
     float ecef_x_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vx)) * 0.01;
     float ecef_y_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vy)) * 0.01;
@@ -757,7 +756,7 @@ gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, struct Serial *seri
                           + (ecef_z_velocity * ecef_z_velocity));
     //convert m/sec to km/hour
     gpsSample->speed = velocity * 3.6;
-    gpsSample->altitude = (((float)swap_uint32(gpsMsg.navigationDataMessage.mean_sea_level_altitude)) * 0.01) * 3.28084;
+    gpsSample->altitude = (((float) swap_int32(gpsMsg.navigationDataMessage.mean_sea_level_altitude)) * 0.01) * 3.28084;
 
     //convert GNSS_week to milliseconds and add time of week converted to milliseconds
     uint16_t GNSS_week = swap_uint16(gpsMsg.navigationDataMessage.GNSS_week);
