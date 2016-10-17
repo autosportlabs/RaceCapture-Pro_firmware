@@ -651,11 +651,13 @@ static void lapstats_setup(const GpsSnapshot *gps_snapshot)
         const Track *track = NULL;
         track_status_t track_status;
         if (auto_detect_track) {
-                track_status = TRACK_STATUS_AUTO_DETECTED;
-                track = auto_configure_track(NULL, gp);
+                const Track *default_track = (get_tracks()->count == 0) ? &trackConfig->track : NULL;
+                track = auto_configure_track(default_track, gp);
+                track_status = default_track->trackId ? TRACK_STATUS_AUTO_DETECTED : TRACK_STATUS_WAITING_TO_CONFIG;
                 if (track)
                         pr_info_int_msg("track: detected track ",
                                         track->trackId);
+
         } else {
                 track_status = TRACK_STATUS_FIXED_CONFIG;
                 track = &trackConfig->track;
