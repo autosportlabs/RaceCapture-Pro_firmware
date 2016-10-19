@@ -843,12 +843,12 @@ bool esp8266_set_ap_info(const struct esp8266_ap_info* info,
 static bool connect_cb(struct at_rsp *rsp, void *up)
 {
         static const char *cmd_name = "connect_cb";
+	const bool in_use = STR_EQ(rsp->msgs[0], "ALREADY CONNECTED");
+	const bool status = at_ok(rsp);
         esp8266_connect_cb_t *cb = up;
-        const bool status = at_ok(rsp);
-        const bool in_use = STR_EQ(rsp->msgs[0], "ALREADY CONNECTED");
 
         if (!status)
-                cmd_failure(cmd_name, NULL);
+                cmd_failure(cmd_name, rsp->msgs[0]);
 
         if (cb)
                 cb(status, in_use);
