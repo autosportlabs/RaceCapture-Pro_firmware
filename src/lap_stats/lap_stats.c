@@ -657,14 +657,12 @@ static void lapstats_setup(const GpsSnapshot *gps_snapshot)
                 if (track != &trackConfig->track) {
                         pr_info_int_msg(_LOG_PFX "Auto-detected track from db ",
                                         track->trackId);
-                }
-                else {
+                } else {
                         bool track_db_exists = (get_tracks()->count > 0);
                         if (track_db_exists) {
                                 track_status = TRACK_STATUS_FIXED_CONFIG;
                                 pr_info_int_msg(_LOG_PFX "Could not find track in db, falling back to fixed config ", track->trackId);
-                        }
-                        else {
+                        } else {
                                 pr_info_int_msg(_LOG_PFX "Using track config ", track->trackId);
                         }
                 }
