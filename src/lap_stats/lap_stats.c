@@ -36,6 +36,7 @@
 #include "tracks.h"
 #include <stdint.h>
 #include <string.h>
+#define _LOG_PFX            "[lapstats] "
 
 /* Make the radius 2x the size of start/finish radius.*/
 #define GEO_CIRCLE_RADIUS_MIN		1
@@ -442,7 +443,7 @@ int getAtSector()
  */
 static void lap_finished_event(const GpsSnapshot *gpsSnapshot)
 {
-        pr_debug_int_msg("Finished lap ", ++g_lapCount);
+        pr_debug_int_msg(_LOG_PFX "Finished lap ", ++g_lapCount);
 
         end_lap_timing(gpsSnapshot);
         finishLap(gpsSnapshot);
@@ -465,7 +466,7 @@ static void lap_finished_event(const GpsSnapshot *gpsSnapshot)
 static void lap_started_event(const tiny_millis_t time, const GeoPoint *sp,
                               const float distance)
 {
-        pr_debug_int_msg("Starting lap ", ++g_lap);
+        pr_debug_int_msg(_LOG_PFX "Starting lap ", ++g_lap);
         g_at_sf = true;
 
         // Timing and predictive timing
@@ -495,7 +496,7 @@ static void sector_boundary_event(const GpsSnapshot *gpsSnapshot)
 {
     const tiny_millis_t millis = gpsSnapshot->deltaFirstFix;
 
-    pr_debug_int_msg("Sector boundary ", g_sector);
+    pr_debug_int_msg(_LOG_PFX "Sector boundary ", g_sector);
 
     g_lastSectorTime = millis - g_lastSectorTimestamp;
     g_lastSectorTimestamp = millis;
@@ -639,29 +640,38 @@ static void lapstats_setup(const GpsSnapshot *gps_snapshot)
          */
         const LoggerConfig *config = getWorkingLoggerConfig();
         const TrackConfig *trackConfig = &(config->TrackConfigs);
-	const bool auto_detect_track = trackConfig->auto_detect;
-	const GeoPoint *gp = &gps_snapshot->sample.point;
+        const bool auto_detect_track = trackConfig->auto_detect;
+        const GeoPoint *gp = &gps_snapshot->sample.point;
 
-	/* If we are using auto-detect and have no valid point, we are done */
-	if (auto_detect_track && !isValidPoint(gp))
-		return;
+        /* If we are using auto-detect and have no valid point, we are done */
+        if (auto_detect_track && !isValidPoint(gp))
+                return;
 
         const float radius_in_meters =
                 lapstats_degrees_to_meters(config->TrackConfigs.radius);
         const Track *track = NULL;
         track_status_t track_status;
         if (auto_detect_track) {
-                const Track *default_track = (get_tracks()->count == 0) ? &trackConfig->track : NULL;
-                track = auto_configure_track(default_track, gp);
-                track_status = default_track->trackId ? TRACK_STATUS_AUTO_DETECTED : TRACK_STATUS_WAITING_TO_CONFIG;
-                if (track)
-                        pr_info_int_msg("track: detected track ",
+                track_status = TRACK_STATUS_AUTO_DETECTED;
+                track = auto_configure_track(&trackConfig->track, gp);
+                if (track != &trackConfig->track) {
+                        pr_info_int_msg(_LOG_PFX "Auto-detected track from db ",
                                         track->trackId);
-
+                }
+                else {
+                        bool track_db_exists = (get_tracks()->count > 0);
+                        if (track_db_exists) {
+                                track_status = TRACK_STATUS_FIXED_CONFIG;
+                                pr_info_int_msg(_LOG_PFX "Could not find track in db, falling back to fixed config ", track->trackId);
+                        }
+                        else {
+                                pr_info_int_msg(_LOG_PFX "Using track config ", track->trackId);
+                        }
+                }
         } else {
                 track_status = TRACK_STATUS_FIXED_CONFIG;
                 track = &trackConfig->track;
-                pr_info("track: using fixed config");
+                pr_info_int_msg(_LOG_PFX "Using fixed track config ", track->trackId);
         }
 
         set_active_track(track, radius_in_meters, track_status);
