@@ -240,8 +240,7 @@ static void resetTrackConfig(TrackConfig *cfg)
 {
 	memset(cfg, 0, sizeof(TrackConfig));
 	cfg->radius = DEFAULT_TRACK_TARGET_RADIUS;
-	/* True if we support a track DB, false otherwise */
-	cfg->auto_detect = !!MAX_TRACKS;
+	cfg->auto_detect = true;
 }
 
 static void resetBluetoothConfig(BluetoothConfig *cfg)
