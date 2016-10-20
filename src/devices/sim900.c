@@ -220,9 +220,9 @@ static bool sim900_connect_tcp_socket(struct serial_buffer *sb,
         const size_t count = cellular_exec_cmd(sb, CONNECT_TIMEOUT, msgs,
                                                msgs_len);
         return is_rsp_ok(msgs, 1) && (
-                0 == strcmp("CONNECT OK", msgs[count - 1]) ||
-                0 == strcmp("CONNECT", msgs[count - 1]) ||
-                0 == strcmp("ALREADY CONNECT", msgs[count - 1]));
+                0 == strcmp("CONNECT OK\r\n", msgs[count - 1]) ||
+                0 == strcmp("CONNECT\r\n", msgs[count - 1]) ||
+                0 == strcmp("ALREADY CONNECT\r\n", msgs[count - 1]));
 }
 
 static bool sim900_close_tcp_socket(struct serial_buffer *sb,
