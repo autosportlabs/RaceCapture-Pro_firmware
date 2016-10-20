@@ -39,7 +39,6 @@ using std::istreambuf_iterator;
 class LoggerApiTest : public CppUnit::TestFixture
 {
     CPPUNIT_TEST_SUITE( LoggerApiTest );
-    CPPUNIT_TEST( testUnescapeTextField );
     CPPUNIT_TEST( testSetConnectivityCfg );
     CPPUNIT_TEST( testGetConnectivityCfg );
     CPPUNIT_TEST( testGetAnalogCfg );
@@ -99,7 +98,6 @@ public:
     int findAndReplace(string & source, const string find, const string replace);
     string readFile(string filename);
     void setUp();
-    void tearDown();
 
     void setActiveTrack();
     void setActiveTrackSectors();
@@ -111,7 +109,6 @@ public:
     char * processApiGeneric(string filename);
 
     void assertGenericResponse(char *buffer, const char *messageName, int responseCode);
-    void testUnescapeTextField();
     void testSampleData1();
     void testSampleData2();
     void testHeartBeat();

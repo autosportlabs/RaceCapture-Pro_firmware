@@ -86,6 +86,7 @@ INCLUDES = \
 -I$(FREE_RTOS_KERNEL_DIR)/include \
 -I$(FREE_RTOS_KERNEL_DIR)/include_testing \
 -I$(UTIL_DIR) \
+-I$(RCP_SRC) \
 -I$(RCP_SRC)/devices \
 -I$(RCP_SRC)/lap_stats \
 -I$(RCP_SRC)/logger \
@@ -138,6 +139,7 @@ AutoLoggerTest.cpp \
 AtTest.cpp \
 CellularApiStatusKeysTest.cpp \
 ChannelConfigTest.cpp \
+JsmnTest.cpp \
 PredictiveTimeTest2.cpp \
 StrUtilTest.cpp \
 date_time_test.cpp \
@@ -199,7 +201,6 @@ $(RCP_SRC)/gps/geopoint.c \
 $(RCP_SRC)/gps/gps.c \
 $(RCP_SRC)/gsm/gsm.c \
 $(RCP_SRC)/imu/imu.c \
-$(RCP_SRC)/jsmn/jsmn.c \
 $(RCP_SRC)/launch_control.c \
 $(RCP_SRC)/logger/fileWriter.c \
 $(RCP_SRC)/logger/connectivityTask.c \
@@ -244,6 +245,7 @@ mock_usb_comm.c \
 
 SIM_C_SRC = \
 $(RCP_SRC)/devices/cellular_api_status_keys.c \
+$(RCP_SRC)/jsmn/jsmn.c \
 $(RCP_SRC)/lap_stats/lap_stats.c \
 $(RCP_SRC)/logger/auto_logger.c \
 $(RCP_SRC)/logger/channel_config.c \
