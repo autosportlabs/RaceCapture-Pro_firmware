@@ -298,6 +298,7 @@ static void open_log_file(struct logging_status *ls)
 
         pr_info_str_msg(_RCP_BASE_FILE_ "Opened " , ls->name);
         ls->flush_tick = xTaskGetTickCount();
+	ls->last_sample_tick = 0;
 }
 
 TESTABLE_STATIC int logging_start(struct logging_status *ls)
@@ -333,6 +334,13 @@ static int write_samples(struct logging_status *ls, const LoggerMessage *msg)
 		pr_warning(LOG_PFX "Sample invalid.  Skipping...\r\n");
 		return 0;
 	}
+
+	/* Ensure that we don't write a sample that is older than previous */
+	if (msg->ticks < ls->last_sample_tick) {
+		pr_debug(LOG_PFX "Sample is too old.  Skipping...\r\n");
+		return 0;
+	}
+	ls->last_sample_tick = msg->ticks;
 
 	int rc = 0;
 

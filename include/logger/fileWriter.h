@@ -44,6 +44,7 @@ struct logging_status
         unsigned int rows_written;
         enum writing_status writing_status;
         portTickType flush_tick;
+	portTickType last_sample_tick;
         char name[FILENAME_LEN];
 };
 
