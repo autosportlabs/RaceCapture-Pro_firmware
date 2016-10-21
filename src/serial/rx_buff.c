@@ -59,12 +59,13 @@ void rx_buff_clear(struct rx_buff *rxb)
  */
 struct rx_buff* rx_buff_create(const size_t cap)
 {
-        struct rx_buff* rxb =
-		(struct rx_buff*) portMalloc(sizeof(struct rx_buff));
+        struct rx_buff* rxb = (struct rx_buff*)
+		calloc(1, sizeof(struct rx_buff));
+
         if (!rxb)
                 goto fail_obj_alloc;
 
-        rxb->buff = (char*) portMalloc(cap);
+        rxb->buff = (char*) calloc(cap, sizeof(char));
         if (!rxb->buff)
                 goto fail_buff_alloc;
 
@@ -73,7 +74,7 @@ struct rx_buff* rx_buff_create(const size_t cap)
         return rxb;
 
 fail_buff_alloc:
-        portFree(rxb);
+        free(rxb);
 fail_obj_alloc:
         /* Failed to get the memory we need */
         pr_error(LOG_PFX "create failed\r\n");
@@ -86,8 +87,8 @@ fail_obj_alloc:
  */
 void rx_buff_destroy(struct rx_buff *rxb)
 {
-        portFree(rxb->buff);
-        portFree(rxb);
+        free(rxb->buff);
+        free(rxb);
 }
 
 /**
