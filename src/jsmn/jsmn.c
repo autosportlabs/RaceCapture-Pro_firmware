@@ -19,8 +19,10 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "api.h"
 #include "jsmn.h"
 #include "macros.h"
+#include "serial.h"
 #include "str_util.h"
 #include <stdbool.h>
 #include <stddef.h>
@@ -372,7 +374,7 @@ bool jsmn_exists_set_val_int(const jsmntok_t* root, const char* field,
 	if (!node)
 		return false;
 
-	int* value = val;
+	int* value = (int*) val;
 	*value = atoi(node->data);
 	return true;
 }
@@ -385,7 +387,7 @@ bool jsmn_exists_set_val_float(const jsmntok_t* root, const char* field,
 	if (!node)
 		return false;
 
-	float* value = val;
+	float* value = (float*) val;
 	*value = atof(node->data);
 	return true;
 }
@@ -398,7 +400,7 @@ bool jsmn_exists_set_val_bool(const jsmntok_t* root, const char* field,
 	if (!node)
 		return false;
 
-	bool* value = val;
+	bool* value = (bool*) val;
 	*value = STR_EQ("true", node->data);
 	return true;
 }
@@ -413,10 +415,107 @@ bool jsmn_exists_set_val_string(const jsmntok_t* root, const char* field,
 	if (!node)
 		return false;
 
-	char* data = node->data;
-	if (strip)
-		data = strip_inline(data);
+	jsmn_decode_string((char*) val, node->data, max_len);
 
-	strntcpy(val, data, max_len);
+	if (strip) {
+		const char* data = strip_inline(node->data);
+		if (node->data != data)
+			memmove(node->data, data, strlen(data) + 1);
+	}
+
 	return true;
+}
+
+/**
+ * Reads a raw JSON string and writes out the string represented in JSON.
+ * This handles unescaping most unescaped characters that would come across
+ * the wire.  Follows the safe practices of strntcpy and will ensure that
+ * the string in dest is always NULL terminated, even if the length of the
+ * JSON string was longer.
+ * @param dst The destination array for the string output.
+ * @param src The JSON string that we are reading in.
+ * @param len The maximum length allowed in the destination string area
+ * including NULL termination character.
+ */
+void jsmn_decode_string(char* dst, const char* src, size_t len)
+{
+	while(*src && len--) {
+		switch(*src) {
+		case '\\':
+			switch(*++src) {
+			case 'b':
+				*dst = '\b';
+				break;
+			case 'f':
+				*dst = '\f';
+				break;
+			case 'n':
+				*dst = '\n';
+				break;
+			case 'r':
+				*dst = '\r';
+				break;
+			case 't':
+				*dst = '\t';
+				break;
+			case 'u':
+				/* Handles \uXXXX. Not supported */
+				for(int i = 0; i < 4 && *src; ++i, ++src);
+				*dst = '?';
+				break;
+			default:
+				/* No special handling required for \,/,"*/
+				*dst = *src;
+				break;
+			}
+			break;
+		default:
+			*dst = *src;
+			break;
+		}
+		++src;
+		++dst;
+	}
+
+	/* Ensure end of destination is always NULL'd out */
+	*dst = 0;
+}
+
+/**
+ * Encodes and writes a JSON string out to the given serial pipe, ensuring
+ * that all special characters that need escaping are escaped.
+ * @param serial The serial object to write out to
+ * @param str The JSON string to write out.
+ */
+void jsmn_encode_write_string(struct Serial* serial, const char* str)
+{
+	while(*str) {
+		switch(*str) {
+		case '\b':
+			serial_write_s(serial, "\\b");
+			break;
+		case '\f':
+			serial_write_s(serial, "\\f");
+			break;
+		case '\n':
+			serial_write_s(serial, "\\n");
+			break;
+		case '\r':
+			serial_write_s(serial, "\\r");
+			break;
+		case '\t':
+			serial_write_s(serial, "\\t");
+			break;
+		case '"':
+			serial_write_s(serial, "\\\"");
+			break;
+		case '\\':
+			serial_write_s(serial, "\\\\");
+			break;
+		default:
+			serial_write_c(serial, *str);
+			break;
+		}
+		++str;
+	}
 }

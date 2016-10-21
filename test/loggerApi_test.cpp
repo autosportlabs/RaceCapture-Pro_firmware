@@ -178,41 +178,6 @@ void LoggerApiTest::setUp()
         lapstats_config_changed();
 }
 
-
-void LoggerApiTest::tearDown()
-{
-}
-
-void LoggerApiTest::testUnescapeTextField(){
-	{
-		char test[] =  "test1";
-		unescapeTextField(test);
-		CPPUNIT_ASSERT_EQUAL(string("test1"), string(test));
-	}
-
-	{
-		char test[] =  "test\\n1";
-		unescapeTextField(test);
-		CPPUNIT_ASSERT_EQUAL(string("test\n1"), string(test));
-	}
-	{
-		char test[] =  "test\\r1";
-		unescapeTextField(test);
-		CPPUNIT_ASSERT_EQUAL(string("test\r1"), string(test));
-	}
-	{
-		char test[] =  "test\\\\1";
-		unescapeTextField(test);
-		CPPUNIT_ASSERT_EQUAL(string("test\\1"), string(test));
-	}
-	{
-		char test[] =  "test\\\"1";
-		unescapeTextField(test);
-		CPPUNIT_ASSERT_EQUAL(string("test\"1"), string(test));
-	}
-
-}
-
 void LoggerApiTest::populateChannelConfig(ChannelConfig *cfg, const int i, const int splRt) {
    sprintf(cfg->label, "testName_%d", i);
    sprintf(cfg->units, "unit_%d", i);

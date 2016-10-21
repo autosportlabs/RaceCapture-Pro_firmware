@@ -171,8 +171,6 @@ void api_sendLogEnd(struct Serial *serial);
 void api_send_sample_record(struct Serial *serial,
                             const struct sample *sample,
                             const unsigned int tick, const int sendMeta);
-//Utility functions
-void unescapeTextField(char *data);
 
 /* Wifi methods */
 int api_get_wifi_cfg(struct Serial *s, const jsmntok_t *json);

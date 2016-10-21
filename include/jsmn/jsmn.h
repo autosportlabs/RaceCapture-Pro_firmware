@@ -23,6 +23,7 @@
 #define __JSMN_H_
 
 #include "cpp_guard.h"
+#include "serial.h"
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -137,6 +138,11 @@ bool jsmn_exists_set_val_bool(const jsmntok_t* root, const char* field,
 bool jsmn_exists_set_val_string(const jsmntok_t* root, const char* field,
 				void* val, const size_t max_len,
 				const bool strip);
+
+void jsmn_decode_string(char* dst, const char* src, size_t len);
+
+void jsmn_encode_write_string(struct Serial* serial, const char* str);
+
 
 CPP_GUARD_END
 

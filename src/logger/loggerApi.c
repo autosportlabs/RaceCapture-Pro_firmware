@@ -73,41 +73,6 @@ typedef void (*getConfigs_func)(size_t channeId, void ** baseCfg, ChannelConfig 
 typedef const jsmntok_t * (*setExtField_func)(const jsmntok_t *json, const char *name, const char *value, void *cfg);
 typedef int (*reInitConfig_func)(LoggerConfig *config);
 
-
-void unescapeTextField(char *data)
-{
-    char *result = data;
-    while (*data) {
-        if (*data == '\\') {
-            switch(*(data + 1)) {
-            case 'n':
-                *result = '\n';
-                break;
-            case 'r':
-                *result = '\r';
-                break;
-            case '\\':
-                *result = '\\';
-                break;
-            case '"':
-                *result = '\"';
-                break;
-            case '\0': //this should *NOT* happen
-                *result = '\0';
-                return;
-            default: // unknown escape char?
-                *result = ' ';
-                break;
-            }
-            result++;
-            data+=2;
-        } else {
-            *result++ = *data++;
-        }
-    }
-    *result='\0';
-}
-
 static int setUnsignedCharValueIfExists(const jsmntok_t *root, const char * fieldName, unsigned char *target, unsigned char (*filter)(unsigned char))
 {
     const jsmntok_t *valueNode = jsmn_find_get_node_value_prim(root, fieldName);
@@ -582,22 +547,21 @@ static const jsmntok_t * setChannelConfig(struct Serial *serial, const jsmntok_t
 
         char *name = nameTok->data;
         char *value = valueTok->data;
-        unescapeTextField(value);
 
         if (STR_EQ("nm", name))
-            strntcpy(channelCfg->label, value, DEFAULT_LABEL_LENGTH);
+		jsmn_decode_string(channelCfg->label, value, DEFAULT_LABEL_LENGTH);
         else if (STR_EQ("ut", name))
-            strntcpy(channelCfg->units, value, DEFAULT_UNITS_LENGTH);
+		jsmn_decode_string(channelCfg->units, value, DEFAULT_UNITS_LENGTH);
         else if (STR_EQ("min", name))
-            channelCfg->min = atof(value);
+		channelCfg->min = atof(value);
         else if (STR_EQ("max", name))
-            channelCfg->max = atof(value);
+		channelCfg->max = atof(value);
         else if (STR_EQ("sr", name))
-            channelCfg->sampleRate = encodeSampleRate(atoi(value));
+		channelCfg->sampleRate = encodeSampleRate(atoi(value));
         else if (STR_EQ("prec", name))
-            channelCfg->precision = (unsigned char) atoi(value);
+		channelCfg->precision = (unsigned char) atoi(value);
         else if (setExtField != NULL)
-            cfg = setExtField(valueTok, name, value, extCfg);
+		cfg = setExtField(valueTok, name, value, extCfg);
     }
 
     return cfg;

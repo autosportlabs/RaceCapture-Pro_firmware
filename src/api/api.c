@@ -46,9 +46,9 @@ void initApi()
 
 static void putQuotedStr(struct Serial *serial, const char *str)
 {
-    serial_write_c(serial, '"');
-    serial_write_s(serial, str);
-    serial_write_c(serial, '"');
+	serial_write_c(serial, '"');
+	jsmn_encode_write_string(serial, str);
+	serial_write_c(serial, '"');
 }
 
 static void putKeyAndColon(struct Serial *serial, const char *key)
@@ -96,11 +96,11 @@ void json_uint(struct Serial *serial, const char *name, unsigned int value, int 
 
 void json_escapedString(struct Serial *serial, const char *name, const char *value, int more)
 {
-    putKeyAndColon(serial, name);
-    serial_write_c(serial, '"');
-    put_escapedString(serial, value, strlen(value));
-    serial_write_c(serial, '"');
-    putCommaIfNecessary(serial, more);
+	putKeyAndColon(serial, name);
+	serial_write_c(serial, '"');
+	jsmn_encode_write_string(serial, value);
+	serial_write_c(serial, '"');
+	putCommaIfNecessary(serial, more);
 }
 
 void json_string(struct Serial *serial, const char *name, const char *value, int more)

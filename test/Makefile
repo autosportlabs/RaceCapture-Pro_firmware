@@ -139,6 +139,7 @@ AutoLoggerTest.cpp \
 AtTest.cpp \
 CellularApiStatusKeysTest.cpp \
 ChannelConfigTest.cpp \
+JsmnTest.cpp \
 PredictiveTimeTest2.cpp \
 RxBuffTest.cpp \
 StrUtilTest.cpp \
@@ -201,7 +202,6 @@ $(RCP_SRC)/gps/geopoint.c \
 $(RCP_SRC)/gps/gps.c \
 $(RCP_SRC)/gsm/gsm.c \
 $(RCP_SRC)/imu/imu.c \
-$(RCP_SRC)/jsmn/jsmn.c \
 $(RCP_SRC)/launch_control.c \
 $(RCP_SRC)/logger/fileWriter.c \
 $(RCP_SRC)/logger/connectivityTask.c \
@@ -245,6 +245,7 @@ mock_usb_comm.c \
 
 SIM_C_SRC = \
 $(RCP_SRC)/devices/cellular_api_status_keys.c \
+$(RCP_SRC)/jsmn/jsmn.c \
 $(RCP_SRC)/lap_stats/lap_stats.c \
 $(RCP_SRC)/logger/auto_logger.c \
 $(RCP_SRC)/logger/channel_config.c \
