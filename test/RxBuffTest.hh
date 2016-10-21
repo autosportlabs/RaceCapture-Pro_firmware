@@ -1,0 +1,47 @@
+/*
+ * Race Capture Firmware
+ *
+ * Copyright (C) 2016 Autosport Labs
+ *
+ * This file is part of the Race Capture firmware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef _RXBUFFTEST_H_
+#define _RXBUFFTEST_H_
+
+#include <cppunit/extensions/HelperMacros.h>
+
+class RxBuffTest : public CppUnit::TestFixture
+{
+	CPPUNIT_TEST_SUITE( RxBuffTest );
+	CPPUNIT_TEST( clearBuffTest );
+	CPPUNIT_TEST( createRxBuffTest );
+	CPPUNIT_TEST( msgReadyTest );
+	CPPUNIT_TEST( msgPartialTest );
+	CPPUNIT_TEST( msgOverflowTest );
+	CPPUNIT_TEST_SUITE_END();
+
+public:
+	void setUp();
+	void tearDown();
+	void clearBuffTest();
+	void createRxBuffTest();
+	void msgReadyTest();
+	void msgPartialTest();
+	void msgOverflowTest();
+};
+
+#endif /* _RXBUFFTEST_H_ */

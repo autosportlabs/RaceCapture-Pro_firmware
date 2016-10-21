@@ -59,11 +59,12 @@ void rx_buff_clear(struct rx_buff *rxb)
  */
 struct rx_buff* rx_buff_create(const size_t cap)
 {
-        struct rx_buff *rxb = portMalloc(sizeof(struct rx_buff));
+        struct rx_buff* rxb =
+		(struct rx_buff*) portMalloc(sizeof(struct rx_buff));
         if (!rxb)
                 goto fail_obj_alloc;
 
-        rxb->buff = portMalloc(cap);
+        rxb->buff = (char*) portMalloc(cap);
         if (!rxb->buff)
                 goto fail_buff_alloc;
 
@@ -192,9 +193,11 @@ bool rx_buff_is_overflow(struct rx_buff *rxb)
  */
 enum rx_buff_status rx_buff_get_status(struct rx_buff *rxb)
 {
-        if (rxb->msg_ready)
-                return rx_buff_is_overflow(rxb) ?
-                        RX_BUFF_STATUS_OVERFLOW : RX_BUFF_STATUS_READY;
+	if (rxb->msg_ready)
+		return RX_BUFF_STATUS_READY;
+
+	if (rx_buff_is_overflow(rxb))
+		return RX_BUFF_STATUS_OVERFLOW;
 
         return rxb->idx == 0 ?
                 RX_BUFF_STATUS_EMPTY : RX_BUFF_STATUS_PARTIAL;
