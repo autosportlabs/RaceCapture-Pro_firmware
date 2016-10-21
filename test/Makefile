@@ -86,6 +86,7 @@ INCLUDES = \
 -I$(FREE_RTOS_KERNEL_DIR)/include \
 -I$(FREE_RTOS_KERNEL_DIR)/include_testing \
 -I$(UTIL_DIR) \
+-I$(RCP_SRC) \
 -I$(RCP_SRC)/devices \
 -I$(RCP_SRC)/lap_stats \
 -I$(RCP_SRC)/logger \
@@ -139,6 +140,7 @@ AtTest.cpp \
 CellularApiStatusKeysTest.cpp \
 ChannelConfigTest.cpp \
 PredictiveTimeTest2.cpp \
+RxBuffTest.cpp \
 StrUtilTest.cpp \
 date_time_test.cpp \
 launch_control_test.cpp \
@@ -217,7 +219,6 @@ $(RCP_SRC)/lua/luaScript.c \
 $(RCP_SRC)/memory/memory.c \
 $(RCP_SRC)/modem/at_basic.c \
 $(RCP_SRC)/predictive_timer/predictive_timer_2.c \
-$(RCP_SRC)/serial/rx_buff.c \
 $(RCP_SRC)/serial/serial_buffer.c \
 $(RCP_SRC)/serial/serial.c \
 $(RCP_SRC)/system/flags.c \
@@ -248,6 +249,7 @@ $(RCP_SRC)/lap_stats/lap_stats.c \
 $(RCP_SRC)/logger/auto_logger.c \
 $(RCP_SRC)/logger/channel_config.c \
 $(RCP_SRC)/modem/at.c \
+$(RCP_SRC)/serial/rx_buff.c \
 
 OBJ_TEST = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $(basename $(SRC) $(T_SRC) RCPTest.cpp))))
 OBJ_SIM = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $(basename $(SRC) $(SIM_C_SRC) RCPSim.cpp))))
