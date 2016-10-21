@@ -148,7 +148,8 @@ bool gsm_get_imei(struct serial_buffer *sb,
                 return false;
         }
 
-        strntcpy(cell_info->imei, msgs[0], sizeof(cell_info->imei));
+	strntcpy(cell_info->imei, msgs[0], sizeof(cell_info->imei));
+	rstrip_inline(cell_info->imei);
 
         return 1;
 }
