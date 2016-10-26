@@ -1,3 +1,14 @@
+= 2.10.1 =
+* Fixed SIM900 failure to connect issue.
+* Fix below sea level altitude issue.
+* Fix AT parsing bug in cellular for IMEI.
+* Fix battery voltage reading issue in RaceCapture devices.
+* Improve handling of invalid JSON characters when both encoding and
+  decoding JSON messages.
+* Fix SD card logging bug where we could log sample out of order at
+  the beginning of the log file.
+* Improve track selection algorithm upon track detection .
+
 = 2.10.0 =
 * RaceCapture supported!
 * Reduction of stack sizes to improve RAM usage
