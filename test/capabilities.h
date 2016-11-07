@@ -126,9 +126,6 @@ CPP_GUARD_BEGIN
 //system info
 #define DEVICE_NAME    "RCP_SIM"
 #define FRIENDLY_DEVICE_NAME "RaceCapture/Pro Sim"
-#define COMMAND_PROMPT "RaceCapture/Pro Sim"
-#define VERSION_STR MAJOR_REV_STR "." MINOR_REV_STR "." BUGFIX_REV_STR
-#define WELCOME_MSG "Welcome to RaceCapture/Pro Sim: Firmware Version " VERSION_STR
 
 /* How big is our hardware init stack */
 #define HARDWARE_INIT_STACK_SIZE	192

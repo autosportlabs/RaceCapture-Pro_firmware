@@ -67,12 +67,13 @@ bool version_check_changed(const VersionInfo *pv,
 }
 
 /**
- * @return The output of `git describe --dirty` on the HEAD of the git
- * tree when this release was built.  This human readable string provides
- * info on where the code has come from along with # of committs and whether
- * or not the tree was dirty at the time of build.
+ * @return The full version string.  This is effectively the output of
+ * `git describe --dirty` on the HEAD of the git tree when this release
+ * was built.  This human readable string provides info on where the code
+ * has come from along with # of committs and whether or not the tree was
+ * dirty at the time of build.
  */
-const char* version_git_description()
+const char* version_full()
 {
         /* The git hash value is defined by the build */
         return RC_BUILD_GIT_DESCRIPTION;

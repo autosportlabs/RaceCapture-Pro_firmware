@@ -59,9 +59,6 @@
 //system info
 #define DEVICE_NAME    "RCT"
 #define FRIENDLY_DEVICE_NAME "RaceCapture"
-#define COMMAND_PROMPT "RaceCapture"
-#define VERSION_STR MAJOR_REV_STR "." MINOR_REV_STR "." BUGFIX_REV_STR
-#define WELCOME_MSG "Welcome to RaceCapture : Firmware Version " VERSION_STR
 
 /* LUA Configuration */
 

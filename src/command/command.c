@@ -24,7 +24,10 @@
 #include "constants.h"
 #include "loggerCommands.h"
 #include "luaCommands.h"
+#include "macros.h"
 #include "serial.h"
+#include "versionInfo.h"
+#include <stdio.h>
 #include <string.h>
 
 #define SYSTEM_COMMANDS { LOGGER_COMMANDS       \
@@ -34,10 +37,10 @@
         }
 
 #define MAX_ARGS	10
-const cmd_t commands[] = SYSTEM_COMMANDS;
+#define MAX_HEADER_WIDTH	80
 
-const char cmdPrompt[] = COMMAND_PROMPT;
-const char welcomeMsg[] = WELCOME_MSG;
+static const char device_name[] = FRIENDLY_DEVICE_NAME;
+static const cmd_t commands[] = SYSTEM_COMMANDS;
 static int menuPadding = 0;
 
 cmd_context commandContext;
@@ -106,19 +109,28 @@ static void send_header(struct Serial *serial, unsigned int len)
 
 void show_welcome(struct Serial *serial)
 {
-    put_crlf(serial);
-    size_t len = strlen(welcomeMsg);
-    send_header(serial, len);
-    serial_write_s(serial, welcomeMsg);
-    put_crlf(serial);
-    send_header(serial, len);
-    put_crlf(serial);
-    show_help(serial);
+	static size_t len = 0;
+	static char msg[MAX_HEADER_WIDTH];
+
+	if (!len) {
+		snprintf(msg, MAX_HEADER_WIDTH, "Welcome to %s version %s",
+			 device_name, version_full());
+		msg[MAX_HEADER_WIDTH - 1] = 0; // Terminate it as a precaution.
+		len = strlen(msg);
+	}
+
+	put_crlf(serial);
+	send_header(serial, len);
+	serial_write_s(serial, msg);
+	put_crlf(serial);
+	send_header(serial, len);
+	put_crlf(serial);
+	show_help(serial);
 }
 
 void show_command_prompt(struct Serial *serial)
 {
-    serial_write_s(serial, cmdPrompt);
+    serial_write_s(serial, device_name);
     serial_write_s(serial, " > ");
 }
 

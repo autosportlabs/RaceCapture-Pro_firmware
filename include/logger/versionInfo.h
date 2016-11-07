@@ -44,7 +44,7 @@ typedef struct _VersionInfo {
 bool version_check_changed(const VersionInfo *versionInfo,
                            const char* log_pfx);
 const VersionInfo* get_current_version_info();
-const char* version_git_description();
+const char* version_full();
 enum release_type version_get_release_type();
 const char* version_release_type_api_key(const enum release_type rt);
 

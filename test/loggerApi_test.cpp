@@ -1308,7 +1308,7 @@ void LoggerApiTest::testGetVersion(){
 	CPPUNIT_ASSERT_EQUAL(BUGFIX_REV, (int)(Number)json["ver"]["bugfix"]);
 	CPPUNIT_ASSERT_EQUAL(string(cpu_get_serialnumber()),
 			     (string)(String)json["ver"]["serial"]);
-        CPPUNIT_ASSERT_EQUAL(string(version_git_description()),
+        CPPUNIT_ASSERT_EQUAL(string(version_full()),
 			     (string)(String)json["ver"]["git_info"]);
 
 	const enum release_type rt = version_get_release_type();
@@ -1333,7 +1333,7 @@ void LoggerApiTest::testGetStatus(){
 	CPPUNIT_ASSERT_EQUAL(BUGFIX_REV, (int)(Number)sys_obj["ver_bugfix"]);
 	CPPUNIT_ASSERT_EQUAL(string(cpu_get_serialnumber()),
 			     (string)(String)sys_obj["serial"]);
-	CPPUNIT_ASSERT_EQUAL(string(version_git_description()),
+	CPPUNIT_ASSERT_EQUAL(string(version_full()),
 			     (string)(String)sys_obj["git_info"]);
 
 	const enum release_type rt = version_get_release_type();

@@ -124,7 +124,7 @@ static void rc_version_info(struct Serial *serial, const int more,
         json_int(serial, minor_name, MINOR_REV, 1);
         json_int(serial, bf_name, BUGFIX_REV, 1);
         json_string(serial, "serial", cpu_get_serialnumber(), 1);
-        json_string(serial, "git_info", version_git_description(), 1);
+        json_string(serial, "git_info", version_full(), 1);
         json_string(serial, "release_type", rt_key, more);
 }
 
