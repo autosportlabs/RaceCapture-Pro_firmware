@@ -279,7 +279,7 @@ typedef enum _OBD2TimeOuts
     Hz0_2 = 1 << 0, // 5 seconds
     Hz0_5 = 1 << 1, // 2 seconds
     Hz1_0 = 1 << 2, // 1 seconds
-    Hz2_5 = 1 << 3, // .5 seconds
+    Hz2_0 = 1 << 3, // .5 seconds
     Hz10_0 = 1 << 4, // .1 seconds
     Hz25_0 = 1 << 5, // .04 seconds
     Hz50_0 = 1 << 6, // .02 seconds

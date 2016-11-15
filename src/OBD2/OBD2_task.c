@@ -55,9 +55,9 @@ OBD2TimeOuts mapSampleRates(short sampleRate)
     } else if (sampleRate > 5) {
         return Hz10_0;
     } else if (sampleRate > 1) {
-        return Hz2_5;
+        return Hz2_0;
     }
-    return Hz100_0;
+    return Hz1_0;
 }
 
 void OBD2Task(void *pvParameters)
@@ -78,11 +78,11 @@ void OBD2Task(void *pvParameters)
             currtimeOuts = (currTime > lastTime + 5000 ? Hz0_2 : 0)
                 + (currTime > lastTime + 2000 ? Hz0_5 : 0)
                 + (currTime > lastTime + 1000 ? Hz1_0 : 0)
-                + (currTime > lastTime + 500 ? Hz2_5 : 0)
+                + (currTime > lastTime + 500 ? Hz2_0 : 0)
                 + (currTime > lastTime + 100 ? Hz10_0 : 0)
                 + (currTime > lastTime + 40 ? Hz25_0 : 0)
                 + (currTime > lastTime + 20 ? Hz50_0 : 0)
-                + (currTime > lastTime + 1 ? Hz100_0 : 0);
+                + (currTime > lastTime + 10 ? Hz100_0 : 0);
             lastTime = currTime;
 
             for (size_t i = 0; i < oc->enabledPids; i++) {
