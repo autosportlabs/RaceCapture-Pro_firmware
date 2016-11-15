@@ -67,28 +67,23 @@ void OBD2Task(void *pvParameters)
     LoggerConfig *config = getWorkingLoggerConfig();
     OBD2Config *oc = &config->OBD2Configs;
 
-    uint32_t currTime = getUptime();
+    tiny_millis_t currTime = getUptime();
+    tiny_millis_t lastTime = currTime;
     uint32_t currtimeOuts = 0;
-    tiny_millis_t lastTime5000ms = currTime + 5000;
-    tiny_millis_t lastTime2000ms = currTime + 2000;
-    tiny_millis_t lastTime1000ms = currTime + 1000;
-    tiny_millis_t lastTime500ms = currTime + 500;
-    tiny_millis_t lastTime100ms = currTime + 100;
-    tiny_millis_t lastTime40ms = currTime + 40;
-    tiny_millis_t lastTime20ms = currTime + 20;
-    tiny_millis_t lastTime1ms = currTime + 1;
+    tiny_millis_t timeDelayMs = 0;
 
     while(1) {
         while (oc->enabled && oc->enabledPids > 0) {
             currTime = getUptime();
-            currtimeOuts = (currTime > lastTime5000ms ? Hz0_2 : 0)
-                + (currTime > lastTime2000ms ? Hz0_5 : 0)
-                + (currTime > lastTime1000ms ? Hz1_0 : 0)
-                + (currTime > lastTime500ms ? Hz2_5 : 0)
-                + (currTime > lastTime100ms ? Hz10_0 : 0)
-                + (currTime > lastTime40ms ? Hz25_0 : 0)
-                + (currTime > lastTime20ms ? Hz50_0 : 0)
-                + (currTime > lastTime1ms ? Hz100_0 : 0);
+            currtimeOuts = (currTime > lastTime + 5000 ? Hz0_2 : 0)
+                + (currTime > lastTime + 2000 ? Hz0_5 : 0)
+                + (currTime > lastTime + 1000 ? Hz1_0 : 0)
+                + (currTime > lastTime + 500 ? Hz2_5 : 0)
+                + (currTime > lastTime + 100 ? Hz10_0 : 0)
+                + (currTime > lastTime + 40 ? Hz25_0 : 0)
+                + (currTime > lastTime + 20 ? Hz50_0 : 0)
+                + (currTime > lastTime + 1 ? Hz100_0 : 0);
+            lastTime = currTime;
 
             for (size_t i = 0; i < oc->enabledPids; i++) {
                 PidConfig *pidCfg = &oc->pids[i];
@@ -110,7 +105,12 @@ void OBD2Task(void *pvParameters)
                         pr_warning_int_msg("OBD2: PID read fail: ", pid);
                     }
                 }
-                delayTicks(max_obd2_samplerate);
+                
+                timeDelayMs = (lastTime + decodeSampleRate(max_obd2_samplerate)) - getUptime();
+                if (timeDelayMs > 0)
+                {
+                    delayMs(timeDelayMs);
+                }
             }
         }
         delayMs(OBD2_FEATURE_DISABLED_DELAY_MS);
