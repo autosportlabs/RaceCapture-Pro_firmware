@@ -274,11 +274,22 @@ typedef struct _PWMConfig {
 
 #define OBD2_CHANNELS 20
 
+typedef enum _OBD2TimeOuts
+{
+    Hz0_2 = 1 << 0, // 5 seconds
+    Hz0_5 = 1 << 1, // 2 seconds
+    Hz1_0 = 1 << 2, // 1 seconds
+    Hz2_5 = 1 << 3, // .5 seconds
+    Hz10_0 = 1 << 4, // .1 seconds
+    Hz25_0 = 1 << 5, // .04 seconds
+    Hz50_0 = 1 << 6, // .02 seconds
+    Hz100_0 = 1 << 7 // .01 seconds
+} OBD2TimeOuts;
+
 typedef struct _PidConfig {
     ChannelConfig cfg;
     unsigned short pid;
 } PidConfig;
-
 
 typedef struct _OBD2Config {
     unsigned char enabled;
