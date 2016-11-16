@@ -322,6 +322,27 @@ typedef struct _CANConfig {
 
 #define DEFAULT_CAN_BAUD_RATE 500000
 
+#define CAN_MAP_CHANNELS 100
+
+typedef struct _CANMapChannelConfig {
+    ChannelConfig cfg;
+    unsigned short canChannel; // Bus 0 or 1
+    unsigned short canIdMask;
+    unsigned short canId;
+    unsigned short byteStart;
+    unsigned short byteLength;
+    unsigned short dataMask;
+    signed short multipler;
+    signed short divisor;
+    signed short adder;
+} CANMapChannelConfig;
+
+typedef struct _CANMapConfig {
+    unsigned char enabled;
+    unsigned short enabledChannels;
+    CANMapChannelConfig maps[CAN_MAP_CHANNELS];
+} CANMapConfig;
+
 typedef struct _GPSConfig {
     ChannelConfig latitude;
     ChannelConfig longitude;
@@ -494,6 +515,9 @@ typedef struct _LoggerConfig {
 
     //CAN Configuration
     CANConfig CanConfig;
+
+    //CANMap Config
+    CANMapConfig CANMapConfigs;
 
     //OBD2 Config
     OBD2Config OBD2Configs;

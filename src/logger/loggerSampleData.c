@@ -22,6 +22,7 @@
 #include "ADC.h"
 #include "FreeRTOS.h"
 #include "GPIO.h"
+#include "CANMap.h"
 #include "OBD2.h"
 #include "PWM.h"
 #include "channel_config.h"
@@ -298,9 +299,17 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     }
 #endif
 
+    CANMapConfig *canMapConfig = &(loggerConfig->CANMapConfigs);
+    const unsigned char canMapEnabled = loggerConfig->CANMapConfigs.enabled;
+    for (size_t i = 0; i < canMapConfig->enabledChannels && canMapEnabled; i++) {
+        chanCfg = &(canMapConfig->maps[i].cfg);
+        sample = processChannelSampleWithIntGetter(sample, chanCfg, i,
+                                                   CANMap_get_current_map_value);
+    }
+
     OBD2Config *obd2Config = &(loggerConfig->OBD2Configs);
-    const unsigned char enabled = loggerConfig->OBD2Configs.enabled;
-    for (size_t i = 0; i < obd2Config->enabledPids && enabled; i++) {
+    const unsigned char obd2Enabled = loggerConfig->OBD2Configs.enabled;
+    for (size_t i = 0; i < obd2Config->enabledPids && obd2Enabled; i++) {
         chanCfg = &(obd2Config->pids[i].cfg);
         sample = processChannelSampleWithIntGetter(sample, chanCfg, i,
                                                    OBD2_get_current_PID_value);

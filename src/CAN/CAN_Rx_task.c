@@ -20,12 +20,13 @@
  */
 
 
-#include "OBD2_task.h"
+#include "CAN_Rx_task.h"
 #include "taskUtil.h"
 #include "loggerConfig.h"
 #include "stddef.h"
 #include "CAN.h"
 #include "OBD2.h"
+#include "CANMap.h"
 #include "printk.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -34,38 +35,46 @@
 #include "taskUtil.h"
 #include "capabilities.h"
 
-#define OBD2_TASK_STACK 	configMINIMAL_STACK_SIZE
-#define OBD2_FEATURE_DISABLED_DELAY_MS 2000
+#define CAN_RX_TASK_STACK 	configMINIMAL_STACK_SIZE
+#define CAN_RX_FEATURE_DISABLED_DELAY_MS 2000
 
-void startOBD2Task(int priority)
+void startCANRxTask(int priority)
 {
         /* Make all task names 16 chars including NULL char*/
-        static const signed portCHAR task_name[] = "OBD-II Task    ";
-        xTaskCreate(OBD2Task, task_name, OBD2_TASK_STACK, NULL,
+        static const signed portCHAR task_name[] = "CAN Rx Task    ";
+        xTaskCreate(CANRxTask, task_name, CAN_RX_TASK_STACK, NULL,
                     priority, NULL );
 }
 
-void OBD2Task(void *pvParameters)
+void CANRxTask(void *pvParameters)
 {
-    pr_info("Start OBD2 task\r\n");
-    size_t max_obd2_samplerate = msToTicks((TICK_RATE_HZ / MAX_OBD2_SAMPLE_RATE));
+    pr_info("Start CAN Rx task\r\n");
+    size_t max_can_samplerate = msToTicks((TICK_RATE_HZ / MAX_OBD2_SAMPLE_RATE));
     LoggerConfig *config = getWorkingLoggerConfig();
+    CANMapConfig *cMapConf = &config->CANMapConfigs;
     OBD2Config *oc = &config->OBD2Configs;
 
+    CAN_msg msg;
+    int value;
+
     while(1) {
-        while (oc->enabled && oc->enabledPids > 0) {
-            for (size_t i = 0; i < oc->enabledPids; i++) {
-                PidConfig *pidCfg = &oc->pids[i];
-                unsigned char pid = pidCfg->pid;
-                if (OBD2_request_PID(pid, OBD2_PID_DEFAULT_TIMEOUT_MS))
-                {
-                    
-                } else {
-                    pr_warning_int_msg("OBD2: PID read fail: ", pid);
+        while(cMapConf->enabled && cMapConf->enabledChannels > 0) {
+            for (size_t channel = 0; channel < CAN_CHANNELS; channel++) {
+                if (CAN_rx_msg(channel, &msg, DEFAULT_CAN_TIMEOUT)) {
+                    if (OBD2_process_PID(oc, &msg, &value)) {
+
+                    }
+                    else if (CAN_process_map(cMapConf, &msg, &value)) {
+
+                    }
+                    else {
+
+                    }
                 }
-                delayTicks(max_obd2_samplerate);
             }
+
+            delayTicks(max_can_samplerate);
         }
-        delayMs(OBD2_FEATURE_DISABLED_DELAY_MS);
+        delayMs(CAN_RX_FEATURE_DISABLED_DELAY_MS);
     }
 }
