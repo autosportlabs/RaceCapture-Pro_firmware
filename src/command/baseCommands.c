@@ -117,12 +117,13 @@ void ShowTaskInfo(struct Serial *serial, unsigned int argc, char **argv)
 
 void GetVersion(struct Serial *serial, unsigned int argc, char **argv)
 {
-    putHeader(serial, "Version Info");
-    put_nameString(serial, "major", MAJOR_REV_STR);
-    put_nameString(serial, "minor", MINOR_REV_STR);
-    put_nameString(serial, "bugfix", BUGFIX_REV_STR);
-    put_nameString(serial, "serial", cpu_get_serialnumber());
-    put_crlf(serial);
+	putHeader(serial, "Version Info");
+	put_nameString(serial, "major", MAJOR_REV_STR);
+	put_nameString(serial, "minor", MINOR_REV_STR);
+	put_nameString(serial, "bugfix", BUGFIX_REV_STR);
+	put_nameString(serial, "full", version_full());
+	put_nameString(serial, "serial", cpu_get_serialnumber());
+	put_crlf(serial);
 }
 
 void ResetSystem(struct Serial *serial, unsigned int argc, char **argv)
