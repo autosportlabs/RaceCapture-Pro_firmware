@@ -323,13 +323,13 @@ static int lua_init_serial(lua_State *L)
 }
 
 /**
- * Read a character from the specified serial port
+ * Read a raw character from the specified serial port
  * Lua Params:
  * port - the serial port to initialize
  * timeout - the read timeout, in ms.
  *
  * Lua Returns:
- * the character read, or nil if no characters received (receive timeout)
+ * The raw character read, or nil if no characters received (receive timeout)
  *
  */
 static int lua_serial_read_char(lua_State *L)
@@ -351,7 +351,7 @@ static int lua_serial_read_char(lua_State *L)
         char c;
         struct Serial *serial = lua_get_serial(L, port);
         if (0 < serial_read_c_wait(serial, &c, timeout)) {
-                lua_pushlstring(L, &c, 1);
+		lua_pushinteger(L, (int) c);
         } else {
                 lua_pushnil(L);
         }
@@ -428,12 +428,12 @@ static int lua_serial_write_line(lua_State *L)
 }
 
 /**
- * Writes the specified character to the serial port.
+ * Writes the specified raw character to the serial port.
  * The call will block until the character is written.
  *
  * Lua Params:
  * port - the serial port to write
- * char - the character to write.
+ * char - the character (in raw digit format) to write.
  *
  * Lua Returns:
  * no return values (nil)
@@ -443,13 +443,13 @@ static int lua_serial_write_char(lua_State *L)
 {
         lua_validate_args_count(L, 2, 2);
         lua_validate_arg_number(L, 1);
-        lua_validate_arg_string(L, 2);
+        lua_validate_arg_number(L, 2);
 
         const serial_id_t port = (serial_id_t) lua_tointeger(L, 1);
-        const char *data = lua_tostring(L, 2);
+        const int data = lua_tointeger(L, 2);
 
         struct Serial *serial = lua_get_serial(L, port);
-        serial_write_c(serial, *data);
+        serial_write_c(serial, (char) data);
 
         return 0;
 }
