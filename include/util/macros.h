@@ -23,7 +23,7 @@
 #define _MACROS_H_
 
 #include "cpp_guard.h"
-
+#include <stdint.h>
 #include <string.h>
 
 CPP_GUARD_BEGIN
@@ -47,6 +47,11 @@ CPP_GUARD_BEGIN
  * Chooses the minimum of two values.
  */
 #define MIN(a,b) (((a)<(b))?(a):(b))
+
+/**
+ * Ensures the parameter is aligned to a word boundary and size.
+ */
+#define ALIGNED_WORD __attribute__((aligned(sizeof(uint32_t))))
 
 CPP_GUARD_END
 

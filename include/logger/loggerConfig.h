@@ -27,12 +27,12 @@
 #include "channel_config.h"
 #include "cpp_guard.h"
 #include "geopoint.h"
+#include "macros.h"
 #include "serial_device.h"
 #include "timer_config.h"
 #include "tracks.h"
 #include "versionInfo.h"
 #include "wifi.h"
-
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -458,62 +458,60 @@ struct logging_config {
         enum serial_log_type serial[__SERIAL_COUNT];
 };
 
-typedef struct _LoggerConfig {
-    VersionInfo RcpVersionInfo;
+typedef struct ALIGNED_WORD _LoggerConfig {
+	VersionInfo RcpVersionInfo;
 
-    //PWM/Analog out configurations
-    unsigned short PWMClockFrequency;
+	//PWM/Analog out configurations
+	unsigned short PWMClockFrequency;
 
-    // Time Config
-    struct TimeConfig TimeConfigs[CONFIG_TIME_CHANNELS];
+	// Time Config
+	struct TimeConfig TimeConfigs[CONFIG_TIME_CHANNELS];
 
-    //ADC Calibrations
+	//ADC Calibrations
 #if ANALOG_CHANNELS > 0
-    ADCConfig ADCConfigs[CONFIG_ADC_CHANNELS];
+	ADCConfig ADCConfigs[CONFIG_ADC_CHANNELS];
 #endif
 
 #if PWM_CHANNELS > 0
-    //PWM configuration
-    PWMConfig PWMConfigs[CONFIG_PWM_CHANNELS];
+	//PWM configuration
+	PWMConfig PWMConfigs[CONFIG_PWM_CHANNELS];
 #endif
 
 #if GPIO_CHANNELS > 0
-    //GPIO configurations
-    GPIOConfig GPIOConfigs[CONFIG_GPIO_CHANNELS];
+	//GPIO configurations
+	GPIOConfig GPIOConfigs[CONFIG_GPIO_CHANNELS];
 #endif
 
 #if TIMER_CHANNELS > 0
-    //Timer Configurations
-    TimerConfig TimerConfigs[CONFIG_TIMER_CHANNELS];
+	//Timer Configurations
+	TimerConfig TimerConfigs[CONFIG_TIMER_CHANNELS];
 #endif
 
 #if IMU_CHANNELS > 0
-    //IMU Configurations
-    ImuConfig ImuConfigs[CONFIG_IMU_CHANNELS];
+	//IMU Configurations
+	ImuConfig ImuConfigs[CONFIG_IMU_CHANNELS];
 #endif
 
-    //CAN Configuration
-    CANConfig CanConfig;
+	//CAN Configuration
+	CANConfig CanConfig;
 
-    //OBD2 Config
-    OBD2Config OBD2Configs;
+	//OBD2 Config
+	OBD2Config OBD2Configs;
 
-    //GPS Configuration
-    GPSConfig GPSConfigs;
+	//GPS Configuration
+	GPSConfig GPSConfigs;
 
-    //Lap Configuration
-    LapConfig LapConfigs;
+	//Lap Configuration
+	LapConfig LapConfigs;
 
-    //Track configuration
-    TrackConfig TrackConfigs;
+	//Track configuration
+	TrackConfig TrackConfigs;
 
-    //Connectivity Configuration
-    ConnectivityConfig ConnectivityConfigs;
+	//Connectivity Configuration
+	ConnectivityConfig ConnectivityConfigs;
 
         struct logging_config logging_cfg;
         struct auto_logger_config auto_logger_cfg;
-    //Padding data to accommodate flash routine
-    char padding_data[FLASH_PAGE_SIZE];
 } LoggerConfig;
 
 
