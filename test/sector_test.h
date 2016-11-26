@@ -47,6 +47,7 @@ public:
     void outputSectorTimes(vector<float> & sectorTimes, int lap);
     void testSectorTimes();
     void testStageSectorTimes();
+    static bool is_debug();
 };
 
 

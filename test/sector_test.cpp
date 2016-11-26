@@ -66,7 +66,11 @@ void SectorTest::setUp()
 	lapstats_config_changed();
 }
 
-
+bool SectorTest::is_debug()
+{
+	const bool debug = getenv("TRACE") != NULL;
+	return debug;
+}
 void SectorTest::tearDown()
 {
 }
@@ -122,8 +126,9 @@ string SectorTest::readFile(string filename){
 	}
 
 void SectorTest::outputSectorTimes(vector<float> & sectorTimes, int lap){
+	const bool debug = this->is_debug();
 	for (size_t i = 0; i < sectorTimes.size(); i++){
-		//printf("lap %d | sector %d | %f\r", lap, i + 1, sectorTimes[i]);
+		if (debug) printf("lap %d | sector %zu | %f\r", lap, i + 1, sectorTimes[i]);
 	}
 }
 
@@ -136,7 +141,8 @@ float SectorTest::sumSectorTimes(vector<float> & sectorTimes){
 }
 
 void SectorTest::testSectorTimes(){
-	//printf("\rSector Times:\r");
+	const bool debug = this->is_debug();
+	if (debug) printf("\rSector Times:\r");
 	string log = readFile("predictive_time_test_lap.log");
 
 	std::istringstream iss(log);
@@ -155,7 +161,6 @@ void SectorTest::testSectorTimes(){
 	int lineNo = 0;
 	string line;
 
-        const bool debug = getenv("TRACE") != NULL;
         if (debug) printf("\r\n");
 
 	while (std::getline(iss, line)) {
@@ -254,6 +259,7 @@ void SectorTest::testSectorTimes(){
 }
 
 void SectorTest::testStageSectorTimes() {
+  const bool debug = this->is_debug();
   const Track track = {
     3333,
     TRACK_TYPE_STAGE,
@@ -325,10 +331,10 @@ void SectorTest::testStageSectorTimes() {
     GpsSnapshot snap = getGpsSnapshot();
     lapstats_processUpdate(&snap);
 
-    /*
+    if (debug) {
     printf("second: %d, atSector = %d, sectorCount = %d, lastSector = %d\n",
            dt.second, getAtSector(), getSector(), getLastSector());
-    */
+    }
 
     if (areGeoPointsEqual(*gp, fakePoint)) {
       // Then we should not be at a sector.
