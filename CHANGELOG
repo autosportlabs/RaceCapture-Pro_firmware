@@ -1,3 +1,9 @@
+= 2.10.2 =
+* Fixed OBDII Stack Smash issue on RCT
+* Fixed version printing information to reflect git tags
+* Fixed LUA Raw character handling regression
+* Fixed LUA readSer regression
+
 = 2.10.1 =
 * Fixed SIM900 failure to connect issue.
 * Fix below sea level altitude issue.
