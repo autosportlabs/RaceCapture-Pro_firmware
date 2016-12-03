@@ -60,7 +60,6 @@
 #define LUA_DEFAULT_SERIAL_PARITY	0
 #define LUA_DEFAULT_SERIAL_STOP_BITS	1
 
-static char g_tempBuffer[TEMP_BUFFER_LEN];
 static int lua_get_virtual_channel(lua_State *ls);
 static int lua_set_led(lua_State *ls);
 
@@ -366,7 +365,7 @@ static int lua_serial_read_char(lua_State *L)
  * timeout - the read timeout, in ms.
  *
  * Lua Returns:
- * the character read, or nil if no characters received (receive timeout)
+ * The character read, terminating with a nil character always.
  */
 static int lua_serial_read_line(lua_State *L)
 {
@@ -384,18 +383,16 @@ static int lua_serial_read_line(lua_State *L)
                 port = (serial_id_t) lua_tointeger(L, 1);
         }
 
-        struct Serial *serial = lua_get_serial(L, port);
-        /* STIEG: Would be nice to be rid of that tempBuffer */
-        const int len = serial_read_line_wait(serial, g_tempBuffer,
-					      TEMP_BUFFER_LEN - 1,
-					      timeout);
+        /* STIEG: Would be nice to be rid of this tempBuffer */
+	static char g_tempBuffer[TEMP_BUFFER_LEN];
+	struct Serial *serial = lua_get_serial(L, port);
+        int len = serial_read_line_wait(serial, g_tempBuffer,
+					TEMP_BUFFER_LEN - 1, timeout);
+	if (len < 0)
+		len = 0;
 
-        if (0 < len) {
-		g_tempBuffer[len] = 0;
-                lua_pushstring(L, g_tempBuffer);
-        } else {
-                lua_pushnil(L);
-        }
+	g_tempBuffer[len] = 0;
+	lua_pushstring(L, g_tempBuffer);
 
         return 1;
 }
