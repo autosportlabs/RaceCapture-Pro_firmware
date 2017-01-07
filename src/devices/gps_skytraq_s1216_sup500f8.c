@@ -1,7 +1,6 @@
 #include "FreeRTOS.h"
 #include "at_basic.h"
 #include "byteswap.h"
-#include "gps_device.h"
 #include "mem_mang.h"
 #include "printk.h"
 #include "task.h"
@@ -10,6 +9,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include "gps_device.h"
+#include "gps_device_lld.h"
 
 /* UNIX time (epoch 1/1/1970) at the start of GNSS epoch (1/6/1980) */
 #define GNSS_EPOCH_IN_UNIX_EPOCH 315964800
@@ -23,20 +24,20 @@
 
 #define MAX_PROVISIONING_ATTEMPTS	10
 #define MAX_PAYLOAD_LEN			256
+#define GPS_INIT_DELAY_MS		1000
 #define GPS_MSG_RX_WAIT_MS		2000
 #define GPS_MESSAGE_BUFFER_LEN		1024
-#define GPS_INIT_DELAY_MS		1000
 #define TARGET_BAUD_RATE 		115200
 #define MESSAGE_TYPE_NMEA		1
 #define MESSAGE_TYPE_BINARY		2
 #define GNSS_NAVIGATION_MODE		GNSS_NAVIGATION_MODE_AUTOMOBILE
 
 #define BAUD_RATE_COUNT 3
-#define BAUD_RATES      {                       \
-                {921600, 8},                    \
-                {115200, 5},                    \
-                {9600, 1}                       \
-        }
+#define BAUD_RATES 	{			\
+		{921600, 8},			\
+		{115200, 5},            	\
+		{9600, 1}			\
+	}
 
 typedef struct _BaudRateCodes {
     uint32_t baud;
@@ -652,6 +653,7 @@ static uint8_t getTargetUpdateRate(uint8_t sampleRate)
 gps_status_t GPS_device_init(uint8_t sampleRate, struct Serial *serial)
 {
 	pr_info("GPS: Initializing...\r\n");
+	gps_device_lld_init();
 	serial_flush(serial);
 
 	/*
