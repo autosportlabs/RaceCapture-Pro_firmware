@@ -653,7 +653,6 @@ static uint8_t getTargetUpdateRate(uint8_t sampleRate)
 gps_status_t GPS_device_init(uint8_t sampleRate, struct Serial *serial)
 {
 	pr_info("GPS: Initializing...\r\n");
-	gps_device_lld_init();
 	serial_flush(serial);
 
 	/*
@@ -669,6 +668,8 @@ gps_status_t GPS_device_init(uint8_t sampleRate, struct Serial *serial)
     size_t gps_init_status = GPS_STATUS_NOT_INIT;
 
     while(attempts-- && gps_init_status == GPS_STATUS_NOT_INIT) {
+        /* Perform low level init / reset of GPS device */
+        gps_device_lld_init();
         while(1) {
             pr_info("GPS: provisioning attempt\r\n");
             uint32_t baudRate = detectGpsBaudRate(&gpsMsg, serial);
