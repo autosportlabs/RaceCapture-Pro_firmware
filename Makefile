@@ -128,6 +128,32 @@ mk2-flash: mk2-build
 PHONY += mk2
 mk2: mk2-build
 
+#
+# MK3
+#
+MK3_DIR := platform/mk3
+PHONY += mk3-build
+mk3-build: lua-build
+	$(MAKE) -C $(MK3_DIR) all
+
+PHONY += mk3-clean
+mk3-clean:
+	$(MAKE) -C $(MK3_DIR) clean
+
+PHONY += mk3-pristine
+mk3-pristine: lua-pristine mk3-clean
+	$(MAKE) mk3-build
+
+PHONY += mk3-package
+mk3-package: mk3-pristine
+	./bin/package_release.sh "RaceCapturePro_MK3" $(VERSION) $(MK3_DIR)
+
+PHONY += mk3-flash
+mk3-flash: mk3-build
+	cd $(MK3_DIR) && openocd -f openocd_stlinkv2_flash.cfg
+
+PHONY += mk3
+mk3: mk3-build
 
 #
 # RCT
@@ -161,7 +187,7 @@ rct: rct-build
 # Common targets.
 #
 PHONY += clean
-clean: rct-clean mk2-clean test-clean lua-clean
+clean: rct-clean mk2-clean mk3-clean test-clean lua-clean
 	$(Q)find . -type f \
 	-name "*.a"   -o   \
 	-name "*.bin" -o   \
@@ -180,6 +206,7 @@ clean: rct-clean mk2-clean test-clean lua-clean
 package: clean
 	$(MAKE) test-pristine
 	$(MAKE) mk2-package
+	$(MAKE) mk2-package	
 	$(MAKE) rct-package
 	$(MAKE) hashes
 
