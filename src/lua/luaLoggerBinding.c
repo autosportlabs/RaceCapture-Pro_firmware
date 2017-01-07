@@ -52,7 +52,6 @@
 #include "virtual_channel.h"
 
 #define TEMP_BUFFER_LEN 		256
-#define DEFAULT_CAN_TIMEOUT 		100
 #define DEFAULT_SERIAL_TIMEOUT		100
 #define LUA_DEFAULT_SERIAL_PORT 	SERIAL_AUX
 #define LUA_DEFAULT_SERIAL_BAUD 	115200
@@ -751,8 +750,17 @@ static int lua_obd2_read(lua_State *L)
         }
 
         int value;
-        if (!OBD2_request_PID(pid, &value, timeout))
+        if (!OBD2_request_PID(pid, timeout))
+        {
+                if (!OBD2_receive_PID(pid, &value, timeout))
+                {
+                        return 0;
+                }
+        }
+        else
+        {
                 return 0;
+        }
 
         lua_pushnumber(L, value);
         return 1;

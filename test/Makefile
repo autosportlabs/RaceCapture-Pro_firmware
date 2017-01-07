@@ -36,6 +36,7 @@ BUILD_DIR=build
 INCLUDES = \
 -I. \
 -I./include \
+-I/usr/local/lib/ \
 -I$(RCP_BASE) \
 -I$(RCP_BASE)/logger \
 -I$(MK2_SRC)/hal/fat_sd_stm32/fatfs \
@@ -137,6 +138,8 @@ $(LAP_STATS_DIR)/LapStatsTest.cpp \
 $(UTIL_DIR)/numtoa_test.cpp \
 AutoLoggerTest.cpp \
 AtTest.cpp \
+CANMockTest.cpp \
+CANMapTest.cpp \
 CellularApiStatusKeysTest.cpp \
 ChannelConfigTest.cpp \
 JsmnTest.cpp \
@@ -180,6 +183,7 @@ $(MOCK_DIR)/timer_device_mock.c \
 $(MOCK_DIR)/watchdog_device_mock.c \
 $(RCP_SRC)/ADC/ADC.c \
 $(RCP_SRC)/CAN/CAN.c \
+$(RCP_SRC)/CAN/CANMap.c \
 $(RCP_SRC)/GPIO/GPIO.c \
 $(RCP_SRC)/LED/led.c \
 $(RCP_SRC)/OBD2/OBD2.c \
@@ -258,7 +262,7 @@ OBJ_SIM = $(addprefix build/, $(addsuffix .o, $(subst $(RCP_BASE)/, rcp_base/, $
 all: test sim
 
 test: $(OBJ_TEST)
-	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ_TEST) -lm -lcppunit
+	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ_TEST) -lm -L/usr/local/lib/ -lcppunit
 
 sim: $(OBJ_SIM)
 	$(CXX) $(CXXFLAGS) -o $(SIMNAME) $(OBJ_SIM) -lm

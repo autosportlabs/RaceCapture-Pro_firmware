@@ -18,23 +18,26 @@
  * have received a copy of the GNU General Public License along with
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef OBD2_H_
-#define OBD2_H_
 
-#include "cpp_guard.h"
-#include "CAN.h"
-#include "stddef.h"
+#ifndef _CANMAPTEST_H_
+#define _CANMAPTEST_H_
 
-CPP_GUARD_BEGIN
+#include <cppunit/extensions/HelperMacros.h>
 
-#define OBD2_PID_DEFAULT_TIMEOUT_MS 300
+class CANMapTest : public CppUnit::TestFixture
+{
+	CPPUNIT_TEST_SUITE( CANMapTest );
+	CPPUNIT_TEST( setAndGetValueTest );
+	CPPUNIT_TEST( setOutOfBoundsTest );
+	CPPUNIT_TEST( getOutOfBoundsTest );
+	CPPUNIT_TEST( msgProcessTest );
+	CPPUNIT_TEST_SUITE_END();
 
-bool OBD2_request_PID(unsigned char pid, size_t timeout);
-bool OBD2_receive_PID(unsigned char pid, int *value, size_t timeout);
-void OBD2_set_current_PID_value(size_t index, int value);
-int OBD2_get_current_PID_value(int index);
-bool OBD2_process_PID(OBD2Config *oc, CAN_msg *msg, int *value);
+public:
+	void setAndGetValueTest();
+	void setOutOfBoundsTest();
+	void getOutOfBoundsTest();
+	void msgProcessTest();
+};
 
-CPP_GUARD_END
-
-#endif /* OBD2_H_ */
+#endif /* _CANMAPTEST_H_ */

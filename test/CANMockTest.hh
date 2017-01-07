@@ -18,23 +18,24 @@
  * have received a copy of the GNU General Public License along with
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef OBD2_H_
-#define OBD2_H_
 
-#include "cpp_guard.h"
-#include "CAN.h"
-#include "stddef.h"
+#ifndef _CANMOCKTEST_H_
+#define _CANMOCKTEST_H_
 
-CPP_GUARD_BEGIN
+#include <cppunit/extensions/HelperMacros.h>
 
-#define OBD2_PID_DEFAULT_TIMEOUT_MS 300
+class CANMockTest : public CppUnit::TestFixture
+{
+	CPPUNIT_TEST_SUITE( CANMockTest );
+	CPPUNIT_TEST( rxMsgEmptyQueueTest );
+	CPPUNIT_TEST( txMsgRxMsgSequentialMsgQueueTest );
+	CPPUNIT_TEST( txMsgQueueOverflowTest );
+	CPPUNIT_TEST_SUITE_END();
 
-bool OBD2_request_PID(unsigned char pid, size_t timeout);
-bool OBD2_receive_PID(unsigned char pid, int *value, size_t timeout);
-void OBD2_set_current_PID_value(size_t index, int value);
-int OBD2_get_current_PID_value(int index);
-bool OBD2_process_PID(OBD2Config *oc, CAN_msg *msg, int *value);
+public:
+	void rxMsgEmptyQueueTest();
+	void txMsgRxMsgSequentialMsgQueueTest();
+	void txMsgQueueOverflowTest();
+};
 
-CPP_GUARD_END
-
-#endif /* OBD2_H_ */
+#endif /* _CANMOCKTEST_H_ */

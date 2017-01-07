@@ -38,6 +38,8 @@ CPP_GUARD_BEGIN
 
 #define CAN_MSG_SIZE 8
 
+#define DEFAULT_CAN_TIMEOUT 		100
+
 typedef struct _CAN_msg {
     int isExtendedAddress;
     unsigned int addressValue;

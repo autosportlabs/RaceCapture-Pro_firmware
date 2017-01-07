@@ -78,6 +78,8 @@ $(HAL_SRC)/watchdog_stm32/watchdog_device_stm32.c \
 $(HAL_SRC)/wifi_esp8266/wifi_esp8266_device.c \
 $(RCP_SRC)/ADC/ADC.c \
 $(RCP_SRC)/CAN/CAN.c \
+$(RCP_SRC)/CAN/CANMap.c \
+$(RCP_SRC)/CAN/CAN_Rx_task.c \
 $(RCP_SRC)/GPIO/GPIO.c \
 $(RCP_SRC)/GPIO/gpioTasks.c \
 $(RCP_SRC)/LED/led.c \
