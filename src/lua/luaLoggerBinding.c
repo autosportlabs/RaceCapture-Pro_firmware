@@ -131,6 +131,8 @@ static int lua_get_gps_at_start_finish(lua_State *L)
         return 1;
 }
 
+#if PWM_CHANNELS > 0
+
 static int lua_set_pwm_clk_freq(lua_State *L)
 {
         lua_validate_args_count(L, 1, 1);
@@ -150,6 +152,56 @@ static int lua_get_pwm_clk_freq(lua_State *L)
         lua_pushinteger(L, getWorkingLoggerConfig()->PWMClockFrequency);
         return 1;
 }
+
+static void validate_pwm_channel(lua_State *l, const size_t channel)
+{
+        if (channel >= CONFIG_PWM_CHANNELS)
+                luaL_error(l, "Invalid PWM channel index");
+}
+
+static int lua_set_pwm_duty_cycle(lua_State *L)
+{
+        lua_validate_args_count(L, 2, 2);
+        lua_validate_arg_number(L, 1);
+        lua_validate_arg_number(L, 2);
+
+        const size_t channel = lua_tointeger(L, 1);
+        validate_pwm_channel(L, channel);
+
+        const size_t dutyCycleRaw = lua_tointeger(L, 2);
+        PWM_set_duty_cycle(channel, (unsigned short) dutyCycleRaw);
+        return 0;
+}
+
+static int lua_set_pwm_period(lua_State *L)
+{
+        lua_validate_args_count(L, 2, 2);
+        lua_validate_arg_number(L, 1);
+        lua_validate_arg_number(L, 2);
+
+        const size_t channel = lua_tointeger(L, 1);
+        validate_pwm_channel(L, channel);
+
+        const size_t periodRaw = lua_tointeger(L, 2);
+        PWM_channel_set_period(channel, (unsigned short) periodRaw);
+        return 0;
+}
+
+static int lua_set_analog_out(lua_State *L)
+{
+        lua_validate_args_count(L, 2, 2);
+        lua_validate_arg_number(L, 1);
+        lua_validate_arg_number(L, 2);
+
+        const size_t channel = lua_tointeger(L,1);
+        validate_pwm_channel(L, channel);
+
+        const float dutyCycle = (float) lua_tonumber(L, 2) /
+                PWM_VOLTAGE_SCALING;
+        PWM_set_duty_cycle(channel, (unsigned short) dutyCycle);
+        return 0;
+}
+#endif
 
 static int lua_get_analog(lua_State *L)
 {
@@ -564,54 +616,6 @@ static int lua_imu_read_raw(lua_State *L)
         return 1;
 }
 
-static void validate_pwm_channel(lua_State *l, const size_t channel)
-{
-        if (channel >= CONFIG_PWM_CHANNELS)
-                luaL_error(l, "Invalid PWM channel index");
-}
-
-static int lua_set_pwm_duty_cycle(lua_State *L)
-{
-        lua_validate_args_count(L, 2, 2);
-        lua_validate_arg_number(L, 1);
-        lua_validate_arg_number(L, 2);
-
-        const size_t channel = lua_tointeger(L, 1);
-        validate_pwm_channel(L, channel);
-
-        const size_t dutyCycleRaw = lua_tointeger(L, 2);
-        PWM_set_duty_cycle(channel, (unsigned short) dutyCycleRaw);
-        return 0;
-}
-
-static int lua_set_pwm_period(lua_State *L)
-{
-        lua_validate_args_count(L, 2, 2);
-        lua_validate_arg_number(L, 1);
-        lua_validate_arg_number(L, 2);
-
-        const size_t channel = lua_tointeger(L, 1);
-        validate_pwm_channel(L, channel);
-
-        const size_t periodRaw = lua_tointeger(L, 2);
-        PWM_channel_set_period(channel, (unsigned short) periodRaw);
-        return 0;
-}
-
-static int lua_set_analog_out(lua_State *L)
-{
-        lua_validate_args_count(L, 2, 2);
-        lua_validate_arg_number(L, 1);
-        lua_validate_arg_number(L, 2);
-
-        const size_t channel = lua_tointeger(L,1);
-        validate_pwm_channel(L, channel);
-
-        const float dutyCycle = (float) lua_tonumber(L, 2) /
-                PWM_VOLTAGE_SCALING;
-        PWM_set_duty_cycle(channel, (unsigned short) dutyCycle);
-        return 0;
-}
 
 static int lua_init_can(lua_State *L)
 {
@@ -909,11 +913,13 @@ void registerLuaLoggerBindings(lua_State *L)
         lua_registerlight(L,"setGpio", lua_set_gpio);
         lua_registerlight(L,"getButton", lua_get_button);
 
+#if PWM_CHANNELS > 0
         lua_registerlight(L, "setPwmDutyCycle", lua_set_pwm_duty_cycle);
         lua_registerlight(L, "setPwmPeriod", lua_set_pwm_period);
         lua_registerlight(L, "setAnalogOut", lua_set_analog_out);
         lua_registerlight(L, "setPwmClockFreq", lua_set_pwm_clk_freq);
         lua_registerlight(L, "getPwmClockFreq", lua_get_pwm_clk_freq);
+#endif
 
         lua_registerlight(L, "getTimerRpm", lua_get_rpm);
         lua_registerlight(L, "getTimerPeriodMs", lua_get_period_ms);
