@@ -17,9 +17,9 @@
 #define WIFI_SUPPORT		1
 
 /* Wifi Specific Info */
-#define WIFI_MAX_BAUD		230400
-#define WIFI_MAX_SAMPLE_RATE	10
-#define WIFI_ENABLED_DEFAULT	false
+#define WIFI_MAX_BAUD       921600
+#define WIFI_MAX_SAMPLE_RATE    50
+#define WIFI_ENABLED_DEFAULT    true
 
 /* Rx Max Message length */
 #define RX_MAX_MSG_LEN	768
