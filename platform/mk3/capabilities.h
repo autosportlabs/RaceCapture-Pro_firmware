@@ -88,8 +88,8 @@
 #define LOG_BUFFER_SIZE			8192
 
 //system info
-#define DEVICE_NAME    "RCP_MK2"
-#define FRIENDLY_DEVICE_NAME "RaceCapture/Pro MK2"
+#define DEVICE_NAME    "RCP_MK3"
+#define FRIENDLY_DEVICE_NAME "RaceCapture/Pro MK3"
 
 /* How big is our hardware init stack */
 #define HARDWARE_INIT_STACK_SIZE	256
