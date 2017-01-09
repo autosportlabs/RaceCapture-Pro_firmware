@@ -45,9 +45,12 @@ static struct led_data {
         bool level;
 } leds[] = {
         {LED_ERROR,     GPIOD, GPIO_Pin_14},
-        {LED_TELEMETRY, GPIOD, GPIO_Pin_13},
-        {LED_LOGGER,    GPIOD, GPIO_Pin_10 },
-        {LED_GPS,       GPIOD, GPIO_Pin_11 },
+        {LED_TELEMETRY, GPIOD, GPIO_Pin_3},
+        {LED_LOGGER,    GPIOD, GPIO_Pin_10},
+        {LED_GPS,       GPIOD, GPIO_Pin_11},
+        {LED_CAN,       GPIOD, GPIO_Pin_4},
+        {LED_WIFI,      GPIOD, GPIO_Pin_12},
+        {LED_BLUETOOTH, GPIOD, GPIO_Pin_13}
 };
 
 static bool led_set_level(struct led_data *ld, const bool on)
@@ -70,7 +73,7 @@ bool led_device_set_index(const size_t i, const bool on)
         return i < ARRAY_LEN(leds) ? led_set_level(leds + i, on) : false;
 }
 
-struct led_data* find_led_data(const enum led l)
+static struct led_data* find_led_data(const enum led l)
 {
         /* Use an unsigned value here to handle negative indicies */
         for (size_t i = 0; i < ARRAY_LEN(leds); ++i) {
@@ -80,6 +83,11 @@ struct led_data* find_led_data(const enum led l)
         }
 
         return NULL;
+}
+
+bool led_device_available(const enum led l)
+{
+    return find_led_data(l) != NULL;
 }
 
 bool led_device_set(const enum led l, const bool on)

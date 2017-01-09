@@ -50,6 +50,11 @@ bool led_set_index(const size_t i, const bool on)
         return led_device_set_index(i, on);
 }
 
+bool led_available(const enum led l)
+{
+        return led_device_available(l);
+}
+
 bool led_set(const enum led l, const bool on)
 {
         return led_device_set(l, on);
