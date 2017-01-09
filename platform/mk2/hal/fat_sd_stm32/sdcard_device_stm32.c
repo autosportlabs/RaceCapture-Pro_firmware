@@ -26,3 +26,8 @@ void disk_init_hardware(void)
 {
 	SD_Init();
 }
+
+bool sdcard_device_card_present(void)
+{
+    return true;
+}

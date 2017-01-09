@@ -22,7 +22,27 @@
 #include "sdcard_device.h"
 #include "fatfs_sd_sdio.h"
 
+
+static void init_sdcard_io(void)
+{
+        /* Configure SD card detection pin*/
+        RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+        GPIO_InitTypeDef GPIO_InitStructure;
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14;
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+        GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+        GPIO_Init(GPIOB, &GPIO_InitStructure);
+}
+
 void disk_init_hardware(void)
 {
+    init_sdcard_io();
 	SD_Init();
+}
+
+bool sdcard_device_card_present(void)
+{
+    return GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_14) ? false : true;
 }

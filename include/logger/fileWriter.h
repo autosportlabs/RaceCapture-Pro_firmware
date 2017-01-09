@@ -35,7 +35,8 @@ CPP_GUARD_BEGIN
 
 enum writing_status {
     WRITING_INACTIVE = 0,
-    WRITING_ACTIVE
+    WRITING_ACTIVE,
+    SD_CARD_NOT_PRESENT
 };
 
 struct logging_status
