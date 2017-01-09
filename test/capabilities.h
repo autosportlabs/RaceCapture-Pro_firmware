@@ -106,6 +106,7 @@ CPP_GUARD_BEGIN
 #define TIMER_CHANNELS			3
 #define PWM_CHANNELS			4
 #define CAN_CHANNELS			2
+#define CAN_SW_TERMINATION      true
 #define CONNECTIVITY_CHANNELS	2
 
 //sample rates

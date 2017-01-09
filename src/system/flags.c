@@ -57,6 +57,9 @@ static const char* feature_flags[] = {
 #if CAN_CHANNELS > 0
         FEATURE_FLAG("can")
 #endif
+#if CAN_SW_TERMINATION == true
+        FEATURE_FLAG("can_term")
+#endif
 #if CELLULAR_SUPPORT
         FEATURE_FLAG("cell")
 #endif
