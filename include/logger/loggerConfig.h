@@ -318,6 +318,9 @@ typedef struct _OBD2Config {
 typedef struct _CANConfig {
     unsigned char enabled;
     int baud[CONFIG_CAN_CHANNELS];
+#if CAN_SW_TERMINATION == true
+    bool termination[CONFIG_CAN_CHANNELS];
+#endif
 } CANConfig;
 
 #define DEFAULT_CAN_BAUD_RATE 500000

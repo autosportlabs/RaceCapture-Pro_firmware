@@ -46,7 +46,7 @@ typedef struct _CAN_msg {
 } CAN_msg;
 
 int CAN_init(LoggerConfig *loggerConfig);
-int CAN_init_port(uint8_t port, uint32_t baud);
+int CAN_init_port(uint8_t port, uint32_t baud, bool termination_enabled);
 int CAN_set_filter(uint8_t, uint8_t id, uint8_t extended, uint32_t filter,
 		   uint32_t mask, const bool enabled);
 int CAN_tx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs);

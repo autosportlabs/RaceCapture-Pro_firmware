@@ -166,11 +166,10 @@ static void createCombinedTelemetryTask(int16_t priority,
 
 static void createWirelessConnectionTask(int16_t priority,
                                          xQueueHandle sampleQueue,
-                                         uint8_t isPrimary)
+                                         enum led activity_led)
 {
 #if BLUETOOTH_SUPPORT
         ConnParams *params = portMalloc(sizeof(ConnParams));
-        params->isPrimary = isPrimary;
         params->connectionName = "Wireless";
         params->periodicMeta = 0;
         params->connection_timeout = 0;
@@ -181,6 +180,7 @@ static void createWirelessConnectionTask(int16_t priority,
         params->sampleQueue = sampleQueue;
         params->always_streaming = true;
         params->max_sample_rate = SAMPLE_50Hz;
+        params->activity_led = activity_led;
 
         /* Make all task names 16 chars including NULL char */
         static const signed portCHAR task_name[] = "Bluetooth Task ";
@@ -191,11 +191,10 @@ static void createWirelessConnectionTask(int16_t priority,
 
 static void createTelemetryConnectionTask(int16_t priority,
                                           xQueueHandle sampleQueue,
-                                          uint8_t isPrimary)
+                                          enum led activity_led)
 {
 #if CELLULAR_SUPPORT
         ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
-        params->isPrimary = isPrimary;
         params->connectionName = "Telemetry";
         params->periodicMeta = 0;
         params->connection_timeout = TELEMETRY_DISCONNECT_TIMEOUT;
@@ -206,6 +205,7 @@ static void createTelemetryConnectionTask(int16_t priority,
         params->sampleQueue = sampleQueue;
         params->always_streaming = false;
         params->max_sample_rate = SAMPLE_10Hz;
+        params->activity_led = activity_led;
 
         /* Make all task names 16 chars including NULL char */
         static const signed portCHAR task_name[] = "Cell Telem Task";
@@ -243,12 +243,18 @@ void startConnectivityTask(int16_t priority)
 
                 if (cellEnabled)
                         createTelemetryConnectionTask(priority,
-                                                      g_sampleQueue[1], 1);
+                                                      g_sampleQueue[1], LED_TELEMETRY);
 
-                if (connConfig->bluetoothConfig.btEnabled)
-                        createWirelessConnectionTask(priority,
-                                                     g_sampleQueue[0],
-                                                     !cellEnabled);
+                if (connConfig->bluetoothConfig.btEnabled) {
+                        /* Pick the bluetooth LED if available */
+                        enum led activity_led = led_available(LED_BLUETOOTH) ? LED_BLUETOOTH : LED_TELEMETRY;
+                        activity_led = cellEnabled && activity_led == LED_TELEMETRY ? LED_UNKNOWN : activity_led;
+
+                    createWirelessConnectionTask(priority,
+                                                 g_sampleQueue[0],
+                                                 activity_led);
+
+                }
         }
                 break;
         default:
@@ -257,14 +263,14 @@ void startConnectivityTask(int16_t priority)
         }
 }
 
-static void toggle_connectivity_indicator()
+static void toggle_connectivity_indicator(const enum led indicator)
 {
-        led_toggle(LED_TELEMETRY);
+        led_toggle(indicator);
 }
 
-static void clear_connectivity_indicator()
+static void clear_connectivity_indicator(const enum led indicator)
 {
-        led_disable(LED_TELEMETRY);
+        led_disable(indicator);
 }
 
 void connectivityTask(void *params)
@@ -349,8 +355,7 @@ void connectivityTask(void *params)
                             !should_sample(msg.ticks, max_telem_rate))
                                 break;
 
-                        if (connParams->isPrimary)
-                                toggle_connectivity_indicator();
+                        toggle_connectivity_indicator(connParams->activity_led);
 
                         const int send_meta = tick == 0 ||
                                 (connParams->periodicMeta &&
@@ -407,7 +412,7 @@ void connectivityTask(void *params)
             }
         }
 
-        clear_connectivity_indicator();
+        clear_connectivity_indicator(connParams->activity_led);
         connParams->disconnect(&deviceConfig);
     }
 }

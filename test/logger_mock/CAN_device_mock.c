@@ -23,7 +23,7 @@
 #include "CAN_device.h"
 #include <stdbool.h>
 
-int CAN_device_init(uint8_t channel, uint32_t baud)
+int CAN_device_init(uint8_t channel, uint32_t baud, bool termination_enabled)
 {
     return 1;
 }

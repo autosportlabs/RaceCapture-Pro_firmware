@@ -191,6 +191,9 @@ static void resetCanConfig(CANConfig *cfg)
     cfg->enabled = CONFIG_FEATURE_INSTALLED;
     for (size_t i = 0; i < CONFIG_CAN_CHANNELS; i++) {
         cfg->baud[i] = DEFAULT_CAN_BAUD_RATE;
+#if CAN_SW_TERMINATION == true
+        cfg->termination[i] = true;
+#endif
     }
 }
 

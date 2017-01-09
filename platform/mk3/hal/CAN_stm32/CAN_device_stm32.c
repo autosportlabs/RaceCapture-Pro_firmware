@@ -85,6 +85,19 @@ static void initGPIO(GPIO_TypeDef * GPIOx, uint32_t gpioPins)
     GPIO_Init(GPIOx, &GPIO_InitStructure);
 }
 
+static void initGPIO_port(GPIO_TypeDef * GPIOx, uint32_t gpioPins)
+{
+    /* Configure CAN RX and TX pins */
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitStructure.GPIO_Pin = gpioPins;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    GPIO_Init(GPIOx, &GPIO_InitStructure);
+}
+
+
 static void initCAN(CAN_TypeDef * CANx, uint32_t baud)
 {
 
@@ -132,7 +145,7 @@ static void initCANInterrupts(CAN_TypeDef * CANx, uint8_t irqNumber)
     NVIC_Init(&NVIC_InitStructure);
 }
 
-static void CAN_device_init_1(int baud)
+static void CAN_device_init_1(int baud, bool termination_enabled)
 {
     CAN_DeInit(CAN1);
 
@@ -155,9 +168,19 @@ static void CAN_device_init_1(int baud)
     CAN_ITConfig(CAN1, CAN_IT_FMP0, ENABLE);
 
     initCANInterrupts(CAN1, CAN1_RX0_IRQn);
+
+    /* Configure soft termination */
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+    initGPIO_port(GPIOB, GPIO_Pin_10);
+    if (termination_enabled) {
+        GPIO_SetBits(GPIOB, GPIO_Pin_10);
+    }
+    else {
+        GPIO_ResetBits(GPIOB, GPIO_Pin_10);
+    }
 }
 
-static void CAN_device_init_2(int baud)
+static void CAN_device_init_2(int baud, bool termination_enabled)
 {
     CAN_DeInit(CAN2);
 
@@ -180,9 +203,19 @@ static void CAN_device_init_2(int baud)
     CAN_ITConfig(CAN2, CAN_IT_FMP1, ENABLE);
 
     initCANInterrupts(CAN2, CAN2_RX1_IRQn);
+
+    /* Configure soft termination */
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+    initGPIO_port(GPIOB, GPIO_Pin_11);
+    if (termination_enabled) {
+        GPIO_SetBits(GPIOB, GPIO_Pin_11);
+    }
+    else {
+        GPIO_ResetBits(GPIOB, GPIO_Pin_11);
+    }
 }
 
-int CAN_device_init(uint8_t channel, uint32_t baud)
+int CAN_device_init(uint8_t channel, uint32_t baud, bool termination_enabled)
 {
 	pr_info("Initializing CAN");
 	pr_info_int(channel);
@@ -195,10 +228,10 @@ int CAN_device_init(uint8_t channel, uint32_t baud)
 
 	switch (channel) {
 	case 0:
-		CAN_device_init_1(baud);
+		CAN_device_init_1(baud, termination_enabled);
 		break;
 	case 1:
-		CAN_device_init_2(baud);
+		CAN_device_init_2(baud, termination_enabled);
 		break;
 	default:
 		pr_info("CAN init device failed\r\n");
