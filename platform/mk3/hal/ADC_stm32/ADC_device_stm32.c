@@ -31,7 +31,7 @@
 #include <stdint.h>
 #include <string.h>
 /*
- * On RCP MK2
+ * On RCP MK3
  * Analog1 - PC4 - ADC12_IN14
  * Analog2 - PC5 - ADC12_IN15
  * Analog3 - PB0 - ADC12_IN8
@@ -166,9 +166,9 @@ int ADC_device_init(void)
                                  ADC_SampleTime_480Cycles);
         ADC_RegularChannelConfig(ADC2, ADC_Channel_11, 7,
                                  ADC_SampleTime_480Cycles);
-        ADC_RegularChannelConfig(ADC2, ADC_Channel_4, 8,
+        ADC_RegularChannelConfig(ADC2, ADC_Channel_10, 8,
                                  ADC_SampleTime_480Cycles);
-        ADC_RegularChannelConfig(ADC2, ADC_Channel_10, 9,
+        ADC_RegularChannelConfig(ADC2, ADC_Channel_4, 9,
                                  ADC_SampleTime_480Cycles);
 
         /* Enable DMA request after last transfer (Single-ADC mode) */
@@ -200,7 +200,7 @@ int ADC_device_sample(const size_t channel)
 float ADC_device_get_voltage_range(const size_t channel)
 {
         switch (channel) {
-        case 7:
+        case 8:
                 return ADC_SYSTEM_VOLTAGE_RANGE;
         default:
                 return ADC_PORT_VOLTAGE_RANGE;
@@ -210,7 +210,7 @@ float ADC_device_get_voltage_range(const size_t channel)
 float ADC_device_get_channel_scaling(const size_t channel)
 {
         switch (channel) {
-        case 7:
+        case 8:
                 return SCALING_BATTERYV;
         default:
                 return SCALING_5V;
