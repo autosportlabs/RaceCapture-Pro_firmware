@@ -53,6 +53,7 @@
 
 #define CHAR_CHECK_PERIOD_MS		100
 #define DEFAULT_AUX_BAUD_RATE		115200
+#define DEFAULT_AUX2_BAUD_RATE      115200
 #define DEFAULT_GPS_BAUD_RATE		921600
 #define DEFAULT_TELEMETRY_BAUD_RATE	115200
 #define DEFAULT_WIRELESS_BAUD_RATE	115200
@@ -293,7 +294,7 @@ static void usart_device_init_0(size_t bits, size_t parity,
 
 }
 
-/* Auxilary port */
+/* WiFi (Aux) */
 static void usart_device_init_1(size_t bits, size_t parity,
                                 size_t stopBits, size_t baud)
 {
@@ -356,6 +357,28 @@ static void usart_device_init_3(size_t bits, size_t parity,
                       DMA_IRQ_PRIORITY, DMA_IT_TC | DMA_IT_HT, ui);
 
         enable_dma_tx(RCC_AHB1Periph_DMA1, DMA1_Stream4_IRQn,
+                      DMA_IRQ_PRIORITY, DMA_IT_TC, ui);
+}
+
+/* Aux2 */
+static void usart_device_init_4(size_t bits, size_t parity,
+                                size_t stopBits, size_t baud)
+{
+        volatile struct usart_info* ui = usart_data + UART_AUX2;
+
+        RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART6, ENABLE);
+        RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
+
+        initGPIO(GPIOC, (GPIO_Pin_6 | GPIO_Pin_7));
+        GPIO_PinAFConfig(GPIOC, GPIO_PinSource6, GPIO_AF_USART6);
+        GPIO_PinAFConfig(GPIOC, GPIO_PinSource7, GPIO_AF_USART6);
+
+        init_usart(ui->usart, bits, parity, stopBits, baud);
+
+        enable_dma_rx(RCC_AHB1Periph_DMA2, DMA2_Stream1_IRQn,
+                      DMA_IRQ_PRIORITY, DMA_IT_TC | DMA_IT_HT, ui);
+
+        enable_dma_tx(RCC_AHB1Periph_DMA2, DMA2_Stream6_IRQn,
                       DMA_IRQ_PRIORITY, DMA_IT_TC, ui);
 }
 
@@ -544,6 +567,11 @@ void UART4_IRQHandler(void)
         usart_generic_irq_handler(usart_data + UART_TELEMETRY);
 }
 
+void USART6_IRQHandler(void)
+{
+        usart_generic_irq_handler(usart_data + UART_AUX2);
+}
+
 static bool dma_rx_isr(volatile struct usart_info *ui)
 {
         const uint16_t dma_counter = (uint16_t) ui->dma_rx.stream->NDTR;
@@ -593,6 +621,13 @@ void DMA2_Stream5_IRQHandler(void)
         DMA_ClearITPendingBit(DMA2_Stream5, DMA_IT_HTIF5);
         DMA_ClearITPendingBit(DMA2_Stream5, DMA_IT_TCIF5);
         portEND_SWITCHING_ISR(dma_rx_isr(usart_data + UART_WIRELESS));
+}
+
+void DMA2_Stream1_IRQHandler(void)
+{
+    DMA_ClearITPendingBit(DMA2_Stream1, DMA_IT_HTIF1);
+    DMA_ClearITPendingBit(DMA2_Stream1, DMA_IT_TCIF1);
+    portEND_SWITCHING_ISR(dma_rx_isr(usart_data + UART_AUX2));
 }
 
 static bool dma_tx_isr(volatile struct usart_info* ui,
@@ -657,6 +692,11 @@ void DMA2_Stream7_IRQHandler(void)
         portEND_SWITCHING_ISR(dma_tx_isr(usart_data + UART_WIRELESS, true));
 }
 
+void DMA2_Stream6_IRQHandler(void)
+{
+        DMA_ClearITPendingBit(DMA2_Stream6, DMA_IT_TCIF6);
+        portEND_SWITCHING_ISR(dma_tx_isr(usart_data + UART_AUX2, true));
+}
 
 /* *** Timer Methods *** */
 
@@ -759,6 +799,10 @@ int usart_device_init()
                                   DMA_RX_BUFF_SIZE, DMA1_Stream1,
                                   DMA_Channel_4, DMA_TX_BUFF_SIZE,
                                   DMA1_Stream3, DMA_Channel_4);
+                init_usart_serial(UART_AUX2, USART6, SERIAL_AUX2, "Aux2",
+                                  DMA_RX_BUFF_SIZE, DMA2_Stream1,
+                                  DMA_Channel_5, DMA_TX_BUFF_SIZE,
+                                  DMA2_Stream6, DMA_Channel_5);
 
         if (!mem_alloc_success) {
                 pr_error(LOG_PFX "Failed to init\r\n");
@@ -769,6 +813,7 @@ int usart_device_init()
         usart_device_init_1(8, 0, 1, DEFAULT_AUX_BAUD_RATE);
         usart_device_init_2(8, 0, 1, DEFAULT_GPS_BAUD_RATE);
         usart_device_init_3(8, 0, 1, DEFAULT_TELEMETRY_BAUD_RATE);
+        usart_device_init_4(8, 0, 1, DEFAULT_AUX2_BAUD_RATE);
 
         /* Sets up the DMA timeout timer */
         setup_dma_timer();

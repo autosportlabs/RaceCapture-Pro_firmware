@@ -51,6 +51,9 @@ struct Serial* serial_device_get(const serial_id_t port)
         case SERIAL_AUX:
                 s = usart_device_get_serial(UART_AUX);
                 break;
+        case SERIAL_AUX2:
+                s = usart_device_get_serial(UART_AUX2);
+                break;
         default:
                 s = NULL;
         };
