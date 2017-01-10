@@ -46,3 +46,8 @@ int OpenNextLogFile(FIL *f)
 {
     return 0;
 }
+
+bool sdcard_present()
+{
+    return true;
+}
