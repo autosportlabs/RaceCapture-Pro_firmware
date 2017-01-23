@@ -23,19 +23,21 @@
 #include "CAN.h"
 #include "FreeRTOS.h"
 #include "GPIO.h"
-#include "led.h"
 #include "OBD2.h"
 #include "PWM.h"
+#include "channel_config.h"
 #include "dateTime.h"
 #include "gps.h"
 #include "imu.h"
 #include "lap_stats.h"
-#include "lap_stats.h"
+#include "lauxlib.h"
+#include "led.h"
 #include "logger.h"
 #include "loggerConfig.h"
 #include "loggerData.h"
 #include "loggerSampleData.h"
 #include "loggerTaskEx.h"
+#include "luaBaseBinding.h"
 #include "luaLoggerBinding.h"
 #include "luaScript.h"
 #include "luaTask.h"
@@ -50,16 +52,17 @@
 #include "virtual_channel.h"
 
 #define TEMP_BUFFER_LEN 		200
-#define DEFAULT_CAN_TIMEOUT 	100
-#define DEFAULT_SERIAL_TIMEOUT	100
-#define LUA_DEFAULT_SERIAL_PORT SERIAL_AUX
-#define LUA_DEFAULT_SERIAL_BAUD 115200
-#define LUA_DEFAULT_SERIAL_BITS 8
-#define LUA_DEFAULT_SERIAL_PARITY 0
-#define LUA_DEFAULT_SERIAL_STOP_BITS 1
-
+#define DEFAULT_CAN_TIMEOUT 		100
+#define DEFAULT_SERIAL_TIMEOUT		100
+#define LUA_DEFAULT_SERIAL_PORT 	SERIAL_AUX
+#define LUA_DEFAULT_SERIAL_BAUD 	115200
+#define LUA_DEFAULT_SERIAL_BITS 	8
+#define LUA_DEFAULT_SERIAL_PARITY	0
+#define LUA_DEFAULT_SERIAL_STOP_BITS	1
 
 char g_tempBuffer[TEMP_BUFFER_LEN];
+static int lua_get_virtual_channel(lua_State *ls);
+static int lua_set_led(lua_State *ls);
 
 static int lua_get_uptime(lua_State *L)
 {
@@ -91,84 +94,14 @@ static int lua_get_date_time(lua_State *L)
         return 7;
 }
 
-void registerLuaLoggerBindings(lua_State *L)
+static int lua_get_gps_altitude(lua_State *L)
 {
-
-    //Read / control inputs and outputs
-    lua_registerlight(L,"getGpio",Lua_GetGPIO);
-    lua_registerlight(L,"setGpio",Lua_SetGPIO);
-    lua_registerlight(L,"getButton",Lua_GetButton);
-
-    lua_registerlight(L,"setPwmDutyCycle",Lua_SetPWMDutyCycle);
-    lua_registerlight(L,"setPwmPeriod",Lua_SetPWMPeriod);
-    lua_registerlight(L,"setAnalogOut",Lua_SetAnalogOut);
-    lua_registerlight(L,"setPwmClockFreq",Lua_SetPWMClockFrequency);
-    lua_registerlight(L,"getPwmClockFreq",Lua_GetPWMClockFrequency);
-
-    lua_registerlight(L,"getTimerRpm",Lua_GetRPM);
-    lua_registerlight(L,"getTimerPeriodMs",Lua_GetPeriodMs);
-    lua_registerlight(L,"getTimerFreq",Lua_GetFrequency);
-    lua_registerlight(L,"getTimerRaw",Lua_GetTimerRaw);
-    lua_registerlight(L,"resetTimerCount",Lua_ResetTimerCount);
-    lua_registerlight(L,"getTimerCount",Lua_GetTimerCount);
-
-    lua_registerlight(L,"getAnalog",Lua_GetAnalog);
-
-    lua_registerlight(L,"getImu",Lua_ReadImu);
-    lua_registerlight(L,"getImuRaw",Lua_ReadImuRaw);
-
-    lua_registerlight(L, "getGpsSats", Lua_GetGPSSatellites);
-    lua_registerlight(L,"getGpsPos", Lua_GetGPSPosition);
-    lua_registerlight(L,"getGpsSpeed",Lua_GetGPSSpeed);
-    lua_registerlight(L,"getGpsQuality", Lua_GetGPSQuality);
-    lua_registerlight(L,"getGpsDist", Lua_GetGPSDistance);
-
-    lua_registerlight(L, "getLapCount", Lua_GetLapCount);
-    lua_registerlight(L, "getLapTime", Lua_GetLapTime);
-    lua_registerlight(L, "getGpsSec", Lua_GetGpsSecondsSinceFirstFix);
-    lua_registerlight(L, "getAtStartFinish",Lua_GetGPSAtStartFinish);
-
-    lua_registerlight(L, "getTickCount", Lua_GetTickCount);
-    lua_registerlight(L, "getTicksPerSecond", Lua_GetTicksPerSecond);
-
-    lua_registerlight(L, "initCAN", Lua_InitCAN);
-    lua_registerlight(L, "txCAN", Lua_SendCANMessage);
-    lua_registerlight(L, "rxCAN", Lua_ReceiveCANMessage);
-    lua_registerlight(L, "setCANfilter", Lua_SetCANFilter);
-    lua_registerlight(L, "readOBD2", Lua_ReadOBD2);
-
-    lua_registerlight(L,"startLogging",Lua_StartLogging);
-    lua_registerlight(L,"stopLogging",Lua_StopLogging);
-    lua_registerlight(L,"isLogging" , Lua_IsLogging);
-
-    lua_registerlight(L,"setLed",Lua_SetLED);
-
-    //Serial API
-    lua_registerlight(L,"initSer", Lua_InitSerial);
-    lua_registerlight(L,"readCSer", Lua_ReadSerialChar);
-    lua_registerlight(L,"readSer", Lua_ReadSerialLine);
-    lua_registerlight(L,"writeCSer", Lua_WriteSerialChar);
-    lua_registerlight(L,"writeSer", Lua_WriteSerialLine);
-
-    //Logger configuration editing
-    lua_registerlight(L,"flashLoggerCfg", Lua_FlashLoggerConfig);
-
-    lua_registerlight(L,"calibrateImuZero",Lua_CalibrateImuZero);
-
-    lua_registerlight(L,"setBgStream", Lua_SetBackgroundStreaming);
-    lua_registerlight(L,"getBgStream", Lua_GetBackgroundStreaming);
-
-    lua_registerlight(L, "addChannel", Lua_AddVirtualChannel);
-    lua_registerlight(L, "setChannel", Lua_SetVirtualChannelValue);
-
-    /* Timing info */
-    lua_registerlight(L, "getUptime", lua_get_uptime);
-    lua_registerlight(L, "getDateTime", lua_get_date_time);
+        lua_pushnumber(L, getAltitude());
+        return 1;
 }
 
-////////////////////////////////////////////////////
 
-int Lua_SetBackgroundStreaming(lua_State *L)
+static int Lua_SetBackgroundStreaming(lua_State *L)
 {
     if (lua_gettop(L) >= 1) {
         getWorkingLoggerConfig()->ConnectivityConfigs.telemetryConfig.backgroundStreaming = (lua_tointeger(L,1) == 1);
@@ -176,32 +109,25 @@ int Lua_SetBackgroundStreaming(lua_State *L)
     return 0;
 }
 
-int Lua_GetBackgroundStreaming(lua_State *L)
+static int Lua_GetBackgroundStreaming(lua_State *L)
 {
     lua_pushinteger(L, getWorkingLoggerConfig()->ConnectivityConfigs.telemetryConfig.backgroundStreaming == 1);
     return 1;
 }
 
-int Lua_CalibrateImuZero(lua_State *L)
+static int Lua_CalibrateImuZero(lua_State *L)
 {
     imu_calibrate_zero();
     return 0;
 }
 
-int Lua_GetGPSAtStartFinish(lua_State *L)
+static int Lua_GetGPSAtStartFinish(lua_State *L)
 {
     lua_pushinteger(L,getAtStartFinish());
     return 1;
 }
 
-int Lua_GetAtSplit(lua_State *L)
-{
-    lua_pushinteger(L,getAtSector());
-    return 1;
-}
-
-
-int Lua_SetPWMClockFrequency(lua_State *L)
+static int Lua_SetPWMClockFrequency(lua_State *L)
 {
     if (lua_gettop(L) >= 1) {
         LoggerConfig *loggerConfig = getWorkingLoggerConfig();
@@ -213,13 +139,13 @@ int Lua_SetPWMClockFrequency(lua_State *L)
     return 0;
 }
 
-int Lua_GetPWMClockFrequency(lua_State *L)
+static int Lua_GetPWMClockFrequency(lua_State *L)
 {
     lua_pushinteger(L,getWorkingLoggerConfig()->PWMClockFrequency);
     return 1;
 }
 
-int Lua_GetAnalog(lua_State *L)
+static int Lua_GetAnalog(lua_State *L)
 {
     float analogValue = -1;
     if (lua_gettop(L) >= 1) {
@@ -259,7 +185,7 @@ static int luaToTimerValues(lua_State *L, uint8_t *pulsePerRevolution, size_t *c
     return result;
 }
 
-int Lua_GetRPM(lua_State *L)
+static int Lua_GetRPM(lua_State *L)
 {
     uint8_t pulsePerRevolution;
     size_t channel;
@@ -273,7 +199,7 @@ int Lua_GetRPM(lua_State *L)
 }
 
 
-int Lua_GetPeriodMs(lua_State *L)
+static int Lua_GetPeriodMs(lua_State *L)
 {
     uint8_t pulsePerRevolution;
     size_t channel;
@@ -286,7 +212,7 @@ int Lua_GetPeriodMs(lua_State *L)
     return result;
 }
 
-int Lua_GetFrequency(lua_State *L)
+static int Lua_GetFrequency(lua_State *L)
 {
     uint8_t pulsePerRevolution;
     size_t channel;
@@ -299,7 +225,7 @@ int Lua_GetFrequency(lua_State *L)
     return result;
 }
 
-int Lua_GetTimerRaw(lua_State *L)
+static int Lua_GetTimerRaw(lua_State *L)
 {
     int result = -1;
     if (lua_gettop(L) >= 1) {
@@ -310,7 +236,7 @@ int Lua_GetTimerRaw(lua_State *L)
     return 1;
 }
 
-int Lua_ResetTimerCount(lua_State *L)
+static int Lua_ResetTimerCount(lua_State *L)
 {
     if (lua_gettop(L) >= 1) {
         timer_reset_count(lua_tointeger(L,1));
@@ -318,7 +244,7 @@ int Lua_ResetTimerCount(lua_State *L)
     return 0;
 }
 
-int Lua_GetTimerCount(lua_State *L)
+static int Lua_GetTimerCount(lua_State *L)
 {
     int result = -1;
     if (lua_gettop(L) >= 1) {
@@ -329,7 +255,7 @@ int Lua_GetTimerCount(lua_State *L)
     return 1;
 }
 
-int Lua_GetButton(lua_State *L)
+static int Lua_GetButton(lua_State *L)
 {
     unsigned int pushbutton = GPIO_is_button_pressed();
     lua_pushinteger(L,(pushbutton == 0));
@@ -349,7 +275,7 @@ int Lua_GetButton(lua_State *L)
  * Lua Returns:
  * 1 if successful; -1 if parameter error
  */
-int Lua_InitSerial(lua_State *L)
+static int Lua_InitSerial(lua_State *L)
 {
     int params = lua_gettop(L);
 
@@ -392,7 +318,7 @@ int Lua_InitSerial(lua_State *L)
  * the character read, or nil if no characters received (receive timeout)
  *
  */
-int Lua_ReadSerialChar(lua_State *L)
+static int Lua_ReadSerialChar(lua_State *L)
 {
     int params = lua_gettop(L);
     if (!params)
@@ -422,7 +348,7 @@ int Lua_ReadSerialChar(lua_State *L)
  * the character read, or nil if no characters received (receive timeout)
  *
  */
-int Lua_ReadSerialLine(lua_State *L)
+static int Lua_ReadSerialLine(lua_State *L)
 {
     size_t params = lua_gettop(L);
     if (!params)
@@ -452,7 +378,7 @@ int Lua_ReadSerialLine(lua_State *L)
  * no return values (nil)
  *
  */
-int Lua_WriteSerialLine(lua_State *L)
+static int Lua_WriteSerialLine(lua_State *L)
 {
     if (lua_gettop(L) >= 2) {
         int serialPort = lua_tointeger(L,1);
@@ -479,7 +405,7 @@ int Lua_WriteSerialLine(lua_State *L)
  * no return values (nil)
  *
  */
-int Lua_WriteSerialChar(lua_State *L)
+static int Lua_WriteSerialChar(lua_State *L)
 {
     if (lua_gettop(L) >= 2) {
         int serialPort = lua_tointeger(L,1);
@@ -492,7 +418,7 @@ int Lua_WriteSerialChar(lua_State *L)
     return 0;
 }
 
-int Lua_GetGPIO(lua_State *L)
+static int Lua_GetGPIO(lua_State *L)
 {
     unsigned int state = 0;
     if (lua_gettop(L) >= 1) {
@@ -503,7 +429,7 @@ int Lua_GetGPIO(lua_State *L)
     return 1;
 }
 
-int Lua_SetGPIO(lua_State *L)
+static int Lua_SetGPIO(lua_State *L)
 {
     if (lua_gettop(L) >=2) {
         unsigned int channel = (unsigned int)lua_tointeger(L,1);
@@ -513,51 +439,51 @@ int Lua_SetGPIO(lua_State *L)
     return 0;
 }
 
-int Lua_GetGPSSatellites(lua_State *L)
+static int Lua_GetGPSSatellites(lua_State *L)
 {
     lua_pushnumber(L, GPS_getSatellitesUsedForPosition());
     return 1;
 }
 
-int Lua_GetGPSPosition(lua_State *L)
+static int Lua_GetGPSPosition(lua_State *L)
 {
     lua_pushnumber(L, GPS_getLatitude());
     lua_pushnumber(L, GPS_getLongitude());
     return 2;
 }
 
-int Lua_GetGPSSpeed(lua_State *L)
+static int Lua_GetGPSSpeed(lua_State *L)
 {
     lua_pushnumber(L,getGpsSpeedInMph());
     return 1;
 }
 
-int Lua_GetGPSQuality(lua_State *L)
+static int Lua_GetGPSQuality(lua_State *L)
 {
     lua_pushnumber(L,GPS_getQuality());
     return 1;
 }
 
-int Lua_GetGPSDistance(lua_State *L)
+static int Lua_GetGPSDistance(lua_State *L)
 {
     lua_pushnumber(L, getLapDistanceInMiles());
     return 1;
 }
 
-int Lua_GetLapTime(lua_State *L)
+static int Lua_GetLapTime(lua_State *L)
 {
     // XXX: TIME_HACK.  Convert to millis.
     lua_pushnumber(L, tinyMillisToMinutes(getLastLapTime()));
     return 1;
 }
 
-int Lua_GetLapCount(lua_State *L)
+static int Lua_GetLapCount(lua_State *L)
 {
     lua_pushinteger(L,getLapCount());
     return 1;
 }
 
-int Lua_GetGpsSecondsSinceFirstFix(lua_State *L)
+static int Lua_GetGpsSecondsSinceFirstFix(lua_State *L)
 {
     const tiny_millis_t millis = getMillisSinceFirstFix();
     // XXX: TIME_HACK.  Convert to millis.
@@ -565,21 +491,21 @@ int Lua_GetGpsSecondsSinceFirstFix(lua_State *L)
     return 1;
 }
 
-int Lua_GetTickCount(lua_State *L)
+static int Lua_GetTickCount(lua_State *L)
 {
     const float f = (float) xTaskGetTickCount();
     lua_pushnumber(L, f);
     return 1;
 }
 
-int Lua_GetTicksPerSecond(lua_State *L)
+static int Lua_GetTicksPerSecond(lua_State *L)
 {
     const float f = (float) configTICK_RATE_HZ;
     lua_pushnumber(L, f);
     return 1;
 }
 
-int Lua_ReadImu(lua_State *L)
+static int Lua_ReadImu(lua_State *L)
 {
     if (lua_gettop(L) >= 1) {
         unsigned int channel = (unsigned int)lua_tointeger(L,1);
@@ -593,7 +519,7 @@ int Lua_ReadImu(lua_State *L)
     return 0;
 }
 
-int Lua_ReadImuRaw(lua_State *L)
+static int Lua_ReadImuRaw(lua_State *L)
 {
     if (lua_gettop(L) >= 1) {
         unsigned int channel = (unsigned int)lua_tointeger(L,1);
@@ -607,7 +533,7 @@ int Lua_ReadImuRaw(lua_State *L)
 }
 
 
-int Lua_SetPWMDutyCycle(lua_State *L)
+static int Lua_SetPWMDutyCycle(lua_State *L)
 {
     if (lua_gettop(L) >= 2) {
         unsigned int channel = (unsigned int)lua_tointeger(L,1);
@@ -619,7 +545,7 @@ int Lua_SetPWMDutyCycle(lua_State *L)
     return 0;
 }
 
-int Lua_SetPWMPeriod(lua_State *L)
+static int Lua_SetPWMPeriod(lua_State *L)
 {
     if (lua_gettop(L) >= 2) {
         unsigned int channel = (unsigned int)lua_tointeger(L,1);
@@ -631,7 +557,7 @@ int Lua_SetPWMPeriod(lua_State *L)
     return 0;
 }
 
-int Lua_SetAnalogOut(lua_State *L)
+static int Lua_SetAnalogOut(lua_State *L)
 {
     if (lua_gettop(L) >= 2) {
         PWMConfig *c = getPwmConfigChannel(lua_tointeger(L,1));
@@ -646,7 +572,7 @@ int Lua_SetAnalogOut(lua_State *L)
     return 0;
 }
 
-int Lua_InitCAN(lua_State *L)
+static int Lua_InitCAN(lua_State *L)
 {
     if (lua_gettop(L) >= 2) {
         size_t port = (size_t)lua_tointeger(L, 1);
@@ -659,7 +585,7 @@ int Lua_InitCAN(lua_State *L)
     }
 }
 
-int Lua_SetCANFilter(lua_State *L)
+static int Lua_SetCANFilter(lua_State *L)
 {
     if (lua_gettop(L) >= 5) {
         uint8_t channel = lua_tointeger(L, 1);
@@ -674,7 +600,7 @@ int Lua_SetCANFilter(lua_State *L)
     return 0;
 }
 
-int Lua_SendCANMessage(lua_State *L)
+static int Lua_SendCANMessage(lua_State *L)
 {
     size_t args = lua_gettop(L);
     if (args >= 4) {
@@ -701,7 +627,7 @@ int Lua_SendCANMessage(lua_State *L)
     return 0;
 }
 
-int Lua_ReceiveCANMessage(lua_State *L)
+static int Lua_ReceiveCANMessage(lua_State *L)
 {
     size_t timeout = DEFAULT_CAN_TIMEOUT;
     if (lua_gettop(L) >= 1) {
@@ -727,7 +653,7 @@ int Lua_ReceiveCANMessage(lua_State *L)
     return 1;
 }
 
-int Lua_ReadOBD2(lua_State *L)
+static int Lua_ReadOBD2(lua_State *L)
 {
     if (lua_gettop(L) >= 1) {
         unsigned char pid = (unsigned char)lua_tointeger(L, 1);
@@ -740,71 +666,244 @@ int Lua_ReadOBD2(lua_State *L)
     return 0;
 }
 
-int Lua_StartLogging(lua_State *L)
+static int Lua_StartLogging(lua_State *L)
 {
     startLogging();
     return 0;
 }
 
-int Lua_StopLogging(lua_State *L)
+static int Lua_StopLogging(lua_State *L)
 {
     stopLogging();
     return 0;
 }
 
-int Lua_IsLogging(lua_State *L)
+static int Lua_IsLogging(lua_State *L)
 {
     lua_pushinteger(L, logging_is_active());
     return 1;
 }
 
-int Lua_SetLED(lua_State *L)
+static int lua_set_led(lua_State *ls)
 {
-        if (lua_gettop(L) >= 2) {
-                unsigned int LED = lua_tointeger(L,1);
-                unsigned int state = lua_tointeger(L,2);
-                if (state) {
-                        //LED_enable(LED);
-                } else {
-                        //LED_disable(LED);
-                }
+        if (lua_gettop(ls) != 2)
+                return incorrect_arguments(ls);
+
+        const bool is_num = lua_isnumber(ls, 1);
+        const bool is_str = lua_isstring(ls, 1);
+        if (!is_num && !is_str)
+                return luaL_error(ls, "This method only accepts LED names "
+                                  "or LED IDs");
+
+        /*
+         * Numbers can be passed in as 123 or "123" in lua.  So handle
+         * that case first
+         */
+        const bool on = lua_toboolean(ls, 2);
+        bool res;
+        if (is_num) {
+                res = led_set_index(lua_tointeger(ls, 1), on);
+        } else {
+                const enum led led = get_led_enum(lua_tostring(ls, 1));
+                res = led_set(led, on);
         }
-        return 0;
+
+        lua_pushboolean(ls, res);
+        return 1;
 }
 
 
-int Lua_FlashLoggerConfig(lua_State *L)
+static int Lua_FlashLoggerConfig(lua_State *L)
 {
     enum memory_flash_result_t result = flashLoggerConfig();
     lua_pushinteger(L,result);
     return 1;
 }
 
-int Lua_AddVirtualChannel(lua_State *L)
+static int Lua_AddVirtualChannel(lua_State *L)
 {
-    size_t args = lua_gettop(L);
-    if (args < 2) return 0;
+        const size_t args = lua_gettop(L);
+        if (args < 2 || args > 6)
+                return incorrect_arguments(L);
 
-    ChannelConfig cc;
-    strlcpy(cc.label, lua_tostring(L, 1), DEFAULT_LABEL_LENGTH);
-    cc.sampleRate = encodeSampleRate((unsigned short) lua_tointeger(L, 2));
-    cc.precision = args >= 3 ? lua_tointeger(L, 3) :
-                   DEFAULT_CHANNEL_LOGGING_PRECISION;
-    cc.min = args >= 4 ? lua_tointeger(L, 4) : DEFAULT_CHANNEL_MIN;
-    cc.max = args >= 5 ? lua_tointeger(L, 5) : DEFAULT_CHANNEL_MAX;
-    strlcpy(cc.units, args >=6 ? lua_tostring(L, 6) : DEFAULT_CHANNEL_UNITS,
-            DEFAULT_UNITS_LENGTH);
-    lua_pushinteger(L, create_virtual_channel(cc));
+        ChannelConfig cc;
+        channel_config_defaults(&cc);
 
+        switch (validate_channel_config_label(lua_tostring(L, 1))) {
+        case CHAN_CFG_STATUS_OK:
+                strcpy(cc.label, lua_tostring(L, 1));
+                break;
+        case CHAN_CFG_STATUS_NO_LABEL:
+                luaL_error(L, "Label is empty");
+        case CHAN_CFG_STATUS_LONG_LABEL:
+                luaL_error(L, "Label is too long");
+        default:
+                goto bug;
+        }
+
+        cc.sampleRate = encodeSampleRate((unsigned short) lua_tointeger(L, 2));
+        if (SAMPLE_DISABLED == cc.sampleRate)
+                return luaL_error(L, "Unsupported sample rate");
+
+        switch(args) {
+        case 6:
+                switch (validate_channel_config_units(lua_tostring(L, 6))) {
+                case CHAN_CFG_STATUS_OK:
+                        strcpy(cc.units, lua_tostring(L, 6));
+                        break;
+                case CHAN_CFG_STATUS_NO_UNITS:
+                        return luaL_error(L, "Units is empty");
+                case CHAN_CFG_STATUS_LONG_UNITS:
+                        return luaL_error(L, "Units is too long");
+                default:
+                        goto bug;
+                }
+        case 5:
+                cc.max = lua_tointeger(L, 5);
+        case 4:
+                cc.min = lua_tointeger(L, 4);
+        case 3:
+                cc.precision = lua_tointeger(L, 3);
+        }
+
+        switch(validate_channel_config(&cc)) {
+        case CHAN_CFG_STATUS_OK:
+                break;
+        case CHAN_CFG_STATUS_MAX_LT_MIN:
+                return luaL_error(L, "Max is less than min");
+        default:
+                goto bug;
+        }
+
+        const int chan_id = create_virtual_channel(cc);
+        if (INVALID_VIRTUAL_CHANNEL == chan_id)
+                return luaL_error(L, "Unable to create channel. "
+                                     "Maximum channels reached.");
+
+        lua_pushinteger(L, chan_id);
+        return 1;
+
+bug:
+        return luaL_error(L, "BUG. Should never get here.  "
+                             "Please inform AutosportLabs");
+}
+
+static int lua_get_virtual_channel(lua_State *ls)
+{
+    if (lua_gettop(ls) != 1)
+            return incorrect_arguments(ls);
+
+    const bool is_num = lua_isnumber(ls, 1);
+    const bool is_str = lua_isstring(ls, 1);
+    if (!is_num && !is_str)
+            return luaL_error(ls, "This method only accepts channel names "
+                              "or channel IDs");
+
+    /*
+     * Numbers can be passed in as 123 or "123" in lua.  So handle
+     * that case first
+     */
+    VirtualChannel *vc;
+    if (is_num) {
+            vc = get_virtual_channel(lua_tointeger(ls, 1));
+    } else {
+            const int idx = find_virtual_channel(lua_tostring(ls, 1));
+            vc = get_virtual_channel(idx);
+    }
+
+    if (!vc)
+            return luaL_error(ls, "Virtual channel not found!");
+
+    lua_pushnumber(ls, vc->currentValue);
     return 1;
 }
 
-int Lua_SetVirtualChannelValue(lua_State *L)
+static int Lua_SetVirtualChannelValue(lua_State *L)
 {
-    if (lua_gettop(L) >= 2) {
-        int id = lua_tointeger(L, 1);
-        float value = lua_tonumber(L, 2);
-        set_virtual_channel_value(id,value);
-    }
-    return 0;
+        const size_t args = lua_gettop(L);
+        if (args != 2)
+                return incorrect_arguments(L);
+
+        const int id = lua_tointeger(L, 1);
+        const float value = lua_tonumber(L, 2);
+        set_virtual_channel_value(id, value);
+
+        return 0;
+}
+
+void registerLuaLoggerBindings(lua_State *L)
+{
+
+    //Read / control inputs and outputs
+    lua_registerlight(L,"getGpio",Lua_GetGPIO);
+    lua_registerlight(L,"setGpio",Lua_SetGPIO);
+    lua_registerlight(L,"getButton",Lua_GetButton);
+
+    lua_registerlight(L,"setPwmDutyCycle",Lua_SetPWMDutyCycle);
+    lua_registerlight(L,"setPwmPeriod",Lua_SetPWMPeriod);
+    lua_registerlight(L,"setAnalogOut",Lua_SetAnalogOut);
+    lua_registerlight(L,"setPwmClockFreq",Lua_SetPWMClockFrequency);
+    lua_registerlight(L,"getPwmClockFreq",Lua_GetPWMClockFrequency);
+
+    lua_registerlight(L,"getTimerRpm",Lua_GetRPM);
+    lua_registerlight(L,"getTimerPeriodMs",Lua_GetPeriodMs);
+    lua_registerlight(L,"getTimerFreq",Lua_GetFrequency);
+    lua_registerlight(L,"getTimerRaw",Lua_GetTimerRaw);
+    lua_registerlight(L,"resetTimerCount",Lua_ResetTimerCount);
+    lua_registerlight(L,"getTimerCount",Lua_GetTimerCount);
+
+    lua_registerlight(L,"getAnalog",Lua_GetAnalog);
+
+    lua_registerlight(L,"getImu",Lua_ReadImu);
+    lua_registerlight(L,"getImuRaw",Lua_ReadImuRaw);
+
+    lua_registerlight(L, "getGpsSats", Lua_GetGPSSatellites);
+    lua_registerlight(L, "getGpsPos", Lua_GetGPSPosition);
+    lua_registerlight(L, "getGpsSpeed", Lua_GetGPSSpeed);
+    lua_registerlight(L, "getGpsQuality", Lua_GetGPSQuality);
+    lua_registerlight(L, "getGpsDist", Lua_GetGPSDistance);
+    lua_registerlight(L, "getGpsAltitude", lua_get_gps_altitude);
+
+    lua_registerlight(L, "getLapCount", Lua_GetLapCount);
+    lua_registerlight(L, "getLapTime", Lua_GetLapTime);
+    lua_registerlight(L, "getGpsSec", Lua_GetGpsSecondsSinceFirstFix);
+    lua_registerlight(L, "getAtStartFinish",Lua_GetGPSAtStartFinish);
+
+    lua_registerlight(L, "getTickCount", Lua_GetTickCount);
+    lua_registerlight(L, "getTicksPerSecond", Lua_GetTicksPerSecond);
+
+    lua_registerlight(L, "initCAN", Lua_InitCAN);
+    lua_registerlight(L, "txCAN", Lua_SendCANMessage);
+    lua_registerlight(L, "rxCAN", Lua_ReceiveCANMessage);
+    lua_registerlight(L, "setCANfilter", Lua_SetCANFilter);
+    lua_registerlight(L, "readOBD2", Lua_ReadOBD2);
+
+    lua_registerlight(L,"startLogging",Lua_StartLogging);
+    lua_registerlight(L,"stopLogging",Lua_StopLogging);
+    lua_registerlight(L,"isLogging" , Lua_IsLogging);
+
+    lua_registerlight(L,"setLed", lua_set_led);
+
+    //Serial API
+    lua_registerlight(L,"initSer", Lua_InitSerial);
+    lua_registerlight(L,"readCSer", Lua_ReadSerialChar);
+    lua_registerlight(L,"readSer", Lua_ReadSerialLine);
+    lua_registerlight(L,"writeCSer", Lua_WriteSerialChar);
+    lua_registerlight(L,"writeSer", Lua_WriteSerialLine);
+
+    //Logger configuration editing
+    lua_registerlight(L,"flashLoggerCfg", Lua_FlashLoggerConfig);
+
+    lua_registerlight(L,"calibrateImuZero",Lua_CalibrateImuZero);
+
+    lua_registerlight(L,"setBgStream", Lua_SetBackgroundStreaming);
+    lua_registerlight(L,"getBgStream", Lua_GetBackgroundStreaming);
+
+    lua_registerlight(L, "addChannel", Lua_AddVirtualChannel);
+    lua_registerlight(L, "getChannel", lua_get_virtual_channel);
+    lua_registerlight(L, "setChannel", Lua_SetVirtualChannelValue);
+
+    /* Timing info */
+    lua_registerlight(L, "getUptime", lua_get_uptime);
+    lua_registerlight(L, "getDateTime", lua_get_date_time);
 }
