@@ -25,14 +25,20 @@
 #include "loggerConfig.h"
 #include "printk.h"
 #include "led.h"
+#include <stdbool.h>
 
 int CAN_init(LoggerConfig *loggerConfig)
 {
     CANConfig *canConfig = &loggerConfig->CanConfig;
 
-    for (size_t i = 0; i < CAN_CHANNELS; i++)
-        if (!CAN_init_port(i, canConfig->baud[i], true))
+    for (size_t i = 0; i < CAN_CHANNELS; i++) {
+        bool termination = false;
+#if CAN_SW_TERMINATION == true
+        termination = canConfig->termination[i];
+#endif
+        if (!CAN_init_port(i, canConfig->baud[i], termination))
             return 0;
+    }
     return 1;
 }
 

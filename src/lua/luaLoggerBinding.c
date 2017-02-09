@@ -626,8 +626,8 @@ static int lua_init_can(lua_State *L)
         default:
             return lua_panic(L);
         case 3:
-            lua_validate_arg_boolean(L, 3);
-            termination_enabled = lua_toboolean(L, 3);
+            lua_validate_arg_number(L, 3);
+            termination_enabled = (bool)lua_tonumber(L, 3);
         case 2:
             lua_validate_arg_number(L, 2);
             lua_validate_arg_number(L, 1);
