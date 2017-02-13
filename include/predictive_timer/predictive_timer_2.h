@@ -66,15 +66,13 @@ bool addGpsSample(const GpsSnapshot *gpsSnapshot);
 tiny_millis_t getSplitAgainstFastLap(const GeoPoint *  point, tiny_millis_t time);
 
 /**
- * Figures out the predicted lap time.  Call as much as you like... it will only do
- * calculations when new data is actually available.  This minimizes inaccuracies and
- * allows for drivers to better see how their most recent driving affected their predicted
- * lap time.
- * @param point The current location of the car.
- * @param time The time (millis) which the sample was taken.
+ * Calculates the predicted lap time based on the split against the fast
+ * lap.
+ * @param snapshot The most recent GPS Snapshot available.
  * @return The predicted lap time.
+ * @see #getSplitAgainstFastLap
  */
-tiny_millis_t getPredictedTime(const GeoPoint * point, tiny_millis_t time);
+tiny_millis_t getPredictedTime(const GpsSnapshot *snapshot);
 
 /**
  * Like #getPredictedTime but returns the value in minutes.  Useful for logging compatibility.

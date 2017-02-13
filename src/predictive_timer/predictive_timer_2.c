@@ -27,6 +27,11 @@
 #include <string.h>
 #include "predictive_timer_2.h"
 
+/* What is the required GPS fix quality to be used as a sample */
+#define GPS_FIX_QUALITY_REQUIRED GPS_QUALITY_3D_DGNSS
+/* What is the maximum GPS DOP we accept to be used as a sample */
+#define GPS_MAXIMUM_DOP_ALLOWED 2.0
+
 /**
  * How frequently to initially take in GPS data.  To small and we overflow.  To large and we don't
  * update very frequently.
@@ -91,6 +96,20 @@ static enum Status {
 static tiny_millis_t getCurrentLapTime(tiny_millis_t time)
 {
     return time - currLapStartTime;
+}
+
+/**
+ * Validates that the GPS sample quality is sufficient enough to be
+ * useful to us here. Low quality snapshots can throw off the calculations
+ * and cause inaccurate predictive times.
+ * @param snapshot The GpsSnapshot to validate.
+ * @return true if quality is passable, false otherwise.
+ * @see https://github.com/autosportlabs/RaceCapture-Pro_firmware/issues/108
+ */
+static bool verify_gps_quality(const GpsSample *sample)
+{
+	return sample->quality == GPS_FIX_QUALITY_REQUIRED
+		&& sample->DOP <= GPS_MAXIMUM_DOP_ALLOWED;
 }
 
 /**
@@ -237,6 +256,11 @@ bool addGpsSample(const GpsSnapshot *gpsSnapshot)
     if (getTimeSinceLastSample(time) < pollInterval) {
         DEVEL("DROPPING - elapsed < pollInterval\n");
         return false;
+    }
+
+    if (!verify_gps_quality(&gpsSnapshot->sample)) {
+	    DEVEL("DROPPING - GPS quality poor\n");
+	    return false;
     }
 
     if (!insertTimeLocSample(point, time)) {
@@ -401,27 +425,34 @@ tiny_millis_t getSplitAgainstFastLap(const GeoPoint * point, tiny_millis_t curre
 }
 
 /**
- * Figures out the predicted lap time.  Call as much as you like... it will only do
- * calculations when new data is actually available.  This minimizes inaccuracies and
- * allows for drivers to better see how their most recent driving affected their predicted
- * lap time.
- * @param point The current location of the car.
- * @param time The current time of the most recent GPS fix.
+ * Calculates the predicted lap time based on the split against the fast
+ * lap.
+ * @param snapshot The most recent GPS Snapshot available.
  * @return The predicted lap time.
+ * @see #getSplitAgainstFastLap
  */
-tiny_millis_t getPredictedTime(const GeoPoint * point, tiny_millis_t time)
+tiny_millis_t getPredictedTime(const GpsSnapshot *snapshot)
 {
-        if (DISABLED == status)
-                return 0;
+	if (DISABLED == status)
+		return 0;
 
-        tiny_millis_t timeDelta = getSplitAgainstFastLap(point, time);
-        tiny_millis_t newPredictedTime = fastLapTime - timeDelta;
+	/*
+	 * If the quality of the gps sample is low, don't try to predict
+	 * time since the chances of it being wrong are higher
+	 */
+	if (!verify_gps_quality(&snapshot->sample))
+		return lastPredictedTime;
 
-        // Check for a minimum predicted time to deal with start/finish errors.
-        if (newPredictedTime < MIN_PREDICTED_TIME)
-                return lastPredictedTime;
+	const GeoPoint point = snapshot->sample.point;
+	const tiny_millis_t time = snapshot->deltaFirstFix;
+	const tiny_millis_t timeDelta = getSplitAgainstFastLap(&point, time);
+	const tiny_millis_t newPredictedTime = fastLapTime - timeDelta;
 
-        return lastPredictedTime = newPredictedTime;
+	// Check for a minimum predicted time to deal with start/finish errors.
+	if (newPredictedTime < MIN_PREDICTED_TIME)
+		return lastPredictedTime;
+
+	return lastPredictedTime = newPredictedTime;
 }
 
 /**
@@ -442,7 +473,6 @@ void resetPredictiveTimer()
 
 float getPredictedTimeInMinutes()
 {
-    const GeoPoint gp = getGeoPoint();
-    const tiny_millis_t millis = getMillisSinceFirstFix();
-    return tinyMillisToMinutes(getPredictedTime(&gp, millis));
+	const GpsSnapshot snapshot = getGpsSnapshot();
+	return tinyMillisToMinutes(getPredictedTime(&snapshot));
 }
