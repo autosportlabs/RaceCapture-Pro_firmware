@@ -155,10 +155,10 @@ static int os_date (lua_State *L)
         setfield(L, "yday", stm->tm_yday+1);
         setboolfield(L, "isdst", stm->tm_isdst);
     } else {
-        char cc[3];
-        luaL_Buffer b;
-        cc[0] = '%';
-        cc[2] = '\0';
+        /* char cc[3]; */
+        /* cc[0] = '%'; */
+        /* cc[2] = '\0'; */
+	luaL_Buffer b;
         luaL_buffinit(L, &b);
         for (; *s; s++) {
             if (*s != '%' || *(s + 1) == '\0')  /* no conversion specifier? */
