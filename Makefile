@@ -206,7 +206,7 @@ clean: rct-clean mk2-clean mk3-clean test-clean lua-clean
 package: clean
 	$(MAKE) test-pristine
 	$(MAKE) mk2-package
-	$(MAKE) mk2-package	
+	$(MAKE) mk3-package	
 	$(MAKE) rct-package
 	$(MAKE) hashes
 
