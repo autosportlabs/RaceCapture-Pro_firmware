@@ -33,6 +33,7 @@
 #include "task.h"
 #include "taskUtil.h"
 #include "test.h"
+#include "logger.h"
 #include <stdbool.h>
 #include <string.h>
 #include <string.h>
@@ -280,6 +281,12 @@ static void open_log_file(struct logging_status *ls)
         pr_info(_RCP_BASE_FILE_ "Opening log file\r\n");
         ls->writing_status = WRITING_INACTIVE;
 
+        if (!sdcard_present()) {
+                ls->writing_status = SD_CARD_NOT_PRESENT;
+                pr_error(_RCP_BASE_FILE_ "SD card not present\r\n");
+                return;
+        }
+
         const int rc = InitFS();
         if (0 != rc) {
                 pr_error_int_msg(_RCP_BASE_FILE_ "FS init error: ", rc);
@@ -383,6 +390,9 @@ TESTABLE_STATIC int logging_sample(struct logging_status *ls,
                 if (WRITING_ACTIVE != ls->writing_status)
                         open_log_file(ls);
 
+                if (SD_CARD_NOT_PRESENT == ls->writing_status)
+                        break;
+
                 /* Don't try to write if file isn't open */
                 if (WRITING_ACTIVE == ls->writing_status) {
                         rc = write_samples(ls, msg);
@@ -423,6 +433,23 @@ TESTABLE_STATIC int flush_logfile(struct logging_status *ls)
 
         ls->flush_tick = xTaskGetTickCount();
         return res;
+}
+
+static void update_logger_status(struct logging_status *ls)
+{
+    switch(ls->writing_status) {
+    case WRITING_INACTIVE:
+        logging_set_status(LOGGING_STATUS_IDLE);
+        break;
+    case WRITING_ACTIVE:
+        logging_set_status(LOGGING_STATUS_WRITING);
+        break;
+    case SD_CARD_NOT_PRESENT:
+        logging_set_status(LOGGING_STATUS_CARD_NOT_PRESENT);
+        break;
+    default:
+        break;
+    }
 }
 
 static void fileWriterTask(void *params)
@@ -466,6 +493,7 @@ static void fileWriterTask(void *params)
                 }
 
                 flush_logfile(&ls);
+                update_logger_status(&ls);
         }
 }
 

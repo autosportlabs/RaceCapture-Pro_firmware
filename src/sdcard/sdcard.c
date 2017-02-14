@@ -51,14 +51,24 @@ static bool is_initialized()
         if (fat_fs)
                 return true;
 
-        pr_error("sdcard: Not initialized");
+        pr_error("sdcard: Not initialized\r\n");
         return false;
+}
+
+bool sdcard_present(void)
+{
+    return sdcard_device_card_present();
 }
 
 int InitFS()
 {
         if(!is_initialized())
                 return -1;
+
+        if(!sdcard_device_card_present()) {
+                pr_error("sdcard: card not present\r\n");
+                return -1;
+        }
 
         return f_mount(fat_fs, "0", 1);
 }

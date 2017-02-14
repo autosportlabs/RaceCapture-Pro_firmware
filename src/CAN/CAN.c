@@ -24,37 +24,48 @@
 #include "CAN_device.h"
 #include "loggerConfig.h"
 #include "printk.h"
+#include "led.h"
+#include <stdbool.h>
 
 int CAN_init(LoggerConfig *loggerConfig)
 {
     CANConfig *canConfig = &loggerConfig->CanConfig;
 
-    for (size_t i = 0; i < CAN_CHANNELS; i++)
-        if (!CAN_init_port(i, canConfig->baud[i]))
+    for (size_t i = 0; i < CAN_CHANNELS; i++) {
+        bool termination = false;
+#if CAN_SW_TERMINATION == true
+        termination = canConfig->termination[i];
+#endif
+        if (!CAN_init_port(i, canConfig->baud[i], termination))
             return 0;
-
-
+    }
     return 1;
 }
 
-int CAN_init_port(uint8_t port, uint32_t baud)
+int CAN_init_port(uint8_t port, uint32_t baud, bool termination_enabled)
 {
-    return CAN_device_init(port, baud);
+    return CAN_device_init(port, baud, termination_enabled);
 }
 
 int CAN_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
-		   uint32_t filter, uint32_t mask, const bool enabled)
+           uint32_t filter, uint32_t mask, const bool enabled)
 {
-	return CAN_device_set_filter(channel, id, extended, filter,
-				     mask, enabled);
+    return CAN_device_set_filter(channel, id, extended, filter,
+                     mask, enabled);
 }
 
 int CAN_tx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs)
 {
-    return CAN_device_tx_msg(channel, msg, timeoutMs);
+    int rc = CAN_device_tx_msg(channel, msg, timeoutMs);
+    if (rc)
+            led_toggle(LED_CAN);
+    return rc;
 }
 
 int CAN_rx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs)
 {
-    return CAN_device_rx_msg(channel, msg, timeoutMs);
+    int rc = CAN_device_rx_msg(channel, msg, timeoutMs);
+    if (rc)
+            led_toggle(LED_CAN);
+    return rc;
 }

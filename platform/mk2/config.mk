@@ -61,7 +61,7 @@ $(HAL_SRC)/fat_sd_stm32/fatfs/option/unicode.c \
 $(HAL_SRC)/fat_sd_stm32/sdcard_device_stm32.c \
 $(HAL_SRC)/fat_sd_stm32/tm_stm32f4_fatfs.c \
 $(HAL_SRC)/fat_sd_stm32/tm_stm32f4_gpio.c \
-$(HAL_SRC)/gps_skytraq/gps_device_skytraq.c \
+$(HAL_SRC)/gps_stm32/gps_device_lld_stm32.c \
 $(HAL_SRC)/i2c_stm32/i2c_device_stm32.c \
 $(HAL_SRC)/imu_stm32/imu_device_stm32.c \
 $(HAL_SRC)/imu_stm32/invensense_9150.c \
@@ -96,6 +96,7 @@ $(RCP_SRC)/devices/esp8266.c \
 $(RCP_SRC)/devices/null_device.c \
 $(RCP_SRC)/devices/sara_u280.c \
 $(RCP_SRC)/devices/sim900.c \
+$(RCP_SRC)/devices/gps_skytraq_s1216_sup500f8.c \
 $(RCP_SRC)/drivers/esp8266_drv.c \
 $(RCP_SRC)/filter/filter.c \
 $(RCP_SRC)/gps/dateTime.c \

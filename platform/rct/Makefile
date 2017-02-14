@@ -98,7 +98,7 @@ src-y += $(wildcard hal/cpu_stm32/*.c)
 inc-y += $(RC_INCLUDE_DIR)/cpu
 
 # GPS skytraq
-src-y += $(wildcard hal/gps_skytraq/*.c)
+src-y += $(wildcard hal/gps_stm32/*.c)
 inc-y += $(RC_INCLUDE_DIR)/gps
 
 #filter

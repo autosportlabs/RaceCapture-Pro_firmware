@@ -1303,12 +1303,19 @@ int api_getCanConfig(struct Serial *serial, const jsmntok_t *json)
     for (size_t i = 0; i < CONFIG_CAN_CHANNELS; i++) {
         json_arrayElementInt(serial, canCfg->baud[i], i < CONFIG_CAN_CHANNELS - 1);
     }
+#if CAN_SW_TERMINATION == true
+    json_arrayEnd(serial, 1);
+    json_arrayStart(serial, "term");
+    for (size_t i = 0; i < CONFIG_CAN_CHANNELS; i++) {
+        json_arrayElementInt(serial, canCfg->termination[i], i < CONFIG_CAN_CHANNELS - 1);
+    }
+#endif
     json_arrayEnd(serial, 0);
     json_objEnd(serial, 0);
     json_objEnd(serial, 0);
-
     return API_SUCCESS_NO_RETURN;
 }
+
 
 int api_setCanConfig(struct Serial *serial, const jsmntok_t *json)
 {
@@ -1316,16 +1323,32 @@ int api_setCanConfig(struct Serial *serial, const jsmntok_t *json)
     CANConfig *canCfg = &getWorkingLoggerConfig()->CanConfig;
     setUnsignedCharValueIfExists( json, "en", &canCfg->enabled, NULL);
 
-    const jsmntok_t *baudTok = jsmn_find_node(json, "baud");
-    if (baudTok != NULL && (++baudTok)->type == JSMN_ARRAY) {
-        size_t arrSize = json->size;
-        if (arrSize > CONFIG_CAN_CHANNELS)
-            arrSize = CONFIG_CAN_CHANNELS;
-        size_t can_index = 0;
-        for (baudTok++; can_index < arrSize; can_index++, baudTok++) {
-            canCfg->baud[can_index] = atoi(baudTok->data);
-        }
+    {
+            const jsmntok_t *tok = jsmn_find_node(json, "baud");
+            if (tok != NULL && (++tok)->type == JSMN_ARRAY) {
+                    size_t arr_size = json->size;
+                    if (arr_size > CONFIG_CAN_CHANNELS)
+                            arr_size = CONFIG_CAN_CHANNELS;
+                    size_t can_index = 0;
+                    for (tok++; can_index < arr_size; can_index++, tok++) {
+                            canCfg->baud[can_index] = atoi(tok->data);
+                    }
+            }
     }
+#if CAN_SW_TERMINATION == true
+    {
+            const jsmntok_t *tok = jsmn_find_node(json, "term");
+            if (tok != NULL && (++tok)->type == JSMN_ARRAY) {
+                    size_t arr_size = json->size;
+                    if (arr_size > CONFIG_CAN_CHANNELS)
+                            arr_size = CONFIG_CAN_CHANNELS;
+                    size_t can_index = 0;
+                    for (tok++; can_index < arr_size; can_index++, tok++) {
+                            canCfg->termination[can_index] = atoi(tok->data);
+                    }
+            }
+    }
+#endif
     return API_SUCCESS;
 }
 

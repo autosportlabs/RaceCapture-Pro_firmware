@@ -70,7 +70,7 @@ bool led_device_set_index(const size_t i, const bool on)
         return i < ARRAY_LEN(leds) ? led_set_level(leds + i, on) : false;
 }
 
-struct led_data* find_led_data(const enum led l)
+static struct led_data* find_led_data(const enum led l)
 {
         /* Use an unsigned value here to handle negative indicies */
         for (size_t i = 0; i < ARRAY_LEN(leds); ++i) {
@@ -80,6 +80,11 @@ struct led_data* find_led_data(const enum led l)
         }
 
         return NULL;
+}
+
+bool led_device_available(const enum led l)
+{
+    return find_led_data(l) != NULL;
 }
 
 bool led_device_set(const enum led l, const bool on)

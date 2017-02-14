@@ -80,6 +80,11 @@ struct led_data* find_led_data(const enum led l)
         return NULL;
 }
 
+bool led_device_available(const enum led l)
+{
+    return find_led_data(l) != NULL;
+}
+
 bool led_device_set(const enum led l, const bool on)
 {
         struct led_data *ld = find_led_data(l);

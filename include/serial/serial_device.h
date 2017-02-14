@@ -37,6 +37,7 @@ typedef enum {
         SERIAL_BLUETOOTH,
         SERIAL_WIFI,
         SERIAL_AUX,
+        SERIAL_AUX2,
         __SERIAL_COUNT, /* ALWAYS AT THE END */
 } serial_id_t;
 

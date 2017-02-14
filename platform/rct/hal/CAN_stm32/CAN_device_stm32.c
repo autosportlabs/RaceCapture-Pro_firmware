@@ -121,7 +121,6 @@ static void initCAN(CAN_TypeDef * CANx, uint32_t baud)
     CAN_InitStructure.CAN_Prescaler = can_baud_pre[baudIndex];
 
     CAN_Init(CANx, &CAN_InitStructure);
-
 }
 
 static void initCANInterrupts(CAN_TypeDef * CANx, uint8_t irqNumber)
@@ -160,7 +159,7 @@ static void CAN_device_init_1(int baud)
     initCANInterrupts(CAN1, USB_LP_CAN1_RX0_IRQn);
 }
 
-int CAN_device_init(uint8_t channel, uint32_t baud)
+int CAN_device_init(uint8_t channel, uint32_t baud, bool termination_enabled)
 {
 	pr_info("Initializing CAN");
 	pr_info_int(channel);
@@ -186,6 +185,8 @@ int CAN_device_init(uint8_t channel, uint32_t baud)
 		CAN_device_set_filter(channel, i, 0, 0, 0, false);
 
 	pr_info("CAN init success!\r\n");
+
+	/*  termination is not supported on this platform, so termination_enabled parameter is not used */
 	return 1;
 }
 

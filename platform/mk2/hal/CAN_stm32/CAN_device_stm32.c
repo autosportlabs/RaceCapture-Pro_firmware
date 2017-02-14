@@ -132,7 +132,7 @@ static void initCANInterrupts(CAN_TypeDef * CANx, uint8_t irqNumber)
     NVIC_Init(&NVIC_InitStructure);
 }
 
-static void CAN_device_init_1(int baud)
+static void CAN_device_init_1(int baud, bool termination_enabled)
 {
     CAN_DeInit(CAN1);
 
@@ -155,9 +155,11 @@ static void CAN_device_init_1(int baud)
     CAN_ITConfig(CAN1, CAN_IT_FMP0, ENABLE);
 
     initCANInterrupts(CAN1, CAN1_RX0_IRQn);
+
+    /*  termination is not supported on this platform, so termination_enabled parameter is not used */
 }
 
-static void CAN_device_init_2(int baud)
+static void CAN_device_init_2(int baud, bool termination_enabled)
 {
     CAN_DeInit(CAN2);
 
@@ -180,9 +182,11 @@ static void CAN_device_init_2(int baud)
     CAN_ITConfig(CAN2, CAN_IT_FMP1, ENABLE);
 
     initCANInterrupts(CAN2, CAN2_RX1_IRQn);
+
+    /*  termination is not supported on this platform, so termination_enabled parameter is not used */
 }
 
-int CAN_device_init(uint8_t channel, uint32_t baud)
+int CAN_device_init(uint8_t channel, uint32_t baud, bool termination_enabled)
 {
 	pr_info("Initializing CAN");
 	pr_info_int(channel);
@@ -195,10 +199,10 @@ int CAN_device_init(uint8_t channel, uint32_t baud)
 
 	switch (channel) {
 	case 0:
-		CAN_device_init_1(baud);
+		CAN_device_init_1(baud, termination_enabled);
 		break;
 	case 1:
-		CAN_device_init_2(baud);
+		CAN_device_init_2(baud, termination_enabled);
 		break;
 	default:
 		pr_info("CAN init device failed\r\n");

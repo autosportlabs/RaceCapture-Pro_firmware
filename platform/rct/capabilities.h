@@ -40,6 +40,7 @@
 #define TIMER_CHANNELS	0
 #define PWM_CHANNELS	0
 #define CAN_CHANNELS	1
+#define CAN_SW_TERMINATION      false
 #define CONNECTIVITY_CHANNELS	2
 
 //sample rates
