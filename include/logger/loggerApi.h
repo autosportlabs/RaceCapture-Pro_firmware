@@ -40,6 +40,7 @@ CPP_GUARD_BEGIN
 	API_METHOD("flashCfg", api_flashConfig)				\
 	API_METHOD("getAutoLoggerCfg", api_get_auto_logger_cfg)		\
 	API_METHOD("getCanCfg", api_getCanConfig)			\
+	API_METHOD("getCanChanCfg", api_get_can_channel_config) \
 	API_METHOD("getCapabilities", api_getCapabilities)		\
 	API_METHOD("getConnCfg", api_getConnectivityConfig)		\
 	API_METHOD("getGpsCfg", api_getGpsConfig)			\
@@ -147,6 +148,7 @@ int api_getObd2Config(struct Serial *serial, const jsmntok_t *json);
 int api_setObd2Config(struct Serial *serial, const jsmntok_t *json);
 int api_getCanConfig(struct Serial *serial, const jsmntok_t *json);
 int api_setCanConfig(struct Serial *serial, const jsmntok_t *json);
+int api_get_can_channel_config(struct Serial *serial, const jsmntok_t *json);
 
 /* Sensor channels */
 int api_getAnalogConfig(struct Serial *serial, const jsmntok_t *json);

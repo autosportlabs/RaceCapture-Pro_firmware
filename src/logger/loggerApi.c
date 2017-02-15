@@ -1352,6 +1352,40 @@ int api_setCanConfig(struct Serial *serial, const jsmntok_t *json)
     return API_SUCCESS;
 }
 
+static void _send_can_mapping(struct Serial *serial, CANMapping *can_mapping, int more)
+{
+    json_objStartString(serial, "map");
+    json_int(serial, "bm", can_mapping->bit_mode == 1, 1);
+    json_int(serial, "chan", can_mapping->can_channel, 1);
+    json_int(serial, "id", can_mapping->can_id, 1);
+    json_int(serial, "id_mask", can_mapping->can_mask, 1);
+    json_int(serial, "endian", can_mapping->endian, 1);
+    json_int(serial, "offset", can_mapping->offset, 1);
+    json_int(serial, "len", can_mapping->length, 1);
+    json_float(serial, "mult", can_mapping->multiplier, DEFAULT_CAN_MAPPING_PRECISION, 1);
+    json_float(serial, "div", can_mapping->divider, DEFAULT_CAN_MAPPING_PRECISION, 1);
+    json_float(serial, "add", can_mapping->adder, DEFAULT_CAN_MAPPING_PRECISION, 1);
+    json_int(serial, "filtId", can_mapping->conversion_filter_id, 0);
+    json_objEnd(serial, more);
+}
+
+int api_get_can_channel_config(struct Serial *serial, const jsmntok_t *json)
+{
+    CANMappingConfig * can_mapping_cfg = &(getWorkingLoggerConfig()->CanMappingConfig);
+    json_objStart(serial);
+    json_objStartString(serial, "canChanCfg");
+    json_int(serial, "en", can_mapping_cfg->enabled, 1);
+    json_arrayStart(serial, "chans");
+    for (size_t i = 0; i < can_mapping_cfg->enabled_mappings; i++) {
+        CANMapping *can_mapping = &can_mapping_cfg->can_mappings[i];
+        _send_can_mapping(serial, can_mapping, i < CONFIG_CAN_MAPPINGS - 1);
+    }
+    json_arrayEnd(serial, 0);
+    json_objEnd(serial, 0);
+    json_objEnd(serial, 0);
+    return API_SUCCESS_NO_RETURN;
+}
+
 int api_getObd2Config(struct Serial *serial, const jsmntok_t *json)
 {
     json_objStart(serial);

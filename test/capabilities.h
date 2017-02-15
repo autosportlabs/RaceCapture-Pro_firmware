@@ -107,6 +107,7 @@ CPP_GUARD_BEGIN
 #define PWM_CHANNELS			4
 #define CAN_CHANNELS			2
 #define CAN_SW_TERMINATION      true
+#define CAN_MAPPINGS            10
 #define CONNECTIVITY_CHANNELS	2
 
 //sample rates

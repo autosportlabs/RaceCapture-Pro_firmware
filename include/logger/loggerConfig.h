@@ -70,12 +70,15 @@ CPP_GUARD_BEGIN
 #define CONFIG_PWM_CHANNELS					PWM_CHANNELS
 #define CONFIG_TIMER_CHANNELS				TIMER_CHANNELS
 #define CONFIG_CAN_CHANNELS                 CAN_CHANNELS
+#define CONFIG_CAN_MAPPINGS                 CAN_MAPPINGS
 
 #define SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_10Hz
 #define FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_50Hz
 
 #define DEFAULT_GPS_POSITION_PRECISION 		6
 #define DEFAULT_GPS_RADIUS_PRECISION 		5
+
+#define DEFAULT_CAN_MAPPING_PRECISION       5
 
 enum TimeType {
     TimeType_Uptime,
@@ -323,6 +326,27 @@ typedef struct _CANConfig {
 #endif
 } CANConfig;
 
+typedef struct _CANMapping {
+    uint32_t can_id;
+    uint32_t can_mask;
+    float multiplier;
+    float divider;
+    float adder;
+    uint8_t bit_mode;
+    uint8_t type;
+    uint8_t can_channel;
+    uint8_t endian;
+    uint8_t offset;
+    uint8_t length;
+    uint8_t conversion_filter_id;
+} CANMapping;
+
+typedef struct _CANMappingConfig {
+    CANMapping can_mappings[CONFIG_CAN_MAPPINGS];
+    uint8_t enabled;
+    uint16_t enabled_mappings;
+} CANMappingConfig;
+
 #define DEFAULT_CAN_BAUD_RATE 500000
 
 typedef struct _GPSConfig {
@@ -335,8 +359,6 @@ typedef struct _GPSConfig {
     ChannelConfig quality;
     ChannelConfig DOP;
 } GPSConfig;
-
-
 
 #define DEFAULT_GPS_SAMPLE_RATE SAMPLE_10Hz
 
@@ -497,6 +519,8 @@ typedef struct _LoggerConfig {
 
     //CAN Configuration
     CANConfig CanConfig;
+
+    CANMappingConfig CanMappingConfig;
 
     //OBD2 Config
     OBD2Config OBD2Configs;

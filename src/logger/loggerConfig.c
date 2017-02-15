@@ -197,6 +197,12 @@ static void resetCanConfig(CANConfig *cfg)
     }
 }
 
+static void reset_can_mapping_config(CANMappingConfig *cfg)
+{
+    memset(cfg, 0, sizeof(CANMappingConfig));
+    return;
+}
+
 static void resetOBD2Config(OBD2Config *cfg)
 {
     memset(cfg, 0, sizeof(OBD2Config));
@@ -668,6 +674,7 @@ int flash_default_logger_config(void)
 #endif
 
     resetCanConfig(&lc->CanConfig);
+    reset_can_mapping_config(&lc->CanMappingConfig);
     resetOBD2Config(&lc->OBD2Configs);
     logger_config_reset_gps_config(&lc->GPSConfigs);
     resetLapConfig(&lc->LapConfigs);
