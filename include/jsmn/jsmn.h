@@ -135,6 +135,9 @@ bool jsmn_exists_set_val_float(const jsmntok_t* root, const char* field,
 bool jsmn_exists_set_val_bool(const jsmntok_t* root, const char* field,
                               void* val);
 
+bool jsmn_exists_set_val_uchar(const jsmntok_t *root, const char * field,
+                              uint8_t *val, uint8_t (*filter)(uint8_t));
+
 bool jsmn_exists_set_val_string(const jsmntok_t* root, const char* field,
 				void* val, const size_t max_len,
 				const bool strip);

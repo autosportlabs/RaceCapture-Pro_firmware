@@ -197,6 +197,12 @@ static void resetCanConfig(CANConfig *cfg)
     }
 }
 
+uint8_t filter_can_channel(uint8_t value)
+{
+        if (value >= CONFIG_CAN_CHANNELS)
+            value = CONFIG_CAN_CHANNELS - 1;
+        return value;
+}
 static void reset_can_mapping_config(CANMappingConfig *cfg)
 {
     memset(cfg, 0, sizeof(CANMappingConfig));
@@ -355,22 +361,10 @@ int decodeSampleRate(int rate_code)
     }
 }
 
-unsigned char filterBgStreamingMode(unsigned char mode)
+uint8_t filterBgStreamingMode(uint8_t mode)
 {
     return mode == 0 ? 0 : 1;
 }
-
-unsigned char filterSdLoggingMode(unsigned char mode)
-{
-    switch (mode) {
-    case SD_LOGGING_MODE_CSV:
-        return SD_LOGGING_MODE_CSV;
-    default:
-    case SD_LOGGING_MODE_DISABLED:
-        return SD_LOGGING_MODE_DISABLED;
-    }
-}
-
 
 #if TIMER_CHANNELS > 0
 unsigned short filterTimerDivider(unsigned short speed)

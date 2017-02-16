@@ -326,24 +326,49 @@ typedef struct _CANConfig {
 #endif
 } CANConfig;
 
+/* define max offsets and length for CAN mappings */
+#define MAX_CAN_MAPPING_OFFSET_BYTES 7
+#define MAX_CAN_MAPPING_LENGTH_BYTES 4
+
+enum CANMappingEndian {
+    CANMappingEndian_Big = 0,
+    CANMappingEndian_Little
+};
+
+
 typedef struct _CANMapping {
+    /* CAN ID to match this mapping */
     uint32_t can_id;
+    /* mask to apply to ID */
     uint32_t can_mask;
+    /* multiplier for conversion formula */
     float multiplier;
+    /* divider for conversion formula */
     float divider;
+    /* adder for conversion formula */
     float adder;
+    /* flag to indicate bit mode or byte mode for offset and length */
     uint8_t bit_mode;
+    /* indicates the encoding of the raw data type: unsigned, signed, IEEE 754 floating point */
     uint8_t type;
+    /* the can bus we expect the data to show up on */
     uint8_t can_channel;
-    uint8_t endian;
+    /* indicates endian-ness for multi-byte values */
+    uint8_t big_endian;
+    /* byte or bit offset of the data to extract within the CAN message */
     uint8_t offset;
+    /* byte or bit length of the data to extract within the CAN message */
     uint8_t length;
+    /* the conversion filter to apply to quickly convert units without changing mapping */
     uint8_t conversion_filter_id;
 } CANMapping;
 
 typedef struct _CANMappingConfig {
+    /* all available CAN mappings */
     CANMapping can_mappings[CONFIG_CAN_MAPPINGS];
+    /* globally enables/disables CAN mappings */
     uint8_t enabled;
+    /* number of mappings set within configuration */
     uint16_t enabled_mappings;
 } CANMappingConfig;
 
@@ -473,9 +498,6 @@ typedef struct _ConnectivityConfig {
         struct wifi_cfg wifi;
 } ConnectivityConfig;
 
-#define SD_LOGGING_MODE_DISABLED					0
-#define SD_LOGGING_MODE_CSV							1
-
 /**
  * Configurations specific to our logging infrastructure.
  */
@@ -553,8 +575,7 @@ int getConnectivitySampleRateLimit();
 int encodeSampleRate(int sampleRate);
 int decodeSampleRate(int sampleRateCode);
 
-unsigned char filterBgStreamingMode(unsigned char mode);
-unsigned char filterSdLoggingMode(unsigned char mode);
+uint8_t filterBgStreamingMode(uint8_t mode);
 
 PWMConfig * getPwmConfigChannel(int channel);
 char filterPwmOutputMode(int config);
@@ -575,6 +596,9 @@ char filterGpioMode(int config);
 ImuConfig * getImuConfigChannel(int channel);
 int filterImuMode(int mode);
 int filterImuChannel(int channel);
+
+uint8_t filter_can_mapping_endian(uint8_t value);
+uint8_t filter_can_channel(uint8_t value);
 
 unsigned int getHighestSampleRate(LoggerConfig *config);
 size_t get_enabled_channel_count(LoggerConfig *loggerConfig);

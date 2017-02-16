@@ -366,6 +366,18 @@ const jsmntok_t * jsmn_find_get_node_value_prim(const jsmntok_t *node, const cha
         return jsmn_find_get_node_value(node, name, JSMN_PRIMITIVE);
 }
 
+bool jsmn_exists_set_val_uchar(const jsmntok_t *root, const char * field, uint8_t *val, uint8_t (*filter)(uint8_t))
+{
+    const jsmntok_t *valueNode = jsmn_find_get_node_value_prim(root, field);
+    if (valueNode) {
+        unsigned char value = atoi(valueNode->data);
+        if (filter != NULL)
+            value = filter(value);
+        * val = value;
+    }
+    return (valueNode != NULL);
+}
+
 bool jsmn_exists_set_val_int(const jsmntok_t* root, const char* field,
                              void* val)
 {
