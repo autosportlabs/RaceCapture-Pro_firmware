@@ -77,7 +77,7 @@
 #define PWM_CHANNELS			0
 #define CAN_CHANNELS			2
 #define CAN_SW_TERMINATION      true
-#define CAN_MAPPINGS            10
+#define CAN_MAPPINGS            100
 #define CONNECTIVITY_CHANNELS	2
 
 //sample rates

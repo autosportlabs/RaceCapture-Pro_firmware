@@ -519,8 +519,10 @@ static const jsmntok_t * setChannelConfig(struct Serial *serial, const jsmntok_t
         void *extCfg)
 {
 
-    if (cfg->type != JSMN_OBJECT || cfg->size % 2 != 0)
+    if (cfg->type != JSMN_OBJECT || cfg->size % 2 != 0) {
+
         return cfg;
+    }
 
     int size = cfg->size;
     cfg++;
@@ -542,17 +544,17 @@ static const jsmntok_t * setChannelConfig(struct Serial *serial, const jsmntok_t
         if (STR_EQ("nm", name))
 		jsmn_decode_string(channelCfg->label, value, DEFAULT_LABEL_LENGTH);
         else if (STR_EQ("ut", name))
-		jsmn_decode_string(channelCfg->units, value, DEFAULT_UNITS_LENGTH);
+            jsmn_decode_string(channelCfg->units, value, DEFAULT_UNITS_LENGTH);
         else if (STR_EQ("min", name))
-		channelCfg->min = atof(value);
+            channelCfg->min = atof(value);
         else if (STR_EQ("max", name))
-		channelCfg->max = atof(value);
+            channelCfg->max = atof(value);
         else if (STR_EQ("sr", name))
-		channelCfg->sampleRate = encodeSampleRate(atoi(value));
+            channelCfg->sampleRate = encodeSampleRate(atoi(value));
         else if (STR_EQ("prec", name))
-		channelCfg->precision = (unsigned char) atoi(value);
+            channelCfg->precision = (unsigned char) atoi(value);
         else if (setExtField != NULL)
-		cfg = setExtField(valueTok, name, value, extCfg);
+            cfg = setExtField(valueTok, name, value, extCfg);
     }
 
     return cfg;
@@ -1346,7 +1348,7 @@ int api_setCanConfig(struct Serial *serial, const jsmntok_t *json)
 static void _send_can_mapping(struct Serial *serial, CANMapping *can_mapping, int more)
 {
     json_objStart(serial);
-    json_objStartString(serial, "map");
+    json_channelConfig(serial, &(can_mapping->channel_cfg), 1);
     json_bool(serial, "bm", can_mapping->bit_mode, 1);
     json_int(serial, "bus", can_mapping->can_channel, 1);
     json_int(serial, "id", can_mapping->can_id, 1);
@@ -1358,7 +1360,6 @@ static void _send_can_mapping(struct Serial *serial, CANMapping *can_mapping, in
     json_float(serial, "div", can_mapping->divider, DEFAULT_CAN_MAPPING_PRECISION, 1);
     json_float(serial, "add", can_mapping->adder, DEFAULT_CAN_MAPPING_PRECISION, 1);
     json_int(serial, "filtId", can_mapping->conversion_filter_id, 0);
-    json_objEnd(serial, 0);
     json_objEnd(serial, more);
 }
 
@@ -1426,8 +1427,6 @@ int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
     uint8_t can_bus_channel = 0;
     jsmn_exists_set_val_uchar(chan, "bus", &can_bus_channel, filter_can_channel);
     can_mapping->can_channel = can_bus_channel;
-    pr_info_int_msg("caaaaa ", can_bus_channel);
-
 
     jsmn_exists_set_val_int(chan, "id", &can_mapping->can_id);
     jsmn_exists_set_val_int(chan, "id_mask", &can_mapping->can_mask);
@@ -1442,6 +1441,7 @@ int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
      * mappings must be set sequentially.
      */
     can_mapping_cfg->enabled_mappings = index + 1;
+    setChannelConfig(serial, chan + 1, &(can_mapping->channel_cfg), NULL, NULL);
     return API_SUCCESS;
 }
 

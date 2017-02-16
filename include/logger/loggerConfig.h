@@ -337,28 +337,42 @@ enum CANMappingEndian {
 
 
 typedef struct _CANMapping {
+    /* The standard channel configuration */
+    ChannelConfig channel_cfg;
+
     /* CAN ID to match this mapping */
     uint32_t can_id;
+
     /* mask to apply to ID */
     uint32_t can_mask;
+
     /* multiplier for conversion formula */
     float multiplier;
+
     /* divider for conversion formula */
     float divider;
+
     /* adder for conversion formula */
     float adder;
+
     /* flag to indicate bit mode or byte mode for offset and length */
     uint8_t bit_mode;
+
     /* indicates the encoding of the raw data type: unsigned, signed, IEEE 754 floating point */
     uint8_t type;
+
     /* the can bus we expect the data to show up on */
     uint8_t can_channel;
+
     /* indicates endian-ness for multi-byte values */
     uint8_t big_endian;
+
     /* byte or bit offset of the data to extract within the CAN message */
     uint8_t offset;
+
     /* byte or bit length of the data to extract within the CAN message */
     uint8_t length;
+
     /* the conversion filter to apply to quickly convert units without changing mapping */
     uint8_t conversion_filter_id;
 } CANMapping;
