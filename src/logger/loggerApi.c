@@ -1345,36 +1345,37 @@ int api_setCanConfig(struct Serial *serial, const jsmntok_t *json)
     return API_SUCCESS;
 }
 
-static void _send_can_mapping(struct Serial *serial, CANMapping *can_mapping, int more)
+static void _send_can_mapping(struct Serial *serial, CANChannel *can_channel, int more)
 {
     json_objStart(serial);
-    json_channelConfig(serial, &(can_mapping->channel_cfg), 1);
-    json_bool(serial, "bm", can_mapping->bit_mode, 1);
-    json_int(serial, "bus", can_mapping->can_channel, 1);
-    json_int(serial, "id", can_mapping->can_id, 1);
-    json_int(serial, "id_mask", can_mapping->can_mask, 1);
-    json_bool(serial, "bigEndian", can_mapping->big_endian, 1);
-    json_int(serial, "offset", can_mapping->offset, 1);
-    json_int(serial, "len", can_mapping->length, 1);
-    json_float(serial, "mult", can_mapping->multiplier, DEFAULT_CAN_MAPPING_PRECISION, 1);
-    json_float(serial, "div", can_mapping->divider, DEFAULT_CAN_MAPPING_PRECISION, 1);
-    json_float(serial, "add", can_mapping->adder, DEFAULT_CAN_MAPPING_PRECISION, 1);
-    json_int(serial, "filtId", can_mapping->conversion_filter_id, 0);
+    json_channelConfig(serial, &(can_channel->channel_cfg), 1);
+    CANMapping *mapping = &(can_channel->mapping);
+    json_bool(serial, "bm", mapping->bit_mode, 1);
+    json_int(serial, "bus", mapping->can_channel, 1);
+    json_int(serial, "id", mapping->can_id, 1);
+    json_int(serial, "id_mask", mapping->can_mask, 1);
+    json_bool(serial, "bigEndian", mapping->big_endian, 1);
+    json_int(serial, "offset", mapping->offset, 1);
+    json_int(serial, "len", mapping->length, 1);
+    json_float(serial, "mult", mapping->multiplier, DEFAULT_CAN_MAPPING_PRECISION, 1);
+    json_float(serial, "div", mapping->divider, DEFAULT_CAN_MAPPING_PRECISION, 1);
+    json_float(serial, "add", mapping->adder, DEFAULT_CAN_MAPPING_PRECISION, 1);
+    json_int(serial, "filtId", mapping->conversion_filter_id, 0);
     json_objEnd(serial, more);
 }
 
 int api_get_can_channel_config(struct Serial *serial, const jsmntok_t *json)
 {
-    CANMappingConfig * can_mapping_cfg = &(getWorkingLoggerConfig()->CanMappingConfig);
+    CANChannelConfig * can_channel_cfg = &(getWorkingLoggerConfig()->can_channel_cfg);
     json_objStart(serial);
     json_objStartString(serial, "canChanCfg");
-    json_int(serial, "en", can_mapping_cfg->enabled, 1);
-    size_t enabled_mappings = can_mapping_cfg->enabled_mappings;
+    json_int(serial, "en", can_channel_cfg->enabled, 1);
+    size_t enabled_mappings = can_channel_cfg->enabled_mappings;
 
     json_arrayStart(serial, "chans");
-    for (size_t i = 0; i < can_mapping_cfg->enabled_mappings; i++) {
-        CANMapping *can_mapping = &can_mapping_cfg->can_mappings[i];
-        _send_can_mapping(serial, can_mapping, i < enabled_mappings - 1);
+    for (size_t i = 0; i < can_channel_cfg->enabled_mappings; i++) {
+        CANChannel *can_channel = &can_channel_cfg->can_channels[i];
+        _send_can_mapping(serial, can_channel, i < enabled_mappings - 1);
     }
     json_arrayEnd(serial, 0);
     json_objEnd(serial, 0);
@@ -1384,7 +1385,7 @@ int api_get_can_channel_config(struct Serial *serial, const jsmntok_t *json)
 
 int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
 {
-    CANMappingConfig * can_mapping_cfg = &(getWorkingLoggerConfig()->CanMappingConfig);
+    CANChannelConfig * can_channel_cfg = &(getWorkingLoggerConfig()->can_channel_cfg);
 
     size_t index;
     /* If no index given, then fail */
@@ -1393,7 +1394,7 @@ int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
 
     /* fail if index is out of range. API must be called
      * with indexes in ascending order */
-    if (index >= CONFIG_CAN_MAPPINGS || index > can_mapping_cfg->enabled_mappings)
+    if (index >= CONFIG_CAN_MAPPINGS || index > can_channel_cfg->enabled_mappings)
             return API_ERROR_PARAMETER;
 
     const jsmntok_t *chan = jsmn_find_node(json, "chan");
@@ -1401,16 +1402,16 @@ int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
     if (chan == NULL)
             return API_ERROR_PARAMETER;
 
-    CANMapping *can_mapping = &can_mapping_cfg->can_mappings[index];
-
+    CANChannel *can_channel = &can_channel_cfg->can_channels[index];
+    CANMapping *mapping = &(can_channel->mapping);
     /* Validate parameters */
-    uint8_t bit_mode = can_mapping->bit_mode;
+    uint8_t bit_mode = mapping->bit_mode;
     jsmn_exists_set_val_bool(chan, "bm", &bit_mode);
 
-    uint8_t offset = can_mapping->offset;
+    uint8_t offset = mapping->offset;
     jsmn_exists_set_val_uchar(chan, "offset", &offset, NULL);
 
-    uint8_t length = can_mapping->length;
+    uint8_t length = mapping->length;
     jsmn_exists_set_val_uchar(chan, "len", &length, NULL);
 
     /* check for invalid mapping offsets and length */
@@ -1421,27 +1422,27 @@ int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
             return API_ERROR_PARAMETER;
 
     /* we made it this far, let's update the mapping */
-    can_mapping->bit_mode = bit_mode;
-    can_mapping->offset = offset;
-    can_mapping->length = length;
+    mapping->bit_mode = bit_mode;
+    mapping->offset = offset;
+    mapping->length = length;
     uint8_t can_bus_channel = 0;
     jsmn_exists_set_val_uchar(chan, "bus", &can_bus_channel, filter_can_channel);
-    can_mapping->can_channel = can_bus_channel;
+    mapping->can_channel = can_bus_channel;
 
-    jsmn_exists_set_val_int(chan, "id", &can_mapping->can_id);
-    jsmn_exists_set_val_int(chan, "id_mask", &can_mapping->can_mask);
-    jsmn_exists_set_val_bool(chan, "bigEndian", &can_mapping->big_endian);
-    jsmn_exists_set_val_float(chan, "mult", &can_mapping->multiplier);
-    jsmn_exists_set_val_float(chan, "div", &can_mapping->divider);
-    jsmn_exists_set_val_float(chan, "add", &can_mapping->adder);
-    jsmn_exists_set_val_uchar(chan, "filtId", &can_mapping->conversion_filter_id, NULL);
+    jsmn_exists_set_val_int(chan, "id", &mapping->can_id);
+    jsmn_exists_set_val_int(chan, "id_mask", &mapping->can_mask);
+    jsmn_exists_set_val_bool(chan, "bigEndian", &mapping->big_endian);
+    jsmn_exists_set_val_float(chan, "mult", &mapping->multiplier);
+    jsmn_exists_set_val_float(chan, "div", &mapping->divider);
+    jsmn_exists_set_val_float(chan, "add", &mapping->adder);
+    jsmn_exists_set_val_uchar(chan, "filtId", &mapping->conversion_filter_id, NULL);
 
     /* update the number of mappings configured.
      * Every time this API is called it sets the high water mark for mappings;
      * mappings must be set sequentially.
      */
-    can_mapping_cfg->enabled_mappings = index + 1;
-    setChannelConfig(serial, chan + 1, &(can_mapping->channel_cfg), NULL, NULL);
+    can_channel_cfg->enabled_mappings = index + 1;
+    setChannelConfig(serial, chan + 1, &(can_channel->channel_cfg), NULL, NULL);
     return API_SUCCESS;
 }
 

@@ -205,9 +205,9 @@ uint8_t filter_can_channel(uint8_t value)
             value = CONFIG_CAN_CHANNELS - 1;
         return value;
 }
-static void reset_can_mapping_config(CANMappingConfig *cfg)
+static void _reset_can_mapping_config(CANChannelConfig *cfg)
 {
-    memset(cfg, 0, sizeof(CANMappingConfig));
+    memset(cfg, 0, sizeof(CANChannelConfig));
     return;
 }
 
@@ -672,7 +672,7 @@ int flash_default_logger_config(void)
 #endif
 
     resetCanConfig(&lc->CanConfig);
-    reset_can_mapping_config(&lc->CanMappingConfig);
+    _reset_can_mapping_config(&lc->can_channel_cfg);
     resetOBD2Config(&lc->OBD2Configs);
     logger_config_reset_gps_config(&lc->GPSConfigs);
     resetLapConfig(&lc->LapConfigs);

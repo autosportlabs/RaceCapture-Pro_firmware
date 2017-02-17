@@ -375,14 +375,20 @@ typedef struct _CANMapping {
     uint8_t conversion_filter_id;
 } CANMapping;
 
-typedef struct _CANMappingConfig {
+typedef struct _CANChannel {
+    /* The standard channel configuration */
+    ChannelConfig channel_cfg;
+    CANMapping mapping;
+} CANChannel;
+
+typedef struct _CANChannelConfig {
     /* all available CAN mappings */
-    CANMapping can_mappings[CONFIG_CAN_MAPPINGS];
+    CANChannel can_channels[CONFIG_CAN_MAPPINGS];
     /* globally enables/disables CAN mappings */
     uint8_t enabled;
     /* number of mappings set within configuration */
     uint16_t enabled_mappings;
-} CANMappingConfig;
+} CANChannelConfig;
 
 #define DEFAULT_CAN_BAUD_RATE 500000
 
@@ -558,7 +564,7 @@ typedef struct _LoggerConfig {
     //CAN Configuration
     CANConfig CanConfig;
 
-    CANMappingConfig CanMappingConfig;
+    CANChannelConfig can_channel_cfg;
 
     //OBD2 Config
     OBD2Config OBD2Configs;
