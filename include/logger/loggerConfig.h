@@ -275,46 +275,8 @@ typedef struct _PWMConfig {
 #define DEFAULT_PWM_CHANNEL_CONFIG {"PWM1", "", 0, 100, SAMPLE_DISABLED, 0, 0}
 #define DEFAULT_PWM_CONFIG {DEFAULT_PWM_CHANNEL_CONFIG, MODE_PWM_FREQUENCY, MODE_LOGGING_PWM_DUTY, DEFAULT_PWM_DUTY_CYCLE, DEFAULT_PWM_PERIOD}
 
-typedef struct _PidConfig {
-    ChannelConfig cfg;
-    unsigned short pid;
-} PidConfig;
 
-
-typedef struct _OBD2Config {
-    unsigned char enabled;
-    unsigned short enabledPids;
-    PidConfig pids[CONFIG_OBD2_CHANNELS];
-} OBD2Config;
-
-#define DEFAULT_ENABLED_PIDS 1
-#define DEFAULT_OBD2_CONFIG \
-{ \
-	CONFIG_FEATURE_NOT_INSTALLED, \
-	DEFAULT_ENABLED_PIDS, \
-	{ \
-		{{"RPM", "", 0, 10000, SAMPLE_10Hz, 0, 0}, 12}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}  \
-	} \
-}
+#define DEFAULT_CAN_BAUD_RATE 500000
 
 typedef struct _CANConfig {
     unsigned char enabled;
@@ -390,7 +352,20 @@ typedef struct _CANChannelConfig {
     uint16_t enabled_mappings;
 } CANChannelConfig;
 
-#define DEFAULT_CAN_BAUD_RATE 500000
+
+typedef struct _PidConfig {
+    ChannelConfig cfg;
+    CANMapping mapping;
+    unsigned short pid;
+    unsigned short mode;
+} PidConfig;
+
+
+typedef struct _OBD2Config {
+    unsigned char enabled;
+    unsigned short enabledPids;
+    PidConfig pids[CONFIG_OBD2_CHANNELS];
+} OBD2Config;
 
 typedef struct _GPSConfig {
     ChannelConfig latitude;
