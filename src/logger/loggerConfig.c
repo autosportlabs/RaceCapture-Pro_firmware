@@ -33,6 +33,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#define _LOG_PFX "[LoggerConfig] "
+
 #ifndef RCP_TESTING
 static const volatile LoggerConfig g_savedLoggerConfig  __attribute__((section(".config\n\t#")));
 #else
@@ -640,6 +642,8 @@ int flash_default_logger_config(void)
 {
     LoggerConfig *lc = &g_workingLoggerConfig;
 
+    lc->config_size = sizeof(LoggerConfig);
+
     resetVersionInfo(&lc->RcpVersionInfo);
     resetTimeConfig(lc->TimeConfigs);
 
@@ -691,14 +695,24 @@ int flashLoggerConfig(void)
                                sizeof (LoggerConfig));
 }
 
+
+static bool _config_size_changed(void) {
+    bool changed = false;
+
+    if (g_savedLoggerConfig.config_size != sizeof(LoggerConfig)) {
+        changed = true;
+        pr_warning(_LOG_PFX "size of LoggerConfig changed\r\n");
+    }
+    return changed;
+}
+
 static bool checkFlashDefaultConfig(void)
 {
         const VersionInfo sv = g_savedLoggerConfig.RcpVersionInfo;
-        bool changed = version_check_changed(&sv, "Config DB");
+        bool changed = version_check_changed(&sv) || _config_size_changed();
         if (!changed)
                 return false;
 
-        pr_info("major/minor version changed\r\n");
         flash_default_logger_config();
         return true;
 }
@@ -707,6 +721,8 @@ static void loadWorkingLoggerConfig(void)
 {
     memcpy((void *) &g_workingLoggerConfig,
            (void *) &g_savedLoggerConfig, sizeof(LoggerConfig));
+
+    pr_info_int_msg("sizeof LoggerConfig: ", sizeof(LoggerConfig));
 }
 
 void initialize_logger_config()

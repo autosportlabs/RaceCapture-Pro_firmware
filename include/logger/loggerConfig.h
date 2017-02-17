@@ -71,6 +71,7 @@ CPP_GUARD_BEGIN
 #define CONFIG_TIMER_CHANNELS				TIMER_CHANNELS
 #define CONFIG_CAN_CHANNELS                 CAN_CHANNELS
 #define CONFIG_CAN_MAPPINGS                 CAN_MAPPINGS
+#define CONFIG_OBD2_CHANNELS                OBD2_CHANNELS
 
 #define SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_10Hz
 #define FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_50Hz
@@ -274,9 +275,6 @@ typedef struct _PWMConfig {
 #define DEFAULT_PWM_CHANNEL_CONFIG {"PWM1", "", 0, 100, SAMPLE_DISABLED, 0, 0}
 #define DEFAULT_PWM_CONFIG {DEFAULT_PWM_CHANNEL_CONFIG, MODE_PWM_FREQUENCY, MODE_LOGGING_PWM_DUTY, DEFAULT_PWM_DUTY_CYCLE, DEFAULT_PWM_PERIOD}
 
-
-#define OBD2_CHANNELS 20
-
 typedef struct _PidConfig {
     ChannelConfig cfg;
     unsigned short pid;
@@ -286,7 +284,7 @@ typedef struct _PidConfig {
 typedef struct _OBD2Config {
     unsigned char enabled;
     unsigned short enabledPids;
-    PidConfig pids[OBD2_CHANNELS];
+    PidConfig pids[CONFIG_OBD2_CHANNELS];
 } OBD2Config;
 
 #define DEFAULT_ENABLED_PIDS 1
@@ -520,6 +518,10 @@ struct logging_config {
 };
 
 typedef struct _LoggerConfig {
+    /* The size of this logger config struct */
+    size_t config_size;
+
+    /* stores the version of this firmware */
     VersionInfo RcpVersionInfo;
 
     //PWM/Analog out configurations

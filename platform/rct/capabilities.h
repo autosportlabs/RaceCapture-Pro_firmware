@@ -33,14 +33,18 @@
 #define PREDICTIVE_TIME_MAX_SAMPLES	72
 
 
-//Input / output Channels
-#define ANALOG_CHANNELS	1
-#define IMU_CHANNELS	7
-#define	GPIO_CHANNELS	0
-#define TIMER_CHANNELS	0
-#define PWM_CHANNELS	0
-#define CAN_CHANNELS	1
+//Sensor Channels
+#define ANALOG_CHANNELS	        1
+#define IMU_CHANNELS	        7
+#define	GPIO_CHANNELS	        0
+#define TIMER_CHANNELS	        0
+#define PWM_CHANNELS	        0
+#define CAN_CHANNELS	        1
 #define CAN_SW_TERMINATION      false
+#define CAN_MAPPINGS            10
+#define OBD2_CHANNELS           6
+
+//Wireless connections
 #define CONNECTIVITY_CHANNELS	2
 
 //sample rates
