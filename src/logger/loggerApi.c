@@ -18,7 +18,6 @@
  * have received a copy of the GNU General Public License along with
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include "ADC.h"
 #include "FreeRTOS.h"
 #include "GPIO.h"
@@ -1347,21 +1346,22 @@ int api_setCanConfig(struct Serial *serial, const jsmntok_t *json)
 
 static void _send_can_mapping(struct Serial *serial, CANChannel *can_channel, int more)
 {
-    json_objStart(serial);
-    json_channelConfig(serial, &(can_channel->channel_cfg), 1);
-    CANMapping *mapping = &(can_channel->mapping);
-    json_bool(serial, "bm", mapping->bit_mode, 1);
-    json_int(serial, "bus", mapping->can_channel, 1);
-    json_int(serial, "id", mapping->can_id, 1);
-    json_int(serial, "id_mask", mapping->can_mask, 1);
-    json_bool(serial, "bigEndian", mapping->big_endian, 1);
-    json_int(serial, "offset", mapping->offset, 1);
-    json_int(serial, "len", mapping->length, 1);
-    json_float(serial, "mult", mapping->multiplier, DEFAULT_CAN_MAPPING_PRECISION, 1);
-    json_float(serial, "div", mapping->divider, DEFAULT_CAN_MAPPING_PRECISION, 1);
-    json_float(serial, "add", mapping->adder, DEFAULT_CAN_MAPPING_PRECISION, 1);
-    json_int(serial, "filtId", mapping->conversion_filter_id, 0);
-    json_objEnd(serial, more);
+        json_objStart(serial);
+        json_channelConfig(serial, &(can_channel->channel_cfg), 1);
+        CANMapping *mapping = &(can_channel->mapping);
+        json_bool(serial, "bm", mapping->bit_mode, 1);
+        json_int(serial, "bus", mapping->can_channel, 1);
+        json_int(serial, "id", mapping->can_id, 1);
+        json_int(serial, "id_mask", mapping->can_mask, 1);
+        json_bool(serial, "bigEndian", mapping->big_endian, 1);
+        json_int(serial, "offset", mapping->offset, 1);
+        json_int(serial, "len", mapping->length, 1);
+        json_float(serial, "mult", mapping->multiplier, DEFAULT_CAN_MAPPING_PRECISION, 1);
+        json_float(serial, "div", mapping->divider, DEFAULT_CAN_MAPPING_PRECISION, 1);
+        json_float(serial, "add", mapping->adder, DEFAULT_CAN_MAPPING_PRECISION, 1);
+        json_int(serial, "type", mapping->type, 1);
+        json_int(serial, "filtId", mapping->conversion_filter_id, 0);
+        json_objEnd(serial, more);
 }
 
 int api_get_can_channel_config(struct Serial *serial, const jsmntok_t *json)
@@ -1387,7 +1387,11 @@ int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
 {
     CANChannelConfig * can_channel_cfg = &(getWorkingLoggerConfig()->can_channel_cfg);
 
-    size_t index;
+    /* flag to indicate if this channel is the last in a series */
+    bool last = false;
+    jsmn_exists_set_val_bool(json, "last", &last);
+
+    unsigned index;
     /* If no index given, then fail */
     if (!jsmn_exists_set_val_int(json, "index", &index))
             return API_ERROR_PARAMETER;
@@ -1437,11 +1441,12 @@ int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
     jsmn_exists_set_val_float(chan, "add", &mapping->adder);
     jsmn_exists_set_val_uchar(chan, "filtId", &mapping->conversion_filter_id, NULL);
 
-    /* update the number of mappings configured.
-     * Every time this API is called it sets the high water mark for mappings;
-     * mappings must be set sequentially.
+    /* if the 'last' flag was set, indicate this is the high water mark for mappings.
+     * this API is designed to be called sequentially, or have indiviual elements updated
      */
-    can_channel_cfg->enabled_mappings = index + 1;
+    if (last)
+            can_channel_cfg->enabled_mappings = index + 1;
+
     setChannelConfig(serial, chan + 1, &(can_channel->channel_cfg), NULL, NULL);
     return API_SUCCESS;
 }

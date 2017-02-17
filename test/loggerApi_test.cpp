@@ -1115,6 +1115,122 @@ void LoggerApiTest::testSetCanCfgFile(string filename){
 	CPPUNIT_ASSERT_EQUAL(1000000, (int)canCfg->baud[1]);
 }
 
+void LoggerApiTest::testGetCanChanCfg()
+{
+    testGetCanChanCfgFile("getCanChanCfg1.json");
+}
+
+void LoggerApiTest::testSetCanChanCfg()
+{
+    testSetCanChanCfgFile("setCanChanCfg1.json");
+    testSetCanChanCfgFile("setCanChanCfg_invalid_index.json");
+    testSetCanChanCfgFile("setCanChanCfg_with_last.json");
+}
+
+void LoggerApiTest::testGetCanChanCfgFile(string filename)
+{
+    LoggerConfig *c = getWorkingLoggerConfig();
+    CANChannelConfig *cfg = &c->can_channel_cfg;
+
+    cfg->enabled = true;
+    cfg->enabled_mappings = CONFIG_CAN_MAPPINGS;
+
+    for(size_t i = 0; i < CONFIG_CAN_MAPPINGS; i++) {
+        CANChannel *ch = &(cfg->can_channels[i]);
+        populateChannelConfig(&(ch->channel_cfg), i, 100);
+        CANMapping *mp = &(ch->mapping);
+        mp->big_endian = true;
+        mp->bit_mode = true;
+        mp->can_channel = 2;
+        mp->can_id = 1 + i;
+        mp->can_mask = 2 + i;
+        mp->conversion_filter_id = 3 + i;
+        mp->divider = (float)4 + i;
+        mp->multiplier = (float)5 + i;
+        mp->adder = (float)6 + i;
+        mp->offset = 3;
+        mp->length = 1;
+        mp->type = 4;
+    }
+
+    const char *response = processApiGeneric(filename);
+    Object json;
+    stringToJson(response, json);
+
+    for(size_t i = 0; i < CONFIG_CAN_MAPPINGS; i++) {
+        std::ostringstream stringStream;
+        stringStream << i;
+        string iString = stringStream.str();
+
+        Object ch = (Object)json["canChanCfg"]["chans"][i];
+        checkChannelConfig(ch, i, iString, 100);
+        CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)ch["bigEndian"]);
+        CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)ch["bm"]);
+        CPPUNIT_ASSERT_EQUAL(2, (int)(Number)ch["bus"]);
+        CPPUNIT_ASSERT_EQUAL((int)(1 + i), (int)(Number)ch["id"]);
+        CPPUNIT_ASSERT_EQUAL((int)(2 + i), (int)(Number)ch["id_mask"]);
+        CPPUNIT_ASSERT_EQUAL((int)(3 + i), (int)(Number)ch["filtId"]);
+        CPPUNIT_ASSERT_EQUAL((float)(4 + i), (float)(Number)ch["div"]);
+        CPPUNIT_ASSERT_EQUAL((float)(5 + i), (float)(Number)ch["mult"]);
+        CPPUNIT_ASSERT_EQUAL((float)(6 + i), (float)(Number)ch["add"]);
+        CPPUNIT_ASSERT_EQUAL((int)(3), (int)(Number)ch["offset"]);
+        CPPUNIT_ASSERT_EQUAL((int)(1), (int)(Number)ch["len"]);
+        CPPUNIT_ASSERT_EQUAL((int)(4), (int)(Number)ch["type"]);
+    }
+}
+
+void LoggerApiTest::testSetCanChanCfgFile(string filename)
+{
+        processApiGeneric(filename);
+
+        Object json;
+        string json_string = readFile(filename);
+        stringToJson(json_string.c_str(), json);
+
+        int index = (int)(Number)json["setCanChanCfg"]["index"];
+
+        bool last = (bool)(Boolean)json["setCanChanCfg"]["last"];
+
+        LoggerConfig *c = getWorkingLoggerConfig();
+        CANChannelConfig *cfg = &c->can_channel_cfg;
+
+        /* ensure our index is handled correctly */
+        char *txBuffer = mock_getTxBuffer();
+        int expected_response_code = index <= cfg->enabled_mappings ? API_SUCCESS : API_ERROR_PARAMETER;
+        assertGenericResponse(txBuffer, "setCanChanCfg", expected_response_code);
+
+        if (expected_response_code == API_ERROR_PARAMETER)
+            return; //no further testing needed
+
+        CANChannel *ch = &(cfg->can_channels[index]);
+        ChannelConfig *ch_cfg = &(ch->channel_cfg);
+        CANMapping *mapping = &(ch->mapping);
+
+        Object jch = (Object)json["setCanChanCfg"]["chan"];
+        CPPUNIT_ASSERT_EQUAL((int)(Number)jch["sr"], (int)decodeSampleRate(ch_cfg->sampleRate));
+        CPPUNIT_ASSERT_EQUAL((string)(String)jch["nm"], string(ch_cfg->label));
+        CPPUNIT_ASSERT_EQUAL((string)(String)jch["ut"], string(ch_cfg->units));
+        CPPUNIT_ASSERT_EQUAL((float)(Number)jch["min"], (float)ch_cfg->min);
+        CPPUNIT_ASSERT_EQUAL((float)(Number)jch["max"], (float)ch_cfg->max);
+        CPPUNIT_ASSERT_EQUAL((int)(Number)jch["prec"], (int)ch_cfg->precision);
+
+        CPPUNIT_ASSERT_EQUAL((int)(Number)jch["filtId"], (int)mapping->conversion_filter_id);
+        CPPUNIT_ASSERT_EQUAL((bool)(Boolean)jch["bm"], (bool)mapping->bit_mode);
+        CPPUNIT_ASSERT_EQUAL((bool)(Boolean)jch["bigEndian"], (bool)mapping->big_endian);
+        CPPUNIT_ASSERT_EQUAL((int)(Number)jch["offset"], (int)mapping->offset);
+        CPPUNIT_ASSERT_EQUAL((int)(Number)jch["len"], (int)mapping->length);
+        CPPUNIT_ASSERT_EQUAL((int)(Number)jch["type"], (int)mapping->type);
+        CPPUNIT_ASSERT_EQUAL((float)(Number)jch["add"], (float)mapping->adder);
+        CPPUNIT_ASSERT_EQUAL((float)(Number)jch["mult"], (float)mapping->multiplier);
+        CPPUNIT_ASSERT_EQUAL((float)(Number)jch["div"], (float)mapping->divider);
+        CPPUNIT_ASSERT_EQUAL((int)(Number)jch["id"], (int)mapping->can_id);
+        CPPUNIT_ASSERT_EQUAL((int)(Number)jch["id_mask"], (int)mapping->can_mask);
+
+        if (last) {
+                CPPUNIT_ASSERT_EQUAL((int)(index + 1), (int)cfg->enabled_mappings);
+        }
+}
+
 void LoggerApiTest::testSetObd2Cfg(){
 	testSetObd2ConfigFile("setObd2Cfg1.json");
 }
@@ -1160,6 +1276,7 @@ void LoggerApiTest::testGetObd2ConfigFile(string filename){
 void LoggerApiTest::testSetObd2ConfigFile(string filename){
 	processApiGeneric(filename);
 	char *txBuffer = mock_getTxBuffer();
+    assertGenericResponse(txBuffer, "setObd2Cfg", API_SUCCESS);
 
 	LoggerConfig *c = getWorkingLoggerConfig();
 	OBD2Config *obd2Config = &c->OBD2Configs;
