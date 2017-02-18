@@ -363,7 +363,7 @@ int decodeSampleRate(int rate_code)
     }
 }
 
-uint8_t filterBgStreamingMode(uint8_t mode)
+uint8_t filter_background_streaming_mode(uint8_t mode)
 {
     return mode == 0 ? 0 : 1;
 }
