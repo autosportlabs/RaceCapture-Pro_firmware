@@ -80,8 +80,8 @@ void SampleRecordTest::testPopulateSampleRecord(){
         increment_tick();
         CPPUNIT_ASSERT_EQUAL(1, (int) (xTaskGetTickCount()));
 
-	const unsigned short highSampleRate =
-                (unsigned short) populate_sample_buffer(&s, 0);
+        populate_sample_buffer(&s, 0);
+
         const ChannelSample *samples = s.channel_samples;
 
         // Interval Channel
@@ -422,8 +422,6 @@ void SampleRecordTest::testIsValidLoggerMessage() {
 }
 
 void SampleRecordTest::testLoggerMessageAlwaysHasTime() {
-        size_t channelCount = get_enabled_channel_count(lc);
-
         /*
          * Check that we always populate the Interval time, regardless of
          * what the sample rate is that is set for that channel.

@@ -187,21 +187,6 @@ void LoggerApiTest::populateChannelConfig(ChannelConfig *cfg, const int i, const
    cfg->precision = (unsigned char) i + 1;
 }
 
-void LoggerApiTest::checkChannelConfig(Object &json, const int i, string &iString, const int splRt)
-{
-   string expNmStr = string("testName_") + iString;
-   CPPUNIT_ASSERT_EQUAL(expNmStr, string((String)json["nm"]));
-
-   string expUtStr = string("unit_") + iString;
-   CPPUNIT_ASSERT_EQUAL(expUtStr, string((String)json["ut"]));
-
-   CPPUNIT_ASSERT_EQUAL(0.1f + i, (float)(Number)json["min"]);
-   CPPUNIT_ASSERT_EQUAL(100.1f + i, (float)(Number)json["max"]);
-
-   CPPUNIT_ASSERT_EQUAL(i + 1, (int)(Number)json["prec"]);
-   CPPUNIT_ASSERT_EQUAL(splRt, (int)(Number)json["sr"]);
-}
-
 void LoggerApiTest::check_channel_config(Object &json_ch_cfg, ChannelConfig *ch_cfg)
 {
     CPPUNIT_ASSERT_EQUAL((int)(Number)json_ch_cfg["sr"], (int)decodeSampleRate(ch_cfg->sampleRate));
@@ -246,7 +231,7 @@ void LoggerApiTest::testGetMultipleAnalogCfg(){
 
       Object &analogJson = json["analogCfg"][iString];
 
-      checkChannelConfig(analogJson, i, iString, 100);
+      check_channel_config(analogJson, &c->ADCConfigs[i].cfg);
 
       CPPUNIT_ASSERT_EQUAL(3.21F + i, (float)(Number)analogJson["scaling"]);
       CPPUNIT_ASSERT_EQUAL(9.0F + i, (float)(Number)analogJson["offset"]);
@@ -291,13 +276,13 @@ void LoggerApiTest::testGetAnalogConfigFile(string filename, int index){
 		analogCfg->scalingMap.scaledValues[x] = iv;
 	}
 
-        const char *response = processApiGeneric(filename);
+    const char *response = processApiGeneric(filename);
 	Object json;
 	stringToJson(response, json);
 
 	Object &analogJson = json["analogCfg"][iStr];
 
-        checkChannelConfig(analogJson, index, iStr, 50);
+    check_channel_config(analogJson, &c->ADCConfigs[index].cfg);
 
 	CPPUNIT_ASSERT_EQUAL(1.234F, (float)(Number)analogJson["scaling"]);
 	CPPUNIT_ASSERT_EQUAL(9.9F, (float)(Number)analogJson["offset"]);
@@ -326,8 +311,6 @@ void LoggerApiTest::testGetAnalogCfg(){
 }
 
 void LoggerApiTest::testSetAnalogConfigFile(string filename){
-
-	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -395,7 +378,7 @@ void LoggerApiTest::testGetImuConfigFile(string filename, int index){
 
 	Object &imuJson = json["imuCfg"][iStr];
 
-        checkChannelConfig(imuJson, index, iStr, 100);
+    check_channel_config(imuJson, &c->ImuConfigs[index].cfg);
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)imuJson["mode"]);
 	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)imuJson["chan"]);
@@ -408,7 +391,6 @@ void LoggerApiTest::testGetImuCfg(){
 }
 
 void LoggerApiTest::testSetImuConfigFile(string filename){
-	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -515,7 +497,7 @@ void LoggerApiTest::testGetPwmConfigFile(string filename, int index){
 
 	Object &analogJson = json["pwmCfg"][iStr];
 
-        checkChannelConfig(analogJson, index, iStr, 100);
+        check_channel_config(analogJson, &c->PWMConfigs[index].cfg);
 
 	CPPUNIT_ASSERT_EQUAL(3, (int)(Number)analogJson["outMode"]);
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["logMode"]);
@@ -529,7 +511,6 @@ void LoggerApiTest::testGetPwmCfg(){
 
 
 void LoggerApiTest::testSetPwmConfigFile(string filename){
-	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -563,7 +544,7 @@ void LoggerApiTest::testGetGpioConfigFile(string filename, int index){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	GPIOConfig *gpioCfg = &c->GPIOConfigs[index];
 
-        populateChannelConfig(&gpioCfg->cfg, index, 100);
+    populateChannelConfig(&gpioCfg->cfg, index, 100);
 	gpioCfg->mode = 1;
 
 	const char *response = processApiGeneric(filename);
@@ -576,7 +557,7 @@ void LoggerApiTest::testGetGpioConfigFile(string filename, int index){
 
 	Object &analogJson = json["gpioCfg"][iStr];
 
-        checkChannelConfig(analogJson, index, iStr, 100);
+    check_channel_config(analogJson, &(gpioCfg->cfg));
 	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)analogJson["mode"]);
 }
 
@@ -585,7 +566,6 @@ void LoggerApiTest::testGetGpioCfg(){
 }
 
 void LoggerApiTest::testSetGpioConfigFile(string filename){
-	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -629,11 +609,11 @@ void LoggerApiTest::testGetTimerConfigFile(string filename, int index){
 
 	std::ostringstream stringStream;
 	stringStream << index;
-        string iStr = stringStream.str();
+    string iStr = stringStream.str();
 
 	Object &timerJson = json["timerCfg"][iStr];
 
-        checkChannelConfig(timerJson, index, iStr, 100);
+    check_channel_config(timerJson, &(timerCfg->cfg));
 	CPPUNIT_ASSERT_EQUAL(0, (int)(Number)timerJson["st"]); /* DEPRECATED */
 	CPPUNIT_ASSERT_EQUAL(2, (int)(Number)timerJson["mode"]);
 	CPPUNIT_ASSERT_EQUAL(0.5F, (float)(Number)timerJson["alpha"]);
@@ -647,7 +627,6 @@ void LoggerApiTest::testGetTimerCfg(){
 }
 
 void LoggerApiTest::testSetTimerConfigFile(string filename){
-	struct Serial *serial = getMockSerial();
 	string json = readFile(filename);
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)json.c_str(), json.size());
@@ -682,7 +661,6 @@ string LoggerApiTest::getSampleResponse(string requestJson) {
 	mock_resetTxBuffer();
 	process_api(getMockSerial(),(char *)requestJson.c_str(), requestJson.size());
 
-	LoggerConfig *c = getWorkingLoggerConfig();
 	char *txBuffer = mock_getTxBuffer();
 	string txString(txBuffer);
         return txString;
@@ -886,33 +864,33 @@ void LoggerApiTest::testGetLapConfigFile(string filename){
 	LoggerConfig *c = getWorkingLoggerConfig();
 	LapConfig *cfg = &c->LapConfigs;
 
-        populateChannelConfig(&cfg->lapCountCfg, 1, 50);
-        populateChannelConfig(&cfg->lapTimeCfg, 2, 50);
-        populateChannelConfig(&cfg->sectorCfg, 3, 50);
-        populateChannelConfig(&cfg->sectorTimeCfg, 4, 50);
-        populateChannelConfig(&cfg->predTimeCfg, 5, 50);
+    populateChannelConfig(&cfg->lapCountCfg, 1, 50);
+    populateChannelConfig(&cfg->lapTimeCfg, 2, 50);
+    populateChannelConfig(&cfg->sectorCfg, 3, 50);
+    populateChannelConfig(&cfg->sectorTimeCfg, 4, 50);
+    populateChannelConfig(&cfg->predTimeCfg, 5, 50);
 
 	const char *response = processApiGeneric(filename);
 	Object json;
 	stringToJson(response, json);
 
-        Object &lapCount = json["lapCfg"]["lapCount"];
-        Object &lapTime = json["lapCfg"]["lapTime"];
-        Object &lapSector = json["lapCfg"]["sector"];
-        Object &lapSectorTime = json["lapCfg"]["sectorTime"];
-        Object &lapPredTime = json["lapCfg"]["predTime"];
+    Object &lapCount = json["lapCfg"]["lapCount"];
+    Object &lapTime = json["lapCfg"]["lapTime"];
+    Object &lapSector = json["lapCfg"]["sector"];
+    Object &lapSectorTime = json["lapCfg"]["sectorTime"];
+    Object &lapPredTime = json["lapCfg"]["predTime"];
 
-        string str1 = string("1");
-        string str2 = string("2");
-        string str3 = string("3");
-        string str4 = string("4");
-        string str5 = string("5");
+    string str1 = string("1");
+    string str2 = string("2");
+    string str3 = string("3");
+    string str4 = string("4");
+    string str5 = string("5");
 
-        checkChannelConfig(lapCount, 1, str1, 50);
-        checkChannelConfig(lapTime, 2, str2, 50);
-        checkChannelConfig(lapSector, 3, str3, 50);
-        checkChannelConfig(lapSectorTime, 4, str4, 50);
-        checkChannelConfig(lapPredTime, 5, str5, 50);
+    check_channel_config(lapCount, &cfg->lapCountCfg);
+    check_channel_config(lapTime, &cfg->lapTimeCfg);
+    check_channel_config(lapSector, &cfg->sectorCfg);
+    check_channel_config(lapSectorTime, &cfg->sectorTimeCfg);
+    check_channel_config(lapPredTime, &cfg->predTimeCfg);
 }
 
 void LoggerApiTest::testGetLapCfg(){
@@ -996,7 +974,6 @@ void LoggerApiTest::testAddTrackDb(){
 
 void LoggerApiTest::testAddTrackDbFile(string filename){
 	processApiGeneric(filename);
-	char *txBuffer = mock_getTxBuffer();
 	const Tracks *tracks = get_tracks();
 
 	Object jsonCompare;
@@ -1116,7 +1093,6 @@ void LoggerApiTest::testSetCanCfg(){
 
 void LoggerApiTest::testSetCanCfgFile(string filename){
 	processApiGeneric(filename);
-	char *txBuffer = mock_getTxBuffer();
 
 	LoggerConfig *c = getWorkingLoggerConfig();
 	CANConfig *canCfg = &c->CanConfig;
@@ -1191,7 +1167,7 @@ void LoggerApiTest::testGetCanChanCfgFile(string filename)
         string iString = stringStream.str();
 
         Object ch = (Object)json["canChanCfg"]["chans"][i];
-        checkChannelConfig(ch, i, iString, 100);
+        check_channel_config(ch, &(cfg->can_channels[i].channel_cfg));
         CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)ch["bigEndian"]);
         CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)ch["bm"]);
         CPPUNIT_ASSERT_EQUAL(2, (int)(Number)ch["bus"]);
@@ -1252,37 +1228,43 @@ void LoggerApiTest::testGetObd2Cfg(){
 }
 
 void LoggerApiTest::testGetObd2ConfigFile(string filename){
-	LoggerConfig *c = getWorkingLoggerConfig();
-	OBD2Config *obd2Config = &c->OBD2Configs;
+        LoggerConfig *c = getWorkingLoggerConfig();
+        OBD2Config *obd2Config = &c->OBD2Configs;
 
-	obd2Config->enabled = 1;
-	obd2Config->enabledPids = 2;
+        obd2Config->enabled = 1;
+        obd2Config->enabledPids = 2;
 
         ChannelConfig *cfg1 = &obd2Config->pids[0].cfg;
         populateChannelConfig(cfg1, 1, 1);
-	obd2Config->pids[0].pid = 0x05;
+        obd2Config->pids[0].pid = 0x05;
+        obd2Config->pids[0].mode = 0x55;
+        obd2Config->pids[0].passive = true;
 
         ChannelConfig *cfg2 = &obd2Config->pids[1].cfg;
         populateChannelConfig(cfg2, 2, 50);
-	obd2Config->pids[1].pid = 0x06;
+        obd2Config->pids[1].pid = 0x06;
+        obd2Config->pids[1].mode = 0x66;
+        obd2Config->pids[1].passive = true;
 
-	const char *response = processApiGeneric(filename);
-	Object json;
-	stringToJson(response, json);
+        const char *response = processApiGeneric(filename);
+        Object json;
+        stringToJson(response, json);
 
-	Object pid1 = (Object)json["obd2Cfg"]["pids"][0];
-	Object pid2 = (Object)json["obd2Cfg"]["pids"][1];
+        Object json_pid0 = (Object)json["obd2Cfg"]["pids"][0];
+        PidConfig *pid_cfg0 = &obd2Config->pids[0];
+        check_channel_config(json_pid0, &pid_cfg0->cfg);
+        CPPUNIT_ASSERT_EQUAL((int)pid_cfg0->pid, (int)(Number)json_pid0["pid"]);
+        CPPUNIT_ASSERT_EQUAL((int)pid_cfg0->mode, (int)(Number)json_pid0["mode"]);
+        CPPUNIT_ASSERT_EQUAL((bool)pid_cfg0->passive, (bool)(Boolean)json_pid0["pass"]);
 
-        string str1 = string("1");
-        string str2 = string("2");
+        Object json_pid1 = (Object)json["obd2Cfg"]["pids"][1];
+        PidConfig *pid_cfg1 = &obd2Config->pids[1];
+        check_channel_config(json_pid1, &pid_cfg1->cfg);
+        CPPUNIT_ASSERT_EQUAL((int)pid_cfg1->pid, (int)(Number)json_pid1["pid"]);
+        CPPUNIT_ASSERT_EQUAL((int)pid_cfg1->mode, (int)(Number)json_pid1["mode"]);
+        CPPUNIT_ASSERT_EQUAL((bool)pid_cfg1->passive, (bool)(Boolean)json_pid1["pass"]);
 
-        checkChannelConfig(pid1, 1, str1, 1);
-	CPPUNIT_ASSERT_EQUAL(0x05, (int)(Number)pid1["pid"]);
-
-        checkChannelConfig(pid2, 2, str2, 50);
-	CPPUNIT_ASSERT_EQUAL(0x06, (int)(Number)pid2["pid"]);
-
-	CPPUNIT_ASSERT_EQUAL(1, (int)(Number)json["obd2Cfg"]["en"]);
+        CPPUNIT_ASSERT_EQUAL(1, (int)(Number)json["obd2Cfg"]["en"]);
 }
 
 void LoggerApiTest::testSetObd2ConfigFile(string filename){
@@ -1326,8 +1308,6 @@ void LoggerApiTest::testSetObd2ConfigFile_fromIndex(){
 
     processApiGeneric(obd2_cfg1);
     processApiGeneric(obd2_cfg2);
-
-    char *txBuffer = mock_getTxBuffer();
 
 	LoggerConfig *c = getWorkingLoggerConfig();
 	OBD2Config *obd2Config = &c->OBD2Configs;
@@ -1374,9 +1354,6 @@ void LoggerApiTest::testGetScriptFile(string filename){
 void LoggerApiTest::testSetScriptFile(string filename){
 	processApiGeneric(filename);
 	char *txBuffer = mock_getTxBuffer();
-
-	LoggerConfig *c = getWorkingLoggerConfig();
-	TrackConfig *cfg = &c->TrackConfigs;
 
 	assertGenericResponse(txBuffer, "setScriptCfg", API_SUCCESS);
 
