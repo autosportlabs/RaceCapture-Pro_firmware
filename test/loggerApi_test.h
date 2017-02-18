@@ -200,6 +200,7 @@ private:
     void populateChannelConfig(ChannelConfig *cfg, const int id, const int splRt);
     void checkChannelConfig(Object &json, const int i, string &iString, const int splRt);
     void check_can_mapping_config(Object &json, CANMapping *mapping);
+    void check_channel_config(Object &json_cfg, ChannelConfig *cfg);
     void testChannelConfig(ChannelConfig *chCfg, string expNm, string expUt, unsigned short sr);
 };
 

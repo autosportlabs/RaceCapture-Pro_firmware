@@ -187,7 +187,8 @@ void LoggerApiTest::populateChannelConfig(ChannelConfig *cfg, const int i, const
    cfg->precision = (unsigned char) i + 1;
 }
 
-void LoggerApiTest::checkChannelConfig(Object &json, const int i, string &iString, const int splRt) {
+void LoggerApiTest::checkChannelConfig(Object &json, const int i, string &iString, const int splRt)
+{
    string expNmStr = string("testName_") + iString;
    CPPUNIT_ASSERT_EQUAL(expNmStr, string((String)json["nm"]));
 
@@ -199,6 +200,16 @@ void LoggerApiTest::checkChannelConfig(Object &json, const int i, string &iStrin
 
    CPPUNIT_ASSERT_EQUAL(i + 1, (int)(Number)json["prec"]);
    CPPUNIT_ASSERT_EQUAL(splRt, (int)(Number)json["sr"]);
+}
+
+void LoggerApiTest::check_channel_config(Object &json_ch_cfg, ChannelConfig *ch_cfg)
+{
+    CPPUNIT_ASSERT_EQUAL((int)(Number)json_ch_cfg["sr"], (int)decodeSampleRate(ch_cfg->sampleRate));
+    CPPUNIT_ASSERT_EQUAL((string)(String)json_ch_cfg["nm"], string(ch_cfg->label));
+    CPPUNIT_ASSERT_EQUAL((string)(String)json_ch_cfg["ut"], string(ch_cfg->units));
+    CPPUNIT_ASSERT_EQUAL((float)(Number)json_ch_cfg["min"], (float)ch_cfg->min);
+    CPPUNIT_ASSERT_EQUAL((float)(Number)json_ch_cfg["max"], (float)ch_cfg->max);
+    CPPUNIT_ASSERT_EQUAL((int)(Number)json_ch_cfg["prec"], (int)ch_cfg->precision);
 }
 
 void LoggerApiTest::testGetMultipleAnalogCfg(){
@@ -1224,13 +1235,7 @@ void LoggerApiTest::testSetCanChanCfgFile(string filename)
         CANMapping *mapping = &(ch->mapping);
 
         Object jch = (Object)json["setCanChanCfg"]["chans"][index];
-        CPPUNIT_ASSERT_EQUAL((int)(Number)jch["sr"], (int)decodeSampleRate(ch_cfg->sampleRate));
-        CPPUNIT_ASSERT_EQUAL((string)(String)jch["nm"], string(ch_cfg->label));
-        CPPUNIT_ASSERT_EQUAL((string)(String)jch["ut"], string(ch_cfg->units));
-        CPPUNIT_ASSERT_EQUAL((float)(Number)jch["min"], (float)ch_cfg->min);
-        CPPUNIT_ASSERT_EQUAL((float)(Number)jch["max"], (float)ch_cfg->max);
-        CPPUNIT_ASSERT_EQUAL((int)(Number)jch["prec"], (int)ch_cfg->precision);
-
+        check_channel_config(jch, ch_cfg);
         check_can_mapping_config(jch, mapping);
 
         if (last) {
@@ -1296,41 +1301,33 @@ void LoggerApiTest::testSetObd2ConfigFile(string filename){
         CPPUNIT_ASSERT_EQUAL(1, (int)obd2Config->enabled);
         CPPUNIT_ASSERT_EQUAL(2, (int)obd2Config->enabledPids);
 
-        PidConfig *pidCfg1 = &obd2Config->pids[0];
-        PidConfig *pidCfg2 = &obd2Config->pids[1];
+        Array json_pids = (Array)json["setObd2Cfg"]["pids"];
+        for (size_t i=0; i < json_pids.Size(); i++) {
+                PidConfig *pid_cfg = &obd2Config->pids[i];
+                Object json_pid = (Object)json_pids[i];
+                check_channel_config(json_pid, &pid_cfg->cfg);
+                check_can_mapping_config(json_pid, &pid_cfg->mapping);
 
-        ChannelConfig *cfg = &pidCfg1->cfg;
-        CPPUNIT_ASSERT_EQUAL(string("I <3 OBD2"), string(cfg->label));
-        CPPUNIT_ASSERT_EQUAL(string("?????"), string(cfg->units));
-        CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
-        CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
-        CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(cfg->sampleRate));
-        CPPUNIT_ASSERT_EQUAL(1, (int)cfg->precision);
-        CPPUNIT_ASSERT_EQUAL(5, (int)pidCfg1->pid);
-        CPPUNIT_ASSERT_EQUAL(1, (int)pidCfg1->mode);
-        CPPUNIT_ASSERT_EQUAL((bool)false, (bool)pidCfg1->passive);
-
-        cfg = &pidCfg2->cfg;
-        CPPUNIT_ASSERT_EQUAL(string("I <3 OBD2"), string(cfg->label));
-        CPPUNIT_ASSERT_EQUAL(string("?????"), string(cfg->units));
-        CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
-        CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
-        CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(cfg->sampleRate));
-        CPPUNIT_ASSERT_EQUAL(1, (int)cfg->precision);
-        CPPUNIT_ASSERT_EQUAL(6, (int)pidCfg2->pid);
-        CPPUNIT_ASSERT_EQUAL(22, (int)pidCfg2->mode);
-        CPPUNIT_ASSERT_EQUAL((bool)true, (bool)pidCfg2->passive);
-
-        /* Check mapping */
-        check_can_mapping_config(json["setObd2Cfg"]["pids"][0], &pidCfg1->mapping);
-        check_can_mapping_config(json["setObd2Cfg"]["pids"][1], &pidCfg2->mapping);
+                CPPUNIT_ASSERT_EQUAL((int)(Number)json_pid["pid"], (int)pid_cfg->pid);
+                CPPUNIT_ASSERT_EQUAL((int)(Number)json_pid["mode"], (int)pid_cfg->mode);
+                CPPUNIT_ASSERT_EQUAL((bool)(Boolean)json_pid["pass"], (bool)pid_cfg->passive);
+        }
 }
 
 void LoggerApiTest::testSetObd2ConfigFile_fromIndex(){
-    return;
-    processApiGeneric("setObd2Cfg1.json");
-	processApiGeneric("setObd2Cfg_fromIndex.json");
-	char *txBuffer = mock_getTxBuffer();
+    string obd2_cfg1 = "setObd2Cfg1.json";
+    string obd2_cfg2 = "setObd2Cfg_fromIndex.json";
+
+    Object obd2_json1;
+    stringToJson(readFile(obd2_cfg1).c_str(), obd2_json1);
+
+    Object obd2_json2;
+    stringToJson(readFile(obd2_cfg2).c_str(), obd2_json2);
+
+    processApiGeneric(obd2_cfg1);
+    processApiGeneric(obd2_cfg2);
+
+    char *txBuffer = mock_getTxBuffer();
 
 	LoggerConfig *c = getWorkingLoggerConfig();
 	OBD2Config *obd2Config = &c->OBD2Configs;
@@ -1340,30 +1337,14 @@ void LoggerApiTest::testSetObd2ConfigFile_fromIndex(){
 	//when setting PIDs from an index, index + length of PID array becomes the total number of enabled PIDs
 	CPPUNIT_ASSERT_EQUAL(4, (int)obd2Config->enabledPids);
 
-	PidConfig *pidCfg1 = &obd2Config->pids[2];
-	PidConfig *pidCfg2 = &obd2Config->pids[3];
+    check_channel_config(obd2_json1["setObd2Cfg"]["pids"][0], &obd2Config->pids[0].cfg);
+    check_channel_config(obd2_json1["setObd2Cfg"]["pids"][1], &obd2Config->pids[1].cfg);
 
-        ChannelConfig *cfg = &pidCfg1->cfg;
-        CPPUNIT_ASSERT_EQUAL(string("I <3 OBD2"), string(cfg->label));
-        CPPUNIT_ASSERT_EQUAL(string("?????"), string(cfg->units));
-        CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
-        CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
-	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(cfg->sampleRate));
-	CPPUNIT_ASSERT_EQUAL(1, (int)cfg->precision);
-	CPPUNIT_ASSERT_EQUAL(5, (int)pidCfg1->pid);
-
-        cfg = &pidCfg2->cfg;
-        CPPUNIT_ASSERT_EQUAL(string("I <3 OBD2"), string(cfg->label));
-        CPPUNIT_ASSERT_EQUAL(string("?????"), string(cfg->units));
-        CPPUNIT_ASSERT_EQUAL(-1.0f, cfg->min);
-        CPPUNIT_ASSERT_EQUAL(1.0f, cfg->max);
-	CPPUNIT_ASSERT_EQUAL(10, decodeSampleRate(cfg->sampleRate));
-	CPPUNIT_ASSERT_EQUAL(1, (int)cfg->precision);
-	CPPUNIT_ASSERT_EQUAL(6, (int)pidCfg2->pid);
+	check_channel_config(obd2_json2["setObd2Cfg"]["pids"][0], &obd2Config->pids[2].cfg);
+	check_channel_config(obd2_json2["setObd2Cfg"]["pids"][1], &obd2Config->pids[3].cfg);
 }
 
 void LoggerApiTest::testSetObd2ConfigFile_invalid(){
-    return;
 	char *response = NULL;
 
 	response = processApiGeneric("setObd2Cfg_too_many_pids_from_index.json");
