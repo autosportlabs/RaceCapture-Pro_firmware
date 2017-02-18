@@ -65,8 +65,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Max number of PIDs that can be specified in the setOBD2Cfg message */
-#define MAX_OBD2_MESSAGE_PIDS 10
+/* Max number of channels that can be specified in the setOBD2Cfg message */
+#define MAX_OBD2_MESSAGE_PIDS 4
+
+/* Max number of channels that can be specified in the setCanChan message */
+#define MAX_CAN_MESSAGE_CHANNELS 4
 
 typedef void (*getConfigs_func)(size_t channeId, void ** baseCfg, ChannelConfig ** channelCfg);
 typedef const jsmntok_t * (*setExtField_func)(const jsmntok_t *json, const char *name, const char *value, void *cfg);
@@ -1344,11 +1347,8 @@ int api_setCanConfig(struct Serial *serial, const jsmntok_t *json)
     return API_SUCCESS;
 }
 
-static void _send_can_mapping(struct Serial *serial, CANChannel *can_channel, int more)
+static void _json_can_mapping(struct Serial *serial, CANMapping *mapping, int more)
 {
-        json_objStart(serial);
-        json_channelConfig(serial, &(can_channel->channel_cfg), 1);
-        CANMapping *mapping = &(can_channel->mapping);
         json_bool(serial, "bm", mapping->bit_mode, 1);
         json_int(serial, "bus", mapping->can_channel, 1);
         json_int(serial, "id", mapping->can_id, 1);
@@ -1360,8 +1360,7 @@ static void _send_can_mapping(struct Serial *serial, CANChannel *can_channel, in
         json_float(serial, "div", mapping->divider, DEFAULT_CAN_MAPPING_PRECISION, 1);
         json_float(serial, "add", mapping->adder, DEFAULT_CAN_MAPPING_PRECISION, 1);
         json_int(serial, "type", mapping->type, 1);
-        json_int(serial, "filtId", mapping->conversion_filter_id, 0);
-        json_objEnd(serial, more);
+        json_int(serial, "filtId", mapping->conversion_filter_id, more);
 }
 
 int api_get_can_channel_config(struct Serial *serial, const jsmntok_t *json)
@@ -1375,7 +1374,11 @@ int api_get_can_channel_config(struct Serial *serial, const jsmntok_t *json)
     json_arrayStart(serial, "chans");
     for (size_t i = 0; i < can_channel_cfg->enabled_mappings; i++) {
         CANChannel *can_channel = &can_channel_cfg->can_channels[i];
-        _send_can_mapping(serial, can_channel, i < enabled_mappings - 1);
+
+        json_objStart(serial);
+        json_channelConfig(serial, &(can_channel->channel_cfg), 1);
+        _json_can_mapping(serial, &(can_channel->mapping), 0);
+        json_objEnd(serial, i < enabled_mappings - 1);
     }
     json_arrayEnd(serial, 0);
     json_objEnd(serial, 0);
@@ -1383,40 +1386,17 @@ int api_get_can_channel_config(struct Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
-int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
+static int _set_can_mapping(const jsmntok_t *json_mapping, CANMapping *mapping)
 {
-    CANChannelConfig * can_channel_cfg = &(getWorkingLoggerConfig()->can_channel_cfg);
-
-    /* flag to indicate if this channel is the last in a series */
-    bool last = false;
-    jsmn_exists_set_val_bool(json, "last", &last);
-
-    unsigned index;
-    /* If no index given, then fail */
-    if (!jsmn_exists_set_val_int(json, "index", &index))
-            return API_ERROR_PARAMETER;
-
-    /* fail if index is out of range. API must be called
-     * with indexes in ascending order */
-    if (index >= CONFIG_CAN_MAPPINGS || index > can_channel_cfg->enabled_mappings)
-            return API_ERROR_PARAMETER;
-
-    const jsmntok_t *chan = jsmn_find_node(json, "chan");
-    /* If no channel given, then fail */
-    if (chan == NULL)
-            return API_ERROR_PARAMETER;
-
-    CANChannel *can_channel = &can_channel_cfg->can_channels[index];
-    CANMapping *mapping = &(can_channel->mapping);
     /* Validate parameters */
     uint8_t bit_mode = mapping->bit_mode;
-    jsmn_exists_set_val_bool(chan, "bm", &bit_mode);
+    jsmn_exists_set_val_bool(json_mapping, "bm", &bit_mode);
 
     uint8_t offset = mapping->offset;
-    jsmn_exists_set_val_uchar(chan, "offset", &offset, NULL);
+    jsmn_exists_set_val_uchar(json_mapping, "offset", &offset, NULL);
 
     uint8_t length = mapping->length;
-    jsmn_exists_set_val_uchar(chan, "len", &length, NULL);
+    jsmn_exists_set_val_uchar(json_mapping, "len", &length, NULL);
 
     /* check for invalid mapping offsets and length */
     if (offset > MAX_CAN_MAPPING_OFFSET_BYTES * (bit_mode? 8 : 1))
@@ -1430,24 +1410,67 @@ int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
     mapping->offset = offset;
     mapping->length = length;
     uint8_t can_bus_channel = 0;
-    jsmn_exists_set_val_uchar(chan, "bus", &can_bus_channel, filter_can_channel);
+    jsmn_exists_set_val_uchar(json_mapping, "bus", &can_bus_channel, filter_can_channel);
     mapping->can_channel = can_bus_channel;
 
-    jsmn_exists_set_val_int(chan, "id", &mapping->can_id);
-    jsmn_exists_set_val_int(chan, "id_mask", &mapping->can_mask);
-    jsmn_exists_set_val_bool(chan, "bigEndian", &mapping->big_endian);
-    jsmn_exists_set_val_float(chan, "mult", &mapping->multiplier);
-    jsmn_exists_set_val_float(chan, "div", &mapping->divider);
-    jsmn_exists_set_val_float(chan, "add", &mapping->adder);
-    jsmn_exists_set_val_uchar(chan, "filtId", &mapping->conversion_filter_id, NULL);
+    jsmn_exists_set_val_int(json_mapping, "id", &mapping->can_id);
+    jsmn_exists_set_val_int(json_mapping, "id_mask", &mapping->can_mask);
+    jsmn_exists_set_val_bool(json_mapping, "bigEndian", &mapping->big_endian);
+    jsmn_exists_set_val_float(json_mapping, "mult", &mapping->multiplier);
+    jsmn_exists_set_val_float(json_mapping, "div", &mapping->divider);
+    jsmn_exists_set_val_float(json_mapping, "add", &mapping->adder);
+    jsmn_exists_set_val_uchar(json_mapping, "filtId", &mapping->conversion_filter_id, NULL);
+    return API_SUCCESS;
+}
 
-    /* if the 'last' flag was set, indicate this is the high water mark for mappings.
-     * this API is designed to be called sequentially, or have indiviual elements updated
-     */
-    if (last)
-            can_channel_cfg->enabled_mappings = index + 1;
+int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
+{
+    CANChannelConfig * can_channel_cfg = &(getWorkingLoggerConfig()->can_channel_cfg);
 
-    setChannelConfig(serial, chan + 1, &(can_channel->channel_cfg), NULL, NULL);
+    /* flag to indicate if this channel is the last in a series */
+    bool last = false;
+    jsmn_exists_set_val_bool(json, "last", &last);
+
+    /* optional starting index. start at beginning by default */
+    unsigned index = 0;
+    jsmn_exists_set_val_int(json, "index", &index);
+
+    /* we can only start updating up to the item right after the last */
+    if (index >= CONFIG_CAN_MAPPINGS || index > can_channel_cfg->enabled_mappings)
+            return API_ERROR_PARAMETER;
+
+    /* find the beginning of the channels json array */
+    const jsmntok_t *chans_tok = jsmn_find_node(json, "chans");
+    chans_tok = jsmn_find_node_type(chans_tok, JSMN_ARRAY);
+
+    if (chans_tok) {
+        int channel_max = chans_tok->size;
+        if (channel_max > MAX_CAN_MESSAGE_CHANNELS) {
+            return API_ERROR_PARAMETER;
+        }
+
+        channel_max += index;
+        if (channel_max > CONFIG_CAN_MAPPINGS) {
+            return API_ERROR_PARAMETER;
+        }
+
+        for (chans_tok++; index < channel_max; index++) {
+            CANChannel *pid_cfg = can_channel_cfg->can_channels + index;
+            ChannelConfig *chCfg = &(pid_cfg->channel_cfg);
+
+            int result = _set_can_mapping(chans_tok, &(pid_cfg->mapping));
+            if (result != API_SUCCESS)
+                    return result;
+
+            chans_tok = setChannelConfig(serial, chans_tok, chCfg, NULL, NULL);
+        }
+        if (index > can_channel_cfg->enabled_mappings || last)
+                can_channel_cfg->enabled_mappings = index;
+    }
+
+    /* set the global enabled flag, if present */
+    jsmn_exists_set_val_uchar(json, "en", &can_channel_cfg->enabled, NULL);
+
     return API_SUCCESS;
 }
 
@@ -1466,7 +1489,10 @@ int api_getObd2Config(struct Serial *serial, const jsmntok_t *json)
         PidConfig *pidCfg = &obd2Cfg->pids[i];
         json_objStart(serial);
         json_channelConfig(serial, &(pidCfg->cfg), 1);
-        json_int(serial,"pid",pidCfg->pid, 0);
+        _json_can_mapping(serial, &(pidCfg->mapping), 1);
+        json_int(serial,"pid",pidCfg->pid, 1);
+        json_int(serial, "mode", pidCfg->mode, 1);
+        json_bool(serial, "pass", pidCfg->passive, 0);
         json_objEnd(serial, i < enabledPids - 1);
     }
 
@@ -1476,47 +1502,54 @@ int api_getObd2Config(struct Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
-static const jsmntok_t * setPidExtendedField(const jsmntok_t *valueTok, const char *name,
-        const char *value, void *cfg)
-{
-    PidConfig *pidCfg = (PidConfig *) cfg;
-
-    if (STR_EQ("pid", name))
-        pidCfg->pid = (unsigned short) atoi(value);
-
-    return valueTok + 1;
-}
-
 int api_setObd2Config(struct Serial *serial, const jsmntok_t *json)
 {
     OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
 
-    int pidIndex = 0;
-    jsmn_exists_set_val_int(json, "index", &pidIndex);
+    /* flag to indicate if this channel is the last in a series */
+    bool is_last = false;
+    jsmn_exists_set_val_bool(json, "last", &is_last);
 
-    if (pidIndex >= OBD2_CHANNELS) {
+    /* optional starting index. start at beginning by default */
+    unsigned index = 0;
+    jsmn_exists_set_val_int(json, "index", &index);
+
+    /* we can only start updating up to the item right after the last */
+    if (index >= CONFIG_OBD2_CHANNELS || index > obd2Cfg->enabledPids) {
         return API_ERROR_PARAMETER;
     }
 
-    const jsmntok_t *pidsTok = jsmn_find_node(json, "pids");
-    if (pidsTok != NULL && (++pidsTok)->type == JSMN_ARRAY) {
-        int pidMax = pidsTok->size;
-        if (pidMax > MAX_OBD2_MESSAGE_PIDS) {
+    /* find the beginning of the pids json array */
+    const jsmntok_t *pids_tok = jsmn_find_node(json, "pids");
+    pids_tok = jsmn_find_node_type(pids_tok, JSMN_ARRAY);
+
+    if (pids_tok) {
+        int pid_max = pids_tok->size;
+        if (pid_max > MAX_OBD2_MESSAGE_PIDS) {
             return API_ERROR_PARAMETER;
         }
-        pidMax += pidIndex;
-        if (pidMax > OBD2_CHANNELS) {
+        pid_max += index;
+        if (pid_max > CONFIG_OBD2_CHANNELS) {
             return API_ERROR_PARAMETER;
         }
 
-        for (pidsTok++; pidIndex < pidMax; pidIndex++) {
-            PidConfig *pidCfg = obd2Cfg->pids + pidIndex;
-            ChannelConfig *chCfg = &(pidCfg->cfg);
-            pidsTok = setChannelConfig(serial, pidsTok, chCfg, setPidExtendedField, pidCfg);
+        for (pids_tok++; index < pid_max; index++) {
+            PidConfig *pid_cfg = obd2Cfg->pids + index;
+            jsmn_exists_set_val_int(pids_tok, "pid", &pid_cfg->pid);
+            jsmn_exists_set_val_int(pids_tok, "mode", &pid_cfg->mode);
+            jsmn_exists_set_val_bool(pids_tok, "pass", &pid_cfg->passive);
+            int result = _set_can_mapping(pids_tok, &(pid_cfg->mapping));
+            if (result != API_SUCCESS)
+                    return result;
+
+            pids_tok = setChannelConfig(serial, pids_tok, &(pid_cfg->cfg), NULL, NULL);
         }
+        /* update the number of PIDs enabled in the list as needed */
+        if (index > obd2Cfg->enabledPids || is_last)
+                obd2Cfg->enabledPids = index;
     }
-    obd2Cfg->enabledPids = pidIndex;
 
+    /* set the global enabled flag, if present */
     jsmn_exists_set_val_uchar(json, "en", &obd2Cfg->enabled, NULL);
 
     configChanged();

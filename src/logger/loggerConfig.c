@@ -637,8 +637,7 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
     return channels;
 }
 
-
-int flash_default_logger_config(void)
+void reset_logger_config(void)
 {
     LoggerConfig *lc = &g_workingLoggerConfig;
 
@@ -681,9 +680,12 @@ int flash_default_logger_config(void)
     reset_logging_config(&lc->logging_cfg);
     auto_logger_reset_config(&lc->auto_logger_cfg);
     strcpy(lc->padding_data, "");
+}
 
+int flash_default_logger_config(void)
+{
+    reset_logger_config();
     int result = flashLoggerConfig();
-
     pr_info_str_msg("flashing default config: ", result == 0 ? "win" : "fail");
     return result;
 }

@@ -329,6 +329,18 @@ int jsmn_isNull(const jsmntok_t *tok)
     return strncmp("null", tok->data, 3) == 0;
 }
 
+const jsmntok_t * jsmn_find_node_type(const jsmntok_t *node, const jsmntype_t node_type)
+{
+    if (NULL == node)
+            return NULL;
+
+    for (; node->start || node->end; ++node)
+            if (node->type == node_type)
+                return node;
+
+    return NULL;
+}
+
 const jsmntok_t * jsmn_find_node(const jsmntok_t *node, const char * name)
 {
         if (NULL == node)

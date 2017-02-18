@@ -103,6 +103,11 @@ const jsmntok_t * jsmn_trimData(const jsmntok_t *tok);
  */
 int jsmn_isNull(const jsmntok_t *tok);
 
+/*
+ * Finds the next node with a specific type
+ */
+const jsmntok_t * jsmn_find_node_type(const jsmntok_t *node, const jsmntype_t node_type);
+
 /**
  * Finds the node with the given name.
  */

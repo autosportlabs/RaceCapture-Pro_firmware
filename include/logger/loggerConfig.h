@@ -356,8 +356,9 @@ typedef struct _CANChannelConfig {
 typedef struct _PidConfig {
     ChannelConfig cfg;
     CANMapping mapping;
-    unsigned short pid;
-    unsigned short mode;
+    uint8_t passive;
+    uint8_t pid;
+    uint16_t mode;
 } PidConfig;
 
 
@@ -605,6 +606,7 @@ bool should_sample(const int sample_rate, const int max_rate);
 int getHigherSampleRate(const int a, const int b);
 
 int flashLoggerConfig(void);
+void reset_logger_config(void);
 int flash_default_logger_config(void);
 
 void logger_config_reset_gps_config(GPSConfig *cfg);

@@ -1,7 +1,7 @@
 {
     "setCanChanCfg": {
         "index": 0,
-        "chan": {
+        "chans": [{
             "filtId": 0,
             "sr": 10,
             "nm": "AccelX",
@@ -20,6 +20,6 @@
             "id": 1234,
             "bus": 0,
             "id_mask": 5678
-        }
+        }]
     }
 }
