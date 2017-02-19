@@ -912,7 +912,7 @@ static void setTelemetryConfig(const jsmntok_t *root)
 				   TELEMETRY_SERVER_HOST_LENGTH, true);
         jsmn_exists_set_val_uchar(telemetryCfgNode, "bgStream",
 				     &telemetryCfg->backgroundStreaming,
-				     filterBgStreamingMode);
+				     filter_background_streaming_mode);
     }
 }
 

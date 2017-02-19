@@ -356,8 +356,14 @@ typedef struct _CANChannelConfig {
 typedef struct _PidConfig {
     ChannelConfig cfg;
     CANMapping mapping;
+
+    /* flag for passive mode where we only listen for OBDII PID responses */
     uint8_t passive;
+
+    /* The OBDII PID to query */
     uint8_t pid;
+
+    /* The OBDII mode specified in the query */
     uint16_t mode;
 } PidConfig;
 
@@ -573,7 +579,7 @@ int getConnectivitySampleRateLimit();
 int encodeSampleRate(int sampleRate);
 int decodeSampleRate(int sampleRateCode);
 
-uint8_t filterBgStreamingMode(uint8_t mode);
+uint8_t filter_background_streaming_mode(uint8_t mode);
 
 PWMConfig * getPwmConfigChannel(int channel);
 char filterPwmOutputMode(int config);
