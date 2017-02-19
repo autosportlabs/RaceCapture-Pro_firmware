@@ -246,8 +246,6 @@ static void init_timer_2(struct config *cfg)
         /* Enable the CC1 Interrupt Request */
         TIM_ITConfig(TIM10, TIM_IT_CC1, ENABLE);
         TIM_ITConfig(TIM10, TIM_IT_Update, ENABLE);
-
-        pr_error("Init timer 02\r\n");
 }
 
 static void init_timer_3(struct config *cfg)
@@ -301,8 +299,6 @@ static void init_timer_3(struct config *cfg)
         /* Enable the CC1 Interrupt Request */
         TIM_ITConfig(TIM14, TIM_IT_CC1, ENABLE);
         TIM_ITConfig(TIM14, TIM_IT_Update, ENABLE);
-
-        pr_error("Init timer 03\r\n");
 }
 
 /**
