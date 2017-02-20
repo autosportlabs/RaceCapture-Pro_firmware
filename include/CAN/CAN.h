@@ -42,7 +42,10 @@ typedef struct _CAN_msg {
     int isExtendedAddress;
     unsigned int addressValue;
     unsigned char dataLength;
-    unsigned char data[CAN_MSG_SIZE];
+    union {
+    	unsigned char data[CAN_MSG_SIZE];
+    	uint64_t data64;
+    };
 } CAN_msg;
 
 int CAN_init(LoggerConfig *loggerConfig);
