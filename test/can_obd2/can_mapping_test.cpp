@@ -21,7 +21,7 @@
 
 #include "can_mapping.h"
 #include "can_mapping_test.h"
-
+#include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 /* Inclue the code to test here */
 //extern "C" {
@@ -30,19 +30,33 @@
 CPPUNIT_TEST_SUITE_REGISTRATION( CANMappingTest );
 
 
-void CANMappingTest::mapping_test()
+void CANMappingTest::formula_test(void)
+{
+
+}
+
+void CANMappingTest::extract_text(void)
+{
+
+}
+
+void CANMappingTest::mapping_test(void)
 {
     for (uint8_t length = 1; length <= 1; length++ ) {
         for (size_t offset = 0; offset < 7; offset++) {
                 CAN_msg msg;
                 CANMapping mapping;
+                memset(&mapping, 0, sizeof(mapping));
+                memset(&msg, 0, sizeof(CAN_msg));
+                mapping.adder = 0;
+                mapping.multiplier = 1.0;
+                mapping.divider = 0;
                 mapping.offset = offset;
                 mapping.length = length;
-                //memset(&msg, 0, sizeof(CAN_msg));
                 msg.data[offset] = 0x55;
-                float value = foo();
-               // float value = map_value(&msg, &mapping);
-                printf("value %f", value);
+                //float value = foo();
+                float value = map_value(&msg, &mapping);
+                printf("value %f\r\n", value);
         }
     }
 

@@ -13,9 +13,12 @@
 
 CPP_GUARD_BEGIN
 
+
 float map_value(CAN_msg *can_msg, CANMapping *mapping);
 
-float foo(void);
+float apply_formula(float value, CANMapping *mapping);
+
+float extract_value(uint64_t raw_data, CANMapping *mapping);
 
 CPP_GUARD_END
 #endif /* CAN_MAPPING_H_ */

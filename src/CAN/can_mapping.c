@@ -22,34 +22,40 @@
 #include "byteswap.h"
 #include <byteswap.h>
 
-float foo(void){
-    return 33;
+#include <stdio.h>
+
+float extract_value(uint64_t raw_data, CANMapping *mapping)
+{
+	uint8_t offset = mapping->offset;
+	uint8_t length = mapping->length;
+	if (! mapping->bit_mode) {
+			length *= 8;
+			offset *= 8;
+	}
+	uint32_t bitmask = (1 << length) - 1;
+	uint32_t raw_value = (raw_data >> offset) & bitmask;
+
+	printf("blah %d %d %d\r\n", offset, bitmask,  raw_value);
+	if (mapping->big_endian) {
+			printf("big endian %i\r\n", mapping->big_endian);
+			raw_value = swap_uint32(raw_value);
+	}
+	return (float)raw_value;
 }
 
-float map_value(CAN_msg *can_msg, CANMapping *mapping)
+float apply_formula(float value, CANMapping *mapping)
 {
-		uint8_t offset = mapping->offset;
-		uint8_t length = mapping->length;
-		if (! mapping->bit_mode) {
-				length *= 8;
-				offset *= 8;
-		}
-		uint32_t bitmask = (1 << length) - 1;
-		uint32_t raw_value = (can_msg->data64  >> (7 - offset)) & bitmask;
-
-		if (mapping->big_endian)
-				raw_value = swap_uint32(raw_value);
-
-		float value;
-		value = (float)raw_value;
-
 		value *= mapping->multiplier;
 		if (mapping->divider)
 				value /= mapping->divider;
 		value += mapping->adder;
-
 		return value;
 }
 
-
-
+float map_value(CAN_msg *can_msg, CANMapping *mapping)
+{
+		uint64_t raw_data = can_msg->data64;
+		float value = extract_value(raw_data, mapping);
+		value = apply_formula(value, mapping);
+		return value;
+}
