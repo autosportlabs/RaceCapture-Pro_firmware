@@ -295,6 +295,12 @@ enum CANMappingEndian {
     CANMappingEndian_Little
 };
 
+enum CANMappingType {
+    CANMappingType_unsigned = 0,
+    CANMappingType_signed,
+    CANMappingType_IEEE754
+};
+
 
 typedef struct _CANMapping {
     /* The standard channel configuration */
@@ -316,16 +322,16 @@ typedef struct _CANMapping {
     float adder;
 
     /* flag to indicate bit mode or byte mode for offset and length */
-    uint8_t bit_mode;
+    bool bit_mode;
 
     /* indicates the encoding of the raw data type: unsigned, signed, IEEE 754 floating point */
-    uint8_t type;
+    enum CANMappingType type;
 
     /* the can bus we expect the data to show up on */
     uint8_t can_channel;
 
     /* indicates endian-ness for multi-byte values */
-    uint8_t big_endian;
+    bool big_endian;
 
     /* byte or bit offset of the data to extract within the CAN message */
     uint8_t offset;
@@ -358,7 +364,7 @@ typedef struct _PidConfig {
     CANMapping mapping;
 
     /* flag for passive mode where we only listen for OBDII PID responses */
-    uint8_t passive;
+    bool passive;
 
     /* The OBDII PID to query */
     uint8_t pid;
@@ -601,8 +607,7 @@ ImuConfig * getImuConfigChannel(int channel);
 int filterImuMode(int mode);
 int filterImuChannel(int channel);
 
-uint8_t filter_can_mapping_endian(uint8_t value);
-uint8_t filter_can_channel(uint8_t value);
+uint8_t filter_can_bus_channel(uint8_t value);
 
 unsigned int getHighestSampleRate(LoggerConfig *config);
 size_t get_enabled_channel_count(LoggerConfig *loggerConfig);
