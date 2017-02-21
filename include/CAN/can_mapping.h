@@ -10,8 +10,12 @@
 
 #include "loggerConfig.h"
 #include "CAN.h"
-#include <byteswap.h>
+
+CPP_GUARD_BEGIN
 
 float map_value(CAN_msg *can_msg, CANMapping *mapping);
 
+float foo(void);
+
+CPP_GUARD_END
 #endif /* CAN_MAPPING_H_ */

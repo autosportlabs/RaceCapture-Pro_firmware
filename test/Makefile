@@ -28,6 +28,7 @@ MK2_SRC=$(RCP_BASE)/platform/mk2
 COMMAND_SRC=$(RCP_SRC)/command
 MOCK_DIR=logger_mock
 GPS_DIR=gps
+CAN_OBD2_DIR=can_obd2
 FREE_RTOS_KERNEL_DIR=FreeRTOS_Kernel
 LAP_STATS_DIR=lap_stats
 UTIL_DIR=util
@@ -81,6 +82,7 @@ INCLUDES = \
 -I$(RCP_INC)/units \
 -I$(MOCK_DIR) \
 -I$(GPS_DIR) \
+-I$(CAN_OBD2_DIR) \
 -I$(LAP_STATS_DIR) \
 -I$(FREE_RTOS_KERNEL_DIR)/ \
 -I$(FREE_RTOS_KERNEL_DIR)/include \
@@ -135,6 +137,7 @@ $(GPS_DIR)/geoTriggerTest.cpp \
 $(GPS_DIR)/gps_test.cpp \
 $(LAP_STATS_DIR)/LapStatsTest.cpp \
 $(UTIL_DIR)/numtoa_test.cpp \
+$(CAN_OBD2_DIR)/can_mapping_test.cpp \
 AutoLoggerTest.cpp \
 AtTest.cpp \
 CellularApiStatusKeysTest.cpp \
@@ -153,7 +156,7 @@ ring_buffer_test.cpp \
 sampleRecord_test.cpp \
 sector_test.cpp \
 track_test.cpp \
-virtualChannel_test.cpp \
+virtualChannel_test.cpp
 
 SRC = \
 $(FREE_RTOS_KERNEL_DIR)/stubs/ff.c \
@@ -180,6 +183,7 @@ $(MOCK_DIR)/timer_device_mock.c \
 $(MOCK_DIR)/watchdog_device_mock.c \
 $(RCP_SRC)/ADC/ADC.c \
 $(RCP_SRC)/CAN/CAN.c \
+$(RCP_SRC)/CAN/can_mapping.c \
 $(RCP_SRC)/GPIO/GPIO.c \
 $(RCP_SRC)/LED/led.c \
 $(RCP_SRC)/OBD2/OBD2.c \
@@ -229,6 +233,7 @@ $(RCP_SRC)/tasks/wifi.c \
 $(RCP_SRC)/units/units.c \
 $(RCP_SRC)/usart/usart.c \
 $(RCP_SRC)/util/convert.c \
+$(RCP_SRC)/util/byteswap.c \
 $(RCP_SRC)/util/linear_interpolate.c \
 $(RCP_SRC)/util/modp_numtoa.c \
 $(RCP_SRC)/util/panic.c \

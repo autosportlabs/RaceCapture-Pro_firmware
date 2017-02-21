@@ -19,6 +19,12 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "can_mapping.h"
+#include "byteswap.h"
+#include <byteswap.h>
+
+float foo(void){
+    return 33;
+}
 
 float map_value(CAN_msg *can_msg, CANMapping *mapping)
 {
