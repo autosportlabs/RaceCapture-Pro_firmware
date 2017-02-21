@@ -387,7 +387,7 @@ int api_log(struct Serial *serial, const jsmntok_t *json)
     return API_SUCCESS;
 }
 
-static void json_channelConfig(struct Serial *serial, ChannelConfig *cfg, int more)
+static void json_channelConfig(struct Serial *serial, const ChannelConfig *cfg, int more)
 {
     json_string(serial, "nm", cfg->label, 1);
     json_string(serial, "ut", cfg->units, 1);
@@ -874,7 +874,7 @@ static void setCellConfig(const jsmntok_t *root)
     if (cellCfgNode) {
         CellularConfig *cellCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
         cellCfgNode++;
-        jsmn_exists_set_val_uchar(cellCfgNode, "cellEn", &cellCfg->cellEnabled, NULL);
+        jsmn_exists_set_val_uint8(cellCfgNode, "cellEn", &cellCfg->cellEnabled, NULL);
         jsmn_exists_set_val_string(cellCfgNode, "apnHost", cellCfg->apnHost,
 				   CELL_APN_HOST_LENGTH, true);
         jsmn_exists_set_val_string(cellCfgNode, "apnUser", cellCfg->apnUser,
@@ -890,7 +890,7 @@ static void setBluetoothConfig(const jsmntok_t *root)
     if (btCfgNode != NULL) {
         btCfgNode++;
         BluetoothConfig *btCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
-        jsmn_exists_set_val_uchar(btCfgNode, "btEn", &btCfg->btEnabled, NULL);
+        jsmn_exists_set_val_uint8(btCfgNode, "btEn", &btCfg->btEnabled, NULL);
         jsmn_exists_set_val_string(btCfgNode, "name", btCfg->new_name,
 				   BT_DEVICE_NAME_LENGTH, true);
         jsmn_exists_set_val_string(btCfgNode, "pass", btCfg->new_pin,
@@ -910,7 +910,7 @@ static void setTelemetryConfig(const jsmntok_t *root)
         jsmn_exists_set_val_string(telemetryCfgNode, "host",
 				   telemetryCfg->telemetryServerHost,
 				   TELEMETRY_SERVER_HOST_LENGTH, true);
-        jsmn_exists_set_val_uchar(telemetryCfgNode, "bgStream",
+        jsmn_exists_set_val_uint8(telemetryCfgNode, "bgStream",
 				     &telemetryCfg->backgroundStreaming,
 				     filter_background_streaming_mode);
     }
@@ -1257,7 +1257,7 @@ static void gpsConfigTestAndSet(const jsmntok_t *json, ChannelConfig *cfg,
                                 const char *str, const unsigned short sr)
 {
 	unsigned char test = 0;
-	jsmn_exists_set_val_uchar(json, str, &test, NULL);
+	jsmn_exists_set_val_uint8(json, str, &test, NULL);
 	cfg->sampleRate = test == 0 ? SAMPLE_DISABLED : sr;
 }
 
@@ -1316,7 +1316,7 @@ int api_setCanConfig(struct Serial *serial, const jsmntok_t *json)
 {
 
     CANConfig *canCfg = &getWorkingLoggerConfig()->CanConfig;
-    jsmn_exists_set_val_uchar( json, "en", &canCfg->enabled, NULL);
+    jsmn_exists_set_val_uint8( json, "en", &canCfg->enabled, NULL);
 
     {
             const jsmntok_t *tok = jsmn_find_node(json, "baud");
@@ -1347,7 +1347,7 @@ int api_setCanConfig(struct Serial *serial, const jsmntok_t *json)
     return API_SUCCESS;
 }
 
-static void _json_can_mapping(struct Serial *serial, CANMapping *mapping, int more)
+static void json_put_can_mapping(struct Serial *serial, const CANMapping * mapping, int more)
 {
         json_bool(serial, "bm", mapping->bit_mode, 1);
         json_int(serial, "bus", mapping->can_channel, 1);
@@ -1365,7 +1365,7 @@ static void _json_can_mapping(struct Serial *serial, CANMapping *mapping, int mo
 
 int api_get_can_channel_config(struct Serial *serial, const jsmntok_t *json)
 {
-    CANChannelConfig * can_channel_cfg = &(getWorkingLoggerConfig()->can_channel_cfg);
+    const CANChannelConfig * can_channel_cfg = &(getWorkingLoggerConfig()->can_channel_cfg);
     json_objStart(serial);
     json_objStartString(serial, "canChanCfg");
     json_int(serial, "en", can_channel_cfg->enabled, 1);
@@ -1373,11 +1373,11 @@ int api_get_can_channel_config(struct Serial *serial, const jsmntok_t *json)
 
     json_arrayStart(serial, "chans");
     for (size_t i = 0; i < can_channel_cfg->enabled_mappings; i++) {
-        CANChannel *can_channel = &can_channel_cfg->can_channels[i];
+        const CANChannel *can_channel = &can_channel_cfg->can_channels[i];
 
         json_objStart(serial);
         json_channelConfig(serial, &(can_channel->channel_cfg), 1);
-        _json_can_mapping(serial, &(can_channel->mapping), 0);
+        json_put_can_mapping(serial, &(can_channel->mapping), 0);
         json_objEnd(serial, i < enabled_mappings - 1);
     }
     json_arrayEnd(serial, 0);
@@ -1386,32 +1386,19 @@ int api_get_can_channel_config(struct Serial *serial, const jsmntok_t *json)
     return API_SUCCESS_NO_RETURN;
 }
 
-static int _set_can_mapping(const jsmntok_t *json_mapping, CANMapping *mapping)
+static void set_can_mapping(const jsmntok_t *json_mapping, CANMapping *mapping)
 {
-    /* Validate parameters */
-    uint8_t bit_mode = mapping->bit_mode;
-    jsmn_exists_set_val_bool(json_mapping, "bm", &bit_mode);
+    jsmn_exists_set_val_bool(json_mapping, "bm", &mapping->bit_mode);
 
-    uint8_t offset = mapping->offset;
-    jsmn_exists_set_val_uchar(json_mapping, "offset", &offset, NULL);
+    jsmn_exists_set_val_uint8(json_mapping, "offset", &mapping->offset, NULL);
+    /* rail to maximum CAN mapping offset */
+    mapping->offset = MIN(mapping->offset, MAX_CAN_MAPPING_OFFSET_BYTES * (mapping->bit_mode ? 8 : 1));
 
-    uint8_t length = mapping->length;
-    jsmn_exists_set_val_uchar(json_mapping, "len", &length, NULL);
+    jsmn_exists_set_val_uint8(json_mapping, "len", &mapping->length, NULL);
+    /* rail to maximum CAN mapping length */
+    mapping->length = MIN(mapping->length, MAX_CAN_MAPPING_LENGTH_BYTES * (mapping->bit_mode ? 8 : 1));
 
-    /* check for invalid mapping offsets and length */
-    if (offset > MAX_CAN_MAPPING_OFFSET_BYTES * (bit_mode? 8 : 1))
-            return API_ERROR_PARAMETER;
-
-    if (length > MAX_CAN_MAPPING_OFFSET_BYTES * (bit_mode? 8 : 1))
-            return API_ERROR_PARAMETER;
-
-    /* we made it this far, let's update the mapping */
-    mapping->bit_mode = bit_mode;
-    mapping->offset = offset;
-    mapping->length = length;
-    uint8_t can_bus_channel = 0;
-    jsmn_exists_set_val_uchar(json_mapping, "bus", &can_bus_channel, filter_can_channel);
-    mapping->can_channel = can_bus_channel;
+    jsmn_exists_set_val_uint8(json_mapping, "bus", &mapping->can_channel, filter_can_bus_channel);
 
     jsmn_exists_set_val_int(json_mapping, "id", &mapping->can_id);
     jsmn_exists_set_val_int(json_mapping, "id_mask", &mapping->can_mask);
@@ -1419,8 +1406,7 @@ static int _set_can_mapping(const jsmntok_t *json_mapping, CANMapping *mapping)
     jsmn_exists_set_val_float(json_mapping, "mult", &mapping->multiplier);
     jsmn_exists_set_val_float(json_mapping, "div", &mapping->divider);
     jsmn_exists_set_val_float(json_mapping, "add", &mapping->adder);
-    jsmn_exists_set_val_uchar(json_mapping, "filtId", &mapping->conversion_filter_id, NULL);
-    return API_SUCCESS;
+    jsmn_exists_set_val_uint8(json_mapping, "filtId", &mapping->conversion_filter_id, NULL);
 }
 
 int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
@@ -1458,10 +1444,7 @@ int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
             CANChannel *pid_cfg = can_channel_cfg->can_channels + index;
             ChannelConfig *chCfg = &(pid_cfg->channel_cfg);
 
-            int result = _set_can_mapping(chans_tok, &(pid_cfg->mapping));
-            if (result != API_SUCCESS)
-                    return result;
-
+            set_can_mapping(chans_tok, &(pid_cfg->mapping));
             chans_tok = setChannelConfig(serial, chans_tok, chCfg, NULL, NULL);
         }
         if (index > can_channel_cfg->enabled_mappings || last)
@@ -1469,7 +1452,7 @@ int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
     }
 
     /* set the global enabled flag, if present */
-    jsmn_exists_set_val_uchar(json, "en", &can_channel_cfg->enabled, NULL);
+    jsmn_exists_set_val_uint8(json, "en", &can_channel_cfg->enabled, NULL);
 
     return API_SUCCESS;
 }
@@ -1489,7 +1472,7 @@ int api_getObd2Config(struct Serial *serial, const jsmntok_t *json)
         PidConfig *pidCfg = &obd2Cfg->pids[i];
         json_objStart(serial);
         json_channelConfig(serial, &(pidCfg->cfg), 1);
-        _json_can_mapping(serial, &(pidCfg->mapping), 1);
+        json_put_can_mapping(serial, &(pidCfg->mapping), 1);
         json_int(serial,"pid",pidCfg->pid, 1);
         json_int(serial, "mode", pidCfg->mode, 1);
         json_bool(serial, "pass", pidCfg->passive, 0);
@@ -1538,10 +1521,7 @@ int api_setObd2Config(struct Serial *serial, const jsmntok_t *json)
             jsmn_exists_set_val_int(pids_tok, "pid", &pid_cfg->pid);
             jsmn_exists_set_val_int(pids_tok, "mode", &pid_cfg->mode);
             jsmn_exists_set_val_bool(pids_tok, "pass", &pid_cfg->passive);
-            int result = _set_can_mapping(pids_tok, &(pid_cfg->mapping));
-            if (result != API_SUCCESS)
-                    return result;
-
+            set_can_mapping(pids_tok, &(pid_cfg->mapping));
             pids_tok = setChannelConfig(serial, pids_tok, &(pid_cfg->cfg), NULL, NULL);
         }
         /* update the number of PIDs enabled in the list as needed */
@@ -1550,7 +1530,7 @@ int api_setObd2Config(struct Serial *serial, const jsmntok_t *json)
     }
 
     /* set the global enabled flag, if present */
-    jsmn_exists_set_val_uchar(json, "en", &obd2Cfg->enabled, NULL);
+    jsmn_exists_set_val_uint8(json, "en", &obd2Cfg->enabled, NULL);
 
     configChanged();
     return API_SUCCESS;
@@ -1736,7 +1716,7 @@ static void setTrack(const jsmntok_t *trackNode, Track *track)
 {
     jsmn_exists_set_val_int(trackNode, "id", (int*)&(track->trackId));
     unsigned char trackType;
-    if (jsmn_exists_set_val_uchar(trackNode, "type", &trackType, NULL)) {
+    if (jsmn_exists_set_val_uint8(trackNode, "type", &trackType, NULL)) {
         track->track_type = (enum TrackType) trackType;
         GeoPoint *sectorsList = track->circuit.sectors;
         size_t maxSectors = CIRCUIT_SECTOR_COUNT;
@@ -1786,7 +1766,7 @@ int api_setTrackConfig(struct Serial *serial, const jsmntok_t *json)
 
     TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs);
     jsmn_exists_set_val_float(json, "rad", &trackCfg->radius);
-    jsmn_exists_set_val_uchar(json, "autoDetect", &trackCfg->auto_detect, NULL);
+    jsmn_exists_set_val_uint8(json, "autoDetect", &trackCfg->auto_detect, NULL);
 
     const jsmntok_t *track = jsmn_find_node(json, "track");
     if (track != NULL)
@@ -1816,7 +1796,7 @@ int api_addTrackDb(struct Serial *serial, const jsmntok_t *json)
     unsigned char mode = 0;
     int index = 0;
 
-    if (jsmn_exists_set_val_uchar(json, "mode", &mode, NULL) && jsmn_exists_set_val_int(json, "index", &index)) {
+    if (jsmn_exists_set_val_uint8(json, "mode", &mode, NULL) && jsmn_exists_set_val_int(json, "index", &index)) {
         Track track;
         const jsmntok_t *trackNode = jsmn_find_node(json, "track");
         if (trackNode != NULL)

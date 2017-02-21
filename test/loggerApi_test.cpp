@@ -1154,7 +1154,7 @@ void LoggerApiTest::testGetCanChanCfgFile(string filename)
         mp->adder = (float)6 + i;
         mp->offset = 3;
         mp->length = 1;
-        mp->type = 4;
+        mp->type = CANMappingType_signed;
     }
 
     const char *response = processApiGeneric(filename);
@@ -1179,7 +1179,7 @@ void LoggerApiTest::testGetCanChanCfgFile(string filename)
         CPPUNIT_ASSERT_EQUAL((float)(6 + i), (float)(Number)ch["add"]);
         CPPUNIT_ASSERT_EQUAL((int)(3), (int)(Number)ch["offset"]);
         CPPUNIT_ASSERT_EQUAL((int)(1), (int)(Number)ch["len"]);
-        CPPUNIT_ASSERT_EQUAL((int)(4), (int)(Number)ch["type"]);
+        CPPUNIT_ASSERT_EQUAL(CANMappingType_signed, (CANMappingType)(int)(Number)ch["type"]);
     }
 }
 

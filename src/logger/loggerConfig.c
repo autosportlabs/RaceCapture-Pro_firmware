@@ -30,6 +30,7 @@
 #include "timer_config.h"
 #include "units.h"
 #include "virtual_channel.h"
+#include "stdutil.h"
 #include <stdbool.h>
 #include <string.h>
 
@@ -199,12 +200,11 @@ static void resetCanConfig(CANConfig *cfg)
     }
 }
 
-uint8_t filter_can_channel(uint8_t value)
+uint8_t filter_can_bus_channel(uint8_t value)
 {
-        if (value >= CONFIG_CAN_CHANNELS)
-            value = CONFIG_CAN_CHANNELS - 1;
-        return value;
+        return MIN(value, CONFIG_CAN_CHANNELS - 1);
 }
+
 static void _reset_can_mapping_config(CANChannelConfig *cfg)
 {
     memset(cfg, 0, sizeof(CANChannelConfig));
