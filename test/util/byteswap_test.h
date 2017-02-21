@@ -19,40 +19,29 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _BYTESWAP_H_
-#define _BYTESWAP_H_
+#ifndef BYTESWAPTEST_H
+#define BYTESWAPTEST_H
 
-#include "cpp_guard.h"
+#include <cppunit/extensions/HelperMacros.h>
 
-#include <stdint.h>
+class ByteswapTest : public CppUnit::TestFixture
+{
+    CPPUNIT_TEST_SUITE( ByteswapTest );
+    CPPUNIT_TEST( test_uint16_swap );
+    CPPUNIT_TEST( test_int16_swap );
+    CPPUNIT_TEST( test_uint24_swap );
+    CPPUNIT_TEST( test_uint32_swap );
+    CPPUNIT_TEST( test_int32_swap );
+    CPPUNIT_TEST_SUITE_END();
 
-CPP_GUARD_BEGIN
+public:
+    void setUp();
+    void tearDown();
+    void test_uint16_swap(void);
+    void test_int16_swap(void);
+    void test_uint24_swap(void);
+    void test_uint32_swap(void);
+    void test_int32_swap(void);
+};
 
-/*
- * Byte swap unsigned 16 bits
- */
-uint16_t swap_uint16( uint16_t val );
-
-/*
- * Byte swap signed 16 bits
- */
-int16_t swap_int16( int16_t val );
-
-/*
-* Byte swap unsigned 24 bits
-*/
-uint32_t swap_uint24( int32_t val );
-
-/*
- * Byte swap signed 32 bits
- */
-int32_t swap_int32( int32_t val );
-
-/*
- * Byte swap unsigned 32 bits
- */
-uint32_t swap_uint32( uint32_t val );
-
-CPP_GUARD_END
-
-#endif /* _BYTESWAP_H_ */
+#endif  // BYTESWAPTEST_H

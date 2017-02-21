@@ -137,6 +137,7 @@ $(GPS_DIR)/geoTriggerTest.cpp \
 $(GPS_DIR)/gps_test.cpp \
 $(LAP_STATS_DIR)/LapStatsTest.cpp \
 $(UTIL_DIR)/numtoa_test.cpp \
+$(UTIL_DIR)/byteswap_test.cpp \
 $(CAN_OBD2_DIR)/can_mapping_test.cpp \
 AutoLoggerTest.cpp \
 AtTest.cpp \

@@ -13,12 +13,14 @@
 class CANMappingTest : public CppUnit::TestFixture
 {
     CPPUNIT_TEST_SUITE( CANMappingTest );
+    CPPUNIT_TEST( id_match_test );
     CPPUNIT_TEST( mapping_test );
     CPPUNIT_TEST( formula_test );
     CPPUNIT_TEST( extract_test );
     CPPUNIT_TEST_SUITE_END();
 
 public:
+    void id_match_test(void);
     void mapping_test(void);
     void formula_test(void);
     void extract_test(void);

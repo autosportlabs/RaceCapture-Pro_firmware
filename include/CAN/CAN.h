@@ -44,6 +44,8 @@ typedef struct _CAN_msg {
     unsigned char dataLength;
     union {
     	unsigned char data[CAN_MSG_SIZE];
+    	uint16_t data16[CAN_MSG_SIZE / 2];
+    	uint32_t data32[CAN_MSG_SIZE / 4];
     	uint64_t data64;
     };
 } CAN_msg;
