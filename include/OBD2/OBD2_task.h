@@ -28,12 +28,11 @@
 
 CPP_GUARD_BEGIN
 
-bool CAN_init_current_values(size_t values);
 float CAN_get_current_channel_value(int index);
-void CAN_set_current_channel_value(int index, float value);
+
+float OBD2_get_current_channel_value(int index);
 
 void startOBD2Task(int priority);
-void OBD2Task(void *parameters);
 
 CPP_GUARD_END
 

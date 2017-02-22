@@ -35,171 +35,178 @@
 #include "capabilities.h"
 #include "mem_mang.h"
 #include "can_mapping.h"
+#include "stdutil.h"
 #include <string.h>
 
 #define OBD2_TASK_STACK 	128
 #define OBD2_FEATURE_DISABLED_DELAY_MS 2000
 #define CAN_MAPPING_FEATURE_DISABLED_MS 2000
-#define CAN_RX_DELAY 1000
+#define CAN_RX_DELAY 300
+
+
+#define STANDARD_PID_RESPONSE           0x7e8
 
 #define _LOG_PFX            "[CAN] "
-typedef struct _CANTaskParams {
-        uint8_t can_bus;
-        bool obd2_enabled;
-} CANTaskParams;
 
 static float * CAN_current_values = NULL;
-static size_t current_obd2_pid = 0;
+
+
+static float * OBD2_current_values = NULL;
+static size_t current_obd2_pid_index = 0;
 static size_t last_obd2_query_timestamp = 0;
 
-bool CAN_init_current_values(size_t values) {
-    if (CAN_current_values != NULL)
-            portFree(CAN_current_values);
+static bool OBD2_init_current_values(size_t values) {
+        if (OBD2_current_values != NULL)
+                portFree(OBD2_current_values);
 
-    size_t size = sizeof(float[values]);
-    CAN_current_values = portMalloc(size);
+        values = MAX(1, values);
+        size_t size = sizeof(float[values]);
+        OBD2_current_values = portMalloc(size);
 
-    if (CAN_current_values != NULL)
-            memset(CAN_current_values, 0, size);
+        return OBD2_current_values != NULL;
+}
 
-    return CAN_current_values != NULL;
+float OBD2_get_current_channel_value(int index) {
+    if (OBD2_current_values == NULL)
+            return 0;
+    return OBD2_current_values[index];
+}
+
+static void OBD2_set_current_channel_value(int index, float value)
+{
+        if (OBD2_current_values == NULL)
+                return;
+        OBD2_current_values[index] = value;
+}
+
+static bool CAN_init_current_values(size_t values) {
+        if (CAN_current_values != NULL)
+                portFree(CAN_current_values);
+
+        values = MAX(1, values);
+        size_t size = sizeof(float[values]);
+        CAN_current_values = portMalloc(size);
+
+        if (CAN_current_values != NULL)
+                memset(CAN_current_values, 0, size);
+
+        return CAN_current_values != NULL;
 }
 
 float CAN_get_current_channel_value(int index) {
-    if (CAN_current_values == NULL)
-            return 0;
-    return CAN_current_values[index];
+        if (CAN_current_values == NULL)
+                return 0;
+        return CAN_current_values[index];
 }
 
-void CAN_set_current_channel_value(int index, float value)
+static void CAN_set_current_channel_value(int index, float value)
 {
-    if (CAN_current_values == NULL)
-            return;
-    CAN_current_values[index] = value;
+        if (CAN_current_values == NULL)
+                return;
+        CAN_current_values[index] = value;
+}
+
+static void check_sequence_next_obd2_query(OBD2Config * obd2_config, uint16_t enabled_obd2_pids_count)
+{
+        /* Should we send a PID request? */
+        if (!last_obd2_query_timestamp || isTimeoutMs(last_obd2_query_timestamp, OBD2_PID_DEFAULT_TIMEOUT_MS)) {
+
+                current_obd2_pid_index++;
+                if (current_obd2_pid_index >= enabled_obd2_pids_count)
+                        current_obd2_pid_index = 0;
+
+                PidConfig * pid_cfg = &obd2_config->pids[current_obd2_pid_index];
+                if (OBD2_request_PID(pid_cfg->pid, pid_cfg->mode, OBD2_PID_REQUEST_TIMEOUT_MS)) {
+                        last_obd2_query_timestamp = getCurrentTicks();
+                }
+        }
+}
+
+static void update_can_channels(CAN_msg *msg, uint8_t can_bus, CANChannelConfig *cfg, uint16_t enabled_mapping_count)
+{
+        for (size_t i = 0; i < enabled_mapping_count; i++) {
+                CANMapping *mapping = &cfg->can_channels[i].mapping;
+                /* only process the mapping for the bus we're handling messages for */
+                if (can_bus != mapping->can_channel)
+                        continue;
+
+                float value;
+                /* map the CAN message to the value */
+                bool result = canmapping_map_value(&value, msg, mapping);
+                if (!result)
+                        continue;
+
+                CAN_set_current_channel_value(i, value);
+                }
+}
+
+static void update_obd2_channels(CAN_msg *msg, OBD2Config *cfg)
+{
+        PidConfig *pid_config = &cfg->pids[current_obd2_pid_index];
+        /* Did we get an OBDII PID we were waiting for? */
+        if (last_obd2_query_timestamp &&
+            msg->addressValue == STANDARD_PID_RESPONSE &&
+            msg->data[2] == pid_config->pid ) {
+                    float value;
+                    bool result = canmapping_map_value(&value, msg, &pid_config->mapping);
+                    if (result)
+                            OBD2_set_current_channel_value(current_obd2_pid_index, value);
+
+                    /* PID request is complete */
+                    last_obd2_query_timestamp = 0;
+        }
+}
+
+static void OBD2Task(void *parameters)
+{
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        CANChannelConfig *ccc = &lc->can_channel_cfg;
+        OBD2Config *oc = &lc->OBD2Configs;
+
+        while(1) {
+                uint16_t enabled_mapping_count = 0;
+                uint16_t enabled_obd2_pids_count = 0;
+                bool success;
+
+                uint16_t new_enabled_mapping_count = ccc->enabled_mappings;
+                success = CAN_init_current_values(new_enabled_mapping_count);
+                enabled_mapping_count = success ? new_enabled_mapping_count : 0;
+                if (!success)
+                        pr_error_int_msg("Failed to create buffer for CAN channels; size ", new_enabled_mapping_count);
+
+                uint16_t new_enabled_obd2_pids_count = oc->enabledPids;
+                success = OBD2_init_current_values(new_enabled_obd2_pids_count);
+                enabled_obd2_pids_count = success ? new_enabled_obd2_pids_count : 0;
+                if (!success)
+                        pr_error_int_msg("Failed to create buffer for OBD2 channels; size ", new_enabled_obd2_pids_count);
+
+
+                bool config_changed = false;
+
+
+                while(! config_changed) {
+                        CAN_msg msg;
+                        int result = CAN_rx_msg(0, &msg, CAN_RX_DELAY );
+
+                        if (result) {
+                                if (ccc->enabled)
+                                        update_can_channels(&msg, 0, ccc, enabled_mapping_count);
+
+                                if (oc->enabled)
+                                        update_obd2_channels(&msg, oc);
+                        }
+                        if (oc->enabled)
+                                check_sequence_next_obd2_query(oc, enabled_obd2_pids_count);
+
+                        config_changed = (enabled_mapping_count != ccc->enabled_mappings || enabled_obd2_pids_count != oc->enabledPids);
+                }
+                delayMs(CAN_MAPPING_FEATURE_DISABLED_MS);
+        }
 }
 
 void startOBD2Task(int priority)
 {
-    for (uint8_t bus = 0; bus < CAN_CHANNELS; bus++ ) {
-            CANTaskParams * params = (CANTaskParams *)portMalloc(sizeof(CANTaskParams));
-            params->can_bus = bus;
-            params->obd2_enabled = bus == 0 ? true : false;
-
-            /* Make all task names 16 chars including NULL char*/
-            static const signed portCHAR task_name[] = "CAN Task       ";
-            xTaskCreate(OBD2Task, task_name, OBD2_TASK_STACK, params, priority, NULL );
-    }
-}
-
-/*
-static void OBD2Task2(void *pvParameters)
-{
-    pr_info("Start OBD2 task\r\n");
-    size_t max_obd2_samplerate = msToTicks((TICK_RATE_HZ / MAX_OBD2_SAMPLE_RATE));
-    LoggerConfig *config = getWorkingLoggerConfig();
-    OBD2Config *oc = &config->OBD2Configs;
-    while(1) {
-        while(oc->enabled && oc->enabledPids > 0) {
-            for (size_t i = 0; i < oc->enabledPids; i++) {
-                PidConfig *pidCfg = &oc->pids[i];
-                int value;
-                unsigned char pid = pidCfg->pid;
-                if (OBD2_request_PID(pid, &value, OBD2_PID_DEFAULT_TIMEOUT_MS)) {
-                    OBD2_set_current_PID_value(i, value);
-                    if (TRACE_LEVEL) {
-                        pr_trace("read OBD2 PID ");
-                        pr_trace_int(pid);
-                        pr_trace("=")
-                        pr_trace_int(value);
-                        pr_trace("\r\n");
-                    }
-                } else {
-                    pr_warning_int_msg("OBD2: PID read fail: ", pid);
-                }
-                delayTicks(max_obd2_samplerate);
-            }
-        }
-        delayMs(OBD2_FEATURE_DISABLED_DELAY_MS);
-    }
-}
-*/
-
-static void sequence_next_obd2_query(void)
-{
-		LoggerConfig *config = getWorkingLoggerConfig();
-		OBD2Config *oc = &config->OBD2Configs;
-
-		uint16_t enabled_pids = oc->enabledPids;
-
-		if (current_obd2_pid >= enabled_pids)
-				current_obd2_pid = 0;
-
-		if (!last_obd2_query_timestamp || isTimeoutMs(last_obd2_query_timestamp, 100)) {
-			if (OBD2_request_PID(pid, &value, OBD2_PID_DEFAULT_TIMEOUT_MS)) {
-					last_obd2_query_timestamp = getCurrentTicks();
-			}
-}
-
-static void check_obd2_response(CAN_msg *msg, OBD2Config * obd2_config)
-{
-		PidConfig *pid_config = obd2_config->pids[current_obd2_pid];
-		if (msg->addressValue == STANDARD_PID_RESPONSE && msg->data[2] == pid_config->pid ) {
-
-				current_obd2_pid++;
-				last_obd2_query_timestamp = 0;
-		}
-}
-
-void OBD2Task(void *parameters)
-{
-        CANTaskParams *params = (CANTaskParams *)parameters;
-        uint8_t can_bus = params->can_bus;
-        bool obd2_enabled = params->obd2_enabled;
-        portFree(params);
-
-        pr_info_int_msg(_LOG_PFX "Start CAN task ", can_bus);
-
-        LoggerConfig *config = getWorkingLoggerConfig();
-        CANChannelConfig *ccc = &config->can_channel_cfg;
-        OBD2Config *oc = &config->OBD2Configs;
-
-        size_t enabled_mapping_count = 0;
-        while(1) {
-        		if (obd2_enabled)
-        				sequence_next_obd2_query();
-
-                size_t new_enabled_mapping_count = ccc->enabled_mappings;
-                /* if the number of mappings changed, re-initialize our current values buffer */
-                if (new_enabled_mapping_count != enabled_mapping_count) {
-                        bool success = CAN_init_current_values(new_enabled_mapping_count);
-                        enabled_mapping_count = success ? new_enabled_mapping_count : 0;
-                        if (!success)
-                                pr_error_int_msg("Failed to create buffer for CAN channels; size ", new_enabled_mapping_count);
-                }
-                while(ccc->enabled && enabled_mapping_count > 0 && ccc->enabled_mappings == enabled_mapping_count) {
-                        CAN_msg msg;
-                        int result = CAN_rx_msg(can_bus, &msg, CAN_RX_DELAY );
-                        if (!result)
-                                continue;
-
-                        if (obd2_enabled)
-                        		check_obd2_response(&msg);
-
-                        for (size_t i = 0; i < ccc->enabled_mappings; i++) {
-                                CANMapping *mapping = &ccc->can_channels[i].mapping;
-                                /* only process the mapping for the bus we're handling messages for */
-                                if (can_bus != mapping->can_channel)
-                                        continue;
-
-                                float value;
-                                /* map the CAN message to the value */
-                                bool result = canmapping_map_value(&value, &msg, mapping);
-                                if (!result)
-                                        continue;
-
-                                CAN_set_current_channel_value(i, value);
-                                }
-                }
-                delayMs(CAN_MAPPING_FEATURE_DISABLED_MS);
-        }
+        /* Make all task names 16 chars including NULL char*/
+        static const signed portCHAR task_name[] = "CAN Task       ";
+        xTaskCreate(OBD2Task, task_name, OBD2_TASK_STACK, NULL, priority, NULL );
 }

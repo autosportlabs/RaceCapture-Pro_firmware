@@ -750,24 +750,18 @@ static int lua_obd2_read(lua_State *L)
 {
         lua_validate_args_count(L, 1, 2);
 
-        size_t pid;
-        size_t timeout = OBD2_PID_DEFAULT_TIMEOUT_MS;
+        uint8_t pid;
 
         switch(lua_gettop(L)) {
         default:
                 return lua_panic(L);
         case 2:
-                lua_validate_arg_number(L, 2);
-                timeout = lua_tointeger(L, 2);
         case 1:
                 lua_validate_arg_number(L, 1);
                 pid = lua_tointeger(L, 1);
         }
 
-        int value;
-        if (!OBD2_request_PID(pid, &value, timeout))
-                return 0;
-
+        int value = OBD2_get_value_for_pid(pid);
         lua_pushnumber(L, value);
         return 1;
 }

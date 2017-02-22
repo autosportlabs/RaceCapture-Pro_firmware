@@ -303,8 +303,8 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     const unsigned char enabled = loggerConfig->OBD2Configs.enabled;
     for (size_t i = 0; i < obd2Config->enabledPids && enabled; i++) {
         chanCfg = &(obd2Config->pids[i].cfg);
-        sample = processChannelSampleWithIntGetter(sample, chanCfg, i,
-                                                   OBD2_get_current_PID_value);
+        sample = processChannelSampleWithFloatGetter(sample, chanCfg, i,
+                                                   OBD2_get_current_channel_value);
     }
 
     CANChannelConfig *ccc = &(loggerConfig->can_channel_cfg);
