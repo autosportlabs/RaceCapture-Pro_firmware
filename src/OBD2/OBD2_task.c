@@ -42,15 +42,24 @@
 #define CAN_MAPPING_FEATURE_DISABLED_MS 2000
 #define CAN_RX_DELAY 1000
 
+#define _LOG_PFX            "[CAN] "
+typedef struct _CANTaskParams {
+        uint8_t can_bus;
+        bool obd2_enabled;
+} CANTaskParams;
 
 static float * CAN_current_values = NULL;
 
 bool CAN_init_current_values(size_t values) {
     if (CAN_current_values != NULL)
             portFree(CAN_current_values);
+
     size_t size = sizeof(float[values]);
     CAN_current_values = portMalloc(size);
-    memset(CAN_current_values, 0, size);
+
+    if (CAN_current_values != NULL)
+            memset(CAN_current_values, 0, size);
+
     return CAN_current_values != NULL;
 }
 
@@ -69,10 +78,15 @@ void CAN_set_current_channel_value(int index, float value)
 
 void startOBD2Task(int priority)
 {
-        /* Make all task names 16 chars including NULL char*/
-        static const signed portCHAR task_name[] = "OBD-II Task    ";
-        xTaskCreate(OBD2Task, task_name, OBD2_TASK_STACK, NULL,
-                    priority, NULL );
+    for (uint8_t bus = 0; bus < CAN_CHANNELS; bus++ ) {
+            CANTaskParams * params = (CANTaskParams *)portMalloc(sizeof(CANTaskParams));
+            params->can_bus = bus;
+            params->obd2_enabled = bus == 0 ? true : false;
+
+            /* Make all task names 16 chars including NULL char*/
+            static const signed portCHAR task_name[] = "CAN Task";
+            xTaskCreate(OBD2Task, task_name, OBD2_TASK_STACK, params, priority, NULL );
+    }
 }
 
 /*
@@ -107,9 +121,16 @@ static void OBD2Task2(void *pvParameters)
     }
 }
 */
-void OBD2Task(void *pvParameters)
+void OBD2Task(void *parameters)
 {
-        pr_info("Start CAN task\r\n");
+        CANTaskParams *params = (CANTaskParams *)parameters;
+        uint8_t can_bus = params->can_bus;
+        bool obd2_enabled = params->obd2_enabled;
+        portFree(params);
+
+        obd2_enabled = obd2_enabled;
+        pr_info_int_msg(_LOG_PFX "Start CAN task ", can_bus);
+
         LoggerConfig *config = getWorkingLoggerConfig();
         CANChannelConfig *ccc = &config->can_channel_cfg;
         size_t enabled_mapping_count = 0;
@@ -119,22 +140,28 @@ void OBD2Task(void *pvParameters)
                 if (new_enabled_mapping_count != enabled_mapping_count) {
                         bool success = CAN_init_current_values(new_enabled_mapping_count);
                         enabled_mapping_count = success ? new_enabled_mapping_count : 0;
-                        pr_error_int_msg("Failed to create buffer for CAN channels; size ", new_enabled_mapping_count);
+                        if (!success)
+                                pr_error_int_msg("Failed to create buffer for CAN channels; size ", new_enabled_mapping_count);
                 }
                 while(ccc->enabled && enabled_mapping_count > 0 && ccc->enabled_mappings == enabled_mapping_count) {
                         CAN_msg msg;
-                        int result = CAN_rx_msg(0, &msg, CAN_RX_DELAY );
+                        int result = CAN_rx_msg(can_bus, &msg, CAN_RX_DELAY );
                         if (!result)
                                 continue;
 
                         for (size_t i = 0; i < ccc->enabled_mappings; i++) {
-                                float value;
                                 CANMapping *mapping = &ccc->can_channels[i].mapping;
+                                /* only process the mapping for the bus we're handling messages for */
+                                if (can_bus != mapping->can_channel)
+                                        continue;
+
+                                float value;
+                                /* map the CAN message to the value */
                                 bool result = canmapping_map_value(&value, &msg, mapping);
                                 if (!result)
                                         continue;
+
                                 CAN_set_current_channel_value(i, value);
-                                pr_info_float_msg("setting CAN value ", value);
                                 }
                 }
                 delayMs(CAN_MAPPING_FEATURE_DISABLED_MS);
