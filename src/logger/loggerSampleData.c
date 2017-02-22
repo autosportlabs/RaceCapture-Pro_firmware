@@ -70,6 +70,7 @@ static ChannelSample* processChannelSampleWithFloatGetter(ChannelSample *s,
     return ++s;
 }
 
+#if GPIO_CHANNELS > 0
 static ChannelSample* processChannelSampleWithIntGetter(ChannelSample *s,
         ChannelConfig *cfg,
         const size_t index,
@@ -85,6 +86,7 @@ static ChannelSample* processChannelSampleWithIntGetter(ChannelSample *s,
 
     return ++s;
 }
+#endif
 
 static ChannelSample* processChannelSampleWithFloatGetterNoarg(ChannelSample *s,
         ChannelConfig *cfg,
