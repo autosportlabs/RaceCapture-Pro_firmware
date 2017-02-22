@@ -23,8 +23,14 @@
 #define OBD2_TASK_H_
 
 #include "cpp_guard.h"
+#include <stdbool.h>
+#include <stddef.h>
 
 CPP_GUARD_BEGIN
+
+bool CAN_init_current_values(size_t values);
+float CAN_get_current_channel_value(int index);
+void CAN_set_current_channel_value(int index, float value);
 
 void startOBD2Task(int priority);
 void OBD2Task(void *pvParameters);

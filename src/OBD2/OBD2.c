@@ -28,13 +28,12 @@
 #include "task.h"
 #include "taskUtil.h"
 
-
 #define STANDARD_PID_RESPONSE 			0x7e8
 #define CUSTOM_MODE_SHOW_CURRENT_DATA 	0x41
 
 static int OBD2_current_values[OBD2_CHANNELS];
 
-void OBD2_set_current_PID_value(size_t index, int value)
+void OBD2_set_current_PID_value(int index, int value)
 {
     if (index < OBD2_CHANNELS) {
         OBD2_current_values[index] = value;

@@ -33,9 +33,39 @@
 #include "semphr.h"
 #include "taskUtil.h"
 #include "capabilities.h"
+#include "mem_mang.h"
+#include "can_mapping.h"
+#include <string.h>
 
 #define OBD2_TASK_STACK 	128
 #define OBD2_FEATURE_DISABLED_DELAY_MS 2000
+#define CAN_MAPPING_FEATURE_DISABLED_MS 2000
+#define CAN_RX_DELAY 1000
+
+
+static float * CAN_current_values = NULL;
+
+bool CAN_init_current_values(size_t values) {
+    if (CAN_current_values != NULL)
+            portFree(CAN_current_values);
+    size_t size = sizeof(float[values]);
+    CAN_current_values = portMalloc(size);
+    memset(CAN_current_values, 0, size);
+    return CAN_current_values != NULL;
+}
+
+float CAN_get_current_channel_value(int index) {
+    if (CAN_current_values == NULL)
+            return 0;
+    return CAN_current_values[index];
+}
+
+void CAN_set_current_channel_value(int index, float value)
+{
+    if (CAN_current_values == NULL)
+            return;
+    CAN_current_values[index] = value;
+}
 
 void startOBD2Task(int priority)
 {
@@ -45,7 +75,8 @@ void startOBD2Task(int priority)
                     priority, NULL );
 }
 
-void OBD2Task(void *pvParameters)
+/*
+static void OBD2Task2(void *pvParameters)
 {
     pr_info("Start OBD2 task\r\n");
     size_t max_obd2_samplerate = msToTicks((TICK_RATE_HZ / MAX_OBD2_SAMPLE_RATE));
@@ -74,4 +105,38 @@ void OBD2Task(void *pvParameters)
         }
         delayMs(OBD2_FEATURE_DISABLED_DELAY_MS);
     }
+}
+*/
+void OBD2Task(void *pvParameters)
+{
+        pr_info("Start CAN task\r\n");
+        LoggerConfig *config = getWorkingLoggerConfig();
+        CANChannelConfig *ccc = &config->can_channel_cfg;
+        size_t enabled_mapping_count = 0;
+        while(1) {
+                size_t new_enabled_mapping_count = ccc->enabled_mappings;
+                /* if the number of mappings changed, re-initialize our current values buffer */
+                if (new_enabled_mapping_count != enabled_mapping_count) {
+                        bool success = CAN_init_current_values(new_enabled_mapping_count);
+                        enabled_mapping_count = success ? new_enabled_mapping_count : 0;
+                        pr_error_int_msg("Failed to create buffer for CAN channels; size ", new_enabled_mapping_count);
+                }
+                while(ccc->enabled && enabled_mapping_count > 0 && ccc->enabled_mappings == enabled_mapping_count) {
+                        CAN_msg msg;
+                        int result = CAN_rx_msg(0, &msg, CAN_RX_DELAY );
+                        if (!result)
+                                continue;
+
+                        for (size_t i = 0; i < ccc->enabled_mappings; i++) {
+                                float value;
+                                CANMapping *mapping = &ccc->can_channels[i].mapping;
+                                bool result = canmapping_map_value(&value, &msg, mapping);
+                                if (!result)
+                                        continue;
+                                CAN_set_current_channel_value(i, value);
+                                pr_info_float_msg("setting CAN value ", value);
+                                }
+                }
+                delayMs(CAN_MAPPING_FEATURE_DISABLED_MS);
+        }
 }

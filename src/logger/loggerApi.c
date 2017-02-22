@@ -1453,7 +1453,7 @@ int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
 
     /* set the global enabled flag, if present */
     jsmn_exists_set_val_uint8(json, "en", &can_channel_cfg->enabled, NULL);
-
+    configChanged();
     return API_SUCCESS;
 }
 

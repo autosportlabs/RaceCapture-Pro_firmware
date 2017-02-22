@@ -23,6 +23,7 @@
 #include "FreeRTOS.h"
 #include "GPIO.h"
 #include "OBD2.h"
+#include "OBD2_task.h"
 #include "PWM.h"
 #include "channel_config.h"
 #include "dateTime.h"
@@ -304,6 +305,13 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
         chanCfg = &(obd2Config->pids[i].cfg);
         sample = processChannelSampleWithIntGetter(sample, chanCfg, i,
                                                    OBD2_get_current_PID_value);
+    }
+
+    CANChannelConfig *ccc = &(loggerConfig->can_channel_cfg);
+    for (size_t i = 0; i < ccc->enabled_mappings && ccc->enabled; i++) {
+            chanCfg = &(ccc->can_channels[i].channel_cfg);
+            sample = processChannelSampleWithFloatGetter(sample, chanCfg, i,
+                                                       CAN_get_current_channel_value);
     }
 
 #if VIRTUAL_CHANNEL_SUPPORT
