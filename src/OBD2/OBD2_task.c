@@ -49,6 +49,8 @@ typedef struct _CANTaskParams {
 } CANTaskParams;
 
 static float * CAN_current_values = NULL;
+static size_t current_obd2_pid = 0;
+static size_t last_obd2_query_timestamp = 0;
 
 bool CAN_init_current_values(size_t values) {
     if (CAN_current_values != NULL)
@@ -84,7 +86,7 @@ void startOBD2Task(int priority)
             params->obd2_enabled = bus == 0 ? true : false;
 
             /* Make all task names 16 chars including NULL char*/
-            static const signed portCHAR task_name[] = "CAN Task";
+            static const signed portCHAR task_name[] = "CAN Task       ";
             xTaskCreate(OBD2Task, task_name, OBD2_TASK_STACK, params, priority, NULL );
     }
 }
@@ -121,6 +123,33 @@ static void OBD2Task2(void *pvParameters)
     }
 }
 */
+
+static void sequence_next_obd2_query(void)
+{
+		LoggerConfig *config = getWorkingLoggerConfig();
+		OBD2Config *oc = &config->OBD2Configs;
+
+		uint16_t enabled_pids = oc->enabledPids;
+
+		if (current_obd2_pid >= enabled_pids)
+				current_obd2_pid = 0;
+
+		if (!last_obd2_query_timestamp || isTimeoutMs(last_obd2_query_timestamp, 100)) {
+			if (OBD2_request_PID(pid, &value, OBD2_PID_DEFAULT_TIMEOUT_MS)) {
+					last_obd2_query_timestamp = getCurrentTicks();
+			}
+}
+
+static void check_obd2_response(CAN_msg *msg, OBD2Config * obd2_config)
+{
+		PidConfig *pid_config = obd2_config->pids[current_obd2_pid];
+		if (msg->addressValue == STANDARD_PID_RESPONSE && msg->data[2] == pid_config->pid ) {
+
+				current_obd2_pid++;
+				last_obd2_query_timestamp = 0;
+		}
+}
+
 void OBD2Task(void *parameters)
 {
         CANTaskParams *params = (CANTaskParams *)parameters;
@@ -128,13 +157,17 @@ void OBD2Task(void *parameters)
         bool obd2_enabled = params->obd2_enabled;
         portFree(params);
 
-        obd2_enabled = obd2_enabled;
         pr_info_int_msg(_LOG_PFX "Start CAN task ", can_bus);
 
         LoggerConfig *config = getWorkingLoggerConfig();
         CANChannelConfig *ccc = &config->can_channel_cfg;
+        OBD2Config *oc = &config->OBD2Configs;
+
         size_t enabled_mapping_count = 0;
         while(1) {
+        		if (obd2_enabled)
+        				sequence_next_obd2_query();
+
                 size_t new_enabled_mapping_count = ccc->enabled_mappings;
                 /* if the number of mappings changed, re-initialize our current values buffer */
                 if (new_enabled_mapping_count != enabled_mapping_count) {
@@ -148,6 +181,9 @@ void OBD2Task(void *parameters)
                         int result = CAN_rx_msg(can_bus, &msg, CAN_RX_DELAY );
                         if (!result)
                                 continue;
+
+                        if (obd2_enabled)
+                        		check_obd2_response(&msg);
 
                         for (size_t i = 0; i < ccc->enabled_mappings; i++) {
                                 CANMapping *mapping = &ccc->can_channels[i].mapping;

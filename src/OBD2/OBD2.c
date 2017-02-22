@@ -367,7 +367,25 @@ static int decode_pid(unsigned char pid, CAN_msg *msg, int *value)
     return result;
 }
 
-int OBD2_request_PID(unsigned char pid, int *value, size_t timeout)
+int OBD2_request_PID(uint8_t pid, uint8_t mode, size_t timeout)
+{
+		CAN_msg msg;
+		msg.addressValue = 0x7df;
+		msg.data[0] = 2;
+		msg.data[1] = mode;
+		msg.data[2] = pid;
+		msg.data[3] = 0x55;
+		msg.data[4] = 0x55;
+		msg.data[5] = 0x55;
+		msg.data[6] = 0x55;
+		msg.data[7] = 0x55;
+		msg.dataLength = 8;
+		msg.isExtendedAddress = 0;
+		result = CAN_tx_msg(0, &msg, timeout);
+		return result;
+}
+
+int OBD2_request_PID2(unsigned char pid, int *value, size_t timeout)
 {
     CAN_msg msg;
     msg.addressValue = 0x7df;

@@ -29,7 +29,7 @@ CPP_GUARD_BEGIN
 
 #define OBD2_PID_DEFAULT_TIMEOUT_MS 300
 
-int OBD2_request_PID(unsigned char pid, int *value, size_t timeout);
+int OBD2_request_PID(uint8_t pid, uint8_t mode, size_t timeout);
 void OBD2_set_current_PID_value(int index, int value);
 int OBD2_get_current_PID_value(int index);
 
