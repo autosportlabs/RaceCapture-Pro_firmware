@@ -54,7 +54,7 @@ struct OBD2ChannelState {
         float current_value;
 
         /* holds the state for determining how to prioritize OBD2 queries */
-        uint8_t sequencer_timeout;
+        uint16_t sequencer_timeout;
 };
 
 /* manages the running state of OBD2 queries */
@@ -101,10 +101,10 @@ static bool OBD2_init_current_values(OBD2Config *obd2_config) {
         /* determine the fastest sample rate, which will set our PID querying timebase */
         for (size_t i = 0; i < obd2_channel_count; i++) {
                 max_sample_rate = MAX(max_sample_rate,
-                                      obd2_config->pids[i].cfg.sampleRate > max_sample_rate);
+                                      decodeSampleRate(obd2_config->pids[i].cfg.sampleRate));
         }
         obd2_state.max_sample_rate = max_sample_rate;
-        pr_info_int_msg(_LOG_PFX " Max OBD2 sample rate: ", obd2_state.max_sample_rate);
+        pr_debug_int_msg(_LOG_PFX " Max OBD2 sample rate: ", obd2_state.max_sample_rate);
 
         if (obd2_channel_count > 0) {
                 /* malloc the collection of OBD2 channels */
@@ -172,11 +172,26 @@ static void check_sequence_next_obd2_query(OBD2Config * obd2_config, uint16_t en
 
         if (obd2_state.last_obd2_query_timestamp == 0 || is_obd2_timeout) {
 
-                obd2_state.current_obd2_pid_index++;
-                if (obd2_state.current_obd2_pid_index >= enabled_obd2_pids_count)
-                        obd2_state.current_obd2_pid_index = 0;
+                size_t current_pid_index = obd2_state.current_obd2_pid_index;
 
-                PidConfig * pid_cfg = &obd2_config->pids[obd2_state.current_obd2_pid_index];
+                /*
+                 * find the next PID we should query -
+                 * this algorithm queries OBD2 channels at a rate
+                 * proportonal to the channel's configured sample rate
+                 */
+                while(true) {
+                        current_pid_index++;
+                        if (current_pid_index >= enabled_obd2_pids_count)
+                                current_pid_index = 0;
+
+                        struct OBD2ChannelState *state = &obd2_state.current_channel_states[current_pid_index];
+                        state->sequencer_timeout += decodeSampleRate(obd2_config->pids[current_pid_index].cfg.sampleRate);
+                        if (state->sequencer_timeout >= obd2_state.max_sample_rate) {
+                                state->sequencer_timeout = 0;
+                                break;
+                        }
+                }
+                PidConfig * pid_cfg = &obd2_config->pids[current_pid_index];
                 int pid_request_result = OBD2_request_PID(pid_cfg->pid, pid_cfg->mode, OBD2_PID_REQUEST_TIMEOUT_MS);
                 if (pid_request_result) {
                         obd2_state.last_obd2_query_timestamp = getCurrentTicks();
@@ -184,6 +199,7 @@ static void check_sequence_next_obd2_query(OBD2Config * obd2_config, uint16_t en
                 else {
                         pr_debug_int_msg("Timeout sending PID request ", pid_cfg->pid);
                 }
+                obd2_state.current_obd2_pid_index = current_pid_index;
         }
 }
 
