@@ -48,35 +48,88 @@
 
 #define _LOG_PFX            "[CAN] "
 
+/* tracks the state of OBD2 channels */
+struct OBD2ChannelState {
+        /* the current OBD2 channel value */
+        float current_value;
+
+        /* holds the state for determining how to prioritize OBD2 queries */
+        uint8_t sequencer_timeout;
+};
+
+/* manages the running state of OBD2 queries */
+struct OBD2State {
+        /* points to a dynamically created array of OBD2ChannelState structs */
+        struct OBD2ChannelState * current_channel_states;
+
+        /* holds the last query timestamp, for determining OBD2 query timeouts */
+        size_t last_obd2_query_timestamp;
+
+        /* the index of the current OBD2 PID we're querying */
+        size_t current_obd2_pid_index;
+
+        /*
+         * the max sample rate across all of the channels;
+         * will set the time base for the fastest PID querying
+         */
+        size_t max_sample_rate;
+};
+
+static struct OBD2State obd2_state;
+
+/* CAN bus channels current channel values */
 static float * CAN_current_values = NULL;
 
+static void OBD2_init_state(void) {
+    memset(&obd2_state, 0, sizeof(struct OBD2State));
+}
 
-static float * OBD2_current_values = NULL;
-static size_t current_obd2_pid_index = 0;
-static size_t last_obd2_query_timestamp = 0;
+/*
+ * Init our OBD2 state with the list of current running channels;
+ */
+static bool OBD2_init_current_values(OBD2Config *obd2_config) {
+        uint16_t obd2_channel_count = obd2_config->enabledPids;
+        /* free any previously created channel states */
+        if (obd2_state.current_channel_states != NULL)
+                portFree(obd2_state.current_channel_states);
 
-static bool OBD2_init_current_values(size_t values) {
-        if (OBD2_current_values != NULL)
-                portFree(OBD2_current_values);
+        /* start the querying from the first PID */
+        obd2_state.current_obd2_pid_index = 0;
+        obd2_state.last_obd2_query_timestamp = 0;
 
-        values = MAX(1, values);
-        size_t size = sizeof(float[values]);
-        OBD2_current_values = portMalloc(size);
+        size_t max_sample_rate = 0;
+        /* determine the fastest sample rate, which will set our PID querying timebase */
+        for (size_t i = 0; i < obd2_channel_count; i++) {
+                max_sample_rate = MAX(max_sample_rate,
+                                      obd2_config->pids[i].cfg.sampleRate > max_sample_rate);
+        }
+        obd2_state.max_sample_rate = max_sample_rate;
+        pr_info_int_msg(_LOG_PFX " Max OBD2 sample rate: ", obd2_state.max_sample_rate);
 
-        return OBD2_current_values != NULL;
+        if (obd2_channel_count > 0) {
+                /* malloc the collection of OBD2 channels */
+                size_t size = sizeof(struct OBD2ChannelState[obd2_channel_count]);
+                obd2_state.current_channel_states = portMalloc(size);
+                return obd2_state.current_channel_states != NULL;
+        }
+        else{
+                /* if no OBD2 channels are enabled, don't malloc */
+                obd2_state.current_channel_states = NULL;
+                return true;
+        }
 }
 
 float OBD2_get_current_channel_value(int index) {
-    if (OBD2_current_values == NULL)
+    if (obd2_state.current_channel_states == NULL)
             return 0;
-    return OBD2_current_values[index];
+    return obd2_state.current_channel_states[index].current_value;
 }
 
 static void OBD2_set_current_channel_value(int index, float value)
 {
-        if (OBD2_current_values == NULL)
+        if (obd2_state.current_channel_states == NULL)
                 return;
-        OBD2_current_values[index] = value;
+        obd2_state.current_channel_states[index].current_value = value;
 }
 
 static bool CAN_init_current_values(size_t values) {
@@ -108,16 +161,28 @@ static void CAN_set_current_channel_value(int index, float value)
 
 static void check_sequence_next_obd2_query(OBD2Config * obd2_config, uint16_t enabled_obd2_pids_count)
 {
-        /* Should we send a PID request? */
-        if (!last_obd2_query_timestamp || isTimeoutMs(last_obd2_query_timestamp, OBD2_PID_DEFAULT_TIMEOUT_MS)) {
+        /*
+         * Should we send a PID request?
+         * We should send a PID request if we're ready for the next PID (timestamp == 0)
+         * or we've timed out.
+         * */
+        bool is_obd2_timeout = obd2_state.last_obd2_query_timestamp > 0 && isTimeoutMs(obd2_state.last_obd2_query_timestamp, OBD2_PID_DEFAULT_TIMEOUT_MS);
+        if (is_obd2_timeout)
+                pr_debug_int_msg(_LOG_PFX "Timeout requesting PID ", obd2_config->pids[obd2_state.current_obd2_pid_index].pid);
 
-                current_obd2_pid_index++;
-                if (current_obd2_pid_index >= enabled_obd2_pids_count)
-                        current_obd2_pid_index = 0;
+        if (obd2_state.last_obd2_query_timestamp == 0 || is_obd2_timeout) {
 
-                PidConfig * pid_cfg = &obd2_config->pids[current_obd2_pid_index];
-                if (OBD2_request_PID(pid_cfg->pid, pid_cfg->mode, OBD2_PID_REQUEST_TIMEOUT_MS)) {
-                        last_obd2_query_timestamp = getCurrentTicks();
+                obd2_state.current_obd2_pid_index++;
+                if (obd2_state.current_obd2_pid_index >= enabled_obd2_pids_count)
+                        obd2_state.current_obd2_pid_index = 0;
+
+                PidConfig * pid_cfg = &obd2_config->pids[obd2_state.current_obd2_pid_index];
+                int pid_request_result = OBD2_request_PID(pid_cfg->pid, pid_cfg->mode, OBD2_PID_REQUEST_TIMEOUT_MS);
+                if (pid_request_result) {
+                        obd2_state.last_obd2_query_timestamp = getCurrentTicks();
+                }
+                else {
+                        pr_debug_int_msg("Timeout sending PID request ", pid_cfg->pid);
                 }
         }
 }
@@ -142,23 +207,24 @@ static void update_can_channels(CAN_msg *msg, uint8_t can_bus, CANChannelConfig 
 
 static void update_obd2_channels(CAN_msg *msg, OBD2Config *cfg)
 {
-        PidConfig *pid_config = &cfg->pids[current_obd2_pid_index];
+        PidConfig *pid_config = &cfg->pids[obd2_state.current_obd2_pid_index];
         /* Did we get an OBDII PID we were waiting for? */
-        if (last_obd2_query_timestamp &&
+        if (obd2_state.last_obd2_query_timestamp &&
             msg->addressValue == STANDARD_PID_RESPONSE &&
             msg->data[2] == pid_config->pid ) {
                     float value;
                     bool result = canmapping_map_value(&value, msg, &pid_config->mapping);
                     if (result)
-                            OBD2_set_current_channel_value(current_obd2_pid_index, value);
+                            OBD2_set_current_channel_value(obd2_state.current_obd2_pid_index, value);
 
                     /* PID request is complete */
-                    last_obd2_query_timestamp = 0;
+                    obd2_state.last_obd2_query_timestamp = 0;
         }
 }
 
 static void OBD2Task(void *parameters)
 {
+        OBD2_init_state();
         LoggerConfig *lc = getWorkingLoggerConfig();
         CANChannelConfig *ccc = &lc->can_channel_cfg;
         OBD2Config *oc = &lc->OBD2Configs;
@@ -175,7 +241,7 @@ static void OBD2Task(void *parameters)
                         pr_error_int_msg("Failed to create buffer for CAN channels; size ", new_enabled_mapping_count);
 
                 uint16_t new_enabled_obd2_pids_count = oc->enabledPids;
-                success = OBD2_init_current_values(new_enabled_obd2_pids_count);
+                success = OBD2_init_current_values(oc);
                 enabled_obd2_pids_count = success ? new_enabled_obd2_pids_count : 0;
                 if (!success)
                         pr_error_int_msg("Failed to create buffer for OBD2 channels; size ", new_enabled_obd2_pids_count);

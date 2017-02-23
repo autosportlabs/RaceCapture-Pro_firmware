@@ -28,6 +28,8 @@
 #include "task.h"
 #include "taskUtil.h"
 
+#define _LOG_PFX            "[OBD2] "
+
 int OBD2_get_value_for_pid(uint8_t pid)
 {
     return 0;
@@ -35,6 +37,7 @@ int OBD2_get_value_for_pid(uint8_t pid)
 
 int OBD2_request_PID(uint8_t pid, uint8_t mode, size_t timeout)
 {
+        pr_debug_int_msg(_LOG_PFX " Requesting PID ", pid);
 		CAN_msg msg;
 		msg.addressValue = 0x7df;
 		msg.data[0] = 2;
