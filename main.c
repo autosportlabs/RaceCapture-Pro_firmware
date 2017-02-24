@@ -29,7 +29,7 @@
  */
 
 #include "FreeRTOS.h"
-#include "OBD2_task.h"
+#include "CAN_task.h"
 #include "capabilities.h"
 #include "connectivityTask.h"
 #include "constants.h"

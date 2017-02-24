@@ -23,7 +23,7 @@
 #include "FreeRTOS.h"
 #include "GPIO.h"
 #include "OBD2.h"
-#include "OBD2_task.h"
+#include "can_channels.h"
 #include "PWM.h"
 #include "channel_config.h"
 #include "dateTime.h"

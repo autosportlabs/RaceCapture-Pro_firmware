@@ -70,5 +70,5 @@ void update_can_channels(CAN_msg *msg, uint8_t can_bus, CANChannelConfig *cfg, u
                         continue;
 
                 CAN_set_current_channel_value(i, value);
-                }
+		}
 }
