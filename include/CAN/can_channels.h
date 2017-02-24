@@ -19,22 +19,18 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef OBD2_TASK_H_
-#define OBD2_TASK_H_
+#ifndef CAN_CHANNELS_H_
+#define CAN_CHANNELS_H_
 
-#include "cpp_guard.h"
-#include <stdbool.h>
-#include <stddef.h>
+#include "loggerConfig.h"
+#include "CAN.h"
 
 CPP_GUARD_BEGIN
 
+bool CAN_init_current_values(size_t values);
 float CAN_get_current_channel_value(int index);
-
-float OBD2_get_current_channel_value(int index);
-
-void start_CAN_task(int priority);
+void CAN_set_current_channel_value(int index, float value);
+void update_can_channels(CAN_msg *msg, uint8_t can_bus, CANChannelConfig *cfg, uint16_t enabled_mapping_count);
 
 CPP_GUARD_END
-
-
-#endif /* OBD2_TASK_H_ */
+#endif /* CAN_CHANNELS_H_ */

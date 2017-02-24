@@ -33,73 +33,21 @@
 #include "semphr.h"
 #include "taskUtil.h"
 #include "capabilities.h"
-#include "mem_mang.h"
 #include "can_mapping.h"
-#include "stdutil.h"
-#include <string.h>
+#include "can_channels.h"
 
-#define _LOG_PFX            "[CANOBD2] "
+#define _LOG_PFX            "[CAN_Task] "
 
-#define OBD2_TASK_STACK 	128
-#define OBD2_FEATURE_DISABLED_DELAY_MS 2000
-#define CAN_MAPPING_FEATURE_DISABLED_MS 2000
-#define CAN_RX_DELAY 300
+#define CAN_TASK_STACK 					128
+#define CAN_TASK_FEATURED_DISABLED_MS	2000
+#define CAN_RX_DELAY 					300
 
-/* CAN bus channels current channel values */
-static float * CAN_current_values = NULL;
-
-static bool CAN_init_current_values(size_t values) {
-        if (CAN_current_values != NULL)
-                portFree(CAN_current_values);
-
-        values = MAX(1, values);
-        size_t size = sizeof(float[values]);
-        CAN_current_values = portMalloc(size);
-
-        if (CAN_current_values != NULL)
-                memset(CAN_current_values, 0, size);
-
-        return CAN_current_values != NULL;
-}
-
-float CAN_get_current_channel_value(int index) {
-        if (CAN_current_values == NULL)
-                return 0;
-        return CAN_current_values[index];
-}
-
-static void CAN_set_current_channel_value(int index, float value)
+static void CAN_task(void *parameters)
 {
-        if (CAN_current_values == NULL)
-                return;
-        CAN_current_values[index] = value;
-}
-
-
-static void update_can_channels(CAN_msg *msg, uint8_t can_bus, CANChannelConfig *cfg, uint16_t enabled_mapping_count)
-{
-        for (size_t i = 0; i < enabled_mapping_count; i++) {
-                CANMapping *mapping = &cfg->can_channels[i].mapping;
-                /* only process the mapping for the bus we're handling messages for */
-                if (can_bus != mapping->can_channel)
-                        continue;
-
-                float value;
-                /* map the CAN message to the value */
-                bool result = canmapping_map_value(&value, msg, mapping);
-                if (!result)
-                        continue;
-
-                CAN_set_current_channel_value(i, value);
-                }
-}
-
-static void OBD2Task(void *parameters)
-{
-        OBD2_init_state();
         LoggerConfig *lc = getWorkingLoggerConfig();
         CANChannelConfig *ccc = &lc->can_channel_cfg;
         OBD2Config *oc = &lc->OBD2Configs;
+        OBD2_init_state();
 
         while(1) {
                 uint16_t enabled_mapping_count = 0;
@@ -118,9 +66,7 @@ static void OBD2Task(void *parameters)
                 if (!success)
                         pr_error_int_msg("Failed to create buffer for OBD2 channels; size ", new_enabled_obd2_pids_count);
 
-
                 bool config_changed = false;
-
 
                 while(! config_changed) {
                         CAN_msg msg;
@@ -138,13 +84,13 @@ static void OBD2Task(void *parameters)
 
                         config_changed = (enabled_mapping_count != ccc->enabled_mappings || enabled_obd2_pids_count != oc->enabledPids);
                 }
-                delayMs(CAN_MAPPING_FEATURE_DISABLED_MS);
+                delayMs(CAN_TASK_FEATURED_DISABLED_MS);
         }
 }
 
-void startOBD2Task(int priority)
+void start_CAN_task(int priority)
 {
         /* Make all task names 16 chars including NULL char*/
         static const signed portCHAR task_name[] = "CAN Task       ";
-        xTaskCreate(OBD2Task, task_name, OBD2_TASK_STACK, NULL, priority, NULL );
+        xTaskCreate(CAN_task, task_name, CAN_TASK_STACK, NULL, priority, NULL );
 }
