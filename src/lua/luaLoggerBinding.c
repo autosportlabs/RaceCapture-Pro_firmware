@@ -761,9 +761,13 @@ static int lua_obd2_read(lua_State *L)
                 pid = lua_tointeger(L, 1);
         }
 
-        int value = OBD2_get_value_for_pid(pid);
-        lua_pushnumber(L, value);
-        return 1;
+        float value;
+        if (OBD2_get_value_for_pid(pid, &value)) {
+        		lua_pushnumber(L, value);
+        		return 1;
+        }
+        else
+        		return 0;
 }
 
 static int lua_logging_start(lua_State *L)

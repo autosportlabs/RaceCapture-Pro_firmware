@@ -30,7 +30,13 @@ CPP_GUARD_BEGIN
 #define OBD2_PID_DEFAULT_TIMEOUT_MS 300
 #define OBD2_PID_REQUEST_TIMEOUT_MS 10
 
-int OBD2_get_value_for_pid(uint8_t pid);
+void OBD2_init_state(void);
+bool OBD2_init_current_values(OBD2Config *obd2_config);
+float OBD2_get_current_channel_value(int index);
+void OBD2_set_current_channel_value(int index, float value);
+void check_sequence_next_obd2_query(OBD2Config * obd2_config, uint16_t enabled_obd2_pids_count);
+void update_obd2_channels(CAN_msg *msg, OBD2Config *cfg);
+bool OBD2_get_value_for_pid(uint8_t pid, float *value);
 int OBD2_request_PID(uint8_t pid, uint8_t mode, size_t timeout);
 
 CPP_GUARD_END
