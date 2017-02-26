@@ -20,11 +20,9 @@
  */
 #include "can_mapping.h"
 #include "byteswap.h"
-#include <byteswap.h>
 #include "printk.h"
-#include <stdio.h>
 
-float canmapping_extract_value(uint64_t raw_data, CANMapping *mapping)
+float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
 {
         uint8_t offset = mapping->offset;
         uint8_t length = mapping->length;
@@ -52,7 +50,7 @@ float canmapping_extract_value(uint64_t raw_data, CANMapping *mapping)
         return (float)raw_value;
 }
 
-float canmapping_apply_formula(float value, CANMapping *mapping)
+float canmapping_apply_formula(float value, const CANMapping *mapping)
 {
 		value *= mapping->multiplier;
 		if (mapping->divider)
@@ -61,7 +59,7 @@ float canmapping_apply_formula(float value, CANMapping *mapping)
 		return value;
 }
 
-bool canmapping_match_id(CAN_msg *can_msg, CANMapping *mapping)
+bool canmapping_match_id(const CAN_msg *can_msg, const CANMapping *mapping)
 {
         uint32_t can_id  = can_msg->addressValue;
         if (mapping->can_mask)
@@ -70,7 +68,7 @@ bool canmapping_match_id(CAN_msg *can_msg, CANMapping *mapping)
         return can_id == mapping->can_id;
 }
 
-bool canmapping_map_value(float *value, CAN_msg *can_msg, CANMapping *mapping)
+bool canmapping_map_value(float *value, const CAN_msg *can_msg, const CANMapping *mapping)
 {
         if (! canmapping_match_id(can_msg, mapping))
                 return false;

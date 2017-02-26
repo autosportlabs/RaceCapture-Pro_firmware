@@ -33,10 +33,9 @@ int16_t swap_int16( int16_t val )
     return (val << 8) | ((val >> 8) & 0xFF);
 }
 
-uint32_t swap_uint24( int32_t val )
+uint32_t swap_uint24(int32_t val )
 {
-    val = ((val & 0xFF0000) >> 16) | (val & 0x00FF00) | ((val & 0x0000FF) << 16);
-    return val;
+    return ((val & 0xFF0000) >> 16) | (val & 0x00FF00) | ((val & 0x0000FF) << 16);
 }
 
 uint32_t swap_uint32( uint32_t val )
