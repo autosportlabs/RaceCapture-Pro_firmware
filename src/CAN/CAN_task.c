@@ -70,17 +70,17 @@ static void CAN_task(void *parameters)
 
                 while(! config_changed) {
                         CAN_msg msg;
-                        int result = CAN_rx_msg(0, &msg, CAN_RX_DELAY );
+                        int result = CAN_rx_msg(&msg, CAN_RX_DELAY );
 
                         if (result) {
                                 if (ccc->enabled)
-                                        update_can_channels(&msg, 0, ccc, enabled_mapping_count);
+                                        update_can_channels(&msg, ccc, enabled_mapping_count);
 
                                 if (oc->enabled)
                                         update_obd2_channels(&msg, oc);
                         }
                         if (oc->enabled)
-                                check_sequence_next_obd2_query(oc, enabled_obd2_pids_count);
+                                sequence_next_obd2_query(oc, enabled_obd2_pids_count);
 
                         config_changed = (enabled_mapping_count != ccc->enabled_mappings || enabled_obd2_pids_count != oc->enabledPids);
                 }

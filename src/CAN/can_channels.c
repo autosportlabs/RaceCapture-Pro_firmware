@@ -23,6 +23,7 @@
 #include "can_mapping.h"
 #include "mem_mang.h"
 #include "stdutil.h"
+#include "printk.h"
 #include <string.h>
 
 /* CAN bus channels current channel values */
@@ -55,12 +56,13 @@ void CAN_set_current_channel_value(int index, float value)
         CAN_current_values[index] = value;
 }
 
-void update_can_channels(CAN_msg *msg, uint8_t can_bus, CANChannelConfig *cfg, uint16_t enabled_mapping_count)
+void update_can_channels(CAN_msg *msg, CANChannelConfig *cfg, uint16_t enabled_mapping_count)
 {
         for (size_t i = 0; i < enabled_mapping_count; i++) {
                 CANMapping *mapping = &cfg->can_channels[i].mapping;
+
                 /* only process the mapping for the bus we're handling messages for */
-                if (can_bus != mapping->can_channel)
+                if (msg->can_bus != mapping->can_channel)
                         continue;
 
                 float value;

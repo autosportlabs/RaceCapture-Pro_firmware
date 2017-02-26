@@ -62,9 +62,9 @@ int CAN_tx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs)
     return rc;
 }
 
-int CAN_rx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs)
+int CAN_rx_msg(CAN_msg *msg, unsigned int timeoutMs)
 {
-    int rc = CAN_device_rx_msg(channel, msg, timeoutMs);
+    int rc = CAN_device_rx_msg(msg, timeoutMs);
     if (rc)
             led_toggle(LED_CAN);
     return rc;

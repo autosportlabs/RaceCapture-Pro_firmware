@@ -34,7 +34,7 @@ int CAN_device_init(uint8_t channel, uint32_t baud, bool termination_enabled);
 int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
 			  uint32_t filter, uint32_t mask, const bool enabled);
 int CAN_device_tx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs);
-int CAN_device_rx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs);
+int CAN_device_rx_msg(CAN_msg *msg, unsigned int timeoutMs);
 
 CPP_GUARD_END
 

@@ -730,7 +730,8 @@ static int lua_rx_can_msg(lua_State *L)
         }
 
         CAN_msg msg;
-        if (!CAN_rx_msg(channel, &msg, timeout))
+        channel = channel;
+        if (!CAN_rx_msg(&msg, timeout))
                 return 0;
 
         lua_pushinteger(L, msg.addressValue);
@@ -742,7 +743,6 @@ static int lua_rx_can_msg(lua_State *L)
                 lua_pushnumber(L, msg.data[i - 1]);
                 lua_rawset(L, -3);
         }
-
         return 3;
 }
 

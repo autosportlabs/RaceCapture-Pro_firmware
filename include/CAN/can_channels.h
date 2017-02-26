@@ -54,7 +54,7 @@ void CAN_set_current_channel_value(int index, float value);
  * @param cfg the CAN channel configuration, containing the mappings
  * @param enabled_mapping_count the number of channel mappings
  */
-void update_can_channels(CAN_msg *msg, uint8_t can_bus, CANChannelConfig *cfg, uint16_t enabled_mapping_count);
+void update_can_channels(CAN_msg *msg, CANChannelConfig *cfg, uint16_t enabled_mapping_count);
 
 CPP_GUARD_END
 #endif /* CAN_CHANNELS_H_ */

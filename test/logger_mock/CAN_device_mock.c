@@ -33,7 +33,7 @@ int CAN_device_tx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs)
     return 1;
 }
 
-int CAN_device_rx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs)
+int CAN_device_rx_msg(CAN_msg *msg, unsigned int timeoutMs)
 {
     return 1;
 }
