@@ -21,6 +21,7 @@
 
 #include "ADC.h"
 #include "CAN.h"
+#include "CAN_aux_queue.h"
 #include "FreeRTOS.h"
 #include "GPIO.h"
 #include "OBD2.h"
@@ -715,7 +716,7 @@ static int lua_rx_can_msg(lua_State *L)
 {
         lua_validate_args_count(L, 1, 2);
 
-        size_t channel;
+        size_t can_bus;
         size_t timeout = DEFAULT_CAN_TIMEOUT;
 
         switch(lua_gettop(L)) {
@@ -726,21 +727,20 @@ static int lua_rx_can_msg(lua_State *L)
                 timeout = lua_tointeger(L, 2);
         case 1:
                 lua_validate_arg_number(L, 1);
-                channel = lua_tointeger(L, 1);
+                can_bus = lua_tointeger(L, 1);
         }
 
-        CAN_msg msg;
-        channel = channel;
-        if (!CAN_rx_msg(&msg, timeout))
+        CAN_msg can_msg;
+        if (!CAN_aux_queue_get_msg(can_bus, &can_msg, timeout))
                 return 0;
 
-        lua_pushinteger(L, msg.addressValue);
-        lua_pushinteger(L, msg.isExtendedAddress);
+        lua_pushinteger(L, can_msg.addressValue);
+        lua_pushinteger(L, can_msg.isExtendedAddress);
 
         lua_newtable(L);
-        for (int i = 1; i <= msg.dataLength; i++) {
+        for (int i = 1; i <= can_msg.dataLength; i++) {
                 lua_pushnumber(L, i);
-                lua_pushnumber(L, msg.data[i - 1]);
+                lua_pushnumber(L, can_msg.data[i - 1]);
                 lua_rawset(L, -3);
         }
         return 3;
