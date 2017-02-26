@@ -72,6 +72,8 @@ class LoggerApiTest : public CppUnit::TestFixture
     CPPUNIT_TEST( testSetObd2ConfigFile_fromIndex);
     CPPUNIT_TEST( testSetObd2ConfigFile_invalid);
     CPPUNIT_TEST( testGetObd2Cfg);
+    CPPUNIT_TEST( testGetCanChanCfg);
+    CPPUNIT_TEST( testSetCanChanCfg);
     CPPUNIT_TEST( testGetScript);
     CPPUNIT_TEST( testSetScript);
     CPPUNIT_TEST( testRunScript);
@@ -140,6 +142,8 @@ public:
     void testSetLogLevel();
     void testGetCanCfg();
     void testSetCanCfg();
+    void testGetCanChanCfg();
+    void testSetCanChanCfg();
     void testSetObd2Cfg();
     void testSetObd2ConfigFile_fromIndex();
     void testSetObd2ConfigFile_invalid();
@@ -189,10 +193,13 @@ private:
     void testSetLogLevelFile(string filename, int expectedResponse);
     void testGetCanCfgFile(string filename);
     void testSetCanCfgFile(string filename);
+    void testGetCanChanCfgFile(string filename);
+    void testSetCanChanCfgFile(string filename);
     void testGetObd2ConfigFile(string filename);
     void testSetObd2ConfigFile(string filename);
     void populateChannelConfig(ChannelConfig *cfg, const int id, const int splRt);
-    void checkChannelConfig(Object &json, const int i, string &iString, const int splRt);
+    void check_can_mapping_config(Object &json, CANMapping *mapping);
+    void check_channel_config(Object &json_cfg, ChannelConfig *cfg);
     void testChannelConfig(ChannelConfig *chCfg, string expNm, string expUt, unsigned short sr);
 };
 

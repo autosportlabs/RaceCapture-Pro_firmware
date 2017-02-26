@@ -41,8 +41,7 @@ typedef struct _VersionInfo {
         uint32_t bugfix;
 } VersionInfo;
 
-bool version_check_changed(const VersionInfo *versionInfo,
-                           const char* log_pfx);
+bool version_check_changed(const VersionInfo *versionInfo);
 const VersionInfo* get_current_version_info();
 const char* version_full();
 enum release_type version_get_release_type();

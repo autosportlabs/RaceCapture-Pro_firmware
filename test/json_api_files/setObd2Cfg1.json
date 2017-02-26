@@ -1,24 +1,50 @@
-{"setObd2Cfg":
- {"en":1,
-  "pids":[
-      {
-          "pid":5,
-          "nm": "I <3 OBD2",
-          "ut": "?????",
-          "min": -1,
-          "max": 1,
-          "prec": 1,
-          "sr": 10
-      },
-      {
-          "nm": "I <3 OBD2",
-          "ut": "?????",
-          "min": -1,
-          "max": 1,
-          "prec": 1,
-          "sr": 10,
-          "pid":6
-      }
-  ]
- }
+{
+    "setObd2Cfg": {
+        "en": 1,
+        "pids": [{
+            "filtId": 0,
+            "sr": 10,
+            "nm": "I <3 OBD2",
+            "min": -1,
+            "ut": "?????",
+            "bm": true,
+            "offset": 0,
+            "add": 33.0,
+            "prec": 1,
+            "mult": 11.0,
+            "bigEndian": false,
+            "len": 1,
+            "max": 1,
+            "div": 22.0,
+            "type": 0,
+            "id": 1234,
+            "bus": 0,
+            "id_mask": 5678,
+            "pid": 5,
+            "mode": 1,
+            "pass": false
+        }, {
+            "filtId": 0,
+            "sr": 10,
+            "nm": "I <3 OBD2",
+            "min": -1,
+            "ut": "?????",
+            "bm": true,
+            "offset": 0,
+            "add": 33.0,
+            "prec": 1,
+            "mult": 11.0,
+            "bigEndian": false,
+            "len": 1,
+            "max": 1,
+            "div": 22.0,
+            "type": 0,
+            "id": 1234,
+            "bus": 0,
+            "id_mask": 5678,
+            "pid": 6,
+            "mode": 22,
+            "pass": true
+        }]
+    }
 }

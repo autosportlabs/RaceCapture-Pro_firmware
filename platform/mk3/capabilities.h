@@ -69,7 +69,7 @@
 #define LUA_REGISTER_EXTERNAL_LIBS	1
 
 
-//Input / output Channels
+//Sensor Channels
 #define ANALOG_CHANNELS 		9
 #define IMU_CHANNELS			7
 #define	GPIO_CHANNELS			3
@@ -77,6 +77,10 @@
 #define PWM_CHANNELS			0
 #define CAN_CHANNELS			2
 #define CAN_SW_TERMINATION      true
+#define CAN_MAPPINGS            100
+#define OBD2_CHANNELS           10
+
+//Wireless connections
 #define CONNECTIVITY_CHANNELS	2
 
 //sample rates

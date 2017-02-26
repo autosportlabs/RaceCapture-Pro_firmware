@@ -30,8 +30,11 @@
 #include "timer_config.h"
 #include "units.h"
 #include "virtual_channel.h"
+#include "stdutil.h"
 #include <stdbool.h>
 #include <string.h>
+
+#define _LOG_PFX "[LoggerConfig] "
 
 #ifndef RCP_TESTING
 static const volatile LoggerConfig g_savedLoggerConfig  __attribute__((section(".config\n\t#")));
@@ -197,6 +200,17 @@ static void resetCanConfig(CANConfig *cfg)
     }
 }
 
+uint8_t filter_can_bus_channel(uint8_t value)
+{
+        return MIN(value, CONFIG_CAN_CHANNELS - 1);
+}
+
+static void _reset_can_mapping_config(CANChannelConfig *cfg)
+{
+    memset(cfg, 0, sizeof(CANChannelConfig));
+    return;
+}
+
 static void resetOBD2Config(OBD2Config *cfg)
 {
     memset(cfg, 0, sizeof(OBD2Config));
@@ -349,22 +363,10 @@ int decodeSampleRate(int rate_code)
     }
 }
 
-unsigned char filterBgStreamingMode(unsigned char mode)
+uint8_t filter_background_streaming_mode(uint8_t mode)
 {
     return mode == 0 ? 0 : 1;
 }
-
-unsigned char filterSdLoggingMode(unsigned char mode)
-{
-    switch (mode) {
-    case SD_LOGGING_MODE_CSV:
-        return SD_LOGGING_MODE_CSV;
-    default:
-    case SD_LOGGING_MODE_DISABLED:
-        return SD_LOGGING_MODE_DISABLED;
-    }
-}
-
 
 #if TIMER_CHANNELS > 0
 unsigned short filterTimerDivider(unsigned short speed)
@@ -635,10 +637,11 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
     return channels;
 }
 
-
-int flash_default_logger_config(void)
+void reset_logger_config(void)
 {
     LoggerConfig *lc = &g_workingLoggerConfig;
+
+    lc->config_size = sizeof(LoggerConfig);
 
     resetVersionInfo(&lc->RcpVersionInfo);
     resetTimeConfig(lc->TimeConfigs);
@@ -668,6 +671,7 @@ int flash_default_logger_config(void)
 #endif
 
     resetCanConfig(&lc->CanConfig);
+    _reset_can_mapping_config(&lc->can_channel_cfg);
     resetOBD2Config(&lc->OBD2Configs);
     logger_config_reset_gps_config(&lc->GPSConfigs);
     resetLapConfig(&lc->LapConfigs);
@@ -676,9 +680,12 @@ int flash_default_logger_config(void)
     reset_logging_config(&lc->logging_cfg);
     auto_logger_reset_config(&lc->auto_logger_cfg);
     strcpy(lc->padding_data, "");
+}
 
+int flash_default_logger_config(void)
+{
+    reset_logger_config();
     int result = flashLoggerConfig();
-
     pr_info_str_msg("flashing default config: ", result == 0 ? "win" : "fail");
     return result;
 }
@@ -690,14 +697,24 @@ int flashLoggerConfig(void)
                                sizeof (LoggerConfig));
 }
 
+
+static bool _config_size_changed(void) {
+    bool changed = false;
+
+    if (g_savedLoggerConfig.config_size != sizeof(LoggerConfig)) {
+        changed = true;
+        pr_warning(_LOG_PFX "size of LoggerConfig changed\r\n");
+    }
+    return changed;
+}
+
 static bool checkFlashDefaultConfig(void)
 {
         const VersionInfo sv = g_savedLoggerConfig.RcpVersionInfo;
-        bool changed = version_check_changed(&sv, "Config DB");
+        bool changed = version_check_changed(&sv) || _config_size_changed();
         if (!changed)
                 return false;
 
-        pr_info("major/minor version changed\r\n");
         flash_default_logger_config();
         return true;
 }
@@ -706,6 +723,8 @@ static void loadWorkingLoggerConfig(void)
 {
     memcpy((void *) &g_workingLoggerConfig,
            (void *) &g_savedLoggerConfig, sizeof(LoggerConfig));
+
+    pr_info_int_msg("sizeof LoggerConfig: ", sizeof(LoggerConfig));
 }
 
 void initialize_logger_config()

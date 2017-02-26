@@ -70,12 +70,16 @@ CPP_GUARD_BEGIN
 #define CONFIG_PWM_CHANNELS					PWM_CHANNELS
 #define CONFIG_TIMER_CHANNELS				TIMER_CHANNELS
 #define CONFIG_CAN_CHANNELS                 CAN_CHANNELS
+#define CONFIG_CAN_MAPPINGS                 CAN_MAPPINGS
+#define CONFIG_OBD2_CHANNELS                OBD2_CHANNELS
 
 #define SLOW_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_10Hz
 #define FAST_LINK_MAX_TELEMETRY_SAMPLE_RATE SAMPLE_50Hz
 
 #define DEFAULT_GPS_POSITION_PRECISION 		6
 #define DEFAULT_GPS_RADIUS_PRECISION 		5
+
+#define DEFAULT_CAN_MAPPING_PRECISION       5
 
 enum TimeType {
     TimeType_Uptime,
@@ -272,48 +276,7 @@ typedef struct _PWMConfig {
 #define DEFAULT_PWM_CONFIG {DEFAULT_PWM_CHANNEL_CONFIG, MODE_PWM_FREQUENCY, MODE_LOGGING_PWM_DUTY, DEFAULT_PWM_DUTY_CYCLE, DEFAULT_PWM_PERIOD}
 
 
-#define OBD2_CHANNELS 20
-
-typedef struct _PidConfig {
-    ChannelConfig cfg;
-    unsigned short pid;
-} PidConfig;
-
-
-typedef struct _OBD2Config {
-    unsigned char enabled;
-    unsigned short enabledPids;
-    PidConfig pids[OBD2_CHANNELS];
-} OBD2Config;
-
-#define DEFAULT_ENABLED_PIDS 1
-#define DEFAULT_OBD2_CONFIG \
-{ \
-	CONFIG_FEATURE_NOT_INSTALLED, \
-	DEFAULT_ENABLED_PIDS, \
-	{ \
-		{{"RPM", "", 0, 10000, SAMPLE_10Hz, 0, 0}, 12}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}, \
-		{EMPTY_CHANNEL_CONFIG, 0}  \
-	} \
-}
+#define DEFAULT_CAN_BAUD_RATE 500000
 
 typedef struct _CANConfig {
     unsigned char enabled;
@@ -323,7 +286,99 @@ typedef struct _CANConfig {
 #endif
 } CANConfig;
 
-#define DEFAULT_CAN_BAUD_RATE 500000
+/* define max offsets and length for CAN mappings */
+#define MAX_CAN_MAPPING_OFFSET_BYTES 7
+#define MAX_CAN_MAPPING_LENGTH_BYTES 4
+
+enum CANMappingEndian {
+    CANMappingEndian_Big = 0,
+    CANMappingEndian_Little
+};
+
+enum CANMappingType {
+    CANMappingType_unsigned = 0,
+    CANMappingType_signed,
+    CANMappingType_IEEE754
+};
+
+
+typedef struct _CANMapping {
+    /* The standard channel configuration */
+    ChannelConfig channel_cfg;
+
+    /* CAN ID to match this mapping */
+    uint32_t can_id;
+
+    /* mask to apply to ID */
+    uint32_t can_mask;
+
+    /* multiplier for conversion formula */
+    float multiplier;
+
+    /* divider for conversion formula */
+    float divider;
+
+    /* adder for conversion formula */
+    float adder;
+
+    /* flag to indicate bit mode or byte mode for offset and length */
+    bool bit_mode;
+
+    /* indicates the encoding of the raw data type: unsigned, signed, IEEE 754 floating point */
+    enum CANMappingType type;
+
+    /* the can bus we expect the data to show up on */
+    uint8_t can_channel;
+
+    /* indicates endian-ness for multi-byte values */
+    bool big_endian;
+
+    /* byte or bit offset of the data to extract within the CAN message */
+    uint8_t offset;
+
+    /* byte or bit length of the data to extract within the CAN message */
+    uint8_t length;
+
+    /* the conversion filter to apply to quickly convert units without changing mapping */
+    uint8_t conversion_filter_id;
+} CANMapping;
+
+typedef struct _CANChannel {
+    /* The standard channel configuration */
+    ChannelConfig channel_cfg;
+    CANMapping mapping;
+} CANChannel;
+
+typedef struct _CANChannelConfig {
+    /* all available CAN mappings */
+    CANChannel can_channels[CONFIG_CAN_MAPPINGS];
+    /* globally enables/disables CAN mappings */
+    uint8_t enabled;
+    /* number of mappings set within configuration */
+    uint16_t enabled_mappings;
+} CANChannelConfig;
+
+
+typedef struct _PidConfig {
+    ChannelConfig cfg;
+    CANMapping mapping;
+
+    /* flag for passive mode where we only listen for OBDII PID responses */
+    bool passive;
+
+    /* The OBDII PID to query */
+    uint8_t pid;
+
+    /* The OBDII mode specified in the query */
+    uint16_t mode;
+} PidConfig;
+
+
+typedef struct _OBD2Config {
+    unsigned char enabled;
+    unsigned short enabledPids;
+    PidConfig pids[CONFIG_OBD2_CHANNELS];
+} OBD2Config;
 
 typedef struct _GPSConfig {
     ChannelConfig latitude;
@@ -335,8 +390,6 @@ typedef struct _GPSConfig {
     ChannelConfig quality;
     ChannelConfig DOP;
 } GPSConfig;
-
-
 
 #define DEFAULT_GPS_SAMPLE_RATE SAMPLE_10Hz
 
@@ -451,9 +504,6 @@ typedef struct _ConnectivityConfig {
         struct wifi_cfg wifi;
 } ConnectivityConfig;
 
-#define SD_LOGGING_MODE_DISABLED					0
-#define SD_LOGGING_MODE_CSV							1
-
 /**
  * Configurations specific to our logging infrastructure.
  */
@@ -462,6 +512,10 @@ struct logging_config {
 };
 
 typedef struct _LoggerConfig {
+    /* The size of this logger config struct */
+    size_t config_size;
+
+    /* stores the version of this firmware */
     VersionInfo RcpVersionInfo;
 
     //PWM/Analog out configurations
@@ -498,6 +552,8 @@ typedef struct _LoggerConfig {
     //CAN Configuration
     CANConfig CanConfig;
 
+    CANChannelConfig can_channel_cfg;
+
     //OBD2 Config
     OBD2Config OBD2Configs;
 
@@ -529,8 +585,7 @@ int getConnectivitySampleRateLimit();
 int encodeSampleRate(int sampleRate);
 int decodeSampleRate(int sampleRateCode);
 
-unsigned char filterBgStreamingMode(unsigned char mode);
-unsigned char filterSdLoggingMode(unsigned char mode);
+uint8_t filter_background_streaming_mode(uint8_t mode);
 
 PWMConfig * getPwmConfigChannel(int channel);
 char filterPwmOutputMode(int config);
@@ -552,6 +607,8 @@ ImuConfig * getImuConfigChannel(int channel);
 int filterImuMode(int mode);
 int filterImuChannel(int channel);
 
+uint8_t filter_can_bus_channel(uint8_t value);
+
 unsigned int getHighestSampleRate(LoggerConfig *config);
 size_t get_enabled_channel_count(LoggerConfig *loggerConfig);
 
@@ -560,6 +617,7 @@ bool should_sample(const int sample_rate, const int max_rate);
 int getHigherSampleRate(const int a, const int b);
 
 int flashLoggerConfig(void);
+void reset_logger_config(void);
 int flash_default_logger_config(void);
 
 void logger_config_reset_gps_config(GPSConfig *cfg);

@@ -37,7 +37,7 @@ static Tracks g_tracks = {};
 void initialize_tracks()
 {
         const VersionInfo vi = g_tracks.versionInfo;
-        if (version_check_changed(&vi, "Tracks DB"))
+        if (version_check_changed(&vi))
                 flash_default_tracks();
 }
 

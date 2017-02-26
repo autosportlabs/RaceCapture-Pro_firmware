@@ -96,7 +96,7 @@ INCLUDES = \
 CPP = g++
 CC = gcc
 
-CPPFLAGS := -g -DRCP_TESTING -DAPI_REV=$(API) \
+CPPFLAGS := -g -DRCP_TESTING -DAPI_REV=$(API) -Werror=unused-variable\
 $(VERSION_CFLAGS) $(INCLUDES)
 
 #
