@@ -19,33 +19,29 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef BYTESWAPTEST_H
+#define BYTESWAPTEST_H
 
-#include <stdint.h>
-#include "byteswap.h"
+#include <cppunit/extensions/HelperMacros.h>
 
-uint16_t swap_uint16( uint16_t val )
+class ByteswapTest : public CppUnit::TestFixture
 {
-    return (val << 8) | (val >> 8 );
-}
+    CPPUNIT_TEST_SUITE( ByteswapTest );
+    CPPUNIT_TEST( test_uint16_swap );
+    CPPUNIT_TEST( test_int16_swap );
+    CPPUNIT_TEST( test_uint24_swap );
+    CPPUNIT_TEST( test_uint32_swap );
+    CPPUNIT_TEST( test_int32_swap );
+    CPPUNIT_TEST_SUITE_END();
 
-int16_t swap_int16( int16_t val )
-{
-    return (val << 8) | ((val >> 8) & 0xFF);
-}
+public:
+    void setUp();
+    void tearDown();
+    void test_uint16_swap(void);
+    void test_int16_swap(void);
+    void test_uint24_swap(void);
+    void test_uint32_swap(void);
+    void test_int32_swap(void);
+};
 
-uint32_t swap_uint24(int32_t val )
-{
-    return ((val & 0xFF0000) >> 16) | (val & 0x00FF00) | ((val & 0x0000FF) << 16);
-}
-
-uint32_t swap_uint32( uint32_t val )
-{
-    val = ((val << 8) & 0xFF00FF00) | ((val >> 8) & 0xFF00FF );
-    return (val << 16) | (val >> 16);
-}
-
-int32_t swap_int32( int32_t val )
-{
-    val = ((val << 8) & 0xFF00FF00) | ((val >> 8) & 0xFF00FF );
-    return (val << 16) | ((val >> 16) & 0xFFFF);
-}
+#endif  // BYTESWAPTEST_H
