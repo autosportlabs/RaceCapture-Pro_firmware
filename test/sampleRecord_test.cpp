@@ -195,7 +195,7 @@ void SampleRecordTest::testInitSampleRecord()
                 if (ac->cfg.sampleRate == SAMPLE_DISABLED)
                         continue;
 
-                CPPUNIT_ASSERT_EQUAL((size_t) i, ts->channelIndex);
+                CPPUNIT_ASSERT_EQUAL((uint8_t) i, ts->channelIndex);
                 CPPUNIT_ASSERT_EQUAL((void *) &ac->cfg, (void *) ts->cfg);
                 CPPUNIT_ASSERT_EQUAL((void *) get_analog_sample,
                                      (void *) ts->get_float_sample);
@@ -208,7 +208,7 @@ void SampleRecordTest::testInitSampleRecord()
                 if (ac->cfg.sampleRate == SAMPLE_DISABLED)
                         continue;
 
-                CPPUNIT_ASSERT_EQUAL((size_t)i,ts->channelIndex);
+                CPPUNIT_ASSERT_EQUAL((uint8_t)i,ts->channelIndex);
                 CPPUNIT_ASSERT_EQUAL((void *) &ac->cfg, (void *) ts->cfg);
                 CPPUNIT_ASSERT_EQUAL((void *) get_imu_sample,
                                      (void *) ts->get_float_sample);
@@ -221,7 +221,7 @@ void SampleRecordTest::testInitSampleRecord()
                 if (tc->cfg.sampleRate == SAMPLE_DISABLED)
                         continue;
 
-                CPPUNIT_ASSERT_EQUAL((size_t)i, ts->channelIndex);
+                CPPUNIT_ASSERT_EQUAL((uint8_t)i, ts->channelIndex);
                 CPPUNIT_ASSERT_EQUAL((void *) &tc->cfg, (void *) ts->cfg);
                 CPPUNIT_ASSERT_EQUAL((void *) timer_get_sample,
                                      (void *) ts->get_float_sample);
@@ -234,7 +234,7 @@ void SampleRecordTest::testInitSampleRecord()
                 if (gc->cfg.sampleRate == SAMPLE_DISABLED)
                         continue;
 
-                CPPUNIT_ASSERT_EQUAL((size_t)i, ts->channelIndex);
+                CPPUNIT_ASSERT_EQUAL((uint8_t)i, ts->channelIndex);
                 CPPUNIT_ASSERT_EQUAL((void *) &gc->cfg, (void *) ts->cfg);
                 CPPUNIT_ASSERT_EQUAL((void *) GPIO_get,
                                      (void *) ts->get_int_sample);
@@ -247,7 +247,7 @@ void SampleRecordTest::testInitSampleRecord()
                 if (pc->cfg.sampleRate == SAMPLE_DISABLED)
                         continue;
 
-                CPPUNIT_ASSERT_EQUAL((size_t)i, ts->channelIndex);
+                CPPUNIT_ASSERT_EQUAL((uint8_t)i, ts->channelIndex);
                 CPPUNIT_ASSERT_EQUAL((void *) &pc->cfg, (void *) ts->cfg);
                 CPPUNIT_ASSERT_EQUAL((void *) get_pwm_sample,
                                      (void *) ts->get_int_sample);

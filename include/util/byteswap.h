@@ -28,18 +28,30 @@
 
 CPP_GUARD_BEGIN
 
-//! Byte swap unsigned short
-uint16_t swap_uint16( uint16_t val );
+/*
+ * Byte swap unsigned 16 bits
+ */
+uint16_t swap_uint16(uint16_t val );
 
-//! Byte swap short
+/*
+ * Byte swap signed 16 bits
+ */
 int16_t swap_int16( int16_t val );
 
-//! Byte swap unsigned int
-uint32_t swap_uint32( uint32_t val );
+/*
+* Byte swap unsigned 24 bits
+*/
+uint32_t swap_uint24(int32_t val );
 
-//! Byte swap int
+/*
+ * Byte swap signed 32 bits
+ */
 int32_t swap_int32( int32_t val );
 
+/*
+ * Byte swap unsigned 32 bits
+ */
+uint32_t swap_uint32( uint32_t val );
 
 CPP_GUARD_END
 
