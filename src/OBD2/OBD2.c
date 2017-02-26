@@ -34,6 +34,11 @@
 
 #define STANDARD_PID_RESPONSE           0x7e8
 
+enum obd2_channel_status {
+        OBD2_CHANNEL_STATUS_NO_DATA = 0,
+        OBD2_CHANNEL_STATUS_DATA_RECEIVED,
+        OBD2_CHANNEL_STATUS_SQUELCHED
+};
 
 /* tracks the state of OBD2 channels */
 struct OBD2ChannelState {
@@ -41,16 +46,15 @@ struct OBD2ChannelState {
         float current_value;
 
         /**
-         * holds the state for determining how to prioritize OBD2 queries
-         * base on the channel's sample rate
-         * */
+         * holds the state for the priority sequencer
+         */
         uint16_t sequencer_count;
 
         /* PID associated with OBD2 channel */
         uint8_t pid;
 
-        /* indicates if channel is disabled */
-        bool squelched;
+        /* indicates status of channel */
+        enum obd2_channel_status channel_status;
 };
 
 /* manages the running state of OBD2 queries */
@@ -64,13 +68,13 @@ struct OBD2State {
         /* the index of the current OBD2 PID we're querying */
         uint16_t current_obd2_pid_index;
 
-        /*
+        /**
          * the max sample rate across all of the channels;
          * will set the time base for the fastest PID querying
          */
         uint16_t max_sample_rate;
 
-        /*
+        /**
          * number of OBD2 channels
          */
         uint16_t channel_count;
@@ -124,7 +128,7 @@ bool OBD2_init_current_values(OBD2Config *obd2_config)
 		for (size_t i = 0; i < obd2_channel_count; i++) {
 		        struct OBD2ChannelState *state = &obd2_state.current_channel_states[i];
 				state->pid = obd2_config->pids[i].pid;
-				state->squelched = false;
+				state->channel_status = OBD2_CHANNEL_STATUS_NO_DATA;
 		}
 
 		obd2_state.channel_count = obd2_config->enabledPids;
@@ -153,8 +157,12 @@ void sequence_next_obd2_query(OBD2Config * obd2_config, uint16_t enabled_obd2_pi
         bool is_obd2_timeout = obd2_state.last_obd2_query_timestamp > 0 &&
         		isTimeoutMs(obd2_state.last_obd2_query_timestamp, OBD2_PID_DEFAULT_TIMEOUT_MS);
 
-        if (is_obd2_timeout)
-                pr_debug_int_msg(_LOG_PFX "Timeout requesting PID ", obd2_config->pids[obd2_state.current_obd2_pid_index].pid);
+        size_t current_pid_index = obd2_state.current_obd2_pid_index;
+
+        if (is_obd2_timeout) {
+                struct OBD2ChannelState *state = &obd2_state.current_channel_states[current_pid_index];
+                pr_debug_int_msg(_LOG_PFX "Timeout requesting PID ", state->pid);
+        }
 
         /* if a query is active and not timed out, exit now */
         if (obd2_state.last_obd2_query_timestamp != 0 && !is_obd2_timeout)
@@ -182,7 +190,6 @@ void sequence_next_obd2_query(OBD2Config * obd2_config, uint16_t enabled_obd2_pi
 		 * Channel 2 is selected for PID querying approx. 1/2 the rate of channel 3
 		 * Channel 3 is selected for PID querying approx. every time
 		 */
-		size_t current_pid_index = obd2_state.current_obd2_pid_index;
 
 		uint16_t highest_timeout = 0;
 
@@ -191,7 +198,7 @@ void sequence_next_obd2_query(OBD2Config * obd2_config, uint16_t enabled_obd2_pi
 
 		for (size_t i = 0; i < enabled_obd2_pids_count; i++) {
                 struct OBD2ChannelState *state = &obd2_state.current_channel_states[i];
-                if (state->squelched)
+                if (state->channel_status == OBD2_CHANNEL_STATUS_SQUELCHED)
                         /* if channel is squelched then skip */
                         continue;
 
